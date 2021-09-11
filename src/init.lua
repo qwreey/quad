@@ -35,7 +35,9 @@ function module.init()
 	this.class = class;
 	this.store = store;
 	this.style = style;
-	--this.makeClass = 
+	--this.makeClass = makeClass;
+	--this.tween = tween;
+	--this.plugin = plugin;
 
 	return this;
 end
