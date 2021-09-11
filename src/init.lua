@@ -23,18 +23,22 @@ frame{
 
 ]]
 
+require = require(script.require);
+local event = require("event");
+local store = require("store");
+local style = require("style");
+local class = require("class");
+local mount = require("mount");
+
 function module.init()
 	local this = {items = {}};
 
-	local event = require(script.event).init(this); if false then event = require("src.event").init(this); end
-	local class = require(script.class).init(this); if false then class = require("src.class").init(this); end
-	local store = require(script.store).init(this); if false then store = require("src.store").init(this); end
-	local style = require(script.style).init(this); if false then style = require("src.style").init(this); end
+	this.event = event.init(this);
+	this.store = store.init(this);
+	this.style = style.init(this);
+	this.class = class.init(this);
+	this.mount = mount.init(this);
 
-	this.event = event;
-	this.class = class;
-	this.store = store;
-	this.style = style;
 	--this.makeClass = makeClass;
 	--this.tween = tween;
 	--this.plugin = plugin;

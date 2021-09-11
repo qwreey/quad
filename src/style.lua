@@ -3,11 +3,9 @@ local module = {};
 function module.init(shared)
     local new = {};
 
-    function shared.new()
+    function shared.new(property)
 
     end
-
-    function shared.
 
     return new;
 end

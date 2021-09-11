@@ -3,21 +3,21 @@ local module = {};
 function module.init(shared)
 	local new = {};
 	local bind = shared.event.bind;
-	local items = shared.items;
+	local addObject = shared.store.addObject;
 
 	function new.make(ClassName,prop)
 		-- make thing
 		local item;
 		local classOfClassName = type(ClassName);
-		if classOfClassName == "string" then
+		if classOfClassName == "string" then -- if classname is a string value, cdall instance.new for making new roblox instance
 			item = Instance.new(ClassName);
-		elseif classOfClassName == "function" then
+		elseif classOfClassName == "function" then -- if classname is a function value, call it for making new object (OOP object)
 			item = ClassName();
-		elseif classOfClassName == "table" then
+		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new;
 			item = func();
 		end
-		if not item then
+		if not item then -- if cannot make new object, ignore this call
 			local str = tostring(ClassName);
 			print(("fail to make item '%s', did you forget to checking the class '%s' is exist?"):format(str,str));
 		end
@@ -29,7 +29,7 @@ function module.init(shared)
 
 			-- child
 			if indexType ~= "string" then -- object
-				value.Parent = new;
+				value.Parent = item;
 			elseif valueType == "function" and bind(value) then -- connect event
 			elseif indexType == "string" then
 				new[index] = value; -- set property
@@ -39,21 +39,26 @@ function module.init(shared)
 	end
 	local make = new.make;
 
-	function new.import(ClassName)
-		return function (prop)
-			if type(prop) == "string" then
-				local lastName = prop;
-				return function (nprop)
-					nprop.Name = lastName;
-					local item = make(ClassName,nprop);
-					items[lastName] = item;
-					return item;
-				end;
-			end
-			return make(ClassName,prop);
-		end;
+	function new.import(ClassName) -- make new quad class object
+		local this = {styles = {}};
+		setmetatable(this,{
+			__call = function (self,prop)
+				if type(prop) == "string" then
+					local lastName = prop;
+					return function (nprop)
+						nprop.Name = lastName;
+						local item = make(ClassName,nprop);
+						addObject(lastName,item);
+						return item;
+					end;
+				end
+				return make(ClassName,prop);
+			end;
+		});
+		return this;
 	end
 
+	-- set module calling function
 	setmetatable(new,{
 		__call = function (self,...)
 			return self.import(...);
