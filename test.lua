@@ -8,9 +8,7 @@ local store = render.store;
 
 local frame = class "Frame";
 local text = class.import "TextLabel";
-text.style = {
-    
-};
+text.TextSize = ;
 
 mount(gui,frame "testFrame" {
     text "texts" {

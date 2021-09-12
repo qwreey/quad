@@ -41,8 +41,8 @@ function module.init(shared)
 	end
 	local make = new.make;
 
-	function new.import(ClassName) -- make new quad class object
-		local this = {};
+	function new.import(ClassName,defaultProperties) -- make new quad class object
+		local this = defaultProperties or {};
 		setmetatable(this,{
 			__call = function (self,prop)
 				if type(prop) == "string" then
