@@ -1,11 +1,17 @@
 {
 	"name": "Plugin",
 	"tree": {
+        "$className": "DataModel",
         "StarterGui": {
             "$className": "StarterGui",
             "testGUI": {
                 "$className": "ScreenGui",
-                "$path": "src"
+                "testScript": {
+                    "$path": "testScript.client.lua"
+                },
+                "quad": {
+                    "$path": "src"
+                }
             }
         }
 	}

@@ -43,6 +43,10 @@ function module.init(shared)
 	function new.getObjects(id)
 		return items[id];
 	end
+	function new.getObject(id)
+		local item = items[id];
+		return item and item[1];
+	end
 	-- TODO: if item is exist already, ignore this call
 	function new.addObject(id,object)
 		local array = items[id];

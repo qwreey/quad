@@ -1,11 +1,22 @@
 local module = {};
 
+local exportItemMeta = {
+	__index = function (self,key)
+		local methods = self.__methods;
+		local events = self.__events;
+		return (methods and methods[key]) or (events and events[key]) or (self.getters[key](self.__this));
+	end;
+	__newindex = function (self,key,value)
+		self.__setters[key](self.__this,value);
+	end;
+};
+
 function module.init(shared)
 	local new = {};
 	local bind = shared.event.bind;
 	local addObject = shared.store.addObject;
 
-	function new.make(ClassName,...)
+	function new.make(ClassName,...) -- render object
 		-- make thing
 		local item;
 		local classOfClassName = type(ClassName);
@@ -23,17 +34,21 @@ function module.init(shared)
 		end
 
 		-- set property and adding child and binding functions
-		for _,prop in pairs({...}) do
+		for iprop,prop in pairs({...}) do
 			for index,value in pairs(prop) do
 				local valueType = typeof(value);
 				local indexType = typeof(index);
 
 				-- child
-				if indexType ~= "string" then -- object
-					value.Parent = item;
-				elseif valueType == "function" and bind(value) then -- connect event
+				if valueType == "function" and bind(value) then -- connect event
 				elseif indexType == "string" then
-					new[index] = value; -- set property
+					item[index] = value; -- set property
+				elseif indexType == "number" then -- object
+					if iprop == 1 then -- todo : move bindings
+						value.Parent = item;
+					else
+						value:Clone().Parent = item;
+					end
 				end
 			end
 		end
@@ -58,6 +73,18 @@ function module.init(shared)
 			end;
 		});
 		return this;
+	end
+
+	function new.export(newFn,setters,getters,methods,events) -- make quad importable class
+		return function ()
+			return setmetatable({
+				__this = newFn();
+				__setters = setters;
+				__getters = getters;
+				__methods = methods;
+				__events = events;
+			},exportItemMeta);
+		end;
 	end
 
 	-- set module calling function
