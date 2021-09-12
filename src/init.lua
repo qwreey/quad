@@ -26,7 +26,7 @@ frame{
 require = require(script.require);
 local event = require("event");
 local store = require("store");
-local style = require("style");
+--local style = require("style");
 local class = require("class");
 local mount = require("mount");
 
@@ -35,7 +35,7 @@ function module.init()
 
 	this.event = event.init(this);
 	this.store = store.init(this);
-	this.style = style.init(this);
+	--this.style = style.init(this);
 	this.class = class.init(this);
 	this.mount = mount.init(this);
 

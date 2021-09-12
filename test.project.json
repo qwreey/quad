@@ -1,0 +1,12 @@
+{
+	"name": "Plugin",
+	"tree": {
+        "StarterGui": {
+            "$className": "StarterGui",
+            "testGUI": {
+                "$className": "ScreenGui",
+                "$path": "src"
+            }
+        }
+	}
+}

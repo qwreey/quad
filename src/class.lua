@@ -5,7 +5,7 @@ function module.init(shared)
 	local bind = shared.event.bind;
 	local addObject = shared.store.addObject;
 
-	function new.make(ClassName,prop)
+	function new.make(ClassName,...)
 		-- make thing
 		local item;
 		local classOfClassName = type(ClassName);
@@ -23,16 +23,18 @@ function module.init(shared)
 		end
 
 		-- set property and adding child and binding functions
-		for index,value in pairs(prop) do
-			local valueType = typeof(value);
-			local indexType = typeof(index);
+		for _,prop in pairs({...}) do
+			for index,value in pairs(prop) do
+				local valueType = typeof(value);
+				local indexType = typeof(index);
 
-			-- child
-			if indexType ~= "string" then -- object
-				value.Parent = item;
-			elseif valueType == "function" and bind(value) then -- connect event
-			elseif indexType == "string" then
-				new[index] = value; -- set property
+				-- child
+				if indexType ~= "string" then -- object
+					value.Parent = item;
+				elseif valueType == "function" and bind(value) then -- connect event
+				elseif indexType == "string" then
+					new[index] = value; -- set property
+				end
 			end
 		end
 		return item;
@@ -40,7 +42,7 @@ function module.init(shared)
 	local make = new.make;
 
 	function new.import(ClassName) -- make new quad class object
-		local this = {styles = {}};
+		local this = {};
 		setmetatable(this,{
 			__call = function (self,prop)
 				if type(prop) == "string" then
@@ -52,7 +54,7 @@ function module.init(shared)
 						return item;
 					end;
 				end
-				return make(ClassName,prop);
+				return make(ClassName,prop,this);
 			end;
 		});
 		return this;
@@ -61,7 +63,7 @@ function module.init(shared)
 	-- set module calling function
 	setmetatable(new,{
 		__call = function (self,...)
-			return self.import(...);
+			return new.import(...);
 		end;
 	});
 

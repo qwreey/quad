@@ -7,6 +7,7 @@ this feature should be upgraded
 ]]
 
 local insert = table.insert;
+local remove = table.remove;
 function module.init(shared)
 	local new = {};
 	local items = shared.items;
@@ -14,9 +15,27 @@ function module.init(shared)
 	local objSpace = {};
 	function objSpace:each(func)
 		for i,v in ipairs(self) do
+			coroutine.resume(coroutine.create(func),i,v);
+		end
+	end
+	function objSpace:eachSync(func)
+		for i,v in ipairs(self) do
 			local ret = func(i,v);
 			if ret then
 				break;
+			end
+		end
+	end
+	function objSpace:remove(indexOrItem)
+		local thisType = type(indexOrItem);
+		if thisType == "number" then
+			remove(self,indexOrItem);
+		else
+			for i,v in pairs(self) do
+				if v == indexOrItem then
+					remove(self,i);
+					break;
+				end
 			end
 		end
 	end
@@ -24,6 +43,7 @@ function module.init(shared)
 	function new.getObjects(id)
 		return items[id];
 	end
+	-- TODO: if item is exist already, ignore this call
 	function new.addObject(id,object)
 		local array = items[id];
 		if not array then
