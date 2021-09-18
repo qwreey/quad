@@ -1,10 +1,11 @@
 local module = {};
 
+local unpack = table.unpack;
+local coroutineCreate = coroutine.create;
+local coroutineResume = coroutine.resume;
+
 function module.init(shared)
 	local new = {};
-	local unpack = table.unpack;
-	local coroutineCreate = coroutine.create;
-	local coroutineResume = coroutine.resume;
 
 	local prefix = "event::";
 	local special = {
