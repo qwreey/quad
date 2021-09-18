@@ -13,7 +13,6 @@ local function adaptRoutine(func,callback,...)
         func(...);
     end
 end
-
 function module.adapt(func,...)
     local lenArgs = select("#",...);
     local callArgs = {...};
@@ -25,9 +24,11 @@ local adapt = module.adapt;
 local runable = {};
 module.runable = runable;
 runable.__index = runable;
+
 function runable:run(callback)
     adapt(self.func,self,callback)
 end
+
 function runable:delayedRun(time,callback)
     delay(time,function ()
         if callback then
@@ -37,6 +38,7 @@ function runable:delayedRun(time,callback)
         end
     end);
 end
+
 local function loopedRun(id,checkId,checkKilled,delay,period,self,func,callback)
     if (delay ~= 0) and (delay) then
         wait(delay);
@@ -73,17 +75,21 @@ function runable:loopedRun(delay,period,callback)
         end;
     };
 end
+
 function runable:kill()
     self.runid = self.runid + 1;
 end
+
 function runable:getRunid()
     return self.runid;
 end
+
 function runable.new(func)
     local new = {runid = 0,func = func};
     setmetatable(new,runable);
     return new;
 end
+module.new = runable.new;
 
 function module.init()
     return module;

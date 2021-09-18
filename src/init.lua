@@ -24,6 +24,7 @@ frame{
 ]]
 
 require = require(script.require);
+local runable = require("runble");
 local event = require("event");
 local store = require("store");
 --local style = require("style");
@@ -33,6 +34,7 @@ local mount = require("mount");
 function module.init()
 	local this = {items = {}};
 
+	this.runable = runable.init();
 	this.event = event.init(this);
 	this.store = store.init(this);
 	--this.style = style.init(this);
