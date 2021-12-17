@@ -23,7 +23,7 @@ frame{
 
 ]]
 
-require = require(script.require);
+local require = require(script.require);
 local event = require("event"); ---@module "src.event"
 local store = require("store"); ---@module "src.store"
 --local style = require("style");

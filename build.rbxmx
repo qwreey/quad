@@ -28,19 +28,19 @@ frame{
 
 ]]
 
-require = require(script.require);
-local event = require("event");
-local store = require("store");
-local style = require("style");
-local class = require("class");
-local mount = require("mount");
+local require = require(script.require);
+local event = require("event"); ---@module "src.event"
+local store = require("store"); ---@module "src.store"
+--local style = require("style");
+local class = require("class"); ---@module "src.class"
+local mount = require("mount"); ---@module "src.mount"
 
 function module.init()
 	local this = {items = {}};
 
 	this.event = event.init(this);
 	this.store = store.init(this);
-	this.style = style.init(this);
+	--this.style = style.init(this);
 	this.class = class.init(this);
 	this.mount = mount.init(this);
 
@@ -56,21 +56,33 @@ return module;
     </Properties>
     <Item class="ModuleScript" referent="1">
       <Properties>
-        <string name="Name">bind</string>
-        <string name="Source"></string>
-      </Properties>
-    </Item>
-    <Item class="ModuleScript" referent="2">
-      <Properties>
         <string name="Name">class</string>
         <string name="Source">local module = {};
+
+-- local exportItemMeta = {
+-- 	__index = function (self,key)
+-- 		local methods = self.__methods;
+-- 		local events = self.__events;
+-- 		return (methods and methods[key]) or (events and events[key]) or (self.getters[key](self.__this));
+-- 	end;
+-- 	__newindex = function (self,key,value)
+-- 		self.__setters[key](self.__this,value);
+-- 	end;
+-- };
 
 function module.init(shared)
 	local new = {};
 	local bind = shared.event.bind;
 	local addObject = shared.store.addObject;
+	local storeNew = shared.store.new;
 
-	function new.make(ClassName,prop)
+	function new.getHolder(item)
+		return (type(item) == "table") and (item._holder or item.holder or item.__holder) or item;
+	end
+	local getHolder = new.getHolder;
+
+	-- make object that from instance, class and more
+	function new.make(ClassName,...) -- render object
 		-- make thing
 		local item;
 		local classOfClassName = type(ClassName);
@@ -80,6 +92,32 @@ function module.init(shared)
 			item = ClassName();
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new;
+			if ClassName.__noSetup then -- if is support initing props
+				local childs,props = {},{...};
+				local parsed;
+				for iprop = #props,1,-1 do
+					local prop = props[iprop];
+					for i,v in ipairs(prop) do
+						childs[i] = ((iprop == 1) and v or v:Clone());
+						prop[i] = nil;
+					end
+					if next(prop) then -- there are (key/value)s
+						if parsed then
+							for i,v in pairs(prop) do
+								parsed[i] = v;
+							end
+						else
+							parsed = prop;
+						end
+					end
+				end
+				item = func(parsed);
+				local holder = getHolder(item);
+				for _,v in ipairs(childs) do
+					v.Parent = holder;
+				end
+				return item;
+			end
 			item = func();
 		end
 		if not item then -- if cannot make new object, ignore this call
@@ -88,24 +126,54 @@ function module.init(shared)
 		end
 
 		-- set property and adding child and binding functions
-		for index,value in pairs(prop) do
-			local valueType = typeof(value);
-			local indexType = typeof(index);
+		local holder = getHolder(item); -- to __holder or holder or it self (for tabled)
+		-- for iprop,prop in ipairs({...}) do
+		for iprop = select("#",...),1,-1 do
+			local prop = select(iprop,...);
+			for index,value in pairs(prop) do
+				local valueType = typeof(value);
+				local indexType = typeof(index);
 
-			-- child
-			if indexType ~= "string" then -- object
-				value.Parent = new;
-			elseif valueType == "function" and bind(value) then -- connect event
-			elseif indexType == "string" then
-				new[index] = value; -- set property
+				-- child
+				if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
+					-- store binding
+					local with = value.wfunc;
+					local set = value.store[value.key];
+					if set then
+						if with then
+							set = with(set);
+						end
+						item[index] = set;
+					else
+						local dset = value.dvalue;
+						if dset then
+							item[index] = dset;
+						end
+					end
+					value.register(function (newValue,store)
+						if with then
+							newValue = with(newValue,item,store);
+						end
+						item[index] = newValue;
+					end);
+				elseif (valueType == "function" or valueType == "table") and bind(item,index,value,valueType) then -- connect event
+					-- event binding
+				elseif indexType == "string" then
+					-- prop set
+					item[index] = value; -- set property
+				elseif indexType == "number" then -- object
+					-- child object
+					((iprop == 1) and value or value:Clone()).Parent = holder;
+				end
 			end
 		end
 		return item;
 	end
 	local make = new.make;
 
-	function new.import(ClassName) -- make new quad class object
-		local this = {styles = {}};
+	-- import quad object
+	function new.import(ClassName,defaultProperties) -- make new quad class object
+		local this = defaultProperties or {};
 		setmetatable(this,{
 			__call = function (self,prop)
 				if type(prop) == "string" then
@@ -117,18 +185,151 @@ function module.init(shared)
 						return item;
 					end;
 				end
-				return make(ClassName,prop);
+				return make(ClassName,prop,this);
 			end;
 		});
 		return this;
 	end
 
+	-- function new.export(newFn,setters,getters,methods,events) -- make quad importable class
+	-- 	return function ()
+	-- 		return setmetatable({
+	-- 			__this = newFn();
+	-- 			__setters = setters;
+	-- 			__getters = getters;
+	-- 			__methods = methods;
+	-- 			__events = events;
+	-- 		},exportItemMeta);
+	-- 	end;
+	-- end
+
 	-- set module calling function
 	setmetatable(new,{
 		__call = function (self,...)
-			return self.import(...);
+			return new.import(...);
 		end;
 	});
+
+	-- make class
+	function new.extend()
+		local this = {};
+
+		--- make new object
+		function this.new(prop)
+			-- make metatable
+			prop = storeNew(prop);
+			local parent = prop and (prop.Parent or prop.parent);
+			local self = {__prop = prop; __parent = parent};
+			local init = this.init;
+			if init then
+				init(self,prop);
+			end
+			setmetatable(self,this);
+
+			-- render that
+			local object = self:render(prop);
+			rawset(self,"__object",object);
+			rawset(self,"__holder",object);
+			if parent then
+				rawset(self,"__parent",parent);
+				object.Parent = getHolder(parent);
+			end
+			return self;
+		end
+
+		--- re-render object (if some props chaged, call this to render again)
+		function this:update() -- swap object
+			local object = rawget(self,"__object"); -- get last instance
+			local parent = rawget(self,"__parent") or (object and object.Parent); -- date parent
+			local lastObject = object;
+			if lastObject then
+				lastObject.Parent = nil;
+			end
+			object = self:render(self.__prop); -- new instance
+			rawset(self,"__holder",object);
+			rawset(self,"__object",object);
+			object.Parent = getHolder(parent); -- update parent
+			if lastObject then -- remove old instance
+				self:Destroy(lastObject);
+			end
+		end
+
+		-- define destroy method
+		function this:Destroy(object)
+			local unload = rawget(self,"unload");
+			object = object or rawget(self,"__object");
+			if object then
+				if unload then
+					unload(self,object);
+				else
+					local destroy = (object.Destroy or object.destroy);
+					if destroy then
+						pcall(destroy,object);
+					end
+				end
+			end
+		end
+
+		--- link to new
+		function this.__call(self,...)
+			return (self.new or self.New or self.__new)(...);
+		end;
+
+		-- indexer (getter)
+		function this:__index(k)
+			if k == "destroy" then
+				return self.Destroy;
+			end
+			local getter = this.getter[k];
+			if getter then
+				return getter(self,rawget(self,"__object"));
+			end
+
+			-- from this (have more priority)
+			local fromThis = this[k];
+			if fromThis then
+				return fromThis;
+			end
+
+			-- from prop, not start with '_' (private value)
+			if k:sub(1,1) ~= "_" then
+				return self.__prop[k];
+			end
+		end
+
+		--- new indexer (setter)
+		function this:__newindex(k,v)
+			-- from setter
+			local setter = this.setter[k];
+			if setter then
+				return setter(self,v,rawget(self,"__object"));
+			end
+
+			-- is private (self value)
+			if k == "holder" or k:sub(1,1) == "_" then
+				return rawset(self,k,v);
+			end
+
+			-- prop update
+			self.__prop[k] = v;
+			if this.updateTriggers[k] then
+				self:update();
+			end
+		end
+
+		this.getter = {};
+		this.setter = {
+			Parent = function(self,parent,object)
+				rawset(self,"__parent",parent);
+				if object then
+					object.Parent = getHolder(parent);
+				end
+			end;
+		};
+		this.updateTriggers = {};
+		this.__noSetup = true;
+		return this;
+	end
 
 	return new;
 end
@@ -136,7 +337,7 @@ end
 return module;</string>
       </Properties>
     </Item>
-    <Item class="ModuleScript" referent="3">
+    <Item class="ModuleScript" referent="2">
       <Properties>
         <string name="Name">event</string>
         <string name="Source">local module = {};
@@ -144,10 +345,9 @@ return module;</string>
 function module.init(shared)
 	local new = {};
 	local unpack = table.unpack;
-	local coroutineCreate = coroutine.create;
-	local coroutineResume = coroutine.resume;
+	local wrap = coroutine.wrap;
 
-	local prefix = "event::";
+	local prefix = "Event::";
 	local special = {
 		["Property::(.+)"] = function (this,func,property)
 			this.GetPropertyChangedSignal(property):Connect(function()
@@ -158,7 +358,7 @@ function module.init(shared)
 			func(this);
 		end;
 		["Created::"] = function (this,func)
-			coroutineResume(coroutineCreate(func),this);
+			wrap(func)(this);
 		end;
 	};
 
@@ -170,10 +370,19 @@ function module.init(shared)
 	});
 
 	-- try binding, if key dose match with anything, ignore call
-	function new.bind(this,key,func)
+	function new.bind(this,key,func,typefunc)
+		-- if is advanced binding (self setted)
+		typefunc = typefunc or type(func);
+		local self;
+		if typefunc == "table" then
+			self = func.self;
+			func = func.func;
+		end
 		-- check prefix
 		if key:sub(1,prefixLen) ~= prefix then
 			return;
+		elseif not func then
+			return true;
 		end
 		key = key:sub(prefixLen + 1,-1);
 
@@ -190,7 +399,7 @@ function module.init(shared)
 		local event = this[key];
 		if event then
 			event:Connect(function(...)
-				func(this,...);
+				func(self or this,...);
 			end);
 			return true;
 		end
@@ -198,7 +407,7 @@ function module.init(shared)
 
 	-- property changed binding
 	local prefixProperty = prefix .. "Property::";
-	function new.property(name)
+	function new.prop(name)
 		return prefixProperty .. name;
 	end
 
@@ -211,7 +420,7 @@ end
 return module;</string>
       </Properties>
     </Item>
-    <Item class="ModuleScript" referent="4">
+    <Item class="ModuleScript" referent="3">
       <Properties>
         <string name="Name">mount</string>
         <string name="Source">local module = {};
@@ -219,14 +428,33 @@ return module;</string>
 function module.init(shared)
     local new = {};
 
+    local mount = {};
+    mount.__index = mount;
+    function mount:unmount()
+        local this = self.this;
+        local typeThis = type(this);
+        if typeThis == "userdata" then
+            this:Destroy();
+        elseif typeThis == "table" then
+            pcall(function()
+                this.Parent = nil;
+            end);
+            local destroyThis = this.Destroy;
+            if destroyThis then
+                pcall(destroyThis);
+            end
+        end
+    end
+
     -- we should add plugin support
     function new.mount(to,this)
         this.Parent = to;
+        return setmetatable({to = to,this = this},mount);
     end
 
     setmetatable(new,{
         __call = function (self,...)
-            self.mount(...);
+            return new.mount(...);
         end;
     });
 
@@ -236,7 +464,7 @@ end
 return module;</string>
       </Properties>
     </Item>
-    <Item class="ModuleScript" referent="5">
+    <Item class="ModuleScript" referent="4">
       <Properties>
         <string name="Name">require</string>
         <string name="Source">-- remove the roblox's require system,
@@ -272,7 +500,7 @@ return function (query)
 end;</string>
       </Properties>
     </Item>
-    <Item class="ModuleScript" referent="6">
+    <Item class="ModuleScript" referent="5">
       <Properties>
         <string name="Name">store</string>
         <string name="Source"><![CDATA[local module = {};
@@ -282,22 +510,131 @@ this feature allows get object without making some created callback and local va
 but, it can't allows mulit id and object
 this feature should be upgraded
 ]]
-
+local wrap = coroutine.wrap;
 local insert = table.insert;
+local remove = table.remove;
+
+local function catch(...)
+	local passed,err = pcall(...);
+	if not passed then
+		wran("[QUAD] Error occured while operating async task\n" .. tostring(err));
+	end
+end
+
 function module.init(shared)
 	local new = {};
 	local items = shared.items;
 
+	-- id space (array of object)
+	local objSpace = {};
+	function objSpace:each(func)
+		for i,v in ipairs(self) do
+			wrap(catch)(func,i,v);
+		end
+	end
+	function objSpace:eachSync(func)
+		for i,v in ipairs(self) do
+			local ret = func(i,v);
+			if ret then
+				break;
+			end
+		end
+	end
+	function objSpace:remove(indexOrItem)
+		local thisType = type(indexOrItem);
+		if thisType == "number" then
+			remove(self,indexOrItem);
+		else
+			for i,v in pairs(self) do
+				if v == indexOrItem then
+					remove(self,i);
+					break;
+				end
+			end
+		end
+	end
+	function objSpace.__new()
+		return setmetatable({},objSpace);
+	end
+	function objSpace:__newIndex(key,value) -- props setter
+		self:each(function (this)
+			this[key] = value;
+		end);
+	end
+	objSpace.__mode = "kv"; -- week link for gc
+	objSpace.__index = objSpace;
+
+	-- get object array with id (objSpace)
 	function new.getObjects(id)
 		return items[id];
 	end
-	function new.addObject(id,object)
-		local array = items[id];
-		if not array then
-			array = {};
-			items[id] = array;
+
+	-- get first object with id (not array)
+	function new.getObject(id)
+		local item = items[id];
+		return item and item[1];
+	end
+
+	--TODO: if item is exist already, ignore this call
+	-- adding object with id
+	function new.addObject(ids,object)
+		for id in ids:gmatch("[^,]+") do -- split by ,
+			-- remove trailing, heading spaces
+			id = id:gsub("^ +",""):gsub(" +$","");
+			local array = items[id];
+			if not array then
+				array = objSpace.__new();
+				items[id] = array;
+			end
+			insert(array, object);
 		end
-		insert(array, object);
+	end
+
+	-- bindable store object
+	local store = {};
+	function store:__index(key)
+		return self.__self[key];
+	end
+	function store:__newindex(key,value)
+		self.__self[key] = value;
+		local event = self.__evt[key];
+		if event then
+			for _,v in ipairs(event) do
+				wrap(catch)(v,value,store);
+			end
+		end
+	end
+	function store:__call(key,func)
+		local register = self.__reg[key];
+		if not register then
+			local event = {}
+			self.__evt[key] = event;
+			register = {
+				register = function (efunc)
+					insert(event,efunc);
+				end;
+				with = function (s,efunc)
+					return setmetatable({wfunc = efunc},{__index = s});
+				end;
+				default = function (s,value)
+					return setmetatable({dvalue = value},{__index = s});
+				end;
+				key = key;
+				store = self;
+				t = "reg";
+			};
+			self.__reg[key] = register;
+		end
+
+		if func then
+			register.register(func);
+		end
+		return register;
+	end
+	function new.new(self)
+		return setmetatable(
+			{__self = self or {},__evt = {},__reg = {}},store
+		);
 	end
 
 	return new;
@@ -305,24 +642,6 @@ end
 
 return module;
 ]]></string>
-      </Properties>
-    </Item>
-    <Item class="ModuleScript" referent="7">
-      <Properties>
-        <string name="Name">style</string>
-        <string name="Source">local module = {};
-
-function module.init(shared)
-    local new = {};
-
-    function shared.new(property)
-
-    end
-
-    return new;
-end
-
-return module;</string>
       </Properties>
     </Item>
   </Item>

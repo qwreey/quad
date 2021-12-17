@@ -3,10 +3,9 @@ local module = {};
 function module.init(shared)
 	local new = {};
 	local unpack = table.unpack;
-	local coroutineCreate = coroutine.create;
-	local coroutineResume = coroutine.resume;
+	local wrap = coroutine.wrap;
 
-	local prefix = "event::";
+	local prefix = "Event::";
 	local special = {
 		["Property::(.+)"] = function (this,func,property)
 			this.GetPropertyChangedSignal(property):Connect(function()
@@ -17,7 +16,7 @@ function module.init(shared)
 			func(this);
 		end;
 		["Created::"] = function (this,func)
-			coroutineResume(coroutineCreate(func),this);
+			wrap(func)(this);
 		end;
 	};
 
@@ -29,10 +28,19 @@ function module.init(shared)
 	});
 
 	-- try binding, if key dose match with anything, ignore call
-	function new.bind(this,key,func)
+	function new.bind(this,key,func,typefunc)
+		-- if is advanced binding (self setted)
+		typefunc = typefunc or type(func);
+		local self;
+		if typefunc == "table" then
+			self = func.self;
+			func = func.func;
+		end
 		-- check prefix
 		if key:sub(1,prefixLen) ~= prefix then
 			return;
+		elseif not func then
+			return true; -- nil binding
 		end
 		key = key:sub(prefixLen + 1,-1);
 
@@ -49,7 +57,7 @@ function module.init(shared)
 		local event = this[key];
 		if event then
 			event:Connect(function(...)
-				func(this,...);
+				func(self or this,...);
 			end);
 			return true;
 		end

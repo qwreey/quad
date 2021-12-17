@@ -15,7 +15,14 @@ function module.init(shared)
 	local new = {};
 	local bind = shared.event.bind;
 	local addObject = shared.store.addObject;
+	local storeNew = shared.store.new;
 
+	function new.getHolder(item)
+		return (type(item) == "table") and (item._holder or item.holder or item.__holder) or item;
+	end
+	local getHolder = new.getHolder;
+
+	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
 		-- make thing
 		local item;
@@ -29,7 +36,8 @@ function module.init(shared)
 			if ClassName.__noSetup then -- if is support initing props
 				local childs,props = {},{...};
 				local parsed;
-				for iprop,prop in ipairs(props) do
+				for iprop = #props,1,-1 do
+					local prop = props[iprop];
 					for i,v in ipairs(prop) do
 						childs[i] = ((iprop == 1) and v or v:Clone());
 						prop[i] = nil;
@@ -37,15 +45,15 @@ function module.init(shared)
 					if next(prop) then -- there are (key/value)s
 						if parsed then
 							for i,v in pairs(prop) do
-								prop[i] = v;
+								parsed[i] = v;
 							end
 						else
 							parsed = prop;
 						end
 					end
 				end
-				item = func(props);
-				local holder = (type(item) == "table") and (item.__holder or item.holder) or item;
+				item = func(parsed);
+				local holder = getHolder(item);
 				for _,v in ipairs(childs) do
 					v.Parent = holder;
 				end
@@ -59,17 +67,43 @@ function module.init(shared)
 		end
 
 		-- set property and adding child and binding functions
-		local holder = (type(item) == "table") and (item.__holder or item.holder) or item; -- to __holder or holder or it self (for tabled)
-		for iprop,prop in pairs({...}) do
+		local holder = getHolder(item); -- to __holder or holder or it self (for tabled)
+		-- for iprop,prop in ipairs({...}) do
+		for iprop = select("#",...),1,-1 do
+			local prop = select(iprop,...);
 			for index,value in pairs(prop) do
 				local valueType = typeof(value);
 				local indexType = typeof(index);
 
 				-- child
-				if valueType == "function" and bind(value) then -- connect event
+				if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
+					-- store binding
+					local with = value.wfunc;
+					local set = value.store[value.key];
+					if set then
+						if with then
+							set = with(set);
+						end
+						item[index] = set;
+					else
+						local dset = value.dvalue;
+						if dset then
+							item[index] = dset;
+						end
+					end
+					value.register(function (newValue,store)
+						if with then
+							newValue = with(newValue,item,store);
+						end
+						item[index] = newValue;
+					end);
+				elseif (valueType == "function" or valueType == "table") and bind(item,index,value,valueType) then -- connect event
+					-- event binding
 				elseif indexType == "string" then
+					-- prop set
 					item[index] = value; -- set property
 				elseif indexType == "number" then -- object
+					-- child object
 					((iprop == 1) and value or value:Clone()).Parent = holder;
 				end
 			end
@@ -78,6 +112,7 @@ function module.init(shared)
 	end
 	local make = new.make;
 
+	-- import quad object
 	function new.import(ClassName,defaultProperties) -- make new quad class object
 		local this = defaultProperties or {};
 		setmetatable(this,{
@@ -115,6 +150,127 @@ function module.init(shared)
 			return new.import(...);
 		end;
 	});
+
+	-- make class
+	function new.extend()
+		local this = {};
+
+		--- make new object
+		function this.new(prop)
+			-- make metatable
+			prop = storeNew(prop);
+			local parent = prop and (prop.Parent or prop.parent);
+			local self = {__prop = prop; __parent = parent};
+			local init = this.init;
+			if init then
+				init(self,prop);
+			end
+			setmetatable(self,this);
+
+			-- render that
+			local object = self:render(prop);
+			rawset(self,"__object",object);
+			rawset(self,"__holder",object);
+			if parent then
+				rawset(self,"__parent",parent);
+				object.Parent = getHolder(parent);
+			end
+			return self;
+		end
+
+		--- re-render object (if some props chaged, call this to render again)
+		function this:update() -- swap object
+			local object = rawget(self,"__object"); -- get last instance
+			local parent = rawget(self,"__parent") or (object and object.Parent); -- date parent
+			local lastObject = object;
+			if lastObject then
+				lastObject.Parent = nil;
+			end
+			object = self:render(self.__prop); -- new instance
+			rawset(self,"__holder",object);
+			rawset(self,"__object",object);
+			object.Parent = getHolder(parent); -- update parent
+			if lastObject then -- remove old instance
+				self:Destroy(lastObject);
+			end
+		end
+
+		-- define destroy method
+		function this:Destroy(object)
+			local unload = rawget(self,"unload");
+			object = object or rawget(self,"__object");
+			if object then
+				if unload then
+					unload(self,object);
+				else
+					local destroy = (object.Destroy or object.destroy);
+					if destroy then
+						pcall(destroy,object);
+					end
+				end
+			end
+		end
+
+		--- link to new
+		function this.__call(self,...)
+			return (self.new or self.New or self.__new)(...);
+		end;
+
+		-- indexer (getter)
+		function this:__index(k)
+			if k == "destroy" then
+				return self.Destroy;
+			end
+			local getter = this.getter[k];
+			if getter then
+				return getter(self,rawget(self,"__object"));
+			end
+
+			-- from this (have more priority)
+			local fromThis = this[k];
+			if fromThis then
+				return fromThis;
+			end
+
+			-- from prop, not start with '_' (private value)
+			if k:sub(1,1) ~= "_" then
+				return self.__prop[k];
+			end
+		end
+
+		--- new indexer (setter)
+		function this:__newindex(k,v)
+			-- from setter
+			local setter = this.setter[k];
+			if setter then
+				return setter(self,v,rawget(self,"__object"));
+			end
+
+			-- is private (self value)
+			if k == "holder" or k:sub(1,1) == "_" then
+				return rawset(self,k,v);
+			end
+
+			-- prop update
+			self.__prop[k] = v;
+			if this.updateTriggers[k] then
+				self:update();
+			end
+		end
+
+		this.getter = {};
+		this.setter = {
+			Parent = function(self,parent,object)
+				rawset(self,"__parent",parent);
+				if object then
+					object.Parent = getHolder(parent);
+				end
+			end;
+		};
+		this.updateTriggers = {};
+		this.__noSetup = true;
+		return this;
+	end
 
 	return new;
 end
