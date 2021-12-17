@@ -57,7 +57,7 @@ function module.init(shared)
 
 	-- property changed binding
 	local prefixProperty = prefix .. "Property::";
-	function new.property(name)
+	function new.prop(name)
 		return prefixProperty .. name;
 	end
 

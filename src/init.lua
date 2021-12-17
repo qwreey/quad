@@ -24,11 +24,11 @@ frame{
 ]]
 
 require = require(script.require);
-local event = require("event");
-local store = require("store");
+local event = require("event"); ---@module "src.event"
+local store = require("store"); ---@module "src.store"
 --local style = require("style");
-local class = require("class");
-local mount = require("mount");
+local class = require("class"); ---@module "src.class"
+local mount = require("mount"); ---@module "src.mount"
 
 function module.init()
 	local this = {items = {}};

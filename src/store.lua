@@ -19,7 +19,7 @@ end
 function module.init(shared)
 	local new = {};
 	local items = shared.items;
-	
+
 	local objSpace = {};
 	function objSpace:each(func)
 		for i,v in ipairs(self) do
@@ -65,18 +65,22 @@ function module.init(shared)
 		return item and item[1];
 	end
 	--TODO: if item is exist already, ignore this call
-	function new.addObject(id,object)
-		local array = items[id];
-		if not array then
-			array = objSpace.__new();
-			items[id] = array;
+	function new.addObject(ids,object)
+		for id in ids:gmatch("[^,]+") do -- split by ,
+			-- remove trailing, heading spaces
+			id = id:gsub("^ +",""):gsub(" +$","");
+			local array = items[id];
+			if not array then
+				array = objSpace.__new();
+				items[id] = array;
+			end
+			insert(array, object);
 		end
-		insert(array, object);
 	end
 
 	local store = {};
 	function store:__index(key)
-		self.__self[key];
+		return self.__self[key];
 	end
 	function store:__newindex(key,value)
 		self.__self[key] = value;
@@ -97,7 +101,7 @@ function module.init(shared)
 			end;
 			self.__reg[key] = register;
 		end
-	
+
 		if func then
 			register(func);
 		end
