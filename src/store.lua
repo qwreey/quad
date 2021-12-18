@@ -16,6 +16,7 @@ local function catch(...)
 	end
 end
 
+local week = {__mode = "vk"};
 function module.init(shared)
 	local new = {};
 	local items = shared.items;
@@ -94,7 +95,7 @@ function module.init(shared)
 		self.__self[key] = value;
 		local event = self.__evt[key];
 		if event then
-			for _,v in ipairs(event) do
+			for _,v in pairs(event) do -- NO ipairs here
 				wrap(catch)(v,value,store);
 			end
 		end
@@ -128,7 +129,7 @@ function module.init(shared)
 	end
 	function new.new(self)
 		return setmetatable(
-			{__self = self or {},__evt = {},__reg = {}},store
+			{__self = self or {},__evt = setmetatable({},week),__reg = setmetatable({},week)},store
 		);
 	end
 
