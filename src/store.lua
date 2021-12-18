@@ -115,6 +115,9 @@ function module.init(shared)
 				default = function (s,value)
 					return setmetatable({dvalue = value},{__index = s});
 				end;
+				tween = function (s,value)
+					return setmetatable({tvalue = value},{__index = s});
+				end;
 				key = key;
 				store = self;
 				t = "reg";
