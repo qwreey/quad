@@ -91,7 +91,7 @@ function module.init(shared)
 							item[index] = dset;
 						end
 					end
-					local tween = value.tween;
+					local tween = value.tvalue;
 
 					-- adding event function
 					local function regFn(newValue,store)
