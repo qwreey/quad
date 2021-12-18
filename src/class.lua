@@ -91,11 +91,22 @@ function module.init(shared)
 							item[index] = dset;
 						end
 					end
-					value.register(function (newValue,store)
+					local tween = value.tween;
+
+					-- adding event function
+					local function regFn(newValue,store)
 						if with then
 							newValue = with(newValue,item,store);
 						end
 						item[index] = newValue;
+					end
+					value.register(regFn);
+
+					-- this is using hacky of roblox instance
+					-- this is will keep reference from week table until
+					-- inscance got GCed
+					item:GetPropertyChangedSignal("ClassName"):Connect(function ()
+						return regFn;
 					end);
 				elseif (valueType == "function" or valueType == "table") and bind(item,index,value,valueType) then -- connect event
 					-- event binding
