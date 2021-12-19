@@ -101,7 +101,7 @@ function module.init(shared)
 	function store:__call(key,func)
 		local register = self.__reg[key];
 		if not register then
-			local event = {}
+			local event = setmetatable({},week);
 			self.__evt[key] = event;
 			register = {
 				register = function (efunc)
