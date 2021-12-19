@@ -105,9 +105,7 @@ function module.init(shared)
 					-- this is using hacky of roblox instance
 					-- this is will keep reference from week table until
 					-- inscance got GCed
-					item:GetPropertyChangedSignal("ClassName"):Connect(function ()
-						return regFn;
-					end);
+					item:GetPropertyChangedSignal("ClassName"):Connect(regFn);
 				elseif (valueType == "function" or valueType == "table") and bind(item,index,value,valueType) then -- connect event
 					-- event binding
 				elseif indexType == "string" then
