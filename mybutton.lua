@@ -12,6 +12,7 @@ local textButton = class.import "TextButton";
 imageButton.BackgroundTransparency = 1;
 textButton.BorderSizePixel = 0;
 textLabel.Size = UDim2.fromScale(1,1);
+textLabel.BackgroundTransparency = 1;
 
 -- 기본 값 설정
 function myButton:init(props)
