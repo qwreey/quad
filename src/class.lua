@@ -181,6 +181,10 @@ function module.init(shared)
 				rawset(self,"__parent",parent);
 				mount(item,parent)
 			end
+			-- prevent gc
+			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+				return item;
+			end);
 			return self;
 		end
 
@@ -208,6 +212,10 @@ function module.init(shared)
 					end
 				end
 			end
+			-- prevnet gc
+			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+				return item;
+			end);
 			if lastObject then -- remove old instance
 				self:Destroy(lastObject);
 			end
@@ -227,6 +235,7 @@ function module.init(shared)
 					end
 				end
 			end
+			self = nil;
 		end
 
 		--- link to new
