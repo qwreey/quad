@@ -33,9 +33,11 @@ local _,advancedTween = pcall(require,"src.libs.AdvancedTween"); ---@module src.
 
 local idSpace = {};
 function module.init(id)
-	local last = idSpace[id];
-	if last then
-		return last;
+	if id then
+		local last = idSpace[id];
+		if last then
+			return last;
+		end
 	end
 	local this = {items = {}};
 
@@ -51,7 +53,9 @@ function module.init(id)
 	--this.tween = tween;
 	--this.plugin = plugin;
 
-	idSpace[id] = this;
+	if id then
+		idSpace[id] = this;
+	end
 	return this;
 end
 
