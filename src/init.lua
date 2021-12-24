@@ -29,7 +29,8 @@ local store = require "store"; ---@module src.store
 --local style = require("style");
 local class = require "class"; ---@module src.class
 local mount = require "mount"; ---@module src.mount
-local _,advancedTween = pcall(require,"src.libs.AdvancedTween"); ---@module src.libs.AdvancedTween
+local _,advancedTween = pcall(require,"libs.AdvancedTween"); ---@module src.libs.AdvancedTween
+local _,round = pcall(require,"libs.round"); ---@module src.libs.round
 
 local idSpace = {};
 function module.init(id)
@@ -42,6 +43,7 @@ function module.init(id)
 	local this = {items = {}};
 
 	this.require = require;
+	this.round = type(round) == "table" and round;
 	this.advancedTween = type(advancedTween) == "table" and advancedTween;
 	this.event = event.init(this);
 	this.store = store.init(this);
