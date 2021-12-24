@@ -1,9 +1,12 @@
 {
 	"name": "Plugin",
 	"tree": {
-		"$properties": {
-			"Name": "quad"
-		},
-		"$path": "src"
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "Quad": {
+                "$path": "src"
+            }
+        }
 	}
 }

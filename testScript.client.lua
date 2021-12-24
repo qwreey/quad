@@ -1,6 +1,6 @@
 -- 이렇게 모듈을 부를 수 있다, 뒤에 if 가 붇은것은 자동완성이 뜨도록 하기 위해서 사용된다
 ---@module "src/init.lua"
-local quad = require(script.Parent.quad);
+local quad = require(game.ReplicatedStorage:WaitForChild "Quad");
 local render = quad.init();
 -- init 함수를 이용해 여러 스크립트가 이 모듈을 호출해도 완전히 별계의
 -- 환경에서 실행될 수 있도록 만든다, init 를 호출하면 완전히 새로운 store 와 style

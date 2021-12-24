@@ -1,1 +1,1 @@
-rojo build default.project.json -o build.rbxmx
+rojo build build.project.json -o build.rbxmx
