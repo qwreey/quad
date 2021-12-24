@@ -196,7 +196,7 @@ function module.init(shared)
 				mount(self,parent)
 			end
 			-- prevent gc
-			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
 				return self;
 			end);
 			return self;
@@ -227,7 +227,7 @@ function module.init(shared)
 				end
 			end
 			-- prevnet gc
-			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
 				return self;
 			end);
 			if lastObject then -- remove old instance
