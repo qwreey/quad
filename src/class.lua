@@ -97,10 +97,12 @@ function module.init(shared)
 				if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
 					-- store binding
 					local with = value.wfunc;
-					local set = value.store[value.key];
-					if set then
+					local tstore = value.store;
+					local rawKey = value.key;
+					local set = store[rawKey];
+					if set or (rawKey:match(",") and with) then
 						if with then
-							set = with(set);
+							set = with(item,tstore,set,value.key);
 						end
 						setProperty(item,index,set,ClassName);
 					else
@@ -113,12 +115,12 @@ function module.init(shared)
 					local from = value.fvalue;
 
 					-- adding event function
-					local function regFn(newValue,store)
+					local function regFn(_,newValue,key)
 						if from then
 							newValue = from[newValue];
 						end
 						if with then
-							newValue = with(newValue,item,store);
+							newValue = with(item,tstore,newValue,key);
 						end
 						if tween then
 							if not advancedTween then

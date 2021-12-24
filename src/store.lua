@@ -86,7 +86,17 @@ function module.init(shared)
 
 	local registerMt = {
 		register = function (s,efunc)
-			insert(s.event,efunc);
+			local self = s.store;
+			local events = self.__evt;
+			for key in s.key:gmatch("[^,]+") do
+				key = key:gsub("^ +",""):gsub(" +$","");
+				local event = events[key];
+				if not event then
+					event = setmetatable({},week);
+					events[key] = event;
+				end
+				insert(event,efunc);
+			end
 		end;
 		with = function (s,efunc)
 			return setmetatable({wfunc = efunc},{__index = s});
@@ -114,17 +124,14 @@ function module.init(shared)
 		local event = self.__evt[key];
 		if event then
 			for _,v in pairs(event) do -- NO ipairs here
-				wrap(catch)(v,value,store);
+				wrap(catch)(v,store,value,key);
 			end
 		end
 	end
 	function store:__call(key,func)
 		local register = self.__reg[key];
 		if not register then
-			local event = setmetatable({},week);
-			self.__evt[key] = event;
 			register = setmetatable({
-				event = event;
 				key = key;
 				store = self;
 				t = "reg";
