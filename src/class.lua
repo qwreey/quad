@@ -21,6 +21,7 @@ function module.init(shared)
 	local mount = shared.mount; ---@module src.mount
 	local getHolder = mount.getHolder;
 	local advancedTween = shared.advancedTween; ---@module src.libs.AdvancedTween
+	local round = shared.round; ---@module src.libs.round
 
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
@@ -104,7 +105,7 @@ function module.init(shared)
 						end
 						if tween then
 							if not advancedTween then
-								return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not founded on 'src.libs'. you should adding that to src.libs directory";
+								return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
 							end
 							advancedTween.RunTween(item,tween,{[index] = newValue});
 						else
@@ -121,7 +122,15 @@ function module.init(shared)
 					-- event binding
 				elseif indexType == "string" then
 					-- prop set
-					item[index] = value; -- set property
+					local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
+					if index == "roundSize" and isImage then
+						if not round then
+							warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
+						end
+						round.setRound(item,value);
+					else
+						item[index] = value; -- set property
+					end
 				elseif indexType == "number" then -- object
 					-- child object
 					mount(item,((iprop == 1) and value or value:Clone()),holder);
