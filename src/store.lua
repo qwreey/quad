@@ -141,11 +141,17 @@ function module.init(shared)
 		self[key] = self[key] or value;
 	end
 	function new.new(self,id)
+		if id then
+			local old = storeIdSpace[id];
+			if old then
+				return old;
+			end
+		end
 		local this = setmetatable(
 			{__self = self or {},__evt = setmetatable({},week),__reg = setmetatable({},week)},store
 		);
 		if id then
-			storeIdSpace[id] = id;
+			storeIdSpace[id] = this;
 		end
 		return this;
 	end

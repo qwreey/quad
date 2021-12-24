@@ -72,6 +72,39 @@ function module.init(shared)
 	-- when created binding
 	new.created = prefix .. "Created::";
 	new.createdSync = prefix .. "CreatedSync::";
+
+	-- roblox connections disconnecter
+	local insert = table.insert;
+	local idSpace = {};
+	local disconnecter = {};
+	function disconnecter:add(connection)
+		insert(self,connection);
+	end
+	function disconnecter:destroy()
+		local id = self.id;
+		if id then
+			idSpace[id] = nil;
+		end
+		for i,v in pairs(self) do
+			pcall(v.Disconnect,v);
+			self[i] = nil;
+		end
+	end
+	disconnecter.__index = disconnecter;
+	function new.new(id)
+		if id then
+			local old = idSpace[id];
+			if old then
+				return old;
+			end
+		end
+		local this = setmetatable({id = id},disconnecter);
+		if id then
+			idSpace[id] = this;
+		end
+		return this;
+	end
+
 	return new;
 end
 
