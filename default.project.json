@@ -7,6 +7,15 @@
             "Quad": {
                 "$path": "src"
             }
+        },
+        "StarterGui": {
+            "$className": "StarterGui",
+            "QuadTesting": {
+                "$className": "ScreenGui",
+                "testScript": {
+                    "$path": "testScript.client.lua"
+                }
+            }
         }
 	}
 }

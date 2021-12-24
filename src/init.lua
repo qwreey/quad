@@ -24,15 +24,17 @@ frame{
 ]]
 
 local require = require(script.require);
-local event = require("event"); ---@module "src.event"
-local store = require("store"); ---@module "src.store"
+local event = require "event"; ---@module "src.event"
+local store = require "store"; ---@module "src.store"
 --local style = require("style");
-local class = require("class"); ---@module "src.class"
-local mount = require("mount"); ---@module "src.mount"
+local class = require "class"; ---@module "src.class"
+local mount = require "mount"; ---@module "src.mount"
+local _,advancedTween = pcall(require,"src.libs.AdvancedTween"); ---@module "src.libs.AdvancedTween"
 
 function module.init()
 	local this = {items = {}};
 
+	this.advancedTween = type(advancedTween) == "table" and advancedTween;
 	this.event = event.init(this);
 	this.store = store.init(this);
 	--this.style = style.init(this);

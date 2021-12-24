@@ -84,6 +84,25 @@ function module.init(shared)
 		end
 	end
 
+	local registerMt = {
+		register = function (s,efunc)
+			insert(s.event,efunc);
+		end;
+		with = function (s,efunc)
+			return setmetatable({wfunc = efunc},{__index = s});
+		end;
+		default = function (s,value)
+			return setmetatable({dvalue = value},{__index = s});
+		end;
+		tween = function (s,value)
+			return setmetatable({tvalue = value},{__index = s});
+		end;
+		from = function (s,value)
+			return setmetatable({fvalue = value},{__index = s});
+		end;
+	};
+	registerMt.__index = registerMt;
+
 	-- bindable store object
 	local store = {};
 	function store:__index(key)
@@ -103,23 +122,12 @@ function module.init(shared)
 		if not register then
 			local event = setmetatable({},week);
 			self.__evt[key] = event;
-			register = {
-				register = function (efunc)
-					insert(event,efunc);
-				end;
-				with = function (s,efunc)
-					return setmetatable({wfunc = efunc},{__index = s});
-				end;
-				default = function (s,value)
-					return setmetatable({dvalue = value},{__index = s});
-				end;
-				tween = function (s,value)
-					return setmetatable({tvalue = value},{__index = s});
-				end;
+			register = setmetatable({
+				event = event;
 				key = key;
 				store = self;
 				t = "reg";
-			};
+			},registerMt);
 			self.__reg[key] = register;
 		end
 

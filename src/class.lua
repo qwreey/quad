@@ -13,11 +13,14 @@ local module = {};
 
 function module.init(shared)
 	local new = {};
-	local bind = shared.event.bind;
-	local addObject = shared.store.addObject;
-	local storeNew = shared.store.new;
-	local mount = shared.mount;
-	local getHolder = shared.mount.getHolder;
+	local event = shared.event; ---@module "src.event"
+	local bind = event.bind;
+	local store = shared.store; ---@module "src.store"
+	local addObject = store.addObject;
+	local storeNew = store.new;
+	local mount = shared.mount; ---@module "src.mount"
+	local getHolder = mount.getHolder;
+	local advancedTween = shared.advancedTween; ---@module "src.libs.AdvancedTween"
 
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
@@ -89,15 +92,26 @@ function module.init(shared)
 						end
 					end
 					local tween = value.tvalue;
+					local from = value.fvalue;
 
 					-- adding event function
 					local function regFn(newValue,store)
+						if from then
+							newValue = from[newValue];
+						end
 						if with then
 							newValue = with(newValue,item,store);
 						end
-						item[index] = newValue;
+						if tween then
+							if not advancedTween then
+								return wran "module 'AdvancedTween' needs to be loaded for tween properties but it is not founded on 'src.libs'. you should adding that to src.libs directory";
+							end
+							advancedTween.RunTween(item,tween,{[index] = newValue});
+						else
+							item[index] = newValue;
+						end
 					end
-					value.register(regFn);
+					value:register(regFn);
 
 					-- this is using hacky of roblox instance
 					-- this is will keep reference from week table until
@@ -208,7 +222,7 @@ function module.init(shared)
 			if child then
 				for _,v in pairs(child) do
 					if v then
-						((type(v) == table and rawget(v,"__object") or v).Parent = object;
+						((type(v) == "table") and rawget(v,"__object") or v).Parent = object;
 					end
 				end
 			end
