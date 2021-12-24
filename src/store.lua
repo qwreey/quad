@@ -156,7 +156,7 @@ function module.init(shared)
 		return this;
 	end
 	function new.getStore(id)
-		return storeIdSpace[id];
+		return storeIdSpace[id] or new.new({},id);
 	end
 
 	return new;
