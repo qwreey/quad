@@ -61,4 +61,8 @@ function module.init(id)
 	return this;
 end
 
+function module.uninit(id)
+	idSpace[id] = nil;
+end
+
 return module;

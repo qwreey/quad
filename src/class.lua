@@ -99,10 +99,10 @@ function module.init(shared)
 					local with = value.wfunc;
 					local tstore = value.store;
 					local rawKey = value.key;
-					local set = store[rawKey];
+					local set = tstore[rawKey];
 					if set or (rawKey:match(",") and with) then
 						if with then
-							set = with(item,tstore,set,value.key);
+							set = with(tstore,set,value.key,item);
 						end
 						setProperty(item,index,set,ClassName);
 					else
@@ -120,7 +120,7 @@ function module.init(shared)
 							newValue = from[newValue];
 						end
 						if with then
-							newValue = with(item,tstore,newValue,key);
+							newValue = with(tstore,newValue,key,item);
 						end
 						if tween then
 							if not advancedTween then
