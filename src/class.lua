@@ -53,20 +53,14 @@ function module.init(shared)
 			local func = ClassName.new or ClassName.New or ClassName.__new;
 			if ClassName.__noSetup then -- if is support initing props
 				local childs,props = {},{...};
-				local parsed;
+				local parsed = {};
 				for iprop = #props,1,-1 do
 					local prop = props[iprop];
-					for i,v in ipairs(prop) do
-						childs[i] = ((iprop == 1) and v or v:Clone());
-						prop[i] = nil;
-					end
-					if next(prop) then -- there are (key/value)s
-						if parsed then
-							for i,v in pairs(prop) do
-								parsed[i] = v;
-							end
+					for i,v in pairs(prop) do
+						if type(i) == "number" then
+							childs[i] = ((iprop == 1) and v or v:Clone());
 						else
-							parsed = prop;
+							parsed[i] = v;
 						end
 					end
 				end
@@ -166,12 +160,12 @@ function module.init(shared)
 					return function (nprop)
 						nprop = nprop or {};
 						nprop.Name = lastName;
-						local item = make(ClassName,nprop);
+						local item = make(ClassName,nprop,this);
 						addObject(lastName,item);
 						return item;
 					end;
 				elseif propType == "nil" then
-					return make(ClassName);
+					return make(ClassName,this);
 				end
 				return make(ClassName,prop,this);
 			end;
