@@ -16,11 +16,8 @@ function module.init(shared)
 	local bind = shared.event.bind;
 	local addObject = shared.store.addObject;
 	local storeNew = shared.store.new;
-
-	function new.getHolder(item)
-		return (type(item) == "table") and (item._holder or item.holder or item.__holder) or item;
-	end
-	local getHolder = new.getHolder;
+	local mount = shared.mount;
+	local getHolder = shared.mount.getHolder;
 
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
@@ -55,7 +52,7 @@ function module.init(shared)
 				item = func(parsed);
 				local holder = getHolder(item);
 				for _,v in ipairs(childs) do
-					v.Parent = holder;
+					mount(item,v,holder);
 				end
 				return item;
 			end
@@ -113,7 +110,7 @@ function module.init(shared)
 					item[index] = value; -- set property
 				elseif indexType == "number" then -- object
 					-- child object
-					((iprop == 1) and value or value:Clone()).Parent = holder;
+					mount(item,((iprop == 1) and value or value:Clone()),holder);
 				end
 			end
 		end
@@ -182,15 +179,22 @@ function module.init(shared)
 			rawset(self,"__holder",object);
 			if parent then
 				rawset(self,"__parent",parent);
-				object.Parent = getHolder(parent);
+				mount(item,parent)
 			end
+			-- prevent gc
+			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+				return item;
+			end);
 			return self;
 		end
 
 		--- re-render object (if some props chaged, call this to render again)
 		function this:update() -- swap object
 			local object = rawget(self,"__object"); -- get last instance
-			local parent = rawget(self,"__parent") or (object and object.Parent); -- date parent
+			local parent = object and object.Parent; -- date parent
+			if not object then
+				parent = rawget(self,"__parent");
+			end
 			local lastObject = object;
 			if lastObject then
 				lastObject.Parent = nil;
@@ -199,6 +203,19 @@ function module.init(shared)
 			rawset(self,"__holder",object);
 			rawset(self,"__object",object);
 			object.Parent = getHolder(parent); -- update parent
+			-- restore childs
+			local child = rawget(self,"__child");
+			if child then
+				for _,v in pairs(child) do
+					if v then
+						((type(v) == table and rawget(v,"__object") or v).Parent = object;
+					end
+				end
+			end
+			-- prevnet gc
+			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
+				return item;
+			end);
 			if lastObject then -- remove old instance
 				self:Destroy(lastObject);
 			end
@@ -218,6 +235,7 @@ function module.init(shared)
 					end
 				end
 			end
+			self = nil;
 		end
 
 		--- link to new
