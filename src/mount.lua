@@ -42,7 +42,7 @@ function module.init(shared)
         		child = {};
         		rawset(to,"__child",child);
     		end
-    		insert(child,this):
+    		insert(child,this);
         end
         return setmetatable({to = to,this = this},mount);
     end
