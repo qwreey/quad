@@ -105,6 +105,7 @@ function module.init(shared)
 
 	-- bindable store object
 	local store = {};
+	local storeIdSpace = {};
 	function store:__index(key)
 		return self.__self[key];
 	end
@@ -139,10 +140,17 @@ function module.init(shared)
 	function store:default(key,value)
 		self[key] = self[key] or value;
 	end
-	function new.new(self)
-		return setmetatable(
+	function new.new(self,id)
+		local this = setmetatable(
 			{__self = self or {},__evt = setmetatable({},week),__reg = setmetatable({},week)},store
 		);
+		if id then
+			storeIdSpace[id] = id;
+		end
+		return this;
+	end
+	function new.getStore(id)
+		return storeIdSpace[id];
 	end
 
 	return new;
