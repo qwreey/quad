@@ -23,6 +23,19 @@ function module.init(shared)
 	local advancedTween = shared.advancedTween; ---@module src.libs.AdvancedTween
 	local round = shared.round; ---@module src.libs.round
 
+	local function setProperty(item,index,value,ClassName)
+		ClassName = ClassName or item.ClassName;
+		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
+		if index == "roundSize" and isImage then
+			if not round then
+				warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
+			end
+			round.setRound(item,value);
+		else
+			item[index] = value; -- set property
+		end
+	end
+
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
 		-- make thing
@@ -85,11 +98,11 @@ function module.init(shared)
 						if with then
 							set = with(set);
 						end
-						item[index] = set;
+						setProperty(item,index,set,ClassName);
 					else
 						local dset = value.dvalue;
 						if dset then
-							item[index] = dset;
+							setProperty(item,index,dset,ClassName);
 						end
 					end
 					local tween = value.tvalue;
@@ -109,7 +122,7 @@ function module.init(shared)
 							end
 							advancedTween.RunTween(item,tween,{[index] = newValue});
 						else
-							item[index] = newValue;
+							setProperty(item,index,newValue,ClassName);
 						end
 					end
 					value:register(regFn);
@@ -122,15 +135,7 @@ function module.init(shared)
 					-- event binding
 				elseif indexType == "string" then
 					-- prop set
-					local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
-					if index == "roundSize" and isImage then
-						if not round then
-							warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
-						end
-						round.setRound(item,value);
-					else
-						item[index] = value; -- set property
-					end
+					setProperty(item,index,value,ClassName);
 				elseif indexType == "number" then -- object
 					-- child object
 					mount(item,((iprop == 1) and value or value:Clone()),holder);
