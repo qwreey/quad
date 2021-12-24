@@ -41,6 +41,7 @@ function module.init(shared)
 	end
 
 	-- make object that from instance, class and more
+	local pack = table.pack;
 	function new.make(ClassName,...) -- render object
 		-- make thing
 		local item;
@@ -52,15 +53,16 @@ function module.init(shared)
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new;
 			if ClassName.__noSetup then -- if is support initing props
-				local childs,props = {},{...};
-				local parsed = {};
-				for iprop = #props,1,-1 do
+				local childs,props,parsed = {},pack(...),{};
+				for iprop = props.n,1,-1 do
 					local prop = props[iprop];
-					for i,v in pairs(prop) do
-						if type(i) == "number" then
-							childs[i] = ((iprop == 1) and v or v:Clone());
-						else
-							parsed[i] = v;
+					if prop then
+						for i,v in pairs(prop) do
+							if type(i) == "number" then
+								childs[i] = ((iprop == 1) and v or v:Clone());
+							else
+								parsed[i] = v;
+							end
 						end
 					end
 				end
@@ -81,64 +83,67 @@ function module.init(shared)
 		-- set property and adding child and binding functions
 		local holder = getHolder(item); -- to __holder or holder or it self (for tabled)
 		-- for iprop,prop in ipairs({...}) do
-		for iprop = select("#",...),1,-1 do
-			local prop = select(iprop,...);
-			for index,value in pairs(prop) do
-				local valueType = typeof(value);
-				local indexType = typeof(index);
+		local props = pack(...);
+		for iprop = props.n,1,-1 do
+			local prop = props[iprop];
+			if prop then
+				for index,value in pairs(prop) do
+					local valueType = typeof(value);
+					local indexType = typeof(index);
 
-				-- child
-				if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
-					-- store binding
-					local with = value.wfunc;
-					local tstore = value.store;
-					local rawKey = value.key;
-					local set = tstore[rawKey];
-					if set or (rawKey:match(",") and with) then
-						if with then
-							set = with(tstore,set,value.key,item);
-						end
-						setProperty(item,index,set,ClassName);
-					else
-						local dset = value.dvalue;
-						if dset then
-							setProperty(item,index,dset,ClassName);
-						end
-					end
-					local tween = value.tvalue;
-					local from = value.fvalue;
-
-					-- adding event function
-					local function regFn(_,newValue,key)
-						if from then
-							newValue = from[newValue];
-						end
-						if with then
-							newValue = with(tstore,newValue,key,item);
-						end
-						if tween then
-							if not advancedTween then
-								return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
+					-- child
+					if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
+						-- store binding
+						local with = value.wfunc;
+						local tstore = value.store;
+						local rawKey = value.key;
+						local set = tstore[rawKey];
+						if set or (rawKey:match(",") and with) then
+							if with then
+								set = with(tstore,set,value.key,item);
 							end
-							advancedTween.RunTween(item,tween,{[index] = newValue});
+							setProperty(item,index,set,ClassName);
 						else
-							setProperty(item,index,newValue,ClassName);
+							local dset = value.dvalue;
+							if dset then
+								setProperty(item,index,dset,ClassName);
+							end
 						end
-					end
-					value:register(regFn);
+						local tween = value.tvalue;
+						local from = value.fvalue;
 
-					-- this is using hacky of roblox instance
-					-- this is will keep reference from week table until
-					-- inscance got GCed
-					item:GetPropertyChangedSignal("ClassName"):Connect(regFn);
-				elseif (valueType == "function" or valueType == "table") and indexType == "string" and bind(item,index,value,valueType) then -- connect event
-					-- event binding
-				elseif indexType == "string" then
-					-- prop set
-					setProperty(item,index,value,ClassName);
-				elseif indexType == "number" then -- object
-					-- child object
-					mount(item,((iprop == 1) and value or value:Clone()),holder);
+						-- adding event function
+						local function regFn(_,newValue,key)
+							if from then
+								newValue = from[newValue];
+							end
+							if with then
+								newValue = with(tstore,newValue,key,item);
+							end
+							if tween then
+								if not advancedTween then
+									return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
+								end
+								advancedTween.RunTween(item,tween,{[index] = newValue});
+							else
+								setProperty(item,index,newValue,ClassName);
+							end
+						end
+						value:register(regFn);
+
+						-- this is using hacky of roblox instance
+						-- this is will keep reference from week table until
+						-- inscance got GCed
+						item:GetPropertyChangedSignal("ClassName"):Connect(regFn);
+					elseif (valueType == "function" or valueType == "table") and indexType == "string" and bind(item,index,value,valueType) then -- connect event
+						-- event binding
+					elseif indexType == "string" then
+						-- prop set
+						setProperty(item,index,value,ClassName);
+					elseif indexType == "number" then -- object
+						-- child object
+						mount(item,((iprop == 1) and value or value:Clone()),holder);
+					end
 				end
 			end
 		end
