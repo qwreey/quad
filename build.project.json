@@ -1,9 +1,0 @@
-{
-	"name": "Plugin",
-	"tree": {
-		"$properties": {
-			"Name": "quad"
-		},
-		"$path": "src"
-	}
-}

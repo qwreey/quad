@@ -1,21 +1,9 @@
 {
 	"name": "Plugin",
 	"tree": {
-        "$className": "DataModel",
-        "ReplicatedStorage": {
-            "$className": "ReplicatedStorage",
-            "Quad": {
-                "$path": "src"
-            }
-        },
-        "StarterGui": {
-            "$className": "StarterGui",
-            "QuadTesting": {
-                "$className": "ScreenGui",
-                "testScript": {
-                    "$path": "testScript.client.lua"
-                }
-            }
-        }
+		"$properties": {
+			"Name": "Quad"
+		},
+		"$path": "src"
 	}
 }
