@@ -153,21 +153,21 @@ function module.init(shared)
 		end
 		local this = defaultProperties or {};
 		setmetatable(this,{
-			__call = function (self,prop)
+			__call = function (self,prop,...)
 				local propType = type(prop);
 				if propType == "string" then
 					local lastName = prop;
-					return function (nprop)
+					return function (nprop,...)
 						nprop = nprop or {};
 						nprop.Name = lastName;
-						local item = make(ClassName,nprop,this);
+						local item = make(ClassName,nprop,...,this);
 						addObject(lastName,item);
 						return item;
 					end;
 				elseif propType == "nil" then
 					return make(ClassName,this);
 				end
-				return make(ClassName,prop,this);
+				return make(ClassName,prop,...,this);
 			end;
 		});
 		return this;
