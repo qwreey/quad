@@ -31,7 +31,12 @@ local class = require "class"; ---@module src.class
 local mount = require "mount"; ---@module src.mount
 local _,advancedTween = pcall(require,"src.libs.AdvancedTween"); ---@module src.libs.AdvancedTween
 
-function module.init()
+local idSpace = {};
+function module.init(id)
+	local last = idSpace[id];
+	if last then
+		return last;
+	end
 	local this = {items = {}};
 
 	this.require = require;
@@ -46,6 +51,7 @@ function module.init()
 	--this.tween = tween;
 	--this.plugin = plugin;
 
+	idSpace[id] = this;
 	return this;
 end
 
