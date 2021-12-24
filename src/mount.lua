@@ -2,6 +2,7 @@ local module = {};
 
 function module.init(shared)
     local new = {};
+    local insert = table.insert;
 
     local mount = {};
     mount.__index = mount;
@@ -16,14 +17,33 @@ function module.init(shared)
             end);
             local destroyThis = this.Destroy;
             if destroyThis then
-                pcall(destroyThis);
+                pcall(destroyThis,this);
             end
+            --if sef.to when
+            -- todo for remove child on parent
         end
     end
 
+    function new.getHolder(item)
+		return (type(item) == "table") and (item._holder or item.holder or item.__holder) or item;
+	end
+	local getHolder = new.getHolder
     -- we should add plugin support
-    function new.mount(to,this)
-        this.Parent = to;
+    function new.mount(to,this,inst)
+    	local thisO = this;
+    	if type(this) == "table" then
+    		thisO = this.__object;
+    		rawset(this,"__parent",to);
+    	end
+        thisO.Parent = inst or getHolder(to);
+        if type(to) == "table" then
+        	local child = rawget(to,"__child");
+        	if not child then
+        		child = {};
+        		rawset(to,"__child",child);
+    		end
+    		insert(child,this):
+        end
         return setmetatable({to = to,this = this},mount);
     end
 
