@@ -40,6 +40,7 @@ function module.init()
 	--this.style = style.init(this);
 	this.class = class.init(this);
 	this.mount = mount.init(this);
+	this.require = require;
 
 	--this.makeClass = makeClass;
 	--this.tween = tween;
