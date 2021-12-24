@@ -136,6 +136,9 @@ function module.init(shared)
 		end
 		return register;
 	end
+	function store:default(key,value)
+		self[key] = self[key] or value;
+	end
 	function new.new(self)
 		return setmetatable(
 			{__self = self or {},__evt = setmetatable({},week),__reg = setmetatable({},week)},store

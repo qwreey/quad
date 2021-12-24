@@ -34,13 +34,13 @@ local _,advancedTween = pcall(require,"src.libs.AdvancedTween"); ---@module src.
 function module.init()
 	local this = {items = {}};
 
+	this.require = require;
 	this.advancedTween = type(advancedTween) == "table" and advancedTween;
 	this.event = event.init(this);
 	this.store = store.init(this);
 	--this.style = style.init(this);
 	this.class = class.init(this);
 	this.mount = mount.init(this);
-	this.require = require;
 
 	--this.makeClass = makeClass;
 	--this.tween = tween;
