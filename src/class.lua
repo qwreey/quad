@@ -193,11 +193,11 @@ function module.init(shared)
 			rawset(self,"__holder",object);
 			if parent then
 				rawset(self,"__parent",parent);
-				mount(item,parent)
+				mount(self,parent)
 			end
 			-- prevent gc
 			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
-				return item;
+				return self;
 			end);
 			return self;
 		end
@@ -222,13 +222,13 @@ function module.init(shared)
 			if child then
 				for _,v in pairs(child) do
 					if v then
-						((type(v) == "table") and rawget(v,"__object") or v).Parent = object;
+						v.Parent = object;
 					end
 				end
 			end
 			-- prevnet gc
 			((type(object) == "table" and object.__object) or object):GetPropertyChamgedSignal "ClassName":Connect(function()
-				return item;
+				return self;
 			end);
 			if lastObject then -- remove old instance
 				self:Destroy(lastObject);

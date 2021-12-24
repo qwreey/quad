@@ -33,9 +33,22 @@ function module.init(shared)
     	local thisO = this;
     	if type(this) == "table" then
     		thisO = this.__object;
+            local parent = rawget(this,"__parent");
+            if type(parent) == "table" then
+                local parentChild = rawget(parent,"__child");
+                if parentChild then
+                    for i,v in pairs(parentChild) do
+                        if v == this then
+                            parentChild[i] = nil;
+                        end
+                    end
+                end
+            end
     		rawset(this,"__parent",to);
     	end
-        thisO.Parent = inst or getHolder(to);
+        if thisO then
+            thisO.Parent = inst or getHolder(to);
+        end
         if type(to) == "table" then
         	local child = rawget(to,"__child");
         	if not child then
