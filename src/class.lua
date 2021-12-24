@@ -13,14 +13,14 @@ local module = {};
 
 function module.init(shared)
 	local new = {};
-	local event = shared.event; ---@module "src.event"
+	local event = shared.event; ---@module src.event
 	local bind = event.bind;
-	local store = shared.store; ---@module "src.store"
+	local store = shared.store; ---@module src.store
 	local addObject = store.addObject;
 	local storeNew = store.new;
-	local mount = shared.mount; ---@module "src.mount"
+	local mount = shared.mount; ---@module src.mount
 	local getHolder = mount.getHolder;
-	local advancedTween = shared.advancedTween; ---@module "src.libs.AdvancedTween"
+	local advancedTween = shared.advancedTween; ---@module src.libs.AdvancedTween
 
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
@@ -104,7 +104,7 @@ function module.init(shared)
 						end
 						if tween then
 							if not advancedTween then
-								return wran "module 'AdvancedTween' needs to be loaded for tween properties but it is not founded on 'src.libs'. you should adding that to src.libs directory";
+								return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not founded on 'src.libs'. you should adding that to src.libs directory";
 							end
 							advancedTween.RunTween(item,tween,{[index] = newValue});
 						else

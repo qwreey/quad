@@ -12,7 +12,7 @@ local remove = table.remove;
 local function catch(...)
 	local passed,err = pcall(...);
 	if not passed then
-		wran("[QUAD] Error occured while operating async task\n" .. tostring(err));
+		warn ("[QUAD] Error occured while operating async task\n" .. tostring(err));
 	end
 end
 
@@ -107,7 +107,7 @@ function module.init(shared)
 	local store = {};
 	local storeIdSpace = {};
 	function store:__index(key)
-		return self.__self[key];
+		return self.__self[key] or store[key];
 	end
 	function store:__newindex(key,value)
 		self.__self[key] = value;
