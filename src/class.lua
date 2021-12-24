@@ -154,17 +154,24 @@ function module.init(shared)
 
 	-- import quad object
 	function new.import(ClassName,defaultProperties) -- make new quad class object
+		if type(ClassName) == "userdata" and ClassName.ClassName == "ModuleScript" then
+			ClassName = require(ClassName);
+		end
 		local this = defaultProperties or {};
 		setmetatable(this,{
 			__call = function (self,prop)
-				if type(prop) == "string" then
+				local propType = type(prop);
+				if propType == "string" then
 					local lastName = prop;
 					return function (nprop)
+						nprop = nprop or {};
 						nprop.Name = lastName;
 						local item = make(ClassName,nprop);
 						addObject(lastName,item);
 						return item;
 					end;
+				elseif propType == "nil" then
+					return make(ClassName);
 				end
 				return make(ClassName,prop,this);
 			end;
