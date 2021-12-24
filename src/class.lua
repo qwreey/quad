@@ -13,6 +13,7 @@ local module = {};
 
 function module.init(shared)
 	local new = {};
+	local InstanceNew = Instance.new;
 	local event = shared.event; ---@module src.event
 	local bind = event.bind;
 	local store = shared.store; ---@module src.store
@@ -31,6 +32,9 @@ function module.init(shared)
 				warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
 			end
 			round.setRound(item,value);
+		elseif index == "uiRoundSize" then
+			local uiCorner = InstanceNew("UICorner",item);
+			uiCorner.CornerRadius = UDim.new(0,value);
 		else
 			item[index] = value; -- set property
 		end
@@ -42,7 +46,7 @@ function module.init(shared)
 		local item;
 		local classOfClassName = type(ClassName);
 		if classOfClassName == "string" then -- if classname is a string value, cdall instance.new for making new roblox instance
-			item = Instance.new(ClassName);
+			item = InstanceNew(ClassName);
 		elseif classOfClassName == "function" then -- if classname is a function value, call it for making new object (OOP object)
 			item = ClassName();
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
