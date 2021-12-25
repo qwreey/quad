@@ -32,7 +32,7 @@ for i,v in pairs(EasingFunctions) do
 	module.EasingFunctions[i] = v
 end
 
-module.EasingDirection = {
+module.EasingDirections = {
 	Out = "Out"; -- 반전된 방향
 	In  = "In" ; -- 기본방향
 }

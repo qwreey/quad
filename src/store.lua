@@ -145,7 +145,11 @@ function module.init(shared)
 		return register;
 	end
 	function store:default(key,value)
-		self[key] = self[key] or value;
+		local old = self[key];
+		if type(old) == "nil" then
+			self[key] = value;
+			return;
+		end
 	end
 	function new.new(self,id)
 		if id then

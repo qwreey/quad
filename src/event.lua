@@ -8,7 +8,7 @@ function module.init(shared)
 	local prefix = "Event::";
 	local special = {
 		["Property::(.+)"] = function (this,func,property)
-			this.GetPropertyChangedSignal(property):Connect(function()
+			this:GetPropertyChangedSignal(property):Connect(function()
 				func(this,this[property]);
 			end);
 		end;
@@ -79,6 +79,12 @@ function module.init(shared)
 	local disconnecter = {};
 	function disconnecter:add(connection)
 		insert(self,connection);
+	end
+	function disconnecter:disconnect()
+		for i,v in pairs(self) do
+			pcall(v.Disconnect,v);
+			self[i] = nil;
+		end
 	end
 	function disconnecter:destroy()
 		local id = self.id;
