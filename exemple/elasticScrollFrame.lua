@@ -22,6 +22,7 @@ frame.BorderSizePixel = 0;
 local button = class "TextButton";
 button.BorderSizePixel = 0;
 button.Text = nil;
+local image = class "ImageLabel";
 
 -- tween for moving
 local out = advancedTween.EasingDirections.Out;
@@ -80,8 +81,12 @@ function scrollFrame:init(props)
     props:default("ZIndex",1);
     props:default("BackgroundColor3",white);
     props:default("ScrollbarSizeX",2);
+    props:default("ScrollbarVisibleY",false);
+    props:default("ScrollbarSizeX",2);
+    props:default("ScrollbarVisibleX",true);
     props:default("ScrollbarPadding",2);
-    props:default("ScrollbarVisible",true);
+    props:default("ScrollbarColor3",Color3.fromRGB(172, 172, 172));
+    props:default("ScrollbarTransparency",0.5);
 end
 
 -- Render objects
@@ -95,10 +100,10 @@ function scrollFrame:render(props)
         ClipsDescendants = true;
         [event.createdSync] = function (this)
             this.InputChanged:Connect(function (input)
-                if self._mouseDown then
+                if self._mouseDown or self._scrollbarDown then
                     return;
                 end
-                local inputType= input.UserInputType;
+                local inputType = input.UserInputType;
                 if inputType == mouseWheel then
                     local x,y = 0,1;
                     if input:IsModifierKeyDown(shiftModifier) then
@@ -157,9 +162,22 @@ function scrollFrame:render(props)
                 self._holder = this;
             end;
         };
-        -- button {
-            
-        -- }
+        button {
+            Visible = props "ScrollbarVisibleY";
+            Size = props "ScrollbarPadding,ScrollbarSizeX":with(function (store)
+                self:fit();
+            end);
+            image {
+                roundSize = 2000;
+                ImageColor3 = props "ScrollbarColor3";
+                ImageTransparency = props "ScrollbarTransparency";
+                Size = props "ScrollbarSizeX,ScrollbarPadding":with(function (store)
+                    return UDim2.new(0,store.ScrollbarSizeX,1,store.ScrollbarPadding * 2);
+                end);
+                Position = UDim2.fromScale(0.5,0.5);
+                AnchorPoint = Vector2.new(0.5,0.5);
+            };
+        }
     };
 end
 
@@ -183,6 +201,7 @@ function scrollFrame:update(x,y)
         Position = UDim2.fromOffset(x,-y);
     });
     self._targetX,self._targetY = x,y;
+    self:updateScrollbar(x,y);
     return inputIndex;
 end
 
@@ -215,6 +234,8 @@ function scrollFrame:fit()
             max(min(targetX,maxX),0),
             max(min(targetY,maxY),0)
         );
+    else
+        self:updateScrollbar(targetX,targetY);
     end
 end
 

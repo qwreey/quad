@@ -225,6 +225,12 @@ function module.init(shared)
 			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
 				return self;
 			end);
+
+			--after render
+			local afterRender = this.afterRender;
+			if afterRender then
+				afterRender(self,object);
+			end
 			return self;
 		end
 
@@ -239,10 +245,12 @@ function module.init(shared)
 			if lastObject then
 				lastObject.Parent = nil;
 			end
+
 			object = self:render(self.__prop); -- new instance
 			rawset(self,"__holder",object);
 			rawset(self,"__object",object);
 			object.Parent = getHolder(parent); -- update parent
+
 			-- restore childs
 			local child = rawget(self,"__child");
 			if child then
@@ -252,12 +260,19 @@ function module.init(shared)
 					end
 				end
 			end
+
 			-- prevnet gc
 			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
 				return self;
 			end);
 			if lastObject then -- remove old instance
 				self:Destroy(lastObject);
+			end
+
+			--after render
+			local afterRender = this.afterRender;
+			if afterRender then
+				afterRender(self,object);
 			end
 		end
 
