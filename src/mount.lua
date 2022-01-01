@@ -4,9 +4,9 @@ function module.init(shared)
     local new = {};
     local insert = table.insert;
 
-    local mount = {};
-    mount.__index = mount;
-    function mount:unmount()
+    local mountClass = {};
+    mountClass.__index = mountClass;
+    function mountClass:unmount()
         local this = self.this
         local typeThis = type(this);
         if typeThis == "userdata" then
@@ -27,7 +27,8 @@ function module.init(shared)
     function new.getHolder(item)
 		return (type(item) == "table") and (item._holder or item.holder or item.__holder) or item;
 	end
-	local getHolder = new.getHolder
+	local getHolder = new.getHolder;
+
     -- we should add plugin support
     function new.mount(to,this,holder)
         local thisObject = this;
@@ -57,12 +58,30 @@ function module.init(shared)
             end
             insert(child,this);
         end
-        return setmetatable({to = to,this = this},mount);
+        return setmetatable({to = to,this = this},mountClass);
     end
+    local mount = new.mount;
 
+    local pack = table.pack;
+    local mountsClass = {};
+    mountsClass.__index = mountsClass;
+    function mountsClass:unmount()
+        for _,v in ipairs(self) do
+            v:unmount();
+        end
+    end
     setmetatable(new,{
-        __call = function (self,...)
-            return new.mount(...);
+        __call = function (self,to,...)
+            if select("#",...) == 1 then
+                return new.mount(to,...);
+            end
+            local mounts = {};
+            local items = pack(...);
+            for _,item in ipairs(items) do
+                insert(mounts,mount(to,item));
+            end
+            setmetatable(mounts,mountsClass);
+            return mounts;
         end;
     });
 

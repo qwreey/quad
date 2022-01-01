@@ -76,17 +76,17 @@ function module.init(shared)
 	-- roblox connections disconnecter
 	local insert = table.insert;
 	local idSpace = {};
-	local disconnecter = {};
-	function disconnecter:add(connection)
+	local disconnecterClass = {};
+	function disconnecterClass:add(connection)
 		insert(self,connection);
 	end
-	function disconnecter:disconnect()
+	function disconnecterClass:disconnect()
 		for i,v in pairs(self) do
 			pcall(v.Disconnect,v);
 			self[i] = nil;
 		end
 	end
-	function disconnecter:destroy()
+	function disconnecterClass:destroy()
 		local id = self.id;
 		if id then
 			idSpace[id] = nil;
@@ -96,7 +96,7 @@ function module.init(shared)
 			self[i] = nil;
 		end
 	end
-	disconnecter.__index = disconnecter;
+	disconnecterClass.__index = disconnecterClass;
 	function new.new(id)
 		if id then
 			local old = idSpace[id];
@@ -104,7 +104,7 @@ function module.init(shared)
 				return old;
 			end
 		end
-		local this = setmetatable({id = id},disconnecter);
+		local this = setmetatable({id = id},disconnecterClass);
 		if id then
 			idSpace[id] = this;
 		end

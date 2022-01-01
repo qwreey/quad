@@ -22,13 +22,13 @@ function module.init(shared)
 	local items = shared.items;
 
 	-- id space (array of object)
-	local objSpace = {};
-	function objSpace:each(func)
+	local objSpaceClass = {};
+	function objSpaceClass:each(func)
 		for i,v in ipairs(self) do
 			wrap(catch)(func,i,v);
 		end
 	end
-	function objSpace:eachSync(func)
+	function objSpaceClass:eachSync(func)
 		for i,v in ipairs(self) do
 			local ret = func(i,v);
 			if ret then
@@ -36,7 +36,7 @@ function module.init(shared)
 			end
 		end
 	end
-	function objSpace:remove(indexOrItem)
+	function objSpaceClass:remove(indexOrItem)
 		local thisType = type(indexOrItem);
 		if thisType == "number" then
 			remove(self,indexOrItem);
@@ -49,16 +49,16 @@ function module.init(shared)
 			end
 		end
 	end
-	function objSpace.__new()
-		return setmetatable({},objSpace);
+	function objSpaceClass.__new()
+		return setmetatable({},objSpaceClass);
 	end
-	function objSpace:__newIndex(key,value) -- props setter
+	function objSpaceClass:__newIndex(key,value) -- props setter
 		self:each(function (this)
 			this[key] = value;
 		end);
 	end
-	objSpace.__mode = "kv"; -- week link for gc
-	objSpace.__index = objSpace;
+	objSpaceClass.__mode = "kv"; -- week link for gc
+	objSpaceClass.__index = objSpaceClass;
 
 	-- get object array with id (objSpace)
 	function new.getObjects(id)
@@ -77,14 +77,14 @@ function module.init(shared)
 			id = id:gsub("^ +",""):gsub(" +$","");
 			local array = items[id];
 			if not array then
-				array = objSpace.__new();
+				array = objSpaceClass.__new();
 				items[id] = array;
 			end
 			insert(array, object);
 		end
 	end
 
-	local registerMt = {
+	local registerClass = {
 		register = function (s,efunc)
 			local self = s.store;
 			local events = self.__evt;
@@ -111,7 +111,7 @@ function module.init(shared)
 			return setmetatable({fvalue = value},{__index = s});
 		end;
 	};
-	registerMt.__index = registerMt;
+	registerClass.__index = registerClass;
 
 	-- bindable store object
 	local store = {};
@@ -135,7 +135,7 @@ function module.init(shared)
 				key = key;
 				store = self;
 				t = "reg";
-			},registerMt);
+			},registerClass);
 			self.__reg[key] = register;
 		end
 
