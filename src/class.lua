@@ -14,15 +14,16 @@ local module = {};
 function module.init(shared)
 	local new = {};
 	local InstanceNew = Instance.new;
-	local event = shared.event; ---@module src.event
+	local event = shared.event; ---@module "src.event"
 	local bind = event.bind;
-	local store = shared.store; ---@module src.store
+	local store = shared.store; ---@module "src.store"
 	local addObject = store.addObject;
 	local storeNew = store.new;
-	local mount = shared.mount; ---@module src.mount
+	local mount = shared.mount; ---@module "src.mount"
 	local getHolder = mount.getHolder;
-	local advancedTween = shared.advancedTween; ---@module src.libs.AdvancedTween
-	local round = shared.round; ---@module src.libs.round
+	local mountf = mount.mount;
+	local advancedTween = shared.advancedTween; ---@module "src.libs.AdvancedTween"
+	local round = shared.round; ---@module "src.libs.round"
 
 	local function setProperty(item,index,value,ClassName)
 		ClassName = ClassName or item.ClassName;
@@ -69,7 +70,7 @@ function module.init(shared)
 				item = func(parsed);
 				local holder = getHolder(item);
 				for _,v in ipairs(childs) do
-					mount(item,v,holder);
+					mountf(item,v,holder);
 				end
 				return item;
 			end
@@ -142,7 +143,7 @@ function module.init(shared)
 						setProperty(item,index,value,ClassName);
 					elseif indexType == "number" then -- object
 						-- child object
-						mount(item,((iprop == 1) and value or value:Clone()),holder);
+						mountf(item,((iprop == 1) and value or value:Clone()),holder);
 					end
 				end
 			end
@@ -219,7 +220,7 @@ function module.init(shared)
 			rawset(self,"__holder",object);
 			if parent then
 				rawset(self,"__parent",parent);
-				mount(self,parent)
+				mountf(self,parent)
 			end
 			-- prevent gc
 			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
