@@ -24,13 +24,12 @@ frame{
 ]]
 
 local require = require(script.require);
-local event = require "event"; ---@module src.event
-local store = require "store"; ---@module src.store
---local style = require("style");
-local class = require "class"; ---@module src.class
-local mount = require "mount"; ---@module src.mount
-local _,advancedTween = pcall(require,"libs.AdvancedTween"); ---@module src.libs.AdvancedTween
-local _,round = pcall(require,"libs.round"); ---@module src.libs.round
+local event = require "event"; ---@module "src.event"
+local store = require "store"; ---@module "src.store"
+local class = require "class"; ---@module "src.class"
+local mount = require "mount"; ---@module "src.mount"
+local _,advancedTween = pcall(require,"libs.AdvancedTween"); ---@module "src.libs.AdvancedTween"
+local _,round = pcall(require,"libs.round"); ---@module "src.libs.round"
 
 local idSpace = {};
 function module.init(id)
@@ -47,12 +46,9 @@ function module.init(id)
 	this.advancedTween = type(advancedTween) == "table" and advancedTween;
 	this.event = event.init(this);
 	this.store = store.init(this);
-	--this.style = style.init(this);
 	this.mount = mount.init(this);
 	this.class = class.init(this);
 
-	--this.makeClass = makeClass;
-	--this.tween = tween;
 	--this.plugin = plugin;
 
 	if id then
