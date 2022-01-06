@@ -99,7 +99,7 @@ function module.init(shared)
 						local tstore = value.store;
 						local rawKey = value.key;
 						local set = tstore[rawKey];
-						if set or (rawKey:match(",") and with) then
+						if type(set) ~= "nil" or (rawKey:match(",") and with) then
 							if with then
 								set = with(tstore,set,value.key,item);
 							end
