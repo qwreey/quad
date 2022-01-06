@@ -117,7 +117,11 @@ function module.init(shared)
 	local store = {};
 	local storeIdSpace = {};
 	function store:__index(key)
-		return self.__self[key] or store[key];
+		local this = self.__self[key];
+		if this ~= nil then
+			return this;
+		end
+		return store[key];
 	end
 	function store:__newindex(key,value)
 		self.__self[key] = value;
@@ -146,7 +150,7 @@ function module.init(shared)
 	end
 	function store:default(key,value)
 		local old = self[key];
-		if type(old) == "nil" then
+		if old == nil then
 			self[key] = value;
 			return;
 		end

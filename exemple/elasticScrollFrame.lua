@@ -1,5 +1,5 @@
 local Quad = require(game.ReplicatedStorage:WaitForChild "Quad"); ---@module Quad.src
-local _ = Quad.init "IosUI"; local round,class,mount,store,event,advancedTween = _.round,_.class,_.mount,_.store,_.event,_.advancedTween;
+local _ = Quad.init "IosUI"; local round,class,mount,store,event,tween = _.round,_.class,_.mount,_.store,_.event,_.tween;
 
 -- init quad
 local scrollFrame = class.extend();
@@ -25,14 +25,14 @@ button.Text = nil;
 local image = class "ImageLabel";
 
 -- tween for moving
-local out = advancedTween.EasingDirections.Out;
-local exp2 = advancedTween.EasingFunctions.Exp2;
+local out = tween.EasingDirections.Out;
+local exp2 = tween.EasingFunctions.Exp2;
 local tweenData = {
     Time = tweenTime;
     Direction = out;
     EasingFunction = exp2;
 };
-local runTween = advancedTween.RunTween;
+local runTween = tween.RunTween;
 
 -- user input service
 local userInputService = game:GetService "UserInputService";

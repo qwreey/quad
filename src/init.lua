@@ -43,7 +43,7 @@ function module.init(id)
 
 	this.require = require;
 	this.round = type(round) == "table" and round;
-	this.advancedTween = type(advancedTween) == "table" and advancedTween;
+	this.tween = type(advancedTween) == "table" and advancedTween;
 	this.event = event.init(this);
 	this.store = store.init(this);
 	this.mount = mount.init(this);

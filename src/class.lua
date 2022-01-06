@@ -22,7 +22,7 @@ function module.init(shared)
 	local mount = shared.mount; ---@module "src.mount"
 	local getHolder = mount.getHolder;
 	local mountf = mount.mount;
-	local advancedTween = shared.advancedTween; ---@module "src.libs.AdvancedTween"
+	local advancedTween = shared.tween; ---@module "src.libs.AdvancedTween"
 	local round = shared.round; ---@module "src.libs.round"
 
 	local function setProperty(item,index,value,ClassName)
@@ -99,7 +99,7 @@ function module.init(shared)
 						local tstore = value.store;
 						local rawKey = value.key;
 						local set = tstore[rawKey];
-						if type(set) ~= "nil" or (rawKey:match(",") and with) then
+						if set ~= nil or (rawKey:match(",") and with) then
 							if with then
 								set = with(tstore,set,value.key,item);
 							end
@@ -141,7 +141,7 @@ function module.init(shared)
 					elseif indexType == "string" then
 						-- prop set
 						setProperty(item,index,value,ClassName);
-					elseif indexType == "number" then -- object
+					elseif indexType == "number" and valueType ~= "boolean" then -- object
 						-- child object
 						mountf(item,((iprop == 1) and value or value:Clone()),holder);
 					end
