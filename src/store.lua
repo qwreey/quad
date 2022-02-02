@@ -16,7 +16,7 @@ local function catch(...)
 	end
 end
 
-local week = {__mode = "vk"};
+local week = {__mode = "v"};
 function module.init(shared)
 	local new = {};
 	local items = shared.items;
@@ -163,7 +163,7 @@ function module.init(shared)
 			end
 		end
 		local this = setmetatable(
-			{__self = self or {},__evt = setmetatable({},week),__reg = setmetatable({},week)},store
+			{__self = self or {},__evt = {},__reg = setmetatable({},week)},store
 		);
 		if id then
 			storeIdSpace[id] = this;

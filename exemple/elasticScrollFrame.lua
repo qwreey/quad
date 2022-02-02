@@ -137,6 +137,8 @@ function scrollFrame:render(props)
 			end);
 		end;
 		[event "MouseButton1Down"] = function (this,downX,downY)
+			local lastX,lastY = self._targetX,self._targetY;
+			local upX,upY = downX,downY;
 			self._mouseDown = true;
 			local mouseConnection = self._mouseConnection;
 			mouseConnection:disconnect();
@@ -147,7 +149,7 @@ function scrollFrame:render(props)
 					local position = input.Position;
 					local x = position.X;
 					local y = position.Y;
-					self:update(self._targetX + ((x - downX) * mouseUpMut),self._targetY + ((- y + downY)*mouseUpMut));
+					self:update(self._targetX + ((x - upX) * mouseUpMut),self._targetY + ((- y + upY)*mouseUpMut));
 					mouseConnection:disconnect();
 					self:fit();
 				end
@@ -156,24 +158,9 @@ function scrollFrame:render(props)
 				if input.UserInputType == mouseMovement then
 					local position = input.Position;
 					local x,y = position.X,position.Y;
-					local overscrollX,overscrollY = self._overscrollX,self._overscrollY;
 
-					local xIns = downX - x;
-					if overscrollX and ((overscrollX == -1 and xIns > 0) or (overscrollX == 1 and xIns < 0)) then
-						xIns = xIns * dragRestMut;
-					elseif overscrollX and ((overscrollX == -1 and xIns < 0) or (overscrollX == 1 and xIns > 0)) then
-						xIns = xIns * dragOverMut;
-					end
-
-					local yIns = downY - y;
-					if overscrollY and ((overscrollY == -1 and yIns > 0) or (overscrollY == 1 and yIns < 0)) then
-						yIns = yIns * dragRestMut;
-					elseif overscrollY and ((overscrollY == -1 and yIns < 0) or (overscrollY == 1 and yIns > 0)) then
-						yIns = yIns * dragOverMut;
-					end
-
-					self:update(self._targetX + xIns,self._targetY + yIns);
-					downX,downY = x,y;
+					self:update(lastX + (downX - x),lastY + (downY - y));
+					upX,upY = x,y;
 				end
 			end));
 		end;
