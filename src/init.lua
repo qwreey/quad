@@ -1,3 +1,4 @@
+---@class quad
 local module = {};
 
 -- TODO : style should be can edited with anytimes, and the object's styles can be changed (add, remove ...)
@@ -42,8 +43,8 @@ function module.init(id)
 	local this = {items = {}};
 
 	this.require = require;
-	this.round = type(round) == "table" and round;
-	this.tween = type(advancedTween) == "table" and advancedTween;
+	this.round = type(round) == "table" and round; ---@type quad_module_round
+	this.tween = type(advancedTween) == "table" and advancedTween; ---@type quad_module_tween
 	this.event = event.init(this);
 	this.store = store.init(this);
 	this.mount = mount.init(this);

@@ -1,3 +1,4 @@
+---@class quad_module_tween
 local module = {}
 
 ------------------------------------
@@ -6,6 +7,9 @@ local module = {}
 local type = typeof or type
 local clock = os.clock
 local tonumber = tonumber
+local remove = table.remove
+local insert = table.insert
+local find = table.find
 
 local script = script
 local EasingFunctions = require(script and script.EasingFunctions or "EasingFunctions")
@@ -142,29 +146,21 @@ function module.RunTween(Item,Data,Properties,Ended)
 	Step = function()
 		-- 아에 멈추게 되는 경우
 		if module.PlayIndex[Item] == nil then
-			table.remove(BindedFunctions,table.find(BindedFunctions,Step))
+			remove(BindedFunctions,find(BindedFunctions,Step))
 			return
 		end
 
 		local Now = clock()
 		local Index = 1 - (EndTime - Now) / Time
+		local Alpha = Direction == "Out" and Easing(Index) or (1 - Easing(1 - Index))
 
 		-- 속성 Lerp 수행
-		if Direction == "Out" then
-			LerpProperties(
-				Item,
-				LastProperties,
-				Properties,
-				Easing(Index)
-			)
-		else
-			LerpProperties(
-				Item,
-				LastProperties,
-				Properties,
-				1 - Easing(1 - Index)
-			)
-		end
+		LerpProperties(
+			Item,
+			LastProperties,
+			Properties,
+			Alpha
+		)
 
 		-- 다른 트윈이 속성을 바꾸고 있다면(이후 트윈이) 그 속성을 건들지 않도록 없엠
 		local StopByOther = true
@@ -180,7 +176,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 
 		-- 만약 다른 트윈이 지금 트윈하고 있는 속성을 모두 먹은경우 현재 트윈을 삭제함
 		if StopByOther then
-			table.remove(BindedFunctions,table.find(BindedFunctions,Step))
+			remove(BindedFunctions,find(BindedFunctions,Step))
 			return
 		end
 
@@ -198,7 +194,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 				ThisPlayIndex = nil
 			end
 
-			table.remove(BindedFunctions,table.find(BindedFunctions,Step))
+			remove(BindedFunctions,find(BindedFunctions,Step))
 			Index = 1
 			if Ended then
 				Ended()
@@ -208,16 +204,29 @@ function module.RunTween(Item,Data,Properties,Ended)
 		-- 중간 중간 함수 배정된것 실행
 		if CallBack then
 			for FncIndex,Fnc in pairs(CallBack) do
-				if tonumber(FncIndex) <= Index then
-					Fnc()
-					CallBack[FncIndex] = nil
+				if FncIndex == "*" then
+					Fnc(Index,Alpha)
+				else
+					local num = tonumber(FncIndex)
+					if num then
+						if num <= Index then
+							Fnc(Alpha)
+							CallBack[FncIndex] = nil
+						end
+					else
+						local alphaNum = tonumber(FncIndex:match"~(%d+)")
+						if alphaNum <= Alpha then
+							Fnc(Index)
+							CallBack[FncIndex] = nil
+						end
+					end
 				end
 			end
 		end
 	end
 
 	-- 스캐줄에 등록
-	table.insert(BindedFunctions,Step)
+	insert(BindedFunctions,Step)
 end
 
 -- 여러개의 개체를 트윈시킴

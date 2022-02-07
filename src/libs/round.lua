@@ -1,3 +1,4 @@
+---@class quad_module_round
 local round = {};
 
 local outlineImage = "http://www.roblox.com/asset/?id=4668565547";
