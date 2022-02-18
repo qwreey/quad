@@ -136,7 +136,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 	local CallBack = Data.CallBack
 	if CallBack then
 		for FncIndex,Fnc in pairs(CallBack) do
-			if type(Fnc) ~= "function" or type(tonumber(FncIndex)) ~= "number" then
+			if type(Fnc) ~= "function" then
 				CallBack[FncIndex] = nil
 			end
 		end
@@ -214,7 +214,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 							CallBack[FncIndex] = nil
 						end
 					else
-						local alphaNum = tonumber(FncIndex:match"~(%d+)")
+						local alphaNum = tonumber(FncIndex:match"~([%d.]+)")
 						if alphaNum <= Alpha then
 							Fnc(Index)
 							CallBack[FncIndex] = nil

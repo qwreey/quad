@@ -54,13 +54,15 @@ function module.init(shared)
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new;
 			if ClassName.__noSetup then -- if is support initing props
-				local childs,props,parsed = {},pack(...),{};
+				local childs,props,parsed,binds = {},pack(...),{},{};
 				for iprop = props.n,1,-1 do
 					local prop = props[iprop];
 					if prop then
 						for i,v in pairs(prop) do
 							if type(i) == "number" then
 								childs[i] = ((iprop == 1) and v or v:Clone());
+							elseif bind(i) then
+								binds[i] = v;
 							else
 								parsed[i] = v;
 							end
@@ -71,6 +73,9 @@ function module.init(shared)
 				local holder = getHolder(item);
 				for _,v in ipairs(childs) do
 					mountf(item,v,holder);
+				end
+				for i,v in pairs(binds) do
+					bind(item,i,v);
 				end
 				return item;
 			end

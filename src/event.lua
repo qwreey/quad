@@ -29,6 +29,11 @@ function module.init(shared)
 
 	-- try binding, if key dose match with anything, ignore call
 	function new.bind(this,key,func,typefunc)
+		if not key then
+			key = this;
+			this = nil;
+		end
+
 		-- if is advanced binding (self setted)
 		typefunc = typefunc or type(func);
 		local self;
@@ -39,8 +44,6 @@ function module.init(shared)
 		-- check prefix
 		if key:sub(1,prefixLen) ~= prefix then
 			return;
-		elseif not func then
-			return true; -- nil binding
 		end
 		key = key:sub(prefixLen + 1,-1);
 
@@ -48,18 +51,24 @@ function module.init(shared)
 		for specKey,specFunc in pairs(special) do
 			local find = {key:match(specKey)};
 			if #find ~= 0 then
-				specFunc(this,func,unpack(find));
+				if func then
+					specFunc(this,func,unpack(find));
+				end
 				return true;
 			end
 		end
 
 		-- binding normal events
-		local event = this[key];
-		if event then
-			event:Connect(function(...)
-				func(self or this,...);
-			end);
-			return true;
+		if this then
+			local event = this[key];
+			if event then
+				if func then
+					event:Connect(function(...)
+						func(self or this,...);
+					end);
+				end
+				return true;
+			end
 		end
 	end
 
