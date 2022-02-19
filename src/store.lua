@@ -110,6 +110,9 @@ function module.init(shared)
 		from = function (s,value)
 			return setmetatable({fvalue = value},{__index = s});
 		end;
+		add = function (s,value)
+			return setmetatable({avalue = value},{__index = s});
+		end;
 	};
 	registerClass.__index = registerClass;
 
@@ -133,6 +136,10 @@ function module.init(shared)
 		end
 	end
 	function store:__call(key,func)
+		local last = self.__self[key];
+		if last and type(last) == "table" and getmetatable(last) == registerClass then
+			return last;
+		end
 		local register = self.__reg[key];
 		if not register then
 			register = setmetatable({

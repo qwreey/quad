@@ -117,9 +117,13 @@ function module.init(shared)
 						end
 						local tween = value.tvalue;
 						local from = value.fvalue;
+						local add = value.avalue;
 
 						-- adding event function
 						local function regFn(_,newValue,key)
+							if add then
+								newValue = newValue + add;
+							end
 							if from then
 								newValue = from[newValue];
 							end
