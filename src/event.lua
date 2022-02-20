@@ -38,8 +38,11 @@ function module.init(shared)
 		typefunc = typefunc or type(func);
 		local self;
 		if typefunc == "table" then
-			self = func.self;
-			func = func.func;
+			local t = func;
+			self = t.self;
+			func = t.func;
+			if not self then self = t[1]; end
+			if not func then func = t[2]; end
 		end
 		-- check prefix
 		if key:sub(1,prefixLen) ~= prefix then

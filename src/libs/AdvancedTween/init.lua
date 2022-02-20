@@ -68,21 +68,21 @@ function LerpProperties(Item,Old,New,Alpha)
 				Item[Property] = Lerp(OldValue,NewValue,Alpha)
 			elseif Type == "UDim2" then
 				Item[Property] = UDim2.new(
-					Lerp(OldValue.X.Scale ,NewValue.X.Scale ,Alpha),
-					Lerp(OldValue.X.Offset,NewValue.X.Offset,Alpha),
-					Lerp(OldValue.Y.Scale ,NewValue.Y.Scale ,Alpha),
-					Lerp(OldValue.Y.Offset,NewValue.Y.Offset,Alpha)
+					Lerp(OldValue.X.Scale  or 0,NewValue.X.Scale  or 0,Alpha),
+					Lerp(OldValue.X.Offset or 0,NewValue.X.Offset or 0,Alpha),
+					Lerp(OldValue.Y.Scale  or 0,NewValue.Y.Scale  or 0,Alpha),
+					Lerp(OldValue.Y.Offset or 0,NewValue.Y.Offset or 0,Alpha)
 				)
 			elseif Type == "UDim" then
 				Item[Property] = UDim.new(
-					Lerp(OldValue.Scale ,NewValue.Scale ),
-					Lerp(OldValue.Offset,NewValue.Offset)
+					Lerp(OldValue.Scale  or 0,NewValue.Scale  or 0,Alpha),
+					Lerp(OldValue.Offset or 0,NewValue.Offset or 0,Alpha)
 				)
 			elseif Type == "Color3" then
 				Item[Property] = Color3.fromRGB(
-					Lerp(OldValue.r*255,NewValue.r*255),
-					Lerp(OldValue.g*255,NewValue.g*255),
-					Lerp(OldValue.b*255,NewValue.b*255)
+					Lerp((OldValue.r or 0)*255,(NewValue.r or 0)*255,Alpha),
+					Lerp((OldValue.g or 0)*255,(NewValue.g or 0)*255,Alpha),
+					Lerp((OldValue.b or 0)*255,(NewValue.b or 0)*255,Alpha)
 				)
 			end
 		end

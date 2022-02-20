@@ -17,14 +17,12 @@ local image = class "ImageLabel";
 image.BackgroundTransparency = 1;
 
 -- const
-local white = Color3.fromRGB(255,255,255);
-local scrollMut		= 100;  -- Used for multiply input when using mosue scroll
-local elasticMut	   = 20;   -- Used for multiply input when overscrolling
-local fitTime		  = 0.22; -- Used for reset overscroll when mouse scroll
-local tweenTime		= 0.63; -- Used for tween time
-local mouseUpMut	   = 18;   -- Used for multiply input when drag input ended
-local dragRestMut	  = 5;	-- Used for multiply input when reset overscroll from drag input
-local dragOverMut	  = 0.3;  -- Used for multiply input when overscrolling from drag input
+local white            = Color3.fromRGB(255,255,255);
+local scrollMut        = 100;  -- Used for multiply input when using mosue scroll
+local elasticMut       = 18;   -- Used for multiply input when overscrolling
+local fitTime          = 0.26; -- Used for reset overscroll when mouse scroll
+local tweenTime        = 0.71; -- Used for tween time
+local mouseUpMut       = 6;   -- Used for multiply input when drag input ended
 local scrollbarOverMut = 0.18; -- Used for multiply size of scrollbar when overscrolling
 
 -- tween for moving
@@ -148,7 +146,7 @@ function scrollFrame:render(props)
 				if inputType == mouseButton1 or inputType == touch then
 					local position = input.Position;
 					local x = position.X;
-					local y = position.Y;
+					local y = position.Y + 36;
 					self:update(self._targetX + ((x - upX) * mouseUpMut),self._targetY + ((- y + upY)*mouseUpMut));
 					mouseConnection:disconnect();
 					self:fit();
@@ -157,7 +155,7 @@ function scrollFrame:render(props)
 			mouseConnection:add(inputChanged:Connect(function (input)
 				if input.UserInputType == mouseMovement then
 					local position = input.Position;
-					local x,y = position.X,position.Y;
+					local x,y = position.X,position.Y + 36;
 
 					self:update(lastX + (downX - x),lastY + (downY - y));
 					upX,upY = x,y;
@@ -232,6 +230,7 @@ function scrollFrame:update(x,y)
 	local objectAbsSize = self.__object.AbsoluteSize;
 	local holderX,holderY = holderAbsSize.X,holderAbsSize.Y;
 	local objectX,objectY = objectAbsSize.X,objectAbsSize.Y;
+	holderX,holderY = max(holderX,objectX),max(holderY,objectY);
 	local maxX = holderX - objectX;
 	local maxY = holderY - objectY;
 
@@ -278,8 +277,9 @@ function scrollFrame:fit()
 	local holder = self._holder;
 	local holderAbsoluteSize = holder.AbsoluteSize;
 	local objectAbsSize = self.__object.AbsoluteSize;
-	local maxX = holderAbsoluteSize.X - objectAbsSize.X;
-	local maxY = holderAbsoluteSize.Y - objectAbsSize.Y;
+	local objectX,objectY = objectAbsSize.X,objectAbsSize.Y;
+	local maxX = max(holderAbsoluteSize.X,objectX) - objectX;
+	local maxY = max(holderAbsoluteSize.Y,objectY) - objectY;
 	if targetX<0 or targetY<0 or targetX>maxX or targetY>maxY then
 		self:update(
 			max(min(targetX,maxX),0),
@@ -310,13 +310,13 @@ function scrollFrame:updateScrollbar(x,y,objectX,objectY,holderX,holderY,elastic
 	local holderSize;
 	if not holderY then
 		holderSize = self._holder.AbsoluteSize;
-		holderY = holderSize.Y;
+		holderY = max(holderSize.Y,objectY);
 	end
 	if not holderX then
 		if not holderSize then
 			holderSize = self._holder.AbsoluteSize;
 		end
-		holderX = holderSize.X;
+		holderX = max(holderSize.X,objectX);
 	end
 
 	elastic = elastic or self.Elastic;
