@@ -1,5 +1,7 @@
 local Quad = require(game.ReplicatedStorage:WaitForChild "Quad"); ---@module "Quad.src"
 local _ = Quad.init "components"; local round,class,mount,store,event,tween = _.round,_.class,_.mount,_.store,_.event,_.tween;
+local RunService = game:GetService"RunService";
+local IsRunning = RunService:IsRunning();
 local max = math.max;
 local min = math.min;
 local abs = math.abs;
@@ -146,7 +148,7 @@ function scrollFrame:render(props)
 				if inputType == mouseButton1 or inputType == touch then
 					local position = input.Position;
 					local x = position.X;
-					local y = position.Y + 36;
+					local y = position.Y + (IsRunning and 36 or 0);
 					self:update(self._targetX + ((x - upX) * mouseUpMut),self._targetY + ((- y + upY)*mouseUpMut));
 					mouseConnection:disconnect();
 					self:fit();
@@ -155,7 +157,7 @@ function scrollFrame:render(props)
 			mouseConnection:add(inputChanged:Connect(function (input)
 				if input.UserInputType == mouseMovement then
 					local position = input.Position;
-					local x,y = position.X,position.Y + 36;
+					local x,y = position.X,position.Y + (IsRunning and 36 or 0);
 
 					self:update(lastX + (downX - x),lastY + (downY - y));
 					upX,upY = x,y;
