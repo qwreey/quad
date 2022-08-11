@@ -33,7 +33,7 @@ function module.init(shared)
     function new.mount(to,this,holder)
         local thisObject = this;
         if type(this) == "table" then
-            thisObject = this.__object;
+            thisObject = rawget(this,"__object");
             local parent = rawget(this,"__parent");
             if type(parent) == "table" then
                 local parentChild = rawget(parent,"__child");
