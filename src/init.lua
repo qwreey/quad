@@ -33,6 +33,10 @@ local _,advancedTween = pcall(require,"libs.AdvancedTween"); ---@module "src.lib
 local _,round = pcall(require,"libs.round"); ---@module "src.libs.round"
 
 local idSpace = {};
+
+---@return table this
+---@return quad_module_round round
+---@return quad_module_tween tween
 function module.init(id)
 	if id then
 		local last = idSpace[id];
@@ -55,7 +59,7 @@ function module.init(id)
 	if id then
 		idSpace[id] = this;
 	end
-	return this;
+	return this,this.round,this.class,this.mount,this.store,this.event,this.tween;
 end
 
 function module.uninit(id)
