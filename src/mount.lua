@@ -49,6 +49,8 @@ function module.init(shared)
         end
         if thisObject then
             thisObject.Parent = holder or getHolder(to);
+        else
+            this.Parent = holder or getHolder(to);
         end
         if type(to) == "table" then
             local child = rawget(to,"__child");
