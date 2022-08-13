@@ -39,9 +39,9 @@ local idSpace = {};
 ---@return quad_module_tween tween
 function module.init(id)
 	if id then
-		local last = idSpace[id];
-		if last then
-			return last;
+		local this = idSpace[id];
+		if this then
+			return this,this.round,this.class,this.mount,this.store,this.event,this.tween;
 		end
 	end
 	local this = {items = {}};
