@@ -34,7 +34,7 @@ local _,round = pcall(require,"libs.round"); ---@module "src.libs.round"
 
 local idSpace = {};
 
----@return table this
+---@return quadexport this
 ---@return quad_module_round round
 ---@return quad_module_tween tween
 function module.init(id)
@@ -44,6 +44,8 @@ function module.init(id)
 			return this,this.round,this.class,this.mount,this.store,this.event,this.tween;
 		end
 	end
+
+	---@class quadexport
 	local this = {items = {}};
 
 	this.require = require;
