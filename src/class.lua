@@ -25,17 +25,39 @@ function module.init(shared)
 	local advancedTween = shared.tween; ---@module "src.libs.AdvancedTween"
 	local round = shared.round; ---@module "src.libs.round"
 
+	local function InstanceNewWithName(classname,parent,name)
+		local item = InstanceNew(classname,parent)
+		item.Name = name
+		return item
+	end
+
 	local function setProperty(item,index,value,ClassName)
 		ClassName = ClassName or item.ClassName;
 		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
-		if index == "roundSize" and isImage then
+		if (index == "roundSize" or index == "RoundSize") and isImage then
 			if not round then
 				warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
 			end
 			round.setRound(item,value);
-		elseif index == "uiRoundSize" then
-			local uiCorner = InstanceNew("UICorner",item);
+		elseif index == "uiRoundSize" or index == "UIRoundSize" then
+			local uiCorner = item:FindFirstChildOfClass("UICorner") or InstanceNewWithName("UICorner",item,"_quad_round");
 			uiCorner.CornerRadius = UDim.new(0,value);
+		elseif index == "PaddingAll" or index == "paddingAll" then
+			local target = ClassName == "UIPadding" and item or (item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding"));
+			target.PaddingLeft = value;
+			target.PaddingRight = value;
+			target.PaddingTop = value;
+			target.PaddingBottom = value;
+		elseif index == "PaddingAllOffset" or index == "PaddingAllOffset" then
+			local target = ClassName == "UIPadding" and item or (item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding"));
+			local padding = UDim.new(0,value);
+			target.PaddingLeft = padding;
+			target.PaddingRight = padding;
+			target.PaddingTop = padding;
+			target.PaddingBottom = padding;
+		elseif index == "Scale" then
+			local target = ClassName == "UIScale" and item or (item:FindFirstChildOfClass("UIScale") or InstanceNewWithName("UIScale",item,"_quad_scale"));
+			target.Scale = value;
 		else
 			item[index] = value; -- set property
 		end

@@ -41,6 +41,11 @@ module.EasingDirections = {
 	In  = "In" ; -- 기본방향
 }
 
+---@deprecated
+module.EasingDirection = module.EasingDirections
+---@deprecated
+module.EasingFunction = module.EasingFunctions
+
 ------------------------------------
 -- Lerp 함수
 ------------------------------------
@@ -68,21 +73,21 @@ function LerpProperties(Item,Old,New,Alpha)
 				Item[Property] = Lerp(OldValue,NewValue,Alpha)
 			elseif Type == "UDim2" then
 				Item[Property] = UDim2.new(
-					Lerp(OldValue.X.Scale  or 0,NewValue.X.Scale  or 0,Alpha),
-					Lerp(OldValue.X.Offset or 0,NewValue.X.Offset or 0,Alpha),
-					Lerp(OldValue.Y.Scale  or 0,NewValue.Y.Scale  or 0,Alpha),
-					Lerp(OldValue.Y.Offset or 0,NewValue.Y.Offset or 0,Alpha)
+					Lerp(OldValue.X.Scale ,NewValue.X.Scale ,Alpha),
+					Lerp(OldValue.X.Offset,NewValue.X.Offset,Alpha),
+					Lerp(OldValue.Y.Scale ,NewValue.Y.Scale ,Alpha),
+					Lerp(OldValue.Y.Offset,NewValue.Y.Offset,Alpha)
 				)
 			elseif Type == "UDim" then
 				Item[Property] = UDim.new(
-					Lerp(OldValue.Scale  or 0,NewValue.Scale  or 0,Alpha),
-					Lerp(OldValue.Offset or 0,NewValue.Offset or 0,Alpha)
+					Lerp(OldValue.Scale ,NewValue.Scale ),
+					Lerp(OldValue.Offset,NewValue.Offset)
 				)
 			elseif Type == "Color3" then
 				Item[Property] = Color3.fromRGB(
-					Lerp((OldValue.r or 0)*255,(NewValue.r or 0)*255,Alpha),
-					Lerp((OldValue.g or 0)*255,(NewValue.g or 0)*255,Alpha),
-					Lerp((OldValue.b or 0)*255,(NewValue.b or 0)*255,Alpha)
+					Lerp(OldValue.r*255,NewValue.r*255),
+					Lerp(OldValue.g*255,NewValue.g*255),
+					Lerp(OldValue.b*255,NewValue.b*255)
 				)
 			end
 		end
@@ -103,7 +108,10 @@ end
 	--해당 함수가 실행됨
 --Properties : 트윈할 속성과 목표값 예시 :
 --Data.Properties.Position = UDim2.new(1,0,1,0) 처럼 하면 Position 속성의 목표를 1,0,1,0 으로 지정
-function module.RunTween(Item,Data,Properties,Ended)
+function module.RunTween(Item,Data,Properties,Ended,OnStepped,_)
+	-- remove self
+	if Item == module then Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = _; end
+
 	-- 시간 저장
 	local Time = Data.Time or 1
 	local EndTime = clock() + Time
@@ -136,7 +144,8 @@ function module.RunTween(Item,Data,Properties,Ended)
 	local CallBack = Data.CallBack
 	if CallBack then
 		for FncIndex,Fnc in pairs(CallBack) do
-			if type(Fnc) ~= "function" then
+			if type(Fnc) ~= "function" or (type(tonumber(FncIndex)) ~= "number" and FncIndex ~= "*") then
+				warn(("Unprocessable callback function got, Ignored.\n - key: %s value: %s"):format(tostring(Fnc),tostring(FncIndex)))
 				CallBack[FncIndex] = nil
 			end
 		end
@@ -197,7 +206,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 			remove(BindedFunctions,find(BindedFunctions,Step))
 			Index = 1
 			if Ended then
-				Ended()
+				Ended(Item)
 			end
 		end
 
@@ -223,6 +232,7 @@ function module.RunTween(Item,Data,Properties,Ended)
 				end
 			end
 		end
+		if OnStepped then OnStepped(Item,Index,Alpha) end
 	end
 
 	-- 스캐줄에 등록
@@ -230,21 +240,24 @@ function module.RunTween(Item,Data,Properties,Ended)
 end
 
 -- 여러개의 개체를 트윈시킴
-function module.RunTweens(Items,Data,Properties,Ended)
-	local First = true
+function module.RunTweens(Items,Data,Properties,Ended,OnStepped,_)
+	-- remove self
+	if Items == module then Items = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = _; end
 	for _,Item in pairs(Items) do
-		module.RunTween(Item,Data,Properties,First and Ended)
-		First = false
+		module.RunTween(Item,Data,Properties,Ended,OnStepped)
 	end
 end
 
 -- 트윈 멈추기
-function module.StopTween(Item)
+function module.StopTween(Item,_)
+	if Item == module then Item = _ end
 	module.PlayIndex[Item] = nil
 end
 
 -- 해당 개체가 트윈중인지 반환
-function module.IsTweening(Item)
+function module.IsTweening(Item,_)
+	if Item == module then Item = _ end
+
 	if module.PlayIndex[Item] == nil then
 		return false
 	end
@@ -258,7 +271,9 @@ function module.IsTweening(Item)
 end
 
 -- 해당 개체의 해당 프로퍼티가 트윈중인지 반환
-function module.IsPropertyTweening(Item,PropertyName)
+function module.IsPropertyTweening(Item,PropertyName,_)
+	if Item == module then Item = _ end
+
 	if module.PlayIndex[Item] == nil then
 		return false
 	end
