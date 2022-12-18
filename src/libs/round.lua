@@ -25,6 +25,11 @@ function round.setOutline(ImageFrame,RoundSize)
 	ImageFrame.SliceScale = outlineSliceScale * RoundSize;
 	return ImageFrame;
 end
-
+function round.getRound(ImageFrame)
+	return ImageFrame.SliceScale / roundSliceScale;
+end
+function round.getOutline(ImageFrame)
+	return ImageFrame.SliceScale / outlineSliceScale;
+end
 
 return round;

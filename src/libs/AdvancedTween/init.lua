@@ -64,35 +64,57 @@ local DefaultItems = {
 
 -- 예전 값,목표 값,알파를 주고 각각 해당하는 속성에 입력해줌
 -- 기본적으로 모든 속성값 적용은 여기에서 이루워짐
-function LerpProperties(Item,Old,New,Alpha)
+function LerpProperties(Item,Old,New,Alpha,Setter)
 	for Property,OldValue in pairs(Old) do
 		local NewValue = New[Property]
-		if NewValue ~= nil then
-			local Type = type(OldValue)
-			if DefaultItems[Type] then
-				Item[Property] = Lerp(OldValue,NewValue,Alpha)
-			elseif Type == "UDim2" then
-				Item[Property] = UDim2.new(
-					Lerp(OldValue.X.Scale ,NewValue.X.Scale ,Alpha),
-					Lerp(OldValue.X.Offset,NewValue.X.Offset,Alpha),
-					Lerp(OldValue.Y.Scale ,NewValue.Y.Scale ,Alpha),
-					Lerp(OldValue.Y.Offset,NewValue.Y.Offset,Alpha)
+		local Type = type(OldValue)
+		local Value
+		if Type ~= type(NewValue) then
+			error(
+				("Unable to lerp property '%s' of '%s' due to type invalid. Old value type is '%s'. but New value type is '%s'")
+				:format(
+					tostring(Type),
+					tostring(type(NewValue))
 				)
-			elseif Type == "UDim" then
-				Item[Property] = UDim.new(
-					Lerp(OldValue.Scale ,NewValue.Scale ),
-					Lerp(OldValue.Offset,NewValue.Offset)
+			)
+		elseif DefaultItems[Type] then
+			Item[Property] = Lerp(OldValue,NewValue,Alpha)
+		elseif Type == "UDim2" then
+			Item[Property] = UDim2.new(
+				Lerp(OldValue.X.Scale ,NewValue.X.Scale ,Alpha),
+				Lerp(OldValue.X.Offset,NewValue.X.Offset,Alpha),
+				Lerp(OldValue.Y.Scale ,NewValue.Y.Scale ,Alpha),
+				Lerp(OldValue.Y.Offset,NewValue.Y.Offset,Alpha)
+			)
+		elseif Type == "UDim" then
+			Item[Property] = UDim.new(
+				Lerp(OldValue.Scale ,NewValue.Scale ),
+				Lerp(OldValue.Offset,NewValue.Offset)
+			)
+		elseif Type == "Color3" then
+			Item[Property] = Color3.fromRGB(
+				Lerp(OldValue.r*255,NewValue.r*255),
+				Lerp(OldValue.g*255,NewValue.g*255),
+				Lerp(OldValue.b*255,NewValue.b*255)
+			)
+		else
+			error(
+				("Unable to lerp property '%s' of '%s'. Old value type is '%s'. but tweenable types are UDim2, UDim, Color3, Vector2, Vector3, CFrame, number only")
+				:format(
+					tostring(Property),
+					tostring(Item),
+					tostring(Type)
 				)
-			elseif Type == "Color3" then
-				Item[Property] = Color3.fromRGB(
-					Lerp(OldValue.r*255,NewValue.r*255),
-					Lerp(OldValue.g*255,NewValue.g*255),
-					Lerp(OldValue.b*255,NewValue.b*255)
-				)
-			end
+			)
+		end
+		if Setter then
+			Setter(Item,Property,NewValue)
+		else
+			Item[Property] = Value
 		end
 	end
 end
+module.LerpProperties = LerpProperties
 
 ------------------------------------
 -- 모듈 함수 지정
@@ -108,9 +130,9 @@ end
 	--해당 함수가 실행됨
 --Properties : 트윈할 속성과 목표값 예시 :
 --Data.Properties.Position = UDim2.new(1,0,1,0) 처럼 하면 Position 속성의 목표를 1,0,1,0 으로 지정
-function module.RunTween(Item,Data,Properties,Ended,OnStepped,_)
+function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	-- remove self
-	if Item == module then Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = _; end
+	if Item == module then Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
 
 	-- 시간 저장
 	local Time = Data.Time or 1
@@ -124,7 +146,11 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,_)
 	local NowAnimationIndex = {}
 	local LastProperties = {}
 	for Property,_ in pairs(Properties) do
-		LastProperties[Property] = Item[Property]
+		if Getter then
+			LastProperties[Property] = Getter(Property)
+		else
+			LastProperties[Property] = Item[Property]
+		end
 		ThisPlayIndex[Property] = ThisPlayIndex[Property] ~= nil and ThisPlayIndex[Property] + 1 or 1
 		NowAnimationIndex[Property] = ThisPlayIndex[Property]
 	end
@@ -168,7 +194,8 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,_)
 			Item,
 			LastProperties,
 			Properties,
-			Alpha
+			Alpha,
+			Setter
 		)
 
 		-- 다른 트윈이 속성을 바꾸고 있다면(이후 트윈이) 그 속성을 건들지 않도록 없엠
@@ -240,11 +267,11 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,_)
 end
 
 -- 여러개의 개체를 트윈시킴
-function module.RunTweens(Items,Data,Properties,Ended,OnStepped,_)
+function module.RunTweens(Items,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	-- remove self
-	if Items == module then Items = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = _; end
+	if Items == module then Items = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
 	for _,Item in pairs(Items) do
-		module.RunTween(Item,Data,Properties,Ended,OnStepped)
+		module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter)
 	end
 end
 

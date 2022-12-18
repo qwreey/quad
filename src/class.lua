@@ -26,37 +26,67 @@ function module.init(shared)
 	local round = shared.round; ---@module "src.libs.round"
 
 	local function InstanceNewWithName(classname,parent,name)
-		local item = InstanceNew(classname,parent)
-		item.Name = name
-		return item
+		local item = InstanceNew(classname,parent);
+		item.Name = name;
+		return item;
+	end
+
+	-- TODO: refactor getProperty
+	-- local propertyGetterRaw = {}
+	-- local propertySetterRaw = {}
+
+	local function getProperty(item,index,ClassName)
+		if type(item) == "table" then return item[index]; end
+		ClassName = ClassName or item.ClassName;
+		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
+		if (index == "RoundSize" or index == "roundSize") and isImage then
+			if not round then
+				error("module 'round' needs to be loaded for get image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
+			end
+			return round.getRound(item);
+		elseif index == "UiRoundSize" or index == "uiRoundSize" or index == "UIRoundSize" then
+			local target = (ClassName == "UICorner" and item) or item:FindFirstChildOfClass("UICorner");
+			return (target and target.CornerRadius.Offset) or 0;
+		elseif index == "PaddingAll" or index == "paddingAll" then
+			local target = (ClassName == "UIPadding" and item) or item:FindFirstChildOfClass("UIPadding");
+			return (target and target.PaddingLeft) or UDim.new(0,0);
+		elseif index == "PaddingAllOffset" or index == "paddingAllOffset" then
+			local target = (ClassName == "UIPadding" and item) or item:FindFirstChildOfClass("UIPadding");
+			return (target and target.PaddingLeft.Offset) or 0;
+		elseif index == "Scale" then
+			local target = (ClassName == "UIScale" and item) or item:FindFirstChildOfClass("UIScale");
+			return (target and target.Scale) or 1;
+		end
+		return item[index];
 	end
 
 	local function setProperty(item,index,value,ClassName)
+		if type(item) == "table" then item[index] = value; return; end
 		ClassName = ClassName or item.ClassName;
 		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
-		if (index == "roundSize" or index == "RoundSize") and isImage then
+		if (index == "RoundSize" or index == "roundSize") and isImage then
 			if not round then
-				warn "module 'round' needs to be loaded for set images round size but it is not found on 'src.libs'. you should adding that to src.libs directory"
+				error("module 'round' needs to be loaded for set image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
 			end
 			round.setRound(item,value);
-		elseif index == "uiRoundSize" or index == "UIRoundSize" then
-			local uiCorner = item:FindFirstChildOfClass("UICorner") or InstanceNewWithName("UICorner",item,"_quad_round");
+		elseif index == "UiRoundSize" or index == "uiRoundSize" or index == "UIRoundSize" then
+			local uiCorner = (ClassName == "UICorner" and item) or item:FindFirstChildOfClass("UICorner") or InstanceNewWithName("UICorner",item,"_quad_round");
 			uiCorner.CornerRadius = UDim.new(0,value);
 		elseif index == "PaddingAll" or index == "paddingAll" then
-			local target = ClassName == "UIPadding" and item or (item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding"));
+			local target = (ClassName == "UIPadding" and item) or item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding");
 			target.PaddingLeft = value;
 			target.PaddingRight = value;
 			target.PaddingTop = value;
 			target.PaddingBottom = value;
-		elseif index == "PaddingAllOffset" or index == "PaddingAllOffset" then
-			local target = ClassName == "UIPadding" and item or (item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding"));
+		elseif index == "PaddingAllOffset" or index == "paddingAllOffset" then
+			local target = (ClassName == "UIPadding" and item) or item:FindFirstChildOfClass("UIPadding") or InstanceNewWithName("UIPadding",item,"_quad_padding");
 			local padding = UDim.new(0,value);
 			target.PaddingLeft = padding;
 			target.PaddingRight = padding;
 			target.PaddingTop = padding;
 			target.PaddingBottom = padding;
 		elseif index == "Scale" then
-			local target = ClassName == "UIScale" and item or (item:FindFirstChildOfClass("UIScale") or InstanceNewWithName("UIScale",item,"_quad_scale"));
+			local target = (ClassName == "UIScale" and item) or item:FindFirstChildOfClass("UIScale") or InstanceNewWithName("UIScale",item,"_quad_scale");
 			target.Scale = value;
 		else
 			item[index] = value; -- set property
@@ -156,7 +186,18 @@ function module.init(shared)
 								if not advancedTween then
 									return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
 								end
-								advancedTween.RunTween(item,tween,{[index] = newValue});
+								local ended, onStepped;
+								if tween.Ended then
+									ended = function (...)
+										tween.Ended(item,...);
+									end
+								end
+								if tween.OnStepped then
+									onStepped = function (...)
+										tween.OnStepped(item,...);
+									end
+								end
+								advancedTween.RunTween(item,tween,{[index] = newValue},ended,onStepped,setProperty,getProperty);
 							else
 								setProperty(item,index,newValue,ClassName);
 							end
