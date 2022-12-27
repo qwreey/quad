@@ -155,8 +155,17 @@ function module.init(shared)
 						local with = value.wfunc;
 						local tstore = value.store;
 						local rawKey = value.key;
+						local tween = value.tvalue;
+						local from = value.fvalue;
+						local add = value.avalue;
 						local set = tstore[rawKey];
 						if set ~= nil or (rawKey:match(",") and with) then
+							if add then
+								set = set + add;
+							end
+							if from then
+								set = from[set];
+							end
 							if with then
 								set = with(tstore,set,value.key,item);
 							end
@@ -167,9 +176,6 @@ function module.init(shared)
 								setProperty(item,index,dset,ClassName);
 							end
 						end
-						local tween = value.tvalue;
-						local from = value.fvalue;
-						local add = value.avalue;
 
 						-- adding event function
 						local function regFn(_,newValue,key)

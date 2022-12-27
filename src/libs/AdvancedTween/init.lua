@@ -16,6 +16,7 @@ local EasingFunctions = require(script and script.EasingFunctions or "EasingFunc
 local Stepped = require(script and script.Stepped or "Stepped")
 
 local BindedFunctions = {} -- 애니메이션을 위해 프레임에 연결된 함수들
+local FunctionTargetItem = setmetatable({},{__mode="kv"}) -- 함수가 타겟으로 하는 아이템
 
 module.PlayIndex = setmetatable({},{__mode = "k"}) -- 애니메이션 실행 스택 저장하기
 -- PlayIndex[Item][Property] = 0 or nil <= 트윈중이지 않은 속성
@@ -25,12 +26,21 @@ module.PlayIndex = setmetatable({},{__mode = "k"}) -- 애니메이션 실행 스
 -- Easing 스타일
 ------------------------------------
 module.EasingFunctions = {
-	--// for Autocomplete
-	Linear = EasingFunctions.Linear; --// 직선
-	Circle = EasingFunctions.Circle; --// 사분원
-	Exp2 = EasingFunctions.Exp2; --// 덜 가파른 지수 그래프
-	Exp4 = EasingFunctions.Exp4; --// 더 가파른 지수 그래프
-	Exp2Max4 = EasingFunctions.Exp2Max4; --// 적당히 가파른 지수 그래프
+	Linear = EasingFunctions.Linear; ---직선, Linear. i=x, x=0 ~ 1
+	Quint = EasingFunctions.Quint; ---5제곱, Quint. (^5) i=1-(1-x)^5, x=0 ~ 1
+	Quart = EasingFunctions.Quart; ---4제곱, Quart. (^4) i=1-(1-x)^4, x=0 ~ 1
+	Cubic = EasingFunctions.Cubic; ---3제곱, Cubic. (^3) i=1-(1-x)^3, x=0 ~ 1
+	Quad = EasingFunctions.Quad; ---2제곱, Quad. (^2) i=1-(1-x)^2, x=0 ~ 1
+	Sin = EasingFunctions.Sin; ---사인파, Sin. i=sin(x*pi/2), x=0 ~ 1
+	Circle = EasingFunctions.Circle; ---사분원, Circle. i=sqrt(1-(1-x)^2), x=0 ~ 1
+	Expo = EasingFunctions.Expo; ---지수함수, Expo. i=1-2^(-10*x), x=0~1
+	Elastic = EasingFunctions.Elastic; ---튀어오름, Elastic.
+	Bounce = EasingFunctions.Bounce; ---통통거림, Bounce
+
+	-- Old things
+	Exp2 = EasingFunctions.Exp2; ---덜 가파른 지수. i=math.exp(x), x=-4 ~ 2
+	Exp4 = EasingFunctions.Exp4; ---더 가파른 지수. i=math.exp(x), x=-4 ~ 4
+	Exp2Max4 = EasingFunctions.Exp2; ---@deprecated
 }
 for i,v in pairs(EasingFunctions) do
 	module.EasingFunctions[i] = v
@@ -78,21 +88,21 @@ function LerpProperties(Item,Old,New,Alpha,Setter)
 				)
 			)
 		elseif DefaultItems[Type] then
-			Item[Property] = Lerp(OldValue,NewValue,Alpha)
+			Value = Lerp(OldValue,NewValue,Alpha)
 		elseif Type == "UDim2" then
-			Item[Property] = UDim2.new(
+			Value = UDim2.new(
 				Lerp(OldValue.X.Scale ,NewValue.X.Scale ,Alpha),
 				Lerp(OldValue.X.Offset,NewValue.X.Offset,Alpha),
 				Lerp(OldValue.Y.Scale ,NewValue.Y.Scale ,Alpha),
 				Lerp(OldValue.Y.Offset,NewValue.Y.Offset,Alpha)
 			)
 		elseif Type == "UDim" then
-			Item[Property] = UDim.new(
+			Value = UDim.new(
 				Lerp(OldValue.Scale ,NewValue.Scale ),
 				Lerp(OldValue.Offset,NewValue.Offset)
 			)
 		elseif Type == "Color3" then
-			Item[Property] = Color3.fromRGB(
+			Value = Color3.fromRGB(
 				Lerp(OldValue.r*255,NewValue.r*255),
 				Lerp(OldValue.g*255,NewValue.g*255),
 				Lerp(OldValue.b*255,NewValue.b*255)
@@ -108,7 +118,7 @@ function LerpProperties(Item,Old,New,Alpha,Setter)
 			)
 		end
 		if Setter then
-			Setter(Item,Property,NewValue)
+			Setter(Item,Property,Value)
 		else
 			Item[Property] = Value
 		end
@@ -139,20 +149,32 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	local EndTime = clock() + Time
 
 	-- 플레이 인덱스 저장
-	local ThisPlayIndex = module.PlayIndex[Item] or {}
-	module.PlayIndex[Item] = ThisPlayIndex
-
-	-- 예전의 트윈을 덮어쓰고 현재 값을 저장함
-	local NowAnimationIndex = {}
-	local LastProperties = {}
-	for Property,_ in pairs(Properties) do
-		if Getter then
-			LastProperties[Property] = Getter(Property)
-		else
-			LastProperties[Property] = Item[Property]
+	local ItemPlayIndex = module.PlayIndex[Item]
+	if ItemPlayIndex then
+		for _,stepFunc in ipairs(BindedFunctions) do
+			if FunctionTargetItem[stepFunc] == Item then
+				stepFunc() -- 해당 애니메이션을 미리 계산해서 지금 위치를 저장
+			end
 		end
-		ThisPlayIndex[Property] = ThisPlayIndex[Property] ~= nil and ThisPlayIndex[Property] + 1 or 1
-		NowAnimationIndex[Property] = ThisPlayIndex[Property]
+		ItemPlayIndex = module.PlayIndex[Item]
+	end
+	if not ItemPlayIndex then
+		ItemPlayIndex = {}
+		module.PlayIndex[Item] = ItemPlayIndex
+	end
+
+	-- 예전의 트윈을 덮어쓰고 현재 값을 저장함 !이전 트윈은 파기됨
+	local ThisPlayIndex = {}
+	local LastProperties = {}
+	for PropertyName,_ in pairs(Properties) do
+		if Getter then
+			LastProperties[PropertyName] = Getter(Item,PropertyName)
+		else
+			LastProperties[PropertyName] = Item[PropertyName]
+		end
+		local PlayIndex = (ItemPlayIndex[PropertyName] or 0) + 1
+		ItemPlayIndex[PropertyName] = PlayIndex
+		ThisPlayIndex[PropertyName] = PlayIndex
 	end
 
 	-- 이징 효과 가져오기
@@ -160,6 +182,10 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	local Easing do
 		local Data_Easing = Data.Easing or EasingFunctions.Exp2
 		local Data_EasingType = type(Data_Easing)
+		if Data_EasingType == "string" then
+			Data_Easing = EasingFunctions[Data_Easing]
+			Data_EasingType = "table"
+		end
 		Easing = (Data_EasingType == "function" and Data_Easing) or (Data_EasingType == "table" and Data_Easing.Run)
 		if Data_EasingType == "table" and Data_Easing.Reverse then
 			Direction = Direction == "Out" and "In" or "Out"
@@ -171,11 +197,15 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	if CallBack then
 		for FncIndex,Fnc in pairs(CallBack) do
 			if type(Fnc) ~= "function" or (type(tonumber(FncIndex)) ~= "number" and FncIndex ~= "*") then
-				warn(("Unprocessable callback function got, Ignored.\n - key: %s value: %s"):format(tostring(Fnc),tostring(FncIndex)))
+				warn(
+					("Unprocessable callback function got, Ignored.\n - key: %s value: %s")
+					:format(tostring(Fnc),tostring(FncIndex))
+				)
 				CallBack[FncIndex] = nil
 			end
 		end
 	end
+
 	-- 스탭핑
 	local Step
 	Step = function()
@@ -183,6 +213,18 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		if module.PlayIndex[Item] == nil then
 			remove(BindedFunctions,find(BindedFunctions,Step))
 			return
+		end
+
+		-- 다른 트윈이 속성을 바꾸고 있다면(이후 트윈이) 그 속성을 건들지 않도록 없엠
+		local StopByOther = true
+		for PropertyName,PlayIndex in pairs(ThisPlayIndex) do
+			if PlayIndex ~= ItemPlayIndex[PropertyName] then
+				LastProperties[PropertyName] = nil
+				Properties[PropertyName] = nil
+				ThisPlayIndex[PropertyName] = nil
+			else
+				StopByOther = false
+			end
 		end
 
 		local Now = clock()
@@ -198,18 +240,6 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 			Setter
 		)
 
-		-- 다른 트윈이 속성을 바꾸고 있다면(이후 트윈이) 그 속성을 건들지 않도록 없엠
-		local StopByOther = true
-		for Property,Index in pairs(NowAnimationIndex) do
-			if Index ~= ThisPlayIndex[Property] then
-				LastProperties[Property] = nil
-				Properties[Property] = nil
-				NowAnimationIndex[Property] = nil
-			else
-				StopByOther = false
-			end
-		end
-
 		-- 만약 다른 트윈이 지금 트윈하고 있는 속성을 모두 먹은경우 현재 트윈을 삭제함
 		if StopByOther then
 			remove(BindedFunctions,find(BindedFunctions,Step))
@@ -219,15 +249,11 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		-- 끝남
 		if Now >= EndTime then
 			for Property,_ in pairs(Properties) do
-				ThisPlayIndex[Property] = 0
+				ItemPlayIndex[Property] = 0
 			end
 
-			local PlayIndexLen = 0
-			for _,_ in pairs(ThisPlayIndex) do
-				PlayIndexLen = PlayIndexLen + 1
-			end
-			if PlayIndexLen == 0 then
-				ThisPlayIndex = nil
+			if next(ItemPlayIndex) then
+				module.PlayIndex[Item] = nil
 			end
 
 			remove(BindedFunctions,find(BindedFunctions,Step))
@@ -264,6 +290,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 
 	-- 스캐줄에 등록
 	insert(BindedFunctions,Step)
+	FunctionTargetItem[Step] = Item
 end
 
 -- 여러개의 개체를 트윈시킴
@@ -319,13 +346,17 @@ end
 -- ./Stepped.lua 에서 연결점 편집 가능
 -- roblox 는 이미 연결되어 있음
 function module.Stepped()
-	if not BindedFunctions[1] then
-		return;
-	end
 	for _,Function in ipairs(BindedFunctions) do
-		Function()
+		if not FunctionTargetItem[Function] then
+			remove(BindedFunctions,find(BindedFunctions,Function))
+		else
+			Function()
+		end
 	end
 end
 Stepped.BindStep(module.Stepped)
+script.Destroying:Connect(function()
+	Stepped.UnbindAll()
+end)
 
 return module

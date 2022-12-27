@@ -9,15 +9,27 @@ local IsRoblox = version and version() or nil
 local module = {}
 function module.BindStep(StepFunction)
     if IsRoblox then
+        if module.Connection then
+            error("Function was binded already")
+        end
         local RunService = game:GetService("RunService")
         if RunService:IsStudio() and (not RunService:IsRunning()) and RunService:IsEdit() then
-            RunService.Heartbeat:Connect(StepFunction)
+            module.Connection = RunService.Heartbeat:Connect(StepFunction)
         else
-            RunService.Stepped:Connect(StepFunction)
+            -- RunService:BindToRenderStep("advancedTween",1,StepFunction)
+            module.Connection = RunService.RenderStepped:Connect(StepFunction)
         end
     else
         -- do something here
     end
+end
+
+function module.UnbindAll()
+    if not module.Connection then
+        error("Function was not binded yet")
+    end
+    module.Connection:Disconnect()
+    module.Connection = nil
 end
 
 return module
