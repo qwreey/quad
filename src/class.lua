@@ -1,6 +1,7 @@
 local module = {};
 local pack = table.pack;
 local match = string.match;
+local insert = table.insert;
 
 ---@param shared quad_export
 ---@return quad_module_class
@@ -171,9 +172,12 @@ function module.init(shared)
 		elseif indexType == "number" and valueType == "table" and value.__type == "quad_style" then -- style
 			-- style parsing
 			for _,thisStyle in ipairs(parseStyles(value)) do
-				for styleIndex,styleValue in pairs(thisStyle) do
-					if type(styleValue) ~= "table" or styleValue.__type ~= "quad_style" then
-						processQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
+				if not processedProperty[thisStyle] then
+					processedProperty[thisStyle] = true;
+					for styleIndex,styleValue in pairs(thisStyle) do
+						if type(styleValue) ~= "table" or styleValue.__type ~= "quad_style" then
+							processQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
+						end
 					end
 				end
 			end
@@ -236,6 +240,11 @@ function module.init(shared)
 			local prop = propsListArray[iprop]
 			if prop then
 				for index,value in pairs(prop) do
+					if type(index) ~= "number" then
+						processQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
+					end
+				end
+				for index,value in ipairs(prop) do
 					processQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
 				end
 			end
