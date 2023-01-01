@@ -2,6 +2,8 @@ local module = {};
 local unpack = table.unpack;
 local wrap = coroutine.wrap;
 
+---@param shared quad_export
+---@return quad_module_event
 function module.init(shared)
 	---@class quad_module_event
 	local new = {__type = "quad_module_event"};

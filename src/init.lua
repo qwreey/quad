@@ -2,6 +2,7 @@
 local module = {};
 
 local require = require(script.require);
+local style = require "style";
 local event = require "event";
 local store = require "store";
 local class = require "class";
@@ -28,6 +29,7 @@ function module.init(id)
 	this.require = require;
 	this.round = type(round) == "table" and round; ---@type quad_module_round
 	this.tween = type(advancedTween) == "table" and advancedTween; ---@type quad_module_tween
+	this.style = style.init(this); ---@type quad_module_style
 	this.event = event.init(this); ---@type quad_module_event
 	this.store = store.init(this); ---@type quad_module_store
 	this.mount = mount.init(this); ---@type quad_module_mount
@@ -36,7 +38,7 @@ function module.init(id)
 	if id then
 		idSpace[id] = this;
 	end
-	return this,this.round,this.class,this.mount,this.store,this.event,this.tween;
+	return this,this.round,this.class,this.mount,this.store,this.event,this.tween,this.style;
 end
 
 function module.uninit(id)

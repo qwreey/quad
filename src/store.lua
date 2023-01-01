@@ -17,6 +17,9 @@ local function catch(...)
 end
 
 local week = {__mode = "v"};
+
+---@param shared quad_export
+---@return quad_module_store
 function module.init(shared)
 	---@class quad_module_store
 	local new = {__type = "quad_module_store"};

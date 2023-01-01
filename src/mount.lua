@@ -2,6 +2,8 @@ local module = {};
 local insert = table.insert;
 local pack = table.pack;
 
+---@param shared quad_export
+---@return quad_module_mount
 function module.init(shared)
 	---@class quad_module_mount
 	local new = {__type = "quad_module_mount"};

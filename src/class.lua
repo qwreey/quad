@@ -1,6 +1,9 @@
 local module = {};
 local pack = table.pack;
+local match = string.match;
 
+---@param shared quad_export
+---@return quad_module_class
 function module.init(shared)
 	---@class quad_module_class
 	local new = {__type = "quad_module_class"};
@@ -13,6 +16,9 @@ function module.init(shared)
 	local mount = shared.mount; ---@type quad_module_mount
 	local getHolder = mount.getHolder;
 	local mountfunc = mount.mount;
+	local style = shared.style; ---@type quad_module_style
+	local styleList = style.styles;
+	local parseStyles = style.parseStyles;
 	local advancedTween = shared.tween; ---@type quad_module_tween
 	local round = shared.round; ---@type quad_module_round
 
@@ -84,9 +90,102 @@ function module.init(shared)
 		end
 	end
 
+	local function processQuadProperty(processedProperty,iprop,holder,item,className,index,value)
+		if processedProperty[index] then return; end
+
+		local valueType = typeof(value);
+		local indexType = typeof(index);
+
+		-- child
+		if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
+			processedProperty[index] = true; -- ignore next
+			-- store binding
+			local with = value.wfunc;
+			local tstore = value.store;
+			local rawKey = value.key;
+			local tween = value.tvalue;
+			local from = value.fvalue;
+			local add = value.avalue;
+			local set = tstore[rawKey];
+			if set ~= nil or (rawKey:match(",") and with) then
+				if add then
+					set = set + add;
+				end
+				if from then
+					set = from[set];
+				end
+				if with then
+					set = with(tstore,set,value.key,item);
+				end
+				setProperty(item,index,set,className);
+			else
+				local dset = value.dvalue;
+				if dset then
+					setProperty(item,index,dset,className);
+				end
+			end
+
+			-- adding event function
+			local function regFn(_,newValue,key)
+				if add then
+					newValue = newValue + add;
+				end
+				if from then
+					newValue = from[newValue];
+				end
+				if with then
+					newValue = with(tstore,newValue,key,item);
+				end
+				if tween then
+					if not advancedTween then
+						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
+					end
+					local ended, onStepped;
+					if tween.Ended then
+						ended = function (...)
+							tween.Ended(item,...);
+						end
+					end
+					if tween.OnStepped then
+						onStepped = function (...)
+							tween.OnStepped(item,...);
+						end
+					end
+					advancedTween.RunTween(item,tween,{[index] = newValue},ended,onStepped,setProperty,getProperty);
+				else
+					setProperty(item,index,newValue,className);
+				end
+			end
+			value:register(regFn);
+
+			-- this is using hacky of roblox instance
+			-- this is will keep reference from week table until
+			-- inscance got GCed
+			item:GetPropertyChangedSignal("ClassName"):Connect(regFn);
+		elseif (valueType == "function" or valueType == "table") and indexType == "string" and bind(item,index,value,valueType) then -- connect event
+			-- event binding
+		elseif indexType == "string" then
+			processedProperty[index] = true; -- ignore next
+			-- prop set
+			setProperty(item,index,value,className);
+		elseif indexType == "number" and valueType == "table" and value.__type == "quad_style" then -- style
+			-- style parsing
+			for _,thisStyle in ipairs(parseStyles(value)) do
+				for styleIndex,styleValue in pairs(thisStyle) do
+					if type(styleValue) ~= "table" or styleValue.__type ~= "quad_style" then
+						processQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
+					end
+				end
+			end
+		elseif indexType == "number" and valueType ~= "boolean" then -- object
+			-- child object
+			mountfunc(item,((iprop == 1) and value or value:Clone()),holder);
+		end
+	end
+
 	-- make object that from instance, class and more
 	function new.make(ClassName,...) -- render object
-		-- make thing
+		-- make object from ClassName
 		local item;
 		local classOfClassName = type(ClassName);
 		if classOfClassName == "string" then -- if classname is a string value, cdall instance.new for making new roblox instance
@@ -131,88 +230,13 @@ function module.init(shared)
 		-- set property and adding child and binding functions
 		local holder = getHolder(item); -- to __holder or holder or it self (for tabled)
 		-- for iprop,prop in ipairs({...}) do
-		local props = pack(...);
-		for iprop = props.n,1,-1 do
-			local prop = props[iprop];
+		local propsListArray = pack(...);
+		local processedProperty = {};
+		for iprop = 1,propsListArray.n do
+			local prop = propsListArray[iprop]
 			if prop then
 				for index,value in pairs(prop) do
-					local valueType = typeof(value);
-					local indexType = typeof(index);
-
-					-- child
-					if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
-						-- store binding
-						local with = value.wfunc;
-						local tstore = value.store;
-						local rawKey = value.key;
-						local tween = value.tvalue;
-						local from = value.fvalue;
-						local add = value.avalue;
-						local set = tstore[rawKey];
-						if set ~= nil or (rawKey:match(",") and with) then
-							if add then
-								set = set + add;
-							end
-							if from then
-								set = from[set];
-							end
-							if with then
-								set = with(tstore,set,value.key,item);
-							end
-							setProperty(item,index,set,ClassName);
-						else
-							local dset = value.dvalue;
-							if dset then
-								setProperty(item,index,dset,ClassName);
-							end
-						end
-
-						-- adding event function
-						local function regFn(_,newValue,key)
-							if add then
-								newValue = newValue + add;
-							end
-							if from then
-								newValue = from[newValue];
-							end
-							if with then
-								newValue = with(tstore,newValue,key,item);
-							end
-							if tween then
-								if not advancedTween then
-									return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
-								end
-								local ended, onStepped;
-								if tween.Ended then
-									ended = function (...)
-										tween.Ended(item,...);
-									end
-								end
-								if tween.OnStepped then
-									onStepped = function (...)
-										tween.OnStepped(item,...);
-									end
-								end
-								advancedTween.RunTween(item,tween,{[index] = newValue},ended,onStepped,setProperty,getProperty);
-							else
-								setProperty(item,index,newValue,ClassName);
-							end
-						end
-						value:register(regFn);
-
-						-- this is using hacky of roblox instance
-						-- this is will keep reference from week table until
-						-- inscance got GCed
-						item:GetPropertyChangedSignal("ClassName"):Connect(regFn);
-					elseif (valueType == "function" or valueType == "table") and indexType == "string" and bind(item,index,value,valueType) then -- connect event
-						-- event binding
-					elseif indexType == "string" then
-						-- prop set
-						setProperty(item,index,value,ClassName);
-					elseif indexType == "number" and valueType ~= "boolean" then -- object
-						-- child object
-						mountfunc(item,((iprop == 1) and value or value:Clone()),holder);
-					end
+					processQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
 				end
 			end
 		end
@@ -235,6 +259,11 @@ function module.init(shared)
 					return function (nprop,...)
 						nprop = nprop or {};
 						nprop.Name = lastName;
+						for styleName,styleObj in pairs(styleList) do
+							if match(prop,styleName) then
+								insert(nprop,styleObj);
+							end
+						end
 						local item = make(ClassName,nprop,...,this);
 						addObject(lastName,item);
 						return item;
