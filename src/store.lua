@@ -107,7 +107,9 @@ function module.init(shared)
 		tween = function (s,value)
 			return setmetatable({tvalue = value},{__index = s});
 		end;
+		---@deprecated
 		from = function (s,value)
+			warn "[QUAD] register:from() is deprecated. You can use register:add(t:table|function) instead"
 			return setmetatable({fvalue = value},{__index = s});
 		end;
 		add = function (s,value)

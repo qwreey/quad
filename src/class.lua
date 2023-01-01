@@ -66,7 +66,7 @@ function module.init(shared)
 		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
 		if (index == "RoundSize" or index == "roundSize") and isImage then
 			if not round then
-				error("module 'round' needs to be loaded for set image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
+				error("[QUAD] module 'round' needs to be loaded for set image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
 			end
 			round.setRound(item,value);
 		elseif index == "UiRoundSize" or index == "uiRoundSize" or index == "UIRoundSize" then
@@ -135,7 +135,7 @@ function module.init(shared)
 		end
 		if not item then -- if cannot make new object, ignore this call
 			local str = tostring(ClassName);
-			print(("fail to make item '%s', did you forget to checking the class '%s' is exist?"):format(str,str));
+			warn(("[Quad] fail to make item '%s', did you forget to checking the class '%s' is exist?"):format(str,str));
 		end
 
 		-- set property and adding child and binding functions
@@ -190,7 +190,7 @@ function module.init(shared)
 							end
 							if tween then
 								if not advancedTween then
-									return warn "module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
+									return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
 								end
 								local ended, onStepped;
 								if tween.Ended then
