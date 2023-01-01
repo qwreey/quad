@@ -18,11 +18,12 @@ end
 
 local week = {__mode = "v"};
 function module.init(shared)
-	local new = {};
+	---@class quad_module_store
+	local new = {__type = "quad_module_store"};
 	local items = shared.items;
 
 	-- id space (array of object)
-	local objSpaceClass = {};
+	local objSpaceClass = {__type = "quad_objspace"};
 	function objSpaceClass:each(func)
 		for i,v in ipairs(self) do
 			wrap(catch)(func,i,v);
@@ -85,6 +86,7 @@ function module.init(shared)
 	end
 
 	local registerClass = {
+		__type = "quad_register";
 		register = function (s,efunc)
 			local self = s.store;
 			local events = self.__evt;
@@ -109,7 +111,7 @@ function module.init(shared)
 		end;
 		---@deprecated
 		from = function (s,value)
-			warn "[QUAD] register:from() is deprecated. You can use register:add(t:table|function) instead"
+			warn "[QUAD] register:from() is deprecated. You can use register:add(t:table|function) instead";
 			return setmetatable({fvalue = value},{__index = s});
 		end;
 		add = function (s,value)
@@ -119,7 +121,7 @@ function module.init(shared)
 	registerClass.__index = registerClass;
 
 	-- bindable store object
-	local store = {};
+	local store = {__type = "quad_store"};
 	local storeIdSpace = {};
 	function store:__index(key)
 		local this = self.__self[key];

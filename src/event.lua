@@ -1,9 +1,10 @@
 local module = {};
+local unpack = table.unpack;
+local wrap = coroutine.wrap;
 
 function module.init(shared)
-	local new = {};
-	local unpack = table.unpack;
-	local wrap = coroutine.wrap;
+	---@class quad_module_event
+	local new = {__type = "quad_module_event"};
 
 	local prefix = "Event::";
 	local special = {
@@ -88,7 +89,7 @@ function module.init(shared)
 	-- roblox connections disconnecter
 	local insert = table.insert;
 	local idSpace = {};
-	local disconnecterClass = {};
+	local disconnecterClass = {__type = "quad_disconnecter"};
 	function disconnecterClass:add(connection)
 		insert(self,connection);
 	end
@@ -109,7 +110,7 @@ function module.init(shared)
 		end
 	end
 	disconnecterClass.__index = disconnecterClass;
-	function new.new(id)
+	function new.disconnecter(id)
 		if id then
 			local old = idSpace[id];
 			if old then

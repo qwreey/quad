@@ -1,10 +1,12 @@
 local module = {};
+local insert = table.insert;
+local pack = table.pack;
 
 function module.init(shared)
-	local new = {};
-	local insert = table.insert;
+	---@class quad_module_mount
+	local new = {__type = "quad_module_mount"};
 
-	local mountClass = {};
+	local mountClass = {__type = "quad_mount"};
 	mountClass.__index = mountClass;
 	function mountClass:unmount()
 		local this = self.this
@@ -64,8 +66,7 @@ function module.init(shared)
 	end
 	local mount = new.mount;
 
-	local pack = table.pack;
-	local mountsClass = {};
+	local mountsClass = {__type = "quad_mounts"};
 	mountsClass.__index = mountsClass;
 	function mountsClass:unmount()
 		for _,v in ipairs(self) do

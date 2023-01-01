@@ -1,29 +1,20 @@
 local module = {};
-
--- local exportItemMeta = {
--- 	__index = function (self,key)
--- 		local methods = self.__methods;
--- 		local events = self.__events;
--- 		return (methods and methods[key]) or (events and events[key]) or (self.getters[key](self.__this));
--- 	end;
--- 	__newindex = function (self,key,value)
--- 		self.__setters[key](self.__this,value);
--- 	end;
--- };
+local pack = table.pack;
 
 function module.init(shared)
-	local new = {};
+	---@class quad_module_class
+	local new = {__type = "quad_module_class"};
 	local InstanceNew = Instance.new;
-	local event = shared.event; ---@module "src.event"
+	local event = shared.event; ---@type quad_module_event
 	local bind = event.bind;
-	local store = shared.store; ---@module "src.store"
+	local store = shared.store; ---@type quad_module_store
 	local addObject = store.addObject;
 	local storeNew = store.new;
-	local mount = shared.mount; ---@module "src.mount"
+	local mount = shared.mount; ---@type quad_module_mount
 	local getHolder = mount.getHolder;
-	local mountf = mount.mount;
-	local advancedTween = shared.tween; ---@module "src.libs.AdvancedTween"
-	local round = shared.round; ---@module "src.libs.round"
+	local mountfunc = mount.mount;
+	local advancedTween = shared.tween; ---@type quad_module_tween
+	local round = shared.round; ---@type quad_module_round
 
 	local function InstanceNewWithName(classname,parent,name)
 		local item = InstanceNew(classname,parent);
@@ -94,7 +85,6 @@ function module.init(shared)
 	end
 
 	-- make object that from instance, class and more
-	local pack = table.pack;
 	function new.make(ClassName,...) -- render object
 		-- make thing
 		local item;
@@ -124,7 +114,7 @@ function module.init(shared)
 				item = func(parsed);
 				local holder = getHolder(item);
 				for _,v in ipairs(childs) do
-					mountf(item,v,holder);
+					mountfunc(item,v,holder);
 				end
 				for i,v in pairs(binds) do
 					bind(item,i,v);
@@ -221,7 +211,7 @@ function module.init(shared)
 						setProperty(item,index,value,ClassName);
 					elseif indexType == "number" and valueType ~= "boolean" then -- object
 						-- child object
-						mountf(item,((iprop == 1) and value or value:Clone()),holder);
+						mountfunc(item,((iprop == 1) and value or value:Clone()),holder);
 					end
 				end
 			end
@@ -237,6 +227,7 @@ function module.init(shared)
 		end
 		local this = defaultProperties or {};
 		setmetatable(this,{
+			__type = "quad_imported_class",
 			__call = function (self,prop,...)
 				local propType = type(prop);
 				if propType == "string" then
@@ -257,18 +248,6 @@ function module.init(shared)
 		return this;
 	end
 
-	-- function new.export(newFn,setters,getters,methods,events) -- make quad importable class
-	-- 	return function ()
-	-- 		return setmetatable({
-	-- 			__this = newFn();
-	-- 			__setters = setters;
-	-- 			__getters = getters;
-	-- 			__methods = methods;
-	-- 			__events = events;
-	-- 		},exportItemMeta);
-	-- 	end;
-	-- end
-
 	-- set module calling function
 	setmetatable(new,{
 		__call = function (self,...)
@@ -278,7 +257,7 @@ function module.init(shared)
 
 	-- make class
 	function new.extend()
-		local this = {};
+		local this = {__type = "quad_extend"};
 
 		--- make new object
 		function this.new(prop)
@@ -298,7 +277,7 @@ function module.init(shared)
 			rawset(self,"__holder",object);
 			if parent then
 				rawset(self,"__parent",parent);
-				mountf(self,parent)
+				mountfunc(self,parent)
 			end
 			-- prevent gc
 			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()

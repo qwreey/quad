@@ -51,3 +51,5 @@ function myButton:render(props)
 end
 
 myButton.updateTriggers.style = true;
+
+return myButton
