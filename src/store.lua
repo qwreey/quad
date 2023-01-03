@@ -8,6 +8,8 @@ this feature should be upgraded
 local wrap = coroutine.wrap;
 local insert = table.insert;
 local remove = table.remove;
+local gmatch = string.gmatch;
+local gsub = string.gsub;
 
 local function catch(...)
 	local passed,err = pcall(...);
@@ -26,21 +28,25 @@ function module.init(shared)
 	local items = shared.items;
 
 	-- id space (array of object)
-	local objSpaceClass = {__type = "quad_objspace"};
-	function objSpaceClass:each(func)
-		for i,v in ipairs(self) do
-			wrap(catch)(func,i,v);
+	local objectListClass = {__type = "quad_objectlist"};
+	function objectListClass:each(func)
+		local index = 1;
+		for i,v in pairs(self) do
+			wrap(catch)(func,index,v);
+			index = index + 1;
 		end
 	end
-	function objSpaceClass:eachSync(func)
-		for i,v in ipairs(self) do
-			local ret = func(i,v);
+	function objectListClass:eachSync(func)
+		local index = 1;
+		for _,v in pairs(self) do
+			local ret = func(index,v);
+			index = index + 1;
 			if ret then
 				break;
 			end
 		end
 	end
-	function objSpaceClass:remove(indexOrItem)
+	function objectListClass:remove(indexOrItem)
 		local thisType = type(indexOrItem);
 		if thisType == "number" then
 			remove(self,indexOrItem);
@@ -53,35 +59,43 @@ function module.init(shared)
 			end
 		end
 	end
-	function objSpaceClass.__new()
-		return setmetatable({},objSpaceClass);
+	function objectListClass:isEmpty()
+		if next(self) then return true; end
+		return false;
 	end
-	function objSpaceClass:__newIndex(key,value) -- props setter
+	function objectListClass.__new()
+		return setmetatable({},objectListClass);
+	end
+	function objectListClass:__newIndex(key,value) -- props setter
 		self:each(function (this)
 			this[key] = value;
 		end);
 	end
-	objSpaceClass.__mode = "kv"; -- week link for gc
-	objSpaceClass.__index = objSpaceClass;
+	objectListClass.__mode = "kv"; -- week link for gc
+	objectListClass.__index = objectListClass;
 
 	-- get object array with id (objSpace)
 	function new.getObjects(id)
-		return items[id];
+		local list = items[id];
+		if list then return list; end
+		list = objectListClass.__new(id);
+		items[id] = list;
+		return list;
 	end
 	-- get first object with id (not array)
 	function new.getObject(id)
 		local item = items[id];
-		return item and item[1];
+		return item and item[next(item)];
 	end
 	--TODO: if item is exist already, ignore this call
 	-- adding object with id
 	function new.addObject(ids,object)
-		for id in ids:gmatch("[^,]+") do -- split by ,
+		for id in gmatch(ids,"[^,]+") do -- split by ,
 			-- remove trailing, heading spaces
-			id = id:gsub("^ +",""):gsub(" +$","");
+			id = gsub(gsub(id,"^ +","")," +$","");
 			local array = items[id];
 			if not array then
-				array = objSpaceClass.__new();
+				array = objectListClass.__new();
 				items[id] = array;
 			end
 			insert(array, object);

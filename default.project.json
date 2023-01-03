@@ -1,9 +1,6 @@
 {
 	"name": "Quad",
 	"tree": {
-		"$properties": {
-			"Name": "Quad"
-		},
 		"$path": "src"
 	}
 }

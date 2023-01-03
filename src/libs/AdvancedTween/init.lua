@@ -10,6 +10,7 @@ local tonumber = tonumber
 local remove = table.remove
 local insert = table.insert
 local find = table.find
+local floor = math.floor
 
 local script = script
 local EasingFunctions = require(script and script.EasingFunctions or "EasingFunctions")
@@ -60,16 +61,17 @@ module.EasingFunction = module.EasingFunctions
 -- Lerp 함수
 ------------------------------------
 -- 이중 선형, Alpha 를 받아서 값을 구해옴
-function Lerp(start,goal,alpha)
-	return start + ((goal - start) * alpha)
+local function Lerp(start,goal,alpha)
+    if alpha == 1 then return goal end
+    if alpha == 0 then return start end
+    return start + ((goal - start) * alpha)
 end
 
--- 기본적으로 로블록스에 있는 클래스중, + - * / 과 같은 연산자 처리 메타 인덱스가 있는것들
-local DefaultItems = {
+-- 기본적으로 로블록스가 Lerp 를 지원하는 Class
+local DefaultLerpableItems = {
 	["Vector2"] = true;
 	["Vector3"] = true;
 	["CFrame" ] = true;
-	["number" ] = true;
 }
 
 -- 예전 값,목표 값,알파를 주고 각각 해당하는 속성에 입력해줌
@@ -87,7 +89,9 @@ function LerpProperties(Item,Old,New,Alpha,Setter)
 					tostring(type(NewValue))
 				)
 			)
-		elseif DefaultItems[Type] then
+		elseif DefaultLerpableItems[Type] then
+			Value = OldValue:Lerp(NewValue,Alpha)
+		elseif Type == "number" then
 			Value = Lerp(OldValue,NewValue,Alpha)
 		elseif Type == "UDim2" then
 			Value = UDim2.new(
@@ -98,14 +102,14 @@ function LerpProperties(Item,Old,New,Alpha,Setter)
 			)
 		elseif Type == "UDim" then
 			Value = UDim.new(
-				Lerp(OldValue.Scale ,NewValue.Scale ),
-				Lerp(OldValue.Offset,NewValue.Offset)
+				Lerp(OldValue.Scale ,NewValue.Scale ,Alpha),
+				Lerp(OldValue.Offset,NewValue.Offset,Alpha)
 			)
 		elseif Type == "Color3" then
 			Value = Color3.fromRGB(
-				Lerp(OldValue.r*255,NewValue.r*255),
-				Lerp(OldValue.g*255,NewValue.g*255),
-				Lerp(OldValue.b*255,NewValue.b*255)
+				Lerp(floor(OldValue.r*255),floor(NewValue.r*255) ,Alpha),
+				Lerp(floor(OldValue.g*255),floor(NewValue.g*255),Alpha),
+				Lerp(floor(OldValue.b*255),floor(NewValue.b*255) ,Alpha)
 			)
 		else
 			error(
@@ -230,6 +234,10 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		local Now = clock()
 		local Index = 1 - (EndTime - Now) / Time
 		local Alpha = Direction == "Out" and Easing(Index) or (1 - Easing(1 - Index))
+		if Now >= EndTime then
+			Index = 1
+			Alpha = 1
+		end
 
 		-- 속성 Lerp 수행
 		LerpProperties(
@@ -247,7 +255,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		end
 
 		-- 끝남
-		if Now >= EndTime then
+		if Index == 1 then
 			for Property,_ in pairs(Properties) do
 				ItemPlayIndex[Property] = 0
 			end
@@ -267,18 +275,18 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		if CallBack then
 			for FncIndex,Fnc in pairs(CallBack) do
 				if FncIndex == "*" then
-					Fnc(Index,Alpha)
+					Fnc(Index,Alpha,Item)
 				else
 					local num = tonumber(FncIndex)
 					if num then
 						if num <= Index then
-							Fnc(Alpha)
+							Fnc(Alpha,Item)
 							CallBack[FncIndex] = nil
 						end
 					else
 						local alphaNum = tonumber(FncIndex:match"~([%d.]+)")
 						if alphaNum <= Alpha then
-							Fnc(Index)
+							Fnc(Index,Item)
 							CallBack[FncIndex] = nil
 						end
 					end

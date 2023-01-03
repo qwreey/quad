@@ -318,7 +318,8 @@ function module.init(shared)
 				mountfunc(self,parent)
 			end
 			-- prevent gc
-			((type(object) == "table" and object.__object) or object):GetPropertyChangedSignal "ClassName":Connect(function()
+			((type(object) == "table" and object.__object) or object)
+			:GetPropertyChangedSignal "ClassName":Connect(function()
 				return self;
 			end);
 
