@@ -23,6 +23,7 @@ local week = {__mode = "v"};
 ---@param shared quad_export
 ---@return quad_module_store
 function module.init(shared)
+	local warn = shared.warn;
 	---@class quad_module_store
 	local new = {__type = "quad_module_store"};
 	local items = shared.items;
@@ -149,7 +150,7 @@ function module.init(shared)
 			local with = s.wfunc;
 			local tstore = s.store;
 			local rawKey = s.key;
-			local tween = s.tvalue or s.dtvalue;
+			local tween = s.tvalue or tstore.__tweens[rawKey];
 			local from = s.fvalue;
 			local add = s.avalue;
 			local set = tstore[rawKey];
@@ -175,7 +176,8 @@ function module.init(shared)
 		calcWithNewValue = function(s,withItem,newValue,key)
 			local with = s.wfunc;
 			local tstore = s.store;
-			local tween = s.tvalue or s.dtvalue;
+			local rawKey = s.key;
+			local tween = s.tvalue or tstore.__tweens[rawKey];
 			local from = s.fvalue;
 			local add = s.avalue;
 			if add then
@@ -205,7 +207,35 @@ function module.init(shared)
 	function store:__newindex(key,value)
 		-- if got register, just copy data to self and connect
 		if type(value) == "table" and value.__type == "quad_register" then
-			warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored";
+			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored";
+			
+			local selfValues = self.__self;
+			local selfTweens = self.__tweens;
+
+			-- fetch data from origin
+			do
+				local tstore = value.store;
+				for tkey in value.key:gmatch("^[,]") do
+					if not selfValues[tkey] then
+						selfValues[tkey] = tstore[tkey];
+					end
+				end
+			end
+
+			-- calc value
+			do
+				local setValue,tween = value:calcWithDefault(self);
+				selfValues[key] = setValue;
+				selfTweens[key] = tween;
+			end
+
+			-- make event connection
+			value:register(function (_,newValue,eventKey)
+				-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
+				local setValue = value:calcWithNewValue(self,newValue,eventKey);
+				self[key] = setValue;
+			end);
+
 			return;
 		end
 		self.__self[key] = value;
@@ -226,7 +256,9 @@ function module.init(shared)
 				do
 					local tstore = item.store;
 					for tkey in item.key:gmatch("^[,]") do
-						selfValues[tkey] = tstore[tkey];
+						if not selfValues[tkey] then
+							selfValues[tkey] = tstore[tkey];
+						end
 					end
 				end
 
@@ -253,12 +285,10 @@ function module.init(shared)
 			return last;
 		end
 		local register = self.__reg[key];
-		local tweens = self.__tweens;
 		if not register then
 			register = setmetatable({
 				key = key;
 				store = self;
-				dtvalue = tweens and tweens[key];
 			},registerClass);
 			self.__reg[key] = register;
 		end

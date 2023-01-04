@@ -5,6 +5,7 @@ local wrap = coroutine.wrap;
 ---@param shared quad_export
 ---@return quad_module_event
 function module.init(shared)
+	local warn = shared.warn;
 	---@class quad_module_event
 	local new = {__type = "quad_module_event"};
 

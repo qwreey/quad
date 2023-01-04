@@ -4,6 +4,7 @@ local insert = table.insert;
 ---@param shared quad_export
 ---@return quad_module_style
 function module.init(shared)
+	local warn = shared.warn;
 	---@class quad_module_style
 	local new = {__type = "quad_module_style"};
 

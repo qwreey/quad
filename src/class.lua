@@ -6,6 +6,7 @@ local insert = table.insert;
 ---@param shared quad_export
 ---@return quad_module_class
 function module.init(shared)
+	local warn = shared.warn;
 	---@class quad_module_class
 	local new = {__type = "quad_module_class"};
 	local InstanceNew = Instance.new;
@@ -104,6 +105,9 @@ function module.init(shared)
 			-- store reading
 			do
 				local setValue = value:calcWithDefault(item);
+				if setValue == nil then
+					warn "[Quad] register return value must not be nil, but got nil. did you inited values before?";
+				end
 				setProperty(item,index,setValue,className);
 			end
 

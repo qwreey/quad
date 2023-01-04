@@ -21,7 +21,7 @@ return function (query)
 			object = object[this];
 			if not object then
 				object = lastObject.libs
-				error(("[require] : object %s was not found from this worktree, require failed"):format(query));
+				error(("[Quad] (require) object %s was not found from this worktree, require failed"):format(query));
 			end
 		end);
 		return require(object);

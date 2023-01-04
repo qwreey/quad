@@ -5,6 +5,7 @@ local pack = table.pack;
 ---@param shared quad_export
 ---@return quad_module_mount
 function module.init(shared)
+	local warn = shared.warn;
 	---@class quad_module_mount
 	local new = {__type = "quad_module_mount"};
 

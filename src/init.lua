@@ -27,6 +27,10 @@ function module.init(id)
 	local this = {__type = "quad_module_init",items = {}};
 
 	this.require = require;
+	this.warn = function(err)
+		warn(tostring(err));
+		print(debug.traceback());
+	end;
 	this.round = type(round) == "table" and round; ---@type quad_module_round
 	this.tween = type(advancedTween) == "table" and advancedTween; ---@type quad_module_tween
 	this.style = style.init(this); ---@type quad_module_style
