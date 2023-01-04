@@ -134,6 +134,51 @@ function module.init(shared)
 		add = function (s,value)
 			return setmetatable({avalue = value},{__index = s});
 		end;
+		-- return init data
+		calcWithDefault = function (s,withItem)
+			local with = s.wfunc;
+			local tstore = s.store;
+			local rawKey = s.key;
+			local tween = s.tvalue or s.dtvalue;
+			local from = s.fvalue;
+			local add = s.avalue;
+			local set = tstore[rawKey];
+			if set ~= nil or (rawKey:match(",") and with) then
+				if add then
+					set = set + add;
+				end
+				if from then
+					set = from[set];
+				end
+				if with then
+					set = with(tstore,set,rawKey,withItem);
+				end
+				return set,tween;
+			else
+				local dset = s.dvalue;
+				if dset ~= nil then
+					return dset,tween;
+				end
+				warn "[Quad] no default value found.";
+			end
+		end;
+		calcWithNewValue = function(s,withItem,newValue,key)
+			local with = s.wfunc;
+			local tstore = s.store;
+			local tween = s.tvalue or s.dtvalue;
+			local from = s.fvalue;
+			local add = s.avalue;
+			if add then
+				newValue = newValue + add;
+			end
+			if from then
+				newValue = from[newValue];
+			end
+			if with then
+				newValue = with(tstore,newValue,key,withItem);
+			end
+			return newValue,tween;
+		end
 	};
 	registerClass.__index = registerClass;
 
@@ -148,6 +193,11 @@ function module.init(shared)
 		return store[key];
 	end
 	function store:__newindex(key,value)
+		-- if got register, just copy data to self and connect
+		if type(value) == "table" and value.__type == "quad_register" then
+			warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored";
+			return;
+		end
 		self.__self[key] = value;
 		local event = self.__evt[key];
 		if event then
@@ -156,17 +206,49 @@ function module.init(shared)
 			end
 		end
 	end
+	-- init bindings
+	function new.__initStoreRegisterBinding(self,withItem)
+		local selfTweens = self.__tweens;
+		local selfValues = self.__self;
+		for key,item in pairs(selfValues) do
+			if type(item) == "table" and item.__type == "quad_register" then
+				-- fetch data from origin
+				do
+					local tstore = item.store;
+					for tkey in item.key:gmatch("^[,]") do
+						selfValues[tkey] = tstore[tkey];
+					end
+				end
+
+				-- calc value
+				do
+					local setValue,tween = item:calcWithDefault(withItem);
+					selfValues[key] = setValue;
+					selfTweens[key] = tween;
+				end
+
+				-- make event connection
+				item:register(function (_,newValue,eventKey)
+					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
+					local setValue = item:calcWithNewValue(withItem,newValue,eventKey);
+					self[key] = setValue;
+				end);
+			end
+		end
+	end
+	-- create register
 	function store:__call(key,func)
 		local last = self.__self[key];
 		if last and type(last) == "table" and getmetatable(last) == registerClass then
 			return last;
 		end
 		local register = self.__reg[key];
+		local tweens = self.__tweens;
 		if not register then
 			register = setmetatable({
 				key = key;
 				store = self;
-				t = "reg";
+				dtvalue = tweens and tweens[key];
 			},registerClass);
 			self.__reg[key] = register;
 		end
@@ -184,22 +266,22 @@ function module.init(shared)
 		end
 	end
 	function new.new(self,id)
-		if id then
-			local old = storeIdSpace[id];
-			if old then
-				return old;
-			end
-		end
 		local this = setmetatable(
-			{__self = self or {},__evt = {},__reg = setmetatable({},week)},store
+			{
+				__self = self or {}, -- real value storage
+				__evt = {}, -- changed event handler functions (dict of array)
+				__reg = setmetatable({},week), -- save registers
+				__tweens = {} -- tweens (if inited with register, save tween and use as default tween data)
+			},store
 		);
-		if id then
+		if id then -- save in id space
 			storeIdSpace[id] = this;
 		end
 		return this;
 	end
+	local storeNew = new.new;
 	function new.getStore(id)
-		return storeIdSpace[id] or new.new({},id);
+		return storeIdSpace[id] or storeNew({},id);
 	end
 
 	return new;

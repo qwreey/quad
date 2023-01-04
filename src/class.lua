@@ -12,6 +12,7 @@ function module.init(shared)
 	local event = shared.event; ---@type quad_module_event
 	local bind = event.bind;
 	local store = shared.store; ---@type quad_module_store
+	local initStoreRegisterBinding = store.__initStoreRegisterBinding;
 	local addObject = store.addObject;
 	local storeNew = store.new;
 	local mount = shared.mount; ---@type quad_module_mount
@@ -98,45 +99,17 @@ function module.init(shared)
 		local indexType = typeof(index);
 
 		-- child
-		if indexType == "string" and valueType == "table" and value.t == "reg" then -- register (bind to store event)
+		if indexType == "string" and valueType == "table" and value.__type == "quad_register" then -- register (bind to store event)
 			processedProperty[index] = true; -- ignore next
-			-- store binding
-			local with = value.wfunc;
-			local tstore = value.store;
-			local rawKey = value.key;
-			local tween = value.tvalue;
-			local from = value.fvalue;
-			local add = value.avalue;
-			local set = tstore[rawKey];
-			if set ~= nil or (rawKey:match(",") and with) then
-				if add then
-					set = set + add;
-				end
-				if from then
-					set = from[set];
-				end
-				if with then
-					set = with(tstore,set,value.key,item);
-				end
-				setProperty(item,index,set,className);
-			else
-				local dset = value.dvalue;
-				if dset then
-					setProperty(item,index,dset,className);
-				end
+			-- store reading
+			do
+				local setValue = value:calcWithDefault(item);
+				setProperty(item,index,setValue,className);
 			end
 
-			-- adding event function
+			-- adding event function (bindding)
 			local function regFn(_,newValue,key)
-				if add then
-					newValue = newValue + add;
-				end
-				if from then
-					newValue = from[newValue];
-				end
-				if with then
-					newValue = with(tstore,newValue,key,item);
-				end
+				local setValue,tween = value:calcWithNewValue(item,newValue,key);
 				if tween then
 					if not advancedTween then
 						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory";
@@ -152,9 +125,9 @@ function module.init(shared)
 							tween.OnStepped(item,...);
 						end
 					end
-					advancedTween.RunTween(item,tween,{[index] = newValue},ended,onStepped,setProperty,getProperty);
+					advancedTween.RunTween(item,tween,{[index] = setValue},ended,onStepped,setProperty,getProperty);
 				else
-					setProperty(item,index,newValue,className);
+					setProperty(item,index,setValue,className);
 				end
 			end
 			value:register(regFn);
@@ -300,7 +273,7 @@ function module.init(shared)
 		--- make new object
 		function this.new(prop)
 			-- make metatable
-			prop = storeNew(prop);
+			prop = storeNew(prop,nil);
 			local parent = prop and (prop.Parent or prop.parent);
 			local self = {__prop = prop; __parent = parent};
 			local init = this.init;
@@ -308,6 +281,7 @@ function module.init(shared)
 				init(self,prop);
 			end
 			setmetatable(self,this);
+			initStoreRegisterBinding(prop,this);
 
 			-- render that
 			local object = self:render(prop);
