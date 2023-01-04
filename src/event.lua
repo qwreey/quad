@@ -85,8 +85,8 @@ function module.init(shared)
 	end
 
 	-- when created binding
-	new.created = prefix .. "Created::";
-	new.createdSync = prefix .. "CreatedSync::";
+	new.createdAsync = prefix .. "CreatedAsync::";
+	new.created = prefix .. "CreatedSync::";
 
 	-- roblox connections disconnecter
 	local insert = table.insert;

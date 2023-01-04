@@ -117,22 +117,32 @@ function module.init(shared)
 				insert(event,efunc);
 			end
 		end;
-		with = function (s,efunc)
-			return setmetatable({wfunc = efunc},{__index = s});
+		with = function (s,wfunc)
+			-- s.wfunc = wfunc;
+			-- return s;
+			return setmetatable({wfunc = wfunc},{__index = s});
 		end;
-		default = function (s,value)
-			return setmetatable({dvalue = value},{__index = s});
+		default = function (s,dvalue)
+			-- s.dvalue = dvalue;
+			-- return s;
+			return setmetatable({dvalue = dvalue},{__index = s});
 		end;
-		tween = function (s,value)
-			return setmetatable({tvalue = value},{__index = s});
+		tween = function (s,tvalue)
+			-- s.tvalue = tvalue;
+			-- return s;
+			return setmetatable({tvalue = tvalue},{__index = s});
 		end;
 		---@deprecated
-		from = function (s,value)
+		from = function (s,fvalue)
 			warn "[QUAD] register:from() is deprecated. You can use register:add(t:table|function) instead";
-			return setmetatable({fvalue = value},{__index = s});
+			-- s.fvalue = fvalue;
+			-- return s;
+			return setmetatable({fvalue = fvalue},{__index = s});
 		end;
-		add = function (s,value)
-			return setmetatable({avalue = value},{__index = s});
+		add = function (s,avalue)
+			-- s.avalue = avalue;
+			-- return s;
+			return setmetatable({avalue = avalue},{__index = s});
 		end;
 		-- return init data
 		calcWithDefault = function (s,withItem)
