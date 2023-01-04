@@ -146,7 +146,7 @@ module.LerpProperties = LerpProperties
 --Data.Properties.Position = UDim2.new(1,0,1,0) 처럼 하면 Position 속성의 목표를 1,0,1,0 으로 지정
 function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	-- remove self
-	if Item == module then warn "AdvancedTween:RunTween() is deprecated, You can use AdvancedTween.RunTween() instead"; Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
+	if Item == module then warn "AdvancedTween:RunTween() is deprecated, Use AdvancedTween.RunTween() instead"; Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
 
 	-- 시간 저장
 	local Time = Data.Time or 1
@@ -306,7 +306,7 @@ end
 -- 여러개의 개체를 트윈시킴
 function module.RunTweens(Items,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 	-- remove self
-	if Items == module then warn "AdvancedTween:RunTweens() is deprecated, You can use AdvancedTween.RunTweens() instead"; Items = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
+	if Items == module then warn "AdvancedTween:RunTweens() is deprecated, Use AdvancedTween.RunTweens() instead"; Items = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
 	for _,Item in pairs(Items) do
 		module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter)
 	end
@@ -314,7 +314,7 @@ end
 
 -- 트윈 멈추기
 function module.StopTween(ItemOrStep,_)
-	if ItemOrStep == module then warn "AdvancedTween:StopTween() is deprecated, You can use AdvancedTween.StopTween() instead"; ItemOrStep = _ end
+	if ItemOrStep == module then warn "AdvancedTween:StopTween() is deprecated, Use AdvancedTween.StopTween() instead"; ItemOrStep = _ end
 	if type(ItemOrStep) == "function" then
 		local pos = find(BindedFunctions,ItemOrStep)
 		if not pos then
@@ -328,7 +328,7 @@ function module.StopTween(ItemOrStep,_)
 end
 
 function module.StopPropertyTween(Item,PropertyName,_)
-	if Item == module then warn "AdvancedTween:StopTween() is deprecated, You can use AdvancedTween.StopTween() instead"; Item = _ end
+	if Item == module then warn "AdvancedTween:StopTween() is deprecated, Use AdvancedTween.StopTween() instead"; Item = _ end
 	local ItemPlayIndex = module.PlayIndex[Item]
 	if not ItemPlayIndex then return end
 	if type(PropertyName) == "table" then
@@ -342,7 +342,7 @@ end
 
 -- 해당 개체가 트윈중인지 반환
 function module.IsTweening(Item,_)
-	if Item == module then warn "AdvancedTween:IsTweening() is deprecated, You can use AdvancedTween.IsTweening() instead"; Item = _ end
+	if Item == module then warn "AdvancedTween:IsTweening() is deprecated, Use AdvancedTween.IsTweening() instead"; Item = _ end
 
 	if module.PlayIndex[Item] == nil then
 		return false
@@ -358,7 +358,7 @@ end
 
 -- 해당 개체의 해당 프로퍼티가 트윈중인지 반환
 function module.IsPropertyTweening(Item,PropertyName,_)
-	if Item == module then warn "AdvancedTween:IsPropertyTweening() is deprecated, You can use AdvancedTween.IsPropertyTweening() instead"; Item = _ end
+	if Item == module then warn "AdvancedTween:IsPropertyTweening() is deprecated, Use AdvancedTween.IsPropertyTweening() instead"; Item = _ end
 
 	if module.PlayIndex[Item] == nil then
 		return false

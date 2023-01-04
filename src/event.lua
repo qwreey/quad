@@ -28,6 +28,12 @@ function module.init(shared)
 		__call = function(self,eventName)
 			return prefix .. eventName;
 		end;
+		__index = function(self,key)
+			if key == "createdSync" then
+				warn "[Quad] event.createdSync is deprecated. Use event.created instead"
+				return self.created;
+			end
+		end;
 	});
 
 	-- try binding, if key dose match with anything, ignore call

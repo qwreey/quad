@@ -134,7 +134,7 @@ function module.init(shared)
 		end;
 		---@deprecated
 		from = function (s,fvalue)
-			warn "[QUAD] register:from() is deprecated. You can use register:add(t:table|function) instead";
+			warn "[QUAD] register:from() is deprecated. Use register:add(t:table|function) instead";
 			-- s.fvalue = fvalue;
 			-- return s;
 			return setmetatable({fvalue = fvalue},{__index = s});
