@@ -250,6 +250,7 @@ function module.init(shared)
 	function new.__initStoreRegisterBinding(self,withItem)
 		local selfTweens = self.__tweens;
 		local selfValues = self.__self;
+		local selfKeep = self.__keep;
 		for key,item in pairs(selfValues) do
 			if type(item) == "table" and item.__type == "quad_register" then
 				-- fetch data from origin
@@ -270,11 +271,14 @@ function module.init(shared)
 				end
 
 				-- make event connection
-				item:register(function (_,newValue,eventKey)
+				local function regFn(_,newValue,eventKey)
 					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
 					local setValue = item:calcWithNewValue(withItem,newValue,eventKey);
 					self[key] = setValue;
-				end);
+				end
+				item:register(regFn);
+				insert(selfKeep,item);
+				insert(selfKeep,regFn);
 			end
 		end
 	end
@@ -311,7 +315,8 @@ function module.init(shared)
 				__self = self or {}, -- real value storage
 				__evt = {}, -- changed event handler functions (dict of array)
 				__reg = setmetatable({},week), -- save registers
-				__tweens = {} -- tweens (if inited with register, save tween and use as default tween data)
+				__tweens = {}, -- tweens (if inited with register, save tween and use as default tween data)
+				__keep = {} -- store data which should not be destoryed
 			},store
 		);
 		if id then -- save in id space

@@ -115,7 +115,7 @@ function scrollFrame:render(props)
 		BackgroundColor3 = props "BackgroundColor3";
 		ZIndex = props "ZIndex";
 		ClipsDescendants = true;
-		[event.createdSync] = function (this)
+		[event.created] = function (this)
 			this.InputChanged:Connect(function (input)
 				if self._mouseDown or self._scrollbarDown then
 					return;
@@ -172,7 +172,7 @@ function scrollFrame:render(props)
 			Size = props "CanvasSize";
 			ZIndex = props "ZIndex";
 			Position = UDim2.fromOffset(self._targetX,self._targetY);
-			[event.createdSync] = function (this)
+			[event.created] = function (this)
 				self._holder = this;
 			end;
 		};
@@ -180,7 +180,7 @@ function scrollFrame:render(props)
 			AnchorPoint = props "ScrollbarPositionY":with(function (_,value)
 				return value == "Right" and Vector2.new(1,0) or Vector2.new(0,0);
 			end);
-			[event.createdSync] = function (this)
+			[event.created] = function (this)
 				self._scrollbarY = this;
 			end;
 			Position = props.ScrollbarPositionY == "Right" and UDim2.new(1,0,0,0) or UDim2.new(0,0,0,0);
@@ -201,7 +201,7 @@ function scrollFrame:render(props)
 			AnchorPoint = props "ScrollbarPositionX":with(function (_,value)
 				return value == "Top" and Vector2.new(0,0) or Vector2.new(0,1);
 			end);
-			[event.createdSync] = function (this)
+			[event.created] = function (this)
 				self._scrollbarX = this;
 			end;
 			Position = props.ScrollbarPositionX == "Top" and UDim2.new(0,0,0,0) or UDim2.new(0,0,1,0);
