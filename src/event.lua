@@ -18,7 +18,7 @@ function module.init(shared)
 		["CreatedSync::"] = function (this,func)
 			func(this);
 		end;
-		["Created::"] = function (this,func)
+		["CreatedAsync::"] = function (this,func)
 			wrap(func)(this);
 		end;
 	};
