@@ -93,6 +93,15 @@ function module.init(shared)
 		end
 	end
 
+	local function rawGetProperty(item,index)
+		return item[index];
+	end
+	local function pcallGetProperty(item,index)
+		local ok,err = pcall(rawGetProperty,index);
+		if ok then return err; end
+		return nil;
+	end
+
 	local function processQuadProperty(processedProperty,iprop,holder,item,className,index,value)
 		if processedProperty[index] then return; end
 
@@ -100,7 +109,7 @@ function module.init(shared)
 		local indexType = typeof(index);
 
 		-- child
-		if indexType == "string" and valueType == "table" and value.__type == "quad_register" then -- register (bind to store event)
+		if indexType == "string" and valueType == "table" and pcallGetProperty(value,"__type") == "quad_register" then -- register (bind to store event)
 			processedProperty[index] = true; -- ignore next
 			-- store reading
 			do
@@ -146,13 +155,13 @@ function module.init(shared)
 			processedProperty[index] = true; -- ignore next
 			-- prop set
 			setProperty(item,index,value,className);
-		elseif indexType == "number" and valueType == "table" and value.__type == "quad_style" then -- style
+		elseif indexType == "number" and valueType == "table" and pcallGetProperty(value,"__type") == "quad_style" then -- style
 			-- style parsing
 			for _,thisStyle in ipairs(parseStyles(value)) do
 				if not processedProperty[thisStyle] then
 					processedProperty[thisStyle] = true;
 					for styleIndex,styleValue in pairs(thisStyle) do
-						if type(styleValue) ~= "table" or styleValue.__type ~= "quad_style" then
+						if type(styleValue) ~= "table" or pcall(styleValue,"__type") ~= "quad_style" then
 							processQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
 						end
 					end
