@@ -1,11 +1,9 @@
 
 local module = {}
 
-local Quad = require(script.Quad)
+local IsTestMode = script.Name:match("testing_")
 
-local isTestMode = script.Name:match("testing_")
-
-function module.setTheme(global)
+local function SetTheme(global)
     local isDark
     local hasPermissionToGetSettings = pcall(function()
         isDark = tostring(settings().Studio.Theme) == "Dark"
@@ -45,41 +43,43 @@ function module.setTheme(global)
 end
 
 function module.init()
-    local quad = Quad.init("ui")
-    local round,class,mount,store,event,tween,style
-    = quad.round,quad.class,quad.mount,quad.store,quad.event,quad.tween,quad.style
+    ---@module Quad.src.types
+    local types = require(script.Parent.Quad.types)
+    local quad = (require(script.Parent.Quad) :: types.module).Init("ui")
+    local Round,Class,Mount,Store,Event,Tween,Style,Signal
+    = quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Signal
 
-    local frame = class "Frame"
-    local gui = class "ScreenGui"
+    local Frame = Class "Frame"
+    local Gui = Class "ScreenGui"
 
-    local global = store.getStore "global"
-    local tweenTest = class(script.tween)
+    local Global = Store.GetStore "global"
+    local TweenTest = Class(script.tween)
 
-    module.setTheme(global)
+    SetTheme(Global)
 
-    gui "MainGui" {
-        frame "Main" {
+    Gui "MainGui" {
+        Frame "Main" {
             Size = UDim2.fromOffset(400,640);
             Position = UDim2.fromScale(0.5,0.5);
             AnchorPoint = Vector2.new(0.5,0.5);
-            tweenTest{};
+            TweenTest{};
         }
     }
-    mount(game.StarterGui,store.getObject "MainGui")
-    _G.uiinstance = store.getObject "MainGui"
+    Mount(game.StarterGui,Store.GetObject "MainGui")
+    _G.uiinstance = Store.GetObject "MainGui"
 end
 
 function module.deinit()
-    if isTestMode then
+    if IsTestMode then
         local lastInstance = _G.uiinstance
-        Quad.uninit("ui")
+        require(script.Parent.Quad).Uninit("ui")
         if lastInstance then
             lastInstance:Destroy()
         end
         _G.uiinstance = nil
         return
     end
-    Quad.uninit("ui")
+    require(script.Parent.Quad).Uninit("ui")
 end
 
 return module

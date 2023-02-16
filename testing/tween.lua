@@ -3,97 +3,97 @@ local module = {}
 
 ---@module Quad.src.types
 local types = require(script.Parent.Quad.types)
-local quad = (require(script.Parent.Quad) :: types.module).init("ui")
-local round,class,mount,store,event,tween,style
-= quad.round,quad.class,quad.mount,quad.store,quad.event,quad.tween,quad.style
+local quad = (require(script.Parent.Quad) :: types.module).Init("ui")
+local Round,Class,Mount,Store,Event,Tween,Style
+= quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style
 
-local global = store.getStore "global"
+local Global = Store.GetStore "global"
 
 -- Import classes
-local frame = class "Frame"
-frame.BorderSizePixel = 0
-frame.BackgroundColor3 = global "backgroundColor"
-local textLabel = class "TextLabel"
-textLabel.BackgroundTransparency = 1
-textLabel.BorderSizePixel = 0
-textLabel.Font = Enum.Font.Gotham;
-textLabel.TextColor3 = global "textColor"
-textLabel.TextSize = 16;
+local Frame = Class "Frame"
+Frame.BorderSizePixel = 0
+Frame.BackgroundColor3 = Global "backgroundColor"
+local TextLabel = Class "TextLabel"
+TextLabel.BackgroundTransparency = 1
+TextLabel.BorderSizePixel = 0
+TextLabel.Font = Enum.Font.Gotham;
+TextLabel.TextColor3 = Global "textColor"
+TextLabel.TextSize = 16;
 
-local tweenTestFrameStyle = style "tweenTestFrame" {
+Style "tweenTestFrame" {
     BackgroundTransparency = 0;
     Size = UDim2.fromOffset(60,30);
     BackgroundColor3 = Color3.fromRGB(0, 0, 0);
-};
+}
 
 -- Create GUI
-local tweenTest = class.extend()
+local tweenTest = Class.Extend()
 
-function tweenTest:init(prop)
-    prop:default("tweenTest",UDim2.fromOffset(50,0))
+function tweenTest:Init(Prop)
+    Prop:Default("Position",UDim2.fromOffset(50,0))
     local on = false
     task.spawn(function()
-        while wait(2) do
+        while task.wait(2) do
             on = not on
-            prop.tweenTest = on and UDim2.new(1,-50-60,0,0) or UDim2.fromOffset(50,0)
+            Prop.Position = on and UDim2.new(1,-50-60,0,0) or UDim2.fromOffset(50,0)
         end
     end)
 end
 
-function tweenTest:render(prop)
-    return frame {
+function tweenTest:Render(Prop)
+    return Frame {
         Size = UDim2.fromScale(1,1);
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Linear";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,80)):tween{Direction = "InOut",Time = 2,Easing = "Linear"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,80)):Tween{Direction = "InOut",Time = 2,Easing = "Linear"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Expo";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,120)):tween{Direction = "InOut",Time = 2,Easing = "Expo"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,120)):Tween{Direction = "InOut",Time = 2,Easing = "Expo"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Quint";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,160)):tween{Direction = "InOut",Time = 2,Easing = "Quint"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,160)):Tween{Direction = "InOut",Time = 2,Easing = "Quint"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Quart";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,200)):tween{Direction = "InOut",Time = 2,Easing = "Quart"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,200)):Tween{Direction = "InOut",Time = 2,Easing = "Quart"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Cubic";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,240)):tween{Direction = "InOut",Time = 2,Easing = "Cubic"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,240)):Tween{Direction = "InOut",Time = 2,Easing = "Cubic"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Quad";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,280)):tween{Direction = "InOut",Time = 2,Easing = "Quad"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,280)):Tween{Direction = "InOut",Time = 2,Easing = "Quad"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Sin";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,320)):tween{Direction = "InOut",Time = 2,Easing = "Sin"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,320)):Tween{Direction = "InOut",Time = 2,Easing = "Sin"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Circle";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,360)):tween{Direction = "InOut",Time = 2,Easing = "Circle"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,360)):Tween{Direction = "InOut",Time = 2,Easing = "Circle"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Exp2";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,400)):tween{Direction = "InOut",Time = 2,Easing = "Exp2"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,400)):Tween{Direction = "InOut",Time = 2,Easing = "Exp2"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Exp4";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,440)):tween{Direction = "InOut",Time = 2,Easing = "Exp4"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,440)):Tween{Direction = "InOut",Time = 2,Easing = "Exp4"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Elastic";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,480)):tween{Direction = "InOut",Time = 2,Easing = "Elastic"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,480)):Tween{Direction = "InOut",Time = 2,Easing = "Elastic"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Bounce";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,520)):tween{Direction = "InOut",Time = 2,Easing = "Bounce"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,520)):Tween{Direction = "InOut",Time = 2,Easing = "Bounce"};
         };
-        textLabel "tweenTestFrame" {
+        TextLabel "tweenTestFrame" {
             Text = "Back";
-            Position = prop "tweenTest":add(UDim2.fromOffset(0,560)):tween{Direction = "InOut",Time = 2,Easing = "Back"};
+            Position = Prop "Position":Add(UDim2.fromOffset(0,560)):Tween{Direction = "InOut",Time = 2,Easing = "Back"};
         };
         -- frame {
         --     Size = UDim2.new(100,100);

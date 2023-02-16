@@ -11,7 +11,7 @@ local function reload()
 	if lastModule then
 		local passed,module = pcall(require,lastModule)
 		if passed then
-			module.deinit()
+			pcall(module.deinit)
 			_G.uiloaded = false
 		end
 		lastModule:Destroy()
@@ -29,7 +29,7 @@ local function reload()
 
 	local module = require(lastModule)
 	if _G.uiloaded then
-		module.deinit()
+		pcall(module.deinit)
 		_G.uiloaded = false
 	end
 
@@ -43,7 +43,6 @@ return {
 		reload()
 
 		if not _G.uichangetracker then
-			---@module "src.test.tracker"
 			local tracker =  require(script.tracker)
 			local changeTracker = tracker.new(script.Parent)
 

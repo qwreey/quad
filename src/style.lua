@@ -9,16 +9,16 @@ function module.init(shared)
 	local new = {__type = "quad_module_style"};
 
 	local styles = {};
-	new.styles = styles;
+	new.Styles = styles;
 
 	---@class quad_style
 	local styleClass = {__type = "quad_style"};
 	styleClass.__index = styleClass;
 
-	function new.new(props)
+	function new.New(props)
 		return setmetatable(props,styleClass);
 	end
-	local newStyle = new.new;
+	local newStyle = new.New;
 
 	setmetatable(new,{
 		---@return quad_style
@@ -50,7 +50,7 @@ function module.init(shared)
 	end
 
 	local parsed = {};
-	function new.parseStyles(style)
+	function new.ParseStyles(style)
 		do -- check cache
 			local cached = parsed[style];
 			if cached then return cached; end

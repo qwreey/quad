@@ -2,10 +2,17 @@
 -- module_class
 -------------------
 export type extend = {
-	Getter: {[string]: ()->any|any?};
-	Setter: {[string]: ()->()?};
-	New: (prop:DOM_constructor)->DOM;
-	Init: (self:DOM)->();
+	Getter: {[string]: ()->(any?)?};
+	Setter: {[string]: (value:any)->()?};
+	New: (prop:DOM_constructor)->DOM|any;
+	Init: (self:extend,props:store)->();
+	Render: (self:extend,props:store)->(DOM|any);
+	AfterRender: (self:extend,item:DOM|any,props:store)->();
+	GetPropertyChangedSignal: (self:extend,propertyName:string)->signal;
+	EmitPropertyChangedSignal: (self:extend,propertyName:string,...any)->();
+	Update: (self:extend)->();
+	Destroy: (self:extend)->();
+	UpdateTriggers: {[string]:boolean?};
 }
 export type DOM = {
 	[string]: any;
@@ -37,24 +44,26 @@ export type module_class = {
 -- module_event
 -------------------
 export type event = string
-export type disconnecter = {
-	Add: (self:disconnecter,connection:RBXScriptConnection)->();
-	Destroy: (self:disconnecter)->();
-	Disconnect: (self:disconnecter)->();
-}
 export type module_event = {
 	Prop: (propName:string)->event;
 	CreatedAsync: event;
 	Created: event;
 	Bind: (this:DOM|any,key:event|string,func:(...any)->(),typefunc:string?)->();
-	Disconnecter: (id:string?)->disconnecter;
 } & (eventName:string)->event;
 
 -------------------
 -- module_signal
 -------------------
 export type signal = {}
-export type module_signal = {}
+export type disconnecter = {
+	Add: (self:disconnecter,connection:RBXScriptConnection)->();
+	Destroy: (self:disconnecter)->();
+	Disconnect: (self:disconnecter)->();
+	New: (id:string?)->disconnecter;
+}
+export type module_signal = {
+	Disconnecter: disconnecter;
+}
 
 -------------------
 -- module_register
@@ -81,15 +90,24 @@ export type module_store = {
 }
 
 -------------------
--- module_signal
+-- module_style
 -------------------
 export type style = {}
-export type module_style = {}
+export type module_style = {
+	New: (props:{[string]:any})->style;
+} & (props:{[string]:any})->style
 
 -------------------
--- module_signal
+-- module_mount
 -------------------
-export type module_mount = {}
+export type mount = {
+	Unmount: (self:mount)->();
+}
+export type mounts = mount
+export type module_mount = {
+	Mount: (to:DOM|any,object:DOM|any,holder:DOM|any?)->mount;
+	GetHolder: (item:DOM|any)->any?;
+} & (to:DOM|any,object:DOM|any,holder:DOM|any?)->mounts
 
 -------------------
 -- module_tween
@@ -177,10 +195,12 @@ export type module_exported = {
 	Store: module_store;
 	Mount: module_mount;
 	Class: module_class;
+	Signal: module_signal;
+	Lang: module_lang;
 }
 export type module = {
 	Uninit: (id:string)->();
-	Init: (id:string)->module_exported;
+	Init: (id:string?)->module_exported;
 }
 
 return {}

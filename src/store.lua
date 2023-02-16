@@ -28,18 +28,18 @@ function module.init(shared)
 	---@class quad_module_store
 	local new = {__type = "quad_module_store"}
 	local items = {}
-	new.items = items
+	new.Items = items
 
 	-- id space (array of object)
 	local objectListClass = {__type = "quad_objectlist"}
-	function objectListClass:each(func)
+	function objectListClass:Each(func)
 		local index = 1
 		for i,v in pairs(self) do
 			wrap(catch)(func,index,v)
 			index = index + 1
 		end
 	end
-	function objectListClass:eachSync(func)
+	function objectListClass:EachSync(func)
 		local index = 1
 		for _,v in pairs(self) do
 			local ret = func(index,v)
@@ -49,7 +49,7 @@ function module.init(shared)
 			end
 		end
 	end
-	function objectListClass:remove(indexOrItem)
+	function objectListClass:Remove(indexOrItem)
 		local thisType = type(indexOrItem)
 		if thisType == "number" then
 			return remove(self,indexOrItem),indexOrItem
@@ -61,7 +61,7 @@ function module.init(shared)
 			end
 		end
 	end
-	function objectListClass:isEmpty()
+	function objectListClass:IsEmpty()
 		if next(self) then return true end
 		return false
 	end
@@ -69,7 +69,7 @@ function module.init(shared)
 		return setmetatable({},objectListClass)
 	end
 	function objectListClass:__newIndex(key,value) -- props setter
-		self:each(function (this)
+		self:Each(function (this)
 			this[key] = value
 		end)
 	end
@@ -77,7 +77,7 @@ function module.init(shared)
 	objectListClass.__index = objectListClass
 
 	-- get object array with id (objSpace)
-	function new.getObjects(ids)
+	function new.GetObjects(ids)
 		if match(ids,",") then
 			local list = items[ids]
 			if list then return list end
@@ -99,13 +99,13 @@ function module.init(shared)
 		end
 	end
 	-- get first object with id (not array)
-	function new.getObject(id)
+	function new.GetObject(id)
 		local item = items[id]
 		return item and item[next(item)]
 	end
 	--TODO: if item is exist already, ignore this call
 	-- adding object with id
-	function new.addObject(ids,object)
+	function new.AddObject(ids,object)
 		for id in gmatch(ids,"[^,]+") do -- split by ,
 			-- remove trailing, heading spaces
 			id = gsub(gsub(id,"^ +","")," +$","")
@@ -120,7 +120,7 @@ function module.init(shared)
 
 	local registerClass = {
 		__type = "quad_register";
-		register = function (s,efunc)
+		Register = function (s,efunc)
 			local self = s.store
 			local events = self.__evt
 			for key in s.key:gmatch("[^,]+") do
@@ -133,35 +133,35 @@ function module.init(shared)
 				insert(event,efunc)
 			end
 		end;
-		with = function (s,wfunc)
+		With = function (s,wfunc)
 			-- s.wfunc = wfunc
 			-- return s
 			return setmetatable({wfunc = wfunc},{__index = s})
 		end;
-		default = function (s,dvalue)
+		Default = function (s,dvalue)
 			-- s.dvalue = dvalue
 			-- return s
 			return setmetatable({dvalue = dvalue},{__index = s})
 		end;
-		tween = function (s,tvalue)
+		Tween = function (s,tvalue)
 			-- s.tvalue = tvalue
 			-- return s
 			return setmetatable({tvalue = tvalue},{__index = s})
 		end;
 		---@deprecated
-		from = function (s,fvalue)
+		From = function (s,fvalue)
 			warn "[QUAD] register:from() is deprecated. Use register:add(t:table|function) instead"
 			-- s.fvalue = fvalue
 			-- return s
 			return setmetatable({fvalue = fvalue},{__index = s})
 		end;
-		add = function (s,avalue)
+		Add = function (s,avalue)
 			-- s.avalue = avalue
 			-- return s
 			return setmetatable({avalue = avalue},{__index = s})
 		end;
 		-- return init data
-		calcWithDefault = function (s,withItem)
+		CalcWithDefault = function (s,withItem)
 			local with = s.wfunc
 			local tstore = s.store
 			local rawKey = s.key
@@ -188,7 +188,7 @@ function module.init(shared)
 				warn "[Quad] no default value found."
 			end
 		end;
-		calcWithNewValue = function(s,withItem,newValue,key)
+		CalcWithNewValue = function(s,withItem,newValue,key)
 			local with = s.wfunc
 			local tstore = s.store
 			local rawKey = s.key
@@ -280,7 +280,7 @@ function module.init(shared)
 
 				-- calc value
 				do
-					local setValue,tween = item:calcWithDefault(withItem)
+					local setValue,tween = item:CalcWithDefault(withItem)
 					selfValues[key] = setValue
 					selfTweens[key] = tween
 				end
@@ -288,10 +288,10 @@ function module.init(shared)
 				-- make event connection
 				local function regFn(_,newValue,eventKey)
 					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
-					local setValue = item:calcWithNewValue(withItem,newValue,eventKey)
+					local setValue = item:CalcWithNewValue(withItem,newValue,eventKey)
 					self[key] = setValue
 				end
-				item:register(regFn)
+				item:Register(regFn)
 				insert(selfKeep,item)
 				insert(selfKeep,regFn)
 			end
@@ -313,17 +313,17 @@ function module.init(shared)
 		end
 
 		if func then
-			register.register(func)
+			register.Register(func)
 		end
 		return register
 	end
-	function store:default(key,value)
+	function store:Default(key,value)
 		if self[key] == nil then
 			self[key] = value
 			return
 		end
 	end
-	function new.new(self,id)
+	function new.New(self,id)
 		local this = setmetatable(
 			{
 				__self = self or {}, -- real value storage
@@ -338,8 +338,8 @@ function module.init(shared)
 		end
 		return this
 	end
-	local storeNew = new.new
-	function new.getStore(id)
+	local storeNew = new.New
+	function new.GetStore(id)
 		return storeIdSpace[id] or storeNew({},id)
 	end
 

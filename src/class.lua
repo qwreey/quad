@@ -131,7 +131,7 @@ function module.init(shared)
 
 			-- store reading
 			do
-				local setValue = value:calcWithDefault(item)
+				local setValue = value:CalcWithDefault(item)
 				if setValue == nil then
 					warn "[Quad] register return value must not be nil, but got nil. did you inited values before?"
 				end
@@ -140,7 +140,7 @@ function module.init(shared)
 
 			-- adding handle function (bindding)
 			local function regFn(_,newValue,key)
-				local setValue,tween = value:calcWithNewValue(item,newValue,key)
+				local setValue,tween = value:CalcWithNewValue(item,newValue,key)
 				if tween then
 					if not advancedTween then
 						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory"
@@ -161,7 +161,7 @@ function module.init(shared)
 					SetProperty(item,index,setValue,className)
 				end
 			end
-			value:register(regFn)
+			value:Register(regFn)
 
 			-- this is using hacky of roblox instance
 			-- this is will keep reference from week table until
@@ -335,7 +335,7 @@ function module.init(shared)
 			--after render
 			local afterRender = this.AfterRender
 			if afterRender then
-				afterRender(self,object)
+				afterRender(self,object,prop)
 			end
 			return self
 		end

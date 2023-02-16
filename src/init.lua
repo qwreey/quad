@@ -13,6 +13,7 @@ local event = require "event"
 local store = require "store"
 local class = require "class"
 local mount = require "mount"
+local signal = require "signal"
 -- local lang = require "lang"
 
 -- submodule
@@ -43,6 +44,7 @@ function module.Init(id)
 	end
 	this.Round = type(round) == "table" and round ---@type quad_module_round
 	this.Tween = type(advancedTween) == "table" and advancedTween ---@type quad_module_tween
+	this.Signal = signal.init(this) ---@type quad_module_signal
 	this.Style = style.init(this) ---@type quad_module_style
 	this.Event = event.init(this) ---@type quad_module_event
 	this.Store = store.init(this) ---@type quad_module_store
