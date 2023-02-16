@@ -11,20 +11,20 @@ function module.init(shared)
 	---@class quad_module_class
 	local new = {__type = "quad_module_class"};
 	local InstanceNew = Instance.new;
-	local event = shared.event; ---@type quad_module_event
-	local bind = event.bind;
-	local store = shared.store; ---@type quad_module_store
+	local event = shared.Event; ---@type quad_module_event
+	local bind = event.Bind;
+	local store = shared.Store; ---@type quad_module_store
 	local initStoreRegisterBinding = store.__initStoreRegisterBinding;
-	local addObject = store.addObject;
-	local storeNew = store.new;
-	local mount = shared.mount; ---@type quad_module_mount
-	local getHolder = mount.getHolder;
-	local mountfunc = mount.mount;
-	local style = shared.style; ---@type quad_module_style
-	local styleList = style.styles;
-	local parseStyles = style.parseStyles;
-	local advancedTween = shared.tween; ---@type quad_module_tween
-	local round = shared.round; ---@type quad_module_round
+	local addObject = store.AddObject;
+	local storeNew = store.New;
+	local mount = shared.Mount; ---@type quad_module_mount
+	local getHolder = mount.GetHolder;
+	local mountfunc = mount.Mount;
+	local style = shared.Style; ---@type quad_module_style
+	local styleList = style.Styles;
+	local parseStyles = style.ParseStyles;
+	local advancedTween = shared.Tween; ---@type quad_module_tween
+	local round = shared.Round; ---@type quad_module_round
 
 	local function InstanceNewWithName(classname,parent,name)
 		local item = InstanceNew(classname,parent);
@@ -32,11 +32,7 @@ function module.init(shared)
 		return item;
 	end
 
-	-- TODO: refactor getProperty
-	-- local propertyGetterRaw = {}
-	-- local propertySetterRaw = {}
-
-	local function getProperty(item,index,ClassName)
+	local function GetProperty(item,index,ClassName)
 		if type(item) == "table" then return item[index]; end
 		ClassName = ClassName or item.ClassName;
 		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
@@ -44,7 +40,7 @@ function module.init(shared)
 			if not round then
 				error("module 'round' needs to be loaded for get image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
 			end
-			return round.getRound(item);
+			return round.GetRound(item);
 		elseif index == "UiRoundSize" or index == "uiRoundSize" or index == "UIRoundSize" then
 			local target = (ClassName == "UICorner" and item) or item:FindFirstChildOfClass("UICorner");
 			return (target and target.CornerRadius.Offset) or 0;
@@ -60,9 +56,9 @@ function module.init(shared)
 		end
 		return item[index];
 	end
-	new.getProperty = getProperty
+	new.GetProperty = GetProperty
 
-	local function setProperty(item,index,value,ClassName)
+	local function SetProperty(item,index,value,ClassName)
 		if type(item) == "table" then item[index] = value; return; end
 		ClassName = ClassName or item.ClassName;
 		local isImage = (ClassName == "ImageLabel" or ClassName == "ImageButton");
@@ -70,8 +66,8 @@ function module.init(shared)
 			if not round then
 				error("[QUAD] module 'round' needs to be loaded for set image round size but it is not found on 'src.libs'. you should adding that to src.libs directory");
 			end
-			round.setRound(item,value);
-		elseif index == "UiRoundSize" or index == "uiRoundSize" or index == "UIRoundSize" then
+			round.SetRound(item,value);
+		elseif index == "UIRoundSize" or index == "uiRoundSize" or index == "UiRoundSize" then
 			local uiCorner = (ClassName == "UICorner" and item) or item:FindFirstChildOfClass("UICorner") or InstanceNewWithName("UICorner",item,"_quad_round");
 			uiCorner.CornerRadius = UDim.new(0,value);
 		elseif index == "PaddingAll" or index == "paddingAll" then
@@ -94,37 +90,39 @@ function module.init(shared)
 			item[index] = value; -- set property
 		end
 	end
-	new.setProperty = setProperty
+	new.SetProperty = SetProperty
 
-	local function rawGetProperty(item,index)
+	local function RawGetProperty(item,index)
 		return item[index];
 	end
-	local function pcallGetProperty(item,index)
-		local ok,err = pcall(rawGetProperty,item,index);
+	local function PcallGetProperty(item,index)
+		local ok,err = pcall(RawGetProperty,item,index);
 		if ok then return err; end
 		return nil;
 	end
 
-	local function processQuadProperty(processedProperty,iprop,holder,item,className,index,value)
+	local function ProcessQuadProperty(processedProperty,iprop,holder,item,className,index,value)
 		if processedProperty[index] then return; end
 
 		local valueType = typeof(value);
 		local indexType = typeof(index);
+		local quadType = valueType == "table" and PcallGetProperty(value,"__type")
 
-		-- child
-		local quadType = valueType == "table" and pcallGetProperty(value,"__type")
-		if indexType == "string" and valueType == "table" and quadType == "quad_register" then -- register (bind to store event)
+		if indexType == "string" and quadType == "quad_register" then
+			-- register (bind to store event)
+
 			processedProperty[index] = true; -- ignore next
+
 			-- store reading
 			do
 				local setValue = value:calcWithDefault(item);
 				if setValue == nil then
 					warn "[Quad] register return value must not be nil, but got nil. did you inited values before?";
 				end
-				setProperty(item,index,setValue,className);
+				SetProperty(item,index,setValue,className);
 			end
 
-			-- adding event function (bindding)
+			-- adding handle function (bindding)
 			local function regFn(_,newValue,key)
 				local setValue,tween = value:calcWithNewValue(item,newValue,key);
 				if tween then
@@ -142,9 +140,9 @@ function module.init(shared)
 							tween.OnStepped(item,...);
 						end
 					end
-					advancedTween.RunTween(item,tween,{[index] = setValue},ended,onStepped,setProperty,getProperty);
+					advancedTween.RunTween(item,tween,{[index] = setValue},ended,onStepped,SetProperty,GetProperty);
 				else
-					setProperty(item,index,setValue,className);
+					SetProperty(item,index,setValue,className);
 				end
 			end
 			value:register(regFn);
@@ -158,7 +156,7 @@ function module.init(shared)
 		elseif indexType == "string" then
 			processedProperty[index] = true; -- ignore next
 			-- prop set
-			setProperty(item,index,value,className);
+			SetProperty(item,index,value,className);
 		elseif indexType == "number" and valueType == "table" and quadType == "quad_style" then -- style
 			-- style parsing
 			for _,thisStyle in ipairs(parseStyles(value)) do
@@ -166,7 +164,7 @@ function module.init(shared)
 					processedProperty[thisStyle] = true;
 					for styleIndex,styleValue in pairs(thisStyle) do
 						if type(styleValue) ~= "table" or pcall(styleValue,"__type") ~= "quad_style" then
-							processQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
+							ProcessQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue);
 						end
 					end
 				end
@@ -231,11 +229,11 @@ function module.init(shared)
 			if prop then
 				for index,value in pairs(prop) do
 					if type(index) ~= "number" then
-						processQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
+						ProcessQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
 					end
 				end
 				for index,value in ipairs(prop) do
-					processQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
+					ProcessQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value);
 				end
 			end
 		end

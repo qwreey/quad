@@ -11,24 +11,24 @@ local roundScaleType = Enum.ScaleType.Slice;
 local roundSliceCenter = Rect.new(Vector2.new(516,516),Vector2.new(516,516));
 local roundSliceScale = 0.0019166666666667;
 
-function round.setRound(ImageFrame,RoundSize)
+function round.SetRound(ImageFrame,RoundSize)
 	ImageFrame.Image = roundImage;
 	ImageFrame.ScaleType = roundScaleType;
 	ImageFrame.SliceCenter = roundSliceCenter;
 	ImageFrame.SliceScale = roundSliceScale * RoundSize;
 	return ImageFrame;
 end
-function round.setOutline(ImageFrame,RoundSize)
+function round.SetOutline(ImageFrame,RoundSize)
 	ImageFrame.Image = outlineImage
 	ImageFrame.ScaleType = outlineScaleType;
 	ImageFrame.SliceCenter = outlineSliceCenter;
 	ImageFrame.SliceScale = outlineSliceScale * RoundSize;
 	return ImageFrame;
 end
-function round.getRound(ImageFrame)
+function round.GetRound(ImageFrame)
 	return ImageFrame.SliceScale / roundSliceScale;
 end
-function round.getOutline(ImageFrame)
+function round.GetOutline(ImageFrame)
 	return ImageFrame.SliceScale / outlineSliceScale;
 end
 

@@ -50,6 +50,7 @@ end
 module.EasingDirections = {
 	Out = "Out"; -- 반전된 방향
 	In  = "In" ; -- 기본방향
+	InOut = "InOut"; -- 두 방향 모두 가감속
 }
 
 ---@deprecated
@@ -76,7 +77,7 @@ local DefaultLerpableItems = {
 
 -- 예전 값,목표 값,알파를 주고 각각 해당하는 속성에 입력해줌
 -- 기본적으로 모든 속성값 적용은 여기에서 이루워짐
-function LerpProperties(Item,Old,New,Alpha,Setter)
+local function LerpProperties(Item,Old,New,Alpha,Setter)
 	for Property,OldValue in pairs(Old) do
 		local NewValue = New[Property]
 		local Type = type(OldValue)
@@ -129,6 +130,57 @@ function LerpProperties(Item,Old,New,Alpha,Setter)
 	end
 end
 module.LerpProperties = LerpProperties
+
+-- Easing 값을 계산함
+local function CalcEasing(Easing,Direction,Reverse,Index)
+	if Index >= 1 then
+		return 1
+	elseif Direction == "Out" then
+		if Reverse then
+			return 1 - Easing(1 - Index)
+		else
+			return Easing(Index)
+		end
+	elseif Direction == "In" then
+		if Reverse then
+			return Easing(Index)
+		else
+			return 1 - Easing(1 - Index)
+		end
+	elseif Direction == "InOut" then
+		if Index<0.5 then
+			-- In
+			if Reverse then
+				return Easing(Index*2)/2
+			else
+				return 0.5 - Easing(1 - Index*2)/2
+			end
+		else
+			-- Out
+			if Reverse then
+				return 1 - Easing(2-Index*2)/2
+			else
+				return Easing(Index*2-1)/2+0.5
+			end
+		end
+	end
+end
+function module.CalcEasing(Data_Easing,Direction,X)
+	local Reverse
+	local Easing do
+		Data_Easing = Easing or EasingFunctions.Exp2
+		local Data_EasingType = type(Data_Easing)
+		if Data_EasingType == "string" then
+			Data_Easing = EasingFunctions[Data_Easing]
+			Data_EasingType = "table"
+		end
+		Easing = (Data_EasingType == "function" and Data_Easing) or (Data_EasingType == "table" and Data_Easing.Run)
+		if Data_EasingType == "table" and Data_Easing.Reverse then
+			Reverse = true
+		end
+	end
+	return CalcEasing(Easing,Direction,Reverse,X)
+end
 
 ------------------------------------
 -- 모듈 함수 지정
@@ -188,6 +240,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 
 	-- 이징 효과 가져오기
 	local Direction = Data.Direction or "Out"
+	local Reverse
 	local Easing do
 		local Data_Easing = Data.Easing or EasingFunctions.Exp2
 		local Data_EasingType = type(Data_Easing)
@@ -197,7 +250,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		end
 		Easing = (Data_EasingType == "function" and Data_Easing) or (Data_EasingType == "table" and Data_Easing.Run)
 		if Data_EasingType == "table" and Data_Easing.Reverse then
-			Direction = Direction == "Out" and "In" or "Out"
+			Reverse = true
 		end
 	end
 
@@ -238,10 +291,12 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 
 		local Now = clock()
 		local Index = 1 - (EndTime - Now) / Time
-		local Alpha = Direction == "Out" and Easing(Index) or (1 - Easing(1 - Index))
+		local Alpha
 		if Now >= EndTime then
 			Index = 1
 			Alpha = 1
+		else
+			Alpha = CalcEasing(Easing,Direction,Reverse,Index)
 		end
 
 		-- 속성 Lerp 수행
@@ -338,8 +393,17 @@ function module.StopPropertyTween(Item,PropertyName,_)
 end
 
 -- 해당 개체가 트윈중인지 반환
-function module.IsTweening(Item,_)
+function module.IsTweening(ItemOrStep,_)
 	if Item == module then warn "AdvancedTween:IsTweening() is deprecated, Use AdvancedTween.IsTweening() instead"; Item = _ end
+
+	if type(ItemOrStep) == "function" then
+		local pos = find(BindedFunctions,ItemOrStep)
+		if pos then
+			return true
+		else
+			return false
+		end
+	end
 
 	if module.PlayIndex[Item] == nil then
 		return false

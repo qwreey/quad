@@ -27,7 +27,8 @@ function module.init(shared)
 	local warn = shared.warn;
 	---@class quad_module_store
 	local new = {__type = "quad_module_store"};
-	local items = shared.items;
+	local items = {};
+	new.items = items
 
 	-- id space (array of object)
 	local objectListClass = {__type = "quad_objectlist"};

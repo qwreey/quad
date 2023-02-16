@@ -110,6 +110,7 @@ EasingFunctions["Sin"] = Sin
 
 local Circle = {} do
 	local sqrt = math.sqrt
+	Circle.Reverse = false
 	Circle.Run = function(Index)
 		if Index == 1 then return 1 end
 		if Index == 0 then return 0 end

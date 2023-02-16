@@ -2,30 +2,35 @@
 -- module_class
 -------------------
 export type extend = {
-    getter: {[string]: ()->any|any?};
-    setter: {[string]: ()->()?};
+	Getter: {[string]: ()->any|any?};
+	Setter: {[string]: ()->()?};
+	New: (prop:DOM_constructor)->DOM;
+	Init: (self:DOM)->();
 }
 export type DOM = {
-    [string]: any;
+	[string]: any;
+	Destroy: (self:DOM)->();
+	GetPropertyChangedSignal: (self:DOM,propertyName:string)->(RBXScriptSignal|signal);
+	Update: (self:DOM)->();
 }
 export type DOM_constructor = {
-    [event]:
-        (DOM,...any)->()
-        &{self: any,func: ()->()};
+	[event]:
+		(DOM,...any)->()
+		&{self: any,func: (...any)->(...any)};
 } & { [number]: DOM|style; }
 &   { [string]: any|register; }
 export type DOM_creator = (DOM_constructor,...DOM_constructor)->DOM
 export type imported =
-    {[string]:any}
-    &(ids:ObjectIdList)->DOM_creator
-    &DOM_creator
+	{[string]:any}
+	&(ids:ObjectIdList)->DOM_creator
+	&DOM_creator
 export type import = (ClassName:string|ModuleScript|extend|()->()|{any},defaultProperties:DOM_constructor?)->imported
 export type module_class = {
-    extend: ()->extend;
-    import: import;
-    getProperty: (item:extend|any,index:string,ClassName:string?)->any;
-    setProperty: (item:extend|any,index:string,value:any,ClassName:string?)->();
-    make: (ClassName:string|(...any)->any|extend,...{any})->any;
+	Extend: ()->extend;
+	Import: import;
+	GetProperty: (item:extend|any,index:string,ClassName:string?)->any;
+	SetProperty: (item:extend|any,index:string,value:any,ClassName:string?)->();
+	Make: (ClassName:string|(...any)->any|extend,...{any})->any;
 } & import
 
 -------------------
@@ -33,46 +38,46 @@ export type module_class = {
 -------------------
 export type event = string
 export type disconnecter = {
-    add: (self:disconnecter,connection:RBXScriptConnection)->();
-    destroy: (self:disconnecter)->();
-    disconnect: (self:disconnecter)->();
+	Add: (self:disconnecter,connection:RBXScriptConnection)->();
+	Destroy: (self:disconnecter)->();
+	Disconnect: (self:disconnecter)->();
 }
 export type module_event = {
-    prop: (propName:string)->event;
-    createdAsync: event;
-    created: event;
-    bind: (this:DOM|any,key:event|string,func:(...any)->(),typefunc:string?)->();
-    disconnecter: (id:string?)->disconnecter;
+	Prop: (propName:string)->event;
+	CreatedAsync: event;
+	Created: event;
+	Bind: (this:DOM|any,key:event|string,func:(...any)->(),typefunc:string?)->();
+	Disconnecter: (id:string?)->disconnecter;
 } & (eventName:string)->event;
 
 -------------------
 -- module_signal
 -------------------
+export type signal = {}
 export type module_signal = {}
 
 -------------------
 -- module_register
 -------------------
 export type register = {
-    register: (self:register,()->())->();
-    with: <R>(self:R&register,handler:{any}|(store:store,value:any,key:any,item:DOM)->any)->R&register;
-    default: <R>(self:R&register,value:any)->R&register;
-    add: <R>(self:R&register,value:any)->R&register;
-    tween: <R>(self:R&register,tween:TweenOptions)->R&register;
+	Register: (self:register,()->())->();
+	With: <R>(self:R&register,handler:{any}|(store:store,value:any,key:any,item:DOM)->any)->R&register;
+	Default: <R>(self:R&register,value:any)->R&register;
+	Add: <R>(self:R&register,value:any)->R&register;
+	Tween: <R>(self:R&register,tween:TweenOptions)->R&register;
 }
 export type store = {}
 export type objectList = {
-    each: (self:objectList,(item:DOM,index:number)->())->();
-    eachSync: (self:objectList,(item:DOM,index:number)->())->();
-    remove: (self:objectList,index:number|DOM)->(DOM?,number?);
-    isEmpty: (self:objectList)->boolean;
+	Each: (self:objectList,(item:DOM,index:number)->())->();
+	EachSync: (self:objectList,(item:DOM,index:number)->())->();
+	Remove: (self:objectList,index:number|DOM)->(DOM?,number?);
+	IsEmpty: (self:objectList)->boolean;
 }
 export type ObjectIdList = string
 export type module_store = {
-    getObjects: (ids:ObjectIdList)->objectList;
-    getObject: (id:string)->DOM?;
-    addObject: (ids:ObjectIdList)->();
-
+	GetObjects: (ids:ObjectIdList)->objectList;
+	SetObject: (id:string)->DOM?;
+	AddObject: (ids:ObjectIdList)->();
 }
 
 -------------------
@@ -87,16 +92,27 @@ export type module_style = {}
 export type module_mount = {}
 
 -------------------
--- module_signal
+-- module_tween
 -------------------
-
 export type TweenOnStepped = (Item:DOM|any,Alpha:number,AbsolutePercent:number)->()
 export type TweenEnded = (Item:DOM|any)->()
 export type TweenSetter = (Item:DOM|any,Property:string,Value:Lerpable)->()
 export type TweenGetter = (Item:DOM|any,Property:string)->()
 export type TweenOptions = {
-	Easing: EasingFunction?;
-	Direction: EasingDirection?;
+	Easing: "Linear"
+			|"Quint"
+			|"Quart"
+			|"Cubic"
+			|"Quad"
+			|"Sin"
+			|"Circle"
+			|"Expo"
+			|"Elastic"
+			|"Bounce"
+			|"Exp2"
+			|"Exp4"
+			|EasingFunction?;
+	Direction: "Out"|"InOut"|"In"|EasingDirection?;
 	CallBack: {[number|"*"|string]:(Item:DOM|any,Alpha:number,AbsolutePercent:number)->()}?;
 	OnStepped: TweenOnStepped?; -- Same as CallBack{["*"]:()->()} But faster then CallBack due to table loop
 	Ended: TweenEnded?;
@@ -119,47 +135,52 @@ export type EasingFunctions = {
 	-- Old things
 	Exp2: EasingFunction; ---덜 가파른 지수. i=math.exp(x), x=-4 ~ 2
 	Exp4: EasingFunction; ---더 가파른 지수. i=math.exp(x), x=-4 ~ 4
-	Exp2Max4: EasingFunction; ---@deprecated
 }
 export type EasingDirection = string
 export type EasingDirections = {
 	Out: EasingDirection&"Out";
 	In: EasingDirection&"In";
+	InOut: EasingDirection&"InOut";
 }
 export type Lerpable = Color3|UDim|UDim2|number|Vector2|Vector3|CFrame
 export type TweenHandler = ()->();
-export type AdvancedTween = {
+export type module_tween = {
 	EasingFunctions:EasingFunctions;
 	EasingDirections:EasingDirections;
 	LerpProperties: <item>(item:item&(DOM|any),old:{[string]:Lerpable},new:{[string]:Lerpable},alpha:number,setter:(item:item&(DOM|any),property:string,value:Lerpable)->()?)->();
 	RunTween: (Item:DOM|any,Option:TweenOptions,Properties:{[string]:Lerpable},Ended:TweenEnded?,OnStepped:TweenOnStepped?,Setter:TweenSetter?,Getter:TweenGetter?)->TweenHandler;
+	RunTweens: (Items:{[number]:DOM|any},Option:TweenOptions,Properties:{[string]:Lerpable},Ended:TweenEnded?,OnStepped:TweenOnStepped?,Setter:TweenSetter?,Getter:TweenGetter?)->();
+	StopTween: (ItemOrStep:TweenHandler|DOM|any)->();
+	StopPropertyTween: (Item:DOM|any,PropertyName:string)->();
+	IsTweening: (ItemOrStep:TweenHandler|DOM|any)->boolean;
+	IsPropertyTweening: (Item:DOM|any,PropertyName:string)->boolean;
 }
 
 -------------------
 -- module_signal
 -------------------
 export type round = {
-    setRound: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
-    setOutline: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
-    getRound: (ImageFrame:ImageLabel|ImageButton)->number;
-    getOutline: (ImageFrame:ImageLabel|ImageButton)->number;
+	SetRound: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
+	SetOutline: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
+	GetRound: (ImageFrame:ImageLabel|ImageButton)->number;
+	GetOutline: (ImageFrame:ImageLabel|ImageButton)->number;
 }
 
 -------------------
 -- module
 -------------------
 export type module_exported = {
-    round: round;
-    tween: AdvancedTween;
-    style: module_style;
-    event: module_event;
-    store: module_store;
-    mount: module_mount;
-    class: module_class;
+	Round: round;
+	Tween: module_tween;
+	Style: module_style;
+	Event: module_event;
+	Store: module_store;
+	Mount: module_mount;
+	Class: module_class;
 }
 export type module = {
-    uninit: (id:string)->();
-    init: (id:string)->module_exported;
+	Uninit: (id:string)->();
+	Init: (id:string)->module_exported;
 }
 
 return {}
