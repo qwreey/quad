@@ -145,6 +145,11 @@ module.LerpProperties = LerpProperties
 --Properties : 트윈할 속성과 목표값 예시 :
 --Data.Properties.Position = UDim2.new(1,0,1,0) 처럼 하면 Position 속성의 목표를 1,0,1,0 으로 지정
 function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
+	OnStepped = OnStepped or Data.OnStepped
+	Ended = Ended or Data.Ended
+	Setter = Setter or Data.Setter
+	Getter = Getter or Data.Getter
+
 	-- remove self
 	if Item == module then warn "AdvancedTween:RunTween() is deprecated, Use AdvancedTween.RunTween() instead"; Item = Data; Data = Properties; Properties = Ended; Ended = OnStepped; OnStepped = Setter; Setter = Getter; Getter = _; end
 
@@ -275,20 +280,12 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 		if CallBack then
 			for FncIndex,Fnc in pairs(CallBack) do
 				if FncIndex == "*" then
-					Fnc(Index,Alpha,Item)
+					Fnc(Item,Index,Alpha)
 				else
 					local num = tonumber(FncIndex)
-					if num then
-						if num <= Index then
-							Fnc(Alpha,Item)
-							CallBack[FncIndex] = nil
-						end
-					else
-						local alphaNum = tonumber(FncIndex:match"~([%d.]+)")
-						if alphaNum <= Alpha then
-							Fnc(Index,Item)
-							CallBack[FncIndex] = nil
-						end
+					if num and num <= Index then
+						Fnc(Alpha,Index,Item)
+						CallBack[FncIndex] = nil
 					end
 				end
 			end

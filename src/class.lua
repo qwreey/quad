@@ -2,6 +2,7 @@ local module = {};
 local pack = table.pack;
 local match = string.match;
 local insert = table.insert;
+local gsub = string.gsub
 
 ---@param shared quad_export
 ---@return quad_module_class
@@ -59,6 +60,7 @@ function module.init(shared)
 		end
 		return item[index];
 	end
+	new.getProperty = getProperty
 
 	local function setProperty(item,index,value,ClassName)
 		if type(item) == "table" then item[index] = value; return; end
@@ -92,12 +94,13 @@ function module.init(shared)
 			item[index] = value; -- set property
 		end
 	end
+	new.setProperty = setProperty
 
 	local function rawGetProperty(item,index)
 		return item[index];
 	end
 	local function pcallGetProperty(item,index)
-		local ok,err = pcall(rawGetProperty,index);
+		local ok,err = pcall(rawGetProperty,item,index);
 		if ok then return err; end
 		return nil;
 	end
@@ -109,7 +112,8 @@ function module.init(shared)
 		local indexType = typeof(index);
 
 		-- child
-		if indexType == "string" and valueType == "table" and pcallGetProperty(value,"__type") == "quad_register" then -- register (bind to store event)
+		local quadType = valueType == "table" and pcallGetProperty(value,"__type")
+		if indexType == "string" and valueType == "table" and quadType == "quad_register" then -- register (bind to store event)
 			processedProperty[index] = true; -- ignore next
 			-- store reading
 			do
@@ -155,7 +159,7 @@ function module.init(shared)
 			processedProperty[index] = true; -- ignore next
 			-- prop set
 			setProperty(item,index,value,className);
-		elseif indexType == "number" and valueType == "table" and pcallGetProperty(value,"__type") == "quad_style" then -- style
+		elseif indexType == "number" and valueType == "table" and quadType == "quad_style" then -- style
 			-- style parsing
 			for _,thisStyle in ipairs(parseStyles(value)) do
 				if not processedProperty[thisStyle] then
@@ -253,7 +257,7 @@ function module.init(shared)
 					local lastName = prop;
 					return function (nprop,...)
 						nprop = nprop or {};
-						nprop.Name = lastName;
+						nprop.Name = gsub(gsub(match(lastName,"[^,]+")," +$",""),"^ +","");
 						for styleName,styleObj in pairs(styleList) do
 							if match(prop,styleName) then
 								insert(nprop,styleObj);
@@ -288,7 +292,7 @@ function module.init(shared)
 			-- make metatable
 			prop = storeNew(prop,nil);
 			local parent = prop and (prop.Parent or prop.parent);
-			local self = {__prop = prop; __parent = parent};
+			local self = {__prop = prop; __parent = parent,__propertyChangedSignals = {}};
 			local init = this.init;
 			if init then
 				init(self,prop);
@@ -316,6 +320,18 @@ function module.init(shared)
 				afterRender(self,object);
 			end
 			return self;
+		end
+
+		function this:GetPropertyChangedSignal(propertyName)
+			local signal = self.__propertyChangedSignals[propertyName]
+			if not signal then
+				signal = {}
+				self.__propertyChangedSignals[propertyName] = signal
+			end
+		end
+
+		function this:EmitPropertyChangedSignal(propertyName,value)
+
 		end
 
 		--- re-render object (if some props chaged, call this to render again)

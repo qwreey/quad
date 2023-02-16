@@ -45,7 +45,12 @@ function module.init(id)
 	return this,this.round,this.class,this.mount,this.store,this.event,this.tween,this.style;
 end
 
+local function cleanup(space)
+	-- space.items
+end
+
 function module.uninit(id)
+	pcall(cleanup,idSpace[id])
 	idSpace[id] = nil;
 end
 

@@ -5,11 +5,12 @@ this feature allows get object without making some created callback and local va
 but, it can't allows mulit id and object
 this feature should be upgraded
 ]]
-local wrap = coroutine.wrap;
+local wrap   = coroutine.wrap;
 local insert = table.insert;
 local remove = table.remove;
 local gmatch = string.gmatch;
-local gsub = string.gsub;
+local gsub   = string.gsub;
+local match  = string.match;
 
 local function catch(...)
 	local passed,err = pcall(...);
@@ -50,12 +51,11 @@ function module.init(shared)
 	function objectListClass:remove(indexOrItem)
 		local thisType = type(indexOrItem);
 		if thisType == "number" then
-			remove(self,indexOrItem);
+			return remove(self,indexOrItem),indexOrItem;
 		else
 			for i,v in pairs(self) do
 				if v == indexOrItem then
-					remove(self,i);
-					break;
+					return remove(self,i),i;
 				end
 			end
 		end
@@ -76,12 +76,26 @@ function module.init(shared)
 	objectListClass.__index = objectListClass;
 
 	-- get object array with id (objSpace)
-	function new.getObjects(id)
-		local list = items[id];
-		if list then return list; end
-		list = objectListClass.__new(id);
-		items[id] = list;
-		return list;
+	function new.getObjects(ids)
+		if match(ids,",") then
+			local list = items[ids];
+			if list then return list; end
+			list = objectListClass.__new();
+			items[ids] = list;
+			return list;
+		else
+			local list = objectListClass.__new();
+			for id in gmatch(ids,"[^,]+") do -- split by ,
+				id = gsub(gsub(id,"^ +","")," +$","");
+				local idItem = items[id];
+				if idItem then
+					for _,item in pairs(idItem) do
+						insert(list,item);
+					end
+				end
+			end
+			return list
+		end
 	end
 	-- get first object with id (not array)
 	function new.getObject(id)
@@ -208,7 +222,7 @@ function module.init(shared)
 		-- if got register, just copy data to self and connect
 		if type(value) == "table" and value.__type == "quad_register" then
 			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored";
-			
+
 			local selfValues = self.__self;
 			local selfTweens = self.__tweens;
 
@@ -303,8 +317,7 @@ function module.init(shared)
 		return register;
 	end
 	function store:default(key,value)
-		local old = self[key];
-		if old == nil then
+		if self[key] == nil then
 			self[key] = value;
 			return;
 		end
