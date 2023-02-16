@@ -14,11 +14,12 @@ local store = require "store"
 local class = require "class"
 local mount = require "mount"
 local signal = require "signal"
--- local lang = require "lang"
+local lang = require "lang"
 
 -- submodule
 local _,advancedTween = pcall(require,"libs.AdvancedTween")
 local _,round = pcall(require,"libs.round")
+local _,customWarn = pcall(require,"libs.customWarn")
 
 local idSpace = {}
 
@@ -38,10 +39,7 @@ function module.Init(id)
 	local this = {__type = "quad_module_init"}
 
 	this.require = require
-	this.warn = function(err)
-		warn(tostring(err))
-		print(debug.traceback())
-	end
+	this.warn = customWarn or warn
 	this.Round = type(round) == "table" and round ---@type quad_module_round
 	this.Tween = type(advancedTween) == "table" and advancedTween ---@type quad_module_tween
 	this.Signal = signal.init(this) ---@type quad_module_signal
@@ -50,6 +48,7 @@ function module.Init(id)
 	this.Store = store.init(this) ---@type quad_module_store
 	this.Mount = mount.init(this) ---@type quad_module_mount
 	this.Class = class.init(this) ---@type quad_module_class
+	this.Lang = lang.init(this) ---@type quad_module_lang
 
 	-- save
 	if id then

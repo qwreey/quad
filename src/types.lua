@@ -175,9 +175,9 @@ export type module_tween = {
 }
 
 -------------------
--- module_signal
+-- module_round
 -------------------
-export type round = {
+export type module_round = {
 	SetRound: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
 	SetOutline: (ImageFrame:ImageLabel|ImageButton,RoundSize:number)->(ImageLabel|ImageButton);
 	GetRound: (ImageFrame:ImageLabel|ImageButton)->number;
@@ -185,17 +185,22 @@ export type round = {
 }
 
 -------------------
+-- module_signal
+-------------------
+export type module_lang = {}
+
+-------------------
 -- module
 -------------------
 export type module_exported = {
-	Round: round;
+	Signal: module_signal;
+	Round: module_round;
 	Tween: module_tween;
 	Style: module_style;
 	Event: module_event;
 	Store: module_store;
 	Mount: module_mount;
 	Class: module_class;
-	Signal: module_signal;
 	Lang: module_lang;
 }
 export type module = {
