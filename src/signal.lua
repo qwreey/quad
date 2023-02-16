@@ -14,7 +14,7 @@ end
 
 local customSignal = {}
 customSignal.__index = customSignal
-function customSignal:emit(...)
+function customSignal:Fire(...)
     local waitting = self.waitting
     self.waitting = {}
 
@@ -38,7 +38,7 @@ function customSignal:Connect(func)
         end
     end
     insert(self.connection,func)
-    return customConnection.new(self,func) 
+    return customConnection.new(self,func)
 end
 local function onceWaitter(targetFunction)
     
@@ -54,3 +54,41 @@ function this.new(...)
     customSignal.new(...)
 end
 this.customSignal = customSignal
+
+-- roblox connections disconnecter
+local insert = table.insert
+local idSpace = {}
+local disconnecterClass = {__type = "quad_disconnecter"}
+function disconnecterClass:Add(connection)
+    insert(self,connection)
+end
+function disconnecterClass:Disconnect()
+    for i,v in pairs(self) do
+        pcall(v.Disconnect,v)
+        self[i] = nil
+    end
+end
+function disconnecterClass:Destroy()
+    local id = self.id
+    if id then
+        idSpace[id] = nil
+    end
+    for i,v in pairs(self) do
+        pcall(v.Disconnect,v)
+        self[i] = nil
+    end
+end
+function disconnecterClass.New(id)
+    if id then
+        local old = idSpace[id];
+        if old then
+            return old;
+        end
+    end
+    local this = setmetatable({id = id},disconnecterClass);
+    if id then
+        idSpace[id] = this;
+    end
+    return this;
+end
+disconnecterClass.__index = disconnecterClass

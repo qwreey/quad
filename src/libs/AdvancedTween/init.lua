@@ -63,9 +63,9 @@ module.EasingFunction = module.EasingFunctions
 ------------------------------------
 -- 이중 선형, Alpha 를 받아서 값을 구해옴
 local function Lerp(start,goal,alpha)
-    if alpha == 1 then return goal end
-    if alpha == 0 then return start end
-    return start + ((goal - start) * alpha)
+	if alpha == 1 then return goal end
+	if alpha == 0 then return start end
+	return start + ((goal - start) * alpha)
 end
 
 -- 기본적으로 로블록스가 Lerp 를 지원하는 Class

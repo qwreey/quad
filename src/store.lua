@@ -1,97 +1,97 @@
-local module = {};
+local module = {}
 
 --[[
 this feature allows get object without making some created callback and local var
 but, it can't allows mulit id and object
 this feature should be upgraded
 ]]
-local wrap   = coroutine.wrap;
-local insert = table.insert;
-local remove = table.remove;
-local gmatch = string.gmatch;
-local gsub   = string.gsub;
-local match  = string.match;
+local wrap   = coroutine.wrap
+local insert = table.insert
+local remove = table.remove
+local gmatch = string.gmatch
+local gsub   = string.gsub
+local match  = string.match
 
 local function catch(...)
-	local passed,err = pcall(...);
+	local passed,err = pcall(...)
 	if not passed then
-		warn ("[QUAD] Error occured while operating async task\n" .. tostring(err));
+		warn ("[QUAD] Error occured while operating async task\n" .. tostring(err))
 	end
 end
 
-local week = {__mode = "v"};
+local week = {__mode = "v"}
 
 ---@param shared quad_export
 ---@return quad_module_store
 function module.init(shared)
-	local warn = shared.warn;
+	local warn = shared.warn
 	---@class quad_module_store
-	local new = {__type = "quad_module_store"};
-	local items = {};
+	local new = {__type = "quad_module_store"}
+	local items = {}
 	new.items = items
 
 	-- id space (array of object)
-	local objectListClass = {__type = "quad_objectlist"};
+	local objectListClass = {__type = "quad_objectlist"}
 	function objectListClass:each(func)
-		local index = 1;
+		local index = 1
 		for i,v in pairs(self) do
-			wrap(catch)(func,index,v);
-			index = index + 1;
+			wrap(catch)(func,index,v)
+			index = index + 1
 		end
 	end
 	function objectListClass:eachSync(func)
-		local index = 1;
+		local index = 1
 		for _,v in pairs(self) do
-			local ret = func(index,v);
-			index = index + 1;
+			local ret = func(index,v)
+			index = index + 1
 			if ret then
-				break;
+				break
 			end
 		end
 	end
 	function objectListClass:remove(indexOrItem)
-		local thisType = type(indexOrItem);
+		local thisType = type(indexOrItem)
 		if thisType == "number" then
-			return remove(self,indexOrItem),indexOrItem;
+			return remove(self,indexOrItem),indexOrItem
 		else
 			for i,v in pairs(self) do
 				if v == indexOrItem then
-					return remove(self,i),i;
+					return remove(self,i),i
 				end
 			end
 		end
 	end
 	function objectListClass:isEmpty()
-		if next(self) then return true; end
-		return false;
+		if next(self) then return true end
+		return false
 	end
 	function objectListClass.__new()
-		return setmetatable({},objectListClass);
+		return setmetatable({},objectListClass)
 	end
 	function objectListClass:__newIndex(key,value) -- props setter
 		self:each(function (this)
-			this[key] = value;
-		end);
+			this[key] = value
+		end)
 	end
-	objectListClass.__mode = "kv"; -- week link for gc
-	objectListClass.__index = objectListClass;
+	objectListClass.__mode = "kv" -- week link for gc
+	objectListClass.__index = objectListClass
 
 	-- get object array with id (objSpace)
 	function new.getObjects(ids)
 		if match(ids,",") then
-			local list = items[ids];
-			if list then return list; end
-			list = objectListClass.__new();
-			items[ids] = list;
-			return list;
+			local list = items[ids]
+			if list then return list end
+			list = objectListClass.__new()
+			items[ids] = list
+			return list
 		else
-			local list = objectListClass.__new();
+			local list = objectListClass.__new()
 			for id in gmatch(ids,"[^,]+") do -- split by ,
-				id = gsub(gsub(id,"^ +","")," +$","");
-				local idItem = items[id];
+				id = gsub(gsub(id,"^ +","")," +$","")
+				local idItem = items[id]
 				if idItem then
 					for _,item in pairs(idItem) do
-						insert(list,item);
+						insert(list,item)
 					end
 				end
 			end
@@ -100,227 +100,227 @@ function module.init(shared)
 	end
 	-- get first object with id (not array)
 	function new.getObject(id)
-		local item = items[id];
-		return item and item[next(item)];
+		local item = items[id]
+		return item and item[next(item)]
 	end
 	--TODO: if item is exist already, ignore this call
 	-- adding object with id
 	function new.addObject(ids,object)
 		for id in gmatch(ids,"[^,]+") do -- split by ,
 			-- remove trailing, heading spaces
-			id = gsub(gsub(id,"^ +","")," +$","");
-			local array = items[id];
+			id = gsub(gsub(id,"^ +","")," +$","")
+			local array = items[id]
 			if not array then
-				array = objectListClass.__new();
-				items[id] = array;
+				array = objectListClass.__new()
+				items[id] = array
 			end
-			insert(array, object);
+			insert(array, object)
 		end
 	end
 
 	local registerClass = {
 		__type = "quad_register";
 		register = function (s,efunc)
-			local self = s.store;
-			local events = self.__evt;
+			local self = s.store
+			local events = self.__evt
 			for key in s.key:gmatch("[^,]+") do
-				key = key:gsub("^ +",""):gsub(" +$","");
-				local event = events[key];
+				key = key:gsub("^ +",""):gsub(" +$","")
+				local event = events[key]
 				if not event then
-					event = setmetatable({},week);
-					events[key] = event;
+					event = setmetatable({},week)
+					events[key] = event
 				end
-				insert(event,efunc);
+				insert(event,efunc)
 			end
 		end;
 		with = function (s,wfunc)
-			-- s.wfunc = wfunc;
-			-- return s;
-			return setmetatable({wfunc = wfunc},{__index = s});
+			-- s.wfunc = wfunc
+			-- return s
+			return setmetatable({wfunc = wfunc},{__index = s})
 		end;
 		default = function (s,dvalue)
-			-- s.dvalue = dvalue;
-			-- return s;
-			return setmetatable({dvalue = dvalue},{__index = s});
+			-- s.dvalue = dvalue
+			-- return s
+			return setmetatable({dvalue = dvalue},{__index = s})
 		end;
 		tween = function (s,tvalue)
-			-- s.tvalue = tvalue;
-			-- return s;
-			return setmetatable({tvalue = tvalue},{__index = s});
+			-- s.tvalue = tvalue
+			-- return s
+			return setmetatable({tvalue = tvalue},{__index = s})
 		end;
 		---@deprecated
 		from = function (s,fvalue)
-			warn "[QUAD] register:from() is deprecated. Use register:add(t:table|function) instead";
-			-- s.fvalue = fvalue;
-			-- return s;
-			return setmetatable({fvalue = fvalue},{__index = s});
+			warn "[QUAD] register:from() is deprecated. Use register:add(t:table|function) instead"
+			-- s.fvalue = fvalue
+			-- return s
+			return setmetatable({fvalue = fvalue},{__index = s})
 		end;
 		add = function (s,avalue)
-			-- s.avalue = avalue;
-			-- return s;
-			return setmetatable({avalue = avalue},{__index = s});
+			-- s.avalue = avalue
+			-- return s
+			return setmetatable({avalue = avalue},{__index = s})
 		end;
 		-- return init data
 		calcWithDefault = function (s,withItem)
-			local with = s.wfunc;
-			local tstore = s.store;
-			local rawKey = s.key;
-			local tween = s.tvalue or tstore.__tweens[rawKey];
-			local from = s.fvalue;
-			local add = s.avalue;
-			local set = tstore[rawKey];
+			local with = s.wfunc
+			local tstore = s.store
+			local rawKey = s.key
+			local tween = s.tvalue or tstore.__tweens[rawKey]
+			local from = s.fvalue
+			local add = s.avalue
+			local set = tstore[rawKey]
 			if set ~= nil or (rawKey:match(",") and with) then
 				if add then
-					set = set + add;
+					set = set + add
 				end
 				if from then
-					set = from[set];
+					set = from[set]
 				end
 				if with then
-					set = with(tstore,set,rawKey,withItem);
+					set = with(tstore,set,rawKey,withItem)
 				end
-				return set,tween;
+				return set,tween
 			else
-				local dset = s.dvalue;
+				local dset = s.dvalue
 				if dset ~= nil then
-					return dset,tween;
+					return dset,tween
 				end
-				warn "[Quad] no default value found.";
+				warn "[Quad] no default value found."
 			end
 		end;
 		calcWithNewValue = function(s,withItem,newValue,key)
-			local with = s.wfunc;
-			local tstore = s.store;
-			local rawKey = s.key;
-			local tween = s.tvalue or tstore.__tweens[rawKey];
-			local from = s.fvalue;
-			local add = s.avalue;
+			local with = s.wfunc
+			local tstore = s.store
+			local rawKey = s.key
+			local tween = s.tvalue or tstore.__tweens[rawKey]
+			local from = s.fvalue
+			local add = s.avalue
 			if add then
-				newValue = newValue + add;
+				newValue = newValue + add
 			end
 			if from then
-				newValue = from[newValue];
+				newValue = from[newValue]
 			end
 			if with then
-				newValue = with(tstore,newValue,key,withItem);
+				newValue = with(tstore,newValue,key,withItem)
 			end
-			return newValue,tween;
+			return newValue,tween
 		end
-	};
-	registerClass.__index = registerClass;
+	}
+	registerClass.__index = registerClass
 
 	-- bindable store object
-	local store = {__type = "quad_store"};
-	local storeIdSpace = {};
+	local store = {__type = "quad_store"}
+	local storeIdSpace = {}
 	function store:__index(key)
-		local this = self.__self[key];
+		local this = self.__self[key]
 		if this ~= nil then
-			return this;
+			return this
 		end
-		return store[key];
+		return store[key]
 	end
 	function store:__newindex(key,value)
 		-- if got register, just copy data to self and connect
 		if type(value) == "table" and value.__type == "quad_register" then
-			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored";
+			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored"
 
-			local selfValues = self.__self;
-			local selfTweens = self.__tweens;
+			local selfValues = self.__self
+			local selfTweens = self.__tweens
 
 			-- fetch data from origin
 			do
-				local tstore = value.store;
+				local tstore = value.store
 				for tkey in value.key:gmatch("^[,]") do
 					if not selfValues[tkey] then
-						selfValues[tkey] = tstore[tkey];
+						selfValues[tkey] = tstore[tkey]
 					end
 				end
 			end
 
 			-- calc value
 			do
-				local setValue,tween = value:calcWithDefault(self);
-				selfValues[key] = setValue;
-				selfTweens[key] = tween;
+				local setValue,tween = value:calcWithDefault(self)
+				selfValues[key] = setValue
+				selfTweens[key] = tween
 			end
 
 			-- make event connection
 			value:register(function (_,newValue,eventKey)
 				-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
-				local setValue = value:calcWithNewValue(self,newValue,eventKey);
-				self[key] = setValue;
-			end);
+				local setValue = value:calcWithNewValue(self,newValue,eventKey)
+				self[key] = setValue
+			end)
 
-			return;
+			return
 		end
-		self.__self[key] = value;
-		local event = self.__evt[key];
+		self.__self[key] = value
+		local event = self.__evt[key]
 		if event then
 			for _,v in pairs(event) do -- NO ipairs here
-				wrap(catch)(v,store,value,key);
+				wrap(catch)(v,store,value,key)
 			end
 		end
 	end
 	-- init bindings
 	function new.__initStoreRegisterBinding(self,withItem)
-		local selfTweens = self.__tweens;
-		local selfValues = self.__self;
-		local selfKeep = self.__keep;
+		local selfTweens = self.__tweens
+		local selfValues = self.__self
+		local selfKeep = self.__keep
 		for key,item in pairs(selfValues) do
 			if type(item) == "table" and item.__type == "quad_register" then
 				-- fetch data from origin
 				do
-					local tstore = item.store;
+					local tstore = item.store
 					for tkey in item.key:gmatch("^[,]") do
 						if not selfValues[tkey] then
-							selfValues[tkey] = tstore[tkey];
+							selfValues[tkey] = tstore[tkey]
 						end
 					end
 				end
 
 				-- calc value
 				do
-					local setValue,tween = item:calcWithDefault(withItem);
-					selfValues[key] = setValue;
-					selfTweens[key] = tween;
+					local setValue,tween = item:calcWithDefault(withItem)
+					selfValues[key] = setValue
+					selfTweens[key] = tween
 				end
 
 				-- make event connection
 				local function regFn(_,newValue,eventKey)
 					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
-					local setValue = item:calcWithNewValue(withItem,newValue,eventKey);
-					self[key] = setValue;
+					local setValue = item:calcWithNewValue(withItem,newValue,eventKey)
+					self[key] = setValue
 				end
-				item:register(regFn);
-				insert(selfKeep,item);
-				insert(selfKeep,regFn);
+				item:register(regFn)
+				insert(selfKeep,item)
+				insert(selfKeep,regFn)
 			end
 		end
 	end
 	-- create register
 	function store:__call(key,func)
-		local last = self.__self[key];
+		local last = self.__self[key]
 		if last and type(last) == "table" and getmetatable(last) == registerClass then
-			return last;
+			return last
 		end
-		local register = self.__reg[key];
+		local register = self.__reg[key]
 		if not register then
 			register = setmetatable({
 				key = key;
 				store = self;
-			},registerClass);
-			self.__reg[key] = register;
+			},registerClass)
+			self.__reg[key] = register
 		end
 
 		if func then
-			register.register(func);
+			register.register(func)
 		end
-		return register;
+		return register
 	end
 	function store:default(key,value)
 		if self[key] == nil then
-			self[key] = value;
-			return;
+			self[key] = value
+			return
 		end
 	end
 	function new.new(self,id)
@@ -332,18 +332,18 @@ function module.init(shared)
 				__tweens = {}, -- tweens (if inited with register, save tween and use as default tween data)
 				__keep = {} -- store data which should not be destoryed
 			},store
-		);
+		)
 		if id then -- save in id space
-			storeIdSpace[id] = this;
+			storeIdSpace[id] = this
 		end
-		return this;
+		return this
 	end
-	local storeNew = new.new;
+	local storeNew = new.new
 	function new.getStore(id)
-		return storeIdSpace[id] or storeNew({},id);
+		return storeIdSpace[id] or storeNew({},id)
 	end
 
-	return new;
+	return new
 end
 
-return module;
+return module

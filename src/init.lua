@@ -1,5 +1,5 @@
 ---@class quad
-local module = {};
+local module = {}
 
 local IS_TEST = true
 local VER = "1.14" .. (IS_TEST and "B" or "")
@@ -7,19 +7,19 @@ if IS_TEST then
 	warn("You are using BETA version of quad now. Many features may change in the future and unstable. AS USING BETA VERSION OF QUAD, YOU SHOULD KNOW IT WILL BUGGY SOMETIME. still on development - you can ignore this message if have no issue. if you have issue on using quad, please report issue on github. VERSION: "..VER)
 end
 
-local require = require(script.require);
-local style = require "style";
-local event = require "event";
-local store = require "store";
-local class = require "class";
-local mount = require "mount";
--- local lang = require "lang";
+local require = require(script.require)
+local style = require "style"
+local event = require "event"
+local store = require "store"
+local class = require "class"
+local mount = require "mount"
+-- local lang = require "lang"
 
 -- submodule
-local _,advancedTween = pcall(require,"libs.AdvancedTween");
-local _,round = pcall(require,"libs.round");
+local _,advancedTween = pcall(require,"libs.AdvancedTween")
+local _,round = pcall(require,"libs.round")
 
-local idSpace = {};
+local idSpace = {}
 
 ---@return quad_export this
 ---@return quad_module_round round
@@ -63,7 +63,7 @@ end
 
 function module.Uninit(id)
 	pcall(cleanup,idSpace[id])
-	idSpace[id] = nil;
+	idSpace[id] = nil
 end
 
-return module;
+return module
