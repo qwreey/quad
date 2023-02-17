@@ -4,8 +4,8 @@ local module = {}
 ---@module Quad.src.types
 local types = require(script.Parent.Quad.types)
 local quad = (require(script.Parent.Quad) :: types.module).Init("ui")
-local Round,Class,Mount,Store,Event,Tween,Style
-= quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style
+local Round,Class,Mount,Store,Event,Tween,Style,Lang
+= quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Lang
 
 local Global = Store.GetStore "global"
 
@@ -26,15 +26,22 @@ Style "tweenTestFrame" {
     BackgroundColor3 = Color3.fromRGB(0, 0, 0);
 }
 
+Lang.New("tweenCount",{
+    [Lang.Locales.Korean] = "{count}번 실행했어요";
+    [Lang.Locales.English] = "Ran {count} times";
+})
+
 -- Create GUI
 local tweenTest = Class.Extend()
 
 function tweenTest:Init(Prop)
+    Prop:Default("Count",0)
     Prop:Default("Position",UDim2.fromOffset(50,0))
     local on = false
     task.spawn(function()
         while task.wait(2) do
             on = not on
+            Prop.Count = Prop.Count + 1
             Prop.Position = on and UDim2.new(1,-50-60,0,0) or UDim2.fromOffset(50,0)
         end
     end)
@@ -42,6 +49,12 @@ end
 
 function tweenTest:Render(Prop)
     return Frame {
+        TextLabel {
+            Size = UDim2.new(1,0,0,30);
+            Text = Lang "tweenCount" {
+                count = Prop "Count":With(function(_,value) return value*2 end);
+            };
+        };
         Size = UDim2.fromScale(1,1);
         TextLabel "tweenTestFrame" {
             Text = "Linear";

@@ -187,7 +187,113 @@ export type module_round = {
 -------------------
 -- module_signal
 -------------------
-export type module_lang = {}
+export type langOptions = {
+	[string]: register|string|number|any;
+}
+export type langHandler = {
+	[string]: string|(langOptions:langOptions)->string;
+}
+export type Locale = string
+export type module_lang = {
+	New: (id:string,handlers:{
+		en_us: langHandler;
+		es_es: langHandler;
+		fr_fr: langHandler;
+		id_id: langHandler;
+		it_it: langHandler;
+		ja_jp: langHandler;
+		ko_kr: langHandler;
+		ru_ru: langHandler;
+		th_th: langHandler;
+		tr_tr: langHandler;
+		vi_vn: langHandler;
+		pt_br: langHandler;
+		de_de: langHandler;
+		zh_cn: langHandler;
+		zh_tw: langHandler;
+		bg_bg: langHandler;
+		bn_bd: langHandler;
+		cs_cz: langHandler;
+		da_dk: langHandler;
+		el_gr: langHandler;
+		et_ee: langHandler;
+		fi_fi: langHandler;
+		hi_in: langHandler;
+		hr_hr: langHandler;
+		hu_hu: langHandler;
+		ka_ge: langHandler;
+		kk_kz: langHandler;
+		km_kh: langHandler;
+		lt_lt: langHandler;
+		lv_lv: langHandler;
+		ms_my: langHandler;
+		my_mm: langHandler;
+		nb_no: langHandler;
+		nl_nl: langHandler;
+		fil_ph: langHandler;
+		pl_pl: langHandler;
+		ro_ro: langHandler;
+		uk_ua: langHandler;
+		si_lk: langHandler;
+		sk_sk: langHandler;
+		sl_sl: langHandler;
+		sq_al: langHandler;
+		bs_ba: langHandler;
+		sr_rs: langHandler;
+		sv_se: langHandler;
+		ar_001: langHandler;
+	})->();
+	Locales: {
+		English: Locale & "en_us";
+		Spanish: Locale & "es_es";
+		French: Locale & "fr_fr";
+		Indonesian: Locale & "id_id";
+		Italian: Locale & "it_it";
+		Japanese: Locale & "ja_jp";
+		Korean: Locale & "ko_kr";
+		Russian: Locale & "ru_ru";
+		Thai: Locale & "th_th";
+		Turkish: Locale & "tr_tr";
+		Vietnamese: Locale & "vi_vn";
+		Portuguese: Locale & "pt_br";
+		German: Locale & "de_de";
+		ChineseSimplified: Locale & "zh_cn";
+		ChineseTraditional: Locale & "zh_tw";
+		Bulgarian: Locale & "bg_bg";
+		Bengali: Locale & "bn_bd";
+		Czech: Locale & "cs_cz";
+		Danish: Locale & "da_dk";
+		Greek: Locale & "el_gr";
+		Estonian: Locale & "et_ee";
+		Finnish: Locale & "fi_fi";
+		Hindi: Locale & "hi_in";
+		Croatian: Locale & "hr_hr";
+		Hungarian: Locale & "hu_hu";
+		Georgian: Locale & "ka_ge";
+		Kazakh: Locale & "kk_kz";
+		Khmer: Locale & "km_kh";
+		Lithuanian: Locale & "lt_lt";
+		Latvian: Locale & "lv_lv";
+		Malay: Locale & "ms_my";
+		Burmese: Locale & "my_mm";
+		Bokmal: Locale & "nb_no";
+		Dutch: Locale & "nl_nl";
+		Filipino: Locale & "fil_ph";
+		Polish: Locale & "pl_pl";
+		Romanian: Locale & "ro_ro";
+		Ukrainian: Locale & "uk_ua";
+		Sinhala: Locale & "si_lk";
+		Slovak: Locale & "sk_sk";
+		Slovenian: Locale & "sl_sl";
+		Albanian: Locale & "sq_al";
+		Bosnian: Locale & "bs_ba";
+		Serbian: Locale & "sr_rs";
+		Swedish: Locale & "sv_se";
+		Arabic: Locale & "ar_001";
+	};
+	Lang: Locale;
+	Default: Locale;
+} & (id:string)->(langOptions)->register;
 
 -------------------
 -- module

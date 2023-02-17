@@ -44,8 +44,8 @@ end
 
 function module.init()
     ---@module Quad.src.types
-    local types = require(script.Parent.Quad.types)
-    local quad = (require(script.Parent.Quad) :: types.module).Init("ui")
+    local types = require(script.Quad.types)
+    local quad = (require(script.Quad) :: types.module).Init("ui")
     local Round,Class,Mount,Store,Event,Tween,Style,Signal
     = quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Signal
 

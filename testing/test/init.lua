@@ -41,7 +41,7 @@ return {
 	track = function ()
 
 		reload()
-
+		wait()
 		if not _G.uichangetracker then
 			local tracker =  require(script.tracker)
 			local changeTracker = tracker.new(script.Parent)

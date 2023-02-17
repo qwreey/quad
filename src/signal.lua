@@ -142,7 +142,7 @@ function module.init(shared)
 		local self = {waitting={},onceConnection={},connection={}}
 		setmetatable(self,signal)
 	end
-	new.Signal = signal
+	new.Bindable = signal
 
 	return new
 end

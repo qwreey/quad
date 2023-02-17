@@ -25,6 +25,8 @@ function module.init(shared)
 	local parseStyles = style.ParseStyles
 	local advancedTween = shared.Tween ---@type quad_module_tween
 	local round = shared.Round ---@type quad_module_round
+	local signal = shared.Signal ---@type quad_module_signal
+	local bindable = signal.Bindable
 
 	local function InstanceNewWithName(classname,parent,name)
 		local item = InstanceNew(classname,parent)
@@ -114,6 +116,7 @@ function module.init(shared)
 		if ok then return err end
 		return nil
 	end
+	new.PcallGetProperty = PcallGetProperty
 
 	local function ProcessQuadProperty(processedProperty,iprop,holder,item,className,index,value)
 		if processedProperty[index] then
@@ -341,15 +344,21 @@ function module.init(shared)
 		end
 
 		function this:GetPropertyChangedSignal(propertyName)
-			local signal = self.__propertyChangedSignals[propertyName]
-			if not signal then
-				signal = {}
-				self.__propertyChangedSignals[propertyName] = signal
+			local thisSignal = self.__propertyChangedSignals[propertyName]
+			if thisSignal then
+				return thisSignal
 			end
+			thisSignal = bindable.New()
+			self.__propertyChangedSignals[propertyName] = thisSignal
+			return thisSignal
 		end
 
 		function this:EmitPropertyChangedSignal(propertyName,value)
-
+			local thisSignal = self.__propertyChangedSignals[propertyName]
+			if not thisSignal then
+				return
+			end
+			thisSignal:Fire(value)
 		end
 
 		--- re-render object (if some props chaged, call this to render again)
@@ -453,9 +462,18 @@ function module.init(shared)
 			if this.UpdateTriggers[k] then
 				self:Update()
 			end
+
+			-- call PropertyChangedSignal
+			if self.__propertyChangedSignals[k] and self[k] ~= v then
+				self:EmitPropertyChangedSignal(k,v)
+			end
 		end
 
-		this.Getter = {}
+		this.Getter = {
+			Parent = function(self)
+				return rawget(self,"__parent")
+			end
+		}
 		this.Setter = {
 			Parent = function(self,parent,object)
 				rawset(self,"__parent",parent)
