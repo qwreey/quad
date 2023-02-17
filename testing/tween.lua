@@ -28,7 +28,7 @@ Style "tweenTestFrame" {
 
 Lang.New("tweenCount",{
     [Lang.Locales.Korean] = "{count}번 실행했어요";
-    [Lang.Locales.English] = "Ran {count} times";
+    [Lang.Locales.Default] = "Ran {count} times";
 })
 
 -- Create GUI
@@ -52,7 +52,7 @@ function tweenTest:Render(Prop)
         TextLabel {
             Size = UDim2.new(1,0,0,30);
             Text = Lang "tweenCount" {
-                count = Prop "Count":With(function(_,value) return value*2 end);
+                count = Prop "Count";
             };
         };
         Size = UDim2.fromScale(1,1);
@@ -108,20 +108,21 @@ function tweenTest:Render(Prop)
             Text = "Back";
             Position = Prop "Position":Add(UDim2.fromOffset(0,560)):Tween{Direction = "InOut",Time = 2,Easing = "Back"};
         };
-        -- frame {
-        --     Size = UDim2.new(100,100);
-        --     [event.created] = function(self)
-        --         for i = 1,100 do
-        --             mount(self,frame{
-        --                 Size = UDim2.fromOffset(3,3);
-        --                 AnchorPoint = Vector2.new(0.5,0.5);
-        --                 Position = UDim2.fromOffset(100-i,tween.CalcEasing(tween.EasingFunctions.Circle,tween.EasingDirections.InOut,i/100)*100);
-        --                 BackgroundColor3 = Color3.fromRGB(110, 110, 255);
-        --             })
-        --         end
-        --     end;
-        --     BackgroundColor3 = Color3.fromRGB(0,0,0);
-        -- };
+        Frame {
+            Size = UDim2.new(100,100);
+            [Event.Created] = function(self)
+                for j = 1,25 do
+                    local i = j*4
+                    Mount(self,Frame{
+                        Size = UDim2.fromOffset(3,3);
+                        AnchorPoint = Vector2.new(0.5,0.5);
+                        Position = UDim2.fromOffset(100-i,Tween.CalcEasing(Tween.EasingFunctions.Circle,Tween.EasingDirections.InOut,i/100)*100);
+                        BackgroundColor3 = Color3.fromRGB(110, 110, 255);
+                    })
+                end
+            end;
+            BackgroundColor3 = Color3.fromRGB(0,0,0);
+        };
     }
 end
 

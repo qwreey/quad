@@ -188,7 +188,7 @@ function module.init(shared)
 				warn "[Quad] no default value found."
 			end
 		end;
-		CalcWithNewValue = function(s,withItem,newValue,key)
+		CalcWithNewValue = function(s,withItem,updatedValue,updatedKey)
 			local with = s.wfunc
 			local tstore = s.store
 			local rawKey = s.key
@@ -196,15 +196,15 @@ function module.init(shared)
 			local from = s.fvalue
 			local add = s.avalue
 			if add then
-				newValue = newValue + add
+				updatedValue = updatedValue + add
 			end
 			if from then
-				newValue = from[newValue]
+				updatedValue = from[updatedValue]
 			end
 			if with then
-				newValue = with(tstore,newValue,key,withItem)
+				updatedValue = with(tstore,updatedValue,updatedKey,withItem)
 			end
-			return newValue,tween
+			return updatedValue,tween
 		end
 	}
 	registerClass.__index = registerClass
@@ -261,7 +261,7 @@ function module.init(shared)
 			end
 		end
 	end
-	-- init bindings
+	-- init bindings (reflect all changes into class or other store, just wrapping it)
 	function new.__initStoreRegisterBinding(self,withItem)
 		local selfTweens = self.__tweens
 		local selfValues = self.__self

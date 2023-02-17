@@ -12,6 +12,7 @@ function module.init(shared)
 	local PcallGetProperty = class.PcallGetProperty
 
 	new.Locales = {
+		["Default"] = "default";
 		["English"] = "en_us";
 		["Spanish"] = "es_es";
 		["French"] = "fr_fr";
@@ -59,14 +60,17 @@ function module.init(shared)
 		["Swedish"] = "sv_se";
 		["Arabic"] = "ar_001";
 	}
-	new.Lang = game:GetService("LocalizationService").RobloxLocaleId
-	new.Default = new.Locales.English
+	new.CurrentLocale = game:GetService("LocalizationService").RobloxLocaleId
+	new.FailedMessage = "<Localization Failed>"
 
 	local lang = {}
 	lang.__index = lang
 	function lang.New(id,handlers)
 		local this = {handlers=handlers,id=id,store=store.New(),index=1}
 		lang[id] = this
+		if not handlers[new.Locales.Default] then
+			warn(("Localization %s have no Default value, Did you missed '[Lang.Locales.Default] = ...' ? It may make Localization fail on other languages"))
+		end
 		setmetatable(this,lang)
 	end
 
@@ -84,17 +88,7 @@ function module.init(shared)
 			local optionType = type(option)
 			local formatted
 			if quadType == "quad_register" then
-				local default = option.dvalue
-				local with = option.wfunc
-				local tstore = option.store
-				local rawKey = option.key
-				local value = tstore[rawKey]
-				if value == nil then
-					value = default
-				elseif with then
-					value = with(tstore,value,rawKey)
-				end
-				formatted = value
+				formatted = option:CalcWithDefault(nil)
 			elseif optionType == "number" then
 				if option%1 == 0 then
 					-- int
@@ -119,11 +113,23 @@ function module.init(shared)
 	end
 	local Update = lang.Update
 
-	function lang:Format(options)
+	function lang:UpdateAll()
 		-- find handler
 		local handler = self.handlers[new.Lang]
 		if not handler then
 			handler = self.handlers[new.Default]
+		end
+
+		for index = 1,self.index do
+			Update(self.store,handler,index,options)
+		end
+	end
+
+	function lang:Format(options)
+		-- find handler
+		local handler = self.handlers[new.Lang]
+		if not handler then
+			handler = self.handlers[new.Locales.Default]
 		end
 		if not handler then
 			warn(("Langauge handle %s is not found on Localization %s"):format(new.Default,self.id))
@@ -132,24 +138,46 @@ function module.init(shared)
 		self.index = index + 1
 
 		-- setup updater
+		local registerKeep = {}
+		-- this table will destroyed when parent register was destroyed
+		-- that means, if some other registerFN was inserted in registerKeep,
+		-- it will be destroyed when unnecessary
+		-- maybe better then self.store.__keep for GC
+		-- it will be not destroyed. anyway; registerKeep will be connected
+		-- to real instance OR local
 		for _,option in pairs(options) do
 			local quadType = PcallGetProperty(option,"__type")
 			-- if it is register, setup updater
 			if quadType == "quad_register" then
 				local function regFn()
-					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
+					-- update handler
+					handler = self.handlers[new.Lang]
+					if not handler then
+						handler = self.handlers[new.Locales.Default]
+					end
+					if not handler then
+						self.store[tostring(index)] = new.FailedMessage
+					end
 					Update(self.store,handler,index,options)
+					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
 				end
 				option:Register(regFn)
-				insert(self.store.__keep,regFn)
+				insert(registerKeep,regFn)
 			end
 		end
 
 		-- update once
-		Update(self.store,handler,index,options)
-		
+		if handler then
+			Update(self.store,handler,index,options)
+		else
+			self.store[tostring(index)] = new.FailedMessage
+		end
+
 		-- return resiter
-		return self.store(tostring(index))
+		local register = self.store(tostring(index))
+		register.registerKeep = registerKeep
+		register.__rtype = "LangUpdater"
+		return register
 	end
 
 	function new.New(id,handlers)
