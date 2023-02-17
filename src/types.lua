@@ -136,6 +136,7 @@ export type TweenOptions = {
 	Ended: TweenEnded?;
 	Getter: TweenGetter?;
 	Setter: TweenSetter?;
+	Time: number?;
 }
 export type EasingFunction = {run:(number)->number,[any]:any}
 export type EasingFunctions = {
