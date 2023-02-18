@@ -56,7 +56,7 @@ function module.init()
     local TweenTest = Class(script.tween)
     local LangTest = Class(script.lang)
 
-    Signal.
+    -- Signal.
 
     SetTheme(Global)
 

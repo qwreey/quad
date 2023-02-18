@@ -54,7 +54,20 @@ export type module_event = {
 -------------------
 -- module_signal
 -------------------
-export type signal = {}
+export type connection = {
+	Disconnect: (self:connection)->();
+	Destroy: (self:connection)->();
+	New: (signal,(...any)->())->();
+}
+export type signal = {
+	Fire: (self:signal,...any)->();
+	Wait: (self:signal)->();
+	CheckConnected: (self:signal,(...any)->())->boolean;
+	Connect: (self:signal,(...any)->())->connection;
+	Once: (self:signal,(...any)->())->connection;
+	Destroy: (self:signal)->();
+	New: (id:string?)->signal;
+}
 export type disconnecter = {
 	Add: (self:disconnecter,connection:RBXScriptConnection)->();
 	Destroy: (self:disconnecter)->();
@@ -63,6 +76,7 @@ export type disconnecter = {
 }
 export type module_signal = {
 	Disconnecter: disconnecter;
+	Bindable: signal;
 }
 
 -------------------

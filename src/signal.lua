@@ -51,12 +51,12 @@ function module.init(shared)
 	end
 	new.Disconnecter = disconnecterClass
 
-	local customConnection = {}
-	customConnection.__index = customConnection
-	function customConnection.New(signal,func)
+	local connection = {}
+	connection.__index = connection
+	function connection.New(signal,func)
 		return {signal = signal,func = func}
 	end
-	function customConnection:Disconnect(slient)
+	function connection:Disconnect(slient)
 		local signal = self.signal
 		local onceConnection = signal.onceConnection
 		local connection = signal.connection
@@ -78,11 +78,12 @@ function module.init(shared)
 			warn(("Connection %s is not found from signal %s, but tried :Disconnect(). Maybe disconnected aleady?"):format(tostring(self),tostring(signal)))
 		end
 	end
-	function customConnection:Destroy()
+	function connection:Destroy()
 		return self:Disconnect(true)
 	end
-	new.Connection = customConnection
+	new.Connection = connection
 
+	local signals = {}
 	local signal = {}
 	signal.__index = signal
 	function signal:Fire(...)
@@ -126,7 +127,7 @@ function module.init(shared)
 		if self:CheckConnected(func) then
 			warn(("[Quad] Function %s Connected already on signal %s"):format(tostring(func),tostring(self)))
 		end
-		local thisConnection = customConnection.New(self,func)
+		local thisConnection = connection.New(self,func)
 		insert(self.connection,{func=func,connection=thisConnection})
 		return thisConnection
 	end
@@ -134,13 +135,26 @@ function module.init(shared)
 		if self:CheckConnected(func) then
 			warn(("[Quad] Function %s Connected already on signal %s"):format(tostring(func),tostring(self)))
 		end
-		local thisConnection = customConnection.New(self,func)
+		local thisConnection = connection.New(self,func)
 		insert(self.onceConnection,{func=func,connection=thisConnection})
 		return thisConnection
 	end
-	function signal.New()
-		local self = {waitting={},onceConnection={},connection={}}
-		setmetatable(self,signal)
+	function signal:Destroy()
+		self.waitting = nil
+		self.onceConnection = nil
+		self.connection = nil
+		setmetatable(self,nil)
+	end
+	function signal.New(id)
+		if id and signals[id] then
+			return signals[id]
+		end
+		local this = {waitting={},onceConnection={},connection={}}
+		setmetatable(this,signal)
+		if id then
+			signals[id] = this
+		end
+		return this
 	end
 	new.Bindable = signal
 
