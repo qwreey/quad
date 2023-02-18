@@ -54,6 +54,9 @@ function module.init()
 
     local Global = Store.GetStore "global"
     local TweenTest = Class(script.tween)
+    local LangTest = Class(script.lang)
+
+    Signal.
 
     SetTheme(Global)
 
@@ -62,7 +65,8 @@ function module.init()
             Size = UDim2.fromOffset(400,640);
             Position = UDim2.fromScale(0.5,0.5);
             AnchorPoint = Vector2.new(0.5,0.5);
-            TweenTest{};
+            -- TweenTest{};
+            LangTest{};
         }
     }
     Mount(game.StarterGui,Store.GetObject "MainGui")

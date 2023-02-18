@@ -60,13 +60,30 @@ function module.init(shared)
 		["Swedish"] = "sv_se";
 		["Arabic"] = "ar_001";
 	}
-	new.CurrentLocale = game:GetService("LocalizationService").RobloxLocaleId
-	new.FailedMessage = "<Localization Failed>"
 
+	local function GetLocale()
+		return game:GetService("LocalizationService").RobloxLocaleId
+	end
+	local function PcallGetLocale()
+		local passed,result = pcall(GetLocale)
+		if passed then return result end
+		return false
+	end
+
+	local CurrentLocale = PcallGetLocale() or "en_us"
+	local FailedMessage = "<Localization Failed>"
+
+	local weak = {__mode = "v"}
 	local lang = {}
 	lang.__index = lang
 	function lang.New(id,handlers)
-		local this = {handlers=handlers,id=id,store=store.New(),index=1}
+		local this = {
+			handlers=handlers;
+			id=id;
+			store=store.New();
+			index=1;
+			registers = setmetatable({},weak);
+		}
 		lang[id] = this
 		if not handlers[new.Locales.Default] then
 			warn(("Localization %s have no Default value, Did you missed '[Lang.Locales.Default] = ...' ? It may make Localization fail on other languages"))
@@ -115,24 +132,28 @@ function module.init(shared)
 
 	function lang:UpdateAll()
 		-- find handler
-		local handler = self.handlers[new.Lang]
+		local handler = self.handlers[CurrentLocale]
 		if not handler then
-			handler = self.handlers[new.Default]
+			handler = self.handlers[new.Locales.Default]
 		end
 
-		for index = 1,self.index do
-			Update(self.store,handler,index,options)
+		for index,register in pairs(self.registers) do
+			if handler then
+				Update(self.store,handler,index,register.options)
+			else
+				self.store[tostring(index)] = FailedMessage
+			end
 		end
 	end
 
 	function lang:Format(options)
 		-- find handler
-		local handler = self.handlers[new.Lang]
+		local handler = self.handlers[CurrentLocale]
 		if not handler then
 			handler = self.handlers[new.Locales.Default]
 		end
 		if not handler then
-			warn(("Langauge handle %s is not found on Localization %s"):format(new.Default,self.id))
+			warn(("Langauge handle Lang.Locales.Default is not found on Localization %s"):format(self.id))
 		end
 		local index = self.index
 		self.index = index + 1
@@ -140,11 +161,6 @@ function module.init(shared)
 		-- setup updater
 		local registerKeep = {}
 		-- this table will destroyed when parent register was destroyed
-		-- that means, if some other registerFN was inserted in registerKeep,
-		-- it will be destroyed when unnecessary
-		-- maybe better then self.store.__keep for GC
-		-- it will be not destroyed. anyway; registerKeep will be connected
-		-- to real instance OR local
 		for _,option in pairs(options) do
 			local quadType = PcallGetProperty(option,"__type")
 			-- if it is register, setup updater
@@ -156,9 +172,10 @@ function module.init(shared)
 						handler = self.handlers[new.Locales.Default]
 					end
 					if not handler then
-						self.store[tostring(index)] = new.FailedMessage
+						self.store[tostring(index)] = FailedMessage
+					else
+						Update(self.store,handler,index,options)
 					end
-					Update(self.store,handler,index,options)
 					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
 				end
 				option:Register(regFn)
@@ -170,18 +187,27 @@ function module.init(shared)
 		if handler then
 			Update(self.store,handler,index,options)
 		else
-			self.store[tostring(index)] = new.FailedMessage
+			self.store[tostring(index)] = FailedMessage
 		end
 
 		-- return resiter
 		local register = self.store(tostring(index))
 		register.registerKeep = registerKeep
 		register.__rtype = "LangUpdater"
+		register.index = index
+		register.options = options
+		self.registers[index] = register
 		return register
 	end
 
 	function new.New(id,handlers)
 		return lang.New(id,handlers)
+	end
+
+	function new.Update()
+		for _,this in pairs(lang) do
+			this:UpdateAll()
+		end
 	end
 
 	setmetatable(new,{
@@ -194,6 +220,27 @@ function module.init(shared)
 				return data:Format(options)
 			end
 		end;
+		__index = function (self,key)
+			if key == "CurrentLocale" then
+				return CurrentLocale
+			end
+			if key == "FailedMessage" then
+				return FailedMessage
+			end
+		end;
+		__newindex = function (self,key,value)
+			if key == "CurrentLocale" then
+				CurrentLocale = value
+				new.Update()
+				return
+			end
+			if key == "FailedMessage" then
+				FailedMessage = value
+				new.Update()
+				return
+			end
+			rawset(self,key,value)
+		end
 	})
 
 	return new

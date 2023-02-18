@@ -9,7 +9,7 @@ return function (query)
 	local typeQuery = type(query)
 
 	if typeQuery == "string" then
-		local object = script.Parent
+		local object = script.Parent.Parent
 		query = query:gsub("/",".")
 		-- local index = 0
 		query:gsub("[^%.]+",function (this)
@@ -21,7 +21,7 @@ return function (query)
 			object = object[this]
 			if not object then
 				object = lastObject.libs
-				error(("[Quad] (require) object %s was not found from this worktree, require failed"):format(query))
+				return false,("[Quad] (require) object %s was not found from this worktree, require failed"):format(query)
 			end
 		end)
 		return require(object)
