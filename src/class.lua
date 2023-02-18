@@ -274,7 +274,9 @@ function module.init(shared)
 					local lastName = prop
 					return function (nprop,...)
 						nprop = nprop or {}
-						nprop.Name = gsub(gsub(match(lastName,"[^,]+")," +$",""),"^ +","")
+						if not nprop.Name then
+							nprop.Name = gsub(gsub(match(lastName,"[^,]+")," +$",""),"^ +","")
+						end
 						for styleName,styleObj in pairs(styleList) do
 							if match(prop,styleName) then
 								insert(nprop,styleObj)

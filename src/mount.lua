@@ -76,7 +76,7 @@ function module.init(shared)
 	mountsClass.__index = mountsClass
 	function mountsClass:Unmount()
 		for _,v in ipairs(self) do
-			v:unmount()
+			v:Unmount()
 		end
 	end
 

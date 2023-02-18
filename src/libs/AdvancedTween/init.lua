@@ -12,6 +12,15 @@ local insert = table.insert
 local find = table.find
 local floor = math.floor
 
+if not find then
+	find = function (table,item)
+		for i,v in pairs(table) do
+			if v == item then return i end
+		end
+		return nil
+	end
+end
+
 local script = script
 local EasingFunctions = require(script and script.EasingFunctions or "EasingFunctions")
 local Stepped = require(script and script.Stepped or "Stepped")

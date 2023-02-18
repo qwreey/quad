@@ -13,6 +13,6 @@
 
 ## 목차
 
-[1. 설치하기](kr/tutorial/1_install)  
+[1. 설치하기](kr/tutorial/1_importRobloxClass)  
 [2. 시작하기](kr/tutorial/2_starting)  
 

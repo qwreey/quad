@@ -54,7 +54,7 @@ function module.init(shared)
 	local connection = {}
 	connection.__index = connection
 	function connection.New(signal,func)
-		return {signal = signal,func = func}
+		return setmetatable({signal = signal,func = func},connection)
 	end
 	function connection:Disconnect(slient)
 		local signal = self.signal
@@ -69,7 +69,7 @@ function module.init(shared)
 		end
 		for i,v in pairs(onceConnection) do
 			if v.connection == self then
-				remove(connection,i)
+				remove(onceConnection,i)
 				return
 			end
 		end

@@ -11,6 +11,16 @@ local remove = table.remove
 local gmatch = string.gmatch
 local gsub   = string.gsub
 local match  = string.match
+local find  = table.find
+
+if not find then
+	find = function (table,item)
+		for i,v in pairs(table) do
+			if v == item then return i end
+		end
+		return nil
+	end
+end
 
 local function catch(...)
 	local passed,err = pcall(...)
@@ -32,17 +42,17 @@ function module.init(shared)
 
 	-- id space (array of object)
 	local objectListClass = {__type = "quad_objectlist"}
-	function objectListClass:Each(func)
+	function objectListClass:EachAsync(func)
 		local index = 1
 		for i,v in pairs(self) do
-			wrap(catch)(func,index,v)
+			wrap(catch)(func,v,index)
 			index = index + 1
 		end
 	end
-	function objectListClass:EachSync(func)
+	function objectListClass:Each(func)
 		local index = 1
 		for _,v in pairs(self) do
-			local ret = func(index,v)
+			local ret = func(v,index)
 			index = index + 1
 			if ret then
 				break
@@ -50,6 +60,9 @@ function module.init(shared)
 		end
 	end
 	function objectListClass:Remove(indexOrItem)
+		if self.__locked then
+			error("This objectList is locked, maybe used Store.GetObjects('a,b')? AdvancedObjectQuery does not support :Remove")
+		end
 		local thisType = type(indexOrItem)
 		if thisType == "number" then
 			return remove(self,indexOrItem),indexOrItem
@@ -78,23 +91,64 @@ function module.init(shared)
 
 	-- get object array with id (objSpace)
 	function new.GetObjects(ids)
-		if match(ids,",") then
+		if match(ids,"[,&]") then
+			local list = objectListClass.__new()
+			objectListClass.__locked = true
+			local checked = {}
+			for query in gmatch(ids,"[^,]+") do -- split by ,
+				if match(query,"&") then
+					-- multi ids (and)
+
+					-- make list of combined ids
+					local queryIds = {}
+					for id in gmatch(query,"[^&]+") do
+						id = gsub(gsub(id,"^ +","")," +$","")
+						insert(queryIds,id)
+					end
+
+					-- loop as first list
+					local targetList = queryIds[1] and items[remove(queryIds,1)]
+					if targetList then
+						for _,item in pairs(targetList) do
+							if not checked[item] then
+								-- check item has all of ids from queryIds
+								local ok = true
+								for _,id in ipairs(queryIds) do
+									local checkList = items[id]
+									if (not checkList) or (not find(checkList,item)) then
+										ok = false
+										break
+									end
+								end
+
+								-- insert in return list
+								if ok then
+									insert(list,item)
+									-- prevent multi insert
+									checked[item] = true
+								end
+							end
+						end
+					end
+				else
+					query = gsub(gsub(query,"^ +","")," +$","")
+					local idItem = items[query]
+					if idItem then
+						for _,item in pairs(idItem) do
+							if not checked[item] then
+								insert(list,item)
+								checked[item] = true -- prevent multi insert
+							end
+						end
+					end
+				end
+			end
+			return list
+		else
 			local list = items[ids]
 			if list then return list end
 			list = objectListClass.__new()
 			items[ids] = list
-			return list
-		else
-			local list = objectListClass.__new()
-			for id in gmatch(ids,"[^,]+") do -- split by ,
-				id = gsub(gsub(id,"^ +","")," +$","")
-				local idItem = items[id]
-				if idItem then
-					for _,item in pairs(idItem) do
-						insert(list,item)
-					end
-				end
-			end
 			return list
 		end
 	end

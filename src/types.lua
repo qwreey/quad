@@ -91,8 +91,8 @@ export type register = {
 }
 export type store = {}
 export type objectList = {
-	Each: (self:objectList,(item:DOM,index:number)->())->();
-	EachSync: (self:objectList,(item:DOM,index:number)->())->();
+	Each: (self:objectList,(item:DOM|any,index:number)->())->();
+	EachSync: (self:objectList,(item:DOM|any,index:number)->())->();
 	Remove: (self:objectList,index:number|DOM)->(DOM?,number?);
 	IsEmpty: (self:objectList)->boolean;
 }
