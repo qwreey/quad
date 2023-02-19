@@ -5,7 +5,7 @@ if false then if not task then _G.task = {} end end
 local module = {}
 module.__index = module
 
-module.scheduleDelay = 0.1
+module.scheduleDelay = 1
 
 function module:__emit(eventName,...)
 	for _,func in ipairs(self.events[eventName]) do

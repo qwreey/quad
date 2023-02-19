@@ -1,6 +1,11 @@
 
 # 오브젝트에 아이디 부여하기, 그리고 사용하기
 
+읽기 전...
+> **다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 Store 는 공유됩니다**  
+> Quad.Init(QuadId:string?)  
+> 필요에 따라 다른 모듈에서의 오브젝트를 가져오는것을 막고싶다면 QuadId 를 모듈마다 다르게 설정하세요.  
+
 **변수에 만들어진 오브젝트를 하나하나 저장해???** 그게 편할리가 없죠. 오브젝트에 아이디를 넣고 사용해봅시다.
 
 ```lua
@@ -103,6 +108,12 @@ end
 id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.
 
 ```lua
+local ScreenGUI = script.Parent
+local Quad = require(path.to.module).Init()
+local Class,Mount,Store = Quad.Class,Quad.Mount,Quad.Store
+
+local Frame = Class "Frame"
+
 --다음과 같이 a 와 b 모두 가진 프레임을 생성할 수도 있습니다.
 Frame "a,b" {
     Name = "main";
@@ -136,3 +147,29 @@ end)
 또는(or) 연산 `,` 와 그리고(and) 연산 `&` 연산을 GetObjects 에 사용할 수 있고, 생성시에는 `,` 로 여러 아이디를 부여해줄 수 있습니다. *띄어쓰기는 무시됩니다*  
 
 > 주의 : *고급 ID 사용시 :Remove 연산자는 사용할 수 없습니다*
+
+# id 추가와 제거
+
+경우에 따라 이미 생성한 오브젝트에 id 를 추가 혹은 제거해줄 수 있습니다
+
+```lua
+local ScreenGUI = script.Parent
+local Quad = require(path.to.module).Init()
+local Class,Mount,Store = Quad.Class,Quad.Mount,Quad.Store
+
+local Frame = Class "Frame"
+
+Frame "testing" {}
+
+-- 아이디를 추가합니다
+Store.AddObject(
+    "a,b",Store.GetObject("testing")
+)
+
+-- 아이디를 제거합니다
+Store.GetObjects("a"):Remove(Store.GetObject("testing"))
+```
+
+`Store.AddObject(ids:string,item:any)` 를 이용해 아이디를 추가하고 `:Remote(item:any)` 를 이용해 아이디를 제거합니다  
+
+[다음 튜토리얼](./4_style)

@@ -325,8 +325,8 @@ export type module_exported = {
 	Lang: module_lang;
 }
 export type module = {
-	Uninit: (id:string)->();
-	Init: (id:string?)->module_exported;
+	Uninit: (QuadId:string)->();
+	Init: (QuadId:string?)->module_exported;
 }
 
 return {}

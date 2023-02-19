@@ -157,7 +157,6 @@ function module.init(shared)
 		local item = items[id]
 		return item and item[next(item)]
 	end
-	--TODO: if item is exist already, ignore this call
 	-- adding object with id
 	function new.AddObject(ids,object)
 		for id in gmatch(ids,"[^,]+") do -- split by ,
@@ -168,7 +167,9 @@ function module.init(shared)
 				array = objectListClass.__new()
 				items[id] = array
 			end
-			insert(array, object)
+			if not find(array,object) then
+				insert(array, object)
+			end
 		end
 	end
 
