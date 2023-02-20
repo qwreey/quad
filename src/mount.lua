@@ -34,6 +34,7 @@ function module.init(shared)
 			--if sef.to when
 			-- todo for remove child on parent
 		end
+		self.this = nil
 	end
 
 	-- mount function
@@ -69,27 +70,36 @@ function module.init(shared)
 		end
 		return setmetatable({to = to,this = this},mountClass)
 	end
-	new.Mount = mount
+	new.MountOne = mount
 
 	-- mount(s) class
 	local mountsClass = {__type = "quad_mounts"}
 	mountsClass.__index = mountsClass
 	function mountsClass:Unmount()
-		for _,v in ipairs(self) do
-			v:Unmount()
+		for i,v in pairs(self) do -- DO NOT IPAIRS (REASON: gc...)
+			if type(i) == "number" then
+				v:Unmount()
+				self[i] = nil
+			end
+		end
+	end
+
+	function mountsClass:Add(...)
+		for i = 1,select('#',...) do
+			insert(self,mount(self.to,select(i,...)))
 		end
 	end
 
 	-- handle __call
 	setmetatable(new,{
 		__call = function (self,to,...)
-			if select("#",...) == 1 then
-				return mount(to,...)
-			end
-			local mounts = {}
-			local items = pack(...)
-			for _,item in ipairs(items) do
-				insert(mounts,mount(to,item))
+			-- it not working for :Add()
+			-- if select("#",...) == 1 then
+			-- 	return mount(to,...)
+			-- end
+			local mounts = {to = to}
+			for i = 1,select('#',...) do
+				insert(mounts,mount(to,select(i,...)))
 			end
 			setmetatable(mounts,mountsClass)
 			return mounts

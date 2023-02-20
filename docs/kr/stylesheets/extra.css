@@ -1,0 +1,149 @@
+/*D2Coding 폰트 불러오기*/
+@font-face {
+  font-family: "KawaiiMonoRegular";
+  src:url("../assets/fonts/KawaiiMonoRegular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: normal;
+}
+
+/*전체 폰트*/
+body, input {
+  font-family: KawaiiMonoRegular;
+}
+/*코드창 폰트*/
+code {
+  font-family: KawaiiMonoRegular;
+}
+
+/*svg 글자 선택 불가능하도록 설정*/
+svg text {
+  pointer-events: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select:none;
+  -o-user-select:none;
+  user-select: none;
+}
+/*메크로 변수 리스트 배경 색깔 지정*/
+table.pretty {
+  background-color: #262929 !important;
+}
+
+/*메뉴 열면 배경 블러효과 주기*/
+.md-overlay {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/*테이블 해더 꾸미기*/
+th {
+  /*최소 길이*/
+  /* min-width: 5.8em !important; */
+  /*글자 색깔*/
+  /* color: rgb(255 255 255) !important; */
+  /*배경 색깔*/
+  /* background-color: rgb(26 27 31) !important; */
+  /*라인*/
+  /* border-bottom: .05em solid var(--md-accent-fg-color) !important; */
+  /*주변 남기는 공간 (상하 / 좌우)*/
+  /* padding: .85em 0.8em !important; */
+}
+/*테이블 아이템 꾸미기*/
+td {
+  /*배경 색깔*/
+  /* background-color: rgb(47 49 60) !important; */
+   /*주변 남기는 공간 (상하 / 좌우)*/
+  /* padding: .7em 0.8em !important; */
+}
+
+/*테이블 아이템 크기 (좌우)*/
+/* #table-em5 {
+  width: 5em !important;
+  min-width: 5em !important;
+}
+#table-em4 {
+  width: 4em !important;
+  min-width: 4em !important;
+}
+#table-em3 {
+  width: 3em !important;
+  min-width: 3em !important;
+}
+#table-em2 {
+  width: 2em !important;
+  min-width: 2em !important;
+}
+#table-em1 {
+  width: 1em !important;
+  min-width: 1em !important;
+}
+#table-custom {
+  min-width: 0em !important;
+} */
+
+/*테마 설정*/
+[data-md-color-scheme="custom"] {
+  /*글자 색깔*/
+  --md-default-fg-color: rgb(225, 215, 225);
+  --md-default-fg-color--light: rgb(235, 215, 252);
+  --md-default-fg-color--lighter: rgb(105, 105, 105);
+  --md-default-fg-color--lightest: rgb(70, 70, 70);
+
+  /*배경 색깔*/
+  --md-default-bg-color: rgb(41, 43, 54);
+  --md-default-bg-color--light: hsla(232, 15%, 21%, 0.54);
+  --md-default-bg-color--lighter: hsla(232, 15%, 21%, 0.26);
+  --md-default-bg-color--lightest: hsla(232, 15%, 21%, 0.07);
+
+  /*하이라이팅 색깔 (탑바, 링크)*/
+  --md-primary-fg-color: hsl(268, 100%, 53%);
+  --md-primary-fg-color--light: hsl(271, 100%, 77%);
+  --md-primary-fg-color--dark :hsl(271, 82%, 72%);
+  --md-primary-bg-color: #f9e1ff;
+  --md-primary-bg-color--light: #f1d2ff;
+
+  /*기타 (링크 마우스 온, 탭 컬러)*/
+  --md-accent-fg-color: #bd78f5;
+  --md-accent-fg-color--transparent: hsla(0, 0%, 0%, 0.1);
+  --md-accent-bg-color: hsla(0, 0%, 100%, 1);
+  --md-accent-bg-color--light: hsla(0, 0%, 100%, 0.7);
+
+  /*모르겠음*/
+  --md-typeset-color: var(--md-default-fg-color);
+  --md-typeset-a-color: var(--md-primary-fg-color--light);
+  --md-typeset-mark-color: hsla(218, 100%, 63%, 0.3);  /*마커로 마킹함*/
+  --md-typeset-del-color: hsla(6, 90%, 60%, 0.15); /*내용 비교 하이라이터 : 지움*/
+  --md-typeset-ins-color: hsla(150, 90%, 44%, 0.15); /*내용 비교 하이라이터 : 만듬*/
+  --md-typeset-kbd-color: hsla(232, 15%, 94%, 0.12);
+  --md-typeset-kbd-accent-color: hsla(232, 15%, 94%, 0.2);
+  --md-typeset-kbd-border-color: hsla(232, 15%, 14%, 1);
+  --md-admonition-fg-color: var(--md-default-fg-color);
+  --md-admonition-bg-color: hsla(232, 0%, 100%, 0.025);
+
+  /* Footer */
+  --md-footer-fg-color: hsla(0, 0%, 100%, 1);
+  --md-footer-fg-color--light: hsla(0, 0%, 100%, 0.7);
+  --md-footer-fg-color--lighter: hsla(0, 0%, 100%, 0.3);
+  --md-footer-bg-color: hsla(232, 15%, 12%, 0.87);
+  --md-footer-bg-color--dark: hsla(232, 15%, 10%, 1);
+
+  /*Code block , Code highlighting*/
+  --md-code-fg-color: hsla(232, 18%, 86%, 1); /*일반 텍스트*/
+  --md-code-bg-color: hsla(232, 15%, 15%, 1); /*배경*/
+  --md-code-hl-color: hsla(218, 100%, 63%, 0.15); /*수직선(왼쪽 숫자 옆)*/
+  --md-code-hl-number-color:#f0b680; /*숫자*/
+  --md-code-hl-special-color: #d17eeb;
+  --md-code-hl-function-color: #7db9eb; /*함수명 색깔*/
+  --md-code-hl-constant-color: #50A8B3; /*내장함수 색깔*/
+  --md-code-hl-keyword-color:#C577DC; /*local, function, do, for ...*/
+  --md-code-hl-string-color: #98C279; /*문자열*/
+  --md-code-hl-name-color: var(--md-code-fg-color); /*변수명 색깔*/
+  --md-code-hl-operator-color: #50A8B3; /*연산자( = < > ^ * - + ) 색깔*/
+  --md-code-hl-punctuation-color: #A9B0BD; /*구두점 문자 ( ) , ;*/
+  --md-code-hl-comment-color: #5B626F; /*주석 색깔*/
+  --md-code-hl-generic-color: var(--md-default-fg-color--light);
+  --md-code-hl-variable-color: var(--md-default-fg-color--light);
+}

@@ -5,9 +5,9 @@ export type extend = {
 	Getter: {[string]: ()->(any?)?};
 	Setter: {[string]: (value:any)->()?};
 	New: (prop:DOM_constructor)->DOM|any;
-	Init: (self:extend,props:store)->();
-	Render: (self:extend,props:store)->(DOM|any);
-	AfterRender: (self:extend,item:DOM|any,props:store)->();
+	Init: (self:extend,props:valueStore)->();
+	Render: (self:extend,props:valueStore)->(DOM|any);
+	AfterRender: (self:extend,item:DOM|any,props:valueStore)->();
 	GetPropertyChangedSignal: (self:extend,propertyName:string)->signal;
 	EmitPropertyChangedSignal: (self:extend,propertyName:string,...any)->();
 	Update: (self:extend)->();
@@ -84,12 +84,12 @@ export type module_signal = {
 -------------------
 export type register = {
 	Register: (self:register,()->())->();
-	With: <R>(self:R&register,handler:{any}|(store:store,value:any,key:any,item:DOM)->any)->R&register;
+	With: <R>(self:R&register,handler:{any}|(store:valueStore,value:any,key:any,item:DOM)->any)->R&register;
 	Default: <R>(self:R&register,value:any)->R&register;
 	Add: <R>(self:R&register,value:any)->R&register;
 	Tween: <R>(self:R&register,tween:TweenOptions)->R&register;
 }
-export type store = {}
+export type valueStore = {[any]:any}&(key:string)->register
 export type objectList = {
 	Each: (self:objectList,(item:DOM|any,index:number)->())->();
 	EachSync: (self:objectList,(item:DOM|any,index:number)->())->();
@@ -99,9 +99,10 @@ export type objectList = {
 export type ObjectIdList = string
 export type module_store = {
 	GetObjects: (ids:ObjectIdList)->objectList;
-	SetObject: (id:string)->DOM?;
+	GetObject: (id:string)->DOM?;
 	AddObject: (ids:ObjectIdList)->();
-}
+	GetStore: (id:string?)->valueStore;
+} & (id:string?)->valueStore
 
 -------------------
 -- module_style
@@ -117,9 +118,11 @@ export type module_style = {
 export type mount = {
 	Unmount: (self:mount)->();
 }
-export type mounts = mount
+export type mounts = mount & {
+	Add: (self:mount,...DOM|any)->();
+}
 export type module_mount = {
-	Mount: (to:DOM|any,object:DOM|any,holder:DOM|any?)->mount;
+	MountOne: (to:DOM|any,object:DOM|any,holder:DOM|any?)->mount;
 	GetHolder: (item:DOM|any)->any?;
 } & (to:DOM|any,object:DOM|any,holder:DOM|any?)->mounts
 

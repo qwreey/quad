@@ -86,7 +86,7 @@ function module.init(shared)
 			this[key] = value
 		end)
 	end
-	objectListClass.__mode = "kv" -- week link for gc
+	objectListClass.__mode = "v" -- week link for gc
 	objectListClass.__index = objectListClass
 
 	-- get object array with id (objSpace)
@@ -159,6 +159,12 @@ function module.init(shared)
 	end
 	-- adding object with id
 	function new.AddObject(ids,object)
+		-- prevent gc
+		if type(object) == "userdata" then
+			object:GetPropertyChangedSignal("ClassName"):Connect(function()
+				return object
+			end)
+		end
 		for id in gmatch(ids,"[^,]+") do -- split by ,
 			-- remove trailing, heading spaces
 			id = gsub(gsub(id,"^ +","")," +$","")
@@ -178,8 +184,8 @@ function module.init(shared)
 		Register = function (s,efunc)
 			local self = s.store
 			local events = self.__evt
-			for key in s.key:gmatch("[^,]+") do
-				key = key:gsub("^ +",""):gsub(" +$","")
+			for key in gmatch(s.key,"[^,]+") do
+				key = gsub(gsub(key,"^ +","")," +$","")
 				local event = events[key]
 				if not event then
 					event = setmetatable({},week)
@@ -224,7 +230,7 @@ function module.init(shared)
 			local from = s.fvalue
 			local add = s.avalue
 			local set = tstore[rawKey]
-			if set ~= nil or (rawKey:match(",") and with) then
+			if set ~= nil or (match(rawKey,",") and with) then
 				if add then
 					set = set + add
 				end
@@ -232,7 +238,14 @@ function module.init(shared)
 					set = from[set]
 				end
 				if with then
-					set = with(tstore,set,rawKey,withItem)
+					local typeWith = type(with)
+					if typeWith == "table" then
+						set = with[set]
+					elseif typeWith == "function" then
+						set = with(tstore,set,rawKey,withItem)
+					else
+						error(("Unsupported type :With(). got %s"):format(typeWith))
+					end
 				end
 				return set,tween
 			else
@@ -285,7 +298,7 @@ function module.init(shared)
 			-- fetch data from origin
 			do
 				local tstore = value.store
-				for tkey in value.key:gmatch("^[,]") do
+				for tkey in gmatch(value.key,"^[,]") do
 					if not selfValues[tkey] then
 						selfValues[tkey] = tstore[tkey]
 					end
@@ -294,15 +307,15 @@ function module.init(shared)
 
 			-- calc value
 			do
-				local setValue,tween = value:calcWithDefault(self)
+				local setValue,tween = value:CalcWithDefault(self)
 				selfValues[key] = setValue
 				selfTweens[key] = tween
 			end
 
 			-- make event connection
-			value:register(function (_,newValue,eventKey)
+			value:Register(function (_,newValue,eventKey)
 				-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
-				local setValue = value:calcWithNewValue(self,newValue,eventKey)
+				local setValue = value:CalcWithNewValue(self,newValue,eventKey)
 				self[key] = setValue
 			end)
 
@@ -397,6 +410,13 @@ function module.init(shared)
 	function new.GetStore(id)
 		return storeIdSpace[id] or storeNew({},id)
 	end
+	local getStore = new.GetStore
+
+	setmetatable(new,{
+		__call = function (self,...)
+			return getStore(...)
+		end;
+	})
 
 	return new
 end
