@@ -16,8 +16,7 @@ Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되
 
 === "용법"
 
-    ```lua
-    -- 자세한 설명은 예제를 참고하세요
+    ```lua title="자세한 설명은 예제를 참고하세요"
     Lang.New("Test",{
         [Lang.Locales.Korean] = "{won} 원";
         [Lang.Locales.Default] = "{won} Won";
@@ -31,9 +30,7 @@ Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되
 
 === "예제 - 다중언어 카운터"
 
-    1초가 지날 때 마다 카운트를 증가합니다. 영어 사용자에겐 영어를, 한국어 사용자에겐 한국어를 보여줍니다.
-
-    ```lua
+    ```lua title="1초가 지날 때 마다 카운트를 증가합니다. 영어 사용자에겐 영어를, 한국어 사용자에겐 한국어를 보여줍니다."
     local ScreenGUI = script.Parent
     local Quad = require(path.to.module).Init()
     local Store = Quad.Store

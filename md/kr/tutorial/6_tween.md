@@ -24,9 +24,7 @@ Quad 에서는 실제로 직접적으로 Tween 을 사용할 일은 적으며 �
 
 === "예제 - 움직이는 버튼"
 
-    클릭시 움직이는 버튼을 구현합니다.
-
-    ```lua
+    ```lua title="클릭시 움직이는 버튼을 구현합니다."
     local ScreenGUI = script.Parent
     local Quad = require(path.to.module).Init()
     local Class = Quad.Class

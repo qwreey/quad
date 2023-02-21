@@ -35,7 +35,7 @@ local myClass = Class.Extend()
 
 === "localscript"
 
-    ```lua
+    ```lua title="Extend 클래스를 불러오고 사용합니다"
     local ScreenGUI = script.Parent
     local Quad = require(path.to.module).Init()
     local Mount = Quad.Mount
@@ -83,7 +83,7 @@ local myClass = Class.Extend()
 
 === "localscript.myClass"
 
-    ```lua
+    ```lua title="Extend 클래스를 만듭니다. 다른곳에서 불러서 사용할 수 있습니다."
     local Quad = require(path.to.module).Init()
     local Class = Quad.Class
     local Event = Quad.Event

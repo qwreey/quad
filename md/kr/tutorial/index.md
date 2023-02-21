@@ -110,8 +110,7 @@ local Quad = (require(path.to.module)::types.module).Init()
 
 === "Main"
 
-    실제로 UI 들을 그리는 코드들이 담깁니다.
-    ```lua
+    ```lua title="실제로 UI 들을 그리는 코드들이 담깁니다."
     local Quad = require(path.to.module).Init()
     local LocalPlayer = game.Players.LocalPlayer
     local ScreenGUI = Instance.new("ScreenGui",
@@ -130,15 +129,13 @@ local Quad = (require(path.to.module)::types.module).Init()
 
 === "Loader"
 
-    게임을 플레이 할 때 코드가 로드될 수 있도록 만드는 로더입니다.
-    ```lua
+    ```lua title="게임을 플레이 할 때 코드가 로드될 수 있도록 만드는 로더입니다."
     require(script.Parent)
     ```
 
 === "Test"
 
-    명령창에서 명령어 입력으로 테스트를 실행 할 수 있도록 만드는 코드들이 담깁니다.
-    ```lua
+    ```lua title="명령창에서 명령어 입력으로 테스트를 실행 할 수 있도록 만드는 코드들이 담깁니다."
     -- 모듈 위치로 알맞게 변경해주세요
     local Quad = path.to.module
     local tracker = require(Quad.tracker)
@@ -176,3 +173,9 @@ local Quad = (require(path.to.module)::types.module).Init()
 
     return module
     ```
+
+이제 명령어 창에서 자동 리로드를 켜거나 끌 수 있습니다. rojo 나 편집기로 인해 코드가 변경되면 자동으로 업데이트됩니다!
+
+```lua
+require(path.to.your.module).load()
+```

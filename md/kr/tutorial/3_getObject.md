@@ -125,9 +125,7 @@ id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.
 
 === "예제"
 
-    좀더 직관적인 확인을 위해서 작동시켜보세요.
-
-    ```lua
+    ```lua title="좀더 직관적인 확인을 위해서 작동시켜보세요."
     local ScreenGUI = script.Parent
     local Quad = require(path.to.module).Init()
     local Class = Quad.Mount
