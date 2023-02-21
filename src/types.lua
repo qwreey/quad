@@ -122,7 +122,7 @@ export type mounts = mount & {
 	Add: (self:mount,...DOM|any)->();
 }
 export type module_mount = {
-	MountOne: (to:DOM|any,object:DOM|any,holder:DOM|any?)->mount;
+	MountOne: (to:DOM|any,object:DOM|any,holder:DOM|any?,noReturn:boolean?)->mount;
 	GetHolder: (item:DOM|any)->any?;
 } & (to:DOM|any,object:DOM|any,holder:DOM|any?)->mounts
 
@@ -132,7 +132,7 @@ export type module_mount = {
 export type TweenOnStepped = (Item:DOM|any,Alpha:number,AbsolutePercent:number)->()
 export type TweenEnded = (Item:DOM|any)->()
 export type TweenSetter = (Item:DOM|any,Property:string,Value:Lerpable)->()
-export type TweenGetter = (Item:DOM|any,Property:string)->()
+export type TweenGetter = (Item:DOM|any,Property:string)->any
 export type TweenOptions = {
 	Easing: "Linear"
 			|"Quint"
@@ -144,6 +144,7 @@ export type TweenOptions = {
 			|"Expo"
 			|"Elastic"
 			|"Bounce"
+			|"Back"
 			|"Exp2"
 			|"Exp4"
 			|EasingFunction?;
@@ -157,20 +158,21 @@ export type TweenOptions = {
 }
 export type EasingFunction = {run:(number)->number,[any]:any}
 export type EasingFunctions = {
-	Linear: EasingFunction; ---직선, Linear. i=x, x=0 ~ 1
-	Quint: EasingFunction; ---5제곱, Quint. (^5) i=1-(1-x)^5, x=0 ~ 1
-	Quart: EasingFunction; ---4제곱, Quart. (^4) i=1-(1-x)^4, x=0 ~ 1
-	Cubic: EasingFunction; ---3제곱, Cubic. (^3) i=1-(1-x)^3, x=0 ~ 1
-	Quad: EasingFunction; ---2제곱, Quad. (^2) i=1-(1-x)^2, x=0 ~ 1
-	Sin: EasingFunction; ---사인파, Sin. i=sin(x*pi/2), x=0 ~ 1
-	Circle: EasingFunction; ---사분원, Circle. i=sqrt(1-(1-x)^2), x=0 ~ 1
-	Expo: EasingFunction; ---지수함수, Expo. i=1-2^(-10*x), x=0~1
-	Elastic: EasingFunction; ---튀어오름, Elastic.
-	Bounce: EasingFunction; ---통통거림, Bounce
+	Linear: EasingFunction; ---직선, Linear. i=x, x=0 to 1
+	Quint: EasingFunction; ---5제곱, Quint. (^5) i=1-(1-x)^5, x=0 to 1
+	Quart: EasingFunction; ---4제곱, Quart. (^4) i=1-(1-x)^4, x=0 to 1
+	Cubic: EasingFunction; ---3제곱, Cubic. (^3) i=1-(1-x)^3, x=0 to 1
+	Quad: EasingFunction; ---2제곱, Quad. (^2) i=1-(1-x)^2, x=0 to 1
+	Sin: EasingFunction; ---사인파, Sin. i=sin(x*pi/2), x=0 to 1
+	Circle: EasingFunction; ---사분원, Circle. i=sqrt(1-(1-x)^2), x=0 to 1
+	Expo: EasingFunction; ---지수함수, Expo. i=1-2^(-10*x), x=0 to 1
+	Elastic: EasingFunction; ---탄성, Elastic.
+	Bounce: EasingFunction; ---튀어오름, Bounce
+	Back: EasingFunction; ---뒤로 움직임, Back
 
 	-- Old things
-	Exp2: EasingFunction; ---덜 가파른 지수. i=math.exp(x), x=-4 ~ 2
-	Exp4: EasingFunction; ---더 가파른 지수. i=math.exp(x), x=-4 ~ 4
+	Exp2: EasingFunction; ---덜 가파른 지수. i=exp(x)/max, x=-4 to 2
+	Exp4: EasingFunction; ---더 가파른 지수. i=exp(x)/max, x=-4 to 4
 }
 export type EasingDirection = string
 export type EasingDirections = {
@@ -182,7 +184,9 @@ export type Lerpable = Color3|UDim|UDim2|number|Vector2|Vector3|CFrame
 export type TweenHandler = ()->();
 export type module_tween = {
 	EasingFunctions:EasingFunctions;
+	Easing:EasingFunctions;
 	EasingDirections:EasingDirections;
+	Directions:EasingDirections;
 	LerpProperties: <item>(item:item&(DOM|any),old:{[string]:Lerpable},new:{[string]:Lerpable},alpha:number,setter:(item:item&(DOM|any),property:string,value:Lerpable)->()?)->();
 	RunTween: (Item:DOM|any,Option:TweenOptions,Properties:{[string]:Lerpable},Ended:TweenEnded?,OnStepped:TweenOnStepped?,Setter:TweenSetter?,Getter:TweenGetter?)->TweenHandler;
 	RunTweens: (Items:{[number]:DOM|any},Option:TweenOptions,Properties:{[string]:Lerpable},Ended:TweenEnded?,OnStepped:TweenOnStepped?,Setter:TweenSetter?,Getter:TweenGetter?)->();

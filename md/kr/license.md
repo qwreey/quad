@@ -1,11 +1,6 @@
 
-=== "왜안됨"
-
-    왜 안돌아가냐
-
 === "Korean"
 
-    왜 안돌아가냐
     ```
               qwreeykawaii license v1.3
     Copyright 2023. Qwreey [qwreey75@gmail.com]

@@ -62,10 +62,8 @@ module.EasingDirections = {
 	InOut = "InOut"; -- 두 방향 모두 가감속
 }
 
----@deprecated
-module.EasingDirection = module.EasingDirections
----@deprecated
-module.EasingFunction = module.EasingFunctions
+module.Directions = module.EasingDirections
+module.Easings = module.EasingFunctions
 
 ------------------------------------
 -- Lerp 함수
@@ -336,7 +334,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 			remove(BindedFunctions,find(BindedFunctions,Step))
 			Index = 1
 			if Ended then
-				Ended(Item)
+				Ended(Item,1,1)
 			end
 		end
 
@@ -347,7 +345,7 @@ function module.RunTween(Item,Data,Properties,Ended,OnStepped,Setter,Getter,_)
 					Fnc(Item,Index,Alpha)
 				else
 					local num = tonumber(FncIndex)
-					if num and num <= Index then
+					if num and num <= Alpha then
 						Fnc(Alpha,Index,Item)
 						CallBack[FncIndex] = nil
 					end

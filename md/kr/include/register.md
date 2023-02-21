@@ -31,11 +31,22 @@ end
 ```
 
 `#!ts :With((store:valueStore, newValue:any, key:string)->())->register`  
-> 함수 또는 테이블에서 값을 가져옵니다. Add 보다 나중에 수행됩니다.  
-> 첫번째 값에는 편의상 스토어 값이 제공되며, 새로운 값과, 바뀐 값에 대한 키가 제공됩니다  
-> *주의 : 구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다*
+<blockquote markdown>
 
-=== "함수"
+함수 또는 테이블에서 값을 가져옵니다. Add 보다 나중에 수행됩니다.  
+첫번째 값에는 편의상 스토어 값이 제공되며, 새로운 값과, 바뀐 값에 대한 키가 제공됩니다  
+
+=== "용법"
+
+    ```lua
+    myStore "size":With(function (_,value)
+        return value * 2
+    end)
+    ```
+
+=== "예제 - 함수"
+
+    `width` 값에 맞춰 자동으로 UI 가 업데이트되도록 만듭니다.  
 
     ```lua
     -- 용법
@@ -67,6 +78,8 @@ end
         Frame "Topbar" {
             LayoutOrder = 1;
             BackgroundColor3 = Color3.fromRGB(255,0,0);
+            -- 이렇게 여러 값을 묶어서 두 값이 변경됨, 혹은 그이상을
+            -- 만들 수 있습니다.
             Size = myStore "topbarSize,width":With(function()
                 return UDim2.fromOffset(myStore.width,myStore.topbarSize)
             end);
@@ -92,7 +105,9 @@ end
     end
     ```
 
-=== "테이블"
+=== "예제 - 테이블"
+
+    `colors` 테이블 안에 있는 색깔들을 돌아가며 보여줍니다.  
 
     ```lua
     -- 용법
@@ -117,6 +132,7 @@ end
     myStore.color = 1
 
     Frame "mainFrame" {
+        Size = UDim2.fromOffset(200,200);
         BackgroundColor3 = myStore "color":With(colors);
     }
     Mount(ScreenGUI, Store.GetObject("mainFrame"))
@@ -126,78 +142,79 @@ end
     end
     ```
 
-=== "여러 값이 묶임"
-
-    ```lua
-    -- 용법
-    local ScreenGUI = script.Parent
-    local Quad = require(path.to.module).Init()
-    local Store = Quad.Store
-    local Class = Quad.Class
-    local Mount = Quad.Mount
-    ```
+???+ Warning "주의"
+    구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다
+</blockquote>
 
 ---
 
 `#!ts :Tween(options:TweenOptions)`  
 > 트윈을 이용해 변경사항을 적용합니다(처음 오브젝트 생성시에는 적용되지 않음) 옵션은 Tween 문서에 나와있는 옵션과 같습니다.
-> *주의 : 구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다*
 
-```lua
--- 용법
-local ScreenGUI = script.Parent
-local Quad = require(path.to.module).Init()
-local Store = Quad.Store
-local Class = Quad.Class
-local Mount = Quad.Mount
-local Style = Quad.Style
+=== "용법"
 
-local Frame = Class "Frame"
-local myStore = Store.GetStore("myStore")
-myStore.pos = UDim2.fromOffset(50,0)
-Style "TweenFrame" {
-    Size = UDim2.fromOffset(50,50);
-    BackgroundColor3 = Color3.fromRGB(255,100,255);
-}
+    ```lua
+    -- Tween 옵션을 넣을 수 있습니다
+    myStore "size":Tween{ Time = 2 }
+    ```
 
-Frame "mainFrame" {
-    BackgroundColor3 = Color3.fromRGB(255,255,255);
-    Size = UDim2.fromOffset(500,500);
-    Frame "TweenFrame" {
-        Position = myStore "pos":Tween{Time = 2};
-    };
-    Frame "TweenFrame" {
-        Position = myStore "pos"
-            :Add(UDim2.fromOffset(0,100))
-            :Tween{Time = 2};
-    };
-    Frame "TweenFrame" {
-        Position = myStore "pos"
-            :Add(UDim2.fromOffset(0,200))
-            :Tween{Time = 2};
-    };
-    Frame "TweenFrame" {
-        Position = myStore "pos"
-            :Add(UDim2.fromOffset(0,300))
-            :Tween{Time = 2};
+=== "예제"
+
+    ```lua
+    local ScreenGUI = script.Parent
+    local Quad = require(path.to.module).Init()
+    local Store = Quad.Store
+    local Class = Quad.Class
+    local Mount = Quad.Mount
+    local Style = Quad.Style
+
+    local Frame = Class "Frame"
+    local myStore = Store.GetStore("myStore")
+    myStore.pos = UDim2.fromOffset(50,0)
+    Style "TweenFrame" {
+        Size = UDim2.fromOffset(50,50);
+        BackgroundColor3 = Color3.fromRGB(255,100,255);
     }
-}
 
-Mount(ScreenGUI, Store.GetObject("mainFrame"))
+    Frame "mainFrame" {
+        BackgroundColor3 = Color3.fromRGB(255,255,255);
+        Size = UDim2.fromOffset(500,500);
+        Frame "TweenFrame" {
+            Position = myStore "pos":Tween{Time = 2};
+        };
+        Frame "TweenFrame" {
+            Position = myStore "pos"
+                :Add(UDim2.fromOffset(0,100))
+                :Tween{Time = 2};
+        };
+        Frame "TweenFrame" {
+            Position = myStore "pos"
+                :Add(UDim2.fromOffset(0,200))
+                :Tween{Time = 2};
+        };
+        Frame "TweenFrame" {
+            Position = myStore "pos"
+                :Add(UDim2.fromOffset(0,300))
+                :Tween{Time = 2};
+        }
+    }
 
-local on = false
-while true do
-    on = not on
-    myStore.pos = on and UDim2.fromOffset(400,0) or UDim2.fromOffset(50,0)
-end
-```
+    Mount(ScreenGUI, Store.GetObject("mainFrame"))
+
+    local on = false
+    while true do
+        on = not on
+        myStore.pos = on and UDim2.fromOffset(400,0) or UDim2.fromOffset(50,0)
+    end
+    ```
+???+ Warning "주의"
+    구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다
 
 ---
 
 `#!ts :Default(value:any)`  
 > 기본값을 정합니다. 만약 값이 `#!lua nil` 인 경우 이 값을 사용하게 됩니다. Add 나 With 등 다른것에 영향받지 않습니다.  
 > *주의 : 처음 오브젝트가 생성될 때에만 이 값이 사용됩니다.*
-
 ```lua
 -- 용법
 local ScreenGUI = script.Parent

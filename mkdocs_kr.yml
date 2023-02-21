@@ -28,8 +28,8 @@ nav:
     - 레퍼런스:
         - 'reference/index.md'
 
-# 다중 언어 설정
 extra:
+    # 다중 언어 설정
     alternate:
         - name: 한국어
           link: /kr/
@@ -37,9 +37,15 @@ extra:
         - name: English
           link: /en/
           lang: en
+    # 소셜 링크
+    social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/qwreey75
+    - icon: fontawesome/brands/mastodon
+      link: https://stella.place/@qwreey
 
 # 리포 설정
-repo_url: https://github.com/qwreey75/quad
+repo_url: https://github.com/qwreey75/Quad
 repo_name: Quad
 remote_branch: master
 
@@ -76,10 +82,11 @@ theme:
     # 세부기능 Flag
     features:
         - navigation.indexes
-        - navigation.footer
-        - navigation.tabs
-        - navigation.top
-        # - toc.integrate # 목차를 네비게이션에 합치기
+        - navigation.footer # 바닥에 다음글 표시
+        - navigation.tabs # 최상위 nav 인덱스를 탭으로 이동
+        - navigation.top # 맨 위로 올라가기 표시
+        - toc.integrate # 목차를 네비게이션에 합치기
+        - content.code.copy # 코드 복사버튼
 
     # 결과 없음 페이지
     static_templates:
@@ -118,6 +125,7 @@ markdown_extensions:
     - pymdownx.magiclink # 링크 확장기
     - pymdownx.inlinehilite # 인라인 코드 하이라이팅
     - pymdownx.mark # 마킹(형광마커 효과)
+    - md_in_html # div 같은거 안에 마크다운 작성
     - pymdownx.highlight: # 코드 구문강조
         linenums: true # 코드라인 넘버
     - pymdownx.emoji: # 이모지 불러오기

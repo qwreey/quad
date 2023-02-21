@@ -19,7 +19,7 @@ function module.init(shared)
 	local storeNew = store.New
 	local mount = shared.Mount ---@type quad_module_mount
 	local getHolder = mount.GetHolder
-	local mountfunc = mount.Mount
+	local mountfunc = mount.MountOne
 	local style = shared.Style ---@type quad_module_style
 	local styleList = style.Styles
 	local parseStyles = style.ParseStyles
@@ -173,18 +173,18 @@ function module.init(shared)
 					if not advancedTween then
 						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory"
 					end
-					local ended, onStepped
-					if tween.Ended then
-						ended = function (...)
-							tween.Ended(item,...)
-						end
-					end
-					if tween.OnStepped then
-						onStepped = function (...)
-							tween.OnStepped(item,...)
-						end
-					end
-					advancedTween.RunTween(item,tween,{[index] = setValue},ended,onStepped,SetProperty,GetProperty)
+					-- local ended, onStepped
+					-- if tween.Ended then
+					-- 	ended = function (...)
+					-- 		tween.Ended(item,...)
+					-- 	end
+					-- end
+					-- if tween.OnStepped then
+					-- 	onStepped = function (...)
+					-- 		tween.OnStepped(item,...)
+					-- 	end
+					-- end
+					advancedTween.RunTween(item,tween,{[index] = setValue},nil,nil,SetProperty,GetProperty)
 				else
 					SetProperty(item,index,setValue,className)
 				end
@@ -215,7 +215,10 @@ function module.init(shared)
 			end
 		elseif indexType == "number" and valueType ~= "boolean" then -- object
 			-- child object
-			mountfunc(item,((iprop == 1) and value or value:Clone()),holder)
+			if iprop ~= 1 then
+				value = value:Clone()
+			end
+			mountfunc(item,value,holder,true)
 		end
 	end
 

@@ -1,11 +1,15 @@
 
-# 오브젝트에 아이디 부여하기, 그리고 사용하기
+# GetObject - 오브젝트에 아이디 부여
 
-읽기 전...
-> 모듈 설정시 `#!ts .Init()` 처럼 QuadId 란을 비워두는 경우 `#!ts Store.GetObject` 가 코드를 넘어 공유되지 않습니다  
-> 하지만 `#!ts .Init("Project1")` 처럼 아이디를 부여하는 경우 **다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 `#!ts Store.GetObject` 는 공유됩니다**  
+???+ info "읽기 전..."
+    모듈 설정시 `#!ts .Init()` 처럼 QuadId 란을 비워두는 경우 `#!ts Store.GetObject` 가 코드를 넘어 공유되지 않습니다  
+    하지만 `#!ts .Init("Project1")` 처럼 아이디를 부여하는 경우 **다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 `#!ts Store.GetObject` 는 공유됩니다**  
 
-**변수에 만들어진 오브젝트를 하나하나 저장해???** 그게 편할리가 없죠. 오브젝트에 아이디를 넣고 사용해봅시다.
+---
+
+## 오브젝트에 아이디 부여하기, 사용하기
+
+**변수에 만들어진 오브젝트를 하나하나 저장해야하나요?** 아니요, Quad 에는 오브젝트에 아이디를 부여할 수 있습니다.
 
 ```lua
 local ScreenGUI = script.Parent
@@ -37,9 +41,10 @@ print(Store.GetObject("mainFrame" .. index))
 
 ## 다량의 오브젝트를 다루기
 
-또한, Quad 는 다량의 오브젝트를 다루기 편하도록 `#!ts Store.GetObjects(id:string)->objectList` 라는 함수를 가지고 있습니다.  
+???+ Warning "주의"
+    `Store.GetObjects`의 반환값인 `objectList`는 캐시해서는 안됩니다. `objectList`를 local 에 넣고 계속해서 유지시키지 마십시오, 반환값은 자동으로 업데이트 되지 않습니다.  
 
-> 주의 : *GetObjects 의 반환값인 objectList 는 캐시해서는 안됩니다. objectList 를 local 에 넣고 계속해서 유지시키지 마십시오, 반환값은 자동으로 업데이트 되지 않습니다.*  
+Quad 는 다량의 오브젝트를 다루기 편하도록 `#!ts Store.GetObjects(id:string)->objectList` 라는 함수를 가지고 있습니다.  
 
 실험으로, 색깔이 랜덤하게 바뀌는 프레임들을 만들어 봅시다  
 
@@ -95,6 +100,8 @@ for _,child in ipairs(Store.GetObjects("Child")) do
 end
 ```
 
+### objectList
+
 `#!ts Store.GetObjects()` 의 반환 `#!ts objectList` 의 메소드들은 다음과 같습니다.  
 
 {!include/objectList.md!}
@@ -105,55 +112,68 @@ end
 
 id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.
 
-```lua
-local ScreenGUI = script.Parent
-local Quad = require(path.to.module).Init()
-local Class = Quad.Mount
-local Mount = Quad.Store
-local Store = Quad.Class
+=== 용법
 
-local Frame = Class "Frame"
+    ```lua
+    Frame "a,b" {
+        
+    }
+    ```
 
---다음과 같이 a 와 b 모두 가진 프레임을 생성할 수도 있습니다.
-Frame "a,b" {
-    Name = "main";
-    Frame "a" {
-        Name = "Child1";
-    };
-    Frame "b" {
-        Name = "Child2";
-    };
-}
+=== 예제
 
--- 다음과 같이 a 와 b 둘다 선택할 수 있습니다
-Store.GetObjects("a,b"):Each(function(item, index)
-    print(item.Name)
-end)
-print("----")
+    좀더 직관적인 확인을 위해서 작동시켜보세요.
 
--- 다음과 같이 a 와 b 를 동시에 가진 것을 선택할 수 있습니다
-Store.GetObjects("a&b"):Each(function(item, index)
-    print(item.Name)
-end)
-print("----")
+    ```lua
+    local ScreenGUI = script.Parent
+    local Quad = require(path.to.module).Init()
+    local Class = Quad.Mount
+    local Mount = Quad.Store
+    local Store = Quad.Class
 
--- 다음과 같이 a와b 를 동시에 가진것과, b 를 가진것을 선택
--- 할 수 있습니다
-Store.GetObjects("a&b,b"):Each(function(item, index)
-    print(item.Name)
-end)
-```
+    local Frame = Class "Frame"
+
+    --다음과 같이 a 와 b 모두 가진 프레임을 생성할 수도 있습니다.
+    Frame "a,b" {
+        Name = "main";
+        Frame "a" {
+            Name = "Child1";
+        };
+        Frame "b" {
+            Name = "Child2";
+        };
+    }
+
+    -- 다음과 같이 a 와 b 둘다 선택할 수 있습니다
+    Store.GetObjects("a,b"):Each(function(item, index)
+        print(item.Name)
+    end)
+    print("----")
+
+    -- 다음과 같이 a 와 b 를 동시에 가진 것을 선택할 수 있습니다
+    Store.GetObjects("a&b"):Each(function(item, index)
+        print(item.Name)
+    end)
+    print("----")
+
+    -- 다음과 같이 a와b 를 동시에 가진것과, b 를 가진것을 선택
+    -- 할 수 있습니다
+    Store.GetObjects("a&b,b"):Each(function(item, index)
+        print(item.Name)
+    end)
+    ```
 
 + 또는(or) 연산 `#!ts ,`  
 + 그리고(and) 연산 `#!ts &`  
 
 GetObjects 에는 이 두 연산을 사용할 수 있고, 생성시에는 `#!ts ,` 으로 여러 아이디를 부여해줄 수 있습니다. *띄어쓰기는 무시됩니다*  
 
-> 주의 : *고급 ID 사용시 `#!ts objectList:Remove` 메소드는 사용할 수 없습니다*
+???+ Warning "주의"
+    고급 ID 사용시 `#!ts objectList:Remove` 메소드는 사용할 수 없습니다
 
 ---
 
-# id 추가와 제거
+## id 추가와 제거
 
 경우에 따라 이미 생성한 오브젝트에 id 를 추가 혹은 제거해줄 수 있습니다
 

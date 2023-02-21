@@ -1,6 +1,14 @@
 
 # 반복되는 속성값을 줄이기
 
+???+ info "읽기 전..."
+    모듈 설정시 `#!ts .Init()` 처럼 QuadId 란을 비워두는 경우 `Style` 기능이 코드를 넘어 공유되지 않습니다  
+    하지만 `#!ts .Init("Project1")` 처럼 아이디를 부여하는 경우 **다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 `Style` 는 공유됩니다**  
+
+---
+
+Quad 에서는 반복적인 속성들을 줄여 쓸 수 있도록 Style 을 제공합니다.  
+
 ```lua
 local ScreenGUI = script.Parent
 local Quad = require(path.to.module).Init()

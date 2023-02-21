@@ -38,7 +38,7 @@ function module.init(shared)
 	end
 
 	-- mount function
-	local function mount(to,this,holder)
+	local function mount(to,this,holder,noReturn)
 		local thisObject = this
 		if type(this) == "table" then
 			thisObject = rawget(this,"__object")
@@ -68,6 +68,7 @@ function module.init(shared)
 			end
 			insert(child,this)
 		end
+		if noReturn then return end
 		return setmetatable({to = to,this = this},mountClass)
 	end
 	new.MountOne = mount

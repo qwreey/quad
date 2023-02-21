@@ -2,127 +2,132 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://quad.qwreey.kr/kr/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/changelogs/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/gallery/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/license/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/TweenOptions/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/direction/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/easings/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/events/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/locales/</loc>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/mounts/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/objectList/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/quadProperty/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/register/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/reference/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/10_signal/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/11_extend/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/1_import/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/2_mount/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/3_getObject/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/4_style/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/5_event/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/6_tween/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/7_quadProperty/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/8_register/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/tutorial/9_lang/</loc>
-         <lastmod>2023-02-20</lastmod>
+         <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

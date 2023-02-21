@@ -835,7 +835,7 @@
 첫번째 값에는 편의상 스토어 값이 제공되며, 새로운 값과, 바뀐 값에 대한 키가 제공됩니다<br />
 <em>주의 : 구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다</em></p>
 </blockquote>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">함수</label><label for="__tabbed_1_2">테이블</label><label for="__tabbed_1_3">여러 값이 묶임</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">함수</label><label for="__tabbed_1_2">테이블</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -889,7 +889,9 @@
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
-<span class="normal">52</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
 <span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
 <span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
 <span class="kd">local</span> <span class="n">Store</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Store</span>
@@ -918,6 +920,8 @@
     <span class="n">Frame</span> <span class="s2">&quot;Topbar&quot;</span> <span class="p">{</span>
         <span class="n">LayoutOrder</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
         <span class="n">BackgroundColor3</span> <span class="o">=</span> <span class="n">Color3</span><span class="p">.</span><span class="n">fromRGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+        <span class="c1">-- 이렇게 여러 값을 묶어서 두 값이 변경됨, 혹은 그이상을</span>
+        <span class="c1">-- 만들 수 있습니다.</span>
         <span class="n">Size</span> <span class="o">=</span> <span class="n">myStore</span> <span class="s2">&quot;topbarSize,width&quot;</span><span class="p">:</span><span class="n">With</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span>
             <span class="kr">return</span> <span class="n">UDim2</span><span class="p">.</span><span class="n">fromOffset</span><span class="p">(</span><span class="n">myStore</span><span class="p">.</span><span class="n">width</span><span class="p">,</span><span class="n">myStore</span><span class="p">.</span><span class="n">topbarSize</span><span class="p">)</span>
         <span class="kr">end</span><span class="p">);</span>
@@ -972,11 +976,7 @@
 <span class="normal">26</span>
 <span class="normal">27</span>
 <span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
+<span class="normal">29</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
 <span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
 <span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
 <span class="kd">local</span> <span class="n">Store</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Store</span>
@@ -997,32 +997,14 @@
 <span class="p">}</span>
 <span class="n">myStore</span><span class="p">.</span><span class="n">color</span> <span class="o">=</span> <span class="mi">1</span>
 
- <span class="o">%</span><span class="p">(</span><span class="o">#</span><span class="n">colors</span><span class="p">)</span>
-
-
 <span class="n">Frame</span> <span class="s2">&quot;mainFrame&quot;</span> <span class="p">{</span>
-    <span class="n">BackgroundColor3</span> <span class="o">=</span> 
+    <span class="n">BackgroundColor3</span> <span class="o">=</span> <span class="n">myStore</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="n">With</span><span class="p">(</span><span class="n">colors</span><span class="p">);</span>
 <span class="p">}</span>
 <span class="n">Mount</span><span class="p">(</span><span class="n">ScreenGUI</span><span class="p">,</span> <span class="n">Store</span><span class="p">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s2">&quot;mainFrame&quot;</span><span class="p">))</span>
 
-<span class="kr">while</span> <span class="kc">true</span> <span class="kr">do</span>
-
-    <span class="n">task</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="kr">while</span> <span class="n">task</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kr">do</span>
+    <span class="n">myStore</span><span class="p">.</span><span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="p">(</span><span class="o">#</span><span class="n">colors</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span>
 <span class="kr">end</span>
-</code></pre></div></td></tr></table></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
-<span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
-<span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
-<span class="kd">local</span> <span class="n">Store</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Store</span>
-<span class="kd">local</span> <span class="n">Class</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Class</span>
-<span class="kd">local</span> <span class="n">Mount</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Mount</span>
 </code></pre></div></td></tr></table></div>
 </div>
 </div>

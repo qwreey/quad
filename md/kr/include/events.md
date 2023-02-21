@@ -15,7 +15,9 @@ Frame {
 `#!ts Event.Created`  
 > 오브젝트가 생성되었을 때 실행됩니다. 첫번째 인자로 `self` 를 받을 수 있습니다.  
 
-*주의: Event.Created 가 실행될 때는 Parent 값이 정해지지 않았을 수 있습니다. self.Parent 는 접근해서는 안됩니다. Class.Extend 에서는 AfterRender 를 이용해야 합니다.*
+???+ Warning "주의"
+    `Event.Created` 가 실행될 때는 `Parent` 값이 정해지지 않았을 수 있습니다. `#!lua self.Parent` 는 접근해서는 안됩니다. `Class.Extend` 에서는 `AfterRender` 를 이용해야 합니다.
+
 ```lua
 -- 용법
 Frame {
@@ -30,7 +32,9 @@ Frame {
 `#!ts Event.CreatedAsync`  
 > `#!ts Event.Created` 와 비슷하지만, 코루틴 안에서 작동합니다. `#!ts objectList:EachAsync()` 처럼 반환을 기다리지 않습니다.  
 
-*주의: Event.CreatedAsync 가 실행될 때는 Parent 값이 정해지지 않았을 수 있습니다. self.Parent 는 접근해서는 안됩니다.*
+???+ Warning "주의"
+    `Event.CreatedAsync` 가 실행될 때는 `Parent` 값이 정해지지 않았을 수 있습니다. `#!lua self.Parent` 는 접근해서는 안됩니다.
+
 ```lua
 -- 용법
 Frame {

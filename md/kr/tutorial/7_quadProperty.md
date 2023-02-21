@@ -1,8 +1,16 @@
 
-# Quad 내부 프로퍼티
+# QuadProperty - 특수 프로퍼티
+
+???+ Failure "주의사항"
+    특수 프로퍼티는 `Tween` 이 지원되지 않습니다. 그러나 `register`의 `#!ts :Tween()`의 경우 호환되므로, 특수 프로퍼티 값을 트윈하려면 향후 설명되는 `register` 와 함깨 사용해야합니다.
+    > `#!ts Tween.RunTween`, `#!ts Tween.RunTweens` 와는 같이 사용할 수 없습니다.
+
+---
+
+## 특수한 프로퍼티
 
 Quad 에서는 편리성을 위해 일부 특수 프로퍼티를 사용할 수 있습니다.  
-*이 모든 특수 프로퍼티는 향후 소개되는 `register`와 함깨 사용할 수 있습니다*
+*이 모든 특수 프로퍼티는 향후 소개되는 `register`와 함깨 사용할 수 있습니다*  
 
 ```lua
 local ScreenGUI = script.Parent
