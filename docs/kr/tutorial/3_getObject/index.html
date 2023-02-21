@@ -906,15 +906,18 @@
 <blockquote>
 <p>일반적인 반복입니다. for 를 사용하는것과 효과가 같으나 함수를 이용합니다  </p>
 </blockquote>
+<hr />
 <p><code class="highlight"><span class="o">:</span><span class="nx">EachAsync</span><span class="p">((</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="kt">number</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
 <blockquote>
 <p>반환을 기다리지 않고 바로바로 다음 아이템으로 넘어갑니다.<br />
 코루틴이 이용됩니다. <code>wrap()</code> 코루틴을 모르거나, 필요성이 없는경우 일반적으로 <code class="highlight"><span class="o">:</span><span class="nx">Each</span></code> 를 사용해도 됩니다  </p>
 </blockquote>
+<hr />
 <p><code class="highlight"><span class="o">:</span><span class="nx">IsEmpty</span><span class="p">()</span></code>  </p>
 <blockquote>
 <p>이 ObjectList 가 비어있는지 여부를 반환합니다.  </p>
 </blockquote>
+<hr />
 <p><code class="highlight"><span class="o">:</span><span class="nx">Remove</span><span class="p">(</span><span class="nx">indexOrItem</span><span class="o">:</span><span class="kt">number</span><span class="o">|</span><span class="nx">any</span><span class="p">)</span></code>  </p>
 <blockquote>
 <p>objectList 에서 해당하는 오브젝트를 제거합니다.<br />
@@ -923,18 +926,24 @@
 <hr />
 <h2 id="id">고급 ID 사용하기<a class="headerlink" href="#id" title="Permanent link">&para;</a></h2>
 <p>id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.</p>
-<p>=== 용법</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">용법</label><label for="__tabbed_1_2">예제</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>```lua
-Frame &quot;a,b&quot; {
-
-}
-```
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 두 아이디를 가진 프레임을 생성합니다</span>
+<span class="n">Frame</span> <span class="s2">&quot;a,b&quot;</span> <span class="p">{}</span>
+<span class="c1">-- a 를 가진것과, a 와 b 를 가진것을 가져옵니다</span>
+<span class="n">Store</span><span class="p">.</span><span class="n">GetObjects</span><span class="p">(</span><span class="s2">&quot;a,a&amp;b&quot;</span><span class="p">):</span><span class="n">Each</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-<p>=== 예제</p>
+</div>
+<div class="tabbed-block">
+<p>좀더 직관적인 확인을 위해서 작동시켜보세요.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -970,51 +979,46 @@ Frame &quot;a,b&quot; {
 <span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code>좀더 직관적인 확인을 위해서 작동시켜보세요.
+<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
+<span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
+<span class="kd">local</span> <span class="n">Class</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Mount</span>
+<span class="kd">local</span> <span class="n">Mount</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Store</span>
+<span class="kd">local</span> <span class="n">Store</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Class</span>
 
-```lua
-local ScreenGUI = script.Parent
-local Quad = require(path.to.module).Init()
-local Class = Quad.Mount
-local Mount = Quad.Store
-local Store = Quad.Class
+<span class="kd">local</span> <span class="n">Frame</span> <span class="o">=</span> <span class="n">Class</span> <span class="s2">&quot;Frame&quot;</span>
 
-local Frame = Class &quot;Frame&quot;
+<span class="c1">--다음과 같이 a 와 b 모두 가진 프레임을 생성할 수도 있습니다.</span>
+<span class="n">Frame</span> <span class="s2">&quot;a,b&quot;</span> <span class="p">{</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">;</span>
+    <span class="n">Frame</span> <span class="s2">&quot;a&quot;</span> <span class="p">{</span>
+        <span class="n">Name</span> <span class="o">=</span> <span class="s2">&quot;Child1&quot;</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="n">Frame</span> <span class="s2">&quot;b&quot;</span> <span class="p">{</span>
+        <span class="n">Name</span> <span class="o">=</span> <span class="s2">&quot;Child2&quot;</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">}</span>
 
---다음과 같이 a 와 b 모두 가진 프레임을 생성할 수도 있습니다.
-Frame &quot;a,b&quot; {
-    Name = &quot;main&quot;;
-    Frame &quot;a&quot; {
-        Name = &quot;Child1&quot;;
-    };
-    Frame &quot;b&quot; {
-        Name = &quot;Child2&quot;;
-    };
-}
+<span class="c1">-- 다음과 같이 a 와 b 둘다 선택할 수 있습니다</span>
+<span class="n">Store</span><span class="p">.</span><span class="n">GetObjects</span><span class="p">(</span><span class="s2">&quot;a,b&quot;</span><span class="p">):</span><span class="n">Each</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">Name</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----&quot;</span><span class="p">)</span>
 
--- 다음과 같이 a 와 b 둘다 선택할 수 있습니다
-Store.GetObjects(&quot;a,b&quot;):Each(function(item, index)
-    print(item.Name)
-end)
-print(&quot;----&quot;)
+<span class="c1">-- 다음과 같이 a 와 b 를 동시에 가진 것을 선택할 수 있습니다</span>
+<span class="n">Store</span><span class="p">.</span><span class="n">GetObjects</span><span class="p">(</span><span class="s2">&quot;a&amp;b&quot;</span><span class="p">):</span><span class="n">Each</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">Name</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----&quot;</span><span class="p">)</span>
 
--- 다음과 같이 a 와 b 를 동시에 가진 것을 선택할 수 있습니다
-Store.GetObjects(&quot;a&amp;b&quot;):Each(function(item, index)
-    print(item.Name)
-end)
-print(&quot;----&quot;)
-
--- 다음과 같이 a와b 를 동시에 가진것과, b 를 가진것을 선택
--- 할 수 있습니다
-Store.GetObjects(&quot;a&amp;b,b&quot;):Each(function(item, index)
-    print(item.Name)
-end)
-```
+<span class="c1">-- 다음과 같이 a와b 를 동시에 가진것과, b 를 가진것을 선택</span>
+<span class="c1">-- 할 수 있습니다</span>
+<span class="n">Store</span><span class="p">.</span><span class="n">GetObjects</span><span class="p">(</span><span class="s2">&quot;a&amp;b,b&quot;</span><span class="p">):</span><span class="n">Each</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="n">Name</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
+</div>
+</div>
+</div>
 <ul>
 <li>또는(or) 연산 <code class="highlight"><span class="p">,</span></code>  </li>
 <li>그리고(and) 연산 <code class="highlight"><span class="o">&amp;</span></code>  </li>
@@ -1062,7 +1066,7 @@ end)
 <span class="n">Store</span><span class="p">.</span><span class="n">GetObjects</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">):</span><span class="n">Remove</span><span class="p">(</span><span class="n">Store</span><span class="p">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
 <p><code class="highlight"><span class="nx">Store</span><span class="p">.</span><span class="nx">AddObject</span><span class="p">(</span><span class="nx">ids</span><span class="o">:</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">)</span></code> 를 이용해 item 에 아이디를 추가하고<br />
-<code class="highlight"><span class="o">:</span><span class="nx">Remove</span><span class="p">(</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">)</span></code> 를 이용해 item 에 아이디를 제거합니다</p>
+<code class="highlight"><span class="o">:</span><span class="nx">Remove</span><span class="p">(</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">)</span></code> 를 이용해 item 에 아이디를 제거합니다  </p>
 
 
 

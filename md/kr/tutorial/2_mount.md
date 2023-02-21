@@ -3,7 +3,7 @@
 
 ## 화면에 UI 를 표시하기
 
-일반적으로 *Quad* 모듈에서 모든 Parent 처리는 `#!ts Mount` 를 이용합니다. `#!ts Mount(to:any,...item:any?)->mounts` 함수를 이용하면 다루는 오브젝트가 로블록스 `Instance` 인지, 향후 소개될 Quad 확장 클래스인지 상관없이 알아서 Parent 가 처리됩니다.
+*Quad* 모듈에서 모든 Parent 처리는 `#!ts Mount` 를 이용합니다. `#!ts Mount(to:any,...item:any?)->mounts` 함수를 이용하면 다루는 오브젝트가 로블록스 `Instance` 인지, 향후 소개될 Quad 확장 클래스인지 상관없이 알아서 Parent 가 처리됩니다.
 
 ```lua
 --- StarterGui 안에 ScreenGui 를 넣고 로컬스크립트로 입력해보세요

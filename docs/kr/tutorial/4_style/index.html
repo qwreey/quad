@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#style-" class="md-skip">
           콘텐츠로 이동
         </a>
       
@@ -512,9 +512,47 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Style
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Style
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    반복되는 속성값을 줄이기
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id" class="md-nav__link">
+    ID 로 타겟을 지정하기
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -688,13 +726,14 @@
   
 
 
-<h1 id="_1">반복되는 속성값을 줄이기<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="style-">Style - 속성 값 번들링<a class="headerlink" href="#style-" title="Permanent link">&para;</a></h1>
 <details class="info" open="open">
 <summary>읽기 전...</summary>
 <p>모듈 설정시 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">()</span></code> 처럼 QuadId 란을 비워두는 경우 <code>Style</code> 기능이 코드를 넘어 공유되지 않습니다<br />
 하지만 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">(</span><span class="s2">&quot;Project1&quot;</span><span class="p">)</span></code> 처럼 아이디를 부여하는 경우 <strong>다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 <code>Style</code> 는 공유됩니다</strong>  </p>
 </details>
 <hr />
+<h2 id="_1">반복되는 속성값을 줄이기<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <p>Quad 에서는 반복적인 속성들을 줄여 쓸 수 있도록 Style 을 제공합니다.  </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -771,7 +810,9 @@
 <span class="n">Mount</span><span class="p">(</span><span class="n">ScreenGUI</span><span class="p">,</span><span class="n">Store</span><span class="p">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s2">&quot;mainFrame&quot;</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
 <p><code class="highlight"><span class="nx">Style</span></code>을 사용하면 많은 양의 속성을 하나에 변수로 집어넣을 수 있습니다. <code class="highlight"><span class="nx">Style</span></code>을 사용해서 많은 양의 코드를 줄여보세요  </p>
-<p>또, <code class="highlight"><span class="nx">Style</span></code>에는 타겟 id를 지정해줄 수 있습니다  </p>
+<hr />
+<h2 id="id">ID 로 타겟을 지정하기<a class="headerlink" href="#id" title="Permanent link">&para;</a></h2>
+<p><code class="highlight"><span class="nx">Style</span></code>에는 <code>타겟 id</code>를 지정해줄 수 있습니다  </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -820,7 +861,7 @@
 
 <span class="n">Mount</span><span class="p">(</span><span class="n">ScreenGUI</span><span class="p">,</span><span class="n">Store</span><span class="p">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s2">&quot;mainFrame&quot;</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-<p><code class="highlight"><span class="nx">Style</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="kt">string</span><span class="p">){</span><span class="w"> </span><span class="nx">any</span><span class="w"> </span><span class="p">}</span></code>를 이용해 스타일을 선언해주면 나중에 해당 id를 가진 오브젝트 생성시 해당 스타일이 적용됩니다.</p>
+<p><code class="highlight"><span class="nx">Style</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="kt">string</span><span class="p">){</span><span class="w"> </span><span class="nx">any</span><span class="w"> </span><span class="p">}</span></code>를 이용해 스타일을 선언해주면 나중에 해당 id를 가진 오브젝트 생성시 해당 스타일이 적용됩니다.  </p>
 
 
 

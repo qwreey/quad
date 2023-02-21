@@ -35,6 +35,7 @@ function module.init(shared)
 			pcall(v.Disconnect,v)
 			self[i] = nil
 		end
+		setmetatable(self,nil)
 	end
 	function disconnecterClass.New(id)
 		if id then
@@ -59,11 +60,11 @@ function module.init(shared)
 	function connection:Disconnect(slient)
 		local signal = self.signal
 		local onceConnection = signal.onceConnection
-		local connection = signal.connection
+		local connections = signal.connection
 
-		for i,v in pairs(connection) do
+		for i,v in pairs(connections) do
 			if v.connection == self then
-				remove(connection,i)
+				remove(connections,i)
 				return
 			end
 		end
@@ -104,14 +105,23 @@ function module.init(shared)
 			task.spawn(v.func,...)
 		end
 	end
+	function signal:DisconnectAll()
+		local waitting = self.waitting
+		self.waitting = {}
+		self.onceConnection = {}
+		self.connection = {}
+		for _,v in pairs(waitting) do
+			task.spawn(resume,v,nil)
+		end
+	end
 	function signal:Wait()
 		insert(self.waitting,running())
 		return yield()
 	end
 	function signal:CheckConnected(func)
 		local onceConnection = self.onceConnection
-		local connection = self.connection
-		for _,v in pairs(connection) do
+		local connections = self.connection
+		for _,v in pairs(connections) do
 			if v.func == func then
 				return true
 			end
@@ -140,16 +150,18 @@ function module.init(shared)
 		return thisConnection
 	end
 	function signal:Destroy()
-		self.waitting = nil
-		self.onceConnection = nil
-		self.connection = nil
+		local id = self.id
+		if id then
+			signals[id] = nil
+		end
+		self:DisconnectAll()
 		setmetatable(self,nil)
 	end
 	function signal.New(id)
 		if id and signals[id] then
 			return signals[id]
 		end
-		local this = {waitting={},onceConnection={},connection={}}
+		local this = {id=id,waitting={},onceConnection={},connection={}}
 		setmetatable(this,signal)
 		if id then
 			signals[id] = this

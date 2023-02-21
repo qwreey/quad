@@ -12,7 +12,7 @@
         <meta name="author" content="Qwreey and more">
       
       
-        <link rel="canonical" href="https://quad.qwreey.kr/kr/include/objectList/">
+        <link rel="canonical" href="https://quad.qwreey.kr/kr/include/extend/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>objectList - Quad 한국어 문서</title>
+        <title>Extend - Quad 한국어 문서</title>
       
     
     
@@ -92,7 +92,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              objectList
+              Extend
             
           </span>
         </div>
@@ -665,29 +665,30 @@
   
 
 
-  <h1>objectList</h1>
+  <h1>Extend</h1>
 
-<p><code class="highlight"><span class="o">:</span><span class="nx">Each</span><span class="p">((</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="kt">number</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
+<p><code>self(name:string)</code>  </p>
 <blockquote>
-<p>일반적인 반복입니다. for 를 사용하는것과 효과가 같으나 함수를 이용합니다  </p>
+<p>Extend 메소드 전역에서 사용가능합니다. 링커를 만들며, <code>PropertyChangedSignal</code> 를 이어주거나, self 에 원하는 오브젝트를 넣는 용도로 사용됩니다. 자세한 정보는 Render 를 확인해주세요.  </p>
 </blockquote>
 <hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">EachAsync</span><span class="p">((</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="kt">number</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
+<p><mark>REQUIRED</mark> <code>:Render(props:valueStore)</code>  </p>
 <blockquote>
-<p>반환을 기다리지 않고 바로바로 다음 아이템으로 넘어갑니다.<br />
-코루틴이 이용됩니다. <code>wrap()</code> 코루틴을 모르거나, 필요성이 없는경우 일반적으로 <code class="highlight"><span class="o">:</span><span class="nx">Each</span></code> 를 사용해도 됩니다  </p>
+<p>화면에 그려지는 UI 를 만들어지게 하는 함수입니다. <code>Extend</code> 가 그려지려면 무조건 있어야합니다.<br />
+이 오브젝트를 그리는데 들어간 프로퍼티 목록을 첫번째 인자로 줍니다. 레지스터 문법이 사용될 수 있습니다.  </p>
+<p>=== 예제</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>
+</code></pre></div></td></tr></table></div>
+<p>```</p>
 </blockquote>
-<hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">IsEmpty</span><span class="p">()</span></code>  </p>
-<blockquote>
-<p>이 ObjectList 가 비어있는지 여부를 반환합니다.  </p>
-</blockquote>
-<hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">Remove</span><span class="p">(</span><span class="nx">indexOrItem</span><span class="o">:</span><span class="kt">number</span><span class="o">|</span><span class="nx">any</span><span class="p">)</span></code>  </p>
-<blockquote>
-<p>objectList 에서 해당하는 오브젝트를 제거합니다.<br />
-, &amp; 를 사용한 고급 검색에서는 작동하지 않습니다  </p>
-</blockquote>
+<p><mark>OPTION</mark> AfterRender
+Getter Setter
+Update
+GetPropertyChangedSignal
+EmitPropertyChangedSignal
+Unload
+self()
+UpdateTriggers</p>
 
 
 

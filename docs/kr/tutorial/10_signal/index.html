@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#signal" class="md-skip">
+        <a href="#signal-" class="md-skip">
           콘텐츠로 이동
         </a>
       
@@ -596,9 +596,67 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Signal
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Signal
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bindable" class="md-nav__link">
+    Bindable
+  </a>
+  
+    <nav class="md-nav" aria-label="Bindable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bindable_1" class="md-nav__link">
+    Bindable 메소드
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection" class="md-nav__link">
+    Connection 메소드
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disconnecter" class="md-nav__link">
+    Disconnecter
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -688,8 +746,148 @@
   
 
 
-<h1 id="signal">Signal<a class="headerlink" href="#signal" title="Permanent link">&para;</a></h1>
-<p>Quad 에는 편의상의 이유로 </p>
+<h1 id="signal-">Signal - 이벤트 생성과 연결<a class="headerlink" href="#signal-" title="Permanent link">&para;</a></h1>
+<details class="info" open="open">
+<summary>읽기 전...</summary>
+<p>모듈 설정시 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">()</span></code> 처럼 QuadId 란을 비워두는 경우 <code>Bindable</code>, <code>Disconnecter</code> 기능이 코드를 넘어 공유되지 않습니다<br />
+하지만 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">(</span><span class="s2">&quot;Project1&quot;</span><span class="p">)</span></code> 처럼 아이디를 부여하는 경우 <strong>다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 <code>Bindable</code>, <code>Disconnecter</code> 는 공유됩니다</strong>  </p>
+</details>
+<p>Quad 에는 편의상의 이유로 로블록스의 <code>RBXScriptSignal</code> 의 유사품과, 한번에 시그널을 끊어주는 <code>Disconnecter</code> 를 제공합니다.<br />
+이는 내부적으로 <code>Extend</code> 의 <code>GetPropertyChangedSignal</code> 같은 곳에서 사용되기도 합니다.  </p>
+<h2 id="bindable">Bindable<a class="headerlink" href="#bindable" title="Permanent link">&para;</a></h2>
+<p>Bindable 은 <code>RBXScriptSignal</code> 과 유사한 객체입니다. <code class="highlight"><span class="nx">Signal</span><span class="p">.</span><span class="nx">Bindable</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="kt">string?</span><span class="p">)</span></code> 으로 생성할 수 있습니다.<br />
+로블록스의 기본 <code>BindableEvent</code> 와는 다르게 <code>:Fire</code> 가 한곳에 합쳐져 있습니다.  </p>
+<details class="note" open="open">
+<summary>Note</summary>
+<p>만약 <code>id</code> 를 지정한 경우, 같은 <code>id</code> 를 가진 <code>Bindable</code> 이 있으면 이전것을 반환합니다.  </p>
+</details>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
+<span class="kd">local</span> <span class="n">Signal</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Signal</span>
+
+<span class="kd">local</span> <span class="n">mySignal</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">.</span><span class="n">Bindable</span><span class="p">.</span><span class="n">New</span><span class="p">()</span>
+
+<span class="kd">local</span> <span class="n">connection</span> <span class="o">=</span> <span class="n">mySignal</span><span class="p">:</span><span class="n">Connect</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 출력되어야 합니다.&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="p">:</span><span class="n">Disconnect</span><span class="p">()</span>
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 출력되면 안됩니다.&quot;</span><span class="p">)</span>
+
+<span class="n">task</span><span class="p">.</span><span class="n">spawn</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span>
+    <span class="n">task</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 지연된 후 출력되어야 합니다.&quot;</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mySignal</span><span class="p">:</span><span class="n">Wait</span><span class="p">())</span>
+
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Once</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 출력되어야 합니다.&quot;</span><span class="p">)</span>
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 출력되면 안됩니다.&quot;</span><span class="p">)</span>
+
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Once</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">):</span><span class="n">Disconnect</span><span class="p">()</span>
+<span class="n">mySignal</span><span class="p">:</span><span class="n">Fire</span><span class="p">(</span><span class="s2">&quot;이 메시지는 출력되면 안됩니다.&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<h3 id="bindable_1">Bindable 메소드<a class="headerlink" href="#bindable_1" title="Permanent link">&para;</a></h3>
+<p><code>Bindable</code> 에는 다음과 같은 메소드들이 제공됩니다.  </p>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Fire</span><span class="p">(...</span><span class="nx">any</span><span class="p">)</span></code>  </p>
+<blockquote>
+<p>등록된 연결들을 실행하고, <code>Wait</code> 을 풀어줍니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Wait</span><span class="p">()</span><span class="o">-&gt;</span><span class="p">(...</span><span class="nx">any</span><span class="p">)</span></code>  </p>
+<blockquote>
+<p><code>Fire</code> 가 호출될 때 까지 기다립니다. <code>Fire</code> 에 사용된 값이 반환됩니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Connect</span><span class="p">((...</span><span class="nx">any</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span><span class="o">-&gt;</span><span class="nx">Connection</span></code>  </p>
+<blockquote>
+<p><code>Fire</code> 가 호출 될 때 함수가 실행되도록 만듭니다. <code>Fire</code> 에 사용된 값이 호출 인자로 사용됩니다. 연결을 끊을 수 있도록 <code>Connection</code> 이 제공됩니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Once</span><span class="p">((...</span><span class="nx">any</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span><span class="o">-&gt;</span><span class="nx">Connection</span></code>  </p>
+<blockquote>
+<p><code>Connect</code> 와 유사하지만, <code>Fire</code> 가 한번 호출된 뒤 연결이 끊어집니다/  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">CheckConnected</span><span class="p">(</span><span class="nx">func</span><span class="p">)</span><span class="o">-&gt;</span><span class="kt">boolean</span></code>  </p>
+<blockquote>
+<p>함수가 이미 등록되어 있는지 여부를 반환합니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">DisconnectAll</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p>모든 연결을 끊습니다. <code>Wait</code> 으로 기다리고 있는 곳에는 <code>nil</code> 을 반환합니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Destroy</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p><code class="highlight"><span class="o">:</span><span class="nx">DisconnectAll</span><span class="p">()</span></code> 를 수행한 후, 객체를 더이상 사용할 수 없도록 만듭니다.<br />
+<code>id</code> 가 등록되어 있는경우 저장소에서 파기하게 됩니다.</p>
+</blockquote>
+<h3 id="connection">Connection 메소드<a class="headerlink" href="#connection" title="Permanent link">&para;</a></h3>
+<p>Bindable:Connect 와 Bindable:Once 는 <code>Connection</code> 을 반환합니다. <code>Connection</code> 에는 다음과 같은 메소드들이 제공됩니다.  </p>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p>연결을 끊습니다. <code>Fire</code> 가 호출되더라도 <code>Connect</code> 혹은 <code>Once</code> 에 사용된 함수가 실행되지 않습니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Destroy</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code> 의 별칭입니다.</p>
+</blockquote>
+<hr />
+<h2 id="disconnecter">Disconnecter<a class="headerlink" href="#disconnecter" title="Permanent link">&para;</a></h2>
+<p><code>Disconnecter</code> 는 일종의 <code>Maid</code> 모듈과 비슷한 객체입니다. 이 객체에는 <code>Connection</code> (로블록스, Quad 모두 호환) 을 추가할 수 있으며, 나중에 추가된 <code>Connection</code> 을 한꺼번에 <code>Disconnect</code> 할 수 있습니다. <code class="highlight"><span class="nx">Signal</span><span class="p">.</span><span class="nx">Disconnecter</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="nx">id</span><span class="o">:</span><span class="kt">string?</span><span class="p">)</span></code> 으로 생성할 수 있습니다.</p>
+<details class="note" open="open">
+<summary>Note</summary>
+<p>만약 <code>id</code> 를 지정한 경우, 같은 <code>id</code> 를 가진 <code>Bindable</code> 이 있으면 이전것을 반환합니다.  </p>
+</details>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Add</span><span class="p">(</span><span class="nx">connection</span><span class="o">:</span><span class="kt">Connection</span><span class="o">|</span><span class="nx">RBXScriptConnection</span><span class="p">)</span></code>  </p>
+<blockquote>
+<p><code>connection</code>을 리스트에 추가합니다. 나중에 <code>:Disconnect</code>를 호출하면 추가된 연결이 파기됩니다.  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p>추가된 모든 연결에 <code>Disconnect()</code> 를 수행합니다. 이 호출 후에 추가된 연결은 모두 사라지며. 이 요청 후에도 다시 <code>:Add</code> 를 사용할 수 있습니다<br />
+Disconnecter 를 완전히 사용하지 못하도록 하려면 <code>:Destroy</code> 를 호출하세요  </p>
+</blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Destroy</span><span class="p">()</span></code>  </p>
+<blockquote>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code> 를 수행한 후, 객체를 더이상 사용할 수 없도록 만듭니다.<br />
+<code>id</code> 가 등록되어 있는경우 저장소에서 파기하게 됩니다.</p>
+</blockquote>
 
 
 

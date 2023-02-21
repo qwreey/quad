@@ -123,9 +123,9 @@ function module.init(shared)
 		local name = linker.name
 		if indexType == "number" then
 			-- set
-			if rawget(target,name) ~= nil then
-				warn(("%s is exist already. Overwrite it"))
-			end
+			-- if rawget(target,name) ~= nil then
+			-- 	warn(("%s is exist already. Overwrite it"))
+			-- end
 			rawset(target,name,item)
 			-- target[name] = item
 		elseif indexType == "string" then
@@ -409,6 +409,9 @@ function module.init(shared)
 			local thisSignal = self.__propertyChangedSignals[propertyName]
 			if not thisSignal then
 				return
+			end
+			if not value then
+				value = self[propertyName]
 			end
 			thisSignal:Fire(value)
 		end

@@ -12,7 +12,7 @@
         <meta name="author" content="Qwreey and more">
       
       
-        <link rel="canonical" href="https://quad.qwreey.kr/kr/include/objectList/">
+        <link rel="canonical" href="https://quad.qwreey.kr/kr/include/connection/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>objectList - Quad 한국어 문서</title>
+        <title>Connection - Quad 한국어 문서</title>
       
     
     
@@ -92,7 +92,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              objectList
+              Connection
             
           </span>
         </div>
@@ -665,28 +665,16 @@
   
 
 
-  <h1>objectList</h1>
+  <h1>Connection</h1>
 
-<p><code class="highlight"><span class="o">:</span><span class="nx">Each</span><span class="p">((</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="kt">number</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code>  </p>
 <blockquote>
-<p>일반적인 반복입니다. for 를 사용하는것과 효과가 같으나 함수를 이용합니다  </p>
+<p>연결을 끊습니다. <code>Fire</code> 가 호출되더라도 <code>Connect</code> 혹은 <code>Once</code> 에 사용된 함수가 실행되지 않습니다.  </p>
 </blockquote>
 <hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">EachAsync</span><span class="p">((</span><span class="nx">item</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="kt">number</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Destroy</span><span class="p">()</span></code>  </p>
 <blockquote>
-<p>반환을 기다리지 않고 바로바로 다음 아이템으로 넘어갑니다.<br />
-코루틴이 이용됩니다. <code>wrap()</code> 코루틴을 모르거나, 필요성이 없는경우 일반적으로 <code class="highlight"><span class="o">:</span><span class="nx">Each</span></code> 를 사용해도 됩니다  </p>
-</blockquote>
-<hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">IsEmpty</span><span class="p">()</span></code>  </p>
-<blockquote>
-<p>이 ObjectList 가 비어있는지 여부를 반환합니다.  </p>
-</blockquote>
-<hr />
-<p><code class="highlight"><span class="o">:</span><span class="nx">Remove</span><span class="p">(</span><span class="nx">indexOrItem</span><span class="o">:</span><span class="kt">number</span><span class="o">|</span><span class="nx">any</span><span class="p">)</span></code>  </p>
-<blockquote>
-<p>objectList 에서 해당하는 오브젝트를 제거합니다.<br />
-, &amp; 를 사용한 고급 검색에서는 작동하지 않습니다  </p>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Disconnect</span><span class="p">()</span></code> 의 별칭입니다.  </p>
 </blockquote>
 
 

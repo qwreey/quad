@@ -2,9 +2,10 @@
 `register` 특수 메소드가 적용되는 순서는 다음과 같습니다.  
 
 `#!ts :Add(value:any)->register`
-> 값에 더하기를 취합니다. 음수형태가 제공되는 경우 빼기 처럼 작동합니다.  
-> `number`, `Udim`, `UDim2`, `Color3`, `Vector2` 등 더할 수 있는 모든것을 사용할 수 있습니다  
-> *주의 : 구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다*
+<blockquote markdown>
+
+값에 더하기를 취합니다. 음수형태가 제공되는 경우 빼기 처럼 작동합니다.  
+`number`, `Udim`, `UDim2`, `Color3`, `Vector2` 등 더할 수 있는 모든것을 사용할 수 있습니다  
 ```lua
 -- 용법
 local ScreenGUI = script.Parent
@@ -28,6 +29,9 @@ while true do
     task.wait(2)
 end
 ```
+???+ Warning "주의"
+    구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다
+</blockquote>
 
 ---
 

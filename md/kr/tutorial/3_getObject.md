@@ -112,15 +112,18 @@ end
 
 id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.
 
-=== 용법
+=== "용법"
 
     ```lua
-    Frame "a,b" {
-        
-    }
+    -- 두 아이디를 가진 프레임을 생성합니다
+    Frame "a,b" {}
+    -- a 를 가진것과, a 와 b 를 가진것을 가져옵니다
+    Store.GetObjects("a,a&b"):Each(function(item)
+        print(item)
+    end)
     ```
 
-=== 예제
+=== "예제"
 
     좀더 직관적인 확인을 위해서 작동시켜보세요.
 
@@ -198,4 +201,4 @@ Store.GetObjects("a"):Remove(Store.GetObject("testing"))
 ```
 
 `#!ts Store.AddObject(ids:string, item:any)` 를 이용해 item 에 아이디를 추가하고  
-`#!ts :Remove(item:any)` 를 이용해 item 에 아이디를 제거합니다
+`#!ts :Remove(item:any)` 를 이용해 item 에 아이디를 제거합니다  

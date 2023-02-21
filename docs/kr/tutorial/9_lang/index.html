@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#lang-" class="md-skip">
           콘텐츠로 이동
         </a>
       
@@ -607,7 +607,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     언어관리
   </a>
   
@@ -726,16 +726,43 @@
   
 
 
-<h1 id="_1">언어관리<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<h1 id="lang-">Lang - 언어관리<a class="headerlink" href="#lang-" title="Permanent link">&para;</a></h1>
 <details class="info" open="open">
 <summary>읽기 전...</summary>
 <p>모듈 설정시 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">()</span></code> 처럼 QuadId 란을 비워두는 경우 <code>Lang</code> 기능이 코드를 넘어 공유되지 않습니다<br />
 하지만 <code class="highlight"><span class="p">.</span><span class="nx">Init</span><span class="p">(</span><span class="s2">&quot;Project1&quot;</span><span class="p">)</span></code> 처럼 아이디를 부여하는 경우 <strong>다른 모듈, 로컬스크립트가 접근하더라도 같은 QuadId 를 가졌다면 <code>Lang</code> 은 공유됩니다</strong>  </p>
 </details>
 <hr />
-<h2 id="_2">언어관리<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되어 있습니다.<br />
-이 기능은 register 와 연동해 적은 줄의 코드로 변하는 텍스트도 언어에 맞게 출력되도록 만들 수 있습니다.  </p>
+<h2 id="_1">언어관리<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되어 있습니다. 이 기능은 register 와 연동해 적은 줄의 코드로 변하는 텍스트도 언어에 맞게 출력되도록 만들 수 있습니다.  </p>
+<p>번역 테이블은 <code class="highlight"><span class="nx">Lang</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="nx">LangName</span><span class="o">:</span><span class="kt">string</span><span class="p">,{</span><span class="w"> </span><span class="p">[</span><span class="nx">Locale</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="o">|</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span><span class="o">-&gt;</span><span class="kt">string</span><span class="w"> </span><span class="p">})</span></code> 다음을 이용해 만들 수 있으며.<br />
+<code>Lang(LangName:string)(options)</code> 로 UI 에 적용시킬 수 있습니다.  </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">용법</label><label for="__tabbed_1_2">예제 - 다중언어 카운터</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 자세한 설명은 예제를 참고하세요</span>
+<span class="n">Lang</span><span class="p">.</span><span class="n">New</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">,{</span>
+    <span class="p">[</span><span class="n">Lang</span><span class="p">.</span><span class="n">Locales</span><span class="p">.</span><span class="n">Korean</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{won} 원&quot;</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">Lang</span><span class="p">.</span><span class="n">Locales</span><span class="p">.</span><span class="n">Default</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{won} Won&quot;</span><span class="p">;</span>
+<span class="p">})</span>
+<span class="n">TextLabel</span> <span class="p">{</span>
+    <span class="n">Lang</span> <span class="s2">&quot;Test&quot;</span> <span class="p">{</span>
+        <span class="n">won</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+</div>
+<div class="tabbed-block">
+<p>1초가 지날 때 마다 카운트를 증가합니다. 영어 사용자에겐 영어를, 한국어 사용자에겐 한국어를 보여줍니다.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -826,6 +853,9 @@
     <span class="n">myStore</span><span class="p">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">myStore</span><span class="p">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
 <span class="kr">end</span>
 </code></pre></div></td></tr></table></div>
+</div>
+</div>
+</div>
 <hr />
 <h2 id="locale">Locale 목록<a class="headerlink" href="#locale" title="Permanent link">&para;</a></h2>
 <p>로케일 값들은 <code class="highlight"><span class="nx">Lang</span><span class="p">.</span><span class="nx">Locales</span></code>에서 가져올 수 있으며, 사용가능한 로케일 목록은 다음과 같습니다.  </p>

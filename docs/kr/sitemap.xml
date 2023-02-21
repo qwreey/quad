@@ -21,7 +21,22 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://quad.qwreey.kr/kr/include/bindable/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/connection/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://quad.qwreey.kr/kr/include/direction/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/disconnecter/</loc>
          <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -32,6 +47,11 @@
     </url>
     <url>
          <loc>https://quad.qwreey.kr/kr/include/events/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/extend/</loc>
          <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>

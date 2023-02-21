@@ -672,7 +672,6 @@
 <blockquote>
 <p>값에 더하기를 취합니다. 음수형태가 제공되는 경우 빼기 처럼 작동합니다.<br />
 <code>number</code>, <code>Udim</code>, <code>UDim2</code>, <code>Color3</code>, <code>Vector2</code> 등 더할 수 있는 모든것을 사용할 수 있습니다<br />
-<em>주의 : 구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다</em>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -715,6 +714,10 @@
     <span class="n">task</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="kr">end</span>
 </code></pre></div></td></tr></table></div></p>
+<details class="warning" open="open">
+<summary>주의</summary>
+<p>구조의 복잡성을 피하고자, 여러번 호출시 가장 마지막 호출된 것만 사용됩니다</p>
+</details>
 </blockquote>
 <hr />
 <p><code class="highlight"><span class="o">:</span><span class="nx">With</span><span class="p">((</span><span class="nx">store</span><span class="o">:</span><span class="kt">valueStore</span><span class="p">,</span><span class="w"> </span><span class="nx">newValue</span><span class="o">:</span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">key</span><span class="o">:</span><span class="kt">string</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span><span class="o">-&gt;</span><span class="nx">register</span></code>  </p>
