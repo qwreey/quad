@@ -38,6 +38,11 @@ table.pretty {
   -webkit-backdrop-filter: blur(3px);
 }
 
+/* 디테일 안에 글자크기 */
+.md-typeset details {
+  font-size: .72rem !important;
+}
+
 /*테이블 해더 꾸미기*/
 th {
   /*최소 길이*/
@@ -91,6 +96,9 @@ td {
   --md-default-fg-color--light: rgb(235, 215, 252);
   --md-default-fg-color--lighter: rgb(105, 105, 105);
   --md-default-fg-color--lightest: rgb(70, 70, 70);
+
+  /* 마커 */
+  --md-typeset-mark-color: hsl(271, 81%, 46%) !important;
 
   /*배경 색깔*/
   --md-default-bg-color: rgb(41, 43, 54);

@@ -21,11 +21,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://quad.qwreey.kr/kr/include/TweenOptions/</loc>
-         <lastmod>2023-02-21</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://quad.qwreey.kr/kr/include/direction/</loc>
          <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
@@ -66,7 +61,32 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://quad.qwreey.kr/kr/include/tweenOptions/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/typeDirection/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/include/typeEasings/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://quad.qwreey.kr/kr/reference/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/reference/tween/directions/</loc>
+         <lastmod>2023-02-21</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://quad.qwreey.kr/kr/reference/tween/easings/</loc>
          <lastmod>2023-02-21</lastmod>
          <changefreq>daily</changefreq>
     </url>

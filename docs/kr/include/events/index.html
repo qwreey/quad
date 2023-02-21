@@ -162,7 +162,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/qwreey75/quad" title="저장소로 이동" class="md-source" data-md-component="source">
+        <a href="https://github.com/qwreey75/Quad" title="저장소로 이동" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -254,7 +254,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Quad 한국어 문서" class="md-nav__button md-logo" aria-label="Quad 한국어 문서" data-md-component="logo">
       
@@ -265,7 +267,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/qwreey75/quad" title="저장소로 이동" class="md-source" data-md-component="source">
+      <a href="https://github.com/qwreey75/Quad" title="저장소로 이동" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
@@ -652,22 +654,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="목차">
-  
-  
-  
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -684,26 +670,56 @@
 <p><code class="highlight"><span class="nx">Event</span><span class="p">(</span><span class="nx">name</span><span class="o">:</span><span class="kt">string</span><span class="p">)</span></code>  </p>
 <blockquote>
 <p>모든 로블록스 이벤트들을 나타냅니다, <code>MouseEnter, MouseLeave, MouseButton1Down, MouseButton1Up</code> 등이 될 수 있습니다<br />
-기본적으로 로블록스의 기본 이벤트들과 다르게, 첫번째 인자로 <code>self</code> 를 받을 수 있습니다.<br />
+기본적으로 로블록스의 기본 이벤트들과 다르게, 첫번째 인자로 <code>self</code> 를 받을 수 있습니다.  </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">용법</label><label for="__tabbed_1_2">예제 - 버튼클릭</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">-- 용법</span>
-<span class="n">Frame</span> <span class="p">{</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">Frame</span> <span class="p">{</span>
     <span class="p">[</span><span class="n">Event</span> <span class="s2">&quot;MouseEnter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kr">function</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">Name</span> <span class="o">..</span> <span class="s2">&quot;에 마우스가 올라왔습니다&quot;</span><span class="p">)</span>
     <span class="kr">end</span><span class="p">;</span>
 <span class="p">}</span>
-</code></pre></div></td></tr></table></div></p>
+</code></pre></div></td></tr></table></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
+<span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
+<span class="kd">local</span> <span class="n">Class</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Class</span>
+<span class="kd">local</span> <span class="n">Mount</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Mount</span>
+<span class="kd">local</span> <span class="n">TextButton</span> <span class="o">=</span> <span class="n">Class</span> <span class="s2">&quot;TextButton&quot;</span>
+
+<span class="n">TextButton</span> <span class="s2">&quot;mainButton&quot;</span> <span class="p">{</span>
+    <span class="n">Size</span> <span class="o">=</span> <span class="n">UDim2</span><span class="p">.</span><span class="n">fromOffset</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">);</span>
+    <span class="p">[</span><span class="n">Event</span> <span class="s2">&quot;MouseEnter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kr">function</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;버튼이 클릭되었습니다&quot;</span><span class="p">)</span>
+    <span class="kr">end</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">Mount</span><span class="p">(</span><span class="n">ScreenGUI</span><span class="p">,</span> <span class="n">Store</span><span class="p">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s2">&quot;mainButton&quot;</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+</div>
+</div>
+</div>
 </blockquote>
 <hr />
 <p><code class="highlight"><span class="nx">Event</span><span class="p">.</span><span class="nx">Created</span></code>  </p>
 <blockquote>
-<p>오브젝트가 생성되었을 때 실행됩니다. 첫번째 인자로 <code>self</code> 를 받을 수 있습니다.  </p>
-</blockquote>
-<p><em>주의: Event.Created 가 실행될 때는 Parent 값이 정해지지 않았을 수 있습니다. self.Parent 는 접근해서는 안됩니다. Class.Extend 에서는 AfterRender 를 이용해야 합니다.</em>
+<p>오브젝트가 생성되었을 때 실행됩니다. 첫번째 인자로 <code>self</code> 를 받을 수 있습니다.<br />
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -716,12 +732,15 @@
     <span class="kr">end</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div></td></tr></table></div></p>
+<details class="warning" open="open">
+<summary>주의</summary>
+<p><code>Event.Created</code> 가 실행될 때는 <code>Parent</code> 값이 정해지지 않았을 수 있습니다. <code class="highlight"><span class="n">self</span><span class="p">.</span><span class="n">Parent</span></code> 는 접근해서는 안됩니다. <code>Class.Extend</code> 에서는 <code>AfterRender</code> 를 이용해야 합니다.</p>
+</details>
+</blockquote>
 <hr />
 <p><code class="highlight"><span class="nx">Event</span><span class="p">.</span><span class="nx">CreatedAsync</span></code>  </p>
 <blockquote>
-<p><code class="highlight"><span class="nx">Event</span><span class="p">.</span><span class="nx">Created</span></code> 와 비슷하지만, 코루틴 안에서 작동합니다. <code class="highlight"><span class="nx">objectList</span><span class="o">:</span><span class="kt">EachAsync</span><span class="p">()</span></code> 처럼 반환을 기다리지 않습니다.  </p>
-</blockquote>
-<p><em>주의: Event.CreatedAsync 가 실행될 때는 Parent 값이 정해지지 않았을 수 있습니다. self.Parent 는 접근해서는 안됩니다.</em>
+<p><code class="highlight"><span class="nx">Event</span><span class="p">.</span><span class="nx">Created</span></code> 와 비슷하지만, 코루틴 안에서 작동합니다. <code class="highlight"><span class="nx">objectList</span><span class="o">:</span><span class="kt">EachAsync</span><span class="p">()</span></code> 처럼 반환을 기다리지 않습니다.<br />
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -754,11 +773,15 @@
     <span class="p">};</span>
 <span class="p">}</span>
 </code></pre></div></td></tr></table></div></p>
+<details class="warning" open="open">
+<summary>주의</summary>
+<p><code>Event.CreatedAsync</code> 가 실행될 때는 <code>Parent</code> 값이 정해지지 않았을 수 있습니다. <code class="highlight"><span class="n">self</span><span class="p">.</span><span class="n">Parent</span></code> 는 접근해서는 안됩니다.</p>
+</details>
+</blockquote>
 <hr />
 <p><code class="highlight"><span class="nx">Event</span><span class="p">.</span><span class="nx">Prop</span><span class="p">(</span><span class="nx">propertyName</span><span class="o">:</span><span class="kt">string</span><span class="p">)</span></code>  </p>
 <blockquote>
-<p>프로퍼티 값이 변경됨을 연결합니다. </p>
-</blockquote>
+<p>프로퍼티 값이 변경됨을 연결합니다.<br />
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -774,7 +797,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="kr">end</span><span class="p">;</span>
 <span class="p">}</span>
-</code></pre></div></td></tr></table></div>
+</code></pre></div></td></tr></table></div></p>
+</blockquote>
 
 
 
@@ -814,6 +838,34 @@
   
 </div>
       
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/qwreey75" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+      
+    
+    
+    
+      
+      
+    
+    <a href="https://stella.place/@qwreey" target="_blank" rel="noopener me" title="stella.place" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M433 179.11c0-97.2-63.71-125.7-63.71-125.7-62.52-28.7-228.56-28.4-290.48 0 0 0-63.72 28.5-63.72 125.7 0 115.7-6.6 259.4 105.63 289.1 40.51 10.7 75.32 13 103.33 11.4 50.81-2.8 79.32-18.1 79.32-18.1l-1.7-36.9s-36.31 11.4-77.12 10.1c-40.41-1.4-83-4.4-89.63-54a102.54 102.54 0 0 1-.9-13.9c85.63 20.9 158.65 9.1 178.75 6.7 56.12-6.7 105-41.3 111.23-72.9 9.8-49.8 9-121.5 9-121.5zm-75.12 125.2h-46.63v-114.2c0-49.7-64-51.6-64 6.9v62.5h-46.33V197c0-58.5-64-56.6-64-6.9v114.2H90.19c0-122.1-5.2-147.9 18.41-175 25.9-28.9 79.82-30.8 103.83 6.1l11.6 19.5 11.6-19.5c24.11-37.1 78.12-34.8 103.83-6.1 23.71 27.3 18.4 53 18.4 175z"/></svg>
+    </a>
+  
+</div>
+      
     </div>
   </div>
 </footer>
@@ -823,7 +875,7 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.footer", "navigation.tabs", "navigation.top"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.footer", "navigation.tabs", "navigation.top", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.2a6f1dda.min.js"></script>

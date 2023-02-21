@@ -193,6 +193,7 @@ function module.init(shared)
 				end
 				insert(event,efunc)
 			end
+			return efunc
 		end;
 		With = function (s,wfunc)
 			-- s.wfunc = wfunc

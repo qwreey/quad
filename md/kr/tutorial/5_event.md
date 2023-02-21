@@ -17,6 +17,7 @@ local TextButton = Class "TextButton"
 local Count = 0
 
 TextButton "mainButton" {
+    Size = UDim2.fromOffset(200,200);
     Text = "0 번 클릭했습니다";
     [Event "MouseButton1Click"] = function(self,x,y)
         Count = Count + 1
