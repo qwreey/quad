@@ -31,8 +31,16 @@ function module.init(shared)
 			if destroyThis then
 				pcall(destroyThis,this)
 			end
-			--if sef.to when
-			-- todo for remove child on parent
+			if type(self.to) == "table" then
+				local parentChild = rawget(self.to,"__child")
+				if parentChild then
+					for i,v in pairs(parentChild) do
+						if v == this then
+							parentChild[i] = nil
+						end
+					end
+				end
+			end
 		end
 		self.this = nil
 	end

@@ -10,10 +10,11 @@ Quad 에서는 로블록스의 `Frame` 이나 `TextButton` 같은 기본 오브�
 > 2. 긴 코드를 나누어 코드마다 확실한 목적을 부여해 더 명확한 코드 작성이 가능해집니다.  
 > 3. 자신만의 프로퍼티를 만들거나 완전히 원하는대로 오브젝트를 커스터마이징 할 수 있습니다.  
 > 4. 함수나 생성기를 직접 만드는 것 보다 일관된 방법을 제공합니다.  
+> 5. 매우 유연합니다. 다양한 방법의 구현법을 원하는대로 사용할 수 있습니다.  
 
 ---
 
-## 나만의 클래스를 만들어보자
+## 나만의 클래스를 만들어보기
 
 `Extend` 객체는 다음과 같이 생성합니다.  
 ```lua
@@ -25,7 +26,7 @@ local myClass = Class.Extend()
 ```
 일반적으로 Extend 는 한 모듈에 하나씩 넣습니다.  
 
-다음과 같은 코드 구조를 만들어보세요.  
+다음과 같은 코드 구조를 만들어보세요. 아래의 코드는 모든 `Extend` 문법을 설명합니다.  
 ```
  - ScreenGUI
  |-- localscript
@@ -59,7 +60,7 @@ local myClass = Class.Extend()
         BackgroundColor3 = myStore "bgColor";
     }
 
-    Mount(ScreenGUI,main)
+    Mount(ScreenGUI, main)
     print(Store.GetObject("main") == main) -- true
 
     -- 이 값을 바꾸면 연동된 BackgroundColor3 도 바뀔것입니다
@@ -104,8 +105,8 @@ local myClass = Class.Extend()
         -- 프로퍼티의 기본값을 정해줄 수 있습니다.
         -- 생성 시 값이 누락된 경우 사용할 값을 정해줄 수 있습니다
         -- 키, 값 으로 구성합니다
-        props:Default("Text","Testing Label")
-        props:Default("ZIndex",1)
+        props:Default("Text",   "Testing Label")
+        props:Default("ZIndex", 1)
     end
 
     -- myClass 가 진짜 그려지는 부분입니다.
@@ -116,6 +117,11 @@ local myClass = Class.Extend()
             -- self 에 _label 로 이 TextLabel 을 넣습니다.
             -- 자식 오브젝트에도 사용할 수 있는 문법입니다.
             self "_label";
+
+            -- _holder 는 예약된 값입니다. 자식들이 여기에 들어와야
+            -- 함을 나타냅니다. 리스트나 그리드가 있는 경우 유용합니다.
+            -- 따로 설정하지 않는 경우 Render 가 리턴한 값을 사용합니다.
+            self "_holder";
 
             -- GetPropertyChangedSignal 가 작동할 수 있도록
             -- 프로퍼티 변경 이벤트를 연결해줍니다
@@ -184,3 +190,11 @@ local myClass = Class.Extend()
     -- 만든 클래스를 반환해줍시다.
     return myClass
     ```
+
+---
+
+## Extend
+
+Extend 에서 사용할 수 있는 값들과 메소드입니다.  
+
+{!include/extend.md!}

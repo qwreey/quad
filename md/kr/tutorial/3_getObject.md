@@ -27,7 +27,7 @@ Mount(ScreenGUI, Store.GetObject("mainFrame"))
 
 아이디에 허용되는 글자는 변수명과 같습니다. 대소문자, 숫자, 언더바(_) 를 허용합니다.  
 오브젝트 생성시 `#!ts Frame "mainFrame" {}` 와 같이 id 값을 지정해 준다면 생성된 오브젝트는 그 아이디를 가지게 됩니다.  
-`#!ts Store.GetObject(id:string)->Object` 는 생성된 객체중 가장 첫번째의 id 가 일치하는 오브젝트를 반환해 줍니다.
+`#!ts Store.GetObject(id:string)->Object?` 는 생성된 객체중 가장 첫번째의 id 가 일치하는 오브젝트를 반환해 줍니다.
 
 ```lua
 local index = 1
@@ -169,10 +169,12 @@ id 기능을 조금더 고급적인 방법으로 사용할 수도 있습니다.
 + 또는(or) 연산 `#!ts ,`  
 + 그리고(and) 연산 `#!ts &`  
 
-GetObjects 에는 이 두 연산을 사용할 수 있고, 생성시에는 `#!ts ,` 으로 여러 아이디를 부여해줄 수 있습니다. *띄어쓰기는 무시됩니다*  
+`GetObjects` 에는 이 두 연산을 사용할 수 있고, 생성시에는 `#!ts ,` 으로 여러 아이디를 부여해줄 수 있습니다. *띄어쓰기는 무시됩니다*  
 
 ???+ Warning "주의"
-    고급 ID 사용시 `#!ts objectList:Remove` 메소드는 사용할 수 없습니다
+
+    + `GetObject` 에는 이 방식을 사용할 수 없습니다.  
+    + 고급 ID 사용시 `#!ts objectList:Remove` 메소드는 사용할 수 없습니다.  
 
 ---
 

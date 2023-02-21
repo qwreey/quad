@@ -1,5 +1,14 @@
 
+# 라이선스
+
 === "Korean"
+
+    | Permissions | Limitations | Conditions |
+    |-------------|-------------|------------|
+    | ✅ 상업적 사용 | ❎ 보증 | ❓ 라이선스와 저작권 고지 (권고사항) |
+    | ✅ 배포 | ❎ 무례하게 굴기 | |
+    | ✅ 변경/수정/2차저작 | ❎ 러시아를 비롯한 전쟁을 돕는 | |
+    | ✅ 개인적 사용 | ❎ 아무런 변경사항 없이 복제 | |
 
     ```
               qwreeykawaii license v1.3
@@ -54,6 +63,13 @@
     ```
 
 === "English"
+
+    | Permissions | Limitations | Conditions |
+    |-------------|-------------|------------|
+    | ✅ Commercial use | ❎ Warranty | ❓ License and copyright notice (Recommendation) |
+    | ✅ Distribution | ❎ Being Rude | |
+    | ✅ Modification | ❎ Russian, And supporting war | |
+    | ✅ Private use | ❎ Copy without any modification | |
 
     ```
               qwreeykawaii license v1.3

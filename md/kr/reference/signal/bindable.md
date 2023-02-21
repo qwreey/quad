@@ -1,0 +1,3 @@
+# Bindable
+
+{!include/bindable.md!}

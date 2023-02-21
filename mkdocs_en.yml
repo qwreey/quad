@@ -7,7 +7,7 @@ copyright: Copyright &copy; 2020 - 2023 Qwreey
 
 # 사이드바
 nav:
-    'index.md'
+    - Home: 'index.md'
 
 # 다중 언어 설정
 extra:

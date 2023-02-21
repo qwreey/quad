@@ -184,7 +184,7 @@ export type Lerpable = Color3|UDim|UDim2|number|Vector2|Vector3|CFrame
 export type TweenHandler = ()->();
 export type module_tween = {
 	EasingFunctions:EasingFunctions;
-	Easing:EasingFunctions;
+	Easings:EasingFunctions;
 	EasingDirections:EasingDirections;
 	Directions:EasingDirections;
 	LerpProperties: <item>(item:item&(DOM|any),old:{[string]:Lerpable},new:{[string]:Lerpable},alpha:number,setter:(item:item&(DOM|any),property:string,value:Lerpable)->()?)->();
@@ -313,8 +313,8 @@ export type module_lang = {
 		Swedish: Locale & "sv_se";
 		Arabic: Locale & "ar_001";
 	};
-	Lang: Locale;
-	Default: Locale;
+	CurrentLocale: Locale;
+	FailedMessage: string;
 } & (id:string)->(langOptions)->register;
 
 -------------------
