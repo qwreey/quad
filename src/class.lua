@@ -279,7 +279,7 @@ function module.init(shared)
 				local binding = {}
 				-- set property
 				for index,value in pairs(prop) do
-					if bind() then
+					if bind(index) then
 						binding[index] = value
 					elseif type(index) ~= "number" then
 						ProcessQuadProperty(processedProperty,iprop,holder,item,ClassName,index,value)
