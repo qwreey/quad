@@ -1,6 +1,8 @@
 local module = {}
 local unpack = table.unpack
 local wrap = coroutine.wrap
+local sub = string.sub
+local match = string.match
 
 ---@param shared quad_export
 ---@return quad_module_event
@@ -55,14 +57,14 @@ function module.init(shared)
 			if not func then func = t[2] end
 		end
 		-- check prefix
-		if key:sub(1,prefixLen) ~= prefix then
+		if sub(key,1,prefixLen) ~= prefix then
 			return
 		end
-		key = key:sub(prefixLen + 1,-1)
+		key = sub(key,prefixLen + 1,-1)
 
 		-- find special bindings
 		for specKey,specFunc in pairs(special) do
-			local find = {key:match(specKey)}
+			local find = {match(key,specKey)}
 			if #find ~= 0 then
 				if func then
 					specFunc(this,func,unpack(find))
