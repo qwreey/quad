@@ -1,6 +1,6 @@
 # Extend - 확장과 재사용
 
-## 나만의 클래스를 만들어보자
+## Extend 란?
 
 Quad 에서는 로블록스의 `Frame` 이나 `TextButton` 같은 기본 오브젝트만 만들 수 있는것이 아닙니다. Quad 는 자신만의 버튼, 혹은 여러 컴포넌트들을 추상적으로 만들고. 다시 활용할 수 있도록 `Extend` 를 지원합니다.
 
@@ -10,6 +10,10 @@ Quad 에서는 로블록스의 `Frame` 이나 `TextButton` 같은 기본 오브�
 > 2. 긴 코드를 나누어 코드마다 확실한 목적을 부여해 더 명확한 코드 작성이 가능해집니다.  
 > 3. 자신만의 프로퍼티를 만들거나 완전히 원하는대로 오브젝트를 커스터마이징 할 수 있습니다.  
 > 4. 함수나 생성기를 직접 만드는 것 보다 일관된 방법을 제공합니다.  
+
+---
+
+## 나만의 클래스를 만들어보자
 
 `Extend` 객체는 다음과 같이 생성합니다.  
 ```lua
@@ -101,7 +105,7 @@ local myClass = Class.Extend()
 
     -- myClass 가 진짜 그려지는 부분입니다.
     -- Render 도 Init 처럼 프로퍼티 리스트가 제공됩니다.
-    function myClass:Init(props)
+    function myClass:Render(props)
         return TextLabel {
             -- self 에 _label 로 이 TextLabel 을 넣습니다.
             -- 자식 오브젝트에도 사용할 수 있는 문법입니다.

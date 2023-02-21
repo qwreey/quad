@@ -635,6 +635,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#extend" class="md-nav__link">
+    Extend 란?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     나만의 클래스를 만들어보자
   </a>
@@ -720,7 +727,7 @@
 
 
 <h1 id="extend-">Extend - 확장과 재사용<a class="headerlink" href="#extend-" title="Permanent link">&para;</a></h1>
-<h2 id="_1">나만의 클래스를 만들어보자<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<h2 id="extend">Extend 란?<a class="headerlink" href="#extend" title="Permanent link">&para;</a></h2>
 <p>Quad 에서는 로블록스의 <code>Frame</code> 이나 <code>TextButton</code> 같은 기본 오브젝트만 만들 수 있는것이 아닙니다. Quad 는 자신만의 버튼, 혹은 여러 컴포넌트들을 추상적으로 만들고. 다시 활용할 수 있도록 <code>Extend</code> 를 지원합니다.</p>
 <p><code>Extend</code> 는 <code>Register</code> 와 더불어 Quad 의 가장 중요한 기능으로써, 다음과 같은 장점을 지닙니다.</p>
 <blockquote>
@@ -731,6 +738,8 @@
 <li>함수나 생성기를 직접 만드는 것 보다 일관된 방법을 제공합니다.  </li>
 </ol>
 </blockquote>
+<hr />
+<h2 id="_1">나만의 클래스를 만들어보자<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <p><code>Extend</code> 객체는 다음과 같이 생성합니다.<br />
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -938,7 +947,7 @@
 
 <span class="c1">-- myClass 가 진짜 그려지는 부분입니다.</span>
 <span class="c1">-- Render 도 Init 처럼 프로퍼티 리스트가 제공됩니다.</span>
-<span class="kr">function</span> <span class="nc">myClass</span><span class="p">:</span><span class="nf">Init</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+<span class="kr">function</span> <span class="nc">myClass</span><span class="p">:</span><span class="nf">Render</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
     <span class="kr">return</span> <span class="n">TextLabel</span> <span class="p">{</span>
         <span class="c1">-- self 에 _label 로 이 TextLabel 을 넣습니다.</span>
         <span class="c1">-- 자식 오브젝트에도 사용할 수 있는 문법입니다.</span>
