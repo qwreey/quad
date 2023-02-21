@@ -800,7 +800,11 @@
 <span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span>
-<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">ScreenGUI</span> <span class="o">=</span> <span class="n">script</span><span class="p">.</span><span class="n">Parent</span>
 <span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
 <span class="kd">local</span> <span class="n">Mount</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Mount</span>
 <span class="kd">local</span> <span class="n">Class</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Class</span>
@@ -839,89 +843,113 @@
 
 <span class="c1">-- main:Update()</span>
 <span class="c1">-- 강제로 다시 Render 를 실행하도록 만듭니다.</span>
+
+<span class="c1">-- main.Testing = 2</span>
+<span class="c1">-- 업데이트 트리거이므로 이 값을 변경하면.</span>
+<span class="c1">-- main:Update() 와 같은 효과가 납니다.</span>
 </code></pre></div></td></tr></table></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  1</span>
+<span class="normal">  2</span>
+<span class="normal">  3</span>
+<span class="normal">  4</span>
+<span class="normal">  5</span>
+<span class="normal">  6</span>
+<span class="normal">  7</span>
+<span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">Quad</span> <span class="o">=</span> <span class="nb">require</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">to</span><span class="p">.</span><span class="n">module</span><span class="p">).</span><span class="n">Init</span><span class="p">()</span>
 <span class="kd">local</span> <span class="n">Class</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Class</span>
 <span class="kd">local</span> <span class="n">Event</span> <span class="o">=</span> <span class="n">Quad</span><span class="p">.</span><span class="n">Event</span>
 
@@ -929,8 +957,8 @@
 
 <span class="kd">local</span> <span class="n">myClass</span> <span class="o">=</span> <span class="n">Class</span><span class="p">.</span><span class="n">Extend</span><span class="p">()</span>
 
-<span class="c1">-- Init 에는 프로퍼티 리스트가 제공됩니다.</span>
-<span class="c1">-- Init 는 없더라도 무방합니다.</span>
+<span class="c1">-- Init 는 Render 전 props 를 초기화 하는 용도로 사용합니다</span>
+<span class="c1">-- Init 에는 프로퍼티 리스트가 제공됩니다. Init 는 없더라도 무방합니다.</span>
 <span class="kr">function</span> <span class="nc">myClass</span><span class="p">:</span><span class="nf">Init</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
     <span class="c1">-- 생성된 오브젝트에 프라이빗 값을 만듭니다.</span>
     <span class="c1">-- 이름 앞에 _ 가 붇으면 외부에서 사용되는 목적이 아닌</span>
@@ -943,12 +971,14 @@
     <span class="c1">-- 생성 시 값이 누락된 경우 사용할 값을 정해줄 수 있습니다</span>
     <span class="c1">-- 키, 값 으로 구성합니다</span>
     <span class="n">props</span><span class="p">:</span><span class="n">Default</span><span class="p">(</span><span class="s2">&quot;Text&quot;</span><span class="p">,</span><span class="s2">&quot;Testing Label&quot;</span><span class="p">)</span>
+    <span class="n">props</span><span class="p">:</span><span class="n">Default</span><span class="p">(</span><span class="s2">&quot;ZIndex&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="kr">end</span>
 
 <span class="c1">-- myClass 가 진짜 그려지는 부분입니다.</span>
 <span class="c1">-- Render 도 Init 처럼 프로퍼티 리스트가 제공됩니다.</span>
 <span class="kr">function</span> <span class="nc">myClass</span><span class="p">:</span><span class="nf">Render</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
     <span class="kr">return</span> <span class="n">TextLabel</span> <span class="p">{</span>
+        <span class="n">Size</span> <span class="o">=</span> <span class="n">UDim2</span><span class="p">.</span><span class="n">fromOffset</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">);</span>
         <span class="c1">-- self 에 _label 로 이 TextLabel 을 넣습니다.</span>
         <span class="c1">-- 자식 오브젝트에도 사용할 수 있는 문법입니다.</span>
         <span class="n">self</span> <span class="s2">&quot;_label&quot;</span><span class="p">;</span>
@@ -968,15 +998,33 @@
         <span class="c1">-- 만약 props.BackgroundColor3 만 사용하면</span>
         <span class="c1">-- 처음에만 레지스터에서 값을 읽어옵니다.</span>
         <span class="c1">-- 따라서 값을 변경해도 변경사항이 적용되지 않습니다.</span>
-        <span class="n">BackgroundColor3</span> <span class="o">=</span> <span class="n">props</span> <span class="s2">&quot;BackgroundColor3&quot;</span><span class="p">;</span>
+        <span class="n">BackgroundColor3</span> <span class="o">=</span> <span class="n">props</span> <span class="s2">&quot;BackgroundColor3&quot;</span><span class="p">:</span><span class="n">Tween</span><span class="p">();</span>
 
         <span class="c1">-- 입력 값과 상관없이 레지스터를 쓸 수 있습니다.</span>
         <span class="c1">-- 이 경우 main.Text = &quot;New&quot; 처럼 직접 변경하면</span>
         <span class="c1">-- 그 변경이 적용됩니다.</span>
         <span class="n">Text</span> <span class="o">=</span> <span class="n">props</span> <span class="s2">&quot;Text&quot;</span><span class="p">;</span>
-
+        <span class="n">ZIndex</span> <span class="o">=</span> <span class="n">props</span> <span class="s2">&quot;ZIndex&quot;</span><span class="p">;</span>
         <span class="c1">-- ... 자식을 넣어도 무방합니다.</span>
+        <span class="c1">-- Frame {</span>
+        <span class="c1">--    [Event.Created] = function(self)</span>
+        <span class="c1">--        print(self.Parent) -- nil 일 수도 있습니다</span>
+        <span class="c1">--        따라서 부모를 건들여야 하는 경우, self &quot;&quot; 를 통해</span>
+        <span class="c1">--        self 값에 넣어놓고 나중에 AfterRender 로 해결해야합니다.</span>
+        <span class="c1">--    end;</span>
+        <span class="c1">-- }</span>
     <span class="p">}</span>
+<span class="kr">end</span>
+
+
+<span class="c1">-- AfterRender 는 Render 직후 실행됩니다.</span>
+<span class="c1">-- 렌더링 후 실행해야 할 것을 넣을 수 있습니다.</span>
+<span class="c1">-- object 는 :Render 가 반환한 값입니다.</span>
+<span class="c1">-- AfterRender 는 없더라도 무방합니다.</span>
+<span class="kr">function</span> <span class="nc">myClass</span><span class="p">:</span><span class="nf">AfterRender</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">_label</span><span class="p">,</span><span class="s2">&quot;이 생성되었습니다&quot;</span><span class="p">)</span>
+    <span class="c1">-- 이렇게 하면 레지스터로 연결된 부분도 업데이트됩니다.</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">ZIndex</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="kr">end</span>
 
 <span class="c1">-- function myClass:Unload(object)</span>

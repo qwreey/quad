@@ -71,9 +71,13 @@ local myClass = Class.Extend()
         :Connect(function()
             print("AbsolutePosition",main.AbsolutePosition)
         end)
-    
+
     -- main:Update()
     -- 강제로 다시 Render 를 실행하도록 만듭니다.
+
+    -- main.Testing = 2
+    -- 업데이트 트리거이므로 이 값을 변경하면.
+    -- main:Update() 와 같은 효과가 납니다.
     ```
 
 === "localscript.myClass"
@@ -87,8 +91,8 @@ local myClass = Class.Extend()
 
     local myClass = Class.Extend()
 
-    -- Init 에는 프로퍼티 리스트가 제공됩니다.
-    -- Init 는 없더라도 무방합니다.
+    -- Init 는 Render 전 props 를 초기화 하는 용도로 사용합니다
+    -- Init 에는 프로퍼티 리스트가 제공됩니다. Init 는 없더라도 무방합니다.
     function myClass:Init(props)
         -- 생성된 오브젝트에 프라이빗 값을 만듭니다.
         -- 이름 앞에 _ 가 붇으면 외부에서 사용되는 목적이 아닌
@@ -101,12 +105,14 @@ local myClass = Class.Extend()
         -- 생성 시 값이 누락된 경우 사용할 값을 정해줄 수 있습니다
         -- 키, 값 으로 구성합니다
         props:Default("Text","Testing Label")
+        props:Default("ZIndex",1)
     end
 
     -- myClass 가 진짜 그려지는 부분입니다.
     -- Render 도 Init 처럼 프로퍼티 리스트가 제공됩니다.
     function myClass:Render(props)
         return TextLabel {
+            Size = UDim2.fromOffset(200,200);
             -- self 에 _label 로 이 TextLabel 을 넣습니다.
             -- 자식 오브젝트에도 사용할 수 있는 문법입니다.
             self "_label";
@@ -126,15 +132,33 @@ local myClass = Class.Extend()
             -- 만약 props.BackgroundColor3 만 사용하면
             -- 처음에만 레지스터에서 값을 읽어옵니다.
             -- 따라서 값을 변경해도 변경사항이 적용되지 않습니다.
-            BackgroundColor3 = props "BackgroundColor3";
+            BackgroundColor3 = props "BackgroundColor3":Tween();
 
             -- 입력 값과 상관없이 레지스터를 쓸 수 있습니다.
             -- 이 경우 main.Text = "New" 처럼 직접 변경하면
             -- 그 변경이 적용됩니다.
             Text = props "Text";
-
+            ZIndex = props "ZIndex";
             -- ... 자식을 넣어도 무방합니다.
+            -- Frame {
+            --    [Event.Created] = function(self)
+            --        print(self.Parent) -- nil 일 수도 있습니다
+            --        따라서 부모를 건들여야 하는 경우, self "" 를 통해
+            --        self 값에 넣어놓고 나중에 AfterRender 로 해결해야합니다.
+            --    end;
+            -- }
         }
+    end
+
+
+    -- AfterRender 는 Render 직후 실행됩니다.
+    -- 렌더링 후 실행해야 할 것을 넣을 수 있습니다.
+    -- object 는 :Render 가 반환한 값입니다.
+    -- AfterRender 는 없더라도 무방합니다.
+    function myClass:AfterRender(object)
+        print(self._label,"이 생성되었습니다")
+        -- 이렇게 하면 레지스터로 연결된 부분도 업데이트됩니다.
+        self.ZIndex = 2
     end
 
     -- function myClass:Unload(object)
