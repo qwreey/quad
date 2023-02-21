@@ -2,6 +2,10 @@
 
 ## 진행중이거나 검토중
 
+### Easing 문서
+
+Easing 문서에 Out In Inout 비교 영상 만들기  
+
 ### Spring
 
 Spring 물리 계산을 UI 애니메이션에 적용합니다  

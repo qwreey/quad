@@ -1,6 +1,8 @@
 
 # 라이선스
 
+QwreeyKawaii License v1.3
+
 === "Korean"
 
     | Permissions | Limitations | Conditions |
@@ -11,14 +13,14 @@
     | ✅ 개인적 사용 | ❎ 아무런 변경사항 없이 복제 | |
 
     ```
-              qwreeykawaii license v1.3
+              QwreeyKawaii license v1.3
     Copyright 2023. Qwreey [qwreey75@gmail.com]
 
     이 라이선스는 DBAD 라이선스를 기반으로 합니다.
     누구든지 이 라이선스 문서의 원본 혹은 수정본을
     복사, 편집, 배포 할 수 있습니다.
 
-    qwreeykawaii 라이선스의 복사 배포 및 수정에
+    QwreeyKawaii 라이선스의 복사 배포 및 수정에
     관한 규정과 조건.
 
     1. 당신은 이 귀여운 창작물을 가지고 어떠한
@@ -72,7 +74,7 @@
     | ✅ Private use | ❎ Copy without any modification | |
 
     ```
-              qwreeykawaii license v1.3
+              QwreeyKawaii license v1.3
 
     Copyright 2023. Qwreey [qwreey75@gmail.com]
 

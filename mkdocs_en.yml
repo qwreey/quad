@@ -59,8 +59,20 @@ theme:
     # custom_dir: overrides
 
     # 테마
+    # 테마
     palette:
-        scheme: custom #youtube
+        - scheme: darker
+          toggle:
+            icon: material/brightness-3
+            name: Switch to light theme
+        # - scheme: dark
+        #   toggle:
+        #     icon: material/brightness-4
+        #     name: Switch to light theme
+        - scheme: default
+          toggle:
+            icon: material/brightness-7
+            name: Switch to dark theme
 
     # 세부기능 Flag
     features:
@@ -112,7 +124,8 @@ markdown_extensions:
     - pymdownx.highlight: # 코드 구문강조
         linenums: true # 코드라인 넘버
     - pymdownx.emoji: # 이모지 불러오기
-        emoji_generator: !!python/name:pymdownx.emoji.to_svg
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg
     - pymdownx.tasklist: # 체크박스 불러오기
         custom_checkbox: true
     - pymdownx.betterem: # 더 나은 글자 서식 알고리즘

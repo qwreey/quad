@@ -2,8 +2,8 @@
 	"name": "quadTesting",
 	"tree": {
         "$className": "DataModel",
-        "ReplicatedStorage": {
-            "$className": "ReplicatedStorage",
+        "ReplicatedFirst": {
+            "$className": "ReplicatedFirst",
             "QuadTest": {
                 "$path": "./testing",
                 "Quad": {

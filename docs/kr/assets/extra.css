@@ -38,6 +38,14 @@ table.pretty {
   -webkit-backdrop-filter: blur(3px);
 }
 
+/* 검색 열면 배경 블러효과 주기 */
+@media screen and (min-width: 60em) {
+  .md-search__overlay {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+}
+
 /* 디테일 안에 글자크기 */
 .md-typeset details {
   font-size: .72rem !important;
@@ -90,7 +98,73 @@ td {
 } */
 
 /*테마 설정*/
-[data-md-color-scheme="custom"] {
+[data-md-color-scheme="darker"] {
+  /*글자 색깔*/
+  --md-default-fg-color: rgb(225, 215, 225);
+  --md-default-fg-color--light: rgb(235, 215, 252);
+  --md-default-fg-color--lighter: rgb(105, 105, 105);
+  --md-default-fg-color--lightest: rgb(70, 70, 70);
+
+  /* 마커 */
+  --md-typeset-mark-color: hsl(271, 81%, 46%) !important;
+
+  /*배경 색깔*/
+  --md-default-bg-color: rgb(28, 25, 39);
+  --md-default-bg-color--light: hsla(259, 15%, 21%, 0.54);
+  --md-default-bg-color--lighter: hsla(259, 15%, 21%, 0.26);
+  --md-default-bg-color--lightest: hsla(259, 15%, 21%, 0.07);
+
+  /*하이라이팅 색깔 (탑바, 링크)*/
+  --md-primary-fg-color: hsl(268, 100%, 53%);
+  --md-primary-fg-color--light: hsl(271, 100%, 77%);
+  --md-primary-fg-color--dark :hsl(271, 82%, 72%);
+  --md-primary-bg-color: #f9e1ff;
+  --md-primary-bg-color--light: #f1d2ff;
+
+  /*기타 (링크 마우스 온, 탭 컬러)*/
+  --md-accent-fg-color: #bd78f5;
+  --md-accent-fg-color--transparent: hsla(0, 0%, 0%, 0.1);
+  --md-accent-bg-color: hsla(0, 0%, 100%, 1);
+  --md-accent-bg-color--light: hsla(0, 0%, 100%, 0.7);
+
+  /*모르겠음*/
+  --md-typeset-color: var(--md-default-fg-color);
+  --md-typeset-a-color: var(--md-primary-fg-color--light);
+  --md-typeset-del-color: hsla(6, 90%, 60%, 0.15); /*내용 비교 하이라이터 : 지움*/
+  --md-typeset-ins-color: hsla(150, 90%, 44%, 0.15); /*내용 비교 하이라이터 : 만듬*/
+  --md-typeset-kbd-color: hsla(232, 15%, 94%, 0.12);
+  --md-typeset-kbd-accent-color: hsla(232, 15%, 94%, 0.2);
+  --md-typeset-kbd-border-color: hsla(232, 15%, 14%, 1);
+  --md-admonition-fg-color: var(--md-default-fg-color);
+  --md-admonition-bg-color: hsla(232, 0%, 100%, 0.025);
+
+  /* Footer */
+  --md-footer-fg-color: hsla(0, 0%, 100%, 1);
+  --md-footer-fg-color--light: hsla(0, 0%, 100%, 0.7);
+  --md-footer-fg-color--lighter: hsla(0, 0%, 100%, 0.3);
+  --md-footer-bg-color: hsla(232, 15%, 12%, 0.87);
+  --md-footer-bg-color--dark: hsla(232, 15%, 10%, 1);
+
+  /*Code block , Code highlighting*/
+  --md-code-fg-color: rgb(249, 235, 255); /*일반 텍스트*/
+  --md-code-bg-color: rgb(38, 31, 51); /*배경*/
+  --md-code-hl-color: hsla(218, 100%, 63%, 0.15); /*수직선(왼쪽 숫자 옆)*/
+  --md-code-hl-number-color:#f0b680; /*숫자*/
+  --md-code-hl-special-color: #d17eeb;
+  --md-code-hl-function-color: #7db9eb; /*함수명 색깔*/
+  --md-code-hl-constant-color: #50A8B3; /*내장함수 색깔*/
+  --md-code-hl-keyword-color:#C577DC; /*local, function, do, for ...*/
+  --md-code-hl-string-color: #98C279; /*문자열*/
+  --md-code-hl-name-color: var(--md-code-fg-color); /*변수명 색깔*/
+  --md-code-hl-operator-color: #50A8B3; /*연산자( = < > ^ * - + ) 색깔*/
+  --md-code-hl-punctuation-color: #A9B0BD; /*구두점 문자 ( ) , ;*/
+  --md-code-hl-comment-color: #5B626F; /*주석 색깔*/
+  --md-code-hl-generic-color: var(--md-default-fg-color--light);
+  --md-code-hl-variable-color: var(--md-default-fg-color--light);
+}
+
+/*테마 설정*/
+[data-md-color-scheme="dark"] {
   /*글자 색깔*/
   --md-default-fg-color: rgb(225, 215, 225);
   --md-default-fg-color--light: rgb(235, 215, 252);

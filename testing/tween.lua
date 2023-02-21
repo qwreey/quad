@@ -4,8 +4,8 @@ local module = {}
 ---@module Quad.src.types
 local types = require(script.Parent.Quad.types)
 local quad = (require(script.Parent.Quad) :: types.module).Init("ui")
-local Round,Class,Mount,Store,Event,Tween,Style,Lang
-= quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Lang
+local Class,Mount,Store,Event,Tween,Style,Lang
+= quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Lang
 
 local Global = Store.GetStore "global"
 
@@ -31,18 +31,21 @@ Lang.New("tweenCount",{
     [Lang.Locales.Default] = "Ran {count} times";
 })
 
--- Create GUI
+-- Create Extend Class
 local tweenTest = Class.Extend()
 
 function tweenTest:Init(Prop)
     Prop:Default("Count",0)
     Prop:Default("Position",UDim2.fromOffset(50,0))
+end
+
+function tweenTest:AfterRender()
     local on = false
     task.spawn(function()
         while task.wait(2) do
             on = not on
-            Prop.Count = Prop.Count + 1
-            Prop.Position = on and UDim2.new(1,-50-60,0,0) or UDim2.fromOffset(50,0)
+            self.Count = self.Count + 1
+            self.Position = on and UDim2.new(1,-50-60,0,0) or UDim2.fromOffset(50,0)
         end
     end)
 end
@@ -109,21 +112,21 @@ function tweenTest:Render(Prop)
             Text = "Back";
             Position = Prop "Position":Add(UDim2.fromOffset(0,560)):Tween{Direction = "Out",Time = 2,Easing = "Back"};
         };
-        Frame {
-            Size = UDim2.new(100,100);
-            [Event.Created] = function(self)
-                for j = 1,25 do
-                    local i = j*4
-                    Mount(self,Frame{
-                        Size = UDim2.fromOffset(3,3);
-                        AnchorPoint = Vector2.new(0.5,0.5);
-                        Position = UDim2.fromOffset(100-i,Tween.CalcEasing(Tween.EasingFunctions.Circle,Tween.EasingDirections.Out,i/100)*100);
-                        BackgroundColor3 = Color3.fromRGB(110, 110, 255);
-                    })
-                end
-            end;
-            BackgroundColor3 = Color3.fromRGB(0,0,0);
-        };
+        -- Frame {
+        --     Size = UDim2.new(100,100);
+        --     [Event.Created] = function(self)
+        --         for j = 1,25 do
+        --             local i = j*4
+        --             Mount(self,Frame{
+        --                 Size = UDim2.fromOffset(3,3);
+        --                 AnchorPoint = Vector2.new(0.5,0.5);
+        --                 Position = UDim2.fromOffset(100-i,Tween.CalcEasing(Tween.EasingFunctions.Circle,Tween.EasingDirections.Out,i/100)*100);
+        --                 BackgroundColor3 = Color3.fromRGB(110, 110, 255);
+        --             })
+        --         end
+        --     end;
+        --     BackgroundColor3 = Color3.fromRGB(0,0,0);
+        -- };
     }
 end
 

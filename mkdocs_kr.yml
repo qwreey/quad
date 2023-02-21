@@ -95,7 +95,18 @@ theme:
 
     # 테마
     palette:
-        scheme: custom #youtube
+        - scheme: darker
+          toggle:
+            icon: material/brightness-3
+            name: 밝은 테마로 변경
+        # - scheme: dark
+        #   toggle:
+        #     icon: material/brightness-4
+        #     name: Switch to light theme
+        - scheme: default
+          toggle:
+            icon: material/brightness-7
+            name: 어두운 테마로 변경
 
     # 세부기능 Flag
     features:
@@ -115,8 +126,8 @@ theme:
     font: false
 
     # 아이콘
-    favicon: ../assets/LUAICON_TP.png
-    logo: ../assets/LUAICON_DARK.png
+    favicon: assets/Quad_MiniLogo.png
+    logo: assets/Quad_MiniLogoWhite.png
 
     # 일부 설정
     include_search_page: false
@@ -147,7 +158,8 @@ markdown_extensions:
     - pymdownx.highlight: # 코드 구문강조
         linenums: true # 코드라인 넘버
     - pymdownx.emoji: # 이모지 불러오기
-        emoji_generator: !!python/name:pymdownx.emoji.to_svg
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg
     - pymdownx.tasklist: # 체크박스 불러오기
         custom_checkbox: true
     - pymdownx.betterem: # 더 나은 글자 서식 알고리즘

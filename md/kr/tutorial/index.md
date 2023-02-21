@@ -112,6 +112,7 @@ local Quad = (require(path.to.module)::types.module).Init()
 
     ```lua title="실제로 UI 들을 그리는 코드들이 담깁니다."
     local Quad = require(path.to.module).Init()
+    local IsTestMode = script.Name:match("_TESTING") -- 테스트모드 여부
     local LocalPlayer = game.Players.LocalPlayer
     local ScreenGUI = Instance.new("ScreenGui",
         LocalPlayer and LocalPlayer.PlayerGui or game.StarterGui)

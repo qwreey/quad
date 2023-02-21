@@ -1,7 +1,14 @@
 
 local module = {}
 
-local IsTestMode = script.Name:match("testing_")
+local IsTestMode = script.Name:match("_TESTING")
+
+local Quad = require(script.Quad).Init()
+local LocalPlayer = game.Players.LocalPlayer
+local ScreenGUI = Instance.new("ScreenGui",
+    LocalPlayer and LocalPlayer.PlayerGui or game.StarterGui)
+ScreenGUI.Name = "MyGUI"
+ScreenGUI.ResetOnSpawn = false
 
 local function SetTheme(global)
     local isDark
@@ -42,46 +49,32 @@ local function SetTheme(global)
     end
 end
 
-function module.init()
-    ---@module Quad.src.types
-    local types = require(script.Quad.types)
-    local quad = (require(script.Quad) :: types.module).Init("ui")
-    local Round,Class,Mount,Store,Event,Tween,Style,Signal
-    = quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Signal
+---@module src.types
+local types = require(script.Quad.types)
+local quad = (require(script.Quad) :: types.module).Init("ui")
+local Round,Class,Mount,Store,Event,Tween,Style,Signal
+= quad.Round,quad.Class,quad.Mount,quad.Store,quad.Event,quad.Tween,quad.Style,quad.Signal
 
-    local Frame = Class "Frame"
-    local Gui = Class "ScreenGui"
+local Frame = Class "Frame"
+local Gui = Class "ScreenGui"
 
-    local Global = Store.GetStore "global"
-    local TweenTest = Class(script.tween)
-    -- local LangTest = Class(script.lang)
+local Global = Store.GetStore "global"
+local TweenTest = Class(script.tween)
+-- local LangTest = Class(script.lang)
 
-    SetTheme(Global)
+SetTheme(Global)
 
-    Gui "MainGui" {
-        Frame "Main" {
-            Size = UDim2.fromOffset(400,640);
-            Position = UDim2.fromScale(0.5,0.5);
-            AnchorPoint = Vector2.new(0.5,0.5);
-            TweenTest{};
-            -- LangTest{};
-        }
-    }
-    Mount(game.StarterGui,Store.GetObject "MainGui")
-    _G.uiinstance = Store.GetObject "MainGui"
+local mainMount = Mount(ScreenGUI,Frame "Main" {
+    Size = UDim2.fromOffset(400,640);
+    Position = UDim2.fromScale(0.5,0.5);
+    AnchorPoint = Vector2.new(0.5,0.5);
+    TweenTest{};
+    -- LangTest{};
+})
+
+return function()
+    -- 테스트가 끝나 만든걸 지워야 할 때 사용됩니다.
+    -- 추후 설명될 Unmount() 를 이용하세요.
+    mainMount:Unmount()
+    ScreenGUI:Destroy()
 end
-
-function module.deinit()
-    if IsTestMode then
-        local lastInstance = _G.uiinstance
-        require(script.Parent.Quad).Uninit("ui")
-        if lastInstance then
-            lastInstance:Destroy()
-        end
-        _G.uiinstance = nil
-        return
-    end
-    require(script.Parent.Quad).Uninit("ui")
-end
-
-return module

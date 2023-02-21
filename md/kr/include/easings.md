@@ -1,5 +1,14 @@
 
-![함수 개형](../assets/EasingStyles.jpg)  
+=== "미리보기"
+    <div align=center markdown>
+    <video autoplay muted loop src="/kr/assets/easingVideo.mp4"></video>
+    </div>
+
+=== "그래프 개형"
+    <div align=center markdown>
+    ![함수 개형](/kr/assets/EasingStyles.jpg)  
+    </div>
+
 [모든 Easing 은 여기에서 직접적으로 확인할 수 있습니다.](https://easings.net/)  
 
 `Linear`  
