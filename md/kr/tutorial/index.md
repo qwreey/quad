@@ -78,7 +78,7 @@ local Class = Quad.Class
 
 ### 타입 불러오기
 
-기본적으로 이 모듈은 로드시 타입을 반환하지만. 직접적으로 타입을 지정하고 싶은 경우 types.lua 를 불러올 수 있습니다  
+기본적으로 Quad 는 로드시 타입 같이 반환하지만. 직접적으로 타입을 지정하고 싶은 경우 types.lua 를 불러올 수 있습니다  
 
 ```lua
 local types = require(path.to.module.types)

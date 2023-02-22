@@ -40,11 +40,11 @@ nav:
             - TweenOptions: 'reference/tween/tweenOptions.md'
             - Easings: 'reference/tween/easings.md'
             - Directions: 'reference/tween/directions.md'
-        - Event: 'event.md'
-        - Extend: 'extend.md'
-        - Lang: 'lang.md'
-        - Mounts: 'mounts.md'
-        - QuadProperty: 'quadProperty.md'
+        - Event: 'reference/event.md'
+        - Extend: 'reference/extend.md'
+        - Lang: 'reference/lang.md'
+        - Mounts: 'reference/mounts.md'
+        - QuadProperty: 'reference/quadProperty.md'
 
 extra:
     # 다중 언어 설정
