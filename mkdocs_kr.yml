@@ -127,7 +127,7 @@ theme:
 
     # 아이콘
     favicon: assets/Quad_MiniLogo.png
-    logo: assets/Quad_MiniLogoWhite.png
+    logo: assets/Quad_MiniLogoWhite.svg
 
     # 일부 설정
     include_search_page: false

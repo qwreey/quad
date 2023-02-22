@@ -92,8 +92,8 @@ theme:
     font: false
 
     # 아이콘
-    favicon: ../assets/LUAICON_TP.png
-    logo: ../assets/LUAICON_DARK.png
+    favicon: assets/Quad_MiniLogo.png
+    logo: assets/Quad_MiniLogoWhite.svg
 
     # 일부 설정
     include_search_page: false
