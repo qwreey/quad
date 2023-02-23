@@ -334,36 +334,35 @@ function module.init(shared)
 	function store:__newindex(key,value)
 		-- if got register, just copy data to self and connect
 		if PcallGetProperty(value,"__type") == "quad_register" then
-			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored"
+			error "[Quad] adding register value on store is only allowed when init store. set value request was ignored"
+			-- local selfValues = self.__self
+			-- local selfTweens = self.__tweens
 
-			local selfValues = self.__self
-			local selfTweens = self.__tweens
+			-- -- fetch data from origin
+			-- do
+			-- 	local tstore = value.store
+			-- 	for tkey in gmatch(value.key,"^[,]") do
+			-- 		if not selfValues[tkey] then
+			-- 			selfValues[tkey] = tstore[tkey]
+			-- 		end
+			-- 	end
+			-- end
 
-			-- fetch data from origin
-			do
-				local tstore = value.store
-				for tkey in gmatch(value.key,"^[,]") do
-					if not selfValues[tkey] then
-						selfValues[tkey] = tstore[tkey]
-					end
-				end
-			end
+			-- -- calc value
+			-- do
+			-- 	local setValue,tween = value:CalcWithDefault(self)
+			-- 	selfValues[key] = setValue
+			-- 	selfTweens[key] = tween
+			-- end
 
-			-- calc value
-			do
-				local setValue,tween = value:CalcWithDefault(self)
-				selfValues[key] = setValue
-				selfTweens[key] = tween
-			end
+			-- -- make event connection
+			-- value:Register(function (_,newValue,eventKey)
+			-- 	-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
+			-- 	local setValue = value:CalcWithNewValue(self,newValue,eventKey)
+			-- 	self[key] = setValue
+			-- end)
 
-			-- make event connection
-			value:Register(function (_,newValue,eventKey)
-				-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
-				local setValue = value:CalcWithNewValue(self,newValue,eventKey)
-				self[key] = setValue
-			end)
-
-			return
+			-- return
 		end
 		self.__self[key] = value
 		local event = self.__evt[key]
