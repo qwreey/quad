@@ -231,7 +231,7 @@ function module.init(shared)
 					if prop then
 						for i,v in pairs(prop) do
 							if type(i) == "number" then
-								insert(childs[i],(iprop == 1) and v or v:Clone())
+								insert(childs,(iprop == 1) and v or v:Clone())
 							elseif bind(i) then
 								binds[i] = v
 							elseif PcallGetProperty(v,"__type") == "quad_linker" then
