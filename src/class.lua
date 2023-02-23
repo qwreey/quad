@@ -198,7 +198,7 @@ function module.init(shared)
 				if not processedProperty[thisStyle] then
 					processedProperty[thisStyle] = true
 					for styleIndex,styleValue in pairs(thisStyle) do
-						if type(styleValue) ~= "table" or pcall(styleValue,"__type") ~= "quad_style" then
+						if PcallGetProperty(styleValue,"__type") ~= "quad_style" then
 							ProcessQuadProperty(processedProperty,iprop,holder,item,className,styleIndex,styleValue)
 						end
 					end
@@ -225,18 +225,29 @@ function module.init(shared)
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new
 			if ClassName.__noSetup then -- if is support initing props
-				local childs,props,parsed,binds,links = {},pack(...),{},{},{}
+				local childs,props,parsed,binds,links,processed = {},pack(...),{},{},{},{}
 				for iprop = props.n,1,-1 do
 					local prop = props[iprop]
 					if prop then
 						for i,v in pairs(prop) do
-							if type(i) == "number" then
-								insert(childs,(iprop == 1) and v or v:Clone())
-							elseif bind(i) then
+							local quadType = PcallGetProperty(v,"__type")
+							if bind(i) then
 								binds[i] = v
-							elseif PcallGetProperty(v,"__type") == "quad_linker" then
+							elseif quadType == "quad_linker" then
 								links[i] = v
+							elseif quadType == "quad_style" then
+								for _,thisStyle in ipairs(parseStyles(v)) do
+									for styleIndex,styleValue in pairs(thisStyle) do
+										if not processed[styleIndex] then
+											processed[styleIndex] = true
+											parsed[styleIndex] = styleValue
+										end
+									end
+								end
+							elseif type(i) == "number" then
+								insert(childs,(iprop == 1) and v or v:Clone())
 							else
+								processed[i] = true
 								parsed[i] = v
 							end
 						end
