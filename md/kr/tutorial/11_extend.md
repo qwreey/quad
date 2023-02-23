@@ -53,6 +53,8 @@ local myClass = Class.Extend()
     -- 일반 오브젝트와 똑같이 id 를 넣고 GetObject 로
     -- 가져올 수도 있습니다
     local main = myClass "main" {
+        -- 이 테이블은 모듈의 :Init(props) 에 제공됩니다.
+        -- :Render(props) 에도 이 테이블이 제공됩니다.
         Testing = 1;
         Text = "Test";
         -- 레지스터 값을 넘겨줄 수도 있습니다.

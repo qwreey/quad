@@ -31,11 +31,20 @@ myStore.color = Color3.fromRGB(0,0,0)
 ???+ Warning "주의"
 
     구현의 복잡성의 이유로 레지스터는 오브젝트 생성시에만 등록할 수 있습니다.
+
     ```lua
     local myFrame = Frame{}
     Frame.BackgroundColor3 = myStore "color"
     ```
     위처럼 사용할 수 없습니다.
+
+    ```lua
+    local myFrame = Frame{}
+    Apply (myFrame) {
+        BackgroundColor3 = myStore "color";
+    }
+    ```
+
 
 > 1. 스토어를 생성함.  
 > 2. 기본 값을 설정함.  

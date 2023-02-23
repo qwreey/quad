@@ -13,52 +13,52 @@ function module.init(shared)
 
 	new.Locales = {
 		["Default"] = "default";
-		["English"] = "en_us";
-		["Spanish"] = "es_es";
-		["French"] = "fr_fr";
-		["Indonesian"] = "id_id";
-		["Italian"] = "it_it";
-		["Japanese"] = "ja_jp";
-		["Korean"] = "ko_kr";
-		["Russian"] = "ru_ru";
-		["Thai"] = "th_th";
-		["Turkish"] = "tr_tr";
-		["Vietnamese"] = "vi_vn";
-		["Portuguese"] = "pt_br";
-		["German"] = "de_de";
-		["ChineseSimplified"] = "zh_cn";
-		["ChineseTraditional"] = "zh_tw";
-		["Bulgarian"] = "bg_bg";
-		["Bengali"] = "bn_bd";
-		["Czech"] = "cs_cz";
-		["Danish"] = "da_dk";
-		["Greek"] = "el_gr";
-		["Estonian"] = "et_ee";
-		["Finnish"] = "fi_fi";
-		["Hindi"] = "hi_in";
-		["Croatian"] = "hr_hr";
-		["Hungarian"] = "hu_hu";
-		["Georgian"] = "ka_ge";
-		["Kazakh"] = "kk_kz";
-		["Khmer"] = "km_kh";
-		["Lithuanian"] = "lt_lt";
-		["Latvian"] = "lv_lv";
-		["Malay"] = "ms_my";
-		["Burmese"] = "my_mm";
-		["Bokmal"] = "nb_no";
-		["Dutch"] = "nl_nl";
-		["Filipino"] = "fil_ph";
-		["Polish"] = "pl_pl";
-		["Romanian"] = "ro_ro";
-		["Ukrainian"] = "uk_ua";
-		["Sinhala"] = "si_lk";
-		["Slovak"] = "sk_sk";
-		["Slovenian"] = "sl_sl";
-		["Albanian"] = "sq_al";
-		["Bosnian"] = "bs_ba";
-		["Serbian"] = "sr_rs";
-		["Swedish"] = "sv_se";
-		["Arabic"] = "ar_001";
+		["English"] = "en-us";
+		["Spanish"] = "es-es";
+		["French"] = "fr-fr";
+		["Indonesian"] = "id-id";
+		["Italian"] = "it-it";
+		["Japanese"] = "ja-jp";
+		["Korean"] = "ko-kr";
+		["Russian"] = "ru-ru";
+		["Thai"] = "th-th";
+		["Turkish"] = "tr-tr";
+		["Vietnamese"] = "vi-vn";
+		["Portuguese"] = "pt-br";
+		["German"] = "de-de";
+		["ChineseSimplified"] = "zh-cn";
+		["ChineseTraditional"] = "zh-tw";
+		["Bulgarian"] = "bg-bg";
+		["Bengali"] = "bn-bd";
+		["Czech"] = "cs-cz";
+		["Danish"] = "da-dk";
+		["Greek"] = "el-gr";
+		["Estonian"] = "et-ee";
+		["Finnish"] = "fi-fi";
+		["Hindi"] = "hi-in";
+		["Croatian"] = "hr-hr";
+		["Hungarian"] = "hu-hu";
+		["Georgian"] = "ka-ge";
+		["Kazakh"] = "kk-kz";
+		["Khmer"] = "km-kh";
+		["Lithuanian"] = "lt-lt";
+		["Latvian"] = "lv-lv";
+		["Malay"] = "ms-my";
+		["Burmese"] = "my-mm";
+		["Bokmal"] = "nb-no";
+		["Dutch"] = "nl-nl";
+		["Filipino"] = "fil-ph";
+		["Polish"] = "pl-pl";
+		["Romanian"] = "ro-ro";
+		["Ukrainian"] = "uk-ua";
+		["Sinhala"] = "si-lk";
+		["Slovak"] = "sk-sk";
+		["Slovenian"] = "sl-sl";
+		["Albanian"] = "sq-al";
+		["Bosnian"] = "bs-ba";
+		["Serbian"] = "sr-rs";
+		["Swedish"] = "sv-se";
+		["Arabic"] = "ar-001";
 	}
 
 	local function GetLocale()
@@ -75,6 +75,7 @@ function module.init(shared)
 
 	local weak = {__mode = "v"}
 	local lang = {}
+	local langList = {}
 	lang.__index = lang
 	function lang.New(id,handlers)
 		local this = {
@@ -84,7 +85,7 @@ function module.init(shared)
 			index=1;
 			registers = setmetatable({},weak);
 		}
-		lang[id] = this
+		langList[id] = this
 		if not handlers[new.Locales.Default] then
 			warn(("Localization %s have no Default value, Did you missed '[Lang.Locales.Default] = ...' ? It may make Localization fail on other languages"))
 		end
@@ -205,7 +206,7 @@ function module.init(shared)
 	end
 
 	function new.Update()
-		for _,this in pairs(lang) do
+		for _,this in pairs(langList) do
 			this:UpdateAll()
 		end
 	end
@@ -213,7 +214,7 @@ function module.init(shared)
 	setmetatable(new,{
 		__call = function(_,id)
 			return function (options)
-				local data = lang[id]
+				local data = langList[id]
 				if not data then
 					error(("Localization %s is not definded"):format(id))
 				end

@@ -12,7 +12,7 @@
 Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되어 있습니다. 이 기능은 register 와 연동해 적은 줄의 코드로 변하는 텍스트도 언어에 맞게 출력되도록 만들 수 있습니다.  
 
 번역 테이블은 `#!ts Lang.New(LangName:string,{ [Locale]: string|(options)->string })` 다음을 이용해 만들 수 있으며.  
-`Lang(LangName:string)(options)` 로 UI 에 적용시킬 수 있습니다.  
+`#!ts Lang(LangName:string)(options)->register` 로 UI 에 적용시킬 수 있습니다.  
 
 === "용법"
 
@@ -76,6 +76,27 @@ Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되
     while task.wait(1) do
         myStore.count = myStore.count + 1
     end
+    ```
+
+???+ Warning "주의"
+
+    구현의 복잡성의 이유로 Lang 은 레지스터와 같은 제약을 가집니다 (오브젝트 생성시에만 등록할 수 있습니다)
+
+    ```lua
+    local myLabel = TextLabel{}
+    Lang.new("Test",{ [Lang.Locales.Default] = "{lang}" })
+    myLabel.Text = Lang "Test" { lang = 1 }
+    ```
+    위처럼 사용할 수 없습니다.
+
+    대신에 `#!ts :Register` 문법을 사용하여 등록할 수 있습니다.
+
+    ```lua
+    local myLabel = TextLabel{}
+    Lang.new("Test",{ [Lang.Locales.Default] = "{lang}" })
+    Apply (myLabel) {
+        Text = Lang "Test" { lang = 1 };
+    }
     ```
 
 ---

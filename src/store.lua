@@ -40,6 +40,16 @@ function module.init(shared)
 	local items = {}
 	new.Items = items
 
+	local function RawGetProperty(item,index)
+		return item[index]
+	end
+	local function PcallGetProperty(item,index)
+		local ok,err = pcall(RawGetProperty,item,index)
+		if ok then return err end
+		return nil
+	end
+	new.PcallGetProperty = PcallGetProperty
+
 	-- id space (array of object)
 	local objectListClass = {__type = "quad_objectlist"}
 	function objectListClass:EachAsync(func)
@@ -290,7 +300,7 @@ function module.init(shared)
 	end
 	function store:__newindex(key,value)
 		-- if got register, just copy data to self and connect
-		if type(value) == "table" and value.__type == "quad_register" then
+		if PcallGetProperty(value,"__type") == "quad_register" then
 			-- warn "[Quad] adding register value on store is only allowed when init store. set value request was ignored"
 
 			local selfValues = self.__self

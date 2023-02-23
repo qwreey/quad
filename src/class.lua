@@ -27,6 +27,7 @@ function module.init(shared)
 	local round = shared.Round ---@type quad_module_round
 	local signal = shared.Signal ---@type quad_module_signal
 	local bindable = signal.Bindable
+	local PcallGetProperty = store.PcallGetProperty
 
 	local function InstanceNewWithName(classname,parent,name)
 		local item = InstanceNew(classname,parent)
@@ -107,16 +108,6 @@ function module.init(shared)
 		end
 	end
 	new.SetProperty = SetProperty
-
-	local function RawGetProperty(item,index)
-		return item[index]
-	end
-	local function PcallGetProperty(item,index)
-		local ok,err = pcall(RawGetProperty,item,index)
-		if ok then return err end
-		return nil
-	end
-	new.PcallGetProperty = PcallGetProperty
 
 	local function Link(linker,item,index,indexType)
 		local target = linker.target
@@ -549,6 +540,11 @@ function module.init(shared)
 		this.__noSetup = true
 		return this
 	end
+
+	local function Apply()
+		
+	end
+	new.Apply = Apply
 
 	return new
 end
