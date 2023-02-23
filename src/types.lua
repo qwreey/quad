@@ -92,7 +92,7 @@ export type register = {
 	Add: <R>(self:R&register,value:any)->R&register;
 	Tween: <R>(self:R&register,tween:TweenOptions)->R&register;
 }
-export type valueStore = {[any]:any}&(key:string)->register
+export type valueStore = {[any]:any,Default:(key:string,value:any)->()}&(key:string)->register
 export type objectList = {
 	Each: (self:objectList,(item:DOM|any,index:number)->())->();
 	EachSync: (self:objectList,(item:DOM|any,index:number)->())->();
