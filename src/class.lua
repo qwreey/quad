@@ -541,8 +541,13 @@ function module.init(shared)
 		return this
 	end
 
-	local function Apply()
+	local function ApplyNewProps(Item,Props)
 		
+	end
+	local function Apply(Item)
+		return function (Props)
+			ApplyNewProps(Item,Props)
+		end
 	end
 	new.Apply = Apply
 

@@ -168,7 +168,7 @@ function module.init(shared)
 			if quadType == "quad_register" then
 				local function regFn()
 					-- update handler
-					handler = self.handlers[new.Lang]
+					handler = self.handlers[new.CurrentLocale]
 					if not handler then
 						handler = self.handlers[new.Locales.Default]
 					end
