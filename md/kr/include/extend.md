@@ -297,7 +297,7 @@ Mount(ScreenGUI, myButton)
 ==Event== `#!ts .ChildAdded:Connect((child)->())->Connection`  
 <blockquote markdown>
 
-자식 오브젝트가 추가될 때 발생하는 이벤트입니다. `#!ts :Init` 에서 사용하면 옵션으로 넣은 자식 오브젝트가 이 이벤트를 통해 얻어질 수 있으며, `#!ts :AfterRender` 에서는 추후 `Mount` 를 통해 추가되는 자식 오브젝트만 이 이벤트로 얻어질 수 있습니다.  
+자식 오브젝트가 추가될 때 발생하는 이벤트입니다. `#!ts :Init` 또는 `#!ts :AfterRender` 에서 사용하면 옵션으로 넣은 자식 오브젝트가 이 이벤트를 통해 얻어질 수 있으며, 추후 `Mount` 를 통해 추가되는 자식 오브젝트 또한 이 이벤트로 얻어질 수 있습니다.  
 ```lua
 local Quad = require(path.to.module).Init()
 local Class = Quad.Class
@@ -336,7 +336,7 @@ Mount(myButton, TextButton{ Name = "World" })
 `#!ts :GetChildren()`  
 <blockquote markdown>
 
-자식 오브젝트들을 가져오는 함수입니다. `:Init()` 에서는 빈 테이블을 반환하고, `AfterRender` 에서는 옵션에 들어간 자식 오브젝트들이 담긴 테이블을 반환합니다. 자식의 순서는 일정하지 않습니다.
+자식 오브젝트들을 가져오는 함수입니다. `:Init()` 와 `:AfterRender()` 에서는 빈 테이블을 반환합니다. 자식의 순서는 일정하지 않습니다.
 ```lua
 local Quad = require(path.to.module).Init()
 local Class = Quad.Class

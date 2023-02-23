@@ -1506,7 +1506,7 @@
 <hr />
 <p><mark>Event</mark> <code class="highlight"><span class="nx">.ChildAdded</span><span class="o">:</span><span class="kt">Connect</span><span class="p">((</span><span class="nx">child</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span><span class="o">-&gt;</span><span class="nx">Connection</span></code>  </p>
 <blockquote>
-<p>자식 오브젝트가 추가될 때 발생하는 이벤트입니다. <code class="highlight"><span class="o">:</span><span class="nx">Init</span></code> 에서 사용하면 옵션으로 넣은 자식 오브젝트가 이 이벤트를 통해 얻어질 수 있으며, <code class="highlight"><span class="o">:</span><span class="nx">AfterRender</span></code> 에서는 추후 <code>Mount</code> 를 통해 추가되는 자식 오브젝트만 이 이벤트로 얻어질 수 있습니다.<br />
+<p>자식 오브젝트가 추가될 때 발생하는 이벤트입니다. <code class="highlight"><span class="o">:</span><span class="nx">Init</span></code> 또는 <code class="highlight"><span class="o">:</span><span class="nx">AfterRender</span></code> 에서 사용하면 옵션으로 넣은 자식 오브젝트가 이 이벤트를 통해 얻어질 수 있으며, 추후 <code>Mount</code> 를 통해 추가되는 자식 오브젝트 또한 이 이벤트로 얻어질 수 있습니다.<br />
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1569,7 +1569,7 @@
 <hr />
 <p><code class="highlight"><span class="o">:</span><span class="nx">GetChildren</span><span class="p">()</span></code>  </p>
 <blockquote>
-<p>자식 오브젝트들을 가져오는 함수입니다. <code>:Init()</code> 에서는 빈 테이블을 반환하고, <code>AfterRender</code> 에서는 옵션에 들어간 자식 오브젝트들이 담긴 테이블을 반환합니다. 자식의 순서는 일정하지 않습니다.
+<p>자식 오브젝트들을 가져오는 함수입니다. <code>:Init()</code> 와 <code>:AfterRender()</code> 에서는 빈 테이블을 반환합니다. 자식의 순서는 일정하지 않습니다.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
