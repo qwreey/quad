@@ -356,12 +356,12 @@ function module.init(shared)
 		end
 	end
 	-- init bindings (reflect all changes into class or other store, just wrapping it)
-	function new.__initStoreRegisterBinding(self,withItem)
+	function new.__initStoreRegisterBinding(self,withItem,extend)
 		local selfTweens = self.__tweens
 		local selfValues = self.__self
 		local selfKeep = self.__keep
 		for key,item in pairs(selfValues) do
-			if type(item) == "table" and item.__type == "quad_register" then
+			if PcallGetProperty(item,"__type") == "quad_register" then
 				-- fetch data from origin
 				-- do
 				-- 	local tstore = item.store
@@ -383,7 +383,11 @@ function module.init(shared)
 				local function regFn(_,newValue,eventKey)
 					-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
 					local setValue = item:CalcWithNewValue(withItem,newValue,eventKey)
-					self[key] = setValue
+					if extend then
+						extend[key] = setValue
+					else
+						self[key] = setValue
+					end
 				end
 				item:Register(regFn)
 				insert(selfKeep,{func=regFn,register=item,key=key})

@@ -225,7 +225,7 @@ function module.init(shared)
 		elseif classOfClassName == "table" then -- if classname is a calss what is included new function, call it for making new object (object)
 			local func = ClassName.new or ClassName.New or ClassName.__new
 			if ClassName.__noSetup then -- if is support initing props
-				local childs,props,parsed,binds,links,processed = {},pack(...),{},{},{},{}
+				local childs,props,parsed,binds,links,processed,styles = {},pack(...),{},{},{},{},{}
 				for iprop = props.n,1,-1 do
 					local prop = props[iprop]
 					if prop then
@@ -236,19 +236,22 @@ function module.init(shared)
 							elseif quadType == "quad_linker" then
 								links[i] = v
 							elseif quadType == "quad_style" then
-								for _,thisStyle in ipairs(parseStyles(v)) do
-									for styleIndex,styleValue in pairs(thisStyle) do
-										if not processed[styleIndex] then
-											processed[styleIndex] = true
-											parsed[styleIndex] = styleValue
-										end
-									end
-								end
+								insert(styles,v)
 							elseif type(i) == "number" then
 								insert(childs,(iprop == 1) and v or v:Clone())
 							else
 								processed[i] = true
 								parsed[i] = v
+							end
+						end
+					end
+				end
+				for _,v in ipairs(styles) do
+					for _,thisStyle in ipairs(parseStyles(v)) do
+						for styleIndex,styleValue in pairs(thisStyle) do
+							if not processed[styleIndex] then
+								processed[styleIndex] = true
+								parsed[styleIndex] = styleValue
 							end
 						end
 					end
@@ -366,7 +369,6 @@ function module.init(shared)
 			local self = {
 				__prop = prop;
 				__parent = parent;
-				__propertyChangedSignals = {};
 				ChildAdded = signal.Bindable.New();
 			}
 			local init = this.Init
@@ -374,7 +376,7 @@ function module.init(shared)
 				init(self,prop)
 			end
 			setmetatable(self,this)
-			initStoreRegisterBinding(prop,this)
+			initStoreRegisterBinding(prop,self,self)
 
 			-- render that
 			local object = self:Render(prop)
@@ -399,17 +401,28 @@ function module.init(shared)
 		end
 
 		function this:GetPropertyChangedSignal(propertyName)
-			local thisSignal = self.__propertyChangedSignals[propertyName]
+			local propertySignalList = rawget(self,"__propertyChangedSignals")
+			if not propertySignalList then
+				propertySignalList = {}
+				rawset(self,"__propertyChangedSignals",propertySignalList)
+			end
+
+			local thisSignal = propertySignalList[propertyName]
 			if thisSignal then
 				return thisSignal
 			end
 			thisSignal = bindable.New()
-			self.__propertyChangedSignals[propertyName] = thisSignal
+			propertySignalList[propertyName] = thisSignal
 			return thisSignal
 		end
 
 		function this:EmitPropertyChangedSignal(propertyName,value)
-			local thisSignal = self.__propertyChangedSignals[propertyName]
+			local propertySignalList = rawget(self,"__propertyChangedSignals")
+			if not propertySignalList then
+				return
+			end
+
+			local thisSignal = propertySignalList[propertyName]
 			if not thisSignal then
 				return
 			end
@@ -531,18 +544,19 @@ function module.init(shared)
 			end
 
 			-- is private (self value)
-			if k == "holder" or k:sub(1,1) == "_" then
+			if k:sub(1,1) == "_" then
 				return rawset(self,k,v)
 			end
 
 			-- prop update
+			local lastValue = self[k]
 			self.__prop[k] = v
 			if this.UpdateTriggers[k] then
 				self:Update()
 			end
 
 			-- call PropertyChangedSignal
-			if self.__propertyChangedSignals[k] and self[k] ~= v then
+			if lastValue ~= v then
 				self:EmitPropertyChangedSignal(k,v)
 			end
 		end
