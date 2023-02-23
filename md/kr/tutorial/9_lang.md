@@ -14,6 +14,8 @@ Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되
 번역 테이블은 `#!ts Lang.New(LangName:string,{ [Locale]: string|(options)->string })` 다음을 이용해 만들 수 있으며.  
 `#!ts Lang(LangName:string)(options)->register` 로 UI 에 적용시킬 수 있습니다.  
 
+`#!ts Lang.Locales.Default` 는 일치하는 언어가 없을때 보여줄 언어입니다. 일반적으로 영어를 추천합니다.  
+
 === "용법"
 
     ```lua title="자세한 설명은 예제를 참고하세요"

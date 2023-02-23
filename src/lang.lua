@@ -8,8 +8,7 @@ function module.init(shared)
 	local new = {}
 	local warn = shared.warn
 	local store = shared.Store
-	local class = shared.Class
-	local PcallGetProperty = class.PcallGetProperty
+	local PcallGetProperty = store.PcallGetProperty
 
 	new.Locales = {
 		["Default"] = "default";
@@ -168,7 +167,7 @@ function module.init(shared)
 			if quadType == "quad_register" then
 				local function regFn()
 					-- update handler
-					handler = self.handlers[new.CurrentLocale]
+					handler = self.handlers[CurrentLocale]
 					if not handler then
 						handler = self.handlers[new.Locales.Default]
 					end

@@ -371,8 +371,7 @@ function module.init(shared)
 					self[key] = setValue
 				end
 				item:Register(regFn)
-				insert(selfKeep,item)
-				insert(selfKeep,regFn)
+				insert(selfKeep,{func=regFn,register=item,key=key})
 			end
 		end
 	end
