@@ -220,6 +220,24 @@ function module.init(shared)
 			end
 			return efunc
 		end;
+		Observe = function(s,efunc)
+			local self = s.store
+			local events = self.__evt
+			local function update(_,newValue,key)
+				local value = s:CalcWithNewValue(self,newValue,key)
+				efunc(value)
+			end
+			insert(self.__keep,update)
+			for key in gmatch(s.key,"[^,]+") do
+				key = gsub(gsub(key,"^ +","")," +$","")
+				local event = events[key]
+				if not event then
+					event = setmetatable({},week)
+					events[key] = event
+				end
+				insert(event,update)
+			end
+		end;
 		With = function (s,wfunc)
 			-- s.wfunc = wfunc
 			-- return s

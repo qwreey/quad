@@ -303,3 +303,26 @@ myStore.color = Color3.fromRGB(0,255,0)
     Register 안에 들어간 함수는 GC 안정성을 위해서 약한 참조로 저장됩니다. 따라서 함수를 저장해야합니다.
 </blockquote>
 
+---
+
+`#!ts :Observe((newValue:any)->())`  
+<blockquote markdown>
+
+`#!ts :Register`의 간소화 버전입니다. `:Register`와 다르게 자동적으로 들어간 함수를 GC 로 부터 보호하기 때문에 들어간 함수를 따로 저장 할 필요가 없으며, 인자는 `newValue` 하나만 주어집니다.
+
+`newValue` 는 `:Add`, `:With`, `:Tween`, `:Default` 가 계산된 상태로 제공됩니다.
+
+=== "간략한 용법"
+
+    ```lua
+    myStore.test = 1
+    myStore "test":Add(1):Observe(function(_,newValue)
+        -- 값 변경시 출력됩니다
+        print(newValue)
+    end)
+    myStore.test = 2
+    ```
+</blockquote>
+
+
+

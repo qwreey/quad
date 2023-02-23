@@ -1518,6 +1518,30 @@
 <p>Register 안에 들어간 함수는 GC 안정성을 위해서 약한 참조로 저장됩니다. 따라서 함수를 저장해야합니다.</p>
 </details>
 </blockquote>
+<hr />
+<p><code class="highlight"><span class="o">:</span><span class="nx">Observe</span><span class="p">((</span><span class="nx">newValue</span><span class="o">:</span><span class="kt">any</span><span class="p">)</span><span class="o">-&gt;</span><span class="p">())</span></code>  </p>
+<blockquote>
+<p><code class="highlight"><span class="o">:</span><span class="nx">Register</span></code>의 간소화 버전입니다. <code>:Register</code>와 다르게 자동적으로 들어간 함수를 GC 로 부터 보호하기 때문에 들어간 함수를 따로 저장 할 필요가 없으며, 인자는 <code>newValue</code> 하나만 주어집니다.</p>
+<p><code>newValue</code> 는 <code>:Add</code>, <code>:With</code>, <code>:Tween</code>, <code>:Default</code> 가 계산된 상태로 제공됩니다.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:1"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">간략한 용법</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">myStore</span><span class="p">.</span><span class="n">test</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">myStore</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span><span class="n">Add</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span><span class="n">Observe</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="n">_</span><span class="p">,</span><span class="n">newValue</span><span class="p">)</span>
+    <span class="c1">-- 값 변경시 출력됩니다</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+<span class="n">myStore</span><span class="p">.</span><span class="n">test</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div></td></tr></table></div>
+</div>
+</div>
+</div>
+</blockquote>
 
 
 
