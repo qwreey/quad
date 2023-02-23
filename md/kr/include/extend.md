@@ -263,7 +263,7 @@ local Class = Quad.Class
 local Mount = Quad.Mount
 local Evnet = Quad.Event
 
-local TextBox = Class "TextButton"
+local TextButton = Class "TextButton"
 
 local myClass = Class.Extend()
 function myClass:Render(props)
@@ -291,3 +291,80 @@ end)
 Mount(ScreenGUI, myButton)
 ```
 </blockquote>
+
+---
+
+==Event== `#!ts .ChildAdded:Connect((child)->())->Connection`  
+<blockquote markdown>
+
+자식 오브젝트가 추가될 때 발생하는 이벤트입니다. `#!ts :Init` 에서 사용하면 옵션으로 넣은 자식 오브젝트가 이 이벤트를 통해 얻어질 수 있으며, `#!ts :AfterRender` 에서는 추후 `Mount` 를 통해 추가되는 자식 오브젝트만 이 이벤트로 얻어질 수 있습니다.  
+```lua
+local Quad = require(path.to.module).Init()
+local Class = Quad.Class
+local Mount = Quad.Mount
+local Evnet = Quad.Event
+
+local TextButton = Class "TextButton"
+
+local myClass = Class.Extend()
+function myClass:Render(props)
+    return TextButton {
+        self "_holder";
+    }
+end
+function myClass:AfterRender()
+    self.ChildAdded:Connect(function(child)
+        print(child.Name)
+    end)
+end
+
+local myImported = Class(myClass)
+local myButton = myImported{
+    -- Init 에 ChildAdded 를 넣은것이 아니기 때문에 출력되지 않습니다.
+    -- 그러나 AfterRender 에 :GetChildren 을 넣어 이 오브젝트를
+    -- 얻어올 수 있습니다.
+    TextButton { Name = "Hello "};
+}
+
+Mount(myButton, TextButton{ Name = "Hello" })
+Mount(myButton, TextButton{ Name = "World" })
+```
+</blockquote>
+
+---
+
+`#!ts :GetChildren()`  
+<blockquote markdown>
+
+자식 오브젝트들을 가져오는 함수입니다. `:Init()` 에서는 빈 테이블을 반환하고, `AfterRender` 에서는 옵션에 들어간 자식 오브젝트들이 담긴 테이블을 반환합니다. 자식의 순서는 일정하지 않습니다.
+```lua
+local Quad = require(path.to.module).Init()
+local Class = Quad.Class
+local Mount = Quad.Mount
+local Evnet = Quad.Event
+
+local TextButton = Class "TextButton"
+
+local myClass = Class.Extend()
+function myClass:Render(props)
+    return TextButton {
+        self "_holder";
+    }
+end
+function myClass:AfterRender()
+    for i,v in ipairs(self:GetChildren()) do
+        print(v.Name)
+    end
+end
+
+local myImported = Class(myClass)
+local myButton = myImported{
+    TextButton { Name = "Hello World"};
+}
+
+-- 나중에 추가하는 오브젝트는 출력되지 않습니다.
+Mount(myButton, TextButton{ Name = "Hello" })
+Mount(myButton, TextButton{ Name = "World" })
+```
+</blockquote>
+

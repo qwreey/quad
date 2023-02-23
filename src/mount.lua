@@ -5,7 +5,7 @@ local pack = table.pack
 ---@param shared quad_export
 ---@return quad_module_mount
 function module.init(shared)
-	local warn = shared.warn
+	local PcallGetProperty = shared.Store.PcallGetProperty
 	---@class quad_module_mount
 	local new = {__type = "quad_module_mount"}
 
@@ -75,6 +75,12 @@ function module.init(shared)
 				rawset(to,"__child",child)
 			end
 			insert(child,this)
+
+			-- ChildAdded call
+			local childAdded = rawget(to,"ChildAdded")
+			if childAdded and PcallGetProperty(childAdded,"__type") == "quad_bindable" then
+				childAdded:Fire(this)
+			end
 		end
 		if noReturn then return end
 		return setmetatable({to = to,this = this},mountClass)

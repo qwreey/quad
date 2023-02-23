@@ -100,7 +100,7 @@ export type ObjectIdList = string
 export type module_store = {
 	GetObjects: (ids:ObjectIdList)->objectList;
 	GetObject: (id:string)->DOM?;
-	AddObject: (ids:ObjectIdList)->();
+	AddObject: (ids:ObjectIdList,item:Dom|any)->();
 	GetStore: (id:string?)->valueStore;
 } & (id:string?)->valueStore
 

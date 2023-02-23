@@ -1106,7 +1106,8 @@
 <h2 id="_1">언어관리<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <p>Quad 에는 귀찮은 언어관리를 자동으로 해주는 기능이 내장되어 있습니다. 이 기능은 register 와 연동해 적은 줄의 코드로 변하는 텍스트도 언어에 맞게 출력되도록 만들 수 있습니다.  </p>
 <p>번역 테이블은 <code class="highlight"><span class="nx">Lang</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="nx">LangName</span><span class="o">:</span><span class="kt">string</span><span class="p">,{</span><span class="w"> </span><span class="p">[</span><span class="nx">Locale</span><span class="p">]</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="o">|</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span><span class="o">-&gt;</span><span class="kt">string</span><span class="w"> </span><span class="p">})</span></code> 다음을 이용해 만들 수 있으며.<br />
-<code>Lang(LangName:string)(options)</code> 로 UI 에 적용시킬 수 있습니다.  </p>
+<code class="highlight"><span class="nx">Lang</span><span class="p">(</span><span class="nx">LangName</span><span class="o">:</span><span class="kt">string</span><span class="p">)(</span><span class="nx">options</span><span class="p">)</span><span class="o">-&gt;</span><span class="nx">register</span></code> 로 UI 에 적용시킬 수 있습니다.  </p>
+<p><code class="highlight"><span class="nx">Lang</span><span class="p">.</span><span class="nx">Locales</span><span class="p">.</span><span class="nx">Default</span></code> 는 일치하는 언어가 없을때 보여줄 언어입니다. 일반적으로 영어를 추천합니다.  </p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">용법</label><label for="__tabbed_1_2">예제 - 다중언어 카운터</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1223,57 +1224,79 @@
 </div>
 </div>
 </div>
+<details class="warning" open="open">
+<summary>주의</summary>
+<p>구현의 복잡성의 이유로 Lang 은 레지스터와 같은 제약을 가집니다 (오브젝트 생성시에만 등록할 수 있습니다)</p>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">myLabel</span> <span class="o">=</span> <span class="n">TextLabel</span><span class="p">{}</span>
+<span class="n">Lang</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">,{</span> <span class="p">[</span><span class="n">Lang</span><span class="p">.</span><span class="n">Locales</span><span class="p">.</span><span class="n">Default</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{lang}&quot;</span> <span class="p">})</span>
+<span class="n">myLabel</span><span class="p">.</span><span class="n">Text</span> <span class="o">=</span> <span class="n">Lang</span> <span class="s2">&quot;Test&quot;</span> <span class="p">{</span> <span class="n">lang</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+위처럼 사용할 수 없습니다.</p>
+<p>대신에 <code class="highlight"><span class="o">:</span><span class="nx">Register</span></code> 문법을 사용하여 등록할 수 있습니다.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kd">local</span> <span class="n">myLabel</span> <span class="o">=</span> <span class="n">TextLabel</span><span class="p">{}</span>
+<span class="n">Lang</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">,{</span> <span class="p">[</span><span class="n">Lang</span><span class="p">.</span><span class="n">Locales</span><span class="p">.</span><span class="n">Default</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;{lang}&quot;</span> <span class="p">})</span>
+<span class="n">Apply</span> <span class="p">(</span><span class="n">myLabel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Text</span> <span class="o">=</span> <span class="n">Lang</span> <span class="s2">&quot;Test&quot;</span> <span class="p">{</span> <span class="n">lang</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+</details>
 <hr />
 <h2 id="locale">Locale 목록<a class="headerlink" href="#locale" title="Permanent link">&para;</a></h2>
 <p>로케일 값들은 <code class="highlight"><span class="nx">Lang</span><span class="p">.</span><span class="nx">Locales</span></code>에서 가져올 수 있으며, 사용가능한 로케일 목록은 다음과 같습니다.  </p>
 <blockquote>
 <p><strong>Default</strong> (default)<br />
-<strong>English</strong> (en_us)<br />
-<strong>Spanish</strong> (es_es)<br />
-<strong>French</strong> (fr_fr)<br />
-<strong>Indonesian</strong> (id_id)<br />
-<strong>Italian</strong> (it_it)<br />
-<strong>Japanese</strong> (ja_jp)<br />
-<strong>Korean</strong> (ko_kr)<br />
-<strong>Russian</strong> (ru_ru)<br />
-<strong>Thai</strong> (th_th)<br />
-<strong>Turkish</strong> (tr_tr)<br />
-<strong>Vietnamese</strong> (vi_vn)<br />
-<strong>Portuguese</strong> (pt_br)<br />
-<strong>German</strong> (de_de)<br />
-<strong>ChineseSimplified</strong> (zh_cn)<br />
-<strong>ChineseTraditional</strong> (zh_tw)<br />
-<strong>Bulgarian</strong> (bg_bg)<br />
-<strong>Bengali</strong> (bn_bd)<br />
-<strong>Czech</strong> (cs_cz)<br />
-<strong>Danish</strong> (da_dk)<br />
-<strong>Greek</strong> (el_gr)<br />
-<strong>Estonian</strong> (et_ee)<br />
-<strong>Finnish</strong> (fi_fi)<br />
-<strong>Hindi</strong> (hi_in)<br />
-<strong>Croatian</strong> (hr_hr)<br />
-<strong>Hungarian</strong> (hu_hu)<br />
-<strong>Georgian</strong> (ka_ge)<br />
-<strong>Kazakh</strong> (kk_kz)<br />
-<strong>Khmer</strong> (km_kh)<br />
-<strong>Lithuanian</strong> (lt_lt)<br />
-<strong>Latvian</strong> (lv_lv)<br />
-<strong>Malay</strong> (ms_my)<br />
-<strong>Burmese</strong> (my_mm)<br />
-<strong>Bokmal</strong> (nb_no)<br />
-<strong>Dutch</strong> (nl_nl)<br />
-<strong>Filipino</strong> (fil_ph)<br />
-<strong>Polish</strong> (pl_pl)<br />
-<strong>Romanian</strong> (ro_ro)<br />
-<strong>Ukrainian</strong> (uk_ua)<br />
-<strong>Sinhala</strong> (si_lk)<br />
-<strong>Slovak</strong> (sk_sk)<br />
-<strong>Slovenian</strong> (sl_sl)<br />
-<strong>Albanian</strong> (sq_al)<br />
-<strong>Bosnian</strong> (bs_ba)<br />
-<strong>Serbian</strong> (sr_rs)<br />
-<strong>Swedish</strong> (sv_se)<br />
-<strong>Arabic</strong> (ar_001)</p>
+<strong>English</strong> (en-us)<br />
+<strong>Spanish</strong> (es-es)<br />
+<strong>French</strong> (fr-fr)<br />
+<strong>Indonesian</strong> (id-id)<br />
+<strong>Italian</strong> (it-it)<br />
+<strong>Japanese</strong> (ja-jp)<br />
+<strong>Korean</strong> (ko-kr)<br />
+<strong>Russian</strong> (ru-ru)<br />
+<strong>Thai</strong> (th-th)<br />
+<strong>Turkish</strong> (tr-tr)<br />
+<strong>Vietnamese</strong> (vi-vn)<br />
+<strong>Portuguese</strong> (pt-br)<br />
+<strong>German</strong> (de-de)<br />
+<strong>ChineseSimplified</strong> (zh-cn)<br />
+<strong>ChineseTraditional</strong> (zh-tw)<br />
+<strong>Bulgarian</strong> (bg-bg)<br />
+<strong>Bengali</strong> (bn-bd)<br />
+<strong>Czech</strong> (cs-cz)<br />
+<strong>Danish</strong> (da-dk)<br />
+<strong>Greek</strong> (el-gr)<br />
+<strong>Estonian</strong> (et-ee)<br />
+<strong>Finnish</strong> (fi-fi)<br />
+<strong>Hindi</strong> (hi-in)<br />
+<strong>Croatian</strong> (hr-hr)<br />
+<strong>Hungarian</strong> (hu-hu)<br />
+<strong>Georgian</strong> (ka-ge)<br />
+<strong>Kazakh</strong> (kk-kz)<br />
+<strong>Khmer</strong> (km-kh)<br />
+<strong>Lithuanian</strong> (lt-lt)<br />
+<strong>Latvian</strong> (lv-lv)<br />
+<strong>Malay</strong> (ms-my)<br />
+<strong>Burmese</strong> (my-mm)<br />
+<strong>Bokmal</strong> (nb-no)<br />
+<strong>Dutch</strong> (nl-nl)<br />
+<strong>Filipino</strong> (fil-ph)<br />
+<strong>Polish</strong> (pl-pl)<br />
+<strong>Romanian</strong> (ro-ro)<br />
+<strong>Ukrainian</strong> (uk-ua)<br />
+<strong>Sinhala</strong> (si-lk)<br />
+<strong>Slovak</strong> (sk-sk)<br />
+<strong>Slovenian</strong> (sl-sl)<br />
+<strong>Albanian</strong> (sq-al)<br />
+<strong>Bosnian</strong> (bs-ba)<br />
+<strong>Serbian</strong> (sr-rs)<br />
+<strong>Swedish</strong> (sv-se)<br />
+<strong>Arabic</strong> (ar-001)</p>
 </blockquote>
 
 

@@ -356,6 +356,7 @@ function module.init(shared)
 				__prop = prop;
 				__parent = parent;
 				__propertyChangedSignals = {};
+				ChildAdded = signal.Bindable.New();
 			}
 			local init = this.Init
 			if init then
@@ -405,6 +406,18 @@ function module.init(shared)
 				value = self[propertyName]
 			end
 			thisSignal:Fire(value)
+		end
+
+		function this:GetChildren()
+			local children = rawget(self,"__child")
+			if not children then
+				return {}
+			end
+			local newChildren = {}
+			for _,v in pairs(children) do
+				insert(newChildren,v)
+			end
+			return newChildren
 		end
 
 		--- re-render object (if some props chaged, call this to render again)
@@ -541,8 +554,43 @@ function module.init(shared)
 		return this
 	end
 
-	local function ApplyNewProps(Item,Props)
-		
+	local function ApplyNewProps(Item,NewProps)
+		local quadType = PcallGetProperty(Item, "__type")
+		if quadType == "quad_extend" then
+			local prop = Item.__prop
+			local propKeep = prop.__keep
+			local propTweens = prop.__tweens
+			local propValues = prop.__self
+			for index,value in pairs(NewProps) do
+				-- if new value is register
+				if PcallGetProperty(value,"__type") == "quad_register" then
+					-- remove old register
+					for keepIndex,keepValue in pairs(propKeep) do
+						if type(keepValue) == "table" and PcallGetProperty(keepValue,"key") == index then
+							keepValue.register:Unregister(keepValue.func)
+							propKeep[keepIndex] = nil
+						end
+					end
+
+					-- calc value
+					do
+						local setValue,tween = value:CalcWithDefault(Item)
+						propValues[index] = setValue
+						propTweens[index] = tween
+					end
+
+					-- make event connection
+					local function regFn(_,newValue,eventKey)
+						-- !HOLD IT SELF TO PREVENT THIS REGISTER BEGIN REMOVED FROM MEMORY
+						local setValue = value:CalcWithNewValue(Item,newValue,eventKey)
+						prop[index] = setValue
+					end
+					value:Register(regFn)
+					insert(propKeep,{func=regFn,register=value,key=index})
+				end
+				
+			end
+		end
 	end
 	local function Apply(Item)
 		return function (Props)

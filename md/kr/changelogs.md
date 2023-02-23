@@ -1,6 +1,9 @@
 
 # 버전 번경사항
 
+## 2.25
+실험적 API 로써 GetChildren() 과 ChildAdded::Bindable 이 추가되었습니다.
+
 ## 2.24
 모든 문서가 정리되었습니다.
 

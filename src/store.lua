@@ -191,6 +191,21 @@ function module.init(shared)
 
 	local registerClass = {
 		__type = "quad_register";
+		Unregister = function(s,efunc)
+			local self = s.store
+			local events = self.__evt
+			for key in gmatch(s.key,"[^,]+") do
+				key = gsub(gsub(key,"^ +","")," +$","")
+				local event = events[key]
+				if event then
+					for i,v in pairs(event) do
+						if efunc == v then
+							event[i] = nil
+						end
+					end
+				end
+			end
+		end;
 		Register = function (s,efunc)
 			local self = s.store
 			local events = self.__evt
@@ -348,14 +363,14 @@ function module.init(shared)
 		for key,item in pairs(selfValues) do
 			if type(item) == "table" and item.__type == "quad_register" then
 				-- fetch data from origin
-				do
-					local tstore = item.store
-					for tkey in item.key:gmatch("^[,]") do
-						if not selfValues[tkey] then
-							selfValues[tkey] = tstore[tkey]
-						end
-					end
-				end
+				-- do
+				-- 	local tstore = item.store
+				-- 	for tkey in item.key:gmatch("^[,]") do
+				-- 		if not selfValues[tkey] then
+				-- 			selfValues[tkey] = tstore[tkey]
+				-- 		end
+				-- 	end
+				-- end
 
 				-- calc value
 				do
@@ -391,7 +406,7 @@ function module.init(shared)
 		end
 
 		if func then
-			register.Register(func)
+			register:Register(func)
 		end
 		return register
 	end

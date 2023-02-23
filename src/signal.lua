@@ -52,7 +52,7 @@ function module.init(shared)
 	end
 	new.Disconnecter = disconnecterClass
 
-	local connection = {}
+	local connection = {__type = "quad_connection"}
 	connection.__index = connection
 	function connection.New(signal,func)
 		return setmetatable({signal = signal,func = func},connection)
@@ -85,7 +85,7 @@ function module.init(shared)
 	new.Connection = connection
 
 	local signals = {}
-	local signal = {}
+	local signal = {__type = "quad_bindable"}
 	signal.__index = signal
 	function signal:Fire(...)
 		local waitting = self.waitting
