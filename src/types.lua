@@ -13,13 +13,16 @@ export type extend = {
 	Update: (self:extend)->();
 	Destroy: (self:extend)->();
 	UpdateTriggers: {[string]:boolean?};
+	Unload: (self:extend,object:DOM|any)->();
+	GetChildren: (self:extend)->({DOM|any});
+	ChildAdded: signal;
 }
 export type DOM = {
 	[string]: any;
 	Destroy: (self:DOM)->();
 	GetPropertyChangedSignal: (self:DOM,propertyName:string)->(RBXScriptSignal|signal);
 	Update: (self:DOM)->();
-}
+}|extend;
 export type DOM_constructor = {
 	[event]:
 		(DOM,...any)->()
