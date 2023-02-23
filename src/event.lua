@@ -85,6 +85,8 @@ function module.init(shared)
 				return true
 			end
 		end
+
+		return true
 	end
 
 	-- property changed binding
