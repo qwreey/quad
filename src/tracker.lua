@@ -70,7 +70,6 @@ function module:init()
 	mainConnections[3] = self.main.Destroying:Connect(function ()
 		self:__drop(self.main)
 	end)
-	self:__scheduleUpdate()
 
 	return self
 end
