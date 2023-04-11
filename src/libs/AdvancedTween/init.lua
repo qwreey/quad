@@ -401,7 +401,7 @@ end
 
 -- 해당 개체가 트윈중인지 반환
 function module.IsTweening(ItemOrStep,_)
-	if Item == module then warn "AdvancedTween:IsTweening() is deprecated, Use AdvancedTween.IsTweening() instead"; Item = _ end
+	if ItemOrStep == module then warn "AdvancedTween:IsTweening() is deprecated, Use AdvancedTween.IsTweening() instead"; ItemOrStep = _ end
 
 	if type(ItemOrStep) == "function" then
 		local pos = find(BindedFunctions,ItemOrStep)
@@ -412,11 +412,11 @@ function module.IsTweening(ItemOrStep,_)
 		end
 	end
 
-	if module.PlayIndex[Item] == nil then
+	if module.PlayIndex[ItemOrStep] == nil then
 		return false
 	end
 
-	for Property,Index in pairs(module.PlayIndex[Item]) do
+	for Property,Index in pairs(module.PlayIndex[ItemOrStep]) do
 		if Index ~= 0 then
 			return true
 		end
