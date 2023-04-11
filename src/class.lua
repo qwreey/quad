@@ -167,7 +167,8 @@ function module.init(shared)
 				local setValue,tween = value:CalcWithNewValue(item,newValue,key)
 				if tween then
 					if not advancedTween then
-						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory"
+						warn "[QUAD] Failed to execute register handler function. (Real Instance was not updated)"
+						return warn "[QUAD] module 'AdvancedTween' needs to be loaded for tween properties but it is not found on 'src.libs'. you should adding that to src.libs directory.\nPossible reason : Cloned repository without recursive option. => 'git submodule init ; git submodule update' to get submodules"
 					end
 					-- local ended, onStepped
 					-- if tween.Ended then
@@ -445,11 +446,18 @@ function module.init(shared)
 			thisSignal:Fire(value)
 		end
 
-		function this:GetChildren()
-			local children = rawget(self,"__child")
-			if not children then
-				return {}
+		function this:GetChildren(slotName)
+			if slotName then
+				local slot = rawget(slotName,"__slot")
+				if not slot then return {} end
+				local newSlot = {}
+				for _,v in pairs(slot) do
+					insert(newSlot,v)
+				end
+				return slot
 			end
+			local children = rawget(self,"__child")
+			if not children then return {} end
 			local newChildren = {}
 			for _,v in pairs(children) do
 				insert(newChildren,v)

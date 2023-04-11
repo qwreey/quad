@@ -5,6 +5,9 @@ types 모듈이 삭제되며 init.lua 에 통합됨
 이제 extend 에 대해서 Init(self) self 안에 props 기능이 내장되어있음
 
 TODO: slot 기능 구현
-spring 구현
+
+TODO: spring 구현
 
 TODO: !ChildRemoved 구현
+
+TODO: AdvancedTween 을 submodule 로 변경
