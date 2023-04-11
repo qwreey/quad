@@ -110,8 +110,13 @@ function module.init(shared)
 	new.SetProperty = SetProperty
 
 	local function Link(linker,item,index,indexType)
-		local target = linker.target
-		local name = linker.name
+		-- error("Not implemented")
+
+		local target = linker.lvalue
+		local name = linker.key
+
+		-- local target = linker.target
+		-- local name = linker.name
 		if indexType == "number" then
 			-- set
 			-- if rawget(target,name) ~= nil then
@@ -140,7 +145,7 @@ function module.init(shared)
 		local indexType = typeof(index)
 		local quadType = valueType == "table" and PcallGetProperty(value,"__type")
 
-		if quadType == "quad_linker" then
+		if indexType == "number" and quadType == "quad_register" then
 			-- linking
 			Link(value,item,index,indexType)
 		elseif indexType == "string" and quadType == "quad_register" then
@@ -349,13 +354,13 @@ function module.init(shared)
 		end
 	})
 
-	local function Linker(target,name)
-		return {
-			__type = "quad_linker";
-			target = target;
-			name = name;
-		}
-	end
+	-- local function Linker(target,name)
+	-- 	return {
+	-- 		__type = "quad_linker";
+	-- 		target = target;
+	-- 		name = name;
+	-- 	}
+	-- end
 
 	-- make class
 	function new.Extend()
@@ -400,8 +405,12 @@ function module.init(shared)
 			return self
 		end
 
-		function this:Default(...)
-			return this.__prop:Default(...)
+		-- default function from props
+		function this:Default(key,value)
+			if self == this then
+				error("prop handler not found (this method cannot be used on class)")
+			end
+			self.__prop:Default(key,value)
 		end
 
 		function this:GetPropertyChangedSignal(propertyName)
@@ -504,7 +513,6 @@ function module.init(shared)
 					end
 				end
 			end
-			self = nil
 		end
 
 		--- link to new
@@ -517,7 +525,10 @@ function module.init(shared)
 			if type(name) ~= "string" then
 				error(("Name must be string, but got %s"):format(type(name)))
 			end
-			return Linker(self,name)
+			-- return Linker(self,name)
+			local register = self.__props(name)
+			register:Link(self)
+			return register
 		end
 
 		-- indexer (getter)
