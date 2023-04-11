@@ -400,6 +400,10 @@ function module.init(shared)
 			return self
 		end
 
+		function this:Default(...)
+			return this.__prop:Default(...)
+		end
+
 		function this:GetPropertyChangedSignal(propertyName)
 			local propertySignalList = rawget(self,"__propertyChangedSignals")
 			if not propertySignalList then

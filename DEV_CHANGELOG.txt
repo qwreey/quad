@@ -1,0 +1,7 @@
+types 모듈이 삭제되며 init.lua 에 통합됨
+
+:Tween() 필드에 register 값을, 또 Tween 자체에 register 값을 등록할 수 있음
+
+이제 extend 에 대해서 Init(self) self 안에 props 기능이 내장되어있음
+
+TODO: slot 기능 구현

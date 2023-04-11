@@ -189,6 +189,23 @@ function module.init(shared)
 		end
 	end
 
+	-- resolve tween object
+	local function ResolveRegisterTween(s,tween)
+		if not tween then return end
+		if type(tween) == "table" and PcallGetProperty(tween,"__type") == "quad_register" then
+			tween = tween:CalcWithDefault(s)
+		end
+		local result = {}
+		for i,v in pairs(tween) do
+			if type(v) == "table" and PcallGetProperty(tween,"__type" == "quad_register") then
+				result[i] = tween:CalcWithDefault(v)
+			else
+				result[i] = v
+			end
+		end
+		return result
+	end
+
 	local registerClass = {
 		__type = "quad_register";
 		Unregister = function(s,efunc)
@@ -251,6 +268,7 @@ function module.init(shared)
 		Tween = function (s,tvalue)
 			-- s.tvalue = tvalue
 			-- return s
+			if tvalue == true then tvalue = {} end
 			return setmetatable({tvalue = tvalue},{__index = s})
 		end;
 		---@deprecated
@@ -270,7 +288,7 @@ function module.init(shared)
 			local with = s.wfunc
 			local tstore = s.store
 			local rawKey = s.key
-			local tween = s.tvalue or tstore.__tweens[rawKey]
+			local tween = ResolveRegisterTween(s,s.tvalue or tstore.__tweens[rawKey])
 			local from = s.fvalue
 			local add = s.avalue
 			local set = tstore[rawKey]
@@ -304,7 +322,7 @@ function module.init(shared)
 			local with = s.wfunc
 			local tstore = s.store
 			local rawKey = s.key
-			local tween = s.tvalue or tstore.__tweens[rawKey]
+			local tween = ResolveRegisterTween(s,s.tvalue or tstore.__tweens[rawKey])
 			local from = s.fvalue
 			local add = s.avalue
 			if add then
