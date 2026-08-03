@@ -1,0 +1,81 @@
+# Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (착수 전)
+
+**상태**: research — 설계 방향은 상당히 잡혀 있으나 세부(특히 소유권 이전/해제
+시맨틱)는 사용자와 확인 필요. 원본: `.claude/initreq/raw-userinput.md` "slot을
+구현하도록 하기로 했음" 절. Fusion의 `Children` SpecialKey와 Vide의 mount 무가드
+비교는 `base/comparison-fusion-vide.md` 참고 — 결론: **두 라이브러리 어디에도
+이런 엄격한 단일 마운트 가드가 없음, quad의 진짜 개선점.**
+
+## 개념
+
+`add`/`remove`/`clear`/`get`/`set` 등 뮤터블 연산을 지원하는 메타 배열. 실제
+바인드가 일어나면 child로 풀리고, 이 메타 배열에 CRUD를 하면 실제 children이
+적절히 제어됨.
+
+## 핵심 제약: 소유권 귀속과 단일 마운트
+
+Slot에 들어간 요소는 **ownership이 귀속**되며 다른 곳에 마운트할 수 없게 된다.
+`isMounted`를 관리해서, **한 인스턴스에 대한 다중 마운팅이 라이브러리 차원에서
+절대 일어나지 않도록 강제**하는 게 v1 대비 핵심 디자인 변화. v1의 `mount()`는
+별다른 강제를 안 했지만(`base/quad-v1-architecture.md`의 mount.lua 분석 참고 —
+실제로는 부모/자식 부기까지 했지만 다중 마운트 방지는 없었음), v2는 mount
+함수 자체가 이 강제를 담당.
+
+Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 부기"로만
+구현했고(재사용 가능한 1급 프리미티브가 아님), Vide는 아예 이 개념이 없어서
+같은 target에 두 번 `mount()`하면 조용히 두 개의 독립 루트가 생김 — 둘 다
+반면교사.
+
+## 여럿 존재 가능, 부모가 실제 데이터 테이블만 다루면 됨
+
+Slot은 하나의 instance 안에 여럿 존재할 수 있다. 전부 하나의 children으로
+들어가지만, 실제 렌더된 instance에서 `GetChildren()`을 직접 하지 않고도 부모가
+생성한 "실제 slot 데이터 테이블"만 다루면 되게 해서 **추상화 수준을 낮은 직접
+바인딩에서 한 단계 떼어냄**(간접화를 통한 추상화).
+
+## 마운트된 Slot의 재마운트는 즉시 throw (확정)
+
+**사용자 확인 완료**: 이미 사용된(마운트된) slot을 재마운트하려 하면 **즉시
+`error()`로 중단** — warn+no-op 아님. 개발 중 바로 잡아낼 수 있게 강하게
+실패하는 쪽 선택. 마운트되는 순간 slot의 실제 대상은 고정된다 — 따라서
+**글로벌 스코프에서 slot을 쓰는 건 그다지 좋지 않을 수 있음**(재사용/재마운트가
+막히므로).
+
+## 클래스가 슬롯을 받는 방법
+
+"네이밍된 슬롯"이 필요한가에 대한 사용자 자문: 그냥 슬롯 바인드 테이블을
+값으로 넘기면 되는 것 아닌가 — 결국 array처럼 구현된 Store라고 생각하는 게
+편하다는 방향. **기울어진 결론**: 별도 "Named Slot" 개념 없이, store나
+파라미터로 넘기고 그게 그냥 ref처럼 바인드되는 모양.
+
+## Slot과 Store 바인드의 관계 (`retract` 순서)
+
+Slot이 store 바인드로 들어오는 경우, pluggable 처리기에 `retract`(구 cleanup,
+`base/lifecycle-pattern.md` 참고) 핸들러가 필요함 — 한번 넘어간 slot 요소가
+나중에 `retract`되면 삭제되는지, 아니면 "부모의 소유이니 부모가 처리"해야
+하는지 검토 필요. **기울어진 결론**: 부모가 정리 정도만 미리 수행하고 다시
+`process`하면 되므로, 부모에게 위임(자식 slot 요소 자체가 스스로 정리를
+실행하는 게 아니라).
+
+이건 `research/bind-system-plan.md`의 "Store 바인드는 재실행 래핑" 확정
+모델과 맞물림 — slot이 store 값으로 오면, store 바인드 핸들러가 이전 slot
+상태를 `retract`하고 새 slot 상태로 다시 `process`하는 사이클을 돈다는 뜻.
+Slot 핸들러 자신이 감시 중인 값(배열/스토어)이 바뀔 때 child를 갱신하는
+추적(구독)도 `research/bind-system-plan.md`가 말하는 "process 함수가 다른 값
+변경을 추적해도 됨" 범위에 속하고, `retract` 시점엔 그 추적만 풀면 됨 —
+Destroy 시점엔 `retract`가 호출되지 않는다는 원칙(`base/lifecycle-pattern.md`)도
+동일하게 적용.
+
+## 자식으로 넘기는 클래스 스토어
+
+자식에게 내려주는 클래스 스토어는 부모 쪽에서 미리 만들어서 내려보내는 게
+편할 것 같다는 방향 — `store<<ChildClass.Props>>` 형태로 구성된 스토어를 만들면
+됨(타입 표기는 러프한 스케치, 실제 문법은 tbox의 명시적 제네릭 적용 패턴
+`f<<T>>(...)` — `.claude/initreq/tbox/CLAUDE.md:40-41` — 참고해서 확정할 것).
+
+## 열린 질문 (`.claude/question.md`에도 취합)
+
+- 재마운트 에러 처리는 확정(throw). 남은 건 Slot 안 요소가 `retract`될 때
+  "부모가 정리 후 재`process`"가 정말 항상 올바른 기본 동작인지, 아니면 slot
+  자체가 일부 자기 정리를 해야 하는 케이스가 있는지 — 구현하면서 실제 사례로
+  재검증 필요.

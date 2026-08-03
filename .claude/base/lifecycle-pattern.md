@@ -1,0 +1,132 @@
+# 라이프사이클 패턴 — rbvm의 `Connected` + GC 관용구 채택
+
+**상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(cleanup) 전략의 원본.
+완료 개념 없음, 구현하면서 세부 조정 있을 수 있음.
+
+## 배경
+
+`raw-userinput.md`(이하 사용자 원 메모): "레지스터의 실행은 내 생각엔 그냥 Destroy
+되었는지를 라이프타임 홀더의 Connected 상태로 보는게 맞는듯", "여전히 connection
+으로 해키한 방법 쓸듯. destroying으로 자료구조 계속 바꿔가는거 비용 큼. gc 네이티브
+에 맡겨야함. 대신 이젠 Connected 필드로 이 연결이 살아 있는지 보고 설정 가능함.
+이게 rbvm 쪽에서 구현되어있음."
+
+rbvm(`.claude/initreq/rbvm/`)을 조사한 결과, 정확히 이 패턴이 존재함. 아래는
+그 조사 결과 요약(전체는 이 문서 작성에 쓰인 리서치 세션 참고, 소스는
+`.claude/initreq/rbvm/src/signal.luau`, `src/proxy/base.luau`, `src/namespace.luau`).
+
+## 채택할 패턴
+
+### 1. `Connected`는 저장되는 bool이 아니라 계산된 속성
+
+rbvm의 `Connection` 타입(`signal.luau:21-24`)은 `Connected`를 실제 필드로 두지 않고
+`__index` 메타메소드에서 계산함:
+
+```luau
+function ConnectionMeta.__index(self: Connection, key: string): any
+    if key == "Connected" then
+        local data = Connection.GetPrivate(self)
+        return data.Signal ~= nil
+    end
+end
+```
+
+연결 해제 시 `data.Signal = nil`만 하면 됨(`Connection.Dispose`) — 자료구조를
+바로 지우거나 재구성하지 않음. quad-v2도 이 모양을 그대로 채택: 라이프타임
+홀더는 "내가 아직 살아있게 하는 뒷받침 참조"가 nil인지만 확인하면 됨.
+
+### 2. Instance 파괴는 `Instance.Destroying` 훅 하나로만 관측
+
+rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로 좁혀둠 —
+`inst.Destroying:Connect(...)` (`proxy/base.luau:150-156`), `Destroyed` 같은
+플래그를 그 콜백에서만 true로 뒤집음. `AncestryChanged`나 폴링 방식은 안 씀.
+quad-v2도 동일: 인스턴스 라이프사이클 훅 지점은 `Destroying` 하나로 통일.
+
+### 3. 정리(cleanup)는 기본적으로 GC에 위임, 예외적으로만 즉시(eager)
+
+rbvm 전역에 약한 테이블(weak table, `__mode = "k"/"v"/"kv"`)로 private 데이터를
+저장 — 홀더 객체를 아무도 안 들고 있으면 그 private 레코드도 자동으로 사라짐.
+즉시 처리하는 예외는 딱 두 가지뿐이었음: (a) 가상 트리의 부모/자식 포인터처럼
+방치하면 죽은 참조를 계속 순회하게 되는 "작고 유계(bounded)"인 것, (b) 네임스페이스
+전체가 통째로 죽을 때의 순서 있는 dispose 훅. **quad-v2 원칙: 기본은 GC 위임,
+즉시 정리는 "안 끊으면 죽은 참조를 순회하게 되는 작은 포인터"류에만 국한.**
+
+### 4. Signal 자체는 커스텀 구현체를 그대로 재사용 가능
+
+`signal.luau`의 `Signal`/`Connection` 클래스는 rbvm 프록시 시스템에 의존하지
+않는 범용 이벤트 emitter임 (`Connect`/`Once`/`Wait`/`Fire`/`Destroy`,
+`IsInited`/`OnInit`/`OnUninit` 지연 활성화 훅 포함). **단, 사용자 원 메모에는
+"시그널 자체 구현은 아닌듯... 콜백 정도로도 충분"이라고 되어 있어 서로 상충함**
+— 아래 열린 질문 참고.
+
+### 5. rbvm에서 그대로 가져오면 안 되는 것 (버그 발견됨)
+
+- `proxy/base.luau:72-78`의 `Proxy.DisposeNamespace`와 `signal.luau:401-408`의
+  `SignalProxy.DisposeNamespace`가 `Connected` 체크 방향이 서로 뒤집혀 있음
+  (하나는 "아직 연결되어 있으면 continue", 다른 하나는 정반대) — 후자가 맞는
+  방향(`not Connected`일 때만 skip, 살아있으면 Disconnect). quad-v2 구현 시
+  이 반전 버그를 복사하지 않도록 주의.
+- `namespace.luau:5-6`의 `ItemNamespaceMap`은 `__mod = "k"`로 오타가 나 있어서
+  실제로는 weak table이 아님(`__mode`가 맞음) — 그대로 베끼면 메모리 누수.
+- `InitNamespace`/`Registered`-가드/`NewLib` 3종 세트로 "라이브러리마다 하나하나
+  수동 init" 하는 방식은 정확히 사용자가 피하고 싶다고 한 패턴 — 순서 있는
+  dispose-hook 리스트 자체는 재사용해도, 수동 init 관례는 그대로 베끼지 말 것
+  (팩토리 함수로 대체 — `research/module-lifecycle-plan.md` 참고).
+
+## 확정: Signal 클래스는 안 만든다
+
+**사용자 확인 완료** — 콜백 + `Connected` 계산 속성만으로 간다. rbvm의 범용
+`Signal`/`Connection` 클래스 전체는 가져오지 않음. rbvm에서 채용하는 건 오직
+"`Connected`가 계산된 속성" 이라는 패턴 자체뿐.
+
+## 확정: quad는 자신이 만든 Instance의 라이프사이클 "중간"에 있지 않다
+
+이게 이 문서 전체의 핵심을 재정의하는 결정. rbvm의 proxy는 Instance와 소비자
+사이에 자신을 끼워넣는(중간 계층) 설계라 "내가 사라질 때 무언가를 정리해야
+하는가"라는 문제가 생기지만, **quad는 자신이 만든 Instance를 그 Instance의
+생명주기 끝까지 그대로 들고 있는 소유자다 — 중간에 끼는 계층이 없음.**
+
+결론: **Instance/바인드 전체가 Destroy될 때 실행해야 하는 정리(teardown) 로직은
+없다.** 오히려 있으면 안 됨 — Destroy 이후에 그 Instance에 프로퍼티를 셋하거나
+메서드를 호출하면(예: 이미 죽은 Tween에 `:Cancel()`) 그냥 에러남. 대상이
+Destroy되면 그 대상에 묶인 것들(Tween 등)도 자연히 죽은 상태가 됨 — GTK 등
+다른 백엔드도 마찬가지로 "run된 dispose를 관리"할 필요가 없는 구조로 봄.
+**해야 할 일은 딱 하나: 생명주기가 끝난 뒤에 그 대상을 다시 건드리는 시도가
+일어나지 않게 막는 것**(=처리를 그냥 멈춤) 뿐 — 자료구조 자체의 해제는
+가능하면 GC에 맡김.
+
+이 원칙 때문에 "값 교체 시 이전 처리를 무르는 것"(아래 `retract`)과 "완전
+소멸 시 정리"는 **하나로 통일** — 후자는 애초에 안 만듦. `research/
+tween-plan.md`/`research/slot-plan.md`의 "cleanup" 표기는 전부 `retract`로
+갱신됨(이름 변경 근거는 아래).
+
+## 함수 안에서 만든 옵저버도 GC 대상이 되어야 함 — 범용 "생명 바인드 유틸" 필요
+
+사용자 원 메모: "함수 안에서 옵저버 만들어버린 거, 그것도 gc 대상 되어야
+할 텐데, 이건 아래쪽에 생성하는 실 객체에 유저가 바인드 할 수 있게 하는 약간의
+유틸이 있긴 해야 할듯. connect 트릭 그대로 들고 와서 쓰면 될 것 같고. 옵저버는
+canExecute 같은 람다 함수 하나 달게 해서 Connected 상태 보게 하여 실행 안 될
+수 있게 만들어도 될 듯."
+
+즉, 핸들러가 처리 도중 만든 구독/옵저버 클로저는 그 자체로는 아무것도 자동으로
+GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연결해 참조를
+붙잡아두던 "GC 방지 핫팩"(`base/quad-v1-architecture.md` 참고)과 같은 문제.
+**base가 범용 유틸로 제공할 것: 임의의 클로저/구독을 실제 Roblox 객체의
+생명주기에 바인드하는 도구** — 내부적으로 v1/rbvm이 쓰던 "connect 트릭"(어떤
+신호에든 연결해서 참조를 죽을 때까지만 붙잡아두는 것)을 그대로 재사용. 이
+도구로 바인드된 옵저버는 `canExecute: () -> boolean` 같은 predicate 람다를
+가질 수 있어서, `Connected`가 false면 실행 자체를 건너뛸 수 있음(죽은 대상에
+대한 처리 시도 방지, 위 원칙과 직결).
+
+이건 `research/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸과 짝을
+이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"(weak-keyed per-instance
+저장소), 다른 하나는 "언제까지 실행되어도 되는지"(생명 바인드 + canExecute)를
+다룸. 둘 다 base가 제공하는 범용 유틸로 확정.
+
+## 이름: `cleanup` → `retract`
+
+"cleanup"이라는 이름은 부적절하다는 사용자 피드백(완전 소멸 정리로 오인되기
+쉬움) — 실제 의미는 "이전에 적용한 처리를 무른다/멈춘다"이므로 **`retract`**
+로 통일. (`revert`, `rescind`도 검토했으나 `retract`가 "이전에 취한 조치를
+철회한다"는 의미로 가장 정확 — `process`/`retract` 쌍으로 자연스럽게 대구를
+이룸.) 모든 문서에서 이 이름으로 갱신.
