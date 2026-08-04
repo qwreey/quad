@@ -20,15 +20,21 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 길게 잡음.
 
 **지금은 설계/계획 단계이고 구현은 아직 시작 전** — 저장소 루트에 실제 소스
-코드(`src/` 등)가 없음. 2026-08-03 여러 질의응답 라운드를 거쳐 핵심 아키텍처
-결정 대부분이 확정됨(Store 책임 분리, `process`/`retract` 디스패치 모델,
-Signal 미채택, Ref 역할, Store 문법 인체공학, 트윈 기본 오버라이드, Slot
-재마운트 에러 처리, 순수성→이식성 재정의) — `.claude/question.md`의 "확정됨"
-절 참고. 이전에 시도했다 폐기한 v2 재작성 시도(`.claude/initreq/quad2-try`)도
-리서치 완료 — OOP 상속/커스텀 파서/Slot 스텁은 확인된 죽은 접근이라 반복 금지,
-`Pipe`의 copy-on-write 절충안은 살려볼 후보. 남은 건 세부 함수 시그니처
-(`:Compute`가 의존값을 읽는 방법, `CreatedRef`/`Store.Combine`류 정확한 이름)
-정도 — `.claude/question.md`의 "착수하면서 확인" 절 참고.
+코드(`src/` 등)가 없음. 2026-08-03에 확정됐던 핵심 아키텍처 결정들(Store
+책임 분리, `process`/`retract` 디스패치 모델, Signal 미채택, Ref 역할, Store
+문법 인체공학, 트윈 기본 오버라이드, Slot 재마운트 에러 처리, 순수성→이식성
+재정의 등)은 2026-08-04에 `AskUserQuestion`으로 하나씩 재검증까지 마쳐서
+확정 상태 — `.claude/question.md`의 "확정됨" 절 참고. 이전에 시도했다 폐기한
+v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치 완료 — OOP 상속/커스텀
+파서/Slot 스텁은 확인된 죽은 접근이라 반복 금지, `Pipe`의 copy-on-write
+절충안은 한때 살려볼 후보였으나 **2026-08-04에 사실상 폐기로 재평가**됨(State
+자체가 `state(state)`로 분기하는 쪽으로 대체).
+
+**지금 유일하게 결론 안 난 핵심 설계 이슈는 Store/State/Source 온톨로지**
+— 검증 라운드 중 "State 프리미티브는 안 만든다"던 기존 결정이 틀렸다는 게
+드러나며 새로 열림. `.claude/research/bind-system-plan.md`의 "Store/State/
+Source 온톨로지" 절, `.claude/question.md`의 "최우선 새 열린 질문" 절 참고 —
+아래 "지금 할 일" 1번이 다음 세션이 여기서부터 시작해야 함을 명시.
 
 ## 계획 문서 구조
 
@@ -74,35 +80,41 @@ Signal 미채택, Ref 역할, Store 문법 인체공학, 트윈 기본 오버라
 
 ## 지금 할 일 (우선순위순)
 
-1. **[다음 세션 최우선] 확정된 설계 검증 라운드.** 2026-08-03에 여러 라운드에
-   걸쳐 확정한 아키텍처 결정들(`.claude/question.md`의 "확정됨" 절 전체 —
-   Store 책임 분리, `process`/`retract` 모델, Ref 역할, Store 문법, `:With`/
-   `:Compute`, 트윈 기본값, Slot 에러 처리, 순수성→이식성 재정의 등)을 **사용자가
-   명시적으로 요청한 방식으로 재검증할 것**: 각 결정을 작게 쪼개서 예/아니오로
-   답할 수 있는 질문으로 만들어 `AskUserQuestion`으로 하나씩 확인. 목적은 이
-   설계 라운드에서 내가(에이전트가) 잘못 이해했거나 성급히 확정한 부분을
-   찾아내 프로젝트 전반의 기틀과 정확성을 높이는 것 — 이미 답변받은 걸 다시
-   묻는 게 아니라, "정말 이렇게 이해한 게 맞는지"를 세분화해서 다시 짚는 것.
-   `.claude/base/`, `.claude/research/` 각 문서를 훑으며 검증 질문 목록을 먼저
-   만들고, 한 번에 다 던지지 말고 문서/주제 단위로 나눠서 진행할 것.
-2. 검증 라운드가 끝나면 `research/bind-system-plan.md`/
+1. **[다음 세션 최우선] Store/State/Source 온톨로지 설계.** 2026-08-04 검증
+   라운드 중 "State 프리미티브는 안 만든다"는 이전 결정이 틀렸다는 게
+   밝혀지면서 새로 터져나온 핵심 설계 이슈 — Store=source 집합체, State=
+   source를 감싸는 조합 가능한 캐시(`state(state)`로 분기), `:Compute`
+   캐싱/무효화 전략, Luau 타입 시스템에서 커링 호출의 `state<T>` 추론 문제
+   등이 전부 미정. `.claude/research/bind-system-plan.md`의 "Store/State/
+   Source 온톨로지" 절에 지금까지 나온 내용이 정리되어 있음 — 이어서 설계를
+   구체화할 것. `.claude/question.md`의 "최우선 새 열린 질문" 절도 함께 참고.
+2. 위 온톨로지가 어느 정도 정리되면 `research/bind-system-plan.md`/
    `research/module-lifecycle-plan.md`를 `base/`로 승격하고,
    `base/architecture.md`에 "구현 착수" 섹션을 추가해 실제 소스 트리 구조
    (어느 서브패키지가 뭘 갖는지)를 확정 — 이 시점부터 `qa-request/`/`archive/`
    폴더가 실제로 쓰이기 시작함.
-3. 남은 세부 시그니처(dependency 값 읽는 방법, `CreatedRef`/`Store.Combine`류
-   정확한 이름)는 검증 라운드 중 자연스럽게 같이 확정 가능.
-4. `research/purity-and-effects-plan.md`, `research/existing-instance-bind-plan.md`는
+3. 남은 세부 시그니처(`CreatedRef` 정확한 이름, 인스턴스 생성/이벤트 네이밍
+   인체공학, `RobloxFactory`류 팩토리 중복 호출 가드)는 온톨로지 설계와
+   자연스럽게 같이 확정 가능.
+4. `research/purity-and-effects-plan.md`(특히 "state 옵저빙 결과로 slot을
+   조작할 때 생존 여부 확인" 열린 질문), `research/existing-instance-bind-plan.md`는
    급하지 않음 — 스코프 논의만 필요, 구현 착수를 막지 않음.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
-## 인수인계 메모 (2026-08-03 세션 종료 시점)
+## 인수인계 메모 (2026-08-04 세션 종료 시점)
 
-이 세션에서 `.claude/` 전체 스캐폴드 + 대부분의 핵심 아키텍처 결정을 완료함.
-사용자가 다음 세션 시작 시 이렇게 요청함: "각 디자인 부분을 작게작게 질문으로
-만들어서, 이게 맞나요? 예/아니오로 대답할 수 있는 걸 던져가며 검증해보자.
-프로젝트의 전반적 기틀 잡힘과 정확성을 올리기를 할 것이라 해둬." — 위 "지금
-할 일" 1번이 이 요청을 그대로 반영한 것. 로컬 git 저장소는 이 세션에서 초기화
-+ 첫 커밋까지 해둠(원격 없음, `SAFETY.md` 참고 — 원격은 사용자가 제한 계정을
-마련해줘야 추가 가능).
+2026-08-03에 확정됐다고 표시된 결정 전체(architecture.md 14개 + lifecycle-
+pattern/store-semantics/bind-system-plan/module-lifecycle-plan/slot-plan/
+tween-plan)를 `AskUserQuestion`으로 하나씩 예/아니오 검증 완료 — 상세는
+`.claude/question.md`의 "2026-08-04 검증 라운드 완료" 절. 대부분 그대로
+확인됐지만, 검증 과정에서 사용자가 실시간으로 설계를 더 전개하면서 **"State
+프리미티브는 안 만든다"는 기존 결정이 틀렸다는 게 밝혀짐** — Store/State/
+Source 온톨로지 전체가 이번 세션에서 새로 열린 가장 중요한 설계 스레드로
+떠올랐고, 아직 결론이 안 났음(위 "지금 할 일" 1번). 그 외 자잘한 정정들(Slot
+retract=폐기 확정, Pipe COW 후보 폐기 등)은 각 문서에 바로 반영해둠 — 재조사
+불필요.
+
+이전 세션(2026-08-03) 종료 시점 메모: `.claude/` 전체 스캐폴드 + 대부분의
+핵심 아키텍처 결정을 완료, 로컬 git 저장소 초기화+첫 커밋(원격 없음,
+`SAFETY.md` 참고 — 원격은 사용자가 제한 계정을 마련해줘야 추가 가능).

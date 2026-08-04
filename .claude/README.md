@@ -28,13 +28,13 @@
 | `quad-v1-architecture.md` | v1(`initreq/quad`) 내부 동작 스냅샷 — "이 문제를 안 반복하려면"의 기준선 |
 | `comparison-fusion-vide.md` | Fusion/Vide 아키텍처 비교 리서치 — 설계 결정 근거 자료 |
 | `lifecycle-pattern.md` | rbvm의 `Connected`+GC 관용구를 quad-v2가 채택하는 방식 |
-| `store-semantics.md` | Store는 부작용 허용이 기본, 별도 State 프리미티브는 안 만듦 |
+| `store-semantics.md` | Store는 부작용 허용이 기본. State는 Store 위의 조합 가능한 캐시 레이어로 실제로 필요함(2026-08-04 정정) — Store/State/Source 온톨로지는 `research/bind-system-plan.md`에서 진행 중 |
 
 ## `research/` — 아직 착수 전, 상의 필요
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
-| `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델, Ref, quad2-try 리서치 결과. 핵심은 확정, 세부 시그니처만 남음 | 최상 — 다른 모든 설계가 이 위에서 조립됨 |
+| `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델(확정), Ref(확정), quad2-try 리서치 결과. **Store/State/Source 온톨로지는 2026-08-04에 새로 열린 미해결 설계 스레드**(다음 세션 최우선) | 최상 — 다른 모든 설계가 이 위에서 조립됨 |
 | `module-lifecycle-plan.md` | 프로바이더 패턴, bind/store 구현 책임 분리 — 확정됨 | 최상 — 확정, 구현 착수 시 API 세부만 조정 |
 | `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw | 상 — bind-system 확정 후 |
 | `tween-plan.md` | 트윈을 Store 밖 특수 bind key로 처리, 기본 오버라이드는 Cancel | 중 — 세부 옵션만 남음 |

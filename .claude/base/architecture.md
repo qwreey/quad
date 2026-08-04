@@ -54,9 +54,9 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     별개 라이브러리로 존재해야 함(v1 `lang.lua`의 전역 스코프 버그 등은
     `base/quad-v1-architecture.md` 참고 — 애초에 반면교사).
 11. **커스텀 Signal 클래스 미구현.** 콜백 정도로 이벤트 바인드 뒤에 함수를
-    넣는 것만으로 충분하다고 판단(단, `base/lifecycle-pattern.md`의 rbvm 리서치
-    결과 rbvm의 커스텀 Signal이 실제로는 재사용 가능해 보여서 상충 — 열린 질문으로
-    `.claude/question.md`에 있음).
+    넣는 것만으로 충분하다고 판단. (이전 초안엔 "rbvm의 Signal이 재사용
+    가능해 보여 상충한다"는 메모가 있었으나 2026-08-04 검증 라운드에서 최종
+    확정으로 재확인 — 더 이상 열린 질문 아님.)
 12. **멀티 타겟(pluggable 백엔드) — 특히 GTK 지원까지 염두.** Roblox 전용 렌더
     기술(react.lua, Fusion)은 결국 외부 개발자 유인이 없어 발전이 더딜 거라는
     문제의식. 결과적으로 `plug/roblox`, `plug/base` 정도로 나뉠 전망 — base가
@@ -75,3 +75,11 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
 바인드 시스템 디스패치, Slot 설계 세부, Tween 플러깅, 모듈 라이프사이클/누가
 Store를 구현하는가, 순수함수 범위, 이미 생성된 인스턴스에 대한 바인드 —
 `.claude/research/` 각 문서 참고, 전체 색인은 `.claude/README.md`.
+
+**가장 시급한 미정 사항(2026-08-04부터, 다음 세션 최우선)**: Store/State/
+Source 온톨로지 — Store는 source(실제 값이 존재하는 단일 지점) 집합체이고,
+`store "key"`처럼 접근할 때마다 그 source를 감싸는 새 State(자기 고유
+value 없는 조합 가능한 캐시)를 반환한다는 모델까지는 나왔으나, `:Compute`
+캐싱/무효화 전략, Luau 타입 시스템에서 커링 호출의 타입 추론 문제 등 세부는
+전부 열려있음. `research/bind-system-plan.md`의 "Store/State/Source
+온톨로지" 절, `.claude/question.md`의 "최우선 새 열린 질문" 절 참고.
