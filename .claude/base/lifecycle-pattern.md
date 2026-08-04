@@ -71,7 +71,7 @@ rbvm 전역에 약한 테이블(weak table, `__mode = "k"/"v"/"kv"`)로 private 
 - `InitNamespace`/`Registered`-가드/`NewLib` 3종 세트로 "라이브러리마다 하나하나
   수동 init" 하는 방식은 정확히 사용자가 피하고 싶다고 한 패턴 — 순서 있는
   dispose-hook 리스트 자체는 재사용해도, 수동 init 관례는 그대로 베끼지 말 것
-  (팩토리 함수로 대체 — `research/module-lifecycle-plan.md` 참고).
+  (팩토리 함수로 대체 — `base/module-lifecycle-plan.md` 참고).
 
 ## 확정: Signal 클래스는 안 만든다
 
@@ -97,7 +97,7 @@ Destroy되면 그 대상에 묶인 것들(Tween 등)도 자연히 죽은 상태�
 
 이 원칙 때문에 "값 교체 시 이전 처리를 무르는 것"(아래 `retract`)과 "완전
 소멸 시 정리"는 **하나로 통일** — 후자는 애초에 안 만듦. `research/
-tween-plan.md`/`research/slot-plan.md`의 "cleanup" 표기는 전부 `retract`로
+tween-plan.md`/`base/slot-plan.md`의 "cleanup" 표기는 전부 `retract`로
 갱신됨(이름 변경 근거는 아래).
 
 ## 함수 안에서 만든 옵저버도 GC 대상이 되어야 함 — 범용 "생명 바인드 유틸" 필요
@@ -118,10 +118,28 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 가질 수 있어서, `Connected`가 false면 실행 자체를 건너뛸 수 있음(죽은 대상에
 대한 처리 시도 방지, 위 원칙과 직결).
 
-이건 `research/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸과 짝을
+이건 `base/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸과 짝을
 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"(weak-keyed per-instance
 저장소), 다른 하나는 "언제까지 실행되어도 되는지"(생명 바인드 + canExecute)를
 다룸. 둘 다 base가 제공하는 범용 유틸로 확정.
+
+**교차검증(2026-08-04 4차 라운드)**: 사용자가 공유해준 실제 참고 코드
+(`.claude/initreq/artworks/EventDrivenProgramming/`, PA님 작성)는 GC-native가
+아니라 전부 수동 `:unsubscribe()`/`:disconnect()`로 관리됨 — rbvm 기반
+GC-native 원칙과 반대 선택이라 재확인했으나 **GC-native 유지로 확정**(지금까지
+명시적 dispose가 꼭 필요할 만큼 큰 자원을 다루는 실제 사례가 없었음). **막다른
+길은 아님을 기록**: rbvm처럼 관계를 양쪽 다 weak-keyed로 두고 모든 걸 connection
+람다에 담아두는 방식이면, 나중에 GC만으로 부족한 케이스가 실제로 생겨도 그
+connection을 얻어 `disconnect()`하는 명시적 dispose 경로를 추가로 얹는 게
+가능한 디자인 — 필요성이 드러나면 그때 얹을 하이브리드 여지로만 남겨둠.
+
+**재사용 사례(2026-08-04 2차 라운드)**: Store/State의 무효화(invalidate)
+신호를 받는 리스너 클로저도 정확히 이 유틸로 등록됨 — `base/
+store-semantics.md`가 예전에 "state 옵저빙 결과로 slot을 조작할 때 생존
+여부를 어떻게 확인할지" 미해결로 남겨뒀던 문제가, 사실은 새 메커니즘이
+필요한 게 아니라 이 canExecute 게이트를 그대로 적용하면 되는 사례였음(별도
+`isInit` 분기 불필요). 상세는 `base/bind-system-plan.md`의 "Store/State/
+Source 온톨로지" 절 참고.
 
 ## 2026-08-04 검증 라운드에서 보강된 내용
 

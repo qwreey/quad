@@ -1,10 +1,27 @@
-# Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (착수 전)
+# Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
-**상태**: research — 설계 방향은 상당히 잡혀 있으나 세부(특히 소유권 이전/해제
-시맨틱)는 사용자와 확인 필요. 원본: `.claude/initreq/raw-userinput.md` "slot을
-구현하도록 하기로 했음" 절. Fusion의 `Children` SpecialKey와 Vide의 mount 무가드
-비교는 `base/comparison-fusion-vide.md` 참고 — 결론: **두 라이브러리 어디에도
-이런 엄격한 단일 마운트 가드가 없음, quad의 진짜 개선점.**
+**상태**: base — 설계 방향(소유권 귀속, 재마운트 시 throw, retract=폐기)과
+소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
+architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
+`.claude/initreq/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
+`Children` SpecialKey와 Vide의 mount 무가드 비교는 `base/comparison-fusion-vide.md`
+참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
+quad의 진짜 개선점.**
+
+## base/roblox 패키지 경계 (2026-08-04, 5차 라운드 확정)
+
+Slot의 add/remove/clear 재조정 로직(추상 자식 참조 기준 — "이 자리에 뭐가
+있어야 하는가"를 결정하는 순수 로직)은 `quad-base/src/Dispatch/Slot.luau`가
+소유. 실제 트리 조작(Instance `Parent` 설정/`Destroy`)은 `quad-roblox/src/
+Handlers/Slot.luau`가 그 위에서 적용/해제만 담당 — 다른 모든 인터페이스/구현
+분리와 동일한 패턴(`base/architecture.md`의 소스 트리 참고). Slot 자체는
+당연히 Instance들을 담게 될 것으로 취급.
+
+**추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
+만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
+`Frame { Frame {} }`)를 위한 핸들러도 필요 — `quad-roblox/src/Handlers/
+InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "정적으로
+하나 박아넣는" 더 단순한 경우라 별개로 둠.
 
 ## 개념
 
@@ -57,11 +74,11 @@ Slot이 store 바인드로 들어오는 경우, pluggable 처리기에 `retract`
 `process`하면 되므로, 부모에게 위임(자식 slot 요소 자체가 스스로 정리를
 실행하는 게 아니라).
 
-이건 `research/bind-system-plan.md`의 "Store 바인드는 재실행 래핑" 확정
+이건 `base/bind-system-plan.md`의 "Store 바인드는 재실행 래핑" 확정
 모델과 맞물림 — slot이 store 값으로 오면, store 바인드 핸들러가 이전 slot
 상태를 `retract`하고 새 slot 상태로 다시 `process`하는 사이클을 돈다는 뜻.
 Slot 핸들러 자신이 감시 중인 값(배열/스토어)이 바뀔 때 child를 갱신하는
-추적(구독)도 `research/bind-system-plan.md`가 말하는 "process 함수가 다른 값
+추적(구독)도 `base/bind-system-plan.md`가 말하는 "process 함수가 다른 값
 변경을 추적해도 됨" 범위에 속하고, `retract` 시점엔 그 추적만 풀면 됨 —
 Destroy 시점엔 `retract`가 호출되지 않는다는 원칙(`base/lifecycle-pattern.md`)도
 동일하게 적용.

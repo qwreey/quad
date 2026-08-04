@@ -1,9 +1,12 @@
-# Bind 시스템 — pluggable key/value 핸들러 (핵심 모델 확정, 세부 사항만 남음)
+# Bind 시스템 — pluggable key/value 핸들러 (base로 승격됨)
 
-**상태**: research — 핵심 디스패치 모델(`process`/`retract`, 핸들러 4종 계약,
-Signal 미채택, Ref 역할)은 사용자 확인 완료로 사실상 확정. 남은 건 세부
-시그니처(dependency array API, `CreatedRef` 모양) 뿐 — 이것들이 정리되면
-`base/`로 승격 예정. 원본: `.claude/initreq/raw-userinput.md`
+**상태**: base — 핵심 디스패치 모델(`process`/`retract`, 핸들러 4종 계약,
+Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치 엔진은
+`quad-base`가 인터페이스로 소유, `quad-roblox`는 실제 구현만)까지 전부
+2026-08-04 세션에서 확정되어 `research/`에서 승격됨(`base/architecture.md`의
+"구현 착수: 소스 트리 구조 확정" 절 참고). 남은 건 세부 시그니처(dependency
+array API, `CreatedRef` 모양) 뿐 — 구현 단계에서 자연히 정리됨. 원본:
+`.claude/initreq/raw-userinput.md`
 "key와 value에 대한 바인드 연산은 pluggable 하도록 구성하기" / "스토어는 스토어를
 저장 가능한가" / "Ref는 고민중" 절. v1의 문제점은 `base/quad-v1-architecture.md`
 ("ProcessQuadProperty" 하드코딩 디스패처), 참고 패턴은 `.claude/initreq/tbox`
@@ -111,7 +114,7 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
 
 Slot이 store 바인드로 넘어오는 경우, pluggable 처리기에 `retract` 핸들러가
 필요하다는 점(부모가 slot을 정리하고 다시 process하는 방식)도 이 래핑 방식과
-자연스럽게 맞음 — `research/slot-plan.md` 참고.
+자연스럽게 맞음 — `base/slot-plan.md` 참고.
 
 ## Store가 Store를 저장 가능한가
 
@@ -188,51 +191,138 @@ read ...`처럼, State끼리 자유롭게 합성/파이핑 가능한 것이 최�
 같은 축의 문제 — 옵션 2가 그 원칙과 더 잘 맞아 보이지만, 실현 가능성 자체가
 아직 검증 안 됨.
 
-## Store/State/Source 온톨로지 — 진행 중인 설계 스레드 (2026-08-04 검증 라운드에서 새로 열림)
+## Store/State/Source 온톨로지 — 핵심 메커니즘 확정 (2026-08-04 2차 라운드)
 
-**이 절은 아직 결론난 설계가 아니다** — 검증 라운드 중 사용자가 실시간으로
-설계를 전개하며 나온 내용을 그대로 기록. 다음 세션에서 이어서 다룰 것.
-`base/store-semantics.md`의 "State 프리미티브는 실제로 필요하다" 정정과
-직결됨.
+**상태**: 전파 모델/`:Compute` 인자 규칙/State 쓰기 금지/Slot 생존 확인/타입
+추론(dot-access) 전부 `AskUserQuestion`으로 확인 완료. 남은 건 정확한 함수/
+생성자 이름뿐(구현 단계). `base/store-semantics.md`의 "State 프리미티브는
+실제로 필요하다" 정정에서 이어짐.
 
-**핵심 온톨로지**:
+**핵심 온톨로지** (변경 없음):
 - **Source** — 실제 값이 존재하고 변경될 수 있는 단일 지점(v1의 "값의 근원").
-- **Store** — source들의 집합체. `store.a`/`store "a"`처럼 키로 접근하면
-  그 source를 감싼 **새 State**를 매번 만들어 반환(state가 store에 캐시되어
-  재사용되는 게 아님 — source만 store에 귀속된 유일한 실체).
+- **Store** — source들의 집합체. `store.a`처럼 키로 접근하면 그 source를
+  감싼 **새 State**를 매번 만들어 반환(state가 store에 캐시되어 재사용되는
+  게 아님 — source만 store에 귀속된 유일한 실체).
 - **State** — source(또는 다른 state)의 결과를 캐싱만 하는 존재, 자기 고유의
   독립적 value 개념이 없음. `state(state)`로 기존 state의 결과를 받아 새
   state를 만들어 분기 가능 — 이게 사실상 Unix 파이프 영감의 "State끼리
   합성 가능"이라는 원래 목표를 구현하는 방식.
-- `:With(...)`/`:Compute(fn)`은 실제로는 state 위의 연산 —
-  `store "key1":With(store "key2"):Compute(function(key1) return key1 +
-  store.key2.value end)`처럼, with한 값을 fn이 클로저로 직접 읽는 모양.
 
-**미해결 세부 사항**:
-- **`:Compute` 캐싱/무효화 전략** — 매번 새로 계산할지, 캐싱해두고 무효화
-  플래그로 관리할지 미정. 후보: 값이 바뀌었는데 듣는 소비자가 없으면 연산은
-  미루고 `invalid=true`만 세워두고, 필요해질 때(듣는 사람이 생기거나 값을
-  읽을 때) 실제로 연산하고 `true`→캐싱 후 `false`로 되돌리는 dirty-flag 방식.
-  "store가 state를 **만드느냐** 아니면 **저장하느냐**"의 문제와 직결 —
-  사용자 판단은 "만든다" 쪽(저장한다고 하면 한 곳에서 `:Compute`를 붙이면
-  다른 소비자도 전부 그 compute된 값을 읽게 되어버리는 오염 문제 발생).
-- **`emit` 필요 여부** — store가 값 변경 시 관련된 모든 state에 emit해야
-  하는 구조가 맞는지 확신은 없지만, 그 외의 방법이 안 보인다는 게 사용자
-  현재 판단. `state(from) / state() -> (state, setState)` 같은 팩토리
-  모양도 후보로 언급됨(React의 `useState`류 페어 반환과 유사).
-- **Luau 타입 시스템 제약** — `store "key"` 같은 커링 호출로 `state<T>`의
-  `T`를 정확히 추론하려면 오버로드 함수 타입(`(("a") -> number) | (("b")
-  -> boolean)`)이 필요한데, Luau는 문자열 리터럴 인자를 자동으로 `as const`
-  취급하지 않아서 타입이 좁혀지지 않는 문제가 있음. `store.states.a`처럼
-  필드 접근으로 우회하거나, `store.a`가 바로 state를 반환하고
-  `state.value = x`로 설정 가능하게 하는 대안도 검토됐으나, 후자는 "다른
-  source로부터 파생된 state에 value를 직접 설정하면 안 된다"는 문제와
-  충돌(store가 실제 값을 담는 유일한 주체여야 함). `state<Mapped>`(compute
-  결과)가 제대로 바인딩 안 됐을 때 생기는 타입 문제는 일단 UB로 두기로 함.
-- **`Pipe`(quad2-try 후보)는 사실상 폐기 쪽으로 기움** — 별도 `Pipe` 타입에
-  소유권/버전 가드를 넣어 재설계하는 대신, State 자체를 파이핑 결합체로
-  보고 `state(state)`로 분기하는 쪽이 엔지니어링상 더 쉬워 보인다는 게
-  사용자의 최신 판단(2026-08-03 라운드의 "Pipe COW가 유력 후보"보다 우선함).
+**전파 모델 확정: push-invalidate(신호만) / pull-recompute(`Get()` 시점에만) —
+Fusion식 eager 노드·생성순 정렬은 안 만듦**
+
+- `Source`는 값이 바뀌면 구독 중인 State들에게 **"무효화됐다"는 신호만
+  쏜다** — 새 값 자체는 신호에 안 실림("state는 세터를 내보내기보다
+  업데이트 됐다는 신호만 쏜다" — 사용자 확정 문구).
+- 신호를 받은 State는 자기 `invalid` 플래그만 세우고, 이미 `invalid`였다면
+  그 아래로 더 전파하지 않는다 — 다이아몬드 의존성에서 중복 워크를 막는
+  장치(Vide가 저자 스스로 `todo.md`에 미해결로 남긴 문제의 해결책).
+- 실제 재계산은 `Get()`(또는 `.value` 인덱싱)이 호출되는 시점에만 일어남 —
+  "필요할 때 계산" 원칙(사용자 확정). Fusion의 `timeliness="eager"` 노드/
+  생성순 정렬 장치는 만들지 않음 — quad엔 그런 다단계 즉시 재계산이 필요한
+  소비자가 없다는 판단. 유일하게 "즉시 반응해야 하는" 소비자는 store-bind
+  pluggable 핸들러(위 "확정된 디스패치 모델" 절)인데, 이건 무효화 신호를
+  받는 즉시 자기가 알아서 `Get()`을 호출해 pull하는 방식으로 충분함 —
+  State 스스로 "지금 나를 보는 eager 소비자가 있나" 같은 부기가 전혀
+  필요 없음.
+- `emit`은 이 무효화 신호 하나로 좁혀짐 — 값을 안 실어보내므로 저렴함
+  ("emit 필요 여부" 열린 질문은 이걸로 해소).
+
+**`:With`/`:Compute` — self 인자도 lazy 핸들로 통일**
+
+- 최초안(self 값은 포지셔널 raw 값, with한 값만 클로저로 읽음)에는 실제
+  단점이 있었음 — self가 raw 값이면 `fn` 호출 전에 항상 self를 먼저
+  `Get()`해야 하므로, `fn` 내부 로직이 with한 다른 값을 보고 "이 경우엔 self
+  계산 자체가 필요 없다"고 판단해도 이미 늦음(예: `:With(noprint)`이고
+  `noprint.value == true`면 앞단 계산을 통째로 생략하고 싶은 경우).
+- **해결(사용자 확정)**: self도 raw 값이 아니라 **State 핸들 그 자체**를
+  `fn`의 포지셔널 인자로 넘긴다 — `fn(self: State<T>)`, 내부에서
+  `self.value`(또는 `self:Get()`)를 실제로 읽을 때만 계산이 트리거됨.
+  with한 값과 동일한 lazy 원칙을 self에도 그대로 적용 — 별도
+  `ComputeWithout` 변형은 불필요, `Compute` 하나로 일관.
+- `.value`는 `Get()`을 감싼 읽기 전용 계산 속성(`base/lifecycle-pattern.md`의
+  `Connected`와 동일한 "저장되는 필드가 아니라 계산된 속성" 패턴 재사용) —
+  `:Get()`과 `.value` 둘 다 지원, `.value`가 관용적 표기.
+- 예시 갱신: `store "key1":With(store "key2"):Compute(function(key1) return
+  key1.value + store.key2.value end)` — `key1`은 이제 raw 숫자가 아니라
+  State.
+
+**State는 쓰기 대상이 아님 — 확정, Source는 독립 공개 프리미티브로 격상**
+
+- `.value`는 항상 읽기 전용. 값을 쓰는 경로는 오직 Store의 `__newindex`
+  (`store.key = value`, 이미 확정된 문법)뿐 — State에는 대응하는 쓰기 API가
+  아예 없음. "State에 `.value = x`를 허용하면 다른 source에서 파생된
+  state에 직접 쓰기가 가능해져 버린다"는 이전 우려는 이걸로 근본적으로
+  해소(그런 API 자체가 없음).
+- **`Source`는 Store의 내부 구현 디테일이 아니라 별도의 가벼운 공개
+  프리미티브로 노출** — Store는 다수의 source를 등록/관리하는 무거운
+  구조라, 값 하나만 반응형으로 다루고 싶을 때 Store를 통째로 만드는 건
+  비효율이라는 게 사용자 판단("store가 source 수십 개 만드는건 비효율이니
+  둘이 다른 구현이라 봐도 될듯"). `Source(initial)` 류의 독립 생성자
+  (정확한 이름은 구현 단계에서 확정)가 Store와 나란히 존재.
+
+**Slot 생존 확인 — 별도 메커니즘 아님, `canExecute` 재사용으로 확정**
+
+- `base/store-semantics.md`에 있던 "`isInit=false`면 허용, `isInit=true`+
+  생존확인 거짓이면 불허" 분기 초안은 폐기. state-invalidate 리스너
+  클로저도 `base/lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute
+  predicate)로 등록하면, 발화 시 `canExecute()` 하나만 확인하고 거짓이면
+  그냥 no-op — `isInit` 분기라는 별도 개념 자체가 불필요(사용자 확정:
+  "canExecute 하나로 통일").
+
+**타입 추론 문제 — 확정(2026-08-04 3차 라운드)**
+
+- `store "key"`(문자열 커링)로 `state<T>`를 오버로드 함수 타입으로 정확히
+  추론하려는 시도는 포기하고, **`store.key`(dot-access)를 1급 경로로 확정**
+  — Store 타입을 `{key: State<number>, other: State<string>}`류 평범한
+  레코드 타입으로 지으면 일반 구조적 필드 타이핑으로 자동 해결되고, 문자열
+  리터럴 narrowing 문제 자체가 안 생김. `store "key"` 문자열 커링은 동적
+  키가 필요할 때 쓰는 미타입(`State<any>`) 폴백으로 격하.
+- 이 패턴은 Store에만 국한되지 않고 **인스턴스 생성(`DI.Frame`)/이벤트
+  (`On.EventName`)까지 관통하는 프로젝트 전역 관습으로 확정**됨 — 아래
+  "인스턴스 생성 / 이벤트 네이밍 인체공학" 절 참고.
+
+**`Pipe`(quad2-try 후보)는 폐기 확정** — 별도 `Pipe` 타입에 소유권/버전
+가드를 넣어 재설계하는 대신, State 자체가 파이핑 결합체이고
+`state(state)`로 분기하는 위 모델로 완전히 대체됨.
+
+**PA님 코드와의 교차검증(2026-08-04 4차 라운드) — 둘 다 기존 확정 유지**
+
+`.claude/initreq/artworks/EventDrivenProgramming/`(Connection/Event/
+Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실제로 다른
+선택이 나와 재검토했으나 결론은 변경 없음:
+
+- **전파 모델**: PA님의 pub-sub은 push-invalidate가 아니라 **push-값**
+  (`Event:fire(...)`가 인자를 그대로 콜백에 전달, `Observable`의 `__newindex`가
+  새 값을 실어 즉시 `changed:fire(key, value)`, dirty-flag/`Get()` pull 단계
+  자체가 없음). 한때 "leaf(source 하나→sink 하나, 파생 없음)는 PA님처럼
+  push-값으로 단순화하고 push-invalidate/pull-recompute는 실제 `:Compute`
+  파생이 있을 때만 쓰자"는 이원화를 검토했으나 **기각** — invalidate+`Get()`
+  방식도 leaf에서 딱히 더 복잡하지 않고(불리언 플래그 하나 + `Get()`/`emit`
+  둘로 나뉘는 정도), 오히려 두 메커니즘을 병행하면 "leaf State가 나중에
+  `:Compute`로 감싸일 때 두 메커니즘을 어떻게 연결하는가"라는 새 경계 문제가
+  생겨 이원화가 더 복잡함. **결정적으로, PA님 코드엔 애초에 `:Compute`/`:With`
+  같은 파생·합성 개념 자체가 없음** — quad-v2가 lazy pull을 도입한 이유(여러
+  소비자가 하나의 파생 State를 공유할 때 오염 방지, 안 쓰이는 연산 스킵)를
+  PA님 시스템은 처음부터 안 풀려던 문제라, 대등한 반례가 아니었음. **결론:
+  push-invalidate/pull-recompute로 통일 유지, 변경 없음.** 사용자 최종 확인
+  문구: "store 전파 처리는 우리 방식이 맞음. 이건 vide 에서 없었던것과
+  동일함, [PA님] 저기도 디자인 상 해결 못하는 문제가 된거거든. 비 필요
+  연산과 중복 연산을 지우는건 디자인 단계에서 구성할 일임. 우린 디자인
+  단계부터 해당 문제를 해결하고 싶었던거야."
+- **라이프사이클**: PA님 코드는 GC-native가 아니라 **전부 수동 해제**
+  (`Connection.connected`는 계산 속성이 아니라 저장된 bool, `Observer`의
+  8개 `subscribeXxx` 헬퍼 전부 명시적 `:unsubscribe()` 필요, weak table은
+  `Observable`의 subject↔observable 캐시 한 곳뿐). rbvm 기반으로 확정한
+  "GC 위임, 명시적 dispose 없음" 원칙과 반대 선택이라 재확인 질문했으나,
+  **GC-native 유지로 확정** — 지금까지 이 정도 규모(명시적 dispose가 꼭
+  필요할 만큼 큰 자원)를 요구하는 실제 사례가 없었다는 게 사용자 판단. 다만
+  **완전히 막다른 길은 아님**을 기록해둠: rbvm처럼 관계를 양쪽 다 weak-keyed로
+  두고 모든 걸 connection 람다에 담아 "연결이 살아있는 동안만 살아있게" 하는
+  방식이면, 나중에 GC만으로 정말 부족한 케이스가 생겨도 그 connection을 얻어
+  `disconnect()`하는 명시적 dispose 경로를 추가로 얹는 게 가능한 디자인 —
+  지금 마일스톤에서는 필요 없어서 안 함(사용자: "필요하다면 dispose 핸들러를
+  만들어주는 것도 가능한 디자인, 다만 지금까지 요구가 없었음").
 
 ## quad2-try 리서치 결과 (완료) — 이전 시도에서 뭘 가져오고 뭘 버릴지
 
@@ -256,7 +346,7 @@ State/스트림)를 다뤘던 이전 시도가 있었음. 조사 결과 요약:
 - **Slot은 이 시도에서도 사실상 빈 스텁**이었음 — `Insert`의 실제 구현부가
   전부 주석 처리되어 있고, `Notify()`도 빈 함수. 심지어 구 v1(`quad-2`)의
   `DEV_CHANGELOG.txt`에도 "TODO: slot 기능 구현"이 마지막까지 미완료로 남아있었음
-  — **가져올 게 전혀 없음**, `research/slot-plan.md`의 from-scratch 설계를
+  — **가져올 게 전혀 없음**, `base/slot-plan.md`의 from-scratch 설계를
   그대로 진행하면 됨(재조사 불필요).
 - 다른 서브패키지(`quad-roblox`/`quad-gtk`/`quad-lang`/`quad-gen`/`quad-compat`/
   `quad-debug`/`quad-docs`)는 전부 파일이 0개인 빈 디렉토리 — `quad-core` 밖엔
@@ -315,38 +405,97 @@ copy-on-write 절충안은 2026-08-04 검증 라운드에서 사실상 폐기 �
 RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들 `quad`
 패키지로 재수출할 필요 없음, 필요하면 만들어도 됨).
 
-**열린 질문**: `RobloxFactory`를 같은 `BaseModule`에 여러 번 호출하면 어떻게
-되어야 하는가 — 이미 초기화됐으면 무시(rbvm의 `InitNamespace`류 가드와
-유사하되, "라이브러리마다 수동 init" 패턴과는 다름)하는 쪽으로 기울어짐.
-서로 다른 두 곳에서 같은 `base`를 require해서 `RobloxFactory`와
-`AnotherFactory`(가상의 예)를 각각 실행하는 경우처럼 충돌 가능성이 있는
-시나리오가 향후 모듈 스코핑(`New()`, `base/architecture.md` 13번) 논의를
-다시 촉발할 수 있음 — 지금은 열어만 둠.
+**확정(2026-08-04 3차 라운드)**: `RobloxFactory`를 같은 `BaseModule`에 여러
+번 호출했을 때 — **같은 팩토리로 재호출하면 무시(no-op)**, hot-reload처럼
+초기화 스크립트가 다시 도는 경우를 안전하게 만듦. **다른 팩토리
+(`AnotherFactory` 등, 가상의 예)로 재호출하면 에러** — 이건 `base/module-lifecycle-plan.md`의 "bind는 유일 슬롯" 원칙(이미 구현체가 있는데 또
+다른 구현체로 init하려 하면 오류)이 다루던 것과 정확히 같은 케이스, 이
+문서의 이전 "무시" 잠정안과 그 문서의 "오류" 잠정안이 서로 모순되는 게
+아니라 **같은 팩토리 재호출(무시) vs 다른 팩토리로 유일 슬롯 충돌(에러)이라는
+서로 다른 케이스를 각각 가리키고 있었음**. 구현은 모듈 테이블에 "누가
+초기화했는지" 마커(`_initializedBy = "roblox"`류, 정확한 이름은 구현 단계)만
+두면 됨. 모듈 스코핑(`New()`, `base/architecture.md` 13번)과의 관계도 실은
+열려있던 게 아니라 자연히 풀림 — `New()`가 생기면 각 인스턴스가 별도
+테이블이 되므로 이 마커도 테이블별로 독립적으로 스코핑됨, 재설계 불필요.
 
-## 인스턴스 생성 / 이벤트 네이밍 인체공학 (2026-08-04 검증 라운드에서 새로 나온 열린 질문)
+## 인스턴스 생성 / 이벤트 네이밍 인체공학 — 확정(2026-08-04 3~4차 라운드, PA님 실 코드로 검증됨)
 
 `Quad "Frame"`처럼 문자열로 인스턴스 종류를 지정하는 방식은 타입 추론이
-어려움(위 온톨로지 절의 Luau 오버로드 문제와 같은 원인). PA님 DI 스타일은
-`DI.Frame`/`DI.TextLabel`처럼 필드 접근으로 만들어서 자동완성이 자연스럽게
-됨 — 목록에 없는 타입은 `DI.New<<Frame>> "Frame"`류로 폴백. 이벤트도
-`Event ""` 대신 `On...`류 이름으로 필드 접근하면 타입/자동완성이 쉬워질 수
-있음. 아직 방향 결정 안 됨 — 다음 세션에서 다룰 것.
+어려움(위 온톨로지 절의 Luau 오버로드 문제와 같은 원인). 사용자가 실제
+참고 코드를 `.claude/initreq/artworks/DeclarativeProgramming/
+DeclarativeInstance.luau`(PA님 작성, UI 포함 전반적 설계 패턴을 시범 적용한
+데모 모듈)에 공유해줘서 직접 확인 — **"DI"는 Dependency Injection이 아니라
+"Declarative Instance"(선언형 인스턴스 생성)**.
+
+**인스턴스 생성 — PA님 코드 그대로 채택**: 처음 제안했던 "필드=1급 타입
+경로, 문자열=폴백"이라는 2트랙(`DI.Frame` vs `DI.New<<Frame>> "Frame"`) 구상
+보다 실제로는 더 단순했음(`DeclarativeInstance.luau:104-160`) —
+**제네릭 생성자 함수 하나(`new<ClassName>(className): from<index<UIInstances,
+ClassName>>`)가 알려진 타입과 모르는 타입을 전부 커버**하고, 그중 UI에서 자주
+쓰는 클래스 ~25개(`Frame`/`TextButton`/`UICorner` 등, `UIInstances` 타입
+테이블에 등록된 것들)만 모듈 로드 시점에 **즉시(eager)** `constructor.Frame =
+new("Frame")`처럼 필드로 미리 채워둠 — `__index` 메타메소드 지연 생성이
+아니라 그냥 정적 테이블. quad-v2도 이 모양 그대로 채택: 하나의 제네릭
+생성자 + 자주 쓰는 것만 정적으로 미리 바인딩.
+
+**이벤트 바인딩 — `On.EventName` 도트액세스 안 씀, PA님 방식(평범한 문자열
+키 + 런타임 리플렉션)으로 전환**: `DeclarativeInstance.luau:13-91`의
+`assign(instance, key, value)`가 `ReflectionService:GetPropertiesOfClass`/
+`GetEventsOfClass`로 클래스별 프로퍼티/이벤트 타입을 캐싱해두고, 키가
+`RBXScriptSignal` 타입이면 자동으로 `instance[key]:Connect(value)`로 처리함
+— `Frame { MouseButton1Click = fn }`처럼 별도 네임스페이스 없이 그냥 문자열
+키로 씀. 이건 타입 안전성을 어느 정도 포기하는 대가지만(콜백 시그니처까지
+Luau가 검증 못 함 — `apply<T,U>(instance: T, properties: U): T & U`가 스키마
+검증 없이 구조적으로만 merge), 이미 UB로 남긴 "테이블 리터럴 안 키별 값
+타입 자동 검증 불가"와 같은 급의 한계라 손해가 크지 않고, `On.` 접두어 없이
+문법이 더 간결해짐 — **사용자 확정**("PA 님 방식 괜찮은듯. 타이핑은 인라인이
+되긴 하겠지 정도면 괜찮다"). quad-v2 구현에서는 이 "키가 이벤트인가"
+판별을 `isHandlable`로 감싼 pluggable 핸들러(`quad-roblox`가 `Reflection
+Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근 구조 자체가
+불필요해짐.
+
+**Store 쪽 dot-access는 그대로 유지**: `store.key`(1급 타입 경로)/
+`store "key"`(문자열 커링, 동적 키 폴백)는 이벤트와 달리 실질적으로 Luau가
+타입을 좁혀주는 이득이 있어서(Store 자체가 `{key: State<number>, ...}`류
+평범한 레코드 타입으로 지어짐) 그대로 유지 — 이벤트만 예외였을 뿐, "정적으로
+알려진 것=필드 접근" 원칙 자체가 깨진 건 아님.
+
+**PA님 코드와 대조해서 재확인한 것(변경 없음)**:
+- **OOP 회피 결정은 오히려 보강됨** — PA님의 `ObjectOrientedProgramming/
+  class.luau`도 `setmetatable(methods, {__index = parent})` 체이닝 상속이라
+  quad-v2가 피하기로 한 quad2-try `Base:Extends`와 같은 모양이고, 제네릭을
+  파일마다 중첩해서 재선언해야 하는 보일러플레이트까지 동일하게 나타남.
+- **Instance 태그는 CollectionService 직접 사용 그대로 유지** — PA님의
+  `EventDrivenProgramming/Observer.luau`의 `subscribeTaggedInstance`도 얇은
+  `CollectionService` 래퍼일 뿐. `DataOrientedProgramming/TagService.luau`는
+  이것과 무관하게 plain-table 엔티티(비-Instance 데이터)용 커스텀 태그
+  인덱스라 지금 quad-v2 스코프 밖 — Instance가 아닌 데이터에 태깅이 필요해질
+  미래 시나리오를 위한 참고 자료로만 기록.
+- **Store/State 전파 모델, 라이프사이클 — 둘 다 재검토 후 기존 확정 유지**
+  (아래 "Store/State/Source 온톨로지" 절의 "PA님 코드와의 교차검증" 참고).
 
 ## 남은 열린 질문 (`.claude/question.md`에도 취합)
 
-- **`:Compute`가 `with`한 값을 정확히 어떻게 읽는가** — 클로저로 직접 캡처하는
-  방향은 확정(위 온톨로지 절), 캐싱/무효화 전략(dirty-flag 등)과 `emit` 필요
-  여부는 아직 미정.
+이 문서의 핵심 설계 질문은 2026-08-04 세 라운드(전파 모델/`:Compute`/State
+쓰기 금지/Slot 생존 확인 → dot-access 타입 추론/인스턴스·이벤트 네이밍/
+`RobloxFactory` 재호출 가드)를 거치며 전부 확정됨. 남은 건 순수 API 표면
+이름뿐:
+
+- **`state()`/`Source()`/`Get()`/`DI`(또는 다른 이름) 등 정확한 함수·생성자·
+  모듈 이름** — 방향은 전부 확정, 이름만 구현 단계에서 남음(`On` 모듈은
+  이벤트 바인딩이 PA님 방식으로 바뀌며 아예 불필요해짐 — 위 "인스턴스 생성 /
+  이벤트 네이밍" 절 참고).
 - **`CreatedRef`(가칭)의 정확한 함수/옵션 이름** — children 배열에 아이템으로
   넣는다는 방향과 생성/마운트 두 시점 모두 지원한다는 것은 확정, 정확한 API
   이름만 남음.
 - **매 `process()` 호출마다 우선순위 스캔 비용** — 실제 구현/벤치마크 단계에서
   확인 필요(디자인 자체는 확정됐으므로 더 이상 사용자 확인 대상 아님, 구현
   검증 대상).
-- Store가 Store를 담는 경우의 실제 소유권(누가 내부 Store를 destroy하는가) —
-  이 문서의 "재실행 래핑" 제안이 맞다면 자연히 바깥 Store bind가 내부 Store의
-  라이프타임도 감싸게 될 텐데, 이중 해제(double-dispose) 방지가 필요한지 확인.
-  단, `base/lifecycle-pattern.md`의 "destroy 시점엔 아무것도 안 함" 원칙상 이중
-  해제 자체가 걱정할 필요 없는 개념일 수도 있음 — 재검토 필요.
-- `RobloxFactory` 중복 호출/충돌 시나리오, 인스턴스 생성·이벤트 네이밍
-  인체공학 — 위 두 절 참고, 둘 다 새로 열린 질문.
+
+**해소된 것**: "Store가 Store를 담는 경우 이중 해제(double-dispose) 방지가
+필요한가"는 재검토 결과 질문 자체가 성립 안 함으로 결론 — State/Source
+그래프 구독이 전부 weak-keyed GC-native(명시적 `dispose()` 호출이 아예 없음,
+`base/lifecycle-pattern.md`의 GC 위임 원칙 재사용)라 "같은 걸 두 번 해제"할
+행위 자체가 존재하지 않음(GC는 멱등). "`:Compute`가 with한 값을 어떻게
+읽는가"/"emit 필요 여부"도 전파 모델 확정으로 해소, `RobloxFactory` 중복
+호출/충돌 시나리오·인스턴스 생성/이벤트 네이밍도 위 절에서 전부 확정.

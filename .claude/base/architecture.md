@@ -35,7 +35,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    개념을 추가하면 라이브러리 복잡도가 너무 올라간다고 판단 — 당장은
    TagService 그대로 사용. **대신 Ref가 도입됨** — 단 Ref의 용도는 "id로 조회"가
    아니라 "외부에서 이미 관리되고 있는 instance를 quad로 점진적으로 마이그레이션/
-   래핑하기 위해 직접 참조를 얻는 것"(`research/bind-system-plan.md`의 Ref 절
+   래핑하기 위해 직접 참조를 얻는 것"(`base/bind-system-plan.md`의 Ref 절
    참고) — 둘을 혼동하지 말 것.
 6. **함수지향 디폴트, `:` 체이닝은 예외적으로만.** 스토어 바인드처럼 체인이 정말
    편한 경우만 `:` 사용, 나머지는 외부 함수가 인스턴스를 인자로 받는 모양.
@@ -44,7 +44,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    store 바인드를 받을 수도 있음.
 8. **특수 이벤트는 특수 플러깅으로.** `PropertyChangedSignal`, `PropertyChangedEvent ""`
    같은 것들은 일반 이벤트 바인드가 아니라 pluggable 바인드 핸들러 중 하나로
-   구현(`research/bind-system-plan.md`).
+   구현(`base/bind-system-plan.md`).
 9. **Tracker 미구현.** v1의 소스 변경 감지 자동 재렌더 기능(hot-reload watcher,
    실제로는 `.claude/initreq/quad/src/tracker.lua` — v1에서도 이미 `exports.lua`에
    연결 안 된 죽은 코드였음, `base/quad-v1-architecture.md` 참고)은 렌더
@@ -70,16 +70,88 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     `InitRoblox(Module)` 같은 팩토리 함수가 생성된 모듈을 뮤테이션하는 도구를
     주는 방식.
 
+## 구현 착수: 소스 트리 구조 확정 (2026-08-04, 5차 라운드)
+
+**상태**: 소스 트리 레이아웃과 `quad-base`/`quad-roblox` 패키지 경계 확정 —
+아래가 다음 세션에서 실제로 만들 구조. 지금은 문서 확정까지만, 실제
+폴더/`wally.toml`/`project.json` 스캐폴딩은 다음 세션.
+
+**패키징 방식(모노레포, RbxUtil 선례 채택)**: 최종적으로는 여러 개의 독립
+wally 패키지로 나누고 싶지만, 지금 Luau 툴링(특히 wally로 설치된 패키지의
+타입 정보 단절·`luau-lsp`의 심볼릭 링크 해석 문제 — 최근 `luau-lsp 1.63.0`
+에서야 수정됨)이 아직 불안정해서 **당장은 모놀리식**으로 감. `Sleitnick/
+RbxUtil`이 정확히 이 패턴(루트 하나로 통합 개발/테스트, 서브폴더마다 자체
+`wally.toml`로 독립 퍼블리시)을 쓰는 선례라 그대로 채택. `.luaurc`의
+`aliases`는 **런타임 require에서 아직 엔진이 지원 안 함**(Roblox 스태프가
+지원 예정이라고만 밝힌 상태, 2026-01 기준) — 그래서 alias는 편집기
+자동완성/타입체크용으로만 곁들이고, 실제 크로스패키지 require는 상대경로로
+쓴다. 나중에 실제로 레포를 쪼갤 때는 Rojo `project.json`의 트리 매핑 규칙만
+유지하면 되고, require는 그 시점에 한 번 기계적으로 바꾸는 정도로 감수.
+
+**패키지 경계**: `quad-base`는 다른 렌더 백엔드(GTK 등, 항목 12 참고)에서도
+재사용 가능해야 한다는 전제 — Store/State/Source 온톨로지+전파뿐 아니라
+**pluggable 디스패치 엔진 자체도 "인터페이스"로 base가 소유**한다(엔진마다
+큰 구현을 중복하지 않기 위함 — rbvm이 relation을 하나로 통합하려 했던 것과
+같은 동기). `quad-roblox`는 그 인터페이스의 **실제 구현체**만 제공.
+
+```
+quad/
+├── .luaurc                      # @quad-base, @quad-roblox alias (편집기 경험용, 런타임 비의존)
+├── default.project.json         # 루트 통합 개발/테스트용 Rojo 프로젝트
+├── quad-base/
+│   ├── wally.toml
+│   └── src/
+│       ├── Source.luau           # 값의 근원, 단일 지점
+│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기
+│       ├── Store.luau            # source 집합체, dot-access, __newindex
+│       ├── Dispatch/
+│       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔
+│       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
+│       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
+│       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
+│       ├── LifetimeHandle.luau    # Connected 계산 속성 "인터페이스"(타입/계약만)
+│       ├── PerInstanceState.luau  # per-instance 상태 저장 "인터페이스"
+│       ├── Ref.luau               # CreatedRef 메커니즘(숫자 슬롯 참가자)
+│       └── init.luau
+└── quad-roblox/
+    ├── wally.toml
+    └── src/
+        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러)
+        ├── LifetimeHandle.luau    # 실제 구현(Instance 생존 확인)
+        ├── PerInstanceState.luau  # 실제 구현(weak-keyed table, Instance 키)
+        ├── Handlers/
+        │   ├── Property.luau
+        │   ├── Event.luau         # ReflectionService 기반 자동 판별
+        │   ├── Attribute.luau
+        │   ├── Tag.luau           # CollectionService
+        │   ├── Tween.luau         # 높은 우선순위 store-bind 핸들러
+        │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
+        │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
+        ├── DI/
+        │   └── init.luau          # 제네릭 생성자 + ~25개 정적 필드(UIInstances)
+        └── init.luau
+```
+
+**남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
+`slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
+Tween/purity/existing-instance-bind는 여전히 `research/`에 남아있고 이
+구조 확정을 막지 않음.
+
 ## 아직 미정 (research/로 분리됨)
 
-바인드 시스템 디스패치, Slot 설계 세부, Tween 플러깅, 모듈 라이프사이클/누가
-Store를 구현하는가, 순수함수 범위, 이미 생성된 인스턴스에 대한 바인드 —
-`.claude/research/` 각 문서 참고, 전체 색인은 `.claude/README.md`.
+Tween 플러깅, 순수함수 범위, 이미 생성된 인스턴스에 대한 바인드 —
+`.claude/research/` 각 문서 참고, 전체 색인은 `.claude/README.md`. 바인드
+디스패치/Slot/모듈 라이프사이클은 위 "구현 착수" 섹션대로 확정되어
+`.claude/base/`로 승격됨(`bind-system-plan.md`/`module-lifecycle-plan.md`/
+`slot-plan.md`).
 
-**가장 시급한 미정 사항(2026-08-04부터, 다음 세션 최우선)**: Store/State/
-Source 온톨로지 — Store는 source(실제 값이 존재하는 단일 지점) 집합체이고,
-`store "key"`처럼 접근할 때마다 그 source를 감싸는 새 State(자기 고유
-value 없는 조합 가능한 캐시)를 반환한다는 모델까지는 나왔으나, `:Compute`
-캐싱/무효화 전략, Luau 타입 시스템에서 커링 호출의 타입 추론 문제 등 세부는
-전부 열려있음. `research/bind-system-plan.md`의 "Store/State/Source
-온톨로지" 절, `.claude/question.md`의 "최우선 새 열린 질문" 절 참고.
+**Store/State/Source 온톨로지(2026-08-04 두 라운드에 걸쳐 확정)**: Store는
+source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로 접근할 때마다
+그 source를 감싸는 새 State(자기 고유 value 없는 조합 가능한 캐시)를
+반환한다. 전파는 push-invalidate(신호만)/pull-recompute(`Get()` 시점) —
+Fusion식 eager 노드 없이도 다이아몬드 의존성 중복 재계산 문제가 풀림. State는
+쓰기 대상이 아니고(값 쓰기는 항상 Store의 `__newindex`), 값 하나만 다룰 땐
+Store와 별개인 가벼운 `Source` 프리미티브를 씀. 남은 건 정확한 API 이름과
+"`store.key` dot-access를 타입 추론 1급 경로로 삼는다"는 제안의 정식 확인
+뿐 — `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절,
+`.claude/question.md` 참고.

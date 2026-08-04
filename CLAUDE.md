@@ -30,11 +30,25 @@ v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치 완료 — OOP 상
 절충안은 한때 살려볼 후보였으나 **2026-08-04에 사실상 폐기로 재평가**됨(State
 자체가 `state(state)`로 분기하는 쪽으로 대체).
 
-**지금 유일하게 결론 안 난 핵심 설계 이슈는 Store/State/Source 온톨로지**
-— 검증 라운드 중 "State 프리미티브는 안 만든다"던 기존 결정이 틀렸다는 게
-드러나며 새로 열림. `.claude/research/bind-system-plan.md`의 "Store/State/
-Source 온톨로지" 절, `.claude/question.md`의 "최우선 새 열린 질문" 절 참고 —
-아래 "지금 할 일" 1번이 다음 세션이 여기서부터 시작해야 함을 명시.
+**Store/State/Source 온톨로지 및 관련 인체공학 질문은 2026-08-04 네 라운드에
+걸쳐 전부 확정됨**(사용자가 공유해준 실제 참고 코드 `.claude/initreq/
+artworks/`, PA님 작성, 로 4차 교차검증까지 마침) — push-invalidate/
+pull-recompute 전파 모델, `:Compute` self/with 인자를 둘 다 lazy State
+핸들로 통일, State는 쓰기 불가(값 쓰기는 항상 Store의 `__newindex`),
+`Source`는 Store와 별개인 독립 프리미티브로 격상, Slot 생존 확인은 기존
+canExecute 유틸 재사용으로 해소, `store.key` dot-access를 타입 추론 1급
+경로로(인스턴스 생성도 같은 관습, 단 이벤트는 PA님 방식인 평범한 문자열
+키+런타임 리플렉션으로 예외), `RobloxFactory` 재호출 가드(같은 팩토리=무시,
+다른 팩토리=에러)까지 확정. 남은 건 정확한 API 표면 이름뿐 —
+`.claude/base/bind-system-plan.md` 전체, `.claude/question.md`의
+"2026-08-04" 절들 참고.
+
+**소스 트리 구조도 확정됨(2026-08-04 5차 라운드)**: `bind-system-plan.md`/
+`module-lifecycle-plan.md`/`slot-plan.md` 모두 `research/`에서 `base/`로
+승격 완료. 모노레포(`quad-base`/`quad-roblox` 서브폴더, RbxUtil 패턴)로
+당장은 모놀리식 진행, 패키지 경계(디스패치 엔진까지 base가 인터페이스로
+소유)까지 확정 — `base/architecture.md`의 "구현 착수: 소스 트리 구조 확정"
+절 참고. 아래 "지금 할 일" 1번이 다음 단계(실제 스캐폴딩)를 명시.
 
 ## 계획 문서 구조
 
@@ -80,40 +94,76 @@ Source 온톨로지" 절, `.claude/question.md`의 "최우선 새 열린 질문"
 
 ## 지금 할 일 (우선순위순)
 
-1. **[다음 세션 최우선] Store/State/Source 온톨로지 설계.** 2026-08-04 검증
-   라운드 중 "State 프리미티브는 안 만든다"는 이전 결정이 틀렸다는 게
-   밝혀지면서 새로 터져나온 핵심 설계 이슈 — Store=source 집합체, State=
-   source를 감싸는 조합 가능한 캐시(`state(state)`로 분기), `:Compute`
-   캐싱/무효화 전략, Luau 타입 시스템에서 커링 호출의 `state<T>` 추론 문제
-   등이 전부 미정. `.claude/research/bind-system-plan.md`의 "Store/State/
-   Source 온톨로지" 절에 지금까지 나온 내용이 정리되어 있음 — 이어서 설계를
-   구체화할 것. `.claude/question.md`의 "최우선 새 열린 질문" 절도 함께 참고.
-2. 위 온톨로지가 어느 정도 정리되면 `research/bind-system-plan.md`/
-   `research/module-lifecycle-plan.md`를 `base/`로 승격하고,
-   `base/architecture.md`에 "구현 착수" 섹션을 추가해 실제 소스 트리 구조
-   (어느 서브패키지가 뭘 갖는지)를 확정 — 이 시점부터 `qa-request/`/`archive/`
-   폴더가 실제로 쓰이기 시작함.
-3. 남은 세부 시그니처(`CreatedRef` 정확한 이름, 인스턴스 생성/이벤트 네이밍
-   인체공학, `RobloxFactory`류 팩토리 중복 호출 가드)는 온톨로지 설계와
-   자연스럽게 같이 확정 가능.
-4. `research/purity-and-effects-plan.md`(특히 "state 옵저빙 결과로 slot을
-   조작할 때 생존 여부 확인" 열린 질문), `research/existing-instance-bind-plan.md`는
-   급하지 않음 — 스코프 논의만 필요, 구현 착수를 막지 않음.
-5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
+1. **[다음 세션 최우선] 실제 스캐폴딩.** 소스 트리 구조는 문서로 이미 확정됨
+   (`base/architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절) — 다음
+   세션에서 실제로 `quad-base/`, `quad-roblox/` 폴더, 각각의 `wally.toml`,
+   루트 `default.project.json`, `.luaurc`를 만들 것. 이 시점부터 `qa-request/`/
+   `archive/` 폴더가 실제로 쓰이기 시작함.
+2. 남은 세부 시그니처(`CreatedRef`/`state()`/`Source()`/`DI`류 정확한
+   이름)는 위 항목과 자연스럽게 같이 확정 가능 — PA님 실 코드(`.claude/
+   initreq/artworks/`)를 이미 받아서 교차검증 완료(아래 인수인계 메모
+   참고), `On` 모듈은 이벤트 바인딩 방식이 바뀌며 아예 불필요해짐.
+3. `research/existing-instance-bind-plan.md`는 급하지 않음 — 스코프 논의만
+   필요, 구현 착수를 막지 않음.
+4. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
-## 인수인계 메모 (2026-08-04 세션 종료 시점)
+## 인수인계 메모 (2026-08-04 세션 종료 시점, 5차 라운드까지 반영)
+
+**5차 라운드(소스 구조 확정)**: 4차 라운드 종료 시점에 서브에이전트로 먼저
+계획 문서 전체의 정합성을 점검(차질 없음 확인) 후 진행. 패키징 방식은
+서브에이전트 웹 리서치로 확인(`.luaurc` alias 런타임 미지원, wally 심볼릭
+링크/타입 문제, `Sleitnick/RbxUtil`의 모노레포+개별 wally.toml 선례,
+`pesde`는 아직 이름) — 모노레포로 당장 진행, 나중에 실제 분리 결정.
+패키지 경계는 사용자가 "base=인터페이스, roblox=구현"이라는 원칙을 명확히
+해서 확정 — Store/State/Source 온톨로지뿐 아니라 `process`/`retract`
+디스패치 엔진, `LifetimeHandle`/`PerInstanceState` 인터페이스, Ref, Slot
+코어 재조정 로직까지 전부 `quad-base`가 소유(다른 엔진에서도 재사용
+가능해야 한다는 전제, 엔진마다 큰 구현 중복 방지가 목적). Slot도 같은
+원칙 적용 확정, 그 과정에서 `k:number,v:Instance` 중첩 인스턴스 자식용
+`InstanceChild` 핸들러가 추가로 필요하다는 게 밝혀짐. `bind-system-plan.md`/
+`module-lifecycle-plan.md`/`slot-plan.md` 세 문서 모두 `research/`에서
+`base/`로 승격 완료, `base/architecture.md`에 전체 소스 트리가 문서화됨 —
+실제 폴더/파일 스캐폴딩은 다음 세션(위 "지금 할 일" 1번).
+
+## 인수인계 메모 (2026-08-04 세션 종료 시점, 4차 라운드까지 반영)
 
 2026-08-03에 확정됐다고 표시된 결정 전체(architecture.md 14개 + lifecycle-
 pattern/store-semantics/bind-system-plan/module-lifecycle-plan/slot-plan/
 tween-plan)를 `AskUserQuestion`으로 하나씩 예/아니오 검증 완료 — 상세는
-`.claude/question.md`의 "2026-08-04 검증 라운드 완료" 절. 대부분 그대로
-확인됐지만, 검증 과정에서 사용자가 실시간으로 설계를 더 전개하면서 **"State
-프리미티브는 안 만든다"는 기존 결정이 틀렸다는 게 밝혀짐** — Store/State/
-Source 온톨로지 전체가 이번 세션에서 새로 열린 가장 중요한 설계 스레드로
-떠올랐고, 아직 결론이 안 났음(위 "지금 할 일" 1번). 그 외 자잘한 정정들(Slot
-retract=폐기 확정, Pipe COW 후보 폐기 등)은 각 문서에 바로 반영해둠 — 재조사
-불필요.
+`.claude/question.md`의 "2026-08-04 검증 라운드 완료" 절. 검증 과정에서
+사용자가 실시간으로 설계를 더 전개하면서 **"State 프리미티브는 안 만든다"는
+기존 결정이 틀렸다는 게 밝혀짐** — Store/State/Source 온톨로지 전체가 이
+세션에서 새로 열린 가장 중요한 설계 스레드로 떠올랐음.
+
+**같은 날 이어진 2차/3차 라운드에서 그 온톨로지와 인체공학 질문 전부를
+확정함**: push-invalidate/pull-recompute 전파 모델(Fusion식 eager 노드/생성순
+정렬 불필요), `:Compute`의 self/with 인자를 둘 다 lazy State 핸들로 통일
+(별도 `ComputeWithout` 불필요), State는 쓰기 불가(값 쓰기는 Store의
+`__newindex`로만) 확정, `Source`는 Store 내부 디테일이 아니라 값 하나만
+다룰 때 쓰는 독립 공개 프리미티브로 격상, Slot 생존 확인 문제는 새 메커니즘
+없이 기존 canExecute 유틸 재사용으로 해소(부수 효과로 "Store가 Store를 담을
+때 이중 해제 방지 필요한가" 백로그 항목도 "명시적 dispose가 없어 질문 자체가
+성립 안 함"으로 닫힘), `store.key` dot-access를 타입 추론 1급 경로로 삼는
+관습을 인스턴스 생성까지 프로젝트 전역으로 확정, `RobloxFactory` 재호출
+가드(같은 팩토리=무시, 다른 팩토리=에러, `New()`와는 인스턴스별 테이블
+분리로 자연히 공존)까지 확정.
+
+**4차 라운드에서 사용자가 실제 참고 코드(`.claude/initreq/artworks/`, PA님
+작성 — UI 포함 전반적 설계 패턴을 시범 적용한 데모 모듈)를 공유해줘서
+교차검증**: "DI"는 Dependency Injection이 아니라 Declarative Instance였음
+(정정). 인스턴스 생성은 2트랙 구상보다 단순한 "제네릭 생성자 함수 하나 +
+자주 쓰는 클래스만 정적 필드로 미리 바인딩" 모양으로 정정. **이벤트
+바인딩은 `On.EventName` 도트액세스를 접고 PA님 방식(평범한 문자열 키 +
+`ReflectionService` 기반 자동 판별)으로 전환** — Store의 dot-access는 실질적
+타입 이득이 있어 그대로 유지, 이벤트만 예외. 전파 모델(push-invalidate/
+pull-recompute)과 라이프사이클(GC-native)은 PA님 코드가 반례처럼 보였으나
+(각각 파생 개념이 없는 단순 pub-sub, 전부 수동 해제) 재검토 후 **기존
+확정 유지** — 라이프사이클은 나중에 하이브리드로 확장 가능한 여지만 기록.
+OOP 회피 결정은 PA님의 `class.luau`도 같은 체이닝 상속 문제를 보여 오히려
+보강됨. **더 이상 열려있는 핵심 설계 질문은 없음** — 남은 건 API 표면 이름뿐
+(위 "지금 할 일" 참고). 그 외 자잘한 정정들(Slot retract=폐기 확정, Pipe COW
+후보 폐기 등)은 각 문서에 바로 반영해둠 — 재조사 불필요.
 
 이전 세션(2026-08-03) 종료 시점 메모: `.claude/` 전체 스캐폴드 + 대부분의
 핵심 아키텍처 결정을 완료, 로컬 git 저장소 초기화+첫 커밋(원격 없음,

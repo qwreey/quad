@@ -32,13 +32,13 @@
 
 ## 정정: Ref 불필요 — 핸들러는 항상 대상 Instance를 직접 받는다
 
-**이전 초안의 전제가 틀렸음.** Tween 핸들러도 `research/bind-system-plan.md`의
+**이전 초안의 전제가 틀렸음.** Tween 핸들러도 `base/bind-system-plan.md`의
 "확정된 디스패치 모델"을 그대로 따르는 store-bind 핸들러 중 하나 — `process(inst,
 k, v)`가 항상 대상 Instance(`inst`)를 직접 받으므로, 트윈 대상을 얻기 위해
 Ref나 네임스페이스드 조회가 필요하지 않음. Tween의 store-bind 핸들러는 "`k`는
 무엇이든, `v`가 Store인 것"을 잡아내는 우선순위 매우 높은 핸들러로 등록되고,
 `inst`는 이미 파라미터로 주어짐. (Ref 자체는 도입되지만 전혀 다른
-용도 — `research/bind-system-plan.md`의 Ref 절 참고.)
+용도 — `base/bind-system-plan.md`의 Ref 절 참고.)
 
 ## `retract`(구 cleanup)로 확정된 오버라이드 시맨틱
 
@@ -62,7 +62,7 @@ Ref나 네임스페이스드 조회가 필요하지 않음. Tween의 store-bind 
 라이브러리가 강제하지 않고, `[Tween(key, tweenData, {onOverride=...})]`처럼
 키 설정으로 사용자가 고를 수 있게 열어둠 — `retract(inst, k, v)`가 이전
 값(v)을 받으므로 여기서 선택된 동작을 구현. `retract`가 접근해야 할 "이전에
-생성한 실제 Tween 객체"는 `research/bind-system-plan.md`가 말하는 base 제공
+생성한 실제 Tween 객체"는 `base/bind-system-plan.md`가 말하는 base 제공
 범용 유틸(`inst`를 키로 하는 weak-keyed per-instance 상태 저장소)에 담아두면
 됨.
 

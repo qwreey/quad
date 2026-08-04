@@ -1,8 +1,7 @@
 # Store 의미론 — 부작용 허용, State는 Store 위의 조합 가능한 캐시 레이어
 
 **상태**: base — 부작용 허용/Store 문법 부분은 확정. State/Source 온톨로지는
-2026-08-04 검증 라운드에서 새로 열린 진행 중인 설계 스레드(`research/
-bind-system-plan.md` 참고). 원본: `.claude/initreq/raw-userinput.md`
+2026-08-04 검증 라운드에서 새로 열린 진행 중인 설계 스레드(`base/bind-system-plan.md` 참고). 원본: `.claude/initreq/raw-userinput.md`
 "store는 부작용을 허용함" / "state는 어떻게 구현하는가" 절.
 
 ## Store는 부작용을 허용하는 게 기본 디자인
@@ -26,16 +25,22 @@ purity-and-effects-plan.md`와 연결됨).
    막을 수는 없지만, 라이브러리로 재사용하려는 컴포넌트가 이런 부작용을
    가지면 이식성이 떨어짐(`research/purity-and-effects-plan.md`와 연결).
 
-**미해결 열린 질문**: state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은
-연산을 할 때, 그 시점에 대상 slot이 이미 죽어있으면 어떻게 되는가 — state가
-생성되는 지점과 slot이 적용되는 지점이 서로 다른 스코프라, "state 변경이
-발생했을 때 그 slot이 아직 살아있는지"를 어떻게 연관지어 확인할지 아직 명확한
-설계가 없음(`isInit=false`일 때는 허용, `isInit=true`이고 생존 확인 함수가
-거짓이면 불허 정도의 방향은 있으나 미완성). 사용자 본인도 "더 리서치가 필요"
-하다고 명시적으로 표시 — `research/bind-system-plan.md`의 "Store/State/Source
-온톨로지" 스레드와 함께 다룰 것.
+**해소됨(2026-08-04 2차 라운드)**: state를 옵저빙해서 나온 결과로 slot에
+`clear`/`add` 같은 연산을 할 때, 그 시점에 대상 slot이 이미 죽어있으면
+어떻게 되는가 — 별도 메커니즘을 새로 만들 필요 없이, `base/
+lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute predicate)을 state-
+invalidate 리스너 클로저 등록에도 그대로 재사용하면 됨: 발화 시
+`canExecute()` 하나만 확인, 거짓이면 no-op. 한때 검토했던 `isInit=false`면
+허용/`isInit=true`+생존확인 거짓이면 불허 분기 초안은 폐기 — `canExecute`
+하나로 통일(사용자 확정). 상세는 `base/bind-system-plan.md`의
+"Store/State/Source 온톨로지" 절 참고.
 
 ## 정정(2026-08-04 검증 라운드): `State` 프리미티브는 실제로 필요하다
+
+**후속(2026-08-04 2차 라운드)**: 아래 온톨로지의 전파 모델(push-invalidate/
+pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
+프리미티브화·Slot 생존 확인까지 전부 확정됨 — 최신 상세는 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지 — 핵심 메커니즘 확정"
+절이 최종 소스, 이 절은 배경/온톨로지 명칭 정의로만 유지.
 
 **이전 버전의 이 절("State 프리미티브는 만들지 않는다")은 틀렸음 — 사용자가
 검증 라운드에서 직접 정정.** 정확한 모델:
@@ -54,7 +59,7 @@ purity-and-effects-plan.md`와 연결됨).
 - 이건 quad2-try(폐기된 이전 시도)의 `Pipe` copy-on-write 절충안을 대체하는
   방향으로 좁혀짐 — 별도 `Pipe` 타입을 만들어 소유권/버전 가드를 넣는 대신
   State 자체가 "파이핑 결합체"이고 `state(state)`로 분기하면 될 걸로 보임
-  (`Pipe` 후보는 사실상 폐기 쪽으로 기움). 상세는 `research/bind-system-plan.md`의
+  (`Pipe` 후보는 사실상 폐기 쪽으로 기움). 상세는 `base/bind-system-plan.md`의
   "Store/State/Source 온톨로지" 절 참고 — **아직 완전히 결론난 설계는 아니고,
   구현 단계에서 더 다뤄야 할 진행 중인 스레드.**
 
@@ -62,7 +67,7 @@ purity-and-effects-plan.md`와 연결됨).
 없으면 연산을 미루는 dirty-flag 방식 등), Luau 타입 시스템에서 `store "key"`
 같은 커링 호출이 오버로드 함수 타입으로 `state<T>`를 정확히 추론하기 어려운
 문제(문자열 리터럴이 as-const로 좁혀지지 않는 문제) — 둘 다 열린 채로
-`research/bind-system-plan.md`에서 계속 다룰 것.
+`base/bind-system-plan.md`에서 계속 다룰 것.
 
 ## Store 값 설정 문법 — v1 인체공학 유지 (확정)
 
@@ -82,12 +87,13 @@ purity-and-effects-plan.md`와 연결됨).
 인체공학(사용자가 좋아하는 부분)은 유지하되 내부 구현(체이닝이 아니라 팩토리
 함수)만 바꾼다.
 
-## 여러 스토어 값을 묶어 처리하는 것 (dependency array) — 연구 필요
+## 여러 스토어 값을 묶어 처리하는 것 (dependency array) — 확정
 
 `useEffect`처럼 여러 store 값을 디펜던시로 묶어 파생값을 계산하고 싶다는
-요구가 있음(v1의 `myStore "a,b"` 콤마-조인 문자열 방식은 폐기 대상 —
-`base/quad-v1-architecture.md`의 "문자열 DSL" 문제점 참고). 단, **v1의
-`:Add`/`:With`/`:Tween` 같은 이름 붙은(named) 체이닝 연산은 만들지 않기로
-확정** — 대신 일반 함수를 받아 처리하는 쪽이 일관적이라는 판단. 구체적인 API
-모양(`Store.Combine({a,b}, function(a,b) ... end)`류)은 아직 미정 —
-`research/bind-system-plan.md` 참고.
+요구가 있었음(v1의 `myStore "a,b"` 콤마-조인 문자열 방식은 폐기 대상 —
+`base/quad-v1-architecture.md`의 "문자열 DSL" 문제점 참고). **v1의
+`:Add`/`:With`/`:Tween` 같은 이름 붙은(named) 체이닝 연산은 만들지 않음** —
+대신 일반 함수를 받아 처리. 최종 형태는 `:With(...)`로 의존성을 모으고
+`:Compute(fn)`으로 파생 State를 만드는 것으로 확정 — `Store.Combine({a,b},
+fn)`류 포지셔널 인자 방식은 기각됨. 정확한 lazy 인자 규칙(self/with 값 둘 다
+State 핸들로 넘기고 `.value`를 실제로 읽을 때만 계산)은 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
