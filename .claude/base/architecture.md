@@ -157,6 +157,36 @@ quad/
 Tween/purity/existing-instance-bind는 여전히 `research/`에 남아있고 이
 구조 확정을 막지 않음.
 
+## 테스트 전략: quad-base용 최소 mock (2026-08-04)
+
+**결정**: quad-base 테스트는 Vide 선례(`initreq/vide/test/mock.luau`, 약
+300줄)를 따라 최소한의 mock으로 감 — parent/children 트리 + 타입 검증 없는
+property bag + property별 변경 시그널 정도만 흉내내고, `IsA()`/클래스별
+프로퍼티 스키마/`WaitForChild`/`DataModel` 같은 건 안 만듦. 순수 `luau` CLI로
+Studio/엔진 없이 테스트(Vide가 실제로 이렇게 CI에 물려놓음) — Fusion처럼
+Studio 안에서만 도는 방식은 채택 안 함. 근거: quad-base 코어(Store/State/
+Source/Modifier/Slot, 디스패치 엔진)는 이미 `inst`를 `any`로 취급하고
+Instance 특정 동작을 전혀 참조하지 않도록 설계돼 있어(`bind-system-plan.md`
+"inst가 항상 Roblox Instance일 필요는 없음" 절), mock이 실제 Roblox 충실도를
+가질 이유가 없음.
+
+**스코프는 "정적 디버깅"으로 한정** — **사용자 확정**: mock으로 확인하려는
+건 한 시점의 렌더 결과(정적 스냅샷)지, 시간에 따라 변하는 동적 동작(Tween
+애니메이션, 타이밍 등)이 아님. 그래서 지금 단계 mock엔 시간 기반 핸들러를
+흉내낼 계획이 없음.
+
+**"quad-roblox로 작성한 컴포넌트가 mock에서도 그대로 돌아가야 한다"는 요구는
+없음** — **사용자 확정**("이건 꼭 지켜질 필요까지 있진 않아, 단순하게 가도
+됨"). mock은 quad-roblox의 실제 핸들러(ReflectionService 기반 이벤트 판별,
+CollectionService 태그 등)를 흉내낼 필요가 없고, quad-base 자체 로직(디스패치
+엔진, Store/State/Source, Modifier, Slot)만 검증하면 충분 — quad-roblox
+개발과는 무관해도 됨.
+
+**백로그**: 나중에 범용 렌더 결과 디버깅 도구로 키우고 싶어지면(정적
+스냅샷을 넘어 Tween mock 같은 동적 동작까지 포함) 그때 스코프를 넓히는
+걸로 — 지금은 quad-base 테스트 전용 최소 mock까지만(`CLAUDE.md` 백로그
+참고).
+
 ## Store/State/Source 온톨로지 — 확정됨 (요약)
 
 Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로 접근할
@@ -171,8 +201,9 @@ Store와 별개인 가벼운 `Source` 프리미티브를 씀. `store.key` dot-ac
 
 ## 아직 미정 (research/로 분리됨)
 
-Tween 플러깅, 이미 생성된 인스턴스에 대한 바인드, 컴포넌트가 modifier/Ref를
-경계 너머로 어떻게 전달하는지 — `.claude/research/` 각 문서 참고, 전체 색인은
-`.claude/README.md`. 바인드 디스패치/Slot/모듈 라이프사이클은 위 "구현 착수"
-섹션대로 확정되어 `.claude/base/`로 승격됨(`bind-system-plan.md`/
-`module-lifecycle-plan.md`/`slot-plan.md`).
+Tween 플러깅, 이미 생성된 인스턴스에 대한 바인드 — `.claude/research/` 각
+문서 참고, 전체 색인은 `.claude/README.md`. 바인드 디스패치/Slot/모듈
+라이프사이클/Modifier/컴포넌트화(컴포넌트 경계 modifier/Ref 전달 포함)는
+위 "구현 착수" 섹션대로 확정되어 `.claude/base/`로 승격됨
+(`bind-system-plan.md`/`module-lifecycle-plan.md`/`slot-plan.md`/
+`modifier-plan.md`/`component-composition-plan.md`).

@@ -136,6 +136,18 @@ Modifier가 immutable해야 하는 이유(변환마다 clone)와 State가 이미
 명시적으로 쓰는 구조라 "암묵적 분기"가 애초에 존재하지 않음 — 새로 결정할
 것 없음.
 
+### 7. State가 Modifier를 값으로 담는 것은 UB — 타입으로 막을 것 (2026-08-04, 로드맵 인수인계 라운드)
+
+Modifier "필드"가 State일 수 있는 것(4-1번)과는 별개로, **State 자체의
+value가 Modifier인 경우**(예: `someState:With(fn)`이 Modifier를 반환)는
+지원 대상이 아님 — Modifier는 "flatten해서 한 번 적용"이 전제인 정적 값인데,
+State에 담기면 그 값이 반응형으로 바뀔 수 있다는 뜻이 되어 매번 재-flatten이
+필요해지고, 이는 "정적 merge" 확정(1번)과 정면으로 충돌함 — **사용자
+확정**("state 안에 modifier가 있으면 그건 끔찍히 힘들꺼야... 타입 상 받지
+못하게 만들어야 할 수도 있고"). **UB로 확정, 가능하면 타입 시스템으로
+아예 못 넣게 막을 것**(`State<Modifier>` 같은 조합을 타입 정의 단계에서
+거부) — 런타임 가드가 아니라 타입 차단을 우선 검토.
+
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
 - Getter 정확한 이름/모양(`:Get(key)` vs dot-access 겸용) — 후순위, 구현

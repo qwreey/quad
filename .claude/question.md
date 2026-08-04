@@ -10,22 +10,7 @@
 
 ## 지금 열려있는 것 (우선순위순)
 
-### 1. [최우선] 컴포넌트 경계에서 modifier/Ref가 어떻게 전달되는가
-
-사용자가 "지금 quad에서 가장 문제되는 부분"으로 직접 지목. 컴포넌트가
-플레인 함수이고 반환하는 루트가 여러 개(혹은 Slot으로 갈라지는 구조)일 때,
-호출부가 넘긴 modifier/Ref가 "어느 루트로 가야 하는지" 모호해지는 케이스가
-있음. Jetpack Compose는 언어 강제가 아니라 "컴포저블은 `modifier` 파라미터를
-받아 루트에 적용해야 한다"는 순수 관례(+린트)로 풂 — quad도 비슷한 관례
-기반으로 갈 수 있어 보이나 다중 루트 케이스는 미정.
-
-**주의**: modifier "값 자체"가 어떻게 동작하는지(정적 merge, immutable+clone
-체이닝, State 필드 지원)는 이미 완전히 확정됨(`base/modifier-plan.md`) — 이
-질문은 그것과 별개로 "경계를 어떻게 통과하느냐"만 다룸, 혼동하지 말 것.
-
-→ 상세/배경: `research/component-composition-plan.md`.
-
-### 2. 용어 정리 (사용자 요청, 진행 중)
+### 1. 용어 정리 (사용자 요청, 진행 중)
 
 사용자 원 메모: "quad는 register라던가 좀 부정확하거나 느낌이 바로 와닿지
 않던 용어들이 많음 — 전체적 용어를 보고 생각해볼래? 제안을 줘, 나도 같이
@@ -56,13 +41,17 @@
 - `Store`/`Source`/`Modifier`/`Ref`/`process`/`retract`/`isHandlable`은
   업계 선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
 
-### 3. 낮은 우선순위
+### 2. 낮은 우선순위
 
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —
   `base/quad-v1-architecture.md`에 남겨진 v1 내부 동작 확인 사항, 마이그레이션
   가이드 작성 시점에 필요. 지금은 그냥 백로그로만 기록.
+- **여러 Slot이 형제로 섞일 때 순서 보장** — `base/slot-plan.md`의 "여러
+  Slot이 섞일 때 순서 보장" 절 참고. Roblox 단일 백엔드로는 급하지 않음
+  (LayoutOrder/ZIndex로 대부분 해결), 다른 백엔드(웹 DOM 등) 재사용성과
+  직결되는 문제라 Slot 코어 로직 구현 시점에 재검토.
 
 ## 참고: 지금까지 확정된 것 (요약)
 
@@ -79,6 +68,7 @@
 | Slot 재조정, 재마운트 시 throw, retract=폐기 | `base/slot-plan.md` |
 | `Connected`+GC 라이프사이클 패턴 | `base/lifecycle-pattern.md` |
 | Modifier(정적 merge, immutable 체이닝, State 필드 지원) | `base/modifier-plan.md` |
+| 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Merge`) | `base/component-composition-plan.md` |
 | 컴포넌트 이식성(전역 store 참조 시 재사용성 문제) | `base/purity-and-effects-plan.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `base/comparison-fusion-vide.md` |
 | v1 내부 동작 스냅샷 | `base/quad-v1-architecture.md` |

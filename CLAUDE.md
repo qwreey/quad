@@ -22,11 +22,12 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 **지금은 설계/계획 단계이고 구현은 아직 시작 전** — 저장소 루트에 실제 소스
 코드(`src/` 등)가 없음. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
 디스패치 모델, Store/State/Source 온톨로지, 소스 트리 구조, Modifier 메커니즘,
-컴포넌트=플레인 함수)는 전부 `.claude/base/`에 문서로 확정돼 있음 — 먼저
-`.claude/base/architecture.md`를 읽을 것. **단, "핵심 설계 질문이 더 이상
-없다"는 뜻은 아님** — 컴포넌트화(특히 modifier/Ref가 컴포넌트 경계를 어떻게
-통과하는지)는 사용자가 직접 "지금 quad에서 가장 문제되는 부분"으로 지목한
-채 아직 열려있음, 아래 "지금 할 일" 참고.
+컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에
+문서로 확정돼 있음 — 먼저 `.claude/base/architecture.md`를 읽을 것. 사용자가
+직접 "지금 quad에서 가장 문제되는 부분"으로 지목했던 컴포넌트화(특히
+modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션에서 수렴
+완료(`base/component-composition-plan.md`) — 남은 핵심 설계 질문은 없고,
+용어 정리(진행 중)와 실제 스캐폴딩만 남음, 아래 "지금 할 일" 참고.
 
 이전에 시도했다 폐기한 v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치
 완료 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` copy-on-write 절충안은 확인된
@@ -39,8 +40,8 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
   `.claude/base/architecture.md`를 읽을 것.
 - `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의. 지금은
   `tween-plan.md`(세부 옵션만 남음), `existing-instance-bind-plan.md`(급하지
-  않음), `component-composition-plan.md`(**사용자가 최우선으로 지목한 열린
-  주제**) 세 개뿐.
+  않음) 두 개뿐 — `component-composition-plan.md`는 2026-08-04 세션에 수렴
+  완료돼 `base/`로 승격됨.
 - `.claude/qa-request/`, `.claude/archive/`, `.claude/feedback/` — 구현
   시작되면 쓰기 시작함, 지금은 비어있음.
 - `.claude/initreq/` — 클론해둔 참고 레포(quad v1, Fusion, Vide, rbvm, tbox,
@@ -48,6 +49,9 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
   `.gitignore`로 커밋 제외됨** — 내용을 다른 곳으로 옮기지 말고 항상 원본
   그대로 둘 것. 리서치가 더 필요하면 이 폴더를 다시 파고들 것.
 - `.claude/question.md` — 사용자가 답해야 할 질문 전체 취합(우선순위순).
+- 루트 `ROADMAP.md` — 설계 단계 종료 후 실제 구현 순서(M0, M1, ... 마일스톤 +
+  todo 체크박스). "무엇을 확정했는가"는 `.claude/base/`가 소스, "어떤 순서로
+  만드는가"는 이 문서가 소스 — 헷갈리지 말 것.
 - 루트 `HUMAN_TODO.md` — 사람만 할 수 있는 일(로컬 GUI 조작, 스케줄/루프
   설정 등).
 
@@ -87,28 +91,31 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 
 ## 지금 할 일 (우선순위순)
 
-1. **컴포넌트화 논의 계속 — 사용자가 직접 "가장 문제되는 부분"으로 지목.**
-   `research/component-composition-plan.md` 참고. 핵심 골격(컴포넌트=플레인
-   함수, State/Source 읽기·쓰기 경계, `StoreSource` 프록시)과 Modifier
-   메커니즘 자체(`base/modifier-plan.md`, 완전 확정)는 수렴됨 — 남은 건
-   **modifier/Ref가 컴포넌트 경계(특히 다중 루트)를 어떻게 통과하는가**라는
-   진짜 설계 질문(이름 문제가 아님). 다음 세션에서 이걸 이어서 파고들 것.
-2. **실제 스캐폴딩.** 소스 트리 구조는 문서로 이미 확정됨(`base/
-   architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절) — `quad-base/`,
-   `quad-roblox/` 폴더, 각각의 `wally.toml`, 루트 `default.project.json`,
-   `.luaurc`를 만들 것. 1번의 컴포넌트 경계 논의가 `DI`/`Modifier` 모듈
-   설계에 영향을 주므로, 그 결론이 안 나온 상태에서도 나머지 구조(Store/
-   State/Source, 디스패치 엔진, Slot)는 그대로 스캐폴딩 가능 — 막을 필요
-   없음(`architecture.md`에도 명시). 이 시점부터 `qa-request/`/`archive/`
-   폴더가 실제로 쓰이기 시작함.
-3. **용어 정리 — 사용자가 별도로 요청, 진행 중.** "register"(v1) 같이
+1. **구현 시작 — 루트 `ROADMAP.md`의 M0부터.** 설계 단계는 2026-08-04
+   로드맵 인수인계 라운드로 종료, 다음 세션은 바로 `ROADMAP.md` M0(스켈레톤+
+   기술검증 스파이크)부터 시작. M0는 "진짜" 마일스톤이 아니라, 지금까지
+   추론만으로 확정하고 실제 Luau로 부딪혀본 적 없는 세 가지(Store/State
+   propagation, 재귀 process/retract 디스패치, 컴포넌트 경계 named-parameter
+   전달)를 던지는 코드로 검증하는 단계 — 여기서 걸리면 `base/` 문서를 그
+   자리에서 고치는 게 정상. M0 통과 후 M1(실제 스캐폴딩: `quad-base/`,
+   `quad-roblox/` 폴더 + `wally.toml`/`default.project.json`/`.luaurc` +
+   quad-base용 최소 mock 테스트 하네스)으로 진행 — 소스 트리 자체는 이미
+   확정됨(`base/architecture.md` "구현 착수" 절). 이 단계부터
+   `qa-request/`/`archive/` 폴더가 실제로 쓰이기 시작함. **세부 순서/todo는
+   `ROADMAP.md`가 소스** — 여기서 반복 안 함.
+2. **용어 정리 — 사용자가 별도로 요청, 진행 중.** "register"(v1) 같이
    부정확한 이름들을 전체적으로 재검토하자는 요청 — 1차 제안 완료(우선순위
    순: `State`가 React/Vue식 "쓸 수 있는 로컬 상태"라는 통상 의미와 반대라
    가장 위험, `DI`가 Dependency Injection 축약어와 충돌, `PerInstanceState`가
    핵심 프리미티브 `State`와 이름 충돌 — 세부는 `.claude/question.md` 참고),
-   사용자와 같이 계속 논의 필요.
-4. `research/existing-instance-bind-plan.md`는 급하지 않음 — 스코프 논의만
+   사용자와 같이 계속 논의 필요. 컴포넌트 경계용 `props.Modifier`/`props.Ref`/
+   `Modifier.Merge` 같은 새 가칭들도 이 정리에 합류 대상.
+3. `research/existing-instance-bind-plan.md`는 급하지 않음 — 스코프 논의만
    필요, 구현 착수를 막지 않음.
+4. **[백로그] 범용 렌더 디버깅 도구로서의 quad-mock.** 1번의 quad-base 테스트용
+   mock과는 별개 — 정적 스냅샷을 넘어 Tween mock 같은 동적 동작까지 지원하는
+   더 큰 스코프의 디버깅 도구(`architecture.md` "테스트 전략" 절 백로그 참고).
+   효용성 봐가며 나중에 검토, 지금 당장 설계할 필요 없음.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -125,12 +132,19 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
   경우의 setter/getter 동작까지 전부 확정(`base/modifier-plan.md`, 새로
   base 승격). 이 논의에서 "관측해야 실체화된다"는 프로젝트 전역 원칙도
   명문화(`bind-system-plan.md`).
-- **컴포넌트화 논의 시작, 아직 미완** — v1의 `Class.Extend()` 자동-store
-  매직은 폐기하고 React식으로 값을 명시적으로 전달하는 방향으로 수렴,
-  `StoreSource`(Source를 인터페이스+구현체로 보고 Store 키에서 얇은
-  프록시로 얻는 것) 아이디어까지 나왔지만 modifier/Ref의 컴포넌트 경계
-  통과 방식은 미해결(`research/component-composition-plan.md`, 위 "지금
-  할 일" 1번).
+- **컴포넌트화 논의, 같은 날 후속 세션에서 완결** — v1의 `Class.Extend()`
+  자동-store 매직은 폐기하고 React식으로 값을 명시적으로 전달하는 방향으로
+  수렴, `StoreSource`(Source를 인터페이스+구현체로 보고 Store 키에서 얇은
+  프록시로 얻는 것) 아이디어 확정. 마지막 미결이던 "modifier/Ref의 컴포넌트
+  경계 통과"도 후속 세션에서 풀림: Compose/Fusion/Vide/v1 4개 선례를
+  서브에이전트로 병렬 조사한 결과 전부 named parameter로 경계를 넘기는
+  패턴에 수렴한다는 게 확인됐고, "컴포넌트가 여러 루트를 반환한다"는
+  프레이밍 자체가 (a) Luau가 tail position 밖 다중 리턴을 지원 안 해서
+  불필요한 개념과 (b) 이미 있는 Slot 메커니즘을 섞은 것이었음이 드러나
+  정리됨 — 결론: 경계는 named parameter(`props.Modifier`/`props.Ref`
+  가칭), "다중 루트"라는 별도 개념은 폐기, 여러 modifier를 하나로 합치는
+  `Modifier.Merge`(가칭) 유틸 추가. `research/component-composition-plan.md`
+  → `base/component-composition-plan.md`로 승격 완료.
 - **문서 전체 감사 및 정리** — `.claude/` 코퍼스 전체(약 15개 문서)를
   서브에이전트로 감사해 여러 라운드에 걸쳐 쌓인 모순/중복/stale 마커를
   대거 발견하고 수정(예: 이벤트 dot-access 확정 여부가 문서 내에서 서로
@@ -142,4 +156,25 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
   git log와 각 `base/`/`research/` 문서 안의 라운드 표시(예: "2026-08-04
   3차 라운드")를 참고할 것, 여기서 전부 반복하지 않음.
 
-용어 정리 제안 진행 중인 점은 위 "지금 할 일" 3번 참고.
+**같은 날 로드맵 인수인계 라운드 — 설계 단계 마무리, 구현 준비 완료**:
+- **quad-base 테스트 mock 방향 확정**: Vide 선례(`test/mock.luau`, ~300줄,
+  순수 `luau` CLI, Studio 불필요) 그대로 채택, 스코프는 정적 디버깅 한정(Tween
+  같은 동적 동작 제외), quad-roblox로 작성한 컴포넌트가 mock에서도 그대로
+  돌아가야 한다는 요구 없음(단순하게 감) — `architecture.md` "테스트 전략"
+  절. 범용 렌더 디버깅 도구(Tween mock 포함)는 별개로 백로그.
+- **구현 전 리스크 감사**: `.claude/base/` 전체 + 남은 `research/`를
+  서브에이전트로 감사해 "실제 Luau 접촉 없이 추론만으로 확정된 것" 3개
+  (Store/State 반응형 코어, 디스패치 엔진, 컴포넌트 경계 modifier/Ref)를
+  식별 — 이것들은 M0 스파이크로 검증하기로 함(아래). 감사 중 `slot-plan.md`가
+  스스로 "정식 확정 안 됨"이라 표시해뒀던 "클래스가 슬롯을 받는 방법"(Named
+  Slot 없음)도 이번에 정식 확정, 대신 "여러 Slot이 형제로 섞일 때 순서 보장"
+  이라는 새 하위 질문이 열림(다중 백엔드 관점, Roblox만이면 급하지 않음).
+  `State<Modifier>` 조합은 UB로 확정해 타입으로 막기로 함(`modifier-plan.md`
+  7번), 디스패치 엔진의 일반적 무한루프는 방어 로직 없이 provider 버그로
+  간주하기로 확정(`bind-system-plan.md`).
+- **루트 `ROADMAP.md` 신설** — M0(스켈레톤+기술검증 스파이크, "진짜"
+  마일스톤 아님)부터 M11(Tween)까지 + 병행 가능 항목 + 백로그로 구성된 실행
+  계획, todo 체크박스 포함. 오늘은 문서 준비만 — **다음 세션이 M0부터 실제
+  시작**.
+
+용어 정리 제안 진행 중인 점은 위 "지금 할 일" 2번 참고.
