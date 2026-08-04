@@ -1,7 +1,8 @@
 # Store 의미론 — 부작용 허용, State는 Store 위의 조합 가능한 캐시 레이어
 
-**상태**: base — 부작용 허용/Store 문법 부분은 확정. State/Source 온톨로지는
-2026-08-04 검증 라운드에서 새로 열린 진행 중인 설계 스레드(`base/bind-system-plan.md` 참고). 원본: `.claude/initreq/raw-userinput.md`
+**상태**: base — 전부 확정. State/Source 온톨로지는 2026-08-04 검증
+라운드에서 새로 열려 같은 세션 2~4차 라운드에 걸쳐 확정까지 마침 — 최신
+상세는 `base/bind-system-plan.md` 참고. 원본: `.claude/initreq/raw-userinput.md`
 "store는 부작용을 허용함" / "state는 어떻게 구현하는가" 절.
 
 ## Store는 부작용을 허용하는 게 기본 디자인
@@ -12,7 +13,7 @@
 
 다만 한 가지는 명확히 구분: **렌더 리턴 위에서 무언가를 observe하는 것은 그냥
 부작용**이다 (`useEffect`와 유사한 것으로 문서화). 이건 "허용되는 부작용"이 아니라
-"당연히 부작용"이라는 뜻 — 문서화 시 이 경계를 분명히 할 것 (`research/
+"당연히 부작용"이라는 뜻 — 문서화 시 이 경계를 분명히 할 것 (`base/
 purity-and-effects-plan.md`와 연결됨).
 
 **보강(2026-08-04 검증 라운드): 부작용은 심각도가 다른 두 갈래로 나뉜다.**
@@ -23,7 +24,7 @@ purity-and-effects-plan.md`와 연결됨).
 2. **경계를 넘는 부작용** — globalStore처럼 컴포넌트 바깥의 전역 상태를
    다루는 경우. 게임 UI 특성상(스킬/주변 환경에 영향받는 UI 등) 완전히
    막을 수는 없지만, 라이브러리로 재사용하려는 컴포넌트가 이런 부작용을
-   가지면 이식성이 떨어짐(`research/purity-and-effects-plan.md`와 연결).
+   가지면 이식성이 떨어짐(`base/purity-and-effects-plan.md`와 연결).
 
 **해소됨(2026-08-04 2차 라운드)**: state를 옵저빙해서 나온 결과로 slot에
 `clear`/`add` 같은 연산을 할 때, 그 시점에 대상 slot이 이미 죽어있으면
@@ -60,14 +61,14 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
   방향으로 좁혀짐 — 별도 `Pipe` 타입을 만들어 소유권/버전 가드를 넣는 대신
   State 자체가 "파이핑 결합체"이고 `state(state)`로 분기하면 될 걸로 보임
   (`Pipe` 후보는 사실상 폐기 쪽으로 기움). 상세는 `base/bind-system-plan.md`의
-  "Store/State/Source 온톨로지" 절 참고 — **아직 완전히 결론난 설계는 아니고,
-  구현 단계에서 더 다뤄야 할 진행 중인 스레드.**
+  "Store/State/Source 온톨로지" 절 참고 — **이 절 이후 2~4차 라운드에 걸쳐
+  전부 확정됨, 더 이상 진행 중인 스레드 아님.**
 
-미해결로 남은 것: `:Compute`의 캐싱/무효화 전략(값이 바뀌었는데 듣는 소비자가
-없으면 연산을 미루는 dirty-flag 방식 등), Luau 타입 시스템에서 `store "key"`
-같은 커링 호출이 오버로드 함수 타입으로 `state<T>`를 정확히 추론하기 어려운
-문제(문자열 리터럴이 as-const로 좁혀지지 않는 문제) — 둘 다 열린 채로
-`base/bind-system-plan.md`에서 계속 다룰 것.
+과거 "미해결로 남은 것"으로 적었던 두 항목도 모두 해소됨: `:Compute`의
+캐싱/무효화 전략은 push-invalidate(신호만)/pull-recompute(`Get()` 시점)로
+확정(`base/bind-system-plan.md` "전파 모델" 절), `store "key"` 커링의 타입
+추론 문제는 `store.key`(dot-access)를 1급 경로로 확정하며 해소(같은 문서
+"타입 추론 문제" 절, 3차 라운드).
 
 ## Store 값 설정 문법 — v1 인체공학 유지 (확정)
 
@@ -92,8 +93,11 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 `useEffect`처럼 여러 store 값을 디펜던시로 묶어 파생값을 계산하고 싶다는
 요구가 있었음(v1의 `myStore "a,b"` 콤마-조인 문자열 방식은 폐기 대상 —
 `base/quad-v1-architecture.md`의 "문자열 DSL" 문제점 참고). **v1의
-`:Add`/`:With`/`:Tween` 같은 이름 붙은(named) 체이닝 연산은 만들지 않음** —
-대신 일반 함수를 받아 처리. 최종 형태는 `:With(...)`로 의존성을 모으고
+`:Add`/`:With`/`:Tween`처럼 값을 직접 가공하는 이름 붙은(named) 체이닝 연산은
+만들지 않음** — 대신 일반 함수를 받아 처리. (주의: 아래의 v2 `:With(...)`는
+이름만 같을 뿐 v1의 `:With`와는 다른 연산임 — v1은 "함수/테이블에서 값을
+가져오는" 가공 연산이었고, v2는 그냥 "여러 State를 의존성으로 모으는" 수집
+연산.) 최종 형태는 `:With(...)`로 의존성을 모으고
 `:Compute(fn)`으로 파생 State를 만드는 것으로 확정 — `Store.Combine({a,b},
 fn)`류 포지셔널 인자 방식은 기각됨. 정확한 lazy 인자 규칙(self/with 값 둘 다
 State 핸들로 넘기고 `.value`를 실제로 읽을 때만 계산)은 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.

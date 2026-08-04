@@ -24,7 +24,8 @@ Mount(ScreenGui, Frame {...})
 
 `Class.Extend()`로 재사용 컴포넌트(`Init/Render/AfterRender/Getter/Setter/
 UpdateTriggers/Unload`) 정의 가능. `Store.GetObject(id)`류 id 기반 전역 조회는
-v2에서 태그 시스템으로 대체 예정(`base/store-and-tags.md` 참고).
+v2에서 대체될 예정 — Ref 도입과 네임스페이싱 판단까지 포함해 최신 상세는
+`base/architecture.md` 5번 항목 참고.
 
 ## 핵심 내부 동작 요약
 

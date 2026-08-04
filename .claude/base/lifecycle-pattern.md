@@ -1,6 +1,6 @@
 # 라이프사이클 패턴 — rbvm의 `Connected` + GC 관용구 채택
 
-**상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(cleanup) 전략의 원본.
+**상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(`retract`) 전략의 원본.
 완료 개념 없음, 구현하면서 세부 조정 있을 수 있음.
 
 ## 배경
@@ -42,7 +42,7 @@ rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로
 플래그를 그 콜백에서만 true로 뒤집음. `AncestryChanged`나 폴링 방식은 안 씀.
 quad-v2도 동일: 인스턴스 라이프사이클 훅 지점은 `Destroying` 하나로 통일.
 
-### 3. 정리(cleanup)는 기본적으로 GC에 위임, 예외적으로만 즉시(eager)
+### 3. 정리(`retract`)는 기본적으로 GC에 위임, 예외적으로만 즉시(eager)
 
 rbvm 전역에 약한 테이블(weak table, `__mode = "k"/"v"/"kv"`)로 private 데이터를
 저장 — 홀더 객체를 아무도 안 들고 있으면 그 private 레코드도 자동으로 사라짐.
@@ -51,13 +51,17 @@ rbvm 전역에 약한 테이블(weak table, `__mode = "k"/"v"/"kv"`)로 private 
 전체가 통째로 죽을 때의 순서 있는 dispose 훅. **quad-v2 원칙: 기본은 GC 위임,
 즉시 정리는 "안 끊으면 죽은 참조를 순회하게 되는 작은 포인터"류에만 국한.**
 
-### 4. Signal 자체는 커스텀 구현체를 그대로 재사용 가능
+### 4. (참고 기록) rbvm의 Signal 자체는 재사용 가능한 범용 emitter였음 — 실제로는 채택 안 함
 
 `signal.luau`의 `Signal`/`Connection` 클래스는 rbvm 프록시 시스템에 의존하지
 않는 범용 이벤트 emitter임 (`Connect`/`Once`/`Wait`/`Fire`/`Destroy`,
-`IsInited`/`OnInit`/`OnUninit` 지연 활성화 훅 포함). **단, 사용자 원 메모에는
-"시그널 자체 구현은 아닌듯... 콜백 정도로도 충분"이라고 되어 있어 서로 상충함**
-— 아래 열린 질문 참고.
+`IsInited`/`OnInit`/`OnUninit` 지연 활성화 훅 포함). 사용자 원 메모에는
+"시그널 자체 구현은 아닌듯... 콜백 정도로도 충분"이라는 언급이 있어 한때
+이 문서 초안 단계에서 상충하는 것처럼 보였으나, **이 질문은 2026-08-04
+검증 라운드에서 최종 확정으로 재확인됨 — 더 이상 열린 질문 아님**
+(`base/architecture.md` 11번 항목도 동일하게 명시). 결론은 아래 "확정: Signal
+클래스는 안 만든다" 절 참고 — 커스텀 `Signal`/`Connection` 클래스는 만들지
+않고, 콜백 + `Connected` 계산 속성만 채택한다.
 
 ### 5. rbvm에서 그대로 가져오면 안 되는 것 (버그 발견됨)
 
@@ -97,8 +101,9 @@ Destroy되면 그 대상에 묶인 것들(Tween 등)도 자연히 죽은 상태�
 
 이 원칙 때문에 "값 교체 시 이전 처리를 무르는 것"(아래 `retract`)과 "완전
 소멸 시 정리"는 **하나로 통일** — 후자는 애초에 안 만듦. `research/
-tween-plan.md`/`base/slot-plan.md`의 "cleanup" 표기는 전부 `retract`로
-갱신됨(이름 변경 근거는 아래).
+tween-plan.md`/`base/slot-plan.md`의 "cleanup" 표기는 대부분 `retract`로
+갱신됨(이름 변경 근거는 아래) — 잔여 표기 확인은 진행 중, 해당 문서들은
+각자 별도로 정리될 예정.
 
 ## 함수 안에서 만든 옵저버도 GC 대상이 되어야 함 — 범용 "생명 바인드 유틸" 필요
 
@@ -180,4 +185,5 @@ Roblox 엔진 자체가 Destroy 시 Tag/Attribute/실행 중인 Tween을 전부 
 쉬움) — 실제 의미는 "이전에 적용한 처리를 무른다/멈춘다"이므로 **`retract`**
 로 통일. (`revert`, `rescind`도 검토했으나 `retract`가 "이전에 취한 조치를
 철회한다"는 의미로 가장 정확 — `process`/`retract` 쌍으로 자연스럽게 대구를
-이룸.) 모든 문서에서 이 이름으로 갱신.
+이룸.) 대부분의 문서에서 이 이름으로 갱신됨 — 잔여 "cleanup" 표기가 남은
+문서가 있을 수 있으며, 그 확인/정리는 진행 중.

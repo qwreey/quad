@@ -14,7 +14,7 @@
 | `qa-request/` | 구현 완료(코드/에이전트 검증까지 끝남) + 사용자 본인의 실기기(Roblox Studio) QA만 남음 — 지금은 구현 자체가 시작 전이라 비어있음 |
 | `archive/` | 완료 + 사용자가 실사용/실기기로 직접 검증까지 마침 — 지금은 비어있음 |
 | `feedback/` | 실사용 피드백을 정리한 긴 로그 — 지금은 비어있음(구현 시작 전) |
-| `initreq/` | 프로젝트 착수 시 클론해둔 참고 레포(quad v1, fusion, vide, rbvm, tbox, code-docker) + 원본 요청(`req.md`, `raw-userinput.md`) + `quad2-try`(이전에 시도했다 폐기한 v2 재작성 시도 — 리서치 완료, 결론은 `base/bind-system-plan.md`) — 읽기 전용 리서치 소스, 여기 내용을 옮기지 말고 항상 원본 그대로 유지 |
+| `initreq/` | 프로젝트 착수 시 클론해둔 참고 레포(quad v1, fusion, vide, rbvm, tbox, code-docker) + PA님 실 코드(`artworks/`, 4차 라운드 교차검증 근거) + 원본 요청(`req.md`, `raw-userinput.md`) + `quad2-try`(이전에 시도했다 폐기한 v2 재작성 시도 — 리서치 완료, 결론은 `base/bind-system-plan.md`) — 읽기 전용 리서치 소스, 여기 내용을 옮기지 말고 항상 원본 그대로 유지 |
 
 `research/`의 문서가 설계 확정되면 `base/`로 승격(또는 구현 착수 시
 `qa-request/`행). 지금은 구현 라운드 전(설계 단계)이라 전부 `base/`/`research/`에만
@@ -26,20 +26,22 @@
 |---|---|
 | `architecture.md` | quad-v2 전체 아키텍처 확정 사항 요약(제일 먼저 볼 문서) |
 | `quad-v1-architecture.md` | v1(`initreq/quad`) 내부 동작 스냅샷 — "이 문제를 안 반복하려면"의 기준선 |
-| `comparison-fusion-vide.md` | Fusion/Vide 아키텍처 비교 리서치 — 설계 결정 근거 자료 |
+| `comparison-fusion-vide.md` | Fusion/Vide 아키텍처 비교 리서치 — 설계 결정 근거 자료(전파 모델 등 일부 서술은 이후 라운드에서 뒤집혔으니 `bind-system-plan.md` 쪽을 최신으로 볼 것) |
 | `lifecycle-pattern.md` | rbvm의 `Connected`+GC 관용구를 quad-v2가 채택하는 방식 |
 | `store-semantics.md` | Store는 부작용 허용이 기본. State는 Store 위의 조합 가능한 캐시 레이어로 실제로 필요함(2026-08-04 정정) — 온톨로지 핵심 메커니즘은 2026-08-04 2차 라운드에서 확정, 최신 상세는 `base/bind-system-plan.md` |
-| `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델, Ref, Store/State/Source 온톨로지 + 인체공학 질문 전부 확정. 디스패치 엔진은 `quad-base`가 인터페이스로 소유(2026-08-04 5차 라운드) | — |
-| `module-lifecycle-plan.md` | 프로바이더 패턴, bind/store 구현 책임 분리 — 확정 | — |
-| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정 | — |
+| `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델, Ref, Store/State/Source 온톨로지 + 인체공학 질문 전부 확정. 디스패치 엔진은 `quad-base`가 인터페이스로 소유(2026-08-04 5차 라운드) |
+| `module-lifecycle-plan.md` | 프로바이더 패턴, bind/store 구현 책임 분리 — 확정 |
+| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정 |
+| `modifier-plan.md` | Modifier는 런타임 plug 아닌 정적 merge, immutable+clone 기반 체이닝 — 메커니즘 확정, getter 이름만 남음 |
+| `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 |
 
 ## `research/` — 아직 착수 전, 상의 필요
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
 | `tween-plan.md` | 트윈을 Store 밖 특수 bind key로 처리, 기본 오버라이드는 Cancel | 중 — 세부 옵션만 남음 |
-| `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 | 하 — 문서화 성격, 급하지 않음 |
 | `existing-instance-bind-plan.md` | 이미 생성된 인스턴스 재바인드 — 착수 안 하되 "미지원" 확정도 안 함, 열린 가능성 유지 | 하 — v2 초기 스코프 제외 |
+| `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, `StoreSource` 프록시 — 핵심 골격 수렴, modifier/Ref가 컴포넌트 경계를 어떻게 통과하는지만 남음 | 상 — 사용자가 "가장 문제되는 부분"으로 직접 지목 |
 
 ## 참고
 

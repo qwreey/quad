@@ -31,17 +31,36 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    내장되어 store 컴퓨티드 바인드도 가능해야 함.
 5. **id 기반 전역 조회 폐지, Tag 시스템으로 대체.** v1의 `Store.GetObject(id)`/
    `Frame "id" {}`류는 더 이상 없음 — "id 매핑이 비현실적"이라는 게 이유.
-   네임스페이싱 문제는 있지만(`.claude/question.md` 참고) 별도 네임스페이스
-   개념을 추가하면 라이브러리 복잡도가 너무 올라간다고 판단 — 당장은
-   TagService 그대로 사용. **대신 Ref가 도입됨** — 단 Ref의 용도는 "id로 조회"가
-   아니라 "외부에서 이미 관리되고 있는 instance를 quad로 점진적으로 마이그레이션/
-   래핑하기 위해 직접 참조를 얻는 것"(`base/bind-system-plan.md`의 Ref 절
-   참고) — 둘을 혼동하지 말 것.
+   네임스페이싱 문제는 있지만 별도 네임스페이스 개념을 추가하면 라이브러리
+   복잡도가 너무 올라간다고 판단 — 당장은 TagService 그대로 사용. **대신
+   Ref가 도입됨** — 단 Ref의 용도는 "id로 조회"가 아니라 "외부에서 이미
+   관리되고 있는 instance를 quad로 점진적으로 마이그레이션/래핑하기 위해
+   직접 참조를 얻는 것"(`base/bind-system-plan.md`의 Ref 절 참고) — 둘을
+   혼동하지 말 것.
+   - **2026-08-04 6차: 네임스페이싱 충돌을 심각하게 안 보는 이유 확정.**
+     충돌을 피해야 하는 단위는 보통 컴포넌트 단위로 나오고, 그 경우는 Ref로
+     직접 참조를 얻으면 되므로 태그 자체의 전역 네임스페이스가 굳이 필요
+     없음. 태그는 원래 주로 스타일링(스타일시트 셀렉터) 용도인데, 스타일시트는
+     적용 위치가 트리 상위에 존재해야 하고 사용자가 직접 그 위치에 심어야
+     하는 등 스크립팅으로 구성하기 어려워 quad 같은 UI 라이브러리에서는 잘
+     안 쓰는 접근 — 그래서 스타일시트 대신 modifier kit을 제공하는 것(아래
+     7번 항목의 modifier 우선순위 규칙 참고).
 6. **함수지향 디폴트, `:` 체이닝은 예외적으로만.** 스토어 바인드처럼 체인이 정말
    편한 경우만 `:` 사용, 나머지는 외부 함수가 인스턴스를 인자로 받는 모양.
-7. **Style(Default) 시스템 폐기.** Roblox 자체 스타일시트를 쓰는 게 낫다고 판단.
-   대신 modifier(spread되는 값, `...`으로 풀리는 것)를 지향 — 함수형 modifier가
-   store 바인드를 받을 수도 있음.
+7. **Style(Default) 시스템 폐기.** 대신 modifier(spread되는 값, `...`으로
+   풀리는 것)를 지향 — 함수형 modifier가 store 바인드를 받을 수도 있음.
+   (초기 근거였던 "Roblox 자체 스타일시트를 쓰는 게 낫다"는 6차 라운드에서
+   갱신됨 — 위 5번 항목의 6차 추가분 참고: 스타일시트는 적용 위치 제약과
+   스크립팅 난이도 때문에 오히려 안 쓰기로 하고 modifier kit으로 대체함.)
+   - **2026-08-04 세션: modifier 메커니즘 전체 확정, 상세는
+     `research/modifier-plan.md`로 분리.** 요지만: 런타임 pluggable 핸들러가
+     아니라 디스패치 이전에 정적으로 flatten되는 값(핸들러 레지스트리 미참여,
+     CSS cascade 문제 회피). Merge 우선순위는 "배열 순서상 나중 modifier가
+     우선"과 "인라인 키는 modifier보다 무조건 우선"이라는 독립된 두 규칙(Lua
+     테이블 리터럴이 배열/해시 파트 간 소스 순서를 보존 안 하므로 하나로 합칠
+     수 없음). 값은 immutable — 체이닝 메소드(`:FontSize(...)`류)는 항상
+     `table.clone` 후 반환, 원본 mutate 금지(형제 서브트리 오염/재렌더 드리프트
+     방지, 비용은 무시 가능한 수준으로 확인됨).
 8. **특수 이벤트는 특수 플러깅으로.** `PropertyChangedSignal`, `PropertyChangedEvent ""`
    같은 것들은 일반 이벤트 바인드가 아니라 pluggable 바인드 핸들러 중 하나로
    구현(`base/bind-system-plan.md`).
@@ -59,9 +78,10 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     확정으로 재확인 — 더 이상 열린 질문 아님.)
 12. **멀티 타겟(pluggable 백엔드) — 특히 GTK 지원까지 염두.** Roblox 전용 렌더
     기술(react.lua, Fusion)은 결국 외부 개발자 유인이 없어 발전이 더딜 거라는
-    문제의식. 결과적으로 `plug/roblox`, `plug/base` 정도로 나뉠 전망 — base가
-    가상돔 없이도 프로바이더 패턴으로 백엔드를 받는 인터페이스만 정의하고,
-    실제 Roblox 구현은 `quad-roblox` 격 서브패키지가 담당.
+    문제의식. 결과적으로 `quad-base`/`quad-roblox`로 나뉨(5차 라운드에서 확정된
+    정확한 패키지 이름, 아래 "구현 착수" 절 참고) — base가 가상돔 없이도
+    프로바이더 패턴으로 백엔드를 받는 인터페이스만 정의하고, 실제 Roblox 구현은
+    `quad-roblox`가 담당.
 13. **모듈은 기본 싱글톤, `New()`는 나중에.** 한 Lua 스레드에서 Roblox/비-Roblox
     프로바이더를 동시에 쓸 일이 거의 없을 거라 판단 — 필요해지면 그때 `New()`
     추가.
@@ -137,21 +157,22 @@ quad/
 Tween/purity/existing-instance-bind는 여전히 `research/`에 남아있고 이
 구조 확정을 막지 않음.
 
-## 아직 미정 (research/로 분리됨)
+## Store/State/Source 온톨로지 — 확정됨 (요약)
 
-Tween 플러깅, 순수함수 범위, 이미 생성된 인스턴스에 대한 바인드 —
-`.claude/research/` 각 문서 참고, 전체 색인은 `.claude/README.md`. 바인드
-디스패치/Slot/모듈 라이프사이클은 위 "구현 착수" 섹션대로 확정되어
-`.claude/base/`로 승격됨(`bind-system-plan.md`/`module-lifecycle-plan.md`/
-`slot-plan.md`).
-
-**Store/State/Source 온톨로지(2026-08-04 두 라운드에 걸쳐 확정)**: Store는
-source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로 접근할 때마다
-그 source를 감싸는 새 State(자기 고유 value 없는 조합 가능한 캐시)를
+Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로 접근할
+때마다 그 source를 감싸는 새 State(자기 고유 value 없는 조합 가능한 캐시)를
 반환한다. 전파는 push-invalidate(신호만)/pull-recompute(`Get()` 시점) —
 Fusion식 eager 노드 없이도 다이아몬드 의존성 중복 재계산 문제가 풀림. State는
 쓰기 대상이 아니고(값 쓰기는 항상 Store의 `__newindex`), 값 하나만 다룰 땐
-Store와 별개인 가벼운 `Source` 프리미티브를 씀. 남은 건 정확한 API 이름과
-"`store.key` dot-access를 타입 추론 1급 경로로 삼는다"는 제안의 정식 확인
-뿐 — `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절,
-`.claude/question.md` 참고.
+Store와 별개인 가벼운 `Source` 프리미티브를 씀. `store.key` dot-access를 타입
+추론 1급 경로로 삼는 것도 3차 라운드에서 정식 확정됨 — **더 이상 열린 질문
+아님**, 남은 건 정확한 API 이름뿐. 상세는 `base/bind-system-plan.md`의
+"Store/State/Source 온톨로지" 절 참고.
+
+## 아직 미정 (research/로 분리됨)
+
+Tween 플러깅, 이미 생성된 인스턴스에 대한 바인드, 컴포넌트가 modifier/Ref를
+경계 너머로 어떻게 전달하는지 — `.claude/research/` 각 문서 참고, 전체 색인은
+`.claude/README.md`. 바인드 디스패치/Slot/모듈 라이프사이클은 위 "구현 착수"
+섹션대로 확정되어 `.claude/base/`로 승격됨(`bind-system-plan.md`/
+`module-lifecycle-plan.md`/`slot-plan.md`).
