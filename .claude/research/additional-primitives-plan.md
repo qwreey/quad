@@ -179,6 +179,67 @@ context 테이블 전달" 패턴은 확인 못 함(급하지 않다는 방증).
    충분히 대체), 다만 "재사용 가능 컴포넌트 라이브러리"를 장기 목표로
    본다면 재검토 가치 — `purity-and-effects-plan.md`와 같이 봐야 함.
 
+## 진행 중 논의 (2026-08-06 후속 세션)
+
+메인 브랜치에 병합된 `pre-implementation-audit.md`의 1-7번("Slot의
+`add`/`remove`/`clear` CRUD 의미론이 정의돼 있지 않음")과 정확히 맞물리는
+타이밍이라, 키 기반 컬렉션 재조정을 Slot 설계에 바로 접목해보는 논의 시작.
+
+### 키 기반 컬렉션 재조정 — 설계 스케치 (확정 아님)
+
+사용자가 처음부터 "Slot의 상위 요소"로 만들고 싶다고 명시 — 두 가지 프레이밍을
+제시함: (a) Slot을 만들어주는 팩토리 함수, (b) State의 "터미널 연산"(스트림의
+`.collect()`류)으로 Slot을 얻는 것(`state:?() -> Slot`).
+
+**두 프레이밍 중 (b)가 quad의 기존 원칙과 더 잘 맞음** — 2026-08-06 세션에서
+이미 확정된 "독립 프리미티브 vs 원천 종속 파생 데이터" 원칙(`state:Observer(fn)`가
+메소드고 자유 함수가 아닌 이유와 같은 논리, `store-semantics.md`)을 그대로
+적용하면: 키 기반 Slot은 그 뒤에 있는 State 없이는 존재 의미가 없는 **파생
+데이터**이므로, 자유 함수 팩토리(`Type(args)` 패턴)가 아니라 **State의
+메소드**로 두는 게 일관적. 가칭 `state:Keyed(keyFn, renderFn) -> Slot`.
+
+**메커니즘 스케치**(전부 이미 확정된 조각들의 재조합 — 새 마운트/디스패치
+장치 불필요):
+- 내부적으로 `state:Observer(fn)`과 동형 — `fn`이 무효화 신호를 받을 때마다
+  `Get()`으로 새 테이블을 pull하고, 이전에 본 key 집합과 diff.
+- 새 key → `renderFn(key, itemState)` 호출 후 `Slot:add(...)`.
+- 사라진 key → `Slot:remove(...)`(기존 확정 시맨틱대로 `retract`=폐기, 옮기지
+  않음 — `slot-plan.md`와 자동으로 일관됨).
+- 유지되는 key → Slot 조작 없이 그 항목의 `itemState`에만 새 값을 반영(재생성
+  안 함) — Fusion `SubObject`/Vide `values()`가 하는 "값만 갱신"과 동일 효과를,
+  `renderFn`이 `itemState: State<V>`를 받는 것만으로 자연스럽게 얻음(항목 값이
+  바뀌어도 renderFn 자체는 재호출 안 되고, `itemState`를 구독한 리프만
+  갱신됨).
+- 소유권: 반환된 Slot은 기존 "엄격한 단일 마운트" 규칙 그대로 적용 — 새 규칙
+  불필요.
+- 패키지 경계: diff 알고리즘(순수 데이터 로직)은 `quad-base`, 실제 Instance
+  생성/제거는 기존 Slot 핸들러 경로 그대로 재사용 — `slot-plan.md`가 이미
+  확정한 base/roblox 분리와 동일 패턴.
+
+**열린 세부**: Fusion은 `ForPairs`/`ForKeys`/`ForValues` 3종으로 나뉘는데,
+quad는 `renderFn(key, itemState)`가 항상 key+itemState를 다 주고 안 쓰는
+쪽은 그냥 무시하게 하는 **1종 통합안**이 단순화 후보로 보임(3개로 쪼갤
+근거가 약해 보임 — `pre-implementation-audit.md`의 "단순화 후보" 렌즈와
+같은 결). `keyFn` 생략 시 입력이 이미 맵이면 맵 key를 그대로 identity로
+쓰는 것도 자연스러운 기본값 후보. 이름(`Keyed`/`Each`/`List`/`ToSlot`)은
+용어 정리 라운드로 이월.
+
+**다음 단계**: 사용자 피드백 반영해 스케치 다듬고, 이견 없으면 M6(Slot)
+착수 시점에 `slot-plan.md`/`bind-system-plan.md`에 정식 반영.
+
+### Context — 구현 난이도 판정 진행 중
+
+사용자 확인: Context는 React `useContext`(Provider가 위에서 값을 심고,
+하위 어디서든 prop 없이 읽는 패턴)와 같은 개념 맞음. 구현 난이도가
+채택 여부를 사실상 결정한다는 사용자 판단에 따라 서브에이전트에게
+난이도 평가 위임(진행 중) — 특히 "컴포넌트 호출 자체는 동기적 콜스택으로
+Context 전파가 가능해 보이지만, Slot에 나중에(이벤트 핸들러/코루틴에서)
+비동기로 추가되는 자식까지 자동으로 따라오게 하는 건 훨씬 어려워 보인다"는
+사용자 직관을 검증 대상으로 명시. 결과는 후속 라운드에 반영.
+
+사용자가 제시한 대안(Store 병합, 타입 안전 서브셋 전달, 레이어 계층을 가진
+Store)도 같은 서브에이전트에게 난이도/효용 비교를 같이 시킴.
+
 ## 참고: 조사에 사용한 소스 근거
 
 - Fusion: `State/ForPairs.luau`, `State/ForKeys.luau`,
