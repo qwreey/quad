@@ -364,3 +364,29 @@ Ref 일반화 — 네 가지 다 확정, 실제 base 문서에 반영 완료.** 
   모델과 섞여서 안 좋았던 경험에서 나온 의도적 분리). Ref 정의 자체가
   넓어졌으니 용어 정리 때 이름도 같이 재검토 대상. `question.md`의
   관련 항목은 해소됨으로 갱신.
+
+**5. Observer 이름 확정, Ref/Source/Store 생성자 스타일, "독립 프리미티브 vs
+파생 데이터" 원칙, Modifier 세부 마무리 — 전부 확정, base 문서 반영 완료.**
+- `Observer`로 확정(`ObserverHandle` 아님) — `:Connect()`→`Connection`과
+  같은 기존 명명 관례. PA님 코드의 동명 클래스와는 무관, 각주로 구분.
+- **생성자 스타일**: `Source(default)`/`Ref(default)`/`Store({defaults})`
+  — Kotlin Compose식 "타입 이름 자체가 팩토리 함수". Ref만 예외였던 이유
+  없었음(단순 명세 공백).
+- **일반 원칙 신설**: 독립 존재 가능한 프리미티브(Source/Ref/Store/
+  Modifier, `Type(args)` 자유 함수 생성자) vs 원천에 종속된 파생 데이터
+  (State/Observer, 원천에 대한 메소드로만 얻어짐) — `state:Observer(fn)`가
+  메소드고 자유 함수가 없는 더 근본적인 이유로 연결(`store-semantics.md`).
+- **Modifier 마무리**: (a) Getter를 아예 안 만들기로 확정 —
+  `:FontSize(function(old)->new)`가 유일했던 use case를 인라인으로 커버.
+  (b) `old`는 항상 "현재 저장된 그대로"(plain이면 raw, State면 State
+  핸들) 넘김 — `:Compute`의 self와 같은 결. (c) `func(state)->state`라는
+  세 번째 인자 모양은 불필요(함수 합성 + State 직접 대입으로 이미 커버).
+  (d) Modifier는 핸들러 계층(Ref/Slot 등)을 몰라도 됨 — 순수 데이터
+  merge 레이어라 UB로 흘려보내도 문제없음. (e) **런타임 구현은 base에
+  제네릭 `__index` 하나면 충분** — `mod:FontSize(...)`가 `__index(self,
+  "FontSize")`로 잡히므로 클래스별 런타임 코드 불필요, FrameModifier류
+  타입 생성기는 순전히 정적 타입 체크만을 위한 것. (f) 이벤트도
+  store-bind 가능하도록 확정 — 기존 재실행 래핑 재사용, `false`를
+  disconnect 센티널로 씀(`nil`은 테이블에서 사라져서 부적합) —
+  `bind-system-plan.md`. Modifier가 이벤트 키를 담아도 되는지는 (d)로
+  자동 해소(Modifier가 애초에 키 종류를 구분 안 하므로).

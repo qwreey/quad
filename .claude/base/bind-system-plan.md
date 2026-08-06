@@ -265,10 +265,12 @@ SyntheticEvent만 주는 것과 같은 모양).
    충분함. quad는 어차피 라이프사이클 끝까지 바인딩을 들고 있으므로
    (`base/lifecycle-pattern.md`, rbvm 선례 — GC-native), Destroy되면
    해당 Connection도 자연히 같이 정리됨 — 별도 Disconnect 관리가 애초에
-   불필요. 동적으로 Connect/Disconnect를 반복해야 하는 최적화 케이스가
-   실제로 생기면, 그건 Ref로 얻은 Instance를 갖고 사용자 코드가 직접
-   처리하면 됨(사용자가 실사용 케이스로 확인한 바로도 이런 니즈는
-   드묾 — 드문 케이스를 위해 구조 전체를 복잡하게 만들 이유 없음).
+   불필요. **[정정, 2026-08-06 후속 세션] 동적으로 Connect/Disconnect를
+   반복하고 싶은 케이스는 Ref로 수동 처리하는 대신 store-bind로 네이티브
+   지원하기로 확정** — 아래 "이벤트도 store-bind 가능 — `false`로
+   disconnect" 절 참고. 엔지니어링 비용이 예상보다 훨씬 낮다는 게 나중에
+   확인됨(기존 store-bind 재실행 래핑을 그대로 재사용, 새 디스패치
+   메커니즘 불필요).
 
 **일반화**: 이 논거의 핵심은 Roblox에 국한되지 않는 원칙으로 정리됨 —
 "엔진이 네이티브로 콜백에 뭘 주든, quad는 그걸 감싸지 않고 그대로
@@ -276,6 +278,28 @@ SyntheticEvent만 주는 것과 같은 모양).
 있는 개념이라(다른 백엔드는 이벤트 모델이 다를 수 있음) 이건 base
 문서가 아니라 quad-roblox 로컬 결정 — 다른 백엔드 구현체를 만들 때
 참고할 만한 템플릿 정도로만 취급.
+
+## 이벤트도 store-bind 가능 — `false`로 disconnect (2026-08-06 후속 세션)
+
+**결정**: 이벤트 핸들러 값으로 State를 넘기는 것(reactive하게 콜백을
+바꿔치기/해제하는 것)을 지원한다. quad-roblox 로컬 결정, base 변경 없음.
+
+**엔지니어링 비용이 낮은 이유**: 이미 확정된 "Store 바인드는 pluggable
+바인드를 재실행하는 래핑"(위 절, `process`가 값이 바뀔 때마다
+`process(inst,k,realv)`를 재귀 호출) + "재실행 래핑이 `retract`도 같이
+호출한다"(Slot이 이미 이 조합을 씀, 같은 절)는 두 메커니즘이 이미 있음.
+이벤트 핸들러가 할 일은 딱 하나: `process`에서 `:Connect()`한 Connection을
+per-instance 저장소에 기억해두고, `retract`에서 그걸 `:Disconnect()`하는
+것 — 새 디스패치 메커니즘 발명 필요 없이 기존 4종 계약(`isHandlable`/
+`priority`/`process`/`retract`)만 제대로 구현하면 됨.
+
+**`false`로 disconnect, `nil` 아님.** `nil`은 Lua 테이블에서 "키가 아예
+없음"과 구별이 안 됨(`pairs`에서도 안 보임) — "명시적으로 꺼짐"이라는
+신호를 값으로 전달하기엔 부적합. 대신 `false`(Luau에서 실재하는 싱글톤
+타입)를 "연결 없음" 센티널로 씀: `process(inst,k,false)`가 들어오면
+`retract`가 하던 일(기존 Connection 해제)만 하고 새로 Connect 안 함.
+이벤트인지 여부는 값이 아니라 키(리플렉션으로 판별)로 결정되므로, 다른
+boolean 프로퍼티 핸들러와 `(k, false)` 매칭이 겹칠 위험 없음.
 
 ## 여러 Store 값을 묶어 파생값 만들기 — `:With` + `:Compute`, 포지셔널 인자 지양
 
