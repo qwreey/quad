@@ -506,6 +506,45 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 - **Store/State 전파 모델, 라이프사이클 — 둘 다 재검토 후 기존 확정 유지**
   (위 "Store/State/Source 온톨로지" 절의 "PA님 코드와의 교차검증" 참고).
 
+## Attribute 특수 키 — 타입 파라미터화 (2026-08-06, 신규 논의)
+
+**상태**: 미확정, 사용자가 이번에 새로 제기 — 이전에 기록된 적 없음
+(`architecture.md` 4번 항목의 `[Attribute "Name"]`은 특수 DI 키의 존재만
+확정했을 뿐, 타입을 어떻게 표현할지는 다룬 적 없었음).
+
+**문제**: Roblox Attribute는 Instance/Tag와 달리 실제로 **타입이 있는
+값**(string/boolean/number/Color3/UDim/UDim2/Vector2/Vector3/CFrame/
+Instance 참조 등 제한된 프리미티브 집합, 테이블 등 복합 타입은 지원 안
+함)이라, 그냥 `[Attribute "name"] = value`로 두면 `value`의 타입을 Luau가
+좁혀줄 방법이 없음. 커스텀/복합 데이터(테이블 등)는 애초에 Attribute가
+지원을 안 하므로 Ref(직접 참조 획득) 쪽으로 빠지는 게 맞고, Attribute는
+프리미티브 전용으로 남기면 된다는 게 사용자 판단 — Value 오브젝트가
+역사적으로 Attribute의 대안(테이블/참조를 담는 용도)으로 나온 배경이지만,
+지금은 Roblox Attribute가 Instance 참조 타입도 지원해서 `ObjectValue`
+없이도 Ref 용도로 Attribute를 그대로 쓸 수 있다는 점을 사용자가 짚음
+(`research/debug-tooling-plan.md`의 "Value 오브젝트 기각, Attribute로
+확정" 결정과 같은 방향 — Instance 타입 지원까지 감안하면 그 결정의 근거가
+한층 더 탄탄해짐).
+
+**후보 두 가지**:
+- `[Attribute<<boolean>> "name"] = true` (리터럴 또는 store-bind 값) —
+  제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일.
+- `[BooleanAttribute "name"] = true` — 타입별로 이름이 다른 정적 생성자
+  패밀리(`StringAttribute`/`NumberAttribute`/`Color3Attribute`/
+  `InstanceAttribute` 등).
+
+**소견(확정 아님, 검토 필요)**: 이 선택은 이미 확정된 DI 인스턴스 생성
+패턴(위 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)과 구조적으로 똑같은
+문제 — 그때도 "제네릭 하나로 다 커버할지 vs 타입별 정적 필드로 나눌지"
+고민이 있었고, 결론은 **둘 다**(`new<ClassName>(className)` 제네릭
+생성자 + 자주 쓰는 ~25개는 정적 필드로 미리 바인딩)였음. Attribute도 같은
+모양을 재사용하면 자연스러울 가능성 — `Attribute<T>("name")` 제네릭을
+기본으로 두고, 실사용 빈도가 압도적으로 높을 `Boolean`/`Number`/`String`/
+`Instance` 정도만 `BooleanAttribute`/`NumberAttribute`/`StringAttribute`/
+`InstanceAttribute` 같은 지름길로 정적 바인딩하는 절충. 단 이건 사용자
+확인 전 소견일 뿐 — `.claude/question.md`에 반영, 다음 세션에서 사용자
+판단 필요.
+
 ## 남은 열린 질문 (`.claude/question.md`에도 취합)
 
 이 문서의 핵심 설계 질문은 2026-08-04 세 라운드(전파 모델/`:Compute`/State

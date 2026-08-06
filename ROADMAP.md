@@ -112,5 +112,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       긴장 관계 있음, 재검토 시 그 문서부터 다시 볼 것
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
       M1의 quad-base 테스트용 mock과는 별개)
+- [ ] `quad-debug`/`quad-debug-roblox-plugin` — 실물 Instance→코드 위치
+      역추적 Studio 플러그인(`research/debug-tooling-plan.md`). 위
+      quad-mock과 목적이 다름(오프라인 검증 vs 실시간 라이브 관찰) —
+      단 trace 이벤트 스키마를 공유할 여지는 있음, 그 문서 참고. M2/M3/M5
+      구현 시 훅 확장 지점만 고려해두면 이 항목 자체는 지금 착수 불필요.
 - [ ] v1 마이그레이션 가이드 + `objectListClass.__newIndex` 오타 기능 재현 테스트
 - [ ] Slot 형제 순서 보장(다중 백엔드 관점) — Roblox만이면 급하지 않음

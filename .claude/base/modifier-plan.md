@@ -126,6 +126,11 @@ PA님 방식인 문자열 키 + 런타임 리플렉션으로 감, `base/bind-sys
 "이벤트 바인딩 정정" 절 참고. Modifier는 이벤트가 아니라 Store/인스턴스
 생성과 같은 카테고리라 dot-access 관습이 그대로 적용됨.)
 
+`Modifier.Rounded(8)`가 실제로 어떻게 UICorner 자식을 만들어 붙이는지(v1의
+`Corner` 특수 프로퍼티 선례, 핸들러 배치 소견)는
+`research/ui-shorthand-plan.md` 참고 — 이 문서는 Modifier 값 자체의
+동작만 다루므로 분리.
+
 ### 6. State/Pipe 쪽엔 영향 없음 — 이미 있던 결정의 재확인일 뿐
 
 Modifier가 immutable해야 하는 이유(변환마다 clone)와 State가 이미

@@ -52,6 +52,27 @@
   Slot이 섞일 때 순서 보장" 절 참고. Roblox 단일 백엔드로는 급하지 않음
   (LayoutOrder/ZIndex로 대부분 해결), 다른 백엔드(웹 DOM 등) 재사용성과
   직결되는 문제라 Slot 코어 로직 구현 시점에 재검토.
+- **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
+  채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
+  넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
+  다 해소됨, 남은 건 세부 API 이름과 "이벤트 함수가 self로 instance를
+  읽는 게 quad 관습"이라는 언급 확인(그 문서 "열린 질문" 절 참고)뿐.
+  사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정한 건
+  여전함 — base 설계(M2 Dispatch/M3 Source/M5 DI 생성자) 시점에 훅 확장
+  지점만 고려해두면 됨.
+- **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
+  패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
+  올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
+- **Attribute 특수 키 타입 파라미터화** — `base/bind-system-plan.md`
+  "Attribute 특수 키" 절(2026-08-06 신규). `[Attribute<<boolean>> "name"]`
+  제네릭 스타일 vs `[BooleanAttribute "name"]` 타입별 정적 생성자 패밀리
+  중 뭘로 갈지 — 소견은 DI 인스턴스 생성 패턴처럼 "제네릭 하나 + 자주
+  쓰는 타입만 정적 지름길" 절충이지만 확정 아님, M10(Handlers/Attribute)
+  착수 전 아무 때나 확인해도 됨.
+- **UICorner/UIPadding/UIScale 인라인 편의 키 세부** — `research/
+  ui-shorthand-plan.md`. 기능 필요 여부(여전히 필요로 재확정)·메커니즘
+  (Handler)·패키지 배치(quad-roblox 코어)는 확정, 남은 건 이름 재검토
+  (용어 정리 합류)와 `RoundSize`(이미지 라운드) 대체 방식뿐.
 
 ## 참고: 지금까지 확정된 것 (요약)
 
