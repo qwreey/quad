@@ -17,15 +17,22 @@
 Fusion/Vide/quad v1 소스를 서브에이전트 2개로 병렬 조사 완료, 상세는
 `research/additional-primitives-plan.md`. 요지:
 
-- **키 기반 동적 컬렉션 재조정(가장 시급)**: Fusion `ForPairs`/`ForKeys`/
-  `ForValues`, Vide `indexes()`/`values()`, React `key` prop에 대응하는
-  프리미티브가 quad엔 전혀 없음 확인 — `Slot`은 CRUD 껍데기일 뿐 diff
-  엔진이 아님. 인벤토리/리더보드/채팅로그 같은 실전 리스트 UI에 직결.
-  Slot 확장으로 갈지 별도 프리미티브(가칭 `Keyed`/`ForEach`)로 갈지부터
-  전혀 정해진 게 없음 — 사용자 판단 필요.
+- **키 기반 동적 컬렉션 재조정(가장 시급, 설계 스케치 진행 중)**: Fusion
+  `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
+  `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 — `Slot`은
+  CRUD 껍데기일 뿐 diff 엔진이 아님(`pre-implementation-audit.md` 1-7번과
+  같은 지점). 가칭 `state:Keyed(keyFn, renderFn) -> Slot`(State의 파생
+  데이터 메소드로 프레이밍, `state:Observer(fn)`와 같은 논리) 스케치
+  진행 중 — 사용자 피드백 반영 중, 상세는 `research/additional-primitives-plan.md`
+  "진행 중 논의" 절.
 - Effect/Watch(자동 cleanup 공개 API), Batch/Transaction(이벤트 store-bind
-  churn 문제 직결), Context(트리 전파, 단 `purity-and-effects-plan.md`
-  이식성 원칙과 상충)는 부차적 후보로 확인, 착수 여부 미정.
+  churn 문제 직결)은 부차적 후보로 확인, 착수 여부 미정.
+- **Context — 기각 권고로 결론(2026-08-06, 서브에이전트 난이도 판정
+  완료)**: 완전 자동 버전은 Roblox Luau 플랫폼 한계로 사실상 불가, 얕은
+  버전(동기 콜스택 한정)도 quad가 정상 패턴으로 확정한 Slot 비동기 추가에서
+  조용히 깨짐 + quad-debug의 "모든 연결은 선언된 그래프" 철학과 충돌 —
+  대신 **레이어드 Store**(`__index` 델리게이션 기반 서브트리 오버라이드)를
+  실제 필요 시점에 검토할 것으로 대체 결정.
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단.
 
