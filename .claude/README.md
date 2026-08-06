@@ -45,7 +45,7 @@
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | UI 네이밍 컨벤션 문서 + Store 부작용을 게임 시스템에서 깔끔하게 쓰는 패턴 문서 — 뼈대만, `debug-tooling-plan.md` 논의에서 파생 | 하 — 착수 시점 미정, 뼈대만 기록해둔 상태 |
 | `ui-shorthand-plan.md` | UICorner/UIPadding/UIScale 인라인 편의 키(v1 `Corner`/`PaddingAll`/`Scale` 선례) — 여전히 필요한 기능으로 재확정(RoundSize만 네이티브 UICorner로 대체돼 불필요), 메커니즘(Handler)·패키지 배치(quad-roblox 코어) 확정 | 하 — 결론 남, M10 전후 구현하면 됨 |
-| `v1-compat-plan.md` | v1 하위호환(compat) 레이어 타당성 검토 — 표면 문법(이벤트 self 등)은 opt-in 서브패키지로 얇게 가능, 핵심 런타임(`Class.Extend()` 자동-store+자동재렌더)은 컴포넌트 정체성 모델 충돌로 얇게 안 됨. quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — 방향(부분 compat vs 마이그레이션 가이드) 사용자 결정 대기 |
+| `v1-compat-plan.md` | v1 하위호환(compat) 레이어 타당성 검토 — v1 런타임 재구현(문법 흉내)은 컴포넌트 정체성 모델 충돌로 얇게 안 됨, 대신 **v1을 그대로 병행 실행 + 경계에서만 `state:Observer()`+v1 프로퍼티 재대입으로 값 리졸브해 넘기는 브리지**가 유력 방향으로 수렴(사용자 제안). quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — 브리지 세부 범위(양방향 필요 여부, 패키지 위치) 사용자 결정 대기 |
 
 ## 참고
 
