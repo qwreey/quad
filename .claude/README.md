@@ -49,6 +49,7 @@
 | `ui-shorthand-plan.md` | UICorner/UIPadding/UIScale 인라인 편의 키(v1 `Corner`/`PaddingAll`/`Scale` 선례) — 여전히 필요한 기능으로 재확정(RoundSize만 네이티브 UICorner로 대체돼 불필요), 메커니즘(Handler)·패키지 배치(quad-roblox 코어) 확정 | 하 — 결론 남, M10 전후 구현하면 됨 |
 | `additional-primitives-plan.md` | 확정 프리미티브(Source/State/Store/Ref/Observer/Modifier/Slot/DI)만으로 충분한지 웹 프레임워크·Fusion/Vide/v1 소스 근거로 조사 — 키 기반 동적 컬렉션 재조정(Fusion `ForPairs`/Vide `indexes()`류)이 가장 명확한 빈 자리로 확인, Effect/Batch/Context는 부차적 후보 | 상 — 사용자 판단 대기, 착수 전 M0/M1 스코프에 영향 줄 수 있음 |
 | `pre-implementation-audit.md` | M0 착수 직전 크리티컬 감사(2026-08-06 신설) — `base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재검토, 11개 우선순위1(M0~M4 착수 전 확인 권장) + 11개 우선순위2 + 2개 단순화후보 | 상 — M0 착수 전 최소 우선순위1 항목 확인 권장 |
+| `v1-compat-plan.md` | v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat` 패키지, v2→v1 단방향 브리지(`state:Observer()`+v1 프로퍼티 재대입), v2-in-v1/v1-in-v2 두 임베딩 방향의 기술 규칙까지 확정. quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — Slot이 foreign Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 미결 |
 
 ## `archive/` — 완료됐거나 완전히 뒤집힌 것, 능동 참고 불필요
 
