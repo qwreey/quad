@@ -204,7 +204,8 @@ push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
 의존성 중복 재계산 문제가 풀림. State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
-`.value`/`:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가). 값 하나만
+`:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
+읽기는 `:Get()` 하나로 통일 — `.value` 표기는 Ref 전용으로 좁혀짐). 값 하나만
 다룰 땐 Store와 별개인 가벼운 `Source` 프리미티브를 독립적으로도 씀.
 `store.key` dot-access를 타입 추론 1급 경로로 삼는 것도 3차 라운드에서
 정식 확정됨 — **더 이상 열린 질문 아님**, 남은 건 정확한 API 이름뿐.

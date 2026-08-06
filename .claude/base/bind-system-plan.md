@@ -404,7 +404,7 @@ Modifier와는 다른 부류).
 
 ```lua
 local observer = state:Observer(function()
-    state.value
+    state:Get()
 end)
 
 Frame {
@@ -419,7 +419,7 @@ retract/Destroy되면 자동으로 정리됨.
   무효화 신호 하나로 좁혀짐 — 값을 안 실어보내므로 저렴함" 원칙(아래
   "Store/State/Source 온톨로지" 절)이 그대로 적용됨: `fn`은 "뭔가
   바뀌었으니 다시 확인하라"는 신호만 받고 새 값 자체는 안 받음 —
-  위 예시처럼 `fn` 본문에서 `state.value`/`Get()`을 명시적으로 다시
+  위 예시처럼 `fn` 본문에서 `state:Get()`을 명시적으로 다시
   읽어야 함. 자동으로 안 해주는 이유: 재계산이 진짜 필요한지가 다른
   `:With`한 값에 따라 갈리는 경우가 있어서(위 "포지셔널 인자 지양" 절의
   `noprint` 예시처럼 계산 자체를 통째로 생략하고 싶을 수 있음) — `Get()`
@@ -532,7 +532,7 @@ read ...`처럼, State끼리 자유롭게 합성/파이핑 가능한 것이 최�
 아래 "State는 쓰기 대상이 아님" 절 이후 내용 및 `base/store-semantics.md`의
 "Source가 State를 만족함" 절 참고):
 - **Source** — 실제 값이 존재하고 변경될 수 있는 단일 지점(v1의 "값의 근원").
-  **구조적으로 State를 만족(단방향 호환)** — `.value`/`:Get()`/`:With`/`:Compute`
+  **구조적으로 State를 만족(단방향 호환)** — `:Get()`/`:With`/`:Compute`
   전부 지원 위에 `:Set(value)`/`:Emit()` 추가.
 - **Store** — Source들의 이름 붙은 모음, 그 이상 아님. `store.a`처럼 키로
   접근하면 **이미 만들어진 Source가 있으면 그대로 반환, 없으면 그 자리에서
@@ -557,7 +557,7 @@ Fusion식 eager 노드·생성순 정렬은 안 만듦**
 - 신호를 받은 State는 자기 `invalid` 플래그만 세우고, 이미 `invalid`였다면
   그 아래로 더 전파하지 않는다 — 다이아몬드 의존성에서 중복 워크를 막는
   장치(Vide가 저자 스스로 `todo.md`에 미해결로 남긴 문제의 해결책).
-- 실제 재계산은 `Get()`(또는 `.value` 인덱싱)이 호출되는 시점에만 일어남 —
+- 실제 재계산은 `:Get()`이 호출되는 시점에만 일어남 —
   "필요할 때 계산" 원칙(사용자 확정). Fusion의 `timeliness="eager"` 노드/
   생성순 정렬 장치는 만들지 않음 — quad엔 그런 다단계 즉시 재계산이 필요한
   소비자가 없다는 판단. 유일하게 "즉시 반응해야 하는" 소비자는 store-bind
@@ -571,14 +571,14 @@ Fusion식 eager 노드·생성순 정렬은 안 만듦**
 **전역 원칙으로 명문화: "관측해야 실체화된다" (2026-08-04 세션)**
 
 위 pull-recompute 규칙을 State 하나의 재계산 메커니즘으로만 읽지 말고,
-프로젝트 전역에 적용되는 원칙으로 명시함: **어떤 파생값도 `.value`/`Get()`로
+프로젝트 전역에 적용되는 원칙으로 명시함: **어떤 파생값도 `:Get()`으로
 직접 읽히기(관측) 전까지는 계산되지 않는다.** 이 원칙은 State 자체뿐 아니라,
 State를 필드 값으로 담고 있는 다른 구조(예: `base/modifier-plan.md`의
 Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 읽으면 그
 순간이 바로 관측이고, 그 순간 계산이 확정됨.
 
 **주의 — 구조적 복사는 관측이 아님.** `table.clone`처럼 테이블 레퍼런스만
-복사하는 연산은 안에 담긴 State 핸들을 그대로 옮길 뿐 `.value`/`Get()`을
+복사하는 연산은 안에 담긴 State 핸들을 그대로 옮길 뿐 `:Get()`을
 호출하지 않으므로 관측이 아니고, 계산을 트리거하지 않음. Modifier 체이닝
 메소드가 `table.clone` 후 필드를 덮어쓰는 것(위 "Immutable 값 + clone 기반
 체이닝")과 이 원칙이 충돌하지 않는 이유가 바로 이것 — clone은 그저 참조
@@ -625,23 +625,31 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
   단점이 있었음 — self가 raw 값이면 `fn` 호출 전에 항상 self를 먼저
   `Get()`해야 하므로, `fn` 내부 로직이 with한 다른 값을 보고 "이 경우엔 self
   계산 자체가 필요 없다"고 판단해도 이미 늦음(예: `:With(noprint)`이고
-  `noprint.value == true`면 앞단 계산을 통째로 생략하고 싶은 경우).
+  `noprint:Get() == true`면 앞단 계산을 통째로 생략하고 싶은 경우).
 - **해결(사용자 확정)**: self도 raw 값이 아니라 **State 핸들 그 자체**를
   `fn`의 포지셔널 인자로 넘긴다 — `fn(self: State<T>)`, 내부에서
-  `self.value`(또는 `self:Get()`)를 실제로 읽을 때만 계산이 트리거됨.
-  with한 값과 동일한 lazy 원칙을 self에도 그대로 적용 — 별도
-  `ComputeWithout` 변형은 불필요, `Compute` 하나로 일관.
-- `.value`는 `Get()`을 감싼 읽기 전용 계산 속성(`base/lifecycle-pattern.md`의
-  `Connected`와 동일한 "저장되는 필드가 아니라 계산된 속성" 패턴 재사용) —
-  `:Get()`과 `.value` 둘 다 지원, `.value`가 관용적 표기.
+  `self:Get()`을 실제로 읽을 때만 계산이 트리거됨. with한 값과 동일한
+  lazy 원칙을 self에도 그대로 적용 — 별도 `ComputeWithout` 변형은
+  불필요, `Compute` 하나로 일관.
+- **[정정, 2026-08-07] `.value`는 State/Source에서 제외, `:Get()`만 지원.**
+  이전엔 `Get()`을 감싼 읽기 전용 계산 속성(`base/lifecycle-pattern.md`의
+  `Connected`와 동일한 "저장되는 필드가 아니라 계산된 속성" 패턴)으로
+  `.value`/`:Get()` 둘 다 지원하고 `.value`를 관용적 표기로 앞세웠으나,
+  "관측해야 실체화된다"는 원칙이 가장 날카롭게 느껴져야 할 지점에서
+  프로퍼티 문법이 그 느낌을 무디게 한다는 재검토 끝에 함수 호출
+  `:Get()` 하나로 좁힘 — `:Set()`과의 동사 짝도 자연스러움. `.value`
+  표기 자체는 폐기하지 않고 **Ref 전용으로 좁힘**(Ref는 lazy가 아니라
+  값을 읽어도 계산이 트리거되지 않으므로 프로퍼티 문법이 정직함 — 이
+  절 위쪽 "Ref 일반화" 절의 `.Value`가 그대로 유일한 존재가 됨, 이름
+  충돌 자체가 사라져 별도 표기 정리 불필요).
 - 예시 갱신: `store "key1":With(store "key2"):Compute(function(key1) return
-  key1.value + store.key2.value end)` — `key1`은 이제 raw 숫자가 아니라
+  key1:Get() + store.key2:Get() end)` — `key1`은 이제 raw 숫자가 아니라
   State.
 
 **State는 쓰기 대상이 아님 — 확정, Source는 독립 공개 프리미티브로 격상**
 
-- `.value`는 항상 읽기 전용. State에는 쓰기 API가 아예 없음. "State에
-  `.value = x`를 허용하면 다른 source에서 파생된 state에 직접 쓰기가
+- `state:Get()`은 항상 읽기 전용. State에는 쓰기 API가 아예 없음. "State에
+  직접 쓰기 API를 허용하면 다른 source에서 파생된 state에 직접 쓰기가
   가능해져 버린다"는 이전 우려는 이걸로 근본적으로 해소(그런 API 자체가
   없음).
 - **[정정, 2026-08-06 후속 세션] 값을 쓰는 경로는 `store.key = value`

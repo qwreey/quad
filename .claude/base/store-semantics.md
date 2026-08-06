@@ -108,9 +108,12 @@ State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하
 **확정 방향**:
 - **`Source<T>`가 구조적으로 `State<T>`를 만족(단방향 호환)** — State
   자리엔 Source를 넣을 수 있지만 역은 안 됨(Svelte의 `Writable<T> extends
-  Readable<T>`와 같은 모양). Source는 State가 주는 모든 것(`.value`,
-  `:Get()`, `:With(...)`, `:Compute(fn)`) 위에 `:Set(value)`/`:Emit()`을
-  추가로 가짐.
+  Readable<T>`와 같은 모양). Source는 State가 주는 모든 것(`:Get()`,
+  `:With(...)`, `:Compute(fn)`) 위에 `:Set(value)`/`:Emit()`을
+  추가로 가짐([정정, 2026-08-07] `.value`는 State/Source에서 제외되고
+  `Get()`으로 통일됨, `.value` 표기는 Ref 전용으로 좁혀짐 — `base/
+  bind-system-plan.md` "`:With`/`:Compute` — self 인자도 lazy 핸들로
+  통일" 절 참고).
 - **`:With`/`:Compute`는 Source에서도 항상 `State<U>`를 반환** — Source
   자신을 변형하는 게 아니라, "Source의 State 뷰를 뽑아 그 위에 파이핑"하는
   것과 동치. 구현은 metatable `__index` 델리게이션(Source의 메소드
@@ -287,4 +290,4 @@ Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processo
 연산.) 최종 형태는 `:With(...)`로 의존성을 모으고
 `:Compute(fn)`으로 파생 State를 만드는 것으로 확정 — `Store.Combine({a,b},
 fn)`류 포지셔널 인자 방식은 기각됨. 정확한 lazy 인자 규칙(self/with 값 둘 다
-State 핸들로 넘기고 `.value`를 실제로 읽을 때만 계산)은 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
+State 핸들로 넘기고 `:Get()`을 실제로 읽을 때만 계산)은 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
