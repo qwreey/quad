@@ -124,7 +124,7 @@ quad/
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기
-│       ├── Store.luau            # source 집합체, dot-access, __newindex
+│       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
 │       ├── Dispatch/
 │       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
@@ -132,7 +132,7 @@ quad/
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── LifetimeHandle.luau    # Connected 계산 속성 "인터페이스"(타입/계약만)
 │       ├── PerInstanceState.luau  # per-instance 상태 저장 "인터페이스"
-│       ├── Ref.luau               # CreatedRef 메커니즘(숫자 슬롯 참가자)
+│       ├── Ref.luau               # 범용 값 박스(.Value/:Wait()/콜백) + 그 위에 얹힌 CreatedRef(숫자 슬롯 참가자) 특수화
 │       └── init.luau
 └── quad-roblox/
     ├── wally.toml

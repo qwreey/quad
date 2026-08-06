@@ -47,6 +47,7 @@
 | `documentation-content-map.md` | 위 4축에 실제로 뭘 채울지 `base/` 전체를 초심자/api/심화/skip으로 서베이한 콘텐츠 맵 — 초심자 core loop 목차 초안 포함 | 하 — 문서화 착수 시점의 목차/우선순위표로 쓸 것 |
 | `framework-comparison-findings.md` | quad vs Fusion/Vide/react-lua 정직한 비교(실 소스 근거) — quad 강점, 진짜 불리한 점 중 고칠 만한 것 3개, 못 고치는 트레이드오프 정리 | 하 — 사용자 검토 후 반영 여부 결정 대기 |
 | `ui-shorthand-plan.md` | UICorner/UIPadding/UIScale 인라인 편의 키(v1 `Corner`/`PaddingAll`/`Scale` 선례) — 여전히 필요한 기능으로 재확정(RoundSize만 네이티브 UICorner로 대체돼 불필요), 메커니즘(Handler)·패키지 배치(quad-roblox 코어) 확정 | 하 — 결론 남, M10 전후 구현하면 됨 |
+| `pre-implementation-audit.md` | M0 착수 직전 크리티컬 감사(2026-08-06 신설) — `base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재검토, 11개 우선순위1(M0~M4 착수 전 확인 권장) + 11개 우선순위2 + 2개 단순화후보 | 상 — M0 착수 전 최소 우선순위1 항목 확인 권장 |
 
 ## `archive/` — 완료됐거나 완전히 뒤집힌 것, 능동 참고 불필요
 
