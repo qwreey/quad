@@ -72,7 +72,39 @@ Fusion/Vide/quad v1 소스를 서브에이전트 2개로 병렬 조사 완료, �
 - `Store`/`Source`/`Modifier`/`Ref`/`process`/`retract`/`isHandlable`은
   업계 선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
 
-### 2. 낮은 우선순위
+### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
+
+`research/pre-implementation-audit.md` — `base/` 전체를 M0 착수 직전
+시점에서 모호성/지연결정리스크/단순화후보 세 렌즈로 재감사한 결과. 총
+11개 우선순위1(구현 중 바로 부딪힐 가능성 높음) + 11개 우선순위2(지금
+정해두면 싼 지연리스크) + 2개 단순화후보. 전체는 그 문서 참고, 특히
+사용자 판단이 필요한 것 위주로 요약:
+
+- **Tween.luau가 "범용 store-bind 캐치올 핸들러"의 유일한 예시로 서술됨** —
+  일반 반응형 프로퍼티 바인딩(`BackgroundColor3 = store.color`, 애니메이션
+  없음)이 결국 이름은 "Tween"인 파일을 거쳐가는 건지, 아니면 별도 범용
+  `Handlers/StoreBind.luau`가 있어야 하는 건지 확정 필요 — 우선순위1-1.
+- **`State<Modifier>` 타입 차단(엔지니어링 비용 감수)과 Ref/Slot이 Modifier
+  필드에 들어가는 건 UB 방치 — 같은 문서 안에서 정반대 원칙이 근거 설명
+  없이 나란히 적용됨.** 왜 이 경우만 예외로 방어하는지 명문화 필요, 또는
+  Luau에서 실제 타입 차단이 가능한지부터 확인(안 되면 그냥 UB로 격하) —
+  문서모순 절 + 우선순위2-2.
+- **`props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴
+  nil-hole 함정에 그대로 노출됨** — caller가 Modifier/Ref를 안 넘기면
+  `{nil, ref, child}`에서 뒤 항목까지 통째로 무시될 수 있는 버그 클래스.
+  M0 스파이크에 이 케이스(안 넘기는 경우)를 반드시 포함시킬 것 — 우선순위1-5.
+- **`canExecute`/`Connected`의 실제 구현 방식(Parent==nil vs Connection.
+  Connected vs Destroying 플래그)이 미확정인데 이미 Slot/Observer/store-bind
+  retract 전역에 재사용 확정됨** — M2/M3 착수 전 실측 필요 — 우선순위1-6.
+- **`LifetimeHandle` 인터페이스가 M8에 배치돼 있지만 M4/M6이 이미 그걸
+  필요로 함(로드맵 순서 역전)** — quad-base 인터페이스 정의를 M2/M3로
+  옮기는 게 자연스러워 보임, `ROADMAP.md` 수정 필요 — 우선순위1-9.
+- 그 외(Slot CRUD 의미론 미정의, retract 시 "이전 핸들러" 추적 책임 소재,
+  우선순위 스캔 동률/매치실패 처리, `:Compute`의 `previous` 인자가
+  오버엔지니어링일 수 있음, UI shorthand의 기존 UICorner 매칭 기준 등)는
+  `pre-implementation-audit.md` 본문 참고.
+
+### 3. 낮은 우선순위
 
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.

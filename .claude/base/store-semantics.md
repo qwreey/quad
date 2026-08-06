@@ -54,9 +54,11 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
   해주지만, 그 결과를 다시 분기하고 싶으면(하나의 파생 스트림에서 여러
   소비자가 각자 다른 추가 compute를 얹고 싶은 경우) `state(state)`처럼 기존
   state의 결과를 받아 새 state를 만드는 조합이 필요.
-- **store에서 state를 얻는 연산(예: `store "key"`)은 항상 새 state 인스턴스를
-  반환한다** — state 자체가 캐시되어 재사용되는 게 아니라, source만 store에
-  귀속된 유일한 실체이고 그 위의 state는 매번 새로 생성됨.
+- **[정정, 2026-08-06 후속 세션] store에서 값을 얻는 연산(`store.key`)은
+  Source를 직접 반환한다 — 더 이상 별도 State 인스턴스를 감싸서 반환하지
+  않음.** 상세는 아래 "Source가 State를 만족함" 절 참고. 이 항목의 원래
+  버전("항상 새 state 인스턴스를 반환")은 틀림 — Store가 별도 wrapper
+  없이 자기 안에 만들어둔 Source를 그대로 돌려주는 쪽으로 재정리됨.
 - 이건 quad2-try(폐기된 이전 시도)의 `Pipe` copy-on-write 절충안을 대체하는
   방향으로 좁혀짐 — 별도 `Pipe` 타입을 만들어 소유권/버전 가드를 넣는 대신
   State 자체가 "파이핑 결합체"이고 `state(state)`로 분기하면 될 걸로 보임
@@ -93,29 +95,115 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 추론 문제는 `store.key`(dot-access)를 1급 경로로 확정하며 해소(같은 문서
 "타입 추론 문제" 절, 3차 라운드).
 
-## Store 값 설정 문법 — v1 인체공학 유지 (확정)
+## Source가 State를 만족함 — 구조적 서브타입, RefSource 개념 폐기 (2026-08-06 후속 세션)
 
-**사용자 확인 완료**: Store 값 설정은 `__newindex` 기반(`myStore.key = value`)을
-그대로 유지 — ProfileService 등 Roblox 생태계에서 이미 익숙한 관용구라 바꿀
-이유 없음. 마찬가지로 다음 두 인체공학도 유지:
+**배경**: `store.key`가 매번 새 State를 감싸 반환하던 이전 모델의 타입
+문제(레코드 타입 `{key: State<number>}`가 읽기/쓰기 비대칭이라 Luau
+타이핑이 안 맞음, 위 "Source가 State를 만족함" 논의에서 도출)를 풀다가
+사용자가 제안한 더 근본적인 재구성. `RefSource<T>`(store 슬롯을 가리키는
+전용 타입)를 따로 만드는 중간안도 검토했으나, 최종적으로 **Source 자체가
+State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하는 쪽으로
+수렴.
 
-- **괄호 생략(paren-less) 구조** — 필요 시 커링(`myStore "key"`처럼 문자열
-  하나로 register를 얻는 v1 스타일)을 계속 허용.
-- **`:` 체이닝** — 값을 바꾸는 연산에 한해 체이닝 문법 허용(`base/
-  architecture.md`의 "함수지향 디폴트, `:`는 예외적으로만" 원칙과 일치 — 체이닝이
-  자연스러운 곳 중 하나가 바로 이 store 값 변경).
+**확정 방향**:
+- **`Source<T>`가 구조적으로 `State<T>`를 만족(단방향 호환)** — State
+  자리엔 Source를 넣을 수 있지만 역은 안 됨(Svelte의 `Writable<T> extends
+  Readable<T>`와 같은 모양). Source는 State가 주는 모든 것(`.value`,
+  `:Get()`, `:With(...)`, `:Compute(fn)`) 위에 `:Set(value)`/`:Emit()`을
+  추가로 가짐.
+- **`:With`/`:Compute`는 Source에서도 항상 `State<U>`를 반환** — Source
+  자신을 변형하는 게 아니라, "Source의 State 뷰를 뽑아 그 위에 파이핑"하는
+  것과 동치. 구현은 metatable `__index` 델리게이션(Source의 메소드
+  테이블이 State의 메소드 테이블로 폴백)으로 충분 — `Modifier`의 제네릭
+  `__index` 트릭(`base/modifier-plan.md`)과 같은 패턴이라 로직 중복이
+  생기지 않음.
+- **`RefSource<T>` 같은 별도 타입은 불필요, `Store({defaults})`가
+  내부적으로 `{[key] = Source(default), ...}`나 다름없게 됨** — `store.key`는
+  Store 생성 시 이미 만들어둔 Source를 그대로 돌려줄 뿐, 매번 새로 만들거나
+  별도로 캐싱할 wrapper 객체 자체가 없음. 이전에 검토했던 "State를
+  weak table로 캐싱" 절충안보다 더 싸다(래퍼 생성/캐싱 단계 자체가
+  사라짐). v1이 모든 값을 Store 하나에 몰아넣던 습관은 "당시 정적 타입이
+  없어 단순하게 쓰는 게 편해서"였다는 게 사용자의 회고적 재평가 — 지금은
+  타입이 핵심 제약이라 그 전제 자체가 더 이상 안 맞고, 이번 정리로 Store는
+  "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐.
+- **이 서브타입 관계는 `quad2-try`에서 기각한 컴포넌트/클래스 OOP 상속과는
+  다른 층위.** 그때 금지한 건 사용자가 짜는 컴포넌트 계층 구조(`Class:Extend()`류
+  매직)였고, 지금은 두 프리미티브 타입 사이의 구조적 서브타이핑(런타임
+  구현 델리게이션 포함)이라 그 금지와 충돌하지 않음.
+- **동적 키 폴백(`store "key"`)은 이제 `State<any>`가 아니라 `Source<any>`를
+  반환**하는 것으로 자연히 갱신됨(위 "타입 추론 문제" 절과 연동).
 
-`base/architecture.md`의 "복사 구현 지양, 팩토리 함수로 대체" 원칙과 함께 읽을
-것 — v1의 문제는 metatable 체이닝으로 매번 새 테이블을 할당하며 "불변 빌더"를
-흉내낸 것이었지, `:` 체이닝 문법 자체나 커링 문법 자체가 아니었음. v2는 문법
-인체공학(사용자가 좋아하는 부분)은 유지하되 내부 구현(체이닝이 아니라 팩토리
-함수)만 바꾼다.
+**검증 필요(확정 아님, M0 스파이크 대상)**: `Source<T>`의 `:Compute`
+시그니처가 자기 자신(`Source<T>`)과 `State<U>`를 동시에 참조하는 제네릭
+메소드라, Luau 솔버가 재귀 타입 조합에서 막히지 않는지 실제로 검증
+필요(사용자 우려: "솔버가 종종 죽는다"). 구분해서 볼 것:
+- **자기 자신을 가리키는 self 타이핑**(`{ Compute: <U>(self: Source<T>, ...) -> State<U> }`
+  같은 패턴)은 Luau에서 극히 흔하고 대체로 안전 — 모든 메소드 테이블
+  클래스가 쓰는 패턴이라 이것 자체가 위험 신호는 아님.
+- **진짜 위험한 건 두 제네릭 타입 별칭이 서로를 참조하는 상호 재귀**
+  (`Source<T>` 정의가 `State<T>`를 참조하고, `State<T>`도 거꾸로
+  `Source<T>`를 참조하는 경우) — 이게 Luau 솔버가 알려진 대로 취약한
+  패턴. **`State<T>`가 `Source`를 전혀 참조하지 않도록 먼저 독립적으로
+  정의하고, `Source<T>`만 `State<T>`를 참조하는 단방향 의존으로 두면**
+  이 위험한 패턴 자체를 피할 수 있어 보임 — 다만 이것도 추론이라 실제
+  Luau로 확인 전엔 확정 아님.
+- 사용자는 `&`(교차 타입) 조합보다 **타입을 손으로 펼쳐 쓰는(flatten)
+  쪽을 선호**(엔지니어링 비용을 감수하더라도 솔버 안정성 우선) — 이건
+  런타임 구현의 델리게이션(위 항목)과는 별개 축이라 서로 충돌 안 함:
+  타입은 펼쳐 쓰고 구현은 공유하는 조합이 가능함.
+- `ROADMAP.md` M0의 "Store/State propagation" 스파이크 항목에 이 구체적
+  케이스(Source가 State를 만족하는 제네릭 메소드 체이닝)를 포함해서
+  검증할 것.
 
-## Store 값을 직접 mutate한 뒤 전파 — `:Emit(key)` (2026-08-06 후속 세션)
+**이름 주의**: `Source`/`State`라는 이름 자체가 `CLAUDE.md` "지금 할 일"
+2번의 용어 정리 대상(특히 `State`)과 겹침 — 구조(서브타입 관계, RefSource
+폐기)는 지금 확정해도 정확한 이름은 용어 정리 라운드까지 가칭으로 남김.
+
+## Store 값 설정 문법 — `myStore.key = value` 폐기, `source:Set(value)`로 전환 (2026-08-06 후속 세션, 정정)
+
+**이전 버전("v1 인체공학 유지, `__newindex` 기반 `myStore.key = value`
+그대로")은 폐기됨.** 아래 "Source가 State를 만족함" 절의 타입 설계와
+맞물려 재검토된 결과:
+
+1. **타입 대칭성**: `store.key`가 이제 `Source<T>`를 직접 반환하는
+   평범한 레코드 필드(`{key: Source<number>}`)로 타이핑되는데, 레코드
+   필드는 읽기/쓰기 타입이 같아야 Luau 구조적 타이핑이 깨끗하게 성립함.
+   `store.key = value`(raw `T` 대입)를 유지하면 읽기(`Source<T>`)/쓰기(`T`)
+   타입이 갈려 mismatch가 남음 — `store.key:Set(value)`로 통일하면 필드
+   타입이 항상 `Source<T>`로 대칭적이라 문제 자체가 안 생김(사용자 지적).
+2. **의미론적 정직성**: `=` 대입 문법은 관례상 "그 자리에서 즉시 확정되는
+   부작용 없는 값 쓰기"를 암시하는데, quad의 실제 동작은 **lazy** —
+   `Set`은 무효화 신호만 쏘고, 실제 재계산은 나중에 누군가 관측(`Get()`)할
+   때만 일어남("Emit으로 필요한 사람 있어? 하고 물어보고, 있어야 진짜
+   계산 시작"). 이건 `=`가 암시하는 "즉시 커밋"과 정서가 안 맞고, 메소드
+   호출(`:Set()`)이 "이건 프로세스를 트리거하는 연산"이라는 걸 더 정직하게
+   신호함(사용자 확정 논거).
+3. `:Set()`은 이미 확정된 "값을 바꾸는 연산엔 `:` 체이닝 허용" 원칙(`base/
+   architecture.md`)에도 자연스럽게 들어맞음 — 문법 자체가 새로 생기는 게
+   아니라 기존 원칙의 정상적인 적용.
+
+**남는 것**: `myStore "key"`(문자열 커링)는 이미 3차 라운드에서 동적 키
+전용 미타입 폴백으로 격하돼 있었으므로 이번 정정과 무관하게 그대로 유지.
+`:` 체이닝 원칙도 `:Set()` 자체가 그 사례라 유지.
+
+`base/architecture.md`의 "복사 구현 지양, 팩토리 함수로 대체" 원칙과 함께
+읽을 것 — v1의 문제는 metatable 체이닝으로 매번 새 테이블을 할당하며
+"불변 빌더"를 흉내낸 것이었지, `:` 체이닝 문법 자체나 커링 문법 자체가
+아니었음.
+
+## Source 값을 직접 mutate한 뒤 전파 — `:Emit()` (2026-08-06 후속 세션, 호출부 정정)
 
 **결정**: Source가 들고 있는 값을 새 값으로 교체하지 않고 제자리에서
-mutate한 뒤, `Store:Emit(key)`로 그 key의 무효화 신호만 별도로 쏘는
-것을 **Source 원천(store가 직접 들고 있는 값)에 한해 허용**한다.
+mutate한 뒤, `:Emit()`으로 무효화 신호만 별도로 쏘는 것을 **Source
+원천(store가 직접 들고 있는 값)에 한해 허용**한다.
+
+**[정정, 같은 세션 후반]** 원래 `Store:Emit(key)`(Store에 key를 넘겨
+호출)로 적혀있었으나, 아래 "Source가 State를 만족함" 절에서 `store.key`
+자체가 Source를 직접 반환하는 것으로 바뀌면서 `Emit`도 Source의 평범한
+메소드로 이동 — `store.key:Emit()`(key 인자 불필요, 이미 손에 든 Source
+핸들에 바로 호출). `Store:Emit(key)`라는 별도 경로는 유지할 이유가
+없어져 폐기(같은 걸 하는 두 번째 경로를 남기지 않는다는 이번 세션 전반의
+원칙과 일치 — `store.key = value` → `store.key:Set(value)` 정리와 같은 결).
 
 **존재 이유(우선순위순)**:
 1. **clone이 아예 불가능한 값이 있음.** userdata나 외부 라이브러리
@@ -153,8 +241,13 @@ mutation에 정식 신호를 붙여주는 것뿐.
 정적 flatten으로 dispatch와 완전히 별개인 단계에서 처리되고
 (`base/modifier-plan.md`), `State<Modifier>`가 UB로 확정된 것도 같은
 이유(`modifier-plan.md` 7번) — Store/State/dispatch 경로엔 애초에
-Modifier용 processor가 없음. 위 "하드 경계"와 같은 이유로, `Emit`이
-Modifier의 정적 flatten과 충돌할 걱정 자체가 성립하지 않음(둘이 만날
+Modifier용 processor가 없음. **[2026-08-06 후속 세션 추가]** Source가
+State를 구조적으로 만족하게 되면서 이 UB는 `Source<Modifier>`(Store를
+거치지 않는 독립 `Source(someModifier)`)에도 동일하게 적용됨을 명시 —
+Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processor
+부재)가 그대로 적용되고, 별도로 다시 논증할 필요 없음. 위 "하드 경계"와
+같은 이유로, `Emit`이 Modifier의 정적 flatten과 충돌할 걱정 자체가
+성립하지 않음(둘이 만날
 지점이 없음).
 
 ## 여러 스토어 값을 묶어 처리하는 것 (dependency array) — 확정

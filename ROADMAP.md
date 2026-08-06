@@ -17,6 +17,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] Store/State push-invalidate → pull-recompute propagation을 실제로
       짜보기(다이아몬드 의존성 케이스 포함 — 이미 invalid면 전파 중단되는지)
+- [ ] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
+      Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
+      Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 후속 세션,
+      `base/store-semantics.md` "Source가 State를 만족함" 절 — `State<T>`가
+      `Source`를 참조하지 않는 단방향 의존으로 두면 위험한 상호 재귀는
+      피할 수 있어 보이나 실제 검증 전엔 확정 아님)
 - [ ] `process`/`retract` 재귀 재-process 디스패치를 실제로 짜보기(store-bind
       핸들러 하나 + `isHandlable` 우선순위 스캔 포함)
 - [ ] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,

@@ -38,12 +38,19 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 `.claude/README.md`가 색인. 요약:
 - `.claude/base/` — 확정된 아키텍처/컨텍스트, plan/done 개념 없음. 먼저
   `.claude/base/architecture.md`를 읽을 것.
-- `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의. 지금은
-  `tween-plan.md`(세부 옵션만 남음), `existing-instance-bind-plan.md`(급하지
-  않음) 두 개뿐 — `component-composition-plan.md`는 2026-08-04 세션에 수렴
-  완료돼 `base/`로 승격됨.
-- `.claude/qa-request/`, `.claude/archive/`, `.claude/feedback/` — 구현
-  시작되면 쓰기 시작함, 지금은 비어있음.
+- `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의.
+  `tween-plan.md`/`existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
+  `ui-shorthand-plan.md`/`documentation-plan.md`/`documentation-content-map.md`/
+  `framework-comparison-findings.md` — 전부 후순위(급한 건 `tween-plan.md`
+  세부 옵션 정도). 최신 목록·우선순위는 `.claude/README.md`가 소스, 여기서
+  개수 반복 안 함(과거에 "두 개뿐"이라 적어놨다가 새 문서 추가될 때마다
+  안 갱신되는 패턴이 반복돼서 아예 안 세기로 함).
+- `.claude/qa-request/`, `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
+  지금은 비어있음. `.claude/archive/`는 원래 같은 취급이었으나
+  2026-08-06 세 번째 세션부터 **완전히 뒤집힌 설계 결정을 원문+역전
+  이유+diff와 함께 보존하는 용도로도 사용 시작**(구현 완료 대상만이
+  아님) — `archive/store-source-proxy-reversed.md`가 첫 사례, 나중
+  `quadnomicon` 콘텐츠 소재로 재사용 예정.
 - `.claude/initreq/` — 클론해둔 참고 레포(quad v1, Fusion, Vide, rbvm, tbox,
   code-docker) + PA님 실 코드(`artworks/`) + 원본 요청. **읽기 전용,
   `.gitignore`로 커밋 제외됨** — 내용을 다른 곳으로 옮기지 말고 항상 원본
@@ -102,7 +109,11 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    quad-base용 최소 mock 테스트 하네스)으로 진행 — 소스 트리 자체는 이미
    확정됨(`base/architecture.md` "구현 착수" 절). 이 단계부터
    `qa-request/`/`archive/` 폴더가 실제로 쓰이기 시작함. **세부 순서/todo는
-   `ROADMAP.md`가 소스** — 여기서 반복 안 함.
+   `ROADMAP.md`가 소스** — 여기서 반복 안 함. **M0 착수 직전에 `research/
+   pre-implementation-audit.md`(2026-08-06 신설)의 우선순위1 항목부터 먼저
+   확인할 것** — 특히 M0 스파이크 코드 자체에 반영해야 할 항목(props.Modifier/
+   Ref를 안 넘기는 케이스 포함, `store.key` 레코드 필드 타이핑도 M0로
+   앞당기기 검토)이 있음, 아래 최신 세션 요약 참고.
 2. **용어 정리 — 사용자가 별도로 요청, 진행 중.** "register"(v1) 같이
    부정확한 이름들을 전체적으로 재검토하자는 요청 — 1차 제안 완료(우선순위
    순: `State`가 React/Vue식 "쓸 수 있는 로컬 상태"라는 통상 의미와 반대라
@@ -121,9 +132,13 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    채널 실현 가능성(Studio 플러그인↔Play 중 게임 간 BindableEvent/Function
    통신)까지 실측 검증 완료, 세부 API 이름만 남음. 착수 시점은 여전히
    "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박음. 같은 날 파생된 문서화
-   전략 뼈대(`research/documentation-plan.md` — UI 네이밍 컨벤션, Store
-   부작용 게임 시스템 활용 패턴, 권장 이벤트 핸들링 패턴 3종)도 후순위
-   백로그로 같이 남김.
+   전략(`research/documentation-plan.md` — UI 네이밍 컨벤션, Store 부작용
+   게임 시스템 활용 패턴, 권장 이벤트 핸들링 패턴 3종)도 후순위 백로그로
+   같이 남김. **[2026-08-06 세 번째 세션에서 크게 확장됨]** 문서 사이트
+   전체 구조(초심자/api/심화/`quadnomicon` 4축)와 실제 콘텐츠 분류맵
+   (`research/documentation-content-map.md`), quad vs Fusion/Vide/react-lua
+   정직 비교(`research/framework-comparison-findings.md`)까지 늘어남 —
+   착수 우선순위 자체는 안 바뀜(여전히 후순위), 아래 최신 세션 요약 참고.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -411,3 +426,146 @@ Ref 일반화 — 네 가지 다 확정, 실제 base 문서에 반영 완료.** 
   쌈). 내부 레지스트리는 자동 케이스의 weak table과 별개로 강참조
   (weak면 "살려둔다"는 목적이 무의미해짐). 둘 다 idempotent, `:Unsubscribe()`는
   자동 케이스 조기 해제에도 재사용.
+
+## 2026-08-06 세 번째 세션 — 문서 사이트 구조, 프레임워크 정직 비교, Source가 State를 만족하는 서브타입 재구성
+
+같은 날 이어진 세 번째 세션. 셋으로 갈리는 주제라 순서대로 요약 — **다음
+세션이 새로 알아야 할 건 4번(Source/State 재구성)뿐**, 1~3번은 배경/참고용.
+
+**1. 문서 사이트 구조 확정 — 초심자/api/심화 3축 + `quadnomicon` 4번째 축.**
+`research/documentation-plan.md` 0번 항목에 전부 반영. 초심자는 "core loop
+완주에 필요한 최소 집합만, 백엔드 구체적(quad-roblox), quad-base/roblox
+분리 노출 안 함, 다른 백엔드 생기면 그때 별도 트랙 추가"로 스코프 확정.
+api는 간략 설명 + 심화로 "더 알아보기" 링크 패턴. `quadnomicon`(Rustonomicon
+패러디, 사용자 확정 이름)은 quad 사용자가 아니라 "비슷한 프레임워크를
+설계/포크하려는 엔지니어"용 4번째 축 — Fusion/Vide 내부 비교 같은 콘텐츠가
+여기 해당, 세션 정정 이력 같은 순수 내부 리서치 원자료는 이 축에도 안
+들어가고 그냥 `.claude/` 내부에만 영구히 남음(RFC 저장소 성격). GC처럼
+quad 밖 배경지식이 깊은 주제는 새 티어 없이 "quad 활용법만 심화에, 일반
+개념은 외부 링크"로 처리. 실제 콘텐츠 분류(초심자 core loop 목차 초안,
+파일별 분류, 심화 에세이 후보 15개)는 `research/documentation-content-map.md`.
+
+**2. quad vs Fusion/Vide/react-lua 정직 비교 — 3개 에이전트가 실제
+소스/웹 리서치로 검증.** `research/framework-comparison-findings.md`.
+요지: quad의 Slot 단일 마운트 가드·열린 우선순위 축·명시적 의존성·다이아몬드
+dedup은 실 소스 근거로 확인된 진짜 강점(Fusion `Children.luau`의 TODO
+주석, Vide `mount.luau`의 중복 체크 부재, Vide 자신이 `todo.md`에 미해결로
+남긴 diamond 문제 등). 반대로 use-after-destroy 검증 안전망 부재·`:With`
+정적 의존성·Store dot-access 할당 비용 3가지는 고칠 만한 약점으로 식별(3번은
+이후 4번 논의로 이미 해소됨). GC-native 리스크·암묵 추적 대비 보일러플레이트·
+Tween 비합성성·"지금 트리 상태" 파악 어려움은 의도된 트레이드오프로 "고친다"
+개념 자체가 안 맞음. 성숙도 격차(quad 구현 0줄)는 정직하게 명시.
+
+**3. 위 1·2번에서 파생된 실행 항목**: 아직 결정 아님, `research/
+documentation-plan.md`/`framework-comparison-findings.md`의 "다음 단계"에
+남겨둔 사용자 판단 대기 항목들(문서화 착수 시점, 프레임워크 비교에서 나온
+개선안 반영 여부/시점) 그대로 참고.
+
+**4. Source가 State를 구조적으로 만족 — Store/State/Source 핵심 메커니즘
+재구성, base 문서 전부 반영 완료.** `store.key`의 타입 문제(레코드 타입
+`{key: State<number>}`가 읽기/쓰기 비대칭이라 Luau 타이핑이 안 맞음)를
+풀다가 나온 더 근본적인 재구성:
+- **`Source<T>`가 구조적으로 `State<T>`를 만족**(단방향 호환, Svelte
+  `Writable<T> extends Readable<T>`와 같은 모양) — `.value`/`:Get()`/
+  `:With`/`:Compute` 전부 지원 위에 `:Set(value)`/`:Emit()` 추가. `:With`/
+  `:Compute`는 Source에서도 항상 `State<U>` 반환(구현은 metatable `__index`
+  델리게이션, `Modifier`의 제네릭 `__index` 트릭과 같은 패턴이라 로직
+  중복 없음). 이 서브타입 관계는 `quad2-try`에서 기각한 컴포넌트/클래스
+  OOP 상속과 다른 층위(프리미티브 타입 간 구조적 서브타이핑일 뿐, 사용자가
+  짜는 클래스 계층 구조가 아님)라 그 금지와 안 부딪힘.
+- **`RefSource`(store 슬롯 전용 타입 중간안)와 그 전신인 `StoreSource`
+  프록시(2026-08-04 세션에서 confirmed였던 것)는 전부 폐기.** Store는
+  이제 "이름 붙은 Source 모음, 그 이상 아님" — `store.key`는 Store 생성
+  시 이미 만들어둔 진짜 Source 객체를 그대로 반환(별도 wrapper 생성/캐싱
+  단계 자체가 사라짐, 이전에 검토한 "State를 weak table로 캐싱"보다도
+  쌈). v1이 타입 없던 시절 습관으로 모든 값을 Store에 몰아넣은 건 "당시엔
+  편해서"였지 지금 그대로 가져올 이유가 아니라는 게 사용자의 회고적
+  재평가 — 그 재검토가 이번 단순화로 이어짐.
+- **`store.key = value`(`__newindex`) 폐기, `store.key:Set(value)`로
+  전환** — 이유 둘: (a) 레코드 타입 `{key: Source<number>}`가 읽기/쓰기
+  둘 다 같은 타입이어야 Luau 타이핑이 깨끗한데 대입 문법을 유지하면
+  비대칭이 남음, (b) `=`는 관례상 "즉시 커밋되는 부작용 없는 쓰기"를
+  암시하는데 quad는 실제로 lazy(무효화 신호만 쏘고 재계산은 관측 시점에)라
+  대입 문법이 실제 동작과 정서적으로 안 맞음(사용자 논거). `Store:Emit(key)`도
+  같은 이유로 `source:Emit()`(key 인자 불필요)로 이동 — 같은 일 하는
+  두 번째 경로를 안 남긴다는 원칙과 일치.
+- **검증 필요, M0 스파이크에 항목 추가됨(`ROADMAP.md`)**: Source의
+  `:Compute` 시그니처가 자기 자신과 `State<U>`를 동시 참조하는 제네릭
+  메소드라 Luau 솔버가 재귀 타입 조합에서 안 막히는지 확인 필요. 자기
+  참조 self 타이핑 자체는 흔하고 안전하나, `State<T>`가 거꾸로 `Source`를
+  참조하는 **상호 재귀**는 Luau의 알려진 취약 패턴이라 피해야 함 —
+  `State<T>`를 `Source` 참조 없이 독립적으로 먼저 정의하고 `Source<T>`만
+  단방향으로 `State<T>`를 참조하게 두면 이 위험을 피할 수 있어 보이나
+  확정 아님. 타입은 `&`(교차) 조합 대신 손으로 펼쳐 쓰는 쪽으로(사용자
+  선호, 솔버 안정성 우선) — 이건 런타임 구현 델리게이션과 다른 축이라
+  서로 안 부딪힘(타입은 펼치고 구현은 공유 가능).
+- **반영된 파일**: `base/store-semantics.md`(신규 "Source가 State를
+  만족함" 절이 최종 소스), `base/bind-system-plan.md`(온톨로지·타입 추론
+  절 정정), `base/component-composition-plan.md`(`StoreSource`/타입
+  유니온 절 재작성), `ROADMAP.md`(M0 항목 추가), `research/
+  documentation-content-map.md`/`.claude/README.md`(참조 갱신). 이름
+  자체(`Source`/`State`)는 여느 때처럼 "지금 할 일" 2번 용어 정리
+  라운드까지 가칭.
+
+## 2026-08-06 네 번째 세션 — M0 착수 직전 크리티컬 감사, `research/pre-implementation-audit.md` 신설
+
+사용자 요청: "실 개발 시 모호하여 인터럽트될 수 있는 부분, 나중에 결정되면
+치명적일 것 같은 것, 지금 구조가 오버엔지니어링일 수 있어 보이며 더 나은
+대안이 있는 것"을 찾아 정리해달라는 요청. `.claude/base/` 전체(architecture/
+bind-system/store-semantics/module-lifecycle/component-composition/
+modifier/purity-and-effects/slot/lifecycle-pattern/quad-v1-architecture)와
+근접 `research/`(existing-instance-bind/tween/ui-shorthand) + `ROADMAP.md`를
+4개 클러스터로 나눠 서브에이전트 4개를 병렬로 돌려 "모호성/지연결정리스크/
+단순화후보" 세 렌즈로 재감사, 결과를 `research/pre-implementation-audit.md`
+로 종합. `.claude/question.md`엔 이미 취합된 것(용어 재검토, M0 스파이크
+항목 자체 등)과 겹치지 않는 새 발견만 반영.
+
+**작업 도중 발견한 부수 이슈**: 워크트리 생성 시점과 main 체크아웃의
+미커밋 변경사항(세 번째 세션 결과물)이 어긋나 있었음 — 워크트리는 커밋
+시점 기준으로 fork되므로 아직 커밋 안 된 변경은 안 딸려옴. 사용자가 중간에
+main에 커밋을 완료해줘서(`4b839b0`) 워크트리를 새로 만들어 재동기화함 —
+**앞으로 워크트리에서 최신 설계를 감사/참조해야 하는 작업을 시작하기 전엔,
+main에 미커밋 변경이 있는지(`git status`) 먼저 확인하고 필요하면 커밋을
+요청하거나 파일을 직접 동기화할 것.**
+
+**핵심 발견 요약** (전체 25개 항목은 `pre-implementation-audit.md` 참고,
+우선순위1만 발췌):
+
+- **Tween.luau가 문서 전체에서 "범용 store-bind 캐치올 핸들러"의 유일한
+  구체 예시로 서술됨** — 애니메이션 없는 일반 반응형 프로퍼티 바인딩이
+  실제로 Tween 파일을 거쳐가는지, 별도 범용 핸들러가 필요한지 확정 안 됨.
+  가장 구조적인 발견 — 직접 `bind-system-plan.md` 67-79행을 재확인해
+  agent 발견을 검증함.
+- `props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴의
+  nil-hole 함정(caller가 안 넘기면 `{nil, ref, child}`에서 뒤 항목까지
+  무시될 수 있음)에 그대로 노출 — M0 스파이크 코드에 이 케이스를 반드시
+  포함시켜야 함.
+- `canExecute`/`Connected`의 실제 구현 방식이 미확정인 채 코어 전역
+  (Slot/Observer/store-bind retract)에 이미 재사용 확정돼 있음.
+- `LifetimeHandle` 인터페이스가 M8에 배치돼 있지만 M4/M6이 이미 그 인터
+  페이스를 전제로 서술돼 있음 — 로드맵 순서 역전, `ROADMAP.md` 조정 필요.
+- retract 시 "이전에 실제로 매치됐던 핸들러" 추적 책임, 우선순위 스캔
+  동률/매치실패 처리, provider 미주입 상태 dispatch 호출 시 동작 —
+  전부 M2(Dispatch 엔진) 착수 전 한 번에 결정하면 효율적인 것들.
+- Slot의 `add`/`remove`/`clear` CRUD 의미론 자체가 정의 안 돼 있음,
+  "재마운트 시 throw"도 추적 대상(개별 element vs Slot 컨테이너)이
+  뭉뚱그려 서술됨 — 둘 다 M6 착수 전 확정 필요.
+
+**단순화 후보로 지적된 것 중 사용자 판단 필요**: `:Compute(fn)`의
+`previous` 두 번째 인자 — quad의 "함수 자체가 재호출되는" 모델상 클로저
+업밸류로 이미 되는 걸 별도 API 표면으로 만든 것일 수 있음(근거 불명).
+
+**문서모순으로 남겨둔 것**: `State<Modifier>`는 "UB, 가능하면 타입으로
+차단"인데 Ref/Slot이 Modifier 필드에 들어가는 건 "UB, 방어 로직 없음" —
+같은 문서(`modifier-plan.md`) 안에서 정반대 원칙이 근거 설명 없이 나란히
+적용됨. 판단이 필요해 고치지 않고 감사 문서에만 남김.
+
+**부수적으로 직접 고친 stale 문서(판단 불필요한 순수 동기화)**: `base/
+architecture.md` 소스트리 주석 두 곳 — `Store.luau`가 여전히 옛 `__newindex`
+모델을 언급, `Ref.luau`가 여전히 "CreatedRef 메커니즘 자체"로만 서술(Ref
+일반화 결정 반영 안 됨). 온톨로지 요약 절 stale은 같은 세션 도중 커밋
+`4b839b0`에서 이미 독립적으로 고쳐져 있었음을 확인 — 재작업 없이 스킵.
+
+**다음 세션이 할 일**: M0 착수 전에 `pre-implementation-audit.md` 우선순위1
+항목(특히 위 6개)부터 확인 — "지금 할 일" 1번 참고. `.claude/question.md`
+2번에 사용자 판단이 필요한 항목 요약이 반영돼 있음.
