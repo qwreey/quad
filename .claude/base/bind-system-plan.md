@@ -301,6 +301,34 @@ per-instance 저장소에 기억해두고, `retract`에서 그걸 `:Disconnect()
 이벤트인지 여부는 값이 아니라 키(리플렉션으로 판별)로 결정되므로, 다른
 boolean 프로퍼티 핸들러와 `(k, false)` 매칭이 겹칠 위험 없음.
 
+**quad가 미는 기본 패턴은 아님 — 부차적 옵션.** 저빈도 UI 이벤트(클릭류)를
+조건부로 켜고 끄고 싶은 흔한 케이스는 사실 이 메커니즘 없이도 됨 — 핸들러
+하나를 계속 연결해두고 안에서 분기하면 끝:
+
+```lua
+MouseButton1Click = function()
+    if not store.enabled:Get() then return end
+    ...
+end
+```
+
+이 "핸들러 하나 + 내부 분기" 패턴이 Connect/Disconnect 자체가 없어서 더
+싸고, Roblox/React 어디서든 이미 익숙한 관용구라 **기본 권장 패턴**.
+store-bind 방식이 실제로 값어치 있는 지점은 고빈도 신호(Heartbeat/
+RenderStepped/마우스 무브처럼 안 쓸 때 Connection을 살려두는 것 자체가
+낭비인 경우)나, 단순 on/off가 아니라 로직 자체가 바뀌는 드문 케이스.
+자주 재계산되는 State에 이벤트를 직접 물리면 매 재계산마다 Disconnect+
+Connect가 도는 숨은 churn 비용도 있음(Store Set은 dedup 안 함,
+`store-semantics.md`) — 그래서 남용하지 말라는 캐비엇.
+
+**그래도 일관성 있게 지원은 해둠.** "저빈도엔 필요 없다"가 "그러니 예외로
+빼고 못 하게 막자"로 이어질 이유는 없음 — 프로퍼티/태그/어트리뷰트가
+전부 store-bind되는데 이벤트만 특별 취급해서 뺄 근거가 약하고, 구현
+비용도 낮으니(위 "엔지니어링 비용이 낮은 이유" 참고) 일관되게 지원해두는
+쪽을 택함. 그냥 "이런 것도 가능하다" 정도로 존재하고, quad가 이 패턴을
+적극 권장하진 않는다는 톤으로 문서화(`research/documentation-plan.md`
+3번 "권장 이벤트 핸들링 패턴" 문서에 이 대조까지 반영 예정).
+
 ## 여러 Store 값을 묶어 파생값 만들기 — `:With` + `:Compute`, 포지셔널 인자 지양
 
 **사용자 확인 완료, 상세 방향 확정.** 후보로 검토했던 두 방식 모두 기각:
