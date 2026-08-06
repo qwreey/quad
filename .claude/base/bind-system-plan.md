@@ -338,7 +338,13 @@ stale하다" 수준이 아니라 **영영 갱신이 안 일어날 수 있음**. 
 **결정(2026-08-06 후속 세션, 사용자 확정)**: 별도 `ObserverHolder`
 래퍼 타입은 안 만듦 — `state:Observer(fn)`가 반환하는 값 자체가 이미
 "children 배열에 바로 놓을 수 있는 leaf 값"이라 감쌀 필요가 없음.
-`CreatedRef`와 완전히 같은 층위:
+`CreatedRef`와 완전히 같은 층위. **자유 함수 `Observer(state, fn)`가
+아니라 메소드 `state:Observer(fn)`로 확정** — `state`가 항상 필요한
+필수 인자라 `:` 리시버 자리에 자연스럽게 들어가고(다른 형태면 인자
+두 개짜리 자유 함수가 되어 읽는 순서가 어색해짐), `architecture.md`의
+"함수지향 디폴트, `:` 체이닝은 예외적으로만(체이닝이 정말 편한 경우만)"
+원칙이 정확히 이 경우를 가리킴 — Store 값 변경 체이닝과 같은 예외
+카테고리.
 
 ```lua
 local observer = state:Observer(function()
@@ -490,6 +496,18 @@ Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 �
   비효율이라는 게 사용자 판단("store가 source 수십 개 만드는건 비효율이니
   둘이 다른 구현이라 봐도 될듯"). `Source(initial)` 류의 독립 생성자
   (정확한 이름은 구현 단계에서 확정)가 Store와 나란히 존재.
+- **생성자 스타일 확정(2026-08-06 후속 세션): Kotlin Compose식 "타입
+  이름 자체를 팩토리 함수로" — `Source(default)`, `Ref(default)`,
+  `Store({defaults})`.** Ref도 예외 없이 이 스타일을 따름 — Ref가
+  `Ref()`로 안 만들어질 특별한 이유는 없었고(이전 절에서 API 모양만
+  다루고 생성자를 명시 안 해서 생긴 공백), `architecture.md`의 "복사
+  구현 지양, 팩토리 함수로 대체" 원칙과도 정확히 일치. `Store({defaults})`도
+  같은 스타일로 지원(안 하고 `Store()`만 있어도 되지만, 구현이 쉬우면
+  지원) — 내부적으로 입력 테이블을 그대로 들고 있지 않고 `__real`/
+  metatable 저장 + `__newindex`/`__index` 프록시로 감싸면 됨. 이후
+  사용자가 그 defaults 테이블 원본을 직접 mutate하는 건 UB로 둠(방어
+  로직 불필요 — 오늘 세션에서 반복 확인된 "드문 오용 케이스를 위해
+  구조를 복잡하게 만들지 않는다"는 태도와 일치).
 
 **Slot 생존 확인 — 별도 메커니즘 아님, `canExecute` 재사용으로 확정**
 
@@ -521,7 +539,10 @@ Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 �
 
 `.claude/initreq/artworks/EventDrivenProgramming/`(Connection/Event/
 Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실제로 다른
-선택이 나와 재검토했으나 결론은 변경 없음:
+선택이 나와 재검토했으나 결론은 변경 없음. **이름 주의**: 아래에서 말하는
+`Observer`는 PA님 코드의 클래스 이름(pub-sub, 8개 `subscribeXxx` 헬퍼)이고,
+위 "`state:Observer(fn)`" 절에서 확정한 quad의 `Observer`와는 이름만
+같을 뿐 무관한 별개 개념 — 이 절은 순수 역사적 교차검증 기록으로만 읽을 것.
 
 - **전파 모델**: PA님의 pub-sub은 push-invalidate가 아니라 **push-값**
   (`Event:fire(...)`가 인자를 그대로 콜백에 전달, `Observable`의 `__newindex`가
