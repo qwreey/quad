@@ -64,6 +64,29 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
   "Store/State/Source 온톨로지" 절 참고 — **이 절 이후 2~4차 라운드에 걸쳐
   전부 확정됨, 더 이상 진행 중인 스레드 아님.**
 
+## 일반 원칙 — 독립 존재 가능한 프리미티브 vs 원천에 종속된 파생 데이터 (2026-08-06 후속 세션)
+
+위 "State는 자기 고유의 독립적 value 개념이 없다"는 관찰을 일반 원칙으로
+확장(사용자 관찰): quad의 개념들은 두 부류로 갈린다.
+
+- **독립 존재 가능한 프리미티브** — Source, Ref, Store, Modifier. 다른
+  무언가 없이 그 자체로 `Type(args)` 팩토리 함수로 만들어짐(`Source(default)`/
+  `Ref(default)`/`Store({defaults})`/`Modifier.Rounded(8)`, 위 "생성자
+  스타일 확정" 참고).
+- **원천에 종속된 파생 데이터** — State, Observer. 자기 혼자 존재할 수
+  없고 항상 특정 원천(Source/다른 State)에 의존 — 그래서 이 둘은 자유
+  함수 생성자가 없고, 항상 원천에 대한 메소드 호출로만 얻어진다
+  (`store.key`/`state:Compute(fn)`/`state:With(...)` → State,
+  `state:Observer(fn)` → Observer). "클래스 같은 독립 타입"이라기보다
+  "State를 관측·핸들링하는 데이터"에 가까움.
+
+이게 `base/bind-system-plan.md`의 `state:Observer(fn)`가 메소드고
+`Observer(state, fn)`라는 자유 함수가 없는 더 근본적인 이유 — 단순히
+"읽기 편해서"가 아니라 Observer 자체가 State처럼 원천 없인 존재할 수
+없는 카테고리라서. 앞으로 새 개념을 추가할 때도 이 두 부류 중 어디에
+속하는지가 생성자 모양(자유 함수 팩토리 vs 원천에 대한 메소드)을
+결정하는 기준으로 쓸 수 있음.
+
 과거 "미해결로 남은 것"으로 적었던 두 항목도 모두 해소됨: `:Compute`의
 캐싱/무효화 전략은 push-invalidate(신호만)/pull-recompute(`Get()` 시점)로
 확정(`base/bind-system-plan.md` "전파 모델" 절), `store "key"` 커링의 타입

@@ -344,7 +344,11 @@ stale하다" 수준이 아니라 **영영 갱신이 안 일어날 수 있음**. 
 두 개짜리 자유 함수가 되어 읽는 순서가 어색해짐), `architecture.md`의
 "함수지향 디폴트, `:` 체이닝은 예외적으로만(체이닝이 정말 편한 경우만)"
 원칙이 정확히 이 경우를 가리킴 — Store 값 변경 체이닝과 같은 예외
-카테고리.
+카테고리. **더 근본적인 이유**: `base/store-semantics.md`의 "독립 존재
+가능한 프리미티브 vs 원천에 종속된 파생 데이터" 원칙 참고 — Observer는
+State처럼 원천 없이는 존재할 수 없는 파생 데이터라, 애초에 "타입
+이름을 부르는 자유 함수 생성자" 카테고리에 안 속함(Source/Ref/Store/
+Modifier와는 다른 부류).
 
 ```lua
 local observer = state:Observer(function()
