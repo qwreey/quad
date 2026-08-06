@@ -191,10 +191,16 @@ CollectionService 태그 등)를 흉내낼 필요가 없고, quad-base 자체 �
 ## Store/State/Source 온톨로지 — 확정됨 (요약)
 
 Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로
-접근하면 Store 생성 시 이미 만들어둔 그 Source 객체를 그대로 반환한다
-(별도 wrapper 없음 — **[2026-08-06 후속 세션 정정]** 원래 "매번 새 State를
-감싸 반환"이었으나, `Source`가 구조적으로 `State`를 만족하도록 재구성되며
-wrapper 계층 자체가 불필요해짐). 전파는 push-invalidate(신호만)/
+접근하면 이미 만들어져 있는 Source 객체를 그대로 반환하거나(defaults로
+Store 생성 시 미리 만들어둔 경우), 아직 없으면 그 자리에서 만들어 저장한
+뒤 반환한다(별도 wrapper 없음 — **[2026-08-06 후속 세션 정정, 2026-08-07
+추가 정정]** 원래 "매번 새 State를 감싸 반환"이었으나, `Source`가 구조적으로
+`State`를 만족하도록 재구성되며 wrapper 계층 자체가 불필요해짐. 이후
+"Store 생성 시 전부 eager하게만 만들어진다"로 한 차례 더 정리됐다가, Luau
+타입이 런타임에 강제되지 않아 defaults 없이 만든 키를 나중에 `:Set()`하면
+크래시난다는 점이 지적돼 lazy `__index`+저장 생성도 같이 필요함이 확인됨 —
+상세는 `base/store-semantics.md` "Source가 State를 만족함" 절). 전파는
+push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
 의존성 중복 재계산 문제가 풀림. State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —

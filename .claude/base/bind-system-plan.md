@@ -535,9 +535,14 @@ read ...`처럼, State끼리 자유롭게 합성/파이핑 가능한 것이 최�
   **구조적으로 State를 만족(단방향 호환)** — `.value`/`:Get()`/`:With`/`:Compute`
   전부 지원 위에 `:Set(value)`/`:Emit()` 추가.
 - **Store** — Source들의 이름 붙은 모음, 그 이상 아님. `store.a`처럼 키로
-  접근하면 Store 생성 시 이미 만들어둔 **그 Source를 그대로 반환**(더 이상
-  별도 State wrapper를 매번 만들거나 따로 캐싱하지 않음 — Source 자체가
-  이미 State를 만족하므로 wrapper 계층 자체가 불필요해짐).
+  접근하면 **이미 만들어진 Source가 있으면 그대로 반환, 없으면 그 자리에서
+  만들어 저장한 뒤 반환**(더 이상 별도 State wrapper를 매번 만들거나 따로
+  캐싱하지 않음 — Source 자체가 이미 State를 만족하므로 wrapper 계층
+  자체가 불필요해짐. **[정정, 2026-08-07]** "Store 생성 시 전부 eager하게만
+  만들어진다"는 이전 서술은 부정확 — `defaults`가 선택이고 Luau 타입이
+  런타임에 강제 안 되므로, 생성 시점 eager 생성(각 `defaults` 키)과
+  `store.key` 접근 시점 lazy 생성(아직 없는 키를 그 자리에서 만듦)이 둘 다
+  필요함, 상세는 `base/store-semantics.md` 참고).
 - **State** — source(또는 다른 state)의 결과를 캐싱만 하는 존재, 자기 고유의
   독립적 value 개념이 없음. `state(state)`로 기존 state의 결과를 받아 새
   state를 만들어 분기 가능 — 이게 사실상 Unix 파이프 영감의 "State끼리
@@ -658,12 +663,18 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
   `Ref()`로 안 만들어질 특별한 이유는 없었고(이전 절에서 API 모양만
   다루고 생성자를 명시 안 해서 생긴 공백), `architecture.md`의 "복사
   구현 지양, 팩토리 함수로 대체" 원칙과도 정확히 일치. `Store({defaults})`도
-  같은 스타일로 지원(안 하고 `Store()`만 있어도 되지만, 구현이 쉬우면
-  지원) — 내부적으로 입력 테이블을 그대로 들고 있지 않고 `__real`/
-  metatable 저장 + `__newindex`/`__index` 프록시로 감싸면 됨. 이후
-  사용자가 그 defaults 테이블 원본을 직접 mutate하는 건 UB로 둠(방어
-  로직 불필요 — 오늘 세션에서 반복 확인된 "드문 오용 케이스를 위해
-  구조를 복잡하게 만들지 않는다"는 태도와 일치).
+  같은 스타일로 지원(`defaults`는 선택 — 안 주고 `Store()`만 호출해도
+  됨, 순수 편의용 초기값 템플릿).
+  **[정정, 2026-08-07]** 아래 두 문장은 이후 라운드에서 정정된 옛 서술 —
+  실제 메커니즘·mutate 취급은 `base/store-semantics.md` "Source가 State를
+  만족함" 절이 최종 소스: (a) "`__newindex`/`__index` 프록시로 감싸면
+  됨"은 이후 `store.key = value` 쓰기 문법 자체가 `:Set()`으로 옮겨가며
+  `__newindex`는 더 이상 관여 안 함(읽기 쪽 `__index`는 "없으면 그 자리에서
+  Source를 만들어 저장"하는 lazy 생성 용도로 여전히 필요, 위 store-semantics.md
+  참고). (b) "defaults 테이블 원본을 직접 mutate하는 건 UB로 둠"도 최신
+  모델과 안 맞음 — `defaults`는 라이브 백킹 스토리지가 아니라 "아직 안
+  만들어진 Source를 만들 때 참고하는 초기값 템플릿"으로만 쓰이므로, 생성
+  후 원본을 바꿔도 문제없고 UB가 아님.
 
 **Slot 생존 확인 — 별도 메커니즘 아님, `canExecute` 재사용으로 확정**
 
