@@ -1,7 +1,9 @@
 # 추가 프리미티브 필요성 조사 — 다른 프레임워크 대비 갭 분석
 
-**상태**: research — 조사 완료(2026-08-06), 사용자 판단 대기. 설계/구현 결정은
-전혀 안 됨, 이 문서는 "뭐가 빠졌을 수 있는지" 후보를 정리한 것뿐.
+**상태**: research — 사용자와 라이브 논의로 계속 수렴 중(2026-08-06). Context/
+Batch는 **결정 완료**(둘 다 프리미티브로 안 만듦). 키 기반 컬렉션 재조정은
+설계 진행 중(사용자가 "작업 전에 모든 정의를 마치고 싶다"고 명시 — M0 전
+완전 확정이 목표). Effect는 거의 수렴, 시그니처만 남음.
 
 ## 배경
 
@@ -13,140 +15,276 @@
 
 ## 조사 방법
 
-서브에이전트 2개를 병렬로 띄워 서로 다른 각도로 조사:
-1. **웹 프레임워크 서베이** — React/Vue 3/Solid/Svelte 5/MobX 등 주류
-   반응형 프레임워크 기준, quad 프리미티브 집합에 빠진 개념이 있는지 일반
-   지식 기반 평가.
-2. **Roblox 생태계 소스 기반 조사** — Fusion(`initreq/fusion/src`),
-   Vide(`initreq/vide/src`), quad v1(`initreq/quad/src`), PA님 실 프로덕션
-   코드(`initreq/artworks`)를 직접 읽고 파일:라인 근거로 검증.
-
-두 조사 모두 이미 있는 `research/framework-comparison-findings.md`(quad vs
-Fusion/Vide/react-lua 강점/약점 비교)와는 다른 질문 — 그 문서는 "같은
-개념을 quad가 얼마나 잘 구현했는가"를 다뤘고, 이 문서는 "개념 자체가
-통째로 없는 게 있는가"를 다룸.
+서브에이전트 여러 개를 병렬/순차로 띄워 조사(웹 프레임워크 서베이, Fusion/
+Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 결과를
+사용자와 라이브로 검증/반박/재조정. `research/framework-comparison-findings.md`
+(quad vs Fusion/Vide/react-lua 강점/약점 비교)와는 다른 질문 — 그 문서는
+"같은 개념을 quad가 얼마나 잘 구현했는가", 이 문서는 "개념 자체가 통째로
+없는 게 있는가/필요한가".
 
 ## 결론 요약
 
-| 후보 | 판정 | 심각도 |
+| 후보 | 판정 | 상태 |
 |---|---|---|
-| 키 기반 동적 컬렉션 재조정 | **진짜 빈 자리** | 높음 — 가장 시급 |
-| Effect/Watch(자동 cleanup 포함 사이드이펙트) | 진짜 빈 자리 | 중간 |
-| Batch/Transaction | 부분적 빈 자리(이미 문서화된 churn 문제와 직결) | 중~낮 |
-| Context(트리 하위 암묵 전파) | **기각 권고**(난이도 판정 완료, 2026-08-06) — 레이어드 Store로 대체 | - |
+| 키 기반 동적 컬렉션 재조정 | **진짜 빈 자리, 최우선** | 설계 진행 중 |
+| Effect(leaf 죽음에 확정 정리) | 진짜 빈 자리 | 거의 수렴, 시그니처만 남음 |
+| Batch/Transaction | **프리미티브로 안 만듦** — 문서화로 대체 | 결정 완료 |
+| Context(트리 하위 암묵 전파) | **기각** — 대안(레이어드 Store)도 철회 | 결정 완료 |
+| Observer에 cleanup 반환 계약 추가 | **기각** — 클로저 업밸류로 이미 충분 | 결정 완료 |
 | Untrack/Peek | 빈 자리 아님 | - |
 | Suspense/비동기 경계 | 빈 자리 아님(문서화 문제로 재분류) | - |
 | Error Boundary | 빈 자리 아님 | - |
 | Readonly wrapper | 빈 자리 아님 | - |
 
-두 에이전트가 서로 독립적으로 **키 기반 리스트/컬렉션 재조정**을 가장 크고
-명확한 빈 자리로 지목했다는 점이 이 조사에서 가장 신뢰도 높은 결론.
-
-## 1. 키 기반 동적 컬렉션 재조정 — 진짜 빈 자리, 최우선 검토 대상
+## 1. 키 기반 동적 컬렉션 재조정 — 최우선, 설계 진행 중
 
 **무엇인가**: 데이터 배열(인벤토리, 리더보드, 채팅로그처럼 삽입/삭제/
 재정렬되는 목록)을 UI로 렌더링할 때, 이전 렌더 결과와 새 데이터를
 **정체성(key) 기준으로 diff**해서 변경분만 생성/갱신/파괴하는 프리미티브.
-React `key` prop, Vue `v-for :key`, Solid `<For>`가 이 층위.
+React `key` prop, Vue `v-for :key`, Solid `<For>`, Fusion `ForPairs`/
+`ForKeys`/`ForValues`, Vide `indexes()`/`values()`가 이 층위. `base/
+slot-plan.md`의 `Slot`은 CRUD 껍데기일 뿐 diff 엔진이 아니라서 이 프리미티브가
+quad엔 없음(확인 완료, 근거는 문서 하단 소스 목록 참고).
 
-**Roblox 선례에 명확히 존재함**:
-- Fusion `State/ForPairs.luau:46-89` — key/value 쌍마다 독립 `SubObject`를
-  만들어 안 바뀐 키는 재계산을 건너뜀. `ForKeys.luau`도 같은 `For` 코어
-  위에서 파라미터만 바꿔 변형.
-- Vide `indexes.luau:11-119`, `values.luau:11-131` — 매 effect마다
-  `scopes` 맵을 순회, 새 항목은 `branch()` 생성, 사라진 항목은
-  `present(false)` 후 `destroy()`, 남은 항목은 값만 갱신(재생성 없음).
+### 왜 "매핑 함수" 직관이 안 통하는가
 
-**quad엔 없음(확인 완료)**: `base/slot-plan.md`의 `Slot`은 `add`/`remove`/
-`clear`/`get`/`set` CRUD를 지원하는 **뮤터블 배열**일 뿐, "입력 데이터를
-주면 알아서 diff해서 CRUD를 호출해주는" 계층이 없음. `base/*.md` 전체를
-grep해도 `ForPairs`/`ForKeys`/`keyed`/`diffing`류 언급 전무. quad v1에도
-`diff`/`reconcile`류 헬퍼는 없었음(grep 확인) — v1 사용자도 이 문제를
-프레임워크 밖에서 손으로 풀어왔다는 정황.
+React류는 매 렌더마다 새 가상 트리를 통째로 새로 만들고 reconciler가
+old/new를 diff한다 — 그래서 "그냥 다시 매핑"이 성립한다. quad는 컴포넌트가
+**한 번만 실행**되므로 그 "매 렌더"가 아예 없다. 그래서 이건 매핑 함수가
+아니라 **한 번 설치되면 스스로 diff-and-patch를 도는 Observer 변형**이다 —
+전달한 `renderFn`은 새 key가 나타났을 때 딱 한 번만 불리고, 그 이후로는
+값이 바뀌어도 절대 다시 안 불린다.
 
-**실전 영향**: 지금 구조로 동적 리스트를 만들려면 "이전 렌더된 항목을
-어딘가 들고 있다가 새 데이터와 직접 비교해 Slot의 add/remove를 손으로
-호출"하는 로직을 화면마다 재발명해야 함 — Fusion/Vide가 라이브러리
-차원에서 없애준 보일러플레이트(어떤 항목이 "같은 항목"인지, 순서가 바뀐
-항목을 삭제+재생성할지 in-place로 옮길지)가 quad엔 그대로 남음. Slot
-자체는 "부모는 데이터 테이블만 다루면 됨"이라는 좋은 저수준 기반이라,
-그 위에 diff 알고리즘 한 겹만 얹으면 되는 구조적으로 자연스러운 확장으로
-보임.
+### 메커니즘 스케치
 
-**PA님 코드 정황 증거**: artworks엔 실제 UI 화면 코드가 없어(백엔드/OOP/
-데이터스토어 패턴 위주) 직접 증거는 못 찾았지만, `Utility/Array.luau`가
-`map`/`filter`/`insert`/`isEqual` 같은 범용 배열 유틸을 팀이 별도로
-만들어 쓰고 있었다는 점 자체가 "배열 반복 작업을 프리미티브로 뽑아내는"
-습관이 있는 팀이라는 간접 방증.
+```
+key가 새로 나타남     → renderFn(key, itemState) 호출, itemSource:Set(초기값), Slot에 삽입
+key가 사라짐          → Slot에서 제거(파괴)
+key가 유지, 값만 변경  → renderFn 재호출 없음, itemSource:Set(새값)만 → itemState 구독한 리프만 갱신
+key가 유지, 순서만 변경 → renderFn 재호출 없음, Slot 위치만 조정(파괴/재생성 없음)
+```
 
-**열린 질문**: Slot의 확장 옵션으로 넣을지, 별도 최상위 프리미티브(가칭
-`Keyed`/`ForEach`/`List`)로 분리할지 — 설계 자체가 전혀 없는 상태. quad의
-"명시적 의존성" 철학(`:With`)과는 직교하는 문제라 `:With`/`:Compute` 확장이
-아니라 Slot 쪽 확장이 자연스러워 보인다는 게 조사 에이전트 소견이지만
-확정 아님.
+`itemState`는 이 프리미티브 내부 소유의 Source이고, `renderFn`엔 그 State
+뷰만 노출한다(Source 자체를 주면 renderFn이 실수로 `:Set()`해서 diff
+엔진과 경쟁할 수 있음).
 
-## 2. Effect/Watch(자동 cleanup 포함) — 진짜 빈 자리, 중간 심각도
+### 폼 팩터 — 자유 함수로 정정 (State 메소드 프레이밍 철회)
 
-React `useEffect`/Vue `watchEffect`/Solid `createEffect`는 "이펙트
-재실행 전/dispose 시 이전 cleanup을 프레임워크가 자동으로 불러준다"는
-계약을 가짐. quad `state:Observer(fn)`는 무효화 신호만 주고 cleanup 자동
-관리가 없음 — `fn`이 매번 뭔가를 새로 구독/생성한다면 이전 것을 정리하는
-책임이 전적으로 사용자 코드에 있음.
+이전 라운드에서 "독립 프리미티브 vs 원천 종속 파생 데이터" 원칙을 적용해
+`state:Keyed(...)`처럼 **State의 메소드**로 두자고 제안했는데, 사용자가
+정확한 반례를 지적함: **Source를 안 쓰는 컴포넌트는 이 메소드 자체에
+접근을 못 한다.** 정적 데이터(한 번만 렌더되고 다시는 안 바뀌는 리스트)를
+키 기반으로 렌더링하고 싶을 뿐인데 굳이 `Source(정적데이터)`로 감싸야
+한다면 불필요한 강제다.
 
-`process`/`retract` 쌍이 정확히 이 문제(이전 처리를 무르고 새로 처리)를
-풀지만, 이건 base가 소유한 KV 핸들러 계층에 갇힌 내부 메커니즘이지 사용자가
-임의의 부수효과(`RunService.Heartbeat` 구독, 폴링 타이머 등)에 쓸 수 있는
-공개 API가 아님. 이미 증명된 내부 패턴을 사용자 레벨 `Effect(fn)`(반환값을
-다음 실행 전 cleanup으로 호출)로 얇게 노출하는 정도로, 큰 설계 변경 없이
-채울 수 있는 자리로 보임.
+재검토 결과 — quad는 이미 **leaf 프로퍼티가 "리터럴 값 또는 State" 둘 다
+받는 폴리모픽 컨벤션**을 갖고 있다(`BackgroundColor3 = someColor`도
+`BackgroundColor3 = someState`도 같은 자리에서 됨, 정적이면 한 번만 세팅,
+State면 구독). 이 프리미티브도 같은 컨벤션을 따르는 게 자연스럽다 —
+**자유 함수**로 두고 `data` 인자가 plain array/table이든 `State<array>`/
+`Source<array>`든 둘 다 받게 한다. Plain이면 diff 로직 자체가 발동 안 하고
+(다시는 안 바뀌므로 최초 1회 배치만 하면 끝), State/Source면 위 메커니즘이
+동작한다. 이름은 아직 미정이지만 시그니처 형태:
 
-*참고*: Fusion `Cleanup`/`doCleanup`, Vide `cleanup()`은 "명시적 dispose
-콜백 등록 리스트" 모델이라 quad의 GC-native 철학과 정면 충돌하고 이미
-`base/comparison-fusion-vide.md`에서 반면교사로 다뤄짐 — 여기서 제안하는
-건 그것과 달리 *cleanup 콜백을 자동으로 호출해주는 것*(dispose 리스트
-직접 관리가 아님)이라 같은 문제가 아님, 혼동하지 말 것.
+```
+<이름>(data: {[K]: V} | State<{[K]: V}>, keyFn: (V, K) -> Key, renderFn: (Key, State<V>) -> Child) -> Slot
+```
 
-## 3. Batch/Transaction — 부분적 빈 자리, 이미 문서화된 문제와 직결
+### Slot 확장 — `Extract`, 그리고 확정해야 할 소유권 모델
 
-quad의 push-invalidate/pull-recompute 모델은 batching을 상당 부분 공짜로
-줌 — `Get()`이 호출되기 전까진 `Set()`을 연달아 해도 재계산이 안 일어남.
-다만 이미 문서에 자기진단된 예외가 있음: **store-bind 이벤트 핸들러는
-무효화 신호를 받는 즉시 pull**(`bind-system-plan.md` "자주 재계산되는
-State에 이벤트를 직접 물리면... churn 비용"). 즉 여러 Source가 `:With`로
-물린 파생 State에 store-bind 핸들러가 붙어 있으면, 여러 `Set()`을 순서대로
-실행하는 도중 중간 상태마다 핸들러가 여러 번 재실행되는 게 이미 확인된
-시나리오. `Batch(function() ... end)`류 opt-in 유틸은 이론적 완결성이
-아니라 **이미 확인된 실제 버그 클래스를 막는 것**이라 가치 있음 — 다만 새
-프리미티브라기보다 dispatch 엔진에 얹는 얇은 유틸 수준.
+순서 변경(파괴 없이 위치만 옮기기)을 처리하려면 Slot에 **"파괴하지 않고
+빼내기"** 연산이 필요하다. 기존 확정 사항(`slot-plan.md`):
 
-Vide `batch.luau:4-21`가 정확히 이 역할(여러 `source:set()`을 하나의
-flush로 묶음).
+> retract되는 slot은 옮겨지지 않고 그냥 폐기된다 ... React의 portal류로
+> 나중에 옮길 수 있게 하는 것도 검토됐으나 이번 마일스톤에서는
+> 오버엔지니어링으로 판단, 하지 않음.
 
-## 4. Context(트리 하위 암묵 전파) — 난이도 판정 완료, 기각 권고 (2026-08-06)
+이건 **"다른 Slot으로 옮기기"(portal)를 안 한다**는 결정이지 **"같은 Slot
+안에서 위치만 바꾸기"**를 막는 결정이 아니다 — 순서 재조정은 후자만
+필요하므로 이 결정과 충돌하지 않는다.
 
-Fusion `Utility/Contextual.luau:28-88`(코루틴 키 weak table push-pop), Vide
-`context.luau:14-72`(scope 그래프 조회)가 대응 개념. 서브에이전트에게 구현
-난이도 평가를 위임한 결과(상세 근거는 아래 "진행 중 논의" 절의 Context
-서브섹션 참고), **동기적 저작 트리 안에서만 작동하는 얕은 버전은 구현
-난이도가 낮지만(Fusion 코드를 사실상 그대로 이식 가능), quad가 이미
-정상 패턴으로 확정한 "Slot에 이벤트 핸들러/코루틴에서 비동기로 자식이
-추가되는 경우"엔 조용히 기본값으로 폴백하는 함정이 생김**을 확인 —
-Roblox Luau에 thread-local/async-context-propagation 훅이 없어 완전
-자동화는 사실상 불가능(플랫폼 한계, 구현 노력의 문제가 아님). Node
-`AsyncLocalStorage`/Python `contextvars`가 같은 문제를 "자동"이 아니라
-"async 경계마다 명시적 캡처+재진입"으로 푸는 것과 동일한 결론.
+**사용자가 명확히 한 최종 소유권 모델(확정)**:
+- **Slot 자체의 바인딩은 귀속·불가역** — 한 번 마운트되면 그 Slot 컨테이너
+  자체를 다른 곳에 다시 바인드할 수 없음(기존 "재마운트 시 throw"와 동일).
+- **Slot 안에 있는 개별 요소의 입출력은 자유** — 넣고 빼고 다시 넣는 것에
+  제약 없음.
+- **단, 요소의 `.Parent`를 Slot API를 거치지 않고 직접 만지는 건 UB.**
 
-**기각 권고 근거**: 얕은 버전조차 (a) quad가 스스로 정상 패턴으로 확정한
-Slot 비동기 추가에서 가장 먼저 깨지고, (b) `research/debug-tooling-plan.md`의
+제안:
+
+```
+Slot:Extract(key) -> element   -- 파괴 없이 빼냄
+Slot:Add(element, index?)      -- 기존 그대로, Extract로 뺀 것도 다시 넣을 수 있음
+```
+
+리오더는 `Extract` + `Add(index)` 조합으로 구현(별도 `Move`/`Swap` 원시
+연산은 새로 안 만듦 — 원시 개수를 최소화). 덤으로 이게
+`pre-implementation-audit.md` 1-8번("isMounted가 element 단위와 Slot
+컨테이너 단위를 뭉뚱그려 서술됨")을 자연스럽게 푼다 — `Extract`가 있으면
+"element의 mounted 여부는 가변, Slot 컨테이너 자체의 mounted 여부는
+불변"으로 두 개념이 명확히 분리된다.
+
+### 이름 후보 (확정 아님, 용어 정리 라운드 대상)
+
+`Keyed`는 탈락 — 타이핑이 어색하고 "Slot을 렌더한다"는 느낌과도 안 맞는다는
+사용자 피드백. 후보:
+- `Render(data, keyFn, renderFn) -> Slot` — 가장 직접적("슬롯을 렌더한다").
+  단, quad는 "렌더 주기가 없다"를 아키텍처 원칙으로 강조해왔는데 이 이름만
+  "Render"를 쓰면 혼동 가능성 있음.
+- `Draw(data, keyFn, renderFn) -> Slot` — 짧음, "Render"와의 충돌은 피하지만
+  즉시모드 GUI(Dear ImGui류) 뉘앙스를 가져올 수 있어 quad의 유지형(retained)
+  모델과 어긋나 보일 수 있음.
+- `List(data, keyFn, renderFn) -> Slot` — 중립적, 결과가 "리스트"라는 것만
+  전달, 메커니즘을 과다 암시 안 함.
+
+세 후보 다 트레이드오프가 있어 확정 안 함 — `.claude/question.md`의 용어
+정리 라운드에 후보로 올려둠.
+
+### 남은 열린 질문
+
+- 최종 이름(위 후보 중 또는 새 후보).
+- `Extract`/`Add(index)` 조합의 정확한 시그니처(에러 조건: 이미 다른 Slot에
+  있는 요소를 Add하면? 존재 안 하는 key를 Extract하면?).
+- Fusion의 `ForPairs`/`ForKeys`/`ForValues` 3종 분리를 안 따르고
+  `renderFn(key, itemState)` 1종으로 통합하는 안이 여전히 유력(단순화
+  후보, `pre-implementation-audit.md`의 "단순화 후보" 렌즈와 같은 결) —
+  최종 확정 아님.
+- **목표: M6(Slot) 착수 전, 가급적 M0 스파이크 이전에 이 전체를 완전히
+  정의**(사용자 명시적 요청) — 이 프리미티브가 Slot 자체의 CRUD 시맨틱
+  (`pre-implementation-audit.md` 1-7, 지금 미정)과 얽혀 있어서, Slot을
+  먼저 정하고 나중에 여기를 끼워맞추면 재작업이 날 가능성이 높음. Slot
+  CRUD 시맨틱을 정의할 때 이 프리미티브의 요구사항을 같이 고려할 것.
+
+## 2. Effect — 거의 수렴, 시그니처만 남음
+
+### Observer에 cleanup 반환 계약을 추가하는 안 — 기각
+
+React `useEffect`류처럼 "`fn`이 `nil | () -> ()`를 반환하면 다음 재실행
+직전에 그걸 불러준다"를 `state:Observer(fn)`에 얹는 안을 검토했으나
+**사용자가 기각** — 클로저 업밸류로 이미 쉽게 되고 잘 작동하는데
+(`local lastConn; state:Observer(function() if lastConn then
+lastConn:Disconnect() end; lastConn = ... end)`), 프레임워크가 이걸
+대신해줄 이유가 약하다는 판단. 이건 `pre-implementation-audit.md`
+3-1번("`:Compute(fn)`의 `previous` 인자 — 클로저 업밸류로 이미 되는 걸
+별도 API로 만든 것일 수 있음")과 **정확히 같은 논리** — 일관성 있는
+판단으로 보임(3-1 자체도 같은 이유로 재검토 대상일 수 있음, 별도 항목).
+
+### Effect — 별도의 단순한 primitive로, "leaf 죽음에 확정 정리"만 담당
+
+Roblox엔 `task.spawn`으로 코루틴에 반복문/타이머를 돌리는 패턴이 흔하고,
+Luau 테이블엔 `__gc` 같은 GC 시점 훅이 없어서 "이게 진짜 사라지는 순간"을
+아는 유일한 방법은 `Instance.Destroying`류 명시적 신호뿐이다. 이런
+케이스(타이머 시작 → leaf가 죽을 때 반드시 정지)를 위한 별도 primitive는
+필요하다는 데 합의:
+
+```
+Effect(fn) -> EffectHandle   -- fn을 즉시 1회 실행, 리턴값(nil | () -> ())은
+                              -- 이 Effect가 바인드된 leaf가 죽을 때 정확히 1회 호출
+```
+
+Observer와 달리 **재실행 개념이 없다** — 값 변화에 반응해 다시 도는 건
+Observer(+클로저로 직접 짠 cleanup)의 영역이고, Effect는 순수하게 "설치 +
+확정 정리" 페어 하나만 담당한다. children 배열에 leaf로 놓는 기존 Observer
+바인딩 패턴을 그대로 재사용(그 leaf가 살아있는 동안만 유효, leaf가 죽으면
+정리 콜백 호출). 비용은 leaf당 실제 Destroying 바인딩 하나(공유 weak
+table로 되는 Observer보다 비쌈) — 사용자가 필요할 때만 쓰는 걸로 충분.
+
+**상태**: 사실상 수렴 — 시그니처(`fn`의 인자 유무, `EffectHandle`의 모양)만
+다듬으면 `base/`로 승격 가능해 보임. 계속 논의 원하면 이어감.
+
+## 3. Batch/Transaction — 프리미티브로 안 만듦 (결정 완료)
+
+### "즉시 pull"이 뭔지 (참고용 예시)
+
+store-bind 핸들러(예: `Frame { BackgroundColor3 = total }`)는 lazy가
+아니다 — 화면에 실제로 반영하는 "누군가"가 바로 이 핸들러 자신이라,
+무효화 신호를 받자마자 스스로 `Get()`하고 바로 대입한다:
+
+```lua
+local total = a:With(b):Compute(function(av, bv) return av + bv end)
+Frame { BackgroundColor3 = total }
+
+a:Set(1) -- total 무효화 → 핸들러가 즉시 (av=1, bv=이전b)로 재계산+대입
+b:Set(2) -- total 무효화 → 핸들러가 즉시 (av=1, bv=2)로 다시 재계산+대입
+-- BackgroundColor3가 중간값을 한 번 거쳐가고, 두 번 대입됨
+```
+
+### 왜 lexical block 방식(Solid `batch()`/MobX `runInAction()`)을 안 쓰는가
+
+`Batch(fn)`을 "플래그 세우고 fn 실행, 끝나면 flush"로 구현하면 **fn이
+yield하는 순간 위험해진다**(사용자 지적, 정확함):
+
+1. 플래그가 전역이면, yield 중 스케줄러가 돌리는 무관한 코루틴의 `Set()`이
+   이 Batch에 잘못 휘말릴 수 있음.
+2. 플래그를 코루틴 스코프로 만들어도(Fusion `Contextual`류 코루틴 키 weak
+   table), `fn` 안에서 새 코루틴을 스폰하는 API(Promise, `task.spawn`)를
+   부르면 그 새 코루틴은 배치 스코프를 상속 못 받아 일부 Set이 새어나감.
+3. `fn`이 영원히 재개 안 되면(장시간 대기, 리크된 코루틴) flush가 영영 안
+   일어나 store-bind 핸들러들이 화면을 무기한 stale 상태로 방치 — 즉시
+   pull보다 더 나쁜 실패 모드.
+
+이건 구현을 잘 짜서 피할 수 있는 버그가 아니라 **lexical block 모델
+자체가 협조적 스케줄링 환경과 구조적으로 안 맞는 것**으로 판단.
+
+### 결정: 프리미티브 없음, 대신 문서화 두 갈래
+
+1. **심화(사용자 대상) 최적화 팁**: "여러 Source를 한꺼번에 바꿀 때
+   store-bind가 걸린 파생값의 재계산/재대입이 중복되지 않도록 파이프라인
+   구성과 업데이트 순서에 유의하라"를 실용 가이드로 문서화. 예: 정말
+   여러 값이 자주 같이 바뀐다면 애초에 하나의 State로 묶어서 `:Set()`을
+   한 번만 하는 설계를 권장.
+2. **quadnomicon(프레임워크 설계자 대상) 에세이**: "왜 Batch/Transaction이
+   없는가" — 위 코루틴 yield 위험 분석을 근거로, Solid/MobX식 lexical
+   transaction이 협조적 스케줄링(코루틴) 환경에서 왜 근본적으로 위험한지
+   설명. `documentation-content-map.md`에 후보로 등록함(아래 "문서화
+   백로그" 참고).
+
+## 4. Context — 기각 확정, 레이어드 Store 대안도 철회 (결정 완료)
+
+### 난이도 판정 요약
+
+서브에이전트 조사 결과: 동기적 저작 트리에 한정한 얕은 버전(Fusion
+`Contextual`류 코루틴 키 weak table push-pop)은 구현 난이도 **낮음**이지만,
+quad가 정상 패턴으로 확정한 "Slot에 이벤트 핸들러/코루틴에서 비동기로
+자식이 추가되는 경우"엔 **에러 없이 조용히 기본값으로 폴백**하는 함정이
+있음. 완전 자동(비동기 추가까지 자동 전파)은 Roblox Luau에
+thread-local/async-context-propagation 훅이 없어 **사실상 불가**(플랫폼
+한계, Node `AsyncLocalStorage`/Python `contextvars`도 "자동"이 아니라
+"async 경계마다 명시적 캡처+재진입"으로 같은 문제를 품).
+
+### 기각 이유
+
+얕은 버전조차: (1) `base/slot-plan.md`가 정상 패턴으로 명시한 Slot 비동기
+추가에서 가장 먼저, 가장 조용히 깨짐. (2) `research/debug-tooling-plan.md`의
 "모든 연결은 선언된 그래프여야 한다"는 quad-debug 철학과 충돌하는 안 보이는
-채널을 만듦. 대신 **레이어드 Store**(자식 Source 모음이 자기한테 없는 키는
-부모로 `__index` 폴백 — Modifier/Source가 이미 쓰는 델리게이션 패턴과 동일
-계열)가 Context의 핵심 가치(서브트리별 오버라이드)를 명시적 전달 철학과
-비동기 안전성을 유지하면서 대부분 재현함 — 오버라이드 Store 참조는 여전히
-prop으로 명시 전달해야 하지만, 이건 `component-composition-plan.md`가 이미
-확정한 비용이라 새로 감수하는 게 아님. Roblox `require()` 캐싱 싱글톤(단일
-전역, 서브트리 오버라이드 불가)은 오버라이드가 필요 없는 단순 케이스에는
-여전히 충분.
+채널을 만듦.
+
+### 레이어드 Store 대안도 철회 (사용자 반박 수용)
+
+이전 라운드에서 대안으로 "레이어드 Store"(자식 Source 모음이 없는 키는
+부모로 `__index` 폴백)를 권고했는데, 사용자 반박으로 철회함:
+
+- quad는 이미 **타입으로 강제되는 명시적 Store 전달**을 갖고 있고, 이건
+  Context의 "Provider 안 넣으면 조용히 기본값/에러"보다 **더 안전**하다
+  (컴파일타임에 걸림 vs 런타임에 조용히 새는 값) — Context보다 나은 지점.
+- "필드 일부만 오버라이드, 나머지는 부모 값 그대로"가 필요하면, 오버라이드
+  지점에서 `Store({...부모값, 변경필드=새값})`을 **한 번 명시적으로**
+  만들어서 그 지점부터 평소처럼 prop으로 넘기면 끝 — Modifier가 이미 쓰는
+  "merge, 나중 게 이김" 패턴 재사용 가능, 새 primitive 불필요. 레이어드
+  Store(읽는 시점에 몇 단계를 거슬러 올라가는지 안 보이는 자동 폴백)는
+  정확히 Context와 같은 이유(디버깅 어려움 — "이 값이 왜 이거지?"를
+  추적하려면 부모 체인을 다 훑어야 함)로 얻는 것보다 잃는 게 크다.
+- 서드파티 라이브러리가 뭔가 필요하면, 타입이 강제하는 명시적 요구
+  (`props.Theme: Store<Theme>`)가 "몰래 안 줘서 죽는다"보다 나은 실패
+  모드 — Slot 기반 저작 모델(부모가 자손을 직접 구성)에서도 이런 요청은
+  자연스럽게 props로 흐름.
+
+### 결론
+
+Context, 레이어드 Store 둘 다 프리미티브로 만들지 않음. "왜 Context가
+없는가"(명시적 Store 전달이 이미 그 역할을 하고, 타입 강제가 Context의
+실패 모드보다 안전하다는 논증)도 quadnomicon 에세이 후보로 등록(아래
+"문서화 백로그" 참고).
 
 ## 빈 자리 아닌 것으로 확인된 것들
 
@@ -174,112 +312,24 @@ prop으로 명시 전달해야 하지만, 이건 `component-composition-plan.md`
 - **디바운스/스로틀**: Fusion/Vide/v1 어디에도 공개 프리미티브로 없음 —
   세 레포 모두 없다는 것 자체가 "quad도 굳이 안 만들어도 된다"는 정황.
 
-## 제안 우선순위 (결정 아님, 검토 순서 제안)
+## 문서화 백로그 (2026-08-06, `documentation-content-map.md`에도 반영)
 
-1. **키 기반 컬렉션 재조정** — 실전 영향이 가장 크고, 설계가 완전히
-   빈 상태라 가장 먼저 사용자와 상의할 가치.
-2. **Effect 공개 API** — `process`/`retract`가 이미 증명한 패턴을 얇게
-   노출하는 정도라 구현 비용 낮음.
-3. **Batch** — 이미 문서화된 churn 문제의 직접 해법, opt-in 유틸 수준.
-4. **Context** — 기각 권고(2026-08-06 난이도 판정 완료). 서브트리 오버라이드가
-   실제로 필요해지면 Context가 아니라 **레이어드 Store**를 검토할 것.
+- **quadnomicon 에세이**: "왜 Batch/Transaction이 없는가"(코루틴 yield
+  위험), "왜 Context가 없는가"(명시적 타입 강제 Store 전달이 이미 그
+  역할을 함).
+- **심화 문서**: "여러 Source를 한꺼번에 바꿀 때 중복 재계산/재대입을
+  피하는 파이프라인/업데이트 순서 최적화 팁"(Batch 없이 사용자가 직접
+  할 수 있는 것).
 
-## 진행 중 논의 (2026-08-06 후속 세션)
+## 제안 우선순위
 
-메인 브랜치에 병합된 `pre-implementation-audit.md`의 1-7번("Slot의
-`add`/`remove`/`clear` CRUD 의미론이 정의돼 있지 않음")과 정확히 맞물리는
-타이밍이라, 키 기반 컬렉션 재조정을 Slot 설계에 바로 접목해보는 논의 시작.
-
-### 키 기반 컬렉션 재조정 — 설계 스케치 (확정 아님)
-
-사용자가 처음부터 "Slot의 상위 요소"로 만들고 싶다고 명시 — 두 가지 프레이밍을
-제시함: (a) Slot을 만들어주는 팩토리 함수, (b) State의 "터미널 연산"(스트림의
-`.collect()`류)으로 Slot을 얻는 것(`state:?() -> Slot`).
-
-**두 프레이밍 중 (b)가 quad의 기존 원칙과 더 잘 맞음** — 2026-08-06 세션에서
-이미 확정된 "독립 프리미티브 vs 원천 종속 파생 데이터" 원칙(`state:Observer(fn)`가
-메소드고 자유 함수가 아닌 이유와 같은 논리, `store-semantics.md`)을 그대로
-적용하면: 키 기반 Slot은 그 뒤에 있는 State 없이는 존재 의미가 없는 **파생
-데이터**이므로, 자유 함수 팩토리(`Type(args)` 패턴)가 아니라 **State의
-메소드**로 두는 게 일관적. 가칭 `state:Keyed(keyFn, renderFn) -> Slot`.
-
-**메커니즘 스케치**(전부 이미 확정된 조각들의 재조합 — 새 마운트/디스패치
-장치 불필요):
-- 내부적으로 `state:Observer(fn)`과 동형 — `fn`이 무효화 신호를 받을 때마다
-  `Get()`으로 새 테이블을 pull하고, 이전에 본 key 집합과 diff.
-- 새 key → `renderFn(key, itemState)` 호출 후 `Slot:add(...)`.
-- 사라진 key → `Slot:remove(...)`(기존 확정 시맨틱대로 `retract`=폐기, 옮기지
-  않음 — `slot-plan.md`와 자동으로 일관됨).
-- 유지되는 key → Slot 조작 없이 그 항목의 `itemState`에만 새 값을 반영(재생성
-  안 함) — Fusion `SubObject`/Vide `values()`가 하는 "값만 갱신"과 동일 효과를,
-  `renderFn`이 `itemState: State<V>`를 받는 것만으로 자연스럽게 얻음(항목 값이
-  바뀌어도 renderFn 자체는 재호출 안 되고, `itemState`를 구독한 리프만
-  갱신됨).
-- 소유권: 반환된 Slot은 기존 "엄격한 단일 마운트" 규칙 그대로 적용 — 새 규칙
-  불필요.
-- 패키지 경계: diff 알고리즘(순수 데이터 로직)은 `quad-base`, 실제 Instance
-  생성/제거는 기존 Slot 핸들러 경로 그대로 재사용 — `slot-plan.md`가 이미
-  확정한 base/roblox 분리와 동일 패턴.
-
-**열린 세부**: Fusion은 `ForPairs`/`ForKeys`/`ForValues` 3종으로 나뉘는데,
-quad는 `renderFn(key, itemState)`가 항상 key+itemState를 다 주고 안 쓰는
-쪽은 그냥 무시하게 하는 **1종 통합안**이 단순화 후보로 보임(3개로 쪼갤
-근거가 약해 보임 — `pre-implementation-audit.md`의 "단순화 후보" 렌즈와
-같은 결). `keyFn` 생략 시 입력이 이미 맵이면 맵 key를 그대로 identity로
-쓰는 것도 자연스러운 기본값 후보. 이름(`Keyed`/`Each`/`List`/`ToSlot`)은
-용어 정리 라운드로 이월.
-
-**다음 단계**: 사용자 피드백 반영해 스케치 다듬고, 이견 없으면 M6(Slot)
-착수 시점에 `slot-plan.md`/`bind-system-plan.md`에 정식 반영.
-
-### Context — 구현 난이도 판정 완료 (2026-08-06)
-
-사용자 확인: Context는 React `useContext`(Provider가 위에서 값을 심고,
-하위 어디서든 prop 없이 읽는 패턴)와 같은 개념 맞음. 구현 난이도가 채택
-여부를 사실상 결정한다는 사용자 판단에 따라 서브에이전트에게 난이도 평가를
-위임했고, 결과 수렴 완료 — **위 "4. Context" 절이 최종 결론**. 요지만
-재정리:
-
-- **난이도 등급**: 동기적 저작 트리에 한정한 얕은 버전 = **낮음**(Fusion
-  `Contextual`의 "코루틴을 키로 하는 weak table push-pop"을 그대로 이식
-  가능, quad-base 단독으로 완결, quad-roblox 분리조차 불필요). 완전
-  자동(비동기 Slot 추가까지 자동 전파) = **매우 높음, 사실상 불가** —
-  Roblox Luau에 thread-local/async-context-propagation 훅이 없어서 quad가
-  소유하지 않는 임의의 콜백 경계(`Signal:Connect`, `task.spawn`, Promise)를
-  가로챌 방법이 없음. 이건 quad 설계의 문제가 아니라 플랫폼 자체의 한계.
-- **사용자의 직관이 정확히 맞았음**: 동기 콜스택 부분은 싸지만, Slot에
-  나중에(이벤트 핸들러/코루틴에서) 비동기로 자식이 추가되는 케이스에서
-  Fusion 방식은 **에러 없이 조용히 `defaultValue`로 폴백**함 — "테마가
-  가끔 기본값으로 보인다"는 형태의 원인 추적 어려운 버그를 만듦(Vide
-  방식은 폴백 대신 에러를 던지지만, 애초에 이 시나리오를 지원 대상으로
-  설계한 적이 없어 참고할 답이 없기는 마찬가지). Node
-  `AsyncLocalStorage`/Python `contextvars`도 "자동"이 아니라 "async 경계마다
-  명시적으로 값을 캡처해서 재진입"하는 방식으로 같은 문제를 풀고 있어,
-  이식해도 결국 "prop drilling 비용"이 "매 async 경계 캡처+재진입 보일러
-  플레이트 비용"으로 자리만 옮김.
-- **기각 이유(효용 대비 비용)**: 얕은 버전조차 채택할 가치가 낮음 — (1)
-  `base/slot-plan.md`가 정상 패턴으로 명시한 Slot 비동기 추가에서 가장
-  먼저, 가장 조용히 깨짐, (2) `research/debug-tooling-plan.md`의 "모든
-  연결은 선언된 그래프여야 한다"는 quad-debug 철학과 충돌하는 안 보이는
-  채널을 만듦.
-- **대안 비교 결과**: Store 병합(난이도 매우 낮음, 그러나 drilling 자체는
-  안 없앰) < 타입 안전 서브셋 전달(난이도 낮음, 하지만 트리 전파 문제와는
-  별개 축이라 해결책이 아님) < **레이어드 Store**(난이도 낮음~중간, Context의
-  핵심 가치인 "서브트리별 오버라이드"를 대부분 재현하면서 명시적 전달
-  철학·비동기 안전성 둘 다 유지 — Modifier의 제네릭 `__index` 트릭,
-  Source가 State를 만족시키는 `__index` 델리게이션과 같은 이미 검증된
-  패턴 계열이라 구현 리스크도 낮음) — **레이어드 Store가 최종 권고안.**
-  사용자가 스스로 "어려울 것 같다"고 짐작했던 것과 달리, quad2-try에서
-  금지한 `Class:Extend()`류 행위(메소드) 상속과는 다른 층위(순수 데이터
-  값 조회의 `__index` 폴백일 뿐)라 실제로는 낮은 난이도로 판정됨 — 다만
-  Luau 타입 레벨에서 "자식 키 ∪ 부모의 나머지 키"를 구조적으로 표현하는
-  부분은 M0가 이미 검증 대상으로 잡은 `Source<T> satisfies State<T>`류
-  솔버 위험과 비슷한 급이라, 도입한다면 같은 스파이크에 끼워 검증하는 게
-  합리적.
-- **결론**: Context라는 이름의 범용 프리미티브는 채택하지 않음. 테마/로케일
-  서브트리 오버라이드가 실제로 필요해지는 시점에 레이어드 Store를 별도
-  후보로 검토(지금 착수 우선순위 낮음, 키 기반 컬렉션 재조정이 여전히
-  더 시급).
+1. **키 기반 컬렉션 재조정** — 여전히 최우선, 설계 진행 중. M0 이전 완전
+   확정이 목표.
+2. **Effect** — 거의 수렴, 시그니처만 다듬으면 됨.
+3. **Batch** — 결정 완료(프리미티브 없음, 문서화로 대체), 더 이상 검토
+   대상 아님.
+4. **Context** — 결정 완료(기각, 레이어드 Store도 철회), 더 이상 검토
+   대상 아님.
 
 ## 참고: 조사에 사용한 소스 근거
 

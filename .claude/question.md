@@ -10,29 +10,36 @@
 
 ## 지금 열려있는 것 (우선순위순)
 
-### 0. 추가 프리미티브 필요성 — 사용자 요청, 조사 완료(2026-08-06)
+### 0. 추가 프리미티브 필요성 — 사용자 요청, 대부분 수렴(2026-08-06)
 
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것
-같나요. 이것만으로 이 프로젝트는 충분하다 생각해요?" — 웹 프레임워크/
-Fusion/Vide/quad v1 소스를 서브에이전트 2개로 병렬 조사 완료, 상세는
-`research/additional-primitives-plan.md`. 요지:
+같나요. 이것만으로 이 프로젝트는 충분하다 생각해요?" — 여러 서브에이전트
+조사 + 사용자와 라이브 논의로 계속 수렴 중, 상세는 `research/
+additional-primitives-plan.md`. 요지:
 
-- **키 기반 동적 컬렉션 재조정(가장 시급, 설계 스케치 진행 중)**: Fusion
+- **키 기반 동적 컬렉션 재조정(유일하게 아직 열려있음, 최우선)**: Fusion
   `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
-  `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 — `Slot`은
-  CRUD 껍데기일 뿐 diff 엔진이 아님(`pre-implementation-audit.md` 1-7번과
-  같은 지점). 가칭 `state:Keyed(keyFn, renderFn) -> Slot`(State의 파생
-  데이터 메소드로 프레이밍, `state:Observer(fn)`와 같은 논리) 스케치
-  진행 중 — 사용자 피드백 반영 중, 상세는 `research/additional-primitives-plan.md`
-  "진행 중 논의" 절.
-- Effect/Watch(자동 cleanup 공개 API), Batch/Transaction(이벤트 store-bind
-  churn 문제 직결)은 부차적 후보로 확인, 착수 여부 미정.
-- **Context — 기각 권고로 결론(2026-08-06, 서브에이전트 난이도 판정
-  완료)**: 완전 자동 버전은 Roblox Luau 플랫폼 한계로 사실상 불가, 얕은
-  버전(동기 콜스택 한정)도 quad가 정상 패턴으로 확정한 Slot 비동기 추가에서
-  조용히 깨짐 + quad-debug의 "모든 연결은 선언된 그래프" 철학과 충돌 —
-  대신 **레이어드 Store**(`__index` 델리게이션 기반 서브트리 오버라이드)를
-  실제 필요 시점에 검토할 것으로 대체 결정.
+  `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 —
+  `pre-implementation-audit.md` 1-7번(Slot CRUD 미정의)과 같은 지점이라
+  같이 정의해야 함. **자유 함수**(plain data 또는 State 둘 다 받는
+  폴리모픽 시그니처, State 메소드 프레이밍은 Source 안 쓰는 컴포넌트가
+  못 쓴다는 반례로 철회됨), Slot에 파괴 없이 빼내는 `Extract` 연산 추가
+  필요 — 최종 이름만 미정(아래 "용어 정리" 절에 후보 추가). **사용자가
+  "작업 전에 모든 정의를 마치고 싶다"고 명시** — M0 이전 완전 확정 목표.
+- **Effect — 거의 수렴**: leaf가 죽을 때 확정적으로 정리 콜백을 부르는
+  단순 primitive(재실행 개념 없음, Observer와 별개)로 합의, 시그니처만
+  남음. Observer에 cleanup 반환 계약을 얹는 안은 기각(클로저 업밸류로
+  이미 충분 — `pre-implementation-audit.md` 3-1과 같은 논리).
+- **Batch/Transaction — 프리미티브로 안 만들기로 결정 완료**: lexical
+  transaction 블록이 코루틴 yield 위에서 구조적으로 위험(전역/코루틴
+  스코프 플래그 둘 다 새 코루틴 스폰이나 영구 yield에 깨짐) — 대신
+  심화 최적화 팁 + quadnomicon "왜 없는가" 에세이로 문서화.
+- **Context — 기각 확정, 대안이던 레이어드 Store도 철회**: 완전 자동
+  버전은 Roblox Luau 플랫폼 한계로 사실상 불가, 얕은 버전도 Slot 비동기
+  추가에서 조용히 깨짐 + quad-debug 철학과 충돌. 레이어드 Store 대안은
+  사용자 반박으로 철회 — 이미 있는 타입 강제 명시적 Store 전달 +
+  오버라이드 지점에서 새 Store를 만들어 넘기는 것으로 충분하다는 판단.
+  둘 다 "왜 없는가" quadnomicon 에세이 대상.
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단.
 
@@ -68,6 +75,12 @@ Fusion/Vide/quad v1 소스를 서브에이전트 2개로 병렬 조사 완료, �
   통로"에서 "아무 사용자 값이나 담는 범용 값 박스"로 넓어져서(`base/
   bind-system-plan.md` "Ref 일반화" 절), 이름이 여전히 넓어진 의미에
   맞는지 재검토 대상.
+- **키 기반 동적 컬렉션 재조정 프리미티브 이름(3순위, 2026-08-06 추가)**:
+  `Keyed`는 타이핑이 어색하고 "Slot을 렌더한다"는 느낌과 안 맞는다는
+  사용자 피드백으로 탈락. 후보: `Render`(가장 직접적이지만 "quad엔 렌더
+  주기가 없다"는 기존 원칙과 이름이 충돌해 보일 수 있음), `Draw`(짧지만
+  즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
+  미정, `research/additional-primitives-plan.md` 1번 절 참고.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/

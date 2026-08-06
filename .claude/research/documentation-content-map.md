@@ -122,6 +122,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
 14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`
 15. 왜 Source가 State를 구조적으로 만족하는가(Svelte Writable/Readable과 같은 서브타입 모양, `RefSource`/`StoreSource` 중간안이 왜 기각됐는가) — `store-semantics.md`, `component-composition-plan.md`
+16. 여러 Source를 한꺼번에 바꿀 때 중복 재계산/재대입을 피하는 파이프라인/업데이트 순서 최적화 팁(Batch 프리미티브 없이 사용자가 직접 할 수 있는 것) — `research/additional-primitives-plan.md` "문서화 백로그" 절(2026-08-06 신설)
 
 (13번이었던 "Fusion/Vide 경험자용 비교 섹션"은 2026-08-06 재분류로 아래 6번
 `quadnomicon`으로 이동)
@@ -140,6 +141,20 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
    "왜 이중 mount를 막는가"를 Fusion/Vide 내부 동작과 나란히 비교
 2. `:With`+`:Compute` 명시적 파생값이 Vide의 암묵적 ambient stack 대신
    채택된 이유 — Vide 경험자 대상 비교
+
+**2026-08-06 후속 세션에서 추가된 후보(둘 다 `research/
+additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
+3. 왜 Batch/Transaction이 없는가 — Solid `batch()`/MobX `runInAction()`류
+   lexical transaction이 Roblox의 협조적 스케줄링(코루틴 yield) 환경에서
+   왜 근본적으로 위험한지(전역/코루틴 스코프 플래그가 새 코루틴 스폰·영구
+   yield에 어떻게 깨지는지 구체 시나리오 포함) — Fusion/Vide 비교는 아니고
+   "설계 원리"형 에세이라 Rustonomicon 패러디 취지(비슷한 프레임워크
+   설계자용)와 잘 맞음
+4. 왜 Context가 없는가 — 얕은 버전(코루틴 키 weak table push-pop)조차
+   quad가 정상 패턴으로 확정한 Slot 비동기 추가에서 조용히 깨지는 이유,
+   완전 자동 버전이 Roblox Luau의 플랫폼 한계(thread-local 없음)로 불가한
+   이유, 명시적 타입 강제 Store 전달이 Context보다 안전한 이유(레이어드
+   Store 대안도 왜 함께 기각됐는지 포함)
 
 **publish 안 하는 것과의 경계**: 세션별 정정 이력, 조사 원자료(Fusion
 반응 그래프 BFS 분석, quad2-try 죽은 코드 조사 등)는 quadnomicon에도
@@ -161,6 +176,9 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 - UI 숏핸드 `RoundSize` 드롭 여부 (`research/ui-shorthand-plan.md`)
 - `Attribute<T>` 제네릭 vs 타입별 정적 생성자 (`bind-system-plan.md`)
 - provider/processor 네이밍 (`module-lifecycle-plan.md`)
+- 키 기반 동적 컬렉션 재조정 최종 이름/시그니처(`Render`/`Draw`/`List` 등
+  후보만 있음, `Slot:Extract` 세부 시맨틱도 미정) — `research/
+  additional-primitives-plan.md`(2026-08-06 신설, 설계 진행 중)
 
 이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
 "확정 전엔 문서화 대상 아님"이라는 표시만 겸함.
