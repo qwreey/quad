@@ -190,15 +190,20 @@ CollectionService 태그 등)를 흉내낼 필요가 없고, quad-base 자체 �
 
 ## Store/State/Source 온톨로지 — 확정됨 (요약)
 
-Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로 접근할
-때마다 그 source를 감싸는 새 State(자기 고유 value 없는 조합 가능한 캐시)를
-반환한다. 전파는 push-invalidate(신호만)/pull-recompute(`Get()` 시점) —
-Fusion식 eager 노드 없이도 다이아몬드 의존성 중복 재계산 문제가 풀림. State는
-쓰기 대상이 아니고(값 쓰기는 항상 Store의 `__newindex`), 값 하나만 다룰 땐
-Store와 별개인 가벼운 `Source` 프리미티브를 씀. `store.key` dot-access를 타입
-추론 1급 경로로 삼는 것도 3차 라운드에서 정식 확정됨 — **더 이상 열린 질문
-아님**, 남은 건 정확한 API 이름뿐. 상세는 `base/bind-system-plan.md`의
-"Store/State/Source 온톨로지" 절 참고.
+Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로
+접근하면 Store 생성 시 이미 만들어둔 그 Source 객체를 그대로 반환한다
+(별도 wrapper 없음 — **[2026-08-06 후속 세션 정정]** 원래 "매번 새 State를
+감싸 반환"이었으나, `Source`가 구조적으로 `State`를 만족하도록 재구성되며
+wrapper 계층 자체가 불필요해짐). 전파는 push-invalidate(신호만)/
+pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
+의존성 중복 재계산 문제가 풀림. State는 쓰기 대상이 아니고, 값을 쓰는
+경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
+`.value`/`:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가). 값 하나만
+다룰 땐 Store와 별개인 가벼운 `Source` 프리미티브를 독립적으로도 씀.
+`store.key` dot-access를 타입 추론 1급 경로로 삼는 것도 3차 라운드에서
+정식 확정됨 — **더 이상 열린 질문 아님**, 남은 건 정확한 API 이름뿐.
+상세는 `base/store-semantics.md`의 "Source가 State를 만족함" 절과
+`base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
 
 ## 아직 미정 (research/로 분리됨)
 

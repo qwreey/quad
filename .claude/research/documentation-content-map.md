@@ -1,0 +1,174 @@
+# 문서 콘텐츠 분류 맵 (초심자/api/심화/skip)
+
+**상태**: research — `documentation-plan.md` 0번 항목(3축 구조: 초심자/api/심화
++ 백엔드별 트랙 분리)이 확정된 뒤, 실제로 각 축에 뭘 채울지 `.claude/base/*.md`
+전체 + 관련 `research/*.md`(tween-plan, ui-shorthand-plan)를 2026-08-06 세션에
+6개 에이전트로 병렬 서베이해 분류함. **아직 문서를 쓰라는 뜻 아님** — 착수
+시점은 여전히 구현 우선(`CLAUDE.md` "지금 할 일" 1번). 나중에 실제 문서화를
+시작할 때 이 맵을 목차/우선순위표로 쓰면 됨.
+
+**api↔심화 연결 원칙(사용자 확정)**: api 문서는 항목마다 설명을 간략하게
+유지하고, 근거·내부 동작까지 파고드는 내용은 심화 섹션으로 링크("더 알아보기
+→ 심화")하는 방식으로 연결. 아래 [api] 항목 중 "→심화"가 붙은 것들이 이
+패턴 대상.
+
+**분류 기준**: [초심자] core loop에 필수(백엔드 구체적, quad-roblox 기준) /
+[api] 레퍼런스, 빠른 룩업용 짧은 설명 / [심화] 왜 이렇게 설계했는지, 최적화·
+대규모 코드베이스 관리 관심자용 / [skip] 내부 설계 과정 기록, 최종 사용자
+문서엔 안 들어감(세션 날짜, 정정 이력, 조사 원자료 등).
+
+---
+
+## 1. 초심자(getting-started) core loop — 취합된 목차 초안
+
+전체 서베이에서 나온 [초심자] 항목을 실제 학습 순서로 재배열한 것. 이대로
+목차를 잡으면 좋아 보임(그대로 확정은 아니고 초안):
+
+1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
+2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 `new<Class>` + 자주 쓰는 ~25개 클래스 정적 필드(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
+3. **속성 채우기** — `[Attribute "Name"]`, `[Tag ""] = true` 특수 바인드 키 (`architecture.md`)
+4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`bind-system-plan.md`, `store-semantics.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
+5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)
+6. **자식 전달** — Slot 기본 개념(children 배열, add/remove/clear), 마운트된 slot 재마운트 시 throw (`slot-plan.md`)
+7. **컴포넌트 작성** — 컴포넌트 = 순수 함수, 리프 프로퍼티엔 State만 바인딩, 전역 store 직접 참조 금지(이식성) (`component-composition-plan.md`, `purity-and-effects-plan.md`)
+8. **컴포넌트 경계 넘기기** — `props.Modifier`/`props.Ref` named parameter 패턴 (`component-composition-plan.md`)
+9. **이벤트** — self(Instance) 안 받음, 문자열 키(`Frame { MouseButton1Click = fn }`) (`bind-system-plan.md`)
+10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
+11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `CreatedRef(fn, {phase=...})` (`architecture.md`, `bind-system-plan.md`)
+12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
+13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`research/tween-plan.md`)
+14. **UI 숏핸드(quad-roblox 한정)** — `Corner`/`PaddingAllOffset`/`Scale` 인라인 키 (`research/ui-shorthand-plan.md`)
+
+---
+
+## 2. 파일별 상세 분류
+
+### architecture.md
+- 초심자: DOMless 즉시 Instance 생성 모델 / 특수 바인드 키 / Ref 기본 개념 / modifier 기본 사용법(스타일링) / Store·State·Source 온톨로지 핵심 동작 / quad-base·quad-roblox 패키지 구조 존재 사실
+- api: Class 함수형+`:` 체이닝 예외 규칙 / store 바인드=전체 교체 의미론 / Tag/retract(TagService 기반) / modifier 병합 우선순위 규칙(→심화: CSS cascade 회피 근거) / PropertyChangedSignal이 pluggable 핸들러로 구현 / Source·State·Store 타입 정의
+- 심화: Class가 OOP 아닌 함수형인 이유 / metatable 체이닝 폐기 이유(v1 clone 문제) / id 기반 전역 조회 폐지 이유 / Style(Default) 시스템 폐기→modifier 대체 근거 / 멀티 백엔드(GTK 등) 지향 이유 / push-invalidate·pull-recompute 전파 모델 상세, 다이아몬드 의존성 해결 근거
+- skip: Tracker 미구현, lang 모듈 분리, Signal 클래스 미구현 판단 과정, 소스 트리·모노레포 구조, 테스트 전략(mock 설계)
+
+### comparison-fusion-vide.md — 대부분 skip(내부 리서치 스냅샷)
+- **quadnomicon**으로 재작성 가치 있는 것 두 개(2026-08-06 재분류 — 원래
+  심화 후보였다가, 독자층이 "quad 사용자"가 아니라 "프레임워크 설계 자체에
+  관심 있는 엔지니어"라 quadnomicon으로 이동): **Slot 단일 마운트 소유권**이
+  Fusion/Vide 둘 다에 없는 quad만의 차별점(Fusion/Vide 경험자 대상 "왜 이중
+  mount를 막는가" 비교 소재) / **`:With`+`:Compute` 명시적 파생값**이 Vide의
+  암묵적 ambient stack 대신 채택된 이유(Vide 경험자 대상 비교 설명, 원문
+  재작성 필요) — 단, "왜 Slot은 단일 마운트를 강제하는가" 자체(다른 프레임워크
+  비교 없이 quad 논리만으로 설명 가능한 부분)는 여전히 심화에 남음(아래 4번
+  9번 항목).
+- 나머지(Fusion 반응 그래프 BFS 분석, Scope 정리 모델, Vide 디스패치 분석, 비교표 전체)는 전부 내부 설계 근거 수집용, skip — `.claude/` 내부 설계사로만 남고 publish 대상 아님
+
+### quad-v1-architecture.md — 전체 skip
+v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 회고. 단, **v1에서
+넘어오는 기존 사용자용 마이그레이션 가이드**가 나중에 별도 문서로 계획된다면
+그때만 재사용 가치 있음 — 지금 3축 어디에도 해당 없음.
+
+### bind-system-plan.md (943줄, 최대 문서)
+- 초심자: Source/Store/State 기본 정의+생성자, State 읽기 전용 규칙 / dot-access가 값 읽기 1급 경로 / `:With`+`:Compute` 최소 사용법 / Ref 기본 개념+`CreatedRef` / 이벤트 self 미채택 기본 규칙+문자열 키 / 인스턴스 생성(제네릭+정적 필드) / 라이브러리 초기화 3줄(`RobloxFactory(QuadBase)`)
+- api: `state:Observer(fn)` 사용법(→심화: weak-table 내부 인덱싱) / `:Subscribe()`/`:Unsubscribe()` 시그니처(→심화: 강참조 레지스트리 구조) / Ref 일반화 표면 API(→심화: "왜 값이 아니라 콜백인가") / 이벤트 store-bind 존재+권장 안 함 가이드(→심화: 엔지니어링 비용 근거) / 핸들러 4종 계약(`isHandlable`/`priority`/`process`/`retract`) / `Attribute<T>` 특수 키 후보(미확정 명시 필요)
+- 심화: push-invalidate/pull-recompute 전파 모델+"관측해야 실체화된다" 원칙+`previous` 캐비엇 / **왜 State를 Modifier처럼 플래튼하지 않는가**(이미 문서화 완료, 아래 3번 참고) / Store가 Store를 못 담는 이유 / 이벤트 self 미채택 4가지 근거 / store-bind 재귀 래핑 내부 메커니즘, retract가 Destroy 시 호출 안 되는 이유 / 같은 팩토리 재호출 no-op·다른 팩토리 충돌 에러 내부 안전장치
+- skip: quad2-try 리서치 결과 섹션 전체(OOP 상속/커스텀 파서/Slot 스텁/`Pipe` 폐기 이력) / PA님 코드 교차검증 절(역사적 검증 기록) / "남은 열린 질문"/"확정된 것" 메타 요약
+
+### component-composition-plan.md / module-lifecycle-plan.md
+- 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티엔 State만 바인딩 / `props.Modifier`/`props.Ref` named parameter 경계 전달 / `InitRoblox(Module)` 팩토리 초기화
+- api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Merge(mod1, mod2, ...)` 유틸 / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
+- 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `store-semantics.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
+- skip: Compose/Fusion/Vide/v1 프레임워크 비교 원자료 / provider/processor 네이밍 미정 등 열린 질문 메모
+
+### lifecycle-pattern.md / purity-and-effects-plan.md
+- 초심자: 수동 정리 불필요(GC 위임) / Destroy 이후 재사용 금지 / 컴포넌트는 파라미터로 받은 store만 사용(전역 store 직접 참조 금지)
+- api: `Connected`/canExecute 인터페이스(→심화) / 생명 바인드 유틸 시그니처(→심화) / 이식성 규칙이 린트 강제가 아니라 컨벤션이라는 사실
+- 심화: `Connected`가 계산된 속성인 이유(rbvm 근거) / `Instance.Destroying` 훅 단일화 이유 / weak-table GC-native 원칙+eager 정리 예외 / Signal 클래스 미채택 이유 / "quad는 생명주기 중간 계층이 아니다" 소유권 모델 / `retract` 네이밍 배경 / "순수함수 아니라 이식성 문제"로 재정의된 배경(vdom 없음 전제)
+- skip: rbvm 조사 세션 메타, EventDrivenProgramming 교차검증 일화(결론만 심화에 남음)
+
+### modifier-plan.md / slot-plan.md
+- 초심자: Modifier 기본 체이닝+merge 우선순위 규칙 실제 예시 / Slot 기본 개념(children 배열)+클래스가 슬롯 받는 방법(Named Slot 없음) / 마운트된 slot 재마운트 시 즉시 throw
+- api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `Modifier.Rounded(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / retract 시 slot 내용 폐기(→심화: portal 없는 이유)
+- 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / retract=폐기 확정 히스토리(portal 검토 후 기각)
+- 열린 질문(문서화 보류): 여러 Slot이 형제로 섞일 때 순서 보장 — 미확정
+- skip: 세션 날짜/확정 이력, 문서 승격/정정 안내
+
+### store-semantics.md / tween-plan.md / ui-shorthand-plan.md
+- 초심자: Store 생성+`myStore.key = value` 문법 / `store.key`로 State 얻기 개념 / Tween 기본 바인드 키+취소 기본 동작 / UI 숏핸드 인라인 키 기본 예시(`Frame { PaddingAllOffset = 50 }`)
+- api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `store-semantics.md` 참고) / Tween 핸들러가 Instance 직접 받음(Ref 불필요) / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
+- 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사) / RoundSize 포팅 불필요 vs Corner/PaddingAll/Scale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
+- 열린 질문(문서화 보류): tween-plan.md의 오버라이드/삭제후재시작/끝점이동 옵션 키 이름 미정 / ui-shorthand의 RoundSize 완전 드롭 여부
+- skip: 세션 정정 이력, v1 소스 조사 경위
+
+---
+
+## 3. 이미 작성 완료된 심화 콘텐츠
+
+- **왜 State 체인을 Modifier처럼 플래튼하지 않는가** — `base/bind-system-plan.md` 해당 절에 결정문 있음(2026-08-06 세션에서 이 대화 중 확정).
+
+## 4. 심화 전용 신설 콘텐츠 후보 (반복 테마 정리, 에세이 단위)
+
+위 표에서 반복 등장하는 "왜" 주제들을 에세이 단위로 묶으면:
+
+1. 왜 함수형 컴포넌트인가(OOP 상속 대신) — `architecture.md`, `component-composition-plan.md`
+2. 왜 Modifier는 런타임 pluggable이 아니라 정적 flatten인가 — `modifier-plan.md`
+3. 왜 push-invalidate/pull-recompute인가(Fusion eager 노드 미채택) — `bind-system-plan.md`
+4. 왜 State는 플래튼하지 않는가 — 작성 완료(위 3번)
+5. 왜 GC-native 생명주기인가(Signal 클래스 없음) — `lifecycle-pattern.md`
+6. 왜 이벤트 핸들러는 self를 안 받는가 — `bind-system-plan.md`, `research/documentation-plan.md` 3번과 통합 가능
+7. 왜 컴포넌트 경계는 named parameter인가(Compose/Fusion/Vide/v1 수렴) — `component-composition-plan.md`
+8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
+9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
+10. 왜 Tween은 반응 그래프 밖에 있는가 — `research/tween-plan.md`
+11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `store-semantics.md`
+12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
+14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`
+15. 왜 Source가 State를 구조적으로 만족하는가(Svelte Writable/Readable과 같은 서브타입 모양, `RefSource`/`StoreSource` 중간안이 왜 기각됐는가) — `store-semantics.md`, `component-composition-plan.md`
+
+(13번이었던 "Fusion/Vide 경험자용 비교 섹션"은 2026-08-06 재분류로 아래 6번
+`quadnomicon`으로 이동)
+
+## 6. `quadnomicon` — 4번째 축, 프레임워크 설계자용 (2026-08-06 신설)
+
+**독자층이 다름**: 심화(1~5번)는 "quad를 깊게 이해해 최적화하거나 왜
+이런지 이해하고 싶은 quad 사용자"용. `quadnomicon`은 "비슷한 반응형 UI
+프레임워크를 직접 설계/포크하려는 엔지니어"용 — quad를 그냥 쓰기만
+한다면 평생 안 읽어도 무방한 콘텐츠. Rustonomicon 패러디로 이름 확정
+(사용자 선택).
+
+**현재 후보(둘 다 `comparison-fusion-vide.md`에서 재작성 필요, 원문
+그대로 쓰면 안 됨 — 지금은 우리 내부 리서치 원자료 톤)**:
+1. Slot 단일 마운트 소유권이 Fusion/Vide 둘 다에 없는 quad만의 차별점 —
+   "왜 이중 mount를 막는가"를 Fusion/Vide 내부 동작과 나란히 비교
+2. `:With`+`:Compute` 명시적 파생값이 Vide의 암묵적 ambient stack 대신
+   채택된 이유 — Vide 경험자 대상 비교
+
+**publish 안 하는 것과의 경계**: 세션별 정정 이력, 조사 원자료(Fusion
+반응 그래프 BFS 분석, quad2-try 죽은 코드 조사 등)는 quadnomicon에도
+안 들어감 — 그건 새 티어가 필요한 게 아니라 애초에 `.claude/` 내부
+설계사로만 남고 절대 publish 안 하는 것(RFC 논의 저장소 같은 성격,
+위 각 파일 섹션의 skip 참고). quadnomicon은 잘 다듬은 소수의 큐레이션된
+에세이 공간이지, 내부 연구 기록을 그대로 옮기는 곳이 아님.
+
+**배경지식 자체가 깊은 주제(예: GC) 처리 방침**: 새 티어를 만들지 않음.
+"quad가 GC를 어떻게 활용하는가"(quad 고유)는 심화에 그대로 두되, "GC란
+무엇인가" 자체를 가르치는 자체 튜토리얼은 안 쓰고 외부 좋은 자료로
+링크 처리 — 안 그러면 문서 프로젝트가 일반 프로그래밍 교육 쪽으로
+스코프 크리프될 위험이 있음(사용자 판단).
+
+## 5. 문서화 아직 보류(미확정 설계라 쓰면 안 됨)
+
+- Slot 형제 순서 보장 (`slot-plan.md`)
+- Tween 오버라이드/삭제후재시작/끝점이동 세부 옵션 키 이름 (`research/tween-plan.md`)
+- UI 숏핸드 `RoundSize` 드롭 여부 (`research/ui-shorthand-plan.md`)
+- `Attribute<T>` 제네릭 vs 타입별 정적 생성자 (`bind-system-plan.md`)
+- provider/processor 네이밍 (`module-lifecycle-plan.md`)
+
+이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
+"확정 전엔 문서화 대상 아님"이라는 표시만 겸함.
+
+## 다음 단계
+
+이 맵 자체를 지금 실행할 필요는 없음(구현 착수가 여전히 최우선,
+`documentation-plan.md` "다음 단계" 참고). 나중에 실제로 문서 사이트
+작업을 시작할 때: (1) 위 1번 목차 초안으로 초심자 트랙 스캐폴딩, (2) 파일별
+[api] 항목으로 레퍼런스 페이지 스캐폴딩, (3) 4번 리스트를 심화 섹션
+에세이 백로그로 사용.

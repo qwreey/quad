@@ -528,11 +528,16 @@ read ...`처럼, State끼리 자유롭게 합성/파이핑 가능한 것이 최�
 생성자 이름뿐(구현 단계). `base/store-semantics.md`의 "State 프리미티브는
 실제로 필요하다" 정정에서 이어짐.
 
-**핵심 온톨로지** (변경 없음):
+**핵심 온톨로지** (2026-08-06 후속 세션에서 Store/Source 부분 정정 —
+아래 "State는 쓰기 대상이 아님" 절 이후 내용 및 `base/store-semantics.md`의
+"Source가 State를 만족함" 절 참고):
 - **Source** — 실제 값이 존재하고 변경될 수 있는 단일 지점(v1의 "값의 근원").
-- **Store** — source들의 집합체. `store.a`처럼 키로 접근하면 그 source를
-  감싼 **새 State**를 매번 만들어 반환(state가 store에 캐시되어 재사용되는
-  게 아님 — source만 store에 귀속된 유일한 실체).
+  **구조적으로 State를 만족(단방향 호환)** — `.value`/`:Get()`/`:With`/`:Compute`
+  전부 지원 위에 `:Set(value)`/`:Emit()` 추가.
+- **Store** — Source들의 이름 붙은 모음, 그 이상 아님. `store.a`처럼 키로
+  접근하면 Store 생성 시 이미 만들어둔 **그 Source를 그대로 반환**(더 이상
+  별도 State wrapper를 매번 만들거나 따로 캐싱하지 않음 — Source 자체가
+  이미 State를 만족하므로 wrapper 계층 자체가 불필요해짐).
 - **State** — source(또는 다른 state)의 결과를 캐싱만 하는 존재, 자기 고유의
   독립적 value 개념이 없음. `state(state)`로 기존 state의 결과를 받아 새
   state를 만들어 분기 가능 — 이게 사실상 Unix 파이프 영감의 "State끼리
@@ -574,6 +579,41 @@ Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 �
 체이닝")과 이 원칙이 충돌하지 않는 이유가 바로 이것 — clone은 그저 참조
 복사라 State 필드는 클론 이후에도 여전히 살아있는 lazy 핸들로 남음.
 
+**왜 State 체인을 Modifier처럼 플래튼하지 않는가 (2026-08-06 후속 세션)**
+
+**문제 제기(사용자)**: State가 `a → b → c`처럼 계속 연결되는 구조면, 이전
+노드가 다음 노드에 대한 emit 연결/값 연결을 항상 들고 있어야 함(weak
+table로 GC는 되지만 별도 데이터스트럭처 관리 부담). 대안으로, 각 State가
+자기 Compute 함수 목록을 통째로 누적해서 갖고(Modifier의 clone-then-return
+체이닝처럼) 매번 클론+append하면 링크드 그래프 자체가 필요 없어지지
+않는가?
+
+**기각 이유 — State의 정의 자체가 "캐싱하는 존재"임.** 위 온톨로지에
+"State — source(또는 다른 state)의 결과를 **캐싱만 하는** 존재"라고
+확정돼 있고, `previous` 두 번째 인자 메커니즘(무거운 파생 엔진 객체
+재생성 비용 절감)도 이 캐싱 전제 위에서만 의미가 있음. 만약 Compute
+체인을 매번 통째로 클론해 각 leaf가 독립된 함수 목록을 갖게 하면, 중간
+State를 여러 갈래가 공유하는 다이아몬드 형태(`b`에서 `c1 = b:Compute(g1)`,
+`c2 = b:Compute(g2)`로 분기)에서 `b`까지의 계산이 캐시 공유 없이 소비자
+수만큼 중복 실행됨 — `previous` 메커니즘이 막으려던 문제를 반대로 다시
+만들어내는 셈이라 방향이 안 맞음.
+
+**"별도 데이터스트럭처 관리" 부담은 실제로는 작음.** "관측해야
+실체화된다" 원칙 때문에 살아있는 노드-대-노드 구독 엣지가 필요한 건
+실제로 관측되는(`Get()`되는) State뿐 — 중간에 만들어놓고 아무도 안 보는
+State는 구독 등록 자체가 안 일어남. 다이아몬드에서 중복 워크를 막는
+`invalid` 플래그 dedup 장치도 체인 전체가 링크드일 것을 요구하지 않고
+각 노드가 자기 구독자 목록만 가지면 되는 것이라, 이 결정과 무관하게
+그대로 유지됨. 구현은 Observer와 동일한 패턴(외부 weak table,
+`{[child] = true}` 류)으로 충분 — 새 메커니즘 발명 아님.
+
+**결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
+플래튼+클론을 쓰는 건 애초에 캐싱이 필요 없는 정적 데이터라 성립하는
+것이고, State는 존재 이유 자체(캐싱)가 달라 같은 패턴을 적용할 수 없음.
+`research/documentation-plan.md`의 심화 문서 후보로 남겨둠 — "왜 State는
+Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사용자를 위한
+좋은 심화 콘텐츠 소재.
+
 **`:With`/`:Compute` — self 인자도 lazy 핸들로 통일**
 
 - 최초안(self 값은 포지셔널 raw 값, with한 값만 클로저로 읽음)에는 실제
@@ -595,11 +635,17 @@ Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 �
 
 **State는 쓰기 대상이 아님 — 확정, Source는 독립 공개 프리미티브로 격상**
 
-- `.value`는 항상 읽기 전용. 값을 쓰는 경로는 오직 Store의 `__newindex`
-  (`store.key = value`, 이미 확정된 문법)뿐 — State에는 대응하는 쓰기 API가
-  아예 없음. "State에 `.value = x`를 허용하면 다른 source에서 파생된
-  state에 직접 쓰기가 가능해져 버린다"는 이전 우려는 이걸로 근본적으로
-  해소(그런 API 자체가 없음).
+- `.value`는 항상 읽기 전용. State에는 쓰기 API가 아예 없음. "State에
+  `.value = x`를 허용하면 다른 source에서 파생된 state에 직접 쓰기가
+  가능해져 버린다"는 이전 우려는 이걸로 근본적으로 해소(그런 API 자체가
+  없음).
+- **[정정, 2026-08-06 후속 세션] 값을 쓰는 경로는 `store.key = value`
+  (`__newindex`)가 아니라 `store.key:Set(value)`로 전환됨** — 이유와
+  상세는 `base/store-semantics.md`의 "Store 값 설정 문법" 절 참고(요지:
+  Source가 State를 만족하는 구조로 바뀌며 레코드 타입 읽기/쓰기 대칭을
+  맞추려면 대입 문법을 포기해야 함 + `=`가 암시하는 "즉시 커밋"이 실제
+  lazy 동작과 정서적으로 안 맞는다는 논거). 같은 문서의 "Source가 State를
+  만족함" 절에 Source/State 서브타입 구조 전체가 정리돼 있음.
 - **`Source`는 Store의 내부 구현 디테일이 아니라 별도의 가벼운 공개
   프리미티브로 노출** — Store는 다수의 source를 등록/관리하는 무거운
   구조라, 값 하나만 반응형으로 다루고 싶을 때 Store를 통째로 만드는 건
@@ -632,10 +678,15 @@ Modifier)에도 그대로 적용됨 — Modifier의 getter가 State 필드를 �
 
 - `store "key"`(문자열 커링)로 `state<T>`를 오버로드 함수 타입으로 정확히
   추론하려는 시도는 포기하고, **`store.key`(dot-access)를 1급 경로로 확정**
-  — Store 타입을 `{key: State<number>, other: State<string>}`류 평범한
+  — Store 타입을 `{key: Source<number>, other: Source<string>}`류 평범한
   레코드 타입으로 지으면 일반 구조적 필드 타이핑으로 자동 해결되고, 문자열
-  리터럴 narrowing 문제 자체가 안 생김. `store "key"` 문자열 커링은 동적
-  키가 필요할 때 쓰는 미타입(`State<any>`) 폴백으로 격하.
+  리터럴 narrowing 문제 자체가 안 생김([정정, 2026-08-06] 원래 `State<T>`
+  필드로 적혀있었으나 Source가 State를 만족하는 구조로 바뀌며 `Source<T>`로
+  갱신 — `store.key = value` 쓰기 문법이 `:Set()`으로 옮겨가 이 필드가
+  더 이상 `__newindex`로 쓰이지 않으므로 읽기/쓰기 타입 대칭 문제도 같이
+  해소됨, `base/store-semantics.md` "Source가 State를 만족함" 절 참고).
+  `store "key"` 문자열 커링은 동적 키가 필요할 때 쓰는 미타입(`Source<any>`)
+  폴백으로 격하.
 - 이 패턴은 Store에만 국한되지 않고 **인스턴스 생성까지 관통하는 프로젝트
   전역 관습으로 확정**됨 — 단 이벤트는 이후 4차 라운드에서 이 관습의
   **유일한 예외**로 빠졌음(PA님 방식인 문자열 키+런타임 리플렉션으로 전환).
@@ -821,9 +872,11 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 
 **Store 쪽 dot-access는 그대로 유지**: `store.key`(1급 타입 경로)/
 `store "key"`(문자열 커링, 동적 키 폴백)는 이벤트와 달리 실질적으로 Luau가
-타입을 좁혀주는 이득이 있어서(Store 자체가 `{key: State<number>, ...}`류
-평범한 레코드 타입으로 지어짐) 그대로 유지 — 이벤트만 예외였을 뿐, "정적으로
-알려진 것=필드 접근" 원칙 자체가 깨진 건 아님.
+타입을 좁혀주는 이득이 있어서(Store 자체가 `{key: Source<number>, ...}`류
+평범한 레코드 타입으로 지어짐[정정: 2026-08-06 후속 세션에서 필드 타입이
+`State<T>`→`Source<T>`로 갱신, "Source가 State를 만족함" 절 참고]) 그대로
+유지 — 이벤트만 예외였을 뿐, "정적으로 알려진 것=필드 접근" 원칙 자체가
+깨진 건 아님.
 
 **PA님 코드와 대조해서 재확인한 것(변경 없음)**:
 - **OOP 회피 결정은 오히려 보강됨** — PA님의 `ObjectOrientedProgramming/
