@@ -479,12 +479,27 @@ retract/Destroy되면 자동으로 정리됨.
   **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
   자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
   (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
+  **`:Unsubscribe()`는 이 레지스트리에서 반드시 `SubscribedObservers[observer]
+  = nil`까지 해야 함** — `Subscribed` 플래그만 내리고 강참조를 안 끊으면
+  GC 대상이 안 되는 반쪽짜리 해제가 됨, 둘은 항상 같이 일어나는 한 세트.
 - **`:Subscribe()`/`:Unsubscribe()` 둘 다 idempotent** — 이미 구독 중인데
   또 Subscribe해도, 구독 안 했는데 Unsubscribe해도 에러 안 나고 그냥
   no-op. 토글 로직 짤 때 상태 추적 부담을 줄여줌.
 - **`:Unsubscribe()`는 자동(리프) 케이스에도 동일하게 씀** — Instance가
   파괴되기 전에 수동으로 조기 해제하고 싶을 때도 같은 메소드 하나로
   충분, 별도 API 안 만듦.
+- **`state:Observer(fn):Subscribe()`처럼 참조를 아무 데도 안 담아도 정상**
+  — 강참조 레지스트리 자체가 생존을 보장하는 유일한 근거라, 로컬 변수에
+  담아둘 필요가 없음. 예외 없이 그냥 계속 돎(그게 이 메커니즘의 핵심
+  포인트).
+- **`:Subscribe()`/`:Unsubscribe()` 둘 다 `self`를 리턴(대칭)** —
+  `local obs = state:Observer(fn):Subscribe()`처럼 "구독 시작 + 나중에
+  끊을 핸들 확보"가 한 줄로 되고, `table.insert(subs, state:Observer(fn)
+  :Subscribe())`처럼 리스트에 담을 때도 줄바꿈 없이 됨. Observer가
+  immutable 값이 아니라 원래 mutable한 구독 핸들이라 fluent 체이닝이
+  자연스러움 — Modifier의 clone-then-return 체이닝과는 다른 이유(같은
+  객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
+  체이닝 가능.
 
 ## Unix 파이프에서 영감 받은 스트림 지향 — 원래 의도, 해소됨
 
