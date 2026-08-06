@@ -205,6 +205,22 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
   "이미 채워졌는지" 확인이 항상 필요함). `:Wait()`의 대기자 리스트와
   콜백 리스트는 같은 구조 재사용 가능(발화 후 해당 인덱스만 nil 처리,
   Luau의 일반화 for는 성긴 배열도 잘 순회함).
+- **제네릭 시그니처(2026-08-07 확정): `Ref<T>(T) -> Ref<T>` — 단일 타입
+  파라미터.** React `useRef<T, U=T>(U): T|U`류 "초기값 타입과 최종 타입을
+  분리"하는 2파라미터 설계도 검토했으나(예: `Ref<<HTMLDivElement>>(null)`
+  → `HTMLDivElement|null`), Luau 솔버로는 명시된 타입 파라미터 하나와
+  인자에서 추론되는 다른 타입 파라미터가 만드는 합집합이 깔끔하게
+  풀리지 않고 미해소 제네릭 변수가 결과 타입에 남는 것으로 확인(사용자가
+  직접 Luau 플레이그라운드류로 확인) — `Source<T> satisfies State<T>`나
+  `State<Modifier>` 차단 검증 항목(`research/pre-implementation-audit.md`)
+  에서 이미 반복 확인된 "Luau 제네릭 솔버는 복잡한 조합에서 잘 안 풀린다"는
+  패턴과 같은 결. 단일 파라미터로 단순화하면 이 위험 자체가 없음 — 대신
+  초기값만으로 좁은 타입이 추론되는 문제(`Ref(nil)`이 `Ref<nil>`로
+  좁혀짐)는 `Ref<<Obj?>>(nil)`처럼 **명시적 제네릭 적용**(`f<<T>>(...)`
+  패턴, `.claude/initreq/tbox/CLAUDE.md:40-41` 선례)으로 타입을 넓혀
+  풀면 됨 — React `useRef<HTMLDivElement>(null)`도 명시적 타입 인자 없이는
+  같은 문제를 겪으므로 이미 널리 받아들여진 UX, quad가 새로 감수하는
+  트레이드오프 아님.
 - **`CreatedRef`와의 관계**: 둘은 상충하지 않음 — 이 절의 Ref가 범용
   프리미티브, `CreatedRef(fn, {phase=...})`는 그 위에 얹힌 "children
   배열에 넣으면 dispatch가 자동으로 채워주는" 특수 편의 패턴(quad가
