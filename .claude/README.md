@@ -45,6 +45,7 @@
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | UI 네이밍 컨벤션 문서 + Store 부작용을 게임 시스템에서 깔끔하게 쓰는 패턴 문서 — 뼈대만, `debug-tooling-plan.md` 논의에서 파생 | 하 — 착수 시점 미정, 뼈대만 기록해둔 상태 |
 | `ui-shorthand-plan.md` | UICorner/UIPadding/UIScale 인라인 편의 키(v1 `Corner`/`PaddingAll`/`Scale` 선례) — 여전히 필요한 기능으로 재확정(RoundSize만 네이티브 UICorner로 대체돼 불필요), 메커니즘(Handler)·패키지 배치(quad-roblox 코어) 확정 | 하 — 결론 남, M10 전후 구현하면 됨 |
+| `additional-primitives-plan.md` | 확정 프리미티브(Source/State/Store/Ref/Observer/Modifier/Slot/DI)만으로 충분한지 웹 프레임워크·Fusion/Vide/v1 소스 근거로 조사 — 키 기반 동적 컬렉션 재조정(Fusion `ForPairs`/Vide `indexes()`류)이 가장 명확한 빈 자리로 확인, Effect/Batch/Context는 부차적 후보 | 상 — 사용자 판단 대기, 착수 전 M0/M1 스코프에 영향 줄 수 있음 |
 
 ## 참고
 
