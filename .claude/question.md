@@ -26,6 +26,9 @@
 - **`DI`(Declarative Instance, 1순위)**: "Dependency Injection"의 업계
   표준 축약어와 완전히 겹침 — 4차 라운드에서 이미 한 번 실제로 오해가
   있었던 전례(`base/bind-system-plan.md`의 "인스턴스 생성" 절 참고).
+  **파급 효과(2026-08-06 추가)**: `DI`가 리네임되면 `DI.FrameModifier`류
+  Modifier 클래스별 타입 프리픽스도 같이 바뀌어야 함 — `DI` 리네임 논의
+  때 이 연쇄까지 같이 고려할 것.
 - **`PerInstanceState`(2순위)**: 핵심 프리미티브 `State`와 이름이 겹쳐서
   실제로는 완전히 무관한 유틸(인스턴스별 weak-keyed 저장소)인데 혼동
   유발 가능 — `PerInstanceStorage`/`InstanceData` 등 대안.
@@ -35,6 +38,10 @@
 - **`CreatedRef`/`canExecute`(3순위, 사소함)**: `CreatedRef`는 과거분사형이라
   생성자처럼 안 읽힘. `canExecute`는 실제로 "이 핸들이 아직 살아있나"
   확인인데 이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
+- **`Ref`(3순위, 2026-08-06 추가)**: 정의가 "quad가 만든 instance를 얻는
+  통로"에서 "아무 사용자 값이나 담는 범용 값 박스"로 넓어져서(`base/
+  bind-system-plan.md` "Ref 일반화" 절), 이름이 여전히 넓어진 의미에
+  맞는지 재검토 대상.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
