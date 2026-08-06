@@ -27,6 +27,12 @@ Default를 넣으면 더 어려워짐 — Default로 쓰다가 실제 쓰인 값
 복사(clone) 모드를 켜야 하나 — 근데 그러면 너무 복잡해질 것 같다는 우려까지만
 기록. 결론 없음.
 
+관련: Modifier flatten 자체의 clone 정책(변환마다 `table.clone`, immutable
+확정)은 이미 `base/modifier-plan.md`의 "3. Immutable 값 + clone 기반 체이닝"
+절에서 다뤄짐 — 단 그건 "Modifier 값 자체의 clone"이고, 여기서 미정인 건
+"이미 마운트된 Instance에 대한 재바인드 시점의 Default→실값 flatten"이라 층위가
+다름, 새로 설계하지 않고 참고 링크만.
+
 ## 사용자 확인 결과: 진짜로 모르겠음 — 열린 가능성으로 유지
 
 **사용자 확인 완료, 그러나 결론은 "미정 유지".** 실제로 이 기능을 원한다고

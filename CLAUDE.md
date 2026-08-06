@@ -120,9 +120,10 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    `research/debug-tooling-plan.md`)도 2026-08-06 세션에서 설계 수렴 —
    채널 실현 가능성(Studio 플러그인↔Play 중 게임 간 BindableEvent/Function
    통신)까지 실측 검증 완료, 세부 API 이름만 남음. 착수 시점은 여전히
-   "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박음. 같은 세션에서 파생된
-   문서화 전략 뼈대(`research/documentation-plan.md`, UI 네이밍 컨벤션 +
-   Store 부작용 게임 시스템 활용 패턴)도 후순위 백로그로 같이 남김.
+   "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박음. 같은 날 파생된 문서화
+   전략 뼈대(`research/documentation-plan.md` — UI 네이밍 컨벤션, Store
+   부작용 게임 시스템 활용 패턴, 권장 이벤트 핸들링 패턴 3종)도 후순위
+   백로그로 같이 남김.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -234,11 +235,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   UI 네이밍 컨벤션 문서, 스킬/쿨타임/재화 같은 게임 시스템에서 Store의
   부작용 허용을 깔끔한 패턴으로 쓰는 법 문서 — 를 `research/
   documentation-plan.md`에 뼈대만 분리해서 남김(위 "지금 할 일" 4번).
-- **아직 확인 안 된 것 하나**: 사용자가 "이벤트 함수들이 실제 instance를
-  읽을 수 있게 self를 건네받는 게 quad의 관습"이라고 언급했으나 본인도
-  "문서화됐는지 모르겠다"고 함 — 어떤 함수(이벤트 핸들러? Compute?
-  `describe` 훅?)에 정확히 어떤 시그니처로 적용되는지 다음 세션에서 확인
-  필요(`debug-tooling-plan.md` "열린 질문" 참고), 추측성 반영은 안 해둠.
+- **이벤트 self 관습 확인 필요했던 항목 — 같은 날 후속 세션에서 해소됨.**
+  아래 "2026-08-06 후속 세션" 절 참고.
 
 **같은 세션 후반, 별개 주제 두 개 추가**(quad-debug와 무관, 사용자가
 "적어는 뒀는데 안 줬는건가" 하며 새로 떠올린 것들):
@@ -275,3 +273,94 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   상호작용면(자기 트리 뷰/리프 클릭→상세 패널/실제 Explorer 선택과 연동,
   Explorer와 플러그인 트리는 별도 도킹 위젯)으로 구성된다는 것도 사용자
   질문에 확인 응답 — `debug-tooling-plan.md` "핵심 설계 방향" 9번.
+
+## 2026-08-06 후속 세션 — 이벤트 self 관습 결정, rbvm GC 참고, 문서 코퍼스 정리
+
+같은 날 이어진 세션에서 세 가지를 처리함. **다음 세션이 새로 알아야 할 것은
+없음** — 아래 전부 `base/`/`research/`/`question.md`에 실제로 반영 완료.
+
+**1. 이벤트 핸들러 self(Instance) 관습 — 채택하지 않기로 확정.** 위 절에서
+"확인 필요"로 남겨뒀던 것의 결론: v1의 `func(self or this, ...)` 관습은
+실존함을 확인했지만(`.claude/initreq/quad/src/event.lua` 82행, 튜토리얼
+문서화까지 있음), quad 재설계에서는 채택하지 않음. 근거 네 가지 —
+(1) Ref가 이미 "생성 직후/마운트 후 Instance 접근"을 콜백으로 커버해서
+중복 채널이 됨, (2) self로 재바인드 가능한 thin wrapper를 준다면 Modifier의
+정적 flatten과 경쟁하는 두 번째 쓰기 경로가 생겨 KV 핸들러가 매번
+"flatten된 값이냐 wrapper냐"를 분기해야 하는 오버엔지니어링, (3)
+quad-debug가 추적하는 반응형 그래프 밖의 mutate 경로가 공식 API로
+생기는 셈이라 `purity-and-effects-plan.md`의 이식성 원칙과 충돌, (4)
+self를 넘기려면 원본 콜백을 클로저로 한 번 더 감싸야 해서 불필요한 할당
+비용 — quad는 어차피 라이프사이클 끝까지 바인딩을 들고 있어 Destroy 시
+Connection도 자연히 정리되므로(`lifecycle-pattern.md`, GC-native) 감쌀
+이유가 없음. 상세 결정문은 `base/bind-system-plan.md`의 "이벤트 핸들러는
+self(Instance)를 받지 않는다" 절. `research/debug-tooling-plan.md`/
+`.claude/question.md`의 관련 항목은 "해소됨"으로 갱신 완료, 이 결정을
+설명하는 문서화 숙제("왜 thin wrapper를 안 주는가", "권장 이벤트 핸들링
+패턴")는 `research/documentation-plan.md` 3번으로 신설(다른 두 항목과
+동일하게 아직 백로그 뼈대만).
+
+**2. rbvm GC 패턴 — "실물 검증됨" 근거 보강.** 사용자가 "GC 처리를 봐야
+한다면 rbvm을 확인하라, 실제 프로덕션에서 잘 돌아가는 걸 직접 확인한
+모듈"이라고 언급 — 실제로 rbvm의 GC 패턴(weak table 4종, `Instance.
+Destroying` 기반 gcHold 클로저, 네임스페이스 Dispose 훅 등)은 이미
+`base/lifecycle-pattern.md`에 파일:라인까지 인용하며 상세 반영돼 있었지만
+"사용자가 직접 실행해서 확인했다"는 신뢰도 근거는 빠져있어서 그 문단을
+추가함(사람이 짠 코드라 100% 무결 보장은 아님 — 이미 발견된 버그 2건도
+근거로 같이 인용, 규범이 아니라 참고용 비교 대상이라는 톤 유지).
+
+**3. `.claude/` 코퍼스 전체 정리 패스.** 이전 세션들에서 쌓인 stale
+참조/모순을 서브에이전트로 전수 감사 후 수정 — `modifier-plan.md`/
+`architecture.md`의 `research/component-composition-plan.md` 참조를
+승격된 `base/` 경로로 갱신, `comparison-fusion-vide.md`의 낡은 "Vide식
+암묵적 추적 vs Fusion식 명시적 축, quad는 미정" 서술을 실제 확정 사실
+(`bind-system-plan.md`의 `:With`+`:Compute` 명시적 모델 채택)로 정정,
+`tween-plan.md`의 끊긴 절 참조 수정, `documentation-plan.md`의 인용
+오류 정정. `module-lifecycle-plan.md`가 스스로 "question.md에도 취합"
+표시해뒀지만 누락돼 있던 "프로바이더" 이름(provider/processor/plug)
+미정 항목도 `question.md`에 추가함. 여러 문서에 흩어져 있던 진짜 열린
+설계 질문들(Slot 형제 순서 보장, Attribute 타입 파라미터화, UI shorthand
+이름 등)은 전부 `.claude/question.md`에 이미 반영되어 있음을 재확인만
+하고 임의로 결정하지 않음 — **이 파일이 여전히 "지금 열려있는 것"의
+단일 소스.**
+
+**4. Store `:Emit`, `:Compute`의 `previous` 인자, `state:Observer(fn)`,
+Ref 일반화 — 네 가지 다 확정, 실제 base 문서에 반영 완료.** 같은 세션에서
+더 이어진 Store/Ref 설계 논의, 전부 `base/store-semantics.md`와
+`base/bind-system-plan.md`에 반영됨:
+- **`Store:Emit(key)`** — Source 원천에 한해서만 허용(중간/파생 State엔
+  없음). 존재 이유는 clone 불가능한 userdata/엔진 객체가 우선(편의성은
+  부차적). `Get()`이 라이브 레퍼런스를 주므로 캐시해서 비교/diff하면
+  안 된다는 캐비엇 명시. Modifier는 정적 flatten이라 Store/State 경로에
+  아예 안 걸치므로 Emit과 충돌할 지점 자체가 없음(따름정리:
+  `Store<T>`의 `T`는 Modifier가 될 수 없음) — `store-semantics.md`.
+- **`:Compute(fn)`의 선택적 두 번째 인자 `previous`** — Compute 결과
+  자체가 무거운 userdata인 경우(예: 큰 locale 테이블 → Roblox
+  `LocalizationTable` 변환) 재생성 대신 이전 결과를 재사용/patch하는
+  용도, opt-in. `previous`는 "정확히 한 단계 전"이 보장 안 되므로 반드시
+  full diff로 다뤄야 함(React reconciler와 같은 모양). **핵심 캐비엇**:
+  이 패턴은 결과 State가 계속 능동적으로 관측(정상 prop 바인딩 또는
+  `state:Observer(fn)`+명시적 `Get()`)되지 않으면 mutate 로직 자체가
+  다시 실행 안 되어 조용히 영구 정지함 — `bind-system-plan.md`.
+- **`state:Observer(fn)`** — 무효화 신호만 주고 값은 안 줌, `fn` 안에서
+  명시적으로 `Get()` 해야 실제 값을 얻음(기존 "emit은 저렴한 무효화
+  신호" 원칙 재사용). 반환값 자체가 `CreatedRef`처럼 children 배열에
+  바로 놓는 leaf 값(별도 `ObserverHolder` 래퍼 불필요, 사용자가 직접
+  단순화) — 그 leaf가 살아있는 동안만 구독 유지, `canExecute`로 게이팅.
+  `fn` 생략 시 "이 State를 그냥 계속 능동 관측 상태로 유지"하는 유틸로
+  씀(위 `previous` 캐비엇의 해결 도구). 구현은 값 내부가 아니라 외부
+  weak table로 살아있는 Observer를 추적하는 방식 권장(rbvm
+  `getNamespaceOf`류 선례) — `bind-system-plan.md`.
+- **Ref 일반화** — "quad가 만든 instance 전용"에서 "아무 사용자 값이나
+  담는 범용 값 박스"로 확장(object-ref/function-ref 안 나눔, React
+  `useRef`가 선례). `.Value` + `:Wait()`(coroutine 컨텍스트용) + 콜백
+  등록(복수 허용, 이미 채워져 있으면 즉시 1회 호출) — 이걸로 "코루틴
+  기반 대기 지원 미정"이던 항목 해소. `CreatedRef`는 이 위에 얹힌 특수
+  편의 패턴으로 재정리, 상충 없음. **one-shot 여부도 해소됨 — 반복
+  재설정 가능으로 확정**(React의 자식 재생성 시 ref 재사용 패턴이 선례,
+  라벨 컨테이너 재사용 예시로 확인). 콜백은 발화 후에도 안 소진되고
+  매 `:Set()`마다 다시 불림 — 소진되는 건 `:Wait()`의 개별 대기자뿐.
+  **Ref는 의도적으로 lazy가 아니고 `:Compute` 파생도 지원 안 함** —
+  State와의 이 차이가 중요(예전에 Store가 Ref 역할도 겸했다가 lazy
+  모델과 섞여서 안 좋았던 경험에서 나온 의도적 분리). Ref 정의 자체가
+  넓어졌으니 용어 정리 때 이름도 같이 재검토 대상. `question.md`의
+  관련 항목은 해소됨으로 갱신.

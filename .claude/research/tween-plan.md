@@ -6,8 +6,9 @@
 정도. 원본:
 `.claude/initreq/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
 항상 먼저 캐치한다" / "네임스페이스드 객체" 절. Fusion의 Tween/Spring이
-반응 그래프 안에 있는 설계는 명시적 반면교사 — `base/comparison-fusion-vide.md`
-"Animation(Tween/Spring) integration — 경고 신호" 절 참고.
+반응 그래프 안에 있는 설계는 명시적 반면교사 — [정정: 절 제목이 실제와
+달랐음] `base/comparison-fusion-vide.md`의 "Fusion" 절 마지막 불릿
+("Tween/Spring이 State그래프 안의 1급 노드") 참고.
 
 ## 확정된 방향: 트윈을 Store/반응 그래프 밖에 둔다
 

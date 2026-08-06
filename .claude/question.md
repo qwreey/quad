@@ -35,6 +35,11 @@
 - **`CreatedRef`/`canExecute`(3순위, 사소함)**: `CreatedRef`는 과거분사형이라
   생성자처럼 안 읽힘. `canExecute`는 실제로 "이 핸들이 아직 살아있나"
   확인인데 이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
+- **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
+  "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
+  스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
+  그냥 "plug" 중 뭘로 할지 아직 안 정함(개념 자체는 확정). 이 문서가 자체적으로
+  "question.md에도 취합"이라고 표시해뒀던 항목이 누락돼 있어 이번에 추가.
 - **이미 지나간 사례로 참고**: `register`(v1) → `State`(v2) 리네임은
   "모호함"은 풀었지만 "다른 뜻으로 이미 쓰이는 단어"라는 새 문제를 만든
   셈 — 이번 정리에서 같은 패턴을 조심할 것.
@@ -55,11 +60,12 @@
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
-  다 해소됨, 남은 건 세부 API 이름과 "이벤트 함수가 self로 instance를
-  읽는 게 quad 관습"이라는 언급 확인(그 문서 "열린 질문" 절 참고)뿐.
-  사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정한 건
-  여전함 — base 설계(M2 Dispatch/M3 Source/M5 DI 생성자) 시점에 훅 확장
-  지점만 고려해두면 됨.
+  다 해소됨, 남은 건 세부 API 이름뿐("이벤트 함수가 self로 instance를
+  읽는 게 quad 관습"이라는 언급은 2026-08-06 후속 세션에서 해소 —
+  채택 안 함으로 확정, `base/bind-system-plan.md` "이벤트 핸들러는
+  self(Instance)를 받지 않는다" 절 참고). 사용자가 "quad 개발 완료 전엔
+  착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M2 Dispatch/
+  M3 Source/M5 DI 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
   패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.

@@ -53,7 +53,8 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    갱신됨 — 위 5번 항목의 6차 추가분 참고: 스타일시트는 적용 위치 제약과
    스크립팅 난이도 때문에 오히려 안 쓰기로 하고 modifier kit으로 대체함.)
    - **2026-08-04 세션: modifier 메커니즘 전체 확정, 상세는
-     `research/modifier-plan.md`로 분리.** 요지만: 런타임 pluggable 핸들러가
+     `base/modifier-plan.md`로 분리.**[정정: `research/`에서 `base/`로
+     승격됨] 요지만: 런타임 pluggable 핸들러가
      아니라 디스패치 이전에 정적으로 flatten되는 값(핸들러 레지스트리 미참여,
      CSS cascade 문제 회피). Merge 우선순위는 "배열 순서상 나중 modifier가
      우선"과 "인라인 키는 modifier보다 무조건 우선"이라는 독립된 두 규칙(Lua

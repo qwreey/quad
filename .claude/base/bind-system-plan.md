@@ -167,6 +167,115 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
 - **콜백 호출 시점 확정**: 생성 직후(construction 시점)와 트리 마운트 후(Parent
   세팅 완료) 둘 다 지원 — 옵션으로 선택(`CreatedRef(fn, {phase="created"|
   "mounted"})`류, 정확한 API 이름은 구현 단계에서 확정).
+- **왜 값이 아니라 콜백인가**: quad는 React처럼 렌더 함수가 계속
+  재실행되지 않음(플레인 함수를 한 번 호출해 트리를 만들고 끝) — 그래서
+  "채워졌는지 매 렌더마다 다시 확인"하는 모델 자체가 없고, `useEffect`
+  의존성 배열 같은 것도 없음. 즉 값이 채워지는 시점을 외부에서 알아낼
+  방법이 콜백(또는 폴링, 채택 안 함 — `lifecycle-pattern.md`에서 폴링
+  방식은 이미 기각된 패턴) 말고 없음. 값 자체를 나중에 다루고 싶으면
+  콜백 안에서 원하는 곳(외부 변수, `self._button` 같은 필드, Store 등)에
+  직접 대입해 캡쳐하면 됨 — `component-composition-plan.md` 31행 예제
+  참고. 즉 "값으로도 얻어진다"는 요구는 별도 API가 아니라 콜백이 이미
+  충족함.
+
+### Ref 일반화 — 엔진 instance 전용이 아니라 범용 값 박스 (2026-08-06 후속 세션)
+
+**결정**: Ref는 "quad가 만든 instance를 얻는 통로"로 좁게 남지 않고,
+**아무 사용자 값이나 담을 수 있는 범용 "채워지길 기다리는 값 박스"**로
+확장한다. 위 "코루틴 기반 대기 지원 여부는 미정"이었던 항목은 이걸로
+해소됨(더 이상 열린 질문 아님).
+
+- **object-ref/function-ref로 나누지 않음.** React의 `useRef`가 DOM
+  노드든 임의의 사용자 값이든(함수 포함, `ref.current?.()`로 호출하는
+  imperative-handle 패턴 포함) 같은 API로 다루는 것과 동일한 선례 —
+  두 개념으로 쪼개면 사용자가 "이번엔 어느 쪽을 써야 하나" 매번
+  판단해야 해서 나쁨. 엔진 instance도 그냥 "사용자 값의 한 종류"일 뿐.
+- **구체 유스케이스**: 자식 컴포넌트가 비싸고 온디맨드로만 필요한 계산
+  (예: 클릭 위치 기준 컨텍스트 메뉴를 그리기 위한 clip bounds 계산)을
+  부모에 노출하고 싶을 때, 매 변경마다 push하는 대신 부모가 필요할 때만
+  `ref.Value?.()`처럼 호출하는 함수를 Ref에 담아 넘기는 패턴 — React의
+  imperative handle과 동일한 이유(비싼 연산이라 온디맨드가 맞음, 값이
+  최신인지 아닌지도 애매해짐).
+- **API 모양**: `.Value`(get/set) + `:Wait()`(coroutine 컨텍스트에서
+  사용 — 렌더 함수 바디 안에서 `return` 위에 바로 못 씀, 그래서 콜백도
+  같이 필요) + 콜백 등록(복수 허용, 이미 채워져 있으면 등록 즉시 그
+  값으로 1회 호출 — nil/미설정 상태여도 그 상태 그대로 호출. React의
+  `useEffect`가 매번 `.current` 존재 여부부터 체크하는 것과 같은 이유,
+  Ref가 자식으로 전달되는 경우 채워지는 시점이 더 늦어질 수 있어서
+  "이미 채워졌는지" 확인이 항상 필요함). `:Wait()`의 대기자 리스트와
+  콜백 리스트는 같은 구조 재사용 가능(발화 후 해당 인덱스만 nil 처리,
+  Luau의 일반화 for는 성긴 배열도 잘 순회함).
+- **`CreatedRef`와의 관계**: 둘은 상충하지 않음 — 이 절의 Ref가 범용
+  프리미티브, `CreatedRef(fn, {phase=...})`는 그 위에 얹힌 "children
+  배열에 넣으면 dispatch가 자동으로 채워주는" 특수 편의 패턴(quad가
+  만든 instance에 한정된 경우).
+- **해소됨 — 반복 재설정 가능(one-shot 아님), 사용자 확정.** React에서도
+  자식이 재생성되는 경우 같은 방식(ref가 다시 채워짐)을 씀 — 예: 마우스
+  호버/무브 시 `current` 확인 후 라벨 위치를 결정하는 라벨 컨테이너
+  하나를 두고 라벨 내용만 스왑해가며 Ref를 재사용하는 패턴. 이런 고급
+  패턴은 조심할 게 많지만 그건 라이브러리가 아니라 사용자가 신경 쓸
+  몫. **따라서 콜백은 "발화 후 소진"이 아니라 매 `:Set()`마다 다시
+  불림** — 소진되는 건 `:Wait()`가 만드는 개별 대기자(coroutine 재개는
+  본질적으로 1회성)뿐, 콜백 리스트 자체는 유지됨.
+- **⚠️ Ref는 의도적으로 lazy가 아니고 `:Compute` 파생을 지원하지 않음
+  — State와의 이 차이가 중요함.** (예전엔 Store가 Ref와 비슷한 것도
+  겸해서 지원한 적이 있었는데, State의 lazy 재계산 모델과 Ref의 즉시
+  get/set 모델이 섞여서 좋지 않았음 — 그 경험에서 나온 의도적 분리.)
+  Ref는 그냥 "지금 뭐가 들어있나/누가 채워주길 기다리나"만 다루는 즉시
+  값 박스이고, 파생값이 필요하면 Store/State(`:With`+`:Compute`)를 쓸 것
+  — 둘을 섞으려 하지 말 것.
+- **용어 정리 합류 대상**: Ref의 정의 자체가 "instance를 얻는 것"에서
+  "범용 값 박스"로 넓어졌으므로, 진행 중인 용어 정리(`question.md` 1번)
+  때 이름이 여전히 맞는지 같이 재검토할 것.
+
+## 이벤트 핸들러는 self(Instance)를 받지 않는다 — 확정 (2026-08-06)
+
+**결정**: v1의 `function(self, ...)` 관습(`self`/`this`로 이벤트 대상
+Instance를 넘겨주는 것, `.claude/base/quad-v1-architecture.md` 참고 —
+실제로 `event.lua`의 `Bind`가 `func(self or this, ...)`로 넘겨줌)은
+**채택하지 않는다.** quad-roblox의 이벤트 핸들러는 엔진이 네이티브로
+주는 이벤트 인자만 받는다(React의 `onXxx`가 DOM 노드가 아니라
+SyntheticEvent만 주는 것과 같은 모양).
+
+**근거**:
+1. **Ref가 이미 이 자리를 채움.** "생성 직후/마운트 후 ref 채우기"가 되는
+   순간 Instance 접근이 필요하면 클로저 캡처로 해결됨(위 Ref 절) — self는
+   그와 중복되는 두 번째 채널일 뿐이고, 두 채널이 있으면 "어느 쪽이
+   authoritative냐"는 질문이 항상 따라붙음.
+2. **thin wrapper를 제공하면 엔지니어링 구조 자체가 바뀜.** self로 얻는
+   값이 mutable한 재바인드 가능 wrapper라면, 그건 Modifier의 정적
+   flatten(`base/modifier-plan.md`)과 항상 경쟁하는 두 번째 쓰기 경로가
+   생긴다는 뜻 — flatten된 뒤엔 wrapper 쪽에서 "이전 modifier가 뭐였는지"
+   재구성할 방법이 없음. Modifier 핸들러가 KV 매치 기반이라는 걸 감안하면,
+   wrapper 값을 처리하려면 핸들러가 "이게 flatten된 정적 값이냐, 아니면
+   언제든 바뀔 수 있는 wrapper냐"를 매번 분기해야 함 — 오버엔지니어링이고
+   hot path(매 `process` 호출)에 분기 비용이 붙음. 반대로 raw Instance를
+   그대로 주는 선택지도 있지만, 그러면 quad가 스스로 지양하는 "quad가
+   모르는 직접 mutate 경로"를 공식 API로 만들어주는 셈이라 (3)과 충돌.
+3. **디버깅 관점에서 더 결정적.** quad-debug의 가치 제안이 "무엇이
+   무엇에 연결됐는가"를 선언된 반응형 그래프로 추적하는 것인데
+   (`research/debug-tooling-plan.md`), self로 얻은 Instance를 이벤트
+   핸들러 안에서 직접 mutate하는 경로는 그 그래프 밖 — `base/
+   purity-and-effects-plan.md`의 "재사용 가능한 컴포넌트는 store만
+   파라미터로 받아야 한다"는 이식성 원칙과도 같은 결.
+4. **성능/GC**: self를 넘겨주려면 원본 콜백을 클로저로 한 번 더 감싸야
+   함(`event:Connect(function(...) func(self, ...) end)`) — Connect마다
+   불필요한 클로저 할당 비용이 들고, 최적화에도 GC 흐름에도 좋을 게
+   없음. self가 없으면 사용자가 준 함수를 그대로 `:Connect`에 넘기면
+   충분함. quad는 어차피 라이프사이클 끝까지 바인딩을 들고 있으므로
+   (`base/lifecycle-pattern.md`, rbvm 선례 — GC-native), Destroy되면
+   해당 Connection도 자연히 같이 정리됨 — 별도 Disconnect 관리가 애초에
+   불필요. 동적으로 Connect/Disconnect를 반복해야 하는 최적화 케이스가
+   실제로 생기면, 그건 Ref로 얻은 Instance를 갖고 사용자 코드가 직접
+   처리하면 됨(사용자가 실사용 케이스로 확인한 바로도 이런 니즈는
+   드묾 — 드문 케이스를 위해 구조 전체를 복잡하게 만들 이유 없음).
+
+**일반화**: 이 논거의 핵심은 Roblox에 국한되지 않는 원칙으로 정리됨 —
+"엔진이 네이티브로 콜백에 뭘 주든, quad는 그걸 감싸지 않고 그대로
+호출해줘도 무방하다"는 것. 다만 이벤트 등록 자체가 quad-roblox에만
+있는 개념이라(다른 백엔드는 이벤트 모델이 다를 수 있음) 이건 base
+문서가 아니라 quad-roblox 로컬 결정 — 다른 백엔드 구현체를 만들 때
+참고할 만한 템플릿 정도로만 취급.
 
 ## 여러 Store 값을 묶어 파생값 만들기 — `:With` + `:Compute`, 포지셔널 인자 지양
 
@@ -184,6 +293,97 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
 (정확히 어떤 방식으로 "직접 읽는지"는 2차 라운드에서 확정 — self/with 값 둘 다
 lazy State 핸들로 통일, 아래 "Store/State/Source 온톨로지" 절의 "`:With`/
 `:Compute`" 부분 참고).
+
+### `:Compute(fn)`의 선택적 두 번째 인자 — `previous` (무거운 파생 객체 재사용, 2026-08-06)
+
+**배경**: `:Compute`의 결과가 그 자체로 무겁고 재생성 비용이 큰 엔진
+객체일 수 있음(예: 큰 로케일 테이블을 Roblox `LocalizationTable`
+Instance로 변환하는 경우 — `LocalizationTable`은 `Set`/`Get`/`List`로
+부분 갱신 가능한 userdata). 매번 새로 만들지 않고 이전 결과를 그대로
+재사용해 필드만 patch하고 싶을 때를 위해, `fn(value, previous)` 형태로
+**직전에 이 Compute 함수가 반환했던 값**을 두 번째 인자로 받을 수 있게
+한다.
+
+- **opt-in**: 안 쓰는 Compute 함수는 두 번째 인자를 그냥 무시하면 됨 —
+  비용 0. 대부분의 Compute는 이걸 쓸 필요 없음.
+- **`previous`는 "바로 직전 버전"이 보장되지 않음.** lazy pull 모델이라
+  중간에 여러 번 무효화됐어도 실제로 관측(`Get()`) 안 됐으면 재계산
+  자체가 안 일어남 — 그래서 `previous`는 몇 세대 전 값인지 알 수 없음.
+  **따라서 `previous`를 다루는 로직은 반드시 "현재 입력 전체 대 이전
+  결과 전체"의 full diff여야 하고, "정확히 한 단계 전"이라고 가정하는
+  incremental delta 로직을 짜면 안 됨.** 이건 React 자체의 reconciler가
+  하는 것과 같은 모양(old tree/new tree 전체 비교 후 실제 host 객체에
+  패치 적용)이라 새로 발명하는 패턴은 아님.
+- 최종 소비처가 patch된 값을 다시 한번 Set/Parent하게 되는 경우가
+  있어도(레퍼런스는 같은데 다시 대입) 대체로 치명적이지 않음(Roblox
+  프로퍼티 재대입은 저렴/멱등인 경우가 대부분) — 문서화만 해두면 충분.
+
+**⚠️ 이 패턴을 쓸 때 반드시 같이 지켜야 하는 것 — "확정(관측)되기 전엔
+연산이 없다".** `previous`를 mutate하는 로직은 Compute 함수 **본문
+안**에 있으므로, 그 함수가 재실행되지 않으면(=아무도 다시 `Get()`하지
+않으면) mutation 코드 자체가 아예 실행되지 않는다 — 단순히 "가끔
+stale하다" 수준이 아니라 **영영 갱신이 안 일어날 수 있음**. 이 패턴으로
+만든 State는 반드시 다음 중 하나로 계속 능동적으로 관측되어야 함:
+1. quad의 정상적인 선언적 prop 바인딩 경로(`[Property "X"] = someState`
+   류)에 실제로 물려있어서, dispatch 엔진이 무효화 시 자동으로
+   재`Get()`하게 되어 있거나,
+2. 아래 "Observer" 절의 `state:Observer(fn)` + 콜백 안에서 명시적
+   `Get()` 호출 + 그 결과를 children 배열에 넣어 라이프사이클에
+   묶어두기.
+"Ref로 한 번 얻어서 수동으로 Parent만 하고 끝"처럼 능동적 관측 경로가
+안 남아있으면, 이 최적화는 그냥 조용히 작동을 멈춘다.
+
+### `state:Observer(fn)` — 값을 안 실어주는 구독, children 배열에 직접 놓는 leaf 값
+
+**결정(2026-08-06 후속 세션, 사용자 확정)**: 별도 `ObserverHolder`
+래퍼 타입은 안 만듦 — `state:Observer(fn)`가 반환하는 값 자체가 이미
+"children 배열에 바로 놓을 수 있는 leaf 값"이라 감쌀 필요가 없음.
+`CreatedRef`와 완전히 같은 층위:
+
+```lua
+local observer = state:Observer(function()
+    state.value
+end)
+
+Frame {
+    observer,
+}
+```
+
+이러면 `observer`는 `Frame`이 살아있는 동안만 유지되고, `Frame`이
+retract/Destroy되면 자동으로 정리됨.
+
+- **값을 안 실어줌 — 반드시 `Get()`을 다시 해야 함.** 기존 "emit은
+  무효화 신호 하나로 좁혀짐 — 값을 안 실어보내므로 저렴함" 원칙(아래
+  "Store/State/Source 온톨로지" 절)이 그대로 적용됨: `fn`은 "뭔가
+  바뀌었으니 다시 확인하라"는 신호만 받고 새 값 자체는 안 받음 —
+  위 예시처럼 `fn` 본문에서 `state.value`/`Get()`을 명시적으로 다시
+  읽어야 함. 자동으로 안 해주는 이유: 재계산이 진짜 필요한지가 다른
+  `:With`한 값에 따라 갈리는 경우가 있어서(위 "포지셔널 인자 지양" 절의
+  `noprint` 예시처럼 계산 자체를 통째로 생략하고 싶을 수 있음) — `Get()`
+  호출 여부를 작성자가 직접 결정하게 열어둔 것.
+- **base가 제공하는 것은 `isObserver`류 타입 판별자 하나** — children
+  배열 dispatch가 숫자 슬롯 값을 훑을 때 "이게 Observer인가"를 판별해
+  `CreatedRef`와 같은 방식으로 라이프사이클에 묶어주는 것 말고는 base가
+  더 해줄 일이 없음. 새 dispatch 메커니즘이 아니라 기존 children-array
+  참가자 패턴의 반복.
+- **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
+  동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
+  — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
+- **구현 노트(사용자 제안, 확정된 아키텍처는 아니고 구현 시 참고)**:
+  살아있는 Observer 집합을 Observer 값 내부 필드로 안 두고, 외부에
+  weak table(`{[observer] = true}`, `__mode = "k"`)로 인덱싱하는 방식을
+  선호 — 포인터 해싱 비용만 들고 값 자체엔 부작용 없음. rbvm의
+  `getNamespaceOf`류가 비슷한 외부 weak-table 인덱싱을 씀
+  (`base/lifecycle-pattern.md` 참고).
+- **인자 없는 `state:Observer()` — "항상 관측" 유틸.** `fn`을 생략하면
+  내부적으로 no-op 콜백을 쓰는 것으로 취급해, 그냥 "이 State를 계속
+  능동적으로 관측 상태로 유지"하는 용도로만 씀. 위 "`previous` 인자"
+  절의 캐비엇("능동적 관측 경로가 안 남아있으면 mutate 로직이 조용히
+  멈춘다")을 만족시키는 가장 단순한 도구 — 별道 콜백 로직 없이 그냥
+  이 State가 계속 재계산되게만 강제하고 싶을 때 씀 — 별도 콜백 로직 없이
+  이 용도로만 쓰고 싶을 때. 문서화만 확실히 하면 별문제 없음(사용자
+  판단).
 
 ## Unix 파이프에서 영감 받은 스트림 지향 — 원래 의도, 해소됨
 
@@ -353,7 +553,9 @@ Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실�
   방식이면, 나중에 GC만으로 정말 부족한 케이스가 생겨도 그 connection을 얻어
   `disconnect()`하는 명시적 dispose 경로를 추가로 얹는 게 가능한 디자인 —
   지금 마일스톤에서는 필요 없어서 안 함(사용자: "필요하다면 dispose 핸들러를
-  만들어주는 것도 가능한 디자인, 다만 지금까지 요구가 없었음").
+  만들어주는 것도 가능한 디자인, 다만 지금까지 요구가 없었음"). (rbvm의
+  GC-native 패턴이 실물에서 검증됐다는 근거는 `base/lifecycle-pattern.md` 상단
+  참고 메모 참고.)
 
 ## quad2-try 리서치 결과 (완료) — 이전 시도에서 뭘 가져오고 뭘 버릴지
 

@@ -56,8 +56,13 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 인용되는 원본 비교 자�
 ## 추가로 기록해둘 것
 
 - Vide의 암묵적(ambient stack) 의존성 추적 vs Fusion의 명시적 `use()` 축은
-  push/pull 축과 독립적인 별개 결정 — quad는 아직 미정(`base/bind-system-plan.md`
-  열린 질문 참고). Fusion의 명시적 `use()`는 `checkLifetime` 같은 bind-time
-  체크를 가능하게 하는 부수 효과가 있음.
+  push/pull 축과 독립적인 별개 결정. **[정정] 리서치 당시(2026-08-03 이전)엔
+  "quad는 아직 미정"이었으나, `base/bind-system-plan.md`의 "여러 Store 값을
+  묶어 파생값 만들기 — `:With` + `:Compute`" 절에서 이미 명시적 모델로
+  확정됨** — Vide식 암묵적 ambient stack 추적은 "함수 실행 중과 끝 사이를
+  확인하고 부작용이 필요"한 방식이라 Lua에서 깔끔하지 않다는 이유로 기각,
+  `:With(...)` + `:Compute(fn)`(클로저로 직접 읽는 명시적 방식)를 채택.
+  Fusion의 명시적 `use()`는 `checkLifetime` 같은 bind-time 체크를 가능하게
+  하는 부수 효과가 있음.
 - 두 라이브러리 다 mount 시 단일 소유권 가드가 없다는 것 자체가 quad Slot의
   차별점이라는 근거로 재사용 가능.

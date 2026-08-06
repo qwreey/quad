@@ -3,8 +3,9 @@
 **상태**: base — 핵심 메커니즘(런타임 plug 아님/정적 merge, immutable
 값+clone 기반 체이닝, 이중 setter)은 2026-08-04 세션 채팅 논의로 확정. 남은
 건 getter 정확한 이름뿐(구현 단계). Modifier가 컴포넌트 경계를 어떻게
-통과하는지(다중 루트, 상속 방식)는 별개 문제로
-`research/component-composition-plan.md`의 열린 질문에 남음 — 이 문서는
+통과하는지(named parameter로 전달, multi-root 개념 폐기)는 별개 문제로
+**[정정] `research/component-composition-plan.md`는 2026-08-04 세션에 수렴
+완료돼 `base/component-composition-plan.md`로 승격됨 — 이 문서는
 "Modifier 값 자체가 어떻게 동작하는가"만 다룸.
 
 ## 문제
@@ -25,6 +26,12 @@ Modifier는 `isHandlable`/`priority`/`process`/`retract` 핸들러 레지스트�
 pluggable로 만들면 여러 modifier가 반응형으로 같은 키를 계속 다투는 CSS
 cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 변경은 전체
 교체, 부분 오버레이 없음"(`base/architecture.md` 3번) 원칙과 충돌함.
+
+관련: 이미 마운트된 Instance에 재바인드할 때 Default→실값 flatten을 다시
+해야 하는지/clone이 필요한지는 별개 미정 문제로
+`research/existing-instance-bind-plan.md`의 "Default 값과 얽히는 문제" 절
+참고 — 여기서 다루는 건 컴포지션 타임의 modifier 값 자체 flatten이라 층위가
+다름.
 
 ### 2. Merge 우선순위: 배열 순서와 인라인은 독립된 두 규칙
 
@@ -157,6 +164,7 @@ State에 담기면 그 값이 반응형으로 바뀔 수 있다는 뜻이 되어
 
 - Getter 정확한 이름/모양(`:Get(key)` vs dot-access 겸용) — 후순위, 구현
   단계에서 다른 세부 API 이름들과 같이 확정 가능.
-- Modifier가 컴포넌트 경계를 어떻게 통과하는지(다중 루트, 상속 방식)는
-  `research/component-composition-plan.md`에서 계속 다룸 — 이 문서가 다루는
-  "값 자체의 동작"과는 별개 문제.
+- Modifier가 컴포넌트 경계를 어떻게 통과하는지는 **[정정] 이미
+  `base/component-composition-plan.md`에서 해소됨**(named parameter로
+  전달, "다중 루트" 개념 자체는 폐기) — 더 이상 열린 질문 아님, 이 문서가
+  다루는 "값 자체의 동작"과는 별개 문제였다는 점만 참고로 남김.

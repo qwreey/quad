@@ -88,6 +88,52 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 인체공학(사용자가 좋아하는 부분)은 유지하되 내부 구현(체이닝이 아니라 팩토리
 함수)만 바꾼다.
 
+## Store 값을 직접 mutate한 뒤 전파 — `:Emit(key)` (2026-08-06 후속 세션)
+
+**결정**: Source가 들고 있는 값을 새 값으로 교체하지 않고 제자리에서
+mutate한 뒤, `Store:Emit(key)`로 그 key의 무효화 신호만 별도로 쏘는
+것을 **Source 원천(store가 직접 들고 있는 값)에 한해 허용**한다.
+
+**존재 이유(우선순위순)**:
+1. **clone이 아예 불가능한 값이 있음.** userdata나 외부 라이브러리
+   객체(엔진 Instance 등)는 `table.clone`으로 새 값을 만들 수 없음 —
+   이런 값은 "새 값을 만들어 Set"이라는 대안 자체가 없으므로, in-place
+   mutation + `Emit`이 변경을 전파하는 유일한 수단.
+2. Lua의 불변 업데이트가 verbose함(JS의 `{...t, x=1}` 같은 문법이 없어
+   `table.clone` 후 필드 덮어쓰기 + 재대입 필요) — 이걸 줄여주는 부차적
+   이득도 있지만, 이게 주된 이유는 아님(1번이 진짜 이유).
+
+**왜 새 구멍이 아닌가**: `Get()`은 원래도 라이브 테이블 레퍼런스를
+돌려주므로, 그 레퍼런스를 mutate하는 것 자체는 `Emit` 유무와 무관하게
+Lua에서 항상 가능한 일. `Emit`이 없으면 그 mutation은 "조용히 반영 안
+되는"(dependent가 재계산 안 됨, UI가 stale한 채 멈춤) 상태로 남을 뿐이라
+오히려 `Emit` 없는 쪽이 더 나쁜 버그 클래스 — `Emit`은 이미 가능한
+mutation에 정식 신호를 붙여주는 것뿐.
+
+**남는 캐비엇(문서에 반드시 명시)**: `Get()`으로 이전에 그 테이블을
+읽어서 어딘가(로컬 변수, 다른 코드가 들고 있는 참조)에 캐시해둔 게
+있다면, mutation 순간 그것도 같이 바뀐다 — 새 테이블이 아니라 같은
+레퍼런스라서. **`Get()` 결과를 나중 비교(`==`)나 diff 캐시 용도로 들고
+있으면 안 됨 — 항상 다시 `Get()`할 것.**
+
+**하드 경계 — Source 원천에만 허용, 중간/파생 State에는 없음.** `:With`/
+`:Compute`로 만들어진 파생 State에는 `Emit`이라는 개념 자체가 없다 —
+허용하면 "이 State의 현재 값이 뭘 근거로 계산됐는가"를 아무도 설명할 수
+없게 되어(quad-debug가 추적하려는 "무엇이 무엇을 계산했는가" 그래프가
+깨짐) 디버깅이 사실상 불가능해짐. State의 값은 항상 "선언된 Compute
+함수를 실제로 실행한 결과"여야 한다는 불변식이 깨지면 안 됨. 무거운
+파생 객체를 재사용하고 싶은 경우(Compute의 결과 자체가 무거운 userdata인
+경우)를 위한 별도 메커니즘은 `base/bind-system-plan.md`의 "`:Compute(fn)`의
+선택적 두 번째 인자 — `previous`" 절 참고 — 이건 `Emit`과 다른 메커니즘.
+
+**따름정리 — `Store<T>`의 `T`는 Modifier가 될 수 없음.** Modifier는
+정적 flatten으로 dispatch와 완전히 별개인 단계에서 처리되고
+(`base/modifier-plan.md`), `State<Modifier>`가 UB로 확정된 것도 같은
+이유(`modifier-plan.md` 7번) — Store/State/dispatch 경로엔 애초에
+Modifier용 processor가 없음. 위 "하드 경계"와 같은 이유로, `Emit`이
+Modifier의 정적 flatten과 충돌할 걱정 자체가 성립하지 않음(둘이 만날
+지점이 없음).
+
 ## 여러 스토어 값을 묶어 처리하는 것 (dependency array) — 확정
 
 `useEffect`처럼 여러 store 값을 디펜던시로 묶어 파생값을 계산하고 싶다는
