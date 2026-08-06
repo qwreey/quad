@@ -122,7 +122,23 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
 14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`
 15. 왜 Source가 State를 구조적으로 만족하는가(Svelte Writable/Readable과 같은 서브타입 모양, `RefSource`/`StoreSource` 중간안이 왜 기각됐는가) — `store-semantics.md`, `component-composition-plan.md`
-16. 여러 Source를 한꺼번에 바꿀 때 중복 재계산/재대입을 피하는 파이프라인/업데이트 순서 최적화 팁(Batch 프리미티브 없이 사용자가 직접 할 수 있는 것) — `research/additional-primitives-plan.md` "문서화 백로그" 절(2026-08-06 신설)
+16. **State 파생 체인 동작 원리** — emit이 아래로 전파되고, `Get()` 요청이
+    위로 거슬러 올라가 재계산된 뒤 다시 아래로 내려오는 흐름을 명확히
+    설명(Blocker/Effect 둘 다 이 흐름 위에서 동작하므로 선행 이해로 필요)
+    — `research/additional-primitives-plan.md` "문서화 백로그" 절
+    (2026-08-06~07 신설)
+17. **`:Compute` 함수 안에서 `if` 등으로 일부 의존값만 조건부로 사용하는
+    유연한 구조** — 명시적 의존성 선언(`:With`) 위에서도 실제 계산은
+    조건부로 일부만 쓸 수 있다는 팁 — `research/additional-primitives-plan.md`
+    "문서화 백로그" 절
+18. **Blocker 사용 가이드** — 파이프라인 최종 연산 지점(무거운 계산이
+    실제 일어나는 derived state)에 배치하는 게 원칙이라는 것, **네스팅
+    금지를 최우선으로 강조**(겹치는 배치는 각자 새 `Blocker`를 만들 것 —
+    안 지키면 조용히 잘못된 시점에 조기 해제되는 원인 추적 어려운 버그로
+    이어짐) — `research/additional-primitives-plan.md` 3-1절
+19. 여러 Source를 한꺼번에 바꿀 때 Blocker 없이도 중복 재계산/재대입을
+    피하는 파이프라인/업데이트 순서 팁(Blocker를 안 쓰는 단순 케이스용
+    보조 팁) — `research/additional-primitives-plan.md` "문서화 백로그" 절
 
 (13번이었던 "Fusion/Vide 경험자용 비교 섹션"은 2026-08-06 재분류로 아래 6번
 `quadnomicon`으로 이동)
@@ -142,19 +158,28 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 2. `:With`+`:Compute` 명시적 파생값이 Vide의 암묵적 ambient stack 대신
    채택된 이유 — Vide 경험자 대상 비교
 
-**2026-08-06 후속 세션에서 추가된 후보(둘 다 `research/
+**2026-08-06~07 후속 세션에서 추가된 후보(전부 `research/
 additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
-3. 왜 Batch/Transaction이 없는가 — Solid `batch()`/MobX `runInAction()`류
-   lexical transaction이 Roblox의 협조적 스케줄링(코루틴 yield) 환경에서
-   왜 근본적으로 위험한지(전역/코루틴 스코프 플래그가 새 코루틴 스폰·영구
-   yield에 어떻게 깨지는지 구체 시나리오 포함) — Fusion/Vide 비교는 아니고
-   "설계 원리"형 에세이라 Rustonomicon 패러디 취지(비슷한 프레임워크
-   설계자용)와 잘 맞음
+3. **왜 lexical Batch를 기각하고 대신 값 기반 Blocker를 택했는가** —
+   Solid `batch()`/MobX `runInAction()`류 lexical transaction이 Roblox의
+   협조적 스케줄링(코루틴 yield) 환경에서 왜 근본적으로 위험한지(전역/
+   코루틴 스코프 플래그가 새 코루틴 스폰·영구 yield에 어떻게 깨지는지
+   구체 시나리오) **+** 그 대안으로 `Blocker`(콜스택/코루틴이 아니라
+   값으로 지연 구간을 표현, 네스팅 의도적 미지원)가 어떻게 같은 문제를
+   구조적으로 우회하는지 나란히 비교 — Fusion/Vide 비교는 아니고 "설계
+   원리"형 에세이라 Rustonomicon 패러디 취지(비슷한 프레임워크 설계자용)와
+   잘 맞음. (2026-08-06 세션엔 "왜 Batch가 없는가"로만 다뤘다가, Blocker
+   채택 후 2026-08-07 세션에서 비교 에세이로 재구성됨 — Batch(lexical)
+   기각과 Blocker 채택은 별개 결정이니 혼동하지 말 것.)
 4. 왜 Context가 없는가 — 얕은 버전(코루틴 키 weak table push-pop)조차
    quad가 정상 패턴으로 확정한 Slot 비동기 추가에서 조용히 깨지는 이유,
    완전 자동 버전이 Roblox Luau의 플랫폼 한계(thread-local 없음)로 불가한
    이유, 명시적 타입 강제 Store 전달이 Context보다 안전한 이유(레이어드
    Store 대안도 왜 함께 기각됐는지 포함)
+5. 왜 push-invalidate/pull-recompute 설계가 laziness와 재계산 방지를
+   최우선 목표로 뒀는가 — 위 `심화` 3번(`왜 push-invalidate/pull-recompute
+   인가`)을 더 깊게 확장, `Blocker` 같은 파생 프리미티브가 이 목표 위에서
+   왜 자연스럽게 나왔는지까지 포함하는 설계 철학 에세이
 
 **publish 안 하는 것과의 경계**: 세션별 정정 이력, 조사 원자료(Fusion
 반응 그래프 BFS 분석, quad2-try 죽은 코드 조사 등)는 quadnomicon에도

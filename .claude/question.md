@@ -10,16 +10,16 @@
 
 ## 지금 열려있는 것 (우선순위순)
 
-### 0. 추가 프리미티브 필요성 — 사용자 요청, 대부분 수렴(2026-08-06)
+### 0. 추가 프리미티브 필요성 — 사용자 요청, 대부분 수렴(2026-08-06~07)
 
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것
 같나요. 이것만으로 이 프로젝트는 충분하다 생각해요?" — 여러 서브에이전트
 조사 + 사용자와 라이브 논의로 계속 수렴 중, 상세는 `research/
 additional-primitives-plan.md`. 요지:
 
-- **키 기반 동적 컬렉션 재조정(유일하게 아직 열려있음, 최우선)**: Fusion
-  `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
-  `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 —
+- **키 기반 동적 컬렉션 재조정(유일하게 아직 완전히 열려있음, 최우선)**:
+  Fusion `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`,
+  React `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 —
   `pre-implementation-audit.md` 1-7번(Slot CRUD 미정의)과 같은 지점이라
   같이 정의해야 함. **자유 함수**(plain data 또는 State 둘 다 받는
   폴리모픽 시그니처, State 메소드 프레이밍은 Source 안 쓰는 컴포넌트가
@@ -30,10 +30,21 @@ additional-primitives-plan.md`. 요지:
   단순 primitive(재실행 개념 없음, Observer와 별개)로 합의, 시그니처만
   남음. Observer에 cleanup 반환 계약을 얹는 안은 기각(클로저 업밸류로
   이미 충분 — `pre-implementation-audit.md` 3-1과 같은 논리).
-- **Batch/Transaction — 프리미티브로 안 만들기로 결정 완료**: lexical
+- **Blocker — 채택, 핵심 메커니즘+이름 확정(2026-08-07 신설)**: 여러
+  Source를 한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는
+  primitive — lexical Batch(아래 항목, 기각)와 달리 콜스택/코루틴이 아니라
+  **값**(`Blocker` 객체의 `On()`/`Off()`)으로 지연 구간을 표현해 코루틴
+  yield 위험을 구조적으로 우회함. `state:Block(blocker) -> state`가
+  gated state를 반환(호출 즉시 onunblock 핸들 등록), `IsBlocked`/
+  `HasBlockedEmit` 필드, 재진입(네스팅)은 의도적으로 미지원(Rust
+  poisoned-mutex류 위험 회피 — 겹치는 배치는 각자 새 `Blocker`를 쓸 것,
+  **문서화에서 강하게 명시 필요**). `base/`로 승격 가능한 수준, 남은 건
+  문서화뿐.
+- **Batch(함수/코루틴 스코프 lexical block) — 기각 확정**: lexical
   transaction 블록이 코루틴 yield 위에서 구조적으로 위험(전역/코루틴
-  스코프 플래그 둘 다 새 코루틴 스폰이나 영구 yield에 깨짐) — 대신
-  심화 최적화 팁 + quadnomicon "왜 없는가" 에세이로 문서화.
+  스코프 플래그 둘 다 새 코루틴 스폰이나 영구 yield에 깨짐) — Blocker로
+  대체됐으므로 더 이상 미해결 문제 아님, quadnomicon "왜 Batch 대신
+  Blocker인가" 에세이 대상.
 - **Context — 기각 확정, 대안이던 레이어드 Store도 철회**: 완전 자동
   버전은 Roblox Luau 플랫폼 한계로 사실상 불가, 얕은 버전도 Slot 비동기
   추가에서 조용히 깨짐 + quad-debug 철학과 충돌. 레이어드 Store 대안은
