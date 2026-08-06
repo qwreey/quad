@@ -442,10 +442,49 @@ retract/Destroy되면 자동으로 정리됨.
   내부적으로 no-op 콜백을 쓰는 것으로 취급해, 그냥 "이 State를 계속
   능동적으로 관측 상태로 유지"하는 용도로만 씀. 위 "`previous` 인자"
   절의 캐비엇("능동적 관측 경로가 안 남아있으면 mutate 로직이 조용히
-  멈춘다")을 만족시키는 가장 단순한 도구 — 별道 콜백 로직 없이 그냥
-  이 State가 계속 재계산되게만 강제하고 싶을 때 씀 — 별도 콜백 로직 없이
-  이 용도로만 쓰고 싶을 때. 문서화만 확실히 하면 별문제 없음(사용자
-  판단).
+  멈춘다")을 만족시키는 가장 단순한 도구 — 별도 콜백 로직 없이 그냥
+  이 State가 계속 재계산되게만 강제하고 싶을 때 씀. 문서화만 확실히
+  하면 별문제 없음(사용자 판단).
+
+### `:Subscribe()`/`:Unsubscribe()` — 리프에 안 붙는 "전역/독립" Observer용 (2026-08-06 후속 세션)
+
+**문제**: children 배열에 넣는 자동 라이프사이클 바인딩은 Observer가
+"어딘가 leaf에 붙어있다"는 걸 전제함. 근데 흔한 실사용 패턴 하나가 이
+전제를 깨뜨림 — 개발자가 디버깅용으로 `RunService:IsStudio()` 가드
+안에서 Store에 직접 Observer를 걸어 `print`하는 패턴(원하면 BooleanValue
+로 부분부분 켰다 껐다 하기도 함). 이건 다크패턴이 아니라 오히려 방어적인
+엔지니어링이고, 붙일 leaf 자체가 없는 "전역/독립" 사용이라 위 weak-table
+기반 자동 추적이 적용 안 됨.
+
+**해결**: 명시적 `:Subscribe()`/`:Unsubscribe()`를 추가로 지원. 이건 새
+설계가 아니라 `bind-system-plan.md`의 PA님 코드 교차검증(라이프사이클
+절)에서 이미 예고해둔 확장 지점을 실제로 채우는 것 — "나중에 GC만으로
+정말 부족한 케이스가 생기면 명시적 dispose 경로를 추가로 얹는 게 가능한
+디자인"이라고 그때 이미 못박아뒀음.
+
+- **`local` 변수로 참조만 들고 있는 것으로는 부족한 이유**: 토글(BooleanValue로
+  로깅 껐다 켰다) 케이스에서, 참조를 끊어도 실제 GC는 결정론적으로 즉시
+  일어나지 않음 — "껐다"고 생각한 뒤에도 한동안 계속 발화할 수 있음.
+  `:Unsubscribe()`는 즉시/결정론적으로 끊는 경로라 이 문제가 없음.
+- **liveness 체크는 필드 우선, weak table은 폴백**(사용자 제안): 외부
+  weak table 조회보다 리터럴 필드 접근이 더 쌈(Luau가 문자열 키 접근을
+  미리 해시해둠) —
+  ```lua
+  if self.Subscribed then return true end
+  if self.Connection then return self.Connection.Connected end
+  ```
+  자동(리프 부착)/수동(구독) 두 라이프사이클 경로를 하나의 `canExecute`류
+  predicate로 OR 묶는 자연스러운 형태. 실측은 구현 단계에서 확인.
+- **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류를
+  **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
+  자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
+  (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
+- **`:Subscribe()`/`:Unsubscribe()` 둘 다 idempotent** — 이미 구독 중인데
+  또 Subscribe해도, 구독 안 했는데 Unsubscribe해도 에러 안 나고 그냥
+  no-op. 토글 로직 짤 때 상태 추적 부담을 줄여줌.
+- **`:Unsubscribe()`는 자동(리프) 케이스에도 동일하게 씀** — Instance가
+  파괴되기 전에 수동으로 조기 해제하고 싶을 때도 같은 메소드 하나로
+  충분, 별도 API 안 만듦.
 
 ## Unix 파이프에서 영감 받은 스트림 지향 — 원래 의도, 해소됨
 

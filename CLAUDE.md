@@ -390,3 +390,24 @@ Ref 일반화 — 네 가지 다 확정, 실제 base 문서에 반영 완료.** 
   disconnect 센티널로 씀(`nil`은 테이블에서 사라져서 부적합) —
   `bind-system-plan.md`. Modifier가 이벤트 키를 담아도 되는지는 (d)로
   자동 해소(Modifier가 애초에 키 종류를 구분 안 하므로).
+
+**6. 이벤트 store-bind는 부차적 옵션으로 재조정, Observer의 `:Subscribe`/
+`:Unsubscribe` 추가 — 둘 다 확정, 반영 완료.**
+- 이벤트 store-bind(5번 (f))를 다시 검토 — "구현이 쉽다"가 "구현할
+  가치가 있다"를 보장 안 함을 재확인. 저빈도 UI 이벤트의 조건부 처리는
+  "핸들러 하나 계속 연결 + 내부에서 `store.enabled:Get()` 분기"가 이미
+  Connect/Disconnect 없이 더 싸고 표준적이라 **이걸 기본 권장 패턴으로
+  확정**. store-bind는 고빈도 신호(Heartbeat 등)나 로직 자체가 바뀌는
+  드문 케이스를 위한 부차적 옵션으로 격하(메커니즘 자체는 유지 — 일관성
+  위해 예외로 뺄 근거는 약함). 자주 재계산되는 State에 물리면 Connect/
+  Disconnect churn이 숨은 비용이 된다는 캐비엇도 추가.
+- **Observer의 `:Subscribe()`/`:Unsubscribe()`** — children 배열에 안
+  붙는 "전역/독립" Observer(디버깅용으로 Store에 직접 걸어 print하는
+  흔한 패턴, `RunService:IsStudio()` 가드 + BooleanValue 토글)를 위한
+  명시적 라이프사이클 경로. 이건 새 설계가 아니라 PA님 코드 교차검증
+  때 이미 예고해둔 확장 지점("GC만으로 부족하면 명시적 dispose 경로
+  추가 가능")을 실제로 채운 것. liveness 체크는 `self.Subscribed` 필드
+  우선, `self.Connection.Connected` 폴백(필드 접근이 weak table 조회보다
+  쌈). 내부 레지스트리는 자동 케이스의 weak table과 별개로 강참조
+  (weak면 "살려둔다"는 목적이 무의미해짐). 둘 다 idempotent, `:Unsubscribe()`는
+  자동 케이스 조기 해제에도 재사용.
