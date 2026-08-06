@@ -142,6 +142,15 @@ State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하
   게 사용자의 회고적 재평가 — 지금은 타입이 핵심 제약이라 그 전제 자체가
   더 이상 안 맞고, 이번 정리로 Store는 "이름 붙은 Source 모음, 그 이상
   아님"으로 더 단순해짐.
+- **구현 스케치(2026-08-07, 성능 근거): eager 생성은 `table.clone(defaults)`
+  후 그 결과를 순회하며 각 슬롯을 `Source(v)`로 교체하는 모양이어야 함**
+  (`local sources = table.clone(defaults); for k, v in sources do
+  sources[k] = Source(v) end` 류) — 빈 테이블을 새로 만들어 키를 하나씩
+  넣는 것보다, `table.clone`으로 원본의 해시/배열 슬롯 구조를 그대로
+  재사용하는 쪽이 Luau VM 입장에서 더 쌈(직접 해시 슬롯을 처음부터
+  구성하는 것보다 기존 슬롯을 복제하는 게 저렴). `Source()`(인자 없이
+  호출)는 `Source(nil)`과 동치 — `defaults`에 값이 없는 키를 `store.key`
+  접근 시점에 lazy 생성할 때 이 무인자 형태를 씀.
 - **이 서브타입 관계는 `quad2-try`에서 기각한 컴포넌트/클래스 OOP 상속과는
   다른 층위.** 그때 금지한 건 사용자가 짜는 컴포넌트 계층 구조(`Class:Extend()`류
   매직)였고, 지금은 두 프리미티브 타입 사이의 구조적 서브타이핑(런타임

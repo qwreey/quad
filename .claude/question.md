@@ -92,17 +92,16 @@ additional-primitives-plan.md`. 요지:
   주기가 없다"는 기존 원칙과 이름이 충돌해 보일 수 있음), `Draw`(짧지만
   즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
   미정, `research/additional-primitives-plan.md` 1번 절 참고.
-- **State/Source 읽기 접근자 — `.value` vs `:Get()`/`:Pull()`(3순위,
-  2026-08-07 추가)**: 지금 `.value`는 `:Get()`을 감싼 계산 속성이고 "관용적
-  표기"로 앞세워져 있는데, 이게 quad가 명문화한 "관측해야 실체화된다"
-  원칙을 프로퍼티 문법이 무디게 만드는 건 아닌지 재검토 중. `Finalize`는
-  quad가 이미 "정리/해제"쪽 의미로 자리 잡아둔 단어(Effect의 leaf-death
-  cleanup, `retract`, `Destroying`)와 충돌 위험이 있어 기각 — 대신
-  `Pull()`(아키텍처 문서 자체가 이 메커니즘을 부르는 "push-invalidate/
-  pull-recompute"와 일치)을 검토했다가, 사용자가 `Get()`/`:Set()` 동사
-  짝을 맞추는 쪽이 더 나을 수 있다고 재고 중 — **아직 결정 안 됨**,
-  `.value` 자체를 유지할지(Ref처럼 진짜 non-lazy인 것에만 남길지)도 같이
-  볼 것.
+- **State/Source 읽기 접근자 — 함수명은 `Get()`으로 확정(2026-08-07),
+  `.value` 존치 여부만 남음**: `Get()` vs `Pull()` 중 `Get()`으로 확정 —
+  둘 다 "명시적 게터 호출"이라는 엔지니어링 기준에서 동급이라 승부처가
+  아니었고, 이미 문서 전체가 `Get()`을 쓰고 있어 바꿀 이유가 약함(`Finalize`는
+  앞서 quad의 "정리/해제" 어휘(Effect leaf-death cleanup, `retract`,
+  `Destroying`)와 충돌 위험으로 이미 기각). **아직 열려있는 건 `.value`
+  (Get()을 감싼 "관용적 표기" 계산 속성) 자체를 유지할지** — quad가
+  명문화한 "관측해야 실체화된다" 원칙을 프로퍼티 문법이 무디게 만드는 건
+  아닌지, 유지한다면 State/Source에도 둘지 아니면 진짜 non-lazy인 Ref에만
+  남길지.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
