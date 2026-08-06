@@ -63,7 +63,11 @@
 - **여러 Slot이 형제로 섞일 때 순서 보장** — `base/slot-plan.md`의 "여러
   Slot이 섞일 때 순서 보장" 절 참고. Roblox 단일 백엔드로는 급하지 않음
   (LayoutOrder/ZIndex로 대부분 해결), 다른 백엔드(웹 DOM 등) 재사용성과
-  직결되는 문제라 Slot 코어 로직 구현 시점에 재검토.
+  직결되는 문제라 Slot 코어 로직 구현 시점에 재검토. **같은 구현 시점에
+  같이 확인할 것(2026-08-06 추가)**: Slot이 quad 밖(v1 compat 등)에서
+  만들어진 임의 Instance를 동적 배열 원소로 받을 수 있는지, retract 시
+  foreign Instance를 어떻게 다루는지 — `research/v1-compat-plan.md` 7-3
+  참고.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
@@ -86,14 +90,15 @@
   ui-shorthand-plan.md`. 기능 필요 여부(여전히 필요로 재확정)·메커니즘
   (Handler)·패키지 배치(quad-roblox 코어)는 확정, 남은 건 이름 재검토
   (용어 정리 합류)와 `RoundSize`(이미지 라운드) 대체 방식뿐.
-- **v1 하위호환(compat) 레이어 방향** — `research/v1-compat-plan.md`(신규,
-  2026-08-06, 같은 날 후속 논의로 수렴). v1 런타임을 v2 위에 재구현하는
-  건(문법 흉내) 컴포넌트 정체성 모델 충돌로 얇게 안 되지만, **v1을 그대로
-  두고 v2와 병행 실행 + 경계에서만 `state:Observer()`(lazy 포기, 항상
-  관측)로 값을 리졸브해 v1 프로퍼티에 재대입하는 브리지**는 유력 방향으로
-  수렴(사용자 제안, 기존 base 원시들만으로 조립 가능함을 확인). 남은 결정:
-  이 브리지가 양방향(v1→v2도) 필요한지, 브리지 글루 코드를 별도 패키지로
-  뺄지.
+- **v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat`** —
+  `research/v1-compat-plan.md`(신규, 2026-08-06, 두 차례 후속 논의로 수렴).
+  방향 확정: v1을 그대로 병행 실행 + 경계에서만 `state:Observer()`(lazy
+  포기)로 값을 리졸브해 v1 프로퍼티에 재대입하는 브리지, v2→v1 단방향만
+  (양방향 불필요로 확정), 패키지명 `quad-roblox-v1-compat`으로 확정(소스
+  트리에 세 번째 패키지로 추가될 예정). v2-in-v1/v1-in-v2 두 임베딩 방향
+  모두 기술적 근거와 안전 규칙까지 정리됐으나(문서 7번), **Slot이 foreign
+  Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 결정 불가로 남음**
+  (위 "여러 Slot이 형제로 섞일 때 순서 보장" 항목과 같은 시점에 확인).
 
 ## 참고: 지금까지 확정된 것 (요약)
 

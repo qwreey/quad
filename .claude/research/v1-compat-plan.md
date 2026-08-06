@@ -153,30 +153,117 @@ v2 문법으로 흉내내는 작업 자체를 없앰** — v1 코드는 그냥 v
 - **"v1 코드를 완전히 무수정으로 v2 런타임 위에서 돌리는 것"(3-2, OOP
   mutate 재구현)은 여전히 비권장** — 1순위 방향이 그 문제 자체를 안 만들기
   때문에 불필요.
-- 확정된 소스 트리(`base/architecture.md` "구현 착수" 절)는 `quad-base`/
-  `quad-roblox` 두 패키지뿐 — 경계 브리지 글루 코드를 어디 둘지(별도
-  `quad-compat` 패키지 신설 vs 필요한 프로젝트마다 로컬 유틸)는 아래 열린
-  질문.
 
-## 6. 열린 질문 (사용자 판단 필요)
+## 6. 확정된 것 (2026-08-06 후속 라운드)
 
-- **양방향이 실제로 필요한가, 한쪽 방향(v2→v1, 데이터 새로 짜고 v1 UI는
-  유지)만으로 충분한가** — 사용자 예시는 v2→v1 한 방향. 반대 방향까지
-  필요하면 4번의 3번 항목(v1 시그널 구독 → v2 Source 갱신)을 실제로
-  설계해야 함.
-- 브리지 글루 코드를 별도 패키지(`quad-compat`, 소스 트리에 아직 없음)로
-  뺄지, 아니면 정식 패키지 없이 "필요할 때 짜는 유틸 패턴" 정도로 문서화만
-  해둘지.
+- **방향: v2→v1 단방향만.** 4번 3항목의 v1→v2(시그널 구독 → `Source:Set()`)
+  방향은 사용자가 "필요성 모르겠다"고 확정 — 설계 범위에서 제외. 굳이
+  대칭성 때문에 만들 필요 없음.
+- **패키지명: `quad-roblox-v1-compat`.** `quad-compat`처럼 엔진 무관을
+  가장하는 이름 대신, v1 자체가 애초에 Roblox 전용이라(quad가 엔진 무관화에
+  실패한 전례가 있다는 사용자 확인) 이 브리지도 처음부터 `quad-roblox`
+  계열의 Roblox 전용 패키지로 이름 붙임 — `quad-base`/`quad-roblox` 확정
+  트리에 세 번째로 추가되는 패키지.
+- **번역 경계 원칙 확정**: v1의 원시 타입(Linker, v1 store의
+  `registerClass` 객체, `Class.Extend().New()`가 만드는 `this` OOP
+  인스턴스)이 v2 코드 쪽으로 그대로 흘러들어가지 않고, v2의 원시 타입
+  (Source/State/Store/Modifier/Ref)도 v1 코드 쪽으로 흘러들어가지 않는다
+  — `quad-roblox-v1-compat`의 공개 표면은 오직 (a) 리졸브된 평범한 값과
+  (b) Roblox Instance만 주고받는다. 두 런타임의 내부 핸들 타입이 서로의
+  영역을 침범하지 않는 게 핵심 — 아래 7번의 구체적 규칙들이 전부 이 원칙의
+  적용.
+
+## 7. 기술 계획 — 두 임베딩 방향 + Slot 조사 결과 (2026-08-06 후속)
+
+v1/v2를 병행 사용할 때 실제로 쓰이는 모양은 두 가지다: (A) 신규로 짜는
+v2 트리 안에 과거 v1 컴포넌트를 리프로 박아넣는 것, (B) 기존 v1 앱 안의
+요소를 하나씩 v2로 교체하는 것. 둘 다 지원 가능한지 v1 `mount.lua`/
+`class.lua`와 v2 `base/slot-plan.md`를 대조 조사했다.
+
+### 7-1. (A) v2 트리 안에 v1 컴포넌트를 리프로 박기
+
+제안: `quad-roblox-v1-compat`에 `EmbedV1(v1ClassOrFactory, propsBuilder)`류
+어댑터 — v1 컴포넌트를 생성하고 루트 Instance를 v2 Slot/`InstanceChild`가
+받을 수 있는 leaf 값으로 반환. 내부에 흘려줄 v2 State는 4번에서 확정한
+`state:Observer()` 브리지로 v1 인스턴스 프로퍼티에 재대입.
+
+- **근거**: v1의 `mount()`(`mount.lua:49-87`)는 부모-자식 관계에 소유권
+  검사가 전혀 없음(누가 만든 Instance든 그냥 Parent 세팅 + `__child`
+  등록) — v2가 v1이 만든 루트 Instance를 자기 Slot에 끼우는 것 자체는
+  막힘 없음.
+- **위험 + 제안 규칙**: v1의 `mountClass:Unmount()`(`mount.lua:21-46`)는
+  `this`가 Instance면 무조건 `this:Destroy()`를 직접 호출함. 반대로 v2
+  Slot의 retract(교체) "폐기" 시맨틱이 quad가 안 만든(v1이 만든) foreign
+  Instance에 대해 뭘 하는지는 `slot-plan.md`에 명시가 없음(7-2 참고).
+  **→ v2 Slot이 `EmbedV1` 결과물을 폐기할 때 절대 직접 `:Destroy()`를
+  부르지 말고, 반드시 `EmbedV1`이 반환한 핸들의 v1 쪽 정식 `Unmount()`를
+  거치게 한다** — 이게 6번 "번역 경계 원칙"의 구체적 적용 하나.
+
+### 7-2. (B) v1 트리 안 요소를 하나씩 v2로 교체
+
+제안: `quad-roblox-v1-compat`에 `EmbedV2(v2Component, props)`류 반대쪽
+어댑터 — v2 컴포넌트를 렌더한 루트 Instance를 v1 prop 테이블의 숫자 키
+자식으로 그냥 꽂을 수 있는 값으로 반환.
+
+- **위험 1 — 재렌더 시 파괴**: v1의 `Update()`(`class.lua:452-491`)는
+  루트 Instance를 파괴 후 재생성하되, `__child`에 정식 등록된(=`mount()`/
+  `mountfunc` 경로를 거친) 자식만 새 루트로 재부모 지정하고, 그 외(직접
+  `.Parent=` 대입 등)는 옛 루트와 함께 파괴됨. **→ `EmbedV2` 결과물은
+  반드시 v1의 정식 children 경로(prop 테이블의 숫자 키)로만 붙여야 함,
+  `.Parent=` 직접 대입 금지.**
+- **위험 2 — Clone 함정**: `ProcessQuadProperty`(`class.lua:209-212`)는
+  같은 prop 테이블이 여러 인스턴스 생성 호출에 걸쳐 재사용되면(첫 번째
+  인자, `iprop==1`이 아닌 경우) 그 안의 자식 Instance를 통째로 `Clone()`함
+  — v2 루트가 Clone되면 원본과 반응형 그래프 연결이 끊긴 죽은 복제본이
+  생김. **→ `EmbedV2` 결과물은 절대 공유/캐시된 prop 테이블(`Import`의
+  defaultProperties, 재사용 style 테이블 등)에 넣지 말고, 매번 새로 만드는
+  최초(iprop==1) prop 테이블에만 넣도록 문서화** — 가능하면 구현 시점에
+  Clone 감지 가드(예: 복제 발생 시 error) 추가 검토.
+- **거저 얻는 이득 — 파괴 방향은 이미 맞물림**: v1은 자기가 파괴될 때
+  children을 순회하며 개별 Destroy하지 않고 Roblox 엔진의 cascading
+  destroy에 의존함(`class.lua:494-508`에 순회 로직 없음, 확인 완료). v2의
+  라이프사이클은 이미 `Destroying` 훅 기반 GC-native 패턴
+  (`base/lifecycle-pattern.md`)이라 "누가 파괴를 트리거했든 Destroying만
+  감지하면 됨" — v1이 자기 루트를 Destroy()해서 안에 박힌 v2 서브트리가
+  cascading으로 같이 파괴돼도 v2 쪽 정리가 별도 브리지 코드 없이 자동으로
+  맞물림.
+
+### 7-3. Slot — 조사했지만 완전히 못 푼 부분 (사용자가 예상한 대로)
+
+- `base/slot-plan.md`엔 "엄격한 단일 마운트 소유권"(`isMounted` 관리,
+  재마운트 시 즉시 `error()`)은 확정돼 있지만, **Slot이 이미 만들어진
+  임의 Instance를 동적 배열 원소로 받을 수 있는지, 아니면 그건 별도
+  `InstanceChild`(정적 단일 삽입) 핸들러 전용인지가 문서에 명시 안 됨.**
+  `EmbedV1`의 반환값을 v2 쪽에서 Slot(동적 배열)에 넣을 수 있는지
+  `InstanceChild`(정적 단일)로만 넣을 수 있는지는 실제 Dispatch/Slot
+  구현 시점에 가서야 확인 가능.
+- Slot의 retract "폐기"가 quad가 안 만든 Instance에 대해 정확히 뭘 하는지
+  (그냥 `:Destroy()`인지, 다른 처리인지)도 문서 밖 — 7-1에서 제안한
+  "직접 Destroy 금지, Unmount 경유" 규칙을 Dispatch 엔진의 어느 지점에
+  훅으로 강제할지도 Slot 실제 구현 시점 확인 필요.
+- **결론: 지금 결정 불가.** M0 이후 Slot 코어 로직 구현 라운드
+  (`question.md`의 "여러 Slot이 형제로 섞일 때 순서 보장" 항목과 같은
+  시점)에서 이 두 가지를 실제 구현과 함께 재확인해야 함.
+
+## 8. 남은 확인 사항 (추가 리서치 후보, 지금 결정 불필요)
+
+- v1이 자기 루트 Instance의 `Destroying`(또는 유사 신호)을 듣고 Lua측
+  부기(`store.AddObject` 태그 레지스트리 등)를 스스로 청소하는 경로가
+  있는지 미확인 — 7-1의 "v2가 v1 임베딩을 Destroy 대신 Unmount 경유해서
+  정리하라"는 규칙이 얼마나 엄격히 지켜져야 하는지가 여기 달림(v1이
+  Destroying만 들어도 알아서 청소한다면 직접 Destroy해도 무방해질 수
+  있음).
 - v1 store의 `registerClass` 체이닝 기능(`:Tween`/`:Default` 등)까지
   브리지가 흡수해야 하는 케이스가 있는지 — 단순 프로퍼티 재대입만으로
   충분한 범위인지 실사용 예시로 확인 필요.
-- (3-1을 실제로 병행 채택할 경우) 이벤트 self 관습을 compat에서 되살릴 때,
-  `base/bind-system-plan.md`가 명시한 반대 근거 4번(quad-debug 추적 밖
-  mutate 경로)을 어떻게 처리할지 — quad-debug는 어차피 후순위라 지금 결정
-  불필요할 수도 있음.
+- (2순위 문법 설탕 어댑터를 실제 채택할 경우) 이벤트 self 관습을 compat에서
+  되살릴 때, `base/bind-system-plan.md`가 명시한 반대 근거 4번(quad-debug
+  추적 밖 mutate 경로)을 어떻게 처리할지 — quad-debug는 어차피 후순위라
+  지금 결정 불필요할 수도 있음.
 
 ## 착수 시점
 
 지금 당장 설계/착수 불필요 — `CLAUDE.md` "지금 할 일" 1번(구현 착수,
-ROADMAP M0)이 최우선. 이 문서는 타당성 평가 결과만 남겨두고, 실제 설계는
-사용자가 방향(4번 병행+브리지의 세부 범위)을 정한 뒤 진행.
+ROADMAP M0)이 최우선. 7-3의 Slot 관련 두 항목은 M0 이후 Slot 구현
+라운드에서 실제 코드와 함께 재확인해야 풀림 — 그 전까진 이 문서의 제안
+(7-1/7-2 규칙들)이 최선의 추정치.
