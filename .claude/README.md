@@ -37,7 +37,7 @@
 | `blocker-plan.md` | **[2026-08-07 신설]** `Blocker` — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게, State 마일스톤(M3)과 함께 개발. 메커니즘+이름 확정 |
 | `effect-plan.md` | **[2026-08-07 신설, 여섯 번째 세션에 확정]** `Effect(fn, state?)` — `state` 없으면 설치 1회+leaf 사망 시 확정 정리, 있으면 내부적으로 `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React `useEffect` 동형). Observer와의 관계 해소 완료 |
 | `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고. `v=nil`이면 `process` 자신이 만든 자식 제거(`retract` 아님) |
-| `tag-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** `[Tag "Name"] = boolean` — `CollectionService` 얇은 래퍼, `process`가 add/remove 전부 처리, `retract` 불필요 |
+| `tag-plan.md` | **[2026-08-08 세 번째 세션 재설계]** `Tag(...)` — array-part 값 객체, `Modifier`와 같은 immutable clone 체이닝(`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), `CollectionService` 글루만 quad-roblox. 이제 `retract`가 의미 있음(타입이 바뀌면 전체 삭제, 같은 Tag끼리는 `process`가 diff). 구 해시 파트 boolean 모델은 `archive/tag-hash-key-model-reversed.md` |
 | `attribute-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** `[Attribute "Name"]` — `SetAttribute(name, nil)`이 네이티브 지우기라 `None` 센티널과 가장 깔끔하게 맞아떨어짐, `retract` 불필요. 타입 파라미터화 이름(`Attribute<T>` vs `BooleanAttribute`류)만 미확정 |
 | `relate-plan.md` | **[2026-08-08 신설]** `Relate` — `inst`를 weak 키로 하는 범용 릴레이션 프리미티브(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`, 비싱글톤 생성자). 구 `base.perInstanceState(inst)` placeholder를 대체·정식 승격, `lifecycle-pattern.md`의 `bindLifetime`/`canExecute`가 그 위에 얹힘 |
 

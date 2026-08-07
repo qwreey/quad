@@ -113,6 +113,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
       bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절)
+- [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={handler,handler,...}
+      (strong 순서 배열)}}`) + `Dispatch.retractUnder(inst,k,keep,v)` —
+      재귀 재-dispatch(StoreBind/Tween/NoneHandler)의 retract를 다단
+      체인까지 정확히 전파(2026-08-08 세 번째 세션, `base/
+      bind-system-plan.md` "Dispatch 체인" 절 — `pre-implementation-audit.md`
+      1-2번 "이전 핸들러 추적" 항목 해소). `Dispatch.process`가 매치될
+      때마다 체인에 push하는 것도 이 항목에 포함
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source
@@ -143,8 +150,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M4 — 첫 end-to-end 반응형 업데이트
 
-- [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관)
-- [ ] mock 대상으로 "store 값 바꾸면 `process`가 다시 호출된다" 확인
+- [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — 재-dispatch
+      전 `Dispatch.retractUnder(inst,k,self,realv)` 호출 필수, `base/
+      bind-system-plan.md` "Dispatch 체인" 절)
+- [ ] mock 대상으로 "store 값 바꾸면 `process`가 다시 호출된다" +
+      "이전 값이 다른 타입이면 이전 핸들러의 `retract`가 정확히 불린다"
+      확인
 
 ## M5 — quad-roblox 최소 프로바이더
 
@@ -235,7 +246,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/Attribute.luau`(`base/attribute-plan.md` — 메커니즘/`None`/
       `retract` 불필요 확정, 타입 파라미터화 이름만 착수 전 확인)
-- [ ] `Handlers/Tag.luau`(`CollectionService`, `base/tag-plan.md` — 전부 확정)
+- [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
+      `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`, `base/tag-plan.md`
+      — 2026-08-08 세 번째 세션 array-part 값 객체로 재설계, 구 해시 파트
+      모델은 `archive/tag-hash-key-model-reversed.md`)
+- [ ] `Handlers/Tag.luau`(quad-roblox — `CollectionService` process/retract
+      글루만, `isHandlable`은 `isTag(v)`. `retract`는 이제 의미 있음(값이
+      Tag가 아니게 되면 전체 삭제), 같은 Tag끼리 바뀌는 diff는 `process`가
+      자기 `Relate` 저장분과 비교해서 처리 — 전체 삭제 후 재생성 금지(랙
+      유발), `base/tag-plan.md` 참고)
 
 ## M11 — Tween
 

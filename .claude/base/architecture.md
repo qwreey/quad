@@ -26,9 +26,12 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
-4. **PA님 스타일 DI 키 계속 지원**: `[Attribute "Name"]`, `[Tag ""] = true` 같은
-   특수 바인드 키. Tag는 `retract`(구 cleanup, `base/lifecycle-pattern.md` 참고)가
-   내장되어 store 컴퓨티드 바인드도 가능해야 함.
+4. **PA님 스타일 DI 키 계속 지원**: `[Attribute "Name"]` 같은 특수 바인드 키,
+   store 컴퓨티드 바인드도 가능해야 함(`retract`, 구 cleanup,
+   `base/lifecycle-pattern.md` 참고). **[정정, 2026-08-08 세 번째 세션]**
+   `Tag`는 더 이상 `[Tag ""] = true` 해시 파트 DI 키가 아님 — array-part
+   값 객체(`Tag(...)`)로 재설계됨, `base/tag-plan.md` 참고
+   (`archive/tag-hash-key-model-reversed.md`에 구 모델 보존).
 5. **id 기반 전역 조회 폐지, Tag 시스템으로 대체.** v1의 `Store.GetObject(id)`/
    `Frame "id" {}`류는 더 이상 없음 — "id 매핑이 비현실적"이라는 게 이유.
    네임스페이싱 문제는 있지만 별도 네임스페이스 개념을 추가하면 라이브러리
@@ -134,9 +137,10 @@ quad/
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Override`(`base/modifier-plan.md`)
+│       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), CollectionService 글루는 quad-roblox Handlers/Tag.luau(`base/tag-plan.md`, 2026-08-08 세 번째 세션)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
-│       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔
+│       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔, `chains`(inst,k별 핸들러 체인)+`retractUnder`(`bind-system-plan.md` "Dispatch 체인" 절, 2026-08-08 세 번째 세션)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef) children-array leaf 매칭 Handler, StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
@@ -155,7 +159,7 @@ quad/
         │   ├── Property.luau
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
         │   ├── Attribute.luau
-        │   ├── Tag.luau           # CollectionService
+        │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Tween.luau         # 높은 우선순위 store-bind 핸들러
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })

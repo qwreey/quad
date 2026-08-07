@@ -92,13 +92,16 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
      결국 정리하긴 하지만, GC 되기 전에도 store 값이 업데이트될 수 있으므로
      그 시점엔 그냥 `Connected`를 보고 무시(no-op).
   2. 처리해도 되면, 사용자가 넘긴 함수들을 거쳐 실제 값(`realv`)을 계산.
-  3. **`realv`를 들고 다시 `Dispatch.process(inst, k, realv)`를 재귀 호출**
-     (오케스트레이터 이름 공식화는 아래 `None` 센티널 절 참고, 2026-08-07
-     여덟 번째 세션) — 이게 바로 "store 바인드는 pluggable 바인드를
-     재실행하는 래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가
-     store가 아니라면 자연히 Tween의 store-bind 핸들러 `isHandlable`을
-     통과 못 하고 우선순위상 다음 핸들러(일반 프로퍼티 세터 등)로 흘러감
-     — 무한 재귀 걱정 없음.
+  3. **재귀 호출 전에 먼저 `Dispatch.retractUnder(inst, k, self, realv)`를
+     불러 자기 밑에 위임돼 있던 걸 정리한 뒤, `realv`를 들고
+     `Dispatch.process(inst, k, realv)`를 재귀 호출**(정확한 메커니즘은
+     아래 "Dispatch 체인" 절, 2026-08-08 세 번째 세션 — 오케스트레이터
+     이름 공식화는 아래 `None` 센티널 절 참고, 2026-08-07 여덟 번째
+     세션) — 이게 바로 "store 바인드는 pluggable 바인드를 재실행하는
+     래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가 store가
+     아니라면 자연히 Tween의 store-bind 핸들러 `isHandlable`을 통과 못
+     하고 우선순위상 다음 핸들러(일반 프로퍼티 세터 등)로 흘러감 — 무한
+     재귀 걱정 없음.
 - **`retract(inst, k, v)`** (이전 초안의 "cleanup", 이름 변경 근거는
   `base/lifecycle-pattern.md` 참고) — 이전 처리를 무르는/멈추는 함수. **오직
   "같은 key에 새 값이 들어와서 이전 처리를 갈아치우는" 시나리오에만 존재** —
@@ -111,14 +114,19 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     세션, 정정) — 예: 이전엔 Tween 핸들러가 매치돼 애니메이션이 실행
     중이었는데, 다음 값이 더 이상 Tween 대상이 아니게 되어 일반
     PropertyHandler로 매치가 넘어가는 경우, 이전 Tween을 멈추는 게
-    `retract`의 일. **Tag/Attribute는 여기 해당 안 함** — 처음엔 이
-    둘도 예시로 들었으나, 실제로는 UICorner 숏핸드와 같은 패턴(값의
-    참/거짓/nil 여부와 무관하게 항상 같은 핸들러가 계속 담당하고,
-    추가/제거를 전부 `process` 자신이 처리)이라 핸들러 교체 자체가 안
-    일어나서 `retract`가 발화할 조건이 생기지 않음 — 구체 설계는
-    `base/tag-plan.md`/`base/attribute-plan.md`.
-  - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract(inst, k, v)`를
-    한 번 호출해주면 됨.
+    `retract`의 일. **Attribute는 여기 해당 안 함** — UICorner 숏핸드와
+    같은 패턴(값의 참/거짓/nil 여부와 무관하게 항상 같은 핸들러가 계속
+    담당, 추가/제거를 전부 `process` 자신이 처리)이라 핸들러 교체 자체가
+    안 일어남 — `base/attribute-plan.md`. **[정정, 2026-08-08 세 번째
+    세션] Tag는 더 이상 여기 해당하지 않음** — array-part 값 객체로
+    재설계되며(`base/tag-plan.md`, 구 모델은 `archive/
+    tag-hash-key-model-reversed.md`) `Tag(...)`↔`nil` 사이에서 핸들러
+    타입 자체가 바뀌므로 `retract`가 의미 있어짐(전체 삭제), 같은 Tag끼리
+    바뀌는 diff는 `process`가 담당.
+  - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
+    됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
+    재-dispatch에서 여러 단계가 겹칠 때 어느 슬롯에 뭘 추적하는지가
+    2026-08-08 세 번째 세션에 구체화됨, 여기 한 줄 설명은 그 요약).
 - **핸들러 내부 상태 저장**: `retract`가 "이전에 생성한 것"(예: 실행 중이던
   Tween 객체)에 접근하려면 상태를 어딘가에 저장해야 함 — **`inst`를 키로 하는
   weak-keyed 테이블에 `k`별로 저장**(예: 생성된 Tween을 담아뒀다가 나중에
@@ -252,15 +260,12 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   "`v`가 `nil`이 됨"과는 다른 문제. `None → nil` 재디스패치는 항상
   `Dispatch.process` 경로로만 흐름 — `NoneHandler` 자신도 `retract`가
   딱히 할 일이 없음(재귀 호출 자체가 이미 process이므로).
-- **M2 착수 시 확인할 것 (`pre-implementation-audit.md` 우선순위1
-  "이전에 실제로 매치됐던 핸들러 추적" 항목에 추가)**: "이 키를 지금 누가
-  담당 중인가" bookkeeping은 바깥 순회 루프(`Dispatch.drive`)가 아니라
-  `Dispatch.process` 호출 자체 내부에서 갱신돼야 함. 안 그러면 값이 계속
-  `None`으로 유지되는 매 사이클마다 "1차 매치는 `NoneHandler`, 재귀 호출 뒤
-  실제 담당은 다른 핸들러"로 바깥 루프가 오판해 불필요한 `retract`를 반복
-  호출할 위험이 있음 — `Dispatch.process`가 재귀 호출 시에도 자기 자신을
-  통해 담당자 기록을 갱신하게만 해두면(`Dispatch.drive`가 별도로 기록 안
-  하고 `Dispatch.process` 내부에 위임) 자연히 해소됨.
+- **[해소됨, 2026-08-08 세 번째 세션]** "이 키를 지금 누가 담당 중인가"
+  bookkeeping — `pre-implementation-audit.md` 우선순위1 "이전에 실제로
+  매치됐던 핸들러 추적" 항목이 여기서 다시 언급됐던 것. 아래 "Dispatch
+  체인" 절의 `chains`/`Dispatch.retractUnder`로 구체화됨 — `NoneHandler`의
+  재귀 재호출도 이 메커니즘 위에서 동일하게 동작(`None`으로 유지되는 매
+  사이클마다 담당자가 자연히 정확하게 갱신됨, 별도 특수 처리 불필요).
 
 ### Dispatch는 프리미티브가 아니다 — 탑레벨 싱글톤 확정 (2026-08-08 두 번째 세션)
 
@@ -313,6 +318,92 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   딸려가고, 호출부는 `module.Dispatch.process(...)`처럼 그 인스턴스
   테이블을 통해 접근하게 됨 — 지금 미리 프리미티브화해둘 이유가 없음.
 
+### Dispatch 체인 — 재귀 재-dispatch의 retract 전파, `Dispatch.retractUnder` (2026-08-08 세 번째 세션)
+
+**문제**: Tween/`NoneHandler`/`StoreBind`처럼 자기 `process` 안에서
+`Dispatch.process(inst,k,realv)`를 다시 부르는 래핑 핸들러가 있으면, 같은
+`(inst,k)`에 대해 "지금 누가 담당 중인가"를 슬롯 하나로 추적하는 순간
+깨짐 — 래핑 핸들러 A 자신의 생명주기(예: StoreBind의 Observer 구독)와,
+A가 재귀로 위임한 핸들러 B의 생명주기가 **같은 슬롯을 두고 서로
+덮어씀**. 구체적으로: A의 재귀 진입 시점에 슬롯을 A→B로 갱신해두면, A가
+스스로 다시 값을 재계산해 재-dispatch할 때(예: store 값이 또 바뀜) 그
+슬롯엔 이미 B가 적혀있어 "A로 바뀌었다"고 오판해 A 자신을 엉뚱하게
+retract하거나, 반대로 A가 자길 스스로 retract하는 오작동이 남 — 처음
+검토했던 "Dispatch 전역 소유자맵 슬롯 하나" 안은 이 이유로 기각됨(당시
+대화에서 직접 반례로 확인).
+
+**해법 — Dispatch가 `(inst,k)`별 핸들러 체인(순서 있는 배열)을 소유**:
+
+```lua
+-- Dispatch/init.luau
+local chains = Relate()  -- {[inst(weak)] = {[k] = {handler, handler, ...}(strong, 순서 있는 배열)}}
+
+function Dispatch.process(inst, k, v)
+    local h = Dispatch.getHandler(inst, k, v)
+    if h then
+        local list = chains:GetStrong(inst, k) or {}
+        table.insert(list, h)           -- 항상 꼬리에 추가
+        chains:SetStrong(inst, k, list)
+        h.process(inst, k, v)
+    end
+end
+
+function Dispatch.retractUnder(inst, k, keep, v)
+    local list = chains:GetStrong(inst, k)
+    if not list then return end
+    local cutoff = 0
+    if keep then
+        for i, h in list do if h == keep then cutoff = i break end end
+    end
+    for i = #list, cutoff + 1, -1 do
+        list[i].retract(inst, k, i == cutoff + 1 and v or nil)
+        list[i] = nil
+    end
+end
+```
+
+- **재귀/래핑 핸들러는 재-dispatch 전에 반드시 `Dispatch.retractUnder(inst,
+  k, self, newV)`를 먼저 부른 뒤 `Dispatch.process(inst, k, newV)`를
+  부름** — "나 밑에 있던 걸 전부 정리하고 새로 위임". `keep`(자기 자신)
+  바로 다음 항목만 실제 `newV`를 받고, 그보다 더 안쪽(다단 체인이 있을
+  경우)은 `nil`을 받음 — 더 안쪽 항목엔 "구체적으로 뭐로 대체됐는지"
+  정보가 없고 "완전히 사라진다"는 것만 사실이라서.
+- **개별 핸들러의 `retract`는 더 이상 자기 위임 대상을 수동으로 안
+  쫓아가도 됨** — `retractUnder`가 꼬리부터 `keep` 앞까지 한 번의
+  루프로 체인 전체를 순서대로 정리해주므로, A→B→C처럼 몇 단계든 각
+  핸들러는 **자기 자신의 자원만** 정리하면 자동으로 전파됨(질문
+  제기됐던 "다단 체인에서 안쪽까지 retract가 안 간다" 문제가 이걸로
+  해소 — `retractUnder`의 루프 자체가 체인 전체를 훑으므로 각 핸들러가
+  수동으로 cascade할 필요가 원천적으로 없음).
+- **구멍 걱정 없음** — 이 배열은 항상 꼬리에서만 추가/삭제되는 스택
+  모양이라(`retractUnder`가 항상 꼬리부터 연속으로 지움), "촘촘하지
+  않은 정수 키는 순회 순서가 깨진다"는 문제(위 "PreRef" 절의 `None`
+  소진 이슈)가 애초에 발생할 구조가 아님.
+- **`retract`는 여전히 `(inst,k,v)` 3-인자** — 드롭하자는 제안이 대화
+  중 한 번 나왔으나 기각(전체 삭제 vs 부분 diff를 갈라야 하는 핸들러가
+  있어서, `base/tag-plan.md` 참고). 다만 `v`가 실제로 필요한지는
+  핸들러마다 다름 — Tag는 구조상 retract가 "더 이상 매치 안 될 때만"
+  불리므로 `v`를 안 봐도 항상 전체 삭제가 맞음(무조건), Tween 같은
+  경우는 자기 `Relate` 저장분만 보고 `Cancel`하면 되니 역시 `v`를 꼭
+  안 봐도 됨 — `v`는 "계약상 항상 주어지지만 안 쓰는 핸들러가 있어도
+  됨" 정도로 이해할 것.
+- **순환은 UB, 방어 로직 없음** — Handler 간 순환 참조(A가 B를 부르고
+  B가 다시 A로 돌아오는 것)는 재귀 호출이 안 끝나 바로 스택오버플로가
+  나므로 애초에 일어날 수 없는 구조(각 핸들러는 최대 한 번씩만 그
+  키에서 호출됨을 전제) — 값에 별도 플래그를 심어 의도적으로 순환을
+  만드는 것도 이론상 가능하지만 use case가 없어 문서화 대상 밖,
+  2026-08-04 세션에 이미 확정된 "일반적 무한루프 방어 안 함" 원칙과
+  같은 결로 UB 취급.
+- **부수 효과 — 미래 재바인드/quad-debug에 유리**: 이 체인이 Dispatch에
+  중앙화돼 있으므로, `research/existing-instance-bind-plan.md`가 다룰
+  미래의 재바인드는 `Dispatch.retractUnder(inst, k, nil, newV);
+  Dispatch.process(inst, k, newV)` 두 줄로 "이 키의 체인을 통째로 갈아
+  끼우기"가 자연스럽게 됨(각 래핑 핸들러가 자기 전용 `Relate`에 위임
+  대상을 비공개로 숨겨두는 대안 설계는 이게 안 됨 — 대화 중 검토 후
+  기각). `research/debug-tooling-plan.md`의 "무엇이 무엇에 연결됐는가"
+  그래프도 이 `chains` 구조를 그대로 읽으면 됨 — quad-debug 착수 시점에
+  새로 설계할 필요 없음.
+
 ## Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가
 
 사용자 원 메모: "스토어 바인드는 특수 경우로 둘지, 아니면 다른 pluggable 바인드를
@@ -335,7 +426,8 @@ value)로 `Dispatch.process(inst,k,realv)`를 재귀 호출"하는 식으로 구
 ```lua
 -- 예: 일반 프로퍼티 store-bind 핸들러의 process(inst, k, state)
 local observer = state:Observer(function()
-    Dispatch.process(inst, k, state:Get())
+    Dispatch.retractUnder(inst, k, StoreBind, state:Get())  -- 나 밑에 있던 거 정리
+    Dispatch.process(inst, k, state:Get())                          -- 새로 위임(체인에 push)
 end)
 observer:Subscribe()
 relate:SetStrong(inst, k, observer)  -- retract에서 :Unsubscribe() 하려면 들고 있어야 함
@@ -346,12 +438,12 @@ relate:SetStrong(inst, k, observer)  -- retract에서 :Unsubscribe() 하려면 �
   보는 leaf가 아니기 때문(위 "이중 바인딩 금지" 원칙과 정합적: 한 Observer
   핸들은 두 바인딩 경로 중 하나만 써야 하는데, 이건 애초에 leaf가 아니므로
   `:Subscribe()`가 유일한 선택).
-- **`retract`가 할 일은 `observer:Unsubscribe()` 호출뿐** — 이게 위 "이벤트도
+- **`retract`가 할 일은 `observer:Unsubscribe()` 호출뿐 — 위임 대상까지
+  수동으로 안 쫓아가도 됨.** `Dispatch.retractUnder`가 자기 밑에 위임된
+  걸 알아서 정리해주므로(위 "Dispatch 체인" 절), 이 핸들러의 `retract`는
+  정확히 자기 자신의 자원(Observer)만 정리하면 끝 — 이게 위 "이벤트도
   store-bind 가능" 절에서 이미 "엔지니어링 비용이 낮다"고 서술한 것과 같은
-  이유(새 디스패치 메커니즘 없이 기존 4종 계약만 구현), 다만 그 절이
-  구체적으로 가리키는 재사용 대상은 "재귀 process+retract 래핑 패턴"이었고
-  Observer 자체를 구독 메커니즘으로 쓴다는 것까지는 명시가 안 돼 있었던
-  갭이 이번에 메워짐.
+  이유(새 디스패치 메커니즘 없이 기존 계약만 구현).
 - **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — Observer가
   이미 자기 `Subscribed` 상태로 게이팅됨(아래 `base/lifecycle-pattern.md`의
   `canExecute(inst, value)` 절 참고, Observer/Effect는 그 함수 안에서

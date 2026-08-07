@@ -66,7 +66,17 @@ store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌
 `Tween.luau`는 그 위에 얹히는 "값에 tween 설정이 붙어있으면 가로채는" 더
 높은 우선순위의 특수 케이스로 재정리하는 게 자연스러워 보임.
 
-### 1-2. retract 시 "이전에 실제로 매치됐던 핸들러"를 누가 추적하는지 불명
+### 1-2. retract 시 "이전에 실제로 매치됐던 핸들러"를 누가 추적하는지 불명 — [해소됨, 2026-08-08 세 번째 세션]
+
+**해소**: `Dispatch`가 `(inst,k)`별 핸들러 체인(순서 있는 배열, `chains`)을
+직접 소유하고, `Dispatch.retractUnder(inst,k,keep,v)`가 꼬리부터 `keep`
+앞까지 정리해주는 걸로 확정 — 아래 원래 제안(`Dispatch/StoreBind.luau`가
+"마지막 선택된 핸들러"를 직접 들고 있는 방식)은 재귀/래핑 핸들러가
+여러 단계(A→B→C)로 겹칠 때 자기 자신의 상태와 위임한 핸들러의 상태가
+슬롯 하나를 두고 충돌하는 문제가 있어 기각되고, 대신 Dispatch 자신이
+전체 체인을 배열로 들고 있는 쪽으로 정리됨. 상세는 `base/
+bind-system-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
+원래 발견 당시 기록.
 
 **위치**: `base/bind-system-plan.md` "확정된 디스패치 모델" 절 90-91행 —
 "store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract(inst, k, v)`를
