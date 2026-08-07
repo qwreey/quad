@@ -84,17 +84,31 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 아니라 하나의 시스템으로 돌 수 있게(pluggable 하게 두자는 논리의 근거이기도
 함). `base/architecture.md` 도입부와 동일 결정.
 
-## 열린 질문 (`.claude/question.md`에도 취합)
+## 열린 질문이었던 것 — 전부 해소됨 (2026-08-08 두 번째 세션 정리)
 
-- **Store 책임 분리(base vs provider)는 확정됨** — 위 절 참고. 남은 건 실제
-  구현 단계에서 base의 `LifetimeHandle`/재실행 유틸 API를 정확히 어떻게
-  노출할지 정도(설계 방향 자체는 더 이상 열려있지 않음).
-- 넘버 바인드/프로바이더 인터페이스의 정확한 함수 시그니처(base가 요구하는
-  provider 인터페이스 계약)는 아직 미정 — 구현 착수 시 함께 확정.
-- **네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히
-  뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함 —
-  실제로는 `isHandlable`로 받을지 말지 결정하고 우선순위대로 스캔되는
-  pluggable 참가자라는 점은 확정, 이름만 미정.
+**이 문서 상단 "상태" 줄이 이미 "확정되어 승격됨"이라고 말하고 있었는데도
+이 절 자체는 오래 stale로 방치돼 있었음** — 아래 4개 항목 중 2/3번은 그 뒤
+`base/bind-system-plan.md`의 Handler 계약 확정으로 이미 풀렸는데 여기
+반영이 안 됨. 원문은 남기고 각각에 해소 표시만 추가:
+
+- **Store 책임 분리(base vs provider)는 확정됨** — 위 절 참고. ~~남은 건
+  실제 구현 단계에서 base의 `LifetimeHandle`/재실행 유틸 API를 정확히
+  어떻게 노출할지 정도~~ **[해소됨]** 노출 방식도 확정 — `bindLifetime`/
+  `canExecute`는 네임스페이스 없는 탑레벨 함수(`base/lifecycle-pattern.md`),
+  케이싱까지 포함해 `base/architecture.md` "코드 스타일 — 네이밍 케이싱"
+  절 참고.
+- ~~넘버 바인드/프로바이더 인터페이스의 정확한 함수 시그니처(base가 요구하는
+  provider 인터페이스 계약)는 아직 미정~~ **[해소됨]** — 그 "provider
+  인터페이스"가 곧 Handler 계약: `isHandlable(inst,key,value)`/
+  `priority`/`process(inst,key,value)`/`retract(inst,key,value)` 4종,
+  `retract`는 no-op이라도 필드 생략 불가까지 확정. `base/bind-system-plan.md`
+  "핸들러 계약" 절.
+- ~~**네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히
+  뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함~~
+  **[해소됨]** — **`Handler`로 확정**, 위 항목이 가리키는 계약의 정식 이름.
+  `Dispatch`(그 계약을 스캔/실행하는 엔진, 프리미티브 아닌 탑레벨 싱글톤)와
+  구분해서 쓸 것 — `base/bind-system-plan.md` "Dispatch는 프리미티브가
+  아니다" 절.
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로
   주입한다는 패턴이 확정됨 — 상세는 `base/bind-system-plan.md`의 "base
@@ -103,4 +117,6 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   재호출하면 무시(no-op), 다른 팩토리로 재호출하면 에러(유일 슬롯 충돌 —
   바로 위 "Bind는 누가, 어떻게 구현하는가" 절의 원칙과 일치) — `New()`가
   생기면 인스턴스별 테이블이 분리되므로 이 가드도 자연히 인스턴스별로
-  스코핑됨, 별도 재설계 불필요.
+  스코핑됨, 별도 재설계 불필요. **이 결론이 Dispatch의 handler 레지스트리에도
+  그대로 적용된다는 게 2026-08-08 두 번째 세션에서 재확인/일반화됨** —
+  `base/bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절.
