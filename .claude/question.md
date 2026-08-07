@@ -82,6 +82,10 @@ additional-primitives-plan.md`. 요지:
 - **`CreatedRef`/`canExecute`(3순위, 사소함)**: `CreatedRef`는 과거분사형이라
   생성자처럼 안 읽힘. `canExecute`는 실제로 "이 핸들이 아직 살아있나"
   확인인데 이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
+  **(2026-08-07 추가)** `PreRef`(children 배열 전용, Modifier/Store에
+  못 들어가는 Ref 특수화 — `base/bind-system-plan.md` "`phase` 옵션 폐기 →
+  위치로 표현, `PreRef` 신설" 절)도 신규 이름이라 이 라운드에 같이 재검토
+  대상.
 - **`Ref`(3순위, 2026-08-06 추가)**: 정의가 "quad가 만든 instance를 얻는
   통로"에서 "아무 사용자 값이나 담는 범용 값 박스"로 넓어져서(`base/
   bind-system-plan.md` "Ref 일반화" 절), 이름이 여전히 넓어진 의미에

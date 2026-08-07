@@ -34,7 +34,7 @@
 8. **컴포넌트 경계 넘기기** — `props.Modifier`/`props.Ref` named parameter 패턴 (`component-composition-plan.md`)
 9. **이벤트** — self(Instance) 안 받음, 문자열 키(`Frame { MouseButton1Click = fn }`) (`bind-system-plan.md`)
 10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
-11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `CreatedRef(fn, {phase=...})` (`architecture.md`, `bind-system-plan.md`)
+11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `CreatedRef(fn)` + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
 12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
 13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`research/tween-plan.md`)
 14. **UI 숏핸드(quad-roblox 한정)** — `Corner`/`PaddingAllOffset`/`Scale` 인라인 키 (`research/ui-shorthand-plan.md`)

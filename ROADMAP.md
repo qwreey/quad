@@ -25,6 +25,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       피할 수 있어 보이나 실제 검증 전엔 확정 아님)
 - [ ] `process`/`retract` 재귀 재-process 디스패치를 실제로 짜보기(store-bind
       핸들러 하나 + `isHandlable` 우선순위 스캔 포함)
+- [ ] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
+      Luau 테이블에서 관찰한 대로 동작하는지 확인, `PreRef` pre-pass +
+      일반 `Ref`/`CreatedRef`의 위치 기반 순서까지 최소 스파이크로 검증
+      (2026-08-07 세 번째 세션, `base/bind-system-plan.md` "`phase` 옵션
+      폐기 → 위치로 표현, `PreRef` 신설" 절)
 - [ ] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,
       `export type Params = {...}`로 타입 체크되는지 확인
       (`component-composition-plan.md` 최종 결론 1번)

@@ -622,3 +622,57 @@ clone 체이닝)/4번(제네릭 `__index`) 결정 위에 그대로 얹힘. 구�
 예약됨**(실 스타일 프로퍼티와 겹칠 일은 거의 없어 보이나 문서화 필요).
 `ROADMAP.md` M7에 체크박스 추가 완료. 다음 세션이 새로 알아야 할 건 없음 —
 M7 착수 시 `modifier-plan.md` 8번 참고하면 됨.
+
+## 2026-08-07 세 번째 세션 — Ref의 KV 핸들러 처리 vs phase 타이밍, `PreRef` 신설
+
+**출발점**: Ref가 Modifier처럼 밖에서 처리되는 게 아니라 KV 핸들러
+(`process(inst,k,v)`)로 처리된다면, "생성 직후"/"자식 마운트 후" 두
+콜백 타이밍(특히 self(Instance)를 안 주는 이벤트가 Ref로 self를 얻는
+경우)을 단순 for-loop 디스패치만으로 어떻게 표현하는지가 출발 질문 —
+길게 이어진 단일 스레드라 아래 요약만 읽으면 됨, 상세 근거는 각 base
+문서에 이미 반영됨.
+
+**핵심 결론(전부 `base/bind-system-plan.md`에 반영 완료)**:
+- **base 디스패치 드라이버는 props 순회를 "배열 파트(children/Ref) 먼저,
+  해시 파트(프로퍼티/이벤트) 나중"으로 명시적으로 두 패스 계약화**한다
+  — Luau 테이블이 실제로 이렇게 순회되는 걸 사용자가 직접 확인했지만,
+  그 우연한 동작에 기대지 않고 base가 스스로 이 순서를 보장(다른
+  백엔드가 다른 자료구조를 쓸 수 있어서). M0 스파이크 검증 항목에 추가.
+- **`CreatedRef`의 `{phase="created"|"mounted"}` 옵션은 폐기.** 두 패스
+  계약 덕에 "자식 마운트 전/후"는 그냥 배열 안에서 Ref를 다른 children
+  보다 앞/뒤에 놓는 것만으로 공짜로 표현됨 — 옵션 문법 자체가 불필요.
+- **`PreRef` 신설** — "프로퍼티/이벤트 세팅보다도 먼저"(Roblox의
+  `ChildAdded`/`DescendantAdded`/`Changed`류가 setup 도중 동기 발화할
+  수 있어서 self-ref가 이벤트보다 먼저 채워져야 하는 케이스)만 담당하는
+  별도 nominal 타입. `Ref`를 그대로 재사용(런타임 중복 없음)하되
+  Modifier 필드 값·Source/Store 값으로는 타입으로 아예 못 들어가게
+  막고, children 배열 안에서도 위치 무관하게 항상 최우선(호이스팅) —
+  base 드라이버가 두 패스 루프 앞에 `PreRef`만 골라 fire하는 좁은
+  pre-pass를 하나 더 둠.
+- **일반 `Ref`는 Modifier/Store 어디든 계속 자유롭게 들어감** — Store를
+  통해 나중에 도착하는 Ref는 그냥 도착한 순간 처리, 별도 phase 개념 불필요.
+- **`:Wait()`는 PreRef에도 그대로 유효** — fire 자체는 동기적이지만
+  호출부가 `task.spawn`이 아니라 순수 `coroutine`일 수 있어 실제
+  yield-resume이 필요한 경우가 있음. "채워졌는지 먼저 확인, 없으면
+  `:Wait()`" 방어 관용구를 문서화 대상으로 명시.
+- **콜백/대기자 실행 구현 디테일 추가**: 같은 배열 하나를 한 번의
+  일반화 `for`로 순회하며 `type(v)=="thread"`면 `coroutine.resume`+
+  슬롯 nil 처리(1회성), 함수면 그냥 호출(유지) — 새 등록은 `table.insert`
+  로 끝, 성긴 배열이어도 압축 불필요.
+- v1의 `OnCreated` 특수 DI 키는 이식 안 함 — `Ref():Callback(fn)`으로
+  완전 대체.
+
+**역전된 이전 서술은 archive로 이동**: `CreatedRef`의 `phase` 옵션과
+"Ref는 특수 처리 없는 평범한 참가자"라는 원래 서술은
+`archive/ref-phase-option-reversed.md`로 옮기고 원 위치엔 짧은 포인터만
+남김(컨텍스트 비대화 방지 목적, `archive/store-source-proxy-reversed.md`와
+같은 패턴). `architecture.md` 소스트리 주석/`question.md`(PreRef를
+용어 재검토 대상에 추가)/`research/documentation-content-map.md`(stale
+`{phase=...}` 예시 갱신)도 같이 동기화함.
+
+**아직 미해결, 다음 세션 주제로 예고됨**: `{ Override = nil, mod }`처럼
+인라인 키로 modifier가 주는 값을 명시적으로 "지우고" 싶어도 Lua
+테이블 리터럴의 `키 = nil`은 키가 아예 없는 것과 구별이 안 돼서 안
+풀리는 문제 — `false`를 이벤트 disconnect 센티널로 쓴 선례처럼 `None`
+(가칭) 프리미티브를 도입하는 방향만 `base/modifier-plan.md` "2-1"절에
+짧게 메모해두고 상세 설계는 다음 세션으로 미룸.
