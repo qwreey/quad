@@ -850,3 +850,43 @@ setter를 단발로 직접 호출하는 흔한 경로는 여전히 mutable이라
 결정 자체는 늘지 않았음 — 단, M3 체크리스트에 `Blocker.luau` 항목이
 하나 추가된 것과, 위 Effect/Observer 미해결 항목은 M3~M4 착수 전에
 확인해야 함.
+
+## 2026-08-07 여섯 번째 세션 — Ref/PreRef 메소드 API 확정, 파일 분리, Tween GC 저장 구조 확인
+
+사용자가 메모 형태로 두 가지를 던짐: (1) Tween 인스턴스를 per-instance
+저장소에 담는 구조가 실제로 GC-안전한지, (2) Ref가 이제 충분히 완결된
+프리미티브이니 PreRef와 파일을 분리하고, `:Set`/`:Callback`/`:Wait`
+세 메소드로 API를 굳히자는 제안(전부 mutation 패턴이라 자기 자신을
+반환). 둘 다 검증 후 반영 완료:
+
+- **Tween per-instance 저장소는 이미 확정된 구조 그대로 GC-안전함** —
+  `inst`로 weak-keyed된 바깥 릴레이션 안에 `k`별 안쪽 릴레이션이 중첩된
+  모양이라(`base.perInstanceState(inst)`), `inst`가 죽으면 중첩된 Tween
+  인스턴스 릴레이션도 별도 정리 없이 같이 GC됨 — 새 결정 아니라 기존
+  설계(`bind-system-plan.md` "핸들러 내부 상태 저장" 절)의 확인, "왜
+  GC-안전한가" 설명만 명시적으로 추가.
+- **Ref API가 `.Value`(읽기 전용) + `:Set(value)`/`:Callback(fn)`/
+  `:Wait(thread?)`(전부 self 반환)로 확정.** self-반환 덕에
+  `if ref.Value then ref.Value else ref:Wait().Value` 관용구가 성립 —
+  이걸 성립시키려고 `:Set()`이 `coroutine.resume`할 때 넘기는 인자를
+  기존 문서(세 번째 세션 원안)의 `value`에서 **`self`**로 정정함(안
+  그러면 `:Wait()`의 yield 리턴값에 `.Value`를 체이닝할 방법이 없었음).
+  `:Wait(thread?)`의 `thread` 인자는 생략 시 `coroutine.running()`을
+  캡처해 진짜로 yield하고, 명시적으로 넘기면 그 thread를 등록만 하고
+  yield 없이 즉시 `self` 반환(코루틴 역학상 남의 thread를 여기서 대신
+  정지시킬 수 없어서) — 사용자가 직접 관리하는 스케줄러가 이미 어딘가서
+  정지시켜 둔 thread를 등록만 해두고 호출부는 안 블록되고 싶은 유스케이스.
+  콜백은 여전히 raw 값을 받음(Ref 자신이 아니라).
+- **파일 분리**: `Ref`는 그 자체로 완결된 프리미티브, `PreRef`도 "children
+  배열 전용, 위치 무관 호이스팅"이라는 특이한 제약을 가진 별개
+  프리미티브라 기존 1프리미티브-1파일 컨벤션(Blocker/Effect 분리와
+  같은 이유)을 따라 `Ref.luau`/`PreRef.luau`로 쪼갬 — 런타임은 여전히
+  공유(`PreRef`가 `Ref`를 재사용, 브랜드 태그만 다름), `base/architecture.md`
+  소스트리에 반영 완료.
+- 전부 `base/bind-system-plan.md`(Ref/PreRef 절)와 `research/tween-plan.md`에
+  반영 완료. `.claude/question.md`엔 이미 반영돼 있던 "Ref 이름 자체는
+  용어 정리 대상" 항목과 모순 없음(이번 세션은 메소드 이름만 확정, Ref라는
+  타입 이름 자체는 여전히 가칭).
+
+**다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터) — 이번 세션도 이미
+설계된 것의 세부 마무리라 M0 착수 우선순위 자체는 그대로.

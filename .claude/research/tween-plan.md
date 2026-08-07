@@ -71,7 +71,11 @@ Ref나 네임스페이스드 조회가 필요하지 않음. Tween의 store-bind 
 값(v)을 받으므로 여기서 선택된 동작을 구현. `retract`가 접근해야 할 "이전에
 생성한 실제 Tween 객체"는 `base/bind-system-plan.md`가 말하는 base 제공
 범용 유틸(`inst`를 키로 하는 weak-keyed per-instance 상태 저장소)에 담아두면
-됨.
+됨. **GC 확인(2026-08-07 여섯 번째 세션, 사용자 제안 검증)**: 이 저장소는
+`inst`로 weak-keyed된 바깥 릴레이션 안에 `k`별 안쪽 릴레이션이 중첩된
+구조라, `inst`가 죽으면 그 안에 담긴 Tween 인스턴스 릴레이션도 별도
+정리 로직 없이 같이 GC됨 — `base/bind-system-plan.md`의 "핸들러 내부
+상태 저장" 절 "왜 GC-안전한가" 참고.
 
 ## `retract`는 완전 소멸(Destroy) 시엔 호출되지 않는다
 
