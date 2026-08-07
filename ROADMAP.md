@@ -86,17 +86,29 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `isState`처럼 집합 멤버십 아님) 전부의 기반. `isNone`만 예외로
       레지스트리 없이 `x == None` 항등 비교 — `bind-system-plan.md`의
       `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
-- [ ] `LifetimeHandle.luau`/`PerInstanceState.luau` **인터페이스만**(타입
-      계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
-      있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
-      이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
-      있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md` 2번
-      — 2026-08-07 세 번째 세션에 반영). **`canExecute`는 `(handle:
-      LifetimeHandle) -> boolean`으로 확정**(바인딩마다 클로저 만드는
-      zero-arg가 아니라, quad-roblox가 한 번만 주입하는 공유 함수 — "base
-      유틸은 인터페이스, 백엔드가 주입" 패턴과 맞춰야 해서.
-      `base/lifecycle-pattern.md`의 gchold 스케치 절, 2026-08-07 여덟 번째
-      세션 정정)
+- [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
+      `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
+      `inst`(첫 인자)는 항상 weak, `StrongMap`/`WeakMap` 서브테이블은 lazy
+      생성(첫 `Set` 호출 시에만), `WeakMap`은 공유 메타테이블(`{__mode="v"}`)
+      재사용 — 구 `base.perInstanceState(inst)`/`PerInstanceState.luau`를
+      대체(2026-08-08 세션 신설).
+- [ ] `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
+      `canExecute(inst,value)` 탑레벨 함수 타입 계약, 실 구현 없음 —
+      quad-roblox 실 구현은 M8) — 원래 M8에만 있었으나 M4(StoreBind의
+      `Connected` 확인)/M6(Slot의 `canExecute`)이 이미 이 인터페이스를
+      전제로 서술돼 있어 로드맵 순서가 역전돼 있었음(`pre-implementation-audit.md`
+      우선순위1-9, `question.md` 2번 — 2026-08-07 세 번째 세션에 반영).
+      **`canExecute`는 `(inst, value) -> boolean`으로 재확정(2026-08-08
+      세션, `(handle)` 단일 인자 서술을 대체)** — Observer/Effect는 자기
+      `Subscribed` 상태를 먼저 확인, 그 다음 `inst`의 공유 gcconn(`Relate`로
+      저장)의 `.Connected`를 봄. `bindLifetime`/`canExecute` 둘 다 네임스페이스
+      없이 탑레벨 함수로 export(`Dispatch.xxx`류 시스템 네임싱과 구분,
+      `isState`/`isObserver`와 같은 1급 프리미티브 취급) — `base/
+      lifecycle-pattern.md`의 "`bindLifetime`/`canExecute` — 확정" 절 참고
+- [ ] 핸들러 계약 검증: `retract` 필드가 없는 핸들러를 등록하면 리뷰/린트에서
+      걸러내기(no-op이라도 필드 자체는 항상 정의 — `Dispatch.process`가 핸들러
+      교체 시 nil 체크 없이 호출, `base/bind-system-plan.md` "핸들러 계약"
+      절, 2026-08-08 세션)
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source
@@ -203,10 +215,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
-- [ ] `LifetimeHandle` quad-roblox 실제 구현(Instance 생존 확인, 인터페이스
-      자체는 M2로 이동됨)
-- [ ] `PerInstanceState` quad-roblox 실제 구현(weak-keyed table, 인터페이스
-      자체는 M2로 이동됨)
+- [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/`canExecute`
+      본체(`GetPropertyChangedSignal("ClassName")` 연결 트릭으로 gcconn 확보,
+      `Relate:SetStrong`으로 gcconn/gchold 저장 — 인터페이스 자체는 M2로
+      이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현 없음)
 
 ## M9 — 컴포넌트 합성 레이어
 
@@ -229,8 +241,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## 특정 마일스톤에 안 묶이고 병행 가능
 
-- [ ] 용어 정리 스윕 — `State`/`DI`/`PerInstanceState`/`Slot` 등
-      (`.claude/question.md` 1번), 최종 이름 확정되는 대로 아무 시점에나
+- [ ] 용어 정리 스윕 — `State`/`DI`/`Slot` 등(`PerInstanceState`는 `Relate`로
+      대체·해소됨) — `.claude/question.md` 1번, 최종 이름 확정되는 대로
+      아무 시점에나
 - [ ] 각 마일스톤 완료 시 `.claude/qa-request/`/`.claude/archive/`에 기록,
       필요하면 `CLAUDE.md` "최근 세션 요약"도 갱신
 

@@ -58,9 +58,10 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   **파급 효과(2026-08-06 추가)**: `DI`가 리네임되면 `DI.FrameModifier`류
   Modifier 클래스별 타입 프리픽스도 같이 바뀌어야 함 — `DI` 리네임 논의
   때 이 연쇄까지 같이 고려할 것.
-- **`PerInstanceState`(2순위)**: 핵심 프리미티브 `State`와 이름이 겹쳐서
-  실제로는 완전히 무관한 유틸(인스턴스별 weak-keyed 저장소)인데 혼동
-  유발 가능 — `PerInstanceStorage`/`InstanceData` 등 대안.
+- **[해소됨, 2026-08-08 세션]** `PerInstanceState` — 이름 문제 자체가 없어짐.
+  `State`와 이름이 겹쳐 혼동 유발하던 그 유틸은 `Relate`로 대체·정식
+  승격됨(`base/relate-plan.md`) — 이름도 이미 사용자 확정("Relate 괜찮아요"),
+  `State`와 안 겹침.
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
@@ -138,23 +139,34 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   세션)**. `props.Modifier or None`/`props.Ref or None` 관용구를 필수로
   확정(`base/component-composition-plan.md` "필수 관용구" 절) — M0에선
   이 관용구 자체가 타입/런타임 양쪽에서 문제없이 동작하는지만 검증.
-- **`canExecute`/`Connected`의 실제 구현 방식(Parent==nil vs Connection.
-  Connected vs Destroying 플래그)이 미확정인데 이미 Slot/Observer/store-bind
-  retract 전역에 재사용 확정됨** — M2/M3 착수 전 실측 필요 — 우선순위1-6.
-  **(2026-08-07 여덟 번째 세션 보강)** 시그니처는 `(handle) -> boolean`으로
-  확정(zero-arg 클로저 아님, `base/lifecycle-pattern.md` 참고)됐고
-  rbvm식 gchold 스케치(weak per-instance 배열에 절대 안 발화하는
-  Connection을 넣어 그 클로저 업밸류로 Observer를 살려두는 방식)도
-  후보로 적어뒀지만, 여전히 스케치 단계 — Observer→Connection 역참조를
-  weak 릴레이션으로 둘지 평범한 필드로 둘지 포함, 실측은 그대로 필요.
+- **~~`canExecute`/`Connected`의 실제 구현 방식이 미확정~~ — 반영 완료
+  (2026-08-08 세션)** — 우선순위1-6 해소. `bindLifetime(inst,value)`/
+  `canExecute(inst,value)` 탑레벨 함수로 확정(네임스페이스 안 씀,
+  `LifetimeHandle.luau`는 이 둘의 인터페이스만 갖고 quad-roblox가 구현
+  주입), 시그니처는 `(handle)`이 아니라 `(inst, value)` 2-인자로 재정정
+  (Observer 자신의 `Subscribed` 상태를 먼저 보고, 그 다음 `inst`의 공유
+  gcconn을 봄 — 두 조건이 독립적이라 하나로 못 뭉침). gchold 저장소는
+  새 프리미티브 `Relate`(`base/relate-plan.md`) 위에 구현 — `base/
+  lifecycle-pattern.md`의 "`bindLifetime`/`canExecute` — 확정" 절 참고.
 - **~~`LifetimeHandle` 인터페이스가 M8에 배치돼 있지만 M4/M6이 이미 그걸
   필요로 함(로드맵 순서 역전)~~ — 반영 완료(2026-08-07 세 번째 세션)**:
-  `LifetimeHandle`/`PerInstanceState` 인터페이스(타입만)를 `ROADMAP.md`
+  `LifetimeHandle`/`Relate` 인터페이스(타입만)를 `ROADMAP.md`
   M2로 옮기고, quad-roblox 실 구현만 M8에 남김 — 우선순위1-9 해소.
 - 그 외(Slot CRUD 의미론 미정의, retract 시 "이전 핸들러" 추적 책임 소재,
   우선순위 스캔 동률/매치실패 처리, `:Compute`의 `previous` 인자가
   오버엔지니어링일 수 있음, UI shorthand의 기존 UICorner 매칭 기준 등)는
   `pre-implementation-audit.md` 본문 참고.
+- **[신규, 2026-08-08 세션, 미확인]** `Frame { ref }`/`Frame { observer }`처럼
+  children 배열 숫자 슬롯에 직접 놓는 leaf 값을 실제로 매칭·바인드하는
+  Handler(`(i:number, v=Ref/Observer/PreRef)`)가 어느 패키지에 사는지 —
+  `base/bind-system-plan.md:301-303,852-854`는 "`(v=Ref)` 매치 핸들러가
+  처리한다"/"`isObserver`로 판별해 라이프사이클에 묶어준다"까지만 서술하고
+  파일 배치는 안 함(`architecture.md` 소스트리에도 이 Handler가 이름으로
+  안 나와 있음). 제안(미확정): `Ref`/`Observer`/`PreRef` 전부 `inst`를 `any`로
+  취급하는 engine-agnostic 타입이고 process가 `v:Set(inst)`/`LifetimeHandle`
+  위임 정도만 하면 되니, `Dispatch/StoreBind.luau`(이미 "범용, 엔진 무관"으로
+  분류)와 같은 층위로 `quad-base`에 두는 게 맞아 보임 — `quad-roblox/Handlers/`가
+  아니라. 사용자 확인 필요, 아직 base에 반영 안 함.
 
 ### 3. 낮은 우선순위
 
@@ -227,6 +239,8 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | 컴포넌트 이식성(전역 store 참조 시 재사용성 문제) | `base/purity-and-effects-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | `base/blocker-plan.md` |
 | Effect(설치+확정 정리, `state` 있으면 Observer 조합해 재실행도 지원 — 확정) | `base/effect-plan.md` |
+| `Relate`(inst-weak 릴레이션 프리미티브, `SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), `bindLifetime`/`canExecute`(inst,value) 탑레벨 함수 | `base/relate-plan.md`, `base/lifecycle-pattern.md` |
+| `retract` 필드 생략 불가(no-op 허용, 누락 시 핸들러 교체 순간 크래시), store-bind 재실행은 `state:Observer(fn):Subscribe()` 재사용 | `base/bind-system-plan.md` |
 | UICorner/UIPadding/UIScale 인라인 편의 키 — 이름·메커니즘·store-bind 가능성까지 확정 | `base/ui-shorthand-plan.md` |
 | Batch(lexical) 기각, Context(+레이어드 Store) 기각 | `archive/batch-rejected.md`, `archive/context-rejected.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `reference/comparison-fusion-vide.md` |

@@ -133,8 +133,8 @@ quad/
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
-│       ├── LifetimeHandle.luau    # Connected 계산 속성 "인터페이스"(타입/계약만)
-│       ├── PerInstanceState.luau  # per-instance 상태 저장 "인터페이스"
+│       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
+│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value 읽기 + :Set()/:Callback()/:Wait() 셋), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `bind-system-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       └── init.luau
@@ -142,8 +142,7 @@ quad/
     ├── wally.toml
     └── src/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러)
-        ├── LifetimeHandle.luau    # 실제 구현(Instance 생존 확인)
-        ├── PerInstanceState.luau  # 실제 구현(weak-keyed table, Instance 키)
+        ├── LifetimeHandle.luau    # bindLifetime/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau
         │   ├── Event.luau         # ReflectionService 기반 자동 판별

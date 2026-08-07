@@ -150,6 +150,13 @@ Modifier/Ref를 아예 안 넘기는 케이스를 반드시 포함시킬 것.**
 
 ### 1-6. `canExecute`/`Connected`의 실제 구현 방식이 미확정인 채로 코어 전역에 이미 재사용 확정됨
 
+**[해소됨, 2026-08-08 세션]** `bindLifetime(inst,value)`/`canExecute(inst,value)`
+탑레벨 함수로 확정, `Relate` 프리미티브(`base/relate-plan.md`) 위에 gcconn/
+gchold를 얹는 구체 구현까지 나옴 — `base/lifecycle-pattern.md`의
+"`bindLifetime`/`canExecute` — 확정" 절이 최신. 아래는 이 결정이 나오기
+전까지의 문제 서술(정확했던 문제 인식이라 그대로 둠, 남은 실측 항목은
+`lifecycle-pattern.md` 쪽 "M0/M2 실측 필요" 캐비엇으로 이동).
+
 **위치**: `base/lifecycle-pattern.md` "2026-08-04 검증 라운드에서 보강된
 내용" 절, 특히 "`Destroying` 훅은 생각보다 덜 중요할 수 있음" 부분.
 
@@ -566,8 +573,8 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 - M9(컴포넌트 합성)이 M7(Modifier)·M8(Ref) 뒤에 오는 순서 — M9는 "M0
   스파이크(named-parameter 전달)를 정식 Modifier/Ref로 검증"하는 단계라고
   명시돼 있어 뒤늦은 검증이 아니라 의도된 정식화.
-- `PerInstanceState` 실제 구현 시점(M8) — 이걸 필요로 하는 핸들러(Tag/
-  Attribute/Tween)가 전부 M10/M11이라 순서상 문제없음.
+- `Relate`(구 `PerInstanceState`) 실제 구현 시점(M8) — 이걸 필요로 하는
+  핸들러(Tag/Attribute/Tween)가 전부 M10/M11이라 순서상 문제없음.
 - Slot의 store-bind 의존(M6→M4) 순서.
 
 ---

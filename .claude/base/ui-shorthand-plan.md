@@ -98,8 +98,8 @@ v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했
 다시 세팅하는 정도로 충분. 구현 비용도 낮음: 각 Handler가 `process`에서
 "이전에 자기가 찾거나 만든 자식 Instance"를 얻어야 하는데, 이건 이미
 base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저장소
-(`base.perInstanceState(inst)`, `base/bind-system-plan.md` "핸들러 내부
-상태 저장" 절)를 그대로 재사용하면 됨 — Tween 핸들러가 실행 중인 Tween
+(`Relate:SetStrong(inst,k,...)`, `base/relate-plan.md`/`base/bind-system-plan.md`
+"핸들러 내부 상태 저장" 절)를 그대로 재사용하면 됨 — Tween 핸들러가 실행 중인 Tween
 객체를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘 발명 불필요, 이미
 있는 "store 바인드는 pluggable 바인드를 재실행하는 래핑" 원칙
 (`base/bind-system-plan.md` "확정된 디스패치 모델" 절)이 그대로 적용됨.

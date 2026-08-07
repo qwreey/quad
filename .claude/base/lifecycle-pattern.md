@@ -130,35 +130,90 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 도구로 바인드된 옵저버는 `canExecute` predicate로 게이팅되어, 살아있지 않으면
 실행 자체를 건너뛸 수 있음(죽은 대상에 대한 처리 시도 방지, 위 원칙과 직결).
 
-**`canExecute`의 시그니처는 `(handle) -> boolean`이지 `() -> boolean`이
-아님(2026-08-07 여덟 번째 세션, 정정)** — 처음엔 "바인딩마다 클로즈오버된
-zero-arg 람다"로 적었으나, 그러면 등록마다 클로저를 새로 만들어야 해서
-아래 "base 유틸은 인터페이스, 실제 구현은 백엔드 팩토리가 주입" 절의 패턴
-(base는 타입만 갖고, quad-roblox가 `BaseModule`을 뮤테이션해서 실 구현체를
-채워넣음)과 잘 안 맞음 — 그 패턴이 성립하려면 `canExecute`는 **quad-roblox가
-한 번만 주입하는 공유 함수**여야 하고, 그러려면 "어떤 등록을 확인할지"를
-가리키는 인자(`handle`, 아래 gchold 스케치의 Connection이 이 역할)가 있어야
-함. base 입장에선 `handle`은 `any`(엔진마다 실체가 다를 수 있음).
+### `bindLifetime`/`canExecute` — 확정(2026-08-08 세션)
 
-**quad-roblox 구현 스케치(rbvm 패턴 재사용, base 결정 아님 — 참고용)**:
-Instance당(꼭 하나일 필요는 없지만 보통 그게 싸서 하나로 감) weak-keyed
-per-instance 저장소(`base.perInstanceState(inst)`)에 "gchold" 배열을 둠.
-그 배열엔 절대 발화하지 않도록 골라 만든 신호에 연결한 Connection을
-넣는데, 이 Connection의 콜백 클로저 안에 실제로 살려두고 싶은 옵저버를
-업밸류로 캡쳐해둠(콜백은 안 불려도 클로저 자체가 살아있는 한 업밸류는
-안 죽음) — `inst`가 GC되면 gchold 배열째로 같이 죽으므로 옵저버도 자연히
-GC됨(`base/bind-system-plan.md` "핸들러 내부 상태 저장" 절의 weak-keyed
-중첩 구조와 같은 원리). `canExecute(handle)`은 이 Connection(또는 이를
-감싼 핸들)을 받아 `.Connected`를 확인하는 정도로 구현될 것.
-**미확인 세부사항**: 옵저버 → Connection 역참조를 별도 weak 릴레이션으로
-둘지, 아니면 그냥 Observer 테이블 안 평범한 필드로 넣을지(정적 해싱된
-필드 접근이 weak 테이블 조회보다 싸서 후자가 나을 수 있음) — quad-roblox
-구현 단계에서 실측 확인 필요, base 설계에 영향 없음.
+**탑레벨 평범한 함수로 확정, 네임스페이스에 안 숨김.** `Dispatch.process`/
+`Handler.xxx`는 "시스템 내부 배관"이라 네임스페이스가 맞지만, `bindLifetime`/
+`canExecute`는 `isState`/`isObserver`처럼 핸들러 작성자가 직접 호출하는
+**1급 프리미티브 연산**이라 `LifetimeHandle.bind(...)`류로 감싸면 안 됨 —
+`LifetimeHandle.luau` 파일 안에 있어도 되지만 export는 평평한 함수:
 
-이건 `base/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸과 짝을
-이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"(weak-keyed per-instance
-저장소), 다른 하나는 "언제까지 실행되어도 되는지"(생명 바인드 + canExecute)를
-다룸. 둘 다 base가 제공하는 범용 유틸로 확정.
+```lua
+bindLifetime(inst: any, value: any): ()
+canExecute(inst: any, value: any): boolean
+```
+
+base는 이 두 함수의 **인터페이스만**(타입 시그니처) 갖고, quad-roblox가
+`BaseModule` 뮤테이션 시점에 실 구현을 채워넣는다는 원칙은 그대로(`canExecute`
+관련 기존 절 참고) — 아래는 그 실 구현 스케치, `base/relate-plan.md`의
+`Relate` 프리미티브 위에 얹힘(2026-08-08 세션, gchold를 `perInstanceState`
+직접 조작 대신 `Relate`로 구현):
+
+```lua
+-- quad-roblox 실 구현 스케치
+local relate = Relate() -- 이 모듈 전용 인스턴스, 다른 핸들러와 key 충돌 없음
+local GCCONN = "__gcconn"
+local GCHOLD = "__gchold"
+
+function bindLifetime(inst, value)
+    local gcconn = relate:GetStrong(inst, GCCONN)
+    if not gcconn then
+        -- ClassName은 절대 안 바뀌는 프로퍼티라 이 신호는 절대 발화하지 않음
+        -- (rbvm 패턴 그대로) — 콜백 클로저가 gchold를 업밸류로 캡쳐해 살려둠
+        local gchold = {}
+        relate:SetStrong(inst, GCHOLD, gchold)
+        gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
+            local _ = gchold -- 발화 안 함, 클로저 생존이 곧 gchold 생존
+        end)
+        relate:SetStrong(inst, GCCONN, gcconn)
+    end
+    local gchold = relate:GetStrong(inst, GCHOLD)
+    table.insert(gchold, value) -- 강참조 생성, inst 죽으면 gcconn 클로저와 함께 GC
+end
+
+function canExecute(inst, value)
+    -- Observer/Effect는 자기 바인딩 경로(leaf 부착 또는 :Subscribe())의
+    -- 생존 여부를 스스로 알고 있음 — inst가 살아있어도 이 값이 먼저 죽어
+    -- 있을 수 있으므로(예: retract가 :Unsubscribe()만 하고 inst는 안 죽음)
+    -- 반드시 먼저 확인.
+    if (isObserver(value) or isEffect(value)) and not value.Subscribed then
+        return false
+    end
+    local gcconn = relate:GetStrong(inst, GCCONN)
+    return gcconn ~= nil and gcconn.Connected
+end
+```
+
+**`canExecute`의 시그니처는 `(inst, value) -> boolean`(2026-08-08 세션,
+재정정 — 원래 있던 "`(handle) -> boolean`, zero-arg 아님" 결정을 대체함).**
+이전 라운드(2026-08-07 여덟 번째 세션)는 "등록마다 클로저를 새로 만들지
+않기 위해 zero-arg 대신 `handle` 인자를 받는다"까지만 확정했는데, 실제로
+`handle`이 뭘 가리키는지(단일 Connection? Observer 자신?)가 미정으로
+남아있었음 — 이번에 `(inst, value)` 2-인자로 구체화됨. 이유: Observer 자신의
+바인딩 생존(`Subscribed`)과 `inst` 자체 생존(gcconn)은 **독립적인 두 조건**이라
+하나의 opaque `handle`로 뭉치면 "inst는 살아있지만 이 Observer는 이미
+`:Unsubscribe()`됨" 케이스를 못 구별함 — 위 구현처럼 `value`의 타입에 따라
+분기해서 먼저 확인하고, 그 다음 `inst` 공유 gcconn을 봄. "canExecute 하나로
+전역 통일" 원칙(Slot 생존/Observer 게이팅/store-bind retract 전부 재사용)은
+안 바뀜, 시그니처만 구체화된 것.
+
+**Instance당 gcconn/gchold는 하나로 공유**(꼭 그럴 필요는 없지만 보통 그게
+싸서) — `bindLifetime`을 여러 값에 대해 여러 번 불러도 같은 `inst`면 같은
+`gcconn`/`gchold`를 재사용(첫 호출에서만 생성, 이후는 `relate:GetStrong`으로
+바로 찾음). `Relate`의 lazy 생성 자체가 이 재사용 비용을 이미 다뤄줌 —
+자세한 내부 구조는 `base/relate-plan.md`.
+
+**실측 필요(M0/M2)**: Observer→liveness 역참조를 `value.Subscribed` 필드
+직접 읽기로 확정했으나(위 구현), 실제 Luau 필드 접근 비용/weak table 조회
+비용 비교는 여전히 quad-roblox 구현 단계에서 실측 확인 대상.
+
+이건 `base/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
+직접 사용)과 짝을 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"
+(`Relate:SetStrong`/`:SetWeak`), 다른 하나는 "언제까지 실행되어도 되는지"
+(`bindLifetime` + `canExecute`)를 다룸. 후자는 내부적으로 전자가 제공하는
+같은 `Relate` 프리미티브 위에 얹혀 구현됨(위 절) — 별도 저장 메커니즘을
+새로 만든 게 아니라 `Relate` 하나를 두 용도로 재사용. 둘 다 base가 제공하는
+범용 유틸로 확정.
 
 **교차검증(2026-08-04 4차 라운드)**: 사용자가 공유해준 실제 참고 코드
 (`.claude/initreq/artworks/EventDrivenProgramming/`, PA님 작성)는 GC-native가

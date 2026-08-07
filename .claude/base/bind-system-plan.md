@@ -45,6 +45,14 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 - `retract(inst, key, value)` — 이전 처리를 무르는/멈추는 함수(아래 절,
   `base/lifecycle-pattern.md` 참고). 모든 핸들러가 의미 있게 구현할 필요는
   없음(예: 일반 프로퍼티 핸들러는 보통 no-op).
+  **`retract` 필드 자체는 생략 불가, no-op이라도 항상 정의할 것(2026-08-08
+  세션, 확정)** — `Dispatch.process`(아래 "확정된 디스패치 모델" 절)는
+  담당 핸들러 *타입*이 바뀔 때 이전 핸들러의 `retract`를 nil 체크 없이
+  무조건 호출함. 필드를 생략한 핸들러가 나중에(드물더라도, 예: Tween↔
+  프로퍼티 교체) 실제로 담당이 바뀌는 순간 `attempt to call a nil value`로
+  바로 크래시 — "의미 있게 구현할 필요 없음"은 "구현이 사소해도 됨"이라는
+  뜻이지 "필드를 안 둬도 안전하다"는 뜻이 아님. 새 핸들러를 짤 때 이 필드가
+  없으면 리뷰/린트에서 걸러내야 함(M2 착수 시 확인 목록에 추가).
 
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
@@ -114,14 +122,18 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
 - **핸들러 내부 상태 저장**: `retract`가 "이전에 생성한 것"(예: 실행 중이던
   Tween 객체)에 접근하려면 상태를 어딘가에 저장해야 함 — **`inst`를 키로 하는
   weak-keyed 테이블에 `k`별로 저장**(예: 생성된 Tween을 담아뒀다가 나중에
-  멈추거나 끝냄). **base가 이걸 범용 유틸로 제공**(`base.perInstanceState(inst)`
-  류, 정확한 이름/모양은 구현 단계에서 확정) — 모든 핸들러가 재사용, 각자
-  WeakMap을 새로 만들지 않음. `base/lifecycle-pattern.md`의 "생명 바인드 유틸"과
-  짝을 이루는 유틸. **왜 GC-안전한가(2026-08-07 여섯 번째 세션, 명시화)**:
-  구조가 "`inst`로 weak-keyed된 바깥 릴레이션 안에 `k`별 안쪽 릴레이션이
-  중첩된" 모양이라, `inst`가 죽어 weak table 엔트리가 통째로 사라지는
-  순간 그 안에 중첩된 `k`별 Tween 인스턴스 릴레이션도 같이 GC됨 — 별도
-  cleanup 로직 불필요(Tween 핸들러가 여기 담아두는 실제 Tween 인스턴스도
+  멈추거나 끝냄). **[정정, 2026-08-08 세션] `base.perInstanceState(inst)`라는
+  이름/모양은 폐기 — `base/relate-plan.md`의 `Relate` 프리미티브로 구체화됨.**
+  각 핸들러 모듈이 자기 톱레벨에 `local relate = Relate()`를 하나 두고
+  `relate:SetStrong(inst, k, tween)`/`relate:GetStrong(inst, k)`로 저장/조회 —
+  "모든 핸들러가 WeakMap을 재발명하지 않고 공유 유틸을 쓴다"는 원래 취지는
+  그대로, `Relate`가 그 공유 유틸의 정식 인터페이스. `base/lifecycle-pattern.md`의
+  `bindLifetime`/`canExecute`도 같은 `Relate`를 내부적으로 씀(용도가 다르니
+  별도 `Relate()` 인스턴스). **왜 GC-안전한가(2026-08-07 여섯 번째 세션,
+  명시화)**: 구조가 "`inst`로 weak-keyed된 바깥 릴레이션 안에 `k`별 안쪽
+  릴레이션이 중첩된" 모양이라, `inst`가 죽어 weak table 엔트리가 통째로
+  사라지는 순간 그 안에 중첩된 `k`별 Tween 인스턴스 릴레이션도 같이 GC됨 —
+  별도 cleanup 로직 불필요(Tween 핸들러가 여기 담아두는 실제 Tween 인스턴스도
   자동으로 같이 죽는 것까지 포함, `research/tween-plan.md` 참고).
 - **다른 값 변경을 추적하는 것도 process 함수의 정상 범위**: 예를 들어 Slot
   핸들러는 자기가 감시하는 값(배열/스토어)이 바뀌면 그에 따라 child를
@@ -262,6 +274,42 @@ value)로 `Dispatch.process(inst,k,realv)`를 재귀 호출"하는 식으로 구
 이러면 store 값 자체가 어떤 타입이든(원시값, 인스턴스, 심지어 다른 store)
 상관없이 동일한 재귀적 디스패치로 처리 가능 — 아래 "store가 store를 저장
 가능한가"와 직결.
+
+**"값이 바뀔 때마다"의 실제 구독 메커니즘 = `state:Observer(fn)` 재사용으로
+확정(2026-08-08 세션).** 이전엔 이 절이 구독 메커니즘 자체를 추상적으로만
+서술했는데(새 프리미티브를 발명하는 것처럼 읽힐 수 있었음), 실제로는 아래
+"`state:Observer(fn)`" 절에서 이미 확정된 것을 그대로 재사용하면 됨 — 새
+구독 primitive를 store-bind 전용으로 따로 만들 이유가 없음:
+
+```lua
+-- 예: 일반 프로퍼티 store-bind 핸들러의 process(inst, k, state)
+local observer = state:Observer(function()
+    Dispatch.process(inst, k, state:Get())
+end)
+observer:Subscribe()
+relate:SetStrong(inst, k, observer)  -- retract에서 :Unsubscribe() 하려면 들고 있어야 함
+```
+
+- children-array leaf 부착(`Frame { observer }`)이 **아니라** `:Subscribe()`/
+  `:Unsubscribe()` 경로를 씀 — 이 Observer는 핸들러 내부 배관이라 사용자가
+  보는 leaf가 아니기 때문(위 "이중 바인딩 금지" 원칙과 정합적: 한 Observer
+  핸들은 두 바인딩 경로 중 하나만 써야 하는데, 이건 애초에 leaf가 아니므로
+  `:Subscribe()`가 유일한 선택).
+- **`retract`가 할 일은 `observer:Unsubscribe()` 호출뿐** — 이게 위 "이벤트도
+  store-bind 가능" 절에서 이미 "엔지니어링 비용이 낮다"고 서술한 것과 같은
+  이유(새 디스패치 메커니즘 없이 기존 4종 계약만 구현), 다만 그 절이
+  구체적으로 가리키는 재사용 대상은 "재귀 process+retract 래핑 패턴"이었고
+  Observer 자체를 구독 메커니즘으로 쓴다는 것까지는 명시가 안 돼 있었던
+  갭이 이번에 메워짐.
+- **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — Observer가
+  이미 자기 `Subscribed` 상태로 게이팅됨(아래 `base/lifecycle-pattern.md`의
+  `canExecute(inst, value)` 절 참고, Observer/Effect는 그 함수 안에서
+  특별 취급됨).
+- Observer가 "등록 즉시 1회 실행"이므로 **최초 적용과 이후 재실행이 같은
+  코드 경로로 자동 통일**됨 — 프로퍼티 store-bind 핸들러가 "설치 시 1회
+  적용"을 별도로 안 짜도 되는 이유(위 Observer 절의 원래 근거 그대로).
+- `relate`는 `base/relate-plan.md`의 `Relate` 인스턴스 — 이 핸들러 모듈
+  톱레벨에 `local relate = Relate()`로 하나 두고 재사용.
 
 Slot이 store 바인드로 넘어오는 경우, pluggable 처리기에 `retract` 핸들러가
 필요하다는 점(부모가 slot을 정리하고 다시 process하는 방식)도 이 래핑 방식과
