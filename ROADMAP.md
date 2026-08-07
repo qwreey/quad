@@ -109,6 +109,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       걸러내기(no-op이라도 필드 자체는 항상 정의 — `Dispatch.process`가 핸들러
       교체 시 nil 체크 없이 호출, `base/bind-system-plan.md` "핸들러 계약"
       절, 2026-08-08 세션)
+- [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef)` children-array
+      leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
+      quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
+      bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절)
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source

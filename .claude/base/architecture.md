@@ -85,7 +85,14 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     `quad-roblox`가 담당.
 13. **모듈은 기본 싱글톤, `New()`는 나중에.** 한 Lua 스레드에서 Roblox/비-Roblox
     프로바이더를 동시에 쓸 일이 거의 없을 거라 판단 — 필요해지면 그때 `New()`
-    추가.
+    추가. **메커니즘도 이미 정해짐(2026-08-08 두 번째 세션, 새 설계 아니라
+    기존 패턴의 자연스러운 연장)**: v1처럼 `require`를 감싸 `Init(QuadId?)`로
+    격리 인스턴스를 만드는 방식은 안 씀 — 대신 지금 있는 "팩토리가
+    `BaseModule`을 뮤테이션" 패턴(14번) 그대로, `New()`가 생기면 매번 새
+    `BaseModule` 테이블을 만들어 팩토리로 채우는 것뿐. Dispatch의 handler
+    레지스트리를 포함해 지금 module-level state로 사는 모든 것(`_initializedBy`
+    마커, Dispatch 레지스트리 등)이 자동으로 테이블별 스코핑됨 — 상세 근거는
+    `base/bind-system-plan.md`의 "Dispatch는 프리미티브가 아니다" 절.
 14. **pluggable 초기화는 팩토리 함수로.** rbvm처럼 네임스페이스 하나하나 수동
     init 하는 방식(`base/lifecycle-pattern.md` 5번 항목 참고)은 피하고,
     `InitRoblox(Module)` 같은 팩토리 함수가 생성된 모듈을 뮤테이션하는 도구를
@@ -132,6 +139,7 @@ quad/
 │       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
+│       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef) children-array leaf 매칭 Handler, StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
@@ -160,6 +168,45 @@ quad/
 `slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
 Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확정을
 막지 않음(`purity-and-effects-plan.md`는 이미 `base/`로 승격 완료).
+
+## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
+
+지금까지 각 문서가 예시 코드를 쓰며 암묵적으로 따라온 패턴을 사용자가
+명시적 규칙으로 정리해달라고 요청 — 실제로 지금까지 나온 모든 이름이
+예외 없이 따르는 규칙이라 새로 뭘 바꿀 필요는 없고, 그냥 문서화만:
+
+- **대문자 시작(PascalCase)** — 다음 세 가지, 공통점은 전부 **어떤
+  프리미티브 타입 자신의 공개 어휘**라는 것:
+  1. 프리미티브 타입 생성자, `Type(args)` 스타일: `Source(default)`/
+     `Ref(default)`/`Store({defaults})`/`Modifier()`/`Relate()`/
+     `Effect(fn, state?)`/`PreRef(default)`.
+  2. 그 인스턴스의 콜론 메서드: `state:Get()`/`:With(...)`/`:Compute(fn)`/
+     `:Observer(fn)`/`:Apply(factory)`/`:Peek(key)`, `source:Set(v)`/`:Emit()`,
+     `ref:Set(v)`/`:Callback(fn)`/`:Wait(thread?)`, `observer:Subscribe()`/
+     `:Unsubscribe()`, `relate:SetWeak(...)`/`:GetWeak(...)`/`:SetStrong(...)`/
+     `:GetStrong(...)`, `mod:FontSize(...)`(필드 setter 체이닝).
+  3. 프리미티브 타입 자신의 네임스페이스에 달린 정적 결합 함수 —
+     `Modifier.Override(mod1, mod2, ...)`가 유일한 현재 사례. 콜론 메서드는
+     아니지만(여러 Modifier를 동등한 인자로 받아야 해서 self 하나로 안
+     됨) `Modifier` 타입 고유의 공개 연산이라는 점에서 1/2과 같은 부류 —
+     `Modifier()` 생성자와 같은 이유로 대문자.
+- **소문자 시작(camelCase)** — 특정 프리미티브 타입 하나에 안 묶이고 여러
+  타입을 넘나드는 범용 유틸(`isState`/`isSource`/`isRef`/`isPreRef`/
+  `isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
+  `bindLifetime`, `base/lifecycle-pattern.md`), 그리고 **프리미티브가
+  아닌** 내부 엔진/레지스트리의 네임스페이스 멤버(`Dispatch.process`/
+  `getHandler`/`addHandler`/`drive`, `Brand.set`/`get`) — 이 셋은 "타입
+  고유의 어휘"가 아니라 여러 타입에 걸쳐 쓰이거나(`isX`류) 프리미티브
+  자체가 아닌 것(Dispatch/Brand는 `Type(args)` 생성자가 없는 내부 엔진)의
+  구성원이라 PascalCase 대상이 아님. Handler 계약 필드(`isHandlable`/
+  `priority`/`process`/`retract`)도 여기 속함 — 이건 애초에 "함수"라기보다
+  구현체가 채워 넣는 구조체 필드.
+- **경계 판단 기준**: 새 이름을 지을 때 "이게 특정 프리미티브 타입 하나의
+  전용 소유물인가?"로 물으면 됨 — 그렇다면 대문자(생성자/메서드/그
+  타입의 정적 결합 함수), 아니면(범용 유틸이거나 프리미티브가 아닌 엔진
+  소속) 소문자. `Dispatch`/`Brand`가 프리미티브가 아닌 이유는
+  `base/bind-system-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
+  `base/store-semantics.md`의 "세 번째 카테고리 — Handler" 절 참고.
 
 ## 테스트 전략: quad-base용 최소 mock (2026-08-04)
 

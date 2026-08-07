@@ -90,6 +90,22 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 속하는지가 생성자 모양(자유 함수 팩토리 vs 원천에 대한 메소드)을
 결정하는 기준으로 쓸 수 있음.
 
+**세 번째 카테고리 — Handler는 둘 중 어디에도 안 낌(2026-08-08 두 번째
+세션, 명시화).** `Handler`(`isHandlable`/`priority`/`process`/`retract`
+4종 계약, `base/bind-system-plan.md` "핸들러 계약" 절)는 위 분류가 다루는
+"quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
+없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
+`Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은
+`PropertyHandler`/`TagHandler`/`Dispatch/StoreBind.luau`의 `NoneHandler`처럼
+**구현하는 쪽**이 리터럴 테이블로 직접 채워 넣는 것), State/Observer처럼
+어떤 원천에 종속된 파생물도 아님(애초에 "원천"이라는 개념 자체가 안 맞음).
+Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우는 확장
+지점**이라는 완전히 다른 축의 개념이라, 여기 분류를 "왜 Handler가
+빠졌는지" 궁금해할 필요 없음 — 프리미티브 분류가 불완전한 게 아니라
+Handler가 애초에 다른 층위. 관련해서 Handler를 담는 엔진(`Dispatch`) 자체가
+왜 프리미티브가 아니라 탑레벨 싱글톤인지는 `base/bind-system-plan.md`의
+"Dispatch는 프리미티브가 아니다" 절 참고.
+
 과거 "미해결로 남은 것"으로 적었던 두 항목도 모두 해소됨: `:Compute`의
 캐싱/무효화 전략은 push-invalidate(신호만)/pull-recompute(`Get()` 시점)로
 확정(`base/bind-system-plan.md` "전파 모델" 절), `store "key"` 커링의 타입

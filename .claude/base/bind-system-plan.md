@@ -262,6 +262,57 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   통해 담당자 기록을 갱신하게만 해두면(`Dispatch.drive`가 별도로 기록 안
   하고 `Dispatch.process` 내부에 위임) 자연히 해소됨.
 
+### Dispatch는 프리미티브가 아니다 — 탑레벨 싱글톤 확정 (2026-08-08 두 번째 세션)
+
+`Dispatch.process`/`getHandler`/`addHandler`/`drive`를 `Source`/`Ref`/`Store`/
+`Modifier`처럼 생성자가 있는 프리미티브(예: `Dispatch()`로 인스턴스를 여러 개
+만들 수 있는 것)로 바꿔야 하는지 검토 후 **기각, 지금 형태(모듈 require로
+바로 닿는 flat 탑레벨 함수) 유지로 확정**:
+
+- **재귀 재-dispatch가 요구하는 필연** — Tween/`NoneHandler`/`Dispatch/
+  StoreBind.luau` 전부 자기 `process` 안에서 다시 `Dispatch.process(inst,k,
+  realv)`를 호출함(위 "확정된 디스패치 모델"/"`None` 센티널" 절). 이게
+  성립하려면 Dispatch가 `canExecute`/`bindLifetime`(`base/
+  lifecycle-pattern.md`)과 똑같이 require 한 번으로 바로 닿는 안정된
+  전역이어야 함 — 인스턴스화 가능한 프리미티브로 만들면 모든 Handler
+  등록/호출 경로에 Dispatch 핸들을 인자로 계속 실어날라야 하는 스레딩
+  비용이 생기는데, 지금 형태는 그 비용을 아예 안 짐.
+- **순환참조로 보이는 건 착시 — 실제로는 단방향.** "Handler"라는 말이 두
+  가지를 가리켜서 헷갈릴 수 있음: (a) `Handler.luau`의 **타입 계약**
+  (`isHandlable`/`priority`/`process`/`retract` 시그니처만 있는 순수 leaf,
+  Dispatch를 몰라도 됨) vs (b) `StoreBind.luau`/`Tween.luau`처럼 그 계약을
+  **구현하는 concrete 값 모듈**(재귀호출 위해 Dispatch를 require함). 의존
+  방향은 항상 한쪽으로만 흐름 — `Handler.luau`(leaf) ← `Dispatch/init.luau`
+  (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StoreBind.luau`/
+  `Tween.luau`(재귀호출 위해 Dispatch를 참조). `Handler.luau` 자신이
+  Dispatch를 되받아 참조하는 일이 없으니 타입 레벨에서도 사이클이 안 생김.
+  런타임에서도 마찬가지 — 어떤 handler의 `process`든 실제로 *호출*되는
+  시점은 컴포넌트가 렌더되는 시점이라, 그때는 이미 Dispatch 모듈 require가
+  완전히 끝나있어 부트스트랩 문제도 없음.
+- **quad-base 자신의 기본 핸들러도 같은 레지스트리를 씀** — `NoneHandler`,
+  `Dispatch/StoreBind.luau`("범용, 엔진 무관")뿐 아니라, children 배열
+  숫자 슬롯에 `Ref`/`Observer`/`PreRef`를 직접 놓는 leaf 값을 매칭하는
+  Handler도 여기 속함(`inst`를 `any`로 취급, 엔진 특정 API 불필요 —
+  `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
+  어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
+  `Dispatch/Leaf.luau`, `Dispatch.addHandler`로 등록). quad-roblox의
+  Property/Event/Tween 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
+  등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
+  전부 하나의 우선순위 스캔을 공유.
+- **모듈 재생성(`New()`)과의 관계 — 새 설계 불필요, 이미 있는 선례로 자연히
+  풀림.** v1처럼 `require`를 감싸 `Init(QuadId?)`로 격리 인스턴스를 만드는
+  방식은 안 씀(위 "확정된 것" 절 — id 기반 조회 자체가 Ref로 대체되며
+  기각됨). 대신 이미 확정된 "base 유틸은 인터페이스, 실제 구현은 팩토리가
+  `BaseModule`을 뮤테이션해서 주입"(`RobloxFactory(BaseModule)`) 패턴을
+  그대로 따름 — Dispatch의 handler 레지스트리도 `BaseModule` 테이블에
+  딸린 state 중 하나일 뿐이라, `_initializedBy` 마커에 대해 이미 확정된
+  것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`New()`가
+  생기면 각 인스턴스가 별도 테이블이 되므로 이 마커도 테이블별로 독립적으로
+  스코핑됨, 재설계 불필요"). `New()`가 실제로 생기면 그 시점에 BaseModule
+  전체를 인스턴스별 테이블로 만드는 메커니즘에 Dispatch도 자연히 같이
+  딸려가고, 호출부는 `module.Dispatch.process(...)`처럼 그 인스턴스
+  테이블을 통해 접근하게 됨 — 지금 미리 프리미티브화해둘 이유가 없음.
+
 ## Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가
 
 사용자 원 메모: "스토어 바인드는 특수 경우로 둘지, 아니면 다른 pluggable 바인드를

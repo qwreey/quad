@@ -156,17 +156,14 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   우선순위 스캔 동률/매치실패 처리, `:Compute`의 `previous` 인자가
   오버엔지니어링일 수 있음, UI shorthand의 기존 UICorner 매칭 기준 등)는
   `pre-implementation-audit.md` 본문 참고.
-- **[신규, 2026-08-08 세션, 미확인]** `Frame { ref }`/`Frame { observer }`처럼
-  children 배열 숫자 슬롯에 직접 놓는 leaf 값을 실제로 매칭·바인드하는
-  Handler(`(i:number, v=Ref/Observer/PreRef)`)가 어느 패키지에 사는지 —
-  `base/bind-system-plan.md:301-303,852-854`는 "`(v=Ref)` 매치 핸들러가
-  처리한다"/"`isObserver`로 판별해 라이프사이클에 묶어준다"까지만 서술하고
-  파일 배치는 안 함(`architecture.md` 소스트리에도 이 Handler가 이름으로
-  안 나와 있음). 제안(미확정): `Ref`/`Observer`/`PreRef` 전부 `inst`를 `any`로
-  취급하는 engine-agnostic 타입이고 process가 `v:Set(inst)`/`LifetimeHandle`
-  위임 정도만 하면 되니, `Dispatch/StoreBind.luau`(이미 "범용, 엔진 무관"으로
-  분류)와 같은 층위로 `quad-base`에 두는 게 맞아 보임 — `quad-roblox/Handlers/`가
-  아니라. 사용자 확인 필요, 아직 base에 반영 안 함.
+- **[해소됨, 2026-08-08 두 번째 세션]** `Frame { ref }`/`Frame { observer }`처럼
+  children 배열 숫자 슬롯에 직접 놓는 leaf 값을 매칭·바인드하는 Handler
+  (`(i:number, v=Ref/Observer/PreRef)`)의 패키지 배치 — 원래 제안대로
+  `quad-base`, `Dispatch/Leaf.luau`(이미 있던 `Dispatch/StoreBind.luau`와
+  같은 층위)로 확정. Dispatch 자체가 프리미티브가 아니라 탑레벨 싱글톤이고
+  base 기본 핸들러와 quad-roblox 백엔드 핸들러가 같은 `Dispatch.addHandler`
+  레지스트리를 공유한다는 결론과 함께 나온 것 — `base/bind-system-plan.md`
+  "Dispatch는 프리미티브가 아니다" 절, `base/architecture.md` 소스트리 참고.
 
 ### 3. 낮은 우선순위
 
