@@ -2,12 +2,16 @@
 
 **상태**: research — 방향은 뚜렷하게 잡혀 있고(라이브러리가 트윈을 직접
 구현하지 않는다), `retract` 순서/오버라이드 기본값(Cancel)도 확정됨. 남은 건
-기본값 외 나머지 오버라이드 동작을 고르는 옵션 키의 정확한 이름/시그니처
-정도. 원본:
+기본값 외 나머지 오버라이드 동작을 고르는 옵션 키의 정확한 이름/시그니처와,
+트윈 옵션을 어떤 값 모양으로 받을지(아래 "트윈 옵션 값 모양" 절, 신규)
+정도. **중요 — 놓치기 쉬운 포인트**: `retract`는 Destroy(완전 소멸) 시엔
+호출되지 않는다(아래 "`retract`는 완전 소멸 시엔 호출되지 않는다" 절) —
+Tween 오버라이드 로직을 짤 때 "인스턴스가 파괴될 때도 이 코드가 실행될
+것"이라고 가정하면 틀림. 원본:
 `.claude/initreq/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
 항상 먼저 캐치한다" / "네임스페이스드 객체" 절. Fusion의 Tween/Spring이
 반응 그래프 안에 있는 설계는 명시적 반면교사 — [정정: 절 제목이 실제와
-달랐음] `base/comparison-fusion-vide.md`의 "Fusion" 절 마지막 불릿
+달랐음] `reference/comparison-fusion-vide.md`의 "Fusion" 절 마지막 불릿
 ("Tween/Spring이 State그래프 안의 1급 노드") 참고.
 
 ## 확정된 방향: 트윈을 Store/반응 그래프 밖에 둔다
@@ -79,6 +83,44 @@ Ref나 네임스페이스드 조회가 필요하지 않음. Tween의 store-bind 
 Destroy 시점엔 아무 것도 안 함(라이프타임 `Connected` 체크로 처리 자체를
 멈추는 것만으로 충분).**
 
+**메모 — `retract`와 `canExecute`는 서로 다른 문제를 다룬다, 나중에 quadnomicon
+급에서 제대로 설명 필요.** "그럼 값 교체가 아니라 값을 계속 관측하는 쪽
+(예: `state:Observer(fn)`으로 Tween을 건 경우)은 Destroy 시 어떻게
+정리되는가?"라는 질문이 자연스럽게 따라오는데, 이건 `retract`의 영역이
+아니라 `canExecute`(라이프타임 predicate, `base/lifecycle-pattern.md`의
+"생명 바인드 유틸" 절)의 영역이다 — Destroy되면 `retract` 호출 없이 그냥
+`canExecute`가 false가 되어 이후 처리 시도 자체가 조용히 no-op된다.
+store-bind 일반(Tween 포함)도 같은 결이라 실제로는 이미 일관되게 명시돼
+있지만(`base/bind-system-plan.md` "확정된 디스패치 모델" 절), "왜 이
+경로엔 retract를 쓰고 저 경로엔 canExecute를 쓰는가"라는 내부 구조상의
+이유는 quadnomicon 콘텐츠로 풀어서 설명할 필요가 있음(`research/
+documentation-content-map.md` 심화 콘텐츠 후보에 메모) — 지금은 이 메모만
+남겨두고 상세 설명은 나중 문서화 단계로 미룸.
+
+## 트윈 옵션 값 모양 — TweenInfo 그대로 vs 편의 필드 (신규, 열린 논의)
+
+**아직 논의 시작 단계 — 나중에 더 다룰 주제로만 남겨둠.** Roblox의
+`TweenInfo.new(time, easingStyle, easingDirection, repeatCount, reverses,
+delayTime)`는 순수 포지셔널 생성자인데, Luau엔 named call 문법이 없어서
+직접 쓰면 `TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)`
+처럼 각 인자가 뭘 뜻하는지 호출부만 보고 알기 어렵다. 후보:
+
+1. **`TweenInfo`를 그대로 받는다** — 사용자가 이미 만들어둔 `TweenInfo`를
+   재사용하고 싶은 경우엔 상관없지만, 대부분의 흔한 케이스(길이/이징만
+   바꾸고 싶음)에서 매번 포지셔널 생성자를 마주해야 함.
+2. **편의 필드로 개별 인자를 받고 기본값을 제공** — 예:
+   `{Time=0.3, Style=Enum.EasingStyle.Quad, Reverses=false, ...}`처럼
+   이름 붙은 키로 받고 흔한 기본값(예: `Time=0.2`, `Style=Quad`,
+   `Direction=Out`)을 채워줌. 명시적으로 `TweenInfo`가 이미 있어서
+   재사용하고 싶다는 케이스에도 열어두면(예: `Info = someTweenInfo`
+   필드로), 둘 다 지원 가능.
+
+**현재 소견(확정 아님)**: 2번(편의 필드 + 기본값)이 흔한 사용 경험상 더
+낫다는 쪽으로 기움 — 대부분의 호출에서 named call이 없는 `TweenInfo.new`의
+가독성 문제를 피할 수 있고, 기본값 덕에 짧은 호출도 가능해짐. 다만
+구체적인 필드 이름/기본값/`TweenInfo` 재사용 경로의 정확한 문법은 아직
+확정 아님 — 나중 논의 대상으로 남김.
+
 ## 네임스페이스드 객체 (성능상 이유로 보류)
 
 트윈 대상을 이름으로 찾는 별도 네임스페이스는 성능상 별로라고 판단 —
@@ -92,3 +134,7 @@ CollectionService를 쓰는 게 나아 보이지만, 트윈 전용 네임스페�
 - 기본값(Cancel)은 확정됨. 남은 건 나머지 세 동작(오버라이드/삭제 후 재시작/
   끝점 이동 후 재시작)을 선택하는 옵션 키의 정확한 이름/시그니처 — 구현
   단계에서 확정.
+- 트윈 옵션 값 모양(위 "트윈 옵션 값 모양" 절, 신규) — `TweenInfo` 그대로
+  받을지 편의 필드+기본값으로 받을지, 소견은 후자 쪽이지만 확정 아님.
+- 자연 완료(Completed) 시 per-instance 북키핑 정리 여부 —
+  `research/pre-implementation-audit.md` 2-10번 참고, M11 착수 시 확정.

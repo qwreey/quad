@@ -3,8 +3,8 @@
 **상태**: base — 횡단 결정의 최종 상태 요약. 특정 기능 plan이 아니라 프로젝트
 전체에 걸친 결정이라 완료 개념 없음. 근거가 된 원본 브레인스토밍은
 `.claude/initreq/raw-userinput.md`(안 옮기고 그대로 둠 — 이 문서들로 나누기 전의
-raw chain-of-thought 백업 역할). 현재 v1 구조는 `base/quad-v1-architecture.md`,
-비교 리서치는 `base/comparison-fusion-vide.md`, `base/lifecycle-pattern.md` 참고.
+raw chain-of-thought 백업 역할). 현재 v1 구조는 `reference/quad-v1-architecture.md`,
+비교 리서치는 `reference/comparison-fusion-vide.md`, `base/lifecycle-pattern.md` 참고.
 
 ## 한 줄 요약
 
@@ -23,7 +23,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    바인드처럼 정말 체인이 자연스러운 곳에만(`:` 문법) 남김. 타입 작성 난이도가
    OOP 스타일에서 너무 커진다는 게 이유.
 3. **복사(clone) 구현 지양, 팩토리 함수로 대체.** v1의 metatable 체이닝(1-필드
-   테이블을 계속 쌓는 방식, `base/quad-v1-architecture.md` 참고)은 폐기.
+   테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
 4. **PA님 스타일 DI 키 계속 지원**: `[Attribute "Name"]`, `[Tag ""] = true` 같은
@@ -67,12 +67,12 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    구현(`base/bind-system-plan.md`).
 9. **Tracker 미구현.** v1의 소스 변경 감지 자동 재렌더 기능(hot-reload watcher,
    실제로는 `.claude/initreq/quad/src/tracker.lua` — v1에서도 이미 `exports.lua`에
-   연결 안 된 죽은 코드였음, `base/quad-v1-architecture.md` 참고)은 렌더
+   연결 안 된 죽은 코드였음, `reference/quad-v1-architecture.md` 참고)은 렌더
    라이브러리 범위 밖으로 판단. 스토리북 구현체(https://ui-labs.luau.page/docs/getstarted)가
    이미 존재하므로 대체.
 10. **lang 모듈 미구현, 분리.** 로케일/문자열 처리는 리액터블 라이브러리와
     별개 라이브러리로 존재해야 함(v1 `lang.lua`의 전역 스코프 버그 등은
-    `base/quad-v1-architecture.md` 참고 — 애초에 반면교사).
+    `reference/quad-v1-architecture.md` 참고 — 애초에 반면교사).
 11. **커스텀 Signal 클래스 미구현.** 콜백 정도로 이벤트 바인드 뒤에 함수를
     넣는 것만으로 충분하다고 판단. (이전 초안엔 "rbvm의 Signal이 재사용
     가능해 보여 상충한다"는 메모가 있었으나 2026-08-04 검증 라운드에서 최종

@@ -123,7 +123,7 @@ canExecute 같은 람다 함수 하나 달게 해서 Connected 상태 보게 하
 
 즉, 핸들러가 처리 도중 만든 구독/옵저버 클로저는 그 자체로는 아무것도 자동으로
 GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연결해 참조를
-붙잡아두던 "GC 방지 핫팩"(`base/quad-v1-architecture.md` 참고)과 같은 문제.
+붙잡아두던 "GC 방지 핫팩"(`reference/quad-v1-architecture.md` 참고)과 같은 문제.
 **base가 범용 유틸로 제공할 것: 임의의 클로저/구독을 실제 Roblox 객체의
 생명주기에 바인드하는 도구** — 내부적으로 v1/rbvm이 쓰던 "connect 트릭"(어떤
 신호에든 연결해서 참조를 죽을 때까지만 붙잡아두는 것)을 그대로 재사용. 이

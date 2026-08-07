@@ -61,7 +61,7 @@ v1(`.claude/initreq/quad/src`) 조사 결과, API는 성격이 다른 두 계층
   핸들러 분기도 안 생김. 단, "quad-debug 추적 밖 mutate 경로가 생긴다"는
   근거(4번)는 격리해도 남는 문제라 별도 검토 필요.
 - **RoundSize 등 특수 키**: `Corner`/`PaddingAll`/`Scale`은 이미
-  `research/ui-shorthand-plan.md`에서 네이티브 포팅 확정됨 — 별도 compat
+  `base/ui-shorthand-plan.md`에서 네이티브 포팅 확정됨 — 별도 compat
   작업 불필요. `RoundSize`(이미지 9-slice 라운드 트릭)만 UICorner 없던
   시절 워크어라운드라 재현 자체가 불필요하다고 이미 결론남.
 - **`target()`/Linker**: 위 정정대로 "이름 있는 자식 등록 + 시그널 중계"일

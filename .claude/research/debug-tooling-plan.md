@@ -328,7 +328,7 @@ UI를 클릭한 순간)에 강제로 그 계산을 트리거하는 건 이 전�
 **네이밍 컨벤션(사용자 제안)**: 내부 자동 생성 helper Instance는 `_`나
 `QUAD_` 같은 접두어를 붙여서 Explorer에서 직접 봤을 때 헷갈리지 않게 함 —
 이름 바꾸는 건 비용이 크지 않음. v1이 이미 `_quad_round`/`_quad_padding`/
-`_quad_scale` 네이밍(`research/ui-shorthand-plan.md` 참고)으로 정확히
+`_quad_scale` 네이밍(`base/ui-shorthand-plan.md` 참고)으로 정확히
 이 관습을 썼던 전례 — quad-v2에서 내부 자동 생성물이 생기면 그대로
 재사용. `research/documentation-plan.md`의 "UI 네이밍 컨벤션 문서"
 백로그에도 이 구체적 규칙을 추가해둠.

@@ -38,10 +38,14 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 `.claude/README.md`가 색인. 요약:
 - `.claude/base/` — 확정된 아키텍처/컨텍스트, plan/done 개념 없음. 먼저
   `.claude/base/architecture.md`를 읽을 것.
+- `.claude/reference/` — **[2026-08-07 신설]** base처럼 확정된 건 아니지만
+  base 문서가 근거로 인용하는 온디맨드 참고 자료(v1 내부 동작 스냅샷,
+  Fusion/Vide 비교 리서치) — 항상 읽을 필요는 없고 인용될 때만 열어볼 것.
 - `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의.
   `tween-plan.md`/`existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
-  `ui-shorthand-plan.md`/`documentation-plan.md`/`documentation-content-map.md`/
-  `framework-comparison-findings.md` — 전부 후순위(급한 건 `tween-plan.md`
+  `documentation-plan.md`/`documentation-content-map.md`/
+  `framework-comparison-findings.md`/`additional-primitives-plan.md`(키 기반
+  동적 컬렉션 재조정만 남음) — 전부 후순위(급한 건 `tween-plan.md`
   세부 옵션 정도). 최신 목록·우선순위는 `.claude/README.md`가 소스, 여기서
   개수 반복 안 함(과거에 "두 개뿐"이라 적어놨다가 새 문서 추가될 때마다
   안 갱신되는 패턴이 반복돼서 아예 안 세기로 함).
@@ -676,3 +680,71 @@ M7 착수 시 `modifier-plan.md` 8번 참고하면 됨.
 풀리는 문제 — `false`를 이벤트 disconnect 센티널로 쓴 선례처럼 `None`
 (가칭) 프리미티브를 도입하는 방향만 `base/modifier-plan.md` "2-1"절에
 짧게 메모해두고 상세 설계는 다음 세션으로 미룸.
+
+## 2026-08-07 네 번째 세션 — `.claude/` 코퍼스 전반 정리(폴더 재편, 승격, 기각 분리)
+
+사용자가 코퍼스 전체를 훑고 "실제 코딩에 필요한가"를 기준으로 남길 것과
+분리할 것을 판단해 달라고 요청 — 여러 문서에 쌓인 역전 이력/quad
+자체와 무관한 배경자료/이미 기각된 후보가 뒤섞여 있어 컨텍스트 크기와
+가독성 둘 다 해치고 있다는 문제의식. 아래 6가지를 처리, 전부 반영 완료:
+
+1. **`reference/` 폴더 신설** — `quad-v1-architecture.md`,
+   `comparison-fusion-vide.md`를 `base/`에서 이동. 항상 읽어야 하는
+   결정사항(`base/`)과, 다른 문서가 근거로 인용할 때만 열어보면 되는
+   온디맨드 스냅샷/비교자료(`reference/`)를 분리 — 전자는 "결정 완료",
+   후자는 "결정이 아니라 결정의 근거"라는 차이. 전체 문서의 상호참조
+   경로도 전부 갱신함.
+2. **`component-composition-plan.md`의 누적 역전 이력 트리밍** —
+   `StoreSource` 프록시 폐기 이력이 "원래 이랬다 → 이렇게 뒤집혔다"를
+   본문에서 장황하게 반복 서술하고 있었는데, 이미 `archive/
+   store-source-proxy-reversed.md`에 원문·이유·비교표가 전부 보존돼
+   있으므로 본문은 최종 확정만 남기고 포인터로 압축.
+3. **`ui-shorthand-plan.md`를 `research/`→`base/`로 승격, 재작성** —
+   (a) 이미지 라운드 트릭 `RoundSize`는 완전히 드롭, 근거는
+   `archive/ui-shorthand-roundsize-dropped.md`로 분리(이 판단이 한 차례
+   "Corner/PaddingAll/Scale 전체가 불필요하다"로 잘못 일반화됐다가
+   정정된 이력도 같이 보존). (b) 이름을 v1 그대로(`Corner`/`PaddingAll`/
+   `Scale`)가 아니라 실제 Roblox Instance 이름과 맞춘 `UICorner`/
+   `UIPadding`/`UIScale`로 확정 — v1식 짧은 이름은 Modifier 체이닝
+   메소드와 겹쳐 "진짜 UICorner 숏핸드인지 그냥 비슷한 이름의 부가
+   Modifier인지" 구분이 안 된다는 사용자 지적 반영. (c) store-bind
+   가능성 명시 — v1에서도 가능했던 기능이고, Tween처럼 무거운 API
+   표면 없이 기존 per-instance weak-table 유틸(`base.perInstanceState`)
+   재사용만으로 충분하다는 점을 추가.
+4. **`additional-primitives-plan.md`를 4갈래로 분리**: 확정된 `Blocker`/
+   `Effect`는 새 `base/additional-primitives.md`로 승격(Blocker는
+   State와 같은 마일스톤에서 개발하기로 해서 `store-semantics.md`에
+   교차 참조 추가, `ROADMAP.md` M3에도 체크박스 반영). 기각된 `Batch`
+   (lexical block)와 `Context`(+대안이던 레이어드 Store)는 각각
+   `archive/batch-rejected.md`/`archive/context-rejected.md`로 분리.
+   `research/additional-primitives-plan.md`엔 아직 실제로 열려있는
+   것(키 기반 동적 컬렉션 재조정) 하나만 남김.
+5. **archive 제목 컨벤션을 둘로 분화** — 기존 `[역전됨]`(한 번 확정했다가
+   뒤집힌 것, `store-source-proxy-reversed.md`/`ref-phase-option-reversed.md`)과
+   새로 생긴 `[기각됨]`(확정한 적 없이 후보였다가 채택 안 된 것,
+   `batch-rejected.md`/`context-rejected.md`/`ui-shorthand-roundsize-dropped.md`)을
+   구분 — `README.md`의 `archive/` 폴더 기준 설명에 두 컨벤션 차이를
+   명시.
+6. **`tween-plan.md` 보강** — `retract`가 Destroy 시엔 호출 안 된다는
+   사실을 상단 상태 요약에서도 짚도록 가시성 강화, `canExecute`(Destroy
+   시 처리)와 `retract`(값 교체 시 처리)가 서로 다른 문제를 다룬다는
+   점을 quadnomicon급 문서화 숙제로 메모(지금은 상세 설명 안 하고
+   메모만). 트윈 옵션 값 모양(raw `TweenInfo` vs 이름 붙은 편의
+   필드+기본값) 논의를 새로 열어둠 — Luau가 named call을 지원 안 해서
+   `TweenInfo.new(...)` 포지셔널 생성자가 읽기 어렵다는 문제의식,
+   소견은 편의 필드 쪽이지만 확정 아님, 나중 논의 대상으로만 남김.
+
+**미해결로 남긴 것 — 임의로 결론내지 않음**: Effect가 `state:Effect()`
+형태로 Observer를 확장하는 변형인지, 완전히 독립된 free function인지가
+불명확함(사용자가 "확인 필요, 아니라면 논의해야 할 상태로 남겨두라"고
+명시). 관련 하위 질문으로 `state:Observer(fn)`가 생성 시 `fn`을 즉시
+1회 실행하는지도 문서 어디에도 명시돼 있지 않음이 이번에 드러남(Effect는
+"즉시 1회 실행"이 스펙에 명시돼 있어 이 부분만 보면 둘이 겹쳐 보임).
+`base/additional-primitives.md`의 "미해결" 절과 `.claude/question.md`
+0번에 반영 — 구현 착수(M3~M4 전후) 전에 반드시 재확인할 것.
+
+**다음 세션이 할 일**: 안 바뀜(위 2026-08-06 네 번째 세션 절 "다음 세션이
+할 일" 참고, `ROADMAP.md` M0부터). 이번 세션은 순수 문서 정리라 설계
+결정 자체는 늘지 않았음 — 단, M3 체크리스트에 `Blocker.luau` 항목이
+하나 추가된 것과, 위 Effect/Observer 미해결 항목은 M3~M4 착수 전에
+확인해야 함.

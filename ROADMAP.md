@@ -52,12 +52,21 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] `Dispatch/init.luau`(`process`/`retract` 엔진, `isHandlable` 우선순위 스캔)
 - [ ] `Handler.luau`(핸들러 계약 타입)
+- [ ] `LifetimeHandle.luau`/`PerInstanceState.luau` **인터페이스만**(타입
+      계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
+      있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
+      이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
+      있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md` 2번
+      — 2026-08-07 세 번째 세션에 반영)
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source
 
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
 - [ ] `store.key` dot-access 타입 추론 확인
+- [ ] `Blocker.luau`(`base/additional-primitives.md` 참고 — 여러 Source를
+      한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
+      State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -87,12 +96,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `State<Modifier>` 조합 타입 차단 확인(`modifier-plan.md` 7번, UB 확정)
 - [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
+- [ ] 인라인 키로 modifier 필드를 명시적으로 지우는 문제 확인 — `None`
+      (가칭) 센티널 프리미티브 도입 여부(`modifier-plan.md` 2-1번, 아직
+      미정 — 착수 전 사용자 확인 필요, 확정 안 되면 이번 마일스톤은
+      스킵하고 다음으로 미뤄도 됨)
 
 ## M8 — Ref
 
-- [ ] `CreatedRef` 메커니즘(숫자 슬롯 참가자)
-- [ ] `LifetimeHandle` 인터페이스 + quad-roblox 실제 구현(Instance 생존 확인)
-- [ ] `PerInstanceState` 인터페이스 + quad-roblox 실제 구현(weak-keyed table)
+- [ ] `CreatedRef` 메커니즘(숫자 슬롯 참가자) + `PreRef`(children 배열
+      전용, Modifier/Store 타입 차단, 위치 무관 호이스팅 pre-pass —
+      `base/bind-system-plan.md` "`phase` 옵션 폐기 → 위치로 표현,
+      `PreRef` 신설" 절)
+- [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면 resume+소진,
+      함수면 호출+유지 — 같은 배열 하나로 통합)
+- [ ] `LifetimeHandle` quad-roblox 실제 구현(Instance 생존 확인, 인터페이스
+      자체는 M2로 이동됨)
+- [ ] `PerInstanceState` quad-roblox 실제 구현(weak-keyed table, 인터페이스
+      자체는 M2로 이동됨)
 
 ## M9 — 컴포넌트 합성 레이어
 

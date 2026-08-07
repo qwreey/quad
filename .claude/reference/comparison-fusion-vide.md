@@ -1,7 +1,11 @@
 # Fusion / Vide 아키텍처 비교 — quad-v2 설계 근거
 
-**상태**: base — 리서치 스냅샷(참고용 근거 자료), "완료" 개념 없음. quad-v2의
-Store/Slot/Tween/bind-dispatch 설계 결정에 인용되는 원본 비교 자료.
+**상태**: reference — 온디맨드 참고 자료, "완료" 개념 없음. **[2026-08-07
+문서 정리에서 `base/`→`reference/`로 이동]** quad에 관한 결정 자체가 아니라
+Fusion/Vide 리서치 스냅샷이라 항상 읽어야 하는 base 컨텍스트는 아님 —
+`quadnomicon`(프레임워크 설계자용 심화 콘텐츠) 소재 후보이기도 함. quad-v2의
+Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열어볼 것,
+실제 확정 사항은 인용하는 쪽 `base/` 문서가 소스.
 
 ## Fusion (`.claude/initreq/fusion/`)
 

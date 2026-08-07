@@ -4,7 +4,7 @@
 소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
 architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
 `.claude/initreq/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
-`Children` SpecialKey와 Vide의 mount 무가드 비교는 `base/comparison-fusion-vide.md`
+`Children` SpecialKey와 Vide의 mount 무가드 비교는 `reference/comparison-fusion-vide.md`
 참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
 quad의 진짜 개선점.**
 
@@ -34,7 +34,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
 Slot에 들어간 요소는 **ownership이 귀속**되며 다른 곳에 마운트할 수 없게 된다.
 `isMounted`를 관리해서, **한 인스턴스에 대한 다중 마운팅이 라이브러리 차원에서
 절대 일어나지 않도록 강제**하는 게 v1 대비 핵심 디자인 변화. v1의 `mount()`는
-별다른 강제를 안 했지만(`base/quad-v1-architecture.md`의 mount.lua 분석 참고 —
+별다른 강제를 안 했지만(`reference/quad-v1-architecture.md`의 mount.lua 분석 참고 —
 실제로는 부모/자식 부기까지 했지만 다중 마운트 방지는 없었음), v2는 mount
 함수 자체가 이 강제를 담당.
 

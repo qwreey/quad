@@ -10,7 +10,7 @@ Store/State/Source 온톨로지가 먼저 확정된 뒤에야 이 논의가 열�
 ## 문제
 
 v1의 `Class.Extend()`(Init/Render/AfterRender/Getter/Setter/UpdateTriggers,
-`base/quad-v1-architecture.md` 참고)는 이미 OOP 상속 스타일이라 폐기
+`reference/quad-v1-architecture.md` 참고)는 이미 OOP 상속 스타일이라 폐기
 방향이지만, 그게 제공하던 실제 편의 기능(컴포넌트가 자기 store를 자동으로
 가짐, props로 넘어온 State를 자동 흡수, `self:Default`/`self "key"`로
 기본값·바인딩)까지 같이 버려도 되는지가 미결이었음. `MyComp {...}` 형태로
@@ -56,42 +56,30 @@ State는 `:With`/`:Compute`로 만들어진 파생값일 수 있어 쓰기가 �
 의미 있음 — **사용자 확정**("맞음. 확실해"). 이 원칙 자체는 그대로 유지되고,
 아래 3번의 구체적 메커니즘만 2026-08-06 후속 세션에서 더 단순하게 갱신됨.
 
-### 3. [정정, 2026-08-06 후속 세션] `StoreSource` 프록시 개념 폐기 — Source가 State를 구조적으로 만족하므로 Store가 내부 Source를 그대로 반환
+### 3. Store는 내부 Source를 그대로 반환 — Source가 State를 구조적으로 만족
 
-**원래 이 절은 "Source를 인터페이스+구현체로 두고 Store 키에서 얇은 프록시
-(`StoreSource`)를 받는다"는 방향이었음 — 지금은 폐기됨.** 이후 세션에서
-Store/Source dot-access 타입 문제(레코드 타입의 읽기/쓰기 비대칭)를
-다루다가 더 근본적인 재구성으로 수렴: **`Source<T>`가 구조적으로
-`State<T>`를 만족**(단방향 호환, Svelte `Writable<T> extends Readable<T>`와
-같은 모양)하도록 만들면, Store가 "내부 Source를 감추고 별도 프록시를
-새로 만들어 노출"할 이유 자체가 없어짐 — `store.key`가 Store 생성 시
-이미 만들어둔 진짜 Source 객체를 그대로 돌려줘도 안전함(Source 자체가
-이미 State의 읽기 계약을 전부 만족하고, 거기에 `:Set(value)`/`:Emit()`이
-추가로 있을 뿐이라 "원본이라 쓰기 가능"이라는 위 2번 규칙과도 자연히
-맞아떨어짐). 상세 근거·타입 설계·Luau 솔버 검증 필요 항목은
-`base/store-semantics.md`의 "Source가 State를 만족함" 절이 최종 소스 —
-이 문서는 배경만 유지.
+**확정**: `Source<T>`가 구조적으로 `State<T>`를 만족하므로(단방향 호환,
+Svelte `Writable<T> extends Readable<T>`와 같은 모양), `store.key`는 Store
+생성 시 이미 만들어둔 진짜 Source 객체를 그대로 반환한다 — 별도 프록시
+타입도, 별도 캐싱 계층도 없음(Source 자체가 이미 State의 읽기 계약을
+전부 만족하고 거기에 `:Set(value)`/`:Emit()`이 추가로 있을 뿐이라 "원본이라
+쓰기 가능"이라는 위 2번 규칙과도 자연히 맞아떨어짐). 쓰기 문법도 같이
+바뀜: `store.key = v`가 아니라 `store.key:Set(v)`(레코드 타입 읽기/쓰기
+대칭 + lazy 동작에 `=`가 암시하는 "즉시 커밋"이 안 맞는다는 논거). 상세
+근거·타입 설계·Luau 솔버 검증 필요 항목은 `base/store-semantics.md`의
+"Source가 State를 만족함" 절이 최종 소스.
 
-- **쓰기 문법도 같이 바뀜**: `store.key = v`가 아니라 `store.key:Set(v)`
-  (레코드 타입 읽기/쓰기 대칭 + lazy 동작에 `=`가 암시하는 "즉시 커밋"이
-  안 맞는다는 논거, 같은 절 참고).
-- **캐시 문제도 이걸로 자연히 해소**: State를 "매번 새로 만듦"이던 이전
-  모델과 달리, 이제 Store는 생성 시 만들어둔 Source를 그대로 갖고 있다가
-  돌려주기만 하므로 별도 캐싱 메커니즘 자체가 불필요(래퍼 생성 단계가
-  아예 없어짐 — 이전보다 더 쌈).
+**[이전에 확정했다가 폐기된 `StoreSource` 프록시 설계는 이 결론으로
+완전히 대체됨 — 원문·역전 이유·신구 비교표는
+`archive/store-source-proxy-reversed.md` 참고, 여기서는 반복하지 않음.]**
 
-### 4. [정정, 2026-08-06 후속 세션] Source 직접 전달 — 타입 유니온도 불필요해짐
+### 4. Source 직접 전달 — 타입 유니온 불필요, 서브타입 호환으로 자동 통과
 
-원래 "핸들러가 `Source<T> | State<T>` 유니온으로 받는다"는 방향이었으나,
-Source가 State를 구조적으로 만족하는 지금은 **유니온 자체가 필요 없음** —
-핸들러는 그냥 `State<T>` 하나만 받아도 Source 인스턴스가 자동으로 그
-자리에 들어감(서브타입 호환). `isHandlable`/`priority`/`process`/`retract`
-4종 계약에 5번째 항목을 추가할 필요 없다는 결론은 그대로 유지, 다만 근거가
-"타입 유니온으로 처리"에서 "서브타입이라 유니온 자체가 불필요"로 더
-단순해짐. 단, 핸들러가 "이거 Source면 역방향 쓰기까지 걸고 싶다"처럼
-**런타임에** Source인지 구분하고 싶은 경우는 여전히 있을 수 있음 —
-그건 타입 유니온이 아니라 런타임 판별자(`isSource`류, `isObserver`
-패턴과 동일한 결)로 처리하면 됨.
+핸들러는 `State<T>` 하나만 받아도 Source 인스턴스가 서브타입 호환으로
+자동 통과된다(`Source<T> | State<T>` 유니온 불필요, `isHandlable`/
+`priority`/`process`/`retract` 4종 계약에 5번째 항목 추가 불필요). 런타임에
+"이게 Source면 역방향 쓰기까지 걸고 싶다"처럼 구분하고 싶은 경우는
+`isSource`류 판별자로(`isObserver`와 동일한 패턴).
 
 - **실사용 범위가 좁다는 판단은 그대로 유지**: `isEnabled`처럼 여러 조건에
   영향받는(=파생된) 값은 애초에 State지 Source가 아니므로 이 경로로 못

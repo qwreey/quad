@@ -8,9 +8,9 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
 array API, `CreatedRef` 모양) 뿐 — 구현 단계에서 자연히 정리됨. 원본:
 `.claude/initreq/raw-userinput.md`
 "key와 value에 대한 바인드 연산은 pluggable 하도록 구성하기" / "스토어는 스토어를
-저장 가능한가" / "Ref는 고민중" 절. v1의 문제점은 `base/quad-v1-architecture.md`
+저장 가능한가" / "Ref는 고민중" 절. v1의 문제점은 `reference/quad-v1-architecture.md`
 ("ProcessQuadProperty" 하드코딩 디스패처), 참고 패턴은 `.claude/initreq/tbox`
-(레지스트리)와 Fusion/Vide 비교는 `base/comparison-fusion-vide.md` 참고.
+(레지스트리)와 Fusion/Vide 비교는 `reference/comparison-fusion-vide.md` 참고.
 
 ## 문제
 
@@ -352,7 +352,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
 ## 이벤트 핸들러는 self(Instance)를 받지 않는다 — 확정 (2026-08-06)
 
 **결정**: v1의 `function(self, ...)` 관습(`self`/`this`로 이벤트 대상
-Instance를 넘겨주는 것, `.claude/base/quad-v1-architecture.md` 참고 —
+Instance를 넘겨주는 것, `.claude/reference/quad-v1-architecture.md` 참고 —
 실제로 `event.lua`의 `Bind`가 `func(self or this, ...)`로 넘겨줌)은
 **채택하지 않는다.** quad-roblox의 이벤트 핸들러는 엔진이 네이티브로
 주는 이벤트 인자만 받는다(React의 `onXxx`가 DOM 노드가 아니라

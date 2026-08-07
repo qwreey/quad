@@ -102,7 +102,7 @@ Roblox가 Play 중 라이브 UI 편집 도구를 꺼버려서 실제 화면의 U
   강제할까(과한 선택지, 참고만)?
 
 **구체적으로 결정된 하위 규칙 하나(2026-08-06)**: quad가 내부적으로
-자동 생성하는 helper Instance(예: `research/ui-shorthand-plan.md`의
+자동 생성하는 helper Instance(예: `base/ui-shorthand-plan.md`의
 UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같은
 접두어를 붙여 Explorer에서 직접 볼 때 사용자가 만든 것과 헷갈리지 않게
 함 — v1의 `_quad_round`류 네이밍 재사용(`research/debug-tooling-plan.md`

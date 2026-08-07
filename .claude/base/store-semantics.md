@@ -282,7 +282,7 @@ Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processo
 
 `useEffect`처럼 여러 store 값을 디펜던시로 묶어 파생값을 계산하고 싶다는
 요구가 있었음(v1의 `myStore "a,b"` 콤마-조인 문자열 방식은 폐기 대상 —
-`base/quad-v1-architecture.md`의 "문자열 DSL" 문제점 참고). **v1의
+`reference/quad-v1-architecture.md`의 "문자열 DSL" 문제점 참고). **v1의
 `:Add`/`:With`/`:Tween`처럼 값을 직접 가공하는 이름 붙은(named) 체이닝 연산은
 만들지 않음** — 대신 일반 함수를 받아 처리. (주의: 아래의 v2 `:With(...)`는
 이름만 같을 뿐 v1의 `:With`와는 다른 연산임 — v1은 "함수/테이블에서 값을
@@ -291,3 +291,12 @@ Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processo
 `:Compute(fn)`으로 파생 State를 만드는 것으로 확정 — `Store.Combine({a,b},
 fn)`류 포지셔널 인자 방식은 기각됨. 정확한 lazy 인자 규칙(self/with 값 둘 다
 State 핸들로 넘기고 `:Get()`을 실제로 읽을 때만 계산)은 `base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
+
+**여러 소스를 한 번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하려면
+`Blocker` 참고.** 위 `:With`+`:Compute`만으로는 "state1, state2를 연달아
+Set하면 결합된 파생값이 두 번 재계산/재대입된다"는 문제(즉시 pull하는
+store-bind 소비자 기준)는 안 풀림 — 이건 별도 확정 프리미티브
+`base/additional-primitives.md`의 "Blocker" 절이 다룸(State 개발과 같은
+마일스톤, `ROADMAP.md` M3에서 함께 구현). lexical `Batch(fn)`으로 풀려던
+초기 시도는 코루틴 yield 위에서 구조적으로 위험해 기각됨 —
+`archive/batch-rejected.md` 참고.

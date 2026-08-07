@@ -442,7 +442,7 @@ M11 착수 시.
 
 ### 2-11. UI shorthand — 기존 UICorner 자식과의 매칭 기준(이름 vs 타입)이 불명, 사용자 실수 유발 위험 높음
 
-**위치**: `research/ui-shorthand-plan.md` "v1 실제 메커니즘" 절.
+**위치**: `base/ui-shorthand-plan.md` "v1 실제 메커니즘" 절.
 
 **문제**: v1 메커니즘은 "기존 `UICorner` 자식이 있으면 재사용, 없으면
 `Instance.new("UICorner", item)`(`Name = "_quad_round"`)"라고 서술되는데,
@@ -485,7 +485,7 @@ M11 착수 시.
 
 ### 3-2. Corner/PaddingAll/Scale 개별 Handler 대신 데이터 테이블 구동 단일 제네릭 Handler
 
-**위치**: `research/ui-shorthand-plan.md` "메커니즘 — 새 아키텍처 개념
+**위치**: `base/ui-shorthand-plan.md` "메커니즘 — 새 아키텍처 개념
 불필요" 절.
 
 **문제**: 문서는 "Corner/PaddingAll/Scale 같은 특수 키를 인식하는
