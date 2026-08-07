@@ -238,25 +238,29 @@ Fusion/Vide(named prop 전달, `[Children]`류 예약 키)가 서로 다른 이�
 가야 하는지는 저작자가 자기 코드에 뭐라고 쓰느냐로 완전히 결정됨(자동 전파가
 없기 때문에 성립하는 단순함).
 
-### 3. 여러 modifier를 하나로 합치는 공개 유틸 필요 — `Modifier.Merge`(가칭)
+### 3. 여러 modifier를 하나로 합치는 공개 유틸 필요 — `Modifier.Override`(가칭, 2026-08-07 다섯 번째 세션에서 `Merge`→개명, 동작 확정)
 
 caller가 named parameter 하나에 여러 modifier를 몰아넣고 싶을 때
 (`Frame{modifier1, modifier2}`의 컴포넌트판)를 위해, 기존 flatten 규칙(배열
 순서상 나중 것이 필드 단위로 이김, `modifier-plan.md` 2번)을 그대로 재사용하는
-결합 함수를 공개 API로 노출: `Modifier.Merge(mod1, mod2, ...) -> Modifier`.
+결합 함수를 공개 API로 노출: `Modifier.Override(mod1, mod2, ...) -> Modifier`.
 새 병합 규칙이 아니라 이미 확정된 flatten을 함수로 한 번 더 꺼내 쓸 수 있게
 하는 것뿐 — **사용자 요청**("modifier를 합칠 방법도 존재한다면 좋을것
-같아"). `MyComp { Modifier = Modifier.Merge(theme, override) }` → 컴포넌트
+같아"). `MyComp { Modifier = Modifier.Override(theme, override) }` → 컴포넌트
 내부는 항상 이미 합쳐진 단일 값만 받으므로 컴포넌트 저작자가 배열 처리를
 신경 쓸 필요 없음. Ref는 필드 충돌 개념이 없어 이 문제 자체가 없음(여러
 Ref를 받으면 그냥 전부 실행하면 됨, `modifier-plan.md` §4-2) — 별도 결합
-유틸 불필요.
+유틸 불필요. **정확한 동작(baked 값 교체 경고, 순서 의존성, `Apply`와의
+역할 구분, `:Peek`/`isState`)은 `base/modifier-plan.md` 9번 절이 최종
+소스** — `Merge`로 전부 대체해 `Apply`만 강제하는 방안도 이번에 검토했으나,
+이 3번 절에서 확정한 실사용 니즈(단일 named parameter 슬롯에 독립적으로
+만들어진 modifier 값들을 밀어넣는 경우)를 못 풀어서 기각됨.
 
 ## 남은 열린 질문 (`.claude/question.md`에도 취합, 전부 후순위 — 이름만 남음)
 
 - **정확한 API 이름**: `Component`(플레인 함수 규약이라 별도 래퍼가 필요한지
   자체도 불확실 — 아마 불필요), `Source`/`State` 독립 생성자·타입 이름,
-  컴포넌트 경계용 `props.Modifier`/`props.Ref` 필드명, `Modifier.Merge`
+  컴포넌트 경계용 `props.Modifier`/`props.Ref` 필드명, `Modifier.Override`
   함수명은 전부 가칭. (`GetSource` 계열 접근자는 위 3번 정정으로 아예
   불필요해짐 — `store.key`가 직접 Source를 반환하므로 별도 접근자 자체가
   없음.) `base/bind-system-plan.md`의 "남은 열린 질문" 절(정확한 함수/

@@ -92,10 +92,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M7 — Modifier
 
 - [ ] flatten-before-dispatch, immutable `table.clone` 체이닝
-- [ ] `Modifier.Merge`(가칭)
+- [ ] `Modifier.Override(mod1, mod2, ...)`(가칭, 구 `Merge`) — 필드별 raw
+      덮어쓰기, 특별한 State/함수 분기 불필요(`modifier-plan.md` 9번)
 - [ ] `State<Modifier>` 조합 타입 차단 확인(`modifier-plan.md` 7번, UB 확정)
 - [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
+- [ ] `:Peek<<T>>(key): T|State<T>|nil` 필드 읽기 접근자 +
+      `isState(x): boolean`(weak-key 레지스트리 기반, quad-base 공용
+      유틸 — `modifier-plan.md` 9번, `bind-system-plan.md`의 `isState` 절)
 - [ ] 인라인 키로 modifier 필드를 명시적으로 지우는 문제 확인 — `None`
       (가칭) 센티널 프리미티브 도입 여부(`modifier-plan.md` 2-1번, 아직
       미정 — 착수 전 사용자 확인 필요, 확정 안 되면 이번 마일스톤은

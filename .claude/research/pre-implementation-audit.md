@@ -340,24 +340,29 @@ API"를 얹어야 할 때 Slot의 "own한 것만 CRUD 대상" 불변식 자체�
 `existing-instance-bind-plan.md`에 한 줄 추가해둘 것 — 기존 "Modifier
 flatten과 긴장" 캐비엇 옆에 병기.
 
-### 2-5. `Modifier.Merge` 시 서로 다른 클래스의 Modifier가 섞이는 게 허용되는지 미정
+### 2-5. `Modifier.Override`(구 `Merge`) 시 서로 다른 클래스의 Modifier가 섞이는 게 허용되는지 — **런타임은 해소, 타입 레벨은 여전히 미정**
 
-**위치**: `base/modifier-plan.md` "2. Merge 우선순위" + `base/
-component-composition-plan.md` 3번(`Modifier.Merge`).
+**위치**: `base/modifier-plan.md` "2. Merge 우선순위" + 9번(`Override`) +
+`base/component-composition-plan.md` 3번.
 
-**문제**: `question.md`가 언급하는 `DI.FrameModifier`류 "클래스별 타입
-프리픽스"를 보면 Modifier는 대상 인스턴스 클래스별로 타입이 나뉜다. merge는
-"필드명 기준, 나중 게 이김"이라고만 확정돼 있는데 — `Modifier.Merge`의
-가장 그럴듯한 실사용 시나리오가 바로 "공통 테마 Modifier(여러 GuiObject
-클래스에 걸친 공통 필드) + 클래스별 override Modifier"를 합치는 것이다.
-두 Modifier가 정적으로 다른 타입이면 `Modifier.Merge` 시그니처가 애초에
-타입 에러로 막아주는지(같은 제네릭 파라미터만 merge 허용), 아니면 필드명만
-보고 런타임에 섞이는 순수 데이터 레이어라 다른 클래스끼리도 그냥 합쳐지는
-지가 전혀 명시돼 있지 않다.
+**[2026-08-07 다섯 번째 세션 갱신] 런타임 동작은 이제 명확함**: `modifier-plan.md`
+9번에서 `Override`가 "필드별 raw 덮어쓰기"로 확정됐고, "Modifier는 핸들러
+계층을 모름 — 순수 데이터 merge 레이어"(1번 절) 원칙도 이미 있었으므로,
+**런타임 레벨에서는 대상 클래스가 다른 Modifier끼리 `Override`해도 막을
+이유가 없음**(필드명만 보고 그대로 덮어쓸 뿐 — Luau 타입은 런타임에
+강제되지 않는다는 점은 `store-semantics.md`에도 이미 명시된 전제).
 
-**제안**: Modifier가 target 클래스별 제네릭 타입(`Modifier<Frame>` 등)인지,
-있다면 계층 구조(공통 base + 클래스별 확장)가 뭔지, `Modifier.Merge`가
-이걸 타입으로 강제하는지 최소 한 문장으로 확정할 것. M7 착수 시.
+**여전히 미정인 것 — 타입 레벨**: Modifier가 target 클래스별 제네릭
+타입(`Modifier<Frame>` 등)이라면, `Modifier.Override<T>(mod1: Modifier<T>,
+mod2: Modifier<T>): Modifier<T>`처럼 같은 `T`만 받도록 타입으로 강제할지,
+아니면 공통 base 타입(여러 GuiObject 클래스에 걸친 공통 필드)과 클래스별
+확장 사이의 계층 구조를 별도로 두고 `Override`가 그 계층을 넘나들 수
+있게 할지는 아직 결정된 바 없음 — "공통 테마 Modifier + 클래스별 override
+Modifier를 합친다"는 시나리오가 `Override`의 가장 그럴듯한 실사용
+예시라 이 타입 설계가 실제로 막히면 바로 걸릴 문제.
+
+**제안**: Modifier의 클래스별 typed 생성자 계층(2-8번과 같은 지점) 설계
+시 `Override`의 제네릭 시그니처도 같이 확정할 것. M7 착수 시.
 
 ### 2-6. Modifier 필드에 State/Source를 인자로 넘기는 케이스가 세터 표에서 빠짐
 
@@ -377,10 +382,10 @@ component-composition-plan.md` 3번(`Modifier.Merge`).
 
 ### 2-7. 여러 Ref를 하나의 named parameter로 넘길 때 nested-array flatten 여부 불명
 
-**위치**: `base/component-composition-plan.md` 3번(`Modifier.Merge`) vs
-"Ref는... 별도 결합 유틸 불필요" 문장.
+**위치**: `base/component-composition-plan.md` 3번(`Modifier.Override`,
+구 `Merge`) vs "Ref는... 별도 결합 유틸 불필요" 문장.
 
-**문제**: Modifier는 여러 개를 합치려면 `Modifier.Merge`가 명시적으로
+**문제**: Modifier는 여러 개를 합치려면 `Modifier.Override`가 명시적으로
 필요한데, 바로 다음 문장은 Ref는 "여러 Ref를 받으면 그냥 전부 실행하면
 됨 — 별도 결합 유틸 불필요"라고 한다. `props.Ref = {ref1, ref2}`처럼
 배열을 넘기면 리프 디스패처가 그 중첩 배열을 재귀적으로 펼쳐서 각 Ref를
@@ -402,7 +407,7 @@ component-composition-plan.md` 3번(`Modifier.Merge`).
 것)은 "DI 쪽 '제네릭 생성자 함수 하나 + 자주 쓰는 것만 정적 필드' 패턴
 재사용"이라 문서 스스로 밝히듯 quad-roblox의 DI 타입 생성 계층(M5)에 강하게
 결합돼 있다. 그런데 `ROADMAP.md` M7 체크리스트(flatten-before-dispatch,
-`Modifier.Merge`, `State<Modifier>` 차단)엔 이 클래스별 타입 생성 작업이
+`Modifier.Override`, `State<Modifier>` 차단)엔 이 클래스별 타입 생성 작업이
 전혀 없고, M5 DI 체크리스트에도 Modifier 언급이 없음.
 
 **제안**: M5 또는 M7 체크리스트에 "quad-roblox 클래스별 typed Modifier

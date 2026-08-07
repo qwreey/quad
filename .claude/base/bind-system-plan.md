@@ -1121,6 +1121,43 @@ Instance 참조 등 제한된 프리미티브 집합, 테이블 등 복합 타�
 확인 전 소견일 뿐 — `.claude/question.md`에 반영, 다음 세션에서 사용자
 판단 필요.
 
+## `isState(x): boolean` — State/Source 판별 predicate (2026-08-07 다섯 번째 세션)
+
+**배경**: `base/modifier-plan.md` 9번 절의 `:Peek<<T>>(key): T|State<T>|nil`
+(Modifier 필드를 확정하지 않고 raw 그대로 읽는 접근자)이 나오면서, 사용자
+코드가 그 결과를 State/plain으로 분기하려면 판별 수단이 필요해짐 — 같은
+필요가 실은 새로 생긴 게 아니라 Modifier의 함수형 setter(`modifier-plan.md`
+4-1번, "현재 필드가 State냐 plain이냐"로 동작이 갈림)가 지금까지도 내부적으로
+풀어야 했던 문제인데 그 판별 방법 자체가 문서에 명시된 적이 없었음 — 이번에
+`isState`로 명문화하며 그 구멍도 같이 메움.
+
+**Source도 같이 잡힘, 별도 `isSource` 불필요** — Source가 State를 구조적으로
+만족(위 "Source가 State를 만족함" 관련 내용은 `base/store-semantics.md`
+참고)하므로, `isState(source) == true`가 자연스러운 동작이고 그걸로 충분함.
+
+**구현: weak-key 레지스트리, duck-typing 아님.**
+
+```
+local registry = setmetatable({}, {__mode = "k"})
+-- State/Source를 만드는 모든 생성 지점(Source(...), :With(...), :Compute(fn) 등)에서:
+registry[newHandle] = true
+-- predicate:
+local function isState(x)
+  return registry[x] == true
+end
+```
+
+**duck-typing(예: `type(x) == "table" and x.Compute ~= nil`)을 쓰지 않는
+이유**: `Peek`가 돌려주는 `T`는 Modifier 필드에 들어갈 수 있는 임의의
+값(테이블, Roblox userdata 등)이라 — 우연히 비슷한 모양의 필드/메소드를
+가진 `T`에 false positive가 나거나, 일부 Roblox userdata는 정의 안 된 키
+인덱싱 자체에서 에러를 던지므로 duck-typing이 `pcall`로 감싸야 하는 지저분한
+엔지니어링이 되거나 최악의 경우 그냥 엔진이 죽는 상황까지 생길 수 있음.
+weak-key 레지스트리는 rbvm 네임스페이스 추적(`base/lifecycle-pattern.md`)과
+같은 이미 확정된 패턴 재사용이라 새 아이디어 아님 — weak 키라 등록된 State/
+Source가 GC되면 레지스트리 엔트리도 자동으로 사라짐(살려두는 목적의 강참조
+레지스트리인 Observer의 `:Subscribe` 레지스트리와는 반대 성격).
+
 ## 남은 열린 질문 (`.claude/question.md`에도 취합)
 
 이 문서의 핵심 설계 질문은 2026-08-04 세 라운드(전파 모델/`:Compute`/State

@@ -87,6 +87,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
   미정, `research/additional-primitives-plan.md`의 "키 기반 동적 컬렉션
   재조정" 절 참고.
+- **`Override`/`Peek`/`isState`(3순위, 사소함, 2026-08-07 다섯 번째
+  세션 추가)**: Modifier 결합 유틸(구 `Merge`)과 필드 읽기 접근자, State/
+  Source 판별 predicate 세 개의 이름 — 동작은 전부 확정(`base/
+  modifier-plan.md` 9번, `base/bind-system-plan.md`의 `isState` 절),
+  이름만 다른 가칭들과 같이 용어 정리 라운드에서 재검토.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
@@ -197,8 +202,8 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | 프로바이더 패턴, bind/store 구현 책임 분리 | `base/module-lifecycle-plan.md` |
 | Slot 재조정, 재마운트 시 throw, retract=폐기 | `base/slot-plan.md` |
 | `Connected`+GC 라이프사이클 패턴 | `base/lifecycle-pattern.md` |
-| Modifier(정적 merge, immutable 체이닝, State 필드 지원) | `base/modifier-plan.md` |
-| 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Merge`) | `base/component-composition-plan.md` |
+| Modifier(정적 merge, immutable 체이닝, State 필드 지원, `Apply`/`Override`/`Peek`/`isState`) | `base/modifier-plan.md` |
+| 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Override`) | `base/component-composition-plan.md` |
 | 컴포넌트 이식성(전역 store 참조 시 재사용성 문제) | `base/purity-and-effects-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | `base/blocker-plan.md` |
 | Effect(leaf 죽음에 확정 정리 — 단 Observer와의 관계는 위 0번 열린 질문 참고) | `base/effect-plan.md` |
