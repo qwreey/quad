@@ -56,7 +56,7 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 "이름 붙은 자식을 찾거나 만들고 프로퍼티 세팅"을 `process(inst, k, v)`에
 구현 — v1의 하드코딩 if/elseif 대신 정식 핸들러 계약(`isHandlable`/
 `priority`/`process`/`retract`)을 따르는 것만 다름. `modifier-plan.md`가
-이미 예시로 든 `Modifier.Rounded(8)`은 이 특수 키를 flatten해서 props에
+이미 예시로 든 `mod:UICorner(8)`은 이 특수 키를 flatten해서 props에
 꽂아넣는 사탕 문법일 뿐, 실제 처리는 이 Handler가 함 — Modifier를 안 거치고
 `Frame { UICorner = 8 }`처럼 순수 인라인 키로 직접 써도(v1처럼) 동일하게
 작동함, `architecture.md`의 `[Attribute "Name"]`류 특수 키와 같은 층위.

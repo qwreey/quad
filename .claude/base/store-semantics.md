@@ -1,4 +1,4 @@
-# Store 의미론 — 부작용 허용, State는 Store 위의 조합 가능한 캐시 레이어
+# Store 의미론 — 부작용 허용, State는 Source 위의 조합 가능한 캐시 레이어
 
 **상태**: base — 전부 확정. State/Source 온톨로지는 2026-08-04 검증
 라운드에서 새로 열려 같은 세션 2~4차 라운드에 걸쳐 확정까지 마침 — 최신
@@ -31,7 +31,7 @@ purity-and-effects-plan.md`와 연결됨).
 어떻게 되는가 — 별도 메커니즘을 새로 만들 필요 없이, `base/
 lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute predicate)을 state-
 invalidate 리스너 클로저 등록에도 그대로 재사용하면 됨: 발화 시
-`canExecute()` 하나만 확인, 거짓이면 no-op. 한때 검토했던 `isInit=false`면
+`canExecute(handle)` 하나만 확인, 거짓이면 no-op. 한때 검토했던 `isInit=false`면
 허용/`isInit=true`+생존확인 거짓이면 불허 분기 초안은 폐기 — `canExecute`
 하나로 통일(사용자 확정). 상세는 `base/bind-system-plan.md`의
 "Store/State/Source 온톨로지" 절 참고.
@@ -73,7 +73,7 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 
 - **독립 존재 가능한 프리미티브** — Source, Ref, Store, Modifier. 다른
   무언가 없이 그 자체로 `Type(args)` 팩토리 함수로 만들어짐(`Source(default)`/
-  `Ref(default)`/`Store({defaults})`/`Modifier.Rounded(8)`, 위 "생성자
+  `Ref(default)`/`Store({defaults})`/`mod:UICorner(8)`, 위 "생성자
   스타일 확정" 참고).
 - **원천에 종속된 파생 데이터** — State, Observer. 자기 혼자 존재할 수
   없고 항상 특정 원천(Source/다른 State)에 의존 — 그래서 이 둘은 자유

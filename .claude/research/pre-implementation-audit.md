@@ -210,7 +210,12 @@ element별 weak-set) — throw 조건을 "Slot 핸들러의 `process`가 같은 
 
 ### 1-9. `LifetimeHandle` 인터페이스가 M8에 배치돼 있지만 M4/M6이 이미 그걸 필요로 함(로드맵 순서 역전)
 
-**위치**: `ROADMAP.md` M8 "Ref" — `"LifetimeHandle 인터페이스 + quad-roblox
+**[2026-08-07 세 번째 세션 갱신 — 반영 완료.]** 아래 제안대로
+`LifetimeHandle.luau`/`PerInstanceState.luau` 인터페이스가 `ROADMAP.md`
+M2로 이동됐고, M8은 quad-roblox 실제 구현만 담당하도록 분리됨 — 더 이상
+열린 항목 아님, 아래는 원래 발견 당시 기록.
+
+**위치(당시)**: `ROADMAP.md` M8 "Ref" — `"LifetimeHandle 인터페이스 + quad-roblox
 실제 구현(Instance 생존 확인)"`.
 
 **문제**: `base/lifecycle-pattern.md`("생명 바인드 유틸"을 State-invalidate
@@ -403,7 +408,7 @@ Modifier를 합친다"는 시나리오가 `Override`의 가장 그럴듯한 실�
 관습 재사용" 절, `.claude/question.md` 1번.
 
 **문제**: Modifier의 런타임 체이닝 엔진은 quad-base 소유가 맞지만, 클래스별
-정적 타입 안전성(`Modifier.Rounded(8)`가 `FrameModifier` 타입으로 추론되는
+정적 타입 안전성(`mod:UICorner(8)`가 `FrameModifier` 타입으로 추론되는
 것)은 "DI 쪽 '제네릭 생성자 함수 하나 + 자주 쓰는 것만 정적 필드' 패턴
 재사용"이라 문서 스스로 밝히듯 quad-roblox의 DI 타입 생성 계층(M5)에 강하게
 결합돼 있다. 그런데 `ROADMAP.md` M7 체크리스트(flatten-before-dispatch,
@@ -561,12 +566,13 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 
 ## 다음 액션 제안
 
-- **M0 착수 전**: 1-5(props.Modifier/Ref nil-hole)를 M0 스파이크 코드에
-  반영, 1-10(`store.key` 레코드 필드 타이핑)을 M0로 앞당기는 것 검토,
-  1-11(Modifier `__index` 트릭)도 비용이 낮으니 M0 후보로 포함 검토.
+- **M0 착수 전**: 1-5(props.Modifier/Ref nil-hole)는 `ROADMAP.md` M0에
+  반영 완료. 1-10(`store.key` 레코드 필드 타이핑)을 M0로 앞당기는 것 검토,
+  1-11(Modifier `__index` 트릭)도 비용이 낮으니 M0 후보로 포함 검토는 계속
+  열려있음.
 - **M2(Dispatch) 착수 전**: 1-2, 1-3, 1-4를 한 번에 확정(전부 base
   dispatch 엔진의 에러/상태관리 규칙이라 같이 결정하는 게 효율적).
-- **M2/M3 착수 전**: 1-6(canExecute 실제 구현) 실측, 1-9(LifetimeHandle
-  마일스톤 재배치).
+- **M2/M3 착수 전**: 1-6(canExecute 실제 구현) 실측(1-9는 반영 완료, 위
+  항목 참고).
 - **나머지**: 해당 마일스톤 착수 시점에 이 문서를 다시 열어 관련 항목만
   확인하면 됨 — 지금 전부 결정할 필요는 없음.

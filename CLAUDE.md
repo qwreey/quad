@@ -45,10 +45,11 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   `tween-plan.md`/`existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
   `documentation-plan.md`/`documentation-content-map.md`/
   `framework-comparison-findings.md`/`additional-primitives-plan.md`(키 기반
-  동적 컬렉션 재조정만 남음) — 전부 후순위(급한 건 `tween-plan.md`
-  세부 옵션 정도). 최신 목록·우선순위는 `.claude/README.md`가 소스, 여기서
-  개수 반복 안 함(과거에 "두 개뿐"이라 적어놨다가 새 문서 추가될 때마다
-  안 갱신되는 패턴이 반복돼서 아예 안 세기로 함).
+  동적 컬렉션 재조정만 남음)/`pre-implementation-audit.md`/`v1-compat-plan.md`
+  — 전부 후순위(급한 건 `tween-plan.md` 세부 옵션 정도). 최신 목록·우선순위는
+  `.claude/README.md`가 소스, 여기서 개수 반복 안 함(과거에 "두 개뿐"이라
+  적어놨다가 새 문서 추가될 때마다 안 갱신되는 패턴이 반복돼서 아예 안
+  세기로 함).
 - `.claude/qa-request/`, `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
   지금은 비어있음. `.claude/archive/`는 원래 같은 취급이었으나
   2026-08-06 세 번째 세션부터 **완전히 뒤집힌 설계 결정을 원문+역전
@@ -1054,12 +1055,9 @@ Tag/Attribute 전용 문서 신설.** None 논의를 파고들다 디스패치 �
 `base/bind-system-plan.md`/`base/lifecycle-pattern.md`/`base/tag-plan.md`
 (신규)/`base/attribute-plan.md`(신규)/`ROADMAP.md`에 반영 완료:
 
-- **제 실수 정정 — `canExecute`와 `isHandlable`은 다른 개념.**
-  `isHandlable(k,v)`는 KV 매치 predicate(핸들러 계약 4종 중 하나),
-  `canExecute`는 특정 바인딩 하나가 "지금 살아있어 실행돼도 되는가"만
-  보는 별개의 라이프타임 게이트(`lifecycle-pattern.md`) — `NoneHandler`가
-  구현해야 하는 건 `isHandlable`이지 `canExecute`가 아님, 앞서 잘못 쓴
-  문장을 고침.
+- **제 실수 정정 — `canExecute`와 `isHandlable`은 다른 개념** (전체 경위는
+  `archive/agent-mistake.md` 1번으로 옮김) — 결론만: `NoneHandler`가
+  구현해야 하는 건 `isHandlable`이지 `canExecute`가 아님.
 - **`Dispatch.getHandler`/`Dispatch.process`/`Dispatch.addHandler`/
   `Dispatch.drive`로 이름 공식화.** 원래 "확정된 디스패치 모델" 절은
   "스캔+실행"과 "매치된 핸들러 자신의 처리"를 둘 다 그냥 `process`라고
@@ -1136,12 +1134,8 @@ Tag/Attribute 전용 문서 신설.** None 논의를 파고들다 디스패치 �
   introspection 창구(quad-debug 용도) 역할까지 겸하도록 `None`을 특수
   분기로 앞단에서 걸러줌 — `isNone`이 그 분기의 실제 구현체.
 - **정정 — `isSource`는 별도로 필요함, 다섯 번째 세션의 "불필요" 서술을
-  뒤집음.** 그땐 "State면 충분한 용도"만 봤지만 `Source`는 State보다
-  진짜 더 많은 능력(`:Set`/`:Emit`)을 가진 서브타입이라 "쓰기도 되는
-  원천인가"를 알아야 하는 코드엔 `isState`만으론 부족 — `isSource` 별도
-  제공, `isState`는 여전히 `{State,Source}` 둘 다 통과. `component-
-  composition-plan.md` 4번 절이 애초에 `isSource`가 존재한다고 가정해둔
-  것과도 이걸로 정합됨(그동안 두 문서가 서로 모순돼 있었음, 이번에 발견).
+  뒤집음** (전체 경위는 `archive/agent-mistake.md` 2번으로 옮김) — 결론만:
+  `isSource`를 별도 제공, `isState`는 여전히 `{State,Source}` 둘 다 통과.
 - **Luau 타입 narrowing은 자동으로 안 됨 — 사용자가 직접 확인, 명시적
   `::` 캐스팅 필요.** `isX(v)`가 참이어도 Luau가 TypeScript의 `x is T`
   같은 사용자 정의 타입 가드를 지원 안 해서 `v`의 정적 타입을 자동으로

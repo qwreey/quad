@@ -159,8 +159,8 @@ quad/
 
 **남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
 `slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
-Tween/purity/existing-instance-bind는 여전히 `research/`에 남아있고 이
-구조 확정을 막지 않음.
+Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확정을
+막지 않음(`purity-and-effects-plan.md`는 이미 `base/`로 승격 완료).
 
 ## 테스트 전략: quad-base용 최소 mock (2026-08-04)
 

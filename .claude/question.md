@@ -111,8 +111,9 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **이미 지나간 사례로 참고**: `register`(v1) → `State`(v2) 리네임은
   "모호함"은 풀었지만 "다른 뜻으로 이미 쓰이는 단어"라는 새 문제를 만든
   셈 — 이번 정리에서 같은 패턴을 조심할 것.
-- `Store`/`Source`/`Modifier`/`Ref`/`process`/`retract`/`isHandlable`은
-  업계 선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
+- `Store`/`Source`/`Modifier`/`process`/`retract`/`isHandlable`은 업계
+  선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음
+  (`Ref`는 여기 포함 안 됨 — 위 3순위 목록에 이미 재검토 대상으로 있음).
 
 ### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
 
@@ -195,6 +196,15 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   모두 기술적 근거와 안전 규칙까지 정리됐으나(문서 7번), **Slot이 foreign
   Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 결정 불가로 남음**
   (위 "여러 Slot이 형제로 섞일 때 순서 보장" 항목과 같은 시점에 확인).
+  그 외 §8의 세부 항목(v1 자기 루트의 `Destroying` 자기청소 여부,
+  `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
+  불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
+  시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
+- **`framework-comparison-findings.md`의 두 남은 개선 후보 반영 여부** —
+  `research/framework-comparison-findings.md` "다음 단계" 절. use-after-destroy
+  검증 안전망 부재, `:With`의 정적 의존성(동적 With 미지원) 두 가지를 실제
+  설계에 반영할지, 반영한다면 M0 스파이크 때 같이 검증할지 나중 최적화
+  패스로 미룰지 — 아직 사용자 판단 전.
 
 ## 참고: 지금까지 확정된 것 (요약)
 
