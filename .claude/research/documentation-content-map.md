@@ -74,7 +74,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 
 ### component-composition-plan.md / module-lifecycle-plan.md
 - 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티엔 State만 바인딩 / `props.Modifier`/`props.Ref` named parameter 경계 전달(**`props.Modifier or None`/`props.Ref or None` 필수 관용구 — 안 쓰면 nil-hole 버그, 2026-08-07 열 번째 세션 확정**) / `InitRoblox(Module)` 팩토리 초기화
-- api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Override(mod1, mod2, ...)` 유틸(구 `Merge`, `props.Modifier` 단일 슬롯용 특수 상황으로 한정 소개 — 아래 modifier-plan.md 절 참고) / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
+- api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Overridden(mod1, mod2, ...)` 유틸(구 `Merge`, `props.Modifier` 단일 슬롯용 특수 상황으로 한정 소개 — 아래 modifier-plan.md 절 참고) / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
 - 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `store-semantics.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
 - skip: Compose/Fusion/Vide/v1 프레임워크 비교 원자료 / provider/processor 네이밍 미정 등 열린 질문 메모
 
@@ -86,8 +86,8 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 
 ### modifier-plan.md / slot-plan.md
 - 초심자: Modifier 기본 체이닝+merge 우선순위 규칙 실제 예시 / Slot 기본 개념(children 배열)+클래스가 슬롯 받는 방법(Named Slot 없음) / 마운트된 slot 재마운트 시 즉시 throw
-- api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `mod:UICorner(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / retract 시 slot 내용 폐기(→심화: portal 없는 이유) / `:Apply(factory)` 기본 체이닝 관용구(→심화: 언제 `Apply` vs `Override`인지 성능 기준) / `:Peek<<T>>(key)` + `isState`(→심화: `Get`과 이름을 다르게 한 이유)
-- 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / retract=폐기 확정 히스토리(portal 검토 후 기각) / **왜 `Apply`가 기본이고 `Override`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
+- api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `mod:UICorner(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / retract 시 slot 내용 폐기(→심화: portal 없는 이유) / `:Apply(factory)` 기본 체이닝 관용구(→심화: 언제 `Apply` vs `Overridden`인지 성능 기준) / `:Peek<<T>>(key)` + `isState`(→심화: `Get`과 이름을 다르게 한 이유)
+- 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / retract=폐기 확정 히스토리(portal 검토 후 기각) / **왜 `Apply`가 기본이고 `Overridden`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
 - 열린 질문(문서화 보류): 여러 Slot이 형제로 섞일 때 순서 보장 — 미확정
 - skip: 세션 날짜/확정 이력, 문서 승격/정정 안내
 

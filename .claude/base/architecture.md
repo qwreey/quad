@@ -136,7 +136,7 @@ quad/
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행) 전부 여기 소속
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
-│       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Override`(`base/modifier-plan.md`)
+│       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), CollectionService 글루는 quad-roblox Handlers/Tag.luau(`base/tag-plan.md`, 2026-08-08 세 번째 세션)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
@@ -190,7 +190,7 @@ Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조
      `:Unsubscribe()`, `relate:SetWeak(...)`/`:GetWeak(...)`/`:SetStrong(...)`/
      `:GetStrong(...)`, `mod:FontSize(...)`(필드 setter 체이닝).
   3. 프리미티브 타입 자신의 네임스페이스에 달린 정적 결합 함수 —
-     `Modifier.Override(mod1, mod2, ...)`가 유일한 현재 사례. 콜론 메서드는
+     `Modifier.Overridden(mod1, mod2, ...)`가 유일한 현재 사례. 콜론 메서드는
      아니지만(여러 Modifier를 동등한 인자로 받아야 해서 self 하나로 안
      됨) `Modifier` 타입 고유의 공개 연산이라는 점에서 1/2과 같은 부류 —
      `Modifier()` 생성자와 같은 이유로 대문자.

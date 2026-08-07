@@ -786,7 +786,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     (2026-08-07 아홉 번째 세션, 사용자 제안 채택) — 아직 문서화 안 돼
     있었음, 지금 확정.** 위 "Modifier 필드로 막는 이유"/"Source/Store
     값으로 막는 이유" 절은 **타입 차단**만 다뤘음 — Luau 타입은 런타임에
-    지워지므로(`:Peek`/`Override`/버그로 타입을 우회해 PreRef가 Modifier나
+    지워지므로(`:Peek`/`Overridden`/버그로 타입을 우회해 PreRef가 Modifier나
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
     전용 `Handler`를 하나 등록: `{ isHandlable = function(inst,k,v) return
     isPreRef(v) end, process = function(inst,k,v) error("PreRef는 children

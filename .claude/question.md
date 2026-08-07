@@ -84,11 +84,13 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
   미정, `research/additional-primitives-plan.md`의 "키 기반 동적 컬렉션
   재조정" 절 참고.
-- **`Override`/`Peek`/`isState`(3순위, 사소함, 2026-08-07 다섯 번째
-  세션 추가)**: Modifier 결합 유틸(구 `Merge`)과 필드 읽기 접근자, State/
-  Source 판별 predicate 세 개의 이름 — 동작은 전부 확정(`base/
-  modifier-plan.md` 9번, `base/bind-system-plan.md`의 `isState` 절),
-  이름만 다른 가칭들과 같이 용어 정리 라운드에서 재검토.
+- **`Peek`/`isState`(3순위, 사소함, 2026-08-07 다섯 번째 세션 추가)**:
+  필드 읽기 접근자, State/Source 판별 predicate 두 개의 이름 — 동작은
+  전부 확정(`base/modifier-plan.md` 9번, `base/bind-system-plan.md`의
+  `isState` 절), 이름만 다른 가칭들과 같이 용어 정리 라운드에서 재검토.
+  (`Override`는 이 목록에서 빠짐 — `Overridden`으로 확정, 2026-08-08
+  세션. `Add`/`Remove`→`Added`/`Removed`, `Merge`→`Merged`와 같은 분사형
+  네이밍 컨벤션에 맞춰 불규칙동사 `override`의 정확한 과거분사를 씀.)
 - **`Bound`(3순위, 사소함, 2026-08-07 일곱 번째 세션 추가)**: Observer/
   Effect 핸들이 leaf 부착과 `:Subscribe()` 중 이미 어느 한쪽으로
   바인딩됐는지 표시하는 내부 플래그 이름(`base/bind-system-plan.md`
@@ -231,8 +233,8 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | 프로바이더 패턴, bind/store 구현 책임 분리 | `base/module-lifecycle-plan.md` |
 | Slot 재조정, 재마운트 시 throw, retract=폐기 | `base/slot-plan.md` |
 | `Connected`+GC 라이프사이클 패턴 | `base/lifecycle-pattern.md` |
-| Modifier(정적 merge, immutable 체이닝, State 필드 지원, `Apply`/`Override`/`Peek`/`isState`) | `base/modifier-plan.md` |
-| 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Override`) | `base/component-composition-plan.md` |
+| Modifier(정적 merge, immutable 체이닝, State 필드 지원, `Apply`/`Overridden`/`Peek`/`isState`) | `base/modifier-plan.md` |
+| 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Overridden`) | `base/component-composition-plan.md` |
 | 컴포넌트 이식성(전역 store 참조 시 재사용성 문제) | `base/purity-and-effects-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | `base/blocker-plan.md` |
 | Effect(설치+확정 정리, `state` 있으면 Observer 조합해 재실행도 지원 — 확정) | `base/effect-plan.md` |
