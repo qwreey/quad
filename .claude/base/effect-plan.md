@@ -69,6 +69,52 @@ end; lastConn = ... end)`) **Observer 자체**가 이걸 대신해줄 이유는 
 (Effect)으로 분리해 얹었을 뿐, Observer의 기본 계약(재실행 신호만, cleanup은
 클로저로 직접)은 그대로 가볍게 유지됨.
 
+## `EffectHandle:Subscribe()`/`:Unsubscribe()` — leaf 없이 쓰는 독립 Effect (2026-08-07 일곱 번째 세션)
+
+**동기**: 지금까지 Effect의 유일한 생애주기 경로는 children 배열의 leaf
+부착뿐이었음 — leaf 없이 `Effect(fn)`/`Effect(fn, state)`를 호출하면
+설치(1회 실행)는 되지만 반환된 `EffectHandle`엔 아무 인터페이스도 없어서
+cleanup을 트리거할 방법이 없는 막다른 길이었음. `state:Observer(fn)`가
+이미 `:Subscribe()`/`:Unsubscribe()`(위 bind-system-plan.md 절)로 "children
+배열 밖, 모듈/스크립트 레벨에서 독립적으로 켜고 끄는" 경로를 갖고 있는데,
+Effect도 모듈/스크립트 사이드 이펙트(백그라운드 시스템, non-UI 코드가
+quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 쓰일 수 있어서
+같은 결로 필요 — `Effect`도 leaf 없이 독립적으로 켜고 끌 수 있어야 함.
+
+**확정**: `EffectHandle`에도 `:Subscribe()`/`:Unsubscribe()` 추가, 둘 다
+`self` 반환(Observer와 동일한 fluent 대칭).
+
+- **`:Subscribe()`** — Observer가 쓰는 것과 같은 강참조 레지스트리에
+  자신(또는 `state` 있는 경우 내부 Observer)을 등록 — 새 메커니즘 아님,
+  기존 레지스트리 재사용. 이후 로컬 변수로 참조를 안 들고 있어도 계속
+  살아있음(Observer와 동일 관용구).
+- **`:Unsubscribe()`는 Observer의 것을 그냥 위임하지 않는다 — Effect
+  계층에서 의미가 확장됨.** Observer의 `:Unsubscribe()`는 "미래 재실행만
+  끊는다"(Observer 자체엔 정리할 상태가 없음)로 충분하지만, Effect의
+  계약은 "생애주기가 끝나는 시점에 마지막 cleanup이 정확히 1회 호출된다"
+  이고 leaf 사망은 그 "끝"의 신호 중 하나일 뿐이라, `:Unsubscribe()`도
+  동일하게 "지금 끝났다"는 신호로 취급해야 계약이 일관됨:
+  1. `state`가 있으면 내부 Observer도 `:Unsubscribe()`해서 향후 재실행을
+     끊고,
+  2. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
+     하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것.
+  3. **idempotent, 그리고 이후 leaf가 실제로 죽어도 cleanup이 중복
+     호출되면 안 됨** — 새 메커니즘 불필요, Observer가 이미 확정해둔
+     "`Subscribed` 필드 우선 liveness 체크"가 자동(리프)/수동(Unsubscribe)
+     두 경로를 하나의 게이트로 OR 묶어주므로 여기 그대로 얹힘.
+- **`state` 없는 mount-only Effect엔 특별한 분기 불필요** — install은 이미
+  `Effect(fn)` 호출 시점에 끝나 있으므로, `:Unsubscribe()`는 그냥 "지금
+  leaf-사망 cleanup을 수동으로 트리거"하는 것과 완전히 동치.
+- **leaf 부착과 `:Subscribe()`를 동시에 쓰는 건 UB — 정정(2026-08-07
+  일곱 번째 세션 후속)**: 처음엔 "같은 liveness 게이트를 공유하니
+  동시에 써도 안전"으로 적었으나, 애초에 한 핸들은 라이프사이클 바인딩
+  경로를 하나만 가져야 한다는 게 맞는 방향이라 판단이 뒤집힘 — 상세
+  규칙과 `Bound` 플래그 기반 즉시-에러 메커니즘은
+  `base/bind-system-plan.md`의 "이중 바인딩 금지" 절 참고. leaf 부착
+  **후** `:Unsubscribe()`로 조기 해제하는 것(위 "Observer의
+  `:Unsubscribe()`는 자동 케이스에도 동일하게 씀" 패턴)은 여전히 정상 —
+  금지되는 건 leaf 부착과 `:Subscribe()`를 **같이** 쓰는 것뿐.
+
 ## 해결됨 — Effect/Observer 관계 (2026-08-07 여섯 번째 세션, 이전 미해결 절 대체)
 
 **과거 미해결이었던 두 질문 모두 확정**:

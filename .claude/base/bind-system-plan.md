@@ -515,6 +515,13 @@ Connect가 도는 숨은 churn 비용도 있음(Store Set은 dedup 안 함,
 lazy State 핸들로 통일, 아래 "Store/State/Source 온톨로지" 절의 "`:With`/
 `:Compute`" 부분 참고).
 
+**`fn`을 커링 스타일로 짜는 것도 권장(2026-08-07 일곱 번째 세션)** —
+`key:Compute(makeFormatter("ko-KR"))`처럼 팩토리가 실제 `fn`을 만들어
+반환하는 패턴, Observer/Effect의 동일 관용구(아래 "`fn`을 커링 스타일로
+짜는 것도 모듈화 관용구로 권장" 절, `base/effect-plan.md`)와 같은 결 —
+`:Compute`가 원래부터 이 셋 중 제일 먼저 있던 자리라 뒤늦게 문서화된
+것뿐, 새 결정이라기보다 이미 있던 패턴을 명문화한 것.
+
 ### `:Compute(fn)`의 선택적 두 번째 인자 — `previous` (무거운 파생 객체 재사용, 2026-08-06)
 
 **배경**: `:Compute`의 결과가 그 자체로 무겁고 재생성 비용이 큰 엔진
@@ -630,14 +637,56 @@ retract/Destroy되면 자동으로 정리됨.
   이 State가 계속 재계산되게만 강제하고 싶을 때 씀. 문서화만 확실히
   하면 별문제 없음(사용자 판단).
 
-### 백로그(미확정) — `state:Apply(...)`: `:With`+`:Compute` 등록을 커링으로 자동화 (2026-08-07 여섯 번째 세션, 사용자 제안)
+### `state:Apply(factory)` — Modifier와 동일한 순수 체이닝 설탕으로 확정 (2026-08-07 일곱 번째 세션)
 
-Effect/Observer의 `fn` 커링 관용구 논의 중 나온 인접 아이디어 — `Modifier`의
-`:Apply(factory)`(팩토리 체이닝, `modifier-plan.md` 8번)와 비슷하게, 여러
-개를 커링으로 받아 알아서 `:With`/`:Compute` 등록을 대신 해주는
-`state:Apply(...)` 같은 조합기가 있으면 편리할 수 있다는 제안. **지금 결정
-필요 없음 — 백로그로만 기록.** 구체 시그니처/필요성 검증 없음, 나중에
-`:With`/`:Compute` 관용구가 실제로 자주 반복되는 게 확인되면 다시 논의.
+**처음 제안됐던 "`:With`/`:Compute` 등록을 커링으로 자동화하는 조합기"
+방향은 기각됨 — 사용자가 재확인한 실제 의도는 그보다 훨씬 단순함.**
+`Modifier:Apply(factory)`도 매번 새 값을 만들어내는 체이닝 설탕일 뿐이듯,
+State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양이라 —
+`state:Apply(factory)`는 그냥 `factory(state)`를 메소드 체이닝 문법으로
+쓴 것뿐이고 그 이상의 계약은 없음(`Modifier:Apply`와 완전히 동일한
+정의: `function(self, factory) return factory(self) end`).
+
+- **동기**: 커링 팩토리 두 개 이상을 이미 있는 문법만으로 이으면 바깥에서
+  안으로 겹쳐 읽어야 하는 중첩 호출이 됨 — 실제 형태로 예를 들면,
+  ```lua
+  -- Apply 없이: 안쪽(가장 최근에 만든 것)부터 거꾸로 읽어야 함
+  local capped = capAt(100)(withLocale(localeStore.locale)(rawScore))
+
+  -- state:Apply로: 왼쪽에서 오른쪽, 만든 순서 그대로 읽힘
+  local capped = rawScore
+    :Apply(withLocale(localeStore.locale))
+    :Apply(capAt(100))
+  ```
+  팩토리가 세 개, 네 개로 늘어날수록 앞쪽 버전은 괄호 깊이와 읽는 방향이
+  코드 작성 순서와 반대로 꼬여 diff/리뷰에서 특히 안 좋음 — `:Apply`
+  버전은 각 줄이 "그다음 뭘 했는지"를 순서대로 나열하므로 Modifier
+  체이닝(`mod:FontSize(14):Apply(Boldify(10)):Apply(Italicify)`)과 읽는
+  방식이 완전히 통일됨. `:With`/`:Compute` 자체를 대신 호출해주는
+  자동화가 아니므로, 여전히 팩토리 본문 안에서 `:With`/`:Compute`를
+  직접 호출하는 건 팩토리 작성자 몫.
+- **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
+  필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
+  존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌
+  자체가 없음 — 그냥 고정 메소드 하나 추가하는 것.
+- **타입은 `factory: (State<T>) -> U): U`로 완전히 열어둠** — Modifier의
+  `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
+  이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종
+  요약된 plain 값)을 반환해 반응형 그래프를 벗어나는 탈출구로 쓰는 것도
+  막을 이유가 없음 — Modifier보다 오히려 더 자유로운 시그니처.
+- **Source도 자동 포함**: Source가 State를 구조적으로 만족하는 기존
+  델리게이션(`__index`로 `:With`/`:Compute` 위임)에 `:Apply`도 그대로
+  얹히므로 별도 구현 불필요.
+- **Effect/Observer/Compute의 `fn` 커링 권장(위 절들)과 같은 스레드지만
+  별개 기능** — 커링은 "`fn` 자체를 팩토리로 짜는 관용구" 권장이고,
+  `:Apply`는 그렇게 만든 팩토리를 체이닝 문법으로 적용하는 수단. 둘이
+  합쳐지면 `state:Apply(makeFormatter("ko-KR"))`처럼 자연스럽게 이어짐.
+
+**Observer/Effect의 `:Subscribe()`/`:Unsubscribe()`는 이 절과 무관한
+별개 주제** — 아래 새 절로 분리(이전에 이 헤더 아래 잘못 걸려 있던
+문서 버그 수정, 내용 자체는 이미 확정된 것 그대로).
+
+### Observer의 `:Subscribe()`/`:Unsubscribe()` — children 배열 밖 독립 구독 (2026-08-06 후속 세션)
 
 **문제**: children 배열에 넣는 자동 라이프사이클 바인딩은 Observer가
 "어딘가 leaf에 붙어있다"는 걸 전제함. 근데 흔한 실사용 패턴 하나가 이
@@ -691,6 +740,50 @@ Effect/Observer의 `fn` 커링 관용구 논의 중 나온 인접 아이디어 �
   자연스러움 — Modifier의 clone-then-return 체이닝과는 다른 이유(같은
   객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
   체이닝 가능.
+
+### 이중 바인딩 금지 — leaf 부착과 `:Subscribe()`는 상호 배타적, `Bound` 플래그로 즉시 에러 (2026-08-07 일곱 번째 세션)
+
+**규칙**: 같은 Observer/Effect 핸들 하나는 라이프사이클 바인딩 경로를
+딱 하나만 가질 수 있음 — children 배열에 놓여 leaf에 자동 부착되거나
+(위 weak table 경로) `:Subscribe()`로 수동 등록되거나(위 강참조
+레지스트리 경로), 둘 중 하나만. **둘 다 동시에 걸리는 건 UB로 확정** —
+이미 leaf에 부착된 핸들을 다시 `:Subscribe()`하는 것도, 이미
+`:Subscribe()`한 핸들을 children 배열에 놓아 leaf로도 부착시키는 것도
+둘 다 금지.
+
+**UB를 조용한 오동작이 아니라 즉시 에러로 만든다** — 판별 비용이 사실상
+0(불리언 필드 하나 확인)이라, 조용히 이상하게 동작하게 두는 것보다
+바로 에러를 던져 버그를 그 자리에서 잡는 게 엔지니어링상 훨씬 쌈:
+
+```lua
+-- :Subscribe() 진입부, children 배열 leaf 부착부 — 둘 다 진입 전 동일하게 확인
+if self.Bound then
+  error("Observer/Effect가 이미 다른 경로로 바인딩됨 — leaf 부착과 :Subscribe()는 동시에 쓸 수 없음")
+end
+self.Bound = true
+```
+
+- **`Bound`는 가칭** — 용어 정리 라운드에서 최종 이름 재검토 대상
+  (`.claude/question.md`에 반영).
+- 이 플래그는 어느 경로가 먼저 왔는지와 무관하게 "이미 바인딩됨"만
+  표시 — 두 진입점이 똑같이 확인/설정하므로 순서와 무관하게 대칭적으로
+  막힘.
+- **`:Unsubscribe()`는 여전히 "어떤 경로로 바인딩됐든 그 계약을 끊는다"는
+  뜻으로 통일** — `Bound`가 어느 경로로 세워졌는지와 무관하게,
+  `:Unsubscribe()` 한 번으로 그 바인딩(leaf의 Destroying 연결이든 수동
+  강참조 등록이든)을 끝내고 최종 정리를 수행. 위 "`:Unsubscribe()`는
+  자동(리프) 케이스에도 동일하게 씀" 절과 정합 — 이중 바인딩 금지 규칙과
+  별개로, "단일 바인딩을 끊는" `:Unsubscribe()` 자체의 계약은 안 바뀜.
+- **Effect도 동일 규칙 적용** — 내부적으로 Observer를 조합하는 경우든
+  `state` 없는 경우든 같은 `Bound` 게이트를 그대로 재사용
+  (`base/effect-plan.md`). 이전에 그 문서에 적어뒀던 "leaf 부착과
+  `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이 규칙으로
+  대체(정정)** — 안전하게 지원하는 게 아니라 애초에 막아야 하는
+  조합이었음.
+- **문서화 경고 대상(api/심화)**: "한 Effect/Observer 핸들을 children
+  배열에 놓았다면 그걸 다시 `:Subscribe()`하지 말 것, 반대도 마찬가지 —
+  두 경로를 동시에 쓰고 싶으면 각각 독립된 새 `Effect(...)`/
+  `state:Observer(...)` 호출로 따로 만들 것"을 명시할 것.
 
 ## Unix 파이프에서 영감 받은 스트림 지향 — 원래 의도, 해소됨
 

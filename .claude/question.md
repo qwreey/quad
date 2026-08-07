@@ -87,6 +87,10 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   Source 판별 predicate 세 개의 이름 — 동작은 전부 확정(`base/
   modifier-plan.md` 9번, `base/bind-system-plan.md`의 `isState` 절),
   이름만 다른 가칭들과 같이 용어 정리 라운드에서 재검토.
+- **`Bound`(3순위, 사소함, 2026-08-07 일곱 번째 세션 추가)**: Observer/
+  Effect 핸들이 leaf 부착과 `:Subscribe()` 중 이미 어느 한쪽으로
+  바인딩됐는지 표시하는 내부 플래그 이름(`base/bind-system-plan.md`
+  "이중 바인딩 금지" 절) — 동작은 확정, 이름만 가칭.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/

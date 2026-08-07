@@ -67,13 +67,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
+- [ ] `state:Apply(factory)`(`base/bind-system-plan.md` "`state:Apply(factory)`"
+      절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
+      부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
+      기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
 - [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
       실행 확정**(`base/bind-system-plan.md`의 Observer 절), `isObserver`
       판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`
 - [ ] `Effect(fn, state?)`(`base/effect-plan.md`) — `state` 생략 시 설치
       1회+leaf 사망 시 확정 정리, `state` 지정 시 내부적으로
       `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React
-      `useEffect` 동형). Observer 구현 이후에 착수(의존 관계)
+      `useEffect` 동형). Observer 구현 이후에 착수(의존 관계).
+      `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
+      모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
+      마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
+- [ ] Observer/Effect 이중 바인딩 금지 — `Bound`(가칭) 플래그로 leaf 부착과
+      `:Subscribe()`가 동시에 걸리면 즉시 `error`(`base/bind-system-plan.md`
+      "이중 바인딩 금지" 절, 2026-08-07 일곱 번째 세션)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
