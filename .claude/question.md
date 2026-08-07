@@ -30,16 +30,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   필요 — 최종 이름만 미정(아래 "용어 정리" 절에 후보 추가). **사용자가
   "작업 전에 모든 정의를 마치고 싶다"고 명시** — M0 이전 완전 확정 목표.
   상세는 `research/additional-primitives-plan.md`(이제 이 주제 전용).
-- **Effect가 Observer의 변형(`state:Effect()`)인지, 완전히 독립된 free
-  function인지 — 신규, 2026-08-07 문서 정리 세션에서 발견.** `base/
-  effect-plan.md`가 지금까지의 조사대로 Effect를 "재실행 없는
-  독립 free function"으로 서술해뒀지만, 사용자가 직접 `state:Effect()`
-  형태(=Observer에 "확정 정리" 계약만 추가된 변형)로 기억하고 있어서
-  확인이 필요함. 관련 하위 질문: `state:Observer(fn)`가 생성 시점에
-  `fn`을 즉시 1회 실행하는지도 현재 문서 어디에도 명시돼 있지 않음(Effect는
-  "즉시 1회 실행"이 스펙에 있음 — 이 부분만 보면 둘이 겹쳐 보이는 이유).
-  **임의로 결론내지 않고 열어둠** — 구현 착수(M3~M4 전후) 전에 확인 필요,
-  상세는 `base/effect-plan.md`의 "미해결" 절.
+- **[해소됨, 2026-08-07 여섯 번째 세션]** Effect/Observer 관계 — Effect는
+  자유 함수로 확정(`state` 인자를 받으면 내부적으로 `state:Observer(...)`를
+  조합해 재실행+자동 cleanup 배선, React `useEffect`와 동형). `state:Observer(fn)`도
+  등록 즉시 1회 실행되는 것으로 확정. 상세는 `base/effect-plan.md`의
+  "해결됨" 절과 `base/bind-system-plan.md`의 Observer 절.
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단(`research/
   additional-primitives-plan.md` "빈 자리 아닌 것" 절).
@@ -206,7 +201,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Override`) | `base/component-composition-plan.md` |
 | 컴포넌트 이식성(전역 store 참조 시 재사용성 문제) | `base/purity-and-effects-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | `base/blocker-plan.md` |
-| Effect(leaf 죽음에 확정 정리 — 단 Observer와의 관계는 위 0번 열린 질문 참고) | `base/effect-plan.md` |
+| Effect(설치+확정 정리, `state` 있으면 Observer 조합해 재실행도 지원 — 확정) | `base/effect-plan.md` |
 | UICorner/UIPadding/UIScale 인라인 편의 키 — 이름·메커니즘·store-bind 가능성까지 확정 | `base/ui-shorthand-plan.md` |
 | Batch(lexical) 기각, Context(+레이어드 Store) 기각 | `archive/batch-rejected.md`, `archive/context-rejected.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `reference/comparison-fusion-vide.md` |

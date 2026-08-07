@@ -30,7 +30,7 @@ Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 �
 | 후보 | 판정 | 현재 위치 |
 |---|---|---|
 | 키 기반 동적 컬렉션 재조정 | **진짜 빈 자리, 최우선** — 아직 열려있음 | 이 문서(아래) |
-| Effect(leaf 죽음에 확정 정리) | 채택, 단 Observer와의 관계는 미해결 | `base/effect-plan.md` |
+| Effect(leaf 죽음에 확정 정리 + `state` 있으면 재실행) | **채택, 확정** — Observer와의 관계도 해소 | `base/effect-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | **채택** — Batch의 대안 | `base/blocker-plan.md` |
 | Batch(함수/코루틴 스코프 lexical block) | **기각** | `archive/batch-rejected.md` |
 | Context(트리 하위 암묵 전파) + 레이어드 Store | **기각** | `archive/context-rejected.md` |
