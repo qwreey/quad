@@ -57,7 +57,13 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   있었던 전례(`base/bind-system-plan.md`의 "인스턴스 생성" 절 참고).
   **파급 효과(2026-08-06 추가)**: `DI`가 리네임되면 `DI.FrameModifier`류
   Modifier 클래스별 타입 프리픽스도 같이 바뀌어야 함 — `DI` 리네임 논의
-  때 이 연쇄까지 같이 고려할 것.
+  때 이 연쇄까지 같이 고려할 것. **(2026-08-08 추가)** 사용자가 `D`(Declarative
+  만 남김)로 축약하는 안을 제안 — 근거: (1) "Instance" 전용 개념이 아니라
+  quad-* 전반의 declare 요소로 확장해도 되는 이름, (2) 엔진 종속 없이 다른
+  백엔드에서도 재사용 가능, (3) 어차피 `D.FrameModifier`류 타입 프리픽스가
+  길면 못 쓰므로 짧아야 한다는 실용적 제약. 아직 최종 확정 아님 — 다음
+  세션에서 마저 논의(한 글자 식별자의 검색성/자기설명력 트레이드오프를
+  문서에서 어떻게 보완할지도 같이).
 - **[해소됨, 2026-08-08 세션]** `PerInstanceState` — 이름 문제 자체가 없어짐.
   `State`와 이름이 겹쳐 혼동 유발하던 그 유틸은 `Relate`로 대체·정식
   승격됨(`base/relate-plan.md`) — 이름도 이미 사용자 확정("Relate 괜찮아요"),
@@ -66,17 +72,14 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
 - **`canExecute`(3순위, 사소함)**: 실제로 "이 핸들이 아직 살아있나" 확인인데
-  이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
-  **(2026-08-07 추가)** `PreRef`(children 배열 전용, Modifier/Store에
-  못 들어가는 Ref 특수화 — `base/bind-system-plan.md` "`phase` 옵션 폐기 →
-  위치로 표현, `PreRef` 신설" 절)도 신규 이름이라 이 라운드에 같이 재검토
-  대상. (`CreatedRef`는 더 이상 이 목록에 없음 — 별도 이름 자체가 폐기됨,
-  `Ref(default)`/`PreRef(default)`를 children 배열에 직접 놓는 것으로
-  확정, 아래 "지금까지 확정된 것" 참고.)
-- **`Ref`(3순위, 2026-08-06 추가)**: 정의가 "quad가 만든 instance를 얻는
-  통로"에서 "아무 사용자 값이나 담는 범용 값 박스"로 넓어져서(`base/
-  bind-system-plan.md` "Ref 일반화" 절), 이름이 여전히 넓어진 의미에
-  맞는지 재검토 대상.
+  이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적이라는 제안이
+  있었으나, **(2026-08-08 재검토)** `isAlive`는 top-level `isX` 계열
+  (`isState`/`isRef`/`isPreRef`/`isModifier`/`isObserver`류 — 전부 타입
+  판별자)과 접두어가 겹쳐 "이것도 타입 체크인가" 오해를 유발할 수 있다는
+  점이 지적됨. `canExecute`는 타입이 아니라 liveness(생존 여부)를 묻는
+  질문이라 `is`보다 `can` 계열 접두를 유지하는 쪽이 낫다는 방향으로 사용자가
+  기욺 — 여전히 미확정, 다음에 `can`으로 시작하는 구체 대안(예: `canRun`)을
+  같이 검토할 것.
 - **키 기반 동적 컬렉션 재조정 프리미티브 이름(3순위, 2026-08-06 추가)**:
   `Keyed`는 타이핑이 어색하고 "Slot을 렌더한다"는 느낌과 안 맞는다는
   사용자 피드백으로 탈락. 후보: `Render`(가장 직접적이지만 "quad엔 렌더
@@ -84,40 +87,44 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
   미정, `research/additional-primitives-plan.md`의 "키 기반 동적 컬렉션
   재조정" 절 참고.
-- **`Peek`/`isState`(3순위, 사소함, 2026-08-07 다섯 번째 세션 추가)**:
-  필드 읽기 접근자, State/Source 판별 predicate 두 개의 이름 — 동작은
-  전부 확정(`base/modifier-plan.md` 9번, `base/bind-system-plan.md`의
-  `isState` 절), 이름만 다른 가칭들과 같이 용어 정리 라운드에서 재검토.
-  (`Override`는 이 목록에서 빠짐 — `Overridden`으로 확정, 2026-08-08
-  세션. `Add`/`Remove`→`Added`/`Removed`, `Merge`→`Merged`와 같은 분사형
-  네이밍 컨벤션에 맞춰 불규칙동사 `override`의 정확한 과거분사를 씀.)
 - **`Bound`(3순위, 사소함, 2026-08-07 일곱 번째 세션 추가)**: Observer/
   Effect 핸들이 leaf 부착과 `:Subscribe()` 중 이미 어느 한쪽으로
   바인딩됐는지 표시하는 내부 플래그 이름(`base/bind-system-plan.md`
   "이중 바인딩 금지" 절) — 동작은 확정, 이름만 가칭.
-- **`None`/`NoneHandler`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**:
-  인라인 키/Modifier setter로 필드를 명시적으로 지우는 센티널과, 그걸
-  `nil`로 바꿔 재디스패치하는 base 내장 핸들러 이름 —
-  `modifier-plan.md` "2-1"절/`bind-system-plan.md`의 `None` 센티널
-  절에서 동작은 확정, 이름만 다른 가칭들과 같이 재검토 대상.
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
   10종 branded 타입 전부로 일반화) — `bind-system-plan.md`의 `Brand`
   절에서 동작/구현 방식은 확정, "OOP 인스턴스의 클래스명을 얻는 느낌"을
   전달할 더 나은 이름이 있는지가 열린 질문(사용자가 직접 제기) — `Tag`는
   이미 quad-roblox의 `CollectionService` 래퍼로 쓰여서 이름 충돌, 후보로
-  "type namespace"류를 사용자가 검토했으나 미확정.
-- **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
-  "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
-  스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
-  그냥 "plug" 중 뭘로 할지 아직 안 정함(개념 자체는 확정). 이 문서가 자체적으로
-  "question.md에도 취합"이라고 표시해뒀던 항목이 누락돼 있어 이번에 추가.
+  "type namespace"류를 사용자가 검토했으나 미확정. **(2026-08-08 재확인)**
+  사용자가 다시 짚었지만 여전히 미정.
+- **[해소됨, 2026-08-08 세션]** `Ref`/`PreRef`/`Peek`/`isState`(구
+  `Override`는 이미 `Overridden`으로 별도 확정) — 전부 현재 이름 그대로
+  유지로 확정. `Ref`는 "지연 없는 확정된 값 박스"라는 정의를 재확인(leaf
+  노드를 담는 용도로도, leaf 노드에 바인딩하는 용도로도 쓰임 — 넓어진
+  정의에도 여전히 맞음), `PreRef`는 더 나은 대안이 안 보여 그대로,
+  `Peek`/`isState`는 이미 잘 맞는다고 재확인.
+- **[해소됨, 2026-08-08 세션]** `None`/`NoneHandler` — `Undefined`/`Null`/
+  `Nothing`도 검토했으나 기각(`Null`은 보통 "포인터가 비어있음"을 뜻해
+  "값이 없음"이라는 의도와 안 맞는다는 게 이유), `None`/`NoneHandler`
+  그대로 확정.
+- **[해소됨, 2026-08-08 세션]** "프로바이더" → **`Handler`로 확정** —
+  `base/module-lifecycle-plan.md`가 이미 [해소됨]으로 표시해뒀던 걸
+  이 목록에 반영 안 하고 있던 stale 항목. `Processor`는 계약 메소드 이름
+  자체가 `process`라 "그 안에 또 process가 있어" 눈에 걸리고, `Provider`는
+  `canProvide`처럼 "뭔가를 공급한다"는 늬앙스라 실제로는 값을 처리/반응하는
+  Handler의 동작과 안 맞으며 React `Context.Provider`류 맥락 패턴과도 헷갈릴
+  수 있고, `Plug`는 "꽂힌다"는 늬앙스는 맞지만 "값을 처리한다"는 의미가
+  없어 기각 — `Handler`가 계약(`isHandlable`/`process`/`retract`) 전체를
+  가장 정확히 담는다는 사용자 재확인. 근거를 `base/module-lifecycle-plan.md`
+  "프로바이더" 절에 보강 완료.
 - **이미 지나간 사례로 참고**: `register`(v1) → `State`(v2) 리네임은
   "모호함"은 풀었지만 "다른 뜻으로 이미 쓰이는 단어"라는 새 문제를 만든
   셈 — 이번 정리에서 같은 패턴을 조심할 것.
-- `Store`/`Source`/`Modifier`/`process`/`retract`/`isHandlable`은 업계
-  선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음
-  (`Ref`는 여기 포함 안 됨 — 위 3순위 목록에 이미 재검토 대상으로 있음).
+- `Store`/`Source`/`Modifier`/`Ref`/`PreRef`/`Peek`/`isState`/`Handler`/
+  `None`/`NoneHandler`/`process`/`retract`/`isHandlable`은 업계 선례와
+  잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
 
 ### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
 

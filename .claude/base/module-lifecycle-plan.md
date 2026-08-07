@@ -108,7 +108,15 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   **[해소됨]** — **`Handler`로 확정**, 위 항목이 가리키는 계약의 정식 이름.
   `Dispatch`(그 계약을 스캔/실행하는 엔진, 프리미티브 아닌 탑레벨 싱글톤)와
   구분해서 쓸 것 — `base/bind-system-plan.md` "Dispatch는 프리미티브가
-  아니다" 절.
+  아니다" 절. **왜 다른 후보들을 기각했는지(2026-08-08 세션, 재확인)**:
+  `Processor`는 계약 메소드 자체가 `process`라 이름 안에 같은 단어가
+  겹쳐 눈에 거슬림, `Provider`는 `canProvide`처럼 "뭔가를 공급한다"는
+  늬앙스인데 Handler는 실제로 값을 공급하는 게 아니라 처리/반응하는
+  쪽이라 의미가 안 맞고 React `Context.Provider`류 맥락(context) 패턴과도
+  헷갈릴 수 있음, `Plug`는 "동적으로 꽂힌다"는 어감은 맞지만 "값을
+  처리한다"는 의미가 빠져 있음 — `Handler`가 계약 4종
+  (`isHandlable`/`priority`/`process`/`retract`) 전체를 가장 정확히
+  담는다는 결론.
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로
   주입한다는 패턴이 확정됨 — 상세는 `base/bind-system-plan.md`의 "base
