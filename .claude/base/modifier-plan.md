@@ -198,6 +198,38 @@ State에 담기면 그 값이 반응형으로 바뀔 수 있다는 뜻이 되어
 아예 못 넣게 막을 것**(`State<Modifier>` 같은 조합을 타입 정의 단계에서
 거부) — 런타임 가드가 아니라 타입 차단을 우선 검토.
 
+### 8. `:Apply(factory)` — 팩토리 함수 체이닝 지원 (2026-08-07)
+
+**동기**: 재사용 가능한 스타일 프리셋을 만들고 싶을 때(예: `Boldify(mod)
+-> mod`처럼 어떤 modifier든 받아 기본값보다 더 두껍게 만들어 돌려주는
+함수, 커링해서 `Boldify(10)(mod) -> mod`처럼도 씀) 이런 "modifier
+팩토리"를 체이닝에 자연스럽게 끼워 넣을 방법이 없었음 — 팩토리를 직접
+호출하면 `Italicify(Boldify(10)(mod:FontSize(14)))`처럼 안에서 밖으로
+쌓여 읽는 순서가 실행 순서와 반대로 뒤집힘.
+
+**결정**: `mod:Apply(factory)`를 지원 — `factory`는 그냥 `Modifier ->
+Modifier` 평범한 함수(커링된 클로저 포함, 새 타입 개념 아님). 동작은
+`function(self, factory) return factory(self) end`이 전부. 이걸로
+`mod:FontSize(14):Apply(Boldify(10)):Apply(Italicify)`처럼 필드
+setter 체이닝과 팩토리 적용을 같은 fluent 문법 하나로 섞어 쓸 수
+있음 — 읽는 순서 = 적용 순서.
+
+**왜 좋은 아이디어인가**: Jetpack Compose의 커스텀 `Modifier` 확장 함수
+패턴(`fun Modifier.myStyle(): Modifier = this.then(...)`)과 동일한
+효용(모듈화된 스타일 프리셋을 라이브러리로 나눠 배포/재사용, 체이닝으로
+조합)을 Luau엔 확장 함수 문법이 없으니 `:Apply` 콤비네이터로 흉내낸 것.
+새 개념을 추가하는 게 아니라 "펑션도 그냥 값"이라는 Lua 특성과 이미 있는
+immutable clone 체이닝(3번)에 얹는 얇은 sugar라 구현/개념 비용이 거의
+없음 — 팩토리 자신이 내부에서 이미 `:FontSize(...)` 같은 필드 setter를
+호출해 clone된 새 Modifier를 반환하므로, `Apply` 자체는 clone할 필요조차
+없음(`factory(self)`가 이미 새 값을 만들어 줌).
+
+**구현 시 주의**: `Apply`는 제네릭 `__index`가 즉석에서 만들어주는 필드
+setter 클로저(4번)와 이름이 겹치면 안 됨 — `__index`가 고정 메소드
+테이블(현재는 `Apply` 하나)을 먼저 확인하고, 없을 때만 필드 setter를
+합성하도록 구현. 따라서 **`Apply`는 Modifier 필드 이름으로 예약됨**(실제
+스타일 프로퍼티 이름과 겹칠 일은 거의 없어 보이지만 문서화 필요).
+
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
 - **[해소됨]** Getter 정확한 이름/모양 — 2026-08-06 후속 세션에서 getter

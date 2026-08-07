@@ -80,6 +80,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] flatten-before-dispatch, immutable `table.clone` 체이닝
 - [ ] `Modifier.Merge`(가칭)
 - [ ] `State<Modifier>` 조합 타입 차단 확인(`modifier-plan.md` 7번, UB 확정)
+- [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
+      `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
 
 ## M8 — Ref
 
