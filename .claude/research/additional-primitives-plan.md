@@ -2,7 +2,7 @@
 
 **상태**: research — 사용자와 라이브 논의로 대부분 수렴(2026-08-06~07),
 **2026-08-07 문서 정리에서 확정/기각된 항목을 분리**: Effect/Blocker →
-`base/additional-primitives.md`, Batch(lexical) → `archive/
+`base/blocker-plan.md`/`base/effect-plan.md`, Batch(lexical) → `archive/
 batch-rejected.md`, Context(+레이어드 Store 대안) → `archive/
 context-rejected.md`. 이 문서에는 **아직 완전히 열려있는 것 하나만** 남음
 — 키 기반 동적 컬렉션 재조정. 사용자가 "작업 전에 모든 정의를 마치고
@@ -30,11 +30,11 @@ Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 �
 | 후보 | 판정 | 현재 위치 |
 |---|---|---|
 | 키 기반 동적 컬렉션 재조정 | **진짜 빈 자리, 최우선** — 아직 열려있음 | 이 문서(아래) |
-| Effect(leaf 죽음에 확정 정리) | 채택, 단 Observer와의 관계는 미해결 | `base/additional-primitives.md` |
-| Blocker(값 기반 emit 지연/합치기) | **채택** — Batch의 대안 | `base/additional-primitives.md` |
+| Effect(leaf 죽음에 확정 정리) | 채택, 단 Observer와의 관계는 미해결 | `base/effect-plan.md` |
+| Blocker(값 기반 emit 지연/합치기) | **채택** — Batch의 대안 | `base/blocker-plan.md` |
 | Batch(함수/코루틴 스코프 lexical block) | **기각** | `archive/batch-rejected.md` |
 | Context(트리 하위 암묵 전파) + 레이어드 Store | **기각** | `archive/context-rejected.md` |
-| Observer에 cleanup 반환 계약 추가 | **기각** — 클로저 업밸류로 이미 충분 | `base/additional-primitives.md`(Effect 절에 근거만 인용) |
+| Observer에 cleanup 반환 계약 추가 | **기각** — 클로저 업밸류로 이미 충분 | `base/effect-plan.md`(근거만 인용) |
 | Untrack/Peek | 빈 자리 아님 | 아래 "빈 자리 아닌 것" 절 |
 | Suspense/비동기 경계 | 빈 자리 아님(문서화 문제로 재분류) | 아래 "빈 자리 아닌 것" 절 |
 | Error Boundary | 빈 자리 아님 | 아래 "빈 자리 아닌 것" 절 |
@@ -189,7 +189,7 @@ Slot:Add(element, index?)      -- 기존 그대로, Extract로 뺀 것도 다시
 
 - **quadnomicon 에세이**:
   - "왜 lexical Batch를 기각하고 대신 값 기반 Blocker를 택했는가" —
-    `archive/batch-rejected.md`와 `base/additional-primitives.md`의
+    `archive/batch-rejected.md`와 `base/blocker-plan.md`의
     Blocker 절을 나란히 비교.
   - "왜 Context가 없는가" — `archive/context-rejected.md` 참고.
   - "왜 push-invalidate/pull-recompute 설계가 laziness와 재계산 방지를
@@ -204,7 +204,7 @@ Slot:Add(element, index?)      -- 기존 그대로, Extract로 뺀 것도 다시
     유연한 구조" — 명시적 의존성 선언(`:With`) 위에서도 실제 계산은
     조건부로 일부만 쓸 수 있다는 팁.
   - "Blocker 사용 가이드" — 파이프라인 최종 연산 지점에 배치, **네스팅
-    금지를 강하게 명시**(`base/additional-primitives.md`의 "재진입" 절
+    금지를 강하게 명시**(`base/blocker-plan.md`의 "재진입" 절
     참고, 문서화 시 최우선 강조 항목).
   - "여러 Source를 한꺼번에 바꿀 때 Blocker 없이도 중복 재계산을 피하는
     파이프라인/업데이트 순서 팁"(Blocker를 안 쓰는 단순 케이스용 보조 팁,

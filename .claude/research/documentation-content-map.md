@@ -135,7 +135,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
     실제 일어나는 derived state)에 배치하는 게 원칙이라는 것, **네스팅
     금지를 최우선으로 강조**(겹치는 배치는 각자 새 `Blocker`를 만들 것 —
     안 지키면 조용히 잘못된 시점에 조기 해제되는 원인 추적 어려운 버그로
-    이어짐) — `base/additional-primitives.md`의 "Blocker" 절
+    이어짐) — `base/blocker-plan.md`
 19. 여러 Source를 한꺼번에 바꿀 때 Blocker 없이도 중복 재계산/재대입을
     피하는 파이프라인/업데이트 순서 팁(Blocker를 안 쓰는 단순 케이스용
     보조 팁) — `research/additional-primitives-plan.md` "문서화 백로그" 절
@@ -205,7 +205,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   후보만 있음, `Slot:Extract` 세부 시맨틱도 미정) — `research/
   additional-primitives-plan.md`(2026-08-06 신설, 설계 진행 중)
 - Effect가 `state:Effect()`로 Observer를 확장하는 형태인지, 완전히 독립된
-  free function인지 (`base/additional-primitives.md`의 "미해결" 절)
+  free function인지 (`base/effect-plan.md`의 "미해결" 절)
 
 이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
 "확정 전엔 문서화 대상 아님"이라는 표시만 겸함.

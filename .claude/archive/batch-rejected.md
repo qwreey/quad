@@ -1,7 +1,7 @@
 # [기각됨] `Batch(fn)` — lexical block 기반 지연/합치기, `Blocker`로 대체됨
 
 **기각 일시**: 2026-08-06~07. **현재 유효한 설계**: `base/
-additional-primitives.md`의 "Blocker" 절 — 이 문서가 다루는 것과 같은
+blocker-plan.md` — 이 문서가 다루는 것과 같은
 문제("여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게")를
 값 기반으로 풀어 대체함. 이 파일은 더 이상 능동적으로 참고할 필요 없음
 (구현에 안 씀) — "왜 lexical Batch를 기각하고 값 기반 Blocker를 택했는가"가

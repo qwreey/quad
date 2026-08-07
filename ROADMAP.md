@@ -64,7 +64,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
 - [ ] `store.key` dot-access 타입 추론 확인
-- [ ] `Blocker.luau`(`base/additional-primitives.md` 참고 — 여러 Source를
+- [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
 - [ ] mock 대상 테스트

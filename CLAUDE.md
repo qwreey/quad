@@ -712,13 +712,19 @@ M7 착수 시 `modifier-plan.md` 8번 참고하면 됨.
    표면 없이 기존 per-instance weak-table 유틸(`base.perInstanceState`)
    재사용만으로 충분하다는 점을 추가.
 4. **`additional-primitives-plan.md`를 4갈래로 분리**: 확정된 `Blocker`/
-   `Effect`는 새 `base/additional-primitives.md`로 승격(Blocker는
-   State와 같은 마일스톤에서 개발하기로 해서 `store-semantics.md`에
-   교차 참조 추가, `ROADMAP.md` M3에도 체크박스 반영). 기각된 `Batch`
-   (lexical block)와 `Context`(+대안이던 레이어드 Store)는 각각
-   `archive/batch-rejected.md`/`archive/context-rejected.md`로 분리.
-   `research/additional-primitives-plan.md`엔 아직 실제로 열려있는
-   것(키 기반 동적 컬렉션 재조정) 하나만 남김.
+   `Effect`는 각각 새 `base/blocker-plan.md`/`base/effect-plan.md`로
+   승격(Blocker는 State와 같은 마일스톤에서 개발하기로 해서
+   `store-semantics.md`에 교차 참조 추가, `ROADMAP.md` M3에도 체크박스
+   반영). 기각된 `Batch`(lexical block)와 `Context`(+대안이던 레이어드
+   Store)는 각각 `archive/batch-rejected.md`/`archive/context-rejected.md`로
+   분리. `research/additional-primitives-plan.md`엔 아직 실제로 열려있는
+   것(키 기반 동적 컬렉션 재조정) 하나만 남김. **[같은 날 바로 정정]**
+   처음엔 Blocker/Effect를 `base/additional-primitives.md` 한 파일로
+   합쳐 승격했으나, 사용자가 "State 볼 때 Effect까지 볼 필요는 없다,
+   기존 프리미티브당 1파일 컨벤션(`modifier-plan.md`/`slot-plan.md`류)에
+   맞지 않는다"고 지적해 바로 두 파일로 재분리함 — Blocker는
+   Store/State와 밀접해 교차 참조가 필요하지만 Effect는 완전히 독립된
+   요소라 애초에 같은 파일일 이유가 없었음.
 5. **archive 제목 컨벤션을 둘로 분화** — 기존 `[역전됨]`(한 번 확정했다가
    뒤집힌 것, `store-source-proxy-reversed.md`/`ref-phase-option-reversed.md`)과
    새로 생긴 `[기각됨]`(확정한 적 없이 후보였다가 채택 안 된 것,
@@ -740,7 +746,7 @@ M7 착수 시 `modifier-plan.md` 8번 참고하면 됨.
 명시). 관련 하위 질문으로 `state:Observer(fn)`가 생성 시 `fn`을 즉시
 1회 실행하는지도 문서 어디에도 명시돼 있지 않음이 이번에 드러남(Effect는
 "즉시 1회 실행"이 스펙에 명시돼 있어 이 부분만 보면 둘이 겹쳐 보임).
-`base/additional-primitives.md`의 "미해결" 절과 `.claude/question.md`
+`base/effect-plan.md`의 "미해결" 절과 `.claude/question.md`
 0번에 반영 — 구현 착수(M3~M4 전후) 전에 반드시 재확인할 것.
 
 **다음 세션이 할 일**: 안 바뀜(위 2026-08-06 네 번째 세션 절 "다음 세션이

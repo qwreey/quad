@@ -34,7 +34,8 @@
 | `modifier-plan.md` | Modifier는 런타임 plug 아닌 정적 merge, immutable+clone 기반 체이닝 — 메커니즘 확정, getter 이름만 남음 |
 | `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 |
 | `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, Source가 State를 구조적으로 만족 — modifier/Ref 컴포넌트 경계 통과까지 전부 확정, 남은 건 API 이름뿐. **[2026-08-07 정리]** 폐기된 `StoreSource` 프록시 설계로의 역전 이력은 본문에서 빼고 `archive/store-source-proxy-reversed.md` 포인터로 압축 |
-| `additional-primitives.md` | **[2026-08-07 신설]** `Blocker`(여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게, State 마일스톤과 함께 개발)와 `Effect`(leaf 죽음에 확정 정리) — Blocker는 메커니즘+이름 확정, Effect는 Observer와의 관계가 아직 미해결(문서 내 "미해결" 절, `question.md` 0번) |
+| `blocker-plan.md` | **[2026-08-07 신설]** `Blocker` — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게, State 마일스톤(M3)과 함께 개발. 메커니즘+이름 확정 |
+| `effect-plan.md` | **[2026-08-07 신설]** `Effect` — leaf 죽음에 확정 정리, 재실행 개념 없음. Observer와의 관계가 아직 미해결(문서 내 "미해결" 절, `question.md` 0번) |
 | `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고 |
 
 ## `reference/` — 온디맨드 참고 자료 (2026-08-07 신설)
@@ -54,7 +55,7 @@
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
 | `documentation-content-map.md` | 위 4축에 실제로 뭘 채울지 `base/` 전체를 초심자/api/심화/skip으로 서베이한 콘텐츠 맵 — 초심자 core loop 목차 초안 포함 | 하 — 문서화 착수 시점의 목차/우선순위표로 쓸 것 |
 | `framework-comparison-findings.md` | quad vs Fusion/Vide/react-lua 정직한 비교(실 소스 근거) — quad 강점, 진짜 불리한 점 중 고칠 만한 것 3개, 못 고치는 트레이드오프 정리 | 하 — 사용자 검토 후 반영 여부 결정 대기 |
-| `additional-primitives-plan.md` | **[2026-08-07 범위 축소]** 확정/기각된 Effect·Blocker·Batch·Context는 `base/additional-primitives.md`·`archive/`로 분리됨 — 이제 **키 기반 동적 컬렉션 재조정**(Fusion `ForPairs`/Vide `indexes()`류에 대응하는 프리미티브가 quad엔 없음) 하나만 다룸 | 상 — 사용자 판단 대기, 착수 전 M0/M1 스코프에 영향 줄 수 있음 |
+| `additional-primitives-plan.md` | **[2026-08-07 범위 축소]** 확정/기각된 Effect·Blocker·Batch·Context는 `base/blocker-plan.md`·`base/effect-plan.md`·`archive/`로 분리됨 — 이제 **키 기반 동적 컬렉션 재조정**(Fusion `ForPairs`/Vide `indexes()`류에 대응하는 프리미티브가 quad엔 없음) 하나만 다룸 | 상 — 사용자 판단 대기, 착수 전 M0/M1 스코프에 영향 줄 수 있음 |
 | `pre-implementation-audit.md` | M0 착수 직전 크리티컬 감사(2026-08-06 신설) — `base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재검토, 11개 우선순위1(M0~M4 착수 전 확인 권장) + 11개 우선순위2 + 2개 단순화후보 | 상 — M0 착수 전 최소 우선순위1 항목 확인 권장 |
 | `v1-compat-plan.md` | v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat` 패키지, v2→v1 단방향 브리지(`state:Observer()`+v1 프로퍼티 재대입), v2-in-v1/v1-in-v2 두 임베딩 방향의 기술 규칙까지 확정. quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — Slot이 foreign Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 미결 |
 
@@ -65,7 +66,7 @@
 | `store-source-proxy-reversed.md` | [역전됨] 2026-08-04에 확정했던 `StoreSource` 프록시 설계(Store가 Source를 감춘 별도 프록시로 감쌈) — 2026-08-06 세 번째 세션에서 "Source가 State를 구조적으로 만족" 재구성으로 완전히 대체됨. 원문·역전 이유·신구 비교표 보존, `quadnomicon` 소재 후보 |
 | `ref-phase-option-reversed.md` | [역전됨] `CreatedRef`의 `phase` 옵션 — 위치 기반 순서 + `PreRef` 신설로 대체됨 |
 | `ui-shorthand-roundsize-dropped.md` | **[기각됨, 2026-08-07 신설]** v1 `RoundSize`(이미지 9-slice 라운드 트릭) — 네이티브 `UICorner`로 대체되어 포팅 불필요. 이 판단이 한 차례 "Corner/PaddingAll/Scale 숏핸드 전체가 불필요하다"로 과잉일반화됐다가 정정된 이력 포함 |
-| `batch-rejected.md` | **[기각됨, 2026-08-07 신설]** lexical `Batch(fn)` — 코루틴 yield 위에서 구조적으로 위험해 기각, 값 기반 `Blocker`(`base/additional-primitives.md`)로 대체 |
+| `batch-rejected.md` | **[기각됨, 2026-08-07 신설]** lexical `Batch(fn)` — 코루틴 yield 위에서 구조적으로 위험해 기각, 값 기반 `Blocker`(`base/blocker-plan.md`)로 대체 |
 | `context-rejected.md` | **[기각됨, 2026-08-07 신설]** `Context`(트리 하위 암묵 전파) + 대안이던 레이어드 Store 둘 다 기각 — 명시적 타입 강제 Store 전달로 충분하다는 판단 |
 
 ## 참고

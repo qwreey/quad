@@ -296,7 +296,7 @@ State 핸들로 넘기고 `:Get()`을 실제로 읽을 때만 계산)은 `base/b
 `Blocker` 참고.** 위 `:With`+`:Compute`만으로는 "state1, state2를 연달아
 Set하면 결합된 파생값이 두 번 재계산/재대입된다"는 문제(즉시 pull하는
 store-bind 소비자 기준)는 안 풀림 — 이건 별도 확정 프리미티브
-`base/additional-primitives.md`의 "Blocker" 절이 다룸(State 개발과 같은
+`base/blocker-plan.md`가 다룸(State 개발과 같은
 마일스톤, `ROADMAP.md` M3에서 함께 구현). lexical `Batch(fn)`으로 풀려던
 초기 시도는 코루틴 yield 위에서 구조적으로 위험해 기각됨 —
 `archive/batch-rejected.md` 참고.
