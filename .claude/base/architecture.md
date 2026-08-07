@@ -122,9 +122,12 @@ quad/
 ├── quad-base/
 │   ├── wally.toml
 │   └── src/
-│       ├── Source.luau           # 값의 근원, 단일 지점
-│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기
+│       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
+│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행) 전부 여기 소속
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
+│       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
+│       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Override`(`base/modifier-plan.md`)
+│       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
 │       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)

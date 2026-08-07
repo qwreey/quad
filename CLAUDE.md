@@ -832,6 +832,17 @@ setter를 단발로 직접 호출하는 흔한 경로는 여전히 mutable이라
 기각. 전부 clone하는 현재 방식 유지 확정. `base/modifier-plan.md`
 9-1번 (a-1) 절.
 
+**같은 세션 네 번째 후속(당시 CLAUDE.md에 미기록 — 2026-08-07 여섯 번째
+세션에서 뒤늦게 발견/보강) — `Override`가 서브타입 관계인 Modifier끼리
+섞일 때의 타입 시그니처는 미검증으로 열어둠.** `FrameModifier`가
+`GuiObjectModifier`의 서브타입이어야 자연스러운데, 필드 setter 메소드의
+리턴 타입이 각자 자기 자신이라(`self`) 단순 구조적 서브타이핑만으로
+`Modifier.Override(guiObjectMod, frameMod)`류가 통과하는지 추론만으로는
+결론 못 냄 — 후보안(메소드 필드는 `any`로 뭉개고 데이터 필드만 구조적
+체크)을 실 Luau로 검증 필요, 안 되면 `Override(...: any): any`로
+느슨하게 열고 이 항목으로 되돌아오는 걸 fallback으로 남김.
+`base/modifier-plan.md` 9-2번, `ROADMAP.md` M7에 체크박스 반영 완료.
+
 **다음 세션이 할 일**: 안 바뀜(위 2026-08-06 네 번째 세션 절 참고,
 `ROADMAP.md` M0부터) — 이번 세션도 순수 설계 확정이라 M0 착수 우선순위
 자체는 그대로.

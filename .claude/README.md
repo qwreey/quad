@@ -35,7 +35,7 @@
 | `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 |
 | `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, Source가 State를 구조적으로 만족 — modifier/Ref 컴포넌트 경계 통과까지 전부 확정, 남은 건 API 이름뿐. **[2026-08-07 정리]** 폐기된 `StoreSource` 프록시 설계로의 역전 이력은 본문에서 빼고 `archive/store-source-proxy-reversed.md` 포인터로 압축 |
 | `blocker-plan.md` | **[2026-08-07 신설]** `Blocker` — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게, State 마일스톤(M3)과 함께 개발. 메커니즘+이름 확정 |
-| `effect-plan.md` | **[2026-08-07 신설]** `Effect` — leaf 죽음에 확정 정리, 재실행 개념 없음. Observer와의 관계가 아직 미해결(문서 내 "미해결" 절, `question.md` 0번) |
+| `effect-plan.md` | **[2026-08-07 신설, 여섯 번째 세션에 확정]** `Effect(fn, state?)` — `state` 없으면 설치 1회+leaf 사망 시 확정 정리, 있으면 내부적으로 `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React `useEffect` 동형). Observer와의 관계 해소 완료 |
 | `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고 |
 
 ## `reference/` — 온디맨드 참고 자료 (2026-08-07 신설)

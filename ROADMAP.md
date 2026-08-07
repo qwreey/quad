@@ -67,6 +67,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
+- [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
+      실행 확정**(`base/bind-system-plan.md`의 Observer 절), `isObserver`
+      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`
+- [ ] `Effect(fn, state?)`(`base/effect-plan.md`) — `state` 생략 시 설치
+      1회+leaf 사망 시 확정 정리, `state` 지정 시 내부적으로
+      `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React
+      `useEffect` 동형). Observer 구현 이후에 착수(의존 관계)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -111,12 +118,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M8 — Ref
 
-- [ ] `CreatedRef` 메커니즘(숫자 슬롯 참가자) + `PreRef`(children 배열
-      전용, Modifier/Store 타입 차단, 위치 무관 호이스팅 pre-pass —
-      `base/bind-system-plan.md` "`phase` 옵션 폐기 → 위치로 표현,
-      `PreRef` 신설" 절)
-- [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면 resume+소진,
-      함수면 호출+유지 — 같은 배열 하나로 통합)
+- [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
+      `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`(별도 파일, Ref
+      런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
+      위치 무관 호이스팅 pre-pass — `base/bind-system-plan.md` "`phase`
+      옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)
+- [ ] `CreatedRef` 메커니즘(숫자 슬롯 참가자)
+- [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
+      `coroutine.resume(v, self)`+소진, 함수면 `v(value)` 호출+유지 —
+      같은 배열 하나로 통합). `:Wait(thread?)`는 `thread`가 `nil`이면
+      `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
+      반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
 - [ ] `LifetimeHandle` quad-roblox 실제 구현(Instance 생존 확인, 인터페이스
       자체는 M2로 이동됨)
 - [ ] `PerInstanceState` quad-roblox 실제 구현(weak-keyed table, 인터페이스

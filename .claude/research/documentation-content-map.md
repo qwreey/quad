@@ -204,8 +204,6 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 - 키 기반 동적 컬렉션 재조정 최종 이름/시그니처(`Render`/`Draw`/`List` 등
   후보만 있음, `Slot:Extract` 세부 시맨틱도 미정) — `research/
   additional-primitives-plan.md`(2026-08-06 신설, 설계 진행 중)
-- Effect가 `state:Effect()`로 Observer를 확장하는 형태인지, 완전히 독립된
-  free function인지 (`base/effect-plan.md`의 "미해결" 절)
 
 이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
 "확정 전엔 문서화 대상 아님"이라는 표시만 겸함.
