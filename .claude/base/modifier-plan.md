@@ -46,22 +46,46 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
 않으므로 "순서상 나중이 이긴다"는 단일 규칙만으로는 구현 불가 — 반드시 두
 규칙으로 쪼개야 함.
 
-### 2-1. 인라인 키로 modifier 필드를 명시적으로 "지우기"는 아직 안 풀림 — `None` 센티널 후보만 메모 (2026-08-07 세 번째 세션, 미확정)
+### 2-1. 인라인 키로 modifier 필드를 명시적으로 "지우기" — `None` 센티널로 확정 (2026-08-07 여덟 번째 세션)
 
-**문제**: `{ Override = nil, mod }`처럼 인라인 키로 modifier가 주는 값을
+**문제**: `{ TextColor3 = nil, mod }`처럼 인라인 키로 modifier가 주는 값을
 명시적으로 취소하고 싶어도, Lua 테이블 리터럴에서 `키 = nil`은 그 키
 자체가 아예 존재하지 않는 것과 구별이 안 됨(`pairs`에서도 안 보임) — 그래서
 위 2번 "인라인은 무조건 우선" 규칙이 실제로 작동할 근거(인라인 키가
-존재한다는 사실 자체)가 사라지고, `mod`가 주는 `Override` 값이 그대로
-새어나옴.
+존재한다는 사실 자체)가 사라지고, `mod`가 주는 값이 그대로 새어나옴.
 
-**후보(미확정)**: 이벤트 store-bind에서 이미 쓴 "`nil` 대신 실재하는
-센티널 값" 패턴(`false`로 disconnect, `base/bind-system-plan.md` "이벤트도
-store-bind 가능" 절) 재사용 — `None`(가칭) 프리미티브를 만들어
-`{ Override = None, mod }`로 쓰면 flatten 로직이 `None`을 만난 인라인 키를
-"명시적으로 지움"으로 해석해 modifier 쪽 값을 덮어씀. 상세 설계(타입,
-flatten 내부 표현, State 필드에도 같은 문제가 적용되는지 등)는 다음
-세션에서 이어감 — 지금은 문제와 방향성만 기록.
+**결론 — `None`은 raw 저장 계층에만 존재하는 실재값 센티널, merge/setter는
+전혀 안 바뀜.** 이벤트 store-bind의 "`nil` 대신 실재하는 센티널"
+(`false`로 disconnect, `base/bind-system-plan.md` "이벤트도 store-bind
+가능" 절)과 같은 발상이지만, 처리 위치가 다름 — merge 단계가 아니라
+**디스패치 단계**에서 풀린다:
+
+- **`{ TextColor3 = None, mod }`도, `mod:TextColor3(None)`도 둘 다 지원.**
+  Modifier setter/Override/인라인 props 테이블은 `None`을 그냥 평범한 raw
+  값으로 저장·교체할 뿐 특별 취급이 전혀 없음 — 애초에 문제였던 건 "`nil`이
+  테이블에 존재하는 값으로 표현이 안 된다"는 것뿐이라, 표현 가능한 실재
+  센티널만 있으면 기존 merge 규칙("인라인 키 존재 시 무조건 우선",
+  `Override`의 "뒤 인자가 필드 단위로 이김")이 손댈 것 없이 그대로 작동함.
+  구현 비용이 사실상 0이라 인라인 키/setter 둘 다 여는 데 주저할 이유가
+  없음(2026-08-07 여덟 번째 세션 확정) — setter로 받으면 "특정 필드만 지우는
+  재사용 가능한 modifier 조각"(9-1번의 스타일 프리셋 opt-out 시나리오)도
+  공짜로 됨.
+- **`:Peek<<T>>(key)`의 반환 타입이 `T | State<T> | None | nil`로 확장됨** —
+  `Peek`은 raw 저장값을 그대로 읽으므로(9번 절 "현재 저장된 그대로 넘김"
+  원칙) `None`을 다른 값처럼 있는 그대로 돌려줌. "필드가 아예 안 채워짐"
+  (`nil`)과 "명시적으로 지워짐"(`None`)은 raw 계층에서 계속 구별됨.
+- **실제 "지우기" 동작은 디스패치 쪽 `NoneHandler`가 담당** — merge가 끝난
+  뒤 최종 flatten 결과에 `None`이 남아있으면, base 드라이버가 그 키를 어떻게
+  처리하는지는 새 개념이 아니라 이미 확정된 디스패치 모델 그대로다.
+  상세는 `base/bind-system-plan.md`의 "`None` 센티널 — Tween store-bind와
+  같은 재귀 재디스패치 패턴 재사용" 절 참고 — 핵심만 요약하면 `NoneHandler`도
+  Tween의 store-bind 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
+  잡고, `process`가 `v`를 진짜 `nil`로 바꿔 `process(inst, k, nil)`을 재귀
+  호출)이라 base 드라이버 자체엔 `None`을 아는 코드가 한 줄도 안 들어감 —
+  개별 프로퍼티/이벤트/UI shorthand 핸들러도 자기 시그니처에 `None`이 안
+  나옴(원래도 있어야 했던 "`v`가 `nil`일 때" 처리를 재사용할 뿐). 구체 예시는
+  `base/ui-shorthand-plan.md`의 UICorner 숏핸드 절(nil 받으면 만들어둔 자식
+  제거, 단 `retract`가 아니라 `process` 쪽 로직).
 
 ### 3. Immutable 값 + clone 기반 체이닝
 
@@ -445,9 +469,12 @@ setter 표면과 read 표면이 헷갈리고, 타이핑 이득도 메소드 방�
 **`isState(x): boolean` 필요 — `base/bind-system-plan.md`에 정의**.
 `Peek`가 raw union을 돌려주므로 사용자 코드가 State/plain을 분기하려면
 판별 수단이 필요함(Source가 State를 구조적으로 만족하므로 `isState`가
-Source도 같이 잡아줌 — 별도 `isSource` 불필요). 상세 근거/구현 방식은
-`bind-system-plan.md`의 `isState` 절 참고 — 요지만: duck-typing 대신
-weak-key 레지스트리 기반, 그리고 이 판별 로직 자체는 새로 만드는 게
+Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSource`도
+별도로 존재함**, `:Set`/`:Emit` 같은 Source 전용 능력이 있는지 알아야
+하는 코드를 위해 필요하다고 판단 정정됨). 상세 근거/구현 방식은
+`bind-system-plan.md`의 `Brand`/`isState` 절 참고 — 요지만: duck-typing
+대신 weak-key 레지스트리 기반(quad의 다른 branded 타입 전부와 공유하는
+통합 메커니즘으로 일반화됨), 그리고 이 판별 로직 자체는 새로 만드는 게
 아니라 4-1번 setter 분기가 이미 내부적으로 해야 하는 걸 public 유틸로
 승격하는 것뿐.
 

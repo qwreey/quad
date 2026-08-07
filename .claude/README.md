@@ -36,7 +36,9 @@
 | `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, Source가 State를 구조적으로 만족 — modifier/Ref 컴포넌트 경계 통과까지 전부 확정, 남은 건 API 이름뿐. **[2026-08-07 정리]** 폐기된 `StoreSource` 프록시 설계로의 역전 이력은 본문에서 빼고 `archive/store-source-proxy-reversed.md` 포인터로 압축 |
 | `blocker-plan.md` | **[2026-08-07 신설]** `Blocker` — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게, State 마일스톤(M3)과 함께 개발. 메커니즘+이름 확정 |
 | `effect-plan.md` | **[2026-08-07 신설, 여섯 번째 세션에 확정]** `Effect(fn, state?)` — `state` 없으면 설치 1회+leaf 사망 시 확정 정리, 있으면 내부적으로 `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React `useEffect` 동형). Observer와의 관계 해소 완료 |
-| `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고 |
+| `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고. `v=nil`이면 `process` 자신이 만든 자식 제거(`retract` 아님) |
+| `tag-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** `[Tag "Name"] = boolean` — `CollectionService` 얇은 래퍼, `process`가 add/remove 전부 처리, `retract` 불필요 |
+| `attribute-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** `[Attribute "Name"]` — `SetAttribute(name, nil)`이 네이티브 지우기라 `None` 센티널과 가장 깔끔하게 맞아떨어짐, `retract` 불필요. 타입 파라미터화 이름(`Attribute<T>` vs `BooleanAttribute`류)만 미확정 |
 
 ## `reference/` — 온디맨드 참고 자료 (2026-08-07 신설)
 

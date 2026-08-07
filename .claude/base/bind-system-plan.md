@@ -24,12 +24,20 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 
 핸들러는 다음 4개를 제공하는 등록 가능한 객체:
 
-- `isHandlable(key, value): boolean` — 이 핸들러가 이 key/value 쌍을 처리할
-  수 있는지 판별하는 predicate. **부작용 없이, 빠르게** — tbox의 type-check/
-  constraint-check 분리 원칙(`.claude/initreq/tbox/CLAUDE.md`의 "타입 체크는
-  분기 선택에 쓰이므로 순수해야 함")을 그대로 적용: `isHandlable`은 오직
-  "이 핸들러가 맞는가" 판별에만 쓰이고, 실제 유효성 검사는 핸들러가
-  선택된 *이후* 별도 단계에서.
+- `isHandlable(inst, key, value): boolean` — 이 핸들러가 이 inst/key/value
+  조합을 처리할 수 있는지 판별하는 predicate. **부작용 없이, 빠르게** —
+  tbox의 type-check/constraint-check 분리 원칙(`.claude/initreq/tbox/
+  CLAUDE.md`의 "타입 체크는 분기 선택에 쓰이므로 순수해야 함")을 그대로
+  적용: `isHandlable`은 오직 "이 핸들러가 맞는가" 판별에만 쓰이고, 실제
+  유효성 검사는 핸들러가 선택된 *이후* 별도 단계에서. **`inst`도 받음
+  (2026-08-07 여덟 번째 세션 정정, 원래 `(key,value)`뿐이었음)** —
+  `process`/`retract`는 처음부터 항상 `inst`를 받았는데("모든 핸들러는
+  대상 Instance를 직접, 항상 받는다", 아래 "확정된 디스패치 모델" 절)
+  `isHandlable`만 예외였던 게 애초에 약간의 불일치. 지금 당장 `inst`에
+  따라 매치 여부가 갈리는 케이스는 없지만, 나중에 필요해지면(다른
+  백엔드에서 인스턴스 종류별로 매치가 달라져야 하는 경우 등) 핸들러
+  계약 자체를 깨는 breaking change가 되므로 지금 넣어두는 게 훨씬 쌈 —
+  사용자 판단으로 확정.
 - `priority: number` — 우선순위. 등록 순서(Fusion의 4단계 고정 stage, Vide의
   action() 우선순위)보다 일반화된 **열린 숫자 공간**으로.
 - `process(inst, key, value)` — 실제 처리 수행(아래 "확정된 디스패치 모델"
@@ -62,8 +70,12 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     엔드포인트 백엔드(`quad-roblox`/`quad-web` 등)가 알아서 결정할 문제 —
     base 인터페이스는 "무언가를 inst로 받아 process/retract한다"는 계약만
     지키면 됨, 그 inst의 실체가 뭔지는 백엔드 재량.
-- `process(inst, k, v)` — 우선순위 순으로 등록된 핸들러를 스캔, `isHandlable(k,v)`를
-  만족하는 최상위 핸들러가 실제 처리를 담당.
+- `process(inst, k, v)` — 우선순위 순으로 등록된 핸들러를 스캔,
+  `isHandlable(inst,k,v)`를 만족하는 최상위 핸들러가 실제 처리를 담당.
+  **이 "스캔+실행" 오케스트레이터는 `Dispatch.process`로, 순수 스캔
+  부분은 `Dispatch.getHandler`로 이름이 공식화됨**(아래 `None` 센티널
+  절, 2026-08-07 여덟 번째 세션) — 이 절에서는 개념 설명이라 편의상
+  그냥 `process`로 계속 씀.
 - 예시: Tween의 store-bind 핸들러는 **`k`는 무엇이든 받고 `v`가 Store인 경우를
   잡아내는, 우선순위가 매우 높은 핸들러** — `v`가 store이면 그 값을 처리(구독)함.
   이 핸들러 안에서:
@@ -72,11 +84,13 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
      결국 정리하긴 하지만, GC 되기 전에도 store 값이 업데이트될 수 있으므로
      그 시점엔 그냥 `Connected`를 보고 무시(no-op).
   2. 처리해도 되면, 사용자가 넘긴 함수들을 거쳐 실제 값(`realv`)을 계산.
-  3. **`realv`를 들고 다시 `process(inst, k, realv)`를 재귀 호출** — 이게 바로
-     "store 바인드는 pluggable 바인드를 재실행하는 래핑"이라는 이 문서 이전
-     초안의 결론과 일치. `realv`가 store가 아니라면 자연히 Tween의 store-bind
-     핸들러 `isHandlable`을 통과 못 하고 우선순위상 다음 핸들러(일반 프로퍼티
-     세터 등)로 흘러감 — 무한 재귀 걱정 없음.
+  3. **`realv`를 들고 다시 `Dispatch.process(inst, k, realv)`를 재귀 호출**
+     (오케스트레이터 이름 공식화는 아래 `None` 센티널 절 참고, 2026-08-07
+     여덟 번째 세션) — 이게 바로 "store 바인드는 pluggable 바인드를
+     재실행하는 래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가
+     store가 아니라면 자연히 Tween의 store-bind 핸들러 `isHandlable`을
+     통과 못 하고 우선순위상 다음 핸들러(일반 프로퍼티 세터 등)로 흘러감
+     — 무한 재귀 걱정 없음.
 - **`retract(inst, k, v)`** (이전 초안의 "cleanup", 이름 변경 근거는
   `base/lifecycle-pattern.md` 참고) — 이전 처리를 무르는/멈추는 함수. **오직
   "같은 key에 새 값이 들어와서 이전 처리를 갈아치우는" 시나리오에만 존재** —
@@ -84,9 +98,17 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   lifecycle-pattern.md`의 "quad는 라이프사이클 중간에 있지 않다" 원칙 참고).
   - 일반 프로퍼티는 애초에 "unset" 개념이 없음(`nil`로 셋하는 것도 그냥 셋
     동작) — 그래서 프로퍼티 핸들러는 보통 `retract`가 필요 없음.
-  - `retract`가 실제로 의미 있는 곳: **Tag를 지운다, Attribute 엔트리 자체를
-    지운다, 실행 중인 Tween을 멈춘다** 같은, "값을 새로 셋하는 것"과
-    "이전 상태를 명시적으로 되돌리는 것"이 다른 케이스.
+  - **`retract`가 실제로 의미 있는 유일한 패턴은 "같은 키에 대해 매치되는
+    핸들러 *타입 자체*가 사이클마다 바뀌는 경우"** (2026-08-07 여덟 번째
+    세션, 정정) — 예: 이전엔 Tween 핸들러가 매치돼 애니메이션이 실행
+    중이었는데, 다음 값이 더 이상 Tween 대상이 아니게 되어 일반
+    PropertyHandler로 매치가 넘어가는 경우, 이전 Tween을 멈추는 게
+    `retract`의 일. **Tag/Attribute는 여기 해당 안 함** — 처음엔 이
+    둘도 예시로 들었으나, 실제로는 UICorner 숏핸드와 같은 패턴(값의
+    참/거짓/nil 여부와 무관하게 항상 같은 핸들러가 계속 담당하고,
+    추가/제거를 전부 `process` 자신이 처리)이라 핸들러 교체 자체가 안
+    일어나서 `retract`가 발화할 조건이 생기지 않음 — 구체 설계는
+    `base/tag-plan.md`/`base/attribute-plan.md`.
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract(inst, k, v)`를
     한 번 호출해주면 됨.
 - **핸들러 내부 상태 저장**: `retract`가 "이전에 생성한 것"(예: 실행 중이던
@@ -135,6 +157,92 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   항목 — `research/pre-implementation-audit.md`가 짚은 "실제 Luau로
   부딪혀본 적 없는 것" 범주와 같은 급이라 신중하게 다룸).
 
+### `None` 센티널 — Tween store-bind와 같은 재귀 재디스패치 패턴 재사용 (2026-08-07 여덟 번째 세션)
+
+`modifier-plan.md` "2-1"절의 "인라인 키로 modifier 필드를 명시적으로
+지우기" 문제 — raw 저장 계층(Modifier 필드/인라인 props/`Peek`)에서 쓰는
+`None` 센티널이 실제로 인스턴스에 반영될 때 base가 뭘 하는지가 이 문서의
+층위. 결론: **새 메커니즘이 아니라 위 "확정된 디스패치 모델"의
+Tween store-bind 핸들러(65-79행)와 완전히 같은 모양의 핸들러 하나 추가.**
+
+```
+NoneHandler.priority = <매우 높음>
+NoneHandler.isHandlable(inst, k, v) = (v == None)
+NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
+```
+
+- **매치 predicate는 `isHandlable`** — `canExecute`가 아님. 둘은 완전히
+  다른 개념이라 혼동하지 말 것: `isHandlable(k,v)`는 KV 매치 predicate(핸들러
+  계약 4종 중 하나, 이 절에서 다루는 것), `canExecute`는 인자로 받은 특정
+  바인딩/등록 하나가 "지금 살아있어서 실행돼도 되는가"만 보는 별개의
+  라이프타임 게이트(`base/lifecycle-pattern.md` "생명 바인드 유틸" 절) —
+  KV 매치와 무관.
+  `NoneHandler.isHandlable`은 `v == None`(센티널 자체)을 잡는 것이지
+  `v == nil`이 아님 — 진짜 `nil`은 애초에 테이블 순회로 나올 수 없다는 게
+  이 문제의 출발점이었으므로, 매치 대상은 항상 `None` 마커.
+  `Dispatch.process(inst, k, nil)`로 재귀 호출하는 순간 `None`은 더 이상
+  존재하지 않고 진짜 `nil`이 되므로, 다음 우선순위 스캔은 자연히 키 `k`를
+  원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand 등)로 흘러감 — Tween의
+  store-bind 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로 좁혀지는
+  것과 정확히 같은 원리, 무한루프 걱정도 동일하게 없음.
+- **`Dispatch.process`/`Handler.process` 이름 겹침 — 소유자 네임스페이싱으로
+  해소, 새 이름 발명 안 함 (2026-08-07 여덟 번째 세션 후속).** 원래
+  "확정된 디스패치 모델" 절은 "스캔+실행"과 "매치된 핸들러 자신의 처리
+  로직" 둘 다 그냥 `process`라고 불러서 이름이 겹쳤음 — 이제 두 계층을
+  명시적으로 분리:
+  - `Dispatch.getHandler(inst,k,v): Handler?` — 순수 스캔(`handler.isHandlable(inst,k,v)`+
+    `priority`), 부작용 없음.
+  - `Dispatch.process(inst,k,v)` — 오케스트레이터: `getHandler` 호출 →
+    이전에 이 키를 담당하던 핸들러와 다르면 이전 핸들러의 `retract` 호출 →
+    새로 매치된 핸들러의 `.process` 호출. **재귀 재디스패치(Tween/일반
+    store-bind/`NoneHandler`)는 전부 이 `Dispatch.process`를 다시 부르는
+    것** — 원래 있던 재귀 관례 그대로, 새로 바뀐 것 없음.
+  - `Dispatch.addHandler(handler: Handler)` — 핸들러를 우선순위 레지스트리에
+    등록. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
+    있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
+    UICornerHandler/TagHandler/AttributeHandler 등)은 팩토리가 `BaseModule`을
+    뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
+    같은 패턴, 새 메커니즘 아님).
+  - Handler 자신의 필드는 계속 `process`/`retract`(이미 확정된 이름,
+    `question.md`에 "특별한 문제 없음"으로 못박혀 있어 재검토 대상 아님) —
+    겹침은 실제 런타임 충돌이 아니라 프로즈 표기 문제였을 뿐이라, 항상
+    소유자를 명시(`Dispatch.process` vs `handler.process`)하는 것으로 해소.
+  - **base 드라이버 루프 자신의 이름은 `Dispatch.drive(inst, flattened)`로
+    확정** — 이미 위 "props 순회 순서" 절이 이걸 비공식적으로 "base
+    디스패치 드라이버"라고 불러왔던 걸 그대로 동사화(`apply`는 "Dispatch를
+    뮤테이션해서 결과를 낸다"는 어감이라 기각 — 사용자 판단). `inst`와
+    flatten된 props 테이블을 받아 배열 파트(children/Ref) 먼저, 해시
+    파트(프로퍼티/이벤트) 나중으로 두 패스 순회하며 각 `(k,v)`에
+    `Dispatch.process`를 호출하는 게 이 함수의 본체.
+- **`v=nil`이 구체적으로 뭘 뜻하는지는 핸들러마다 다름, `None` 자신은
+  "리셋"이 아님** — 일반 프로퍼티는 "`nil`로 셋하는 것도 그냥 셋 동작"이라
+  사실상 그대로 두는 것과 다름없고, UICorner 같은 숏핸드 핸들러는 만들어둔
+  자식 Instance를 실제로 지우는 것까지 포함 — 구체 예시는
+  `base/ui-shorthand-plan.md`/`base/tag-plan.md`/`base/attribute-plan.md`.
+  `None`은 **"이 조합 단계에서 나는 이 필드를 세팅 안 한다"**는 뜻이고,
+  그걸 받은 실제 핸들러가 무엇을 할지는 각자 몫. 개별 프로퍼티/이벤트/UI
+  shorthand 핸들러의 `process` 시그니처는 안 바뀜 — 이들은 원래도 `v`가
+  State 계산 결과로 `nil`이 되는 경우를 처리할 수 있어야 했으므로(일반
+  반응형 케이스), `None`은 그 기존 경로에 도달하는 방법 하나가 늘어난 것뿐.
+  **구현 디테일 캐비엇**: `None→nil`이 Roblox의 nil을 허용 안 하는 타입
+  프로퍼티(Color3/number 등)에 도달하면 `inst[k] = nil`은 런타임 에러 —
+  PropertyHandler 자신이 `v == nil`이면 셋을 건너뛰는 방어를 갖고 있어야
+  함(None 자체의 문제가 아니라 PropertyHandler 구현 디테일, M9/M10로 미룸).
+- **retract와는 무관** — `retract`는 "같은 키를 다른 *핸들러 타입*이
+  넘겨받는" 시나리오 전용(아래 정정된 "확정된 디스패치 모델" 절)이지
+  "`v`가 `nil`이 됨"과는 다른 문제. `None → nil` 재디스패치는 항상
+  `Dispatch.process` 경로로만 흐름 — `NoneHandler` 자신도 `retract`가
+  딱히 할 일이 없음(재귀 호출 자체가 이미 process이므로).
+- **M2 착수 시 확인할 것 (`pre-implementation-audit.md` 우선순위1
+  "이전에 실제로 매치됐던 핸들러 추적" 항목에 추가)**: "이 키를 지금 누가
+  담당 중인가" bookkeeping은 바깥 순회 루프(`Dispatch.drive`)가 아니라
+  `Dispatch.process` 호출 자체 내부에서 갱신돼야 함. 안 그러면 값이 계속
+  `None`으로 유지되는 매 사이클마다 "1차 매치는 `NoneHandler`, 재귀 호출 뒤
+  실제 담당은 다른 핸들러"로 바깥 루프가 오판해 불필요한 `retract`를 반복
+  호출할 위험이 있음 — `Dispatch.process`가 재귀 호출 시에도 자기 자신을
+  통해 담당자 기록을 갱신하게만 해두면(`Dispatch.drive`가 별도로 기록 안
+  하고 `Dispatch.process` 내부에 위임) 자연히 해소됨.
+
 ## Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가
 
 사용자 원 메모: "스토어 바인드는 특수 경우로 둘지, 아니면 다른 pluggable 바인드를
@@ -142,10 +250,11 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
 
 **확정**: 래핑 쪽. 위 "확정된 디스패치 모델" 절 참고 — store 바인드 핸들러도
 다른 핸들러와 동일한 `isHandlable`/`priority`/`process`/`retract` 계약을
-따르되, `process`가 내부적으로 "실제 값이 바뀔 때마다 (원래 key, 새 value)로
-`process(inst,k,realv)`를 재귀 호출"하는 식으로 구현됨. 이러면 store 값
-자체가 어떤 타입이든(원시값, 인스턴스, 심지어 다른 store) 상관없이 동일한
-재귀적 디스패치로 처리 가능 — 아래 "store가 store를 저장 가능한가"와 직결.
+따르되, 자신의 `process`가 내부적으로 "실제 값이 바뀔 때마다 (원래 key, 새
+value)로 `Dispatch.process(inst,k,realv)`를 재귀 호출"하는 식으로 구현됨.
+이러면 store 값 자체가 어떤 타입이든(원시값, 인스턴스, 심지어 다른 store)
+상관없이 동일한 재귀적 디스패치로 처리 가능 — 아래 "store가 store를 저장
+가능한가"와 직결.
 
 Slot이 store 바인드로 넘어오는 경우, pluggable 처리기에 `retract` 핸들러가
 필요하다는 점(부모가 slot을 정리하고 다시 process하는 방식)도 이 래핑 방식과
@@ -454,9 +563,9 @@ SyntheticEvent만 주는 것과 같은 모양).
 바꿔치기/해제하는 것)을 지원한다. quad-roblox 로컬 결정, base 변경 없음.
 
 **엔지니어링 비용이 낮은 이유**: 이미 확정된 "Store 바인드는 pluggable
-바인드를 재실행하는 래핑"(위 절, `process`가 값이 바뀔 때마다
-`process(inst,k,realv)`를 재귀 호출) + "재실행 래핑이 `retract`도 같이
-호출한다"(Slot이 이미 이 조합을 씀, 같은 절)는 두 메커니즘이 이미 있음.
+바인드를 재실행하는 래핑"(위 절, 핸들러의 `process`가 값이 바뀔 때마다
+`Dispatch.process(inst,k,realv)`를 재귀 호출) + "재실행 래핑이 `retract`도
+같이 호출한다"(Slot이 이미 이 조합을 씀, 같은 절)는 두 메커니즘이 이미 있음.
 이벤트 핸들러가 할 일은 딱 하나: `process`에서 `:Connect()`한 Connection을
 per-instance 저장소에 기억해두고, `retract`에서 그걸 `:Disconnect()`하는
 것 — 새 디스패치 메커니즘 발명 필요 없이 기존 4종 계약(`isHandlable`/
@@ -1155,8 +1264,8 @@ copy-on-write 절충안은 2026-08-04 검증 라운드에서 사실상 폐기 �
 
 ## 확정된 것 (더 이상 열린 질문 아님)
 
-- **핸들러 계약**: `isHandlable(k,v)` + `priority` + `process`(구 `bind`) +
-  `retract`(구 `cleanup`) 4종 조합으로 확정 — tbox식 6-hook 세분화는 지금은
+- **핸들러 계약**: `isHandlable(inst,k,v)` + `priority` + `process`(구
+  `bind`) + `retract`(구 `cleanup`) 4종 조합으로 확정 — tbox식 6-hook 세분화는 지금은
   안 함. 실제 구현하며 부족한 지점이 보이면 그때 hook 추가(점진적 확장).
 - **Signal 클래스**: 안 만듦, 콜백 + `Connected` 계산 속성만(`base/
   lifecycle-pattern.md`).
@@ -1245,70 +1354,85 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 - **Store/State 전파 모델, 라이프사이클 — 둘 다 재검토 후 기존 확정 유지**
   (위 "Store/State/Source 온톨로지" 절의 "PA님 코드와의 교차검증" 참고).
 
-## Attribute 특수 키 — 타입 파라미터화 (2026-08-06, 신규 논의)
+## Tag/Attribute 특수 키 — 전용 문서로 분리됨 (2026-08-07 여덟 번째 세션)
 
-**상태**: 미확정, 사용자가 이번에 새로 제기 — 이전에 기록된 적 없음
-(`architecture.md` 4번 항목의 `[Attribute "Name"]`은 특수 DI 키의 존재만
-확정했을 뿐, 타입을 어떻게 표현할지는 다룬 적 없었음).
+`base/tag-plan.md`/`base/attribute-plan.md`로 이동 — 이 절이 다루던 타입
+파라미터화 문제(`[Attribute<<boolean>> "name"]` vs `[BooleanAttribute
+"name"]`)뿐 아니라 `None`/`process`/`retract` 동작까지 확정 반영됨.
+UICorner 숏핸드/Tween처럼 "1 프리미티브 1 파일" 관례를 따라야 한다는
+지적으로 분리.
 
-**문제**: Roblox Attribute는 Instance/Tag와 달리 실제로 **타입이 있는
-값**(string/boolean/number/Color3/UDim/UDim2/Vector2/Vector3/CFrame/
-Instance 참조 등 제한된 프리미티브 집합, 테이블 등 복합 타입은 지원 안
-함)이라, 그냥 `[Attribute "name"] = value`로 두면 `value`의 타입을 Luau가
-좁혀줄 방법이 없음. 커스텀/복합 데이터(테이블 등)는 애초에 Attribute가
-지원을 안 하므로 Ref(직접 참조 획득) 쪽으로 빠지는 게 맞고, Attribute는
-프리미티브 전용으로 남기면 된다는 게 사용자 판단 — Value 오브젝트가
-역사적으로 Attribute의 대안(테이블/참조를 담는 용도)으로 나온 배경이지만,
-지금은 Roblox Attribute가 Instance 참조 타입도 지원해서 `ObjectValue`
-없이도 Ref 용도로 Attribute를 그대로 쓸 수 있다는 점을 사용자가 짚음
-(`research/debug-tooling-plan.md`의 "Value 오브젝트 기각, Attribute로
-확정" 결정과 같은 방향 — Instance 타입 지원까지 감안하면 그 결정의 근거가
-한층 더 탄탄해짐).
+## `Brand` — 런타임 nominal 타입 판별 통합 메커니즘, `isState`를 일반화 (2026-08-07 여덟 번째 세션)
 
-**후보 두 가지**:
-- `[Attribute<<boolean>> "name"] = true` (리터럴 또는 store-bind 값) —
-  제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일.
-- `[BooleanAttribute "name"] = true` — 타입별로 이름이 다른 정적 생성자
-  패밀리(`StringAttribute`/`NumberAttribute`/`Color3Attribute`/
-  `InstanceAttribute` 등).
+**배경**: `isState`(2026-08-07 다섯 번째 세션 확정, `:Peek<<T>>(key):
+T|State<T>|nil`가 돌려주는 raw union을 사용자 코드가 분기하려면 판별
+수단이 필요했음)와 똑같은 필요가 quad의 다른 branded 타입에도 전부
+적용됨 — `Observer`/`Effect`/`Tag`/`Attribute`/`Tween`/`Blocker`/`Store`/
+`Source`/`Slot`/`None`까지, Handler 구현(`isHandlable`에서 "이 값이
+Tween인가/Store인가" 판별)과 사용자 코드 양쪽에서 반복적으로 필요해질
+수단이라 `isState` 하나만 만들고 끝내지 않고 전체를 일관된 메커니즘으로
+통합(component-composition-plan.md 4번 절이 이미 "`isSource`류 판별자로
+(`isObserver`와 동일한 패턴)"라고 이 방향을 예견해뒀던 것과 맞아떨어짐).
 
-**소견(확정 아님, 검토 필요)**: 이 선택은 이미 확정된 DI 인스턴스 생성
-패턴(위 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)과 구조적으로 똑같은
-문제 — 그때도 "제네릭 하나로 다 커버할지 vs 타입별 정적 필드로 나눌지"
-고민이 있었고, 결론은 **둘 다**(`new<ClassName>(className)` 제네릭
-생성자 + 자주 쓰는 ~25개는 정적 필드로 미리 바인딩)였음. Attribute도 같은
-모양을 재사용하면 자연스러울 가능성 — `Attribute<T>("name")` 제네릭을
-기본으로 두고, 실사용 빈도가 압도적으로 높을 `Boolean`/`Number`/`String`/
-`Instance` 정도만 `BooleanAttribute`/`NumberAttribute`/`StringAttribute`/
-`InstanceAttribute` 같은 지름길로 정적 바인딩하는 절충. 단 이건 사용자
-확인 전 소견일 뿐 — `.claude/question.md`에 반영, 다음 세션에서 사용자
-판단 필요.
-
-## `isState(x): boolean` — State/Source 판별 predicate (2026-08-07 다섯 번째 세션)
-
-**배경**: `base/modifier-plan.md` 9번 절의 `:Peek<<T>>(key): T|State<T>|nil`
-(Modifier 필드를 확정하지 않고 raw 그대로 읽는 접근자)이 나오면서, 사용자
-코드가 그 결과를 State/plain으로 분기하려면 판별 수단이 필요해짐 — 같은
-필요가 실은 새로 생긴 게 아니라 Modifier의 함수형 setter(`modifier-plan.md`
-4-1번, "현재 필드가 State냐 plain이냐"로 동작이 갈림)가 지금까지도 내부적으로
-풀어야 했던 문제인데 그 판별 방법 자체가 문서에 명시된 적이 없었음 — 이번에
-`isState`로 명문화하며 그 구멍도 같이 메움.
-
-**Source도 같이 잡힘, 별도 `isSource` 불필요** — Source가 State를 구조적으로
-만족(위 "Source가 State를 만족함" 관련 내용은 `base/store-semantics.md`
-참고)하므로, `isState(source) == true`가 자연스러운 동작이고 그걸로 충분함.
-
-**구현: weak-key 레지스트리, duck-typing 아님.**
+**구현: 공유 weak-key 레지스트리 하나 + 테이블 아이덴티티를 태그로
+사용(문자열 아님).**
 
 ```
+local Brand = {}
 local registry = setmetatable({}, {__mode = "k"})
--- State/Source를 만드는 모든 생성 지점(Source(...), :With(...), :Compute(fn) 등)에서:
-registry[newHandle] = true
--- predicate:
+
+function Brand.set(x, tag) registry[x] = tag end
+function Brand.get(x) return registry[x] end -- nil이면 quad가 모르는 값
+
+-- 각 브랜드는 고유 테이블(빈 테이블이어도 됨) — 문자열 리터럴 아님
+local ObserverTag, EffectTag, TagTag, AttributeTag, TweenTag, BlockerTag,
+      StateTag, SourceTag, StoreTag, SlotTag = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+
+-- 각 타입의 모든 생성 지점(Observer(...), Source(...), :With(...), Tag(...) 등)에서:
+Brand.set(newHandle, ObserverTag)
+```
+
+**문자열 대신 테이블 아이덴티티를 태그로 쓰는 이유(사용자 제안)** —
+Luau의 인터닝된 문자열 비교도 이미 사실상 O(1) 포인터 비교라 성능 차는
+무시할 만하지만, **오타 안전성**이 실질적 이득: 태그가 오타난 문자열
+리터럴("Oberver")이면 등록/조회 양쪽이 조용히 어긋나는데, 테이블
+레퍼런스는 잘못된 변수를 참조하면 즉시 드러나거나 최소한 진짜 다른 값이
+되어 헷갈릴 여지가 없음.
+
+**`isX`는 `Brand`를 직접 노출 안 하고 각자 얇은 wrapper로 감쌈** —
+단순 항등인 경우(`isObserver(x) = Brand.get(x) == ObserverTag`)와, 상위
+관계(subtype)가 있어 집합 멤버십이 필요한 경우(`isState`)로 갈림:
+
+```
 local function isState(x)
-  return registry[x] == true
+  local t = Brand.get(x)
+  return t == StateTag or t == SourceTag  -- Source가 State를 구조적으로 만족
+end
+local function isSource(x)
+  return Brand.get(x) == SourceTag
 end
 ```
+
+**정정 — `isSource`는 별도로 필요함, 다섯 번째 세션의 "불필요" 서술을
+뒤집음(2026-08-07 여덟 번째 세션).** 그때는 "State면 충분한 용도"만
+염두에 뒀지만, `Source`는 State보다 진짜로 더 많은 능력(`:Set`/`:Emit`)을
+가진 진짜 서브타입이라 "이 값이 (읽기 전용이 아니라) 쓰기도 되는
+원천인가"를 알아야 하는 코드는 `isState`만으론 부족함 — `isSource`를
+별도로 제공, `isState`는 여전히 `{State, Source}` 둘 다 통과시킴(상위
+개념이니까 당연히). `component-composition-plan.md` 4번 절이 이미
+`isSource`가 존재한다고 가정하고 있었던 것과도 이걸로 정합됨(그동안 두
+문서가 서로 모순돼 있었음). `base/modifier-plan.md`의 "별도 `isSource`
+불필요" 서술도 같이 정정 대상.
+
+**`None`은 이 레지스트리에 안 들어감 — 싱글턴이라 항등 비교로 충분.**
+`Observer`/`Store`처럼 인스턴스가 여러 개 생기는 타입과 달리 `None`은
+quad 전체에서 딱 하나만 존재하므로 weak table 조회보다 `x == None`
+레퍼런스 비교가 더 싸고 정확함. 다만 `Brand.get(x)`가 "quad가 아는 모든
+값의 태그를 답해주는 범용 introspection 창구"(quad-debug 같은 도구가
+"이 값이 뭐냐"를 물어볼 단일 창구) 역할까지 겸하게 하려면 `None`도
+빠지면 안 되므로, `Brand.get`이 내부적으로 `x == None`을 먼저 확인하는
+특수 분기를 하나 두고 그 뒤에 일반 레지스트리 조회로 폴백 — `isNone`은
+바로 이 특수 분기의 실제 구현체가 됨(별도로 새로 만들 것 없음).
 
 **duck-typing(예: `type(x) == "table" and x.Compute ~= nil`)을 쓰지 않는
 이유**: `Peek`가 돌려주는 `T`는 Modifier 필드에 들어갈 수 있는 임의의
@@ -1317,9 +1441,20 @@ end
 인덱싱 자체에서 에러를 던지므로 duck-typing이 `pcall`로 감싸야 하는 지저분한
 엔지니어링이 되거나 최악의 경우 그냥 엔진이 죽는 상황까지 생길 수 있음.
 weak-key 레지스트리는 rbvm 네임스페이스 추적(`base/lifecycle-pattern.md`)과
-같은 이미 확정된 패턴 재사용이라 새 아이디어 아님 — weak 키라 등록된 State/
-Source가 GC되면 레지스트리 엔트리도 자동으로 사라짐(살려두는 목적의 강참조
+같은 이미 확정된 패턴 재사용이라 새 아이디어 아님 — weak 키라 등록된 값이
+GC되면 레지스트리 엔트리도 자동으로 사라짐(살려두는 목적의 강참조
 레지스트리인 Observer의 `:Subscribe` 레지스트리와는 반대 성격).
+
+**Luau 타입 narrowing은 자동으로 안 됨 — 명시적 `::` 캐스팅 필요(사용자
+확인, Luau가 원래 그렇게 동작함).** `isX(v)`가 참이어도 Luau 컴파일러가
+`v`의 정적 타입을 알아서 좁혀주진 않음(TypeScript의 `x is T`류 사용자
+정의 타입 가드를 Luau가 지원 안 함) — `if isState(v) then local s = v ::
+State<any> ... end`처럼 런타임 검증 뒤 명시적 캐스팅을 붙이는 게 실제
+패턴. 여전히 duck-typing/`pcall`보다 훨씬 안전하니 가치는 있음, 다만
+"자동 narrowing"을 기대하면 안 됨.
+
+**이름은 전부 가칭 — `Brand`/`ObserverTag`류 포함 용어 정리 대상,
+`.claude/question.md`에 반영.**
 
 ## 남은 열린 질문 (`.claude/question.md`에도 취합)
 

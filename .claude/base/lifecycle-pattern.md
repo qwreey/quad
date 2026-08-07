@@ -127,9 +127,33 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 **base가 범용 유틸로 제공할 것: 임의의 클로저/구독을 실제 Roblox 객체의
 생명주기에 바인드하는 도구** — 내부적으로 v1/rbvm이 쓰던 "connect 트릭"(어떤
 신호에든 연결해서 참조를 죽을 때까지만 붙잡아두는 것)을 그대로 재사용. 이
-도구로 바인드된 옵저버는 `canExecute: () -> boolean` 같은 predicate 람다를
-가질 수 있어서, `Connected`가 false면 실행 자체를 건너뛸 수 있음(죽은 대상에
-대한 처리 시도 방지, 위 원칙과 직결).
+도구로 바인드된 옵저버는 `canExecute` predicate로 게이팅되어, 살아있지 않으면
+실행 자체를 건너뛸 수 있음(죽은 대상에 대한 처리 시도 방지, 위 원칙과 직결).
+
+**`canExecute`의 시그니처는 `(handle) -> boolean`이지 `() -> boolean`이
+아님(2026-08-07 여덟 번째 세션, 정정)** — 처음엔 "바인딩마다 클로즈오버된
+zero-arg 람다"로 적었으나, 그러면 등록마다 클로저를 새로 만들어야 해서
+아래 "base 유틸은 인터페이스, 실제 구현은 백엔드 팩토리가 주입" 절의 패턴
+(base는 타입만 갖고, quad-roblox가 `BaseModule`을 뮤테이션해서 실 구현체를
+채워넣음)과 잘 안 맞음 — 그 패턴이 성립하려면 `canExecute`는 **quad-roblox가
+한 번만 주입하는 공유 함수**여야 하고, 그러려면 "어떤 등록을 확인할지"를
+가리키는 인자(`handle`, 아래 gchold 스케치의 Connection이 이 역할)가 있어야
+함. base 입장에선 `handle`은 `any`(엔진마다 실체가 다를 수 있음).
+
+**quad-roblox 구현 스케치(rbvm 패턴 재사용, base 결정 아님 — 참고용)**:
+Instance당(꼭 하나일 필요는 없지만 보통 그게 싸서 하나로 감) weak-keyed
+per-instance 저장소(`base.perInstanceState(inst)`)에 "gchold" 배열을 둠.
+그 배열엔 절대 발화하지 않도록 골라 만든 신호에 연결한 Connection을
+넣는데, 이 Connection의 콜백 클로저 안에 실제로 살려두고 싶은 옵저버를
+업밸류로 캡쳐해둠(콜백은 안 불려도 클로저 자체가 살아있는 한 업밸류는
+안 죽음) — `inst`가 GC되면 gchold 배열째로 같이 죽으므로 옵저버도 자연히
+GC됨(`base/bind-system-plan.md` "핸들러 내부 상태 저장" 절의 weak-keyed
+중첩 구조와 같은 원리). `canExecute(handle)`은 이 Connection(또는 이를
+감싼 핸들)을 받아 `.Connected`를 확인하는 정도로 구현될 것.
+**미확인 세부사항**: 옵저버 → Connection 역참조를 별도 weak 릴레이션으로
+둘지, 아니면 그냥 Observer 테이블 안 평범한 필드로 넣을지(정적 해싱된
+필드 접근이 weak 테이블 조회보다 싸서 후자가 나을 수 있음) — quad-roblox
+구현 단계에서 실측 확인 필요, base 설계에 영향 없음.
 
 이건 `base/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸과 짝을
 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"(weak-keyed per-instance

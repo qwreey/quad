@@ -91,6 +91,18 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   Effect 핸들이 leaf 부착과 `:Subscribe()` 중 이미 어느 한쪽으로
   바인딩됐는지 표시하는 내부 플래그 이름(`base/bind-system-plan.md`
   "이중 바인딩 금지" 절) — 동작은 확정, 이름만 가칭.
+- **`None`/`NoneHandler`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**:
+  인라인 키/Modifier setter로 필드를 명시적으로 지우는 센티널과, 그걸
+  `nil`로 바꿔 재디스패치하는 base 내장 핸들러 이름 —
+  `modifier-plan.md` "2-1"절/`bind-system-plan.md`의 `None` 센티널
+  절에서 동작은 확정, 이름만 다른 가칭들과 같이 재검토 대상.
+- **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
+  nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
+  10종 branded 타입 전부로 일반화) — `bind-system-plan.md`의 `Brand`
+  절에서 동작/구현 방식은 확정, "OOP 인스턴스의 클래스명을 얻는 느낌"을
+  전달할 더 나은 이름이 있는지가 열린 질문(사용자가 직접 제기) — `Tag`는
+  이미 quad-roblox의 `CollectionService` 래퍼로 쓰여서 이름 충돌, 후보로
+  "type namespace"류를 사용자가 검토했으나 미확정.
 - **"프로바이더"(3순위, 사소함)**: `base/module-lifecycle-plan.md`가
   "provider"라고 불러온, `isHandlable`로 참여 여부를 결정하고 우선순위대로
   스캔되는 pluggable 참가자 개념 — 정확한 이름을 "provider"/"processor"/
@@ -126,6 +138,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **`canExecute`/`Connected`의 실제 구현 방식(Parent==nil vs Connection.
   Connected vs Destroying 플래그)이 미확정인데 이미 Slot/Observer/store-bind
   retract 전역에 재사용 확정됨** — M2/M3 착수 전 실측 필요 — 우선순위1-6.
+  **(2026-08-07 여덟 번째 세션 보강)** 시그니처는 `(handle) -> boolean`으로
+  확정(zero-arg 클로저 아님, `base/lifecycle-pattern.md` 참고)됐고
+  rbvm식 gchold 스케치(weak per-instance 배열에 절대 안 발화하는
+  Connection을 넣어 그 클로저 업밸류로 Observer를 살려두는 방식)도
+  후보로 적어뒀지만, 여전히 스케치 단계 — Observer→Connection 역참조를
+  weak 릴레이션으로 둘지 평범한 필드로 둘지 포함, 실측은 그대로 필요.
 - **~~`LifetimeHandle` 인터페이스가 M8에 배치돼 있지만 M4/M6이 이미 그걸
   필요로 함(로드맵 순서 역전)~~ — 반영 완료(2026-08-07 세 번째 세션)**:
   `LifetimeHandle`/`PerInstanceState` 인터페이스(타입만)를 `ROADMAP.md`
@@ -137,15 +155,6 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 
 ### 3. 낮은 우선순위
 
-- **`None`(가칭) 센티널 프리미티브 — 미확정, 2026-08-07 세 번째 세션
-  신설.** `{ Override = nil, mod }`처럼 인라인 키로 modifier가 주는 값을
-  명시적으로 지우고 싶어도 Lua 테이블 리터럴의 `키 = nil`은 키가 아예
-  없는 것과 구별이 안 돼서 "인라인이 modifier보다 무조건 우선"이라는
-  기존 merge 규칙(`modifier-plan.md` 2번)이 이 케이스에선 실제로 작동을
-  안 함. `false`를 이벤트 disconnect 센티널로 쓴 선례처럼 실재하는 값
-  `None`을 도입하는 방향만 나왔고 상세(타입, flatten 내부 표현, State
-  필드에도 같은 문제가 적용되는지)는 미정 — `modifier-plan.md` "2-1"절
-  참고, M7(Modifier) 착수 전 확인.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —

@@ -50,14 +50,38 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M2 — 디스패치 엔진
 
-- [ ] `Dispatch/init.luau`(`process`/`retract` 엔진, `isHandlable` 우선순위 스캔)
-- [ ] `Handler.luau`(핸들러 계약 타입)
+- [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
+      스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v)`(오케
+      스트레이터: getHandler → 이전 담당자와 다르면 그 `retract` → 새
+      핸들러의 `.process`) / `Dispatch.addHandler(handler)`(레지스트리
+      등록, quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
+      flattened)`(배열→해시 두 패스 순회하며 각 `(k,v)`에 `process` 호출 —
+      `bind-system-plan.md`의 `None` 센티널 절, 2026-08-07 여덟 번째 세션에
+      네이밍 확정). "이 키를 지금 누가 담당 중인가" bookkeeping은
+      `Dispatch.drive`가 아니라 `Dispatch.process` 호출 자체 내부에서
+      갱신할 것(재귀 재-process 시에도 자연히 갱신되게 — 안 그러면 재귀
+      재디스패치를 쓰는 케이스(Tween store-bind, `NoneHandler`)에서 매
+      사이클 불필요한 `retract`가 반복 호출될 위험)
+- [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
+      `process`/`retract` — `isHandlable`도 `inst`를 받도록 확정, 2026-08-07
+      여덟 번째 세션 정정)
+- [ ] `Brand.luau`(공유 weak-key 레지스트리, `Brand.set(x,tag)`/
+      `Brand.get(x)` — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
+      `isAttribute`/`isTween`/`isBlocker`/`isSource`/`isStore`/`isSlot`
+      전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None` 항등
+      비교 — `bind-system-plan.md`의 `Brand` 절, 2026-08-07 여덟 번째
+      세션 신설)
 - [ ] `LifetimeHandle.luau`/`PerInstanceState.luau` **인터페이스만**(타입
       계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
       있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
       이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
       있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md` 2번
-      — 2026-08-07 세 번째 세션에 반영)
+      — 2026-08-07 세 번째 세션에 반영). **`canExecute`는 `(handle:
+      LifetimeHandle) -> boolean`으로 확정**(바인딩마다 클로저 만드는
+      zero-arg가 아니라, quad-roblox가 한 번만 주입하는 공유 함수 — "base
+      유틸은 인터페이스, 백엔드가 주입" 패턴과 맞춰야 해서.
+      `base/lifecycle-pattern.md`의 gchold 스케치 절, 2026-08-07 여덟 번째
+      세션 정정)
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source
@@ -119,12 +143,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
 - [ ] `:Peek<<T>>(key): T|State<T>|nil` 필드 읽기 접근자 +
-      `isState(x): boolean`(weak-key 레지스트리 기반, quad-base 공용
-      유틸 — `modifier-plan.md` 9번, `bind-system-plan.md`의 `isState` 절)
-- [ ] 인라인 키로 modifier 필드를 명시적으로 지우는 문제 확인 — `None`
-      (가칭) 센티널 프리미티브 도입 여부(`modifier-plan.md` 2-1번, 아직
-      미정 — 착수 전 사용자 확인 필요, 확정 안 되면 이번 마일스톤은
-      스킵하고 다음으로 미뤄도 됨)
+      `isState(x)`/`isSource(x): boolean`(`Brand` 공유 레지스트리 기반 —
+      `modifier-plan.md` 9번, `bind-system-plan.md`의 `Brand` 절, M2의
+      `Brand.luau`에 이미 구현돼 있어야 함)
+- [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None`(가칭)
+      센티널(`modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
+      이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
+      (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
+      "이전 매치 핸들러 추적" 항목과 함께 구현 — Tween store-bind 핸들러와
+      동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — 확정 완료
 
 ## M8 — Ref
 
@@ -153,8 +180,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M10 — Event / Attribute / Tag
 
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
-- [ ] `Handlers/Attribute.luau`
-- [ ] `Handlers/Tag.luau`(`CollectionService`)
+- [ ] `Handlers/Attribute.luau`(`base/attribute-plan.md` — 메커니즘/`None`/
+      `retract` 불필요 확정, 타입 파라미터화 이름만 착수 전 확인)
+- [ ] `Handlers/Tag.luau`(`CollectionService`, `base/tag-plan.md` — 전부 확정)
 
 ## M11 — Tween
 

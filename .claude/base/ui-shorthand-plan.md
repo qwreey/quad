@@ -69,6 +69,26 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 않음. 사용자가 직접 만든 `UICorner`를 quad가 멋대로 건드리는 부작용을
 피하기 위함.
 
+### `v`가 `nil`인 경우 — `process`가 직접 자식 제거, `retract`는 관여 안 함 (2026-08-07 여덟 번째 세션)
+
+`modifier-plan.md`의 `None` 센티널(`base/bind-system-plan.md`의
+`NoneHandler` 재귀 재디스패치 절 참고)이 최종적으로 이 Handler의
+`process(inst, k, nil)`을 호출하는 구체 사례 — 이 Handler에서 "`v`가
+`nil`"은 만들어둔 `_quad_corner`류 자식이 있으면 그냥 지우는 것으로 확정.
+일반 프로퍼티 핸들러와 달리 이 숏핸드는 실제 Instance를 만들어 붙이는
+쪽이라 "`nil` = 셋 안 함"이 곧 "만들어둔 게 있으면 치운다"는 뜻이 됨.
+
+- **이건 `retract`가 아니라 `process` 자신의 로직** — `retract`는 "이
+  키를 다른 핸들러가 넘겨받는" 시나리오 전용(`bind-system-plan.md` "확정된
+  디스패치 모델" 절)이지, 같은 핸들러가 값이 바뀌어서 자기 산출물을
+  정리하는 것과는 다른 문제. 값이 나중에 다시 숫자로(`2`→`nil`→`3`처럼)
+  바뀌면 `process`가 다시 자식을 만들면 그만이라 `retract` 쪽에 별도로
+  구현할 게 없음.
+- **캐비엇**: 이 왔다갔다가 잦으면(예: 반응형 State가 `nil`과 숫자 사이를
+  자주 토글) 매번 Instance 생성/제거 비용이 그대로 듦 — Tween처럼 무거운
+  API는 아니지만 공짜도 아니므로, 잦은 토글이 예상되는 값을 이 숏핸드에
+  직접 물리는 건 문서화 시점에 캐비엇으로 명시할 것(지금은 메모만).
+
 ## store-bind — 이 숏핸드도 지원, Tween만큼 무겁게 안 가도 됨
 
 v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했음
