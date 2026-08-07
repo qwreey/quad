@@ -198,7 +198,32 @@ Modifier/Ref/자식을 구분"이 이미 v1의 유일한 해법이었던 패턴 
 명시적으로 원하는 내부 `Frame{...}` 호출의 배열 자리에 다시 꽂아넣음
 (`return Frame { props.Modifier, props.Ref, ... }`) — **사용자 확정**
 ("결과적으로 함수 구현에선 타입을 멀쩡히 지정하는게 더 중요하니 네임드가
-맞는듯"). Compose(named `modifier` 파라미터 강제, 린트로 감시)와
+맞는듯").
+
+**⚠️ 필수 관용구 — `props.Modifier or None`/`props.Ref or None`으로
+써야 함, 맨 리터럴로 꽂으면 안 됨(2026-08-07 열 번째 세션, `nil`-hole
+버그 실측 후 확정).** caller가 `props.Modifier`/`props.Ref`를 안 넘기면
+`nil`인데, `{nil, props.Ref, child}`처럼 Lua 배열 리터럴에 `nil`이 그대로
+들어가면 그 순간 테이블의 배열 파트 전체가 순회 순서 보장을 잃을 위험이
+있음(`base/bind-system-plan.md` "왜 `nil`이 아니라 `None`인가" 절 — Luau
+REPL 실측으로 확인된 실제 버그, 국소적 피해가 아니라 테이블 전체에 영향).
+그래서 **컴포넌트 저작자는 항상 `or None`으로 감싸서 넘겨야 함**:
+```luau
+return Frame { props.Modifier or None, props.Ref or None, child }
+```
+- **왜 `Modifier()`(빈 modifier 생성)가 아니라 `None`인가**: 별도 할당이
+  필요 없고, 기존 메커니즘을 그대로 재사용함 — `flatten` 단계는 애초에
+  `isModifier(v)`가 거짓인 값은 그냥 건드리지 않고 통과시키므로
+  (`None`은 Modifier가 아니라서 자동으로 이 경로), `props.Modifier or
+  None`이 최종적으로 배열 파트에 `None`인 채로 남으면 두 패스 루프
+  자신의 array-part `None`-스킵 규칙(위 "PreRef" 절)이 그대로 적용돼
+  아무 일도 안 일어남 — 새 특수 케이스 코드가 하나도 안 늘어남.
+- 이 관용구는 컴포넌트 저작자가 **직접 챙겨야 하는 규율**(base가 강제로
+  검증해줄 방법은 없음, Lua는 이런 걸 린트로만 잡을 수 있음) — quad
+  문서화(초심자 가이드/`props.Modifier`/`props.Ref` 절)에 필수 패턴으로
+  명시할 것, `research/documentation-content-map.md`에 반영 필요.
+
+Compose(named `modifier` 파라미터 강제, 린트로 감시)와
 Fusion/Vide(named prop 전달, `[Children]`류 예약 키)가 서로 다른 이유로 전부
 같은 결론에 도달한 유일한 실용적 패턴 — quad가 발명한 게 아니라 선례가
 수렴하는 지점(위 "프레임워크 사례 조사" 절 참고).

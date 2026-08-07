@@ -119,7 +119,15 @@ nil-index 크래시 vs 조용한 no-op)가 안 정해져 있음.
 
 ### 1-5. `props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴의 nil-hole 함정에 그대로 노출됨
 
-**위치**: `base/component-composition-plan.md` "최종 결론" 1번 —
+**[2026-08-07 열 번째 세션 갱신 — 반영 완료.]** 아래 제안 (a)/(b) 대신
+더 단순한 (c)류 해법으로 확정: `props.Modifier or None`/`props.Ref or
+None` 관용구를 필수로 강제 — `None`이 항상 non-nil이라 리터럴 구멍 자체가
+안 생기고, 이미 있는 array-part `None`-스킵 메커니즘(PreRef 논의 중
+같은 세션에서 확정)을 그대로 재사용해 새 코드가 안 늘어남.
+`base/component-composition-plan.md` "필수 관용구" 절, `ROADMAP.md` M0에
+반영 완료 — 더 이상 열린 항목 아님, 아래는 원래 발견 당시 기록.
+
+**위치(당시)**: `base/component-composition-plan.md` "최종 결론" 1번 —
 `return Frame { props.Modifier, props.Ref, ... }` 패턴.
 
 **문제**: caller가 `props.Modifier`나 `props.Ref`를 안 넘기면 그 값은

@@ -31,6 +31,14 @@ pluggable로 만들면 여러 modifier가 반응형으로 같은 키를 계속 �
 cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 변경은 전체
 교체, 부분 오버레이 없음"(`base/architecture.md` 3번) 원칙과 충돌함.
 
+**flatten이 배열 항목 중 뭐가 Modifier인지 판별하는 수단 — `isModifier`
+(`Brand` 기반, 2026-08-07 열 번째 세션 명시).** 다른 모든 nominal 타입
+판별과 같은 메커니즘(`bind-system-plan.md`의 `Brand` 절) 재사용 — flatten은
+배열을 훑으며 `isModifier(v)`가 참인 항목만 필드를 뽑아 merge하고, 나머지는
+전혀 안 건드리고 그대로 배열 파트에 남겨둠(그래서 `None`처럼 Modifier가
+아닌 값은 flatten을 그냥 통과함 — `component-composition-plan.md`의
+"필수 관용구" 절 참고).
+
 관련: 이미 마운트된 Instance에 재바인드할 때 Default→실값 flatten을 다시
 해야 하는지/clone이 필요한지는 별개 미정 문제로
 `research/existing-instance-bind-plan.md`의 "Default 값과 얽히는 문제" 절
@@ -111,6 +119,16 @@ mutable하게 구현하면 같은 modifier 레퍼런스를 공유하는 형제 �
 노드를 할당하는 것과 같은 급의 비용이라 일관되고, mutable+문서화 경고보다
 오염 버그를 원천 차단하는 쪽이 라이브러리 복잡도/사용자 편의 양쪽에서
 낫다고 판단 — **immutable 기본으로 확정**.
+
+**바닥 생성자 — `Modifier()`(필드 없는 빈 인스턴스, 2026-08-07 열 번째
+세션 명시).** 지금까지 문서 어디에도 modifier 체이닝이 시작되는 첫
+호출(`props.Modifier`처럼 이미 존재하는 modifier를 이어받지 않고 처음부터
+만드는 경우)이 명시된 적이 없었던 갭 — `Source(default)`/`Ref(default)`/
+`Store({defaults})`와 같은 "`Type(args)` 팩토리" 관습을 그대로 적용하면
+됨, Modifier는 초기 필드가 필수가 아니므로 `args`가 비어도 되는
+`Modifier()`. `mod:FontSize(20)`처럼 체이닝하는 모든 예시가 실은 이
+`Modifier()`가 만든 빈 인스턴스 위에서 시작함. `base/store-semantics.md`
+"독립 존재 가능한 프리미티브" 절의 예시 목록도 이걸로 갱신.
 
 ### 4. Setter는 리터럴 값과 변환 함수 둘 다 받음, 별도 Getter는 없음
 

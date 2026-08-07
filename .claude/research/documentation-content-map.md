@@ -34,7 +34,7 @@
 8. **컴포넌트 경계 넘기기** — `props.Modifier`/`props.Ref` named parameter 패턴 (`component-composition-plan.md`)
 9. **이벤트** — self(Instance) 안 받음, 문자열 키(`Frame { MouseButton1Click = fn }`) (`bind-system-plan.md`)
 10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
-11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `CreatedRef(fn)` + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
+11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `Ref(default):Callback(fn)`을 children 배열 숫자 슬롯에 직접 놓기 + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
 12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
 13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`research/tween-plan.md`)
 14. **UI 숏핸드(quad-roblox 한정)** — `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 인라인 키 (`base/ui-shorthand-plan.md`)
@@ -67,13 +67,13 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 그때만 재사용 가치 있음 — 지금 3축 어디에도 해당 없음.
 
 ### bind-system-plan.md (943줄, 최대 문서)
-- 초심자: Source/Store/State 기본 정의+생성자, State 읽기 전용 규칙 / dot-access가 값 읽기 1급 경로 / `:With`+`:Compute` 최소 사용법 / Ref 기본 개념+`CreatedRef` / 이벤트 self 미채택 기본 규칙+문자열 키 / 인스턴스 생성(제네릭+정적 필드) / 라이브러리 초기화 3줄(`RobloxFactory(QuadBase)`)
+- 초심자: Source/Store/State 기본 정의+생성자, State 읽기 전용 규칙 / dot-access가 값 읽기 1급 경로 / `:With`+`:Compute` 최소 사용법 / Ref 기본 개념(children 배열에 직접 놓기, 별도 `CreatedRef` 없음) / 이벤트 self 미채택 기본 규칙+문자열 키 / 인스턴스 생성(제네릭+정적 필드) / 라이브러리 초기화 3줄(`RobloxFactory(QuadBase)`)
 - api: `state:Observer(fn)` 사용법(→심화: weak-table 내부 인덱싱) / `:Subscribe()`/`:Unsubscribe()` 시그니처(→심화: 강참조 레지스트리 구조) / Ref 일반화 표면 API(→심화: "왜 값이 아니라 콜백인가") / 이벤트 store-bind 존재+권장 안 함 가이드(→심화: 엔지니어링 비용 근거) / 핸들러 4종 계약(`isHandlable`/`priority`/`process`/`retract`) / `Attribute<T>` 특수 키 후보(미확정 명시 필요)
 - 심화: push-invalidate/pull-recompute 전파 모델+"관측해야 실체화된다" 원칙+`previous` 캐비엇 / **왜 State를 Modifier처럼 플래튼하지 않는가**(이미 문서화 완료, 아래 3번 참고) / Store가 Store를 못 담는 이유 / 이벤트 self 미채택 4가지 근거 / store-bind 재귀 래핑 내부 메커니즘, retract가 Destroy 시 호출 안 되는 이유 / 같은 팩토리 재호출 no-op·다른 팩토리 충돌 에러 내부 안전장치
 - skip: quad2-try 리서치 결과 섹션 전체(OOP 상속/커스텀 파서/Slot 스텁/`Pipe` 폐기 이력) / PA님 코드 교차검증 절(역사적 검증 기록) / "남은 열린 질문"/"확정된 것" 메타 요약
 
 ### component-composition-plan.md / module-lifecycle-plan.md
-- 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티엔 State만 바인딩 / `props.Modifier`/`props.Ref` named parameter 경계 전달 / `InitRoblox(Module)` 팩토리 초기화
+- 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티엔 State만 바인딩 / `props.Modifier`/`props.Ref` named parameter 경계 전달(**`props.Modifier or None`/`props.Ref or None` 필수 관용구 — 안 쓰면 nil-hole 버그, 2026-08-07 열 번째 세션 확정**) / `InitRoblox(Module)` 팩토리 초기화
 - api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Override(mod1, mod2, ...)` 유틸(구 `Merge`, `props.Modifier` 단일 슬롯용 특수 상황으로 한정 소개 — 아래 modifier-plan.md 절 참고) / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
 - 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `store-semantics.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
 - skip: Compose/Fusion/Vide/v1 프레임워크 비교 원자료 / provider/processor 네이밍 미정 등 열린 질문 메모
@@ -180,6 +180,23 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    최우선 목표로 뒀는가 — 위 `심화` 3번(`왜 push-invalidate/pull-recompute
    인가`)을 더 깊게 확장, `Blocker` 같은 파생 프리미티브가 이 목표 위에서
    왜 자연스럽게 나왔는지까지 포함하는 설계 철학 에세이
+6. **왜 배열/해시 두 패스 순서를 안 뒤집는가, `PreRef`는 왜 그 예외로
+   따로 필요한가** (2026-08-07 세 번째 세션 원자료, `bind-system-plan.md`
+   "`phase` 옵션 폐기" 절 마지막 항목이 이 자리를 지목해뒀던 것 — 지금까지
+   여기 안 옮겨져 있었음) — "프로퍼티/이벤트가 항상 children/Ref보다
+   나중"이라는 순서를 고치는 대신 `PreRef`라는 별도 타입으로 예외를
+   빼낸 선택 자체가 에세이 소재. **여기 곁들일 후보 프레이밍(사용자 제시,
+   2026-08-07, 정확한 정의는 미확정 — 아래 5번 목록 참고)**: `Ref`는
+   `(v=Ref)` 매치 핸들러로 처리돼 다른 핸들러들과
+   같은 우선순위 스캔에 참여한다는 의미에서 "hook"(순서 등록 가능, 다른
+   값으로 교체되면 `retract`로 취소됨)에 가깝고, `PreRef`는 그 스캔 밖의
+   고정 pre-pass라는 의미에서 "pre-hook"(항상 최우선 고정, 순서/취소
+   개념 자체가 다름)에 가깝다는 구분 — quadnomicon 에세이로 쓸 때 이
+   "hook"/"pre-hook" 용어 자체를 채택할지부터 먼저 확인 필요(복수 `PreRef`
+   간 순서는 2026-08-07 아홉 번째 세션에서 해소됨 — 배열 index 순서
+   그대로, 별도 규칙 없음, `bind-system-plan.md` "PreRef" 절 참고. 취소
+   가능 여부는 여전히 미정 — PreRef는 fire와 동시에 소진되는 1회성
+   pre-pass 참가자라 "취소"라는 개념 자체가 성립하는지부터 다시 볼 것).
 
 **publish 안 하는 것과의 경계**: 세션별 정정 이력, 조사 원자료(Fusion
 반응 그래프 BFS 분석, quad2-try 죽은 코드 조사 등)는 quadnomicon에도
@@ -204,6 +221,14 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 - 키 기반 동적 컬렉션 재조정 최종 이름/시그니처(`Render`/`Draw`/`List` 등
   후보만 있음, `Slot:Extract` 세부 시맨틱도 미정) — `research/
   additional-primitives-plan.md`(2026-08-06 신설, 설계 진행 중)
+- **"hook"/"pre-hook" 용어 채택 여부 + `PreRef`의 취소 가능성** (2026-08-07,
+  위 심화 후보 6번 참고) — `bind-system-plan.md`는 `PreRef`가 위치 무관
+  호이스팅이라는 것과 일반 `Ref`가 우선순위 스캔에 참여한다는 것까지는
+  확정해뒀고(복수 `PreRef` 간 순서=배열 index 순서, 동적 경로로 도착한
+  PreRef는 전용 Handler가 즉시 error — 둘 다 아홉 번째 세션에서 추가
+  확정), "hook 대 pre-hook"이라는 용어 자체를 문서화 시 채택할지와
+  `PreRef`의 취소 가능성(애초에 fire와 동시에 소진되는 1회성이라
+  "취소"가 의미 있는 개념인지부터)만 아직 미정.
 
 이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
 "확정 전엔 문서화 대상 아님"이라는 표시만 겸함.

@@ -64,13 +64,14 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
-- **`CreatedRef`/`canExecute`(3순위, 사소함)**: `CreatedRef`는 과거분사형이라
-  생성자처럼 안 읽힘. `canExecute`는 실제로 "이 핸들이 아직 살아있나"
-  확인인데 이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
+- **`canExecute`(3순위, 사소함)**: 실제로 "이 핸들이 아직 살아있나" 확인인데
+  이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적.
   **(2026-08-07 추가)** `PreRef`(children 배열 전용, Modifier/Store에
   못 들어가는 Ref 특수화 — `base/bind-system-plan.md` "`phase` 옵션 폐기 →
   위치로 표현, `PreRef` 신설" 절)도 신규 이름이라 이 라운드에 같이 재검토
-  대상.
+  대상. (`CreatedRef`는 더 이상 이 목록에 없음 — 별도 이름 자체가 폐기됨,
+  `Ref(default)`/`PreRef(default)`를 children 배열에 직접 놓는 것으로
+  확정, 아래 "지금까지 확정된 것" 참고.)
 - **`Ref`(3순위, 2026-08-06 추가)**: 정의가 "quad가 만든 instance를 얻는
   통로"에서 "아무 사용자 값이나 담는 범용 값 박스"로 넓어져서(`base/
   bind-system-plan.md` "Ref 일반화" 절), 이름이 여전히 넓어진 의미에
@@ -132,10 +133,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   없이 나란히 적용됨.** 왜 이 경우만 예외로 방어하는지 명문화 필요, 또는
   Luau에서 실제 타입 차단이 가능한지부터 확인(안 되면 그냥 UB로 격하) —
   문서모순 절 + 우선순위2-2.
-- **`props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴
-  nil-hole 함정에 그대로 노출됨** — caller가 Modifier/Ref를 안 넘기면
-  `{nil, ref, child}`에서 뒤 항목까지 통째로 무시될 수 있는 버그 클래스.
-  M0 스파이크에 이 케이스(안 넘기는 경우)를 반드시 포함시킬 것 — 우선순위1-5.
+- ~~`props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴
+  nil-hole 함정에 그대로 노출됨~~ — **반영 완료(2026-08-07 열 번째
+  세션)**. `props.Modifier or None`/`props.Ref or None` 관용구를 필수로
+  확정(`base/component-composition-plan.md` "필수 관용구" 절) — M0에선
+  이 관용구 자체가 타입/런타임 양쪽에서 문제없이 동작하는지만 검증.
 - **`canExecute`/`Connected`의 실제 구현 방식(Parent==nil vs Connection.
   Connected vs Destroying 플래그)이 미확정인데 이미 Slot/Observer/store-bind
   retract 전역에 재사용 확정됨** — M2/M3 착수 전 실측 필요 — 우선순위1-6.

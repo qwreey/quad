@@ -28,15 +28,24 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       핸들러 하나 + `isHandlable` 우선순위 스캔 포함)
 - [ ] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
       Luau 테이블에서 관찰한 대로 동작하는지 확인, `PreRef` pre-pass +
-      일반 `Ref`/`CreatedRef`의 위치 기반 순서까지 최소 스파이크로 검증
+      일반 `Ref`의 위치 기반 순서까지 최소 스파이크로 검증
       (2026-08-07 세 번째 세션, `base/bind-system-plan.md` "`phase` 옵션
-      폐기 → 위치로 표현, `PreRef` 신설" 절)
+      폐기 → 위치로 표현, `PreRef` 신설" 절) — **PreRef pre-pass의 소진은
+      `nil`이 아니라 `None`으로(2026-08-07 열 번째 세션 정정, 사용자가
+      Luau REPL로 반례 제시 — 키가 듬성듬성해지면 순회가 index 순서를
+      전혀 안 지킴), 이 경로는 nil-hole 위험이 아예 없도록 설계됐으므로
+      "구멍 있는 테이블 순회" 자체를 검증할 필요는 없어짐(같은 절 "왜
+      `nil`이 아니라 `None`인가" 참고)**
 - [ ] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,
       `export type Params = {...}`로 타입 체크되는지 확인
-      (`component-composition-plan.md` 최종 결론 1번) — **caller가 Modifier/Ref를
-      안 넘기는 케이스(Lua 배열 리터럴의 nil-hole 함정, `{nil, ref, child}`처럼
-      뒤 항목이 무시될 수 있는 경우)를 반드시 케이스에 포함**
-      (`research/pre-implementation-audit.md` 1-5)
+      (`component-composition-plan.md` 최종 결론 1번) — **`props.Modifier or
+      None`/`props.Ref or None` 관용구(2026-08-07 열 번째 세션 확정,
+      `component-composition-plan.md` "필수 관용구" 절)로 nil-hole을 막는
+      케이스를 반드시 포함할 것 — caller가 Modifier/Ref를 안 넘겨도
+      `or None`이 항상 non-nil을 보장하므로 `{nil, ref, child}`류 리터럴
+      구멍 자체가 안 생김(`research/pre-implementation-audit.md` 1-5).
+      M0에서 검증할 것은 "어떻게 막을지"가 아니라 이 관용구가 실제로
+      타입 체크/런타임 양쪽에서 문제없이 동작하는지**
 - [ ] 위 과정에서 소스 트리/메커니즘 문서에 고칠 부분이 생기면 그 자리에서
       `.claude/base/` 갱신
 
@@ -71,10 +80,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       여덟 번째 세션 정정)
 - [ ] `Brand.luau`(공유 weak-key 레지스트리, `Brand.set(x,tag)`/
       `Brand.get(x)` — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
-      `isAttribute`/`isTween`/`isBlocker`/`isSource`/`isStore`/`isSlot`
-      전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None` 항등
-      비교 — `bind-system-plan.md`의 `Brand` 절, 2026-08-07 여덟 번째
-      세션 신설)
+      `isAttribute`/`isTween`/`isBlocker`/`isSource`/`isStore`/`isSlot`/
+      `isRef`/`isPreRef`/`isModifier`(2026-08-07 열 번째 세션 추가 — 원래
+      태그 목록에서 빠져있었음, `isRef`/`isPreRef`는 단순 항등이지
+      `isState`처럼 집합 멤버십 아님) 전부의 기반. `isNone`만 예외로
+      레지스트리 없이 `x == None` 항등 비교 — `bind-system-plan.md`의
+      `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
 - [ ] `LifetimeHandle.luau`/`PerInstanceState.luau` **인터페이스만**(타입
       계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
       있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
@@ -136,7 +147,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M7 — Modifier
 
-- [ ] flatten-before-dispatch, immutable `table.clone` 체이닝
+- [ ] `Modifier()`(빈 인스턴스 바닥 생성자, 2026-08-07 열 번째 세션
+      명시 — `Source(default)`/`Ref(default)`/`Store({defaults})`와 같은
+      `Type(args)` 팩토리 관습, `modifier-plan.md` 3번)
+- [ ] flatten-before-dispatch(`isModifier(v)`로 배열 항목 중 Modifier만
+      판별해 필드 merge, 나머지는 안 건드리고 통과 — 2026-08-07 열 번째
+      세션 명시, `modifier-plan.md` 1번), immutable `table.clone` 체이닝
 - [ ] `Modifier.Override(mod1, mod2, ...)`(가칭, 구 `Merge`) — 필드별 raw
       덮어쓰기, 특별한 State/함수 분기 불필요(`modifier-plan.md` 9번)
 - [ ] `Override`가 서브타입 관계인 서로 다른 Modifier 타입(예: `FrameModifier`/
@@ -164,10 +180,27 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
       위치 무관 호이스팅 pre-pass — `base/bind-system-plan.md` "`phase`
       옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)
-- [ ] `CreatedRef` 메커니즘(숫자 슬롯 참가자)
+- [ ] `(v=Ref)` 매치 핸들러 — children 배열의 숫자 슬롯에 놓인
+      `Ref(default)` 인스턴스를 인식해 바인드(별도 `CreatedRef` 래퍼
+      없음 — 이름 자체가 폐기됨, 아래 참고)
+- [ ] `PreRef` pre-pass — 새 `Dispatch.*` 함수 없이 `Dispatch.drive(inst,
+      flattened)` 자신이 두 패스(배열→해시) 루프 전에 배열 파트를 훑어
+      `PreRef` 항목만 fire(Dispatch.process/getHandler 우회하는 raw 루프,
+      `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten 재호출 가능성과
+      충돌하므로 기각). 복수 `PreRef`는 배열 index 순서 그대로(별도 규칙
+      없음). fire된 슬롯은 그 자리에서 소진(`None` 처리, `nil` 아님 —
+      2026-08-07 열 번째 세션 정정)해 이어지는 정상 두 패스에 다시 노출
+      안 되게 함 — `base/bind-system-plan.md` "PreRef" 절
+- [ ] `PreRef` 동적 경로 가드 Handler — `{isHandlable = v is PreRef,
+      process = error(...)}` 형태로 정상 우선순위 레지스트리에 등록,
+      `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열 경로는
+      pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입 차단을
+      우회한 버그라는 뜻 — 같은 절 참고
 - [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
-      `coroutine.resume(v, self)`+소진, 함수면 `v(value)` 호출+유지 —
-      같은 배열 하나로 통합). `:Wait(thread?)`는 `thread`가 `nil`이면
+      `coroutine.resume(v, self)`+`None`으로 소진(`nil` 아님 —
+      2026-08-07 열 번째 세션 정정, `#t`/`table.insert` 안전성), 함수면
+      `v(value)` 호출+유지 — 같은 배열 하나로 통합). `:Wait(thread?)`는
+      `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
 - [ ] `LifetimeHandle` quad-roblox 실제 구현(Instance 생존 확인, 인터페이스

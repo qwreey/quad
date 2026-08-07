@@ -73,8 +73,9 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 
 - **독립 존재 가능한 프리미티브** — Source, Ref, Store, Modifier. 다른
   무언가 없이 그 자체로 `Type(args)` 팩토리 함수로 만들어짐(`Source(default)`/
-  `Ref(default)`/`Store({defaults})`/`mod:UICorner(8)`, 위 "생성자
-  스타일 확정" 참고).
+  `Ref(default)`/`Store({defaults})`/`Modifier()`, 위 "생성자
+  스타일 확정" 참고 — `Modifier()`는 빈 인스턴스, 실제 필드는
+  `mod:UICorner(8)`류 체이닝으로 그 위에 얹음).
 - **원천에 종속된 파생 데이터** — State, Observer. 자기 혼자 존재할 수
   없고 항상 특정 원천(Source/다른 State)에 의존 — 그래서 이 둘은 자유
   함수 생성자가 없고, 항상 원천에 대한 메소드 호출로만 얻어진다
