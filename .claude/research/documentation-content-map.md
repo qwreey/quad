@@ -45,7 +45,7 @@
 
 ### architecture.md
 - 초심자: DOMless 즉시 Instance 생성 모델 / 특수 바인드 키 / Ref 기본 개념 / modifier 기본 사용법(스타일링) / Store·State·Source 온톨로지 핵심 동작 / quad-base·quad-roblox 패키지 구조 존재 사실
-- api: Class 함수형+`:` 체이닝 예외 규칙 / store 바인드=전체 교체 의미론 / Tag/retract(TagService 기반) / modifier 병합 우선순위 규칙(→심화: CSS cascade 회피 근거) / PropertyChangedSignal이 pluggable 핸들러로 구현 / Source·State·Store 타입 정의
+- api: Class 함수형+`:` 체이닝 예외 규칙 / store 바인드=전체 교체 의미론 / Tag/retract(CollectionService 기반) / modifier 병합 우선순위 규칙(→심화: CSS cascade 회피 근거) / PropertyChangedSignal이 pluggable 핸들러로 구현 / Source·State·Store 타입 정의
 - 심화: Class가 OOP 아닌 함수형인 이유 / metatable 체이닝 폐기 이유(v1 clone 문제) / id 기반 전역 조회 폐지 이유 / Style(Default) 시스템 폐기→modifier 대체 근거 / 멀티 백엔드(GTK 등) 지향 이유 / push-invalidate·pull-recompute 전파 모델 상세, 다이아몬드 의존성 해결 근거
 - skip: Tracker 미구현, lang 모듈 분리, Signal 클래스 미구현 판단 과정, 소스 트리·모노레포 구조, 테스트 전략(mock 설계)
 
@@ -92,9 +92,9 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 - skip: 세션 날짜/확정 이력, 문서 승격/정정 안내
 
 ### store-semantics.md / tween-plan.md / ui-shorthand-plan.md
-- 초심자: Store 생성+`myStore.key = value` 문법 / `store.key`로 State 얻기 개념 / Tween 기본 바인드 키+취소 기본 동작 / UI 숏핸드 인라인 키 기본 예시(`Frame { PaddingAllOffset = 50 }`)
+- 초심자: Store 생성+`myStore.key = value` 문법 / `store.key`로 State 얻기 개념 / Tween 기본 바인드 키+취소 기본 동작 / UI 숏핸드 인라인 키 기본 예시(`Frame { UIPaddingOffset = 50 }`)
 - api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `store-semantics.md` 참고) / Tween 핸들러가 Instance 직접 받음(Ref 불필요) / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
-- 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사) / RoundSize 포팅 불필요 vs Corner/PaddingAll/Scale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
+- 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사) / RoundSize 포팅 불필요 vs UICorner/UIPadding/UIScale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
 - 열린 질문(문서화 보류): tween-plan.md의 오버라이드/삭제후재시작/끝점이동 옵션 키 이름 미정 / ui-shorthand의 RoundSize 완전 드롭 여부
 - skip: 세션 정정 이력, v1 소스 조사 경위
 

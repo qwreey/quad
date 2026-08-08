@@ -121,7 +121,7 @@ base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저�
 
 ## 남은 열린 질문 (단순화 후보, 사소함)
 
-- Corner/PaddingAll/Scale 3개 거의 동일한 형태의 Handler를 각각 만들지,
+- UICorner/UIPadding/UIScale 3개 거의 동일한 형태의 Handler를 각각 만들지,
   `{key -> {ChildClassName, ChildDefaultName, Property, wrap=fn}}` 룩업
   테이블로 구동되는 단일 `Handlers/InstanceShorthand.luau`로 통합할지 —
   `research/pre-implementation-audit.md` 3-2번 참고, 강제 사항 아님,

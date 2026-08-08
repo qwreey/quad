@@ -518,12 +518,12 @@ M11 착수 시.
 쉬워진다든가)가 있다면 한 줄 추가하고, 없다면 "그냥 클로저 업밸류를
 쓰라"는 문서화 패턴으로 대체해 API 표면 자체를 줄이는 걸 검토.
 
-### 3-2. Corner/PaddingAll/Scale 개별 Handler 대신 데이터 테이블 구동 단일 제네릭 Handler
+### 3-2. UICorner/UIPadding/UIScale 개별 Handler 대신 데이터 테이블 구동 단일 제네릭 Handler
 
 **위치**: `base/ui-shorthand-plan.md` "메커니즘 — 새 아키텍처 개념
 불필요" 절.
 
-**문제**: 문서는 "Corner/PaddingAll/Scale 같은 특수 키를 인식하는
+**문제**: 문서는 "UICorner/UIPadding/UIScale 같은 특수 키를 인식하는
 Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴 값 하나 →
 고정 이름 자식 찾기/생성 → 프로퍼티 세팅)의 Handler를 각각 만드는
 그림이다. 문서 자체가 "앞으로 비슷한 제안이 오면 이 선례를 따르라"고
@@ -531,8 +531,8 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 선형으로 늘어나는 구조.
 
 **제안**: `{key -> {ChildClassName, ChildDefaultName, Property, wrap=fn}}`
-형태의 룩업 테이블 하나로 구동되는 단일 `Handlers/InstanceShorthand.luau`
-로 통합하는 안을 검토. 새 shorthand 키 추가가 "테이블에 항목 하나 추가"로
+형태의 룩업 테이블 하나로 구동되는 단일 `Handlers/InstanceShorthand.luau`로
+통합하는 안을 검토. 새 shorthand 키 추가가 "테이블에 항목 하나 추가"로
 끝나 M10 이후 유지보수 비용이 줄어듦. 강제 사항 아님, 구현 시점에 결정할
 정도의 사소한 개선 후보.
 
@@ -595,8 +595,11 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   반영 완료. 1-10(`store.key` 레코드 필드 타이핑)을 M0로 앞당기는 것 검토,
   1-11(Modifier `__index` 트릭)도 비용이 낮으니 M0 후보로 포함 검토는 계속
   열려있음.
-- **M2(Dispatch) 착수 전**: 1-2, 1-3, 1-4를 한 번에 확정(전부 base
-  dispatch 엔진의 에러/상태관리 규칙이라 같이 결정하는 게 효율적).
+- **M2(Dispatch) 착수 전**: 1-3, 1-4를 한 번에 확정(전부 base dispatch
+  엔진의 에러/상태관리 규칙이라 같이 결정하는 게 효율적). 1-2는 2026-08-08
+  세 번째 세션에 Dispatch 체인+`retractUnder`로 이미 해소됨(위 1-2번 항목
+  참고) — 남은 건 M2 스파이크에서 다단 체인 케이스가 실제로 맞게
+  동작하는지 실측하는 것뿐.
 - **M2/M3 착수 전**: 1-6(canExecute 실제 구현) 실측(1-9는 반영 완료, 위
   항목 참고).
 - **나머지**: 해당 마일스톤 착수 시점에 이 문서를 다시 열어 관련 항목만

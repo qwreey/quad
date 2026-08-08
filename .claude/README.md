@@ -71,6 +71,8 @@
 | `ui-shorthand-roundsize-dropped.md` | **[기각됨, 2026-08-07 신설]** v1 `RoundSize`(이미지 9-slice 라운드 트릭) — 네이티브 `UICorner`로 대체되어 포팅 불필요. 이 판단이 한 차례 "Corner/PaddingAll/Scale 숏핸드 전체가 불필요하다"로 과잉일반화됐다가 정정된 이력 포함 |
 | `batch-rejected.md` | **[기각됨, 2026-08-07 신설]** lexical `Batch(fn)` — 코루틴 yield 위에서 구조적으로 위험해 기각, 값 기반 `Blocker`(`base/blocker-plan.md`)로 대체 |
 | `context-rejected.md` | **[기각됨, 2026-08-07 신설]** `Context`(트리 하위 암묵 전파) + 대안이던 레이어드 Store 둘 다 기각 — 명시적 타입 강제 Store 전달로 충분하다는 판단 |
+| `modifier-apply-mutable-rejected.md` | **[기각됨, 2026-08-08 신설]** `Modifier.Apply`/setter를 mutable로 바꾸는 방안(및 "Apply 경계에서만 clone" 절충안) — 둘 다 형제 서브트리 오염 방지가 clone 비용 절감보다 우선이라 기각 |
+| `tag-hash-key-model-reversed.md` | [역전됨] 구 `Tag` 모델(해시 파트 boolean 키, 태그 개수만큼 키 갱신) — 2026-08-08 세 번째 세션에서 array-part 값 객체(`Tag(...)`, `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`) 모델로 완전히 대체됨 |
 | `agent-mistake.md` | **[에이전트 실수, 2026-08-07 신설]** 설계 반전이 아니라 에이전트가 문서 작성 중 개념을 혼동했다가 같은 세션 안에서 스스로 정정한 사례 모음(`canExecute`/`isHandlable` 혼동, `isSource` 불필요 오판) — CLAUDE.md 세션 로그의 중복 서술을 여기로 옮기고 포인터만 남김 |
 
 ## 참고

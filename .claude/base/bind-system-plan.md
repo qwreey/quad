@@ -220,10 +220,13 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   - `Dispatch.getHandler(inst,k,v): Handler?` — 순수 스캔(`handler.isHandlable(inst,k,v)`+
     `priority`), 부작용 없음.
   - `Dispatch.process(inst,k,v)` — 오케스트레이터: `getHandler` 호출 →
-    이전에 이 키를 담당하던 핸들러와 다르면 이전 핸들러의 `retract` 호출 →
-    새로 매치된 핸들러의 `.process` 호출. **재귀 재디스패치(Tween/일반
-    store-bind/`NoneHandler`)는 전부 이 `Dispatch.process`를 다시 부르는
-    것** — 원래 있던 재귀 관례 그대로, 새로 바뀐 것 없음.
+    매치된 핸들러를 `(inst,k)` 체인 꼬리에 push → 그 핸들러의 `.process`
+    호출. **"이전 핸들러와 다르면 retract"라는 diff는 `Dispatch.process`
+    자신의 일이 아님** — 재귀/래핑 핸들러(Tween/일반 store-bind/
+    `NoneHandler`)가 재-dispatch 전에 스스로 `Dispatch.retractUnder(inst,
+    k, self, newV)`를 먼저 불러 자기 밑을 정리하는 책임을 짐(정확한
+    메커니즘·기각된 대안은 아래 "Dispatch 체인" 절 참고 — 전역 소유자
+    슬롯 하나로 diff하는 안은 래핑 핸들러에서 깨져서 기각됨).
   - `Dispatch.addHandler(handler: Handler)` — 핸들러를 우선순위 레지스트리에
     등록. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
@@ -1448,7 +1451,8 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 - `base/store-semantics.md`에 있던 "`isInit=false`면 허용, `isInit=true`+
   생존확인 거짓이면 불허" 분기 초안은 폐기. state-invalidate 리스너
   클로저도 `base/lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute
-  predicate)로 등록하면, 발화 시 `canExecute(handle)` 하나만 확인하고 거짓이면
+  predicate)로 등록하면, 발화 시 `canExecute(inst, value)`(2026-08-08 세션
+  최종 시그니처) 하나만 확인하고 거짓이면
   그냥 no-op — `isInit` 분기라는 별도 개념 자체가 불필요(사용자 확정:
   "canExecute 하나로 통일").
 

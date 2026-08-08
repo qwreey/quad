@@ -35,7 +35,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
 5. **id 기반 전역 조회 폐지, Tag 시스템으로 대체.** v1의 `Store.GetObject(id)`/
    `Frame "id" {}`류는 더 이상 없음 — "id 매핑이 비현실적"이라는 게 이유.
    네임스페이싱 문제는 있지만 별도 네임스페이스 개념을 추가하면 라이브러리
-   복잡도가 너무 올라간다고 판단 — 당장은 TagService 그대로 사용. **대신
+   복잡도가 너무 올라간다고 판단 — 당장은 `CollectionService` 그대로 사용. **대신
    Ref가 도입됨** — 단 Ref의 용도는 "id로 조회"가 아니라 "외부에서 이미
    관리되고 있는 instance를 quad로 점진적으로 마이그레이션/래핑하기 위해
    직접 참조를 얻는 것"(`base/bind-system-plan.md`의 Ref 절 참고) — 둘을

@@ -22,7 +22,7 @@ tag:Contains(name): boolean -- 멤버십 확인
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의
                                      Overridden(필드 단위 덮어쓰기, 손실 있음)와
-                                     다른 연산이라 이름도 다름 — Override는
+                                     다른 연산이라 이름도 다름 — Overridden은
                                      "이미 계산된 걸 합침", Merged는 "집합을
                                      합침"
 ```
