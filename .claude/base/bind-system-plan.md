@@ -365,6 +365,15 @@ function Dispatch.retractUnder(inst, k, keep, v)
 end
 ```
 
+- **`handler.process(inst,k,v)`를 `Dispatch.process`를 거치지 않고 직접
+  호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할 것.**
+  이유: `chains` 배열에 push하는 bookkeeping이 `Dispatch.process` 내부에만
+  있어서, `handler.process`를 직접 부르면 그 핸들러가 실제로 활성화됐는데도
+  체인에 안 올라가 — 나중에 다른 값으로 바뀌어도 `retractUnder`가 이
+  핸들러의 존재를 몰라 `retract`가 영영 안 불리거나(리소스 누수), 반대로
+  체인 순서 자체가 실제 활성 상태와 어긋나는 정합성 붕괴로 이어짐. 재귀/
+  래핑 핸들러가 위임할 때도 항상 `Dispatch.process(inst,k,newV)`를
+  불러야지 매치된 핸들러의 `.process`를 스스로 찾아 직접 호출하면 안 됨.
 - **재귀/래핑 핸들러는 재-dispatch 전에 반드시 `Dispatch.retractUnder(inst,
   k, self, newV)`를 먼저 부른 뒤 `Dispatch.process(inst, k, newV)`를
   부름** — "나 밑에 있던 걸 전부 정리하고 새로 위임". `keep`(자기 자신)
@@ -450,8 +459,13 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   (`localIndex:With(offset):Compute(function(i,o) return i+o end)`을
   `LayoutOrder`에 store-bind로 걸어두면, offset이 바뀔 때 기존 store-bind
   재실행 메커니즘이 알아서 다시 씀 — 새 push/observer 시스템 불필요).
-  **실제 마운트를 하지 않는 위치(Ref/PreRef 등)는 `None`을 등록** — 순서
-  계산에 참여할 게 없다는 명시적 선언.
+  **실제 마운트를 하지 않는 위치는 `None`을 등록** — 순서 계산에
+  참여할 게 없다는 명시적 선언. 대상은 Ref/PreRef뿐 아니라 **그 배열
+  위치의 값 자체가 `None`인 모든 경우**(예: `props.Ref or None` 관용구로
+  캐우칭된 미전달 Ref, PreRef pre-pass가 소진시킨 슬롯 등) — `setLength`도
+  같은 위치엔 짝을 맞춰 `0`으로 등록해야 함(위 `setLength` 항목의
+  "`nil`/`None`이면 `0`" 규칙과 항상 같이 감, 둘 중 하나만 반영되면
+  길이 합계와 실제 순서 계산이 어긋남).
 
 **둘 다 array part의 모든 number 인덱스에 대해 반드시 호출 — 생략은 UB
 (2026-08-09 여섯 번째 세션 확정).** `retract` 필드 생략 불가와 같은 톤 —
@@ -467,12 +481,15 @@ lazy 생성.
 원칙 재사용** — 모든 number 인덱스를 반드시 채워야 하는데(위 UB 규칙)
 `nil`을 넣으면 (1) 그 자리가 "안 채워짐"과 구별이 안 되고 (2) 배열이
 구멍 나면서 순수 array 취급이 깨져 접근 비용이 올라감(해시 파트로 밀림)
-— `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, `Ref`
-콜백/대기자 배열·PreRef pre-pass에 이미 적용된 것과 같은 원칙(위 "왜
-`nil`이 아니라 `None`인가" 절 참고). 다만 `recompute`가 `1..N` 고정
-범위를 도는 인덱스 `for`라 애초에 성긴 정수 키 순회 문제 자체는 안
-생김 — `None`이 필요한 이유는 순회 순서 보존이 아니라 "채워짐 여부
-구별과 접근 비용" 쪽.
+— `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, PreRef
+pre-pass 소진 슬롯에 이미 적용된 것과 같은 원칙(위 "PreRef" 절의
+"왜 `None`이 아니라 `nil`인가" 참고 — **단, 그 절에서 최종적으로 `nil`로
+되돌아간 건 Ref 콜백/대기자 배열 한정**이고 `sourceList`/PreRef
+pre-pass처럼 순서가 실제로 중요하거나 "채워짐 여부"를 엄밀히 구별해야
+하는 배열은 여전히 `None`이 맞음, 헷갈리지 말 것). 다만 `recompute`가
+`1..N` 고정 범위를 도는 인덱스 `for`라 애초에 성긴 정수 키 순회 문제
+자체는 안 생김 — `None`이 필요한 이유는 순회 순서 보존이 아니라 "채워짐
+여부 구별과 접근 비용" 쪽.
 
 **recompute — 매번 전체 순회, `Get` 가드로 캐스케이드만 방지**:
 
@@ -722,8 +739,19 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
     존재 여부부터 체크하는 것과 같은 이유, Ref가 자식으로 전달되는 경우
     채워지는 시점이 더 늦어질 수 있어서 "이미 채워졌는지" 확인이 항상
     필요함. `:Wait()`의 대기자 리스트와 콜백 리스트는 같은 구조 재사용
-    가능(발화 후 해당 인덱스만 **`None`으로 소진** — 아래 구현 디테일의
-    2026-08-07 열 번째 세션 정정 참고, 단순 `nil` 처리는 아님).
+    가능(발화 후 해당 인덱스만 **`nil`로 소진** — 아래 구현 디테일 참고,
+    **[재정정, 2026-08-09 열한 번째 세션] `None`이 아니라 `nil`이 맞음**,
+    바로 아래 캐비엇 참고).
+  - **`.Value`는 이 테이블의 평범한 hash 필드로 직접 저장하지 않고
+    `__index` 메타메소드로 구현함(2026-08-09 열한 번째 세션 보강)** —
+    Ref 객체 자신이 곧 콜백/대기자 배열(숫자 키로 색인)이라, `.Value`를
+    `self.Value = v`로 그냥 얹으면 그 값 자체가 이 테이블의 hash 파트에
+    같이 걸림. `T`가 함수나 스레드 타입일 수 있는데(Ref는 범용 값 박스,
+    위 "object-ref/function-ref로 나누지 않음" 참고), `for i, v in self do`
+    같은 일반화 순회가 배열 파트뿐 아니라 hash 파트도 함께 훑으므로 이
+    경우 `.Value`가 콜백/대기자 처리 루프에 잘못 걸려 `type(v)`로
+    오분류될 위험이 생김. `__index`로 실제 저장 위치를 배열과 분리해두면
+    이 충돌 자체가 안 생김.
   - **`:Wait(thread?)`의 `thread` 인자(2026-08-07 여섯 번째 세션, 사용자
     제안, 확정)**: 생략(`nil`)하면 `coroutine.running()`으로 호출 중인
     코루틴 자신을 캡처해 대기자로 등록하고 그 자리에서 `coroutine.yield()`로
@@ -737,38 +765,45 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
     블록되지 않고 계속 진행하고 싶은 경우. 구현은 정말 단순함 — `thread`가
     `nil`이면 yield, 있으면 yield 안 함.
   - **구현 디테일(2026-08-07 세 번째 세션 제안, 여섯 번째 세션에서 resume
-    payload 정정, 열 번째 세션에서 소진 방식 정정)**: 값이 새로 `:Set()`될
-    때, 같은 배열 하나를 `for i, v in <배열> do ... end`로 한 번만
+    payload 정정, 열한 번째 세션에서 소진 방식 최종 확정)**: 값이 새로
+    `:Set()`될 때, 같은 배열 하나를 `for i, v in <배열> do ... end`로 한 번만
     순회하면서 `type(v) == "thread"`면 `:Wait()`가 만든 대기자로 보고
     **`coroutine.resume(v, self)`** (즉 값이 아니라 **Ref 자기 자신**을
     resume 인자로 넘김 — 위 self-반환 관용구가 `:Wait()`의 yield
     경로에서도 그대로 성립하게 하기 위해, `coroutine.yield()`의
     리턴값이 곧 `self`가 되도록 정정. 세 번째 세션 원안은 `value`를
     넘기는 것으로 적혀 있었으나 이러면 `ref:Wait().Value`가 안 풀려서
-    이번 세션에 정정) 후 **`[i] = None`**(**`nil`이 아님** — 아래
-    "왜 `nil`이 아니라 `None`인가" 참고), 아니면 일반 콜백 함수로 보고
-    그냥 `v(value)`(콜백은 여전히 원래 값을 직접 받음, 소진 안 함, 계속
-    유지)로 분기하면 됨 — 대기자/콜백을 서로 다른 배열로 나눌 필요 없이
-    값 타입 하나로 분기 가능(`type(v) == "thread"` → 대기자,
-    `type(v) == "function"` → 콜백, 그 외/`None` → 빈 슬롯이라 스킵).
-    새 콜백/대기자 등록은 `table.insert`로 끝.
-  - **왜 `nil`이 아니라 `None`인가(2026-08-07 열 번째 세션, 사용자가 실제
-    Luau REPL로 반례 제시 후 정정) — 이전 서술("성긴 배열이어도 일반화
-    `for`가 계속 잘 순회하므로 압축 불필요")은 절반만 맞았음.** 대기자/콜백
-    자체는 순서가 안 중요해서(어느 게 먼저 fire되든 상관없이 전부 fire되기만
-    하면 됨) "잘 순회함"까지는 맞았지만, 두 가지를 놓쳤음: (1) 키가 촘촘한
-    저범위 정수(1,2,3,...)에서 벗어나 듬성듬성해지면(`nil`로 지운 슬롯도
-    포함) Luau/Lua 테이블이 그 키들을 해시 파트로 취급해 순회 순서가 해시
-    버킷 순서가 되어버림(사용자가 `{[1]=1,[2222]=2222,[211]=211,...}`류
-    REPL 실측으로 확인 — 대기자/콜백 리스트 자체는 이 순서 소실이 문제
-    안 되지만, 순서가 실제로 중요한 다른 배열(`PreRef` pre-pass 등)엔
-    치명적). (2) `table.insert`가 내부적으로 쓰는 `#t`(length 연산자)는
-    Lua 명세상 구멍이 있는 테이블에서 **정의되지 않은 동작**이라, 다음
-    콜백/대기자 등록이 엉뚱한 인덱스에 들어가 기존 항목을 덮어쓸 위험이
-    있음 — 이건 대기자/콜백 리스트에도 실제로 해당하는 진짜 버그.
-    `None`은 `nil`이 아닌 **실재하는 값**이라 그 슬롯이 "차 있다"는 사실
-    자체는 안 바뀌므로 두 문제 다 피함 — 소진된 슬롯도 여전히 non-nil
-    값을 갖고 있어 테이블이 "구멍 없는 시퀀스"라는 불변식이 깨지지 않음.
+    정정) 후 **`[i] = nil`**로 소진(아래 "왜 `None`이 아니라 `nil`인가"
+    참고), 아니면 일반 콜백 함수로 보고 그냥 `v(value)`(콜백은 여전히
+    원래 값을 직접 받음, 소진 안 함, 계속 유지)로 분기하면 됨 — 대기자/콜백을
+    서로 다른 배열로 나눌 필요 없이 값 타입 하나로 분기 가능
+    (`type(v) == "thread"` → 대기자, `type(v) == "function"` → 콜백,
+    `nil` → 빈 슬롯이라 스킵). 새 콜백/대기자 등록은 `table.insert`가
+    아니라 **비어있는(=`nil`인) 첫 슬롯을 선형 탐색해 재사용**하는
+    등록 함수로 함(아래 참고) — 소진된 슬롯이 실제로 비므로 등록이 그
+    자리를 되찾아 쓸 수 있음.
+  - **왜 `None`이 아니라 `nil`인가(2026-08-09 열한 번째 세션, 최종 정정)
+    — 2026-08-07 열 번째 세션에 `None`으로 바꿨던 것은 이 배열에는 안
+    맞는 처방이었음, 되돌림.** `None`을 도입한 원래 근거(구멍 있는
+    정수 키가 해시 파트로 튀어 순회 순서가 깨짐, `table.insert`의 `#t`가
+    구멍 있는 테이블에서 미정의 동작)는 **순서가 실제로 중요한 배열**
+    (`PreRef` pre-pass, Length/Offset의 `sourceList` — `1..N` 고정
+    범위로 도는 `for` 루프라 구멍이 있으면 안 됨)에는 맞는 처방이지만,
+    Ref의 콜백/대기자 배열은 애초에 **순서가 중요하지 않다**(어느 게
+    먼저 fire되든 전부 fire되기만 하면 됨) — 일반화 `for i,v in tbl do`는
+    구멍이 있어도 순서가 뒤섞여도 **모든 엔트리를 빠짐없이 방문**하므로
+    "순서 보장이 깨진다"는 문제 자체가 이 배열엔 없음. 오히려 `None`을
+    쓰면 소진된 슬롯이 영원히 non-nil로 채워진 채 남아 **매 `:Wait()`
+    호출마다 배열이 끝없이 길어지는** 새 문제가 생김(등록이 항상 끝에만
+    추가되고 예전 슬롯을 재사용 못 함) — `nil`로 지우면 다음 등록이 그
+    빈 슬롯을 재사용할 수 있어 배열 크기가 동시 대기자 수만큼만 유지됨.
+    `table.insert`의 `#t` 문제도 **`table.insert`를 아예 안 쓰고** 빈
+    슬롯을 선형 탐색해 넣는 등록 함수로 우회하면 됨(`None`이 필요했던
+    이유 자체가 없어짐). 결론: **순서가 안 중요하고 슬롯 재사용이
+    필요한 배열(Ref 콜백/대기자)은 `nil` 소진, 순서가 중요한 배열
+    (PreRef pre-pass 소진 슬롯, Length/Offset `sourceList`)은 계속
+    `None`** — 두 패턴이 서로 다른 문제를 풀고 있었을 뿐, 하나로 통일할
+    이유가 없었음.
   - **주의(문서화 대상, 방어 로직 없음)**: 이미 죽은(완료/에러난) thread를
     `:Wait(thread)`에 넘기면 나중에 `coroutine.resume`이 에러남 — 이건
     다른 UB 케이스들과 같은 결로 라이브러리가 방어하지 않고 호출부 책임으로
@@ -894,11 +929,14 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `Dispatch.drive(inst, flattened)`는 같은 `flattened` 배열을 **두 번
     순회**한다 — (1) pre-pass: 배열 파트 전체를 index 순서대로 훑으며
     `isPreRef(v)`인 슬롯을 찾아 그 자리에서 fire하고 즉시 **`flattened[i]
-    = None`**으로 소진(`nil`이 아님 — 위 "왜 `nil`이 아니라 `None`인가"
-    절과 같은 이유, 2026-08-07 열 번째 세션 정정: `nil`로 지우면 그
-    순간 테이블이 "구멍 있는" 상태가 되어 이어지는 (2)의 순회 순서
-    보장 자체가 깨질 위험이 있음 — 정확히 이 pre-pass가 의존하는 바로 그
-    보장이라 치명적). (2) 그 다음에야 비로소 평소의 배열→해시 두 패스가
+    = None`**으로 소진(`nil`이 아님, 2026-08-07 열 번째 세션 정정: `nil`로
+    지우면 그 순간 테이블이 "구멍 있는" 상태가 되어 이어지는 (2)의 순회
+    순서 보장 자체가 깨질 위험이 있음 — 정확히 이 pre-pass가 의존하는
+    바로 그 보장이라 치명적. **[주의, 2026-08-09 열한 번째 세션] Ref
+    자신의 콜백/대기자 배열은 이 이유가 적용되지 않아 `nil` 소진으로
+    되돌아갔음(위 "Ref 일반화" 절 참고) — 여기 PreRef pre-pass는 순서
+    보장이 실제로 필요한 별개 케이스라 `None` 소진이 계속 맞음, 두
+    사례를 혼동하지 말 것**). (2) 그 다음에야 비로소 평소의 배열→해시 두 패스가
     **같은 테이블**을 다시 순회 — 이때 `None`으로 소진된 슬롯은 **정상
     `Dispatch.process`/`NoneHandler` 경로를 안 타고 두 패스 루프 자신이
     직접 건너뜀**(`if v == None then continue end`, 배열 파트 전용
@@ -918,6 +956,17 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `Dispatch.process`로 다시 넘기게 되고, 그러면 이 가드 Handler가
     엉뚱하게 매치되어 **정상적인 PreRef 사용에도 에러가 터짐** — 소진은
     이 오탐을 막기 위해 반드시 필요.
+  - **명확화(2026-08-09 열한 번째 세션, 확인 질문에 답변) —
+    `NoneHandler.isHandlable(inst,k,v) = (v == None)`은 `k` 타입을 전혀
+    안 가리므로 숫자 키(`k=number`)에서도 이론상 매치될 수 있어 보이지만,
+    실제로 문제 안 되는 이유는 위에서 이미 확정한 그대로다: 배열 파트의
+    `None`은 **애초에 `Dispatch.process` 자체를 절대 안 탄다**(두 패스
+    루프가 `Dispatch.process` 호출 전에 자기 스스로
+    `if v == None then continue end`로 걸러냄). `NoneHandler`는
+    `Dispatch.process`를 거쳐야만 매치될 기회를 얻으므로, 배열 파트의
+    `None`이 거기 아예 도달하지 않는 이상 `k=number` 조합으로
+    `NoneHandler`가 실제로 매치되는 경우는 없음 — "재전파 없이 무시된다"가
+    정확한 설명.
   - **M0 스파이크 검증 항목 갱신(2026-08-07 열 번째 세션)**: 위 "props
     순회 순서" 절은 `{a=1, 2, b=3}`류 **구멍 없는** 테이블에서 배열
     파트가 해시 파트보다 먼저 나온다는 것만 실측 확인됨(2026-08-07 세
@@ -1375,6 +1424,18 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   — 강참조 레지스트리 자체가 생존을 보장하는 유일한 근거라, 로컬 변수에
   담아둘 필요가 없음. 예외 없이 그냥 계속 돎(그게 이 메커니즘의 핵심
   포인트).
+- **⚠️ 이건 quad 전역의 "정리는 기본적으로 GC에 위임" 원칙의 의도적
+  예외 — 문서에 명시적으로 경고할 것(2026-08-09 열한 번째 세션).**
+  `:Subscribe()`로 등록한 뒤 로컬 변수 참조를 전부 놓아도(스코프 이탈,
+  변수 재할당 등) **GC되지 않고 영원히 계속 실행됨** — 강참조
+  레지스트리가 그 자체로 생존을 보장하기 때문. `bindLifetime`(leaf
+  부착 포함) 경로는 `inst`가 죽으면 자동으로 정리되는 GC-native 그대로지만,
+  `:Subscribe()` 경로는 오직 명시적 `:Unsubscribe()` 호출로만 끊김 — 이
+  차이를 모르고 "quad는 다 GC-native니까 참조만 버리면 되겠지"라고
+  가정하면 조용한 누수(메모리뿐 아니라 계속 재실행되는 콜백까지)로
+  이어짐. 용도도 "완전히 top-level(어떤 Instance 생명주기에도 안 묶인)
+  사이드 이펙트"로 좁게 문서화할 것 — 특정 `inst`에 묶인 경우는
+  `:Subscribe()`가 아니라 leaf 부착(`bindLifetime`)이 정상 경로.
 - **`:Subscribe()`/`:Unsubscribe()` 둘 다 `self`를 리턴(대칭)** —
   `local obs = state:Observer(fn):Subscribe()`처럼 "구독 시작 + 나중에
   끊을 핸들 확보"가 한 줄로 되고, `table.insert(subs, state:Observer(fn)
@@ -1724,6 +1785,20 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
   구현 지양, 팩토리 함수로 대체" 원칙과도 정확히 일치. `Store({defaults})`도
   같은 스타일로 지원(`defaults`는 선택 — 안 주고 `Store()`만 호출해도
   됨, 순수 편의용 초기값 템플릿).
+- **[보강, 2026-08-09 열한 번째 세션] `Source(default)`/`Ref(default)`의
+  `default` 인자가 "선택"이라는 서술은 정확히는 `T`가 `nil`을 포함할 때만
+  성립함 — 생략하면 실제로 `nil`이 그 자리를 채우기 때문.** `Source()`
+  (무인자)는 `Source(nil)`과 동치라고 이미 명시돼 있으나, 이게 타입
+  레벨에서 뭘 뜻하는지(`T`가 nilable이 아니면 타입과 실제 저장값이
+  어긋난다는 것)는 지금까지 명시적으로 안 적혀 있었음. `Ref`도 마찬가지
+  캐비엇이 있고 오히려 더 눈에 띄게 드러남 — `:Callback(fn)`은 등록
+  즉시 그 시점 값으로 무조건 1회 호출되므로(미설정 상태여도 그 상태
+  그대로 호출, 아래 `Ref` "바인드 방법" 절 참고), `default`를 생략한
+  `Ref()`에 콜백을 걸면 그 콜백이 즉시 `nil`로 한 번 불림 — `T`가
+  non-nilable이면 이 시점에 이미 타입 위반. 따라서 `default`를 생략해도
+  되는 건 오직 `T`가 nilable(`T?`)로 선언된 경우뿐이라는 걸 문서 차원에서
+  명시할 것(non-nilable `T`에 `default` 없이 생성하는 건 사용자 실수,
+  타입으로 막을 수 있으면 막고 안 되면 UB로 문서 경고).
   **[정정, 2026-08-07]** 아래 두 문장은 이후 라운드에서 정정된 옛 서술 —
   실제 메커니즘·mutate 취급은 `base/store-semantics.md` "Source가 State를
   만족함" 절이 최종 소스: (a) "`__newindex`/`__index` 프록시로 감싸면
@@ -1961,15 +2036,26 @@ Luau의 인터닝된 문자열 비교도 이미 사실상 O(1) 포인터 비교�
 
 **`isX`는 `Brand`를 직접 노출 안 하고 각자 얇은 wrapper로 감쌈** —
 단순 항등인 경우(`isObserver(x) = Brand.get(x) == ObserverTag`)와, 상위
-관계(subtype)가 있어 집합 멤버십이 필요한 경우(`isState`)로 갈림:
+관계(subtype)가 있어 **더 구체적인 브랜드 체크 위에 OR로 얹는** 경우
+(`isState`/`isRef`)로 갈림. **[정정, 2026-08-09 열한 번째 세션]** 후자를
+"집합 멤버십"(`t == A or t == B`, 플랫한 셋 체크)으로 구현하던 방식을
+"더 구체적인 predicate를 먼저 정의하고 그 위에 얹는" 합성 방식으로
+재정리 — 동작은 동일하지만, 어느 predicate가 다른 predicate를 내포하는지
+(포함 관계의 방향)가 코드 모양 자체에 드러나게 함:
 
 ```
-local function isState(x)
-  local t = Brand.get(x)
-  return t == StateTag or t == SourceTag  -- Source가 State를 구조적으로 만족
-end
 local function isSource(x)
   return Brand.get(x) == SourceTag
+end
+local function isState(x)
+  return isSource(x) or Brand.get(x) == StateTag  -- Source가 State를 구조적으로 만족
+end
+
+local function isPreRef(x)
+  return Brand.get(x) == PreRefTag
+end
+local function isRef(x)
+  return isPreRef(x) or Brand.get(x) == RefTag  -- PreRef가 Ref 런타임을 재사용 = Ref의 한 종류
 end
 ```
 
@@ -1985,20 +2071,25 @@ end
 불필요" 서술도 같이 정정 대상.
 
 **갭 보강 — `isRef`/`isPreRef`/`isModifier`가 태그 목록에서 빠져있던 것
-추가(2026-08-07 열 번째 세션).** 위 코드 예시가 원래 `RefTag`/
-`PreRefTag`/`ModifierTag`를 안 만들어뒀는데, 이 문서 곳곳(PreRef 절의
-`isPreRef(v)`, `component-composition-plan.md`의 `isModifier(v)` 등)이
-이미 이 predicate들이 존재한다고 전제하고 써왔음 — 실제로 만들어야 하는
-게 맞아서 태그 목록에 추가. **`isRef`/`isPreRef`는 `isObserver`와 같은
-단순 항등**(`isRef(x) = Brand.get(x) == RefTag`, `isPreRef(x) =
-Brand.get(x) == PreRefTag`) — `isState`처럼 집합 멤버십이 아님, 즉
-**`isRef(preRefInstance)`는 `false`.** 이게 중요한 이유: `PreRef`가
-"Ref 런타임을 재사용하되 브랜드 태그만 다름"이라고 해서 `isRef`가
-`PreRef`도 통과시키면, 일반 `(v=Ref)` 매치 핸들러가 `PreRef` 인스턴스도
-집어삼켜버려 위 "PreRef" 절이 요구하는 "일반 Ref 경로를 절대 타면 안
-됨"이 깨짐 — `Ref`/`PreRef`는 State/Source 같은 상하위 관계가 아니라
-서로 배타적인 형제 브랜드. `isModifier`도 같은 단순 항등
-(`Brand.get(x) == ModifierTag`).
+추가(2026-08-07 열 번째 세션), 이후 `isRef`/`isPreRef` 관계 자체가
+재정정됨(2026-08-09 열한 번째 세션).** 처음엔 `isRef`/`isPreRef`를
+`isObserver`와 같은 단순 항등으로 두고 서로 배타적인 형제 브랜드로
+취급(`isRef(preRefInstance)`가 `false`)했으나, 이건 `isState`/`isSource`
+쌍과 비일관적이었음 — `Source`가 State를 구조적으로 만족하듯,
+**`PreRef`도 "Ref 런타임을 그대로 재사용하는" 관계라 같은 포함
+방향(상위=Ref, 하위=PreRef)으로 다뤄야 일관적**이라는 지적으로 뒤집힘.
+
+- **`isPreRef(x)`가 가장 구체적인 항등 체크**(`Brand.get(x) ==
+  PreRefTag`), **`isRef(x)`는 그 위에 `Brand.get(x)==RefTag`를 OR로
+  얹은 상위 개념** — 즉 이제 **`isRef(preRefInstance)`는 `true`.**
+- **`(v=Ref)` children 배열 leaf 매치 핸들러(`Dispatch/Leaf.luau`)는
+  이제 `isHandlable`을 `isRef(v) and not isPreRef(v)`로 명시적으로
+  좁혀야 함** — 예전처럼 `isRef` 자체가 배타적이라 저절로 걸러지는 게
+  아니라, "Ref이긴 한데 그 중 PreRef는 아니다"를 호출부가 명시적으로
+  말해야 하는 모양으로 바뀜(PreRef pre-pass가 이미 소진시켜 정상 경로에선
+  거의 안 걸리지만, 위 "PreRef" 절의 동적 경로 가드 Handler와 이 조합이
+  같이 "일반 Ref 경로를 절대 타면 안 됨"을 보장). `isModifier`도 같은
+  단순 항등(`Brand.get(x) == ModifierTag`, 상위 개념 없음).
 
 **같은 이유로 `isSlot`/`isEffect`도 명시(2026-08-09 세션)** —
 `Brand.get(x) == SlotTag`/`Brand.get(x) == EffectTag`인 단순 항등

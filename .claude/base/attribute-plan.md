@@ -1,7 +1,8 @@
 # Attribute 특수 키 — 타입 파라미터화, `SetAttribute(name, nil)` 네이티브 지우기
 
-**상태**: base(메커니즘/`None`/`retract` 동작은 확정) — 타입 파라미터화
-이름만 미확정. `[Attribute "Name"]` DI 키의 존재 자체는 `architecture.md`
+**상태**: base — 메커니즘/`None`/`retract` 동작뿐 아니라 타입 파라미터화도
+**둘 다 채택으로 확정**(2026-08-09 열한 번째 세션, 아래 참고). `[Attribute
+"Name"]` DI 키의 존재 자체는 `architecture.md`
 4번 항목에서 이미 확정. UICorner 숏핸드/Tween처럼 별도 전용 문서가 없던 걸
 2026-08-07 여덟 번째 세션에 메꿈("1 프리미티브 1 파일" 관례를 Tag/Attribute
 에도 적용해야 한다는 사용자 지적) — `bind-system-plan.md`의 "Attribute
@@ -23,23 +24,28 @@ Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Att
 "Value 오브젝트 기각, Attribute로 확정" 결정과 같은 방향 — Instance 타입
 지원까지 감안하면 그 결정의 근거가 한층 더 탄탄해짐).
 
-**후보 두 가지 (미확정)**:
+**확정(2026-08-09 열한 번째 세션) — 둘 다 채택**:
 - `[Attribute<<boolean>> "name"] = true` (리터럴 또는 store-bind 값) —
-  제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일.
+  제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일. 기본/범용 경로.
 - `[BooleanAttribute "name"] = true` — 타입별로 이름이 다른 정적 생성자
   패밀리(`StringAttribute`/`NumberAttribute`/`Color3Attribute`/
-  `InstanceAttribute` 등).
+  `InstanceAttribute` 등). 실사용 빈도가 높은 몇 개만 지름길로.
 
-**소견(확정 아님, 검토 필요)**: 이 선택은 이미 확정된 DI 인스턴스 생성
-패턴(`bind-system-plan.md` "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)과
-구조적으로 똑같은 문제 — 그때도 "제네릭 하나로 다 커버할지 vs 타입별 정적
-필드로 나눌지" 고민이 있었고, 결론은 **둘 다**(`new<ClassName>(className)`
-제네릭 생성자 + 자주 쓰는 ~25개는 정적 필드로 미리 바인딩)였음. Attribute도
-같은 모양을 재사용하면 자연스러울 가능성 — `Attribute<T>("name")` 제네릭을
-기본으로 두고, 실사용 빈도가 압도적으로 높을 `Boolean`/`Number`/`String`/
-`Instance` 정도만 `BooleanAttribute`/`NumberAttribute`/`StringAttribute`/
-`InstanceAttribute` 같은 지름길로 정적 바인딩하는 절충. 사용자 확인 전
-소견일 뿐 — `.claude/question.md`에 반영, 사용자 판단 필요.
+**근거**: 이미 확정된 DI 인스턴스 생성 패턴(`bind-system-plan.md` "인스턴스
+생성 / 이벤트 네이밍 인체공학" 절)과 구조적으로 똑같은 문제라 같은 결론
+재사용 — `new<ClassName>(className)` 제네릭 생성자 + 자주 쓰는 ~25개는
+정적 필드로 미리 바인딩했던 것과 동일한 절충. **내부 구현은 완전히
+동일**(같은 Handler를 타고, 같은 프리미티브) — 둘 사이 차이는 순전히
+호출부가 타입을 어떻게 명시하느냐(제네릭 파라미터 vs 이름)뿐이라 어느
+쪽을 쓰든 런타임 동작에 차이 없음.
+
+**[실측 필요, M0/M10]** `[Attribute<<boolean>> "name"] = value`처럼 DI
+키 제네릭 파라미터로 `=` 뒤 `value`의 타입까지 실제로 좁혀지는지는
+미검증 — Luau 솔버가 이 조합을 못 풀면 `value`가 `any`로 남을 수 있음.
+단, **타입 추론이 안 되더라도 런타임 동작에는 영향 없음**(순수 정적
+타입체크 실패일 뿐, `SetAttribute` 호출 자체는 항상 정상 작동) — 안
+되면 `BooleanAttribute` 같은 정적 타입 패밀리 쪽이 사실상 유일하게
+믿을 수 있는 정적 체크 경로가 됨.
 
 ## 메커니즘, `None`, `retract` — 전부 확정 (2026-08-07 여덟 번째 세션)
 

@@ -82,8 +82,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Brand.get(x)` — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
       `isAttribute`/`isTween`/`isBlocker`/`isSource`/`isStore`/`isSlot`/
       `isRef`/`isPreRef`/`isModifier`(2026-08-07 열 번째 세션 추가 — 원래
-      태그 목록에서 빠져있었음, `isRef`/`isPreRef`는 단순 항등이지
-      `isState`처럼 집합 멤버십 아님) 전부의 기반. `isNone`만 예외로
+      태그 목록에서 빠져있었음. **[정정, 2026-08-09 열한 번째 세션]**
+      `isRef`/`isPreRef`는 `isState`처럼 상위-하위 관계로 재정정됨 —
+      `isPreRef`가 가장 구체적인 항등, `isRef`는 그 위에 얹혀
+      `isPreRef`도 `true`로 통과시킴(PreRef가 Ref 런타임을 재사용하는
+      것과 정합). `(v=Ref)` children leaf 매치 핸들러는 이제
+      `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 함. `isModifier`는
+      여전히 단순 항등, 상위 개념 없음) 전부의 기반. `isNone`만 예외로
       레지스트리 없이 `x == None` 항등 비교 — `bind-system-plan.md`의
       `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
 - [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
@@ -195,21 +200,31 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       bind-system-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
       이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
       UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
-- [x] **Slot의 `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD 의미론
-      확정** (2026-08-09 세 번째 세션) — `get`/`set` 드롭, 에러 조건까지
-      전부 확정(`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시
-      throw"도 `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너
-      기준이 명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
-      `Move(element, newIndex)`(O(n))/`Swap(indexA, indexB)`(O(1), element
-      아닌 인덱스 — element면 위치 조회에 2n 들어 O(1) 약속이 깨짐)은
-      리오더 전용, Parent를 안 건드림. 공개 6개 메소드 전부 "가드 확인 +
-      `raw*` 위임" 얇은 wrapper. base/roblox 경계에 mount/unmount 외
-      reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소 타입 제약 확정**
-      — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔 실제 마운트 가능한
-      `T`만), 핸들러 계층 값(Ref/PreRef/Observer/Effect/Modifier)은
-      self-ref 컨텍스트가 없어 의미 불성립이라 즉시 error(`Modifier`
-      필드와 같은 판별 메커니즘 재사용) — `D.InstSlot = Slot<<Instance>>`가
-      quad-roblox의 사실상 유일한 Slot 타입.
+- [x] **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
+      `Get`/`IndexOf` CRUD 의미론 확정** (2026-08-09 세 번째 세션, 2026-08-09
+      열한 번째 세션에 식별 기준 재정정) — 에러 조건까지 전부 확정
+      (`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시 throw"도
+      `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너 기준이
+      명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
+      **[정정, 2026-08-09 열한 번째 세션] 식별 기준을 element 레퍼런스에서
+      인덱스 기준으로 전환** — `Remove(index)`/`Extract(index, newElement?)`
+      (O(n) 또는 O(1))/`Move(oldIndex, newIndex)`(O(n))/`Swap(indexA,
+      indexB)`(O(1)) 전부 인덱스, `Add(element, index?)`만 element를 직접
+      받음(새로 넣는 대상이라 참조가 당연히 있음). 호출부가 `Add` 리턴값을
+      안 담고 흘려버리는 경우가 흔해 레퍼런스 기준이 오히려 실사용과 안
+      맞았음 — 레퍼런스만 있으면 `IndexOf(element): number?`로 인덱스를
+      구하면 됨. `ExtractAll(): {T}`(Clear의 비파괴 버전), `Get(index): T?`
+      신설(`get`/`set` 드롭했던 걸 재추가). `Extract(index, newElement?)` —
+      `newElement` 지정 시 O(1) 제자리 교체(이전 element 반환), 기존엔
+      교체하려면 Extract+Add 이중 O(n) 시프트가 필요했던 문제 해결. 공개
+      mutate 메소드 전부 "가드 확인 + `raw*` 위임" 얇은 wrapper(`Get`/
+      `IndexOf`는 순수 읽기라 가드 대상 아님). base/roblox 경계에
+      mount/unmount 외 reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소
+      타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
+      실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
+      Effect/Modifier)은 self-ref 컨텍스트가 없어 의미 불성립이라 즉시
+      error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
+      Slot<<Instance>>`가 quad-roblox의 사실상 유일한 Slot 타입.
 - [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
       `keyFn` 생략 시 index를 그대로 key로 사용(중간 삽입/삭제 시 identity
       보존 안 됨, 캐스케이드 갱신 — 흔한 업계 관행과 같은 트레이드오프).
@@ -294,8 +309,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입 차단을
       우회한 버그라는 뜻 — 같은 절 참고
 - [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
-      `coroutine.resume(v, self)`+`None`으로 소진(`nil` 아님 —
-      2026-08-07 열 번째 세션 정정, `#t`/`table.insert` 안전성), 함수면
+      `coroutine.resume(v, self)`+`nil`로 소진(2026-08-09 열한 번째
+      세션 최종 정정 — 순서 안 중요 + 슬롯 재사용 위해 `None`이 아닌
+      `nil`, `table.insert` 대신 빈 슬롯 선형 탐색 등록), 함수면
       `v(value)` 호출+유지 — 같은 배열 하나로 통합). `:Wait(thread?)`는
       `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`

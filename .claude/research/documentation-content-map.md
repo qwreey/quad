@@ -73,7 +73,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 - skip: quad2-try 리서치 결과 섹션 전체(OOP 상속/커스텀 파서/Slot 스텁/`Pipe` 폐기 이력) / PA님 코드 교차검증 절(역사적 검증 기록) / "남은 열린 질문"/"확정된 것" 메타 요약
 
 ### component-composition-plan.md / module-lifecycle-plan.md
-- 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티엔 State만 바인딩 / `props.Modifier`/`props.Ref` named parameter 경계 전달(**`props.Modifier or None`/`props.Ref or None` 필수 관용구 — 안 쓰면 nil-hole 버그, 2026-08-07 열 번째 세션 확정**) / `InitRoblox(Module)` 팩토리 초기화
+- 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티 바인딩(**[정정, 2026-08-09 열한 번째 세션] "State만"이 아님 — 단순 원본 토글(`Frame{Visible=source}`)은 Source 직접 바인딩이 정상 경로, 여러 값에서 파생된 계산 결과일 때만 자연히 State가 됨, `component-composition-plan.md` 5번 절 참고**) / `props.Modifier`/`props.Ref` named parameter 경계 전달(**`props.Modifier or None`/`props.Ref or None` 필수 관용구 — 안 쓰면 nil-hole 버그, 2026-08-07 열 번째 세션 확정**) / `InitRoblox(Module)` 팩토리 초기화
 - api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Overridden(mod1, mod2, ...)` 유틸(구 `Merge`, `props.Modifier` 단일 슬롯용 특수 상황으로 한정 소개 — 아래 modifier-plan.md 절 참고) / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
 - 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `store-semantics.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
 - skip: Compose/Fusion/Vide/v1 프레임워크 비교 원자료 / provider/processor 네이밍 미정 등 열린 질문 메모
@@ -220,14 +220,26 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 
 ## 5. 문서화 아직 보류(미확정 설계라 쓰면 안 됨)
 
-- Slot 형제 순서 보장 (`slot-plan.md`)
+**[정정, 2026-08-09 열한 번째 세션] 아래 목록 중 상당수가 이미 해소돼
+있었음 — 이 절이 오래 안 갱신되며 stale해진 것, 실제 열린 것만 남기고
+해소된 건 표시만 남김(중복 조사 방지 목적, 지웠다가 나중에 또 조사하게
+되는 걸 막기 위해 흔적만 유지).**
+
+- **[해소됨]** Slot 형제 순서 보장 — `Dispatch.setLength`/
+  `setOffsetSource`(Length/Offset)로 2026-08-09 여섯 번째 세션에 확정,
+  `bind-system-plan.md` "Length/Offset" 절 참고.
 - Tween 오버라이드/삭제후재시작/끝점이동 세부 옵션 키 이름, 트윈 옵션 값
-  모양(TweenInfo vs 편의 필드) (`research/tween-plan.md`)
-- `Attribute<T>` 제네릭 vs 타입별 정적 생성자 (`bind-system-plan.md`)
-- provider/processor 네이밍 (`module-lifecycle-plan.md`)
-- 키 기반 동적 컬렉션 재조정 최종 이름/시그니처(`Render`/`Draw`/`List` 등
-  후보만 있음, `Slot:Extract` 세부 시맨틱도 미정) — `research/
-  additional-primitives-plan.md`(2026-08-06 신설, 설계 진행 중)
+  모양(TweenInfo vs 편의 필드) (`research/tween-plan.md`) — 아직 열림.
+- **[해소됨]** `Attribute<T>` 제네릭 vs 타입별 정적 생성자 — 2026-08-09
+  열한 번째 세션에 "둘 다 채택"으로 확정, `base/attribute-plan.md` 참고.
+- provider/processor 네이밍 — **[해소됨]** `Handler`로 이미 오래전 확정
+  (`base/module-lifecycle-plan.md`), 이 줄이 그 갱신을 놓치고 있었음.
+- **[해소됨]** 키 기반 동적 컬렉션 재조정 최종 이름/시그니처, `Slot:Extract`
+  세부 시맨틱 — `Slot:List(data, updateFn, keyFn?)`로 2026-08-09 세 번째
+  세션에 전부 확정·통합(`base/slot-plan.md`), `Extract`도 CRUD 표에서
+  완전히 확정(2026-08-09 열한 번째 세션엔 `Extract(index, newElement?)`로
+  더 확장). `research/additional-primitives-plan.md`는 더 이상 열린
+  항목 없음, 배경 자료로만 유지.
 - **"hook"/"pre-hook" 용어 채택 여부 + `PreRef`의 취소 가능성** (2026-08-07,
   위 심화 후보 6번 참고) — `bind-system-plan.md`는 `PreRef`가 위치 무관
   호이스팅이라는 것과 일반 `Ref`가 우선순위 스캔에 참여한다는 것까지는

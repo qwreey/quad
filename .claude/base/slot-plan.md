@@ -205,53 +205,73 @@ Slot은 바인딩되는 순간 그 안의 요소를 전부 own해버리는 데�
 
 ## CRUD API 확정 (2026-08-09 세 번째 세션, 1-7 해소)
 
-`get`/`set`은 드롭 — 최종 표면(`Move`/`Swap`은 같은 세션 후속 논의에서
-추가, 아래 "원시 최소화 원칙 정정" 참고):
+**[정정, 2026-08-09 열한 번째 세션] 식별 기준을 element 레퍼런스에서
+인덱스 기준으로 전환.** 원래 "인덱스는 add/remove 반복 시 곧 stale
+해진다"는 이유로 레퍼런스 기준을 택했으나, 실사용에서는 반대 문제가 더
+흔함(사용자 지적) — `slot:Add(Frame{...})`처럼 호출부가 리턴값을 변수에
+안 담고 바로 흘려보내는 경우가 많아서, 나중에 그 element를 다시 골라
+Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `Add`만
+새로 넣는 대상이라 자연히 element를 직접 받고, 나머지 CRUD는 전부
+**인덱스 기준**으로 재확정 — 레퍼런스만 갖고 있으면 `IndexOf`로 먼저
+인덱스를 구하면 됨(아래):
 
 | 연산 | 시그니처 | 복잡도 | 의미 |
 |---|---|---|---|
 | `Add` | `Slot:Add(element, index?)` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 |
-| `Remove` | `Slot:Remove(element)` | O(n) | 제거 **+ 파괴**(retract/Destroy) |
-| `Extract` | `Slot:Extract(element)` | O(n) | 제거, **파괴 안 함** — 호출부가 소유권 회수, 임의의 다른 Slot에 재삽입 가능 |
+| `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
+| `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
+| `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환 |
 | `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op |
-| `Move` | `Slot:Move(element, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
-| `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 **인덱스**의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
+| `Move` | `Slot:Move(oldIndex, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
+| `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 인덱스의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
+| `Get` | `Slot:Get(index): T?` | O(1) | 그 인덱스의 element 조회(범위 밖이면 `nil`) |
+| `IndexOf` | `Slot:IndexOf(element): number?` | O(n) | element의 현재 인덱스 역조회(멤버 아니면 `nil`) — 레퍼런스만 있고 인덱스가 없을 때 다른 CRUD와 연결하는 다리 |
 
-- **식별은 기본적으로 element 레퍼런스 기준**(`Add`/`Remove`/`Extract`/
-  `Move`) — element는 컴포넌트 호출/Instance 생성이 만들어낸 구체 값이라
-  항상 아이덴티티로 구분 가능. 인덱스 기준으로 하면 add/remove가 반복될
-  때 호출부가 들고 있던 인덱스가 곧바로 stale해짐.
-- **`Swap`만 예외 — 인덱스 기준(`indexA`/`indexB`), element 레퍼런스
-  아님(2026-08-09 세 번째 세션 정정).** element 레퍼런스로 받으면 Slot이
-  element→index 역방향 맵을 안 갖고 있는 이상 두 element 각각의 현재
-  위치를 찾는 데 O(n)씩(총 2n) 들어서 **`Swap`이 약속하는 O(1)이 깨짐**
-  — `Move`는 어차피 시프트 자체가 O(n)이라 element 조회 비용이 묻히지만,
-  `Swap`은 조회 비용이 곧 전체 비용이라 이 차이가 그대로 드러남. 호출부는
-  보통 "지금 몇 번째 항목과 몇 번째 항목을 바꿀지"를 이미 알고 있는
-  상황(예: 드래그 리오더 UI)이라 인덱스로 받는 게 자연스럽기도 함.
-- **열거(iteration)/`Get` API는 지금 안 만듦** — `Slot:List(...)`(아래)는
-  자기 자신의 key→element 맵을 따로 들고 있어 Slot의 내부 상태를 조회할
-  필요가 없음. 다른 실사용이 나오면 그때 추가(YAGNI).
+- **`Extract(index, newElement?)`가 존재하는 이유** — 인덱스 기준 모델에서
+  "요소 하나를 다른 걸로 교체"하려면 `Extract(index)`(O(n) 시프트) 후
+  `Add(newElement, index)`(O(n) 시프트 재발생)를 따로 불러야 해서 이중으로
+  무거움. `newElement`를 같이 넘기면 그 자리 값을 시프트 없이 바로
+  갈아끼우기만 하면 되므로 훨씬 쌈 — 별도 `Set`이라는 이름 대신 `Extract`의
+  확장으로 둔 이유는 반환값이 "이전 element"라는 의미가 `Extract`와
+  정확히 같아서(교체도 "그 자리 걸 빼내고 새 걸 넣는" 것의 원자적 버전일
+  뿐). `newElement`에도 `Add`와 같은 검증(이미 마운트/타입 제약)이
+  똑같이 적용됨.
+- **`Get`/`IndexOf` 신설, 원래 "YAGNI"로 뺐던 것을 재추가.** 처음엔
+  "`:List`가 자기 key→element 맵을 따로 들고 있어 Slot 내부 상태 조회가
+  불필요"하다고 판단해 드롭했으나, 위 인덱스 기준 전환과 맞물려 다시
+  필요해짐 — element 레퍼런스만 갖고 있는 호출부가 인덱스 기반 CRUD를
+  쓰려면 `IndexOf`가 유일한 다리. `Get`은 대칭성/일반적인 컬렉션 API
+  완결성을 위해 같이 열어둠(필수까진 아니지만 비용이 거의 없어 열어둠).
+- **`raw*` 내부 호출 규약은 공개 API와 다를 수 있음(구현 세부, M6에서
+  확정)** — `:List`의 reconcile은 이미 자기 `key→element` 맵을 들고
+  있어서 `rawRemove`/`rawMove` 등을 element 기준으로 계속 부를 수도
+  있음. 공개 CRUD가 인덱스를 받아 내부적으로 element를 찾아 `raw*`에
+  넘기는 얇은 변환 계층이 될지, `raw*` 자체를 인덱스 기준으로 통일할지는
+  base 설계가 못박을 필요 없는 구현 디테일.
 - **에러 조건 — 전부 즉시 `error()`, no-op 없음**(기존 "재마운트 시 throw"와
   같은 fail-fast 톤):
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
     CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
     값(Ref/PreRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
-  - `Remove`/`Extract`: 그 element가 지금 이 Slot의 멤버가 아니면 에러.
-  - `Move`: `element`가 이 Slot의 멤버가 아니면 에러.
-  - `Swap`: `indexA`/`indexB` 중 하나라도 범위 밖(1..현재 개수)이면 에러 —
-    단 `Swap(i, i)`(같은 인덱스)는 위치가 안 바뀌므로 에러 없이 no-op.
+  - `Remove`/`Extract`/`Move`: `index`(들)가 범위 밖(1..현재 개수)이면
+    에러.
+  - `Extract(index, newElement)`: `newElement`도 `Add`와 동일한 검증
+    (이미 마운트/타입 제약) 적용.
+  - `Swap`: `indexA`/`indexB` 중 하나라도 범위 밖이면 에러 — 단
+    `Swap(i, i)`(같은 인덱스)는 위치가 안 바뀌므로 에러 없이 no-op.
 - **`Move`/`Swap`은 반환값 없음(void)** — 내부 재배치만 수행, 멤버십
   weak-set을 안 건드림(요소가 Slot을 떠난 적이 없으므로) — 그래서 `Add`/
   `Remove`/`Extract`보다 저렴함.
-- **모든 공개 CRUD는 "가드 확인 + `raw*` 위임"의 얇은 wrapper** — `Add`/
-  `Remove`/`Extract`/`Clear`/`Move`/`Swap` 전부 `self._listed`(`:List`가
-  설치돼 있으면 수동 CRUD 금지)만 확인하고 실제 로직은 `rawAdd`/
-  `rawRemove`/`rawExtract`/`rawClear`/`rawMove`/`rawSwap`에 있음 — 이
-  `raw*` 함수들이 `:List`의 reconcile이 가드 없이 직접 호출하는 바로
-  그 함수(아래 "`Slot:List`" 절의 "구현" 참고). 공개 메소드에 로직이
-  따로 있는 게 아니라 전부 이 한 세트를 공유.
+- **공개 CRUD 중 실제로 mutate하는 것(`Add`/`Remove`/`Extract`/
+  `ExtractAll`/`Clear`/`Move`/`Swap`)은 "가드 확인 + `raw*` 위임"의 얇은
+  wrapper** — `self._listed`(`:List`가 설치돼 있으면 수동 CRUD 금지)만
+  확인하고 실제 로직은 `rawAdd`/`rawRemove`/`rawExtract`/`rawClear`/
+  `rawMove`/`rawSwap`에 있음 — 이 `raw*` 함수들이 `:List`의 reconcile이
+  가드 없이 직접 호출하는 바로 그 함수(아래 "`Slot:List`" 절의 "구현"
+  참고). 공개 메소드에 로직이 따로 있는 게 아니라 전부 이 한 세트를
+  공유. **`Get`/`IndexOf`는 순수 읽기라 이 가드 대상 아님** — `:List`가
+  설치돼 있어도 자유롭게 호출 가능.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로

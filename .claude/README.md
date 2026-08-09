@@ -30,7 +30,7 @@
 | `store-semantics.md` | Store는 부작용 허용이 기본. State는 Store 위의 조합 가능한 캐시 레이어로 실제로 필요함(2026-08-04 정정) — 온톨로지 핵심 메커니즘은 2026-08-04 2차 라운드에서 확정, 최신 상세는 `base/bind-system-plan.md` |
 | `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델, Ref, Store/State/Source 온톨로지 + 인체공학 질문 전부 확정. 디스패치 엔진은 `quad-base`가 인터페이스로 소유(2026-08-04 5차 라운드) |
 | `module-lifecycle-plan.md` | 프로바이더 패턴, bind/store 구현 책임 분리 — 확정 |
-| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정. **[2026-08-09 세 번째 세션]** `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD(복잡도 표기 포함), `isMounted` 이중 추적 분리, 요소 타입 제약(`nil`/`None`/핸들러 계층 값 금지, `Slot<T>()` 제네릭), 키 기반 동적 컬렉션 재조정(`Slot:List(data, updateFn, keyFn?)`, `keyFn` 생략 시 index 기본값, `updateFn<UD>(item, index, userdata, prev)`가 매 사이클 호출되며 `prev` 재사용/`nil` 반환으로 filter 지원, `Source` 생성은 `updateFn`이 `userdata`로 직접 관리, `userdata`는 GC-native 값만 허용·명시적 cleanup 필요한 값은 UB)까지 전부 확정 통합, base/roblox 경계에 reposition 훅 추가 |
+| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정. **[2026-08-09 세 번째 세션]** `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD(복잡도 표기 포함), `isMounted` 이중 추적 분리, 요소 타입 제약(`nil`/`None`/핸들러 계층 값 금지, `Slot<T>()` 제네릭), 키 기반 동적 컬렉션 재조정(`Slot:List(data, updateFn, keyFn?)`, `keyFn` 생략 시 index 기본값, `updateFn<UD>(item, index, userdata, prev)`가 매 사이클 호출되며 `prev` 재사용/`nil` 반환으로 filter 지원, `Source` 생성은 `updateFn`이 `userdata`로 직접 관리, `userdata`는 GC-native 값만 허용·명시적 cleanup 필요한 값은 UB)까지 전부 확정 통합, base/roblox 경계에 reposition 훅 추가. **[2026-08-09 열한 번째 세션, 중간검토]** CRUD 식별 기준을 element 레퍼런스에서 인덱스 기준으로 재정정(`Remove(index)`/`Extract(index, newElement?)`/`Move(oldIndex, newIndex)`), `ExtractAll`/`Get`/`IndexOf` 신설 |
 | `modifier-plan.md` | Modifier는 런타임 plug 아닌 정적 merge, immutable+clone 기반 체이닝 — 메커니즘 확정. **[2026-08-07 다섯 번째 세션 추가]** `:Apply(factory)` 팩토리 체이닝, `Overridden`(구 `Merge`→`Override`, 2026-08-08 세션에서 이름까지 확정) 값 결합+성능 기준, `:Peek`/`isState` 필드 읽기까지 전부 확정(`Peek`/`isState`는 이름만 용어 정리 라운드까지 잠정) |
 | `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 |
 | `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, Source가 State를 구조적으로 만족 — modifier/Ref 컴포넌트 경계 통과까지 전부 확정, 남은 건 API 이름뿐. **[2026-08-07 정리]** 폐기된 `StoreSource` 프록시 설계로의 역전 이력은 본문에서 빼고 `archive/store-source-proxy-reversed.md` 포인터로 압축 |
@@ -47,6 +47,7 @@
 |---|---|
 | `quad-v1-architecture.md` | v1(`initreq/quad`) 내부 동작 스냅샷 — "이 문제를 안 반복하려면"의 기준선. **[2026-08-07 `base/`→`reference/` 이동]** v2의 결정 자체가 아니라 다른 문서가 인용하는 온디맨드 자료라 항상 읽을 필요는 없음 |
 | `comparison-fusion-vide.md` | Fusion/Vide 아키텍처 비교 리서치 — 설계 결정 근거 자료(전파 모델 등 일부 서술은 이후 라운드에서 뒤집혔으니 `bind-system-plan.md` 쪽을 최신으로 볼 것). **[2026-08-07 `base/`→`reference/` 이동]**, `quadnomicon` 소재 후보 |
+| `comparison-charm.md` | **[2026-08-09 신설]** littensy/charm(Roblox Zustand류) 비교 — `batch()`/`atom()`/수동 dispose Effect 3가지는 quad가 이미 기각한 패턴이라 반면교사, `None` 센티널은 독립 재확인, charm-sync의 diff/patch는 quad 미착수 네트워크 복제 영역의 첫 참고자료, Blocker의 "previous 값 비교" 미결 문제엔 정황 증거(생성 시 필수 `equals`, computed의 previous-in-getter) 제공 |
 
 ## `research/` — 아직 착수 전, 상의 필요
 

@@ -216,12 +216,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
   패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
-- **Attribute 특수 키 타입 파라미터화** — `base/bind-system-plan.md`
-  "Attribute 특수 키" 절(2026-08-06 신규). `[Attribute<<boolean>> "name"]`
-  제네릭 스타일 vs `[BooleanAttribute "name"]` 타입별 정적 생성자 패밀리
-  중 뭘로 갈지 — 소견은 DI 인스턴스 생성 패턴처럼 "제네릭 하나 + 자주
-  쓰는 타입만 정적 지름길" 절충이지만 확정 아님, M10(Handlers/Attribute)
-  착수 전 아무 때나 확인해도 됨.
+- **[해소됨, 2026-08-09 열한 번째 세션]** Attribute 특수 키 타입
+  파라미터화 — `[Attribute<<boolean>> "name"]` 제네릭 스타일과
+  `[BooleanAttribute "name"]` 타입별 정적 생성자 패밀리 **둘 다 채택으로
+  확정**(내부 구현 동일, 호출부 표기만 다름). `base/attribute-plan.md`
+  참고 — 제네릭 파라미터가 `=` 뒤 값 타입까지 좁혀주는지는 M0/M10에서
+  실측 필요(안 돼도 런타임엔 영향 없음).
 - **v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat`** —
   `research/v1-compat-plan.md`(신규, 2026-08-06, 두 차례 후속 논의로 수렴).
   방향 확정: v1을 그대로 병행 실행 + 경계에서만 `state:Observer()`(lazy

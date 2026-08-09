@@ -71,6 +71,7 @@ function TagHandler.process(inst, k, v)
 end
 
 function TagHandler.retract(inst, k, v)
+    assert(v == nil, "TagHandler.retract는 v가 nil일 때만 불려야 함")
     local old = relate:GetStrong(inst, k)
     if old then for name in old:Names() do CollectionService:RemoveTag(inst, name) end end
     relate:SetStrong(inst, k, nil)
@@ -84,11 +85,16 @@ end
   전부 사라졌다 다시 붙어 랙/깜빡임을 유발하므로(사용자 지적), 반드시
   이전 값과 diff.
 - **`Tag(A) → nil`(핸들러가 TagHandler → 없음으로 바뀜)**: `retract`가
-  불림 — **`v`를 굳이 안 봐도 됨**: retract는 구조상 "더 이상 Tag가
-  아니게 됐을 때만" 불리므로, 뭐가 새로 들어왔든 전체 삭제가 항상 맞는
-  동작. `Handler.retract`가 여전히 `(inst,k,v)` 3-인자를 받는 건 계약
-  일관성 때문이지(다른 핸들러는 `v`를 실제로 씀) Tag가 그걸 필수로
-  요구해서가 아님.
+  불림. **[명시화, 2026-08-09 열한 번째 세션] 전체 삭제는 정확히
+  `v == nil`일 때만 맞는 동작 — "v를 안 봐도 된다"가 아니라 "v가 항상
+  nil로 들어온다는 걸 알고 있으니 별도 분기가 필요 없다"가 정확한
+  표현.** Tag 값을 담는 키에서 TagHandler가 더 이상 매치 안 되는 유일한
+  경로가 값이 `nil`이 되는 것(`None → nil` 재디스패치 포함)이라 이
+  전제가 깨지지 않는 한 위 구현처럼 `v`를 실제로 분기 안 해도 항상
+  옳음 — 위 pseudocode에 `assert(v == nil, ...)`을 추가해 이 전제를
+  코드에도 드러냄. `Handler.retract`가 여전히 `(inst,k,v)` 3-인자를
+  받는 건 계약 일관성 때문이지(다른 핸들러는 `v`를 실제로 씀) Tag가
+  그걸 필수로 요구해서가 아님.
 - **`retract`가 자기 위임 대상까지 수동으로 안 쫓아가도 됨** —
   `Dispatch.retractUnder`가 체인 전체를 알아서 훑어주므로 TagHandler는
   자기 자원(위 `relate` 저장분)만 정리하면 됨. 상세 메커니즘은

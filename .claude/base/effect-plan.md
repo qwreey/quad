@@ -58,6 +58,31 @@ leaf가 살아있는 동안만 유효, leaf가 죽으면 최종 정리 콜백 �
 leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer보다
 비쌈) — 필요할 때만 쓰는 걸로 충분.
 
+**보강 — `EffectHandle`의 내부 Observer 바인딩 세부(2026-08-09 열한 번째
+세션, 재확인 후 명시화)**:
+
+- **`EffectHandle`은 내부 Observer를 필드로 강참조** — `handle._observer =
+  observer`(`state`가 주어진 경우만 존재). 이건 GC 방지가 목적이 아니라
+  (그건 아래 `bindLifetime`/`gchold`가 담당) `:Unsubscribe()`/`bindLifetime`
+  cascade가 이 필드를 통해 내부 Observer에 접근하기 위한 것.
+- **`bindLifetime(inst, handle)`은 `state`가 있는 경우 내부 Observer도
+  같은 `inst`로 `bindLifetime(inst, handle._observer)`를 cascade해야
+  함** — `Dispatch/Leaf.luau`가 children 배열의 `EffectHandle`을 매치해
+  `bindLifetime(inst, handle)`을 부르는 시점(leaf 부착)과, `:Subscribe()`가
+  `handle`을 전역 레지스트리에 등록하는 시점(아래) 둘 다 해당. 이유:
+  내부 Observer 자신의 재실행 게이팅(`canExecute`)이 "`Subscribed` 필드
+  + `inst`의 gcconn"을 함께 보는데, 후자는 그 Observer가 **직접**
+  `bindLifetime(inst, observer)`된 적이 있어야만 올바른 `inst`를 참조함
+  — `EffectHandle`만 바인드하고 내부 Observer는 안 하면, 그 Observer의
+  `canExecute`가 `inst` 생존을 못 보고 엉뚱하게(또는 전혀) 게이팅됨.
+  같은 이유로 `unbindLifetime(inst, handle)`도 내부 Observer까지 같이
+  풀어야 대칭이 맞음.
+- **`:Subscribe()`도 마찬가지로 `state`가 있으면 내부 Observer를 같은
+  전역 강참조 레지스트리에 같이 등록**(`handle` 자신 + `handle._observer`
+  둘 다, 또는 `handle._observer`만으로 충분한지는 구현 세부 — 어느 쪽이든
+  "`EffectHandle`은 등록됐는데 내부 Observer는 등록 안 됨" 상태가 생기면
+  안 됨).
+
 **Observer 자체에 cleanup 반환 계약을 추가하는 안은 여전히 기각** — React
 `useEffect`식으로 `fn`의 반환값을 자동으로 배선해주는 안을 검토했으나,
 클로저 업밸류로 이미 충분해 채택 안 함. 이 기각은 위 Effect 설계와
@@ -85,6 +110,17 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   자신(또는 `state` 있는 경우 내부 Observer)을 등록 — 새 메커니즘 아님,
   기존 레지스트리 재사용. 이후 로컬 변수로 참조를 안 들고 있어도 계속
   살아있음(Observer와 동일 관용구).
+  - **⚠️ 용도는 완전히 top-level(모듈/스크립트 레벨, 어떤 Instance
+    생명주기에도 안 묶인) 사이드 이펙트로 한정할 것 — 특정 `inst`에
+    묶인 경우엔 leaf 부착(`bindLifetime`)을 쓰지 `:Subscribe()`를 쓰지
+    않는 게 정상 경로.** `:Subscribe()`를 쓰기로 했다면(top-level이든
+    의도적으로 다른 경우든) **반드시 `:Unsubscribe()`로 짝을 맞춰야
+    함** — 강참조 레지스트리는 quad 전역의 "정리는 기본적으로 GC에
+    위임" 원칙의 **의도적 예외**라, 로컬 변수 참조를 다 놓아도(스코프를
+    벗어나도) **GC되지 않고 계속 실행됨**. 이건 quad의 다른 프리미티브
+    대부분이 GC-native인 것과 정반대라 혼동하기 쉬운 지점 — 사용자
+    문서에 명시적으로 경고할 것(`:Subscribe()`를 부르는 순간부터 그
+    핸들의 생애주기는 전적으로 수동 관리 대상이 됨).
 - **`:Unsubscribe()`는 Observer의 것을 그냥 위임하지 않는다 — Effect
   계층에서 의미가 확장됨.** Observer의 `:Unsubscribe()`는 "미래 재실행만
   끊는다"(Observer 자체엔 정리할 상태가 없음)로 충분하지만, Effect의

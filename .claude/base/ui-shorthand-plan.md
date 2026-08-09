@@ -63,6 +63,17 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 자동 생성된 자식은 기존 관례대로 `_`/`QUAD_` 접두어 네이밍
 (`research/debug-tooling-plan.md` 9번, v1의 `_quad_round`류 그대로 재사용).
 
+**[보강, 2026-08-09 열한 번째 세션] `mod:UICorner(8)`류 체이닝이 실제로
+타입체크되려면, 생성되는 `FrameModifier`류 정적 타입의 메소드 목록에
+`UICorner`/`UIPadding`/`UIScale`이 (진짜 프로퍼티들과 나란히) 포함돼
+있어야 함 — 순수 런타임 관점(제네릭 `__index`가 처리)에선 문제없지만,
+타입 레벨에선 별도로 챙겨야 하는 항목.** quad-roblox의 각종 타입(DI
+인스턴스 타입, Modifier 타입 등)이 Roblox API 덤프를 읽어 Luau 타입
+파일을 구워내는 스크립트로 생성될 예정이라(구현 단계 결정 사항) — 이
+스크립트가 실제 Roblox 프로퍼티뿐 아니라 이 3개 숏핸드 키도 각
+Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 설계할
+게 없는 구현 체크리스트 항목.
+
 **기존 자식과의 매칭 기준(2026-08-06 감사에서 지적된 항목, 여기서 같이
 확정)**: 재사용 대상은 quad가 이전에 만든 고정 이름(`_quad_corner`류)
 자식으로 한정 — 타입만 보고(`UICorner`이기만 하면 아무거나) 재사용하지
