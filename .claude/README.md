@@ -30,7 +30,7 @@
 | `store-semantics.md` | Store는 부작용 허용이 기본. State는 Store 위의 조합 가능한 캐시 레이어로 실제로 필요함(2026-08-04 정정) — 온톨로지 핵심 메커니즘은 2026-08-04 2차 라운드에서 확정, 최신 상세는 `base/bind-system-plan.md` |
 | `bind-system-plan.md` | pluggable key/value 핸들러 레지스트리 — `process`/`retract` 디스패치 모델, Ref, Store/State/Source 온톨로지 + 인체공학 질문 전부 확정. 디스패치 엔진은 `quad-base`가 인터페이스로 소유(2026-08-04 5차 라운드) |
 | `module-lifecycle-plan.md` | 프로바이더 패턴, bind/store 구현 책임 분리 — 확정 |
-| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정 |
+| `slot-plan.md` | 뮤터블 자식 배열, 엄격한 단일 마운트 소유권, 재마운트 시 throw, base/roblox 패키지 경계까지 확정. **[2026-08-09 세 번째 세션]** `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD(복잡도 표기 포함), `isMounted` 이중 추적 분리, 요소 타입 제약(`nil`/`None`/핸들러 계층 값 금지, `Slot<T>()` 제네릭), 키 기반 동적 컬렉션 재조정(`Slot:List(data, updateFn, keyFn?)`, `keyFn` 생략 시 index 기본값, `updateFn<UD>(item, index, userdata, prev)`가 매 사이클 호출되며 `prev` 재사용/`nil` 반환으로 filter 지원, `Source` 생성은 `updateFn`이 `userdata`로 직접 관리, `userdata`는 GC-native 값만 허용·명시적 cleanup 필요한 값은 UB)까지 전부 확정 통합, base/roblox 경계에 reposition 훅 추가 |
 | `modifier-plan.md` | Modifier는 런타임 plug 아닌 정적 merge, immutable+clone 기반 체이닝 — 메커니즘 확정. **[2026-08-07 다섯 번째 세션 추가]** `:Apply(factory)` 팩토리 체이닝, `Overridden`(구 `Merge`→`Override`, 2026-08-08 세션에서 이름까지 확정) 값 결합+성능 기준, `:Peek`/`isState` 필드 읽기까지 전부 확정(`Peek`/`isState`는 이름만 용어 정리 라운드까지 잠정) |
 | `purity-and-effects-plan.md` | 컴포넌트 "순수성"이 아니라 "이식성" 문제로 재정의 — 문서 경고 수준으로 확정 |
 | `component-composition-plan.md` | 컴포넌트=플레인 함수, State/Source 읽기·쓰기 경계, Source가 State를 구조적으로 만족 — modifier/Ref 컴포넌트 경계 통과까지 전부 확정, 남은 건 API 이름뿐. **[2026-08-07 정리]** 폐기된 `StoreSource` 프록시 설계로의 역전 이력은 본문에서 빼고 `archive/store-source-proxy-reversed.md` 포인터로 압축 |
@@ -58,7 +58,7 @@
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
 | `documentation-content-map.md` | 위 4축에 실제로 뭘 채울지 `base/` 전체를 초심자/api/심화/skip으로 서베이한 콘텐츠 맵 — 초심자 core loop 목차 초안 포함 | 하 — 문서화 착수 시점의 목차/우선순위표로 쓸 것 |
 | `framework-comparison-findings.md` | quad vs Fusion/Vide/react-lua 정직한 비교(실 소스 근거) — quad 강점, 진짜 불리한 점 중 고칠 만한 것 3개, 못 고치는 트레이드오프 정리 | 하 — 사용자 검토 후 반영 여부 결정 대기 |
-| `additional-primitives-plan.md` | **[2026-08-07 범위 축소]** 확정/기각된 Effect·Blocker·Batch·Context는 `base/blocker-plan.md`·`base/effect-plan.md`·`archive/`로 분리됨 — 이제 **키 기반 동적 컬렉션 재조정**(Fusion `ForPairs`/Vide `indexes()`류에 대응하는 프리미티브가 quad엔 없음) 하나만 다룸 | 상 — 사용자 판단 대기, 착수 전 M0/M1 스코프에 영향 줄 수 있음 |
+| `additional-primitives-plan.md` | **[2026-08-09 세 번째 세션, 전부 해소]** 마지막으로 남아있던 키 기반 동적 컬렉션 재조정도 `Slot:List(...)`로 확정되어 `base/slot-plan.md`로 승격 — 이 문서엔 새로 열린 설계 질문 없음, "빈 자리 아닌 것"/"문서화 백로그"/조사 소스 목록만 배경 자료로 유지 | 하 — 배경 리서치 기록용, 열린 결정 없음 |
 | `pre-implementation-audit.md` | M0 착수 직전 크리티컬 감사(2026-08-06 신설) — `base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재검토, 11개 우선순위1(M0~M4 착수 전 확인 권장) + 11개 우선순위2 + 2개 단순화후보 | 상 — M0 착수 전 최소 우선순위1 항목 확인 권장 |
 | `v1-compat-plan.md` | v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat` 패키지, v2→v1 단방향 브리지(`state:Observer()`+v1 프로퍼티 재대입), v2-in-v1/v1-in-v2 두 임베딩 방향의 기술 규칙까지 확정. quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — Slot이 foreign Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 미결 |
 

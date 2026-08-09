@@ -4,9 +4,12 @@
 **2026-08-07 문서 정리에서 확정/기각된 항목을 분리**: Effect/Blocker →
 `base/blocker-plan.md`/`base/effect-plan.md`, Batch(lexical) → `archive/
 batch-rejected.md`, Context(+레이어드 Store 대안) → `archive/
-context-rejected.md`. 이 문서에는 **아직 완전히 열려있는 것 하나만** 남음
-— 키 기반 동적 컬렉션 재조정. 사용자가 "작업 전에 모든 정의를 마치고
-싶다"고 명시 — M0 전 완전 확정이 목표.
+context-rejected.md`. **[2026-08-09 세 번째 세션]** 마지막으로 남아있던
+키 기반 동적 컬렉션 재조정도 `Slot:List(...)` 메소드로 완전히 확정되어
+`base/slot-plan.md`로 승격됨(아래 절은 요약+포인터만 남기고 상세는 그쪽
+참고) — **이 문서에 새로 열려있는 설계 질문은 더 이상 없음**, 아래 표/
+"빈 자리 아닌 것"/"문서화 백로그"/"참고 소스" 절은 배경 리서치 기록으로만
+유지.
 
 ## 배경
 
@@ -29,7 +32,7 @@ Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 �
 
 | 후보 | 판정 | 현재 위치 |
 |---|---|---|
-| 키 기반 동적 컬렉션 재조정 | **진짜 빈 자리, 최우선** — 아직 열려있음 | 이 문서(아래) |
+| 키 기반 동적 컬렉션 재조정 | **채택, 확정** — `Slot:List(...)` 메소드로 통합 | `base/slot-plan.md`(2026-08-09 세 번째 세션) |
 | Effect(leaf 죽음에 확정 정리 + `state` 있으면 재실행) | **채택, 확정** — Observer와의 관계도 해소 | `base/effect-plan.md` |
 | Blocker(값 기반 emit 지연/합치기) | **채택** — Batch의 대안 | `base/blocker-plan.md` |
 | Batch(함수/코루틴 스코프 lexical block) | **기각** | `archive/batch-rejected.md` |
@@ -40,121 +43,21 @@ Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 �
 | Error Boundary | 빈 자리 아님 | 아래 "빈 자리 아닌 것" 절 |
 | Readonly wrapper | 빈 자리 아님 | 아래 "빈 자리 아닌 것" 절 |
 
-## 키 기반 동적 컬렉션 재조정 — 최우선, 설계 진행 중
+## 키 기반 동적 컬렉션 재조정 — 확정, `base/slot-plan.md`로 승격 (2026-08-09 세 번째 세션)
 
-**무엇인가**: 데이터 배열(인벤토리, 리더보드, 채팅로그처럼 삽입/삭제/
-재정렬되는 목록)을 UI로 렌더링할 때, 이전 렌더 결과와 새 데이터를
-**정체성(key) 기준으로 diff**해서 변경분만 생성/갱신/파괴하는 프리미티브.
 React `key` prop, Vue `v-for :key`, Solid `<For>`, Fusion `ForPairs`/
-`ForKeys`/`ForValues`, Vide `indexes()`/`values()`가 이 층위. `base/
-slot-plan.md`의 `Slot`은 CRUD 껍데기일 뿐 diff 엔진이 아니라서 이 프리미티브가
-quad엔 없음(확인 완료, 근거는 문서 하단 소스 목록 참고).
+`ForKeys`/`ForValues`, Vide `indexes()`/`values()`에 대응하는 프리미티브 —
+데이터 배열을 정체성(key) 기준으로 diff해서 변경분만 생성/갱신/파괴한다.
+**최종 확정 형태는 자유 함수도 새 타입도 아니라 `Slot`의 콜론 메소드**
+(`Slot():List(data, updateFn, keyFn?) -> Slot`) — 상세 시그니처/구현
+의사코드/왜 자유 함수·새 타입이 아닌지/`Move` 기반 리오더/`userdata` 기반
+`Source` 관리 위임은 전부 `base/slot-plan.md`의 "`Slot:List(...)`" 절
+참고, 여기서 반복 안 함.
 
-### 왜 "매핑 함수" 직관이 안 통하는가
-
-React류는 매 렌더마다 새 가상 트리를 통째로 새로 만들고 reconciler가
-old/new를 diff한다 — 그래서 "그냥 다시 매핑"이 성립한다. quad는 컴포넌트가
-**한 번만 실행**되므로 그 "매 렌더"가 아예 없다. 그래서 이건 매핑 함수가
-아니라 **한 번 설치되면 스스로 diff-and-patch를 도는 Observer 변형**이다 —
-전달한 `renderFn`은 새 key가 나타났을 때 딱 한 번만 불리고, 그 이후로는
-값이 바뀌어도 절대 다시 안 불린다.
-
-### 메커니즘 스케치
-
-```
-key가 새로 나타남     → renderFn(key, itemState) 호출, itemSource:Set(초기값), Slot에 삽입
-key가 사라짐          → Slot에서 제거(파괴)
-key가 유지, 값만 변경  → renderFn 재호출 없음, itemSource:Set(새값)만 → itemState 구독한 리프만 갱신
-key가 유지, 순서만 변경 → renderFn 재호출 없음, Slot 위치만 조정(파괴/재생성 없음)
-```
-
-`itemState`는 이 프리미티브 내부 소유의 Source이고, `renderFn`엔 그 State
-뷰만 노출한다(Source 자체를 주면 renderFn이 실수로 `:Set()`해서 diff
-엔진과 경쟁할 수 있음).
-
-### 폼 팩터 — 자유 함수로 정정 (State 메소드 프레이밍 철회)
-
-`state:Keyed(...)`처럼 State의 메소드로 두려던 초안은 "Source를 안 쓰는
-컴포넌트가 접근 못 함" 반례로 철회됨 — 상세 경위는
-`archive/keyed-collection-state-method-rejected.md` 참고.
-
-재검토 결과 — quad는 이미 **leaf 프로퍼티가 "리터럴 값 또는 State" 둘 다
-받는 폴리모픽 컨벤션**을 갖고 있다(`BackgroundColor3 = someColor`도
-`BackgroundColor3 = someState`도 같은 자리에서 됨, 정적이면 한 번만 세팅,
-State면 구독). 이 프리미티브도 같은 컨벤션을 따르는 게 자연스럽다 —
-**자유 함수**로 두고 `data` 인자가 plain array/table이든 `State<array>`/
-`Source<array>`든 둘 다 받게 한다. Plain이면 diff 로직 자체가 발동 안 하고
-(다시는 안 바뀌므로 최초 1회 배치만 하면 끝), State/Source면 위 메커니즘이
-동작한다. 이름은 아직 미정이지만 시그니처 형태:
-
-```
-<이름>(data: {[K]: V} | State<{[K]: V}>, keyFn: (V, K) -> Key, renderFn: (Key, State<V>) -> Child) -> Slot
-```
-
-### Slot 확장 — `Extract`, 그리고 확정해야 할 소유권 모델
-
-순서 변경(파괴 없이 위치만 옮기기)을 처리하려면 Slot에 **"파괴하지 않고
-빼내기"** 연산이 필요하다. 기존 확정 사항(`slot-plan.md`):
-
-> retract되는 slot은 옮겨지지 않고 그냥 폐기된다 ... React의 portal류로
-> 나중에 옮길 수 있게 하는 것도 검토됐으나 이번 마일스톤에서는
-> 오버엔지니어링으로 판단, 하지 않음.
-
-이건 **"다른 Slot으로 옮기기"(portal)를 안 한다**는 결정이지 **"같은 Slot
-안에서 위치만 바꾸기"**를 막는 결정이 아니다 — 순서 재조정은 후자만
-필요하므로 이 결정과 충돌하지 않는다.
-
-**사용자가 명확히 한 최종 소유권 모델(확정)**:
-- **Slot 자체의 바인딩은 귀속·불가역** — 한 번 마운트되면 그 Slot 컨테이너
-  자체를 다른 곳에 다시 바인드할 수 없음(기존 "재마운트 시 throw"와 동일).
-- **Slot 안에 있는 개별 요소의 입출력은 자유** — 넣고 빼고 다시 넣는 것에
-  제약 없음.
-- **단, 요소의 `.Parent`를 Slot API를 거치지 않고 직접 만지는 건 UB.**
-
-제안:
-
-```
-Slot:Extract(key) -> element   -- 파괴 없이 빼냄
-Slot:Add(element, index?)      -- 기존 그대로, Extract로 뺀 것도 다시 넣을 수 있음
-```
-
-리오더는 `Extract` + `Add(index)` 조합으로 구현(별도 `Move`/`Swap` 원시
-연산은 새로 안 만듦 — 원시 개수를 최소화). 덤으로 이게
-`pre-implementation-audit.md` 1-8번("isMounted가 element 단위와 Slot
-컨테이너 단위를 뭉뚱그려 서술됨")을 자연스럽게 푼다 — `Extract`가 있으면
-"element의 mounted 여부는 가변, Slot 컨테이너 자체의 mounted 여부는
-불변"으로 두 개념이 명확히 분리된다.
-
-### 이름 후보 (확정 아님, 용어 정리 라운드 대상)
-
-`Keyed`는 탈락 — 타이핑이 어색하고 "Slot을 렌더한다"는 느낌과도 안 맞는다는
-사용자 피드백. 후보:
-- `Render(data, keyFn, renderFn) -> Slot` — 가장 직접적("슬롯을 렌더한다").
-  단, quad는 "렌더 주기가 없다"를 아키텍처 원칙으로 강조해왔는데 이 이름만
-  "Render"를 쓰면 혼동 가능성 있음.
-- `Draw(data, keyFn, renderFn) -> Slot` — 짧음, "Render"와의 충돌은 피하지만
-  즉시모드 GUI(Dear ImGui류) 뉘앙스를 가져올 수 있어 quad의 유지형(retained)
-  모델과 어긋나 보일 수 있음.
-- `List(data, keyFn, renderFn) -> Slot` — 중립적, 결과가 "리스트"라는 것만
-  전달, 메커니즘을 과다 암시 안 함.
-
-세 후보 다 트레이드오프가 있어 확정 안 함 — `.claude/question.md`의 용어
-정리 라운드에 후보로 올려둠.
-
-### 남은 열린 질문
-
-- 최종 이름(위 후보 중 또는 새 후보).
-- `Extract`/`Add(index)` 조합의 정확한 시그니처(에러 조건: 이미 다른 Slot에
-  있는 요소를 Add하면? 존재 안 하는 key를 Extract하면?).
-- Fusion의 `ForPairs`/`ForKeys`/`ForValues` 3종 분리를 안 따르고
-  `renderFn(key, itemState)` 1종으로 통합하는 안이 여전히 유력(단순화
-  후보, `pre-implementation-audit.md`의 "단순화 후보" 렌즈와 같은 결) —
-  최종 확정 아님.
-- **목표: M6(Slot) 착수 전, 가급적 M0 스파이크 이전에 이 전체를 완전히
-  정의**(사용자 명시적 요청) — 이 프리미티브가 Slot 자체의 CRUD 시맨틱
-  (`pre-implementation-audit.md` 1-7, 지금 미정)과 얽혀 있어서, Slot을
-  먼저 정하고 나중에 여기를 끼워맞추면 재작업이 날 가능성이 높음. Slot
-  CRUD 시맨틱을 정의할 때 이 프리미티브의 요구사항을 같이 고려할 것.
+이 아래 있던 "왜 매핑 함수 직관이 안 통하는가"/"메커니즘 스케치"/
+"이름 후보"/"남은 열린 질문" 절은 전부 그 문서로 흡수·확정되어 제거함 —
+State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
+`archive/keyed-collection-state-method-rejected.md`에 별도 보존.
 
 ## 빈 자리 아닌 것으로 확인된 것들
 

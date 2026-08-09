@@ -20,16 +20,12 @@
 `archive/batch-rejected.md`, Context(+레이어드 Store) → `archive/
 context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 남김.
 
-- **키 기반 동적 컬렉션 재조정(유일하게 아직 완전히 열려있음, 최우선)**:
-  Fusion `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`,
-  React `key` prop에 대응하는 프리미티브가 quad엔 전혀 없음 확인 —
-  `pre-implementation-audit.md` 1-7번(Slot CRUD 미정의)과 같은 지점이라
-  같이 정의해야 함. **자유 함수**(plain data 또는 State 둘 다 받는
-  폴리모픽 시그니처, State 메소드 프레이밍은 Source 안 쓰는 컴포넌트가
-  못 쓴다는 반례로 철회됨), Slot에 파괴 없이 빼내는 `Extract` 연산 추가
-  필요 — 최종 이름만 미정(아래 "용어 정리" 절에 후보 추가). **사용자가
-  "작업 전에 모든 정의를 마치고 싶다"고 명시** — M0 이전 완전 확정 목표.
-  상세는 `research/additional-primitives-plan.md`(이제 이 주제 전용).
+- **[해소됨, 2026-08-09 세 번째 세션]** 키 기반 동적 컬렉션 재조정 —
+  `Slot:List(data, updateFn, keyFn?) -> Slot` 콜론 메소드로 완전히 확정
+  (자유 함수/새 타입 둘 다 기각, "Slot이 이미 가진 것 위에 새 공개
+  메소드를 안 얹으니 별도 타입일 이유가 없다"는 게 근거). Slot의
+  `Extract`/`Add(index)` CRUD와 같이 확정됨, 상세는 `base/slot-plan.md`
+  "`Slot:List(...)`" 절.
 - **[해소됨, 2026-08-07 여섯 번째 세션]** Effect/Observer 관계 — Effect는
   자유 함수로 확정(`state` 인자를 받으면 내부적으로 `state:Observer(...)`를
   조합해 재실행+자동 cleanup 배선, React `useEffect`와 동형). `state:Observer(fn)`도
@@ -80,13 +76,9 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   질문이라 `is`보다 `can` 계열 접두를 유지하는 쪽이 낫다는 방향으로 사용자가
   기욺 — 여전히 미확정, 다음에 `can`으로 시작하는 구체 대안(예: `canRun`)을
   같이 검토할 것.
-- **키 기반 동적 컬렉션 재조정 프리미티브 이름(3순위, 2026-08-06 추가)**:
-  `Keyed`는 타이핑이 어색하고 "Slot을 렌더한다"는 느낌과 안 맞는다는
-  사용자 피드백으로 탈락. 후보: `Render`(가장 직접적이지만 "quad엔 렌더
-  주기가 없다"는 기존 원칙과 이름이 충돌해 보일 수 있음), `Draw`(짧지만
-  즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
-  미정, `research/additional-primitives-plan.md`의 "키 기반 동적 컬렉션
-  재조정" 절 참고.
+- **[해소됨, 2026-08-09 세 번째 세션]** 키 기반 동적 컬렉션 재조정 이름 —
+  `List`로 확정(`Slot:List(...)` 메소드, `Render`/`Draw`는 기각). 상세는
+  `base/slot-plan.md` "`Slot:List(...)`" 절.
 - **[해소됨, 2026-08-09 세션]** `Bound` — **`canBound(handle): boolean`
   탑레벨 함수로 확정**, `canExecute`와 같은 결(raw 필드를 직접 노출하는
   대신 predicate 함수로 감쌈). `base/bind-system-plan.md` "이중 바인딩
@@ -178,9 +170,10 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `pre-implementation-audit.md` 3-1). **[해소됨]** UI shorthand의 기존
   UICorner 매칭 기준도 `base/ui-shorthand-plan.md`에 이미 확정 반영돼
   있던 것을 이번에 `pre-implementation-audit.md` 2-11에도 해소 표시로
-  동기화. **아직 실제로 열려있는 건 두 개뿐** — Slot CRUD 의미론
-  (`add`/`remove`/`clear`) 미정의(1-7), 우선순위 스캔 동률/매치실패
-  처리(1-3) — `pre-implementation-audit.md` 본문 참고.
+  동기화. **[해소됨, 2026-08-09 세 번째 세션]** Slot CRUD 의미론
+  (`add`/`remove`/`clear`) 미정의(1-7)/`isMounted` 이중 추적 혼용(1-8) —
+  `base/slot-plan.md` 참고. **아직 실제로 열려있는 건 하나** — 우선순위
+  스캔 동률/매치실패 처리(1-3) — `pre-implementation-audit.md` 본문 참고.
 - **[해소됨, 2026-08-08 두 번째 세션]** `Frame { ref }`/`Frame { observer }`처럼
   children 배열 숫자 슬롯에 직접 놓는 leaf 값을 매칭·바인드하는 Handler
   (`(i:number, v=Ref/Observer/PreRef)`)의 패키지 배치 — 원래 제안대로

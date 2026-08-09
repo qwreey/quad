@@ -198,6 +198,10 @@ eager cleanup을 택했다"는 구체적 위험을 지적하며 "quad는 rbvm �
 
 ### 1-7. Slot의 `add`/`remove`/`clear` CRUD 의미론이 정의돼 있지 않음
 
+**[해소됨, 2026-08-09 세 번째 세션]** `base/slot-plan.md`의 "CRUD API
+확정" 절에 `Add`/`Remove`/`Extract`/`Clear` 시그니처·에러 조건·재진입성까지
+전부 확정 반영됨(`get`/`set`은 드롭). 아래는 당시 지적 원문, 참고용으로만 남김.
+
 **위치**: `base/slot-plan.md` "개념" 절 — "`add`/`remove`/`clear`/`get`/
 `set` 등 뮤터블 연산을 지원하는 메타 배열"이라고만 서술.
 
@@ -213,6 +217,11 @@ eager cleanup을 택했다"는 구체적 위험을 지적하며 "quad는 rbvm �
 타이밍에 같이 정리하면 됨.
 
 ### 1-8. Slot "재마운트 시 throw"가 두 가지 다른 추적 대상을 혼용해서 서술됨
+
+**[해소됨, 2026-08-09 세 번째 세션]** `base/slot-plan.md`의 "`isMounted`
+이중 추적 분리" 절에 Slot 컨테이너(`self._mounted`, dispatch-process 시점
+트리거)와 개별 element(전역 weak-set)를 명시적으로 분리 반영됨. 아래는
+당시 지적 원문, 참고용으로만 남김.
 
 **위치**: `base/slot-plan.md` "핵심 제약: 소유권 귀속과 단일 마운트" +
 "마운트된 Slot의 재마운트는 즉시 throw" 절.

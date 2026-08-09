@@ -170,14 +170,44 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] "여러 Slot이 형제로 섞일 때 순서 보장" 열린 질문 확인(`slot-plan.md`) —
       Roblox 단일 백엔드로는 급하지 않으면 스킵하고 진행 가능
-- [ ] **Slot의 `add`/`remove`/`clear` CRUD 의미론 확정 — 착수 전 필수.**
-      `research/pre-implementation-audit.md` 우선순위1이 지적한 갭, 아직
-      미해결(2026-08-07 아홉 번째 세션에서 "사용자가 다음 세션에서 직접
-      다루기로 보류"로 확인, 2026-08-09 세션 말미에도 다음 세션 예고로
-      다시 지목됨). "재마운트 시 즉시 throw"가 개별 element 기준인지 Slot
-      컨테이너 전체 기준인지도 이 논의에서 같이 확정할 것.
-- [ ] base `Dispatch/Slot.luau`(추상 재조정) + quad-roblox `Handlers/Slot.luau`
-      (실제 Parent 조작)
+- [x] **Slot의 `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD 의미론
+      확정** (2026-08-09 세 번째 세션) — `get`/`set` 드롭, 에러 조건까지
+      전부 확정(`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시
+      throw"도 `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너
+      기준이 명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
+      `Move(element, newIndex)`(O(n))/`Swap(indexA, indexB)`(O(1), element
+      아닌 인덱스 — element면 위치 조회에 2n 들어 O(1) 약속이 깨짐)은
+      리오더 전용, Parent를 안 건드림. 공개 6개 메소드 전부 "가드 확인 +
+      `raw*` 위임" 얇은 wrapper. base/roblox 경계에 mount/unmount 외
+      reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소 타입 제약 확정**
+      — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔 실제 마운트 가능한
+      `T`만), 핸들러 계층 값(Ref/PreRef/Observer/Effect/Modifier)은
+      self-ref 컨텍스트가 없어 의미 불성립이라 즉시 error(`Modifier`
+      필드와 같은 판별 메커니즘 재사용) — `D.InstSlot = Slot<<Instance>>`가
+      quad-roblox의 사실상 유일한 Slot 타입.
+- [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
+      `keyFn` 생략 시 index를 그대로 key로 사용(중간 삽입/삭제 시 identity
+      보존 안 됨, 캐스케이드 갱신 — 흔한 업계 관행과 같은 트레이드오프).
+      `updateFn<UD=any>(item, index, userdata: UD?, prev: T?): (T|nil, UD?)`가
+      **매 reconcile 사이클마다 호출**(filter/toggle 지원 — 첫 반환값
+      `nil` 시 실제 파괴, `Visible` 토글 아님, 200+ 항목에서 lazy하지 않은
+      문제 회피), `prev` 그대로 반환하면 저비용 재사용 경로. `:List`가
+      `Source`를 대신 안 만듦 — item/index를 반응형으로 감쌀지는
+      `updateFn`이 `userdata`에 직접 관리(반환값 두 개는 서로 독립,
+      `result`가 `nil`이어도 `userdata`는 명시적으로 반환 안 하는 한 안
+      지워짐). 정리 루프는 `mounted`가 아니라 직전 사이클 `keyIndex`
+      전체를 순회해야 함(`userdata`만 살아있는 채로 key가 완전히 사라지는
+      케이스 커버). `userdata = userdata or {}` lazy-init 패턴이 Luau
+      제네릭에서 잘 좁혀지는지 실측 필요. **`userdata`는 GC-native 값만
+      허용, `:Subscribe()`한 Observer류 명시적 cleanup 필요한 값은 UB** —
+      `item`을 nilable로 바꿔 최종 제거 시 정리 훅을 한 번 더 부르는 안은
+      기각(Slot 부모 자체가 Destroy되는 경로에선 이 훅이 전혀 안 불려서
+      절반만 동작, `retract`가 Destroy 시 안 불리는 것과 같은 이유).
+      (2026-08-09 세 번째 세션 확정,
+      `base/slot-plan.md` "`Slot:List(...)`" 절) 구현
+- [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
+      quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
+      `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
 
 ## M7 — Modifier
 

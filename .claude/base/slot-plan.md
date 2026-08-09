@@ -6,7 +6,10 @@ architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). �
 `.claude/initreq/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
 `Children` SpecialKey와 Vide의 mount 무가드 비교는 `reference/comparison-fusion-vide.md`
 참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
-quad의 진짜 개선점.**
+quad의 진짜 개선점.** **[2026-08-09 세 번째 세션]** CRUD 의미론
+(`pre-implementation-audit.md` 1-7/1-8) 완전 확정, `research/
+additional-primitives-plan.md`가 다루던 키 기반 동적 컬렉션 재조정도
+`Slot:List(...)` 메소드로 이 문서에 승격·통합 완료 — 아래 참고.
 
 ## base/roblox 패키지 경계 (2026-08-04, 5차 라운드 확정)
 
@@ -17,6 +20,12 @@ Handlers/Slot.luau`가 그 위에서 적용/해제만 담당 — 다른 모든 �
 분리와 동일한 패턴(`base/architecture.md`의 소스 트리 참고). Slot 자체는
 당연히 Instance들을 담게 될 것으로 취급.
 
+**[2026-08-09 세 번째 세션 보강]** 이 경계가 담당하는 훅은 mount(`Add`)/
+unmount(`Remove`) 둘이 아니라 **reposition(`Move`/`Swap`)까지 셋** —
+아래 "CRUD API 확정" 절 참고. reposition은 **Parent를 건드리지 않는다는
+계약만 base가 강제**하고, quad-roblox가 이걸 `SetSiblingIndex`로 구현할지
+(`LayoutOrder` 기반 정렬이라) 사실상 no-op으로 둘지는 구현 선택.
+
 **추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
 만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
 `Frame { Frame {} }`)를 위한 핸들러도 필요 — `quad-roblox/src/Handlers/
@@ -25,9 +34,47 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
 
 ## 개념
 
-`add`/`remove`/`clear`/`get`/`set` 등 뮤터블 연산을 지원하는 메타 배열. 실제
-바인드가 일어나면 child로 풀리고, 이 메타 배열에 CRUD를 하면 실제 children이
-적절히 제어됨.
+뮤터블 자식 배열. `Slot<T>()`(빈 인스턴스, 인자 없는 바닥 생성자 — 다른
+독립 프리미티브의 `Type(args)` 관습과 동일하되, 무인자라 `T`를 추론할
+수 없어 tbox 명시적 제네릭 적용 `Slot<<Instance>>()`로 지정)로 만들고,
+`Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD로 조작하면 실제
+바인드된 children이 그에 맞춰 갱신됨 — 정확한 시그니처는 아래 "CRUD API
+확정" 절 참고(`get`/`set`은 드롭).
+
+### 요소 타입 제약 (2026-08-09 세 번째 세션)
+
+- **`nil`/`None` 둘 다 금지 — Slot의 raw 요소는 오직 실제 마운트 가능한
+  `T` 값만.** [정정, 같은 세션 후속] 처음엔 "배열 파트는 `nil` 대신
+  `None`" 원칙을 그대로 가져와 `None`을 Slot 요소로 허용했었는데,
+  `:List`의 필터링 요구사항을 구체화하며 재검토한 결과 불필요했음이
+  드러남 — `updateFn`이 "이번엔 렌더 안 함"을 표현하는 건 아래 `:List`
+  절에서 **`updateFn`의 반환값을 해석하는 `:List` 자신의 내부 로직**으로
+  처리되고, 그 경우 `rawAdd` 자체가 아예 호출되지 않음(즉 `None`이 실제로
+  Slot 배열에 들어갈 일이 없음) — 그래서 raw `Add`가 굳이 `None`을
+  허용해야 할 이유가 없어짐. `element == nil`뿐 아니라 `element == None`도
+  `Add`(및 내부 `raw*`)에서 즉시 `error` — "Slot 안엔 실제로 마운트
+  가능한 값만 들어간다"는 단일 규칙으로 단순화.
+- **핸들러 계층 값(Ref/PreRef/Observer/Effect/Modifier) 금지, 즉시
+  `error`** — `Modifier` 필드가 이 값들을 담으면 즉시 `error`로 확정했던
+  것(`modifier-plan.md` 7번)과 같은 판별 메커니즘(`isRef`/`isPreRef`/
+  `isObserver`/`isEffect`/`isModifier` Brand predicate)을 그대로 재사용.
+  근거: `Dispatch/Leaf.luau`가 처리하는 "children 배열에 `Ref`/`Observer`/
+  `PreRef`가 직접 놓이는" 케이스는 **그 컴포넌트가 지금 만들고 있는
+  Instance 자기 자신을 가리키는 self-ref 캡처**(`Frame { PreRef():Callback(fn) }`가
+  그 Frame 자신을 잡는 것)라 `inst`가 "지금 생성 중인 바로 그 하나의
+  Instance"로 고정돼 있어야 의미가 성립하는데, **Slot은 특정 컴포넌트
+  호출 하나에 묶여있지 않고 이미 존재하는 부모에 나중에 독립적으로
+  붙는 동적 리스트라 이 전제 자체가 없음** — Slot 안의 Ref가 "무엇"을
+  가리켜야 하는지 정의가 안 됨. 대체 경로도 이미 있어 능력 손실 없음 —
+  특정 child에 ref가 필요하면 그 child를 만드는 컴포넌트 호출 자체에
+  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })`).
+- **`T`의 실제 의미**: 위 배제 덕에 "이 Slot이 실제로 담을 수 있는 최종
+  마운트 가능한 값의 타입" 그 자체로 단순해짐 — quad-roblox엔 사실상
+  `T = Instance` 하나뿐(컴포넌트 호출 결과도 결국 Instance)이라
+  `D.InstSlot = Slot<<Instance>>`가 사실상 "그" Slot 타입. `Slot<T>()`가
+  기본값(`T` 생략 시) 없이 항상 명시를 요구하는지, `quad-base`에선
+  `any`로 기본값을 두는지는 tbox 제네릭 적용 문법 확정 시 같이 정할 것
+  (이 문서 "자식으로 넘기는 클래스 스토어" 절의 기존 미결과 같은 갈래).
 
 ## 핵심 제약: 소유권 귀속과 단일 마운트
 
@@ -42,6 +89,26 @@ Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 �
 구현했고(재사용 가능한 1급 프리미티브가 아님), Vide는 아예 이 개념이 없어서
 같은 target에 두 번 `mount()`하면 조용히 두 개의 독립 루트가 생김 — 둘 다
 반면교사.
+
+### `isMounted` 이중 추적 분리 (1-8 해소, 2026-08-09 세 번째 세션)
+
+"한 인스턴스가 다중 마운팅 절대 안 됨"이라는 위 원칙과 아래 "재마운트 시
+즉시 throw"가 원래 하나의 `isMounted`로 뭉뚱그려 서술돼 있었는데, 실제로는
+서로 다른 두 대상을 추적해야 함 — 명시적으로 분리:
+
+- **Slot 컨테이너 자신**: `self._mounted: boolean`(Slot 인스턴스 필드
+  하나). **트리거 시점은 `Dispatch.process(inst,k,self)`가 이 Slot
+  객체에 대해 실제로 호출된 순간**(핸들러 매치 시점) — Instance
+  `Parent` 대입 완료를 기다리지 않음. 다른 모든 "마운트됨" 판정(PreRef
+  소진, Ref 콜백 fire 등)이 전부 dispatch-process 시점 기준이라 여기만
+  post-effect 기준으로 가면 일관성이 깨짐. 컴포넌트가 Slot을 prop으로
+  받아 저장만 하고 실제 트리에 안 놓는 경로는 `process`가 애초에 안
+  불려서 이 정의로도 오탐 없음.
+- **개별 element**: Slot 안에 담기는 각 element(Instance/컴포넌트 결과 등)
+  마다 전역 weak-set 멤버십으로 추적 — 특정 Slot 인스턴스에 안 묶임
+  ("한 인스턴스가 어디에도 중복 마운트 안 됨"이 라이브러리 전역 불변식이라서).
+  `Add`가 이 weak-set을 확인(이미 참이면 error)/설정, `Remove`/`Extract`
+  둘 다 여기서 제거(둘의 차이는 파괴 여부일 뿐, "마운트 해제"라는 점은 같음).
 
 ## 여럿 존재 가능, 부모가 실제 데이터 테이블만 다루면 됨
 
@@ -117,6 +184,351 @@ Slot은 바인딩되는 순간 그 안의 요소를 전부 own해버리는 데�
 **이번 마일스톤에서는 오버엔지니어링으로 판단, 하지 않음** — 필요성이 명확해지면
 그때 별도로 다시 논의.
 
+> **범위 명확화(2026-08-09 세 번째 세션)**: 위 "폐기, 옮기지 않음"은
+> **프레임워크가 store-bind 재실행으로 Slot 값 전체를 통째로 갈아치울
+> 때**(retract)만의 얘기 — **사용자가 직접 `Slot:Extract(element)`를
+> 부르는 CRUD 경로는 이것과 다른 시나리오**다. Extract로 뺀 element는
+> 파괴되지 않고 호출부가 소유권을 되찾으며, **임의의 다른 Slot으로
+> 자유롭게 다시 `Add`할 수 있다**(아래 "CRUD API 확정" 절) — retract가
+> "옮기지 않는다"고 확정한 건 프레임워크가 알아서 옮겨주는 자동 portal을
+> 안 만든다는 뜻이지, 사용자가 명시적으로 두 번 호출(`Extract` 후
+> `Add`)해서 옮기는 것 자체를 막는 게 아니다.
+
+## CRUD API 확정 (2026-08-09 세 번째 세션, 1-7 해소)
+
+`get`/`set`은 드롭 — 최종 표면(`Move`/`Swap`은 같은 세션 후속 논의에서
+추가, 아래 "원시 최소화 원칙 정정" 참고):
+
+| 연산 | 시그니처 | 복잡도 | 의미 |
+|---|---|---|---|
+| `Add` | `Slot:Add(element, index?)` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 |
+| `Remove` | `Slot:Remove(element)` | O(n) | 제거 **+ 파괴**(retract/Destroy) |
+| `Extract` | `Slot:Extract(element)` | O(n) | 제거, **파괴 안 함** — 호출부가 소유권 회수, 임의의 다른 Slot에 재삽입 가능 |
+| `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op |
+| `Move` | `Slot:Move(element, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
+| `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 **인덱스**의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
+
+- **식별은 기본적으로 element 레퍼런스 기준**(`Add`/`Remove`/`Extract`/
+  `Move`) — element는 컴포넌트 호출/Instance 생성이 만들어낸 구체 값이라
+  항상 아이덴티티로 구분 가능. 인덱스 기준으로 하면 add/remove가 반복될
+  때 호출부가 들고 있던 인덱스가 곧바로 stale해짐.
+- **`Swap`만 예외 — 인덱스 기준(`indexA`/`indexB`), element 레퍼런스
+  아님(2026-08-09 세 번째 세션 정정).** element 레퍼런스로 받으면 Slot이
+  element→index 역방향 맵을 안 갖고 있는 이상 두 element 각각의 현재
+  위치를 찾는 데 O(n)씩(총 2n) 들어서 **`Swap`이 약속하는 O(1)이 깨짐**
+  — `Move`는 어차피 시프트 자체가 O(n)이라 element 조회 비용이 묻히지만,
+  `Swap`은 조회 비용이 곧 전체 비용이라 이 차이가 그대로 드러남. 호출부는
+  보통 "지금 몇 번째 항목과 몇 번째 항목을 바꿀지"를 이미 알고 있는
+  상황(예: 드래그 리오더 UI)이라 인덱스로 받는 게 자연스럽기도 함.
+- **열거(iteration)/`Get` API는 지금 안 만듦** — `Slot:List(...)`(아래)는
+  자기 자신의 key→element 맵을 따로 들고 있어 Slot의 내부 상태를 조회할
+  필요가 없음. 다른 실사용이 나오면 그때 추가(YAGNI).
+- **에러 조건 — 전부 즉시 `error()`, no-op 없음**(기존 "재마운트 시 throw"와
+  같은 fail-fast 톤):
+  - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
+    있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
+    CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
+    값(Ref/PreRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
+  - `Remove`/`Extract`: 그 element가 지금 이 Slot의 멤버가 아니면 에러.
+  - `Move`: `element`가 이 Slot의 멤버가 아니면 에러.
+  - `Swap`: `indexA`/`indexB` 중 하나라도 범위 밖(1..현재 개수)이면 에러 —
+    단 `Swap(i, i)`(같은 인덱스)는 위치가 안 바뀌므로 에러 없이 no-op.
+- **`Move`/`Swap`은 반환값 없음(void)** — 내부 재배치만 수행, 멤버십
+  weak-set을 안 건드림(요소가 Slot을 떠난 적이 없으므로) — 그래서 `Add`/
+  `Remove`/`Extract`보다 저렴함.
+- **모든 공개 CRUD는 "가드 확인 + `raw*` 위임"의 얇은 wrapper** — `Add`/
+  `Remove`/`Extract`/`Clear`/`Move`/`Swap` 전부 `self._listed`(`:List`가
+  설치돼 있으면 수동 CRUD 금지)만 확인하고 실제 로직은 `rawAdd`/
+  `rawRemove`/`rawExtract`/`rawClear`/`rawMove`/`rawSwap`에 있음 — 이
+  `raw*` 함수들이 `:List`의 reconcile이 가드 없이 직접 호출하는 바로
+  그 함수(아래 "`Slot:List`" 절의 "구현" 참고). 공개 메소드에 로직이
+  따로 있는 게 아니라 전부 이 한 세트를 공유.
+- **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
+  다시 호출) — 별도 가드 불필요. CRUD는 평범한 동기 테이블 뮤테이션 +
+  Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
+  간주"라는 기존 원칙이 그대로 적용됨.
+- **`Slot()` 생성자**: 인자 없는 빈 생성자로 확정 — 초기 children을
+  가변인자로 받는 옵션도 검토했으나, "명시적으로 `Add`해야 들어간다"
+  쪽이 이 프로젝트의 "매직 없이 명시적" 기조와 더 맞음.
+
+### 원시 최소화 원칙 정정 — `Move`/`Swap` 공개 API로 추가 (같은 세션 후속)
+
+`:List`의 리오더 메커니즘을 구체화하던 중, 처음엔 `Extract`+`Add(index)`
+조합으로 충분하다고 봐서 "원시 연산 최소화" 원칙에 따라 별도 `Move`/`Swap`을
+안 만들기로 했었는데 — 실제로는 두 가지 공백이 드러나 **뒤집음**:
+
+1. **`Extract`+`Add`는 리오더치고 너무 무겁다.** `Extract`의 계약이 "제거,
+   파괴 안 함, 소유권 회수"라 백엔드가 곧이곧대로 구현하면 실제 Parent
+   조작이 두 번(detach+reattach) 일어남 — Roblox에서 `AncestryChanged`
+   발화, 잠재적 깜빡임, 불필요한 재바인딩 비용까지 딸려올 수 있음.
+   순서만 바뀌는, 매 `:List` 재계산마다 흔히 일어나는 케이스치고 과함.
+2. **`:List` 없이 수동으로 Slot을 구성하는 사용자에겐 리오더 수단이
+   아예 없었다** — `Extract`+`Add`도 결국 위 1번 비용을 그대로 지므로
+   대체제가 못 됨.
+
+둘 다 원시 최소화보다 우선하는 실사용 공백이라 판단, `Move`(O(n), 배열
+splice 의미)와 `Swap`(O(1), 순수 페어 교환)을 공개 CRUD에 추가 — 시간복잡도
+차이를 문서화해서 사용자가 상황에 맞게 고를 근거를 줌. `:List`의 reconcile
+자체는 키 기반 diff가 "이 키는 이제 절대 위치 i다"를 산출하지 "A랑 B를
+맞바꿔라"를 산출하지 않으므로 내부적으로는 계속 `Move`(의 가드 없는 버전)만
+사용 — `Swap`은 순수하게 수동 Slot 사용자를 위한 편의 API.
+
+## `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정 (2026-08-09 세 번째 세션, `research/additional-primitives-plan.md`에서 승격·통합)
+
+Fusion `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
+`key` prop에 대응하는 프리미티브 — 데이터 배열을 정체성(key) 기준으로
+diff해서 변경분만 생성/갱신/파괴한다. **독립 타입이 아니라 `Slot`의
+콜론 메소드**로 확정(아래 "왜 자유 함수/새 타입이 아닌가" 참고) — 자기
+자신을 변경하고 자신을 반환, `Ref():Callback(fn)`류의 기존 체이닝 패턴과
+동일:
+
+```
+Slot():List(data, updateFn, keyFn?) -> Slot  -- self
+```
+
+**파라미터 순서 정정, `keyFn` 선택 인자화 (같은 세션 후속).** 원래
+`(data, keyFn, updateFn)`이었는데, 실사용 대부분(사용자 추정 80%)이
+"item 자체의 정체성 추적 없이 그냥 순번을 key로 써도 충분한" 단순 목록
+(재정렬·중간 삽입/삭제로 인한 identity 보존이 필요 없는 경우)이라
+`keyFn`을 매번 명시하게 하는 게 불필요한 보일러플레이트였음 — `updateFn`을
+필수 인자 자리(두 번째)로, `keyFn`을 선택 인자(세 번째, 생략 시 인덱스를
+그대로 key로 사용하는 `function(item, index) return index end`)로 재배치.
+**tradeoff는 명시적으로 문서화 필요**: 인덱스를 key로 쓰면 중간 삽입/삭제
+시 그 뒤 모든 항목이 "다른 item인데 같은 key"로 오인돼 캐스케이드 갱신이
+일어남(파괴/재생성은 없음, 단지 identity 보존이 없을 뿐) — 흔한 업계
+관행(React `key` 생략 시 index 기본값, Vue `v-for` key 없이 쓰는 경우)과
+같은 트레이드오프라 새로 설명할 개념은 아님, 재정렬/중간 삽입이 실제로
+일어나는 목록엔 진짜 `keyFn`을 넘기라고 안내하는 정도로 충분.
+
+**이름 정정 — `renderFn` → `updateFn` (같은 세션 후속).** 아래 서술하는
+호출 계약이 "새 key가 나타났을 때 1회 렌더"에서 "매 사이클 재호출되어
+갱신 여부를 스스로 판단"으로 바뀌면서, "render"보다 "update"가 실제
+역할을 더 정확히 반영한다고 판단해 이름도 같이 바꿈.
+
+- `data: {[K]:V} | State<{[K]:V}> | Source<{[K]:V}>` — plain이면 최초
+  1회 배치만 하고 이후 추적 안 함(다시는 안 바뀌므로), State/Source면
+  아래 메커니즘이 계속 동작. 기존 leaf 프로퍼티의 "리터럴 또는 State
+  둘 다 받는" 폴리모픽 컨벤션 재사용.
+- `keyFn(item, index) -> key`(선택, 생략 시 `index`를 그대로 key로 사용) —
+  아이템 값과 인덱스 둘 다 받음.
+- **`updateFn<UD = any>(item, index, userdata: UD?, prev: T?): (T | nil, UD?)`
+  — 매 reconcile 사이클마다 모든 key에 대해 호출됨.** `:List`는 더 이상
+  item을 위해 `Source`를 대신 만들어주지 않음(아래 "왜 `Source`를
+  `:List`가 안 만드는가" 참고) — `item`/`index`는 매번 그 사이클의 raw
+  현재값 그대로 넘어감, 반응형으로 쓸지는 `updateFn`이 알아서 결정.
+  - **`userdata: UD?`** — 이 key에 대해 지난 호출에서 `updateFn` 자신이
+    반환해둔 두 번째 값을 그대로 돌려받음(첫 호출은 `nil`). 완전히
+    opaque — `:List`는 안을 전혀 안 들여다봄. `updateFn`이 원하는 걸
+    아무거나 담아도 됨(item의 `Source`, 여러 파생 State, 로컬 UI
+    상태 등).
+  - **`prev: T?`** — 이 key에 대해 지금 실제로 마운트돼 있는
+    element(없으면 `nil`, 첫 호출을 포함해 언제든 가능).
+  - **반환값 두 개는 서로 완전히 독립** — `:List`가 `result`와 `userdata`
+    사이에 어떤 커플링도 안 둠(예: `result`가 `nil`이라고 `userdata`를
+    자동으로 지우지 않음), 그대로 기록만 함. **[정정, 같은 세션 후속]**
+    처음엔 "`result`가 `nil`이면 `userdata`도 같이 버림"이었으나, 이러면
+    "인스턴스는 파괴하되 다시 나타날 때 재사용하려고 캐시는 남겨두고
+    싶다" 같은 정당한 패턴 자체가 원천 봉쇄됨 — 그럴 이유가 없어 커플링을
+    없앰. 흔한 경우(둘 다 리셋)는 그냥 `return nil` 하나로 충분(Lua가
+    안 받은 반환 슬롯을 알아서 `nil`로 채움), 캐시를 남기고 싶으면
+    명시적으로 `return nil, ud`.
+  - `updateFn`은 매번 다음 중 하나를 반환:
+    - **`prev`를 그대로 반환** — "지금 마운트된 걸 계속 쓴다"는 뜻.
+      관용구: `if prev and (필터 통과) then ...update ud...; return prev,
+      ud end`. 실제 마운트/파괴가 없는 **저렴한 경로**.
+    - **새 값(또는 다른 값)을 반환** — 첫 렌더(이 key 최초 등장) 또는
+      의도적 교체. `prev`가 있었다면 그건 파괴되고 새 값이 그 자리를
+      대신함.
+    - **첫 번째 값으로 `nil`을 반환** — "지금 이 key는 렌더 안 함"(filter
+      탈락 등). `prev`가 있었다면 실제로 파괴됨(단순 `Visible = false`
+      아님 — 아래 참고). `None`을 반환해도 동일 취급(둘 다 허용, 편의상
+      `nil` 권장 — 반환값이 raw Slot 요소로 직접 들어가는 게 아니라
+      `:List`의 reconcile이 해석만 하므로 "요소 타입 제약"의 raw
+      `nil`/`None` 금지와 안 부딪힘).
+  - `userdata = userdata or {}`류 lazy-init 관용구가 `UD`가 완전히 자유
+    제네릭인 상태에서도 Luau 타입 시스템이 매끄럽게 좁혀주는지는 **실측
+    필요**(M0/M6 착수 시 확인 항목, 지금 단정 안 함).
+
+### 왜 매 사이클 호출로 바뀌었는가 — filter/toggle 문제
+
+사용자가 제기한 문제: item이 State 변경으로 "더 이상 렌더되면 안 되는"
+상태가 될 수 있는데(예: 검색 필터에서 탈락), 기존 "1회만 호출" 모델엔
+이걸 표현할 방법이 없었음. 실무에서 흔한 회피책은 실제로 제거하지 않고
+`Visible = false`만 토글하는 것 — 하지만 이건 **lazy하지 않음**: 필터링된
+항목도 여전히 완전히 살아있는 Instance라 애니메이션/이벤트 연결/재계산이
+계속 돎. 리스트가 200개+가 되면 "보이는 건 20개인데 200개가 전부 계속
+돌아가는" 문제가 실제 비용으로 드러남.
+
+**해법**: `updateFn`을 매 사이클 호출하되, `prev`를 줘서 "바꿀 게 없으면
+그대로 돌려주기만 하면 되는" 저렴한 경로를 만들고, filter 탈락은 `nil`
+반환으로 **진짜 파괴**되게 함 — Visible 토글이 아니라 실제 Remove.
+200개 중 20개만 통과하는 필터면 20개만 실제로 살아있고 나머지 180개는
+정말로 존재하지 않음(애니메이션도 안 돎).
+
+**"이전 상태를 다음 호출에 어떻게 넘기냐" 문제는 `userdata`가 그 채널** —
+item이 plain table이라 매번 `Source`를 새로 안 만들고 재사용하려면 그
+`Source`를 어딘가 저장해야 하는데, `:List`가 그걸 대신 안 만들어주는
+대신(아래 참고) `userdata`라는 전용 채널로 `updateFn`이 직접 관리하게
+함 — filter 탈락 후 재등장해도(Instance는 파괴됐다 새로 만들어져도)
+`userdata`를 살려뒀다면 그대로 이어짐(위 "반환값 두 개는 서로 독립" 참고).
+
+**sort는 이 재설계와 무관, 기존 메커니즘으로 이미 커버됨** — 호출부가
+`data`의 순서를 바꾸면 `keyIndex[key] ~= i` 감지 → `Move`가 그대로
+처리, 새 메커니즘 필요 없음(사용자가 filter와 같이 물었던 것 중 sort는
+원래도 문제가 없었음).
+
+### 왜 `Source`를 `:List`가 안 만드는가 — item/index를 raw로 넘기는 이유
+
+이전 초안은 `:List`가 `itemState`/`indexState`(내부 `Source`)를 강제로
+만들어 `updateFn`에 넘겨줬는데, 재검토 결과 이건 **`:List`가 굳이 강요할
+필요 없는 결정**이었음 — 반응형 바인딩이 필요 없는 단순한 행(예: 매번
+그냥 새로 계산해도 싼 텍스트 하나)까지 전부 `Source` 생성 비용을 억지로
+지게 됨. `userdata`로 이 권한을 완전히 `updateFn` 쪽에 넘기면, 원하는
+item만 자기 `Source`를 만들어 `userdata`에 담고, 나머지는 매번 raw
+`item`에서 그냥 다시 계산해도 됨 — 어느 쪽이 나은지는 케이스 by 케이스라
+`:List`가 미리 정할 이유가 없음.
+
+**부수 효과 — 이전 "item 값은 무조건 재전파, index는 실제 변경시만"
+비대칭 백로그가 사라짐.** `:List`가 더 이상 `Source`를 안 만드므로 그
+문제 자체가 `:List` 소관이 아니게 됨 — item/index를 반응형으로 감쌀지,
+매번 무조건 `:Set()`할지 조건부로 할지는 전부 `updateFn` 작성자의 선택.
+
+### `userdata`의 생명주기 제약 — GC-native만 허용, 명시적 cleanup이 필요한
+값은 UB (같은 세션 후속)
+
+**검토했다가 기각한 대안**: `item`을 `T?`(nilable)로 바꿔서, key가 최종
+제거될 때 `updateFn(nil, index, userdata, prev)`를 한 번 더 불러 "정리할
+기회"를 주는 안 — `if not item then <userdata 안의 구독 해제 등> return
+end` 관용구로 `userdata` 안에 담긴 리소스(예: `Observer:Subscribe()`한
+구독)를 정리할 수 있게 하자는 아이디어. **기각 — 사용자가 스스로 반례를
+찾음**: 이 훅은 `data`에서 key가 빠져 `reconcile`이 다시 도는 정상
+경로에서만 발화함 — 하지만 **Slot을 담고 있는 부모 Instance 자체가
+`Destroy`되는 경로**(가장 흔한 소멸 경로)는 `reconcile`을 다시 안 돌기
+때문에 이 훅이 전혀 안 불림. 절반만 동작하는 정리 메커니즘은 없는 것보다
+나쁨 — 사용자가 "정리가 보장된다"고 오해하고 `Subscribe`류를 `userdata`에
+넣었다가 Destroy 경로에서 조용히 새는 게 실제로 훨씬 위험한 결과.
+`retract`가 Destroy 시엔 절대 안 불린다는 기존 원칙(`base/
+lifecycle-pattern.md` "quad는 라이프사이클 중간에 있지 않다")과 정확히
+같은 이유로, `:List`에 새 반쪽짜리 예외를 만들 이유가 없음.
+
+**대신 명시적 제약으로 문서화**: **`userdata`에는 반환된 element(또는
+Slot 자신)보다 명시적으로 오래 살아야 하는 값을 담으면 안 됨 — GC만으로
+자연히 정리되는 값만 담을 것(plain 값, `Source`/`State` 등), `:Subscribe()`한
+`Observer`/`Effect`류처럼 명시적 `:Unsubscribe()`가 필요한 값을 담는 건
+UB.** `:List`가 어떤 teardown 경로도 보장 안 하므로, `userdata` 안의
+무언가가 GC 하나만으로 안 죽는다면 그건 곧 leak. 이건 quad 전역
+GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 그대로
+적용한 것뿐 — 새 원칙 아님.
+
+### 구현
+
+```lua
+function Slot:List(data, updateFn, keyFn)
+    assert(not self._listed, "Slot already has :List installed")
+    self._listed = true
+    keyFn = keyFn or function(_, index) return index end
+
+    local mounted, userdata, keyIndex = {}, {}, {}
+
+    local function reconcile(items)
+        local newKeyIndex, seen = {}, {}
+        for i, item in ipairs(items) do
+            local key = keyFn(item, i)
+            newKeyIndex[key] = i
+            seen[key] = true
+
+            local prev = mounted[key]
+            local result, ud = updateFn(item, i, userdata[key], prev)
+            if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
+
+            if result ~= prev then
+                if prev ~= nil then rawRemove(self, prev) end    -- 파괴
+                if result ~= nil then rawAdd(self, result, i) end -- 새로 배치
+                mounted[key] = result
+            elseif prev ~= nil and keyIndex[key] ~= i then
+                rawMove(self, prev, i)                 -- 그대로 쓰되 위치만 이동
+            end
+
+            userdata[key] = ud    -- result와 무관, 그대로 기록
+        end
+        for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
+            if not seen[key] then
+                local prev = mounted[key]
+                if prev ~= nil then rawRemove(self, prev) end
+                mounted[key], userdata[key] = nil, nil
+            end
+        end
+        keyIndex = newKeyIndex
+    end
+
+    if isState(data) then
+        data:Observer(function() reconcile(data:Get()) end)
+        -- Observer는 등록 즉시 1회 실행 확정 -> 최초 population도 공짜
+    else
+        reconcile(data)
+    end
+    return self
+end
+```
+
+- **`data:Observer(fn)`**: 새 구독 프리미티브 아님 — 2026-08-07 여섯 번째
+  세션에 이미 "등록 즉시 1회 실행" 확정된 그 메소드를 그대로 씀.
+  `reconcile`은 매번 **현재 전체 스냅샷을 받아 O(n) 단일 패스로 diff**
+  — 트리 전체를 비교하는 비싼 diff가 아니라 `seen` 셋 하나로 "새 key
+  목록에 없는 건 지운다"만 판정하는 React/Vue/Solid류의 표준 key 기반
+  방식, `data`가 참조를 유지한 채 뮤테이션+`Emit()`되는 경로도 지원해야
+  하는 이상 최소 한 번은 훑어야 하는 게 불가피함.
+- **`updateFn`을 매번 부르는 게 비싼 게 아닌 이유** — 흔한 경로(`prev`
+  그대로 반환)는 함수 호출 하나뿐, 실제 Instance 생성/파괴가 있는 건
+  key가 새로 나타나거나/사라지거나/filter로 구조가 바뀌는 경우뿐.
+  200개 중 값만 갱신되는 사이클엔 200번의 값싼 함수 호출이 있을 뿐,
+  200번의 재구성이 있는 게 아님.
+- **`mounted`/`userdata`를 정리하는 루프가 `mounted`가 아니라 이전
+  사이클의 `keyIndex`를 순회하는 이유** — `userdata`가 이제 `result ==
+  nil`이어도 살아남을 수 있어서(위 "반환값 두 개는 서로 독립"), 어떤
+  key가 `mounted[key] == nil`인 채로(필터 탈락 상태) `data`에서 완전히
+  사라지면 `pairs(mounted)`로는 그 key가 아예 안 잡혀서 `userdata`가
+  못 치워지고 샘 — 직전 사이클에 실제로 존재했던 **전체** key 집합
+  (`keyIndex`, 매 사이클 모든 key에 대해 채워짐)을 순회해야 이 케이스를
+  놓치지 않음.
+- **`mounted`/`userdata`/`keyIndex`**: 이 Slot 인스턴스의 평범한 로컬
+  필드(클로저 업밸류) — 별도 전역 weak table(`Relate` 등) 불필요, `self`가
+  살아있는 동안만 존재하면 되고 Slot이 죽으면 클로저도 같이 GC됨.
+- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawRemove`/`rawMove`뿐** —
+  `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
+  구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
+  셋을 쓸 일이 없을 뿐(제거는 항상 파괴 확정이라 `Extract` 아닌 `Remove`
+  경로, 리오더는 항상 절대 위치 이동이라 `Swap` 아닌 `Move` 경로,
+  `Clear`는 reconcile 단위가 아니라 Slot 전체 단위 연산이라 무관).
+- **리오더는 `Move`(의 가드 없는 버전)** — Parent를 안 건드리는 진짜
+  저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
+  미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.
+
+### 왜 자유 함수/새 타입이 아닌가
+
+처음엔 `List(data, updateFn, keyFn?) -> Slot` 같은 자유 함수(또는 `Slot`을
+구조적으로 만족하는 새 타입 `List`)로 검토했으나 둘 다 기각:
+
+- **자유 함수 기각**: `Source(default)`/`Ref(default)`/`Store({defaults})`가
+  지켜온 "`Type(args)` 팩토리 이름 = 반환 타입"이라는 컨벤션이 깨짐 —
+  `List(...)`이 `Slot`을 반환하면 이름과 실제 타입이 안 맞음.
+- **새 서브타입(`List extends Slot`, Source⊇State 같은 구조적 서브타이핑)
+  기각**: Source가 State의 서브타입이어야 했던 이유는 Source가 State보다
+  진짜로 더 많은 공개 메소드(`:Set`/`:Emit`)를 갖기 때문 — 반면 이
+  프리미티브는 Slot이 이미 가진 것(`Add`/`Remove`/`Extract`/`Clear`/
+  `Move`/`Swap`) 위에 새 공개 메소드를 얹지 않음. 그냥 "자동으로 채워지고
+  관리되는 Slot"일 뿐이라 별도 타입일 이유가 없음.
+- **결론: `Slot`의 콜론 메소드.** "원천에 종속된 파생 데이터는 자유 함수
+  생성자가 없고 메소드로만 얻어진다"(State/Observer)는 기존 분류 원칙과
+  같은 모양 — 다만 여기 원천은 Source가 아니라 이미 만들어진 Slot 자신.
+  Fusion의 `ForPairs`/`ForKeys`/`ForValues` 3분할도 이 재구성으로 통합
+  방향이 자연스러워짐(단일 `:List`가 이미 Slot 메소드 이름공간 안에
+  있으니 여러 진입점을 나열할 이유가 약해짐) — **통합 확정**.
+- 이름 후보로 검토됐던 `Render`/`Draw`도 이 재구성으로 더 이상 "타입
+  이름"이 아니라 "메소드 이름" 문제가 됐지만, `List`가 여전히 가장
+  낫다고 판단(`Render`는 quad의 "렌더 주기 없음" 원칙과 메소드 이름으로
+  써도 충돌 소지가 남고, `Draw`는 즉시모드 GUI 뉘앙스) — **`List`로 확정**.
+
 ## 자식으로 넘기는 클래스 스토어
 
 자식에게 내려주는 클래스 스토어는 부모 쪽에서 미리 만들어서 내려보내는 게
@@ -131,13 +543,9 @@ Slot은 바인딩되는 순간 그 안의 요소를 전부 own해버리는 데�
   정도 — 설계 방향 자체는 더 이상 열려있지 않음.
 - "클래스가 슬롯을 받는 방법"(Named Slot 없음)도 확정됨(위 "클래스가 슬롯을
   받는 방법" 절 참고).
+- **[해소됨, 2026-08-09 세 번째 세션]** `add`/`remove`/`clear` CRUD 의미론,
+  `isMounted` 이중 추적 분리, 키 기반 동적 컬렉션 재조정(`Slot:List`) —
+  위 "CRUD API 확정"/"`isMounted` 이중 추적 분리"/"`Slot:List`" 절 참고.
 - **여러 Slot이 형제로 섞일 때 순서 보장**은 아직 열려있음(위 "여러 Slot이
   섞일 때 순서 보장" 절 참고) — Roblox 단일 백엔드로는 급하지 않음, Slot
   코어 로직 구현 시점에 재검토.
-- **`add`/`remove`/`clear` CRUD 의미론 자체가 아직 정의 안 됨** — 위
-  "개념" 절이 이 세 연산을 뮤터블 메타 배열에 지원되는 것처럼 나열만
-  하고 정확한 동작(예: `add`가 위치를 지정하는지, `remove`가 값 동등성
-  기준인지 참조 기준인지, `clear`가 재마운트 가능한 자리를 남기는지)은
-  정의돼 있지 않음. `research/pre-implementation-audit.md`가 이미 지적한
-  갭이고, 2026-08-07 아홉 번째 세션에서 사용자가 직접 다루기로 보류함 —
-  Slot 코어 로직 구현 착수 전 반드시 확정 필요.
