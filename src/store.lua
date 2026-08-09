@@ -283,6 +283,9 @@ function module.init(shared)
 			-- return s
 			return setmetatable({avalue = avalue},{__index = s})
 		end;
+		Link = function(s,lvalue)
+			return setmetatable({avalue = lvalue},{__index = s})
+		end;
 		-- return init data
 		CalcWithDefault = function (s,withItem)
 			local with = s.wfunc

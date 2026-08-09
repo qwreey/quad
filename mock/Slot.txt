@@ -1,0 +1,22 @@
+
+Window {
+  Class.Slot "Content" {
+    Text {
+      Text = "wow";
+    };
+    Text {
+      Text = "wow";
+    };
+    Text {
+      Text = "wow";
+    };
+    Text {
+      Text = "wow";
+    };
+  } 
+  TopbarButton {
+    [Class.Slot] = "Topbar";
+  };
+}
+다수가 있을경우
+이런식으로 묶을 수 있다고 하자
