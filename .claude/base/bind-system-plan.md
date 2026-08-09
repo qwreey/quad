@@ -435,7 +435,14 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   실제 마운트 가능한 leaf를 기여하는지 보고. 정적 단일 자식은 상수
   `1`(또는 `nil`/`None`이면 `0`), Slot은 자기 `.Length`(`State<number>`,
   아래 참고), `state<Frame>`처럼 store-bind로 오가는 단일 위치는 그
-  store-bind 핸들러가 값이 바뀔 때마다 다시 호출.
+  store-bind 핸들러가 값이 바뀔 때마다 다시 호출. **호출 책임은 `Slot`
+  자신의 `:List`/CRUD가 아니라 그 위치를 처음 매치한 Handler(`Dispatch/
+  Slot.luau`)** — `Slot`은 `inst`/`i`를 모르는 독립 값(어디 마운트될지
+  자기가 결정 안 함)이라, `process(inst, i, slotValue)`가 매치되는
+  시점에 그 Handler가 `Dispatch.setLength(inst, i, slotValue.Length)`를
+  1회 호출(길이 자체가 바뀌는 매 순간은 이미 `slotValue.Length`가
+  `State`라 알아서 전파됨, Handler가 매번 다시 부를 필요 없음). `state<Slot>`
+  교체 시엔 이 Handler가 새 값으로 다시 `setLength`를 호출.
 - **`setOffsetSource`**: 이 위치가 자기 순서 계산에 쓸 `Source<number>`를
   **스스로 만들어서** 등록 — Dispatch는 그냥 레지스트리에 넣어두기만
   하고, `recompute`가 그 자리에 값을 `:Set()`함. Handler는 이 **같은**
@@ -452,7 +459,20 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
 이 존재 자체를 몰라도 됨(사용성 저하 없음), API 문서화만 명확히 하면 됨.
 
 **저장 위치**: `lengthList`/`sourceList`(부모 `inst` 하나에 귀속, 그
-`inst`의 array part 크기 `N`만큼) — `Relate(parentInst)`에 lazy 생성.
+`inst`의 array part 크기 `N` — `bk.N`으로 같이 저장, `Dispatch.drive`가
+최초 배열 파트 순회 시점에 이미 알고 있는 값) — `Relate(parentInst)`에
+lazy 생성.
+
+**`sourceList`에도 `nil`이 아니라 `None`을 쓰는 이유는 기존 배열 파트
+원칙 재사용** — 모든 number 인덱스를 반드시 채워야 하는데(위 UB 규칙)
+`nil`을 넣으면 (1) 그 자리가 "안 채워짐"과 구별이 안 되고 (2) 배열이
+구멍 나면서 순수 array 취급이 깨져 접근 비용이 올라감(해시 파트로 밀림)
+— `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, `Ref`
+콜백/대기자 배열·PreRef pre-pass에 이미 적용된 것과 같은 원칙(위 "왜
+`nil`이 아니라 `None`인가" 절 참고). 다만 `recompute`가 `1..N` 고정
+범위를 도는 인덱스 `for`라 애초에 성긴 정수 키 순회 문제 자체는 안
+생김 — `None`이 필요한 이유는 순회 순서 보존이 아니라 "채워짐 여부
+구별과 접근 비용" 쪽.
 
 **recompute — 매번 전체 순회, `Get` 가드로 캐스케이드만 방지**:
 
@@ -463,7 +483,9 @@ local function recompute(inst, bk)
         local v = bk.lengthList[i]
         sum += (isState(v) and v:Get() or v)
         local offset = bk.sourceList[i]
-        if offset and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
+        -- offset은 실제 Source이거나 None(참여 안 함) — None은 truthy라
+        -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함
+        if offset ~= None and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
             offset:Set(sum)
         end
     end
