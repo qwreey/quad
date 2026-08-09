@@ -238,18 +238,16 @@ trace 이벤트 페이로드는 처음부터 함수/클로저 없이 **순수 �
   재검토)**: "지금 이 순간 일어난 일" 스트림은 BindableEvent, 특정
   Instance 선택 시 상세 정보 요청-응답은 BindableFunction — 둘 다 실측
   확인됨(위 참고).
-  - **`ReplicatedStorage` 자동 생성 방식은 기각 — 사용자 정정**: 처음
-    구상은 quad-debug-roblox가 초기화 시 `ReplicatedStorage` 밑에 잘
-    알려진 이름으로 Bindable을 만들어 노출하는 것이었으나, **이건
-    개발자가 의도하지 않은 Instance를 게임 트리에 주입하는, 부작용이
-    큰 행위라 기각**. 대신 Bindable을 **quad 모듈 자신의 Instance
-    트리 안**(quad가 이미 설치돼 있는 위치 그대로, 새 위치를 따로
-    안 만듦)에 두고, `CollectionService` 태그로 노출 — 플러그인은
-    quad가 어디 설치됐는지 몰라도 `CollectionService:GetTagged(tag)`로
-    바로 찾음(`GetDescendants()`로 전체 트리를 훑어 필터링할 필요
-    없음 — 사용자가 "roblox query descendants" 관련해서 짚어준 더
-    저렴한 방법). 태그를 모듈 자신에 달지 Bindable 각각에 달지는
-    취향 차이 — **사용자 확정**("큰 차이는 없는 엔지니어링 선택").
+  - **`ReplicatedStorage` 자동 생성 방식은 기각** — 개발자가 의도하지
+    않은 Instance를 게임 트리에 주입하는 부작용 때문(상세 경위는
+    `archive/debug-channel-replicatedstorage-rejected.md`). 대신 Bindable을
+    **quad 모듈 자신의 Instance 트리 안**(quad가 이미 설치돼 있는 위치
+    그대로, 새 위치를 따로 안 만듦)에 두고, `CollectionService` 태그로
+    노출 — 플러그인은 quad가 어디 설치됐는지 몰라도
+    `CollectionService:GetTagged(tag)`로 바로 찾음(`GetDescendants()`로
+    전체 트리를 훑어 필터링할 필요 없음). 태그를 모듈 자신에 달지
+    Bindable 각각에 달지는 취향 차이 — **사용자 확정**("큰 차이는 없는
+    엔지니어링 선택").
 - **공통 원칙(사용자 확정)**: 어떤 채널이든 **debug를 안 켰을 땐 CPU/메모리
   영향이 사실상 없어야 함**(패시브하게 가볍게만 들고 있거나, 아예 아무것도
   안 함) — 무거운 트레이스 함수 실행은 debug를 켠 다음부터만. 이건 위

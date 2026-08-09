@@ -59,15 +59,12 @@ leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer�
 비쌈) — 필요할 때만 쓰는 걸로 충분.
 
 **Observer 자체에 cleanup 반환 계약을 추가하는 안은 여전히 기각** — React
-`useEffect`류로 `fn`이 `nil | () -> ()`를 반환하면 다음 재실행 직전에 그걸
-불러주는 안을 검토했으나, 클로저 업밸류로 이미 쉽게 되고 잘 작동해서(`local
-lastConn; state:Observer(function() if lastConn then lastConn:Disconnect()
-end; lastConn = ... end)`) **Observer 자체**가 이걸 대신해줄 이유는 여전히
-약함. **이 기각과 위 Effect 설계는 상충하지 않는다** — 그때 기각한 건
-"Observer 자체에 이 복잡도를 넣지 말자"였지 "이 패턴 자체가 무용하다"가
-아니었음. 자동 cleanup 배선이 필요한 사람만 opt-in으로 쓰는 별도 계층
-(Effect)으로 분리해 얹었을 뿐, Observer의 기본 계약(재실행 신호만, cleanup은
-클로저로 직접)은 그대로 가볍게 유지됨.
+`useEffect`식으로 `fn`의 반환값을 자동으로 배선해주는 안을 검토했으나,
+클로저 업밸류로 이미 충분해 채택 안 함. 이 기각은 위 Effect 설계와
+상충하지 않음(그때 기각한 건 "Observer 자체에 이 복잡도를 넣지 말자"였지
+패턴 자체의 무용함이 아니었고, `Effect`가 opt-in 상위 계층으로 정확히
+이 패턴을 제공함) — 상세 경위는 `archive/observer-cleanup-contract-rejected.md`
+참고.
 
 ## `EffectHandle:Subscribe()`/`:Unsubscribe()` — leaf 없이 쓰는 독립 Effect (2026-08-07 일곱 번째 세션)
 

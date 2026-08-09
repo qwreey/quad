@@ -125,6 +125,15 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - `Store`/`Source`/`Modifier`/`Ref`/`PreRef`/`Peek`/`isState`/`Handler`/
   `None`/`NoneHandler`/`process`/`retract`/`isHandlable`은 업계 선례와
   잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
+- **`Tag`/`Added`/`Removed`/`Merged`(3순위, 사소함, 2026-08-08 세 번째
+  세션 array-part 값 객체 재설계 때 확정된 API 표면)**: `base/tag-plan.md`가
+  "열린 질문 없음, 값 모양/메커니즘/retract/패키지 배치 전부 확정, 이름
+  자체만 용어 정리 대상"이라고 명시해뒀으나 이 목록에 반영이 안 돼 있던
+  누락 — 이번에 추가. `Tag`는 Roblox `CollectionService`가 쓰는 용어와
+  1:1 대응이라 그 자체로는 무난해 보이지만, 위 `Brand` 항목(97-99행)에서
+  "`Tag`가 이미 이 뜻으로 쓰이고 있어서 충돌"이라는 이유로 `Brand`의
+  대안 이름 후보에서 제외됐다는 점은 참고할 것 — 두 이름이 같은 코퍼스
+  안에서 공존 가능한지도 같이 검토 대상.
 
 ### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
 

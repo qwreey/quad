@@ -5,9 +5,14 @@ Store 전달(`props.Theme: Store<Theme>`처럼 컴포넌트가 필요한 걸 nam
 parameter로 명시적으로 요구) + 오버라이드가 필요한 지점에서
 `Store({...부모값, 변경필드=새값})`을 한 번 명시적으로 만들어 그 지점부터
 평소처럼 prop으로 넘기는 것 — 새 primitive 없이 이미 있는 Modifier의
-"merge, 나중 게 이김" 패턴 재사용. 이 파일은 더 이상 능동적으로 참고할
-필요 없음(구현에 안 씀) — "왜 Context가 없는가"가 `quadnomicon`(프레임워크
-설계자용 심화 콘텐츠) 소재로 가치 있어서 사유를 통째로 보존해둔 것.
+"merge, 나중 게 이김" 패턴 재사용. **base/ 포인터**: named parameter로
+경계를 넘기는 일반 패턴은 `base/component-composition-plan.md` "1. Named
+parameter로 경계를 넘김" 절, merge 패턴 자체는 `base/modifier-plan.md`
+2번 절 — 이 결정 자체가 새 primitive를 만들지 "않기로" 한 것이라 전용
+base/ 절이 따로 없고 기존 두 절의 재사용으로 충분함이 이 파일의 결론.
+이 파일은 더 이상 능동적으로 참고할 필요 없음(구현에 안 씀) — "왜 Context가
+없는가"가 `quadnomicon`(프레임워크 설계자용 심화 콘텐츠) 소재로 가치 있어서
+사유를 통째로 보존해둔 것.
 
 ## 무엇을 검토했었나
 

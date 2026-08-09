@@ -74,6 +74,10 @@
 | `modifier-apply-mutable-rejected.md` | **[기각됨, 2026-08-08 신설]** `Modifier.Apply`/setter를 mutable로 바꾸는 방안(및 "Apply 경계에서만 clone" 절충안) — 둘 다 형제 서브트리 오염 방지가 clone 비용 절감보다 우선이라 기각 |
 | `tag-hash-key-model-reversed.md` | [역전됨] 구 `Tag` 모델(해시 파트 boolean 키, 태그 개수만큼 키 갱신) — 2026-08-08 세 번째 세션에서 array-part 값 객체(`Tag(...)`, `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`) 모델로 완전히 대체됨 |
 | `agent-mistake.md` | **[에이전트 실수, 2026-08-07 신설]** 설계 반전이 아니라 에이전트가 문서 작성 중 개념을 혼동했다가 같은 세션 안에서 스스로 정정한 사례 모음(`canExecute`/`isHandlable` 혼동, `isSource` 불필요 오판) — CLAUDE.md 세션 로그의 중복 서술을 여기로 옮기고 포인터만 남김 |
+| `quad2-try-research-findings-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** quad2-try 이전 시도 리서치 전문(OOP 상속/커스텀 파서/Slot 스텁/`Pipe` copy-on-write 4가지 죽은 접근 + `:With` 이름 방증) — `base/bind-system-plan.md`에 남아있던 인라인 전체 서술을 이전, 결론 한 줄 포인터만 본문에 남김 |
+| `observer-cleanup-contract-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** `Observer` 자체에 React `useEffect`식 cleanup 반환 계약을 추가하는 안 — 클로저로 이미 충분해 기각, `Effect`가 opt-in 상위 계층으로 이 패턴을 제공 |
+| `keyed-collection-state-method-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** 키 기반 동적 컬렉션 재조정 프리미티브를 `state:Keyed(...)` State 메소드로 두려던 초안 — Source 미사용 컴포넌트가 접근 못 한다는 반례로 철회, 현재는 자유 함수로 확정 |
+| `debug-channel-replicatedstorage-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** quad-debug 채널을 `ReplicatedStorage`에 자동 생성하던 초안 — 게임 트리 오염 부작용으로 기각, quad 모듈 자신의 트리+`CollectionService` 태그로 대체 |
 
 ## 참고
 

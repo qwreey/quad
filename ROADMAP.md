@@ -20,7 +20,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       짜보기(다이아몬드 의존성 케이스 포함 — 이미 invalid면 전파 중단되는지)
 - [ ] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
-      Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 후속 세션,
+      Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 세 번째 세션,
       `base/store-semantics.md` "Source가 State를 만족함" 절 — `State<T>`가
       `Source`를 참조하지 않는 단방향 의존으로 두면 위험한 상호 재귀는
       피할 수 있어 보이나 실제 검증 전엔 확정 아님)
@@ -97,7 +97,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       quad-roblox 실 구현은 M8) — 원래 M8에만 있었으나 M4(StoreBind의
       `Connected` 확인)/M6(Slot의 `canExecute`)이 이미 이 인터페이스를
       전제로 서술돼 있어 로드맵 순서가 역전돼 있었음(`pre-implementation-audit.md`
-      우선순위1-9, `question.md` 2번 — 2026-08-07 세 번째 세션에 반영).
+      우선순위1-9, `question.md` 2번 — 2026-08-07 네 번째 세션에 반영).
       **`canExecute`는 `(inst, value) -> boolean`으로 재확정(2026-08-08
       세션, `(handle)` 단일 인자 서술을 대체)** — Observer/Effect는 자기
       `Subscribed` 상태를 먼저 확인, 그 다음 `inst`의 공유 gcconn(`Relate`로
@@ -143,9 +143,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
-- [ ] Observer/Effect 이중 바인딩 금지 — `Bound`(가칭) 플래그로 leaf 부착과
-      `:Subscribe()`가 동시에 걸리면 즉시 `error`(`base/bind-system-plan.md`
-      "이중 바인딩 금지" 절, 2026-08-07 일곱 번째 세션)
+- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로 leaf
+      부착과 `:Subscribe()`가 동시에 걸리면 즉시 `error`(`base/bind-system-plan.md`
+      "이중 바인딩 금지" 절, 2026-08-07 일곱 번째 세션 신설, 이름은
+      2026-08-09 세션에 `canBound`로 확정)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -169,6 +170,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] "여러 Slot이 형제로 섞일 때 순서 보장" 열린 질문 확인(`slot-plan.md`) —
       Roblox 단일 백엔드로는 급하지 않으면 스킵하고 진행 가능
+- [ ] **Slot의 `add`/`remove`/`clear` CRUD 의미론 확정 — 착수 전 필수.**
+      `research/pre-implementation-audit.md` 우선순위1이 지적한 갭, 아직
+      미해결(2026-08-07 아홉 번째 세션에서 "사용자가 다음 세션에서 직접
+      다루기로 보류"로 확인, 2026-08-09 세션 말미에도 다음 세션 예고로
+      다시 지목됨). "재마운트 시 즉시 throw"가 개별 element 기준인지 Slot
+      컨테이너 전체 기준인지도 이 논의에서 같이 확정할 것.
 - [ ] base `Dispatch/Slot.luau`(추상 재조정) + quad-roblox `Handlers/Slot.luau`
       (실제 Parent 조작)
 
@@ -196,8 +203,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `isState(x)`/`isSource(x): boolean`(`Brand` 공유 레지스트리 기반 —
       `modifier-plan.md` 9번, `bind-system-plan.md`의 `Brand` 절, M2의
       `Brand.luau`에 이미 구현돼 있어야 함)
-- [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None`(가칭)
-      센티널(`modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
+- [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None` 센티널
+      (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
       이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
       (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
       "이전 매치 핸들러 추적" 항목과 함께 구현 — Tween store-bind 핸들러와

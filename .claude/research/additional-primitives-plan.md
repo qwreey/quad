@@ -12,8 +12,8 @@ context-rejected.md`. 이 문서에는 **아직 완전히 열려있는 것 하�
 
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것
 같나요. 이것만으로 이 프로젝트는 충분하다 생각해요?" — 지금까지 확정된
-독립 프리미티브(`Source`/`State`/`Store`/`Ref`/`Observer`/`Modifier`/`Slot`/
-`DI`)만으로 충분한지, 웹 프레임워크나 실제 Roblox 개발 관점에서 솔직하게
+독립 프리미티브(`Source`/`Store`/`Ref`/`Modifier`/`Slot`/`DI`)+파생 데이터
+(`State`/`Observer`)만으로 충분한지, 웹 프레임워크나 실제 Roblox 개발 관점에서 솔직하게
 재검토해달라는 요청.
 
 ## 조사 방법
@@ -74,12 +74,9 @@ key가 유지, 순서만 변경 → renderFn 재호출 없음, Slot 위치만 �
 
 ### 폼 팩터 — 자유 함수로 정정 (State 메소드 프레이밍 철회)
 
-이전 라운드에서 "독립 프리미티브 vs 원천 종속 파생 데이터" 원칙을 적용해
-`state:Keyed(...)`처럼 **State의 메소드**로 두자고 제안했는데, 사용자가
-정확한 반례를 지적함: **Source를 안 쓰는 컴포넌트는 이 메소드 자체에
-접근을 못 한다.** 정적 데이터(한 번만 렌더되고 다시는 안 바뀌는 리스트)를
-키 기반으로 렌더링하고 싶을 뿐인데 굳이 `Source(정적데이터)`로 감싸야
-한다면 불필요한 강제다.
+`state:Keyed(...)`처럼 State의 메소드로 두려던 초안은 "Source를 안 쓰는
+컴포넌트가 접근 못 함" 반례로 철회됨 — 상세 경위는
+`archive/keyed-collection-state-method-rejected.md` 참고.
 
 재검토 결과 — quad는 이미 **leaf 프로퍼티가 "리터럴 값 또는 State" 둘 다
 받는 폴리모픽 컨벤션**을 갖고 있다(`BackgroundColor3 = someColor`도
