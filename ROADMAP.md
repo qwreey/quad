@@ -331,9 +331,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `props.Modifier`/`props.Ref` 전달 관례를 정식 컴포넌트로 검증(M0
       스파이크를 정식화)
 
-## M10 — Event / Attribute / Tag
+## M10 — Event / OnChange / Attribute / Tag
 
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
+- [ ] `Handlers/OnChange.luau`(`OnChange(name)` DI 키 팩토리+Handler,
+      `GetPropertyChangedSignal` 바인딩 — 제네릭 없이 콜백 타입은 인라인
+      명시, `base/onchange-plan.md`, 2026-08-10 세션 확정)
 - [ ] `Handlers/Attribute.luau`(`base/attribute-plan.md` — 메커니즘/`None`/
       `retract` 불필요 확정, 타입 파라미터화 이름만 착수 전 확인)
 - [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/

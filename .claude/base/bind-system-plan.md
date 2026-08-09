@@ -245,7 +245,8 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   - `Dispatch.addHandler(handler: Handler)` — 핸들러를 우선순위 레지스트리에
     등록. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
-    UICornerHandler/TagHandler/AttributeHandler 등)은 팩토리가 `BaseModule`을
+    OnChangeHandler/UICornerHandler/TagHandler/AttributeHandler 등)은
+    팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
     같은 패턴, 새 메커니즘 아님).
   - Handler 자신의 필드는 계속 `process`/`retract`(이미 확정된 이름,
@@ -2008,6 +2009,13 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 `State<T>`→`Source<T>`로 갱신, "Source가 State를 만족함" 절 참고]) 그대로
 유지 — 이벤트만 예외였을 뿐, "정적으로 알려진 것=필드 접근" 원칙 자체가
 깨진 건 아님.
+
+**`GetPropertyChangedSignal`은 이 문자열 키 패턴이 안 통함 — 별도 `OnChange`
+DI 키로 확정(2026-08-10 세션).** 이벤트는 `inst[key]`가 이미 Signal이라
+그대로 `Connect`하면 되지만, `GetPropertyChangedSignal(name)`은 프로퍼티
+이름을 인자로 받아야 하고 그 이름이 "값 세팅" 키 네임스페이스와 겹쳐서
+평범한 문자열 키로는 세팅과 리스닝을 구분할 수 없음 — 상세는
+`base/onchange-plan.md`.
 
 **PA님 코드와 대조해서 재확인한 것(변경 없음)**:
 - **OOP 회피 결정은 오히려 보강됨** — PA님의 `ObjectOrientedProgramming/

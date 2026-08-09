@@ -159,6 +159,7 @@ quad/
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
+        │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩(`base/onchange-plan.md`, 2026-08-10 세션)
         │   ├── Attribute.luau
         │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)

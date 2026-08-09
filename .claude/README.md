@@ -40,6 +40,7 @@
 | `ui-shorthand-plan.md` | **[2026-08-07 `research/`에서 승격]** `UICorner`/`UIPadding`/`UIScale` 인라인 편의 키 — 이름(v1 `Corner`/`PaddingAll`/`Scale`에서 Modifier 필드명과 안 겹치게 `UI` 프리픽스로 확정)·메커니즘(Handler)·패키지 배치(quad-roblox 코어)·store-bind 가능성까지 전부 확정. 이미지 라운드 트릭(`RoundSize`)은 드롭 — `archive/ui-shorthand-roundsize-dropped.md` 참고. `v=nil`이면 `process` 자신이 만든 자식 제거(`retract` 아님) |
 | `tag-plan.md` | **[2026-08-08 세 번째 세션 재설계]** `Tag(...)` — array-part 값 객체, `Modifier`와 같은 immutable clone 체이닝(`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), `CollectionService` 글루만 quad-roblox. 이제 `retract`가 의미 있음(타입이 바뀌면 전체 삭제, 같은 Tag끼리는 `process`가 diff). 구 해시 파트 boolean 모델은 `archive/tag-hash-key-model-reversed.md` |
 | `attribute-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** `[Attribute "Name"]` — `SetAttribute(name, nil)`이 네이티브 지우기라 `None` 센티널과 가장 깔끔하게 맞아떨어짐, `retract` 불필요. 타입 파라미터화 이름(`Attribute<T>` vs `BooleanAttribute`류)만 미확정 |
+| `onchange-plan.md` | **[2026-08-10 세션 신설]** `OnChange(name)` — `GetPropertyChangedSignal` 바인딩 전용 DI 키, `Attribute`와 달리 제네릭 타입 파라미터 없음(콜백 타입은 인라인 명시, 이벤트 바인딩과 같은 급 트레이드오프). 전부 quad-roblox(`Handlers/OnChange.luau`), `State<function>`은 기존 이벤트 store-bind 메커니즘 재사용 |
 | `relate-plan.md` | **[2026-08-08 신설]** `Relate` — `inst`를 weak 키로 하는 범용 릴레이션 프리미티브(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`, 비싱글톤 생성자). 구 `base.perInstanceState(inst)` placeholder를 대체·정식 승격, `lifecycle-pattern.md`의 `bindLifetime`/`canExecute`가 그 위에 얹힘 |
 
 ## `reference/` — 온디맨드 참고 자료 (2026-08-07 신설)
@@ -81,6 +82,7 @@
 | `keyed-collection-state-method-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** 키 기반 동적 컬렉션 재조정 프리미티브를 `state:Keyed(...)` State 메소드로 두려던 초안 — Source 미사용 컴포넌트가 접근 못 한다는 반례로 철회, 현재는 자유 함수로 확정 |
 | `debug-channel-replicatedstorage-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** quad-debug 채널을 `ReplicatedStorage`에 자동 생성하던 초안 — 게임 트리 오염 부작용으로 기각, quad 모듈 자신의 트리+`CollectionService` 태그로 대체 |
 | `tween-special-bind-key-reversed.md` | **[역전됨, 2026-08-10 신설]** 구 Tween 모델(`[Tween(key,tweenData...)] = storeValue` 특수 bind key, 우선순위 최상위 Dispatch 핸들러) — 값-레벨 `Tween<T>` 래퍼 모델로 완전히 대체됨(`research/tween-plan.md`) |
+| `onchange-per-property-codegen-rejected.md` | **[기각됨, 2026-08-10 신설]** `OnChange.PropertyName` 프로퍼티별 정적 코드 생성 — Attribute의 정적 지름길과 달리 (클래스 수 × 프로퍼티 수) 규모로 폭발해 기각, `OnChange(name)` 단일 팩토리로 대체 |
 
 ## 참고
 
