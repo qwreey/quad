@@ -313,6 +313,16 @@ Luau 솔버가 막히면 되돌릴 범위가 `store-semantics.md`의 절반 이�
 
 ### 2-2. `State<Modifier>` 타입 차단이 Luau에서 실제로 가능한지 검증 계획이 없음
 
+**[대부분 해소, 2026-08-09 세션]** "가능하면 타입 차단, 안 되면 UB로
+후퇴"라는 원래 걱정 자체가 무의미해짐 — `State<Modifier>`를 이제
+`isModifier` predicate 기반 명시적 `error`로 막기로 확정
+(`base/modifier-plan.md` 7번 정정, `base/store-semantics.md` "따름정리"
+절)했으므로, 타입 차단은 성공하든 실패하든 런타임 에러라는 안전망이
+항상 있음 — 아래 "제안"이 우려했던 "조용히 UB로 후퇴" 시나리오 자체가
+발생하지 않음. 타입 차단이 Luau에서 실제로 가능한지는 여전히 미검증이지만,
+이제 "되면 좋은 보너스"로 우선순위가 낮아짐 — M0/M7 필수 검증 항목에서
+제외해도 됨. 아래는 원래 발견 당시 기록.
+
 **위치**: `base/modifier-plan.md` 7번.
 
 **문제**: "가능하면 타입 시스템으로 아예 못 넣게 막을 것"이라 확정했지만,
@@ -501,6 +511,14 @@ M11 착수 시.
 
 ### 3-1. `:Compute(fn)`의 `previous` 인자 — 클로저 업밸류로 이미 되는 걸 별도 API로 만든 것일 수 있음
 
+**[해소됨, 2026-08-09 세션]** 오버엔지니어링 아님으로 확정, 현재
+`fn(self, previous)` 설계 그대로 유지 — 클로저 업밸류 대안은 IIFE로
+감싸야 하는 준비 비용이 오히려 더 크다는 게 사용자 반박 논거.
+`previous`는 `self`(입력)가 아니라 이 `:Compute` 호출 하나가 만든
+결과 State 노드 자신에 귀속되므로 팬아웃 시에도 충돌 없음 — 상세는
+`base/bind-system-plan.md`의 "previous" 절 참고. 아래는 원래 발견
+당시 기록.
+
 **위치**: `base/bind-system-plan.md` "`:Compute(fn)`의 선택적 두 번째
 인자 — `previous`" 절.
 
@@ -565,6 +583,16 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   보이지만, 문서 어디에도 "왜 이 경우엔 원칙에서 예외로 처리하는가"를
   명시적으로 인정/정당화하지 않고 그냥 나란히 적혀 있다. 위 2-2 항목
   (Luau에서 실제 차단 가능한지)과 묶어서 같이 정리할 문제.
+
+  **[완전 해소, 2026-08-09 세션]** 양쪽 다 이제 같은 메커니즘 —
+  Ref/Slot(+Observer/Effect/Modifier 자기 자신)이 Modifier *필드*로
+  들어오는 것도, `State<Modifier>`처럼 Modifier가 State/Source *값*으로
+  담기는 것도 전부 `Brand` 기반 `isX` predicate로 런타임에 즉시
+  `error`(`base/modifier-plan.md` 4번/7번 절 정정, `base/
+  store-semantics.md` "따름정리" 절). 더 이상 "한쪽만 방어" 비대칭이
+  아님 — 남은 차이는 `State<Modifier>` 쪽에 "되면 좋은 보너스"로
+  타입 차단을 추가 시도해볼 여지가 있다는 것뿐(위 2-2번, 미검증이지만
+  더 이상 필수 방어선이 아니라 우선순위 낮음).
 - **Destroying 훅 신뢰도에 대한 서술이 `lifecycle-pattern.md` 내부에서도,
   `framework-comparison-findings.md`와의 사이에서도 어긋남** — 위 1-6
   항목에 상세, 여기서는 "아직 아무도 하나의 확정 문장으로 정리 안 함"이라는

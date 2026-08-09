@@ -187,7 +187,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `GuiObjectModifier`)을 섞을 때의 타입 시그니처 실 Luau 테스트
       (`modifier-plan.md` 9-2번, 미검증 — 안 되면 일단 `Overridden(...: any):
       any`로 느슨하게 열어두고 이 항목으로 되돌아올 것)
-- [ ] `State<Modifier>` 조합 타입 차단 확인(`modifier-plan.md` 7번, UB 확정)
+- [ ] `State<Modifier>` 조합에 `isModifier` 기반 명시적 error 적용
+      (`modifier-plan.md` 7번, 2026-08-09 세션 확정) — 타입 차단은
+      되면 좋은 보너스로 선택 검증(필수 아님)
 - [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
 - [ ] `:Peek<<T>>(key): T|State<T>|nil` 필드 읽기 접근자 +

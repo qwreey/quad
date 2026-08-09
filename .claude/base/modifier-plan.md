@@ -184,14 +184,34 @@ Roblox API에 전혀 의존 안 하는 순수 Lua 테이블 조작이라, "base�
 **Modifier의 체이닝 엔진 자체는 quad-base에 완결된 구현으로 그대로
 존재해도 됨** — 주입할 엔진별 구현이 애초에 없음.
 
-**Modifier는 핸들러 계층을 모름 — 순수 데이터 merge 레이어.** Modifier는
-`process`/`retract`/`isHandlable` 핸들러 레지스트리보다 아래층(위 "1.
-런타임 pluggable 핸들러 아님" 참고)이라, Ref/Slot 같은 핸들러 계층
-개념을 아예 몰라도 됨 — 필드에 Ref나 Slot 같은 값이 들어가도 Modifier
-입장에선 그냥 flatten해서 최종 props 테이블에 얹을 뿐. 권장하는 사용법은
-아니지만(Modifier는 스타일링 데이터 지향이니), 막을 이유도 없음 — 방어
-로직 없는 UB로 남겨둠(오늘 세션 내내 반복된 "드문 오용까지 방어하려고
-구조 복잡하게 안 만든다" 원칙과 동일).
+**Modifier 필드에 핸들러 계층 값(Ref/PreRef/Observer/Effect/Slot/
+Modifier)이 들어오면 즉시 error — UB 아님(2026-08-09 세션, 정정).**
+이전 버전("권장 사용법은 아니지만 막을 이유도 없음 — 방어 로직 없는
+UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 자식/Ref
+같은 걸 다루는 목적이 아니고, 이런 값이 실제로 쓸모 있는 use case가
+없다고 확인된 이상 조용한 UB보다 그 자리에서 막는 쪽이 낫다 — 판별
+비용도 이미 있는 `Brand` 기반 predicate(`isRef`/`isPreRef`/
+`isObserver`/`isEffect`/`isSlot`/`isModifier`, `bind-system-plan.md`의
+`Brand` 절)를 그대로 재사용하면 되므로 거의 공짜.
+
+- **체크 지점 — 제네릭 `__index` setter가 최종 저장 직전에 검사.** 위
+  4번 절의 제네릭 setter(`clone[key] = value`, 또는 함수 인자면
+  `clone[key] = fn(old)`, 4-1번 표의 State 분기 결과도 포함)가 실제로
+  필드에 쓰려는 값을 확정한 직후, 그 값이 `isRef(v) or isPreRef(v) or
+  isObserver(v) or isEffect(v) or isSlot(v) or isModifier(v)`를
+  만족하면 `error`. 리터럴로 직접 넣은 경우든(`mod:SomeField(someRef)`류
+  오용) 변환 함수가 반환한 경우든(`mod:X(function(old) return someRef
+  end)`) 동일하게 걸림 — "콜백이냐 직접 실행이냐"를 구분하지 않고 최종
+  저장값 하나만 보면 충분(사용자 제안).
+- **State/Source는 여전히 허용** — 이 체크는 핸들러 계층 값만 잡음,
+  4-1번 절의 "필드가 State일 수도 있음"과 안 부딪힘(`isState`가 참인
+  값은 이 체크를 그냥 통과함).
+- **7번 절(`State<Modifier>` UB)과의 비대칭이 이걸로 줄어듦** —
+  `pre-implementation-audit.md`가 지적했던 "같은 문서 안에서 한쪽은
+  방어(타입 차단 시도), 한쪽은 무방비 UB"라는 비일관성이, 이제 둘 다
+  "적극적으로 막는다"는 같은 방향으로 정리됨(메커니즘은 여전히 다름 —
+  하나는 타입 레벨 차단 시도+실패 시 UB 폴백, 하나는 런타임 `error` —
+  이 차이 자체는 남지만 "막을 가치가 있는가"라는 판단은 통일됨).
 
 ### 4-1. 필드가 State일 수도 있음 — Setter가 State/plain 여부로 분기
 
@@ -248,17 +268,50 @@ Modifier가 immutable해야 하는 이유(변환마다 clone)와 State가 이미
 명시적으로 쓰는 구조라 "암묵적 분기"가 애초에 존재하지 않음 — 새로 결정할
 것 없음.
 
-### 7. State가 Modifier를 값으로 담는 것은 UB — 타입으로 막을 것 (2026-08-04, 로드맵 인수인계 라운드)
+### 7. State/Source가 Modifier를 값으로 담는 것 — 명시적 error로 확정 (2026-08-04 신설, 2026-08-09 세션 정정)
 
-Modifier "필드"가 State일 수 있는 것(4-1번)과는 별개로, **State 자체의
-value가 Modifier인 경우**(예: `someState:With(fn)`이 Modifier를 반환)는
-지원 대상이 아님 — Modifier는 "flatten해서 한 번 적용"이 전제인 정적 값인데,
-State에 담기면 그 값이 반응형으로 바뀔 수 있다는 뜻이 되어 매번 재-flatten이
-필요해지고, 이는 "정적 merge" 확정(1번)과 정면으로 충돌함 — **사용자
+Modifier "필드"가 State일 수 있는 것(4-1번)과는 별개로, **State/Source
+자체의 value가 Modifier인 경우**(예: `someState:With(fn)`이 Modifier를
+반환하거나 `someSource:Set(someModifier)`)는 지원 대상이 아님 — Modifier는
+"flatten해서 한 번 적용"이 전제인 정적 값인데, State/Source에 담기면 그
+값이 반응형으로 바뀔 수 있다는 뜻이 되어 매번 재-flatten이 필요해지고,
+이는 "정적 merge" 확정(1번, "Modifier는 런타임 pluggable 핸들러가 아니라
+dispatch 밖에서만 처리되는 유일한 존재")과 정면으로 충돌함 — **사용자
 확정**("state 안에 modifier가 있으면 그건 끔찍히 힘들꺼야... 타입 상 받지
-못하게 만들어야 할 수도 있고"). **UB로 확정, 가능하면 타입 시스템으로
-아예 못 넣게 막을 것**(`State<Modifier>` 같은 조합을 타입 정의 단계에서
-거부) — 런타임 가드가 아니라 타입 차단을 우선 검토.
+못하게 만들어야 할 수도 있고").
+
+**[정정, 2026-08-09 세션] "UB, 가능하면 타입 차단"에서 "명시적
+`error`로 확정"으로 전환** — 위 "핸들러 계층 값이 필드로 들어오면
+즉시 error" 절(Ref/PreRef/Observer/Effect/Slot/Modifier가 Modifier
+*필드*로 들어오는 걸 막은 것)과 같은 방향으로 통일: `isModifier`
+predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
+막는다.** 타입 차단(`State<Modifier>` 같은 조합을 타입 정의 단계에서
+거부)은 여전히 되면 좋은 보너스로 계속 시도해볼 수 있지만
+(`research/pre-implementation-audit.md` 2-2 — Luau에서 실제로 가능한지
+미검증), **더 이상 유일한 방어선이 아님** — 타입이 뚫려도 런타임
+`error`가 항상 잡아준다.
+
+- **적용 지점**: "어떤 값이 Source/State의 현재 값으로 확정되는 모든
+  지점" — `Source:Set(value)` 호출 시, `Store({defaults})` 생성 시
+  각 `defaults` 키를 `Source(v)`로 만드는 시점, 그리고 State의
+  `:Compute(fn)` 결과를 캐시로 저장하기 직전(`fn`이 반환한 값이
+  `isModifier`면 캐싱 전에 `error`). 새 체크 지점을 여러 곳에 흩는 게
+  아니라, "값이 State/Source의 값으로 확정되는" 이미 존재하는 몇 안
+  되는 지점에 `isModifier` 검사 한 줄씩 얹는 것뿐.
+- **Slot/Tag/Attribute/Tween 등 다른 핸들러 계층 값은 여전히 아무
+  문제 없이 State/Source에 담길 수 있음 — Modifier만의 예외임을
+  명확히.** (사용자 확인: "slot은 당연히 가능함, retract도 되는 애고
+  런타임 값이라") 이 값들은 전부 정상적으로 `process`/`retract`
+  재귀 경로(store-bind 재실행 모델, "확정된 디스패치 모델" 절)를 타는
+  진짜 런타임 dispatch 참가자라, State/Source 값으로 담겨 바뀌어도
+  기존 재귀 재-dispatch 메커니즘이 그대로 처리해줌 — 새로 막을 이유가
+  없음. Modifier만 유독 문제인 건 Modifier가 애초에 dispatch 경로를
+  아예 안 타는 유일한 존재(1번 절)라서, State/Source에 담기는 순간
+  "재귀 재-dispatch로 처리"할 대상 자체가 없어지기 때문 — 이 구분이
+  왜 Modifier만 막고 나머지는 다 허용하는지의 핵심 근거.
+- **`Store<T>`의 `T`는 Modifier가 될 수 없음(`base/store-semantics.md`
+  "따름정리" 절)도 이 결정을 그대로 물려받음** — Source가 State를
+  구조적으로 만족하므로 별도로 다시 논증할 필요 없이 동일하게 적용됨.
 
 ### 8. `:Apply(factory)` — 팩토리 함수 체이닝 지원 (2026-08-07)
 

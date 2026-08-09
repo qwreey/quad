@@ -87,10 +87,10 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   즉시모드 GUI 뉘앙스), `List`(중립적이나 메커니즘을 안 알려줌) — 아직
   미정, `research/additional-primitives-plan.md`의 "키 기반 동적 컬렉션
   재조정" 절 참고.
-- **`Bound`(3순위, 사소함, 2026-08-07 일곱 번째 세션 추가)**: Observer/
-  Effect 핸들이 leaf 부착과 `:Subscribe()` 중 이미 어느 한쪽으로
-  바인딩됐는지 표시하는 내부 플래그 이름(`base/bind-system-plan.md`
-  "이중 바인딩 금지" 절) — 동작은 확정, 이름만 가칭.
+- **[해소됨, 2026-08-09 세션]** `Bound` — **`canBound(handle): boolean`
+  탑레벨 함수로 확정**, `canExecute`와 같은 결(raw 필드를 직접 노출하는
+  대신 predicate 함수로 감쌈). `base/bind-system-plan.md` "이중 바인딩
+  금지" 절 참고.
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
   10종 branded 타입 전부로 일반화) — `bind-system-plan.md`의 `Brand`
@@ -138,11 +138,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   일반 반응형 프로퍼티 바인딩(`BackgroundColor3 = store.color`, 애니메이션
   없음)이 결국 이름은 "Tween"인 파일을 거쳐가는 건지, 아니면 별도 범용
   `Handlers/StoreBind.luau`가 있어야 하는 건지 확정 필요 — 우선순위1-1.
-- **`State<Modifier>` 타입 차단(엔지니어링 비용 감수)과 Ref/Slot이 Modifier
-  필드에 들어가는 건 UB 방치 — 같은 문서 안에서 정반대 원칙이 근거 설명
-  없이 나란히 적용됨.** 왜 이 경우만 예외로 방어하는지 명문화 필요, 또는
-  Luau에서 실제 타입 차단이 가능한지부터 확인(안 되면 그냥 UB로 격하) —
-  문서모순 절 + 우선순위2-2.
+- **[해소됨, 2026-08-09 세션]** `State<Modifier>`와 Ref/Slot이 Modifier
+  필드에 들어가는 것 — 이제 둘 다 `isX` predicate 기반 명시적 `error`로
+  통일(`base/modifier-plan.md` 4번/7번 절, `base/store-semantics.md`
+  "따름정리" 절). Luau 타입 차단은 "되면 좋은 보너스"로 격하되어 더
+  이상 필수 검증 항목 아님 — 문서모순 절 + 우선순위2-2도 갱신 완료.
 - ~~`props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴
   nil-hole 함정에 그대로 노출됨~~ — **반영 완료(2026-08-07 열 번째
   세션)**. `props.Modifier or None`/`props.Ref or None` 관용구를 필수로

@@ -285,16 +285,19 @@ mutation에 정식 신호를 붙여주는 것뿐.
 
 **따름정리 — `Store<T>`의 `T`는 Modifier가 될 수 없음.** Modifier는
 정적 flatten으로 dispatch와 완전히 별개인 단계에서 처리되고
-(`base/modifier-plan.md`), `State<Modifier>`가 UB로 확정된 것도 같은
-이유(`modifier-plan.md` 7번) — Store/State/dispatch 경로엔 애초에
-Modifier용 processor가 없음. **[2026-08-06 후속 세션 추가]** Source가
-State를 구조적으로 만족하게 되면서 이 UB는 `Source<Modifier>`(Store를
+(`base/modifier-plan.md`) — Store/State/dispatch 경로엔 애초에
+Modifier용 processor가 없음. **[정정, 2026-08-09 세션]** `State<Modifier>`
+조합은 "UB, 가능하면 타입 차단"이 아니라 **명시적 `error`로 확정**
+(`modifier-plan.md` 7번) — `isModifier` predicate를 `Source:Set()`/
+Store 생성 시 eager `Source(default)`/State의 `:Compute` 결과 캐싱
+지점에서 확인해 런타임에 직접 막음, 타입 차단은 되면 좋은 보너스일
+뿐 유일한 방어선이 아님. **[2026-08-06 후속 세션 추가]** Source가
+State를 구조적으로 만족하게 되면서 이 제약은 `Source<Modifier>`(Store를
 거치지 않는 독립 `Source(someModifier)`)에도 동일하게 적용됨을 명시 —
 Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processor
 부재)가 그대로 적용되고, 별도로 다시 논증할 필요 없음. 위 "하드 경계"와
 같은 이유로, `Emit`이 Modifier의 정적 flatten과 충돌할 걱정 자체가
-성립하지 않음(둘이 만날
-지점이 없음).
+성립하지 않음(둘이 만날 지점이 없음).
 
 ## 여러 스토어 값을 묶어 처리하는 것 (dependency array) — 확정
 

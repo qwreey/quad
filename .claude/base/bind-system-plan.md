@@ -697,8 +697,9 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   - Source/Store 값으로 막는 이유: Store 값은 항상 process/retract 재귀
     경로로 도착하는데, 그 경로는 정의상 최초 배열 스캔보다 나중(또는
     아예 스캔 밖)이라 "프로퍼티보다 먼저"를 구조적으로 만족시킬 방법이
-    없음 — `State<Modifier>`를 UB로 보고 타입으로 막기로 한 것과 정확히
-    같은 원칙의 재적용.
+    없음 — `State<Modifier>`를 막기로 한 것(`modifier-plan.md` 7번,
+    2026-08-09 세션부터 `isModifier` 기반 명시적 error)과 정확히 같은
+    원칙의 재적용.
 - **`PreRef`는 배열 안 위치의 영향을 안 받는다 — 호이스팅.** 일반
   `Ref`와 달리, 같은 인스턴스의 배열 파트 안에서 다른
   children/`Ref`보다 뒤에 적었어도 그것들보다 먼저 fire됨(자바스크립트
@@ -989,6 +990,45 @@ stale하다" 수준이 아니라 **영영 갱신이 안 일어날 수 있음**. 
 "Ref로 한 번 얻어서 수동으로 Parent만 하고 끝"처럼 능동적 관측 경로가
 안 남아있으면, 이 최적화는 그냥 조용히 작동을 멈춘다.
 
+**[2026-08-09 세션] 오버엔지니어링 의심 재검토 — 기각, 현재 설계
+유지.** `research/pre-implementation-audit.md` 3-1이 "클로저 업밸류로
+이미 되는 걸 별도 API로 만든 것 아니냐"고 의심했던 것에 대한 사용자
+반박: 클로저 업밸류 대안은 실제로 다음처럼 즉시실행함수(IIFE)로 감싸
+업밸류를 준비해야 함 —
+
+```lua
+local computeFn = (function()
+  local prev
+  return function(self)
+    -- prev를 읽고 새 값을 계산, prev 갱신
+    prev = ...
+    return prev
+  end
+end)()
+someSource:Compute(computeFn)
+```
+
+이 준비 코드 자체가 이미 별도 `previous` 인자 하나보다 무겁고 번거로움
+— "재사용하고 싶으면 그냥 캐시된 값을 바로 넘겨주면 되는" 게 더
+단순하다는 게 사용자 논거. 반대로 `previous`가 없으면 `fn`은 매 호출마다
+새 인스턴스를 만들어야 해서(예: `LocalizationTable.new()`) lazy든
+아니든 재계산이 일어날 때마다 항상 비싼 재생성이 발생 — `previous`가
+막으려는 문제는 실재함. **`pre-implementation-audit.md` 3-1 해소 —
+현재 `fn(self, previous)` 설계 그대로 유지, API 표면을 줄이지 않음.**
+
+**스코핑 명확화(이번 세션에 확인, 새 결정 아님) — `previous`는 `self`
+(입력)가 아니라 "이 `:Compute` 호출 하나가 만들어낸 결과 State 노드"
+자신에 귀속된다.** State가 `:With`/`:Compute` 호출마다 새 노드를
+만든다는 건 이미 확정된 온톨로지(아래 "왜 State 체인을 Modifier처럼
+플래튼하지 않는가" 절)라, `previous`도 그 새 노드의 내부 캐시 슬롯일
+뿐 `self`에 얹히는 게 아님 — 같은 `self`에서 여러 `:Compute`가 갈라지는
+팬아웃(`c1 = w:Compute(g1)`, `c2 = w:Compute(g2)`)이 있어도 `g1`/`g2`
+각자의 `previous`는 각자의 결과 노드에 독립적으로 저장되므로 서로 안
+섞임 — 새로 결정할 것 없이 기존 "노드별 캐시" 원칙의 당연한 귀결.
+(참고: `self.Cache`처럼 `self` — 즉 입력 — 에 캐시를 얹는 모양은 이
+스코핑과 안 맞아 채택하지 않음 — 팬아웃 시 여러 소비자가 같은
+`self.Cache` 슬롯을 공유해 덮어쓰는 충돌이 생기기 때문.)
+
 ### `state:Observer(fn)` — 값을 안 실어주는 구독, children 배열에 직접 놓는 leaf 값
 
 **결정(2026-08-06 후속 세션, 사용자 확정)**: 별도 `ObserverHolder`
@@ -1169,7 +1209,7 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
   체이닝 가능.
 
-### 이중 바인딩 금지 — leaf 부착과 `:Subscribe()`는 상호 배타적, `Bound` 플래그로 즉시 에러 (2026-08-07 일곱 번째 세션)
+### 이중 바인딩 금지 — leaf 부착과 `:Subscribe()`는 상호 배타적, `canBound(handle)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 이름 확정)
 
 **규칙**: 같은 Observer/Effect 핸들 하나는 라이프사이클 바인딩 경로를
 딱 하나만 가질 수 있음 — children 배열에 놓여 leaf에 자동 부착되거나
@@ -1181,29 +1221,44 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
 
 **UB를 조용한 오동작이 아니라 즉시 에러로 만든다** — 판별 비용이 사실상
 0(불리언 필드 하나 확인)이라, 조용히 이상하게 동작하게 두는 것보다
-바로 에러를 던져 버그를 그 자리에서 잡는 게 엔지니어링상 훨씬 쌈:
+바로 에러를 던져 버그를 그 자리에서 잡는 게 엔지니어링상 훨씬 쌈.
+
+**이름 확정 — `canBound(handle): boolean`, `canExecute`와 같은 결의
+탑레벨 함수(2026-08-09 세션, 가칭 `Bound` 필드를 직접 노출하는 대신).**
+`canExecute(inst, value)`가 "지금 살아있어서 실행돼도 되는가"를 묻는
+탑레벨 predicate인 것과 똑같이, "아직 어느 경로로도 안 묶였는가"도
+raw 필드(`self.Bound`)를 직접 보여주지 않고 같은 스타일의 탑레벨
+함수로 감싼다 — Observer/Effect 둘 다 쓰는 범용 predicate라 특정
+프리미티브 하나의 전용 소유물이 아니므로(`store-semantics.md`의
+네이밍 케이싱 기준: "이 이름이 특정 프리미티브 타입 하나의 전용
+소유물인가?"에 아니오라 소문자 탑레벨이 맞음, `architecture.md`
+"코드 스타일 — 네이밍 케이싱" 절과 같은 기준):
 
 ```lua
 -- :Subscribe() 진입부, children 배열 leaf 부착부 — 둘 다 진입 전 동일하게 확인
-if self.Bound then
+if not canBound(self) then
   error("Observer/Effect가 이미 다른 경로로 바인딩됨 — leaf 부착과 :Subscribe()는 동시에 쓸 수 없음")
 end
-self.Bound = true
+-- 통과했으면 여기서 바인딩됨으로 표시(내부 구현 디테일 — 공개 표면은 canBound 하나뿐)
 ```
 
-- **`Bound`는 가칭** — 용어 정리 라운드에서 최종 이름 재검토 대상
-  (`.claude/question.md`에 반영).
-- 이 플래그는 어느 경로가 먼저 왔는지와 무관하게 "이미 바인딩됨"만
-  표시 — 두 진입점이 똑같이 확인/설정하므로 순서와 무관하게 대칭적으로
-  막힘.
+- `canBound(handle)`은 "이 핸들이 아직 어느 경로로도 안 묶였으면
+  `true`, 이미 한 번 묶였으면 `false`"를 답하는 순수 predicate — 내부
+  구현은 여전히 불리언 플래그 하나(예전 가칭 `Bound`)로 충분하지만,
+  공개 표면에서 그 raw 필드를 직접 보여주지 않고 함수로 감싼다는 점만
+  바뀜. 동작 자체(둘 중 한 경로만 허용, 위반 시 그 자리에서 에러)는
+  안 바뀜.
+- 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 바인딩됨"만
+  답함 — 두 진입점이 똑같이 `canBound`를 확인하므로 순서와 무관하게
+  대칭적으로 막힘.
 - **`:Unsubscribe()`는 여전히 "어떤 경로로 바인딩됐든 그 계약을 끊는다"는
-  뜻으로 통일** — `Bound`가 어느 경로로 세워졌는지와 무관하게,
-  `:Unsubscribe()` 한 번으로 그 바인딩(leaf의 Destroying 연결이든 수동
-  강참조 등록이든)을 끝내고 최종 정리를 수행. 위 "`:Unsubscribe()`는
-  자동(리프) 케이스에도 동일하게 씀" 절과 정합 — 이중 바인딩 금지 규칙과
-  별개로, "단일 바인딩을 끊는" `:Unsubscribe()` 자체의 계약은 안 바뀜.
+  뜻으로 통일** — 바인딩이 어느 경로로 세워졌든, `:Unsubscribe()` 한
+  번으로 그 바인딩(leaf의 Destroying 연결이든 수동 강참조 등록이든)을
+  끝내고 최종 정리를 수행. 위 "`:Unsubscribe()`는 자동(리프) 케이스에도
+  동일하게 씀" 절과 정합 — 이중 바인딩 금지 규칙과 별개로, "단일
+  바인딩을 끊는" `:Unsubscribe()` 자체의 계약은 안 바뀜.
 - **Effect도 동일 규칙 적용** — 내부적으로 Observer를 조합하는 경우든
-  `state` 없는 경우든 같은 `Bound` 게이트를 그대로 재사용
+  `state` 없는 경우든 같은 `canBound` 게이트를 그대로 재사용
   (`base/effect-plan.md`). 이전에 그 문서에 적어뒀던 "leaf 부착과
   `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이 규칙으로
   대체(정정)** — 안전하게 지원하는 게 아니라 애초에 막아야 하는
@@ -1760,6 +1815,13 @@ Brand.get(x) == PreRefTag`) — `isState`처럼 집합 멤버십이 아님, 즉
 됨"이 깨짐 — `Ref`/`PreRef`는 State/Source 같은 상하위 관계가 아니라
 서로 배타적인 형제 브랜드. `isModifier`도 같은 단순 항등
 (`Brand.get(x) == ModifierTag`).
+
+**같은 이유로 `isSlot`/`isEffect`도 명시(2026-08-09 세션)** —
+`Brand.get(x) == SlotTag`/`Brand.get(x) == EffectTag`인 단순 항등
+predicate, 태그 자체는 원래부터 목록에 있었지만(`SlotTag`) `isX`
+wrapper로 명시적으로 안 적혀 있던 것을 `base/modifier-plan.md`의
+"핸들러 계층 값이 필드로 들어오면 즉시 error" 절이 필요로 해서 이번에
+같이 적음.
 
 **`None`은 이 레지스트리에 안 들어감 — 싱글턴이라 항등 비교로 충분.**
 `Observer`/`Store`처럼 인스턴스가 여러 개 생기는 타입과 달리 `None`은
