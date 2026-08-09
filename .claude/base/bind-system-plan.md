@@ -582,6 +582,20 @@ quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 n
 `base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 절이 이 메커니즘으로
 해소됨 — 상세는 그 문서 참고.
 
+**동적 자식 추가/제거의 유일한 정당 경로는 `Slot` 또는 `state<Frame>`류
+store-bind — 그 외 방식은 UB로 확정(2026-08-10 세션).** `Length`/`Offset`
+카운팅은 그 위치를 담당하는 Handler(`Dispatch/Slot.luau`, store-bind
+프로퍼티 핸들러)가 `Dispatch.setLength`/`Dispatch.setOffsetSource`를
+호출해줘야만 정합적으로 유지됨 — 이 두 API를 부르지 않고 quad가 관리하는
+부모 Instance에 자식을 끼워 넣는 경로(예: 사용자 코드가 `newInst.Parent =
+parentInst`를 직접 호출해 Slot이 마운트해둔 부모 밑에 자식을 몰래
+추가/제거하는 것)는 `lengthList`/`sourceList`가 그 변화를 전혀 모르게
+만들어 카운트·형제 순서 계산이 조용히 어긋남 — 별도 방어 로직 없는 UB.
+`Slot`이든 `state<Frame>`이든 둘 다 이미 이 두 API를 정확히 호출하는
+유일한 정당 경로로 확정돼 있음(위 `setLength`/`setOffsetSource` 절
+참고) — 새 경로를 만들 필요 없이 "동적 자식은 반드시 이 둘 중 하나를
+거쳐야 한다"는 규칙만 문서화하면 됨.
+
 ## Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가
 
 사용자 원 메모: "스토어 바인드는 특수 경우로 둘지, 아니면 다른 pluggable 바인드를
