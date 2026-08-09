@@ -1,3 +1,0 @@
-# QuadProperty
-
-{!include/quadProperty.md!}

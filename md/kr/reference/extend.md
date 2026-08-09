@@ -1,3 +1,0 @@
-# Extend
-
-{!include/extend.md!}

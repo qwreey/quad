@@ -1,3 +1,0 @@
-# ObjectList
-
-{!include/objectList.md!}

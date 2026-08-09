@@ -1,3 +1,0 @@
-# Bindable
-
-{!include/bindable.md!}

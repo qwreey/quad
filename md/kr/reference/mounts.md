@@ -1,3 +1,0 @@
-# Mounts
-
-{!include/mounts.md!}
