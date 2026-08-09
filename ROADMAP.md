@@ -229,7 +229,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       기각(Slot 부모 자체가 Destroy되는 경로에선 이 훅이 전혀 안 불려서
       절반만 동작, `retract`가 Destroy 시 안 불리는 것과 같은 이유).
       (2026-08-09 세 번째 세션 확정,
-      `base/slot-plan.md` "`Slot:List(...)`" 절) 구현
+      `base/slot-plan.md` "`Slot:List(...)`" 절) 구현.
+      **`data:Observer(fn)` 구독은 `:List()` 호출 시점이 아니라 Slot
+      마운트 시점까지 lazy — `Dispatch.setLength`와 같은 패턴으로
+      `bindLifetime(inst,observer)`(마운트 이후 `:List()`가 불리면
+      `self._mounted` 확인 후 즉시 활성화)** (2026-08-09 일곱 번째 세션,
+      `base/slot-plan.md` "`Slot:List(...)`"의 "구독 시점" 절)
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)

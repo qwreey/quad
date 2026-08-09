@@ -26,6 +26,12 @@ unmount(`Remove`) 둘이 아니라 **reposition(`Move`/`Swap`)까지 셋** —
 계약만 base가 강제**하고, quad-roblox가 이걸 `SetSiblingIndex`로 구현할지
 (`LayoutOrder` 기반 정렬이라) 사실상 no-op으로 둘지는 구현 선택.
 
+**[2026-08-09 일곱 번째 세션 보강]** `Dispatch/Slot.luau`의 mount 훅
+(`process(inst,k,self)`)은 `Dispatch.setLength(inst,i,self.Length)` 호출과
+같은 자리에서 `self._listed`면 `activateList(self,inst)`도 트리거해야 함 —
+`:List`의 `data:Observer(fn)` 구독을 Slot 마운트 시점까지 lazy하게 미루는
+것도 이 mount 훅의 책임(아래 "`Slot:List(...)`"의 "구독 시점" 절 참고).
+
 **추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
 만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
 `Frame { Frame {} }`)를 위한 핸들러도 필요 — `quad-roblox/src/Handlers/
@@ -103,7 +109,10 @@ Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 �
   소진, Ref 콜백 fire 등)이 전부 dispatch-process 시점 기준이라 여기만
   post-effect 기준으로 가면 일관성이 깨짐. 컴포넌트가 Slot을 prop으로
   받아 저장만 하고 실제 트리에 안 놓는 경로는 `process`가 애초에 안
-  불려서 이 정의로도 오탐 없음.
+  불려서 이 정의로도 오탐 없음. **[2026-08-09 일곱 번째 세션 보강]**
+  같은 자리에서 `self._mountedInst = inst`도 같이 저장 — `:List()`가
+  마운트 이후에 호출되는 경우 이 값으로 즉시 활성화(아래 "`Slot:List(...)`"의
+  "구독 시점" 절 참고).
 - **개별 element**: Slot 안에 담기는 각 element(Instance/컴포넌트 결과 등)
   마다 전역 weak-set 멤버십으로 추적 — 특정 Slot 인스턴스에 안 묶임
   ("한 인스턴스가 어디에도 중복 마운트 안 됨"이 라이브러리 전역 불변식이라서).
@@ -422,12 +431,31 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 
 ### 구현
 
+**구독 시점은 `:List()` 호출이 아니라 Slot 마운트 시점 — lazy `bindLifetime`
+(2026-08-09 일곱 번째 세션, 아래 "구독 시점" 절 참고).** `:List()`는 설정만
+저장하고 반환, 실제 `data:Observer(fn)` 구독과 최초 `reconcile`은 Slot
+자신이 마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self)`)에
+`activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
+패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
+
 ```lua
 function Slot:List(data, updateFn, keyFn)
     assert(not self._listed, "Slot already has :List installed")
     self._listed = true
-    keyFn = keyFn or function(_, index) return index end
+    self._listData = data
+    self._updateFn = updateFn
+    self._keyFn = keyFn or function(_, index) return index end
 
+    if self._mounted then
+        activateList(self, self._mountedInst)  -- 이미 마운트돼 있으면 즉시 활성화
+    end
+    return self
+end
+
+-- Dispatch/Slot.luau의 process(inst,k,self)가 마운트 시점에 1회 호출
+-- (self._mounted=true/self._mountedInst=inst를 세팅하는 바로 그 자리)
+function activateList(self, inst)
+    local keyFn, updateFn = self._keyFn, self._updateFn
     local mounted, userdata, keyIndex = {}, {}, {}
 
     local function reconcile(items)
@@ -461,13 +489,16 @@ function Slot:List(data, updateFn, keyFn)
         keyIndex = newKeyIndex
     end
 
+    local data = self._listData
     if isState(data) then
-        data:Observer(function() reconcile(data:Get()) end)
-        -- Observer는 등록 즉시 1회 실행 확정 -> 최초 population도 공짜
+        local observer = data:Observer(function() reconcile(data:Get()) end)
+        -- Observer 등록 자체의 "등록 즉시 1회 실행"은 canExecute/Subscribed
+        -- 게이팅과 무관하게 여기서 이미 무조건 일어남(아래 "구독 시점" 절) —
+        -- bindLifetime은 그 다음에 걸어 *이후* 재실행만 inst 생명주기에 귀속
+        bindLifetime(inst, observer)
     else
         reconcile(data)
     end
-    return self
 end
 ```
 
@@ -491,9 +522,10 @@ end
   못 치워지고 샘 — 직전 사이클에 실제로 존재했던 **전체** key 집합
   (`keyIndex`, 매 사이클 모든 key에 대해 채워짐)을 순회해야 이 케이스를
   놓치지 않음.
-- **`mounted`/`userdata`/`keyIndex`**: 이 Slot 인스턴스의 평범한 로컬
-  필드(클로저 업밸류) — 별도 전역 weak table(`Relate` 등) 불필요, `self`가
-  살아있는 동안만 존재하면 되고 Slot이 죽으면 클로저도 같이 GC됨.
+- **`mounted`/`userdata`/`keyIndex`**: `activateList`(마운트 시점 1회
+  실행)의 로컬 변수(클로저 업밸류) — 별도 전역 weak table(`Relate` 등)
+  불필요, `inst`/`self`가 살아있는 동안만 존재하면 되고 죽으면 클로저도
+  같이 GC됨(아래 "구독 시점" 절).
 - **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawRemove`/`rawMove`뿐** —
   `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
   구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
@@ -503,6 +535,58 @@ end
 - **리오더는 `Move`(의 가드 없는 버전)** — Parent를 안 건드리는 진짜
   저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
   미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.
+
+### 구독 시점 — `:List()` 호출이 아니라 Slot 마운트 시점, lazy `bindLifetime`
+(2026-08-09 일곱 번째 세션)
+
+**문제**: 원래 초안은 `data:Observer(fn)`를 `:List()` 호출 그 자리에서 만들었음
+— 근데 `:List()`는 `Slot():List(data, updateFn)`처럼 Slot이 아직 어디에도
+마운트되기 전에 불리는 게 흔한 사용법이라, 그 시점엔 `inst`를 몰라서
+`bindLifetime`을 걸 수 없었음(사용자가 직접 지적) — 마운트 대상이 나중에
+`Destroy`돼도 이 구독을 멈출 방법이 없는 gap이었음.
+
+**해법 — `Dispatch.setLength`가 이미 쓰고 있는 패턴 그대로 재사용**: 새
+메커니즘 발명 아님. `:List()`는 `data`/`updateFn`/`keyFn`만 저장하고 반환,
+실제 `data:Observer(fn)` 구독 + 최초 `reconcile`은 Slot 컨테이너 자신이
+마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self)` — 위
+"`isMounted` 이중 추적 분리" 절이 이미 `self._mounted`를 세팅하는 바로 그
+지점)에 `activateList(self, inst)`가 수행. `Dispatch.setLength(inst,i,
+self.Length)`를 부르는 것과 같은 자리에서 같이 트리거되면 됨.
+
+**`:List()`가 마운트 이후에 불리는 경우 — `self._mounted`면 즉시 활성화
+(확정)**: 마운트는 1회성 이벤트라, `:List()`가 마운트보다 늦게 호출되면
+그 이벤트를 기다리는 방식으론 영영 활성화가 안 됨 — `:List()`가
+`self._mounted`를 확인해서 이미 참이면 그 자리에서 바로
+`activateList(self, self._mountedInst)`를 호출(마운트 시점에 `inst`를
+`self._mountedInst`로 같이 저장해둠). CRUD와의 상호배타 가드(`self._listed`)와
+같은 자리에서 자연스럽게 처리됨 — 호출 순서에 대한 새 제약을 추가하지 않음.
+
+**canExecute와 "등록 즉시 1회 실행"의 관계 — 초기 실행은 게이팅과 무관하게
+무조건 일어남(사용자 확인)**: `data:Observer(fn)`가 등록되는 순간
+(`bindLifetime` 호출 *이전*) `fn`이 이미 한 번 동기 실행됨(Observer 자체의
+"등록 즉시 1회 실행" 계약) — 이 시점엔 아직 `bindLifetime`이 `Subscribed`를
+세팅 전이라 `canExecute`를 물으면 거짓이겠지만, 애초에 최초 실행은
+`canExecute`로 게이팅되는 대상이 아니라서 상관없음. `bindLifetime`은 그
+직후에 걸려서 **이후의** 재실행(`data`가 다시 바뀔 때)만 게이팅 —
+`Dispatch.setLength`의 `bindLifetime(inst,observer)` 다음 줄에 있는
+"등록 즉시 1회와 겹쳐도 무해"라는 주석과 정확히 같은 구조.
+
+**Destroy 이후 — "재실행 막기"와 "관측 자체를 관두기"가 새 메커니즘 없이
+한 번에 해결됨**: `inst`가 Destroy되면 `bindLifetime`의 `gcconn`(Roblox가
+Destroy 시 자동으로 끊는 Connection)이 죽어 `canExecute`가 거짓이 되고
+future 재실행이 no-op됨(위 "`state:Observer(fn)`" 절 원칙 재사용) — 그리고
+"이전 state를 계속 관측하는 것도 관둬야 한다"는 요구도, `gchold`가
+`Relate(inst)`(weak-keyed) 아래 있어서 `inst`가 죽으면 그 안에 강참조로
+붙잡혀 있던 Observer/클로저(`mounted`/`userdata`/`keyIndex`를 포함해)가
+전부 같이 GC 대상이 되는 것으로 공짜로 해결 — 명시적으로 구독을 끊는
+새 코드가 필요 없음, `base/lifecycle-pattern.md`의 "정리는 기본적으로
+GC에 위임" 원칙 그대로.
+
+**부수 관찰(설계 아님, 메모만)**: `bindLifetime`이 `Relate(inst)` 기반이라,
+"이 `inst`에 지금 어떤 Slot/Observer가 붙어있는가"를 나중에 weak하게
+역조회하는 것도 같은 저장소로 가능해 보임(quad-debug의 "무엇이 무엇에
+연결됐는가" 그래프와 맞닿을 수 있음) — 지금 설계할 필요는 없음, 필요성이
+확인되면 그때.
 
 ### 왜 자유 함수/새 타입이 아닌가
 
