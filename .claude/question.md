@@ -161,10 +161,17 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   필요로 함(로드맵 순서 역전)~~ — 반영 완료(2026-08-07 세 번째 세션)**:
   `LifetimeHandle`/`Relate` 인터페이스(타입만)를 `ROADMAP.md`
   M2로 옮기고, quad-roblox 실 구현만 M8에 남김 — 우선순위1-9 해소.
-- 그 외(Slot CRUD 의미론 미정의, retract 시 "이전 핸들러" 추적 책임 소재,
-  우선순위 스캔 동률/매치실패 처리, `:Compute`의 `previous` 인자가
-  오버엔지니어링일 수 있음, UI shorthand의 기존 UICorner 매칭 기준 등)는
-  `pre-implementation-audit.md` 본문 참고.
+- **[해소됨]** retract 시 "이전 핸들러" 추적 책임 소재 — Dispatch 체인
+  (`chains`)+`Dispatch.retractUnder`로 2026-08-08 세 번째 세션에 이미
+  해소(`pre-implementation-audit.md` 1-2, `bind-system-plan.md` "Dispatch
+  체인" 절). **[해소됨, 2026-08-09 세션]** `:Compute`의 `previous` 인자
+  오버엔지니어링 의심도 기각(`bind-system-plan.md` "previous" 절,
+  `pre-implementation-audit.md` 3-1). **[해소됨]** UI shorthand의 기존
+  UICorner 매칭 기준도 `base/ui-shorthand-plan.md`에 이미 확정 반영돼
+  있던 것을 이번에 `pre-implementation-audit.md` 2-11에도 해소 표시로
+  동기화. **아직 실제로 열려있는 건 두 개뿐** — Slot CRUD 의미론
+  (`add`/`remove`/`clear`) 미정의(1-7), 우선순위 스캔 동률/매치실패
+  처리(1-3) — `pre-implementation-audit.md` 본문 참고.
 - **[해소됨, 2026-08-08 두 번째 세션]** `Frame { ref }`/`Frame { observer }`처럼
   children 배열 숫자 슬롯에 직접 놓는 leaf 값을 매칭·바인드하는 Handler
   (`(i:number, v=Ref/Observer/PreRef)`)의 패키지 배치 — 원래 제안대로
