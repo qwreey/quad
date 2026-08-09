@@ -666,6 +666,14 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 마운트된 것"만 반영 — 수동 Visible 토글을 쓰면 `Length`가 그걸 못 잡는
 게 맞고, 그건 사용자가 별도 State로 계산해야 하는 몫.
 
+**동적 자식은 반드시 `Slot` 또는 `state<Frame>`류 store-bind를 통해서만
+추가/제거 — 그 외 경로는 UB(2026-08-10 세션, `base/bind-system-plan.md`의
+"Length/Offset" 절 반영).** 둘 다 `Dispatch.setLength`/`setOffsetSource`를
+정확히 호출하는 유일한 정당 경로라, 이걸 우회해서(예: 외부 코드가 Slot이
+마운트해둔 부모 Instance에 직접 `.Parent = parentInst`로 자식을 끼워
+넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
+조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김.
+
 ## 백로그 — `Slot():Single(state, updateFn?)` (2026-08-09 여섯 번째 세션, 미착수)
 
 `:List`의 key-map(`mounted`/`userdata`/`keyIndex`) 없이 "0개 아니면 1개"만
