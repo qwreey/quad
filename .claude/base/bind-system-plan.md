@@ -407,6 +407,142 @@ end
   그래프도 이 `chains` 구조를 그대로 읽으면 됨 — quad-debug 착수 시점에
   새로 설계할 필요 없음.
 
+### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
+
+**문제(`base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 열린 질문,
+2026-08-04 신설)**: `Frame { Slot1, Element, Slot2 }`처럼 Slot과 정적
+자식이 형제로 섞일 때, Slot1의 동적 개수가 바뀌어도 "Slot1 전체는 항상
+Element보다 앞, Slot2보다 앞"이라는 저작 순서가 유지돼야 함. Slot2가
+자기 순서를 정하려고 "Slot1이 지금 몇 개인지"를 직접 세는 방식은
+Slot1이 바뀔 때마다 Slot2에 다시 알려줘야 하는 캐스케이드 의존을
+만들어서 막다른 길.
+
+**해법의 핵심 전환**: 절대 위치를 계산해서 전파하는 게 아니라, **각
+구조적 위치(자리 자체는 저작 시점에 고정)가 자기 앞의 형제들이 지금까지
+기여한 개수의 누적합만 알면 됨** — Roblox는 `LayoutOrder`/`ZIndex`가
+`Instance.Parent` 배열의 물리적 순서와 완전히 분리된 정수 프로퍼티라,
+이 누적합을 그 프로퍼티에 반응형으로 바인딩하기만 하면 별도 배선이
+필요 없음(이미 있는 store-bind 재실행 패턴 재사용).
+
+**`Dispatch`의 두 API — 둘 다 Handler→Dispatch 등록(push) 방향**:
+
+```lua
+Dispatch.setLength(inst, i, len: number | State<number>)
+Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
+```
+
+- **`setLength`**: 이 위치(array part의 number 인덱스 `i`)가 지금 몇 개의
+  실제 마운트 가능한 leaf를 기여하는지 보고. 정적 단일 자식은 상수
+  `1`(또는 `nil`/`None`이면 `0`), Slot은 자기 `.Length`(`State<number>`,
+  아래 참고), `state<Frame>`처럼 store-bind로 오가는 단일 위치는 그
+  store-bind 핸들러가 값이 바뀔 때마다 다시 호출.
+- **`setOffsetSource`**: 이 위치가 자기 순서 계산에 쓸 `Source<number>`를
+  **스스로 만들어서** 등록 — Dispatch는 그냥 레지스트리에 넣어두기만
+  하고, `recompute`가 그 자리에 값을 `:Set()`함. Handler는 이 **같은**
+  Source 객체를 자기 원소(들)의 `LayoutOrder` 바인딩에 그대로 씀
+  (`localIndex:With(offset):Compute(function(i,o) return i+o end)`을
+  `LayoutOrder`에 store-bind로 걸어두면, offset이 바뀔 때 기존 store-bind
+  재실행 메커니즘이 알아서 다시 씀 — 새 push/observer 시스템 불필요).
+  **실제 마운트를 하지 않는 위치(Ref/PreRef 등)는 `None`을 등록** — 순서
+  계산에 참여할 게 없다는 명시적 선언.
+
+**둘 다 array part의 모든 number 인덱스에 대해 반드시 호출 — 생략은 UB
+(2026-08-09 여섯 번째 세션 확정).** `retract` 필드 생략 불가와 같은 톤 —
+이건 **Handler 구현체 작성자만 지키는 계약**이고 일반 컴포넌트 작성자는
+이 존재 자체를 몰라도 됨(사용성 저하 없음), API 문서화만 명확히 하면 됨.
+
+**저장 위치**: `lengthList`/`sourceList`(부모 `inst` 하나에 귀속, 그
+`inst`의 array part 크기 `N`만큼) — `Relate(parentInst)`에 lazy 생성.
+
+**recompute — 매번 전체 순회, `Get` 가드로 캐스케이드만 방지**:
+
+```lua
+local function recompute(inst, bk)
+    local sum = 0
+    for i = 1, bk.N do
+        local v = bk.lengthList[i]
+        sum += (isState(v) and v:Get() or v)
+        local offset = bk.sourceList[i]
+        if offset and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
+            offset:Set(sum)
+        end
+    end
+end
+```
+
+전체 순회의 O(N) 비용은 무시 가능(`N`은 저작 시점에 고정된 배열 리터럴
+길이, 보통 작음) — 진짜 비싼 건 `Set`이 트리거하는 다운스트림 리액티브
+캐스케이드(그 위치에 이미 마운트된 원소들의 `LayoutOrder` 재적용)라,
+`Get() ~= sum`일 때만 `Set`해서 안 바뀐 앞쪽 위치들은 캐스케이드가 안
+일어나게 막음.
+
+**`setLength` 구현 — leaf-lifetime 경로(`bindLifetime`/`unbindLifetime`),
+`:Subscribe()` 아님(2026-08-09 여섯 번째 세션)**:
+
+```lua
+function Dispatch.setLength(inst, i, len)
+    local bk = getBookkeeping(inst)   -- Relate(inst) 기반, lazy 생성
+
+    local oldObserver = bk.observers[i]
+    if oldObserver then
+        unbindLifetime(inst, oldObserver)   -- gchold 내부 구조 몰라도 됨
+        bk.observers[i] = nil
+    end
+
+    bk.lengthList[i] = len
+
+    if isState(len) then
+        local observer = len:Observer(function()
+            recompute(inst, bk)
+        end)
+        bindLifetime(inst, observer)   -- inst 생명주기에 귀속, Subscribe 아님
+        bk.observers[i] = observer
+    end
+
+    recompute(inst, bk)   -- 등록 즉시 1회(Observer 자체의 "등록 즉시 1회 실행"과 겹쳐도 무해)
+end
+```
+
+`:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
+본질적으로 `inst` 하나에 종속된 내부 배관이라, `inst`가 Destroy될 때
+같이 죽어야 함 — `:Subscribe()`는 명시적 `:Unsubscribe()`가 없으면 안
+끊기므로 안 맞음. `bindLifetime`/`unbindLifetime`이 이미 이 요구(GC-native,
+`inst` 생명주기에 자동 귀속)를 충족.
+
+**동기 순서 — offset 갱신이 마운트보다 먼저 끝나야 함(안 그러면 Roblox의
+실시간 `UIListLayout` reflow에서 한 프레임 순서가 깨진 채 노출될 위험)**:
+Slot의 `rawAdd`는 `self.Length:Set(newCount)`(→ 다운스트림 offset/LayoutOrder
+갱신이 동기적으로 여기서 끝남) 다음에 `element.Parent = target`(→ 이제
+트리에 보이는 시점엔 다운스트림이 이미 정합적) 순서로 호출. `Length:Set`
+자체도 이전 카운트와 실제로 다를 때만 호출(no-op 캐스케이드 방지, 위
+`Get` 가드와 같은 원칙을 호출부에서도 적용).
+
+**`:List` reconcile에서 `Length` 갱신 시점**: 한 사이클(여러 항목이
+한꺼번에 추가/제거되는 경우 포함) 전체가 끝난 뒤 **한 번만** — 사이클
+도중 항목마다 갱신하면 캐스케이드가 그만큼 반복됨.
+
+**웹 백엔드(quad-web, 아직 없음) — 같은 `lengthList`/`sourceList`/
+`recompute`를 그대로 재사용, 다른 건 "offset 변경 시 무엇을 하는가"뿐**:
+DOM의 `insertBefore`류는 물리적으로 삽입하면 뒤 형제가 자연히 밀려나므로,
+`offset`이 바뀌었다고 이미 마운트된 원소를 실제로 옮길 필요가 없음 —
+quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 no-op이고,
+`offset` 숫자는 그 위치가 **다음에** 스스로 insert/remove할 때 어느
+물리 인덱스에서 해야 하는지를 위해서만 부기됨. base 레벨 로직은 완전히
+동일, backend Handler의 "무엇을 하는가"만 다름.
+
+**`Slot.Length`와 `Slot.Offset`은 별개(사용자 질문으로 명시화)**:
+`Length`는 Slot이 스스로 노출하는 순수 출력값(지금 실제로 마운트된
+개수) — "n개 검색됨" 같은 UI에 그대로 써도 되고, 동시에 위 `setLength`가
+읽는 바로 그 값(하나의 State가 두 용도를 겸함). `:List`가 filter 탈락을
+실제 `Remove`로 처리하도록 이미 확정해둔 덕에(Visible 토글 아님) `Length`는
+자동으로 "실제 마운트된 것"만 반영 — 수동 Visible 토글을 쓰는 경우엔
+`Length`가 그걸 못 잡는 게 맞고, 그건 별도 State로 계산해야 하는 사용자
+몫. `Offset`은 Dispatch가 `setOffsetSource`로 등록받아 `recompute`가
+채워주는 입력값, 순서 계산 전용 — 서로 다른 두 `Source<number>`.
+
+`base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 절이 이 메커니즘으로
+해소됨 — 상세는 그 문서 참고.
+
 ## Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가
 
 사용자 원 메모: "스토어 바인드는 특수 경우로 둘지, 아니면 다른 pluggable 바인드를
@@ -432,25 +568,34 @@ local observer = state:Observer(function()
     Dispatch.retractUnder(inst, k, StoreBind, state:Get())  -- 나 밑에 있던 거 정리
     Dispatch.process(inst, k, state:Get())                          -- 새로 위임(체인에 push)
 end)
-observer:Subscribe()
-relate:SetStrong(inst, k, observer)  -- retract에서 :Unsubscribe() 하려면 들고 있어야 함
+bindLifetime(inst, observer)
+relate:SetStrong(inst, k, observer)  -- retract에서 unbindLifetime을 부르려면 들고 있어야 함
 ```
 
-- children-array leaf 부착(`Frame { observer }`)이 **아니라** `:Subscribe()`/
-  `:Unsubscribe()` 경로를 씀 — 이 Observer는 핸들러 내부 배관이라 사용자가
-  보는 leaf가 아니기 때문(위 "이중 바인딩 금지" 원칙과 정합적: 한 Observer
-  핸들은 두 바인딩 경로 중 하나만 써야 하는데, 이건 애초에 leaf가 아니므로
-  `:Subscribe()`가 유일한 선택).
-- **`retract`가 할 일은 `observer:Unsubscribe()` 호출뿐 — 위임 대상까지
-  수동으로 안 쫓아가도 됨.** `Dispatch.retractUnder`가 자기 밑에 위임된
-  걸 알아서 정리해주므로(위 "Dispatch 체인" 절), 이 핸들러의 `retract`는
-  정확히 자기 자신의 자원(Observer)만 정리하면 끝 — 이게 위 "이벤트도
-  store-bind 가능" 절에서 이미 "엔지니어링 비용이 낮다"고 서술한 것과 같은
-  이유(새 디스패치 메커니즘 없이 기존 계약만 구현).
+**[정정, 2026-08-09 여섯 번째 세션] `:Subscribe()`/`:Unsubscribe()`가
+아니라 `bindLifetime`/`unbindLifetime`을 씀 — 원래 이 절이 "leaf가
+아니니 `:Subscribe()`가 유일한 선택"이라고 적어뒀던 게 틀림.** `:Subscribe()`/
+`:Unsubscribe()`는 **`inst`와 아예 무관한 전역/독립** Observer(모듈
+최상위에 두는 디버그 print용 등)를 위한 전역 GC 방지 테이블 전용 —
+"leaf가 아니면 `:Subscribe()`"가 아니라 "**`inst`에 안 묶이면**
+`:Subscribe()`, `inst`에 묶이면(leaf든 이런 핸들러 내부 배관이든)
+`bindLifetime`"이 실제 기준. 이 Observer는 처음부터 `inst`(그리고 그
+자식 프로퍼티 `k`)에 묶여있는 존재라 `bindLifetime`이 맞음 — 위 "이중
+바인딩 금지" 절의 정정 참고(leaf 부착도 사실 `bindLifetime` 호출이라,
+`:Subscribe()`와 상호 배타적인 건 leaf가 아니라 "전역이냐 inst냐"임).
+
+- **`retract`가 할 일은 `unbindLifetime(inst, observer)` 호출뿐 — 위임
+  대상까지 수동으로 안 쫓아가도 됨.** `Dispatch.retractUnder`가 자기
+  밑에 위임된 걸 알아서 정리해주므로(위 "Dispatch 체인" 절), 이
+  핸들러의 `retract`는 정확히 자기 자신의 자원(Observer)만 정리하면
+  끝 — 이게 위 "이벤트도 store-bind 가능" 절에서 이미 "엔지니어링
+  비용이 낮다"고 서술한 것과 같은 이유(새 디스패치 메커니즘 없이 기존
+  계약만 구현).
 - **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — Observer가
   이미 자기 `Subscribed` 상태로 게이팅됨(아래 `base/lifecycle-pattern.md`의
   `canExecute(inst, value)` 절 참고, Observer/Effect는 그 함수 안에서
-  특별 취급됨).
+  특별 취급됨). `bindLifetime`도 이 `.Subscribed` 필드를 그대로
+  세팅/해제하므로(위 "이중 바인딩 금지" 절 참고) 이 게이팅은 그대로 유효.
 - Observer가 "등록 즉시 1회 실행"이므로 **최초 적용과 이후 재실행이 같은
   코드 경로로 자동 통일**됨 — 프로퍼티 store-bind 핸들러가 "설치 시 1회
   적용"을 별도로 안 짜도 되는 이유(위 Observer 절의 원래 근거 그대로).
@@ -1163,7 +1308,10 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
 안에서 Store에 직접 Observer를 걸어 `print`하는 패턴(원하면 BooleanValue
 로 부분부분 켰다 껐다 하기도 함). 이건 다크패턴이 아니라 오히려 방어적인
 엔지니어링이고, 붙일 leaf 자체가 없는 "전역/독립" 사용이라 위 weak-table
-기반 자동 추적이 적용 안 됨.
+기반 자동 추적이 적용 안 됨. **[용어 정정, 2026-08-09 여섯 번째 세션]**
+여기서 "weak-table 기반 자동 추적"이라 부른 것이 나중에 정식으로
+`bindLifetime`(`base/lifecycle-pattern.md`)으로 명명됨 — 별도 메커니즘
+두 개가 아니라 같은 것의 명명 전/후 표현.
 
 **해결**: 명시적 `:Subscribe()`/`:Unsubscribe()`를 추가로 지원. 이건 새
 설계가 아니라 `bind-system-plan.md`의 PA님 코드 교차검증(라이프사이클
@@ -1194,9 +1342,13 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
 - **`:Subscribe()`/`:Unsubscribe()` 둘 다 idempotent** — 이미 구독 중인데
   또 Subscribe해도, 구독 안 했는데 Unsubscribe해도 에러 안 나고 그냥
   no-op. 토글 로직 짤 때 상태 추적 부담을 줄여줌.
-- **`:Unsubscribe()`는 자동(리프) 케이스에도 동일하게 씀** — Instance가
-  파괴되기 전에 수동으로 조기 해제하고 싶을 때도 같은 메소드 하나로
-  충분, 별도 API 안 만듦.
+- **[정정, 2026-08-09 여섯 번째 세션] "`:Unsubscribe()`는 자동(리프)
+  케이스에도 동일하게 씀"은 틀림 — 리프/`bindLifetime` 경로의 조기
+  해제는 `unbindLifetime(inst, value)`가 담당, `:Unsubscribe()`는
+  전역 강참조 레지스트리 경로 전용으로 남음.** `inst`를 모르는
+  `:Unsubscribe()`가 `bindLifetime`이 어느 `inst`에 등록했는지 찾아낼
+  방법이 없어서(레지스트리가 `inst`별로 나뉘어 있음) 하나로 통합할 수
+  없음 — 위 "이중 바인딩 금지" 절의 정정 참고.
 - **`state:Observer(fn):Subscribe()`처럼 참조를 아무 데도 안 담아도 정상**
   — 강참조 레지스트리 자체가 생존을 보장하는 유일한 근거라, 로컬 변수에
   담아둘 필요가 없음. 예외 없이 그냥 계속 돎(그게 이 메커니즘의 핵심
@@ -1210,15 +1362,33 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
   체이닝 가능.
 
-### 이중 바인딩 금지 — leaf 부착과 `:Subscribe()`는 상호 배타적, `canBound(handle)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 이름 확정)
+### 이중 바인딩 금지 — 진짜 독립된 경로는 `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped) 둘뿐, `canBound(handle)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 이름 확정, 같은 날 여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정)
 
 **규칙**: 같은 Observer/Effect 핸들 하나는 라이프사이클 바인딩 경로를
-딱 하나만 가질 수 있음 — children 배열에 놓여 leaf에 자동 부착되거나
-(위 weak table 경로) `:Subscribe()`로 수동 등록되거나(위 강참조
-레지스트리 경로), 둘 중 하나만. **둘 다 동시에 걸리는 건 UB로 확정** —
-이미 leaf에 부착된 핸들을 다시 `:Subscribe()`하는 것도, 이미
-`:Subscribe()`한 핸들을 children 배열에 놓아 leaf로도 부착시키는 것도
-둘 다 금지.
+딱 하나만 가질 수 있음 — `:Subscribe()`로 전역 강참조 레지스트리에
+등록되거나(위 절), `bindLifetime(inst, value)`로 특정 `inst`에 종속되거나
+(아래 "`bindLifetime`도 같은 게이트를 공유" 절) — **이 둘 중 하나만**.
+
+**[정정, 2026-08-09 여섯 번째 세션] "leaf 부착"은 세 번째 독립 경로가
+아니라 `bindLifetime`을 호출하는 것 그 자체다.** `Frame { observer }`처럼
+children 배열에 Observer를 직접 놓으면, `Dispatch/Leaf.luau`가 이걸
+매치해 내부적으로 `bindLifetime(inst, observer)`를 호출 — "children
+배열에 놓여 leaf에 자동 부착"과 "`bindLifetime`으로 특정 `inst`에
+종속"은 **같은 동작**이라 서로 배타적일 수 없음(둘 다 하는 게 아니라
+leaf 부착이 곧 `bindLifetime` 호출 방식 중 하나일 뿐). 그래서 실제
+상호 배타는 "전역 소유(`:Subscribe()`)" vs "특정 `inst` 소유
+(`bindLifetime`, 직접 호출이든 leaf 부착을 통한 호출이든)"라는
+**2-way**로 정정 — 위 "Observer의 `:Subscribe()`/`:Unsubscribe()`" 절이
+leaf 부착을 "weak table 기반 자동 추적"이라 불렀던 건 `bindLifetime`이
+정식 이름을 얻기 전(2026-08-06 후속 세션) 표현이라 지금은 같은 것을
+가리킴 — 별도 메커니즘 두 개가 있던 게 아니었음.
+
+**둘 이상 동시에 걸리는 건 UB로 확정** — 이미 한 경로로 바인딩된 핸들을
+다른 경로로 또 바인딩하는 건 금지(leaf로 이미 부착된 걸 `:Subscribe()`
+하는 것, 또는 그 반대). 같은 값을 `bindLifetime`으로 두 번(leaf 부착
+한 번 + 직접 호출 한 번, 또는 leaf로 두 Instance에 부착) 등록하려는
+것도 걸림 — 이건 "leaf vs bindLifetime 충돌"이 아니라 "같은 단일
+메커니즘을 중복 호출"하는 것이라 자연히 같은 게이트가 잡아줌.
 
 **UB를 조용한 오동작이 아니라 즉시 에러로 만든다** — 판별 비용이 사실상
 0(불리언 필드 하나 확인)이라, 조용히 이상하게 동작하게 두는 것보다
@@ -1236,9 +1406,10 @@ raw 필드(`self.Bound`)를 직접 보여주지 않고 같은 스타일의 탑�
 "코드 스타일 — 네이밍 케이싱" 절과 같은 기준):
 
 ```lua
--- :Subscribe() 진입부, children 배열 leaf 부착부 — 둘 다 진입 전 동일하게 확인
+-- :Subscribe() 진입부, bindLifetime 진입부(leaf 부착도 내부적으로 이걸 거침)
+-- — 둘 다 진입 전 동일하게 확인
 if not canBound(self) then
-  error("Observer/Effect가 이미 다른 경로로 바인딩됨 — leaf 부착과 :Subscribe()는 동시에 쓸 수 없음")
+  error("Observer/Effect가 이미 다른 경로로 바인딩됨 — :Subscribe()와 bindLifetime(leaf 부착 포함)은 동시에 쓸 수 없음")
 end
 -- 통과했으면 여기서 바인딩됨으로 표시(내부 구현 디테일 — 공개 표면은 canBound 하나뿐)
 ```
@@ -1248,26 +1419,80 @@ end
   구현은 여전히 불리언 플래그 하나(예전 가칭 `Bound`)로 충분하지만,
   공개 표면에서 그 raw 필드를 직접 보여주지 않고 함수로 감싼다는 점만
   바뀜. 동작 자체(둘 중 한 경로만 허용, 위반 시 그 자리에서 에러)는
-  안 바뀜.
+  안 바뀜. **이 내부 플래그는 새 필드가 아니라 `canExecute`가 이미 보는
+  `.Subscribed` 필드 그 자체(2026-08-09 여섯 번째 세션 명시)** —
+  `:Subscribe()`뿐 아니라 `bindLifetime`도(Observer/Effect 값에 한해)
+  이 필드를 `true`로 세팅, `:Unsubscribe()`/`unbindLifetime` 둘 다
+  `false`로 되돌림 — 그래야 `bindLifetime`으로 등록된 Observer도
+  `canExecute`가 정상적으로 "살아있음"으로 인식함(필드를 둘로 나누면
+  `bindLifetime`으로만 등록된 Observer가 `canExecute`에서 항상
+  `false`로 오판됨).
 - 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 바인딩됨"만
   답함 — 두 진입점이 똑같이 `canBound`를 확인하므로 순서와 무관하게
   대칭적으로 막힘.
-- **`:Unsubscribe()`는 여전히 "어떤 경로로 바인딩됐든 그 계약을 끊는다"는
-  뜻으로 통일** — 바인딩이 어느 경로로 세워졌든, `:Unsubscribe()` 한
-  번으로 그 바인딩(leaf의 Destroying 연결이든 수동 강참조 등록이든)을
-  끝내고 최종 정리를 수행. 위 "`:Unsubscribe()`는 자동(리프) 케이스에도
-  동일하게 씀" 절과 정합 — 이중 바인딩 금지 규칙과 별개로, "단일
-  바인딩을 끊는" `:Unsubscribe()` 자체의 계약은 안 바뀜.
-- **Effect도 동일 규칙 적용** — 내부적으로 Observer를 조합하는 경우든
-  `state` 없는 경우든 같은 `canBound` 게이트를 그대로 재사용
-  (`base/effect-plan.md`). 이전에 그 문서에 적어뒀던 "leaf 부착과
-  `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이 규칙으로
-  대체(정정)** — 안전하게 지원하는 게 아니라 애초에 막아야 하는
-  조합이었음.
+- **`:Unsubscribe()`는 `:Subscribe()` 경로의 해제만 담당, `bindLifetime`
+  (leaf 부착 포함) 경로는 `unbindLifetime(inst, value)`로 해제** —
+  둘은 서로 다른 함수로 남음(호출자가 `bindLifetime`을 부른 쪽이
+  `unbindLifetime`도 대칭적으로 부르는 책임을 짐 — `inst`를 모르는
+  `:Unsubscribe()`가 대신 처리할 수 없는 정보라서). leaf 부착으로
+  세워진 바인딩의 실제 해제도(예: Instance 파괴 전 조기 해제하고 싶을
+  때) 결국 `unbindLifetime`이 담당 — 위 "`:Unsubscribe()`는 자동(리프)
+  케이스에도 동일하게 씀" 절의 서술은 leaf 부착이 별도 메커니즘이라고
+  전제했던 것이라 **이 정정으로 대체**(`:Unsubscribe()`가 아니라
+  `unbindLifetime`이 leaf 해제의 실제 통로).
+- **Effect도 동일 규칙 적용(사용자 확인)** — Effect가 `state` 인자로
+  내부적으로 Observer를 조합하는 경우든, `state` 없는 경우든 같은
+  `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
+  자신이 아니라 내부 Observer가 게이트를 갖고 있어서, Effect 구현이
+  이 정정을 몰라도 자동으로 커버됨. 이전에 그 문서에 적어뒀던 "leaf
+  부착과 `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이
+  규칙으로 대체(정정)** — 안전하게 지원하는 게 아니라 애초에 막아야
+  하는 조합이었음.
 - **문서화 경고 대상(api/심화)**: "한 Effect/Observer 핸들을 children
-  배열에 놓았다면 그걸 다시 `:Subscribe()`하지 말 것, 반대도 마찬가지 —
-  두 경로를 동시에 쓰고 싶으면 각각 독립된 새 `Effect(...)`/
-  `state:Observer(...)` 호출로 따로 만들 것"을 명시할 것.
+  배열에 놓았다면(=`bindLifetime`으로 등록된 것) 그걸 다시
+  `:Subscribe()`하거나 다른 Instance에 또 leaf로 놓지 말 것, 반대도
+  마찬가지 — 여러 경로를 동시에 쓰고 싶으면 각각 독립된 새
+  `Effect(...)`/`state:Observer(...)` 호출로 따로 만들 것"을 명시할 것.
+
+### `bindLifetime`이 이 게이트의 두 번째(이자 leaf 부착이 실제로 쓰는) 진입점이다 (2026-08-09 여섯 번째 세션)
+
+`Dispatch.setLength`처럼 특정 `inst`에 종속된 내부 Observer를 등록할 때
+쓰는 `bindLifetime(inst, value)`(`base/lifecycle-pattern.md`)도 **같은
+`canBound` 게이트를 확인** — Observer/Effect 값을 `bindLifetime`할 때도
+진입 전 `canBound(value)`를 확인하고, 통과하면 바인딩됨으로 표시.
+**children 배열 leaf 부착도 바로 이 `bindLifetime` 호출** —
+`Dispatch/Leaf.luau`가 `(i:number, v=Observer/Effect)`를 매치하면
+그 자리에서 `bindLifetime(inst, v)`를 호출하는 것뿐, 별도 "leaf 전용"
+바인딩 로직이 따로 있는 게 아님. 그래서 **실제 상호 배타는 `:Subscribe()`
+(전역 강참조 레지스트리)와 `bindLifetime`(inst별 gchold, 직접 호출이든
+leaf 부착을 통한 간접 호출이든) 둘뿐** — 새 규칙을 따로 만들 이유가
+없음, 기존 게이트에 진입점 하나(`bindLifetime`, leaf 부착이 그 특수
+사례)만 추가.
+
+```lua
+function bindLifetime(inst, value)
+    local isOE = isObserver(value) or isEffect(value)
+    if isOE and not canBound(value) then
+        error("Observer/Effect가 이미 다른 경로로 바인딩됨")
+    end
+    ... -- gchold 등록(base/lifecycle-pattern.md)
+    if isOE then value.Subscribed = true end   -- canExecute가 보는 필드 그대로 재사용
+end
+
+function unbindLifetime(inst, value)
+    ... -- gchold 해제
+    if isObserver(value) or isEffect(value) then value.Subscribed = false end
+end
+```
+
+- **비-Observer/Effect 값(예: Tween 내부에 쓰는 평범한 클로저)은 이 게이트
+  자체가 안 적용됨** — `canBound`는 `.Subscribed`류 필드가 있는 Observer/
+  Effect 전용 predicate라, 그 외 값은 `bindLifetime`이 그냥 통과시킴(leaf/
+  `:Subscribe()` 경로 자체가 성립 안 하는 값들이라 충돌 대상이 없음).
+- Observer/Effect가 `bindLifetime`으로 바인딩된 뒤엔 `canBound`가
+  `false`를 반환하므로, 그 뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면
+  기존 두 진입점의 기존 체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가
+  없이 이미 성립.
 
 **quad의 Unix 파이프 영감(원래 동기)과 `Pipe`/`fromState` 후보 검토 경위는
 `archive/quad2-try-research-findings-rejected.md`로 이전됨** — 최종 결론만

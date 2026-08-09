@@ -139,20 +139,20 @@ ref처럼 바인드됨 — **사용자 확정**("A. 맞음. 리프노드에선 �
 Slot이 형제로 섞이는 경우의 순서 보장 문제는 별도로 열려있음, 바로 아래
 참고.
 
-### 여러 Slot이 섞일 때 순서 보장 — 열린 질문 (2026-08-04 신규)
+### 여러 Slot이 섞일 때 순서 보장 — 해소됨 (2026-08-09 여섯 번째 세션)
 
 `Frame { Slot1, 일반자식, Slot2 }`처럼 Slot과 Slot 사이에 다른 요소가 끼거나
 Slot이 여럿 형제로 존재할 때, 최종 자식 순서가 저작 순서(위쪽 Slot의 요소가
-항상 아래쪽 Slot의 요소보다 앞)를 안정적으로 지키는지는 아직 설계 안 됨 —
-**사용자 확정**("순서도 따름, 만약 웹이라면 순서에 맞춰서 마운트 되어야 하고,
-아래쪽 slot은 위쪽 slot의 요소보다 무조건 아래 있어야함... 이게 가능하냐는
-생각해봐야할 이야기임"). Roblox 자체는 z-순서를 주로 `LayoutOrder`/`ZIndex`로
-푸는 편이라 당장 급하게 막히는 지점은 아니지만, `architecture.md`가 명시한
-"quad-base는 다른 렌더 백엔드(GTK, 웹 DOM 등)에서도 재사용 가능해야 한다"는
-전제와 직결되는 문제 — DOM류 백엔드는 형제 순서 자체가 렌더 순서라 이 보장이
-없으면 못 씀. **후순위 열린 질문으로 유지**, Slot 코어 로직 구현 시점에
-다시 볼 것 — M0/M1 단계를 막지는 않음(Roblox 단일 백엔드로는 당장 문제
-없음).
+항상 아래쪽 Slot의 요소보다 앞)를 안정적으로 지키는지가 2026-08-04부터 열려
+있었던 질문 — **메커니즘 확정으로 해소됨**: `Dispatch.setLength`/
+`Dispatch.setOffsetSource` + 형제별 개수 누적합(`offset`)을 리액티브
+프로퍼티(Roblox `LayoutOrder`)에 바인딩하는 방식 — 상세는 `base/
+bind-system-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때 순서
+보장" 절 참고. **DOM류 물리 순서 백엔드에도 같은 base 메커니즘이 그대로
+재사용됨**(offset이 바뀌어도 이미 마운트된 원소를 물리적으로 옮길 필요
+없음 — `insertBefore`가 뒤 형제를 자연히 밀어주므로, backend Handler의
+"offset 변경 시 할 일"만 no-op으로 달라짐) — `architecture.md`의 "다른
+렌더 백엔드에서도 재사용 가능해야 한다"는 전제와도 부딪히지 않음.
 
 ## Slot과 Store 바인드의 관계 (`retract` 순서)
 
@@ -546,6 +546,26 @@ end
 - **[해소됨, 2026-08-09 세 번째 세션]** `add`/`remove`/`clear` CRUD 의미론,
   `isMounted` 이중 추적 분리, 키 기반 동적 컬렉션 재조정(`Slot:List`) —
   위 "CRUD API 확정"/"`isMounted` 이중 추적 분리"/"`Slot:List`" 절 참고.
-- **여러 Slot이 형제로 섞일 때 순서 보장**은 아직 열려있음(위 "여러 Slot이
-  섞일 때 순서 보장" 절 참고) — Roblox 단일 백엔드로는 급하지 않음, Slot
-  코어 로직 구현 시점에 재검토.
+- **[해소됨, 2026-08-09 여섯 번째 세션]** 여러 Slot이 형제로 섞일 때
+  순서 보장 — 위 "여러 Slot이 섞일 때 순서 보장" 절 참고, 메커니즘은
+  `base/bind-system-plan.md`의 "Length/Offset" 절이 최신 소스.
+
+## Slot.Length — `:List`뿐 아니라 항상 노출됨 (2026-08-09 여섯 번째 세션)
+
+Slot은 CRUD/`:List` 여부와 무관하게 `.Length: State<number>`를 항상
+노출 — 지금 실제로 마운트된 요소 개수(사용자가 직접 CRUD로 넣든 `:List`
+reconcile이 넣든 동일). 두 용도를 겸함: (1) 사용자가 "n개 검색됨" 같은
+UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
+순서 보장(위 "여러 Slot이 섞일 때 순서 보장" 참고)에 내부적으로 읽는 바로
+그 값 — 별도 두 State가 아니라 하나. `:List`의 filter 탈락이 실제
+`Remove`(Visible 토글 아님)로 확정돼 있어서 `Length`는 자동으로 "실제
+마운트된 것"만 반영 — 수동 Visible 토글을 쓰면 `Length`가 그걸 못 잡는
+게 맞고, 그건 사용자가 별도 State로 계산해야 하는 몫.
+
+## 백로그 — `Slot():Single(state, updateFn?)` (2026-08-09 여섯 번째 세션, 미착수)
+
+`:List`의 key-map(`mounted`/`userdata`/`keyIndex`) 없이 "0개 아니면 1개"만
+다루는 더 가벼운 편의 메소드 제안(예: `state<Frame?>`를 조건부로 마운트하는
+관용구를 더 명시적으로 표현) — `.Length`는 그냥 0/1이고 나머지(offset 소비,
+LayoutOrder 바인딩)는 일반 Slot과 완전히 같은 프로토콜. 아직 상세 설계
+안 함, `.claude/question.md`에 백로그로만 반영.

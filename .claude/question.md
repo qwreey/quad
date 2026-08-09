@@ -34,6 +34,9 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단(`research/
   additional-primitives-plan.md` "빈 자리 아닌 것" 절).
+- **[백로그, 2026-08-09 여섯 번째 세션 추가, 미착수]** `Slot():Single(state,
+  updateFn?)` — `:List`의 key-map 없이 "0개 아니면 1개"만 다루는 가벼운
+  편의 메소드. `base/slot-plan.md` "백로그 — `Slot():Single(...)`" 절.
 
 ### 1. 용어 정리 (사용자 요청, 진행 중)
 
@@ -190,11 +193,14 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —
   `reference/quad-v1-architecture.md`에 남겨진 v1 내부 동작 확인 사항, 마이그레이션
   가이드 작성 시점에 필요. 지금은 그냥 백로그로만 기록.
-- **여러 Slot이 형제로 섞일 때 순서 보장** — `base/slot-plan.md`의 "여러
-  Slot이 섞일 때 순서 보장" 절 참고. Roblox 단일 백엔드로는 급하지 않음
-  (LayoutOrder/ZIndex로 대부분 해결), 다른 백엔드(웹 DOM 등) 재사용성과
-  직결되는 문제라 Slot 코어 로직 구현 시점에 재검토. **같은 구현 시점에
-  같이 확인할 것(2026-08-06 추가)**: Slot이 quad 밖(v1 compat 등)에서
+- **[해소됨, 2026-08-09 여섯 번째 세션]** 여러 Slot이 형제로 섞일 때
+  순서 보장 — `Dispatch.setLength`/`Dispatch.setOffsetSource` + 형제별
+  개수 누적합을 `LayoutOrder`에 리액티브 바인딩하는 메커니즘으로 확정,
+  DOM류 물리 순서 백엔드에도 같은 base 로직이 재사용됨(backend Handler의
+  "offset 변경 시 할 일"만 no-op으로 갈림). 상세는 `base/
+  bind-system-plan.md` "Length/Offset" 절, `base/slot-plan.md` "여러
+  Slot이 섞일 때 순서 보장" 절. **같은 구현 시점에 같이 확인할 것
+  (2026-08-06 추가, 아직 안 풀림)**: Slot이 quad 밖(v1 compat 등)에서
   만들어진 임의 Instance를 동적 배열 원소로 받을 수 있는지, retract 시
   foreign Instance를 어떻게 다루는지 — `research/v1-compat-plan.md` 7-3
   참고.

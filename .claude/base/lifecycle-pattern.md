@@ -130,18 +130,34 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 도구로 바인드된 옵저버는 `canExecute` predicate로 게이팅되어, 살아있지 않으면
 실행 자체를 건너뛸 수 있음(죽은 대상에 대한 처리 시도 방지, 위 원칙과 직결).
 
-### `bindLifetime`/`canExecute` — 확정(2026-08-08 세션)
+### `bindLifetime`/`canExecute`/`unbindLifetime` — 확정(2026-08-08 세션,
+`unbindLifetime`은 2026-08-09 세션 추가)
 
 **탑레벨 평범한 함수로 확정, 네임스페이스에 안 숨김.** `Dispatch.process`/
 `Handler.xxx`는 "시스템 내부 배관"이라 네임스페이스가 맞지만, `bindLifetime`/
-`canExecute`는 `isState`/`isObserver`처럼 핸들러 작성자가 직접 호출하는
-**1급 프리미티브 연산**이라 `LifetimeHandle.bind(...)`류로 감싸면 안 됨 —
-`LifetimeHandle.luau` 파일 안에 있어도 되지만 export는 평평한 함수:
+`canExecute`/`unbindLifetime`는 `isState`/`isObserver`처럼 핸들러 작성자가
+직접 호출하는 **1급 프리미티브 연산**이라 `LifetimeHandle.bind(...)`류로
+감싸면 안 됨 — `LifetimeHandle.luau` 파일 안에 있어도 되지만 export는
+평평한 함수:
 
 ```lua
 bindLifetime(inst: any, value: any): ()
+unbindLifetime(inst: any, value: any): ()
 canExecute(inst: any, value: any): boolean
 ```
+
+**`unbindLifetime` 추가 이유(2026-08-09 세션, `bind-system-plan.md`의
+"Length/Offset" 논의에서 파생)**: `Dispatch.setLength`(같은 위치에 새
+`State<number>`가 들어오면 이전 것에 걸어둔 Observer를 먼저 정리해야 함,
+`State<Slot>` 교체가 대표 사례)처럼 **`inst` 전체 생명주기보다 먼저,
+특정 값 하나만 콜백/구독을 끊어야 하는 경우**가 실제로 생김 —
+`bindLifetime`만 있으면 그 호출부가 gchold의 내부 저장 구조(배열이든
+`value`를 키로 쓰는 테이블이든)를 직접 알아야만 특정 항목을 지울 수
+있어서 캡슐화가 깨짐. `unbindLifetime(inst, value)`을 짝으로 추가하면
+호출부는 내부 구조를 몰라도 됨 — 구현이 쉬운 이유도 여기 있음(아래
+스케치처럼 gchold를 `value`를 키로 쓰는 테이블로 두면 `gchold[value] =
+nil` 한 줄). 안 걸려있던 값에 불러도 안전한 no-op(`:Unsubscribe()`류
+기존 관례와 동일).
 
 base는 이 두 함수의 **인터페이스만**(타입 시그니처) 갖고, quad-roblox가
 `BaseModule` 뮤테이션 시점에 실 구현을 채워넣는다는 원칙은 그대로(`canExecute`
@@ -156,11 +172,18 @@ local GCCONN = "__gcconn"
 local GCHOLD = "__gchold"
 
 function bindLifetime(inst, value)
+    local isOE = isObserver(value) or isEffect(value)
+    -- leaf 부착도 내부적으로 이 함수를 호출하므로, :Subscribe()와 상호
+    -- 배타적인 "이중 바인딩 금지"(base/bind-system-plan.md)를 여기서 확인
+    if isOE and not canBound(value) then
+        error("Observer/Effect가 이미 다른 경로로 바인딩됨")
+    end
+
     local gcconn = relate:GetStrong(inst, GCCONN)
     if not gcconn then
         -- ClassName은 절대 안 바뀌는 프로퍼티라 이 신호는 절대 발화하지 않음
         -- (rbvm 패턴 그대로) — 콜백 클로저가 gchold를 업밸류로 캡쳐해 살려둠
-        local gchold = {}
+        local gchold = {} -- value 자신을 키로 씀(배열 아님) — unbindLifetime을 O(1)로
         relate:SetStrong(inst, GCHOLD, gchold)
         gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
             local _ = gchold -- 발화 안 함, 클로저 생존이 곧 gchold 생존
@@ -168,14 +191,23 @@ function bindLifetime(inst, value)
         relate:SetStrong(inst, GCCONN, gcconn)
     end
     local gchold = relate:GetStrong(inst, GCHOLD)
-    table.insert(gchold, value) -- 강참조 생성, inst 죽으면 gcconn 클로저와 함께 GC
+    gchold[value] = true -- 강참조 생성, inst 죽으면 gcconn 클로저와 함께 GC
+    if isOE then value.Subscribed = true end -- canExecute가 보는 필드 그대로 재사용
+end
+
+function unbindLifetime(inst, value)
+    local gchold = relate:GetStrong(inst, GCHOLD)
+    if gchold then
+        gchold[value] = nil -- inst는 안 건드림, 이 value 하나만 조기 해제
+    end
+    if isObserver(value) or isEffect(value) then value.Subscribed = false end
 end
 
 function canExecute(inst, value)
-    -- Observer/Effect는 자기 바인딩 경로(leaf 부착 또는 :Subscribe())의
-    -- 생존 여부를 스스로 알고 있음 — inst가 살아있어도 이 값이 먼저 죽어
-    -- 있을 수 있으므로(예: retract가 :Unsubscribe()만 하고 inst는 안 죽음)
-    -- 반드시 먼저 확인.
+    -- Observer/Effect는 자기 바인딩 경로(bindLifetime=leaf 부착 포함,
+    -- 또는 :Subscribe())의 생존 여부를 스스로 알고 있음 — inst가 살아있어도
+    -- 이 값이 먼저 죽어 있을 수 있으므로(예: retract가 unbindLifetime만
+    -- 하고 inst는 안 죽음) 반드시 먼저 확인.
     if (isObserver(value) or isEffect(value)) and not value.Subscribed then
         return false
     end

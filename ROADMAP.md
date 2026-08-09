@@ -93,18 +93,35 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       재사용 — 구 `base.perInstanceState(inst)`/`PerInstanceState.luau`를
       대체(2026-08-08 세션 신설).
 - [ ] `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
-      `canExecute(inst,value)` 탑레벨 함수 타입 계약, 실 구현 없음 —
-      quad-roblox 실 구현은 M8) — 원래 M8에만 있었으나 M4(StoreBind의
-      `Connected` 확인)/M6(Slot의 `canExecute`)이 이미 이 인터페이스를
-      전제로 서술돼 있어 로드맵 순서가 역전돼 있었음(`pre-implementation-audit.md`
-      우선순위1-9, `question.md` 2번 — 2026-08-07 네 번째 세션에 반영).
+      `unbindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수
+      타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
+      있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
+      이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
+      있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md`
+      2번 — 2026-08-07 네 번째 세션에 반영).
       **`canExecute`는 `(inst, value) -> boolean`으로 재확정(2026-08-08
       세션, `(handle)` 단일 인자 서술을 대체)** — Observer/Effect는 자기
       `Subscribed` 상태를 먼저 확인, 그 다음 `inst`의 공유 gcconn(`Relate`로
-      저장)의 `.Connected`를 봄. `bindLifetime`/`canExecute` 둘 다 네임스페이스
+      저장)의 `.Connected`를 봄. **`unbindLifetime(inst,value)` 추가
+      (2026-08-09 여섯 번째 세션)** — `inst` 전체 죽기 전에 특정 값 하나만
+      조기 해제(`Dispatch.setLength`가 State 재등록 시 이전 Observer를
+      정리하는 데 씀), gchold 내부 구조를 호출부가 몰라도 되게 캡슐화.
+      `bindLifetime`/`unbindLifetime`/`canExecute` 셋 다 네임스페이스
       없이 탑레벨 함수로 export(`Dispatch.xxx`류 시스템 네임싱과 구분,
       `isState`/`isObserver`와 같은 1급 프리미티브 취급) — `base/
-      lifecycle-pattern.md`의 "`bindLifetime`/`canExecute` — 확정" 절 참고
+      lifecycle-pattern.md`의 "`bindLifetime`/`canExecute`/`unbindLifetime`
+      — 확정" 절 참고. **Observer/Effect 값에는 `bindLifetime`/
+      `unbindLifetime`도 M3의 `canBound` 게이트를 확인/세팅** — children
+      배열 leaf 부착이 실제로는 `bindLifetime` 호출이라서(M3 체크박스
+      참고, 구현 순서상 M2가 M3의 `canBound`를 참조하게 됨에 유의)
+- [ ] `Dispatch.setLength(inst,i,len:number|State<number>)`/
+      `Dispatch.setOffsetSource(inst,i,offset:Source<number>|None)` —
+      array part 형제 순서 보장(Length/Offset 누적합→`LayoutOrder` 리액티브
+      바인딩), array part 모든 number 인덱스에 대해 둘 다 호출 필수(생략
+      UB, Handler 구현체 작성자만의 계약) — `recompute`는 leaf-lifetime
+      경로(`bindLifetime`/`unbindLifetime`)로 등록, `:Subscribe()` 아님
+      (2026-08-09 여섯 번째 세션, `base/bind-system-plan.md` "Length/Offset"
+      절 — `base/slot-plan.md` "여러 Slot이 섞일 때 순서 보장" 해소)
 - [ ] 핸들러 계약 검증: `retract` 필드가 없는 핸들러를 등록하면 리뷰/린트에서
       걸러내기(no-op이라도 필드 자체는 항상 정의 — `Dispatch.process`가 핸들러
       교체 시 nil 체크 없이 호출, `base/bind-system-plan.md` "핸들러 계약"
@@ -143,10 +160,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
-- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로 leaf
-      부착과 `:Subscribe()`가 동시에 걸리면 즉시 `error`(`base/bind-system-plan.md`
-      "이중 바인딩 금지" 절, 2026-08-07 일곱 번째 세션 신설, 이름은
-      2026-08-09 세션에 `canBound`로 확정)
+- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로
+      `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
+      내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/
+      bind-system-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
+      세션 신설, 이름은 2026-08-09 세션에 `canBound`로 확정, 같은 날
+      여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정 — 진짜
+      독립 경로는 둘뿐). `canBound`의 내부 플래그는 `canExecute`가 보는
+      `.Subscribed`와 같은 필드 — `bindLifetime`/`unbindLifetime`도
+      (Observer/Effect 값에 한해) 이 필드를 세팅/해제
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -168,8 +190,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M6 — Slot
 
-- [ ] "여러 Slot이 형제로 섞일 때 순서 보장" 열린 질문 확인(`slot-plan.md`) —
-      Roblox 단일 백엔드로는 급하지 않으면 스킵하고 진행 가능
+- [x] **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
+      세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/
+      bind-system-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
+      이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
+      UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
 - [x] **Slot의 `Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD 의미론
       확정** (2026-08-09 세 번째 세션) — `get`/`set` 드롭, 에러 조건까지
       전부 확정(`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시
