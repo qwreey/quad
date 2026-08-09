@@ -73,7 +73,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       네이밍 확정). "이 키를 지금 누가 담당 중인가" bookkeeping은
       `Dispatch.drive`가 아니라 `Dispatch.process` 호출 자체 내부에서
       갱신할 것(재귀 재-process 시에도 자연히 갱신되게 — 안 그러면 재귀
-      재디스패치를 쓰는 케이스(Tween store-bind, `NoneHandler`)에서 매
+      재디스패치를 쓰는 케이스(`StoreBind`, `NoneHandler`)에서 매
       사이클 불필요한 `retract`가 반복 호출될 위험)
 - [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
       `process`/`retract` — `isHandlable`도 `inst`를 받도록 확정, 2026-08-07
@@ -137,7 +137,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절)
 - [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={handler,handler,...}
       (strong 순서 배열)}}`) + `Dispatch.retractUnder(inst,k,keep,v)` —
-      재귀 재-dispatch(StoreBind/Tween/NoneHandler)의 retract를 다단
+      재귀 재-dispatch(StoreBind/NoneHandler)의 retract를 다단
       체인까지 정확히 전파(2026-08-08 세 번째 세션, `base/
       bind-system-plan.md` "Dispatch 체인" 절 — `pre-implementation-audit.md`
       1-2번 "이전 핸들러 추적" 항목 해소). `Dispatch.process`가 매치될
@@ -282,8 +282,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
       이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
       (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
-      "이전 매치 핸들러 추적" 항목과 함께 구현 — Tween store-bind 핸들러와
+      "이전 매치 핸들러 추적" 항목과 함께 구현 — `StoreBind` 핸들러와
       동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — 확정 완료
+- [ ] 프로퍼티류 필드 타입에 `T' = T | Tween<T>` 치환 반영(타입 생성
+      스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
+      끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`
+      10번, 2026-08-10 세션, `research/tween-plan.md`)
 
 ## M8 — Ref
 
@@ -344,9 +348,28 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M11 — Tween
 
-- [ ] `research/tween-plan.md` 남은 옵션 이름 확정(구조는 이미 확정)
-- [ ] `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러, 기본 오버라이드
-      Cancel)
+**[2026-08-10 세션, 구조 재설계]** 독립 Dispatch 핸들러 모델에서 값-레벨
+`Tween<T>` 래퍼 모델로 전환 — 상세는 `research/tween-plan.md`(전면
+재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`.
+
+- [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리, `isTween`/
+      `TweenTag` Brand, `Value: T` plain만 받고 State 재귀 없음)
+- [ ] `Handlers/Property.luau`에 `isTween(realv)` 분기 추가(기존
+      `Handlers/Tween.luau` 독립 핸들러는 폐기) + 3-상태 릴레이션 슬롯
+      (`RobloxTween | true | nil` — `nil`=첫 세팅, `true`=세팅됨/트윈
+      없음, 엔진 객체=활성 트윈) + 첫 세팅은 무조건 애니메이션 없이
+      스냅(hasBeenSet 억제) + 활성 트윈 정리는 override 정책 완료 후에만
+      새 값 세팅(순서 뒤바뀌면 트윈 다음 프레임이 방금 세팅한 값을 덮어씀)
+- [ ] override 정책 4가지(기본 Cancel/Override/Delete-restart/
+      Move-to-end-restart) 중 기본값 외 옵션 키 이름/시그니처 확정,
+      Tween→plain 전환에 5번째 옵션이 필요한지 확인
+- [ ] `research/tween-plan.md` "트윈 옵션 값 모양" 확정(TweenInfo 그대로
+      vs 편의 필드+기본값 — 소견은 후자)
+- [ ] `quad-roblox/Animate.luau`(편의 콤비네이터 — `:Apply`로 체이닝,
+      `useTween` 우회는 이걸로 자연히 커버되어 별도 옵션 필드 불필요,
+      정확한 시그니처는 M11에서 확정)
+- [ ] `initValue`(진입 애니메이션) 필요성 재검토 — 필요해지면 hasBeenSet
+      억제 동작과의 상충부터 풀 것(`research/tween-plan.md` 참고)
 
 ## 특정 마일스톤에 안 묶이고 병행 가능
 

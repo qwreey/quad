@@ -54,7 +54,7 @@
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
-| `tween-plan.md` | 트윈을 Store 밖 특수 bind key로 처리, 기본 오버라이드는 Cancel, 트윈 옵션 값 모양(TweenInfo vs 편의 필드)은 신규 열린 논의 | 중 — 세부 옵션만 남음 |
+| `tween-plan.md` | **[2026-08-10 세션 재설계]** 트윈을 값-레벨 `Tween<T>` 래퍼(PropertyHandler가 소비)로 전환, 구 특수 bind key 모델은 `archive/tween-special-bind-key-reversed.md`로 이전. 3-상태 릴레이션 슬롯(`RobloxTween\|true\|nil`)으로 hasBeenSet 억제, `T'=T\|Tween<T>` 타입 치환, `useTween`은 `:Apply`/`:Compute`로 해소. 기본 오버라이드는 Cancel, 트윈 옵션 값 모양(TweenInfo vs 편의 필드)만 남음 | 중 — 세부 옵션만 남음 |
 | `existing-instance-bind-plan.md` | 이미 생성된 인스턴스 재바인드 — 착수 안 하되 "미지원" 확정도 안 함, 열린 가능성 유지 | 하 — v2 초기 스코프 제외 |
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
@@ -80,6 +80,7 @@
 | `observer-cleanup-contract-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** `Observer` 자체에 React `useEffect`식 cleanup 반환 계약을 추가하는 안 — 클로저로 이미 충분해 기각, `Effect`가 opt-in 상위 계층으로 이 패턴을 제공 |
 | `keyed-collection-state-method-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** 키 기반 동적 컬렉션 재조정 프리미티브를 `state:Keyed(...)` State 메소드로 두려던 초안 — Source 미사용 컴포넌트가 접근 못 한다는 반례로 철회, 현재는 자유 함수로 확정 |
 | `debug-channel-replicatedstorage-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** quad-debug 채널을 `ReplicatedStorage`에 자동 생성하던 초안 — 게임 트리 오염 부작용으로 기각, quad 모듈 자신의 트리+`CollectionService` 태그로 대체 |
+| `tween-special-bind-key-reversed.md` | **[역전됨, 2026-08-10 신설]** 구 Tween 모델(`[Tween(key,tweenData...)] = storeValue` 특수 bind key, 우선순위 최상위 Dispatch 핸들러) — 값-레벨 `Tween<T>` 래퍼 모델로 완전히 대체됨(`research/tween-plan.md`) |
 
 ## 참고
 

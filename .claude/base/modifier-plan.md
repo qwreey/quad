@@ -85,9 +85,9 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
 - **실제 "지우기" 동작은 디스패치 쪽 `NoneHandler`가 담당** — merge가 끝난
   뒤 최종 flatten 결과에 `None`이 남아있으면, base 드라이버가 그 키를 어떻게
   처리하는지는 새 개념이 아니라 이미 확정된 디스패치 모델 그대로다.
-  상세는 `base/bind-system-plan.md`의 "`None` 센티널 — Tween store-bind와
+  상세는 `base/bind-system-plan.md`의 "`None` 센티널 — StoreBind와
   같은 재귀 재디스패치 패턴 재사용" 절 참고 — 핵심만 요약하면 `NoneHandler`도
-  Tween의 store-bind 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
+  `StoreBind` 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
   잡고, `process`가 `v`를 진짜 `nil`로 바꿔 `process(inst, k, nil)`을 재귀
   호출)이라 base 드라이버 자체엔 `None`을 아는 코드가 한 줄도 안 들어감 —
   개별 프로퍼티/이벤트/UI shorthand 핸들러도 자기 시그니처에 `None`이 안
@@ -309,7 +309,7 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
   `isModifier`면 캐싱 전에 `error`). 새 체크 지점을 여러 곳에 흩는 게
   아니라, "값이 State/Source의 값으로 확정되는" 이미 존재하는 몇 안
   되는 지점에 `isModifier` 검사 한 줄씩 얹는 것뿐.
-- **Slot/Tag/Attribute/Tween 등 다른 핸들러 계층 값은 여전히 아무
+- **Slot/Tag/Attribute 등 다른 핸들러 계층 값은 여전히 아무
   문제 없이 State/Source에 담길 수 있음 — Modifier만의 예외임을
   명확히.** (사용자 확인: "slot은 당연히 가능함, retract도 되는 애고
   런타임 값이라") 이 값들은 전부 정상적으로 `process`/`retract`
@@ -319,7 +319,14 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
   없음. Modifier만 유독 문제인 건 Modifier가 애초에 dispatch 경로를
   아예 안 타는 유일한 존재(1번 절)라서, State/Source에 담기는 순간
   "재귀 재-dispatch로 처리"할 대상 자체가 없어지기 때문 — 이 구분이
-  왜 Modifier만 막고 나머지는 다 허용하는지의 핵심 근거.
+  왜 Modifier만 막고 나머지는 다 허용하는지의 핵심 근거. **[정정,
+  2026-08-10 세션] `Tween`은 이 그룹에서 빠짐** — Tween이 독립 Dispatch
+  핸들러(`process`/`retract`를 가진 dispatch 참가자)에서 PropertyHandler가
+  소비하는 값-레벨 래퍼로 재설계되며(`research/tween-plan.md`), `Tween<T>`는
+  이제 `process`/`retract`가 없는 순수 raw 데이터 값 — `None`과 같은
+  분류. State/Source에 `Tween<T>`가 담기는 것 자체는 여전히 문제없이
+  허용되지만(위 타입 대수 절 참고), 그 이유는 "재귀 dispatch 참가자라서"가
+  아니라 "그냥 raw 값이라서"로 바뀜.
 - **`Store<T>`의 `T`는 Modifier가 될 수 없음(`base/store-semantics.md`
   "따름정리" 절)도 이 결정을 그대로 물려받음** — Source가 State를
   구조적으로 만족하므로 별도로 다시 논증할 필요 없이 동일하게 적용됨.
@@ -540,6 +547,27 @@ Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSou
 통합 메커니즘으로 일반화됨), 그리고 이 판별 로직 자체는 새로 만드는 게
 아니라 4-1번 setter 분기가 이미 내부적으로 해야 하는 걸 public 유틸로
 승격하는 것뿐.
+
+### 10. `Tween<T>`와의 타입 합성 — `T' = T | Tween<T>` 치환만으로 해결 (2026-08-10 세션)
+
+`research/tween-plan.md`가 값-레벨 `Tween<T>` 래퍼로 재설계되며, 프로퍼티류
+Modifier 필드 setter가 트윈 값도 받을 수 있어야 하는지가 자연히 따라오는
+질문이었음 — **답은 "이미 있는 `T | State<T>` 필드 타입 모양에 새 케이스를
+추가할 필요가 없다"** — 위 4번 절이 확정한 필드 타입 모양(리터럴 `T` 또는
+`State<T>`)에서 "이 필드의 `T`" 자체를 `T' = T | Tween<T>`로 치환하면
+자동으로 `T | Tween<T> | State<T | Tween<T>>`가 나옴. 즉 `FrameModifier`류
+타입 생성 스크립트가 `Position` 필드를 만들 때 그냥 `T`를 `UDim2 |
+Tween<UDim2>`로 바꿔서 기존 setter 시그니처 생성 로직에 그대로 넣으면 됨 —
+Modifier의 제네릭 `__index`/`table.clone` 런타임(위 "런타임은 클래스별
+코드 없이" 절)에도 `Tween` 인지 로직을 전혀 추가할 필요 없음(setter는
+어차피 값을 그대로 baked 저장할 뿐, 그 값이 `Tween<T>`인지는 나중에
+PropertyHandler가 판단).
+
+`Tween<T>`가 Modifier 필드로 담기는 것도, `State<Tween<T>>`처럼 State/Source
+값으로 담기는 것도 둘 다 아무 문제 없음 — 7번 절의 "핸들러 계층 값 →
+error" 규칙에 안 걸림(`Tween<T>`는 `process`/`retract`를 가진 dispatch
+참가자가 아니라 `None`처럼 순수 raw 데이터 값, 위 7번 절 "Slot/Tag/Attribute
+등" 목록에서 Tween을 뺀 정정 참고).
 
 ## 열린 질문 (`.claude/question.md`에도 취합)
 

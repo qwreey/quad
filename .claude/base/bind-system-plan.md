@@ -48,8 +48,9 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   **`retract` 필드 자체는 생략 불가, no-op이라도 항상 정의할 것(2026-08-08
   세션, 확정)** — `Dispatch.process`(아래 "확정된 디스패치 모델" 절)는
   담당 핸들러 *타입*이 바뀔 때 이전 핸들러의 `retract`를 nil 체크 없이
-  무조건 호출함. 필드를 생략한 핸들러가 나중에(드물더라도, 예: Tween↔
-  프로퍼티 교체) 실제로 담당이 바뀌는 순간 `attempt to call a nil value`로
+  무조건 호출함. 필드를 생략한 핸들러가 나중에(드물더라도, 예: `Tag(...)`↔
+  `nil` 교체 — `base/tag-plan.md`) 실제로 담당이 바뀌는 순간 `attempt to
+  call a nil value`로
   바로 크래시 — "의미 있게 구현할 필요 없음"은 "구현이 사소해도 됨"이라는
   뜻이지 "필드를 안 둬도 안전하다"는 뜻이 아님. 새 핸들러를 짤 때 이 필드가
   없으면 리뷰/린트에서 걸러내야 함(M2 착수 시 확인 목록에 추가).
@@ -84,9 +85,9 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   부분은 `Dispatch.getHandler`로 이름이 공식화됨**(아래 `None` 센티널
   절, 2026-08-07 여덟 번째 세션) — 이 절에서는 개념 설명이라 편의상
   그냥 `process`로 계속 씀.
-- 예시: Tween의 store-bind 핸들러는 **`k`는 무엇이든 받고 `v`가 Store인 경우를
-  잡아내는, 우선순위가 매우 높은 핸들러** — `v`가 store이면 그 값을 처리(구독)함.
-  이 핸들러 안에서:
+- 예시: `Dispatch/StoreBind.luau`(범용, 엔진 무관)는 **`k`는 무엇이든 받고
+  `v`가 State/Source인 경우를 잡아내는, 우선순위가 매우 높은 핸들러** —
+  `v`가 반응형이면 그 값을 처리(구독)함. 이 핸들러 안에서:
   1. 지금 이 처리가 실행되어도 되는지 라이프타임(`Connected`)을 확인 —
      확인 안 하면 이미 Destroy된 대상에 대해 처리가 실행되는 문제가 생김. GC가
      결국 정리하긴 하지만, GC 되기 전에도 store 값이 업데이트될 수 있으므로
@@ -98,10 +99,15 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
      아래 "Dispatch 체인" 절, 2026-08-08 세 번째 세션 — 오케스트레이터
      이름 공식화는 아래 `None` 센티널 절 참고, 2026-08-07 여덟 번째
      세션) — 이게 바로 "store 바인드는 pluggable 바인드를 재실행하는
-     래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가 store가
-     아니라면 자연히 Tween의 store-bind 핸들러 `isHandlable`을 통과 못
-     하고 우선순위상 다음 핸들러(일반 프로퍼티 세터 등)로 흘러감 — 무한
-     재귀 걱정 없음.
+     래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가 반응형이
+     아니라면 자연히 `StoreBind`의 `isHandlable`을 통과 못 하고 우선순위상
+     다음 핸들러(일반 프로퍼티 세터 등)로 흘러감 — 무한 재귀 걱정 없음.
+     **[정정, 2026-08-10 세션]** 이 예시는 원래 "Tween의 store-bind
+     핸들러"였으나, Tween이 독립 Dispatch 핸들러가 아니라 PropertyHandler가
+     소비하는 값-레벨 래퍼(`Tween<T>`)로 재설계되며(`research/
+     tween-plan.md`, `archive/tween-special-bind-key-reversed.md`) 이
+     자리의 대표 예시에서 빠짐 — `NoneHandler`(아래 절)가 지금은 이
+     패턴의 남은 대표 예시.
 - **`retract(inst, k, v)`** (이전 초안의 "cleanup", 이름 변경 근거는
   `base/lifecycle-pattern.md` 참고) — 이전 처리를 무르는/멈추는 함수. **오직
   "같은 key에 새 값이 들어와서 이전 처리를 갈아치우는" 시나리오에만 존재** —
@@ -111,18 +117,23 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     동작) — 그래서 프로퍼티 핸들러는 보통 `retract`가 필요 없음.
   - **`retract`가 실제로 의미 있는 유일한 패턴은 "같은 키에 대해 매치되는
     핸들러 *타입 자체*가 사이클마다 바뀌는 경우"** (2026-08-07 여덟 번째
-    세션, 정정) — 예: 이전엔 Tween 핸들러가 매치돼 애니메이션이 실행
-    중이었는데, 다음 값이 더 이상 Tween 대상이 아니게 되어 일반
-    PropertyHandler로 매치가 넘어가는 경우, 이전 Tween을 멈추는 게
-    `retract`의 일. **Attribute는 여기 해당 안 함** — UICorner 숏핸드와
-    같은 패턴(값의 참/거짓/nil 여부와 무관하게 항상 같은 핸들러가 계속
-    담당, 추가/제거를 전부 `process` 자신이 처리)이라 핸들러 교체 자체가
-    안 일어남 — `base/attribute-plan.md`. **[정정, 2026-08-08 세 번째
-    세션] Tag는 더 이상 여기 해당하지 않음** — array-part 값 객체로
-    재설계되며(`base/tag-plan.md`, 구 모델은 `archive/
-    tag-hash-key-model-reversed.md`) `Tag(...)`↔`nil` 사이에서 핸들러
-    타입 자체가 바뀌므로 `retract`가 의미 있어짐(전체 삭제), 같은 Tag끼리
-    바뀌는 diff는 `process`가 담당.
+    세션, 정정) — 예: `Tag(...)`↔`nil` 사이에서 핸들러 타입 자체가
+    바뀌므로 `retract`가 의미 있어짐(전체 삭제), 같은 Tag끼리 바뀌는
+    diff는 `process`가 담당(`base/tag-plan.md`, 2026-08-08 세 번째 세션
+    — array-part 값 객체 재설계 이후, 구 모델은 `archive/
+    tag-hash-key-model-reversed.md`). **Attribute는 여기 해당 안 함** —
+    UICorner 숏핸드와 같은 패턴(값의 참/거짓/nil 여부와 무관하게 항상
+    같은 핸들러가 계속 담당, 추가/제거를 전부 `process` 자신이 처리)이라
+    핸들러 교체 자체가 안 일어남 — `base/attribute-plan.md`. **[정정,
+    2026-08-10 세션] Tween도 더 이상 여기 해당하지 않음** — 원래는 이
+    패턴의 대표 예시("Tween 핸들러가 매치돼 애니메이션 실행 중이었는데
+    값이 더 이상 Tween 대상이 아니게 되어 일반 PropertyHandler로 매치가
+    넘어가는 경우")였으나, Tween이 독립 Dispatch 핸들러가 아니라
+    PropertyHandler가 소비하는 값-레벨 래퍼(`Tween<T>`)로 재설계되며
+    매치되는 핸들러가 항상 PropertyHandler 하나뿐이 되어 이 케이스
+    자체가 사라짐 — 트윈 취소/전환은 이제 PropertyHandler 내부의
+    3-상태 릴레이션 슬롯으로 처리(`research/tween-plan.md`, `archive/
+    tween-special-bind-key-reversed.md`).
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
     됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
     재-dispatch에서 여러 단계가 겹칠 때 어느 슬롯에 뭘 추적하는지가
@@ -141,8 +152,12 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   명시화)**: 구조가 "`inst`로 weak-keyed된 바깥 릴레이션 안에 `k`별 안쪽
   릴레이션이 중첩된" 모양이라, `inst`가 죽어 weak table 엔트리가 통째로
   사라지는 순간 그 안에 중첩된 `k`별 Tween 인스턴스 릴레이션도 같이 GC됨 —
-  별도 cleanup 로직 불필요(Tween 핸들러가 여기 담아두는 실제 Tween 인스턴스도
-  자동으로 같이 죽는 것까지 포함, `research/tween-plan.md` 참고).
+  별도 cleanup 로직 불필요(PropertyHandler가 여기 담아두는 실제 엔진 Tween
+  인스턴스도 자동으로 같이 죽는 것까지 포함). **[정정, 2026-08-10 세션]**
+  Tween은 더 이상 별도 "Tween 핸들러"가 아니라 PropertyHandler 내부
+  로직이므로, 이 슬롯이 실제로 담는 값은 `RobloxTween | true | nil`
+  3-상태(첫 세팅 여부까지 같은 슬롯에 통합) — 상세는 `research/
+  tween-plan.md` "3-상태 저장" 절 참고.
 - **다른 값 변경을 추적하는 것도 process 함수의 정상 범위**: 예를 들어 Slot
   핸들러는 자기가 감시하는 값(배열/스토어)이 바뀌면 그에 따라 child를
   갱신해야 함 — `retract` 시점엔 그 추적(구독)만 풀면 됨.
@@ -153,9 +168,9 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   둬야 할 문제가 아니라 오작동하는 handler/provider(`quad-roblox` 등) 쪽
   버그로 간주 — **사용자 확정**("입력된 값이 다시 입력되면 무한루프
   빠지겠지만, 그건 막기 힘들고 유저가 내기도 힘들어. 아예 quad-roblox나
-  프로바이더가 잘못 짠 코드일테니까"). Tween의 store-bind 재귀 케이스(위
-  78-79행)처럼 자연히 좁혀지는 경우가 일반적이고, 일반 사용자가 만들어낼 수
-  있는 상황이 아니라고 판단해 별도 가드 없이 진행.
+  프로바이더가 잘못 짠 코드일테니까"). `StoreBind`의 재귀 케이스(위 절)처럼
+  자연히 좁혀지는 경우가 일반적이고, 일반 사용자가 만들어낼 수 있는 상황이
+  아니라고 판단해 별도 가드 없이 진행.
 
 - **props 순회 순서는 base 디스패치 드라이버가 명시적으로 두 단계로
   고정한다 — 배열 파트(숫자 키, children/Ref류) 먼저, 해시 파트(문자열 키,
@@ -177,13 +192,13 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   항목 — `research/pre-implementation-audit.md`가 짚은 "실제 Luau로
   부딪혀본 적 없는 것" 범주와 같은 급이라 신중하게 다룸).
 
-### `None` 센티널 — Tween store-bind와 같은 재귀 재디스패치 패턴 재사용 (2026-08-07 여덟 번째 세션)
+### `None` 센티널 — StoreBind와 같은 재귀 재디스패치 패턴 재사용 (2026-08-07 여덟 번째 세션, 예시는 2026-08-10 세션에 StoreBind로 정정)
 
 `modifier-plan.md` "2-1"절의 "인라인 키로 modifier 필드를 명시적으로
 지우기" 문제 — raw 저장 계층(Modifier 필드/인라인 props/`Peek`)에서 쓰는
 `None` 센티널이 실제로 인스턴스에 반영될 때 base가 뭘 하는지가 이 문서의
 층위. 결론: **새 메커니즘이 아니라 위 "확정된 디스패치 모델"의
-Tween store-bind 핸들러(65-79행)와 완전히 같은 모양의 핸들러 하나 추가.**
+`StoreBind` 핸들러(위 절)와 완전히 같은 모양의 핸들러 하나 추가.**
 
 ```
 NoneHandler.priority = <매우 높음>
@@ -209,8 +224,8 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   이 문제의 출발점이었으므로, 매치 대상은 항상 `None` 마커.
   `Dispatch.process(inst, k, nil)`로 재귀 호출하는 순간 `None`은 더 이상
   존재하지 않고 진짜 `nil`이 되므로, 다음 우선순위 스캔은 자연히 키 `k`를
-  원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand 등)로 흘러감 — Tween의
-  store-bind 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로 좁혀지는
+  원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand 등)로 흘러감 —
+  `StoreBind` 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로 좁혀지는
   것과 정확히 같은 원리, 무한루프 걱정도 동일하게 없음.
 - **`Dispatch.process`/`Handler.process` 이름 겹침 — 소유자 네임스페이싱으로
   해소, 새 이름 발명 안 함 (2026-08-07 여덟 번째 세션 후속).** 원래
@@ -222,7 +237,7 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   - `Dispatch.process(inst,k,v)` — 오케스트레이터: `getHandler` 호출 →
     매치된 핸들러를 `(inst,k)` 체인 꼬리에 push → 그 핸들러의 `.process`
     호출. **"이전 핸들러와 다르면 retract"라는 diff는 `Dispatch.process`
-    자신의 일이 아님** — 재귀/래핑 핸들러(Tween/일반 store-bind/
+    자신의 일이 아님** — 재귀/래핑 핸들러(`StoreBind`/
     `NoneHandler`)가 재-dispatch 전에 스스로 `Dispatch.retractUnder(inst,
     k, self, newV)`를 먼저 불러 자기 밑을 정리하는 책임을 짐(정확한
     메커니즘·기각된 대안은 아래 "Dispatch 체인" 절 참고 — 전역 소유자
@@ -277,7 +292,7 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
 만들 수 있는 것)로 바꿔야 하는지 검토 후 **기각, 지금 형태(모듈 require로
 바로 닿는 flat 탑레벨 함수) 유지로 확정**:
 
-- **재귀 재-dispatch가 요구하는 필연** — Tween/`NoneHandler`/`Dispatch/
+- **재귀 재-dispatch가 요구하는 필연** — `NoneHandler`/`Dispatch/
   StoreBind.luau` 전부 자기 `process` 안에서 다시 `Dispatch.process(inst,k,
   realv)`를 호출함(위 "확정된 디스패치 모델"/"`None` 센티널" 절). 이게
   성립하려면 Dispatch가 `canExecute`/`bindLifetime`(`base/
@@ -288,11 +303,11 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
 - **순환참조로 보이는 건 착시 — 실제로는 단방향.** "Handler"라는 말이 두
   가지를 가리켜서 헷갈릴 수 있음: (a) `Handler.luau`의 **타입 계약**
   (`isHandlable`/`priority`/`process`/`retract` 시그니처만 있는 순수 leaf,
-  Dispatch를 몰라도 됨) vs (b) `StoreBind.luau`/`Tween.luau`처럼 그 계약을
+  Dispatch를 몰라도 됨) vs (b) `StoreBind.luau`처럼 그 계약을
   **구현하는 concrete 값 모듈**(재귀호출 위해 Dispatch를 require함). 의존
   방향은 항상 한쪽으로만 흐름 — `Handler.luau`(leaf) ← `Dispatch/init.luau`
-  (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StoreBind.luau`/
-  `Tween.luau`(재귀호출 위해 Dispatch를 참조). `Handler.luau` 자신이
+  (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StoreBind.luau`
+  (재귀호출 위해 Dispatch를 참조). `Handler.luau` 자신이
   Dispatch를 되받아 참조하는 일이 없으니 타입 레벨에서도 사이클이 안 생김.
   런타임에서도 마찬가지 — 어떤 handler의 `process`든 실제로 *호출*되는
   시점은 컴포넌트가 렌더되는 시점이라, 그때는 이미 Dispatch 모듈 require가
@@ -304,9 +319,11 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
   `Dispatch/Leaf.luau`, `Dispatch.addHandler`로 등록). quad-roblox의
-  Property/Event/Tween 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
+  Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
-  전부 하나의 우선순위 스캔을 공유.
+  전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
+  더 이상 별도로 등록되는 핸들러가 아님 — Property 핸들러 내부에서
+  소비되는 값-레벨 래퍼로 재설계됨(`research/tween-plan.md`).
 - **모듈 재생성(`New()`)과의 관계 — 새 설계 불필요, 이미 있는 선례로 자연히
   풀림.** v1처럼 `require`를 감싸 `Init(QuadId?)`로 격리 인스턴스를 만드는
   방식은 안 씀(위 "확정된 것" 절 — id 기반 조회 자체가 Ref로 대체되며
@@ -323,7 +340,7 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
 
 ### Dispatch 체인 — 재귀 재-dispatch의 retract 전파, `Dispatch.retractUnder` (2026-08-08 세 번째 세션)
 
-**문제**: Tween/`NoneHandler`/`StoreBind`처럼 자기 `process` 안에서
+**문제**: `NoneHandler`/`StoreBind`처럼 자기 `process` 안에서
 `Dispatch.process(inst,k,realv)`를 다시 부르는 래핑 핸들러가 있으면, 같은
 `(inst,k)`에 대해 "지금 누가 담당 중인가"를 슬롯 하나로 추적하는 순간
 깨짐 — 래핑 핸들러 A 자신의 생명주기(예: StoreBind의 Observer 구독)와,
@@ -395,10 +412,13 @@ end
   중 한 번 나왔으나 기각(전체 삭제 vs 부분 diff를 갈라야 하는 핸들러가
   있어서, `base/tag-plan.md` 참고). 다만 `v`가 실제로 필요한지는
   핸들러마다 다름 — Tag는 구조상 retract가 "더 이상 매치 안 될 때만"
-  불리므로 `v`를 안 봐도 항상 전체 삭제가 맞음(무조건), Tween 같은
-  경우는 자기 `Relate` 저장분만 보고 `Cancel`하면 되니 역시 `v`를 꼭
-  안 봐도 됨 — `v`는 "계약상 항상 주어지지만 안 쓰는 핸들러가 있어도
-  됨" 정도로 이해할 것.
+  불리므로 `v`를 안 봐도 항상 전체 삭제가 맞음(무조건) — `v`는 "계약상
+  항상 주어지지만 안 쓰는 핸들러가 있어도 됨" 정도로 이해할 것.
+  **[정정, 2026-08-10 세션]** 원래 두 번째 예시로 들었던 Tween(자기
+  `Relate` 저장분만 보고 `Cancel`하면 되니 `v`를 꼭 안 봐도 됨)은 더
+  이상 유효한 예시가 아님 — PropertyHandler가 항상 매치되는 유일한
+  핸들러가 되어 이 `retract` 경로 자체가 사실상 안 쓰임(`research/
+  tween-plan.md`).
 - **순환은 UB, 방어 로직 없음** — Handler 간 순환 참조(A가 B를 부르고
   B가 다시 A로 돌아오는 것)는 재귀 호출이 안 끝나 바로 스택오버플로가
   나므로 애초에 일어날 수 없는 구조(각 핸들러는 최대 한 번씩만 그
@@ -676,9 +696,10 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
 
 ## Ref — 도입 확정, 단 용도는 재정의됨
 
-**중요한 정정**: Ref는 Tween이 대상을 얻기 위해 필요한 게 아님(Tween 핸들러도
-`process(inst,k,v)`처럼 항상 대상 Instance를 직접 받으므로 — 위 "확정된 디스패치
-모델" 참고, `research/tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
+**중요한 정정**: Ref는 Tween이 대상을 얻기 위해 필요한 게 아님(트윈을
+실제로 처리하는 PropertyHandler도 `process(inst,k,v)`처럼 항상 대상
+Instance를 직접 받으므로 — 위 "확정된 디스패치 모델" 참고, `research/
+tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 
 - v1의 `Frame "id" {}` + `Store.GetObject(id)` 식 id 매핑은 폐기 확정
   (`base/architecture.md` 5번 항목) — "비현실적"이라는 게 이유.
@@ -2017,8 +2038,11 @@ T|State<T>|nil`가 돌려주는 raw union을 사용자 코드가 분기하려면
 수단이 필요했음)와 똑같은 필요가 quad의 다른 branded 타입에도 전부
 적용됨 — `Observer`/`Effect`/`Tag`/`Attribute`/`Tween`/`Blocker`/`Store`/
 `Source`/`Slot`/`None`까지, Handler 구현(`isHandlable`에서 "이 값이
-Tween인가/Store인가" 판별)과 사용자 코드 양쪽에서 반복적으로 필요해질
-수단이라 `isState` 하나만 만들고 끝내지 않고 전체를 일관된 메커니즘으로
+Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
+"이 값이 Tween인가" 판별 — 2026-08-10 세션부터 `isTween`은 `isHandlable`이
+아니라 값-레벨 분기에서만 쓰임, `research/tween-plan.md` 참고)과 사용자
+코드 양쪽에서 반복적으로 필요해질 수단이라 `isState` 하나만 만들고
+끝내지 않고 전체를 일관된 메커니즘으로
 통합(component-composition-plan.md 4번 절이 이미 "`isSource`류 판별자로
 (`isObserver`와 동일한 패턴)"라고 이 방향을 예견해뒀던 것과 맞아떨어짐).
 

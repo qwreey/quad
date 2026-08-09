@@ -138,6 +138,7 @@ quad/
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), CollectionService 글루는 quad-roblox Handlers/Tag.luau(`base/tag-plan.md`, 2026-08-08 세 번째 세션)
+│       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenTag`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`research/tween-plan.md`, 2026-08-10 세션 재설계)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
 │       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔, `chains`(inst,k별 핸들러 체인)+`retractUnder`(`bind-system-plan.md` "Dispatch 체인" 절, 2026-08-08 세 번째 세션)
@@ -156,13 +157,13 @@ quad/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러)
         ├── LifetimeHandle.luau    # bindLifetime/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
-        │   ├── Property.luau
+        │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
         │   ├── Attribute.luau
         │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
-        │   ├── Tween.luau         # 높은 우선순위 store-bind 핸들러
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
+        ├── Animate.luau           # `Animate(condOrOpts, opts?)` 편의 콤비네이터 — `:Apply`/`:Compute`/`Tween{...}` 조합, base 프리미티브 아님(`research/tween-plan.md`)
         ├── DI/
         │   └── init.luau          # 제네릭 생성자 + ~25개 정적 필드(UIInstances)
         └── init.luau

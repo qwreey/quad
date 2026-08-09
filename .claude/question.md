@@ -138,10 +138,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 정해두면 싼 지연리스크) + 2개 단순화후보. 전체는 그 문서 참고, 특히
 사용자 판단이 필요한 것 위주로 요약:
 
-- **Tween.luau가 "범용 store-bind 캐치올 핸들러"의 유일한 예시로 서술됨** —
-  일반 반응형 프로퍼티 바인딩(`BackgroundColor3 = store.color`, 애니메이션
-  없음)이 결국 이름은 "Tween"인 파일을 거쳐가는 건지, 아니면 별도 범용
-  `Handlers/StoreBind.luau`가 있어야 하는 건지 확정 필요 — 우선순위1-1.
+- **[해소됨, 2026-08-10 세션]** Tween.luau가 "범용 store-bind 캐치올
+  핸들러"의 유일한 예시로 서술됨 — Tween을 독립 Dispatch 핸들러에서
+  값-레벨 래퍼(`Tween<T>`, PropertyHandler가 소비)로 재설계해 해소.
+  범용 State/Source 언랩은 `Dispatch/StoreBind.luau` 하나뿐, Tween 여부
+  판단은 완전히 별개(`research/tween-plan.md` 전면 재작성, 우선순위1-1
+  해소).
 - **[해소됨, 2026-08-09 세션]** `State<Modifier>`와 Ref/Slot이 Modifier
   필드에 들어가는 것 — 이제 둘 다 `isX` predicate 기반 명시적 `error`로
   통일(`base/modifier-plan.md` 4번/7번 절, `base/store-semantics.md`
@@ -266,7 +268,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | Batch(lexical) 기각, Context(+레이어드 Store) 기각 | `archive/batch-rejected.md`, `archive/context-rejected.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `reference/comparison-fusion-vide.md` |
 | v1 내부 동작 스냅샷 | `reference/quad-v1-architecture.md` |
-| 트윈 오버라이드(기본값 Cancel), 세부 옵션만 남음 | `research/tween-plan.md` |
+| 트윈 — 값-레벨 `Tween<T>` 래퍼로 구조 확정(2026-08-10), 오버라이드 기본값 Cancel, 옵션 값 모양·옵션 키 이름만 남음 | `research/tween-plan.md` |
 | quad2-try(폐기된 이전 시도) 리서치 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` COW 전부 죽은 접근으로 확인, 반복 조사 금지 | `base/bind-system-plan.md` |
 
 ---

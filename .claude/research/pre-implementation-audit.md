@@ -36,7 +36,17 @@ M0 착수 전에 확인**. 우선순위 2는 지금 결정해두면 싼데 안 �
 
 ## 우선순위 1 — M0~M4 착수 전 확인 권장
 
-### 1-1. Tween이 "범용 store-bind 캐치올 핸들러"의 유일한 예시로 쓰여, 일반 반응형 프로퍼티 바인딩과 혼동될 위험
+### 1-1. Tween이 "범용 store-bind 캐치올 핸들러"의 유일한 예시로 쓰여, 일반 반응형 프로퍼티 바인딩과 혼동될 위험 — [해소됨, 2026-08-10 세션]
+
+**해소**: 아래 "제안"과 같은 방향(별개 핸들러로 분리)이 아니라, 그보다
+더 근본적인 재설계로 해소됨 — Tween 자체가 더 이상 독립 Dispatch
+핸들러가 아니라 PropertyHandler가 소비하는 값-레벨 래퍼(`Tween<T>`)로
+바뀌어, "일반 store-bind와 Tween-store-bind가 같은 핸들러인지"라는
+질문 자체가 성립하지 않게 됨 — 범용 State/Source 언랩은 `Dispatch/
+StoreBind.luau` 하나뿐이고 Tween은 그 아래에서 나온 `realv`를
+PropertyHandler가 직접 판별. 상세는 `research/tween-plan.md`(전면
+재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`. 아래는
+원래 발견 당시 기록.
 
 **위치**: `base/bind-system-plan.md` "확정된 디스패치 모델" 절 67-79행 —
 "Tween의 store-bind 핸들러는 **`k`는 무엇이든 받고 `v`가 Store인 경우를
