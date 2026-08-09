@@ -217,7 +217,7 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
 
 | 연산 | 시그니처 | 복잡도 | 의미 |
 |---|---|---|---|
-| `Add` | `Slot:Add(element, index?)` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 |
+| `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환** |
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
 | `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환 |
@@ -227,6 +227,16 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
 | `Get` | `Slot:Get(index): T?` | O(1) | 그 인덱스의 element 조회(범위 밖이면 `nil`) |
 | `IndexOf` | `Slot:IndexOf(element): number?` | O(n) | element의 현재 인덱스 역조회(멤버 아니면 `nil`) — 레퍼런스만 있고 인덱스가 없을 때 다른 CRUD와 연결하는 다리 |
 
+- **`Add`가 삽입된 인덱스를 반환하는 이유(2026-08-10 세션 확정)** —
+  `index`를 생략(끝에 추가)하면 호출부가 실제 위치를 모르는데, 그걸
+  알아내는 유일한 방법이 `IndexOf(element)`(O(n))뿐이었음 — `Add`는
+  그 값을 삽입 과정에서 이미 계산하므로 반환은 공짜. `index`를 명시적으로
+  넘긴 호출에서는 반환값이 그냥 echo라 다소 중복이지만, "항상 최종
+  인덱스를 반환"으로 시그니처를 통일해 분기 없이 단순하게 둠. `Move`/
+  `Swap`이 void인 것과 모순 아님 — 그 둘은 호출부가 이미 위치를 알고
+  부르는 연산이라 새로 알려줄 정보가 없어서 void인 것이고, `Add`는
+  반대로 새 정보(계산된 위치)가 생기는 경우라 "반환값은 실제로 새로
+  알게 되는 정보만"이라는 같은 원칙의 연장.
 - **`Extract(index, newElement?)`가 존재하는 이유** — 인덱스 기준 모델에서
   "요소 하나를 다른 걸로 교체"하려면 `Extract(index)`(O(n) 시프트) 후
   `Add(newElement, index)`(O(n) 시프트 재발생)를 따로 불러야 해서 이중으로
@@ -254,6 +264,10 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
     CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
     값(Ref/PreRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
+    `index`가 범위 밖(1..현재 개수+1, 즉 끝에 추가하는 위치까지 포함)이면
+    에러 — **clamp 안 함**(2026-08-10 세션 확정): index가 조용히 다른
+    자리로 보정되면 "의도한 위치가 아닌데 그대로 성공한" 조용한 버그가
+    생기고, 이미 다른 CRUD 전부가 fail-fast인 것과도 불일치함.
   - `Remove`/`Extract`/`Move`: `index`(들)가 범위 밖(1..현재 개수)이면
     에러.
   - `Extract(index, newElement)`: `newElement`도 `Add`와 동일한 검증
