@@ -24,7 +24,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
 | **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분) |
-| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14 |
+| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14, 15 |
 | **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
 
 **12/13/14는 특히 `luau-lsp`로 확인해달라고 요청받은 것들** — `luau-analyze`도
@@ -55,6 +55,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[Attribute<<T>> "name"] = value`처럼 제네릭 DI 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `bind-system-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
 | `14-type-nilable-default-overload.luau` (타입체크 전용) | `Source(default)`/`Ref(default)`의 `default` 생략이 `T`가 nilable일 때만 안전하다는 캐비엇을, 함수 오버로드(교차 타입)로 실제로 타입 레벨에서 막을 수 있는지 | `bind-system-plan.md` "[보강, 2026-08-09 열한 번째 세션]" 절 |
+| `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `bind-system-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
 
 ## 갱신 이력
 
@@ -86,6 +87,19 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 **3차 (2026-08-09, 폴더 이동)**: `luau-ignoreme/` → `.claude/luau-test/`로
 이동, git 추적 대상으로 전환. 내용 변경 없음 — 경로 참조하는 문구만
 동기화.
+
+**4차 (2026-08-11, `15` 신규)**: `:Compute(fn, ...)`의 trailing deps를
+`fn`의 위치 인자로도 노출하는 확장(같은 날 두 번째 세션) — 이형 다중
+deps의 제네릭 타입 팩 표현 가능 여부와 `previous?`를 팩 뒤에 붙일 수
+있는지가 base 문서 자신이 "실측 필요"로 명시한 새 항목이라 추가.
+
+**5차 (2026-08-11, 같은 날 세 번째 세션, `previous` 순서 정정)**:
+4차에서 "previous를 팩 뒤에"로 적었던 순서가 틀렸음이 드러남 — Luau
+값 레벨 `...`가 파라미터 리스트 맨 끝이어야 하는 것과 같은 제약으로
+`previous?`는 deps 팩 **앞**(self 바로 다음)에 와야 함. `15`의 (C)를
+"틀린 순서가 막히는지 보는 음성 대조군"으로 재정의하고, 정정된 순서를
+검증하는 (D) 양성 대조군을 신규 추가 — 이제 진짜 불확실성은 (B)
+이형 다중 deps의 제네릭 팩 표현 가능 여부 하나뿐.
 
 ## 결과 확인 후 할 일
 

@@ -154,6 +154,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M3
       스파이크에서 확인. `Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시
       유지(의도적 비대칭, 같은 절 참고)
+- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(`fn(self,
+      previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
+      리스트 맨 끝이어야 하는 것과 같은 이유로 `previous?`가 deps 팩
+      **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
+      세션에 순서 정정, `base/bind-system-plan.md` "trailing deps를 fn에
+      lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
+      `.claude/luau-test/15-type-compute-trailing-deps-typepack.luau`로
+      이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
+      되면 동종 타입 dep 1개로 한정)
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
