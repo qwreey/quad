@@ -1204,6 +1204,49 @@ lazy State 핸들로 통일, 아래 "Store/State/Source 온톨로지" 절의 "`:
 `:Compute`가 원래부터 이 셋 중 제일 먼저 있던 자리라 뒤늦게 문서화된
 것뿐, 새 결정이라기보다 이미 있던 패턴을 명문화한 것.
 
+### `:Compute(fn, ...)` — 추가 의존성을 trailing args로 직접 받는 sugar (2026-08-11)
+
+**문제 제기(사용자)**: React의 `useMemo(fn, deps)`처럼 `:With(...)` 없이
+`:Compute(fn, a, b, c)`로 바로 추가 의존성을 선언할 수 있으면 더 편하지
+않은가 — `self`가 이미 lazy 핸들로 `fn`에 넘어가는 구조라 값 언랩 방식이
+아니므로, 예전에 기각된 `Store.Combine({a,b}, function(av,bv)...)`(포지셔널
+값 언랩이라 타입 표기가 꼬였던 안)과는 다른 제안.
+
+**확정 — `Compute`엔 채택, `Observer`/`Effect`엔 채택 안 함. 근거는 "새
+노드가 실제로 생기는가"의 차이(사용자가 직접 구분).**
+
+- **`:Compute(fn, ...)`는 진짜 공짜 sugar.** `:Compute` 호출은 원래도
+  결과를 담을 새 State 노드(자기 자신의 계산 캐시 슬롯)를 만들어야
+  하므로, 그 노드가 `self` 말고 `a,b,c`에도 구독(무효화 엣지)을 추가로
+  거는 건 **이미 만들어지는 노드에 엣지만 더 얹는 것** — `:With(a,b,c):Compute(fn)`
+  체인(노드 2개: pass-through With 노드 + Compute 노드)과 달리 노드가
+  안 늘어남(노드 1개). 구현은 `:With(...)`가 이미 하는 "구독 목록 확장"
+  로직을 Compute 노드 생성 시점에 그대로 적용하는 것뿐 — 새 메커니즘
+  아님.
+- **`Effect(fn, ...)`/`state:Observer(fn, ...)`류 trailing-args 확장은
+  기각 — 여기선 진짜 새 노드가 생기기 때문.** Effect/Observer는 Compute와
+  달리 **자기 자신이 결과를 담는 State 노드가 아님**(파생값을 안 만드는
+  순수 leaf 소비자, `base/store-semantics.md`의 "독립 프리미티브 vs
+  파생 데이터" 분류에서도 확인되는 차이) — `state`(receiver) 하나만
+  구독 가능하므로, 의존성이 둘 이상이면 그걸 하나로 합칠 별도 노드가
+  필요하고 그게 바로 `:With(...)`가 만드는 새 노드임. 이건 절대 공짜가
+  아니라 **정말 비용이 드는 지점**이라, trailing args로 감춰버리면 "이
+  줄이 실제로 새 노드/구독을 만든다"는 걸 코드만 보고 알 수 없게 됨 —
+  `:With`가 clone 빌더가 아니라 진짜 노드로 확정됐던 이유(2026-08-07 세
+  번째 세션, "코드상의 호출 체인이 그래프 엣지와 1:1로 대응돼야 quad-debug
+  그래프가 안 꼬임")와 정확히 같은 원칙. 그래서 다중 의존성 Effect/Observer는
+  **`Effect(fn, state:With(a,b,c))`처럼 `:With` 호출을 코드에 그대로
+  노출**하도록 유지 — 새 노드가 생기는 지점을 sugar로 숨기지 않는다는
+  게 핵심.
+- **일반 원칙으로 정리**: "trailing args sugar는 그게 정말 무료일 때만
+  붙인다 — 호출부가 이미 만들어야 하는 노드에 엣지만 얹는 경우(Compute)엔
+  sugar, 없던 노드를 새로 만들어야 하는 경우(Effect/Observer의 다중
+  의존성 병합)엔 sugar 없이 `:With`를 명시적으로 남긴다." `quadnomicon`
+  에세이 후보로 좋음(`research/documentation-content-map.md` 6번 항목
+  다음에 추가) — "왜 Compute만 여러 deps를 편하게 받고 Effect/Observer는
+  안 그런가"가 겉보기엔 비일관적으로 보이지만 실제로는 "숨겨지는 비용이
+  있는가"라는 하나의 원칙에서 나온 것이라는 게 소재.
+
 ### `:Compute(fn)`의 선택적 두 번째 인자 — `previous` (무거운 파생 객체 재사용, 2026-08-06)
 
 **배경**: `:Compute`의 결과가 그 자체로 무겁고 재생성 비용이 큰 엔진

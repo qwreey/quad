@@ -148,6 +148,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
 - [ ] `store.key` dot-access 타입 추론 확인
+- [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
+      (2026-08-11 세션, `base/bind-system-plan.md` "`:Compute(fn, ...)`"
+      절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
+      자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M3
+      스파이크에서 확인. `Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시
+      유지(의도적 비대칭, 같은 절 참고)
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)

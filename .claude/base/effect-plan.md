@@ -43,7 +43,14 @@ leaf가 죽을 때 **마지막 cleanup을 한 번 더 호출**. 결과적으로 
 - **다수 의존성은 `:With(...)`로 먼저 하나의 State로 묶어서 넘길 것** —
   React식 별도 deps 배열을 새로 만들지 않음, quad가 이미 가진 다중 의존성
   결합 관용구(`base/bind-system-plan.md` "`:With` + `:Compute`" 절)를
-  그대로 재사용해 같은 일 하는 두 번째 경로를 안 만듦.
+  그대로 재사용해 같은 일 하는 두 번째 경로를 안 만듦. **`Effect(fn, a, b,
+  c)`처럼 trailing args로 바로 받는 sugar는 의도적으로 안 만듦**(2026-08-11
+  세션, `bind-system-plan.md` "`:Compute(fn, ...)` — 추가 의존성을 trailing
+  args로 직접 받는 sugar" 절 참고) — `Compute`와 달리 Effect/Observer는
+  자기 자신이 결과를 담는 State 노드가 아니라서, 의존성이 둘 이상이면 그걸
+  합칠 **새 노드**(`:With`가 만드는 것)가 실제로 필요함. 그 비용을 sugar로
+  감추지 않고 `Effect(fn, state:With(a,b,c))`처럼 코드에 그대로 드러내는
+  게 의도된 선택.
 - **`fn`은 커링 스타일도 권장(2026-08-07 여섯 번째 세션, 사용자 제안)** —
   `Effect(makeLogger("mount"), state)`처럼 팩토리 함수가 실제 `fn(state)`를
   만들어 반환하는 패턴, `Modifier`의 `Boldify(10)` 커링 관용구(`modifier-plan.md`

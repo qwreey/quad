@@ -205,6 +205,17 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    가능 여부는 여전히 미정 — PreRef는 fire와 동시에 소진되는 1회성
    pre-pass 참가자라 "취소"라는 개념 자체가 성립하는지부터 다시 볼 것).
 
+7. **왜 `Compute(fn, ...)`는 여러 의존성을 편하게 받고 `Effect`/`Observer`는
+   안 받는가** (2026-08-11 세션 원자료, `bind-system-plan.md` "`:Compute(fn,
+   ...)` — 추가 의존성을 trailing args로 직접 받는 sugar" 절) — 겉보기엔
+   비일관적인 API 표면(하나는 React `useMemo`식 trailing deps sugar를 받고,
+   다른 둘은 명시적 `:With` 호출을 강제)이 실은 "sugar가 새 노드 생성 비용을
+   감추는가"라는 단일 원칙에서 갈라져 나온다는 게 소재 — `Compute`는 어차피
+   자기 결과를 담을 노드를 만들어야 해서 추가 구독을 얹는 게 공짜지만,
+   `Effect`/`Observer`는 자기 자신이 State 노드가 아니라 다중 의존성 병합에
+   진짜 새 노드가 필요해서 그 비용을 코드에 그대로 드러내는 쪽(`:With`
+   명시)을 택했다는 비교.
+
 **publish 안 하는 것과의 경계**: 세션별 정정 이력, 조사 원자료(Fusion
 반응 그래프 BFS 분석, quad2-try 죽은 코드 조사 등)는 quadnomicon에도
 안 들어감 — 그건 새 티어가 필요한 게 아니라 애초에 `.claude/` 내부
