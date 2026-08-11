@@ -85,10 +85,18 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 - skip: rbvm 조사 세션 메타, EventDrivenProgramming 교차검증 일화(결론만 심화에 남음)
 
 ### modifier-plan.md / slot-plan.md
+- **Slot 프레이밍 확정(2026-08-11)**: Slot을 "동적 렌더링을 가능하게 하는
+  도구"로 소개 — Slot의 요지 자체가 "요소가 자유롭게 생기고 사라짐"이라
+  이 프레이밍이 본질과 일치함(children 배열이라는 정적 구조 서술보다 이
+  동적 능력을 앞세움). 아직 미착수인 `Slot():Single(...)`(890행 백로그)도
+  같은 프레이밍의 특수 케이스로 소개 — "1개 아니면 0개"의 동적 렌더일 뿐,
+  별도 개념 아님.
 - 초심자: Modifier 기본 체이닝+merge 우선순위 규칙 실제 예시 / Slot 기본 개념(children 배열)+클래스가 슬롯 받는 방법(Named Slot 없음) / 마운트된 slot 재마운트 시 즉시 throw
 - api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `mod:UICorner(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / retract 시 slot 내용 폐기(→심화: portal 없는 이유) / `:Apply(factory)` 기본 체이닝 관용구(→심화: 언제 `Apply` vs `Overridden`인지 성능 기준) / `:Peek<<T>>(key)` + `isState`(→심화: `Get`과 이름을 다르게 한 이유)
 - 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / retract=폐기 확정 히스토리(portal 검토 후 기각) / **왜 `Apply`가 기본이고 `Overridden`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
-- 열린 질문(문서화 보류): 여러 Slot이 형제로 섞일 때 순서 보장 — 미확정.
+- 열린 질문(문서화 보류): ~~여러 Slot이 형제로 섞일 때 순서 보장~~ **[해소됨,
+  2026-08-09 여섯 번째 세션]** Length/Offset 누적합으로 확정, 심화 목록에
+  추가 필요(`base/bind-system-plan.md` "Length/Offset" 절).
   **[2026-08-09 추가]** `Slot:List`의 `prev`/`userdata` 재사용 최적화를
   getting-started에서 "항상 파괴 후 재생성" 단순 버전만 가르치고 나중에
   최적화 단계에서 별도로 알려줄지, 아니면 Slot이 학습 순서상 core loop

@@ -894,3 +894,8 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 관용구를 더 명시적으로 표현) — `.Length`는 그냥 0/1이고 나머지(offset 소비,
 LayoutOrder 바인딩)는 일반 Slot과 완전히 같은 프로토콜. 아직 상세 설계
 안 함, `.claude/question.md`에 백로그로만 반영.
+
+**문서화 프레이밍(2026-08-11, `research/documentation-content-map.md`
+반영)**: `:Single`도 Slot의 "요소가 자유롭게 생기고 사라짐"이라는 본질과
+같은 것 — 1개 아니면 0개의 동적 렌더링일 뿐 별도 개념 아님. 실제 설계
+착수 시 이 프레이밍을 그대로 따를 것.
