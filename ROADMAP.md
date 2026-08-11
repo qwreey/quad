@@ -241,30 +241,55 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
       Slot<<Instance>>`가 quad-roblox의 사실상 유일한 Slot 타입.
 - [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
-      `keyFn` 생략 시 index를 그대로 key로 사용(중간 삽입/삭제 시 identity
-      보존 안 됨, 캐스케이드 갱신 — 흔한 업계 관행과 같은 트레이드오프).
-      `updateFn<UD=any>(item, index, userdata: UD?, prev: T?): (T|nil, UD?)`가
-      **매 reconcile 사이클마다 호출**(filter/toggle 지원 — 첫 반환값
-      `nil` 시 실제 파괴, `Visible` 토글 아님, 200+ 항목에서 lazy하지 않은
-      문제 회피), `prev` 그대로 반환하면 저비용 재사용 경로. `:List`가
-      `Source`를 대신 안 만듦 — item/index를 반응형으로 감쌀지는
-      `updateFn`이 `userdata`에 직접 관리(반환값 두 개는 서로 독립,
-      `result`가 `nil`이어도 `userdata`는 명시적으로 반환 안 하는 한 안
-      지워짐). 정리 루프는 `mounted`가 아니라 직전 사이클 `keyIndex`
-      전체를 순회해야 함(`userdata`만 살아있는 채로 key가 완전히 사라지는
-      케이스 커버). `userdata = userdata or {}` lazy-init 패턴이 Luau
-      제네릭에서 잘 좁혀지는지 실측 필요. **`userdata`는 GC-native 값만
-      허용, `:Subscribe()`한 Observer류 명시적 cleanup 필요한 값은 UB** —
+      `keyFn(item, index) -> key` 생략 시 원본 `data` 배열 위치(raw index)를
+      그대로 key로 사용(중간 삽입/삭제 시 identity 보존 안 됨, 캐스케이드
+      갱신 — 흔한 업계 관행과 같은 트레이드오프).
+      `updateFn<UD=any>(item, index: number, offset: Source<number>, prev: T?,
+      userdata: UD?): (T|nil, UD?)`가 **매 reconcile 사이클마다 호출**
+      (filter/toggle 지원 — 첫 반환값 `nil` 시 실제 파괴, `Visible` 토글
+      아님, 200+ 항목에서 lazy하지 않은 문제 회피), `prev` 그대로 반환하면
+      저비용 재사용 경로. 파라미터 순서는 반환값 순서(`prev`류 먼저,
+      `userdata`류 나중)와 맞춤(2026-08-11 세션 정정, 원래 `userdata`가
+      `prev`보다 앞이었음).
+      **`updateFn`의 `index`는 `keyFn`의 raw `index`(원본 `data` 배열
+      위치)와 다른 값** — "이번 사이클에 살아남으면 차지할 압축된 마운트
+      위치"(`candidateIndex`, filter로 압축됨), `key`와도 무관(순서/레이아웃
+      전용, 식별 목적 아님) — 문서화 시 셋(원본 raw index/`key`/`updateFn`의
+      `index`)을 혼동하지 않게 주의. **`offset`은 `Slot.Offset`을 그대로
+      전달**(형제 Slot/정적 자식 누적합, `base/bind-system-plan.md`의
+      "Length/Offset" 절) — `index`/`offset` 둘 다 **raw 값으로만 전달,
+      `Slot`/Handler가 `LayoutOrder` 등을 자동으로 세팅해주지 않음**
+      (2026-08-11 세션 확정 — 자동 바인딩은 컴포넌트가 이미 지정한 값을
+      매직으로 덮어쓰는 문제가 있어 기각, 실제 반영은 전적으로 `updateFn`
+      몫). `:List`가 `Source`를 대신 안 만듦 — item/index를 반응형으로
+      감쌀지는 `updateFn`이 `userdata`에 직접 관리, **"버림(`nil` 반환)/
+      다시 그림(`prev==nil`, 항상 새 `Source`로 처음부터 올바른 값 생성)/
+      source만 갱신(`prev` 재사용, 값 다를 때만 `:Set`)" 세 갈래를
+      `updateFn`이 명시적으로 나눠야 낭비 없음** — 재사용 중인 Source에
+      미리 `:Set()`해뒀다가 결국 새로 그리게 되면 그 `:Set()`은 아무도
+      안 구독한 상태라 무의미한 연산이 됨, `updateFn`만 이 갈래를 정확히
+      알아 낭비를 피할 수 있음(반환값 두 개는 서로 독립, `result`가 `nil`이어도
+      `userdata`는 명시적으로 반환 안 하는 한 안 지워짐). 정리 루프는
+      `mounted`가 아니라 직전 사이클 `keyIndex` 전체를 순회해야 함
+      (`userdata`만 살아있는 채로 key가 완전히 사라지는 케이스 커버).
+      `userdata = userdata or {}` lazy-init 패턴이 Luau 제네릭에서 잘
+      좁혀지는지 실측 필요. **`userdata`는 GC-native 값만 허용,
+      `:Subscribe()`한 Observer류 명시적 cleanup 필요한 값은 UB** —
       `item`을 nilable로 바꿔 최종 제거 시 정리 훅을 한 번 더 부르는 안은
       기각(Slot 부모 자체가 Destroy되는 경로에선 이 훅이 전혀 안 불려서
       절반만 동작, `retract`가 Destroy 시 안 불리는 것과 같은 이유).
-      (2026-08-09 세 번째 세션 확정,
-      `base/slot-plan.md` "`Slot:List(...)`" 절) 구현.
+      (2026-08-09 세 번째 세션 확정, `offset`/raw `index`/세 갈래 구조는
+      2026-08-11 세션 추가 확정, `base/slot-plan.md` "`Slot:List(...)`" 절)
+      구현.
       **`data:Observer(fn)` 구독은 `:List()` 호출 시점이 아니라 Slot
       마운트 시점까지 lazy — `Dispatch.setLength`와 같은 패턴으로
       `bindLifetime(inst,observer)`(마운트 이후 `:List()`가 불리면
       `self._mounted` 확인 후 즉시 활성화)** (2026-08-09 일곱 번째 세션,
       `base/slot-plan.md` "`Slot:List(...)`"의 "구독 시점" 절)
+      **`Slot.Offset: Source<number>`도 `Slot.Length`처럼 공개 필드로
+      노출 — Slot 마운트 시점에 `Dispatch.setOffsetSource`가 등록하는
+      바로 그 Source를 `self.Offset`으로도 저장**(2026-08-11 세션,
+      `base/bind-system-plan.md`의 "Slot.Length와 Slot.Offset은 별개" 절)
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)

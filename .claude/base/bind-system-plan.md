@@ -475,12 +475,24 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   교체 시엔 이 Handler가 새 값으로 다시 `setLength`를 호출.
 - **`setOffsetSource`**: 이 위치가 자기 순서 계산에 쓸 `Source<number>`를
   **스스로 만들어서** 등록 — Dispatch는 그냥 레지스트리에 넣어두기만
-  하고, `recompute`가 그 자리에 값을 `:Set()`함. Handler는 이 **같은**
-  Source 객체를 자기 원소(들)의 `LayoutOrder` 바인딩에 그대로 씀
-  (`localIndex:With(offset):Compute(function(i,o) return i+o end)`을
-  `LayoutOrder`에 store-bind로 걸어두면, offset이 바뀔 때 기존 store-bind
-  재실행 메커니즘이 알아서 다시 씀 — 새 push/observer 시스템 불필요).
-  **실제 마운트를 하지 않는 위치는 `None`을 등록** — 순서 계산에
+  하고, `recompute`가 그 자리에 값을 `:Set()`함. Slot이 매치되는 경우
+  이 Source는 그 자리에서 `Slot.Offset` 필드로도 그대로 저장됨(아래
+  참고) — 순수 숫자 누적합 계산이라 엔진 지식이 전혀 필요 없어서, 이
+  등록 자체는 `quad-base`(`Dispatch/Slot.luau`)가 함. **[정정,
+  2026-08-11 세션] 예전엔 이 Source를 "Handler가 자기 원소(들)의
+  `LayoutOrder` 바인딩에 그대로 쓴다"고 서술했었는데 — 폐기.** Slot이
+  마운트한 원소에 `LayoutOrder`를 자동으로 덮어쓰면 (a) 사용자가 그
+  원소 자신의 프로퍼티로 `LayoutOrder`를 이미 지정해도 조용히 씹히는
+  매직이 되고, (b) `LayoutOrder`는 애초에 Roblox 전용 프로퍼티라 그
+  지식이 `Dispatch/Slot.luau`(엔진 무관) 층위로 새는 레이어링 위반이기도
+  함. 이제 `Offset`은 `Slot.Offset`으로 공개 노출만 되고, 각 원소의
+  `LayoutOrder`(또는 웹의 CSS `order`)를 실제로 계산해 세팅하는 건
+  `updateFn`(또는 수동 Slot 사용자)의 몫 — `updateFn`은 `index`를 raw
+  number로만 받고(`Slot.Length`/`item`과 같은 원칙, `:List`가 반응형을
+  강제하지 않음), 반응형이 필요하면 자기 `userdata` 안에 직접 `Source`를
+  만들어 `Frame { LayoutOrder = layoutOrder:With(offset):Compute(fn) }`처럼
+  써넣으면 됨 — 새 메커니즘 불필요. 상세는 `base/slot-plan.md`의
+  `Slot:List` 절 참고. **실제 마운트를 하지 않는 위치는 `None`을 등록** — 순서 계산에
   참여할 게 없다는 명시적 선언. 대상은 Ref/PreRef뿐 아니라 **그 배열
   위치의 값 자체가 `None`인 모든 경우**(예: `props.Ref or None` 관용구로
   캐우칭된 미전달 Ref, PreRef pre-pass가 소진시킨 슬롯 등) — `setLength`도
@@ -599,6 +611,15 @@ quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 n
 `Length`가 그걸 못 잡는 게 맞고, 그건 별도 State로 계산해야 하는 사용자
 몫. `Offset`은 Dispatch가 `setOffsetSource`로 등록받아 `recompute`가
 채워주는 입력값, 순서 계산 전용 — 서로 다른 두 `Source<number>`.
+
+**`Slot.Offset`도 `Slot.Length`와 마찬가지로 공개 필드(2026-08-11
+세션 명시화)** — Slot이 마운트되는 시점(`Dispatch/Slot.luau`가
+`setOffsetSource`를 등록하는 바로 그 자리)에 같은 Source 객체를
+`self.Offset`으로도 저장, 마운트 전엔 `nil`. 위 정정대로 이 값을
+`LayoutOrder` 등에 실제로 반영하는 건 Slot 자신이 하지 않으므로,
+`:List`의 `updateFn`이 이 값을 받아 쓰거나(아래 `base/slot-plan.md`
+참고) 수동 CRUD 사용자가 직접 `slot.Offset`을 읽어 자기 원소 프로퍼티를
+구성해야 함 — 아무것도 안 하면 그냥 `LayoutOrder`가 안 바뀔 뿐.
 
 `base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 절이 이 메커니즘으로
 해소됨 — 상세는 그 문서 참고.

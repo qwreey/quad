@@ -343,29 +343,95 @@ Slot():List(data, updateFn, keyFn?) -> Slot  -- self
 같은 트레이드오프라 새로 설명할 개념은 아님, 재정렬/중간 삽입이 실제로
 일어나는 목록엔 진짜 `keyFn`을 넘기라고 안내하는 정도로 충분.
 
+**`key`의 타입 제약 — 없음, 사이클 간 안정성+유일성만 있으면 됨
+(2026-08-11 세션 명시화).** `key`는 그냥 `mounted`/`userdata`/`keyIndex`
+맵의 Lua 테이블 키로 쓰일 뿐이라 string/number/테이블 레퍼런스 등 뭐든
+가능 — 유일한 조건은 (1) 같은 논리적 item이면 사이클이 바뀌어도 항상
+같은 key(안정성), (2) 서로 다른 item이면 항상 다른 key(유일성). `keyFn`이
+`item`을 그대로 받으므로, `item`에 이미 안정적인 식별자 필드(흔히 문자열
+id)가 있으면 그걸 그대로 쓰면 됨 — 캐스케이드 갱신을 피하려고 새로
+뭔가 만들 필요 없음:
+
+```lua
+slot:List(data, updateFn, function(item) return item.id end)
+```
+
+재정렬/중간 삽입이 실제로 일어나는 목록엔 이 패턴을 기본 권장 관용구로
+문서화(콘텐츠 사이트 착수 시 반영 — `research/documentation-content-map.md`).
+
+**같은 사이클 안에서 `keyFn`이 중복 key를 반환하면 즉시 `error`
+(2026-08-11 세션)** — `reconcile`이 어차피 `seen[key]`를 채우고 있으므로
+그 직전에 `if seen[key] then error(...) end` 확인 하나만 추가하면 거의
+공짜(아래 "구현" 절 코드 참고). 조용히 넘어가면 두 item이 `mounted`/
+`userdata`/`keyIndex`의 같은 슬롯을 다투게 돼 한쪽 item이 사라지거나
+뒤섞이는 조용한 버그가 되므로, 다른 Slot CRUD 에러 조건들과 같은
+fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `item.id`
+관용구를 안 쓰고 실수로 안 유일한 필드를 쓴 경우)에게 즉시 신호를 줌.
+
 **이름 정정 — `renderFn` → `updateFn` (같은 세션 후속).** 아래 서술하는
 호출 계약이 "새 key가 나타났을 때 1회 렌더"에서 "매 사이클 재호출되어
 갱신 여부를 스스로 판단"으로 바뀌면서, "render"보다 "update"가 실제
 역할을 더 정확히 반영한다고 판단해 이름도 같이 바꿈.
+
+> **용어 주의 — 세 가지 "위치/식별" 값을 혼동하지 말 것(2026-08-11 세션
+> 명시화)**: 아래 서술에 비슷한 이름의 값 세 개가 나오는데 전부 다름.
+> 1. **`keyFn(item, index)`의 `index`** — 원본 `data` 배열에서의 raw
+>    위치(`ipairs(items)`의 루프 인덱스 그대로), filter와 무관하게 항상
+>    원본 배열 기준.
+> 2. **`key`** — `keyFn`이 계산해 돌려주는 정체성 값. `mounted`/`userdata`
+>    맵의 실제 키이자 `:List`가 diff를 판단하는 기준 — item이 재정렬돼도
+>    같은 `key`면 같은 개체로 취급.
+> 3. **`updateFn(item, index, ...)`의 `index`** — `key`/위 1번과 전혀
+>    무관한 **압축된 마운트 위치**(filter로 마운트 안 된 item만큼
+>    당겨짐) — 순서/레이아웃(`LayoutOrder` 등) 계산 전용, **식별 목적으로
+>    쓰면 안 됨**(그건 `key`의 역할). 상세는 아래 `updateFn` 파라미터
+>    설명 참고.
 
 - `data: {[K]:V} | State<{[K]:V}> | Source<{[K]:V}>` — plain이면 최초
   1회 배치만 하고 이후 추적 안 함(다시는 안 바뀌므로), State/Source면
   아래 메커니즘이 계속 동작. 기존 leaf 프로퍼티의 "리터럴 또는 State
   둘 다 받는" 폴리모픽 컨벤션 재사용.
 - `keyFn(item, index) -> key`(선택, 생략 시 `index`를 그대로 key로 사용) —
-  아이템 값과 인덱스 둘 다 받음.
-- **`updateFn<UD = any>(item, index, userdata: UD?, prev: T?): (T | nil, UD?)`
-  — 매 reconcile 사이클마다 모든 key에 대해 호출됨.** `:List`는 더 이상
-  item을 위해 `Source`를 대신 만들어주지 않음(아래 "왜 `Source`를
-  `:List`가 안 만드는가" 참고) — `item`/`index`는 매번 그 사이클의 raw
-  현재값 그대로 넘어감, 반응형으로 쓸지는 `updateFn`이 알아서 결정.
+  아이템 값과 인덱스 둘 다 받음. **이 `index`는 원본 `data` 배열 위치** —
+  아래 `updateFn`의 `index`(압축된 마운트 위치)와 이름만 같고 값은 다름,
+  위 "용어 주의" 참고.
+- **`updateFn<UD = any>(item, index: number, offset: Source<number>,
+  prev: T?, userdata: UD?): (T | nil, UD?)` — 매 reconcile 사이클마다
+  모든 key에 대해 호출됨.** `:List`는 더 이상 item을 위해 `Source`를
+  대신 만들어주지 않음(아래 "왜 `Source`를 `:List`가 안 만드는가" 참고,
+  2026-08-11 세션에 `index`도 같은 원칙으로 편입) — `item`/`index`는
+  매번 그 사이클의 raw 현재값 그대로 넘어감, 반응형으로 쓸지는
+  `updateFn`이 알아서 결정. **파라미터 순서는 반환값 순서(`T`류 먼저,
+  `UD`류 나중)와 맞춤(2026-08-11 세션 정정)** — 원래 `userdata`가
+  `prev`보다 앞이었는데, 반환은 `(result, ud)`라 파라미터도 `prev,
+  userdata` 순서여야 "값이 안 바뀌면 그대로 반환"이 `return prev, ud`로
+  자연스럽게 읽힘.
+  - **`index: number`** — 이 key가 **지금 마운트되면(이 사이클에서
+    `nil`을 반환하지만 않으면) 실제로 마운트된 요소들 사이에서** 몇
+    번째를 차지하게 되는지(1-base), **raw number**(State 아님) — **`keyFn(item,
+    index)`가 받는 raw `index`(원본 `data` 배열에서의 위치)와는 다른
+    값**이니 혼동 주의. filter로 앞쪽 item이 마운트 안 되면 그만큼
+    압축(compact)됨(예: 5개 중 2번째/4번째만 통과하면 그 둘의 `index`는
+    1, 2). **`:List`는 이 값을 State로 감싸주지 않음** — `item`을 raw로
+    넘기는 것과 완전히 같은 원칙(아래 "왜 `Source`를 `:List`가 안
+    만드는가" 참고)이 `index`에도 그대로 적용된 것뿐: `updateFn`이
+    `LayoutOrder` 같은 걸 반응형으로 유지하고 싶으면 **자기 `userdata`
+    안에 직접 `Source`를 만들어 관리**해야 함, 원치 않으면(웹 백엔드처럼
+    무시해도 되는 경우 등) 그냥 버려도 그만 — 아래 "왜 `LayoutOrder`를
+    Slot이 대신 안 해주는가" 절의 예시 참고.
+  - **`offset: Source<number>`** — 이 `Slot` 자신의 `Slot.Offset`을 그대로
+    전달(모든 key가 같은 값을 공유) — 형제로 섞인 다른 Slot/정적 자식이
+    기여한 개수의 누적합(`base/bind-system-plan.md`의 "Length/Offset" 절
+    참고). `index`와 마찬가지로 실제 프로퍼티에 어떻게 반영할지는
+    전적으로 `updateFn` 몫 — `Slot`/Handler가 자동으로 해주지 않음
+    (2026-08-11 세션 확정, 아래 참고).
+  - **`prev: T?`** — 이 key에 대해 지금 실제로 마운트돼 있는
+    element(없으면 `nil`, 첫 호출을 포함해 언제든 가능).
   - **`userdata: UD?`** — 이 key에 대해 지난 호출에서 `updateFn` 자신이
     반환해둔 두 번째 값을 그대로 돌려받음(첫 호출은 `nil`). 완전히
     opaque — `:List`는 안을 전혀 안 들여다봄. `updateFn`이 원하는 걸
     아무거나 담아도 됨(item의 `Source`, 여러 파생 State, 로컬 UI
     상태 등).
-  - **`prev: T?`** — 이 key에 대해 지금 실제로 마운트돼 있는
-    element(없으면 `nil`, 첫 호출을 포함해 언제든 가능).
   - **반환값 두 개는 서로 완전히 독립** — `:List`가 `result`와 `userdata`
     사이에 어떤 커플링도 안 둠(예: `result`가 `nil`이라고 `userdata`를
     자동으로 지우지 않음), 그대로 기록만 함. **[정정, 같은 세션 후속]**
@@ -375,22 +441,117 @@ Slot():List(data, updateFn, keyFn?) -> Slot  -- self
     없앰. 흔한 경우(둘 다 리셋)는 그냥 `return nil` 하나로 충분(Lua가
     안 받은 반환 슬롯을 알아서 `nil`로 채움), 캐시를 남기고 싶으면
     명시적으로 `return nil, ud`.
-  - `updateFn`은 매번 다음 중 하나를 반환:
-    - **`prev`를 그대로 반환** — "지금 마운트된 걸 계속 쓴다"는 뜻.
-      관용구: `if prev and (필터 통과) then ...update ud...; return prev,
-      ud end`. 실제 마운트/파괴가 없는 **저렴한 경로**.
-    - **새 값(또는 다른 값)을 반환** — 첫 렌더(이 key 최초 등장) 또는
-      의도적 교체. `prev`가 있었다면 그건 파괴되고 새 값이 그 자리를
-      대신함.
-    - **첫 번째 값으로 `nil`을 반환** — "지금 이 key는 렌더 안 함"(filter
-      탈락 등). `prev`가 있었다면 실제로 파괴됨(단순 `Visible = false`
-      아님 — 아래 참고). `None`을 반환해도 동일 취급(둘 다 허용, 편의상
-      `nil` 권장 — 반환값이 raw Slot 요소로 직접 들어가는 게 아니라
+  - **`updateFn`은 매번 다음 세 갈래 중 하나를 명시적으로 골라야 함**
+    (아래 "왜 `LayoutOrder`를 Slot이 대신 안 해주는가" 절의 예시 코드가
+    이 세 갈래를 그대로 구현) — 어느 갈래인지 `updateFn` 자신만 정확히
+    알기 때문에, 이 판단을 `updateFn` 밖(`:List` 내부)으로 빼면 낭비가
+    생김(재사용 예정인 Source에 미리 `:Set`해뒀다가 결국 다시 그리게
+    되는 식):
+    - **버림** — 첫 번째 값으로 `nil`(또는 `None`, 동일 취급)을 반환.
+      "지금 이 key는 렌더 안 함"(filter 탈락 등) — `prev`가 있었다면
+      실제로 파괴됨(단순 `Visible = false` 아님 — 아래 참고). 편의상
+      `nil` 권장(반환값이 raw Slot 요소로 직접 들어가는 게 아니라
       `:List`의 reconcile이 해석만 하므로 "요소 타입 제약"의 raw
       `nil`/`None` 금지와 안 부딪힘).
+    - **다시 그림** — `prev`와 다른(보통 새로) 만든 값을 반환. 첫 렌더
+      (이 key 최초 등장) 또는 의도적 전체 교체 — `prev`가 있었다면 그건
+      파괴되고 새 값이 그 자리를 대신함. 이 갈래에서 반응형 값(예:
+      `LayoutOrder`용 `Source`)이 필요하면 **항상 새로 만들어서** 처음부터
+      올바른 값으로 시작해야 함, 이전 `userdata`에 뭐가 남아있었든
+      재사용/`Set`하면 안 됨(아무도 안 구독하는 상태라 무의미한 연산).
+    - **`prev`를 그대로 반환(source만 갱신)** — "지금 마운트된 걸
+      계속 쓴다"는 뜻, 실제 마운트/파괴가 없는 **저렴한 경로**. 관용구:
+      `if prev and (필터 통과) then ...update ud 안의 Source에 :Set()...;
+      return prev, ud end` — 이 갈래에서만 기존 Source를 재사용하며
+      값이 실제로 다를 때만 `:Set()`.
   - `userdata = userdata or {}`류 lazy-init 관용구가 `UD`가 완전히 자유
     제네릭인 상태에서도 Luau 타입 시스템이 매끄럽게 좁혀주는지는 **실측
     필요**(M0/M6 착수 시 확인 항목, 지금 단정 안 함).
+
+### 왜 `LayoutOrder`를 Slot이 대신 안 해주는가 (2026-08-11 세션)
+
+처음엔 `Slot`을 마운트하는 Handler가 `index`+`offset`을 조합해 각 원소의
+`LayoutOrder`를 자동으로 바인딩해주는 안을 검토했으나 **기각** — 사용자가
+직접 두 가지 문제를 지적:
+
+1. **매직이 됨.** 컴포넌트가 자기 프로퍼티로 `LayoutOrder`를 이미 지정해서
+   Slot에 넣어도(`Frame { LayoutOrder = 5 }`), Slot이 마운트 시점에 그걸
+   조용히 덮어쓰게 됨 — "매직 없이 명시적"이라는 프로젝트 전역 기조와
+   정면으로 부딪힘.
+2. **애초에 `updateFn`이 동적 요소를 전부 다루는 게 원래 설계 의도였음.**
+   `userdata`도 그 일부 — Slot/Handler가 원소 프로퍼티의 일부(`LayoutOrder`)만
+   따로 떼어 자기가 관리하면 이 원칙이 깨짐.
+
+**결론**: Slot은 `index`(압축된 위치)와 `offset`(형제 누적합, `Source`)만
+`updateFn`에 값으로 전달하고, 그 둘을 실제로 어디에 어떻게 쓸지는 전부
+`updateFn` 작성자 몫 — 로블록스에선 `LayoutOrder`에, 웹이면 필요할 때만
+CSS `order`에(불필요하면 그냥 무시, `insertBefore`가 알아서 물리 순서를
+처리하므로), 조합 방식(`+`가 아니라 다른 함수)도 전적으로 자유. Slot
+쪽엔 `LayoutOrder`라는 이름 자체가 전혀 등장 안 함, 완전히 엔진/프로퍼티
+이름 무관.
+
+수동 CRUD로 Slot을 쓰는 사용자도 마찬가지 — `:List` 없이 직접
+`slot:Add(element, index)`를 부른다면, 원한다면 `slot.Offset`을 직접
+읽어 자기 `index`(CRUD 호출 시점에 스스로 아는 값)와 조합해서 프로퍼티를
+구성하면 됨, 안 하면 그냥 `LayoutOrder`가 갱신 안 될 뿐(에러 아님).
+
+**`index`가 State가 아니라 raw number인 이유, `:Set` 타이밍은 전부
+`updateFn`의 몫(같은 세션 후속)** — 처음엔 `:List`가 `index`도
+`indexState: Source<number>`로 감싸 관리해주는 안을 검토했으나, 사용자가
+"결국 이것도 `item`처럼 raw number로 넘기고, `:Set`을 언제 할지는
+`userdata`를 활용해 `updateFn` 스스로 정하는 게 맞다"고 정리 — 채택.
+근거: (1) `item`에 이미 적용된 "`:List`가 반응형을 강제하지 않는다"
+원칙(바로 아래 절)이 `index`에도 그대로 적용돼야 일관적임. (2) `:List`가
+`indexState`를 대신 관리하면, 값이 실제로 바뀌었는지 비교하는 가드
+(`Get() ~= newIndex`, `recompute`가 이미 쓰는 패턴)를 넣더라도 **새로
+생기는 원소는 항상 `Source(0)`으로 시작했다가 다시 `:Set(index)`으로
+고쳐 써야 해서 프로퍼티가 두 번 써짐** — `updateFn`이 `userdata`로 직접
+관리하면 새 원소는 처음부터 `Source(index)`로 **올바른 값으로 생성**돼서
+이 낭비 자체가 없음.
+
+```lua
+function updateFn(item, index, offset, prev, ud)
+    if not shouldShow(item) then
+        return nil, ud   -- 버림 — Set 자체를 안 부름
+    end
+
+    if not prev then
+        -- 다시 그림(새 원소) — 이전 Source 재사용/Set 없이 처음부터 올바른 값으로 생성
+        local layoutOrder = Source(index)
+        return Frame {
+            LayoutOrder = layoutOrder:With(offset):Compute(function(i, o) return i + o end),
+            ...
+        }, { layoutOrder = layoutOrder }
+    end
+
+    -- source 업데이트만 전파 — 기존 원소/Source 재사용, 실제로 바뀔 때만 Set
+    local layoutOrder = ud.layoutOrder
+    if layoutOrder:Get() ~= index then
+        layoutOrder:Set(index)
+    end
+    return prev, ud
+end
+```
+
+**세 갈래를 명시적으로 나누는 이유(사용자 정정)** — `updateFn`이 실행되기
+전까지는 이번 사이클에 이 item이 "버려질지/다시 그려질지/source만
+갱신될지" 아무도 모름, 그래서 `idx:Set()`을 미리 해둘 수가 없음(해봐야
+어느 쪽으로 결론 날지 몰라 낭비가 될 수 있음) — 반대로 `updateFn`
+자신은 이 세 갈래를 정확히 알고 있으므로, 자기 안에서 직접 나누면
+낭비가 없음. 특히 **"다시 그림" 갈래에서 이전 `ud.layoutOrder`를
+재사용하며 `:Set()`하는 건 무의미한 연산**이 됨 — 어차피 새 Frame을
+만드는 순간 새로운 `:With`/`:Compute` 구독이 맺어지므로, 그 전에 아직
+아무도 안 보는 이전 Source에 `:Set()`을 해봐야 아무 캐스케이드도 안
+일어나는 헛수고(구독자가 없어 관측 비용은 저렴하지만 그래도 불필요한
+분기) — 대신 그냥 새 `Source(index)`를 바로 만들면 됨, 이전 Source가
+어디 남아있든 상관없음(아무도 참조 안 하면 그냥 GC됨).
+
+`index`가 `updateFn` 호출 시점에 이미 "**이 item이 이번 사이클에 살아남으면
+차지할** 압축 위치"로 정확히 계산돼서 넘어오므로(아래 "구현" 절의
+`candidateIndex` 참고, 직전까지의 생존자 수만으로 계산 가능해 이 item
+자신의 생존 여부와 무관), `updateFn`이 값을 늦게 알아서 임시값→정정
+과정을 거칠 필요가 없음 — `nil` 반환(필터 탈락)이면 이 `index` 값은
+그냥 버려지고 다음 생존자가 같은 값을 받음.
 
 ### 왜 매 사이클 호출로 바뀌었는가 — filter/toggle 문제
 
@@ -487,31 +648,42 @@ function Slot:List(data, updateFn, keyFn)
 end
 
 -- Dispatch/Slot.luau의 process(inst,k,self)가 마운트 시점에 1회 호출
--- (self._mounted=true/self._mountedInst=inst를 세팅하는 바로 그 자리)
+-- (self._mounted=true/self._mountedInst=inst, self.Offset 세팅과 같은 자리)
 function activateList(self, inst)
     local keyFn, updateFn = self._keyFn, self._updateFn
+    local offset = self.Offset
     local mounted, userdata, keyIndex = {}, {}, {}
 
     local function reconcile(items)
         local newKeyIndex, seen = {}, {}
+        local pos = 0   -- 압축된(실제 마운트된) 위치 카운터, raw 루프 인덱스 i와 다름
+
         for i, item in ipairs(items) do
-            local key = keyFn(item, i)
-            newKeyIndex[key] = i
+            local key = keyFn(item, i)   -- keyFn은 raw i를 받음(:List 파라미터 설명 참고)
+            if seen[key] then
+                error("Slot:List — duplicate key: " .. tostring(key))
+            end
             seen[key] = true
 
             local prev = mounted[key]
-            local result, ud = updateFn(item, i, userdata[key], prev)
+            local candidateIndex = pos + 1   -- "이 item이 살아남으면 차지할" 압축 위치(생존 여부와 무관하게 계산 가능)
+            local result, ud = updateFn(item, candidateIndex, offset, prev, userdata[key])
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
 
+            if result ~= nil then
+                pos = candidateIndex   -- 실제로 살아남았을 때만 커밋
+            end
+
             if result ~= prev then
-                if prev ~= nil then rawRemove(self, prev) end    -- 파괴
-                if result ~= nil then rawAdd(self, result, i) end -- 새로 배치
+                if prev ~= nil then rawRemove(self, prev) end       -- 파괴
+                if result ~= nil then rawAdd(self, result, pos) end -- 새로 배치, 압축 위치 기준
                 mounted[key] = result
-            elseif prev ~= nil and keyIndex[key] ~= i then
-                rawMove(self, prev, i)                 -- 그대로 쓰되 위치만 이동
+            elseif prev ~= nil and keyIndex[key] ~= pos then
+                rawMove(self, prev, pos)               -- 그대로 쓰되 위치만 이동
             end
 
             userdata[key] = ud    -- result와 무관, 그대로 기록
+            newKeyIndex[key] = pos
         end
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
@@ -536,6 +708,30 @@ function activateList(self, inst)
 end
 ```
 
+**[정정, 2026-08-11 세션] `pos`(압축 위치)와 raw 루프 인덱스 `i`를
+분리한 이유 — 이전 의사코드의 실제 버그.** 원래 `rawAdd(self, result, i)`처럼
+raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운트 안 되면
+실제 Slot 안 마운트된 개수는 `i`보다 항상 적어짐 — 그 상태로 `rawAdd`를
+`i` 위치에 부르면 `Add`의 "범위 밖 index는 clamp 없이 error"(위 "CRUD API
+확정" 절)에 걸려 그냥 터짐. `pos`는 이번 사이클에서 **지금까지 실제로
+마운트된 개수**만 세는 별도 카운터라 이 문제가 없음 — `keyIndex`/`rawMove`/
+`rawAdd`도 전부 이 `pos` 기준으로 통일. filter 탈락 없이 순서대로 통과하는
+흔한 경우엔 `pos == i`라 체감상 달라지는 게 없음.
+
+**[같은 세션 후속] `updateFn`에 넘기는 `index`가 `candidateIndex`(=`pos + 1`)인
+이유 — `idx`를 `:List`가 State로 관리하던 안을 기각하며 나온 재설계.**
+`candidateIndex`는 **"이 item이 이번 사이클에 살아남으면 차지할 압축
+위치"** — 직전까지 처리된 item들의 생존 개수(`pos`)만으로 계산되므로
+이 item 자신이 살아남을지와 무관하게 `updateFn` 호출 **전에** 이미 정확히
+알 수 있음. 그래서 `result ~= nil`일 때만 `pos = candidateIndex`로 커밋—
+살아남지 못하면(`nil` 반환) 그 값은 그냥 버려지고 다음 생존자가 같은
+값을 받음. 이 덕에 `updateFn`은 항상 **정확한 최종값**을 받아서, 위
+"왜 `LayoutOrder`를 Slot이 대신 안 해주는가" 절의 `Source(index)` 예시처럼
+새 원소를 처음부터 올바른 값으로 만들 수 있음(임시값→나중에 정정하는
+이중 write가 생기지 않음) — `candidateIndex` 자체가 다음 값을 미리
+계산해두는 것뿐이라 look-ahead(아직 안 본 뒤쪽 item을 미리 훑는 것)가
+전혀 필요 없는, 여전히 단일 forward pass.
+
 - **`data:Observer(fn)`**: 새 구독 프리미티브 아님 — 2026-08-07 여섯 번째
   세션에 이미 "등록 즉시 1회 실행" 확정된 그 메소드를 그대로 씀.
   `reconcile`은 매번 **현재 전체 스냅샷을 받아 O(n) 단일 패스로 diff**
@@ -555,7 +751,10 @@ end
   사라지면 `pairs(mounted)`로는 그 key가 아예 안 잡혀서 `userdata`가
   못 치워지고 샘 — 직전 사이클에 실제로 존재했던 **전체** key 집합
   (`keyIndex`, 매 사이클 모든 key에 대해 채워짐)을 순회해야 이 케이스를
-  놓치지 않음.
+  놓치지 않음. `userdata` 안에 사용자가 직접 넣어둔 `Source`(예: 위
+  `LayoutOrder` 예시의 `layoutOrder`)도 이 정리 대상에 자연히 포함됨 —
+  `:List` 자신은 그 안을 안 들여다보지만, `userdata[key] = nil`이 되는
+  순간 참조가 끊겨 GC됨.
 - **`mounted`/`userdata`/`keyIndex`**: `activateList`(마운트 시점 1회
   실행)의 로컬 변수(클로저 업밸류) — 별도 전역 weak table(`Relate` 등)
   불필요, `inst`/`self`가 살아있는 동안만 존재하면 되고 죽으면 클로저도
