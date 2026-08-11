@@ -93,6 +93,15 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   "Slot-in-Slot 중첩" 절 참고. 자기 참조 제네릭이 Luau에서 실제로
   타입체크되는지는 다른 재귀 타입 케이스들과 같은 급으로 실측 필요
   (`.claude/luau-test/`, M0/M6 착수 시 확인).
+  **[2026-08-11 일곱 번째 세션, 같은 세션 정정] raw 요소가 `State<T>`/
+  `Source<T>`로 감싸져 있는 것도 허용 — `Slot:Add`가 받는 실제 타입은
+  `T | State<T> | Source<T>`.** **구현은 새 메커니즘이 아니라 순수
+  `:Single` sugar** — `isState(element)`면 그 자리에 내부적으로
+  `Slot():Single(element)`(nested Slot)를 대신 삽입할 뿐이라, 언랩된
+  값이 `nil`이어도(`State<T?>`) 전혀 문제없음(raw 직접 전달 요소에만
+  여전히 non-nil 요구 적용, 핸들러 계층 값 금지는 그대로 상속) — 상세는
+  맨 아래 "반응형 raw 요소" 절 참고, 최초 검토했던 "position-keyed
+  StoreBind 구독" 안은 기각.
 
 ## 핵심 제약: 소유권 귀속과 단일 마운트
 
@@ -718,7 +727,11 @@ function activateList(self, inst)
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
 
             if result ~= nil then
-                pos = candidateIndex   -- 실제로 살아남았을 때만 커밋
+                -- [2026-08-11 일곱 번째 세션] result가 nested Slot이면 그
+                -- .Length만큼 건너뛴다 — 다음 형제의 index가 이 아이템이
+                -- 실제로 차지하는 물리적 개수를 반영해야 함(아래 "index도
+                -- nested-Slot 결과의 Length만큼 건너뛰어야 함" 절 참고)
+                pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get() or 1)
             end
 
             if result ~= prev then
@@ -938,13 +951,17 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
 조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김.
 
-## `Slot:Single(state, updateFn)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
+## `Slot:Single(state, updateFn?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
 
 기존 "백로그, 미착수"에서 실제 설계까지 완료됨 — 새 reconcile 로직
 없이 **`:List`를 정확히 0/1개짜리 배열로 감싸는 sugar**:
 
 ```lua
+local function identityUpdateFn(item) return item end
+
 function Slot:Single(state, updateFn)
+    updateFn = updateFn or identityUpdateFn   -- [2026-08-11 일곱 번째 세션] 기본값 추가
+
     local data = isState(state)
         and state:Compute(function(v) return v == nil and {} or { v } end)
         or (state == nil and {} or { state })
@@ -954,6 +971,12 @@ function Slot:Single(state, updateFn)
     end, function() return true end)   -- 고정 key
 end
 ```
+
+**`updateFn` 기본값(identity) — [2026-08-11 일곱 번째 세션] 추가.** 반응형
+raw 요소(`Slot:Add(state)`, 아래 "반응형 raw 요소" 절)가 `Slot():Single(state)`의
+sugar로 재정의되면서, `updateFn` 생략이 유효해야 그 sugar가 성립함 —
+생략 시 `prev`/`userdata`/`offset`을 전혀 안 쓰고 매번 `item`을 그대로
+반환(= 정체성이 바뀔 때마다 항상 다시 그리는 coarse swap).
 
 - **`index`를 안 주는 이유**: Single은 형제가 자기 하나뿐이라 `index`가
   항상 상수(1 또는 존재 안 함)라 의미가 없음 — 나머지(`offset`/`prev`/
@@ -1126,3 +1149,137 @@ Roblox뿐 아니라 web에도 그대로 필요.
 `index`는 1-based Lua 배열 관례 — `index + offset` 공식이 이 둘을
 의도적으로 섞는 것. 상세는 `base/bind-system-plan.md`의 "0-based
 개수" 절 참고.
+
+## 반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용 (2026-08-11 일곱 번째 세션)
+
+**동기 — 사용자 제기**: Slot이 지금까지 `State<Frame>`/`State<Slot>`처럼
+State/Source로 감싼 값을 raw 요소로 못 받았는데, 이미 확정된 메커니즘만
+합성하면 새로 만들 것 없이 구현 가능하다는 지적.
+
+**확정**: `Slot:Add`(및 `Slot(initial)` 생성자 sugar)가 받는 `element`의
+타입은 `T | State<T> | Source<T>`(`T = Instance | Slot<Instance>`, 위
+"Slot-in-Slot 중첩"의 자기 참조 제네릭과 합성) — 임의 깊이로 조합 가능.
+
+### [정정, 같은 세션 후속] 최초안(별도 position-keyed StoreBind 구독) 기각 — 순수 `:Single` sugar로 대체
+
+최초에는 "`rawAdd`가 그 위치에 대해 `Dispatch/StoreBind.luau`류 재-dispatch
+구독을 걸고, Length 기여도도 `state:Compute(...)`로 파생시켜 `setLength`에
+넘기는" 별도 메커니즘을 검토했으나 **사용자가 실제 문제를 지적해 기각**:
+
+1. **`State<T?>`(nilable)를 지원하려면 "가끔 없음"을 표현해야 하는데,
+   `_elements` 배열에 직접 `None`을 넣는 것 말고 방법이 없어져서 배열 파트
+   `None`을 다시 끌어들이게 됨.**
+2. **그러면 `Length` 계산도 이 케이스를 따로 알아야 함** — "요소별
+   기여도의 합"이라는 기존 공식이 예외를 갖게 됨.
+3. **`Move`/`Swap`이 인덱스를 재배치할 때마다 그 위치에 물린 구독도 같이
+   옮겨야 하는 인덱스-구독 동기화 부담이 새로 생김** — 이건 정확히
+   `:List`가 element가 아니라 `key` 기준으로 설계된 이유(위 "CRUD API
+   확정" 절)와 정면으로 부딪히는 회귀.
+
+**올바른 구현 — 새 메커니즘 전혀 없이 순수 sugar**: `element`가
+`isState(element)`(State/Source 둘 다 포함하는 기존 집합 판별,
+2026-08-06 후속 세션 확정)면, 그 자리에 **내부적으로 새로 만든 `Slot():
+Single(element)`을 대신 삽입** — raw 반응형 요소는 전부 Slot-in-Slot
+중첩(위 절) 위에 얹힌 `:Single`의 얇은 sugar일 뿐이다:
+
+```lua
+function Slot:Add(element, index)
+    if isState(element) then
+        local sub = Slot()
+        sub:Single(element)   -- updateFn 생략 시 identity 기본값(아래 참고)
+        element = sub
+    end
+    return rawAdd(self, element, index)
+end
+```
+
+**`:Single`의 `updateFn`을 선택 인자로 완화 — 기본값은 identity.** 이
+sugar가 성립하려면 `:Single(state)`(updateFn 생략)이 유효해야 함 —
+`Slot:Single(state, updateFn?)`, 생략 시 `function(item) return item end`.
+
+**이게 최초안의 세 문제를 전부 없애는 이유**:
+- **`_elements`엔 `None`이 절대 안 들어감** — 바깥 Slot 입장에서 이
+  위치의 값은 항상 `sub`(안정적인 Slot 레퍼런스)고, "지금 진짜 뭔가
+  마운트돼 있는가"는 `sub` 내부(`:Single`이 감싼 `:List`의 0/1개 데이터)로
+  완전히 옮겨감 — `sub`가 비어있는 것과 `_elements[index] == None`은
+  전혀 다른 것(전자는 이미 "빈 Slot"이라는 정상 상태, Slot-in-Slot
+  자체가 처음부터 이 경우를 지원).
+- **Length 계산도 새로 손댈 것 없음** — `Slot.Length`가 이미 "요소별
+  기여도의 합"(nested Slot=`.Length`)으로 정의돼 있어서, 비어있는
+  `sub`가 자동으로 0을 기여함(Slot-in-Slot 중첩 절의 기존 recompute
+  그대로).
+- **Add/Remove/Move/Swap도 전부 기존 계약 그대로** — `_elements[index]`가
+  항상 안정적인 `sub` 레퍼런스라, `Remove(index)`는 기존
+  `destroySlotTree`로 `sub` 전체를 정리하면 끝, `Move`/`Swap`도 `sub`
+  레퍼런스 하나를 옮기는 것뿐이라 인덱스-구독 동기화 문제 자체가 없음
+  (`:List`의 reconcile은 `key` 기준으로 독립 동작, `sub`가 바깥에서
+  어느 인덱스에 있든 상관 안 함).
+- **`State<T?>`(nilable)도 특별 취급 없이 그냥 됨** — `:Single`이 이미
+  `v == nil and {} or {v}`로 nil을 "빈 리스트"로 흡수하므로, raw 직접
+  전달 요소(`Add(element)`, State로 안 감싼 경우)에만 여전히 non-nil이
+  요구되고, `State`/`Source`로 감싼 값은 내부적으로 nilable이어도 아무
+  문제 없음 — 위 "요소 타입 제약" 절의 nil/None 금지는 **State/Source로
+  감싸지 않은 raw 값에만 적용되는 규칙으로 범위가 좁혀짐**.
+
+**"coarse swap"은 `updateFn = identity`가 만드는 결과일 뿐, 별도
+메커니즘의 산물이 아님** — 기본 `updateFn`(`function(item) return item
+end`)이 `prev`/`userdata`를 완전히 무시하므로 매 사이클 `result ~= prev`가
+거의 항상 성립해 실질적으로 항상 다시 그리지만, 이건 `:List`/`:Single`의
+reconcile이 원래 갖고 있는 세 갈래(버림/다시 그림/source만 갱신) 중
+"다시 그림"만 계속 타는 특수 케이스일 뿐 — 코드 레벨의 별도 경로가
+아니다. patch-reuse가 필요하면 사용자가 직접 `Slot():Single(state,
+myUpdateFn)`을 불러 `myUpdateFn` 안에서 `prev`/`userdata`를 활용하면 됨.
+
+**`:Single`/`:List`와의 관계 — 대체가 아니라 굵기(granularity)가 다름**:
+- **raw `State<T>` 요소(`Add(state)`)**: `updateFn` 기본값(identity)의
+  `:Single` — coarse swap, `prev` 재사용 없음.
+- **`Slot():Single(state, updateFn)`**: `updateFn`을 직접 지정해
+  `prev`/`userdata`로 patch-reuse + `offset` 접근까지 원할 때 — **`:Single`이
+  애초에 생긴 이유가 정확히 이 offset 접근**(`updateFn`이 LayoutOrder류를
+  계산하려면 offset이 필요한데, raw 요소 sugar의 기본 identity
+  `updateFn`은 이걸 안 씀).
+- 둘은 같은 메커니즘 위의 다른 `updateFn`일 뿐이라 언제든 서로
+  전환 가능(raw로 시작했다가 patch-reuse가 필요해지면 그냥 `updateFn`을
+  명시하는 `:Single` 호출로 바꾸면 됨).
+
+**조합 예시(사용자 제시)**:
+```lua
+return Slot {
+    State<Frame> --[[ 리스트 헤더 — 항상 존재, 정체성만 가끔 바뀜 ]],
+    Slot():List(items, updateFn) --[[ 아이템 그룹 — 개수/순서가 동적 ]],
+}
+```
+헤더처럼 LayoutOrder(offset) 참여가 필요 없는 raw 요소는 그냥
+`State<Frame>`으로 두고, 아이템처럼 개수가 변하며 형제 순서 보장이 필요한
+그룹은 `Slot():List(...)`로 감싸는 식으로 **한 Slot 안에서 자유롭게 섞어
+쓸 수 있음** — Slot-in-Slot 중첩(위 절)과 이 반응형 raw 요소가 서로
+독립적으로 조합됨을 보여주는 예.
+
+**실측 필요 — 새 항목 아님, 기존 실측 목록에 흡수**: `State<T>`/`Slot<T>`
+자기 참조 제네릭 타입체크는 이미 M0/M6 실측 목록에 있던 것과 같은 급이라
+별도 항목 추가 안 함.
+
+### `:List`의 `index`도 nested-Slot 결과의 `.Length`만큼 건너뛰어야 함 (같은 세션 후속, 사용자 발견)
+
+Slot-in-Slot으로 `T = Instance | Slot<Instance>`가 허용되면서, `:List`의
+`updateFn`이 `result`로 nested Slot(멀티루트 컴포넌트 결과 등)을 반환할
+수도 있음 — 이때 그 아이템은 물리적으로 1개가 아니라 `result.Length`개의
+실제 요소를 차지함. 원래 `candidateIndex = pos + 1`(고정 +1)로만 커밋했다면,
+`updateFn`이 `index`를 LayoutOrder 계산에 쓰는데 어떤 아이템이 nested
+Slot(Length=3)을 반환할 때 다음 아이템의 `index`가 3만큼 안 건너뛰고
+1만 건너뛰어 물리적으로 겹치는 LayoutOrder 범위가 나옴 — **의도된 동작으로
+확정, 위 "구현" 절의 `reconcile` 의사코드에 이미 반영됨**(`pos = candidateIndex
+- 1 + (isSlot(result) and result.Length:Get() or 1)`).
+
+**남는 캐비엇 — `index`는 여전히 raw 스냅샷이라, nested Slot의 Length가
+outer `:List`의 reconcile 없이 나중에 바뀌면 그 이후 형제들의 `index`는
+갱신 안 됨.** 이건 새로 생기는 문제가 아니라 이미 확정된 "`index`가
+State가 아니라 raw number"라는 설계(위 "왜 `LayoutOrder`를 Slot이 대신
+안 해주는가" 절) 원칙의 당연한 연장 — `index`는 outer `:List`가 가장
+최근에 reconcile됐을 때의 스냅샷일 뿐, 실시간 정확성이 필요하면
+`updateFn`이 직접 `result.Length`를 구독해서 스스로 처리해야 함(이미
+"`index`/`offset`을 실제 프로퍼티에 어떻게 반영할지는 전적으로
+`updateFn` 몫"이라는 기존 원칙과 정합). 실사용에서 이 케이스(리스트
+아이템이 각자 멀티루트를 반환하며 그 개수가 outer 리스트 reconcile
+없이 동적으로 바뀜)는 드물 것으로 예상 — 실제로 문제가 되면 그때
+`updateFn`이 자체적으로 방어하는 패턴을 문서화.

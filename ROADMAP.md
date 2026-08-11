@@ -293,10 +293,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
-- [x] **`Slot:Single(state, updateFn)` 확정** — `:List`를 0/1개짜리
+- [x] **`Slot:Single(state, updateFn?)` 확정** — `:List`를 0/1개짜리
       배열로 감싸는 순수 sugar, `index` 없이 `offset`/`prev`/`userdata`만
       전달, 고정 key로 `prev` 재사용 보장(2026-08-11 세션, `base/
-      slot-plan.md` "`Slot:Single`" 절).
+      slot-plan.md` "`Slot:Single`" 절). **[2026-08-11 일곱 번째 세션]**
+      `updateFn`이 선택 인자로 완화됨(기본값 identity) — 아래 반응형
+      raw 요소 항목 참고.
 - [x] **Slot-in-Slot 중첩 확정** — 요소 타입 제약에서 `Slot` 배제 해제
       (`T = Instance | Slot<Instance>`, 자기 참조 제네릭은 실측 필요).
       `Dispatch.setLength`/`setOffsetSource`를 물리 inst 대신 **Slot
@@ -330,6 +332,29 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       원칙과 같은 카테고리의 위반으로 **명시적 UB 명명**(방어 로직 없음,
       기존 "일반적 재진입 방어 안 함" 원칙과 정합). `offset`/`sum`은
       0-based 개수, `index`는 1-based Lua 관례라는 것도 명시.
+- [x] **반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용**
+      (2026-08-11 일곱 번째 세션, 같은 세션에 정정) — `Slot:Add`가 받는
+      실제 타입은 `T | State<T> | Source<T>`(임의 깊이 조합 가능).
+      **[정정] 최초 검토한 "position-keyed StoreBind 구독 + Length를
+      Compute로 파생" 안은 기각**(nilable 지원하려면 배열 파트 `None`을
+      다시 끌어들여야 하고, Length 계산에 예외가 생기고, `Move`/`Swap`이
+      인덱스-구독 동기화 부담을 짐 — `:List`가 element 아닌 `key` 기준인
+      이유와 정면 충돌) — **새 메커니즘 없이 순수 `:Single` sugar로
+      확정**: `isState(element)`면 그 자리에 내부적으로 `Slot():
+      Single(element)`(updateFn 생략 시 identity 기본값)를 대신 삽입.
+      `_elements`엔 `None`이 절대 안 들어감(비어있는 nested Slot이 자연히
+      Length 0 기여), raw 직접 전달 요소에만 여전히 non-nil 요구.
+      `:Single`의 `updateFn`도 이 sugar가 성립하도록 선택 인자로 완화
+      (`Slot:Single(state, updateFn?)`, 기본값 identity). `:Single`/`:List`와는
+      대체 관계가 아니라 같은 메커니즘 위의 다른 `updateFn`일 뿐 — raw
+      `State<T>` 요소(identity)는 coarse swap, `updateFn` 직접 지정 시
+      `prev`/`userdata` patch-reuse + `offset` 접근(`:Single`이 애초에
+      생긴 이유). **부수 발견(사용자)**: `:List`의 `reconcile`이
+      nested-Slot 결과를 반환하는 아이템 다음 형제의 압축 `index`를
+      그 결과의 `.Length`만큼 건너뛰도록 `pos` 커밋 공식도 같이 수정
+      (`pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get()
+      or 1)`) — 안 그러면 멀티루트 아이템 다음 형제의 LayoutOrder가
+      겹침. `base/slot-plan.md` "반응형 raw 요소" 절.
 
 ## M7 — Modifier
 

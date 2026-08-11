@@ -40,7 +40,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   slot-plan.md`의 "`Slot:Single(...)`" 절. 같은 세션에 **Slot-in-Slot
   중첩도 확정**(요소 타입 제약에서 `Slot` 배제 해제, `Dispatch.setLength`/
   `setOffsetSource`를 Slot 자신을 owner 키로 재사용하는 재귀 `attachSlot`) —
-  `base/slot-plan.md`의 "Slot-in-Slot 중첩" 절.
+  `base/slot-plan.md`의 "Slot-in-Slot 중첩" 절. **[해소됨, 2026-08-11
+  일곱 번째 세션]** `Slot:Add`가 `State<T>`/`Source<T>`도 요소로 받음 —
+  새 메커니즘 아니라 내부적으로 `Slot():Single(element)`(updateFn 생략
+  시 identity)를 대신 삽입하는 순수 sugar로 확정(`updateFn`도 이때
+  `Slot:Single(state, updateFn?)`로 선택 인자화). `base/slot-plan.md`의
+  "반응형 raw 요소" 절.
 
 ### 1. 용어 정리 (사용자 요청, 진행 중)
 
