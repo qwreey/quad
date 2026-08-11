@@ -293,6 +293,43 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
+- [x] **`Slot:Single(state, updateFn)` 확정** — `:List`를 0/1개짜리
+      배열로 감싸는 순수 sugar, `index` 없이 `offset`/`prev`/`userdata`만
+      전달, 고정 key로 `prev` 재사용 보장(2026-08-11 세션, `base/
+      slot-plan.md` "`Slot:Single`" 절).
+- [x] **Slot-in-Slot 중첩 확정** — 요소 타입 제약에서 `Slot` 배제 해제
+      (`T = Instance | Slot<Instance>`, 자기 참조 제네릭은 실측 필요).
+      `Dispatch.setLength`/`setOffsetSource`를 물리 inst 대신 **Slot
+      자신을 owner 키**로 재사용하는 재귀 `attachSlot`으로 최상위/중첩
+      마운트 통합(새 프리미티브 없음). `Slot.Length`가 raw 개수에서
+      "요소별 기여도의 합"으로 의미 변경. 파괴는 재귀적 `Clear()`가
+      아니라 flat `destroySlotTree`(파괴 walk + `unbindLifetime` walk,
+      outer 쪽 recompute는 1회만) — 물리 target이 살아있는 채로 논리
+      서브트리만 죽는 경우 명시적 `unbindLifetime` 필요(GC-native 정리의
+      예외 케이스). DOM 백엔드가 nested Slot을 실제 `<div>` 중첩으로
+      매핑하는 안은 기각(Fragment와 같은 이유로 wrapper-less 유지 필요) —
+      숫자 기반 메커니즘이 web에도 그대로 필요하나, `insertBefore`/
+      `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
+      불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
+- [x] **`Slot(initial?: {T})` 생성자로 확장** — "인자 없는 빈 생성자로
+      확정"을 뒤집음, `:Add` 반복 호출 sugar일 뿐(새 마운트 로직 없음).
+      `initial ~= nil`이면(빈 테이블도) 즉시 `_crudUsed = true` — 상태상
+      `Add→Remove`와 동일하므로. **`_crudUsed` ↔ `_listed` 상호 배타
+      가드 신설** — 기존엔 `:List` 설치 후 수동 CRUD만 막았지 반대(수동
+      CRUD 후 `:List` 설치)는 안 막아서 `:List`의 reconcile이 기존
+      요소를 모른 채 충돌하는 gap이 있었음(2026-08-11 세션, `base/
+      slot-plan.md` "CRUD API 확정" 절).
+- [x] **`recompute` off-by-one 버그 수정**(2026-08-11 세션, `base/
+      bind-system-plan.md` "Length/Offset" 절) — `sum` 누적과
+      `offset:Set` 순서가 뒤바뀌어 `Offset`이 자기 자신을 포함해버리던
+      버그(예: 유일한 자식인데도 `Offset`이 0이 아니게 됨) 수정. 재진입
+      방지 가드는 검토 후 기각 — 각 Slot이 `Relate(자기 자신)`으로
+      독립된 `bk`를 가져서 nesting만으로는 같은 `bk`가 재진입되는 경로
+      자체가 없음이 재추적으로 확인됨. 진짜 재진입(부작용이 recompute
+      도중 같은 Slot의 length에 다시 쓰기)은 `Source⊇State`의 "단방향"
+      원칙과 같은 카테고리의 위반으로 **명시적 UB 명명**(방어 로직 없음,
+      기존 "일반적 재진입 방어 안 함" 원칙과 정합). `offset`/`sum`은
+      0-based 개수, `index`는 1-based Lua 관례라는 것도 명시.
 
 ## M7 — Modifier
 

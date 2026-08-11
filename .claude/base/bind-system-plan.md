@@ -461,6 +461,15 @@ Dispatch.setLength(inst, i, len: number | State<number>)
 Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
 ```
 
+**[2026-08-11 세션] 첫 인자(`inst`)는 물리 Instance일 필요가 없음 —
+`Relate`가 weak table 기반이라 아무 테이블이나 키로 가능.** 이 사실을
+재사용해 **Slot 자신을 owner 키로 써서 같은 두 함수를 한 번 더
+부르면, 최상위(Dispatch.drive의 리터럴 배열)와 중첩(Slot이 자기
+자신의 요소들에 대해)이 완전히 같은 메커니즘으로 재귀됨** — 새 함수를
+만들 필요 없음. 상세 재귀 흐름(Slot-in-Slot)은 `base/slot-plan.md`의
+"Slot-in-Slot 중첩" 절 참고, 이 문서는 그 절이 재사용하는 `recompute`
+자체만 다룸(아래).
+
 - **`setLength`**: 이 위치(array part의 number 인덱스 `i`)가 지금 몇 개의
   실제 마운트 가능한 leaf를 기여하는지 보고. 정적 단일 자식은 상수
   `1`(또는 `nil`/`None`이면 `0`), Slot은 자기 `.Length`(`State<number>`,
@@ -526,21 +535,73 @@ pre-pass처럼 순서가 실제로 중요하거나 "채워짐 여부"를 엄밀�
 
 **recompute — 매번 전체 순회, `Get` 가드로 캐스케이드만 방지**:
 
+**[정정, 2026-08-11 세션] `sum` 누적과 `offset:Set` 순서가 뒤바뀌어
+있던 off-by-one 버그.** 원래 코드는 `sum += lengthList[i]`를 먼저 한
+뒤 `offset:Set(sum)`을 해서, `offset[i]`가 "자기 앞의 형제들이 기여한
+개수"가 아니라 **자기 자신을 포함한** 누적합이 되고 있었음 — 예를
+들어 `Frame{Slot1}` 하나뿐이어도(앞에 아무것도 없는데) `Slot1.Offset`이
+`Slot1.Length`가 되어버려 `index+offset` 공식이 어긋남. 순서를
+뒤집어(offset 먼저 Set, 그 다음에 자기 기여도를 sum에 누적) 수정 —
+지금까지 실제 Luau로 돌려본 적이 없어 아무도 못 잡았던, Length/Offset
+메커니즘 자체의 버그(오늘 논의한 중첩 기능과는 별개).
+
+**[검토했다가 기각, 2026-08-11 세션] 재진입 방지 가드 — 불필요함이
+재추적으로 확인됨.** 처음엔 recompute 도중 재귀 호출이 들어오는 경우를
+대비해 `_recomputing`/`_dirty` 플래그로 방어하는 안을 검토했으나, 실제
+호출 경로를 다시 추적한 결과 **각 Slot이 `Relate(자기 자신)`으로 독립된
+`bk`를 갖기 때문에, 중첩된 Slot의 Length 변경이 상위로 전파되는 경로는
+항상 서로 다른 `bk`를 거쳐 지나감** — 부모의 `recompute(parent, parentBk)`가
+자식의 `bk`를 건드리지 않고, 자식의 `recompute(child, childBk)`도 부모의
+`bk`를 안 건드림. 즉 **nesting이 있다는 사실만으로는 같은 `(ownerKey,bk)`가
+재진입되는 경로 자체가 없음** — "중첩 Slot이 있으면 항상 dirty가 켜진다"는
+초기 우려는 틀렸고, 가드 자체가 불필요한 걸로 확인됨. 진짜 재진입은
+`updateFn` 같은 부작용이 recompute 도중 **같은** Slot에 다시 `Add`/`Remove`를
+거는 것처럼 순수하게 사용자 코드가 만드는 경우뿐인데, 이건 이미 확정된
+"일반적인 재진입/무한루프는 방어 안 함, provider/사용자 코드 버그로
+간주"(2026-08-04) 원칙 그대로 두면 됨 — 별도 가드를 만들 근거가 없음.
+**결론: `recompute`는 off-by-one만 고친 순수 버전으로 유지, 재진입
+가드 없음.**
+
+**이 케이스를 명시적으로 UB로 명명(2026-08-11 세션, 사용자 제안)** —
+`Source<T>`가 `State<T>`를 "단방향"으로만 만족한다는 이미 확정된 원칙
+(`base/store-semantics.md` "Source가 State를 만족함" 절 — 파생값이
+자기 upstream Source로 거꾸로 쓰기를 하지 않는다는 것)과 **같은 카테고리의
+위반**이라는 게 근거: `recompute`가 만드는 `offset`/`Length`는 전부
+`lengthList`(그 Slot의 upstream 입력)에서 파생된 다운스트림 값인데,
+계산 도중 촉발된 부작용이 **자기 자신의 `lengthList` 입력을 다시
+mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `Set`을
+가하는 것"이 UB인 것과 동일한 이유로, "recompute 도중 발생한 부작용이
+같은 Slot의 length에 다시 쓰기를 가하는 것"도 UB로 문서화 — 새 원칙이
+아니라 이미 있는 단방향 흐름 원칙을 recompute라는 구체 지점에 적용한
+것뿐, 그래서 별도 방어 로직도 필요 없음.
+
 ```lua
-local function recompute(inst, bk)
+local function recompute(ownerKey, bk)
     local sum = 0
     for i = 1, bk.N do
-        local v = bk.lengthList[i]
-        sum += (isState(v) and v:Get() or v)
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(참여 안 함) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함
         if offset ~= None and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
             offset:Set(sum)
         end
+        local v = bk.lengthList[i]
+        sum += (isState(v) and v:Get() or v)
     end
+    if isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
+        ownerKey.Length:Set(sum)   -- ownerKey가 물리 inst가 아니라 Slot 자신인 재귀 케이스
+    end                            -- (`base/slot-plan.md`의 "Slot-in-Slot 중첩" 절)
 end
 ```
+
+**`offset`/`sum`은 0-based *개수*이지 Lua 배열 인덱스가 아님(2026-08-11
+세션 명시화).** Luau/Lua 배열은 1-based 관례지만, 여기서 계산하는
+`offset[i]`는 "그 앞에 몇 개가 있는가"라는 순수 카디널 수라 자연스럽게
+0에서 시작함 — `updateFn`의 `index`(로컬 위치, 1-based Lua 관례)와
+`index + offset` 공식으로 섞이는 게 의도된 것이지 인덱싱 불일치가
+아님. `LayoutOrder` 자체도 0/음수가 허용되는 값이라 최종 결과에도
+문제 없음 — 구현/문서화 시 "이 두 숫자는 서로 다른 기준(1-based 위치
+vs 0-based 개수)"이라는 걸 명시적으로 적어둘 것.
 
 전체 순회의 O(N) 비용은 무시 가능(`N`은 저작 시점에 고정된 배열 리터럴
 길이, 보통 작음) — 진짜 비싼 건 `Set`이 트리거하는 다운스트림 리액티브

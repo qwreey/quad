@@ -34,9 +34,13 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단(`research/
   additional-primitives-plan.md` "빈 자리 아닌 것" 절).
-- **[백로그, 2026-08-09 여섯 번째 세션 추가, 미착수]** `Slot():Single(state,
-  updateFn?)` — `:List`의 key-map 없이 "0개 아니면 1개"만 다루는 가벼운
-  편의 메소드. `base/slot-plan.md` "백로그 — `Slot():Single(...)`" 절.
+- **[해소됨, 2026-08-11 세션]** `Slot:Single(state, updateFn)` — `:List`를
+  0/1개짜리 배열로 감싸는 순수 sugar로 확정(`index` 없이 `offset`/
+  `prev`/`userdata`만 전달, 고정 key로 `prev` 재사용 보장). `base/
+  slot-plan.md`의 "`Slot:Single(...)`" 절. 같은 세션에 **Slot-in-Slot
+  중첩도 확정**(요소 타입 제약에서 `Slot` 배제 해제, `Dispatch.setLength`/
+  `setOffsetSource`를 Slot 자신을 owner 키로 재사용하는 재귀 `attachSlot`) —
+  `base/slot-plan.md`의 "Slot-in-Slot 중첩" 절.
 
 ### 1. 용어 정리 (사용자 요청, 진행 중)
 

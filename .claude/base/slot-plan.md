@@ -31,6 +31,10 @@ unmount(`Remove`) 둘이 아니라 **reposition(`Move`/`Swap`)까지 셋** —
 같은 자리에서 `self._listed`면 `activateList(self,inst)`도 트리거해야 함 —
 `:List`의 `data:Observer(fn)` 구독을 Slot 마운트 시점까지 lazy하게 미루는
 것도 이 mount 훅의 책임(아래 "`Slot:List(...)`"의 "구독 시점" 절 참고).
+**[2026-08-11 세션, superseded] 이 mount 훅은 이제 `attachSlot(slotValue,
+inst, inst, k)` 한 줄로 축약됨** — `Dispatch.setLength`/`activateList`
+호출은 `attachSlot` 내부로 옮겨감(로직은 그대로, 재귀 가능하도록만
+일반화됨), 상세는 아래 "Slot-in-Slot 중첩" 절 참고.
 
 **추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
 만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
@@ -40,12 +44,13 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
 
 ## 개념
 
-뮤터블 자식 배열. `Slot<T>()`(빈 인스턴스, 인자 없는 바닥 생성자 — 다른
-독립 프리미티브의 `Type(args)` 관습과 동일하되, 무인자라 `T`를 추론할
-수 없어 tbox 명시적 제네릭 적용 `Slot<<Instance>>()`로 지정)로 만들고,
-`Add`/`Remove`/`Extract`/`Clear`/`Move`/`Swap` CRUD로 조작하면 실제
-바인드된 children이 그에 맞춰 갱신됨 — 정확한 시그니처는 아래 "CRUD API
-확정" 절 참고(`get`/`set`은 드롭).
+뮤터블 자식 배열. `Slot<T>(initial?)`(다른 독립 프리미티브의 `Type(args)`
+관습과 동일 — `initial` 생략 시 빈 인스턴스, `T`를 추론할 수 없어 tbox
+명시적 제네릭 적용 `Slot<<Instance>>()`로 지정. `initial`을 주면
+`:Add`를 반복 호출하는 sugar일 뿐, 상세는 아래 "CRUD API 확정" 절의
+생성자 항목 참고)로 만들고, `Add`/`Remove`/`Extract`/`Clear`/`Move`/
+`Swap` CRUD로 조작하면 실제 바인드된 children이 그에 맞춰 갱신됨 —
+정확한 시그니처는 아래 "CRUD API 확정" 절 참고(`get`/`set`은 드롭).
 
 ### 요소 타입 제약 (2026-08-09 세 번째 세션)
 
@@ -81,6 +86,13 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   기본값(`T` 생략 시) 없이 항상 명시를 요구하는지, `quad-base`에선
   `any`로 기본값을 두는지는 tbox 제네릭 적용 문법 확정 시 같이 정할 것
   (이 문서 "자식으로 넘기는 클래스 스토어" 절의 기존 미결과 같은 갈래).
+  **[2026-08-11 세션] `Slot<T>` 자신도 이제 예외적으로 허용 — 실제로는
+  `T = Instance | Slot<Instance>`(자기 참조 제네릭).** 컴포넌트 결합
+  시 "결과가 Instance든 Slot(멀티루트)이든 구분 없이 다른 Slot에
+  넣을 수 있어야 한다"는 요구 때문 — 상세 근거/메커니즘은 아래
+  "Slot-in-Slot 중첩" 절 참고. 자기 참조 제네릭이 Luau에서 실제로
+  타입체크되는지는 다른 재귀 타입 케이스들과 같은 급으로 실측 필요
+  (`.claude/luau-test/`, M0/M6 착수 시 확인).
 
 ## 핵심 제약: 소유권 귀속과 단일 마운트
 
@@ -286,13 +298,48 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   참고). 공개 메소드에 로직이 따로 있는 게 아니라 전부 이 한 세트를
   공유. **`Get`/`IndexOf`는 순수 읽기라 이 가드 대상 아님** — `:List`가
   설치돼 있어도 자유롭게 호출 가능.
+  **[2026-08-11 세션] 역방향 가드 신설 — `_crudUsed` ↔ `_listed` 대칭.**
+  `:List`의 가드는 원래 "`:List`가 이미 설치돼 있으면 수동 CRUD
+  금지"만 있었고, 반대로 "수동 CRUD를 이미 썼으면 나중에 `:List`
+  설치 금지"는 없었음 — 이 상태로는 `Slot():Add(x); ...; slot:List(...)`
+  같은 코드가 조용히 통과해서, `:List`의 reconcile이 `x`의 존재를 전혀
+  모른 채(자기 `mounted`/`keyIndex`가 비어있는 상태로 시작) 새 요소를
+  추가하려다 `x`와 충돌(Length 이중 계산, index 꼬임 등)하는 gap이
+  있었음. 모든 mutate CRUD(`Slot(initial)`이 호출하는 `:Add` 포함)가
+  `self._crudUsed = true`를 세팅하고, `:List`/`:Single`(내부적으로
+  `:List` 호출)이 설치 시 `assert(not self._crudUsed, ...)`를 추가로
+  확인 — 한 Slot은 평생 "수동 CRUD" 아니면 "`:List`/`:Single`" 둘 중
+  하나로만 고정됨.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
-  간주"라는 기존 원칙이 그대로 적용됨.
-- **`Slot()` 생성자**: 인자 없는 빈 생성자로 확정 — 초기 children을
-  가변인자로 받는 옵션도 검토했으나, "명시적으로 `Add`해야 들어간다"
-  쪽이 이 프로젝트의 "매직 없이 명시적" 기조와 더 맞음.
+  간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
+  Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —
+  `base/bind-system-plan.md`의 "Length/Offset" 절, `Source⊇State`
+  단방향 원칙과 같은 카테고리로 명명됨(2026-08-11 세션).
+- **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
+  빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**
+  단, 새 마운트 로직이 아니라 **순수하게 `:Add`를 반복 호출하는
+  sugar**로만 존재 — "명시적으로 Add해야 들어간다"는 원래 취지(매직
+  없이 명시적)가 실제로는 안 깨짐, `Slot{a,b,c}`가 정확히
+  `Slot():Add(a):Add(b):Add(c)`와 같은 일을 하는 표기일 뿐이라서:
+  ```lua
+  function Slot(initial)
+      local self = setmetatable({...}, Slot_mt)
+      if initial ~= nil then
+          self._crudUsed = true   -- 빈 테이블이어도 즉시 잠금(아래 참고)
+          for _, v in ipairs(initial) do   -- ipairs가 첫 nil에서 멈춤
+              self:Add(v)                  -- → "중간 nil은 UB, 그 뒤 무시"가 공짜로 성립
+          end
+      end
+      return self
+  end
+  ```
+  **`initial ~= nil`이면(빈 테이블 `{}`이어도) 즉시 `_crudUsed = true`** —
+  `Slot({})`은 상태상 `Slot():Add(x):Remove(1)`과 동일(결과는 비어있지만
+  "수동 CRUD를 썼다"는 의도는 이미 커밋됨)이라, 인자를 아예 안 준
+  `Slot()`(진짜 `nil`)만 나중에 `:List`/`:Single`을 설치할 수 있는 상태로
+  남음 — 아래 "CRUD ↔ List/Single 상호 배타" 절 참고.
 
 ### 원시 최소화 원칙 정정 — `Move`/`Swap` 공개 API로 추가 (같은 세션 후속)
 
@@ -871,7 +918,11 @@ GC에 위임" 원칙 그대로.
 
 Slot은 CRUD/`:List` 여부와 무관하게 `.Length: State<number>`를 항상
 노출 — 지금 실제로 마운트된 요소 개수(사용자가 직접 CRUD로 넣든 `:List`
-reconcile이 넣든 동일). 두 용도를 겸함: (1) 사용자가 "n개 검색됨" 같은
+reconcile이 넣든 동일). **[2026-08-11 세션] Slot-in-Slot 중첩 허용
+이후로는 정확히 "요소별 기여도의 합"** — plain 요소는 1, nested Slot
+요소는 그 Slot 자신의 `.Length`(재귀) — 상세는 "Slot-in-Slot 중첩" 절
+참고. plain 요소만 쓰는 흔한 경우엔 항상 합==개수라 체감 차이 없음.
+두 용도를 겸함: (1) 사용자가 "n개 검색됨" 같은
 UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 순서 보장(위 "여러 Slot이 섞일 때 순서 보장" 참고)에 내부적으로 읽는 바로
 그 값 — 별도 두 State가 아니라 하나. `:List`의 filter 탈락이 실제
@@ -887,15 +938,191 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
 조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김.
 
-## 백로그 — `Slot():Single(state, updateFn?)` (2026-08-09 여섯 번째 세션, 미착수)
+## `Slot:Single(state, updateFn)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
 
-`:List`의 key-map(`mounted`/`userdata`/`keyIndex`) 없이 "0개 아니면 1개"만
-다루는 더 가벼운 편의 메소드 제안(예: `state<Frame?>`를 조건부로 마운트하는
-관용구를 더 명시적으로 표현) — `.Length`는 그냥 0/1이고 나머지(offset 소비,
-LayoutOrder 바인딩)는 일반 Slot과 완전히 같은 프로토콜. 아직 상세 설계
-안 함, `.claude/question.md`에 백로그로만 반영.
+기존 "백로그, 미착수"에서 실제 설계까지 완료됨 — 새 reconcile 로직
+없이 **`:List`를 정확히 0/1개짜리 배열로 감싸는 sugar**:
 
-**문서화 프레이밍(2026-08-11, `research/documentation-content-map.md`
-반영)**: `:Single`도 Slot의 "요소가 자유롭게 생기고 사라짐"이라는 본질과
-같은 것 — 1개 아니면 0개의 동적 렌더링일 뿐 별도 개념 아님. 실제 설계
-착수 시 이 프레이밍을 그대로 따를 것.
+```lua
+function Slot:Single(state, updateFn)
+    local data = isState(state)
+        and state:Compute(function(v) return v == nil and {} or { v } end)
+        or (state == nil and {} or { state })
+
+    return self:List(data, function(item, index, offset, prev, ud)
+        return updateFn(item, offset, prev, ud)   -- index는 항상 상수라 안 넘김
+    end, function() return true end)   -- 고정 key
+end
+```
+
+- **`index`를 안 주는 이유**: Single은 형제가 자기 하나뿐이라 `index`가
+  항상 상수(1 또는 존재 안 함)라 의미가 없음 — 나머지(`offset`/`prev`/
+  `userdata`, 세 갈래 반환 규칙)는 `:List`와 100% 동일 규칙 재사용.
+- **key를 고정값(`true`)으로 두는 게 핵심** — `state`가 A값에서 B값으로
+  바뀌어도 같은 key라 `prev`가 유지되고, `updateFn`이 "새로 그릴지/
+  그대로 쓸지"를 스스로 판단 가능(값 자체를 key로 쓰면 매번 다른 item
+  취급돼서 파괴+재생성이 강제됨 — 원하는 동작이 아님).
+- **원래 동기(`State<Frame?>`가 offset을 못 받는 문제)를 이걸로 완전히
+  해결** — `updateFn`이 `offset`을 직접 받으므로, "offset을 얻으려고
+  컴포넌트가 Slot을 리턴하는" 우회가 애초에 필요 없어짐. Slot-in-Slot
+  중첩(아래 절)의 정당화 근거는 이것과 별개 — 컴포넌트 결합 시 결과
+  타입이 뭐든(Instance/Slot) 균일하게 다룰 수 있어야 한다는 요구.
+- `mounted`/`userdata`/`keyIndex` 전부 `:List`가 이미 갖고 있는 걸
+  그대로 재사용, 코드 중복 없음. `:List`와 마찬가지로 `self._crudUsed`
+  체크 대상(내부적으로 `:List`를 호출하므로 자동 적용).
+
+## Slot-in-Slot 중첩 — 확정 (2026-08-11 세션)
+
+**동기 — Slot을 원시 최소 요구가 아니라 컴포넌트 결합의 균일성 문제로
+접근.** 카테고리 헤더+아이템 그룹(`outer:Add(header); outer:Add(itemsSlot)`)이
+구체적 동기로 제기됐지만, 더 근본적인 이유는 **컴포넌트 결합** — `local
+result = SomeComponent(props)`가 `Instance`를 리턴하든 `Slot`(멀티루트
+워크어라운드, `base/component-composition-plan.md`)을 리턴하든, 호출부가
+`outerSlot:Add(result)`를 분기 없이 그냥 부를 수 있어야 함. 지금까지
+"요소 타입 제약"이 `Slot`을 암묵적으로 배제하고 있어서(`T = Instance`
+단순화), 정확히 이 컴포지션 케이스가 막혀 있었음.
+
+### 요소 타입 — `Slot` 허용
+
+위 "요소 타입 제약" 절 갱신대로 `isMountable`이 `isSlot(v)`을 더 이상
+배제하지 않음 — 나머지(Ref/PreRef/Observer/Effect/Modifier 금지,
+nil/None 금지)는 그대로.
+
+### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용
+
+`base/bind-system-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
+owner 키(`inst`)가 물리 Instance일 필요가 없음(`Relate`가 아무 테이블이나
+weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 마운트와
+중첩 마운트가 완전히 같은 함수 호출**이 됩니다.
+
+```lua
+-- quad-base, Slot.luau — 재귀적 "attach" 하나로 최상위/중첩 마운트 통합
+local function attachSlot(slot, physicalTarget, ownerKey, position)
+    slot._mounted = true
+    slot._mountedInst = physicalTarget
+
+    Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
+    local offsetSource = Source(0)
+    Dispatch.setOffsetSource(ownerKey, position, offsetSource)
+    slot.Offset = offsetSource
+
+    if slot._listed then
+        activateList(slot, physicalTarget)   -- 기존 :List lazy activation, 안 바뀜
+    end
+
+    -- attach 전에 이미 들어와있던 요소들 flush(이미 채워둔 Slot을 나중에
+    -- 마운트하는 흔한 패턴이 원래도 전제하고 있던 것 — 새 개념 아님)
+    for i, element in ipairs(slot._elements) do
+        if isSlot(element) then
+            attachSlot(element, physicalTarget, slot, i)   -- 재귀, ownerKey가 이제 slot 자신
+        else
+            element.Parent = physicalTarget   -- quad-roblox 글루가 실제 수행
+        end
+    end
+end
+```
+
+**최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
+```lua
+-- process(inst, k, slotValue)
+attachSlot(slotValue, inst, inst, k)   -- ownerKey = 물리 inst 자신
+```
+
+**이미 마운트된 outer에 nested Slot을 나중에 `Add`하는 경우(런타임에
+카테고리 추가):**
+```lua
+-- rawAdd 안, element가 Slot이고 self가 이미 마운트돼 있을 때
+if isSlot(element) and self._mounted then
+    attachSlot(element, self._mountedInst, self, index)
+end
+-- self가 아직 마운트 전이면 _elements에만 들어가고, self가 나중에
+-- attachSlot될 때 위 flush 루프가 처리
+```
+
+`recompute`가 owner가 Slot이면 그 `.Length`에도 합계를 반영하도록
+확장됐으므로(`base/bind-system-plan.md` 참고) — `Slot.Length`는 더
+이상 raw 개수가 아니라 **"요소별 기여도의 합"**(plain=1, nested
+Slot=그 `.Length`)이 됨. plain 요소만 있는 흔한 경우엔 항상 합==개수라
+체감 차이 없음.
+
+### 파괴 — 재귀적 `Clear()` 금지, flat teardown
+
+**재귀적으로 `Clear()`(요소별 `Remove` 반복)를 하면 죽는 서브트리
+내부에서 불필요한 shift+recompute가 요소 수만큼 반복되어 비용이 커짐 —
+대신 순수 파괴 walk만 하고, outer 쪽 recompute는 자기 위치 하나에
+대해서만 한 번 돎:**
+
+```lua
+local function destroySlotTree(slot)
+    for i, element in ipairs(slot._elements) do
+        if isSlot(element) then
+            destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
+        else
+            element:Destroy()
+        end
+    end
+    local bk = getBookkeeping(slot)    -- 이 slot이 자기 자식들 위해 등록해둔 observer들
+    if bk then
+        for i, observer in pairs(bk.observers) do
+            unbindLifetime(slot._mountedInst, observer)
+        end
+    end
+end
+
+function rawRemove(self, index)
+    local element = self._elements[index]
+    local bk = getBookkeeping(self)
+    if bk.observers[index] then
+        unbindLifetime(self._mountedInst, bk.observers[index])  -- outer가 이 위치 위해 등록해둔 observer
+    end
+    if isSlot(element) then destroySlotTree(element) else element:Destroy() end
+
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList 전부 한 칸씩 당김
+    recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
+end
+```
+
+**왜 `unbindLifetime`이 꼭 필요한지**: `bindLifetime`은 물리 target
+인스턴스 생명주기에 걸려있는데, 죽는 건 "이 nested Slot 하나"고 물리
+target(공유 부모)은 계속 살아있으니 GC가 자동으로 안 치워줌 — 명시적으로
+안 풀면 카테고리가 자주 추가/삭제되는 UI에서 조용히 새는 옵저버가
+쌓임. 반대로 물리 target 자체가 죽는 경우(최상위 Destroy)는 지금처럼
+GC가 전부 한 번에 정리하니 손 안 대도 됨 — 이 구분은 새 원칙이 아니라
+"GC 정리는 물리 target 생명주기 단위"라는 기존 원칙이 nested Slot에서
+처음으로 그 경계 바깥의 케이스(target은 살아있는데 논리 서브트리만
+죽는 경우)를 만나서 드러난 것뿐.
+
+- **Length 변경은 정확히 offset 변경으로만 전파됨, 별도 채널 없음** —
+  수정된 `recompute`(`base/bind-system-plan.md` 참고)를 보면 `:Set()`이
+  호출되는 대상은 (a) 뒤 형제들의 offset, (b) owner가 Slot이면 그
+  `.Length` 딱 둘뿐. Length 값 자체는 읽히기만 함(`:Get()`/Observer
+  트리거) — (b)로 올라간 `.Length`도 한 단계 위에서는 그냥 또 다른
+  `lengthList` 항목이라 같은 패턴이 재귀될 뿐, 새 전파 채널이 아님.
+
+### "위치 이전 기억"은 base 책임 아님 — backend가 필요하면 `Relate`로
+
+Slot-in-Slot 자체는 순수 숫자(Length/Offset) 계산만 재귀적으로 하고,
+"나 이전에 물리적으로 어디에 있었지" 같은 backend 종속적 위치 정보는
+전혀 안 다룸 — 필요한 backend(예: DOM `insertBefore` 기반)가 자기
+`Relate`로 알아서 저장해야 할 몫. web 백엔드는 `insertBefore`/
+`removeChild`가 물리적으로 밀고/당겨주므로, "지금 이 위치의 물리적
+이전 형제가 누구인지"만 삽입 시점에 알면 되고 이미 배치된 형제들의
+프로퍼티를 재작성할 필요가 없음 — 기존 "DOM류 물리 순서 백엔드에도
+같은 base 메커니즘이 그대로 재사용됨"(2026-08-09 여섯 번째 세션) 확정과
+정합적, 중첩이 생겨도 이 결론은 안 바뀜.
+
+**기각된 대안 — DOM 백엔드가 nested Slot을 실제 `<div>` 중첩으로
+매핑하는 안.** 검토했으나 기각 — React `<></>`(Fragment)가 존재하는
+이유와 정확히 같은 이유로 Slot도 **의도적으로 wrapper 없는** 그룹핑
+도구라, 논리적 중첩을 물리 `<div>` 중첩으로 매핑하면 이 wrapper-less
+원칙 자체가 깨짐(flexbox/grid 등에서 직계 형제를 기대하는 CSS가
+깨질 수 있음). 어느 backend든 nested Slot의 리프는 항상 flat하게
+같은 물리 부모의 자식이어야 함 — 그래서 위 숫자 기반 메커니즘이
+Roblox뿐 아니라 web에도 그대로 필요.
+
+### 0-based 개수 vs 1-based Lua 인덱스
+
+`offset`/`sum`은 0-based 개수(카디널 수)고, `_elements`/`updateFn`의
+`index`는 1-based Lua 배열 관례 — `index + offset` 공식이 이 둘을
+의도적으로 섞는 것. 상세는 `base/bind-system-plan.md`의 "0-based
+개수" 절 참고.
