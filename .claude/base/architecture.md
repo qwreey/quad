@@ -26,12 +26,16 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
-4. **PA님 스타일 DI 키 계속 지원**: `[Attribute "Name"]` 같은 특수 바인드 키,
-   store 컴퓨티드 바인드도 가능해야 함(`retract`, 구 cleanup,
-   `base/lifecycle-pattern.md` 참고). **[정정, 2026-08-08 세 번째 세션]**
-   `Tag`는 더 이상 `[Tag ""] = true` 해시 파트 DI 키가 아님 — array-part
-   값 객체(`Tag(...)`)로 재설계됨, `base/tag-plan.md` 참고
-   (`archive/tag-hash-key-model-reversed.md`에 구 모델 보존).
+4. **PA님 스타일 DI 키 계속 지원**: `[AttributeKey "Name"]`(구 `Attribute`,
+   2026-08-11 아홉 번째 세션에 그룹 `Attribute(...)`와 이름 충돌 방지로
+   리네임) 같은 특수 바인드 키, store 컴퓨티드 바인드도 가능해야 함
+   (`retract`, 구 cleanup, `base/lifecycle-pattern.md` 참고). **[정정,
+   2026-08-08 세 번째 세션]** `Tag`는 더 이상 `[Tag ""] = true` 해시 파트
+   DI 키가 아님 — array-part 값 객체(`Tag(...)`)로 재설계됨,
+   `base/tag-plan.md` 참고(`archive/tag-hash-key-model-reversed.md`에 구
+   모델 보존). **[2026-08-11 아홉 번째 세션]** `Attribute(...)`도 여러
+   Store를 한 번에 attribute로 묶는 array-part 값 객체로 신설(`Tag`와
+   동형), `base/attribute-plan.md` 참고.
 5. **id 기반 전역 조회 폐지, Tag 시스템으로 대체.** v1의 `Store.GetObject(id)`/
    `Frame "id" {}`류는 더 이상 없음 — "id 매핑이 비현실적"이라는 게 이유.
    네임스페이싱 문제는 있지만 별도 네임스페이스 개념을 추가하면 라이브러리
@@ -138,6 +142,7 @@ quad/
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), CollectionService 글루는 quad-roblox Handlers/Tag.luau(`base/tag-plan.md`, 2026-08-08 세 번째 세션)
+│       ├── Attribute.luau        # 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`, `Tag`와 동형) — `SetAttribute` 글루는 quad-roblox Handlers/Attribute.luau(`base/attribute-plan.md`, 2026-08-11 아홉 번째 세션). 단일 키(`AttributeKey<<T>>`)는 값 타입 레이어 없이 quad-roblox 단독 소속(아래)
 │       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenTag`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`research/tween-plan.md`, 2026-08-10 세션 재설계)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
@@ -159,8 +164,9 @@ quad/
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
-        │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩(`base/onchange-plan.md`, 2026-08-10 세션)
-        │   ├── Attribute.luau
+        │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩 + 이름별 weak 캐시(`AttributeKey`와 동일 기법, `base/onchange-plan.md`, 2026-08-10 세션)
+        │   ├── AttributeKey.luau  # 단일 키(`AttributeKey<<T>>(name)`/`BooleanAttribute`류) DI 키 팩토리+Handler, `SetAttribute`/`None` 지우기 + 이름별 weak 캐시(동등성 보장, `base/attribute-plan.md` "동등성" 절)
+        │   ├── Attribute.luau     # 그룹(`Attribute(store1, store2, ...)`) process/retract — 이름 집합 diff만 자체 로직, 실제 `SetAttribute`/구독은 메모이즈된 `AttributeKey(name)`로 `Dispatch.process`/`retractUnder`에 재귀 위임(단일 키 경로 재사용, 중복 구현 없음) — 값 타입/API는 quad-base Attribute.luau(`base/attribute-plan.md`)
         │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })

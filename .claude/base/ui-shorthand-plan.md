@@ -59,7 +59,7 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 이미 예시로 든 `mod:UICorner(8)`은 이 특수 키를 flatten해서 props에
 꽂아넣는 사탕 문법일 뿐, 실제 처리는 이 Handler가 함 — Modifier를 안 거치고
 `Frame { UICorner = 8 }`처럼 순수 인라인 키로 직접 써도(v1처럼) 동일하게
-작동함, `architecture.md`의 `[Attribute "Name"]`류 특수 키와 같은 층위.
+작동함, `architecture.md`의 `[AttributeKey "Name"]`류 특수 키와 같은 층위.
 자동 생성된 자식은 기존 관례대로 `_`/`QUAD_` 접두어 네이밍
 (`research/debug-tooling-plan.md` 9번, v1의 `_quad_round`류 그대로 재사용).
 

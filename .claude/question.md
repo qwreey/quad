@@ -138,6 +138,15 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   "`Tag`가 이미 이 뜻으로 쓰이고 있어서 충돌"이라는 이유로 `Brand`의
   대안 이름 후보에서 제외됐다는 점은 참고할 것 — 두 이름이 같은 코퍼스
   안에서 공존 가능한지도 같이 검토 대상.
+- **`Attribute`/`AttributeKey`(3순위, 사소함, 2026-08-11 아홉 번째 세션
+  추가)**: 여러 Store를 한 번에 attribute로 묶는 그룹 프리미티브
+  (`Attribute(store1, store2, ...)`, `Tag`와 동형)가 신설되면서, 기존
+  단일 키 생성자 `Attribute<<T>>("name")`를 이름 충돌 방지를 위해
+  `AttributeKey<<T>>`로 잠정 리네임함(`OnChange`/`OnChangeKey`처럼 함수
+  이름과 반환 타입 이름이 분리된 기존 전례와 대칭) — 해석 모호성 자체는
+  이미 없앴으니 급하지 않지만, 최종 이름은 여전히 이 목록의 다른
+  가칭들과 함께 검토 대상. `base/attribute-plan.md` "그룹 `Attribute(...)`"
+  절 참고.
 
 ### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
 
@@ -228,11 +237,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
 - **[해소됨, 2026-08-09 열한 번째 세션]** Attribute 특수 키 타입
-  파라미터화 — `[Attribute<<boolean>> "name"]` 제네릭 스타일과
-  `[BooleanAttribute "name"]` 타입별 정적 생성자 패밀리 **둘 다 채택으로
-  확정**(내부 구현 동일, 호출부 표기만 다름). `base/attribute-plan.md`
-  참고 — 제네릭 파라미터가 `=` 뒤 값 타입까지 좁혀주는지는 M0/M10에서
-  실측 필요(안 돼도 런타임엔 영향 없음).
+  파라미터화 — `[AttributeKey<<boolean>> "name"]`(구 `Attribute<<boolean>>`,
+  2026-08-11 아홉 번째 세션에 그룹 `Attribute(...)`와의 이름 충돌 방지로
+  리네임) 제네릭 스타일과 `[BooleanAttribute "name"]` 타입별 정적 생성자
+  패밀리 **둘 다 채택으로 확정**(내부 구현 동일, 호출부 표기만 다름).
+  `base/attribute-plan.md` 참고 — 제네릭 파라미터가 `=` 뒤 값 타입까지
+  좁혀주는지는 M0/M10에서 실측 필요(안 돼도 런타임엔 영향 없음).
 - **v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat`** —
   `research/v1-compat-plan.md`(신규, 2026-08-06, 두 차례 후속 논의로 수렴).
   방향 확정: v1을 그대로 병행 실행 + 경계에서만 `state:Observer()`(lazy

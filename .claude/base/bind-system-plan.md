@@ -2224,10 +2224,13 @@ DI 키로 확정(2026-08-10 세션).** 이벤트는 `inst[key]`가 이미 Signal
 ## Tag/Attribute 특수 키 — 전용 문서로 분리됨 (2026-08-07 여덟 번째 세션)
 
 `base/tag-plan.md`/`base/attribute-plan.md`로 이동 — 이 절이 다루던 타입
-파라미터화 문제(`[Attribute<<boolean>> "name"]` vs `[BooleanAttribute
-"name"]`)뿐 아니라 `None`/`process`/`retract` 동작까지 확정 반영됨.
-UICorner 숏핸드/Tween처럼 "1 프리미티브 1 파일" 관례를 따라야 한다는
-지적으로 분리.
+파라미터화 문제(`[AttributeKey<<boolean>> "name"]`(구 `Attribute<<boolean>>`)
+vs `[BooleanAttribute "name"]`)뿐 아니라 `None`/`process`/`retract` 동작까지
+확정 반영됨. UICorner 숏핸드/Tween처럼 "1 프리미티브 1 파일" 관례를 따라야
+한다는 지적으로 분리. **[2026-08-11 아홉 번째 세션]** `attribute-plan.md`에
+여러 Store를 한 번에 attribute로 묶는 그룹 `Attribute(...)` 프리미티브(`Tag`와
+동형)가 추가되며, 단일 키 생성자는 이름 충돌 방지로 `AttributeKey<<T>>`로
+리네임됨.
 
 ## `Brand` — 런타임 nominal 타입 판별 통합 메커니즘, `isState`를 일반화 (2026-08-07 여덟 번째 세션)
 

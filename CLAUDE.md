@@ -410,3 +410,15 @@ CLAUDE.md가 세션 로그 누적으로 3196줄까지 불어나 컨텍스트 성
 해왔음을 `README.md`/`question.md` 대조로 확인(반영 누락 없음 — archive
 이전 전 처리 불필요). 새 서사가 CLAUDE.md에 다시 쌓이지 않도록 "이 절을
 갱신하는 방법" 절을 세션 히스토리 맨 위에 명문화.
+
+**2026-08-11 아홉 번째 세션 — 그룹 `Attribute(...)` 프리미티브, 단일 키 `AttributeKey`로 리네임, 이름별 weak 캐시**
+(`session/2026-08-11-09-attribute-group-primitive.md`)
+여러 Store를 한 번에 attribute로 묶는 `Attribute(store1, store2, ...)`를
+`Tag`와 동형인 array-part 값 객체로 신설(`Merged`로 헤테로지니어스 합성,
+retract는 Tag처럼 확실히 청소). 이름 충돌 방지로 기존 단일 키
+`Attribute<<T>>`를 `AttributeKey<<T>>`로 즉시 리네임(용어정리 대기열이
+아니라 지금 바로 적용, 최종 이름만 대기열에 남김). **후속**: `AttributeKey(name)`이
+이름별 weak 캐시로 동등성(`AttributeKey(a) == AttributeKey(a)`)을 보장하도록
+확정되며, 최초안이던 "그룹 Handler 자기 완결형(Dispatch 재진입 없음)"을
+뒤집고 메모이즈된 키로 기존 단일 키 경로에 재귀 위임하는 걸로 재개정
+(중복 구현 제거) — `base/attribute-plan.md` 등 관련 문서 전체 반영 완료.

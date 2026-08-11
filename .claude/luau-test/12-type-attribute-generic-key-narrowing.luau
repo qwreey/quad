@@ -1,6 +1,6 @@
 --!strict
 --[[
-	검증 대상: `[Attribute<<boolean>> "name"] = value`처럼 제네릭 파라미터로
+	검증 대상: `[AttributeKey<<boolean>> "name"] = value`처럼 제네릭 파라미터로
 	타입을 명시하는 특수 DI 키를 테이블 리터럴에 쓸 때, `=` 뒤 `value`의
 	타입이 실제로 그 제네릭 파라미터로 좁혀지는지 — Luau 타입 솔버가
 	"이 계산된 키의 제네릭 인스턴스에 따라 옆 값의 타입이 달라진다"는
@@ -23,10 +23,10 @@
 	그대로 확인 가능함.
 ]]
 
--- SpecialKey<T> — Attribute<<T>>(name)이 반환하는 "타입이 실린 키" 흉내
+-- SpecialKey<T> — AttributeKey<<T>>(name)이 반환하는 "타입이 실린 키" 흉내
 type SpecialKey<T> = { __attributeKeyBrand: T }
 
-local function Attribute<T>(name: string): SpecialKey<T>
+local function AttributeKey<T>(name: string): SpecialKey<T>
 	return (nil :: any) :: SpecialKey<T>
 end
 
@@ -39,7 +39,7 @@ type HomogeneousParams = {
 }
 
 local homo: HomogeneousParams = {
-	[Attribute("Enabled")] = true, -- 이건 당연히 통과해야 함
+	[AttributeKey("Enabled")] = true, -- 이건 당연히 통과해야 함
 }
 
 -- ===== 시도 2: 이질적(heterogeneous) — 한 테이블에 boolean/number Attribute를 섞음 =====
@@ -50,11 +50,11 @@ local homo: HomogeneousParams = {
 -- 뭉개짐, (c) 테이블 타입 자체를 선언하는 시점에 에러)
 
 local mixedProps: { [SpecialKey<any>]: any } = {} -- 일단 any로 도피한 버전(항상 통과할 것)
-mixedProps[Attribute("Enabled")] = true
-mixedProps[Attribute("Count")] = 5
+mixedProps[AttributeKey("Enabled")] = true
+mixedProps[AttributeKey("Count")] = 5
 
 -- 진짜 물어볼 질문: 개별 대입 표현식 하나만 놓고 봤을 때, Luau가
--- `Attribute<T>(name)`의 제네릭 인스턴스화 결과로 옆의 값 리터럴 타입을
+-- `AttributeKey<T>(name)`의 제네릭 인스턴스화 결과로 옆의 값 리터럴 타입을
 -- 체크/추론해주는지 — 함수 호출 결과 타입과 그 옆 대입값 사이의 관계는
 -- "인덱스 시그니처"가 아니라 그냥 "함수 반환 타입에 맞는 변수 대입"
 -- 문제로 좁혀서 아래처럼 직접 테스트:
@@ -64,12 +64,12 @@ local function setAttributeTyped<T>(key: SpecialKey<T>, value: T)
 	-- 이 스파이크는 타입 추론 자체만 봄
 end
 
-setAttributeTyped(Attribute("Enabled"), true) -- T=boolean으로 추론돼 통과해야 함
-setAttributeTyped(Attribute("Count"), 5) -- T=number로 추론돼 통과해야 함
-setAttributeTyped(Attribute("Enabled"), 5) -- <- 여기가 핵심: T=boolean인데 5(number)를 넘김.
+setAttributeTyped(AttributeKey("Enabled"), true) -- T=boolean으로 추론돼 통과해야 함
+setAttributeTyped(AttributeKey("Count"), 5) -- T=number로 추론돼 통과해야 함
+setAttributeTyped(AttributeKey("Enabled"), 5) -- <- 여기가 핵심: T=boolean인데 5(number)를 넘김.
 -- 이게 타입 에러로 잡히면(기대하는 결과) "제네릭 키 함수 호출 패턴"은
 -- 최소한 함수 인자 형태로는 잘 작동한다는 뜻 — 그럼 테이블 리터럴
--- `{[Attribute<<T>>(name)] = value}` 안에서도 Luau가 "이건 사실
+-- `{[AttributeKey<<T>>(name)] = value}` 안에서도 Luau가 "이건 사실
 -- 위 setAttributeTyped 호출과 같은 형태"로 취급해주는지가 다음 질문.
 
 print("런타임 실행은 의미 없음 — luau-analyze/luau-lsp 진단만 확인할 것")
@@ -80,7 +80,7 @@ print(homo, mixedProps)
 	1. `setAttributeTyped(Attribute("Enabled"), 5)` 줄에서 실제로 타입
 	   에러가 나는가? — 나면 "함수 인자 형태의 제네릭 키+값 연동"은
 	   Luau가 지원한다는 뜻.
-	2. 위가 통과한다면, 그 다음으로 `mixedProps[Attribute("Enabled")] =
+	2. 위가 통과한다면, 그 다음으로 `mixedProps[AttributeKey("Enabled")] =
 	   5`처럼 **인덱스 대입 문법**으로도 같은 체크가 되는지 직접 추가해
 	   실험해볼 것(이 파일엔 일부러 안 넣어둠 — `{[SpecialKey<T>]: T}`류
 	   제네릭 인덱스 시그니처를 실제로 선언할 수 있는지부터 luau-lsp가

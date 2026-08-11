@@ -80,17 +80,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       여덟 번째 세션 정정)
 - [ ] `Brand.luau`(공유 weak-key 레지스트리, `Brand.set(x,tag)`/
       `Brand.get(x)` — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
-      `isAttribute`/`isTween`/`isBlocker`/`isSource`/`isStore`/`isSlot`/
-      `isRef`/`isPreRef`/`isModifier`(2026-08-07 열 번째 세션 추가 — 원래
-      태그 목록에서 빠져있었음. **[정정, 2026-08-09 열한 번째 세션]**
-      `isRef`/`isPreRef`는 `isState`처럼 상위-하위 관계로 재정정됨 —
-      `isPreRef`가 가장 구체적인 항등, `isRef`는 그 위에 얹혀
+      `isAttributeKey`/`isAttribute`/`isTween`/`isBlocker`/`isSource`/
+      `isStore`/`isSlot`/`isRef`/`isPreRef`/`isModifier`(2026-08-07 열 번째
+      세션 추가 — 원래 태그 목록에서 빠져있었음. **[정정, 2026-08-09
+      열한 번째 세션]** `isRef`/`isPreRef`는 `isState`처럼 상위-하위 관계로
+      재정정됨 — `isPreRef`가 가장 구체적인 항등, `isRef`는 그 위에 얹혀
       `isPreRef`도 `true`로 통과시킴(PreRef가 Ref 런타임을 재사용하는
       것과 정합). `(v=Ref)` children leaf 매치 핸들러는 이제
       `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 함. `isModifier`는
-      여전히 단순 항등, 상위 개념 없음) 전부의 기반. `isNone`만 예외로
-      레지스트리 없이 `x == None` 항등 비교 — `bind-system-plan.md`의
-      `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
+      여전히 단순 항등, 상위 개념 없음. **[정정, 2026-08-11 아홉 번째
+      세션]** `isAttribute` 하나였던 게 `isAttributeKey`(단일 키 DI 키
+      predicate, 해시파트 `k`를 판별)와 `isAttribute`(그룹 값 predicate,
+      array-part `v`를 판별, `isTag`와 같은 결)로 분리됨 — 그룹
+      `Attribute(...)` 프리미티브 신설로 같은 이름이 서로 다른 두
+      대상(키 vs 값)을 가리키게 돼서 갈라짐, `base/attribute-plan.md`
+      참고) 전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None`
+      항등 비교 — `bind-system-plan.md`의 `Brand` 절, 2026-08-07 여덟
+      번째 세션 신설)
 - [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
       `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
       `inst`(첫 인자)는 항상 weak, `StrongMap`/`WeakMap` 서브테이블은 lazy
@@ -438,9 +444,21 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/OnChange.luau`(`OnChange(name)` DI 키 팩토리+Handler,
       `GetPropertyChangedSignal` 바인딩 — 제네릭 없이 콜백 타입은 인라인
-      명시, `base/onchange-plan.md`, 2026-08-10 세션 확정)
-- [ ] `Handlers/Attribute.luau`(`base/attribute-plan.md` — 메커니즘/`None`/
-      `retract` 불필요 확정, 타입 파라미터화 이름만 착수 전 확인)
+      명시, 이름별 weak 캐시로 `OnChange(a) == OnChange(a)` 동등성 보장
+      (`AttributeKey`와 동일 기법), `base/onchange-plan.md`, 2026-08-10
+      세션 확정·2026-08-11 아홉 번째 세션 후속(캐시))
+- [ ] `Handlers/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)`/
+      `BooleanAttribute`류 DI 키 팩토리+Handler — 메커니즘/`None`/`retract`
+      불필요 확정, 이름별 weak 캐시로 동등성 보장, 타입 파라미터화 이름만
+      착수 전 확인, `base/attribute-plan.md`)
+- [ ] `Attribute.luau`(quad-base — 그룹 값 타입+API: `Attribute(store1,
+      store2, ...)`/`Merged`, `Tag`와 동형 array-part 값 객체,
+      `base/attribute-plan.md`)
+- [ ] `Handlers/Attribute.luau`(quad-roblox — 그룹 process/retract, 이전
+      이름 집합과의 diff만 자체 로직, 실제 `SetAttribute`/store-bind
+      구독은 메모이즈된 `AttributeKey(name)`로 `Dispatch.process`/
+      `retractUnder`에 재귀 위임(단일 키 경로 재사용, 중복 구현 없음),
+      `base/attribute-plan.md`)
 - [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
       `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`, `base/tag-plan.md`
       — 2026-08-08 세 번째 세션 array-part 값 객체로 재설계, 구 해시 파트
