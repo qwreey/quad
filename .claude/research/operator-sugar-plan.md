@@ -187,6 +187,28 @@ introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어�
   state를 독립적으로 합치는 형태가 따로 필요한지는 실사용 사례가 나오면
   재검토(지금은 `Store.Combine`류로 이미 커버된다고 봄).
 
+## 열린 질문 — 컬렉션 계열 후보: `Concat`/`Sorted`/`Filtered`
+
+사용자 제안(2026-08-12 세션). 위 산술/논리/비트 스칼라 연산과 달리 문자열
+결합·테이블 정렬·필터링이라 범주가 다름 — 별도로 정리:
+
+- **`Concat(state<any>, ...)`** — 각 operand를 `tostring`으로 변환한 뒤
+  `..`으로 이어붙임. `Sum`과 완전히 같은 N항 커링 shape(`self` 포함해서
+  전부 이어붙임)이라 이 카탈로그에 무리 없이 들어감.
+- **`Sorted(diffFn)`** — `self`가 들고 있는 테이블을 `table.clone`한 뒤
+  `table.sort(clone, diffFn)`로 정렬해 새 State로 반환. `-ed` 어미는
+  기존 `Tag.Added`/`Removed`, `Overridden`과 같은 관례(뮤테이션이 아니라
+  계산되어 반환되는 새 값임을 신호)와 일치해 이름도 자연스러움. `diffFn`은
+  `table.sort`의 비교 함수와 동일한 시그니처(`(a, b) -> boolean`)로 두면
+  됨. 구조적으로 문제없어 보임.
+- **`Filtered`** — 반쯤 기각. 원소 개수 자체가 바뀌는 연산이라 `Slot`의
+  인덱스 기반 조정 모델(`Length`/`Offset`/`bindLifetime`/`unbindLifetime`,
+  `base/slot-plan.md`)과 정면으로 부딪힘 — Slot이 관리하는 리스트에 이걸
+  직접 꽂으면 "원소가 사라졌다 다시 들어옴" 문제가 생겨서, 단순 Operator
+  슈가가 아니라 Slot 쪽 조정 로직과 맞물리는 별도 메커니즘이 필요할 가능성이
+  큼. Slot을 거치지 않는 순수 `State<table> -> State<table>` 값 변환
+  용도라면 문제없이 들어갈 수 있음 — 실사용 사례가 나오면 재검토.
+
 ## 우선순위
 
 **맨 마지막.** 없어도 quad는 기능상 완전하고, 함수 간 의존이 없어 나중에
