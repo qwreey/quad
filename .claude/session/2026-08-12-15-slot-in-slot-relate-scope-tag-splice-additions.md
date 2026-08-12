@@ -20,12 +20,17 @@
 ## 수정한 것
 
 4. **`Tag:Added`/`:Removed`가 문서상 단일 `name`만 받고 있었음 —
-   vararg로 정정.** 원래 `Tag(a,b)`를 `Tag():Added(a):Added(b)`(clone 2회)의
-   sugar로 서술했는데, 사용자가 태그 여러 개를 한 번에 걸 때 이름 개수만큼
-   clone+해싱이 반복되는 손해를 지적 — self-return 최적화(이미 걸려있으면
-   그냥 self 반환)도 검토했으나 매번 먼저 멤버십을 읽어야 해서 오히려
-   더 비싸 기각, 대신 `Added(name, ...)`/`Removed(name, ...)`로 vararg를
-   지원해 여러 이름을 단일 clone으로 처리하도록 변경(`tag-plan.md`).
+   `string | {string}`으로 정정(같은 세션 두 단계로 수렴).** 원래
+   `Tag(a,b)`를 `Tag():Added(a):Added(b)`(clone 2회)의 sugar로 서술했는데,
+   사용자가 태그 여러 개를 한 번에 걸 때 이름 개수만큼 clone+해싱이
+   반복되는 손해를 지적. **1차 정정**: `Added(name, ...)`로 vararg 지원.
+   **2차 정정(같은 세션 후속)**: 사용자가 실사용 패턴 지적 — 조건절로
+   이름 목록을 동적으로 조립하는 경우(`if cond then table.insert(names,
+   "x") end`)엔 결국 `Added(table.unpack(names))`로 풀어야 해서 vararg가
+   더 번거로움, 차라리 `string | {string}`을 받아 내부에서
+   `type(v) == "table"`이면 순회(flatten)하는 게 더 단순 — 최종 채택.
+   self-return 최적화(이미 걸려있으면 그냥 self 반환)도 검토했으나 매번
+   먼저 멤버십을 읽어야 해서 오히려 더 비싸 기각(`tag-plan.md`).
 
 ## 추가한 것
 

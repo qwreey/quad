@@ -634,7 +634,10 @@ vararg, `Slot:Splice` 신설** (`session/2026-08-12-15-slot-in-slot-relate-scope
 `slotOwner`/`kSlotMap` relate가 최상위 마운트에만 걸림, `Animate` 반환
 타입이 `State<Tween<T>|T>`, Slot retract는 전부 파괴·포탈 없음)는 문서와
 일치해 확인만. 1개(`Tag:Added`/`:Removed`가 문서상 단일 `name`만 받던 것)는
-불일치 발견해 vararg로 정정(self-return 최적화는 매번 멤버십을 먼저 읽어야
-해서 오히려 더 비싸 기각, `tag-plan.md`). 추가로 `Slot:Splice(index,
+불일치 발견해 정정 — 처음엔 vararg로 갔다가, 조건절로 동적 조립한 이름
+목록은 `table.unpack`을 거쳐야 해서 오히려 번거롭다는 지적으로 같은
+세션 안에 `string | {string}`(내부 flatten)로 재수렴(self-return
+최적화는 매번 멤버십을 먼저 읽어야 해서 기각, `tag-plan.md`). 추가로
+`Slot:Splice(index,
 removeCount, ...newElements)` CRUD 신설 — 구간 제거+삽입을 shift/recompute
 1회로 묶는 순수 최적화(`slot-plan.md`).

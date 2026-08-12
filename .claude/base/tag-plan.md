@@ -5,8 +5,8 @@
 2026-08-12 열한 번째 세션에 `TagHandler`의 `process`/`retract` 메커니즘을
 참조 카운트 기반으로 전면 정정(옛 버전은 `archive/
 retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째 세션에
-`Added`/`Removed`를 단일 이름에서 vararg로 정정(아래 값 모양 절). 새
-결정만 반영, 열린 질문 없음.
+`Added`/`Removed`를 단일 이름에서 `string | {string}`으로 정정(아래 값
+모양 절). 새 결정만 반영, 열린 질문 없음.
 
 ## 왜 재설계됐나
 
@@ -19,9 +19,9 @@ retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째 세션에
 ## 값 모양 — `Modifier`와 같은 immutable clone 체이닝
 
 ```
-Tag(name1, name2, ...)      -- 생성자, 가변인자. Tag() 빈 값도 유효
-tag:Added(name, ...): Tag   -- clone 후 이름(들) 추가, 원본 안 건드림
-tag:Removed(name, ...): Tag -- clone 후 이름(들) 제거
+Tag(name1, name2, ...)                  -- 생성자, 가변인자. Tag() 빈 값도 유효
+tag:Added(name: string | {string}): Tag   -- clone 후 이름(들) 추가, 원본 안 건드림
+tag:Removed(name: string | {string}): Tag -- clone 후 이름(들) 제거
 tag:Contains(name): boolean -- 멤버십 확인
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의
@@ -35,19 +35,24 @@ Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifie
 API처럼 보이기 때문** — 실제로는 항상 `table.clone` 후 반환(Modifier
 3번 절과 동일한 immutable 확정 이유: 형제 서브트리 오염 방지).
 
-**[정정, 2026-08-12 열다섯 번째 세션] `Added`/`Removed`도 vararg —
-`Tag(a,b)`는 `Tag():Added(a,b)` 한 번의 clone sugar, `Tag():Added(a):Added(b)`
-처럼 반복 clone하는 게 아님.** 처음엔 단일 `name`만 받고 생성자의
-vararg는 반복 `Added` 호출의 sugar로 서술했으나, 이러면 이름 여러 개를
-한 번에 걸 때(`Tag(a,b,c)`도 결국 clone 1회면 충분한데) 이름 개수만큼
-`table.clone`+해싱이 반복되는 손해가 남 — 태그가 이미 걸려있는 경우 self를
-그냥 리턴하는 최적화도 검토했으나(2026-08-12 열다섯 번째 세션) 그러려면
-매번 먼저 멤버십을 읽어야 해서 오히려 전반적으로 더 비쌈(해싱이 한 번
-더 나고 Set에서도 한 번 더 남) — **기각, `Added`는 항상 새 clone을
-반환하는 현재 동작 유지**. 대신 여러 이름을 한 번의 clone으로 처리하는
-vararg만 추가해 흔한 다중 추가 케이스의 비용을 줄임. `Tag(name1, name2,
-...)` 생성자도 이제 정확히 `Tag():Added(name1, name2, ...)`(단일 clone)와
-동치.
+**[정정, 2026-08-12 열다섯 번째 세션, 같은 세션 후속 재정정] `Added`/
+`Removed`는 vararg가 아니라 `string | {string}` — 단일 이름 또는
+이름 배열을 받고 내부에서 `type(v) == "table"`이면 순회(flatten)해서
+처리.** 처음엔 이름 여러 개를 한 clone으로 처리하려고 vararg
+(`Added(name, ...)`)로 정정했으나, 사용자가 실사용 패턴을 지적하며
+재검토됨 — 조건절로 이름 목록을 동적으로 조립하는 경우(`if cond then
+table.insert(names, "x") end`류)엔 결국 테이블에 모은 뒤
+`Added(table.unpack(names))`로 풀어야 해서 vararg가 오히려 더 번거로움.
+반면 `string | {string}`은 그 테이블을 그대로 넘기면 끝 — 호출부가
+단일 이름이든 이미 조립해둔 배열이든 분기 없이 통일해서 부를 수 있고,
+구현도 `table.unpack` 없이 단순 `type(v) == "table"` 분기 후 `for`
+순회만 있으면 됨. **부작용 걱정 없음** — 받는 값이 전부 이미 확정된
+plain string이라(핸들러 계층 값처럼 identity/생명주기가 얽힌 값이
+아님) 테이블로 감싸 넘기든 아니든 의미가 완전히 동일, 오버로드가
+모호해질 여지가 없음. `Tag(name1, name2, ...)` 생성자는 그대로 vararg
+유지(정적 리터럴 호출 자리라 동적 조립 문제가 없음) — 내부적으로
+`{...}`로 한 번 패킹해 `self:Added(packed)`(단일 clone, 테이블 인자
+경로 재사용)를 호출하는 것으로 구현.
 
 **children 배열 슬롯(array-part)에 직접 놓임** — `Frame { Tag("selected") }`.
 정적으로 여러 개 놓아도(`Frame { Tag("a"), Tag("b") }`) 각자 독립적으로
