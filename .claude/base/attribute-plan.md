@@ -114,7 +114,7 @@ end
   같은 `AttributeKeyHandler`가 이 키를 계속 담당(핸들러 *타입*이 안 바뀜).
   `retract`가 의미 있는 유일한 패턴("매치되는 핸들러 타입 자체가 바뀜",
   `Tag(...)`↔`nil`이 실사례 — 2026-08-10 세션부터 Tween은 더 이상 이
-  패턴의 예시가 아님, `research/tween-plan.md`)에 해당 안 함 —
+  패턴의 예시가 아님, `base/tween-plan.md`)에 해당 안 함 —
   `bind-system-plan.md` "확정된 디스패치 모델" 절이 한때 Attribute도
   retract 필요 예시로 들었던 걸 여기서 바로잡음.
 - store-bind 가능(일반 프로퍼티와 동일하게 취급, `Store<T>`/`State<T>`

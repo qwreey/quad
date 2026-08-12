@@ -42,13 +42,13 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   base 문서가 근거로 인용하는 온디맨드 참고 자료(v1 내부 동작 스냅샷,
   Fusion/Vide 비교 리서치) — 항상 읽을 필요는 없고 인용될 때만 열어볼 것.
 - `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의.
-  `tween-plan.md`/`existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
+  `existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
   `documentation-plan.md`/`documentation-content-map.md`/
   `framework-comparison-findings.md`/`additional-primitives-plan.md`(2026-08-09
   세 번째 세션에 마지막 열린 항목까지 전부 해소, 이제 배경 자료용)/
   `pre-implementation-audit.md`/`v1-compat-plan.md`
-  — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에서 사실상 다 닫힘, 남은
-  건 자연완료 북키핑 정도로 더 이상 급하지 않음). 최신 목록·우선순위는
+  — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에 마지막 열린 항목까지
+  전부 해소돼 `base/`로 승격, 더 이상 여기 없음). 최신 목록·우선순위는
   `.claude/README.md`가 소스, 여기서 개수 반복 안 함(과거에 "두 개뿐"이라
   적어놨다가 새 문서 추가될 때마다 안 갱신되는 패턴이 반복돼서 아예 안
   세기로 함).
@@ -489,3 +489,13 @@ bind-system-plan.md`) `local addTax = Sum(a,b)`처럼 만든 값을 `:Compute`�
 `Relate`로 클로저의 operand 목록 추적) 아이디어도 나왔으나 실사용
 사례 나오면 재검토로 보류. `base/architecture.md`의 stale `Animate`
 2-인자 시그니처 코멘트도 이 김에 수정.
+
+**2026-08-12 여섯 번째 세션 — Tween 자연완료 북키핑 확정, `tween-plan.md`
+`base/`로 승격** (`session/2026-08-12-06-tween-completed-bookkeeping-promoted.md`)
+`tween-plan.md`의 마지막 열린 질문(자연완료 시 per-instance 북키핑 정리
+여부)을 사용자가 확정 — 정리 안 해도 됨(자연완료는 유저가 원한 목표값에
+도달한 상태라 남은 참조가 부작용 없음, `Value`가 항상 lerp 가능한
+프리미티브라 메모리 문제도 없음, 별도 Completed 이벤트 정리 장치는
+오버엔지니어링). 이걸로 열린 설계 질문이 없어져 `research/tween-plan.md`를
+`base/tween-plan.md`로 승격, 라이브 크로스레퍼런스 전부 갱신(session/
+과거 기록은 원문 보존을 위해 그대로 둠).

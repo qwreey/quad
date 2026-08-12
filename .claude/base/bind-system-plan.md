@@ -132,7 +132,7 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     PropertyHandler가 소비하는 값-레벨 래퍼(`Tween<T>`)로 재설계되며
     매치되는 핸들러가 항상 PropertyHandler 하나뿐이 되어 이 케이스
     자체가 사라짐 — 트윈 취소/전환은 이제 PropertyHandler 내부의
-    3-상태 릴레이션 슬롯으로 처리(`research/tween-plan.md`, `archive/
+    3-상태 릴레이션 슬롯으로 처리(`base/tween-plan.md`, `archive/
     tween-special-bind-key-reversed.md`).
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
     됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
@@ -324,7 +324,7 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
   더 이상 별도로 등록되는 핸들러가 아님 — Property 핸들러 내부에서
-  소비되는 값-레벨 래퍼로 재설계됨(`research/tween-plan.md`).
+  소비되는 값-레벨 래퍼로 재설계됨(`base/tween-plan.md`).
 - **모듈 재생성(`New()`)과의 관계 — 새 설계 불필요, 이미 있는 선례로 자연히
   풀림.** v1처럼 `require`를 감싸 `Init(QuadId?)`로 격리 인스턴스를 만드는
   방식은 안 씀(위 "확정된 것" 절 — id 기반 조회 자체가 Ref로 대체되며
@@ -2008,7 +2008,7 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 
 **[2026-08-12 세션 감사에서 확인] `:Compute` 콜백 인자에 `:Get()`을 빠뜨리는
 실수가 반복되기 쉬움 — 실제로 `.claude/` 문서 예시 코드 4곳(`tag-plan.md`,
-`slot-plan.md` 2곳, `research/tween-plan.md`)에서 발견·수정됨.** `fn(self,
+`slot-plan.md` 2곳, `base/tween-plan.md`)에서 발견·수정됨.** `fn(self,
 ...)`의 모든 인자가 raw 값이 아니라 lazy State 핸들이라는 원칙(바로 위 절)을
 사람도 에이전트도 코드 작성 중에 잊기 쉬운 지점 — `:Compute`/`:With` 콜백
 안에서 인자를 비교(`==`)/연산(`+`)/테이블에 담기 전에 항상 `:Get()`부터
@@ -2272,7 +2272,7 @@ T|State<T>|nil`가 돌려주는 raw union을 사용자 코드가 분기하려면
 `Source`/`Slot`/`None`까지, Handler 구현(`isHandlable`에서 "이 값이
 Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
 "이 값이 Tween인가" 판별 — 2026-08-10 세션부터 `isTween`은 `isHandlable`이
-아니라 값-레벨 분기에서만 쓰임, `research/tween-plan.md` 참고)과 사용자
+아니라 값-레벨 분기에서만 쓰임, `base/tween-plan.md` 참고)과 사용자
 코드 양쪽에서 반복적으로 필요해질 수단이라 `isState` 하나만 만들고
 끝내지 않고 전체를 일관된 메커니즘으로
 통합(component-composition-plan.md 4번 절이 이미 "`isSource`류 판별자로

@@ -36,7 +36,7 @@
 10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
 11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `Ref(default):Callback(fn)`을 children 배열 숫자 슬롯에 직접 놓기 + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
 12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
-13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`research/tween-plan.md`)
+13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`base/tween-plan.md`)
 14. **UI 숏핸드(quad-roblox 한정)** — `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 인라인 키 (`base/ui-shorthand-plan.md`)
 
 ---
@@ -132,7 +132,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 7. 왜 컴포넌트 경계는 named parameter인가(Compose/Fusion/Vide/v1 수렴) — `component-composition-plan.md`
 8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
 9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
-10. 왜 Tween은 반응 그래프 밖에 있는가 — `research/tween-plan.md`
+10. 왜 Tween은 반응 그래프 밖에 있는가 — `base/tween-plan.md`
 11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `store-semantics.md`
 12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
 14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`
@@ -248,7 +248,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   `setOffsetSource`(Length/Offset)로 2026-08-09 여섯 번째 세션에 확정,
   `bind-system-plan.md` "Length/Offset" 절 참고.
 - Tween 오버라이드/삭제후재시작/끝점이동 세부 옵션 키 이름, 트윈 옵션 값
-  모양(TweenInfo vs 편의 필드) (`research/tween-plan.md`) — 아직 열림.
+  모양(TweenInfo vs 편의 필드) (`base/tween-plan.md`) — 아직 열림.
 - **[해소됨]** `Attribute<T>` 제네릭 vs 타입별 정적 생성자 — 2026-08-09
   열한 번째 세션에 "둘 다 채택"으로 확정, `base/attribute-plan.md` 참고.
 - provider/processor 네이밍 — **[해소됨]** `Handler`로 이미 오래전 확정

@@ -322,7 +322,7 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
   왜 Modifier만 막고 나머지는 다 허용하는지의 핵심 근거. **[정정,
   2026-08-10 세션] `Tween`은 이 그룹에서 빠짐** — Tween이 독립 Dispatch
   핸들러(`process`/`retract`를 가진 dispatch 참가자)에서 PropertyHandler가
-  소비하는 값-레벨 래퍼로 재설계되며(`research/tween-plan.md`), `Tween<T>`는
+  소비하는 값-레벨 래퍼로 재설계되며(`base/tween-plan.md`), `Tween<T>`는
   이제 `process`/`retract`가 없는 순수 raw 데이터 값 — `None`과 같은
   분류. State/Source에 `Tween<T>`가 담기는 것 자체는 여전히 문제없이
   허용되지만(위 타입 대수 절 참고), 그 이유는 "재귀 dispatch 참가자라서"가
@@ -550,7 +550,7 @@ Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSou
 
 ### 10. `Tween<T>`와의 타입 합성 — `T' = T | Tween<T>` 치환만으로 해결 (2026-08-10 세션)
 
-`research/tween-plan.md`가 값-레벨 `Tween<T>` 래퍼로 재설계되며, 프로퍼티류
+`base/tween-plan.md`가 값-레벨 `Tween<T>` 래퍼로 재설계되며, 프로퍼티류
 Modifier 필드 setter가 트윈 값도 받을 수 있어야 하는지가 자연히 따라오는
 질문이었음 — **답은 "이미 있는 `T | State<T>` 필드 타입 모양에 새 케이스를
 추가할 필요가 없다"** — 위 4번 절이 확정한 필드 타입 모양(리터럴 `T` 또는

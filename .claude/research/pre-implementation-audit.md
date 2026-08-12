@@ -44,7 +44,7 @@ M0 착수 전에 확인**. 우선순위 2는 지금 결정해두면 싼데 안 �
 바뀌어, "일반 store-bind와 Tween-store-bind가 같은 핸들러인지"라는
 질문 자체가 성립하지 않게 됨 — 범용 State/Source 언랩은 `Dispatch/
 StoreBind.luau` 하나뿐이고 Tween은 그 아래에서 나온 `realv`를
-PropertyHandler가 직접 판별. 상세는 `research/tween-plan.md`(전면
+PropertyHandler가 직접 판별. 상세는 `base/tween-plan.md`(전면
 재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`. 아래는
 원래 발견 당시 기록.
 
@@ -488,7 +488,14 @@ Modifier를 합친다"는 시나리오가 `Overridden`의 가장 그럴듯한 �
 
 ### 2-10. Tween 자연완료(Completed) 시 per-instance 북키핑 정리 여부가 명세 안 됨
 
-**위치**: `research/tween-plan.md` "`retract`(구 cleanup)로 확정된
+**[해소됨, 2026-08-12 세션]** 결론은 "정리 안 해도 됨" — 자연완료 상태는
+유저가 원한 목표값에 도달한 상태라 남은 북키핑이 부작용을 안 일으키고
+(`Value`가 항상 lerp 가능한 프리미티브), Completed 이벤트 구독 같은 별도
+정리 장치는 오버엔지니어링으로 판단해 안 만들기로 확정. 상세 근거는
+`base/tween-plan.md`(승격됨) "자연 완료(Completed) 시 per-instance
+북키핑 — 정리 안 해도 됨" 절. 아래는 원래 발견 당시 기록.
+
+**위치**: `base/tween-plan.md` "`retract`(구 cleanup)로 확정된
 오버라이드 시맨틱" 절.
 
 **문제**: "새 값이 들어와 갈아치울 때"의 `retract` 동작(4가지 옵션, 기본값

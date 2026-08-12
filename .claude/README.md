@@ -43,6 +43,7 @@
 | `attribute-plan.md` | **[2026-08-07 여덟 번째 세션 신설]** 단일 키 `[AttributeKey<T> "Name"]`(구 `Attribute<T>`) — `SetAttribute(name, nil)`이 네이티브 지우기라 `None` 센티널과 가장 깔끔하게 맞아떨어짐, `retract` 불필요. **[2026-08-11 아홉 번째 세션]** 여러 Store를 한 번에 attribute로 묶는 그룹 `Attribute(...)` 프리미티브 신설(`Tag`와 동형 array-part 값 객체, `Merged`로 헤테로지니어스 Store 합성), 이름 충돌 방지로 단일 키를 `AttributeKey`로 리네임(잠정). **[같은 세션 후속]** `AttributeKey(name)`이 이름별 weak 캐시로 동등성 보장하도록 확정되며, 그룹 Handler는 자기 완결형 재구현 대신 메모이즈된 키로 기존 단일 키 경로에 재귀 위임하는 걸로 개정(중복 구현 제거) |
 | `onchange-plan.md` | **[2026-08-10 세션 신설]** `OnChange(name)` — `GetPropertyChangedSignal` 바인딩 전용 DI 키, `Attribute`와 달리 제네릭 타입 파라미터 없음(콜백 타입은 인라인 명시, 이벤트 바인딩과 같은 급 트레이드오프). 전부 quad-roblox(`Handlers/OnChange.luau`), `State<function>`은 기존 이벤트 store-bind 메커니즘 재사용. **[2026-08-11 아홉 번째 세션 후속]** `AttributeKey`와 동일한 이름별 weak 캐시로 `OnChange(a) == OnChange(a)` 동등성 보장 |
 | `relate-plan.md` | **[2026-08-08 신설]** `Relate` — `inst`를 weak 키로 하는 범용 릴레이션 프리미티브(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`, 비싱글톤 생성자). 구 `base.perInstanceState(inst)` placeholder를 대체·정식 승격, `lifecycle-pattern.md`의 `bindLifetime`/`canExecute`가 그 위에 얹힘 |
+| `tween-plan.md` | **[2026-08-12 세션, `research/`에서 승격]** 값-레벨 `Tween<T>` 래퍼(PropertyHandler가 소비, 구 특수 bind key 모델은 `archive/tween-special-bind-key-reversed.md`). 3-상태 릴레이션 슬롯(`{Tween,Value}\|true\|nil`), `T'=T\|Tween<T>` 타입 치환. 옵션 값 모양은 `Info: TweenInfo?` 우선+편의 필드 폴백, override는 `Tween.Cancel`(기본)/`Tween.Finish` 2값. `Animate(info)`는 `Tween` opts를 `T\|State<T>`로 받아 `:Apply`로 꽂는 sugar. 자연완료 시 per-instance 북키핑은 정리 안 해도 됨으로 확정(목표값 도달 상태라 부작용 없음, Completed 이벤트 구독 장치는 오버엔지니어링으로 판단). `initValue`는 사용자가 직접 처리(에이전트 범위 제외) |
 
 ## `reference/` — 온디맨드 참고 자료 (2026-08-07 신설)
 
@@ -56,7 +57,6 @@
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
-| `tween-plan.md` | **[2026-08-12 세션에서 구조+옵션 값 모양+override 정책+`Animate` 콤비네이터까지 전부 확정]** 값-레벨 `Tween<T>` 래퍼(PropertyHandler가 소비), 구 특수 bind key 모델은 `archive/tween-special-bind-key-reversed.md`로 이전. 3-상태 릴레이션 슬롯(`{Tween,Value}\|true\|nil`), `T'=T\|Tween<T>` 타입 치환. 옵션 값 모양은 `Info: TweenInfo?` 우선+편의 필드(`Time`/`Style`/...) 폴백, override는 `Tween.Cancel`(기본)/`Tween.Finish` 2값. `Animate(info)`는 `Tween` opts(`Value` 제외)를 `T\|State<T>`로 받아 `factory(self)->State`를 반환하는 sugar로 확정(구 `useTween` 스케치 대체), 호출 경로는 같은 세션 후속 논의로 `:Compute`→`:Apply` 정정(재사용 가능한 콤비네이터 정합성 문제, `operator-sugar-plan.md`와 같은 근거). `initValue`는 사용자가 직접 처리(에이전트 범위 제외), 남은 건 자연완료 북키핑 하나뿐 | 하 — 사실상 다 닫힘 |
 | `existing-instance-bind-plan.md` | 이미 생성된 인스턴스 재바인드 — 착수 안 하되 "미지원" 확정도 안 함, 열린 가능성 유지 | 하 — v2 초기 스코프 제외 |
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
@@ -83,7 +83,7 @@
 | `observer-cleanup-contract-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** `Observer` 자체에 React `useEffect`식 cleanup 반환 계약을 추가하는 안 — 클로저로 이미 충분해 기각, `Effect`가 opt-in 상위 계층으로 이 패턴을 제공 |
 | `keyed-collection-state-method-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** 키 기반 동적 컬렉션 재조정 프리미티브를 `state:Keyed(...)` State 메소드로 두려던 초안 — Source 미사용 컴포넌트가 접근 못 한다는 반례로 철회, 현재는 자유 함수로 확정 |
 | `debug-channel-replicatedstorage-rejected.md` | **[기각됨, 2026-08-09 코퍼스 정리 신설]** quad-debug 채널을 `ReplicatedStorage`에 자동 생성하던 초안 — 게임 트리 오염 부작용으로 기각, quad 모듈 자신의 트리+`CollectionService` 태그로 대체 |
-| `tween-special-bind-key-reversed.md` | **[역전됨, 2026-08-10 신설]** 구 Tween 모델(`[Tween(key,tweenData...)] = storeValue` 특수 bind key, 우선순위 최상위 Dispatch 핸들러) — 값-레벨 `Tween<T>` 래퍼 모델로 완전히 대체됨(`research/tween-plan.md`) |
+| `tween-special-bind-key-reversed.md` | **[역전됨, 2026-08-10 신설]** 구 Tween 모델(`[Tween(key,tweenData...)] = storeValue` 특수 bind key, 우선순위 최상위 Dispatch 핸들러) — 값-레벨 `Tween<T>` 래퍼 모델로 완전히 대체됨(`base/tween-plan.md`) |
 | `onchange-per-property-codegen-rejected.md` | **[기각됨, 2026-08-10 신설]** `OnChange.PropertyName` 프로퍼티별 정적 코드 생성 — Attribute의 정적 지름길과 달리 (클래스 수 × 프로퍼티 수) 규모로 폭발해 기각, `OnChange(name)` 단일 팩토리로 대체 |
 
 ## 참고

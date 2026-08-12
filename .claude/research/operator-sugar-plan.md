@@ -149,7 +149,7 @@ introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어�
 
 `quad-base` — Store/State 계층 위에서만 동작하는 순수 함수라 엔진 종속
 없음(`quad-roblox` 아님). `Animate`가 `Tween`과 함께 어디에 배치됐는지와
-같은 결로 맞추면 됨(`research/tween-plan.md` 참고, 단 `Animate` 자체는
+같은 결로 맞추면 됨(`base/tween-plan.md` 참고, 단 `Animate` 자체는
 `Tween`이 quad-roblox 개념(`PropertyHandler`)에 연결되므로 quad-roblox
 배치 — Operator 슈가는 그런 엔진 종속이 없다는 점이 다름).
 
