@@ -137,6 +137,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       걸러내기(no-op이라도 필드 자체는 항상 정의 — `Dispatch.process`가 핸들러
       교체 시 nil 체크 없이 호출, `base/bind-system-plan.md` "핸들러 계약"
       절, 2026-08-08 세션)
+- [ ] 우선순위 동률/매치 실패 처리(2026-08-12 열일곱 번째 세션 확정,
+      `base/bind-system-plan.md` "우선순위 동률/매치 실패 처리" 절) —
+      `HANDLER_PRIORITY_HIGH`/`_NORMAL`/`_LOW` 등 목적별 우선순위 상수,
+      매치 실패(`isHandlable`을 만족하는 핸들러 없음)는 `Brand`+`typeof(v)`
+      출력 후 즉시 error(provider 초기화 확인 안내 포함 — provider
+      미주입 상태도 이 경로로 자동 커버, `pre-implementation-audit.md`
+      1-3/1-4), 핸들러 등록/정렬 시점 동률 감지 print 경고 +
+      `Dispatch.listHandlers()` 디버그 유틸
 - [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef)` children-array
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
@@ -153,7 +161,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M3 — Store/State/Source
 
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
-- [ ] `store.key` dot-access 타입 추론 확인
+- [ ] `store.key` dot-access 타입 추론 확인 — Luau `type function`
+      (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
+      `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
+      번째 세션, `base/bind-system-plan.md` "`store.key` 레코드 필드
+      타이핑" 절) — 실제 문법이 통과하는지는
+      `.claude/luau-test/16-type-store-key-typefunction.luau`로 실측 필요
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
       (2026-08-11 세션, `base/bind-system-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
@@ -369,7 +382,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Type(args)` 팩토리 관습, `modifier-plan.md` 3번)
 - [ ] flatten-before-dispatch(`isModifier(v)`로 배열 항목 중 Modifier만
       판별해 필드 merge, 나머지는 안 건드리고 통과 — 2026-08-07 열 번째
-      세션 명시, `modifier-plan.md` 1번), immutable `table.clone` 체이닝
+      세션 명시, `modifier-plan.md` 1번), immutable `table.clone` 체이닝 —
+      `table.clone`이 메타테이블을 복사 아닌 참조로 공유해 제네릭 `__index`
+      기반 체이닝이 안 끊긴다는 메커니즘은 확인됨(2026-08-12 열일곱 번째
+      세션, `modifier-plan.md` "`table.clone`의 정확한 동작" 절) — 실제
+      Luau 실행 확인은 `.claude/luau-test/17-modifier-index-tableclone-chaining.luau`
 - [ ] `Modifier.Overridden(mod1, mod2, ...)`(이름 확정, 구 `Merge`→`Override`,
       2026-08-08 세션) — 필드별 raw 덮어쓰기, 특별한 State/함수 분기
       불필요(`modifier-plan.md` 9번)

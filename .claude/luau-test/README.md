@@ -23,9 +23,14 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
-| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분) |
-| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14, 15 |
+| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분), 17 |
+| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14, 15, 16 |
 | **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
+
+**16은 특히 `type function`이라는 비교적 최근/계속 진화 중인 Luau 기능을
+쓰므로, luau-analyze 버전이 오래되면 아예 문법 자체를 못 알아볼 수 있음**
+— 그 경우는 실패가 아니라 "이 Luau 버전에서 type function 자체가 아직
+지원 안 됨"이라는 별개의 신호이니 버전 정보와 함께 알려줄 것.
 
 **12/13/14는 특히 `luau-lsp`로 확인해달라고 요청받은 것들** — `luau-analyze`도
 같은 타입 솔버를 쓰므로 원리적으로는 같은 결과가 나와야 하지만, `luau-lsp`가
@@ -56,6 +61,8 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `bind-system-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
 | `14-type-nilable-default-overload.luau` (타입체크 전용) | `Source(default)`/`Ref(default)`의 `default` 생략이 `T`가 nilable일 때만 안전하다는 캐비엇을, 함수 오버로드(교차 타입)로 실제로 타입 레벨에서 막을 수 있는지 | `bind-system-plan.md` "[보강, 2026-08-09 열한 번째 세션]" 절 |
 | `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `bind-system-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
+| `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `bind-system-plan.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |
+| `17-modifier-index-tableclone-chaining.luau` | Modifier의 제네릭 `__index`+`table.clone` 체이닝 — 임의 필드 이름에 대해 즉석 setter가 만들어지는지, `table.clone`이 메타테이블을 참조로 공유해 여러 단계 clone에서도 체이닝이 안 끊기는지, 원본이 mutate 안 되는지, 형제 분기끼리 오염 안 되는지 | `modifier-plan.md` "런타임은 클래스별 코드 없이 base에 딱 하나만 있으면 됨" 절 + "`table.clone`의 정확한 동작 — 확인됨" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-11 |
 
 ## 갱신 이력
 
@@ -101,6 +108,13 @@ deps의 제네릭 타입 팩 표현 가능 여부와 `previous?`를 팩 뒤에 �
 검증하는 (D) 양성 대조군을 신규 추가 — 이제 진짜 불확실성은 (B)
 이형 다중 deps의 제네릭 팩 표현 가능 여부 하나뿐.
 
+**6차 (2026-08-12, 열일곱 번째 세션, `16`/`17` 신규)**: `pre-implementation-audit.md`
+우선순위1의 마지막 두 항목(1-10 `store.key` 타이핑, 1-11 Modifier
+`__index`+`table.clone` 트릭)이 이 세션에 설계 레벨로는 해소됐지만, 실제
+Luau로 부딪혀본 적은 없다는 걸 핸드오버 점검 중 발견 — `16`(type function
+스케치, 타입체크 전용)/`17`(제네릭 __index 체이닝, 런타임)로 신규 추가.
+둘 다 이전까지 이 폴더 어디에도 커버 대상이 없던 완전히 새 항목.
+
 ## 결과 확인 후 할 일
 
 각 파일 결과를 알려주면, 실제로 걸리는 부분이 있는지 보고 필요하면
@@ -130,3 +144,12 @@ deps의 제네릭 타입 팩 표현 가능 여부와 `previous?`를 팩 뒤에 �
 - `13`은 A(타입)/B(런타임) 둘 다 확인해줄 것 — B의 assert가 실패하면
   `Dispatch/Leaf.luau` 설계(`isRef(v) and not isPreRef(v)`) 자체가
   잘못 짜인 것이니 우선순위 높게 알려줄 것.
+- `16`은 **어느 쪽으로 나와도 유용** — 통과하면 `store.key` 타이핑을 이
+  type function 방식으로 그대로 채택, API 이름이 틀려서 막히면(`type
+  function`이 비교적 새 기능이라 가능성 높음) 정확한 에러 메시지를 그대로
+  알려줄 것 — 다음 시도의 API 이름을 고치는 데 바로 쓰임. 아예 이 Luau
+  버전이 `type function` 자체를 지원 안 하면 그것도 알려줄 것(다른 대안
+  필요).
+- `17`은 전부 PASS가 기대값 — 특히 (B) 메타테이블 참조 동일성 assert가
+  실패하면 M7 전체 설계("클래스별 런타임 코드 불필요")의 핵심 전제가
+  무너지는 것이니 최우선으로 알려줄 것.

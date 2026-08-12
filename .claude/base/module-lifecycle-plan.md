@@ -119,6 +119,12 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   처리한다"는 의미가 빠져 있음 — `Handler`가 계약 4종
   (`isHandlable`/`priority`/`process`/`retract`) 전체를 가장 정확히
   담는다는 결론.
+- **[해소됨, 2026-08-12 열일곱 번째 세션]** provider(팩토리)가 아직 한
+  번도 실행 안 된 상태에서 dispatch가 호출되면 어떻게 되는지
+  (`pre-implementation-audit.md` 1-4) — 별도 케이스로 처리하지 않음.
+  provider 미주입 상태는 결국 그 클래스의 핸들러가 레지스트리에 하나도
+  없는 상태이므로, `base/bind-system-plan.md` "우선순위 동률/매치 실패
+  처리" 절의 일반 "매치 실패 시 즉시 error" 규칙 하나로 자연히 커버됨.
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로
   주입한다는 패턴이 확정됨 — 상세는 `base/bind-system-plan.md`의 "base

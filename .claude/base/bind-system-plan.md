@@ -63,6 +63,41 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들지 말고 매치
 실패 시에만 클로저 호출.
 
+**우선순위 동률/매치 실패 처리 — 확정(2026-08-12 열일곱 번째 세션,
+`pre-implementation-audit.md` 1-3/1-4 해소).**
+
+- **동률(같은 `priority` 값)에 대한 tiebreak 규칙은 강제하지 않는다.**
+  "등록 순서가 이긴다" 같은 규칙을 강제하면 `NoneHandler`/`StoreBind`처럼
+  이미 서로 `isHandlable`이 안 겹치는 내장 핸들러에까지 전부 그 규칙을
+  지켜가며 순서를 신경 써야 하고, 나중에 서드파티 핸들러가 늘어나면 더
+  골치아파짐(사용자 판단). 대신 **목적별로 이름 붙은 우선순위 상수**
+  (`HANDLER_PRIORITY_HIGH`/`HANDLER_PRIORITY_NORMAL`/`HANDLER_PRIORITY_LOW`
+  등, 여전히 열린 숫자 공간 위의 편의 상수라 `HANDLER_PRIORITY_HIGH + 1`처럼
+  세밀 조정도 가능)를 제공해 애초에 동률이 잘 안 나오게 유도 — "우선순위
+  밴드 + 오프셋"은 여러 업계에서 이미 흔한 패턴. 실제로 동률이 나면 그건
+  대개 핸들러 설계 실수라, 강제 규칙보다 아래 디버그 가시성으로 대응하는
+  쪽이 맞음.
+- **매치 실패(`isHandlable`을 만족하는 핸들러가 하나도 없음)는 조용한
+  무시 없이 즉시 `error`.** 에러 메시지엔 값의 `Brand`(있으면)와
+  `typeof(v)`를 함께 출력하고, "quad-roblox 등 필요한 provider가
+  초기화됐는지 확인하라"는 안내만 덧붙임 — 그 이상의 특수 분기는 두지
+  않음(다른 라이브러리에서도 흔한 "매치 실패=에러" 패턴 그대로).
+  **이걸로 `module-lifecycle-plan.md`의 "provider가 아직 주입 안 된
+  상태에서 dispatch가 호출되면?" 케이스(`pre-implementation-audit.md`
+  1-4)도 별도 분기 없이 자동으로 해소됨** — provider 미주입 상태는
+  결국 그 클래스를 다루는 핸들러가 레지스트리에 하나도 없는 상태이므로
+  "매치 실패"와 정확히 같은 경로로 수렴함. 오타 키/미지원 조합/provider
+  미주입을 서로 다른 에러 종류로 구분할 필요가 없음.
+- **디버그 모드 — 핸들러 등록/정렬 시점에 동률 감지 시 print 경고 +
+  전체 핸들러 목록 조회 함수.** 우선순위는 핸들러 등록 시점에 정적으로
+  sort되므로 동률 감지 자체는 그 시점에 공짜로 가능 — `priority`가 같은
+  두 핸들러가 등록되면 콘솔에 경고를 찍고, `Dispatch.listHandlers()`류
+  함수로 현재 등록된 전체 핸들러(이름/priority)를 덤프할 수 있게 함.
+  구현 비용이 거의 없고 실제 개발 중 디버깅에 바로 도움되는 항목이라
+  M2(Dispatch 엔진) 착수 시 기본 기능으로 같이 넣음 — 런타임 플러그인인
+  `quad-debug`(후순위, `research/debug-tooling-plan.md`)와는 다른 층위의,
+  라이브러리 자체에 내장된 개발자 편의 기능.
+
 ## 확정된 디스패치 모델: `process(inst, k, v)` / `retract(inst, k, v)`
 
 **사용자가 직접 준 구체적인 모델 — 이 문서의 이전 초안보다 우선함.** 아래가
@@ -2257,6 +2292,45 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 **`Pipe`(quad2-try 후보)는 폐기 확정** — 별도 `Pipe` 타입에 소유권/버전
 가드를 넣어 재설계하는 대신, State 자체가 파이핑 결합체이고
 `state(state)`로 분기하는 위 모델로 완전히 대체됨.
+
+**`store.key` 레코드 필드 타이핑 — Luau 타입함수로 해결 확인
+(2026-08-12 열일곱 번째 세션, `pre-implementation-audit.md` 1-10 해소).**
+
+위 "타입 추론 문제" 절이 "`store.key`를 평범한 레코드 필드 타이핑으로 자동
+해결"이라 서술했지만, `Store<T>`가 입력 `T`(예: `{ty: string}`)를 받아
+`{ty: Source<string>}`류 결과 타입을 실제로 어떻게 합성하는지는 미검증으로
+남아있었음. **Luau의 `type function`**(컴파일타임에 타입을 인자로 받아 새
+타입을 조립하는 기능, https://luau.org/types/type-functions/ ,
+https://luau.org/types-library/ — tbox에서도 이미 쓰이는 검증된 패턴)으로
+정확히 풀림:
+
+```luau
+type function WrapStore(ty: type): type
+    -- Source<T> 형태를 그대로 조립(:Get/:Set/:Compute/:With 등)
+    local result = types.newtable()
+    result:setproperty(types.singleton("Get"), types.newfunction(...))
+    return result
+end
+
+type function ProcessStoreType(ty: type): type
+    local props = ty:properties() :: { [type]: { read: type?, write: type? } }
+    local result = types.newtable()
+    for i, v in props do
+        -- i는 프로퍼티 이름을 담은 singleton 타입, i:value()로 실제 문자열
+        result:setproperty(i, WrapStore(v))
+    end
+    return result
+end
+```
+
+`ProcessStoreType<{ty: string}>` → `{ty: Source<string>}`가 나옴 — 결과는
+선언 시점에 이름 붙은 `Source<string>` 그 자체가 아니라 구조를 그대로 풀어낸
+(flatten) 익명 타입이지만, **Luau는 이름이 아니라 "만족하는가"로 구조적
+일치를 검사**하므로 문제없이 `Source<string>` 자리에 대입 가능 — 오히려 이
+방식과 정확히 맞는 조합. 이걸로 `store.key`가 실제로 타입 명시 가능함이
+확인돼 M0/M3 어느 시점에 검증해도 기술적으로 막힐 위험은 없음 —
+`ROADMAP.md`의 M0/M3 배치를 강제로 바꿀 필요는 없어짐, 검증 난이도
+문제였던 것만 해소.
 
 **PA님 코드와의 교차검증(2026-08-04 4차 라운드) — 둘 다 기존 확정 유지**
 

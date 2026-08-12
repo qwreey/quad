@@ -111,21 +111,16 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 ## 지금 할 일 (우선순위순)
 
 1. **구현 시작 — 루트 `ROADMAP.md`의 M0부터.** 설계 단계는 2026-08-04 로드맵
-   인수인계 라운드로 종료. M0 착수 직전 확인할 것 둘:
-   - **`.claude/luau-test/`(2026-08-09 신설) 스파이크 결과** — 아직 사용자가
+   인수인계 라운드로 종료. `research/pre-implementation-audit.md` 우선순위1은
+   2026-08-12 열일곱 번째 세션에 마지막 넷(1-3/1-4/1-10/1-11)까지 전부
+   해소되어 **11개 전원 완료** — M0 착수 전 남은 유일한 게이트는:
+   - **`.claude/luau-test/`(2026-08-09 신설, 2026-08-12 열일곱 번째 세션에
+     16/17 추가로 총 17개) 스파이크 결과** — 아직 사용자가
      `luau`/`luau-analyze`/`luau-lsp`/Roblox Studio로 안 돌려봄, 결과가
      나오면 그것부터 반영할 것(`luau-test/README.md`가 파일별로 뭘 우선
      확인해야 하는지 이미 적어둠). 걸리는 게 있으면 `base/` 문서부터 고치고,
-     없으면 그대로 M0 실제 코드 작성에 재사용.
-   - **`research/pre-implementation-audit.md` 우선순위1** — 신설 당시
-     11개였으나 대부분 이후 세션에서 해소됨(Tween/Tag 재설계, Slot CRUD,
-     `canExecute` 시그니처, `LifetimeHandle` 로드맵 순서 등). **[2026-08-12
-     감사 세션 정정]** 실제로 아직 열려있는 건 넷(원문에 `[해소됨]` 마커가
-     없는 항목 기준) — 우선순위 스캔 동률/매치실패 처리(1-3), provider
-     미주입 상태 dispatch 처리(1-4), `store.key` 레코드 필드 타이핑을 M0로
-     앞당길지(1-10), Modifier `__index`+`table.clone` 트릭 검증(1-11).
-     이전엔 "1-3 하나뿐"이라 잘못 축약돼 있었음(1-4/1-10/1-11 누락) —
-     `.claude/question.md` 2번이 최신 상태.
+     없으면 그대로 M0 실제 코드 작성에 재사용. 설계 자체는 더 이상 막힌
+     게 없음 — `.claude/question.md` 2번이 최신 상태.
 2. **용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
    `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
    stale해지는 패턴이 반복됐어서). 아직 열려있는 것만 짚으면: `State`(1순위,
@@ -668,3 +663,22 @@ transitively 생존). `and`/`or` 삼항 관용구 전면 금지(기존 "항상-t
 예외" 조항 폐기), 코퍼스 전체 실제 코드 6곳을 `if-then-else`로 교체.
 Attribute 자동 unset이 필요해지면 쓸 `:Apply` opt-in 유틸을
 `research/operator-sugar-plan.md`에 백로그로 추가(착수 안 함).
+
+**2026-08-12 열일곱 번째 세션 — 우선순위1 마지막 넷 전부 해소**
+(`session/2026-08-12-17-priority1-audit-resolved.md`)
+`pre-implementation-audit.md` 우선순위1 중 열려있던 마지막 넷을 사용자가
+한 번에 확정: 우선순위 동률/매치실패(1-3, tiebreak 강제 대신
+`HANDLER_PRIORITY_*` 상수+디버그 모드 동률 감지/핸들러 목록 함수, 매치실패는
+즉시 error), provider 미주입 dispatch(1-4, 매치실패 규칙에 자연 흡수),
+`store.key` 레코드 필드 타이핑(1-10, Luau `type function`으로 `Store<T>`→
+`{[K]: Source<V>}` 합성 가능함을 구체 스케치로 확인), Modifier
+`__index`+`table.clone` 트릭(1-11, 메타테이블이 복사 아닌 참조 공유임을
+확인). 부수적으로 Property에 Attribute식 소유권 레지스트리를 적용하는 안을
+검토 후 기각(엔진이 정한 유한 프로퍼티 이름 집합은 호출자가 전용 키를 못
+만들어 소유권 판정 불가 — Property가 override 우선순위를 쓰는 이유).
+**우선순위1 11개 전원 해소** — M0 착수 전 남은 건 `.claude/luau-test/`
+스파이크 실측뿐. **핸드오버 점검 중 발견**: 1-10/1-11은 설계는 확정됐지만
+이를 실제로 실측할 스파이크 파일 자체가 없었던 갭 — `16-type-store-key-
+typefunction.luau`/`17-modifier-index-tableclone-chaining.luau` 신규
+추가(총 17개), `ROADMAP.md` M2/M3/M7 체크리스트에도 누락됐던 항목(디버그
+모드 동률 감지+`listHandlers`, `store.key`/`table.clone` 실측 링크) 보강.
