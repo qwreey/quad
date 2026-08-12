@@ -449,3 +449,12 @@ Luau `if-then-else` 표현식을 언급하며 `.claude/base` 전역 and/or 삼�
 falsy-값 버그(`v`가 `false`일 때 `nil`로 새는 문제) 발견·수정, 나머지
 히트는 가운데 값이 테이블/숫자라 안전 확인. `research/tween-plan.md`는
 이걸로 자연완료 북키핑 하나만 남기고 사실상 마감.
+
+**2026-08-12 세 번째 세션 — `Animate`에 `CanAnimate` 필드 추가, Luau 문법 공식성 문서화**
+(`session/2026-08-12-03-cananimate-luau-syntax-note.md`)
+`Animate(info)`에 빠져있던 `CanAnimate: State<boolean>|boolean|nil` 필드
+추가(`nil`=기본 `true`, `false`면 `Tween`로 안 감싸고 plain 값 그대로 —
+reduceMotion류 우회가 이걸로 표현됨). `base/architecture.md`에 "코드
+스타일 — Luau 문법 관례" 절 신설 — `if-then-else`(2021년 정식 도입)와
+`const` 바인딩 둘 다 공식 Luau 문법임을 명문화(에이전트가 모르고
+`and`/`or`로 되돌리는 회귀 방지), `const`는 툴링 미성숙으로 지금은 보류.

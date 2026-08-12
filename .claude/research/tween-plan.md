@@ -187,12 +187,13 @@ State<T | Tween<T>>`가 나옴 — Modifier/State/Source/StoreBind 코드엔
 얇은 sugar — 다시 보니 매우 단순해서(사용자 표현: "생각해보니 엄청
 간단하다") 다음 세션으로 미룰 이유가 없어 이번 세션에 바로 확정.
 
-**모양**: `Tween`의 옵션(`Value` 제외 전부)을 그대로 받되, **각 필드가
-`T | State<T>`를 받을 수 있음** — `Tween{...}` 자신의 필드는 plain만
-받는 것과 대조적(위 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절).
-모순이 아님: `Animate`가 반환하는 함수 안에서 각 필드를 **`:Get()`으로
-한 번 풀어 plain 값으로 만든 뒤에만** `Tween{...}`에 넘기므로, `Tween`
-쪽 불변식(plain-only)은 그대로 유지됨.
+**모양**: `Tween`의 옵션(`Value` 제외 전부) + `Animate` 전용 필드
+`CanAnimate`(아래 절) 하나를 더해서 받되, **각 필드가 `T | State<T>`를
+받을 수 있음** — `Tween{...}` 자신의 필드는 plain만 받는 것과 대조적(위
+"`Tween{...}`의 모든 필드는 plain 값만 받음" 절). 모순이 아님: `Animate`가
+반환하는 함수 안에서 각 필드를 **`:Get()`으로 한 번 풀어 plain 값으로
+만든 뒤에만** `Tween{...}`에 넘기므로, `Tween` 쪽 불변식(plain-only)은
+그대로 유지됨.
 
 ```lua
 local function resolve(v)
@@ -205,8 +206,18 @@ end
 
 local function Animate(info)
   return function(self)
+    local v = self:Get()
+
+    local canAnimate = resolve(info.CanAnimate)
+    if canAnimate == nil then
+      canAnimate = true   -- CanAnimate 생략 시 기본 애니메이션 활성
+    end
+    if not canAnimate then
+      return v   -- Tween로 안 감쌈 — 그대로 plain 값 반환(애니메이션 우회)
+    end
+
     return Tween{
-      Value = self:Get(),
+      Value = v,
       Info = resolve(info.Info),
       Time = resolve(info.Time),
       Style = resolve(info.Style),
@@ -221,9 +232,34 @@ end
 ```
 
 `resolve`가 `and`/`or` 삼항 관용구가 아니라 `if-then-else`인 이유는
-`base/bind-system-plan.md`의 2026-08-12 정정 노트와 같음 — `Override`
-등 필드가 `false`일 수 있는 값이면 `isState(v) and v:Get() or v` 식은
-`v:Get()`이 falsy일 때 조용히 `v`(State 객체 자신)로 새는 버그가 됨.
+`base/architecture.md`의 "코드 스타일 — Luau 문법 관례" 절과 같음 —
+`Override`/`CanAnimate` 등 필드가 `false`일 수 있는 값이면
+`isState(v) and v:Get() or v` 식은 `v:Get()`이 falsy일 때 조용히
+`v`(State 객체 자신)로 새는 버그가 됨.
+
+**`CanAnimate: State<boolean> | boolean | nil`** — 애니메이션 자체를 켜고
+끄는 필드, **생략(`nil`)이면 기본 `true`**(항상 애니메이션). `false`로
+resolve되면 `Tween{...}`으로 안 감싸고 `self:Get()`을 그대로 반환 —
+reduceMotion류 접근성 우회가 이 필드 하나로 바로 표현됨:
+
+```lua
+-- reduceMotion: State<boolean>
+Position = mySource:Compute(Animate{
+  Style = Enum.EasingStyle.Bounce,
+  CanAnimate = reduceMotion:Compute(function(r) return not r end),
+})
+```
+
+이 필드도 다른 옵션들과 동일하게 값 자체가 State로 바뀌는 것만으로는
+재계산을 트리거하지 않음(`Value`가 실제로 바뀌는 다음 재계산 때 그
+시점의 최신 `CanAnimate`가 자연히 반영) — 위 "`Style`/`Override` 등이
+State여도..." 절과 같은 이유.
+
+**필드 이름 케이싱 메모**: 대화 중엔 `canAnimate`(소문자 시작)로
+나왔으나, 같은 옵션 테이블의 나머지 필드가 전부 `Value`/`Style`/`Time`
+같은 PascalCase(Roblox 프로퍼티/`Tween` opts 관례를 그대로 따름)라 여기선
+`CanAnimate`로 통일 — 이 필드 하나만 다른 케이싱을 쓸 특별한 이유가
+없다고 판단(확정은 아님, 다음 세션에 뒤집혀도 비용 낮음).
 
 **왜 `:Compute`에 직접 넘길 수 있는가**: `Animate(info)`가 반환하는
 `function(self) ... end`는 `:Compute(fn)`의 콜백 시그니처(`fn(self,
@@ -249,17 +285,18 @@ trailing-deps로 선언 안 됨). 그래서 `Style`이 바뀌어도 그 자체�
 정확히 일치하는 동작이라 별도 트리거 배선이 오히려 불필요한
 복잡도였을 것.
 
-**구 `useTween`(reduceMotion 우회) 스케치는 이 설계로 대체됨** — 이전엔
-`Animate(cond, opts)`처럼 조건 인자를 받아 내부에서 plain/Tween 분기하는
-전용 2-인자 시그니처를 검토했으나, 새 `Animate(info)`는 그 조건 분기를
-아예 안 가짐(단일 책임 유지). 우회가 필요하면 `Animate`를 감싸는 평범한
-`:Compute` 클로저로 여전히 표현 가능 — 새 프리미티브 불필요:
+**구 `useTween`(reduceMotion 우회) 스케치는 `CanAnimate` 필드로 대체됨**
+(위 "`CanAnimate`" 절) — 흔한 단순 토글은 그걸로 충분. 이전에 검토했던
+전용 2-인자 시그니처(`Animate(cond, opts)`)는 안 씀 — `Animate(info)`는
+조건 인자를 별도로 안 가지는 단일 진입점 유지. `CanAnimate`로 못 담는
+더 복잡한 조건(값 자체를 다른 값으로 바꿔치기하는 등)이 생기면, `Animate`를
+감싸는 평범한 `:Compute` 클로저로도 여전히 표현 가능 — 새 프리미티브
+불필요:
 
 ```lua
--- reduceMotion: State<boolean>
 Position = mySource:Compute(function(self)
-  if reduceMotion:Get() then
-    return self:Get()
+  if someComplexCondition() then
+    return someOtherValue
   end
   return Animate{Style = Enum.EasingStyle.Bounce}(self)
 end)

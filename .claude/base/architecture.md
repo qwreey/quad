@@ -220,6 +220,26 @@ Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조
   `base/bind-system-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
   `base/store-semantics.md`의 "세 번째 카테고리 — Handler" 절 참고.
 
+## 코드 스타일 — Luau 문법 관례: `if-then-else`/`const` (2026-08-12 세션 신설)
+
+**`if cond then a else b` 표현식은 Luau 공식 문법이다 — 환각/오타로
+간주해 `and`/`or`로 "고치지" 말 것.** 2021년 10월 Luau에 정식 도입된
+표현식 문법(공식 릴리스 노트: <https://luau.org/news/2021-10-31-luau-recap-october-2021/#if-then-else-expression>)
+— `cond and truthyOnly or fallback` 삼항 관용구와 달리 가운데 값이
+falsy(`nil`/`false`)여도 정확하게 동작함(`bind-system-plan.md`의
+`Dispatch.retractUnder` 정정 사례가 실제 버그 예시). **이 프로젝트의
+기본 삼항 표현 방식은 `if-then-else`** — `cond and x or y`는 `x`가
+테이블/숫자처럼 항상-truthy임이 보장될 때만 예외적으로 허용.
+
+**`const` 바인딩도 Luau 공식 문법**(<https://luau.org/syntax/#const-bindings>)
+이지만 **지금은 채택하지 않음** — 타입 추출/narrowing 등 주변 툴링이
+아직 `const`를 폭넓게 지원하지 못해서, 지금 전면 도입하면 나중에 그
+간극을 메꾸는 비용이 더 클 수 있음. **원칙**: 새로 짜는 코드는 일단
+`local`로 — 나중 리팩터 시점에 특정 바인딩을 `const`로 바꾸는 비용이
+싸 보이면 그때 바꿔도 되고, 비싸 보이면 굳이 지금 손대지 않아도 됨.
+지금 `const`가 없다고 "이 프로젝트가 구식 Luau를 쓴다"고 오해하지
+말 것 — 툴링 성숙도 문제일 뿐 문법 자체를 모르거나 기각한 게 아님.
+
 ## 테스트 전략: quad-base용 최소 mock (2026-08-04)
 
 **결정**: quad-base 테스트는 Vide 선례(`initreq/vide/test/mock.luau`, 약
