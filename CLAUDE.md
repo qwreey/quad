@@ -594,3 +594,22 @@ Claude가 지적했으나, 사용자가 "덮여 쓰여지는 즉시 retract 실�
 Tag/Ref/Slot/Attribute가 이번 대화 내내 의존해온 그 메커니즘)는 서로
 다른 용도라 하나로 안 합쳐짐 — old value를 각 핸들러가 자기 `Relate`로
 저장한다는 원래 결정과는 무관, `retractUnder`는 old를 옮긴 적이 없음.
+
+**2026-08-12 열세 번째 세션 — `Slot`의 두-`Relate` 상호 GC 순환 수정**
+(`session/2026-08-12-13-slot-gc-cycle-fix.md`)
+사용자가 직전 세션의 `slotOwner`(slot→inst)/`kSlotMap`(inst→slot)이 둘 다
+`SetStrong`이면 서로가 서로를 살려주는 순환이 생겨 GC가 안 된다고 지적 —
+`bindLifetime`이 이미 쓰는 "값이 자기 키를 다시 참조"하는 단일 테이블
+자기참조(`Dispatch.setLength`의 `observer` 클로저가 `inst` 캡처,
+`Ref.Value=inst`)는 그 키가 테이블 바깥에서 독립 reachable한지만
+판별하면 돼서 안전하지만, **서로 다른 두 `Relate`가 서로의 키를 상대방
+값으로 제공하는 상호 순환**은 판별 자체가 서로에게 의존해버려 Lua
+5.2+ ephemeron이 풀려던 바로 그 사례라는 걸 Claude가 재확인. `grep`으로
+base/ 전체 `Relate()` 인스턴스를 감사한 결과 `inst`가 아닌 다른 값을
+바깥 키로 쓰는 건 `slotOwner`가 유일했음(나머지는 담긴 값이 `inst`로
+되돌아가는 back-reference가 없거나, 있어도 단일 테이블이라 안전).
+`kSlotMap`/`slotOwner` 둘 다 `SetWeak`로 낮추고, 실제 GC 앵커는
+`bindLifetime`/`unbindLifetime` 하나로 통일 — `attachSlot`에
+`bindLifetime(physicalTarget, slot)`, `destroySlotTree`에 짝인
+`unbindLifetime(slot._mountedInst, slot)` 추가(기존엔 자식 observer들의
+unbindLifetime만 있고 slot 자신의 앵커/해제가 빠져 있었음).

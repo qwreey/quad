@@ -213,31 +213,51 @@ retract 없이 process가 diff 담당"이라는 전제 자체가 틀렸음** —
 추적** — 이게 이미 확정된 "한 element가 어디에도 중복 마운트 안 됨"
 전역 불변식(위 "요소 타입 제약" 절)을 Slot 컨테이너 자신에도 그대로
 적용하는 것이라 더 정확함(위치 비교로는 "이 Slot이 동시에 다른 위치에도
-마운트돼 있는가"를 못 잡음):
+마운트돼 있는가"를 못 잡음).
+
+**[GC 주의, 2026-08-12 열세 번째 세션] `kSlotMap`/`slotOwner` 둘 다
+Slot을 `SetStrong`으로 저장하면 안 됨 — `kSlotMap[inst][k]=slot`(강)과
+`slotOwner[slot]=inst`(강)가 동시에 있으면 **서로 다른 두 `Relate`가
+맞물려 서로를 살려주는 순환**이 생김(`inst`가 살아있어야 `slotOwner`가
+`slot`을 붙잡고, `slot`이 살아있어야 `kSlotMap`이 `inst`를 붙잡는 식 —
+둘 다 서로에게만 기대면 어느 쪽 reachability도 외부에서 못 끊음). 이건
+`bindLifetime`이 이미 쓰는 "한 `Relate` 안에서 값이 자기 키를 다시
+참조하는" 패턴(`Dispatch.setLength`의 `observer`가 클로저로 `inst`를
+캡처하는 것, `Ref.Value=inst` 등)과는 **다른, 더 위험한 모양**이다 —
+단일 테이블 자기참조는 그 테이블의 키(`inst`)가 이 테이블 *바깥에서부터*
+독립적으로 reachable한지만 판별하면 끝나지만, 두 개의 별도 weak 테이블이
+서로의 키를 상대방 값으로 제공하는 상호 순환은 그 판별 자체가 서로에게
+의존해버려 일반적인 weak-table GC로 한 번에 안 풀릴 위험이 있음(Lua
+5.2+ ephemeron이 풀려고 만들어진 바로 그 사례) — Luau가 실제로 이걸
+올바르게 처리하는지 검증된 바 없으니 설계로 아예 피함. **해법: 실제
+GC 앵커는 `bindLifetime`/`unbindLifetime`(이미 결정돼 있었는데
+`attachSlot`/`destroySlotTree`에 적용이 안 돼 있던 부분, 이번에 추가) 
+하나로만 두고, `kSlotMap`/`slotOwner`는 전부 `SetWeak`(순수 조회용,
+아무것도 안 붙잡음)로 낮춤**:
 
 ```lua
-local kSlotMap = Relate()   -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot(retract가 뭘 지울지 알아야 함)
-local slotOwner = Relate()  -- Slot 자신이 weak 키 — {[slot] = 지금 바인딩된 inst}
+local kSlotMap = Relate()   -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot — weak, 조회 전용
+local slotOwner = Relate()  -- Slot 자신이 weak 키 — {[slot] = 지금 바인딩된 inst} — weak, 조회 전용
 
 function SlotHandler.process(inst, k, slotValue)
-    local owner = slotOwner:GetStrong(slotValue)
+    local owner = slotOwner:GetWeak(slotValue)
     if owner == inst then
         return  -- 이미 이 inst에 바인딩된 채 — 단순 emit 전파, no-op
     end
     if owner ~= nil then
         error("이 Slot은 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
     end
-    attachSlot(slotValue, inst, inst, k)
-    slotOwner:SetStrong(slotValue, inst)
-    kSlotMap:SetStrong(inst, k, slotValue)
+    attachSlot(slotValue, inst, inst, k)  -- 내부에서 bindLifetime(inst, slotValue) 호출(아래)
+    slotOwner:SetWeak(slotValue, inst)
+    kSlotMap:SetWeak(inst, k, slotValue)
 end
 
 function SlotHandler.retract(inst, k, v)
-    local old = kSlotMap:GetStrong(inst, k)
+    local old = kSlotMap:GetWeak(inst, k)
     if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Slot 자체일 수도 있음
-        destroySlotTree(old)  -- 폐기, 옮기지 않음 — 아래 "확정" 절 그대로
-        slotOwner:SetStrong(old, nil)  -- 관계 해제 — old를 나중에 다른 곳에 다시 마운트해도 됨
-        kSlotMap:SetStrong(inst, k, nil)
+        destroySlotTree(old)  -- 내부에서 unbindLifetime(inst, old) 호출(아래), 폐기·옮기지 않음
+        slotOwner:SetWeak(old, nil)
+        kSlotMap:SetWeak(inst, k, nil)
     end
     -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 owner==inst로 no-op
 end
@@ -1082,6 +1102,10 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 local function attachSlot(slot, physicalTarget, ownerKey, position)
     slot._mounted = true
     slot._mountedInst = physicalTarget
+    bindLifetime(physicalTarget, slot)  -- [2026-08-12 열세 번째 세션 추가] Slot 자신의
+                                         -- GC 앵커 — 이게 빠져있으면 아무도 slot을 강하게
+                                         -- 안 붙잡아 조기 GC될 수 있음(위 "Slot과 Store
+                                         -- 바인드의 관계" 절 GC 주의 참고)
 
     Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
     local offsetSource = Source(0)
@@ -1149,6 +1173,8 @@ local function destroySlotTree(slot)
             unbindLifetime(slot._mountedInst, observer)
         end
     end
+    unbindLifetime(slot._mountedInst, slot)  -- [2026-08-12 열세 번째 세션 추가]
+                                              -- attachSlot의 bindLifetime과 짝
 end
 
 function rawRemove(self, index)
