@@ -112,8 +112,8 @@ v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했
 "이전에 자기가 찾거나 만든 자식 Instance"를 얻어야 하는데, 이건 이미
 base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저장소
 (`Relate:SetStrong(inst,k,...)`, `base/relate-plan.md`/`base/bind-system-plan.md`
-"핸들러 내부 상태 저장" 절)를 그대로 재사용하면 됨 — Tween 핸들러가 실행 중인 Tween
-객체를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘 발명 불필요, 이미
+"핸들러 내부 상태 저장" 절)를 그대로 재사용하면 됨 — PropertyHandler가 실행 중인
+Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘 발명 불필요, 이미
 있는 "store 바인드는 pluggable 바인드를 재실행하는 래핑" 원칙
 (`base/bind-system-plan.md` "확정된 디스패치 모델" 절)이 그대로 적용됨.
 
@@ -124,7 +124,7 @@ base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저�
 넣어도 충분하다, opt-out할 이유가 별로 없다"는 게 사용자 판단 — **작고
 항상 켜져 있어도 비용이 무시할 만한 편의 기능은 별도 opt-out 패키지로
 쪼개지 말고 `quad-roblox` 코어에 직접 포함한다**는 원칙으로 확정(이미
-계획된 Tween 핸들러가 같은 모양이라는 게 근거). 이 원칙은 일반화해서
+계획된 Tween 처리 로직이 같은 모양이라는 게 근거). 이 원칙은 일반화해서
 재사용 가능 — 앞으로 비슷한 "작은 인스턴스 편의 기능"이 제안되면
 `quad-roblox-util` 같은 걸 새로 만들지 않고 이 선례를 따르면 됨.
 

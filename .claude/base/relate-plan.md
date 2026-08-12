@@ -33,8 +33,13 @@ weak여야 함 — 그런데 그 안에 담기는 값은 경우에 따라 **강�
 ## 위험한 패턴 — 서로 다른 두 `Relate`의 상호 강참조 순환 (2026-08-12 열세/열네 번째 세션, `Slot` 설계 중 발견)
 
 위 26-28행이 말하는 "값이 자기 키를 다시 참조하는" 자기참조(예:
-`Dispatch.setLength`의 `observer` 클로저가 `inst`를 캡처, `Ref.Value=inst`)는
-**단일 `Relate` 안에서** 일어나는 한 안전함 — 그 `Relate`의 키(`inst`)가
+`Dispatch.setLength`의 `observer` 클로저가 `inst`를 캡처, `Ref.Value=inst`,
+**[확인, 2026-08-12 세션 후속] `slot._mountedInst = physicalTarget`도
+같은 패턴** — `bindLifetime(physicalTarget, slot)`이 내부적으로
+`physicalTarget`을 키로 `slot`을 강하게 붙잡는 단일 `relate`고,
+`slot._mountedInst`는 그 값(`slot`)이 자기 키(`physicalTarget`)를 다시
+참조하는 필드일 뿐이라 GC 안전 — `base/slot-plan.md` "재귀 메커니즘"
+절)는 **단일 `Relate` 안에서** 일어나는 한 안전함 — 그 `Relate`의 키(`inst`)가
 테이블 *바깥에서* 독립적으로 reachable한지만 판별하면 되기 때문. 하지만
 **서로 다른 두 `Relate`가 서로의 키를 상대방 값으로 강하게 제공하는
 상호 순환**(예: `RelateA[inst]=value`(강)와 `RelateB[value]=inst`(강)가

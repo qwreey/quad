@@ -195,8 +195,14 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   있던 것을 이번에 `pre-implementation-audit.md` 2-11에도 해소 표시로
   동기화. **[해소됨, 2026-08-09 세 번째 세션]** Slot CRUD 의미론
   (`add`/`remove`/`clear`) 미정의(1-7)/`isMounted` 이중 추적 혼용(1-8) —
-  `base/slot-plan.md` 참고. **아직 실제로 열려있는 건 하나** — 우선순위
-  스캔 동률/매치실패 처리(1-3) — `pre-implementation-audit.md` 본문 참고.
+  `base/slot-plan.md` 참고. **[2026-08-12 감사 세션 정정] 아직 실제로
+  열려있는 건 하나가 아니라 넷** — `pre-implementation-audit.md` 원문에
+  `[해소됨]` 마커가 없는 항목이 1-3 외에도 셋 더 있음: 우선순위 스캔
+  동률/매치실패 처리(1-3), provider 미주입 상태 dispatch 처리(1-4),
+  `store.key`의 레코드 필드 타이핑을 M0로 앞당길지(1-10), Modifier
+  `__index`+`table.clone` 트릭 검증(1-11) — 이전 요약이 이 셋을 누락한
+  채로 "1-3 하나뿐"이라 잘못 축약해뒀던 것, `pre-implementation-audit.md`
+  본문 및 "다음 액션 제안" 절 참고.
 - **[해소됨, 2026-08-08 두 번째 세션]** `Frame { ref }`/`Frame { observer }`처럼
   children 배열 숫자 슬롯에 직접 놓는 leaf 값을 매칭·바인드하는 Handler
   (`(i:number, v=Ref/Observer/PreRef)`)의 패키지 배치 — 원래 제안대로

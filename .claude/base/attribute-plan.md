@@ -1,7 +1,9 @@
 # Attribute — 단일 키(`AttributeKey`)와 그룹(`Attribute(...)`) 두 프리미티브
 
 **상태**: base — 단일 키 메커니즘/`None`/`retract` 동작과 타입 파라미터화는
-전부 확정(2026-08-09 열한 번째 세션). **[2026-08-11 아홉 번째 세션 추가]**
+전부 확정(2026-08-09 열한 번째 세션, **2026-08-12 세션 후속에서
+`retract` 완전 no-op화 + 그룹 청소 정책 전면 재정정 — 아래 "메커니즘"/
+"그룹 `Attribute(...)`" 절이 최신**). **[2026-08-11 아홉 번째 세션 추가]**
 Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attribute(...)`
 프리미티브 신설, 이름 충돌 방지를 위해 기존 단일 키 생성자를
 `Attribute<<T>>` → `AttributeKey<<T>>`로 리네임(잠정 확정 — 최종 이름은
@@ -103,24 +105,30 @@ end
 
 타입 파라미터화 이름과 무관하게 런타임 동작은 확정:
 
-- `process(inst, k, v)` — `inst:SetAttribute(name, v)`가 사실상 전부.
-  **Attribute는 `None`의 가장 깔끔한 사례** — Roblox API 자체가
-  `SetAttribute(name, nil)`을 "그 Attribute 엔트리를 지운다"는 뜻으로
-  네이티브 지원하므로, `None → nil` 재디스패치(`base/bind-system-plan.md`의
-  `None` 센티널 절)가 도착했을 때 handler가 **아무 특별 처리도 없이**
-  `inst:SetAttribute(name, nil)`을 그대로 호출하면 끝 — UICorner 숏핸드처럼
-  "만들어둔 자식을 수동으로 찾아 지우는" 로직조차 필요 없음.
-- **`retract` 불필요** — Tag와 같은 이유: 값이 뭐든(실제 값/`nil`) 항상
-  같은 `AttributeKeyHandler`가 이 키를 계속 담당(핸들러 *타입*이 안 바뀜).
-  `retract`가 의미 있는 유일한 패턴("매치되는 핸들러 타입 자체가 바뀜",
-  `Tag(...)`↔`nil`이 실사례 — 2026-08-10 세션부터 Tween은 더 이상 이
-  패턴의 예시가 아님, `base/tween-plan.md`)에 해당 안 함 —
-  `bind-system-plan.md` "확정된 디스패치 모델" 절이 한때 Attribute도
-  retract 필요 예시로 들었던 걸 여기서 바로잡음. **[정정, 2026-08-12
-  열 번째 세션] 그룹 위임 경로가 생기면서 `retract`가 다시 의미 있어짐 —
-  아래 "이름 소유권" 절 참고, 이 문단이 말하는 "값이 뭐든 같은 핸들러"는
-  여전히 맞지만 그룹이 이름을 놓을 때는 그 이름 전용 키 객체 자체가
-  통째로 폐기되므로 그 키 슬롯 기준으로는 `retract`가 실행됨.**
+- `process(inst, k, v)` — `inst:SetAttribute(name, v)`가 사실상 전부,
+  **`v`가 뭐든(실제 값이든 `nil`이든) 무조건 그대로 호출** — 일반
+  프로퍼티 핸들러와 완전히 동일한 무조건 set. **Attribute는 `None`의
+  가장 깔끔한 사례** — Roblox API 자체가 `SetAttribute(name, nil)`을
+  "그 Attribute 엔트리를 지운다"는 뜻으로 네이티브 지원하므로, `None →
+  nil` 재디스패치(`base/bind-system-plan.md`의 `None` 센티널 절)가
+  도착했을 때 handler가 **아무 특별 처리도 없이** `inst:SetAttribute(name,
+  nil)`을 그대로 호출하면 끝 — UICorner 숏핸드처럼 "만들어둔 자식을
+  수동으로 찾아 지우는" 로직조차 필요 없음.
+- **`retract`는 완전 no-op — [재정정, 2026-08-12 세션 후속] "매번
+  불리지만 대부분 no-op"이라던 직전 서술도 틀렸음, "대부분"이 아니라
+  "항상"** — 일반 프로퍼티 핸들러(`retract`가 완전 무조건 no-op,
+  `bind-system-plan.md` "일반 프로퍼티는 애초에 'unset' 개념이 없음")와
+  완전히 같은 성격으로 재정정. **`AttributeKeyHandler.retract`는
+  `SetAttribute`를 절대 호출하지 않음** — attribute를 지우는 유일한
+  경로는 `process(inst,k,nil)`(`None`이든, State가 스스로 `nil`로
+  바뀌든) 뿐. 이전 버전("이름이 사라질 때(`v==nil`)만 retract가
+  `SetAttribute(name,nil)`을 호출")은 두 가지 문제가 있었음 — (1)
+  `retract` 안에 관측 가능한 부작용이 생겨 `bind-system-plan.md`의
+  "retract는 구조적 팝만, process 트리거 금지" 일반 규칙과 어긋나는
+  성격의 코드가 됨, (2) 그룹이 survivor 이름에 `retractUnder(...,source)`를
+  부를 때 그 시점에 `SetAttribute`가 잘못 끼어들 수 있는 경로가 생겨
+  `a→nil→b` 깜빡임 위험(사용자 지적) — `retract`가 완전 no-op이면 이
+  경로 자체가 물리적으로 없어짐.
 - store-bind 가능(일반 프로퍼티와 동일하게 취급, `Store<T>`/`State<T>`
   값도 받음).
 
@@ -154,28 +162,17 @@ function AttributeKeyHandler.process(inst, k, v)
     if current ~= nil and current ~= k then
         error(("attribute \"%s\"는 이미 다른 AttributeKey가 관리 중"):format(name))
     end
-    inst:SetAttribute(name, v)
-    if v == nil then
-        map[name] = nil  -- nil로 귀결되면 소유권도 같이 반납 — 다른 claimant가 다시 쓸 수 있게
-    else
-        map[name] = k
-    end
+    inst:SetAttribute(name, v)  -- v가 nil이든 아니든 무조건 — 일반 프로퍼티와 완전히 동일
+    map[name] = if v == nil then nil else k  -- nil로 귀결되면 소유권도 같이 반납
     owners:SetStrong(inst, map)
 end
 
 function AttributeKeyHandler.retract(inst, k, v)
-    -- [정정, 2026-08-12 열한 번째 세션] retract는 이 k가 store 재발행으로
-    -- 다시 process될 때도 매번 불림(핸들러 타입이 안 바뀌어도) —
-    -- bind-system-plan.md 일반 retract 계약 절 참고. v가 nil이 아니면
-    -- 곧바로 process가 재확정하므로(같은 k가 계속 살아있는 한 항상
-    -- 자기 자신이 다시 매치됨) 여기서 SetAttribute/소유권 반납을 할
-    -- 이유가 없음 — v가 nil일 때만(진짜 이 이름이 사라지는 경우) 실행.
-    local name = k.Name
-    local map = owners:GetStrong(inst)
-    if map and map[name] == k and v == nil then
-        map[name] = nil
-        inst:SetAttribute(name, nil)
-    end
+    -- 완전 no-op. 일반 프로퍼티와 동일 — "unset" 개념 자체가 없음.
+    -- retract 안에서 process를 부르는 건 Dispatch.retractUnder의 체인
+    -- 추적을 꼬는 UB(base/bind-system-plan.md 일반 규칙)라 여기서도
+    -- SetAttribute를 직접이든 간접이든 절대 안 부름 — 지우는 건 오직
+    -- process(inst,k,nil).
 end
 ```
 
@@ -188,22 +185,10 @@ end
   새 릴레이션 불필요, 이미 있던 걸 재사용. 이름을 처음 보면 `rawNew(name)`로
   만들어 이 맵에 캐싱하고 그 키로 위임, 이미 맵에 있으면(이전 사이클에
   이미 관리 중이던, 즉 "남아있는" 이름) **그 캐싱된 같은 객체를 그대로
-  재사용**해서 위임.
-- **[정정, 2026-08-12 열한 번째 세션] "남아있는 이름은 retract 자체가 안
-  불린다"는 예전 서술은 틀렸음** — `AttributeKeyHandler.retract`는 이제
-  `v==nil`일 때만 실제로 뭔가 하므로(위 "메커니즘, `None`, `retract`" 절
-  정정분), 남아있는 이름에 대해서도 `retractUnder`를 불러도 안전하고 —
-  오히려 **불러야 함**: `Dispatch.process`가 매번 체인 꼬리에 새 항목을
-  쌓기만 하지 스스로 옛 항목을 안 지우므로(popping은 `retractUnder`
-  자신의 일), 남아있는 이름을 `retractUnder` 없이 `Dispatch.process`만
-  반복 호출하면 그룹 값이 교체될 때마다 같은 `(inst,key)` 체인에 옛
-  `AttributeKeyHandler` 항목이 계속 쌓이는 누수가 생김. **그래서 그룹의
-  diff는 사라진/남아있는 이름 모두 자기 캐싱된 키로 먼저
-  `Dispatch.retractUnder(inst, key, nil, newSourceOrNil)`를 부른 뒤에만
-  `Dispatch.process`를 부름** — 새로 들어온 이름만 예외(옛 체인이 없으니
-  retractUnder 없이 바로 process). `AttributeKeyHandler.retract`가 `v`가
-  non-nil이면 즉시 return하는 얇은 함수라 이 추가 호출의 비용은 무시할
-  수준.
+  재사용**해서 위임. 이 diff/재위임 로직의 정확한 코드는 아래 "그룹
+  `Attribute(...)`" 절의 `AttributeGroupHandler.process`/`.retract` 참고
+  — `AttributeKeyHandler` 자신은 diff를 전혀 모름(위 "이름이 살아있는
+  동안 항상 같은 키 재사용" 전제만 지켜지면 그만).
 - **패키지 경계**: `AttributeKey` 자체가 이미 quad-roblox 소속(Tag와
   달리 base/roblox로 안 쪼갬, 아래 "패키지 배치" 절)이고 그룹의 실제
   위임 로직도 이미 roblox 쪽 글루라 `rawNew` 호출이 새 역의존을 안 만듦 —
@@ -257,59 +242,95 @@ Dispatch 재진입 없이 직접 `SetAttribute`+수동 per-field StoreBind 구�
 위 "이름 소유권" 절 참고, 이 절은 그 위에서 diff 로직이 어떻게 도는지만
 설명:
 
-- **그룹 값이 (재)할당될 때**(마운트 시점, 또는 `:Compute`가 그룹 값
-  자체를 교체하는 드문 경우 — 흔한 필드 하나 변경과는 다른 경로, 아래
-  참고): `(inst, index)`(array-part 위치, `Tag`의 `relate:GetStrong(inst,k)`와
-  동일 키잉 — `k`는 배열 인덱스)로 찾은 릴레이션에 저장된 **"이전에 쓴
-  attribute 이름 → 그 이름 전용 키 객체 맵"**(구 "이름 문자열 집합" —
-  이름 존재 여부뿐 아니라 그때 쓴 키 객체 자체까지 같이 들고 있어야 위
-  "이름 소유권" 절의 동일 객체 재사용이 성립)과 새 값의 키 집합을 diff:
-  - **[정정, 2026-08-12 열한 번째 세션] 사라진 이름뿐 아니라 남아있는
-    이름도 먼저 `Dispatch.retractUnder(inst, key, nil, source)`를 부른
-    뒤에야 `Dispatch.process`를 부름** — 그 이름이 맵에 들고 있던 **그
-    전용 키 객체**로, 그 이름이 살아있는 동안 만들어졌던 원래 체인과
-    정확히 같은 슬롯을 가리켜 정리(팝)됨. `retractUnder` 없이
-    `Dispatch.process`만 반복 호출하면 체인이 매번 새 항목을 쌓기만 해서
-    (팝은 `retractUnder`의 일) 같은 키 자리에 옛 `AttributeKeyHandler`
-    항목이 계속 누적되는 진짜 누수가 생기므로, "값이 안 바뀌었으니
-    retract 생략"은 성립 안 함 — `AttributeKeyHandler.retract`가 `v`
-    non-nil이면 즉시 return하는 얇은 함수라(위 "이름 소유권" 절) 이
-    호출 자체는 사실상 공짜.
-    - 사라진 이름: `Dispatch.retractUnder(inst, key, nil, nil)` — 뒤이어
-      `process` 안 부름, 맵에서도 그 이름 제거.
-    - 남아있는 이름: `Dispatch.retractUnder(inst, key, nil, source)` →
-      바로 `Dispatch.process(inst, key, source)` — **맵에 이미 캐싱된 같은
-      키 객체를 그대로 재사용**.
-    - 새로 들어온 이름: 옛 체인이 없으니 `retractUnder` 없이 바로
-      `rawNew(name)`로 갓 만든 키를 맵에 새로 캐싱하고
-      `Dispatch.process(inst, key, source)`.
-  - **값 비교 없이 전부 재위임** — 작성자가 직접
-    `[AttributeKey<<T>> name] = source`를 쓴 것과 거의 같은 경로를
-    타므로(단, 공개 캐시가 아니라 그룹 전용 키를 씀) `source`가
-    `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
-    해줌(그룹 Handler가 따로 구독 관리 안 함).
-  - **값 비교(`:Get()`으로 old/new 비교)는 하지 않음** — State 계약("값은
-    항상 선언된 Compute 재실행 결과, 캐시 비교 금지", `store-semantics.md`
-    "하드 경계" 절)과 어긋나고, 릴레이션 키를 문자열 이름 집합(존재 여부)만
-    들고 있으면 충분해서 굳이 값까지 비교할 이유가 없음.
-  - **캐시(맵)는 그룹 값 교체를 넘어 계속 유지돼야 함** — 매 교체마다
-    남아있는 이름의 키까지 새로 만들면, "이름 소유권" 절의 `owners`
-    레지스트리엔 옛 키가 남아있어 새로 만든 키와 비교 시 오탐 충돌이
-    남(자기 자신과 충돌하는 꼴). 이 릴레이션이 `(inst, index)`로
-    영속되는 건 이미 확정돼 있던 설계라 새로 챙길 것 없음, 저장 값
-    형태만 위처럼 바뀜.
+**그룹의 `process`/`retract` — [전면 재정정, 2026-08-12 세션 후속]**
+아래는 `(inst, index)`(array-part 위치, `Tag`의 `relate:GetStrong(inst,k)`와
+동일 키잉 — `k`는 배열 인덱스)로 찾은 릴레이션에 저장된 **"이름 →
+그 이름 전용 키 객체 맵"**(이름 존재 여부뿐 아니라 그때 쓴 키 객체
+자체까지 같이 들고 있어야 위 "이름 소유권" 절의 동일 객체 재사용이
+성립)을 씀:
+
+```lua
+local groupState = Relate()  -- {[inst(weak)] = {[index]: {[name]: keyObject}}}
+
+function AttributeGroupHandler.process(inst, index, v)
+    if v == nil then return end
+    local map = groupState:GetStrong(inst, index) or {}
+    for name, source in pairs(v:NameMap()) do
+        local key = map[name] or rawNew(name)  -- 남아있던 이름은 캐싱된 같은 객체 재사용
+        map[name] = key
+        Dispatch.retractUnder(inst, key, nil, source)  -- chain-append-leak 방지, 매번(신규는 빈 체인이라 no-op)
+        Dispatch.process(inst, key, source)
+    end
+    groupState:SetStrong(inst, index, map)
+end
+
+function AttributeGroupHandler.retract(inst, index, v)
+    local map = groupState:GetStrong(inst, index)
+    if not map then return end
+    local newNames = if isAttribute(v) then v:NameMap() else {}
+    for name, key in pairs(map) do
+        if newNames[name] == nil then  -- 새 v에 이제 없는 이름만
+            Dispatch.retractUnder(inst, key, nil, nil)  -- 구독만 끊음 — SetAttribute는 안 일어남(아래 원칙)
+            map[name] = nil
+        end
+    end
+end
+```
+
+- **`process`는 매번 살아있는 이름 전부를 `retractUnder`+`process`
+  페어로 재위임** — 신규/생존 구분 없이 균일 처리. `Dispatch.process`가
+  매번 체인 꼬리에 새 항목을 쌓기만 하지 스스로 옛 항목을 안 지우므로
+  (팝은 `retractUnder`의 일), `retractUnder` 없이 `Dispatch.process`만
+  반복 호출하면 같은 키 자리에 옛 `AttributeKeyHandler` 항목이 계속
+  쌓이는 누수가 생김 — 신규 이름은 아직 체인이 없어 `retractUnder`가
+  그냥 no-op이라 이 페어링을 신규/생존 가리지 않고 통일해도 비용 없음.
+  **값 비교(`:Get()`으로 old/new 비교)는 안 함** — State 계약("값은 항상
+  선언된 Compute 재실행 결과, 캐시 비교 금지", `store-semantics.md`
+  "하드 경계" 절)과 어긋나고, `source`가 `State`/`Source`면
+  `Dispatch/StoreBind`가 알아서 언랩+구독까지 다 해줌(그룹 Handler가
+  따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
+- **[확정, 2026-08-12 세션 후속, 사용자 결정] `retract`는 `SetAttribute`를
+  절대 안 부름 — Attribute는 오직 명시적 `None`/`nil`로만 지워진다.**
+  그룹에서 이름이 조용히 빠지든(diff로 사라짐), 그룹 바인딩 자체가
+  통째로 사라지든(컴포넌트 언마운트 등, `v`가 더 이상 Attribute가 아님)
+  프레임워크가 자동으로 `SetAttribute(name,nil)`을 대신 불러주지
+  않음 — 값이 이전 것 그대로 남는 게 정상 동작. `Ref`가 Destroy와
+  무관하게 동작하는 것과 같은 철학("지울 거면 명시적으로 지우라",
+  `bind-system-plan.md`의 "`Ref`의 retract" 절)으로 통일. **이전 초안은
+  "Tag와 동일하게 확실히 청소"였으나 뒤집힘** — 이유: (1) diff로
+  조용히 빠지는 이름은 안 지워주면서 통째 소멸일 땐 지워주면, 두 경우가
+  서로 다른 규칙이 되어 오히려 모호해짐(사용자 지적: "diff 쌓인 거랑
+  전부 지운 거랑 완전 달라짐"). (2) Attribute 이름은 이미 "겹치면
+  error"로 소유 코드가 명확히 갈리는 설계(위 "이름 소유권" 절)라, 그
+  이름을 만든 코드가 알아서 지우는 게 맞지 프레임워크가 대신 판단할
+  이유가 불투명함. (3) 정말 자동 청소가 필요하면 `Animate`와 같은 모양
+  (`State<data> -> State<Attribute>`를 만드는 `:Apply` 팩토리, 이전
+  그룹과 비교해 사라진 이름을 `None`으로 명시적으로 채워 넣는 유틸)을
+  나중에 opt-in으로 추가하면 됨 — 그건 사용자가 고른 명시적 선택이라
+  모호하지 않음, 지금은 범위 밖(백로그).
+- **다만 사라진 이름의 *구독*은 끊음 — 값은 안 지워도 자원은 새면
+  안 됨.** 위 "값은 안 지운다" 원칙과 별개로, 그룹이 더 이상 관리하지
+  않는 이름의 `(inst,key)` 체인을 그대로 두면 그 키에 걸려있던
+  `StoreBind` 구독이 인스턴스가 살아있는 동안 영원히 남아 원본
+  `Source`가 바뀔 때마다 계속 `SetAttribute`를 쏘는 실제 리소스 누수가
+  됨(이건 "마지막 값이 남는다"는 것과 다른 문제 — 안 죽는 구독 자체가
+  문제). 그래서 `retract`는 사라진 이름에 한해 `Dispatch.retractUnder(inst,
+  key, nil, nil)`만 부름 — **`Dispatch.process`는 절대 안 부르므로**
+  (retract 안에서 process 호출은 `retractUnder`의 체인 추적을 꼬는 UB,
+  `bind-system-plan.md` 일반 규칙) `AttributeKeyHandler.retract`(완전
+  no-op)만 타고 끝나 `SetAttribute`는 여기서도 절대 안 일어남 — 위
+  "명시적 None으로만 지운다" 원칙과 안 부딪힘.
 - **필드 하나만 바뀌는 흔한 경우**(`storeA.foo:Set(v)`, 그룹 자체는
   안 바뀜)는 위 그룹 재처리를 아예 거치지 않음 — 마운트 시 이미 걸린
   단일 키 `AttributeKeyHandler`의 store-bind 구독이 바로
   `SetAttribute("foo", v)`를 호출(그룹 재진입 없이 그 경로 스스로).
   **`AttributeChanged`/`GetAttributeChangedSignal` 남발 걱정 없음** —
   키 집합이 안 바뀌는 한 diff 로직 자체가 안 돎.
-- **`retract`**: 자기가 쓴 키(전용 키 객체) 전부 `Dispatch.retractUnder`로
-  정리 — 단일 키의 `SetAttribute(name, nil)`이 그대로 실행되므로 결과적으로
-  `Tag`와 동일하게 확실히 청소됨. Roblox는 Instance 풀링/재사용이 흔해서,
-  이전 컴포넌트가 남긴 attribute가 재사용된 Instance에 방치되면
-  selector/스타일시트 로직에 실제 버그가 됨. ("소진돼도 부작용 없으니
-  방치해도 된다"는 초안은 기각 — Tag의 확실한 청소 원칙과 통일.)
+- **캐시(맵)는 그룹 값 교체를 넘어 계속 유지돼야 함** — 매 교체마다
+  남아있는 이름의 키까지 새로 만들면, "이름 소유권" 절의 `owners`
+  레지스트리엔 옛 키가 남아있어 새로 만든 키와 비교 시 오탐 충돌이
+  남(자기 자신과 충돌하는 꼴). 이 릴레이션이 `(inst, index)`로 영속되는
+  건 이미 확정돼 있던 설계.
 
 **그룹 Handler에 남는 자기 로직은 사실상 "이름 집합 diff"뿐** — 실제
 `SetAttribute` 호출/`None` 처리/store-bind 구독은 전부 기존 단일 키
@@ -353,3 +374,10 @@ UICorner 숏핸드/Tween/Tag와 같은 판단 재사용 — `quad-roblox` 코어
   당장의 해석 모호성은 없앴음 — 그래도 최종 이름은 다른 가칭들(`State`/
   `DI`→`D`/`Slot`/`canExecute`/`Brand`)과 함께 `.claude/question.md` 용어정리
   대기열에 있음, 나중에 한꺼번에 재검토.
+- **[백로그, 2026-08-12 세션 후속]** 그룹이 이름을 조용히 놓아도
+  `SetAttribute(name,nil)`을 자동으로 안 해준다는 위 "그룹 `Attribute(...)`"
+  절의 결정 — 그래도 명시적 자동 unset이 갖고 싶으면 `Animate`와 같은
+  모양의 `:Apply` opt-in 유틸(이전 이름 집합과 비교해 사라진 이름을
+  `None`으로 채워주는 콤비네이터)을 나중에 추가할 수 있음, 착수 안 함 —
+  `research/operator-sugar-plan.md` "Attribute 그룹 명시적 unset 유틸"
+  절 참고.

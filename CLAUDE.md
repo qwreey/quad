@@ -119,8 +119,12 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
      없으면 그대로 M0 실제 코드 작성에 재사용.
    - **`research/pre-implementation-audit.md` 우선순위1** — 신설 당시
      11개였으나 대부분 이후 세션에서 해소됨(Tween/Tag 재설계, Slot CRUD,
-     `canExecute` 시그니처, `LifetimeHandle` 로드맵 순서 등). 실제로 아직
-     열려있는 건 "우선순위 스캔 동률/매치실패 처리"(1-3) 하나뿐 —
+     `canExecute` 시그니처, `LifetimeHandle` 로드맵 순서 등). **[2026-08-12
+     감사 세션 정정]** 실제로 아직 열려있는 건 넷(원문에 `[해소됨]` 마커가
+     없는 항목 기준) — 우선순위 스캔 동률/매치실패 처리(1-3), provider
+     미주입 상태 dispatch 처리(1-4), `store.key` 레코드 필드 타이핑을 M0로
+     앞당길지(1-10), Modifier `__index`+`table.clone` 트릭 검증(1-11).
+     이전엔 "1-3 하나뿐"이라 잘못 축약돼 있었음(1-4/1-10/1-11 누락) —
      `.claude/question.md` 2번이 최신 상태.
 2. **용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
    `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
@@ -645,3 +649,22 @@ vararg 유지(요소 개수가 대개 소수로 고정, 동적이면 Slot-in-Slo
 가능, `T|{T}`는 `Slot<T>`가 base 레벨에선 `T`가 뭔지 모르는 제네릭이라
 바깥 `{}`가 단일 T인지 배열인지 원천적으로 판별 불가능해서 오히려
 모호해짐 — `Slot`의 T에 우연히 Slot이 섞여서가 아님, `slot-plan.md`).
+
+**2026-08-12 열여섯 번째 세션 — 코퍼스 전체 감사, Attribute retract 전면
+재설계, Slot 소유권 일반화** (`session/2026-08-12-16-corpus-audit-attribute-retract-slot-owner.md`)
+7개 에이전트로 `.claude/` 코퍼스 전체를 감사해 stale 서술 다수 정정
+(retract-always-fires 정정 전파 누락, Tween research→base 승격 반영
+누락, `Relate` API 인자 개수 버그, `pre-implementation-audit.md` 열린
+항목 개수 오류 등). 이어서 사용자가 diff를 직접 검토하며 Attribute
+`retract`를 다단계로 재설계 — **최종: retract는 완전 no-op(SetAttribute는
+오직 `process(inst,k,nil)`), Attribute는 오직 명시적 `None`/`nil`로만
+지워짐(그룹이 사라진 이름을 자동으로 안 지워줌 — Ref의 "Destroy 무관"
+철학과 통일), 단 사라진 이름의 *구독*은 끊음(값은 안 지워도 리소스는
+안 새게)**. 일반 규칙 2개 신설(retract의 `v` 타입 미보장 → `isX(v)`
+가드 필수, retract 안에서 `process` 호출은 UB). Slot도 `slotOwner`를
+`elementOwner`로 일반화해 top-level/nested 이중 마운트 gap 폐쇄,
+`bindLifetime`을 top-level 전용으로 축소(nested는 `_elements` 강참조로
+transitively 생존). `and`/`or` 삼항 관용구 전면 금지(기존 "항상-truthy면
+예외" 조항 폐기), 코퍼스 전체 실제 코드 6곳을 `if-then-else`로 교체.
+Attribute 자동 unset이 필요해지면 쓸 `:Apply` opt-in 유틸을
+`research/operator-sugar-plan.md`에 백로그로 추가(착수 안 함).

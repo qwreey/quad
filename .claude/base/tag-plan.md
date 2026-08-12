@@ -67,16 +67,20 @@ plain string이라(핸들러 계층 값처럼 identity/생명주기가 얽힌 �
 "하나의 Tag 값을 프로그래밍적으로 조립"하는 용도).
 
 **동적 토글은 `Source`/`State`로, `None` 불필요** — 상호배타 상태 전환은
-`store.activeTag:Compute(function(name) return name:Get() == "btn1" and
-Tag("selected") or nil end)`처럼 그냥 `nil`을 리턴하면 됨. `None` 센티널은
-"정적 테이블 리터럴에서 `키 = nil`이 키 없음과 구별 안 되는" 문제의
-해법이지(`bind-system-plan.md` "`None` 센티널" 절), 이건 함수 리턴값이
-동적으로 흘러가는 경우라 그 문제 자체가 없음 — `nil`을 인자로 넘기는 건
-아무 문제 없음. (단, `Frame { cond and Tag("a") or nil, sibling }`처럼
-**정적 리터럴**에서 조건부로 Tag를 넣거나 빼고 싶은 경우엔 다른 array-part
-값들과 마찬가지로 `cond and Tag("a") or None` 관용구가 여전히 유효 —
-이건 nil-hole 문제라 Tag만의 특수 규칙이 아니라 `props.Modifier`/
-`props.Ref`와 같은 일반 array-part 관용구.)
+`store.activeTag:Compute(function(name) return (if name:Get() == "btn1"
+then Tag("selected") else nil) end)`처럼 그냥 `nil`을 리턴하면 됨. `None`
+센티널은 "정적 테이블 리터럴에서 `키 = nil`이 키 없음과 구별 안 되는"
+문제의 해법이지(`bind-system-plan.md` "`None` 센티널" 절), 이건 함수
+리턴값이 동적으로 흘러가는 경우라 그 문제 자체가 없음 — `nil`을 인자로
+넘기는 건 아무 문제 없음. (단, `Frame { (if cond then Tag("a") else
+nil), sibling }`처럼 **정적 리터럴**에서 조건부로 Tag를 넣거나 빼고
+싶은 경우엔 다른 array-part 값들과 마찬가지로 `(if cond then Tag("a")
+else None)` 관용구가 여전히 유효 — 이건 nil-hole 문제라 Tag만의 특수
+규칙이 아니라 `props.Modifier`/`props.Ref`와 같은 일반 array-part
+관용구. **[2026-08-12 세션 후속]** 예전엔 `cond and Tag("a") or
+nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
+당장은 안전해도 `if-then-else` 전면 금지 규칙(`base/architecture.md`
+"코드 스타일" 절)에 예외를 안 두기로 하며 여기도 통일.)
 
 ## 메커니즘 — `TagHandler`, `retract`가 이제 의미 있어짐
 

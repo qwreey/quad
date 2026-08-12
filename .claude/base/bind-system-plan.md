@@ -47,12 +47,13 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   없음(예: 일반 프로퍼티 핸들러는 보통 no-op).
   **`retract` 필드 자체는 생략 불가, no-op이라도 항상 정의할 것(2026-08-08
   세션, 확정)** — `Dispatch.process`(아래 "확정된 디스패치 모델" 절)는
-  담당 핸들러 *타입*이 바뀔 때 이전 핸들러의 `retract`를 nil 체크 없이
-  무조건 호출함. 필드를 생략한 핸들러가 나중에(드물더라도, 예: `Tag(...)`↔
-  `nil` 교체 — `base/tag-plan.md`) 실제로 담당이 바뀌는 순간 `attempt to
-  call a nil value`로
-  바로 크래시 — "의미 있게 구현할 필요 없음"은 "구현이 사소해도 됨"이라는
-  뜻이지 "필드를 안 둬도 안전하다"는 뜻이 아님. 새 핸들러를 짤 때 이 필드가
+  store 재발행마다(핸들러 *타입*이 안 바뀌어도) 이전 핸들러의 `retract`를
+  nil 체크 없이 무조건 호출함(`[전면 정정, 2026-08-12 열한 번째 세션]`,
+  아래 "retract-always-fires" 정정 절 참고 — 담당 타입이 바뀔 때만
+  불린다는 건 예전의 틀린 가정이었음). 필드를 생략한 핸들러는 이 반복
+  호출에서 바로 `attempt to call a nil value`로 크래시 — "의미 있게
+  구현할 필요 없음"은 "구현이 사소해도 됨"이라는 뜻이지 "필드를 안 둬도
+  안전하다"는 뜻이 아님. 새 핸들러를 짤 때 이 필드가
   없으면 리뷰/린트에서 걸러내야 함(M2 착수 시 확인 목록에 추가).
 
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
@@ -155,6 +156,22 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     패턴이 아님 — 상세 구현은 `base/tag-plan.md`/`base/attribute-plan.md`
     "이름 소유권" 절, `Ref`는 아래 "`Ref`의 retract" 절, `Slot`은
     `slot-plan.md` "Slot과 Store 바인드의 관계" 절 참고.
+  - **[일반 규칙, 2026-08-12 세션 후속] `retract`의 `v`는 타입을 보장 안
+    함 — 내용(메소드/필드)을 보려면 반드시 `isX(v)` 가드부터.** `retract`가
+    `old ~= v`/`v == nil`처럼 identity/nil만 비교하면 가드가 필요 없지만
+    (`Ref`/`Slot`/`AttributeKey`가 이 경우), `v`의 내용을 실제로 들여다봐야
+    하면(`TagHandler.retract`의 `newv:Contains(name)`처럼) 그 전에 반드시
+    `isTag(newv)` 같은 타입 가드를 거칠 것 — 안 그러면 그 자리 핸들러
+    *타입*이 바뀌는 드문 경우에 엉뚱한 값의 메소드를 호출해 크래시함.
+    (`AttributeGroupHandler.retract`가 이 가드를 처음엔 빠뜨렸던 실수,
+    `base/attribute-plan.md` 참고.)
+  - **[일반 규칙, 2026-08-12 세션 후속] `retract` 안에서 `Dispatch.process`를
+    부르는 것은 UB — `Dispatch.retractUnder`가 체인을 걷는 도중의 트래킹이
+    꼬임.** `retract`는 오직 청소(구조적 팝, 내부 자원 해제)만 전담하고
+    새 등록을 트리거하면 안 됨 — 새 등록은 항상 바깥의 StoreBind/그룹
+    로직이 `retract` 호출이 다 끝난 *뒤에* 별도로 `process`를 부르는
+    순서로만 일어나야 함. `Dispatch.retractUnder`를 (다른 키에 대해)
+    `retract` 안에서 부르는 건 문제없음 — 금지되는 건 오직 `process`.
   - Tween은 이 패턴과 무관 — 독립 Dispatch 핸들러가 아니라 PropertyHandler가
     소비하는 값-레벨 래퍼(`Tween<T>`)라 매치되는 핸들러가 항상
     PropertyHandler 하나뿐(2026-08-10 세션 재설계) — 트윈 취소/전환은
@@ -411,15 +428,20 @@ function Dispatch.retractUnder(inst, k, keep, v)
 end
 ```
 
-**[2026-08-12 세션에서 정정]** `list[i].retract(...)`의 세 번째 인자가
-원래 `i == cutoff + 1 and v or nil`(and/or 삼항 관용구)이었으나, `v`가
-`false`일 때(정당한 boolean 프로퍼티 값) `and`의 결과가 falsy가 되어
-`i == cutoff + 1`이 참이어도 `or nil`로 새는 조용한 버그였음 — Luau의
-`if-then-else` 표현식(2021년 도입)으로 교체. **일반 규칙**: `cond and
-truthyOnly or fallback` 관용구는 가운데 값이 테이블/항상-truthy 값일
-때만 안전(예: `Tag(...)`/`Length:Get()`처럼 절대 `nil`/`false`가 될 수
-없는 값) — 임의 `T`(boolean 포함) 값이 가운데 올 수 있으면 반드시
-`if cond then a else b`를 쓸 것.
+**[2026-08-12 세션에서 정정, 같은 세션 후속으로 예외 조항까지 폐기]**
+`list[i].retract(...)`의 세 번째 인자가 원래 `i == cutoff + 1 and v or
+nil`(and/or 삼항 관용구)이었으나, `v`가 `false`일 때(정당한 boolean
+프로퍼티 값) `and`의 결과가 falsy가 되어 `i == cutoff + 1`이 참이어도
+`or nil`로 새는 조용한 버그였음 — Luau의 `if-then-else` 표현식(2021년
+도입)으로 교체. **일반 규칙(강화): `cond and x or y` 삼항 관용구는
+전면 금지, `if cond then x else y`만 쓸 것** — 처음엔 "가운데 값이
+테이블/항상-truthy일 때만 예외적으로 and/or 허용"이었으나, 안전 여부와
+무관하게 `if-then-else`가 항상 우월하다는 게 재확인돼 예외 자체를
+없앰: `and`/`or`는 진짜 short-circuit이라 각 단계마다 truthiness를
+테스트하는 명령이 들어가는데(최대 2회 분기), `if-then-else`는 `cond`
+하나만 테스트하고 단일 분기로 끝남 — 안전한 경우에도 `if-then-else`
+쪽이 바이트코드상 더 적은 분기. `base/architecture.md`의 "코드 스타일
+— Luau 문법 관례" 절도 같이 갱신.
 
 - **`handler.process(inst,k,v)`를 `Dispatch.process`를 거치지 않고 직접
   호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할 것.**
@@ -450,13 +472,18 @@ truthyOnly or fallback` 관용구는 가운데 값이 테이블/항상-truthy �
 - **`retract`는 여전히 `(inst,k,v)` 3-인자** — 드롭하자는 제안이 대화
   중 한 번 나왔으나 기각(전체 삭제 vs 부분 diff를 갈라야 하는 핸들러가
   있어서, `base/tag-plan.md` 참고). 다만 `v`가 실제로 필요한지는
-  핸들러마다 다름 — Tag는 구조상 retract가 "더 이상 매치 안 될 때만"
-  불리므로 `v`를 안 봐도 항상 전체 삭제가 맞음(무조건) — `v`는 "계약상
-  항상 주어지지만 안 쓰는 핸들러가 있어도 됨" 정도로 이해할 것.
+  핸들러마다 다름 — **[정정, 2026-08-12 열한 번째 세션]** Tag는 오히려
+  반대로 `v`를 반드시 봐야 하는 대표 사례다: `retract`는 store
+  재발행마다(핸들러 타입이 안 바뀌어도) 항상 불리므로, `TagHandler.retract`는
+  `v`가 여전히 그 이름을 `Contains`하는지 힌트로 확인해 실제 엔진
+  `RemoveTag` 호출만 skip한다 — "더 이상 매치 안 될 때만 불리므로 무조건
+  전체 삭제가 맞다"는 원 서술은 이 정정 전 잘못된 가정이었음, 상세는
+  `base/tag-plan.md` "메커니즘" 절 참고. `v`는 "계약상 항상 주어지지만
+  안 쓰는 핸들러가 있어도 됨" 정도로 이해할 것.
   **[정정, 2026-08-10 세션]** 원래 두 번째 예시로 들었던 Tween(자기
   `Relate` 저장분만 보고 `Cancel`하면 되니 `v`를 꼭 안 봐도 됨)은 더
   이상 유효한 예시가 아님 — PropertyHandler가 항상 매치되는 유일한
-  핸들러가 되어 이 `retract` 경로 자체가 사실상 안 쓰임(`research/
+  핸들러가 되어 이 `retract` 경로 자체가 사실상 안 쓰임(`base/
   tween-plan.md`).
 - **순환은 UB, 방어 로직 없음** — Handler 간 순환 참조(A가 B를 부르고
   B가 다시 A로 돌아오는 것)는 재귀 호출이 안 끝나 바로 스택오버플로가
@@ -624,7 +651,7 @@ local function recompute(ownerKey, bk)
             offset:Set(sum)
         end
         local v = bk.lengthList[i]
-        sum += (isState(v) and v:Get() or v)
+        sum += (if isState(v) then v:Get() else v)
     end
     if isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
         ownerKey.Length:Set(sum)   -- ownerKey가 물리 inst가 아니라 Slot 자신인 재귀 케이스

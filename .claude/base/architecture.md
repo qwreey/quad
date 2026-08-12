@@ -178,8 +178,8 @@ quad/
 
 **남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
 `slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
-Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확정을
-막지 않음(`purity-and-effects-plan.md`는 이미 `base/`로 승격 완료).
+existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확정을
+막지 않음(`purity-and-effects-plan.md`/`tween-plan.md`는 이미 `base/`로 승격 완료).
 
 ## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
 
@@ -227,9 +227,17 @@ Tween/existing-instance-bind는 여전히 `research/`에 남아있고 이 구조
 표현식 문법(공식 릴리스 노트: <https://luau.org/news/2021-10-31-luau-recap-october-2021/#if-then-else-expression>)
 — `cond and truthyOnly or fallback` 삼항 관용구와 달리 가운데 값이
 falsy(`nil`/`false`)여도 정확하게 동작함(`bind-system-plan.md`의
-`Dispatch.retractUnder` 정정 사례가 실제 버그 예시). **이 프로젝트의
-기본 삼항 표현 방식은 `if-then-else`** — `cond and x or y`는 `x`가
-테이블/숫자처럼 항상-truthy임이 보장될 때만 예외적으로 허용.
+`Dispatch.retractUnder` 정정 사례가 실제 버그 예시). **[강화, 2026-08-12
+세션 후속] `cond and x or y` 삼항 관용구는 전면 금지 — `if-then-else`만
+쓸 것, 가운데 값이 항상-truthy임이 보장돼도 예외 없음.** 처음엔 그
+경우만 예외적으로 허용했으나, 안전 여부와 무관하게 `if-then-else`가
+항상 더 낫다는 게 재확인됨 — `and`/`or`는 진짜 short-circuit이라 각
+단계 truthiness를 테스트하는 분기가 최대 2번 들어가는데(`cond` 테스트 +
+`and`의 결과 테스트), `if-then-else`는 `cond` 하나만 테스트하고 단일
+분기로 끝남 — 방어적이면서 바이트코드상으로도 더 적은 분기. 단순
+2항 fallback(`x or y`, "and" 없이 값 하나를 기본값으로 대체하는
+`props.Modifier or None`류)은 애초에 이 문제가 없어 그대로 유지 —
+금지 대상은 어디까지나 `A and B or C` 3항 조합.
 
 **`const` 바인딩도 Luau 공식 문법**(<https://luau.org/syntax/#const-bindings>)
 이지만 **지금은 채택하지 않음** — 타입 추출/narrowing 등 주변 툴링이
@@ -296,8 +304,8 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 
 ## 아직 미정 (research/로 분리됨)
 
-Tween 플러깅, 이미 생성된 인스턴스에 대한 바인드 — `.claude/research/` 각
-문서 참고, 전체 색인은 `.claude/README.md`. 바인드 디스패치/Slot/모듈
+이미 생성된 인스턴스에 대한 바인드 — `.claude/research/existing-instance-bind-plan.md`
+참고, 전체 색인은 `.claude/README.md`. 바인드 디스패치/Slot/모듈
 라이프사이클/Modifier/컴포넌트화(컴포넌트 경계 modifier/Ref 전달 포함)는
 위 "구현 착수" 섹션대로 확정되어 `.claude/base/`로 승격됨
 (`bind-system-plan.md`/`module-lifecycle-plan.md`/`slot-plan.md`/

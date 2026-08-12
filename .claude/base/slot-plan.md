@@ -138,10 +138,14 @@ Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 �
   마운트 이후에 호출되는 경우 이 값으로 즉시 활성화(아래 "`Slot:List(...)`"의
   "구독 시점" 절 참고).
 - **개별 element**: Slot 안에 담기는 각 element(Instance/컴포넌트 결과 등)
-  마다 전역 weak-set 멤버십으로 추적 — 특정 Slot 인스턴스에 안 묶임
-  ("한 인스턴스가 어디에도 중복 마운트 안 됨"이 라이브러리 전역 불변식이라서).
-  `Add`가 이 weak-set을 확인(이미 참이면 error)/설정, `Remove`/`Extract`
-  둘 다 여기서 제거(둘의 차이는 파괴 여부일 뿐, "마운트 해제"라는 점은 같음).
+  마다 전역 멤버십으로 추적 — 특정 Slot 인스턴스에 안 묶임("한 인스턴스가
+  어디에도 중복 마운트 안 됨"이 라이브러리 전역 불변식이라서). **[구체화,
+  2026-08-12 열여섯 번째 세션]** 이 전역 멤버십의 실제 구현은 아래
+  "요소 소유권 — `elementOwner`" 절의 `claimOwner`/`releaseOwner` —
+  `Add`가 `claimOwner`(이미 다른 owner면 error)/`Remove`·`Extract`가
+  `releaseOwner`. top-level Dispatch 마운트(`SlotHandler`)도 **같은**
+  레지스트리를 써서 두 경로가 서로의 소유권을 볼 수 있음(전에는 별도
+  레지스트리라 안 보였던 gap, 해당 절 참고).
 
 ## 여럿 존재 가능, 부모가 실제 데이터 테이블만 다루면 됨
 
@@ -152,11 +156,17 @@ Slot은 하나의 instance 안에 여럿 존재할 수 있다. 전부 하나의 
 
 ## 마운트된 Slot의 재마운트는 즉시 throw (확정)
 
-**사용자 확인 완료**: 이미 사용된(마운트된) slot을 재마운트하려 하면 **즉시
-`error()`로 중단** — warn+no-op 아님. 개발 중 바로 잡아낼 수 있게 강하게
-실패하는 쪽 선택. 마운트되는 순간 slot의 실제 대상은 고정된다 — 따라서
+**사용자 확인 완료**: 이미 사용된(마운트된) slot을 **다른 위치로** 재마운트하려
+하면 **즉시 `error()`로 중단** — warn+no-op 아님. 개발 중 바로 잡아낼 수 있게
+강하게 실패하는 쪽 선택. 마운트되는 순간 slot의 실제 대상은 고정된다 — 따라서
 **글로벌 스코프에서 slot을 쓰는 건 그다지 좋지 않을 수 있음**(재사용/재마운트가
 막히므로).
+
+> **[명확화, 2026-08-12 열두 번째 세션 메커니즘과 대조]** 위 throw는 **다른**
+> `inst`로 마운트하려 할 때만 해당 — **같은** `inst`로 재-emit되는 경우(store
+> 재발행 등으로 `process`가 같은 slot을 다시 받는 경우)는 예외적으로 no-op이지
+> throw가 아니다. 상세 메커니즘은 아래 "Slot과 Store 바인드의 관계" 절의
+> `SlotHandler.process`(`owner == inst` 분기) 참고.
 
 ## 클래스가 슬롯을 받는 방법
 
@@ -241,28 +251,54 @@ tables" 항목).** 즉 이 회피는 "혹시 몰라서"가 아니라 **Luau에�
 하나로만 두고, `kSlotMap`/`slotOwner`는 전부 `SetWeak`(순수 조회용,
 아무것도 안 붙잡음)로 낮춤**:
 
+**[일반화, 2026-08-12 열여섯 번째 세션] `slotOwner`는 top-level Dispatch
+마운트만 보고 있어서, Slot-in-Slot으로 nested `Add`되는 경로(아래 "요소
+소유권 — `elementOwner`" 절)와 서로 다른 레지스트리라 어느 한쪽이 이미
+소유 중인 걸 다른 쪽이 못 보고 이중 마운트를 허용하는 gap이 있었음
+(사용자 발견) — `slotOwner`를 element(범용, Slot이든 plain Instance든)
+전체를 커버하는 `elementOwner`로 승격해 top-level Dispatch 경로와
+nested CRUD 경로가 **같은** 레지스트리를 쓰도록 통합:
+
 ```lua
-local kSlotMap = Relate()   -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot — weak, 조회 전용
-local slotOwner = Relate()  -- Slot 자신이 weak 키 — {[slot] = 지금 바인딩된 inst} — weak, 조회 전용
+local kSlotMap = Relate()      -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot — weak, 조회 전용
+local elementOwner = Relate()  -- element(Slot이든 plain 마운트 가능 값이든) 전체 공용
+                                -- {[element] = ownerKey}  -- ownerKey: inst | Slot, 전부 weak
+local OWNER = "__owner"        -- sentinel key(Relate는 항상 3-인자 SetWeak/2-인자 GetWeak 이후
+                                -- 값이라 outer key 하나당 값 하나만 저장하고 싶어도 key가 필요함 —
+                                -- lifecycle-pattern.md의 GCCONN/GCHOLD와 같은 패턴, base/relate-plan.md 참고)
+
+local function claimOwner(element, ownerKey)
+    local current = elementOwner:GetWeak(element, OWNER)
+    if current == ownerKey then
+        return false  -- 이미 같은 owner — no-op, 재확인만
+    end
+    if current ~= nil then
+        error("이 요소는 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
+    end
+    elementOwner:SetWeak(element, OWNER, ownerKey)
+    return true
+end
+
+local function releaseOwner(element, ownerKey)
+    if elementOwner:GetWeak(element, OWNER) == ownerKey then
+        elementOwner:SetWeak(element, OWNER, nil)
+    end
+end
 
 function SlotHandler.process(inst, k, slotValue)
-    local owner = slotOwner:GetWeak(slotValue)
-    if owner == inst then
+    if not claimOwner(slotValue, inst) then
         return  -- 이미 이 inst에 바인딩된 채 — 단순 emit 전파, no-op
     end
-    if owner ~= nil then
-        error("이 Slot은 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
-    end
-    attachSlot(slotValue, inst, inst, k)  -- 내부에서 bindLifetime(inst, slotValue) 호출(아래)
-    slotOwner:SetWeak(slotValue, inst)
+    attachSlot(slotValue, inst, inst, k)  -- top-level이라 내부에서 bindLifetime(inst, slotValue) 호출(위 "재귀 메커니즘" 절)
     kSlotMap:SetWeak(inst, k, slotValue)
 end
 
 function SlotHandler.retract(inst, k, v)
     local old = kSlotMap:GetWeak(inst, k)
     if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Slot 자체일 수도 있음
-        destroySlotTree(old)  -- 내부에서 unbindLifetime(inst, old) 호출(아래), 폐기·옮기지 않음
-        slotOwner:SetWeak(old, nil)
+        destroySlotTree(old)  -- 재귀 파괴(자식 정리), 폐기·옮기지 않음 — slot 자신의 GC 앵커는 안 건드림(top-level 전용)
+        unbindLifetime(inst, old)  -- top-level 자신의 GC 앵커 해제 — attachSlot의 top-level bindLifetime과 짝
+        releaseOwner(old, inst)
         kSlotMap:SetWeak(inst, k, nil)
     end
     -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 owner==inst로 no-op
@@ -270,9 +306,43 @@ end
 ```
 
 `attachSlot` 자체가 quad-roblox 소속이라 `inst`를 아는 건 자연스러움 —
-`slotOwner`가 굳이 `inst`의 정체를 몰라도(예: 다른 백엔드에서 중간
+`elementOwner`가 굳이 `inst`의 정체를 몰라도(예: 다른 백엔드에서 중간
 표현 테이블이어도) 무관하게 동작함, 그냥 "지금 이 자리를 차지한 값이
 누구냐"만 구분하면 됨.
+
+### 요소 소유권 — `elementOwner`, nested `Add`/top-level Dispatch 공용 (2026-08-12 열여섯 번째 세션)
+
+**문제(사용자 발견)**: 위 `elementOwner`가 승격되기 전엔 top-level
+Dispatch 마운트(`SlotHandler.process`)만 `slotOwner`를 봤고, `Add`가
+확인한다는 "개별 element 전역 weak-set"(구 "isMounted 이중 추적 분리"
+절)은 완전히 별개 레지스트리로 서술만 있고 코드가 없었음 — 그래서
+`slot1`을 top-level store-bind하면 `slotOwner`만 찍히고, 그 다음
+`otherSlot:Add(slot1)`을 하면 `Add`가 보는 레지스트리엔 아무것도 없어
+그대로 통과 → 같은 `slot1`이 두 군데 물리적으로 마운트되는데 에러가
+안 남(반대 순서도 동일하게 뚫림) — "핵심 제약: 소유권 귀속과 단일
+마운트" 절의 라이브러리 전역 불변식이 실제로는 안 지켜지던 gap.
+
+**해법**: 위에서 승격한 `elementOwner`/`claimOwner`/`releaseOwner`를
+Slot뿐 아니라 **모든 마운트 가능 element(plain Instance 포함)**의
+소유권 판정에 공용으로 씀 — top-level(`SlotHandler.process`/`.retract`)과
+nested(`rawAdd`/`rawRemove`/`rawExtract`)가 정확히 같은 함수, 같은
+`Relate`를 호출하므로 어느 경로로 먼저 클레임하든 다른 경로가 반드시
+봄:
+
+```lua
+-- rawAdd(self, element, index) 안, "이미 마운트" 에러 체크 자리
+claimOwner(element, self)  -- self = 담는 Slot. 이미 다른 곳 소유면 여기서 error
+
+-- rawRemove(self, index)/rawExtract 안, 요소를 내보내는 자리
+releaseOwner(element, self)
+```
+
+`ownerKey`가 `inst`(top-level)든 `Slot`(nested)든 `elementOwner`는
+타입을 신경 안 써서 하나의 레지스트리로 충분 — `outerSlot`이 값으로
+들어가도 `elementOwner` 자체는 아무것도 강하게 안 붙잡고(전부
+`SetWeak`), 실제 강한 참조는 `outerSlot._elements`(plain array, `Relate`
+아님)가 이미 쥐고 있으므로 `relate-plan.md`가 경고하는 "두 Relate
+상호 강참조" 패턴과 다른 모양 — GC 문제 없음.
 
 - **같은 바인딩이면 완전히 무시하는 게 이 자리에선 효율 문제가 아니라
   정합성 문제** — Slot은 아래 "확정" 절대로 "폐기, 옮기지 않음"(portal
@@ -859,7 +929,7 @@ function activateList(self, inst)
                 -- .Length만큼 건너뛴다 — 다음 형제의 index가 이 아이템이
                 -- 실제로 차지하는 물리적 개수를 반영해야 함(아래 "index도
                 -- nested-Slot 결과의 Length만큼 건너뛰어야 함" 절 참고)
-                pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get() or 1)
+                pos = candidateIndex - 1 + (if isSlot(result) then result.Length:Get() else 1)
             end
 
             if result ~= prev then
@@ -1090,9 +1160,9 @@ local function identityUpdateFn(item) return item end
 function Slot:Single(state, updateFn)
     updateFn = updateFn or identityUpdateFn   -- [2026-08-11 일곱 번째 세션] 기본값 추가
 
-    local data = isState(state)
-        and state:Compute(function(v) return v:Get() == nil and {} or { v:Get() } end)
-        or (state == nil and {} or { state })
+    local data = if isState(state)
+        then state:Compute(function(v) return (if v:Get() == nil then {} else { v:Get() }) end)
+        else (if state == nil then {} else { state })
 
     return self:List(data, function(item, index, offset, prev, ud)
         return updateFn(item, offset, prev, ud)   -- index는 항상 상수라 안 넘김
@@ -1151,10 +1221,19 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 local function attachSlot(slot, physicalTarget, ownerKey, position)
     slot._mounted = true
     slot._mountedInst = physicalTarget
-    bindLifetime(physicalTarget, slot)  -- [2026-08-12 열세 번째 세션 추가] Slot 자신의
-                                         -- GC 앵커 — 이게 빠져있으면 아무도 slot을 강하게
-                                         -- 안 붙잡아 조기 GC될 수 있음(위 "Slot과 Store
-                                         -- 바인드의 관계" 절 GC 주의 참고)
+    if ownerKey == physicalTarget then
+        -- [2026-08-12 열여섯 번째 세션, 스코프 정정] bindLifetime은 최상위(물리
+        -- inst에 직접 연동하는 말단)에서만 — 중첩 Slot은 자신을 담는 outer의
+        -- `_elements`(plain strong array)로 이미 transitively 살아있어서
+        -- (elementOwner는 전부 weak라 별도 anchor 아님, 위 "요소 소유권 —
+        -- `elementOwner`" 절 참고) 여기서 또 anchor할 이유가 없음 — State의 노드 연결처럼
+        -- 중간 노드는 구조로만 연결되고, 말단만 실제 엔진 생명주기에 건다는
+        -- 원칙과 같은 결. 매 레벨 anchor하면 매 레벨 파괴 시 짝을 맞춰
+        -- unbindLifetime해야 하는 부담만 늘어남(destroySlotTree 참고).
+        bindLifetime(physicalTarget, slot)  -- [2026-08-12 열세 번째 세션 추가] 최상위
+                                             -- Slot의 GC 앵커 — 이게 빠져있으면 아무도
+                                             -- 강하게 안 붙잡아 조기 GC될 수 있음
+    end
 
     Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
     local offsetSource = Source(0)
@@ -1222,10 +1301,16 @@ local function destroySlotTree(slot)
             unbindLifetime(slot._mountedInst, observer)
         end
     end
-    unbindLifetime(slot._mountedInst, slot)  -- [2026-08-12 열세 번째 세션 추가]
-                                              -- attachSlot의 bindLifetime과 짝
+    -- [2026-08-12 열여섯 번째 세션, 스코프 정정] slot 자신의 unbindLifetime은
+    -- 여기서 안 부름 — attachSlot이 최상위에서만 bindLifetime하므로 짝도
+    -- 최상위 파괴 지점(SlotHandler.retract, 아래)에서만 한 번. destroySlotTree는
+    -- 재귀 전체에서 항상 이 위치까지만(자식 Observer 정리) 담당.
 end
 
+-- [명확화] 아래 시그니처는 index 기준 예시 — 위 "raw* 내부 호출 규약" 절이
+-- 이미 못박았듯 reconcile(위 "여러 Slot이 섞일 때" 절 근처)은 element 기준으로
+-- rawRemove(self, prev)를 부름. 둘 중 하나로 통일할지 얇은 변환 계층을 둘지는
+-- 아직 M6 구현 세부로 열려 있음 — 이 블록은 그 결정 전 illustrative 예시.
 function rawRemove(self, index)
     local element = self._elements[index]
     local bk = getBookkeeping(self)
@@ -1349,7 +1434,7 @@ sugar가 성립하려면 `:Single(state)`(updateFn 생략)이 유효해야 함 �
   (`:List`의 reconcile은 `key` 기준으로 독립 동작, `sub`가 바깥에서
   어느 인덱스에 있든 상관 안 함).
 - **`State<T?>`(nilable)도 특별 취급 없이 그냥 됨** — `:Single`이 이미
-  `v:Get() == nil and {} or {v:Get()}`로 nil을 "빈 리스트"로 흡수하므로, raw 직접
+  `if v:Get() == nil then {} else {v:Get()}`로 nil을 "빈 리스트"로 흡수하므로, raw 직접
   전달 요소(`Add(element)`, State로 안 감싼 경우)에만 여전히 non-nil이
   요구되고, `State`/`Source`로 감싼 값은 내부적으로 nilable이어도 아무
   문제 없음 — 위 "요소 타입 제약" 절의 nil/None 금지는 **State/Source로
@@ -1403,7 +1488,7 @@ Slot-in-Slot으로 `T = Instance | Slot<Instance>`가 허용되면서, `:List`�
 Slot(Length=3)을 반환할 때 다음 아이템의 `index`가 3만큼 안 건너뛰고
 1만 건너뛰어 물리적으로 겹치는 LayoutOrder 범위가 나옴 — **의도된 동작으로
 확정, 위 "구현" 절의 `reconcile` 의사코드에 이미 반영됨**(`pos = candidateIndex
-- 1 + (isSlot(result) and result.Length:Get() or 1)`).
+- 1 + (if isSlot(result) then result.Length:Get() else 1)`).
 
 **남는 캐비엇 — `index`는 여전히 raw 스냅샷이라, nested Slot의 Length가
 outer `:List`의 reconcile 없이 나중에 바뀌면 그 이후 형제들의 `index`는
