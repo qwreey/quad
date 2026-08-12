@@ -121,10 +121,18 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     바뀌므로 `retract`가 의미 있어짐(전체 삭제), 같은 Tag끼리 바뀌는
     diff는 `process`가 담당(`base/tag-plan.md`, 2026-08-08 세 번째 세션
     — array-part 값 객체 재설계 이후, 구 모델은 `archive/
-    tag-hash-key-model-reversed.md`). **Attribute는 여기 해당 안 함** —
-    UICorner 숏핸드와 같은 패턴(값의 참/거짓/nil 여부와 무관하게 항상
-    같은 핸들러가 계속 담당, 추가/제거를 전부 `process` 자신이 처리)이라
-    핸들러 교체 자체가 안 일어남 — `base/attribute-plan.md`. **[정정,
+    tag-hash-key-model-reversed.md`). **Attribute(단일 키 직접 쓰기 경로)는
+    여기 해당 안 함** — UICorner 숏핸드와 같은 패턴(값의 참/거짓/nil
+    여부와 무관하게 항상 같은 핸들러가 계속 담당, 추가/제거를 전부
+    `process` 자신이 처리)이라 핸들러 교체 자체가 안 일어남 —
+    `base/attribute-plan.md`. **[추가, 2026-08-12 열 번째 세션] 단, 그룹
+    `Attribute(...)`가 개별 이름을 놓을 때는 그 이름 전용 키 객체의 체인
+    자체가 통째로 정리되는 거라 `retract`가 실제로 불림** — "핸들러
+    타입이 안 바뀌면 retract 없이 process"라는 이 절의 원칙과 안 어긋남,
+    그룹이 이름을 잃는 건 "그 이름 전용 키가 이 인스턴스를 더 이상
+    관리 안 하게 됨"이라 오히려 `Tag(...)→nil`과 같은 급의 "완전히
+    사라짐" 케이스임 — `attribute-plan.md` "이름 소유권" 절 참고.
+    **[정정,
     2026-08-10 세션] Tween도 더 이상 여기 해당하지 않음** — 원래는 이
     패턴의 대표 예시("Tween 핸들러가 매치돼 애니메이션 실행 중이었는데
     값이 더 이상 Tween 대상이 아니게 되어 일반 PropertyHandler로 매치가

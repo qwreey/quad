@@ -116,9 +116,88 @@ end
   `Tag(...)`↔`nil`이 실사례 — 2026-08-10 세션부터 Tween은 더 이상 이
   패턴의 예시가 아님, `base/tween-plan.md`)에 해당 안 함 —
   `bind-system-plan.md` "확정된 디스패치 모델" 절이 한때 Attribute도
-  retract 필요 예시로 들었던 걸 여기서 바로잡음.
+  retract 필요 예시로 들었던 걸 여기서 바로잡음. **[정정, 2026-08-12
+  열 번째 세션] 그룹 위임 경로가 생기면서 `retract`가 다시 의미 있어짐 —
+  아래 "이름 소유권" 절 참고, 이 문단이 말하는 "값이 뭐든 같은 핸들러"는
+  여전히 맞지만 그룹이 이름을 놓을 때는 그 이름 전용 키 객체 자체가
+  통째로 폐기되므로 그 키 슬롯 기준으로는 `retract`가 실행됨.**
 - store-bind 가능(일반 프로퍼티와 동일하게 취급, `Store<T>`/`State<T>`
   값도 받음).
+
+### 이름 소유권 — 그룹/직접 쓰기 충돌 방지, `rawNew`와 per-name 전용 키 (2026-08-12 열 번째 세션)
+
+**문제**: `AttributeKey(name)`이 이름별 weak 캐시로 항상 같은 객체를
+리턴하고, 그룹 `Attribute(...)`가 그 경로를 그대로 재사용(위 "메커니즘"
+절)하다 보니, **서로 다른 원래 위치(해시파트 직접 쓰기 `[AttributeKey
+"name"]=value` vs 배열파트 `Attribute(store)`, 또는 서로 다른 두
+`Attribute(...)` 그룹)가 같은 이름을 동시에 관리하려 하면 정확히 같은
+`(inst, k=AttributeKey(name))` 자리로 수렴해 조용히 마지막 쓰기가
+이기는 충돌이 생김.** Modifier 필드는 정적이라 override로 이미 해소되지만
+(같은 해시 키는 한 Modifier 안에 하나뿐), 그룹의 이름 집합은 런타임에
+동적이라 이 해소망 밖에 있음.
+
+**해법 — 그룹은 공개 `AttributeKey(name)` 캐시를 안 쓰고, 이름당 자기
+전용 키 객체를 만들어 씀.** `AttributeKey`의 내부 구현을 캐시 조회
+(`rawNew`가 없으면 만들어서 캐시)와 순수 객체 생성(`rawNew(name)`,
+브랜드 태그/`Name` 필드는 있지만 캐시를 거치지 않는 raw 생성자)로 분리 —
+공개 `AttributeKey(name)`은 지금처럼 캐시를 거치고, **그룹 Handler(roblox
+글루)만 `rawNew`를 직접 써서 이름마다 자기만의 키 객체를 만듦.**
+
+```lua
+-- AttributeKeyHandler(quad-roblox) 전용, (inst,name)별 현재 이 이름을 쓰는 키 객체
+local owners = Relate()  -- {[inst(weak)] = {[name]: keyObject}}
+
+function AttributeKeyHandler.process(inst, k, v)
+    local name = k.Name
+    local map = owners:GetStrong(inst) or {}
+    local current = map[name]
+    if current ~= nil and current ~= k then
+        error(("attribute \"%s\"는 이미 다른 AttributeKey가 관리 중"):format(name))
+    end
+    inst:SetAttribute(name, v)
+    if v == nil then
+        map[name] = nil  -- nil로 귀결되면 소유권도 같이 반납 — 다른 claimant가 다시 쓸 수 있게
+    else
+        map[name] = k
+    end
+    owners:SetStrong(inst, map)
+end
+
+function AttributeKeyHandler.retract(inst, k, v)
+    local name = k.Name
+    local map = owners:GetStrong(inst)
+    if map and map[name] == k then
+        map[name] = nil
+        inst:SetAttribute(name, nil)
+    end
+end
+```
+
+- **직접 리터럴 쓰기**(`[AttributeKey<<T>> "name"] = value`)는 공개
+  `AttributeKey(name)`을 그대로 씀 — 한 Modifier 안에 같은 해시 키가
+  중복될 수 없어 이 경로의 claimant는 항상 유일, 별도 캐싱 불필요.
+- **그룹**은 자기가 이미 갖고 있던 "(inst, 자기 배열 위치)별 마지막으로
+  쓴 attribute 상태" 릴레이션(위 "메커니즘" 절)의 저장 형태를 **이름
+  문자열 집합 → `{[name]: 그 이름 전용 키 객체}` 맵으로 확장**만 하면 됨 —
+  새 릴레이션 불필요, 이미 있던 걸 재사용. 이름을 처음 보면 `rawNew(name)`로
+  만들어 이 맵에 캐싱하고 그 키로 위임, 이미 맵에 있으면(이전 사이클에
+  이미 관리 중이던, 즉 "남아있는" 이름) **그 캐싱된 같은 객체를 그대로
+  재사용**해서 위임.
+- **왜 이러면 "새 Attribute 셋 비교"가 저절로 맞아떨어지는지(사용자 확인,
+  2026-08-12 열 번째 세션)**: 그룹이 이름 집합을 diff할 때 — **남아있는
+  이름은 캐싱된 같은 키 객체로 재위임하므로 `owners` 맵에서 `current == k`가
+  성립해 통과, `retract` 자체가 안 불림**(값만 갱신) — **사라진 이름만
+  `Dispatch.retractUnder`가 그 이름 전용 키를 타서 `retract`가 불리고
+  `nil`화됨.** 새로 들어온 이름은 `rawNew`로 갓 만든 키라 `owners`에 없어
+  그냥 새로 클레임. 즉 "진짜 새 셋과 비교해 사라진 것만 nil화, 나머지는
+  건드리지 않고 갱신"이 diff 로직을 하나도 안 고치고 위 `process`/`retract`
+  구현만으로 자연히 나옴 — **캐시가 그룹 값 교체를 넘어 계속 유지돼야만
+  성립**(매 교체마다 키를 새로 만들면 남아있는 이름도 `owners`엔 옛
+  객체가 남아있어 새 객체와 비교 시 오탐 충돌이 남).
+- **패키지 경계**: `AttributeKey` 자체가 이미 quad-roblox 소속(Tag와
+  달리 base/roblox로 안 쪼갬, 아래 "패키지 배치" 절)이고 그룹의 실제
+  위임 로직도 이미 roblox 쪽 글루라 `rawNew` 호출이 새 역의존을 안 만듦 —
+  base쪽 `Attribute(...)` 값 객체 자신은 이 메커니즘을 전혀 모름.
 
 ## 그룹 `Attribute(...)` — 여러 Store를 한 번에 attribute로 (2026-08-11 아홉 번째 세션 신설)
 
@@ -154,48 +233,59 @@ Frame { Attribute(styleStore), Attribute(stateStore) }   -- 여러 개 나란히
 슬롯을 그대로 가져와 자기 자신의 key→Source 맵에 넣는 것 — 아래 "레이어드
 Store 기각과 안 부딪히나" 참고.
 
-### 메커니즘 — 메모이즈된 키로 기존 단일 키 경로에 재귀 위임
+### 메커니즘 — per-name 전용 키로 기존 단일 키 경로에 재귀 위임
 
 **[2026-08-11 아홉 번째 세션 후속, 개정]** 최초안은 "자기 완결형 Handler,
 Dispatch 재진입 없이 직접 `SetAttribute`+수동 per-field StoreBind 구독"
 이었으나, 위 "동등성" 절의 이름별 weak 캐시가 확정되며 그 회피 이유
-자체가 없어짐 — `AttributeKey(name)`을 몇 번을 다시 불러도 항상 같은
-객체가 나오므로, Dispatch의 `(inst, k)`별 핸들러 체인 추적이 깨질
-위험이 없음. 그래서 그룹 Handler는 **자기만의 SetAttribute/구독 로직을
+자체가 없어짐 — 그래서 그룹 Handler는 **자기만의 SetAttribute/구독 로직을
 새로 만들지 않고, 각 필드를 기존 단일 키 `AttributeKey` 경로에 그대로
 재귀 위임** — `None`/`retract`/store-bind 전부 이미 확정된 단일 키
-메커니즘을 100% 재사용, 중복 구현 없음:
+메커니즘을 100% 재사용, 중복 구현 없음. **[정정, 2026-08-12 열 번째
+세션] 위임에 쓰는 키가 공개 `AttributeKey(name)`이 아니라 `rawNew(name)`로
+매번 그룹 전용으로 만드는 키로 바뀜** — 이유·정확한 소유권 판정 방식은
+위 "이름 소유권" 절 참고, 이 절은 그 위에서 diff 로직이 어떻게 도는지만
+설명:
 
 - **그룹 값이 (재)할당될 때**(마운트 시점, 또는 `:Compute`가 그룹 값
   자체를 교체하는 드문 경우 — 흔한 필드 하나 변경과는 다른 경로, 아래
   참고): `(inst, index)`(array-part 위치, `Tag`의 `relate:GetStrong(inst,k)`와
   동일 키잉 — `k`는 배열 인덱스)로 찾은 릴레이션에 저장된 **"이전에 쓴
-  attribute 이름 문자열 집합"**과 새 값의 키 집합을 diff:
-  - 사라진 이름만 `Dispatch.retractUnder(inst, AttributeKey(name))` —
-    메모이즈된 키라 그 이름이 살아있는 동안 만들어졌던 원래 체인과
-    정확히 같은 슬롯을 가리켜 정리됨.
-  - 남아있거나 새로 들어온 이름은 **값 비교 없이 전부**
-    `Dispatch.process(inst, AttributeKey(name), source)`로 넘김 — 작성자가
-    직접 `[AttributeKey<<T>> name] = source`를 쓴 것과 완전히 같은 경로를
-    타므로, `source`가 `State`/`Source`면 `Dispatch/StoreBind`가 알아서
-    언랩+구독까지 다 해줌(그룹 Handler가 따로 구독 관리 안 함).
+  attribute 이름 → 그 이름 전용 키 객체 맵"**(구 "이름 문자열 집합" —
+  이름 존재 여부뿐 아니라 그때 쓴 키 객체 자체까지 같이 들고 있어야 위
+  "이름 소유권" 절의 동일 객체 재사용이 성립)과 새 값의 키 집합을 diff:
+  - 사라진 이름만, 그 이름이 맵에 들고 있던 **그 전용 키 객체**로
+    `Dispatch.retractUnder(inst, key)` — 그 이름이 살아있는 동안 만들어졌던
+    원래 체인과 정확히 같은 슬롯을 가리켜 정리됨. 맵에서도 그 이름 제거.
+  - 남아있는 이름은 **맵에 이미 캐싱된 같은 키 객체를 그대로 재사용**,
+    새로 들어온 이름은 `rawNew(name)`로 갓 만든 키를 맵에 새로 캐싱 —
+    **값 비교 없이 전부** `Dispatch.process(inst, key, source)`로 넘김,
+    작성자가 직접 `[AttributeKey<<T>> name] = source`를 쓴 것과 거의 같은
+    경로를 타므로(단, 공개 캐시가 아니라 그룹 전용 키를 씀) `source`가
+    `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
+    해줌(그룹 Handler가 따로 구독 관리 안 함).
   - **값 비교(`:Get()`으로 old/new 비교)는 하지 않음** — State 계약("값은
     항상 선언된 Compute 재실행 결과, 캐시 비교 금지", `store-semantics.md`
     "하드 경계" 절)과 어긋나고, 릴레이션 키를 문자열 이름 집합(존재 여부)만
     들고 있으면 충분해서 굳이 값까지 비교할 이유가 없음.
+  - **캐시(맵)는 그룹 값 교체를 넘어 계속 유지돼야 함** — 매 교체마다
+    남아있는 이름의 키까지 새로 만들면, "이름 소유권" 절의 `owners`
+    레지스트리엔 옛 키가 남아있어 새로 만든 키와 비교 시 오탐 충돌이
+    남(자기 자신과 충돌하는 꼴). 이 릴레이션이 `(inst, index)`로
+    영속되는 건 이미 확정돼 있던 설계라 새로 챙길 것 없음, 저장 값
+    형태만 위처럼 바뀜.
 - **필드 하나만 바뀌는 흔한 경우**(`storeA.foo:Set(v)`, 그룹 자체는
   안 바뀜)는 위 그룹 재처리를 아예 거치지 않음 — 마운트 시 이미 걸린
   단일 키 `AttributeKeyHandler`의 store-bind 구독이 바로
   `SetAttribute("foo", v)`를 호출(그룹 재진입 없이 그 경로 스스로).
   **`AttributeChanged`/`GetAttributeChangedSignal` 남발 걱정 없음** —
   키 집합이 안 바뀌는 한 diff 로직 자체가 안 돎.
-- **`retract`**: 자기가 쓴 키 전부 `Dispatch.retractUnder(inst,
-  AttributeKey(name))`로 정리 — 단일 키의 `SetAttribute(name, nil)`이
-  그대로 실행되므로 결과적으로 `Tag`와 동일하게 확실히 청소됨. Roblox는
-  Instance 풀링/재사용이 흔해서, 이전 컴포넌트가 남긴 attribute가
-  재사용된 Instance에 방치되면 selector/스타일시트 로직에 실제 버그가
-  됨. ("소진돼도 부작용 없으니 방치해도 된다"는 초안은 기각 — Tag의
-  확실한 청소 원칙과 통일.)
+- **`retract`**: 자기가 쓴 키(전용 키 객체) 전부 `Dispatch.retractUnder`로
+  정리 — 단일 키의 `SetAttribute(name, nil)`이 그대로 실행되므로 결과적으로
+  `Tag`와 동일하게 확실히 청소됨. Roblox는 Instance 풀링/재사용이 흔해서,
+  이전 컴포넌트가 남긴 attribute가 재사용된 Instance에 방치되면
+  selector/스타일시트 로직에 실제 버그가 됨. ("소진돼도 부작용 없으니
+  방치해도 된다"는 초안은 기각 — Tag의 확실한 청소 원칙과 통일.)
 
 **그룹 Handler에 남는 자기 로직은 사실상 "이름 집합 diff"뿐** — 실제
 `SetAttribute` 호출/`None` 처리/store-bind 구독은 전부 기존 단일 키

@@ -539,3 +539,19 @@ store-bind retract 경로에 연결된 적 없는 진짜 갭). `Ref`와 같은 `
 no-op 가드는 Tag/Ref보다 Slot에서 훨씬 중요함(가드 없으면 재귀 재emit마다
 마운트된 서브트리 전체가 파괴됐다 재생성돼 자식의 스크롤/포커스/애니메이션
 상태가 전부 유실됨).
+
+**2026-08-12 열 번째 세션 — Attribute 이름 소유권, `rawNew` 전용 키로
+그룹/직접 쓰기 충돌 방지** (`session/2026-08-12-10-attribute-name-ownership.md`)
+`Ref`/`Slot`에 이어 `Attribute`도 확인 — 그룹 `Attribute(...)`의 위임
+메커니즘이 공개 `AttributeKey(name)` 캐시(이름별 weak 캐시로 항상 같은
+객체)를 그대로 쓰다 보니, 직접 리터럴 `[AttributeKey "name"]=v`와 배열파트
+`Attribute(store)`(또는 서로 다른 두 그룹)가 같은 이름을 동시에 관리하면
+같은 `(inst,k)` 자리로 수렴해 조용히 마지막 쓰기가 이기는 충돌이 실제로
+가능함을 확인. Claude가 처음 제안한 별도 `Relate` claimant 레지스트리 대신,
+사용자가 더 단순한 안을 제시해 채택: 그룹이 캐시를 우회하는 `rawNew(name)`로
+이름마다 자기 전용 키 객체를 만들어 자기 릴레이션에 캐싱하면(그룹 값 교체를
+넘어 유지), "이 이름에 지금 어느 키 객체가 적용돼 있는가" 조회만으로
+`AttributeKeyHandler`에서 바로 소유권 판정(다르면 error) 가능 — 별도
+claimant 타입 없이 AttributeKey 객체 identity 자체를 재사용하는 더 적은
+부품의 설계. 기존 diff 로직(사라진 이름만 nil, 남은/새 이름은 갱신)은
+그대로 맞물림, 캐시가 그룹 값 교체를 넘어 영속돼야 한다는 조건만 명시.
