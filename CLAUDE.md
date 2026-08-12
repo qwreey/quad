@@ -682,3 +682,54 @@ Attribute 자동 unset이 필요해지면 쓸 `:Apply` opt-in 유틸을
 typefunction.luau`/`17-modifier-index-tableclone-chaining.luau` 신규
 추가(총 17개), `ROADMAP.md` M2/M3/M7 체크리스트에도 누락됐던 항목(디버그
 모드 동률 감지+`listHandlers`, `store.key`/`table.clone` 실측 링크) 보강.
+
+**2026-08-12 열여덟 번째 세션 — `framework-comparison-findings.md` 남은
+두 항목 "고칠 필요 없음"으로 최종 판단**
+(`session/2026-08-12-18-framework-comparison-fixables-closed.md`)
+"고칠 만한 것"으로 분류돼 있던 use-after-destroy 검증 안전망 부재,
+`:With`의 동적 의존성 미지원 두 항목을 사용자가 확정 판단 — 둘 다 "의도된
+트레이드오프"로 문서 3번 절로 이전. use-after-destroy 검증은 `bindLifetime`/
+`Effect`로 이미 커버되는 영역에 별도 장치를 얹으면 GC-native 아키텍처와
+모순(항상 명시적 Destroy를 강제하게 됨) — 완전한 UB로 남기고 문서화로만
+대응. 동적 With는 State immutable 가정과 정면 모순, 실사용 사례도 거의
+없음(React `useMemo` deps도 대부분 정적) — 의도적 비지원으로 확정.
+`question.md`도 동기화.
+
+**2026-08-12 열아홉 번째 세션 — `Operator` 콤비네이터 슈가 외부 리서치**
+(`session/2026-08-12-19-operator-sugar-external-research.md`)
+서브 에이전트로 `research/operator-sugar-plan.md`의 `Operator.*` 카탈로그를
+다른 리액티브 라이브러리 실제 선례와 대조. 논리(`Not`/`And`/`Or`)/`Sum`/
+`Clamp`/`Min`/`Max`는 선례 뚜렷(VueUse `@vueuse/math` 등), 비트연산·비교
+연산자·`Sub`/`Div`는 리액티브 콤비네이터로서 선례 전무(드랍 후보). 업계
+표준 카테고리인 Debounce/Throttle 부재를 발견했으나 `Blocker`(타이머 없는
+값 기반 게이트)와는 다른 메커니즘이라 quad-roblox 쪽 별도 프리미티브
+가능성으로 분리. `Filtered`를 Slot 밖에선 plain transform, Slot 안에선
+별도 프리미티브로 나눈 기존 판단이 ReactiveUI/SolidJS 선례로 뒷받침됨.
+네임스페이스는 Python `operator` 모듈이 `Operator`의 가장 강한 선례 —
+최종 확정은 여전히 사용자 몫, `question.md` 3번 동기화.
+
+**2026-08-12 스무 번째 세션 — `State` 이름 최종 확정, use-after-destroy
+안전망 근본 재검토 후 최종 기각**
+(`session/2026-08-12-20-state-name-final-usedaftedestroy-scoped-out.md`)
+용어 정리 1순위였던 `State`를 현재 이름 그대로 유지로 확정
+(`Computed`/`Derived` 검토 종료). use-after-destroy는 열여덟 번째
+세션에서 이미 "고칠 필요 없음"으로 정리했으나 사용자가 근본부터 재검토
+요청 — 일반적 검증은 Instance 가상화/추적이 필요해 rbvm 같은 전문
+라이브러리의 영역(quad가 재발명하면 오버엔지니어링), quad-debug는
+quad 자신이 만든 효과만 설명하는 스코프라 외부 조작은 원래 관심사
+아님(`research/debug-tooling-plan.md`가 이미 명시), 실제 위험 지점은
+`Ref`가 관례를 벗어나 반출되는 경우뿐(React `useRef`급 스코프 관례를
+`base/bind-system-plan.md`에 이번에 명문화) — 전부 동의로 최종 기각,
+근거를 `research/framework-comparison-findings.md`에 보강.
+
+**2026-08-12 스물한 번째 세션 — 네이밍 정리 후속: `Pipe` 기각, `Compute`
+vs `Computed`, `:With`/`Tag`·`Modifier` clone 대조 명문화**
+(`session/2026-08-12-21-naming-clarity-pipe-compute-with-clone-contrast.md`)
+`:With`가 `Tag`/`Modifier`의 clone 체이닝과 겉보기엔 같은 `:` 문법이라
+혼동될 여지를 `bind-system-plan.md`에 경고 문단으로 명문화. `State` 대안으로
+검토됐던 `Pipe`는 "캐시한다"는 동작이 파이프 비유와 안 맞고 노드 단위로
+보기도 애매해 기각. `Compute`(현재 이름) vs `Computed`(만약이었다면) 논의—
+Vue/Svelte는 lazy인데도 `computed`를 쓰지만, quad 자기 코퍼스 안에서는
+`Tag.Added`/`Modifier.Overridden`이 이미 "-ed = clone 후 즉시 확정된 값"
+관례를 선점해뒀어서 lazy한 State에 재사용하면 자기 관례와 충돌 — `Compute`가
+더 정확하다는 데 동의, `bind-system-plan.md`에 근거 추가.

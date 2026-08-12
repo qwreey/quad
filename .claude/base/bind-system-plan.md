@@ -894,6 +894,15 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 - Store는 이미 바깥에서 옵저빙 가능한 존재라 별도 취급 불필요 — Ref는 그와
   달리 "원하는 객체 자체를 직접 얻어오는" 경로. **얻어진 뒤에 그 참조를 어디에
   저장하고 어떻게 쓰는지는 라이브러리 책임 범위 밖**(사용자 자유).
+  **권장 관례(2026-08-12, use-after-destroy 검토에서 명문화):** Ref는
+  이를 만든 컴포넌트 자신이 쓰거나 자식에게 넘겨 쓰는 용도가 관례 —
+  React `useRef`와 같은 스코프 감각. 컴포넌트 경계를 넘어 위로
+  반출하거나 전역에 장기 보관하는 건 권장하지 않음 — Ref는 Destroy와
+  완전히 무관하게 동작하므로(아래 "Destroy와는 무관" 절), 관례를 벗어난
+  반출·장기보관은 use-after-destroy가 발생할 수 있는 사실상 유일한
+  자리가 됨. quad는 이 케이스에 런타임 안전망을 두지 않기로 확정
+  (`research/framework-comparison-findings.md` 3번 절 근거) — 대응은
+  이 관례를 지키는 것뿐, 위반 시 결과는 완전한 UB.
 - **바인드 방법**: children을 배열 아이템으로 넣듯 `Ref(default)`(또는
   `:Callback(fn)`을 미리 걸어둔 `Ref(default):Callback(fn)`) 인스턴스
   자체를 숫자 키 슬롯에 그대로 넣는 방식 — `(v=Ref)` 매치 핸들러가 이걸
@@ -1489,6 +1498,25 @@ lazy State 핸들로 통일, 아래 "Store/State/Source 온톨로지" 절의 "`:
 짜는 것도 모듈화 관용구로 권장" 절, `base/effect-plan.md`)와 같은 결 —
 `:Compute`가 원래부터 이 셋 중 제일 먼저 있던 자리라 뒤늦게 문서화된
 것뿐, 새 결정이라기보다 이미 있던 패턴을 명문화한 것.
+
+### 네이밍 — `Compute`가 `-ed`가 아닌 이유 (2026-08-12, `State` 용어 정리 라운드 후속)
+
+`Tag`의 `Added`/`Removed`, `Modifier`의 `Overridden`은 전부 `-ed`(과거분사)
+어미를 의도적으로 씀 — `tag-plan.md`가 밝힌 이유는 "`Add`/`Remove`로 쓰면
+뮤테이션 API처럼 보이기 때문"(실제로는 항상 clone 후 즉시 확정된 새 값을
+반환). **`:Compute`/`:With`는 정반대 이유로 이 관례를 의도적으로 안 따름.**
+Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(이미 끝난
+일)가 정확한 묘사지만, `:Compute(fn)`이 만드는 State 노드는 **호출 시점엔
+`fn`을 등록만 해둔 것뿐이고 실제 계산은 나중에 `:Get()`이 pull할 때
+일어남**(push-invalidate/pull-recompute 모델, 아래 "Store/State/Source
+온톨로지" 절) — 즉 호출 시점에 "computed"(이미 계산됨)라고 부르면 거짓.
+`State`를 `Computed`로 리네임하는 안이 최종 기각된 것(`question.md` 1번)도
+같은 이유의 연장 — Vue `computed()`/Svelte `$derived`가 lazy인데도 그
+이름을 쓰는 건 그쪽 생태계에서 문제없지만, quad 자신의 코퍼스 안에서는
+"-ed 어미 = 이미 즉시 확정된 값"이라는 관례가 Tag/Modifier로 이미 자리
+잡아서, 같은 어미를 lazy한 것에 재사용하면 quad 자기 관례와 충돌해 오히려
+더 헷갈림. 그래서 `Compute`(동사 원형, "계산을 등록/설정한다"는 뜻)가
+`Computed`보다 quad의 명명 체계 안에서 정확함.
 
 ### `:Compute(fn, ...)` — 추가 의존성을 trailing args로 직접 받는 sugar (2026-08-11)
 
@@ -2158,6 +2186,16 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 `self`를 그대로 통과(pass-through)시키되 구독 목록만 넓힌 얇은 노드. 이
 노드는 Observer와 같은 패턴(외부 weak table)으로 상위 노드의 구독자 목록에
 등록됨.
+
+**⚠️ 문서 읽을 때 혼동 주의(2026-08-12 추가, 코퍼스 전체에 같은 패턴으로
+적용): `Tag`(`:Added`/`:Removed`)와 `Modifier`(`:Apply` 등)는 겉보기엔
+같은 `:` 체이닝 문법이지만 실제로는 clone-then-return이고, State의
+`:With`/`:Compute`는 이름은 비슷해 보여도 정반대(clone이 아니라 진짜 새
+노드)임.** 하나가 clone 계열, 다른 하나가 새-노드 계열이라는 걸 헷갈리기
+쉬우니(둘 다 "값을 안 바꾸고 새 걸 반환하는 메소드 체이닝"으로 보이기
+때문) 각 API 문서를 볼 때 이 문단을 기준으로 확인할 것 — clone 계열은
+`Tag`/`Modifier`(값 객체, 확정 상태), 새-노드 계열은 `State`의
+`:With`/`:Compute`(반응형, lazy)로 완전히 분리되어 있고 섞이지 않음.
 
 **노드 증식 걱정은 가변인자로 해소.** 처음 문제 제기("With 하나마다 노드가
 하나씩 늘어나는 게 낭비 아니냐")는 노드 자체를 없애는 대신, `:With(...)`가

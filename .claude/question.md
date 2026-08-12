@@ -54,12 +54,25 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 볼게." 1차 제안 완료, 아래는 우선순위순 요약 — 최종 판단은 사용자와 계속
 논의 필요:
 
-- **`State`(1순위, 위험도 높음)**: 지금 정의는 "읽기 전용, 파생/캐시 뷰"인데
-  React/Vue 등 업계 전반에서 "state"는 거의 항상 "쓸 수 있는 로컬 슬롯"을
-  뜻함 — 처음 보는 사람이 정반대로 오해할 위험이 큼. `Computed`/`Derived`
-  (Vue `computed()`, Svelte 5 `$derived`가 정확히 같은 의미로 씀)가 실제
-  의미에 더 맞아 보임. 단, v1의 "register"를 이미 한 번 "State"로 리네임한
-  지 얼마 안 됐다는 점 고려 필요.
+- **[해소됨, 2026-08-12 세션, 같은 날 후속 세션에서 근거 보강]** `State` —
+  사용자가 현재 이름 그대로 유지로 확정("그걸로 충분한듯"). 검토했던
+  대안과 기각 근거:
+  - `Computed`/`Derived`(Vue `computed()`, Svelte `$derived`) — 리네임
+    안 함. 후속 논의로 근거가 하나 더 붙음: quad 코퍼스 안에서 `-ed` 어미는
+    이미 `Tag.Added`/`Removed`, `Modifier.Overridden`이 "clone 후 즉시
+    확정된 값"이라는 뜻으로 선점해둔 관례(`tag-plan.md` 참고)라, `State`
+    노드가 실제로는 lazy(`fn`을 등록만 해두고 `:Get()`이 pull할 때
+    계산됨)인데 `Computed`라는 이름을 쓰면 quad 자기 관례와 충돌해 "이미
+    계산 끝난 값"으로 오해하기 쉬움 — Vue/Svelte 생태계에서는 lazy와
+    `computed`라는 이름이 공존해도 문제없지만, quad 안에서는 다름. 같은
+    이유로 `:Compute`(동사 원형) 메소드 이름도 `Computed`가 아니라
+    `Compute`인 게 맞다고 재확인(`base/bind-system-plan.md` "네이밍 —
+    `Compute`가 `-ed`가 아닌 이유" 절).
+  - `Pipe` — 검토했으나 기각. (1) "캐시한다"는 동작이 파이프라는 비유와
+    안 맞음(파이프는 통과시키는 채널 이미지라 값을 들고 있다/캐시한다는
+    느낌이 잘 안 붙음), (2) 파이프는 흐름/연결의 이미지라 State가 실제로는
+    각각 주소를 가진 독립된 그래프 노드 단위라는 것과 안 맞음(단위를
+    "노드"로 보기 애매해짐).
 - **`DI`(Declarative Instance, 1순위)**: "Dependency Injection"의 업계
   표준 축약어와 완전히 겹침 — 4차 라운드에서 이미 한 번 실제로 오해가
   있었던 전례(`base/bind-system-plan.md`의 "인스턴스 생성" 절 참고).
@@ -216,12 +229,19 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 
 ### 3. 낮은 우선순위
 
-- **`Operator` 콤비네이터 슈가 네임스페이스 이름(2026-08-12 신설)** —
-  `Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 슈가 함수 모음의
-  이름. 흔한 단어라 top-level 노출은 위험, 후보는 `Operator`/`Op`/`Ops`
-  (`Combinator`는 코퍼스 전반에서 이미 일반명사로 쓰여서 제외) — 아직
-  미정. `research/operator-sugar-plan.md` 참고. 구현 자체는 맨 마지막
-  우선순위(순수 슈가, 없어도 무방).
+- **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
+  같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등
+  `:Compute`/`:Apply`용 슈가 함수 모음의 이름. 흔한 단어라 top-level
+  노출은 위험, 후보는 `Operator`/`Op`/`Ops`(`Combinator`는 코퍼스 전반에서
+  이미 일반명사로 쓰여서 제외) — **서브 에이전트 외부 리서치 결과 `Operator`가
+  가장 선례가 강함**(Python `operator` 모듈)이나 최종 확정은 여전히 사용자
+  몫. 같은 리서치에서 포함 범위도 새로 갈렸음 — 비트/비교 연산자 그룹과
+  `Sub`/`Div`는 리액티브 콤비네이터로서 선례가 전혀 없어 드랍 후보로,
+  `Clamp`/`Min`/`Max`는 선례가 강해 추가 후보로, Debounce/Throttle은
+  업계에 흔하지만 `Blocker`와는 다른 시간 기반 메커니즘이라 이 카탈로그가
+  아니라 quad-roblox 쪽 별도 프리미티브로 다룰지 판단이 필요한 별개 질문으로
+  분리됨. 상세는 `research/operator-sugar-plan.md`. 구현 자체는 맨 마지막
+  우선순위(순수 슈가, 없어도 무방) — 여전함.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —
@@ -270,11 +290,15 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
   불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
   시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
-- **`framework-comparison-findings.md`의 두 남은 개선 후보 반영 여부** —
-  `research/framework-comparison-findings.md` "다음 단계" 절. use-after-destroy
-  검증 안전망 부재, `:With`의 정적 의존성(동적 With 미지원) 두 가지를 실제
-  설계에 반영할지, 반영한다면 M0 스파이크 때 같이 검증할지 나중 최적화
-  패스로 미룰지 — 아직 사용자 판단 전.
+- **[해소됨, 2026-08-12 열여덟 번째 세션]** `framework-comparison-findings.md`의
+  두 남은 개선 후보 — 둘 다 "고칠 필요 없음, 의도된 설계"로 사용자가 최종
+  판단해 문서 3번 절(못 고치는 트레이드오프)로 이전. use-after-destroy 검증
+  안전망은 `bindLifetime`/`Effect`로 이미 커버되는 영역에 별도 장치를 얹는
+  게 오히려 GC-native 아키텍처(수동 Destroy 강제 없이 GC가 치우게 두는 것)와
+  모순되어 완전한 UB로 남기고 문서화로만 대응. `:With`의 동적 의존성도
+  State immutable 가정과 정면 모순(실사용 사례도 거의 없음, React
+  `useMemo` deps도 대부분 정적) — 의도적 비지원으로 확정. 상세는
+  `research/framework-comparison-findings.md` 3번 절.
 
 ## 참고: 지금까지 확정된 것 (요약)
 

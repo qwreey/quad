@@ -176,16 +176,51 @@ introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어�
 (`question.md` 1번, `Brand`/`Tag`류)와 같은 카테고리로 나중에 같이
 검토해도 됨 — 급하지 않음.
 
+**[2026-08-12 추가]** 서브 에이전트 외부 리서치(아래 "외부 리서치 결과"
+절) 결과, `Operator`가 가장 강한 실제 선례를 가짐 — Python 표준 라이브러리
+`operator` 모듈(`operator.add`/`operator.and_`/`operator.lt` 등)이 quad의
+정확히 같은 동기(연산자를 `map`/`reduce` 등에 넘길 수 있는 이름 붙은
+함수로 만드는 것, quad에선 `:Apply`가 그 자리)로 존재하는 직접 선례.
+`Ops`는 Rust `std::ops`가 근거이나 그건 연산자 오버로딩용 trait 네임스페이스라
+"콤비네이터 함수 모음"이라는 quad의 용도와는 결이 다름(약한 선례). `Op`
+(단수)는 오히려 Slate.js `Op`/Immer patch처럼 "낱개 연산 객체 하나"를
+가리키는 데 더 흔히 쓰여 네임스페이스 이름으로는 가장 약한 후보 — 최종
+결정은 여전히 사용자 몫이지만, 후보 중 고르라면 `Operator`가 근거가 가장
+탄탄함.
+
 ## 열린 질문 — 포함 범위
 
 - 산술(`Sum`/`Product`/`Sub`/`Div`?)·논리(`Not`/`And`/`Or`/`Xor`)·비트
   (`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)까지는 비교적 명확한데, 비교
   연산자(`Eq`/`Lt`/`Gt`/`Lte`/`Gte`)까지 포함할지는 미정 — 포함해도 같은
-  패턴(커링 팩토리 + `:Apply`)으로 자연스럽게 들어감.
+  패턴(커링 팩토리 + `:Apply`)으로 자연스럽게 들어감. **[2026-08-12 외부
+  리서치로 갱신, 아래 절 참고]** 비트/비교 그룹은 "리액티브 파생값
+  콤비네이터"로서의 실제 선례가 전혀 없는 것으로 확인됨(양쪽 다 다른
+  라이브러리에서 인라인 연산자로만 쓰임) — 포함하더라도 업계 관행을 따르는
+  게 아니라 quad가 처음 시도하는 조합이라는 점을 인지하고 판단할 것.
+  `Sub`/`Div`도 명명된 콤비네이터로서의 선례가 전혀 없어(어디서든 인라인
+  `-`/`/`만 씀) 드랍 후보. `Xor`도 VueUse가 `And`/`Or`/`Not`은 다 갖췄으면서
+  의도적으로 뺀 것으로 보여 약한 후보.
 - `Sum(a, b, ...)`가 self까지 포함해서 더하는 형태(위 예시)로 확정 —
   사용자 원 예시(`:Apply(Sum(state, state...))`)와 일치. self 없이 여러
   state를 독립적으로 합치는 형태가 따로 필요한지는 실사용 사례가 나오면
   재검토(지금은 `Store.Combine`류로 이미 커버된다고 봄).
+- **[2026-08-12 외부 리서치로 신설]** `Clamp`/`Min`/`Max` — VueUse
+  `useClamp`/`useMax`/`useMin`, Ramda `R.clamp` 등 리액티브 파생값
+  콤비네이터로서의 선례가 뚜렷함. 기존 "산술" 뭉치보다 오히려 이쪽이
+  선례가 강해 별도 그룹으로 추가할 후보.
+- **[2026-08-12 외부 리서치로 신설, 별도 검토 필요 — Operator 카탈로그와
+  성격이 다름]** Debounce/Throttle — RxJS `debounceTime`/`throttleTime`,
+  VueUse `useDebounce`/`useThrottle` 등 업계 전반에서 가장 흔한 리액티브
+  콤비네이터 카테고리 중 하나라 부재가 눈에 띔. 단, **quad의 `Blocker`
+  (`base/blocker-plan.md`)와는 다른 메커니즘** — `Blocker`는 유저 코드가
+  직접 `:On()`/`:Off()`로 여닫는 값 기반 게이트(타이머 없음)라 시간 기반
+  지연/합치기가 아님. 실제 debounce/throttle을 만들려면 타이머(엔진 종속,
+  Roblox `task.delay` 등)가 필요해 `factory(self) -> State<U>` 순수 함수
+  모양을 벗어남 — `Operator.*`(quad-base, 엔진 무종속)에 넣을 수 있는 게
+  아니라 quad-roblox 쪽 별도 프리미티브(Tween과 비슷한 위치)로 다뤄야 할
+  가능성이 큼. 이 문서 범위 밖의 별도 설계 질문으로 분리해서 판단 필요 —
+  지금 착수 안 함, 사용자 판단 대기.
 
 ## 열린 질문 — 컬렉션 계열 후보: `Concat`/`Sorted`/`Filtered`
 
@@ -208,6 +243,19 @@ introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어�
   슈가가 아니라 Slot 쪽 조정 로직과 맞물리는 별도 메커니즘이 필요할 가능성이
   큼. Slot을 거치지 않는 순수 `State<table> -> State<table>` 값 변환
   용도라면 문제없이 들어갈 수 있음 — 실사용 사례가 나오면 재검토.
+  **[2026-08-12 외부 리서치로 이 판단이 실제 선례로 뒷받침됨]** ReactiveUI의
+  `IReactiveDerivedList`/`CreateDerivedCollection`은 필터링을 "일반 파생값"이
+  아니라 아예 별도의, 변경분만 증분 반영하는 전용 컬렉션 타입으로 다룸 —
+  즉 quad의 `Slot`과 같은 결의 "더 무거운 전용 프리미티브가 필요하다"는
+  판단과 정확히 같은 결론. 반대로 SolidJS의 `createMemo(() => items.filter(...))`
+  를 `<For>`에 바로 먹이는 흔한 패턴은 문제없이 동작하는데, 이건 memo
+  자신이 아니라 `<For>`가 내부적으로 keyed reconciliation을 따로 하기
+  때문 — memo의 identity 처리와 무관하게 하위 컴포넌트가 스스로
+  재조정한다는 뜻. 이 대조가 quad의 결론을 그대로 뒷받침: **원소 identity
+  보존이 필요 없는 자리(Slot을 안 거치는 순수 값 변환)라면 `Filtered`를
+  plain value transform으로 둬도 되지만, identity를 보존해야 하는 자리는
+  이미 `Slot`이라는 별도 무거운 프리미티브가 담당해야 하는 영역** — 어중간한
+  타협이 아니라 정확한 경계선.
 
 ## 열린 질문 — Attribute 그룹 명시적 unset 유틸 (2026-08-12 세션 후속, 신설)
 
