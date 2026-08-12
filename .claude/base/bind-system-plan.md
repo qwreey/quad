@@ -138,6 +138,12 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     바뀌는 건 둘 다 같은 Ref-leaf handler가 매치하므로 `retract`가 아니라
     `process`의 diff가 담당(이전 Ref를 `:Set(nil)`로 언바인딩), `retract`는
     그 자리가 Ref이길 아예 그만둘 때만 — 아래 "`Ref`의 retract" 절 참고.
+    **[추가, 2026-08-12 아홉 번째 세션] `Slot`도 같은 패턴, 단 diff가 아니라
+    identity 비교** — `State<Slot>`이 `slotA→slotB`로 바뀌는 것도 같은
+    SlotHandler가 매치하므로 `process`가 처리. `Tag`/`Ref`처럼 세밀한 diff
+    대신 "같으면 완전 무시, 다르면 이전 것 통째로 폐기 후 새로 마운트"(Slot은
+    portal 없이 폐기만 하기로 이미 확정돼 있어서) — `slot-plan.md` "Slot과
+    Store 바인드의 관계" 절 참고.
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
     됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
     재-dispatch에서 여러 단계가 겹칠 때 어느 슬롯에 뭘 추적하는지가

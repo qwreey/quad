@@ -525,3 +525,17 @@ diff")과 대조해 `TagHandler` 선례와 정확히 같은 메커니즘이어�
 언바인딩은 Instance `Destroy()`와 완전히 무관 — Destroy된 대상을 계속
 들고 있는 채로 남는 건 UB로 허용, 정리가 필요하면 `Effect`를 쓰도록
 문서가 유도.
+
+**2026-08-12 아홉 번째 세션 — `Slot`의 store 재바인드도 `Ref`와 같은
+`Relate` diff 패턴** (`session/2026-08-12-09-slot-retract-same-pattern.md`)
+직전 세션의 `Ref` 패턴이 `Slot`에도 적용되는지 사용자가 확인 요청 —
+`slot-plan.md`의 "store 바인드 핸들러가 retract하고 다시 process" 서술이
+`Ref`에서 고쳤던 것과 같은 부정확한 서술이었음을 발견(실제 `Dispatch/
+Slot.luau`의 `process`엔 이전 값 비교 자체가 없었고 `destroySlotTree`도
+store-bind retract 경로에 연결된 적 없는 진짜 갭). `Ref`와 같은 `Relate`
+기반 패턴으로 정정하되, Slot은 이미 확정된 "폐기, 옮기지 않음"(portal
+없음) 정책 때문에 세밀한 diff 대신 **identity 비교**로 단순화 — 같은
+바인딩이면 완전 무시, 다르면 이전 것 통째로 폐기 후 새로 마운트. 이
+no-op 가드는 Tag/Ref보다 Slot에서 훨씬 중요함(가드 없으면 재귀 재emit마다
+마운트된 서브트리 전체가 파괴됐다 재생성돼 자식의 스크롤/포커스/애니메이션
+상태가 전부 유실됨).
