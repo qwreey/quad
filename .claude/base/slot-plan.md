@@ -227,10 +227,13 @@ Slot을 `SetStrong`으로 저장하면 안 됨 — `kSlotMap[inst][k]=slot`(강)
 단일 테이블 자기참조는 그 테이블의 키(`inst`)가 이 테이블 *바깥에서부터*
 독립적으로 reachable한지만 판별하면 끝나지만, 두 개의 별도 weak 테이블이
 서로의 키를 상대방 값으로 제공하는 상호 순환은 그 판별 자체가 서로에게
-의존해버려 일반적인 weak-table GC로 한 번에 안 풀릴 위험이 있음(Lua
-5.2+ ephemeron이 풀려고 만들어진 바로 그 사례) — Luau가 실제로 이걸
-올바르게 처리하는지 검증된 바 없으니 설계로 아예 피함. **해법: 실제
-GC 앵커는 `bindLifetime`/`unbindLifetime`(이미 결정돼 있었는데
+의존해버려 일반적인 weak-table GC로 한 번에 안 풀림(Lua 5.2+ ephemeron이
+풀려고 만들어진 바로 그 사례). **[확인, 2026-08-12 열네 번째 세션]
+Luau는 ephemeron 테이블이 없음 — 복잡성 때문에 도입 안 함, 공식 문서로
+확인됨(출처: https://luau.org/compatibility/ "Lua 5.2" 섹션, "Ephemeron
+tables" 항목).** 즉 이 회피는 "혹시 몰라서"가 아니라 **Luau에서 실제로
+이 순환이 안 풀린다는 게 공식 소스로 확정된 필수 조치** — 설계로 아예
+피함. **해법: 실제 GC 앵커는 `bindLifetime`/`unbindLifetime`(이미 결정돼 있었는데
 `attachSlot`/`destroySlotTree`에 적용이 안 돼 있던 부분, 이번에 추가) 
 하나로만 두고, `kSlotMap`/`slotOwner`는 전부 `SetWeak`(순수 조회용,
 아무것도 안 붙잡음)로 낮춤**:

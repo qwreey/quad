@@ -30,6 +30,35 @@ weak여야 함 — 그런데 그 안에 담기는 값은 경우에 따라 **강�
 그래서 `Relate`는 판단을 안 하고 **`SetWeak`/`SetStrong`으로 호출부가 매번
 명시**하게 만드는 얇은 표면만 제공.
 
+## 위험한 패턴 — 서로 다른 두 `Relate`의 상호 강참조 순환 (2026-08-12 열세/열네 번째 세션, `Slot` 설계 중 발견)
+
+위 26-28행이 말하는 "값이 자기 키를 다시 참조하는" 자기참조(예:
+`Dispatch.setLength`의 `observer` 클로저가 `inst`를 캡처, `Ref.Value=inst`)는
+**단일 `Relate` 안에서** 일어나는 한 안전함 — 그 `Relate`의 키(`inst`)가
+테이블 *바깥에서* 독립적으로 reachable한지만 판별하면 되기 때문. 하지만
+**서로 다른 두 `Relate`가 서로의 키를 상대방 값으로 강하게 제공하는
+상호 순환**(예: `RelateA[inst]=value`(강)와 `RelateB[value]=inst`(강)가
+동시에 존재)은 완전히 다른, 더 위험한 모양 — `inst`의 reachability
+판별이 `value`의 reachability에 의존하고 그 반대도 마찬가지라 판별
+자체가 순환됨.
+
+**[확인, 2026-08-12 열네 번째 세션] Luau는 이 순환을 못 풂 — ephemeron
+테이블이 없음, 복잡성 때문에 Lua 5.2 기능을 도입 안 한 것으로 공식
+문서에 명시됨(출처: https://luau.org/compatibility/ "Lua 5.2" 섹션의
+"Ephemeron tables" 항목).** 이건 Lua 5.2+가 ephemeron을 도입해서 풀려던
+바로 그 사례라, Luau에서 위와 같은 두-`Relate` 상호 순환을 만들면
+**둘 다 GC가 안 되는 실제 메모리 누수**가 됨 — "혹시 몰라서 피한다"가
+아니라 확정된 필수 규칙.
+
+**규칙**: 어떤 값(`inst` 아닌 임의 객체, 예: `Slot`)을 다른 `Relate`의
+바깥 키로 쓰고 싶어지면(예: "이 값이 지금 어느 `inst`에 묶여있는가"
+역조회), 그 값 자체가 `inst`로 되돌아가는 강한 back-reference를 갖고
+있는지 먼저 확인할 것 — 갖고 있다면 **두 `Relate` 중 최소 한쪽은
+`SetWeak`로 낮추고, 실제 GC 앵커는 `bindLifetime`/`unbindLifetime`
+하나로 통일**할 것(구체 사례는 `base/slot-plan.md` "Slot과 Store
+바인드의 관계" 절 참고 — `kSlotMap`(inst→slot)/`slotOwner`(slot→inst)가
+정확히 이 패턴이었음).
+
 ## API (확정)
 
 ```lua

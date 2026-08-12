@@ -613,3 +613,17 @@ base/ 전체 `Relate()` 인스턴스를 감사한 결과 `inst`가 아닌 다른
 `bindLifetime(physicalTarget, slot)`, `destroySlotTree`에 짝인
 `unbindLifetime(slot._mountedInst, slot)` 추가(기존엔 자식 observer들의
 unbindLifetime만 있고 slot 자신의 앵커/해제가 빠져 있었음).
+
+**2026-08-12 열네 번째 세션 — Luau에 ephemeron 없음, 공식 확인·문서화**
+(`session/2026-08-12-14-luau-no-ephemeron-confirmed.md`)
+사용자가 직전 세션의 "Luau가 두-`Relate` 상호 순환을 올바르게 처리하는지
+검증된 바 없음"이라는 방어적 서술에 공식 출처를 제시 — Luau는 복잡성
+때문에 Lua 5.2의 ephemeron 테이블을 도입하지 않음
+(https://luau.org/compatibility/ "Lua 5.2" 섹션 "Ephemeron tables" 항목).
+`base/slot-plan.md`의 해당 문단을 "추측성 방어"에서 "공식 확인된 필수
+조치"로 정정, `base/relate-plan.md`에 "위험한 패턴 — 서로 다른 두
+`Relate`의 상호 강참조 순환" 절을 신설해 단일 `Relate` 자기참조(안전)와
+두-`Relate` 상호 순환(위험, 실제로 GC 안 됨)을 명확히 구분하고 일반
+규칙으로 명문화 — 앞으로 비슷한 설계에서 Slot 사례를 매번 재발굴하지
+않도록. 열한~열네 번째 세션에 걸친 "retract는 항상 불림" 정정과 그
+파생 GC 이슈 시리즈가 이걸로 마무리됨.
