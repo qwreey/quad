@@ -198,15 +198,15 @@ Slot이 store 바인드로 들어오는 경우, pluggable 처리기에 `retract`
 > 동작이 '부모 위임' 잠정안에서 '폐기(옮기지 않음)'로 확정") 참고. 이 문단은
 > 검토 과정의 히스토리로만 남겨둠, 현재 유효한 동작 아님.
 
-**[정정, 2026-08-12 아홉 번째 세션] 위 "store 바인드 핸들러가 이전 slot을
-`retract`하고 다시 `process`하는 사이클" 서술은 부정확했음 — `Ref`의
-retract를 검토하며 발견한 것과 같은 오류.** `base/bind-system-plan.md`의
-일반 계약("핸들러 *타입*이 안 바뀌면 `retract` 없이 `process`가 diff
-담당", `Tag`/`Ref`가 실제 선례)을 그대로 적용하면, `State<Slot>`이
-`slotA→slotB`로 바뀌는 것도 둘 다 같은 SlotHandler가 매치하는 경우라
-**`retract`가 아니라 `process` 자신이 처리해야 함** — `retract`는 그
-자리가 아예 Slot이길 그만둘 때만. 메커니즘은 `Ref`(`bind-system-plan.md`
-"`Ref`의 retract" 절)와 같은 모양의 `Relate` 기반 diff:
+**[전면 정정, 2026-08-12 열한 번째 세션] 위 "핸들러 타입이 안 바뀌면
+retract 없이 process가 diff 담당"이라는 전제 자체가 틀렸음** — 실제로는
+`Dispatch.retractUnder`가 store 재발행마다(핸들러가 그대로여도) **항상**
+먼저 불림(`base/bind-system-plan.md` "확정된 디스패치 모델"/일반 retract
+계약 절, 2026-08-12 열한 번째 세션 전면 정정 참고). 그래서 `State<Slot>`이
+`slotA→slotB`로 바뀔 때도 **`retract(inst,k,slotB)`가 먼저 불려 `slotA`를
+폐기하고, 그 다음 `process(inst,k,slotB)`가 `slotB`를 마운트**하는 두
+단계로 자연히 갈림 — `retract`가 "이전 것 정리", `process`가 "새 것
+마운트" 전담:
 
 ```lua
 local relate = Relate()  -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot 기억
@@ -214,33 +214,33 @@ local relate = Relate()  -- SlotHandler 전용, (inst,k)별 마지막으로 마�
 function SlotHandler.process(inst, k, slotValue)
     local old = relate:GetStrong(inst, k)
     if old == slotValue then
-        return  -- 이미 같은 바인딩 — no-op, 다시 빠지고 다시 들어가지 않음
-    end
-    if old then
-        destroySlotTree(old)  -- 폐기, 옮기지 않음 — 아래 "확정" 절 그대로
+        return  -- 이미 같은 바인딩(retract가 방금 손 안 댄 경우) — no-op
     end
     attachSlot(slotValue, inst, inst, k)
     relate:SetStrong(inst, k, slotValue)
 end
 
 function SlotHandler.retract(inst, k, v)
-    assert(v == nil, "Slot 자리가 더 이상 Slot이 아니게 될 때만 불림")
     local old = relate:GetStrong(inst, k)
-    if old then destroySlotTree(old) end
-    relate:SetStrong(inst, k, nil)
+    if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Slot 자체일 수도 있음
+        destroySlotTree(old)  -- 폐기, 옮기지 않음 — 아래 "확정" 절 그대로
+        relate:SetStrong(inst, k, nil)
+    end
+    -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 no-op으로 스킵
 end
 ```
 
 - **같은 바인딩이면 완전히 무시하는 게 이 자리에선 효율 문제가 아니라
-  정합성 문제** — `Tag`/`Ref`의 diff는 값이 같아도 기껏해야 헛계산만
-  하고 넘어가지만, Slot은 아래 "확정" 절대로 "폐기, 옮기지 않음"(portal
+  정합성 문제** — Slot은 아래 "확정" 절대로 "폐기, 옮기지 않음"(portal
   없음)이 이미 정책으로 확정돼 있어서, 이 no-op 가드가 없으면 **재귀 재
   emit이 있을 때마다 마운트된 서브트리 전체가 파괴됐다 다시 만들어짐**
   (자식들이 들고 있던 스크롤 위치/포커스/애니메이션 상태 전부 유실) —
-  Tag의 diff가 막으려던 "깜빡임" 문제보다 훨씬 파괴적인 버전.
+  Tag의 `Contains` 힌트가 막으려던 "깜빡임" 문제보다 훨씬 파괴적인 버전.
   `store.key:Set(sameSlotAgain)`처럼 사용자가 실수로 같은 객체를 다시
   emit하거나, 상위 `:Compute`가 재계산됐는데 결과가 우연히 같은 Slot
-  레퍼런스인 경우 등이 실제로 이 경로를 탈 수 있음.
+  레퍼런스인 경우 등이 실제로 이 경로를 탈 수 있음. `retract`가 `old ~= v`
+  체크로 이걸 막고, `process`도 `old == slotValue` 체크로 대칭적으로 막음
+  — 둘 다 스킵돼야 완전한 no-op.
 - Slot 핸들러 자신이 감시 중인 값(배열/스토어)이 바뀔 때 child를 갱신하는
   추적(구독)도 `base/bind-system-plan.md`가 말하는 "process 함수가 다른 값
   변경을 추적해도 됨" 범위에 속하고, `retract` 시점엔 그 추적만 풀면 됨 —

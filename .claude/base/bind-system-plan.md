@@ -115,43 +115,51 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   lifecycle-pattern.md`의 "quad는 라이프사이클 중간에 있지 않다" 원칙 참고).
   - 일반 프로퍼티는 애초에 "unset" 개념이 없음(`nil`로 셋하는 것도 그냥 셋
     동작) — 그래서 프로퍼티 핸들러는 보통 `retract`가 필요 없음.
-  - **`retract`가 실제로 의미 있는 유일한 패턴은 "같은 키에 대해 매치되는
-    핸들러 *타입 자체*가 사이클마다 바뀌는 경우"** (2026-08-07 여덟 번째
-    세션, 정정) — 예: `Tag(...)`↔`nil` 사이에서 핸들러 타입 자체가
-    바뀌므로 `retract`가 의미 있어짐(전체 삭제), 같은 Tag끼리 바뀌는
-    diff는 `process`가 담당(`base/tag-plan.md`, 2026-08-08 세 번째 세션
-    — array-part 값 객체 재설계 이후, 구 모델은 `archive/
-    tag-hash-key-model-reversed.md`). **Attribute(단일 키 직접 쓰기 경로)는
-    여기 해당 안 함** — UICorner 숏핸드와 같은 패턴(값의 참/거짓/nil
-    여부와 무관하게 항상 같은 핸들러가 계속 담당, 추가/제거를 전부
-    `process` 자신이 처리)이라 핸들러 교체 자체가 안 일어남 —
-    `base/attribute-plan.md`. **[추가, 2026-08-12 열 번째 세션] 단, 그룹
-    `Attribute(...)`가 개별 이름을 놓을 때는 그 이름 전용 키 객체의 체인
-    자체가 통째로 정리되는 거라 `retract`가 실제로 불림** — "핸들러
-    타입이 안 바뀌면 retract 없이 process"라는 이 절의 원칙과 안 어긋남,
-    그룹이 이름을 잃는 건 "그 이름 전용 키가 이 인스턴스를 더 이상
-    관리 안 하게 됨"이라 오히려 `Tag(...)→nil`과 같은 급의 "완전히
-    사라짐" 케이스임 — `attribute-plan.md` "이름 소유권" 절 참고.
-    **[정정,
-    2026-08-10 세션] Tween도 더 이상 여기 해당하지 않음** — 원래는 이
-    패턴의 대표 예시("Tween 핸들러가 매치돼 애니메이션 실행 중이었는데
-    값이 더 이상 Tween 대상이 아니게 되어 일반 PropertyHandler로 매치가
-    넘어가는 경우")였으나, Tween이 독립 Dispatch 핸들러가 아니라
-    PropertyHandler가 소비하는 값-레벨 래퍼(`Tween<T>`)로 재설계되며
-    매치되는 핸들러가 항상 PropertyHandler 하나뿐이 되어 이 케이스
-    자체가 사라짐 — 트윈 취소/전환은 이제 PropertyHandler 내부의
-    3-상태 릴레이션 슬롯으로 처리(`base/tween-plan.md`, `archive/
-    tween-special-bind-key-reversed.md`). **[추가, 2026-08-12 여덟 번째
-    세션] `Ref`도 `Tag`와 같은 결** — `State<Ref>`가 `refA`에서 `refB`로
-    바뀌는 건 둘 다 같은 Ref-leaf handler가 매치하므로 `retract`가 아니라
-    `process`의 diff가 담당(이전 Ref를 `:Set(nil)`로 언바인딩), `retract`는
-    그 자리가 Ref이길 아예 그만둘 때만 — 아래 "`Ref`의 retract" 절 참고.
-    **[추가, 2026-08-12 아홉 번째 세션] `Slot`도 같은 패턴, 단 diff가 아니라
-    identity 비교** — `State<Slot>`이 `slotA→slotB`로 바뀌는 것도 같은
-    SlotHandler가 매치하므로 `process`가 처리. `Tag`/`Ref`처럼 세밀한 diff
-    대신 "같으면 완전 무시, 다르면 이전 것 통째로 폐기 후 새로 마운트"(Slot은
-    portal 없이 폐기만 하기로 이미 확정돼 있어서) — `slot-plan.md` "Slot과
-    Store 바인드의 관계" 절 참고.
+  - **[전면 정정, 2026-08-12 열한 번째 세션] `retract`는 "핸들러 타입이
+    바뀔 때만" 불리는 게 아니라, **store 바인드가 재발행될 때마다(값이
+    뭐로 바뀌든) 항상 불림** — 위 "확정된 디스패치 모델" 절이 처음부터
+    말해온 그대로: `StoreBind`는 재-dispatch 전에 **무조건**
+    `Dispatch.retractUnder(inst,k,self,realv)`를 부르고, `retractUnder`는
+    `keep` 바로 다음 항목에게 그 `realv`를(그 다음 항목들에겐 `nil`을)
+    넘기며 체인을 통째로 걷어낸 뒤에야 `Dispatch.process`가 다시 매치를
+    시도해 새 체인을 쌓음. 즉 **"핸들러가 안 바뀌면 retract 없이 process가
+    diff"라는 이전 서술은 틀렸음** — `Tag`의 옛
+    `assert(v == nil, "TagHandler.retract는 v가 nil일 때만 불려야 함")`을
+    액면 그대로 믿고 거꾸로 일반 규칙을 추론한 게 오류의 출처(2026-08-07
+    여덟 번째 세션 정정 당시엔 안 걸렸던 부분, `bind-system-plan.md` 자기
+    "확정된 디스패치 모델" 절과 실제로 모순돼 있었음). 이 오류는
+    `base/tag-plan.md`(원 출처)와, 이번 대화에서 그걸 그대로 이어받은
+    `Ref`/`Slot`/`Attribute` 세 곳 전부에 퍼져 있었음 — 전부 정정
+    완료(각 문서의 해당 절 참고). **[아카이브, `archive/
+    retract-always-fires-reversed.md`]**.
+  - **정정된 원칙 — 대부분의 핸들러는 이 반복 호출에서 실제로 할 일이
+    없어(일반 프로퍼티처럼 값을 그냥 덮어쓰면 끝이라 "unset" 개념 자체가
+    없음) `retract`가 사실상 no-op일 뿐, "타입이 안 바뀌면 retract가 아예
+    안 불린다"는 뜻이 아님.** `Tag`/`Ref`/`Slot`/`Attribute`처럼 **여러
+    위치가 하나의 실제 리소스(엔진 attribute/tag/mounted 서브트리 등)를
+    공유하거나, 값 자체가 정리가 필요한 상태를 들고 있는** 핸들러는,
+    `retract`가 매번 불려도 **"이전 값이 지금 들어오는 새 값(`v`)과
+    사실상 같은지/그 새 값이 여전히 이 자원을 필요로 하는지"를 `v`를
+    힌트 삼아 판단해 실제 엔진 호출만 skip**하는 방식으로 대응해야 함 —
+    `Tag`의 `Contains` 힌트, `Ref`/`Slot`의 identity 비교가 그 예. **`v`를
+    반드시 `nil`로 가정하면 절대 안 됨**(대체하는 새 값 그 자체일 수
+    있음) — 새 핸들러를 짤 때 `retract` 안에서 `v`의 타입을 방어적으로
+    확인할 것(2026-08-12 열한 번째 세션, 실제로 `Tag(...)`/`Ref`/`Slot`
+    설계 전부에서 이 확인이 빠져 있었음이 드러남).
+  - **자연스러운 분업**: 여러 위치가 자원을 공유하는 핸들러는 대개
+    "`retract`가 이전 기여를 걷어내고(실제 해제는 `v` 힌트로 skip
+    가능), `process`가 새 기여를 등록한다"는 모양으로 깔끔히 갈림 —
+    `process` 쪽에 별도 old-vs-new diff가 필요 없어짐(그 diff를 `retract`가
+    이미 통째로, 매번 정확하게 해주므로). `Tag(...)`↔`nil`, `Attribute`의
+    그룹이 이름을 놓는 경우도 이 분업의 자연스러운 특수 케이스일 뿐, 별도
+    패턴이 아님 — 상세 구현은 `base/tag-plan.md`/`base/attribute-plan.md`
+    "이름 소유권" 절, `Ref`는 아래 "`Ref`의 retract" 절, `Slot`은
+    `slot-plan.md` "Slot과 Store 바인드의 관계" 절 참고.
+  - Tween은 이 패턴과 무관 — 독립 Dispatch 핸들러가 아니라 PropertyHandler가
+    소비하는 값-레벨 래퍼(`Tween<T>`)라 매치되는 핸들러가 항상
+    PropertyHandler 하나뿐(2026-08-10 세션 재설계) — 트윈 취소/전환은
+    PropertyHandler 내부의 3-상태 릴레이션 슬롯으로 처리(`base/tween-plan.md`,
+    `archive/tween-special-bind-key-reversed.md`).
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
     됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
     재-dispatch에서 여러 단계가 겹칠 때 어느 슬롯에 뭘 추적하는지가
@@ -292,11 +300,13 @@ NoneHandler.process(inst, k, v) = process(inst, k, nil)  -- 재귀 재호출
   프로퍼티(Color3/number 등)에 도달하면 `inst[k] = nil`은 런타임 에러 —
   PropertyHandler 자신이 `v == nil`이면 셋을 건너뛰는 방어를 갖고 있어야
   함(None 자체의 문제가 아니라 PropertyHandler 구현 디테일, M9/M10로 미룸).
-- **retract와는 무관** — `retract`는 "같은 키를 다른 *핸들러 타입*이
-  넘겨받는" 시나리오 전용(아래 정정된 "확정된 디스패치 모델" 절)이지
-  "`v`가 `nil`이 됨"과는 다른 문제. `None → nil` 재디스패치는 항상
-  `Dispatch.process` 경로로만 흐름 — `NoneHandler` 자신도 `retract`가
-  딱히 할 일이 없음(재귀 호출 자체가 이미 process이므로).
+- **`retract`는 여기서 할 일이 없음** — **[정정, 2026-08-12 열한 번째
+  세션]** `retract`는 store 재발행마다 항상 불리지만(위 "확정된 디스패치
+  모델"/일반 retract 계약 절 정정분 참고), `NoneHandler`는 `v==None`을
+  매치했을 때 재귀 호출로 곧바로 `Dispatch.process(inst,k,nil)`을
+  부르는 게 전부고 자기 자신이 들고 있는 별도 상태가 없어서(`Relate` 등
+  전혀 안 씀) `retract`가 불려도 정리할 게 없음 — 일반 프로퍼티 핸들러가
+  `retract`를 no-op으로 두는 것과 같은 이유.
 - **[해소됨, 2026-08-08 세 번째 세션]** "이 키를 지금 누가 담당 중인가"
   bookkeeping — `pre-implementation-audit.md` 우선순위1 "이전에 실제로
   매치됐던 핸들러 추적" 항목이 여기서 다시 언급됐던 것. 아래 "Dispatch
@@ -1005,11 +1015,13 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 `refB`로 넘어갔다는 걸 모르는 코드가 `refA.Value`를 계속 유효하다고 믿는
 조용한 버그가 남음 — `PreRef` 재사용 버그(위 절)와 같은 클래스의 문제.
 
-**메커니즘 — `TagHandler`(`base/tag-plan.md`)와 정확히 같은 패턴 재사용,
-새 장치 아님.** `Dispatch`의 일반 규칙("핸들러 *타입*이 안 바뀌면 retract
-없이 process만 다시" — `refA→refB`는 둘 다 같은 Ref-leaf handler가
-매치하므로 여기 해당)을 그대로 따르면, `refA→refB` 전환은 `retract`가
-아니라 **`process` 자신이 이전 값을 기억해뒀다가 diff**해야 함:
+**메커니즘 — `retract`가 매번 불린다는 전제 위에서 언바인딩 전담
+(2026-08-12 열한 번째 세션 정정).** `Dispatch.retractUnder`는 store 값이
+바뀔 때마다(핸들러 타입이 그대로여도) 무조건 불림 — 위 "확정된 디스패치
+모델"/일반 retract 계약 절 참고. 그래서 `refA→refB` 전환도 `retract(inst,k,
+refB)`가 먼저 불려 `refA`를 언바인딩하고, 그 다음 `process(inst,k,refB)`가
+`refB`를 바인딩하는 두 단계로 자연히 갈림 — `process`가 old-vs-new diff를
+따로 계산할 필요가 없어짐(그 일을 `retract`가 매번 정확히 대신 해줌):
 
 ```lua
 local relate = Relate()  -- Ref-leaf handler 전용, (inst,k)별 마지막으로 바인딩한 Ref 기억
@@ -1018,34 +1030,32 @@ RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v)
 
 function RefLeafHandler.process(inst, k, v)
     local old = relate:GetStrong(inst, k)
-    if old and old ~= v then
-        old:Set(nil)  -- 이전 Ref 언바인딩 — 매 :Set()마다 콜백 재통지되는
-                       -- 기존 Ref 규칙(위 "해소됨 — 반복 재설정 가능" 항목)을
-                       -- 그대로 재사용, 새 알림 경로 아님
-    end
+    if old == v then return end  -- 이미 같은 Ref가 이 자리를 차지 중(retract가
+                                  -- 방금 손 안 댄 경우) — 콜백 재통지 없이 no-op
     v:Set(inst)
     relate:SetStrong(inst, k, v)
 end
 
 function RefLeafHandler.retract(inst, k, v)
-    assert(v == nil, "Ref 자리가 더 이상 Ref가 아니게 될 때만 불림 — TagHandler와 같은 이유")
     local old = relate:GetStrong(inst, k)
-    if old then old:Set(nil) end
-    relate:SetStrong(inst, k, nil)
+    if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Ref 자체일 수도 있음 —
+                               -- 어느 쪽이든 old와 다르면 old는 확실히 이 자리를 잃음
+        old:Set(nil)  -- 매 :Set()마다 콜백 재통지되는 기존 Ref 규칙(위 "해소됨 —
+                       -- 반복 재설정 가능" 항목)을 그대로 재사용, 새 알림 경로 아님
+        relate:SetStrong(inst, k, nil)
+    end
+    -- old == v(같은 Ref 재발행) → 아무 것도 안 함, 곧 process도 no-op으로 스킵
 end
 ```
 
-- **`retract`는 이 자리가 Ref이길 아예 그만둘 때만 불림**(Store 값이 Ref가
-  아닌 다른 것으로 바뀌어 다른 Handler가 매치되는 경우) — `refA→refB`처럼
-  Ref끼리 바뀌는 흔한 경우는 위 `process`의 diff가 담당. `retract`와
-  `process` 양쪽 다 결국 `old:Set(nil)` 하나로 귀결되므로 실질적으로
-  "언바인딩 로직은 하나, 트리거 경로만 둘"인 구조 — Tag의 diff/전체삭제
-  분리와 동형.
+- **`retract`가 언바인딩 전담, `process`는 바인딩 전담** — 겹치는 diff
+  로직이 없음. `old == v`(같은 Ref 객체가 스스로 재발행된 spurious한
+  경우)만 둘 다 스킵해 콜백이 `nil`→`inst`로 헛되이 두 번 안 불리게 함.
 - **children 배열 리터럴 `Ref`도 같은 코드 경로를 그대로 씀** — 그 경우
-  `relate:GetStrong(inst,k)`가 애초에 `nil`(그 자리에 처음 오는 값)이라
-  `old`가 없어 언바인딩 분기를 안 타고 바로 `v:Set(inst)`로 끝남. 즉
-  "1회성 리터럴 구성"과 "반복 재바인드"가 하나의 구현으로 자연히 커버됨,
-  케이스 분기 불필요.
+  `retract`가 (StoreBind 경로가 아니라 이 리터럴 구성 자체가 처음이므로)
+  아예 안 불리고 `relate:GetStrong(inst,k)`도 `nil`이라 `process`가 바로
+  `v:Set(inst)`로 끝남. "1회성 리터럴 구성"과 "반복 재바인드"가 하나의
+  구현으로 자연히 커버됨, 케이스 분기 불필요.
 - **타입: 비-nilable `T`도 정당한 용도(사용자 확인, 2026-08-12 여덟 번째
   세션)** — `Ref`는 "채워지길 기다리는 박스"뿐 아니라 "이미 확정된 값을
   여기저기서 부작용 없이 읽는" 용도로도 쓰일 수 있어 `Ref<T>`(T가

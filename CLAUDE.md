@@ -555,3 +555,27 @@ no-op 가드는 Tag/Ref보다 Slot에서 훨씬 중요함(가드 없으면 재�
 claimant 타입 없이 AttributeKey 객체 identity 자체를 재사용하는 더 적은
 부품의 설계. 기존 diff 로직(사라진 이름만 nil, 남은/새 이름은 갱신)은
 그대로 맞물림, 캐시가 그룹 값 교체를 넘어 영속돼야 한다는 조건만 명시.
+
+**2026-08-12 열한 번째 세션 — "retract는 항상 불림" 전면 정정, `Tag`
+참조 카운트 재설계** (`session/2026-08-12-11-retract-always-fires-correction.md`)
+`Tag`도 Attribute와 같은 참조 카운트 문제(서로 다른 위치의 `Tag(...)`가
+같은 이름을 겹쳐 가질 수 있음, 웹 `className` 합집합)가 있다는 사용자
+지적에서 출발 — 논의 중 사용자가 "retract가 v=Tag(nil 아님)를 받는
+경우"를 전제로 설계를 제안했고, 이게 기존 `assert(v==nil)`과 모순됨을
+Claude가 지적했으나, 사용자가 "덮여 쓰여지는 즉시 retract 실행, 전체
+트랙을 retract하고 리빌드하는 맥락"이라고 재확인. `bind-system-plan.md`
+자기 "확정된 디스패치 모델" 절(2026-08-04 원문)을 재대조하니 `StoreBind`가
+재-dispatch 전에 무조건 `retractUnder`를 부른다고 이미 명시돼 있었음 —
+"핸들러 타입이 안 바뀌면 retract 생략"이라는 2026-08-07 정정 서술이
+자기 문서와 처음부터 모순돼 있었고, `Tag`의 `assert(v==nil)`을 액면
+그대로 믿고 거꾸로 일반 규칙을 잘못 추론한 게 오류의 출처였음이 드러남.
+**이 오류가 이번 대화에서 만든 `Ref`/`Slot`/`Attribute` 설계 전부에도
+그대로 이어받아져 있었음** — 전부 한 세션에 정정: `retract`는 store
+재발행마다 항상 불리고 `v`는 대체 값 자체일 수 있음(`nil` 가정 금지),
+"이전 기여 제거는 `retract`, 새 기여 등록은 `process`"로 분업하면
+`process`의 별도 diff가 필요 없어짐. `Tag`는 `kTagMap`(위치→Tag)+
+`tagNameMap`(이름→Tag set) 참조 카운트로 재설계(`AddTag`는 온전히
+`process`, `RemoveTag`는 온전히 `retract`, `Contains` 힌트로 flicker
+방지). `Attribute`의 그룹 위임도 "남아있는 이름"에서 `retractUnder`를
+생략하면 체인이 계속 쌓이는 누수를 추가로 발견·정정. 역전 사례는
+`archive/retract-always-fires-reversed.md`에 원문·근거·영향 범위 보존.

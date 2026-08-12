@@ -2,7 +2,9 @@
 
 **상태**: base — 2026-08-08 세 번째 세션에서 값 모양을 전면 재설계(구
 모델은 `archive/tag-hash-key-model-reversed.md`에 원문·역전 이유 보존).
-새 결정만 반영, 열린 질문 없음.
+2026-08-12 열한 번째 세션에 `TagHandler`의 `process`/`retract` 메커니즘을
+참조 카운트 기반으로 전면 정정(옛 버전은 `archive/
+retract-always-fires-reversed.md`). 새 결정만 반영, 열린 질문 없음.
 
 ## 왜 재설계됐나
 
@@ -50,54 +52,101 @@ Tag("selected") or nil end)`처럼 그냥 `nil`을 리턴하면 됨. `None` 센�
 이건 nil-hole 문제라 Tag만의 특수 규칙이 아니라 `props.Modifier`/
 `props.Ref`와 같은 일반 array-part 관용구.)
 
-## 메커니즘 — `TagHandler`, retract가 이제 의미 있어짐
+## 메커니즘 — `TagHandler`, `retract`가 이제 의미 있어짐
 
 구 모델과 달리 **핸들러 타입이 사이클마다 바뀔 수 있음**(`Tag(...)` ↔
 `nil`, 값이 `Tag`가 아니게 되면 `TagHandler.isHandlable`이 더 이상 안
 맞음) — 그래서 `retract`가 실제로 필요해짐(`bind-system-plan.md` "확정된
 디스패치 모델" 절의 일반 원칙 그대로).
 
+**[전면 정정, 2026-08-12 열한 번째 세션] 아래는 이전 버전(단일 `relate`,
+`assert(v==nil)`, "Tag(A)→Tag(B)는 retract 안 불림")을 대체함 — 그 버전은
+두 가지를 놓쳤음:**
+
+1. **`retract`는 실제로 store 재발행마다(핸들러 타입이 안 바뀌어도) 항상
+   불림** — `bind-system-plan.md`의 "확정된 디스패치 모델" 절이 처음부터
+   말해온 대로 `StoreBind`가 재-dispatch 전에 무조건 `Dispatch.retractUnder`를
+   부르기 때문. "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
+   (상세 근거는 `bind-system-plan.md` 일반 retract 계약 절, `archive/
+   retract-always-fires-reversed.md`).
+2. **서로 다른 배열 위치의 두 `Tag(...)`가 같은 이름을 겹쳐 가질 수
+   있음**(`Frame { Tag("a"), Tag("a","b") }`류, 웹 `className="a a a"`와
+   같은 합집합 시맨틱) — 한 위치의 diff만 보고 `RemoveTag`를 부르면 다른
+   위치가 아직 그 이름을 쓰고 있어도 지워버리는 참조 카운트 버그가
+   생김(사용자 지적, 2026-08-12 열한 번째 세션).
+
+**둘 다 같은 해법으로 풀림**: `Tag`는 **immutable**이고(모든 연산이
+clone을 반환) 내부에 State 같은 걸 담지도 않는 **항상 확정 상태인 말단
+값**(Tween과 같은 결) — 그래서 `State<Tag>`가 진짜로 다른 내용을 내놓을
+때마다 **항상 물리적으로 다른 `Tag` 객체**가 나옴. 이 사실 덕분에, 이름별로
+"어떤 `Tag` 객체들이 지금 이 이름을 걸고 있는가"를 집합으로 추적하면
+`retract`(이전 객체가 이 이름을 놓음)/`process`(새 객체가 이 이름을 걺)가
+겹치는 이름/겹치는 위치 양쪽 다 자동으로 올바르게 처리됨:
+
 ```lua
-local relate = Relate()  -- TagHandler 전용, 이전에 반영한 Tag 값 저장
+local kTagMap = Relate()      -- {[inst(weak)] = {[k]: Tag}} — 위치별 마지막으로 반영한 Tag
+local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[Tag]: true}}} — 이름별 현재 걸고 있는 Tag들
 
 TagHandler.priority = <일반>
 TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
 
-function TagHandler.process(inst, k, v)
-    local old = relate:GetStrong(inst, k)
-    -- diff: old에 있고 v에 없는 이름만 RemoveTag, v에 있고 old에 없는 이름만 AddTag
-    -- (모두 지웠다 다시 붙이지 않음 — 랙/스타일 깜빡임 방지가 이 diff의 존재 이유)
-    relate:SetStrong(inst, k, v)
+function TagHandler.retract(inst, k, newv)
+    local oldv = kTagMap:GetStrong(inst, k)
+    if not oldv then return end
+    local newvIsTag = isTag(newv)  -- newv는 nil일 수도, 대체하는 새 Tag 자체일 수도 있음
+    for name in oldv:Names() do
+        local holders = tagNameMap:GetStrong(inst, name)  -- 이미 등록됐으므로 항상 있음
+        holders[oldv] = nil
+        if next(holders) == nil and not (newvIsTag and newv:Contains(name)) then
+            inst:RemoveTag(name)  -- 곧 process가 재확정할 이름이면 실제 호출은 skip(깜빡임 방지)
+        end
+    end
 end
 
-function TagHandler.retract(inst, k, v)
-    assert(v == nil, "TagHandler.retract는 v가 nil일 때만 불려야 함")
-    local old = relate:GetStrong(inst, k)
-    if old then for name in old:Names() do CollectionService:RemoveTag(inst, name) end end
-    relate:SetStrong(inst, k, nil)
+function TagHandler.process(inst, k, v)
+    for name in v:Names() do
+        local holders = tagNameMap:GetStrong(inst, name)
+        if not holders then
+            holders = {}  -- strong map — Tag가 살아있는 동안 소유 목록도 살아있어야 함
+            tagNameMap:SetStrong(inst, name, holders)
+        end
+        if next(holders) == nil then
+            inst:AddTag(name)
+        end
+        holders[v] = true
+    end
+    kTagMap:SetStrong(inst, k, v)
 end
 ```
 
-- **`Tag(A) → Tag(B)`(같은 핸들러, 타입 안 바뀜)**: `retract`는 아예 안
-  불림 — `Dispatch`의 "핸들러가 안 바뀌면 retract 없이 process만 다시"
-  원칙 그대로(`bind-system-plan.md` "Dispatch 체인" 절). **diff는 여기,
-  `process` 안에서만** 일어남 — 전체 삭제 후 재생성하면 스타일이 순간
-  전부 사라졌다 다시 붙어 랙/깜빡임을 유발하므로(사용자 지적), 반드시
-  이전 값과 diff.
-- **`Tag(A) → nil`(핸들러가 TagHandler → 없음으로 바뀜)**: `retract`가
-  불림. **[명시화, 2026-08-09 열한 번째 세션] 전체 삭제는 정확히
-  `v == nil`일 때만 맞는 동작 — "v를 안 봐도 된다"가 아니라 "v가 항상
-  nil로 들어온다는 걸 알고 있으니 별도 분기가 필요 없다"가 정확한
-  표현.** Tag 값을 담는 키에서 TagHandler가 더 이상 매치 안 되는 유일한
-  경로가 값이 `nil`이 되는 것(`None → nil` 재디스패치 포함)이라 이
-  전제가 깨지지 않는 한 위 구현처럼 `v`를 실제로 분기 안 해도 항상
-  옳음 — 위 pseudocode에 `assert(v == nil, ...)`을 추가해 이 전제를
-  코드에도 드러냄. `Handler.retract`가 여전히 `(inst,k,v)` 3-인자를
-  받는 건 계약 일관성 때문이지(다른 핸들러는 `v`를 실제로 씀) Tag가
-  그걸 필수로 요구해서가 아님.
+- **`AddTag`는 온전히 `process`, `RemoveTag`는 온전히 `retract`** — 서로
+  겹치는 diff 계산이 없음. `retract`가 이전 `Tag`(`oldv`)가 걸었던 이름
+  전부를 소유 목록에서 빼되(항상 실행), 그 결과 목록이 비었을 때 **실제
+  `RemoveTag` 호출만** "새로 들어올 `newv`가 그 이름을 여전히 Contains하는가"로
+  힌트를 줘서 skip — 소유 목록 자체는 항상 최신 객체로 갱신되므로(정확히
+  `oldv`를 빼고 `v`를 넣는 두 단계), 이름이 살아남는 경우에도 stale
+  레퍼런스가 안 남음. `process`는 `v`가 새로 거는 이름 전부를 무조건
+  등록(소유 목록이 비어있던 경우에만 실제 `AddTag`) — 자기 나름의 old-vs-new
+  diff가 전혀 필요 없음(그 일을 `retract`가 매번 정확히 해줌).
+- **`Tag(A)→Tag(B)`(같은 위치, 내용만 바뀜)**: `retract(inst,k,B)`가 먼저
+  불려 `A`가 걸었던 이름 중 `B`에 없는 것만 실제로 `RemoveTag`, 남은 건
+  힌트로 skip — 그 다음 `process(inst,k,B)`가 `B`의 이름 전부를 등록(이미
+  걸려있던 이름은 `AddTag`가 no-op으로 재확인만 됨, 소유 목록엔 `B`가 새로
+  등록). 결과적으로 실제 `RemoveTag`/`AddTag` 호출은 진짜 변경된 이름에만
+  일어남 — 스타일 깜빡임 방지라는 원래 목적은 그대로 달성.
+- **`Tag(A)→nil`**: `retract(inst,k,nil)`만 불림(값이 `Tag`가 아니게 돼
+  `process`는 매치 자체가 안 됨) — `newvIsTag=false`라 힌트가 항상
+  거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `RemoveTag`됨(다른
+  위치가 그 이름을 계속 쓰고 있지 않다면).
+- **여러 위치가 같은 이름을 겹쳐 가지는 경우**(`Frame { Tag("a"), Tag("a","b") }`):
+  두 위치가 서로 다른 `k`로 각자 독립적으로 `process`/`retract`를 타지만,
+  `tagNameMap["a"]`는 **양쪽 위치의 `Tag` 객체를 모두 담는 하나의 공유
+  집합** — 한쪽이 "a"를 잃어도 다른 쪽 객체가 집합에 남아있으면 실제
+  `RemoveTag`가 안 불림. 웹 `className`처럼 손실 없는 합집합이 정확히
+  나옴.
 - **`retract`가 자기 위임 대상까지 수동으로 안 쫓아가도 됨** —
   `Dispatch.retractUnder`가 체인 전체를 알아서 훑어주므로 TagHandler는
-  자기 자원(위 `relate` 저장분)만 정리하면 됨. 상세 메커니즘은
+  자기 자원(위 두 릴레이션)만 정리하면 됨. 상세 메커니즘은
   `bind-system-plan.md` "Dispatch 체인" 절.
 
 ## 패키지 배치 — base는 값+API, roblox는 process/retract 글루

@@ -150,21 +150,23 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값:
 
 **GC-안전성은 기존과 동일** — `Relate`가 `inst`로 weak-keyed되어 있어
 `inst`가 죽으면 이 슬롯(엔진 Tween 객체+`Value` 포함)도 별도 정리 로직
-없이 같이 GC됨. `retract`는 이 케이스에서 거의 안 불림 — 아래 절 참고.
+없이 같이 GC됨. **[정정, 2026-08-12 열한 번째 세션]** `retract`는 store
+재발행마다 항상 불리지만(`bind-system-plan.md` 일반 retract 계약 절
+정정분 — "거의 안 불림"이었던 원 서술은 틀렸음), PropertyHandler의
+`retract`는 몸체가 no-op이라 실질적으로 하는 일이 없음 — 아래 절 참고.
 
 ### 왜 `retract`가 더 이상 필요 없는가 — Dispatch 체인 관점의 결과적 단순화
 
 기존 모델에선 "Tween 핸들러가 매치되어 애니메이션이 실행 중이었는데,
 다음 값이 더 이상 Tween 대상이 아니게 되어 일반 PropertyHandler로
-핸들러 *타입*이 바뀌는" 경우가 `base/bind-system-plan.md`가 서술하는
-"`retract`가 실제로 의미를 갖는 유일한 패턴"의 대표 예시였음. 새 모델에선
+핸들러 *타입*이 바뀌는" 경우가 이 문제의 대표 예시였음. 새 모델에선
 **매치되는 Dispatch 핸들러가 항상 PropertyHandler 하나뿐**(Tween 여부는
-값 내부 분기일 뿐 핸들러 매치 자체엔 영향 없음) — 이 시나리오 자체가
-Dispatch 레벨에서 사라짐. 트윈 취소/전환은 위 3-상태 저장 로직으로
-PropertyHandler 내부에서 처리 — Tag가 이미 하고 있는 "diff는 `process`
-자신이 담당" 패턴과 같은 모양이라 새 개념 아님. (PropertyHandler의
+값 내부 분기일 뿐 핸들러 매치 자체엔 영향 없음) — "핸들러 *타입*이
+바뀌는" 시나리오 자체가 Dispatch 레벨에서 사라짐. 트윈 취소/전환은 위
+3-상태 저장 로직으로 PropertyHandler 내부에서 처리. (PropertyHandler의
 `retract` 필드 자체는 여전히 정의해둬야 함 — "필드 생략 불가" 규칙은
-예외 없는 일반 규칙 — 다만 실제로 호출될 일이 이 경로에선 사실상 없음.)
+예외 없는 일반 규칙 — **매번 불리긴 하지만** 몸체가 no-op이라 실질적
+동작이 없음, 일반 프로퍼티는 애초에 "unset" 개념이 없어서.)
 
 ### 타입 대수: `T' = T | Tween<T>` — Modifier/State/Source에 새 타입 기계 불필요
 

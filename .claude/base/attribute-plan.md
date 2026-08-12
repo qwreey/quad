@@ -164,9 +164,15 @@ function AttributeKeyHandler.process(inst, k, v)
 end
 
 function AttributeKeyHandler.retract(inst, k, v)
+    -- [정정, 2026-08-12 열한 번째 세션] retract는 이 k가 store 재발행으로
+    -- 다시 process될 때도 매번 불림(핸들러 타입이 안 바뀌어도) —
+    -- bind-system-plan.md 일반 retract 계약 절 참고. v가 nil이 아니면
+    -- 곧바로 process가 재확정하므로(같은 k가 계속 살아있는 한 항상
+    -- 자기 자신이 다시 매치됨) 여기서 SetAttribute/소유권 반납을 할
+    -- 이유가 없음 — v가 nil일 때만(진짜 이 이름이 사라지는 경우) 실행.
     local name = k.Name
     local map = owners:GetStrong(inst)
-    if map and map[name] == k then
+    if map and map[name] == k and v == nil then
         map[name] = nil
         inst:SetAttribute(name, nil)
     end
@@ -183,17 +189,21 @@ end
   만들어 이 맵에 캐싱하고 그 키로 위임, 이미 맵에 있으면(이전 사이클에
   이미 관리 중이던, 즉 "남아있는" 이름) **그 캐싱된 같은 객체를 그대로
   재사용**해서 위임.
-- **왜 이러면 "새 Attribute 셋 비교"가 저절로 맞아떨어지는지(사용자 확인,
-  2026-08-12 열 번째 세션)**: 그룹이 이름 집합을 diff할 때 — **남아있는
-  이름은 캐싱된 같은 키 객체로 재위임하므로 `owners` 맵에서 `current == k`가
-  성립해 통과, `retract` 자체가 안 불림**(값만 갱신) — **사라진 이름만
-  `Dispatch.retractUnder`가 그 이름 전용 키를 타서 `retract`가 불리고
-  `nil`화됨.** 새로 들어온 이름은 `rawNew`로 갓 만든 키라 `owners`에 없어
-  그냥 새로 클레임. 즉 "진짜 새 셋과 비교해 사라진 것만 nil화, 나머지는
-  건드리지 않고 갱신"이 diff 로직을 하나도 안 고치고 위 `process`/`retract`
-  구현만으로 자연히 나옴 — **캐시가 그룹 값 교체를 넘어 계속 유지돼야만
-  성립**(매 교체마다 키를 새로 만들면 남아있는 이름도 `owners`엔 옛
-  객체가 남아있어 새 객체와 비교 시 오탐 충돌이 남).
+- **[정정, 2026-08-12 열한 번째 세션] "남아있는 이름은 retract 자체가 안
+  불린다"는 예전 서술은 틀렸음** — `AttributeKeyHandler.retract`는 이제
+  `v==nil`일 때만 실제로 뭔가 하므로(위 "메커니즘, `None`, `retract`" 절
+  정정분), 남아있는 이름에 대해서도 `retractUnder`를 불러도 안전하고 —
+  오히려 **불러야 함**: `Dispatch.process`가 매번 체인 꼬리에 새 항목을
+  쌓기만 하지 스스로 옛 항목을 안 지우므로(popping은 `retractUnder`
+  자신의 일), 남아있는 이름을 `retractUnder` 없이 `Dispatch.process`만
+  반복 호출하면 그룹 값이 교체될 때마다 같은 `(inst,key)` 체인에 옛
+  `AttributeKeyHandler` 항목이 계속 쌓이는 누수가 생김. **그래서 그룹의
+  diff는 사라진/남아있는 이름 모두 자기 캐싱된 키로 먼저
+  `Dispatch.retractUnder(inst, key, nil, newSourceOrNil)`를 부른 뒤에만
+  `Dispatch.process`를 부름** — 새로 들어온 이름만 예외(옛 체인이 없으니
+  retractUnder 없이 바로 process). `AttributeKeyHandler.retract`가 `v`가
+  non-nil이면 즉시 return하는 얇은 함수라 이 추가 호출의 비용은 무시할
+  수준.
 - **패키지 경계**: `AttributeKey` 자체가 이미 quad-roblox 소속(Tag와
   달리 base/roblox로 안 쪼갬, 아래 "패키지 배치" 절)이고 그룹의 실제
   위임 로직도 이미 roblox 쪽 글루라 `rawNew` 호출이 새 역의존을 안 만듦 —
@@ -254,14 +264,28 @@ Dispatch 재진입 없이 직접 `SetAttribute`+수동 per-field StoreBind 구�
   attribute 이름 → 그 이름 전용 키 객체 맵"**(구 "이름 문자열 집합" —
   이름 존재 여부뿐 아니라 그때 쓴 키 객체 자체까지 같이 들고 있어야 위
   "이름 소유권" 절의 동일 객체 재사용이 성립)과 새 값의 키 집합을 diff:
-  - 사라진 이름만, 그 이름이 맵에 들고 있던 **그 전용 키 객체**로
-    `Dispatch.retractUnder(inst, key)` — 그 이름이 살아있는 동안 만들어졌던
-    원래 체인과 정확히 같은 슬롯을 가리켜 정리됨. 맵에서도 그 이름 제거.
-  - 남아있는 이름은 **맵에 이미 캐싱된 같은 키 객체를 그대로 재사용**,
-    새로 들어온 이름은 `rawNew(name)`로 갓 만든 키를 맵에 새로 캐싱 —
-    **값 비교 없이 전부** `Dispatch.process(inst, key, source)`로 넘김,
-    작성자가 직접 `[AttributeKey<<T>> name] = source`를 쓴 것과 거의 같은
-    경로를 타므로(단, 공개 캐시가 아니라 그룹 전용 키를 씀) `source`가
+  - **[정정, 2026-08-12 열한 번째 세션] 사라진 이름뿐 아니라 남아있는
+    이름도 먼저 `Dispatch.retractUnder(inst, key, nil, source)`를 부른
+    뒤에야 `Dispatch.process`를 부름** — 그 이름이 맵에 들고 있던 **그
+    전용 키 객체**로, 그 이름이 살아있는 동안 만들어졌던 원래 체인과
+    정확히 같은 슬롯을 가리켜 정리(팝)됨. `retractUnder` 없이
+    `Dispatch.process`만 반복 호출하면 체인이 매번 새 항목을 쌓기만 해서
+    (팝은 `retractUnder`의 일) 같은 키 자리에 옛 `AttributeKeyHandler`
+    항목이 계속 누적되는 진짜 누수가 생기므로, "값이 안 바뀌었으니
+    retract 생략"은 성립 안 함 — `AttributeKeyHandler.retract`가 `v`
+    non-nil이면 즉시 return하는 얇은 함수라(위 "이름 소유권" 절) 이
+    호출 자체는 사실상 공짜.
+    - 사라진 이름: `Dispatch.retractUnder(inst, key, nil, nil)` — 뒤이어
+      `process` 안 부름, 맵에서도 그 이름 제거.
+    - 남아있는 이름: `Dispatch.retractUnder(inst, key, nil, source)` →
+      바로 `Dispatch.process(inst, key, source)` — **맵에 이미 캐싱된 같은
+      키 객체를 그대로 재사용**.
+    - 새로 들어온 이름: 옛 체인이 없으니 `retractUnder` 없이 바로
+      `rawNew(name)`로 갓 만든 키를 맵에 새로 캐싱하고
+      `Dispatch.process(inst, key, source)`.
+  - **값 비교 없이 전부 재위임** — 작성자가 직접
+    `[AttributeKey<<T>> name] = source`를 쓴 것과 거의 같은 경로를
+    타므로(단, 공개 캐시가 아니라 그룹 전용 키를 씀) `source`가
     `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
     해줌(그룹 Handler가 따로 구독 관리 안 함).
   - **값 비교(`:Get()`으로 old/new 비교)는 하지 않음** — State 계약("값은
