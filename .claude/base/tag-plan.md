@@ -39,7 +39,7 @@ API처럼 보이기 때문** — 실제로는 항상 `table.clone` 후 반환(Mo
 "하나의 Tag 값을 프로그래밍적으로 조립"하는 용도).
 
 **동적 토글은 `Source`/`State`로, `None` 불필요** — 상호배타 상태 전환은
-`store.activeTag:Compute(function(name) return name == "btn1" and
+`store.activeTag:Compute(function(name) return name:Get() == "btn1" and
 Tag("selected") or nil end)`처럼 그냥 `nil`을 리턴하면 됨. `None` 센티널은
 "정적 테이블 리터럴에서 `키 = nil`이 키 없음과 구별 안 되는" 문제의
 해법이지(`bind-system-plan.md` "`None` 센티널" 절), 이건 함수 리턴값이

@@ -458,3 +458,12 @@ reduceMotion류 우회가 이걸로 표현됨). `base/architecture.md`에 "코�
 스타일 — Luau 문법 관례" 절 신설 — `if-then-else`(2021년 정식 도입)와
 `const` 바인딩 둘 다 공식 Luau 문법임을 명문화(에이전트가 모르고
 `and`/`or`로 되돌리는 회귀 방지), `const`는 툴링 미성숙으로 지금은 보류.
+
+**2026-08-12 네 번째 세션 — `:Compute` 콜백 인자 `:Get()` 누락 버그 전역 감사**
+(`session/2026-08-12-04-compute-self-get-audit.md`)
+사용자가 `Animate`의 `CanAnimate` 예시(`not r`)가 `r:Get()`이어야
+한다고 지적 — `:Compute`의 `fn(self, ...)` 인자가 raw 값이 아니라 lazy
+State 핸들이라는 기존 확정 계약을 놓친 버그. 같은 클래스의 실수를
+`.claude/` 전역에서 찾아 `base/slot-plan.md` 2곳(`LayoutOrder` 예시,
+`Slot:Single`)과 `base/tag-plan.md` 1곳에서 추가로 발견·수정.
+`bind-system-plan.md`에 "이 실수가 반복되기 쉬움" 주의 노트 추가.

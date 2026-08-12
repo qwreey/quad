@@ -575,7 +575,7 @@ function updateFn(item, index, offset, prev, ud)
         -- 다시 그림(새 원소) — 이전 Source 재사용/Set 없이 처음부터 올바른 값으로 생성
         local layoutOrder = Source(index)
         return Frame {
-            LayoutOrder = layoutOrder:With(offset):Compute(function(i, o) return i + o end),
+            LayoutOrder = layoutOrder:With(offset):Compute(function(i, o) return i:Get() + o:Get() end),
             ...
         }, { layoutOrder = layoutOrder }
     end
@@ -963,7 +963,7 @@ function Slot:Single(state, updateFn)
     updateFn = updateFn or identityUpdateFn   -- [2026-08-11 일곱 번째 세션] 기본값 추가
 
     local data = isState(state)
-        and state:Compute(function(v) return v == nil and {} or { v } end)
+        and state:Compute(function(v) return v:Get() == nil and {} or { v:Get() } end)
         or (state == nil and {} or { state })
 
     return self:List(data, function(item, index, offset, prev, ud)
@@ -1215,7 +1215,7 @@ sugar가 성립하려면 `:Single(state)`(updateFn 생략)이 유효해야 함 �
   (`:List`의 reconcile은 `key` 기준으로 독립 동작, `sub`가 바깥에서
   어느 인덱스에 있든 상관 안 함).
 - **`State<T?>`(nilable)도 특별 취급 없이 그냥 됨** — `:Single`이 이미
-  `v == nil and {} or {v}`로 nil을 "빈 리스트"로 흡수하므로, raw 직접
+  `v:Get() == nil and {} or {v:Get()}`로 nil을 "빈 리스트"로 흡수하므로, raw 직접
   전달 요소(`Add(element)`, State로 안 감싼 경우)에만 여전히 non-nil이
   요구되고, `State`/`Source`로 감싼 값은 내부적으로 nilable이어도 아무
   문제 없음 — 위 "요소 타입 제약" 절의 nil/None 금지는 **State/Source로

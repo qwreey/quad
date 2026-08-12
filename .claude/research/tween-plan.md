@@ -246,7 +246,7 @@ reduceMotion류 접근성 우회가 이 필드 하나로 바로 표현됨:
 -- reduceMotion: State<boolean>
 Position = mySource:Compute(Animate{
   Style = Enum.EasingStyle.Bounce,
-  CanAnimate = reduceMotion:Compute(function(r) return not r end),
+  CanAnimate = reduceMotion:Compute(function(r) return not r:Get() end),
 })
 ```
 

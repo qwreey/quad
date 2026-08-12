@@ -1994,6 +1994,15 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
   key1:Get() + store.key2:Get() end)` — `key1`은 이제 raw 숫자가 아니라
   State.
 
+**[2026-08-12 세션 감사에서 확인] `:Compute` 콜백 인자에 `:Get()`을 빠뜨리는
+실수가 반복되기 쉬움 — 실제로 `.claude/` 문서 예시 코드 4곳(`tag-plan.md`,
+`slot-plan.md` 2곳, `research/tween-plan.md`)에서 발견·수정됨.** `fn(self,
+...)`의 모든 인자가 raw 값이 아니라 lazy State 핸들이라는 원칙(바로 위 절)을
+사람도 에이전트도 코드 작성 중에 잊기 쉬운 지점 — `:Compute`/`:With` 콜백
+안에서 인자를 비교(`==`)/연산(`+`)/테이블에 담기 전에 항상 `:Get()`부터
+거쳤는지 확인할 것. 예: `function(name) return name == "x" end`(버그) vs
+`function(name) return name:Get() == "x" end`(올바름).
+
 **State는 쓰기 대상이 아님 — 확정, Source는 독립 공개 프리미티브로 격상**
 
 - `state:Get()`은 항상 읽기 전용. State에는 쓰기 API가 아예 없음. "State에
