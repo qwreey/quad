@@ -1,4 +1,4 @@
-# Tween / 애니메이션 플러깅 (구조 재확정 — 값-레벨 `Tween<T>` 래퍼, 옵션 값 모양만 남음)
+# Tween / 애니메이션 플러깅 (구조+옵션 값 모양 확정 — `Animate` 시그니처/자연완료 북키핑만 남음)
 
 **상태**: research — **2026-08-10 세션에서 구조 전체가 재설계됨.** 기존
 "`v`가 Store인 아무 `k`나 잡는 우선순위 최상위 Dispatch 핸들러" 모델은
@@ -10,8 +10,11 @@
 tweenData...)] = storeValue`)은 `archive/tween-special-bind-key-reversed.md`로
 이전됨** — 원문/역전 사유는 거기 보존, 이 문서는 새 모델만 서술.
 
-남은 건 옵션 값 모양(`TweenInfo` 그대로 vs 편의 필드)과 override 정책
-옵션 키의 정확한 이름/시그니처뿐 — M11 착수 시 확정. 원본:
+**2026-08-12 세션에서 옵션 값 모양+override 정책 이름까지 전부 확정됨**
+(아래 "확정: `Tween{...}` 최종 모양" 절) — 남은 건 `Animate` 콤비네이터의
+정확한 시그니처와 자연 완료(Completed) 시 북키핑 정리 여부뿐, 둘 다 다음
+세션으로 미룸. `initValue`는 사용자가 필요해지면 직접 처리하기로 확정
+(에이전트 작업 범위에서 제외, 아래 해당 절 참고). 원본:
 `.claude/initreq/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
 항상 먼저 캐치한다" / "네임스페이스드 객체" 절. Fusion의 Tween/Spring이
 반응 그래프 안에 있는 설계는 명시적 반면교사 — `reference/
@@ -52,11 +55,12 @@ State그래프 안의 1급 노드") 참고.
 평범한 분기.
 
 ```lua
-Tween(opts: {Value: T, ease..., onOverride?...}) -> Tween<T>
+Tween(opts: {Value: T, Time: number?, Style: Enum.EasingStyle?, ...}) -> Tween<T>
 ```
 
 `Store({...})`와 같은 "`Type(args)`가 테이블 인자를 받는 팩토리" 컨벤션 —
-Lua 문법상 `Tween{Value=target, ease=...}`처럼 괄호를 생략해 호출.
+Lua 문법상 `Tween{Value=target, Time=0.3}`처럼 괄호를 생략해 호출. 정확한
+필드 목록은 아래 "확정: `Tween{...}` 최종 모양" 절 참고.
 
 **PropertyHandler.process(inst,k,realv)의 새 로직** — `realv`는 이미
 StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값:
@@ -65,7 +69,7 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값:
    `hasBeenSet` 여부만 갱신하고) 즉시 세팅.
 2. `isTween(realv)`가 참이면 — 아래 "3-상태 저장" 절의 분기를 따름.
 
-### `Tween.Value`는 plain `T`만 받음 — 내부에 별도 반응 경로를 안 둠
+### `Tween{...}`의 모든 필드는 plain 값만 받음 — 내부에 별도 반응 경로를 안 둠
 
 처음엔 `Tween.Value`도 `T | State<T>`를 받아야 하나(내부에 자체 Observer를
 걸어 값이 바뀔 때마다 트윈을 재시작) 검토했으나 **불필요로 확정** — 이미
@@ -73,10 +77,25 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값:
 통째로 재생성해 StoreBind 재귀 재-dispatch 경로를 타므로, `Tween` 값
 내부에 또 다른 반응 경로를 만들 이유가 없음. "같은 일 하는 두 번째 경로를
 만들지 않는다"는 이 프로젝트가 Effect의 deps/Ref의 대기 경로 등에서 이미
-여러 번 적용한 원칙과 정확히 같은 결. **`Tween<T> = {Value: T, ease...,
-onOverride?...}`로 확정** — `Value` 필드는 항상 plain `T`.
+여러 번 적용한 원칙과 정확히 같은 결.
 
-### 3-상태 저장 — `RobloxTween | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
+**2026-08-12 세션에서 이 원칙을 `Value` 하나가 아니라 `Tween{...}`의
+모든 필드(`Time`/`Style`/`Direction`/`Info`/`Override` 등)로 확장** — 동적으로
+바꾸고 싶은 필드가 있으면 `Value`와 동일하게 바깥 `:Compute`가 `Tween{...}`
+테이블 자체를 새로 만들면 되므로, 개별 필드마다 `T | State<T>`를 받아주는
+길을 열어줄 이유가 없음(일관성+"두 번째 경로 없음" 원칙 재적용). 이 논의
+중 "`Blocker`로 감싼 State를 옵션 필드로 읽다가 블록 중이면 어떻게 되는가"도
+검토됐으나, `base/blocker-plan.md`가 이미 **"`Blocker`는 emit 전파만
+지연시키고 `:Get()`엔 전혀 영향 없음 — 블록 도중이라도 `:Get()`하면 항상
+그 순간 다시 계산된 최신 값을 준다"**는 걸 크로스컷팅 원칙으로 확정해뒀으므로,
+설령 다른 이유로 나중에 옵션 필드가 State를 받게 되더라도 이 문제 자체가
+성립하지 않음(그 원칙 자체는 안 바뀜) — 지금은 옵션 필드가 plain만 받으므로
+어차피 무관한 논의.
+
+**`Tween<T>`의 정확한 필드 목록은 아래 "확정: `Tween{...}` 최종 모양" 절
+참고.**
+
+### 3-상태 저장 — `{Tween, Value} | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
 
 처음엔 "첫 세팅 여부(`hasBeenSet: boolean`)"와 "실행 중인 엔진 Tween
 객체"를 별도 필드로 저장하려 했으나, **하나의 릴레이션 슬롯으로 통합** —
@@ -86,8 +105,16 @@ onOverride?...}`로 확정** — `Value` 필드는 항상 plain `T`.
   (첫 세팅).
 - **`true`** — 최소 한 번 세팅된 적 있음(직전 값이 plain이었든 `Tween<T>`
   였든 무관), 지금은 활성 엔진 Tween 없음.
-- **실제 엔진 `TweenBase` 인스턴스** — 지금 애니메이션이 진행 중, 새 값을
-  처리하기 전에 먼저 정리해야 함.
+- **`{Tween: TweenBase, Value: T}` 테이블** — 지금 애니메이션이 진행 중, 새
+  값을 처리하기 전에 먼저 정리해야 함. **2026-08-12 세션에서 정정**: 처음엔
+  엔진 `TweenBase` 인스턴스 하나만 저장하면 된다고 봤으나, 아래 "확정:
+  `Tween{...}` 최종 모양" 절의 `Tween.Finish` override 옵션(트윈을 목표값으로
+  스냅 후 재시작)을 구현하려면 그 목표값을 알아야 하는데 로블록스
+  `TweenBase`는 자신의 목표 PropertyTable을 역으로 노출하는 공식 API가 없음
+  (`:Cancel()`이 값을 되돌리지 않는 것과 같은 이유) — 그래서 세팅 시점의
+  `Value`도 같이 릴레이션 슬롯에 저장해야 함. `Value`는 로블록스 프로퍼티에
+  쓰이는, lerp 가능한 원시값(테이블 aliasing 걱정 없음)이라 그대로 저장해도
+  안전.
 
 **분기**:
 
@@ -98,26 +125,27 @@ onOverride?...}`로 확정** — `Value` 필드는 항상 plain `T`.
 2. **`prev == true`(세팅된 적 있음, 활성 트윈 없음)**:
    - `realv`가 plain 값 → 즉시 세팅, 슬롯은 `true` 유지.
    - `realv`가 `Tween<T>` → 이제 정상적으로 애니메이션 시작(현재 인스턴스
-     프로퍼티 값에서 자연스럽게 출발), 슬롯에 새로 만든 엔진 Tween 객체
-     저장.
-3. **`prev`가 엔진 Tween 객체(활성 트윈 있음)**:
-   - **먼저 override 정책(기본 Cancel, 아래 절)에 따라 이전 트윈을 정리 —
-     반드시 그 정리가 끝난 뒤에 새 값을 세팅한다.** 순서가 뒤바뀌면
+     프로퍼티 값에서 자연스럽게 출발), 슬롯에 새
+     `{Tween=<새 엔진 객체>, Value=realv.Value}` 저장.
+3. **`prev`가 `{Tween, Value}` 테이블(활성 트윈 있음)**:
+   - **먼저 override 정책(기본 `Tween.Cancel`, 아래 절)에 따라 이전 트윈을
+     정리 — 반드시 그 정리가 끝난 뒤에 새 값을 세팅한다.** 순서가 뒤바뀌면
      이전 트윈의 다음 인터폴레이션 프레임이 방금 세팅한 값을 덮어쓸
      위험이 있음(엔진 트윈은 비동기로 계속 프로퍼티를 갱신 중이므로).
-   - 정리 후: `realv`가 plain 값이면 (정리 결과로 프로퍼티에 남은 현재
-     값 위에) 즉시 덮어쓰기 + 슬롯 `true`. `realv`가 `Tween<T>`면 (같은
-     현재 값에서) 새 트윈 시작 + 슬롯을 새 엔진 Tween 객체로 갱신.
-   - plain 값이 들어와 진행 중인 트윈을 끝내는 경우, 기존 override
-     정책의 4가지 옵션(Cancel/Override/Delete-restart/Move-to-end-restart,
-     아래 절)은 원래 Tween→Tween 전환을 염두에 둔 것이라 Tween→plain
-     전환에는 사실상 전부 "멈추고 그 자리에서 즉시 덮어쓴다"로 수렴하는
-     것으로 보임 — 별도 5번째 옵션이 필요해 보이진 않으나 **확정은 아님,
-     M11 착수 시 재확인**.
+   - `Tween.Cancel`(기본)이면: `:Cancel()`만 호출 — 프로퍼티는 현재
+     보간되던 값에 그대로 멈춰있음, 그 값 위에서 아래 이어감.
+   - `Tween.Finish`면: `:Cancel()` 후 저장해뒀던 `prev.Value`로 즉시
+     스냅(로블록스 `TweenBase`가 목표값을 역으로 안 알려주므로 우리가
+     들고 있던 값 사용) — 이후 아래는 이 스냅된 값 위에서 이어감.
+   - 정리 후: `realv`가 plain 값이면 즉시 덮어쓰기 + 슬롯 `true`. `realv`가
+     `Tween<T>`면 (정리 결과 값에서) 새 트윈 시작 + 슬롯을 새
+     `{Tween=<새 엔진 객체>, Value=realv.Value}`로 갱신.
+   - Tween→plain 전환은 두 옵션 모두 "정리 후 즉시 덮어쓰기"로 수렴 —
+     별도 5번째 옵션 불필요로 확정(2026-08-12 세션).
 
 **GC-안전성은 기존과 동일** — `Relate`가 `inst`로 weak-keyed되어 있어
-`inst`가 죽으면 이 슬롯(엔진 Tween 객체 포함)도 별도 정리 로직 없이 같이
-GC됨. `retract`는 이 케이스에서 거의 안 불림 — 아래 절 참고.
+`inst`가 죽으면 이 슬롯(엔진 Tween 객체+`Value` 포함)도 별도 정리 로직
+없이 같이 GC됨. `retract`는 이 케이스에서 거의 안 불림 — 아래 절 참고.
 
 ### 왜 `retract`가 더 이상 필요 없는가 — Dispatch 체인 관점의 결과적 단순화
 
@@ -160,7 +188,7 @@ State<T | Tween<T>>`가 나옴 — Modifier/State/Source/StoreBind 코드엔
 
 ```lua
 -- reduceMotion: State<boolean>
-Position = mySource:Apply(Animate(reduceMotion, {ease = ...}))
+Position = mySource:Apply(Animate(reduceMotion, {Time = 0.3}))
 ```
 
 `Animate(reduceMotion, opts)`는 커링 팩토리로, 개념상 다음과 같은 모양:
@@ -171,7 +199,7 @@ return function(state)
     if reduceMotion:Get() then
       return v
     else
-      return Tween{Value = v, ease = opts.ease}
+      return Tween{Value = v, Time = opts.Time}
     end
   end)
 end
@@ -184,23 +212,31 @@ base 프리미티브가 아니라 quad-roblox가 제공하는 자유 함수 조�
 "패키지 경계" 절) — `Modifier:Apply(Boldify(10))` 커링 패턴과 완전히
 같은 모양이라 base에 새로 추가할 게 없음.
 
-## 초기 진입 애니메이션(`initValue`) — 여전히 별개 문제, 위 hasBeenSet과 상충 방향 주의
+## 초기 진입 애니메이션(`initValue`) — **에이전트 작업 범위 제외로 확정, 사용자가 직접 처리**
 
 `initValue`는 여전히 미확정(2026-08-09 세션 결론 유지: "필요성 낮은
-쪽으로 기움", 완전 폐기는 아님). 다만 이번 세션에서 **"3-상태 저장"의
-1번 분기(`hasBeenSet`)가 "첫 세팅은 무조건 애니메이션 없이 스냅"을
-기본 동작으로 확정**했으므로, 나중에 `initValue`(다이얼로그가 아래에서
-위로 슬라이드-인하는 것처럼 첫 마운트에도 애니메이션을 원하는 경우)가
-실제로 필요해지면 **이 억제 동작을 어떻게 명시적으로 우회할지**(예:
-릴레이션 슬롯에 `nil` 대신 다른 초기 상태를 미리 심어두는 옵션)까지
-같이 설계해야 함 — 지금은 새 결정 없이 이 긴장 관계만 기록해둠.
+쪽으로 기움", 완전 폐기는 아님). "3-상태 저장"의 1번 분기(`hasBeenSet`)가
+"첫 세팅은 무조건 애니메이션 없이 스냅"을 기본 동작으로 확정했으므로,
+나중에 `initValue`(다이얼로그가 아래에서 위로 슬라이드-인하는 것처럼 첫
+마운트에도 애니메이션을 원하는 경우)가 실제로 필요해지면 이 억제 동작을
+어떻게 명시적으로 우회할지(예: 릴레이션 슬롯에 `nil` 대신 다른 초기
+상태를 미리 심어두는 옵션)까지 같이 설계해야 함.
 
-## `Animate` 콤비네이터 — quad-roblox 유틸(base 아님)
+**2026-08-12 세션에서 확정**: 필요해지는 시점이 오면 **사용자가 직접
+코드베이스+문서를 만짐** — Tween 정보가 부족한 에이전트가 다루기엔
+`hasBeenSet` 억제 동작과의 상충 판단이 미묘하고, 반대로 Tween 자체가
+다른 base 요소와 깊게 안 얽혀 있어(거의 전부 `Handlers/Property.luau`
+한 파일 + 릴레이션 슬롯) 사용자가 직접 처리하는 데 범위상 문제가 없음.
+에이전트는 이 항목을 임의로 착수하지 말 것.
+
+## `Animate` 콤비네이터 — quad-roblox 유틸(base 아님), 다음 세션으로 미룸
 
 `Animate(condOrOpts, opts?)`류 팩토리를 quad-roblox가 제공, `:Apply`로
 체이닝해서 쓰는 용도. 상세 시그니처는 미확정(예: `Animate({ease=...,
 useAnimate=state<boolean>})`처럼 조건과 옵션을 하나의 테이블로 합치는
-안도 검토 가치 있음 — 확정 아님, M11에서 정리). 핵심은 **base
+안도 검토 가치 있음 — **2026-08-12 세션에서 다음 세션으로 명시적으로
+미룸**(단순히 `Tween{...}`/`:Apply`/`:Compute`를 감싸는 슈거라
+`Slot:List`류와 성격이 비슷함, 별도 세션에서 다루기로 함). 핵심은 **base
 프리미티브가 아니라는 것** — `Tween<T>` 값 타입/`isTween`만
 base(`quad-base/Tween.luau`)에 있고, `Animate`는 이미 있는 `:Apply`/
 `:Compute`/`Tween{...}`를 조합한 quad-roblox 레벨 편의 함수라 나중에
@@ -217,53 +253,74 @@ base(`quad-base/Tween.luau`)에 있고, `Animate`는 이미 있는 `:Apply`/
 - **기존 `Handlers/Tween.luau`(독립 Dispatch 핸들러 파일) 자체는 더
   이상 필요 없음** — `base/architecture.md` 소스트리 갱신 완료.
 
-## `retract`(구 cleanup)로 확정된 오버라이드 시맨틱 — Tween↔Tween 전환에서는 그대로 유지
+## 확정: `Tween{...}` 최종 모양 (2026-08-12 세션)
 
-**이 절의 4가지 옵션은 안 바뀜 — 다만 "Dispatch의 `retract` 호출"이 아니라
-"PropertyHandler 내부 로직이 참고하는 정책"으로 위치만 이동했다는 점에
-유의.** 이전 트윈을 취소하고 새 트윈을 만드는 게 맞지만, "취소" 시점의
-동작이 여러 갈래로 갈릴 수 있음:
+### 옵션 값 모양 — `Info` 우선, 없으면 편의 필드로 폴백 (확정)
 
-1. 키 밸류를 받으면, 그로 인해 생성된 트윈을 얻어서 **멈춰버리기**.
-2. 트윈 뒤에 **삭제하지 않고 오버라이드**(새 트윈이 이전 트윈의 현재 값에서
-   시작, 이전 트윈 자체는 그대로 재사용/대체).
-3. **삭제** 후 새로 시작.
-4. 트윈을 **끝 지점으로 옮기고** 새로운 트윈을 시작.
+Roblox의 `TweenInfo.new(time, easingStyle, easingDirection, repeatCount,
+reverses, delayTime)`는 순수 포지셔널 생성자인데, Luau엔 named call
+문법이 없어서 직접 쓰면 `TweenInfo.new(0.3, Enum.EasingStyle.Quad,
+Enum.EasingDirection.Out)`처럼 각 인자가 뭘 뜻하는지 호출부만 보고 알기
+어렵다. **두 경로를 동시에 지원하는 걸로 확정** — 비용 근거: 이미 만들어
+재사용하려는 `TweenInfo`가 있으면 매번 새로 조립하지 않고 그대로 쓰는 게
+더 싸고(재사용 최적화), 반대로 매번 값이 바뀌는 인라인 케이스는 개별
+필드가 훨씬 편함(계속 바뀌는 `TweenInfo` 구조도 자연스럽게 허용됨):
 
-**확정된 기본값**: **멈춤(Cancel)** — 새 트윈은 현재 보간된 값에서 자연스럽게
-시작. 근거: Roblox `TweenService`의 `:Cancel()`은 프로퍼티를 되돌리지 않고
-그 자리에서 멈추기만 하므로, 새 트윈이 시작될 때 이미 인스턴스 프로퍼티에
-남아있는 현재 값에서 자연스럽게 이어짐 — 대부분의 UI 애니메이션이 기대하는
-동작과 일치.
+- **`Info: TweenInfo?`** — 있으면 **그대로 사용**, 나머지 편의 필드는
+  전부 무시.
+- **`Info`가 없으면** 아래 편의 필드로 `TweenInfo.new(...)`를 조립.
 
-이 기본값 외 나머지 세 동작(오버라이드/삭제 후 재시작/끝점 이동 후 재시작)은
-라이브러리가 강제하지 않고, `Tween{Value=..., ease=..., onOverride=...}`처럼
-`Tween` 생성 시 넘긴 옵션으로 사용자가 고를 수 있게 열어둠 — PropertyHandler가
-위 3-상태 저장의 3번 분기에서 이 옵션을 참고해 구현.
+편의 필드의 기본값은 **로블록스 `TweenInfo.new()` 자신의 기본값을 그대로
+물려받음** — 별도 기본값 상수를 새로 정의할 필요 없음:
 
-## 트윈 옵션 값 모양 — TweenInfo 그대로 vs 편의 필드 (여전히 열린 논의)
+```lua
+Time: number?             -- default 1
+Style: Enum.EasingStyle?  -- default Enum.EasingStyle.Quad
+Direction: Enum.EasingDirection?  -- default Enum.EasingDirection.Out
+RepeatCount: number?      -- default 0
+Reverses: boolean?        -- default false
+DelayTime: number?        -- default 0
+```
 
-**아직 논의 시작 단계 — 나중에 더 다룰 주제로만 남겨둠.** Roblox의
-`TweenInfo.new(time, easingStyle, easingDirection, repeatCount, reverses,
-delayTime)`는 순수 포지셔널 생성자인데, Luau엔 named call 문법이 없어서
-직접 쓰면 `TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)`
-처럼 각 인자가 뭘 뜻하는지 호출부만 보고 알기 어렵다. 후보:
+### override 정책 — `Tween.Cancel` / `Tween.Finish` 두 값으로 압축 (확정)
 
-1. **`TweenInfo`를 그대로 받는다** — 사용자가 이미 만들어둔 `TweenInfo`를
-   재사용하고 싶은 경우엔 상관없지만, 대부분의 흔한 케이스(길이/이징만
-   바꾸고 싶음)에서 매번 포지셔널 생성자를 마주해야 함.
-2. **편의 필드로 개별 인자를 받고 기본값을 제공** — 예:
-   `Tween{Value=..., Time=0.3, Style=Enum.EasingStyle.Quad, Reverses=false, ...}`처럼
-   이름 붙은 키로 받고 흔한 기본값(예: `Time=0.2`, `Style=Quad`,
-   `Direction=Out`)을 채워줌. 명시적으로 `TweenInfo`가 이미 있어서
-   재사용하고 싶다는 케이스에도 열어두면(예: `Info = someTweenInfo`
-   필드로), 둘 다 지원 가능.
+기존엔 4가지 옵션(멈춤/오버라이드/삭제후재시작/끝점이동후재시작)을 열어뒀으나,
+다시 보니 로블록스 `TweenBase`가 애초에 진행 중인 트윈의 목표를 바꿔치기할
+API가 없음(`:Play`/`:Pause`/`:Cancel`뿐, 인스턴스 재사용 불가) — 그래서
+"오버라이드"와 "삭제 후 재시작"은 관찰 가능한 결과가 "현재 보간값에서
+새로 시작"으로 멈춤(Cancel)과 완전히 동일, 구분할 실익이 없었음이 드러남.
+실질적으로 구별되는 건 딱 두 갈래뿐:
 
-**현재 소견(확정 아님)**: 2번(편의 필드 + 기본값)이 흔한 사용 경험상 더
-낫다는 쪽으로 기움 — 이번 세션의 모든 예시(`Tween{Value=..., ease=...}`)도
-자연스럽게 이 방향을 가정하고 있음. 다만 구체적인 필드 이름/기본값/
-`TweenInfo` 재사용 경로의 정확한 문법은 아직 확정 아님 — 나중 논의 대상으로
-남김.
+- **`Tween.Cancel`(기본값)** — 새 트윈은 **현재 보간된 값**에서 자연스럽게
+  이어감. 근거: Roblox `TweenService`의 `:Cancel()`은 프로퍼티를 되돌리지
+  않고 그 자리에서 멈추기만 하므로, 대부분의 UI 애니메이션이 기대하는
+  동작과 일치.
+- **`Tween.Finish`** — 이전 트윈을 **목표값(`Value`)으로 스냅**시킨 뒤 그
+  자리에서 새 트윈을 시작(기존 "끝점 이동 후 재시작"에 해당). 목표값은
+  로블록스 API로 역산 불가능하므로 릴레이션 슬롯에 `{Tween, Value}`로
+  같이 저장해뒀던 `Value`를 사용(위 "3-상태 저장" 절 참고).
+
+필드 이름은 `Override`(기존 문서에서 계속 써온 "override 정책" 용어와
+일치) — `Tween.Cancel`/`Tween.Finish`는 `Tween` 네임스페이스에 노출되는
+sentinel 상수(구현 세부는 M11 착수 시, 문자열이든 전용 테이블이든 상관없이
+동등성 비교만 되면 됨). Tween→plain 전환도 두 옵션 모두 "정리 후 즉시
+덮어쓰기"로 수렴하므로 별도 5번째 옵션 불필요로 확정.
+
+### 최종 타입
+
+```lua
+Tween(opts: {
+  Value: T,
+  Info: TweenInfo?,
+  Time: number?,
+  Style: Enum.EasingStyle?,
+  Direction: Enum.EasingDirection?,
+  RepeatCount: number?,
+  Reverses: boolean?,
+  DelayTime: number?,
+  Override: (typeof(Tween.Cancel) | typeof(Tween.Finish))?,  -- default Tween.Cancel
+}) -> Tween<T>
+```
 
 ## 네임스페이스드 객체 (더 이상 유효한 관심사 아님)
 
@@ -274,16 +331,17 @@ delayTime)`는 순수 포지셔널 생성자인데, Luau엔 named call 문법이
 
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
-- 기본값(Cancel)은 확정됨. 남은 건 나머지 세 동작(오버라이드/삭제 후 재시작/
-  끝점 이동 후 재시작)을 선택하는 옵션 키의 정확한 이름/시그니처, 그리고
-  Tween→plain 전환에 5번째 옵션이 필요한지 — 구현 단계에서 확정.
-- 트윈 옵션 값 모양(위 절) — `TweenInfo` 그대로 받을지 편의 필드+기본값으로
-  받을지, 소견은 후자 쪽이지만 확정 아님.
-- `Animate` 콤비네이터의 정확한 시그니처(조건/옵션 분리 vs 통합) — M11에서
-  정리.
+**2026-08-12 세션에서 옵션 값 모양/override 정책 이름/릴레이션 슬롯 저장
+모양까지 전부 확정됨** — 아래 두 개만 남음, 둘 다 다음 세션 이후로 명시적
+연기(급하지 않음):
+
+- `Animate` 콤비네이터의 정확한 시그니처(조건/옵션 분리 vs 통합) — 단순
+  `Tween{...}`/`:Apply`/`:Compute` 슈거라 `Slot:List`류와 성격이 비슷함,
+  다음 세션에서 다룸.
 - 자연 완료(Completed) 시 per-instance 북키핑 정리 여부(3-상태 슬롯을
   `true`로 되돌리는 시점) — `research/pre-implementation-audit.md` 2-10번
   참고, M11 착수 시 확정.
-- `initValue`(진입 애니메이션) — 위 절 참고, 필요성 자체가 낮은 쪽으로
-  기움, 완전 폐기는 아님. 필요해지면 hasBeenSet 억제 동작과의 상충을
-  같이 풀어야 함.
+
+`initValue`(진입 애니메이션)는 별도 취급 — 위 해당 절 참고, **에이전트
+작업 범위에서 제외, 필요해지면 사용자가 직접 처리**하기로 확정(질문
+목록이 아님).

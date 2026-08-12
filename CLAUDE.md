@@ -47,7 +47,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   `framework-comparison-findings.md`/`additional-primitives-plan.md`(2026-08-09
   세 번째 세션에 마지막 열린 항목까지 전부 해소, 이제 배경 자료용)/
   `pre-implementation-audit.md`/`v1-compat-plan.md`
-  — 전부 후순위(급한 건 `tween-plan.md` 세부 옵션 정도). 최신 목록·우선순위는
+  — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에서 거의 다 닫힘, 남은 건
+  `Animate` 시그니처 정도로 더 이상 급하지 않음). 최신 목록·우선순위는
   `.claude/README.md`가 소스, 여기서 개수 반복 안 함(과거에 "두 개뿐"이라
   적어놨다가 새 문서 추가될 때마다 안 갱신되는 패턴이 반복돼서 아예 안
   세기로 함).
@@ -422,3 +423,15 @@ retract는 Tag처럼 확실히 청소). 이름 충돌 방지로 기존 단일 �
 확정되며, 최초안이던 "그룹 Handler 자기 완결형(Dispatch 재진입 없음)"을
 뒤집고 메모이즈된 키로 기존 단일 키 경로에 재귀 위임하는 걸로 재개정
 (중복 구현 제거) — `base/attribute-plan.md` 등 관련 문서 전체 반영 완료.
+
+**2026-08-12 세션 — Tween 옵션 값 모양+override 정책 확정, `tween-plan.md` 마감**
+(`session/2026-08-12-01-tween-shape-finalized.md`)
+사용자가 5개 결정을 한 번에 제안해 전부 확정: 옵션 값은 `Info: TweenInfo?`
+우선+편의 필드(`Time`/`Style`/...) 폴백(기본값이 로블록스 `TweenInfo.new()`
+자체 기본값과 일치), 옵션 필드는 전부 plain만(State 불가, Blocker의
+`:Get()`은 블록 중에도 항상 최신값이라는 기존 원칙 재확인), 릴레이션 슬롯
+3번째 상태를 `{Tween, Value}`로 확장(Finish가 목표값을 알아야 함), override
+정책을 `Tween.Cancel`(기본)/`Tween.Finish` 2값으로 압축(로블록스
+`TweenBase` API 현실상 나머지 옵션들이 관찰상 Cancel과 동일했음), `initValue`는
+에이전트 범위 제외하고 사용자가 직접 처리하기로 확정. `Animate` 시그니처와
+자연완료 북키핑만 다음 세션으로 연기.
