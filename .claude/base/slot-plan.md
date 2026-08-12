@@ -208,27 +208,45 @@ retract 없이 process가 diff 담당"이라는 전제 자체가 틀렸음** —
 단계로 자연히 갈림 — `retract`가 "이전 것 정리", `process`가 "새 것
 마운트" 전담:
 
+**[정정, 2026-08-12 열두 번째 세션] "같은 값인가"를 위치별 relate로
+간접 비교하는 대신, Slot 자신이 지금 어느 `inst`에 바인딩됐는지를 직접
+추적** — 이게 이미 확정된 "한 element가 어디에도 중복 마운트 안 됨"
+전역 불변식(위 "요소 타입 제약" 절)을 Slot 컨테이너 자신에도 그대로
+적용하는 것이라 더 정확함(위치 비교로는 "이 Slot이 동시에 다른 위치에도
+마운트돼 있는가"를 못 잡음):
+
 ```lua
-local relate = Relate()  -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot 기억
+local kSlotMap = Relate()   -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot(retract가 뭘 지울지 알아야 함)
+local slotOwner = Relate()  -- Slot 자신이 weak 키 — {[slot] = 지금 바인딩된 inst}
 
 function SlotHandler.process(inst, k, slotValue)
-    local old = relate:GetStrong(inst, k)
-    if old == slotValue then
-        return  -- 이미 같은 바인딩(retract가 방금 손 안 댄 경우) — no-op
+    local owner = slotOwner:GetStrong(slotValue)
+    if owner == inst then
+        return  -- 이미 이 inst에 바인딩된 채 — 단순 emit 전파, no-op
+    end
+    if owner ~= nil then
+        error("이 Slot은 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
     end
     attachSlot(slotValue, inst, inst, k)
-    relate:SetStrong(inst, k, slotValue)
+    slotOwner:SetStrong(slotValue, inst)
+    kSlotMap:SetStrong(inst, k, slotValue)
 end
 
 function SlotHandler.retract(inst, k, v)
-    local old = relate:GetStrong(inst, k)
+    local old = kSlotMap:GetStrong(inst, k)
     if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Slot 자체일 수도 있음
         destroySlotTree(old)  -- 폐기, 옮기지 않음 — 아래 "확정" 절 그대로
-        relate:SetStrong(inst, k, nil)
+        slotOwner:SetStrong(old, nil)  -- 관계 해제 — old를 나중에 다른 곳에 다시 마운트해도 됨
+        kSlotMap:SetStrong(inst, k, nil)
     end
-    -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 no-op으로 스킵
+    -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 owner==inst로 no-op
 end
 ```
+
+`attachSlot` 자체가 quad-roblox 소속이라 `inst`를 아는 건 자연스러움 —
+`slotOwner`가 굳이 `inst`의 정체를 몰라도(예: 다른 백엔드에서 중간
+표현 테이블이어도) 무관하게 동작함, 그냥 "지금 이 자리를 차지한 값이
+누구냐"만 구분하면 됨.
 
 - **같은 바인딩이면 완전히 무시하는 게 이 자리에선 효율 문제가 아니라
   정합성 문제** — Slot은 아래 "확정" 절대로 "폐기, 옮기지 않음"(portal

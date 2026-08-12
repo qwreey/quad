@@ -579,3 +579,18 @@ Claude가 지적했으나, 사용자가 "덮여 쓰여지는 즉시 retract 실�
 방지). `Attribute`의 그룹 위임도 "남아있는 이름"에서 `retractUnder`를
 생략하면 체인이 계속 쌓이는 누수를 추가로 발견·정정. 역전 사례는
 `archive/retract-always-fires-reversed.md`에 원문·근거·영향 범위 보존.
+
+**2026-08-12 열두 번째 세션 — `Slot`의 `slot→inst` 소유권 relate,
+`retractUnder` 4-인자 이유** (`session/2026-08-12-12-slot-owner-relate-retractunder-args.md`)
+직전 세션에서 고친 `Slot`의 의사코드를 사용자가 검토 — 위치별 relate로
+"같은 값인가"를 비교하는 대신, Slot이 이미 갖고 있는 "한 element가
+어디에도 중복 마운트 안 됨" 전역 불변식을 Slot 컨테이너 자신에도
+그대로 적용해 `Relate<slot→inst>`로 소유권을 직접 추적하는 게 더
+정확하다고 지적(위치 비교로는 같은 Slot이 동시에 다른 위치에도
+마운트된 경우를 못 잡음) — `owner==inst`면 단순 emit 전파로 무시,
+다른 inst면 즉시 error, 없으면 정상 바인딩으로 재작성. 별도로
+`Dispatch.retractUnder(inst,k,keep,v)`가 왜 4-인자인지 질문받아 답변:
+`keep`(체인 어디까지 지울지, 구조적)과 `v`(새로 들어올 값 힌트,
+Tag/Ref/Slot/Attribute가 이번 대화 내내 의존해온 그 메커니즘)는 서로
+다른 용도라 하나로 안 합쳐짐 — old value를 각 핸들러가 자기 `Relate`로
+저장한다는 원래 결정과는 무관, `retractUnder`는 old를 옮긴 적이 없음.
