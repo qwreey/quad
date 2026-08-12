@@ -207,11 +207,15 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    값으로 교체되면 `retract`로 취소됨)에 가깝고, `PreRef`는 그 스캔 밖의
    고정 pre-pass라는 의미에서 "pre-hook"(항상 최우선 고정, 순서/취소
    개념 자체가 다름)에 가깝다는 구분 — quadnomicon 에세이로 쓸 때 이
-   "hook"/"pre-hook" 용어 자체를 채택할지부터 먼저 확인 필요(복수 `PreRef`
+   "hook"/"pre-hook" 용어 자체를 채택할지만 아직 열려있음(복수 `PreRef`
    간 순서는 2026-08-07 아홉 번째 세션에서 해소됨 — 배열 index 순서
-   그대로, 별도 규칙 없음, `bind-system-plan.md` "PreRef" 절 참고. 취소
-   가능 여부는 여전히 미정 — PreRef는 fire와 동시에 소진되는 1회성
-   pre-pass 참가자라 "취소"라는 개념 자체가 성립하는지부터 다시 볼 것).
+   그대로, 별도 규칙 없음, `bind-system-plan.md` "PreRef" 절 참고).
+   **[해소됨, 2026-08-12 여섯 번째 세션]** 취소 가능 여부 — PreRef는
+   구조적으로 `retract` 체인에 아예 안 올라가므로 취소 개념 자체가 없고,
+   대신 이미 fire된 PreRef를 재사용하면(두 번째 construction에 다시
+   놓으면) 즉시 `error` — "1회용, 재할당 불가"로 확정. `bind-system-plan.md`
+   "동적 경로로 도착한 PreRef는 런타임에도 명시적으로 에러" 절 바로 아래
+   "PreRef는 '취소'라는 개념이 없다" 항목 참고.
 
 7. **왜 `Compute(fn, ...)`는 여러 의존성을 편하게 받고 `Effect`/`Observer`는
    안 받는가** (2026-08-11 세션 원자료, `bind-system-plan.md` "`:Compute(fn,
@@ -259,17 +263,18 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   완전히 확정(2026-08-09 열한 번째 세션엔 `Extract(index, newElement?)`로
   더 확장). `research/additional-primitives-plan.md`는 더 이상 열린
   항목 없음, 배경 자료로만 유지.
-- **"hook"/"pre-hook" 용어 채택 여부 + `PreRef`의 취소 가능성** (2026-08-07,
-  위 심화 후보 6번 참고) — `bind-system-plan.md`는 `PreRef`가 위치 무관
-  호이스팅이라는 것과 일반 `Ref`가 우선순위 스캔에 참여한다는 것까지는
-  확정해뒀고(복수 `PreRef` 간 순서=배열 index 순서, 동적 경로로 도착한
-  PreRef는 전용 Handler가 즉시 error — 둘 다 아홉 번째 세션에서 추가
-  확정), "hook 대 pre-hook"이라는 용어 자체를 문서화 시 채택할지와
-  `PreRef`의 취소 가능성(애초에 fire와 동시에 소진되는 1회성이라
-  "취소"가 의미 있는 개념인지부터)만 아직 미정.
+- **"hook"/"pre-hook" 용어 채택 여부** (2026-08-07, 위 심화 후보 6번 참고)
+  — `bind-system-plan.md`는 `PreRef`가 위치 무관 호이스팅이라는 것과 일반
+  `Ref`가 우선순위 스캔에 참여한다는 것까지는 확정해뒀고(복수 `PreRef`
+  간 순서=배열 index 순서, 동적 경로로 도착한 PreRef는 전용 Handler가
+  즉시 error — 둘 다 아홉 번째 세션에서 추가 확정), **`PreRef`의 취소
+  가능성은 2026-08-12 여섯 번째 세션에 "취소 개념 없음, 재사용은 error"로
+  해소됨**(위 심화 후보 6번, `bind-system-plan.md` 참고) — "hook 대
+  pre-hook"이라는 용어 자체를 문서화 시 채택할지만 아직 미정.
 
-이 항목들은 `.claude/question.md`에도 이미 열린 질문으로 잡혀있음 — 여기선
-"확정 전엔 문서화 대상 아님"이라는 표시만 겸함.
+`PreRef` 취소 가능성 항목은 실제로는 `.claude/question.md`에 별도로
+잡혀있던 적이 없었음(이전 서술이 부정확했음, 이번에 확인·수정) — 순수
+용어 선택인 "hook"/"pre-hook" 채택 여부만 여기서 계속 추적.
 
 ## 다음 단계
 

@@ -499,3 +499,14 @@ bind-system-plan.md`) `local addTax = Sum(a,b)`처럼 만든 값을 `:Compute`�
 오버엔지니어링). 이걸로 열린 설계 질문이 없어져 `research/tween-plan.md`를
 `base/tween-plan.md`로 승격, 라이브 크로스레퍼런스 전부 갱신(session/
 과거 기록은 원문 보존을 위해 그대로 둠).
+
+**2026-08-12 일곱 번째 세션 — `PreRef`는 취소 개념 없음, 재사용은 error**
+(`session/2026-08-12-07-preref-single-use-no-cancel.md`)
+`documentation-content-map.md`에 미정으로 남아있던 "`PreRef` 취소 가능성"
+해소: `PreRef`는 pre-pass에서 fire와 동시에 소진돼 정상 `retract` 체인에
+아예 안 올라가므로 취소 개념 자체가 없음(사용자 직관과 기존 구조가
+정확히 일치). 진짜 위험은 취소가 아니라 재사용(stale `.Value`로 콜백이
+조용히 잘못 호출됨)이라고 판단해, 이미 fire된 `PreRef`를 다시 놓으면
+pre-pass가 즉시 `error`하는 가드 확정(`_fired` 플래그, 거의 공짜 구현) —
+1회용, use only once. `Slot:List`의 `updateFn`처럼 반복 호출되는 자리에선
+매번 새 `PreRef()`를 만들라는 관용구도 같이 명문화.
