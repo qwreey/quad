@@ -4,7 +4,9 @@
 모델은 `archive/tag-hash-key-model-reversed.md`에 원문·역전 이유 보존).
 2026-08-12 열한 번째 세션에 `TagHandler`의 `process`/`retract` 메커니즘을
 참조 카운트 기반으로 전면 정정(옛 버전은 `archive/
-retract-always-fires-reversed.md`). 새 결정만 반영, 열린 질문 없음.
+retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째 세션에
+`Added`/`Removed`를 단일 이름에서 vararg로 정정(아래 값 모양 절). 새
+결정만 반영, 열린 질문 없음.
 
 ## 왜 재설계됐나
 
@@ -18,8 +20,8 @@ retract-always-fires-reversed.md`). 새 결정만 반영, 열린 질문 없음.
 
 ```
 Tag(name1, name2, ...)      -- 생성자, 가변인자. Tag() 빈 값도 유효
-tag:Added(name): Tag        -- clone 후 이름 추가, 원본 안 건드림
-tag:Removed(name): Tag      -- clone 후 이름 제거
+tag:Added(name, ...): Tag   -- clone 후 이름(들) 추가, 원본 안 건드림
+tag:Removed(name, ...): Tag -- clone 후 이름(들) 제거
 tag:Contains(name): boolean -- 멤버십 확인
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의
@@ -31,9 +33,21 @@ Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifie
 
 `Added`/`Removed`가 `-ed` 어미인 이유는 **`Add`/`Remove`로 쓰면 뮤테이션
 API처럼 보이기 때문** — 실제로는 항상 `table.clone` 후 반환(Modifier
-3번 절과 동일한 immutable 확정 이유: 형제 서브트리 오염 방지). `Tag(a,b)`
-자체가 `Tag():Added(a):Added(b)`의 sugar라고 생각하면 됨 — 별도 런타임
-경로 아님.
+3번 절과 동일한 immutable 확정 이유: 형제 서브트리 오염 방지).
+
+**[정정, 2026-08-12 열다섯 번째 세션] `Added`/`Removed`도 vararg —
+`Tag(a,b)`는 `Tag():Added(a,b)` 한 번의 clone sugar, `Tag():Added(a):Added(b)`
+처럼 반복 clone하는 게 아님.** 처음엔 단일 `name`만 받고 생성자의
+vararg는 반복 `Added` 호출의 sugar로 서술했으나, 이러면 이름 여러 개를
+한 번에 걸 때(`Tag(a,b,c)`도 결국 clone 1회면 충분한데) 이름 개수만큼
+`table.clone`+해싱이 반복되는 손해가 남 — 태그가 이미 걸려있는 경우 self를
+그냥 리턴하는 최적화도 검토했으나(2026-08-12 열다섯 번째 세션) 그러려면
+매번 먼저 멤버십을 읽어야 해서 오히려 전반적으로 더 비쌈(해싱이 한 번
+더 나고 Set에서도 한 번 더 남) — **기각, `Added`는 항상 새 clone을
+반환하는 현재 동작 유지**. 대신 여러 이름을 한 번의 clone으로 처리하는
+vararg만 추가해 흔한 다중 추가 케이스의 비용을 줄임. `Tag(name1, name2,
+...)` 생성자도 이제 정확히 `Tag():Added(name1, name2, ...)`(단일 clone)와
+동치.
 
 **children 배열 슬롯(array-part)에 직접 놓임** — `Frame { Tag("selected") }`.
 정적으로 여러 개 놓아도(`Frame { Tag("a"), Tag("b") }`) 각자 독립적으로

@@ -10,6 +10,9 @@ quad의 진짜 개선점.** **[2026-08-09 세 번째 세션]** CRUD 의미론
 (`pre-implementation-audit.md` 1-7/1-8) 완전 확정, `research/
 additional-primitives-plan.md`가 다루던 키 기반 동적 컬렉션 재조정도
 `Slot:List(...)` 메소드로 이 문서에 승격·통합 완료 — 아래 참고.
+**[2026-08-12 열다섯 번째 세션]** `Splice(index, removeCount,
+...newElements)` CRUD 신설 — 구간 제거+삽입을 shift/recompute 1회로
+묶는 순수 최적화, 아래 "CRUD API 확정" 절 참고.
 
 ## base/roblox 패키지 경계 (2026-08-04, 5차 라운드 확정)
 
@@ -324,6 +327,7 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
 | `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환 |
+| `Splice` | `Slot:Splice(index, removeCount, ...newElements): {T}` | O(n) | 한 위치에서 `removeCount`개를 비파괴 추출(반환)하고 그 자리에 `newElements`를 삽입 — shift+recompute 1회로 통합 |
 | `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op |
 | `Move` | `Slot:Move(oldIndex, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
 | `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 인덱스의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
@@ -349,6 +353,20 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   정확히 같아서(교체도 "그 자리 걸 빼내고 새 걸 넣는" 것의 원자적 버전일
   뿐). `newElement`에도 `Add`와 같은 검증(이미 마운트/타입 제약)이
   똑같이 적용됨.
+- **`Splice` 신설(2026-08-12 열다섯 번째 세션)** — 한 구간을 제거하고
+  동시에 새 요소들을 그 자리에 넣는 흔한 배치 갱신(`:List` 없이 수동
+  CRUD로 큰 구간을 통째로 교체하는 경우)을 `Extract`/`Add`를 요소 수만큼
+  반복 호출하면, 그때마다 개별 `raw*` 호출이 각자 shift+`recompute`를
+  돌려 O(n) 비용이 반복 횟수만큼 곱으로 커짐 — `Splice`는 이걸 시프트
+  1회 + `recompute` 1회로 묶는 순수 최적화(새 능력 추가 아님, `Extract`
+  반복+`Add` 반복으로도 결과는 항상 재현 가능). **비파괴**(`Extract`처럼
+  제거분을 파괴하지 않고 반환) — 실제 물리적 detach/reattach(Roblox
+  `Parent` 조작, `AncestryChanged` 발화 등)를 언제 어떻게 할지는 base가
+  정하지 않고 quad-roblox 등 백엔드 Handler 엔드포인트가 처리(기존
+  "base는 추상 재조정 로직, backend는 실제 트리 조작"이라는 패키지
+  경계 원칙 그대로 재적용, 새 분리 아님). 제거된 구간이 뒤 요소를 당기고
+  삽입된 구간이 다시 밀어내는 게 순수하게 겹치면 상쇄되는 부분이 있어
+  `Extract 반복 + Add 반복`보다 실제 이동 계산량도 더 적음.
 - **`Get`/`IndexOf` 신설, 원래 "YAGNI"로 뺐던 것을 재추가.** 처음엔
   "`:List`가 자기 key→element 맵을 따로 들고 있어 Slot 내부 상태 조회가
   불필요"하다고 판단해 드롭했으나, 위 인덱스 기준 전환과 맞물려 다시
@@ -375,16 +393,22 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
     에러.
   - `Extract(index, newElement)`: `newElement`도 `Add`와 동일한 검증
     (이미 마운트/타입 제약) 적용.
+  - `Splice(index, removeCount, ...newElements)`: `index`는 `Add`와 같은
+    범위(1..현재 개수+1), `removeCount`는 `index`부터 실제 남은 개수를
+    못 넘으면 에러(음수도 에러) — clamp 안 함, 나머지 CRUD와 같은
+    fail-fast 톤. `newElements` 각각에 `Add`와 동일한 검증(이미 마운트/
+    타입 제약) 적용, 검증은 실제 mutate 전에 전부 먼저 통과해야 함
+    (일부만 적용된 채 중간에 에러나는 반쪽 상태 방지).
   - `Swap`: `indexA`/`indexB` 중 하나라도 범위 밖이면 에러 — 단
     `Swap(i, i)`(같은 인덱스)는 위치가 안 바뀌므로 에러 없이 no-op.
 - **`Move`/`Swap`은 반환값 없음(void)** — 내부 재배치만 수행, 멤버십
   weak-set을 안 건드림(요소가 Slot을 떠난 적이 없으므로) — 그래서 `Add`/
   `Remove`/`Extract`보다 저렴함.
 - **공개 CRUD 중 실제로 mutate하는 것(`Add`/`Remove`/`Extract`/
-  `ExtractAll`/`Clear`/`Move`/`Swap`)은 "가드 확인 + `raw*` 위임"의 얇은
-  wrapper** — `self._listed`(`:List`가 설치돼 있으면 수동 CRUD 금지)만
-  확인하고 실제 로직은 `rawAdd`/`rawRemove`/`rawExtract`/`rawClear`/
-  `rawMove`/`rawSwap`에 있음 — 이 `raw*` 함수들이 `:List`의 reconcile이
+  `ExtractAll`/`Splice`/`Clear`/`Move`/`Swap`)은 "가드 확인 + `raw*` 위임"의
+  얇은 wrapper** — `self._listed`(`:List`가 설치돼 있으면 수동 CRUD 금지)만
+  확인하고 실제 로직은 `rawAdd`/`rawRemove`/`rawExtract`/`rawSplice`/
+  `rawClear`/`rawMove`/`rawSwap`에 있음 — 이 `raw*` 함수들이 `:List`의 reconcile이
   가드 없이 직접 호출하는 바로 그 함수(아래 "`Slot:List`" 절의 "구현"
   참고). 공개 메소드에 로직이 따로 있는 게 아니라 전부 이 한 세트를
   공유. **`Get`/`IndexOf`는 순수 읽기라 이 가드 대상 아님** — `:List`가
