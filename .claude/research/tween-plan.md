@@ -1,4 +1,4 @@
-# Tween / 애니메이션 플러깅 (구조+옵션 값 모양 확정 — `Animate` 시그니처/자연완료 북키핑만 남음)
+# Tween / 애니메이션 플러깅 (구조+옵션 값 모양+`Animate` 확정 — 자연완료 북키핑만 남음)
 
 **상태**: research — **2026-08-10 세션에서 구조 전체가 재설계됨.** 기존
 "`v`가 Store인 아무 `k`나 잡는 우선순위 최상위 Dispatch 핸들러" 모델은
@@ -10,11 +10,11 @@
 tweenData...)] = storeValue`)은 `archive/tween-special-bind-key-reversed.md`로
 이전됨** — 원문/역전 사유는 거기 보존, 이 문서는 새 모델만 서술.
 
-**2026-08-12 세션에서 옵션 값 모양+override 정책 이름까지 전부 확정됨**
-(아래 "확정: `Tween{...}` 최종 모양" 절) — 남은 건 `Animate` 콤비네이터의
-정확한 시그니처와 자연 완료(Completed) 시 북키핑 정리 여부뿐, 둘 다 다음
-세션으로 미룸. `initValue`는 사용자가 필요해지면 직접 처리하기로 확정
-(에이전트 작업 범위에서 제외, 아래 해당 절 참고). 원본:
+**2026-08-12 세션에서 옵션 값 모양+override 정책 이름+`Animate` 콤비네이터
+시그니처까지 전부 확정됨**(아래 "확정: `Tween{...}` 최종 모양"/"`Animate`
+콤비네이터" 절) — 남은 건 자연 완료(Completed) 시 북키핑 정리 여부뿐.
+`initValue`는 사용자가 필요해지면 직접 처리하기로 확정(에이전트 작업
+범위에서 제외, 아래 해당 절 참고). 원본:
 `.claude/initreq/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
 항상 먼저 캐치한다" / "네임스페이스드 객체" 절. Fusion의 Tween/Spring이
 반응 그래프 안에 있는 설계는 명시적 반면교사 — `reference/
@@ -179,38 +179,96 @@ State<T | Tween<T>>`가 나옴 — Modifier/State/Source/StoreBind 코드엔
 참가자" 그룹으로 분류해뒀던 건 부정확했던 것으로 이번에 정정(아래
 "패키지 경계" 절 참고).
 
-## `useTween`(트윈 우회) — 해소됨, 새 옵션 필드 불필요
+## `Animate` 콤비네이터 — 확정 (2026-08-12 세션)
 
-이전엔 `Tween{useTween=state<boolean>}`처럼 `Tween` 생성자 안에 별도
-옵션 필드를 두는 방향으로 열려 있었으나, 값-레벨 래퍼 모델에선 **이미
-있는 `state:Apply(factory)`/`:Compute`만으로 공짜로 풀림** — 새 필드
-불필요:
+**동기**: `Tween{Value=..., Style=..., ...}`을 매번 손으로 `:Compute` 안에서
+조립하는 건, 값(`Value`)만 바뀔 뿐 옵션(`Style`/`Time`/`Override`...)은
+거의 고정인 흔한 케이스에서 번거로움. `Animate`는 이 흔한 케이스만 감싸는
+얇은 sugar — 다시 보니 매우 단순해서(사용자 표현: "생각해보니 엄청
+간단하다") 다음 세션으로 미룰 이유가 없어 이번 세션에 바로 확정.
+
+**모양**: `Tween`의 옵션(`Value` 제외 전부)을 그대로 받되, **각 필드가
+`T | State<T>`를 받을 수 있음** — `Tween{...}` 자신의 필드는 plain만
+받는 것과 대조적(위 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절).
+모순이 아님: `Animate`가 반환하는 함수 안에서 각 필드를 **`:Get()`으로
+한 번 풀어 plain 값으로 만든 뒤에만** `Tween{...}`에 넘기므로, `Tween`
+쪽 불변식(plain-only)은 그대로 유지됨.
 
 ```lua
--- reduceMotion: State<boolean>
-Position = mySource:Apply(Animate(reduceMotion, {Time = 0.3}))
-```
+local function resolve(v)
+  if isState(v) then
+    return v:Get()
+  else
+    return v
+  end
+end
 
-`Animate(reduceMotion, opts)`는 커링 팩토리로, 개념상 다음과 같은 모양:
-
-```lua
-return function(state)
-  return state:Compute(function(v)
-    if reduceMotion:Get() then
-      return v
-    else
-      return Tween{Value = v, Time = opts.Time}
-    end
-  end)
+local function Animate(info)
+  return function(self)
+    return Tween{
+      Value = self:Get(),
+      Info = resolve(info.Info),
+      Time = resolve(info.Time),
+      Style = resolve(info.Style),
+      Direction = resolve(info.Direction),
+      RepeatCount = resolve(info.RepeatCount),
+      Reverses = resolve(info.Reverses),
+      DelayTime = resolve(info.DelayTime),
+      Override = resolve(info.Override),
+    }
+  end
 end
 ```
 
-`reduceMotion`이 바뀌면 `:Compute`가 재계산되어 StoreBind가 자연히 새
-`realv`(plain 또는 Tween-wrapped)로 재-dispatch — PropertyHandler는 평소처럼
-그 값만 보고 처리하면 됨, 우회 로직을 따로 알 필요 없음. **`Animate`는
-base 프리미티브가 아니라 quad-roblox가 제공하는 자유 함수 조합기**(아래
-"패키지 경계" 절) — `Modifier:Apply(Boldify(10))` 커링 패턴과 완전히
-같은 모양이라 base에 새로 추가할 게 없음.
+`resolve`가 `and`/`or` 삼항 관용구가 아니라 `if-then-else`인 이유는
+`base/bind-system-plan.md`의 2026-08-12 정정 노트와 같음 — `Override`
+등 필드가 `false`일 수 있는 값이면 `isState(v) and v:Get() or v` 식은
+`v:Get()`이 falsy일 때 조용히 `v`(State 객체 자신)로 새는 버그가 됨.
+
+**왜 `:Compute`에 직접 넘길 수 있는가**: `Animate(info)`가 반환하는
+`function(self) ... end`는 `:Compute(fn)`의 콜백 시그니처(`fn(self,
+previous?, ...deps)`, `self`는 raw 값이 아니라 lazy State 핸들 —
+`bind-system-plan.md` "self/with 값 둘 다 lazy State 핸들로 통일" 절)와
+정확히 일치 — 그래서 `state:Compute(Animate{Style=...})`처럼 **바로**
+넘기면 됨, 예전 `useTween` 스케치가 필요로 했던 `:Apply` 경유가 불필요:
+
+```lua
+-- 슈거로 충분한 흔한 케이스
+Position = mySource:Compute(Animate{Style = Enum.EasingStyle.Bounce, Time = 0.3})
+```
+
+**`Style`/`Override` 등이 State여도 값 변경 자체가 재애니메이션을
+트리거하지 않음 — 의도된 동작.** `Animate{...}`가 반환한 `fn`은
+`self`(= `mySource`, `Value`가 될 State)가 바뀔 때만 `:Compute`에
+의해 다시 불림 — `info.Style`이 State여도 `:Compute`의 구독 목록에
+안 걸림(`resolve`가 그냥 `fn` 본문 안에서 클로저로 읽을 뿐, `:With`/
+trailing-deps로 선언 안 됨). 그래서 `Style`이 바뀌어도 그 자체로는
+아무 일도 안 일어나고, 다음에 `Value`가 실제로 바뀔 때 그 시점의
+최신 `Style`이 자연히 반영됨. 사용자가 직접 짚은 근거: "style 같은
+게 바뀐다고 다시 애니메이션을 수행하는 경우는 없다" — 실사용 요구와
+정확히 일치하는 동작이라 별도 트리거 배선이 오히려 불필요한
+복잡도였을 것.
+
+**구 `useTween`(reduceMotion 우회) 스케치는 이 설계로 대체됨** — 이전엔
+`Animate(cond, opts)`처럼 조건 인자를 받아 내부에서 plain/Tween 분기하는
+전용 2-인자 시그니처를 검토했으나, 새 `Animate(info)`는 그 조건 분기를
+아예 안 가짐(단일 책임 유지). 우회가 필요하면 `Animate`를 감싸는 평범한
+`:Compute` 클로저로 여전히 표현 가능 — 새 프리미티브 불필요:
+
+```lua
+-- reduceMotion: State<boolean>
+Position = mySource:Compute(function(self)
+  if reduceMotion:Get() then
+    return self:Get()
+  end
+  return Animate{Style = Enum.EasingStyle.Bounce}(self)
+end)
+```
+
+**base 프리미티브 아님 — 여전히 quad-roblox 유틸**(아래 "패키지 경계"
+절) — `Tween<T>` 값 타입/`isTween`만 base(`quad-base/Tween.luau`)에
+있고, `Animate`는 이미 있는 `:Compute`/`Tween{...}`/`isState`를 조합한
+quad-roblox 레벨 편의 함수라 base 계약에 영향 없음.
 
 ## 초기 진입 애니메이션(`initValue`) — **에이전트 작업 범위 제외로 확정, 사용자가 직접 처리**
 
@@ -228,20 +286,6 @@ base 프리미티브가 아니라 quad-roblox가 제공하는 자유 함수 조�
 다른 base 요소와 깊게 안 얽혀 있어(거의 전부 `Handlers/Property.luau`
 한 파일 + 릴레이션 슬롯) 사용자가 직접 처리하는 데 범위상 문제가 없음.
 에이전트는 이 항목을 임의로 착수하지 말 것.
-
-## `Animate` 콤비네이터 — quad-roblox 유틸(base 아님), 다음 세션으로 미룸
-
-`Animate(condOrOpts, opts?)`류 팩토리를 quad-roblox가 제공, `:Apply`로
-체이닝해서 쓰는 용도. 상세 시그니처는 미확정(예: `Animate({ease=...,
-useAnimate=state<boolean>})`처럼 조건과 옵션을 하나의 테이블로 합치는
-안도 검토 가치 있음 — **2026-08-12 세션에서 다음 세션으로 명시적으로
-미룸**(단순히 `Tween{...}`/`:Apply`/`:Compute`를 감싸는 슈거라
-`Slot:List`류와 성격이 비슷함, 별도 세션에서 다루기로 함). 핵심은 **base
-프리미티브가 아니라는 것** — `Tween<T>` 값 타입/`isTween`만
-base(`quad-base/Tween.luau`)에 있고, `Animate`는 이미 있는 `:Apply`/
-`:Compute`/`Tween{...}`를 조합한 quad-roblox 레벨 편의 함수라 나중에
-이름/모양을 자유롭게 바꿔도 base 계약에 영향이 없음 — 저비용
-고효율(사용자 표현) 엔지니어링으로 판단.
 
 ## 패키지 경계 — `Tag`가 이미 밟은 것과 같은 분리 (2026-08-10 세션 확정)
 
@@ -332,12 +376,8 @@ Tween(opts: {
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
 **2026-08-12 세션에서 옵션 값 모양/override 정책 이름/릴레이션 슬롯 저장
-모양까지 전부 확정됨** — 아래 두 개만 남음, 둘 다 다음 세션 이후로 명시적
-연기(급하지 않음):
+모양/`Animate` 콤비네이터 시그니처까지 전부 확정됨** — 아래 하나만 남음:
 
-- `Animate` 콤비네이터의 정확한 시그니처(조건/옵션 분리 vs 통합) — 단순
-  `Tween{...}`/`:Apply`/`:Compute` 슈거라 `Slot:List`류와 성격이 비슷함,
-  다음 세션에서 다룸.
 - 자연 완료(Completed) 시 per-instance 북키핑 정리 여부(3-상태 슬롯을
   `true`로 되돌리는 시점) — `research/pre-implementation-audit.md` 2-10번
   참고, M11 착수 시 확정.

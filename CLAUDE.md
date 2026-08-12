@@ -47,8 +47,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   `framework-comparison-findings.md`/`additional-primitives-plan.md`(2026-08-09
   세 번째 세션에 마지막 열린 항목까지 전부 해소, 이제 배경 자료용)/
   `pre-implementation-audit.md`/`v1-compat-plan.md`
-  — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에서 거의 다 닫힘, 남은 건
-  `Animate` 시그니처 정도로 더 이상 급하지 않음). 최신 목록·우선순위는
+  — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에서 사실상 다 닫힘, 남은
+  건 자연완료 북키핑 정도로 더 이상 급하지 않음). 최신 목록·우선순위는
   `.claude/README.md`가 소스, 여기서 개수 반복 안 함(과거에 "두 개뿐"이라
   적어놨다가 새 문서 추가될 때마다 안 갱신되는 패턴이 반복돼서 아예 안
   세기로 함).
@@ -435,3 +435,17 @@ retract는 Tag처럼 확실히 청소). 이름 충돌 방지로 기존 단일 �
 `TweenBase` API 현실상 나머지 옵션들이 관찰상 Cancel과 동일했음), `initValue`는
 에이전트 범위 제외하고 사용자가 직접 처리하기로 확정. `Animate` 시그니처와
 자연완료 북키핑만 다음 세션으로 연기.
+
+**2026-08-12 두 번째 세션 — `Animate` 콤비네이터 확정, `.claude/` and/or 삼항 관용구 감사**
+(`session/2026-08-12-02-animate-confirmed-and-or-audit.md`)
+"다음 세션"으로 미뤘던 `Animate`를 사용자가 곧바로 간단한 구체안으로
+확정: `Tween` opts(`Value` 제외)를 `T|State<T>`로 받아 각 필드를 resolve한
+뒤 `Tween{...}`을 반환하는 `function(self)...end` — `:Compute(fn)`의
+`self`-lazy-핸들 계약과 정확히 일치해 `state:Compute(Animate{...})`로
+바로 연결(구 `useTween` 2-인자 스케치 대체). 옵션이 State여도 값 변경이
+재애니메이션을 트리거하지 않는 게 의도된 동작임을 확정. 별도로 사용자가
+Luau `if-then-else` 표현식을 언급하며 `.claude/base` 전역 and/or 삼항
+관용구를 감사 — `bind-system-plan.md`의 `Dispatch.retractUnder`에서 실제
+falsy-값 버그(`v`가 `false`일 때 `nil`로 새는 문제) 발견·수정, 나머지
+히트는 가운데 값이 테이블/숫자라 안전 확인. `research/tween-plan.md`는
+이걸로 자연완료 북키핑 하나만 남기고 사실상 마감.

@@ -377,11 +377,21 @@ function Dispatch.retractUnder(inst, k, keep, v)
         for i, h in list do if h == keep then cutoff = i break end end
     end
     for i = #list, cutoff + 1, -1 do
-        list[i].retract(inst, k, i == cutoff + 1 and v or nil)
+        list[i].retract(inst, k, if i == cutoff + 1 then v else nil)
         list[i] = nil
     end
 end
 ```
+
+**[2026-08-12 세션에서 정정]** `list[i].retract(...)`의 세 번째 인자가
+원래 `i == cutoff + 1 and v or nil`(and/or 삼항 관용구)이었으나, `v`가
+`false`일 때(정당한 boolean 프로퍼티 값) `and`의 결과가 falsy가 되어
+`i == cutoff + 1`이 참이어도 `or nil`로 새는 조용한 버그였음 — Luau의
+`if-then-else` 표현식(2021년 도입)으로 교체. **일반 규칙**: `cond and
+truthyOnly or fallback` 관용구는 가운데 값이 테이블/항상-truthy 값일
+때만 안전(예: `Tag(...)`/`Length:Get()`처럼 절대 `nil`/`false`가 될 수
+없는 값) — 임의 `T`(boolean 포함) 값이 가운데 올 수 있으면 반드시
+`if cond then a else b`를 쓸 것.
 
 - **`handler.process(inst,k,v)`를 `Dispatch.process`를 거치지 않고 직접
   호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할 것.**

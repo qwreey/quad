@@ -287,7 +287,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | Batch(lexical) 기각, Context(+레이어드 Store) 기각 | `archive/batch-rejected.md`, `archive/context-rejected.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `reference/comparison-fusion-vide.md` |
 | v1 내부 동작 스냅샷 | `reference/quad-v1-architecture.md` |
-| 트윈 — 값-레벨 `Tween<T>` 래퍼(2026-08-10)+옵션 값 모양·override 정책(2026-08-12) 전부 확정, `Animate` 시그니처·자연완료 북키핑만 남음 | `research/tween-plan.md` |
+| 트윈 — 값-레벨 `Tween<T>` 래퍼(2026-08-10)+옵션 값 모양·override 정책·`Animate` 콤비네이터(2026-08-12) 전부 확정, 자연완료 북키핑 하나만 남음 | `research/tween-plan.md` |
 | quad2-try(폐기된 이전 시도) 리서치 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` COW 전부 죽은 접근으로 확인, 반복 조사 금지 | `base/bind-system-plan.md` |
 
 ---
