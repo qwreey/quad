@@ -642,5 +642,6 @@ vararg, `Slot:Splice` 신설** (`session/2026-08-12-15-slot-in-slot-relate-scope
 removeCount, ...newElements)` CRUD 신설 — 구간 제거+삽입을 shift/recompute
 1회로 묶는 순수 최적화. `newElements`는 `Tag:Added`와 달리 의도적으로
 vararg 유지(요소 개수가 대개 소수로 고정, 동적이면 Slot-in-Slot으로 흡수
-가능, `T|{T}`는 `Slot`의 `T` 자체가 테이블이라 오히려 모호해짐,
-`slot-plan.md`).
+가능, `T|{T}`는 `Slot<T>`가 base 레벨에선 `T`가 뭔지 모르는 제네릭이라
+바깥 `{}`가 단일 T인지 배열인지 원천적으로 판별 불가능해서 오히려
+모호해짐 — `Slot`의 T에 우연히 Slot이 섞여서가 아님, `slot-plan.md`).

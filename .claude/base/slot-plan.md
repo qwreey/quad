@@ -376,13 +376,19 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   `Slot:Add`가 이미 받는 `State<T>`/nested `Slot` 요소로 흡수 가능
   (Slot-in-Slot, 위 "반응형 raw 요소"/"Slot-in-Slot 중첩" 절) — `Splice`
   자체가 동적 배치를 떠받칠 이유가 없음. (2) **`T | {T}`가 여기선 오히려
-  틀림** — `Tag`의 `T`는 항상 plain `string`이라 `type(v) == "table"`
-  분기가 "배열이냐 아니냐"를 안전하게 구분하지만, `Slot`의 `T`(`Instance
-  | Slot<Instance>`)는 `Slot` 자신이 이미 테이블이라 "단일 `T`(마침
-  테이블인)"와 "`{T}` 배열"을 구분할 방법이 없음 — 억지로 하려면
-  결국 항상 명시적으로 감싸거나 풀어야 해서 vararg 대비 얻는 게 없음.
-  이미 `{T}` 배열을 들고 있는 호출부는 `Splice(i, n, table.unpack(list))`로
-  충분(리스트가 하나뿐이라 tail-position 제약에도 안 걸림).
+  틀림 — 이유는 "`Slot`의 `T`가 우연히 테이블(`Instance | Slot<Instance>`)
+  이라서"가 아니라, `Slot<T>`가 base 레벨에선 `T`가 뭔지 전혀 모르는
+  제네릭이기 때문(다른 백엔드면 테이블일 수도, userdata일 수도, 그 밖에
+  뭐든 될 수 있음)** — `Tag`는 `T=string`으로 항상 고정·확정돼 있어
+  `type(v) == "table"` 분기가 "배열이냐 아니냐"를 안전하게 구분하지만,
+  `Splice(idx, len, {item1, item2})`의 `{}`가 "그 자체로 하나의 `T`
+  값(마침 테이블로 표현된)"인지 "펼쳐야 할 `{T}` 배열"인지는 `T`가 뭔지
+  base가 애초에 모르므로 원천적으로 판별 불가능(quad-roblox에서 `T`에
+  `Slot`이 섞여있는 건 이 문제를 드러내는 한 사례일 뿐, 근본 원인이
+  아님). 억지로 하려면 결국 항상 명시적으로 감싸거나 풀어야 해서 vararg
+  대비 얻는 게 없음. 이미 `{T}` 배열을 들고 있는 호출부는
+  `Splice(i, n, table.unpack(list))`로 충분(리스트가 하나뿐이라
+  tail-position 제약에도 안 걸림).
 - **`Get`/`IndexOf` 신설, 원래 "YAGNI"로 뺐던 것을 재추가.** 처음엔
   "`:List`가 자기 key→element 맵을 따로 들고 있어 Slot 내부 상태 조회가
   불필요"하다고 판단해 드롭했으나, 위 인덱스 기준 전환과 맞물려 다시
