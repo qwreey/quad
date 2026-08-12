@@ -12,7 +12,10 @@ tweenData...)] = storeValue`)은 `archive/tween-special-bind-key-reversed.md`로
 
 **2026-08-12 세션에서 옵션 값 모양+override 정책 이름+`Animate` 콤비네이터
 시그니처까지 전부 확정됨**(아래 "확정: `Tween{...}` 최종 모양"/"`Animate`
-콤비네이터" 절) — 남은 건 자연 완료(Completed) 시 북키핑 정리 여부뿐.
+콤비네이터" 절), **같은 날 후속 논의에서 `Animate`의 호출 경로가
+`:Compute` 직결 → `:Apply`로 정정됨**(아래 "왜 `:Apply`로 정정됐는가" 절,
+`research/operator-sugar-plan.md`와 같은 근거) — 남은 건 자연 완료
+(Completed) 시 북키핑 정리 여부뿐.
 `initValue`는 사용자가 필요해지면 직접 처리하기로 확정(에이전트 작업
 범위에서 제외, 아래 해당 절 참고). 원본:
 `.claude/initreq/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
@@ -204,29 +207,34 @@ local function resolve(v)
   end
 end
 
+-- Animate(info)는 factory(self) -> State를 반환 — :Apply 전용
+-- (2026-08-12 세션 후속 논의로 :Compute 직결에서 정정됨, 아래
+-- "왜 `:Apply`로 정정됐는가" 절 참고)
 local function Animate(info)
   return function(self)
-    local v = self:Get()
+    return self:Compute(function(selfH)
+      local v = selfH:Get()
 
-    local canAnimate = resolve(info.CanAnimate)
-    if canAnimate == nil then
-      canAnimate = true   -- CanAnimate 생략 시 기본 애니메이션 활성
-    end
-    if not canAnimate then
-      return v   -- Tween로 안 감쌈 — 그대로 plain 값 반환(애니메이션 우회)
-    end
+      local canAnimate = resolve(info.CanAnimate)
+      if canAnimate == nil then
+        canAnimate = true   -- CanAnimate 생략 시 기본 애니메이션 활성
+      end
+      if not canAnimate then
+        return v   -- Tween로 안 감쌈 — 그대로 plain 값 반환(애니메이션 우회)
+      end
 
-    return Tween{
-      Value = v,
-      Info = resolve(info.Info),
-      Time = resolve(info.Time),
-      Style = resolve(info.Style),
-      Direction = resolve(info.Direction),
-      RepeatCount = resolve(info.RepeatCount),
-      Reverses = resolve(info.Reverses),
-      DelayTime = resolve(info.DelayTime),
-      Override = resolve(info.Override),
-    }
+      return Tween{
+        Value = v,
+        Info = resolve(info.Info),
+        Time = resolve(info.Time),
+        Style = resolve(info.Style),
+        Direction = resolve(info.Direction),
+        RepeatCount = resolve(info.RepeatCount),
+        Reverses = resolve(info.Reverses),
+        DelayTime = resolve(info.DelayTime),
+        Override = resolve(info.Override),
+      }
+    end)
   end
 end
 ```
@@ -244,7 +252,7 @@ reduceMotion류 접근성 우회가 이 필드 하나로 바로 표현됨:
 
 ```lua
 -- reduceMotion: State<boolean>
-Position = mySource:Compute(Animate{
+Position = mySource:Apply(Animate{
   Style = Enum.EasingStyle.Bounce,
   CanAnimate = reduceMotion:Compute(function(r) return not r:Get() end),
 })
@@ -261,29 +269,51 @@ State여도..." 절과 같은 이유.
 `CanAnimate`로 통일 — 이 필드 하나만 다른 케이싱을 쓸 특별한 이유가
 없다고 판단(확정은 아님, 다음 세션에 뒤집혀도 비용 낮음).
 
-**왜 `:Compute`에 직접 넘길 수 있는가**: `Animate(info)`가 반환하는
-`function(self) ... end`는 `:Compute(fn)`의 콜백 시그니처(`fn(self,
-previous?, ...deps)`, `self`는 raw 값이 아니라 lazy State 핸들 —
-`bind-system-plan.md` "self/with 값 둘 다 lazy State 핸들로 통일" 절)와
-정확히 일치 — 그래서 `state:Compute(Animate{Style=...})`처럼 **바로**
-넘기면 됨, 예전 `useTween` 스케치가 필요로 했던 `:Apply` 경유가 불필요:
+**왜 `:Apply`로 정정됐는가(2026-08-12 세션 후속 논의)**: 처음엔 `Animate(info)`가
+`:Compute(fn)`의 콜백 시그니처(`fn(self, previous?, ...deps)`)와 모양이
+정확히 일치한다는 이유로 `state:Compute(Animate{...})`처럼 바로 넘기고
+`:Apply` 경유를 "불필요한 한 겹"으로 보고 피했음. 이후 `research/
+operator-sugar-plan.md`의 비슷한 콤비네이터(`Sum`/`Not` 등) 논의에서
+재검토됨 — 결론은 반대: **재사용 가능한 이름 붙은 콤비네이터는 스타일이
+아니라 정합성 때문에 `:Apply`가 맞음.**
+
+- `Animate(info)` 자체는 옵션이 deps로 등록되지 않아(아래 절) 이 특정
+  사례에서 `:Compute` 직결이 실제로 깨지진 않았지만, 같은 패밀리인
+  `Sum(a,b,c)`류는 `local addTax = Sum(tax, shipping)`처럼 만들어서
+  재사용하려는 순간 `:Compute` 직결이 실제로 깨짐(quad는 Vide식 암묵적
+  자동 추적을 이미 기각해서, `tax`/`shipping`을 클로저로만 읽으면 그
+  값이 바뀌어도 재계산이 안 트리거됨 — `:Compute`의 구독 목록은 오직
+  그 호출문 자체의 trailing args로만 채워짐). `:Apply`는 factory가
+  내부에서 `self:Compute(fn, tax, shipping)`을 스스로 다시 전달하므로
+  이 문제가 없음. 상세 근거는 `research/operator-sugar-plan.md` "왜
+  `:Apply`인가" 절 참고.
+- **일관성**: "이 라이브러리가 제공하는 이름 붙은 콤비네이터는 항상
+  `:Apply`로 붙인다"는 단일 규칙이, "`Animate`만 예외적으로 `:Compute`
+  직결"보다 기억하기 쉬움 — `bind-system-plan.md`가 이미 `:Apply` 절에서
+  `state:Apply(makeFormatter("ko-KR"))`를 커링 팩토리의 정석 예시로
+  들어둔 것과도 맞음(오히려 원래 `Animate`의 `:Compute` 선택이 이
+  기존 관용구에서 벗어난 예외였음).
+
+**결론 — `Animate(info)`는 `factory(self) -> State`를 반환하고 항상
+`:Apply`로 붙인다**(위 구현 코드 블록도 이렇게 갱신됨 — 내부에서
+`self:Compute(...)`를 직접 호출):
 
 ```lua
 -- 슈거로 충분한 흔한 케이스
-Position = mySource:Compute(Animate{Style = Enum.EasingStyle.Bounce, Time = 0.3})
+Position = mySource:Apply(Animate{Style = Enum.EasingStyle.Bounce, Time = 0.3})
 ```
 
 **`Style`/`Override` 등이 State여도 값 변경 자체가 재애니메이션을
-트리거하지 않음 — 의도된 동작.** `Animate{...}`가 반환한 `fn`은
-`self`(= `mySource`, `Value`가 될 State)가 바뀔 때만 `:Compute`에
-의해 다시 불림 — `info.Style`이 State여도 `:Compute`의 구독 목록에
-안 걸림(`resolve`가 그냥 `fn` 본문 안에서 클로저로 읽을 뿐, `:With`/
-trailing-deps로 선언 안 됨). 그래서 `Style`이 바뀌어도 그 자체로는
-아무 일도 안 일어나고, 다음에 `Value`가 실제로 바뀔 때 그 시점의
-최신 `Style`이 자연히 반영됨. 사용자가 직접 짚은 근거: "style 같은
-게 바뀐다고 다시 애니메이션을 수행하는 경우는 없다" — 실사용 요구와
-정확히 일치하는 동작이라 별도 트리거 배선이 오히려 불필요한
-복잡도였을 것.
+트리거하지 않음 — 의도된 동작(이 부분은 `:Apply`로 바뀌어도 동일).**
+`Animate{...}`가 반환한 factory 내부의 `self:Compute(fn)` 호출은
+`selfH`(= `mySource`, `Value`가 될 State)가 바뀔 때만 다시 불림 —
+`info.Style`이 State여도 이 내부 `:Compute`의 trailing deps로 안
+넘어가므로 구독 목록에 안 걸림(`resolve`가 그냥 `fn` 본문 안에서
+클로저로 읽을 뿐). 그래서 `Style`이 바뀌어도 그 자체로는 아무 일도 안
+일어나고, 다음에 `Value`가 실제로 바뀔 때 그 시점의 최신 `Style`이
+자연히 반영됨. 사용자가 직접 짚은 근거: "style 같은 게 바뀐다고 다시
+애니메이션을 수행하는 경우는 없다" — 실사용 요구와 정확히 일치하는
+동작이라 별도 트리거 배선이 오히려 불필요한 복잡도였을 것.
 
 **구 `useTween`(reduceMotion 우회) 스케치는 `CanAnimate` 필드로 대체됨**
 (위 "`CanAnimate`" 절) — 흔한 단순 토글은 그걸로 충분. 이전에 검토했던
@@ -294,13 +324,17 @@ trailing-deps로 선언 안 됨). 그래서 `Style`이 바뀌어도 그 자체�
 불필요:
 
 ```lua
-Position = mySource:Compute(function(self)
+Position = mySource:Apply(function(self)
   if someComplexCondition() then
-    return someOtherValue
+    return self:Compute(function(h) return someOtherValue end)
   end
   return Animate{Style = Enum.EasingStyle.Bounce}(self)
 end)
 ```
+
+(`Animate{...}(self)`가 이제 plain 값이 아니라 `State`를 반환하므로,
+탈출 분기도 똑같이 `self:Compute(...)`로 감싸 타입을 맞춰야 함 —
+`:Apply`로 붙이는 factory는 항상 `State`를 반환해야 한다는 불변식.)
 
 **base 프리미티브 아님 — 여전히 quad-roblox 유틸**(아래 "패키지 경계"
 절) — `Tween<T>` 값 타입/`isTween`만 base(`quad-base/Tween.luau`)에

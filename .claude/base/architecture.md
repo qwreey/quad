@@ -170,7 +170,7 @@ quad/
         │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
-        ├── Animate.luau           # `Animate(condOrOpts, opts?)` 편의 콤비네이터 — `:Apply`/`:Compute`/`Tween{...}` 조합, base 프리미티브 아님(`research/tween-plan.md`)
+        ├── Animate.luau           # `Animate(info)` 편의 콤비네이터 — `factory(self)->State`, `:Apply`로 붙임(내부는 `:Compute`/`Tween{...}` 조합), base 프리미티브 아님(`research/tween-plan.md`)
         ├── DI/
         │   └── init.luau          # 제네릭 생성자 + ~25개 정적 필드(UIInstances)
         └── init.luau

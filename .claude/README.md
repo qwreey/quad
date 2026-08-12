@@ -56,7 +56,7 @@
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
-| `tween-plan.md` | **[2026-08-12 세션에서 구조+옵션 값 모양+override 정책+`Animate` 콤비네이터까지 전부 확정]** 값-레벨 `Tween<T>` 래퍼(PropertyHandler가 소비), 구 특수 bind key 모델은 `archive/tween-special-bind-key-reversed.md`로 이전. 3-상태 릴레이션 슬롯(`{Tween,Value}\|true\|nil`), `T'=T\|Tween<T>` 타입 치환. 옵션 값 모양은 `Info: TweenInfo?` 우선+편의 필드(`Time`/`Style`/...) 폴백, override는 `Tween.Cancel`(기본)/`Tween.Finish` 2값. `Animate(info)`는 `Tween` opts(`Value` 제외)를 `T\|State<T>`로 받아 `:Compute`에 바로 넘기는 sugar로 확정(구 `useTween` 스케치 대체). `initValue`는 사용자가 직접 처리(에이전트 범위 제외), 남은 건 자연완료 북키핑 하나뿐 | 하 — 사실상 다 닫힘 |
+| `tween-plan.md` | **[2026-08-12 세션에서 구조+옵션 값 모양+override 정책+`Animate` 콤비네이터까지 전부 확정]** 값-레벨 `Tween<T>` 래퍼(PropertyHandler가 소비), 구 특수 bind key 모델은 `archive/tween-special-bind-key-reversed.md`로 이전. 3-상태 릴레이션 슬롯(`{Tween,Value}\|true\|nil`), `T'=T\|Tween<T>` 타입 치환. 옵션 값 모양은 `Info: TweenInfo?` 우선+편의 필드(`Time`/`Style`/...) 폴백, override는 `Tween.Cancel`(기본)/`Tween.Finish` 2값. `Animate(info)`는 `Tween` opts(`Value` 제외)를 `T\|State<T>`로 받아 `factory(self)->State`를 반환하는 sugar로 확정(구 `useTween` 스케치 대체), 호출 경로는 같은 세션 후속 논의로 `:Compute`→`:Apply` 정정(재사용 가능한 콤비네이터 정합성 문제, `operator-sugar-plan.md`와 같은 근거). `initValue`는 사용자가 직접 처리(에이전트 범위 제외), 남은 건 자연완료 북키핑 하나뿐 | 하 — 사실상 다 닫힘 |
 | `existing-instance-bind-plan.md` | 이미 생성된 인스턴스 재바인드 — 착수 안 하되 "미지원" 확정도 안 함, 열린 가능성 유지 | 하 — v2 초기 스코프 제외 |
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
@@ -64,6 +64,7 @@
 | `framework-comparison-findings.md` | quad vs Fusion/Vide/react-lua 정직한 비교(실 소스 근거) — quad 강점, 진짜 불리한 점 중 고칠 만한 것 3개, 못 고치는 트레이드오프 정리 | 하 — 사용자 검토 후 반영 여부 결정 대기 |
 | `additional-primitives-plan.md` | **[2026-08-09 세 번째 세션, 전부 해소]** 마지막으로 남아있던 키 기반 동적 컬렉션 재조정도 `Slot:List(...)`로 확정되어 `base/slot-plan.md`로 승격 — 이 문서엔 새로 열린 설계 질문 없음, "빈 자리 아닌 것"/"문서화 백로그"/조사 소스 목록만 배경 자료로 유지 | 하 — 배경 리서치 기록용, 열린 결정 없음 |
 | `pre-implementation-audit.md` | M0 착수 직전 크리티컬 감사(2026-08-06 신설) — `base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재검토, 11개 우선순위1(M0~M4 착수 전 확인 권장) + 11개 우선순위2 + 2개 단순화후보 | 상 — M0 착수 전 최소 우선순위1 항목 확인 권장 |
+| `operator-sugar-plan.md` | **[2026-08-12 신설]** `Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 연산자 콤비네이터 슈가 — 메커니즘은 이미 확정된 계약(`Animate`와 동형 패턴) 재사용이라 확정, 네임스페이스 이름만 미정 | 하 — 구현은 맨 마지막(순수 슈가, 없어도 무방, 함수 간 의존 없음), 사용자가 직접 후순위 지정 |
 | `v1-compat-plan.md` | v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat` 패키지, v2→v1 단방향 브리지(`state:Observer()`+v1 프로퍼티 재대입), v2-in-v1/v1-in-v2 두 임베딩 방향의 기술 규칙까지 확정. quad2-try의 `quad-compat`은 빈 폴더로 실제 시도된 적 없었음을 확인 | 하 — Slot이 foreign Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 미결 |
 
 ## `archive/` — 완료됐거나 완전히 뒤집힌 것, 능동 참고 불필요

@@ -133,10 +133,13 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    지원, M0 mock 테스트 하네스와는 별개), 런타임 디버깅 플러그인
    `quad-debug`(Studio 플러그인, 실물 Instance→코드 위치 역추적 — 채널
    실현 가능성은 실측 검증 완료, 세부 API 이름만 남음), 문서 사이트 전체
-   구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵) — 전부 "quad 개발
-   상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는 `.claude/README.md`의
+   구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵), `Operator` 콤비네이터
+   슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — 메커니즘은
+   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막) — 전부 "quad
+   개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는 `.claude/README.md`의
    `research/` 표(`debug-tooling-plan.md`/`documentation-plan.md`/
-   `documentation-content-map.md`/`framework-comparison-findings.md`).
+   `documentation-content-map.md`/`framework-comparison-findings.md`/
+   `operator-sugar-plan.md`).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -467,3 +470,22 @@ State 핸들이라는 기존 확정 계약을 놓친 버그. 같은 클래스의
 `.claude/` 전역에서 찾아 `base/slot-plan.md` 2곳(`LayoutOrder` 예시,
 `Slot:Single`)과 `base/tag-plan.md` 1곳에서 추가로 발견·수정.
 `bind-system-plan.md`에 "이 실수가 반복되기 쉬움" 주의 노트 추가.
+
+**2026-08-12 다섯 번째 세션 — `Operator` 콤비네이터 슈가 신설, `Animate`
+호출 경로를 `:Compute`→`:Apply`로 정정** (`session/2026-08-12-05-operator-sugar-plan.md`)
+기본 연산(산술/논리/비트)을 콤비네이터로 쓰는 슈가 제안(`Not`/`Sum` 등,
+새 프리미티브 아님). 처음엔 0항은 `:Compute`, N항은 `:Apply`로 나눴으나
+후속 논의로 **재사용 가능한 이름 붙은 콤비네이터는 전부 `:Apply`가 맞다는
+쪽으로 정정** — quad가 암묵적 자동 추적을 기각했기 때문에(`base/
+bind-system-plan.md`) `local addTax = Sum(a,b)`처럼 만든 값을 `:Compute`에
+바로 꽂으면 캡처된 deps가 구독 목록에 안 걸려 조용히 멈추는 진짜 버그가
+됨 — 스타일이 아니라 정합성 문제. 같은 근거로 `research/tween-plan.md`의
+`Animate` 호출 경로도 `:Compute(Animate{...})`→`:Apply(Animate{...})`로
+정정(시그니처/동작 자체는 그대로), `base/bind-system-plan.md`의 `:Apply`
+절에 이 관용구를 일반 원칙으로 추가. 네임스페이스 이름(`Operator`/`Op`/`Ops`
+중 미정)만 열린 질문으로 남음. 우선순위는 여전히 사용자가 맨 마지막으로
+직접 지정(순수 슈가, 함수 간 의존 없음) — 구현 착수 안 함. 사용자가
+`:Apply` 통일에 동의, `Sum(a,b,Sum(c,d))` 중첩 flatten 최적화(약한
+`Relate`로 클로저의 operand 목록 추적) 아이디어도 나왔으나 실사용
+사례 나오면 재검토로 보류. `base/architecture.md`의 stale `Animate`
+2-인자 시그니처 코멘트도 이 김에 수정.

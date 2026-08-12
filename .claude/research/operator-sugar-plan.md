@@ -1,0 +1,195 @@
+# Operator 콤비네이터 슈가 — Sum/Product/Not/비트연산 등
+
+**상태**: research — 사용자 요청(2026-08-12 세션)으로 신설, 같은 세션
+후속 논의에서 `:Apply` 경유로 확정(아래 "왜 `:Apply`인가" 절). **구현은
+맨 마지막으로 미룸(사용자 본인이 명시)**: 순수 슈가라 없어도 quad 기능상
+문제없고, 각 함수가 서로 의존이 없어 나중에 통째로 추가하거나 개별
+함수를 지우고 고쳐도 안전 — 우선순위가 낮은 이유. **지금 이 문서를 쓰는
+목적은 구현 착수가 아니라 설계/네이밍 논의를 미리 남겨두는 것뿐.**
+
+## 동기
+
+`:Compute`/`:Apply`는 `fn(self, ...)` 람다를 요구하는데, `not self:Get()`처럼
+정말 단순한 연산에도 매번 `function(self) return not self:Get() end`를
+쓰는 건 번거롭고, 같은 패턴이 코드 여기저기 반복되면 가독성도 떨어짐.
+기본 연산(산술/논리/비트)을 미리 만들어둔 콤비네이터로 표현하면 보기도
+간결해지고 유지보수도 쉬워짐 — 예:
+
+```lua
+-- 지금(람다 매번 작성)
+reduceMotion:Compute(function(self) return not self:Get() end)
+
+-- 슈가로
+reduceMotion:Apply(Operator.Not)  -- 네임스페이스 이름은 미정, 아래 참고
+```
+
+## 메커니즘 — 새 프리미티브 아님, `:Apply(factory)` 위의 순수 함수
+
+**모든 `Operator.*`는 항상 `factory(self) -> State<U>` 모양이고 항상
+`:Apply`로 붙인다** — 인자 없는 것(`Not`)과 커링되는 것(`Sum(a,b,c)`)을
+구분하지 않고 하나의 규칙으로 통일(아래 "왜 `:Apply`인가" 절 근거).
+내부적으로는 `self:Compute(...)`를 호출해 실제 반응형 노드를 만드는
+것뿐 — 새 State/Handler 카테고리 불필요.
+
+```lua
+-- 0항(자기 자신만 변환) — 그 자체로 이미 factory(self) 모양
+Operator.Not = function(self)
+    return self:Compute(function(h)
+        return not h:Get()
+    end)
+end
+
+-- 사용
+reduceMotion:Apply(Operator.Not)
+```
+
+```lua
+-- N항(self + 다른 state들을 결합) — 커링: Sum(a,b,...)가 factory를 반환
+function Operator.Sum(...: State<number>)
+    local deps = {...}
+    return function(self: State<number>)
+        return self:Compute(function(selfH, previous, ...)
+            local total = selfH:Get()
+            for _, h in {...} do
+                total += h:Get()
+            end
+            return total
+        end, table.unpack(deps))
+    end
+end
+
+-- 사용 — 한 번 만들어 이름 붙여 재사용 가능
+local addTaxAndShipping = Operator.Sum(tax, shipping)
+price:Apply(addTaxAndShipping)
+```
+
+`Product`/`And`/`Or`/`Xor`/`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr` 등도 전부
+같은 두 형태(0항은 그 자체가 `factory(self)`, N항은 커링해서 `factory(self)`를
+반환) — 어느 쪽이든 항상 `:Apply`로 붙임. 비트 연산은 Luau에 연산자가
+없어 `bit32` 라이브러리 위에 얇게 얹는 형태가 됨.
+
+## 왜 `:Apply`인가 — 스타일이 아니라 정합성 문제 (2026-08-12 세션, 후속 논의)
+
+**처음엔 "0항은 `:Compute`에 바로, N항만 `:Apply`"로 나눠 썼으나 사용자가
+일관성 문제로 재검토를 요청, 논의 중 실제 정합성 문제까지 발견되어
+`:Apply` 통일로 확정.**
+
+1. **재사용 가능한 커링 팩토리는 `:Compute`로는 안전하게 못 만든다 —
+   진짜 버그 가능성.** quad는 Vide식 암묵적 자동 추적을 이미 기각했음
+   (`bind-system-plan.md` "암묵적 자동 추적 기각") — 의존성은 오직
+   `:With`/`:Compute`의 **그 호출문 자체**에 나열된 trailing args로만
+   등록됨. 그래서 `local addTax = Sum(tax, shipping)`처럼 한 번 만들어
+   재사용하고 싶은 값을 `price:Compute(addTax)`처럼 바로 꽂으면,
+   `addTax` 내부에서 클로저로 캡처한 `tax`/`shipping`을 아무리 `:Get()`
+   해도 **`:Compute`의 구독 목록엔 안 걸림** — `tax`/`shipping`이
+   바뀌어도 조용히 재계산이 안 일어나는 버그가 됨. 이걸 피하려면
+   `price:Compute(addTax, tax, shipping)`처럼 이미 `Sum(...)`에 넘긴
+   deps를 호출부에서 또 나열해야 하는데, 이게 바로 2026-08-11 세션에서
+   "trailing deps를 fn 위치 인자로 노출"하게 만든 그 중복/드리프트
+   위험(`bind-system-plan.md` 해당 절)과 완전히 같은 클래스의 문제 —
+   재사용 가능한 이름을 만드는 의미 자체가 없어짐.
+   **`:Apply`는 이 문제가 원천적으로 없음**: factory가 내부에서
+   `self:Compute(fn, tax, shipping)`을 직접 호출해 자기가 캡처한 deps를
+   스스로 다시 넘기므로(호출자가 재입력하는 게 아니라 factory 자신이
+   한 번 캡처한 값을 그대로 전달), 중복 없이 안전하게 재사용됨 —
+   `price:Apply(addTax)`, `otherPrice:Apply(addTax)` 둘 다 안전.
+2. **기존 문서 관용구와 일치.** `bind-system-plan.md`의 `:Apply` 절이
+   이미 `state:Apply(makeFormatter("ko-KR"))`를 "커링 팩토리 + `:Apply`"의
+   정석 예시로 들어둠 — `Operator.*`/`Animate`가 이 관용구를 따르는 게
+   자연스러움. `Animate`가 `:Compute`를 골랐던 건 오히려 이 기존
+   관용구에서 벗어난 예외였다는 게 이번 논의에서 드러남(`research/
+   tween-plan.md` "왜 `:Apply`인가로 정정" 절 참고).
+3. **일관성 — 0항/N항을 나누지 않음.** `Not`은 deps가 없어서 위 1번
+   문제와 무관하지만, "이 라이브러리의 콤비네이터는 항상 `:Apply`로
+   붙인다"는 단일 규칙을 지키는 게 "0항만 예외적으로 `:Compute`에
+   바로 꽂는다"는 케이스 분기를 사용자가 매번 기억해야 하는 것보다
+   낫다는 게 사용자 판단. 비용은 `Not`이 내부적으로 `self:Compute(...)`
+   한 겹을 더 감싸는 것뿐 — 무시할 만한 오버헤드.
+4. **의미론도 더 맞음.** "값에 연산자를 적용한다"는 게 "값으로부터
+   완전히 새로운 파생값을 계산한다"보다 더 정확한 표현 — `:Compute`가
+   v1/Fusion류 "매 스텝 능동적으로 값을 갱신"하는 것처럼 읽힐 수 있다는
+   우려도 사용자가 제기(오해일 뿐 실제 동작은 pull-recompute지만, 읽는
+   사람에게 주는 인상까지 고려).
+
+**`:Compute`의 역할 재확인**: 이걸로 `:Compute`가 필요 없어지는 게
+아니라, 역할이 명확해짐 — `:Compute(fn, ...deps)`는 **그 자리에서 한 번
+쓰고 마는 인라인 람다**(deps도 그 호출문에 바로 나열) 전용 저수준
+프리미티브로 남고, **이름 붙여 재사용하는 콤비네이터**(라이브러리가
+제공하는 것이든 사용자가 직접 만드는 것이든)는 전부 `factory(self)` 모양
++ `:Apply`로 통일. `Operator.*`/`Animate`의 내부 구현은 여전히
+`:Compute`를 쓴다 — 사용자에게 노출되는 표면만 `:Apply`.
+
+## 미래 고려사항 (보류) — 중첩 결합 `Sum(a, b, Sum(c, d))` flatten 최적화
+
+**사용자 제기(2026-08-12 세션), 지금은 착수 안 함 — 실사용 사례가 나오면
+재검토.** `Sum(a, b, Sum(c, d))`처럼 콤비네이터를 중첩하는 것 자체는
+**지금 설계로도 이미 가능** — `Sum(c, d)`를 먼저 실제 `self`에 적용해
+구체적인 `State<number>`로 만든 뒤(`c:Apply(Operator.Sum(d))`), 그 결과를
+바깥 `Sum`의 평범한 operand로 넘기면 됨. 다만 이러면 안쪽 `Sum(c,d)`가
+독립된 State 노드를 하나 더 만들어서(중첩 `:Compute`), 바깥 `Sum`이
+`a+b+c+d`를 한 번에 계산하는 것보다 그래프 레이어가 한 겹 더 생김.
+
+사용자가 제안한 최적화 방향: `Sum(...)`이 리턴하는 클로저가 자기가
+캡처한 operand 목록(`local keep = {c, d}`)을 **약한 릴레이션**(`Relate`,
+`base/relate-plan.md`)으로 그 클로저 자신에 붙여두면, 나중에 다른 `Sum`
+호출이 자신의 operand 중 하나가 "이미 Operator 콤비네이터가 만든
+클로저"임을 감지해서 그 안에 보관된 operand들을 꺼내 자기 자신의 operand
+목록에 합쳐 넣을 수 있음(`Sum(a, b, Sum(c, d))` → 실질적으로 `Sum(a, b, c,
+d)`와 동일한 단일 `:Compute` 노드로 flatten) — 클로저가 GC되면 약한
+릴레이션도 같이 사라지므로 메모리 누수 없음.
+
+**보류 이유**: 순수 최적화(그래프 노드 한 겹 줄이기)일 뿐 기능 격차가
+아님 — 지금도 위 방법으로 중첩 자체는 문제없이 됨. `Sum`류 생성 팩토리에
+introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어남 — 사용자
+본인이 "실제 사용사례를 보고 필요한지 나중에 검토"로 명시적으로 유보.
+나중에 착수하게 되면 `Sum`/`Product` 등 각 생성 팩토리를 개별적으로 살짝
+고치면 되는 수준이라, 지금 다른 설계에 영향 주지 않음.
+
+## 패키지 배치
+
+`quad-base` — Store/State 계층 위에서만 동작하는 순수 함수라 엔진 종속
+없음(`quad-roblox` 아님). `Animate`가 `Tween`과 함께 어디에 배치됐는지와
+같은 결로 맞추면 됨(`research/tween-plan.md` 참고, 단 `Animate` 자체는
+`Tween`이 quad-roblox 개념(`PropertyHandler`)에 연결되므로 quad-roblox
+배치 — Operator 슈가는 그런 엔진 종속이 없다는 점이 다름).
+
+## 열린 질문 — 네임스페이스 이름 (미정)
+
+`Not`/`Sum`/`And`/`Or` 같은 이름은 흔한 단어라 top-level에 그냥 두면
+충돌 위험이 큼 — `Tag`/`Attribute`처럼 네임스페이스로 묶여야 함
+(`Operator.Not`처럼). 문제는 **짧으면서 "이 연산자 콤비네이터 슈가
+모음"이라는 목적을 잘 담는 이름을 아직 못 찾음** — 사용자가 직접 이
+문제를 제기(2026-08-12 세션). 코퍼스 전체에 `Operator`/`Op` 이름 충돌은
+없음을 확인함(grep 결과 없음), 아래는 후보:
+
+- **`Operator`** — 의미는 제일 정확(산술/논리/비트 전부 "연산자"로
+  포괄). 다만 다소 길어서 `Operator.Sum(a, b)`처럼 매번 타이핑하기엔
+  무거울 수 있음.
+- **`Op`** — 짧지만 무엇의 축약인지 처음 보면 바로 안 와닿을 수 있음.
+- **`Ops`** — `Op`의 복수형, 뉘앙스는 비슷.
+- ~~`Combinator`~~ — 코퍼스 전반에서 `:Apply`/`Animate` 같은 패턴을
+  설명할 때 이미 일반명사로 "콤비네이터"라는 말을 자주 써서(예:
+  `modifier-plan.md` 8번 절), 네임스페이스 이름으로 쓰면 "이 특정
+  모듈"과 "패턴을 가리키는 일반 용어"가 헷갈릴 수 있어 후보에서 제외.
+
+`.claude/question.md` 3번(낮은 우선순위)에도 반영. 용어 정리 라운드
+(`question.md` 1번, `Brand`/`Tag`류)와 같은 카테고리로 나중에 같이
+검토해도 됨 — 급하지 않음.
+
+## 열린 질문 — 포함 범위
+
+- 산술(`Sum`/`Product`/`Sub`/`Div`?)·논리(`Not`/`And`/`Or`/`Xor`)·비트
+  (`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)까지는 비교적 명확한데, 비교
+  연산자(`Eq`/`Lt`/`Gt`/`Lte`/`Gte`)까지 포함할지는 미정 — 포함해도 같은
+  패턴(커링 팩토리 + `:Apply`)으로 자연스럽게 들어감.
+- `Sum(a, b, ...)`가 self까지 포함해서 더하는 형태(위 예시)로 확정 —
+  사용자 원 예시(`:Apply(Sum(state, state...))`)와 일치. self 없이 여러
+  state를 독립적으로 합치는 형태가 따로 필요한지는 실사용 사례가 나오면
+  재검토(지금은 `Store.Combine`류로 이미 커버된다고 봄).
+
+## 우선순위
+
+**맨 마지막.** 없어도 quad는 기능상 완전하고, 함수 간 의존이 없어 나중에
+일부만 먼저 만들거나 전부 미뤄도 리스크가 없음. 지금은 이 문서로
+동기/모양/열린 질문만 남겨두고, 실제 구현은 다른 마일스톤이 다 끝난 뒤로
+미룸.

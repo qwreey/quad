@@ -208,6 +208,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 
 ### 3. 낮은 우선순위
 
+- **`Operator` 콤비네이터 슈가 네임스페이스 이름(2026-08-12 신설)** —
+  `Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 슈가 함수 모음의
+  이름. 흔한 단어라 top-level 노출은 위험, 후보는 `Operator`/`Op`/`Ops`
+  (`Combinator`는 코퍼스 전반에서 이미 일반명사로 쓰여서 제외) — 아직
+  미정. `research/operator-sugar-plan.md` 참고. 구현 자체는 맨 마지막
+  우선순위(순수 슈가, 없어도 무방).
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —

@@ -1602,6 +1602,18 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   별개 기능** — 커링은 "`fn` 자체를 팩토리로 짜는 관용구" 권장이고,
   `:Apply`는 그렇게 만든 팩토리를 체이닝 문법으로 적용하는 수단. 둘이
   합쳐지면 `state:Apply(makeFormatter("ko-KR"))`처럼 자연스럽게 이어짐.
+- **관용구 — 이름 붙여 재사용하는 콤비네이터는 항상 `:Apply`로 붙인다
+  (2026-08-12 세션, `research/operator-sugar-plan.md`/`research/
+  tween-plan.md`의 `Animate` 정정에서 도출)**: 그 자리에서 한 번 쓰고
+  마는 인라인 람다(deps도 그 호출문에 바로 나열)는 `:Compute(fn,
+  ...deps)`를 직접 쓰고, `local addTax = Sum(tax, shipping)`처럼 이름
+  붙여 여러 곳에서 재사용할 콤비네이터는 인자 개수(0항/N항)와 무관하게
+  전부 `factory(self) -> State`를 반환해 `:Apply`로 붙임 — 스타일
+  선호가 아니라 정합성 문제: quad는 암묵적 자동 추적을 기각했으므로
+  (위 "암묵적 자동 추적 기각" 절) 재사용 팩토리가 캡처한 deps를
+  `:Compute`에 직접 꽂으면 그 deps가 구독 목록에 안 걸려 조용히
+  멈추는 버그가 됨 — `:Apply`는 factory 내부에서 `self:Compute(fn,
+  ...deps)`를 스스로 다시 전달하므로 이 문제가 없음.
 
 **Observer/Effect의 `:Subscribe()`/`:Unsubscribe()`는 이 절과 무관한
 별개 주제** — 아래 새 절로 분리(이전에 이 헤더 아래 잘못 걸려 있던
