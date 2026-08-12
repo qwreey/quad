@@ -42,3 +42,19 @@
    CRUD 반복으로도 재현 가능한 결과, 비용만 다름). 비파괴(제거분은 파괴
    안 하고 반환) — 실제 물리 detach/reattach는 기존 base/roblox 패키지
    경계 그대로 backend Handler 몫(`slot-plan.md`).
+
+## 후속 — `Tag:Added` 재정 근거 보강, `Slot:Splice`는 vararg로 확정
+
+`Tag:Added`가 `string | {string}`로 간 진짜 이유를 사용자가 더 정확히
+짚음: 단순 번거로움이 아니라 **Lua `table.unpack(t)`가 인자 목록의 tail
+위치에 있을 때만 완전히 펼쳐지고, 그 뒤에 다른 인자/다른 `unpack`이 오면
+첫 값 하나로 잘리는 문법적 한계** — 조건절로 조립한 여러 개의 독립된
+동적 이름 테이블을 한 `Added` 호출로 합치는 게 vararg로는 애초에 표현이
+안 됨(`tag-plan.md`에 이 설명으로 보강). 이 논거가 `Slot:Splice`의
+`newElements`에도 적용되는지 검토했으나 **기각, vararg 유지** — (1)
+한 번에 갈아끼우는 요소 수는 호출부가 아는 소수인 경우가 대부분이고
+정말 동적이면 Slot-in-Slot으로 흡수 가능해 `Splice` 자체가 그 케이스를
+떠받칠 이유가 없음, (2) `T | {T}`는 `Slot`의 `T`(`Instance | Slot`)가
+이미 테이블이라 "단일 T(마침 테이블)"와 "{T} 배열"을 구분 못 해 오히려
+틀림 — `Tag`의 `T=string`(항상 non-table)이라 안전했던 것과 다름
+(`slot-plan.md`에 반영).
