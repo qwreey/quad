@@ -510,3 +510,18 @@ bind-system-plan.md`) `local addTax = Sum(a,b)`처럼 만든 값을 `:Compute`�
 pre-pass가 즉시 `error`하는 가드 확정(`_fired` 플래그, 거의 공짜 구현) —
 1회용, use only once. `Slot:List`의 `updateFn`처럼 반복 호출되는 자리에선
 매번 새 `PreRef()`를 만들라는 관용구도 같이 명문화.
+
+**2026-08-12 여덟 번째 세션 — `Ref`의 retract, `TagHandler`와 같은 패턴으로
+확정** (`session/2026-08-12-08-ref-retract-tagged-pattern.md`)
+`State<Ref>`가 `refA→refB`로 바뀌는 경우 이전 Ref가 stale하게 남는 문제를
+사용자가 지적 — 처음엔 "retract가 `Set(nil)`"로 단순 답했으나,
+`Dispatch`의 일반 계약("핸들러 타입이 안 바뀌면 retract 없이 process가
+diff")과 대조해 `TagHandler` 선례와 정확히 같은 메커니즘이어야 함을
+발견·정정: `refA→refB`는 `process`가 `Relate`로 기억해둔 이전 값과 diff해
+언바인딩(`old:Set(nil)`), `retract`는 그 자리가 아예 Ref이길 그만둘 때만.
+사용자가 추가로 확정: 비-nilable `Ref<T>`도 "확정값을 부작용 없이 읽는"
+정당한 용도라 계속 지원하되, Store/Modifier 자리에 놓을 땐 호출자가 직접
+`Ref<<T?>>(...)`로 명시(기존 관용구 재사용, 새 규칙 아님). Ref의
+언바인딩은 Instance `Destroy()`와 완전히 무관 — Destroy된 대상을 계속
+들고 있는 채로 남는 건 UB로 허용, 정리가 필요하면 `Effect`를 쓰도록
+문서가 유도.

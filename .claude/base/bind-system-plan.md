@@ -133,7 +133,11 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     매치되는 핸들러가 항상 PropertyHandler 하나뿐이 되어 이 케이스
     자체가 사라짐 — 트윈 취소/전환은 이제 PropertyHandler 내부의
     3-상태 릴레이션 슬롯으로 처리(`base/tween-plan.md`, `archive/
-    tween-special-bind-key-reversed.md`).
+    tween-special-bind-key-reversed.md`). **[추가, 2026-08-12 여덟 번째
+    세션] `Ref`도 `Tag`와 같은 결** — `State<Ref>`가 `refA`에서 `refB`로
+    바뀌는 건 둘 다 같은 Ref-leaf handler가 매치하므로 `retract`가 아니라
+    `process`의 diff가 담당(이전 Ref를 `:Set(nil)`로 언바인딩), `retract`는
+    그 자리가 Ref이길 아예 그만둘 때만 — 아래 "`Ref`의 retract" 절 참고.
   - store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract`를 호출해주면
     됨 — **정확한 전파 메커니즘은 아래 "Dispatch 체인" 절 참고**(재귀
     재-dispatch에서 여러 단계가 겹칠 때 어느 슬롯에 뭘 추적하는지가
@@ -977,6 +981,79 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
   이름은 그대로 확정 — "지연 없는 확정된 값 박스"라는 정의가 leaf로
   담기는 용도/leaf에 바인딩하는 용도 둘 다에 여전히 맞아 더 나은 대안이
   없다는 결론, 용어 정리 대상에서 제외됨.
+
+### `Ref`의 retract — `State<Ref>` 재바인드 시 이전 Ref에 `nil` (2026-08-12 여덟 번째 세션, `TagHandler`와 같은 메커니즘 재사용)
+
+**배경**: `Ref`는 이미 "일반 프로퍼티/Modifier 필드/Store 값 어디든 자유롭게
+들어감"(위 "동적 경로 가드" 절)이 확정돼 있어 — `State<Ref>`가 실제로
+가능하고, 그러면 Store 값이 `refA`에서 `refB`로 바뀌는 경우가 생김. 이때
+`refA`가 계속 "확정된 값(대개 이전 `inst`)"을 들고 있으면, 그 자리가 이제
+`refB`로 넘어갔다는 걸 모르는 코드가 `refA.Value`를 계속 유효하다고 믿는
+조용한 버그가 남음 — `PreRef` 재사용 버그(위 절)와 같은 클래스의 문제.
+
+**메커니즘 — `TagHandler`(`base/tag-plan.md`)와 정확히 같은 패턴 재사용,
+새 장치 아님.** `Dispatch`의 일반 규칙("핸들러 *타입*이 안 바뀌면 retract
+없이 process만 다시" — `refA→refB`는 둘 다 같은 Ref-leaf handler가
+매치하므로 여기 해당)을 그대로 따르면, `refA→refB` 전환은 `retract`가
+아니라 **`process` 자신이 이전 값을 기억해뒀다가 diff**해야 함:
+
+```lua
+local relate = Relate()  -- Ref-leaf handler 전용, (inst,k)별 마지막으로 바인딩한 Ref 기억
+
+RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v)
+
+function RefLeafHandler.process(inst, k, v)
+    local old = relate:GetStrong(inst, k)
+    if old and old ~= v then
+        old:Set(nil)  -- 이전 Ref 언바인딩 — 매 :Set()마다 콜백 재통지되는
+                       -- 기존 Ref 규칙(위 "해소됨 — 반복 재설정 가능" 항목)을
+                       -- 그대로 재사용, 새 알림 경로 아님
+    end
+    v:Set(inst)
+    relate:SetStrong(inst, k, v)
+end
+
+function RefLeafHandler.retract(inst, k, v)
+    assert(v == nil, "Ref 자리가 더 이상 Ref가 아니게 될 때만 불림 — TagHandler와 같은 이유")
+    local old = relate:GetStrong(inst, k)
+    if old then old:Set(nil) end
+    relate:SetStrong(inst, k, nil)
+end
+```
+
+- **`retract`는 이 자리가 Ref이길 아예 그만둘 때만 불림**(Store 값이 Ref가
+  아닌 다른 것으로 바뀌어 다른 Handler가 매치되는 경우) — `refA→refB`처럼
+  Ref끼리 바뀌는 흔한 경우는 위 `process`의 diff가 담당. `retract`와
+  `process` 양쪽 다 결국 `old:Set(nil)` 하나로 귀결되므로 실질적으로
+  "언바인딩 로직은 하나, 트리거 경로만 둘"인 구조 — Tag의 diff/전체삭제
+  분리와 동형.
+- **children 배열 리터럴 `Ref`도 같은 코드 경로를 그대로 씀** — 그 경우
+  `relate:GetStrong(inst,k)`가 애초에 `nil`(그 자리에 처음 오는 값)이라
+  `old`가 없어 언바인딩 분기를 안 타고 바로 `v:Set(inst)`로 끝남. 즉
+  "1회성 리터럴 구성"과 "반복 재바인드"가 하나의 구현으로 자연히 커버됨,
+  케이스 분기 불필요.
+- **타입: 비-nilable `T`도 정당한 용도(사용자 확인, 2026-08-12 여덟 번째
+  세션)** — `Ref`는 "채워지길 기다리는 박스"뿐 아니라 "이미 확정된 값을
+  여기저기서 부작용 없이 읽는" 용도로도 쓰일 수 있어 `Ref<T>`(T가
+  non-nilable)를 계속 지원할 이유가 있음. 위 언바인딩(`old:Set(nil)`)이
+  실제로 발생하는 자리는 **Store/Modifier 필드에 놓여 재바인드/retract가
+  가능한 `Ref`뿐**이므로, 그 자리에 놓을 `Ref`는 **호출자가 직접
+  `Ref<<T?>>(...)`로 명시**할 것 — 이미 있는 "초기값이 `nil`이면 명시적
+  제네릭 적용으로 타입을 넓힌다"는 관용구(위 "제네릭 시그니처" 절)를
+  그대로 재사용하는 것뿐, 새 타입 규칙 추가 아님. 프레임워크가 자동으로
+  감지해 넓혀주지 않음 — non-nilable `T`로 선언해놓고 Store/Modifier
+  자리에 놓으면 런타임에 `.Value`가 타입과 어긋나게 될 수 있는 caller
+  책임의 UB(Luau 타입은 런타임에 지워짐, 다른 UB 케이스들과 같은 결).
+- **Destroy와는 무관 — 별도 처리 없음(사용자 확정).** `Ref`의 언바인딩은
+  오직 위 재바인드/retract 경로에서만 일어나고, 대상 Instance가
+  `Destroy()`되는 것과는 별개 — Ref 자신은 Destroy를 감지하지도, 반응하지도
+  않음. `Ref<Frame?>`가 이미 Destroy된 Frame을 계속 들고 있는 채로 남는 건
+  정상적으로 가능하고, 그 이후 읽고 쓰는 건 그냥 UB(라이브러리가 방어
+  안 함 — `:Wait(thread)`에 이미 죽은 thread를 넘기는 기존 UB와 같은 결).
+  Destroy 시점에 실제로 정리가 필요하면 `Effect`(내부적으로 `bindLifetime`/
+  `Observer` 위에서 동작, 또는 Roblox가 Destroy 시 알아서 `Disconnect`해주는
+  이벤트 안에 로직을 두는 기존 관례)를 쓰도록 문서가 유도할 것 — Ref
+  자신에 Destroy-awareness를 얹는 건 오버엔지니어링.
 
 ### `phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설 (2026-08-07 세 번째
 세션 — 이 절이 당시 쓰던 `CreatedRef(fn, ...)` 래퍼 이름 자체도 이후
