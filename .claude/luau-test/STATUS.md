@@ -1,19 +1,19 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-13 아홉 번째 세션(폴더 재편).
+> 마지막 갱신: 2026-08-13 열세 번째 세션(`08` 해소 → `done/`, `review-required/` 비워짐).
 > 첫 실측은 여섯 번째 세션 — 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
 > 실행법: `luau <파일>` (런타임) / `luau-analyze <파일>` (타입 전용).
 
-**사람이 볼 게 있는 건 `review-required/` 하나뿐입니다.** 나머지는
-에이전트가 처리할 일(`rewrite-required/`)이거나, Studio가 필요한 일
-(`not-run/`)이거나, 끝난 일(`done/`)입니다.
+**[2026-08-13 열세 번째 세션] `review-required/`가 비었습니다** — 마지막
+한 건이던 `08`이 해소돼 `done/`으로 갔습니다. 지금 남은 건 에이전트가
+처리할 일(`rewrite-required/`)과 Studio가 필요한 일(`not-run/`)뿐입니다.
 
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
-| `review-required/` | **설계가 걸림 — 사람 결정 필요** | 1 | ⭐ 사용자 |
+| `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
 | `rewrite-required/` | 스파이크 코드가 깨짐(설계 문제 **아님**) | 3 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 1(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 15 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -21,17 +21,21 @@
 
 ---
 
-## ⭐ `review-required/` — 사람 결정 필요 (1건)
+## ⭐ `review-required/` — 사람 결정 필요 (0건, 비어 있음)
 
-| 파일 | 무엇이 걸렸나 | 어디로 |
-|---|---|---|
-| `08-type-source-satisfies-state.luau` | 핵심 질문(Source⊇State)은 **통과**. 다만 `State<T>`가 **자기 자신**을 다른 타입 인자로 재귀 참조하면 `Recursive type being used with different parameters` — 사용자 방향은 "구울 때 인라이닝" | `question.md` **0-Y** 하단 |
+**[2026-08-13 열세 번째 세션] 마지막 한 건이 해소됐습니다.**
+`08-type-source-satisfies-state.luau`가 남겨뒀던 잔여 케이스(`State<T>`가
+자기 자신을 다른 타입 인자로 재귀 참조하면 막힘)는 **Luau의 현 한계로
+확정**되어 quad가 설계로 풀 대상이 아님이 정해졌고(구 `question.md`
+0-Y 해소), 스파이크는 `done/`으로 이동했습니다. 당시 검토됐던 "구울 때
+인라이닝" 방향은 **채택 안 함**.
 
-`15`의 `:Compute(fn)` lazy 핸들 계약 충돌(**`question.md` 0-Y** 본 항목)도
-같은 종류의 사람 결정 사안이지만, **스파이크 자체가 파싱 실패라 그 결과를
-신뢰할 수 없어** `rewrite-required/`에 둠. 재작성해서 돌아가면 이 폴더로
-승격할 것. 단 **0-Y 판단 자체는 그걸 기다릴 필요 없음** — 계약 충돌은 이미
-별도 최소 재현으로 확인됨(`audit/luau-test-first-run-2026-08-13.md`).
+- 지금 유효한 규약: **`base/typing-limits.md`**
+- 실측 근거 전문(스파이크 44개 포함): `audit/type-recursion-issue/`
+
+`15`도 같은 계약을 다루지만 **스파이크 자체가 파싱 실패**라
+`rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
+아님(계약 자체는 위에서 이미 확정됨).
 
 ## 🟠 `rewrite-required/` — 스파이크가 깨짐, 설계 문제 아님 (3건)
 
@@ -48,7 +52,7 @@
 | `10-roblox-studio-checks.server.luau` | **Studio 전용**(`luau` CLI로 못 돌림). A 섹션 앞부분만 사용자 자작 스크립트로 실측 — `audit/gcconn-trick-verification.md`. **A-1/A-2(`canBound` 게이트)/B/C는 여전히 미확인** |
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (15건)
+## ✅ `done/` — 통과 or 판정 끝 (16건)
 
 **런타임 12개 전원 통과**(crash 0 / FAIL 0):
 
@@ -71,6 +75,7 @@
 
 | 파일 | 판정 |
 |---|---|
+| `08-type-source-satisfies-state` | ✅ 핵심 질문(Source⊇State 구조적 서브타이핑) 통과. 잔여 케이스(자기 이름을 다른 인자로 재귀 참조)는 **[2026-08-13 13차 세션] Luau 현 한계로 확정** — quad가 풀 대상 아님, `base/typing-limits.md` 1번 |
 | `09-type-modifier-overridden-subtype` | ✅ 통과 — 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |

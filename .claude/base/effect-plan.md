@@ -33,9 +33,11 @@ Effect(fn, state?) -> EffectHandle
 `state:Observer(...)`를 감싸는 걸로 구현 — `fn`은 포지셔널 인자로 `state`를
 받고(`fn(state)`, `:Compute`의 `fn(self)` 포지셔널-self 패턴 재사용,
 모듈화 목적 — 클로저 캡처 없이 `fn`을 독립적으로 정의/재사용 가능
-— **[2026-08-13 4차 감사] 이 `fn(state)`가 lazy `State` 핸들을 받는다는
-전제 자체가 `question.md` 0-Y로 열려 있음, `Effect`는 0-Y가 명시적으로
-지목하는 영향 대상 중 하나**),
+— **[2026-08-13 13차 세션 해소] 이 `fn(state)`가 lazy `State` 핸들을
+받는다는 전제는 확정 유지.** 한때 `question.md` 0-Y가 `Effect`를 영향
+대상으로 지목했으나, 실측 결과 **`Effect`는 애초에 무관**했음(자유
+함수라 문제의 조건인 "재귀 타입의 필드 + 로컬 제네릭"에 안 걸림) —
+`base/typing-limits.md` 1번 "영향 범위" 표 참고),
 Observer가 이제 등록 즉시 1회 실행되므로(아래 Observer 절 참고) 그 첫
 실행이 "설치"를 겸함. 이후 `state`가 무효화될 때마다 **직전 `fn` 호출이
 리턴한 cleanup을 먼저 호출한 뒤 `fn`을 재호출**, 그리고 Effect가 바인드된

@@ -219,9 +219,9 @@ end
 -- Animate(info)는 factory(self) -> State를 반환 — :Apply 전용
 -- (2026-08-12 세션 후속 논의로 :Compute 직결에서 정정됨, 아래
 -- "왜 `:Apply`로 정정됐는가" 절 참고)
--- [2026-08-13 4차 감사] 아래 selfH:Get()은 :Compute의 self-lazy-핸들
--- 계약에 의존 — 그 계약 자체가 question.md 0-Y로 열려 있음. 0-Y가
--- raw 값 쪽으로 결론나면 이 구현도 selfH:Get() -> selfH로 바뀜.
+-- [2026-08-13 13차 세션] 아래 selfH:Get()이 의존하는 :Compute의
+-- self-lazy-핸들 계약은 그대로 유지로 확정됨(구 question.md 0-Y 해소)
+-- — 이 구현 그대로 유효. base/typing-limits.md 참고.
 local function Animate(info)
   return function(self)
     return self:Compute(function(selfH)
@@ -456,19 +456,18 @@ Tween(opts: {
 받으므로(다른 모든 핸들러와 동일) 이 문제 자체가 성립하지 않음. 절 자체는
 과거 기록으로만 남김, 실행할 내용 없음.
 
-## 열린 질문 — Tween 자체 설계는 전부 해소됨 (단 0-Y는 예외)
+## 열린 질문 — 전부 해소됨
 
 **2026-08-12 세션에서 옵션 값 모양/override 정책 이름/릴레이션 슬롯 저장
 모양/`Animate` 콤비네이터 시그니처까지 전부 확정됨**, 마지막 남았던 아래
 질문도 같은 날 다섯 번째 후속 논의로 확정됨.
 
-> **⚠️ [2026-08-13 7차 감사 캐비엇] "열린 질문 없음"은 *Tween 고유의*
-> 설계에 한정.** `Animate`는 `:Apply(factory)`로 꽂히는 콤비네이터이고
-> 그 `factory(self)`가 **lazy `State` 핸들을 받는다**는 계약 위에 서
-> 있는데, 그 계약 자체가 `question.md` **0-Y**로 열려 있음(위 `Animate`
-> 절 코드 주석 참고). 0-Y가 "raw 값 전환"으로 결론나면 `Animate`의
-> 시그니처와 옵션 resolve 방식이 같이 바뀜 — Tween 값 모양/override
-> 정책/북키핑은 그와 무관하게 그대로 유효.
+> **[2026-08-13 열세 번째 세션, 해소]** 한때 여기 "0-Y는 예외"라는
+> 캐비엇이 있었음 — `Animate`가 얹혀 있는 `factory(self)`의 lazy 핸들
+> 계약이 열려 있다는 것이었는데, **그 계약이 그대로 유지로 확정**되어
+> `Animate`의 시그니처/옵션 resolve 방식 모두 안 바뀜. 남은 Luau 쪽
+> 한계(파생 State의 반환 타입 명시 바인딩 필요)는 `Animate`만의 문제가
+> 아니라 전역 규약이므로 `base/typing-limits.md`가 담당.
 
 ### 자연 완료(Completed) 시 per-instance 북키핑 — 정리 안 해도 됨 (확정)
 

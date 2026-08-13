@@ -362,7 +362,9 @@ State를 구조적으로 만족)이 통과했음 — 아래 "검증이 실패했
 전제 자체가 (핵심 케이스에 한해) 더 이상 미래형이 아님. 다만 통과와
 별개로 좁은 잔여 케이스(`State<T>`가 자기 자신을 다른 타입 인자로
 재귀 참조하는 경우, `Recursive type being used with different
-parameters`)가 하나 발견돼 `question.md` **0-Y** 하단에서 추적 중 —
+parameters`)가 하나 발견됐고, **[2026-08-13 열세 번째 세션] 그건
+Luau의 현 한계로 확정되어 `base/typing-limits.md` 1번이 담당**함
+(구 `question.md` 0-Y는 해소 — quad가 설계로 풀 대상이 아님).
 이건 "검증 실패 시 Plan B 없음"과는 다른 종류의 문제(전면 실패가
 아니라 narrow edge case)라 아래 원래 제안(M0 스파이크에 폴백 한 줄
 박아두기)은 더 이상 적용 대상 없음. 원래 서술은 배경 기록으로 남김:

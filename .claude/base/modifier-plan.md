@@ -170,11 +170,12 @@ raw 값, State면 State 핸들 그 자체(아래 4-1 표의 "State + 함수" 행
 없이 그냥 지금 들고 있는 걸 그대로 준다는 원칙 하나로 이 절과 4-1절 표가
 전부 설명됨.
 
-> **⚠️ [2026-08-13 3차 감사에서 발견]** 위 "State 핸들 그 자체"/`field:Compute(fn)`
-> 위임은 `:Compute`/`:With`의 self-lazy-핸들 계약을 그대로 물려받음 —
-> 그 계약 자체가 Luau 추론과 충돌한다는 게 `question.md` **0-Y**로 열려
-> 있음(`base/bind-system-plan.md`의 동일 배너). 0-Y 결론에 따라 이 절의
-> "State + 함수" 위임 방식도 같이 바뀔 수 있음.
+> **[2026-08-13 열세 번째 세션, 해소]** 위 "State 핸들 그 자체"/`field:Compute(fn)`
+> 위임은 `:Compute`/`:With`의 self-lazy-핸들 계약을 그대로 물려받는데,
+> 그 계약이 **그대로 유지로 확정**됐음(구 `question.md` 0-Y) — 이 절의
+> "State + 함수" 위임 방식도 안 바뀜. 단 `field:Compute(fn)`이 반환하는
+> 파생 State의 타입은 사용처에서 명시 주석으로 바인딩해야 함
+> (`base/typing-limits.md` 1번).
 
 **별도 `func(state) -> state` 인자 모양은 불필요(검토 후 기각).** "여러
 Compute를 합치고 싶다"는 동기였는데, 이미 두 가지로 다 커버됨: (1) 여러
