@@ -1,5 +1,12 @@
 # quad-v2 전체 아키텍처 (현재 상태 요약)
 
+> **⚠️ [2026-08-13 4차 감사에서 발견] 이 문서는 세션 시작 시 가장 먼저
+> 읽는 진입점인데, 아래 소스 트리의 `chains`/`retractFrom`(Dispatch/init.luau
+> 항목)과 `retractFrom`에 재귀 위임(Attribute.luau 항목) 서술은 현행
+> (교체 예정) 재-dispatch 모델을 전제로 쓰여 있음 — `question.md` **0-Z**
+> 해소 전엔 그대로 구현하면 옛 모델로 짜게 됨. 상세는
+> `base/bind-system-plan.md` 최상단 배너, `research/dispatch-redispatch-diff-plan.md`.
+
 **상태**: base — 횡단 결정의 최종 상태 요약. 특정 기능 plan이 아니라 프로젝트
 전체에 걸친 결정이라 완료 개념 없음. 근거가 된 원본 브레인스토밍은
 `.claude/initreq/raw-userinput.md`(안 옮기고 그대로 둠 — 이 문서들로 나누기 전의

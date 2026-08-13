@@ -47,7 +47,9 @@ Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 �
 
 React `key` prop, Vue `v-for :key`, Solid `<For>`, Fusion `ForPairs`/
 `ForKeys`/`ForValues`, Vide `indexes()`/`values()`에 대응하는 프리미티브 —
-데이터 배열을 정체성(key) 기준으로 diff해서 변경분만 생성/갱신/파괴한다.
+데이터 배열을 정체성(key) 기준으로 diff해서 변경분만 생성/갱신/언마운트한다
+(**[정정, 2026-08-13 4차 감사]** 원래 "파괴"였으나 2026-08-13 여섯 번째
+세션의 언마운트 전환 반영 — 최신 소스는 `base/slot-plan.md`).
 **최종 확정 형태는 자유 함수도 새 타입도 아니라 `Slot`의 콜론 메소드**
 (`Slot():List(data, updateFn, keyFn?) -> Slot`) — 상세 시그니처/구현
 의사코드/왜 자유 함수·새 타입이 아닌지/`Move` 기반 리오더/`userdata` 기반

@@ -219,6 +219,9 @@ end
 -- Animate(info)는 factory(self) -> State를 반환 — :Apply 전용
 -- (2026-08-12 세션 후속 논의로 :Compute 직결에서 정정됨, 아래
 -- "왜 `:Apply`로 정정됐는가" 절 참고)
+-- [2026-08-13 4차 감사] 아래 selfH:Get()은 :Compute의 self-lazy-핸들
+-- 계약에 의존 — 그 계약 자체가 question.md 0-Y로 열려 있음. 0-Y가
+-- raw 값 쪽으로 결론나면 이 구현도 selfH:Get() -> selfH로 바뀜.
 local function Animate(info)
   return function(self)
     return self:Compute(function(selfH)
