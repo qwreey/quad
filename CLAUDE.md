@@ -139,8 +139,11 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    - **`base/`의 현행 `hintValue` 서술은 아직 옛 모델(철거 선행)이다.**
      새 모델은 `research/dispatch-redispatch-diff-plan.md`에만 있음 —
      base만 읽고 구현하면 옛 모델로 짜게 됨. 0-Z가 정해지면 그 문서 6절의
-     파일별 반영 목록대로 `bind-system-plan.md`/`tag-plan.md`/
-     `slot-plan.md`/`attribute-plan.md`를 **한 번에** 옮길 것.
+     파일별 반영 목록대로 **한 번에** 옮길 것 — 대상은 ⚠️ 배너를 달고
+     있는 **6개**(`bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
+     `attribute-plan.md` + **`architecture.md`/`ROADMAP.md`** — 뒤 둘은
+     2026-08-13 7차 감사에서 6절 목록에 빠져 있던 걸 발견해 추가),
+     반영 후 각 배너도 같이 제거.
    - 반대로 **`base/slot-plan.md`의 "언마운트/`dispose`/해제 순서"는 이미
      확정 반영됨**(재디스패치 모델과 독립적인 결정이라 먼저 들어감).
    - 이 세션에서 같은 날 두 차례 급하게 쓴 의사코드가 각각 버그를 냈다는
@@ -396,7 +399,8 @@ lazy하게 구독하도록 변경, Destroy 후 재실행 gap 해소.
 (`session/2026-08-09-12-luau-test-spikes.md`)
 M0가 검증해야 할 스파이크 항목을 독립 실행 스크립트 15개로 미리 작성 —
 사용자가 `luau`/`luau-analyze`/`luau-lsp`/Studio로 직접 돌려보기로 함.
-**아직 결과 미확인** — M0 착수 전 최우선 확인 대상.
+(당시엔 결과 미확인 — **[2026-08-13 여섯 번째 세션에 첫 실측 완료]**,
+현재 상태는 `luau-test/STATUS.md`가 소스.)
 
 **2026-08-10 세션 — `Slot:Add`가 삽입 인덱스 반환**
 (`session/2026-08-10-01-slot-add-return-index.md`)

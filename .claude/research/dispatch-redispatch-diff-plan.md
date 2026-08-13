@@ -240,3 +240,18 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
 - `slot-plan.md` — 4절대로 "해제 짝 필요" 서술 정정, 언마운트 경로에
   `setLength(0)`/`setOffsetSource(None)` 명시.
 - `attribute-plan.md` — 5절 결정 반영, `process`/클로저 모양 재확정.
+- **[2026-08-13 7차 감사에서 누락 발견 — 추가]** `architecture.md` —
+  소스 트리의 `Dispatch/init.luau` 항목(`chains`/`retractFrom` 서술)과
+  `Attribute.luau` 항목("`retractFrom`에 재귀 위임")이 현행 모델 전제로
+  쓰여 있음. **이 파일도 최상단에 0-Z 배너를 달고 있는데 이 목록엔
+  빠져 있었음** — 모든 세션이 "먼저 읽으라"고 지목하는 진입점이라
+  누락되면 파급이 큼.
+- **[같이 추가]** `ROADMAP.md` — M2/M4/M6/M10에 "0-Z 먼저 해소할 것"
+  ⚠️ 배너가 달려 있고, 그 배너가 가리키는 체크리스트 항목들(특히
+  M6의 "`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를
+  반환해야 함")이 선행 `retractFrom` 전제로 쓰여 있음 — base 4개를
+  옮길 때 같이 갱신하고 배너를 걷을 것.
+
+**요약**: 배너를 달고 있는 파일 = 반영 대상. 위 6개(`bind-system-plan`/
+`tag-plan`/`slot-plan`/`attribute-plan`/`architecture`/`ROADMAP`)가
+전부이고, 반영이 끝나면 각 파일의 ⚠️ 배너도 같이 제거할 것.
