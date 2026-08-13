@@ -36,7 +36,7 @@
 | `02-none-sentinel-vs-nil-holes` | ✅ 통과 | `nil` 소진 시 `#t`가 50→**49**로 무너지고 순회가 흐트러짐 / `None` 소진은 `#t`가 항상 50. 반대로 Ref 콜백 배열은 `None`을 쓰면 1000회 반복 후 **죽은 슬롯 1000개**가 그대로 남음 — 두 배열의 규칙이 서로 반대여야 한다는 2026-08-09 열한 번째 세션 정정이 정량적으로 확인됨 |
 | `03-recursive-store-bind-dispatch` | ✅ 통과 | StoreBind 재귀 재-dispatch, `None`→`nil` 흘러가기, 무한재귀 없이 종료 |
 | `04-dispatch-chain-retractFrom` | ✅ 통과 + **버그 재현** | 아래 별도 절 |
-| `05-store-state-diamond-propagation` | ✅ 통과 | 다이아몬드 의존성에서 `stateC` 재계산이 정확히 1회(중복 재계산 없음), invalidate는 2번 도달하지만 2번째가 즉시 중단 |
+| `05-store-state-diamond-propagation` | ⚠️ **통과했으나 검증 대상이 뒤집힘**(2026-08-14) | 다이아몬드 의존성에서 `stateC` 재계산이 정확히 1회(중복 재계산 없음)라는 **앞부분은 그대로 유효**. 다만 "invalidate는 2번 도달하지만 2번째가 즉시 중단"은 **폐기된 모델**을 검증한 것 — 그 전파 중단 규칙이 `Observer` 계약과 모순돼 역전됨(`archive/invalidate-dedup-propagation-reversed.md`). 스파이크는 `rewrite-required/`로 이동, 재작성 후 재측정 필요 |
 | `06-component-boundary-nil-hole-props` | ✅ 통과 | `or None` 없으면 앞쪽 nil-hole로 `bad[1]`/`bad[2]`가 사라짐, 관용구 쓰면 항상 5칸 유지 |
 | `07-relate-weak-table-gc` | ✅ 통과(**이번에 보강 후**) | 아래 별도 절 |
 | `11-modifier-illegal-value-error` | ⚠️ 부분 | 대부분 의도된 가드 에러로 통과하나 "다른 Modifier" 케이스만 브랜드 판별이 크래시해 **엉뚱한 이유로 통과** — 수정 진행 |
@@ -192,6 +192,14 @@ API 전부에 걸림. 2026-08-07 일곱 번째 세션의 커링 스타일 확정
 
 **최종 런타임 상태: 12개 전원 통과**(01/02/03/04/05/06/07/11/17/18/19/20),
 crash 0, FAIL 0.
+
+> **[2026-08-14 정정 — 이 "전원 통과"를 액면 그대로 읽지 말 것]** 통과
+> 자체는 사실이지만, 그 뒤 **검증 대상이던 설계가 바뀐 스파이크가 셋**
+> 생겼음(`04`/`19`는 열네 번째 세션의 하강 diff 재디스패치로, `05`는
+> 2026-08-14의 "emit은 항상 전파" 정정으로). 셋 다 `rewrite-required/`에
+> 있고 **재작성 후 재측정이 필요함** — 즉 지금 기준 "현행 설계를 검증하며
+> 통과한" 런타임 스파이크는 9개임. 개수의 소스는 항상
+> `luau-test/STATUS.md`.
 
 ## 스파이크 자체 수정이 더 필요한 것 (설계 문제 아님)
 

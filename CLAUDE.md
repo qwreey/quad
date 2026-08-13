@@ -255,6 +255,14 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    (`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
    `operator-sugar-plan.md`/`lifecycle-hooks-plan.md`).
+   **[2026-08-14 추가, 성격이 다름]** 시간 기반 전파 게이트
+   `Debounce`/`Throttle`(`research/debounce-throttle-plan.md`)도 백로그이긴
+   하나 위 항목들과 달리 **사용자가 직접 요청한 실제 기능 갭**이고 순수
+   슈가가 아님 — M0/M3를 막지는 않지만, **M3에서 `Blocker`를 구현할 때
+   게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 해야 함**(따로
+   하면 같은 설계를 두 번 함). 주입 op 2개(`setTimeout`/`clearTimeout`)가
+   백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
+   네 라운드로 대부분 확정됐고 남은 열린 질문 4개는 `question.md` 3번.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -1266,3 +1274,38 @@ PreRef pre-pass 한 스윕에서 `isPostRef`도 같이 소진해 `postRefList`�
 `OURS` 패턴이 `-plan`류 접미사 기준이라 store-semantics.md 같은 이름은
 삭제해도 ERROR가 아니라 WARN으로만 잡힘, 그래서 ERROR 목록만 믿지 말고
 grep 전수를 같이 돌려야 함. 최종 ERROR 0 / WARN 85(작업 전 101).
+
+**2026-08-14 여덟 번째 세션 — Debounce/Throttle 백로그 신설 + "emit은 항상
+전파" 정정(base 역전)**
+(`session/2026-08-14-08-debounce-throttle-backlog.md`)
+사용자 요청("`Blocker`와 유사하게 만들어야 함, 너가 먼저 다 정의해봐라")으로
+**워크트리**에서 `research/debounce-throttle-plan.md`를 만들고, 네 번의 리뷰
+왕복으로 다듬은 뒤 메인에 필요한 변경만 이식. **확정된 것**: (1)
+Debounce/Throttle은 `Blocker`가 이미 쓰는 게이티드 노드의 **릴리스 트리거만
+타이머로 바꾼 것** — 새 전파 메커니즘이 아니고, 공개 `Blocker` API엔 "상류
+신호 도착" 통지가 없어 그 위엔 못 얹으므로 **M3에서 게이트를 공용으로 뺄 것**,
+(2) **두 도구의 차이는 "신호가 창 타이머를 리셋하는가" 한 비트뿐**(공개
+생성자 2개 + 내부 구현 1개) — 초안이 옮겨온 lodash식 `maxWait` 공식엔 trailing
+통과 직후 **이중 발화** 버그가 있었고 이 정식화로 구조적으로 사라짐,
+(3) 알고리즘은 **quad-base + 주입 op 2개**(`setTimeout(func, delay) -> Timeout`
+/ `clearTimeout`, Roblox는 `task.delay`/`task.cancel` — **인자 순서 반대 주의**;
+`task`가 표준도 Luau의 것도 아닌 한 엔진의 것이라 엔진 중립 JS 어휘를 택함),
+`os.clock()`은 Luau 표준 라이브러리라 주입 대상 아님(단 **절대 시각이 아니라
+diff 전용**), 취소 없는 엔진도 래핑+유효 플래그로 대응 가능,
+`Timeout = { __type_timeout: true, _native: any }`.
+**⭐ 가장 큰 수확은 부수 발견** — 사용자가 **"emit은 항상 재전파된다"**고
+지적해, `source-state-plan.md`의 무효화 dedup 서술("이미 invalid였다면 그
+아래로 더 전파하지 않는다", 다이아몬드 중복 워크 방지)이 **확정된 `Observer` 계약(`fn`이 `:Get()`을
+안 불러도 됨)과 정면 충돌**함이 드러남 — 액면대로면 `:Get()` 안 하는 Observer는
+**한 번 울고 영구 침묵**. `architecture.md`가 같은 문제를 pull-recompute로
+설명하는 것과도 어긋나 있었음. 정정 모델: `invalid`는 **캐시 낡음 표시**일
+뿐이고 emit은 자기 상태와 무관하게 **항상 전파**, 중복 **재계산**은
+pull-recompute+캐시가 막고 중복 **통지**는 안 접음(접으려면 `Blocker` 같은
+명시적 게이트). base/reference/research/ROADMAP/스파이크/audit 전면 정정,
+`05-store-state-diamond-propagation.luau`는 옛 모델을 통과 상태로 검증
+중이었어서 `rewrite-required/`로 이동. 역전 기록은
+`archive/invalidate-dedup-propagation-reversed.md`. **교훈** — 이 오류 위에
+그 문서의 "가장 중요한 발견"(파생 State 위 debounce 퇴화)이 두 라운드나
+쌓였다가 통째로 철회됨. **확정 문서의 한 문장을 근거로 새 설계를 세울 땐,
+그 문장이 *같은 문서의 다른 확정 문장*과 모순되지 않는지까지 확인할 것** —
+`doc-check.py`는 참조 존재는 봐도 서술 간 모순은 못 봄.

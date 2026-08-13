@@ -28,8 +28,16 @@
 - **다이아몬드 의존성 재계산 dedup — Vide가 스스로 미해결로 남긴 문제를
   더 구조적으로 해결.** Vide `todo.md`가 diamond 그래프 중복 재평가 방지를
   미해결로 인정했고, 실제로 `test/tests.luau`의 "recursive queue flush
-  diamond" 테스트가 이상적 2회 대신 3회 실행됨을 재현함. quad의 `invalid`
-  플래그 dedup은 이걸 원시 레벨에서 막도록 설계됨.
+  diamond" 테스트가 이상적 2회 대신 3회 실행됨을 재현함. quad는 **애초에
+  push 시점에 계산을 안 하기 때문에**(pull-recompute + 노드별 캐시) 이
+  문제가 구조적으로 발생하지 않음 — 신호가 두 경로로 두 번 도착해도
+  계산은 `:Get()` 때 캐시를 통해 한 번뿐.
+  **[2026-08-14 정정]** 원래 이 자리는 "quad의 `invalid` 플래그 dedup이
+  원시 레벨에서 막도록 설계됨"이라고 적혀 있었으나, 그 dedup 장치 자체가
+  `Observer` 계약과 모순돼 폐기됨 — 막는 주체는 플래그가 아니라 캐시임
+  (`archive/invalidate-dedup-propagation-reversed.md`). **quad가 더 낫다는
+  결론은 안 바뀌고 오히려 근거가 단순해짐**, 다만 정확히는 quad도 중복
+  *통지*는 접지 않음(중복 *재평가*만 안 일어남).
 - **fine-grained라 vdom 특유의 버그 클래스가 통째로 없음(vs react-lua).**
   react-lua는 리스트 diffing을 위해 key 관리가 필요하고(불안정하면 자식
   상태 유실), hooks 호출 순서 규칙이 있으며(위반 시 "Rendered fewer/more

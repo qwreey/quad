@@ -30,7 +30,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 실패가 아니라 이 단계의 목적.
 
 - [ ] Store/State push-invalidate → pull-recompute propagation을 실제로
-      짜보기(다이아몬드 의존성 케이스 포함 — 이미 invalid면 전파 중단되는지)
+      짜보기(다이아몬드 의존성 케이스 포함 — **[2026-08-14 정정]** 확인할
+      것은 "이미 invalid면 전파 중단되는지"가 **아니라** 그 반대:
+      **emit은 자기 invalid 상태와 무관하게 항상 전파되고**, 중복 재계산은
+      `:Get()` 시점 캐시로만 막히는지. 특히 `:Get()`을 안 부르는
+      `Observer`가 매 변경마다 계속 울리는지 — 옛 모델에선 두 번째부터
+      침묵했음(`archive/invalidate-dedup-propagation-reversed.md`).
+      스파이크 `05-store-state-diamond-propagation.luau`는 옛 모델을
+      검증 중이라 `rewrite-required/`에 있음)
 - [ ] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
       Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 세 번째 세션,
@@ -750,3 +757,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       테스트는 2026-08-13 세 번째 세션에 불필요로 해소됨 —
       `archive/question-resolved.md` 참고, v2엔 대응 개념 자체가 없음)
 - [ ] Slot 형제 순서 보장(다중 백엔드 관점) — Roblox만이면 급하지 않음
+- [ ] **[2026-08-14 신설]** 시간 기반 전파 게이트 `Debounce`/`Throttle`
+      (`research/debounce-throttle-plan.md`) — **M3에서 `Blocker`를 구현할
+      때 게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 할 것**
+      (둘이 같은 노드를 공유하므로 따로 하면 같은 설계를 두 번 함).
+      프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M3를 막지 않음.
+      주입 op 2개(`setTimeout(func, delay) -> Timeout` / `clearTimeout`,
+      Roblox는 `task.delay`/`task.cancel`로 배선 — **인자 순서가 반대라
+      주의**)가 `bindLifetime`/`canExecute`와 같은 base 범용 유틸 그룹에
+      추가될 예정이라는 것만 M1 설계 시 인지. `os.clock()`은 Luau 표준
+      라이브러리라 주입 대상 아님(단 절대 시각이 아니라 diff 전용)

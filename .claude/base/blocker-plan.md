@@ -21,6 +21,17 @@
 온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함. 별도 파일로 두되
 State와 같은 마일스톤(`ROADMAP.md` M3)에서 함께 구현할 것.
 
+**[2026-08-14 위치 명문화]** `Blocker`는 **quad에서 emit(무효화 신호) 전파를
+지연시킬 수 있는 유일한 요소**임. 평범한 State는 신호를 받으면 자기
+`invalid` 상태와 무관하게 **항상** 아래로 전파하고(`base/source-state-plan.md`
+"전파 모델 확정" 절), 그 흐름을 붙잡아둘 수 있는 건 명시적으로 배선된
+게이트뿐 — 지금은 `Blocker`가 유일하고, 시간 기반 게이트(`research/
+debounce-throttle-plan.md`)가 추가되면 같은 자리에 들어옴. 이걸 못 박아
+두는 이유: 과거에 "이미 `invalid`면 전파를 멈춘다"는 서술이 base에
+있었고, 그건 사실상 `Blocker`가 하는 일을 모든 State에 암묵적으로 심는
+것이라 `Blocker`의 존재 의의를 반쯤 지워버렸음(역전 경위는
+`archive/invalidate-dedup-propagation-reversed.md`).
+
 ## 메커니즘 (확정)
 
 ```

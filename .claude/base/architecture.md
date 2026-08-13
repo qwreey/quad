@@ -314,7 +314,12 @@ Store 생성 시 미리 만들어둔 경우), 아직 없으면 그 자리에서 
 상세는 `base/source-state-plan.md` "Source가 State를 만족함" 절). 전파는
 push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
-의존성 중복 재계산 문제가 풀림. State는 쓰기 대상이 아니고, 값을 쓰는
+의존성 중복 재계산 문제가 풀림(**[2026-08-14 보강]** 푸는 주체는
+**노드별 캐시**임을 명시 — `invalid`는 "내 캐시가 낡았다" 표시일 뿐이고
+**emit 전파는 자기 `invalid` 상태와 무관하게 항상 일어남**. 전파를 늦추는
+건 `Blocker` 같은 명시적 게이트뿐. 한때 `source-state-plan.md`가 "이미
+`invalid`면 전파 중단"으로 서술했으나 `Observer` 계약과 모순돼 역전됨 —
+`archive/invalidate-dedup-propagation-reversed.md`). State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
 `:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
 읽기는 `:Get()` 하나로 통일 — `.value` 표기는 Ref 전용으로 좁혀짐). 값 하나만
