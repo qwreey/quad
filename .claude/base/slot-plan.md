@@ -490,7 +490,7 @@ nested `Slot`을 파괴 후 재사용하는 경로가 정확히 이 케이스). 
   체크로 이걸 막고, `process`도 `old == slotValue` 체크로 대칭적으로 막음
   — 둘 다 스킵돼야 완전한 no-op.
 - Slot 핸들러 자신이 감시 중인 값(배열/스토어)이 바뀔 때 child를 갱신하는
-  추적(구독)도 `base/bind-system-plan.md`가 말하는 "process 함수가 다른 값
+  추적(구독)도 `base/dispatch-core-plan.md`가 말하는 "process 함수가 다른 값
   변경을 추적해도 됨" 범위에 속하고, `retract` 시점엔 그 추적만 풀면 됨 —
   Destroy 시점엔 `retract`가 호출되지 않는다는 원칙(`base/lifecycle-pattern.md`)도
   동일하게 적용.
@@ -1440,7 +1440,7 @@ end
 ```
 
 `recompute`가 owner가 Slot이면 그 `.Length`에도 합계를 반영하도록
-확장됐으므로(`base/bind-system-plan.md` 참고) — `Slot.Length`는 더
+확장됐으므로(`base/dispatch-core-plan.md` 참고) — `Slot.Length`는 더
 이상 raw 개수가 아니라 **"요소별 기여도의 합"**(plain=1, nested
 Slot=그 `.Length`)이 됨. plain 요소만 있는 흔한 경우엔 항상 합==개수라
 체감 차이 없음.
@@ -1558,7 +1558,7 @@ GC가 전부 한 번에 정리하니 손 안 대도 됨 — 이 구분은 새 �
 죽는 경우)를 만나서 드러난 것뿐.
 
 - **Length 변경은 정확히 offset 변경으로만 전파됨, 별도 채널 없음** —
-  수정된 `recompute`(`base/bind-system-plan.md` 참고)를 보면 `:Set()`이
+  수정된 `recompute`(`base/dispatch-core-plan.md` 참고)를 보면 `:Set()`이
   호출되는 대상은 (a) 뒤 형제들의 offset, (b) owner가 Slot이면 그
   `.Length` 딱 둘뿐. Length 값 자체는 읽히기만 함(`:Get()`/Observer
   트리거) — (b)로 올라간 `.Length`도 한 단계 위에서는 그냥 또 다른

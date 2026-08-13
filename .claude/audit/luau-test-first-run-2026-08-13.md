@@ -62,6 +62,20 @@
 나중에 UI를 덮어쓰는** 증상까지 간다는 게 실측으로 확인됨. 수정
 (`SetStrong` hoist + no-op 점유 마커)이 옳았다는 결정적 근거.
 
+> **[2026-08-14 리뷰에서 정정] "no-op 점유 마커" 부분은 이후 폐기된
+> 옛 모델 서술입니다.** `chains:SetStrong`을 `process` 호출 *전에* 끝내야
+> 한다는 순서 버그(위 표, `retractor` 유실/`STALE` 재현)는 하강 diff
+> 재설계(2026-08-13 열네 번째 세션, `base/dispatch-core-plan.md`)에서도
+> 그대로 유효 — 지금 `Dispatch.process`도 여전히 `chains:GetStrong`/
+> `SetStrong`으로 list를 먼저 확보한 뒤에 `h.process`를 부름. 다만 "점유
+> 마커"(같은 인덱스가 이미 점유돼 있으면 즉시 error)는 그 뒤 **Dispatch의
+> 점유 체크 자체가 폐지**되며(`dispatch-core-plan.md` "Dispatch 체인" 절)
+> 없어진 옛 개념 — 지금은 `list[index] = { handler = h, retractor = NOOP }`
+> placeholder만 미리 박아두는 것으로 대체됨(같은 "호출 전 자리 확보"
+> 목적, 에러를 내는 메커니즘은 아님). 이 스파이크는 `rewrite-required/`로
+> 이동돼 있고(`luau-test/STATUS.md`), 재작성 시 이 절의 "정상(수정본)"
+> 시나리오도 새 모델(placeholder, 점유 에러 없음)로 갱신할 것.
+
 ## `07` — 스파이크를 보강해야 실제 검증이 됐음
 
 원래 3번 섹션이 "강하게 붙잡아둔 10개가 살아있는가"라는 **sanity check만**

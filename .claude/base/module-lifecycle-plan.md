@@ -18,7 +18,7 @@ Slot과 맞물려서 잘 생각해서 구현해야 하는 부분. **기울어진
 "Handler로 base를 받는" 게 아니라) — 이유: 여긴 가상돔이 없어서, base
 쪽이 "누가 실제로 그려주는지" 모르는 채로 있다가 Roblox Handler를 주입받는
 모양이 더 자연스러워 보임. (이름 자체는 이후 "Handler"로 확정 —
-`base/bind-system-plan.md`의 핸들러 계약 절 참고, 이 문서는 여전히
+`base/dispatch-core-plan.md`의 핸들러 계약 절 참고, 이 문서는 여전히
 초안 당시 표현인 "프로바이더"로 쓰여 있던 걸 정정.)
 
 ## pluggable 플러그 초기화는 누구 몫인가

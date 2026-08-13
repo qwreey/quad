@@ -83,7 +83,7 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 
 ### `v`가 `nil`인 경우 — `process`가 직접 자식 제거, 반환 클로저는 관여 안 함 (2026-08-07 여덟 번째 세션)
 
-`modifier-plan.md`의 `None` 센티널(`base/bind-system-plan.md`의
+`modifier-plan.md`의 `None` 센티널(`base/dispatch-core-plan.md`의
 `NoneHandler` 재귀 재디스패치 절 참고)이 최종적으로 이 Handler의
 `process(inst, k, nil)`을 호출하는 구체 사례 — 이 Handler에서 "`v`가
 `nil`"은 만들어둔 `_quad_corner`류 자식이 있으면 그냥 지우는 것으로 확정.
@@ -93,7 +93,7 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 - **이건 반환 클로저가 아니라 `process` 자신의 로직** — **[정정, 2026-08-12
   열한 번째 세션, 2026-08-13 다섯 번째 세션에 클로저 반환 계약으로 서술
   갱신]** 그 클로저는 store 재발행마다 항상 불리지만(핸들러 타입이 안
-  바뀌어도, `bind-system-plan.md` 일반 retract 계약 절 정정분 참고), 이
+  바뀌어도, `dispatch-core-plan.md` 일반 retract 계약 절 정정분 참고), 이
   Handler는 `process(inst,k,v,index)` 자체가 `v`가 `nil`이든 숫자든
   전부 완결적으로 처리하므로(있으면 지우거나 만들거나) 반환 클로저가 할 일이
   없어 `function() end`이면 충분 — 일반 프로퍼티 핸들러가 no-op 클로저를

@@ -95,7 +95,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (아래 항목) / `Dispatch.addHandler(handler)`(레지스트리 등록,
       quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
       flattened)`(배열→해시 두 패스 순회하며 각 `(k,v)`에
-      `Dispatch.process(inst,k,v,1)` 호출 — `bind-system-plan.md`의 `None`
+      `Dispatch.process(inst,k,v,1)` 호출 — `dispatch-core-plan.md`의 `None`
       센티널 절, 2026-08-07 여덟 번째 세션에 네이밍 확정).
       **[2026-08-13 다섯 번째 세션 전면 재설계]** "이전 담당자와 다르면
       그 `retract`"라는 옛 diff 모델은 폐기 — 정리 책임은 전적으로
@@ -509,7 +509,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None` 센티널
       (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
       이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
-      (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
+      (`dispatch-core-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
       "이전 매치 핸들러 추적" 항목과 함께 구현 — `StoreBind` 핸들러와
       동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — `None` 센티널
       자체는 확정 완료. **[2026-08-13 열네 번째 세션 갱신]** `NoneHandler`가

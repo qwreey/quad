@@ -6,7 +6,7 @@
 > 했고 결정은 하나도 안 바뀜.**
 
 **상태**: base — 확정. `Dispatch`/`Brand`와의 관계는
-`base/bind-system-plan.md`(디스패치 코어)와 `base/brand-plan.md` 참고.
+`base/dispatch-core-plan.md`(디스패치 코어)와 `base/brand-plan.md` 참고.
 
 ## Ref — 도입 확정, 단 용도는 재정의됨
 

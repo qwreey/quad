@@ -154,7 +154,7 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이
 `inst`가 죽으면 이 슬롯(엔진 Tween 객체+`Value` 포함)도 별도 정리 로직
 없이 같이 GC됨. **[정정, 2026-08-12 열한 번째 세션, 2026-08-13 다섯 번째
 세션에 클로저 반환 계약으로 서술 갱신]** `process`가 반환한 클로저는 store
-재발행마다 항상 불리지만(`bind-system-plan.md` 일반 retract 계약 절
+재발행마다 항상 불리지만(`dispatch-core-plan.md` 일반 retract 계약 절
 정정분 — "거의 안 불림"이었던 원 서술은 틀렸음), PropertyHandler의
 그 클로저는 몸체가 no-op이라 실질적으로 하는 일이 없음 — 아래 절 참고.
 

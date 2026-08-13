@@ -1,6 +1,6 @@
 --[[
 	검증 대상: process(inst,k,v)/retract(inst,k,v) 기반 재귀 재-dispatch
-	모델(.claude/base/bind-system-plan.md "확정된 디스패치 모델" 절)이 실제
+	모델(.claude/base/dispatch-core-plan.md "확정된 디스패치 모델" 절)이 실제
 	Luau 함수 재귀로 자연스럽게 짜이는지, 우선순위 스캔(isHandlable)이
 	기대대로 동작하는지에 대한 최소 스파이크.
 
