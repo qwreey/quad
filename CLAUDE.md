@@ -1136,3 +1136,13 @@ vs xpcall, 패키지 배치, 이름, 프로덕션 동작) 정리, 설계 확정�
 원인 — 필요한 파일만 메인 체크아웃(로컬 `main`)에서 복사해 편집 후 다시
 복사하는 방식으로 처리, 상세 정정은
 `session/2026-08-14-01-component-fallback-plan.md` 참고.
+
+**2026-08-14 두 번째 세션 — `Fallback` 메커니즘 `xpcall` 실측 확인**
+(`session/2026-08-14-02-fallback-xpcall-spike-verified.md`)
+직전 세션이 열어둔 "`xpcall` 에러 핸들러 배선의 실측 필요"를 새 워크트리에서
+`luau` 스파이크(`research/component-fallback-xpcall-spike.luau`)로 확인 —
+클로저 업밸류 배선, 3단 중첩 `debug.traceback` 캡처 등 10개 검증 전부
+통과. 부수 발견으로 `error(msg)` 기본 호출(level=1)이 위치 접두
+("파일:줄: ")를 자동으로 붙인다는 캐비엇을 새로 확인해 문서에 반영 —
+`research/component-fallback-plan.md`의 해당 열린 질문을 해소로 표시,
+백로그 우선순위 자체는 그대로.

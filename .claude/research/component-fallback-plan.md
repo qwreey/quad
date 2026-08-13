@@ -8,7 +8,10 @@
 (`research/operator-sugar-plan.md`)가 `:Compute`/`:Apply` 위에 얹힌 것과
 같은 관계. 우선순위는 그 형제 백로그 항목들(`quad-mock`/`quad-debug`/
 문서 사이트/`Operator`)과 동급 — "quad 개발 상당 부분 끝난 뒤"로 사용자가
-명시(`CLAUDE.md` "지금 할 일" 4번).
+명시(`CLAUDE.md` "지금 할 일" 4번). **[2026-08-14 두 번째 세션]** 메커니즘
+자체(`xpcall`+`debug.traceback` 배선)는 `research/component-fallback-xpcall-spike.luau`로
+실측 확인 완료 — 아래 "메커니즘 스케치"/"열린 질문" 절 참고, 백로그
+우선순위 자체는 안 바뀜(여전히 착수 안 함).
 
 ## 동기 (사용자 원 메모)
 
@@ -62,12 +65,24 @@ function Fallback(original, onError)
 end
 ```
 
-(의사코드 수준 — `xpcall` 에러 핸들러 안에서 잡은 `trace`를 업밸류로
-빼내는 게 실제로 원하는 순서/타이밍에 실행되는지는 Luau로 직접 실측
-필요, 아래 "열린 질문" 참고.) `research/debug-tooling-plan.md`가 이미
-확인해둔 선례(Vide/Fusion 둘 다 `xpcall`+`debug.traceback`으로 **에러
+**[2026-08-14 두 번째 세션, 실측 완료]** 위 의사코드 그대로 `luau`
+스파이크(`research/component-fallback-xpcall-spike.luau`)로 돌려 확인 —
+`xpcall` 에러 핸들러 안에서 업밸류 `trace`에 쓴 값이 `xpcall` 리턴 이후
+`onError` 호출 시점에 정상적으로 채워져 있고, `debug.traceback(nil, 2)`가
+익명 에러 핸들러 프레임을 건너뛰고 실패 지점까지의 실제 호출 스택(3단
+중첩까지 확인)을 정확히 담는 것도 확인됨. `research/debug-tooling-plan.md`가
+이미 확인해둔 선례(Vide/Fusion 둘 다 `xpcall`+`debug.traceback`으로 **에러
 나는 순간에만** 스택을 찍는 패턴)를 그대로 재사용 — 새 트레이싱
 메커니즘을 발명하지 않음.
+
+**같은 실측에서 새로 확인된 캐비엇 — `error(msg)`의 기본 위치 접두**:
+컴포넌트 저자가 레벨 지정 없이 `error("메시지")`만 호출하면(Luau 기본
+level=1), `onError`가 받는 `errorMessage`엔 quad가 아무것도 안 붙였는데도
+`"MyComp.luau:42: 메시지"`처럼 **파일:줄 접두가 이미 붙어서** 옴 —
+`error(msg, 0)`으로 호출해야 접두 없는 순수 메시지가 옴. `Fallback` 쪽
+코드가 만드는 게 아니라 Luau `error()` 자체의 기본 동작이라 `Fallback`이
+따로 손댈 지점은 아니지만, 아래 "프로덕션에서의 동작" 열린 질문(화면에
+그대로 노출할지)에 실제로 영향을 주므로 그 항목에도 반영.
 
 ### `ErrorComp`가 추가 상태가 필요하면 — 커링 (사용자 명시)
 
@@ -101,10 +116,15 @@ local SafeWidget = Fallback(Widget, makeErrorHandler(someContext))
   캡처할지, 아니면 가벼운 `pcall`(에러 메시지만)을 기본으로 하고 트레이스는
   옵션(`onError`가 2번째 인자를 안 받으면 그냥 안 계산)으로 둘지. Roblox
   `debug` 라이브러리가 제한적이라는 건 이미 확인돼 있어서(`debug-tooling-plan.md`)
-  부담은 크지 않아 보이나 실측 필요.
-- **`xpcall` 에러 핸들러 배선의 실측**: 위 의사코드가 실제 Luau에서
-  그대로 동작하는지(에러 핸들러 안에서 클로저 업밸류에 쓴 값이 바깥에서
-  제대로 보이는지 등) 착수 시점에 `luau`로 직접 확인 필요.
+  부담은 크지 않음 — 여전히 미정인 건 "항상 캡처 vs 옵션"이라는 정책
+  판단뿐, 메커니즘 자체는 아래처럼 실측 완료.
+- **[2026-08-14 두 번째 세션, 해소]** ~~`xpcall` 에러 핸들러 배선의
+  실측~~: `luau` 스파이크(`research/component-fallback-xpcall-spike.luau`,
+  10개 검증 전부 통과)로 확인 — 에러 핸들러 안에서 클로저 업밸류에 쓴
+  값이 바깥에서 정상적으로 보이고, 3단 중첩 호출까지 `debug.traceback`이
+  실패 지점을 정확히 담음. 부수적으로 `error(msg)` 기본 호출이 위치
+  접두(`"파일:줄: "`)를 자동으로 붙인다는 캐비엇을 새로 확인(아래
+  "프로덕션에서의 동작" 항목에 반영).
 - **패키지 배치**: `original`을 그냥 호출하고 결과를 그대로 돌려주는
   순수 함수라 Store/Dispatch 어디에도 안 걸림 — `quad-base`(엔진 무종속)가
   자연스러워 보임, `Operator`와 같은 결. 최종 확인 필요.
@@ -117,7 +137,12 @@ local SafeWidget = Fallback(Widget, makeErrorHandler(someContext))
   그대로 노출할지, 아니면 로그로만 보내고 화면엔 일반화된 메시지만
   보여줄지는 `onError` 구현(사용자 코드) 몫으로 완전히 열어두는 게 맞아
   보임 — `Fallback` 자체는 raw 에러 정보를 그대로 넘기기만 하고 가공은
-  안 함(가공까지 대신해주면 그게 또 다른 매직).
+  안 함(가공까지 대신해주면 그게 또 다른 매직). **[2026-08-14 두 번째
+  세션 추가]** 이 raw 정보엔 `error(msg)`(레벨 지정 없는 기본 호출)의
+  자동 위치 접두("파일:줄: ")도 포함됨이 실측으로 확인됨 — 화면에 그대로
+  노출하고 싶지 않은 저자는 `error(msg, 0)`으로 직접 접두를 꺼야 함,
+  `Fallback`이 대신 벗겨주지는 않음(문서화로 안내할 사항, 위 "가공 안
+  함" 원칙과 일치).
 - 그 외 확정된 결정 없음 — 착수 시점에 위 항목들을 순서대로 확인.
 
 ## 우선순위
