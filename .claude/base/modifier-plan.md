@@ -33,7 +33,7 @@ cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 
 
 **flatten이 배열 항목 중 뭐가 Modifier인지 판별하는 수단 — `isModifier`
 (`Brand` 기반, 2026-08-07 열 번째 세션 명시).** 다른 모든 nominal 타입
-판별과 같은 메커니즘(`bind-system-plan.md`의 `Brand` 절) 재사용 — flatten은
+판별과 같은 메커니즘(`brand-plan.md`의 `Brand` 절) 재사용 — flatten은
 배열을 훑으며 `isModifier(v)`가 참인 항목만 필드를 뽑아 merge하고, 나머지는
 전혀 안 건드리고 그대로 배열 파트에 남겨둠(그래서 `None`처럼 Modifier가
 아닌 값은 flatten을 그냥 통과함 — `component-composition-plan.md`의
@@ -79,7 +79,7 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
 
 **결론 — `None`은 raw 저장 계층에만 존재하는 실재값 센티널, merge/setter는
 전혀 안 바뀜.** 이벤트 store-bind의 "`nil` 대신 실재하는 센티널"
-(`false`로 disconnect, `base/bind-system-plan.md` "이벤트도 store-bind
+(`false`로 disconnect, `base/event-plan.md` "이벤트도 store-bind
 가능" 절)과 같은 발상이지만, 처리 위치가 다름 — merge 단계가 아니라
 **디스패치 단계**에서 풀린다:
 
@@ -600,7 +600,7 @@ setter 표면과 read 표면이 헷갈리고, 타이핑 이득도 메소드 방�
 Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSource`도
 별도로 존재함**, `:Set`/`:Emit` 같은 Source 전용 능력이 있는지 알아야
 하는 코드를 위해 필요하다고 판단 정정됨). 상세 근거/구현 방식은
-`bind-system-plan.md`의 `Brand`/`isState` 절 참고 — 요지만: duck-typing
+`brand-plan.md`의 `Brand`/`isState` 절 참고 — 요지만: duck-typing
 대신 weak-key 레지스트리 기반(quad의 다른 branded 타입 전부와 공유하는
 통합 메커니즘으로 일반화됨), 그리고 이 판별 로직 자체는 새로 만드는 게
 아니라 4-1번 setter 분기가 이미 내부적으로 해야 하는 걸 public 유틸로

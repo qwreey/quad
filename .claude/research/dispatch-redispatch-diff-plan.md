@@ -252,6 +252,13 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
   반환해야 함")이 선행 `retractFrom` 전제로 쓰여 있음 — base 4개를
   옮길 때 같이 갱신하고 배너를 걷을 것.
 
+- **[2026-08-13 8차 감사에서 추가] 같은 패스에서 `bind-system-plan.md`
+  2단계 분할도 할 것** — 이 문서가 지시하는 재작성 범위(핸들러 계약 /
+  확정된 디스패치 모델 / Dispatch 체인 / Handler 작성 체크리스트)가 곧
+  분할 예정인 "디스패치 코어" 블록과 정확히 겹침. 어차피 그 텍스트를
+  전면 재작성하므로, **재작성하면서 새 파일로 옮기면 인바운드 참조
+  (~37곳)를 한 번만 고치면 됨.** 따로 하면 같은 곳을 두 번 만짐.
+
 **요약**: 배너를 달고 있는 파일 = 반영 대상. 위 6개(`bind-system-plan`/
 `tag-plan`/`slot-plan`/`attribute-plan`/`architecture`/`ROADMAP`)가
 전부이고, 반영이 끝나면 각 파일의 ⚠️ 배너도 같이 제거할 것.

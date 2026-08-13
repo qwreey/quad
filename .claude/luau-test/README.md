@@ -32,9 +32,10 @@
 `.claude/base/`와 `ROADMAP.md` M0가 "추론만으로 확정하고 실제 Luau 코드로
 부딪혀본 적 없는 것"으로 명시적으로 지목한 항목들, 그리고 이후 세션들에서
 "M0/M2 스파이크 검증 목록에 추가됨"으로 흩어져 있던 항목들을 모아 각각
-독립 실행 가능한 스크립트로 만들었음. **내가(에이전트) 직접 실행은 못
-했음** — 이 환경엔 `luau`/`luau-analyze` 바이너리가 없어서, 전부 사용자가
-직접 돌려보고 결과를 알려줘야 함.
+독립 실행 가능한 스크립트로 만들었음. **[2026-08-13 갱신]** 처음엔 이
+환경에 `luau`/`luau-analyze` 바이너리가 없어 에이전트가 못 돌렸으나,
+여섯 번째 세션에 바이너리가 생겨 **첫 실측이 끝남** — 지금은 에이전트가
+직접 돌릴 수 있고, 사용자 손이 필요한 건 Studio 전용(`not-run/`)뿐.
 
 각 파일 맨 위 주석에 다음이 전부 적혀있음: 뭘 검증하는지, 어느 base 문서/
 ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해야 하는지.
@@ -75,10 +76,10 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `store-semantics.md` "검증 필요", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 — **[2026-08-13]** A 섹션 앞부분(신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됨, `audit/gcconn-trick-verification.md` 참고. A-1/A-2(`canBound` 게이트)/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 — **[2026-08-13]** A 섹션 앞부분(신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됨, `audit/gcconn-trick-verification.md` 참고. A-1/A-2(`canBound` 게이트)/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md`, `ref-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "핸들러 계층 값 즉시 error" 절 + 7번 절 |
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 DI 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
-| `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `bind-system-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
+| `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
 | `14-type-nilable-default-overload.luau` (타입체크 전용) | `Source(default)`/`Ref(default)`의 `default` 생략이 `T`가 nilable일 때만 안전하다는 캐비엇을, 함수 오버로드(교차 타입)로 실제로 타입 레벨에서 막을 수 있는지 | `bind-system-plan.md` "[보강, 2026-08-09 열한 번째 세션]" 절 |
 | `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `bind-system-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
 | `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `bind-system-plan.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |

@@ -209,7 +209,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    개념 자체가 다름)에 가깝다는 구분 — quadnomicon 에세이로 쓸 때 이
    "hook"/"pre-hook" 용어 자체를 채택할지만 아직 열려있음(복수 `PreRef`
    간 순서는 2026-08-07 아홉 번째 세션에서 해소됨 — 배열 index 순서
-   그대로, 별도 규칙 없음, `bind-system-plan.md` "PreRef" 절 참고).
+   그대로, 별도 규칙 없음, `ref-plan.md` "PreRef" 절 참고).
    **[해소됨, 2026-08-12 여섯 번째 세션]** 취소 가능 여부 — PreRef는
    구조적으로 `retract` 체인에 아예 안 올라가므로 취소 개념 자체가 없고,
    대신 이미 fire된 PreRef를 재사용하면(두 번째 construction에 다시

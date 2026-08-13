@@ -111,7 +111,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Attribute(...)` 프리미티브 신설로 같은 이름이 서로 다른 두
       대상(키 vs 값)을 가리키게 돼서 갈라짐, `base/attribute-plan.md`
       참고) 전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None`
-      항등 비교 — `bind-system-plan.md`의 `Brand` 절, 2026-08-07 여덟
+      항등 비교 — `brand-plan.md`의 `Brand` 절, 2026-08-07 여덟
       번째 세션 신설)
 - [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
       `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
@@ -232,7 +232,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/
-      bind-system-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
+      ref-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 이름은 2026-08-09 세션에 `canBound`로 확정, 같은 날
       여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정 — 진짜
       독립 경로는 둘뿐). `canBound`의 내부 플래그는 `canExecute`가 보는
@@ -483,7 +483,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
 - [ ] `:Peek<<T>>(key): T|State<T>|nil` 필드 읽기 접근자 +
       `isState(x)`/`isSource(x): boolean`(`Brand` 공유 레지스트리 기반 —
-      `modifier-plan.md` 9번, `bind-system-plan.md`의 `Brand` 절, M2의
+      `modifier-plan.md` 9번, `brand-plan.md`의 `Brand` 절, M2의
       `Brand.luau`에 이미 구현돼 있어야 함)
 - [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None` 센티널
       (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
@@ -516,7 +516,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       충돌하므로 기각). 복수 `PreRef`는 배열 index 순서 그대로(별도 규칙
       없음). fire된 슬롯은 그 자리에서 소진(`None` 처리, `nil` 아님 —
       2026-08-07 열 번째 세션 정정)해 이어지는 정상 두 패스에 다시 노출
-      안 되게 함 — `base/bind-system-plan.md` "PreRef" 절
+      안 되게 함 — `base/ref-plan.md` "PreRef" 절
 - [ ] `PreRef` 동적 경로 가드 Handler — `{isHandlable = v is PreRef,
       process = error(...)}` 형태로 정상 우선순위 레지스트리에 등록,
       `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열 경로는

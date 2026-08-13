@@ -131,7 +131,7 @@ UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같�
 ## 3. 권장 이벤트 핸들링 패턴 문서 (2026-08-06 추가)
 
 **배경**: 이벤트 핸들러가 self(Instance)를 받지 않기로 확정된 결정
-(`base/bind-system-plan.md` "이벤트 핸들러는 self(Instance)를 받지
+(`base/event-plan.md` "이벤트 핸들러는 self(Instance)를 받지
 않는다" 절)의 근거가 꽤 비직관적임 — v1을 써본 사용자는 self가 없어진
 걸 보고 "왜 없어졌지, 불편한데"라고 느낄 수 있어서 근거까지 같이
 문서화할 가치가 있음.
@@ -151,7 +151,7 @@ UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같�
 - **조건부 이벤트 처리 — 기본 패턴 vs store-bind, 대조해서 보여줄 것**
   (2026-08-06 추가). "핸들러 하나 계속 연결 + 내부에서 `store.enabled:Get()`
   분기"가 기본 권장 패턴이고, 이벤트 store-bind(`false`로 disconnect,
-  `bind-system-plan.md` "이벤트도 store-bind 가능" 절)는 고빈도 신호나
+  `event-plan.md` "이벤트도 store-bind 가능" 절)는 고빈도 신호나
   로직 자체가 바뀌는 드문 케이스를 위한 부차적 옵션이라는 점을 코드
   대조로 보여줄 것 — quad가 미는 디자인은 전자, 후자는 "이럴 수도 있다"
   정도로만 소개.

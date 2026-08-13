@@ -224,7 +224,7 @@ Modifier/Ref/자식을 구분"이 이미 v1의 유일한 해법이었던 패턴 
 버그 실측 후 확정).** caller가 `props.Modifier`/`props.Ref`를 안 넘기면
 `nil`인데, `{nil, props.Ref, child}`처럼 Lua 배열 리터럴에 `nil`이 그대로
 들어가면 그 순간 테이블의 배열 파트 전체가 순회 순서 보장을 잃을 위험이
-있음(`base/bind-system-plan.md`의 PreRef pre-pass 절이 다루는 것과 같은
+있음(`base/ref-plan.md`의 PreRef pre-pass 절이 다루는 것과 같은
 부류의 문제 — Luau REPL 실측으로 확인된 실제 버그, 국소적 피해가 아니라
 테이블 전체에 영향. **[주의]** 순서가 안 중요한 Ref 자신의 콜백/대기자
 배열은 반대로 `nil` 소진이 맞다는 정정이 따로 있음 — 여기서 다루는 건

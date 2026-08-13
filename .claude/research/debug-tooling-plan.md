@@ -499,7 +499,7 @@ Tween mock 등 동적 동작 포함")와 목적이 다름:
   thin wrapper를 준다면 Modifier 정적 flatten과 경쟁하는 두 번째 쓰기
   경로가 생겨 오버엔지니어링/성능/디버깅 추적성 문제가 생긴다는 게
   이유 — 클로저 래핑 비용도 근거로 추가됨. 상세 근거와 결정문은
-  `base/bind-system-plan.md`의 "이벤트 핸들러는 self(Instance)를 받지
+  `base/event-plan.md`의 "이벤트 핸들러는 self(Instance)를 받지
   않는다" 절 참고. quad-debug 입장에서는 self/thin wrapper 경로가
   아예 없어지므로 오히려 계측 대상이 단순해짐(추적 안 되는 경로 자체가
   존재하지 않게 됨).

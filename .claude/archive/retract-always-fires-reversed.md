@@ -5,7 +5,7 @@
 (Tag의 `assert(v==nil)` 명시화).
 **현재 유효한 설계**: `base/bind-system-plan.md`의 일반 retract 계약
 절(`retract(inst,k,v)` 항목), `base/tag-plan.md`/`base/attribute-plan.md`
-"이름 소유권"/"메커니즘" 절, `base/bind-system-plan.md`의 "`Ref`의 retract"
+"이름 소유권"/"메커니즘" 절, `base/ref-plan.md`의 "`Ref`의 retract"
 절, `base/slot-plan.md` "Slot과 Store 바인드의 관계" 절이 최종 소스.
 
 ## 역전된 사례 — 원래 무엇을 확정했었나

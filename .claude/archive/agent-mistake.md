@@ -34,6 +34,6 @@ predicate(핸들러가 이 키/값을 담당하는지 판단, 핸들러 계약 4
 `isState`만으론 부족함 — `isSource`를 별도로 제공해야 함. `isState`는
 여전히 `{State, Source}` 둘 다 통과시킴(상위집합 판별 유지).
 
-**현재 유효한 설계**: `base/bind-system-plan.md`의 `Brand` 절
+**현재 유효한 설계**: `base/brand-plan.md`의 `Brand` 절
 (`isState`/`isSource`가 둘 다 존재, 전자는 집합 멤버십, 후자는 단순 항등)이
 최종 소스.
