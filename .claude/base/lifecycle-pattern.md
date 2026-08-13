@@ -189,7 +189,7 @@ function bindLifetime(inst, value)
             local _ = gchold -- 발화 안 함, 클로저 생존이 곧 gchold 생존
             -- 2026-08-13 부분 실측 확인(미발화 + Destroy 시 Connected 즉시
             -- 전환) — audit/gcconn-trick-verification.md. canBound 이중
-            -- 바인딩 게이트(A-1/A-2)는 아직 공식 luau-test/10으로 미확인.
+            -- 바인딩 게이트(A-1/A-2)는 아직 공식 10(`luau-test/not-run/`)으로 미확인.
         end)
         relate:SetStrong(inst, GCCONN, gcconn)
     end

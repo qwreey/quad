@@ -188,7 +188,7 @@ State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하
   반환**하는 것으로 자연히 갱신됨(위 "타입 추론 문제" 절과 연동).
 
 **[해소됨, 2026-08-13 첫 실측 라운드]** 핵심 질문(Source가 State를 구조적으로
-만족하는 제네릭 메소드 체이닝)은 `luau-test/08-type-source-satisfies-state.luau`로
+만족하는 제네릭 메소드 체이닝)은 `08-type-source-satisfies-state.luau`(`luau-test/review-required/`)로
 실측 통과 확인됨 — 아래 우려대로 "두 제네릭 타입 별칭이 서로를 참조하는
 상호 재귀"는 실제로 위험했지만, 그 아래 제안한 단방향 의존(`State`가
 `Source`를 참조 안 함) 회피책이 그대로 맞아떨어짐. **다만 좁은 잔여

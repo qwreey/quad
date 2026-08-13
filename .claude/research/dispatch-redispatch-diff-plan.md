@@ -251,6 +251,11 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
   M6의 "`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를
   반환해야 함")이 선행 `retractFrom` 전제로 쓰여 있음 — base 4개를
   옮길 때 같이 갱신하고 배너를 걷을 것.
+- **[2026-08-13 감사에서 추가]** `ref-plan.md` — `bind-system-plan.md`
+  1단계 분할(2026-08-13 아홉 번째 세션, 순수 이동) 때 "`Ref`의 retract"
+  절이 옮겨오면서 선행 `retractFrom` 호출 서술도 그대로 딸려왔음. 분할
+  당시 이 문서(section 6, 당시 아직 안 쓰임)가 없어 배너가 안 붙었던
+  것 — 반영 시 나머지 6개와 같이 재작성하고 배너 걷을 것.
 
 - **[2026-08-13 8차 감사에서 추가] 같은 패스에서 `bind-system-plan.md`
   2단계 분할도 할 것** — 이 문서가 지시하는 재작성 범위(핸들러 계약 /
@@ -259,6 +264,6 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
   전면 재작성하므로, **재작성하면서 새 파일로 옮기면 인바운드 참조
   (~37곳)를 한 번만 고치면 됨.** 따로 하면 같은 곳을 두 번 만짐.
 
-**요약**: 배너를 달고 있는 파일 = 반영 대상. 위 6개(`bind-system-plan`/
-`tag-plan`/`slot-plan`/`attribute-plan`/`architecture`/`ROADMAP`)가
-전부이고, 반영이 끝나면 각 파일의 ⚠️ 배너도 같이 제거할 것.
+**요약**: 배너를 달고 있는 파일 = 반영 대상. 위 7개(`bind-system-plan`/
+`tag-plan`/`slot-plan`/`attribute-plan`/`architecture`/`ROADMAP`/
+`ref-plan`)가 전부이고, 반영이 끝나면 각 파일의 ⚠️ 배너도 같이 제거할 것.

@@ -1,6 +1,6 @@
 # Ref / PreRef — 지연 없는 확정 값 박스
 
-> **[2026-08-13 여덟 번째 세션] `bind-system-plan.md`에서 분리됨.** 그
+> **[2026-08-13 아홉 번째 세션] `bind-system-plan.md`에서 분리됨.** 그
 > 문서가 2989줄까지 불어나 사람이 검토하기 어렵고 한 곳의 실수가 미치는
 > 범위가 너무 커진다는 사용자 지적에 따른 1단계 분할. **내용은 옮기기만
 > 했고 결정은 하나도 안 바뀜.**
@@ -209,6 +209,17 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
   없다는 결론, 용어 정리 대상에서 제외됨.
 
 ### `Ref`의 retract — `State<Ref>` 재바인드 시 이전 Ref에 `nil` (2026-08-12 여덟 번째 세션, `TagHandler`와 같은 메커니즘 재사용)
+
+> **⚠️ [2026-08-13 감사 보강] 이 절의 "이전 `process`가 반환한 클로저가
+> `hintValue`로 먼저 불려 언바인딩하고, 그 다음 `process`가 바인딩"이라는
+> 서술은 곧 교체될 예정 — 아직 반영 안 됨. `research/dispatch-redispatch-diff-plan.md`가
+> 폐기 대상으로 지목한 바로 그 **선행 `retractFrom` 호출** 패턴이다 — 이 문서가
+> `bind-system-plan.md`에서 분리(2026-08-13 아홉 번째 세션, 순수 이동)될
+> 때 원문이 그대로 옮겨오면서 `bind-system-plan.md`/`tag-plan.md`/
+> `slot-plan.md`/`attribute-plan.md`가 이미 달고 있는 것과 같은 0-Z
+> 배너가 같이 안 옮겨졌음. `question.md` **0-Z**(Attribute 이름 소유권)
+> 해소 시 "하강 diff" 모델대로 이 절도 같이 재작성할 것 — **여기 적힌
+> 대로 구현하면 옛 모델로 짜게 됨.**
 
 **배경**: `Ref`는 이미 "일반 프로퍼티/Modifier 필드/Store 값 어디든 자유롭게
 들어감"(아래 "동적 경로 가드" 절)이 확정돼 있어 — `State<Ref>`가 실제로

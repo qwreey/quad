@@ -1,7 +1,7 @@
 # 확인/결정 필요 목록
 
 **이 문서는 사용자가 답해야 할 것만 담습니다.** 이미 결정이 끝난 항목은
-2026-08-13 여덟 번째 세션에 `archive/question-resolved.md`로 옮겼음 —
+2026-08-13 아홉 번째 세션에 `archive/question-resolved.md`로 옮겼음 —
 "해결된 게 너무 많아 필요한 부분만 읽기 어렵다"는 사용자 지적에 따른 것.
 결정 내용은 안 바뀌었고 읽는 자리만 옮겼으니, 어떤 항목이 왜 그렇게
 정해졌는지 되짚고 싶으면 그 문서를 볼 것(지금 유효한 설계 자체는 항상
@@ -241,6 +241,13 @@ Attribute가 직접 해야 함.**
   엘비스 연산자류) 후보 추가 — Haskell 비교 리서치 중 나옴, 카탈로그 확정
   규칙에 그대로 맞아 포함 근거는 있음. 상세는 `research/operator-sugar-plan.md`.
   구현 자체는 맨 마지막 우선순위(순수 슈가, 없어도 무방) — 여전함.
+- **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
+  세션 신설, 백로그)** — 인덱스 기반 `Dispatch` 재설계로 `State<State<T>>`는
+  UB에서 정상 지원 대상이 됐지만, 깊이가 늘수록 `retractFrom`의 힌트가
+  더 깊은 인덱스엔 `nil`로 전달돼 `Tag`/`Ref`/`Slot` 등의 힌트 기반
+  최적화(깜빡임 방지)가 무력화되는 실제 기능 손실이 있음 — 값 층에서
+  평탄화하는 `state:Flatten()`류 콤비네이터 아이디어는 나왔으나 착수 안
+  함. 상세는 `research/operator-sugar-plan.md` 마지막 절.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
@@ -248,7 +255,7 @@ Attribute가 직접 해야 함.**
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
   다 해소됨, 남은 건 세부 API 이름뿐("이벤트 함수가 self로 instance를
   읽는 게 quad 관습"이라는 언급은 2026-08-06 후속 세션에서 해소 —
-  채택 안 함으로 확정, `base/bind-system-plan.md` "이벤트 핸들러는
+  채택 안 함으로 확정, `base/event-plan.md` "이벤트 핸들러는
   self(Instance)를 받지 않는다" 절 참고). 사용자가 "quad 개발 완료 전엔
   착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M2 Dispatch/
   M3 Source/M5 DI 생성자) 시점에 훅 확장 지점만 고려해두면 됨.

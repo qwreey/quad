@@ -20,7 +20,7 @@
 	실행: `luau 11-modifier-illegal-value-error.luau`
 ]]
 
--- ===== Brand 흉내 — 실제로는 base/bind-system-plan.md의 Brand 절이 다루는
+-- ===== Brand 흉내 — 실제로는 base/brand-plan.md의 Brand 절이 다루는
 -- weak-key 레지스트리 기반이지만, 이 스파이크에선 태그 필드로 단순화 =====
 
 local function tag(name)
@@ -305,7 +305,7 @@ end
 	3. B에서 Slot 같은 "Modifier가 아닌 다른 핸들러 계층 값"은 State/Source에
 	   여전히 자유롭게 들어갈 수 있는가(Modifier만의 예외라는 걸 재확인).
 	4. 이 스파이크는 Brand/isState를 태그 필드로 단순화한 것 — 실제 구현은
-	   base/bind-system-plan.md의 weak-key 레지스트리 기반 Brand를 씀,
+	   base/brand-plan.md의 weak-key 레지스트리 기반 Brand를 씀,
 	   여기선 그 판별 로직 자체가 아니라 "체크 지점 배치가 실제로 동작하는가"만
 	   검증 대상.
 ]]

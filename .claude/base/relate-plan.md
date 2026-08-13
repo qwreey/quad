@@ -121,7 +121,7 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 - **정리 조건을 실제 정리와 묶을 것.** `Relate` 엔트리를 지우는 코드가
   "실제로 물러날 때"라는 조건 **밖**에 있으면, spurious 재발행에서
   기록만 날아가 dedup이 조용히 무력화됨 — `RefLeafHandler`가 실제로 이
-  버그를 냈음(`bind-system-plan.md` "`Ref`의 retract" 절).
+  버그를 냈음(`ref-plan.md` "`Ref`의 retract" 절).
 - **weak하다고 "언젠간 알아서 사라진다"에 기대지 말 것.** 값이 `SetWeak`
   이어도 **언제 사라지는지는 GC 타이밍**이라, 그 전에 같은 키를 다시
   쓰려는 코드가 비결정적으로 실패함 — `Slot`의 `destroySlotTree`가 자식

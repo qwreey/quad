@@ -1,6 +1,6 @@
 # gcconn 트릭 — 부분 실측 검증 결과
 
-**상태**: 부분 확인(2026-08-13). `luau-test/10-roblox-studio-checks.server.luau`의
+**상태**: 부분 확인(2026-08-13). `10-roblox-studio-checks.server.luau`(`luau-test/not-run/`)의
 공식 스크립트가 아니라 사용자가 별도로 작성한 저수준 검증 스크립트로
 확인됨 — `bindLifetime`/`canBound`/`unbindLifetime` 자체의 이중 바인딩
 로직(A-1/A-2)과 Part B/C는 여전히 미검증. **아래 "아직 확인 안 된 것"이
@@ -32,7 +32,7 @@ Studio에서 실행된 사용자 자작 스크립트(공식 `10` 파일이 아�
   트릭과 동일한 신호를 구독, 콜백 클로저가 `target`을 업밸류로 캡처.
 - Connection을 변수로 안 잡는 경우(Test 1)와 잡는 경우(Test 2) 둘 다 확인.
 - `triggerGC()`로 GC 완료를 간접 관찰(기법 상세는
-  `luau-test/gc-trigger-helper.server.luau`).
+  `gc-trigger-helper.server.luau`, `luau-test/not-run/`).
 
 ## 확인된 것
 
@@ -54,8 +54,8 @@ Studio에서 실행된 사용자 자작 스크립트(공식 `10` 파일이 아�
 
 - **A-1/A-2 (`canBound` 이중 바인딩 게이트, unbind 후 재바인딩 허용)** —
   `bindLifetime`/`canBound`/`unbindLifetime`/`Subscribed` 로직 자체는
-  이 스크립트에 없음(순수 GC/Connection 메커니즘만 테스트함). `luau-test/
-  README.md`가 명시한 두 번째 "심각한 발견" 트리거 조건(A-2 실패 시
+  이 스크립트에 없음(순수 GC/Connection 메커니즘만 테스트함). `luau-test/README.md`가
+  명시한 두 번째 "심각한 발견" 트리거 조건(A-2 실패 시
   `canBound`/`unbindLifetime` 설계 재검토)은 미해소 — 공식 `10` 파일을
   그대로 실행해서 확인해야 함.
 - **Part B (Attribute의 Instance 참조 타입 지원)**, **Part C
@@ -80,7 +80,7 @@ Studio에서 실행된 사용자 자작 스크립트(공식 `10` 파일이 아�
 결론은 이번에 반증됨** — weak-value 테이블에 canary를 넣어두고
 할당 압력(`table.create` 반복)을 걸며 `task.wait`로 기다리면, incremental
 GC가 실제로 완료되는 시점을 간접 관찰 가능함(사용자가 이번 검증에서
-확인). `07`의 docstring과 이 기법 자체는 `luau-test/gc-trigger-helper.server.luau`로
+확인). `07`의 docstring과 이 기법 자체는 `gc-trigger-helper.server.luau`(`luau-test/not-run/`)로
 분리해뒀음 — Studio 기반 스파이크(`10` 등)가 GC 완료를 기다려야 할 때
 그 파일의 `waitForGC`를 그대로 복붙하면 됨.
 

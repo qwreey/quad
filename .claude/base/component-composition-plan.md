@@ -303,7 +303,7 @@ caller가 named parameter 하나에 여러 modifier를 몰아넣고 싶을 때
 내부는 항상 이미 합쳐진 단일 값만 받으므로 컴포넌트 저작자가 배열 처리를
 신경 쓸 필요 없음. Ref는 필드 충돌 개념이 없어 이 문제 자체가 없음(여러
 Ref를 받으면 그냥 전부 실행하면 됨 — Ref 콜백 리스트는 애초에 여러 등록을
-누적하도록 설계돼 있음, `bind-system-plan.md`의 Ref 콜백/대기자 절) — 별도
+누적하도록 설계돼 있음, `ref-plan.md`의 Ref 콜백/대기자 절) — 별도
 결합 유틸 불필요. **정확한 동작(baked 값 교체 경고, 순서 의존성, `Apply`와의
 역할 구분, `:Peek`/`isState`)은 `base/modifier-plan.md` 9번 절이 최종
 소스** — `Merge`로 전부 대체해 `Apply`만 강제하는 방안도 이번에 검토했으나,

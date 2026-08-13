@@ -15,7 +15,7 @@
 	   이제 `isHandlable = isRef(v) and not isPreRef(v)`로 **명시적으로
 	   좁혀야만** PreRef를 잘못 삼키지 않는다는 것.
 
-	배경: .claude/base/bind-system-plan.md의 `Brand` 절
+	배경: .claude/base/brand-plan.md의 `Brand` 절
 	("isRef(x)는 그 위에 Brand.get(x)==RefTag를 OR로 얹은 상위 개념")와
 	"`(v=Ref)` children 배열 leaf 매치 핸들러... isRef(v) and not
 	isPreRef(v)로 명시적으로 좁혀야 함" 부분.
