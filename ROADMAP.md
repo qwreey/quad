@@ -252,6 +252,38 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M6 — Slot
 
+- [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
+      - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
+        비파괴 경로 `unmountSlotTree`를 `destroySlotTree`와 별도로 구현 —
+        차이는 딱 둘: 실제 `Destroy()`를 안 하고, 자식 `releaseOwner`도 안 함
+        (자식은 계속 그 slot 소유라 통째로 재마운트 가능 = 포탈).
+        **쓰는 자리 둘**: `SlotHandler.process`가 반환하는 클로저, `:List`의
+        `reconcile`. **여전히 파괴인 것**: 명시적 `Remove`/`Clear`/`dispose`.
+      - **해제 시 owner 등록 되돌리는 순서 고정** —
+        `setOffsetSource(inst,k,None)` **먼저**, `setLength(inst,k,0)` **나중**.
+        반대로 하면 `setLength` 안의 `recompute`가 죽는 중인 서브트리의 offset
+        `Source`에 헛된 `:Set()`을 날림. `recompute`는 `sourceList[i]`가 `nil`
+        이어도 `None`처럼 skip(방어), 해제 시 `slot.Offset = nil`.
+      - **소유권 판정을 둘로 분리** — nested(`rawAdd`)는 엄격 `claimOwner`
+        (같은 owner 재클레임도 error, `Slot{a,a}` 차단, 반환값 없음),
+        top-level은 `claimOwnerAt(element, inst, k)`(정확히 같은 `(inst,k)`의
+        spurious 재발행만 `false`, `Frame{slot,slot}`은 error).
+        `releaseOwner`는 불일치 시 즉시 error.
+      - **`rawRemove`가 `releaseOwner`를 부를 것**(옛 의사코드에서 누락돼 있었음),
+        **`destroySlotTree`가 자식 소유권 반납 + `_mounted`/`_mountedInst` 복원**
+        (GC에 맡기면 재사용이 GC 타이밍 의존으로 비결정적 실패).
+      - **`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를 반환해야 함**
+        — no-op을 반환하면 다음 진짜 교체 때 정리 주체가 사라짐(`retractFrom`은
+        클로저가 early-return해도 체인에서 항상 소비하므로).
+      - 전부 `base/slot-plan.md`에 반영돼 있고, `luau-test/19` C 섹션이
+        소유권 분기를 음성 대조군까지 포함해 실측 검증함.
+- [ ] **`dispose(value)`** — 대상이 아직 어느 트리에 의해 살아있길 요구되면
+      **파괴를 거부하고 즉시 error**(떼어내주지 않음 — 떼는 건 `Set`=언마운트의
+      몫). 엔진은 `Destroy`/`Clear`에 에러를 안 내지만 quad 자료구조가 깨지므로,
+      quad가 관리 중인 값을 안전하게 지우는 유일한 경로. 마운트 위치는
+      `elementOwner`가 이미 알고 있어 새 부기 불필요. 시그니처/대상 범위는
+      `.claude/question.md` 0-B에서 미확정
+
 - [x] **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
       세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/
       bind-system-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도

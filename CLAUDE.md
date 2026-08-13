@@ -121,6 +121,9 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    `Effect`/`Observer`/`Animate`/`Operator` 등 같은 계약을 공유하는 API
    전부에 걸림 — 선택지는 (1) 계약 유지 + 파라미터 주석 필수, (2) raw 값
    전환(**구조 변경 규모 큼**), (3) 혼합. **M0 착수 전에 정할 것.**
+   사용자 방향: 순환 타입을 만들기보다 **`State` 타입을 구울 때 인라이닝**
+   하는 쪽(생성기가 `T`별 평탄 타입을 뽑는, `Modifier` flat 타입과 같은 결)
+   — 다만 사람이 직접 확인할 부분이라 0-Z와 함께 사용자 판단 대기.
 
    **0-Z: Attribute 이름 소유권 결정.**
    2026-08-13 여섯 번째 세션에 `Dispatch` 재디스패치 모델이 "하강 diff"로
@@ -885,66 +888,18 @@ handoff용 저장이 불필요해짐 — `Relate`는 여러 위치/사이클을 
 `modifier-plan.md` 전부 반영, `archive/checkpoint-handler-pattern-reversed.md`
 신설.
 
-**2026-08-13 여섯 번째 세션 — c33ae04 커밋 전체 감사(버그 4건), Slot
-언마운트 전환, 재디스패치 모델 재설계**
-(`session/2026-08-13-06-commit-audit-dispatch-redesign-bugs.md`)
-사용자 지시로 직전 커밋을 메인 컨텍스트에서 직접 정독 — 인덱스 재설계
-**방향은 옳지만 새로 쓴 의사코드가 손 트레이싱을 안 거친 채 커밋**됐음이
-드러나 실제 버그 4건 발견·수정: (1) `Dispatch.process`의 `chains:SetStrong`이
-`h.process` 뒤에 있어 최초 마운트에서 하위 retractor가 통째로 유실,
-(2) Attribute 그룹이 `process`에서 `retractFrom`을 선행 호출해 점유
-체크(=소유권 충돌 감지)가 전혀 작동 안 함, (3) `SlotHandler`가 claim
-실패에도 파괴적 클로저를 반환해 `Frame{slot,slot}`에서 이중 파괴,
-(4) `Ref` retractor가 spurious 재발행에서도 `relate`를 지워 dedup 무력화.
-Slot 소유권은 nested=엄격 `claimOwner`/top-level=`claimOwnerAt(inst,k)`로
-분리하고 `rawRemove`의 `releaseOwner` 누락·`destroySlotTree`의 GC 타이밍
-의존 오류도 수정. `ROADMAP.md`가 2026-08-08 이전 모델로 남아있던 것, base
-내 "3종 vs 4종 계약" 모순, `luau-test/04`가 없어진 가드를 검증하던 것도
-정리(`04`는 인덱스 모델 + 버그 (1) 재현 음성 대조군으로 재작성).
-재발 방지로 `bind-system-plan.md`에 "Handler 작성 체크리스트"(7항목),
-`relate-plan.md`에 "언제 `Relate`를 쓰고 언제 쓰면 안 되는가" 신설.
-
-**이어진 사용자 설계 결정(같은 세션, 최종 상태만)**:
-- **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일,
-  비파괴 추출은 `Splice`로 이미 지원) — **포탈이 별도 기능이 아니라 이
-  결정의 귀결이 됨**. 해제는 `setOffsetSource(None)` → `setLength(0)`
-  **순서 고정**(반대면 죽는 중인 서브트리의 offset `Source`에 헛된 `:Set()`이
-  날아감) + `recompute`의 `nil` 관대 처리/`slot.Offset = nil` 방어.
-  별도 unregister API는 불필요. `base/slot-plan.md`에 **확정 반영 완료**.
-- **`dispose(value)` 신설** — "트리가 아직 살아있길 요구하면 파괴를 거부하고
-  error"(엔진은 조용히 넘어가지만 quad 자료구조가 깨지므로). 시그니처/범위는
-  `question.md` 0-B.
-- **재디스패치를 "하강 diff"로 재설계** — 래핑 핸들러의 `retractFrom` 선행
-  호출을 폐기하고 `Dispatch.process`가 **핸들러를 먼저 비교**(같으면 그 자리
-  클로저에 새 값 넘기고 자기 process 재호출, 다르면 아래 전량 철거). 계기는
-  힌트가 `None`/래퍼로 오염돼 깜빡임 방지가 조용히 꺼지는 결함(사용자 제기).
-  이 모델이면 **힌트 타입이 구조적으로 보장되고 깊은 체인 힌트 유실까지
-  사라짐**. 내가 낸 반론("StoreBind 구독 갈아타기")과 보완안(`oldValue` 전달)은
-  둘 다 사용자 지적으로 철회 — 클로저가 이미 old를 캡처하고 있음.
-  **아직 `research/dispatch-redispatch-diff-plan.md`에만 있음, base 미반영.**
-- **평탄화**(`state:Flatten()`)는 백로그 상세화만 — 반환 노드의 **동적
-  의존성**이 최대 쟁점(`research/operator-sugar-plan.md`).
-- **남은 결정 하나: Attribute 이름 소유권** — 새 모델에선 양쪽 다
-  `StoreBind`라 "같은 핸들러"로 판정돼 조용히 갈아탐. 사용자가 "이전
-  결정(claimant `Relate`)을 다시 가져오는 게 맞아 보이나 다음 세션에 직접
-  스케치하며 심층 분석"으로 이관 — `question.md` **0-Z(최우선)**.
-
-**이어진 첫 실측 라운드(같은 세션)** — `luau`/`luau-analyze` 바이너리가
-사용 가능해져 **스파이크를 만들기 시작한 2026-08-09 이래 처음으로 실제로
-돌림**(CLAUDE.md가 "M0 착수 전 남은 유일한 게이트"로 꼽아온 항목). 결과
-전문은 `audit/luau-test-first-run-2026-08-13.md`.
-- **런타임 12개 전원 통과**(01~07/11/17~20). **`04`가 이번 세션 감사의
-  버그를 음성 대조군으로 재현** — 체인 깊이가 3 대신 1로 무너지고 죽은
-  store가 나중에 UI를 덮어쓰는 것까지 실측돼 감사→수정 사이클이 닫힘.
-  **`07`은 보강해야 실제 검증이 됐음**(연쇄 GC 미검증 상태였고, 파일이
-  스스로 적어둔 "weak 엔트리를 셀 방법 없음" 전제가 틀렸음) — GC-native
-  아키텍처의 핵심 전제가 이걸로 실측 확정. **`18`이 `Relate` 상호 순환
-  경고를 실증**(추측이 아니라 실제로 GC 안 됨).
-- **타입 쪽에서 진짜 이슈 하나 발견 → `question.md` 0-Y 신설**(위 참고).
-- `modifier-plan.md`의 "데이터를 테이블에 직접 두고"가 두 갈래로 읽히는
-  **문서 결함**이 드러남 — self 최상위 리터럴 키에 두면 `__index`가
-  `rawget` 성공 시 안 불려 같은 필드 재호출이 죽음(문서 3·4절 대표 용례가
-  바로 그 패턴). 경고 문단 추가 + `17` 재작성으로 해소.
-- 스파이크 결함 수정: `17`(크래시), `11`(엉뚱한 이유로 통과), `19` B/C
-  (폐기 설계 검증 → 현행 설계로 재작성, 음성 대조군 포함), `07`(보강).
-  남은 것은 `13`/`15`/`16`의 스파이크 격리·API 재확인(설계 문제 아님).
+**2026-08-13 여섯 번째 세션 — c33ae04 감사(버그 4건), Slot 언마운트 전환,
+재디스패치 재설계안, 첫 실측 라운드**
+(`session/2026-08-13-06-commit-audit-dispatch-redesign-bugs.md`,
+실측 결과는 `audit/luau-test-first-run-2026-08-13.md`)
+직전 커밋을 직접 정독해 인덱스 재설계 의사코드의 실제 버그 4건 발견·수정
+(`chains:SetStrong` 순서로 하위 retractor 유실, Attribute 그룹의 점유 체크
+무력화, `SlotHandler`의 claim 실패 시 이중 파괴, `Ref` dedup 무력화).
+이어 사용자 결정으로 **`State<Slot>` 교체를 파괴→언마운트로 전환**(포탈이
+그 귀결이 됨), **`dispose(value)`**(트리가 요구하면 파괴 거부·error) 신설,
+**재디스패치를 "하강 diff"로 재설계**(`research/dispatch-redispatch-diff-plan.md`,
+**base 미반영 — `question.md` 0-Z 하나 남음**). `ROADMAP.md`/base 계약 개수
+모순/`luau-test` stale도 정리. 마지막으로 `luau` 바이너리가 생겨 **첫 실측**
+— 런타임 12개 전원 통과, `04`가 위 버그를 음성 대조군으로 재현, `07` 보강으로
+GC-native 전제 확정, `18`이 `Relate` 순환 경고 실증. 타입에선 `:Compute(fn)`
+lazy 핸들 계약이 Luau 추론과 충돌하는 게 드러나 `question.md` **0-Y** 신설.

@@ -2669,9 +2669,15 @@ State/스트림)를 다뤘던 이전 시도가 있어 조사함 — **확인된 
 
 ## 확정된 것 (더 이상 열린 질문 아님)
 
-- **핸들러 계약**: `isHandlable(inst,k,v)` + `priority` + `process`(구
-  `bind`) + `retract`(구 `cleanup`) 4종 조합으로 확정 — tbox식 6-hook 세분화는 지금은
+- **핸들러 계약**: `isHandlable(inst,k,v)` + `priority` +
+  `process(inst,k,v,index)` **3종**으로 확정 — tbox식 6-hook 세분화는 지금은
   안 함. 실제 구현하며 부족한 지점이 보이면 그때 hook 추가(점진적 확장).
+  **[정정, 2026-08-13 다섯 번째 세션 — 이 항목이 갱신에서 누락돼 문서 상단
+  "핸들러 계약" 절과 모순돼 있던 걸 같은 날 리뷰에서 발견]** 예전엔
+  `process`(구 `bind`) + `retract`(구 `cleanup`) 4종이었으나, `retract`가
+  별도 필드에서 **`process`의 반환값(retractor 클로저)** 으로 합쳐짐 —
+  이름과 개념은 그대로 유효하고 자리만 옮겨온 것(위 "핸들러 계약" 절이
+  정본).
 - **Signal 클래스**: 안 만듦, 콜백 + `Connected` 계산 속성만(`base/
   lifecycle-pattern.md`).
 - **Ref**: 도입 확정(위 절 참고), 용도는 "id 기반 조회 대체"가 아니라 "외부

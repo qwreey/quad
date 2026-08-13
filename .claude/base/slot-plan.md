@@ -340,12 +340,26 @@ function SlotHandler.process(inst, k, slotValue, index)
     -- no-op을 심어두면 그 다음 진짜 교체 때 이전 서브트리를 정리할 주체가 사라짐.
     return function(hintValue)
         if slotValue == hintValue then return end  -- 같은 Slot 재발행 → no-op
-        destroySlotTree(slotValue)  -- 재귀 파괴(자식 정리), 폐기·옮기지 않음 — slot 자신의 GC 앵커는 안 건드림(top-level 전용)
-        unbindLifetime(inst, slotValue)  -- top-level 자신의 GC 앵커 해제 — attachSlot의 top-level bindLifetime과 짝
-        releaseOwner(slotValue, inst)
+        -- [정정, 2026-08-13 감사 후속] 파괴가 아니라 **언마운트** —
+        -- 아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절이 확정한
+        -- 결정이 적용돼야 하는 자리가 바로 여기(최상위 dispatch 경로).
+        -- 예전엔 destroySlotTree를 불러 그 결정과 정면으로 모순됐음.
+        unmountSlotTree(slotValue)
+        -- 이 위치가 더 이상 기여하지 않음을 owner에게 알림 — **순서 고정**
+        -- (setLength가 끝에서 recompute를 돌리므로 offsetSource를 먼저 비워야
+        -- 죽는 중인 Source에 헛된 :Set()이 안 감, 아래 ⚠️ 절 참고)
+        Dispatch.setOffsetSource(inst, k, None)
+        Dispatch.setLength(inst, k, 0)
+        unbindLifetime(inst, slotValue)  -- top-level 자신의 GC 앵커 해제 — SlotHandler.process의 bindLifetime과 짝
+        releaseOwner(slotValue, inst)    -- 이제 이 Slot은 아무에게도 안 묶임(다른 곳에 다시 넣을 수 있음)
     end
 end
 ```
+
+**언마운트된 Slot은 그대로 재사용 가능** — `_elements`와 그 안의 소유권이
+전부 보존되므로(아래 `unmountSlotTree` 참고), `slot`을 들고 있던 코드가
+다른 곳에 다시 넣으면 `attachSlot`이 새 물리 부모로 다시 flush함. 아무도
+안 들고 있으면 그냥 GC. 지금 확실히 죽이려면 `dispose`(아래 절).
 
 **[전면 정정, 2026-08-13 감사] `claimOwner`를 nested/top-level 두 함수로
 쪼개고, top-level은 `(inst, k)`까지 본다.** 원래는 하나의 `claimOwner`가
@@ -1390,6 +1404,32 @@ Slot=그 `.Length`)이 됨. plain 요소만 있는 흔한 경우엔 항상 합==
 대해서만 한 번 돎:**
 
 ```lua
+-- [신설, 2026-08-13 감사 후속] 비파괴 언마운트 — `State<Slot>` 교체/`Extract`
+-- 계열이 쓰는 경로. `destroySlotTree`와 **딱 하나만 다름: 실제로 안 죽인다.**
+-- 물리 트리에서만 떼어내고 `_elements`/자식 소유권은 통째로 보존하므로,
+-- 같은 Slot을 나중에 다른 곳에 다시 마운트할 수 있음(= 포탈).
+local function unmountSlotTree(slot)
+    for i, element in ipairs(slot._elements) do
+        if isSlot(element) then
+            unmountSlotTree(element)   -- 재귀 — 중첩 Slot도 똑같이 비파괴
+        else
+            element.Parent = nil       -- Destroy 아님(quad-roblox 글루가 수행)
+        end
+        -- releaseOwner를 **안 부름** — 자식들은 여전히 이 slot의 소유. 이게
+        -- destroySlotTree와의 핵심 차이(파괴는 소유권까지 반납, 언마운트는 유지).
+    end
+    local bk = getBookkeeping(slot)
+    if bk then
+        for i, observer in pairs(bk.observers) do
+            unbindLifetime(slot._mountedInst, observer)   -- 물리 target에 걸린 배관만 해제
+        end
+    end
+    slot._mounted, slot._mountedInst = false, nil
+    slot.Offset = nil   -- 마운트 전 상태로 복원(위 "`Slot.Offset`은 마운트 전엔 nil")
+    -- slot 자신의 unbindLifetime / releaseOwner / owner쪽 setLength·setOffsetSource는
+    -- 호출부 몫 — destroySlotTree와 동일한 층위 분리.
+end
+
 local function destroySlotTree(slot)
     for i, element in ipairs(slot._elements) do
         -- [정정, 2026-08-13 감사] 소유권 반납을 먼저 — 아래 "소유권 반납은
@@ -1696,11 +1736,28 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 
 #### 구현상 바뀌어야 하는 것
 
-`reconcile`이 교체/소멸 시 `rawRemove`(파괴) 대신 **비파괴 경로**를 타야
-하고, 그 경로는 `destroySlotTree`가 지금 하는 일 중 **파괴만 빼고 나머지는
-그대로 해야 함**(자식 observer `unbindLifetime`, 옛 owner에 등록해둔
-`Dispatch.setLength`/`setOffsetSource` 해제, `_mounted`/`_mountedInst`
-복원, `releaseOwner`).
+**[반영 완료, 2026-08-13 감사 후속]** 비파괴 경로를 `unmountSlotTree`로
+신설하고(아래 "파괴" 절), 이걸 쓰는 자리를 둘로 못박음:
+
+1. **`SlotHandler.process`가 반환하는 클로저**(최상위 dispatch 경로) —
+   **이 결정이 적용돼야 하는 바로 그 자리인데 처음엔 빠뜨려서
+   `destroySlotTree`를 계속 부르고 있었음**(다른 에이전트 리뷰가 지적,
+   그대로 뒀으면 언마운트 결정 자체가 무의미해질 뻔함). 지금은 위 절의
+   코드가 `unmountSlotTree` + `setOffsetSource(None)`/`setLength(0)` +
+   `unbindLifetime` + `releaseOwner`를 부름.
+2. **`:List`의 `reconcile`** — 교체/소멸 시 `rawRemove`(파괴) 대신 같은
+   비파괴 경로. 데이터에서 빠진 아이템도 파괴되지 않고 언마운트만 되며,
+   아무도 안 들고 있으면 GC(quad 전역의 GC-native 원칙 그대로).
+
+**여전히 파괴인 것**: 명시적 CRUD `Slot:Remove(index)`/`Slot:Clear()`
+(CRUD 표가 "제거 **+ 파괴**"로 이미 정의)와 `dispose`. 즉 **"자동 경로는
+언마운트, 명시적으로 지우라고 한 것만 파괴"**로 갈림 — `Ref`/`Attribute`의
+"지울 거면 명시적으로" 철학과 정확히 같은 결.
+
+`unmountSlotTree`는 `destroySlotTree`가 하는 일 중 **실제 파괴와 자식
+소유권 반납만 빼고 나머지는 그대로 함**(자식 observer `unbindLifetime`,
+`_mounted`/`_mountedInst` 복원, `slot.Offset = nil`). 옛 owner에 등록해둔
+`Dispatch.setLength`/`setOffsetSource` 해제는 호출부 몫(아래).
 
 **[정정, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
 대해 그냥 **`Dispatch.setOffsetSource(ownerKey, position, None)` +
