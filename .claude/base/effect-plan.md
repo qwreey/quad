@@ -154,7 +154,7 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   경로를 하나만 가져야 한다는 게 맞는 방향이라 판단이 뒤집힘 — 상세
   규칙과 `canBound(handle)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
   플래그, 2026-08-09 세션에서 이름 확정)은
-  `base/ref-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
+  `base/bind-system-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
   2026-08-09 여섯 번째 세션] leaf 부착 후 조기 해제는 `:Unsubscribe()`가
   아니라 `unbindLifetime(inst, value)`** — leaf 부착 자체가 내부적으로
   `bindLifetime(inst, value)` 호출이라, 그 해제도 짝인 `unbindLifetime`

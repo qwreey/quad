@@ -307,7 +307,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `base/slot-plan.md` "`Slot:List(...)`" 절.
 - **[해소됨, 2026-08-09 세션]** `Bound` — **`canBound(handle): boolean`
   탑레벨 함수로 확정**, `canExecute`와 같은 결(raw 필드를 직접 노출하는
-  대신 predicate 함수로 감쌈). `base/ref-plan.md` "이중 바인딩
+  대신 predicate 함수로 감쌈). `base/bind-system-plan.md` "이중 바인딩
   금지" 절 참고.
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를

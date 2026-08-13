@@ -232,7 +232,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/
-      ref-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
+      bind-system-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 이름은 2026-08-09 세션에 `canBound`로 확정, 같은 날
       여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정 — 진짜
       독립 경로는 둘뿐). `canBound`의 내부 플래그는 `canExecute`가 보는

@@ -6,7 +6,7 @@
 정해지면 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
 `attribute-plan.md`를 한 번에 옮기면 됨.
 
-> **문서 이력**: 최초엔 `dispatch-hint-to-oldvalue-plan.md`라는 이름으로
+> **문서 이력**: 최초엔 dispatch-hint-to-oldvalue-plan(현재 없는 옛 파일명)으로
 > "힌트 대신 `oldValue`를 넘기자"는 보완안을 담고 있었으나, 사용자가
 > **"이전 값인 oldValue는 처음부터 클로저라 이미 본인이 알지 않아요?"**
 > 라고 지적해 그 보완안이 통째로 불필요함이 드러남(아래 3-2) — 파일명도
