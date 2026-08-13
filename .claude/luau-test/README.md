@@ -23,7 +23,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
-| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분), 17 |
+| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분), 17, 18, 19, 20 |
 | **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14, 15, 16 |
 | **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
 
@@ -55,7 +55,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인" |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `store-semantics.md` "검증 필요", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 | `lifecycle-pattern.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 — **[2026-08-13]** A 섹션 앞부분(신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됨, `audit/gcconn-trick-verification.md` 참고. A-1/A-2(`canBound` 게이트)/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "핸들러 계층 값 즉시 error" 절 + 7번 절 |
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 DI 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `bind-system-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
@@ -63,6 +63,18 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `bind-system-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
 | `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `bind-system-plan.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |
 | `17-modifier-index-tableclone-chaining.luau` | Modifier의 제네릭 `__index`+`table.clone` 체이닝 — 임의 필드 이름에 대해 즉석 setter가 만들어지는지, `table.clone`이 메타테이블을 참조로 공유해 여러 단계 clone에서도 체이닝이 안 끊기는지, 원본이 mutate 안 되는지, 형제 분기끼리 오염 안 되는지 | `modifier-plan.md` "런타임은 클래스별 코드 없이 base에 딱 하나만 있으면 됨" 절 + "`table.clone`의 정확한 동작 — 확인됨" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-11 |
+| `18-relate-mutual-cycle-gc.luau` | **[2026-08-13 신규]** 서로 다른 두 `Relate`가 서로의 키를 상대방의 강한 값으로 제공하는 상호 순환은 Luau에 ephemeron이 없어 GC가 못 푼다는 주장(지금까지 공식 문서 인용으로만 뒷받침됨) — 음성 대조군(순환 재현)과 양성 대조군(한쪽을 weak-value로 낮추면 풀리는지) 둘 다 실측 | `relate-plan.md` "위험한 패턴" 절(2026-08-12 열세/열네 번째 세션), `slot-plan.md`의 `kSlotMap`/`slotOwner`/`elementOwner` 실사례 |
+| `19-ownership-refcount-relate-patterns.luau` | **[2026-08-13 신규]** "retract는 항상 불림" 정정(2026-08-12 열한 번째 세션) 이후 새로 생긴 세 소유권/참조카운트 알고리즘(A: Tag `kTagMap`/`tagNameMap` 참조 카운트 — 여러 위치가 같은 이름을 겹쳐 가져도 마지막 홀더가 빠질 때만 실제 `RemoveTag`, B: Attribute `rawNew`+`owners` 소유권 — 충돌 시 error + 사이클 간 캐시 키 재사용, C: Slot `elementOwner`의 `claimOwner`/`releaseOwner` — 같은 owner 재클레임은 no-op, 다른 owner는 error)가 실제로 정확히 갈리는지 | `tag-plan.md` "메커니즘" 절, `attribute-plan.md` "이름 소유권" 절, `slot-plan.md` "요소 소유권 — `elementOwner`" 절(전부 2026-08-12 세션들, 03/04/11번과는 다른 새 알고리즘 모양이라 별도 실측 필요하다고 판단) |
+| `20-slot-splice-index-arithmetic.luau` | **[2026-08-13 신규]** `Slot:Splice(index, removeCount, ...newElements)`의 shift+recompute 1회 계산이, `Extract`/`Add` 반복으로 재현한 참조 구현과 항상 같은 결과를 내는지 — 제거/삽입 길이가 다를 때(delta 양수/음수) 뒤 요소가 밀리는 방향과 양을 헷갈리는 off-by-one 위험(이 프로젝트가 `Dispatch.recompute`에서 실제로 냈던 것과 같은 클래스의 버그)을 경계값 케이스로 검증 | `slot-plan.md` "확정" CRUD 표 + "`Splice` 신설" 절(2026-08-12 열다섯 번째 세션), `bind-system-plan.md`의 `recompute` off-by-one 수정 사례(2026-08-11 여섯 번째 세션) |
+
+## 공통 유틸리티
+
+- `gc-trigger-helper.server.luau` — Roblox Studio(collectgarbage() 미노출
+  환경)에서 GC 완료를 간접 관찰하는 `waitForGC()` 스니펫. Studio 기반
+  스파이크(`10` 등)가 "GC가 끝날 때까지 기다렸다가 weak 참조가 사라졌는지
+  확인"해야 할 때 그대로 복붙해서 쓸 것. 순수 luau CLI 스크립트(`07` 등)는
+  `collectgarbage()`를 직접 부르면 되므로 이 헬퍼가 필요 없음 — 발견 경위는
+  `audit/gcconn-trick-verification.md` 참고.
 
 ## 갱신 이력
 
@@ -115,6 +127,33 @@ Luau로 부딪혀본 적은 없다는 걸 핸드오버 점검 중 발견 — `16
 스케치, 타입체크 전용)/`17`(제네릭 __index 체이닝, 런타임)로 신규 추가.
 둘 다 이전까지 이 폴더 어디에도 커버 대상이 없던 완전히 새 항목.
 
+**7차 (2026-08-13)**: `10`의 A 섹션 앞부분(ClassName 신호 미발화,
+`Destroy()` 시 `Connection.Connected` 즉시 전환)을 사용자가 공식 파일이
+아닌 자작 스크립트로 먼저 실측 — 결과는 `.claude/audit/
+gcconn-trick-verification.md`에 정리(부분 확인, A-1/A-2/B/C는 아직 official
+`10`으로 재확인 필요). 부수적으로 Studio에서도 GC 완료를 간접 관찰하는
+기법을 발견해 `gc-trigger-helper.server.luau`로 분리, `07`의 "Studio에서
+GC 검증 불가" 서술도 이에 맞춰 정정.
+
+**8차 (2026-08-13)**: `18` 신규 추가 — 2026-08-12 열세/열네 번째 세션에서
+`relate-plan.md`에 확정된 "두 `Relate` 상호 강참조 순환은 ephemeron 없이는
+GC가 안 풂" 주장이 지금까지 공식 문서 인용으로만 뒷받침돼 있었고 실제
+Luau로 재현해본 적이 없었던 갭 — `Slot`의 `kSlotMap`/`slotOwner` GC 수정
+사례(session 13/14) 전체가 이 사례 하나에 기대고 있어 우선순위 있게 추가.
+
+**9차 (2026-08-13)**: CLAUDE.md 세션 8~21(대부분 2026-08-12) 전체를 대상으로
+"새 메커니즘 중 실 Luau로 안 부딪혀본 게 더 있는가"를 재점검 — Ref/Slot의
+`Relate` diff 기반 retract(세션 8/9)는 03/04번이 이미 검증한 것과 같은
+클래스의 재귀 dispatch/체인 로직이라 스킵. 반면 Tag 참조 카운트(세션 11/16)
++ Attribute `rawNew` 소유권(세션 10) + Slot `elementOwner` 소유권 판정
+(세션 12, GC 쪽은 이미 18번이 커버)은 "여러 위치가 하나의 이름/자리를
+공유"하는 셋 다 새로운 알고리즘 모양이라 `19` 하나로 묶어 신규 추가.
+`Slot:Splice`(세션 15)는 순수 index 산술이지만 이 프로젝트가 같은 클래스
+(`recompute` off-by-one)에서 실제 버그를 낸 전례가 있어 `20`으로 별도
+신규 추가. 그 외(`Tag:Added`의 vararg→`string|{string}` 전환, Attribute의
+"retract 완전 no-op" 재정정 등)는 단순 분기/타입 정리라 스파이크 불필요로
+판단, 추가 안 함.
+
 ## 결과 확인 후 할 일
 
 각 파일 결과를 알려주면, 실제로 걸리는 부분이 있는지 보고 필요하면
@@ -127,9 +166,11 @@ Luau로 부딪혀본 적은 없다는 걸 핸드오버 점검 중 발견 — `16
   `collectgarbage("count")` 수치 변화를 같이 알려줄 것 — 정확한 판정이
   어려운 항목이라 참고 신호로만 쓸 것.
 - `10`의 A 섹션에서 만약 `warn`이 실제로 뜨면(ClassName Changed가
-  발화함), gcconn 트릭 전체를 재검토해야 하는 심각한 발견이니 바로 알려줄 것.
-  A-2(재-bindLifetime 허용 여부)가 실패하면 `canBound`/`unbindLifetime`
-  설계 자체를 재검토해야 함.
+  발화함), gcconn 트릭 전체를 재검토해야 하는 심각한 발견이니 바로 알려줄 것
+  — **[2026-08-13] 이 조건은 이미 회피 확인됨**(`audit/
+  gcconn-trick-verification.md`), 재확인 불필요. A-2(재-bindLifetime 허용
+  여부)가 실패하면 `canBound`/`unbindLifetime` 설계 자체를 재검토해야
+  함 — **이건 아직 미확인, 공식 `10` 파일로 꼭 돌려볼 것.**
 - `11`은 전부 PASS가 기대값 — FAIL이 하나라도 있으면 어느 케이스인지
   그대로 알려줄 것(특히 "변환 함수가 반환한 값" 케이스는 놓치기 쉬운
   경로라 실제 구현에서도 잘 짜였는지 중요한 신호).
@@ -153,3 +194,16 @@ Luau로 부딪혀본 적은 없다는 걸 핸드오버 점검 중 발견 — `16
 - `17`은 전부 PASS가 기대값 — 특히 (B) 메타테이블 참조 동일성 assert가
   실패하면 M7 전체 설계("클래스별 런타임 코드 불필요")의 핵심 전제가
   무너지는 것이니 최우선으로 알려줄 것.
+- `18`은 1번 섹션이 true/true, 2번 섹션이 false/false로 나와야 기대값 —
+  둘 중 하나라도 다르면(특히 `warn`이 뜨면) `relate-plan.md` "위험한 패턴"
+  절과 `slot-plan.md`의 `kSlotMap`/`slotOwner`/`elementOwner` GC 설계
+  전체를 최우선으로 재검토해야 함(Slot GC 안전성의 유일한 근거였음).
+- `19`는 전부 PASS가 기대값 — A 섹션이 FAIL이면 `tag-plan.md`의 참조
+  카운트 알고리즘 자체를, C 섹션이 FAIL이면(특히 "같은 owner 재클레임은
+  no-op"이 안 되면) `slot-plan.md`의 `elementOwner` 설계를 최우선으로
+  재검토할 것 — C가 깨지면 재귀 재emit마다 마운트된 서브트리 전체가
+  파괴됐다 재생성되는 파괴적 버그로 직결됨.
+- `20`도 전부 PASS가 기대값 — FAIL이 있으면 어느 케이스(특히 delta 부호가
+  바뀌는 경계값)인지와 최종 배열/제거분이 어떻게 달랐는지 그대로 알려줄
+  것, `Slot:Splice`의 shift 방향/양 계산에 off-by-one이 있다는 뜻이라
+  `slot-plan.md` "확정" CRUD 표를 바로 고쳐야 함.

@@ -9,12 +9,22 @@
 	배경: .claude/base/relate-plan.md "M2 착수 시 실측 확인" 캐비엇.
 
 	중요한 제약: Roblox의 실제 게임 스크립트 환경에는 collectgarbage()가
-	노출되지 않음(강제 GC 트리거 불가) — 그래서 이 GC 타이밍 검증은
-	Roblox Studio가 아니라 반드시 순수 luau CLI에서 해야 함(standalone
-	Luau 인터프리터는 collectgarbage를 허용). Roblox 쪽은 VM/GC 구현
-	자체가 같은 Luau이므로 여기서 확인된 동작이 그대로 적용된다고 가정할
-	수 있지만, "그대로 적용된다"는 가정 자체는 이 스크립트로 검증 불가능한
-	항목으로 남음(참고만 할 것).
+	명시적으로 노출되지 않음 — 그래서 이 스크립트 자체(collectgarbage()를
+	직접 호출)는 Roblox Studio가 아니라 순수 luau CLI에서 돌려야 함
+	(standalone Luau 인터프리터는 collectgarbage를 허용). Roblox 쪽은
+	VM/GC 구현 자체가 같은 Luau이므로 여기서 확인된 동작이 그대로
+	적용된다고 가정할 수 있지만, "그대로 적용된다"는 가정 자체는 이
+	스크립트로 검증 불가능한 항목으로 남음(참고만 할 것).
+
+	**[2026-08-13 갱신]** "그래서 Studio에서는 GC 타이밍 검증 자체가
+	불가능하다"는 예전 결론은 정정됨 — `collectgarbage()` API가 없을
+	뿐, weak-value 테이블에 canary를 넣고 할당 압력을 걸며 기다리는
+	간접 기법으로 Studio에서도 GC 완료를 관찰 가능함이 실측 확인됨
+	(`gc-trigger-helper.server.luau`, `audit/gcconn-trick-verification.md`
+	참고). `10`처럼 Studio 스파이크에서 GC 완료를 기다려야 하면 그
+	헬퍼를 쓸 것 — 이 파일(`07`)은 여전히 순수 luau CLI 전용으로 남김
+	(더 정확한 `collectgarbage()` 직접 호출을 쓸 수 있어 굳이 간접
+	기법으로 바꿀 이유 없음).
 
 	실행: `luau 07-relate-weak-table-gc.luau`
 ]]

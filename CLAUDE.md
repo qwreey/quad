@@ -114,18 +114,27 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    인수인계 라운드로 종료. `research/pre-implementation-audit.md` 우선순위1은
    2026-08-12 열일곱 번째 세션에 마지막 넷(1-3/1-4/1-10/1-11)까지 전부
    해소되어 **11개 전원 완료** — M0 착수 전 남은 유일한 게이트는:
-   - **`.claude/luau-test/`(2026-08-09 신설, 2026-08-12 열일곱 번째 세션에
-     16/17 추가로 총 17개) 스파이크 결과** — 아직 사용자가
-     `luau`/`luau-analyze`/`luau-lsp`/Roblox Studio로 안 돌려봄, 결과가
+   - **`.claude/luau-test/`(2026-08-09 신설, 2026-08-13 기준 20개 —
+     2026-08-12 열일곱 번째 세션에 16/17 추가, 2026-08-13에 세션 8~21이
+     만든 커버리지 갭을 메우는 18/19/20 추가) 스파이크 결과** —
+     **[2026-08-13] `10`의 A 섹션 일부(ClassName 신호 미발화, Destroy 시
+     Connection.Connected 즉시 전환)가 처음으로 부분 확인됨**, 결과는
+     `.claude/audit/gcconn-trick-verification.md`. 나머지 19개 전체(신규
+     `18`/`19`/`20` 포함) + `10`의 남은 부분(A-1/A-2/B/C)은 여전히 사용자가
+     `luau`/`luau-analyze`/`luau-lsp`/Roblox Studio로 안 돌려봄 — 결과가
      나오면 그것부터 반영할 것(`luau-test/README.md`가 파일별로 뭘 우선
      확인해야 하는지 이미 적어둠). 걸리는 게 있으면 `base/` 문서부터 고치고,
      없으면 그대로 M0 실제 코드 작성에 재사용. 설계 자체는 더 이상 막힌
      게 없음 — `.claude/question.md` 2번이 최신 상태.
 2. **용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
    `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
-   stale해지는 패턴이 반복됐어서). 아직 열려있는 것만 짚으면: `State`(1순위,
-   위험도 높음 — 업계 통념("쓸 수 있는 로컬 상태")과 반대 의미라 오해 위험),
-   `DI`→`D`, `Slot`, `canExecute`→`isAlive`, `Brand`.
+   stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
+   2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
+   목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
+   — 아직 진짜로 열려있는 것만 짚으면: `DI`→`D`(1순위), `Slot`(2순위),
+   `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
+   방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
+   `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).
 3. `research/existing-instance-bind-plan.md`는 급하지 않음 — 스코프 논의만
    필요, 구현 착수를 막지 않음.
 4. **[백로그]** 범용 렌더 디버깅 도구 `quad-mock`(Tween mock 등 동적 동작
@@ -733,3 +742,22 @@ Vue/Svelte는 lazy인데도 `computed`를 쓰지만, quad 자기 코퍼스 안�
 `Tag.Added`/`Modifier.Overridden`이 이미 "-ed = clone 후 즉시 확정된 값"
 관례를 선점해뒀어서 lazy한 State에 재사용하면 자기 관례와 충돌 — `Compute`가
 더 정확하다는 데 동의, `bind-system-plan.md`에 근거 추가.
+
+**2026-08-13 첫 번째 세션 — gcconn 트릭 부분 실측, `Relate` 상호 순환
+스파이크 신규, README 동기화**
+(`session/2026-08-13-01-gcconn-audit-relate-cycle-spike-readme-sync.md`)
+사용자가 Studio에서 gcconn 트릭의 핵심 가정(ClassName 신호 미발화, Destroy
+시 `Connected` 즉시 전환) 둘을 자작 스크립트로 실측 — 결과를
+`.claude/audit/gcconn-trick-verification.md`에 정리(부분 확인, `luau-test/10`의
+A-1/A-2/B/C는 미해소로 명확히 구분). GC 강제 트리거 기법을
+`gc-trigger-helper.server.luau`로 문서화하면서 `07`의 "Studio에서 GC 검증
+불가" stale 서술도 정정. 코퍼스를 다시 훑다가 `relate-plan.md`의 "두
+`Relate` 상호 순환은 ephemeron 없이 GC 안 됨" 주장이 공식 문서 인용으로만
+뒷받침돼 실측된 적 없었던 갭을 발견해 `18` 신규 작성, CLAUDE.md 자신의
+"지금 할 일"이 이미 해소된 `State` 용어 논쟁을 stale하게 open으로 남겨뒀던
+것도 발견·수정. 서브에이전트에 위임한 코퍼스 스윕으로 세션 8~21(마지막
+전체 감사인 세션 16 이후) 변경사항이 `.claude/README.md` 요약 테이블에
+안 반영돼 있던 8개 행 동기화(base/research 문서 본문 자체는 이미 최신,
+색인 레이어만 밀렸던 것) + `attribute-plan.md` 행의 실제 오류(폐기된
+중간 단계 서술) 수정 + 새 소유권/참조카운트 알고리즘(Tag/Attribute/Slot)과
+`Slot:Splice` 산술을 커버하는 `19`/`20` 스파이크 추가(총 20개).
