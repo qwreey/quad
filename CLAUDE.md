@@ -268,7 +268,8 @@ Fusion/Vide/react-lua 정직 비교 완료. **핵심**: `Source<T>`가 구조적
 (`session/2026-08-06-04-pre-implementation-audit.md`)
 `.claude/base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재감사,
 `research/pre-implementation-audit.md` 신설(우선순위1 11개 등). 대부분은
-이후 세션에서 해소됨 — 현재 상태는 `.claude/question.md` 2번 참고.
+이후 세션에서 해소됨(우선순위1 11개 전원) — 현재 상태의 원본은
+`research/pre-implementation-audit.md`.
 
 **2026-08-07 세션 — `:With`도 새 State 노드** (`session/2026-08-07-01-with-new-node.md`)
 `:With(...)`는 clone 빌더가 아니라 매번 새 State 노드를 만드는 것으로 확정

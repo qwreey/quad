@@ -92,6 +92,7 @@
 | `onchange-per-property-codegen-rejected.md` | **[기각됨, 2026-08-10 신설]** `OnChange.PropertyName` 프로퍼티별 정적 코드 생성 — Attribute의 정적 지름길과 달리 (클래스 수 × 프로퍼티 수) 규모로 폭발해 기각, `OnChange(name)` 단일 팩토리로 대체 |
 | `retract-always-fires-reversed.md` | **[역전됨, 2026-08-12 열한 번째 세션 신설]** "핸들러 타입이 안 바뀌면 retract 없이 process가 diff" — 실제로는 `retract`가 store 재발행마다 항상 불림(핸들러 타입 무관). `Tag`/`Ref`/`Slot`/`Attribute` 전부 이 오류 위에서 설계돼 있었음이 드러나 한 세션에 전부 정정 |
 | `slot-discard-no-portal-reversed.md` | **[역전됨, 2026-08-13 일곱 번째 세션 신설]** Slot의 **"retract = 폐기, 옮기지 않음"(2026-08-04 확정) + "portal은 오버엔지니어링이라 안 함"** — 여섯 번째 세션에 `State<Slot>` 교체가 파괴에서 **언마운트**로 뒤집히며 portal이 별도 기능이 아니라 그 귀결이 됨(`state<Frame>`와 동일한 시맨틱). `base/slot-plan.md`에 히스토리로 남아 있던 세 덩어리(확정 문단 + `State<Slot?>` 왕복 분석 + 포탈 검토와 숙제 셋)를 원문 그대로 이전, 숙제 셋이 각각 어떻게 결말났는지도 정리 |
+| `question-resolved.md` | **[해소 아카이브, 2026-08-13 여덟 번째 세션 신설]** `question.md`에서 걷어낸 **결정 완료** 항목 전부(당시 32개 `[해소됨]` 마커) — 추가 프리미티브 필요성 라운드, 구현 착수 직전 감사 요약, 확정된 용어들(`State`/`Relate`/`List`/`canBound`/`Ref`/`PreRef`/`Peek`/`isState`/`None`/`Handler`), 포탈·`State<Slot?>` 왕복 해소 등. 분리 직전 전문을 그대로 보존. **`question.md`는 이제 사용자가 답해야 할 것만 담음** — 항목이 해소되면 여기로 옮길 것 |
 | `checkpoint-handler-pattern-reversed.md` | **[역전됨, 2026-08-13 다섯 번째 세션 신설]** `AttributeGroupHandler`의 이름 소유권 충돌을 고치려고 만든 `Dispatch.processAs`/`Dispatch.retractSelfAndUnder` 체크포인트 핸들러 패턴(같은 날 네 번째 세션 신설) — `chains`를 핸들러 identity가 아니라 재귀 깊이 인덱스로 추적하는 더 근본적인 재설계로 대체되며 같은 날 바로 불필요해짐. `State<State<T>>`도 이 재설계로 UB에서 정상 지원 대상으로 바뀜 |
 
 ## 참고

@@ -173,4 +173,5 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
    받을 때 Observer를 그대로 조합해 재사용할 수 있게 됨(별도 "설치 시
    1회 실행" 로직을 Effect가 따로 만들 필요 없음).
 
-`.claude/question.md` 0번의 관련 항목도 해소됨으로 갱신 완료.
+`.claude/question.md`의 관련 항목도 해소됨으로 갱신 완료(그 항목은
+이후 `archive/question-resolved.md`로 이전).
