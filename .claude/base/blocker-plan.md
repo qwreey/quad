@@ -17,9 +17,8 @@
 위험을 구조적으로 우회한다.
 
 **store 개발(M3)과 밀접하게 연관됨** — `state:Block(blocker)`가 State
-위에 얹히는 메소드이므로 `base/store-semantics.md`의 Store/State/Source
-온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/
-bind-system-plan.md` "전파 모델 확정" 절)을 전제로 함. 별도 파일로 두되
+위에 얹히는 메소드이므로 `base/source-state-plan.md`의 Source/State
+온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함. 별도 파일로 두되
 State와 같은 마일스톤(`ROADMAP.md` M3)에서 함께 구현할 것.
 
 ## 메커니즘 (확정)
@@ -45,7 +44,7 @@ gated state의 동작:
 
 **`:Get()`엔 영향 없음** — 블록은 emit **전파**만 지연시킨다. 블록 중이라도
 누군가 명시적으로 `:Get()`하면 그 순간의 실제 값을 정상적으로 계산해서
-준다 — `store-semantics.md`의 "`Get()`은 라이브 레퍼런스를 준다" 원칙과 일치.
+준다 — `base/source-state-plan.md`의 "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`" 절("`Get()`은 라이브 레퍼런스를 준다" 캐비엇)과 일치.
 
 ## 사용 예시
 

@@ -31,7 +31,7 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 
 이전에 시도했다 폐기한 v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치
 완료 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` copy-on-write 절충안은 확인된
-죽은 접근이라 반복 조사 금지(`base/bind-system-plan.md` 참고).
+죽은 접근이라 반복 조사 금지(`base/bind-system-plan.md` "확정된 것" 절 참고).
 
 ## 계획 문서 구조
 
@@ -42,13 +42,14 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   base 문서가 근거로 인용하는 온디맨드 참고 자료(v1 내부 동작 스냅샷,
   Fusion/Vide 비교 리서치) — 항상 읽을 필요는 없고 인용될 때만 열어볼 것.
 - `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의.
-  `existing-instance-bind-plan.md`/`debug-tooling-plan.md`/
+  `debug-tooling-plan.md`/
   `documentation-plan.md`/`documentation-content-map.md`/
   `framework-comparison-findings.md`/`additional-primitives-plan.md`(2026-08-09
   세 번째 세션에 마지막 열린 항목까지 전부 해소, 이제 배경 자료용)/
   `pre-implementation-audit.md`/`v1-compat-plan.md`
   — 전부 후순위(`tween-plan.md`는 2026-08-12 세션에 마지막 열린 항목까지
-  전부 해소돼 `base/`로 승격, 더 이상 여기 없음). 최신 목록·우선순위는
+  전부 해소돼 `base/`로 승격, 이미 생성된 인스턴스 재바인드는
+  2026-08-14 세션에 기각돼 `archive/existing-instance-bind-rejected.md`로 이전, 더 이상 여기 없음). 최신 목록·우선순위는
   `.claude/README.md`가 소스, 여기서 개수 반복 안 함(과거에 "두 개뿐"이라
   적어놨다가 새 문서 추가될 때마다 안 갱신되는 패턴이 반복돼서 아예 안
   세기로 함).
@@ -230,8 +231,9 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
    방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
    `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).
-3. `research/existing-instance-bind-plan.md`는 급하지 않음 — 스코프 논의만
-   필요, 구현 착수를 막지 않음.
+3. **[2026-08-14 세션에 해소]** 오래 열려 있던 "이미 생성된 인스턴스
+   재바인드"는 **기각**되어 `archive/existing-instance-bind-rejected.md`로
+   이전됨 — 더 이상 상의할 스코프 항목이 아님.
 4. **[백로그]** 범용 렌더 디버깅 도구 `quad-mock`(Tween mock 등 동적 동작
    지원, M0 mock 테스트 하네스와는 별개), 런타임 디버깅 플러그인
    `quad-debug`(Studio 플러그인, 실물 Instance→코드 위치 역추적 — 채널
@@ -946,7 +948,7 @@ Slot/Attribute)의 private `Relate` 상태 저장소가 대거 줄어듦(process
 반환하는 클로저가 upvalue로 직접 캡처하므로 process→retract 사이 단발성
 handoff용 저장이 불필요해짐 — `Relate`는 여러 위치/사이클을 가로지르는
 누적 상태에만 남음). `bind-system-plan.md`/`tag-plan.md`/
-`attribute-plan.md`/`slot-plan.md`/`architecture.md`/`store-semantics.md`/
+`attribute-plan.md`/`slot-plan.md`/`architecture.md`/store-semantics.md(현 `store-plan.md`/`source-state-plan.md`)/
 `modifier-plan.md` 전부 반영, `archive/checkpoint-handler-pattern-reversed.md`
 신설.
 
@@ -1234,3 +1236,33 @@ PreRef pre-pass 한 스윕에서 `isPostRef`도 같이 소진해 `postRefList`�
 잠시 보류했다가, 그 세션이 정리된 뒤 이 항목을 원래 자리(세 번째)에서
 지금 자리(여섯 번째)로 옮기고 번호를 재조정 — 동시 편집 충돌 시
 "내용은 안 섞여도 순서/번호가 꼬일 수 있다"는 사례로 남김.
+
+**2026-08-14 일곱 번째 세션 — UI 숏핸드 Tween 지원, existing-instance-bind
+기각, `bind-system-plan.md` 3단계 분할(`store-plan`/`source-state-plan` 신설)**
+(`session/2026-08-14-07-store-source-split-shorthand-tween.md`)
+사용자가 한 메시지로 세 건 지시. (1) **UI 숏핸드 Tween 지원** — 새 기능
+추가가 아니라 **역전 반영**이었음(`ui-shorthand-plan.md`가 "트윈까지 지원할 필요 없음"이라 못박아둔 것은 Tween이 아직 독립 Dispatch 핸들러이던 시절 판단인데 2026-08-10
+값-레벨 래퍼 재설계를 안 따라와 있었음). 확정 메커니즘은 사용자 제안 그대로
+— 숏핸드가 자식을 만들거나 찾은 뒤 프로퍼티를 **직접 대입하지 않고**
+`Dispatch.process(child, prop, ..., 1)`로 위임하면 Tween이 공짜로 따라옴
+(해석 코드는 `PropertyHandler` 하나에만 남는 불변식 유지). "process 중
+`inst`를 바꾸는 것은 키를 바꾸는 것과 같은 층위라 UB 아님"을
+`dispatch-core-plan.md`에 일반 규칙으로 명문화(위임한 자식의 수명 책임은
+위임한 핸들러). 새로 필요한 부품은 스칼라→프로퍼티 `wrap`을 `Tween<T>.Value`
+에만 적용되도록 들어올리는 헬퍼 하나뿐. **ROADMAP M10에 UI 숏핸드 항목이
+통째로 빠져 있던 갭도 발견·보강.** (2) **`existing-instance-bind` 기각** —
+"열린 가능성"에서 미지원 확정으로, `archive/existing-instance-bind-rejected.md`
+(사유: Length/Offset 등 quad가 만든 트리를 전제한 부기를 바깥에서 밀고
+당기는 버그 표면이 치명적으로 넓어짐). "열려 있음"을 전제로 쓰인 본문
+문장 7곳(특히 `architecture.md`의 "아직 미정" 절 — 유일 항목이었음,
+`ref-plan.md`의 flatten 기각 근거)까지 같은 커밋에서 정정.
+(3) **문서 분할** — 사용자가 합당성 판단을 먼저 요청했고, 두 문서(`bind-system-plan.md` + store-semantics.md)가 같은
+주제를 반씩 나눠 갖고 서로를 "상세는 저쪽" 핑퐁하던 게 실재해 **합당하다고
+판단 후 수행**: `base/store-plan.md`(Store=이름 붙은 Source 모음)와
+`base/source-state-plan.md`(반응형 코어) 신설, store-semantics.md는 완전
+흡수되어 삭제, `bind-system-plan.md`는 1238→203줄(인스턴스 생성·이벤트
+네이밍 + 분할 색인만). 캐비엇으로 "남은 내용보다 파일 이름이 넓어졌지만
+리네임 churn이 커서 이번엔 제목만 변경"을 보고. **교훈** — `doc-check.py`의
+`OURS` 패턴이 `-plan`류 접미사 기준이라 store-semantics.md 같은 이름은
+삭제해도 ERROR가 아니라 WARN으로만 잡힘, 그래서 ERROR 목록만 믿지 말고
+grep 전수를 같이 돌려야 함. 최종 ERROR 0 / WARN 85(작업 전 101).

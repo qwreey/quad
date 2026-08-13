@@ -113,7 +113,7 @@ UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같�
 ## 2. Store 부작용을 게임 시스템에서 깔끔하게 쓰는 패턴 문서
 
 **배경**: quad의 Store는 부작용 허용이 기본 설계(`base/architecture.md`,
-`base/store-semantics.md`에서 확정)인데, 실제 게임 개발(스킬, 쿨타임,
+`base/store-plan.md`에서 확정)인데, 실제 게임 개발(스킬, 쿨타임,
 재화 같은 도메인 상태를 담당하는 store, 부분별 모듈화 등)에서 이 자유도를
 깔끔한 패턴으로 쓰는 법이 아직 문서화 안 됨 — 사용자 원 발언: "원래
 의도했던 편한 부작용 허용을 좀더 더럽지 않은 패턴으로 수행하는 방법도
@@ -166,7 +166,7 @@ UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같�
 있으므로 여기선 소재 제목과 위치만 남김:
 
 - **왜 State 체인을 Modifier처럼 플래튼하지 않는가** — 결정문은
-  `base/bind-system-plan.md` "왜 State 체인을 Modifier처럼 플래튼하지
+  `base/source-state-plan.md` "왜 State 체인을 Modifier처럼 플래튼하지
   않는가" 절. State의 정의가 "캐싱하는 존재"라 다이아몬드 파생에서
   캐시 공유를 잃으면 `previous` 메커니즘이 막으려던 중복 계산 문제가
   재발한다는 게 핵심 논거.

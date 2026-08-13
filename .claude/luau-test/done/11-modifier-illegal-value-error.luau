@@ -75,7 +75,7 @@ local function isModifier(v)
 	return type(v) == "table" and v[ModifierBrand] == true
 end
 local function isState(v)
-	-- Source가 State를 구조적으로 만족(store-semantics.md) — 여기선 둘 다
+	-- Source가 State를 구조적으로 만족(source-state-plan.md) — 여기선 둘 다
 	-- ".__isStateLike" 태그로 단순화해서 흉내
 	return type(v) == "table" and v.__isStateLike == true
 end

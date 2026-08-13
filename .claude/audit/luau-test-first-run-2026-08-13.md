@@ -95,7 +95,7 @@ relate4의 살아있는 엔트리 총 개수:            5   (기대 5)
 relate4의 살아있는 엔트리 총 개수:            0   (기대 0)
 ```
 
-**`base/bind-system-plan.md` "왜 GC-안전한가"와 `base/relate-plan.md`
+**`base/lifecycle-pattern.md`(GC-native 관용구)와 `base/relate-plan.md`
 전체가 기대고 있는 전제가 실측 확인됨** — quad의 GC-native 아키텍처
 (명시적 Destroy 강제 없음, `bindLifetime`으로 매달아둔 자원이 inst와 함께
 자동 소멸)가 실제로 성립함.

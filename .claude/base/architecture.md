@@ -197,8 +197,10 @@ quad/
 
 **남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
 `slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
-existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확정을
-막지 않음(`purity-and-effects-plan.md`/`tween-plan.md`는 이미 `base/`로 승격 완료).
+existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
+이전**됐고(`archive/existing-instance-bind-rejected.md`), 애초에 이 구조
+확정을 막던 항목도 아니었음(`purity-and-effects-plan.md`/`tween-plan.md`는
+이미 `base/`로 승격 완료).
 
 ## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
 
@@ -238,7 +240,7 @@ existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확�
   타입의 정적 결합 함수), 아니면(범용 유틸이거나 프리미티브가 아닌 엔진
   소속) 소문자. `Dispatch`/`Brand`가 프리미티브가 아닌 이유는
   `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
-  `base/store-semantics.md`의 "세 번째 카테고리 — Handler" 절 참고.
+  `base/source-state-plan.md`의 "일반 원칙 — 독립 존재 가능한 프리미티브 vs 원천에 종속된 파생 데이터" 절(세 번째 카테고리 문단) 참고.
 
 ## 코드 스타일 — Luau 문법 관례: `if-then-else`/`const` (2026-08-12 세션 신설)
 
@@ -309,7 +311,7 @@ Store 생성 시 미리 만들어둔 경우), 아직 없으면 그 자리에서 
 "Store 생성 시 전부 eager하게만 만들어진다"로 한 차례 더 정리됐다가, Luau
 타입이 런타임에 강제되지 않아 defaults 없이 만든 키를 나중에 `:Set()`하면
 크래시난다는 점이 지적돼 lazy `__index`+저장 생성도 같이 필요함이 확인됨 —
-상세는 `base/store-semantics.md` "Source가 State를 만족함" 절). 전파는
+상세는 `base/source-state-plan.md` "Source가 State를 만족함" 절). 전파는
 push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
 의존성 중복 재계산 문제가 풀림. State는 쓰기 대상이 아니고, 값을 쓰는
@@ -319,14 +321,18 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 다룰 땐 Store와 별개인 가벼운 `Source` 프리미티브를 독립적으로도 씀.
 `store.key` dot-access를 타입 추론 1급 경로로 삼는 것도 3차 라운드에서
 정식 확정됨 — **더 이상 열린 질문 아님**, 남은 건 정확한 API 이름뿐.
-상세는 `base/store-semantics.md`의 "Source가 State를 만족함" 절과
-`base/bind-system-plan.md`의 "Store/State/Source 온톨로지" 절 참고.
+상세는 `base/source-state-plan.md`의 "Source가 State를 만족함"/"핵심
+온톨로지" 절 참고.
 
 ## 아직 미정 (research/로 분리됨)
 
-이미 생성된 인스턴스에 대한 바인드 — `.claude/research/existing-instance-bind-plan.md`
-참고, 전체 색인은 `.claude/README.md`. 바인드 디스패치/Slot/모듈
+**[2026-08-14 세션] 이 절에 유일하게 남아있던 항목(이미 생성된 인스턴스에
+대한 바인드)이 기각되어 `archive/existing-instance-bind-rejected.md`로
+이전됨** — 지금 `research/`에 남은 것은 전부 "착수 시점 미정"이지
+아키텍처를 미정으로 남기는 항목이 아님. 전체 색인은 `.claude/README.md`.
+바인드 디스패치/Slot/모듈
 라이프사이클/Modifier/컴포넌트화(컴포넌트 경계 modifier/Ref 전달 포함)는
 위 "구현 착수" 섹션대로 확정되어 `.claude/base/`로 승격됨
-(`bind-system-plan.md`/`dispatch-core-plan.md`/`module-lifecycle-plan.md`/
+(`bind-system-plan.md`/`dispatch-core-plan.md`/`source-state-plan.md`/
+`store-plan.md`/`module-lifecycle-plan.md`/
 `slot-plan.md`/`modifier-plan.md`/`component-composition-plan.md`).

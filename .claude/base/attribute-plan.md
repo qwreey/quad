@@ -34,8 +34,8 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attri
 이미 확정. UICorner 숏핸드/Tween처럼
 별도 전용 문서가 없던 걸 2026-08-07 여덟 번째 세션에 메꿈("1 프리미티브 1
 파일" 관례를 Tag/Attribute에도 적용해야 한다는 사용자 지적) —
-`bind-system-plan.md`의 "Attribute 특수 키 — 타입 파라미터화" 절(2026-08-06
-신설) 내용을 그대로 옮기고, 논의한 `None`/`process`/`retract` 동작을 추가.
+`bind-system-plan.md`의 Attribute 특수 키/타입 파라미터화 절(2026-08-06
+신설, 지금은 이 문서로 옮겨져 그쪽엔 색인만 남음) 내용을 그대로 옮기고, 논의한 `None`/`process`/`retract` 동작을 추가.
 
 ## 단일 키 — `AttributeKey<<T>>` (구 `Attribute<<T>>`)
 
@@ -262,7 +262,7 @@ Store 필드 여러 개를 각각 `[AttributeKey<<T>> "name"] = store.name`으�
 - **`Attribute`를 Store의 서브타입/확장으로**: Attribute가 Store를
   상속(IS-A)하면 `Store<T>`의 `T`가 다시 Attribute(=Store)일 수 있게
   되어, 이미 확정된 제약("핸들러 계층 값은 Source에 못 들어감" —
-  `store-semantics.md`의 `Store<T>`의 `T`는 Modifier 불가 규칙과 같은
+  `base/source-state-plan.md`의 `Store<T>`의 `T`는 Modifier 불가 규칙과 같은
   이유)과 부딪히는 "Store 안에 Store"를 실제로 만들어냄. Attribute는
   Store를 **참조(HAS-A)**만 해야지 **상속(IS-A)**하면 안 됨 — 기각.
 
@@ -362,7 +362,8 @@ end
   이름은 그냥 재등록이 안 될 뿐. 별도 diff 분기가 없음.
 - **값 비교(`:Get()`으로 old/new 비교)는 안 함** — State
   계약("값은 항상 선언된 Compute 재실행 결과, 캐시 비교 금지",
-  `store-semantics.md` "하드 경계" 절)과 어긋나고, `source`가
+  `base/source-state-plan.md`의 "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`"
+  절 "하드 경계" 문단)과 어긋나고, `source`가
   `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
   해줌(그룹 Handler가 따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
 - **[확정, 2026-08-12 세션 후속, 사용자 결정] 클로저는 `setAttribute`를

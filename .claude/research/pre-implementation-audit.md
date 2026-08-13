@@ -3,7 +3,8 @@
 **상태**: research — 사용자 상의 필요. 2026-08-06 세션에서 신설. `.claude/base/`
 전체가 "확정"으로 표시돼 있지만, 실제 `ROADMAP.md` M0 착수를 앞두고 구현자
 시점에서 다시 크리티컬하게 훑어본 결과. 방법론: `base/` + 근접
-`research/`(tween-plan, ui-shorthand-plan, existing-instance-bind-plan)를
+`research/`(tween-plan, ui-shorthand-plan, existing-instance-bind-plan —
+앞의 둘은 이후 `base/`로 승격, 마지막은 2026-08-14에 기각되어 `archive/`)를
 4개 클러스터로 나눠 서브에이전트로 병렬 정독시키고, 각각 세 가지 렌즈로
 리뷰하게 했음 —
 
@@ -310,7 +311,7 @@ base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 **위치**: `ROADMAP.md` M0 vs M3 `"store.key dot-access 타입 추론 확인"`.
 
 **문제**: M0의 정의 자체가 "추론만으로 확정하고 실제 Luau로 부딪혀본 적
-없는 것"을 검증하는 단계다. `base/store-semantics.md`가 요청한 M0 항목(
+없는 것"을 검증하는 단계다. `base/source-state-plan.md`가 요청한 M0 항목(
 "Source가 State를 만족하는 제네릭 메소드 체이닝"의 솔버 안정성)은 이미
 반영됐지만, 이건 `:Compute` 같은 제네릭 메소드 체이닝만 다루고 `{key:
 Source<number>}` 같은 **레코드 필드로서의 dot-access 타이핑**(읽기/쓰기
@@ -373,7 +374,7 @@ Luau의 현 한계로 확정되어 `base/typing-limits.md` 1번이 담당**함
 아니라 narrow edge case)라 아래 원래 제안(M0 스파이크에 폴백 한 줄
 박아두기)은 더 이상 적용 대상 없음. 원래 서술은 배경 기록으로 남김:
 
-**위치**: `base/store-semantics.md` "Source가 State를 만족함" 절 —
+**위치**: `base/source-state-plan.md` "Source가 State를 만족함" 절 —
 "검증 필요(확정 아님, M0 스파이크 대상)... 다만 이것도 추론이라 실제
 Luau로 확인 전엔 확정 아님."
 
@@ -381,7 +382,7 @@ Luau로 확인 전엔 확정 아님."
 실패했을 때 뭘 하는지가 문서 어디에도 없다.** 이 타입 구조(Source⊂State
 서브타입)는 `store.key`의 반환 타입, `:Set()` 문법, `:Emit()`의 위치,
 dot-access 타입추론, `RefSource` 폐기 결정까지 전부 이 위에 얹혀 있어서,
-Luau 솔버가 막히면 되돌릴 범위가 `store-semantics.md`의 절반 이상에 걸침.
+Luau 솔버가 막히면 되돌릴 범위가 `source-state-plan.md`의 절반 이상에 걸침.
 
 **제안**: M0 스파이크 계획에 "실패 시 폴백은 RefSource 부활 vs 다른 대안"
 한 줄이라도 미리 박아두면, 실패했을 때 다시 사용자 자문을 구하느라 멈추는
@@ -392,7 +393,7 @@ Luau 솔버가 막히면 되돌릴 범위가 `store-semantics.md`의 절반 이�
 **[대부분 해소, 2026-08-09 세션]** "가능하면 타입 차단, 안 되면 UB로
 후퇴"라는 원래 걱정 자체가 무의미해짐 — `State<Modifier>`를 이제
 `isModifier` predicate 기반 명시적 `error`로 막기로 확정
-(`base/modifier-plan.md` 7번 정정, `base/store-semantics.md` "따름정리"
+(`base/modifier-plan.md` 7번 정정, `base/source-state-plan.md` "따름정리"
 절)했으므로, 타입 차단은 성공하든 실패하든 런타임 에러라는 안전망이
 항상 있음 — 아래 "제안"이 우려했던 "조용히 UB로 후퇴" 시나리오 자체가
 발생하지 않음. 타입 차단이 Luau에서 실제로 가능한지는 여전히 미검증이지만,
@@ -403,7 +404,7 @@ Luau 솔버가 막히면 되돌릴 범위가 `store-semantics.md`의 절반 이�
 
 **문제**: "가능하면 타입 시스템으로 아예 못 넣게 막을 것"이라 확정했지만,
 Luau 제네릭은 "T가 특정 타입이면 거부"하는 부정 제약을 기본 지원하지
-않는다. `store-semantics.md`는 이보다 단순한 `Source<T> satisfies
+않는다. `source-state-plan.md`는 이보다 단순한 `Source<T> satisfies
 State<T>` 조합조차 M0 스파이크 대상(솔버가 죽을 수 있음)으로 잡아뒀는데,
 이보다 어려운 문제(제네릭 타입 파라미터 배제 제약)인 `State<Modifier>`
 차단은 어디에도 검증 대상으로 언급되지 않는다. 실제로 안 되면 "UB,
@@ -432,9 +433,15 @@ State<T>` 조합조차 M0 스파이크 대상(솔버가 죽을 수 있음)으로
 고려하라고 명시해뒀으니, 그 시점에 이 질문도 같이 열어 "래퍼 없음"이
 구조적으로도 최종 확정인지 한 번 더 확인할 것. M1 스캐폴딩 전에.
 
-### 2-4. existing-instance-bind가 Slot의 "엄격한 단일 마운트 소유권" 불변식과 근본적으로 긴장
+### 2-4. existing-instance-bind가 Slot의 "엄격한 단일 마운트 소유권" 불변식과 근본적으로 긴장 — **[해소됨, 2026-08-14 세션: 기능 자체가 기각]**
 
-**위치**: `research/existing-instance-bind-plan.md` 전체 vs `base/
+> **[해소]** 이 긴장은 "재바인드를 어떻게 안전하게 할 것인가"를 풀어서가
+> 아니라 **그 기능이 통째로 기각**되어 없어졌음
+> (`archive/existing-instance-bind-rejected.md`) — 아래 분석은 그 기각
+> 판단을 뒷받침한 근거 중 하나로 보존. Slot 소유권 모델에 "흡수(adopt)"
+> 개념을 추가하는 방향도 같이 폐기.
+
+**위치**: `archive/existing-instance-bind-rejected.md` 전체 vs `base/
 slot-plan.md` "핵심 제약: 소유권 귀속과 단일 마운트".
 
 **문제**: 문서가 스스로 언급한 긴장(Modifier flatten의 clone 비용)과는
@@ -451,10 +458,10 @@ Slot의 "own"한 대상인지 아닌지가 완전히 미정. 문서는 "핸들�
 API"를 얹어야 할 때 Slot의 "own한 것만 CRUD 대상" 불변식 자체를 건드려야
 할 수 있음.
 
-**제안**: 착수 안 해도 되지만, "이 기능이 실제로 필요해지면 Slot의
-소유권 모델에 '흡수(adopt)' 개념을 추가해야 할 수도 있다"는 캐비엇을
-`existing-instance-bind-plan.md`에 한 줄 추가해둘 것 — 기존 "Modifier
-flatten과 긴장" 캐비엇 옆에 병기.
+**당시 제안(이제 불필요)**: "이 기능이 실제로 필요해지면 Slot의
+소유권 모델에 '흡수(adopt)' 개념을 추가해야 할 수도 있다"는 캐비엇을 그
+문서에 병기해둘 것 — **2026-08-14 기각으로 대체됨**(캐비엇 대신 기각
+사유가 `archive/existing-instance-bind-rejected.md` 상단 배너에 있음).
 
 ### 2-5. `Modifier.Overridden`(구 `Merge`) 시 서로 다른 클래스의 Modifier가 섞이는 게 허용되는지 — **런타임은 해소, 타입 레벨은 여전히 미정**
 
@@ -466,7 +473,7 @@ flatten과 긴장" 캐비엇 옆에 병기.
 계층을 모름 — 순수 데이터 merge 레이어"(1번 절) 원칙도 이미 있었으므로,
 **런타임 레벨에서는 대상 클래스가 다른 Modifier끼리 `Overridden`해도 막을
 이유가 없음**(필드명만 보고 그대로 덮어쓸 뿐 — Luau 타입은 런타임에
-강제되지 않는다는 점은 `store-semantics.md`에도 이미 명시된 전제).
+강제되지 않는다는 점은 `store-plan.md`에도 이미 명시된 전제).
 
 **여전히 미정인 것 — 타입 레벨**: Modifier가 target 클래스별 제네릭
 타입(`Modifier<Frame>` 등)이라면, `Modifier.Overridden<T>(mod1: Modifier<T>,
@@ -606,10 +613,10 @@ M11 착수 시.
 감싸야 하는 준비 비용이 오히려 더 크다는 게 사용자 반박 논거.
 `previous`는 `self`(입력)가 아니라 이 `:Compute` 호출 하나가 만든
 결과 State 노드 자신에 귀속되므로 팬아웃 시에도 충돌 없음 — 상세는
-`base/bind-system-plan.md`의 "previous" 절 참고. 아래는 원래 발견
+`base/source-state-plan.md`의 "previous" 절 참고. 아래는 원래 발견
 당시 기록.
 
-**위치**: `base/bind-system-plan.md` "`:Compute(fn)`의 선택적 두 번째
+**위치**: `base/source-state-plan.md` "`:Compute(fn)`의 선택적 두 번째
 인자 — `previous`" 절.
 
 **문제**: quad는 "렌더 함수가 계속 재실행되지 않고, `Compute`에 전달한
@@ -651,7 +658,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 ### 이미 고침 (이번 세션)
 
 - `architecture.md`의 "Store/State/Source 온톨로지 확정 요약" 절이
-  `store-semantics.md`의 최신 재구성(Source가 State를 만족, `store.key`가
+  `source-state-plan.md`의 최신 재구성(Source가 State를 만족, `store.key`가
   Source를 직접 반환, `store.key:Set()`)을 못 따라가고 있던 것 — 이 감사
   세션 도중 발견해 직접 정정(커밋 `4b839b0`에서 별도로 이미 반영됨을 뒤늦게
   확인 — 같은 문제를 두 세션이 독립적으로 발견한 셈).
@@ -679,7 +686,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   들어오는 것도, `State<Modifier>`처럼 Modifier가 State/Source *값*으로
   담기는 것도 전부 `Brand` 기반 `isX` predicate로 런타임에 즉시
   `error`(`base/modifier-plan.md` 4번/7번 절 정정, `base/
-  store-semantics.md` "따름정리" 절). 더 이상 "한쪽만 방어" 비대칭이
+  source-state-plan.md` "따름정리" 절). 더 이상 "한쪽만 방어" 비대칭이
   아님 — 남은 차이는 `State<Modifier>` 쪽에 "되면 좋은 보너스"로
   타입 차단을 추가 시도해볼 여지가 있다는 것뿐(위 2-2번, 미검증이지만
   더 이상 필수 방어선이 아니라 우선순위 낮음).

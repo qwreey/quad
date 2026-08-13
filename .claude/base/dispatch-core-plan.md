@@ -721,6 +721,22 @@ end
   전제하므로(quad 자신이 "props 순회 순서" 절에서 이 관례에 의존), 0을
   쓰면 그 항목이 `ipairs` 순회에서 조용히 빠지고 `quad-debug`가 나중에
   `chains`를 그대로 순회해서 보여주려는 계획과도 부딪힘.
+- **위임 대상은 다른 `k`뿐 아니라 다른 `inst`여도 됨 — UB 아님
+  (2026-08-14 세션, 명시화).** `chains`는 `(inst,k)` 쌍으로 인덱싱되므로
+  `(inst,k1)`을 처리하던 핸들러가 `(inst,k2)`로 위임하는 것과
+  `(child,k2)`로 위임하는 것은 Dispatch 입장에서 **구조적으로 완전히 같은
+  일**임(둘 다 별개의 새 배열, 그래서 둘 다 인덱스 `1`부터). 즉 핸들러가
+  **자기가 관리하는 자식 Instance를 먼저 만들거나 찾아둔 뒤 그 자식에
+  대해 `Dispatch.process(child, prop, v, 1)`을 부르는 패턴은 정상**이고,
+  이게 `base/ui-shorthand-plan.md`의 `UICorner`/`UIPadding`/`UIScale`
+  숏핸드가 Tween을 공짜로 얻는 방식임(그 자식 프로퍼티를 최종 처리하는
+  건 `PropertyHandler`이고, Tween 해석은 원래 거기 하나에만 있음 —
+  `base/tween-plan.md`). 단 **그 자식의 수명은 위임한 핸들러가 책임진다**
+  — Dispatch는 `(child,prop)` 체인이 누구 소유인지 모르므로, 자식을
+  없앨 때 `retractFrom(child, prop, 1)`까지 부르는 건 위임한 쪽 몫
+  (자식 Instance 자체를 버리면 `chains`가 `inst`로 weak-keyed라 결국
+  GC되지만, 실행 중인 Tween/구독처럼 즉시 끊어야 하는 게 있으면 명시적
+  정리가 필요).
 - **`handler.process(inst,k,v,index)`를 `Dispatch.process`를 거치지 않고
   직접 호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할
   것.** 이유: 핸들러 비교·`chains` 저장 bookkeeping이 `Dispatch.process`
@@ -767,11 +783,15 @@ end
   `State<State<State<...>>>`도 인덱스가 늘어날 뿐 정상 동작하고, 위
   "깊은 체인에서도 힌트가 안 사라짐" 항목대로 **깜빡임 방지 최적화까지
   정상 작동**함 — 유일하게 남는 UB는 위 "순환" 항목.
-- **부수 효과 — 미래 재바인드/quad-debug에 유리**: 이 체인이 Dispatch에
-  중앙화돼 있으므로, `research/existing-instance-bind-plan.md`가 다룰
-  미래의 재바인드는 `Dispatch.process(inst, k, newV, 1)` **한 줄**로 "이
-  키의 체인을 새 값에 맞춰 갈아 끼우기"가 됨(옛 모델에선 `retractFrom` +
-  `process` 두 줄이었음 — 하강 diff가 그 선행 철거를 흡수). 완전 해제만
+- **부수 효과 — quad-debug에 유리**: 이 체인이 Dispatch에 중앙화돼
+  있으므로, 임의 시점의 재바인드도 `Dispatch.process(inst, k, newV, 1)`
+  **한 줄**로 "이 키의 체인을 새 값에 맞춰 갈아 끼우기"가 됨(옛 모델에선
+  `retractFrom` + `process` 두 줄이었음 — 하강 diff가 그 선행 철거를
+  흡수). **[2026-08-14 세션]** 이 문장이 원래 근거로 들던 "미래의
+  existing-instance-bind"는 기각됐지만
+  (`archive/existing-instance-bind-rejected.md`), 여기서 말하는 성질은
+  quad가 **자기가 만든** 인스턴스의 store 재발행에서 매번 쓰는 그 경로
+  자체라 그대로 유효. 완전 해제만
   원하면 `Dispatch.retractFrom(inst, k, 1)`. `research/debug-tooling-plan.md`의
   "무엇이 무엇에 연결됐는가" 그래프도 이 `chains` 구조를 그대로 읽으면 됨 —
   `handler`가 슬롯에 같이 저장되므로 "이 자리를 지금 누가 담당하는가"를
@@ -1011,7 +1031,7 @@ lazy 생성.
 
 **이 케이스를 명시적으로 UB로 명명(2026-08-11 세션, 사용자 제안)** —
 `Source<T>`가 `State<T>`를 "단방향"으로만 만족한다는 이미 확정된 원칙
-(`base/store-semantics.md` "Source가 State를 만족함" 절 — 파생값이
+(`base/source-state-plan.md` "Source가 State를 만족함" 절 — 파생값이
 자기 upstream Source로 거꾸로 쓰기를 하지 않는다는 것)과 **같은 카테고리의
 위반**이라는 게 근거: `recompute`가 만드는 `offset`/`Length`는 전부
 `lengthList`(그 Slot의 upstream 입력)에서 파생된 다운스트림 값인데,
@@ -1173,7 +1193,7 @@ value)로 `Dispatch.process(inst,k,realv,index+1)`를 재귀 호출"하는 식�
 **"값이 바뀔 때마다"의 실제 구독 메커니즘 = `state:Observer(fn)` 재사용으로
 확정(2026-08-08 세션).** 이전엔 이 절이 구독 메커니즘 자체를 추상적으로만
 서술했는데(새 프리미티브를 발명하는 것처럼 읽힐 수 있었음), 실제로는
-`base/bind-system-plan.md`의 "`state:Observer(fn)`" 절에서 이미 확정된 것을 그대로 재사용하면 됨 — 새
+`base/source-state-plan.md`의 "`state:Observer(fn)`" 절에서 이미 확정된 것을 그대로 재사용하면 됨 — 새
 구독 primitive를 store-bind 전용으로 따로 만들 이유가 없음:
 
 ```lua

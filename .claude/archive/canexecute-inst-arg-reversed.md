@@ -75,7 +75,7 @@ if self.Connection then return self.Connection.Connected end
 
 이 오류가 여섯 세션 넘게 살아남은 이유는 **`canExecute`의 실제 호출부가
 어느 문서에도 코드로 등장한 적이 없기 때문**. `bind-system-plan.md`/
-`store-semantics.md`/`slot-plan.md`는 전부 "발화 시 `canExecute`로 게이팅됨"
+`source-state-plan.md`(당시 store-semantics.md)/`slot-plan.md`는 전부 "발화 시 `canExecute`로 게이팅됨"
 같은 **서술만** 하고 넘어갔고, `dispatch-core-plan.md`는 아예
 "핸들러가 직접 `canExecute`를 재구현할 필요 없음 — Observer가 이미 자기
 `Subscribed` 상태로 게이팅됨"이라고 적어 호출부를 없는 것처럼 만들었음.

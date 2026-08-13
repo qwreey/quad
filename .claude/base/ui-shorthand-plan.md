@@ -53,8 +53,11 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 
 이미 있는 pluggable Handler로 그대로 커버됨. `UICorner`/`UIPadding`/
 `UIScale` 같은 특수 키를 인식하는 Handler(`isHandlable`이 그 키를 매칭)가
-"이름 붙은 자식을 찾거나 만들고 프로퍼티 세팅"을 `process(inst, k, v, index)`에
-구현 — v1의 하드코딩 if/elseif 대신 정식 핸들러 계약(`isHandlable`/
+"이름 붙은 자식을 찾거나 만들고 그 자식의 프로퍼티를 세팅"을
+`process(inst, k, v, index)`에 구현(**[2026-08-14 세션]** 그 마지막
+"세팅"은 직접 대입이 아니라 `Dispatch.process(child, prop, ..., 1)`로
+되돌려주는 위임으로 확정 — 아래 "Tween 지원" 절)
+— v1의 하드코딩 if/elseif 대신 정식 핸들러 계약(`isHandlable`/
 `priority`/`process`, 2026-08-13 다섯 번째 세션 전까진 `retract`가 별도
 필드였음)을 따르는 것만 다름. `modifier-plan.md`가
 이미 예시로 든 `mod:UICorner(8)`은 이 특수 키를 flatten해서 props에
@@ -105,13 +108,108 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
   API는 아니지만 공짜도 아니므로, 잦은 토글이 예상되는 값을 이 숏핸드에
   직접 물리는 건 문서화 시점에 캐비엇으로 명시할 것(지금은 메모만).
 
-## store-bind — 이 숏핸드도 지원, Tween만큼 무겁게 안 가도 됨
+## Tween 지원 — 자식 프로퍼티를 `Dispatch.process`로 다시 흘려보내면 공짜 (2026-08-14 세션 확정)
+
+**[역전] "트윈처럼 애니메이션까지 지원할 필요는 없음"이라던 아래 store-bind
+절의 서술은 폐기.** 그 판단은 Tween이 아직 *독립 Dispatch 핸들러*였던
+시절(우선순위를 다투는 특수 bind key, `archive/tween-special-bind-key-reversed.md`)
+기준이라 "이 숏핸드도 그 경쟁에 끼워 넣어야 하나"가 비용이었는데,
+2026-08-10 재설계로 Tween이 **값-레벨 래퍼 `Tween<T>` + PropertyHandler
+내부 분기**가 되면서(`base/tween-plan.md`) 그 비용이 통째로 사라짐 —
+이제는 숏핸드가 **자식 프로퍼티 세팅을 자기 손으로 하지 않고 Dispatch에
+되돌려주기만 하면** Tween이 저절로 따라옴.
+
+**메커니즘 — 인스턴스 관리 후 `process`로 위임**:
+
+```lua
+-- 개념 스케치. Handler 계약은 base/dispatch-core-plan.md가 정본
+function UICornerHandler.process(inst, k, v, index)
+    if v == nil then
+        -- 기존 규칙 그대로: 만들어둔 자식이 있으면 지움(아래 "v가 nil인 경우" 절)
+        destroyManagedChild(inst, k)
+        return function() end
+    end
+    local child = ensureManagedChild(inst, k)   -- 없으면 Instance.new + Parent, 있으면 재사용
+    Dispatch.process(child, "CornerRadius", mapTweenValue(v, toUDim), 1)
+    return function(hint)
+        if hint == nil then destroyManagedChild(inst, k) end
+    end
+end
+```
+
+- **`process` 도중에 대상 `inst`를 바꾸는 것은 UB가 아님(사용자 확정)** —
+  키가 바뀔 수 있는 것과 정확히 같음. `chains`가 `(inst,k)` 쌍으로
+  인덱싱되므로 `(inst, "UICorner")` → `(child, "CornerRadius")` 위임은
+  Dispatch 입장에서 `Attribute` 그룹이 다른 키로 위임하는 것과 구조적으로
+  동일한 일이고, 새 체인이라 인덱스는 `1`부터. 일반 규칙은
+  `base/dispatch-core-plan.md`의 "인덱스의 의미" 절에 같이 명문화해뒀음.
+- **Tween 해석 코드를 여기 복제하지 않는 게 핵심 이득** — `Tween<T>`를
+  실제로 읽는 코드는 여전히 `PropertyHandler` 하나뿐이라는
+  `base/tween-plan.md`의 불변식이 유지됨. 3-상태 릴레이션 슬롯
+  (`{Tween, Value} | true | nil`), `Tween.Cancel`/`Tween.Finish` override
+  정책, "첫 세팅은 애니메이션 없이 즉시" 규칙까지 전부 `(child, prop)`
+  자리에서 그대로 재사용됨 — 이 문서가 따로 정할 게 없음.
+- **타입 대수도 그대로** — 숏핸드 키의 값 타입이 `number`였다면 이제
+  `number | Tween<number> | State<number | Tween<number>>`가 됨
+  (`T' = T | Tween<T>` 치환, `tween-plan.md` "타입 대수" 절). StoreBind가
+  State 레이어를 먼저 다 풀어내므로 이 Handler가 실제로 보는 `v`는
+  `number` 아니면 `Tween<number>` 둘 중 하나.
+
+**한 가지 진짜로 필요한 부품 — `wrap`을 Tween 위로 들어올리기.** 숏핸드는
+"스칼라를 받아 자식 프로퍼티 타입으로 감싸는" 변환을 갖고 있음(`UICorner = 8`
+→ `CornerRadius = UDim.new(0, 8)`, 열린 질문 절의 룩업 테이블 `wrap=fn`).
+`v`가 `Tween<number>`면 그 변환을 **`Tween`을 벗기지 않고 `.Value`에만**
+적용해야 함:
+
+```lua
+-- Tween<T>는 immutable 값 객체라 clone 후 Value만 교체(Brand 재설정은 Tween()이 함)
+local function mapTweenValue(v, wrap)
+    if isTween(v) then
+        local opts = table.clone(v)
+        opts.Value = wrap(v.Value)
+        return Tween(opts)
+    end
+    return wrap(v)
+end
+```
+
+- `UIScale`처럼 `wrap`이 항등(스칼라를 그대로 `Scale`에 씀)인 키는 이
+  헬퍼를 거쳐도 결과가 같으므로 분기 없이 일관되게 씀.
+- `UIPadding`처럼 **자식의 프로퍼티 여러 개**(`PaddingTop`/`Bottom`/
+  `Left`/`Right`)에 같은 값을 쓰는 키는 각 프로퍼티마다 `Dispatch.process`를
+  따로 부름 — 각자 독립된 `(child, prop)` 체인이 되고, PropertyHandler의
+  트윈 슬롯도 프로퍼티별로 따로 잡혀서 자연스럽게 4개가 같이 애니메이션됨.
+- **`Tween` 값 자체는 `quad-base`, 이 숏핸드 Handler는 `quad-roblox`** —
+  `isTween`/`Tween()`을 base에서 가져다 쓰는 것뿐이라 패키지 경계
+  (`tween-plan.md` "패키지 경계" 절)와 안 부딪힘.
+
+**캐비엇 — 자식이 새로 만들어진 사이클에서는 트윈이 안 걸린다(의도된 동작).**
+PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 규칙이
+`(child, prop)` 기준이므로, `UICorner`가 `nil`↔숫자를 오가며 자식이 파괴/
+재생성되면 그 직후 첫 값은 트윈 없이 스냅됨. 이건 버그가 아니라 그 규칙이
+막으려는 것(기본값에서 목표값으로 날아오는 진입 애니메이션)과 정확히 같은
+상황 — 계속 애니메이션되길 원하면 자식이 살아있도록 `nil`로 내리지 말고
+값만 바꿀 것.
+
+**자식을 없앨 때의 정리 책임은 이 Handler에 있음** — `v`가 `nil`이 되거나
+retractor가 `nil` 힌트로 불려 자식을 파괴할 때, 실행 중인 엔진 Tween이
+남아있을 수 있으므로 `Dispatch.retractFrom(child, prop, 1)`을 같이
+부르는 게 정석(자식 Instance를 `Destroy`하면 엔진 트윈도 같이 죽고
+`chains`도 weak-keyed라 결국 GC되지만, "즉시" 끊는 건 명시적 호출뿐).
+`retractor` 안에서 **다른 키**에 대한 `retractFrom`을 부르는 건 허용된
+경로임(`base/dispatch-core-plan.md`의 retract 계약 — 금지된 건 같은
+`(inst,k)`에 대한 재진입).
+
+## store-bind — 이 숏핸드도 지원
 
 v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했음
 (`myStore "key"` 체이닝으로 다른 프로퍼티와 동일하게 취급됨) — quad-v2도
-이 능력을 유지한다. 트윈처럼 애니메이션까지 지원할 필요는 없음(API 표면만
-복잡해짐) — 그냥 값이 바뀌면 `CornerRadius`/`Padding`/`Scale` 프로퍼티를
-다시 세팅하는 정도로 충분. 구현 비용도 낮음: 각 Handler가 `process`에서
+이 능력을 유지한다. **[정정, 2026-08-14 세션]** 이 절의 원 서술은 "트윈처럼
+애니메이션까지 지원할 필요는 없음(API 표면만 복잡해짐) — 그냥 값이 바뀌면
+프로퍼티를 다시 세팅하는 정도로 충분"이었으나, 위 "Tween 지원" 절에서
+뒤집혔음(자식 프로퍼티를 `Dispatch.process`로 되돌려주면 Tween이 공짜로
+따라오므로 "안 하는 게 더 비싸지는" 상황이 됨). 구현 비용은 여전히 낮음:
+각 Handler가 `process`에서
 "이전에 자기가 찾거나 만든 자식 Instance"를 얻어야 하는데, 이건 이미
 base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저장소
 (`Relate:SetStrong(inst,k,...)`, `base/relate-plan.md`/`base/dispatch-core-plan.md`
@@ -138,7 +236,9 @@ Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘
 ## 남은 열린 질문 (단순화 후보, 사소함)
 
 - UICorner/UIPadding/UIScale 3개 거의 동일한 형태의 Handler를 각각 만들지,
-  `{key -> {ChildClassName, ChildDefaultName, Property, wrap=fn}}` 룩업
-  테이블로 구동되는 단일 `Handlers/InstanceShorthand.luau`로 통합할지 —
+  `{key -> {ChildClassName, ChildDefaultName, Properties, wrap=fn}}` 룩업
+  테이블로 구동되는 단일 `Handlers/InstanceShorthand.luau`로 통합할지
+  (`Properties`가 단수가 아니라 목록인 이유는 `UIPadding`이 자식 프로퍼티
+  4개에 같은 값을 쓰기 때문 — 위 "Tween 지원" 절) —
   `research/pre-implementation-audit.md` 3-2번 참고, 강제 사항 아님,
   구현 시점에 결정할 정도의 사소한 개선 후보.

@@ -4,7 +4,7 @@
 	State 참조가 섞인 제네릭 :Compute) 설계가 Luau 타입 솔버에서 안전하게
 	추론되는지 — 실제 실행이 아니라 타입 체크(luau-analyze) 대상.
 
-	배경: .claude/base/store-semantics.md "검증 필요(확정 아님, M0 스파이크
+	배경: .claude/base/source-state-plan.md "검증 필요(확정 아님, M0 스파이크
 	대상)" 절, ROADMAP.md M0 2번째 항목.
 
 	핵심 우려: State<T>가 거꾸로 Source를 참조하는 "상호 재귀"는 Luau

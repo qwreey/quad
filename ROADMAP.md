@@ -34,7 +34,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
       Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 세 번째 세션,
-      `base/store-semantics.md` "Source가 State를 만족함" 절 — `State<T>`가
+      `base/source-state-plan.md` "Source가 State를 만족함" 절 — `State<T>`가
       `Source`를 참조하지 않는 단방향 의존으로 두면 위험한 상호 재귀는
       피할 수 있어 보이나 실제 검증 전엔 확정 아님)
 - [ ] `process`(+반환 retractor 클로저) 재귀 재-process 디스패치를 실제로
@@ -240,7 +240,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       타이핑" 절) — 실제 문법이 통과하는지는
       `luau-test`의 `16-type-store-key-typefunction.luau`로 실측 필요
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
-      (2026-08-11 세션, `base/bind-system-plan.md` "`:Compute(fn, ...)`"
+      (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
       자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M3
       스파이크에서 확인. `Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시
@@ -249,7 +249,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
       리스트 맨 끝이어야 하는 것과 같은 이유로 `previous?`가 deps 팩
       **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
-      세션에 순서 정정, `base/bind-system-plan.md` "trailing deps를 fn에
+      세션에 순서 정정, `base/source-state-plan.md` "trailing deps를 fn에
       lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
@@ -257,7 +257,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
-- [ ] `state:Apply(factory)`(`base/bind-system-plan.md` "`state:Apply(factory)`"
+- [ ] `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
@@ -273,8 +273,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
 - [ ] Observer/Effect 이중 바인딩 금지 — `canExecute(value)` 게이트로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
-      내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/
-      bind-system-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
+      내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
       호출"로 정정 — 진짜 독립 경로는 둘뿐).
       **[역전, 2026-08-14 다섯 번째 세션] 별도 predicate `canBound(handle)`
@@ -681,6 +680,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       불필요(클로저가 `v`를 직접 캡처). `HANDLER_PRIORITY_FALLBACK`으로
       등록 — 2026-08-12 열한 번째 / 2026-08-13 네·다섯·열네 번째 세션,
       `base/tag-plan.md`)
+- [ ] **[2026-08-14 세션에 누락 발견, 신규]** `quad-roblox/Handlers/
+      InstanceShorthand.luau` — UI 편의 숏핸드 `UICorner`/`UIPadding`
+      (+`UIPaddingOffset`)/`UIScale`(`base/ui-shorthand-plan.md`). 이
+      마일스톤 전후로 구현하기로 그 문서가 이미 지정해뒀는데 체크리스트에
+      항목 자체가 없었음. 구현 포인트: (a) 재사용 대상은 quad가 만든 고정
+      이름(`_quad_corner`류) 자식으로 한정, (b) `v == nil`이면 그 자식 제거,
+      (c) **자식 프로퍼티는 직접 대입하지 말고 `Dispatch.process(child,
+      prop, wrapped, 1)`로 위임** — 이걸로 Tween이 공짜로 따라옴(해석은
+      `PropertyHandler` 하나에만 남음), (d) 스칼라→프로퍼티 타입 `wrap`은
+      `Tween<T>`의 `.Value`에만 적용되도록 들어올릴 것, (e) `UIPadding`은
+      자식 프로퍼티 4개에 각각 위임, (f) 자식을 없앨 때 `retractFrom(child,
+      prop, 1)`도 같이. M11(Tween) 이후에 하면 (c)~(d)를 바로 검증 가능
 
 ## M11 — Tween
 
@@ -728,8 +739,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## 백로그 (스코프 밖 — 필요성이 실제로 드러나면 그때 설계)
 
-- [ ] `research/existing-instance-bind-plan.md` — Modifier 정적 flatten과
-      긴장 관계 있음, 재검토 시 그 문서부터 다시 볼 것
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
       M1의 quad-base 테스트용 mock과는 별개)
 - [ ] `quad-debug`/`quad-debug-roblox-plugin` — 실물 Instance→코드 위치

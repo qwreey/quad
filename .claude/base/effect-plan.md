@@ -47,10 +47,10 @@ leaf가 죽을 때 **마지막 cleanup을 한 번 더 호출**. 결과적으로 
 
 - **다수 의존성은 `:With(...)`로 먼저 하나의 State로 묶어서 넘길 것** —
   React식 별도 deps 배열을 새로 만들지 않음, quad가 이미 가진 다중 의존성
-  결합 관용구(`base/bind-system-plan.md` "`:With` + `:Compute`" 절)를
+  결합 관용구(`base/source-state-plan.md` "`:With` + `:Compute`" 절)를
   그대로 재사용해 같은 일 하는 두 번째 경로를 안 만듦. **`Effect(fn, a, b,
   c)`처럼 trailing args로 바로 받는 sugar는 의도적으로 안 만듦**(2026-08-11
-  세션, `bind-system-plan.md` "`:Compute(fn, ...)` — 추가 의존성을 trailing
+  세션, `source-state-plan.md` "`:Compute(fn, ...)` — 추가 의존성을 trailing
   args로 직접 받는 sugar" 절 참고) — `Compute`와 달리 Effect/Observer는
   자기 자신이 결과를 담는 State 노드가 아니라서, 의존성이 둘 이상이면 그걸
   합칠 **새 노드**(`:With`가 만드는 것)가 실제로 필요함. 그 비용을 sugar로
@@ -162,7 +162,7 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   규칙과 `canExecute(value)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
   플래그 → 2026-08-09 세션에 `canBound`로 명명 → **2026-08-14 세 번째
   세션에 `canBound` 폐기, `canExecute`로 통합**)은
-  `base/bind-system-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
+  `base/source-state-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
   2026-08-09 여섯 번째 세션] leaf 부착 후 조기 해제는 `:Unsubscribe()`가
   아니라 `unbindLifetime(value)`** — leaf 부착 자체가 내부적으로
   `bindLifetime(inst, value)` 호출이라, 그 해제도 짝인 `unbindLifetime`

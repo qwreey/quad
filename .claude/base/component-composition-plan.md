@@ -67,7 +67,7 @@ Svelte `Writable<T> extends Readable<T>`와 같은 모양), `store.key`는 Store
 쓰기 가능"이라는 위 2번 규칙과도 자연히 맞아떨어짐). 쓰기 문법도 같이
 바뀜: `store.key = v`가 아니라 `store.key:Set(v)`(레코드 타입 읽기/쓰기
 대칭 + lazy 동작에 `=`가 암시하는 "즉시 커밋"이 안 맞는다는 논거). 상세
-근거·타입 설계·Luau 솔버 검증 필요 항목은 `base/store-semantics.md`의
+근거·타입 설계·Luau 솔버 검증 필요 항목은 `base/source-state-plan.md`의
 "Source가 State를 만족함" 절이 최종 소스.
 
 **[이전에 확정했다가 폐기된 `StoreSource` 프록시 설계는 이 결론으로

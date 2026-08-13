@@ -106,7 +106,7 @@ RenderStepped/마우스 무브처럼 안 쓸 때 Connection을 살려두는 것 
 낭비인 경우)나, 단순 on/off가 아니라 로직 자체가 바뀌는 드문 케이스.
 자주 재계산되는 State에 이벤트를 직접 물리면 매 재계산마다 Disconnect+
 Connect가 도는 숨은 churn 비용도 있음(Store Set은 dedup 안 함,
-`store-semantics.md`) — 그래서 남용하지 말라는 캐비엇.
+`base/store-plan.md`) — 그래서 남용하지 말라는 캐비엇.
 
 **그래도 일관성 있게 지원은 해둠.** "저빈도엔 필요 없다"가 "그러니 예외로
 빼고 못 하게 막자"로 이어질 이유는 없음 — 프로퍼티/태그/어트리뷰트가

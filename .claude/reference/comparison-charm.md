@@ -33,7 +33,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   대입 문법과 같은 트레이드오프.** `atom<T>(initialValue, equals?)`
   (`init.luau:519-527`)가 인자 개수로 read/write를 분기하는 방식 —
   `store.key = value`를 버리고 `store.key:Set(value)`로 간 이유
-  (`base/store-semantics.md:208-233`, 읽기/쓰기 타입 비대칭)와 같은 문제.
+  (`base/store-plan.md` "Store 값 설정 문법" 절, 읽기/쓰기 타입 비대칭)와 같은 문제.
   charm 스스로도 README(185-196행)에서 `atom()`을 `signal()`(진짜 get/set
   쌍) 위에 얹은 편의 sugar로 취급 — charm 안에서도 "진짜 1급 형태는 아니다"로
   다뤄지는 걸 참고.
@@ -57,7 +57,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   스킵" 기본값을 도입하고 싶어질 때, charm처럼 **모든 노드에 암묵적으로**
   거는 방식은 `Blocker`가 이미 명시한 "특정 게이트 지점에서만 opt-in"
   원칙(`base/blocker-plan.md:65-68`)과 "Source는 스스로를 자동 변형하지
-  않는다"는 `store-semantics.md` 기조에 둘 다 어긋남 — 반면교사로 남겨둘 것.
+  않는다"는 `base/source-state-plan.md` 기조에 둘 다 어긋남 — 반면교사로 남겨둘 것.
 
 ## 참고할만한 부분
 
@@ -76,7 +76,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   getter에 **이전 계산 결과**를 인자로 넘겨줌(`init.luau:538`,
   `(previousValue: T?) -> T`, README 276-287행, `computed.test.
   luau:84-104`가 홀수 업데이트를 스킵하는 걸로 실제 검증) — quad의
-  `store-semantics.md:280-284`가 이미 띄워둔 "`:Compute(fn)`에 선택적
+  `base/source-state-plan.md`가 이미 띄워둔 "`:Compute(fn)`에 선택적
   두 번째 `previous` 인자" 안과 거의 동일한 모양. 새로 수입할 아이디어가
   아니라 **이미 검토 중인 안이 실제로 동작한다는 정황 증거**로 인용
   가치 있음.
@@ -86,7 +86,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   (`patch.luau:91-131`)이 immutable 재구축(레벨마다 `table.clone`, 순수
   signal용)과 in-place mutate+`:Emit()`류 변형(반응형 프록시용) 둘 다
   제공 — quad가 이미 다른 이유로 갖고 있는 clone-vs-mutate+`Emit` 분리
-  (`base/store-semantics.md:240-284`)와 우연히 같은 모양. `patch.
+  (`base/source-state-plan.md`의 `:Emit()` 절)와 우연히 같은 모양. `patch.
   luau:32-57`(`stringifySparseArray`)는 실전에서 놓치기 쉬운 페이로드
   함정을 문서화함 — RemoteEvent/JSON 직렬화가 성긴 배열의 trailing hole을
   조용히 드롭해서, 보낼 땐 문자열 키로 재인코딩하고 받을 땐 숫자 키로
@@ -128,7 +128,7 @@ previous-in-getter). 지금 당장 base 문서를 고칠 만한 발견은 없음
 computed.test.luau:84-104` · `packages/charm/test/observe.test.luau:92-196` ·
 `packages/charm-sync/src/patch.luau:10,19-30,32-57,59-89,91-131` ·
 `packages/charm-sync/src/server.luau:27-32,124-133,192-207,209-250` ·
-`README.md:185-196,262-287` · `base/store-semantics.md:208-233,240-284` ·
+`README.md:185-196,262-287` · `base/store-plan.md` · `base/source-state-plan.md` ·
 `base/blocker-plan.md:25-44,65-68` · `base/lifecycle-pattern.md`(GC-native
 원칙) · `archive/batch-rejected.md` · `base/bind-system-plan.md:180-266`
 (None 센티널) · `research/additional-primitives-plan.md`(Blocker/키 기반

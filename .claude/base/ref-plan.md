@@ -84,7 +84,7 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
   못 씀, 그래서 콜백도 같이 필요) **세 메소드로 확정(2026-08-07 여섯 번째
   세션)**. `:Set`/`:Callback`/`:Wait` 전부 **mutation 패턴이라 자기 자신
   (`Ref<T>`)을 반환** — `store.key:Set(value)`류 "값을 바꾸는 연산엔 `:`
-  체이닝 허용" 원칙(`base/store-semantics.md` 190행)의 자연스러운 재적용.
+  체이닝 허용" 원칙(`base/store-plan.md`의 "Store 값 설정 문법" 절)의 자연스러운 재적용.
   이 self-반환 덕에 Luau의 `if`-표현식과 결합해 흔한 관용구를 한 줄로
   쓸 수 있음(사용자 제시 예):
   ```luau
@@ -486,10 +486,13 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     다른 뜻으로 쓰이는 `Dispatch.process(inst,k,v)` 오케스트레이터와 겹쳐서
     안 좋음). **`flatten(nonFlatten) -> flatten` 함수 자체에 얹는 방안은
     검토 후 기각** — flatten은 Modifier 값을 합치는 순수 변환(현재 `inst`를
-    안 받음, `research/existing-instance-bind-plan.md`가 다루는 "이미
-    마운트된 Instance 재바인드 시 Default→실값 flatten을 다시 해야 하는가"
-    질문이 실제로 열려있어 flatten이 한 인스턴스 생애주기 동안 **여러 번
-    재호출될 가능성이 있음** — 여기에 PreRef fire를 얹으면 재바인드마다
+    안 받음). 원래 근거는 "`archive/existing-instance-bind-rejected.md`가
+    다루던 '이미 마운트된 Instance 재바인드 시 Default→실값 flatten을 다시
+    해야 하는가' 질문이 열려있어 flatten이 한 인스턴스 생애주기 동안
+    **여러 번 재호출될 가능성이 있다**"였고, **[2026-08-14 세션] 그
+    재바인드 기능 자체가 기각되며 이 위험은 사라졌지만 결론(기각)은
+    유지** — flatten은 여전히 `inst`를 모르는 순수 변환이라 fire 지점으로
+    부적절함 — 여기에 PreRef fire를 얹으면 재바인드마다
     PreRef가 또 fire되어 "이 인스턴스 하나의 construction 훅"이라는 PreRef의
     정의 자체가 깨짐. `Dispatch.drive`는 최초 마운트 시 정확히 한 번만
     불리는 게 이미 전제라 이 위험이 없음.

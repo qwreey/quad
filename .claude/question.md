@@ -211,8 +211,6 @@
   합성 시점 1회 체크로 error를 내는 게 이 문서 다른 결정들과 결이
   같지만, "Merged는 뒤가 이긴다"를 의도된 override로 볼 여지도 있어
   사용자 확인 필요 — `base/attribute-plan.md` "열린 질문" 절.
-- `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
-  착수를 막지 않음.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은

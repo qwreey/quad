@@ -140,7 +140,7 @@ print(resultA, resultB, resultD)
 	   `a:Get()`/`b:Get()`가 정확한 타입으로 좁혀지는지)가 전부 에러 없이
 	   통과하는가 — 통과하면 `fn(self, previous?, ...deps)` 순서가
 	   base 문서 확정대로 최종 시그니처로 채택됨.
-	5. 결과에 따라 `base/bind-system-plan.md` "trailing deps를 fn에 lazy
+	5. 결과에 따라 `base/source-state-plan.md` "trailing deps를 fn에 lazy
 	   positional 인자로도 노출" 절에 실측 결과로 반영할 것:
 	   - B/D 통과, C 실패(예상대로) → 지금 base 문서에 적힌
 	     `fn(self, previous?, ...deps)` 시그니처 그대로 최종 확정.

@@ -56,7 +56,7 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 부수적으로 확인된 것:
 - **Store 자체의 연산은 더 단순해져도 됨** — v1의 `:Add`/`:With`/`:Tween` 같은
   이름 붙은 체이닝 연산(named modifier)은 명시적으로 안 만들기로 확정, 대신
-  일반 함수를 받는 형태로 통일(`base/store-semantics.md` 참고). "너무 verbose한
+  일반 함수를 받는 형태로 통일(`base/source-state-plan.md` 참고). "너무 verbose한
   연산들은 오히려 일관성을 해친다"는 게 이유. (주의: 아래의 v2 `:With(...)`는
   이름만 같을 뿐 여기서 안 만들기로 한 v1의 `:With`와는 다른 연산임 — v1은
   "함수/테이블에서 값을 가져오는" 가공 연산이었고, v2는 그냥 "여러 State를
@@ -64,7 +64,7 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 - **여러 store 값을 묶어 유연하게 처리하는 방법**(`useEffect`류 dependency
   array)은 있으면 좋겠다는 요청이었고 — **API 시그니처도 확정됨**:
   `:With(...)`로 의존성을 모으고 `:Compute(fn)`으로 파생 State를 만드는
-  형태, 상세는 `base/store-semantics.md`의 "여러 스토어 값을 묶어 처리하는
+  형태, 상세는 `base/store-plan.md`의 "여러 스토어 값을 묶어 처리하는
   것" 절 참고.
 - `can execute store bind` 후킹 자체는 `Connected` 계산 속성으로 대체된다는
   잠정 제안이 그대로 유지되고, 여기에 더해 **완전 소멸(Destroy) 시점엔 아무

@@ -245,7 +245,7 @@ local InstData = Relate() -- inst  -> gchold/gcconn (위 (0)에서 채워짐)
 local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
 
 function bindLifetime(inst, value)
-    -- 이중 바인딩 금지(base/bind-system-plan.md) — 게이트가 곧 canExecute.
+    -- 이중 바인딩 금지(base/source-state-plan.md) — 게이트가 곧 canExecute.
     -- "지금 실행 가능하다"는 곧 "이미 유효한 바인딩을 갖고 있다"는 뜻.
     if canExecute(value) then
         -- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
@@ -308,7 +308,7 @@ end
 #### (2) 전역 경로 — `:Subscribe()`/`:Unsubscribe()`
 
 `inst`에 안 묶이는(모듈 최상위 디버그 print류) Observer/Effect 전용. 상세
-규칙과 경고는 `base/bind-system-plan.md`의 "`:Subscribe()`/`:Unsubscribe()`"
+규칙과 경고는 `base/source-state-plan.md`의 "`:Subscribe()`/`:Unsubscribe()`"
 절이 소스이고, 여기선 `canExecute`가 보는 상태만 못박음:
 
 ```lua
@@ -336,7 +336,8 @@ end
 강참조 루트(생존 보장), 필드는 `canExecute`가 매 발화마다 읽는 O(1) 경로 +
 에러 메시지에서 "전역이냐 leaf냐"를 가르는 판별자. 둘은 항상 같이
 쓰고 같이 지우는 한 세트(`:Unsubscribe()`가 필드만 내리고 테이블을 안
-비우면 반쪽짜리 해제가 됨 — `bind-system-plan.md`에 이미 확정된 규칙 그대로).
+비우면 반쪽짜리 해제가 됨 — `base/source-state-plan.md`에 이미 확정된 규칙
+그대로).
 
 #### (3) `canBound` 폐기 — 게이트는 `canExecute` 하나
 
@@ -381,8 +382,8 @@ Instance 생성 시 한 번만 만들어지고, 이후는 `InstData:GetWeak`으�
 quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn을 `value`의
 직접 필드로 내리는 선택지가 있음(옛 초안이 `self.Connection`으로 스케치했던
 모양). 지금 `Relate` 쪽으로 둔 이유는 "Observer 값 자체에 부작용을 안
-남기고 외부 weak 인덱싱을 선호"라는 기존 사용자 방침(`base/bind-system-plan.md`의
-`state:Observer(fn)` 절 구현 노트)이고, 성능 근거가 나오면 뒤집어도 되는
+남기고 외부 weak 인덱싱을 선호"라는 기존 사용자 방침(`base/source-state-plan.md`의
+"`state:Observer(fn)`" 절 구현 노트)이고, 성능 근거가 나오면 뒤집어도 되는
 순수 구현 세부.
 
 이건 `base/dispatch-core-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
@@ -405,11 +406,10 @@ connection을 얻어 `disconnect()`하는 명시적 dispose 경로를 추가로 
 
 **재사용 사례(2026-08-04 2차 라운드)**: Store/State의 무효화(invalidate)
 신호를 받는 리스너 클로저도 정확히 이 유틸로 등록됨 — `base/
-store-semantics.md`가 예전에 "state 옵저빙 결과로 slot을 조작할 때 생존
+store-plan.md`가 예전에 "state 옵저빙 결과로 slot을 조작할 때 생존
 여부를 어떻게 확인할지" 미해결로 남겨뒀던 문제가, 사실은 새 메커니즘이
 필요한 게 아니라 이 canExecute 게이트를 그대로 적용하면 되는 사례였음(별도
-`isInit` 분기 불필요). 상세는 `base/bind-system-plan.md`의 "Store/State/
-Source 온톨로지" 절 참고.
+`isInit` 분기 불필요). 상세는 `base/source-state-plan.md`의 "Slot 생존 확인" 절 참고.
 
 ## 2026-08-04 검증 라운드에서 보강된 내용
 

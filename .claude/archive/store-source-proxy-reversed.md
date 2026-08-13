@@ -2,7 +2,7 @@
 
 **역전 일시**: 2026-08-06 (세 번째 세션). **원 확정 일시**: 2026-08-04
 (`component-composition-plan.md` 컴포넌트화 논의 3~4번 항목).
-**현재 유효한 설계**: `base/store-semantics.md`의 "Source가 State를
+**현재 유효한 설계**: `base/source-state-plan.md`의 "Source가 State를
 만족함 — 구조적 서브타입" 절이 최종 소스. 이 파일은 더 이상 능동적으로
 참고할 필요 없음(구현에 안 씀) — 왜 이 경로를 갔다가 되돌아왔는지가
 `quadnomicon`(프레임워크 설계자용 심화 콘텐츠, `research/documentation-plan.md`
@@ -69,5 +69,5 @@ State를 만족**(Svelte `Writable<T> extends Readable<T>`와 같은 모양)
 "별도 프록시 타입을 만든다"에서 "Source 자체를 서브타입으로 승격한다"로
 바뀐 것. 이 반전 자체가 "타입이 없던 v1 습관을 재검토 없이 typed 재작성에
 그대로 가져오면 안 된다"는 더 큰 교훈의 구체적 사례이기도 함(사용자 회고,
-`base/store-semantics.md` 참고) — `quadnomicon`에서 "설계가 왜 이렇게
+`base/source-state-plan.md` 참고) — `quadnomicon`에서 "설계가 왜 이렇게
 반전됐는가" 사례로 쓰기 좋음.

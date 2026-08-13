@@ -40,10 +40,11 @@ cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 
 "필수 관용구" 절 참고).
 
 관련: 이미 마운트된 Instance에 재바인드할 때 Default→실값 flatten을 다시
-해야 하는지/clone이 필요한지는 별개 미정 문제로
-`research/existing-instance-bind-plan.md`의 "Default 값과 얽히는 문제" 절
-참고 — 여기서 다루는 건 컴포지션 타임의 modifier 값 자체 flatten이라 층위가
-다름.
+해야 하는지/clone이 필요한지는 별개 문제였는데, **[2026-08-14 세션] 그
+재바인드 기능 자체가 기각**되어 질문이 없어짐
+(`archive/existing-instance-bind-rejected.md`의 "Default 값과 얽히는 문제"
+절이 당시 서술) — 어차피 여기서 다루는 건 컴포지션 타임의 modifier 값 자체
+flatten이라 층위가 달랐음.
 
 **참고 — Property(일반 프로퍼티)에 Attribute식 "이름 소유권 레지스트리"를
 적용하는 안은 검토 후 기각(2026-08-12 열일곱 번째 세션).** `Attribute`
@@ -142,7 +143,7 @@ mutable하게 구현하면 같은 modifier 레퍼런스를 공유하는 형제 �
 `Store({defaults})`와 같은 "`Type(args)` 팩토리" 관습을 그대로 적용하면
 됨, Modifier는 초기 필드가 필수가 아니므로 `args`가 비어도 되는
 `Modifier()`. `mod:FontSize(20)`처럼 체이닝하는 모든 예시가 실은 이
-`Modifier()`가 만든 빈 인스턴스 위에서 시작함. `base/store-semantics.md`
+`Modifier()`가 만든 빈 인스턴스 위에서 시작함. `base/source-state-plan.md`
 "독립 존재 가능한 프리미티브" 절의 예시 목록도 이걸로 갱신.
 
 ### 4. Setter는 리터럴 값과 변환 함수 둘 다 받음, 별도 Getter는 없음
@@ -308,7 +309,7 @@ Modifier에는 없음).
 
 "누가 modifier에 타입을 붙여주냐"는 새 문제가 아니라, Store/인스턴스 생성에
 이미 적용한 "정적으로 알려진 건 dot-access, 동적인 건 문자열 폴백" 프로젝트
-전역 관습(`base/bind-system-plan.md` "타입 추론 문제" 절)을 그대로 적용하면
+전역 관습(`base/store-plan.md` "타입 추론 문제" 절)을 그대로 적용하면
 됨 — `mod:UICorner(8)`/`mod:FontSize(...)`처럼 DI 쪽 "제네릭 생성자 함수
 하나 + 자주 쓰는 것만 정적 필드로 미리 바인딩" 패턴 재사용.
 (주의: 이벤트는 이 관습의 유일한 예외라 인용 대상에서 제외 — 이벤트 바인딩은
@@ -379,7 +380,7 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
   분류. State/Source에 `Tween<T>`가 담기는 것 자체는 여전히 문제없이
   허용되지만(위 타입 대수 절 참고), 그 이유는 "재귀 dispatch 참가자라서"가
   아니라 "그냥 raw 값이라서"로 바뀜.
-- **`Store<T>`의 `T`는 Modifier가 될 수 없음(`base/store-semantics.md`
+- **`Store<T>`의 `T`는 Modifier가 될 수 없음(`base/source-state-plan.md`
   "따름정리" 절)도 이 결정을 그대로 물려받음** — Source가 State를
   구조적으로 만족하므로 별도로 다시 논증할 필요 없이 동일하게 적용됨.
 

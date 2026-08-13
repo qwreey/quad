@@ -311,7 +311,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
     계산 끝난 값"으로 오해하기 쉬움 — Vue/Svelte 생태계에서는 lazy와
     `computed`라는 이름이 공존해도 문제없지만, quad 안에서는 다름. 같은
     이유로 `:Compute`(동사 원형) 메소드 이름도 `Computed`가 아니라
-    `Compute`인 게 맞다고 재확인(`base/bind-system-plan.md` "네이밍 —
+    `Compute`인 게 맞다고 재확인(`base/source-state-plan.md` "네이밍 —
     `Compute`가 `-ed`가 아닌 이유" 절).
   - `Pipe` — 검토했으나 기각. (1) "캐시한다"는 동작이 파이프라는 비유와
     안 맞음(파이프는 통과시키는 채널 이미지라 값을 들고 있다/캐시한다는
@@ -351,7 +351,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `base/slot-plan.md` "`Slot:List(...)`" 절.
 - **[해소됨, 2026-08-09 세션]** `Bound` — **`canBound(handle): boolean`
   탑레벨 함수로 확정**, `canExecute`와 같은 결(raw 필드를 직접 노출하는
-  대신 predicate 함수로 감쌈). `base/bind-system-plan.md` "이중 바인딩
+  대신 predicate 함수로 감쌈). `base/source-state-plan.md` "이중 바인딩
   금지" 절 참고.
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
@@ -422,7 +422,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   해소).
 - **[해소됨, 2026-08-09 세션]** `State<Modifier>`와 Ref/Slot이 Modifier
   필드에 들어가는 것 — 이제 둘 다 `isX` predicate 기반 명시적 `error`로
-  통일(`base/modifier-plan.md` 4번/7번 절, `base/store-semantics.md`
+  통일(`base/modifier-plan.md` 4번/7번 절, `base/source-state-plan.md`
   "따름정리" 절). Luau 타입 차단은 "되면 좋은 보너스"로 격하되어 더
   이상 필수 검증 항목 아님 — 문서모순 절 + 우선순위2-2도 갱신 완료.
 - ~~`props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴
@@ -448,7 +448,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   이름이었음, 2026-08-13 다섯 번째 세션에 인덱스 기반으로 재설계되며 개명)로 이미
   해소(`pre-implementation-audit.md` 1-2, `bind-system-plan.md` "Dispatch
   체인" 절). **[해소됨, 2026-08-09 세션]** `:Compute`의 `previous` 인자
-  오버엔지니어링 의심도 기각(`bind-system-plan.md` "previous" 절,
+  오버엔지니어링 의심도 기각(`source-state-plan.md` "previous" 절,
   `pre-implementation-audit.md` 3-1). **[해소됨]** UI shorthand의 기존
   UICorner 매칭 기준도 `base/ui-shorthand-plan.md`에 이미 확정 반영돼
   있던 것을 이번에 `pre-implementation-audit.md` 2-11에도 해소 표시로
@@ -495,8 +495,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   엘비스 연산자류) 후보 추가 — Haskell 비교 리서치 중 나옴, 카탈로그 확정
   규칙에 그대로 맞아 포함 근거는 있음. 상세는 `research/operator-sugar-plan.md`.
   구현 자체는 맨 마지막 우선순위(순수 슈가, 없어도 무방) — 여전함.
-- `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
-  착수를 막지 않음.
+- **[해소됨(기각), 2026-08-14 세션]** 이미 생성된 인스턴스 재바인드 —
+  "스코프 논의만 필요"로 오래 열려 있었으나 사용자 확정으로 **기각**,
+  `archive/existing-instance-bind-rejected.md`로 이전(사유: Length/Offset
+  등 quad가 만든 트리를 전제한 부기를 바깥에서 밀고 당기는 버그 표면이
+  치명적으로 넓어짐).
 - **[해소됨, 2026-08-13 세 번째 세션]** v1 `objectListClass.__newIndex` 오타
   기능(재현 테스트 필요했던 항목) — 사용자가 당시 실수였음을 확인. v2는 이제
   오브젝트에 id를 주입하고 id로 조회하는 개념(`GetObjects`류) 자체가 없어져
@@ -565,7 +568,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 |---|---|
 | 전체 아키텍처 결정(디스패치 모델, DOMless, 태그/Ref, Signal 미채택 등) | `base/architecture.md` |
 | Store/State/Source 온톨로지, 인스턴스 생성/이벤트 인체공학, Ref, 남은 API 이름 | `base/bind-system-plan.md` |
-| Store 부작용 허용, `:With`+`:Compute`, dot-access 문법 | `base/store-semantics.md` |
+| Store 부작용 허용, `:With`+`:Compute`, dot-access 문법 | `base/store-plan.md` |
 | 프로바이더 패턴, bind/store 구현 책임 분리 | `base/module-lifecycle-plan.md` |
 | Slot 재조정, 재마운트 시 throw, **[2026-08-13 6번째 세션 역전] retract=언마운트**(파괴 아님, portal이 그 귀결 — 옛 "retract=폐기"는 뒤집힘) | `base/slot-plan.md` |
 | `Connected`+GC 라이프사이클 패턴 | `base/lifecycle-pattern.md` |

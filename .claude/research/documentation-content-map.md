@@ -27,7 +27,7 @@
 1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
 2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 `new<Class>` + 자주 쓰는 ~25개 클래스 정적 필드(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
 3. **속성 채우기** — `[Attribute "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
-4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`bind-system-plan.md`, `store-semantics.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
+4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`base/source-state-plan.md`, `base/store-plan.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
 5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)
 6. **자식 전달** — Slot 기본 개념(children 배열, add/remove/clear), 마운트된 slot 재마운트 시 throw (`slot-plan.md`)
 7. **컴포넌트 작성** — 컴포넌트 = 순수 함수, 리프 프로퍼티엔 State만 바인딩, 전역 store 직접 참조 금지(이식성) (`component-composition-plan.md`, `purity-and-effects-plan.md`)
@@ -35,7 +35,7 @@
 9. **이벤트** — self(Instance) 안 받음, 문자열 키(`Frame { MouseButton1Click = fn }`) (`bind-system-plan.md`)
 10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
 11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `Ref(default):Callback(fn)`을 children 배열 숫자 슬롯에 직접 놓기 + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
-12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
+12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`base/source-state-plan.md`)
 13. **Tween 기초** — ~~`[Tween(key, ...)] = storeValue`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tween-special-bind-key-reversed.md`) — 실제로는 `Tween(opts) -> Tween<T>` 값-레벨 래퍼**, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`base/tween-plan.md`)
 14. **UI 숏핸드(quad-roblox 한정)** — `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 인라인 키 (`base/ui-shorthand-plan.md`)
 
@@ -75,7 +75,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 ### component-composition-plan.md / module-lifecycle-plan.md
 - 초심자: 컴포넌트=순수 함수 / 리프 프로퍼티 바인딩(**[정정, 2026-08-09 열한 번째 세션] "State만"이 아님 — 단순 원본 토글(`Frame{Visible=source}`)은 Source 직접 바인딩이 정상 경로, 여러 값에서 파생된 계산 결과일 때만 자연히 State가 됨, `component-composition-plan.md` 5번 절 참고**) / `props.Modifier`/`props.Ref` named parameter 경계 전달(**`props.Modifier or None`/`props.Ref or None` 필수 관용구 — 안 쓰면 nil-hole 버그, 2026-08-07 열 번째 세션 확정**) / `InitRoblox(Module)` 팩토리 초기화
 - api: State(파생, 읽기전용) vs Source(원본, 쓰기가능) 경계 요약(→심화) / Slot 반환 컴포넌트는 Modifier/Ref 파라미터 미선언 / `Modifier.Overridden(mod1, mod2, ...)` 유틸(구 `Merge`, `props.Modifier` 단일 슬롯용 특수 상황으로 한정 소개 — 아래 modifier-plan.md 절 참고) / Bind는 유일 슬롯(재호출 no-op, 충돌 에러, →심화) / `:With`/`:Compute`로 파생 State 생성 시그니처 / 모듈 싱글톤 스코프
-- 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `store-semantics.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
+- 심화: v1 `Extend` 자동 store 소유 폐지 이유(React 벤치마킹) / Source가 State를 구조적으로 만족하는 서브타입 설계(2026-08-06 후속 세션 — `StoreSource` 프록시 중간안은 폐기되고 이걸로 대체됨, `base/source-state-plan.md` 참고) / named-parameter 경계 방식 채택 이유(Compose/Fusion/Vide/v1 선례 수렴) / 다중 루트 반환 개념 제거 근거 / 팩토리 초기화 패턴 채택 이유(RBVM `InitNamespace` 반례) / Store 책임 분리(base가 `LifetimeHandle` 소유) / v1 named 체이닝 연산 폐기
 - skip: Compose/Fusion/Vide/v1 프레임워크 비교 원자료 / provider/processor 네이밍 미정 등 열린 질문 메모
 
 ### lifecycle-pattern.md / purity-and-effects-plan.md
@@ -106,9 +106,9 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
   콘텐츠 작성 시점에 결정.
 - skip: 세션 날짜/확정 이력, 문서 승격/정정 안내
 
-### store-semantics.md / tween-plan.md / ui-shorthand-plan.md
+### store-plan.md / source-state-plan.md / tween-plan.md / ui-shorthand-plan.md
 - 초심자: Store 생성+`myStore.key:Set(value)` 문법 / `store.key`로 State 얻기 개념 / Tween 기본 바인드 키+취소 기본 동작 / UI 숏핸드 인라인 키 기본 예시(`Frame { UIPaddingOffset = 50 }`)
-- api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `store-semantics.md` 참고) / ~~Tween 핸들러가 Instance 직접 받음(Ref 불필요)~~ **[2026-08-13 정정] 구모델(폐기) — 실제로는 `Tween(opts)` 값-레벨 래퍼가 Property 자리에 놓이고 `PropertyHandler`가 `isTween`으로 분기** / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
+- api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `base/source-state-plan.md` 참고) / ~~Tween 핸들러가 Instance 직접 받음(Ref 불필요)~~ **[2026-08-13 정정] 구모델(폐기) — 실제로는 `Tween(opts)` 값-레벨 래퍼가 Property 자리에 놓이고 `PropertyHandler`가 `isTween`으로 분기** / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
 - 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / ~~Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사)~~ **[2026-08-13 정정] 이 근거 자체가 폐기된 구모델 서술 — 현재는 Tween이 반응 그래프 "밖"이 아니라 Property 값 타입 치환(`T|Tween<T>`)으로 자연스럽게 들어와 있음, `base/tween-plan.md` 참고** / RoundSize 포팅 불필요 vs UICorner/UIPadding/UIScale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
 - 열린 질문(문서화 보류): tween-plan.md의 오버라이드/삭제후재시작/끝점이동 옵션 키 이름 미정 / ui-shorthand의 RoundSize 완전 드롭 여부
 - skip: 세션 정정 이력, v1 소스 조사 경위
@@ -133,10 +133,10 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
 9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
 10. ~~왜 Tween은 반응 그래프 밖에 있는가~~ **[2026-08-13 정정] 위 §2 심화 항목과 같은 stale 표현 — 실제로는 Property 값 타입 치환(`T|Tween<T>`)으로 그래프 안에 자연스럽게 있음** — `base/tween-plan.md`
-11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `store-semantics.md`
-12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
+11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `base/source-state-plan.md`
+12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `base/source-state-plan.md`
 14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`
-15. 왜 Source가 State를 구조적으로 만족하는가(Svelte Writable/Readable과 같은 서브타입 모양, `RefSource`/`StoreSource` 중간안이 왜 기각됐는가) — `store-semantics.md`, `component-composition-plan.md`
+15. 왜 Source가 State를 구조적으로 만족하는가(Svelte Writable/Readable과 같은 서브타입 모양, `RefSource`/`StoreSource` 중간안이 왜 기각됐는가) — `base/source-state-plan.md`, `component-composition-plan.md`
 16. **State 파생 체인 동작 원리** — emit이 아래로 전파되고, `Get()` 요청이
     위로 거슬러 올라가 재계산된 뒤 다시 아래로 내려오는 흐름을 명확히
     설명(Blocker/Effect 둘 다 이 흐름 위에서 동작하므로 선행 이해로 필요)
@@ -218,7 +218,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    "PreRef는 '취소'라는 개념이 없다" 항목 참고.
 
 7. **왜 `Compute(fn, ...)`는 여러 의존성을 편하게 받고 `Effect`/`Observer`는
-   안 받는가** (2026-08-11 세션 원자료, `bind-system-plan.md` "`:Compute(fn,
+   안 받는가** (2026-08-11 세션 원자료, `source-state-plan.md` "`:Compute(fn,
    ...)` — 추가 의존성을 trailing args로 직접 받는 sugar" 절) — 겉보기엔
    비일관적인 API 표면(하나는 React `useMemo`식 trailing deps sugar를 받고,
    다른 둘은 명시적 `:With` 호출을 강제)이 실은 "sugar가 새 노드 생성 비용을

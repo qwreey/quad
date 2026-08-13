@@ -83,7 +83,7 @@ price:Apply(addTaxAndShipping)
 
 1. **재사용 가능한 커링 팩토리는 `:Compute`로는 안전하게 못 만든다 —
    진짜 버그 가능성.** quad는 Vide식 암묵적 자동 추적을 이미 기각했음
-   (`bind-system-plan.md` "암묵적 자동 추적 기각") — 의존성은 오직
+   (`base/source-state-plan.md`의 "여러 값을 묶어 파생값 만들기" 절) — 의존성은 오직
    `:With`/`:Compute`의 **그 호출문 자체**에 나열된 trailing args로만
    등록됨. 그래서 `local addTax = Sum(tax, shipping)`처럼 한 번 만들어
    재사용하고 싶은 값을 `price:Compute(addTax)`처럼 바로 꽂으면,
@@ -93,14 +93,14 @@ price:Apply(addTaxAndShipping)
    `price:Compute(addTax, tax, shipping)`처럼 이미 `Sum(...)`에 넘긴
    deps를 호출부에서 또 나열해야 하는데, 이게 바로 2026-08-11 세션에서
    "trailing deps를 fn 위치 인자로 노출"하게 만든 그 중복/드리프트
-   위험(`bind-system-plan.md` 해당 절)과 완전히 같은 클래스의 문제 —
+   위험(`base/source-state-plan.md` 해당 절)과 완전히 같은 클래스의 문제 —
    재사용 가능한 이름을 만드는 의미 자체가 없어짐.
    **`:Apply`는 이 문제가 원천적으로 없음**: factory가 내부에서
    `self:Compute(fn, tax, shipping)`을 직접 호출해 자기가 캡처한 deps를
    스스로 다시 넘기므로(호출자가 재입력하는 게 아니라 factory 자신이
    한 번 캡처한 값을 그대로 전달), 중복 없이 안전하게 재사용됨 —
    `price:Apply(addTax)`, `otherPrice:Apply(addTax)` 둘 다 안전.
-2. **기존 문서 관용구와 일치.** `bind-system-plan.md`의 `:Apply` 절이
+2. **기존 문서 관용구와 일치.** `base/source-state-plan.md`의 `:Apply` 절이
    이미 `state:Apply(makeFormatter("ko-KR"))`를 "커링 팩토리 + `:Apply`"의
    정석 예시로 들어둠 — `Operator.*`/`Animate`가 이 관용구를 따르는 게
    자연스러움. `Animate`가 `:Compute`를 골랐던 건 오히려 이 기존
@@ -346,7 +346,7 @@ offset이 밀리고 당겨지는 케이스(이건 이미 "그냥 확인된 것"�
 이게 이 항목을 단순 슈가로 못 만드는 이유이자, 백로그에서 따로 더
 파야 하는 지점:
 
-- quad는 **암묵적 자동 추적을 기각**했고(`base/bind-system-plan.md`),
+- quad는 **암묵적 자동 추적을 기각**했고(`base/source-state-plan.md`),
   의존성은 `:With`로 **정적으로** 선언하게 돼 있음. 게다가 "`:With`의
   동적 의존성 미지원"은 2026-08-12 열여덟 번째 세션에 **의도된
   트레이드오프로 확정**됨(`research/framework-comparison-findings.md`) —

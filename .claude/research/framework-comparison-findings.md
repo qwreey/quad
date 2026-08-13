@@ -46,7 +46,7 @@
 
 - ~~Store dot-access가 매 접근마다 새 State를 할당~~ — **[해소됨,
   2026-08-06 세 번째 세션]** 이 항목이 직접 트리거가 되어 Source/State
-  관계 자체를 재구성(`store-semantics.md` "Source가 State를 만족함" 절) —
+  관계 자체를 재구성(`base/source-state-plan.md` "Source가 State를 만족함" 절) —
   Store가 이제 생성 시 만들어둔 Source를 그대로 반환해 wrapper 할당 자체가
   없어짐, 구현 단계 최적화가 아니라 설계로 완전히 없앰(캐싱/풀링보다도 쌈).
 
