@@ -7,6 +7,17 @@
 시점은 여전히 구현 우선(`CLAUDE.md` "지금 할 일" 1번). 나중에 실제 문서화를
 시작할 때 이 맵을 목차/우선순위표로 쓰면 됨.
 
+> **⚠️ [2026-08-14 아홉 번째 세션 감사] 이 서베이는 2026-08-06 시점의
+> `base/` 파일 구성을 기준으로 작성됐음.** 그 뒤 `bind-system-plan.md`가
+> 세 번(2026-08-13 아홉 번째 / 2026-08-13 열네 번째 / 2026-08-14 일곱 번째
+> 세션) 쪼개져 지금은 203줄짜리 분할 색인만 남았으므로, **아래에서
+> `bind-system-plan.md`를 가리키는 포인터는 대부분 실제로는
+> `source-state-plan.md`/`store-plan.md`/`ref-plan.md`/`event-plan.md`/
+> `brand-plan.md`/`dispatch-core-plan.md` 중 하나를 뜻함**(그 문서 맨 위의
+> 분할 표에서 어디로 갔는지 바로 찾을 수 있음). 콘텐츠 분류 자체는 여전히
+> 유효해서 경로만 이 규칙으로 읽으면 되고, 실제 문서화 착수 시점에 한
+> 번에 정규화할 것.
+
 **api↔심화 연결 원칙(사용자 확정)**: api 문서는 항목마다 설명을 간략하게
 유지하고, 근거·내부 동작까지 파고드는 내용은 심화 섹션으로 링크("더 알아보기
 → 심화")하는 방식으로 연결. 아래 [api] 항목 중 "→심화"가 붙은 것들이 이
@@ -205,17 +216,28 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    `(v=Ref)` 매치 핸들러로 처리돼 다른 핸들러들과
    같은 우선순위 스캔에 참여한다는 의미에서 "hook"(순서 등록 가능, 다른
    값으로 교체되면 `retract`로 취소됨)에 가깝고, `PreRef`는 그 스캔 밖의
-   고정 pre-pass라는 의미에서 "pre-hook"(항상 최우선 고정, 순서/취소
-   개념 자체가 다름)에 가깝다는 구분 — quadnomicon 에세이로 쓸 때 이
+   고정 pre-pass에서 fire된다는 의미에서 "pre-hook"(항상 최우선 고정,
+   취소 개념 자체가 다름)에 가깝다는 구분 — quadnomicon 에세이로 쓸 때 이
    "hook"/"pre-hook" 용어 자체를 채택할지만 아직 열려있음(복수 `PreRef`
    간 순서는 2026-08-07 아홉 번째 세션에서 해소됨 — 배열 index 순서
-   그대로, 별도 규칙 없음, `ref-plan.md` "PreRef" 절 참고).
+   그대로 **보장**, 별도 규칙 없음, `ref-plan.md` "PreRef" 절 참고.
+   2026-08-14 아홉 번째 세션에 이 보장을 잠깐 미보장으로 뒤집었다가
+   철회한 왕복이 있음 — `archive/preref-order-unguaranteed-withdrawn.md`,
+   이것도 에세이 소재).
+   **[2026-08-14 아홉 번째 세션] `PostRef`가 생겨 이 프레이밍은 3항이 됨**
+   — "pre-hook / hook / post-hook"으로 자연히 확장되고, 특히
+   `PostRef`("두 패스가 전부 끝난 뒤")가 **자기 서브트리 완성은 보장하되
+   자기가 부모에 붙기 전**이라는 점은 React `componentDidMount`와의 대조
+   소재로 좋음(`ref-plan.md`의 "`PostRef`" 절, `base/lifecycle-hooks-plan.md`).
    **[해소됨, 2026-08-12 여섯 번째 세션]** 취소 가능 여부 — PreRef는
-   구조적으로 `retract` 체인에 아예 안 올라가므로 취소 개념 자체가 없고,
-   대신 이미 fire된 PreRef를 재사용하면(두 번째 construction에 다시
-   놓으면) 즉시 `error` — "1회용, 재할당 불가"로 확정. `ref-plan.md`
-   "동적 경로로 도착한 PreRef는 런타임에도 명시적으로 에러" 절 바로 아래
-   "PreRef는 '취소'라는 개념이 없다" 항목 참고.
+   취소 개념 자체가 없고(**[정정, 2026-08-14 두 번째 세션]** 근거가
+   "`retract` 체인에 아예 안 올라가서"에서 **"그 자리의 retract가 하드코딩된
+   no-op이라 되돌릴 상태 자체가 없어서"**로 바뀜 — `ProcessedPreRef` 신설로
+   소진된 슬롯도 이제 정상 `Dispatch.process` 경로를 타 체인에 올라감,
+   `PostRef`도 동일), 대신 이미 fire된 PreRef를 재사용하면(두 번째
+   construction에 다시 놓으면) 즉시 `error` — "1회용, 재할당 불가"로 확정.
+   `ref-plan.md` "동적 경로로 도착한 PreRef는 런타임에도 명시적으로 에러"
+   절 바로 아래 "PreRef는 '취소'라는 개념이 없다" 항목 참고.
 
 7. **왜 `Compute(fn, ...)`는 여러 의존성을 편하게 받고 `Effect`/`Observer`는
    안 받는가** (2026-08-11 세션 원자료, `source-state-plan.md` "`:Compute(fn,
@@ -272,13 +294,16 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   완전히 확정(2026-08-09 열한 번째 세션엔 `Extract(index, newElement?)`로
   더 확장). `research/additional-primitives-plan.md`는 더 이상 열린
   항목 없음, 배경 자료로만 유지.
-- **"hook"/"pre-hook" 용어 채택 여부** (2026-08-07, 위 심화 후보 6번 참고)
-  — `bind-system-plan.md`는 `PreRef`가 위치 무관 호이스팅이라는 것과 일반
+- **"hook"/"pre-hook"(+`PostRef` 이후로는 "post-hook") 용어 채택 여부**
+  (2026-08-07, 위 심화 후보 6번 참고)
+  — `ref-plan.md`(**[2026-08-13 아홉 번째 세션]** `bind-system-plan.md`에서
+  분리됨, 옛 경로로 적혀 있던 것을 2026-08-14 감사에서 정정)는 `PreRef`가
+  위치 무관 호이스팅이라는 것과 일반
   `Ref`가 우선순위 스캔에 참여한다는 것까지는 확정해뒀고(복수 `PreRef`
-  간 순서=배열 index 순서, 동적 경로로 도착한 PreRef는 전용 Handler가
-  즉시 error — 둘 다 아홉 번째 세션에서 추가 확정), **`PreRef`의 취소
+  간 순서=배열 index 순서 보장, 동적 경로로 도착한 PreRef는 전용 Handler가
+  즉시 error — 둘 다 2026-08-07 아홉 번째 세션에서 추가 확정), **`PreRef`의 취소
   가능성은 2026-08-12 여섯 번째 세션에 "취소 개념 없음, 재사용은 error"로
-  해소됨**(위 심화 후보 6번, `bind-system-plan.md` 참고) — "hook 대
+  해소됨**(위 심화 후보 6번) — "hook 대
   pre-hook"이라는 용어 자체를 문서화 시 채택할지만 아직 미정.
 
 `PreRef` 취소 가능성 항목은 실제로는 `.claude/question.md`에 별도로

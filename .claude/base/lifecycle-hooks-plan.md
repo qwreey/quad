@@ -64,6 +64,11 @@ local function OnDestroyed(fn: () -> ()): EffectHandle
 end
 ```
 
+*(위 시그니처의 `Instance`는 읽기 편하라고 quad-roblox 기준으로 적은
+것 — 이 셋은 quad-base 소속이므로 실제 선언은 `Ref<T>`가 그렇듯 백엔드
+Instance 타입을 모르는 제네릭/불투명 타입 자리로 남음. `bindLifetime(inst,
+value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관례.)*
+
 호출 즉시 `PreRef():Callback(fn)`/`PostRef():Callback(fn)`/`Effect(...)`가
 실행되고, children 배열에 실제로 놓이는 건 **그 결과인 `PreRef`/`PostRef`/
 `EffectHandle` 인스턴스 자체**임 — `OnCreated`라는 이름이나 개념은 이

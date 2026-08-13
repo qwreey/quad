@@ -1240,6 +1240,10 @@ PreRef pre-pass 한 스윕에서 `isPostRef`도 같이 소진해 `postRefList`�
 될 것 같다는 구체 스케치를 남겨 백로그 후보로 보존 — 네 번째 세션이
 이 스케치를 이어받아 `ProcessedPreRef` 기반으로 갱신함(위 참고).
 `question.md`엔 안 올림(이미 "지금 안 함"으로 답이 나온 질문이라).
+**[역전, 같은 날 아홉 번째 세션]** 이 "지금은 구현 안 함" 결정은 뒤집혔음
+— `PostRef`/`OnRendered` 둘 다 채택 확정되어 `base/ref-plan.md`/
+`base/lifecycle-hooks-plan.md`로 승격됨(아래 아홉 번째 세션 항목).
+"공짜가 아니다"라는 판단 자체는 그대로 맞고, 그 비용을 지불하기로 한 것.
 `research/lifecycle-hooks-plan.md` 신설, README 인덱스 반영, 별도
 워크트리에서 작업 후 메인에 수동 반영(다른 세션이 동시에 메인에서
 작업 중이라 병합 타이밍을 사용자와 직접 조율) — 커밋 `9f9a68f`. 같은
@@ -1315,7 +1319,8 @@ pull-recompute+캐시가 막고 중복 **통지**는 안 접음(접으려면 `Bl
 `doc-check.py`는 참조 존재는 봐도 서술 간 모순은 못 봄.
 
 **2026-08-14 아홉 번째 세션 — `PostRef` 확정·`OnRendered` 채택, 계열 안
-fire 순서 미보장으로 역전, `lifecycle-hooks-plan.md` base 승격**
+fire 순서는 미보장으로 갔다가 철회(보장 유지), `lifecycle-hooks-plan.md`
+base 승격**
 (`session/2026-08-14-09-postref-confirmed.md`)
 사용자가 백로그 후보로만 남아 있던 `PostRef`를 확정(선택지 (a) — pre-pass
 공동 수집 + 두 패스 뒤 `postRefList` 소비, "Pre-Post 둘을 지원 안 할 이유가
