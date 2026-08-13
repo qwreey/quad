@@ -119,6 +119,31 @@ M0 착수 시점에 확인하면 되고 지금 막고 있진 않음. 배경은
 `.claude/base/typing-limits.md` 8번, 실측은
 `.claude/audit/type-recursion-issue/REPORT.md` 5절.
 
+## 7. **[2026-08-14 신설]** 워크트리 `debounce-throttle-plan` 정리 여부
+
+Debounce/Throttle 작업에 쓴 워크트리가 **의도적으로 남아 있습니다**(사용자
+지시로 클린업 없이 나옴):
+
+```
+경로:   .claude/worktrees/debounce-throttle-plan
+브랜치: worktree-debounce-throttle-plan (HEAD 5518055)
+```
+
+**필요한 변경은 전부 `main`에 이식 완료**(`623c931`)입니다 — 워크트리에만
+있는 결정은 없습니다. 다만 워크트리는 **분할 이전(`10cd31b`) 구조 기준**이라
+`bind-system-plan.md`에 전파 모델이 있는 등 경로가 다르니, **그 트리를 직접
+참조하거나 머지하지 마세요.** 남겨둔 이유는 이식 과정을 나중에 대조해볼 수
+있게 하기 위함입니다.
+
+지우려면:
+
+```
+git worktree remove .claude/worktrees/debounce-throttle-plan
+git branch -D worktree-debounce-throttle-plan
+```
+
+**언제 지워도 무방** — 지워도 `main`에서 잃는 정보는 없습니다.
+
 ## 3. `.claude/question.md`의 **나머지** 항목 검토 (급하지 않음)
 
 디자인 결정 중 Lua/Roblox 엔진에 대한 깊은 경험이 필요한 것들은 합리적 기본값으로
