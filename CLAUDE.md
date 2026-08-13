@@ -1050,3 +1050,12 @@ CLAUDE.md "작업 방식"에 중대 변경 핸드오버 체크리스트 6단계�
 불필요로 해소됐는데 그 반영이 이 파일에만 안 퍼져 있던 것도 정정. base/
 research/reference/luau-test/archive 전체는 정합성 문제 없음 확인 —
 `doc-check.py` ERROR 0 유지. 새로 연 설계 질문 없음.
+
+**2026-08-13 열두 번째 세션 — 다시 서브 에이전트 없이 순차 직접 감사, 문제 없음**
+(`session/2026-08-13-12-corpus-audit-sequential-no-issues.md`)
+열한 번째 세션의 수정이 안정적으로 유지되는지 재확인하는 목적의 반복
+감사 — `doc-check.py`(ERROR 0) + `base/`(20)·`research/`(9)·`reference/`(3)·
+`luau-test/`(STATUS.md·README.md와 실제 폴더 구조 대조)·`audit/`(2)·
+`archive/`(README.md 색인 18개와 실제 디렉토리 대조) 전체를 순서대로
+직접 정독, 알려진 재발 패턴("6개 문서" stale, "8차 세션" 오표기) grep
+재확인. **새로 발견된 부정확성 0건** — 순수 검증 라운드로 종료.
