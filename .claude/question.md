@@ -246,9 +246,11 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   구현 자체는 맨 마지막 우선순위(순수 슈가, 없어도 무방) — 여전함.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
-- **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —
-  `reference/quad-v1-architecture.md`에 남겨진 v1 내부 동작 확인 사항, 마이그레이션
-  가이드 작성 시점에 필요. 지금은 그냥 백로그로만 기록.
+- **[해소됨, 2026-08-13 세 번째 세션]** v1 `objectListClass.__newIndex` 오타
+  기능(재현 테스트 필요했던 항목) — 사용자가 당시 실수였음을 확인. v2는 이제
+  오브젝트에 id를 주입하고 id로 조회하는 개념(`GetObjects`류) 자체가 없어져
+  이 기능이 실제로 동작했든 안 했든 v2 마이그레이션 가이드에서 논의할 대상이
+  아님(있었다 해도 v1 전용 기능) — 더 이상 확인/논의 불필요.
 - **[해소됨, 2026-08-09 여섯 번째 세션]** 여러 Slot이 형제로 섞일 때
   순서 보장 — `Dispatch.setLength`/`Dispatch.setOffsetSource` + 형제별
   개수 누적합을 `LayoutOrder`에 리액티브 바인딩하는 메커니즘으로 확정,

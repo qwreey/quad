@@ -784,3 +784,11 @@ State/Source)가 같은 `(inst,k)`에 같은 핸들러를 중복 push시켜
 이 버그를 절대 못 잡는 사각지대였음을 발견해 3~4단계를 "가드가 실제로
 걸리는지" 검증으로 재작성. `operator-sugar-plan.md`에 `Alternative` 후보
 신설, `.claude/README.md`/`question.md` 동기화.
+
+**2026-08-13 세 번째 세션 — v1 `objectListClass.__newIndex` 오타 기능,
+v2 논의 대상 아님으로 확정** (`session/2026-08-13-03-v1-newindex-typo-scoped-out.md`)
+`question.md`의 v1 `__newIndex` 오타(항상 미발동) 재현 테스트 필요 항목을
+사용자가 정리 — 당시 실수였던 건 맞지만, v2는 오브젝트 id 주입/조회
+(`GetObjects()`류) 개념 자체가 없어져 재현 여부와 무관하게 v2 마이그레이션
+가이드에서 다룰 대상이 아님(있었다 해도 v1 전용 기능). `question.md`/
+`reference/quad-v1-architecture.md` 둘 다 해소로 반영.
