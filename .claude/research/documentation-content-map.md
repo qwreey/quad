@@ -96,7 +96,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 - 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / ~~retract=폐기 확정 히스토리(portal 검토 후 기각)~~ **[2026-08-13 정정] 위와 같은 이유로 역전 — 이 항목은 "왜 한때 destroy+no-portal로 결정했었는가"라는 히스토리 소재로만 유효, 현재 결론 아님** / **왜 `Apply`가 기본이고 `Overridden`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
 - 열린 질문(문서화 보류): ~~여러 Slot이 형제로 섞일 때 순서 보장~~ **[해소됨,
   2026-08-09 여섯 번째 세션]** Length/Offset 누적합으로 확정, 심화 목록에
-  추가 필요(`base/bind-system-plan.md` "Length/Offset" 절).
+  추가 필요(`base/dispatch-core-plan.md` "Length/Offset" 절).
   **[2026-08-09 추가]** `Slot:List`의 `prev`/`userdata` 재사용 최적화를
   getting-started에서 "항상 파괴 후 재생성" 단순 버전만 가르치고 나중에
   최적화 단계에서 별도로 알려줄지, 아니면 Slot이 학습 순서상 core loop
@@ -250,7 +250,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 
 - **[해소됨]** Slot 형제 순서 보장 — `Dispatch.setLength`/
   `setOffsetSource`(Length/Offset)로 2026-08-09 여섯 번째 세션에 확정,
-  `bind-system-plan.md` "Length/Offset" 절 참고.
+  `dispatch-core-plan.md` "Length/Offset" 절 참고.
 - **[해소됨, 2026-08-13 정정]** Tween 오버라이드/옵션 값 모양 —
   2026-08-12 첫 번째 세션에 `Info: TweenInfo?`+편의 필드 폴백,
   override 정책은 `Tween.Cancel`(기본)/`Tween.Finish` 2값으로 확정,

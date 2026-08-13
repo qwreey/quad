@@ -1,11 +1,12 @@
 # quad-v2 전체 아키텍처 (현재 상태 요약)
 
-> **⚠️ [2026-08-13 4차 감사에서 발견] 이 문서는 세션 시작 시 가장 먼저
-> 읽는 진입점인데, 아래 소스 트리의 `chains`/`retractFrom`(Dispatch/init.luau
-> 항목)과 `retractFrom`에 재귀 위임(Attribute.luau 항목) 서술은 현행
-> (교체 예정) 재-dispatch 모델을 전제로 쓰여 있음 — `question.md` **0-Z**
-> 해소 전엔 그대로 구현하면 옛 모델로 짜게 됨. 상세는
-> `base/bind-system-plan.md` 최상단 배너, `research/dispatch-redispatch-diff-plan.md`.
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델(0-A)/Attribute 이름
+> 소유권(0-Z) 확정·반영 완료 — 아래 소스 트리도 갱신됨.** 이전 ⚠️ 배너가
+> 경고하던 "옛 모델로 짜게 됨" 위험은 해소. 디스패치 코어는
+> `base/bind-system-plan.md`에서 **`base/dispatch-core-plan.md`로
+> 분리**됐고, `Tag`/`Attribute`는 알고리즘까지 quad-base로 재배치됐음
+> (엔진 op만 주입). 뒤집힌 옛 모델은
+> `archive/dispatch-hintvalue-model-reversed.md`.
 
 **상태**: base — 횡단 결정의 최종 상태 요약. 특정 기능 plan이 아니라 프로젝트
 전체에 걸친 결정이라 완료 개념 없음. 근거가 된 원본 브레인스토밍은
@@ -78,7 +79,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
      방지, 비용은 무시 가능한 수준으로 확인됨).
 8. **특수 이벤트는 특수 플러깅으로.** `PropertyChangedSignal`, `PropertyChangedEvent ""`
    같은 것들은 일반 이벤트 바인드가 아니라 pluggable 바인드 핸들러 중 하나로
-   구현(`base/bind-system-plan.md`).
+   구현(`base/dispatch-core-plan.md`).
 9. **Tracker 미구현.** v1의 소스 변경 감지 자동 재렌더 기능(hot-reload watcher,
    실제로는 `.claude/initreq/quad/src/tracker.lua` — v1에서도 이미 `exports.lua`에
    연결 안 된 죽은 코드였음, `reference/quad-v1-architecture.md` 참고)은 렌더
@@ -106,7 +107,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     `BaseModule` 테이블을 만들어 팩토리로 채우는 것뿐. Dispatch의 handler
     레지스트리를 포함해 지금 module-level state로 사는 모든 것(`_initializedBy`
     마커, Dispatch 레지스트리 등)이 자동으로 테이블별 스코핑됨 — 상세 근거는
-    `base/bind-system-plan.md`의 "Dispatch는 프리미티브가 아니다" 절.
+    `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절.
 14. **pluggable 초기화는 팩토리 함수로.** rbvm처럼 네임스페이스 하나하나 수동
     init 하는 방식(`base/lifecycle-pattern.md` 5번 항목 참고)은 피하고,
     `InitRoblox(Module)` 같은 팩토리 함수가 생성된 모듈을 뮤테이션하는 도구를
@@ -135,6 +136,15 @@ RbxUtil`이 정확히 이 패턴(루트 하나로 통합 개발/테스트, 서�
 **pluggable 디스패치 엔진 자체도 "인터페이스"로 base가 소유**한다(엔진마다
 큰 구현을 중복하지 않기 위함 — rbvm이 relation을 하나로 통합하려 했던 것과
 같은 동기). `quad-roblox`는 그 인터페이스의 **실제 구현체**만 제공.
+**[2026-08-13 열네 번째 세션 확장] 이 원칙은 "값 타입"이 아니라 "부기가
+엔진 지식을 요구하는가"로 가른다** — `Tag`의 참조 카운트와 `Attribute`의
+이름 claim/그룹 위임은 엔진과 무관한 순수 부기라 **핸들러째로 quad-base**,
+백엔드는 `addTag`/`removeTag`/`setAttribute` 세 op만 주입한다(웹에도
+`className`/`data-*`라는 대응물이 있어서, 그러지 않으면 같은 알고리즘이
+백엔드마다 복제됨). 반대로 Property/Event/OnChange는 Reflection·시그널
+자체가 로직이라 그대로 백엔드 소속 — 상세 기준과 op 시그니처는
+`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진
+op" 절.
 
 ```
 quad/
@@ -148,15 +158,19 @@ quad/
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
-│       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`), CollectionService 글루는 quad-roblox Handlers/Tag.luau(`base/tag-plan.md`, 2026-08-08 세 번째 세션)
-│       ├── Attribute.luau        # 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`, `Tag`와 동형) — `SetAttribute` 글루는 quad-roblox Handlers/Attribute.luau(`base/attribute-plan.md`, 2026-08-11 아홉 번째 세션). 단일 키(`AttributeKey<<T>>`)는 값 타입 레이어 없이 quad-roblox 단독 소속(아래)
+│       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`) — 참조 카운트 Handler는 Dispatch/Tag.luau(아래), 엔진 호출은 주입된 addTag/removeTag(`base/tag-plan.md`)
+│       ├── Attribute.luau        # 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`/`:NameMap`, `Tag`와 동형) — Handler는 Dispatch/Attribute.luau(아래) (`base/attribute-plan.md`)
+│       ├── AttributeKey.luau     # 단일 키 `AttributeKey<<T>>(name)` + 이름별 weak 캐시(동등성 보장) + 스칼라 편의 패밀리(String/Number/BooleanAttribute) — 엔진 고유 타입 패밀리(Color3Attribute류)만 백엔드 소속(`base/attribute-plan.md` "패키지 배치" 절, 2026-08-13 열네 번째 세션 재배치)
 │       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenTag`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`base/tween-plan.md`, 2026-08-10 세션 재설계)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
-│       │   ├── init.luau          # process 엔진(반환값=retract 클로저), isHandlable 우선순위 스캔, `chains`(inst,k별 인덱스 배열)+`retractFrom`(`bind-system-plan.md` "Dispatch 체인" 절, 2026-08-08 세 번째 세션 신설, 2026-08-13 다섯 번째 세션 인덱스 기반 전면 재설계)
+│       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef) children-array leaf 매칭 Handler, StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
+│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). HANDLER_PRIORITY_FALLBACK으로 등록(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
+│       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절)
+│       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
@@ -166,15 +180,13 @@ quad/
 └── quad-roblox/
     ├── wally.toml
     └── src/
-        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러)
+        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
+        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
         ├── LifetimeHandle.luau    # bindLifetime/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
         │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩 + 이름별 weak 캐시(`AttributeKey`와 동일 기법, `base/onchange-plan.md`, 2026-08-10 세션)
-        │   ├── AttributeKey.luau  # 단일 키(`AttributeKey<<T>>(name)`/`BooleanAttribute`류) DI 키 팩토리+Handler, `SetAttribute`/`None` 지우기 + 이름별 weak 캐시(동등성 보장, `base/attribute-plan.md` "동등성" 절)
-        │   ├── Attribute.luau     # 그룹(`Attribute(store1, store2, ...)`) process — 이름 집합 diff만 자체 로직(반환 클로저에 캡처, 별도 Relate 불필요), 실제 `SetAttribute`/구독은 공개 `AttributeKey(name)`으로 항상 인덱스 1부터 `Dispatch.process`/`retractFrom`에 재귀 위임(단일 키 경로 재사용, 중복 구현 없음) — 값 타입/API는 quad-base Attribute.luau(`base/attribute-plan.md`)
-        │   ├── Tag.luau           # CollectionService 글루만(process, 반환 클로저가 정리 담당) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
         ├── Animate.luau           # `Animate(info)` 편의 콤비네이터 — `factory(self)->State`, `:Apply`로 붙임(내부는 `:Compute`/`Tween{...}` 조합), base 프리미티브 아님(`base/tween-plan.md`)
@@ -225,7 +237,7 @@ existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확�
   전용 소유물인가?"로 물으면 됨 — 그렇다면 대문자(생성자/메서드/그
   타입의 정적 결합 함수), 아니면(범용 유틸이거나 프리미티브가 아닌 엔진
   소속) 소문자. `Dispatch`/`Brand`가 프리미티브가 아닌 이유는
-  `base/bind-system-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
+  `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
   `base/store-semantics.md`의 "세 번째 카테고리 — Handler" 절 참고.
 
 ## 코드 스타일 — Luau 문법 관례: `if-then-else`/`const` (2026-08-12 세션 신설)
@@ -234,7 +246,7 @@ existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확�
 간주해 `and`/`or`로 "고치지" 말 것.** 2021년 10월 Luau에 정식 도입된
 표현식 문법(공식 릴리스 노트: <https://luau.org/news/2021-10-31-luau-recap-october-2021/#if-then-else-expression>)
 — `cond and truthyOnly or fallback` 삼항 관용구와 달리 가운데 값이
-falsy(`nil`/`false`)여도 정확하게 동작함(`bind-system-plan.md`의
+falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 `Dispatch.retractUnder`(현 `retractFrom`) 정정 사례가 실제 버그 예시). **[강화, 2026-08-12
 세션 후속] `cond and x or y` 삼항 관용구는 전면 금지 — `if-then-else`만
 쓸 것, 가운데 값이 항상-truthy임이 보장돼도 예외 없음.** 처음엔 그
@@ -265,8 +277,8 @@ property bag + property별 변경 시그널 정도만 흉내내고, `IsA()`/클�
 Studio/엔진 없이 테스트(Vide가 실제로 이렇게 CI에 물려놓음) — Fusion처럼
 Studio 안에서만 도는 방식은 채택 안 함. 근거: quad-base 코어(Store/State/
 Source/Modifier/Slot, 디스패치 엔진)는 이미 `inst`를 `any`로 취급하고
-Instance 특정 동작을 전혀 참조하지 않도록 설계돼 있어(`bind-system-plan.md`
-"inst가 항상 Roblox Instance일 필요는 없음" 절), mock이 실제 Roblox 충실도를
+Instance 특정 동작을 전혀 참조하지 않도록 설계돼 있어(`dispatch-core-plan.md`
+"확정된 디스패치 모델" 절의 "`inst`가 항상 살아있는 엔진 객체일 필요는 없음"), mock이 실제 Roblox 충실도를
 가질 이유가 없음.
 
 **스코프는 "정적 디버깅"으로 한정** — **사용자 확정**: mock으로 확인하려는
@@ -316,5 +328,5 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 참고, 전체 색인은 `.claude/README.md`. 바인드 디스패치/Slot/모듈
 라이프사이클/Modifier/컴포넌트화(컴포넌트 경계 modifier/Ref 전달 포함)는
 위 "구현 착수" 섹션대로 확정되어 `.claude/base/`로 승격됨
-(`bind-system-plan.md`/`module-lifecycle-plan.md`/`slot-plan.md`/
-`modifier-plan.md`/`component-composition-plan.md`).
+(`bind-system-plan.md`/`dispatch-core-plan.md`/`module-lifecycle-plan.md`/
+`slot-plan.md`/`modifier-plan.md`/`component-composition-plan.md`).

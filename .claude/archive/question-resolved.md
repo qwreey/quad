@@ -104,7 +104,17 @@ API 전부에 걸리며, 2026-08-07 일곱 번째 세션(커링 스타일 확정
 정상 nilable 사용례까지 막음), `16`(`type function` API 불일치). 전부
 `audit/luau-test-first-run-2026-08-13.md`.
 
-### 0-Z. ⭐ **최우선 — Attribute 이름 소유권을 무엇으로 판정할 것인가** (2026-08-13 여섯 번째 세션, 사용자가 다음 세션 심층 분석으로 이관)
+### 0-Z. ~~⭐ 최우선~~ **[해소됨, 2026-08-13 열네 번째 세션]** — Attribute 이름 소유권을 무엇으로 판정할 것인가 (2026-08-13 여섯 번째 세션 신설)
+
+> **결론**: 후보 (a)가 아니라 그 변형 — **그룹 전용 키(비공개 `GetKey`)
+> + `AttributeKeyHandler`의 이름 claim**. 사용자가 `Attribute:GetKey(name)`
+> 아이디어를 제시했고, 트레이싱 결과 (a)만으로는 **그룹↔직접 쓰기 충돌을
+> 못 잡는다**는 게 드러나(두 경로가 만나는 말단 핸들러에서 공개 키는
+> 같은 객체라 소유자 구분 불가) 전용 키가 필요함이 확인됨. 전용 키가
+> 교차 오염을 구조적으로 없애고, claim이 남은 충돌을 즉시 error로
+> 드러냄. `GetKey`는 공개 API로 내지 않음(같은 키가 두 자리에 놓이는
+> 0-W류 갭을 원천 차단). 정본은 `base/attribute-plan.md` "이름 소유권"
+> 절. **아래는 해소 전 원문.**
 
 **이게 지금 유일하게 `base/` 반영을 막고 있는 결정.** 아래 0-A의
 재디스패치 모델은 나머지가 전부 확정됐고, 이 항목 하나만 정해지면
@@ -138,21 +148,29 @@ Attribute가 직접 해야 함.**
   claimant 단방향이면 충분할 것이라는 방향.
 - 원문 맥락과 기각된 두 중간안(`rawNew` 전용 키, `AttributeGroupKeyHandler`
   체크포인트)은 `archive/checkpoint-handler-pattern-reversed.md`,
-  분석은 `research/dispatch-redispatch-diff-plan.md` 5절.
+  분석은 `archive/dispatch-hintvalue-model-reversed.md` 5절.
 
 **대안 후보(정리해둠)**: (a) 이름별 claimant `Relate`를 Attribute에
 국소적으로 — 권고, (b) UB로 두고 문서로만 금지 — 증상이 "조용한 오작동 +
 교차 오염"이라 다른 UB들(즉시 스택오버플로/즉시 error)보다 나빠서 비권장,
 (c) `Dispatch`에 claimant 개념 일반화 — 이번에 걷어낸 방향이라 반대.
 
-### 0-A. `hintValue` 폐기 → process 하강 중 핸들러 비교 (2026-08-13 여섯 번째 세션, **Attribute 건 외 확정**)
+### 0-A. ~~`hintValue` 폐기 → process 하강 중 핸들러 비교~~ **[해소됨, 2026-08-13 열네 번째 세션 — base 반영 완료]** (2026-08-13 여섯 번째 세션)
+
+> **결론**: 모델 그대로 채택되어 `base/dispatch-core-plan.md`(같은 세션에
+> `bind-system-plan.md`에서 분리 신설)로 전면 반영. 부수적으로
+> `Dispatch.retractFrom`이 4-인자에서 **3-인자**가 됐음(값을 넘기는 경로가
+> `Dispatch.process`의 "같은 핸들러" 분기 하나로 통일되어, 외부가 힌트를
+> 만들어 넣을 자리 자체가 사라짐). 배너를 달고 있던 7개 문서 전부 갱신
+> 완료. 뒤집힌 옛 모델 원문은 `archive/dispatch-hintvalue-model-reversed.md`.
+> **아래는 해소 전 원문.**
 
 **검토 결과 사용자 지적이 맞음 — 현행 `hintValue`엔 실제 결함이 있음.**
 힌트가 "그 자리에 곧 디스패치될 raw 값"이라 `None` 센티널이나 `State`/
 `Tween` 같은 래퍼가 그대로 넘어갈 수 있고, 그러면 말단 핸들러의
 `isTag(hint)` 가드가 거짓이 되어 **깜빡임/재생성 방지가 조용히 꺼짐**
 (정확성은 유지돼서 지금까지 안 드러났음). 상세 재현·분석·제안은
-`research/dispatch-redispatch-diff-plan.md`.
+`archive/dispatch-hintvalue-model-reversed.md`.
 
 **후속 라운드에서 모델은 거의 확정됨** — 래핑 핸들러가 `retractFrom`을
 선행 호출하는 걸 폐기하고, `Dispatch.process` 안에서 **핸들러를 먼저
@@ -172,7 +190,7 @@ Attribute가 직접 해야 함.**
 **실행 규모**: `base/`의 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
 `attribute-plan.md` 의사코드 재작성 + `architecture.md` 소스트리 서술과
 `ROADMAP.md` M2/M4/M6/M10 체크리스트 — 0-Z 하나만 정해지면 한 번에 옮기면
-됨(어디를 어떻게 고칠지는 `research/dispatch-redispatch-diff-plan.md` 6절에
+됨(어디를 어떻게 고칠지는 `archive/dispatch-hintvalue-model-reversed.md` 6절에
 파일별로 적어둠 — 뒤 둘은 2026-08-13 7차 감사에서 그 목록에 빠져 있던 걸
 발견해 추가). **그때까지 `base/`의 현행 `hintValue` 서술이 유효** —
 아직 안 옮겼다는 걸 잊고 base만 읽으면 옛 모델로 구현하게 되니 주의.

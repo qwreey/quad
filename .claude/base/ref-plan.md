@@ -12,8 +12,8 @@
 
 **중요한 정정**: Ref는 Tween이 대상을 얻기 위해 필요한 게 아님(트윈을
 실제로 처리하는 PropertyHandler도 `process(inst,k,v)`처럼 항상 대상
-Instance를 직접 받으므로 — 위 "확정된 디스패치 모델" 참고, `research/
-tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
+Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디스패치
+모델" 참고, `base/tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 
 - v1의 `Frame "id" {}` + `Store.GetObject(id)` 식 id 매핑은 폐기 확정
   (`base/architecture.md` 5번 항목) — "비현실적"이라는 게 이유.
@@ -210,16 +210,13 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 
 ### `Ref`의 retract — `State<Ref>` 재바인드 시 이전 Ref에 `nil` (2026-08-12 여덟 번째 세션, `TagHandler`와 같은 메커니즘 재사용)
 
-> **⚠️ [2026-08-13 감사 보강] 이 절의 "이전 `process`가 반환한 클로저가
-> `hintValue`로 먼저 불려 언바인딩하고, 그 다음 `process`가 바인딩"이라는
-> 서술은 곧 교체될 예정 — 아직 반영 안 됨. `research/dispatch-redispatch-diff-plan.md`가
-> 폐기 대상으로 지목한 바로 그 **선행 `retractFrom` 호출** 패턴이다 — 이 문서가
-> `bind-system-plan.md`에서 분리(2026-08-13 아홉 번째 세션, 순수 이동)될
-> 때 원문이 그대로 옮겨오면서 `bind-system-plan.md`/`tag-plan.md`/
-> `slot-plan.md`/`attribute-plan.md`가 이미 달고 있는 것과 같은 0-Z
-> 배너가 같이 안 옮겨졌음. `question.md` **0-Z**(Attribute 이름 소유권)
-> 해소 시 "하강 diff" 모델대로 이 절도 같이 재작성할 것 — **여기 적힌
-> 대로 구현하면 옛 모델로 짜게 됨.**
+> **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
+> "이전 클로저가 먼저 불려 언바인딩, 그 다음 `process`가 바인딩"이라는
+> **두 단계 자체는 그대로**이고, 그걸 일으키는 주체만 바뀌었음(래핑
+> 핸들러의 선행 `retractFrom` → `Dispatch.process`의 핸들러 선비교).
+> 클로저가 받는 값의 타입도 이제 계약으로 보장됨(항상 `Ref`이거나
+> `nil`). 상세는 `base/dispatch-core-plan.md` "Dispatch 체인" 절, 옛
+> 모델 원문은 `archive/dispatch-hintvalue-model-reversed.md`.
 
 **배경**: `Ref`는 이미 "일반 프로퍼티/Modifier 필드/Store 값 어디든 자유롭게
 들어감"(아래 "동적 경로 가드" 절)이 확정돼 있어 — `State<Ref>`가 실제로
@@ -229,19 +226,20 @@ tween-plan.md`도 이에 맞춰 갱신됨). Ref의 진짜 용도는 다름:
 조용한 버그가 남음 — `PreRef` 재사용 버그(위 절)와 같은 클래스의 문제.
 
 **메커니즘 — retractor가 매번 불린다는 전제 위에서 언바인딩 전담
-(2026-08-12 열한 번째 세션 정정, 2026-08-13 다섯 번째 세션에 클로저
-반환 계약으로 서술 갱신).** `Dispatch.retractFrom`은 store 값이 바뀔
-때마다(핸들러 타입이 그대로여도) 무조건 불림 — 위 "확정된 디스패치
-모델"/일반 retract 계약 절 참고. 그래서 `refA→refB` 전환도 이전
-`process`가 반환한 클로저가 `hintValue=refB`로 먼저 불려 `refA`를
-언바인딩하고, 그 다음 `process(inst,k,refB,index)`가 `refB`를 바인딩하는
-두 단계로 자연히 갈림 — `process`가 old-vs-new diff를 따로 계산할
+(2026-08-12 열한 번째 세션 정정, 2026-08-13 다섯 번째/열네 번째 세션에
+서술 갱신).** 이전 `process`가 반환한 클로저는 store 값이 바뀔
+때마다(핸들러 타입이 그대로여도) 무조건 불림 — 같은 핸들러면
+`Dispatch.process`가 그 자리 클로저에 새 값을 넘기고 곧바로 `process`를
+다시 부르기 때문(`base/dispatch-core-plan.md` "Dispatch 체인" 절 (A)
+분기). 그래서 `refA→refB` 전환은 이전 클로저가 `nextValue=refB`로 먼저
+불려 `refA`를 언바인딩하고, 그 다음 `process(inst,k,refB,index)`가
+`refB`를 바인딩하는 두 단계로 자연히 갈림 — `process`가 old-vs-new diff를 따로 계산할
 필요가 없어짐(그 일을 클로저가 매번 정확히 대신 해줌). **`process` 쪽엔
 여전히 `Relate`가 필요** — "spurious하게 같은 Ref가 재발행되면 재통지
 skip"이라는 dedup은 `process`가 "이전에 뭐가 있었는지"를 알아야 하는데,
-그건 인자로 안 들어오고(클로저의 `hintValue`는 다음 값이지 이전 값이
-아님) 오직 여러 호출을 가로지르는 저장소로만 알 수 있음(위 "핸들러
-내부 상태 저장" 절이 이런 경우엔 `Relate`가 여전히 맞다고 한 그 사례):
+그건 인자로 안 들어오고(클로저가 받는 건 다음 값이지 이전 값이
+아님) 오직 여러 호출을 가로지르는 저장소로만 알 수 있음
+(`base/dispatch-core-plan.md` "핸들러 내부 상태 저장" 절이 이런 경우엔 `Relate`가 여전히 맞다고 한 그 사례):
 
 ```lua
 local relate = Relate()  -- Ref-leaf handler 전용, (inst,k)별 마지막으로 바인딩한 Ref 기억 —
@@ -255,14 +253,14 @@ function RefLeafHandler.process(inst, k, v, index)
         v:Set(inst)
     end
     relate:SetStrong(inst, k, v)
-    return function(hintValue)
-        -- hintValue는 nil일 수도, 대체하는 새 Ref 자체일 수도 있음 — v는
+    return function(nextValue)
+        -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
         -- 이 process 호출이 만든 클로저가 직접 캡처(Relate 재조회 불필요)
-        if hintValue ~= v then
+        if nextValue ~= v then
             v:Set(nil)  -- 매 :Set()마다 콜백 재통지되는 기존 Ref 규칙(위 "해소됨 —
                         -- 반복 재설정 가능" 항목)을 그대로 재사용, 새 알림 경로 아님
             -- [정정, 2026-08-13 감사] relate 정리는 반드시 이 분기 *안*에 있어야
-            -- 함 — 밖에 두면 spurious 재발행(hintValue == v)에서도 기록이
+            -- 함 — 밖에 두면 spurious 재발행(nextValue == v)에서도 기록이
             -- 지워져, 곧바로 이어지는 process가 `old ~= v`를 항상 참으로 보고
             -- `v:Set(inst)`를 재실행함(콜백 헛 재통지). 즉 아래 dedup 항목이
             -- 약속한 "spurious면 둘 다 스킵"이 성립을 안 했음.
@@ -273,7 +271,7 @@ end
 ```
 
 - **retractor가 언바인딩 전담, `process`는 바인딩 전담** — 겹치는 diff
-  로직이 없음. `hintValue == v`(같은 Ref 객체가 스스로 재발행된
+  로직이 없음. `nextValue == v`(같은 Ref 객체가 스스로 재발행된
   spurious한 경우)만 둘 다 스킵해 콜백이 `nil`→`inst`로 헛되이 두 번 안
   불리게 함.
 - **children 배열 리터럴 `Ref`도 같은 코드 경로를 그대로 씀** — 그 경우
@@ -309,7 +307,8 @@ end
 아홉 번째 세션에서 폐기됨, 위 "바인드 방법" 절 참고)
 
 **children 배열에 놓는 Ref에 `{phase="created"|"mounted"}` 옵션으로 두
-타이밍을 고르게 하던 것 자체를 없앤다.** 위 "확정된 디스패치 모델" 절에
+타이밍을 고르게 하던 것 자체를 없앤다.** `base/dispatch-core-plan.md`의
+"확정된 디스패치 모델" 절에
 새로 추가된 두 패스 보장(배열 파트는 index 순서대로, 그 다음 해시 파트)
 덕분에, 같은 인스턴스 안에서 **일반 `Ref`를** 다른 children보다 앞/뒤
 어디에 놓느냐가

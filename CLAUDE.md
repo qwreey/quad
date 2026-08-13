@@ -158,58 +158,39 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 
 ## 지금 할 일 (우선순위순)
 
-0. **⭐ 최우선 — `.claude/question.md` 0-Z 결정.** (`question.md`엔
-   0-B `dispose(any)` 시그니처/범위도 열려 있지만, M6 구현 세부만 막을 뿐
-   M0 착수 자체는 안 막아서 이 최우선 항목과 급 다르게 취급 — 별도 항목
-   아님.)
+0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-13 열네 번째 세션 기준).**
+   `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
+   핸들 계약)는 13차 세션에, **`0-Z`(Attribute 이름 소유권)와 `0-A`(재디스패치
+   하강 diff)는 14차 세션에 확정·`base/` 반영 완료**. 남은 `0-W`(같은 `Ref`
+   이중 배치)/`0-B`(`dispose` 시그니처)는 M0가 아니라 각각 M4/M6 구현 세부를
+   막을 뿐임.
 
-   > **[2026-08-13 열세 번째 세션] 여기 같이 있던 `0-Y`는 해소됨.**
-   > `:Compute(fn)`의 lazy 핸들 계약은 **그대로 유지**로 확정. 44개
-   > 스파이크 재실측 결과 진짜 원인이 콜백 계약이 아니라 **Luau 자체의
-   > 한계**(재귀 제네릭이 다른 타입 인자로 자기를 반환하면 타입 안전성이
-   > 에러 없이 조용히 사라짐)였고, 당시 "raw 값이면 완전 클린"이라던
-   > 1차 판정도 **뒤집혔음**(raw 값 계약도 똑같이 불안전). 사용자 정리:
-   > "quad가 타입을 비틀 일이 아니라 상위 Luau의 현 한계이고, RFC/이슈
-   > 수혜를 받을 때 해결될 일이라 당장 우리가 할 수 있는 바 없다."
-   > **구현 시 지켜야 할 규약이 생겼으니 M0 착수 전 반드시 읽을 것:
-   > `base/typing-limits.md`**(핵심은 "파생 State를 만드는 자리마다
-   > 결과 타입을 명시 주석으로 바인딩" + 7번 설계 체크리스트). 실측
-   > 근거는 `audit/type-recursion-issue/`, 해소 전 원문은
-   > `archive/question-resolved.md`의 0-Y 절.
+   **M0 착수 전 반드시 읽을 것 — 이 두 개는 "결정"이 아니라 "구현 규약"이라
+   여전히 유효**:
+   - **`base/typing-limits.md`**(0-Y의 산물) — 핵심은 "파생 State를 만드는
+     자리마다 결과 타입을 명시 주석으로 바인딩" + 7번 설계 체크리스트.
+     재귀 제네릭이 자기를 다른 타입 인자로 반환하면 Luau가 타입 안전성을
+     **에러 없이 조용히** 잃는 상위 한계라 quad 쪽에서 우회하지 않기로
+     확정(RFC `relax-recursive-type-restriction` 수혜 대기, 추적
+     `luau-lang/luau#2380`). 실측 근거는 `audit/type-recursion-issue/`.
+   - **`base/dispatch-core-plan.md`**(0-A/0-Z의 산물, 14차 세션에
+     `bind-system-plan.md`에서 분리 신설) — 재디스패치가 "철거 후 재구축"이
+     아니라 **하강 diff**임, `retractFrom`은 3-인자, 클로저 인자는
+     `nil`이거나 같은 핸들러가 처리할 값(타입 보장), `HANDLER_PRIORITY_FALLBACK`,
+     "base가 소유하는 핸들러와 주입되는 엔진 op"(`addTag`/`removeTag`/
+     `setAttribute`). **Handler 작성 체크리스트 8개**를 새 핸들러 짜기 전에
+     훑을 것 — 지난 세션들에서 실제로 반복된 실수 목록임.
 
-   **0-Z: Attribute 이름 소유권 결정.**
-   2026-08-13 여섯 번째 세션에 `Dispatch` 재디스패치 모델이 "하강 diff"로
-   다시 정리되면서(`research/dispatch-redispatch-diff-plan.md`), **그
-   모델에서 유일하게 안 풀린 것이 Attribute 그룹의 이름 소유권 충돌
-   감지**임. 사용자가 "이전 결정(이름별 claimant `Relate`)을 다시 가져오는
-   게 맞아 보이나, 다음 세션에 직접 물리적으로 스케치하며 심층 분석"으로
-   명시 이관 — 그전까지 아래 항목들보다 우선.
-   **핸드오버 시 반드시 알아야 할 것**:
-   - **`base/`의 현행 `hintValue` 서술은 아직 옛 모델(철거 선행)이다.**
-     새 모델은 `research/dispatch-redispatch-diff-plan.md`에만 있음 —
-     base만 읽고 구현하면 옛 모델로 짜게 됨. 0-Z가 정해지면 그 문서 6절의
-     파일별 반영 목록대로 **한 번에** 옮길 것 — 대상은 ⚠️ 배너를 달고
-     있는 **7개**(`bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
-     `attribute-plan.md` + **`architecture.md`/`ROADMAP.md`** — 뒤 둘은
-     2026-08-13 7차 감사에서 6절 목록에 빠져 있던 걸 발견해 추가 +
-     **`ref-plan.md`** — 9차 세션 분할 때 "`Ref`의 retract" 절이 배너
-     없이 옮겨간 걸 이번 감사에서 발견해 추가),
-     반영 후 각 배너도 같이 제거.
-   - 반대로 **`base/slot-plan.md`의 "언마운트/`dispose`/해제 순서"는 이미
-     확정 반영됨**(재디스패치 모델과 독립적인 결정이라 먼저 들어감).
-   - 이 세션에서 같은 날 두 차례 급하게 쓴 의사코드가 각각 버그를 냈다는
-     사실 자체가 교훈 — 0-Z 반영도 서두르지 말고 손 트레이싱을 거칠 것
-     (`bind-system-plan.md` "Handler 작성 체크리스트" 절이 그 산물).
+   해소 전 원문은 `archive/question-resolved.md`(0-Y/0-Z/0-A 절), 뒤집힌 옛
+   재디스패치 모델 전문은 `archive/dispatch-hintvalue-model-reversed.md`.
 
 1. **구현 시작 — 루트 `ROADMAP.md`의 M0부터.** 설계 단계는 2026-08-04 로드맵
    인수인계 라운드로 종료. `research/pre-implementation-audit.md` 우선순위1은
    2026-08-12 열일곱 번째 세션에 마지막 넷(1-3/1-4/1-10/1-11)까지 전부
-   해소되어 **11개 전원 완료** — 이 항목(우선순위1) 기준 남은 유일한
-   게이트는 아래였음(**[2026-08-13 4차 감사 정정] 위 0번 항목의 0-Y/0-Z가
-   이후 같은 날 발견돼 실제로는 게이트가 하나 더 있었음 — "유일한"은 그
-   발견 전 서술. **[13차 세션 재정정] 그중 0-Y는 해소됐고 지금 남은
-   게이트는 0-Z 하나**, 다만 0-Y가 남긴 구현 규약
-   `base/typing-limits.md`는 M0 착수 전에 읽어야 함**):
+   해소되어 **11개 전원 완료**. **[14차 세션 기준] 0-Y/0-Z/0-A까지 전부
+   해소돼 설계 게이트는 남아있지 않음** — 착수 전 읽을 것은 위 0번의 두
+   문서(`typing-limits.md`/`dispatch-core-plan.md`)뿐이고, 스파이크 상태는
+   아래 그대로:
    - **`.claude/luau-test/`(2026-08-09 신설, 2026-08-13 기준 20개) 스파이크
      결과 — [2026-08-13 여섯 번째 세션에 첫 실측 완료, 대부분 닫힘].**
      **상태의 소스는 `.claude/luau-test/STATUS.md`**(pass / 사람 결정 필요 /
@@ -231,9 +212,11 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
        `SyntaxError` / `types.*` 실제 API 불일치). (3) 그 외엔 그대로 M0
        실제 코드 작성에 재사용.
      - **[주의] 위 "남은 것은 셋뿐"은 여섯 번째 세션 기준** — 13차 세션에
-       `08`이 `done/`으로 가며 `review-required/`가 비었음. **개수의 소스는
-       항상 `luau-test/STATUS.md`.** 지금 M0 착수를 막는 건 0-Z 하나이고,
-       0-Y가 남긴 규약(`base/typing-limits.md`)은 착수 전 필독.
+       `08`이 `done/`으로 가며 `review-required/`가 비었고, **14차 세션에
+       `04`가 하강 diff 재설계로 전제가 바뀌어 `rewrite-required/`로 갔음**.
+       **개수의 소스는 항상 `luau-test/STATUS.md`.** 지금 M0 착수를 막는
+       설계 결정은 없고, 0-Y/0-A가 남긴 규약(`base/typing-limits.md`/
+       `base/dispatch-core-plan.md`)은 착수 전 필독.
      - 참고로 `04`(인덱스 기반 재설계 반영)와 `19`의 B/C 섹션(폐기된
        `rawNew`+`owners`/3분기 `claimOwner` 검증하던 것)은 **둘 다 여섯
        번째 세션에 재작성 완료**되어 통과 상태 — 더 이상 대기 항목 아님.
@@ -965,8 +948,9 @@ handoff용 저장이 불필요해짐 — `Relate`는 여러 위치/사이클을 
 무력화, `SlotHandler`의 claim 실패 시 이중 파괴, `Ref` dedup 무력화).
 이어 사용자 결정으로 **`State<Slot>` 교체를 파괴→언마운트로 전환**(포탈이
 그 귀결이 됨), **`dispose(value)`**(트리가 요구하면 파괴 거부·error) 신설,
-**재디스패치를 "하강 diff"로 재설계**(`research/dispatch-redispatch-diff-plan.md`,
-**base 미반영 — `question.md` 0-Z 하나 남음**). `ROADMAP.md`/base 계약 개수
+**재디스패치를 "하강 diff"로 재설계**(당시 `research/`의 설계안 —
+**base 미반영, `question.md` 0-Z 하나 남음**이었고 14차 세션에 확정·반영 후
+`archive/dispatch-hintvalue-model-reversed.md`로 이전). `ROADMAP.md`/base 계약 개수
 모순/`luau-test` stale도 정리. 마지막으로 `luau` 바이너리가 생겨 **첫 실측**
 — 런타임 12개 전원 통과, `04`가 위 버그를 음성 대조군으로 재현, `07` 보강으로
 GC-native 전제 확정, `18`이 `Relate` 순환 경고 실증. 타입에선 `:Compute(fn)`
@@ -1025,7 +1009,7 @@ Slot 언마운트 전환 미반영 6곳. 뒤집힌 "폐기, 옮기지 않음 + p
 **1단계 분할**(2989→2263줄, `ref-plan.md`/`event-plan.md`/`brand-plan.md`로
 순수 이동) — 남은 디스패치·반응형 코어는 0-Z 반영 때 **어차피 전면 재작성**
 대상이라 그 패스에서 같이 가르는 게 총 변경량·위험이 작다고 판단해 의도적
-연기(`dispatch-redispatch-diff-plan.md` 6절에 지시). (3) `question.md`를
+연기(당시 재디스패치 설계안 6절에 지시 — 14차 세션에 실제로 그렇게 처리됨). (3) `question.md`를
 **사용자가 답할 것만**으로 축소(525→279줄, 해소분은
 `archive/question-resolved.md`). (4) 재발 방지는 규율 문서가 아니라
 **검사기**로 — `.claude/tools/doc-check.py` 신설(깨진 파일/절 참조, 색인
@@ -1054,7 +1038,7 @@ CLAUDE.md "작업 방식"에 중대 변경 핸드오버 체크리스트 6단계�
 정독. 열 번째 세션이 이미 고친 것과 같은 종류의 stale이 두 곳 더 남아있던
 게 핵심 발견 — `question.md` 0-Z/0-A와 `HUMAN_TODO.md` 4번이 여전히
 "6개 문서"(ref-plan.md 누락)로 서술 중이던 것을 "7개"로 정정(같은 정정이
-`dispatch-redispatch-diff-plan.md`/`CLAUDE.md`엔 이미 반영돼 있었으나 이
+재디스패치 설계안/`CLAUDE.md`엔 이미 반영돼 있었으나 이
 두 파일엔 안 퍼져 있었음). 별도로 `ROADMAP.md` 백로그의
 `objectListClass.__newIndex` 재현 테스트 항목이 세 번째 세션에 이미
 불필요로 해소됐는데 그 반영이 이 파일에만 안 퍼져 있던 것도 정정. base/
@@ -1093,3 +1077,26 @@ research/reference/luau-test/archive 전체는 정합성 문제 없음 확인 �
 배너뿐 아니라 본문 표·문단·결론까지 전수 수정(체크리스트 2번 준수).
 교훈 — **`luau-analyze` 진단 0건은 타입 해소를 뜻하지 않음**, 타입
 스파이크는 `--annotate` + 음성 대조군 필수.
+
+**2026-08-13 열네 번째 세션 — 0-Z(`Attribute:GetKey`) 확정, 하강 diff 재디스패치
+전면 반영, Tag/Attribute를 quad-base로 재배치**
+(`session/2026-08-13-14-attribute-getkey-dispatch-diff-reflected.md`)
+사용자가 `Attribute:GetKey(name)`으로 0-Z를 다시 열었고, 트레이싱 결과
+**권고안 (a)(그룹 안 claimant `Relate`)가 그룹↔직접 쓰기 충돌을 못 잡는다**는
+게 드러나(두 경로가 만나는 말단 핸들러에서 공개 키는 같은 객체라 소유자
+구분 불가) **그룹 전용 키(비공개 `GetKey`) + `AttributeKeyHandler`의 이름
+claim**으로 확정. 이걸로 마지막 게이트가 열려 **0-A(하강 diff 재디스패치)까지
+한 패스로 base 전면 반영** — 9차 세션이 미뤄뒀던 `bind-system-plan.md`
+2단계 분할을 같이 수행해 디스패치 코어를 **`base/dispatch-core-plan.md`로
+분리·재작성**(선행 `retractFrom` 폐기, `chains` 슬롯에 `handler` 동거,
+`retractFrom`이 **3-인자**로 축소, `isX(hintValue)` 가드 규칙 폐지, 깊은
+체인 힌트 유실 캐비엇 삭제, 점유 체크 폐지). 사용자 제기로 **Tag/Attribute의
+부기 알고리즘을 통째로 quad-base로 재배치**하고 백엔드는
+`addTag`/`removeTag(inst,{string})`/`setAttribute(inst,name,v)` 3개 op만
+주입(웹 `className`/`data-*` 대응 — 안 그러면 같은 참조카운트/소유권
+알고리즘이 백엔드마다 복제됨), 그 실패 모드를 위해 **`HANDLER_PRIORITY_FALLBACK`**
+신설(사용자 제안 — base 핸들러는 최하위 밴드, 백엔드가 덮어쓰면 언제나
+이김). 옛 모델은 `archive/dispatch-hintvalue-model-reversed.md`로 이전,
+스파이크 `04`/`19`는 옛 모델을 검증 중이라 `rewrite-required/`로 이동.
+**M0 착수를 막는 결정이 이제 없음** — 새로 연 것은 사소한 둘뿐
+(`Attribute.Merged` 이름 중복, `hintValue` 이름 재검토).

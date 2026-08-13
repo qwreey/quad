@@ -118,7 +118,7 @@ base가 범용 유틸로 제공하기로 확정한 per-instance weak-keyed 저�
 "핸들러 내부 상태 저장" 절)를 그대로 재사용하면 됨 — PropertyHandler가 실행 중인
 Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘 발명 불필요, 이미
 있는 "store 바인드는 pluggable 바인드를 재실행하는 래핑" 원칙
-(`base/bind-system-plan.md` "확정된 디스패치 모델" 절)이 그대로 적용됨.
+(`base/dispatch-core-plan.md` "확정된 디스패치 모델" 절)이 그대로 적용됨.
 
 ## 패키지 배치 — `quad-roblox` 코어에 직접 포함, 확정
 

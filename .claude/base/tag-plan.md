@@ -1,14 +1,13 @@
-# Tag — array-part 값 객체, `CollectionService` 얇은 래퍼
+# Tag — array-part 값 객체, 참조 카운트는 base / 엔진 호출은 주입 op
 
-> **⚠️ [2026-08-13 여섯 번째 세션] 이 문서의 `hintValue`/`retractFrom` 선행
-> 호출 서술은 곧 교체될 예정 — 아직 반영 안 됨.** 힌트가 `None` 센티널이나
-> `State`/`Tween` 래퍼로 오염돼 말단 핸들러의 `isX(hint)` 가드를 거짓으로
-> 만들고 깜빡임/재생성 방지를 조용히 끄는 결함이 확인됐고, 대체 모델
-> (**래핑 핸들러의 `retractFrom` 선행 호출 폐기 + `Dispatch.process`가
-> 핸들러를 먼저 비교**)까지 거의 확정됐음 — 다만 `question.md` **0-Z**
-> (Attribute 이름 소유권) 하나가 남아 아직 옮기지 않음. **여기 적힌 대로
-> 구현하면 옛 모델로 짜게 됨** — 반드시
-> `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
+> **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 + 패키지
+> 재배치 완료.** 이전 ⚠️ 배너가 예고하던 교체가 끝났음: (1) 클로저가 받는
+> 값의 **타입이 계약으로 보장**되어 `isTag(hintValue)` 방어 가드가
+> 불필요해졌고 깜빡임 방지가 **깊은 체인에서도 유지**됨
+> (`base/dispatch-core-plan.md` "Dispatch 체인" 절), (2) **참조 카운트
+> 알고리즘 전체가 quad-base 소속**이 되고 `addTag`/`removeTag` op만
+> 백엔드가 주입(아래 "패키지 배치" 절). 옛 모델 원문은
+> `archive/dispatch-hintvalue-model-reversed.md`.
 
 **상태**: base — 값 모양/이름은 확정. 2026-08-08 세 번째 세션에서 값
 모양을 전면 재설계(구 모델은 `archive/tag-hash-key-model-reversed.md`에
@@ -16,9 +15,9 @@
 `process`/`retract` 메커니즘을 참조 카운트 기반으로 전면 정정(옛 버전은
 `archive/retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째
 세션에 `Added`/`Removed`를 단일 이름에서 `string | {string}`으로
-정정(아래 값 모양 절). **단, 위 배너대로 `hintValue`/`retractFrom` 재-dispatch
-메커니즘은 `question.md` 0-Z 해소 대기 중 — "열린 질문 없음"은 값
-모양/이름에 한정.**
+정정(아래 값 모양 절). **[2026-08-13 열네 번째 세션] 재디스패치 모델
+(0-A)과 패키지 배치까지 반영 완료 — 이 문서에 남은 열린 질문은 이름
+자체(용어 정리 대기열)뿐.**
 
 ## 왜 재설계됐나
 
@@ -83,7 +82,7 @@ plain string이라(핸들러 계층 값처럼 identity/생명주기가 얽힌 �
 `store.activeTag:Compute(function(name) return (if name:Get() == "btn1"
 then Tag("selected") else nil) end)`처럼 그냥 `nil`을 리턴하면 됨. `None`
 센티널은 "정적 테이블 리터럴에서 `키 = nil`이 키 없음과 구별 안 되는"
-문제의 해법이지(`bind-system-plan.md` "`None` 센티널" 절), 이건 함수
+문제의 해법이지(`dispatch-core-plan.md` "`None` 센티널" 절), 이건 함수
 리턴값이 동적으로 흘러가는 경우라 그 문제 자체가 없음 — `nil`을 인자로
 넘기는 건 아무 문제 없음. (단, `Frame { (if cond then Tag("a") else
 nil), sibling }`처럼 **정적 리터럴**에서 조건부로 Tag를 넣거나 빼고
@@ -106,13 +105,13 @@ nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
 `assert(v==nil)`, "Tag(A)→Tag(B)는 retract 안 불림")을 대체함 — 그 버전은
 두 가지를 놓쳤음:**
 
-1. **`retract`는 실제로 store 재발행마다(핸들러 타입이 안 바뀌어도) 항상
-   불림** — `bind-system-plan.md`의 "확정된 디스패치 모델" 절이 처음부터
-   말해온 대로 `StoreBind`가 재-dispatch 전에 무조건
-   `Dispatch.retractFrom`(2026-08-13 다섯 번째 세션 전까지의 이름은
-   `retractUnder`)을 부르기 때문. "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
-   (상세 근거는 `bind-system-plan.md` 일반 retract 계약 절, `archive/
-   retract-always-fires-reversed.md`).
+1. **반환하는 클로저는 store 재발행마다(핸들러 타입이 안 바뀌어도) 항상
+   불림** — "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
+   (`archive/retract-always-fires-reversed.md`). **[갱신, 2026-08-13
+   열네 번째 세션]** 부르는 주체는 이제 `StoreBind`의 선행 `retractFrom`이
+   아니라 `Dispatch.process` 자신임 — 같은 핸들러면 그 자리 클로저에 새
+   값을 넘기고 곧바로 `process`를 다시 부름(`dispatch-core-plan.md`
+   "Dispatch 체인" 절 (A) 분기). 호출 빈도는 그대로.
 2. **서로 다른 배열 위치의 두 `Tag(...)`가 같은 이름을 겹쳐 가질 수
    있음**(`Frame { Tag("a"), Tag("a","b") }`류, 웹 `className="a a a"`와
    같은 합집합 시맨틱) — 한 위치의 diff만 보고 `RemoveTag`를 부르면 다른
@@ -145,7 +144,7 @@ identity로 홀더를 추적하면 같은 객체를 두 위치(`k1`, `k2`)에 �
 불필요해짐** — `retract`가 필요로 했던 "이 위치에 걸려 있던 Tag가
 뭐였는가"는 이제 그 `process` 호출이 반환하는 클로저가 `v`를 upvalue로
 직접 캡처하므로, 별도 저장소에서 다시 조회할 이유가 없음(위
-`base/bind-system-plan.md` "핸들러 내부 상태 저장" 절 — 단발성 handoff는
+`base/dispatch-core-plan.md` "핸들러 내부 상태 저장" 절 — 단발성 handoff는
 클로저로 충분). **`tagNameMap`(이름별 현재 걸고 있는 위치 집합)은 여전히
 필요** — 이건 서로 다른 여러 위치를 가로지르는, `process`/클로저 하나의
 호출 수명을 넘어서는 누적 상태라 `Relate`가 맞는 경우:
@@ -164,86 +163,109 @@ function TagHandler.process(inst, k, v, index)
             tagNameMap:SetStrong(inst, name, holders)
         end
         if next(holders) == nil then
-            inst:AddTag(name)
+            addTag(inst, { name })   -- 주입된 엔진 op(아래 "패키지 배치" 절)
         end
         holders[k] = true  -- 이 "위치"가 이 이름을 걺(Tag 객체가 다른 위치와 같아도 무관)
     end
-    return function(hintValue)
-        if v == hintValue then return end  -- Tag는 immutable이라 객체가 안 바뀌면
-                                            -- 이름 집합도 절대 안 바뀜 — holders 순회 자체가 불필요한 순수 최적화
-        local hintIsTag = isTag(hintValue)  -- hintValue는 nil일 수도, 대체하는 새 Tag 자체일 수도 있음
+    return function(nextValue)
+        -- nextValue는 nil(단순 철거)이거나 같은 핸들러가 곧 처리할 새 Tag —
+        -- 타입이 계약으로 보장되므로 isTag 가드가 필요 없음(2026-08-13 열네 번째 세션).
+        if v == nextValue then return end  -- Tag는 immutable이라 객체가 안 바뀌면
+                                           -- 이름 집합도 절대 안 바뀜 — holders 순회 자체가 불필요한 순수 최적화
+        local removed = {}
         for name in v:Names() do
             local holders = tagNameMap:GetStrong(inst, name)  -- 이미 등록됐으므로 항상 있음
             holders[k] = nil  -- 이 "위치"가 이 이름을 놓음(같은 Tag 객체를 다른 위치도 쓰고 있어도 무관)
-            if next(holders) == nil and not (hintIsTag and hintValue:Contains(name)) then
-                inst:RemoveTag(name)  -- 곧 새 process가 재확정할 이름이면 실제 호출은 skip(깜빡임 방지)
+            if next(holders) == nil and not (nextValue ~= nil and nextValue:Contains(name)) then
+                table.insert(removed, name)  -- 곧 새 process가 재확정할 이름이면 skip(깜빡임 방지)
             end
+        end
+        if #removed > 0 then
+            removeTag(inst, removed)   -- 한 번에 — 웹 className 일괄 갱신을 위한 배치 계약
         end
     end
 end
 ```
 
-- **`AddTag`는 온전히 `process`, `RemoveTag`는 온전히 반환하는 클로저**
+- **`addTag`는 온전히 `process`, `removeTag`는 온전히 반환하는 클로저**
   — 서로 겹치는 diff 계산이 없음. 클로저가 이전 `Tag`(`v`, 자기 자신이
   캡처)가 걸었던 이름 전부를 소유 목록에서 빼되(항상 실행), 그 결과
-  목록이 비었을 때 **실제 `RemoveTag` 호출만** "새로 들어올 `hintValue`가
-  그 이름을 여전히 Contains하는가"로 힌트를 줘서 skip — 소유 목록 자체는
+  목록이 비었을 때 **실제 `removeTag` 호출만** "새로 들어올 값이
+  그 이름을 여전히 Contains하는가"로 판단해 skip — 소유 목록 자체는
   항상 최신 객체로 갱신되므로(정확히 `v`를 빼고 새 `process`가 새 값을
   넣는 두 단계), 이름이 살아남는 경우에도 stale 레퍼런스가 안 남음.
   `process`는 `v`가 새로 거는 이름 전부를 무조건 등록(소유 목록이
-  비어있던 경우에만 실제 `AddTag`) — 자기 나름의 old-vs-new diff가 전혀
+  비어있던 경우에만 실제 `addTag`) — 자기 나름의 old-vs-new diff가 전혀
   필요 없음(그 일을 클로저가 매번 정확히 해줌).
 - **`Tag(A)→Tag(B)`(같은 위치, 내용만 바뀜)**: `A`를 처리했던 `process`가
-  반환한 클로저가 `hintValue=B`로 먼저 불려 `A`가 걸었던 이름 중 `B`에
-  없는 것만 실제로 `RemoveTag`, 남은 건 힌트로 skip — 그 다음
+  반환한 클로저가 `nextValue=B`로 먼저 불려 `A`가 걸었던 이름 중 `B`에
+  없는 것만 실제로 `removeTag`, 남은 건 skip — 그 다음
   `process(inst,k,B,index)`가 `B`의 이름 전부를 등록(이미 걸려있던
-  이름은 `AddTag`가 no-op으로 재확인만 됨, 소유 목록엔 `B`가 새로 등록).
-  결과적으로 실제 `RemoveTag`/`AddTag` 호출은 진짜 변경된 이름에만
+  이름은 소유 목록이 안 비어 있어 `addTag` 자체가 안 불림, 소유 목록엔
+  `B`의 위치가 그대로 유지).
+  결과적으로 실제 `removeTag`/`addTag` 호출은 진짜 변경된 이름에만
   일어남 — 스타일 깜빡임 방지라는 원래 목적은 그대로 달성.
-  **[범위 한정, 2026-08-13 감사] 이 깜빡임 방지는 "이 Tag를 바로 위에서
-  직속으로 위임한 한 단계"에서만 성립함** — `Dispatch.retractFrom(inst,
-  k, index, v)`는 힌트 `v`를 정확히 `index` 자리에만 넘기고 그보다 깊은
-  인덱스에는 `nil`을 넘기기 때문(`bind-system-plan.md` "Dispatch 체인"
-  절의 `retractFrom` 의사코드). 그래서 `State<State<Tag>>`에서 **바깥**
-  store가 재발행하면 TagHandler(더 깊은 인덱스)는 `hintValue=nil`을
-  받아 이름 전부를 실제로 `RemoveTag`했다가 새 체인이 다시 `AddTag`함.
-  구조상 불가피함(바깥 단계는 안쪽이 결국 어떤 Tag를 내놓을지 모름)
-  이고, 흔한 경로(`State<Tag>` 한 겹)는 영향 없음 — 실사용에서 문제가
-  되면 그때 힌트를 깊은 인덱스까지 전파하는 안을 재검토.
-- **`Tag(A)→nil`**: `A`의 클로저가 `hintValue=nil`로만 불림(값이 `Tag`가
-  아니게 돼 `process`는 매치 자체가 안 됨) — `hintIsTag=false`라 힌트가
-  항상 거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `RemoveTag`됨
+  **[범위 확대, 2026-08-13 열네 번째 세션] 이 깜빡임 방지는 이제 깊은
+  체인에서도 성립함** — 옛 모델에선 힌트가 `retractFrom`이 지목한 한
+  자리에만 전달돼서 `State<State<Tag>>`의 바깥이 재발행하면 TagHandler가
+  `nil`을 받아 전량 `RemoveTag` 후 재`AddTag`했으나, 하강 diff에선 **각
+  레벨이 자기 재프로세스에서 자기 값을 받으므로** 인덱스가 얼마나 깊든
+  TagHandler는 진짜 `Tag` 객체를 받음(`dispatch-core-plan.md` "Dispatch
+  체인" 절의 "깊은 체인에서도 힌트가 안 사라짐").
+- **`Tag(A)→nil`**: `A`의 클로저가 `nextValue=nil`로만 불림(값이 `Tag`가
+  아니게 돼 핸들러가 바뀌므로 `Dispatch.retractFrom` 경로) — `Contains`
+  검사가 항상 거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `removeTag`됨
   (다른 위치가 그 이름을 계속 쓰고 있지 않다면).
 - **여러 위치가 같은 이름을 겹쳐 가지는 경우**(`Frame { Tag("a"), Tag("a","b") }`):
   두 위치가 서로 다른 `k`로 각자 독립적으로 `process`/자기 클로저를
   타지만, `tagNameMap["a"]`는 **양쪽 위치(`k`)를 모두 담는 하나의 공유
   집합** — 한쪽이 "a"를 잃어도 다른 쪽 위치가 집합에 남아있으면 실제
-  `RemoveTag`가 안 불림. 웹 `className`처럼 손실 없는 합집합이 정확히
+  `removeTag`가 안 불림. 웹 `className`처럼 손실 없는 합집합이 정확히
   나옴. **위치 기준이므로 두 위치가 물리적으로 같은 `Tag` 객체를
   재사용해도(흔한 관례) 정확히 같은 방식으로 안전 — 이게 바로 위 "정정"
   절에서 객체 identity 기준을 버린 이유.**
 - **클로저가 자기 위임 대상까지 수동으로 안 쫓아가도 됨** —
   `Dispatch.retractFrom`이 체인 전체를 알아서 훑어주므로 TagHandler는
   자기 자원(위 `tagNameMap` 하나)만 정리하면 됨. 상세 메커니즘은
-  `bind-system-plan.md` "Dispatch 체인" 절.
+  `dispatch-core-plan.md` "Dispatch 체인" 절.
 
-## 패키지 배치 — base는 값+API, roblox는 process 글루
+## 패키지 배치 — 값도 알고리즘도 quad-base, 주입되는 건 `addTag`/`removeTag` (2026-08-13 열네 번째 세션 재배치)
 
-**Tag의 "값 타입과 clone 체이닝 API"(`Tag(...)`/`:Added`/`:Removed`/
-`:Contains`/`:Apply`/`Merged`)는 quad-base 소속** — `Modifier`와 정확히
-같은 층위(엔진 무관, 순수 데이터+연산). `CollectionService` 실제 호출
-(`TagHandler.process` 및 그 반환 클로저)만 quad-roblox 소속 — 이미
-확정된 "base는 인터페이스/값, backend는 process 글루" 패턴(`LifetimeHandle`,
-`Dispatch.addHandler` 자체가 이 패턴)을 값 타입 수준까지 그대로 확장한
-것뿐, 새 아키텍처 개념 아님.
+**Tag의 값 타입/clone 체이닝 API(`Tag(...)`/`:Added`/`:Removed`/
+`:Contains`/`:Apply`/`Merged`/`:Names`)가 quad-base인 건 처음부터 그대로**
+(`Modifier`와 같은 층위 — 엔진 무관, 순수 데이터+연산). **[재배치,
+2026-08-13 열네 번째 세션] 여기에 더해 `TagHandler`(위 참조 카운트
+알고리즘 전체)도 quad-base로 옮김** — 예전엔 `CollectionService` 실제
+호출이 있다는 이유로 핸들러 통째로 quad-roblox였으나, 엔진에 종속된 건
+`AddTag`/`RemoveTag` 두 줄뿐이고 `tagNameMap` 참조 카운트는 순수 부기임.
+웹에도 대응물이 있으므로(`className` 합집합) 그 배치대로면 **같은 참조
+카운트 알고리즘을 백엔드마다 재구현**하게 됨.
+
+```lua
+addTag(inst: any, names: {string}): ()      -- 백엔드가 주입
+removeTag(inst: any, names: {string}): ()
+```
+
+- **`{string}`을 받는 이유**: 호출자는 항상 quad 자신이고 넘기는 것도
+  "이번 사이클에 실제로 추가/제거된 이름 집합"이라 테이블이 자연 단위임.
+  vararg면 `table.unpack(t)`가 **인자 목록 tail 위치일 때만** 완전히
+  펼쳐진다는 Lua 문법 제약에 걸리는데, 이건 이미 `Tag:Added`가
+  vararg → `string | {string}`으로 되돌아갔던 것과 **같은 이유**(위 "값
+  모양" 절). 배치 호출 자체는 테이블로도 되므로 웹 `className` 일괄
+  갱신 요구도 그대로 충족됨.
+- **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK`** — 특정 백엔드가 태그
+  처리를 통째로 다르게 하고 싶으면 평범한 우선순위로 자기 핸들러를
+  등록하면 자동으로 이김. 주입 op이 없는 백엔드에서는 base 스텁이
+  명확한 에러를 냄. 일반 원칙과 근거는 `base/dispatch-core-plan.md`의
+  "base가 소유하는 핸들러와 주입되는 엔진 op" 절 — `Attribute`도 정확히
+  같은 구조(`base/attribute-plan.md`).
+- 이건 새 아키텍처 개념이 아니라 이미 확정된 "base는 인터페이스/값,
+  backend는 구현"(`LifetimeHandle`의 `bindLifetime`/`canExecute`,
+  `Dispatch.addHandler` 자체가 그 패턴)을 핸들러 층까지 밀어붙인 것.
 
 ## 열린 질문
 
-값 모양/이름(`Tag`/`Added`/`Removed`/`Merged`, 용어 정리 대상,
-`.claude/question.md`) 자체는 없음. **단, 이 문서 최상단 배너가 이미
-경고하듯 `hintValue`/`retractFrom` 선행 호출 메커니즘은 `question.md`
-**0-Z**(Attribute 이름 소유권) 해소 대기 중인 "하강 diff" 재디스패치
-모델로 교체 예정** — `research/dispatch-redispatch-diff-plan.md` 6절이
-이 파일을 반영 대상으로 명시 지목(`isTag(hintValue)` 가드 제거 등).
-이 절이 예전엔 "없음"으로만 적혀 있었던 건 그 배너가 붙기 전 작성된
-서술이 안 갱신된 stale — 재발 방지용으로 여기 명시.
+값 모양/메커니즘/패키지 배치엔 **[2026-08-13 열네 번째 세션 기준] 없음** —
+재디스패치 모델(`question.md` 0-A)과 패키지 재배치까지 전부 반영 완료.
+남은 건 이름 자체(`Tag`/`Added`/`Removed`/`Merged`)가 용어 정리
+대기열(`.claude/question.md` 1번)에 있다는 것뿐.

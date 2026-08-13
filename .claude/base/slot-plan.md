@@ -1,14 +1,12 @@
 # Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
-> **⚠️ [2026-08-13 여섯 번째 세션] 이 문서의 `hintValue`/`retractFrom` 선행
-> 호출 서술은 곧 교체될 예정 — 아직 반영 안 됨.** 힌트가 `None` 센티널이나
-> `State`/`Tween` 래퍼로 오염돼 말단 핸들러의 `isX(hint)` 가드를 거짓으로
-> 만들고 깜빡임/재생성 방지를 조용히 끄는 결함이 확인됐고, 대체 모델
-> (**래핑 핸들러의 `retractFrom` 선행 호출 폐기 + `Dispatch.process`가
-> 핸들러를 먼저 비교**)까지 거의 확정됐음 — 다만 `question.md` **0-Z**
-> (Attribute 이름 소유권) 하나가 남아 아직 옮기지 않음. **여기 적힌 대로
-> 구현하면 옛 모델로 짜게 됨** — 반드시
-> `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
+> **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
+> 이전 ⚠️ 배너가 예고하던 교체가 끝났음 — 래핑 핸들러의 `retractFrom`
+> 선행 호출이 폐기되고 `Dispatch.process`가 핸들러를 먼저 비교하며,
+> `SlotHandler`가 반환하는 클로저가 받는 값의 **타입이 계약으로 보장**됨
+> (같은 핸들러로 재프로세스될 때만 값이 넘어오므로 항상 `Slot`이거나
+> `nil`). 상세는 `base/dispatch-core-plan.md` "Dispatch 체인" 절, 옛
+> 모델 원문은 `archive/dispatch-hintvalue-model-reversed.md`.
 
 **상태**: base — 설계 방향(소유권 귀속, 재마운트 시 throw, **[2026-08-13
 여섯 번째 세션 역전] retract=언마운트** — 옛 "retract=폐기"는 뒤집혔음,
@@ -225,16 +223,17 @@ Slot이 store 바인드로 들어오는 경우, pluggable 처리기에 `retract`
 > 동작이 '부모 위임' 잠정안에서 '폐기(옮기지 않음)'로 확정") 참고. 이 문단은
 > 검토 과정의 히스토리로만 남겨둠, 현재 유효한 동작 아님.
 
-**[전면 정정, 2026-08-12 열한 번째 세션, 2026-08-13 다섯 번째 세션에
-클로저 반환 계약으로 서술 갱신] 위 "핸들러 타입이 안 바뀌면 retract 없이
-process가 diff 담당"이라는 전제 자체가 틀렸음** — 실제로는
-`Dispatch.retractFrom`이 store 재발행마다(핸들러가 그대로여도) **항상**
-이전 `process`가 반환한 클로저를 먼저 부름(`base/bind-system-plan.md`
-"확정된 디스패치 모델"/일반 retract 계약 절 참고). 그래서 `State<Slot>`이
-`slotA→slotB`로 바뀔 때도 **`slotA`를 처리했던 클로저가 `hintValue=slotB`로
-먼저 불려 `slotA`를 폐기하고, 그 다음 `process(inst,k,slotB,index)`가
-`slotB`를 마운트**하는 두 단계로 자연히 갈림 — 클로저가 "이전 것 정리",
-`process`가 "새 것 마운트" 전담:
+**[전면 정정, 2026-08-12 열한 번째 세션, 2026-08-13 다섯 번째/열네 번째
+세션에 서술 갱신] 위 "핸들러 타입이 안 바뀌면 retract 없이 process가 diff
+담당"이라는 전제 자체가 틀렸음** — store 재발행마다(핸들러가 그대로여도)
+**항상** 이전 `process`가 반환한 클로저가 먼저 불림. **[갱신, 열네 번째
+세션] 부르는 주체는 `Dispatch.process` 자신**(같은 핸들러면 그 자리
+클로저에 새 값을 넘기고 곧바로 `process`를 다시 부름 —
+`base/dispatch-core-plan.md` "Dispatch 체인" 절 (A) 분기). 그래서
+`State<Slot>`이 `slotA→slotB`로 바뀔 때 **`slotA`를 처리했던 클로저가
+`nextValue=slotB`로 먼저 불려 `slotA`를 언마운트하고, 그 다음
+`process(inst,k,slotB,index)`가 `slotB`를 마운트**하는 두 단계로 자연히
+갈림 — 클로저가 "이전 것 정리", `process`가 "새 것 마운트" 전담:
 
 **[정정, 2026-08-12 열두 번째 세션] "같은 값인가"를 위치별 relate로
 간접 비교하는 대신, Slot 자신이 지금 어느 `inst`에 바인딩됐는지를 직접
@@ -339,11 +338,13 @@ function SlotHandler.process(inst, k, slotValue, index)
     -- 방금 새로 클레임했든, 직전 사이클의 클레임이 spurious 재발행을 거쳐 그대로
     -- 살아있든 둘 중 하나(다른 소유자였다면 claimOwnerAt이 이미 error). 어느 쪽이든
     -- "이 자리가 결국 다른 값으로 바뀔 때 할 일"은 slotValue/inst가 같아서 동일하므로
-    -- 클로저도 하나로 통일 — 여기서 no-op 클로저를 반환하면 안 됨: retractFrom은
-    -- 클로저를 early-return시키든 말든 체인에서 항상 *소비*하므로, spurious 사이클에서
-    -- no-op을 심어두면 그 다음 진짜 교체 때 이전 서브트리를 정리할 주체가 사라짐.
-    return function(hintValue)
-        if slotValue == hintValue then return end  -- 같은 Slot 재발행 → no-op
+    -- 클로저도 하나로 통일 — 여기서 no-op 클로저를 반환하면 안 됨: 체인은
+    -- 클로저를 early-return시키든 말든 항상 *소비*하므로(retractFrom도, 재프로세스도),
+    -- spurious 사이클에서 no-op을 심어두면 그 다음 진짜 교체 때 이전 서브트리를
+    -- 정리할 주체가 사라짐.
+    return function(nextValue)
+        -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 Slot — 타입 보장됨
+        if slotValue == nextValue then return end  -- 같은 Slot 재발행 → no-op
         -- [정정, 2026-08-13 감사 후속] 파괴가 아니라 **언마운트** —
         -- 아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절이 확정한
         -- 결정이 적용돼야 하는 자리가 바로 여기(최상위 dispatch 경로).
@@ -379,8 +380,8 @@ end
   `kSlotMap`에 안 적힌 자리는 `retract`가 자연히 no-op이라 우연히 막혀
   있었는데, `kSlotMap` 제거가 이 방어를 같이 걷어낸 회귀였음. 이제
   `claimOwnerAt`이 `k=2`에서 곧바로 error를 내므로 그 상태 자체가 안
-  만들어짐 — **클로저를 두 갈래로 쪼개는 방식으로는 못 고침**: `retractFrom`은
-  클로저가 early-return하든 말든 체인에서 항상 소비하므로, spurious
+  만들어짐 — **클로저를 두 갈래로 쪼개는 방식으로는 못 고침**: 체인은
+  클로저가 early-return하든 말든 항상 소비하므로, spurious
   사이클에서 no-op 클로저를 심으면 다음 진짜 교체 때 이전 서브트리를
   정리할 주체가 사라져 오히려 더 큰 누수가 됨(감사 중 실제로 그 방향을
   먼저 써봤다가 되돌림).
@@ -405,7 +406,7 @@ error가 맞음**. 반대로 top-level은 store 재발행마다 같은 Slot으�
 **위치를 키에 넣어도 안전한 이유(사용자 확인)** — 여기서 쓰는 `k`는
 "바깥 컨테이너 안에서의 인덱스"고, 이건 nested Slot의 `Length`가 변해도
 바뀌지 않음. 실제 물리 배치의 변동은 전부 `offset`이 흡수하도록 설계돼
-있음(`base/bind-system-plan.md` "Length/Offset" 절의 `recompute`가 그
+있음(`base/dispatch-core-plan.md` "Length/Offset" 절의 `recompute`가 그
 증거 — `lengthList`/`sourceList`는 위치별 배열이고 순서 계산만
 누적합으로 함). top-level의 `k`는 특히 props 배열 리터럴의 위치라
 저작 시점에 고정. **nested는 `Move`/`Swap`/`Splice`/`Remove`가
@@ -656,7 +657,7 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
   간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —
-  `base/bind-system-plan.md`의 "Length/Offset" 절, `Source⊇State`
+  `base/dispatch-core-plan.md`의 "Length/Offset" 절, `Source⊇State`
   단방향 원칙과 같은 카테고리로 명명됨(2026-08-11 세션).
 - **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
   빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**
@@ -810,7 +811,7 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
     Slot이 대신 안 해주는가" 절의 예시 참고.
   - **`offset: Source<number>`** — 이 `Slot` 자신의 `Slot.Offset`을 그대로
     전달(모든 key가 같은 값을 공유) — 형제로 섞인 다른 Slot/정적 자식이
-    기여한 개수의 누적합(`base/bind-system-plan.md`의 "Length/Offset" 절
+    기여한 개수의 누적합(`base/dispatch-core-plan.md`의 "Length/Offset" 절
     참고). `index`와 마찬가지로 실제 프로퍼티에 어떻게 반영할지는
     전적으로 `updateFn` 몫 — `Slot`/Handler가 자동으로 해주지 않음
     (2026-08-11 세션 확정, 아래 참고).
@@ -1294,7 +1295,7 @@ GC에 위임" 원칙 그대로.
   위 "CRUD API 확정"/"`isMounted` 이중 추적 분리"/"`Slot:List`" 절 참고.
 - **[해소됨, 2026-08-09 여섯 번째 세션]** 여러 Slot이 형제로 섞일 때
   순서 보장 — 위 "여러 Slot이 섞일 때 순서 보장" 절 참고, 메커니즘은
-  `base/bind-system-plan.md`의 "Length/Offset" 절이 최신 소스.
+  `base/dispatch-core-plan.md`의 "Length/Offset" 절이 최신 소스.
 
 ## Slot.Length — `:List`뿐 아니라 항상 노출됨 (2026-08-09 여섯 번째 세션)
 
@@ -1382,7 +1383,7 @@ nil/None 금지)는 그대로.
 
 ### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용
 
-`base/bind-system-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
+`base/dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
 owner 키(`inst`)가 물리 Instance일 필요가 없음(`Relate`가 아무 테이블이나
 weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 마운트와
 중첩 마운트가 완전히 같은 함수 호출**이 됩니다.
@@ -1844,7 +1845,7 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 
 - `Dispatch.setLength`는 끝에서 `recompute`를 돌리고, `recompute`는
   `sourceList`를 순회하며 각 자리의 `offset:Set(sum)`을 호출함
-  (`base/bind-system-plan.md` "Length/Offset" 절).
+  (`base/dispatch-core-plan.md` "Length/Offset" 절).
 - 그래서 **`setLength(0)`을 먼저 부르면**, 그 안의 `recompute`가 도는
   시점에 해제 중인 자리의 `sourceList[i]`엔 **아직 옛 Slot의 offset
   `Source`가 그대로 남아 있음** → 지금 막 떼어내는 서브트리의 Source에

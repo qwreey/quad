@@ -12,68 +12,25 @@
 
 ---
 
-## ⭐ 최우선 — M0 착수를 막고 있음 (1건)
+## ⭐ 최우선 — **없음** (2026-08-13 열네 번째 세션 기준)
 
-이 항목은 사용자가 **직접 스케치하며 판단하겠다고 명시 이관**한 것이라
-에이전트가 기본값으로 밀고 갈 수 없음. 루트 `HUMAN_TODO.md` 4번에도 있음.
-
-> **[2026-08-13 열세 번째 세션] 여기 같이 있던 `0-Y`(`:Compute(fn)`의
-> lazy 핸들 계약)는 해소됨** — 실측 결론은 "계약은 그대로 두고, 파생
-> State를 만드는 자리마다 결과 타입을 명시 주석으로 바인딩한다. 그 외는
-> Luau의 현 한계라 지금 우리가 할 수 있는 바 없다". 지금 유효한 규약은
-> **`base/typing-limits.md`**, 실측 근거 전문은
-> `audit/type-recursion-issue/`, 해소 전 원문은
-> `archive/question-resolved.md`의 0-Y 절.
-
-### 0-Z. ⭐ **최우선 — Attribute 이름 소유권을 무엇으로 판정할 것인가** (2026-08-13 여섯 번째 세션, 사용자가 다음 세션 심층 분석으로 이관)
-
-**이게 지금 유일하게 `base/` 반영을 막고 있는 결정.** 아래 0-A의
-재디스패치 모델은 나머지가 전부 확정됐고, 이 항목 하나만 정해지면
-⚠️ 배너를 단 **7개 문서**(`bind-system-plan.md`/`tag-plan.md`/
-`slot-plan.md`/`attribute-plan.md`/`ref-plan.md`/`architecture.md`/
-`ROADMAP.md` — `ref-plan.md`는 9차 세션 분할 때 배너가 같이 안 옮겨간
-걸 10차 세션 감사에서 발견해 추가)를 한 번에 옮기면 됨.
-
-**문제**: 새 모델(핸들러 선비교)에서는 그룹 A가 잡아둔
-`AttributeKey("foo")` 인덱스 1에 그룹 B가 들어와도 **양쪽 다 `StoreBind`에
-매치되므로 "같은 핸들러"로 판정돼 조용히 갈아탐.** 그리고 나중에 A의
-클로저가 자기 이름들을 `retractFrom`할 때 B의 바인딩을 대신 철거함
-(교차 오염). 예전 "조용한 last-write-wins"가 그대로 돌아옴 — 이번 감사에서
-고쳤던 바로 그 증상. 즉 **Dispatch의 점유 체크가 대신 잡아주던 걸 이제
-Attribute가 직접 해야 함.**
-
-**사용자 방향(2026-08-13, 심층 분석은 다음 세션)**:
-> "Attribute 소유권은 아마 이전 결정을 다시 가져오는게 맞아보이긴 하네요.
-> 막 깊게 Key -> Group 필요한것 같지는 않고, 본인 retract 처리를 수행할 때
-> 무언가 하면 될듯 한데. 이 부분은 나중에 제가 물리적으로 스케치 해보며
-> 심층 분석해보겠습니다."
-
-- **"이전 결정을 다시 가져온다"** = 2026-08-13 네 번째 세션의 이름별
-  claimant `Relate`(당시 이름 `owners`). **당시 기각 사유는 새 모델에서
-  구조적으로 소멸함** — 그때 버그는 "소유권 반납이 `process`의 `v==nil`
-  분기에만 있어서, 그룹이 이름을 통째로 놓는 경로가 그 분기를 안 타
-  옛 소유권이 안 지워짐"이었는데, 지금은 **클로저가 항상 불리므로 거기서
-  반납**하면 그 구멍이 안 생김. 사용자의 "본인 retract 처리를 수행할 때
-  무언가 하면 될듯"이 정확히 이 지점.
-- **"막 깊게 Key → Group 필요한 것 같지는 않다"** — 키에서 그룹으로
-  거슬러 올라가는 양방향 레지스트리까지는 필요 없고, 이름 → 현재
-  claimant 단방향이면 충분할 것이라는 방향.
-- 원문 맥락과 기각된 두 중간안(`rawNew` 전용 키, `AttributeGroupKeyHandler`
-  체크포인트)은 `archive/checkpoint-handler-pattern-reversed.md`,
-  분석은 `research/dispatch-redispatch-diff-plan.md` 5절.
-
-**대안 후보(정리해둠)**: (a) 이름별 claimant `Relate`를 Attribute에
-국소적으로 — 권고, (b) UB로 두고 문서로만 금지 — 증상이 "조용한 오작동 +
-교차 오염"이라 다른 UB들(즉시 스택오버플로/즉시 error)보다 나빠서 비권장,
-(c) `Dispatch`에 claimant 개념 일반화 — 이번에 걷어낸 방향이라 반대.
+> **M0 착수를 막던 항목이 전부 해소됐습니다.** `0-Y`(`:Compute(fn)`의
+> lazy 핸들 계약)는 열세 번째 세션에, `0-Z`(Attribute 이름 소유권)와
+> `0-A`(재디스패치 하강 diff)는 **열네 번째 세션에 확정·`base/` 반영
+> 완료**. 해소 전 원문과 결론은 `archive/question-resolved.md`,
+> 뒤집힌 옛 재디스패치 모델은 `archive/dispatch-hintvalue-model-reversed.md`.
+>
+> **M0 착수 전 읽을 것**: `base/typing-limits.md`(0-Y가 남긴 구현 규약),
+> `base/dispatch-core-plan.md`(0-A/0-Z가 반영된 디스패치 코어 — 열네 번째
+> 세션에 `bind-system-plan.md`에서 분리 신설).
 
 ## 결정 대기 — M0는 안 막음
 
 ### 0-W. 같은 `Ref` 객체가 두 자리에 놓이는 걸 막을 것인가 (2026-08-13 열세 번째 세션 신설, 0-Z 확인 중 발견)
 
-**0-Z(Attribute)를 보다가 "Ref에도 같은 문제가 있냐"는 사용자 질문에서
-나온 것 — 있고, 막는 장치가 전혀 없음.** 단 메커니즘은 0-Z와 **반대
-방향**이라 별개 항목으로 분리: Attribute는 *두 소유자 → 한 자리*(이름별
+**0-Z(Attribute, 열네 번째 세션에 해소됨)를 보다가 "Ref에도 같은 문제가
+있냐"는 사용자 질문에서 나온 것 — 있고, 막는 장치가 전혀 없음.** 단
+메커니즘은 0-Z와 **반대 방향**이라 별개 항목으로 분리: Attribute는 *두 소유자 → 한 자리*(이름별
 메모이즈된 키라 수렴), Ref는 *한 객체 → 두 자리*(발산).
 
 **손 트레이싱**(`base/ref-plan.md`의 `RefLeafHandler` 의사코드에 대입,
@@ -82,7 +39,7 @@ Attribute가 직접 해야 함.**
 1. `process(inst1,"Ref",r)` → `relate[inst1]["Ref"]`가 nil → `r:Set(inst1)`
 2. `process(inst2,"Ref",r)` → `relate[inst2]["Ref"]`도 nil(**다른 키**) →
    `r:Set(inst2)` — inst1 바인딩이 **조용히 유실, 에러 없음**
-3. inst1 자리가 retract → `hintValue(nil) ~= v(r)` → **`r:Set(nil)`** —
+3. inst1 자리가 retract → 클로저 인자 `nil ~= v(r)` → **`r:Set(nil)`** —
    inst2가 정당하게 들고 있던 값을 지움(교차 오염)
 
 `relate`가 `(inst,k)`별로만 있어 "이 Ref가 이미 다른 자리에 있다"를
@@ -95,7 +52,7 @@ Attribute가 직접 해야 함.**
 | `Slot` | element | `claimOwner`/`claimOwnerAt` → 즉시 error(`Slot{a,a}`/`Frame{slot,slot}`) | 막힘 |
 | `PreRef` | 자기 자신 | `_fired` → 재사용 시 error | 막힘 |
 | `Tag` | 태그 이름 | 위치별 참조 카운트 — 겹침이 **의도된 동작**(합집합) | 설계상 정상 |
-| `Attribute` | 이름 | 없음 | **0-Z** |
+| `Attribute` | 이름 | 그룹 전용 키 + 이름 claim → 즉시 error | 막힘(0-Z 해소, 14차 세션) |
 | **`Ref`** | 자기 자신 | **없음** | **이 항목** |
 
 특히 걸리는 두 가지:
@@ -107,48 +64,18 @@ Attribute가 직접 해야 함.**
   검증하는데 **`Ref`만 커버가 없음**.
 
 **0-Z와의 관계 — 독립**: 이건 하강 diff 모델이 만든 회귀가 **아니라
-원래부터 있던 갭**(점유 체크는 같은 `(inst,k,index)`만 봤지, 서로 다른
-자리를 가로지르는 건 원래 안 봤음). 0-Z를 어떻게 정하든 별도 결정이고,
-0-Z와 달리 **M0를 막지 않음** — 다만 사용자가 소유권 설계를 스케치할 때
-같이 보는 게 자연스러움.
+원래부터 있던 갭**(옛 점유 체크도 같은 `(inst,k,index)`만 봤지, 서로 다른
+자리를 가로지르는 건 원래 안 봤음). **[2026-08-13 열네 번째 세션] 0-Z가
+해소되면서 이 표에서 `Ref`만 유일하게 비어 있게 됐음** — Attribute는
+"이름 claim"이라는 국소 레지스트리로 갔으니, `Ref`도 같은 모양(`Ref →
+현재 자리` 단방향 `Relate` + 즉시 error)이 자연스러운 선택지. 여전히
+**M0를 막지는 않음**.
 
 **선택지**: (a) `Slot`/`PreRef`와 같이 즉시 error(일관성 높음, `Relate`
 하나로 Ref→현재 자리 추적), (b) UB로 두고 문서화만(현상 유지 —
 단 증상이 "조용한 값 소실"이라 다른 UB보다 나쁨), (c) 마지막 쓰기 승리를
 정식 동작으로 인정(비권장, `Ref`의 "확정된 값 박스" 의미와 충돌).
 
-### 0-A. `hintValue` 폐기 → process 하강 중 핸들러 비교 (2026-08-13 여섯 번째 세션, **Attribute 건 외 확정**)
-
-**검토 결과 사용자 지적이 맞음 — 현행 `hintValue`엔 실제 결함이 있음.**
-힌트가 "그 자리에 곧 디스패치될 raw 값"이라 `None` 센티널이나 `State`/
-`Tween` 같은 래퍼가 그대로 넘어갈 수 있고, 그러면 말단 핸들러의
-`isTag(hint)` 가드가 거짓이 되어 **깜빡임/재생성 방지가 조용히 꺼짐**
-(정확성은 유지돼서 지금까지 안 드러났음). 상세 재현·분석·제안은
-`research/dispatch-redispatch-diff-plan.md`.
-
-**후속 라운드에서 모델은 거의 확정됨** — 래핑 핸들러가 `retractFrom`을
-선행 호출하는 걸 폐기하고, `Dispatch.process` 안에서 **핸들러를 먼저
-비교**해 (같으면 그 자리 클로저에 새 값을 넘기고 자기 `process` 재호출,
-다르면 그 자리부터 아래를 전량 철거). 이걸로 (a) 힌트의 타입이
-구조적으로 보장되고(같은 핸들러일 때만 값이 넘어가므로), (b) 깊은 체인의
-힌트 유실도 사라지며(각 레벨이 자기 재프로세스에서 자기 힌트를 받음),
-(c) `oldValue`를 따로 넘기자던 보완안은 불필요해짐(사용자 지적:
-"클로저라 이미 본인이 알지 않아요?" — 맞음, `chains`에 추가로 저장할 건
-비교용 `handler` 하나뿐), (d) `HandlerChanged` 마커도 불필요(핸들러가
-바뀌었다는 건 retractor가 `nil` 힌트로 불린다는 사실로 이미 표현됨).
-
-**남은 열린 항목은 Attribute 이름 소유권 하나뿐 — 위 0-Z로 분리해
-최우선 배치**(사용자가 다음 세션에 직접 스케치하며 심층 분석하기로).
-그 하나 외에는 이 항목에 결정할 게 없음.
-
-**실행 규모**: `base/`의 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
-`attribute-plan.md`/`ref-plan.md` 의사코드 재작성 + `architecture.md`
-소스트리 서술과 `ROADMAP.md` M2/M4/M6/M10 체크리스트 — 0-Z 하나만 정해지면
-한 번에 옮기면 됨(어디를 어떻게 고칠지는
-`research/dispatch-redispatch-diff-plan.md` 6절에 파일별로 적어둠 — 뒤
-셋은 2026-08-13 7차/10차 감사에서 그 목록에 빠져 있던 걸 발견해 추가).
-**그때까지 `base/`의 현행 `hintValue` 서술이 유효** — 아직 안 옮겼다는 걸
-잊고 base만 읽으면 옛 모델로 구현하게 되니 주의.
 ### 0-B. `dispose(any)` — 시그니처/범위 (2026-08-13 여섯 번째 세션 신설, 사용자 제안)
 
 `State<Slot>` 교체를 파괴가 아니라 **언마운트**로 확정하면서(`state<Frame>`와
@@ -201,6 +128,13 @@ Attribute가 직접 해야 함.**
   질문이라 `is`보다 `can` 계열 접두를 유지하는 쪽이 낫다는 방향으로 사용자가
   기욺 — 여전히 미확정, 다음에 `can`으로 시작하는 구체 대안(예: `canRun`)을
   같이 검토할 것.
+- **클로저 인자 이름 `hintValue`(3순위, 사소함, 2026-08-13 열네 번째
+  세션 신설)**: 하강 diff 재디스패치에서 이 인자는 더 이상 "힌트"가
+  아니라 **`nil`이거나 같은 핸들러가 곧 처리할 새 값**임이 계약으로
+  보장됨(`base/dispatch-core-plan.md`) — 이름이 옛 모델의 잔재라
+  `nextValue`류가 더 정확함. 코퍼스에 이미 널리 쓰인 이름이라 이번엔
+  안 바꾸고 대기열에만 올림(의사코드는 새로 쓰는 자리부터 `nextValue`를
+  쓰기 시작했음).
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
   10종 branded 타입 전부로 일반화) — `brand-plan.md`의 `Brand`
@@ -251,12 +185,19 @@ Attribute가 직접 해야 함.**
   규칙에 그대로 맞아 포함 근거는 있음. 상세는 `research/operator-sugar-plan.md`.
   구현 자체는 맨 마지막 우선순위(순수 슈가, 없어도 무방) — 여전함.
 - **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
-  세션 신설, 백로그)** — 인덱스 기반 `Dispatch` 재설계로 `State<State<T>>`는
-  UB에서 정상 지원 대상이 됐지만, 깊이가 늘수록 `retractFrom`의 힌트가
-  더 깊은 인덱스엔 `nil`로 전달돼 `Tag`/`Ref`/`Slot` 등의 힌트 기반
-  최적화(깜빡임 방지)가 무력화되는 실제 기능 손실이 있음 — 값 층에서
-  평탄화하는 `state:Flatten()`류 콤비네이터 아이디어는 나왔으나 착수 안
-  함. 상세는 `research/operator-sugar-plan.md` 마지막 절.
+  세션 신설, 백로그)** — **[근거 축소, 열네 번째 세션]** 원래 이 항목의
+  주 근거는 "깊은 체인에선 힌트가 `nil`로 전달돼 깜빡임 방지가 꺼진다"는
+  실제 기능 손실이었는데, **하강 diff 재디스패치로 각 레벨이 자기 값을
+  받게 되면서 그 손실 자체가 없어졌음**(`base/dispatch-core-plan.md`).
+  남은 근거는 편의성과 Slot offset이 밀리고 당겨지는 케이스뿐이라
+  우선순위가 더 내려감 — `state:Flatten()`류 콤비네이터 아이디어는
+  그대로 백로그. 상세는 `research/operator-sugar-plan.md` 마지막 절.
+- **[신설, 2026-08-13 열네 번째 세션] `Attribute.Merged`의 이름 중복** —
+  두 Store가 같은 이름을 가지면 지금은 `:NameMap()` 평탄화 단계에서
+  조용히 하나가 이김(dispatch 이전이라 이름 claim이 못 잡는 자리).
+  합성 시점 1회 체크로 error를 내는 게 이 문서 다른 결정들과 결이
+  같지만, "Merged는 뒤가 이긴다"를 의도된 override로 볼 여지도 있어
+  사용자 확인 필요 — `base/attribute-plan.md` "열린 질문" 절.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.

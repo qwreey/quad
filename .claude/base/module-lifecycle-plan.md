@@ -50,7 +50,7 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 수행하는 "처리된 값을 다시 `Dispatch.process(inst,k,realv)`로 넘기는" 재실행
 로직 자체도 base가 한 번만 구현**해야 함(모든 백엔드/핸들러가 각자
 재구현하면 안 됨). 근거: "모든 곳에서 다시 구현하는 건 나쁘니까." →
-`base/bind-system-plan.md`의 "확정된 디스패치 모델"/`Dispatch` 네이밍 절이
+`base/dispatch-core-plan.md`의 "확정된 디스패치 모델"/`Dispatch` 네이밍 절이
 바로 이 base 제공 로직.
 
 부수적으로 확인된 것:
@@ -104,9 +104,9 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   인터페이스"가 곧 Handler 계약: `isHandlable(inst,key,value)`/
   `priority`/`process(inst,key,value,index)` **3종**(**[정정, 2026-08-13
   다섯 번째 세션]** 원래 별도 `retract(inst,key,value)` 필드가 있던 4종
-  계약이었으나, `process`가 자기 retract 클로저 `(hintValue) -> ()`를
+  계약이었으나, `process`가 자기 retract 클로저 `(nextValue: any?) -> ()`를
   반환하는 1-메소드로 합쳐짐), 정리할 게 없어도 `function() end`
-  반환 생략 불가까지 확정. `base/bind-system-plan.md` "핸들러 계약" 절.
+  반환 생략 불가까지 확정. `base/dispatch-core-plan.md` "핸들러 계약" 절.
 - ~~**네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히
   뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함~~
   **[해소됨]** — **`Handler`로 확정**, 위 항목이 가리키는 계약의 정식 이름.
@@ -129,7 +129,14 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   처리" 절의 일반 "매치 실패 시 즉시 error" 규칙 하나로 자연히 커버됨.
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로
-  주입한다는 패턴이 확정됨 — 상세는 `base/bind-system-plan.md`의 "base
+  주입한다는 패턴이 확정됨. **[2026-08-13 열네 번째 세션] 주입 대상 목록에
+  엔진 op 3개가 추가됨** — `addTag(inst,{string})`/`removeTag(inst,{string})`/
+  `setAttribute(inst,name,v)`(`v==nil`이면 삭제). `Tag`/`Attribute`의 부기
+  알고리즘이 통째로 quad-base로 옮겨오면서, 엔진에 실제로 손대는 마지막
+  한 줄만 이 경로로 주입받게 됨(`base/dispatch-core-plan.md` "base가
+  소유하는 핸들러와 주입되는 엔진 op" 절). 미주입 백엔드에서는 base
+  스텁이 명확한 에러를 내고, 백엔드가 통째로 다르게 처리하고 싶으면
+  `HANDLER_PRIORITY_FALLBACK`보다 높은 우선순위로 자기 핸들러를 등록하면 됨 — 상세는 `base/bind-system-plan.md`의 "base
   유틸은 인터페이스, 실제 구현은 백엔드 팩토리가 주입" 절 참고. **중복 호출
   가드/`New()`와의 관계는 2026-08-04 3차 라운드에서 확정**: 같은 팩토리로
   재호출하면 무시(no-op), 다른 팩토리로 재호출하면 에러(유일 슬롯 충돌 —
@@ -137,4 +144,4 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   생기면 인스턴스별 테이블이 분리되므로 이 가드도 자연히 인스턴스별로
   스코핑됨, 별도 재설계 불필요. **이 결론이 Dispatch의 handler 레지스트리에도
   그대로 적용된다는 게 2026-08-08 두 번째 세션에서 재확인/일반화됨** —
-  `base/bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절.
+  `base/dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절.

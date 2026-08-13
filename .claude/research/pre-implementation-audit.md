@@ -48,7 +48,7 @@ PropertyHandler가 직접 판별. 상세는 `base/tween-plan.md`(전면
 재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`. 아래는
 원래 발견 당시 기록.
 
-**위치**: `base/bind-system-plan.md` "확정된 디스패치 모델" 절 67-79행 —
+**위치**: `base/dispatch-core-plan.md` "확정된 디스패치 모델" 절 67-79행 —
 "Tween의 store-bind 핸들러는 **`k`는 무엇이든 받고 `v`가 Store인 경우를
 잡아내는, 우선순위가 매우 높은 핸들러**"; `architecture.md` 소스트리엔 이
 역할을 하는 quad-roblox 파일이 `Handlers/Tween.luau` 하나뿐(별도 범용
@@ -79,10 +79,11 @@ store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌
 ### 1-2. retract 시 "이전에 실제로 매치됐던 핸들러"를 누가 추적하는지 불명 — [해소됨, 2026-08-08 세 번째 세션]
 
 **해소**: `Dispatch`가 `(inst,k)`별 핸들러 체인(순서 있는 배열, `chains`)을
-직접 소유하고, `Dispatch.retractFrom(inst,k,index,v)`가 꼬리부터 `index`
+직접 소유하고, `Dispatch.retractFrom(inst,k,index)`가 꼬리부터 `index`
 까지 정리해주는 걸로 확정(2026-08-08 확정 당시 이름은 `retractUnder`이고
 체인이 핸들러 배열이었음 — 2026-08-13 다섯 번째 세션에 인덱스 기반으로
-재설계되며 개명, 결론 자체는 유지) — 아래 원래 제안(`Dispatch/StoreBind.luau`가
+재설계되며 개명, 같은 날 열네 번째 세션에 힌트 인자가 빠져 3-인자가 됨,
+결론 자체는 유지) — 아래 원래 제안(`Dispatch/StoreBind.luau`가
 "마지막 선택된 핸들러"를 직접 들고 있는 방식)은 재귀/래핑 핸들러가
 여러 단계(A→B→C)로 겹칠 때 자기 자신의 상태와 위임한 핸들러의 상태가
 슬롯 하나를 두고 충돌하는 문제가 있어 기각되고, 대신 Dispatch 자신이
@@ -90,7 +91,7 @@ store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌
 bind-system-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 원래 발견 당시 기록.
 
-**위치**: `base/bind-system-plan.md` "확정된 디스패치 모델" 절 90-91행 —
+**위치**: `base/dispatch-core-plan.md` "확정된 디스패치 모델" 절 90-91행 —
 "store bind가 새 값으로 넘어갈 때 이전 핸들러의 `retract(inst, k, v)`를
 한 번 호출해주면 됨."
 
@@ -115,10 +116,10 @@ bind-system-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 매치 실패는 조용한 무시 없이 즉시 `error`(브랜드+`typeof` 출력, provider
 초기화 확인 안내)로 확정. 핸들러 등록 시점 동률 감지 print 경고와
 `Dispatch.listHandlers()`류 전체 목록 조회 함수도 M2 기본 기능으로
-확정 — 상세는 `base/bind-system-plan.md` "우선순위 동률/매치 실패 처리"
+확정 — 상세는 `base/dispatch-core-plan.md` "우선순위 동률/매치 실패 처리"
 절. 아래는 원래 발견 당시 기록.
 
-**위치**: `base/bind-system-plan.md` "핸들러 계약" 절 — "디스패치는 등록된
+**위치**: `base/dispatch-core-plan.md` "핸들러 계약" 절 — "디스패치는 등록된
 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출, 첫 매치가 처리."
 
 **문제**: (a) 두 핸들러가 같은 `priority` 값을 가질 때 어느 쪽이 우선인지

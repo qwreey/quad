@@ -1,16 +1,42 @@
-# 재디스패치 = 하강 diff — `retractFrom` 선행 폐기, 핸들러 비교를 클로저 호출 앞에 (설계안)
+# [역전됨] 재디스패치 = "철거 후 재구축" + `hintValue` 힌트 모델
 
-**상태**: research — 2026-08-13 여섯 번째 세션에 사용자가 제기하고 방향을
-제시, 같은 세션 후속 라운드에서 모델이 거의 확정됨. **`base/` 반영 전
-남은 열린 항목은 아래 5절의 하나뿐**(Attribute 이름 소유권). 그 하나만
-정해지면 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
-`attribute-plan.md`를 한 번에 옮기면 됨.
+**상태**: 역전됨 — 2026-08-13 여섯 번째 세션에 사용자가 결함을 제기하고
+방향을 제시, 같은 날 열네 번째 세션에 마지막 열린 항목(Attribute 이름
+소유권)까지 확정되며 **`base/dispatch-core-plan.md`로 전면 반영 완료**.
+이 문서는 그때까지 research/ 아래 dispatch-redispatch-diff-plan이었던 설계안
+원문이고, **지금 유효한 모델은 `base/dispatch-core-plan.md`의 "Dispatch
+체인" 절** — 여기 남기는 이유는 "왜 힌트 모델을 버렸는가"의 재현 사례와
+근거가 통째로 보존될 가치가 있어서(같은 함정을 다시 설계하지 않도록).
 
-> **문서 이력**: 최초엔 dispatch-hint-to-oldvalue-plan(현재 없는 옛 파일명)으로
-> "힌트 대신 `oldValue`를 넘기자"는 보완안을 담고 있었으나, 사용자가
-> **"이전 값인 oldValue는 처음부터 클로저라 이미 본인이 알지 않아요?"**
-> 라고 지적해 그 보완안이 통째로 불필요함이 드러남(아래 3-2) — 파일명도
-> 바꿈.
+## 뒤집힌 옛 모델의 골자 (원문 보존)
+
+```lua
+-- 옛 계약: 래핑 핸들러가 재-dispatch 전에 자기 아래를 먼저 철거하고,
+-- 그때 "곧 디스패치될 raw 값"을 힌트로 실어 보냄.
+function StoreBind.process(inst, k, state, index)
+    local observer = state:Observer(function()
+        local realv = state:Get()
+        Dispatch.retractFrom(inst, k, index + 1, realv)  -- 선행 철거 + 힌트
+        Dispatch.process(inst, k, realv, index + 1)
+    end)
+    ...
+end
+
+function Dispatch.retractFrom(inst, k, index, v)   -- 4-인자(마지막이 힌트)
+    ...
+    retractor(if i == index then v else nil)        -- 힌트는 직속 1단계에만
+    ...
+end
+```
+
+옛 모델이 같이 요구하던 규칙들(전부 지금은 폐기):
+- **`isX(hintValue)` 가드 필수** — 힌트의 타입이 계약으로 보장되지 않아서.
+- **`hintValue`는 직속 위임 1단계에만 보장, 깊은 인덱스는 항상 `nil`** —
+  그래서 `State<State<Tag>>`류에서 깜빡임 방지가 조용히 꺼짐.
+- **`Dispatch.process`의 점유 체크(이미 점유된 인덱스면 즉시 error)** —
+  Attribute 이름 소유권이 이 부수 효과에 얹혀 있었음.
+
+## 아래는 역전을 이끈 분석 원문 (당시 `research/` 문서 그대로)
 
 ## 1. 현행 `hintValue`의 실제 결함 (사용자 지적, 확인됨)
 
@@ -267,3 +293,21 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
 **요약**: 배너를 달고 있는 파일 = 반영 대상. 위 7개(`bind-system-plan`/
 `tag-plan`/`slot-plan`/`attribute-plan`/`architecture`/`ROADMAP`/
 `ref-plan`)가 전부이고, 반영이 끝나면 각 파일의 ⚠️ 배너도 같이 제거할 것.
+
+
+---
+
+## 최종 결말 (2026-08-13 열네 번째 세션)
+
+- **5절의 열린 항목은 (a)가 아니라 그 변형으로 확정됨** — 사용자가 제시한
+  **그룹 전용 키(`GetKey`, 비공개) + `AttributeKeyHandler`의 이름 claim**.
+  (a)(그룹 안에 이름별 claimant `Relate`)를 그대로 쓰면 **그룹↔직접 쓰기
+  충돌을 못 잡는다**는 게 트레이싱으로 드러났기 때문 — 두 경로가 만나는
+  유일한 지점인 말단 핸들러에서 `k`가 같은 객체라 소유자를 구분할 수 없음.
+  근거와 최종 의사코드는 `base/attribute-plan.md` "이름 소유권" 절.
+- **`Dispatch.retractFrom`은 4-인자에서 3-인자가 됐음** — 값을 넘기는
+  경로가 `Dispatch.process`의 "같은 핸들러" 분기 하나로 통일되면서, 외부가
+  힌트를 만들어 넣을 자리 자체가 없어짐(옛 결함이 구조적으로 재발 불가).
+- 6절의 반영 목록(7개 문서 + `bind-system-plan.md` 2단계 분할)은 같은
+  세션에 전부 수행됨 — 디스패치 코어는 `base/dispatch-core-plan.md`로
+  분리되며 재작성됐다.

@@ -37,9 +37,14 @@
   "제네릭 + 자주 쓰는 것만 정적 지름길" 절충과 겉보기엔 비슷해 보이지만
   규모가 다른 문제라 기각.
 - **패키지 경계: 전부 quad-roblox** — `Handlers/OnChange.luau`에 `OnChange(name)`
-  키 팩토리와 Handler를 같이 둠(단일 키 `AttributeKey.luau`와 같은 배치,
-  base 쪽 값 타입 파일 없음 — 그룹 `Attribute.luau`는 값 타입 자체가
-  quad-base 소속이라 다름, `base/attribute-plan.md` 참고).
+  키 팩토리와 Handler를 같이 둠. **[정정, 2026-08-13 열네 번째 세션]**
+  예전엔 "단일 키 `AttributeKey.luau`와 같은 배치"라고 적었으나 그
+  `AttributeKey`는 같은 세션에 **quad-base로 옮겨갔음**(부기가 엔진 지식을
+  요구하지 않아서, `base/attribute-plan.md` "패키지 배치" 절) — `OnChange`가
+  quad-roblox에 남는 이유는 그것과 달리 **`GetPropertyChangedSignal`
+  자체가 로직**이라 "한 줄 op 주입"으로 줄어들지 않기 때문
+  (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진
+  op" 절의 분할 기준).
   `GetPropertyChangedSignal` 자체가 Roblox 엔진 API라 base에
   둘 이유가 없음 — Tag처럼 백엔드 무관한 값/API 레이어가 따로 있는 경우와
   다름.
@@ -73,7 +78,7 @@
 | | 소스 | 값 타입 | 패키지 경계 |
 |---|---|---|---|
 | 이벤트(`MouseButton1Click = fn`) | `inst[key]`가 이미 Signal | 콜백, 타입 미검증 | quad-roblox(`Handlers/Event.luau`) |
-| `AttributeKey(name)` | `SetAttribute`/`GetAttribute` | 값(제네릭 또는 정적 타입 패밀리로 타입 파라미터화) | quad-roblox(`Handlers/AttributeKey.luau`) |
+| `AttributeKey(name)` | 주입된 `setAttribute` op | 값(제네릭 또는 정적 타입 패밀리로 타입 파라미터화) | **quad-base**(키+Handler, 2026-08-13 열네 번째 세션 재배치) / 엔진 op만 백엔드 |
 | `OnChange(name)` | `GetPropertyChangedSignal(name)` | 콜백, 타입 미검증(제네릭 없음) | quad-roblox(`Handlers/OnChange.luau`) |
 
 `OnChange`가 Attribute처럼 제네릭화되지 않은 이유는 "콜백을 받는다"는

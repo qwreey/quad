@@ -8,16 +8,16 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 확정될 때마다 각 마일스톤 체크박스가 계속 갱신돼왔음 — 그래도 아직 M0
 자체는 시작 안 함.** 다음 세션은 바로 M0부터.
 
-> **⚠️ M0 착수 자체가 한 결정으로 막혀 있음 — `.claude/question.md`
-> **0-Z**(Attribute 이름 소유권). "M0 착수 전에 정할 것"으로 명시돼
-> 있음 — `HUMAN_TODO.md` 4번, `CLAUDE.md` "지금 할 일" 0번 항목 참고.
-> 아래 M0 체크리스트 자체는 이 결정과 무관하게 유효하지만, 순서상 이게
-> 먼저.**
+> **✅ [2026-08-13 열네 번째 세션] M0 착수를 막던 결정이 전부 해소됐음.**
+> `0-Y`(13차 세션), `0-Z`(Attribute 이름 소유권)/`0-A`(재디스패치 하강
+> diff, 둘 다 14차 세션) 확정·반영 완료 — `.claude/question.md`의 최우선
+> 칸이 비었습니다.
 >
-> **[2026-08-13 열세 번째 세션] 같이 막고 있던 `0-Y`(`:Compute(fn)` lazy
-> 핸들 계약)는 해소됨** — 계약은 그대로 유지로 확정, 남은 건 Luau의 현
-> 한계라 quad가 지금 할 수 있는 게 없음. **다만 구현 시 지켜야 할 규약이
-> 하나 생겼으니 M0 착수 전에 반드시 읽을 것: `.claude/base/typing-limits.md`**
+> **다만 M0 착수 전에 반드시 읽을 구현 규약 두 개**:
+> `.claude/base/typing-limits.md`(0-Y의 산물 — 파생 State마다 결과 타입을
+> 명시 주석으로 바인딩)와 `.claude/base/dispatch-core-plan.md`(0-A/0-Z의
+> 산물 — 하강 diff 재디스패치, 3-인자 `retractFrom`, Handler 작성
+> 체크리스트 8개, `HANDLER_PRIORITY_FALLBACK`, 주입되는 엔진 op).
 > (특히 "파생 State를 만드는 자리마다 결과 타입을 명시 주석으로 바인딩"과
 > 7번 체크리스트).
 
@@ -76,23 +76,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M2 — 디스패치 엔진
 
-> **⚠️ 착수 전 필독 — 아래 체크리스트는 *현행* 모델(래핑 핸들러가 재-dispatch
-> 전에 `Dispatch.retractFrom`을 선행 호출)을 기준으로 쓰여 있고, 그 모델은
-> 교체가 예정돼 있습니다.** 새 모델("하강 diff": 선행 `retractFrom`을 폐기하고
-> `Dispatch.process`가 **핸들러를 먼저 비교** — 같으면 그 자리 클로저에 새
-> 값을 넘기고 자기 `process` 재호출, 다르면 그 자리부터 전량 철거)은
-> `.claude/research/dispatch-redispatch-diff-plan.md`에 있고, `.claude/question.md`
-> **0-Z**(Attribute 이름 소유권) 하나만 정해지면 base와 이 문서에 한 번에
-> 반영됩니다. **0-Z가 미해결인 채로 M2/M4/M10을 구현하면 곧 갈아엎어야 하는
-> 코드를 짜게 됩니다** — 먼저 0-Z를 해소할 것. (base 4개 문서에도 같은 취지의
-> ⚠️ 배너가 달려 있는데, ROADMAP에만 없어서 2026-08-13 감사에서 지적됨.)
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료 — 아래
+> 체크리스트는 새 모델("하강 diff") 기준으로 갱신됐습니다.** 래핑 핸들러의
+> 선행 `retractFrom`은 폐기됐고, `Dispatch.process`가 슬롯의 `handler`를
+> 먼저 비교해 (같으면 그 자리 클로저에 새 값을 넘기고 자기 `process`
+> 재호출, 다르면 그 자리부터 전량 철거) 처리합니다. 정본은
+> `.claude/base/dispatch-core-plan.md`(같은 세션에 `bind-system-plan.md`에서
+> 분리 신설), 뒤집힌 옛 모델은
+> `.claude/archive/dispatch-hintvalue-model-reversed.md`.
 
 
 - [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
       스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
-      (오케스트레이터: 그 인덱스 점유 여부 체크 → getHandler → 매치된
-      핸들러의 `.process`를 불러 **그 반환값(retractor 클로저)을
-      `chains`의 그 인덱스에 저장**) / `Dispatch.retractFrom(inst,k,index,v)`
+      (오케스트레이터: getHandler → **그 인덱스의 기존 핸들러와 비교** →
+      같으면 그 자리 클로저에 새 값을 넘기고 같은 핸들러의 `.process`로
+      자리 교체, 다르면 `retractFrom` 후 새로 설치. 반환값이 `nil`이면
+      즉시 error) / **3-인자** `Dispatch.retractFrom(inst,k,index)`
       (아래 항목) / `Dispatch.addHandler(handler)`(레지스트리 등록,
       quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
       flattened)`(배열→해시 두 패스 순회하며 각 `(k,v)`에
@@ -160,17 +159,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       바인딩), array part 모든 number 인덱스에 대해 둘 다 호출 필수(생략
       UB, Handler 구현체 작성자만의 계약) — `recompute`는 leaf-lifetime
       경로(`bindLifetime`/`unbindLifetime`)로 등록, `:Subscribe()` 아님
-      (2026-08-09 여섯 번째 세션, `base/bind-system-plan.md` "Length/Offset"
+      (2026-08-09 여섯 번째 세션, `base/dispatch-core-plan.md` "Length/Offset"
       절 — `base/slot-plan.md` "여러 Slot이 섞일 때 순서 보장" 해소)
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
-      호출, `base/bind-system-plan.md` "핸들러 계약" 절, 2026-08-08 세션
+      호출, `base/dispatch-core-plan.md` "핸들러 계약" 절, 2026-08-08 세션
       / **2026-08-13 다섯 번째 세션에 별도 `retract` 필드가 `process`
       반환값으로 합쳐지며 대상만 바뀜**)
 - [ ] 우선순위 동률/매치 실패 처리(2026-08-12 열일곱 번째 세션 확정,
-      `base/bind-system-plan.md` "우선순위 동률/매치 실패 처리" 절) —
-      `HANDLER_PRIORITY_HIGH`/`_NORMAL`/`_LOW` 등 목적별 우선순위 상수,
+      `base/dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절) —
+      `HANDLER_PRIORITY_HIGH`/`_NORMAL`/`_LOW`/**`_FALLBACK`**(base 제공
+      핸들러의 기본 밴드 — 백엔드가 평범한 우선순위로 자기 핸들러를
+      등록하면 언제나 이김, 2026-08-13 열네 번째 세션 신설) 등 목적별 상수,
       매치 실패(`isHandlable`을 만족하는 핸들러 없음)는 `Brand`+`typeof(v)`
       출력 후 즉시 error(provider 초기화 확인 안내 포함 — provider
       미주입 상태도 이 경로로 자동 커버, `pre-implementation-audit.md`
@@ -180,25 +181,30 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
       bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절)
-- [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]=retractor}}}` —
-      **핸들러 배열이 아니라 재귀 깊이 인덱스→retractor 클로저 맵**) +
-      `Dispatch.retractFrom(inst,k,index,v)` — 재귀 재-dispatch(StoreBind/
-      NoneHandler)의 정리를 다단 체인까지 정확히 전파(2026-08-08 세 번째
-      세션 신설, **2026-08-13 다섯 번째 세션 인덱스 기반 전면 재설계** —
-      `base/bind-system-plan.md` "Dispatch 체인" 절,
-      `pre-implementation-audit.md` 1-2번 "이전 핸들러 추적" 항목 해소).
-      `Dispatch.process(inst,k,v,index)`가 반환 클로저를 그 인덱스에
-      저장하는 것도 이 항목에 포함. **구현 시 반드시 지킬 것**:
+- [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
+      — **재귀 깊이 인덱스 → (담당 핸들러, 그가 반환한 retractor 클로저)**) +
+      **3-인자** `Dispatch.retractFrom(inst,k,index)` — 재귀 재-dispatch
+      (StoreBind/NoneHandler)의 정리를 다단 체인까지 정확히 전파(2026-08-08
+      신설 → 2026-08-13 다섯 번째 세션 인덱스화 → **같은 날 열네 번째 세션
+      하강 diff로 전면 교체**, `base/dispatch-core-plan.md` "Dispatch 체인"
+      절, `pre-implementation-audit.md` 1-2번 "이전 핸들러 추적" 항목 해소).
+      **구현 시 반드시 지킬 것**:
+      - **재디스패치는 하강 diff** — 래핑 핸들러는 선행 `retractFrom`을
+        부르지 않고 그냥 `Dispatch.process(inst,k,realv,index+1)`. 비교는
+        `Dispatch.process` 안에서: 슬롯의 `handler`가 같으면 그 자리
+        클로저에 새 값을 넘긴 뒤 같은 핸들러의 `process`로 자리 교체,
+        다르면 `retractFrom(inst,k,index)` 후 새로 설치
       - `chains:SetStrong(inst,k,list)`는 `handler.process` 호출 **전에** —
         뒤에 두면 재귀 위임이 자기 테이블을 만들었다가 바깥이 덮어써
         하위 retractor가 통째로 유실됨(2026-08-13 감사에서 잡힌 버그)
-      - `handler.process` 호출 전에 그 인덱스에 no-op 점유 마커를 박아
-        `list`를 구멍 없는 시퀀스로 유지(hole 있는 테이블의 `#`는 Lua가
-        보장 안 함) + 같은 index 재진입도 가드에 걸리게
-      - 점유 체크는 `getHandler`/`handler.process`보다 **먼저**(핸들러
-        부작용 낭비 없음)
+      - 새 자리를 여는 (B) 분기에선 `handler.process` 호출 전에 no-op
+        점유 마커를 박아 `list`를 구멍 없는 시퀀스로 유지(hole 있는
+        테이블의 `#`는 Lua가 보장 안 함)
+      - `process`가 `nil`을 반환하면 (A)/(B) 양쪽에서 즉시 error
       - 다른 키로 위임할 땐 항상 `index=1`, 같은 키 재귀는 `index+1`;
         `Dispatch.drive`의 진입도 항상 `1`
+      - **소유권 충돌 감지는 Dispatch의 일이 아님**(옛 점유 error 폐지) —
+        필요한 도메인이 직접(Attribute 이름 claim, M10)
 - [ ] mock 대상 테스트
 
 ## M3 — Store/State/Source
@@ -255,14 +261,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M4 — 첫 end-to-end 반응형 업데이트
 
-> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 재디스패치 모델이 교체 예정,
-> `question.md` 0-Z 먼저 해소할 것.
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료** — 아래
+> 항목은 `base/dispatch-core-plan.md`의 하강 diff 기준으로 읽을 것.
 
 
-- [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — 재-dispatch
-      전 `Dispatch.retractFrom(inst,k,index+1,realv)` 호출 필수, 그 다음
-      `Dispatch.process(inst,k,realv,index+1)`. `base/bind-system-plan.md`
-      "Dispatch 체인" 절)
+- [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — **선행
+      `retractFrom` 없이** `Dispatch.process(inst,k,realv,index+1)` 한 줄
+      (2026-08-13 열네 번째 세션 하강 diff), 반환 클로저는 자기 Observer
+      구독만 해제. `base/dispatch-core-plan.md` "Dispatch 체인" 절)
 - [ ] mock 대상으로 "store 값 바꾸면 `process`가 다시 호출된다" +
       "이전 값이 다른 타입이면 이전 `process`가 반환했던 retractor 클로저가
       정확히 불린다" 확인 + **`State<State<T>>`(값이 또 State/Source)가
@@ -281,10 +287,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M6 — Slot
 
-> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 아래 "`SlotHandler.process`는 claim
-> 실패 시에도 파괴적 클로저를 반환해야 함(`retractFrom`은... 항상 소비)"
-> 항목은 현행(교체 예정) 재-dispatch 모델을 전제로 쓰여 있음.
-> `question.md` 0-Z 먼저 해소할 것.
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료** — 아래
+> "`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를 반환해야 함"
+> 항목은 새 모델에서도 그대로 유효함(체인은 클로저를 early-return
+> 여부와 무관하게 항상 소비 — `base/dispatch-core-plan.md` "Handler 작성
+> 체크리스트" 1번). 클로저가 받는 값이 항상 `Slot`이거나 `nil`임이
+> 계약으로 보장된다는 점만 새로 추가됨.
 
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
@@ -402,7 +410,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **`Slot.Offset: Source<number>`도 `Slot.Length`처럼 공개 필드로
       노출 — Slot 마운트 시점에 `Dispatch.setOffsetSource`가 등록하는
       바로 그 Source를 `self.Offset`으로도 저장**(2026-08-11 세션,
-      `base/bind-system-plan.md`의 "Slot.Length와 Slot.Offset은 별개" 절)
+      `base/dispatch-core-plan.md`의 "Slot.Length와 Slot.Offset은 별개" 절)
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
@@ -504,9 +512,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
       "이전 매치 핸들러 추적" 항목과 함께 구현 — `StoreBind` 핸들러와
       동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — `None` 센티널
-      자체는 확정 완료지만, **⚠️ M2 배너와 같은 주의**: `NoneHandler`가
-      쓰는 재-dispatch 배관(선행 `retractFrom` 호출)은 재디스패치 모델
-      교체 대상이라 `question.md` 0-Z 먼저 해소할 것
+      자체는 확정 완료. **[2026-08-13 열네 번째 세션 갱신]** `NoneHandler`가
+      쓰는 재-dispatch 배관에서 **선행 `retractFrom` 호출은 폐기됨** —
+      그냥 `Dispatch.process(inst,k,nil,index+1)` 한 줄
+      (`base/dispatch-core-plan.md`)
 - [ ] 프로퍼티류 필드 타입에 `T' = T | Tween<T>` 치환 반영(타입 생성
       스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
       끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`
@@ -556,9 +565,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M10 — Event / OnChange / Attribute / Tag
 
-> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 재디스패치 모델이 교체 예정이고,
-> 특히 **Attribute 이름 소유권(`question.md` 0-Z)이 이 마일스톤의 직접
-> 대상**임. 0-Z 먼저 해소할 것.
+> **✅ [2026-08-13 열네 번째 세션] 0-Z(Attribute 이름 소유권)/0-A(하강
+> diff) 확정 완료** — 이 마일스톤의 Tag/Attribute 항목은 **quad-base로
+> 재배치**됐고(엔진 op `addTag`/`removeTag`/`setAttribute`만 주입),
+> 이름 소유권은 그룹 전용 키 + `AttributeKeyHandler`의 이름 claim이
+> 판정함. 정본은 `base/attribute-plan.md`/`base/tag-plan.md`.
 
 
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
@@ -567,33 +578,47 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       명시, 이름별 weak 캐시로 `OnChange(a) == OnChange(a)` 동등성 보장
       (`AttributeKey`와 동일 기법), `base/onchange-plan.md`, 2026-08-10
       세션 확정·2026-08-11 아홉 번째 세션 후속(캐시))
-- [ ] `Handlers/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)`/
-      `BooleanAttribute`류 DI 키 팩토리+Handler — 메커니즘/`None`/`retract`
-      불필요 확정, 이름별 weak 캐시로 동등성 보장, 타입 파라미터화 이름만
-      착수 전 확인, `base/attribute-plan.md`)
+- [ ] **[2026-08-13 열네 번째 세션 재배치] `quad-roblox/EngineOps.luau` —
+      주입되는 엔진 op 3개**: `addTag(inst,{string})`/`removeTag(inst,{string})`
+      (`CollectionService`), `setAttribute(inst,name,v)`(`v==nil`이면 삭제).
+      `RobloxFactory`가 `BaseModule`에 주입(`bindLifetime`/`canExecute`와
+      같은 패턴) — 아래 base 핸들러들이 이걸 호출함
+      (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는
+      엔진 op" 절)
+- [ ] `quad-base/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)` +
+      이름별 weak 캐시로 동등성 보장 + 스칼라 편의 패밀리
+      `String`/`Number`/`BooleanAttribute` — 엔진 고유 타입 패밀리
+      (`Color3Attribute`류)만 quad-roblox의 `D`/`DI` 층에서 각자 추가.
+      타입 파라미터화 이름만 착수 전 확인, `base/attribute-plan.md`)
+- [ ] `quad-base/Dispatch/AttributeKey.luau`(`AttributeKeyHandler` —
+      `setAttribute(inst,name,v)`를 `v`가 뭐든 무조건 호출 + **이름
+      claim**(`nameClaims` Relate, 다른 키 객체가 같은 이름에 들어오면
+      즉시 error, 반환 클로저는 자기 claim만 반납하고 엔진 부작용 없음).
+      `HANDLER_PRIORITY_FALLBACK`으로 등록. `question.md` 0-Z 결정 —
+      `base/attribute-plan.md` "이름 소유권" 절)
 - [ ] `Attribute.luau`(quad-base — 그룹 값 타입+API: `Attribute(store1,
-      store2, ...)`/`Merged`, `Tag`와 동형 array-part 값 객체,
+      store2, ...)`/`Merged`/`:NameMap`, `Tag`와 동형 array-part 값 객체,
       `base/attribute-plan.md`)
-- [ ] `Handlers/Attribute.luau`(quad-roblox — 그룹 `process`가 이름마다
-      공개 `AttributeKey(name)`로 `Dispatch.process(inst,key,source,1)`만
-      부르고, 반환 클로저가 **자기가 등록한 이름 전부**에
-      `Dispatch.retractFrom(inst,key,1,nil)`. 실제 `SetAttribute`/store-bind
-      구독은 전부 단일 키 경로 재사용(중복 구현 없음).
-      **`process` 안에서 `retractFrom`을 먼저 부르면 안 됨** — 인덱스 1이
-      무조건 비워져 소유권 충돌 점유 체크가 무력화됨(2026-08-13 감사),
-      `base/attribute-plan.md` "메커니즘" 절)
+- [ ] `quad-base/Dispatch/Attribute.luau`(`AttributeGroupHandler` — 이름마다
+      **그룹 전용 키**(비공개 `GetKey`, 그룹 값 객체별·이름별 메모이즈)로
+      `Dispatch.process(inst,key,source,1)`만 부르고, 반환 클로저가 자기가
+      등록한 키 전부에 `Dispatch.retractFrom(inst,key,1)`.
+      **`process` 안에서 `retractFrom`을 먼저 부르면 안 됨**(철거는 전적으로
+      클로저 몫). 실제 `setAttribute`/store-bind 구독/이름 claim은 전부 단일
+      키 경로 재사용 — `base/attribute-plan.md` "메커니즘" 절)
 - [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
-      `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`, `base/tag-plan.md`
-      — 2026-08-08 세 번째 세션 array-part 값 객체로 재설계, 구 해시 파트
-      모델은 `archive/tag-hash-key-model-reversed.md`)
-- [ ] `Handlers/Tag.luau`(quad-roblox — `CollectionService` 글루만,
-      `isHandlable`은 `isTag(v)`. **`AddTag`는 온전히 `process`, `RemoveTag`는
-      온전히 반환 클로저** — 이름별 홀더 집합(`tagNameMap`, 위치 `k` 기준
-      참조 카운트)이 비었을 때만 실제 `RemoveTag`, 그마저도 `hintValue`가
-      그 이름을 `Contains`하면 skip해 깜빡임 방지(전체 삭제 후 재생성
-      금지). `process` 쪽 별도 diff 없음, `kTagMap`도 불필요(클로저가 `v`를
-      직접 캡처) — 2026-08-12 열한 번째 / 2026-08-13 네·다섯 번째 세션,
-      `base/tag-plan.md` "메커니즘" 절)
+      `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`,
+      `base/tag-plan.md` — 2026-08-08 세 번째 세션 array-part 값 객체로
+      재설계, 구 해시 파트 모델은 `archive/tag-hash-key-model-reversed.md`)
+- [ ] `quad-base/Dispatch/Tag.luau`(`TagHandler` — `isHandlable`은 `isTag(v)`.
+      **`addTag`는 온전히 `process`, `removeTag`는 온전히 반환 클로저** —
+      이름별 홀더 집합(`tagNameMap`, 위치 `k` 기준 참조 카운트)이 비었을
+      때만 실제 `removeTag`, 그마저도 클로저가 받은 새 값이 그 이름을
+      `Contains`하면 skip해 깜빡임 방지. 제거할 이름은 모아서 **한 번에**
+      `removeTag(inst, names)`. `process` 쪽 별도 diff 없음, `kTagMap`도
+      불필요(클로저가 `v`를 직접 캡처). `HANDLER_PRIORITY_FALLBACK`으로
+      등록 — 2026-08-12 열한 번째 / 2026-08-13 네·다섯·열네 번째 세션,
+      `base/tag-plan.md`)
 
 ## M11 — Tween
 

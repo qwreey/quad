@@ -94,7 +94,7 @@ relate:GetWeak(inst: any, key: any): any?
 ## 언제 `Relate`를 쓰고 언제 쓰면 안 되는가 — 체크리스트 (2026-08-13 여섯 번째 세션 신설)
 
 Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌면서
-(`base/bind-system-plan.md` "핸들러 계약" 절) **`Relate`가 필요한 범위가
+(`base/dispatch-core-plan.md` "핸들러 계약" 절) **`Relate`가 필요한 범위가
 크게 줄었음** — 이 전환기에 양방향으로 실수가 나왔어서 기준을 못박아 둠.
 
 **쓰지 말 것 — 클로저 캡처로 충분한 경우**: 이 `process` 호출이 만든
@@ -111,7 +111,7 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 - **여러 위치가 하나의 자원을 공유**할 때의 참조 카운트 — `Tag`의
   `tagNameMap`(이름 → 그 이름을 걸고 있는 위치 집합).
 - **여러 `process` 호출을 가로지르는 dedup 기록** — `Ref`의 "이 자리에
-  마지막으로 바인딩한 Ref"(클로저의 `hintValue`는 *다음* 값이지 *이전*
+  마지막으로 바인딩한 Ref"(클로저가 받는 인자는 *다음* 값이지 *이전*
   값이 아니라서 캡처로 대체 불가).
 - **소유권/멤버십 전역 판정** — `Slot`의 `elementOwner`.
 - **"언제까지 실행돼도 되는가"** — `bindLifetime`/`canExecute`
@@ -162,7 +162,7 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 
 ## 대체하는 것
 
-- `base/bind-system-plan.md` "핸들러 내부 상태 저장" 절의 `base.perInstanceState(inst)`
+- `base/dispatch-core-plan.md` "핸들러 내부 상태 저장" 절의 `base.perInstanceState(inst)`
   placeholder — Tween 등 핸들러가 `retract` 대상을 저장하는 용도, `SetStrong`으로.
 - `base/lifecycle-pattern.md`의 `bindLifetime`/`canExecute` — gcconn/gchold를
   `Relate`의 `SetStrong`으로 저장(둘 다 존재 이유가 "안 죽는 것"이므로

@@ -242,7 +242,7 @@ end
 직접 읽기로 확정했으나(위 구현), 실제 Luau 필드 접근 비용/weak table 조회
 비용 비교는 여전히 quad-roblox 구현 단계에서 실측 확인 대상.
 
-이건 `base/bind-system-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
+이건 `base/dispatch-core-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
 직접 사용)과 짝을 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"
 (`Relate:SetStrong`/`:SetWeak`), 다른 하나는 "언제까지 실행되어도 되는지"
 (`bindLifetime` + `canExecute`)를 다룸. 후자는 내부적으로 전자가 제공하는
@@ -325,6 +325,6 @@ Roblox 엔진 자체가 Destroy 시 Tag/Attribute/실행 중인 Tween을 전부 
 자체는 그대로 유효하고(이 절의 결론은 안 바뀜), 다만 코드에서
 `handler.retract(...)`를 찾으면 안 됨 — `local retractor =
 handler.process(inst,k,v,index)` 형태로 받아서 `Dispatch`가 `chains`에
-보관했다가 부름(`base/bind-system-plan.md` "핸들러 계약"/"Dispatch 체인"
+보관했다가 부름(`base/dispatch-core-plan.md` "핸들러 계약"/"Dispatch 체인"
 절). 이 문서가 계속 쓰는 "retract 시점"/"retract가 불린다"는 표현은
 전부 그 클로저가 호출되는 시점을 가리킴.

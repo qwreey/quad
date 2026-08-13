@@ -306,15 +306,17 @@ Attribute는 이미 "겹치면 error"로 소유 코드가 명확히 갈리는 �
 "Dispatch 체인" 절). 하지만 **동작한다고 해서 권장 방향인 건 아님**
 (사용자 판단: "UB는 아니지만 우리가 원치 않는 방향인건 맞습니다").
 
-**왜 원치 않는가 — 단순 취향이 아니라 실제 기능 손실이 있음**:
-`Dispatch.retractFrom(inst,k,index,v)`는 힌트 `v`를 정확히 `index`
-자리에만 넘기고 더 깊은 인덱스엔 `nil`을 넘김. 그래서 `State<Tag>`
-(한 겹, StoreBind@1 → TagHandler@2)에서는 재발행 시 TagHandler가
-`hintValue=newTag`를 **확실히** 받아 깜빡임 방지가 동작하지만,
-`State<State<Tag>>`(StoreBind@1 → StoreBind@2 → TagHandler@3)에서
-**바깥** store가 재발행하면 TagHandler는 `nil`을 받아 `RemoveTag`→
-`AddTag` 왕복이 실제로 일어남. 깊이가 늘수록 힌트 기반 최적화
-(`Tag`의 `Contains`, `Ref`/`Slot`의 identity 비교)가 전부 무력화됨.
+**[근거 축소, 2026-08-13 열네 번째 세션] 원래 이 항목의 주 근거였던
+"깊은 체인에선 힌트가 사라져 깜빡임 방지가 꺼진다"는 손실은 없어졌음.**
+당시 서술: 옛 `Dispatch.retractFrom(inst,k,index,v)`가 힌트 `v`를 정확히
+`index` 자리에만 넘기고 더 깊은 인덱스엔 `nil`을 넘겼기 때문에
+`State<State<Tag>>`에서 바깥이 재발행하면 TagHandler가 `nil`을 받아
+`RemoveTag`→`AddTag` 왕복이 일어났음. **하강 diff 재디스패치**에선 각
+레벨이 자기 재프로세스에서 자기 값을 받으므로 깊이와 무관하게 진짜
+`Tag` 객체가 전달됨(`base/dispatch-core-plan.md` "Dispatch 체인" 절).
+남은 근거는 (a) 편의성/의도 표현, (b) `state<state<Frame>>`류에서 Slot
+offset이 밀리고 당겨지는 케이스(이건 이미 "그냥 확인된 것"으로 수용)
+정도라 **우선순위가 더 내려감**.
 
 **아이디어(착수 안 함)**: 중첩을 Dispatch 층에서 감내하는 대신, 값
 층에서 **평탄화하는 콤비네이터**를 제공 — `State<State<T>>`를 받아

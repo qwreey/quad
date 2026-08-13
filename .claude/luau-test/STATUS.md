@@ -1,6 +1,7 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-13 열세 번째 세션(`08` 해소 → `done/`, `review-required/` 비워짐).
+> 마지막 갱신: 2026-08-13 **열네 번째 세션**(하강 diff 재디스패치 확정으로
+> `04`/`19`가 옛 모델을 검증하고 있어 `rewrite-required/`로 이동).
 > 첫 실측은 여섯 번째 세션 — 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
 > 실행법: `luau <파일>` (런타임) / `luau-analyze <파일>` (타입 전용).
 
@@ -11,9 +12,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크 코드가 깨짐(설계 문제 **아님**) | 3 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 5 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 1(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 14 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -37,10 +38,19 @@
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
 아님(계약 자체는 위에서 이미 확정됨).
 
-## 🟠 `rewrite-required/` — 스파이크가 깨짐, 설계 문제 아님 (3건)
+## 🟠 `rewrite-required/` — 스파이크가 낡음 (5건)
+
+**[2026-08-13 열네 번째 세션] 앞의 두 건은 "코드가 깨진" 게 아니라 "설계가
+바뀐" 경우** — `question.md` 0-A/0-Z 확정으로 재디스패치가 **하강 diff**가
+되면서, 이 둘이 검증하던 전제(선행 `retractFrom` + 4-인자 힌트 + 인덱스
+점유 체크)가 더 이상 설계가 아님. 통과 상태로 `done/`에 두면 **옛 모델을
+"검증됨"으로 오독하게 되므로** 옮김. 새 정본은
+`base/dispatch-core-plan.md`/`base/attribute-plan.md`.
 
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
+| `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
+| `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
@@ -52,23 +62,23 @@
 | `10-roblox-studio-checks.server.luau` | **Studio 전용**(`luau` CLI로 못 돌림). A 섹션 앞부분만 사용자 자작 스크립트로 실측 — `audit/gcconn-trick-verification.md`. **A-1/A-2(`canBound` 게이트)/B/C는 여전히 미확인** |
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (16건)
+## ✅ `done/` — 통과 or 판정 끝 (14건)
 
-**런타임 12개 전원 통과**(crash 0 / FAIL 0):
+**런타임 12개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] 그중
+`04`/`19`는 검증 대상 설계가 바뀌어 위 `rewrite-required/`로 이동했고,
+아래 표엔 남은 10개만 있음**(실측 당시 통과였다는 사실 자체는 유효):
 
 | 파일 | 확인된 것 |
 |---|---|
 | `01-two-pass-array-hash-order` | 배열 파트 전체 → 해시 파트 순. `Dispatch.drive` 두 패스 계약과 `PreRef` 호이스팅의 전제 |
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
-| `04-dispatch-chain-retractFrom` | 인덱스 기반 체인 + **음성 대조군이 감사 버그를 재현**(아래 별도 절) |
 | `05-store-state-diamond-propagation` | 다이아몬드에서 재계산 정확히 1회, invalidate 2번째는 즉시 중단 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
 | `11-modifier-illegal-value-error` | Modifier 필드/Source에 핸들러 계층 값 넣으면 즉시 error — 16개 케이스 전원 |
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
-| `19-ownership-refcount-relate-patterns` | Tag 참조 카운트 / Attribute 점유 체크 / Slot `claimOwner` vs `claimOwnerAt` — **음성 대조군 포함** 전원 통과. ⚠️ **B 섹션은 `question.md` 0-Z가 정해지면 다시 손봐야 함**(하강 diff 모델에선 그룹↔그룹을 점유 체크만으론 못 잡음) |
 | `20-slot-splice-index-arithmetic` | `Splice` 산술 11개 경계 케이스 전부 참조 구현과 일치 |
 
 **타입 스파이크 중 판정이 끝나 더 할 일 없는 것**:
@@ -82,7 +92,8 @@
 
 ### 특별히 중요한 통과 3건
 
-**`04` — 직전 감사가 찾은 버그가 음성 대조군으로 재현됨**
+**`04` — 직전 감사가 찾은 버그가 음성 대조군으로 재현됨**(파일은 지금
+`rewrite-required/`에 있음 — 아래 관측 자체는 새 모델에서도 유효)
 
 | 관측 지점 | 정상(수정본) | 대조군(버그) |
 |---|---|---|
