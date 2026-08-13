@@ -437,7 +437,7 @@ claimOwner(element, self)  -- self = 담는 Slot. 이미 누가(같은 self 포�
 -- rawRemove(self, index)/rawExtract 안, 요소를 내보내는 자리
 releaseOwner(element, self)
 
--- destroySlotTree(slot) 안, 자식들을 파괴하기 직전(위 "파괴" 절)
+-- destroySlotTree(slot) 안, 자식들을 파괴하기 직전(아래 "파괴" 절)
 releaseOwner(element, slot)
 ```
 
@@ -483,6 +483,13 @@ nested `Slot`을 파괴 후 재사용하는 경로가 정확히 이 케이스). 
   변경을 추적해도 됨" 범위에 속하고, `retract` 시점엔 그 추적만 풀면 됨 —
   Destroy 시점엔 `retract`가 호출되지 않는다는 원칙(`base/lifecycle-pattern.md`)도
   동일하게 적용.
+
+> **🔄 [역전됨, 2026-08-13 여섯 번째 세션] 아래 "폐기, 옮기지 않음" 결정은
+> 뒤집혔습니다 — 지금은 `State<Slot>` 교체가 **파괴가 아니라 언마운트**이고,
+> **portal은 별도 기능이 아니라 그 결정의 자연스러운 귀결**입니다.
+> 최신 설계는 이 문서 아래쪽 "`State<Slot>` 교체는 파괴가 아니라 언마운트"
+> 절(+ `unmountSlotTree`)이 정본. 아래 문단은 그 결론에 이르기까지의
+> 히스토리로만 남겨둡니다 — **여기 적힌 "확정"을 그대로 믿고 구현하지 말 것.**
 
 **확정(2026-08-04 검증 라운드, 메커니즘은 위처럼 2026-08-12 아홉 번째
 세션에 정정): retract/재바인드되는 slot은 옮겨지지 않고 그냥 폐기된다.**
@@ -940,6 +947,14 @@ end
 계속 돎. 리스트가 200개+가 되면 "보이는 건 20개인데 200개가 전부 계속
 돌아가는" 문제가 실제 비용으로 드러남.
 
+**[캐비엇, 2026-08-13 여섯 번째 세션] 아래 근거는 "제거 = 진짜 파괴"를
+전제로 쓰였는데 그 전제가 언마운트 재설계로 바뀌었음** — 다만 **결론은
+그대로 유효**함: 언마운트도 물리 트리에서 떼어내므로 `Visible=false` 토글과
+달리 렌더/레이아웃 비용이 사라지고, 아무도 안 들고 있으면 GC되어 이벤트
+연결·재계산도 결국 정리됨. 즉 "lazy하지 않음" 문제는 파괴가 아니라
+**언마운트만으로도 해소**되고, 오히려 사용자가 그 요소를 들고 있다가 다시
+쓸 수 있게 되는 이득이 붙음.
+
 **해법**: `updateFn`을 매 사이클 호출하되, `prev`를 줘서 "바꿀 게 없으면
 그대로 돌려주기만 하면 되는" 저렴한 경로를 만들고, filter 탈락은 `nil`
 반환으로 **진짜 파괴**되게 함 — Visible 토글이 아니라 실제 Remove.
@@ -1056,7 +1071,11 @@ function activateList(self, inst)
             end
 
             if result ~= prev then
-                if prev ~= nil then rawRemove(self, prev) end       -- 파괴
+                -- [정정, 2026-08-13 여섯 번째 세션] 파괴가 아니라 **언마운트** —
+                -- rawUnmount는 rawRemove와 같되 element를 Destroy하지 않고
+                -- 소유권만 반납(unmountSlotTree 사용, 아래 "파괴" 절).
+                -- 명시적 CRUD Remove/Clear/dispose만 여전히 파괴.
+                if prev ~= nil then rawUnmount(self, prev) end
                 if result ~= nil then rawAdd(self, result, pos) end -- 새로 배치, 압축 위치 기준
                 mounted[key] = result
             elseif prev ~= nil and keyIndex[key] ~= pos then
@@ -1069,7 +1088,7 @@ function activateList(self, inst)
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = mounted[key]
-                if prev ~= nil then rawRemove(self, prev) end
+                if prev ~= nil then rawUnmount(self, prev) end   -- 위와 같은 이유로 비파괴
                 mounted[key], userdata[key] = nil, nil
             end
         end
@@ -1140,7 +1159,10 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   실행)의 로컬 변수(클로저 업밸류) — 별도 전역 weak table(`Relate` 등)
   불필요, `inst`/`self`가 살아있는 동안만 존재하면 되고 죽으면 클로저도
   같이 GC됨(아래 "구독 시점" 절).
-- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawRemove`/`rawMove`뿐** —
+- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawUnmount`/`rawMove`뿐**
+  (**[정정, 2026-08-13 여섯 번째 세션]** 예전엔 `rawRemove`(파괴)였으나
+  언마운트 전환으로 바뀜 — 데이터에서 빠진 아이템도 파괴되지 않고
+  언마운트만 되며, 아무도 안 들고 있으면 GC) —
   `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
   구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
   셋을 쓸 일이 없을 뿐(제거는 항상 파괴 확정이라 `Extract` 아닌 `Remove`
@@ -1236,9 +1258,12 @@ GC에 위임" 원칙 그대로.
 
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
-- 재마운트 에러 처리(throw), retract 시 폐기(옮기지 않음) 둘 다 확정. 남은 건
-  실제 구현 단계에서 이 "폐기" 동작이 실사용에서 불편하지 않은지 재검증하는
-  정도 — 설계 방향 자체는 더 이상 열려있지 않음.
+- 재마운트 에러 처리(throw)는 확정. **[역전됨, 2026-08-13 여섯 번째 세션]
+  "retract 시 폐기(옮기지 않음)"는 뒤집혔음** — 지금은 `State<Slot>` 교체가
+  **언마운트**이고 이전 Slot은 파괴되지 않음(파괴는 명시적 `Remove`/`Clear`/
+  `dispose`만). "실사용에서 불편하지 않은지 재검증"이라던 남은 항목도 그
+  재설계로 해소됨 — 최신 설계는 아래 "`State<Slot>` 교체는 파괴가 아니라
+  언마운트" 절이 정본.
 - "클래스가 슬롯을 받는 방법"(Named Slot 없음)도 확정됨(위 "클래스가 슬롯을
   받는 방법" 절 참고).
 - **[해소됨, 2026-08-09 세 번째 세션]** `add`/`remove`/`clear` CRUD 의미론,
@@ -1461,6 +1486,21 @@ end
 -- 이미 못박았듯 reconcile(위 "여러 Slot이 섞일 때" 절 근처)은 element 기준으로
 -- rawRemove(self, prev)를 부름. 둘 중 하나로 통일할지 얇은 변환 계층을 둘지는
 -- 아직 M6 구현 세부로 열려 있음 — 이 블록은 그 결정 전 illustrative 예시.
+-- [신설, 2026-08-13 여섯 번째 세션] rawRemove의 비파괴 짝 — `:List`의
+-- reconcile과 `Extract` 계열이 씀. rawRemove와 **딱 하나만 다름: 안 죽인다.**
+function rawUnmount(self, index)
+    local element = self._elements[index]
+    local bk = getBookkeeping(self)
+    if bk.observers[index] then
+        unbindLifetime(self._mountedInst, bk.observers[index])
+    end
+    releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
+    if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
+
+    spliceArraysDown(self, index)
+    recompute(self, bk)
+end
+
 function rawRemove(self, index)
     local element = self._elements[index]
     local bk = getBookkeeping(self)

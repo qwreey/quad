@@ -63,6 +63,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M2 — 디스패치 엔진
 
+> **⚠️ 착수 전 필독 — 아래 체크리스트는 *현행* 모델(래핑 핸들러가 재-dispatch
+> 전에 `Dispatch.retractFrom`을 선행 호출)을 기준으로 쓰여 있고, 그 모델은
+> 교체가 예정돼 있습니다.** 새 모델("하강 diff": 선행 `retractFrom`을 폐기하고
+> `Dispatch.process`가 **핸들러를 먼저 비교** — 같으면 그 자리 클로저에 새
+> 값을 넘기고 자기 `process` 재호출, 다르면 그 자리부터 전량 철거)은
+> `.claude/research/dispatch-redispatch-diff-plan.md`에 있고, `.claude/question.md`
+> **0-Z**(Attribute 이름 소유권) 하나만 정해지면 base와 이 문서에 한 번에
+> 반영됩니다. **0-Z가 미해결인 채로 M2/M4/M10을 구현하면 곧 갈아엎어야 하는
+> 코드를 짜게 됩니다** — 먼저 0-Z를 해소할 것. (base 4개 문서에도 같은 취지의
+> ⚠️ 배너가 달려 있는데, ROADMAP에만 없어서 2026-08-13 감사에서 지적됨.)
+
+
 - [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
       스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
       (오케스트레이터: 그 인덱스 점유 여부 체크 → getHandler → 매치된
@@ -229,6 +241,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
+
+> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 재디스패치 모델이 교체 예정,
+> `question.md` 0-Z 먼저 해소할 것.
+
 
 - [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — 재-dispatch
       전 `Dispatch.retractFrom(inst,k,index+1,realv)` 호출 필수, 그 다음
@@ -467,7 +483,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] 프로퍼티류 필드 타입에 `T' = T | Tween<T>` 치환 반영(타입 생성
       스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
       끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`
-      10번, 2026-08-10 세션, `research/tween-plan.md`)
+      10번, 2026-08-10 세션, `base/tween-plan.md`)
 
 ## M8 — Ref
 
@@ -513,6 +529,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M10 — Event / OnChange / Attribute / Tag
 
+> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 재디스패치 모델이 교체 예정이고,
+> 특히 **Attribute 이름 소유권(`question.md` 0-Z)이 이 마일스톤의 직접
+> 대상**임. 0-Z 먼저 해소할 것.
+
+
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/OnChange.luau`(`OnChange(name)` DI 키 팩토리+Handler,
       `GetPropertyChangedSignal` 바인딩 — 제네릭 없이 콜백 타입은 인라인
@@ -550,7 +571,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M11 — Tween
 
 **[2026-08-10 세션, 구조 재설계]** 독립 Dispatch 핸들러 모델에서 값-레벨
-`Tween<T>` 래퍼 모델로 전환 — 상세는 `research/tween-plan.md`(전면
+`Tween<T>` 래퍼 모델로 전환 — 상세는 `base/tween-plan.md`(전면
 재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`.
 
 - [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리, `isTween`/
@@ -561,16 +582,25 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       없음, 엔진 객체=활성 트윈) + 첫 세팅은 무조건 애니메이션 없이
       스냅(hasBeenSet 억제) + 활성 트윈 정리는 override 정책 완료 후에만
       새 값 세팅(순서 뒤바뀌면 트윈 다음 프레임이 방금 세팅한 값을 덮어씀)
-- [ ] override 정책 4가지(기본 Cancel/Override/Delete-restart/
-      Move-to-end-restart) 중 기본값 외 옵션 키 이름/시그니처 확정,
-      Tween→plain 전환에 5번째 옵션이 필요한지 확인
-- [ ] `research/tween-plan.md` "트윈 옵션 값 모양" 확정(TweenInfo 그대로
-      vs 편의 필드+기본값 — 소견은 후자)
-- [ ] `quad-roblox/Animate.luau`(편의 콤비네이터 — `:Apply`로 체이닝,
-      `useTween` 우회는 이걸로 자연히 커버되어 별도 옵션 필드 불필요,
-      정확한 시그니처는 M11에서 확정)
-- [ ] `initValue`(진입 애니메이션) 필요성 재검토 — 필요해지면 hasBeenSet
-      억제 동작과의 상충부터 풀 것(`research/tween-plan.md` 참고)
+- [x] **override 정책 확정 완료**(2026-08-12 세션, `base/tween-plan.md`
+      "확정: `Tween{...}` 최종 모양" 절) — 검토했던 4가지가 **`Tween.Cancel`
+      (기본)/`Tween.Finish` 2값으로 압축**됨(로블록스 `TweenBase` API 현실상
+      나머지가 관찰상 Cancel과 동일). Tween→plain 전환도 두 옵션 모두
+      "정리 후 즉시 덮어쓰기"로 수렴해 5번째 옵션 불필요로 확정.
+      **구현 시 순서 주의**: 이전 트윈 정리 → 그 다음 새 값 세팅
+- [x] **트윈 옵션 값 모양 확정 완료**(2026-08-12 세션, `base/tween-plan.md`)
+      — `Info: TweenInfo?` 우선 + 편의 필드(`Time`/`Style`/...) 폴백,
+      기본값은 로블록스 `TweenInfo.new()` 자체 기본값과 일치. 옵션 필드는
+      전부 plain만(State 불가)
+- [ ] `quad-roblox/Animate.luau` — **시그니처도 이미 확정 완료**(2026-08-12
+      두 번째/세 번째 세션, `base/tween-plan.md`): `Tween` opts(`Value` 제외)를
+      `T|State<T>`로 받아 각 필드를 resolve한 뒤 `Tween{...}`을 반환하는
+      `function(self)...end` — `:Apply(Animate{...})`로 체이닝(`:Compute`가
+      아님, `research/operator-sugar-plan.md` "왜 `:Apply`인가"). `CanAnimate`
+      필드 포함(`false`면 `Tween`으로 안 감싸고 plain 값 그대로). M11은
+      **구현만** 하면 됨
+- [x] **`initValue`(진입 애니메이션) — 에이전트 범위 제외로 확정**
+      (2026-08-12 세션, 사용자가 직접 처리하기로) — 재검토 항목 아님
 
 ## 특정 마일스톤에 안 묶이고 병행 가능
 

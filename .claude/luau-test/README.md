@@ -1,5 +1,10 @@
 # .claude/luau-test — M0 착수 전 실 Luau 기술검증 스파이크 모음
 
+> **⚡ 지금 뭘 봐야 하는지부터 보려면 [`STATUS.md`](STATUS.md)** — 파일별
+> pass / 사람 결정 필요 / 스파이크 깨짐 / 미실행 분류. 이 README는 각 파일이
+> **무엇을 왜 검증하는지**(의도·배경)를 담고, 상태는 STATUS.md가 소스.
+
+
 **[2026-08-09 이동]** 처음엔 레포 루트 `luau-ignoreme/`(git 자동 제외
 폴더)에 만들었으나, 사용자가 직접 확인해볼 만한 검증 코드라 커밋해서
 레포에 남기기로 함 — `.claude/luau-test/`로 옮기고 일반 추적 대상으로
@@ -52,7 +57,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `04-dispatch-chain-retractFrom.luau` | **[2026-08-13 감사에서 전면 재작성 + 파일명 변경]** 인덱스 기반 `chains`/`Dispatch.retractFrom`이 다단 재귀 위임에서 정확한지 — 3단 체인이 인덱스 1/2/3으로 안 겹치고 쌓이는지(= `State<State<T>>` **정상 동작**, UB 아님), 안/바깥 store 재발행 시 깊은 인덱스부터 정리되는지, hint가 target 인덱스에만 가는지 + **음성 대조군**: `chains:SetStrong`을 `handler.process` 뒤에 두면 최초 마운트에서 하위 retractor가 유실되는 버그 재현. 옛 버전은 핸들러 identity 기반 추적과 "중복 push 즉시 error" 가드를 검증했는데 그 가드는 다섯 번째 세션 재설계로 **없어져서** 설계와 정반대를 테스트하고 있었음 | `bind-system-plan.md` "Dispatch 체인"(2026-08-13 다섯 번째 세션 재설계) + 2026-08-13 감사 |
 | `05-store-state-diamond-propagation.luau` | push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지 | ROADMAP M0-1 |
 | `06-component-boundary-nil-hole-props.luau` | `props.Modifier or None` 관용구가 컴포넌트 경계 nil-hole을 막는지 + `Params` 타입 체크 | `component-composition-plan.md` "필수 관용구", ROADMAP M0-5 |
-| `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인" |
+| `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `store-semantics.md` "검증 필요", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 — **[2026-08-13]** A 섹션 앞부분(신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됨, `audit/gcconn-trick-verification.md` 참고. A-1/A-2(`canBound` 게이트)/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
@@ -64,7 +69,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `bind-system-plan.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |
 | `17-modifier-index-tableclone-chaining.luau` | Modifier의 제네릭 `__index`+`table.clone` 체이닝 — 임의 필드 이름에 대해 즉석 setter가 만들어지는지, `table.clone`이 메타테이블을 참조로 공유해 여러 단계 clone에서도 체이닝이 안 끊기는지, 원본이 mutate 안 되는지, 형제 분기끼리 오염 안 되는지 | `modifier-plan.md` "런타임은 클래스별 코드 없이 base에 딱 하나만 있으면 됨" 절 + "`table.clone`의 정확한 동작 — 확인됨" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-11 |
 | `18-relate-mutual-cycle-gc.luau` | **[2026-08-13 신규]** 서로 다른 두 `Relate`가 서로의 키를 상대방의 강한 값으로 제공하는 상호 순환은 Luau에 ephemeron이 없어 GC가 못 푼다는 주장(지금까지 공식 문서 인용으로만 뒷받침됨) — 음성 대조군(순환 재현)과 양성 대조군(한쪽을 weak-value로 낮추면 풀리는지) 둘 다 실측 | `relate-plan.md` "위험한 패턴" 절(2026-08-12 열세/열네 번째 세션), `slot-plan.md`의 `kSlotMap`/`slotOwner`/`elementOwner` 실사례 |
-| `19-ownership-refcount-relate-patterns.luau` | **[2026-08-13 신규]** "retract는 항상 불림" 정정(2026-08-12 열한 번째 세션) 이후 새로 생긴 세 소유권/참조카운트 알고리즘(A: Tag `kTagMap`/`tagNameMap` 참조 카운트 — 여러 위치가 같은 이름을 겹쳐 가져도 마지막 홀더가 빠질 때만 실제 `RemoveTag`, B: ~~Attribute `rawNew`+`owners` 소유권~~ — **[2026-08-13 감사] 이 섹션은 폐기된 설계를 검증 중이라 재작성 필요**: `rawNew`/`owners` 수동 레지스트리는 두 번 뒤집혀 사라졌고, 지금은 그룹이 공개 `AttributeKey(name)`으로 항상 인덱스 1에 위임하고 `Dispatch.process`의 **점유 체크**가 소유권 충돌을 대신 잡음 — 검증 대상도 그쪽으로 바뀌어야 함, C: Slot `elementOwner`의 `claimOwner`/`releaseOwner` — **[2026-08-13 감사] 이 섹션도 갱신 필요**: nested는 엄격 `claimOwner`(같은 owner 재클레임도 error), top-level만 `claimOwnerAt`으로 `(inst,k)`까지 봐서 spurious 재발행을 구분)가 실제로 정확히 갈리는지 | `tag-plan.md` "메커니즘" 절, `attribute-plan.md` "이름 소유권" 절, `slot-plan.md` "요소 소유권 — `elementOwner`" 절(전부 2026-08-12 세션들, 03/04/11번과는 다른 새 알고리즘 모양이라 별도 실측 필요하다고 판단) |
+| `19-ownership-refcount-relate-patterns.luau` | **[2026-08-13 신규, 같은 날 B/C 전면 재작성 — 지금은 현행 설계 기준]** 세 소유권/참조카운트 알고리즘 검증. **A**: Tag `tagNameMap` 참조 카운트(여러 위치가 같은 이름을 겹쳐 가져도 마지막 홀더가 빠질 때만 실제 `RemoveTag`. 옛 `kTagMap`은 클로저 캡처로 대체돼 삭제됨). **B**: Attribute 이름 소유권 — 공개 `AttributeKey(name)` 캐시 + `Dispatch.process`의 인덱스 1 **점유 체크**가 충돌을 잡는지(옛 `rawNew`+`owners` 수동 레지스트리는 폐기). **C**: Slot 소유권 — nested 엄격 `claimOwner`(같은 owner 재클레임도 error) vs top-level `claimOwnerAt(inst,k)`(정확히 같은 자리 재발행만 no-op). **셋 다 음성 대조군 포함** — 옛 로직이 `Slot{a,a}`/`Frame{slot,slot}`을 조용히 통과시키는 걸 재현. **캐비엇**: B는 `question.md` 0-Z(하강 diff 모델에선 그룹↔그룹을 점유 체크만으론 못 잡음)가 정해지면 다시 손봐야 함 | `tag-plan.md` "메커니즘", `attribute-plan.md` "이름 소유권", `slot-plan.md` "요소 소유권" |
 | `20-slot-splice-index-arithmetic.luau` | **[2026-08-13 신규]** `Slot:Splice(index, removeCount, ...newElements)`의 shift+recompute 1회 계산이, `Extract`/`Add` 반복으로 재현한 참조 구현과 항상 같은 결과를 내는지 — 제거/삽입 길이가 다를 때(delta 양수/음수) 뒤 요소가 밀리는 방향과 양을 헷갈리는 off-by-one 위험(이 프로젝트가 `Dispatch.recompute`에서 실제로 냈던 것과 같은 클래스의 버그)을 경계값 케이스로 검증 | `slot-plan.md` "확정" CRUD 표 + "`Splice` 신설" 절(2026-08-12 열다섯 번째 세션), `bind-system-plan.md`의 `recompute` off-by-one 수정 사례(2026-08-11 여섯 번째 세션) |
 
 ## 공통 유틸리티
@@ -207,10 +212,13 @@ error)를 추가하고, `04`의 3~4단계를 "가드가 실제로 걸리는지 +
   gcconn-trick-verification.md`), 재확인 불필요. A-2(재-bindLifetime 허용
   여부)가 실패하면 `canBound`/`unbindLifetime` 설계 자체를 재검토해야
   함 — **이건 아직 미확인, 공식 `10` 파일로 꼭 돌려볼 것.**
-- `04`는 3단계에서 `error로 막혔는가: true`, 4단계에서 체인 길이가 2로
-  복구되는 게 기대값 — 만약 3단계가 error 없이 통과해버리면(`ok == true`)
-  가드 pseudocode 자체가 어딘가 안 맞는 것이니 바로 알려줄 것(체인 파손이
-  다시 조용히 넘어가는 회귀).
+- `04`는 **[2026-08-13 여섯 번째 세션에 전면 재작성 — 옛 판정 기준 폐기]**
+  두 시나리오를 연달아 돌림. **정상 설계**는 [1] 체인 깊이 3, [3] 옛 inner
+  구독 0, [4] `STALE` 미반영이 기대값. **음성 대조군**은 [1] 깊이가 **1**로
+  무너지고 [4]에서 `STALE`이 반영되는 게 기대값(= 버그가 재현돼야 정상).
+  대조군이 정상 시나리오와 똑같이 나오면 스파이크 모델링이 실제 구현과
+  어긋난 것이니 스파이크 쪽을 먼저 의심할 것. (옛 기준이던 "3단계에서
+  error로 막혔는가"는 다섯 번째 세션이 그 가드 자체를 없애서 폐기됨.)
 - `11`은 전부 PASS가 기대값 — FAIL이 하나라도 있으면 어느 케이스인지
   그대로 알려줄 것(특히 "변환 함수가 반환한 값" 케이스는 놓치기 쉬운
   경로라 실제 구현에서도 잘 짜였는지 중요한 신호).
@@ -239,9 +247,13 @@ error)를 추가하고, `04`의 3~4단계를 "가드가 실제로 걸리는지 +
   절과 `slot-plan.md`의 `kSlotMap`/`slotOwner`/`elementOwner` GC 설계
   전체를 최우선으로 재검토해야 함(Slot GC 안전성의 유일한 근거였음).
 - `19`는 전부 PASS가 기대값 — A 섹션이 FAIL이면 `tag-plan.md`의 참조
-  카운트 알고리즘 자체를, C 섹션이 FAIL이면(특히 "같은 owner 재클레임은
-  no-op"이 안 되면) `slot-plan.md`의 `elementOwner` 설계를 최우선으로
-  재검토할 것 — C가 깨지면 재귀 재emit마다 마운트된 서브트리 전체가
+  카운트 알고리즘 자체를, C 섹션이 FAIL이면 `slot-plan.md`의 `elementOwner`
+  설계를 최우선으로 재검토할 것. **[2026-08-13 판정 기준 정정]** C의 기대
+  동작이 바뀌었음 — 예전의 "같은 owner 재클레임은 no-op"은 버그로 판정돼
+  둘로 쪼개짐: **nested `claimOwner`는 같은 owner 재클레임도 error**(엄격),
+  **top-level `claimOwnerAt(element,inst,k)`만** 정확히 같은 `(inst,k)`의
+  재발행에서 `false`. 옛 문구를 그대로 적용하면 정상 동작(nested error)을
+  실패로 오판함 — C가 깨지면 재귀 재emit마다 마운트된 서브트리 전체가
   파괴됐다 재생성되는 파괴적 버그로 직결됨.
 - `20`도 전부 PASS가 기대값 — FAIL이 있으면 어느 케이스(특히 delta 부호가
   바뀌는 경계값)인지와 최종 배열/제거분이 어떻게 달랐는지 그대로 알려줄

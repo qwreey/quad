@@ -176,7 +176,12 @@ Dispatch의 재진입 가드에 얹어 감지)은 이 버그를 고치긴 했으
 이유는 `archive/checkpoint-handler-pattern-reversed.md`.
 
 **최종(세 번째 버전) — 체크포인트도 `owners`도 없이, 항상 인덱스 1부터
-직접 위임.** 그룹이 이름마다 공개 `AttributeKey(name)`으로 그냥
+직접 위임.** **[캐비엇, 2026-08-13 여섯 번째 세션] 여기서 "최종"은 *현행
+`hintValue` 모델 기준*이고, 이 주제 자체가 `question.md` **0-Z**로 다시
+열려 있음** — 문서 상단 ⚠️ 배너가 예고하는 "하강 diff" 재디스패치 모델에선
+그룹 A/B가 둘 다 `StoreBind`로 보여 "같은 핸들러"로 판정되므로 **아래 점유
+체크만으로는 그룹↔그룹 충돌을 못 잡음**(`research/dispatch-redispatch-diff-plan.md`
+5절). 0-Z가 정해지면 이 절이 네 번째 버전으로 다시 갱신됨. 그룹이 이름마다 공개 `AttributeKey(name)`으로 그냥
 `Dispatch.process(inst, key, source, 1)`를 부르면 끝 — **"인덱스 1이 이미
 점유돼 있는가"라는 `Dispatch.process` 자신의 점유 체크가 소유권 충돌
 감지를 그대로 대신함**: 다른 그룹이나 직접 쓰기가 이미 그 이름을
@@ -242,8 +247,8 @@ Frame { Attribute(styleStore), Attribute(stateStore) }   -- 여러 개 나란히
 
 **[2026-08-13 감사에서 추가] `:NameMap()`은 원래 "메커니즘" 절 의사코드에만
 등장하고 이 API 목록엔 빠져 있었음** — Handler가 이름 집합을 순회하려면
-반드시 필요한 공개 접근자라 여기 명시(`Tag:Names()`가 `tag-plan.md`에서
-같은 이유로 빠져 있던 것과 같은 누락).
+반드시 필요한 공개 접근자라 여기 명시(`Tag:Names()`도 `tag-plan.md`에서
+같은 누락이었고, 같은 감사에서 함께 추가됨 — 지금은 양쪽 다 문서화돼 있음).
 
 `Attribute.Merged`가 내부적으로 하는 일은 각 Store에서 이름 붙은 `Source`
 슬롯을 그대로 가져와 자기 자신의 key→Source 맵에 넣는 것 — 아래 "레이어드

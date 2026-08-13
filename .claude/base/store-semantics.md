@@ -202,9 +202,11 @@ State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하
   케이스(Source가 State를 만족하는 제네릭 메소드 체이닝)를 포함해서
   검증할 것.
 
-**이름 주의**: `Source`/`State`라는 이름 자체가 `CLAUDE.md` "지금 할 일"
-2번의 용어 정리 대상(특히 `State`)과 겹침 — 구조(서브타입 관계, RefSource
-폐기)는 지금 확정해도 정확한 이름은 용어 정리 라운드까지 가칭으로 남김.
+**이름 주의 — [해소됨, 2026-08-12 스무 번째 세션]**: `Source`/`State`라는
+이름이 한때 용어 정리 대상(특히 `State`)이었으나, **`State`는 현재 이름
+그대로 유지로 최종 확정됨**(`Computed`/`Derived`/`Pipe` 전부 기각 — 근거는
+`bind-system-plan.md` "네이밍 — `Compute`가 `-ed`가 아닌 이유" 절과
+`question.md` 1번). 더 이상 가칭이 아님.
 
 ## Store 값 설정 문법 — `myStore.key = value` 폐기, `source:Set(value)`로 전환 (2026-08-06 후속 세션, 정정)
 

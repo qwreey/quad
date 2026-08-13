@@ -61,7 +61,7 @@ weak여야 함 — 그런데 그 안에 담기는 값은 경우에 따라 **강�
 있는지 먼저 확인할 것 — 갖고 있다면 **두 `Relate` 중 최소 한쪽은
 `SetWeak`로 낮추고, 실제 GC 앵커는 `bindLifetime`/`unbindLifetime`
 하나로 통일**할 것(구체 사례는 `base/slot-plan.md` "Slot과 Store
-바인드의 관계" 절 참고 — `kSlotMap`(inst→slot)/`slotOwner`(slot→inst)가
+바인드의 관계" 절 참고 — `kSlotMap`(`(inst,k)`별 마지막 Slot)/`slotOwner`(slot→inst)가
 정확히 이 패턴이었음. **[2026-08-13 다섯 번째 세션 이후]** 그 두 `Relate`는
 지금은 존재하지 않음 — `kSlotMap`은 Handler 계약이 클로저 반환으로 바뀌며
 불필요해져 삭제됐고 `slotOwner`는 `elementOwner`(전부 `SetWeak`)로

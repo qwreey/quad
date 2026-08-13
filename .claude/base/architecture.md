@@ -211,7 +211,8 @@ existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확�
   고유의 어휘"가 아니라 여러 타입에 걸쳐 쓰이거나(`isX`류) 프리미티브
   자체가 아닌 것(Dispatch/Brand는 `Type(args)` 생성자가 없는 내부 엔진)의
   구성원이라 PascalCase 대상이 아님. Handler 계약 필드(`isHandlable`/
-  `priority`/`process`/`retract`)도 여기 속함 — 이건 애초에 "함수"라기보다
+  `priority`/`process` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
+  반환값으로 합쳐지기 전엔 4종이었음)도 여기 속함 — 이건 애초에 "함수"라기보다
   구현체가 채워 넣는 구조체 필드.
 - **경계 판단 기준**: 새 이름을 지을 때 "이게 특정 프리미티브 타입 하나의
   전용 소유물인가?"로 물으면 됨 — 그렇다면 대문자(생성자/메서드/그
