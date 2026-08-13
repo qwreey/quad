@@ -153,32 +153,60 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 `OnDestroyed`와 달리 **진짜로 공짜가 아님** — 그래서 지금 채택하지
 않기로 함.
 
-**`PostRef` 스케치(사용자 제안, 2026-08-14)** — 완전히 새로운
-메커니즘을 발명할 필요는 없어 보임. `PreRef`의 pre-pass가 "두 패스
-루프를 돌기 **전에** 배열 파트를 미리 한 번 훑어 fire하고 소진하는"
-별도 선행 스캔이었던 것(`base/ref-plan.md` "PreRef" 절, "호이스팅의
-실제 구현" 항목)과 **정확히 대칭인 후행 스캔**을 만들면 됨 — 두 패스가
-끝난 **뒤에** 배열 파트를 다시 한번 훑어 `PostRef` 슬롯만 골라 fire.
-`PreRef`가 이미 갖고 있는 장치(호이스팅 없이 그냥 후행이면 되므로 오히려
-더 단순할 수 있음, 1회용 `_fired` 가드, `None` 소진 대신 이 시점엔
-순서 보장이 더 이상 필요 없으니 `nil` 소진도 검토 가능)를 그대로
-거울상으로 재사용하는 구현이라 **새 개념이 아니라 기존 `PreRef` 코드의
-변형**에 가까움 — 다만 `Dispatch.drive`에 실제 루프 한 번이 추가되는
-비용은 여전히 있으므로 "공짜"까지는 아님. `OnRendered(fn)`은
-`PostRef():Callback(fn)`을 반환하는 팩토리로, 위 `OnCreated`와 완전히
-같은 패턴이 됨.
+**`PostRef` 스케치(사용자 제안, 2026-08-14, 두 번째 세션에 `ProcessedPreRef`
+선례 반영해 갱신, 같은 세션 후속 제안으로 다시 갱신 — "후행 스캔" 초안
+폐기)** — 완전히 새로운 메커니즘을 발명할 필요는 없어 보임. **핵심 통찰
+(사용자 제안): `PreRef`의 pre-pass가 이미 배열 파트 전체를 index 순서로
+한 번 훑고 있으니, 같은 스윕에서 `isPostRef(v)`도 같이 잡아내면 되고
+`PostRef` 전용 후행 재순회(두 번째 전체 `for`)는 아예 필요 없음.**
+
+- **pre-pass 한 번으로 `PreRef`/`PostRef` 둘 다 처리**: 같은 루프 안에서
+  `isPreRef(v)`면 기존 그대로 그 자리에서 즉시 fire하고
+  `flattened[i] = ProcessedPreRef`로 소진. `isPostRef(v)`면 **아직
+  fire하지 않고**, 이 `Dispatch.drive(inst, flattened)` 호출 하나에만
+  로컬인 평범한 배열 `postRefList`(`Relate` 같은 별도 저장소 불필요 —
+  이 함수 콜스택 안에서만 살면 됨)에 그 인스턴스를 순서대로 push하고
+  즉시 `flattened[i] = ProcessedPostRef`로 소진(1회용 재사용 가드
+  `_fired`도 이 시점에 세팅 — "슬롯이 소진되는 시점"과 "재사용 방지가
+  걸리는 시점"을 `PreRef`와 동일하게 맞춤, 실제 콜백 fire와 시점이
+  갈리는 건 아래 항목뿐).
+- **`ProcessedPostRefHandler`는 `ProcessedPreRefHandler`와 완전히
+  대칭**: 정상 두 패스가 `ProcessedPostRef`를 매치해
+  `setLength(0)`/`setOffsetSource(None)`을 등록하고 no-op retract를
+  반환 — 새 비대칭 규칙이 필요 없음. **[정정] 이전 초안은 "PostRef는
+  소진 전 원본 값이 정상 두 패스의 매치 대상이어야 한다"고
+  잘못 짚었었는데, pre-pass에서 미리 소진해두면 그 비대칭 자체가 안
+  생김** — `PreRef`의 "동적 경로 가드" Handler(정상 스캔에서
+  `isPreRef(v)`를 잡아 즉시 error)와 짝이 되는 `PostRef`용 가드 Handler도
+  똑같이 필요(pre-pass가 놓쳤을 때만 매치되는 버그 케이스 전용, `error`).
+- **두 패스가 끝난 뒤, `Dispatch.drive`가 `postRefList`를 그 순서 그대로
+  순회하며 각 `PostRef`를 fire** — 별도 후행 전체 재순회가 필요 없음,
+  pre-pass가 이미 만들어둔 목록을 그대로 소비하면 끝. 복수 `PostRef`
+  간 순서는 복수 `PreRef`와 같은 원칙(배열 index 순서 그대로)이 자연히
+  적용됨.
+- 결과적으로 `PreRef`와 `PostRef`는 **소진 메커니즘이 완전히 대칭**
+  (둘 다 pre-pass에서 즉시 `Processed*` 센티널로 소진, 둘 다 전담
+  `Processed*Handler`가 Length/Offset을 등록) — 유일한 차이는 "실제
+  콜백을 언제 부르는가"(`PreRef`는 pre-pass 그 자리, `PostRef`는 두
+  패스가 다 끝난 뒤 `postRefList` 순회) 하나뿐. `_fired` 1회용 가드도
+  거울상 그대로 재사용. 비용도 애초 우려("루프 한 번이 추가되는 비용")보다
+  작음 — 추가되는 건 전체 배열 재순회가 아니라 `postRefList`(실제
+  `PostRef` 개수만큼)의 순회뿐이라, "공짜"는 아니어도 이전 "후행 스캔"
+  초안보다 훨씬 저렴. `OnRendered(fn)`은 `PostRef():Callback(fn)`을
+  반환하는 팩토리로, 위 `OnCreated`와 완전히 같은 패턴이 됨.
 
 **스코프도 여전히 불명확함**: "렌더 완료"가 (a) 이 인스턴스 자신의
 프로퍼티/이벤트 세팅만 끝나면 되는지, (b) 이 인스턴스의 **자식들까지
 전부 마운트를 끝내야** 하는지 — React류 `on*Rendered` 이름들은 보통
 (b)(서브트리 전체 완료)를 뜻하는 경우가 많아, 이름만 보고 (a)로 기대하는
 사람과 실제 구현이 (b)라면(또는 반대라면) 기대치가 어긋날 위험이 있음.
-`PostRef` 후행 스캔은 자연스럽게 (a)만 줌 — (b)를 원하면 자식 서브트리
-전체의 마운트 완료를 기다리는 별도 신호가 있어야 해서 훨씬 큰 작업.
+`PostRef`의 `postRefList` 소비(위 스케치)는 자연스럽게 (a)만 줌 — (b)를
+원하면 자식 서브트리 전체의 마운트 완료를 기다리는 별도 신호가 있어야
+해서 훨씬 큰 작업.
 
 **착수 시점에 판단할 선택지(지금은 고르지 않음)**:
-- (a) 위 `PostRef` 스케치대로 진짜 post-pass를 만든다 — (a) 스코프
-  (자기 자신 세팅 완료)의 정확한 보장.
+- (a) 위 `PostRef` 스케치대로 두 패스 뒤 `postRefList`를 소비한다 —
+  (a) 스코프(자기 자신 세팅 완료)의 정확한 보장.
 - (b) 새 메커니즘 없이 일반 `Ref`로 근사한다 — Store를 통해 늦게
   도착하는 값으로 "대충 렌더 이후"를 흉내내되, "완전한 보장은 없음"을
   문서에 명시하는 선에서 타협.

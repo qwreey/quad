@@ -356,11 +356,20 @@ end
   KV 매치와 무관.
   **이 `NoneHandler`는 해시 파트(프로퍼티/이벤트) 전용 — 배열 파트에서
   `None`을 만나는 건 완전히 다른 규칙(2026-08-07 열 번째 세션, "PreRef"
-  절 "호이스팅의 실제 구현" 참고).** 배열 파트의 `None`은 "빈 슬롯"
+  절 "호이스팅의 실제 구현" 참고).** 배열 파트의 `None`(`props.Ref or
+  None`처럼 애초에 아무것도 놓인 적 없는 자리)은 "빈 슬롯"
   표시일 뿐 처리할 핸들러 자체가 없으므로, `Dispatch.drive`의 두 패스
   루프 자신이 `NoneHandler`/`Dispatch.process`를 거치지 않고 바로
   건너뜀 — 같은 센티널 값이지만 배열 파트냐 해시 파트냐에 따라 처리
-  경로가 다르다는 점에 유의.
+  경로가 다르다는 점에 유의. **[정정, 2026-08-14 두 번째 세션] "PreRef
+  pre-pass가 소진시킨 자리"는 이 규칙의 예가 아님** — 그 자리는 `None`이
+  아니라 별도 센티널 `ProcessedPreRef`로 소진되고, `ProcessedPreRefHandler`
+  (`base/ref-plan.md`의 "PreRef" 절)를 통해 정상 `Dispatch.process`
+  경로를 그대로 탐(아래 "Length/Offset" 절 참고) — 예전엔 이 둘(원래부터
+  빈 자리 vs 한때 PreRef였다가 소진된 자리)이 똑같이 `None`으로 뭉뚱그려져
+  `setLength`/`setOffsetSource` 등록 책임 소재가 불분명한 갭이 있었음
+  (2026-08-14 첫 번째 세션 조사에서 발견), 지금은 서로 다른 센티널로
+  명확히 분리됨.
   `NoneHandler.isHandlable`은 `v == None`(센티널 자체)을 잡는 것이지
   `v == nil`이 아님 — 진짜 `nil`은 애초에 테이블 순회로 나올 수 없다는 게
   이 문제의 출발점이었으므로, 매치 대상은 항상 `None` 마커.
@@ -915,12 +924,21 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   만들어 `Frame { LayoutOrder = layoutOrder:With(offset):Compute(fn) }`처럼
   써넣으면 됨 — 새 메커니즘 불필요. 상세는 `base/slot-plan.md`의
   `Slot:List` 절 참고. **실제 마운트를 하지 않는 위치는 `None`을 등록** — 순서 계산에
-  참여할 게 없다는 명시적 선언. 대상은 Ref/PreRef뿐 아니라 **그 배열
+  참여할 게 없다는 명시적 선언. 대상은 일반 `Ref`뿐 아니라 **그 배열
   위치의 값 자체가 `None`인 모든 경우**(예: `props.Ref or None` 관용구로
-  캐우칭된 미전달 Ref, PreRef pre-pass가 소진시킨 슬롯 등) — `setLength`도
+  캐우칭된 미전달 Ref) — `setLength`도
   같은 위치엔 짝을 맞춰 `0`으로 등록해야 함(위 `setLength` 항목의
   "`nil`/`None`이면 `0`" 규칙과 항상 같이 감, 둘 중 하나만 반영되면
-  길이 합계와 실제 순서 계산이 어긋남).
+  길이 합계와 실제 순서 계산이 어긋남). **[정정, 2026-08-14 두 번째 세션]
+  `PreRef` pre-pass가 소진시킨 슬롯은 더 이상 이 목록에 없음** — 예전엔
+  그 슬롯도 `None`으로 뭉뚱그려 등록해야 한다고만 서술돼 있었는데,
+  `None` 소진 슬롯은 정의상 어떤 Handler도 안 거치므로(위 "`None` 센티널"
+  절) "누가 이 등록을 실제로 호출하는가"가 답 없는 갭이었음(2026-08-14
+  첫 번째 세션 조사에서 발견). 지금은 그 슬롯이 전용 센티널
+  `ProcessedPreRef`로 소진되고, **`ProcessedPreRefHandler`(`base/
+  ref-plan.md`의 "PreRef" 절)가 정상 매치 과정에서 직접 `setLength(0)`/
+  `setOffsetSource(None)`을 등록** — "이 위치를 처음 매치한 Handler가
+  등록 책임을 진다"는 위 원칙을 특수 취급 없이 그대로 만족.
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
@@ -949,12 +967,15 @@ lazy 생성.
 원칙 재사용** — 모든 number 인덱스를 반드시 채워야 하는데(위 UB 규칙)
 `nil`을 넣으면 (1) 그 자리가 "안 채워짐"과 구별이 안 되고 (2) 배열이
 구멍 나면서 순수 array 취급이 깨져 접근 비용이 올라감(해시 파트로 밀림)
-— `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, PreRef
-pre-pass 소진 슬롯에 이미 적용된 것과 같은 원칙(`ref-plan.md`의 "PreRef" 절의
-"왜 `None`이 아니라 `nil`인가" 참고 — **단, 그 절에서 최종적으로 `nil`로
-되돌아간 건 Ref 콜백/대기자 배열 한정**이고 `sourceList`/PreRef
-pre-pass처럼 순서가 실제로 중요하거나 "채워짐 여부"를 엄밀히 구별해야
-하는 배열은 여전히 `None`이 맞음, 헷갈리지 말 것). 다만 `recompute`가
+— `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, `flattened`
+배열이 진짜 빈 자리(`None`, 예: `props.Ref or None`)와 PreRef pre-pass
+소진 자리(`ProcessedPreRef`, 2026-08-14 두 번째 세션 이전엔 여기도 `None`)
+둘 다 실재하는 센티널로 채워 구멍을 피하는 것과 같은 원칙(`ref-plan.md`의
+"Ref 일반화" 절 "왜 `None`이 아니라 `nil`인가" 참고 — **단, 그 절에서
+최종적으로 `nil`로 되돌아간 건 Ref 콜백/대기자 배열 한정**이고
+`sourceList`/`flattened`처럼 순서가 실제로 중요하거나 "채워짐 여부"를
+엄밀히 구별해야 하는 배열은 여전히 실재하는 센티널이 맞음, 헷갈리지
+말 것). 다만 `recompute`가
 `1..N` 고정 범위를 도는 인덱스 `for`라 애초에 성긴 정수 키 순회 문제
 자체는 안 생김 — `None`이 필요한 이유는 순회 순서 보존이 아니라 "채워짐
 여부 구별과 접근 비용" 쪽.

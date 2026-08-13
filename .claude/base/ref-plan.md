@@ -382,23 +382,35 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `Dispatch.drive(inst, flattened)`는 같은 `flattened` 배열을 **두 번
     순회**한다 — (1) pre-pass: 배열 파트 전체를 index 순서대로 훑으며
     `isPreRef(v)`인 슬롯을 찾아 그 자리에서 fire하고 즉시 **`flattened[i]
-    = None`**으로 소진(`nil`이 아님, 2026-08-07 열 번째 세션 정정: `nil`로
+    = ProcessedPreRef`**로 소진(`nil`이 아님, 2026-08-07 열 번째 세션 정정: `nil`로
     지우면 그 순간 테이블이 "구멍 있는" 상태가 되어 이어지는 (2)의 순회
     순서 보장 자체가 깨질 위험이 있음 — 정확히 이 pre-pass가 의존하는
     바로 그 보장이라 치명적. **[주의, 2026-08-09 열한 번째 세션] Ref
     자신의 콜백/대기자 배열은 이 이유가 적용되지 않아 `nil` 소진으로
     되돌아갔음(위 "Ref 일반화" 절 참고) — 여기 PreRef pre-pass는 순서
-    보장이 실제로 필요한 별개 케이스라 `None` 소진이 계속 맞음, 두
-    사례를 혼동하지 말 것**). (2) 그 다음에야 비로소 평소의 배열→해시 두 패스가
-    **같은 테이블**을 다시 순회 — 이때 `None`으로 소진된 슬롯은 **정상
-    `Dispatch.process`/`NoneHandler` 경로를 안 타고 두 패스 루프 자신이
-    직접 건너뜀**(`if v == None then continue end`, 배열 파트 전용
-    특수 취급). **해시 파트의 `None`(Modifier 필드 명시적 지우기)과는
-    의미가 다름** — 해시 파트 `None`은 "이 프로퍼티 핸들러야, 방금
-    지워진 걸 알고 알아서 처리해"라는 의미 있는 재디스패치(`NoneHandler`
-    경유)지만, 배열 파트 `None`은 그냥 "여기 원래 아무것도 없었던 것과
-    같다"는 순수 빈 슬롯 표시라 처리할 핸들러 자체가 없음 — 재디스패치
-    없이 루프가 직접 스킵하는 게 맞음. "호이스팅"은 PreRef를 배열의 맨
+    보장이 실제로 필요한 별개 케이스라 실재하는 센티널 소진이 계속 맞음, 두
+    사례를 혼동하지 말 것**). **[정정, 2026-08-14 두 번째 세션] 소진 값은
+    `None`이 아니라 전용 센티널 `ProcessedPreRef`(단일 `{}`, `None`과 같은
+    급의 유니크 키 — 사용자 제안).** 옛 설계는 소진 값을 `None`으로 뭉뚱그려
+    "그 자리가 원래부터 빈 자리"였던 경우(`props.Ref or None`)와 "한때
+    PreRef였다가 방금 fire되어 소진된 자리"를 구별 못 했고, 그 결과
+    아래 "Length/Offset" 계약(`base/dispatch-core-plan.md`, 2026-08-09
+    여섯 번째 세션 확정)이 "이 위치를 처음 매치한 Handler가
+    `setLength`/`setOffsetSource` 등록 책임을 진다"고 못박아 놨는데도
+    `None` 소진 슬롯은 정의상 어떤 Handler도 안 거쳐서(아래 참고) "그럼
+    누가 그 등록을 실제로 호출하는가"가 문서 어디에도 없는 갭이었음
+    (2026-08-14 첫 번째 세션 조사에서 발견). `ProcessedPreRef`로 소진처를
+    분리하면 이 갭이 구조적으로 사라짐 — 아래 `ProcessedPreRefHandler`
+    참고. (2) 그 다음에야 비로소 평소의 배열→해시 두 패스가
+    **같은 테이블**을 다시 순회 — 이때 `ProcessedPreRef`로 소진된 슬롯은
+    **정상 `Dispatch.process` 경로를 그대로 탄다**(아래
+    `ProcessedPreRefHandler`가 매치, **[정정] 예전엔 `None`이라 두 패스
+    루프 자신이 `if v == None then continue end`로 직접 건너뛰고 어떤
+    Handler도 안 거쳤으나, 지금은 일부러 정상 경로를 태워 Length/Offset
+    등록 책임을 기존 계약에 특수 취급 없이 그대로 얹음**). 진짜로
+    원래부터 빈 자리인 `None`(`props.Ref or None` 등)은 여전히 두 패스
+    루프가 직접 건너뜀 — 두 센티널이 이제 서로 다른 경로를 타므로
+    혼동 금지. "호이스팅"은 PreRef를 배열의 맨
     앞으로 물리적으로 옮기는 게 아니라, **PreRef 전용 선행 루프가
     통째로 먼저 끝난 뒤에야 나머지 처리가 시작된다는 뜻** — 그래서
     소스에서 마지막 child로 적었어도 무조건 다른 모든 처리보다 먼저
@@ -408,7 +420,31 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     두 번째(정상) 패스가 이미 정당하게 처리된 그 PreRef를
     `Dispatch.process`로 다시 넘기게 되고, 그러면 이 가드 Handler가
     엉뚱하게 매치되어 **정상적인 PreRef 사용에도 에러가 터짐** — 소진은
-    이 오탐을 막기 위해 반드시 필요.
+    이 오탐을 막기 위해 반드시 필요(`ProcessedPreRef`는 `isPreRef(v)`가
+    거짓이라 이 가드 Handler와는 애초에 안 겹침).
+  - **`ProcessedPreRefHandler` — 소진된 슬롯이 Length/Offset에 "0 기여"를
+    등록하는 전담 Handler (2026-08-14 두 번째 세션, 사용자 제안 — 위 갭의
+    해소).**
+    ```lua
+    ProcessedPreRefHandler.priority = <매우 높음, NoneHandler와 동급>
+    ProcessedPreRefHandler.isHandlable(inst, k, v) = (v == ProcessedPreRef)
+    function ProcessedPreRefHandler.process(inst, i, v)
+        Dispatch.setLength(inst, i, 0)
+        Dispatch.setOffsetSource(inst, i, None)
+        return function() end  -- no-op retract, 이 자리는 fire가 끝나
+                                -- 되돌릴 상태 자체가 없음
+    end
+    ```
+    `isHandlable`이 `v == ProcessedPreRef`만 잡으므로 배열 파트 전용(해시
+    파트엔 이 센티널이 등장할 경로 자체가 없음). 이걸로 `base/
+    dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 "이
+    위치를 처음 매치한 Handler가 등록 책임을 진다"는 계약을 특수 취급
+    없이 그대로 만족시킴 — 매치되는 Handler 자신이 곧 등록자라 "누가
+    등록하는가"라는 질문 자체가 안 생김. 반환하는 retract는 하드코딩된
+    no-op인데, 이건 "PreRef는 취소 개념이 없다" 절(아래)이 말하는 것과
+    같은 이유 — fire가 이미 실행한 부작용은 되돌릴 수 없으므로 이 자리가
+    dispatch 체인에 실제로 올라가 있어도(**[정정] 예전 서술과 달리 이제는
+    올라가 있음** — 아래 참고) retract가 할 일이 없는 것뿐.
   - **명확화(2026-08-09 열한 번째 세션, 확인 질문에 답변) —
     `NoneHandler.isHandlable(inst,k,v) = (v == None)`은 `k` 타입을 전혀
     안 가리므로 숫자 키(`k=number`)에서도 이론상 매치될 수 있어 보이지만,
@@ -426,7 +462,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     번째 세션). 같은 세션에서 사용자가 직접 `{[1]=1,[2222]=2222,
     [211]=211,...}`류 **키가 듬성듬성한(sparse)** 테이블을 REPL로
     실측해, 그런 테이블은 순회 순서가 index 오름차순이 전혀 아님(해시
-    버킷 순서)을 확인함 — 그래서 위 pre-pass는 (nil이 아니라) `None`으로
+    버킷 순서)을 확인함 — 그래서 위 pre-pass는 (nil이 아니라) 실재하는
+    센티널(`ProcessedPreRef`, 2026-08-14 두 번째 세션 이전엔 `None`)로
     소진해 테이블을 "구멍 없이 촘촘한" 상태로 계속 유지하는 전략으로
     이 위험을 원천 회피함(검증 불필요, 애초에 구멍을 안 만드므로).
     **여전히 M0에서 검증해야 하는 건 다른 케이스**: `props.Modifier`/
@@ -468,20 +505,27 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     "한 값 종류만 전담하는 Handler" 패턴 재사용, 새 메커니즘 아님. 이
     Handler는 **`Dispatch.process`/`getHandler`의 정상 우선순위 스캔에
     등록**되는 반면(pre-pass처럼 그 밖에서 도는 게 아님), 리터럴 배열의
-    `PreRef`는 pre-pass가 fire와 동시에 해당 슬롯을 소진(`None` 처리,
-    `nil` 아님)해 정상 두 패스 스캔에 다시 노출되지 않게 하므로, 이
-    Handler가 실제로
+    `PreRef`는 pre-pass가 fire와 동시에 해당 슬롯을 소진(**[정정,
+    2026-08-14 두 번째 세션] `None`이 아니라 `ProcessedPreRef` 처리**,
+    위 "호이스팅의 실제 구현" 절)해 **이 가드 Handler(`isPreRef(v)`만
+    매치)에는 다시 노출되지 않게** 하므로(정상 두 패스 스캔 자체엔
+    `ProcessedPreRefHandler`를 통해 여전히 노출됨 — "스캔에 안 걸림"이
+    아니라 "이 가드에 안 걸림"이 정확한 설명), 이 Handler가 실제로
     매치되는 경우는 오직 "타입이 막았어야 했는데 어떻게든 동적으로
     새어들어온" 버그 케이스뿐 — 그래서 no-op이 아니라 즉시 `error`.
   - **PreRef는 "취소"라는 개념이 없다 — 1회용, 재사용은 즉시 error
     (2026-08-12 여섯 번째 세션, 사용자 제안 채택).** `Ref`가 "다른 값으로
     교체되면 `retract`로 취소됨"이라는 의미의 취소를 가질 수 있는 건 정상
     우선순위 스캔의 `(inst,k)` 디스패치 체인에 실제로 참여해서임 —
-    `Dispatch.retractFrom`이 그 체인을 대상으로 동작함. `PreRef`는 애초에
-    그 체인에 올라간 적이 없음(pre-pass에서 fire와 동시에 `None`으로
-    소진되고 정상 두 패스는 건드리지 않음, 위 "호이스팅의 실제 구현" 절) —
-    그래서 "취소 가능 여부" 자체가 성립할 토대가 없었던 게 구조적으로
-    이미 사실이었음, 이번 세션은 그걸 명문화한 것뿐. 진짜 위험은 취소가
+    `Dispatch.retractFrom`이 그 체인을 대상으로 동작함. **[정정,
+    2026-08-14 두 번째 세션] "그 체인에 올라간 적이 없다"는 근거는 더 이상
+    정확하지 않음** — `ProcessedPreRefHandler` 신설로 소진된 슬롯도 이제
+    정상 `Dispatch.process` 경로를 타 체인에 올라감(위 "호이스팅의 실제
+    구현" 절). "취소 개념이 없다"는 결론 자체는 그대로 유효하지만 이유가
+    바뀜: 체인에 없어서가 아니라, **그 자리의 retract가 하드코딩된
+    no-op이기 때문** — PreRef의 fire는 `fn(inst)`를 실제로 실행하는
+    부작용이라 애초에 "되돌릴 상태"가 없고, 그래서 체인에 올라가 있어도
+    retract가 할 일 자체가 없음. 진짜 위험은 취소가
     아니라 **재사용**: 이미 한 번 fire된 `PreRef` 객체를 두 번째
     construction의 children 배열에 다시 놓으면, 거기서 등록하는
     `:Callback(fn)`이 "이미 채워져 있으면 즉시 1회 호출"이라는 규칙(위

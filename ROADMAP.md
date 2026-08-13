@@ -44,11 +44,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       일반 `Ref`의 위치 기반 순서까지 최소 스파이크로 검증
       (2026-08-07 세 번째 세션, `base/ref-plan.md` "`phase` 옵션
       폐기 → 위치로 표현, `PreRef` 신설" 절) — **PreRef pre-pass의 소진은
-      `nil`이 아니라 `None`으로(2026-08-07 열 번째 세션 정정, 사용자가
+      `nil`이 아니라 실재하는 센티널로(2026-08-07 열 번째 세션 정정, 사용자가
       Luau REPL로 반례 제시 — 키가 듬성듬성해지면 순회가 index 순서를
       전혀 안 지킴), 이 경로는 nil-hole 위험이 아예 없도록 설계됐으므로
       "구멍 있는 테이블 순회" 자체를 검증할 필요는 없어짐(같은 절 "왜
-      `nil`이 아니라 `None`인가" 참고)**
+      `nil`이 아니라 `None`인가" 참고). **[정정, 2026-08-14 두 번째 세션]
+      소진 값은 이제 `None`이 아니라 전용 센티널 `ProcessedPreRef`** —
+      정상 두 패스가 그 자리를 `ProcessedPreRefHandler`로 매치해
+      `Dispatch.setLength(0)`/`setOffsetSource(None)`을 등록하도록 재설계됨
+      (`base/ref-plan.md` "PreRef" 절, `base/dispatch-core-plan.md`
+      "Length/Offset" 절) — 아래 `PreRef` pre-pass/동적 경로 가드
+      체크리스트 항목도 이 값으로 스파이크할 것.
 - [ ] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,
       `export type Params = {...}`로 타입 체크되는지 확인
       (`component-composition-plan.md` 최종 결론 1번) — **`props.Modifier or
@@ -536,14 +542,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `PreRef` 항목만 fire(Dispatch.process/getHandler 우회하는 raw 루프,
       `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten 재호출 가능성과
       충돌하므로 기각). 복수 `PreRef`는 배열 index 순서 그대로(별도 규칙
-      없음). fire된 슬롯은 그 자리에서 소진(`None` 처리, `nil` 아님 —
-      2026-08-07 열 번째 세션 정정)해 이어지는 정상 두 패스에 다시 노출
-      안 되게 함 — `base/ref-plan.md` "PreRef" 절
+      없음). fire된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두 번째
+      세션] `None`이 아니라 전용 센티널 `ProcessedPreRef` 처리** — 아래
+      `ProcessedPreRefHandler` 항목이 그 자리를 정상 두 패스로 마저 처리)
+      — `base/ref-plan.md` "PreRef" 절
 - [ ] `PreRef` 동적 경로 가드 Handler — `{isHandlable = v is PreRef,
       process = error(...)}` 형태로 정상 우선순위 레지스트리에 등록,
       `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열 경로는
       pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입 차단을
       우회한 버그라는 뜻 — 같은 절 참고
+- [ ] **[2026-08-14 두 번째 세션 신설]** `ProcessedPreRefHandler` —
+      `{isHandlable = v == ProcessedPreRef, process = setLength(0)+
+      setOffsetSource(None)+no-op retract}` 형태로 정상 우선순위
+      레지스트리에 등록, `NoneHandler`와 같은 "한 값 종류 전담" 패턴.
+      PreRef pre-pass가 소진시킨 자리가 Length/Offset에 "0 기여"를 등록할
+      책임을 지는 자리 — `base/ref-plan.md` "PreRef" 절, `base/
+      dispatch-core-plan.md` "Length/Offset" 절
 - [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
       `coroutine.resume(v, self)`+`nil`로 소진(2026-08-09 열한 번째
       세션 최종 정정 — 순서 안 중요 + 슬롯 재사용 위해 `None`이 아닌
