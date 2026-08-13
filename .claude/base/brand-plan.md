@@ -34,8 +34,9 @@ function Brand.get(x) return registry[x] end -- nil이면 quad가 모르는 값
 
 -- 각 브랜드는 고유 테이블(빈 테이블이어도 됨) — 문자열 리터럴 아님
 local ObserverTag, EffectTag, TagTag, AttributeTag, TweenTag, BlockerTag,
-      StateTag, SourceTag, StoreTag, SlotTag, RefTag, PreRefTag, ModifierTag =
-      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+      StateTag, SourceTag, StoreTag, SlotTag, RefTag, PreRefTag, PostRefTag,
+      ModifierTag =
+      {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
 -- 각 타입의 모든 생성 지점(Observer(...), Source(...), :With(...), Tag(...) 등)에서:
 Brand.set(newHandle, ObserverTag)
@@ -68,8 +69,12 @@ end
 local function isPreRef(x)
   return Brand.get(x) == PreRefTag
 end
+local function isPostRef(x)                     -- [2026-08-14 아홉 번째 세션] PostRef 확정
+  return Brand.get(x) == PostRefTag
+end
 local function isRef(x)
-  return isPreRef(x) or Brand.get(x) == RefTag  -- PreRef가 Ref 런타임을 재사용 = Ref의 한 종류
+  -- PreRef/PostRef가 Ref 런타임을 재사용 = 둘 다 Ref의 한 종류
+  return isPreRef(x) or isPostRef(x) or Brand.get(x) == RefTag
 end
 ```
 
@@ -97,13 +102,20 @@ end
   PreRefTag`), **`isRef(x)`는 그 위에 `Brand.get(x)==RefTag`를 OR로
   얹은 상위 개념** — 즉 이제 **`isRef(preRefInstance)`는 `true`.**
 - **`(v=Ref)` children 배열 leaf 매치 핸들러(`Dispatch/Leaf.luau`)는
-  이제 `isHandlable`을 `isRef(v) and not isPreRef(v)`로 명시적으로
-  좁혀야 함** — 예전처럼 `isRef` 자체가 배타적이라 저절로 걸러지는 게
-  아니라, "Ref이긴 한데 그 중 PreRef는 아니다"를 호출부가 명시적으로
-  말해야 하는 모양으로 바뀜(PreRef pre-pass가 이미 소진시켜 정상 경로에선
-  거의 안 걸리지만, 위 "PreRef" 절의 동적 경로 가드 Handler와 이 조합이
-  같이 "일반 Ref 경로를 절대 타면 안 됨"을 보장). `isModifier`도 같은
-  단순 항등(`Brand.get(x) == ModifierTag`, 상위 개념 없음).
+  이제 `isHandlable`을 `isRef(v) and not isPreRef(v) and not isPostRef(v)`로
+  명시적으로 좁혀야 함**(**[2026-08-14 아홉 번째 세션]** `PostRef` 확정으로
+  제외 항이 하나 늘어남) — 예전처럼 `isRef` 자체가 배타적이라 저절로
+  걸러지는 게 아니라, "Ref이긴 한데 그 중 Pre/Post는 아니다"를 호출부가
+  명시적으로 말해야 하는 모양으로 바뀜(두 pre-pass 소진이 이미 걸러줘
+  정상 경로에선 거의 안 걸리지만, `base/ref-plan.md`의 두 동적 경로 가드
+  Handler와 이 조합이 같이 "일반 Ref 경로를 절대 타면 안 됨"을 보장).
+  `isModifier`도 같은 단순 항등(`Brand.get(x) == ModifierTag`, 상위 개념
+  없음).
+- **`PostRef`도 `PreRef`와 완전히 같은 포함 방향** — `Ref` 런타임을 그대로
+  재사용하고 브랜드 태그만 다르므로 `isRef(postRefInstance)`도 `true`.
+  즉 `isRef`는 이제 `{Ref, PreRef, PostRef}` 셋을 통과시키는 상위 개념이고,
+  `isPreRef`/`isPostRef`가 각각 가장 구체적인 항등 — `PreRef`/`PostRef`
+  사이엔 포함 관계가 없음(서로 배타적인 형제).
 
 **같은 이유로 `isSlot`/`isEffect`도 명시(2026-08-09 세션)** —
 `Brand.get(x) == SlotTag`/`Brand.get(x) == EffectTag`인 단순 항등

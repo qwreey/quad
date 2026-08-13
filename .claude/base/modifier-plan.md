@@ -237,13 +237,13 @@ Roblox API에 전혀 의존 안 하는 순수 Lua 테이블 조작이라, "base�
 **Modifier의 체이닝 엔진 자체는 quad-base에 완결된 구현으로 그대로
 존재해도 됨** — 주입할 엔진별 구현이 애초에 없음.
 
-**Modifier 필드에 핸들러 계층 값(Ref/PreRef/Observer/Effect/Slot/
+**Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/
 Modifier)이 들어오면 즉시 error — UB 아님(2026-08-09 세션, 정정).**
 이전 버전("권장 사용법은 아니지만 막을 이유도 없음 — 방어 로직 없는
 UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 자식/Ref
 같은 걸 다루는 목적이 아니고, 이런 값이 실제로 쓸모 있는 use case가
 없다고 확인된 이상 조용한 UB보다 그 자리에서 막는 쪽이 낫다 — 판별
-비용도 이미 있는 `Brand` 기반 predicate(`isRef`/`isPreRef`/
+비용도 이미 있는 `Brand` 기반 predicate(`isRef`/`isPreRef`/`isPostRef`/
 `isObserver`/`isEffect`/`isSlot`/`isModifier`, `bind-system-plan.md`의
 `Brand` 절)를 그대로 재사용하면 되므로 거의 공짜.
 
@@ -264,7 +264,7 @@ UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 
   못 잡음.** `isRef(v)` 등은 setter가 확정하는 바로 그 값(State 자체
   또는 plain 값)만 보므로, 값이 State/Source면 그 껍데기가 `isState`를
   통과해 검사를 그냥 지나가고, 그 State가 나중에 `:Get()`됐을 때 실제로
-  내놓는 내용물(예: 그 State가 Ref/PreRef/Observer/Effect/Slot을 값으로
+  내놓는 내용물(예: 그 State가 Ref/PreRef/PostRef/Observer/Effect/Slot을 값으로
   들고 있는 경우)까지는 검사하지 않음 — 검사 시점엔 아직 실체화 안 된
   값이라 정적으로 알 수 없고, 값이 바뀔 때마다 매번 `:Get()`해서
   검사하는 건 관측 시점을 앞당기는 부작용까지 생기는 오버엔지니어링.
@@ -346,7 +346,7 @@ dispatch 밖에서만 처리되는 유일한 존재")과 정면으로 충돌함 
 
 **[정정, 2026-08-09 세션] "UB, 가능하면 타입 차단"에서 "명시적
 `error`로 확정"으로 전환** — 위 "핸들러 계층 값이 필드로 들어오면
-즉시 error" 절(Ref/PreRef/Observer/Effect/Slot/Modifier가 Modifier
+즉시 error" 절(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier가 Modifier
 *필드*로 들어오는 걸 막은 것)과 같은 방향으로 통일: `isModifier`
 predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
 막는다.** 타입 차단(`State<Modifier>` 같은 조합을 타입 정의 단계에서

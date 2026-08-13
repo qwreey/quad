@@ -50,7 +50,7 @@
 | | 공유 자원 | 방어 | 상태 |
 |---|---|---|---|
 | `Slot` | element | `claimOwner`/`claimOwnerAt` → 즉시 error(`Slot{a,a}`/`Frame{slot,slot}`) | 막힘 |
-| `PreRef` | 자기 자신 | `_fired` → 재사용 시 error | 막힘 |
+| `PreRef`/`PostRef` | 자기 자신 | `_fired` → 재사용 시 error | 막힘 (`PostRef`는 2026-08-14 아홉 번째 세션 신설, 같은 가드 그대로) |
 | `Tag` | 태그 이름 | 위치별 참조 카운트 — 겹침이 **의도된 동작**(합집합) | 설계상 정상 |
 | `Attribute` | 이름 | 그룹 전용 키 + 이름 claim → 즉시 error | 막힘(0-Z 해소, 14차 세션) |
 | **`Ref`** | 자기 자신 | **없음** | **이 항목** |
@@ -143,7 +143,7 @@
   쓰기 시작했음).
 - **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`, `isState`를
-  10종 branded 타입 전부로 일반화) — `brand-plan.md`의 `Brand`
+  branded 타입 전부로 일반화) — `brand-plan.md`의 `Brand`
   절에서 동작/구현 방식은 확정, "OOP 인스턴스의 클래스명을 얻는 느낌"을
   전달할 더 나은 이름이 있는지가 열린 질문(사용자가 직접 제기) — `Tag`는
   이미 quad-roblox의 `CollectionService` 래퍼로 쓰여서 이름 충돌, 후보로
@@ -167,6 +167,16 @@
   이미 없앴으니 급하지 않지만, 최종 이름은 여전히 이 목록의 다른
   가칭들과 함께 검토 대상. `base/attribute-plan.md` "그룹 `Attribute(...)`"
   절 참고.
+- **`OnDestroyed`(3순위, 사소함, 2026-08-14 아홉 번째 세션 추가)**:
+  `base/lifecycle-hooks-plan.md`가 이 이름으로 **확정**하되, 위 0-B
+  (`dispose(any)` — 시그니처/범위)가 "quad가 만드는 모든 것의 유일한 파괴
+  경로"로 풀리면 `OnDisposed`와 맞추는 재검토 여지를 남겨둠. 지금
+  `OnDestroyed`인 이유는 실제 트리거가 `dispose()` 호출이 아니라 엔진
+  `Destroying` 신호라서(그 문서 "이름 컨벤션" 절). 이름은 런타임에 아무
+  의미가 없는 순수 네이밍이라 바꾸는 비용이 0에 가까움 — **0-B가 풀리기
+  전엔 이 항목을 열지 말 것**(형제 `OnCreated`/`OnRendered`는 재검토
+  대상 아님, 다만 `OnRendered`엔 "부모에 붙기 전에 불린다"는 캐비엇이
+  있어 이름이 아니라 *문서화*로 대응하기로 확정됨).
 - **참고 — 이미 지나간 사례**: `register`(v1) → `State`(v2) 리네임은
   "모호함"은 풀었지만 "다른 뜻으로 이미 쓰이는 단어"라는 새 문제를 만든
   셈 — 이번 정리에서 같은 패턴을 조심할 것.

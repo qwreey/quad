@@ -254,6 +254,10 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
   유지해야 함**(`State<T>`가 `Source`를 참조하면 안 됨 — 두 제네릭
   별칭의 상호 재귀는 솔버가 취약한 패턴).
 - **`PreRef<T>`가 `Ref<T>` 자리에 대입 가능** — `luau-test/13` A섹션.
+  **[2026-08-14 아홉 번째 세션] `PostRef<T>`도 완전히 같은 관계**(같은
+  `Ref` 런타임 재사용, 브랜드 태그만 다름 — `base/ref-plan.md`의
+  "`PostRef`" 절) — `13`은 지금 `rewrite-required/`라 재작성할 때
+  `PostRef`도 같이 커버할 것.
 - **Modifier의 제네릭 `__index` + `table.clone` 체이닝** — `luau-test/done/17`.
 - **콜백 파라미터/본문의 타입 체크**(1번의 쪼개기 적용 시) — 진짜
   살아있음.

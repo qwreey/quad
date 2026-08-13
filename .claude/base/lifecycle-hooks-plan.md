@@ -1,13 +1,25 @@
-# 생명주기 훅 슈가 — `OnCreated`/`OnDestroyed`(+백로그 후보 `OnRendered`/`PostRef`)
+# 생명주기 훅 슈가 — `OnCreated` / `OnRendered` / `OnDestroyed`
 
-**상태**: research — 사용자 제안(2026-08-14 세션)으로 신설, 착수 전
-백로그. 이미 확정된 `PreRef`/`Ref`(`base/ref-plan.md`)와
-`Effect`(`base/effect-plan.md`) 프리미티브 위에 얹는 순수 슈가 후보 —
+> **[2026-08-14 아홉 번째 세션] `research/` → `base/` 승격.** 마지막 열린
+> 항목이던 `OnRendered`의 채택 여부/메커니즘을 사용자가 확정 — **채택**,
+> 메커니즘은 아래 ② 절의 `PostRef`(착수 선택지 (a)). `PostRef` 자체는
+> `base/ref-plan.md`의 "`PostRef`" 절로 편입되어 **base 프리미티브로
+> 확정**됐고, 이 문서는 그 위에 얹히는 훅 슈가 셋을 다룸.
+
+**상태**: base — 확정. **[2026-08-14 아홉 번째 세션 기준]** 설계에 열린
+질문 없음(이름 재검토 여지 하나만
+`question.md` 용어 정리 대기열에 남음, 아래 "이름 컨벤션" 절).
+`Ref`/`PreRef`/`PostRef`(`base/ref-plan.md`)와
+`Effect`(`base/effect-plan.md`) 프리미티브 위에 얹는 **순수 슈가** —
 `base/fallback-plan.md`의 `Fallback`/`Traceback`이
 `additional-primitives-plan.md`의 기존 결론 위에 얹혔던 것과 같은 관계,
-이 문서도 그 프리미티브들의 확정 사항을 하나도 안 뒤집음. 우선순위는 그
-형제 백로그들(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과 동급 —
-"quad 개발 상당 부분 끝난 뒤"로 볼 것.
+이 문서도 그 프리미티브들의 확정 사항을 하나도 안 뒤집음.
+
+**구현 우선순위는 여전히 맨 뒤** — 설계가 확정됐다는 것과 지금 만든다는
+건 다름. 형제 백로그들(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과
+동급으로 "quad 개발 상당 부분 끝난 뒤". 단 **`PostRef` 자신은 슈가가
+아니라 디스패치 코어의 일부**라 `ROADMAP.md` M8(Ref)에서 `PreRef`와 같이
+구현됨 — 이 문서의 슈가 셋만 뒤로 미뤄지는 것.
 
 ## 동기 (사용자 원 메모)
 
@@ -21,15 +33,19 @@ React/Vue류 프레임워크의 `OnCreated`/`OnRendered`/`OnDisposed` 생명주�
 `OnCreated`/`OnDestroyed` 둘**로 확정되고(`OnDisposed`라는 최초 가칭
 대신 `OnDestroyed`를 사용자가 선호 — 아래 "이름 컨벤션" 절 참고), 두
 훅 모두 **여러 번 나란히 등록 가능**하다는 게 이 제안의 특징으로
-명시됐음. `OnRendered`는 사용자가 **지금은 의도적으로 구현 안 하기로
-확정**(디스패치 코어에 실제 post-pass가 필요해 공짜가 아니라서) —
-다만 나중에 만들 때 `PreRef`의 거울상인 `PostRef`로 구현하면 될
-것 같다는 구체 스케치를 남겼고(아래 ② 절), 이 문서는 그 스케치를
-백로그 후보로 보존하는 용도.
+명시됐음. `OnRendered`는 처음엔 사용자가 **의도적으로 보류**했었으나
+(디스패치 코어에 실제 post-pass가 필요해 "공짜"가 아니라서), 그때 같이
+남겨둔 `PostRef` 스케치가 **"구현 난이도가 아주 낮고 Pre-Post 둘을 지원
+안 할 이유가 없다"**는 판단으로 2026-08-14 아홉 번째 세션에 **채택**됨
+— 아래 ② 절이 그 확정 내용(원래 "착수 시점에 판단할 선택지"였던
+(a)/(b)/(c) 중 **(a)** 확정).
 
 ## 핵심 논지 — 이 셋은 사실 새로운 타입/개념이 아니다
 
-`OnCreated`/`OnDestroyed`가 "정말 공짜"인 이유는 단 하나로 귀결됨:
+`OnCreated`/`OnRendered`/`OnDestroyed`가 "정말 공짜"인 이유는 단 하나로
+귀결됨(`OnRendered`는 자기가 반환하는 `PostRef`라는 프리미티브가 base에
+생긴 뒤부터 — 그 프리미티브 자체는 공짜가 아니었고, 그래서 별도로 확정을
+받아야 했음):
 **이것들은 Dispatch/Brand/타입 시스템이 알아야 하는 새 개념이 아니라,
 호출되는 즉시 평가되어 이미 존재하는 프리미티브의 인스턴스로 사라지는
 plain 함수일 뿐**이기 때문.
@@ -39,15 +55,20 @@ local function OnCreated(fn: (inst: Instance) -> ()): PreRef<Instance>
     return PreRef():Callback(fn)
 end
 
+local function OnRendered(fn: (inst: Instance) -> ()): PostRef<Instance>
+    return PostRef():Callback(fn)   -- [2026-08-14 아홉 번째 세션 확정]
+end
+
 local function OnDestroyed(fn: () -> ()): EffectHandle
     return Effect(function() return fn end)
 end
 ```
 
-호출 즉시 `PreRef():Callback(fn)`/`Effect(...)`가 실행되고, children
-배열에 실제로 놓이는 건 **그 결과인 `PreRef`/`EffectHandle` 인스턴스
-자체**임 — `OnCreated`라는 이름이나 개념은 이 시점 이후 어디에도
-안 남음. `Dispatch`는 이미 아는 `(v=PreRef)`/`(v=EffectHandle)` 매치
+호출 즉시 `PreRef():Callback(fn)`/`PostRef():Callback(fn)`/`Effect(...)`가
+실행되고, children 배열에 실제로 놓이는 건 **그 결과인 `PreRef`/`PostRef`/
+`EffectHandle` 인스턴스 자체**임 — `OnCreated`라는 이름이나 개념은 이
+시점 이후 어디에도
+안 남음. `Dispatch`는 이미 아는 `(v=PreRef)`/`(v=PostRef)`/`(v=EffectHandle)` 매치
 핸들러로 정확히 똑같이 처리하고, 새 브랜드 태그조차 필요 없음(이미
 존재하는 `Brand`로 그대로 식별됨).
 
@@ -63,7 +84,7 @@ end
 "이 값이 언제/어떻게 디스패치되는가"의 문제인데, 팩토리 접근은 애초에
 디스패치될 "값"을 안 만들고 곧장 "결과 객체"를 만들어버림.
 
-## ① 이미 거의 확정적인 슈가 둘
+## ① 확정된 슈가 셋
 
 ### `OnCreated(fn)`
 
@@ -74,7 +95,8 @@ end
 불림. 새 Dispatch 메커니즘 불필요, `PreRef` 그대로 재사용.
 
 **v1과의 관계 — 이름이 같아 보여도 메커니즘은 다름.** `base/ref-plan.md`
-510~513행에 이미 이렇게 확정돼 있음:
+"`phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설" 절에 이미 이렇게 확정돼
+있음:
 
 > quad v1의 `OnCreated` 특수 DI 키는 이식하지 않는다.
 > `Ref():Callback(function(inst) end)`를 children 배열에 넣는 것만으로
@@ -88,6 +110,21 @@ end
 관용구(`Ref()`/`PreRef():Callback(fn)`)를 이름 하나로 감싼 것뿐이라
 모순이 아니라 그 결론의 자연스러운 재포장임. 이름이 v1과 같아 헷갈릴
 수 있다는 점만 "이름 컨벤션" 절에서 별도로 짚음.
+
+### `OnRendered(fn)` (2026-08-14 아홉 번째 세션 확정)
+
+`PostRef():Callback(fn)`를 반환하는 순수 팩토리 — `OnCreated`와 완전히
+같은 패턴이고, 반환하는 프리미티브만 거울상. `PostRef`의 계약을 그대로
+물려받으므로(`base/ref-plan.md`의 "`PostRef`" 절):
+
+- **불리는 시점**: 이 인스턴스의 children(과 그 서브트리 전체)과
+  프로퍼티/이벤트가 **전부 세팅된 뒤**.
+- **⚠️ 불리지 *않는* 시점**: 이 인스턴스가 **부모에 붙은 뒤가 아님**.
+  `PostRef`는 자기 아래(서브트리)의 완성만 보장하고 자기 위(조상 체인)는
+  아직 없을 수 있음 — React `componentDidMount`가 DOM 삽입 **후**인 것과
+  다르므로, 이름만 보고 "화면에 올라간 뒤"로 기대하지 않도록 **사용자
+  문서에 반드시 명시**할 것(아래 "이름 컨벤션" 절도 참고).
+- 복수 `OnRendered` 간 상대 순서는 **보장 안 함**(`PostRef` 계약).
 
 ### `OnDestroyed(fn)`
 
@@ -108,12 +145,20 @@ Dispatch/Effect 메커니즘 불필요, 기존 계약 재사용만으로 정확�
 Frame {
     OnCreated(fn1),
     OnCreated(fn2),
+    OnRendered(fn3),
     OnDestroyed(cleanupA),
     OnDestroyed(cleanupB),
 }
 ```
 
-`OnCreated(fn)`/`OnDestroyed(fn)` 호출마다 `PreRef()`/`Effect(...)`
+**단, 같은 계열끼리의 상대 순서는 보장 안 함** — `fn1`이 `fn2`보다 먼저
+불린다고 기대하지 말 것(`PreRef`/`PostRef` 둘 다 2026-08-14 아홉 번째
+세션에 계열 안 순서를 명시적 미보장으로 확정, `base/ref-plan.md`). 순서가
+정말 필요하면 훅을 여럿 등록하는 게 아니라 **하나의 훅 안에서 순서대로
+부를 것** — 그게 의도가 코드에 드러나는 유일한 방법.
+
+`OnCreated(fn)`/`OnRendered(fn)`/`OnDestroyed(fn)` 호출마다
+`PreRef()`/`PostRef()`/`Effect(...)`
 **생성자가 매번 새로 불려 독립된 인스턴스**를 만들어냄 — children
 배열의 서로 다른 숫자 슬롯에 놓이므로, 같은 인스턴스에 여러 개를
 나란히 등록하는 게 자연히 지원됨. 이건 `Ref():Callback(fn)` 단일
@@ -130,12 +175,18 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 `OnCreated(fn2)`는 각각 `PreRef()`를 독립적으로 호출해 서로 다른 객체를
 만드므로, 이 가드가 막으려는 재사용 시나리오 자체가 발생하지 않음.
 
-## ② `OnRendered`(+`PostRef`) — 의도적으로 지금 구현 안 함, 백로그 후보만
+## ② `OnRendered`(+`PostRef`) — 채택 확정 (2026-08-14 아홉 번째 세션)
 
-**[결정, 2026-08-14 세션]** `OnCreated`/`OnDestroyed`와 달리 지금 착수
-안 함 — 아래 이유로 새 디스패치 단계가 실제로 필요해서, 착수 여부
-자체를 지금 정하지 않고 **백로그 후보로만 남겨둠**. 아래는 나중에
-꺼내볼 때 바로 쓸 수 있도록 정리해두는 조사 결과.
+> **[역전, 2026-08-14 아홉 번째 세션]** 이 절은 원래 "의도적으로 지금
+> 구현 안 함, 백로그 후보만"이었음(같은 날 여섯 번째 세션 결정) —
+> `OnCreated`/`OnDestroyed`와 달리 디스패치 코어에 새 단계가 필요해
+> "공짜가 아니다"라는 게 근거였고, 그 판단 자체는 지금도 맞음. 뒤집힌
+> 건 **그 비용을 지불할지**로, 사용자 판단은 **"Pre-Post 둘을 지원 안 할
+> 이유가 없고, 구현 난이도가 아주 낮아서 괜찮다"** — 아래 스케치가 이미
+> "새 전체 순회 없음, pre-pass에 분기 하나 + 짧은 목록 소비"까지
+> 줄여놨던 게 결정적. **정본은 이제 `base/ref-plan.md`의 "`PostRef`"
+> 절**(프리미티브로서의 계약·보장 범위·Handler)이고, 아래는 그 결론에
+> 이르게 된 조사/논거를 그대로 보존한 것.
 
 `base/dispatch-core-plan.md`의 "확정된 디스패치 모델" 절이 계약하는
 두 패스(배열 파트 먼저, 해시 파트 나중) 기준으로 현재 base가 제공하는
@@ -145,13 +196,13 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 |---|---|
 | `PreRef` | 두 패스보다도 **먼저**(호이스팅 pre-pass) |
 | 일반 `Ref`/`Effect`(children 배열 위치) | **배열 파트** 처리 시점(아직 해시 파트 전) |
-| (없음) | 해시 파트(프로퍼티/이벤트)까지 **전부 끝난 뒤** |
+| `PostRef` **[2026-08-14 아홉 번째 세션 신설]** | 해시 파트(프로퍼티/이벤트)까지 **전부 끝난 뒤** |
 
 즉 "이 인스턴스의 프로퍼티/이벤트까지 전부 세팅된 뒤"를 보장하는 훅이
-**현재 base 설계엔 없음**. 이건 기존 프리미티브 재사용만으로는 안 되고
+**당시 base 설계엔 없었음**. 이건 기존 프리미티브 재사용만으로는 안 되고
 디스패치 코어에 실제로 새 단계가 필요하다는 뜻이라, `OnCreated`/
-`OnDestroyed`와 달리 **진짜로 공짜가 아님** — 그래서 지금 채택하지
-않기로 함.
+`OnDestroyed`와 달리 **진짜로 공짜가 아님** — 그래서 처음엔 채택을
+보류했고, 아래 스케치로 비용이 충분히 작다는 게 드러난 뒤 채택됨.
 
 **`PostRef` 스케치(사용자 제안, 2026-08-14, 두 번째 세션에 `ProcessedPreRef`
 선례 반영해 갱신, 같은 세션 후속 제안으로 다시 갱신 — "후행 스캔" 초안
@@ -181,9 +232,11 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   똑같이 필요(pre-pass가 놓쳤을 때만 매치되는 버그 케이스 전용, `error`).
 - **두 패스가 끝난 뒤, `Dispatch.drive`가 `postRefList`를 그 순서 그대로
   순회하며 각 `PostRef`를 fire** — 별도 후행 전체 재순회가 필요 없음,
-  pre-pass가 이미 만들어둔 목록을 그대로 소비하면 끝. 복수 `PostRef`
-  간 순서는 복수 `PreRef`와 같은 원칙(배열 index 순서 그대로)이 자연히
-  적용됨.
+  pre-pass가 이미 만들어둔 목록을 그대로 소비하면 끝. **[정정, 2026-08-14
+  아홉 번째 세션]** 복수 `PostRef` 간 순서가 복수 `PreRef`와 같은
+  원칙이라는 건 그대로지만, 그 원칙 자체가 "배열 index 순서 **보장**"에서
+  **"보장 안 함"**으로 뒤집혔음 — 구현상 push 순서로 돌 뿐, 계약이
+  아님(`archive/preref-order-guaranteed-reversed.md`).
 - 결과적으로 `PreRef`와 `PostRef`는 **소진 메커니즘이 완전히 대칭**
   (둘 다 pre-pass에서 즉시 `Processed*` 센티널로 소진, 둘 다 전담
   `Processed*Handler`가 Length/Offset을 등록) — 유일한 차이는 "실제
@@ -195,23 +248,24 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   초안보다 훨씬 저렴. `OnRendered(fn)`은 `PostRef():Callback(fn)`을
   반환하는 팩토리로, 위 `OnCreated`와 완전히 같은 패턴이 됨.
 
-**스코프도 여전히 불명확함**: "렌더 완료"가 (a) 이 인스턴스 자신의
-프로퍼티/이벤트 세팅만 끝나면 되는지, (b) 이 인스턴스의 **자식들까지
-전부 마운트를 끝내야** 하는지 — React류 `on*Rendered` 이름들은 보통
-(b)(서브트리 전체 완료)를 뜻하는 경우가 많아, 이름만 보고 (a)로 기대하는
-사람과 실제 구현이 (b)라면(또는 반대라면) 기대치가 어긋날 위험이 있음.
-`PostRef`의 `postRefList` 소비(위 스케치)는 자연스럽게 (a)만 줌 — (b)를
-원하면 자식 서브트리 전체의 마운트 완료를 기다리는 별도 신호가 있어야
-해서 훨씬 큰 작업.
+**스코프 — 해소됨(2026-08-14 아홉 번째 세션).** 원래 이 자리엔 "렌더
+완료"가 (a) 이 인스턴스 자신의 프로퍼티/이벤트 세팅만인지 (b) 자식
+서브트리 전체 완료까지인지가 **불명확**하다고 적혀 있었고, "(a) 메커니즘은
+(b)를 못 준다"고 판단했었음 — **그 판단이 틀렸다는 게 사용자 지적으로
+드러남**: 배열 파트 루프가 각 자식의 마운트를 **동기적으로 끝내고**
+(`Slot`은 실 확정 시 요소를 그 자리에서 주입, `State<Frame>`도 최초 값을
+그 자리에서 처리) 넘어가므로, 두 패스가 끝난 시점엔 **정적으로 선언된
+서브트리가 이미 전부 완성돼 있음**. 즉 (a) 메커니즘이 사실상 (b) 스코프를
+공짜로 줌.
 
-**착수 시점에 판단할 선택지(지금은 고르지 않음)**:
-- (a) 위 `PostRef` 스케치대로 두 패스 뒤 `postRefList`를 소비한다 —
-  (a) 스코프(자기 자신 세팅 완료)의 정확한 보장.
-- (b) 새 메커니즘 없이 일반 `Ref`로 근사한다 — Store를 통해 늦게
-  도착하는 값으로 "대충 렌더 이후"를 흉내내되, "완전한 보장은 없음"을
-  문서에 명시하는 선에서 타협.
-- (c) 계속 스코프 아웃 — `OnCreated`/`OnDestroyed`만 쓰고 `OnRendered`는
-  필요해질 때까지 안 만듦.
+**단, 진짜 경계는 (a)/(b)가 아니라 "자기 아래 vs 자기 위"였음** —
+`PostRef`는 자기 서브트리 완성은 보장하지만 **이 인스턴스가 부모에 붙는
+것보다는 여전히 먼저** 불림. 이 캐비엇의 정본 서술은 `base/ref-plan.md`의
+"`PostRef`" 절 "보장 범위" 항목.
+
+**착수 시점 선택지 — (a) 확정.** 원래 (a)/(b)/(c) 셋을 열어뒀었고
+((b)는 일반 `Ref`로 근사, (c)는 계속 스코프 아웃), 사용자가 **(a)**
+(위 `PostRef` 스케치대로 두 패스 뒤 `postRefList` 소비)를 선택함.
 
 ## 이름 컨벤션
 
@@ -219,16 +273,18 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   `OnChange(name)`(`GetPropertyChangedSignal` 바인딩용 DI 키). 단
   **메커니즘은 다름**: `OnChange`는 이름을 인자로 받아 캐시된 키 객체를
   반환하는 **해시 파트 DI 키 팩토리**(`base/onchange-plan.md` "확정"
-  절)인 반면, 이 문서의 `OnCreated`/`OnDestroyed`는 **배열 파트에
-  놓이는 값(`PreRef`/`EffectHandle`)을 만드는 팩토리**라 이름 패턴만
+  절)인 반면, 이 문서의 `OnCreated`/`OnRendered`/`OnDestroyed`는 **배열
+  파트에 놓이는 값(`PreRef`/`PostRef`/`EffectHandle`)을 만드는 팩토리**라
+  이름 패턴만
   같고 소속 카테고리가 다름 — `OnChange` 쪽 "다른 특수 DI 키와의 대조"
   표에 이 둘을 끼워 넣을 필요는 없어 보임(별도 표로 다루는 게 맞음).
-- `OnCreated`/`OnDestroyed`는 거의 확정적인 후보 — 다만 v1이 이미
+- `OnCreated`/`OnDestroyed` **이름 확정** — 다만 v1이 이미
   `OnCreated`라는 이름을 다른 메커니즘(특수 DI 키)으로 썼던 전례가
   있어 위 "①" 절의 대조 설명 없이 이름만 보면 헷갈릴 수 있음, 문서화
   시 명시할 것.
 - `OnDestroyed`는 최초 가칭이던 `OnDisposed`보다 사용자가 선호 —
-  **최종 이름 결정은 여전히 열려있음.** `OnDisposed`가 제안된 이유는
+  **이 이름으로 확정하되, `dispose()` 범위(0-B)가 풀리면 재검토 여지만
+  남겨둠**(아래 "열린 질문" 절). `OnDisposed`가 제안된 이유는
   미래 `dispose()` 함수(`question.md`
   "0-B. `dispose(any)` — 시그니처/범위")와 이름을 맞추자는 발상이었는데,
   대조해보면 트리거 자체가 다름:
@@ -251,45 +307,50 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
     이름을 맞추는 재검토가 자연스러워질 수 있음.
   - 이름 자체는 런타임에 아무 의미가 없는 순수 네이밍(값은 그냥
     `PreRef`/`EffectHandle`)이라 바꾸는 비용은 0에 가까움 — 그래서
-    지금은 위험 부담 낮은 `OnDestroyed`를 잠정 1순위로 두고,
-    `dispose()` 범위가 확정되면 재검토하는 게 결론. 최종 결정은
-    여전히 사용자 몫.
-- `OnRendered`/`PostRef`는 위 "②" 절의 스코프가 아직 안 정해져서 이름도
-  가결정 — "렌더"라는 단어가 quad엔 없는 개념(React식 재렌더 루프가
-  없음, `base/architecture.md`)이라 `OnRendered`라는 이름 자체가 오해를
-  부를 수 있다는 점도 고려 대상. `PostRef`는 `PreRef`와의 대칭성이
-  이름에서 바로 읽혀서 유력한 후보.
+    위험 부담이 낮은 `OnDestroyed`로 확정하고, `dispose()` 범위가
+    확정되면 재검토하는 게 결론.
+- **`OnRendered`/`PostRef` — 이름 확정(2026-08-14 아홉 번째 세션).**
+  `PostRef`는 `PreRef`와의 대칭성이 이름에서 바로 읽혀 이견 없음.
+  `OnRendered`는 채택되며 이름도 그대로 확정 — 다만 **"렌더"가 quad엔
+  없는 개념**(React식 재렌더 루프가 없음, `base/architecture.md`)이라는
+  원래 우려는 유효하고, 여기에 **"이 인스턴스가 부모에 붙기 전에
+  불린다"**는 캐비엇까지 겹침. 즉 이 이름은 **"React에서 오는 사람이
+  기대하는 것과 미묘하게 다른 시점"**을 가리키므로, 문서화 시 위 ①
+  절의 ⚠️ 항목을 반드시 같이 노출할 것(이름을 바꾸는 대신 문서로
+  대응하기로 한 것 — 이름의 친숙함이 주는 이득이 더 크다는 판단).
 
 ## 패키지 배치
 
-`Ref`/`PreRef`/`Effect`가 전부 quad-base 프리미티브이므로,
-`OnCreated`/`OnDestroyed`는 그 위의 순수 함수일 뿐이라 **quad-base가
-자연스러워 보임** — `Operator`/`Fallback`과 같은 결(엔진 지식이 전혀
-필요 없는 순수 조합). `OnRendered`/`PostRef`를 실제로 만들게 되면
-post-pass 자체는 `Dispatch.drive`(quad-base) 소유가 맞겠지만, 이건 ②가
-착수될 때에나 확정할 문제. 최종 판단은 열어둠.
+**quad-base 확정(2026-08-14 아홉 번째 세션).** `Ref`/`PreRef`/`PostRef`/
+`Effect`가 전부 quad-base 프리미티브이므로 이 훅 셋은 그 위의 순수
+함수일 뿐 — `Operator`/`Fallback`과 같은 결(엔진 지식이 전혀 필요 없는
+순수 조합). `PostRef`의 pre-pass 수집/`postRefList` 소비도 `Dispatch.drive`
+(quad-base) 소유라 층위가 일관됨.
 
 ## 우선순위
 
-**형제 백로그 항목들과 동급, 맨 뒤** — `quad-mock`/`quad-debug`/
-`Operator`/`Fallback`과 같이 "quad 개발 상당 부분 끝난 뒤"로 볼 것.
-`OnCreated`/`OnDestroyed`는 착수 시점에 위 코드 스케치를 그대로 옮기면
-될 만큼 단순하지만, 순수 슈가라 없어도 `Ref():Callback(fn)`/
-`Effect(fn)`를 직접 쓰면 되므로 기능 격차는 없음. `OnRendered`/`PostRef`는
-그 형제들보다도 더 뒤 — 채택 여부 자체가 아직 결정 안 됨(위 ② 절),
-백로그 후보로만 존재.
+**두 층위를 구분할 것**:
+- **`PostRef` 프리미티브 자신** — 디스패치 코어의 일부라 `ROADMAP.md`
+  M8(Ref)에서 `PreRef`와 **같이** 구현됨. 뒤로 미루는 대상이 아님.
+- **이 문서의 훅 슈가 셋(`OnCreated`/`OnRendered`/`OnDestroyed`)** —
+  형제 백로그 항목들과 동급, 맨 뒤(`quad-mock`/`quad-debug`/`Operator`/
+  `Fallback`과 같이 "quad 개발 상당 부분 끝난 뒤"). 착수 시점에 위 코드
+  스케치를 그대로 옮기면 될 만큼 단순하고, 순수 슈가라 없어도
+  `PreRef()/PostRef():Callback(fn)`·`Effect(fn)`를 직접 쓰면 되므로
+  기능 격차가 없음.
 
 ## 열린 질문
 
-**[2026-08-14 세션] `OnRendered` 채택 여부는 이미 답이 나옴 — "지금은
-안 함", 그래서 `question.md`엔 안 올림(사용자가 답할 활성 질문이 아니라
-그냥 보류된 백로그 후보).** 착수하기로 결정되는 시점에 다시 열어볼
-것들만 남음:
-- `PostRef`의 정확한 메커니즘/스코프(위 ②의 (a)/(b)/(c) 중 선택,
-  선택 시 (a)/(b) 하나 고르면 스코프도 자연히 정해짐).
-- 이름 최종 확정 — `OnDestroyed`가 잠정 1순위 후보(위 "이름 컨벤션"
-  절의 `OnDisposed` 대조 참고, `dispose()`의 대상 범위(`question.md`
-  0-B)가 확정되면 재검토 여지 있음). `OnRendered`/`PostRef`는 착수
-  결정 전엔 가결정.
-- 패키지 배치 최종 확인(quad-base로 거의 확정적이나 착수 시점 재확인).
+**[2026-08-14 아홉 번째 세션] 설계상 열린 질문 없음** — 채택 여부/
+메커니즘/스코프/패키지 배치가 전부 확정됨(위 각 절). 하나만 성격이
+다른 항목으로 남음:
+
+- **`OnDestroyed` 이름 재검토 여지** — 지금 이름은 확정이지만, 미래
+  `dispose()`의 대상 범위(`question.md` "0-B. `dispose(any)` —
+  시그니처/범위")가 "quad가 만드는 모든 것의 유일한 파괴 경로"로 풀리면
+  `OnDisposed`와 맞추는 재검토가 자연스러워질 수 있음(위 "이름 컨벤션"
+  절의 대조 참고). `question.md`의 **용어 정리 대기열**에 3순위로 올려둠
+  — `Slot`/`Brand`처럼 "base에 확정돼 있지만 이름만 재검토 대상"인
+  기존 항목들과 같은 취급이고, 이름은 런타임에 아무 의미가 없어 바꾸는
+  비용이 0에 가까움.
 - 그 외 확정된 결정 없음 — 착수 시점에 위 항목들을 순서대로 확인.

@@ -167,7 +167,7 @@ quad/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
-│       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef) children-array leaf 매칭 Handler, StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
+│       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
 │       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). HANDLER_PRIORITY_FALLBACK으로 등록(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
 │       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절)
 │       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절)
@@ -176,6 +176,8 @@ quad/
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value 읽기 + :Set()/:Callback()/:Wait() 셋), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
+│       ├── PostRef.luau           # PreRef의 거울상 — 같은 Ref 런타임/제약, 같은 pre-pass가 수집만 하고 두 패스가 전부 끝난 뒤 fire(`ref-plan.md` "`PostRef`" 절, 2026-08-14 아홉 번째 세션 확정)
+│       ├── LifecycleHooks.luau    # OnCreated/OnRendered/OnDestroyed — PreRef/PostRef/Effect를 반환하는 순수 팩토리 슈가(`base/lifecycle-hooks-plan.md`), 새 타입/Dispatch 개념 없음
 │       └── init.luau
 └── quad-roblox/
     ├── wally.toml
@@ -212,7 +214,7 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
   프리미티브 타입 자신의 공개 어휘**라는 것:
   1. 프리미티브 타입 생성자, `Type(args)` 스타일: `Source(default)`/
      `Ref(default)`/`Store({defaults})`/`Modifier()`/`Relate()`/
-     `Effect(fn, state?)`/`PreRef(default)`.
+     `Effect(fn, state?)`/`PreRef(default)`/`PostRef(default)`.
   2. 그 인스턴스의 콜론 메서드: `state:Get()`/`:With(...)`/`:Compute(fn)`/
      `:Observer(fn)`/`:Apply(factory)`/`:Peek(key)`, `source:Set(v)`/`:Emit()`,
      `ref:Set(v)`/`:Callback(fn)`/`:Wait(thread?)`, `observer:Subscribe()`/
@@ -225,7 +227,7 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
      `Modifier()` 생성자와 같은 이유로 대문자.
 - **소문자 시작(camelCase)** — 특정 프리미티브 타입 하나에 안 묶이고 여러
   타입을 넘나드는 범용 유틸(`isState`/`isSource`/`isRef`/`isPreRef`/
-  `isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
+  `isPostRef`/`isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
   `bindLifetime`, `base/lifecycle-pattern.md`), 그리고 **프리미티브가
   아닌** 내부 엔진/레지스트리의 네임스페이스 멤버(`Dispatch.process`/
   `getHandler`/`addHandler`/`drive`, `Brand.set`/`get`) — 이 셋은 "타입

@@ -78,9 +78,9 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   허용해야 할 이유가 없어짐. `element == nil`뿐 아니라 `element == None`도
   `Add`(및 내부 `raw*`)에서 즉시 `error` — "Slot 안엔 실제로 마운트
   가능한 값만 들어간다"는 단일 규칙으로 단순화.
-- **핸들러 계층 값(Ref/PreRef/Observer/Effect/Modifier) 금지, 즉시
+- **핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Modifier) 금지, 즉시
   `error`** — `Modifier` 필드가 이 값들을 담으면 즉시 `error`로 확정했던
-  것(`modifier-plan.md` 7번)과 같은 판별 메커니즘(`isRef`/`isPreRef`/
+  것(`modifier-plan.md` 7번)과 같은 판별 메커니즘(`isRef`/`isPreRef`/`isPostRef`/
   `isObserver`/`isEffect`/`isModifier` Brand predicate)을 그대로 재사용.
   근거: `Dispatch/Leaf.luau`가 처리하는 "children 배열에 `Ref`/`Observer`/
   `PreRef`가 직접 놓이는" 케이스는 **그 컴포넌트가 지금 만들고 있는
@@ -611,7 +611,7 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
     CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
-    값(Ref/PreRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
+    값(Ref/PreRef/PostRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
     `index`가 범위 밖(1..현재 개수+1, 즉 끝에 추가하는 위치까지 포함)이면
     에러 — **clamp 안 함**(2026-08-10 세션 확정): index가 조용히 다른
     자리로 보정되면 "의도한 위치가 아닌데 그대로 성공한" 조용한 버그가
@@ -1382,7 +1382,7 @@ result = SomeComponent(props)`가 `Instance`를 리턴하든 `Slot`(멀티루트
 ### 요소 타입 — `Slot` 허용
 
 위 "요소 타입 제약" 절 갱신대로 `isMountable`이 `isSlot(v)`을 더 이상
-배제하지 않음 — 나머지(Ref/PreRef/Observer/Effect/Modifier 금지,
+배제하지 않음 — 나머지(Ref/PreRef/PostRef/Observer/Effect/Modifier 금지,
 nil/None 금지)는 그대로.
 
 ### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용

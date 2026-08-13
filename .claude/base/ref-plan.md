@@ -1,4 +1,12 @@
-# Ref / PreRef — 지연 없는 확정 값 박스
+# Ref / PreRef / PostRef — 지연 없는 확정 값 박스
+
+> **[2026-08-14 아홉 번째 세션] `PostRef` 확정·이 문서에 편입.**
+> `base/lifecycle-hooks-plan.md`(당시 `research/`)가 백로그 후보로만 들고 있던 스케치를
+> 사용자가 확정("Pre-Post 둘을 지원 안 할 이유가 없고 구현 난이도가 아주
+> 낮음") — 아래 "`PostRef`" 절 신설, 그 문서도 `base/lifecycle-hooks-plan.md`로
+> 같이 승격됨. **같은 세션에 `PreRef`/`PostRef` 각 계열 안의 fire 순서를
+> "배열 index 순서 그대로 보장"에서 "보장하지 않음"으로 역전** — 역전 원문과
+> 근거는 `archive/preref-order-guaranteed-reversed.md`.
 
 > **[2026-08-13 아홉 번째 세션] `bind-system-plan.md`에서 분리됨.** 그
 > 문서가 2989줄까지 불어나 사람이 검토하기 어렵고 한 곳의 실수가 미치는
@@ -370,17 +378,27 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   패스로 처리하면 됨 — 이 pre-pass는 오직 `PreRef` 타입만 골라내므로
   범위가 좁고, "확정된 디스패치 모델" 절의 두 패스 계약과 별개로 그
   앞에 얹히는 것.
-  - **복수 `PreRef` 간 순서(2026-08-07 아홉 번째 세션, 사용자 확인) —
-    새 규칙 불필요, 배열 index 순서 그대로.** 같은 인스턴스에 `PreRef`가
-    여럿 있으면, 이 pre-pass는 위 "props 순회 순서" 절이 이미 확정해둔
-    "배열 파트는 index 순서대로" 계약을 그대로 재사용해 리터럴 순서대로
-    fire하면 됨 — 서로 다른 우선순위/순서 개념을 별도로 만들 필요 없음
-    (호이스팅은 "PreRef 전체 대 나머지"에만 적용되는 규칙이지, "PreRef끼리"
-    에는 적용될 게 없음 — PreRef끼리는 그냥 평범한 배열 순회).
+  - **복수 `PreRef` 간 순서 — 보장하지 않음(계약)** ⚠️ **[역전, 2026-08-14
+    아홉 번째 세션]** 2026-08-07 아홉 번째 세션엔 "배열 index 순서 그대로"를
+    **보장**으로 명시했었으나, 사용자 판단으로 **의도적 미보장**으로 뒤집음
+    — 역전 원문·근거는 `archive/preref-order-guaranteed-reversed.md`.
+    - **구현은 그대로**(pre-pass가 배열을 index 순서로 훑으므로 사실상
+      리터럴 순서로 fire됨) — 바뀐 건 오직 **계약**임: "같은 계열 안의
+      등록 순서에 의존하는 코드가 생겨선 안 된다, 그건 구조부터 잘못된
+      것"이라는 게 사용자가 든 이유(순서에 의존해야 할 정도면 애초에 두
+      훅으로 나눌 게 아니라 하나의 훅 안에서 순서대로 부르면 됨). 보장을
+      안 하면 **나중에 pre-pass 구현을 바꿀 자유**도 남고, 그 순서에
+      기대는 사용자 코드가 생기지 않아 **버그가 오히려 덜 생김**.
+    - 호이스팅 규칙 자체("`PreRef` 전체가 나머지 전부보다 먼저")는 그대로
+      **보장**임 — 미보장으로 바뀐 건 "`PreRef`끼리의 상대 순서" 하나뿐.
+      아래 `PostRef`도 완전히 같은 규칙(계열 안 순서 미보장).
   - **호이스팅의 실제 구현 = "물리적 재배치"가 아니라 "완전히 별도의
     선행 스캔"(2026-08-07 아홉 번째 세션 후속, 사용자 질문에 답변).**
     `Dispatch.drive(inst, flattened)`는 같은 `flattened` 배열을 **두 번
-    순회**한다 — (1) pre-pass: 배열 파트 전체를 index 순서대로 훑으며
+    순회**한다(**[2026-08-14 아홉 번째 세션]** 그 뒤에 `postRefList` 소비가
+    하나 더 붙지만, 그건 배열 재순회가 아니라 pre-pass가 만들어둔 짧은
+    목록 하나를 도는 것 — 아래 "`PostRef`" 절) — (1) pre-pass: 배열 파트
+    전체를 index 순서대로 훑으며
     `isPreRef(v)`인 슬롯을 찾아 그 자리에서 fire하고 즉시 **`flattened[i]
     = ProcessedPreRef`**로 소진(`nil`이 아님, 2026-08-07 열 번째 세션 정정: `nil`로
     지우면 그 순간 테이블이 "구멍 있는" 상태가 되어 이어지는 (2)의 순회
@@ -572,5 +590,139 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   "고치지" 않는다** — 두 패스 순서를 뒤집거나 재배치하는 시도는
   오버엔지니어링으로 판단해 안 함(이걸 원하면 애초에 PreRef를 쓰면 됨).
   이 결정과 이유는 나중에 `quadnomicon` 콘텐츠로 문서화 예정
-  (`research/documentation-content-map.md` 후보로 메모).
+  (`research/documentation-content-map.md` 후보로 메모). **[보강,
+  2026-08-14 아홉 번째 세션]** "두 패스가 **전부 끝난 뒤**"라는 타이밍은
+  이제 아래 `PostRef`가 제공함 — 그건 두 패스의 순서를 건드리는 게 아니라
+  그 뒤에 얹히는 것이라 이 결정과 상충하지 않음.
+
+### `PostRef` — 두 패스가 전부 끝난 뒤 fire, `PreRef`의 거울상 (2026-08-14 아홉 번째 세션 확정)
+
+**확정.** `research/lifecycle-hooks-plan.md`(현
+`base/lifecycle-hooks-plan.md`) ② 절이 "지금은 구현 안 함, 백로그 후보"로
+남겨뒀던 스케치를 사용자가 착수 선택지 **(a)**(pre-pass 공동 수집 +
+두 패스 뒤 `postRefList` 소비)로 확정 — 근거는 "Pre/Post 둘을 지원 안 할
+이유가 없고, 구현 난이도가 아주 낮음". 이걸로 `OnRendered`도 같이 채택됨
+(`base/lifecycle-hooks-plan.md`).
+
+**정의**: `PostRef`는 `PreRef`와 마찬가지로 **`Ref` 런타임을 그대로 재사용하고
+브랜드 태그만 다른 nominal 타입**(`.Value`/`:Set`/`:Callback`/`:Wait` 동일,
+`base/brand-plan.md`). 다른 점은 **fire 시점 하나뿐** — `PreRef`가 "이
+인스턴스에 뭐가 됐든 일어나기 **전**"이라면, `PostRef`는 "이 인스턴스의
+배열 파트(children/Ref)와 해시 파트(프로퍼티/이벤트)가 **전부 끝난 뒤**".
+
+**세 Ref의 타이밍 대조(이게 전부임)**:
+
+| 타입 | fire 시점 | 계열 안 상대 순서 |
+|---|---|---|
+| `PreRef` | 두 패스보다도 **먼저**(호이스팅 pre-pass) | **보장 안 함** |
+| 일반 `Ref` | **정해진 시점 없음** — 그 값이 dispatch에 도착한 순간(배열 위치/Store 도착 시점에 따라 달라짐) | (해당 없음) |
+| `PostRef` | 두 패스가 **전부 끝난 뒤** | **보장 안 함** |
+
+- 일반 `Ref`의 "언제 채워지는지 모른다"는 건 결함이 아니라 원래 계약임 —
+  그래서 "이미 채워졌는지 먼저 확인, 없으면 `:Wait()`/`:Callback()`"이
+  Ref 전체의 관용구로 이미 확정돼 있음(위 "Ref 일반화" 절). `PreRef`/`PostRef`는
+  그 관용구를 안 써도 되도록 **시점을 계약으로 고정한** 두 특수 케이스.
+- **계열 안 순서를 둘 다 미보장으로 두는 이유**는 위 `PreRef` 절의 역전
+  항목과 같음 — 같은 계열 훅들끼리 등록 순서에 의존하는 코드가 생기면
+  그건 구조부터 잘못된 것이라, 보장을 안 하는 쪽이 버그를 덜 만듦.
+
+**보장 범위 — 무엇이 끝나 있고 무엇이 안 끝나 있는가(중요)**
+
+`PostRef`가 fire될 때 **끝나 있는 것**:
+- **이 인스턴스의 모든 자식**, 그리고 그 자식들의 **서브트리 전체**. 배열
+  파트는 "각 자식이 자기 서브트리까지 전부 동기적으로 마운트를 끝내야 다음
+  형제로 넘어간다"가 이미 계약이고(위 "`phase` 옵션 폐기" 절), `Slot`도
+  마운트 시점에 자기 초기 요소를 그 자리에서 주입하며(`base/slot-plan.md`),
+  `State<Frame>`류 store-bind도 최초 값을 그 자리에서 동기적으로 처리함
+  (`base/dispatch-core-plan.md`) — 즉 배열 파트가 끝난 시점엔 **정적으로
+  선언된 트리가 전부 완성**돼 있음. 사용자 표현 그대로 "중간 for문에서
+  모든 Slot/`State<Frame>`/`Frame` 요소의 마운트가 처리되므로, 바로 뒤에서
+  실행하면 모든 트리가 완성된 이후".
+- **이 인스턴스의 모든 프로퍼티/이벤트**(해시 파트) — `PreRef`가 존재하는
+  이유였던 "이벤트가 setup 도중 동기 발화" 문제의 반대편 끝.
+
+**끝나 있지 **않은** 것**(문서화 필수, 이름만 보고 오해하기 쉬움):
+- **이 인스턴스 자신이 부모에 붙는 것(`.Parent` 대입)** — 부모가 이
+  인스턴스를 자기 배열 파트에서 처리하는 건 이 `drive`가 **끝난 뒤**임
+  (`Frame { Frame {...} }`처럼 리터럴로 중첩하면 안쪽 `Frame` 호출이 먼저
+  완결되어야 바깥 `Frame`의 props 테이블이 완성됨). 즉 `PostRef`는
+  **자기 아래(서브트리)의 완성만 보장하고, 자기 위(조상 체인)는 아직
+  없을 수 있음** — "화면에 올라간 시점"이 아님. `OnRendered`라는 이름이
+  React `componentDidMount`(DOM 삽입 후)처럼 읽힐 수 있으므로 이 차이를
+  `base/lifecycle-hooks-plan.md`와 사용자 문서에 명시할 것.
+- **나중에 동적으로 도착하는 것들** — Store를 통해 뒤늦게 바뀌는 값,
+  `Slot:Add`/`:List`로 나중에 추가되는 요소는 정의상 이 `drive` 밖의
+  사건이라 당연히 포함 안 됨.
+
+**메커니즘 — pre-pass 한 스윕으로 `PreRef`/`PostRef` 둘 다 처리**
+
+새 전체 순회를 추가하지 않는 게 핵심(사용자 제안). `Dispatch.drive`의
+기존 pre-pass가 이미 배열 파트를 index 순서로 한 번 훑고 있으므로:
+
+1. **pre-pass(기존 루프에 분기 하나 추가)**:
+   - `isPreRef(v)`면 지금까지처럼 **그 자리에서 즉시 fire**하고
+     `flattened[i] = ProcessedPreRef`로 소진.
+   - `isPostRef(v)`면 **아직 fire하지 않고**, 이 `Dispatch.drive` 호출
+     하나에만 로컬인 평범한 배열 `postRefList`에 그 인스턴스를 push한 뒤
+     **즉시** `flattened[i] = ProcessedPostRef`로 소진. 1회용 재사용 가드
+     (`_fired`)도 **이 시점에** 세팅 — "슬롯이 소진되는 시점"과 "재사용이
+     막히는 시점"을 `PreRef`와 동일하게 맞춤(실제 콜백 fire와 시점이
+     갈리는 건 아래 3번뿐).
+   - `postRefList`는 **`Relate` 같은 별도 저장소가 아님** — 이 함수
+     콜스택 안에서만 살면 되므로 그냥 로컬 테이블.
+2. **정상 두 패스**(배열 → 해시)가 평소대로 돎. `ProcessedPostRef`로
+   소진된 슬롯은 `ProcessedPreRef`와 **완전히 대칭적으로** 정상
+   `Dispatch.process` 경로를 타고 아래 전담 Handler에 매치됨.
+3. **두 패스가 끝난 뒤 `Dispatch.drive`가 `postRefList`를 순회하며 각
+   `PostRef`를 fire.** 추가 비용은 전체 배열 재순회가 아니라 **실제
+   `PostRef` 개수만큼의 순회**뿐. (순회 자체는 자연히 push 순서지만, 위
+   표대로 **그 순서는 계약이 아님** — 의존 금지.)
+
+**`ProcessedPostRefHandler` — `ProcessedPreRefHandler`의 거울상, 새 규칙 없음**
+
+```lua
+ProcessedPostRefHandler.priority = <매우 높음, ProcessedPreRefHandler와 동급>
+ProcessedPostRefHandler.isHandlable(inst, k, v) = (v == ProcessedPostRef)
+function ProcessedPostRefHandler.process(inst, i, v)
+    Dispatch.setLength(inst, i, 0)
+    Dispatch.setOffsetSource(inst, i, None)
+    return function() end  -- no-op retract, PreRef와 같은 이유(되돌릴 상태가 없음)
+end
+```
+
+`ProcessedPreRefHandler`(위 절)와 한 글자 차이 — "이 위치를 처음 매치한
+Handler가 `setLength`/`setOffsetSource` 등록 책임을 진다"는 `base/
+dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그대로
+만족시킴. `ProcessedPostRef`도 `None`이 아니라 **전용 센티널**(단일 `{}`)인
+이유는 `ProcessedPreRef`와 동일 — "원래부터 빈 자리(`None`)"와 구별돼야
+등록 책임 소재가 분명해지고, 배열에 구멍이 안 생김.
+
+**동적 경로 가드 Handler도 거울상으로 하나 더**
+
+`PreRef`와 똑같이, `PostRef`도 **children 배열의 리터럴 아이템으로만** 놓을
+수 있음 — Modifier 필드/Source/Store 값으로는 **타입으로 차단**(이유도
+동일: flatten되면 해시 파트로 존재하게 돼 "배열 파트" 전제를 벗어나고,
+Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
+정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
+레지스트리에 `{ isHandlable = isPostRef(v), process = error("PostRef는
+children 배열 리터럴에만 놓을 수 있음") }` Handler를 등록 — pre-pass가
+이미 소진시키므로 이게 매치되면 곧 타입 차단을 우회한 버그라는 뜻.
+
+**1회용, 재사용은 즉시 error** — `PreRef`와 같은 `_fired` 플래그를 그대로
+재사용(위 "PreRef는 '취소'라는 개념이 없다" 절과 같은 근거: 이미 fire된
+객체를 다시 놓으면 stale `.Value`로 콜백이 조용히 잘못 호출됨). "취소
+개념이 없다"도 동일 — 체인엔 올라가지만 그 자리 retract가 하드코딩된
+no-op이라 되돌릴 상태가 없음.
+
+**타입/판별**: `isPostRef`는 `isPreRef`와 같은 층위의 가장 구체적인 항등
+체크이고, `isRef`가 그 위에 얹히는 상위 개념 — `Dispatch/Leaf.luau`의
+일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
+상세는 `base/brand-plan.md`.
+
+**대표 유스케이스(사용자 제시)** — `ChildAdded` 같은 이벤트에서 **나중에
+들어오는 것만** 처리하고 싶을 때, `PostRef`의 콜백이 `mounted = true`
+같은 boolean 플래그를 세워두고 핸들러가 그 플래그를 먼저 보게 하는 패턴.
+초기 construction 중에 발생한 이벤트와 그 이후 동적으로 들어온 것을
+사용자 코드가 스스로 구분할 수 있게 해주는, `PreRef`만으론 표현이 안 되던
+자리임.
 

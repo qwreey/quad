@@ -128,7 +128,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       재정정됨 — `isPreRef`가 가장 구체적인 항등, `isRef`는 그 위에 얹혀
       `isPreRef`도 `true`로 통과시킴(PreRef가 Ref 런타임을 재사용하는
       것과 정합). `(v=Ref)` children leaf 매치 핸들러는 이제
-      `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 함. `isModifier`는
+      `isRef(v) and not isPreRef(v) and not isPostRef(v)`로 명시적으로
+      좁혀야 함(**[2026-08-14 아홉 번째 세션]** `PostRef` 확정으로 제외
+      항 하나 추가, `isPostRef`도 `isRef` 아래 형제로 신설). `isModifier`는
       여전히 단순 항등, 상위 개념 없음. **[정정, 2026-08-11 아홉 번째
       세션]** `isAttribute` 하나였던 게 `isAttributeKey`(단일 키 DI 키
       predicate, 해시파트 `k`를 판별)와 `isAttribute`(그룹 값 predicate,
@@ -196,7 +198,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       미주입 상태도 이 경로로 자동 커버, `pre-implementation-audit.md`
       1-3/1-4), 핸들러 등록/정렬 시점 동률 감지 print 경고 +
       `Dispatch.listHandlers()` 디버그 유틸
-- [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef)` children-array
+- [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef/PostRef)` children-array
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
       dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절)
@@ -573,34 +575,50 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M8 — Ref
 
 - [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
-      `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`(별도 파일, Ref
+      `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
       위치 무관 호이스팅 pre-pass — `base/ref-plan.md` "`phase`
       옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)
 - [ ] `(v=Ref)` 매치 핸들러 — children 배열의 숫자 슬롯에 놓인
       `Ref(default)` 인스턴스를 인식해 바인드(별도 `CreatedRef` 래퍼
       없음 — 이름 자체가 폐기됨, 아래 참고)
-- [ ] `PreRef` pre-pass — 새 `Dispatch.*` 함수 없이 `Dispatch.drive(inst,
-      flattened)` 자신이 두 패스(배열→해시) 루프 전에 배열 파트를 훑어
-      `PreRef` 항목만 fire(Dispatch.process/getHandler 우회하는 raw 루프,
-      `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten 재호출 가능성과
-      충돌하므로 기각). 복수 `PreRef`는 배열 index 순서 그대로(별도 규칙
-      없음). fire된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두 번째
-      세션] `None`이 아니라 전용 센티널 `ProcessedPreRef` 처리** — 아래
-      `ProcessedPreRefHandler` 항목이 그 자리를 정상 두 패스로 마저 처리)
-      — `base/ref-plan.md` "PreRef" 절
+- [ ] `PreRef`/`PostRef` pre-pass — 새 `Dispatch.*` 함수 없이
+      `Dispatch.drive(inst, flattened)` 자신이 두 패스(배열→해시) 루프
+      전에 배열 파트를 **한 번** 훑어, `PreRef`는 그 자리에서 fire하고
+      `PostRef`는 로컬 `postRefList`에 push만 함(Dispatch.process/getHandler
+      우회하는 raw 루프, `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten
+      재호출 가능성과 충돌하므로 기각). **복수 `PreRef`/`PostRef`의 계열 안
+      상대 순서는 보장 안 함**(**[역전, 2026-08-14 아홉 번째 세션]** 예전엔
+      "배열 index 순서 그대로"를 보장으로 명시했었음 —
+      `archive/preref-order-guaranteed-reversed.md`, 구현은 그대로고 계약만
+      좁힌 것). fire/수집된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두
+      번째 세션] `None`이 아니라 전용 센티널 `ProcessedPreRef`/
+      `ProcessedPostRef` 처리** — 아래 `Processed*Handler` 항목이 그 자리를
+      정상 두 패스로 마저 처리)
+      — `base/ref-plan.md` "PreRef" 절 / "`PostRef`" 절
+- [ ] **[2026-08-14 아홉 번째 세션 신설]** `PostRef.luau` + 두 패스 뒤
+      `postRefList` 소비 루프 — `PreRef.luau`와 같은 방식(`Ref` 런타임
+      재사용 + 브랜드 태그만 다름, children 배열 리터럴 전용, Modifier/Store
+      타입 차단, `_fired` 1회용 가드). `Dispatch.drive`가 해시 파트까지
+      끝낸 뒤 `postRefList`를 순회하며 각 `PostRef`를 fire — 배열 재순회가
+      아니라 실제 개수만큼의 짧은 루프. **보장 범위 주의**: 자기 서브트리
+      완성은 보장하되 **이 인스턴스가 부모에 붙는 것보다는 먼저**임
+      — `base/ref-plan.md` "`PostRef`" 절
+- [ ] `PostRef` 동적 경로 가드 Handler — `PreRef`의 것과 완전한 거울상
+      (`{isHandlable = v is PostRef, process = error(...)}`), 같은 절 참고
 - [ ] `PreRef` 동적 경로 가드 Handler — `{isHandlable = v is PreRef,
       process = error(...)}` 형태로 정상 우선순위 레지스트리에 등록,
       `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열 경로는
       pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입 차단을
       우회한 버그라는 뜻 — 같은 절 참고
-- [ ] **[2026-08-14 두 번째 세션 신설]** `ProcessedPreRefHandler` —
-      `{isHandlable = v == ProcessedPreRef, process = setLength(0)+
-      setOffsetSource(None)+no-op retract}` 형태로 정상 우선순위
-      레지스트리에 등록, `NoneHandler`와 같은 "한 값 종류 전담" 패턴.
-      PreRef pre-pass가 소진시킨 자리가 Length/Offset에 "0 기여"를 등록할
-      책임을 지는 자리 — `base/ref-plan.md` "PreRef" 절, `base/
-      dispatch-core-plan.md` "Length/Offset" 절
+- [ ] **[2026-08-14 두 번째 세션 신설]** `ProcessedPreRefHandler` +
+      **[아홉 번째 세션] `ProcessedPostRefHandler`**(완전한 거울상, 코드
+      한 글자 차이) — `{isHandlable = v == Processed*Ref, process =
+      setLength(0)+setOffsetSource(None)+no-op retract}` 형태로 정상
+      우선순위 레지스트리에 등록, `NoneHandler`와 같은 "한 값 종류 전담"
+      패턴. pre-pass가 소진시킨 자리가 Length/Offset에 "0 기여"를 등록할
+      책임을 지는 자리 — `base/ref-plan.md` "PreRef" 절 / "`PostRef`" 절,
+      `base/dispatch-core-plan.md` "Length/Offset" 절
 - [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
       `coroutine.resume(v, self)`+`nil`로 소진(2026-08-09 열한 번째
       세션 최종 정정 — 순서 안 중요 + 슬롯 재사용 위해 `None`이 아닌
@@ -767,3 +785,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       주의**)가 `bindLifetime`/`canExecute`와 같은 base 범용 유틸 그룹에
       추가될 예정이라는 것만 M1 설계 시 인지. `os.clock()`은 Luau 표준
       라이브러리라 주입 대상 아님(단 절대 시각이 아니라 diff 전용)
+- [ ] **[2026-08-14 아홉 번째 세션 신설]** 생명주기 훅 슈가
+      `OnCreated`/`OnRendered`/`OnDestroyed`(`base/lifecycle-hooks-plan.md`)
+      — 각각 `PreRef():Callback(fn)`/`PostRef():Callback(fn)`/
+      `Effect(function() return fn end)`를 반환하는 순수 팩토리 함수
+      3개라, 착수 시점에 그 문서의 코드 스케치를 그대로 옮기면 끝(새 타입/
+      Dispatch 개념 없음, 패키지는 quad-base 확정). **설계는 확정됐지만
+      구현은 형제 백로그(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)와
+      동급으로 맨 뒤** — 없어도 프리미티브를 직접 쓰면 되므로 기능 격차
+      없음. 단 이들이 얹히는 `PostRef` 자신은 슈가가 아니라 디스패치
+      코어의 일부라 **M8에서 `PreRef`와 같이 구현됨**(위 M8 참고).

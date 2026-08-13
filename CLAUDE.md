@@ -246,15 +246,19 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    `Fallback`과 `xpcall`+`debug.traceback` 기반 `Traceback`으로 분리,
    `err: any` 확정, 패키지·이름 전부 확정 — **설계만 끝났을 뿐 구현
    우선순위는 그대로 맨 뒤**), 생명주기 훅
-   `OnCreated`/`OnDestroyed`(**[2026-08-14 신설]** `PreRef`/`Effect`를
-   반환하는 순수 팩토리 함수 슈가, `research/lifecycle-hooks-plan.md` —
-   `OnRendered`는 base에 없는 post-pass가 필요해 공짜가 아니라 지금은
-   의도적으로 구현 안 함, 거울상 `PostRef` 스케치만 백로그 후보) — 전부
+   `OnCreated`/`OnRendered`/`OnDestroyed`(**[2026-08-14 아홉 번째 세션,
+   `research/`에서 `base/lifecycle-hooks-plan.md`로 승격]** 각각
+   `PreRef`/`PostRef`/`Effect`를 반환하는 순수 팩토리 함수 슈가 —
+   `OnRendered`도 **채택 확정**, 그게 얹히는 `PostRef` 프리미티브 자체는
+   슈가가 아니라 디스패치 코어라 **ROADMAP M8에서 `PreRef`와 같이 구현됨**
+   (백로그가 아님, `base/ref-plan.md`의 "`PostRef`" 절). 훅 슈가 셋만
+   후순위) — 전부
    "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
-   `.claude/README.md`의 `base/` 표(`fallback-plan.md`)와 `research/` 표
+   `.claude/README.md`의 `base/` 표(`fallback-plan.md`/
+   `lifecycle-hooks-plan.md`)와 `research/` 표
    (`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
-   `operator-sugar-plan.md`/`lifecycle-hooks-plan.md`).
+   `operator-sugar-plan.md`).
    **[2026-08-14 추가, 성격이 다름]** 시간 기반 전파 게이트
    `Debounce`/`Throttle`(`research/debounce-throttle-plan.md`)도 백로그이긴
    하나 위 항목들과 달리 **사용자가 직접 요청한 실제 기능 갭**이고 순수
@@ -1309,3 +1313,25 @@ pull-recompute+캐시가 막고 중복 **통지**는 안 접음(접으려면 `Bl
 쌓였다가 통째로 철회됨. **확정 문서의 한 문장을 근거로 새 설계를 세울 땐,
 그 문장이 *같은 문서의 다른 확정 문장*과 모순되지 않는지까지 확인할 것** —
 `doc-check.py`는 참조 존재는 봐도 서술 간 모순은 못 봄.
+
+**2026-08-14 아홉 번째 세션 — `PostRef` 확정·`OnRendered` 채택, 계열 안
+fire 순서 미보장으로 역전, `lifecycle-hooks-plan.md` base 승격**
+(`session/2026-08-14-09-postref-confirmed.md`)
+사용자가 백로그 후보로만 남아 있던 `PostRef`를 확정(선택지 (a) — pre-pass
+공동 수집 + 두 패스 뒤 `postRefList` 소비, "Pre-Post 둘을 지원 안 할 이유가
+없고 구현 난이도가 아주 낮음"). `PreRef`의 거울상이라 소진 센티널
+(`ProcessedPostRef`)·전담 Handler·동적 경로 가드·`_fired`·타입 차단이 전부
+복제 — `base/ref-plan.md`에 "`PostRef`" 절로 편입. **원 문서가 열어뒀던
+(a)/(b) 스코프 구분은 애초에 잘못된 축이었음이 드러남**: 배열 파트 루프가
+각 자식 마운트를 동기적으로 끝내므로 (a) 메커니즘이 (b)(서브트리 완성)를
+공짜로 줌 — 진짜 경계는 **"자기 아래 vs 자기 위"**로, `PostRef`는 서브트리
+완성은 보장하되 **이 인스턴스가 부모에 붙기 전**에 불림(React
+`componentDidMount`와 다름, `OnRendered` 이름 때문에 문서화 필수 캐비엇).
+같은 세션에 **`PreRef`/`PostRef` 계열 안 fire 순서를 "배열 index 순서 보장"
+에서 미보장으로 역전**(2026-08-07 아홉 번째 세션 결정을 뒤집음, 구현이
+아니라 계약만 — "같은 계열 내 등록 순서에 의존하는 코드가 생겨선 안 됨",
+`archive/preref-order-guaranteed-reversed.md`). `OnRendered` 채택으로
+`lifecycle-hooks-plan.md`의 마지막 열린 항목이 닫혀 `base/`로 승격, 남은
+건 `OnDestroyed` 이름 재검토 여지 하나(0-B 확정 시, `question.md` 용어
+대기열 3순위). ROADMAP M8/백로그·README·brand/architecture/slot/modifier/
+typing-limits 전파 완료, `doc-check.py` ERROR 0.

@@ -365,7 +365,11 @@ end
   pre-pass가 소진시킨 자리"는 이 규칙의 예가 아님** — 그 자리는 `None`이
   아니라 별도 센티널 `ProcessedPreRef`로 소진되고, `ProcessedPreRefHandler`
   (`base/ref-plan.md`의 "PreRef" 절)를 통해 정상 `Dispatch.process`
-  경로를 그대로 탐(아래 "Length/Offset" 절 참고) — 예전엔 이 둘(원래부터
+  경로를 그대로 탐(아래 "Length/Offset" 절 참고). **[2026-08-14 아홉 번째
+  세션] `PostRef`가 소진시킨 자리(`ProcessedPostRef`)도 완전히 같은 취급**
+  — 전용 센티널 + 전용 `ProcessedPostRefHandler`(`base/ref-plan.md`의
+  "`PostRef`" 절), 즉 "정말 빈 자리인 `None`"만 두 패스 루프가 직접
+  건너뜀 — 예전엔 이 둘(원래부터
   빈 자리 vs 한때 PreRef였다가 소진된 자리)이 똑같이 `None`으로 뭉뚱그려져
   `setLength`/`setOffsetSource` 등록 책임 소재가 불분명한 갭이 있었음
   (2026-08-14 첫 번째 세션 조사에서 발견), 지금은 서로 다른 센티널로
@@ -411,6 +415,13 @@ end
     flatten된 props 테이블을 받아 배열 파트(children/Ref) 먼저, 해시
     파트(프로퍼티/이벤트) 나중으로 두 패스 순회하며 각 `(k,v)`에
     `Dispatch.process(inst, k, v, 1)`을 호출하는 게 이 함수의 본체.
+    **[2026-08-14 아홉 번째 세션] 이 두 패스 앞뒤에 `Ref` 계열 훅 처리가
+    붙음** — 앞에는 `PreRef`/`PostRef`를 한 번에 훑는 pre-pass(`PreRef`는
+    그 자리에서 fire, `PostRef`는 이 호출에만 로컬인 `postRefList`에 적재만
+    하고 둘 다 전용 센티널로 소진), 뒤에는 그 `postRefList`를 순회하며 각
+    `PostRef`를 fire하는 짧은 루프. 둘 다 배열 재순회가 아니라 pre-pass
+    하나 + 실제 `PostRef` 개수만큼의 목록 순회라 비용이 작음 — 상세는
+    `base/ref-plan.md`의 "`PostRef`" 절.
     **진입 인덱스는 항상 `1`**(2026-08-13 감사에서 명시화 — 인덱스 도입
     후에도 이 자리만 인자가 안 적혀 있었음) — `drive`는 그 키의 체인을
     처음 여는 자리이므로 "다른 키로 위임할 때는 그 키의 재귀 깊이와
@@ -959,6 +970,9 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   ref-plan.md`의 "PreRef" 절)가 정상 매치 과정에서 직접 `setLength(0)`/
   `setOffsetSource(None)`을 등록** — "이 위치를 처음 매치한 Handler가
   등록 책임을 진다"는 위 원칙을 특수 취급 없이 그대로 만족.
+  **[2026-08-14 아홉 번째 세션] `PostRef` 소진 자리도 동일** —
+  `ProcessedPostRefHandler`(`base/ref-plan.md`의 "`PostRef`" 절)가 같은
+  두 등록을 하는 거울상 Handler라, 새 규칙 없이 그대로 맞물림.
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
@@ -988,8 +1002,9 @@ lazy 생성.
 `nil`을 넣으면 (1) 그 자리가 "안 채워짐"과 구별이 안 되고 (2) 배열이
 구멍 나면서 순수 array 취급이 깨져 접근 비용이 올라감(해시 파트로 밀림)
 — `None`은 실재하는 값이라 자리를 "채워짐"으로 유지시켜줌, `flattened`
-배열이 진짜 빈 자리(`None`, 예: `props.Ref or None`)와 PreRef pre-pass
-소진 자리(`ProcessedPreRef`, 2026-08-14 두 번째 세션 이전엔 여기도 `None`)
+배열이 진짜 빈 자리(`None`, 예: `props.Ref or None`)와 pre-pass 소진
+자리(`ProcessedPreRef`/`ProcessedPostRef`, 2026-08-14 두 번째 세션
+이전엔 여기도 `None`)
 둘 다 실재하는 센티널로 채워 구멍을 피하는 것과 같은 원칙(`ref-plan.md`의
 "Ref 일반화" 절 "왜 `None`이 아니라 `nil`인가" 참고 — **단, 그 절에서
 최종적으로 `nil`로 되돌아간 건 Ref 콜백/대기자 배열 한정**이고

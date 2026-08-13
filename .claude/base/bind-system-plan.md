@@ -57,7 +57,7 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
   *네이밍* 관례는 인스턴스 생성과 한 절에 섞여 있어 아래 "인스턴스 생성 /
   이벤트 네이밍 인체공학" 절에 그대로 있음.
 - **`Brand`** — 런타임 nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`,
-  `isState`를 10종 branded 타입 전부로 일반화) → **`base/brand-plan.md`**.
+  `isState`를 branded 타입 전부로 일반화) → **`base/brand-plan.md`**.
 - **`Tag` / `Attribute` 특수 키** → **`base/tag-plan.md`** /
   **`base/attribute-plan.md`**. 이 문서가 예전에 다루던 타입 파라미터화 문제
   (`[AttributeKey<<boolean>> "name"]`(구 `Attribute<<boolean>>`) vs
