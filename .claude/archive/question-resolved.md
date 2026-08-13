@@ -627,6 +627,42 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `useMemo` deps도 대부분 정적) — 의도적 비지원으로 확정. 상세는
   `research/framework-comparison-findings.md` 3번 절.
 
+- **[해소됨, 2026-08-14 열 번째 세션]** 0-B. `dispose(any)` — 시그니처/범위.
+  **결론**: 범위를 `Slot`+엔진 객체(Instance)로만 좁히고 **Observer/Effect는
+  명시적으로 제외** — 시그니처는 `dispose(value: Slot | Instance)`,
+  내부적으로 `if isSlot(value) then <Slot 자체 소유권 판정 재사용> else
+  disposeInst(value) end`로 분기. `unbindLifetime`과의 역할 분담도 이걸로
+  해소: `dispose`는 **트리 소유권 부기(elementOwner/lengthList 등)가 있는
+  대상**이 아직 요구되는데 강제로 죽이려는 경우를 막는 게 목적이고,
+  `unbindLifetime`은 Observer/Effect류의 GC 앵커(gcconn)를 조기 해제하는
+  것 — 서로 다른 축이라 대체 불가.
+  - **Observer/Effect가 빠지는 이유**: 이 둘은 children 배열 leaf 위치에서
+    `Dispatch/Leaf.luau`가 매치해 내부적으로 `bindLifetime`/`canExecute`/
+    `unbindLifetime`(GC-native, gcconn 기반)로만 관리됨(`base/
+    source-state-plan.md` "이중 바인딩 금지" 절) — Slot의 `elementOwner`/
+    `lengthList`/`sourceList` 같은 "죽으면 offset/length가 깨지는" 트리
+    부기 자체가 없어서, 도중에 GC되거나 `unbindLifetime`으로 조기 해제돼도
+    구조적으로 안전함. 즉 dispose가 막아야 하는 문제(트리 부기 붕괴)가
+    Observer/Effect에는 원천적으로 발생하지 않음. `State<Observer>`/
+    `State<Slot>` 등 반응형 leaf 값은 이미 확정된 일반 원칙("모든
+    `(inst,k)`는 `T`든 `State<T>`든 `StoreBind`가 균일하게 재귀 처리")의
+    자연스러운 귀결일 뿐 별도 설계가 필요 없었음 — Modifier 필드/Slot
+    원소 금지 규칙(핸들러 계층 값 즉시 error)은 **다른 컨텍스트**(Modifier
+    필드, `Slot:Add`/`:List`의 원소)라 여기 적용 안 됨, 혼동하지 말 것.
+  - **base/backend 분리**: `dispose`가 `isSlot`이 아닐 때 위임하는
+    `disposeInst(inst: any): ()`는 `addTag`/`removeTag`/`setAttribute`와
+    같은 "base가 소유하는 핸들러와 주입되는 엔진 op" 패턴(`base/
+    dispatch-core-plan.md`) — quad-roblox는 `inst:Destroy()`로 구현.
+  - **네이밍**: `free()`는 GC 언어 맥락과 안 맞아 기각, `Destroy`는 엔진
+    `:Destroy()` 메소드와 동명이라 사용자가 착각할 위험이 있어 기각 —
+    `dispose` 유지.
+  - 정본은 `base/slot-plan.md` "`dispose(any)`" 절 +
+    `base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op"
+    절. 이 해소로 `base/lifecycle-hooks-plan.md`의 `OnDestroyed` 이름
+    재검토 조건("0-B가 'quad가 만드는 모든 것의 유일한 파괴 경로'로
+    풀리면")도 **발동하지 않는 쪽으로 영구 종결** — `OnDestroyed`가
+    최종 이름.
+
 ## 참고: 지금까지 확정된 것 (요약)
 
 전부 `base/`에 문서화되어 더 이상 열려있지 않음 — 상세 근거/논의 과정이

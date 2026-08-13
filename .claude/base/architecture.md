@@ -183,7 +183,7 @@ quad/
     ├── wally.toml
     └── src/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
-        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
+        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), disposeInst(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
         ├── LifetimeHandle.luau    # bindLifetime/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)

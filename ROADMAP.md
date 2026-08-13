@@ -370,12 +370,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         클로저가 early-return해도 체인에서 항상 소비하므로).
       - 전부 `base/slot-plan.md`에 반영돼 있고, `luau-test/19` C 섹션이
         소유권 분기를 음성 대조군까지 포함해 실측 검증함.
-- [ ] **`dispose(value)`** — 대상이 아직 어느 트리에 의해 살아있길 요구되면
-      **파괴를 거부하고 즉시 error**(떼어내주지 않음 — 떼는 건 `Set`=언마운트의
-      몫). 엔진은 `Destroy`/`Clear`에 에러를 안 내지만 quad 자료구조가 깨지므로,
-      quad가 관리 중인 값을 안전하게 지우는 유일한 경로. 마운트 위치는
-      `elementOwner`가 이미 알고 있어 새 부기 불필요. 시그니처/대상 범위는
-      `.claude/question.md` 0-B에서 미확정
+- [ ] **`dispose(value: Slot | Instance)`** — 대상이 아직 어느 트리에 의해
+      살아있길 요구되면 **파괴를 거부하고 즉시 error**(떼어내주지 않음 —
+      떼는 건 `Set`=언마운트의 몫). 엔진은 `Destroy`/`Clear`에 에러를 안
+      내지만 quad 자료구조가 깨지므로, quad가 관리 중인 값을 안전하게
+      지우는 유일한 경로. 마운트 위치는 `elementOwner`가 이미 알고 있어
+      새 부기 불필요. `isSlot(value)`면 그 경로, 아니면 백엔드가 주입하는
+      `disposeInst(inst): ()`(`addTag`/`removeTag`/`setAttribute`와 같은
+      "base 소유+op 주입" 패턴, quad-roblox는 `inst:Destroy()`)로 위임.
+      **`Observer`/`Effect`는 범위 밖**(GC-native `bindLifetime`/
+      `unbindLifetime`만으로 충분, 트리 부기 없음) — 2026-08-14 열 번째
+      세션에 `question.md` 0-B 해소, 정본은 `base/slot-plan.md`
+      "`dispose(value)`" 절
 
 - [x] **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
       세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/

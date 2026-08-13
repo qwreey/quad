@@ -526,7 +526,12 @@ end
   백엔드마다 재구현하면 **같은 참조 카운트/소유권 알고리즘이 통째로
   복제**됨 — `architecture.md`의 "엔진마다 큰 구현을 중복하지 않기 위해
   디스패치 엔진을 base가 인터페이스로 소유한다"는 원칙이 그대로 적용되는
-  자리(2026-08-13 열네 번째 세션, 사용자 판단으로 재배치).
+  자리(2026-08-13 열네 번째 세션, 사용자 판단으로 재배치). **같은 패턴이
+  Dispatch 바깥에도 적용됨** — `dispose(value)`(`base/slot-plan.md`)는
+  Dispatch 핸들러가 아니라 독립 탑레벨 유틸이지만, `isSlot`이 아닌 값은
+  `elementOwner` 같은 순수 부기 판정 뒤에 마지막 한 줄만
+  `disposeInst(inst: any): ()`로 위임(quad-roblox는 `inst:Destroy()`) —
+  2026-08-14 열 번째 세션에 같은 원칙으로 확정.
 - **backend 소유**: `Property`/`Event`/`OnChange`(Reflection·시그널 같은
   엔진 개념 자체가 로직), `InstanceChild`, `Slot`의 실제 부모 조작
   (재조정 알고리즘은 base `Dispatch/Slot.luau`, 물리 마운트만 backend) —

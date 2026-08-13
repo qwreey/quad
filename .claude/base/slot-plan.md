@@ -1780,10 +1780,10 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 것과 정확히 같은 문제 — quad는 그 값이 이미 죽었다는 걸 모른 채 언마운트
 경로를 탐. 순서는 항상 **`Set`(언마운트) → 그 다음 정리**.
 
-#### `dispose(any)` — quad가 만든 것을 안전하게 지우는 유일한 경로 (신설, 사용자 제안)
+#### `dispose(value)` — quad가 관리 중인 값을 안전하게 지우는 유일한 경로 (신설, 사용자 제안, **2026-08-14 열 번째 세션에 시그니처/범위 확정 — `question.md` 0-B 해소**)
 
 위 UB를 "조심하세요"로만 두지 않기 위해, **base 레벨 탑레벨 유틸
-`dispose(value)`** 를 제공하는 방향으로 확정:
+`dispose(value: Slot | Instance): ()`** 를 제공:
 
 - 의미(**[정정, 사용자 확정]** 최초안은 "마운트돼 있으면 먼저 떼어낸 뒤
   파괴"였으나 더 단순하게 확정): **대상이 아직 어느 트리에 의해 살아있길
@@ -1804,11 +1804,52 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
   거꾸로 읽으면 되므로 **새 부기가 필요 없음**. 사용자 지적: "이미 두
   곳에 넣는 게 에러나도록 하기로 했으니, 어디 마운트되었냐가 따져지고,
   그래서 이미 가능한 일".
-- 네이밍/시그니처(`dispose(any)`가 맞는지, 타입을 어떻게 좁힐지),
-  Slot 외의 대상(Instance/Observer/Effect)까지 커버하는 범위,
-  `unbindLifetime`과의 역할 분담은 **미확정** — `.claude/question.md`에
-  올림. 여기서는 "언마운트로 바꾼 대신 명시적 파괴 수단을 제공한다"는
-  방향만 확정.
+
+**범위 — `Slot` + 엔진 객체(Instance)만, `Observer`/`Effect`는 명시적으로
+제외**(2026-08-14 열 번째 세션, 사용자 확정):
+
+```lua
+function dispose(value)
+    if isSlot(value) then
+        -- 위 elementOwner 기반 판정 재사용 — 요구 중이면 error, 아니면 재귀 파괴
+        ...
+    else
+        disposeInst(value)  -- 아래 주입 op
+    end
+end
+```
+
+- **왜 `Observer`/`Effect`는 dispose 대상이 아닌가**: 이 둘은 children
+  배열 leaf 위치에 놓이면 `Dispatch/Leaf.luau`가 매치해 내부적으로
+  `bindLifetime(inst, value)`를 호출하고(`base/source-state-plan.md`
+  "이중 바인딩 금지" 절), 생존은 그 GC 앵커(gcconn)만으로 판정됨 —
+  Slot처럼 "죽는 순간 `elementOwner`/`lengthList`/`sourceList`가
+  어긋나는" 트리 부기 자체가 없음. 즉 dispose가 막으려는 문제(부기
+  붕괴)가 Observer/Effect에는 원천적으로 발생하지 않음 — 아무도 안 들고
+  있으면 그냥 GC, 조기에 끊고 싶으면 `unbindLifetime`으로 충분하고
+  `dispose`가 다룰 이유가 없음.
+  **주의 — Modifier 필드/`Slot:Add`·`:List` 원소 금지 규칙("핸들러 계층 값이
+  들어오면 즉시 error")과 헷갈리지 말 것.** 그건 Modifier 필드나 Slot의
+  CRUD 원소 자리에 관한 별개 규칙이고, children 배열의 leaf 위치(정적
+  `Frame{observer}`류)나 그 leaf가 `State<Observer>`/`State<Effect>`로
+  반응형으로 바뀌는 경우는 전혀 다른 컨텍스트 — 후자는 이미 확정된 일반
+  원칙("모든 `(inst,k)`는 `T`든 `State<T>`든 `StoreBind`가 균일하게 재귀
+  처리")의 자연스러운 귀결이라 별도 설계 없이 그냥 됨.
+- **`unbindLifetime`과의 역할 분담**: `dispose`는 **트리 소유권 부기가
+  있는 대상**(Slot/Instance)이 아직 요구되는데 강제로 죽이려는 시도를
+  막는 것이고, `unbindLifetime`은 Observer/Effect류의 GC 앵커를 조기
+  해제하는 것 — 축이 달라 서로 대체 불가.
+
+**base/backend 분리 — `disposeInst`는 주입 op**(`base/dispatch-core-plan.md`
+"base가 소유하는 핸들러와 주입되는 엔진 op" 절과 같은 패턴, `addTag`/
+`removeTag`/`setAttribute`가 선례): `dispose`가 `isSlot`이 아닌 값을
+받으면 base가 시그니처만 소유하는 `disposeInst(inst: any): ()`로 위임 —
+quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 방식으로
+매핑.
+
+**네이밍**: `free()`는 GC-native 언어 맥락과 안 맞아 기각, `Destroy`는
+엔진 자체 `:Destroy()` 메소드와 동명이라 사용자가 "그냥 `:Destroy()`
+부르는 거 아님?"으로 착각할 위험이 있어 기각 — `dispose` 유지.
 
 #### 구현상 바뀌어야 하는 것
 

@@ -149,8 +149,9 @@ git branch -D worktree-debounce-throttle-plan
 디자인 결정 중 Lua/Roblox 엔진에 대한 깊은 경험이 필요한 것들은 합리적 기본값으로
 진행하면서 `.claude/question.md`에 모아두는 중. 깨어있을 때 훑어보고 기본값이
 마음에 안 드는 것만 답해주면 됨 — **[2026-08-13 열네 번째 세션 기준]
-M0 착수를 막는 항목은 하나도 없음**(0-W `Ref` 이중 배치는 M4, 0-B
-`dispose` 시그니처는 M6 구현 세부만 막음).
+M0 착수를 막는 항목은 하나도 없음**(남은 건 0-W `Ref` 이중 배치, M4 구현
+세부만 막음 — 0-B `dispose` 시그니처/범위는 2026-08-14 열 번째 세션에
+해소돼 `archive/question-resolved.md`로 이전됨).
 
 ---
 Sources (MCP 리서치): [Roblox/studio-rust-mcp-server](https://github.com/Roblox/studio-rust-mcp-server), [How to Connect Claude Code to Roblox Studio — Clauder Navi](https://www.clauder-navi.com/en/claude-roblox-studio)

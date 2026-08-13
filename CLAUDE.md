@@ -163,8 +163,9 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
    핸들 계약)는 13차 세션에, **`0-Z`(Attribute 이름 소유권)와 `0-A`(재디스패치
    하강 diff)는 14차 세션에 확정·`base/` 반영 완료**. 남은 `0-W`(같은 `Ref`
-   이중 배치)/`0-B`(`dispose` 시그니처)는 M0가 아니라 각각 M4/M6 구현 세부를
-   막을 뿐임.
+   이중 배치)는 M0가 아니라 M4 구현 세부만 막음 — **[2026-08-14 열 번째
+   세션] `0-B`(`dispose` 시그니처/범위)도 해소**되어 `question.md`의
+   "결정 대기"엔 이제 `0-W` 하나만 남음.
 
    **M0 착수 전 반드시 읽을 것 — 이 두 개는 "결정"이 아니라 "구현 규약"이라
    여전히 유효**:
@@ -1343,3 +1344,27 @@ base 승격**
 건 `OnDestroyed` 이름 재검토 여지 하나(0-B 확정 시, `question.md` 용어
 대기열 3순위). ROADMAP M8/백로그·README·brand/architecture/slot/modifier/
 typing-limits 전파 완료, `doc-check.py` ERROR 0.
+
+**2026-08-14 열 번째 세션 — `dispose(value)` 시그니처/범위 확정, `question.md` 0-B 해소**
+(`session/2026-08-14-10-dispose-scope-resolved.md`)
+사용자가 0-B의 남은 미확정(시그니처/대상 범위/`unbindLifetime`과의 역할
+분담)을 직접 확정: **범위는 `Slot`+엔진 객체(`Instance`)만, `Observer`/
+`Effect`는 명시적으로 제외**(둘은 children 배열 leaf에서 `bindLifetime`/
+`canExecute`(GC-native)만으로 관리되고 Slot 같은 트리 부기 자체가 없어
+dispose가 막는 문제가 원천적으로 안 생김). 시그니처는 `dispose(value:
+Slot | Instance)` — `isSlot`이면 기존 `elementOwner` 판정 재사용, 아니면
+`disposeInst(inst)`(`addTag`/`removeTag`/`setAttribute`와 같은 "base
+소유+op 주입" 패턴)로 위임. 네이밍은 `free`(GC 언어 맥락과 안 맞음)/
+`Destroy`(엔진 `:Destroy()`와 혼동 위험) 둘 다 기각하고 `dispose` 유지.
+과정에서 어시스턴트가 "Observer/Effect가 `State<>`로 지원되는지"를 처음에
+Modifier 필드 금지 규칙과 혼동해 잘못 답했다가 사용자 지적으로 정정 —
+실제로는 children 배열 leaf(`Dispatch/Leaf.luau`)가 이미 `Observer`/
+`Effect`를 지원 대상으로 확정해뒀고, `StoreBind`가 "범용, `k`는 무엇이든
+받음"이라 `State<Observer>`도 별도 설계 없이 기존 재귀 디스패치 원칙만으로
+됨. 부수 해소로 `base/lifecycle-hooks-plan.md`의 `OnDestroyed` 이름
+재검토 조건("0-B가 모든 것의 유일한 파괴 경로로 풀리면")도 반대 방향
+(범위가 좁아짐)으로 확정되며 발동 없이 영구 종결. `question.md`/
+`archive/question-resolved.md`/`base/slot-plan.md`/
+`base/dispatch-core-plan.md`/`base/architecture.md`/
+`base/lifecycle-hooks-plan.md`/`ROADMAP.md`/`HUMAN_TODO.md`/`README.md`
+전부 반영, `doc-check.py` ERROR 0 유지.
