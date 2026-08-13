@@ -100,7 +100,7 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
 - **실제 "지우기" 동작은 디스패치 쪽 `NoneHandler`가 담당** — merge가 끝난
   뒤 최종 flatten 결과에 `None`이 남아있으면, base 드라이버가 그 키를 어떻게
   처리하는지는 새 개념이 아니라 이미 확정된 디스패치 모델 그대로다.
-  상세는 `base/bind-system-plan.md`의 "`None` 센티널 — StoreBind와
+  상세는 `base/dispatch-core-plan.md`의 "`None` 센티널 — StoreBind와
   같은 재귀 재디스패치 패턴 재사용" 절 참고 — 핵심만 요약하면 `NoneHandler`도
   `StoreBind` 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
   잡고, `process`가 `v`를 진짜 `nil`로 바꿔 `process(inst, k, nil)`을 재귀
@@ -312,7 +312,7 @@ Modifier에는 없음).
 됨 — `mod:UICorner(8)`/`mod:FontSize(...)`처럼 DI 쪽 "제네릭 생성자 함수
 하나 + 자주 쓰는 것만 정적 필드로 미리 바인딩" 패턴 재사용.
 (주의: 이벤트는 이 관습의 유일한 예외라 인용 대상에서 제외 — 이벤트 바인딩은
-PA님 방식인 문자열 키 + 런타임 리플렉션으로 감, `base/bind-system-plan.md`
+PA님 방식인 문자열 키 + 런타임 리플렉션으로 감, `base/event-plan.md`
 "이벤트 바인딩 정정" 절 참고. Modifier는 이벤트가 아니라 Store/인스턴스
 생성과 같은 카테고리라 dot-access 관습이 그대로 적용됨.)
 

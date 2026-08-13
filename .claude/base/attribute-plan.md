@@ -195,27 +195,24 @@ identity 하나로** 판정할 수 있고, 그러면 claim 로직이 그룹을 �
 
 ```lua
 -- AttributeKeyHandler(quad-base) — 이름 claim만 자기 상태로 가짐
+-- Relate는 항상 (inst, key) 2단 — `base/relate-plan.md` API 참고.
+-- 여기선 key = attribute 이름, value = 그 이름을 지금 잡고 있는 키 객체.
 local nameClaims = Relate()  -- {[inst(weak)] = {[name] = key(strong)}}
 
 function AttributeKeyHandler.process(inst, k, v, index)
-    local claims = nameClaims:GetStrong(inst)
-    if not claims then
-        claims = {}
-        nameClaims:SetStrong(inst, claims)
-    end
-    local cur = claims[k.Name]
+    local cur = nameClaims:GetStrong(inst, k.Name)
     if cur ~= nil and cur ~= k then
         error(`attribute "{k.Name}" is already bound by another owner`)
     end
-    claims[k.Name] = k
+    nameClaims:SetStrong(inst, k.Name, k)
 
     setAttribute(inst, k.Name, v)   -- v가 nil이든 아니든 무조건(위 "메커니즘" 절)
 
     return function()
         -- 엔진 부작용 없음 — claim 반납만. "내가 실제로 물러날 때만" 지움
         -- (`dispatch-core-plan.md` "Handler 작성 체크리스트" 4번).
-        if claims[k.Name] == k then
-            claims[k.Name] = nil
+        if nameClaims:GetStrong(inst, k.Name) == k then
+            nameClaims:SetStrong(inst, k.Name, nil)
         end
     end
 end
@@ -330,6 +327,20 @@ function AttributeGroupHandler.process(inst, k, v, index)
 end
 ```
 
+- **[부분 실패 경로, 2026-08-14 리뷰에서 명시화] 순회 도중 소유권 충돌
+  error가 나면, 그 전에 이미 등록된 이름들은 이 사이클의 클로저가 만들어지지
+  못해 즉시 회수되지 않는다.** `error`가 `process` 밖으로 전파되므로 `return
+  function() ... end`에 도달하지 못하고, `Dispatch`는 성공한 반환값만
+  저장하기 때문. 다만 **피해 범위는 그 인스턴스의 수명으로 한정됨**:
+  (1) `nameClaims`/`chains`는 `Relate`라 `inst`에 대해 weak — 그 인스턴스가
+  GC되면 잔여 claim도 같이 사라짐, (2) 같은 자리가 다시 프로세스되면
+  `Dispatch`가 남겨둔 마커 슬롯 덕분에 (A) 분기를 타고, 이미 claim된 이름은
+  `cur == k`라 **에러 없이 그대로 통과**해 같은 자리에서 같은 error로 다시
+  멈춤 — 조용한 오작동이 아니라 **반복 재현되는 시끄러운 실패**. 그래서
+  별도 롤백 장치를 넣지 않음(코퍼스의 "에러=패닉 상태, 그 이후 정합성은
+  관리 대상 아님" 원칙과 같은 결). 원자적 롤백이 필요하다고 판단되면
+  그때 그룹 `process`에만 국소적으로 넣을 수 있음 — `question.md` 3번에
+  열어둠.
 - **`groupKey(v, name)`는 그룹 값 객체별·이름별 메모이즈** — 같은 그룹
   값이 재프로세스될 때 같은 키가 나와야 claim이 자기 자신과 안 부딪힘.
   구현은 `Relate<그룹 값 → {[name] = key}>` 하나면 충분하고, **공개

@@ -1,6 +1,6 @@
 # Relate — inst와 임의의 값을 weak하게 엮는 범용 릴레이션 프리미티브
 
-**상태**: base — 2026-08-08 세션에서 신설, 확정. `base/bind-system-plan.md`의
+**상태**: base — 2026-08-08 세션에서 신설, 확정. `base/dispatch-core-plan.md`의
 "핸들러 내부 상태 저장"과 `base/lifecycle-pattern.md`의 `bindLifetime`/
 `canExecute` 양쪽이 필요로 했던 "`inst`를 weak 키로 하는 저장소"가 지금까지
 `base.perInstanceState(inst)`라는 이름만 있고 인터페이스가 미정인 placeholder로

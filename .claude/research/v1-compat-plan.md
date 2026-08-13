@@ -53,7 +53,7 @@ v1(`.claude/initreq/quad/src`) 조사 결과, API는 성격이 다른 두 계층
 
 ### 3-1. (a)는 얇게 재현 가능 — opt-in 서브패키지로 격리하면 근거 문제도 해소됨
 
-- **이벤트 self 관습**: 클로저 한 겹으로 재현 가능. `base/bind-system-plan.md`
+- **이벤트 self 관습**: 클로저 한 겹으로 재현 가능. `base/event-plan.md`
   "이벤트 핸들러는 self를 받지 않는다" 절이 든 반대 근거 4가지(Ref 중복
   채널, Modifier 정적 flatten과 경쟁, quad-debug 추적 밖 mutate 경로, 클로저
   비용)는 **코어에 넣을 때** 문제가 되는 것들 — 별도 opt-in 패키지

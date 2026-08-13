@@ -111,7 +111,7 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함~~
   **[해소됨]** — **`Handler`로 확정**, 위 항목이 가리키는 계약의 정식 이름.
   `Dispatch`(그 계약을 스캔/실행하는 엔진, 프리미티브 아닌 탑레벨 싱글톤)와
-  구분해서 쓸 것 — `base/bind-system-plan.md` "Dispatch는 프리미티브가
+  구분해서 쓸 것 — `base/dispatch-core-plan.md` "Dispatch는 프리미티브가
   아니다" 절. **왜 다른 후보들을 기각했는지(2026-08-08 세션, 재확인)**:
   `Processor`는 계약 메소드 자체가 `process`라 이름 안에 같은 단어가
   겹쳐 눈에 거슬림, `Provider`는 `canProvide`처럼 "뭔가를 공급한다"는
@@ -125,7 +125,7 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   번도 실행 안 된 상태에서 dispatch가 호출되면 어떻게 되는지
   (`pre-implementation-audit.md` 1-4) — 별도 케이스로 처리하지 않음.
   provider 미주입 상태는 결국 그 클래스의 핸들러가 레지스트리에 하나도
-  없는 상태이므로, `base/bind-system-plan.md` "우선순위 동률/매치 실패
+  없는 상태이므로, `base/dispatch-core-plan.md` "우선순위 동률/매치 실패
   처리" 절의 일반 "매치 실패 시 즉시 error" 규칙 하나로 자연히 커버됨.
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로

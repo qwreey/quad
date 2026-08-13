@@ -27,7 +27,7 @@
   함.** 콜백 파라미터 타입은 호출부가 인라인으로 직접 명시
   (`function(v: UDim2) ... end`) — Luau가 그 타입이 실제 프로퍼티 타입과
   일치하는지 검증해주지 않음. 이미 확정된 "이벤트 바인딩은 콜백 시그니처를
-  Luau가 검증 못 하는 대가를 받아들인다"는 결정(`bind-system-plan.md` "이벤트
+  Luau가 검증 못 하는 대가를 받아들인다"는 결정(`event-plan.md` "이벤트
   바인딩 — `On.EventName` 도트액세스 안 씀" 절, "타입 안전성을 어느 정도
   포기하는 대가")과 같은 급의 트레이드오프라 새로 정당화할 것 없음 — 오히려
   `AttributeKey<<T>>`처럼 제네릭으로 정확히 맞추려는 시도는 이벤트 키보다 더
@@ -55,7 +55,7 @@
   별도 `retract(inst,k,v)` 필드가 Disconnect를 담당한다고 적혀 있었으나,
   Handler 계약이 `process` 1-메소드로 합쳐지며 그 로직이 반환 클로저로
   이동 — `connection`은 `process`의 로컬 변수를 클로저가 upvalue로 그대로
-  캡처하므로 별도 `Relate` 저장/재조회가 필요 없음(`bind-system-plan.md`
+  캡처하므로 별도 `Relate` 저장/재조회가 필요 없음(`dispatch-core-plan.md`
   "핸들러 내부 상태 저장" 절).
 - **`State<function>` 지원 — 새 메커니즘 없음.** 이미 확정된 "이벤트도
   store-bind 가능 — `false`로 disconnect" 메커니즘(`bind-system-plan.md`)이

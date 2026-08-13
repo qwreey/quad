@@ -61,7 +61,11 @@ def rel(p):
 
 # ---------- 1 & 2: 참조 무결성 ----------
 # `(경로/)파일.md` 또는 `파일.luau`  (+ 바로 뒤에 "절 제목"이 오면 절 검사도)
-REF = re.compile(r'`\.?/?((?:[\w.-]+/)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"\n]{2,60})")?')
+# [2026-08-14] 파일명과 "절 제목"이 **줄바꿈에 걸쳐 있어도** 잡도록 개행 허용.
+# 예전엔 줄 단위로 돌려서 `base/\nbind-system-plan.md`의 "Length/Offset" 같은
+# 자연스러운 줄바꿈 인용을 통째로 놓쳤고, 실제로 문서 분할 후 stale 참조
+# 20여 곳이 이 사각지대로 빠져나갔음(14차 세션 리뷰에서 발견).
+REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,60})")?')
 
 def resolve(target, src):
     """참조 문자열을 실제 경로로 해석 — 상대/부분 경로를 관대하게 매칭."""
@@ -122,28 +126,35 @@ def check_refs(docs):
     for d in docs:
         # archive는 히스토리라 절 참조까지 강제하지 않음(파일 존재만)
         is_archive = '/archive/' in rel(d)
-        for ln, line in enumerate(open(d, encoding='utf-8'), 1):
-            for m in REF.finditer(line):
-                target, _, section = m.group(1), m.group(2), m.group(3)
-                if not interesting(target):
-                    continue
-                p = resolve(target, d)
-                if p is None:
-                    name = os.path.basename(target)
-                    msg = f"{rel(d)}:{ln}  깨진 파일 참조 → `{target}`"
-                    (errors if OURS.search(name) else warns).append(
-                        msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")
-                    continue
-                if section and not is_archive and p.endswith('.md'):
-                    if p not in hcache:
-                        hcache[p] = headings(p) or []
-                    core = re.sub(r'[`*]', '', section).strip()
-                    if not any(core in h for h in hcache[p]):
-                        # 절 제목은 의역해서 인용하는 관례가 있어 WARN — 다만
-                        # 문서를 쪼개거나 헤딩을 고칠 때 여기가 제일 먼저 걸린다.
-                        warns.append(
-                            f"{rel(d)}:{ln}  절 참조 불일치 → {os.path.basename(p)}에 "
-                            f'"{section}" 절 없음')
+        # 줄 단위가 아니라 **파일 전체**를 한 번에 스캔 — 파일명/절 제목이
+        # 줄바꿈에 걸친 인용도 잡기 위함(위 REF 주석 참고). 줄 번호는 매치
+        # 시작 오프셋으로 역산.
+        text = open(d, encoding='utf-8').read()
+        for m in REF.finditer(text):
+            ln = text.count('\n', 0, m.start()) + 1
+            target, _, section = m.group(1), m.group(2), m.group(3)
+            target = re.sub(r'\s+', '', target)
+            if section is not None:
+                section = re.sub(r'\s+', ' ', section).strip()
+            if not interesting(target):
+                continue
+            p = resolve(target, d)
+            if p is None:
+                name = os.path.basename(target)
+                msg = f"{rel(d)}:{ln}  깨진 파일 참조 → `{target}`"
+                (errors if OURS.search(name) else warns).append(
+                    msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")
+                continue
+            if section and not is_archive and p.endswith('.md'):
+                if p not in hcache:
+                    hcache[p] = headings(p) or []
+                core = re.sub(r'[`*]', '', section).strip()
+                if not any(core in h for h in hcache[p]):
+                    # 절 제목은 의역해서 인용하는 관례가 있어 WARN — 다만
+                    # 문서를 쪼개거나 헤딩을 고칠 때 여기가 제일 먼저 걸린다.
+                    warns.append(
+                        f"{rel(d)}:{ln}  절 참조 불일치 → {os.path.basename(p)}에 "
+                        f'"{section}" 절 없음')
 
 
 # ---------- 3: 색인 누락 ----------

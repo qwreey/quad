@@ -98,7 +98,7 @@ nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
 
 구 모델과 달리 **핸들러 타입이 사이클마다 바뀔 수 있음**(`Tag(...)` ↔
 `nil`, 값이 `Tag`가 아니게 되면 `TagHandler.isHandlable`이 더 이상 안
-맞음) — 그래서 `retract`가 실제로 필요해짐(`bind-system-plan.md` "확정된
+맞음) — 그래서 `retract`가 실제로 필요해짐(`dispatch-core-plan.md` "확정된
 디스패치 모델" 절의 일반 원칙 그대로).
 
 **[전면 정정, 2026-08-12 열한 번째 세션] 아래는 이전 버전(단일 `relate`,
@@ -156,6 +156,7 @@ TagHandler.priority = <일반>
 TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
 
 function TagHandler.process(inst, k, v, index)
+    local added = {}
     for name in v:Names() do
         local holders = tagNameMap:GetStrong(inst, name)
         if not holders then
@@ -163,9 +164,12 @@ function TagHandler.process(inst, k, v, index)
             tagNameMap:SetStrong(inst, name, holders)
         end
         if next(holders) == nil then
-            addTag(inst, { name })   -- 주입된 엔진 op(아래 "패키지 배치" 절)
+            table.insert(added, name)  -- 이 이름을 처음 거는 위치일 때만 실제 호출 대상
         end
         holders[k] = true  -- 이 "위치"가 이 이름을 걺(Tag 객체가 다른 위치와 같아도 무관)
+    end
+    if #added > 0 then
+        addTag(inst, added)   -- 한 번에 — 웹 className 일괄 갱신을 위한 배치 계약
     end
     return function(nextValue)
         -- nextValue는 nil(단순 철거)이거나 같은 핸들러가 곧 처리할 새 Tag —
@@ -174,26 +178,33 @@ function TagHandler.process(inst, k, v, index)
                                            -- 이름 집합도 절대 안 바뀜 — holders 순회 자체가 불필요한 순수 최적화
         local removed = {}
         for name in v:Names() do
+            -- [정정, 2026-08-14 리뷰] 생존 이름은 **홀더 등록 자체를 유지**한다.
+            -- 예전엔 홀더를 일단 빼고 removeTag 호출만 skip했는데, 그러면 곧
+            -- 이어지는 process가 빈 holders를 보고 `addTag`를 **다시** 부름
+            -- (엔진이 멱등이라 안 보였을 뿐, "진짜 바뀐 이름에만 호출"이라는
+            -- 이 절의 설계 목표와 어긋났고 아래 서술과도 모순이었음).
+            if nextValue ~= nil and nextValue:Contains(name) then continue end
             local holders = tagNameMap:GetStrong(inst, name)  -- 이미 등록됐으므로 항상 있음
             holders[k] = nil  -- 이 "위치"가 이 이름을 놓음(같은 Tag 객체를 다른 위치도 쓰고 있어도 무관)
-            if next(holders) == nil and not (nextValue ~= nil and nextValue:Contains(name)) then
-                table.insert(removed, name)  -- 곧 새 process가 재확정할 이름이면 skip(깜빡임 방지)
+            if next(holders) == nil then
+                table.insert(removed, name)
             end
         end
         if #removed > 0 then
-            removeTag(inst, removed)   -- 한 번에 — 웹 className 일괄 갱신을 위한 배치 계약
+            removeTag(inst, removed)   -- 한 번에
         end
     end
 end
 ```
 
 - **`addTag`는 온전히 `process`, `removeTag`는 온전히 반환하는 클로저**
-  — 서로 겹치는 diff 계산이 없음. 클로저가 이전 `Tag`(`v`, 자기 자신이
-  캡처)가 걸었던 이름 전부를 소유 목록에서 빼되(항상 실행), 그 결과
-  목록이 비었을 때 **실제 `removeTag` 호출만** "새로 들어올 값이
-  그 이름을 여전히 Contains하는가"로 판단해 skip — 소유 목록 자체는
-  항상 최신 객체로 갱신되므로(정확히 `v`를 빼고 새 `process`가 새 값을
-  넣는 두 단계), 이름이 살아남는 경우에도 stale 레퍼런스가 안 남음.
+  — 서로 겹치는 diff 계산이 없음. 클로저는 이전 `Tag`(`v`, 자기 자신이
+  캡처)가 걸었던 이름 중 **새 값이 더 이상 안 거는 것만** 소유 목록에서
+  빼고, 그 결과 목록이 빈 이름들을 모아 `removeTag`를 **한 번** 호출함.
+  생존 이름은 소유 목록을 그대로 두므로(**[정정, 2026-08-14 리뷰]** 예전엔
+  일단 뺐다가 호출만 skip했는데 그러면 곧이은 `process`가 빈 목록을 보고
+  `addTag`를 다시 불렀음) 뒤이은 `process`에서 `addTag` 자체가 안 불림 —
+  "실제 엔진 호출은 진짜 바뀐 이름에만"이 코드 수준에서도 성립.
   `process`는 `v`가 새로 거는 이름 전부를 무조건 등록(소유 목록이
   비어있던 경우에만 실제 `addTag`) — 자기 나름의 old-vs-new diff가 전혀
   필요 없음(그 일을 클로저가 매번 정확히 해줌).

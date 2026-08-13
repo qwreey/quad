@@ -113,7 +113,7 @@ Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우
 지점**이라는 완전히 다른 축의 개념이라, 여기 분류를 "왜 Handler가
 빠졌는지" 궁금해할 필요 없음 — 프리미티브 분류가 불완전한 게 아니라
 Handler가 애초에 다른 층위. 관련해서 Handler를 담는 엔진(`Dispatch`) 자체가
-왜 프리미티브가 아니라 탑레벨 싱글톤인지는 `base/bind-system-plan.md`의
+왜 프리미티브가 아니라 탑레벨 싱글톤인지는 `base/dispatch-core-plan.md`의
 "Dispatch는 프리미티브가 아니다" 절 참고.
 
 과거 "미해결로 남은 것"으로 적었던 두 항목도 모두 해소됨: `:Compute`의

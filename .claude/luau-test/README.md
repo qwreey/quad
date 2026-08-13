@@ -11,9 +11,9 @@
 | 폴더 | 뜻 | 누가 처리 |
 |---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요**(**[2026-08-13 13차 세션] 현재 비어 있음** — 마지막 한 건이던 `08`이 해소돼 `done/`으로 감) | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크 코드가 깨짐(설계 문제 아님, `13`/`15`/`16`) | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`/`16`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff) | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용 `10` + GC 헬퍼) | 사용자 or MCP 연결 후 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음(15개) | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음(14개) | — |
 
 **스파이크를 고치거나 돌렸으면 파일을 해당 폴더로 `git mv`하고 STATUS.md의
 줄도 같이 옮길 것** — 그게 곧 상태 갱신이다. 아래 파일 목록의 경로는
@@ -68,7 +68,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | 파일 | 검증 대상 | 근거 문서 |
 |---|---|---|
 | `01-two-pass-array-hash-order.luau` | 배열 파트(children/Ref) 먼저, 해시 파트(프로퍼티/이벤트) 나중이라는 두 패스 순회 계약 | `dispatch-core-plan.md` "props 순회 순서", ROADMAP M0-4 |
-| `02-none-sentinel-vs-nil-holes.luau` | **[2026-08-09 커밋 f198fd9 반영해 전면 재작성]** 순서가 중요한 배열(PreRef pre-pass, sourceList)은 `None` 소진이 맞고, 순서가 안 중요하고 재사용이 필요한 배열(Ref 콜백/대기자)은 `nil`+슬롯 재사용이 맞다는 최종 구분 + `None`을 잘못 쓰면 배열이 무한정 자라는 버그의 정량적 재현 | `bind-system-plan.md` "왜 None이 아니라 nil인가"(2026-08-09 열한 번째 세션 최종 정정), ROADMAP M0-4 |
+| `02-none-sentinel-vs-nil-holes.luau` | **[2026-08-09 커밋 f198fd9 반영해 전면 재작성]** 순서가 중요한 배열(PreRef pre-pass, sourceList)은 `None` 소진이 맞고, 순서가 안 중요하고 재사용이 필요한 배열(Ref 콜백/대기자)은 `nil`+슬롯 재사용이 맞다는 최종 구분 + `None`을 잘못 쓰면 배열이 무한정 자라는 버그의 정량적 재현 | `ref-plan.md` "왜 None이 아니라 nil인가"(2026-08-09 열한 번째 세션 최종 정정), ROADMAP M0-4 |
 | `03-recursive-store-bind-dispatch.luau` | `process`/`retract` 재귀 재-dispatch 기본 모델, 우선순위 스캔 | `dispatch-core-plan.md` "확정된 디스패치 모델", ROADMAP M0-3 |
 | `04-dispatch-chain-retractFrom.luau` | **[⚠️ 2026-08-13 열네 번째 세션: 하강 diff 확정으로 낡음 → `rewrite-required/`]** 아래는 옛 모델 기준 설명 — **[2026-08-13 감사에서 전면 재작성 + 파일명 변경]** 인덱스 기반 `chains`/`Dispatch.retractFrom`이 다단 재귀 위임에서 정확한지 — 3단 체인이 인덱스 1/2/3으로 안 겹치고 쌓이는지(= `State<State<T>>` **정상 동작**, UB 아님), 안/바깥 store 재발행 시 깊은 인덱스부터 정리되는지, hint가 target 인덱스에만 가는지 + **음성 대조군**: `chains:SetStrong`을 `handler.process` 뒤에 두면 최초 마운트에서 하위 retractor가 유실되는 버그 재현. 옛 버전은 핸들러 identity 기반 추적과 "중복 push 즉시 error" 가드를 검증했는데 그 가드는 다섯 번째 세션 재설계로 **없어져서** 설계와 정반대를 테스트하고 있었음 | `dispatch-core-plan.md` "Dispatch 체인"(2026-08-13 다섯 번째 세션 재설계) + 2026-08-13 감사 |
 | `05-store-state-diamond-propagation.luau` | push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지 | ROADMAP M0-1 |
@@ -82,7 +82,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
 | `14-type-nilable-default-overload.luau` (타입체크 전용) | `Source(default)`/`Ref(default)`의 `default` 생략이 `T`가 nilable일 때만 안전하다는 캐비엇을, 함수 오버로드(교차 타입)로 실제로 타입 레벨에서 막을 수 있는지 | `bind-system-plan.md` "[보강, 2026-08-09 열한 번째 세션]" 절 |
 | `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `bind-system-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
-| `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `bind-system-plan.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |
+| `16-type-store-key-typefunction.luau` (타입체크 전용) | `Store<T>`가 `T`의 각 필드를 `Source`로 감싼 타입을 Luau `type function`(`types.newtable`/`:setproperty`/`ty:properties()`)으로 실제 합성 가능한지, 결과가 구조적으로 `Source<T>` 필드를 만족하는지 | `typing-limits.md` "`store.key` 레코드 필드 타이핑" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-10 |
 | `17-modifier-index-tableclone-chaining.luau` | Modifier의 제네릭 `__index`+`table.clone` 체이닝 — 임의 필드 이름에 대해 즉석 setter가 만들어지는지, `table.clone`이 메타테이블을 참조로 공유해 여러 단계 clone에서도 체이닝이 안 끊기는지, 원본이 mutate 안 되는지, 형제 분기끼리 오염 안 되는지 | `modifier-plan.md` "런타임은 클래스별 코드 없이 base에 딱 하나만 있으면 됨" 절 + "`table.clone`의 정확한 동작 — 확인됨" 절(2026-08-12 열일곱 번째 세션), `pre-implementation-audit.md` 1-11 |
 | `18-relate-mutual-cycle-gc.luau` | **[2026-08-13 신규]** 서로 다른 두 `Relate`가 서로의 키를 상대방의 강한 값으로 제공하는 상호 순환은 Luau에 ephemeron이 없어 GC가 못 푼다는 주장(지금까지 공식 문서 인용으로만 뒷받침됨) — 음성 대조군(순환 재현)과 양성 대조군(한쪽을 weak-value로 낮추면 풀리는지) 둘 다 실측 | `relate-plan.md` "위험한 패턴" 절(2026-08-12 열세/열네 번째 세션), `slot-plan.md`의 `kSlotMap`/`slotOwner`/`elementOwner` 실사례 |
 | `19-ownership-refcount-relate-patterns.luau` | **[2026-08-13 신규, 같은 날 B/C 전면 재작성 — 지금은 현행 설계 기준]** 세 소유권/참조카운트 알고리즘 검증. **A**: Tag `tagNameMap` 참조 카운트(여러 위치가 같은 이름을 겹쳐 가져도 마지막 홀더가 빠질 때만 실제 `RemoveTag`. 옛 `kTagMap`은 클로저 캡처로 대체돼 삭제됨). **B**: Attribute 이름 소유권 — 공개 `AttributeKey(name)` 캐시 + `Dispatch.process`의 인덱스 1 **점유 체크**가 충돌을 잡는지(옛 `rawNew`+`owners` 수동 레지스트리는 폐기). **C**: Slot 소유권 — nested 엄격 `claimOwner`(같은 owner 재클레임도 error) vs top-level `claimOwnerAt(inst,k)`(정확히 같은 자리 재발행만 no-op). **셋 다 음성 대조군 포함** — 옛 로직이 `Slot{a,a}`/`Frame{slot,slot}`을 조용히 통과시키는 걸 재현. **[2026-08-13 열네 번째 세션] 0-Z가 확정되며 B 섹션이 낡음 → `rewrite-required/`** — 이제 "그룹 전용 키 + `AttributeKeyHandler`의 이름 claim"을 검증해야 함(A/C는 그대로 유효) | `tag-plan.md` "메커니즘", `attribute-plan.md` "이름 소유권", `slot-plan.md` "요소 소유권" |

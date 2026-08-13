@@ -202,7 +202,7 @@ Slot이 여럿 형제로 존재할 때, 최종 자식 순서가 저작 순서(�
 있었던 질문 — **메커니즘 확정으로 해소됨**: `Dispatch.setLength`/
 `Dispatch.setOffsetSource` + 형제별 개수 누적합(`offset`)을 리액티브
 프로퍼티(Roblox `LayoutOrder`)에 바인딩하는 방식 — 상세는 `base/
-bind-system-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때 순서
+dispatch-core-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때 순서
 보장" 절 참고. **DOM류 물리 순서 백엔드에도 같은 base 메커니즘이 그대로
 재사용됨**(offset이 바뀌어도 이미 마운트된 원소를 물리적으로 옮길 필요
 없음 — `insertBefore`가 뒤 형제를 자연히 밀어주므로, backend Handler의
@@ -1314,7 +1314,7 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 게 맞고, 그건 사용자가 별도 State로 계산해야 하는 몫.
 
 **동적 자식은 반드시 `Slot` 또는 `state<Frame>`류 store-bind를 통해서만
-추가/제거 — 그 외 경로는 UB(2026-08-10 세션, `base/bind-system-plan.md`의
+추가/제거 — 그 외 경로는 UB(2026-08-10 세션, `base/dispatch-core-plan.md`의
 "Length/Offset" 절 반영).** 둘 다 `Dispatch.setLength`/`setOffsetSource`를
 정확히 호출하는 유일한 정당 경로라, 이걸 우회해서(예: 외부 코드가 Slot이
 마운트해둔 부모 Instance에 직접 `.Parent = parentInst`로 자식을 끼워
@@ -1589,7 +1589,7 @@ Roblox뿐 아니라 web에도 그대로 필요.
 
 `offset`/`sum`은 0-based 개수(카디널 수)고, `_elements`/`updateFn`의
 `index`는 1-based Lua 배열 관례 — `index + offset` 공식이 이 둘을
-의도적으로 섞는 것. 상세는 `base/bind-system-plan.md`의 "0-based
+의도적으로 섞는 것. 상세는 `base/dispatch-core-plan.md`의 "0-based
 개수" 절 참고.
 
 ## 반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용 (2026-08-11 일곱 번째 세션)
@@ -1834,7 +1834,7 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 **[정정, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
 대해 그냥 **`Dispatch.setOffsetSource(ownerKey, position, None)` +
 `Dispatch.setLength(ownerKey, position, 0)`을 다시 부르면 끝**.
-이건 이미 확정된 관용구 그대로임(`base/bind-system-plan.md`의 "실제
+이건 이미 확정된 관용구 그대로임(`base/dispatch-core-plan.md`의 "실제
 마운트를 하지 않는 위치는 `None`을 등록 — `setLength`도 짝을 맞춰 `0`").
 즉 **해제 = 0/`None`으로 재등록**이고 별도 unregister 함수가 없어도 됨 —
 앞서 "이게 실제 작업량"이라고 적었던 판단은 과했음.

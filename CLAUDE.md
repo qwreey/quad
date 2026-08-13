@@ -213,7 +213,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
        실제 코드 작성에 재사용.
      - **[주의] 위 "남은 것은 셋뿐"은 여섯 번째 세션 기준** — 13차 세션에
        `08`이 `done/`으로 가며 `review-required/`가 비었고, **14차 세션에
-       `04`가 하강 diff 재설계로 전제가 바뀌어 `rewrite-required/`로 갔음**.
+       `04`와 `19`가 하강 diff 재설계로 전제가 바뀌어 `rewrite-required/`로
+       갔음**(`19`는 B 섹션만 낡음, A/C는 유효).
        **개수의 소스는 항상 `luau-test/STATUS.md`.** 지금 M0 착수를 막는
        설계 결정은 없고, 0-Y/0-A가 남긴 규약(`base/typing-limits.md`/
        `base/dispatch-core-plan.md`)은 착수 전 필독.
@@ -1097,6 +1098,16 @@ claim**으로 확정. 이걸로 마지막 게이트가 열려 **0-A(하강 diff 
 알고리즘이 백엔드마다 복제됨), 그 실패 모드를 위해 **`HANDLER_PRIORITY_FALLBACK`**
 신설(사용자 제안 — base 핸들러는 최하위 밴드, 백엔드가 덮어쓰면 언제나
 이김). 옛 모델은 `archive/dispatch-hintvalue-model-reversed.md`로 이전,
-스파이크 `04`/`19`는 옛 모델을 검증 중이라 `rewrite-required/`로 이동.
-**M0 착수를 막는 결정이 이제 없음** — 새로 연 것은 사소한 둘뿐
-(`Attribute.Merged` 이름 중복, `hintValue` 이름 재검토).
+스파이크 `04`(체인/`retractFrom`)와 `19`(B 섹션 = Attribute 소유권)는 옛
+모델을 검증 중이라 `rewrite-required/`로 이동 — `19`의 A/C 섹션은 그대로
+유효.
+**M0 착수를 막는 결정이 이제 없음** — 새로 연 것은 사소한 셋뿐
+(`Attribute.Merged` 이름 중복, `hintValue` 이름 재검토, 그룹 `process`
+부분 실패 롤백). **[2026-08-14 후속 리뷰 라운드]** 다른 에이전트 감사 +
+사용자 트레이싱으로 의사코드 결함 3건 수정 — `nameClaims`가 `Relate`의
+3-인자 계약을 위반, `TagHandler`가 생존 이름의 홀더를 비웠다 되돌려
+`addTag`를 헛되이 재호출(+`addTag` 배치 누락), 그룹 `process` 부분 실패
+경로 미문서화. 더 큰 수확은 **`doc-check.py` 자신의 사각지대 발견** —
+`REF` 정규식이 줄 단위라 파일명과 절 제목이 줄바꿈에 걸친 인용을 통째로
+놓치고 있었고, 고치자 이번 분할뿐 아니라 **9차 세션 1단계 분할의 stale
+참조까지** 무더기로 드러나 30여 곳 정정.

@@ -88,7 +88,7 @@ store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌
 여러 단계(A→B→C)로 겹칠 때 자기 자신의 상태와 위임한 핸들러의 상태가
 슬롯 하나를 두고 충돌하는 문제가 있어 기각되고, 대신 Dispatch 자신이
 전체 체인을 배열로 들고 있는 쪽으로 정리됨. 상세는 `base/
-bind-system-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
+dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 원래 발견 당시 기록.
 
 **위치**: `base/dispatch-core-plan.md` "확정된 디스패치 모델" 절 90-91행 —
@@ -137,7 +137,7 @@ bind-system-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 **해소**: 별도 케이스로 처리하지 않음 — provider 미주입 상태는 결국 그
 클래스의 핸들러가 레지스트리에 하나도 없는 상태이므로, 위 1-3에서 확정된
 일반 "매치 실패 시 즉시 error" 규칙 하나로 자연히 커버됨. 상세는
-`base/module-lifecycle-plan.md` 해당 항목, `base/bind-system-plan.md`
+`base/module-lifecycle-plan.md` 해당 항목, `base/dispatch-core-plan.md`
 "우선순위 동률/매치 실패 처리" 절. 아래는 원래 발견 당시 기록.
 
 **위치**: `base/module-lifecycle-plan.md` "Bind는 누가, 어떻게 구현하는가"
@@ -299,7 +299,7 @@ base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 이미 쓰이는 패턴). 결과가 구조적으로 `Source<T>`를 만족하기만 하면 Luau가
 이름이 아니라 구조로 일치를 검사하므로 문제없음. 기술적으로 막힐 위험이
 없어졌으니 M0/M3 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
-안 옮겨도 됨. 상세는 `base/bind-system-plan.md` "`store.key` 레코드 필드
+안 옮겨도 됨. 상세는 `base/typing-limits.md` "`store.key` 레코드 필드
 타이핑" 절, 실제 문법 실측은
 `luau-test`의 `16-type-store-key-typefunction.luau`(신규). 아래는
 원래 발견 당시 기록.

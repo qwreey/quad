@@ -146,7 +146,7 @@ unbindLifetime(inst: any, value: any): ()
 canExecute(inst: any, value: any): boolean
 ```
 
-**`unbindLifetime` 추가 이유(2026-08-09 세션, `bind-system-plan.md`의
+**`unbindLifetime` 추가 이유(2026-08-09 세션, `dispatch-core-plan.md`의
 "Length/Offset" 논의에서 파생)**: `Dispatch.setLength`(같은 위치에 새
 `State<number>`가 들어오면 이전 것에 걸어둔 Observer를 먼저 정리해야 함,
 `State<Slot>` 교체가 대표 사례)처럼 **`inst` 전체 생명주기보다 먼저,

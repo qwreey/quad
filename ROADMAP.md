@@ -42,7 +42,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
       Luau 테이블에서 관찰한 대로 동작하는지 확인, `PreRef` pre-pass +
       일반 `Ref`의 위치 기반 순서까지 최소 스파이크로 검증
-      (2026-08-07 세 번째 세션, `base/bind-system-plan.md` "`phase` 옵션
+      (2026-08-07 세 번째 세션, `base/ref-plan.md` "`phase` 옵션
       폐기 → 위치로 표현, `PreRef` 신설" 절) — **PreRef pre-pass의 소진은
       `nil`이 아니라 `None`으로(2026-08-07 열 번째 세션 정정, 사용자가
       Luau REPL로 반례 제시 — 키가 듬성듬성해지면 순회가 index 순서를
@@ -180,7 +180,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef)` children-array
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
-      bind-system-plan.md` "Dispatch는 프리미티브가 아니다" 절)
+      dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절)
 - [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
       — **재귀 깊이 인덱스 → (담당 핸들러, 그가 반환한 retractor 클로저)**) +
       **3-인자** `Dispatch.retractFrom(inst,k,index)` — 재귀 재-dispatch
@@ -213,7 +213,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `store.key` dot-access 타입 추론 확인 — Luau `type function`
       (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
       `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
-      번째 세션, `base/bind-system-plan.md` "`store.key` 레코드 필드
+      번째 세션, `base/typing-limits.md` "`store.key` 레코드 필드
       타이핑" 절) — 실제 문법이 통과하는지는
       `luau-test`의 `16-type-store-key-typefunction.luau`로 실측 필요
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
@@ -328,7 +328,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [x] **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
       세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/
-      bind-system-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
+      dispatch-core-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
       이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
       UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
 - [x] **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
@@ -377,7 +377,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       위치"(`candidateIndex`, filter로 압축됨), `key`와도 무관(순서/레이아웃
       전용, 식별 목적 아님) — 문서화 시 셋(원본 raw index/`key`/`updateFn`의
       `index`)을 혼동하지 않게 주의. **`offset`은 `Slot.Offset`을 그대로
-      전달**(형제 Slot/정적 자식 누적합, `base/bind-system-plan.md`의
+      전달**(형제 Slot/정적 자식 누적합, `base/dispatch-core-plan.md`의
       "Length/Offset" 절) — `index`/`offset` 둘 다 **raw 값으로만 전달,
       `Slot`/Handler가 `LayoutOrder` 등을 자동으로 세팅해주지 않음**
       (2026-08-11 세션 확정 — 자동 바인딩은 컴포넌트가 이미 지정한 값을
@@ -443,7 +443,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       요소를 모른 채 충돌하는 gap이 있었음(2026-08-11 세션, `base/
       slot-plan.md` "CRUD API 확정" 절).
 - [x] **`recompute` off-by-one 버그 수정**(2026-08-11 세션, `base/
-      bind-system-plan.md` "Length/Offset" 절) — `sum` 누적과
+      dispatch-core-plan.md` "Length/Offset" 절) — `sum` 누적과
       `offset:Set` 순서가 뒤바뀌어 `Offset`이 자기 자신을 포함해버리던
       버그(예: 유일한 자식인데도 `Offset`이 0이 아니게 됨) 수정. 재진입
       방지 가드는 검토 후 기각 — 각 Slot이 `Relate(자기 자신)`으로
@@ -526,7 +526,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
       `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
-      위치 무관 호이스팅 pre-pass — `base/bind-system-plan.md` "`phase`
+      위치 무관 호이스팅 pre-pass — `base/ref-plan.md` "`phase`
       옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)
 - [ ] `(v=Ref)` 매치 핸들러 — children 배열의 숫자 슬롯에 놓인
       `Ref(default)` 인스턴스를 인식해 바인드(별도 `CreatedRef` 래퍼
