@@ -82,13 +82,17 @@ leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer�
   함** — `Dispatch/Leaf.luau`가 children 배열의 `EffectHandle`을 매치해
   `bindLifetime(inst, handle)`을 부르는 시점(leaf 부착)과, `:Subscribe()`가
   `handle`을 전역 레지스트리에 등록하는 시점(아래) 둘 다 해당. 이유:
-  내부 Observer 자신의 재실행 게이팅(`canExecute`)이 "`Subscribed` 필드
-  + `inst`의 gcconn"을 함께 보는데, 후자는 그 Observer가 **직접**
-  `bindLifetime(inst, observer)`된 적이 있어야만 올바른 `inst`를 참조함
-  — `EffectHandle`만 바인드하고 내부 Observer는 안 하면, 그 Observer의
-  `canExecute`가 `inst` 생존을 못 보고 엉뚱하게(또는 전혀) 게이팅됨.
-  같은 이유로 `unbindLifetime(inst, handle)`도 내부 Observer까지 같이
-  풀어야 대칭이 맞음.
+  `canExecute(observer)`가 보는 gcconn 참조는 **그 Observer 자신이
+  `bindLifetime(inst, observer)`될 때 그 Observer 쪽 릴레이션에
+  복사되는 것**이라, `EffectHandle`만 바인드하고 내부 Observer는 안 하면
+  그 Observer에겐 판정 근거가 아예 없어서 `canExecute`가 항상 거짓이 됨
+  (=재실행이 통째로 죽음). 같은 이유로 `unbindLifetime(handle)`도 내부
+  Observer까지 같이 풀어야 대칭이 맞음.
+  **[정정, 2026-08-14 다섯 번째 세션]** 이 항목이 원래 근거로 든
+  "`canExecute`가 `Subscribed` 필드 + `inst`의 gcconn을 함께 본다"는
+  틀렸음 — `.Subscribed`는 전역 `:Subscribe()` 전용이고 leaf 경로와
+  무관(`archive/canexecute-inst-arg-reversed.md`). cascade가 필요하다는
+  결론은 그대로이고 오히려 근거가 더 직접적이 됨.
 - **`:Subscribe()`도 마찬가지로 `state`가 있으면 내부 Observer를 같은
   전역 강참조 레지스트리에 같이 등록**(`handle` 자신 + `handle._observer`
   둘 다, 또는 `handle._observer`만으로 충분한지는 구현 세부 — 어느 쪽이든
@@ -145,8 +149,9 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
      하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것.
   3. **idempotent, 그리고 이후 leaf가 실제로 죽어도 cleanup이 중복
      호출되면 안 됨** — 새 메커니즘 불필요, Observer가 이미 확정해둔
-     "`Subscribed` 필드 우선 liveness 체크"가 자동(리프)/수동(Unsubscribe)
-     두 경로를 하나의 게이트로 OR 묶어주므로 여기 그대로 얹힘.
+     `canExecute(value)` liveness 체크가 자동(리프=gcconn 참조)/수동
+     (전역=`Subscribed` 필드) 두 경로를 하나의 게이트로 OR 묶어주므로
+     여기 그대로 얹힘.
 - **`state` 없는 mount-only Effect엔 특별한 분기 불필요** — install은 이미
   `Effect(fn)` 호출 시점에 끝나 있으므로, `:Unsubscribe()`는 그냥 "지금
   leaf-사망 cleanup을 수동으로 트리거"하는 것과 완전히 동치.
@@ -154,11 +159,12 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   일곱 번째 세션 후속)**: 처음엔 "같은 liveness 게이트를 공유하니
   동시에 써도 안전"으로 적었으나, 애초에 한 핸들은 라이프사이클 바인딩
   경로를 하나만 가져야 한다는 게 맞는 방향이라 판단이 뒤집힘 — 상세
-  규칙과 `canBound(handle)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
-  플래그, 2026-08-09 세션에서 이름 확정)은
+  규칙과 `canExecute(value)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
+  플래그 → 2026-08-09 세션에 `canBound`로 명명 → **2026-08-14 세 번째
+  세션에 `canBound` 폐기, `canExecute`로 통합**)은
   `base/bind-system-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
   2026-08-09 여섯 번째 세션] leaf 부착 후 조기 해제는 `:Unsubscribe()`가
-  아니라 `unbindLifetime(inst, value)`** — leaf 부착 자체가 내부적으로
+  아니라 `unbindLifetime(value)`** — leaf 부착 자체가 내부적으로
   `bindLifetime(inst, value)` 호출이라, 그 해제도 짝인 `unbindLifetime`
   전용(`:Unsubscribe()`는 `inst`를 몰라 대신 처리 못 함) — 금지되는 건
   여전히 `:Subscribe()`(전역 경로)와 `bindLifetime`(leaf 부착 포함,

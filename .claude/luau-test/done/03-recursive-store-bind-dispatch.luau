@@ -19,7 +19,8 @@
 	참고(2026-08-09 세션 갱신 반영): 아래 makeStore의 `subscribe(fn)`은
 	이 스파이크 전용으로 단순화한 것 — 실제 base 설계는 StoreBind가
 	`state:Observer(fn)` + `bindLifetime(inst, observer)`/
-	`unbindLifetime(inst, observer)`(`.claude/base/lifecycle-pattern.md`)
+	`unbindLifetime(observer)`(2026-08-14 다섯 번째 세션에 unbind가
+	1-인자로 정정됨, `.claude/base/lifecycle-pattern.md`)
 	조합으로 구독/해제한다. 여기서 검증하려는 건 그 구독 배관이 아니라
 	"우선순위 스캔+재귀 process/retract 자체가 Luau에서 잘 도는가"라서
 	영향 없음 — 실제 Handler 구현 짤 때는 subscribe 대신 저 조합을 쓸 것.

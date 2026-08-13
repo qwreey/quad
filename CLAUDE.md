@@ -242,11 +242,16 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    에러 격리 유틸 `Fallback`(**[2026-08-14 신설]** 컴포넌트 함수를 감싸 에러
    시 자동으로 플레이스홀더를 그려주는 `pcall`/`xpcall` 래퍼 — 기존
    "Error Boundary는 빈 자리 아님" 결론 위의 순수 슈가,
-   `research/component-fallback-plan.md`) — 전부 "quad
-   개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는 `.claude/README.md`의
-   `research/` 표(`debug-tooling-plan.md`/`documentation-plan.md`/
-   `documentation-content-map.md`/`framework-comparison-findings.md`/
-   `operator-sugar-plan.md`/`component-fallback-plan.md`).
+   `research/component-fallback-plan.md`), 생명주기 훅
+   `OnCreated`/`OnDestroyed`(**[2026-08-14 신설]** `PreRef`/`Effect`를
+   반환하는 순수 팩토리 함수 슈가, `research/lifecycle-hooks-plan.md` —
+   `OnRendered`는 base에 없는 post-pass가 필요해 공짜가 아니라 지금은
+   의도적으로 구현 안 함, 거울상 `PostRef` 스케치만 백로그 후보) — 전부
+   "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
+   `.claude/README.md`의 `research/` 표(`debug-tooling-plan.md`/
+   `documentation-plan.md`/`documentation-content-map.md`/
+   `framework-comparison-findings.md`/`operator-sugar-plan.md`/
+   `component-fallback-plan.md`/`lifecycle-hooks-plan.md`).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -1146,3 +1151,62 @@ vs xpcall, 패키지 배치, 이름, 프로덕션 동작) 정리, 설계 확정�
 ("파일:줄: ")를 자동으로 붙인다는 캐비엇을 새로 확인해 문서에 반영 —
 `research/component-fallback-plan.md`의 해당 열린 질문을 해소로 표시,
 백로그 우선순위 자체는 그대로.
+
+**2026-08-14 세 번째 세션 — 생명주기 훅 `OnCreated`/`OnDestroyed` 백로그
+신설, `OnRendered`는 의도적 보류** (`session/2026-08-14-03-lifecycle-hooks-plan.md`)
+사용자가 React/Vue류 `OnCreated`/`OnRendered`/`OnDisposed`를 `PreRef`/
+`Effect` 위 슈가로 구현할 수 있을지 제안, 워크트리에서 조사 요청. 확인
+결과 `OnCreated(fn)`→`PreRef():Callback(fn)`, `OnDestroyed(fn)`→
+`Effect(function() return fn end)`는 호출 즉시 평가돼 기존 프리미티브
+인스턴스로 사라지는 순수 팩토리라 새 Dispatch/Brand 개념이 전혀 안
+생김(다중 등록도 자연 지원) — 이게 사용자가 처음 우려했던
+`:Compute`의 `State<function>` 문제가 애초에 안 생기는 이유와 같은
+뿌리임을 확인. `OnDisposed`(미래 `dispose()`와 이름 맞추기 제안)는
+검토 후 기각 — 훅의 실제 트리거는 `dispose()` 호출이 아니라 엔진
+`Destroying` 신호라 `OnDestroyed`가 더 정직함(`dispose()` 대상 범위가
+0-B로 아직 미확정이라 나중에 재검토 여지는 남겨둠). `OnRendered`는
+프로퍼티/이벤트 세팅 완료를 보장하는 훅이 base에 없어 `Dispatch.drive`에
+실제 post-pass가 필요하다는 게 드러나 공짜가 아님을 확인 — 사용자가
+**지금은 의도적으로 구현 안 하기로 확정**, 다만 `PreRef`의 거울상인
+`PostRef`(같은 메커니즘을 후행 스캔으로 뒤집기만 하면 됨)로 구현하면
+될 것 같다는 구체 스케치를 남겨 백로그 후보로 보존. `question.md`엔
+안 올림(이미 "지금 안 함"으로 답이 나온 질문이라). `research/lifecycle-hooks-plan.md`
+신설, README 인덱스 반영, 별도 워크트리에서 작업 후 메인에 수동
+반영(다른 세션이 동시에 메인에서 작업 중이라 병합 타이밍을 사용자가
+직접 조율) — 커밋 `9f9a68f`.
+
+**2026-08-14 네 번째 세션 — `ProcessedPreRef` 신설로 Length/Offset 등록
+갭 해소, `PostRef` 완전 대칭화**
+(`session/2026-08-14-04-processedpreref-postref-symmetry.md`, 위 세 번째
+세션이 신설한 `research/lifecycle-hooks-plan.md`의 `PostRef` 스케치를
+이어받아 갱신)
+사용자의 "PreRef 소진으로 생기는 공백이 setLength/setOffsetSource를
+안 깨뜨리는가" 질문을 읽기 전용으로 조사한 결과, 소진 값이 `None`이라
+정상 두 패스가 그 자리를 아예 안 거쳐 "누가 그 등록을 호출하는가"가
+문서 어디에도 없는 진짜 갭임을 발견. 사용자가 전용 센티널
+`ProcessedPreRef`+`ProcessedPreRefHandler`(매치되는 Handler 자신이
+`setLength(0)`/`setOffsetSource(None)`을 등록)로 해소를 제안, `base/
+ref-plan.md`/`dispatch-core-plan.md`/`ROADMAP.md`에 반영(파생 서술 3곳
+정정 포함). 백로그 `PostRef`(`research/lifecycle-hooks-plan.md`)도 같은
+원리로 갱신하되, 사용자 제안으로 더 단순화 — 별도 후행 재순회 없이
+PreRef pre-pass 한 스윕에서 `isPostRef`도 같이 소진해 `postRefList`에
+적재해두는 안으로 Pre/Post 소진 메커니즘이 완전 대칭됨.
+`doc-check.py` ERROR 0 유지 확인 후 커밋(`e0ef7ce`). 같은 세션에
+`/code-review high`를 두 차례 시도했으나 둘 다 파인더 완료 전에 결과가
+도착하지 않아 리뷰 반영은 못 함 — 나중에 결과 도착 시 별도 검토 필요.
+
+**2026-08-14 다섯 번째 세션 — `canExecute(inst,value)` 2-인자 역전,
+`.Subscribed` 오염 제거·`canBound` 폐기**
+(`session/2026-08-14-05-canexecute-value-scoped.md`)
+`canExecute`/`unbindLifetime`이 `inst`를 받던 2-인자 시그니처를 폐기하고
+`value` 단독으로 정정 — 뿌리는 2026-08-08에 들어온 "`bindLifetime`이
+`.Subscribed`를 세팅한다"는 오염이었고(그 필드는 전역 `:Subscribe()`
+전용), `bindLifetime`이 gcconn 참조를 `value` 쪽 `Relate`로 복사해두면
+생존을 `value` 하나로 물을 수 있음. 이 오염 위에 세워졌던 `canBound`는
+폐기되어 `canExecute` 하나로 통합, gcconn/gchold 생성도 lazy에서
+**Instance 생성 시점**으로 올라가며 클로저가 `inst`까지 캡처(userdata
+포인터 동일성 = `inst`-키 `Relate` 전체의 전제). 여섯 세션을 살아남은
+이유가 "`canExecute`의 실제 호출부(State 전파 루프)가 어느 문서에도
+코드로 없었음"이라, 교훈으로 "계약을 정할 때 호출부를 최소 하나는
+의사코드로 같이 적을 것"을 남김. 정본은 `base/lifecycle-pattern.md`,
+역전 원문은 `archive/canexecute-inst-arg-reversed.md`.

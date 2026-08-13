@@ -355,7 +355,7 @@ function SlotHandler.process(inst, k, slotValue, index)
         -- 죽는 중인 Source에 헛된 :Set()이 안 감, 아래 ⚠️ 절 참고)
         Dispatch.setOffsetSource(inst, k, None)
         Dispatch.setLength(inst, k, 0)
-        unbindLifetime(inst, slotValue)  -- top-level 자신의 GC 앵커 해제 — SlotHandler.process의 bindLifetime과 짝
+        unbindLifetime(slotValue)  -- top-level 자신의 GC 앵커 해제 — SlotHandler.process의 bindLifetime과 짝
         releaseOwner(slotValue, inst)    -- 이제 이 Slot은 아무에게도 안 묶임(다른 곳에 다시 넣을 수 있음)
     end
 end
@@ -1110,7 +1110,7 @@ function activateList(self, inst)
     local data = self._listData
     if isState(data) then
         local observer = data:Observer(function() reconcile(data:Get()) end)
-        -- Observer 등록 자체의 "등록 즉시 1회 실행"은 canExecute/Subscribed
+        -- Observer 등록 자체의 "등록 즉시 1회 실행"은 canExecute
         -- 게이팅과 무관하게 여기서 이미 무조건 일어남(아래 "구독 시점" 절) —
         -- bindLifetime은 그 다음에 걸어 *이후* 재실행만 inst 생명주기에 귀속
         bindLifetime(inst, observer)
@@ -1224,9 +1224,13 @@ self.Length)`를 부르는 것과 같은 자리에서 같이 트리거되면 됨
 **canExecute와 "등록 즉시 1회 실행"의 관계 — 초기 실행은 게이팅과 무관하게
 무조건 일어남(사용자 확인)**: `data:Observer(fn)`가 등록되는 순간
 (`bindLifetime` 호출 *이전*) `fn`이 이미 한 번 동기 실행됨(Observer 자체의
-"등록 즉시 1회 실행" 계약) — 이 시점엔 아직 `bindLifetime`이 `Subscribed`를
-세팅 전이라 `canExecute`를 물으면 거짓이겠지만, 애초에 최초 실행은
-`canExecute`로 게이팅되는 대상이 아니라서 상관없음. `bindLifetime`은 그
+"등록 즉시 1회 실행" 계약) — 이 시점엔 아직 `bindLifetime`을 안 걸어
+`observer`에게 gcconn 참조가 없으므로 `canExecute`를 물으면 거짓이겠지만,
+애초에 최초 실행은 `canExecute`로 게이팅되는 대상이 아니라서 상관없음
+(**[정정, 2026-08-14 다섯 번째 세션]** 원래 "`bindLifetime`이 `Subscribed`를
+세팅 전이라"고 적혀 있었으나 `bindLifetime`은 그 필드를 안 건드림 —
+`.Subscribed`는 전역 `:Subscribe()` 전용,
+`archive/canexecute-inst-arg-reversed.md`). `bindLifetime`은 그
 직후에 걸려서 **이후의** 재실행(`data`가 다시 바뀔 때)만 게이팅 —
 `Dispatch.setLength`의 `bindLifetime(inst,observer)` 다음 줄에 있는
 "등록 즉시 1회와 겹쳐도 무해"라는 주석과 정확히 같은 구조.
@@ -1470,7 +1474,7 @@ local function unmountSlotTree(slot)
     local bk = getBookkeeping(slot)
     if bk then
         for i, observer in pairs(bk.observers) do
-            unbindLifetime(slot._mountedInst, observer)   -- 물리 target에 걸린 배관만 해제
+            unbindLifetime(observer)   -- 물리 target에 걸린 배관만 해제
         end
     end
     slot._mounted, slot._mountedInst = false, nil
@@ -1493,7 +1497,7 @@ local function destroySlotTree(slot)
     local bk = getBookkeeping(slot)    -- 이 slot이 자기 자식들 위해 등록해둔 observer들
     if bk then
         for i, observer in pairs(bk.observers) do
-            unbindLifetime(slot._mountedInst, observer)
+            unbindLifetime(observer)
         end
     end
     -- [정정, 2026-08-13 감사] 마운트 상태도 되돌림 — 안 그러면 파괴된 Slot이
@@ -1520,7 +1524,7 @@ function rawUnmount(self, index)
     local element = self._elements[index]
     local bk = getBookkeeping(self)
     if bk.observers[index] then
-        unbindLifetime(self._mountedInst, bk.observers[index])
+        unbindLifetime(bk.observers[index])
     end
     releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
     if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
@@ -1533,7 +1537,7 @@ function rawRemove(self, index)
     local element = self._elements[index]
     local bk = getBookkeeping(self)
     if bk.observers[index] then
-        unbindLifetime(self._mountedInst, bk.observers[index])  -- outer가 이 위치 위해 등록해둔 observer
+        unbindLifetime(bk.observers[index])  -- outer가 이 위치 위해 등록해둔 observer
     end
     releaseOwner(element, self)   -- [정정, 2026-08-13 감사] 원래 이 줄이 의사코드에서
                                   -- 빠져 있었음(산문 쪽 "요소 소유권" 절은 rawRemove/

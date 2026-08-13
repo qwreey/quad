@@ -1069,7 +1069,7 @@ function Dispatch.setLength(inst, i, len)
 
     local oldObserver = bk.observers[i]
     if oldObserver then
-        unbindLifetime(inst, oldObserver)   -- gchold 내부 구조 몰라도 됨
+        unbindLifetime(oldObserver)   -- gchold 내부 구조도, 어느 inst였는지도 몰라도 됨
         bk.observers[i] = nil
     end
 
@@ -1191,7 +1191,7 @@ function StoreBind.process(inst, k, state, index)
         -- 자기 자신의 자원(Observer 구독)만 정리 — observer는 위 클로저가
         -- upvalue로 이미 캡처하고 있어 별도 Relate 저장/조회가 필요 없음
         -- (2026-08-13 다섯 번째 세션, 계약이 클로저 반환으로 바뀌며 단순화됨).
-        unbindLifetime(inst, observer)
+        unbindLifetime(observer)   -- 1-인자(2026-08-14 다섯 번째 세션)
     end
 end
 ```
@@ -1208,7 +1208,7 @@ end
 바인딩 금지" 절의 정정 참고(leaf 부착도 사실 `bindLifetime` 호출이라,
 `:Subscribe()`와 상호 배타적인 건 leaf가 아니라 "전역이냐 inst냐"임).
 
-- **반환하는 클로저가 할 일은 `unbindLifetime(inst, observer)` 호출뿐 —
+- **반환하는 클로저가 할 일은 `unbindLifetime(observer)` 호출뿐 —
   위임 대상까지 수동으로 안 쫓아가도 됨.** `Dispatch.retractFrom`이 자기
   밑에 위임된 걸 알아서 정리해주므로(위 "Dispatch 체인" 절), 이
   클로저는 정확히 자기 자신의 자원(Observer)만 정리하면 끝 — 이게
@@ -1219,11 +1219,16 @@ end
   캡처하므로, 예전처럼 `relate:SetStrong(inst,k,observer)`로 저장해뒀다가
   나중에 `relate:GetStrong(inst,k)`로 다시 찾아올 필요가 없어짐(위
   "핸들러 계약"/"핸들러 내부 상태 저장" 절 참고).
-- **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — Observer가
-  이미 자기 `Subscribed` 상태로 게이팅됨(아래 `base/lifecycle-pattern.md`의
-  `canExecute(inst, value)` 절 참고, Observer/Effect는 그 함수 안에서
-  특별 취급됨). `bindLifetime`도 이 `.Subscribed` 필드를 그대로
-  세팅/해제하므로(위 "이중 바인딩 금지" 절 참고) 이 게이팅은 그대로 유효.
+- **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — State의
+  전파 루프가 발화 때마다 `canExecute(observer)`로 각 구독자를 게이팅하고,
+  그 판정 근거(`inst` 생존)는 `bindLifetime`이 `observer` 쪽에 복사해둔
+  gcconn 참조가 제공함(`base/lifecycle-pattern.md`의
+  "`bindLifetime`/`canExecute`/`unbindLifetime`" 절).
+  **[정정, 2026-08-14 다섯 번째 세션]** 이 항목의 옛 근거(*"Observer가 이미
+  자기 `Subscribed` 상태로 게이팅됨, `bindLifetime`도 그 필드를 세팅/해제"*)는
+  틀렸음 — `.Subscribed`는 전역 `:Subscribe()` 전용 필드이고 `bindLifetime`은
+  건드리지 않음. 결론(핸들러가 따로 안 짜도 됨)은 그대로, 근거만 바뀜.
+  상세는 `archive/canexecute-inst-arg-reversed.md`.
 - Observer가 "등록 즉시 1회 실행"이므로 **최초 적용과 이후 재실행이 같은
   코드 경로로 자동 통일**됨 — 프로퍼티 store-bind 핸들러가 "설치 시 1회
   적용"을 별도로 안 짜도 되는 이유(`base/bind-system-plan.md`의 Observer 절의

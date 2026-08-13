@@ -84,10 +84,20 @@ op만 주입(웹의 `className`/`data-*` 대응 때문). 상세는
 통과**했으나, `10-roblox-studio-checks.server.luau`만 **Studio 전용이라
 `luau` CLI로 못 돌림**. A 섹션 앞부분(ClassName 신호 미발화, Destroy 시
 `Connected` 즉시 전환)은 사용자가 자작 스크립트로 이미 확인
-(`.claude/audit/gcconn-trick-verification.md`) — **남은 건 A-1/A-2(`canBound`
-게이트)/B(Attribute의 Instance 참조 타입)/C(CollectionService 태그 왕복)**.
-GC 강제 트리거가 필요하면 같은 폴더의 `gc-trigger-helper.server.luau` 참고.
-위 1번(MCP 연결)이 되면 에이전트가 대신 돌릴 수도 있음.
+(`.claude/audit/gcconn-trick-verification.md`).
+
+**[2026-08-14 다섯 번째 세션] 지금 바로 돌릴 수 있는 상태가 아님 — 먼저
+에이전트가 A 섹션을 재작성해야 함.** `bindLifetime`/`canExecute`/
+`unbindLifetime` 재정정으로 A가 폐기된 모델(`canBound`, `bindLifetime`의
+`.Subscribed` 세팅, 2-인자 `canExecute`)을 검증 중이라 파일이
+`.claude/luau-test/rewrite-required/`로 옮겨졌음. **남은 확인거리**는
+이중 바인딩 게이트(이제 `canExecute` 하나)와 unbind/Destroy 후 재바인딩
+허용, `value` 쪽에 복사된 gcconn만으로의 생존 판정, Instance userdata
+동일성, 그리고 B(Attribute의 Instance 참조 타입)/C(CollectionService
+태그 왕복) — 목록은 `.claude/audit/gcconn-trick-verification.md`의
+"아직 확인 안 된 것"이 소스. GC 강제 트리거가 필요하면
+`.claude/luau-test/not-run/gc-trigger-helper.server.luau` 참고. 위
+1번(MCP 연결)이 되면 에이전트가 대신 돌릴 수도 있음.
 
 ## 6. **[2026-08-13 신설, 안 막음]** 에디터의 Luau 솔버 설정 확인
 

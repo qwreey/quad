@@ -173,7 +173,7 @@ quad/
 │       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
-│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
+│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value 읽기 + :Set()/:Callback()/:Wait() 셋), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       └── init.luau

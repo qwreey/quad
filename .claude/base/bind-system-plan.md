@@ -385,6 +385,15 @@ retract/Destroy되면 자동으로 정리됨.
 - **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
   — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
+  **[명시화, 2026-08-14 다섯 번째 세션] 이 게이팅이 일어나는 자리는 State의
+  전파 루프**다 — State는 구독자를 **weak로** 담고, 발화 시 각 구독자마다
+  `canExecute(observer)`를 확인해 거짓이면 그 구독자만 건너뜀. 여기에
+  `inst`가 없다는 사실이 `canExecute`가 `value` 하나만 받아야 하는
+  이유(`base/lifecycle-pattern.md`의 "실제 호출부" 절, 옛 2-인자
+  시그니처의 역전 경위는 `archive/canexecute-inst-arg-reversed.md`).
+  구독자를 weak로 담아도 되는 이유는 살려두는 책임이 State가 아니라
+  `gchold`(leaf) 또는 전역 `Subscribed` 레지스트리에 있기 때문 — 어디에도
+  안 묶인 Observer는 GC되어 구독 목록에서 자연히 빠짐.
 - **구현 노트(사용자 제안, 확정된 아키텍처는 아니고 구현 시 참고)**:
   살아있는 Observer 집합을 Observer 값 내부 필드로 안 두고, 외부에
   weak table(`{[observer] = true}`, `__mode = "k"`)로 인덱싱하는 방식을
@@ -483,15 +492,23 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   로깅 껐다 켰다) 케이스에서, 참조를 끊어도 실제 GC는 결정론적으로 즉시
   일어나지 않음 — "껐다"고 생각한 뒤에도 한동안 계속 발화할 수 있음.
   `:Unsubscribe()`는 즉시/결정론적으로 끊는 경로라 이 문제가 없음.
-- **liveness 체크는 필드 우선, weak table은 폴백**(사용자 제안): 외부
-  weak table 조회보다 리터럴 필드 접근이 더 쌈(Luau가 문자열 키 접근을
-  미리 해시해둠) —
+- **liveness 체크는 두 경로를 하나의 predicate로 OR 묶음**(사용자 제안) —
+  자동(리프 부착=`bindLifetime`)/수동(전역 `:Subscribe()`) 두 라이프사이클
+  경로를 `canExecute(value)` 하나가 답함:
   ```lua
-  if self.Subscribed then return true end
-  if self.Connection then return self.Connection.Connected end
+  -- 개념 스케치. 확정 구현은 base/lifecycle-pattern.md가 소스
+  local gcconn = BindData:GetWeak(self, "gcconn")   -- leaf 경로(bindLifetime이 복사해둠)
+  if gcconn ~= nil and gcconn.Connected then return true end
+  return self.Subscribed == true                    -- 전역 경로(:Subscribe()만 세팅)
   ```
-  자동(리프 부착)/수동(구독) 두 라이프사이클 경로를 하나의 `canExecute`류
-  predicate로 OR 묶는 자연스러운 형태. 실측은 구현 단계에서 확인.
+  **[정정, 2026-08-14 다섯 번째 세션]** 이 절의 옛 스케치는 `self.Subscribed`를
+  먼저 보고 `self.Connection`을 폴백으로 두는 모양이었는데, `.Subscribed`는
+  **전역 경로 전용 필드라 리프 경로와 무관**하므로 우선순위 자체가 의미
+  없음(두 경로는 상호 배타라 OR 순서는 성능 취향일 뿐). "필드 접근이 weak
+  table 조회보다 싸다"는 관찰은 유효하지만, 그건 `.Subscribed`를 리프
+  경로에도 겸용하라는 근거가 못 됨 — 실제로 2026-08-08 세션이 그렇게
+  겸용했다가 `canExecute` 시그니처까지 오염됐음
+  (`archive/canexecute-inst-arg-reversed.md`). 실측은 구현 단계에서 확인.
 - **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류를
   **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
   자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
@@ -504,11 +521,17 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   no-op. 토글 로직 짤 때 상태 추적 부담을 줄여줌.
 - **[정정, 2026-08-09 여섯 번째 세션] "`:Unsubscribe()`는 자동(리프)
   케이스에도 동일하게 씀"은 틀림 — 리프/`bindLifetime` 경로의 조기
-  해제는 `unbindLifetime(inst, value)`가 담당, `:Unsubscribe()`는
-  전역 강참조 레지스트리 경로 전용으로 남음.** `inst`를 모르는
-  `:Unsubscribe()`가 `bindLifetime`이 어느 `inst`에 등록했는지 찾아낼
-  방법이 없어서(레지스트리가 `inst`별로 나뉘어 있음) 하나로 통합할 수
-  없음 — 위 "이중 바인딩 금지" 절의 정정 참고.
+  해제는 `unbindLifetime(value)`가 담당, `:Unsubscribe()`는
+  전역 강참조 레지스트리 경로 전용으로 남음.** 둘이 지우는 대상이 서로
+  다르기 때문 — `:Unsubscribe()`는 전역 레지스트리와 `.Subscribed` 필드를,
+  `unbindLifetime`은 `inst`의 gchold 항목과 `value`가 들고 있던 gcconn
+  참조를 지움. 위 "이중 바인딩 금지" 절의 정정 참고.
+  **[정정, 2026-08-14 다섯 번째 세션]** 이 항목이 원래 들었던 이유(*"`inst`를
+  모르는 `:Unsubscribe()`가 어느 `inst`에 등록했는지 찾아낼 방법이 없다"*)는
+  이제 성립 안 함 — `unbindLifetime`도 `inst`를 안 받고 `value` 하나로
+  해제함(`value`가 자기 홀더를 알고 있음). 결론(두 함수를 안 합침)은
+  그대로지만 근거가 "찾을 수 없어서"가 아니라 "지우는 대상이 달라서"로
+  바뀜.
 - **`state:Observer(fn):Subscribe()`처럼 참조를 아무 데도 안 담아도 정상**
   — 강참조 레지스트리 자체가 생존을 보장하는 유일한 근거라, 로컬 변수에
   담아둘 필요가 없음. 예외 없이 그냥 계속 돎(그게 이 메커니즘의 핵심
@@ -534,7 +557,7 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
   체이닝 가능.
 
-### 이중 바인딩 금지 — 진짜 독립된 경로는 `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped) 둘뿐, `canBound(handle)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 이름 확정, 같은 날 여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정)
+### 이중 바인딩 금지 — 진짜 독립된 경로는 `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped) 둘뿐, `canExecute(value)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 `canBound`로 이름 확정, 같은 날 여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정, **2026-08-14 다섯 번째 세션에 `canBound` 폐기·`canExecute`로 통합**)
 
 **규칙**: 같은 Observer/Effect 핸들 하나는 라이프사이클 바인딩 경로를
 딱 하나만 가질 수 있음 — `:Subscribe()`로 전역 강참조 레지스트리에
@@ -566,47 +589,50 @@ leaf 부착을 "weak table 기반 자동 추적"이라 불렀던 건 `bindLifeti
 0(불리언 필드 하나 확인)이라, 조용히 이상하게 동작하게 두는 것보다
 바로 에러를 던져 버그를 그 자리에서 잡는 게 엔지니어링상 훨씬 쌈.
 
-**이름 확정 — `canBound(handle): boolean`, `canExecute`와 같은 결의
-탑레벨 함수(2026-08-09 세션, 가칭 `Bound` 필드를 직접 노출하는 대신).**
-`canExecute(inst, value)`가 "지금 살아있어서 실행돼도 되는가"를 묻는
-탑레벨 predicate인 것과 똑같이, "아직 어느 경로로도 안 묶였는가"도
-raw 필드(`self.Bound`)를 직접 보여주지 않고 같은 스타일의 탑레벨
-함수로 감싼다 — Observer/Effect 둘 다 쓰는 범용 predicate라 특정
-프리미티브 하나의 전용 소유물이 아니므로(`store-semantics.md`의
-네이밍 케이싱 기준: "이 이름이 특정 프리미티브 타입 하나의 전용
-소유물인가?"에 아니오라 소문자 탑레벨이 맞음, `architecture.md`
-"코드 스타일 — 네이밍 케이싱" 절과 같은 기준):
+**[역전, 2026-08-14 다섯 번째 세션] 별도 predicate `canBound(handle)`은
+폐기하고 `canExecute(value)` 하나로 통합.** 게이트는 이 모양:
 
 ```lua
 -- :Subscribe() 진입부, bindLifetime 진입부(leaf 부착도 내부적으로 이걸 거침)
 -- — 둘 다 진입 전 동일하게 확인
-if not canBound(self) then
-  error("Observer/Effect가 이미 다른 경로로 바인딩됨 — :Subscribe()와 bindLifetime(leaf 부착 포함)은 동시에 쓸 수 없음")
+if canExecute(self) then
+  error(if self.Subscribed
+    then "이미 :Subscribe()로 전역 바인딩된 값"
+    else "이미 다른 Instance에 바인딩된 값")
 end
--- 통과했으면 여기서 바인딩됨으로 표시(내부 구현 디테일 — 공개 표면은 canBound 하나뿐)
 ```
 
-- `canBound(handle)`은 "이 핸들이 아직 어느 경로로도 안 묶였으면
-  `true`, 이미 한 번 묶였으면 `false`"를 답하는 순수 predicate — 내부
-  구현은 여전히 불리언 플래그 하나(예전 가칭 `Bound`)로 충분하지만,
-  공개 표면에서 그 raw 필드를 직접 보여주지 않고 함수로 감싼다는 점만
-  바뀜. 동작 자체(둘 중 한 경로만 허용, 위반 시 그 자리에서 에러)는
-  안 바뀜. **이 내부 플래그는 새 필드가 아니라 `canExecute`가 이미 보는
-  `.Subscribed` 필드 그 자체(2026-08-09 여섯 번째 세션 명시)** —
-  `:Subscribe()`뿐 아니라 `bindLifetime`도(Observer/Effect 값에 한해)
-  이 필드를 `true`로 세팅, `:Unsubscribe()`/`unbindLifetime` 둘 다
-  `false`로 되돌림 — 그래야 `bindLifetime`으로 등록된 Observer도
-  `canExecute`가 정상적으로 "살아있음"으로 인식함(필드를 둘로 나누면
-  `bindLifetime`으로만 등록된 Observer가 `canExecute`에서 항상
-  `false`로 오판됨).
-- 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 바인딩됨"만
-  답함 — 두 진입점이 똑같이 `canBound`를 확인하므로 순서와 무관하게
-  대칭적으로 막힘.
+- **"이미 유효하게 묶여 있다"와 "지금 실행 가능하다"가 정확히 같은
+  조건**이라 predicate를 둘로 나눌 이유가 없었음 — `canExecute`가
+  참이면 그 값은 어딘가에 살아있는 바인딩을 갖고 있다는 뜻이고, 그게
+  곧 "새로 묶으면 안 된다"임.
+- **에러 메시지에서 어느 경로인지는 `.Subscribed`로 가름** — 이 필드는
+  **전역 `:Subscribe()` 경로에서만 세팅되므로**(아래 정정) 참이면 전역,
+  거짓인데 `canExecute`가 참이면 leaf 경로.
+- 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 유효한
+  바인딩이 있음"만 답함 — 두 진입점이 똑같이 `canExecute`를 확인하므로
+  순서와 무관하게 대칭적으로 막힘.
+- **죽은 바인딩의 재사용은 허용** — `inst`가 Destroy됐거나
+  `unbindLifetime`된 값은 `canExecute`가 거짓이라 게이트를 통과함(다른
+  `inst`에 다시 걸 수 있음). 게이트가 막는 건 **살아있는** 이중 바인딩뿐.
+
+**[정정, 2026-08-14 다섯 번째 세션] 옛 서술 — "`canBound`의 내부 플래그는
+`canExecute`가 이미 보는 `.Subscribed` 필드 그 자체이고, `bindLifetime`도
+그 필드를 세팅한다"(2026-08-09 여섯 번째 세션)는 틀렸음.**
+`.Subscribed`는 **전역 `:Subscribe()`/`:Unsubscribe()` 전용 필드로,
+`bindLifetime`/`unbindLifetime`과는 일절 이해관계가 없다** — 이 둘은
+그 필드를 읽지도 쓰지도 않음. leaf 경로의 생존은 `bindLifetime`이
+`value` 쪽 릴레이션에 복사해둔 gcconn 참조로 판정됨(`base/lifecycle-pattern.md`).
+옛 서술이 걱정했던 "필드를 둘로 나누면 `bindLifetime`으로만 등록된
+Observer가 `canExecute`에서 항상 `false`로 오판됨"은 실제로는 안 일어남
+— `canExecute`가 gcconn 경로를 **먼저** 보기 때문. 역전 원문·오염 경로·
+교훈은 `archive/canexecute-inst-arg-reversed.md`.
 - **`:Unsubscribe()`는 `:Subscribe()` 경로의 해제만 담당, `bindLifetime`
-  (leaf 부착 포함) 경로는 `unbindLifetime(inst, value)`로 해제** —
+  (leaf 부착 포함) 경로는 `unbindLifetime(value)`로 해제** —
   둘은 서로 다른 함수로 남음(호출자가 `bindLifetime`을 부른 쪽이
-  `unbindLifetime`도 대칭적으로 부르는 책임을 짐 — `inst`를 모르는
-  `:Unsubscribe()`가 대신 처리할 수 없는 정보라서). leaf 부착으로
+  `unbindLifetime`도 대칭적으로 부르는 책임을 짐). 지우는 대상이
+  서로 다르므로 하나로 합칠 수 없음 — 위 `:Subscribe()` 절의 같은
+  정정(2026-08-14 다섯 번째 세션) 참고. leaf 부착으로
   세워진 바인딩의 실제 해제도(예: Instance 파괴 전 조기 해제하고 싶을
   때) 결국 `unbindLifetime`이 담당 — 위 "`:Unsubscribe()`는 자동(리프)
   케이스에도 동일하게 씀" 절의 서술은 leaf 부착이 별도 메커니즘이라고
@@ -614,7 +640,7 @@ end
   `unbindLifetime`이 leaf 해제의 실제 통로).
 - **Effect도 동일 규칙 적용(사용자 확인)** — Effect가 `state` 인자로
   내부적으로 Observer를 조합하는 경우든, `state` 없는 경우든 같은
-  `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
+  `canExecute` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
   자신이 아니라 내부 Observer가 게이트를 갖고 있어서, Effect 구현이
   이 정정을 몰라도 자동으로 커버됨. 이전에 그 문서에 적어뒀던 "leaf
   부착과 `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이
@@ -630,8 +656,8 @@ end
 
 `Dispatch.setLength`처럼 특정 `inst`에 종속된 내부 Observer를 등록할 때
 쓰는 `bindLifetime(inst, value)`(`base/lifecycle-pattern.md`)도 **같은
-`canBound` 게이트를 확인** — Observer/Effect 값을 `bindLifetime`할 때도
-진입 전 `canBound(value)`를 확인하고, 통과하면 바인딩됨으로 표시.
+`canExecute` 게이트를 확인** — 진입 전 `canExecute(value)`를 확인하고,
+통과하면 gchold 등록 + gcconn 참조 복사를 수행.
 **children 배열 leaf 부착도 바로 이 `bindLifetime` 호출** —
 `Dispatch/Leaf.luau`가 `(i:number, v=Observer/Effect)`를 매치하면
 그 자리에서 `bindLifetime(inst, v)`를 호출하는 것뿐, 별도 "leaf 전용"
@@ -643,28 +669,27 @@ leaf 부착을 통한 간접 호출이든) 둘뿐** — 새 규칙을 따로 만
 
 ```lua
 function bindLifetime(inst, value)
-    local isOE = isObserver(value) or isEffect(value)
-    if isOE and not canBound(value) then
-        error("Observer/Effect가 이미 다른 경로로 바인딩됨")
+    if canExecute(value) then
+        error("이미 바인딩된 값")   -- 메시지 분기는 위 게이트 스케치 참고
     end
-    ... -- gchold 등록(base/lifecycle-pattern.md)
-    if isOE then value.Subscribed = true end   -- canExecute가 보는 필드 그대로 재사용
+    ... -- gchold 등록 + gcconn 참조 복사(base/lifecycle-pattern.md)
 end
 
-function unbindLifetime(inst, value)
-    ... -- gchold 해제
-    if isObserver(value) or isEffect(value) then value.Subscribed = false end
+function unbindLifetime(value)
+    ... -- gchold 항목 제거 + gcconn 참조 해제
 end
 ```
 
-- **비-Observer/Effect 값(예: Tween 내부에 쓰는 평범한 클로저)은 이 게이트
-  자체가 안 적용됨** — `canBound`는 `.Subscribed`류 필드가 있는 Observer/
-  Effect 전용 predicate라, 그 외 값은 `bindLifetime`이 그냥 통과시킴(leaf/
-  `:Subscribe()` 경로 자체가 성립 안 하는 값들이라 충돌 대상이 없음).
-- Observer/Effect가 `bindLifetime`으로 바인딩된 뒤엔 `canBound`가
-  `false`를 반환하므로, 그 뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면
-  기존 두 진입점의 기존 체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가
-  없이 이미 성립.
+- **[정정, 2026-08-14 다섯 번째 세션] 게이트는 값 타입을 안 가린다** —
+  옛 서술은 "`canBound`는 `.Subscribed` 필드가 있는 Observer/Effect 전용
+  predicate라 그 외 값(예: Tween 내부 클로저, Slot)은 그냥 통과"였는데,
+  `canExecute`는 gcconn 경로를 먼저 보므로 **어떤 값이든** 이미 살아있는
+  바인딩이 있으면 걸러짐. 이게 더 맞음 — Slot을 두 `inst`에 이중 마운트하는
+  것도 원래 금지(`base/slot-plan.md`의 `elementOwner`)라, 같은 실수를
+  `bindLifetime` 층위에서도 공짜로 잡아줌.
+- 값이 `bindLifetime`으로 바인딩된 뒤엔 `canExecute`가 참이 되므로, 그
+  뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면 기존 두 진입점의 기존
+  체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가 없이 이미 성립.
 
 **quad의 Unix 파이프 영감(원래 동기)과 `Pipe`/`fromState` 후보 검토 경위는
 `archive/quad2-try-research-findings-rejected.md`로 이전됨** — 최종 결론만
@@ -936,8 +961,8 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 - `base/store-semantics.md`에 있던 "`isInit=false`면 허용, `isInit=true`+
   생존확인 거짓이면 불허" 분기 초안은 폐기. state-invalidate 리스너
   클로저도 `base/lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute
-  predicate)로 등록하면, 발화 시 `canExecute(inst, value)`(2026-08-08 세션
-  최종 시그니처) 하나만 확인하고 거짓이면
+  predicate)로 등록하면, 발화 시 `canExecute(value)`(2026-08-14 세 번째
+  세션 최종 시그니처, `inst`를 안 받음) 하나만 확인하고 거짓이면
   그냥 no-op — `isInit` 분기라는 별도 개념 자체가 불필요(사용자 확정:
   "canExecute 하나로 통일").
 

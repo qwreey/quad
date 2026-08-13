@@ -1,19 +1,24 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-13 **열네 번째 세션**(하강 diff 재디스패치 확정으로
-> `04`/`19`가 옛 모델을 검증하고 있어 `rewrite-required/`로 이동).
+> 마지막 갱신: 2026-08-14 **세 번째 세션**(`bindLifetime`/`canExecute`/
+> `unbindLifetime` 재정정으로 `10`이 옛 모델을 검증하고 있어
+> `rewrite-required/`로 이동 — 이제 `not-run/`에는 스파이크가 없고 헬퍼만
+> 남음). 직전 갱신은 2026-08-13 열네 번째 세션(하강 diff 재디스패치 확정으로
+> `04`/`19` 이동).
 > 첫 실측은 여섯 번째 세션 — 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
 > 실행법: `luau <파일>` (런타임) / `luau-analyze <파일>` (타입 전용).
 
 **[2026-08-13 열세 번째 세션] `review-required/`가 비었습니다** — 마지막
-한 건이던 `08`이 해소돼 `done/`으로 갔습니다. 지금 남은 건 에이전트가
-처리할 일(`rewrite-required/`)과 Studio가 필요한 일(`not-run/`)뿐입니다.
+한 건이던 `08`이 해소돼 `done/`으로 갔습니다. **[2026-08-14 다섯 번째 세션]
+`not-run/`의 유일한 스파이크였던 `10`도 `rewrite-required/`로 갔습니다** —
+지금 남은 건 전부 에이전트가 먼저 재작성해야 할 일(`rewrite-required/`)이고,
+`not-run/`엔 스파이크가 아닌 헬퍼 하나만 있습니다.
 
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 5 | 에이전트 |
-| `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 1(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 6 | 에이전트 |
+| `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
 | `done/` | 통과 or 판정 끝, 더 할 일 없음 | 14 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
@@ -38,7 +43,7 @@
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
 아님(계약 자체는 위에서 이미 확정됨).
 
-## 🟠 `rewrite-required/` — 스파이크가 낡음 (5건)
+## 🟠 `rewrite-required/` — 스파이크가 낡음 (6건)
 
 **[2026-08-13 열네 번째 세션] 앞의 두 건은 "코드가 깨진" 게 아니라 "설계가
 바뀐" 경우** — `question.md` 0-A/0-Z 확정으로 재디스패치가 **하강 diff**가
@@ -47,6 +52,12 @@
 "검증됨"으로 오독하게 되므로** 옮김. 새 정본은
 `base/dispatch-core-plan.md`/`base/attribute-plan.md`.
 
+**[2026-08-14 다섯 번째 세션] `10`도 같은 이유로 합류** — `bindLifetime`/
+`canExecute`/`unbindLifetime` 재정정으로 A 섹션이 폐기된 모델(`canBound`,
+`bindLifetime`의 `.Subscribed` 세팅, 2-인자 `canExecute`)을 검증 중.
+`10`은 **Studio 전용이라 재작성해도 이 환경에서는 못 돌린다** — 재작성
+후 다시 `not-run/`으로 내려가 사용자/MCP를 기다리는 자리다.
+
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
@@ -54,12 +65,15 @@
 | `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 폐기된 `canBound`/`bindLifetime`의 `.Subscribed` 세팅/2-인자 `canExecute`를 검증 중 — **`canExecute(value)` 1-인자 + `bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). 이중 바인딩 게이트도 `canBound`가 아니라 `if canExecute(v) then error(...) end`로. **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
 
+**[2026-08-14 다섯 번째 세션] 스파이크는 0건** — 유일했던 `10`이
+`rewrite-required/`로 갔음(위 표). 남은 건 헬퍼 하나뿐.
+
 | 파일 | 이유 |
 |---|---|
-| `10-roblox-studio-checks.server.luau` | **Studio 전용**(`luau` CLI로 못 돌림). A 섹션 앞부분만 사용자 자작 스크립트로 실측 — `audit/gcconn-trick-verification.md`. **A-1/A-2(`canBound` 게이트)/B/C는 여전히 미확인** |
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
 ## ✅ `done/` — 통과 or 판정 끝 (14건)

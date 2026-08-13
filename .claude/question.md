@@ -100,9 +100,11 @@
 
 사용자 원 메모: "quad는 register라던가 좀 부정확하거나 느낌이 바로 와닿지
 않던 용어들이 많음 — 전체적 용어를 보고 생각해볼래? 제안을 줘, 나도 같이
-볼게." **이미 확정된 이름**(`State`/`Relate`/`List`/`canBound`/`Ref`/
+볼게." **이미 확정된 이름**(`State`/`Relate`/`List`/`Ref`/
 `PreRef`/`Peek`/`isState`/`None`/`NoneHandler`/`Handler`)의 근거는
-`archive/question-resolved.md`.
+`archive/question-resolved.md`. (`canBound`는 2026-08-14 다섯 번째 세션에
+**폐기**되어 이 목록에서 빠짐 — `canExecute` 하나로 통합됐음,
+`archive/canexecute-inst-arg-reversed.md`.)
 
 - **`DI`(Declarative Instance, 1순위)**: "Dependency Injection"의 업계
   표준 축약어와 완전히 겹침 — 4차 라운드에서 이미 한 번 실제로 오해가
@@ -119,7 +121,7 @@
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
-- **`canExecute`(3순위, 사소함)**: 실제로 "이 핸들이 아직 살아있나" 확인인데
+- **`canExecute`(3순위, 사소함)**: 실제로 "이 값이 아직 살아있나" 확인인데
   이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적이라는 제안이
   있었으나, **(2026-08-08 재검토)** `isAlive`는 top-level `isX` 계열
   (`isState`/`isRef`/`isPreRef`/`isModifier`/`isObserver`류 — 전부 타입
@@ -127,7 +129,11 @@
   점이 지적됨. `canExecute`는 타입이 아니라 liveness(생존 여부)를 묻는
   질문이라 `is`보다 `can` 계열 접두를 유지하는 쪽이 낫다는 방향으로 사용자가
   기욺 — 여전히 미확정, 다음에 `can`으로 시작하는 구체 대안(예: `canRun`)을
-  같이 검토할 것.
+  같이 검토할 것. **[2026-08-14 다섯 번째 세션] 열려 있는 건 이름뿐**
+  — 시그니처는 `canExecute(value): boolean` 1-인자로 확정됐고(옛
+  `(inst, value)` 2-인자는 폐기), 폐기된 `canBound`의 몫까지 이 하나가
+  겸함(`base/lifecycle-pattern.md`, `archive/canexecute-inst-arg-reversed.md`)
+  — 이름을 바꾸면 그 두 역할을 다 담아야 함에 유의.
 - **클로저 인자 이름 `hintValue`(3순위, 사소함, 2026-08-13 열네 번째
   세션 신설)**: 하강 diff 재디스패치에서 이 인자는 더 이상 "힌트"가
   아니라 **`nil`이거나 같은 핸들러가 곧 처리할 새 값**임이 계약으로

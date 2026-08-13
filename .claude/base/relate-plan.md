@@ -30,6 +30,53 @@ weak여야 함 — 그런데 그 안에 담기는 값은 경우에 따라 **강�
 그래서 `Relate`는 판단을 안 하고 **`SetWeak`/`SetStrong`으로 호출부가 매번
 명시**하게 만드는 얇은 표면만 제공.
 
+## 전제 — `inst` 키의 동일성은 공짜가 아니다 (2026-08-14 다섯 번째 세션 명시화)
+
+**`Relate`가 `inst`를 키로 쓴다는 설계 전체가 "같은 엔진 객체를 가리키는
+`Instance` 값은 항상 같은 키다"를 전제하는데, Roblox에선 이게 자동으로
+보장되지 않는다.** Roblox의 `Instance` 값은 엔진 객체 자체가 아니라 **엔진
+객체를 가리키는 userdata 포인터**라, Lua 쪽에서 아무도 참조를 안 들고 있으면
+그 userdata가 회수될 수 있음 — 이후 같은 엔진 객체를 `.Parent`/
+`:GetChildren()` 등으로 다시 얻으면 **다른 userdata**가 나올 수 있고, 그러면
+이전 userdata를 키로 저장해둔 항목 전체가 조용히 미아가 됨(`elementOwner`,
+`nameClaims`, Tag 참조 카운트 등 `inst`-키 릴레이션 전부 해당 — 크래시가
+아니라 "부기가 그냥 없던 일이 되는" 조용한 오작동이라 더 위험).
+
+**해결은 이미 있는 것으로 됨 — quad는 자기가 만든 Instance마다 생성 즉시
+gcconn 트릭을 걸고, 그 클로저가 `inst`를 캡처한다**(`base/lifecycle-pattern.md`의
+"gcconn/gchold는 Instance 생성 시점에 만든다" 절). 이 강참조 하나가
+Destroy 전까지 userdata 동일성을 고정해주므로, 모든 `inst`-키 `Relate`가
+그 위에서 성립함. **즉 gcconn 셋업은 `bindLifetime` 전용 배관이 아니라
+`Relate` 전체의 전제 조건이고, 그래서 바인딩 유무와 무관하게 Instance 생성
+시점에 무조건 실행된다**(옛 lazy 생성에서 이번에 전환된 이유).
+
+**따름 정리 — quad 바깥에서 온 Instance를 `Relate` 키로 쓰는 건 UB.** quad가
+만들지 않은 Instance(`research/existing-instance-bind-plan.md`가 다루는
+영역)는 이 셋업을 안 거쳤을 수 있으므로, 그 스코프를 열 때 "키로 쓰기 전에
+gcconn 셋업을 먼저 건다"를 같이 설계해야 함.
+
+## 일반 규칙 — 다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak` (2026-08-14 다섯 번째 세션)
+
+값의 생존이 **이미 다른 경로로 보장돼 있다면** 릴레이션은 약하게만 잡는다.
+예: `gchold`는 gcconn 클로저가 업밸류로, `gcconn`은 `gchold[1]`이 각각
+붙잡고 있으므로 `InstData`/`BindData` 쪽은 전부 `SetWeak`
+(`base/lifecycle-pattern.md` 구현 스케치).
+
+이유는 성능이 아니라 **디버깅 가능성** — 같은 값을 강참조로 두 번 잡으면
+"이 값의 실제 수명이 어디서 끝나는가"의 답이 둘이 되어, 한쪽만 지웠을 때
+안 죽는 조용한 누수가 생김. 강참조는 "여기가 이 값의 유일한 생존 근거"인
+자리에만 두고, 나머지는 전부 weak로 두면 그 질문의 답이 항상 하나로 유지됨.
+`SetStrong`을 쓰기 전에 **"이 값을 붙잡는 다른 근거가 이미 있는가"를 먼저
+확인**할 것 — 있으면 `SetWeak`가 맞다.
+
+**부수 효과 — 이 규칙을 지키면 아래 "상호 강참조 순환" 위험이 구조적으로
+안 생긴다.** 그 위험은 *값이 강하게 보관될 때만* 성립하는데(값이 자기 키를
+되참조하는 경로가 강해야 ephemeron 부재가 문제됨), `SetWeak`면 릴레이션
+쪽에서 시작하는 강한 경로 자체가 없음. `lifecycle-pattern.md`의
+`InstData`/`BindData`가 실제 사례 — `gchold`가 `value`를 키로 강하게 잡고
+`value`가 `BindData`의 키이기도 하지만, `BindData` 쪽 보관이 weak라
+순환이 성립하지 않음.
+
 ## 위험한 패턴 — 서로 다른 두 `Relate`의 상호 강참조 순환 (2026-08-12 열세/열네 번째 세션, `Slot` 설계 중 발견)
 
 위 26-28행이 말하는 "값이 자기 키를 다시 참조하는" 자기참조(예:

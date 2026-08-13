@@ -131,7 +131,8 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 실행 자체를 건너뛸 수 있음(죽은 대상에 대한 처리 시도 방지, 위 원칙과 직결).
 
 ### `bindLifetime`/`canExecute`/`unbindLifetime` — 확정(2026-08-08 세션,
-`unbindLifetime`은 2026-08-09 세션 추가)
+`unbindLifetime`은 2026-08-09 세션 추가, **시그니처는 2026-08-14 세 번째
+세션에 `value` 단독으로 최종 정정**)
 
 **탑레벨 평범한 함수로 확정, 네임스페이스에 안 숨김.** `Dispatch.process`/
 `Handler.xxx`는 "시스템 내부 배관"이라 네임스페이스가 맞지만, `bindLifetime`/
@@ -141,10 +142,26 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 평평한 함수:
 
 ```lua
-bindLifetime(inst: any, value: any): ()
-unbindLifetime(inst: any, value: any): ()
-canExecute(inst: any, value: any): boolean
+bindLifetime(inst: any, value: any): ()   -- inst가 필요한 건 이것 하나뿐
+unbindLifetime(value: any): ()
+canExecute(value: any): boolean
 ```
+
+**[정정, 2026-08-14 다섯 번째 세션] `unbindLifetime`/`canExecute`는 `inst`를
+안 받는다 — 옛 2-인자 시그니처(`(inst, value)`)는 오염이었음.** 역전 원문과
+오염 경로 추적은 `archive/canexecute-inst-arg-reversed.md`. 요지: **"이 값이
+지금 실행돼도 되는가"는 `value` 자신에게 물어야 하는 질문**이고, 실제로 물을
+수 있다 — `bindLifetime`이 바인딩 시점에 `inst`의 gcconn 참조를 `value` 쪽
+릴레이션으로 복사해두기 때문(아래 구현). `inst`가 필요한 건 "어느 홀더에
+넣을 것인가"를 정해야 하는 `bindLifetime` 하나뿐.
+
+이게 **구조적으로 중요한 이유**: `canExecute`의 실제 호출부는 State 전파
+루프(`emit`)다 — 그 자리엔 `inst`가 없고 있어서도 안 됨(State는 자기가 어느
+Instance에 걸렸는지 모르는 게 정상, 애초에 여러 곳에 걸릴 수 있음). 2-인자
+시그니처는 그 호출부에서 **호출 자체가 불가능**했고, 그래서 지금까지 어느
+문서에도 `canExecute`의 실제 호출부가 코드로 등장한 적이 없었음(서술만 있고
+코드가 없던 이유가 이것). 1-인자로 돌아오면서 호출부가 자연스럽게 성립함
+(아래 "실제 호출부" 절).
 
 **`unbindLifetime` 추가 이유(2026-08-09 세션, `dispatch-core-plan.md`의
 "Length/Offset" 논의에서 파생)**: `Dispatch.setLength`(같은 위치에 새
@@ -153,94 +170,220 @@ canExecute(inst: any, value: any): boolean
 특정 값 하나만 콜백/구독을 끊어야 하는 경우**가 실제로 생김 —
 `bindLifetime`만 있으면 그 호출부가 gchold의 내부 저장 구조(배열이든
 `value`를 키로 쓰는 테이블이든)를 직접 알아야만 특정 항목을 지울 수
-있어서 캡슐화가 깨짐. `unbindLifetime(inst, value)`을 짝으로 추가하면
+있어서 캡슐화가 깨짐. `unbindLifetime(value)`을 짝으로 추가하면
 호출부는 내부 구조를 몰라도 됨 — 구현이 쉬운 이유도 여기 있음(아래
 스케치처럼 gchold를 `value`를 키로 쓰는 테이블로 두면 `gchold[value] =
 nil` 한 줄). 안 걸려있던 값에 불러도 안전한 no-op(`:Unsubscribe()`류
 기존 관례와 동일).
 
+**`unbindLifetime`이 `inst`를 안 받는 것의 실질 이득(2026-08-14 세 번째
+세션)**: 호출부가 "이 값을 *어느* inst에 걸었더라"를 기억할 필요가 없어짐 —
+`base/slot-plan.md`가 `unbindLifetime(slot._mountedInst, observer)`처럼
+`_mountedInst`를 되짚어 넘기던 자리가 전부 `unbindLifetime(observer)`로
+줄고, 그 과정에서 "`_mountedInst`가 이미 갈아치워졌거나 `nil`이면 해제가
+조용히 빗나간다"는 잠재 버그 클래스가 원천 소멸함(값 자신이 자기 홀더를
+알고 있으므로 빗나갈 대상이 없음).
+
 base는 이 두 함수의 **인터페이스만**(타입 시그니처) 갖고, quad-roblox가
 `BaseModule` 뮤테이션 시점에 실 구현을 채워넣는다는 원칙은 그대로(`canExecute`
 관련 기존 절 참고) — 아래는 그 실 구현 스케치, `base/relate-plan.md`의
 `Relate` 프리미티브 위에 얹힘(2026-08-08 세션, gchold를 `perInstanceState`
-직접 조작 대신 `Relate`로 구현):
+직접 조작 대신 `Relate`로 구현).
+
+#### (0) gcconn/gchold는 **Instance 생성 시점**에 만든다 — `bindLifetime`이 아니라
+
+**[2026-08-14 다섯 번째 세션 확정, 옛 lazy 생성에서 전환]** 예전 스케치는
+`bindLifetime` 첫 호출에서 gcconn을 lazy 생성했는데, 이건 **`inst`를 키로
+쓰는 모든 `Relate`의 전제를 깨는 구멍**이었음:
+
+Roblox의 `Instance` 값은 엔진 객체 자체가 아니라 **엔진 객체를 가리키는
+userdata 포인터**다. Lua 쪽에서 아무도 참조를 안 들고 있으면 그 userdata는
+회수될 수 있고, 나중에 같은 엔진 객체를 `.Parent`/`:GetChildren()` 등으로
+다시 얻으면 **다른 userdata**가 나올 수 있음 — 그러면 이전 userdata를 키로
+저장해둔 `Relate` 항목 전체가 조용히 미아가 됨(`elementOwner`,
+`nameClaims`, Tag 참조카운트 등 `inst`-키 릴레이션 전부 해당). 따라서 quad는
+**자기가 만든 Instance마다 생성 즉시 Lua 쪽 강참조를 하나 심어** 바인딩이
+살아있는 동안 userdata 동일성을 고정한다:
+
+```lua
+-- quad-roblox: Instance를 만든 직후 무조건 실행(핸들러/바인딩 유무와 무관)
+local nop = false or function(...) end -- local이라 상수 접힘/인라인 안 됨
+
+local gchold = {}                       -- 이 inst에 매달린 값들의 강참조 홀더
+local gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
+    nop(gchold, inst) -- 절대 발화 안 함. 클로저가 gchold와 inst를 업밸류로 붙잡는 게 전부
+end)
+gchold[1] = gcconn                      -- 배열 자리 1번은 gcconn 전용(값들은 해시 자리에)
+
+InstData:SetWeak(inst, "gchold", gchold)
+InstData:SetWeak(inst, "gcconn", gcconn)
+```
+
+- **`ClassName`은 절대 안 바뀌는 프로퍼티라 이 신호는 절대 발화하지 않음**
+  (rbvm 패턴 그대로) — 2026-08-13 부분 실측 확인(미발화 + Destroy 시
+  `Connected` 즉시 전환), `audit/gcconn-trick-verification.md`.
+- **클로저가 `inst`까지 캡처하는 게 이번 변경의 핵심** — 예전 스케치는
+  `gchold`만 캡처했음. `inst`를 캡처해야 위 userdata 동일성이 보장됨.
+- **`InstData`는 `SetWeak`** — gchold/gcconn은 이미 위 클로저↔`gchold[1]`
+  상호 참조로 안전하게 살아있으므로, 릴레이션은 약하게만 잡으면 됨.
+  **"다른 곳에서 안전하게 유지되는 것은 항상 weak로 잡는다"**가 일반
+  규칙(강참조를 중복으로 걸면 실제 수명이 어디서 끝나는지가 흐려져 GC
+  버그를 만들기 쉬움) — `base/relate-plan.md`의 상호 순환 경고와 같은 결.
+- **대가: quad가 만든 Instance는 참조를 놓는 것만으로는 회수되지 않고
+  반드시 `Destroy`로 회수된다.** 클로저가 `inst`를 잡고, 그 클로저를
+  `inst` 자신의 시그널이 잡는 순환이라 Destroy(=엔진이 커넥션을 끊음)가
+  유일한 절단면. **실질적으로 새로 생긴 제약은 아님** — 실제 바인딩이
+  하나라도 걸리면 그 Observer 클로저가 어차피 `inst`를 캡처해 같은 순환이
+  생기므로(예: `dispatch-core-plan.md`의 `StoreBind.process`), 이번
+  변경은 "아무것도 안 걸린 Instance"까지 같은 규칙으로 통일한 것뿐.
+
+#### (1) `bindLifetime` / `unbindLifetime` / `canExecute`
 
 ```lua
 -- quad-roblox 실 구현 스케치
-local relate = Relate() -- 이 모듈 전용 인스턴스, 다른 핸들러와 key 충돌 없음
-local GCCONN = "__gcconn"
-local GCHOLD = "__gchold"
+local InstData = Relate() -- inst  -> gchold/gcconn (위 (0)에서 채워짐)
+local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
 
 function bindLifetime(inst, value)
-    local isOE = isObserver(value) or isEffect(value)
-    -- leaf 부착도 내부적으로 이 함수를 호출하므로, :Subscribe()와 상호
-    -- 배타적인 "이중 바인딩 금지"(base/bind-system-plan.md)를 여기서 확인
-    if isOE and not canBound(value) then
-        error("Observer/Effect가 이미 다른 경로로 바인딩됨")
+    -- 이중 바인딩 금지(base/bind-system-plan.md) — 게이트가 곧 canExecute.
+    -- "지금 실행 가능하다"는 곧 "이미 유효한 바인딩을 갖고 있다"는 뜻.
+    if canExecute(value) then
+        -- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
+        -- 인덱싱하면 안 됨 — 게이트는 값 타입을 안 가려서 value가 평범한
+        -- 클로저일 수도 있음(그 경우 필드 접근 자체가 에러).
+        local isGlobal = isObserver(value) or isEffect(value)
+        if isGlobal then isGlobal = value.Subscribed == true end
+        error(if isGlobal
+            then "이미 :Subscribe()로 전역 바인딩된 값"
+            else "이미 다른 Instance에 바인딩된 값")
     end
 
-    local gcconn = relate:GetStrong(inst, GCCONN)
-    if not gcconn then
-        -- ClassName은 절대 안 바뀌는 프로퍼티라 이 신호는 절대 발화하지 않음
-        -- (rbvm 패턴 그대로) — 콜백 클로저가 gchold를 업밸류로 캡쳐해 살려둠
-        local gchold = {} -- value 자신을 키로 씀(배열 아님) — unbindLifetime을 O(1)로
-        relate:SetStrong(inst, GCHOLD, gchold)
-        gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
-            local _ = gchold -- 발화 안 함, 클로저 생존이 곧 gchold 생존
-            -- 2026-08-13 부분 실측 확인(미발화 + Destroy 시 Connected 즉시
-            -- 전환) — audit/gcconn-trick-verification.md. canBound 이중
-            -- 바인딩 게이트(A-1/A-2)는 아직 공식 10(`luau-test/not-run/`)으로 미확인.
-        end)
-        relate:SetStrong(inst, GCCONN, gcconn)
-    end
-    local gchold = relate:GetStrong(inst, GCHOLD)
-    gchold[value] = true -- 강참조 생성, inst 죽으면 gcconn 클로저와 함께 GC
-    if isOE then value.Subscribed = true end -- canExecute가 보는 필드 그대로 재사용
+    local gchold = InstData:GetWeak(inst, "gchold")
+    gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
+    -- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2).
+    -- 둘 다 weak — gchold는 위 (0) 클로저가, gcconn은 gchold[1]이 이미 안전히 붙잡고 있음.
+    BindData:SetWeak(value, "gchold", gchold)
+    BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
 end
 
-function unbindLifetime(inst, value)
-    local gchold = relate:GetStrong(inst, GCHOLD)
+function unbindLifetime(value)
+    local gchold = BindData:GetWeak(value, "gchold")
     if gchold then
         gchold[value] = nil -- inst는 안 건드림, 이 value 하나만 조기 해제
     end
-    if isObserver(value) or isEffect(value) then value.Subscribed = false end
+    BindData:SetWeak(value, "gchold", nil)
+    BindData:SetWeak(value, "gcconn", nil)
 end
 
-function canExecute(inst, value)
-    -- Observer/Effect는 자기 바인딩 경로(bindLifetime=leaf 부착 포함,
-    -- 또는 :Subscribe())의 생존 여부를 스스로 알고 있음 — inst가 살아있어도
-    -- 이 값이 먼저 죽어 있을 수 있으므로(예: retract가 unbindLifetime만
-    -- 하고 inst는 안 죽음) 반드시 먼저 확인.
-    if (isObserver(value) or isEffect(value)) and not value.Subscribed then
-        return false
+function canExecute(value)
+    -- (a) inst-scoped 경로: bindLifetime이 복사해둔 gcconn을 value 자신에게서 찾음.
+    --     inst가 Destroy되면 Connected가 즉시 false, 이후 GC가 항목까지 치움
+    --     (gchold가 죽으면 gcconn을 강참조하는 게 없어지므로 weak 항목이 스스로 비워짐).
+    local gcconn = BindData:GetWeak(value, "gcconn")
+    if gcconn ~= nil and gcconn.Connected then
+        return true
     end
-    local gcconn = relate:GetStrong(inst, GCCONN)
-    return gcconn ~= nil and gcconn.Connected
+    -- (b) 전역 경로: :Subscribe()가 세운 것. Observer/Effect에만 있는 필드.
+    if isObserver(value) or isEffect(value) then
+        return value.Subscribed == true
+    end
+    return false
 end
 ```
 
-**`canExecute`의 시그니처는 `(inst, value) -> boolean`(2026-08-08 세션,
-재정정 — 원래 있던 "`(handle) -> boolean`, zero-arg 아님" 결정을 대체함).**
-이전 라운드(2026-08-07 여덟 번째 세션)는 "등록마다 클로저를 새로 만들지
-않기 위해 zero-arg 대신 `handle` 인자를 받는다"까지만 확정했는데, 실제로
-`handle`이 뭘 가리키는지(단일 Connection? Observer 자신?)가 미정으로
-남아있었음 — 이번에 `(inst, value)` 2-인자로 구체화됨. 이유: Observer 자신의
-바인딩 생존(`Subscribed`)과 `inst` 자체 생존(gcconn)은 **독립적인 두 조건**이라
-하나의 opaque `handle`로 뭉치면 "inst는 살아있지만 이 Observer는 이미
-`:Unsubscribe()`됨" 케이스를 못 구별함 — 위 구현처럼 `value`의 타입에 따라
-분기해서 먼저 확인하고, 그 다음 `inst` 공유 gcconn을 봄. "canExecute 하나로
-전역 통일" 원칙(Slot 생존/Observer 게이팅/store-bind retract 전부 재사용)은
-안 바뀜, 시그니처만 구체화된 것.
+**`bindLifetime`이 `value`와 맺는 계약은 정확히 둘**(이 둘이 위 구현의 전부):
 
-**Instance당 gcconn/gchold는 하나로 공유**(꼭 그럴 필요는 없지만 보통 그게
-싸서) — `bindLifetime`을 여러 값에 대해 여러 번 불러도 같은 `inst`면 같은
-`gcconn`/`gchold`를 재사용(첫 호출에서만 생성, 이후는 `relate:GetStrong`으로
-바로 찾음). `Relate`의 lazy 생성 자체가 이 재사용 비용을 이미 다뤄줌 —
-자세한 내부 구조는 `base/relate-plan.md`.
+1. **바인딩이 유효한 동안 `value`는 최소한 `inst`만큼은 산다** — `gchold[value]`
+   강참조가 그것.
+2. **`value`는 `inst`가 살아있는지 스스로 확인할 방법을 갖는다** — `BindData`에
+   복사된 gcconn 참조가 그것. `canExecute`가 `inst` 없이 성립하는 이유.
 
-**실측 필요(M0/M2)**: Observer→liveness 역참조를 `value.Subscribed` 필드
-직접 읽기로 확정했으나(위 구현), 실제 Luau 필드 접근 비용/weak table 조회
-비용 비교는 여전히 quad-roblox 구현 단계에서 실측 확인 대상.
+**`Subscribed`는 이 계약과 일절 무관하다 — 오직 전역 `:Subscribe()` 경로
+전용 필드.** `bindLifetime`/`unbindLifetime`은 이 필드를 **읽지도 쓰지도
+않음**. 옛 스케치가 `bindLifetime` 안에서 `value.Subscribed = true`를
+세팅하던 것이 이 문서의 오염 지점이었고, 그게 "`canExecute`가 `inst`를
+받아야 한다"는 잘못된 귀결까지 끌고 왔음(상세는
+`archive/canexecute-inst-arg-reversed.md`).
+
+#### (2) 전역 경로 — `:Subscribe()`/`:Unsubscribe()`
+
+`inst`에 안 묶이는(모듈 최상위 디버그 print류) Observer/Effect 전용. 상세
+규칙과 경고는 `base/bind-system-plan.md`의 "`:Subscribe()`/`:Unsubscribe()`"
+절이 소스이고, 여기선 `canExecute`가 보는 상태만 못박음:
+
+```lua
+local Subscribed = {} -- 전역 강참조 레지스트리(weak 아님 — 살려두는 게 목적)
+
+function Observer:Subscribe()
+    if canExecute(self) then -- bindLifetime과 정확히 같은 게이트
+        error(if self.Subscribed
+            then "이미 :Subscribe()된 값"
+            else "이미 Instance에 바인딩된 값")
+    end
+    self.Subscribed = true
+    Subscribed[self] = true
+    return self
+end
+
+function Observer:Unsubscribe()
+    Subscribed[self] = nil
+    self.Subscribed = false
+    return self
+end
+```
+
+`.Subscribed` 필드와 `Subscribed` 테이블이 **둘 다** 있는 이유: 테이블은
+강참조 루트(생존 보장), 필드는 `canExecute`가 매 발화마다 읽는 O(1) 경로 +
+에러 메시지에서 "전역이냐 leaf냐"를 가르는 판별자. 둘은 항상 같이
+쓰고 같이 지우는 한 세트(`:Unsubscribe()`가 필드만 내리고 테이블을 안
+비우면 반쪽짜리 해제가 됨 — `bind-system-plan.md`에 이미 확정된 규칙 그대로).
+
+#### (3) `canBound` 폐기 — 게이트는 `canExecute` 하나
+
+**[역전, 2026-08-14 다섯 번째 세션]** 2026-08-09 세션에 이름 확정됐던
+별도 predicate `canBound(handle)`("아직 어느 경로로도 안 묶였는가")은
+**폐기하고 `canExecute(value)`로 통합**. 두 질문이 사실 같은 질문이기
+때문 — "이미 유효하게 묶여 있다"와 "지금 실행 가능하다"가 정확히 같은
+조건(위 구현의 (a) OR (b))이고, `canBound`의 내부 근거로 지목돼 있던
+`.Subscribed` 필드는 애초에 leaf 경로와 무관했으므로 그 정의 자체가
+성립하지 않았음.
+
+부수 효과로 **"바인딩이 죽은 뒤의 재사용은 허용"**이 명시적 의미를 얻음 —
+`inst`가 Destroy됐거나 `unbindLifetime`된 `value`는 `canExecute`가 거짓이라
+게이트를 통과함(다시 다른 `inst`에 걸 수 있음). 살아있는 바인딩만 막는 게
+이 게이트의 의도.
+
+#### (4) 실제 호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다
+
+`canExecute`가 "어디서 불리는가"는 지금까지 어느 문서에도 코드로 없었음(위
+정정 배너 참고). 확정된 위치는 **State의 전파 루프**:
+
+- State는 자기 구독자(Observer의 emit 클로저)를 **weak로** 담는다 — 살려두는
+  책임은 State가 아니라 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에
+  있고, 어디에도 안 묶인 Observer는 그냥 GC되어 구독 목록에서 자연히 빠짐.
+- 발화 시 각 구독자에 대해 `canExecute(observer)`를 확인하고, 거짓이면
+  **그 구독자만 조용히 건너뜀**(no-op) — 죽은 `inst`를 건드리는 시도가
+  일어나지 않게 막는 위 "해야 할 일은 딱 하나" 원칙의 실제 구현 지점.
+
+**`state:Observer(fn)`의 "등록 즉시 1회 실행"은 이 게이팅과 무관**하다 —
+그건 Observer 생성자 자체의 계약이라 `bindLifetime` 이전에 동기적으로
+일어나고(그 시점엔 `canExecute`가 당연히 거짓), 게이팅 대상은 **그 이후의
+재실행**뿐. `base/slot-plan.md`/`base/dispatch-core-plan.md`가 이미 같은
+내용을 주석으로 달아둔 것과 같음.
+
+**Instance당 gcconn/gchold는 하나로 공유** — `bindLifetime`을 여러 값에
+대해 여러 번 불러도 같은 `inst`면 같은 `gcconn`/`gchold`를 재사용(위 (0)에서
+Instance 생성 시 한 번만 만들어지고, 이후는 `InstData:GetWeak`으로 바로
+찾음). 자세한 내부 구조는 `base/relate-plan.md`.
+
+**실측 필요(M0/M2)**: `canExecute`가 매 발화마다 `BindData:GetWeak(value,
+"gcconn")`(weak table 2단 조회)를 하는 비용이 실사용에서 문제되는지는
+quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn을 `value`의
+직접 필드로 내리는 선택지가 있음(옛 초안이 `self.Connection`으로 스케치했던
+모양). 지금 `Relate` 쪽으로 둔 이유는 "Observer 값 자체에 부작용을 안
+남기고 외부 weak 인덱싱을 선호"라는 기존 사용자 방침(`base/bind-system-plan.md`의
+`state:Observer(fn)` 절 구현 노트)이고, 성능 근거가 나오면 뒤집어도 되는
+순수 구현 세부.
 
 이건 `base/dispatch-core-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
 직접 사용)과 짝을 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"

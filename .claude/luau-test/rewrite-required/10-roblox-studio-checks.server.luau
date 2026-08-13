@@ -1,4 +1,19 @@
 --[[
+	⚠️ [2026-08-14 다섯 번째 세션] 재작성 필요 — 아래 A 섹션 코드는 **폐기된
+	모델**을 검증한다: 별도 predicate `canBound`(→ `canExecute`로 통합 폐기),
+	`bindLifetime`이 `value.Subscribed = true`를 세팅하는 것(→ `.Subscribed`는
+	전역 `:Subscribe()` 전용이라 `bindLifetime`과 무관), 2-인자
+	`canExecute(inst, value)`/`unbindLifetime(inst, value)`(→ 둘 다 `value`
+	단독 1-인자). 새 모델은 `base/lifecycle-pattern.md`의
+	"`bindLifetime`/`canExecute`/`unbindLifetime` — 확정" 절, 역전 경위는
+	`archive/canexecute-inst-arg-reversed.md`.
+	**단 A 섹션이 검증하려던 것 중 "ClassName 신호 미발화 / Destroy 시
+	Connected 즉시 전환"은 새 모델에서도 그대로 유효하다** — 오히려 더
+	중요해졌음(`canExecute`가 `value` 쪽에 복사된 gcconn의 `.Connected`를
+	직접 읽는 게 leaf 경로 생존 판정의 전부). 그 두 가정은 이미 부분 실측됨:
+	`audit/gcconn-trick-verification.md`. B/C 섹션은 이 변경과 무관하게 그대로
+	유효하다. (재작성은 별도 작업 — Studio 전용이라 이 환경에서 검증도 못 함.)
+
 	검증 대상 (Roblox Studio 전용 — 순수 luau CLI로는 안 됨, 실제 Instance/
 	Connection/CollectionService/Attribute가 필요함):
 

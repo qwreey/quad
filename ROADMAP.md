@@ -138,27 +138,33 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       재사용 — 구 `base.perInstanceState(inst)`/`PerInstanceState.luau`를
       대체(2026-08-08 세션 신설).
 - [ ] `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
-      `unbindLifetime(inst,value)`/`canExecute(inst,value)` 탑레벨 함수
+      `unbindLifetime(value)`/`canExecute(value)` 탑레벨 함수
       타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
       있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
       이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
       있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md`
       2번 — 2026-08-07 네 번째 세션에 반영).
-      **`canExecute`는 `(inst, value) -> boolean`으로 재확정(2026-08-08
-      세션, `(handle)` 단일 인자 서술을 대체)** — Observer/Effect는 자기
-      `Subscribed` 상태를 먼저 확인, 그 다음 `inst`의 공유 gcconn(`Relate`로
-      저장)의 `.Connected`를 봄. **`unbindLifetime(inst,value)` 추가
-      (2026-08-09 여섯 번째 세션)** — `inst` 전체 죽기 전에 특정 값 하나만
+      **[정정, 2026-08-14 다섯 번째 세션] `unbindLifetime`/`canExecute`는
+      `inst`를 안 받는다** — 옛 2-인자 시그니처(`(inst, value)`)는 오염이었음.
+      `bindLifetime`이 바인딩 시점에 `inst`의 gcconn 참조를 `value` 쪽
+      `Relate`로 복사해두므로 "지금 실행돼도 되는가"를 `value` 하나로 물을 수
+      있고, `canExecute`의 실제 호출부(State 전파 루프)엔 `inst`가 없어서
+      2-인자로는 호출 자체가 불가능했음. 판정은 (a) 복사된 gcconn의
+      `.Connected` 또는 (b) Observer/Effect의 `.Subscribed` 둘 중 하나 —
+      **`.Subscribed`는 전역 `:Subscribe()` 전용 필드라
+      `bindLifetime`/`unbindLifetime`이 읽지도 쓰지도 않음**. 역전 원문은
+      `archive/canexecute-inst-arg-reversed.md`.
+      **`unbindLifetime(value)` 추가(2026-08-09 여섯 번째 세션)** —
+      `inst` 전체 죽기 전에 특정 값 하나만
       조기 해제(`Dispatch.setLength`가 State 재등록 시 이전 Observer를
       정리하는 데 씀), gchold 내부 구조를 호출부가 몰라도 되게 캡슐화.
       `bindLifetime`/`unbindLifetime`/`canExecute` 셋 다 네임스페이스
       없이 탑레벨 함수로 export(`Dispatch.xxx`류 시스템 네임싱과 구분,
       `isState`/`isObserver`와 같은 1급 프리미티브 취급) — `base/
       lifecycle-pattern.md`의 "`bindLifetime`/`canExecute`/`unbindLifetime`
-      — 확정" 절 참고. **Observer/Effect 값에는 `bindLifetime`/
-      `unbindLifetime`도 M3의 `canBound` 게이트를 확인/세팅** — children
-      배열 leaf 부착이 실제로는 `bindLifetime` 호출이라서(M3 체크박스
-      참고, 구현 순서상 M2가 M3의 `canBound`를 참조하게 됨에 유의)
+      — 확정" 절 참고. **이중 바인딩 금지 게이트도 `canExecute` 하나로
+      통합**(별도 `canBound`는 폐기 — M3 체크박스 참고), children 배열 leaf
+      부착이 실제로는 `bindLifetime` 호출이라 이 게이트를 그대로 탐
 - [ ] `Dispatch.setLength(inst,i,len:number|State<number>)`/
       `Dispatch.setOffsetSource(inst,i,offset:Source<number>|None)` —
       array part 형제 순서 보장(Length/Offset 누적합→`LayoutOrder` 리액티브
@@ -216,6 +222,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ## M3 — Store/State/Source
 
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
+- [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
+      (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제
+      호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다" 절) —
+      State는 구독자(Observer의 emit 클로저)를 **weak로만** 담고, 살려두는
+      책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
+      (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐). 발화 시
+      각 구독자에 대해 `canExecute(observer)`가 거짓이면 **그 구독자만
+      조용히 건너뜀**(no-op) — 이게 `canExecute`의 유일한 실제 호출부이고,
+      `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
+      걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
+      `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
 - [ ] `store.key` dot-access 타입 추론 확인 — Luau `type function`
       (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
       `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
@@ -254,15 +271,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
-- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(handle)` predicate로
+- [ ] Observer/Effect 이중 바인딩 금지 — `canExecute(value)` 게이트로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/
       bind-system-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
-      세션 신설, 이름은 2026-08-09 세션에 `canBound`로 확정, 같은 날
-      여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정 — 진짜
-      독립 경로는 둘뿐). `canBound`의 내부 플래그는 `canExecute`가 보는
-      `.Subscribed`와 같은 필드 — `bindLifetime`/`unbindLifetime`도
-      (Observer/Effect 값에 한해) 이 필드를 세팅/해제
+      세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
+      호출"로 정정 — 진짜 독립 경로는 둘뿐).
+      **[역전, 2026-08-14 다섯 번째 세션] 별도 predicate `canBound(handle)`
+      (2026-08-09 세션에 이름 확정됐던 것)은 폐기** — "이미 유효하게 묶여
+      있다"와 "지금 실행 가능하다"가 정확히 같은 조건이라 `canExecute`
+      하나로 통합됨. `canBound`의 내부 근거로 지목돼 있던 `.Subscribed`
+      필드는 애초에 leaf 경로와 무관했고(전역 `:Subscribe()` 전용),
+      leaf 생존 판정은 `bindLifetime`이 `value` 쪽 `Relate`에 복사해둔
+      gcconn으로 함 — `base/lifecycle-pattern.md`의 "`canBound` 폐기" 절,
+      역전 경위는 `archive/canexecute-inst-arg-reversed.md`. 부수 효과로
+      **바인딩이 죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를
+      통과**(살아있는 바인딩만 막는 게 의도)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -288,6 +312,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드)
 - [ ] `DI/init.luau`(제네릭 생성자 + ~25개 정적 필드)
 - [ ] `Handlers/Property.luau`, `Handlers/InstanceChild.luau`
+- [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
+      확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
+      lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에
+      만든다" 절) — quad가 만든 모든 Instance에 대해 **핸들러/바인딩 유무와
+      무관하게 생성 직후 무조건** `GetPropertyChangedSignal("ClassName")`
+      연결(절대 발화 안 함)로 gcconn을 만들고 `gchold[1]=gcconn`,
+      `InstData:SetWeak(inst,"gchold"/"gcconn",...)`. **클로저가 `gchold`와
+      `inst`를 둘 다 캡처해야 함** — Instance userdata 포인터 동일성을
+      고정하는 게 목적이고, 그래야 `inst`를 키로 쓰는 모든 `Relate`
+      (`elementOwner`/`nameClaims`/Tag 참조카운트 등)가 성립함. 대가는
+      "quad가 만든 Instance는 참조를 놓는 것만으로 회수되지 않고 반드시
+      `Destroy`가 필요" — 바인딩이 하나라도 걸리면 어차피 같은 순환이
+      생기므로 실질적 신규 제약은 아님
 - [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — **Studio 작업이라
       `HUMAN_TODO.md` 1번(계정 분리) 먼저 되어야 진행 가능, `SAFETY.md` 준수**
 
@@ -566,10 +603,21 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
-- [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/`canExecute`
-      본체(`GetPropertyChangedSignal("ClassName")` 연결 트릭으로 gcconn 확보,
-      `Relate:SetStrong`으로 gcconn/gchold 저장 — 인터페이스 자체는 M2로
-      이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현 없음)
+- [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
+      `unbindLifetime`/`canExecute` 본체(인터페이스 자체는 M2로 이동됨,
+      `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현 없음).
+      **[2026-08-14 다섯 번째 세션 정정] gcconn/gchold를 여기서 lazy 생성하지
+      않는다** — 생성은 M5의 Instance 생성 경로가 이미 끝내둔 것이고, 이
+      함수들은 `InstData`에서 찾아 쓰기만 함. `bindLifetime`은
+      `gchold[value]=true`(강참조로 생존 보장)와 `BindData:SetWeak(value,
+      "gchold"/"gcconn", ...)`(값이 자기 생존 판정 근거를 직접 들고 있게)
+      둘만 하고, `unbindLifetime(value)`은 그 셋을 되돌림, `canExecute(value)`은
+      복사된 gcconn의 `.Connected` 또는 `.Subscribed`를 봄.
+      **저장은 전부 `SetWeak`**(`SetStrong` 아님 — gchold/gcconn은 아래 M5
+      클로저↔`gchold[1]` 상호 참조로 이미 안전하게 살아있고, "다른 곳에서
+      안전하게 유지되는 것은 항상 weak로 잡는다"가 일반 규칙).
+      `base/lifecycle-pattern.md`의 "`bindLifetime` / `unbindLifetime` /
+      `canExecute`" 절
 
 ## M9 — 컴포넌트 합성 레이어
 

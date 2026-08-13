@@ -11,9 +11,9 @@
 | 폴더 | 뜻 | 누가 처리 |
 |---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요**(**[2026-08-13 13차 세션] 현재 비어 있음** — 마지막 한 건이던 `08`이 해소돼 `done/`으로 감) | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`/`16`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff) | 에이전트 |
-| `not-run/` | 이 환경에서 못 돌림(Studio 전용 `10` + GC 헬퍼) | 사용자 or MCP 연결 후 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음(14개) | — |
+| `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`/`16`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff / `10`, **[2026-08-14 3차 세션]** `canExecute` 1-인자 재정정) | 에이전트 |
+| `not-run/` | 이 환경에서 못 돌림 — **[2026-08-14 3차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음 | 사용자 or MCP 연결 후 |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | — |
 
 **스파이크를 고치거나 돌렸으면 파일을 해당 폴더로 `git mv`하고 STATUS.md의
 줄도 같이 옮길 것** — 그게 곧 상태 갱신이다. 아래 파일 목록의 경로는
@@ -76,7 +76,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `store-semantics.md` "검증 필요", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | (A) `bindLifetime`/`unbindLifetime`/`canExecute`/`canBound`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복 — **[2026-08-13]** A 섹션 앞부분(신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됨, `audit/gcconn-trick-verification.md` 참고. A-1/A-2(`canBound` 게이트)/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | **[⚠️ 2026-08-14 다섯 번째 세션: A 섹션이 폐기된 모델을 검증 중 → `rewrite-required/`]** (A) `bindLifetime`/`unbindLifetime`/`canExecute`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복. **A는 재작성 대상** — 파일 속 `canBound`, `bindLifetime`의 `value.Subscribed = true` 세팅, 2-인자 `canExecute(inst, value)`는 전부 폐기됨(게이트는 `if canExecute(v) then error(...) end` 하나, `canExecute`는 `value` 단독 1-인자, gcconn/gchold는 **Instance 생성 시점**에 생성). **[2026-08-13]** A 섹션 앞부분(ClassName 신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됐고 **새 모델에서도 그대로 유효**(오히려 더 중요 — `canExecute`가 `.Connected`를 직접 읽는 게 leaf 경로 판정의 전부), `audit/gcconn-trick-verification.md` 참고. 이중 바인딩 게이트/재바인딩 허용/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md` "`bindLifetime`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `bind-system-plan.md` "이중 바인딩 금지", CLAUDE.md 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "핸들러 계층 값 즉시 error" 절 + 7번 절 |
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 DI 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
@@ -211,6 +211,17 @@ error)를 추가하고, `04`의 3~4단계를 "가드가 실제로 걸리는지 +
   대조해야 판정 가능 — 별도 진행. `15`는 `SyntaxError`로 파싱 자체가
   안 되는 상태(= 아무것도 검증 못 함)인 것만 먼저 확정.
 
+**12차 (2026-08-14, 세 번째 세션, `10` → `rewrite-required/`)**:
+`bindLifetime`/`canExecute`/`unbindLifetime` 시그니처가 재정정되면서
+(`canExecute`/`unbindLifetime`이 `inst`를 안 받는 1-인자, `.Subscribed`는
+전역 `:Subscribe()` 전용이라 `bindLifetime`과 무관, 별도 predicate
+`canBound` 폐기, gcconn/gchold는 Instance 생성 시점 생성) `10`의 A 섹션이
+폐기된 모델을 검증하게 됨 — 코드 본문은 그대로 두고 헤더에 재작성 사유만
+달아 이동. **A가 검증하려던 것 중 "ClassName 신호 미발화 / Destroy 시
+Connected 즉시 전환"은 새 모델에서도 유효**(재작성 시 살릴 것). 정본은
+`base/lifecycle-pattern.md`, 역전 경위는
+`archive/canexecute-inst-arg-reversed.md`.
+
 ## 결과 확인 후 할 일
 
 각 파일 결과를 알려주면, 실제로 걸리는 부분이 있는지 보고 필요하면
@@ -222,12 +233,24 @@ error)를 추가하고, `04`의 3~4단계를 "가드가 실제로 걸리는지 +
 - `07`이 예상대로 GC가 안 되는 것처럼 보이면(90개 안 죽는 것 같으면),
   `collectgarbage("count")` 수치 변화를 같이 알려줄 것 — 정확한 판정이
   어려운 항목이라 참고 신호로만 쓸 것.
-- `10`의 A 섹션에서 만약 `warn`이 실제로 뜨면(ClassName Changed가
-  발화함), gcconn 트릭 전체를 재검토해야 하는 심각한 발견이니 바로 알려줄 것
-  — **[2026-08-13] 이 조건은 이미 회피 확인됨**(`audit/
-  gcconn-trick-verification.md`), 재확인 불필요. A-2(재-bindLifetime 허용
-  여부)가 실패하면 `canBound`/`unbindLifetime` 설계 자체를 재검토해야
-  함 — **이건 아직 미확인, 공식 `10` 파일로 꼭 돌려볼 것.**
+- `10`은 **[2026-08-14 다섯 번째 세션] A 섹션을 먼저 재작성해야 함**(현재
+  `rewrite-required/`) — 아래 판정 기준은 재작성 후에 적용할 것.
+  - `warn`이 실제로 뜨면(ClassName Changed가 발화함) gcconn 트릭 전체를
+    재검토해야 하는 심각한 발견이니 바로 알려줄 것 — **[2026-08-13] 이
+    조건은 이미 회피 확인됨**(`audit/gcconn-trick-verification.md`),
+    재확인 불필요.
+  - 이중 바인딩 게이트는 이제 `canBound`가 아니라 **`canExecute(value)`
+    하나**다(`if canExecute(v) then error(...) end`). 판정 기준도 이에
+    맞춰 바뀜: `unbindLifetime(value)` 이후 같은 값을 다시
+    `bindLifetime`할 수 있어야 하고(게이트가 `canExecute` 거짓이라
+    통과), **`inst`가 Destroy된 뒤의 재바인딩도 이제 명시적으로
+    허용**임(살아있는 바인딩만 막는 게 게이트의 의도 —
+    `lifecycle-pattern.md` "`canBound` 폐기" 절). 이게 실패하면
+    `canExecute` 통합 설계 자체를 재검토해야 함 — **아직 미확인.**
+  - 새로 검증할 항목: `bindLifetime`이 `value` 쪽 릴레이션에 복사해둔
+    gcconn만으로 `inst` 생존을 판정할 수 있는가(=`canExecute`가 `inst`
+    없이 성립하는가), gcconn/gchold를 **Instance 생성 시점**에 만들 때
+    클로저가 `inst`까지 캡처해 userdata 동일성이 유지되는가.
 - `04`는 **[2026-08-13 여섯 번째 세션에 전면 재작성 — 옛 판정 기준 폐기]**
   두 시나리오를 연달아 돌림. **정상 설계**는 [1] 체인 깊이 3, [3] 옛 inner
   구독 0, [4] `STALE` 미반영이 기대값. **음성 대조군**은 [1] 깊이가 **1**로

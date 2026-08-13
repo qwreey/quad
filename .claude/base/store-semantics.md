@@ -39,8 +39,8 @@ purity-and-effects-plan.md`와 연결됨).
 어떻게 되는가 — 별도 메커니즘을 새로 만들 필요 없이, `base/
 lifecycle-pattern.md`의 "생명 바인드 유틸"(canExecute predicate)을 state-
 invalidate 리스너 클로저 등록에도 그대로 재사용하면 됨: 발화 시
-`canExecute(inst, value)`(2026-08-08 세션 최종 시그니처 — `base/
-lifecycle-pattern.md` 참고) 하나만 확인, 거짓이면 no-op. 한때 검토했던 `isInit=false`면
+`canExecute(value)`(2026-08-14 다섯 번째 세션 최종 시그니처, `inst`를 안 받음
+— `base/lifecycle-pattern.md` 참고) 하나만 확인, 거짓이면 no-op. 한때 검토했던 `isInit=false`면
 허용/`isInit=true`+생존확인 거짓이면 불허 분기 초안은 폐기 — `canExecute`
 하나로 통일(사용자 확정). 상세는 `base/bind-system-plan.md`의
 "Store/State/Source 온톨로지" 절 참고.

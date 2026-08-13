@@ -187,10 +187,13 @@ Modifier/Ref를 아예 안 넘기는 케이스를 반드시 포함시킬 것.**
 
 ### 1-6. `canExecute`/`Connected`의 실제 구현 방식이 미확정인 채로 코어 전역에 이미 재사용 확정됨
 
-**[해소됨, 2026-08-08 세션]** `bindLifetime(inst,value)`/`canExecute(inst,value)`
+**[해소됨, 2026-08-08 세션. 시그니처는 2026-08-14 다섯 번째 세션에 정정]**
+`bindLifetime(inst,value)`/`unbindLifetime(value)`/`canExecute(value)`
 탑레벨 함수로 확정, `Relate` 프리미티브(`base/relate-plan.md`) 위에 gcconn/
 gchold를 얹는 구체 구현까지 나옴 — `base/lifecycle-pattern.md`의
-"`bindLifetime`/`canExecute` — 확정" 절이 최신. 아래는 이 결정이 나오기
+"`bindLifetime`/`canExecute`/`unbindLifetime` — 확정" 절이 최신
+(뒤의 둘이 `inst`를 안 받게 된 경위는
+`archive/canexecute-inst-arg-reversed.md`). 아래는 이 결정이 나오기
 전까지의 문제 서술(정확했던 문제 인식이라 그대로 둠, 남은 실측 항목은
 `lifecycle-pattern.md` 쪽 "M0/M2 실측 필요" 캐비엇으로 이동).
 
