@@ -1883,7 +1883,7 @@ deps만 받고 싶어도 `previous`가 2번째 자리를 차지하므로, 그 �
 비워둬야 함 — deps만 쓰는 흔한 케이스가 약간 불편해지지만, Luau 문법
 제약상 다른 선택지가 없음(대안은 애초에 이 확장 자체를 안 하는 것뿐).
 
-**실측 필요 — `.claude/luau-test/15-type-compute-trailing-deps-typepack.luau`
+**실측 필요 — `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`
 신규(ROADMAP.md M3 반영).** 순서 문제 자체는 위 정정으로 구조적으로
 풀렸으므로, 스파이크가 실제로 확인할 진짜 불확실성은 (B) 하나로 좁혀짐 —
 나머지는 그 결론을 뒷받침하는 대조군: (A) 균일 타입 dep 1개를 고정
@@ -2486,7 +2486,7 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 > 계약이 Luau 양방향 추론과 충돌함이 확인됨.** 가장 흔한 관용구
 > (`state:Compute(function(s) return s:Get() * 2 end)`)가 타입 에러를
 > 낸다 — 콜백이 raw 값을 받는 형태면 완전히 클린하다는 것까지 최소
-> 재현으로 확인됨(`.claude/luau-test/15-type-compute-trailing-deps-typepack.luau`,
+> 재현으로 확인됨(`luau-test`의 `15-type-compute-trailing-deps-typepack.luau`,
 > `audit/luau-test-first-run-2026-08-13.md`). `Effect`/`Observer`/`Animate`/
 > `Operator` 등 같은 계약을 공유하는 API 전부에 걸림 — 아래 서술은 M0
 > 착수 전 사용자가 확정해야 할 미해결 사안이지 확정된 계약이 아님.

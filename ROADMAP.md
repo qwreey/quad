@@ -196,7 +196,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
       번째 세션, `base/bind-system-plan.md` "`store.key` 레코드 필드
       타이핑" 절) — 실제 문법이 통과하는지는
-      `.claude/luau-test/16-type-store-key-typefunction.luau`로 실측 필요
+      `luau-test`의 `16-type-store-key-typefunction.luau`로 실측 필요
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
       (2026-08-11 세션, `base/bind-system-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
@@ -209,7 +209,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
       세션에 순서 정정, `base/bind-system-plan.md` "trailing deps를 fn에
       lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
-      `.claude/luau-test/15-type-compute-trailing-deps-typepack.luau`로
+      `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
@@ -467,7 +467,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `table.clone`이 메타테이블을 복사 아닌 참조로 공유해 제네릭 `__index`
       기반 체이닝이 안 끊긴다는 메커니즘은 확인됨(2026-08-12 열일곱 번째
       세션, `modifier-plan.md` "`table.clone`의 정확한 동작" 절) — 실제
-      Luau 실행 확인은 `.claude/luau-test/17-modifier-index-tableclone-chaining.luau`
+      Luau 실행 확인은 `luau-test`의 `17-modifier-index-tableclone-chaining.luau`
 - [ ] `Modifier.Overridden(mod1, mod2, ...)`(이름 확정, 구 `Merge`→`Override`,
       2026-08-08 세션) — 필드별 raw 덮어쓰기, 특별한 State/함수 분기
       불필요(`modifier-plan.md` 9번)

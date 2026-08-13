@@ -300,7 +300,7 @@ base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 없어졌으니 M0/M3 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
 안 옮겨도 됨. 상세는 `base/bind-system-plan.md` "`store.key` 레코드 필드
 타이핑" 절, 실제 문법 실측은
-`.claude/luau-test/16-type-store-key-typefunction.luau`(신규). 아래는
+`luau-test`의 `16-type-store-key-typefunction.luau`(신규). 아래는
 원래 발견 당시 기록.
 
 **위치**: `ROADMAP.md` M0 vs M3 `"store.key dot-access 타입 추론 확인"`.
@@ -331,7 +331,7 @@ M7의 전제가 Luau 공식 동작대로 성립함. 별도로, 프로퍼티에 A
 불가능 — Property가 소유권 추적 대신 Modifier의 override 우선순위를 쓰는
 이유). 상세는 `base/modifier-plan.md` "`table.clone`의 정확한 동작" 절과
 "Property에 Attribute식 소유권 레지스트리 기각" 절, 실제 실행 확인은
-`.claude/luau-test/17-modifier-index-tableclone-chaining.luau`(신규).
+`luau-test`의 `17-modifier-index-tableclone-chaining.luau`(신규).
 아래는 원래 발견 당시 기록.
 
 **위치**: `base/modifier-plan.md` "런타임은 클래스별 코드 없이 base에 딱
@@ -715,8 +715,8 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   항목 참고).
 - **M0 스파이크**: 1-10(`store.key` type function)과 1-11(`table.clone`
   메타테이블 공유)은 메커니즘 자체는 이제 확실하지만, 실제 Luau 코드로
-  돌려보는 것 자체는 여전히 스파이크 대상 — `.claude/luau-test/16-type-
-  store-key-typefunction.luau`/`17-modifier-index-tableclone-chaining.luau`로
+  돌려보는 것 자체는 여전히 스파이크 대상 — `luau-test`의
+  `16-type-store-key-typefunction.luau`/`17-modifier-index-tableclone-chaining.luau`로
   신규 추가됨(2026-08-12 열일곱 번째 세션 핸드오버 점검 중 발견된 갭,
   이전까진 이 두 항목을 커버하는 스파이크 파일 자체가 없었음).
   **[2026-08-13 첫 실측 라운드 결과]** `17`은 **통과**(제네릭 `__index` +

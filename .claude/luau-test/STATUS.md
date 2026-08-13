@@ -1,37 +1,56 @@
-# 스파이크 상태판 — **사람이 먼저 볼 것만 위에**
+# 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-13 여섯 번째 세션(첫 실측 라운드).
-> 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
+> 마지막 갱신: 2026-08-13 여덟 번째 세션(폴더 재편).
+> 첫 실측은 여섯 번째 세션 — 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
 > 실행법: `luau <파일>` (런타임) / `luau-analyze <파일>` (타입 전용).
 
-## 🔴 사람 결정 필요 — 설계가 걸린 것 (1건)
+**사람이 볼 게 있는 건 `review-required/` 하나뿐입니다.** 나머지는
+에이전트가 처리할 일(`rewrite-required/`)이거나, Studio가 필요한 일
+(`not-run/`)이거나, 끝난 일(`done/`)입니다.
 
-| 파일 | 무엇이 걸렸나 | 어디로 |
-|---|---|---|
-| `08-type-source-satisfies-state.luau` | 핵심 질문(Source⊇State)은 통과. 다만 `State<T>`가 **자기 자신**을 다른 타입 인자로 재귀 참조하면 `Recursive type being used with different parameters` — 사용자 방향은 "구울 때 인라이닝" | `question.md` **0-Y** 하단 |
+| 폴더 | 뜻 | 개수 | 누가 처리 |
+|---|---|---|---|
+| `review-required/` | **설계가 걸림 — 사람 결정 필요** | 1 | ⭐ 사용자 |
+| `rewrite-required/` | 스파이크 코드가 깨짐(설계 문제 **아님**) | 3 | 에이전트 |
+| `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 1(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 15 | — |
 
-`15`의 `:Compute(fn)` lazy 핸들 계약 충돌(**`question.md` 0-Y** 본 항목)도
-같은 종류의 사람 결정 필요 사안이지만, 스파이크 자체가 파싱 실패라 아직
-그 결과를 신뢰할 수 없는 상태 — 아래 🟠 표에서 재작성 대기 중, 재작성 후
-다시 여기로 승격할 것.
-
-## 🟠 스파이크 자체가 깨져 있음 — 재작성 필요 (3건, 설계 문제 아님)
-
-| 파일 | 상태 | 무엇을 고쳐야 하나 |
-|---|---|---|
-| `13-type-ref-preref-subtype.luau` | 타입 A섹션은 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션 분리 |
-| `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리. 재작성 후에도 `:Compute` 계약 충돌 자체는 이미 다른 최소 재현으로 확인됐으므로(`question.md` 0-Y) 재작성은 확인 사살일 뿐 0-Y 판단을 바꾸지 않음 |
-| `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
-
-## ⚪ 아직 안 돌림
-
-| 파일 | 이유 |
-|---|---|
-| `10-roblox-studio-checks.server.luau` | **Studio 전용**(`luau` CLI로 못 돌림). A 섹션 일부만 사용자가 자작 스크립트로 실측 — `audit/gcconn-trick-verification.md`. A-1/A-2/B/C는 여전히 미확인 |
+**폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
+해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
+검증하는가"는 `README.md`가 담당(이 파일은 상태만).
 
 ---
 
-## ✅ 통과 — 설계 성립 확인됨 (런타임 12개)
+## ⭐ `review-required/` — 사람 결정 필요 (1건)
+
+| 파일 | 무엇이 걸렸나 | 어디로 |
+|---|---|---|
+| `08-type-source-satisfies-state.luau` | 핵심 질문(Source⊇State)은 **통과**. 다만 `State<T>`가 **자기 자신**을 다른 타입 인자로 재귀 참조하면 `Recursive type being used with different parameters` — 사용자 방향은 "구울 때 인라이닝" | `question.md` **0-Y** 하단 |
+
+`15`의 `:Compute(fn)` lazy 핸들 계약 충돌(**`question.md` 0-Y** 본 항목)도
+같은 종류의 사람 결정 사안이지만, **스파이크 자체가 파싱 실패라 그 결과를
+신뢰할 수 없어** `rewrite-required/`에 둠. 재작성해서 돌아가면 이 폴더로
+승격할 것. 단 **0-Y 판단 자체는 그걸 기다릴 필요 없음** — 계약 충돌은 이미
+별도 최소 재현으로 확인됨(`audit/luau-test-first-run-2026-08-13.md`).
+
+## 🟠 `rewrite-required/` — 스파이크가 깨짐, 설계 문제 아님 (3건)
+
+| 파일 | 상태 | 무엇을 고쳐야 하나 |
+|---|---|---|
+| `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
+| `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
+| `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
+
+## ⚪ `not-run/` — 이 환경에서 못 돌림
+
+| 파일 | 이유 |
+|---|---|
+| `10-roblox-studio-checks.server.luau` | **Studio 전용**(`luau` CLI로 못 돌림). A 섹션 앞부분만 사용자 자작 스크립트로 실측 — `audit/gcconn-trick-verification.md`. **A-1/A-2(`canBound` 게이트)/B/C는 여전히 미확인** |
+| `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
+
+## ✅ `done/` — 통과 or 판정 끝 (15건)
+
+**런타임 12개 전원 통과**(crash 0 / FAIL 0):
 
 | 파일 | 확인된 것 |
 |---|---|
@@ -42,14 +61,19 @@
 | `05-store-state-diamond-propagation` | 다이아몬드에서 재계산 정확히 1회, invalidate 2번째는 즉시 중단 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
-| `09-type-modifier-overridden-subtype` | 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
 | `11-modifier-illegal-value-error` | Modifier 필드/Source에 핸들러 계층 값 넣으면 즉시 error — 16개 케이스 전원 |
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
-| `19-ownership-refcount-relate-patterns` | Tag 참조 카운트 / Attribute 점유 체크 / Slot `claimOwner` vs `claimOwnerAt` — **음성 대조군 포함** 전원 통과 |
+| `19-ownership-refcount-relate-patterns` | Tag 참조 카운트 / Attribute 점유 체크 / Slot `claimOwner` vs `claimOwnerAt` — **음성 대조군 포함** 전원 통과. ⚠️ **B 섹션은 `question.md` 0-Z가 정해지면 다시 손봐야 함**(하강 diff 모델에선 그룹↔그룹을 점유 체크만으론 못 잡음) |
 | `20-slot-splice-index-arithmetic` | `Splice` 산술 11개 경계 케이스 전부 참조 구현과 일치 |
+
+**타입 스파이크 중 판정이 끝나 더 할 일 없는 것**:
+
+| 파일 | 판정 |
+|---|---|
+| `09-type-modifier-overridden-subtype` | ✅ 통과 — 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로) |
-| `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. 설계 결정은 아직 필요 없음(대안이 이미 UB 경고로 존재) |
+| `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
 
 ### 특별히 중요한 통과 3건
 
@@ -80,12 +104,3 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 ```
 추측이 아니라 **실제로 GC가 안 됨** — `Slot`의 두-`Relate` 수정이 필수
 조치였음이 입증.
-
----
-
-## 이 표를 갱신하는 방법
-
-스파이크를 돌리거나 고칠 때마다 **여기 분류부터 옮기고**, 상세 서술은
-`audit/`의 실행 결과 문서에 쓸 것. 이 파일은 "지금 뭘 봐야 하는가"만
-빠르게 답하는 용도라 길어지면 안 됨(파일별 검증 의도/배경은
-`luau-test/README.md`가 이미 담당).
