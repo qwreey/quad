@@ -396,8 +396,13 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   가능함 확인), Modifier `__index`+`table.clone` 트릭 검증(1-11, 메타테이블
   참조 공유 방식 확인) — 상세는 `pre-implementation-audit.md` 해당 항목,
   `base/bind-system-plan.md`/`base/modifier-plan.md` 참고. **우선순위1
-  11개 전부 해소됨** — M0 착수 전 남은 건 `.claude/luau-test/` 스파이크
-  실측 결과 확인뿐(아직 사용자가 안 돌려봄).
+  11개 전부 해소됨.** **[2026-08-13 갱신]** 그 다음 게이트였던
+  `.claude/luau-test/` 스파이크는 **여섯 번째 세션에 첫 실측이 돌아
+  런타임 12개 전원 통과**했고(`audit/luau-test-first-run-2026-08-13.md`,
+  상태판은 `luau-test/STATUS.md`), 남은 건 Studio 전용 `10`과 코드가
+  깨져 재작성이 필요한 `13`/`15`/`16`뿐. **대신 그 실측이 위 0-Y를 새로
+  열었으므로 M0 착수 전 게이트는 이제 0-Y/0-Z** — "실측 확인만 남았다"는
+  옛 서술이니 주의.
 - **[해소됨, 2026-08-08 두 번째 세션]** `Frame { ref }`/`Frame { observer }`처럼
   children 배열 숫자 슬롯에 직접 놓는 leaf 값을 매칭·바인드하는 Handler
   (`(i:number, v=Ref/Observer/PreRef)`)의 패키지 배치 — 원래 제안대로
@@ -496,7 +501,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | Store/State/Source 온톨로지, 인스턴스 생성/이벤트 인체공학, Ref, 남은 API 이름 | `base/bind-system-plan.md` |
 | Store 부작용 허용, `:With`+`:Compute`, dot-access 문법 | `base/store-semantics.md` |
 | 프로바이더 패턴, bind/store 구현 책임 분리 | `base/module-lifecycle-plan.md` |
-| Slot 재조정, 재마운트 시 throw, retract=폐기 | `base/slot-plan.md` |
+| Slot 재조정, 재마운트 시 throw, **[2026-08-13 6번째 세션 역전] retract=언마운트**(파괴 아님, portal이 그 귀결 — 옛 "retract=폐기"는 뒤집힘) | `base/slot-plan.md` |
 | `Connected`+GC 라이프사이클 패턴 | `base/lifecycle-pattern.md` |
 | Modifier(정적 merge, immutable 체이닝, State 필드 지원, `Apply`/`Overridden`/`Peek`/`isState`) | `base/modifier-plan.md` |
 | 컴포넌트화(플레인 함수, State/Source 경계, 컴포넌트 경계 modifier/Ref는 named parameter로 전달, multi-root 개념 폐기, `Modifier.Overridden`) | `base/component-composition-plan.md` |

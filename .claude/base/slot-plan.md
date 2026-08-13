@@ -10,7 +10,9 @@
 > 구현하면 옛 모델로 짜게 됨** — 반드시
 > `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
 
-**상태**: base — 설계 방향(소유권 귀속, 재마운트 시 throw, retract=폐기)과
+**상태**: base — 설계 방향(소유권 귀속, 재마운트 시 throw, **[2026-08-13
+여섯 번째 세션 역전] retract=언마운트** — 옛 "retract=폐기"는 뒤집혔음,
+아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절이 정본)과
 소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
 architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
 `.claude/initreq/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
@@ -389,8 +391,11 @@ end
   두 번째 호출이 덮어써 첫 번째 `Source`가 고아가 됨.
 
 **해법의 근거 — nested엔 "재클레임"이라는 개념이 애초에 없다.** `:List`의
-`reconcile`은 요소를 바꿀 때 항상 `rawRemove(prev)`(→`releaseOwner`) 다음에
-`rawAdd(result)`(→`claimOwner`) 순서로 부르고(아래 "구현" 절 의사코드),
+`reconcile`은 요소를 바꿀 때 항상 `rawUnmount(prev)`(→`releaseOwner`) 다음에
+`rawAdd(result)`(→`claimOwner`) 순서로 부르고(아래 "구현" 절 의사코드 —
+**[정정, 2026-08-13 여섯 번째 세션]** 예전엔 `rawRemove`(파괴)였으나
+언마운트 전환으로 바뀜, `rawUnmount`도 `releaseOwner`를 똑같이 부르므로
+이 소유권 논증 자체는 그대로 성립),
 `rawMove`/`rawSwap`은 클레임을 아예 안 건드림 — 즉 nested에서 "이미 내가
 갖고 있는 걸 다시 클레임"하는 정당한 경로가 하나도 없으므로 **무조건
 error가 맞음**. 반대로 top-level은 store 재발행마다 같은 Slot으로
@@ -447,8 +452,10 @@ releaseOwner(element, slot)
 예전 버전은 "이미 같은 owner면 `false` 반환"이었고 `rawAdd` 호출부는 그
 반환값을 아예 안 봐서, `local a = Slot{}; Slot { a, a }`가 조용히 통과했음
 (위 "Slot과 Store 바인드의 관계" 절의 전면 정정 참고). nested 경로엔
-재클레임이 정당한 경우가 하나도 없으므로(reconcile은 항상 `rawRemove`→
-`rawAdd` 순서, `rawMove`/`rawSwap`은 클레임 미접촉) 무조건 error가 맞음 —
+재클레임이 정당한 경우가 하나도 없으므로(reconcile은 항상 `rawUnmount`→
+`rawAdd` 순서 — **[정정, 2026-08-13 여섯 번째 세션]** 옛 `rawRemove`(파괴)에서
+바뀌었으나 둘 다 `releaseOwner`를 부르므로 논증 동일, `rawMove`/`rawSwap`은
+클레임 미접촉) 무조건 error가 맞음 —
 top-level만 `claimOwnerAt`으로 spurious 재발행을 구분함.
 
 **[2026-08-13 감사] 소유권 반납은 GC에 맡기면 안 됨.** `elementOwner`는
@@ -487,22 +494,16 @@ nested `Slot`을 파괴 후 재사용하는 경로가 정확히 이 케이스). 
   Destroy 시점엔 `retract`가 호출되지 않는다는 원칙(`base/lifecycle-pattern.md`)도
   동일하게 적용.
 
-> **🔄 [역전됨, 2026-08-13 여섯 번째 세션] 아래 "폐기, 옮기지 않음" 결정은
-> 뒤집혔습니다 — 지금은 `State<Slot>` 교체가 **파괴가 아니라 언마운트**이고,
-> **portal은 별도 기능이 아니라 그 결정의 자연스러운 귀결**입니다.
-> 최신 설계는 이 문서 아래쪽 "`State<Slot>` 교체는 파괴가 아니라 언마운트"
-> 절(+ `unmountSlotTree`)이 정본. 아래 문단은 그 결론에 이르기까지의
-> 히스토리로만 남겨둡니다 — **여기 적힌 "확정"을 그대로 믿고 구현하지 말 것.**
+> **🔄 [역전됨, 2026-08-13 여섯 번째 세션 — 원문은 archive로 이동]**
+> 여기 있던 **"retract/재바인드되는 slot은 그냥 폐기된다"+"portal은
+> 오버엔지니어링이라 안 함"** 확정은 뒤집혔습니다 — 지금은 `State<Slot>`
+> 교체가 **파괴가 아니라 언마운트**이고, **portal은 별도 기능이 아니라 그
+> 결정의 자연스러운 귀결**입니다. 정본은 이 문서 아래쪽
+> "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절(+ `unmountSlotTree`).
+> 원문·역전 근거·파급 범위는 `archive/slot-discard-no-portal-reversed.md`.
 
-**확정(2026-08-04 검증 라운드, 메커니즘은 위처럼 2026-08-12 아홉 번째
-세션에 정정): retract/재바인드되는 slot은 옮겨지지 않고 그냥 폐기된다.**
-Slot은 바인딩되는 순간 그 안의 요소를 전부 own해버리는 데이터형 — 새 slot
-상태로 교체될 때 이전 slot의 내용을 다른 곳으로 옮기는 경로는 없음, 그냥
-버림. React의 portal(`<></>`)류로 나중에 옮길 수 있게 하는 것도 검토됐으나
-**이번 마일스톤에서는 오버엔지니어링으로 판단, 하지 않음** — 필요성이 명확해지면
-그때 별도로 다시 논의.
-
-> **범위 명확화(2026-08-09 세 번째 세션)**: 위 "폐기, 옮기지 않음"은
+> **범위 명확화(2026-08-09 세 번째 세션, 이 조항은 지금도 유효)**: 위
+> (지금은 역전된) "폐기, 옮기지 않음"은
 > **프레임워크가 store-bind 재실행으로 Slot 값 전체를 통째로 갈아치울
 > 때**(retract)만의 얘기 — **사용자가 직접 `Slot:Extract(element)`를
 > 부르는 CRUD 경로는 이것과 다른 시나리오**다. Extract로 뺀 element는
@@ -1705,14 +1706,17 @@ return Slot {
 **결론: 후자가 맞고, 실제로 성립함.** 위 sugar 때문에 구조는 항상
 `outer._elements[i] = sub`(래퍼 Slot, 이 위치에 **영구 고정**) →
 `sub:Single(state)` → 그 `:List`의 `reconcile`이 안쪽만 교체 — 이고,
-`reconcile`은 `result ~= prev`일 때 **`rawRemove(self, prev)` 다음에
-`rawAdd(self, result, pos)`** 순서로 부름(위 "구현" 절). 즉 소유권이
+`reconcile`은 `result ~= prev`일 때 **`rawUnmount(self, prev)` 다음에
+`rawAdd(self, result, pos)`** 순서로 부름(위 "구현" 절 — **[정정,
+2026-08-13 여섯 번째 세션]** 옛 `rawRemove`(파괴)에서 비파괴
+`rawUnmount`로 바뀜, 다만 `rawUnmount`도 `releaseOwner`를 부르므로
+아래 소유권 표는 그대로 성립). 즉 소유권이
 **반납 → 재클레임** 순서로 정확히 갈림:
 
 | 시점 | `elementOwner[innerA]` | `elementOwner[innerB]` |
 |---|---|---|
 | 최초 reconcile | `sub` | — |
-| state가 B로 재설정, `rawRemove(sub, innerA)` | `nil`(releaseOwner) | — |
+| state가 B로 재설정, `rawUnmount(sub, innerA)` | `nil`(releaseOwner) | — |
 | 이어서 `rawAdd(sub, innerB, pos)` | `nil` | `sub`(claimOwner) |
 
 바깥(`outer`) 입장에선 `_elements[i]`가 계속 `sub`라 아무 일도 안
@@ -1724,17 +1728,18 @@ return Slot {
 
 **단 이 결론은 위 "요소 소유권" 절의 2026-08-13 감사 수정 셋을 전제함** —
 (1) nested `claimOwner`가 엄격(같은 owner 재클레임도 error)이라
-`Slot { a, a }`가 실제로 막히고, (2) `rawRemove`가 `releaseOwner`를
-실제로 부르고(의사코드에서 빠져 있었음), (3) `destroySlotTree`가 자식
+`Slot { a, a }`가 실제로 막히고, (2) `rawRemove`/`rawUnmount`가
+`releaseOwner`를 실제로 부르고(의사코드에서 빠져 있었음), (3) `destroySlotTree`가 자식
 소유권을 GC에 안 맡기고 명시적으로 반납. 셋 중 하나라도 빠지면 이 표의
 중간 단계가 어긋남.
 
 ### [전면 정정, 2026-08-13 여섯 번째 세션 후속, 사용자 결정] `State<Slot>` 교체는 **파괴가 아니라 언마운트** — `state<Frame>`와 완전히 동일
 
-아래 두 절("`State<Slot?>`가 `nil`이 됐다 돌아오는 경우", "포탈")은 당시
-설계(reconcile이 `rawRemove`=파괴를 씀)를 정확히 서술한 것이지만, 그
-설계 자체가 이 정정으로 **뒤집힘**. 두 절은 문제 제기 과정으로만 남겨두고,
-현재 유효한 규칙은 이 절이다.
+이 정정 **전에** 쓰인 두 절("`State<Slot?>`가 `nil`이 됐다 돌아오는 경우",
+"포탈")은 당시 설계(reconcile이 `rawRemove`=파괴를 씀)를 정확히 서술한
+것이지만, 그 설계 자체가 이 정정으로 **뒤집힘** — 두 절의 원문은
+`archive/slot-discard-no-portal-reversed.md`로 옮겼고(아래쪽에 요약
+포인터만 남김), 현재 유효한 규칙은 이 절이다.
 
 **결정(사용자)**: `State<Slot>`이 다른 값으로 교체될 때 이전 Slot은
 **파괴되지 않고 언마운트만 된다.** 근거:
@@ -1871,90 +1876,23 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 평탄화 도구(`research/operator-sugar-plan.md`)가 처리할 요소이고 실사용
 케이스가 드묾. Dispatch/Slot에 별도 배관을 넣지 않음.
 
-### `State<Slot?>`가 `nil`이 됐다 돌아오는 경우 — 소유권은 정상, 단 **Slot은 파괴된다** (2026-08-13 여섯 번째 세션, 사용자 질문 — **위 정정으로 뒤집힘, 문제 제기 기록으로만 보존**)
+### [역전됨 — 원문은 archive로 이동] `State<Slot?>` 왕복 / 포탈 검토 두 절
 
-**질문**:
-```lua
-local stateSlot: State<Slot?> = Source()
-Frame { Slot { stateSlot } }
-```
-에서 `stateSlot`이 `nil`로 지워졌다 다시 나타나도 문제 없는가.
+위 "언마운트" 정정 **이전에** 쓰인 두 절(`State<Slot?>`가 `nil`이 됐다
+돌아오면 Slot이 파괴된다는 분석, 그리고 포탈이 가능한지 검토하며 숙제 셋을
+열어둔 절)은 결론이 전부 뒤집혀 이 문서에서 뺐다 — **원문·역전 근거·숙제
+셋의 결말은 `archive/slot-discard-no-portal-reversed.md` 3~4절.**
 
-**소유권 bookkeeping은 정상** — `:Single`이 감싼 `:List`의 `reconcile`이
-`data`가 빈 배열이 되면 직전 사이클 key(`true`)가 `seen`에 없으므로
-`rawRemove(sub, prev)`를 부르고(→ `releaseOwner`), 다시 값이 오면
-`rawAdd`(→ `claimOwner`)를 부름. 위 감사 수정(=`rawRemove`가 실제로
-`releaseOwner`를 부르고, `destroySlotTree`가 `_mounted`/`_mountedInst`도
-되돌림) 이후로는 재클레임이 깨끗하게 됨.
+지금 유효한 답만 옮겨두면:
 
-**하지만 그 사이에 Slot 자체가 파괴됨 — 이게 실질적인 답이다.**
-`reconcile`이 쓰는 건 `rawRemove`(= 제거 **+ 파괴**)이지 `rawExtract`(=
-비파괴)가 아님(위 "구현" 절, "제거는 항상 파괴 확정이라 `Extract` 아닌
-`Remove` 경로"). 그래서 `nil`이 된 순간 `destroySlotTree(slotA)`가 돌아
-**slotA의 자식 Instance들이 `:Destroy()`됨**. 다시 나타날 때 같은
-`slotA` 객체를 넣으면 `_elements`엔 이미 죽은 Instance 참조가 남아있는
-상태로 재마운트되는 것 — 껍데기만 살아있다. 이건 이미 확정된 정책
-("retract/재바인드되는 slot은 옮겨지지 않고 그냥 폐기된다", 위 "확정"
-절)의 직접적인 귀결이고 이번 감사로 바뀐 게 아님.
-
-**따라서 실용적 관용구는 "Slot을 껐다 켜는" 게 아니라, Slot은 계속 두고
-그 *내용*을 비우는 것**(`Slot:Clear()`, 또는 `:List`의 `data`를 빈
-배열로) — 또는 매번 새로 만든 Slot을 `Set`하는 것. 같은 Slot 객체를
-`nil`↔`slotA`로 왕복시키는 코드는 두 번째 등장부터 조용히 빈/깨진
-서브트리를 냄.
-
-### 포탈(`Extract`로 살아있는 Slot을 다른 곳으로 옮기기) — **해결됨**(위 "언마운트" 정정으로), 아래는 그 결론에 이른 과정
-
-**질문**: `stateSlot:Get()`으로 Slot을 뽑아두고 → `Set()`으로 다른 Slot을
-넣고 → 뽑아둔 Slot을 다른 곳에 넣을 수 있는가. 가능하다면 "포탈"
-(위 "확정" 절에서 오버엔지니어링으로 미뤄둔 React portal류)이 이걸로
-해결됨.
-
-**현재 설계로는 불가** — 위 절과 같은 이유 하나 때문임: `reconcile`이
-교체 시 `rawRemove`(파괴)를 부르므로, `Get()`으로 뽑아둔 레퍼런스는
-`Set()` 직후 **이미 파괴된 Slot**이 됨. 막는 게 소유권 규칙이 아니라
-"제거 = 파괴"라는 reconcile의 선택 하나라는 점이 중요함.
-
-**그런데 나머지 부품은 이미 다 있음** — 그래서 사용자 지적대로 이
-방향은 실현 가능성이 높음:
-- `Extract`/`ExtractAll`/`Splice`가 이미 **비파괴 제거**로 확정돼 있음
-  (위 "CRUD API 확정" 절) — 필요한 시맨틱이 이미 공개 API에 존재.
-- `claimOwner`/`releaseOwner`가 이미 소유권을 정확히 이양함 — 뽑힌
-  Slot은 owner 없는 상태가 되고, 다른 곳에서 `Add`하면 깨끗이 클레임됨.
-- `attachSlot`은 **재마운트를 구조적으로 이미 지원** — `_mounted`/
-  `_mountedInst`를 새 target으로 세팅하고 `_elements`를 새 물리 부모로
-  flush하는 순수 구조 로직이라, 자식이 파괴만 안 됐다면 그대로 옮겨감.
-  (`destroySlotTree`가 `_mounted`를 되돌리도록 한 이번 감사 수정이
-  마침 이 경로의 전제 조건이기도 함.)
-
-**남는 숙제(그래서 지금 확정 안 하고 열어둠)**:
-1. **어느 경로가 비파괴가 되어야 하는가** — `reconcile` 전체를
-   `rawExtract`로 바꾸면 "안 쓰는 서브트리가 조용히 안 죽는" 누수가 되기
-   쉬움. 사용자가 명시적으로 고르는 opt-in(예: `:Single`/`:List`의
-   옵션, 또는 "이 Slot은 portal 대상"이라는 표식)이 맞아 보임 — Attribute
-   자동 unset을 opt-in 유틸로 미뤄둔 것과 같은 결.
-2. **`destroySlotTree`가 하는 나머지 일들의 짝** — 자식 observer
-   `unbindLifetime`, `Dispatch.setLength`/`setOffsetSource`로 옛 owner에
-   등록해둔 항목 정리. 비파괴 경로는 이것들을 "해제 후 새 owner에 재등록"
-   해야 하는데, 지금 `attachSlot`은 등록만 하고 해제하는 짝이 없음.
-3. **`Extract` 후 재마운트 전까지의 중간 상태** — 소유자 없이 물리
-   트리에서도 떨어진 Slot이 얼마나 오래 떠 있어도 되는지(GC 앵커가
-   `bindLifetime` 하나뿐인데 top-level에서 뽑히면 그 앵커도 풀림 →
-   사용자가 레퍼런스를 안 들고 있으면 그냥 GC됨. 이건 오히려 자연스러운
-   동작일 수 있음).
-
-**결론**: "포탈은 별도 메커니즘이 필요하다"는 기존 전제는 **틀렸음** —
-`Extract` 비파괴 경로 하나로 나옴. **[사용자 결정, 위 "언마운트" 정정]**
-게다가 opt-in이 아니라 **기본 동작**이 됨: `State<Slot>` 교체는 원래부터
-`state<Frame>`와 같이 언마운트여야 했다는 판단이라, "포탈"은 별도
-기능이 아니라 그 결정의 자연스러운 귀결일 뿐. 위 숙제 1번(어디에
-opt-in할지)은 그래서 사라졌고, **2번(등록의 해제 짝)만 실제 작업으로
-남음** — 3번(중간 상태)은 "아무도 안 들고 있으면 GC, 명시적으로 지우려면
-`dispose`"로 답이 나옴.
-
-**실측 필요 — 새 항목 아님, 기존 실측 목록에 흡수**: `State<T>`/`Slot<T>`
-자기 참조 제네릭 타입체크는 이미 M0/M6 실측 목록에 있던 것과 같은 급이라
-별도 항목 추가 안 함.
+- **`nil`↔`slotA` 왕복은 정상 동작한다** — 언마운트 전환으로 "두 번째
+  등장부터 깨진 서브트리" 문제 자체가 사라짐. 단 **`Set`으로 덮어쓰기
+  *전에* 이전 값을 직접 `Destroy()`하는 건 UB**(`state<Frame>`에서 먼저
+  `frame:Destroy()`하고 `Set`하는 것과 같은 문제) — 순서는 항상
+  `Set`(언마운트) → 그 다음 정리.
+- **포탈은 기본 동작이다** — opt-in 표식도, 새 API도 없음. 옛 owner의
+  등록 해제는 `setOffsetSource(ownerKey, position, None)` **다음에**
+  `setLength(ownerKey, position, 0)`(순서 중요 — 위 ⚠️ 절).
 
 ### `:List`의 `index`도 nested-Slot 결과의 `.Length`만큼 건너뛰어야 함 (같은 세션 후속, 사용자 발견)
 
