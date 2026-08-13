@@ -588,10 +588,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `PostRef`는 로컬 `postRefList`에 push만 함(Dispatch.process/getHandler
       우회하는 raw 루프, `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten
       재호출 가능성과 충돌하므로 기각). **복수 `PreRef`/`PostRef`의 계열 안
-      상대 순서는 보장 안 함**(**[역전, 2026-08-14 아홉 번째 세션]** 예전엔
-      "배열 index 순서 그대로"를 보장으로 명시했었음 —
-      `archive/preref-order-guaranteed-reversed.md`, 구현은 그대로고 계약만
-      좁힌 것). fire/수집된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두
+      상대 순서는 배열 index 순서 그대로 보장**(별도 규칙 없음 — 배열 파트
+      index 순서 계약의 귀결. 2026-08-14 아홉 번째 세션에 잠깐 미보장으로
+      뒤집었다가 같은 세션에 철회 —
+      `archive/preref-order-unguaranteed-withdrawn.md`, `FastQuery(...) ->
+      PreRef`류 조합이 반례). fire/수집된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두
       번째 세션] `None`이 아니라 전용 센티널 `ProcessedPreRef`/
       `ProcessedPostRef` 처리** — 아래 `Processed*Handler` 항목이 그 자리를
       정상 두 패스로 마저 처리)

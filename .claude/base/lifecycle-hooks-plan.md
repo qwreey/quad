@@ -124,7 +124,8 @@ end
   아직 없을 수 있음 — React `componentDidMount`가 DOM 삽입 **후**인 것과
   다르므로, 이름만 보고 "화면에 올라간 뒤"로 기대하지 않도록 **사용자
   문서에 반드시 명시**할 것(아래 "이름 컨벤션" 절도 참고).
-- 복수 `OnRendered` 간 상대 순서는 **보장 안 함**(`PostRef` 계약).
+- 복수 `OnRendered` 간 상대 순서는 **배열 index 순서로 보장**(`PostRef`
+  계약, `OnCreated`도 동일).
 
 ### `OnDestroyed(fn)`
 
@@ -151,11 +152,26 @@ Frame {
 }
 ```
 
-**단, 같은 계열끼리의 상대 순서는 보장 안 함** — `fn1`이 `fn2`보다 먼저
-불린다고 기대하지 말 것(`PreRef`/`PostRef` 둘 다 2026-08-14 아홉 번째
-세션에 계열 안 순서를 명시적 미보장으로 확정, `base/ref-plan.md`). 순서가
-정말 필요하면 훅을 여럿 등록하는 게 아니라 **하나의 훅 안에서 순서대로
-부를 것** — 그게 의도가 코드에 드러나는 유일한 방법.
+**같은 계열끼리의 상대 순서는 배열 index 순서로 보장됨** — `fn1`이
+`fn2`보다 먼저 불림(`PreRef`/`PostRef` 공통 계약, `base/ref-plan.md`).
+이게 유용한 대표 사례는 **`PreRef`를 반환하는 다른 팩토리와의 합성**:
+예컨대 `FastQuery(...) -> PreRef`처럼 앞자리 항목이 뭔가를 미리
+해결해두면, 그 뒤에 오는 `OnCreated(fn)`은 **그게 이미 끝났음을 전제로**
+동작할 수 있음(사용자 제시 사례).
+
+```lua
+Frame {
+    FastQuery(...),          -- PreRef를 반환하는 팩토리
+    OnCreated(function(inst) -- 위가 이미 끝난 뒤에 불림
+        ...
+    end),
+}
+```
+
+**다만 스타일 권고**: 서로 얽힌 두 훅을 순서로 조율하는 것보다 **하나의
+훅 안에서 순서대로 부르는 게** 대개 의도가 더 잘 드러남 — 보장은 하되,
+위처럼 "앞의 것이 뒤의 것의 전제를 만들어주는" 명시적 합성이 아니면
+기대지 말 것.
 
 `OnCreated(fn)`/`OnRendered(fn)`/`OnDestroyed(fn)` 호출마다
 `PreRef()`/`PostRef()`/`Effect(...)`
@@ -232,11 +248,11 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   똑같이 필요(pre-pass가 놓쳤을 때만 매치되는 버그 케이스 전용, `error`).
 - **두 패스가 끝난 뒤, `Dispatch.drive`가 `postRefList`를 그 순서 그대로
   순회하며 각 `PostRef`를 fire** — 별도 후행 전체 재순회가 필요 없음,
-  pre-pass가 이미 만들어둔 목록을 그대로 소비하면 끝. **[정정, 2026-08-14
-  아홉 번째 세션]** 복수 `PostRef` 간 순서가 복수 `PreRef`와 같은
-  원칙이라는 건 그대로지만, 그 원칙 자체가 "배열 index 순서 **보장**"에서
-  **"보장 안 함"**으로 뒤집혔음 — 구현상 push 순서로 돌 뿐, 계약이
-  아님(`archive/preref-order-guaranteed-reversed.md`).
+  pre-pass가 이미 만들어둔 목록을 그대로 소비하면 끝. 복수 `PostRef`
+  간 순서는 복수 `PreRef`와 같은 원칙(배열 index 순서 그대로, **보장**)이
+  자연히 적용됨 — 2026-08-14 아홉 번째 세션에 이 보장을 잠깐 미보장으로
+  뒤집었다가 같은 세션에 철회했음
+  (`archive/preref-order-unguaranteed-withdrawn.md`).
 - 결과적으로 `PreRef`와 `PostRef`는 **소진 메커니즘이 완전히 대칭**
   (둘 다 pre-pass에서 즉시 `Processed*` 센티널로 소진, 둘 다 전담
   `Processed*Handler`가 Length/Offset을 등록) — 유일한 차이는 "실제

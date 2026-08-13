@@ -1327,10 +1327,13 @@ fire 순서 미보장으로 역전, `lifecycle-hooks-plan.md` base 승격**
 공짜로 줌 — 진짜 경계는 **"자기 아래 vs 자기 위"**로, `PostRef`는 서브트리
 완성은 보장하되 **이 인스턴스가 부모에 붙기 전**에 불림(React
 `componentDidMount`와 다름, `OnRendered` 이름 때문에 문서화 필수 캐비엇).
-같은 세션에 **`PreRef`/`PostRef` 계열 안 fire 순서를 "배열 index 순서 보장"
-에서 미보장으로 역전**(2026-08-07 아홉 번째 세션 결정을 뒤집음, 구현이
-아니라 계약만 — "같은 계열 내 등록 순서에 의존하는 코드가 생겨선 안 됨",
-`archive/preref-order-guaranteed-reversed.md`). `OnRendered` 채택으로
+같은 세션에 **`PreRef`/`PostRef` 계열 안 fire 순서**를 미보장으로 뒤집었다가
+**곧바로 철회, "배열 index 순서 보장" 유지**(2026-08-07 결정 그대로) —
+사용자가 든 반례가 `FastQuery(...) -> PreRef`류 조합(앞자리 항목이 뒤
+항목의 전제를 만들어주는 정당한 합성)이었고, 보장 비용이 0인 데다 배열
+파트 index 순서가 이미 백엔드 이식성 때문에 명시적 계약이라 새로 내주는
+자유도 없음이 확인됨. 양쪽 논거는
+`archive/preref-order-unguaranteed-withdrawn.md`. `OnRendered` 채택으로
 `lifecycle-hooks-plan.md`의 마지막 열린 항목이 닫혀 `base/`로 승격, 남은
 건 `OnDestroyed` 이름 재검토 여지 하나(0-B 확정 시, `question.md` 용어
 대기열 3순위). ROADMAP M8/백로그·README·brand/architecture/slot/modifier/
