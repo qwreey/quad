@@ -69,9 +69,10 @@ API 전부에 걸리며, 2026-08-07 일곱 번째 세션(커링 스타일 확정
 
 **이게 지금 유일하게 `base/` 반영을 막고 있는 결정.** 아래 0-A의
 재디스패치 모델은 나머지가 전부 확정됐고, 이 항목 하나만 정해지면
-⚠️ 배너를 단 **6개 문서**(`bind-system-plan.md`/`tag-plan.md`/
-`slot-plan.md`/`attribute-plan.md`/`architecture.md`/`ROADMAP.md`)를
-한 번에 옮기면 됨.
+⚠️ 배너를 단 **7개 문서**(`bind-system-plan.md`/`tag-plan.md`/
+`slot-plan.md`/`attribute-plan.md`/`ref-plan.md`/`architecture.md`/
+`ROADMAP.md` — `ref-plan.md`는 9차 세션 분할 때 배너가 같이 안 옮겨간
+걸 10차 세션 감사에서 발견해 추가)를 한 번에 옮기면 됨.
 
 **문제**: 새 모델(핸들러 선비교)에서는 그룹 A가 잡아둔
 `AttributeKey("foo")` 인덱스 1에 그룹 B가 들어와도 **양쪽 다 `StoreBind`에
@@ -134,12 +135,13 @@ Attribute가 직접 해야 함.**
 그 하나 외에는 이 항목에 결정할 게 없음.
 
 **실행 규모**: `base/`의 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
-`attribute-plan.md` 의사코드 재작성 + `architecture.md` 소스트리 서술과
-`ROADMAP.md` M2/M4/M6/M10 체크리스트 — 0-Z 하나만 정해지면 한 번에 옮기면
-됨(어디를 어떻게 고칠지는 `research/dispatch-redispatch-diff-plan.md` 6절에
-파일별로 적어둠 — 뒤 둘은 2026-08-13 7차 감사에서 그 목록에 빠져 있던 걸
-발견해 추가). **그때까지 `base/`의 현행 `hintValue` 서술이 유효** —
-아직 안 옮겼다는 걸 잊고 base만 읽으면 옛 모델로 구현하게 되니 주의.
+`attribute-plan.md`/`ref-plan.md` 의사코드 재작성 + `architecture.md`
+소스트리 서술과 `ROADMAP.md` M2/M4/M6/M10 체크리스트 — 0-Z 하나만 정해지면
+한 번에 옮기면 됨(어디를 어떻게 고칠지는
+`research/dispatch-redispatch-diff-plan.md` 6절에 파일별로 적어둠 — 뒤
+셋은 2026-08-13 7차/10차 감사에서 그 목록에 빠져 있던 걸 발견해 추가).
+**그때까지 `base/`의 현행 `hintValue` 서술이 유효** — 아직 안 옮겼다는 걸
+잊고 base만 읽으면 옛 모델로 구현하게 되니 주의.
 ### 0-B. `dispose(any)` — 시그니처/범위 (2026-08-13 여섯 번째 세션 신설, 사용자 제안)
 
 `State<Slot>` 교체를 파괴가 아니라 **언마운트**로 확정하면서(`state<Frame>`와

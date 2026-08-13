@@ -75,9 +75,10 @@ git.qwreey.moe에 제한된 계정 생성). 로컬 git 저장소는 이미 초�
   제가 물리적으로 스케치해보며 심층 분석해보겠습니다."
 
 **막고 있는 범위**: 0-Z가 정해져야 `bind-system-plan.md`/`tag-plan.md`/
-`slot-plan.md`/`attribute-plan.md`/`architecture.md`/`ROADMAP.md` 6개를 새
-모델로 한 번에 옮길 수 있음 — 그 전에 M2/M4/M6/M10을 구현하면 곧 갈아엎어야
-하는 코드를 짜게 됨. 상세/선택지는 `.claude/question.md` 최상단.
+`slot-plan.md`/`attribute-plan.md`/`ref-plan.md`/`architecture.md`/
+`ROADMAP.md` 7개를 새 모델로 한 번에 옮길 수 있음 — 그 전에 M2/M4/M6/M10을
+구현하면 곧 갈아엎어야 하는 코드를 짜게 됨. 상세/선택지는
+`.claude/question.md` 최상단.
 
 ## 5. Studio 전용 스파이크 `10` 마저 돌리기 (사람만 가능)
 

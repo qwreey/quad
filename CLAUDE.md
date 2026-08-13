@@ -1036,3 +1036,17 @@ CLAUDE.md "작업 방식"에 중대 변경 핸드오버 체크리스트 6단계�
 트림 후 깨진 참조 2곳, `ROADMAP.md` M0 섹션의 0-Y/0-Z 게이트 표시 누락.
 발견 즉시 24개 파일에 직접 반영, `doc-check.py` ERROR 0 유지 확인. 새로
 연 설계 질문 없음.
+
+**2026-08-13 열한 번째 세션 — 서브 에이전트 없이 순차 직접 감사, 부정확성 4건**
+(`session/2026-08-13-11-corpus-audit-sequential-direct.md`)
+사용자 요청으로 에이전트 위임 없이 `.claude/base`(20개)/`research`(9개)/
+`reference`(3개)/`luau-test`/`audit`/`archive`(18개) 전체를 순서대로 직접
+정독. 열 번째 세션이 이미 고친 것과 같은 종류의 stale이 두 곳 더 남아있던
+게 핵심 발견 — `question.md` 0-Z/0-A와 `HUMAN_TODO.md` 4번이 여전히
+"6개 문서"(ref-plan.md 누락)로 서술 중이던 것을 "7개"로 정정(같은 정정이
+`dispatch-redispatch-diff-plan.md`/`CLAUDE.md`엔 이미 반영돼 있었으나 이
+두 파일엔 안 퍼져 있었음). 별도로 `ROADMAP.md` 백로그의
+`objectListClass.__newIndex` 재현 테스트 항목이 세 번째 세션에 이미
+불필요로 해소됐는데 그 반영이 이 파일에만 안 퍼져 있던 것도 정정. base/
+research/reference/luau-test/archive 전체는 정합성 문제 없음 확인 —
+`doc-check.py` ERROR 0 유지. 새로 연 설계 질문 없음.
