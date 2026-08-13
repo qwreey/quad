@@ -5,6 +5,12 @@
 상세는 `base/bind-system-plan.md` 참고. 원본: `.claude/initreq/raw-userinput.md`
 "store는 부작용을 허용함" / "state는 어떻게 구현하는가" 절.
 
+> **⚠️ [2026-08-13 첫 실측에서 발견, `question.md` 0-Y]** 아래에서
+> "확정"으로 서술하는 self/deps lazy `State` 핸들 계약이 Luau 양방향
+> 추론과 충돌함이 실측으로 확인됨 — 상세는
+> `base/bind-system-plan.md`의 동일 배너, M0 착수 전 사용자가 확정해야
+> 할 미해결 사안.
+
 ## Store는 부작용을 허용하는 게 기본 디자인
 
 부작용 없이(파라메터 패싱만으로) 쓰는 것도 물론 가능하지만, 라이브러리 차원에서

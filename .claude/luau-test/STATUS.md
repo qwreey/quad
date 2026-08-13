@@ -4,19 +4,23 @@
 > 상세 결과는 `.claude/audit/luau-test-first-run-2026-08-13.md`.
 > 실행법: `luau <파일>` (런타임) / `luau-analyze <파일>` (타입 전용).
 
-## 🔴 사람 결정 필요 — 설계가 걸린 것 (2건)
+## 🔴 사람 결정 필요 — 설계가 걸린 것 (1건)
 
 | 파일 | 무엇이 걸렸나 | 어디로 |
 |---|---|---|
-| `15-type-compute-trailing-deps-typepack.luau` | **`:Compute(fn)`의 lazy 핸들 계약이 Luau 추론과 충돌.** `state:Compute(function(s) return s:Get()*2 end)`가 타입 에러. 콜백이 raw 값을 받으면 완전 클린 — 즉 표기 조정이 아니라 계약 자체가 원인. `Effect`/`Observer`/`Animate`/`Operator` 등 같은 계약 공유 API 전부에 걸림 | `question.md` **0-Y** |
 | `08-type-source-satisfies-state.luau` | 핵심 질문(Source⊇State)은 통과. 다만 `State<T>`가 **자기 자신**을 다른 타입 인자로 재귀 참조하면 `Recursive type being used with different parameters` — 사용자 방향은 "구울 때 인라이닝" | `question.md` **0-Y** 하단 |
+
+`15`의 `:Compute(fn)` lazy 핸들 계약 충돌(**`question.md` 0-Y** 본 항목)도
+같은 종류의 사람 결정 필요 사안이지만, 스파이크 자체가 파싱 실패라 아직
+그 결과를 신뢰할 수 없는 상태 — 아래 🟠 표에서 재작성 대기 중, 재작성 후
+다시 여기로 승격할 것.
 
 ## 🟠 스파이크 자체가 깨져 있음 — 재작성 필요 (3건, 설계 문제 아님)
 
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
 | `13-type-ref-preref-subtype.luau` | 타입 A섹션은 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션 분리 |
-| `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
+| `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리. 재작성 후에도 `:Compute` 계약 충돌 자체는 이미 다른 최소 재현으로 확인됐으므로(`question.md` 0-Y) 재작성은 확인 사살일 뿐 0-Y 판단을 바꾸지 않음 |
 | `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
 
 ## ⚪ 아직 안 돌림

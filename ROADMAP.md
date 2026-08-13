@@ -479,7 +479,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
       (`bind-system-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
       "이전 매치 핸들러 추적" 항목과 함께 구현 — `StoreBind` 핸들러와
-      동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — 확정 완료
+      동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — `None` 센티널
+      자체는 확정 완료지만, **⚠️ M2 배너와 같은 주의**: `NoneHandler`가
+      쓰는 재-dispatch 배관(선행 `retractFrom` 호출)은 재디스패치 모델
+      교체 대상이라 `question.md` 0-Z 먼저 해소할 것
 - [ ] 프로퍼티류 필드 타입에 `T' = T | Tween<T>` 치환 반영(타입 생성
       스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
       끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`

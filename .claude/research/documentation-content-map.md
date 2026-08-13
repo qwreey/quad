@@ -251,8 +251,17 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 - **[해소됨]** Slot 형제 순서 보장 — `Dispatch.setLength`/
   `setOffsetSource`(Length/Offset)로 2026-08-09 여섯 번째 세션에 확정,
   `bind-system-plan.md` "Length/Offset" 절 참고.
-- Tween 오버라이드/삭제후재시작/끝점이동 세부 옵션 키 이름, 트윈 옵션 값
-  모양(TweenInfo vs 편의 필드) (`base/tween-plan.md`) — 아직 열림.
+- **[해소됨, 2026-08-13 정정]** Tween 오버라이드/옵션 값 모양 —
+  2026-08-12 첫 번째 세션에 `Info: TweenInfo?`+편의 필드 폴백,
+  override 정책은 `Tween.Cancel`(기본)/`Tween.Finish` 2값으로 확정,
+  `tween-plan.md` 자체가 `research/`에서 `base/`로 승격됨(이 줄이 그
+  갱신을 놓치고 있었음). **다만 아래 §1/§2의 Tween 예시(`[Tween(key,
+  ...)] = storeValue` 특수 바인드 키, "Tween 핸들러가 Instance
+  직접 받음", "반응 그래프 밖 특수 bind key로 둔 이유")는 전부
+  2026-08-10 두 번째 세션에 폐기된 구모델
+  (`archive/tween-special-bind-key-reversed.md`) 서술 — 이 문서를
+  실제로 쓸 때 `Tween(opts) -> Tween<T>` 값-레벨 래퍼 모델로 다시
+  써야 함.**
 - **[해소됨]** `Attribute<T>` 제네릭 vs 타입별 정적 생성자 — 2026-08-09
   열한 번째 세션에 "둘 다 채택"으로 확정, `base/attribute-plan.md` 참고.
 - provider/processor 네이밍 — **[해소됨]** `Handler`로 이미 오래전 확정

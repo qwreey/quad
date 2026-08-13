@@ -40,7 +40,7 @@ unmount(`Remove`) 둘이 아니라 **reposition(`Move`/`Swap`)까지 셋** —
 (`LayoutOrder` 기반 정렬이라) 사실상 no-op으로 둘지는 구현 선택.
 
 **[2026-08-09 일곱 번째 세션 보강]** `Dispatch/Slot.luau`의 mount 훅
-(`process(inst,k,self)`)은 `Dispatch.setLength(inst,i,self.Length)` 호출과
+(`process(inst,k,self,index)`)은 `Dispatch.setLength(inst,i,self.Length)` 호출과
 같은 자리에서 `self._listed`면 `activateList(self,inst)`도 트리거해야 함 —
 `:List`의 `data:Observer(fn)` 구독을 Slot 마운트 시점까지 lazy하게 미루는
 것도 이 mount 훅의 책임(아래 "`Slot:List(...)`"의 "구독 시점" 절 참고).
@@ -137,7 +137,7 @@ Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 �
 서로 다른 두 대상을 추적해야 함 — 명시적으로 분리:
 
 - **Slot 컨테이너 자신**: `self._mounted: boolean`(Slot 인스턴스 필드
-  하나). **트리거 시점은 `Dispatch.process(inst,k,self)`가 이 Slot
+  하나). **트리거 시점은 `Dispatch.process(inst,k,self,index)`가 이 Slot
   객체에 대해 실제로 호출된 순간**(핸들러 매치 시점) — Instance
   `Parent` 대입 완료를 기다리지 않음. 다른 모든 "마운트됨" 판정(PreRef
   소진, Ref 콜백 fire 등)이 전부 dispatch-process 시점 기준이라 여기만
@@ -1021,7 +1021,7 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 **구독 시점은 `:List()` 호출이 아니라 Slot 마운트 시점 — lazy `bindLifetime`
 (2026-08-09 일곱 번째 세션, 아래 "구독 시점" 절 참고).** `:List()`는 설정만
 저장하고 반환, 실제 `data:Observer(fn)` 구독과 최초 `reconcile`은 Slot
-자신이 마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self)`)에
+자신이 마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self,index)`)에
 `activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
 
@@ -1039,7 +1039,7 @@ function Slot:List(data, updateFn, keyFn)
     return self
 end
 
--- Dispatch/Slot.luau의 process(inst,k,self)가 마운트 시점에 1회 호출
+-- Dispatch/Slot.luau의 process(inst,k,self,index)가 마운트 시점에 1회 호출
 -- (self._mounted=true/self._mountedInst=inst, self.Offset 세팅과 같은 자리)
 function activateList(self, inst)
     local keyFn, updateFn = self._keyFn, self._updateFn
@@ -1184,7 +1184,7 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
 **해법 — `Dispatch.setLength`가 이미 쓰고 있는 패턴 그대로 재사용**: 새
 메커니즘 발명 아님. `:List()`는 `data`/`updateFn`/`keyFn`만 저장하고 반환,
 실제 `data:Observer(fn)` 구독 + 최초 `reconcile`은 Slot 컨테이너 자신이
-마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self)` — 위
+마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self,index)` — 위
 "`isMounted` 이중 추적 분리" 절이 이미 `self._mounted`를 세팅하는 바로 그
 지점)에 `activateList(self, inst)`가 수행. `Dispatch.setLength(inst,i,
 self.Length)`를 부르는 것과 같은 자리에서 같이 트리거되면 됨.
@@ -1372,7 +1372,7 @@ local function attachSlot(slot, physicalTarget, ownerKey, position)
     -- top-level/nested 어느 깊이에서 불려도 완전히 동일하게 동작하는 순수 구조적
     -- mount 로직만 담당(레이어 구분은 오직 이 함수를 부르는 쪽의 책임) — retract
     -- 쪽(destroySlotTree)이 이미 이 원칙대로였는데(자기 자신의 unbindLifetime은
-    -- 안 하고 Handler.retract에서만 짝을 맞춤) process 쪽만 attachSlot 내부에
+    -- 안 하고 process가 반환하는 retract 클로저에서만 짝을 맞춤) process 쪽만 attachSlot 내부에
     -- ownerKey==physicalTarget 분기로 anchor 로직이 새어들어와 있던 비대칭이었음.
     slot._mounted = true
     slot._mountedInst = physicalTarget
@@ -1400,7 +1400,7 @@ end
 
 **최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
 ```lua
--- process(inst, k, slotValue)
+-- process(inst, k, slotValue, index)
 attachSlot(slotValue, inst, inst, k)   -- ownerKey = 물리 inst 자신
 ```
 
@@ -1482,10 +1482,14 @@ local function destroySlotTree(slot)
     -- destroySlotTree는 재귀 전체에서 항상 이 위치까지만(자식 Observer 정리) 담당.
 end
 
--- [명확화] 아래 시그니처는 index 기준 예시 — 위 "raw* 내부 호출 규약" 절이
--- 이미 못박았듯 reconcile(위 "여러 Slot이 섞일 때" 절 근처)은 element 기준으로
--- rawRemove(self, prev)를 부름. 둘 중 하나로 통일할지 얇은 변환 계층을 둘지는
--- 아직 M6 구현 세부로 열려 있음 — 이 블록은 그 결정 전 illustrative 예시.
+-- [명확화, 2026-08-13 감사에서 index/element 불일치 발견해 보강] 아래
+-- 시그니처는 index 기준 예시 — 위 "raw* 내부 호출 규약" 절이 이미
+-- 못박았듯 reconcile(위 "여러 Slot이 섞일 때" 절 근처)은 element 기준으로
+-- rawRemove(self, prev)를 부름. **같은 불일치가 rawUnmount에도 그대로
+-- 있음** — 아래 reconcile 예시의 rawUnmount(self, prev) 호출도 prev가
+-- element(mounted[key])이지 index가 아님. 둘 중 하나로 통일할지 얇은
+-- 변환 계층을 둘지는 아직 M6 구현 세부로 열려 있음 — 이 블록/아래
+-- reconcile 블록 둘 다 그 결정 전 illustrative 예시.
 -- [신설, 2026-08-13 여섯 번째 세션] rawRemove의 비파괴 짝 — `:List`의
 -- reconcile과 `Extract` 계열이 씀. rawRemove와 **딱 하나만 다름: 안 죽인다.**
 function rawUnmount(self, index)

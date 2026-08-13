@@ -22,10 +22,15 @@
 
 	실행:
 	  A) `luau-analyze 13-type-ref-preref-subtype.luau` (또는 luau-lsp)
-	  B) `luau 13-type-ref-preref-subtype.luau` (런타임 부분은 그냥 통과함,
-	     타입 에러가 있어도 런타임 실행 자체는 대부분 luau CLI가 그냥
-	     진행시켜줌 — 확실히 하려면 A/B를 따로 luau-analyze/luau로 각각
-	     돌려볼 것)
+	  B) `luau 13-type-ref-preref-subtype.luau`
+
+	[정정, 2026-08-13 첫 실측 라운드] 위 "런타임 부분은 그냥 통과함" 예상은
+	틀렸음 — 실제로 돌려보니 A섹션의 `fakePreRef(0)`가 런타임에 `nil`을
+	반환하는 더미 스텁이라, B섹션이 시작하기 전에 `useAsRef(myPreRef)`의
+	`r.Value` 접근에서 "attempt to index nil"로 죽어 B섹션 런타임 검증까지
+	도달하지 못함. 타입 A섹션(luau-analyze)은 별개로 통과. 상세는
+	`luau-test/STATUS.md` 🟠 항목 — A/B를 별도 파일로 분리해야 함(재작성
+	대기).
 ]]
 
 -- ===== A) 타입 체크 대상 =====

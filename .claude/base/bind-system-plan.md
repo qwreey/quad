@@ -2458,6 +2458,15 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 
 **`:With`/`:Compute` — self 인자도 lazy 핸들로 통일**
 
+> **⚠️ [2026-08-13 첫 실측에서 발견, `question.md` 0-Y] 아래 lazy 핸들
+> 계약이 Luau 양방향 추론과 충돌함이 확인됨.** 가장 흔한 관용구
+> (`state:Compute(function(s) return s:Get() * 2 end)`)가 타입 에러를
+> 낸다 — 콜백이 raw 값을 받는 형태면 완전히 클린하다는 것까지 최소
+> 재현으로 확인됨(`.claude/luau-test/15-type-compute-trailing-deps-typepack.luau`,
+> `audit/luau-test-first-run-2026-08-13.md`). `Effect`/`Observer`/`Animate`/
+> `Operator` 등 같은 계약을 공유하는 API 전부에 걸림 — 아래 서술은 M0
+> 착수 전 사용자가 확정해야 할 미해결 사안이지 확정된 계약이 아님.
+
 - 최초안(self 값은 포지셔널 raw 값, with한 값만 클로저로 읽음)에는 실제
   단점이 있었음 — self가 raw 값이면 `fn` 호출 전에 항상 self를 먼저
   `Get()`해야 하므로, `fn` 내부 로직이 with한 다른 값을 보고 "이 경우엔 self
