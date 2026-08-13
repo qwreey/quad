@@ -95,7 +95,9 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
 - **`T`의 실제 의미**: 위 배제 덕에 "이 Slot이 실제로 담을 수 있는 최종
   마운트 가능한 값의 타입" 그 자체로 단순해짐 — quad-roblox엔 사실상
   `T = Instance` 하나뿐(컴포넌트 호출 결과도 결국 Instance)이라
-  `D.InstSlot = Slot<<Instance>>`가 사실상 "그" Slot 타입. `Slot<T>()`가
+  `DI.InstSlot = Slot<<Instance>>`(`DI` 네임스페이스 이름 자체는
+  `question.md` 1번 용어정리 대기 중, 여기선 잠정 표기)가 사실상 "그"
+  Slot 타입. `Slot<T>()`가
   기본값(`T` 생략 시) 없이 항상 명시를 요구하는지, `quad-base`에선
   `any`로 기본값을 두는지는 tbox 제네릭 적용 문법 확정 시 같이 정할 것
   (이 문서 "자식으로 넘기는 클래스 스토어" 절의 기존 미결과 같은 갈래).

@@ -311,8 +311,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
       UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
 - [x] **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
-      `Get`/`IndexOf` CRUD 의미론 확정** (2026-08-09 세 번째 세션, 2026-08-09
-      열한 번째 세션에 식별 기준 재정정) — 에러 조건까지 전부 확정
+      `Get`/`IndexOf`/`Splice` CRUD 의미론 확정** (2026-08-09 세 번째 세션,
+      2026-08-09 열한 번째 세션에 식별 기준 재정정, `Splice`는 2026-08-12
+      열다섯 번째 세션 신설 — **[2026-08-13 5차 감사에서 추가] `Splice`가
+      이 체크리스트에 누락돼 있었음, `luau-test/20`으로 산술 실측 통과됨**)
+      — 에러 조건까지 전부 확정
       (`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시 throw"도
       `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너 기준이
       명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
@@ -333,8 +336,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
       실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
       Effect/Modifier)은 self-ref 컨텍스트가 없어 의미 불성립이라 즉시
-      error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
-      Slot<<Instance>>`가 quad-roblox의 사실상 유일한 Slot 타입.
+      error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `DI.InstSlot =
+      Slot<<Instance>>`(`DI` 네임스페이스 이름 자체는 `question.md` 1번
+      용어정리 대기 중, 여기선 잠정 표기)가 quad-roblox의 사실상 유일한
+      Slot 타입.
 - [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
       `keyFn(item, index) -> key` 생략 시 원본 `data` 배열 위치(raw index)를
       그대로 key로 사용(중간 삽입/삭제 시 identity 보존 안 됨, 캐스케이드
@@ -467,9 +472,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       2026-08-08 세션) — 필드별 raw 덮어쓰기, 특별한 State/함수 분기
       불필요(`modifier-plan.md` 9번)
 - [ ] `Overridden`가 서브타입 관계인 서로 다른 Modifier 타입(예: `FrameModifier`/
-      `GuiObjectModifier`)을 섞을 때의 타입 시그니처 실 Luau 테스트
-      (`modifier-plan.md` 9-2번, 미검증 — 안 되면 일단 `Overridden(...: any):
-      any`로 느슨하게 열어두고 이 항목으로 되돌아올 것)
+      `GuiObjectModifier`)을 섞을 때의 타입 시그니처 — **[해소됨,
+      2026-08-13 첫 실측 라운드]** `luau-test/09`로 실측 완료, 우려대로
+      깨짐 확인됨 → `Overridden(...: any): any`로 느슨하게 열어두는 게
+      실제 구현 방향(`modifier-plan.md` 9-2번)
 - [ ] `State<Modifier>` 조합에 `isModifier` 기반 명시적 error 적용
       (`modifier-plan.md` 7번, 2026-08-09 세션 확정) — 타입 차단은
       되면 좋은 보너스로 선택 검증(필수 아님)
