@@ -1,15 +1,16 @@
 # Store 의미론 — 부작용 허용, State는 Source 위의 조합 가능한 캐시 레이어
 
-**상태**: base — 전부 확정. State/Source 온톨로지는 2026-08-04 검증
-라운드에서 새로 열려 같은 세션 2~4차 라운드에 걸쳐 확정까지 마침 — 최신
-상세는 `base/bind-system-plan.md` 참고. 원본: `.claude/initreq/raw-userinput.md`
-"store는 부작용을 허용함" / "state는 어떻게 구현하는가" 절.
+**상태**: base — Store가 부작용을 허용한다는 핵심 결정과 State/Source
+온톨로지 구조 자체는 확정(2026-08-04 검증 라운드에서 새로 열려 같은 세션
+2~4차 라운드에 걸쳐 확정까지 마침 — 최신 상세는 `base/bind-system-plan.md`
+참고). 원본: `.claude/initreq/raw-userinput.md` "store는 부작용을 허용함" /
+"state는 어떻게 구현하는가" 절.
 
-> **⚠️ [2026-08-13 첫 실측에서 발견, `question.md` 0-Y]** 아래에서
-> "확정"으로 서술하는 self/deps lazy `State` 핸들 계약이 Luau 양방향
-> 추론과 충돌함이 실측으로 확인됨 — 상세는
-> `base/bind-system-plan.md`의 동일 배너, M0 착수 전 사용자가 확정해야
-> 할 미해결 사안.
+> **⚠️ [2026-08-13 첫 실측에서 발견, `question.md` 0-Y] 단, 온톨로지 중
+> 하나 — self/deps를 lazy `State` 핸들로 넘기는 `:Compute`/`:With` 콜백
+> 계약 — 는 "확정"이 아니라 미해결.** Luau 양방향 추론과 충돌함이
+> 실측으로 확인됨 — 상세는 `base/bind-system-plan.md`의 동일 배너,
+> M0 착수 전 사용자가 확정해야 할 사안.
 
 ## Store는 부작용을 허용하는 게 기본 디자인
 
@@ -186,10 +187,19 @@ State를 만족하도록 만들고, RefSource라는 별도 타입은 폐기**하
 - **동적 키 폴백(`store "key"`)은 이제 `State<any>`가 아니라 `Source<any>`를
   반환**하는 것으로 자연히 갱신됨(위 "타입 추론 문제" 절과 연동).
 
-**검증 필요(확정 아님, M0 스파이크 대상)**: `Source<T>`의 `:Compute`
-시그니처가 자기 자신(`Source<T>`)과 `State<U>`를 동시에 참조하는 제네릭
-메소드라, Luau 솔버가 재귀 타입 조합에서 막히지 않는지 실제로 검증
-필요(사용자 우려: "솔버가 종종 죽는다"). 구분해서 볼 것:
+**[해소됨, 2026-08-13 첫 실측 라운드]** 핵심 질문(Source가 State를 구조적으로
+만족하는 제네릭 메소드 체이닝)은 `luau-test/08-type-source-satisfies-state.luau`로
+실측 통과 확인됨 — 아래 우려대로 "두 제네릭 타입 별칭이 서로를 참조하는
+상호 재귀"는 실제로 위험했지만, 그 아래 제안한 단방향 의존(`State`가
+`Source`를 참조 안 함) 회피책이 그대로 맞아떨어짐. **다만 좁은 잔여
+케이스 하나는 남음**: `State<T>`가 **자기 자신**을 다른 타입 인자로
+재귀 참조하면(`Recursive type being used with different parameters`)
+막힘 — 이건 아래 논의 대상이던 "두 타입 간 상호 재귀"와는 다른 문제라
+별도로 `question.md` **0-Y** 하단에 추적 중(사용자 방향: 구울 때
+인라이닝). 아래는 그 판단에 이른 원래 추론 과정(구분 기준 등)이라 계속
+유효한 배경 — `Source<T>`의 `:Compute` 시그니처가 자기 자신(`Source<T>`)과
+`State<U>`를 동시에 참조하는 제네릭 메소드라, Luau 솔버가 재귀 타입
+조합에서 막히지 않는지가 원래 질문이었음. 구분해서 볼 것:
 - **자기 자신을 가리키는 self 타이핑**(`{ Compute: <U>(self: Source<T>, ...) -> State<U> }`
   같은 패턴)은 Luau에서 극히 흔하고 대체로 안전 — 모든 메소드 테이블
   클래스가 쓰는 패턴이라 이것 자체가 위험 신호는 아님.

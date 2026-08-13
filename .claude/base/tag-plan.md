@@ -237,6 +237,11 @@ end
 
 ## 열린 질문
 
-없음 — 값 모양/메커니즘/retract/패키지 배치 전부 확정. 이름 자체
-(`Tag`/`Added`/`Removed`/`Merged`)는 다른 가칭들과 같이 용어 정리 대상
-(`.claude/question.md`).
+값 모양/이름(`Tag`/`Added`/`Removed`/`Merged`, 용어 정리 대상,
+`.claude/question.md`) 자체는 없음. **단, 이 문서 최상단 배너가 이미
+경고하듯 `hintValue`/`retractFrom` 선행 호출 메커니즘은 `question.md`
+**0-Z**(Attribute 이름 소유권) 해소 대기 중인 "하강 diff" 재디스패치
+모델로 교체 예정** — `research/dispatch-redispatch-diff-plan.md` 6절이
+이 파일을 반영 대상으로 명시 지목(`isTag(hintValue)` 가드 제거 등).
+이 절이 예전엔 "없음"으로만 적혀 있었던 건 그 배너가 붙기 전 작성된
+서술이 안 갱신된 stale — 재발 방지용으로 여기 명시.

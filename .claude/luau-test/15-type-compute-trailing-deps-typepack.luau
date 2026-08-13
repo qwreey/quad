@@ -20,6 +20,17 @@
 
 	실행: luau-analyze 15-type-compute-trailing-deps-typepack.luau
 	(또는 luau-lsp)
+
+	[정정, 2026-08-13 첫 실측 라운드] 위 실행 결과는 **파싱 실패
+	(SyntaxError)** — 아래 (C) 음성 대조군의 옛-순서 타입 표기가
+	`TypeError`가 아니라 `SyntaxError`로 걸려서 파일 전체가 파싱 단계에서
+	막힘. 그 결과 (A)/(B)/(D)를 포함해 이 파일의 어떤 섹션도 개별적으로
+	검증되지 못한 상태 — 위 "이미 정정되어 확정됨"/"남은 진짜 불확실성은
+	(B)뿐"이라는 서술은 재작성 전까지는 검증되지 않은 기대치로 읽을 것.
+	재작성 시 (C) 대조군을 별도 파일/블록으로 격리해야 함. 상세는
+	`luau-test/STATUS.md` 🟠 항목. 다만 `:Compute(fn)` lazy 핸들 계약
+	충돌 자체(`question.md` 0-Y)는 이 파일과 별개로 다른 최소 재현으로
+	이미 확인됨 — 이 파일의 파싱 실패가 0-Y 판단을 바꾸지 않음.
 ]]
 
 export type State<T> = {

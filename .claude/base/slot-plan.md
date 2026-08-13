@@ -1165,9 +1165,19 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   언마운트만 되며, 아무도 안 들고 있으면 GC) —
   `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
   구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
-  셋을 쓸 일이 없을 뿐(제거는 항상 파괴 확정이라 `Extract` 아닌 `Remove`
-  경로, 리오더는 항상 절대 위치 이동이라 `Swap` 아닌 `Move` 경로,
-  `Clear`는 reconcile 단위가 아니라 Slot 전체 단위 연산이라 무관).
+  셋을 직접 호출할 일이 없을 뿐 — **[정정, 2026-08-13 감사] "제거는
+  항상 파괴 확정이라 Extract 아닌 Remove 경로"라는 예전 근거는 언마운트
+  전환으로 이제 틀림**(바로 위에서 정정했듯 reconcile의 제거는 이제
+  비파괴 `rawUnmount`이고, 이 함수 자체가 `rawRemove`의 비파괴
+  짝으로서 `Extract` 계열과 공유하는 저수준 프리미티브 — 위 코드
+  블록의 "rawRemove의 비파괴 짝 — `:List`의 reconcile과 `Extract`
+  계열이 씀" 주석 참고). reconcile이 공개 `Slot:Extract` 대신
+  `rawUnmount`를 직접 부르는 진짜 이유는 파괴 여부가 아니라, reconcile이
+  이미 자기 `mounted` 맵으로 element를 추적 중이라 `Extract`의 "제거한
+  element를 호출자에게 반환" 계약이 불필요하고, 공개 CRUD의 가드/에러
+  체크도 reconcile 내부 상태 일관성상 중복이기 때문. 리오더는 항상
+  절대 위치 이동이라 `Swap` 아닌 `Move` 경로, `Clear`는 reconcile 단위가
+  아니라 Slot 전체 단위 연산이라 무관 — 이 둘의 근거는 여전히 유효.
 - **리오더는 `Move`(의 가드 없는 버전)** — Parent를 안 건드리는 진짜
   저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
   미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.

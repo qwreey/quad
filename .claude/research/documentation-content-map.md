@@ -36,7 +36,7 @@
 10. **생명주기** — GC 위임(수동 정리 불필요), Destroy 이후 대상 재사용 금지 (`lifecycle-pattern.md`)
 11. **Ref 기초** — 외부 관리 Instance 참조/마이그레이션용, `Ref(default):Callback(fn)`을 children 배열 숫자 슬롯에 직접 놓기 + 배열 위치로 자식 전/후 표현, "프로퍼티보다도 먼저" 필요할 때만 `PreRef`(2026-08-07 세 번째 세션, `phase` 옵션 폐기) (`architecture.md`, `bind-system-plan.md`)
 12. **파생값 최소 예시** — `:With(...)` + `:Compute(fn)` 기본형 (`bind-system-plan.md`, `store-semantics.md`)
-13. **Tween 기초** — `[Tween(key, ...)] = storeValue`, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`base/tween-plan.md`)
+13. **Tween 기초** — ~~`[Tween(key, ...)] = storeValue`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tween-special-bind-key-reversed.md`) — 실제로는 `Tween(opts) -> Tween<T>` 값-레벨 래퍼**, 취소 시 현재 보간값에서 자연스럽게 이어짐 (`base/tween-plan.md`)
 14. **UI 숏핸드(quad-roblox 한정)** — `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 인라인 키 (`base/ui-shorthand-plan.md`)
 
 ---
@@ -108,8 +108,8 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 
 ### store-semantics.md / tween-plan.md / ui-shorthand-plan.md
 - 초심자: Store 생성+`myStore.key:Set(value)` 문법 / `store.key`로 State 얻기 개념 / Tween 기본 바인드 키+취소 기본 동작 / UI 숏핸드 인라인 키 기본 예시(`Frame { UIPaddingOffset = 50 }`)
-- api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `store-semantics.md` 참고) / Tween 핸들러가 Instance 직접 받음(Ref 불필요) / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
-- 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사) / RoundSize 포팅 불필요 vs UICorner/UIPadding/UIScale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
+- api: `:With`+`:Compute` 시그니처(→심화) / `source:Emit()` 존재+"Get() 결과 캐시 금지" 캐비엇(버그 유발 포인트라 api에도 명시 가치 있음, →심화; 2026-08-06 후속 세션에서 `Store:Emit(key)`→`source:Emit()`로 호출부 변경, `store-semantics.md` 참고) / ~~Tween 핸들러가 Instance 직접 받음(Ref 불필요)~~ **[2026-08-13 정정] 구모델(폐기) — 실제로는 `Tween(opts)` 값-레벨 래퍼가 Property 자리에 놓이고 `PropertyHandler`가 `isTween`으로 분기** / retract는 Destroy 시 호출 안 됨(→심화) / UI 숏핸드 키 목록 레퍼런스 표 / Modifier와 순수 인라인 키 동등성
+- 심화: Source·Store·State·Observer 온톨로지(독립 프리미티브 vs 파생 데이터 원칙, 생성자 모양 근거) / `Emit`이 Source 전용인 이유(디버깅 그래프 무결성) / `Store<T>`의 T가 Modifier 불가인 이유 / ~~Tween을 반응 그래프 밖 특수 bind key로 둔 이유(Fusion 반면교사)~~ **[2026-08-13 정정] 이 근거 자체가 폐기된 구모델 서술 — 현재는 Tween이 반응 그래프 "밖"이 아니라 Property 값 타입 치환(`T|Tween<T>`)으로 자연스럽게 들어와 있음, `base/tween-plan.md` 참고** / RoundSize 포팅 불필요 vs UICorner/UIPadding/UIScale 필요 이유 / "작고 opt-in 아닌 편의 기능은 코어 포함" 원칙
 - 열린 질문(문서화 보류): tween-plan.md의 오버라이드/삭제후재시작/끝점이동 옵션 키 이름 미정 / ui-shorthand의 RoundSize 완전 드롭 여부
 - skip: 세션 정정 이력, v1 소스 조사 경위
 

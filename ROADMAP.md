@@ -268,6 +268,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M6 — Slot
 
+> **⚠️ M2의 ⚠️ 배너와 같은 주의** — 아래 "`SlotHandler.process`는 claim
+> 실패 시에도 파괴적 클로저를 반환해야 함(`retractFrom`은... 항상 소비)"
+> 항목은 현행(교체 예정) 재-dispatch 모델을 전제로 쓰여 있음.
+> `question.md` 0-Z 먼저 해소할 것.
+
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
         비파괴 경로 `unmountSlotTree`를 `destroySlotTree`와 별도로 구현 —

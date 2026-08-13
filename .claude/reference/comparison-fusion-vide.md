@@ -24,10 +24,16 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
   priority 레지스트리보다 약함.
 - **Tween/Spring이 State그래프 안의 1급 노드** — 매 프레임 틱하는 외부
   Stopwatch/ExternalTime 소스에 의존, 애니메이션-입력 간 별도 lifetime 체크
-  기계장치 필요. **quad가 트윈을 Store 밖(특수 bind key)으로 빼려는 이유의
-  반면교사**: Fusion처럼 그래프 안에 넣으면 Computed의 입력으로 자유롭게 합성
-  가능해지지만, 그 대가로 프레임 클럭 통합 + eager 노드 + 교차 lifetime 체크
-  3중 복잡도를 떠안음.
+  기계장치 필요. **quad가 Tween을 반응 그래프의 1급 노드로 만들지 않은
+  이유의 반면교사**: Fusion처럼 그래프 안에 넣으면 Computed의 입력으로
+  자유롭게 합성 가능해지지만, 그 대가로 프레임 클럭 통합 + eager 노드 +
+  교차 lifetime 체크 3중 복잡도를 떠안음. **[2026-08-13 정정] "Store 밖
+  특수 bind key" 표현은 2026-08-10 폐기된 quad 구모델(
+  `archive/tween-special-bind-key-reversed.md`) 서술 — 현재 quad의 실제
+  결론은 Tween을 별도 bind key가 아니라 `Tween(opts) -> Tween<T>`
+  값-레벨 래퍼로 만들어 Property 타입 자리(`T|Tween<T>`)에 꽂는 것.
+  이 문단의 Fusion 반면교사 논리(그래프 1급 노드화의 3중 복잡도) 자체는
+  두 모델 다에 여전히 유효, 인용하는 결론 쪽 이름만 stale했던 것.
 
 ## Vide (`.claude/initreq/vide/`)
 
