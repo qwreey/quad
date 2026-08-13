@@ -70,9 +70,15 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   계기·근거는 아래 "Dispatch 체인" 절). **반환값 생략 불가 — 정리할
   게 없는 핸들러도 항상 `function() end`(no-op) 형태로 반환할 것** —
   `Dispatch.process`(아래 절)가 이 반환값을 `chains`에 저장해뒀다가
-  나중에 정확히 이 클로저 하나만 호출해서 정리하므로, 반환을
-  생략하면(`nil`을 돌려주면) 나중에 `attempt to call a nil value`로
-  크래시(예전 "retract 필드 생략 불가" 규칙과 같은 이유, 자리만 옮겨옴).
+  나중에 정확히 이 클로저 하나만 호출해서 정리하므로(예전 "retract 필드
+  생략 불가" 규칙과 같은 이유, 자리만 옮겨옴). **[정정, 2026-08-13 7차
+  감사] 생략했을 때 실제로 벌어지는 일**: `list[index] = nil`이 되어
+  **배열에 구멍이 뚫림** — `#list`가 Lua 명세상 정의되지 않게 되고
+  (`retractFrom`의 순회 시작점이 어긋남), 그 자리가 비어 보이므로
+  `Dispatch.process`의 점유 체크도 통과해버려 **소유권 충돌 감지가 조용히
+  꺼짐**. 옛 서술("`attempt to call a nil value`로 크래시")은 부정확했음 —
+  `retractFrom`이 `if retractor then` 가드로 넘기고 있어서 크래시조차 안
+  났음. 그 가드를 즉시 error로 바꿔 계약 위반이 실제로 드러나게 함.
   **핸들러가 직접 자기 자신의 하위 위임(재귀 `Dispatch.process`로 만든
   것들)까지 클로저 안에서 다시 정리할 필요는 없음** — `Dispatch.
   retractFrom`의 순회 구조 자체가 항상 깊은 인덱스부터 먼저 정리하고
@@ -531,9 +537,14 @@ function Dispatch.retractFrom(inst, k, index, v)
     if not list then return end
     for i = #list, index, -1 do
         local retractor = list[i]
-        if retractor then
-            retractor(if i == index then v else nil)
+        -- [정정, 2026-08-13 7차 감사] 예전엔 `if retractor then ... end` 가드였으나,
+        -- 그 가드에 걸리는 경우는 **핸들러가 계약을 어기고 nil을 반환한 것뿐**이고
+        -- (정상 경로는 process가 항상 NOOP 마커를 먼저 박음) 조용히 넘기면 이미
+        -- 배열에 구멍이 난 뒤라 `#list`도 점유 체크도 같이 망가짐 — 즉시 error가 맞음.
+        if retractor == nil then
+            error("Dispatch: 인덱스 " .. i .. "에 retractor가 없음 — 핸들러가 반환을 생략했음")
         end
+        retractor(if i == index then v else nil)
         list[i] = nil
     end
 end
@@ -720,7 +731,13 @@ end
 `index`라고 이름 붙였다가 시그니처 자체가 계약과 어긋난 전례가 있음.
 
 **7. 반환 생략 금지.** 정리할 게 없어도 `function() end`. `nil`을
-반환하면 `retractFrom`이 `attempt to call a nil value`로 크래시.
+반환하면 `list[index]`에 **구멍이 뚫려** `#list`가 정의되지 않게 되고
+(순회 시작점이 어긋남) 그 자리가 비어 보여 **점유 체크까지 조용히
+통과** — 즉 소유권 충돌 감지가 꺼짐. **[정정, 2026-08-13 7차 감사]**
+예전엔 이 항목이 "`attempt to call a nil value`로 크래시"라고 적혀
+있었으나 `retractFrom`이 `if retractor then`으로 넘기고 있어 크래시조차
+안 나는 게 실제였음 — 지금은 `retractFrom`이 즉시 error를 냄(위
+"Dispatch 체인" 절 의사코드).
 
 ### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
 
