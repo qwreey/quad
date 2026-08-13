@@ -238,11 +238,15 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    실현 가능성은 실측 검증 완료, 세부 API 이름만 남음), 문서 사이트 전체
    구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵), `Operator` 콤비네이터
    슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — 메커니즘은
-   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막) — 전부 "quad
+   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막), 컴포넌트
+   에러 격리 유틸 `Fallback`(**[2026-08-14 신설]** 컴포넌트 함수를 감싸 에러
+   시 자동으로 플레이스홀더를 그려주는 `pcall`/`xpcall` 래퍼 — 기존
+   "Error Boundary는 빈 자리 아님" 결론 위의 순수 슈가,
+   `research/component-fallback-plan.md`) — 전부 "quad
    개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는 `.claude/README.md`의
    `research/` 표(`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
-   `operator-sugar-plan.md`).
+   `operator-sugar-plan.md`/`component-fallback-plan.md`).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -1111,3 +1115,24 @@ claim**으로 확정. 이걸로 마지막 게이트가 열려 **0-A(하강 diff 
 `REF` 정규식이 줄 단위라 파일명과 절 제목이 줄바꿈에 걸친 인용을 통째로
 놓치고 있었고, 고치자 이번 분할뿐 아니라 **9차 세션 1단계 분할의 stale
 참조까지** 무더기로 드러나 30여 곳 정정.
+
+**2026-08-14 첫 번째 세션 — 컴포넌트 에러 격리 유틸 `Fallback` 백로그 신설**
+(`session/2026-08-14-01-component-fallback-plan.md`)
+사용자가 컴포넌트마다 손으로 `pcall`을 감싸는 게 번거롭다며, 컴포넌트
+함수를 감싸 에러 시 자동으로 플레이스홀더를 그려주는
+유틸(`Fallback(original, onError)`)을 제안하고 백로그 문서화를 요청 —
+워크트리에서 작업.
+`research/additional-primitives-plan.md`가 이미 확정한 "Error Boundary는
+빈 자리 아님, `pcall(MyComp,props)`로 충분"이라는 결론을 뒤집는 게 아니라
+그 위에 얹는 순수 슈가(`Operator`가 `:Compute`/`:Apply` 위에 얹힌 것과
+같은 관계)로 판단해 새 `research/component-fallback-plan.md` 신설 —
+`xpcall`+`debug.traceback` 메커니즘 스케치, 커링 관용구, 열린 질문(pcall
+vs xpcall, 패키지 배치, 이름, 프로덕션 동작) 정리, 설계 확정은 아직 없음.
+부수적으로 워크트리가 계획 문서 없이 빈 채로 시작되는 걸 발견 —
+**[정정, 후속 `/code-review`]** 처음엔 "`.claude/`가 git에 안 커밋돼
+있어서"로 잘못 진단했으나, 실제로는 `EnterWorktree` 기본값이
+`origin/master`에서 갈라치는데 `SAFETY.md`(GitHub push 금지) 때문에
+계획 문서가 로컬 `main`에만 있고 `origin`엔 애초에 없는 것(의도된 것)이
+원인 — 필요한 파일만 메인 체크아웃(로컬 `main`)에서 복사해 편집 후 다시
+복사하는 방식으로 처리, 상세 정정은
+`session/2026-08-14-01-component-fallback-plan.md` 참고.

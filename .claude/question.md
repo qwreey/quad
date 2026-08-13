@@ -207,6 +207,12 @@
   사용자 확인 필요 — `base/attribute-plan.md` "열린 질문" 절.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
+- **컴포넌트 에러 격리 유틸 `Fallback`(2026-08-14 신설, 사용자 제안)** —
+  컴포넌트 함수를 감싸 에러 시 자동으로 플레이스홀더를 그려주는
+  `pcall`/`xpcall` 래퍼. 기존 "Error Boundary는 빈 자리 아님"
+  (`additional-primitives-plan.md`) 결론 위의 순수 슈가라 그 결론 자체는
+  안 흔들림 — `pcall` vs `xpcall`+`debug.traceback`, 패키지 배치
+  (`quad-base` 추정), 이름 전부 미정. 상세는 `research/component-fallback-plan.md`.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
