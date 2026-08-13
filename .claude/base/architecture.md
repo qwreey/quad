@@ -227,7 +227,7 @@ existing-instance-bind는 여전히 `research/`에 남아있고 이 구조 확�
 표현식 문법(공식 릴리스 노트: <https://luau.org/news/2021-10-31-luau-recap-october-2021/#if-then-else-expression>)
 — `cond and truthyOnly or fallback` 삼항 관용구와 달리 가운데 값이
 falsy(`nil`/`false`)여도 정확하게 동작함(`bind-system-plan.md`의
-`Dispatch.retractUnder` 정정 사례가 실제 버그 예시). **[강화, 2026-08-12
+`Dispatch.retractUnder`(현 `retractFrom`) 정정 사례가 실제 버그 예시). **[강화, 2026-08-12
 세션 후속] `cond and x or y` 삼항 관용구는 전면 금지 — `if-then-else`만
 쓸 것, 가운데 값이 항상-truthy임이 보장돼도 예외 없음.** 처음엔 그
 경우만 예외적으로 허용했으나, 안전 여부와 무관하게 `if-then-else`가

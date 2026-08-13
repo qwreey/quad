@@ -10,6 +10,132 @@
 
 ## 지금 열려있는 것 (우선순위순)
 
+### 0-Z. ⭐ **최우선 — Attribute 이름 소유권을 무엇으로 판정할 것인가** (2026-08-13 여섯 번째 세션, 사용자가 다음 세션 심층 분석으로 이관)
+
+**이게 지금 유일하게 `base/` 반영을 막고 있는 결정.** 아래 0-A의
+재디스패치 모델은 나머지가 전부 확정됐고, 이 항목 하나만 정해지면
+`bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/`attribute-plan.md`를
+한 번에 옮기면 됨.
+
+**문제**: 새 모델(핸들러 선비교)에서는 그룹 A가 잡아둔
+`AttributeKey("foo")` 인덱스 1에 그룹 B가 들어와도 **양쪽 다 `StoreBind`에
+매치되므로 "같은 핸들러"로 판정돼 조용히 갈아탐.** 그리고 나중에 A의
+클로저가 자기 이름들을 `retractFrom`할 때 B의 바인딩을 대신 철거함
+(교차 오염). 예전 "조용한 last-write-wins"가 그대로 돌아옴 — 이번 감사에서
+고쳤던 바로 그 증상. 즉 **Dispatch의 점유 체크가 대신 잡아주던 걸 이제
+Attribute가 직접 해야 함.**
+
+**사용자 방향(2026-08-13, 심층 분석은 다음 세션)**:
+> "Attribute 소유권은 아마 이전 결정을 다시 가져오는게 맞아보이긴 하네요.
+> 막 깊게 Key -> Group 필요한것 같지는 않고, 본인 retract 처리를 수행할 때
+> 무언가 하면 될듯 한데. 이 부분은 나중에 제가 물리적으로 스케치 해보며
+> 심층 분석해보겠습니다."
+
+- **"이전 결정을 다시 가져온다"** = 2026-08-13 네 번째 세션의 이름별
+  claimant `Relate`(당시 이름 `owners`). **당시 기각 사유는 새 모델에서
+  구조적으로 소멸함** — 그때 버그는 "소유권 반납이 `process`의 `v==nil`
+  분기에만 있어서, 그룹이 이름을 통째로 놓는 경로가 그 분기를 안 타
+  옛 소유권이 안 지워짐"이었는데, 지금은 **클로저가 항상 불리므로 거기서
+  반납**하면 그 구멍이 안 생김. 사용자의 "본인 retract 처리를 수행할 때
+  무언가 하면 될듯"이 정확히 이 지점.
+- **"막 깊게 Key → Group 필요한 것 같지는 않다"** — 키에서 그룹으로
+  거슬러 올라가는 양방향 레지스트리까지는 필요 없고, 이름 → 현재
+  claimant 단방향이면 충분할 것이라는 방향.
+- 원문 맥락과 기각된 두 중간안(`rawNew` 전용 키, `AttributeGroupKeyHandler`
+  체크포인트)은 `archive/checkpoint-handler-pattern-reversed.md`,
+  분석은 `research/dispatch-redispatch-diff-plan.md` 5절.
+
+**대안 후보(정리해둠)**: (a) 이름별 claimant `Relate`를 Attribute에
+국소적으로 — 권고, (b) UB로 두고 문서로만 금지 — 증상이 "조용한 오작동 +
+교차 오염"이라 다른 UB들(즉시 스택오버플로/즉시 error)보다 나빠서 비권장,
+(c) `Dispatch`에 claimant 개념 일반화 — 이번에 걷어낸 방향이라 반대.
+
+### 0-A. `hintValue` 폐기 → process 하강 중 핸들러 비교 (2026-08-13 여섯 번째 세션, **Attribute 건 외 확정**)
+
+**검토 결과 사용자 지적이 맞음 — 현행 `hintValue`엔 실제 결함이 있음.**
+힌트가 "그 자리에 곧 디스패치될 raw 값"이라 `None` 센티널이나 `State`/
+`Tween` 같은 래퍼가 그대로 넘어갈 수 있고, 그러면 말단 핸들러의
+`isTag(hint)` 가드가 거짓이 되어 **깜빡임/재생성 방지가 조용히 꺼짐**
+(정확성은 유지돼서 지금까지 안 드러났음). 상세 재현·분석·제안은
+`research/dispatch-redispatch-diff-plan.md`.
+
+**후속 라운드에서 모델은 거의 확정됨** — 래핑 핸들러가 `retractFrom`을
+선행 호출하는 걸 폐기하고, `Dispatch.process` 안에서 **핸들러를 먼저
+비교**해 (같으면 그 자리 클로저에 새 값을 넘기고 자기 `process` 재호출,
+다르면 그 자리부터 아래를 전량 철거). 이걸로 (a) 힌트의 타입이
+구조적으로 보장되고(같은 핸들러일 때만 값이 넘어가므로), (b) 깊은 체인의
+힌트 유실도 사라지며(각 레벨이 자기 재프로세스에서 자기 힌트를 받음),
+(c) `oldValue`를 따로 넘기자던 보완안은 불필요해짐(사용자 지적:
+"클로저라 이미 본인이 알지 않아요?" — 맞음, `chains`에 추가로 저장할 건
+비교용 `handler` 하나뿐), (d) `HandlerChanged` 마커도 불필요(핸들러가
+바뀌었다는 건 retractor가 `nil` 힌트로 불린다는 사실로 이미 표현됨).
+
+**남은 열린 항목은 Attribute 이름 소유권 하나뿐 — 위 0-Z로 분리해
+최우선 배치**(사용자가 다음 세션에 직접 스케치하며 심층 분석하기로).
+그 하나 외에는 이 항목에 결정할 게 없음.
+
+**실행 규모**: `base/`의 `bind-system-plan.md`/`tag-plan.md`/`slot-plan.md`/
+`attribute-plan.md` 의사코드 재작성 — 0-Z 하나만 정해지면 한 번에 옮기면
+됨(어디를 어떻게 고칠지는 `research/dispatch-redispatch-diff-plan.md` 6절에
+파일별로 적어둠). **그때까지 `base/`의 현행 `hintValue` 서술이 유효** —
+아직 안 옮겼다는 걸 잊고 base만 읽으면 옛 모델로 구현하게 되니 주의.
+
+### 0-B. `dispose(any)` — 시그니처/범위 (2026-08-13 여섯 번째 세션 신설, 사용자 제안)
+
+`State<Slot>` 교체를 파괴가 아니라 **언마운트**로 확정하면서(`state<Frame>`와
+동일, `base/slot-plan.md`), 명시적 파괴 수단으로 base 탑레벨 `dispose(value)`를
+제공하기로 방향 확정. "이 값이 지금 어디 마운트돼 있는가"는 이미
+`elementOwner`가 들고 있어(다중 마운트 error 판정용) 새 부기가 필요 없음.
+
+**[확정, 사용자] 시맨틱은 "거부"** — 대상이 아직 어느 트리에 의해
+살아있길 요구되고 있으면 **파괴를 거부하고 즉시 error**. 떼어내주지
+않음(떼어내는 건 `Set`=언마운트의 몫, `dispose`는 그 뒤). 근거: 엔진은
+`Destroy`/`Clear`에 에러를 안 내지만 quad의 `_elements`/`lengthList`/
+`sourceList`/`elementOwner`는 그 순간 어긋나므로, **quad가 관리 중인 값을
+안전하게 지우는 유일한 경로**가 이것이고 "지금 지우면 안 되는 상태"를
+잡아주는 게 존재 이유. 이걸로 "`Set` 전에 직접 `Destroy()`"가 UB에서
+명확한 에러로 바뀜.
+
+**미확정**: 시그니처(`dispose(any)`가 맞는지, 타입을 어떻게 좁힐지),
+대상 범위(Slot 외에 Instance/Observer/Effect까지 커버하는지),
+`unbindLifetime`과의 역할 분담.
+
+### 0-C. 포탈 — `Extract` 비파괴 경로로 해결되는가 (2026-08-13 여섯 번째 세션 신설, 사용자 제안 — **해결됨**)
+
+**질문(사용자)**: `stateSlot:Get()`으로 Slot을 뽑아두고 → `Set()`으로 다른
+Slot을 넣고 → 뽑아둔 Slot을 다른 곳에 넣는 게 되는가. 되면 "포탈"이
+이걸로 해결됨.
+
+**조사 결과**: 지금은 **안 됨** — `:List`의 `reconcile`이 교체 시
+`rawRemove`(제거 **+ 파괴**)를 부르므로 뽑아둔 레퍼런스가 이미 파괴된
+Slot이 됨. 막는 게 소유권 규칙이 아니라 "제거 = 파괴"라는 reconcile의
+선택 하나뿐이라는 게 핵심.
+
+**그런데 나머지 부품은 이미 다 있음**: `Extract`/`ExtractAll`/`Splice`가
+이미 비파괴로 확정돼 있고, `claimOwner`/`releaseOwner`가 소유권을 정확히
+이양하며, `attachSlot`은 재마운트를 구조적으로 이미 지원함(자식이 파괴만
+안 됐다면 새 물리 부모로 그대로 flush). 즉 **"포탈은 별도 메커니즘이
+필요하다"는 기존 전제가 틀렸을 가능성이 큼.**
+
+**[해결, 사용자 결정]** opt-in이 아니라 **기본 동작**으로 확정 —
+`State<Slot>` 교체는 원래부터 `state<Frame>`와 같이 언마운트여야 했다는
+판단이라, 포탈은 별도 기능이 아니라 그 결정의 귀결. 안 지운 Slot은
+아무도 안 들고 있으면 GC되고, 지금 죽이려면 `dispose`(위 0-B).
+**[해소, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
+대해 그냥 `setLength(ownerKey, position, 0)` + `setOffsetSource(ownerKey,
+position, None)`을 다시 부르면 됨(이미 확정된 "마운트 안 하는 위치는
+`0`/`None` 등록" 관용구 그대로). 즉 **해제 = 0/`None`으로 재등록**.
+`state<state<Frame>>`류로 offset이 밀리는 문제는 `state<state<Tag>>`와
+같은 범주로 **"그냥 확인된 것"으로 수용**(평탄화 도구가 처리, 케이스 드묾).
+상세는 `base/slot-plan.md` "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절.
+
+**관련(같은 절, 위 결정으로 함께 해소)**: `State<Slot?>`를
+`nil`↔`slotA`로 왕복시키는 코드가 두 번째 등장부터 깨진 서브트리를 내던
+문제도 언마운트 전환으로 사라짐. 대신 **`Set`으로 덮어쓰기 *전에*
+이전 값을 직접 `Destroy()`하는 건 UB**(`state<Frame>`에서 먼저
+`frame:Destroy()`하고 `Set`하는 것과 같은 문제) — 순서는 항상
+`Set`(언마운트) → 그 다음 정리.
+
 ### 0. 추가 프리미티브 필요성 — 사용자 요청, 대부분 수렴(2026-08-06~07)
 
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것
@@ -199,7 +325,8 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `LifetimeHandle`/`Relate` 인터페이스(타입만)를 `ROADMAP.md`
   M2로 옮기고, quad-roblox 실 구현만 M8에 남김 — 우선순위1-9 해소.
 - **[해소됨]** retract 시 "이전 핸들러" 추적 책임 소재 — Dispatch 체인
-  (`chains`)+`Dispatch.retractUnder`로 2026-08-08 세 번째 세션에 이미
+  (`chains`)+`Dispatch.retractFrom`(2026-08-08 세 번째 세션엔 `retractUnder`라는
+  이름이었음, 2026-08-13 다섯 번째 세션에 인덱스 기반으로 재설계되며 개명)로 이미
   해소(`pre-implementation-audit.md` 1-2, `bind-system-plan.md` "Dispatch
   체인" 절). **[해소됨, 2026-08-09 세션]** `:Compute`의 `previous` 인자
   오버엔지니어링 의심도 기각(`bind-system-plan.md` "previous" 절,

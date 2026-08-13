@@ -62,7 +62,12 @@ weak여야 함 — 그런데 그 안에 담기는 값은 경우에 따라 **강�
 `SetWeak`로 낮추고, 실제 GC 앵커는 `bindLifetime`/`unbindLifetime`
 하나로 통일**할 것(구체 사례는 `base/slot-plan.md` "Slot과 Store
 바인드의 관계" 절 참고 — `kSlotMap`(inst→slot)/`slotOwner`(slot→inst)가
-정확히 이 패턴이었음).
+정확히 이 패턴이었음. **[2026-08-13 다섯 번째 세션 이후]** 그 두 `Relate`는
+지금은 존재하지 않음 — `kSlotMap`은 Handler 계약이 클로저 반환으로 바뀌며
+불필요해져 삭제됐고 `slotOwner`는 `elementOwner`(전부 `SetWeak`)로
+일반화됐으므로, Slot 쪽엔 이 위험 패턴이 더 이상 남아있지 않음. 이 절은
+**일반 규칙**으로 계속 유효하고, Slot은 그 규칙이 실제로 적용됐던
+역사적 사례로만 인용).
 
 ## API (확정)
 
@@ -85,6 +90,45 @@ relate:GetWeak(inst: any, key: any): any?
   하나씩 두고 재사용 — 서로 다른 `Relate` 인스턴스라 `key` 네이밍이 모듈
   간에 겹칠 걱정이 없음(모듈 하나가 감당할 key 개수는 보통 한두 개뿐이라
   `Relate()`를 여러 개 만드는 비용은 무시할 만함).
+
+## 언제 `Relate`를 쓰고 언제 쓰면 안 되는가 — 체크리스트 (2026-08-13 여섯 번째 세션 신설)
+
+Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌면서
+(`base/bind-system-plan.md` "핸들러 계약" 절) **`Relate`가 필요한 범위가
+크게 줄었음** — 이 전환기에 양방향으로 실수가 나왔어서 기준을 못박아 둠.
+
+**쓰지 말 것 — 클로저 캡처로 충분한 경우**: 이 `process` 호출이 만든
+것을 **그 호출이 반환한 클로저가** 나중에 정리하는 단발성 handoff.
+`local observer = ...` / `local connection = ...`를 로컬로 두고 반환
+클로저가 upvalue로 캡처하면 끝 — `relate:SetStrong(inst,k,x)` 후
+`relate:GetStrong(inst,k)`로 되찾아오는 왕복이 통째로 불필요.
+2026-08-13 다섯 번째 세션에 `kSlotMap`(위치별 마지막 Slot),
+`kTagMap`(위치별 마지막 Tag), Attribute의 `groupState`가 전부 이 이유로
+삭제됨. 새로 `Relate`를 하나 만들고 싶어지면 **먼저 "이거 그냥 클로저가
+캡처하면 되는 것 아닌가?"를 물어볼 것.**
+
+**써야 할 것 — 하나의 클로저 수명을 넘어서는 상태**:
+- **여러 위치가 하나의 자원을 공유**할 때의 참조 카운트 — `Tag`의
+  `tagNameMap`(이름 → 그 이름을 걸고 있는 위치 집합).
+- **여러 `process` 호출을 가로지르는 dedup 기록** — `Ref`의 "이 자리에
+  마지막으로 바인딩한 Ref"(클로저의 `hintValue`는 *다음* 값이지 *이전*
+  값이 아니라서 캡처로 대체 불가).
+- **소유권/멤버십 전역 판정** — `Slot`의 `elementOwner`.
+- **"언제까지 실행돼도 되는가"** — `bindLifetime`/`canExecute`
+  (`base/lifecycle-pattern.md`). 애초에 클로저 수명과 무관한 질문.
+
+**쓸 때 같이 지킬 것**:
+- **정리 조건을 실제 정리와 묶을 것.** `Relate` 엔트리를 지우는 코드가
+  "실제로 물러날 때"라는 조건 **밖**에 있으면, spurious 재발행에서
+  기록만 날아가 dedup이 조용히 무력화됨 — `RefLeafHandler`가 실제로 이
+  버그를 냈음(`bind-system-plan.md` "`Ref`의 retract" 절).
+- **weak하다고 "언젠간 알아서 사라진다"에 기대지 말 것.** 값이 `SetWeak`
+  이어도 **언제 사라지는지는 GC 타이밍**이라, 그 전에 같은 키를 다시
+  쓰려는 코드가 비결정적으로 실패함 — `Slot`의 `destroySlotTree`가 자식
+  소유권을 명시적으로 반납하지 않고 GC에 맡기고 있던 게 이 사례
+  (`base/slot-plan.md` "요소 소유권" 절). **명시적으로 만든 기록은
+  명시적으로 지울 것.**
+- 서로 다른 두 `Relate`의 상호 강참조 순환 금지 — 위 "위험한 패턴" 절.
 
 ## 실제 구조 (확정, 2026-08-08 세션)
 

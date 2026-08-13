@@ -102,9 +102,11 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 - ~~넘버 바인드/프로바이더 인터페이스의 정확한 함수 시그니처(base가 요구하는
   provider 인터페이스 계약)는 아직 미정~~ **[해소됨]** — 그 "provider
   인터페이스"가 곧 Handler 계약: `isHandlable(inst,key,value)`/
-  `priority`/`process(inst,key,value)`/`retract(inst,key,value)` 4종,
-  `retract`는 no-op이라도 필드 생략 불가까지 확정. `base/bind-system-plan.md`
-  "핸들러 계약" 절.
+  `priority`/`process(inst,key,value,index)` **3종**(**[정정, 2026-08-13
+  다섯 번째 세션]** 원래 별도 `retract(inst,key,value)` 필드가 있던 4종
+  계약이었으나, `process`가 자기 retract 클로저 `(hintValue) -> ()`를
+  반환하는 1-메소드로 합쳐짐), 정리할 게 없어도 `function() end`
+  반환 생략 불가까지 확정. `base/bind-system-plan.md` "핸들러 계약" 절.
 - ~~**네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히
   뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함~~
   **[해소됨]** — **`Handler`로 확정**, 위 항목이 가리키는 계약의 정식 이름.
@@ -116,8 +118,8 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   늬앙스인데 Handler는 실제로 값을 공급하는 게 아니라 처리/반응하는
   쪽이라 의미가 안 맞고 React `Context.Provider`류 맥락(context) 패턴과도
   헷갈릴 수 있음, `Plug`는 "동적으로 꽂힌다"는 어감은 맞지만 "값을
-  처리한다"는 의미가 빠져 있음 — `Handler`가 계약 4종
-  (`isHandlable`/`priority`/`process`/`retract`) 전체를 가장 정확히
+  처리한다"는 의미가 빠져 있음 — `Handler`가 계약 전체
+  (`isHandlable`/`priority`/`process`, 위 항목 참고)를 가장 정확히
   담는다는 결론.
 - **[해소됨, 2026-08-12 열일곱 번째 세션]** provider(팩토리)가 아직 한
   번도 실행 안 된 상태에서 dispatch가 호출되면 어떻게 되는지

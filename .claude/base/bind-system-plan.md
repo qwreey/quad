@@ -1,6 +1,18 @@
 # Bind 시스템 — pluggable key/value 핸들러 (base로 승격됨)
 
-**상태**: base — 핵심 디스패치 모델(`process`/`retract`, 핸들러 4종 계약,
+> **⚠️ [2026-08-13 여섯 번째 세션] 이 문서의 `hintValue`/`retractFrom` 선행
+> 호출 서술은 곧 교체될 예정 — 아직 반영 안 됨.** 힌트가 `None` 센티널이나
+> `State`/`Tween` 래퍼로 오염돼 말단 핸들러의 `isX(hint)` 가드를 거짓으로
+> 만들고 깜빡임/재생성 방지를 조용히 끄는 결함이 확인됐고, 대체 모델
+> (**래핑 핸들러의 `retractFrom` 선행 호출 폐기 + `Dispatch.process`가
+> 핸들러를 먼저 비교**)까지 거의 확정됐음 — 다만 `question.md` **0-Z**
+> (Attribute 이름 소유권) 하나가 남아 아직 옮기지 않음. **여기 적힌 대로
+> 구현하면 옛 모델로 짜게 됨** — 반드시
+> `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
+
+**상태**: base — 핵심 디스패치 모델(`process` + 그가 반환하는 retract
+클로저, 핸들러 3종 계약 — 2026-08-13 다섯 번째 세션에 별도 `retract`
+필드가 반환값으로 합쳐지기 전엔 `process`/`retract` 4종이었음,
 Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치 엔진은
 `quad-base`가 인터페이스로 소유, `quad-roblox`는 실제 구현만)까지 전부
 2026-08-04 세션에서 확정되어 `research/`에서 승격됨(`base/architecture.md`의
@@ -227,8 +239,14 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
     이 클로저는 오직 청소(구조적 팝, 내부 자원 해제)만 전담하고 새
     등록을 트리거하면 안 됨 — 새 등록은 항상 바깥의 StoreBind/그룹
     로직이 클로저 호출이 다 끝난 *뒤에* 별도로 `process`를 부르는
-    순서로만 일어나야 함. `Dispatch.retractFrom`을 (다른 키에 대해)
-    이 클로저 안에서 부르는 건 문제없음 — 금지되는 건 오직 `process`.
+    순서로만 일어나야 함. **`Dispatch.retractFrom`은 "다른 키에 대해서만"
+    허용** — `Attribute` 그룹이 자기가 위임했던 `AttributeKey(name)`들을
+    걷어내는 게 정확히 이 경우. **같은 `(inst,k)`에 대해 이 클로저 안에서
+    `retractFrom`을 부르는 것도 `process`와 똑같이 금지(UB)** — 지금
+    돌고 있는 바깥 `retractFrom`의 루프가 `#list`를 이미 캡처한 채
+    꼬리부터 내려오는 중이라, 그 도중에 같은 list를 다시 훑으면 같은
+    retractor가 두 번 불리거나 건너뛰어짐(2026-08-13 감사에서 명시화 —
+    원래는 "다른 키에 대해"라는 괄호로만 암시돼 있었음).
   - **자기 자신의 하위 위임까지 클로저 안에서 수동으로 다시 정리할
     필요 없음** — 위 "핸들러 계약" 절 참고, `Dispatch.retractFrom`의
     순회 구조 자체가 항상 깊은 인덱스부터 정리하고 나서 얕은 인덱스로
@@ -362,7 +380,15 @@ end
     뮤테이션해서 결과를 낸다"는 어감이라 기각 — 사용자 판단). `inst`와
     flatten된 props 테이블을 받아 배열 파트(children/Ref) 먼저, 해시
     파트(프로퍼티/이벤트) 나중으로 두 패스 순회하며 각 `(k,v)`에
-    `Dispatch.process`를 호출하는 게 이 함수의 본체.
+    `Dispatch.process(inst, k, v, 1)`을 호출하는 게 이 함수의 본체.
+    **진입 인덱스는 항상 `1`**(2026-08-13 감사에서 명시화 — 인덱스 도입
+    후에도 이 자리만 인자가 안 적혀 있었음) — `drive`는 그 키의 체인을
+    처음 여는 자리이므로 "다른 키로 위임할 때는 그 키의 재귀 깊이와
+    무관하게 항상 1부터"(아래 "Dispatch 체인" 절)라는 규칙의 가장 기본
+    사례. 같은 키가 두 번 나올 수 없는 테이블 순회라 여기서 점유 충돌이
+    날 일도 없음(단, 그룹 `Attribute`가 배열 파트에서 먼저 점유해둔
+    이름을 해시 파트 직접 쓰기가 다시 건드리면 그건 정상적으로 점유
+    error — `base/attribute-plan.md` "이름 소유권" 절).
 - **`v=nil`이 구체적으로 뭘 뜻하는지는 핸들러마다 다름, `None` 자신은
   "리셋"이 아님** — 일반 프로퍼티는 "`nil`로 셋하는 것도 그냥 셋 동작"이라
   사실상 그대로 두는 것과 다름없고, UICorner 같은 숏핸드 핸들러는 만들어둔
@@ -472,15 +498,29 @@ Observer 구독)와, A가 재귀로 위임한 핸들러 B의 생명주기가 **�
 ```lua
 -- Dispatch/init.luau
 local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = retractor}(strong)}}
+local NOOP = function() end
 
 function Dispatch.process(inst, k, v, index)
-    local list = chains:GetStrong(inst, k) or {}
+    -- [순서 주의, 2026-08-13 감사] 아래 두 줄(list 확보 + chains 등록)은 반드시
+    -- h.process 호출 *전에* 끝나야 함 — h.process가 내부에서 재귀
+    -- Dispatch.process(inst,k,...,index+1)를 부르는 게 정상 경로이고(StoreBind/
+    -- NoneHandler), 그때 chains에 이 list가 아직 안 들어가 있으면 재귀 호출이
+    -- `or {}`로 자기만의 새 테이블을 만들어 저장해버린 뒤 바깥이 그걸 덮어써서
+    -- 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
+    local list = chains:GetStrong(inst, k)
+    if not list then
+        list = {}
+        chains:SetStrong(inst, k, list)
+    end
     if list[index] ~= nil then
         error("Dispatch: (inst,k)의 이 인덱스는 이미 점유돼 있음 — 먼저 retract할 것")
     end
+    -- 점유 마커를 먼저 박는 이유: (1) h.process가 재귀하는 동안 list가 구멍
+    -- 없는 시퀀스로 유지돼야 `#list`가 정의됨(hole 있는 테이블의 `#`는 Lua가
+    -- 보장 안 함), (2) 핸들러가 같은 index로 재진입하는 버그도 이 가드에 걸림.
+    list[index] = NOOP
     local h = Dispatch.getHandler(inst, k, v)  -- 매치 실패는 기존 규칙대로 즉시 error
     list[index] = h.process(inst, k, v, index)  -- 반환값 = retractor 클로저, 생략 불가
-    chains:SetStrong(inst, k, list)
 end
 
 function Dispatch.retractFrom(inst, k, index, v)
@@ -551,6 +591,37 @@ end
   엔진 `RemoveTag` 호출만 skip한다 — 상세는 `base/tag-plan.md` "메커니즘"
   절 참고. `hintValue`는 "계약상 항상 주어지지만 안 쓰는 핸들러가
   있어도 됨" 정도로 이해할 것.
+- **`hintValue`는 "직속 위임 1단계"에만 보장됨 — 깊은 인덱스는 항상 `nil`
+  (2026-08-13 여섯 번째 세션 명시화).** 위 `retractFrom` 의사코드의
+  `retractor(if i == index then v else nil)`이 그대로 계약임: 힌트를 받는
+  건 **호출자가 지목한 `index` 자리 하나뿐**이고, 그보다 깊은(꼬리 쪽)
+  인덱스들은 전부 `nil`을 받음. 결과:
+  - **`State<Tag>`/`State<Ref>`/`State<Slot>`(한 겹)은 힌트가 확실히
+    전달됨** — StoreBind가 인덱스 1, 실제 핸들러가 인덱스 2이고
+    StoreBind는 `retractFrom(inst,k,index+1=2,realv)`를 부르므로
+    `i == index`가 정확히 그 핸들러에 걸림. 즉 `Tag`의 `Contains` 힌트,
+    `Ref`/`Slot`의 identity 비교 같은 깜빡임/재생성 방지가 **흔한
+    경로에서는 유실 없이 동작**함.
+  - **두 겹 이상(`State<State<Tag>>` 등)에서 바깥이 재발행하면 안쪽
+    핸들러는 `nil` 힌트를 받음** — 구조적으로 불가피(바깥 단계는 안쪽
+    State가 결국 어떤 값을 내놓을지 모름). 동작은 정상이지만 힌트 기반
+    최적화만 꺼짐.
+  - **[검토 후 기각] `chains`에 핸들러도 같이 저장해두고, 깊은 인덱스의
+    핸들러가 새 값에 매치될 핸들러와 같으면 값을 한 겹 풀어 힌트로
+    내려보내는 안**(사용자 제시). 두 가지 이유로 기각: (1) `process`와
+    retractor 호출이 **1:1이 아님** — 전체 철거(`retractFrom(inst,k,1,nil)`)
+    처럼 뒤따르는 `process`가 아예 없는 경로가 정상적으로 존재해서, 그
+    경우엔 애초에 내려보낼 "새 값"이 없음(사용자 스스로 지적한 한계).
+    (2) 더 근본적으로, 값을 한 겹 풀려면 teardown 도중에
+    `innerState:Get()`을 **투기적으로** 호출해야 하는데 — State는
+    pull-recompute 계약(`base/store-semantics.md`)이라 이 호출이 실제
+    재계산을 유발할 수 있고, 곧이어 `process`가 다시 `:Get()`을 부르면
+    같은 사이클에 이중 계산이 됨. 또 그렇게 얻은 값은 어디까지나 추정이라
+    실제 `process` 시점의 값과 다를 수 있음("값 비교/캐싱 금지" 원칙과
+    같은 결). **대신 채택할 방향은 값 층에서의 평탄화**(`State<State<T>>`
+    → `State<T>` 콤비네이터, `research/operator-sugar-plan.md` 백로그) —
+    체인을 한 겹으로 유지하면 위 첫 번째 항목의 보장이 그대로 적용되므로
+    Dispatch 층에 특수 배관을 넣을 이유가 없어짐.
 - **순환은 UB, 방어 로직 없음** — Handler 간 순환 참조(A가 B를 부르고
   B가 다시 A로 돌아오는 것, 또는 값 자체가 결국 자기 자신을 가리켜
   무한히 깊어지는 인덱스)는 재귀 호출이 안 끝나 바로 스택오버플로가
@@ -581,6 +652,73 @@ end
   끼우기"가 자연스럽게 됨. `research/debug-tooling-plan.md`의 "무엇이
   무엇에 연결됐는가" 그래프도 이 `chains` 구조를 그대로 읽으면 됨 —
   quad-debug 착수 시점에 새로 설계할 필요 없음.
+
+### Handler 작성 체크리스트 — 새 모델에서 실제로 반복된 실수들 (2026-08-13 여섯 번째 세션 신설)
+
+**왜 이 절이 있는가**: 인덱스 기반 재설계 직후 작성된 의사코드
+(`Dispatch` 자신, `Ref`, `Tag`, `Slot`, `Attribute`)에서 **같은 세션
+안에 버그 4건**이 나왔고, 그중 셋이 서로 다른 문서에 있으면서도
+**같은 종류의 착각**에서 나왔음. 새 Handler를 짜거나 기존 걸 고칠 때
+이 목록을 먼저 훑을 것 — 전부 "그럴듯해 보이는데 틀린" 것들이라
+리뷰로 잡기 어렵다.
+
+**1. 클로저는 early-return해도 체인에서 *소비*된다.**
+`Dispatch.retractFrom`은 저장된 retractor를 호출하고 **항상**
+`list[i] = nil`로 지움 — 그 클로저가 `hintValue == v`로 아무 일도 안 하고
+돌아왔더라도 마찬가지. 그러므로:
+- **매 `process` 호출은 "이 자리를 무르는 책임"을 온전히 새로 짊어진
+  클로저를 반환해야 한다.** "이번엔 내가 실제로 한 일이 없으니 no-op을
+  돌려주자"는 거의 항상 버그 — 다음 사이클에 진짜 교체가 올 때 정리할
+  주체가 사라짐. (`SlotHandler`에서 실제로 이 함정에 빠졌었음.)
+- 반대로 "아무 일도 안 했으니 무를 것도 없다"가 **진짜로** 맞으려면,
+  그 자리가 무를 자원을 애초에 아무도 안 갖고 있어야 함(일반
+  PropertyHandler처럼).
+
+**2. `process`가 재귀 위임 전에 `retractFrom`을 부르는 건 *같은 키에
+자기 아래*일 때만이다.**
+`StoreBind`가 `retractFrom(inst,k,index+1,realv)`를 부르는 건 자기가
+직전 사이클에 만든 하위 체인을 자기가 치우는 것 — 정당함. 반면 **다른
+키로 위임하면서 그 키의 인덱스 1을 미리 `retractFrom`으로 비우는 것은
+거의 항상 버그**: 그 자리를 누가 점유했든 지워버리므로
+`Dispatch.process`의 점유 체크(= 소유권 충돌 감지)가 통째로 무력화됨.
+`AttributeGroupHandler`가 정확히 이걸로 그룹↔그룹 충돌을 조용히
+넘기고 있었음. **다른 키의 정리는 그 키를 등록했던 클로저가 한다.**
+
+**3. `hintValue`는 `nil`이 아니고, 타입도 보장 안 되고, 깊은 인덱스엔
+안 온다.** 셋 다 별개의 함정:
+- `nil`이라고 가정하고 `assert(v == nil)`을 쓰면 안 됨(이미 한 번 전면
+  정정된 이력, `archive/retract-always-fires-reversed.md`).
+- 내용(메소드/필드)을 보려면 `isTag(hintValue)` 같은 가드부터 —
+  그 자리 핸들러 *타입*이 바뀌는 경우 엉뚱한 값이 옴.
+- 깊이 2 이상에는 `nil`이 옴(위 "`hintValue`는 직속 위임 1단계에만
+  보장됨" 항목) — 힌트가 있으면 최적화, 없으면 정직하게 전부 정리하는
+  코드여야 함. 힌트를 **정확성**의 근거로 삼으면 안 됨.
+
+**4. "이전 값"을 알고 싶으면 클로저 캡처, "여러 위치/사이클을 가로지르는
+누적 상태"만 `Relate`.** 이 경계를 헷갈리면 양방향으로 틀림:
+- 불필요한 `Relate`: `process`가 만든 걸 그 클로저가 정리하는 단발성
+  handoff는 upvalue 캡처로 끝(옛 `kSlotMap`/`kTagMap`이 이걸로 삭제됨).
+- 부족한 `Relate`: `Tag`의 `tagNameMap`(여러 위치가 한 이름을 공유),
+  `Ref`의 spurious 재바인딩 dedup처럼 **자기 클로저 수명 밖의 정보**는
+  캡처로 대체 불가.
+- 그리고 `Relate`에 쓴 걸 클로저에서 지울 땐 **"내가 실제로 물러날
+  때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
+  (`RefLeafHandler`가 정확히 이 버그였음).
+
+**5. `Dispatch`를 통해서만 진입한다.**
+`handler.process(...)`를 직접 부르면 점유 체크와 `chains` 기록이 통째로
+빠져 나중에 정리가 안 되거나 정합성이 깨짐(위 "Dispatch 체인" 절).
+마찬가지로 클로저 안에서는 `Dispatch.process` 금지, **같은 키**에 대한
+`Dispatch.retractFrom`도 금지(진행 중인 루프가 `#list`를 이미 캡처).
+
+**6. 인덱스는 "같은 키 안의 재귀 깊이"다.**
+같은 키로 재귀하면 `index + 1`, **다른 키로 위임하면 그 키에서 다시
+`1`부터**, `Dispatch.drive`의 최초 진입도 `1`. 배열 파트의 위치(`k`)와
+이 `index`는 완전히 다른 것 — `AttributeGroupHandler`가 배열 위치를
+`index`라고 이름 붙였다가 시그니처 자체가 계약과 어긋난 전례가 있음.
+
+**7. 반환 생략 금지.** 정리할 게 없어도 `function() end`. `nil`을
+반환하면 `retractFrom`이 `attempt to call a nil value`로 크래시.
 
 ### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
 
@@ -654,6 +792,19 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   "`nil`/`None`이면 `0`" 규칙과 항상 같이 감, 둘 중 하나만 반영되면
   길이 합계와 실제 순서 계산이 어긋남).
 
+**해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
+→ `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
+별도 unregister API는 없고 `0`/`None` 재등록이 곧 해제인데, **순서가
+반대면 위험함**: `setLength`가 끝에서 `recompute`를 돌리므로, 먼저
+부르면 그 `recompute`가 아직 남아있는 옛 `Source`(지금 막 떼어내는
+서브트리의 것)에 `:Set()`을 날려 죽는 중인 다운스트림을 헛되이
+캐스케이드시킴. `setOffsetSource(None)`을 먼저 하면 아래 `recompute`의
+`offset ~= None` 가드에 바로 걸려 그 Source를 아예 안 건드림. 값이
+틀려지는 문제는 아니지만(자기 length가 줄어도 자기 offset은 그대로라
+갱신될 일 자체가 없음) **invalid한 Source가 순회 대상에 남아있는 것
+자체가 위험**하므로 순서를 계약으로 고정. 상세·부수 방어 조치는
+`base/slot-plan.md`의 "구현상 바뀌어야 하는 것" 절 참고.
+
 **둘 다 array part의 모든 number 인덱스에 대해 반드시 호출 — 생략은 UB
 (2026-08-09 여섯 번째 세션 확정).** `retract` 필드 생략 불가와 같은 톤 —
 이건 **Handler 구현체 작성자만 지키는 계약**이고 일반 컴포넌트 작성자는
@@ -726,8 +877,12 @@ local function recompute(ownerKey, bk)
     for i = 1, bk.N do
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(참여 안 함) — None은 truthy라
-        -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함
-        if offset ~= None and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
+        -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
+        -- [방어, 2026-08-13 여섯 번째 세션] `nil`도 같이 배제 — 정상
+        -- 상태에선 항상 None으로 채워지는 게 계약이지만(위 "None을 쓰는
+        -- 이유"), 해제/재마운트가 얽히는 전이 구간에서 `nil`이 관측돼도
+        -- 크래시 대신 skip이어야 함. 등록 쪽의 "반드시 None" 의무는 그대로.
+        if offset ~= nil and offset ~= None and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
             offset:Set(sum)
         end
         local v = bk.lengthList[i]
@@ -1193,8 +1348,13 @@ function RefLeafHandler.process(inst, k, v, index)
         if hintValue ~= v then
             v:Set(nil)  -- 매 :Set()마다 콜백 재통지되는 기존 Ref 규칙(위 "해소됨 —
                         -- 반복 재설정 가능" 항목)을 그대로 재사용, 새 알림 경로 아님
+            -- [정정, 2026-08-13 감사] relate 정리는 반드시 이 분기 *안*에 있어야
+            -- 함 — 밖에 두면 spurious 재발행(hintValue == v)에서도 기록이
+            -- 지워져, 곧바로 이어지는 process가 `old ~= v`를 항상 참으로 보고
+            -- `v:Set(inst)`를 재실행함(콜백 헛 재통지). 즉 아래 dedup 항목이
+            -- 약속한 "spurious면 둘 다 스킵"이 성립을 안 했음.
+            if relate:GetStrong(inst, k) == v then relate:SetStrong(inst, k, nil) end
         end
-        if relate:GetStrong(inst, k) == v then relate:SetStrong(inst, k, nil) end
     end
 end
 ```
@@ -1516,9 +1676,11 @@ SyntheticEvent만 주는 것과 같은 모양).
 `Dispatch.process(inst,k,realv)`를 재귀 호출) + "재실행 래핑이 `retract`도
 같이 호출한다"(Slot이 이미 이 조합을 씀, 같은 절)는 두 메커니즘이 이미 있음.
 이벤트 핸들러가 할 일은 딱 하나: `process`에서 `:Connect()`한 Connection을
-per-instance 저장소에 기억해두고, `retract`에서 그걸 `:Disconnect()`하는
-것 — 새 디스패치 메커니즘 발명 필요 없이 기존 4종 계약(`isHandlable`/
-`priority`/`process`/`retract`)만 제대로 구현하면 됨.
+`process`의 로컬 변수로 들고, 반환하는 retract 클로저가 그걸 upvalue로
+캡처해 `:Disconnect()`하는 것 — 새 디스패치 메커니즘 발명 필요 없이 기존
+계약(`isHandlable`/`priority`/`process`)만 제대로 구현하면 됨(**[2026-08-13
+다섯 번째 세션]** 예전엔 별도 `retract` 필드 + per-instance `Relate`
+저장소였으나, 클로저 캡처로 저장소 자체가 불필요해짐).
 
 **`false`로 disconnect, `nil` 아님.** `nil`은 Lua 테이블에서 "키가 아예
 없음"과 구별이 안 됨(`pairs`에서도 안 보임) — "명시적으로 꺼짐"이라는

@@ -1,5 +1,15 @@
 # Tag — array-part 값 객체, `CollectionService` 얇은 래퍼
 
+> **⚠️ [2026-08-13 여섯 번째 세션] 이 문서의 `hintValue`/`retractFrom` 선행
+> 호출 서술은 곧 교체될 예정 — 아직 반영 안 됨.** 힌트가 `None` 센티널이나
+> `State`/`Tween` 래퍼로 오염돼 말단 핸들러의 `isX(hint)` 가드를 거짓으로
+> 만들고 깜빡임/재생성 방지를 조용히 끄는 결함이 확인됐고, 대체 모델
+> (**래핑 핸들러의 `retractFrom` 선행 호출 폐기 + `Dispatch.process`가
+> 핸들러를 먼저 비교**)까지 거의 확정됐음 — 다만 `question.md` **0-Z**
+> (Attribute 이름 소유권) 하나가 남아 아직 옮기지 않음. **여기 적힌 대로
+> 구현하면 옛 모델로 짜게 됨** — 반드시
+> `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
+
 **상태**: base — 2026-08-08 세 번째 세션에서 값 모양을 전면 재설계(구
 모델은 `archive/tag-hash-key-model-reversed.md`에 원문·역전 이유 보존).
 2026-08-12 열한 번째 세션에 `TagHandler`의 `process`/`retract` 메커니즘을
@@ -23,6 +33,7 @@ Tag(name1, name2, ...)                  -- 생성자, 가변인자. Tag() 빈 �
 tag:Added(name: string | {string}): Tag   -- clone 후 이름(들) 추가, 원본 안 건드림
 tag:Removed(name: string | {string}): Tag -- clone 후 이름(들) 제거
 tag:Contains(name): boolean -- 멤버십 확인
+tag:Names(): iterator<string> -- 담고 있는 이름 순회(아래 "메커니즘" 절이 쓰는 것)
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의
                                      Overridden(필드 단위 덮어쓰기, 손실 있음)와
@@ -95,8 +106,9 @@ nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
 
 1. **`retract`는 실제로 store 재발행마다(핸들러 타입이 안 바뀌어도) 항상
    불림** — `bind-system-plan.md`의 "확정된 디스패치 모델" 절이 처음부터
-   말해온 대로 `StoreBind`가 재-dispatch 전에 무조건 `Dispatch.retractUnder`를
-   부르기 때문. "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
+   말해온 대로 `StoreBind`가 재-dispatch 전에 무조건
+   `Dispatch.retractFrom`(2026-08-13 다섯 번째 세션 전까지의 이름은
+   `retractUnder`)을 부르기 때문. "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
    (상세 근거는 `bind-system-plan.md` 일반 retract 계약 절, `archive/
    retract-always-fires-reversed.md`).
 2. **서로 다른 배열 위치의 두 `Tag(...)`가 같은 이름을 겹쳐 가질 수
@@ -186,6 +198,16 @@ end
   이름은 `AddTag`가 no-op으로 재확인만 됨, 소유 목록엔 `B`가 새로 등록).
   결과적으로 실제 `RemoveTag`/`AddTag` 호출은 진짜 변경된 이름에만
   일어남 — 스타일 깜빡임 방지라는 원래 목적은 그대로 달성.
+  **[범위 한정, 2026-08-13 감사] 이 깜빡임 방지는 "이 Tag를 바로 위에서
+  직속으로 위임한 한 단계"에서만 성립함** — `Dispatch.retractFrom(inst,
+  k, index, v)`는 힌트 `v`를 정확히 `index` 자리에만 넘기고 그보다 깊은
+  인덱스에는 `nil`을 넘기기 때문(`bind-system-plan.md` "Dispatch 체인"
+  절의 `retractFrom` 의사코드). 그래서 `State<State<Tag>>`에서 **바깥**
+  store가 재발행하면 TagHandler(더 깊은 인덱스)는 `hintValue=nil`을
+  받아 이름 전부를 실제로 `RemoveTag`했다가 새 체인이 다시 `AddTag`함.
+  구조상 불가피함(바깥 단계는 안쪽이 결국 어떤 Tag를 내놓을지 모름)
+  이고, 흔한 경로(`State<Tag>` 한 겹)는 영향 없음 — 실사용에서 문제가
+  되면 그때 힌트를 깊은 인덱스까지 전파하는 안을 재검토.
 - **`Tag(A)→nil`**: `A`의 클로저가 `hintValue=nil`로만 불림(값이 `Tag`가
   아니게 돼 `process`는 매치 자체가 안 됨) — `hintIsTag=false`라 힌트가
   항상 거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `RemoveTag`됨

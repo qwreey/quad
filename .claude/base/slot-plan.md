@@ -1,5 +1,15 @@
 # Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
+> **⚠️ [2026-08-13 여섯 번째 세션] 이 문서의 `hintValue`/`retractFrom` 선행
+> 호출 서술은 곧 교체될 예정 — 아직 반영 안 됨.** 힌트가 `None` 센티널이나
+> `State`/`Tween` 래퍼로 오염돼 말단 핸들러의 `isX(hint)` 가드를 거짓으로
+> 만들고 깜빡임/재생성 방지를 조용히 끄는 결함이 확인됐고, 대체 모델
+> (**래핑 핸들러의 `retractFrom` 선행 호출 폐기 + `Dispatch.process`가
+> 핸들러를 먼저 비교**)까지 거의 확정됐음 — 다만 `question.md` **0-Z**
+> (Attribute 이름 소유권) 하나가 남아 아직 옮기지 않음. **여기 적힌 대로
+> 구현하면 옛 모델로 짜게 됨** — 반드시
+> `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
+
 **상태**: base — 설계 방향(소유권 귀속, 재마운트 시 throw, retract=폐기)과
 소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
 architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
@@ -229,7 +239,12 @@ process가 diff 담당"이라는 전제 자체가 틀렸음** — 실제로는
 적용하는 것이라 더 정확함(위치 비교로는 "이 Slot이 동시에 다른 위치에도
 마운트돼 있는가"를 못 잡음).
 
-**[GC 주의, 2026-08-12 열세 번째 세션] `kSlotMap`/`slotOwner` 둘 다
+**[GC 주의, 2026-08-12 열세 번째 세션 — 아래 문단은 이 결정에 이르게 된
+역사적 근거이고, 거기 나오는 `kSlotMap`/`slotOwner`는 지금은 둘 다
+존재하지 않음: `kSlotMap`은 2026-08-13 다섯 번째 세션에 Handler 계약이
+클로저 반환으로 바뀌며 삭제, `slotOwner`는 2026-08-12 열여섯 번째 세션에
+`elementOwner`로 일반화. 결론(= 전부 weak, 실제 앵커는 `bindLifetime`
+하나)만 아래 코드에 그대로 살아있음]** `kSlotMap`/`slotOwner` 둘 다
 Slot을 `SetStrong`으로 저장하면 안 됨 — `kSlotMap[inst][k]=slot`(강)과
 `slotOwner[slot]=inst`(강)가 동시에 있으면 **서로 다른 두 `Relate`가
 맞물려 서로를 살려주는 순환**이 생김(`inst`가 살아있어야 `slotOwner`가
@@ -266,21 +281,33 @@ local elementOwner = Relate()  -- element(Slot이든 plain 마운트 가능 값�
 local OWNER = "__owner"        -- sentinel key(Relate는 항상 3-인자 SetWeak/2-인자 GetWeak 이후
                                 -- 값이라 outer key 하나당 값 하나만 저장하고 싶어도 key가 필요함 —
                                 -- lifecycle-pattern.md의 GCCONN/GCHOLD와 같은 패턴, base/relate-plan.md 참고)
+local OWNER_POS = "__ownerPos"  -- [2026-08-13 감사 신설] owner 안에서의 위치(top-level만 씀, 아래 참고)
 
+-- nested(`rawAdd`) 전용 — 엄격, 이미 누가 갖고 있으면 같은 owner여도 error
 local function claimOwner(element, ownerKey)
+    if elementOwner:GetWeak(element, OWNER) ~= nil then
+        error("이 요소는 이미 마운트돼 있음 — 다중 마운트 금지")
+    end
+    elementOwner:SetWeak(element, OWNER, ownerKey)
+end
+
+-- top-level(`SlotHandler`) 전용 — "같은 (inst,k) 자리의 spurious 재발행"만
+-- false, 그 외 중복은 전부 error. 반환값 = 실제로 새로 클레임했는가.
+local function claimOwnerAt(element, inst, k)
     local current = elementOwner:GetWeak(element, OWNER)
-    if current == ownerKey then
-        return false  -- 이미 같은 owner — no-op, 재확인만
+    if current == inst and elementOwner:GetWeak(element, OWNER_POS) == k then
+        return false  -- 정확히 이 자리가 이미 들고 있음 — 재확인만, no-op
     end
     if current ~= nil then
         error("이 요소는 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
     end
-    elementOwner:SetWeak(element, OWNER, ownerKey)
+    elementOwner:SetWeak(element, OWNER, inst)
+    elementOwner:SetWeak(element, OWNER_POS, k)
     return true
 end
 
 local function releaseOwner(element, ownerKey)
-    -- [정정, 2026-08-13 세션] 불일치를 조용히 무시하지 않음 — claimOwner가 항상
+    -- [정정, 2026-08-13 세션] 불일치를 조용히 무시하지 않음 — claim이 항상
     -- 먼저 성공해야만 이 element를 이 ownerKey가 들고 있을 수 있으므로, 여기서
     -- 불일치가 관측되는 것 자체가 호출측(rawRemove/rawExtract/SlotHandler.process가 반환한 클로저)의
     -- 소유권 bookkeeping이 어딘가 깨졌다는 뜻 — Dispatch의 "매치 실패는 조용한
@@ -290,10 +317,11 @@ local function releaseOwner(element, ownerKey)
         error("releaseOwner: 이 element는 이 ownerKey가 소유하고 있지 않음 — 호출측 소유권 추적이 깨졌음")
     end
     elementOwner:SetWeak(element, OWNER, nil)
+    elementOwner:SetWeak(element, OWNER_POS, nil)
 end
 
 function SlotHandler.process(inst, k, slotValue, index)
-    if claimOwner(slotValue, inst) then
+    if claimOwnerAt(slotValue, inst, k) then
         -- [정정, 2026-08-13 세션] bindLifetime을 attachSlot 밖, 여기(top-level Handler)로
         -- 이동 — 반환하는 클로저 쪽 unbindLifetime과 같은 층위(Handler)로 대칭. 중첩
         -- Slot은 여전히 anchor 불필요(자신을 담는 outer의 `_elements`(plain strong
@@ -303,14 +331,13 @@ function SlotHandler.process(inst, k, slotValue, index)
         bindLifetime(inst, slotValue)
         attachSlot(slotValue, inst, inst, k)
     end
-    -- claimOwner가 false여도(이미 같은 Slot이 이 자리를 차지 중인 spurious 재발행)
-    -- 아래 클로저는 항상 똑같이 올바르게 동작함 — attachSlot을 두 번 안 부르는
-    -- 것만 위에서 갈렸을 뿐, "이 자리가 결국 다른 값으로 바뀔 때 할 일"은 어느
-    -- 쪽 process 호출이 반환하든 slotValue/inst가 같아서 동일함(2026-08-13 다섯
-    -- 번째 세션 — 이래서 별도 `kSlotMap`이 더 이상 필요 없음: 나중에 이 인덱스가
-    -- 통째로 철거될 때 실제로 불리는 건 항상 *가장 최근* process 호출이 반환한
-    -- 클로저인데, 그게 어느 호출에서 왔든 캡처된 slotValue/inst는 늘 참값이라
-    -- "누가 진짜로 attach했는지"를 별도로 기억해둘 필요 자체가 없음).
+    -- 여기 도달했다는 건 "이 (inst,k) 자리가 slotValue를 소유 중"이 보장된 것 —
+    -- 방금 새로 클레임했든, 직전 사이클의 클레임이 spurious 재발행을 거쳐 그대로
+    -- 살아있든 둘 중 하나(다른 소유자였다면 claimOwnerAt이 이미 error). 어느 쪽이든
+    -- "이 자리가 결국 다른 값으로 바뀔 때 할 일"은 slotValue/inst가 같아서 동일하므로
+    -- 클로저도 하나로 통일 — 여기서 no-op 클로저를 반환하면 안 됨: retractFrom은
+    -- 클로저를 early-return시키든 말든 체인에서 항상 *소비*하므로, spurious 사이클에서
+    -- no-op을 심어두면 그 다음 진짜 교체 때 이전 서브트리를 정리할 주체가 사라짐.
     return function(hintValue)
         if slotValue == hintValue then return end  -- 같은 Slot 재발행 → no-op
         destroySlotTree(slotValue)  -- 재귀 파괴(자식 정리), 폐기·옮기지 않음 — slot 자신의 GC 앵커는 안 건드림(top-level 전용)
@@ -319,6 +346,51 @@ function SlotHandler.process(inst, k, slotValue, index)
     end
 end
 ```
+
+**[전면 정정, 2026-08-13 감사] `claimOwner`를 nested/top-level 두 함수로
+쪼개고, top-level은 `(inst, k)`까지 본다.** 원래는 하나의 `claimOwner`가
+"같은 ownerKey면 `false` 반환(no-op)"을 양쪽에 공유했는데, 그 분기가
+**두 개의 서로 다른 상황을 구분 못 해서** 양쪽 경로에 각각 버그를
+만들고 있었음:
+
+- **top-level**: `Frame { slot, slot }`(같은 Slot을 같은 inst의 두 위치에)에서
+  `k=2`가 `current == inst`라 조용히 `false`를 받아 attach를 건너뛰는데,
+  **그러고도 파괴적인 클로저를 반환**했음 — 나중에 철거될 때
+  `destroySlotTree`가 두 번 돌고 `unbindLifetime` 짝이 어긋나며
+  `releaseOwner`가 (이미 해제된 상태라) error로 터짐. 구 설계는
+  `kSlotMap`에 안 적힌 자리는 `retract`가 자연히 no-op이라 우연히 막혀
+  있었는데, `kSlotMap` 제거가 이 방어를 같이 걷어낸 회귀였음. 이제
+  `claimOwnerAt`이 `k=2`에서 곧바로 error를 내므로 그 상태 자체가 안
+  만들어짐 — **클로저를 두 갈래로 쪼개는 방식으로는 못 고침**: `retractFrom`은
+  클로저가 early-return하든 말든 체인에서 항상 소비하므로, spurious
+  사이클에서 no-op 클로저를 심으면 다음 진짜 교체 때 이전 서브트리를
+  정리할 주체가 사라져 오히려 더 큰 누수가 됨(감사 중 실제로 그 방향을
+  먼저 써봤다가 되돌림).
+- **nested**: `rawAdd`는 애초에 `claimOwner`의 반환값을 안 봄(아래 "요소
+  소유권" 절 호출부) — 그래서 `local a = Slot{}; Slot { a, a }`가 조용히
+  통과해 `_elements = {a, a}`가 되고, `attachSlot`이 같은 Slot에 대해 두 번
+  불려 부모 `lengthList`에 같은 Slot이 두 번 계산되고 `slot.Offset`도
+  두 번째 호출이 덮어써 첫 번째 `Source`가 고아가 됨.
+
+**해법의 근거 — nested엔 "재클레임"이라는 개념이 애초에 없다.** `:List`의
+`reconcile`은 요소를 바꿀 때 항상 `rawRemove(prev)`(→`releaseOwner`) 다음에
+`rawAdd(result)`(→`claimOwner`) 순서로 부르고(아래 "구현" 절 의사코드),
+`rawMove`/`rawSwap`은 클레임을 아예 안 건드림 — 즉 nested에서 "이미 내가
+갖고 있는 걸 다시 클레임"하는 정당한 경로가 하나도 없으므로 **무조건
+error가 맞음**. 반대로 top-level은 store 재발행마다 같은 Slot으로
+`process`가 다시 불리는 게 정상 경로라 그 케이스만 구분해줘야 하고,
+그러려면 owner 하나로는 부족해서 위치(`k`)까지 봐야 함.
+
+**위치를 키에 넣어도 안전한 이유(사용자 확인)** — 여기서 쓰는 `k`는
+"바깥 컨테이너 안에서의 인덱스"고, 이건 nested Slot의 `Length`가 변해도
+바뀌지 않음. 실제 물리 배치의 변동은 전부 `offset`이 흡수하도록 설계돼
+있음(`base/bind-system-plan.md` "Length/Offset" 절의 `recompute`가 그
+증거 — `lengthList`/`sourceList`는 위치별 배열이고 순서 계산만
+누적합으로 함). top-level의 `k`는 특히 props 배열 리터럴의 위치라
+저작 시점에 고정. **nested는 `Move`/`Swap`/`Splice`/`Remove`가
+`_elements` 인덱스를 실제로 밀고 당기지만, 위 결론대로 nested는
+위치를 아예 안 쓰므로(엄격 `claimOwner`) 무관** — 그래서
+`OWNER_POS`는 top-level 전용이고 `rawAdd` 경로는 건드릴 필요가 없음.
 
 `attachSlot` 자체가 quad-roblox 소속이라 `inst`를 아는 건 자연스러움 —
 `elementOwner`가 굳이 `inst`의 정체를 몰라도(예: 다른 백엔드에서 중간
@@ -346,11 +418,33 @@ Slot뿐 아니라 **모든 마운트 가능 element(plain Instance 포함)**의
 
 ```lua
 -- rawAdd(self, element, index) 안, "이미 마운트" 에러 체크 자리
-claimOwner(element, self)  -- self = 담는 Slot. 이미 다른 곳 소유면 여기서 error
+claimOwner(element, self)  -- self = 담는 Slot. 이미 누가(같은 self 포함) 소유 중이면 여기서 error
 
 -- rawRemove(self, index)/rawExtract 안, 요소를 내보내는 자리
 releaseOwner(element, self)
+
+-- destroySlotTree(slot) 안, 자식들을 파괴하기 직전(위 "파괴" 절)
+releaseOwner(element, slot)
 ```
+
+**[2026-08-13 감사] `claimOwner`는 반환값이 없음 — 성공 아니면 error다.**
+예전 버전은 "이미 같은 owner면 `false` 반환"이었고 `rawAdd` 호출부는 그
+반환값을 아예 안 봐서, `local a = Slot{}; Slot { a, a }`가 조용히 통과했음
+(위 "Slot과 Store 바인드의 관계" 절의 전면 정정 참고). nested 경로엔
+재클레임이 정당한 경우가 하나도 없으므로(reconcile은 항상 `rawRemove`→
+`rawAdd` 순서, `rawMove`/`rawSwap`은 클레임 미접촉) 무조건 error가 맞음 —
+top-level만 `claimOwnerAt`으로 spurious 재발행을 구분함.
+
+**[2026-08-13 감사] 소유권 반납은 GC에 맡기면 안 됨.** `elementOwner`는
+값도 `SetWeak`이라 "파괴된 Slot이 아무에게도 참조되지 않게 되면 소유권
+기록도 저절로 사라진다"가 원리적으로는 맞지만, **그게 언제인지가 GC
+타이밍에 달려 있어서** 그 전에 같은 element를 다른 곳에 넣으려 하면
+"이미 마운트돼 있음" error가 비결정적으로 터짐(사용자가 직접 들고 있는
+nested `Slot`을 파괴 후 재사용하는 경로가 정확히 이 케이스). 그래서
+`rawRemove`/`rawExtract`뿐 아니라 **`destroySlotTree`도 자기 자식들의
+`releaseOwner`를 명시적으로 부름** — 원래 이 함수는 소유권을 전혀 안
+건드리고 있었음. top-level Slot 자신의 반납은 `SlotHandler.process`가
+반환한 클로저가 담당(층위 분리는 `unbindLifetime`과 동일한 원칙).
 
 `ownerKey`가 `inst`(top-level)든 `Slot`(nested)든 `elementOwner`는
 타입을 신경 안 써서 하나의 레지스트리로 충분 — `outerSlot`이 값으로
@@ -1298,6 +1392,9 @@ Slot=그 `.Length`)이 됨. plain 요소만 있는 흔한 경우엔 항상 합==
 ```lua
 local function destroySlotTree(slot)
     for i, element in ipairs(slot._elements) do
+        -- [정정, 2026-08-13 감사] 소유권 반납을 먼저 — 아래 "소유권 반납은
+        -- GC에 맡기면 안 됨" 참고
+        releaseOwner(element, slot)
         if isSlot(element) then
             destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
         else
@@ -1310,6 +1407,10 @@ local function destroySlotTree(slot)
             unbindLifetime(slot._mountedInst, observer)
         end
     end
+    -- [정정, 2026-08-13 감사] 마운트 상태도 되돌림 — 안 그러면 파괴된 Slot이
+    -- `_mounted == true`로 남아 "마운트된 Slot의 재마운트는 즉시 throw"(위 절)에
+    -- 영원히 걸리고, `_mountedInst`가 죽은 inst를 계속 강하게 붙잡음.
+    slot._mounted, slot._mountedInst = false, nil
     -- [2026-08-12 열여섯 번째 세션, 스코프 정정] slot 자신의 unbindLifetime은
     -- 여기서 안 부름 — attachSlot이 최상위에서만 bindLifetime하므로 짝도
     -- 최상위 파괴 지점(SlotHandler.process가 반환하는 클로저, 위)에서만 한 번.
@@ -1326,6 +1427,11 @@ function rawRemove(self, index)
     if bk.observers[index] then
         unbindLifetime(self._mountedInst, bk.observers[index])  -- outer가 이 위치 위해 등록해둔 observer
     end
+    releaseOwner(element, self)   -- [정정, 2026-08-13 감사] 원래 이 줄이 의사코드에서
+                                  -- 빠져 있었음(산문 쪽 "요소 소유권" 절은 rawRemove/
+                                  -- rawExtract가 releaseOwner를 부른다고 이미 명시하고
+                                  -- 있었는데 코드만 불일치) — 엄격 releaseOwner가
+                                  -- 들어온 뒤로는 이 누락이 실동작 차이를 만듦
     if isSlot(element) then destroySlotTree(element) else element:Destroy() end
 
     spliceArraysDown(self, index)   -- _elements/lengthList/sourceList 전부 한 칸씩 당김
@@ -1482,6 +1588,246 @@ return Slot {
 그룹은 `Slot():List(...)`로 감싸는 식으로 **한 Slot 안에서 자유롭게 섞어
 쓸 수 있음** — Slot-in-Slot 중첩(위 절)과 이 반응형 raw 요소가 서로
 독립적으로 조합됨을 보여주는 예.
+
+### `State<Slot>` 재설정 시 소유권이 안전한가 — 확인됨 (2026-08-13 감사, 사용자 질문)
+
+**질문**: `Slot { state<Slot> }`에서 그 state가 다른 Slot으로 재설정되면
+소유권/마운트 상태가 정확히 갈리는가. 그리고 이걸 "래퍼가 불변이라
+괜찮다"로 설명할 게 아니라 **Slot-in-Slot 자체가 일반적으로 안전해야**
+하는 것 아닌가(사용자 판단: 후자가 맞음).
+
+**결론: 후자가 맞고, 실제로 성립함.** 위 sugar 때문에 구조는 항상
+`outer._elements[i] = sub`(래퍼 Slot, 이 위치에 **영구 고정**) →
+`sub:Single(state)` → 그 `:List`의 `reconcile`이 안쪽만 교체 — 이고,
+`reconcile`은 `result ~= prev`일 때 **`rawRemove(self, prev)` 다음에
+`rawAdd(self, result, pos)`** 순서로 부름(위 "구현" 절). 즉 소유권이
+**반납 → 재클레임** 순서로 정확히 갈림:
+
+| 시점 | `elementOwner[innerA]` | `elementOwner[innerB]` |
+|---|---|---|
+| 최초 reconcile | `sub` | — |
+| state가 B로 재설정, `rawRemove(sub, innerA)` | `nil`(releaseOwner) | — |
+| 이어서 `rawAdd(sub, innerB, pos)` | `nil` | `sub`(claimOwner) |
+
+바깥(`outer`) 입장에선 `_elements[i]`가 계속 `sub`라 아무 일도 안
+일어나고, 소유권 판정도 `sub` 아래 한 레벨에서만 갈림 — **래퍼가
+불변이라는 사실에 기대는 게 아니라, nested CRUD의 release→claim 규율
+자체가 안전성을 만듦.** 그래서 `Slot { Slot { Slot } }`처럼 손으로
+중첩한 경우에도 정확히 같은 규칙 하나로 동작함(래퍼 sugar는 그저 그
+일반 메커니즘의 사용자일 뿐).
+
+**단 이 결론은 위 "요소 소유권" 절의 2026-08-13 감사 수정 셋을 전제함** —
+(1) nested `claimOwner`가 엄격(같은 owner 재클레임도 error)이라
+`Slot { a, a }`가 실제로 막히고, (2) `rawRemove`가 `releaseOwner`를
+실제로 부르고(의사코드에서 빠져 있었음), (3) `destroySlotTree`가 자식
+소유권을 GC에 안 맡기고 명시적으로 반납. 셋 중 하나라도 빠지면 이 표의
+중간 단계가 어긋남.
+
+### [전면 정정, 2026-08-13 여섯 번째 세션 후속, 사용자 결정] `State<Slot>` 교체는 **파괴가 아니라 언마운트** — `state<Frame>`와 완전히 동일
+
+아래 두 절("`State<Slot?>`가 `nil`이 됐다 돌아오는 경우", "포탈")은 당시
+설계(reconcile이 `rawRemove`=파괴를 씀)를 정확히 서술한 것이지만, 그
+설계 자체가 이 정정으로 **뒤집힘**. 두 절은 문제 제기 과정으로만 남겨두고,
+현재 유효한 규칙은 이 절이다.
+
+**결정(사용자)**: `State<Slot>`이 다른 값으로 교체될 때 이전 Slot은
+**파괴되지 않고 언마운트만 된다.** 근거:
+
+1. **`state<Frame>`가 이미 그렇게 동작함** — `store.child:Set(otherFrame)`을
+   해도 이전 `Frame`을 quad가 `Destroy()`해주지 않음, 그냥 트리에서
+   내려올 뿐. `State<Slot>`만 다르게(파괴로) 동작할 이유가 없음. **"이전
+   값을 지울지는 그 값을 만든 쪽이 정한다"**는 이미 `Ref`("Destroy와 무관")/
+   `Attribute`("명시적 `None`으로만 지움")에서 확정된 quad 전역 철학과도
+   같은 결.
+2. **비파괴 추출은 이미 지원되는 개념** — `Extract`/`ExtractAll`/`Splice`가
+   전부 비파괴로 확정돼 있음(위 "CRUD API 확정" 절). "제거 = 파괴"만
+   reconcile이 임의로 골랐던 것이라, 그 선택을 되돌리는 것뿐 새 능력이
+   아님.
+3. **뽑아냈으면 더 이상 leaf의 소유가 아님** — 소유권이 반납된
+   (`releaseOwner`) 상태이므로, 그 Slot을 계속 쓸지 버릴지는 그걸 들고
+   있는 코드의 몫.
+
+**그러면 안 지운 Slot은 언제 죽는가 — "들고 있다 죽으면 같이 소멸"**
+(GC-native, 이 프로젝트의 기본 원칙 그대로): 아무도 참조를 안 들고 있으면
+그냥 GC됨. 명시적으로 지금 죽이고 싶으면 `dispose`(아래).
+
+**부수 효과 — 이미 파괴된 대상에 재마운트하려는 시도가 자연히 막힘.**
+Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 물리 target에
+묶고, 실제 동작 전에 `canExecute`를 확인**하도록 하면(`base/lifecycle-pattern.md`),
+"nested로 마운트해둔 뒤 물리 Instance를 Destroy하고, 그 다음 Slot을 뽑아
+다른 데 쓰려는" 경로가 별도 방어 로직 없이 걸러짐 — 이미 있는
+`bindLifetime`/`canExecute` 게이트를 한 층 더 촘촘히 적용하는 것뿐,
+새 메커니즘이 아님.
+
+**`Set`으로 덮어쓰기 *전에* 이전 값을 직접 `Destroy()`하는 건 UB.**
+`state<Frame>`에서 `frame:Destroy()`를 먼저 하고 `Set(other)`을 부르는
+것과 정확히 같은 문제 — quad는 그 값이 이미 죽었다는 걸 모른 채 언마운트
+경로를 탐. 순서는 항상 **`Set`(언마운트) → 그 다음 정리**.
+
+#### `dispose(any)` — quad가 만든 것을 안전하게 지우는 유일한 경로 (신설, 사용자 제안)
+
+위 UB를 "조심하세요"로만 두지 않기 위해, **base 레벨 탑레벨 유틸
+`dispose(value)`** 를 제공하는 방향으로 확정:
+
+- 의미(**[정정, 사용자 확정]** 최초안은 "마운트돼 있으면 먼저 떼어낸 뒤
+  파괴"였으나 더 단순하게 확정): **대상이 아직 어느 트리에 의해 살아있길
+  요구되고 있으면 파괴를 거부하고 즉시 `error`.** 떼어내주지 않음 —
+  떼어내는 건 `Set`(언마운트)의 몫이고, `dispose`는 그 뒤에 부르는 것.
+  아무도 요구하지 않는 상태면 실제로 파괴(Slot이면 하위까지 재귀).
+- **왜 거부가 맞는가(사용자)**: "실제로 클리어 하거나 Destroy 해도
+  로블록스엔 에러 안 나는데, quad에선 데이터 구조가 깨지는 일이니까요."
+  엔진은 조용히 넘어가지만 quad의 `_elements`/`lengthList`/`sourceList`/
+  `elementOwner`는 그 순간 어긋남 — 그래서 **quad가 관리 중인 값을
+  안전하게 지우는 유일한 경로가 `dispose`**이고, 그 경로가 "지금 지우면
+  안 되는 상태"를 잡아주는 게 존재 이유. 위 "`Set` 전에 직접 `Destroy()`
+  하는 건 UB" 항목이 `dispose`를 쓰면 UB가 아니라 **명확한 에러**가 됨.
+- **이게 성립하는 이유 — "이 값이 지금 어디 마운트돼 있는가"를 이미
+  알고 있음.** `a = Frame{}; Frame{a}; Frame{a}`를 error로 잡기로 이미
+  확정했고(위 "핵심 제약: 소유권 귀속과 단일 마운트"), 그 판정을 위해
+  `elementOwner`가 element → owner를 들고 있음 — `dispose`는 그 정보를
+  거꾸로 읽으면 되므로 **새 부기가 필요 없음**. 사용자 지적: "이미 두
+  곳에 넣는 게 에러나도록 하기로 했으니, 어디 마운트되었냐가 따져지고,
+  그래서 이미 가능한 일".
+- 네이밍/시그니처(`dispose(any)`가 맞는지, 타입을 어떻게 좁힐지),
+  Slot 외의 대상(Instance/Observer/Effect)까지 커버하는 범위,
+  `unbindLifetime`과의 역할 분담은 **미확정** — `.claude/question.md`에
+  올림. 여기서는 "언마운트로 바꾼 대신 명시적 파괴 수단을 제공한다"는
+  방향만 확정.
+
+#### 구현상 바뀌어야 하는 것
+
+`reconcile`이 교체/소멸 시 `rawRemove`(파괴) 대신 **비파괴 경로**를 타야
+하고, 그 경로는 `destroySlotTree`가 지금 하는 일 중 **파괴만 빼고 나머지는
+그대로 해야 함**(자식 observer `unbindLifetime`, 옛 owner에 등록해둔
+`Dispatch.setLength`/`setOffsetSource` 해제, `_mounted`/`_mountedInst`
+복원, `releaseOwner`).
+
+**[정정, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
+대해 그냥 **`Dispatch.setOffsetSource(ownerKey, position, None)` +
+`Dispatch.setLength(ownerKey, position, 0)`을 다시 부르면 끝**.
+이건 이미 확정된 관용구 그대로임(`base/bind-system-plan.md`의 "실제
+마운트를 하지 않는 위치는 `None`을 등록 — `setLength`도 짝을 맞춰 `0`").
+즉 **해제 = 0/`None`으로 재등록**이고 별도 unregister 함수가 없어도 됨 —
+앞서 "이게 실제 작업량"이라고 적었던 판단은 과했음.
+
+**⚠️ 순서가 중요함 — `setOffsetSource`를 먼저, `setLength`를 나중에
+(2026-08-13 여섯 번째 세션, 사용자 지적).** 마운트할 때와 달리 **해제할
+때는 이 순서를 반드시 지켜야 함**:
+
+- `Dispatch.setLength`는 끝에서 `recompute`를 돌리고, `recompute`는
+  `sourceList`를 순회하며 각 자리의 `offset:Set(sum)`을 호출함
+  (`base/bind-system-plan.md` "Length/Offset" 절).
+- 그래서 **`setLength(0)`을 먼저 부르면**, 그 안의 `recompute`가 도는
+  시점에 해제 중인 자리의 `sourceList[i]`엔 **아직 옛 Slot의 offset
+  `Source`가 그대로 남아 있음** → 지금 막 떼어내는 서브트리의 Source에
+  `:Set()`이 날아가고, 그 Source를 구독하던 (이제 곧 없어질) 자식들의
+  `LayoutOrder` 계산이 헛되이 캐스케이드됨. 사용자 표현대로 "**invalid한
+  offset source 자체가 있다는 것부터 위험**".
+- `setOffsetSource(None)`을 먼저 부르면 그 자리는 `recompute`의
+  `offset ~= None` 가드에 걸려 곧바로 제외되므로, 뒤이은 `setLength(0)`의
+  `recompute`가 그 Source를 아예 안 건드림.
+- **자기 자신의 offset은 어차피 안 바뀜**(자기 length가 줄어든다는 건
+  자기 앞 형제들의 누적합은 그대로라는 뜻) — 그래서 이 순서 문제는
+  "내 offset이 틀리게 계산된다"가 아니라 **"죽는 중인 Source에 쓰기가
+  날아간다"** 쪽임. 사용자도 "물론 별 상관 없어요"라고 했듯 실제 값
+  오류로 이어지진 않지만, 방어적으로 순서를 고정.
+
+**추가 방어 조치**:
+- **해제 시 `slot.Offset = nil`도 같이** — 이 문서의 "`Slot.Offset`은
+  마운트 시점에 세팅되고 마운트 전엔 `nil`" 규칙과 짝을 맞춤. 안 그러면
+  떼어낸 Slot이 옛 owner 기준의 stale한 `Offset`을 계속 공개해, 그걸
+  읽는 사용자 코드가 조용히 틀린 값을 씀.
+- **`recompute`는 `sourceList[i]`가 `None`이든 `nil`이든 "참여 안 함"으로
+  똑같이 관대하게 넘어갈 것** — 정상 상태에선 항상 `None`으로 채워지는 게
+  계약이지만(`nil`은 배열에 구멍을 냄), 해제/재마운트가 얽히는 전이
+  구간에서 `nil`이 관측돼도 크래시 대신 skip이어야 함. 이건 계약 완화가
+  아니라 **순수 방어** — 등록 쪽은 여전히 `None`을 쓸 의무가 있음.
+
+**`state<state<Frame>>`류로 offset이 밀리고 당겨지는 문제는 "그냥 확인된
+것"으로 수용**(사용자 판단) — `state<state<Tag>>`와 같은 범주로,
+평탄화 도구(`research/operator-sugar-plan.md`)가 처리할 요소이고 실사용
+케이스가 드묾. Dispatch/Slot에 별도 배관을 넣지 않음.
+
+### `State<Slot?>`가 `nil`이 됐다 돌아오는 경우 — 소유권은 정상, 단 **Slot은 파괴된다** (2026-08-13 여섯 번째 세션, 사용자 질문 — **위 정정으로 뒤집힘, 문제 제기 기록으로만 보존**)
+
+**질문**:
+```lua
+local stateSlot: State<Slot?> = Source()
+Frame { Slot { stateSlot } }
+```
+에서 `stateSlot`이 `nil`로 지워졌다 다시 나타나도 문제 없는가.
+
+**소유권 bookkeeping은 정상** — `:Single`이 감싼 `:List`의 `reconcile`이
+`data`가 빈 배열이 되면 직전 사이클 key(`true`)가 `seen`에 없으므로
+`rawRemove(sub, prev)`를 부르고(→ `releaseOwner`), 다시 값이 오면
+`rawAdd`(→ `claimOwner`)를 부름. 위 감사 수정(=`rawRemove`가 실제로
+`releaseOwner`를 부르고, `destroySlotTree`가 `_mounted`/`_mountedInst`도
+되돌림) 이후로는 재클레임이 깨끗하게 됨.
+
+**하지만 그 사이에 Slot 자체가 파괴됨 — 이게 실질적인 답이다.**
+`reconcile`이 쓰는 건 `rawRemove`(= 제거 **+ 파괴**)이지 `rawExtract`(=
+비파괴)가 아님(위 "구현" 절, "제거는 항상 파괴 확정이라 `Extract` 아닌
+`Remove` 경로"). 그래서 `nil`이 된 순간 `destroySlotTree(slotA)`가 돌아
+**slotA의 자식 Instance들이 `:Destroy()`됨**. 다시 나타날 때 같은
+`slotA` 객체를 넣으면 `_elements`엔 이미 죽은 Instance 참조가 남아있는
+상태로 재마운트되는 것 — 껍데기만 살아있다. 이건 이미 확정된 정책
+("retract/재바인드되는 slot은 옮겨지지 않고 그냥 폐기된다", 위 "확정"
+절)의 직접적인 귀결이고 이번 감사로 바뀐 게 아님.
+
+**따라서 실용적 관용구는 "Slot을 껐다 켜는" 게 아니라, Slot은 계속 두고
+그 *내용*을 비우는 것**(`Slot:Clear()`, 또는 `:List`의 `data`를 빈
+배열로) — 또는 매번 새로 만든 Slot을 `Set`하는 것. 같은 Slot 객체를
+`nil`↔`slotA`로 왕복시키는 코드는 두 번째 등장부터 조용히 빈/깨진
+서브트리를 냄.
+
+### 포탈(`Extract`로 살아있는 Slot을 다른 곳으로 옮기기) — **해결됨**(위 "언마운트" 정정으로), 아래는 그 결론에 이른 과정
+
+**질문**: `stateSlot:Get()`으로 Slot을 뽑아두고 → `Set()`으로 다른 Slot을
+넣고 → 뽑아둔 Slot을 다른 곳에 넣을 수 있는가. 가능하다면 "포탈"
+(위 "확정" 절에서 오버엔지니어링으로 미뤄둔 React portal류)이 이걸로
+해결됨.
+
+**현재 설계로는 불가** — 위 절과 같은 이유 하나 때문임: `reconcile`이
+교체 시 `rawRemove`(파괴)를 부르므로, `Get()`으로 뽑아둔 레퍼런스는
+`Set()` 직후 **이미 파괴된 Slot**이 됨. 막는 게 소유권 규칙이 아니라
+"제거 = 파괴"라는 reconcile의 선택 하나라는 점이 중요함.
+
+**그런데 나머지 부품은 이미 다 있음** — 그래서 사용자 지적대로 이
+방향은 실현 가능성이 높음:
+- `Extract`/`ExtractAll`/`Splice`가 이미 **비파괴 제거**로 확정돼 있음
+  (위 "CRUD API 확정" 절) — 필요한 시맨틱이 이미 공개 API에 존재.
+- `claimOwner`/`releaseOwner`가 이미 소유권을 정확히 이양함 — 뽑힌
+  Slot은 owner 없는 상태가 되고, 다른 곳에서 `Add`하면 깨끗이 클레임됨.
+- `attachSlot`은 **재마운트를 구조적으로 이미 지원** — `_mounted`/
+  `_mountedInst`를 새 target으로 세팅하고 `_elements`를 새 물리 부모로
+  flush하는 순수 구조 로직이라, 자식이 파괴만 안 됐다면 그대로 옮겨감.
+  (`destroySlotTree`가 `_mounted`를 되돌리도록 한 이번 감사 수정이
+  마침 이 경로의 전제 조건이기도 함.)
+
+**남는 숙제(그래서 지금 확정 안 하고 열어둠)**:
+1. **어느 경로가 비파괴가 되어야 하는가** — `reconcile` 전체를
+   `rawExtract`로 바꾸면 "안 쓰는 서브트리가 조용히 안 죽는" 누수가 되기
+   쉬움. 사용자가 명시적으로 고르는 opt-in(예: `:Single`/`:List`의
+   옵션, 또는 "이 Slot은 portal 대상"이라는 표식)이 맞아 보임 — Attribute
+   자동 unset을 opt-in 유틸로 미뤄둔 것과 같은 결.
+2. **`destroySlotTree`가 하는 나머지 일들의 짝** — 자식 observer
+   `unbindLifetime`, `Dispatch.setLength`/`setOffsetSource`로 옛 owner에
+   등록해둔 항목 정리. 비파괴 경로는 이것들을 "해제 후 새 owner에 재등록"
+   해야 하는데, 지금 `attachSlot`은 등록만 하고 해제하는 짝이 없음.
+3. **`Extract` 후 재마운트 전까지의 중간 상태** — 소유자 없이 물리
+   트리에서도 떨어진 Slot이 얼마나 오래 떠 있어도 되는지(GC 앵커가
+   `bindLifetime` 하나뿐인데 top-level에서 뽑히면 그 앵커도 풀림 →
+   사용자가 레퍼런스를 안 들고 있으면 그냥 GC됨. 이건 오히려 자연스러운
+   동작일 수 있음).
+
+**결론**: "포탈은 별도 메커니즘이 필요하다"는 기존 전제는 **틀렸음** —
+`Extract` 비파괴 경로 하나로 나옴. **[사용자 결정, 위 "언마운트" 정정]**
+게다가 opt-in이 아니라 **기본 동작**이 됨: `State<Slot>` 교체는 원래부터
+`state<Frame>`와 같이 언마운트여야 했다는 판단이라, "포탈"은 별도
+기능이 아니라 그 결정의 자연스러운 귀결일 뿐. 위 숙제 1번(어디에
+opt-in할지)은 그래서 사라졌고, **2번(등록의 해제 짝)만 실제 작업으로
+남음** — 3번(중간 상태)은 "아무도 안 들고 있으면 GC, 명시적으로 지우려면
+`dispose`"로 답이 나옴.
 
 **실측 필요 — 새 항목 아님, 기존 실측 목록에 흡수**: `State<T>`/`Slot<T>`
 자기 참조 제네릭 타입체크는 이미 M0/M6 실측 목록에 있던 것과 같은 급이라

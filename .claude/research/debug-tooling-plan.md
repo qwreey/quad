@@ -140,12 +140,13 @@ instance로 직접 트윈되어버리는지" 같은 걸 구분하고 싶음. 이
 Instance에 직접 `TweenService:Create()`를 건 것을 구분하려면 **핸들러 자신만
 아는 맥락**이 필요.
 
-**제안**: `isHandlable`/`priority`/`process`/`retract` 4종 계약에 선택적
-5번째 훅을 추가 — `describe(inst, k, v): DebugInfo?`(가칭, 기본 미구현
+**제안**: `isHandlable`/`priority`/`process` 3종 계약(2026-08-13 다섯 번째
+세션에 `retract`가 `process` 반환값으로 합쳐지기 전엔 4종)에 선택적
+훅 하나를 추가 — `describe(inst, k, v): DebugInfo?`(가칭, 기본 미구현
 = no-op과 동일 효과). quad-debug가 트레이스 이벤트를 기록할 때 해당 키를
 처리한 핸들러에게 `describe`가 있으면 호출해서 사람이 읽을 수 있는 부가
 정보(예: Tween 핸들러라면 "store-bind 유발" vs "직접 세팅"인지, 어떤 store
-key에서 왔는지)를 이벤트에 덧붙임. `bind-system-plan.md`가 이미 "4종 계약은
+key에서 왔는지)를 이벤트에 덧붙임. `bind-system-plan.md`가 이미 "계약은
 지금 확정이지만 실제 구현하며 부족한 지점이 보이면 그때 hook 추가(점진적
 확장)"라고 열어둔 것과 정확히 맞아떨어지는 케이스 — 새 원칙이 아니라 이미
 예견된 확장.

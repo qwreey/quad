@@ -8,8 +8,8 @@
 	디스패치를 실제로 짜보기(store-bind 핸들러 하나 + isHandlable
 	우선순위 스캔 포함)".
 
-	여기서는 다단 체인(retractUnder)까지는 다루지 않음 — 그건
-	04-dispatch-chain-retractUnder.luau가 별도로 다룸(단일 owner 슬롯
+	여기서는 다단 체인(retractFrom)까지는 다루지 않음 — 그건
+	04-dispatch-chain-retractFrom.luau가 별도로 다룸(단일 owner 슬롯
 	추적이 왜 깨지는지까지 포함). 이 파일은 "재귀 자체가 도는가", "우선순위
 	스캔이 맞는 핸들러를 고르는가", "None -> nil 재디스패치가 다음
 	핸들러로 자연히 좁혀지는가"까지만 검증.

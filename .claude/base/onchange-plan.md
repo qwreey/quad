@@ -43,14 +43,19 @@
   `GetPropertyChangedSignal` 자체가 Roblox 엔진 API라 base에
   둘 이유가 없음 — Tag처럼 백엔드 무관한 값/API 레이어가 따로 있는 경우와
   다름.
-- **`process(inst,k,v)`**: `inst:GetPropertyChangedSignal(name):Connect(function()
-  v(inst[name]) end)`. **`retract(inst,k,v)`**: 그 Connection을
-  `:Disconnect()`. 일반 `Handlers/Event.luau`와 같은 결(Connection
-  관리뿐, 새 메커니즘 없음).
+- **`process(inst,k,v,index)`**: `inst:GetPropertyChangedSignal(name):Connect(
+  function() v(inst[name]) end)` 후 **그 Connection을 `:Disconnect()`하는
+  클로저를 반환**. 일반 `Handlers/Event.luau`와 같은 결(Connection
+  관리뿐, 새 메커니즘 없음). **[정정, 2026-08-13 다섯 번째 세션]** 원래는
+  별도 `retract(inst,k,v)` 필드가 Disconnect를 담당한다고 적혀 있었으나,
+  Handler 계약이 `process` 1-메소드로 합쳐지며 그 로직이 반환 클로저로
+  이동 — `connection`은 `process`의 로컬 변수를 클로저가 upvalue로 그대로
+  캡처하므로 별도 `Relate` 저장/재조회가 필요 없음(`bind-system-plan.md`
+  "핸들러 내부 상태 저장" 절).
 - **`State<function>` 지원 — 새 메커니즘 없음.** 이미 확정된 "이벤트도
   store-bind 가능 — `false`로 disconnect" 메커니즘(`bind-system-plan.md`)이
-  `OnChange` 키에도 그대로 적용됨 — `OnChangeHandler`는 `process`/`retract`만
-  구현하면 되고, `v`가 State/Source면 범용 `Dispatch/StoreBind.luau`가 알아서
+  `OnChange` 키에도 그대로 적용됨 — `OnChangeHandler`는 `process`(와 그
+  반환 클로저)만 구현하면 되고, `v`가 State/Source면 범용 `Dispatch/StoreBind.luau`가 알아서
   언랩+재귀 재-dispatch해서 `process`를 다시 호출해줌. `OnChange` 전용 분기
   불필요.
 - **`OnChange(name)`도 `AttributeKey`와 같은 이름별 weak 캐시 적용

@@ -78,7 +78,9 @@ Svelte `Writable<T> extends Readable<T>`와 같은 모양), `store.key`는 Store
 
 핸들러는 `State<T>` 하나만 받아도 Source 인스턴스가 서브타입 호환으로
 자동 통과된다(`Source<T> | State<T>` 유니온 불필요, `isHandlable`/
-`priority`/`process`/`retract` 4종 계약에 5번째 항목 추가 불필요). 런타임에
+`priority`/`process` 3종 계약에 항목 추가 불필요 — 2026-08-13 다섯 번째
+세션에 `retract`가 `process` 반환값으로 합쳐지기 전엔 4종이라 적혀
+있었음). 런타임에
 "이게 Source면 역방향 쓰기까지 걸고 싶다"처럼 구분하고 싶은 경우는
 `isSource`류 판별자로(`isObserver`와 동일한 패턴).
 

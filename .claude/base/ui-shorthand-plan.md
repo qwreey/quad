@@ -53,9 +53,10 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 
 이미 있는 pluggable Handler로 그대로 커버됨. `UICorner`/`UIPadding`/
 `UIScale` 같은 특수 키를 인식하는 Handler(`isHandlable`이 그 키를 매칭)가
-"이름 붙은 자식을 찾거나 만들고 프로퍼티 세팅"을 `process(inst, k, v)`에
+"이름 붙은 자식을 찾거나 만들고 프로퍼티 세팅"을 `process(inst, k, v, index)`에
 구현 — v1의 하드코딩 if/elseif 대신 정식 핸들러 계약(`isHandlable`/
-`priority`/`process`/`retract`)을 따르는 것만 다름. `modifier-plan.md`가
+`priority`/`process`, 2026-08-13 다섯 번째 세션 전까진 `retract`가 별도
+필드였음)을 따르는 것만 다름. `modifier-plan.md`가
 이미 예시로 든 `mod:UICorner(8)`은 이 특수 키를 flatten해서 props에
 꽂아넣는 사탕 문법일 뿐, 실제 처리는 이 Handler가 함 — Modifier를 안 거치고
 `Frame { UICorner = 8 }`처럼 순수 인라인 키로 직접 써도(v1처럼) 동일하게
@@ -80,7 +81,7 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 않음. 사용자가 직접 만든 `UICorner`를 quad가 멋대로 건드리는 부작용을
 피하기 위함.
 
-### `v`가 `nil`인 경우 — `process`가 직접 자식 제거, `retract`는 관여 안 함 (2026-08-07 여덟 번째 세션)
+### `v`가 `nil`인 경우 — `process`가 직접 자식 제거, 반환 클로저는 관여 안 함 (2026-08-07 여덟 번째 세션)
 
 `modifier-plan.md`의 `None` 센티널(`base/bind-system-plan.md`의
 `NoneHandler` 재귀 재디스패치 절 참고)이 최종적으로 이 Handler의
@@ -89,14 +90,16 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 일반 프로퍼티 핸들러와 달리 이 숏핸드는 실제 Instance를 만들어 붙이는
 쪽이라 "`nil` = 셋 안 함"이 곧 "만들어둔 게 있으면 치운다"는 뜻이 됨.
 
-- **이건 `retract`가 아니라 `process` 자신의 로직** — **[정정, 2026-08-12
-  열한 번째 세션]** `retract`는 store 재발행마다 항상 불리지만(핸들러
-  타입이 안 바뀌어도, `bind-system-plan.md` 일반 retract 계약 절 정정분
-  참고), 이 Handler는 `process(inst,k,v)` 자체가 `v`가 `nil`이든 숫자든
-  전부 완결적으로 처리하므로(있으면 지우거나 만들거나) `retract`가 할 일이
-  없어 no-op이면 충분 — 일반 프로퍼티 핸들러가 `retract`이 필요 없는 것과
-  같은 이유. 값이 나중에 다시 숫자로(`2`→`nil`→`3`처럼) 바뀌면 `process`가
-  다시 자식을 만들면 그만이라 `retract` 쪽에 별도로 구현할 게 없음.
+- **이건 반환 클로저가 아니라 `process` 자신의 로직** — **[정정, 2026-08-12
+  열한 번째 세션, 2026-08-13 다섯 번째 세션에 클로저 반환 계약으로 서술
+  갱신]** 그 클로저는 store 재발행마다 항상 불리지만(핸들러 타입이 안
+  바뀌어도, `bind-system-plan.md` 일반 retract 계약 절 정정분 참고), 이
+  Handler는 `process(inst,k,v,index)` 자체가 `v`가 `nil`이든 숫자든
+  전부 완결적으로 처리하므로(있으면 지우거나 만들거나) 반환 클로저가 할 일이
+  없어 `function() end`이면 충분 — 일반 프로퍼티 핸들러가 no-op 클로저를
+  반환하는 것과 같은 이유. 값이 나중에 다시 숫자로(`2`→`nil`→`3`처럼)
+  바뀌면 `process`가 다시 자식을 만들면 그만이라 클로저 쪽에 별도로
+  구현할 게 없음.
 - **캐비엇**: 이 왔다갔다가 잦으면(예: 반응형 State가 `nil`과 숫자 사이를
   자주 토글) 매번 Instance 생성/제거 비용이 그대로 듦 — Tween처럼 무거운
   API는 아니지만 공짜도 아니므로, 잦은 토글이 예상되는 값을 이 숏핸드에
