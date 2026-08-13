@@ -63,6 +63,17 @@ local function Relate()
 		end
 		t.WeakMap[key] = value
 	end
+	-- [2026-08-13 여섯 번째 세션 추가] 테스트 전용 — outer는 __mode="k"라
+	-- 죽은 키의 엔트리는 GC 후 pairs 순회에서 사라짐. 즉 "weak table 내부
+	-- 엔트리 개수를 셀 방법이 없다"던 이 파일의 옛 결론은 틀렸음.
+	function relate._countEntries()
+		local n = 0
+		for _ in pairs(outer) do
+			n += 1
+		end
+		return n
+	end
+
 	function relate.GetWeak(_, inst, key)
 		local t = outer[inst]
 		if not t or not t.WeakMap then
@@ -123,6 +134,55 @@ for i = 1, 10 do
 	end
 end
 print("강하게 붙잡아둔 10개 중 살아있는 것:", aliveCount, "(10이어야 함)")
+print("relate3의 살아있는 엔트리 총 개수:", relate3._countEntries(), "(10이어야 함 — 죽은 90개가 실제로 걷혔는지)")
+
+print()
+print("=== 4. 핵심 주장 직접 검증 — inst가 죽으면 *중첩된 서브테이블 안의 값*까지 같이 GC되는가 ===")
+--[[
+	이게 `base/bind-system-plan.md` "왜 GC-안전한가"와 `base/relate-plan.md`
+	전체가 기대고 있는 바로 그 주장. 3번은 "바깥 키 엔트리가 걷히는가"까지만
+	보는데, 실제로 중요한 건 그 안에 StrongMap으로 담아둔 **payload(gcconn,
+	실행 중인 Tween, mounted Slot 등)까지 연쇄적으로 풀리는가**임.
+
+	기법: payload를 weak-value canary 레지스트리에도 같이 등록해두고, inst
+	참조만 끊은 뒤 GC. canary 엔트리가 사라졌으면 = payload가 실제로
+	수거됨 = 연쇄 GC 확인.
+]]
+local relate4 = Relate()
+local canary = setmetatable({}, { __mode = "v" }) -- payload를 약하게만 참조
+
+do
+	local liveInsts = {}
+	for i = 1, 50 do
+		local inst = {}
+		local payload = { tag = "payload" .. i } -- StrongMap에 담길 실제 자원 흉내
+		relate4:SetStrong(inst, "gchold", payload)
+		canary[i] = payload
+		if i <= 5 then
+			liveInsts[i] = inst -- 앞 5개만 계속 살림
+		end
+	end
+	collectgarbage()
+	collectgarbage()
+
+	local canaryAlive = 0
+	for _ in pairs(canary) do
+		canaryAlive += 1
+	end
+	print("inst 5개만 살린 상태에서 살아남은 payload 수:", canaryAlive, "(5여야 함 — 45개는 연쇄 GC돼야)")
+	print("relate4의 살아있는 엔트리 총 개수:", relate4._countEntries(), "(5여야 함)")
+	print("살아있는 inst로 payload 재조회 가능?", relate4:GetStrong(liveInsts[1], "gchold") ~= nil, "(true여야 함)")
+end
+
+-- liveInsts까지 스코프를 벗어난 뒤 다시 확인
+collectgarbage()
+collectgarbage()
+local canaryAlive2 = 0
+for _ in pairs(canary) do
+	canaryAlive2 += 1
+end
+print("모든 inst 참조를 놓은 뒤 살아남은 payload 수:", canaryAlive2, "(0이어야 함 — 전부 연쇄 GC)")
+print("relate4의 살아있는 엔트리 총 개수:", relate4._countEntries(), "(0이어야 함)")
 
 print()
 print('=== 참고: collectgarbage("count") 메모리 변화(대략적 신호일 뿐) ===')
@@ -134,12 +194,16 @@ print(collectgarbage("count"), "KB")
 	   순간에만 생기는가(lazy 생성 실측).
 	2. 3번 섹션 — collectgarbage()가 실제로 동작하고(에러 안 나고),
 	   강하게 붙잡아둔 10개는 살아있는가(당연히 그래야 함 — sanity check).
-	3. **가장 중요한 미해결 관찰**: 이 스크립트는 "죽은 90개가 실제로
-	   GC됐는지"를 직접 카운트하지 못함(Luau가 weak table 내부 엔트리
-	   개수를 세는 표준 API를 안 줌) — `collectgarbage("count")`로 전체
-	   메모리 사용량 변화를 보는 정도가 간접 확인의 최선. 필요하면 위
-	   3번 섹션의 루프를 더 크게(예: 100 -> 1,000,000) 돌리면서 루프
-	   전후 collectgarbage("count") 차이를 비교해보면 신호가 더 뚜렷해질
-	   수 있음(주의: GC는 정확한 타이밍을 보장 안 하므로 완벽한 증거는
-	   아님, 참고 신호 정도로만 볼 것).
+	3. **[2026-08-13 여섯 번째 세션 정정·보강] "죽은 것이 실제로 GC됐는지
+	   직접 카운트할 방법이 없다"던 옛 결론은 틀렸음.** outer 테이블이
+	   `__mode = "k"`이므로 GC 후 죽은 키의 엔트리는 `pairs` 순회에서
+	   그냥 사라짐 — 그래서 `relate._countEntries()`로 살아있는 엔트리
+	   수를 직접 셀 수 있고, payload 쪽은 weak-value canary 레지스트리로
+	   같이 세면 됨. 3번(엔트리 카운트)과 4번(연쇄 GC) 섹션이 그 방식.
+	4. **4번 섹션이 이 파일의 진짜 핵심** — `base/bind-system-plan.md`
+	   "왜 GC-안전한가"와 `base/relate-plan.md` 전체가 기대고 있는
+	   "inst가 죽으면 그 안에 StrongMap으로 매달아둔 자원(gcconn/Tween/
+	   mounted Slot 등)까지 연쇄적으로 풀린다"는 주장을 직접 확인함.
+	   여기서 살아남은 payload 수가 기대치보다 크면 **GC-native 아키텍처
+	   전체의 전제가 흔들리는 것**이므로 최우선으로 파고들 것.
 ]]

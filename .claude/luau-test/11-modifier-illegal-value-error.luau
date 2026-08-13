@@ -34,7 +34,16 @@ local function brandOf(v)
 		return nil
 	end
 	local mt = getmetatable(v)
-	return mt and mt.__index and mt.__index.__brand
+	if not mt then
+		return nil
+	end
+	-- Modifier(아래)의 __index는 제네릭 setter를 즉석 생성하는 함수라
+	-- 태그 흉내용 { __index = { __brand = name } } 테이블 모양과 다름 —
+	-- 함수를 테이블처럼 인덱싱하면 크래시하므로 방어(브랜드 없음으로 취급).
+	if type(mt.__index) ~= "table" then
+		return nil
+	end
+	return mt.__index.__brand
 end
 
 local makeRef = tag("Ref")

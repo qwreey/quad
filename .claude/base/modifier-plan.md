@@ -200,7 +200,22 @@ Compute를 합치고 싶다"는 동기였는데, 이미 두 가지로 다 커버
 문법 설탕이고, `mod.FontSize`는 `FontSize`가 리터럴 키로 안 박혀있으니
 `__index(self, key)`가 잡음 — 그러니 `__index`가 **어떤 key가 오든** 그
 key를 클로저에 캡쳐한 `function(self, arg) local clone = table.clone(self)
-... end`류 함수를 즉석에서 만들어 리턴하기만 하면 끝. 즉 `:FontSize`/
+... end`류 함수를 즉석에서 만들어 리턴하기만 하면 끝.
+
+> **⚠️ [2026-08-13 여섯 번째 세션, 실측 중 발견] 필드 값은 `self`의 리터럴
+> 키에 저장하면 안 되고, 반드시 `__index`를 거치는 내부 저장소에 둬야 함.**
+> `__index`는 `rawget`이 **실패할 때만** 불리므로, `clone.FontSize = 14`처럼
+> self 최상위에 값을 박아두면 다음번 `mod:FontSize(fn)` 호출에서
+> `mod.FontSize`가 `__index`를 안 거치고 저장된 숫자 `14`를 그대로 돌려주고,
+> `(14)(mod, fn)`이 되어 `attempt to call a number value`로 죽음. 위 4번
+> 절의 "이전 값을 바탕으로 계산"(`mod:X(function(old) ... end)`)과 3번 절의
+> "상위 TextStyle을 상속해 타이틀만 1.2배" 용례가 **정확히 이 재호출
+> 패턴**이라 실사용에서 바로 터지는 경로임. 해법: 필드 데이터를 유일 테이블
+> identity 키(`FieldsKey` 등)로 분리된 내부 테이블에 담고, `table.clone`이
+> 얕은 복사라 setter 안에서 그 내부 테이블도 따로 `table.clone` 할 것.
+> `luau-test/17`이 이 구조를 실측 검증함(원래 스파이크가 리터럴 키 방식으로
+> 짜여 있다가 바로 이 이유로 크래시했고, 그 과정에서 이 문서의 "데이터를
+> 테이블에 직접 두고"라는 표현이 두 가지로 읽힌다는 게 드러남). 즉 `:FontSize`/
 `:Round`/앞으로 생길 어떤 필드 이름이든 전부 이 **하나의 제네릭 `__index`
 구현**이 처리 가능 — 필드별로 미리 등록된 메소드가 하나도 없어도 됨.
 **중요한 결론**: 위 "FrameModifier 타입" 문제(클래스별로 flat 타입을 생성기로
