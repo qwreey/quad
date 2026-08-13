@@ -414,6 +414,11 @@ UICorner 숏핸드/Tween/Tag와 같은 판단 재사용 — `quad-roblox` 코어
 
 ## 열린 질문 (`.claude/question.md`에도 취합)
 
+- **[2026-08-13 3차 감사에서 보강] `hintValue`/`retractFrom` 재-dispatch
+  메커니즘은 `question.md` **0-Z**(이 문서 자신의 이름 소유권 결정)
+  해소 대기 중** — 이 문서 최상단 배너와 "이름 소유권" 절에 이미
+  명시돼 있지만, 이 목록에는 빠져 있어서 여기만 훑는 독자가 놓치기
+  쉬움. `research/dispatch-redispatch-diff-plan.md` 먼저 읽을 것.
 - **이름은 잠정 확정, 최종 확정은 대기열**: 겹침 방지를 위해 그룹 값은
   `Attribute`, 단일 키는 `AttributeKey<<T>>`로 코드/문서 전체 통일해서
   당장의 해석 모호성은 없앴음 — 그래도 최종 이름은 다른 가칭들(`State`/

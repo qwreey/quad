@@ -504,7 +504,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | Blocker(값 기반 emit 지연/합치기) | `base/blocker-plan.md` |
 | Effect(설치+확정 정리, `state` 있으면 Observer 조합해 재실행도 지원 — 확정) | `base/effect-plan.md` |
 | `Relate`(inst-weak 릴레이션 프리미티브, `SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), `bindLifetime`/`canExecute`(inst,value) 탑레벨 함수 | `base/relate-plan.md`, `base/lifecycle-pattern.md` |
-| `retract` 필드 생략 불가(no-op 허용, 누락 시 핸들러 교체 순간 크래시), store-bind 재실행은 `state:Observer(fn):Subscribe()` 재사용 | `base/bind-system-plan.md` |
+| **[2026-08-13 3차 감사에서 정정]** retract 생략 불가(no-op 허용, 누락 시 핸들러 교체 순간 크래시) — 2026-08-13 다섯 번째 세션부터 별도 `retract` 필드가 아니라 `process`가 반환하는 클로저, 자리만 옮겨왔을 뿐 원칙은 동일. store-bind 재실행은 `state:Observer(fn):Subscribe()` 재사용 | `base/bind-system-plan.md` |
 | UICorner/UIPadding/UIScale 인라인 편의 키 — 이름·메커니즘·store-bind 가능성까지 확정 | `base/ui-shorthand-plan.md` |
 | Batch(lexical) 기각, Context(+레이어드 Store) 기각 | `archive/batch-rejected.md`, `archive/context-rejected.md` |
 | Fusion/Vide 비교 리서치(주의: 일부 서술은 이후 라운드에서 뒤집힘, 문서 내 정정 표시 참고) | `reference/comparison-fusion-vide.md` |

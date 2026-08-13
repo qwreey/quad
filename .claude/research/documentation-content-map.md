@@ -26,7 +26,7 @@
 
 1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
 2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 `new<Class>` + 자주 쓰는 ~25개 클래스 정적 필드(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
-3. **속성 채우기** — `[Attribute "Name"]`, `[Tag ""] = true` 특수 바인드 키 (`architecture.md`)
+3. **속성 채우기** — `[Attribute "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
 4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`bind-system-plan.md`, `store-semantics.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
 5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)
 6. **자식 전달** — Slot 기본 개념(children 배열, add/remove/clear), 마운트된 slot 재마운트 시 throw (`slot-plan.md`)
@@ -92,8 +92,8 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
   같은 프레이밍의 특수 케이스로 소개 — "1개 아니면 0개"의 동적 렌더일 뿐,
   별도 개념 아님.
 - 초심자: Modifier 기본 체이닝+merge 우선순위 규칙 실제 예시 / Slot 기본 개념(children 배열)+클래스가 슬롯 받는 방법(Named Slot 없음) / 마운트된 slot 재마운트 시 즉시 throw
-- api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `mod:UICorner(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / retract 시 slot 내용 폐기(→심화: portal 없는 이유) / `:Apply(factory)` 기본 체이닝 관용구(→심화: 언제 `Apply` vs `Overridden`인지 성능 기준) / `:Peek<<T>>(key)` + `isState`(→심화: `Get`과 이름을 다르게 한 이유)
-- 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / retract=폐기 확정 히스토리(portal 검토 후 기각) / **왜 `Apply`가 기본이고 `Overridden`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
+- api: Setter가 리터럴/변환 함수 둘 다 받음(→심화: getter 없는 이유) / 필드가 State일 수 있는 4가지 조합 표(→심화: 반응성 유지/끊김 이유) / `mod:UICorner(8)` dot-access 생성자 관습 / Slot은 인스턴스당 여럿 가능 / 중첩 인스턴스 자식 처리 / ~~retract 시 slot 내용 폐기(→심화: portal 없는 이유)~~ **[2026-08-13 정정] 2026-08-13 여섯 번째 세션에 역전 — `State<Slot>` 교체는 이제 파괴가 아니라 언마운트, portal은 그 자연스러운 귀결(`base/slot-plan.md`)** / `:Apply(factory)` 기본 체이닝 관용구(→심화: 언제 `Apply` vs `Overridden`인지 성능 기준) / `:Peek<<T>>(key)` + `isState`(→심화: `Get`과 이름을 다르게 한 이유)
+- 심화: 정적 merge vs 런타임 pluggable 기각 이유(CSS cascade) / immutable+clone 체이닝 이유(형제 오염 방지) / getter 미채택 이유 / `__index` 런타임 구현 통찰 / Modifier가 핸들러 계층을 모르는 이유 / base/roblox 패키지 경계(Dispatch/Slot vs Handlers/Slot) / Slot 단일 마운트 소유권이 v1/Fusion/Vide 대비 개선인 이유 / ~~retract=폐기 확정 히스토리(portal 검토 후 기각)~~ **[2026-08-13 정정] 위와 같은 이유로 역전 — 이 항목은 "왜 한때 destroy+no-portal로 결정했었는가"라는 히스토리 소재로만 유효, 현재 결론 아님** / **왜 `Apply`가 기본이고 `Overridden`는 최적화 특수 케이스인가**(계산 의존성 있는 조합 vs 독립적 재사용 가능 조각의 병합 — 2026-08-07 다섯 번째 세션, `modifier-plan.md` 9번) / 왜 `Apply`가 clone 대신 mutate하지 않는가(형제 오염 방지가 개별 clone 비용 절감보다 우선)
 - 열린 질문(문서화 보류): ~~여러 Slot이 형제로 섞일 때 순서 보장~~ **[해소됨,
   2026-08-09 여섯 번째 세션]** Length/Offset 누적합으로 확정, 심화 목록에
   추가 필요(`base/bind-system-plan.md` "Length/Offset" 절).
@@ -132,7 +132,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 7. 왜 컴포넌트 경계는 named parameter인가(Compose/Fusion/Vide/v1 수렴) — `component-composition-plan.md`
 8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
 9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
-10. 왜 Tween은 반응 그래프 밖에 있는가 — `base/tween-plan.md`
+10. ~~왜 Tween은 반응 그래프 밖에 있는가~~ **[2026-08-13 정정] 위 §2 심화 항목과 같은 stale 표현 — 실제로는 Property 값 타입 치환(`T|Tween<T>`)으로 그래프 안에 자연스럽게 있음** — `base/tween-plan.md`
 11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `store-semantics.md`
 12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `store-semantics.md`
 14. 왜 컴포넌트는 전역 store를 직접 참조하면 안 되는가(이식성) — `purity-and-effects-plan.md`

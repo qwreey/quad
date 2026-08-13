@@ -10,13 +10,15 @@
 > 구현하면 옛 모델로 짜게 됨** — 반드시
 > `research/dispatch-redispatch-diff-plan.md`를 먼저 읽을 것.
 
-**상태**: base — 2026-08-08 세 번째 세션에서 값 모양을 전면 재설계(구
-모델은 `archive/tag-hash-key-model-reversed.md`에 원문·역전 이유 보존).
-2026-08-12 열한 번째 세션에 `TagHandler`의 `process`/`retract` 메커니즘을
-참조 카운트 기반으로 전면 정정(옛 버전은 `archive/
-retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째 세션에
-`Added`/`Removed`를 단일 이름에서 `string | {string}`으로 정정(아래 값
-모양 절). 새 결정만 반영, 열린 질문 없음.
+**상태**: base — 값 모양/이름은 확정. 2026-08-08 세 번째 세션에서 값
+모양을 전면 재설계(구 모델은 `archive/tag-hash-key-model-reversed.md`에
+원문·역전 이유 보존). 2026-08-12 열한 번째 세션에 `TagHandler`의
+`process`/`retract` 메커니즘을 참조 카운트 기반으로 전면 정정(옛 버전은
+`archive/retract-always-fires-reversed.md`). 2026-08-12 열다섯 번째
+세션에 `Added`/`Removed`를 단일 이름에서 `string | {string}`으로
+정정(아래 값 모양 절). **단, 위 배너대로 `hintValue`/`retractFrom` 재-dispatch
+메커니즘은 `question.md` 0-Z 해소 대기 중 — "열린 질문 없음"은 값
+모양/이름에 한정.**
 
 ## 왜 재설계됐나
 
