@@ -1,5 +1,5 @@
--- 스파이크: research/component-fallback-plan.md의 Fallback 메커니즘 의사코드가
--- 실제 Luau에서 그대로 동작하는지 실측. 열린 질문:
+-- 스파이크: base/fallback-plan.md의 Traceback 메커니즘 의사코드가
+-- 실제 Luau에서 그대로 동작하는지 실측. 결과는 audit/fallback-xpcall-verification.md.
 --   "xpcall 에러 핸들러 배선의 실측 — 에러 핸들러 안에서 클로저 업밸류에 쓴
 --    값이 바깥에서 제대로 보이는지, debug.traceback이 에러 시점 스택을 정확히
 --    찍는지"
@@ -15,8 +15,8 @@ local function check(name, cond)
     end
 end
 
--- 문서의 의사코드 그대로 옮김
-local function Fallback(original, onError)
+-- 문서의 Traceback 의사코드 그대로 옮김
+local function Traceback(original, onError)
     return function(...)
         local trace: string? = nil
         local ok, resultOrErr = xpcall(original, function(err)
@@ -36,7 +36,7 @@ do
         return "OK:" .. props.name
     end
     local calledOnError = false
-    local SafeWidget = Fallback(Widget, function(msg, trace)
+    local SafeWidget = Traceback(Widget, function(msg, trace)
         calledOnError = true
         return "ERR"
     end)
@@ -51,7 +51,7 @@ do
         error("boom: " .. props.name)
     end
     local capturedMsg, capturedTrace = nil, nil
-    local SafeWidget = Fallback(Widget, function(msg, trace)
+    local SafeWidget = Traceback(Widget, function(msg, trace)
         capturedMsg = msg
         capturedTrace = trace
         return "PLACEHOLDER"
@@ -77,7 +77,7 @@ do
         return level2(props)
     end
     local capturedTrace = nil
-    local SafeWidget = Fallback(level1, function(msg, trace)
+    local SafeWidget = Traceback(level1, function(msg, trace)
         capturedTrace = trace
         return "PLACEHOLDER"
     end)
@@ -95,7 +95,7 @@ do
         error({ code = 42, reason = "custom" })
     end
     local capturedMsg = nil
-    local SafeWidget = Fallback(Widget, function(msg, trace)
+    local SafeWidget = Traceback(Widget, function(msg, trace)
         capturedMsg = msg
         return "PLACEHOLDER"
     end)
@@ -113,7 +113,7 @@ do
             return "PLACEHOLDER(" .. context .. "):" .. message
         end
     end
-    local SafeWidget = Fallback(Widget, makeErrorHandler("someContext"))
+    local SafeWidget = Traceback(Widget, makeErrorHandler("someContext"))
     local result = SafeWidget({})
     -- error("ctx-fail")의 기본 level(=1)이 "파일:줄: " 접두를 붙이므로
     -- message가 정확히 "ctx-fail"이 아님 — 아래 6번에서 별도로 실측/확정.
@@ -130,7 +130,7 @@ do
         local Widget = function()
             error("no-level-specified")
         end
-        local SafeWidget = Fallback(Widget, function(msg) return msg end)
+        local SafeWidget = Traceback(Widget, function(msg) return msg end)
         defaultLevelMsg = SafeWidget()
     end
     check("error(msg) 기본 호출 — onError가 받는 message에 위치 접두(\"파일:줄: \")가 자동으로 붙음",
@@ -144,7 +144,7 @@ do
         local Widget = function()
             error("no-level-specified", 0)
         end
-        local SafeWidget = Fallback(Widget, function(msg) return msg end)
+        local SafeWidget = Traceback(Widget, function(msg) return msg end)
         zeroLevelMsg = SafeWidget()
     end
     check("error(msg, 0) — 위치 접두 없이 순수 메시지만 onError에 전달됨",
@@ -152,7 +152,7 @@ do
     print("  zeroLevelMsg = " .. tostring(zeroLevelMsg))
 end
 
--- 6) original에 여러 인자를 넘기는 vararg 경로(문서 시그니처 (T...) -> Comp)
+-- 7) original에 여러 인자를 넘기는 vararg 경로(문서 시그니처 (Args...) -> Comp)
 do
     local Widget = function(a, b, c)
         if c == nil then
@@ -160,7 +160,7 @@ do
         end
         return a + b + c
     end
-    local SafeWidget = Fallback(Widget, function(msg, trace)
+    local SafeWidget = Traceback(Widget, function(msg, trace)
         return -1
     end)
     check("vararg 성공 경로", SafeWidget(1, 2, 3) == 6)

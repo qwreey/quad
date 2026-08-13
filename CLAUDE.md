@@ -239,19 +239,20 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵), `Operator` 콤비네이터
    슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — 메커니즘은
    확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막), 컴포넌트
-   에러 격리 유틸 `Fallback`(**[2026-08-14 신설]** 컴포넌트 함수를 감싸 에러
-   시 자동으로 플레이스홀더를 그려주는 `pcall`/`xpcall` 래퍼 — 기존
-   "Error Boundary는 빈 자리 아님" 결론 위의 순수 슈가,
-   `research/component-fallback-plan.md`), 생명주기 훅
+   에러 격리 유틸 `Fallback`/`Traceback`(**[2026-08-14 세션, 설계 확정 —
+   `research/`에서 `base/fallback-plan.md`로 승격]** `pcall` 기반
+   `Fallback`과 `xpcall`+`debug.traceback` 기반 `Traceback`으로 분리,
+   `err: any` 확정, 패키지·이름 전부 확정 — **설계만 끝났을 뿐 구현
+   우선순위는 그대로 맨 뒤**), 생명주기 훅
    `OnCreated`/`OnDestroyed`(**[2026-08-14 신설]** `PreRef`/`Effect`를
    반환하는 순수 팩토리 함수 슈가, `research/lifecycle-hooks-plan.md` —
    `OnRendered`는 base에 없는 post-pass가 필요해 공짜가 아니라 지금은
    의도적으로 구현 안 함, 거울상 `PostRef` 스케치만 백로그 후보) — 전부
    "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
-   `.claude/README.md`의 `research/` 표(`debug-tooling-plan.md`/
-   `documentation-plan.md`/`documentation-content-map.md`/
-   `framework-comparison-findings.md`/`operator-sugar-plan.md`/
-   `component-fallback-plan.md`/`lifecycle-hooks-plan.md`).
+   `.claude/README.md`의 `base/` 표(`fallback-plan.md`)와 `research/` 표
+   (`debug-tooling-plan.md`/`documentation-plan.md`/
+   `documentation-content-map.md`/`framework-comparison-findings.md`/
+   `operator-sugar-plan.md`/`lifecycle-hooks-plan.md`).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -1130,7 +1131,8 @@ claim**으로 확정. 이걸로 마지막 게이트가 열려 **0-A(하강 diff 
 `research/additional-primitives-plan.md`가 이미 확정한 "Error Boundary는
 빈 자리 아님, `pcall(MyComp,props)`로 충분"이라는 결론을 뒤집는 게 아니라
 그 위에 얹는 순수 슈가(`Operator`가 `:Compute`/`:Apply` 위에 얹힌 것과
-같은 관계)로 판단해 새 `research/component-fallback-plan.md` 신설 —
+같은 관계)로 판단해 새 research 문서 신설(세 번째 세션에
+`base/fallback-plan.md`로 승격, 이하 경로는 신설 당시 기준) —
 `xpcall`+`debug.traceback` 메커니즘 스케치, 커링 관용구, 열린 질문(pcall
 vs xpcall, 패키지 배치, 이름, 프로덕션 동작) 정리, 설계 확정은 아직 없음.
 부수적으로 워크트리가 계획 문서 없이 빈 채로 시작되는 걸 발견 —
@@ -1145,12 +1147,25 @@ vs xpcall, 패키지 배치, 이름, 프로덕션 동작) 정리, 설계 확정�
 **2026-08-14 두 번째 세션 — `Fallback` 메커니즘 `xpcall` 실측 확인**
 (`session/2026-08-14-02-fallback-xpcall-spike-verified.md`)
 직전 세션이 열어둔 "`xpcall` 에러 핸들러 배선의 실측 필요"를 새 워크트리에서
-`luau` 스파이크(`research/component-fallback-xpcall-spike.luau`)로 확인 —
+`luau` 스파이크(현재 `audit/fallback-xpcall-spike.luau`로 이동)로 확인 —
 클로저 업밸류 배선, 3단 중첩 `debug.traceback` 캡처 등 10개 검증 전부
 통과. 부수 발견으로 `error(msg)` 기본 호출(level=1)이 위치 접두
 ("파일:줄: ")를 자동으로 붙인다는 캐비엇을 새로 확인해 문서에 반영 —
-`research/component-fallback-plan.md`의 해당 열린 질문을 해소로 표시,
-백로그 우선순위 자체는 그대로.
+당시 research 문서(현재 `base/fallback-plan.md`)의 해당 열린 질문을
+해소로 표시, 백로그 우선순위 자체는 그대로.
+
+**2026-08-14 세 번째 세션 — `Fallback`/`Traceback` 승격**
+(`session/2026-08-14-03-fallback-traceback-promoted.md`)
+사용자가 `Fallback`/`Traceback`으로 분리(`pcall` 기반 vs `xpcall`+trace
+기반), 정확한 제네릭 시그니처(`Traceback`은 `onError`가 `trace: string`도
+받는 것만 `Fallback`과 다름 — 전체 시그니처는 `base/fallback-plan.md`
+참고), `err: any`(사용자 REPL로 테이블 에러 통과 재확인), 패키지
+(`quad-base`), 이름(`Fallback`/`Traceback` 그대로 점유)까지 한 번에
+확정 — 남은 열린 질문이 없어져 research/ 초안을 `base/fallback-plan.md`로
+승격(파일 이동), 스파이크는
+`audit/fallback-xpcall-spike.luau`로 옮기며 내부 함수명도 `Traceback`으로
+정정. `README.md`/`question.md`/`archive/question-resolved.md`/
+`research/lifecycle-hooks-plan.md`의 상호 참조 전부 동기화.
 
 **2026-08-14 네 번째 세션 — `ProcessedPreRef` 신설로 Length/Offset 등록
 갭 해소, `PostRef` 완전 대칭화**

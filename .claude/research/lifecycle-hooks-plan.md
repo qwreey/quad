@@ -3,7 +3,7 @@
 **상태**: research — 사용자 제안(2026-08-14 세션)으로 신설, 착수 전
 백로그. 이미 확정된 `PreRef`/`Ref`(`base/ref-plan.md`)와
 `Effect`(`base/effect-plan.md`) 프리미티브 위에 얹는 순수 슈가 후보 —
-`research/component-fallback-plan.md`의 `Fallback`이
+`base/fallback-plan.md`의 `Fallback`/`Traceback`이
 `additional-primitives-plan.md`의 기존 결론 위에 얹혔던 것과 같은 관계,
 이 문서도 그 프리미티브들의 확정 사항을 하나도 안 뒤집음. 우선순위는 그
 형제 백로그들(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과 동급 —

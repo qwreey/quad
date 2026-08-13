@@ -582,6 +582,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 | v1 내부 동작 스냅샷 | `reference/quad-v1-architecture.md` |
 | 트윈 — 값-레벨 `Tween<T>` 래퍼(2026-08-10)+옵션 값 모양·override 정책·`Animate` 콤비네이터·자연완료 북키핑(2026-08-12) 전부 확정, `base/`로 승격 | `base/tween-plan.md` |
 | quad2-try(폐기된 이전 시도) 리서치 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` COW 전부 죽은 접근으로 확인, 반복 조사 금지 | `base/bind-system-plan.md` |
+| `Fallback`/`Traceback`(2026-08-14) — 컴포넌트 에러 격리 유틸, `pcall`(가벼움)과 `xpcall`+`debug.traceback`(trace 항상 있음)으로 분리, `err: any` 확정(테이블 에러 등), 패키지·이름 전부 확정, `research/`에서 승격 | `base/fallback-plan.md` |
 
 ---
 전체 순서/우선순위는 루트 `CLAUDE.md`가 최종 소스 — 위 표는 힌트일 뿐 그쪽이
