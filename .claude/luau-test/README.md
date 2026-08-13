@@ -49,7 +49,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `01-two-pass-array-hash-order.luau` | 배열 파트(children/Ref) 먼저, 해시 파트(프로퍼티/이벤트) 나중이라는 두 패스 순회 계약 | `bind-system-plan.md` "props 순회 순서", ROADMAP M0-4 |
 | `02-none-sentinel-vs-nil-holes.luau` | **[2026-08-09 커밋 f198fd9 반영해 전면 재작성]** 순서가 중요한 배열(PreRef pre-pass, sourceList)은 `None` 소진이 맞고, 순서가 안 중요하고 재사용이 필요한 배열(Ref 콜백/대기자)은 `nil`+슬롯 재사용이 맞다는 최종 구분 + `None`을 잘못 쓰면 배열이 무한정 자라는 버그의 정량적 재현 | `bind-system-plan.md` "왜 None이 아니라 nil인가"(2026-08-09 열한 번째 세션 최종 정정), ROADMAP M0-4 |
 | `03-recursive-store-bind-dispatch.luau` | `process`/`retract` 재귀 재-dispatch 기본 모델, 우선순위 스캔 | `bind-system-plan.md` "확정된 디스패치 모델", ROADMAP M0-3 |
-| `04-dispatch-chain-retractUnder.luau` | `Dispatch` 체인 + `retractUnder`가 다단(A→B→C) 재-dispatch에서 정확한지 | `bind-system-plan.md` "Dispatch 체인", 2026-08-08 세 번째 세션 |
+| `04-dispatch-chain-retractUnder.luau` | `Dispatch` 체인 + `retractUnder`가 다단(A→B→C) 재-dispatch에서 정확한지, **[2026-08-13 재작성]** 같은 `(inst,k)`에 같은 핸들러가 중복 push되는 경우(`State<State<T>>`류) `Dispatch.process`의 신규 가드가 즉시 error하고 이후 정상 복구되는지 | `bind-system-plan.md` "Dispatch 체인" + "확정된 디스패치 모델" 2026-08-13 항목, 2026-08-08 세 번째 세션 / 2026-08-13 세션 |
 | `05-store-state-diamond-propagation.luau` | push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지 | ROADMAP M0-1 |
 | `06-component-boundary-nil-hole-props.luau` | `props.Modifier or None` 관용구가 컴포넌트 경계 nil-hole을 막는지 + `Params` 타입 체크 | `component-composition-plan.md` "필수 관용구", ROADMAP M0-5 |
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인" |
@@ -154,6 +154,19 @@ Luau로 재현해본 적이 없었던 갭 — `Slot`의 `kSlotMap`/`slotOwner` G
 "retract 완전 no-op" 재정정 등)는 단순 분기/타입 정리라 스파이크 불필요로
 판단, 추가 안 함.
 
+**10차 (2026-08-13)**: 사용자가 Haskell Monad/Applicative 리서치 중
+`retractUnder`의 꼬리부터-cutoff 로직을 직접 되짚다가 "같은 키에서 핸들러가
+재사용되면 문제 아닌가"를 제기 — 손으로 트레이싱해 `State<State<T>>`(store가
+emit하는 값 자체가 또 State/Source)가 실제로 체인을 파손시킴을 확인
+(`bind-system-plan.md` "확정된 디스패치 모델" 절 신규 항목). 기존 `04`가
+정확히 이 시나리오(store-in-store)를 이미 스트레스 테스트로 다루고 있었지만,
+`retract`가 print만 하는 no-op 스텁이라 자기-retract 버그의 실제 증상(구독이
+조용히 끊기는 것)을 절대 드러낼 수 없었다는 사각지대도 같이 발견 —
+`Dispatch.process`에 중복 핸들러 가드(push 전 체인에 같은 객체가 있으면
+error)를 추가하고, `04`의 3~4단계를 "가드가 실제로 걸리는지 + 걸린 뒤에도
+정상 복구되는지" 확인으로 재작성. `operator-sugar-plan.md`엔 별개로 nil 대체
+콤비네이터 `Alternative` 후보를 신설(카탈로그에 이전엔 없었음).
+
 ## 결과 확인 후 할 일
 
 각 파일 결과를 알려주면, 실제로 걸리는 부분이 있는지 보고 필요하면
@@ -171,6 +184,10 @@ Luau로 재현해본 적이 없었던 갭 — `Slot`의 `kSlotMap`/`slotOwner` G
   gcconn-trick-verification.md`), 재확인 불필요. A-2(재-bindLifetime 허용
   여부)가 실패하면 `canBound`/`unbindLifetime` 설계 자체를 재검토해야
   함 — **이건 아직 미확인, 공식 `10` 파일로 꼭 돌려볼 것.**
+- `04`는 3단계에서 `error로 막혔는가: true`, 4단계에서 체인 길이가 2로
+  복구되는 게 기대값 — 만약 3단계가 error 없이 통과해버리면(`ok == true`)
+  가드 pseudocode 자체가 어딘가 안 맞는 것이니 바로 알려줄 것(체인 파손이
+  다시 조용히 넘어가는 회귀).
 - `11`은 전부 PASS가 기대값 — FAIL이 하나라도 있으면 어느 케이스인지
   그대로 알려줄 것(특히 "변환 함수가 반환한 값" 케이스는 놓치기 쉬운
   경로라 실제 구현에서도 잘 짜였는지 중요한 신호).

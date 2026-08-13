@@ -761,3 +761,26 @@ A-1/A-2/B/C는 미해소로 명확히 구분). GC 강제 트리거 기법을
 색인 레이어만 밀렸던 것) + `attribute-plan.md` 행의 실제 오류(폐기된
 중간 단계 서술) 수정 + 새 소유권/참조카운트 알고리즘(Tag/Attribute/Slot)과
 `Slot:Splice` 산술을 커버하는 `19`/`20` 스파이크 추가(총 20개).
+
+**2026-08-13 두 번째 세션 — Haskell Monad/Applicative 비교, `State<State<T>>`
+재진입 디스패치 버그 발견·수정**
+(`session/2026-08-13-02-haskell-comparison-dispatch-reentrant-bug.md`)
+"커링/레이지 이벨루에이션 말고 Haskell에서 가져올 것"을 조사 — Functor/
+Applicative/Semigroup은 `:Compute`/`:With`+trailing-args/`Merged`·`Overridden`로
+이미 사실상 가져와 있음 확인, Monad bind/join은 `StoreBind`/`Slot:Single`/
+`NoneHandler`가 각자 따로 재구현 중인 미일반화 후보로 식별(착수 안 함),
+Traversable/sequence는 진짜 빈 자리로 식별(백로그), do-notation류는 Luau에
+HKT가 없어 스킵 권장. 후속으로 사용자가 `Alternative`(nil 대체값)를
+`Operator` 카탈로그에 넣자고 제안하며 `retractUnder`의 꼬리부터-cutoff
+로직을 직접 되짚어 "같은 키에서 핸들러가 재사용되면 문제 아닌가" 제기 —
+손 트레이싱으로 `State<State<T>>`(store가 emit하는 값 자체가 또
+State/Source)가 같은 `(inst,k)`에 같은 핸들러를 중복 push시켜
+`retractUnder`의 첫-매치 cutoff가 안쪽 자신을 잘못 retract하는 실제 체인
+파손 버그(구독이 등록 직후 스스로 끊김)로 확인됨 — 코퍼스 어디에도 UB로
+명시된 적 없었고 막는 가드도 전혀 없었던 진짜 갭. `Dispatch.process`에
+중복 핸들러 즉시 error 가드 추가, 낙관적으로 틀렸던 "다른 store여도
+상관없이 처리 가능" 서술 정정. 부수적으로 `luau-test/04`가 이미 이
+시나리오를 스트레스 테스트로 갖고 있었지만 `retract`가 no-op 스텁이라
+이 버그를 절대 못 잡는 사각지대였음을 발견해 3~4단계를 "가드가 실제로
+걸리는지" 검증으로 재작성. `operator-sugar-plan.md`에 `Alternative` 후보
+신설, `.claude/README.md`/`question.md` 동기화.

@@ -209,6 +209,16 @@ introspection 로직을 추가하는 거라 라이브러리 복잡도가 늘어�
   `useClamp`/`useMax`/`useMin`, Ramda `R.clamp` 등 리액티브 파생값
   콤비네이터로서의 선례가 뚜렷함. 기존 "산술" 뭉치보다 오히려 이쪽이
   선례가 강해 별도 그룹으로 추가할 후보.
+- **[2026-08-13 세션 신설]** `Alternative`(nil 대체값 — Haskell
+  `Alternative`/`<|>`, 흔히 coalesce/`??`/엘비스 연산자라고도 부름) —
+  `State<T?>:Apply(Alternative(default))`처럼 값이 nil이면 기본값으로
+  치환하는 콤비네이터. 지금까지 카탈로그에 없던 게 확인됨(전수 grep 결과).
+  확정 규칙(모든 `Operator.*`는 `factory(self) -> State<U>` + `:Apply`)과
+  그대로 맞음 — `default`가 상수면 deps 없이 클로저 캡처만으로 충분,
+  `default`가 State면 trailing arg로 구독(위 `Sum` 패턴과 동일). 업계
+  선례로 RxJS `defaultIfEmpty`, Kotlin 엘비스 연산자(`?:`), VueUse
+  대부분 유틸의 기본값 인자 등 흔한 연산이라 포함 근거는 있음 — 이름/최종
+  포함 여부는 다른 항목과 동률로 사용자 판단 대기.
 - **[2026-08-12 외부 리서치로 신설, 별도 검토 필요 — Operator 카탈로그와
   성격이 다름]** Debounce/Throttle — RxJS `debounceTime`/`throttleTime`,
   VueUse `useDebounce`/`useThrottle` 등 업계 전반에서 가장 흔한 리액티브

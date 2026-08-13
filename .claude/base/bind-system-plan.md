@@ -443,6 +443,11 @@ function Dispatch.process(inst, k, v)
     local h = Dispatch.getHandler(inst, k, v)
     if h then
         local list = chains:GetStrong(inst, k) or {}
+        for _, existing in list do
+            if existing == h then
+                error("Dispatch: handler already active for this (inst,k) — re-entrant dispatch (e.g. State<State<T>>) is not supported")
+            end
+        end
         table.insert(list, h)           -- 항상 꼬리에 추가
         chains:SetStrong(inst, k, list)
         h.process(inst, k, v)
@@ -527,6 +532,29 @@ nil`(and/or 삼항 관용구)이었으나, `v`가 `false`일 때(정당한 boole
   만드는 것도 이론상 가능하지만 use case가 없어 문서화 대상 밖,
   2026-08-04 세션에 이미 확정된 "일반적 무한루프 방어 안 함" 원칙과
   같은 결로 UB 취급.
+- **[2026-08-13 세션 발견·수정] "각 핸들러는 최대 한 번씩만 그 키에서
+  호출됨" 전제는 순환뿐 아니라 `State<State<T>>`(store가 emit하는 값
+  자체가 또 State/Source인 경우)에서도 깨짐 — 단 순환과 달리
+  스택오버플로로 걸러지지 않고 **조용히 체인을 파손시키는 실제 버그로
+  재현됨**. `store.key = a`(State), `a:Get() = b`(State)일 때: (1)
+  `Dispatch.process(inst,k,a)`가 StoreBind를 매치해 `list={SB}` 생성,
+  `Observer` 즉시 1회 실행이 `Dispatch.process(inst,k,b)`로 재귀; (2) `b`도
+  State라 StoreBind가 **같은 핸들러 객체로 또 매치**돼 `list={SB,SB}`가
+  되고, 안쪽 Observer가 `relate:SetStrong(inst,k,·)`로 바깥 Observer의
+  참조를 덮어써 바깥 것이 `bindLifetime`엔 살아있는데 `relate`에서 못
+  찾는 유령 구독으로 새고; (3) 안쪽 Observer의 즉시 실행이 부르는
+  `retractUnder(inst,k,SB,·)`는 위 457행 루프가 **첫 번째**로 매치되는
+  `SB`(바깥 것의 인덱스)를 `cutoff`로 잡아버려, 그 다음 인덱스(안쪽
+  자기 자신)를 대신 retract — **안쪽 State의 구독이 등록 직후 자기
+  자신에 의해 끊겨 이후 `b:Set(...)`이 조용히 무시됨.** Attribute의
+  `rawNew(name)` 위임은 별개의 `(inst, key)` 체인으로 옮겨가는 것뿐이라
+  이 문제를 원천적으로 피하지 못함(위임된 값 자체가 `State<State<T>>`이면
+  `AttributeKey` 체인 안에서 동일하게 재현). **고정**: 위 `Dispatch.process`
+  pseudocode에 "같은 `(inst,k)`에 이미 같은 핸들러 객체가 push돼 있으면
+  즉시 error" 가드를 추가 — 순환과 같은 전제(핸들러당 최대 1회)를 지키는
+  가장 저비용 지점이 여기(push 직전)라서. `State<State<T>>`가 정당한 값
+  모양인지 자체는 별도 논의(아래 "Store가 Store를 저장 가능한가" 참고) —
+  이 가드는 그 논의와 무관하게 체인 파손을 조용히 넘기지 않게만 함.
 - **부수 효과 — 미래 재바인드/quad-debug에 유리**: 이 체인이 Dispatch에
   중앙화돼 있으므로, `research/existing-instance-bind-plan.md`가 다룰
   미래의 재바인드는 `Dispatch.retractUnder(inst, k, nil, newV);
@@ -808,9 +836,13 @@ parentInst`를 직접 호출해 Slot이 마운트해둔 부모 밑에 자식을 
 다른 핸들러와 동일한 `isHandlable`/`priority`/`process`/`retract` 계약을
 따르되, 자신의 `process`가 내부적으로 "실제 값이 바뀔 때마다 (원래 key, 새
 value)로 `Dispatch.process(inst,k,realv)`를 재귀 호출"하는 식으로 구현됨.
-이러면 store 값 자체가 어떤 타입이든(원시값, 인스턴스, 심지어 다른 store)
-상관없이 동일한 재귀적 디스패치로 처리 가능 — 아래 "store가 store를 저장
-가능한가"와 직결.
+이러면 store 값 자체가 대부분의 타입(원시값, 인스턴스 등)에 대해 동일한
+재귀적 디스패치로 처리 가능 — 아래 "store가 store를 저장 가능한가"와
+직결. **[2026-08-13 세션 정정]** 단 "심지어 다른 store"는 낙관적으로
+틀린 서술이었음 — 실제로 값이 또 State/Source면(`State<State<T>>`) 같은
+핸들러가 같은 `(inst,k)`에 두 번 push되어 체인이 파손됨(위 "확정된
+디스패치 모델" 절의 2026-08-13 발견 항목 참고), 이제 `Dispatch.process`의
+중복 핸들러 가드가 이 경우 error로 막음.
 
 **"값이 바뀔 때마다"의 실제 구독 메커니즘 = `state:Observer(fn)` 재사용으로
 확정(2026-08-08 세션).** 이전엔 이 절이 구독 메커니즘 자체를 추상적으로만
@@ -876,6 +908,14 @@ ref 타입처럼 생각하는 게 맞는 거 같음 — 그걸 처리하는 플�
 쓰지 않음). Store에서 값을 꺼내 State를 옵저빙하다가 콜백으로 다른 Store 값을
 바꾸는 식의 수동 연결은 있을 수 있지만, 잘 짜인 UI에서 실사용 사례를 거의
 보지 못했다는 게 사용자 판단 — 그래서 이 케이스를 위해 별도로 신경 쓰지 않음.
+
+**[2026-08-13 세션, 스코프 명확화]** 이 절은 "Store *필드*가 Store/State를
+담는가"(예: `store.a = otherStore`) 얘기이고, "State가 *emit하는 값*이
+State/Source인가"(`State<State<T>>`, 예: `store.key`에 대입된 값 자체가
+State)는 다른 축 — 후자는 위 "확정된 디스패치 모델" 절에서 실제 체인
+파손 버그로 확인됨. 이 절의 "별도로 신경 쓰지 않음"은 전자에만 해당하고,
+후자는 이제 `Dispatch.process`가 명시적으로 error하도록 막혀 있어 "신경
+안 씀 = 조용히 UB"가 아니라 "신경 안 씀 = 즉시 실패"로 취급됨.
 
 ## Ref — 도입 확정, 단 용도는 재정의됨
 

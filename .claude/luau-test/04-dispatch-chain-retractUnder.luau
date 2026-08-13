@@ -26,6 +26,24 @@
 	`bindLifetime`/`unbindLifetime` 조합(`.claude/base/lifecycle-pattern.md`)을
 	쓴다. `retract`가 할 일이 "구독 해제"라는 본질은 같아서 체인/
 	retractUnder 로직 검증엔 영향 없음.
+
+	**[2026-08-13 세션 정정]** 바로 위 문단의 마지막 문장은 3단계~4단계
+	(store-in-store, 즉 `State<State<T>>`에 대응하는 시나리오)에 대해서는
+	틀렸음이 드러남 — 이 스파이크의 `retract`는 print만 하는 완전 no-op이라
+	"자기 자신을 스스로 retract하는" 버그가 실제로 일어나도 아무 부작용
+	없이 넘어가버려서, 겉보기엔(체인 길이만 보면) 3~4단계가 정상으로
+	보임. 실제로는 같은 싱글톤 `StoreBindA` 핸들러가 같은 `(inst,k)`에
+	두 번 push되고(`list={StoreBindA,StoreBindA}`), `retractUnder`의
+	457행 "첫 매치 cutoff" 로직이 안쪽 재계산 시점에도 항상 **바깥쪽**
+	인덱스를 cutoff로 잡아버려 안쪽 자기 자신이 잘못 retract되는 게
+	`.claude/base/bind-system-plan.md` "확정된 디스패치 모델" 절
+	2026-08-13 항목에서 손으로 트레이싱해 확인됨 — 실제 `bindLifetime`
+	기반 구현이었다면 안쪽 State 구독이 등록 직후 끊겨 이후 갱신이
+	조용히 무시됐을 것. 이 파일이 "다단 체인이 정상"이라고 결론 내린 건
+	이 스텁의 사각지대 때문이었지 실제로 검증된 게 아니었음 — 그래서
+	아래에 같은 `(inst,k)`에 같은 핸들러가 중복 push되면 즉시 error하는
+	가드(같은 세션에 base 문서 pseudocode에도 추가됨)를 넣고, 3단계에서
+	이 가드가 실제로 걸리는지 확인하는 걸로 대체.
 ]]
 
 local StoreTag = {}
@@ -84,6 +102,21 @@ function Dispatch.process(inst, k, v)
 		return
 	end
 	local list = chainFor(inst, k)
+	-- [2026-08-13 세션 신설] 같은 (inst,k)에 같은 핸들러 객체가 이미 체인에
+	-- 있으면 error — State<State<T>>류 재진입 디스패치를 조용히 깨지게
+	-- 두지 않고 즉시 실패시킴 (base/bind-system-plan.md 동시 반영)
+	for _, existing in list do
+		if existing == h then
+			error(
+				string.format(
+					"Dispatch: handler '%s' already active for %s.%s — re-entrant dispatch (e.g. State<State<T>>) is not supported",
+					h.name,
+					tostring(inst),
+					tostring(k)
+				)
+			)
+		end
+	end
 	table.insert(list, h)
 	print(string.format("    [chain push] %s.%s <- %s (체인 길이=%d)", tostring(inst), tostring(k), h.name, #list))
 	h.process(inst, k, v)
@@ -176,15 +209,26 @@ storeA:set("world")
 print("  현재 체인 길이:", #chainFor("Frame1", "Text"), "(A->Property 2개여야 정상)")
 
 print()
-print("=== 3단계: StoreA 값을 store로 다시 바꿔서(다단 체인 유도) 스트레스 테스트 ===")
+print("=== 3단계 [2026-08-13 세션 재작성]: StoreA 값을 store로 다시 바꿔서")
+print("    (State<State<T>>에 대응) 재진입 디스패치를 유도 — 이제 가드가")
+print("    즉시 error해야 정상 ===")
 local storeB = makeStore("nested")
-storeA:set(storeB)
-print("  현재 체인 길이:", #chainFor("Frame1", "Text"))
+local ok, err = pcall(function()
+	storeA:set(storeB)
+end)
+print("  error로 막혔는가:", not ok)
+print("  에러 메시지:", tostring(err))
+print(
+	"  현재 체인 길이:",
+	#chainFor("Frame1", "Text"),
+	"(가드가 push 전에 error하므로 1이어야 정상 — StoreBindA만 남고 오염 없음)"
+)
 
 print()
-print("=== 4단계: 안쪽 StoreB 값을 바꿔서, retractUnder(keep=StoreBindA 자신)가")
-print("    바깥 A는 안 건드리고 그 밑(B 이후)만 정리하는지 확인 ===")
-storeB:set("nested-changed")
+print("=== 4단계: 가드가 걸린 뒤에도 같은 자리에 정상 값으로 다시 바인드하면")
+print("    문제없이 복구되는가(에러가 체인을 영구 오염시키지 않는가) ===")
+storeA:set(42)
+print("  현재 체인 길이:", #chainFor("Frame1", "Text"), "(A->Property 2개로 정상 복구되어야 함)")
 
 --[[
 	확인 포인트 (이게 이 파일의 핵심 목적):
@@ -192,10 +236,18 @@ storeB:set("nested-changed")
 	   돌아오는가 — retractUnder가 이전 PropertyHandler를 정리하고 새로
 	   push했는가, 아니면 계속 누적돼서 체인이 무한정 길어지는가?
 	   (누적되면 버그 — 체인이 GC 안 되는 메모리 누수이자 논리 오류)
-	2. 3단계~4단계에서 A(StoreBindA) 자신은 살아남고, 그 밑(구 PropertyHandler
-	   또는 구 중첩 핸들러)만 정리되는가 — "A가 자길 엉뚱하게 retract하는"
-	   버그(CLAUDE.md가 기각한 1차 설계의 실패 모드)가 재현되지 않는가?
-	3. 체인 길이가 각 단계마다 예상한 값과 정확히 일치하는가(주석에 적어둔
-	   기대값과 실제 print 결과를 비교).
+	2. **[2026-08-13 세션 정정]** 3단계는 원래 "A(StoreBindA) 자신은 살아남고
+	   그 밑만 정리되는가"를 확인하려 했으나, 이 스파이크의 `retract`가
+	   print만 하는 no-op이라 실제 자기-retract 버그(같은 싱글톤 핸들러가
+	   같은 (inst,k)에 중복 push되고, retractUnder의 첫-매치 cutoff가 안쪽
+	   재계산 시점에 바깥쪽 인덱스를 잡아 안쪽이 스스로를 retract하는 것 —
+	   상세 트레이싱은 `.claude/base/bind-system-plan.md` "확정된 디스패치
+	   모델" 절 2026-08-13 항목)를 이 스텁으로는 절대 못 잡는다는 게 드러남.
+	   그래서 이제 3단계는 "같은 핸들러 중복 push를 Dispatch.process가
+	   push 전에 잡아 즉시 error하는가"를 확인 — `ok`가 `false`고 체인
+	   길이가 오염 없이 1로 남는 게 정상.
+	3. 4단계: 가드가 발동한 뒤에도 같은 (inst,k)에 정상적으로 새 값을
+	   바인드할 수 있는가(에러가 chains 자료구조를 영구히 깨뜨리지
+	   않는가) — 체인 길이가 다시 2(A, Property)로 정상 복구돼야 함.
 	4. 스택 오버플로 없이 전부 정상 종료되는가.
 ]]

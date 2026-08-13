@@ -240,8 +240,10 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `Clamp`/`Min`/`Max`는 선례가 강해 추가 후보로, Debounce/Throttle은
   업계에 흔하지만 `Blocker`와는 다른 시간 기반 메커니즘이라 이 카탈로그가
   아니라 quad-roblox 쪽 별도 프리미티브로 다룰지 판단이 필요한 별개 질문으로
-  분리됨. 상세는 `research/operator-sugar-plan.md`. 구현 자체는 맨 마지막
-  우선순위(순수 슈가, 없어도 무방) — 여전함.
+  분리됨. **[2026-08-13 세션 신설]** `Alternative`(nil 대체값, coalesce/`??`/
+  엘비스 연산자류) 후보 추가 — Haskell 비교 리서치 중 나옴, 카탈로그 확정
+  규칙에 그대로 맞아 포함 근거는 있음. 상세는 `research/operator-sugar-plan.md`.
+  구현 자체는 맨 마지막 우선순위(순수 슈가, 없어도 무방) — 여전함.
 - `research/existing-instance-bind-plan.md` — 스코프 논의만 필요, 구현
   착수를 막지 않음.
 - **v1 `objectListClass.__newIndex` 오타 기능의 재현 테스트 필요** —
