@@ -92,8 +92,9 @@ pull-recompute)·`:Compute` 인자 규칙·State 쓰기 금지·`Source` 독립
 결정하는 기준으로 쓸 수 있음.
 
 **세 번째 카테고리 — Handler는 둘 중 어디에도 안 낌(2026-08-08 두 번째
-세션, 명시화).** `Handler`(`isHandlable`/`priority`/`process`/`retract`
-4종 계약, `base/bind-system-plan.md` "핸들러 계약" 절)는 위 분류가 다루는
+세션, 명시화).** `Handler`(`isHandlable`/`priority`/`process` 3종 계약 —
+`process`가 자기 retract 클로저를 반환, 2026-08-13 다섯 번째 세션 정정,
+`base/bind-system-plan.md` "핸들러 계약" 절)는 위 분류가 다루는
 "quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
 없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
 `Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은

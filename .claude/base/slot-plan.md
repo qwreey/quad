@@ -211,15 +211,16 @@ Slot이 store 바인드로 들어오는 경우, pluggable 처리기에 `retract`
 > 동작이 '부모 위임' 잠정안에서 '폐기(옮기지 않음)'로 확정") 참고. 이 문단은
 > 검토 과정의 히스토리로만 남겨둠, 현재 유효한 동작 아님.
 
-**[전면 정정, 2026-08-12 열한 번째 세션] 위 "핸들러 타입이 안 바뀌면
-retract 없이 process가 diff 담당"이라는 전제 자체가 틀렸음** — 실제로는
-`Dispatch.retractUnder`가 store 재발행마다(핸들러가 그대로여도) **항상**
-먼저 불림(`base/bind-system-plan.md` "확정된 디스패치 모델"/일반 retract
-계약 절, 2026-08-12 열한 번째 세션 전면 정정 참고). 그래서 `State<Slot>`이
-`slotA→slotB`로 바뀔 때도 **`retract(inst,k,slotB)`가 먼저 불려 `slotA`를
-폐기하고, 그 다음 `process(inst,k,slotB)`가 `slotB`를 마운트**하는 두
-단계로 자연히 갈림 — `retract`가 "이전 것 정리", `process`가 "새 것
-마운트" 전담:
+**[전면 정정, 2026-08-12 열한 번째 세션, 2026-08-13 다섯 번째 세션에
+클로저 반환 계약으로 서술 갱신] 위 "핸들러 타입이 안 바뀌면 retract 없이
+process가 diff 담당"이라는 전제 자체가 틀렸음** — 실제로는
+`Dispatch.retractFrom`이 store 재발행마다(핸들러가 그대로여도) **항상**
+이전 `process`가 반환한 클로저를 먼저 부름(`base/bind-system-plan.md`
+"확정된 디스패치 모델"/일반 retract 계약 절 참고). 그래서 `State<Slot>`이
+`slotA→slotB`로 바뀔 때도 **`slotA`를 처리했던 클로저가 `hintValue=slotB`로
+먼저 불려 `slotA`를 폐기하고, 그 다음 `process(inst,k,slotB,index)`가
+`slotB`를 마운트**하는 두 단계로 자연히 갈림 — 클로저가 "이전 것 정리",
+`process`가 "새 것 마운트" 전담:
 
 **[정정, 2026-08-12 열두 번째 세션] "같은 값인가"를 위치별 relate로
 간접 비교하는 대신, Slot 자신이 지금 어느 `inst`에 바인딩됐는지를 직접
@@ -260,7 +261,6 @@ tables" 항목).** 즉 이 회피는 "혹시 몰라서"가 아니라 **Luau에�
 nested CRUD 경로가 **같은** 레지스트리를 쓰도록 통합:
 
 ```lua
-local kSlotMap = Relate()      -- SlotHandler 전용, (inst,k)별 마지막으로 마운트한 Slot — weak, 조회 전용
 local elementOwner = Relate()  -- element(Slot이든 plain 마운트 가능 값이든) 전체 공용
                                 -- {[element] = ownerKey}  -- ownerKey: inst | Slot, 전부 weak
 local OWNER = "__owner"        -- sentinel key(Relate는 항상 3-인자 SetWeak/2-인자 GetWeak 이후
@@ -280,28 +280,43 @@ local function claimOwner(element, ownerKey)
 end
 
 local function releaseOwner(element, ownerKey)
-    if elementOwner:GetWeak(element, OWNER) == ownerKey then
-        elementOwner:SetWeak(element, OWNER, nil)
+    -- [정정, 2026-08-13 세션] 불일치를 조용히 무시하지 않음 — claimOwner가 항상
+    -- 먼저 성공해야만 이 element를 이 ownerKey가 들고 있을 수 있으므로, 여기서
+    -- 불일치가 관측되는 것 자체가 호출측(rawRemove/rawExtract/SlotHandler.process가 반환한 클로저)의
+    -- 소유권 bookkeeping이 어딘가 깨졌다는 뜻 — Dispatch의 "매치 실패는 조용한
+    -- 무시 없이 즉시 error" 원칙과 같은 결로 즉시 error.
+    local current = elementOwner:GetWeak(element, OWNER)
+    if current ~= ownerKey then
+        error("releaseOwner: 이 element는 이 ownerKey가 소유하고 있지 않음 — 호출측 소유권 추적이 깨졌음")
     end
+    elementOwner:SetWeak(element, OWNER, nil)
 end
 
-function SlotHandler.process(inst, k, slotValue)
-    if not claimOwner(slotValue, inst) then
-        return  -- 이미 이 inst에 바인딩된 채 — 단순 emit 전파, no-op
+function SlotHandler.process(inst, k, slotValue, index)
+    if claimOwner(slotValue, inst) then
+        -- [정정, 2026-08-13 세션] bindLifetime을 attachSlot 밖, 여기(top-level Handler)로
+        -- 이동 — 반환하는 클로저 쪽 unbindLifetime과 같은 층위(Handler)로 대칭. 중첩
+        -- Slot은 여전히 anchor 불필요(자신을 담는 outer의 `_elements`(plain strong
+        -- array)로 이미 transitively 살아있음 — elementOwner는 전부 weak라 별도 anchor
+        -- 아님) — 그 구분은 이제 "attachSlot을 top-level에서 부르는 이 자리에서만
+        -- bindLifetime한다"는 호출부 자체의 위치로 표현됨, attachSlot 내부 분기가 아님.
+        bindLifetime(inst, slotValue)
+        attachSlot(slotValue, inst, inst, k)
     end
-    attachSlot(slotValue, inst, inst, k)  -- top-level이라 내부에서 bindLifetime(inst, slotValue) 호출(위 "재귀 메커니즘" 절)
-    kSlotMap:SetWeak(inst, k, slotValue)
-end
-
-function SlotHandler.retract(inst, k, v)
-    local old = kSlotMap:GetWeak(inst, k)
-    if old and old ~= v then  -- v는 nil일 수도, 대체하는 새 Slot 자체일 수도 있음
-        destroySlotTree(old)  -- 재귀 파괴(자식 정리), 폐기·옮기지 않음 — slot 자신의 GC 앵커는 안 건드림(top-level 전용)
-        unbindLifetime(inst, old)  -- top-level 자신의 GC 앵커 해제 — attachSlot의 top-level bindLifetime과 짝
-        releaseOwner(old, inst)
-        kSlotMap:SetWeak(inst, k, nil)
+    -- claimOwner가 false여도(이미 같은 Slot이 이 자리를 차지 중인 spurious 재발행)
+    -- 아래 클로저는 항상 똑같이 올바르게 동작함 — attachSlot을 두 번 안 부르는
+    -- 것만 위에서 갈렸을 뿐, "이 자리가 결국 다른 값으로 바뀔 때 할 일"은 어느
+    -- 쪽 process 호출이 반환하든 slotValue/inst가 같아서 동일함(2026-08-13 다섯
+    -- 번째 세션 — 이래서 별도 `kSlotMap`이 더 이상 필요 없음: 나중에 이 인덱스가
+    -- 통째로 철거될 때 실제로 불리는 건 항상 *가장 최근* process 호출이 반환한
+    -- 클로저인데, 그게 어느 호출에서 왔든 캡처된 slotValue/inst는 늘 참값이라
+    -- "누가 진짜로 attach했는지"를 별도로 기억해둘 필요 자체가 없음).
+    return function(hintValue)
+        if slotValue == hintValue then return end  -- 같은 Slot 재발행 → no-op
+        destroySlotTree(slotValue)  -- 재귀 파괴(자식 정리), 폐기·옮기지 않음 — slot 자신의 GC 앵커는 안 건드림(top-level 전용)
+        unbindLifetime(inst, slotValue)  -- top-level 자신의 GC 앵커 해제 — attachSlot의 top-level bindLifetime과 짝
+        releaseOwner(slotValue, inst)
     end
-    -- old == v(같은 Slot 재발행) → 아무 것도 안 함, 곧 process도 owner==inst로 no-op
 end
 ```
 
@@ -324,8 +339,8 @@ Dispatch 마운트(`SlotHandler.process`)만 `slotOwner`를 봤고, `Add`가
 
 **해법**: 위에서 승격한 `elementOwner`/`claimOwner`/`releaseOwner`를
 Slot뿐 아니라 **모든 마운트 가능 element(plain Instance 포함)**의
-소유권 판정에 공용으로 씀 — top-level(`SlotHandler.process`/`.retract`)과
-nested(`rawAdd`/`rawRemove`/`rawExtract`)가 정확히 같은 함수, 같은
+소유권 판정에 공용으로 씀 — top-level(`SlotHandler.process`와 그 반환
+클로저)과 nested(`rawAdd`/`rawRemove`/`rawExtract`)가 정확히 같은 함수, 같은
 `Relate`를 호출하므로 어느 경로로 먼저 클레임하든 다른 경로가 반드시
 봄:
 
@@ -1219,21 +1234,15 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 ```lua
 -- quad-base, Slot.luau — 재귀적 "attach" 하나로 최상위/중첩 마운트 통합
 local function attachSlot(slot, physicalTarget, ownerKey, position)
+    -- [정정, 2026-08-13 세션] bindLifetime 호출은 여기 없음 — top-level 전용
+    -- 앵커링은 SlotHandler.process(아래)로 이동. attachSlot 자신은 이제
+    -- top-level/nested 어느 깊이에서 불려도 완전히 동일하게 동작하는 순수 구조적
+    -- mount 로직만 담당(레이어 구분은 오직 이 함수를 부르는 쪽의 책임) — retract
+    -- 쪽(destroySlotTree)이 이미 이 원칙대로였는데(자기 자신의 unbindLifetime은
+    -- 안 하고 Handler.retract에서만 짝을 맞춤) process 쪽만 attachSlot 내부에
+    -- ownerKey==physicalTarget 분기로 anchor 로직이 새어들어와 있던 비대칭이었음.
     slot._mounted = true
     slot._mountedInst = physicalTarget
-    if ownerKey == physicalTarget then
-        -- [2026-08-12 열여섯 번째 세션, 스코프 정정] bindLifetime은 최상위(물리
-        -- inst에 직접 연동하는 말단)에서만 — 중첩 Slot은 자신을 담는 outer의
-        -- `_elements`(plain strong array)로 이미 transitively 살아있어서
-        -- (elementOwner는 전부 weak라 별도 anchor 아님, 위 "요소 소유권 —
-        -- `elementOwner`" 절 참고) 여기서 또 anchor할 이유가 없음 — State의 노드 연결처럼
-        -- 중간 노드는 구조로만 연결되고, 말단만 실제 엔진 생명주기에 건다는
-        -- 원칙과 같은 결. 매 레벨 anchor하면 매 레벨 파괴 시 짝을 맞춰
-        -- unbindLifetime해야 하는 부담만 늘어남(destroySlotTree 참고).
-        bindLifetime(physicalTarget, slot)  -- [2026-08-12 열세 번째 세션 추가] 최상위
-                                             -- Slot의 GC 앵커 — 이게 빠져있으면 아무도
-                                             -- 강하게 안 붙잡아 조기 GC될 수 있음
-    end
 
     Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
     local offsetSource = Source(0)
@@ -1303,8 +1312,8 @@ local function destroySlotTree(slot)
     end
     -- [2026-08-12 열여섯 번째 세션, 스코프 정정] slot 자신의 unbindLifetime은
     -- 여기서 안 부름 — attachSlot이 최상위에서만 bindLifetime하므로 짝도
-    -- 최상위 파괴 지점(SlotHandler.retract, 아래)에서만 한 번. destroySlotTree는
-    -- 재귀 전체에서 항상 이 위치까지만(자식 Observer 정리) 담당.
+    -- 최상위 파괴 지점(SlotHandler.process가 반환하는 클로저, 위)에서만 한 번.
+    -- destroySlotTree는 재귀 전체에서 항상 이 위치까지만(자식 Observer 정리) 담당.
 end
 
 -- [명확화] 아래 시그니처는 index 기준 예시 — 위 "raw* 내부 호출 규약" 절이

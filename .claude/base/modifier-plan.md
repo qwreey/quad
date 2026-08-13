@@ -24,7 +24,7 @@ Setter는 리터럴 값과 변환 함수 둘 다 받음" 절 참고. **팩토리
 
 ### 1. 런타임 pluggable 핸들러 아님 — 정적 merge
 
-Modifier는 `isHandlable`/`priority`/`process`/`retract` 핸들러 레지스트리에
+Modifier는 `isHandlable`/`priority`/`process` 핸들러 레지스트리에
 안 들어감. 그냥 평범한 테이블(데이터)을 보유하는 값이고, 디스패치 들어가기
 전에 한 번 평탄화(flatten)돼서 최종 props 테이블에 합쳐짐. 이유: 런타임
 pluggable로 만들면 여러 modifier가 반응형으로 같은 키를 계속 다투는 CSS

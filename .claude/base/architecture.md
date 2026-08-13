@@ -146,8 +146,8 @@ quad/
 │       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenTag`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`base/tween-plan.md`, 2026-08-10 세션 재설계)
 │       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
-│       │   ├── init.luau          # process/retract 엔진, isHandlable 우선순위 스캔, `chains`(inst,k별 핸들러 체인)+`retractUnder`(`bind-system-plan.md` "Dispatch 체인" 절, 2026-08-08 세 번째 세션)
-│       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process/retract)
+│       │   ├── init.luau          # process 엔진(반환값=retract 클로저), isHandlable 우선순위 스캔, `chains`(inst,k별 인덱스 배열)+`retractFrom`(`bind-system-plan.md` "Dispatch 체인" 절, 2026-08-08 세 번째 세션 신설, 2026-08-13 다섯 번째 세션 인덱스 기반 전면 재설계)
+│       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef) children-array leaf 매칭 Handler, StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
@@ -166,8 +166,8 @@ quad/
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
         │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩 + 이름별 weak 캐시(`AttributeKey`와 동일 기법, `base/onchange-plan.md`, 2026-08-10 세션)
         │   ├── AttributeKey.luau  # 단일 키(`AttributeKey<<T>>(name)`/`BooleanAttribute`류) DI 키 팩토리+Handler, `SetAttribute`/`None` 지우기 + 이름별 weak 캐시(동등성 보장, `base/attribute-plan.md` "동등성" 절)
-        │   ├── Attribute.luau     # 그룹(`Attribute(store1, store2, ...)`) process/retract — 이름 집합 diff만 자체 로직, 실제 `SetAttribute`/구독은 메모이즈된 `AttributeKey(name)`로 `Dispatch.process`/`retractUnder`에 재귀 위임(단일 키 경로 재사용, 중복 구현 없음) — 값 타입/API는 quad-base Attribute.luau(`base/attribute-plan.md`)
-        │   ├── Tag.luau           # CollectionService 글루만(process/retract) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
+        │   ├── Attribute.luau     # 그룹(`Attribute(store1, store2, ...)`) process — 이름 집합 diff만 자체 로직(반환 클로저에 캡처, 별도 Relate 불필요), 실제 `SetAttribute`/구독은 공개 `AttributeKey(name)`으로 항상 인덱스 1부터 `Dispatch.process`/`retractFrom`에 재귀 위임(단일 키 경로 재사용, 중복 구현 없음) — 값 타입/API는 quad-base Attribute.luau(`base/attribute-plan.md`)
+        │   ├── Tag.luau           # CollectionService 글루만(process, 반환 클로저가 정리 담당) — 값 타입/API는 quad-base Tag.luau(`base/tag-plan.md`)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
         ├── Animate.luau           # `Animate(info)` 편의 콤비네이터 — `factory(self)->State`, `:Apply`로 붙임(내부는 `:Compute`/`Tween{...}` 조합), base 프리미티브 아님(`base/tween-plan.md`)

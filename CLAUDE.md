@@ -125,7 +125,14 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
      나오면 그것부터 반영할 것(`luau-test/README.md`가 파일별로 뭘 우선
      확인해야 하는지 이미 적어둠). 걸리는 게 있으면 `base/` 문서부터 고치고,
      없으면 그대로 M0 실제 코드 작성에 재사용. 설계 자체는 더 이상 막힌
-     게 없음 — `.claude/question.md` 2번이 최신 상태.
+     게 없음 — `.claude/question.md` 2번이 최신 상태. **[2026-08-13 다섯
+     번째 세션 추가 주의]** `Dispatch`가 인덱스 기반으로 전면 재설계됨
+     (`base/bind-system-plan.md` "Dispatch 체인" 절, `chains`/`retractUnder`
+     대신 `retractFrom`+`process`가 반환하는 클로저) — 기존 `luau-test/04`
+     (다단 체인 스트레스 테스트)는 옛 모델(핸들러 identity 기반 `chains`)
+     전제로 쓰여 있어서, 돌려보기 전에 새 모델에 맞춰 먼저 다시 써야 함
+     (`session/2026-08-13-05-dispatch-index-based-redesign.md` "남는 것"
+     참고) — 아직 안 함, 다음 세션 우선 항목.
 2. **용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
    `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
    stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
@@ -792,3 +799,53 @@ v2 논의 대상 아님으로 확정** (`session/2026-08-13-03-v1-newindex-typo-
 (`GetObjects()`류) 개념 자체가 없어져 재현 여부와 무관하게 v2 마이그레이션
 가이드에서 다룰 대상이 아님(있었다 해도 v1 전용 기능). `question.md`/
 `reference/quad-v1-architecture.md` 둘 다 해소로 반영.
+
+**2026-08-13 네 번째 세션 — 사각지대 손 트레이싱 라운드, `Dispatch.processAs`/
+`retractSelfAndUnder` 체크포인트 핸들러 신설**
+(`session/2026-08-13-04-blind-spot-audit-checkpoint-handlers.md`)
+직전 세션의 `State<State<T>>` 발견 방식(합성 시나리오를 pseudocode에 손
+대입)을 서브에이전트 4개로 코퍼스 전체에 반복 — 실제 버그 3건 발견:
+Tag 참조 카운트가 객체 identity 기준이라 같은 Tag 객체 재사용 시 깨짐,
+Attribute 그룹이 이름을 놓았다 다시 포함하면 자기 자신과 소유권 충돌,
+(Slot의 이중 State 언랩은 사용자 확인 결과 버그가 아니라 기존
+`State<State<T>>` UB 범위였음, 과다 보고 정정). 사용자가 Attribute
+설계를 직접 재검토하며 `owners`/`rawNew` 수동 레지스트리를 통째로
+버리고, `isHandlable` 없는(스캔 불가) 순수 체크포인트 핸들러를
+`Dispatch.processAs`로 명시 push + `Dispatch.retractSelfAndUnder`(target
+자신 포함 철거, 신설)로 통째 정리하는 설계로 전환 — 소유권 충돌 감지가
+기존 재진입 가드로 공짜로 해결됨. Slot의 `releaseOwner` 불일치 무시를
+error로 강화, `bindLifetime` 위치를 Handler 층위로 이동해 `unbindLifetime`과
+대칭 맞춤. `Brand`/`isXX`의 nil 처리는 서브에이전트 확인 결과 안전.
+`base/bind-system-plan.md`/`tag-plan.md`/`attribute-plan.md`/`slot-plan.md`
+전부 반영 완료. **[정정, 같은 날 다섯 번째 세션]** 이 세션에서 신설한
+`Dispatch.processAs`/`retractSelfAndUnder` 체크포인트 패턴은 바로 다음
+세션에 더 근본적인 인덱스 기반 재설계로 대체되며 전부 걷어내짐 — 아래
+다섯 번째 세션 항목 참고, 원문은 `archive/checkpoint-handler-pattern-reversed.md`.
+
+**2026-08-13 다섯 번째 세션 — `Dispatch` 인덱스 기반 전면 재설계,
+`State<State<T>>` UB 해제** (`session/2026-08-13-05-dispatch-index-based-redesign.md`)
+사용자가 체크포인트 패턴에 "왜 최상단에서 뭔가 지우는 일을 만들었냐,
+가정이 늘어나는 건 안 좋다"고 문제 제기하며 시작 — `chains`가 핸들러
+**객체 identity**로 위치를 추적하는 것 자체가 `State<State<T>>`를 UB로
+만든 근본 원인이라는 데까지 논의가 이어짐. 최종 설계: `chains`를
+**재귀 깊이 인덱스**로 추적(같은 키 재귀는 `index+1`, 다른 키 위임은
+항상 `1`부터, 0이 아니라 1인 이유는 Luau `ipairs`/`#` 관례), `Handler`
+계약이 `process`/`retract` 2-메소드에서 `process`가 자기 retract
+클로저(`(hintValue)->()`)를 반환하는 1-메소드로 축소, `Dispatch.process`가
+핸들러를 부르기 전에 그 인덱스 점유 여부를 먼저 체크(핸들러 부작용 낭비
+없음, 도메인 특화 에러 메시지가 없는 건 의도된 트레이드오프 — 에러=패닉
+상태라 상세 설명 비용을 들일 이유가 없다는 데 사용자 동의),
+`retractUnder`/`retractSelfAndUnder`도 `Dispatch.retractFrom(inst,k,index,v)`
+하나로 통합(자기 포함/미만 여부는 호출자가 넘기는 인덱스 자체로 표현).
+이 재설계로 `State<State<T>>`가 UB에서 정상 지원 대상으로 재정정되고,
+전날 만든 체크포인트 패턴 전체(`AttributeGroupKeyHandler`/`processAs`/
+`retractSelfAndUnder`)가 통째로 불필요해짐 — Attribute 그룹은 이제
+공개 `AttributeKey(name)`으로 항상 인덱스 1에 직접 위임, 점유 체크가
+소유권 충돌 감지를 대신함. 부수 효과로 여러 핸들러(StoreBind/Ref/Tag/
+Slot/Attribute)의 private `Relate` 상태 저장소가 대거 줄어듦(process가
+반환하는 클로저가 upvalue로 직접 캡처하므로 process→retract 사이 단발성
+handoff용 저장이 불필요해짐 — `Relate`는 여러 위치/사이클을 가로지르는
+누적 상태에만 남음). `bind-system-plan.md`/`tag-plan.md`/
+`attribute-plan.md`/`slot-plan.md`/`architecture.md`/`store-semantics.md`/
+`modifier-plan.md` 전부 반영, `archive/checkpoint-handler-pattern-reversed.md`
+신설.

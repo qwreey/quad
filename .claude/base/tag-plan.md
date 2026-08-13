@@ -109,83 +109,107 @@ nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
 clone을 반환) 내부에 State 같은 걸 담지도 않는 **항상 확정 상태인 말단
 값**(Tween과 같은 결) — 그래서 `State<Tag>`가 진짜로 다른 내용을 내놓을
 때마다 **항상 물리적으로 다른 `Tag` 객체**가 나옴. 이 사실 덕분에, 이름별로
-"어떤 `Tag` 객체들이 지금 이 이름을 걸고 있는가"를 집합으로 추적하면
-`retract`(이전 객체가 이 이름을 놓음)/`process`(새 객체가 이 이름을 걺)가
+**"지금 이 이름을 걸고 있는 위치(`k`)가 몇 개인가"를 집합으로 추적**하면
+`retract`(이전 위치가 이 이름을 놓음)/`process`(그 위치가 새 이름을 걺)가
 겹치는 이름/겹치는 위치 양쪽 다 자동으로 올바르게 처리됨:
 
+**[정정, 2026-08-13 네 번째 세션] holders는 `Tag` 객체가 아니라 위치(`k`)로
+키잉함.** 최초안은 `holders[Tag객체] = true`(객체 identity 기준)이었으나,
+`Tag`는 immutable이라 **재사용이 자연스러운 관례**(예: `local SELECTED =
+Tag("selected")`를 모듈 상수로 만들어 여러 위치에서 재사용)인데, 객체
+identity로 홀더를 추적하면 같은 객체를 두 위치(`k1`, `k2`)에 걸었을 때
+`tagNameMap`엔 **단일 엔트리**만 생겨 두 위치가 구분이 안 됨 — `k1`만
+`retract`돼도 그 하나뿐인 엔트리가 지워져 `holders`가 비고, `k2`가 여전히
+그 이름을 쓰고 있는데도 `RemoveTag`가 불려버리는 실제 참조 카운트 버그로
+손 트레이싱에서 재현됨(하단 "여러 위치가 같은 이름을 겹쳐 가지는 경우"
+절이 암묵적으로 "서로 다른 객체"만 가정하고 있었던 게 원인). "여러 위치가
+같은 이름을 겹칠 수 있다"는 이 절의 원래 취지 자체가 **위치 기준
+집합**이어야 성립하므로, 홀더를 `k`로 바꾸는 게 원 의도와도 더 맞음:
+
+**[정정, 2026-08-13 다섯 번째 세션] `process`가 자기 retract 클로저를
+반환하는 계약으로 전환되며 `kTagMap`(위치별 마지막 Tag)이 완전히
+불필요해짐** — `retract`가 필요로 했던 "이 위치에 걸려 있던 Tag가
+뭐였는가"는 이제 그 `process` 호출이 반환하는 클로저가 `v`를 upvalue로
+직접 캡처하므로, 별도 저장소에서 다시 조회할 이유가 없음(위
+`base/bind-system-plan.md` "핸들러 내부 상태 저장" 절 — 단발성 handoff는
+클로저로 충분). **`tagNameMap`(이름별 현재 걸고 있는 위치 집합)은 여전히
+필요** — 이건 서로 다른 여러 위치를 가로지르는, `process`/클로저 하나의
+호출 수명을 넘어서는 누적 상태라 `Relate`가 맞는 경우:
+
 ```lua
-local kTagMap = Relate()      -- {[inst(weak)] = {[k]: Tag}} — 위치별 마지막으로 반영한 Tag
-local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[Tag]: true}}} — 이름별 현재 걸고 있는 Tag들
+local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[k]: true}}} — 이름별 현재 걸고 있는 위치들
 
 TagHandler.priority = <일반>
 TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
 
-function TagHandler.retract(inst, k, newv)
-    local oldv = kTagMap:GetStrong(inst, k)
-    if not oldv then return end
-    local newvIsTag = isTag(newv)  -- newv는 nil일 수도, 대체하는 새 Tag 자체일 수도 있음
-    for name in oldv:Names() do
-        local holders = tagNameMap:GetStrong(inst, name)  -- 이미 등록됐으므로 항상 있음
-        holders[oldv] = nil
-        if next(holders) == nil and not (newvIsTag and newv:Contains(name)) then
-            inst:RemoveTag(name)  -- 곧 process가 재확정할 이름이면 실제 호출은 skip(깜빡임 방지)
-        end
-    end
-end
-
-function TagHandler.process(inst, k, v)
+function TagHandler.process(inst, k, v, index)
     for name in v:Names() do
         local holders = tagNameMap:GetStrong(inst, name)
         if not holders then
-            holders = {}  -- strong map — Tag가 살아있는 동안 소유 목록도 살아있어야 함
+            holders = {}  -- strong map — 이 이름을 거는 위치가 하나라도 있는 동안 소유 목록도 살아있어야 함
             tagNameMap:SetStrong(inst, name, holders)
         end
         if next(holders) == nil then
             inst:AddTag(name)
         end
-        holders[v] = true
+        holders[k] = true  -- 이 "위치"가 이 이름을 걺(Tag 객체가 다른 위치와 같아도 무관)
     end
-    kTagMap:SetStrong(inst, k, v)
+    return function(hintValue)
+        if v == hintValue then return end  -- Tag는 immutable이라 객체가 안 바뀌면
+                                            -- 이름 집합도 절대 안 바뀜 — holders 순회 자체가 불필요한 순수 최적화
+        local hintIsTag = isTag(hintValue)  -- hintValue는 nil일 수도, 대체하는 새 Tag 자체일 수도 있음
+        for name in v:Names() do
+            local holders = tagNameMap:GetStrong(inst, name)  -- 이미 등록됐으므로 항상 있음
+            holders[k] = nil  -- 이 "위치"가 이 이름을 놓음(같은 Tag 객체를 다른 위치도 쓰고 있어도 무관)
+            if next(holders) == nil and not (hintIsTag and hintValue:Contains(name)) then
+                inst:RemoveTag(name)  -- 곧 새 process가 재확정할 이름이면 실제 호출은 skip(깜빡임 방지)
+            end
+        end
+    end
 end
 ```
 
-- **`AddTag`는 온전히 `process`, `RemoveTag`는 온전히 `retract`** — 서로
-  겹치는 diff 계산이 없음. `retract`가 이전 `Tag`(`oldv`)가 걸었던 이름
-  전부를 소유 목록에서 빼되(항상 실행), 그 결과 목록이 비었을 때 **실제
-  `RemoveTag` 호출만** "새로 들어올 `newv`가 그 이름을 여전히 Contains하는가"로
-  힌트를 줘서 skip — 소유 목록 자체는 항상 최신 객체로 갱신되므로(정확히
-  `oldv`를 빼고 `v`를 넣는 두 단계), 이름이 살아남는 경우에도 stale
-  레퍼런스가 안 남음. `process`는 `v`가 새로 거는 이름 전부를 무조건
-  등록(소유 목록이 비어있던 경우에만 실제 `AddTag`) — 자기 나름의 old-vs-new
-  diff가 전혀 필요 없음(그 일을 `retract`가 매번 정확히 해줌).
-- **`Tag(A)→Tag(B)`(같은 위치, 내용만 바뀜)**: `retract(inst,k,B)`가 먼저
-  불려 `A`가 걸었던 이름 중 `B`에 없는 것만 실제로 `RemoveTag`, 남은 건
-  힌트로 skip — 그 다음 `process(inst,k,B)`가 `B`의 이름 전부를 등록(이미
-  걸려있던 이름은 `AddTag`가 no-op으로 재확인만 됨, 소유 목록엔 `B`가 새로
-  등록). 결과적으로 실제 `RemoveTag`/`AddTag` 호출은 진짜 변경된 이름에만
+- **`AddTag`는 온전히 `process`, `RemoveTag`는 온전히 반환하는 클로저**
+  — 서로 겹치는 diff 계산이 없음. 클로저가 이전 `Tag`(`v`, 자기 자신이
+  캡처)가 걸었던 이름 전부를 소유 목록에서 빼되(항상 실행), 그 결과
+  목록이 비었을 때 **실제 `RemoveTag` 호출만** "새로 들어올 `hintValue`가
+  그 이름을 여전히 Contains하는가"로 힌트를 줘서 skip — 소유 목록 자체는
+  항상 최신 객체로 갱신되므로(정확히 `v`를 빼고 새 `process`가 새 값을
+  넣는 두 단계), 이름이 살아남는 경우에도 stale 레퍼런스가 안 남음.
+  `process`는 `v`가 새로 거는 이름 전부를 무조건 등록(소유 목록이
+  비어있던 경우에만 실제 `AddTag`) — 자기 나름의 old-vs-new diff가 전혀
+  필요 없음(그 일을 클로저가 매번 정확히 해줌).
+- **`Tag(A)→Tag(B)`(같은 위치, 내용만 바뀜)**: `A`를 처리했던 `process`가
+  반환한 클로저가 `hintValue=B`로 먼저 불려 `A`가 걸었던 이름 중 `B`에
+  없는 것만 실제로 `RemoveTag`, 남은 건 힌트로 skip — 그 다음
+  `process(inst,k,B,index)`가 `B`의 이름 전부를 등록(이미 걸려있던
+  이름은 `AddTag`가 no-op으로 재확인만 됨, 소유 목록엔 `B`가 새로 등록).
+  결과적으로 실제 `RemoveTag`/`AddTag` 호출은 진짜 변경된 이름에만
   일어남 — 스타일 깜빡임 방지라는 원래 목적은 그대로 달성.
-- **`Tag(A)→nil`**: `retract(inst,k,nil)`만 불림(값이 `Tag`가 아니게 돼
-  `process`는 매치 자체가 안 됨) — `newvIsTag=false`라 힌트가 항상
-  거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `RemoveTag`됨(다른
-  위치가 그 이름을 계속 쓰고 있지 않다면).
+- **`Tag(A)→nil`**: `A`의 클로저가 `hintValue=nil`로만 불림(값이 `Tag`가
+  아니게 돼 `process`는 매치 자체가 안 됨) — `hintIsTag=false`라 힌트가
+  항상 거짓이 되어 `A`가 걸었던 이름 전부가 무조건 실제로 `RemoveTag`됨
+  (다른 위치가 그 이름을 계속 쓰고 있지 않다면).
 - **여러 위치가 같은 이름을 겹쳐 가지는 경우**(`Frame { Tag("a"), Tag("a","b") }`):
-  두 위치가 서로 다른 `k`로 각자 독립적으로 `process`/`retract`를 타지만,
-  `tagNameMap["a"]`는 **양쪽 위치의 `Tag` 객체를 모두 담는 하나의 공유
-  집합** — 한쪽이 "a"를 잃어도 다른 쪽 객체가 집합에 남아있으면 실제
+  두 위치가 서로 다른 `k`로 각자 독립적으로 `process`/자기 클로저를
+  타지만, `tagNameMap["a"]`는 **양쪽 위치(`k`)를 모두 담는 하나의 공유
+  집합** — 한쪽이 "a"를 잃어도 다른 쪽 위치가 집합에 남아있으면 실제
   `RemoveTag`가 안 불림. 웹 `className`처럼 손실 없는 합집합이 정확히
-  나옴.
-- **`retract`가 자기 위임 대상까지 수동으로 안 쫓아가도 됨** —
-  `Dispatch.retractUnder`가 체인 전체를 알아서 훑어주므로 TagHandler는
-  자기 자원(위 두 릴레이션)만 정리하면 됨. 상세 메커니즘은
+  나옴. **위치 기준이므로 두 위치가 물리적으로 같은 `Tag` 객체를
+  재사용해도(흔한 관례) 정확히 같은 방식으로 안전 — 이게 바로 위 "정정"
+  절에서 객체 identity 기준을 버린 이유.**
+- **클로저가 자기 위임 대상까지 수동으로 안 쫓아가도 됨** —
+  `Dispatch.retractFrom`이 체인 전체를 알아서 훑어주므로 TagHandler는
+  자기 자원(위 `tagNameMap` 하나)만 정리하면 됨. 상세 메커니즘은
   `bind-system-plan.md` "Dispatch 체인" 절.
 
-## 패키지 배치 — base는 값+API, roblox는 process/retract 글루
+## 패키지 배치 — base는 값+API, roblox는 process 글루
 
 **Tag의 "값 타입과 clone 체이닝 API"(`Tag(...)`/`:Added`/`:Removed`/
 `:Contains`/`:Apply`/`Merged`)는 quad-base 소속** — `Modifier`와 정확히
 같은 층위(엔진 무관, 순수 데이터+연산). `CollectionService` 실제 호출
-(`TagHandler.process`/`retract`)만 quad-roblox 소속 — 이미 확정된 "base는
-인터페이스/값, backend는 process·retract 글루" 패턴(`LifetimeHandle`,
+(`TagHandler.process` 및 그 반환 클로저)만 quad-roblox 소속 — 이미
+확정된 "base는 인터페이스/값, backend는 process 글루" 패턴(`LifetimeHandle`,
 `Dispatch.addHandler` 자체가 이 패턴)을 값 타입 수준까지 그대로 확장한
 것뿐, 새 아키텍처 개념 아님.
 

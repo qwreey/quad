@@ -3,7 +3,15 @@
 **상태**: base — 단일 키 메커니즘/`None`/`retract` 동작과 타입 파라미터화는
 전부 확정(2026-08-09 열한 번째 세션, **2026-08-12 세션 후속에서
 `retract` 완전 no-op화 + 그룹 청소 정책 전면 재정정 — 아래 "메커니즘"/
-"그룹 `Attribute(...)`" 절이 최신**). **[2026-08-11 아홉 번째 세션 추가]**
+"그룹 `Attribute(...)`" 절이 최신**). **[2026-08-13 세션, 하루 안에서
+두 차례 재설계]** 그룹/직접 쓰기 이름 충돌 방지 방식이 `rawNew`+`owners`
+수동 레지스트리 → `AttributeGroupKeyHandler` 체크포인트(`Dispatch.
+processAs`/`retractSelfAndUnder`) → **최종적으로 `Dispatch` 자체의
+인덱스 기반 재설계(`base/bind-system-plan.md` "Dispatch 체인" 절)에
+올라타 체크포인트도 필요 없어짐**(공개 `AttributeKey(name)`으로 항상
+인덱스 1에 직접 위임, 점유 체크가 소유권 충돌 감지를 대신함) — 아래
+"이름 소유권"/"메커니즘" 절이 최신, 중간 버전은 `archive/
+checkpoint-handler-pattern-reversed.md`에 보존. **[2026-08-11 아홉 번째 세션 추가]**
 Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attribute(...)`
 프리미티브 신설, 이름 충돌 방지를 위해 기존 단일 키 생성자를
 `Attribute<<T>>` → `AttributeKey<<T>>`로 리네임(잠정 확정 — 최종 이름은
@@ -105,8 +113,8 @@ end
 
 타입 파라미터화 이름과 무관하게 런타임 동작은 확정:
 
-- `process(inst, k, v)` — `inst:SetAttribute(name, v)`가 사실상 전부,
-  **`v`가 뭐든(실제 값이든 `nil`이든) 무조건 그대로 호출** — 일반
+- `process(inst, k, v, index)` — `inst:SetAttribute(name, v)`가 사실상
+  전부, **`v`가 뭐든(실제 값이든 `nil`이든) 무조건 그대로 호출** — 일반
   프로퍼티 핸들러와 완전히 동일한 무조건 set. **Attribute는 `None`의
   가장 깔끔한 사례** — Roblox API 자체가 `SetAttribute(name, nil)`을
   "그 Attribute 엔트리를 지운다"는 뜻으로 네이티브 지원하므로, `None →
@@ -114,28 +122,28 @@ end
   도착했을 때 handler가 **아무 특별 처리도 없이** `inst:SetAttribute(name,
   nil)`을 그대로 호출하면 끝 — UICorner 숏핸드처럼 "만들어둔 자식을
   수동으로 찾아 지우는" 로직조차 필요 없음.
-- **`retract`는 완전 no-op — [재정정, 2026-08-12 세션 후속] "매번
+- **반환하는 클로저는 완전 no-op — [재정정, 2026-08-12 세션 후속] "매번
   불리지만 대부분 no-op"이라던 직전 서술도 틀렸음, "대부분"이 아니라
-  "항상"** — 일반 프로퍼티 핸들러(`retract`가 완전 무조건 no-op,
+  "항상"** — 일반 프로퍼티 핸들러(반환 클로저가 완전 무조건 no-op,
   `bind-system-plan.md` "일반 프로퍼티는 애초에 'unset' 개념이 없음")와
-  완전히 같은 성격으로 재정정. **`AttributeKeyHandler.retract`는
-  `SetAttribute`를 절대 호출하지 않음** — attribute를 지우는 유일한
-  경로는 `process(inst,k,nil)`(`None`이든, State가 스스로 `nil`로
-  바뀌든) 뿐. 이전 버전("이름이 사라질 때(`v==nil`)만 retract가
+  완전히 같은 성격으로 재정정. **`AttributeKeyHandler`가 반환하는
+  클로저는 `SetAttribute`를 절대 호출하지 않음** — attribute를 지우는
+  유일한 경로는 `process(inst,k,nil,index)`(`None`이든, State가 스스로
+  `nil`로 바뀌든) 뿐. 이전 버전("이름이 사라질 때(`v==nil`)만 retract가
   `SetAttribute(name,nil)`을 호출")은 두 가지 문제가 있었음 — (1)
-  `retract` 안에 관측 가능한 부작용이 생겨 `bind-system-plan.md`의
-  "retract는 구조적 팝만, process 트리거 금지" 일반 규칙과 어긋나는
-  성격의 코드가 됨, (2) 그룹이 survivor 이름에 `retractUnder(...,source)`를
-  부를 때 그 시점에 `SetAttribute`가 잘못 끼어들 수 있는 경로가 생겨
-  `a→nil→b` 깜빡임 위험(사용자 지적) — `retract`가 완전 no-op이면 이
-  경로 자체가 물리적으로 없어짐.
+  이 클로저 안에 관측 가능한 부작용이 생겨 `bind-system-plan.md`의
+  "이 클로저는 구조적 팝만, process 트리거 금지" 일반 규칙과 어긋나는
+  성격의 코드가 됨, (2) 그룹이 survivor 이름에 재위임할 때 그 시점에
+  `SetAttribute`가 잘못 끼어들 수 있는 경로가 생겨 `a→nil→b` 깜빡임
+  위험(사용자 지적) — 클로저가 완전 no-op이면 이 경로 자체가 물리적으로
+  없어짐.
 - store-bind 가능(일반 프로퍼티와 동일하게 취급, `Store<T>`/`State<T>`
   값도 받음).
 
-### 이름 소유권 — 그룹/직접 쓰기 충돌 방지, `rawNew`와 per-name 전용 키 (2026-08-12 열 번째 세션)
+### 이름 소유권 — 그룹/직접 쓰기 충돌 방지 (2026-08-12 열 번째 세션, 2026-08-13 다섯 번째 세션 전면 재정정)
 
 **문제**: `AttributeKey(name)`이 이름별 weak 캐시로 항상 같은 객체를
-리턴하고, 그룹 `Attribute(...)`가 그 경로를 그대로 재사용(위 "메커니즘"
+리턴하고, 그룹 `Attribute(...)`가 그 경로를 그대로 재사용(아래 "메커니즘"
 절)하다 보니, **서로 다른 원래 위치(해시파트 직접 쓰기 `[AttributeKey
 "name"]=value` vs 배열파트 `Attribute(store)`, 또는 서로 다른 두
 `Attribute(...)` 그룹)가 같은 이름을 동시에 관리하려 하면 정확히 같은
@@ -144,55 +152,48 @@ end
 (같은 해시 키는 한 Modifier 안에 하나뿐), 그룹의 이름 집합은 런타임에
 동적이라 이 해소망 밖에 있음.
 
-**해법 — 그룹은 공개 `AttributeKey(name)` 캐시를 안 쓰고, 이름당 자기
-전용 키 객체를 만들어 씀.** `AttributeKey`의 내부 구현을 캐시 조회
-(`rawNew`가 없으면 만들어서 캐시)와 순수 객체 생성(`rawNew(name)`,
-브랜드 태그/`Name` 필드는 있지만 캐시를 거치지 않는 raw 생성자)로 분리 —
-공개 `AttributeKey(name)`은 지금처럼 캐시를 거치고, **그룹 Handler(roblox
-글루)만 `rawNew`를 직접 써서 이름마다 자기만의 키 객체를 만듦.**
+**[역사, 2026-08-13 세션 안에서 두 번 뒤집힘]** 첫 버전(`rawNew`로 그룹
+전용 키를 만들고 `owners` Relate로 이름별 소유권을 수동 추적)은 "그룹이
+이름을 놓았다 나중에 같은 그룹이 그 이름을 다시 포함하면 자기 자신과
+충돌"하는 실제 버그가 있었음(소유권 반납이 `process`의 `v==nil` 분기에만
+있어서, 그룹이 이름을 통째로 놓는 경로는 그 분기를 안 타서 옛 소유권
+기록이 안 지워짐). 두 번째 버전(`AttributeGroupKeyHandler`라는 스캔
+불가 체크포인트 핸들러를 `Dispatch.processAs`로 명시 push, 소유권 충돌을
+Dispatch의 재진입 가드에 얹어 감지)은 이 버그를 고치긴 했으나, 같은 날
+다섯 번째 세션에 `Dispatch` 자체가 `chains`를 핸들러 identity가 아니라
+**인덱스**로 추적하도록 재설계되며(`base/bind-system-plan.md` "Dispatch
+체인" 절) 체크포인트가 하던 일 자체가 통째로 불필요해짐 — 원문·역전
+이유는 `archive/checkpoint-handler-pattern-reversed.md`.
+
+**최종(세 번째 버전) — 체크포인트도 `owners`도 없이, 항상 인덱스 1부터
+직접 위임.** 그룹이 이름마다 공개 `AttributeKey(name)`으로 그냥
+`Dispatch.process(inst, key, source, 1)`를 부르면 끝 — **"인덱스 1이 이미
+점유돼 있는가"라는 `Dispatch.process` 자신의 점유 체크가 소유권 충돌
+감지를 그대로 대신함**: 다른 그룹이나 직접 쓰기가 이미 그 이름을
+점유했다면, 이 호출은(체크포인트를 거칠 필요도 없이) 곧바로 "이미
+점유됨" error를 냄. `AttributeKeyHandler`도 다시 완전 무상태로 되돌아감:
 
 ```lua
--- AttributeKeyHandler(quad-roblox) 전용, (inst,name)별 현재 이 이름을 쓰는 키 객체
-local owners = Relate()  -- {[inst(weak)] = {[name]: keyObject}}
-
-function AttributeKeyHandler.process(inst, k, v)
-    local name = k.Name
-    local map = owners:GetStrong(inst) or {}
-    local current = map[name]
-    if current ~= nil and current ~= k then
-        error(("attribute \"%s\"는 이미 다른 AttributeKey가 관리 중"):format(name))
-    end
-    inst:SetAttribute(name, v)  -- v가 nil이든 아니든 무조건 — 일반 프로퍼티와 완전히 동일
-    map[name] = if v == nil then nil else k  -- nil로 귀결되면 소유권도 같이 반납
-    owners:SetStrong(inst, map)
-end
-
-function AttributeKeyHandler.retract(inst, k, v)
-    -- 완전 no-op. 일반 프로퍼티와 동일 — "unset" 개념 자체가 없음.
-    -- retract 안에서 process를 부르는 건 Dispatch.retractUnder의 체인
-    -- 추적을 꼬는 UB(base/bind-system-plan.md 일반 규칙)라 여기서도
-    -- SetAttribute를 직접이든 간접이든 절대 안 부름 — 지우는 건 오직
-    -- process(inst,k,nil).
+-- AttributeKeyHandler(quad-roblox) — 완전 무상태, 소유권 추적 없음
+function AttributeKeyHandler.process(inst, k, v, index)
+    inst:SetAttribute(k.Name, v)  -- v가 nil이든 아니든 무조건 — 일반 프로퍼티와 완전히 동일
+    return function() end        -- 지울 게 없음 — SetAttribute는 오직 process(inst,k,nil)로만
 end
 ```
 
 - **직접 리터럴 쓰기**(`[AttributeKey<<T>> "name"] = value`)는 공개
-  `AttributeKey(name)`을 그대로 씀 — 한 Modifier 안에 같은 해시 키가
-  중복될 수 없어 이 경로의 claimant는 항상 유일, 별도 캐싱 불필요.
-- **그룹**은 자기가 이미 갖고 있던 "(inst, 자기 배열 위치)별 마지막으로
-  쓴 attribute 상태" 릴레이션(위 "메커니즘" 절)의 저장 형태를 **이름
-  문자열 집합 → `{[name]: 그 이름 전용 키 객체}` 맵으로 확장**만 하면 됨 —
-  새 릴레이션 불필요, 이미 있던 걸 재사용. 이름을 처음 보면 `rawNew(name)`로
-  만들어 이 맵에 캐싱하고 그 키로 위임, 이미 맵에 있으면(이전 사이클에
-  이미 관리 중이던, 즉 "남아있는" 이름) **그 캐싱된 같은 객체를 그대로
-  재사용**해서 위임. 이 diff/재위임 로직의 정확한 코드는 아래 "그룹
-  `Attribute(...)`" 절의 `AttributeGroupHandler.process`/`.retract` 참고
-  — `AttributeKeyHandler` 자신은 diff를 전혀 모름(위 "이름이 살아있는
-  동안 항상 같은 키 재사용" 전제만 지켜지면 그만).
-- **패키지 경계**: `AttributeKey` 자체가 이미 quad-roblox 소속(Tag와
-  달리 base/roblox로 안 쪼갬, 아래 "패키지 배치" 절)이고 그룹의 실제
-  위임 로직도 이미 roblox 쪽 글루라 `rawNew` 호출이 새 역의존을 안 만듦 —
-  base쪽 `Attribute(...)` 값 객체 자신은 이 메커니즘을 전혀 모름.
+  `AttributeKey(name)`을 그대로 씀, 정상 스캔으로 바로
+  `AttributeKeyHandler`에 도달(인덱스 1) — 한 Modifier 안에 같은 해시
+  키가 중복될 수 없어 이 경로 자체의 claimant는 항상 유일. 그룹이
+  이미 그 이름의 인덱스 1을 점유 중이면, 이 직접 쓰기의
+  `Dispatch.process(inst,key,value,1)`가 그 자리에서 곧바로 점유 error —
+  그룹↔직접 쓰기 충돌도 같은 점유 체크 하나로 잡힘.
+- **그룹**은 아래 "메커니즘" 절에서 이름마다 `Dispatch.retractFrom`+
+  `Dispatch.process` 페어로 위임 — 전용 키 객체도, 소유권 레지스트리도
+  필요 없음(항상 공개 `AttributeKey(name)`, 항상 인덱스 1).
+- **패키지 경계**: `AttributeKey`는 이미 quad-roblox 소속(Tag와 달리
+  base/roblox로 안 쪼갬, 아래 "패키지 배치" 절) — base쪽
+  `Attribute(...)` 값 객체 자신은 이 메커니즘을 전혀 모름.
 
 ## 그룹 `Attribute(...)` — 여러 Store를 한 번에 attribute로 (2026-08-11 아홉 번째 세션 신설)
 
@@ -228,67 +229,57 @@ Frame { Attribute(styleStore), Attribute(stateStore) }   -- 여러 개 나란히
 슬롯을 그대로 가져와 자기 자신의 key→Source 맵에 넣는 것 — 아래 "레이어드
 Store 기각과 안 부딪히나" 참고.
 
-### 메커니즘 — per-name 전용 키로 기존 단일 키 경로에 재귀 위임
+### 메커니즘 — 항상 인덱스 1부터 기존 단일 키 경로에 직접 위임
 
 **[2026-08-11 아홉 번째 세션 후속, 개정]** 최초안은 "자기 완결형 Handler,
 Dispatch 재진입 없이 직접 `SetAttribute`+수동 per-field StoreBind 구독"
 이었으나, 위 "동등성" 절의 이름별 weak 캐시가 확정되며 그 회피 이유
 자체가 없어짐 — 그래서 그룹 Handler는 **자기만의 SetAttribute/구독 로직을
 새로 만들지 않고, 각 필드를 기존 단일 키 `AttributeKey` 경로에 그대로
-재귀 위임** — `None`/`retract`/store-bind 전부 이미 확정된 단일 키
-메커니즘을 100% 재사용, 중복 구현 없음. **[정정, 2026-08-12 열 번째
-세션] 위임에 쓰는 키가 공개 `AttributeKey(name)`이 아니라 `rawNew(name)`로
-매번 그룹 전용으로 만드는 키로 바뀜** — 이유·정확한 소유권 판정 방식은
-위 "이름 소유권" 절 참고, 이 절은 그 위에서 diff 로직이 어떻게 도는지만
-설명:
+재귀 위임** — `None`/store-bind 전부 이미 확정된 단일 키 메커니즘을
+100% 재사용, 중복 구현 없음. **[전면 재정정, 2026-08-13 다섯 번째 세션]
+`rawNew(name)` 그룹 전용 키 → `AttributeGroupKeyHandler` 체크포인트로
+두 번 거쳐온 위임 메커니즘이, `Dispatch`의 인덱스 기반 재설계로 다시
+한번 단순화됨 — 이제 그냥 공개 `AttributeKey(name)`으로 인덱스 1에
+직접 위임**(경위는 위 "이름 소유권" 절, 원문은 `archive/
+checkpoint-handler-pattern-reversed.md`):
 
-**그룹의 `process`/`retract` — [전면 재정정, 2026-08-12 세션 후속]**
-아래는 `(inst, index)`(array-part 위치, `Tag`의 `relate:GetStrong(inst,k)`와
-동일 키잉 — `k`는 배열 인덱스)로 찾은 릴레이션에 저장된 **"이름 →
-그 이름 전용 키 객체 맵"**(이름 존재 여부뿐 아니라 그때 쓴 키 객체
-자체까지 같이 들고 있어야 위 "이름 소유권" 절의 동일 객체 재사용이
-성립)을 씀:
+**그룹의 `process`** — `(inst, index)`(array-part 위치, `Tag`의
+`relate:GetStrong(inst,k)`와 동일 키잉 — `k`는 배열 인덱스)에서 호출되고,
+반환하는 클로저가 "지금 관리 중인 이름 집합"을 직접 캡처 — **별도 `Relate`
+불필요**(2026-08-13 다섯 번째 세션, 클로저가 매 호출마다 자기 자신의
+이름 집합을 새로 만들어 캡처하므로 사이클을 가로질러 저장해둘 이유가
+없어짐):
 
 ```lua
-local groupState = Relate()  -- {[inst(weak)] = {[index]: {[name]: keyObject}}}
-
 function AttributeGroupHandler.process(inst, index, v)
-    if v == nil then return end
-    local map = groupState:GetStrong(inst, index) or {}
-    for name, source in pairs(v:NameMap()) do
-        local key = map[name] or rawNew(name)  -- 남아있던 이름은 캐싱된 같은 객체 재사용
-        map[name] = key
-        Dispatch.retractUnder(inst, key, nil, source)  -- chain-append-leak 방지, 매번(신규는 빈 체인이라 no-op)
-        Dispatch.process(inst, key, source)
+    local names = {}
+    for name, source in pairs(v:NameMap()) do  -- isHandlable이 이미 isAttribute(v)를 보장
+        local key = AttributeKey(name)  -- 공개 캐시 그대로 — 그룹 전용 키 불필요
+        Dispatch.retractFrom(inst, key, 1, source)  -- 그 이름 자리에 이미 뭔가 있으면 통째로 철거(신규는 no-op)
+        Dispatch.process(inst, key, source, 1)       -- 항상 인덱스 1부터 새로 위임 — StoreBind/AttributeKeyHandler는 정상 스캔으로 쌓임
+        names[name] = true
     end
-    groupState:SetStrong(inst, index, map)
-end
-
-function AttributeGroupHandler.retract(inst, index, v)
-    local map = groupState:GetStrong(inst, index)
-    if not map then return end
-    local newNames = if isAttribute(v) then v:NameMap() else {}
-    for name, key in pairs(map) do
-        if newNames[name] == nil then  -- 새 v에 이제 없는 이름만
-            Dispatch.retractUnder(inst, key, nil, nil)  -- 구독만 끊음 — SetAttribute는 안 일어남(아래 원칙)
-            map[name] = nil
+    return function(hintValue)
+        -- hintValue: 다음에 이 자리를 대체할 값(다른 Attribute, nil 등) — Tag/Ref와 같은 힌트 패턴
+        local newNames = if isAttribute(hintValue) then hintValue:NameMap() else {}
+        for name in pairs(names) do
+            if newNames[name] == nil then  -- 더 이상 이 그룹이 안 쓰는 이름만
+                Dispatch.retractFrom(inst, AttributeKey(name), 1, nil)  -- SetAttribute는 안 일어남(아래 원칙)
+            end
         end
     end
 end
 ```
 
-- **`process`는 매번 살아있는 이름 전부를 `retractUnder`+`process`
-  페어로 재위임** — 신규/생존 구분 없이 균일 처리. `Dispatch.process`가
-  매번 체인 꼬리에 새 항목을 쌓기만 하지 스스로 옛 항목을 안 지우므로
-  (팝은 `retractUnder`의 일), `retractUnder` 없이 `Dispatch.process`만
-  반복 호출하면 같은 키 자리에 옛 `AttributeKeyHandler` 항목이 계속
-  쌓이는 누수가 생김 — 신규 이름은 아직 체인이 없어 `retractUnder`가
-  그냥 no-op이라 이 페어링을 신규/생존 가리지 않고 통일해도 비용 없음.
-  **값 비교(`:Get()`으로 old/new 비교)는 안 함** — State 계약("값은 항상
-  선언된 Compute 재실행 결과, 캐시 비교 금지", `store-semantics.md`
-  "하드 경계" 절)과 어긋나고, `source`가 `State`/`Source`면
-  `Dispatch/StoreBind`가 알아서 언랩+구독까지 다 해줌(그룹 Handler가
-  따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
+- **`process`는 매번 살아있는 이름 전부를 `retractFrom`+`process`
+  페어로 재위임** — 신규/생존 구분 없이 균일 처리(신규 이름은 아직 체인이
+  없어 `retractFrom`이 그냥 no-op이라 이 페어링을 통일해도
+  비용 없음). **값 비교(`:Get()`으로 old/new 비교)는 안 함** — State
+  계약("값은 항상 선언된 Compute 재실행 결과, 캐시 비교 금지",
+  `store-semantics.md` "하드 경계" 절)과 어긋나고, `source`가
+  `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
+  해줌(그룹 Handler가 따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
 - **[확정, 2026-08-12 세션 후속, 사용자 결정] `retract`는 `SetAttribute`를
   절대 안 부름 — Attribute는 오직 명시적 `None`/`nil`로만 지워진다.**
   그룹에서 이름이 조용히 빠지든(diff로 사라짐), 그룹 바인딩 자체가
@@ -314,23 +305,19 @@ end
   `StoreBind` 구독이 인스턴스가 살아있는 동안 영원히 남아 원본
   `Source`가 바뀔 때마다 계속 `SetAttribute`를 쏘는 실제 리소스 누수가
   됨(이건 "마지막 값이 남는다"는 것과 다른 문제 — 안 죽는 구독 자체가
-  문제). 그래서 `retract`는 사라진 이름에 한해 `Dispatch.retractUnder(inst,
-  key, nil, nil)`만 부름 — **`Dispatch.process`는 절대 안 부르므로**
-  (retract 안에서 process 호출은 `retractUnder`의 체인 추적을 꼬는 UB,
-  `bind-system-plan.md` 일반 규칙) `AttributeKeyHandler.retract`(완전
-  no-op)만 타고 끝나 `SetAttribute`는 여기서도 절대 안 일어남 — 위
-  "명시적 None으로만 지운다" 원칙과 안 부딪힘.
+  문제). 그래서 반환하는 클로저는 사라진 이름에 한해
+  `Dispatch.retractFrom(inst, AttributeKey(name), 1, nil)`만 부름 —
+  **`Dispatch.process`는 절대 안 부르므로**(이 클로저 안에서 새 등록을
+  트리거하는 건 체인 추적을 꼬는 UB, `bind-system-plan.md` 일반 규칙)
+  그 이름 아래가 전부 자기 자신의 클로저만 타고 끝나 `SetAttribute`는
+  여기서도 절대 안 일어남 — 위 "명시적 None으로만 지운다" 원칙과 안
+  부딪힘.
 - **필드 하나만 바뀌는 흔한 경우**(`storeA.foo:Set(v)`, 그룹 자체는
   안 바뀜)는 위 그룹 재처리를 아예 거치지 않음 — 마운트 시 이미 걸린
   단일 키 `AttributeKeyHandler`의 store-bind 구독이 바로
   `SetAttribute("foo", v)`를 호출(그룹 재진입 없이 그 경로 스스로).
   **`AttributeChanged`/`GetAttributeChangedSignal` 남발 걱정 없음** —
   키 집합이 안 바뀌는 한 diff 로직 자체가 안 돎.
-- **캐시(맵)는 그룹 값 교체를 넘어 계속 유지돼야 함** — 매 교체마다
-  남아있는 이름의 키까지 새로 만들면, "이름 소유권" 절의 `owners`
-  레지스트리엔 옛 키가 남아있어 새로 만든 키와 비교 시 오탐 충돌이
-  남(자기 자신과 충돌하는 꼴). 이 릴레이션이 `(inst, index)`로 영속되는
-  건 이미 확정돼 있던 설계.
 
 **그룹 Handler에 남는 자기 로직은 사실상 "이름 집합 diff"뿐** — 실제
 `SetAttribute` 호출/`None` 처리/store-bind 구독은 전부 기존 단일 키
