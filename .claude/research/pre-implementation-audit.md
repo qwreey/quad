@@ -363,7 +363,7 @@ M7의 전제가 Luau 공식 동작대로 성립함. 별도로, 프로퍼티에 A
 ### 2-1. Source가 State를 만족하는 제네릭 검증이 실패했을 때의 대안(Plan B)이 전혀 없음
 
 **[해소됨, 2026-08-13 첫 실측 라운드]** 검증 자체는
-`08-type-source-satisfies-state.luau`(`luau-test/review-required/`)로 실행돼 핵심 질문(Source가
+`08-type-source-satisfies-state.luau`(`luau-test/STATUS.md` 기준 `done/`)로 실행돼 핵심 질문(Source가
 State를 구조적으로 만족)이 통과했음 — 아래 "검증이 실패했을 때"라는
 전제 자체가 (핵심 케이스에 한해) 더 이상 미래형이 아님. 다만 통과와
 별개로 좁은 잔여 케이스(`State<T>`가 자기 자신을 다른 타입 인자로

@@ -73,7 +73,7 @@ v2에서 대체될 예정 — Ref 도입과 네임스페이싱 판단까지 포�
 1. Metatable 체이닝으로 "불변 빌더" 흉내내기 → 대신 팩토리 함수로 필요한 곳만 복사
    (`raw-userinput.md` "복사 구현은 지양" 항목, `.claude/initreq/raw-userinput.md:83-86`).
 2. 하드코딩된 중앙 디스패처 → pluggable `isHandlable(key,value)` + 우선순위 핸들러
-   레지스트리 (`base/bind-system-plan.md`).
+   레지스트리 (`base/dispatch-core-plan.md`).
 3. 흩어진 "GC 안 되게 참조 붙잡기" 핫팩 → rbvm 스타일 `Connected` 계산 속성 +
    명시적 라이프타임 홀더 (`base/lifecycle-pattern.md`).
 4. mount가 여러 책임(부모 부기+파괴+child 레지스트리)을 한 모듈에 다 지는 구조 →

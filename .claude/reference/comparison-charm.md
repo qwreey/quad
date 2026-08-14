@@ -65,7 +65,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   `patch.luau:10,19-30`이 diff 페이로드에서 "안 바뀜"과 "명시적으로
   지움"을 `nil`로는 구분 못 해서 `None = {__none="__none"}`을 따로
   둔 이유 — quad의 배열/해시 파트 `None` 센티널 정당화(`base/
-  bind-system-plan.md:180-266`)와 동기 없이 같은 결론에 수렴한 사례.
+  dispatch-core-plan.md` "`None` 센티널" 절)와 동기 없이 같은 결론에 수렴한 사례.
   새 아이디어는 아니고 인용 근거로만 가치 있음.
 - **charm의 `previous` 유사 메커니즘 두 가지 — quad가 이미 확정한
   `:Compute(fn)`의 `previous` 인자(`base/source-state-plan.md` "previous"
@@ -129,6 +129,6 @@ computed.test.luau:84-104` · `packages/charm/test/observe.test.luau:92-196` ·
 `packages/charm-sync/src/server.luau:27-32,124-133,192-207,209-250` ·
 `README.md:185-196,262-287` · `base/store-plan.md` · `base/source-state-plan.md` ·
 `base/blocker-plan.md:25-44,65-68` · `base/lifecycle-pattern.md`(GC-native
-원칙) · `archive/batch-rejected.md` · `base/bind-system-plan.md:180-266`
+원칙) · `archive/batch-rejected.md` · `base/dispatch-core-plan.md`
 (None 센티널) · `research/additional-primitives-plan.md`(Blocker/키 기반
 컬렉션 미결 상태).

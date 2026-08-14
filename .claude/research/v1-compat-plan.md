@@ -10,9 +10,10 @@
 
 ## 1. 선행 조사: quad2-try의 `quad-compat`은 실제로 시도된 적 없음
 
-`base/bind-system-plan.md:715`에서 quad2-try의 서브패키지 9개(`quad-docs`,
-`quad-debug`, `quad-compat`, `quad-2`, `quad-roblox`, `quad-lang`, `quad-gtk`,
-`quad-core` 등)를 나열하며 "`quad-core` 밖엔 참고할 게 없다"고 기록돼있는데,
+`archive/quad2-try-research-findings-rejected.md`에서 quad2-try의 서브패키지
+9개(`quad-docs`, `quad-debug`, `quad-compat`, `quad-2`, `quad-roblox`,
+`quad-lang`, `quad-gtk`, `quad-core` 등)를 나열하며 "`quad-core` 밖엔
+참고할 게 없다"고 기록돼있는데,
 직접 확인한 결과 `out/quad-compat/`은 **파일이 0개인 완전히 빈 디렉토리**.
 compat.lua나 어댑터 코드는 전혀 없고, README/커밋 메시지에도 "왜 포기했는지"
 단서가 없음 — 애초에 착수된 적이 없다는 뜻.
@@ -110,7 +111,8 @@ v2 위에 재현하려 하지 말고, **v1을 그대로, 수정 없이 계속 �
    "v1 컴포넌트를 그대로 두고 옆에 놓기"에는 애초에 적용되지 않음.
 2. **v2→v1 값 전달(사용자가 든 예시)도 이미 있는 재료로 충분히 얇음**:
    - v2 쪽: `state:Observer()`를 인자 없이 호출하면 "이 State를 계속
-     능동 관측 상태로 유지"하는 유틸로 동작(`base/bind-system-plan.md:441`)
+     능동 관측 상태로 유지"하는 유틸로 동작(`base/source-state-plan.md`
+     "인자 없는 `state:Observer()`" 절)
      — 이걸로 lazy를 포기하고 항상 최신값이 계산되게 강제하는 부분이 이미
      설계돼 있음. 사용자가 말한 "포기하고 전부 관측된 값으로" 정확히 이 API.
    - v1 쪽: 만들어진 v1 인스턴스에 `instance.Text = value`처럼 그냥
@@ -258,7 +260,7 @@ v2 트리 안에 과거 v1 컴포넌트를 리프로 박아넣는 것, (B) 기�
   브리지가 흡수해야 하는 케이스가 있는지 — 단순 프로퍼티 재대입만으로
   충분한 범위인지 실사용 예시로 확인 필요.
 - (2순위 문법 설탕 어댑터를 실제 채택할 경우) 이벤트 self 관습을 compat에서
-  되살릴 때, `base/bind-system-plan.md`가 명시한 반대 근거 4번(quad-debug
+  되살릴 때, `base/event-plan.md`가 명시한 반대 근거 4번(quad-debug
   추적 밖 mutate 경로)을 어떻게 처리할지 — quad-debug는 어차피 후순위라
   지금 결정 불필요할 수도 있음.
 

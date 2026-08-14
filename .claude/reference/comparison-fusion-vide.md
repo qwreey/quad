@@ -66,7 +66,7 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
 |---|---|---|---|
 | 전파 모델 | push+pull 하이브리드, eager 집합만 즉시 재계산, 생성순 정렬로 글리치 방지 | 순수 push, 즉시 동기 재평가, 다이아몬드 중복 재평가 미해결(저자 인정) | ⚠️ **[정정] 아래 서술은 리서치 당시(2026-08-03 이전) 검토 방향이며 이후 뒤집힘 — 최종 확정은 `base/source-state-plan.md`의 "전파 모델 확정" 절 참고**(push-invalidate는 신호만 쏘고 값은 안 실음, 재계산은 `Get()` 시점 pull-recompute로만, Fusion식 eager 노드·생성순 정렬은 아예 채택 안 함 — quad엔 그런 다단계 즉시 재계산이 필요한 소비자가 없다는 판단). 당시 스냅샷 원문: "Store는 값 자체에 항상 eager 발화, retract(구 cleanup)가 key/value를 먼저 확인" 요구사항은 Vide의 push 모델 + eval-전-retract 패턴에 더 가까움. 단 Vide의 naive BFS 대신 Fusion의 생성순 정렬 글리치 방지 규율은 채택할 것. |
 | 정리/스코프 | 배열+메타테이블, dependency-agnostic, bind 시점에만 lifetime soft-check | dependency edge와 구조적 owner를 분리한 2중 관계, destroy는 owned만 cascade, 활성 스코프 destroy 하드 가드 | 둘 다 GC 비의존 eager 수동 정리 — rbvm의 Connected+GC 관용구와 정반대 축. quad의 Slot은 Vide처럼 "마운트 소유권"과 "반응 의존성"을 별개 관계로 분리하는 게 안전해 보임(`base/lifecycle-pattern.md`의 rbvm 패턴과는 다른 층위 — rbvm은 인스턴스 파괴 감지, 이건 Slot 내부 소유권 모델). |
-| 키/값 디스패치 개방성 | SpecialKey 모양은 열려있으나 우선순위 4단계 하드고정 | action()은 등록 없는 태그 인식 방식이지만 key/value 버림, 콜백+우선순위만 | quad는 Fusion의 "디스패처가 key+value+target을 다 받는" 풍부함과 Vide의 "등록 없이 태그로 인식" 인체공학을 합치되, 우선순위 축은 열린 숫자 공간으로 일반화해야 함(`base/bind-system-plan.md`). |
+| 키/값 디스패치 개방성 | SpecialKey 모양은 열려있으나 우선순위 4단계 하드고정 | action()은 등록 없는 태그 인식 방식이지만 key/value 버림, 콜백+우선순위만 | quad는 Fusion의 "디스패처가 key+value+target을 다 받는" 풍부함과 Vide의 "등록 없이 태그로 인식" 인체공학을 합치되, 우선순위 축은 열린 숫자 공간으로 일반화해야 함(`base/dispatch-core-plan.md`). |
 
 ## 추가로 기록해둘 것
 

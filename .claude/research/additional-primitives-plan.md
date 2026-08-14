@@ -86,7 +86,7 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
   직접 전달은 좁은 케이스에 한정, 일반적으론 State + callback이 기본"으로
   못박아둬서 캡슐화 깨짐 문제 자체가 대부분 상황에서 안 생김.
 - **Fusion `Observer`/`Attribute`**: quad `state:Observer(fn)` +
-  `bind-system-plan.md`의 Attribute 논의로 이미 커버 중, 신규 아님.
+  `base/attribute-plan.md`의 Attribute 논의로 이미 커버 중, 신규 아님.
 - **디바운스/스로틀**: ~~Fusion/Vide/v1 어디에도 공개 프리미티브로 없음 —
   세 레포 모두 없다는 것 자체가 "quad도 굳이 안 만들어도 된다"는 정황.~~
   **[2026-08-14 뒤집힘]** 사용자가 직접 "`Blocker`와 유사하게 만들어야

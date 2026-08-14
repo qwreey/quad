@@ -139,7 +139,7 @@ UICorner/UIPadding/UIScale 숏핸드가 만드는 자식)는 `_`나 `QUAD_` 같�
 **뼈대(아직 설계 아님, 물음표만)**:
 - **"왜 thin wrapper를 안 주는가"**를 설명하는 절 — 메모리 낭비(클로저
   래핑 비용)와 오버엔지니어링(Modifier 정적 flatten과 경쟁하는 두 번째
-  쓰기 경로, KV 핸들러 분기 비용)이 핵심 논거. `bind-system-plan.md`의
+  쓰기 경로, KV 핸들러 분기 비용)이 핵심 논거. `base/event-plan.md`의
   결정문을 그대로 요약하면 될 듯.
 - **권장 이벤트 핸들링 패턴** 자체 — Instance가 필요하면 Ref로 캡쳐해서
   쓰는 예제, Store/Source를 만들고 State로 파이핑되는 초기점을 바꿔가며

@@ -90,12 +90,16 @@ op만 주입(웹의 `className`/`data-*` 대응 때문). 상세는
 에이전트가 A 섹션을 재작성해야 함.** `bindLifetime`/`canExecute`/
 `unbindLifetime` 재정정으로 A가 폐기된 모델(`canBound`, `bindLifetime`의
 `.Subscribed` 세팅, 2-인자 `canExecute`)을 검증 중이라 파일이
-`.claude/luau-test/rewrite-required/`로 옮겨졌음. **남은 확인거리**는
-이중 바인딩 게이트(이제 `canExecute` 하나)와 unbind/Destroy 후 재바인딩
-허용, `value` 쪽에 복사된 gcconn만으로의 생존 판정, Instance userdata
-동일성, 그리고 B(Attribute의 Instance 참조 타입)/C(CollectionService
-태그 왕복) — 목록은 `.claude/audit/gcconn-trick-verification.md`의
-"아직 확인 안 된 것"이 소스. GC 강제 트리거가 필요하면
+`.claude/luau-test/rewrite-required/`로 옮겨졌음. **[2026-08-14 열한
+번째 세션 재정정]** 이중 바인딩 게이트는 `canExecute` 하나가 아니라
+**`canBound`**로 별도 진입점 재도입됨(`canExecute`는 emit 게이팅 전용,
+판정 로직은 비공개 헬퍼 하나를 공유 — `base/lifecycle-pattern.md`의
+"`canBound` vs `canExecute`" 절). **남은 확인거리**는 이중 바인딩
+게이트(`canBound`)와 unbind/Destroy 후 재바인딩 허용, `value` 쪽에
+복사된 gcconn만으로의 생존 판정, Instance userdata 동일성, 그리고
+B(Attribute의 Instance 참조 타입)/C(CollectionService 태그 왕복) —
+목록은 `.claude/audit/gcconn-trick-verification.md`의 "아직 확인 안
+된 것"이 소스. GC 강제 트리거가 필요하면
 `.claude/luau-test/not-run/gc-trigger-helper.server.luau` 참고. 위
 1번(MCP 연결)이 되면 에이전트가 대신 돌릴 수도 있음.
 
