@@ -152,7 +152,9 @@ identity로 홀더를 추적하면 같은 객체를 두 위치(`k1`, `k2`)에 �
 ```lua
 local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[k]: true}}} — 이름별 현재 걸고 있는 위치들
 
-TagHandler.priority = HANDLER_PRIORITY_FALLBACK
+-- TagHandler 자신은 `.priority` 없음(직접 등록 안 됨) — 아래 "패키지 배치" 절의
+-- `TagFallbackHandler = { priority = HANDLER_PRIORITY_FALLBACK, isHandlable = TagHandler.isHandlable,
+-- process = TagHandler.process }`가 실제로 등록되는 얇은 래퍼(2026-08-14 열두 번째 세션 정정)
 TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
 
 function TagHandler.process(inst, k, v, index)
@@ -264,19 +266,34 @@ removeTag(inst: any, names: {string}): ()
   vararg → `string | {string}`으로 되돌아갔던 것과 **같은 이유**(위 "값
   모양" 절). 배치 호출 자체는 테이블로도 되므로 웹 `className` 일괄
   갱신 요구도 그대로 충족됨.
-- **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK` — `TagHandler` 자신은
-  quad-base가 모듈 로드 시점에 스스로 등록**(2026-08-14 열한 번째 세션
-  재확인 — 한때 "등록 자체가 백엔드 선택"으로 잘못 정정됐다가 철회됨).
+- **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK` — 단 여기 꽂히는 건
+  `TagHandler` 자신이 아니라 그걸 감싸는 `TagFallbackHandler`(2026-08-14
+  열두 번째 세션 정정 — `TagHandler`는 참조 카운트 알고리즘 구현일
+  뿐, 스스로 등록되는 주체가 아님).** 등록 주체는 quad-base 모듈 자체가
+  아니라 백엔드 팩토리 — quad-roblox 같은 백엔드가 `BaseModule`을
+  구성할 때 자기 전용 Handler들과 같이 이 `TagFallbackHandler`도 등록해줌
+  (`base/module-lifecycle-plan.md`가 이미 확정해둔 "base는 인터페이스만,
+  등록은 팩토리 뮤테이션 시점" 원칙 그대로). 옛 "quad-base 모듈 로드
+  시점에 스스로 등록" 모델은
+  `archive/tag-attribute-load-time-registration-reversed.md`.
   `addTag`/`removeTag`만 백엔드 팩토리가 채우는 타입 계약, 안 채운
   슬롯의 base 기본값은 명시적으로 에러내는 스텁. 더 명확한 메시지나
   진짜 원자적 실패를 원하는 백엔드는 opt-in으로
   `HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기 Handler를 추가로 등록
   가능. 태그 처리 자체를 통째로 다른 알고리즘으로 바꾸고 싶은 백엔드는
   `HANDLER_PRIORITY_FALLBACK`보다 확실히 높은 우선순위로 자기 Handler를
-  등록하면 base `TagHandler`를 완전히 대체함(같은 override 원리).
+  등록하면 base `TagFallbackHandler`를 완전히 대체함(같은 override 원리).
   상세는 `base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와
   주입되는 엔진 op" 절 — `Attribute`도 정확히 같은 구조
-  (`base/attribute-plan.md`).
+  (`base/attribute-plan.md`). 래퍼는 필드 셋뿐인 얇은 재노출:
+
+  ```lua
+  TagFallbackHandler = {
+      priority = HANDLER_PRIORITY_FALLBACK,
+      isHandlable = TagHandler.isHandlable,
+      process = TagHandler.process,
+  }
+  ```
 - 이건 새 아키텍처 개념이 아니라 이미 확정된 "base는 인터페이스/값,
   backend는 구현"(`LifetimeHandle`의 `bindLifetime`/`canExecute`,
   `Dispatch.addHandler` 자체가 그 패턴)을 핸들러 층까지 밀어붙인 것.

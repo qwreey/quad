@@ -167,10 +167,10 @@ quad/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
-│       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
-│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). quad-base가 모듈 로드 시점에 priority=HANDLER_PRIORITY_FALLBACK로 스스로 등록(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
-│       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절)
-│       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절)
+│       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/Effect/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`, Observer/Effect는 `ObserverEffectLeafHandler` 하나가 `type(k)=="number" and (isObserver(v) or isEffect(v))`로 같이 매치 — `base/source-state-plan.md` "Observer/Effect Leaf dedup" 절, 2026-08-14 열두 번째 세션), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
+│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `TagFallbackHandler`가 백엔드 팩토리 뮤테이션 시점에 등록됨(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
+│       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `AttributeKeyFallbackHandler`가 백엔드 팩토리 뮤테이션 시점에 등록됨
+│       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절). `AttributeGroupFallbackHandler`가 같은 방식으로 감쌈
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)

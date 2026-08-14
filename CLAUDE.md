@@ -174,7 +174,7 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    되짚음 — "이미 묶여 있는가"(bound 문맥)와 "지금 발화해도 되는가"
    (execute 문맥)는 판정 로직은 공유해도 호출부의 질문이 다르다는 사용자
    지적, `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절).
-   `question.md`의 "결정 대기" 절 자체가 지금은 비어 있음.
+   `question.md`엔 이제 "결정 대기" 절 자체가 없음(비어서 헤딩째로 삭제).
 
    **M0 착수 전 반드시 읽을 것 — 이 두 개는 "결정"이 아니라 "구현 규약"이라
    여전히 유효**:
@@ -266,7 +266,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 해야 함**(따로
    하면 같은 설계를 두 번 함). 주입 op 2개(`setTimeout`/`clearTimeout`)가
    백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
-   네 라운드로 대부분 확정됐고 남은 열린 질문 4개는 `question.md` 3번.
+   네 라운드로 대부분 확정됐고 남은 열린 질문은 `question.md` 3번(개수는
+   거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 
@@ -1371,102 +1372,72 @@ Modifier 필드 금지 규칙과 혼동해 잘못 답했다가 사용자 지적�
 **2026-08-14 열한 번째 세션 — 코퍼스 전체 감사(서브에이전트 6개 병렬),
 `canBound`/`canExecute` 재분리로 `question.md` 0-W 해소**
 (`session/2026-08-14-11-corpus-audit-canbound-resplit.md`)
-사용자 요청으로 `.claude/` 전체를 `doc-check.py` + 6개 병렬 서브에이전트로
-감사 — stale 세션 번호(luau-test 파일들의 "canExecute 재정정"이 "세 번째"
-vs "다섯 번째"로 갈라짐, archive 교차확인 결과 다섯 번째가 맞음), 잘못된
-인용(`comparison-charm.md`가 이미 확정된 `:Compute`의 `previous` 인자를
-존재하지 않는 문서 인용으로 "미결"이라 잘못 서술), 자기모순 배너(`tag-plan.md`
-의사코드와 "패키지 배치" 절 우선순위 불일치, `additional-primitives-plan.md`의
-"새 질문 없음" 배너가 이후 추가된 질문 2개와 모순) 등 15개 파일의 실제
-사실 오류를 발견·수정. 감사 후 사용자가 `question.md` 0-W(`Ref` 이중
-배치 방지)를 선택지 (a)로 확정 — 메커니즘은 `RefLeafHandler`가 새
-`Relate` 없이 `bindLifetime`/`unbindLifetime`을 재사용(이미 내장된
-이중 바인딩 가드를 그대로 탐). 이 과정에서 그 가드 이름이 `canExecute`인
-게 개념적으로 안 맞다는 지적 — "이미 묶여 있는가"(bound 문맥, `bindLifetime`/
-`Observer:Subscribe()`가 묻는 것)와 "지금 발화해도 되는가"(execute 문맥,
-State emit 전파 루프만 묻는 것)는 판정값은 같아도 다른 질문이라, 2026-08-14
-다섯 번째 세션에 "canBound 폐기, canExecute로 통합"했던 걸 부분적으로
-되짚어 `canBound`를 별도 진입점으로 재도입(판정 로직은 비공개 헬퍼
-`isBoundAlive` 하나로 계속 공유 — 코드 중복 없이 호출부 의미만 분리,
-다섯 번째 세션이 고친 시그니처/오염 정정 자체는 안 바뀜). `base/
-lifecycle-pattern.md`(정본)/`base/ref-plan.md`/`archive/
-canexecute-inst-arg-reversed.md`(addendum)/`question.md`→`archive/
-question-resolved.md`/`ROADMAP.md`/`base/source-state-plan.md`/
-`base/effect-plan.md`/`base/architecture.md`/`base/dispatch-core-plan.md`/
-`research/pre-implementation-audit.md`/`luau-test/README.md`/`audit/
-gcconn-trick-verification.md`/CLAUDE.md 자신까지 전부 반영,
-`doc-check.py` ERROR 0 유지. 새로 연 설계 질문 없음.
+6개 병렬 서브에이전트 감사로 stale 서술 15개 파일 정정, `question.md`
+0-W(`Ref` 이중 배치 방지) 확정 — `canBound`를 `canExecute`와 별도
+진입점으로 재도입(판정 로직은 `isBoundAlive` 하나로 공유). 후속으로
+`PreRef`/`PostRef`/`Observer`/`Effect`의 non-number 키 유입을
+`HANDLER_PRIORITY_FALLBACK` 동적 경로 가드로 통일, Tag/Attribute
+백엔드 op 미주입 처리 정책을 네 라운드 정정 끝에 확정(**그 최종
+결론 중 "TagHandler가 quad-base 모듈 로드 시점에 스스로 등록"은
+**[역전, 같은 날 열두 번째 세션]** — 원문·근거는
+`archive/tag-attribute-load-time-registration-reversed.md`). 이어진
+`git diff` 자기 감사와 `/code-review high`가 각각 추가로 3건씩 발견·
+수정(대부분 `canBound` 재도입 때문에 stale해진, 이 세션이 안 건드린
+파일들 — 자기 감사가 "건드린 파일만" 훑는 사각지대를 재확인).
+`doc-check.py` ERROR 0 유지.
 
-**같은 세션 후속**: 손 트레이싱의 `Frame1 { Ref = r }` 표기가 실제
-API와 다르다는 사용자 지적(`Ref`는 항상 배열 리터럴이라 `k`는 숫자,
-`"Ref"`라는 문자열 키가 아님) — `ref-plan.md`/`archive/question-resolved.md`
-정정. 이어서 `PreRef`/`PostRef`/`Observer`/`Effect`가 non-number 키로
-들어오면 어떻게 할지 논의 — 사용자가 처음엔 "process에서 에러"를
-제안했다가 스스로 "가장 아래(FALLBACK)에 까는 게 맞다"고 정정, 넷 다
-`HANDLER_PRIORITY_FALLBACK`으로 등록하는 동적 경로 가드로 통일(하드
-블록이 아니라 `Tag`/`Attribute`처럼 나중에 평범한 우선순위 Handler로
-override 가능한 자리) — `ref-plan.md`/`source-state-plan.md`/
-`effect-plan.md`/`ROADMAP.md` 반영. 마지막으로 Tag/Attribute의 미주입
-백엔드 스텁 에러가 "미지원"과 "미등록"을 구분 안 하는 게 맞는지 확인
-질문 — 확정 원칙(스텁 입장에선 원천적으로 구별 불가) 재확인. 처음엔
-"FALLBACK보다 높은 우선순위 Handler로 덮어씌우기" 관례를 문서화했으나,
-사용자가 곧바로 더 단순한 안으로 정정 — **op 등록 자체를 필수로
-바꿈**: 백엔드 팩토리는 `addTag`/`removeTag`/`setAttribute`를 항상
-명시적으로 채워야 하고(`nop`도 정당한 구현, 미지원이면
-`function() error(...) end`), base의 미주입 스텁에 기대는 정상 경로는
-없앰 — Dispatch Handler/우선순위 조정 불필요해서 훨씬 가볍고, 부수
-효과로 "provider 미주입"(어떤 팩토리도 안 돌았다는 좁은 경우) vs
-"미지원"(팩토리가 명시적으로 에러 등록)이 자연히 갈라짐.
-`dispatch-core-plan.md`/`module-lifecycle-plan.md` 반영. **바로 다시
-정정** — 사용자가 op 필수화만으론 부족함을 지적: `addTag` 에러는
-`TagHandler.process` 본문 안, 부기(`tagNameMap` 등)가 이미 일부
-mutate된 뒤에야 나서 원자적 실패가 아님(`Tag()`가 반쪽짜리 상태로
-남을 수 있음). 결론: op 필수화는 유지하되, 미지원 백엔드는 **추가로**
-`HANDLER_PRIORITY_FALLBACK + 1` 우선순위의 순수 가로채기 Handler도
-등록해 `TagHandler.process`가 아예 안 불리게(부기 mutation 0회) 하는
-걸 권장으로 추가 — "매치된 Handler 하나만 실행"이라는 기존 Dispatch
-규칙을 그대로 이용, 새 메커니즘 없음. 같은 두 문서 재반영.
+**2026-08-14 열두 번째 세션 — Observer/Effect Leaf에 `Ref`와 같은 dedup 추가(성능)**
+(`session/2026-08-14-12-observer-effect-leaf-dedup.md`)
+`State<Observer>`/`State<Effect>`가 재-dispatch될 때 안쪽 값이 안 바뀌어도
+Dispatch는 값 비교 없이 매번 `retractor`+`process`를 다시 부름 — 처음엔
+`bindLifetime`/`unbindLifetime`이 저렴한 weak-table 쓰기뿐이라(실제
+Roblox 커넥션은 Instance 생성 시 한 번만 만들어짐) 버그가 아니라고
+결론지었으나, 사용자가 "`==` 비교가 매번 도는 해싱 비용보다 항상 싸다"고
+지적 — correctness와 무관하게 순수 성능 이유로 `RefLeafHandler`와 같은
+`old ~= v` dedup을 그대로 채택. `base/dispatch-core-plan.md`(4번 절)
+정정 + `base/source-state-plan.md`에 새 절 "Observer/Effect Leaf dedup"
+신설(pseudocode 포함).
 
-**세 번째 정정(틀림, 곧바로 재정정됨)** — 어시스턴트가 "TagHandler는
-quad-base가 자기 모듈 로드 시점에 스스로 등록 안 하고, 등록 여부는
-백엔드 팩토리의 (A)지원/(B)미지원 선택"이라는 모델을 제시했으나, 이는
-어시스턴트 자신의 오독이었음(사용자가 실제로 한 말이 아님). **네 번째,
-최종 정정** — 사용자가 명확히 바로잡음: "HANDLER_PRIORITY_FALLBACK까지
-등록 안한다 했는데, 개소리 — FALLBACK은 아무 등록 없을 때 처리하려는
-걸 방어하는 것까지 포함하는 애임, 기본 등록은 필요함." **최종 모델**:
-`TagHandler`/`AttributeKeyHandler`/`AttributeGroupHandler`는 quad-base가
-모듈 로드 시점에 `HANDLER_PRIORITY_FALLBACK`으로 **스스로 등록**(모든
-백엔드가 자동으로 부기를 얻음 — FALLBACK 밴드의 존재 이유 자체가 이
-"기본 안전 동작"을 공짜로 제공하는 것). `addTag`/`removeTag`/
-`setAttribute`만 백엔드 팩토리가 채우는 타입 계약이고, 안 채운 슬롯의
-base 기본값은 "그럴듯한 기본 동작을 추측"하지 않고 **명시적으로
-에러내는 스텁**(조용한 no-op은 provider 초기화를 잊은 실수를 가려버려
-기각). 더 명확한 메시지·진짜 원자적 실패를 원하는 백엔드만 **opt-in으로**
-`HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기 Handler를 추가로 등록 —
-필수가 아니라 선택적 업그레이드. `dispatch-core-plan.md`(정본, 다시
-전면 재작성)/`module-lifecycle-plan.md`/`tag-plan.md`/`attribute-plan.md`/
-`architecture.md` 재반영. **교훈**: 네 라운드 연속 정정이 있었던 이유는
-"누가 실제로 Dispatch.addHandler를 부르는가"라는 아키텍처 전제를
-확신 없이 매번 새로 단정하고 그 위에 patch를 쌓았기 때문 — 불확실한
-전제는 재확인 없이 단정하지 말 것.
+**같은 세션 후속 — `/code-review` findings 11건 전부 반영.**
+`isHandlable`이 `k` 타입을 안 봐서 죽어있던 FALLBACK 가드 수정,
+`bindLifetime` pseudocode의 `canExecute`→`canBound` 정정,
+"동적 경로 가드"(볼드 텍스트뿐 실제 헤딩 아니었음) 3곳을 `###`으로
+승격, `question.md`/`CLAUDE.md`/`HUMAN_TODO.md`가 공통으로 갖고 있던
+"결정 대기가 비어 있다"는 서술을 "그 헤딩 자체가 삭제됐다"로 정정,
+11번째 세션 기록 ~103줄→~13줄 압축(전문은
+`session/2026-08-14-11-corpus-audit-canbound-resplit.md`에 보존).
+**가장 큰 건**: 고치던 중 사용자가 "Tag/Attribute를 base가 스스로
+등록한다는 게 사실이 아님"을 지적 — 열한 번째 세션이 네 라운드
+정정 끝에 확정했던 그 결론 자체가 틀렸음이 드러남(`base/
+lifecycle-pattern.md`가 이미 거부해둔 `InitNamespace`류 top-level
+부작용 패턴과 같은 클래스). 정정: `TagHandler`류는 참조 카운트
+**알고리즘 구현**일 뿐 스스로 등록 안 됨 — `HANDLER_PRIORITY_FALLBACK`엔
+별도 이름의 `TagFallbackHandler`류가 꽂히고, 등록 주체는 quad-base
+모듈이 아니라 **백엔드 팩토리**(`BaseModule` 뮤테이션 시점, 자기 전용
+Handler들과 같이 — `module-lifecycle-plan.md`가 이미 확정해둔 패턴
+그대로, 새 예외 아님). `dispatch-core-plan.md`/`tag-plan.md`/
+`attribute-plan.md`/`architecture.md`/`module-lifecycle-plan.md` 전부
+재반영, 뒤집힌 원문은 `archive/
+tag-attribute-load-time-registration-reversed.md`. `doc-check.py`
+ERROR 0 유지.
 
-**같은 세션, 사용자 요청으로 전체 자기 감사**: 이 세션이 건드린 25개
-파일을 `git diff`로 처음부터 재정독 — 실제 문제 3건 발견·수정
-(`HUMAN_TODO.md`가 0-W 해소 이후에도 "남은 건 0-W"로 방치돼 있던 것,
-`ref-plan.md`의 편집 중 생긴 어색한 줄바꿈, Tag/Attribute 등록 모델
-재정리 중 `tag-plan.md`/`attribute-plan.md`에서 실수로 빠뜨린 "백엔드가
-알고리즘 전체를 교체하고 싶으면 그냥 더 높은 우선순위로 등록" 문장
-복원). 나머지는 문제 없음 확인, `doc-check.py` ERROR 0 유지.
+**같은 세션 후속 — 같은 실수의 다른 잔존 여부 전수 확인.** "모듈
+로드 시점에 스스로 등록"류 주장을 코퍼스 전체 grep — 두 매치는
+오탐(정적 lookup 테이블, React DevTools 비교 서술), 일반 Handler
+등록 절(`dispatch-core-plan.md` 492~516줄)은 이미 정확했음. 진짜
+갭은 `ROADMAP.md` M10 체크리스트 — 새로 분리된
+`TagFallbackHandler`/`AttributeKeyFallbackHandler`/
+`AttributeGroupFallbackHandler` 파일 자체가 체크리스트에 없어서
+구현자가 만들 필요를 몰랐을 상태였음, 세 항목 추가 + 배너 정정 +
+`architecture.md` 파일 트리 설명 보강.
 
-**같은 세션, `/code-review high` 백그라운드 실행이 추가로 3건 발견**:
-`git diff` 기반 자기 감사가 "이 세션이 건드린 파일"만 훑어서, "이
-세션이 안 건드렸지만 `canBound` 재도입 때문에 stale해진 파일"을
-놓쳤음 — `audit/gcconn-trick-verification.md` 상단 배너(고친 섹션
-바로 위인데 안 건드림, "canBound 폐기" 서술이 몇 줄 아래 새 서술과
-모순), `.claude/README.md` 인덱스 행 4곳(이 세션 동안 한 번도 안 열어본
-파일이라 5차 세션 서술 그대로 잔존), `luau-test/STATUS.md`의 스파이크
-`10` 재작성 가이드(가장 심각 — "이중 바인딩 게이트는 canExecute로 쓸
-것"이라고 옛 모델을 재작성 지침으로 명시 중이었음), `question.md`
-"용어 정리" 절. 전부 정정. **교훈**: 이름 하나가 재도입되면 그 이름을
-문자열로 전체 코퍼스에 grep해야지, "내가 고친 파일들"만 재확인하는
-건 안 충분함.
+**같은 세션 후속 — 두 번째 `/code-review high`가 3건 더 발견.**
+`tag-plan.md:155`의 `TagHandler.priority = HANDLER_PRIORITY_FALLBACK`
+pseudocode가 프로즈 정정과 모순됐던 것(가장 심각 — 실제 코드로
+복붙될 블록), `dispatch-core-plan.md:612`의 opt-in 예시가 여전히
+"`TagHandler` 자신(FALLBACK)"이라 서술하던 것 — 둘 다 정정 +
+`TagFallbackHandler` 래퍼 pseudocode 신설. 별개로 `ref-plan.md:257`의
+`RefLeafHandler.isHandlable`이 `and not isPostRef(v)`를 빠뜨린
+**사전 존재 버그**(PostRef 도입 9차 세션 때 안 갱신됨, 이번 세션과
+무관)도 같이 잡혀 정정, `architecture.md`의 `Leaf.luau` 파일 트리에
+빠져있던 `Effect` 타입도 보강. `doc-check.py` ERROR 0 유지.

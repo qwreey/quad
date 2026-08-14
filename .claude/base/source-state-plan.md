@@ -897,23 +897,29 @@ retract/Destroy되면 자동으로 정리됨.
   `Ref`와 같은 방식으로 라이프사이클에 묶어주는 것 말고는 base가
   더 해줄 일이 없음. 새 dispatch 메커니즘이 아니라 기존 children-array
   참가자 패턴의 반복.
-- **동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
-  (2026-08-14 열한 번째 세션, `PreRef`의 동적 경로 가드와 같은 패턴).**
-  `Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
-  등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
-  전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
-  isHandlable = function(inst,k,v) return isObserver(v) end, process =
-  function(inst,k,v) error("Observer는 children 배열 리터럴에만 놓을 수
-  있음") end }`. `HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
-  하드 블록이 아니라 `Tag`/`Attribute`/`PreRef`와 같은 "base가 소유하되
-  평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
-  때문(`base/dispatch-core-plan.md`의 "`HANDLER_PRIORITY_FALLBACK`" 절) —
-  지금은 아무도 그 자리를 안 가져가서 항상 이 가드가 에러를 내지만, 이
-  Handler를 만드는 게 목적이 아니라 "지금은 확정된 기능이 없다"는 default를
-  base가 값싸게 제공하는 것뿐. (**이 가드가 없던 이전엔** 확정된 "매치
-  실패는 즉시 error" 규칙에 의해 결과적으로 똑같이 에러가 났었음 — 이
-  가드는 동작을 바꾸는 게 아니라 에러 메시지를 명확하게 하고, 미래에
-  override할 자리를 구조적으로 열어두는 것.)
+
+### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
+
+(2026-08-14 열한 번째 세션, `PreRef`의 동적 경로 가드와 같은 패턴.)
+`Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
+등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
+전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
+isHandlable = function(inst,k,v) return isObserver(v) end, process =
+function(inst,k,v) error("Observer는 children 배열 리터럴에만 놓을 수
+있음") end }`. `HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
+하드 블록이 아니라 `Tag`/`Attribute`/`PreRef`와 같은 "base가 소유하되
+평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
+때문(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는
+엔진 op" 절) —
+지금은 아무도 그 자리를 안 가져가서 항상 이 가드가 에러를 내지만, 이
+Handler를 만드는 게 목적이 아니라 "지금은 확정된 기능이 없다"는 default를
+base가 값싸게 제공하는 것뿐. (**이 가드가 없던 이전엔** 확정된 "매치
+실패는 즉시 error" 규칙에 의해 결과적으로 똑같이 에러가 났었음 — 이
+가드는 동작을 바꾸는 게 아니라 에러 메시지를 명확하게 하고, 미래에
+override할 자리를 구조적으로 열어두는 것.)
+
+이어서, base가 제공하는 나머지 항목:
+
 - **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
   — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
@@ -1159,7 +1165,8 @@ leaf 부착을 통한 간접 호출이든) 둘뿐** — 새 규칙을 따로 만
 
 ```lua
 function bindLifetime(inst, value)
-    if canExecute(value) then
+    if canBound(value) then  -- [정정, 2026-08-14 열두 번째 세션] 이 절이 확정한 대로
+                              -- bindLifetime의 게이트는 canBound, canExecute 아님
         error("이미 바인딩된 값")   -- 메시지 분기는 위 게이트 스케치 참고
     end
     ... -- gchold 등록 + gcconn 참조 복사(base/lifecycle-pattern.md)
@@ -1180,6 +1187,51 @@ end
 - 값이 `bindLifetime`으로 바인딩된 뒤엔 `canExecute`가 참이 되므로, 그
   뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면 기존 두 진입점의 기존
   체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가 없이 이미 성립.
+
+### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴, 순수 성능 최적화(2026-08-14 세션)
+
+**correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.** `State<Observer>`/
+`State<Effect>`가 재-dispatch될 때 안쪽 값이 그대로여도(같은 객체가 다시 옴)
+Dispatch의 (A) 분기(`base/dispatch-core-plan.md` "Dispatch 체인" 절)는 무조건
+`retractor(v)`→`process(inst,k,v,index)`를 다시 부름 — 이걸 그냥 둬도
+`bindLifetime`/`unbindLifetime`이 `Relate` weak 테이블 쓰기 몇 개뿐이라(위
+"(1)" 코드 블록, `base/lifecycle-pattern.md`) 실제 Roblox 커넥션을 만들거나
+끊지 않고, 사용자에게 보이는 재통지도 없음(`fn` 재실행은 이 leaf 바인딩이
+아니라 자기 내부 구독이 따로 트리거함).
+
+**그래도 dedup을 넣기로 함(사용자 판단)** — `==` 비교 하나(바이트코드 1개
++ 분기)가 매번 여러 weak 테이블 읽기/쓰기(해싱 비용)를 도는 것보다 항상 더
+싸서, 이득이 공짜에 가까운데 안 넣을 이유가 없음. `RefLeafHandler`(`base/
+ref-plan.md` "`Ref`의 retract" 절)와 완전히 같은 모양을 그대로 재사용:
+
+```lua
+local relate = Relate()  -- Observer/Effect-leaf 전용, (inst,k)별 마지막으로 바인딩한 값 기억 —
+                          -- process 재실행 시 identical-value dedup(순수 성능 최적화,
+                          -- Ref처럼 재통지 부작용이 있어서가 아님)
+
+ObserverEffectLeafHandler.isHandlable(inst, k, v) =
+    type(k) == "number" and (isObserver(v) or isEffect(v))
+    -- k 타입까지 반드시 체크 — 안 그러면 바로 위 "동적 경로 가드" FALLBACK
+    -- Handler(named 자리로 흘러온 값을 에러내려는 것)가 이 자리에 먼저
+    -- 매치돼버려 죽은 코드가 됨(2026-08-14 열두 번째 세션 수정)
+
+function ObserverEffectLeafHandler.process(inst, k, v, index)
+    local old = relate:GetStrong(inst, k)
+    if old ~= v then  -- 이미 같은 값이 이 자리를 차지 중이면 재바인딩 skip
+        bindLifetime(inst, v)  -- Effect는 내부적으로 자기 Observer까지 cascade(`base/effect-plan.md`)
+    end
+    relate:SetStrong(inst, k, v)
+    return function(nextValue)
+        if nextValue ~= v then
+            unbindLifetime(v)
+            -- [`RefLeafHandler`와 같은 주의] relate 정리는 반드시 이 분기 *안*에서만 —
+            -- 밖에 두면 spurious 재발행(nextValue == v)에서도 기록이 지워져 곧바로
+            -- 이어지는 process가 `old ~= v`를 항상 참으로 보고 dedup이 무력화됨.
+            if relate:GetStrong(inst, k) == v then relate:SetStrong(inst, k, nil) end
+        end
+    end
+end
+```
 
 ## PA님 코드와의 교차검증(2026-08-04 4차 라운드) — 둘 다 기존 확정 유지
 

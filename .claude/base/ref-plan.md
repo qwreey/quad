@@ -254,7 +254,9 @@ skip"이라는 dedup은 `process`가 "이전에 뭐가 있었는지"를 알아�
 local relate = Relate()  -- Ref-leaf handler 전용, (inst,k)별 마지막으로 바인딩한 Ref 기억 —
                           -- process의 spurious 재바인딩 dedup 전용(클로저 캡처로는 대체 불가)
 
-RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v)
+RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v) and not isPostRef(v)
+    -- [2026-08-14 열두 번째 세션 정정] PostRef 도입(아홉 번째 세션) 당시 이 자리가
+    -- 안 갱신돼 있었음 — 아래 "타입/판별" 절의 최종 공식과 일치시킴
 
 function RefLeafHandler.process(inst, k, v, index)
     local old = relate:GetStrong(inst, k)
@@ -583,7 +585,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     나지만, 나중에 named 자리 바인드 같은 실제 기능이 확정되면 base
     가드를 건드리지 않고 그 기능의 Handler를 평범한 우선순위로 하나
     등록하는 것만으로 자연히 우선함, `base/dispatch-core-plan.md`의
-    "`HANDLER_PRIORITY_FALLBACK`" 절). 이
+    "base가 소유하는 핸들러와 주입되는 엔진 op" 절). 이
     Handler는 **`Dispatch.process`/`getHandler`의 정상 우선순위 스캔에
     등록**되는 반면(pre-pass처럼 그 밖에서 도는 게 아님), 리터럴 배열의
     `PreRef`는 pre-pass가 fire와 동시에 해당 슬롯을 소진(**[정정,
@@ -758,7 +760,7 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 이유는 `ProcessedPreRef`와 동일 — "원래부터 빈 자리(`None`)"와 구별돼야
 등록 책임 소재가 분명해지고, 배열에 구멍이 안 생김.
 
-**동적 경로 가드 Handler도 거울상으로 하나 더**
+### 동적 경로 가드 Handler도 거울상으로 하나 더
 
 `PreRef`와 똑같이, `PostRef`도 **children 배열의 리터럴 아이템으로만** 놓을
 수 있음 — Modifier 필드/Source/Store 값으로는 **타입으로 차단**(이유도

@@ -70,9 +70,10 @@ leaf가 살아있는 동안만 유효, leaf가 죽으면 최종 정리 콜백 �
 leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer보다
 비쌈) — 필요할 때만 쓰는 걸로 충분.
 
-**동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
+### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
+
 (2026-08-14 열한 번째 세션, `PreRef`/`Observer`와 같은 패턴, `base/
-source-state-plan.md`의 "동적 경로 가드" 절 참고).** `EffectHandle`도
+source-state-plan.md`의 "동적 경로 가드" 절 참고.) `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =

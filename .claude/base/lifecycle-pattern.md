@@ -442,7 +442,7 @@ quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn
 이건 `base/dispatch-core-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
 직접 사용)과 짝을 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"
 (`Relate:SetStrong`/`:SetWeak`), 다른 하나는 "언제까지 실행되어도 되는지"
-(`bindLifetime` + `canExecute`)를 다룸. 후자는 내부적으로 전자가 제공하는
+(`bindLifetime` + `canBound`/`canExecute`)를 다룸. 후자는 내부적으로 전자가 제공하는
 같은 `Relate` 프리미티브 위에 얹혀 구현됨(위 절) — 별도 저장 메커니즘을
 새로 만든 게 아니라 `Relate` 하나를 두 용도로 재사용. 둘 다 base가 제공하는
 범용 유틸로 확정.

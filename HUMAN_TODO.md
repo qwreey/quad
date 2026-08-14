@@ -149,7 +149,8 @@ git branch -D worktree-debounce-throttle-plan
 디자인 결정 중 Lua/Roblox 엔진에 대한 깊은 경험이 필요한 것들은 합리적 기본값으로
 진행하면서 `.claude/question.md`에 모아두는 중. 깨어있을 때 훑어보고 기본값이
 마음에 안 드는 것만 답해주면 됨 — **[2026-08-14 열한 번째 세션 기준]
-`question.md`의 "결정 대기" 절 자체가 비어 있음**(마지막 남았던 0-W
+`question.md`엔 이제 "결정 대기" 절 자체가 없음**(비어서 헤딩째로 삭제 —
+마지막 남았던 0-W
 `Ref` 이중 배치도 이 세션에 해소 — `base/ref-plan.md` "이중 배치 방지"
 절, `archive/question-resolved.md`로 이전됨).
 

@@ -694,6 +694,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 재배치**됐고(엔진 op `addTag`/`removeTag`/`setAttribute`만 주입),
 > 이름 소유권은 그룹 전용 키 + `AttributeKeyHandler`의 이름 claim이
 > 판정함. 정본은 `base/attribute-plan.md`/`base/tag-plan.md`.
+>
+> **[2026-08-14 열두 번째 세션 정정]** `TagHandler`/`AttributeKeyHandler`/
+> `AttributeGroupHandler`는 참조 카운트/이름 claim **알고리즘 구현**일
+> 뿐 — `HANDLER_PRIORITY_FALLBACK`에 실제로 등록되는 건 이를 감싸는
+> 별도 파일 `TagFallbackHandler`/`AttributeKeyFallbackHandler`/
+> `AttributeGroupFallbackHandler`이고, 등록 주체는 quad-base 모듈
+> 자체가 아니라 **백엔드 팩토리**(`RobloxFactory`가 `BaseModule`
+> 뮤테이션 시점에 자기 전용 Handler들과 같이 등록). 아래 체크리스트의
+> `Handler` 파일 항목은 전부 이 구분을 반영하도록 갱신됨 — 뒤집힌
+> 옛 모델은
+> `archive/tag-attribute-load-time-registration-reversed.md`.
 
 
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
@@ -718,8 +729,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `setAttribute(inst,name,v)`를 `v`가 뭐든 무조건 호출 + **이름
       claim**(`nameClaims` Relate, 다른 키 객체가 같은 이름에 들어오면
       즉시 error, 반환 클로저는 자기 claim만 반납하고 엔진 부작용 없음).
-      `HANDLER_PRIORITY_FALLBACK`으로 등록. `question.md` 0-Z 결정 —
+      알고리즘 구현일 뿐 스스로 등록되진 않음(아래
+      `AttributeKeyFallbackHandler` 항목 참고). `question.md` 0-Z 결정 —
       `base/attribute-plan.md` "이름 소유권" 절)
+- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+      AttributeKeyFallback.luau`(`AttributeKeyFallbackHandler` — 위
+      `AttributeKeyHandler`를 그대로 감싸 `HANDLER_PRIORITY_FALLBACK`으로
+      등록되는 별도 이름의 엔티티. 등록 주체는 `RobloxFactory`가
+      `BaseModule` 뮤테이션 시점에 자기 전용 Handler들과 같이 —
+      `base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는
+      엔진 op" 절)
 - [ ] `Attribute.luau`(quad-base — 그룹 값 타입+API: `Attribute(store1,
       store2, ...)`/`Merged`/`:NameMap`, `Tag`와 동형 array-part 값 객체,
       `base/attribute-plan.md`)
@@ -729,7 +748,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       등록한 키 전부에 `Dispatch.retractFrom(inst,key,1)`.
       **`process` 안에서 `retractFrom`을 먼저 부르면 안 됨**(철거는 전적으로
       클로저 몫). 실제 `setAttribute`/store-bind 구독/이름 claim은 전부 단일
-      키 경로 재사용 — `base/attribute-plan.md` "메커니즘" 절)
+      키 경로 재사용 — `base/attribute-plan.md` "메커니즘" 절. 알고리즘
+      구현일 뿐 스스로 등록되진 않음, 아래 `AttributeGroupFallbackHandler`
+      항목 참고)
+- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+      AttributeGroupFallback.luau`(`AttributeGroupFallbackHandler` — 위
+      `AttributeGroupHandler`를 그대로 감싸 `HANDLER_PRIORITY_FALLBACK`으로
+      등록되는 별도 이름의 엔티티, 등록 주체는 `AttributeKeyFallbackHandler`와
+      동일하게 `RobloxFactory`)
 - [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
       `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`,
       `base/tag-plan.md` — 2026-08-08 세 번째 세션 array-part 값 객체로
@@ -740,9 +766,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       때만 실제 `removeTag`, 그마저도 클로저가 받은 새 값이 그 이름을
       `Contains`하면 skip해 깜빡임 방지. 제거할 이름은 모아서 **한 번에**
       `removeTag(inst, names)`. `process` 쪽 별도 diff 없음, `kTagMap`도
-      불필요(클로저가 `v`를 직접 캡처). `HANDLER_PRIORITY_FALLBACK`으로
-      등록 — 2026-08-12 열한 번째 / 2026-08-13 네·다섯·열네 번째 세션,
-      `base/tag-plan.md`)
+      불필요(클로저가 `v`를 직접 캡처) — 2026-08-12 열한 번째 /
+      2026-08-13 네·다섯·열네 번째 세션, `base/tag-plan.md`. 알고리즘
+      구현일 뿐 스스로 등록되진 않음, 아래 `TagFallbackHandler` 항목 참고)
+- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+      TagFallback.luau`(`TagFallbackHandler` — 위 `TagHandler`를 그대로
+      감싸 `HANDLER_PRIORITY_FALLBACK`으로 등록되는 별도 이름의 엔티티,
+      등록 주체는 `AttributeKeyFallbackHandler`와 동일하게 `RobloxFactory`)
 - [ ] **[2026-08-14 세션에 누락 발견, 신규]** `quad-roblox/Handlers/
       InstanceShorthand.luau` — UI 편의 숏핸드 `UICorner`/`UIPadding`
       (+`UIPaddingOffset`)/`UIScale`(`base/ui-shorthand-plan.md`). 이

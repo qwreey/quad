@@ -400,10 +400,12 @@ end
   - `Dispatch.addHandler(handler: Handler)` — 핸들러를 우선순위 레지스트리에
     등록. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
-    OnChangeHandler/UICornerHandler/TagHandler/AttributeHandler 등)은
-    팩토리가 `BaseModule`을
+    OnChangeHandler/UICornerHandler 등)은 팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
-    같은 패턴, 새 메커니즘 아님).
+    같은 패턴, 새 메커니즘 아님). **`Tag`/`Attribute`의 base 소유
+    Fallback Handler들(`TagFallbackHandler` 등)도 같은 팩토리 뮤테이션
+    시점에 같이 등록됨** — quad-base 모듈 로드 자체의 부작용이 아님,
+    상세는 아래 "base가 소유하는 핸들러와 주입되는 엔진 op" 절.
   - Handler 자신의 필드는 계속 `process`/`retract`(이미 확정된 이름,
     `question.md`에 "특별한 문제 없음"으로 못박혀 있어 재검토 대상 아님) —
     겹침은 실제 런타임 충돌이 아니라 프로즈 표기 문제였을 뿐이라, 항상
@@ -557,15 +559,30 @@ setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름
   매핑하면 됨(웹이면 `removeAttribute`). base 쪽 규칙 — "Attribute는 오직
   명시적 `None`/`nil`로만 지워진다"(`base/attribute-plan.md`) — 은 그대로.
 
-**[재정정, 2026-08-14 열한 번째 세션 — 앞선 "등록 자체도 백엔드의
-선택" 안은 틀렸음, 철회] `TagHandler`/`AttributeKeyHandler`/
-`AttributeGroupHandler`는 quad-base가 자기 모듈 로드 시점에
-`HANDLER_PRIORITY_FALLBACK`으로 스스로 `Dispatch.addHandler` 등록한다
-— 이게 기본이고 필요함.** `HANDLER_PRIORITY_FALLBACK`이라는 밴드
-자체가 정확히 이런 용도 — "아무도 이 자리를 안 가져갔을 때의 안전한
-기본 동작"을 base가 공짜로 제공하는 것. 모든 백엔드가 자동으로
-`Tag`/`Attribute` 부기(참조 카운트/이름 claim)를 얻고, 특별히 뭔가를
-하지 않아도 이 값들이 어떤 자리에 놓이든 최소한 매치는 됨.
+**[재정정, 2026-08-14 열두 번째 세션] `TagHandler`/`AttributeKeyHandler`/
+`AttributeGroupHandler`는 참조 카운트/이름 claim **알고리즘 구현**일
+뿐이고, 스스로 등록되는 주체가 아니다.** `HANDLER_PRIORITY_FALLBACK`에
+실제로 꽂히는 건 그 알고리즘을 그대로 감싸는 **별도 이름의 엔티티**
+(`TagFallbackHandler`/`AttributeKeyFallbackHandler`/
+`AttributeGroupFallbackHandler`) — "이게 기본 안전망으로 자동 설치되는
+대상"임을 이름 자체로 구분한다. **등록 주체는 quad-base 모듈 자체가
+아니라 필요한 엔진(백엔드 팩토리)** — quad-roblox 같은 백엔드가
+`BaseModule`을 구성할 때 자기 전용 Handler들(Property/Event/OnChange/
+UICorner)과 **같이** 이 base 소유 Fallback Handler들도 등록해준다(위
+`Dispatch.addHandler` 절과 같은 경로, `base/module-lifecycle-plan.md`가
+이미 확정해둔 "base는 인터페이스만, 등록/구현은 백엔드 팩토리가
+`BaseModule`을 뮤테이션하는 시점에" 원칙을 그대로 따르는 것뿐 — 새
+예외가 아님). "quad-base가 자기 모듈 로드 시점에 스스로 등록"이라던
+옛 모델은 정확히 `base/lifecycle-pattern.md`가 이미 거부해둔
+`InitNamespace`류 top-level 부작용 패턴과 같은 클래스라 틀렸음 — 원문·
+근거는 `archive/tag-attribute-load-time-registration-reversed.md`.
+`HANDLER_PRIORITY_FALLBACK`이라는 밴드 자체가 정확히 이런 용도 —
+"아무도 이 자리를 안 가져갔을 때의 안전한 기본 동작"을 base가 값싸게
+제공하는 것. 엔진 저자 입장에서 "자동/공짜"인 이유는 직접 알고리즘을
+안 짜도 되기 때문이지 quad-base 모듈 자체가 부작용을 내서가 아님 —
+모든 백엔드가 (자기 팩토리 뮤테이션 한 번으로) `Tag`/`Attribute` 부기를
+얻고, 특별히 뭔가를 더 하지 않아도 이 값들이 어떤 자리에 놓이든 최소한
+매치는 됨.
 
 `addTag`/`removeTag`/`setAttribute`는 base가 시그니처만 소유하고
 실제 구현은 팩토리가 뮤테이션으로 주입하는 **타입 계약**(`bindLifetime`/
@@ -592,10 +609,13 @@ setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름
     isHandlable = function(inst,k,v) return isTag(v) end,
     process = function(inst,k,v) error("이 백엔드는 Tag를 지원하지 않음") end }
   ```
-  `TagHandler` 자신(`FALLBACK`)보다 한 단계 높아 스캔에서 먼저 매치되고,
-  "매치된 Handler 하나만 실행"이라는 기존 규칙 덕분에 `TagHandler.process`
-  (와 그 안의 `tagNameMap` mutation)는 아예 안 불림 — op 에러보다
-  이르고 정확한, 진짜 원자적 실패. 단 이건 **선택적 업그레이드**일 뿐
+  실제로 `FALLBACK`에 등록돼 있는 `TagFallbackHandler`보다 한 단계
+  높아 스캔에서 먼저 매치되고(2026-08-14 열두 번째 세션 정정 — `TagHandler`
+  자신은 스스로 등록되지 않음, 위 "base가 소유하는 핸들러와 주입되는
+  엔진 op" 절 참고), "매치된 Handler 하나만 실행"이라는 기존 규칙
+  덕분에 `TagHandler.process`(와 그 안의 `tagNameMap` mutation)는 아예
+  안 불림 — op 에러보다 이르고 정확한, 진짜 원자적 실패. 단 이건
+  **선택적 업그레이드**일 뿐
   기본 요구사항은 아님 — base 기본 스텁 하나로도 이미 충분히 안전하게
   실패함(`AttributeGroupHandler`의 "부분 실패 경로" 절이 이미 정리한
   "에러=패닉 상태, 그 이후 정합성은 관리 대상 아님" 원칙 + `nameClaims`/
@@ -906,6 +926,21 @@ end
 - 그리고 `Relate`에 쓴 걸 클로저에서 지울 땐 **"내가 실제로 물러날
   때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
   (`RefLeafHandler`가 정확히 이 버그였음).
+- **`Observer`/`Effect`의 Leaf 바인딩(`Dispatch/Leaf.luau`)도 `RefLeafHandler`와
+  같은 `old ~= v` dedup을 둠 — correctness 문제는 아니지만 순수 성능
+  최적화로 채택(2026-08-14 세션, 사용자 판단).** `State<Observer>`/
+  `State<Effect>`가 재-dispatch될 때 안쪽 값이 실제로 안 바뀌어도(같은
+  객체가 다시 옴) (A) 분기는 무조건 `retractor(v)`→`h.process(inst,k,v,index)`를
+  다시 부름 — `Ref`와 달리 이걸 그냥 둬도 **깨지진 않음**: `bindLifetime`/
+  `unbindLifetime`은 `Relate` weak 테이블 쓰기 몇 개뿐이라(`base/
+  lifecycle-pattern.md`) 같은 값에 unbind 직후 바로 rebind해도 실제 Roblox
+  커넥션을 만들거나 끊지 않고, 사용자에게 보이는 재통지도 없음(`Observer`/
+  `Effect`의 `fn`은 이 leaf 바인딩이 아니라 자기 내부 구독이 따로 발화시킴 —
+  `base/effect-plan.md`). 하지만 **`==` 비교(바이트코드 1개+분기)가 매번 여러
+  weak 테이블 쓰기(해싱 비용)를 도는 것보다 항상 더 쌈** — 이득이 공짜에
+  가까운데 안 넣을 이유가 없다는 판단으로 `RefLeafHandler`와 동일한 패턴을
+  그대로 적용. 상세 pseudocode는 `base/source-state-plan.md`의
+  "Observer/Effect Leaf dedup" 절.
 
 **5. `Dispatch`를 통해서만 진입한다.**
 `handler.process(...)`를 직접 부르면 핸들러 비교와 `chains` 기록이 통째로

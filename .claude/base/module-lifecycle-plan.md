@@ -135,12 +135,18 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   알고리즘이 통째로 quad-base로 옮겨오면서, 엔진에 실제로 손대는 마지막
   한 줄만 이 경로로 주입받게 됨(`base/dispatch-core-plan.md` "base가
   소유하는 핸들러와 주입되는 엔진 op" 절). **`TagHandler`/
-  `AttributeKeyHandler`/`AttributeGroupHandler` 자신은 quad-base가
-  모듈 로드 시점에 `HANDLER_PRIORITY_FALLBACK`으로 스스로 등록** —
-  `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가 뮤테이션으로
-  채우는 타입 계약. 아직 아무 팩토리도 안 채운 슬롯의 기본값은
-  quad-base가 명시적으로 에러내는 스텁으로 미리 채워둠(조용한 no-op
-  추측 아님 — base가 임의 엔진의 "맞는 기본 동작"을 알 수 없어서).
+  `AttributeKeyHandler`/`AttributeGroupHandler` 자신은 참조 카운트/이름
+  claim 알고리즘 구현일 뿐 스스로 등록되는 주체가 아님(2026-08-14 열두
+  번째 세션 정정, 옛 "quad-base 모듈 로드 시점에 스스로 등록" 모델은
+  `archive/tag-attribute-load-time-registration-reversed.md`) —
+  `HANDLER_PRIORITY_FALLBACK`에 실제로 꽂히는 건 이걸 감싸는
+  `TagFallbackHandler`/`AttributeKeyFallbackHandler`/
+  `AttributeGroupFallbackHandler`이고, 등록 주체는 quad-base 모듈 자체가
+  아니라 백엔드 팩토리(바로 위 문단과 같은 `BaseModule` 뮤테이션 경로 —
+  새 예외 아님).** `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가
+  뮤테이션으로 채우는 타입 계약. 아직 아무 팩토리도 안 채운 슬롯의
+  기본값은 quad-base가 명시적으로 에러내는 스텁으로 미리 채워둠(조용한
+  no-op 추측 아님 — base가 임의 엔진의 "맞는 기본 동작"을 알 수 없어서).
   더 명확한 메시지나 진짜 원자적 실패(부기 mutation 0회)를 원하는
   백엔드는 opt-in으로 `HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기
   Handler를 추가로 등록할 수 있음 — 상세는
