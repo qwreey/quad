@@ -1441,3 +1441,12 @@ pseudocode가 프로즈 정정과 모순됐던 것(가장 심각 — 실제 코�
 **사전 존재 버그**(PostRef 도입 9차 세션 때 안 갱신됨, 이번 세션과
 무관)도 같이 잡혀 정정, `architecture.md`의 `Leaf.luau` 파일 트리에
 빠져있던 `Effect` 타입도 보강. `doc-check.py` ERROR 0 유지.
+
+**2026-08-14 열세 번째 세션 — `quad` 재귀 약어 브레인스토밍**
+(`session/2026-08-14-13-recursive-acronym-brainstorm.md`)
+GNU/WINE류로 `Quad`를 재귀 약어화하는 순수 카피 브레인스토밍 —
+설계 결정/착수 게이팅과 무관. 자학 개그 방향(`Quad Undoes All (that
+v1) Did` 등)은 톤이 안 맞아 기각, 사용자가 실제로 내걸고 싶어한
+지연평가·재귀/커링·펑터·일급 익명 클로저 방향으로 `Quad Unwinds,
+Applies, Defers` 등 4개 후보 정리 — `research/quad-recursive-acronym.md`
+신설(나중에 README.md 헤딩 후보용), 최종 문구는 미확정.
