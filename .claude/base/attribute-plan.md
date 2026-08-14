@@ -446,7 +446,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 | 그룹 값 타입+API(`Attribute(...)`/`Merged`/`:NameMap`) | quad-base |
 | 단일 키 `AttributeKey<<T>>(name)` + 이름별 weak 캐시 | quad-base |
 | 스칼라 편의 패밀리(`StringAttribute`/`NumberAttribute`/`BooleanAttribute`) | quad-base |
-| `AttributeKeyHandler`(이름 claim 포함) / `AttributeGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로 등록 |
+| `AttributeKeyHandler`(이름 claim 포함) / `AttributeGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로 quad-base가 스스로 등록 |
 | 엔진 고유 타입 패밀리(`Color3Attribute`/`UDim2Attribute`/`InstanceAttribute`류) | 백엔드(quad-roblox의 `D`/`DI` 층) |
 | **`setAttribute(inst, name, v)`** — `v == nil`이면 그 이름을 지움 | 백엔드가 주입 |
 
@@ -455,10 +455,18 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
   수 없음. 반대로 string/number/boolean은 어느 백엔드에나 있으므로 base에
   둔다. "이 값이 이 백엔드에서 표현 가능한가"라는 **검증도 base가 아니라
   주입된 `setAttribute`의 몫** — base는 값을 그대로 흘려보냄.
-- **백엔드가 통째로 다르게 하고 싶으면** 평범한 우선순위로 자기 핸들러를
-  등록하면 됨(base 것은 최하위 밴드라 자동으로 짐) — 상세는
-  `base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진
-  op" 절. `Tag`도 정확히 같은 구조(`base/tag-plan.md`).
+- **`AttributeKeyHandler`/`AttributeGroupHandler` 자신은 quad-base가
+  모듈 로드 시점에 스스로 등록** — `setAttribute`만 백엔드 팩토리가
+  채우는 타입 계약, 안 채운 슬롯의 base 기본값은 명시적으로 에러내는
+  스텁(2026-08-14 열한 번째 세션 — 한때 "등록 자체가 백엔드 선택"으로
+  잘못 정정됐다가 철회됨). 더 명확한 메시지나 진짜 원자적 실패를 원하는
+  백엔드는 opt-in으로 `HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기
+  Handler를 추가로 등록 가능. 속성 처리 자체를 통째로 다른 알고리즘으로
+  바꾸고 싶은 백엔드는 `HANDLER_PRIORITY_FALLBACK`보다 확실히 높은
+  우선순위로 자기 Handler를 등록하면 base 것을 완전히 대체함(같은
+  override 원리) — 상세는 `base/dispatch-core-plan.md`의 "base가
+  소유하는 핸들러와 주입되는 엔진 op" 절. `Tag`도 정확히 같은
+  구조(`base/tag-plan.md`).
 - 단일 키를 별도 opt-out 패키지로 쪼개지 않는다는 기존 판단은 그대로
   (UICorner 숏핸드/Tween/Tag와 같은 결) — 다만 "어느 패키지의 코어인가"가
   quad-roblox에서 quad-base로 바뀐 것.

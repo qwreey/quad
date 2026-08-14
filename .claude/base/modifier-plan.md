@@ -244,7 +244,7 @@ UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 
 같은 걸 다루는 목적이 아니고, 이런 값이 실제로 쓸모 있는 use case가
 없다고 확인된 이상 조용한 UB보다 그 자리에서 막는 쪽이 낫다 — 판별
 비용도 이미 있는 `Brand` 기반 predicate(`isRef`/`isPreRef`/`isPostRef`/
-`isObserver`/`isEffect`/`isSlot`/`isModifier`, `bind-system-plan.md`의
+`isObserver`/`isEffect`/`isSlot`/`isModifier`, `brand-plan.md`의
 `Brand` 절)를 그대로 재사용하면 되므로 거의 공짜.
 
 - **체크 지점 — 제네릭 `__index` setter가 최종 저장 직전에 검사.** 위
@@ -596,7 +596,7 @@ setter 표면과 read 표면이 헷갈리고, 타이핑 이득도 메소드 방�
 안 되는 캐비엇이 있지만, 이건 quad가 대신 풀어줄 문제가 아니라 문서화
 (경고)로 충분(이미 있는 "`Get()` 결과 캐싱 금지" 캐비엇과 같은 클래스).
 
-**`isState(x): boolean` 필요 — `base/bind-system-plan.md`에 정의**.
+**`isState(x): boolean` 필요 — `base/brand-plan.md`에 정의**.
 `Peek`가 raw union을 돌려주므로 사용자 코드가 State/plain을 분기하려면
 판별 수단이 필요함(Source가 State를 구조적으로 만족하므로 `isState`가
 Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSource`도

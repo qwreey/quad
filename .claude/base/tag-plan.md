@@ -152,7 +152,7 @@ identity로 홀더를 추적하면 같은 객체를 두 위치(`k1`, `k2`)에 �
 ```lua
 local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[k]: true}}} — 이름별 현재 걸고 있는 위치들
 
-TagHandler.priority = <일반>
+TagHandler.priority = HANDLER_PRIORITY_FALLBACK
 TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
 
 function TagHandler.process(inst, k, v, index)
@@ -264,12 +264,19 @@ removeTag(inst: any, names: {string}): ()
   vararg → `string | {string}`으로 되돌아갔던 것과 **같은 이유**(위 "값
   모양" 절). 배치 호출 자체는 테이블로도 되므로 웹 `className` 일괄
   갱신 요구도 그대로 충족됨.
-- **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK`** — 특정 백엔드가 태그
-  처리를 통째로 다르게 하고 싶으면 평범한 우선순위로 자기 핸들러를
-  등록하면 자동으로 이김. 주입 op이 없는 백엔드에서는 base 스텁이
-  명확한 에러를 냄. 일반 원칙과 근거는 `base/dispatch-core-plan.md`의
-  "base가 소유하는 핸들러와 주입되는 엔진 op" 절 — `Attribute`도 정확히
-  같은 구조(`base/attribute-plan.md`).
+- **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK` — `TagHandler` 자신은
+  quad-base가 모듈 로드 시점에 스스로 등록**(2026-08-14 열한 번째 세션
+  재확인 — 한때 "등록 자체가 백엔드 선택"으로 잘못 정정됐다가 철회됨).
+  `addTag`/`removeTag`만 백엔드 팩토리가 채우는 타입 계약, 안 채운
+  슬롯의 base 기본값은 명시적으로 에러내는 스텁. 더 명확한 메시지나
+  진짜 원자적 실패를 원하는 백엔드는 opt-in으로
+  `HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기 Handler를 추가로 등록
+  가능. 태그 처리 자체를 통째로 다른 알고리즘으로 바꾸고 싶은 백엔드는
+  `HANDLER_PRIORITY_FALLBACK`보다 확실히 높은 우선순위로 자기 Handler를
+  등록하면 base `TagHandler`를 완전히 대체함(같은 override 원리).
+  상세는 `base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와
+  주입되는 엔진 op" 절 — `Attribute`도 정확히 같은 구조
+  (`base/attribute-plan.md`).
 - 이건 새 아키텍처 개념이 아니라 이미 확정된 "base는 인터페이스/값,
   backend는 구현"(`LifetimeHandle`의 `bindLifetime`/`canExecute`,
   `Dispatch.addHandler` 자체가 그 패턴)을 핸들러 층까지 밀어붙인 것.

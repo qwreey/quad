@@ -70,6 +70,17 @@ leaf가 살아있는 동안만 유효, leaf가 죽으면 최종 정리 콜백 �
 leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer보다
 비쌈) — 필요할 때만 쓰는 걸로 충분.
 
+**동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
+(2026-08-14 열한 번째 세션, `PreRef`/`Observer`와 같은 패턴, `base/
+source-state-plan.md`의 "동적 경로 가드" 절 참고).** `EffectHandle`도
+children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
+흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
+isHandlable = function(inst,k,v) return isEffect(v) end, process =
+function(inst,k,v) error("EffectHandle은 children 배열 리터럴에만 놓을
+수 있음") end }`. `FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
+named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
+값싸게 override 가능한 자리로 열어둠.
+
 **보강 — `EffectHandle`의 내부 Observer 바인딩 세부(2026-08-09 열한 번째
 세션, 재확인 후 명시화)**:
 
@@ -159,10 +170,12 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   일곱 번째 세션 후속)**: 처음엔 "같은 liveness 게이트를 공유하니
   동시에 써도 안전"으로 적었으나, 애초에 한 핸들은 라이프사이클 바인딩
   경로를 하나만 가져야 한다는 게 맞는 방향이라 판단이 뒤집힘 — 상세
-  규칙과 `canExecute(value)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
-  플래그 → 2026-08-09 세션에 `canBound`로 명명 → **2026-08-14 세 번째
-  세션에 `canBound` 폐기, `canExecute`로 통합**)은
-  `base/source-state-plan.md`의 "이중 바인딩 금지" 절 참고. **[정정,
+  규칙과 `canBound(value)` 기반 즉시-에러 메커니즘(구 가칭 `Bound`
+  플래그 → 2026-08-09 세션에 `canBound`로 명명 → 2026-08-14 다섯 번째
+  세션에 `canBound` 폐기, `canExecute`로 통합 → **같은 날 열한 번째
+  세션에 `canBound`가 별도 진입점으로 재도입**, 판정 로직은
+  `canExecute`와 공유)은 `base/source-state-plan.md`의 "이중 바인딩
+  금지" 절 참고. **[정정,
   2026-08-09 여섯 번째 세션] leaf 부착 후 조기 해제는 `:Unsubscribe()`가
   아니라 `unbindLifetime(value)`** — leaf 부착 자체가 내부적으로
   `bindLifetime(inst, value)` 호출이라, 그 해제도 짝인 `unbindLifetime`

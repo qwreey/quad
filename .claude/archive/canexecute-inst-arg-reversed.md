@@ -94,8 +94,16 @@ if self.Connection then return self.Connection.Connected end
 ## 같이 폐기된 것
 
 - **`canBound(handle)`** — 이 오염된 `.Subscribed` 재사용 위에 세워진
-  predicate라 정의 자체가 성립 안 함. `canExecute(value)` 하나로 통합
-  (`base/lifecycle-pattern.md`의 "`canBound` 폐기" 절).
+  predicate라 정의 자체가 성립 안 함. `canExecute(value)` 하나로 통합.
+  **[부분 되짚음, 2026-08-14 열한 번째 세션]** 이 "하나로 합친다"는
+  판단만 나중에 다시 갈라짐(이 문서가 고친 시그니처/오염 원인 정정은
+  안 바뀜) — `canBound`가 별도 진입점으로 재도입되어 `bindLifetime`/
+  `Observer:Subscribe()`의 "이미 묶여 있는가"(bound 문맥) 가드를 맡고,
+  `canExecute`는 State emit 전파 루프의 "지금 발화해도 되는가"(execute
+  문맥) 게이팅에만 씀 — 판정 로직(`isBoundAlive`)은 여전히 공유,
+  이름만 문맥별로 분리. 상세는 `base/lifecycle-pattern.md`의 "`canBound`
+  vs `canExecute`" 절, 계기는 `Ref` 이중 배치 방지(`question.md` 0-W,
+  `base/ref-plan.md` "이중 배치 방지" 절).
 - **gcconn/gchold의 lazy 생성** — `bindLifetime` 첫 호출에서 만들던 것을
   **Instance 생성 시점**으로 올림. 이유는 이 역전과 별개(Instance userdata
   포인터 동일성 — `inst`-키 `Relate` 전체의 전제), 같은 세션에 확정돼 같은

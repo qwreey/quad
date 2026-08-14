@@ -537,9 +537,7 @@ end
   (재조정 알고리즘은 base `Dispatch/Slot.luau`, 물리 마운트만 backend) —
   이들은 "한 줄 op"으로 줄어들지 않으므로 그대로 backend.
 
-**주입되는 엔진 op(base는 시그니처만 소유, 실제 구현은
-`RobloxFactory(BaseModule)`류가 뮤테이션으로 주입 — `bindLifetime`/
-`canExecute`와 완전히 같은 패턴, 새 메커니즘 아님)**:
+**주입되는 엔진 op**:
 
 ```lua
 addTag(inst: any, names: {string}): ()       -- 웹은 className을 한 번에 갱신
@@ -558,13 +556,52 @@ setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름
   `SetAttribute`의 네이티브 동작과 일치하고, 다른 백엔드는 자기 방식으로
   매핑하면 됨(웹이면 `removeAttribute`). base 쪽 규칙 — "Attribute는 오직
   명시적 `None`/`nil`로만 지워진다"(`base/attribute-plan.md`) — 은 그대로.
-- **미주입 백엔드의 실패 모드**: base가 이 핸들러들을
-  `HANDLER_PRIORITY_FALLBACK`(위 "핸들러 계약" 절)으로 등록하므로,
-  백엔드가 자기 핸들러를 따로 등록했다면 그쪽이 항상 이기고 base 것은
-  아예 안 불림. 아무도 안 가져갔는데 op도 주입 안 된 백엔드라면 그때
-  **"이 백엔드는 `addTag`를 구현하지 않음"** 같은 명확한 에러를 내는 게
-  base 기본 스텁의 역할 — "매치 실패=error"(위 절)와 층위만 다른, 같은
-  성격의 즉시 실패.
+
+**[재정정, 2026-08-14 열한 번째 세션 — 앞선 "등록 자체도 백엔드의
+선택" 안은 틀렸음, 철회] `TagHandler`/`AttributeKeyHandler`/
+`AttributeGroupHandler`는 quad-base가 자기 모듈 로드 시점에
+`HANDLER_PRIORITY_FALLBACK`으로 스스로 `Dispatch.addHandler` 등록한다
+— 이게 기본이고 필요함.** `HANDLER_PRIORITY_FALLBACK`이라는 밴드
+자체가 정확히 이런 용도 — "아무도 이 자리를 안 가져갔을 때의 안전한
+기본 동작"을 base가 공짜로 제공하는 것. 모든 백엔드가 자동으로
+`Tag`/`Attribute` 부기(참조 카운트/이름 claim)를 얻고, 특별히 뭔가를
+하지 않아도 이 값들이 어떤 자리에 놓이든 최소한 매치는 됨.
+
+`addTag`/`removeTag`/`setAttribute`는 base가 시그니처만 소유하고
+실제 구현은 팩토리가 뮤테이션으로 주입하는 **타입 계약**(`bindLifetime`/
+`canExecute`와 같은 패턴, 엔진이 실제로 손대는 부분은 백엔드가 채우기로
+"계약"한 것) — 이건 그대로 유지:
+
+- **아직 아무 팩토리도 채우지 않은 슬롯의 기본값은 quad-base가 준다 —
+  단 "동작하는 구현을 추측"하지 않고 명시적으로 에러내는 스텁으로.**
+  `BaseModule.addTag = function() error("addTag가 구현되지 않음 —
+  provider가 초기화됐는지, 이 백엔드가 Tag를 지원하는지 확인하라") end`
+  류. base가 "그럴듯한 기본 동작"(예: 조용한 no-op)을 대신 만들어주는
+  건 기각 — 임의의 엔진에 뭐가 맞는 기본값인지 base는 알 수 없고,
+  조용한 no-op은 실수(provider 초기화를 잊음)를 가려버림. 명시적 에러가
+  유일하게 안전한 기본값.
+  - **"provider 미주입"과 "이 백엔드가 애초에 Tag를 지원 안 함"은 이
+    기본 스텁 수준에서 여전히 구분 안 됨** — 둘 다 그 슬롯이 안
+    채워진 같은 상태라 원천적으로 구별 불가(`pre-implementation-audit.md`
+    1-4, 2026-08-12 열일곱 번째 세션 확정 원칙 그대로).
+- **[관례, opt-in] 더 명확한 메시지나 진짜 원자적 실패(부기 mutation
+  0회)를 원하는 백엔드는, 그거대로 `HANDLER_PRIORITY_FALLBACK + 1`
+  우선순위의 얇은 가로채기 Handler를 추가로 등록할 수 있음**:
+  ```lua
+  { priority = HANDLER_PRIORITY_FALLBACK + 1,
+    isHandlable = function(inst,k,v) return isTag(v) end,
+    process = function(inst,k,v) error("이 백엔드는 Tag를 지원하지 않음") end }
+  ```
+  `TagHandler` 자신(`FALLBACK`)보다 한 단계 높아 스캔에서 먼저 매치되고,
+  "매치된 Handler 하나만 실행"이라는 기존 규칙 덕분에 `TagHandler.process`
+  (와 그 안의 `tagNameMap` mutation)는 아예 안 불림 — op 에러보다
+  이르고 정확한, 진짜 원자적 실패. 단 이건 **선택적 업그레이드**일 뿐
+  기본 요구사항은 아님 — base 기본 스텁 하나로도 이미 충분히 안전하게
+  실패함(`AttributeGroupHandler`의 "부분 실패 경로" 절이 이미 정리한
+  "에러=패닉 상태, 그 이후 정합성은 관리 대상 아님" 원칙 + `nameClaims`/
+  `tagNameMap`이 `inst`에 대해 weak라 그 인스턴스가 GC되면 잔여 부기도
+  같이 사라지는 것으로 충분히 커버됨), 더 깔끔한 실패를 원하는 백엔드만
+  추가로 얹으면 됨.
 - **타입 패밀리는 백엔드 몫**: `AttributeKey<<T>>` 제네릭 생성자와
   스칼라 편의 패밀리(`StringAttribute`/`NumberAttribute`/`BooleanAttribute`)
   까지가 base이고, `Color3Attribute`류처럼 **엔진 고유 타입**에 묶인
@@ -1263,7 +1300,7 @@ end
   전파 루프가 발화 때마다 `canExecute(observer)`로 각 구독자를 게이팅하고,
   그 판정 근거(`inst` 생존)는 `bindLifetime`이 `observer` 쪽에 복사해둔
   gcconn 참조가 제공함(`base/lifecycle-pattern.md`의
-  "`bindLifetime`/`canExecute`/`unbindLifetime`" 절).
+  "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime`" 절).
   **[정정, 2026-08-14 다섯 번째 세션]** 이 항목의 옛 근거(*"Observer가 이미
   자기 `Subscribed` 상태로 게이팅됨, `bindLifetime`도 그 필드를 세팅/해제"*)는
   틀렸음 — `.Subscribed`는 전역 `:Subscribe()` 전용 필드이고 `bindLifetime`은

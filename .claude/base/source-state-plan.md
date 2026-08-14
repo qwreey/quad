@@ -897,6 +897,23 @@ retract/Destroy되면 자동으로 정리됨.
   `Ref`와 같은 방식으로 라이프사이클에 묶어주는 것 말고는 base가
   더 해줄 일이 없음. 새 dispatch 메커니즘이 아니라 기존 children-array
   참가자 패턴의 반복.
+- **동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
+  (2026-08-14 열한 번째 세션, `PreRef`의 동적 경로 가드와 같은 패턴).**
+  `Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
+  등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
+  전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
+  isHandlable = function(inst,k,v) return isObserver(v) end, process =
+  function(inst,k,v) error("Observer는 children 배열 리터럴에만 놓을 수
+  있음") end }`. `HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
+  하드 블록이 아니라 `Tag`/`Attribute`/`PreRef`와 같은 "base가 소유하되
+  평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
+  때문(`base/dispatch-core-plan.md`의 "`HANDLER_PRIORITY_FALLBACK`" 절) —
+  지금은 아무도 그 자리를 안 가져가서 항상 이 가드가 에러를 내지만, 이
+  Handler를 만드는 게 목적이 아니라 "지금은 확정된 기능이 없다"는 default를
+  base가 값싸게 제공하는 것뿐. (**이 가드가 없던 이전엔** 확정된 "매치
+  실패는 즉시 error" 규칙에 의해 결과적으로 똑같이 에러가 났었음 — 이
+  가드는 동작을 바꾸는 게 아니라 에러 메시지를 명확하게 하고, 미래에
+  override할 자리를 구조적으로 열어두는 것.)
 - **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
   — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
@@ -1023,7 +1040,7 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   객체를 mutate하고 그대로 돌려주는 것)지만 표면 문법은 비슷하게
   체이닝 가능.
 
-## 이중 바인딩 금지 — 진짜 독립된 경로는 `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped) 둘뿐, `canExecute(value)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 `canBound`로 이름 확정, 같은 날 여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정, **2026-08-14 다섯 번째 세션에 `canBound` 폐기·`canExecute`로 통합**)
+## 이중 바인딩 금지 — 진짜 독립된 경로는 `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped) 둘뿐, `canBound(value)`로 즉시 에러 (2026-08-07 일곱 번째 세션, 2026-08-09 세션에서 `canBound`로 이름 확정, 같은 날 여섯 번째 세션에서 "leaf 부착=bindLifetime 호출"로 정정, 2026-08-14 다섯 번째 세션에 `canBound` 폐기·`canExecute`로 통합됐다가 **같은 날 열한 번째 세션에 `canBound`가 별도 진입점으로 재도입되어 다시 갈라짐** — 판정 로직은 공유, `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절이 소스)
 
 **규칙**: 같은 Observer/Effect 핸들 하나는 라이프사이클 바인딩 경로를
 딱 하나만 가질 수 있음 — `:Subscribe()`로 전역 강참조 레지스트리에
@@ -1055,31 +1072,36 @@ leaf 부착을 "weak table 기반 자동 추적"이라 불렀던 건 `bindLifeti
 0(불리언 필드 하나 확인)이라, 조용히 이상하게 동작하게 두는 것보다
 바로 에러를 던져 버그를 그 자리에서 잡는 게 엔지니어링상 훨씬 쌈.
 
-**[역전, 2026-08-14 다섯 번째 세션] 별도 predicate `canBound(handle)`은
-폐기하고 `canExecute(value)` 하나로 통합.** 게이트는 이 모양:
+**[2026-08-14 다섯 번째 세션에 별도 predicate `canBound(handle)`을 폐기하고
+`canExecute(value)` 하나로 통합했다가, 같은 날 열한 번째 세션에
+`canBound`가 다시 별도 진입점으로 도입됨]** — `Ref`가 emit 전파에 참여도
+안 하면서 "발화해도 되는가"(`canExecute`)를 묻는 게 개념적으로 안 맞다는
+지적(`question.md` 0-W)에서 나온 재분리. 게이트는 이 모양:
 
 ```lua
 -- :Subscribe() 진입부, bindLifetime 진입부(leaf 부착도 내부적으로 이걸 거침)
 -- — 둘 다 진입 전 동일하게 확인
-if canExecute(self) then
+if canBound(self) then
   error(if self.Subscribed
     then "이미 :Subscribe()로 전역 바인딩된 값"
     else "이미 다른 Instance에 바인딩된 값")
 end
 ```
 
-- **"이미 유효하게 묶여 있다"와 "지금 실행 가능하다"가 정확히 같은
-  조건**이라 predicate를 둘로 나눌 이유가 없었음 — `canExecute`가
-  참이면 그 값은 어딘가에 살아있는 바인딩을 갖고 있다는 뜻이고, 그게
-  곧 "새로 묶으면 안 된다"임.
+- **"이미 유효하게 묶여 있다"(`canBound`)와 "지금 실행 가능하다"
+  (`canExecute`)는 판정 로직이 같아서**(둘 다 비공개 헬퍼
+  `isBoundAlive`를 그대로 부름, `base/lifecycle-pattern.md`) 값은 항상
+  같지만, 호출부의 질문이 서로 달라 이름은 분리돼 있음 — 이 절(이중
+  바인딩 금지)은 `canBound`를 쓰고, State emit 전파 루프만 `canExecute`를
+  씀.
 - **에러 메시지에서 어느 경로인지는 `.Subscribed`로 가름** — 이 필드는
   **전역 `:Subscribe()` 경로에서만 세팅되므로**(아래 정정) 참이면 전역,
-  거짓인데 `canExecute`가 참이면 leaf 경로.
+  거짓인데 `canBound`가 참이면 leaf 경로.
 - 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 유효한
-  바인딩이 있음"만 답함 — 두 진입점이 똑같이 `canExecute`를 확인하므로
+  바인딩이 있음"만 답함 — 두 진입점이 똑같이 `canBound`를 확인하므로
   순서와 무관하게 대칭적으로 막힘.
 - **죽은 바인딩의 재사용은 허용** — `inst`가 Destroy됐거나
-  `unbindLifetime`된 값은 `canExecute`가 거짓이라 게이트를 통과함(다른
+  `unbindLifetime`된 값은 `canBound`가 거짓이라 게이트를 통과함(다른
   `inst`에 다시 걸 수 있음). 게이트가 막는 건 **살아있는** 이중 바인딩뿐.
 
 **[정정, 2026-08-14 다섯 번째 세션] 옛 서술 — "`canBound`의 내부 플래그는
@@ -1090,9 +1112,11 @@ end
 그 필드를 읽지도 쓰지도 않음. leaf 경로의 생존은 `bindLifetime`이
 `value` 쪽 릴레이션에 복사해둔 gcconn 참조로 판정됨(`base/lifecycle-pattern.md`).
 옛 서술이 걱정했던 "필드를 둘로 나누면 `bindLifetime`으로만 등록된
-Observer가 `canExecute`에서 항상 `false`로 오판됨"은 실제로는 안 일어남
-— `canExecute`가 gcconn 경로를 **먼저** 보기 때문. 역전 원문·오염 경로·
-교훈은 `archive/canexecute-inst-arg-reversed.md`.
+Observer가 `canBound`에서 항상 `false`로 오판됨"은 실제로는 안 일어남
+— `canBound`(와 `canExecute`가 공유하는 `isBoundAlive`)가 gcconn 경로를
+**먼저** 보기 때문. 역전 원문·오염 경로·교훈은
+`archive/canexecute-inst-arg-reversed.md`(그 문서 하단에 이 재분리
+경위도 추가돼 있음).
 - **`:Unsubscribe()`는 `:Subscribe()` 경로의 해제만 담당, `bindLifetime`
   (leaf 부착 포함) 경로는 `unbindLifetime(value)`로 해제** —
   둘은 서로 다른 함수로 남음(호출자가 `bindLifetime`을 부른 쪽이
@@ -1106,7 +1130,7 @@ Observer가 `canExecute`에서 항상 `false`로 오판됨"은 실제로는 안 
   `unbindLifetime`이 leaf 해제의 실제 통로).
 - **Effect도 동일 규칙 적용(사용자 확인)** — Effect가 `state` 인자로
   내부적으로 Observer를 조합하는 경우든, `state` 없는 경우든 같은
-  `canExecute` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
+  `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
   자신이 아니라 내부 Observer가 게이트를 갖고 있어서, Effect 구현이
   이 정정을 몰라도 자동으로 커버됨. 이전에 그 문서에 적어뒀던 "leaf
   부착과 `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이

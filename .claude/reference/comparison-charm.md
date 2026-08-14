@@ -67,19 +67,18 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   둔 이유 — quad의 배열/해시 파트 `None` 센티널 정당화(`base/
   bind-system-plan.md:180-266`)와 동기 없이 같은 결론에 수렴한 사례.
   새 아이디어는 아니고 인용 근거로만 가치 있음.
-- **quad가 미결로 남긴 "previous 값 비교" 문제에 대한 두 가지 답.**
-  (1) `signal(initialValue, equals?)`(`init.luau:432`, `Equals<T>` 타입은
+- **charm의 `previous` 유사 메커니즘 두 가지 — quad가 이미 확정한
+  `:Compute(fn)`의 `previous` 인자(`base/source-state-plan.md` "previous"
+  절, `fn(self, previous?, ...deps)`)에 대한 독립 실동작 증거.** (1)
+  `signal(initialValue, equals?)`(`init.luau:432`, `Equals<T>` 타입은
   23행)는 생성 시점에 `initialValue`를 항상 요구해서 "비교할 이전 값이
-  아직 없다"는 애매한 첫 상태 자체를 구조적으로 없앰 —
-  `research/additional-primitives-plan.md`가 남겨둔 "비교할 이전 값이
-  확정 안 된 문제"에 대한 한 가지 해법 형태. (2) `computed(getter)`가
+  아직 없다"는 애매한 첫 상태 자체를 구조적으로 없앰. (2) `computed(getter)`가
   getter에 **이전 계산 결과**를 인자로 넘겨줌(`init.luau:538`,
   `(previousValue: T?) -> T`, README 276-287행, `computed.test.
-  luau:84-104`가 홀수 업데이트를 스킵하는 걸로 실제 검증) — quad의
-  `base/source-state-plan.md`가 이미 띄워둔 "`:Compute(fn)`에 선택적
-  두 번째 `previous` 인자" 안과 거의 동일한 모양. 새로 수입할 아이디어가
-  아니라 **이미 검토 중인 안이 실제로 동작한다는 정황 증거**로 인용
-  가치 있음.
+  luau:84-104`가 홀수 업데이트를 스킵하는 걸로 실제 검증) — quad가
+  `base/source-state-plan.md`에서 이미 확정한 `previous` 안과 거의 동일한
+  모양. 새로 수입할 아이디어가 아니라 **이미 확정된 안이 실제로 동작한다는
+  정황 증거**로 인용 가치 있음(더 이상 열린 질문 아님).
 - **charm-sync의 diff/patch 메커니즘 — quad가 아직 전혀 안 다뤄본 영역이라
   가장 새로운 참고자료.** `patch.luau:59-89`(`diff`)가 재귀적 구조적
   diff로 중첩 patch 테이블을 만들고, `apply`/`applyMutable`
@@ -116,8 +115,8 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
 기각한 패턴을 그대로 구현하고 있음 — 사용자가 애초에 예상한 "짧은
 라이브러리라 새로운 게 없을 것"이 이 레이어에는 대체로 맞음. 진짜 참고
 가치는 코어 밖에 있음: charm-sync의 diff/patch(현재 quad 스코프 밖이지만
-새 영역), 그리고 quad가 미결로 열어둔 Blocker의 "previous 값 비교" 문제에
-대한 두 가지 실동작 사례(`signal`의 필수 initialValue, `computed`의
+새 영역), 그리고 quad가 이미 확정한 `:Compute`의 `previous` 인자가 실제로
+동작한다는 두 가지 실동작 사례(`signal`의 필수 initialValue, `computed`의
 previous-in-getter). 지금 당장 base 문서를 고칠 만한 발견은 없음 — 순수
 참고자료로 등록.
 

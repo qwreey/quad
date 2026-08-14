@@ -168,9 +168,12 @@ end
 일치를 검사**하므로 문제없이 `Source<string>` 자리에 대입 가능 — 오히려 이
 방식과 정확히 맞는 조합. 이걸로 `store.key`가 실제로 타입 명시 가능함이
 확인돼 M0/M3 어느 시점에 검증해도 기술적으로 막힐 위험은 없음 —
-`ROADMAP.md`의 M0/M3 배치를 강제로 바꿀 필요는 없어짐, 검증 난이도
-문제였던 것만 해소. (이 방식이 못 해주는 것은 `base/typing-limits.md`가
-따로 정리.)
+`ROADMAP.md`의 M0/M3 배치를 강제로 바꿀 필요는 없어짐, 설계 레벨의 검증
+난이도 문제였던 것만 해소. **단 이 `type function` 접근 자체의 실측은
+아직 미완료** — 스파이크(`luau-test/rewrite-required/16-type-store-key-
+typefunction.luau`)는 `types.newfunction` 시그니처 불일치로 깨져 재작성
+대기 중(`luau-test/STATUS.md` 소스). 실측 전까지는 설계 확정이지 검증
+완료가 아님(`base/typing-limits.md`가 이 구분을 명확히 다룸).
 
 ## Store가 Store를 저장 가능한가
 

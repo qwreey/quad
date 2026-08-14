@@ -2,7 +2,7 @@
 
 > 마지막 갱신: 2026-08-14 (**"emit은 항상 전파"** 정정으로 `05`가 옛 모델을
 > 검증 중이라 `rewrite-required/`로 이동 —
-> `archive/invalidate-dedup-propagation-reversed.md`). 직전 갱신은 같은 날 **세 번째 세션**(`bindLifetime`/`canExecute`/
+> `archive/invalidate-dedup-propagation-reversed.md`). 직전 갱신은 같은 날 **다섯 번째 세션**(`bindLifetime`/`canExecute`/
 > `unbindLifetime` 재정정으로 `10`이 옛 모델을 검증하고 있어
 > `rewrite-required/`로 이동 — 이제 `not-run/`에는 스파이크가 없고 헬퍼만
 > 남음). 직전 갱신은 2026-08-13 열네 번째 세션(하강 diff 재디스패치 확정으로
@@ -68,7 +68,7 @@
 | `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 폐기된 `canBound`/`bindLifetime`의 `.Subscribed` 세팅/2-인자 `canExecute`를 검증 중 — **`canExecute(value)` 1-인자 + `bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). 이중 바인딩 게이트도 `canBound`가 아니라 `if canExecute(v) then error(...) end`로. **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정]** 이중 바인딩 게이트는 `canBound(value)`(`if canBound(v) then error(...) end`) — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
 

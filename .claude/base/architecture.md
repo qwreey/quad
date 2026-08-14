@@ -168,12 +168,12 @@ quad/
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
-│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). HANDLER_PRIORITY_FALLBACK으로 등록(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
+│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). quad-base가 모듈 로드 시점에 priority=HANDLER_PRIORITY_FALLBACK로 스스로 등록(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
 │       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절)
 │       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절)
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
-│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
+│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value 읽기 + :Set()/:Callback()/:Wait() 셋), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       ├── PostRef.luau           # PreRef의 거울상 — 같은 Ref 런타임/제약, 같은 pre-pass가 수집만 하고 두 패스가 전부 끝난 뒤 fire(`ref-plan.md` "`PostRef`" 절, 2026-08-14 아홉 번째 세션 확정)
@@ -182,9 +182,9 @@ quad/
 └── quad-roblox/
     ├── wally.toml
     └── src/
-        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
+        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canBound/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
         ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), disposeInst(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
-        ├── LifetimeHandle.luau    # bindLifetime/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
+        ├── LifetimeHandle.luau    # bindLifetime/canBound/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). `canBound`/`canExecute`는 비공개 헬퍼 하나를 공유하는 얇은 진입점(2026-08-14 열한 번째 세션). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별

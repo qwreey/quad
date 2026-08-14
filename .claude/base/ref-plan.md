@@ -259,6 +259,8 @@ RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v)
 function RefLeafHandler.process(inst, k, v, index)
     local old = relate:GetStrong(inst, k)
     if old ~= v then  -- 이미 같은 Ref가 이 자리를 차지 중이면 재통지 skip
+        bindLifetime(inst, v)  -- v가 이미 다른 자리에 살아있으면 여기서 즉시 error —
+                                -- 이중 배치 방지("이중 배치 방지" 절 참고), 별도 Relate 불필요
         v:Set(inst)
     end
     relate:SetStrong(inst, k, v)
@@ -266,6 +268,7 @@ function RefLeafHandler.process(inst, k, v, index)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
         -- 이 process 호출이 만든 클로저가 직접 캡처(Relate 재조회 불필요)
         if nextValue ~= v then
+            unbindLifetime(v)  -- 점유 해제 — 이후 v는 다른 자리에 다시 bindLifetime 가능
             v:Set(nil)  -- 매 :Set()마다 콜백 재통지되는 기존 Ref 규칙(위 "해소됨 —
                         -- 반복 재설정 가능" 항목)을 그대로 재사용, 새 알림 경로 아님
             -- [정정, 2026-08-13 감사] relate 정리는 반드시 이 분기 *안*에 있어야
@@ -310,6 +313,40 @@ end
   `Observer` 위에서 동작, 또는 Roblox가 Destroy 시 알아서 `Disconnect`해주는
   이벤트 안에 로직을 두는 기존 관례)를 쓰도록 문서가 유도할 것 — Ref
   자신에 Destroy-awareness를 얹는 건 오버엔지니어링.
+
+### 이중 배치 방지 — `question.md` 0-W 해소, (a) 선택 (2026-08-14 열한 번째 세션)
+
+**같은 `Ref` 객체를 두 자리에 동시에 놓으면 뒤에 놓은 자리가 앞 자리의
+바인딩을 조용히 지우는 문제**(`Frame1{r}`/`Frame2{r}`처럼 같은 `r`을 두
+Frame의 children 배열에 각각 리터럴로 놓으면 — `Ref`는 항상 children
+배열 아이템으로 놓이므로 `k`는 문자열 `"Ref"`가 아니라 그 자리의 배열
+인덱스(숫자) — `r:Set(inst1)` 다음 `r:Set(inst2)`가 에러 없이 덮어씀,
+`inst1` 자리가 나중에 retract되면 `r:Set(nil)`이 `inst2`의 정당한 값까지 지움)를
+**즉시 error로 막기로 확정** — `Slot`의 `claimOwner`, `PreRef`/`PostRef`의
+`_fired`, `Attribute`의 이름 claim과 같은 급의 방어를 `Ref`에도 채택.
+
+**메커니즘 — 새 `Relate`를 안 만들고 `bindLifetime`/`unbindLifetime`을
+그대로 재사용.** `bindLifetime(inst, value)`은 이미 자기 내부에 "이 value가
+이미 다른 곳에 살아있는 바인딩을 갖고 있으면 즉시 error"라는 가드를 갖고
+있음(`base/lifecycle-pattern.md`의 `canBound` 게이트) — `Ref`가 바인딩될
+때마다 이 가드를 그대로 통과시키면 이중 배치가 저절로 막힘. 위
+`RefLeafHandler.process`의 `bindLifetime(inst, v)`/`unbindLifetime(v)` 호출이
+그것 — 실제 바인딩이 일어나는 분기(`old ~= v`)에서만 걸어서 spurious
+재발행(같은 `v`가 다시 오는 경우)엔 안 걸림, 실제 언바인딩이 일어나는
+분기(`nextValue ~= v`)에서만 풀어서 그 뒤 다른 자리에 재바인딩 가능.
+
+**기존 dedup용 `relate`와는 별개 관심사** — `relate`는 "이 슬롯에 마지막으로
+뭐가 있었는지"(spurious 재발행 dedup)를 기억하고, `bindLifetime`은 "이 `Ref`
+객체가 지금 어딘가에 살아있게 물려 있는지"(이중 배치 방지)를 판정함. 서로
+다른 축이라 하나가 다른 하나를 대체 못 함 — 계속 둘 다 필요.
+
+**children 배열 리터럴 경로도 같은 코드를 그대로 타므로 자동으로 커버됨**
+(`Frame1{r}`/`Frame2{r}`가 원래 문제였던 그 케이스) — 리터럴 구성은
+`old`가 항상 `nil`이라 매번 `bindLifetime`이 불리고, 두 번째 자리에서
+`r`이 이미 살아있는 바인딩을 갖고 있으니 그 즉시 에러.
+
+`question.md`의 원 형제 프리미티브 대조 표(`Ref` 행 "없음")는 해소로 갱신,
+상세는 `archive/question-resolved.md`.
 
 ### `phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설 (2026-08-07 세 번째
 세션 — 이 절이 당시 쓰던 `CreatedRef(fn, ...)` 래퍼 이름 자체도 이후
@@ -533,10 +570,20 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     값으로 막는 이유" 절은 **타입 차단**만 다뤘음 — Luau 타입은 런타임에
     지워지므로(`:Peek`/`Overridden`/버그로 타입을 우회해 PreRef가 Modifier나
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
-    전용 `Handler`를 하나 등록: `{ isHandlable = function(inst,k,v) return
-    isPreRef(v) end, process = function(inst,k,v) error("PreRef는 children
-    배열 리터럴에만 놓을 수 있음") end }` — `NoneHandler`와 같은 결의
-    "한 값 종류만 전담하는 Handler" 패턴 재사용, 새 메커니즘 아님. 이
+    전용 `Handler`를 하나 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
+    isHandlable = function(inst,k,v) return isPreRef(v) end, process =
+    function(inst,k,v) error("PreRef는 children 배열 리터럴에만 놓을 수
+    있음") end }` — `k` 타입은 안 가림(숫자든 문자열이든 `isPreRef(v)`만
+    보고 매치). `NoneHandler`와 같은 결의 "한 값 종류만 전담하는 Handler"
+    패턴 재사용, 새 메커니즘 아님. **[2026-08-14 열한 번째 세션] 우선순위는
+    `HANDLER_PRIORITY_FALLBACK`**(무조건 매치하는 하드 블록이 아니라
+    `Tag`/`Attribute`와 같은 "base가 소유하지만 백엔드/특정 자리에서
+    평범한 우선순위로 자기 핸들러를 등록하면 덮어쓸 수 있는" 자리 —
+    지금은 그 자리를 아무도 안 가져가서 항상 이 가드가 매치돼 에러가
+    나지만, 나중에 named 자리 바인드 같은 실제 기능이 확정되면 base
+    가드를 건드리지 않고 그 기능의 Handler를 평범한 우선순위로 하나
+    등록하는 것만으로 자연히 우선함, `base/dispatch-core-plan.md`의
+    "`HANDLER_PRIORITY_FALLBACK`" 절). 이
     Handler는 **`Dispatch.process`/`getHandler`의 정상 우선순위 스캔에
     등록**되는 반면(pre-pass처럼 그 밖에서 도는 게 아님), 리터럴 배열의
     `PreRef`는 pre-pass가 fire와 동시에 해당 슬롯을 소진(**[정정,
@@ -718,9 +765,12 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 동일: flatten되면 해시 파트로 존재하게 돼 "배열 파트" 전제를 벗어나고,
 Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
 정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
-레지스트리에 `{ isHandlable = isPostRef(v), process = error("PostRef는
-children 배열 리터럴에만 놓을 수 있음") }` Handler를 등록 — pre-pass가
-이미 소진시키므로 이게 매치되면 곧 타입 차단을 우회한 버그라는 뜻.
+레지스트리에 `{ priority = HANDLER_PRIORITY_FALLBACK, isHandlable =
+isPostRef(v), process = error("PostRef는 children 배열 리터럴에만 놓을
+수 있음") }` Handler를 등록(`k` 타입 안 가림 — `PreRef`의 "동적 경로
+가드" 절과 완전히 같은 이유로 `HANDLER_PRIORITY_FALLBACK`, 2026-08-14
+열한 번째 세션) — pre-pass가 이미 소진시키므로 이게 매치되면 곧 타입
+차단을 우회한 버그라는 뜻.
 
 **1회용, 재사용은 즉시 error** — `PreRef`와 같은 `_fired` 플래그를 그대로
 재사용(위 "PreRef는 '취소'라는 개념이 없다" 절과 같은 근거: 이미 fire된

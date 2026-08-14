@@ -134,10 +134,17 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   `setAttribute(inst,name,v)`(`v==nil`이면 삭제). `Tag`/`Attribute`의 부기
   알고리즘이 통째로 quad-base로 옮겨오면서, 엔진에 실제로 손대는 마지막
   한 줄만 이 경로로 주입받게 됨(`base/dispatch-core-plan.md` "base가
-  소유하는 핸들러와 주입되는 엔진 op" 절). 미주입 백엔드에서는 base
-  스텁이 명확한 에러를 내고, 백엔드가 통째로 다르게 처리하고 싶으면
-  `HANDLER_PRIORITY_FALLBACK`보다 높은 우선순위로 자기 핸들러를 등록하면 됨 — 상세는 `base/bind-system-plan.md`의 "base
-  유틸은 인터페이스, 실제 구현은 백엔드 팩토리가 주입" 절 참고. **중복 호출
+  소유하는 핸들러와 주입되는 엔진 op" 절). **`TagHandler`/
+  `AttributeKeyHandler`/`AttributeGroupHandler` 자신은 quad-base가
+  모듈 로드 시점에 `HANDLER_PRIORITY_FALLBACK`으로 스스로 등록** —
+  `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가 뮤테이션으로
+  채우는 타입 계약. 아직 아무 팩토리도 안 채운 슬롯의 기본값은
+  quad-base가 명시적으로 에러내는 스텁으로 미리 채워둠(조용한 no-op
+  추측 아님 — base가 임의 엔진의 "맞는 기본 동작"을 알 수 없어서).
+  더 명확한 메시지나 진짜 원자적 실패(부기 mutation 0회)를 원하는
+  백엔드는 opt-in으로 `HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기
+  Handler를 추가로 등록할 수 있음 — 상세는
+  `base/dispatch-core-plan.md`의 같은 절. **중복 호출
   가드/`New()`와의 관계는 2026-08-04 3차 라운드에서 확정**: 같은 팩토리로
   재호출하면 무시(no-op), 다른 팩토리로 재호출하면 에러(유일 슬롯 충돌 —
   바로 위 "Bind는 누가, 어떻게 구현하는가" 절의 원칙과 일치) — `New()`가

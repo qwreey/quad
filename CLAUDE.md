@@ -55,11 +55,13 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   세기로 함).
 - `.claude/luau-test/` — **[2026-08-09 신설]** "추론만으로 확정하고 실제
   Luau로 부딪혀본 적 없는 것"을 미리 검증하는 독립 실행 스파이크 20개
-  (`luau <파일>` / `luau-analyze <파일>`). **상태의 소스는 `STATUS.md`**
-  (pass / 사람 결정 필요 / 스파이크 깨짐 / 미실행), 각 파일이 뭘 왜
-  검증하는지는 `README.md`. 2026-08-13에 첫 실측 완료 — 런타임 12개 전원
-  통과, 남은 건 Studio 전용 `10`과 코드가 깨진 `13`/`15`/`16`
-  (`review-required/`는 13차 세션에 비워짐).
+  (`luau <파일>` / `luau-analyze <파일>`). **상태의 소스는 항상 `STATUS.md`**
+  (pass / 사람 결정 필요 / 스파이크 깨짐 / 미실행, 폴더 구조 자체가 상태),
+  각 파일이 뭘 왜 검증하는지는 `README.md`. 2026-08-13에 첫 실측 완료(당시
+  런타임 12개 전원 통과) — 이후 여러 세션에 걸쳐 재설계로 몇 건이 추가로
+  `rewrite-required/`에 합류했으니 **지금 몇 개가 어디 있는지는 여기서
+  나열 안 하고 `STATUS.md`로 미룸**(나열하다 stale해지는 패턴이 실제로
+  반복됐음, 아래 "지금 할 일" 0번 참고).
 - `.claude/audit/` — **[2026-08-13 신설]** 스파이크를 실제로 돌린 **실측
   결과** 기록(계획 아님). 부분 확인도 있는 그대로 남김 —
   `luau-test-first-run-2026-08-13.md`(첫 실측 라운드 전체, 구 0-Y의 1차
@@ -159,13 +161,20 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
 
 ## 지금 할 일 (우선순위순)
 
-0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-13 열네 번째 세션 기준).**
+0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-14 열한 번째 세션 기준).**
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
-   핸들 계약)는 13차 세션에, **`0-Z`(Attribute 이름 소유권)와 `0-A`(재디스패치
-   하강 diff)는 14차 세션에 확정·`base/` 반영 완료**. 남은 `0-W`(같은 `Ref`
-   이중 배치)는 M0가 아니라 M4 구현 세부만 막음 — **[2026-08-14 열 번째
-   세션] `0-B`(`dispose` 시그니처/범위)도 해소**되어 `question.md`의
-   "결정 대기"엔 이제 `0-W` 하나만 남음.
+   핸들 계약)는 13차 세션에, `0-Z`(Attribute 이름 소유권)와 `0-A`(재디스패치
+   하강 diff)는 14차 세션에, `0-B`(`dispose` 시그니처/범위)는 2026-08-14
+   열 번째 세션에 확정·`base/` 반영 완료. **`0-W`(같은 `Ref` 이중 배치,
+   M8 구현 세부만 막던 항목)도 2026-08-14 열한 번째 세션에 해소** —
+   선택지 (a) 채택(즉시 error), 메커니즘은 새 `Relate` 없이
+   `bindLifetime`/`unbindLifetime` 재사용(`base/ref-plan.md` "이중 배치
+   방지" 절). 부수 결정으로 **`canBound`가 `canExecute`와 별도 진입점으로
+   재도입**됨(2026-08-14 다섯 번째 세션에 하나로 합쳤던 걸 부분적으로
+   되짚음 — "이미 묶여 있는가"(bound 문맥)와 "지금 발화해도 되는가"
+   (execute 문맥)는 판정 로직은 공유해도 호출부의 질문이 다르다는 사용자
+   지적, `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절).
+   `question.md`의 "결정 대기" 절 자체가 지금은 비어 있음.
 
    **M0 착수 전 반드시 읽을 것 — 이 두 개는 "결정"이 아니라 "구현 규약"이라
    여전히 유효**:
@@ -195,9 +204,14 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    아래 그대로:
    - **`.claude/luau-test/`(2026-08-09 신설, 2026-08-13 기준 20개) 스파이크
      결과 — [2026-08-13 여섯 번째 세션에 첫 실측 완료, 대부분 닫힘].**
-     **상태의 소스는 `.claude/luau-test/STATUS.md`**(pass / 사람 결정 필요 /
-     스파이크 깨짐 / 미실행 4분류), 실행 결과 상세는
-     `.claude/audit/luau-test-first-run-2026-08-13.md`. 요지만:
+     **상태의 소스는 항상 `.claude/luau-test/STATUS.md`**(pass / 사람 결정
+     필요 / 스파이크 깨짐 / 미실행, 폴더 구조 자체가 상태) — 몇 개가 지금
+     어느 폴더에 있는지는 여기서 나열 안 함(04/05/10/13/15/16/19가 여러
+     세션에 걸쳐 재설계로 `rewrite-required/`에 들고나며 이 문단의 나열이
+     매번 stale해지는 패턴이 반복됐음, 최근엔 8차 세션의 "emit은 항상
+     전파" 정정으로 `05`도 합류). 실행 결과 상세는
+     `.claude/audit/luau-test-first-run-2026-08-13.md`. 첫 실측 요지만
+     (역사적 사실 — 이후 변동은 위처럼 `STATUS.md`가 소스):
      - **런타임 12개 전원 통과**(01~07/11/17/18/19/20, crash 0 / FAIL 0) —
        특히 `07`이 연쇄 GC를, `18`이 두-`Relate` 상호 순환 미해제를 실측
        확정해 GC-native 아키텍처의 핵심 전제가 검증됨. `04`는 같은 세션
@@ -206,23 +220,8 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
        해소**(Luau 현 한계로 확정, `base/typing-limits.md`). 나머지 타입
        스파이크는 판정 완료(`08`/`09` 통과, `12`는 실패지만 문서가 이미
        fallback으로 예비해둔 결과라 설계 영향 없음, `14`는 부분).
-     - **남은 것은 셋뿐**: (1) `10`은 **Studio 전용이라 `luau` CLI로 못
-       돌림** — A 섹션 앞부분만 사용자 자작 스크립트로 부분 확인
-       (`audit/gcconn-trick-verification.md`), A-1/A-2/B/C 미확인.
-       (2) `13`/`15`/`16`은 **스파이크 코드 자체가 깨져 재작성 필요**
-       (설계 문제 아님 — 각각 더미 스텁 도달불가 / 음성 대조군이
-       `SyntaxError` / `types.*` 실제 API 불일치). (3) 그 외엔 그대로 M0
-       실제 코드 작성에 재사용.
-     - **[주의] 위 "남은 것은 셋뿐"은 여섯 번째 세션 기준** — 13차 세션에
-       `08`이 `done/`으로 가며 `review-required/`가 비었고, **14차 세션에
-       `04`와 `19`가 하강 diff 재설계로 전제가 바뀌어 `rewrite-required/`로
-       갔음**(`19`는 B 섹션만 낡음, A/C는 유효).
-       **개수의 소스는 항상 `luau-test/STATUS.md`.** 지금 M0 착수를 막는
-       설계 결정은 없고, 0-Y/0-A가 남긴 규약(`base/typing-limits.md`/
-       `base/dispatch-core-plan.md`)은 착수 전 필독.
-     - 참고로 `04`(인덱스 기반 재설계 반영)와 `19`의 B/C 섹션(폐기된
-       `rawNew`+`owners`/3분기 `claimOwner` 검증하던 것)은 **둘 다 여섯
-       번째 세션에 재작성 완료**되어 통과 상태 — 더 이상 대기 항목 아님.
+     지금 M0 착수를 막는 설계 결정은 없고, 0-Y/0-A가 남긴 규약
+     (`base/typing-limits.md`/`base/dispatch-core-plan.md`)은 착수 전 필독.
 2. **용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
    `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
    stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
@@ -1368,3 +1367,106 @@ Modifier 필드 금지 규칙과 혼동해 잘못 답했다가 사용자 지적�
 `base/dispatch-core-plan.md`/`base/architecture.md`/
 `base/lifecycle-hooks-plan.md`/`ROADMAP.md`/`HUMAN_TODO.md`/`README.md`
 전부 반영, `doc-check.py` ERROR 0 유지.
+
+**2026-08-14 열한 번째 세션 — 코퍼스 전체 감사(서브에이전트 6개 병렬),
+`canBound`/`canExecute` 재분리로 `question.md` 0-W 해소**
+(`session/2026-08-14-11-corpus-audit-canbound-resplit.md`)
+사용자 요청으로 `.claude/` 전체를 `doc-check.py` + 6개 병렬 서브에이전트로
+감사 — stale 세션 번호(luau-test 파일들의 "canExecute 재정정"이 "세 번째"
+vs "다섯 번째"로 갈라짐, archive 교차확인 결과 다섯 번째가 맞음), 잘못된
+인용(`comparison-charm.md`가 이미 확정된 `:Compute`의 `previous` 인자를
+존재하지 않는 문서 인용으로 "미결"이라 잘못 서술), 자기모순 배너(`tag-plan.md`
+의사코드와 "패키지 배치" 절 우선순위 불일치, `additional-primitives-plan.md`의
+"새 질문 없음" 배너가 이후 추가된 질문 2개와 모순) 등 15개 파일의 실제
+사실 오류를 발견·수정. 감사 후 사용자가 `question.md` 0-W(`Ref` 이중
+배치 방지)를 선택지 (a)로 확정 — 메커니즘은 `RefLeafHandler`가 새
+`Relate` 없이 `bindLifetime`/`unbindLifetime`을 재사용(이미 내장된
+이중 바인딩 가드를 그대로 탐). 이 과정에서 그 가드 이름이 `canExecute`인
+게 개념적으로 안 맞다는 지적 — "이미 묶여 있는가"(bound 문맥, `bindLifetime`/
+`Observer:Subscribe()`가 묻는 것)와 "지금 발화해도 되는가"(execute 문맥,
+State emit 전파 루프만 묻는 것)는 판정값은 같아도 다른 질문이라, 2026-08-14
+다섯 번째 세션에 "canBound 폐기, canExecute로 통합"했던 걸 부분적으로
+되짚어 `canBound`를 별도 진입점으로 재도입(판정 로직은 비공개 헬퍼
+`isBoundAlive` 하나로 계속 공유 — 코드 중복 없이 호출부 의미만 분리,
+다섯 번째 세션이 고친 시그니처/오염 정정 자체는 안 바뀜). `base/
+lifecycle-pattern.md`(정본)/`base/ref-plan.md`/`archive/
+canexecute-inst-arg-reversed.md`(addendum)/`question.md`→`archive/
+question-resolved.md`/`ROADMAP.md`/`base/source-state-plan.md`/
+`base/effect-plan.md`/`base/architecture.md`/`base/dispatch-core-plan.md`/
+`research/pre-implementation-audit.md`/`luau-test/README.md`/`audit/
+gcconn-trick-verification.md`/CLAUDE.md 자신까지 전부 반영,
+`doc-check.py` ERROR 0 유지. 새로 연 설계 질문 없음.
+
+**같은 세션 후속**: 손 트레이싱의 `Frame1 { Ref = r }` 표기가 실제
+API와 다르다는 사용자 지적(`Ref`는 항상 배열 리터럴이라 `k`는 숫자,
+`"Ref"`라는 문자열 키가 아님) — `ref-plan.md`/`archive/question-resolved.md`
+정정. 이어서 `PreRef`/`PostRef`/`Observer`/`Effect`가 non-number 키로
+들어오면 어떻게 할지 논의 — 사용자가 처음엔 "process에서 에러"를
+제안했다가 스스로 "가장 아래(FALLBACK)에 까는 게 맞다"고 정정, 넷 다
+`HANDLER_PRIORITY_FALLBACK`으로 등록하는 동적 경로 가드로 통일(하드
+블록이 아니라 `Tag`/`Attribute`처럼 나중에 평범한 우선순위 Handler로
+override 가능한 자리) — `ref-plan.md`/`source-state-plan.md`/
+`effect-plan.md`/`ROADMAP.md` 반영. 마지막으로 Tag/Attribute의 미주입
+백엔드 스텁 에러가 "미지원"과 "미등록"을 구분 안 하는 게 맞는지 확인
+질문 — 확정 원칙(스텁 입장에선 원천적으로 구별 불가) 재확인. 처음엔
+"FALLBACK보다 높은 우선순위 Handler로 덮어씌우기" 관례를 문서화했으나,
+사용자가 곧바로 더 단순한 안으로 정정 — **op 등록 자체를 필수로
+바꿈**: 백엔드 팩토리는 `addTag`/`removeTag`/`setAttribute`를 항상
+명시적으로 채워야 하고(`nop`도 정당한 구현, 미지원이면
+`function() error(...) end`), base의 미주입 스텁에 기대는 정상 경로는
+없앰 — Dispatch Handler/우선순위 조정 불필요해서 훨씬 가볍고, 부수
+효과로 "provider 미주입"(어떤 팩토리도 안 돌았다는 좁은 경우) vs
+"미지원"(팩토리가 명시적으로 에러 등록)이 자연히 갈라짐.
+`dispatch-core-plan.md`/`module-lifecycle-plan.md` 반영. **바로 다시
+정정** — 사용자가 op 필수화만으론 부족함을 지적: `addTag` 에러는
+`TagHandler.process` 본문 안, 부기(`tagNameMap` 등)가 이미 일부
+mutate된 뒤에야 나서 원자적 실패가 아님(`Tag()`가 반쪽짜리 상태로
+남을 수 있음). 결론: op 필수화는 유지하되, 미지원 백엔드는 **추가로**
+`HANDLER_PRIORITY_FALLBACK + 1` 우선순위의 순수 가로채기 Handler도
+등록해 `TagHandler.process`가 아예 안 불리게(부기 mutation 0회) 하는
+걸 권장으로 추가 — "매치된 Handler 하나만 실행"이라는 기존 Dispatch
+규칙을 그대로 이용, 새 메커니즘 없음. 같은 두 문서 재반영.
+
+**세 번째 정정(틀림, 곧바로 재정정됨)** — 어시스턴트가 "TagHandler는
+quad-base가 자기 모듈 로드 시점에 스스로 등록 안 하고, 등록 여부는
+백엔드 팩토리의 (A)지원/(B)미지원 선택"이라는 모델을 제시했으나, 이는
+어시스턴트 자신의 오독이었음(사용자가 실제로 한 말이 아님). **네 번째,
+최종 정정** — 사용자가 명확히 바로잡음: "HANDLER_PRIORITY_FALLBACK까지
+등록 안한다 했는데, 개소리 — FALLBACK은 아무 등록 없을 때 처리하려는
+걸 방어하는 것까지 포함하는 애임, 기본 등록은 필요함." **최종 모델**:
+`TagHandler`/`AttributeKeyHandler`/`AttributeGroupHandler`는 quad-base가
+모듈 로드 시점에 `HANDLER_PRIORITY_FALLBACK`으로 **스스로 등록**(모든
+백엔드가 자동으로 부기를 얻음 — FALLBACK 밴드의 존재 이유 자체가 이
+"기본 안전 동작"을 공짜로 제공하는 것). `addTag`/`removeTag`/
+`setAttribute`만 백엔드 팩토리가 채우는 타입 계약이고, 안 채운 슬롯의
+base 기본값은 "그럴듯한 기본 동작을 추측"하지 않고 **명시적으로
+에러내는 스텁**(조용한 no-op은 provider 초기화를 잊은 실수를 가려버려
+기각). 더 명확한 메시지·진짜 원자적 실패를 원하는 백엔드만 **opt-in으로**
+`HANDLER_PRIORITY_FALLBACK + 1`짜리 가로채기 Handler를 추가로 등록 —
+필수가 아니라 선택적 업그레이드. `dispatch-core-plan.md`(정본, 다시
+전면 재작성)/`module-lifecycle-plan.md`/`tag-plan.md`/`attribute-plan.md`/
+`architecture.md` 재반영. **교훈**: 네 라운드 연속 정정이 있었던 이유는
+"누가 실제로 Dispatch.addHandler를 부르는가"라는 아키텍처 전제를
+확신 없이 매번 새로 단정하고 그 위에 patch를 쌓았기 때문 — 불확실한
+전제는 재확인 없이 단정하지 말 것.
+
+**같은 세션, 사용자 요청으로 전체 자기 감사**: 이 세션이 건드린 25개
+파일을 `git diff`로 처음부터 재정독 — 실제 문제 3건 발견·수정
+(`HUMAN_TODO.md`가 0-W 해소 이후에도 "남은 건 0-W"로 방치돼 있던 것,
+`ref-plan.md`의 편집 중 생긴 어색한 줄바꿈, Tag/Attribute 등록 모델
+재정리 중 `tag-plan.md`/`attribute-plan.md`에서 실수로 빠뜨린 "백엔드가
+알고리즘 전체를 교체하고 싶으면 그냥 더 높은 우선순위로 등록" 문장
+복원). 나머지는 문제 없음 확인, `doc-check.py` ERROR 0 유지.
+
+**같은 세션, `/code-review high` 백그라운드 실행이 추가로 3건 발견**:
+`git diff` 기반 자기 감사가 "이 세션이 건드린 파일"만 훑어서, "이
+세션이 안 건드렸지만 `canBound` 재도입 때문에 stale해진 파일"을
+놓쳤음 — `audit/gcconn-trick-verification.md` 상단 배너(고친 섹션
+바로 위인데 안 건드림, "canBound 폐기" 서술이 몇 줄 아래 새 서술과
+모순), `.claude/README.md` 인덱스 행 4곳(이 세션 동안 한 번도 안 열어본
+파일이라 5차 세션 서술 그대로 잔존), `luau-test/STATUS.md`의 스파이크
+`10` 재작성 가이드(가장 심각 — "이중 바인딩 게이트는 canExecute로 쓸
+것"이라고 옛 모델을 재작성 지침으로 명시 중이었음), `question.md`
+"용어 정리" 절. 전부 정정. **교훈**: 이름 하나가 재도입되면 그 이름을
+문자열로 전체 코퍼스에 grep해야지, "내가 고친 파일들"만 재확인하는
+건 안 충분함.

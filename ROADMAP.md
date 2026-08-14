@@ -147,12 +147,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       재사용 — 구 `base.perInstanceState(inst)`/`PerInstanceState.luau`를
       대체(2026-08-08 세션 신설).
 - [ ] `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
-      `unbindLifetime(value)`/`canExecute(value)` 탑레벨 함수
-      타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래 M8에만
-      있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의 `canExecute`)이
-      이미 이 인터페이스를 전제로 서술돼 있어 로드맵 순서가 역전돼
-      있었음(`pre-implementation-audit.md` 우선순위1-9, `question.md`
-      2번 — 2026-08-07 네 번째 세션에 반영).
+      `unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨
+      함수 타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래
+      M8에만 있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의
+      `canExecute`)이 이미 이 인터페이스를 전제로 서술돼 있어 로드맵
+      순서가 역전돼 있었음(`pre-implementation-audit.md` 우선순위1-9,
+      `question.md` 2번 — 2026-08-07 네 번째 세션에 반영).
       **[정정, 2026-08-14 다섯 번째 세션] `unbindLifetime`/`canExecute`는
       `inst`를 안 받는다** — 옛 2-인자 시그니처(`(inst, value)`)는 오염이었음.
       `bindLifetime`이 바인딩 시점에 `inst`의 gcconn 참조를 `value` 쪽
@@ -167,13 +167,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `inst` 전체 죽기 전에 특정 값 하나만
       조기 해제(`Dispatch.setLength`가 State 재등록 시 이전 Observer를
       정리하는 데 씀), gchold 내부 구조를 호출부가 몰라도 되게 캡슐화.
-      `bindLifetime`/`unbindLifetime`/`canExecute` 셋 다 네임스페이스
-      없이 탑레벨 함수로 export(`Dispatch.xxx`류 시스템 네임싱과 구분,
-      `isState`/`isObserver`와 같은 1급 프리미티브 취급) — `base/
-      lifecycle-pattern.md`의 "`bindLifetime`/`canExecute`/`unbindLifetime`
-      — 확정" 절 참고. **이중 바인딩 금지 게이트도 `canExecute` 하나로
-      통합**(별도 `canBound`는 폐기 — M3 체크박스 참고), children 배열 leaf
-      부착이 실제로는 `bindLifetime` 호출이라 이 게이트를 그대로 탐
+      `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` 넷 다
+      네임스페이스 없이 탑레벨 함수로 export(`Dispatch.xxx`류 시스템
+      네임싱과 구분, `isState`/`isObserver`와 같은 1급 프리미티브 취급) —
+      `base/lifecycle-pattern.md`의 "`bindLifetime`/`canBound`/
+      `canExecute`/`unbindLifetime` — 확정" 절 참고. **이중 바인딩 금지
+      게이트는 `canBound`**(`canExecute`는 emit 전파 게이팅 전용 —
+      **[2026-08-14 열한 번째 세션] `canBound`가 별도 진입점으로 재도입되어
+      다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M3 체크박스
+      참고**), children 배열 leaf 부착이 실제로는 `bindLifetime` 호출이라
+      이 게이트를 그대로 탐
 - [ ] `Dispatch.setLength(inst,i,len:number|State<number>)`/
       `Dispatch.setOffsetSource(inst,i,offset:Source<number>|None)` —
       array part 형제 순서 보장(Length/Offset 누적합→`LayoutOrder` 리액티브
@@ -271,30 +274,39 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
 - [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
-      실행 확정**(`base/bind-system-plan.md`의 Observer 절), `isObserver`
-      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`
+      실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
+      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`. **동적
+      경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
+      is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
+      열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
 - [ ] `Effect(fn, state?)`(`base/effect-plan.md`) — `state` 생략 시 설치
       1회+leaf 사망 시 확정 정리, `state` 지정 시 내부적으로
       `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React
       `useEffect` 동형). Observer 구현 이후에 착수(의존 관계).
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
-      마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션)
-- [ ] Observer/Effect 이중 바인딩 금지 — `canExecute(value)` 게이트로
+      마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
+      **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
+      "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
+- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
       호출"로 정정 — 진짜 독립 경로는 둘뿐).
-      **[역전, 2026-08-14 다섯 번째 세션] 별도 predicate `canBound(handle)`
-      (2026-08-09 세션에 이름 확정됐던 것)은 폐기** — "이미 유효하게 묶여
-      있다"와 "지금 실행 가능하다"가 정확히 같은 조건이라 `canExecute`
-      하나로 통합됨. `canBound`의 내부 근거로 지목돼 있던 `.Subscribed`
-      필드는 애초에 leaf 경로와 무관했고(전역 `:Subscribe()` 전용),
-      leaf 생존 판정은 `bindLifetime`이 `value` 쪽 `Relate`에 복사해둔
-      gcconn으로 함 — `base/lifecycle-pattern.md`의 "`canBound` 폐기" 절,
-      역전 경위는 `archive/canexecute-inst-arg-reversed.md`. 부수 효과로
-      **바인딩이 죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를
-      통과**(살아있는 바인딩만 막는 게 의도)
+      **[2026-08-14 다섯 번째 세션에 별도 predicate `canBound(handle)`을
+      폐기하고 `canExecute` 하나로 합쳤다가, 같은 날 열한 번째 세션에
+      다시 갈라짐]** — "이미 유효하게 묶여 있다"(bound 문맥)와 "지금
+      발화해도 되는가"(execute 문맥)는 판정값은 같아도 호출부의 질문이
+      달라, `Ref` 이중 배치 방지(`question.md` 0-W)를 계기로 `canBound`가
+      별도 진입점으로 재도입됨 — 판정 로직(비공개 `isBoundAlive` 헬퍼)은
+      공유해 코드 중복은 없음. **이 절이 쓰는 게이트는 이제 `canBound`**
+      (emit 전파 게이팅 전용 `canExecute`가 아님). `.Subscribed` 필드가
+      leaf 경로와 무관하다는 것, leaf 생존 판정을 `bindLifetime`이 `value`
+      쪽 `Relate`에 복사해둔 gcconn으로 하는 것은 안 바뀜 — `base/
+      lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절, 역전 경위는
+      `archive/canexecute-inst-arg-reversed.md`. 부수 효과로 **바인딩이
+      죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를 통과**
+      (살아있는 바인딩만 막는 게 의도, 안 바뀜)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -588,6 +600,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `(v=Ref)` 매치 핸들러 — children 배열의 숫자 슬롯에 놓인
       `Ref(default)` 인스턴스를 인식해 바인드(별도 `CreatedRef` 래퍼
       없음 — 이름 자체가 폐기됨, 아래 참고)
+- [ ] **이중 배치 방지**(`question.md` 0-W, 2026-08-14 열한 번째 세션
+      해소) — `RefLeafHandler.process`가 실제 바인딩 분기에서
+      `bindLifetime(inst, v)`를, 실제 언바인딩 분기에서 `unbindLifetime(v)`를
+      호출. 새 `Relate` 불필요 — `bindLifetime`이 이미 내장한 `canBound`
+      이중 바인딩 가드를 재사용하는 것뿐(같은 `Ref`가 이미 다른 자리에
+      살아있으면 그 자리에서 즉시 error) — `base/ref-plan.md` "이중 배치
+      방지" 절
 - [ ] `PreRef`/`PostRef` pre-pass — 새 `Dispatch.*` 함수 없이
       `Dispatch.drive(inst, flattened)` 자신이 두 패스(배열→해시) 루프
       전에 배열 파트를 **한 번** 훑어, `PreRef`는 그 자리에서 fire하고
@@ -612,12 +631,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       완성은 보장하되 **이 인스턴스가 부모에 붙는 것보다는 먼저**임
       — `base/ref-plan.md` "`PostRef`" 절
 - [ ] `PostRef` 동적 경로 가드 Handler — `PreRef`의 것과 완전한 거울상
-      (`{isHandlable = v is PostRef, process = error(...)}`), 같은 절 참고
-- [ ] `PreRef` 동적 경로 가드 Handler — `{isHandlable = v is PreRef,
-      process = error(...)}` 형태로 정상 우선순위 레지스트리에 등록,
-      `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열 경로는
-      pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입 차단을
-      우회한 버그라는 뜻 — 같은 절 참고
+      (`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v is PostRef,
+      process = error(...)}`), 같은 절 참고
+- [ ] `PreRef` 동적 경로 가드 Handler — `{priority =
+      HANDLER_PRIORITY_FALLBACK, isHandlable = v is PreRef, process =
+      error(...)}` 형태로 정상 우선순위 레지스트리에 등록(`k` 타입 안
+      가림), `NoneHandler`와 같은 "한 값 종류 전담" 패턴. 리터럴 배열
+      경로는 pre-pass가 이미 소진시키므로 이 Handler가 매치되면 곧 타입
+      차단을 우회한 버그라는 뜻 — 같은 절 참고. **[2026-08-14 열한 번째
+      세션]** 우선순위가 하드 블록이 아니라 `FALLBACK`인 이유(나중에 named
+      자리 바인드가 확정되면 평범한 우선순위 Handler로 덮어쓸 수 있게 —
+      `Tag`/`Attribute`와 같은 이유)와 `Observer`/`EffectHandle`에도 같은
+      패턴의 가드가 추가됨은 `base/source-state-plan.md`/`base/effect-plan.md`의
+      "동적 경로 가드" 절 참고
 - [ ] **[2026-08-14 두 번째 세션 신설]** `ProcessedPreRefHandler` +
       **[아홉 번째 세션] `ProcessedPostRefHandler`**(완전한 거울상, 코드
       한 글자 차이) — `{isHandlable = v == Processed*Ref, process =
@@ -635,20 +661,25 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
 - [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
-      `unbindLifetime`/`canExecute` 본체(인터페이스 자체는 M2로 이동됨,
-      `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현 없음).
+      `unbindLifetime`/`canBound`/`canExecute` 본체(인터페이스 자체는
+      M2로 이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현
+      없음).
       **[2026-08-14 다섯 번째 세션 정정] gcconn/gchold를 여기서 lazy 생성하지
       않는다** — 생성은 M5의 Instance 생성 경로가 이미 끝내둔 것이고, 이
       함수들은 `InstData`에서 찾아 쓰기만 함. `bindLifetime`은
       `gchold[value]=true`(강참조로 생존 보장)와 `BindData:SetWeak(value,
       "gchold"/"gcconn", ...)`(값이 자기 생존 판정 근거를 직접 들고 있게)
-      둘만 하고, `unbindLifetime(value)`은 그 셋을 되돌림, `canExecute(value)`은
-      복사된 gcconn의 `.Connected` 또는 `.Subscribed`를 봄.
+      둘만 하고, `unbindLifetime(value)`은 그 셋을 되돌림. **[2026-08-14
+      열한 번째 세션] `canBound(value)`/`canExecute(value)`는 비공개
+      헬퍼 `isBoundAlive(value)` 하나(복사된 gcconn의 `.Connected` 또는
+      `.Subscribed`를 봄)를 공유하는 얇은 진입점 둘로 분리** — `bindLifetime`/
+      `Observer:Subscribe()`의 이중 바인딩 가드는 `canBound`, State emit
+      전파 루프만 `canExecute`.
       **저장은 전부 `SetWeak`**(`SetStrong` 아님 — gchold/gcconn은 아래 M5
       클로저↔`gchold[1]` 상호 참조로 이미 안전하게 살아있고, "다른 곳에서
       안전하게 유지되는 것은 항상 weak로 잡는다"가 일반 규칙).
-      `base/lifecycle-pattern.md`의 "`bindLifetime` / `unbindLifetime` /
-      `canExecute`" 절
+      `base/lifecycle-pattern.md`의 "`bindLifetime` / `canBound` /
+      `canExecute` / `unbindLifetime`" 절
 
 ## M9 — 컴포넌트 합성 레이어
 

@@ -324,6 +324,57 @@ Slot이 됨. 막는 게 소유권 규칙이 아니라 "제거 = 파괴"라는 re
 `frame:Destroy()`하고 `Set`하는 것과 같은 문제) — 순서는 항상
 `Set`(언마운트) → 그 다음 정리.
 
+### 0-W. ~~같은 `Ref` 객체가 두 자리에 놓이는 걸 막을 것인가~~ **[해소됨, 2026-08-14 열한 번째 세션]** (2026-08-13 열세 번째 세션 신설, 0-Z 확인 중 발견)
+
+**결정: 선택지 (a) — `Slot`/`PreRef`와 같이 즉시 error.** 메커니즘은
+사용자 제안대로 새 전용 `Relate`를 만들지 않고 `bindLifetime`/
+`unbindLifetime`을 재사용 — `bindLifetime`이 이미 내부에 "이 value가
+다른 곳에 이미 살아있는 바인딩을 갖고 있으면 즉시 error"라는 가드를
+갖고 있어서(`base/lifecycle-pattern.md`의 `canBound` 게이트),
+`RefLeafHandler.process`가 실제 바인딩 분기에서 `bindLifetime(inst, v)`를,
+실제 언바인딩 분기에서 `unbindLifetime(v)`를 부르기만 하면 이중 배치가
+저절로 막힘. 상세 메커니즘/코드는 `base/ref-plan.md`의 "이중 배치 방지"
+절.
+
+**부수 결정 — `canBound`가 `canExecute`와 별도 진입점으로 재도입됨**
+(2026-08-14 다섯 번째 세션에 "canBound 폐기, canExecute로 통합"됐던 걸
+부분적으로 되짚음, 시그니처 정정 자체는 안 바뀜). 사용자 지적: "이중
+바인딩 여부"(bound 문맥)와 "지금 발화해도 되는가"(execute 문맥)는 오늘
+판정값이 같아도 서로 다른 질문 — `Ref`처럼 emit 전파에 참여하지 않는
+값에 `canExecute`를 묻는 건 개념이 안 맞음. 판정 로직(`isBoundAlive`)은
+공유하는 비공개 헬퍼 하나로 유지하고, `canBound`/`canExecute`는 그
+헬퍼를 부르는 얇은 진입점으로 분리 — 중복 구현 없이 호출부 의미만
+나뉨. `bindLifetime`/`Observer:Subscribe()`의 가드는 `canBound`로,
+State emit 전파 루프만 `canExecute`로. 상세는
+`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절, 역전
+경위는 `archive/canexecute-inst-arg-reversed.md`의 추가된 절 참고.
+
+원 손 트레이싱/형제 프리미티브 대조표는 아래 보존(**[표기 정정, 2026-08-14
+열한 번째 세션 후속]** 아래 `Frame1 { Ref = r }`/`process(inst1,"Ref",r)`의
+`"Ref"`는 설명 편의상 쓴 표기일 뿐, 실제로는 `Ref`가 항상 children
+배열 리터럴 아이템으로 놓여 `k`가 문자열 `"Ref"`가 아니라 그 자리의 배열
+인덱스(숫자)임 — 정확한 표기는 `base/ref-plan.md` "이중 배치 방지" 절
+참고, 트레이싱의 논리 자체는 `k`가 뭐든 안 바뀜):
+
+**손 트레이싱** (`base/ref-plan.md`의 `RefLeafHandler` 의사코드에 대입,
+`Frame1 { Ref = r }` / `Frame2 { Ref = r }`):
+
+1. `process(inst1,"Ref",r)` → `relate[inst1]["Ref"]`가 nil → `r:Set(inst1)`
+2. `process(inst2,"Ref",r)` → `relate[inst2]["Ref"]`도 nil(**다른 키**) →
+   `r:Set(inst2)` — inst1 바인딩이 **조용히 유실, 에러 없음**
+3. inst1 자리가 retract → 클로저 인자 `nil ~= v(r)` → **`r:Set(nil)`** —
+   inst2가 정당하게 들고 있던 값을 지움(교차 오염)
+
+**형제 프리미티브 대조 — 해소 전 `Ref`만 비어 있었음**:
+
+| | 공유 자원 | 방어 | 상태 |
+|---|---|---|---|
+| `Slot` | element | `claimOwner`/`claimOwnerAt` → 즉시 error(`Slot{a,a}`/`Frame{slot,slot}`) | 막힘 |
+| `PreRef`/`PostRef` | 자기 자신 | `_fired` → 재사용 시 error | 막힘 |
+| `Tag` | 태그 이름 | 위치별 참조 카운트 — 겹침이 **의도된 동작**(합집합) | 설계상 정상 |
+| `Attribute` | 이름 | 그룹 전용 키 + 이름 claim → 즉시 error | 막힘 |
+| `Ref` | 자기 자신 | `bindLifetime`/`canBound` 재사용 → 즉시 error | **막힘(해소)** |
+
 ### 0. 추가 프리미티브 필요성 — 사용자 요청, 대부분 수렴(2026-08-06~07)
 
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것

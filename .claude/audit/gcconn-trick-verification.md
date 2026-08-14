@@ -11,11 +11,13 @@
 재정정으로 `canExecute(value)`가 **`value` 쪽 릴레이션에 복사된 gcconn의
 `.Connected`를 직접 읽는 것**이 leaf 경로 생존 판정의 전부가 됐기 때문
 (`base/lifecycle-pattern.md`의 "`bindLifetime`/`canExecute`/`unbindLifetime`
-— 확정" 절). 반면 이 문서가 인용하던 **`canBound`는 폐기**됐고(게이트는
-`canExecute` 하나로 통합), 공식 `10` 파일은 옛 모델을 검증 중이라
-`rewrite-required/`로 옮겨졌음 — 아래 시그니처 표기와 "아직 확인 안 된
-것"/"다음 확인 시 참고"를 그에 맞춰 갱신함. 역전 경위는
-`archive/canexecute-inst-arg-reversed.md`.
+— 확정" 절). **[재정정, 2026-08-14 열한 번째 세션] `canBound`는 폐기되지
+않고 별도 진입점으로 재도입됨** — 이중 바인딩 게이트(`bindLifetime`/
+`Observer:Subscribe()`)는 `canBound`, State emit 전파 게이팅만
+`canExecute`(판정 로직은 비공개 헬퍼 하나를 공유, `base/lifecycle-pattern.md`의
+"`canBound` vs `canExecute`" 절) — 공식 `10` 파일은 이 재분리도 반영해
+재작성해야 함, 계속 `rewrite-required/`에 있음. 역전 경위는
+`archive/canexecute-inst-arg-reversed.md`(추가된 절 포함).
 
 ## 배경
 
@@ -75,18 +77,19 @@ Studio에서 실행된 사용자 자작 스크립트(공식 `10` 파일이 아�
 
 - **이중 바인딩 게이트 + unbind/Destroy 후 재바인딩 허용** — `bindLifetime`/
   `unbindLifetime` 로직 자체는 이 스크립트에 없음(순수 GC/Connection
-  메커니즘만 테스트함). **[2026-08-14 다섯 번째 세션 갱신]** 게이트는 이제
-  `canBound`가 아니라 `canExecute(value)` 하나이고(`if canExecute(v) then
-  error(...) end`), 검증해야 할 명제도 바뀜: (a) 살아있는 바인딩을 가진
+  메커니즘만 테스트함). **[2026-08-14 열한 번째 세션 재갱신]** 게이트는
+  `canBound(value)`이고(`if canBound(v) then error(...) end`, `canExecute`는
+  emit 게이팅 전용으로 분리 — `lifecycle-pattern.md` "`canBound` vs
+  `canExecute`" 절), 검증해야 할 명제는 안 바뀜: (a) 살아있는 바인딩을 가진
   값을 다시 `bindLifetime`하면 error, (b) `unbindLifetime(value)` 후에는
-  통과, (c) **`inst`가 Destroy된 뒤에도 통과**(새 모델이 명시적으로
-  허용 — `lifecycle-pattern.md` "`canBound` 폐기" 절). 전부 미해소이고,
-  공식 `10` 파일은 **재작성 후에야** 이걸 확인할 수 있음(현재
-  `luau-test/rewrite-required/`).
+  통과, (c) **`inst`가 Destroy된 뒤에도 통과**(모델이 명시적으로 허용).
+  전부 미해소이고, 공식 `10` 파일은 **재작성 후에야** 이걸 확인할 수
+  있음(현재 `luau-test/rewrite-required/`).
 - **`bindLifetime`이 복사해둔 gcconn만으로 판정이 성립하는가** —
-  **[2026-08-14 다섯 번째 세션 신규]** `canExecute`가 `inst`를 안 받고
-  `BindData:GetWeak(value, "gcconn")` 하나로 생존을 판정하는 경로 자체는
-  아직 실측된 적 없음(위 3번은 gcconn을 `inst` 쪽에서 직접 들고 있는
+  **[2026-08-14 다섯 번째 세션 신규]** `canBound`/`canExecute`가 `inst`를
+  안 받고 `BindData:GetWeak(value, "gcconn")` 하나로 생존을 판정하는
+  경로 자체는 아직 실측된 적 없음(위 3번은 gcconn을 `inst` 쪽에서
+  직접 들고 있는
   형태로 확인한 것). weak 릴레이션에 복사해둔 참조가 gchold 사망 후
   기대대로 비워지는지도 같은 항목.
 - **Instance userdata 포인터 동일성** — **[2026-08-14 다섯 번째 세션 신규]**
