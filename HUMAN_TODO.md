@@ -119,30 +119,18 @@ M0 착수 시점에 확인하면 되고 지금 막고 있진 않음. 배경은
 `.claude/base/typing-limits.md` 8번, 실측은
 `.claude/audit/type-recursion-issue/REPORT.md` 5절.
 
-## 7. **[2026-08-14 신설]** 워크트리 `debounce-throttle-plan` 정리 여부
+## 7. ~~워크트리 `debounce-throttle-plan` 정리~~ **[2026-08-14 완료 — 할 일 없음]**
 
-Debounce/Throttle 작업에 쓴 워크트리가 **의도적으로 남아 있습니다**(사용자
-지시로 클린업 없이 나옴):
+Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 완료**입니다
+(`git worktree remove` + `git branch -D worktree-debounce-throttle-plan`,
+당시 HEAD `5518055`). 지금 `git worktree list`엔 메인 하나만 남아 있고
+`.claude/worktrees/`도 비었습니다.
 
-```
-경로:   .claude/worktrees/debounce-throttle-plan
-브랜치: worktree-debounce-throttle-plan (HEAD 5518055)
-```
-
-**필요한 변경은 전부 `main`에 이식 완료**(`623c931`)입니다 — 워크트리에만
-있는 결정은 없습니다. 다만 워크트리는 **분할 이전(`10cd31b`) 구조 기준**이라
-`bind-system-plan.md`에 전파 모델이 있는 등 경로가 다르니, **그 트리를 직접
-참조하거나 머지하지 마세요.** 남겨둔 이유는 이식 과정을 나중에 대조해볼 수
-있게 하기 위함입니다.
-
-지우려면:
-
-```
-git worktree remove .claude/worktrees/debounce-throttle-plan
-git branch -D worktree-debounce-throttle-plan
-```
-
-**언제 지워도 무방** — 지워도 `main`에서 잃는 정보는 없습니다.
+**잃은 정보 없음** — 필요한 변경은 전부 `main`에 이식돼 있습니다
+(`623c931` 백로그 신설 + emit 전파 정정, `6dbce6c` 핸드오버 노트).
+지우기 전에 (1) 두 커밋이 `main` 조상인지, (2) 워크트리에 미커밋 변경이
+없는지, (3) `git worktree list`에 다른 에이전트 워크트리가 없는지를
+확인했습니다. 이 항목은 기록용으로만 남겨둡니다.
 
 ## 3. `.claude/question.md`의 **나머지** 항목 검토 (급하지 않음)
 
