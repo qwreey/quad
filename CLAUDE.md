@@ -270,6 +270,10 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
    거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
+6. **[신규 백로그, 2026-08-14 열네 번째 세션]** 문서 stale 감소용 include
+   도구 `doc-include.py`(가칭, `doc-check.py`와 짝) — `research/
+   doc-include-plan.md` 참고. 플랜만 초안, **사용자가 내일 다듬을
+   예정**. M0/설계 게이트와 무관.
 
 ## 세션 히스토리
 
@@ -1450,3 +1454,19 @@ v1) Did` 등)은 톤이 안 맞아 기각, 사용자가 실제로 내걸고 싶�
 지연평가·재귀/커링·펑터·일급 익명 클로저 방향으로 `Quad Unwinds,
 Applies, Defers` 등 4개 후보 정리 — `research/quad-recursive-acronym.md`
 신설(나중에 README.md 헤딩 후보용), 최종 문구는 미확정.
+
+**2026-08-14 열네 번째 세션 — 코퍼스 전체 사실관계 감사, `doc-include.py`
+백로그 신설** (`session/2026-08-14-14-corpus-audit-doc-include-backlog.md`)
+서브에이전트 4개 병렬(base/research+reference/luau-test+audit/archive+root)로
+전 코퍼스 재감사 — `bind-system-plan.md` 3단계 분할 후 stale 참조 11곳,
+`HUMAN_TODO.md`의 `canBound` 재도입 미반영, 날짜 없는 완결 주장 4건 등
+13개 파일 20건 수정, `doc-check.py` ERROR 0 유지(커밋 `f829487`). 이어
+사용자가 반복된 stale 원인(같은 사실이 여러 곳에 중복 서술)을 근본적으로
+줄이는 방법으로 마커 기반 include 도구(원본에 요약 구간을 마커로 표시,
+인용 문서가 기계적으로 추출해 붙여넣음)를 제안 — AsciiDoc tagged
+include/markdown-magic이 선례임을 확인 후 build-vs-buy 논의, 문제가 좁고
+기존 도구는 새 Node/npm 의존성을 들여온다는 이유로 **직접 제작**(Python,
+`doc-check.py`와 짝) 채택. 오늘은 플랜만 `research/doc-include-plan.md`로
+작성 — 파일럿은 부작용이 가장 작은 CLAUDE.md 세션 히스토리부터, 마커
+문법·소급 적용 범위 등 열린 질문은 **사용자가 내일 직접 다듬기로 함**,
+구현 착수 안 함.
