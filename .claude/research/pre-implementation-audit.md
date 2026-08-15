@@ -305,9 +305,10 @@ base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 이름이 아니라 구조로 일치를 검사하므로 문제없음. 기술적으로 막힐 위험이
 없어졌으니 M0/M3 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
 안 옮겨도 됨. 상세는 `base/typing-limits.md` "`store.key` 레코드 필드
-타이핑" 절, 실제 문법 실측은
-`luau-test`의 `16-type-store-key-typefunction.luau`(신규). 아래는
-원래 발견 당시 기록.
+타이핑" 절, 실제 문법 실측은 `luau-test/done/16-type-store-key-
+typefunction.luau`(**[2026-08-15] 통과** — 원래 스파이크가 API 버전
+드리프트로 깨져있던 걸 고침, `audit/type-recursive-issue-with-typeof/
+REPORT.md` 6-1절). 아래는 원래 발견 당시 기록.
 
 **위치**: `ROADMAP.md` M0 vs M3 `"store.key dot-access 타입 추론 확인"`.
 

@@ -1,6 +1,10 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-14 (**"emit은 항상 전파"** 정정으로 `05`가 옛 모델을
+> 마지막 갱신: 2026-08-15 — `16`이 `types.newfunction` API 버전 드리프트
+> (배열이 아니라 `{head=..., tail=...}` 레코드를 받음) 수정으로 통과,
+> `rewrite-required/` → `done/` 이동. 근거:
+> `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절.
+> 직전 갱신은 2026-08-14(**"emit은 항상 전파"** 정정으로 `05`가 옛 모델을
 > 검증 중이라 `rewrite-required/`로 이동 —
 > `archive/invalidate-dedup-propagation-reversed.md`). 직전 갱신은 같은 날 **다섯 번째 세션**(`bindLifetime`/`canExecute`/
 > `unbindLifetime` 재정정으로 `10`이 옛 모델을 검증하고 있어
@@ -19,9 +23,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 7 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 6 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 13 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 14 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -67,7 +71,6 @@
 | `05-store-state-diamond-propagation.luau` | 옛 모델 기준으로는 ✅ 통과였음 | **검증하던 모델이 뒤집힘**(2026-08-14) — 이 스파이크는 "이미 dirty면 더 아래로 전파하지 않음"을 assert하는데, 그게 `Observer` 계약과 모순돼 폐기됨(`archive/invalidate-dedup-propagation-reversed.md`). 재작성 방향: **emit은 자기 invalid 상태와 무관하게 항상 전파**되는지, 중복 재계산은 `:Get()` 시점 캐시로만 막히는지(재계산 1회 검증은 그대로 유효), 그리고 **`:Get()`을 안 부르는 `Observer`가 매 변경마다 계속 울리는지**(옛 모델에선 두 번째부터 침묵 — 이게 음성 대조군으로 딱 맞음) |
 | `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
-| `16-type-store-key-typefunction.luau` | ❌ 실패 | `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음 — 실제 API 재확인 후 재시도 |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정]** 이중 바인딩 게이트는 `canBound(value)`(`if canBound(v) then error(...) end`) — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
@@ -79,7 +82,7 @@
 |---|---|
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (13건)
+## ✅ `done/` — 통과 or 판정 끝 (14건)
 
 **런타임 12개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] 그중
 `04`/`19`, [2026-08-14] 추가로 `05`는 검증 대상 설계가 바뀌어 위
@@ -106,6 +109,7 @@
 | `09-type-modifier-overridden-subtype` | ✅ 통과 — 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
+| `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
 
 ### 특별히 중요한 통과 3건
 

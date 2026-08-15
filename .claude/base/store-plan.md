@@ -169,11 +169,12 @@ end
 방식과 정확히 맞는 조합. 이걸로 `store.key`가 실제로 타입 명시 가능함이
 확인돼 M0/M3 어느 시점에 검증해도 기술적으로 막힐 위험은 없음 —
 `ROADMAP.md`의 M0/M3 배치를 강제로 바꿀 필요는 없어짐, 설계 레벨의 검증
-난이도 문제였던 것만 해소. **단 이 `type function` 접근 자체의 실측은
-아직 미완료** — 스파이크(`luau-test/rewrite-required/16-type-store-key-
-typefunction.luau`)는 `types.newfunction` 시그니처 불일치로 깨져 재작성
-대기 중(`luau-test/STATUS.md` 소스). 실측 전까지는 설계 확정이지 검증
-완료가 아님(`base/typing-limits.md`가 이 구분을 명확히 다룸).
+난이도 문제였던 것만 해소. **[2026-08-15] 이 `type function` 접근 자체의
+실측도 완료** — 스파이크(`luau-test/done/16-type-store-key-
+typefunction.luau`)는 원래 `types.newfunction` 시그니처 불일치로 깨져
+있었으나 원인이 설계 문제가 아니라 API 버전 드리프트였음이 드러나 수정
+후 통과(음성 대조군 4건 포함), `base/typing-limits.md` §5로 승격.
+상세는 `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절.
 
 ## Store가 Store를 저장 가능한가
 

@@ -143,15 +143,74 @@ export type State<T> = StateData<T> & {
   (`tween-plan.md`의 `Animate`, `research/operator-sugar-plan.md`의
   `Sum`류) 그런 팩토리는 최상위 함수 선언이라 자연히 주석을 답니다.
 
+### 그래서 우리가 하는 것 — ③ 선언 스타일: 인라인 대신 `typeof(named function)`
+
+**[2026-08-15 추가, 근거: `audit/type-recursive-issue-with-typeof/REPORT.md`]**
+①②와 별개로 추가 검증된 **선언 스타일 규약**입니다 — ①의 "명시 바인딩
+강제" 원칙을 대체하지 않고, 그 위에 얹히는 보강입니다.
+
+재귀 메소드(`Compute` 등)를 타입 안에 **인라인 제네릭 시그니처로 직접
+쓰지 않고**, 이름 붙은 top-level 함수로 선언한 뒤 `typeof(그함수)`로
+필드 타입만 참조하면:
+
+```lua
+-- ✅ 이렇게 (인라인 대신 이름 붙은 함수 + typeof)
+local function Compute<T, U>(self: State<T>, func: (State<T>) -> U): State<U>
+	return nil :: any
+end
+type State<T> = {
+	Get: typeof(Get),
+	Compute: typeof(Compute),
+}
+
+-- ❌ 이렇게 두면 반환 타입이 `Unifiable<Error>`로 샘(①이 다루는 원래 문제)
+type State<T> = {
+	Get: (self: State<T>) -> T,
+	Compute: <U>(self: State<T>, func: (State<T>) -> U) -> State<U>,
+}
+```
+
+**LHS 명시 주석 없이도 다운스트림이 정확히 타이핑됩니다** — 체이닝
+깊이 50, 타입이 바뀌는 체이닝(number→boolean→string→number), 콜백
+안에서 self를 다시 호출하는 중첩까지 전부 실측 확인(위 REPORT `2`~`3`절).
+비용 없음(50단 체이닝 `luau-analyze` 0.02초 안팎, hover 타입 크기도
+깊이와 무관하게 일정).
+
+**바뀌지 않는 것**:
+- **콜백 파라미터는 여전히 명시 주석 필요**(`function(a0: State<T>)`) —
+  ②의 "쪼개기"가 다루던 문제는 별개이고, `typeof`가 대신 풀어주지
+  않습니다. 무주석이면 자유 타입 변수(`a0: unknown`에 가까움).
+- **명시 LHS 오타입 그 줄 자체는 여전히 못 잡습니다**(`wrong: State<boolean>
+  = test:Compute(...)`처럼 대입 줄 자체에 틀린 타입을 달면 그 줄은
+  통과 — 다운스트림에서만 잡힘). ①이 이미 명시한 구멍과 정확히 같은
+  종류로, **이 규약이 그 구멍을 메워주지 않습니다** — "명시 바인딩
+  관례를 완화할 수 있다"는 뜻이 절대 아닙니다.
+
+**시도했지만 채택 안 함 — `setmetatable<{...}, {__index: typeof(...)}>`**:
+콜백 파라미터 자동 추론까지 노리고 `Modifier`의 `__index`+`table.clone`
+체이닝(§6)과 같은 계열로 확장을 시도했으나, quad의 실제 계약(콜백이
+self 핸들 자체를 받음)에서 **콜백 반환 타입이 self의 원래 T와 다르면
+(= `Compute`가 존재하는 이유 그 자체) 올바른 대입에도 모순되는 진단
+두 개가 동시에 남는 Luau 0.733 솔버 버그**를 만남 — `setmetatable`
+없이 순수 `typeof`만 쓰면 같은 시나리오가 깨끗이 통과하므로, `typeof`
+자체가 아니라 `setmetatable` 경로 특정 문제로 좁혀짐. 최소 재현
+9줄: REPORT 5-3절.
+
 ### 영향 범위
 
-| API | 파라미터 추론 | 반환 타입 안전성 |
-|---|---|---|
-| `state:Compute(fn)` | 쪼개기로 해결 | ❌ 명시 바인딩 필요 |
-| `state:With(...)` | 쪼개기로 해결(이형 dep 포함) | ❌ 명시 바인딩 필요 |
-| `state:Apply(factory)` | factory 파라미터 주석 필요 | ❌ 명시 바인딩 필요 |
-| `Effect(fn, state)` | 해당 없음(자유 함수) | 해당 없음(반환이 재귀 타입 아님) |
-| `state:Observer(fn)` | 해당 없음(로컬 제네릭 없음) | 해당 없음(`EffectHandle` 반환) |
+| API | 선언 스타일 | 파라미터 추론 | 반환 타입 안전성(LHS 무주석 시) |
+|---|---|---|---|
+| `state:Compute(fn)` | 인라인 + 쪼개기 | 쪼개기로 자동 해결 | ❌ 명시 바인딩 필요 |
+| `state:Compute(fn)` | `typeof(named fn)`(③) | 콜백 파라미터 명시 주석 필요 | ✅ 무주석이어도 안전(다운스트림) |
+| `state:With(...)` | 인라인 + 쪼개기 | 쪼개기로 해결(이형 dep 포함) | ❌ 명시 바인딩 필요 |
+| `state:Apply(factory)` | 인라인 | factory 파라미터 주석 필요 | ❌ 명시 바인딩 필요 |
+| `Effect(fn, state)` | — | 해당 없음(자유 함수) | 해당 없음(반환이 재귀 타입 아님) |
+| `state:Observer(fn)` | — | 해당 없음(로컬 제네릭 없음) | 해당 없음(`EffectHandle` 반환) |
+
+`state:With(...)`/`state:Apply(factory)`도 원리상 ③으로 같은 이득을
+받을 것으로 예상되나(둘 다 `Compute`와 같은 "재귀 자기 반환" 모양),
+**아직 개별 실측은 안 함** — 실제로 base pseudocode에 ③을 반영할 때
+같이 확인할 것.
 
 **`Effect`/`Observer`는 이 문제와 무관합니다** — 한때 0-Y가 "같은
 lazy 핸들 계약을 공유하니 같이 걸린다"고 서술했으나 실측 결과 아니었음
@@ -229,18 +288,39 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
 
 ---
 
-## 5. `store.key` 레코드 필드 타이핑(`type function`)은 미검증
+## 5. `store.key` 레코드 필드 타이핑(`type function`) — ✅ 검증 완료
 
-**근거: `luau-test/rewrite-required/16-type-store-key-typefunction.luau`**
+**[2026-08-15 확정, 근거: `luau-test/done/16-type-store-key-typefunction.luau`,
+`audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절]**
 
 `Store<T>` → `{[K]: Source<V>}` 합성을 Luau `type function`으로 하는
-설계는 **설계 레벨로는 확정**(`pre-implementation-audit.md` 1-10)이지만,
-스파이크가 `types.newfunction` 시그니처 불일치로 깨져 **실측 확인이 안
-된 상태**입니다.
+설계(`pre-implementation-audit.md` 1-10)는 **설계와 실측 둘 다
+확정**입니다. 원래 스파이크가 깨졌던 이유는 설계 문제가 아니라
+**`types.newfunction`의 API 버전 드리프트**였습니다 — 시그니처가
+`(parameters: {head: {type}?, tail: type?}, returns: {head: {type}?,
+tail: type?}?, generics: {type}?): type`로 parameters/returns 둘 다
+**레코드**를 받는데, 원래 스파이크는 배열(`{ ty }`)을 그대로 넘기고
+있었습니다. self 파라미터는 `types.newtable()`이 돌려주는 **뮤터블
+핸들 자기 자신**을 그대로 참조하면 됩니다(나중에 `setproperty`로
+채워도 핸들이라 소급 반영됨).
 
-**우리가 하는 것**: 스파이크 재작성 후 재시도(에이전트 몫,
-`luau-test/STATUS.md` 🟠). `type function`은 비교적 최근/진화 중인
-기능이라 버전에 따라 API가 다를 수 있음.
+수정 후 `ProcessStoreType<{ty:string, count:number}>`가 정확히
+`{ty: Source<string>, count: Source<number>}` 구조를 만족하고, 음성
+대조군(틀린 타입 `Get`/`Set`, 존재하지 않는 메소드) 전부 정확히
+에러납니다. 에러 메시지도 `t1 where t1 = { Get: (t1) -> string, ... }`처럼
+`<Cycle>` 없이 한 단계로 표기돼 아래 1번의 `typeof` 간접참조보다
+오히려 읽기 쉽습니다.
+
+**참고 — 1번(재귀 제네릭 반환 leak)과의 관계**: `type function`으로
+`Compute<U>: State<U>`처럼 **자기 자신을 재귀 호출**하는 것(1번 문제
+자체를 이 메커니즘으로 우회하는 것)은 별도로 시도해봤으나 막다른
+길이었습니다 — 제네릭 인자가 아직 구체화되지 않은 채로 type function이
+자기 자신을 호출하면 `stack overflow`로 즉시 크래시합니다(type
+function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC가 별칭에
+주려는 "진짜 lazy expansion"과 다름 — `types` 라이브러리에 지연 적용을
+표현하는 API 자체가 없음). 이 항목(레코드 필드 합성)과 1번은 **서로
+다른 문제**이고, `type function`이 도와주는 건 이쪽뿐입니다. 상세는
+`audit/type-recursive-issue-with-typeof/REPORT.md` 6-2절.
 
 ---
 
@@ -268,9 +348,17 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
 
 1. **자기 이름을 다른 타입 인자로 감싸 반환하는가?**(`Foo<T>` 안에서
    `-> Foo<U>`) → 1번 한계에 걸림. 설계를 바꾸지 말고(0번 대전제),
-   명시 바인딩 관례를 문서에 같이 적을 것.
-2. **로컬 제네릭을 가진 메소드가 재귀 타입의 필드인가?** → 1번의
-   "쪼개기"를 적용할 것(`XxxData<T>` / `Xxx<T>` 분리).
+   메소드를 인라인 대신 이름 붙은 함수 + `typeof`로 선언(1번 ③)하고,
+   그래도 명시 바인딩 관례는 그대로 문서에 같이 적을 것 — ③은 ①을
+   대체하지 않음.
+2. **로컬 제네릭을 가진 메소드가 재귀 타입의 필드인가?** → 콜백
+   파라미터 자동 추론이 필요하면 1번의 "쪼개기"(`XxxData<T>` /
+   `Xxx<T>` 분리)를, 반환 타입 안전성이 우선이면 1번 ③(`typeof`)을
+   적용할 것 — 필요하면 병행 가능(개별 검증은 아직 안 됨, 위 "영향
+   범위" 표 참고). **`setmetatable<{...}, {__index: typeof(...)}>`로
+   확장해 두 이득을 한 번에 얻으려 하지 말 것** — quad의 self-핸들
+   콜백 계약에서 솔버 버그를 만남(1번 ③의 "시도했지만 채택 안 함"
+   참고).
 3. **제네릭 키로 값 타입을 좁히려 하는가?** → 3번, 안 됨. 타입
    패밀리를 쓸 것.
 4. **서브타입 관계인 두 타입을 합성하려 하는가?** → 2번, 메소드 반환
@@ -298,5 +386,13 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
   `"luau-lsp.fflags.enableNewSolver": true`. **M0 실착수 때 실제 에디터
   환경에서 확정할 것** — 옛 솔버는 1번 패턴을 아예 거부하므로 사실상
   새 솔버 외에 선택지가 없어 보이지만, 실환경에서 확인 필요.
-- **5번(`store.key` type function)** — 스파이크 재작성 후 실측.
-- **`luau-lang/luau#2380`** — 닫히면 1번 관례 재검증.
+- **`luau-lang/luau#2380`** — 닫히면 1번 관례 재검증(③ 포함).
+- **`state:With(...)`/`state:Apply(factory)`에 1번 ③(`typeof`) 개별
+  실측** — `Compute`에서만 확인됐고, base pseudocode에 실제로 반영할
+  때 같이 확인할 것.
+- **`setmetatable`+`typeof(genericFn<<T>>())` 조합의 모순 진단
+  버그**(1번 ③ "시도했지만 채택 안 함") — quad는 이 formulation을
+  안 쓰기로 해서 quad 쪽에서 더 팔 필요는 없지만, Luau 0.733의 실제
+  솔버 버그로 보이므로 이미 알려진 이슈인지 확인 후 업스트림 제보
+  검토(최소 재현 9줄, `audit/type-recursive-issue-with-typeof/spikes/
+  08-metatable-BUG-contradictory-diagnostics.luau`).

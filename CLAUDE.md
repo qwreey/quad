@@ -1470,3 +1470,20 @@ include/markdown-magic이 선례임을 확인 후 build-vs-buy 논의, 문제가
 작성 — 파일럿은 부작용이 가장 작은 CLAUDE.md 세션 히스토리부터, 마커
 문법·소급 적용 범위 등 열린 질문은 **사용자가 내일 직접 다듬기로 함**,
 구현 착수 안 함.
+
+**2026-08-15 세션 — `typeof(named fn)` 간접참조로 0-Y 우회 실측,
+`luau-test/16` 복구** (`session/2026-08-15-01-typeof-recursive-generic-workaround.md`)
+사용자가 발견한 "재귀 메소드를 인라인 대신 이름 붙은 함수 + `typeof`로
+선언하면 0-Y(재귀 제네릭 반환 leak)가 안 생기는 것 같다"는 관찰을
+`--annotate`+양성/음성 대조군+체이닝 깊이 1~50 스윕으로 검증 —
+**확인됨**(LHS 명시 없이도 다운스트림 안전, 콜백 파라미터 명시 주석은
+여전히 필요). `typing-limits.md` §1에 ③으로 추가(①을 대체하지 않는
+보강). 도중 시도한 `setmetatable<{...}, {__index: typeof(fn<<T>>())}>`
+확장은 quad의 실제 self-핸들 콜백 계약에서 **모순되는 진단 두 개가
+동시에 남는 Luau 0.733 솔버 버그**를 만나 채택 안 함(quad와 무관한
+버그로 판단, 최소 재현 9줄 남김). 병행: `luau-test/16(type function으로
+`Store<T>` 필드 합성)`이 API 버전 드리프트로 깨져있던 걸 복구 —
+`typing-limits.md` §5를 "미검증"→"검증 완료"로 승격,
+`done/`으로 이동. type function으로 0-Y 자체를 우회하는 시도는
+`stack overflow`로 막다른 길 확인. 전체 실측:
+`audit/type-recursive-issue-with-typeof/`.
