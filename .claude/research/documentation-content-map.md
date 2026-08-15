@@ -77,7 +77,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 넘어오는 기존 사용자용 마이그레이션 가이드**가 나중에 별도 문서로 계획된다면
 그때만 재사용 가치 있음 — 지금 3축 어디에도 해당 없음.
 
-### bind-system-plan.md (943줄, 최대 문서)
+### bind-system-plan.md
 - 초심자: Source/Store/State 기본 정의+생성자, State 읽기 전용 규칙 / dot-access가 값 읽기 1급 경로 / `:With`+`:Compute` 최소 사용법 / Ref 기본 개념(children 배열에 직접 놓기, 별도 `CreatedRef` 없음) / 이벤트 self 미채택 기본 규칙+문자열 키 / 인스턴스 생성(제네릭+정적 필드) / 라이브러리 초기화 3줄(`RobloxFactory(QuadBase)`)
 - api: `state:Observer(fn)` 사용법(→심화: weak-table 내부 인덱싱) / `:Subscribe()`/`:Unsubscribe()` 시그니처(→심화: 강참조 레지스트리 구조) / Ref 일반화 표면 API(→심화: "왜 값이 아니라 콜백인가") / 이벤트 store-bind 존재+권장 안 함 가이드(→심화: 엔지니어링 비용 근거) / 핸들러 3종 계약(`isHandlable`/`priority`/`process` — `process`가 자기 retract 클로저를 반환, 2026-08-13 다섯 번째 세션에 4종에서 축소) / `AttributeKey<T>` 특수 키(2026-08-11 아홉 번째 세션에 `Attribute<T>`에서 개명, 그룹 값 `Attribute(...)`와 구분 — 확정됨)
 - 심화: push-invalidate/pull-recompute 전파 모델+"관측해야 실체화된다" 원칙+`previous` 캐비엇 / **왜 State를 Modifier처럼 플래튼하지 않는가**(이미 문서화 완료, 아래 3번 참고) / Store가 Store를 못 담는 이유 / 이벤트 self 미채택 4가지 근거 / store-bind 재귀 래핑 내부 메커니즘, retract가 Destroy 시 호출 안 되는 이유 / 같은 팩토리 재호출 no-op·다른 팩토리 충돌 에러 내부 안전장치
