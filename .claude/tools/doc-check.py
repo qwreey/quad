@@ -22,6 +22,8 @@
   5. [WARN]  미반영 배너를 단 파일 vs 반영 목록 일치 여부
 
 `session/`(원문 보존), `initreq/`(읽기 전용 클론)는 검사 대상에서 제외.
+`archive/`와 `.claude/session-summary.md`는 검사 대상이되 **히스토리 문서**라
+절 참조/시한부 주장 검사는 면제(`is_history()` 참고).
 """
 import os, re, sys, collections
 
@@ -92,7 +94,11 @@ def resolve(target, src):
 # 안 걸리면 외부 문서명(Compose 가이드라인 등)일 수 있어 WARN으로 낮춤.
 OURS = re.compile(r'(-plan|-reversed|-rejected|-findings|-map|-audit|-verification'
                   r'|^README|^STATUS|^CLAUDE|^ROADMAP|^HUMAN_TODO|^SAFETY'
-                  r'|^question|^architecture|^agent-mistake)\.md$')
+                  r'|^question|^architecture|^agent-mistake'
+                  # [2026-08-16] CLAUDE.md 분할 산물. 여기 안 넣으면 이 파일들로
+                  # 가는 깨진 참조가 ERROR가 아니라 WARN으로만 잡힌다 — 일곱 번째
+                  # 세션에 store-semantics.md에서 실제로 당했던 사각지대.
+                  r'|^conventions|^project-context|^todos|^session-summary)\.md$')
 
 
 def headings(path):
@@ -121,11 +127,23 @@ def interesting(target):
     return True
 
 
+def is_history(path):
+    """히스토리 문서인가 — 절 참조/시한부 주장 검사를 면제한다.
+
+    `archive/`는 뒤집힌 결정의 원문 보존, `session-summary.md`는 세션별
+    과거 기록이라 둘 다 "그때는 그렇게 적었다"가 정상이다. 여기에 현재형
+    검사를 걸면 영원히 안 꺼지는 WARN만 쌓인다.
+    [2026-08-16] CLAUDE.md 분할로 세션 히스토리가 별도 파일이 되면서 추가.
+    """
+    r = rel(path)
+    return '/archive/' in r or os.path.basename(r) == 'session-summary.md'
+
+
 def check_refs(docs):
     hcache = {}
     for d in docs:
-        # archive는 히스토리라 절 참조까지 강제하지 않음(파일 존재만)
-        is_archive = '/archive/' in rel(d)
+        # 히스토리 문서는 절 참조까지 강제하지 않음(파일 존재만)
+        is_archive = is_history(d)
         # 줄 단위가 아니라 **파일 전체**를 한 번에 스캔 — 파일명/절 제목이
         # 줄바꿈에 걸친 인용도 잡기 위함(위 REF 주석 참고). 줄 번호는 매치
         # 시작 오프셋으로 역산.
@@ -186,7 +204,7 @@ DATED = re.compile(r'20\d\d-\d\d-\d\d|\[\s*(?:해소|정정|갱신|확정|역전
 
 def check_temporal(docs):
     for d in docs:
-        if '/archive/' in rel(d):
+        if is_history(d):
             continue
         lines = open(d, encoding='utf-8').read().split('\n')
         for i, line in enumerate(lines, 1):

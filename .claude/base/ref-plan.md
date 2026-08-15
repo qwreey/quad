@@ -538,7 +538,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     이 위험을 원천 회피함(검증 불필요, 애초에 구멍을 안 만드므로).
     **여전히 M0에서 검증해야 하는 건 다른 케이스**: `props.Modifier`/
     `props.Ref`를 caller가 안 넘겨 생기는 리터럴 `nil`-hole(`{nil, ref,
-    child}`, 위 "지금 할 일" 우선순위1 항목)은 caller가 직접 쓰는 raw
+    child}`, `research/pre-implementation-audit.md` 1-5)은 caller가 직접 쓰는 raw
     Lua 리터럴이라 프레임워크가 `None`으로 대신 못 채워줌 — 이번 REPL
     실측으로 그 케이스의 실제 위험도가 이전 서술("뒤 항목까지 무시될 수
     있음", 국소적 피해로 서술돼 있었음)보다 훨씬 큼이 드러남: 구멍이 하나만

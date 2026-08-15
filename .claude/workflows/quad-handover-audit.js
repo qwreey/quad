@@ -51,7 +51,7 @@ function fixPrompt(file, items) {
     .join('\n')
   return (
     `아래는 quad-doc-auditor가 "${file}"에서 찾은 stale/모순 서술이다. ` +
-    `이 파일을 읽고 CLAUDE.md의 관례(한국어 서술, 최소 수정, 뒤집힌 결정은 ` +
+    `이 파일을 읽고 .claude/conventions.md의 관례(한국어 서술, 최소 수정, 뒤집힌 결정은 ` +
     `archive/로 이전+포인터, 날짜 없는 시한부 주장엔 날짜 붙이기)에 맞춰 직접 ` +
     `고쳐라. "의심"으로 표시된 항목은 실제로 문제인지 먼저 확인하고, 문제가 ` +
     `아니면 건드리지 말고 넘어가라(억지로 고치지 말 것).\n\n${lines}`
@@ -79,7 +79,28 @@ while (dry < DRY_ROUNDS_TO_CONVERGE && round < MAX_ROUNDS) {
     )
   )
 
-  const all = passes.filter(Boolean).flatMap((p) => p.findings || [])
+  // ⚠️ 가짜 초록불 방지 — 2026-08-16 첫 실측에서 실제로 당한 것.
+  // 감사 패스가 전부 에러로 죽으면(예: agentType 미등록) fresh가 비어
+  // "깨끗한 라운드"와 구분이 안 되고, 그대로 converged:true가 나와서
+  // **아무것도 감사 안 하고 통과 도장을 찍는다**. 감사 도구의 최악
+  // 실패 모드라 살아남은 패스 수를 명시적으로 확인한다.
+  const alive = passes.filter(Boolean)
+  if (alive.length === 0) {
+    throw new Error(
+      `라운드 ${round}: 감사 패스 ${PASSES_PER_ROUND}개가 전부 실패 — ` +
+        `감사가 실제로 수행되지 않았으므로 수렴 판정을 낼 수 없음. ` +
+        `(quad-doc-auditor가 등록됐는지 확인: .claude/agents/ 를 만든 직후라면 ` +
+        `Claude Code 재시작 필요)`
+    )
+  }
+  if (alive.length < PASSES_PER_ROUND) {
+    log(
+      `⚠️ 라운드 ${round}: 감사 패스 ${PASSES_PER_ROUND}개 중 ` +
+        `${PASSES_PER_ROUND - alive.length}개 실패 — 커버리지가 그만큼 얕음`
+    )
+  }
+
+  const all = alive.flatMap((p) => p.findings || [])
   const fresh = all.filter((f) => !seen.has(keyOf(f)))
 
   if (!fresh.length) {
@@ -99,8 +120,9 @@ while (dry < DRY_ROUNDS_TO_CONVERGE && round < MAX_ROUNDS) {
   }
 
   phase('Fix')
-  await parallel(
-    Object.entries(byFile).map(([file, items]) => () =>
+  const fileEntries = Object.entries(byFile)
+  const fixed = await parallel(
+    fileEntries.map(([file, items]) => () =>
       agent(fixPrompt(file, items), {
         label: `fix:${file}`,
         phase: 'Fix',
@@ -109,7 +131,27 @@ while (dry < DRY_ROUNDS_TO_CONVERGE && round < MAX_ROUNDS) {
     )
   )
 
-  roundLog.push({ round, fresh: fresh.length, files: Object.keys(byFile) })
+  // 반영 에이전트가 죽으면 그 발견들을 `seen`에서 빼둔다 — 안 그러면
+  // 다음 라운드 감사가 같은 문제를 다시 찾아와도 dedup에 걸려 조용히
+  // 사라지고, 안 고쳐진 채로 수렴 판정이 난다(위와 같은 클래스의 버그).
+  const failedFiles = []
+  fixed.forEach((r, i) => {
+    if (r === null) {
+      const [file, items] = fileEntries[i]
+      failedFiles.push(file)
+      items.forEach((f) => seen.delete(keyOf(f)))
+    }
+  })
+  if (failedFiles.length) {
+    log(`⚠️ 라운드 ${round}: 반영 실패 ${failedFiles.length}건 — ${failedFiles.join(', ')} (다음 라운드에서 재시도)`)
+  }
+
+  roundLog.push({
+    round,
+    fresh: fresh.length,
+    files: fileEntries.map(([f]) => f),
+    fixFailed: failedFiles,
+  })
 }
 
 const converged = dry >= DRY_ROUNDS_TO_CONVERGE

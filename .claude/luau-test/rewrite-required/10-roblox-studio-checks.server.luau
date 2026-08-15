@@ -23,14 +23,14 @@
 	   gchold를 배열이 아니라 value를 키로 쓰는 테이블로 바꾼 것까지 반영
 	   — 이전 버전의 이 스크립트는 array 기반 gchold였음, 이번에 정정).
 	B) Attribute가 Instance 참조 타입을 실제로 지원하는가(ObjectValue
-	   없이 Ref 용도로 쓸 수 있다는 CLAUDE.md 서술의 실측).
+	   없이 Ref 용도로 쓸 수 있다는 .claude/session-summary.md 서술의 실측).
 	C) CollectionService 태그 + GetTagged 왕복이 quad-debug가 기대하는
 	   대로 동작하는가(태그 추가/제거, GetTagged로 조회).
 
 	배경: .claude/base/lifecycle-pattern.md "bindLifetime/canExecute/
 	unbindLifetime — 확정" 절 + "실측 필요(M0/M2)" 캐비엇,
 	.claude/base/bind-system-plan.md "이중 바인딩 금지" 절(canBound),
-	CLAUDE.md 2026-08-06 세션의 Attribute Instance 참조 지원 언급,
+	.claude/session-summary.md 2026-08-06 세션의 Attribute Instance 참조 지원 언급,
 	.claude/research/debug-tooling-plan.md의 CollectionService 노출 방식.
 
 	실행 방법:

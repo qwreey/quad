@@ -1,6 +1,6 @@
 ---
 name: quad-doc-auditor
-description: quad 프로젝트의 `.claude/` 설계 문서 코퍼스(base/research/reference/archive, README.md, question.md, CLAUDE.md, 루트 ROADMAP.md/HUMAN_TODO.md)에서 `doc-check.py`가 못 잡는 의미론적 stale/모순을 찾는다. 설계 결정이 뒤집히거나 확정되는 등 이 코퍼스에 중대한 변경이 있은 뒤, 특히 그런 변경을 커밋하기 전에 사용. 읽기 전용 — 문제를 리포트만 하고 직접 고치지 않는다.
+description: quad 프로젝트의 `.claude/` 설계 문서 코퍼스(base/research/reference/archive, README.md, question.md, conventions.md, project-context.md, todos.md, 루트 CLAUDE.md/ROADMAP.md/HUMAN_TODO.md)에서 `doc-check.py`가 못 잡는 의미론적 stale/모순을 찾는다. 설계 결정이 뒤집히거나 확정되는 등 이 코퍼스에 중대한 변경이 있은 뒤, 특히 그런 변경을 커밋하기 전에 사용. 읽기 전용 — 문제를 리포트만 하고 직접 고치지 않는다.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 memory: project
@@ -34,7 +34,8 @@ memory: project
    부정하는 *본문 bullet*은 안 고쳐진 경우 — 배너만 보고 넘어가지 말고
    반드시 본문까지 읽어라.
 4. 뒤집힌 결정의 원문이 `archive/`로 옮겨지지 않고 라이브 문서(`base/`,
-   `research/`, `reference/`, `README.md`, `CLAUDE.md`, `ROADMAP.md`)에
+   `research/`, `reference/`, `README.md`, `conventions.md`,
+   `project-context.md`, `todos.md`, `CLAUDE.md`, `ROADMAP.md`)에
    "히스토리로만 보존" 같은 말과 함께 전체 서술로 남아있는지 확인해라.
    앞에서부터 읽는 구현자가 그걸 "확정"으로 오인할 여지가 있으면 문제다.
 5. 이번 변경으로 개수·목록·상태 서술("N개 문서", "남은 항목은 이것뿐",

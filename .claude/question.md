@@ -205,6 +205,6 @@
 > `research/pre-implementation-audit.md`가 원본이자 최신.
 
 ---
-전체 순서/우선순위는 루트 `CLAUDE.md`가 최종 소스. 확정된 것들의 문서
+전체 순서/우선순위는 `.claude/todos.md`가 최종 소스. 확정된 것들의 문서
 색인은 `.claude/README.md`의 `base/` 표(예전에 이 문서 맨 아래에 있던
 요약표는 그것과 중복이라 archive로 옮김).

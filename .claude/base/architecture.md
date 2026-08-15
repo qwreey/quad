@@ -299,7 +299,7 @@ CollectionService 태그 등)를 흉내낼 필요가 없고, quad-base 자체 �
 
 **백로그**: 나중에 범용 렌더 결과 디버깅 도구로 키우고 싶어지면(정적
 스냅샷을 넘어 Tween mock 같은 동적 동작까지 포함) 그때 스코프를 넓히는
-걸로 — 지금은 quad-base 테스트 전용 최소 mock까지만(`CLAUDE.md` 백로그
+걸로 — 지금은 quad-base 테스트 전용 최소 mock까지만(`.claude/todos.md` 백로그
 참고).
 
 ## Store/State/Source 온톨로지 — 확정됨 (요약)

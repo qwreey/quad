@@ -22,7 +22,7 @@ Roblox가 2026-02부터 Studio에 **MCP 서버를 내장**했음 — 예전처�
 
 **주의(사용자가 이미 말한 것)**: Roblox Studio는 잘 죽는 편 — 죽었을 때 살리려고
 위험한 명령을 반복 시도하지 않을 것이고, 그런 날엔 MCP 없이 할 수 있는 작업만
-하거나 대기함. 이 안전 원칙은 `CLAUDE.md`에도 적어둠.
+하거나 대기함. 이 안전 원칙은 `.claude/conventions.md`에도 적어둠.
 
 **해야 할 일**: 테스트용 place 파일(빈 place 하나, 또는 `quad/test.project.json`
 기반 rojo 싱크 대상)을 열어서 베타 기능만 켜주면 됨. 이후 MCP 서버 설정 파일

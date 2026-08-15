@@ -826,9 +826,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       대체·해소됨) — `.claude/question.md` 1번, 최종 이름 확정되는 대로
       아무 시점에나
 - [ ] 각 마일스톤 완료 시 `.claude/qa-request/`/`.claude/archive/`에 기록,
-      필요하면 `CLAUDE.md` "세션 히스토리"도 갱신(전체 원문은
-      `.claude/session/`에, CLAUDE.md엔 2~4줄 요약+링크만 — 2026-08-11
-      재구조화 세션 참고)
+      필요하면 `.claude/session-summary.md` "세션 히스토리"도 갱신(전체 원문은
+      `.claude/session/`에, `.claude/session-summary.md`엔 2~4줄 요약+링크만
+      — 2026-08-11 재구조화 세션 참고)
 
 ## 백로그 (스코프 밖 — 필요성이 실제로 드러나면 그때 설계)
 
