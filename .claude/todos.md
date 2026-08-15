@@ -33,7 +33,7 @@
      아니라 **하강 diff**임, `retractFrom`은 3-인자, 클로저 인자는
      `nil`이거나 같은 핸들러가 처리할 값(타입 보장), `HANDLER_PRIORITY_FALLBACK`,
      "base가 소유하는 핸들러와 주입되는 엔진 op"(`addTag`/`removeTag`/
-     `setAttribute`). **Handler 작성 체크리스트 8개**를 새 핸들러 짜기 전에
+     `setAttribute`). **Handler 작성 체크리스트**(개수는 그 문서가 소스)를 새 핸들러 짜기 전에
      훑을 것 — 지난 세션들에서 실제로 반복된 실수 목록임.
 
    해소 전 원문은 `archive/question-resolved.md`(0-Y/0-Z/0-A 절), 뒤집힌 옛
@@ -42,7 +42,7 @@
 1. **구현 시작 — 루트 `ROADMAP.md`의 M0부터.** 설계 단계는 2026-08-04 로드맵
    인수인계 라운드로 종료. `research/pre-implementation-audit.md` 우선순위1은
    2026-08-12 열일곱 번째 세션에 마지막 넷(1-3/1-4/1-10/1-11)까지 전부
-   해소되어 **11개 전원 완료**. **[14차 세션 기준] 0-Y/0-Z/0-A까지 전부
+   해소되어 **전원 완료**(항목 수는 그 문서가 소스). **[14차 세션 기준] 0-Y/0-Z/0-A까지 전부
    해소돼 설계 게이트는 남아있지 않음** — 착수 전 읽을 것은 위 0번의 두
    문서(`typing-limits.md`/`dispatch-core-plan.md`)뿐이고, 스파이크 상태는
    아래 그대로:
