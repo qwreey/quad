@@ -91,7 +91,11 @@ haiku, 일반 작업은 sonnet. 특히 소스코드를 많이 읽어야 하는 �
   명시했으므로 기본 워크플로 크기 가이드라인(15 에이전트 이하)을 의도적으로
   넘을 수 있음 — 이 워크플로 자체가 그 예외 대상. Workflow는 백그라운드로
   돌고 완료 시 알림이 오므로, 호출 직후 대화를 막지 말고 진행 상황만
-  알린 뒤 알림을 기다릴 것. 알림이 오면 `python3 .claude/tools/doc-check.py`로
+  알린 뒤 알림을 기다릴 것. **[2026-08-16] 워크플로 스크립트를 그 세션에서
+  고쳤다면 이름 대신 `Workflow({scriptPath: '.claude/workflows/quad-handover-audit.js'})`로
+  부를 것** — 이름 해석은 세션 시작 시점 스냅샷이라 편집이 안 실린 채
+  "돌긴 돌았다"가 되고, 감사 도구에선 그게 조용한 거짓 초록불이다(실측 근거는
+  `.claude/agents/quad-doc-auditor.md` 상단 배너). 알림이 오면 `python3 .claude/tools/doc-check.py`로
   ERROR 0을 최종 확인한 뒤 평소 커밋 절차(git status/diff 검토, 메시지 작성)로
   넘어갈 것 — **실제 `git commit`은 이 워크플로 안이 아니라 항상 메인 세션이
   직접 함**(커밋 전 diff 재검토는 대화형 맥락이 필요해서 워크플로에 위임 안 함).
