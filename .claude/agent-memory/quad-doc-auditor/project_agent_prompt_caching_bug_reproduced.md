@@ -1,35 +1,34 @@
 ---
-name: agent-definition-loads-from-committed-head
-description: My loaded definition comes from the committed HEAD of quad-doc-auditor.md, not the working tree — uncommitted edits are invisible to me. Resolved 2026-08-16; the earlier "cache" framing was wrong.
+name: definition-freshness-is-unknown
+description: The definition text I receive sometimes lags the file on disk and has matched no commit at all. Mechanism unknown as of 2026-08-16 — do not adopt any of the three refuted explanations.
 metadata:
   type: project
 ---
 
-내가 받는 지시문은 `.claude/agents/quad-doc-auditor.md`의 **커밋된 HEAD
-버전**이다. 워킹트리에만 있는(아직 커밋 안 된) 편집은 나에게 안 보인다.
+내가 받는 지시문(`.claude/agents/quad-doc-auditor.md`)이 **디스크의 현재
+파일과 다를 수 있고, 어느 커밋과도 일치하지 않을 수도 있다.** 무엇이 갱신을
+트리거하는지는 2026-08-16 기준 **모른다**.
 
-**Why:** 2026-08-16에 여러 라운드가 "정의 파일이 최신본과 다르다"고
-반복 보고했고, 한동안 "세션/워크플로 시작 시점에 캐시된 스냅샷"으로
-설명됐다. 그 가설은 **반증됐다** — 한 라운드가 자기가 받은 지시문이
-blob `92b9484`, 즉 *그 시점 HEAD 커밋*의 버전과 바이트 단위로 같음을
-확인했고, 그 HEAD는 세션 시작 시점이 아니라 세션 도중에 만들어진
-커밋이었다(메인 세션이 `git rev-parse`로 독립 확인). 즉 정의는 커밋될
-때마다 갱신된다. 같은 정정이 오래 미확정이던 도구 문제도 풀었다:
-**`memory: project`가 Write/Edit을 딸려온다는 진단이 맞았고**, "옵션을
-뺐는데도 그대로 주어진다"고 보였던 건 그 제거가 아직 커밋 안 됐던
-탓이었다.
+**Why:** 같은 날 이 문제에 결론이 세 번 나왔고 앞의 둘이 반증됐다 —
+(1) "세션 시작 시점 스냅샷" → 반증, (2) "커밋된 HEAD에서 읽힌다" → 반증.
+결정타는 한 라운드가 받은 텍스트가 **배너는 구버전인데 출력 형식 절은
+신버전인 하이브리드**였고, 그 조합이 커밋된 적 없는 중간 워킹트리 상태와
+일치한 것이다(`git log -S`로 확인). 반면 그 다음 라운드는 디스크 현재
+내용과 바이트 단위로 같은 걸 받았다. 즉 **일관되게 낡은 것도 아니다.**
+관측표와 지금 유효한 서술은 `.claude/agents/quad-doc-auditor.md` 상단
+배너가 소스 — 이 메모리는 그걸 가리키기만 하고 결론을 복제하지 않는다.
 
-**여전히 미해결**: `tools:` 필드가 그대로 반영되지는 않는다 —
-frontmatter에 적힌 Grep/Glob이 실제로는 안 주어지고, 적혀 있지도 않은
-`advisor`가 주어진 라운드가 있었다. 그래서 "파일을 고치지 않는다"는
-규칙은 도구 유무가 아니라 **행동 규약**으로 지킨다.
+**⚠️ 이 파일은 두 번이나 stale 상태로 방치됐다.** 캐시 가설로 썼다가
+"커밋된 HEAD"로 고쳤는데(2026-08-16), 바로 다음 커밋이 그 결론을 뒤집었는데도
+여기만 안 따라와서 감사 3라운드가 다시 잡아냈다. 라이브 문서를 고치는 세션은
+`agent-memory/`가 자기 수정 범위에 있다는 걸 자꾸 잊는다 — **내 메모리도
+코퍼스이고 감사 대상이다**([[project_agent_memory_self_reference_risk]]).
 
-**How to apply:** 내 지시문이 최신이 아닌 것 같으면 그건 코퍼스 정합성
-문제가 아니라 **아직 커밋 안 된 편집**이라는 뜻이다 — "corpus contradiction"
-발견으로 올리지 말고, 관찰만 한 줄 보고해라. 보고할 땐 추측하지 말고
-대조 가능한 형태로 줄 것: `git rev-parse HEAD:.claude/agents/quad-doc-auditor.md`와
-내가 받은 텍스트를 비교해 blob 해시로 말하면 메인이 1차 근거로 승격시킬 수
-있다(실제로 이 정정이 그렇게 나왔다 — 근거 없는 자기 보고는 깎이고,
-대조 가능한 자기 보고는 채택된다). 지금 유효한 규약의 소스는
-`.claude/agents/quad-doc-auditor.md` 상단 배너.
-See [[project_quad_corpus_structure]], [[project_agent_memory_self_reference_risk]].
+**How to apply:** 내 지시문이 최신이 아닌 것 같아도 **코퍼스 정합성 발견으로
+올리지 마라** — 코퍼스 문서끼리 모순된 게 아니라 도구 쪽 현상이다. 대신
+**대조 가능한 형태로 관찰만 보고해라**: `git rev-parse HEAD:.claude/agents/quad-doc-auditor.md`,
+디스크 파일, 내가 받은 텍스트 셋을 비교해 어느 것과 일치하는지(또는 어느
+것과도 불일치하는지) 말할 것. 추측으로 메커니즘을 단정하지 마라 — 그렇게
+해서 두 번 틀렸다. 반영 여부가 중요한 상황이면 메인 세션이 정의에 마커
+문구를 넣고 나에게 그 문구가 보이는지 묻는 방식이 실제로 작동했다.
+See [[project_quad_corpus_structure]].

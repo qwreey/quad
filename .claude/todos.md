@@ -128,7 +128,7 @@
    세션 도중 생긴 디렉토리였기 때문, 재시작으로 해소), (c) frontmatter
    `model: sonnet` 반영 — **확인됨**(서브에이전트 트랜스크립트에
    `claude-sonnet-5` 기록), (d) **해소** — 읽기 전용인데 Write/Edit이
-   주어지던 원인은 `memory: project`가 맞았음(아래 부수 확정 참고). 다만
+   주어지던 원인은 `memory: project`가 맞았음(근거는 `.claude/agents/quad-doc-auditor.md` 상단 배너). 다만
    `tools:` 필드가 그대로 반영되지 않는 건 **여전히 미해결**이라, 읽기
    전용은 도구 유무가 아니라 프롬프트의 행동 규약으로 계속 지킨다.
 
