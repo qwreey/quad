@@ -245,12 +245,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
       걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
       `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
-- [ ] `store.key` dot-access 타입 추론 확인 — Luau `type function`
+- [x] `store.key` dot-access 타입 추론 확인 — Luau `type function`
       (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
       `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
-      번째 세션, `base/typing-limits.md` "`store.key` 레코드 필드
-      타이핑" 절) — 실제 문법이 통과하는지는
-      `luau-test`의 `16-type-store-key-typefunction.luau`로 실측 필요
+      번째 세션, `base/typing-limits.md` §5) — **[2026-08-15 실측 완료]**
+      `luau-test/done/16-type-store-key-typefunction.luau` 통과(원인은
+      설계 문제가 아니라 `types.newfunction` API 버전 드리프트였음)
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
       (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드

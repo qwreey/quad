@@ -124,7 +124,7 @@ relate4의 살아있는 엔트리 총 개수:            0   (기대 0)
 | `13-type-ref-preref-subtype` | ✅ 통과 | `PreRef<T>`가 `Ref<T>` 자리에 대입 가능 — 진단 0건 |
 | `14-type-nilable-default-overload` | ⚠️ 부분통과 | 의도한 오용은 정확히 막지만 **정상 nilable 사용례까지 같이 막아** 현 스케치로는 채택 불가 |
 | `15-type-compute-trailing-deps-typepack` | ❌ 검증불가 | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 파일 전체가 파싱 실패. 다만 파서가 복구 후 낸 진단에서 **아래 1번 이슈**가 드러남 |
-| `16-type-store-key-typefunction` | ❌ 실패 | `type function` 스케치의 `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음. 문서가 스스로 "API 이름이 다를 수 있다"고 예비해둔 케이스 |
+| `16-type-store-key-typefunction` | ❌ 실패(당시) → **[2026-08-15] ✅ 통과로 복구** | `type function` 스케치의 `types.newfunction` 시그니처가 설치된 버전의 실제 API와 안 맞음(레코드 대신 배열을 넘기고 있었음) — 설계 문제 아니라 API 버전 드리프트였음이 나중에 확인됨. 상세: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절, `luau-test/done/16-type-store-key-typefunction.luau` |
 
 ## ⚠️ 실측으로 드러난 진짜 설계 이슈 — `:Compute(fn)`의 lazy 핸들 계약이 Luau 추론과 충돌
 
@@ -206,7 +206,8 @@ crash 0, FAIL 0.
 - `13`: B 런타임 섹션이 A의 더미 스텁에 막혀 단독 실행 불가 — 분리 필요.
 - `15`: 음성 대조군을 별도 파일/블록으로 격리해 `SyntaxError`가 A/B/D
   판정을 막지 않도록.
-- `16`: 설치된 버전의 `types.*` 실제 API 재확인 후 재시도.
+- `16`: 설치된 버전의 `types.*` 실제 API 재확인 후 재시도. **[2026-08-15
+  완료]** — `done/`으로 이동, 위 표에 반영.
 
 ## 결론
 

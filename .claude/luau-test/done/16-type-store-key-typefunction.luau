@@ -18,7 +18,9 @@
 	`types.newtable()`이 돌려주는 **뮤터블 핸들 자기 자신**을 그대로
 	참조하면 됨(나중에 `setproperty`로 채워도 핸들이라 소급 반영됨) —
 	별도 self 타입을 새로 만들 필요 없음. 이 수정만으로 통과.
-	재현: `luau-analyze 16-type-store-key-typefunction.luau` — 진단 0건.
+	재현: `luau-analyze 16-type-store-key-typefunction.luau` — 양성 경로는
+	클린, 이 파일 하단의 의도된 음성 대조군 4개(TypeError)만 정확히
+	에러남(진단 0건이 아님 — 그게 정상).
 
 	실측 환경: Luau 0.733(`mise ls luau`).
 ]]

@@ -15,7 +15,14 @@
 재현됨.
 
 **실측 환경**: Luau `0.733`(`mise ls luau`), `luau-analyze`(새 솔버
-기본값)와 `luau-analyze --solver=old` 둘 다로 교차검증.
+기본값) 기준. **[2026-08-15 정정, `/code-review high` 지적]** `--solver=old`
+교차검증은 이 폴더 자체의 `spikes/`엔 없음 — 후속 실험
+(`audit/type-recursive-issue-try-callback/spikes/
+19-oldsolver-crosscheck-rejects-typeof.luau`)에서 이 폴더의 승자
+formulation(`typeof(Get)`/`typeof(Compute)`)을 그대로 돌려 확인됨:
+옛 솔버는 그 선언 자체를 "Recursive type being used with different
+parameters"로 **선언 시점에 거부**(새 솔버만 통과) — `typing-limits.md`
+§8이 이미 예견한 "새 솔버 전제"와 정합적.
 
 ## TL;DR
 
@@ -43,8 +50,9 @@
 3. **음성 대조군**: 명백히 틀린 사용(`wrong: U = ...`, 없는 메소드 호출)이
    진짜로 에러가 나는지 — 둘 다 확인해야 "타입이 살아있다"고 말할 수 있음
    (에러가 하나도 안 나는 건 안전이 아니라 `any`로 샌 것일 수도 있음).
-4. 체이닝 깊이 1/3/5/8/50, 콜백 안에서 self를 다시 호출하는 중첩 케이스,
-   구솔버(`--solver=old`) 대조까지 포함.
+4. 체이닝 깊이 1/3/5/8/50, 콜백 안에서 self를 다시 호출하는 중첩 케이스
+   포함(구솔버 `--solver=old` 대조는 이 폴더가 아니라 후속 실험에서
+   수행 — 위 "실측 환경" 참고).
 
 ## 1. 대조군 — 인라인 선언은 여전히 leak (기존 0-Y 그대로 재현)
 
@@ -121,16 +129,25 @@ end)`처럼 **그 대입 줄 자체**에 틀린 타입 주석을 달면 그 줄�
 `Modifier`의 `__index` + `table.clone` 체이닝, `typing-limits.md` §6과
 같은 계열)을 재귀 `Compute`에 확장해봤습니다.
 
-### 5-1. raw 값을 콜백 파라미터로 받으면(quad 계약 아님) 정말 좋음
+### 5-1. `spikes/07` — U==T(타입 안 바뀜) 케이스, self-핸들 파라미터는 명시 주석
 
-`spikes/07-metatable-clean-when-U-equals-T.luau`(정확히는 이 파일은
-U==T 케이스; 원래 raw-param 버전은 아래 5-3 이전 실험) — 콜백이
-`(rawValue) -> U`를 받는 형태면 **파라미터가 무주석이어도 자동으로
-`number`로 추론**되고, 체이닝 50단에서도 hover 타입이
-`{inner:number}`로 고정 크기 유지(0-Y-free보다도 더 깔끔). 하지만
-**이건 quad의 실제 계약이 아닙니다** — quad `Compute`의 콜백은 lazy
-self 핸들 자체를 받아야 함(여러 세션에 걸쳐 확정된 계약,
-`base/typing-limits.md`/`bind-system-plan.md` 참고).
+**[2026-08-15 정정, `/code-review high` 지적]** 원래 서술이 이 파일을
+"콜백이 raw 값을 받으면 무주석으로도 정말 좋음, 체이닝 50단까지 깔끔"으로
+소개했으나, **`spikes/07-metatable-clean-when-U-equals-T.luau`를 직접
+열어보면 그 서술과 안 맞습니다** — 이 파일은 콜백이 raw 값이 아니라
+`(a0: Box<number>): number`처럼 **self 핸들을 명시 주석으로** 받고,
+체이닝도 50단이 아니라 **1단**(`d1 = test:Compute(...)` 한 번)뿐입니다.
+raw 값 콜백 + 50단 체이닝을 다뤘다는 실험은 이 폴더의 `spikes/`에
+저장된 파일 중 어디에도 없어 지금은 재현할 수 없습니다 — 그 서술은
+빼고, 이 파일이 실제로 보여주는 것만 남깁니다: **자동 추론
+자체는 됩니다**(파라미터에 명시 주석이 있으므로 무주석 추론 얘기가
+아니라 타입 안전성 얘기 — `wrong: string = d1:Get()`이 정확히 에러남).
+이 파일의 진짜 역할은 **5-3의 대조군**입니다 — U가 T와 같을 때는
+아래 솔버 버그가 안 남을 보여주는 baseline. 어느 쪽이든 raw 값이든
+self 핸들이든 **quad의 실제 계약은 self 핸들**이라 이 절의 결론에는
+영향 없습니다 — quad `Compute`의 콜백은 lazy self 핸들 자체를 받아야
+함(여러 세션에 걸쳐 확정된 계약, `base/typing-limits.md`/
+`bind-system-plan.md` 참고).
 
 ### 5-2. 콜백이 self 핸들을 무주석으로 받으면 — 정상/오용 안 가리고 모든 호출이 깨짐
 

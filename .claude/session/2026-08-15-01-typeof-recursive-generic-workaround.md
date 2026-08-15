@@ -46,7 +46,11 @@ typing-limits를 풀어보자, 오래 걸려도 되니까 정확하게 처리해
    파라미터까지 무주석 자동 추론**되는 걸 발견(raw 값 파라미터 한정).
    이걸 진짜 재귀 `Compute<U>: Box<U>`로 확장해보니 처음엔 완벽해
    보였음(체이닝 50단, 무주석 파라미터, 즉시 LHS 오타입 검출까지 전부
-   통과) — 그러나 quad의 **실제 계약**(콜백이 raw 값이 아니라 self
+   통과 — **[2026-08-15 정정, `/code-review` 지적] 이 raw-값·50단
+   버전은 파일로 저장되지 않아 지금은 재현 불가**, 사용자와 직접
+   대화하며 확인한 중간 관찰일 뿐 — 최종 결론은 이 서술이 아니라
+   `REPORT.md` §5-1/`typing-limits.md`가 소스) — 그러나 quad의
+   **실제 계약**(콜백이 raw 값이 아니라 self
    핸들을 받음)으로 정정하자 두 가지 문제가 연쇄로 드러남: (a) 파라미터
    무주석 시 duck-typing으로 새서 존재하지 않는 메소드도 안 잡히는
    불건전, (b) 파라미터를 명시 주석해도 **콜백 반환 타입이 self의
@@ -81,7 +85,7 @@ type function으로 0-Y 자체(재귀 `Compute`)를 우회하는 시도는
   (복구 완료), `STATUS.md`/`README.md` 동기화(rewrite-required 7→6,
   done 13→14).
 - `research/pre-implementation-audit.md` 1-10에 실측 완료 포인터 추가.
-- 전체 실측 원문+스파이크 14개: `audit/type-recursive-issue-with-typeof/`
+- 전체 실측 원문+스파이크 15개: `audit/type-recursive-issue-with-typeof/`
   (`REPORT.md` + `spikes/`, 사용자가 만든 `test-ignoreme`/`test2`/`test3`도
   `00`대 파일로 보존).
 

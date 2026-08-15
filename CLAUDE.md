@@ -63,14 +63,17 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   나열 안 하고 `STATUS.md`로 미룸**(나열하다 stale해지는 패턴이 실제로
   반복됐음, 아래 "지금 할 일" 0번 참고).
 - `.claude/audit/` — **[2026-08-13 신설]** 스파이크를 실제로 돌린 **실측
-  결과** 기록(계획 아님). 부분 확인도 있는 그대로 남김 —
-  `luau-test-first-run-2026-08-13.md`(첫 실측 라운드 전체, 구 0-Y의 1차
-  근거 — 단 그 문서의 "raw 값이면 완전 클린" 판정은 아래 문서가 뒤집었음),
-  `gcconn-trick-verification.md`(사용자가 Studio에서 직접 돌린 gcconn 트릭
-  부분 확인), **`type-recursion-issue/`**(**[13차 세션]** 0-Y 재실측 전체 —
-  `REPORT.md` + `spikes/` 44개. **이 폴더만 예외적으로 스크립트를 같이
-  둠** — 판정이 "여러 formulation 대조"라 개별 파일을 직접 돌려야 재현됨.
-  결론은 `base/typing-limits.md`로 승격).
+  결과** 기록(계획 아님). 부분 확인도 있는 그대로 남김 — **지금 몇 개가
+  있는지·각각 뭘 확인했는지는 여기서 나열 안 하고 `.claude/README.md`의
+  `audit/` 행으로 미룸**(luau-test와 같은 이유 — 나열하다 새 폴더가
+  추가될 때마다 stale해지는 패턴이 실제로 반복됐음, 가장 최근엔
+  2026-08-15에 이 목록이 3개에서 멈춰 있는 걸 `/code-review`가 발견).
+  `type-recursion-issue/`만 참고로 짚으면: **[13차 세션]** 0-Y 재실측
+  전체 — `REPORT.md` + `spikes/` 44개, **스크립트를 같이 두는** 예외적
+  구성(판정이 "여러 formulation 대조"라 개별 파일을 직접 돌려야 재현됨),
+  결론은 `base/typing-limits.md`로 승격 — 이후 신설된 폴더들도 같은
+  구성 관례를 따름(`type-recursive-issue-with-typeof/`,
+  `type-recursive-issue-try-callback/` 등).
 - `.claude/qa-request/`, `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
   지금은 비어있음. `.claude/archive/`는 원래 같은 취급이었으나
   2026-08-06 세 번째 세션부터 **완전히 뒤집힌 설계 결정을 원문+역전
@@ -1487,3 +1490,22 @@ include/markdown-magic이 선례임을 확인 후 build-vs-buy 논의, 문제가
 `done/`으로 이동. type function으로 0-Y 자체를 우회하는 시도는
 `stack overflow`로 막다른 길 확인. 전체 실측:
 `audit/type-recursive-issue-with-typeof/`.
+
+**2026-08-15 두 번째 세션 — 콜백 파라미터 무주석 추론 전방위 재시도,
+`/code-review` 2회전 정합성 수정**
+(`session/2026-08-15-02-try-callback-investigation-and-review-fixes.md`)
+사용자 요청으로 "콜백 파라미터는 명시 주석 필요" 캐비엇을 type
+function/메타테이블/제네릭 등으로 전방위 재시도(`audit/
+type-recursive-issue-try-callback/`, spikes 35개) — **결론은 그대로
+"안 됨"**이지만 근본 원인이 재귀 특유가 아니라 "제네릭 콜백 인자엔
+컨텍스트 타입 전파 자체가 안 됨"이라는 더 일반적 한계임이 드러났고,
+`/code-review high`가 지적한 이중 꺾쇠 명시 인스턴스화(`Compute<<T,U>>(fn)`)
+후속 조사까지 포함해 near-miss 세 개(중간 변수 고정/monomorphize
+헬퍼/명시 인스턴스화) 전부 §0 대전제(API를 타입 사정으로 비틀지 않음)
+위반으로 기각. `typing-limits.md` §1에 각주로만 반영, 원칙 자체는
+안 바뀜. 이어진 `/code-review` 2회전이 이 작업과 직전 세션 산출물
+전반에서 정합성 문제(옛 솔버 캐비엇 누락, 체크리스트 항목 간 모순,
+`type-recursion-issue/REPORT.md`의 실제 틀린 서술(`06`이 통과한다는
+잘못된 주장, 재귀가 아니라 "self가 제네릭인가"가 진짜 분기점이었음),
+스파이크 개수 off-by-one 2건, 이 세션 자체의 히스토리 누락 등) 다수
+발견·수정.
