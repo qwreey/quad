@@ -1368,3 +1368,12 @@ blob과 바이트 단위로 동일, 메인이 `git rev-parse`로 독립 확인).
 `tools:` 미반영뿐. 감사자 모델은 다섯 실행 전부 sonnet으로 재확인했고,
 실행마다 `message.usage.iterations[]`에 opus 항목이 딱 1개씩 붙는 게
 "감사자가 opus"로 보이는 원인.
+
+**[같은 세션, 해소]** "감사자가 opus로 돈다"는 반복 관측은 **뷰잉 이슈**로
+판명 — 서브에이전트 뷰 최상단에 보이는 `Opus 5 · Claude Max`는 Claude Code
+**세션 헤더**(메인 모델)이지 서브에이전트 모델이 아니다(사용자가 화면 직접
+확인). 감사자는 다섯 실행 전부 sonnet이고 frontmatter `model: sonnet`은
+정상 동작. 모델을 잘못 읽을 자리가 셋이었음 — (1) `"model"` 문자열 grep이
+`message.usage.iterations[]`의 opus 항목에 낚임, (2) 화면 최상단 세션 헤더,
+(3) 폐기된 워크플로의 픽스 에이전트 49개는 실제로 opus였던 것. 신뢰할
+소스는 트랜스크립트 최상위 `message.model` 하나.
