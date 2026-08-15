@@ -43,7 +43,8 @@
 인라이닝" 방향은 **채택 안 함**.
 
 - 지금 유효한 규약: **`base/typing-limits.md`**
-- 실측 근거 전문(스파이크 44개 포함): `audit/type-recursion-issue/`
+- 실측 근거 전문(스파이크 다수 포함 — 개수는 `spikes/` 폴더가 소스):
+  `audit/type-recursion-issue/`
 
 `15`도 같은 계약을 다루지만 **스파이크 자체가 파싱 실패**라
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이

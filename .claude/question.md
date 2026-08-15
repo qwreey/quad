@@ -31,11 +31,14 @@
 
 사용자 원 메모: "quad는 register라던가 좀 부정확하거나 느낌이 바로 와닿지
 않던 용어들이 많음 — 전체적 용어를 보고 생각해볼래? 제안을 줘, 나도 같이
-볼게." **이미 확정된 이름**(`State`/`Relate`/`List`/`Ref`/
+볼게." **이미 확정된 이름**(`State`/`Relate`/`List`/`canBound`/`Ref`/
 `PreRef`/`Peek`/`isState`/`None`/`NoneHandler`/`Handler`)의 근거는
 `archive/question-resolved.md`. (`canBound`는 2026-08-14 다섯 번째 세션에
-**폐기**되어 이 목록에서 빠짐 — `canExecute` 하나로 통합됐음,
-`archive/canexecute-inst-arg-reversed.md`.)
+폐기돼 `canExecute`로 통합됐다가 **같은 날 열한 번째 세션에 별도 진입점으로
+재도입**되어 여전히 이 목록에 있음 — 이중 바인딩 가드 전용이고 `canExecute`
+(emit 게이팅 전용)와는 판정 로직만 공유. 아래 3번 `canExecute` 항목과
+`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절,
+`archive/canexecute-inst-arg-reversed.md` 하단 addendum 참고.)
 
 - **`DI`(Declarative Instance, 1순위)**: "Dependency Injection"의 업계
   표준 축약어와 완전히 겹침 — 4차 라운드에서 이미 한 번 실제로 오해가
@@ -109,6 +112,23 @@
   선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
 
 ## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
+
+- **인용 출처 없는 원칙 — "드문 오용/가상 미래 요구까지 방어/최적화하려고
+  구조를 복잡하게 만들지 않는다"(2026-08-16 신설)** —
+  `base/modifier-plan.md`의 "미검토로 남긴 것" 문단이 이 원칙을 `CLAUDE.md`의
+  것으로 인용해왔으나, **코퍼스 전체 grep과 `git log -S`(CLAUDE.md 전
+  히스토리) 어디에도 그런 서술이 없음** — 즉 존재한 적 없는 출처였음(같이
+  발견된 다른 두 건은 인용 대상만 틀린 것이라 실제 소스로 재조준 완료:
+  `research/v1-compat-plan.md`→`base/component-composition-plan.md`+
+  `base/store-plan.md`, `research/pre-implementation-audit.md`→`ROADMAP.md` +
+  `question.md`(이 문서)).
+  선택지는 (a) 이 원칙을 `.claude/conventions.md`에 정식 명문화 —
+  실제로 여러 설계 결정이 이 취지로 내려졌으니 한 번 적어두면 앞으로도
+  인용 가능, (b) 명문화하지 않고 `modifier-plan.md`의 지역 논거로만 둠
+  (이 경우 그 문단의 정정 배너를 지우고 문장만 남기면 됨).
+  **어느 쪽이든 그 문단의 결론("지금은 fast-path 빌더를 설계하지 않음")은
+  영향받지 않음** — 순수하게 "이 원칙을 프로젝트 공식 관례로 승격할
+  것인가"만 묻는 질문.
 
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등

@@ -60,6 +60,10 @@ function fixPrompt(file, items) {
 
 const seen = new Set()
 const roundLog = []
+// 실제 발견 내용 자체를 누적한다 — 카운트만 돌려주면 호출한 세션이
+// 커밋 전 diff 리뷰(관례상 필수)를 할 때 "이 수정이 왜 들어갔는지"를
+// 알 길이 없어서 journal.jsonl을 뒤져야 한다(2026-08-16 지적).
+const appliedFindings = []
 let dry = 0
 let round = 0
 
@@ -127,6 +131,10 @@ while (dry < DRY_ROUNDS_TO_CONVERGE && round < MAX_ROUNDS) {
         label: `fix:${file}`,
         phase: 'Fix',
         agentType: 'general-purpose',
+        // 토큰 관례(.claude/conventions.md "일반 작업은 sonnet") — 감사
+        // 패스는 frontmatter로 이미 sonnet, 반영 쪽만 메인 모델(Opus)을
+        // 상속하고 있어서 맞춤.
+        model: 'sonnet',
       })
     )
   )
@@ -136,10 +144,12 @@ while (dry < DRY_ROUNDS_TO_CONVERGE && round < MAX_ROUNDS) {
   // 사라지고, 안 고쳐진 채로 수렴 판정이 난다(위와 같은 클래스의 버그).
   const failedFiles = []
   fixed.forEach((r, i) => {
+    const [file, items] = fileEntries[i]
     if (r === null) {
-      const [file, items] = fileEntries[i]
       failedFiles.push(file)
       items.forEach((f) => seen.delete(keyOf(f)))
+    } else {
+      items.forEach((f) => appliedFindings.push({ round, ...f }))
     }
   })
   if (failedFiles.length) {
@@ -162,6 +172,10 @@ if (!converged) {
 return {
   converged,
   rounds: round,
-  totalFindingsFixed: seen.size,
+  // ⚠️ "반영 에이전트에게 넘긴 발견"의 수이지 "실제로 고쳐진" 수가 아니다
+  // — "의심"으로 표시된 항목은 반영 에이전트가 확인 후 건드리지 않고
+  // 넘어갈 수 있다. 실제 반영 여부는 항상 `git diff`로 확인할 것.
+  findingsSentToFix: appliedFindings.length,
+  findings: appliedFindings,
   roundLog,
 }

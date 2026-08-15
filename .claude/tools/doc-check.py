@@ -11,17 +11,24 @@
        python3 .claude/tools/doc-check.py --quiet   # 실패한 검사만
 종료코드: 오류(ERROR)가 하나라도 있으면 1, 경고만 있으면 0.
 
-검사 항목
-  1. [ERROR] 깨진 파일 참조 — 라이브 문서가 가리키는 .md/.luau가 실제로 없음
-  2. [ERROR] 깨진 절 참조 — `foo.md` "절 제목" 이 그 파일에 없음
-     (문서를 쪼개거나 헤딩을 고칠 때 가장 잘 깨지는 것 — 아홉 번째 세션에
-      bind-system-plan.md를 분할하며 20곳이 여기 걸렸음)
+검사 항목  ([2026-08-16 정정] 1·2번의 심각도를 실제 코드에 맞춰 고침 —
+           예전엔 둘 다 [ERROR]라고 적어놨지만 코드는 그렇게 동작한 적이 없음)
+  1. [ERROR/WARN] 깨진 파일 참조 — 라이브 문서가 가리키는 .md/.luau가 실제로
+     없음. 파일명이 이 레포의 명명 관례(`OURS`)에 걸리면 ERROR, 아니면
+     외부 문서명일 수 있어 WARN.
+  2. [WARN]  깨진 절 참조 — `foo.md` "절 제목" 이 그 파일에 없음
+     (문서를 쪼개거나 헤딩을 고칠 때 가장 잘 걸리는 것 — 아홉 번째 세션에
+      bind-system-plan.md를 분할하며 20곳이 여기 걸렸음. 절 제목을 의역해
+      인용하는 관례가 있어 오탐이 섞이므로 ERROR가 아니라 WARN)
   3. [ERROR] 색인 누락 — base/research/archive/reference 파일이 README에 없음
   4. [WARN]  날짜 없는 시한부 주장 — "아직 안 돌려봄", "열린 질문 없음" 등
      시간이 지나면 거짓이 되는데 언제 기준인지 안 적힌 문장
   5. [WARN]  미반영 배너를 단 파일 vs 반영 목록 일치 여부
 
-`session/`(원문 보존), `initreq/`(읽기 전용 클론)는 검사 대상에서 제외.
+검사 대상에서 제외되는 폴더는 `SKIP_DIRS`가 소스 — `session/`(원문 보존),
+`initreq/`(읽기 전용 클론), `worktrees/`, `tools/`(이 스크립트 자신이 여기
+있으므로 **doc-check.py는 자기 자신을 검사하지 않음**, 이 docstring의 주장은
+사람이 손으로 확인해야 함).
 `archive/`와 `.claude/session-summary.md`는 검사 대상이되 **히스토리 문서**라
 절 참조/시한부 주장 검사는 면제(`is_history()` 참고).
 """
@@ -245,8 +252,11 @@ def main():
     check_temporal(docs)
     check_banner(docs)
 
+    # 제외 목록은 SKIP_DIRS 하나만 소스로 두고 여기서 다시 적지 않음
+    # ([2026-08-16] 예전엔 "session/·initreq/ 제외"라고 하드코딩돼 있어
+    #  worktrees/·tools/가 빠진 채 stale했음)
     print(f"검사 대상 라이브 문서 {len(docs)}개 "
-          f"(session/·initreq/ 제외)\n")
+          f"({'·'.join(d + '/' for d in SKIP_DIRS)} 제외)\n")
     if errors:
         print(f"■ ERROR {len(errors)}건 — 고쳐야 함")
         for e in errors:

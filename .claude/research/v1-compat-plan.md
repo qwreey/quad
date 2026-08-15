@@ -47,8 +47,14 @@ v1(`.claude/initreq/quad/src`) 조사 결과, API는 성격이 다른 두 계층
 - 인스턴스화 시 생성자 인자를 자동으로 store로 감싸고(`class.lua:367`),
   이후 `comp.Text = "hi"`처럼 프로퍼티를 재대입하면 `__newindex`가 자동으로
   내부 store에 위임 + `UpdateTriggers`에 걸리면 자동 재렌더까지 발생
-  (`class.lua:524-566`) — CLAUDE.md에 이미 "이 자동 위임/재렌더 매직은
-  v2에서 폐기하기로 확정"이라 기록된 바로 그 메커니즘.
+  (`class.lua:524-566`) — v2에서 폐기하기로 확정된 바로 그 메커니즘
+  (**[2026-08-16 인용 정정]** 원래 "CLAUDE.md에 기록됨"이라 적혀 있었으나
+  CLAUDE.md에 그런 서술은 없었음. 실제 소스는
+  `base/component-composition-plan.md`의 "1. 컴포넌트 = 그냥 함수, "자기
+  store 자동 소유" 매직은 폐기" 절(자동 흡수/자동 store 생성 매직 폐기,
+  사용자 확정)과 `base/store-plan.md`의 "Store 값 설정 문법 —
+  `myStore.key = value` 폐기, `source:Set(value)`로 전환" 절(`__newindex`
+  자동 위임 폐기)).
 
 ## 3. 계층별 실현 가능성
 

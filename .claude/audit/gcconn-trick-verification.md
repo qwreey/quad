@@ -10,8 +10,8 @@
 오히려 더 중요해졌음** — `bindLifetime`/`canExecute`/`unbindLifetime`
 재정정으로 `canExecute(value)`가 **`value` 쪽 릴레이션에 복사된 gcconn의
 `.Connected`를 직접 읽는 것**이 leaf 경로 생존 판정의 전부가 됐기 때문
-(`base/lifecycle-pattern.md`의 "`bindLifetime`/`canExecute`/`unbindLifetime`
-— 확정" 절). **[재정정, 2026-08-14 열한 번째 세션] `canBound`는 폐기되지
+(`base/lifecycle-pattern.md`의 "`bindLifetime`/`canBound`/`canExecute`/
+`unbindLifetime` — 확정" 절). **[재정정, 2026-08-14 열한 번째 세션] `canBound`는 폐기되지
 않고 별도 진입점으로 재도입됨** — 이중 바인딩 게이트(`bindLifetime`/
 `Observer:Subscribe()`)는 `canBound`, State emit 전파 게이팅만
 `canExecute`(판정 로직은 비공개 헬퍼 하나를 공유, `base/lifecycle-pattern.md`의
