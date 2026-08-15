@@ -11,7 +11,7 @@
 
 | 파일 | 무엇이 들어있나 |
 |---|---|
-| `conventions.md` | 언어/모델 관례 + **작업 방식**(핸드오버 체크리스트, `doc-check.py`, `quad-doc-auditor`, SAFETY 준수 등 에이전트가 따라야 할 절차 전부) |
+| `conventions.md` | 언어/모델 관례 + **설계 원칙** + **작업 방식**(핸드오버 체크리스트, `doc-check.py`, `quad-doc-auditor`, SAFETY 준수 등 에이전트가 따라야 할 절차 전부) |
 | `project-context.md` | 이 프로젝트가 뭔지 + 계획 문서 구조(폴더별 성격 요약 — 상세 색인은 이 README가 소스) |
 | `todos.md` | 지금 할 일(우선순위순). 가장 자주 바뀜 |
 | `session-summary.md` | 세션별 2~4줄 요약 색인. **`@import` 안 됨(의도적)** — 이만한 분량을 매 세션 컨텍스트에 올릴 이유가 없어 온디맨드로 둠, 선행 맥락이 필요할 때 grep해서 열 것. 자동생성 전환 예정(`research/doc-include-plan.md`) |
