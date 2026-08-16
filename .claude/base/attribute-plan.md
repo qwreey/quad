@@ -51,8 +51,8 @@ Ref(직접 참조 획득) 쪽으로 빠지는 게 맞고, Attribute는 프리미
 대안(테이블/참조를 담는 용도)으로 나온 배경이지만, 지금은 Roblox Attribute가
 Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Attribute를
 그대로 쓸 수 있다는 점을 사용자가 짚음(`research/debug-tooling-plan.md`의
-"Value 오브젝트 기각, Attribute로 확정" 결정과 같은 방향 — Instance 타입
-지원까지 감안하면 그 결정의 근거가 한층 더 탄탄해짐).
+"Value 오브젝트(StringValue/ObjectValue 등)는 기각" 결정과 같은 방향
+— Instance 타입 지원까지 감안하면 그 결정의 근거가 한층 더 탄탄해짐).
 
 **확정(2026-08-09 열한 번째 세션) — 둘 다 채택**:
 - `[AttributeKey<<boolean>> "name"] = true` (리터럴 또는 store-bind 값) —
@@ -436,8 +436,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 (`inst:SetAttribute`)뿐이고, 이름 claim·그룹 위임·`None` 처리·이름별 weak
 캐시는 전부 순수 부기임. 웹에도 대응물이 있으므로(`data-*`) 그 배치대로면
 **같은 소유권 알고리즘을 백엔드마다 재구현**하게 됨 — `architecture.md`의
-"엔진마다 큰 구현을 중복하지 않기 위해 디스패치 엔진을 base가 인터페이스로
-소유한다"는 원칙에 정면으로 어긋남.
+"패키지 경계" 절이 세운 원칙에 정면으로 어긋남.
 
 **확정된 배치**:
 

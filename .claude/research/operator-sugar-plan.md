@@ -104,8 +104,8 @@ price:Apply(addTaxAndShipping)
    이미 `state:Apply(makeFormatter("ko-KR"))`를 "커링 팩토리 + `:Apply`"의
    정석 예시로 들어둠 — `Operator.*`/`Animate`가 이 관용구를 따르는 게
    자연스러움. `Animate`가 `:Compute`를 골랐던 건 오히려 이 기존
-   관용구에서 벗어난 예외였다는 게 이번 논의에서 드러남(`research/
-   tween-plan.md` "왜 `:Apply`인가로 정정" 절 참고).
+   관용구에서 벗어난 예외였다는 게 이번 논의에서 드러남(`base/
+   tween-plan.md` "왜 `:Apply`로 정정됐는가" 절 참고).
 3. **일관성 — 0항/N항을 나누지 않음.** `Not`은 deps가 없어서 위 1번
    문제와 무관하지만, "이 라이브러리의 콤비네이터는 항상 `:Apply`로
    붙인다"는 단일 규칙을 지키는 게 "0항만 예외적으로 `:Compute`에

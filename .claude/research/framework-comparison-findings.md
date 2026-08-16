@@ -142,6 +142,7 @@ React 커스텀 훅만큼의 합성성을 실사용 규모에서 주는가"도 �
 이전 완료, 상세 근거는 3번 절 참고. 2번은 이제 전부 해소된 항목만 남음, 이
 문서 자체는 더 이상 사용자 판단 대기 상태가 아님.
 
-- 1번 강점 목록은 `research/documentation-content-map.md`의 "왜 quad를
-  쓰는가" 초심자/quadnomicon 콘텐츠 소재로 재사용 가능(유일하게 남은 재활용
-  대상).
+- 1번 강점 목록은 `research/documentation-content-map.md`의 "초심자(getting-started)
+  core loop"와 "`quadnomicon`" 축에 콘텐츠 소재로 재사용 가능(유일하게 남은
+  재활용 대상). 위 1번 헤딩이 말하는 "왜 quad인가" 문서는 아직 그 콘텐츠
+  맵에 항목으로 없음 — 쓰게 되면 거기 먼저 추가할 것.

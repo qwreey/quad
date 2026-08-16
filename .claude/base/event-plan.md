@@ -41,8 +41,8 @@ SyntheticEvent만 주는 것과 같은 모양).
    무엇에 연결됐는가"를 선언된 반응형 그래프로 추적하는 것인데
    (`research/debug-tooling-plan.md`), self로 얻은 Instance를 이벤트
    핸들러 안에서 직접 mutate하는 경로는 그 그래프 밖 — `base/
-   purity-and-effects-plan.md`의 "재사용 가능한 컴포넌트는 store만
-   파라미터로 받아야 한다"는 이식성 원칙과도 같은 결.
+   purity-and-effects-plan.md`의 "결론: 입력받은 store만 처리하는
+   함수가 좋은 컴포넌트" 절이 세운 이식성 원칙과도 같은 결.
 4. **성능/GC**: self를 넘겨주려면 원본 콜백을 클로저로 한 번 더 감싸야
    함(`event:Connect(function(...) func(self, ...) end)`) — Connect마다
    불필요한 클로저 할당 비용이 들고, 최적화에도 GC 흐름에도 좋을 게

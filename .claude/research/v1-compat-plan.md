@@ -20,8 +20,8 @@ compat.lua나 어댑터 코드는 전혀 없고, README/커밋 메시지에도 "
 
 → `archive/question-resolved.md`가 "OOP 상속/커스텀 파서/Slot 스텁/`Pipe` COW는
 확인된 죽은 접근"이라고 명시한 목록에 compat은 **포함돼 있지 않음**(정확한 서술).
-즉 `.claude/project-context.md`의 "반복 조사 금지"는 compat에는 적용되지 않는다 — 이 문서를
-쓰는 게 규칙 위반이 아님.
+즉 `base/bind-system-plan.md`의 "확정된 것" 절이 정한 반복 조사 금지 규칙은
+compat에는 적용되지 않는다 — 이 문서를 쓰는 게 규칙 위반이 아님.
 
 ## 2. v1 공개 API 표면 — 두 계층으로 나뉨
 
@@ -61,7 +61,7 @@ v1(`.claude/initreq/quad/src`) 조사 결과, API는 성격이 다른 두 계층
 ### 3-1. (a)는 얇게 재현 가능 — opt-in 서브패키지로 격리하면 근거 문제도 해소됨
 
 - **이벤트 self 관습**: 클로저 한 겹으로 재현 가능. `base/event-plan.md`
-  "이벤트 핸들러는 self를 받지 않는다" 절이 든 반대 근거 4가지(Ref 중복
+  "이벤트 핸들러는 self(Instance)를 받지 않는다" 절이 든 반대 근거 4가지(Ref 중복
   채널, Modifier 정적 flatten과 경쟁, quad-debug 추적 밖 mutate 경로, 클로저
   비용)는 **코어에 넣을 때** 문제가 되는 것들 — 별도 opt-in 패키지
   (`quad-compat` 부활)로 격리하면 비용은 compat 사용자만 부담하고 코어 KV
@@ -250,7 +250,7 @@ v2 트리 안에 과거 v1 컴포넌트를 리프로 박아넣는 것, (B) 기�
   "직접 Destroy 금지, Unmount 경유" 규칙을 Dispatch 엔진의 어느 지점에
   훅으로 강제할지도 Slot 실제 구현 시점 확인 필요.
 - **결론: 지금 결정 불가.** M0 이후 Slot 코어 로직 구현 라운드
-  (`archive/question-resolved.md`의 "여러 Slot이 형제로 섞일 때 순서 보장"
+  (`archive/question-resolved.md`의 `여러 Slot이 형제로 섞일 때 순서 보장`
   항목과 같은 시점 — 이미 해소돼 아카이브로 옮겨졌으나 실제 구현 시점의
   참고 자료로는 여전히 유효)에서 이 두 가지를 실제 구현과 함께 재확인해야 함.
 

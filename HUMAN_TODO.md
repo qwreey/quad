@@ -119,8 +119,9 @@ B(Attribute의 Instance 참조 타입)/C(CollectionService 태그 왕복) —
 2. 사용 가능해지는 순간 에이전트에 알려줄 것.
 
 둘 중 어느 쪽이든 **에이전트는 스스로 판단하지 않고 대기**한다 — 알려주기
-전까지는 `architecture.md`의 "새로 짜는 코드는 일단 `local`로" 원칙을 그대로
-따름. 알려주면 그때 `architecture.md`의 해당 절을 갱신하고 기존 코드의
+전까지는 `architecture.md`의 "`const` 바인딩도 Luau 공식 문법" 절이 정한
+"새로 짜는 코드는 일단 `local`로" 원칙을 그대로 따름. 알려주면 그때
+`architecture.md`의 해당 절을 갱신하고 기존 코드의
 `const` 전환 범위를 같이 상의할 것.
 
 ## 6. **[2026-08-13 신설, 안 막음]** 에디터의 Luau 솔버 설정 확인

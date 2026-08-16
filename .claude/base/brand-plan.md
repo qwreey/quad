@@ -86,8 +86,8 @@ end
 별도로 제공, `isState`는 여전히 `{State, Source}` 둘 다 통과시킴(상위
 개념이니까 당연히). `component-composition-plan.md` 4번 절이 이미
 `isSource`가 존재한다고 가정하고 있었던 것과도 이걸로 정합됨(그동안 두
-문서가 서로 모순돼 있었음). `base/modifier-plan.md`의 "별도 `isSource`
-불필요" 서술도 같이 정정 대상.
+문서가 서로 모순돼 있었음). `base/modifier-plan.md`의 "`isState(x): boolean` 필요" 절에 있던 "별도 `isSource` 불필요" 서술은
+`session/2026-08-07-08-none-sentinel-dispatch-brand.md`에서 이미 정정됨.
 
 **갭 보강 — `isRef`/`isPreRef`/`isModifier`가 태그 목록에서 빠져있던 것
 추가(2026-08-07 열 번째 세션), 이후 `isRef`/`isPreRef` 관계 자체가
@@ -121,7 +121,8 @@ end
 `Brand.get(x) == SlotTag`/`Brand.get(x) == EffectTag`인 단순 항등
 predicate, 태그 자체는 원래부터 목록에 있었지만(`SlotTag`) `isX`
 wrapper로 명시적으로 안 적혀 있던 것을 `base/modifier-plan.md`의
-"핸들러 계층 값이 필드로 들어오면 즉시 error" 절이 필요로 해서 이번에
+"Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)이
+들어오면 즉시 error" 절이 필요로 해서 이번에
 같이 적음.
 
 **`None`은 이 레지스트리에 안 들어감 — 싱글턴이라 항등 비교로 충분.**

@@ -691,7 +691,7 @@ someSource:Compute(computeFn)
   이름 자체를 팩토리 함수로" — `Source(default)`, `Ref(default)`,
   `Store({defaults})`.** Ref도 예외 없이 이 스타일을 따름 — Ref가
   `Ref()`로 안 만들어질 특별한 이유는 없었고(이전 절에서 API 모양만
-  다루고 생성자를 명시 안 해서 생긴 공백), `architecture.md`의 "복사
+  다루고 생성자를 명시 안 해서 생긴 공백), `architecture.md`의 "복사(clone)
   구현 지양, 팩토리 함수로 대체" 원칙과도 정확히 일치. `Store({defaults})`도
   같은 스타일로 지원(`defaults`는 선택 — 안 주고 `Store()`만 호출해도
   됨, 순수 편의용 초기값 템플릿).
@@ -840,7 +840,7 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
 아니라 메소드 `state:Observer(fn)`로 확정** — `state`가 항상 필요한
 필수 인자라 `:` 리시버 자리에 자연스럽게 들어가고(다른 형태면 인자
 두 개짜리 자유 함수가 되어 읽는 순서가 어색해짐), `architecture.md`의
-"함수지향 디폴트, `:` 체이닝은 예외적으로만(체이닝이 정말 편한 경우만)"
+"함수지향 디폴트, `:` 체이닝은 예외적으로만"
 원칙이 정확히 이 경우를 가리킴 — Store 값 변경 체이닝과 같은 예외
 카테고리. **더 근본적인 이유**: 위 "독립 존재 가능한 프리미티브 vs
 원천에 종속된 파생 데이터" 원칙 참고 — Observer는 State처럼 원천 없이는

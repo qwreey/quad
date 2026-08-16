@@ -322,7 +322,7 @@ UI를 클릭한 순간)에 강제로 그 계산을 트리거하는 건 이 전�
   실제로 알고 있는 가장 가까운 **부모**를 대신 선택/하이라이트.
 - 플러그인 트리에 대응 노드가 **있는** 경우(예: 사용자가 어떤 Instance를
   직접 컴포넌트화해서 quad로 bind한 경우 — 이건 UB가 아니라 충분히 유효한
-  사용법, `base/component-composition-plan.md`의 "컴포넌트 = 플레인 함수"
+  사용법, `base/component-composition-plan.md`의 "컴포넌트 = 그냥 함수"
   원칙과도 맞음) 트리에 있는 그 실제 노드를 정확히 선택.
 
 **네이밍 컨벤션(사용자 제안)**: 내부 자동 생성 helper Instance는 `_`나
@@ -330,7 +330,7 @@ UI를 클릭한 순간)에 강제로 그 계산을 트리거하는 건 이 전�
 이름 바꾸는 건 비용이 크지 않음. v1이 이미 `_quad_round`/`_quad_padding`/
 `_quad_scale` 네이밍(`base/ui-shorthand-plan.md` 참고)으로 정확히
 이 관습을 썼던 전례 — quad-v2에서 내부 자동 생성물이 생기면 그대로
-재사용. `research/documentation-plan.md`의 "UI 네이밍 컨벤션 문서"
+재사용. `research/documentation-plan.md`의 "UI 요소 네이밍 컨벤션 문서"
 백로그에도 이 구체적 규칙을 추가해둠.
 
 **플러그인 UI 아키텍처 확인(사용자 질문에 대한 답 — 맞음)**: 세 개의

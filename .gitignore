@@ -1,1 +1,5 @@
 .claude/initreq
+
+# Python 바이트코드 — doc-check.py 실행 시 생김(32e9db0에 실수로 딸려 들어갔었음)
+__pycache__/
+*.pyc

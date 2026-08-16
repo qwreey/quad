@@ -124,8 +124,9 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   `typeof(v)`를 함께 출력하고, "quad-roblox 등 필요한 provider가
   초기화됐는지 확인하라"는 안내만 덧붙임 — 그 이상의 특수 분기는 두지
   않음(다른 라이브러리에서도 흔한 "매치 실패=에러" 패턴 그대로).
-  **이걸로 `module-lifecycle-plan.md`의 "provider가 아직 주입 안 된
-  상태에서 dispatch가 호출되면?" 케이스(`pre-implementation-audit.md`
+  **이걸로 `module-lifecycle-plan.md`의 "열린 질문이었던 것 — 전부
+  해소됨" 절에 있는 "provider가 아직 주입 안 된 상태에서 dispatch가
+  호출되면?" 케이스(`pre-implementation-audit.md`
   1-4)도 별도 분기 없이 자동으로 해소됨** — provider 미주입 상태는
   결국 그 클래스를 다루는 핸들러가 레지스트리에 하나도 없는 상태이므로
   "매치 실패"와 정확히 같은 경로로 수렴함. 오타 키/미지원 조합/provider
@@ -207,7 +208,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   이전 처리를 무르는/멈추는 함수. **오직 "같은 key에 새 값이 들어와서
   이전 처리를 갈아치우는" 시나리오에만 존재** — 인스턴스/바인드 전체가
   Destroy될 때는 이 클로저가 호출되지 않음(`base/lifecycle-pattern.md`의
-  "quad는 라이프사이클 중간에 있지 않다" 원칙 참고).
+  "quad는 자신이 만든 Instance의 라이프사이클" 절의 원칙 참고).
   - 일반 프로퍼티는 애초에 "unset" 개념이 없음(`nil`로 셋하는 것도 그냥 셋
     동작) — 그래서 프로퍼티 핸들러는 보통 no-op 클로저(`function() end`)만
     반환하면 됨.
@@ -526,8 +527,7 @@ end
   키/그룹(이름 claim, 그룹→단일 키 위임, `None` 처리). 둘 다 웹에도
   대응물이 있고(`className`, `data-*`) 부기 로직이 엔진과 무관해서,
   백엔드마다 재구현하면 **같은 참조 카운트/소유권 알고리즘이 통째로
-  복제**됨 — `architecture.md`의 "엔진마다 큰 구현을 중복하지 않기 위해
-  디스패치 엔진을 base가 인터페이스로 소유한다"는 원칙이 그대로 적용되는
+  복제**됨 — `architecture.md`의 "패키지 경계" 절이 세운 원칙이 그대로 적용되는
   자리(2026-08-13 열네 번째 세션, 사용자 판단으로 재배치). **같은 패턴이
   Dispatch 바깥에도 적용됨** — `dispose(value)`(`base/slot-plan.md`)는
   Dispatch 핸들러가 아니라 독립 탑레벨 유틸이지만, `isSlot`이 아닌 값은

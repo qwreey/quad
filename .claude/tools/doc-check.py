@@ -16,10 +16,15 @@
   1. [ERROR/WARN] 깨진 파일 참조 — 라이브 문서가 가리키는 .md/.luau가 실제로
      없음. 파일명이 이 레포의 명명 관례(`OURS`)에 걸리면 ERROR, 아니면
      외부 문서명일 수 있어 WARN.
-  2. [WARN]  깨진 절 참조 — `foo.md` "절 제목" 이 그 파일에 없음
+  2. [ERROR] 깨진 절 참조 — `foo.md` "절 제목" 이 그 파일에 없음
      (문서를 쪼개거나 헤딩을 고칠 때 가장 잘 걸리는 것 — 아홉 번째 세션에
-      bind-system-plan.md를 분할하며 20곳이 여기 걸렸음. 절 제목을 의역해
-      인용하는 관례가 있어 오탐이 섞이므로 ERROR가 아니라 WARN)
+      bind-system-plan.md를 분할하며 20곳이 여기 걸렸음)
+     [2026-08-16] 판정 규칙은 `BOLD_LEAD` 주석과 `conventions.md`의
+     "절 인용 규약"이 소스 — `#` 헤딩은 부분문자열, `**볼드**` 절은 줄머리 +
+     앞부분일치. 예전엔 `#` 헤딩만 읽어서 볼드 절 인용을 전부 오탐으로
+     냈고(78건 중 30건), "의역 인용 관례 때문에 오탐이 섞인다"며 WARN에
+     묶여 있었다. 의역 인용을 규약으로 금지하고 불일치를 78→0으로 정리한
+     뒤 ERROR로 승격함.
   3. [ERROR] 색인 누락 — base/research/archive/reference 파일이 README에 없음
   4. [WARN]  날짜 없는 시한부 주장 — "아직 안 돌려봄", "열린 질문 없음" 등
      시간이 지나면 거짓이 되는데 언제 기준인지 안 적힌 문장
@@ -74,7 +79,9 @@ def rel(p):
 # 예전엔 줄 단위로 돌려서 `base/\nbind-system-plan.md`의 "Length/Offset" 같은
 # 자연스러운 줄바꿈 인용을 통째로 놓쳤고, 실제로 문서 분할 후 stale 참조
 # 20여 곳이 이 사각지대로 빠져나갔음(14차 세션 리뷰에서 발견).
-REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,60})")?')
+# [2026-08-16] 인용 길이 상한을 60→160자로 넓힘. 60자를 넘는 절 인용은 매치
+# 자체가 안 걸려 **검사에서 조용히 빠져나갔다** — 위양성보다 나쁜 종류의 구멍.
+REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,160})")?')
 
 def resolve(target, src):
     """참조 문자열을 실제 경로로 해석 — 상대/부분 경로를 관대하게 매칭."""
@@ -108,6 +115,52 @@ OURS = re.compile(r'(-plan|-reversed|-rejected|-findings|-map|-audit|-verificati
                   r'|^conventions|^project-context|^todos|^session-summary)\.md$')
 
 
+# [2026-08-16] 이 코퍼스의 "절"은 `#` 헤딩만이 아니다 — `**볼드**`로 시작하는
+# 줄을 하위 절로 쓰고, 다른 문서들이 그걸 "절"이라 부르며 인용해왔다. 그걸
+# 안 읽어서 절 참조 WARN 상당수가 위양성이었음 — 라운드별 실측 수치는
+# `session/2026-08-16-03-doc-check-section-convention.md`가 소스(여기 복제 안 함).
+#
+# 다만 볼드를 통째로 절 제목으로 인정하면 검사가 장식이 된다 — 실측상 볼드는
+# `#` 헤딩보다 압도적으로 흔하고 대부분은 그냥 강조다. 인용이 무관한 강조
+# 스팬에 우연히 걸리면 검사가 조용히 통과해버려 진짜 rot을 놓친다. 그래서
+# 규칙을 비대칭으로 둔다:
+#   - `#` 헤딩  : **부분문자열** 인용 허용 (명시적 절 마커라 오인 위험 없음)
+#   - `**볼드**` 절: 빈 줄 다음이나 리스트 항목 머리에 있고, 인용이 제목
+#                    **앞부분부터**일 때만 인정
+# 이 비대칭이 곧 `conventions.md`의 "절 인용 규약"이다. 느슨한 규칙과 해소
+# 건수는 같으면서 매칭 표면만 좁다는 걸 실측으로 확인하고 채택했다.
+# 절 제목으로 인정하는 볼드는 **빈 줄 다음** 또는 **리스트 항목**뿐이다.
+# 그냥 "줄머리 볼드"로 두면 **문단이 줄바꿈되며 우연히 줄머리에 걸린 강조**까지
+# 절로 잡힌다 — `architecture.md`의 `**pluggable 디스패치 엔진 자체도 …**`가
+# 실제 사례로, 진짜 절은 두 줄 위의 `**패키지 경계**`인데 두 문서가 그 우연한
+# 자리를 절이라며 인용하고 있었다(커밋 전 감사가 잡음).
+# 리스트 마커는 `-`/`*`/`>`뿐 아니라 `1.`도 인정 — `conventions.md`의 핸드오버
+# 체크리스트처럼 **번호 항목 자체가 절**이고 다른 문서가 그걸 인용하는 형태가 있다.
+BOLD_LEAD = re.compile(
+    r'(?:\A|\n[ \t]*\n)[ \t]{0,6}\*\*(.+?)\*\*'                    # 빈 줄 다음
+    r'|(?:\A|\n)[ \t]{0,6}(?:[-*>]|\d+\.)[ \t]+\*\*(.+?)\*\*',     # 리스트 항목
+    re.S)
+# 선두 장식(⚠️/⭐ 등)은 인용할 때 관례적으로 생략되므로 양쪽에서 벗겨내고 비교
+DECOR = re.compile(r'^[^\w가-힣`(\[]+')
+# 선두 상태/날짜 태그(`[2026-08-16 신설]`, `[해소됨, …]`)도 제목의 일부가 아니다 —
+# 시간이 지나면 내용이 바뀌는 메타 표시라 여기에 인용을 묶으면 태그가 갱신될 때마다
+# 참조가 깨진다. 양쪽에서 똑같이 벗겨내므로 태그째 인용해도 여전히 매칭된다.
+TAG = re.compile(r'^\[[^\]]{2,80}\]\s*')
+
+
+def norm_section(s):
+    """절 제목/인용문을 비교 가능한 형태로 정규화."""
+    s = re.sub(r'\s+', ' ', re.sub(r'[`*]', '', s)).strip()
+    s = DECOR.sub('', s).strip()
+    stripped = DECOR.sub('', TAG.sub('', s)).strip()
+    return stripped or s   # 태그가 제목 전부였다면 원본을 남긴다
+
+
+def squash(s):
+    """비교 전용 — 정규화 후 공백까지 전부 제거(줄바꿈 인용 대응)."""
+    return re.sub(r'\s+', '', norm_section(s))
+
+
 def headings(path):
     if not path.endswith('.md') or not os.path.exists(path):
         return None
@@ -115,8 +168,16 @@ def headings(path):
     for line in open(path, encoding='utf-8'):
         if line.startswith('#'):
             # 백틱/강조 표기는 인용할 때 자주 빠지므로 정규화해서 비교
-            hs.append(re.sub(r'[`*]', '', line.lstrip('#')).strip())
+            hs.append(norm_section(line.lstrip('#')))
     return hs
+
+
+def bold_leads(path):
+    """줄머리 `**볼드**` 절 제목. 위 BOLD_LEAD 주석의 비대칭 규칙 참고."""
+    if not path.endswith('.md') or not os.path.exists(path):
+        return []
+    txt = open(path, encoding='utf-8').read()
+    return [norm_section(a or b) for a, b in BOLD_LEAD.findall(txt)]
 
 
 def interesting(target):
@@ -170,14 +231,27 @@ def check_refs(docs):
                 (errors if OURS.search(name) else warns).append(
                     msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")
                 continue
-            if section and not is_archive and p.endswith('.md'):
+            # `initreq/`를 가리키는 인용은 절 검사 제외 — 읽기 전용 외부 원본이라
+            # 절 구조가 없다(`raw-userinput.md`는 스스로 "정리가 없는 생각의 흐름"
+            # 이라고 밝힌 원문). 저기로 가는 인용은 절 제목이 아니라 원문 문장을
+            # 따오는 것이므로 헤딩과 대조하는 게 애초에 의미가 없다.
+            if section and not is_archive and p.endswith('.md') \
+                    and 'initreq' not in rel(p).split(os.sep):
                 if p not in hcache:
-                    hcache[p] = headings(p) or []
-                core = re.sub(r'[`*]', '', section).strip()
-                if not any(core in h for h in hcache[p]):
-                    # 절 제목은 의역해서 인용하는 관례가 있어 WARN — 다만
-                    # 문서를 쪼개거나 헤딩을 고칠 때 여기가 제일 먼저 걸린다.
-                    warns.append(
+                    hcache[p] = (headings(p) or [], bold_leads(p))
+                heads, leads = hcache[p]
+                # 공백을 뺀 형태로 비교 — 인용이 줄바꿈에 걸리면 원문엔 없는
+                # 공백이 끼어든다(`canExecute/\nunbindLifetime` → "canExecute/
+                # unbindLifetime"). 이것 때문에 실재하는 절이 불일치로 잡혔음.
+                core = squash(section)
+                if not (any(core in squash(h) for h in heads)
+                        or any(squash(s).startswith(core) for s in leads)):
+                    # [2026-08-16] WARN → ERROR로 승격. 예전엔 "절 제목을
+                    # 의역해 인용하는 관례" 탓에 오탐이 섞여 WARN이었지만,
+                    # `conventions.md`의 "절 인용 규약"이 의역을 금지하고
+                    # 불일치를 78→0으로 정리한 뒤 게이트로 올렸다. 문서를
+                    # 쪼개거나 헤딩을 고칠 때 여기가 제일 먼저 걸린다.
+                    errors.append(
                         f"{rel(d)}:{ln}  절 참조 불일치 → {os.path.basename(p)}에 "
                         f'"{section}" 절 없음')
 

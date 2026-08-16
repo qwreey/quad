@@ -56,7 +56,7 @@ React `key` prop, Vue `v-for :key`, Solid `<For>`, Fusion `ForPairs`/
 **최종 확정 형태는 자유 함수도 새 타입도 아니라 `Slot`의 콜론 메소드**
 (`Slot():List(data, updateFn, keyFn?) -> Slot`) — 상세 시그니처/구현
 의사코드/왜 자유 함수·새 타입이 아닌지/`Move` 기반 리오더/`userdata` 기반
-`Source` 관리 위임은 전부 `base/slot-plan.md`의 "`Slot:List(...)`" 절
+`Source` 관리 위임은 전부 `base/slot-plan.md`의 "`Slot:List(data, updateFn, keyFn?)`" 절
 참고, 여기서 반복 안 함.
 
 이 아래 있던 "왜 매핑 함수 직관이 안 통하는가"/"메커니즘 스케치"/

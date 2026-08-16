@@ -104,7 +104,9 @@ RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들
 **확정(2026-08-04 3차 라운드)**: `RobloxFactory`를 같은 `BaseModule`에 여러
 번 호출했을 때 — **같은 팩토리로 재호출하면 무시(no-op)**, hot-reload처럼
 초기화 스크립트가 다시 도는 경우를 안전하게 만듦. **다른 팩토리
-(`AnotherFactory` 등, 가상의 예)로 재호출하면 에러** — 이건 `base/module-lifecycle-plan.md`의 "bind는 유일 슬롯" 원칙(이미 구현체가 있는데 또
+(`AnotherFactory` 등, 가상의 예)로 재호출하면 에러** — 이건
+`base/module-lifecycle-plan.md`의 "Bind는 누가, 어떻게 구현하는가" 절의
+원칙(이미 구현체가 있는데 또
 다른 구현체로 init하려 하면 오류)이 다루던 것과 정확히 같은 케이스, 이
 문서의 이전 "무시" 잠정안과 그 문서의 "오류" 잠정안이 서로 모순되는 게
 아니라 **같은 팩토리 재호출(무시) vs 다른 팩토리로 유일 슬롯 충돌(에러)이라는

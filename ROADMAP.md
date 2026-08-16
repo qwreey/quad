@@ -353,9 +353,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료** — 아래
 > "`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를 반환해야 함"
 > 항목은 새 모델에서도 그대로 유효함(체인은 클로저를 early-return
-> 여부와 무관하게 항상 소비 — `base/dispatch-core-plan.md` "Handler 작성
-> 체크리스트" 1번). 클로저가 받는 값이 항상 `Slot`이거나 `nil`임이
-> 계약으로 보장된다는 점만 새로 추가됨.
+> 여부와 무관하게 항상 소비 — `base/dispatch-core-plan.md`의
+> "Handler 작성 체크리스트" 1번). 클로저가 받는 값이 항상 `Slot`이거나
+> `nil`임이 계약으로 보장된다는 점만 새로 추가됨.
 
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
@@ -469,13 +469,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       기각(Slot 부모 자체가 Destroy되는 경로에선 이 훅이 전혀 안 불려서
       절반만 동작, `retract`가 Destroy 시 안 불리는 것과 같은 이유).
       (2026-08-09 세 번째 세션 확정, `offset`/raw `index`/세 갈래 구조는
-      2026-08-11 세션 추가 확정, `base/slot-plan.md` "`Slot:List(...)`" 절)
+      2026-08-11 세션 추가 확정, `base/slot-plan.md` "`Slot:List(data, updateFn, keyFn?)`" 절)
       구현.
       **`data:Observer(fn)` 구독은 `:List()` 호출 시점이 아니라 Slot
       마운트 시점까지 lazy — `Dispatch.setLength`와 같은 패턴으로
       `bindLifetime(inst,observer)`(마운트 이후 `:List()`가 불리면
       `self._mounted` 확인 후 즉시 활성화)** (2026-08-09 일곱 번째 세션,
-      `base/slot-plan.md` "`Slot:List(...)`"의 "구독 시점" 절)
+      `base/slot-plan.md` "`Slot:List(data, updateFn, keyFn?)`"의 "구독 시점" 절)
       **`Slot.Offset: Source<number>`도 `Slot.Length`처럼 공개 필드로
       노출 — Slot 마운트 시점에 `Dispatch.setOffsetSource`가 등록하는
       바로 그 Source를 `self.Offset`으로도 저장**(2026-08-11 세션,

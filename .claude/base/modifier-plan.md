@@ -314,7 +314,7 @@ Modifier에는 없음).
 하나 + 자주 쓰는 것만 정적 필드로 미리 바인딩" 패턴 재사용.
 (주의: 이벤트는 이 관습의 유일한 예외라 인용 대상에서 제외 — 이벤트 바인딩은
 PA님 방식인 문자열 키 + 런타임 리플렉션으로 감, `base/event-plan.md`
-"이벤트 바인딩 정정" 절 참고. Modifier는 이벤트가 아니라 Store/인스턴스
+"이벤트 바인딩 — self 미전달, false로 disconnect" 절 참고. Modifier는 이벤트가 아니라 Store/인스턴스
 생성과 같은 카테고리라 dot-access 관습이 그대로 적용됨.)
 
 `mod:UICorner(8)`가 실제로 어떻게 UICorner 자식을 만들어 붙이는지(v1의

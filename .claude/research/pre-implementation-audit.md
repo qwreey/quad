@@ -566,8 +566,7 @@ Modifier를 합친다"는 시나리오가 `Overridden`의 가장 그럴듯한 �
 `base/tween-plan.md`(승격됨) "자연 완료(Completed) 시 per-instance
 북키핑 — 정리 안 해도 됨" 절. 아래는 원래 발견 당시 기록.
 
-**위치**: `base/tween-plan.md` "`retract`(구 cleanup)로 확정된
-오버라이드 시맨틱" 절.
+**위치**: `base/tween-plan.md` "override 정책" 절.
 
 **문제**: "새 값이 들어와 갈아치울 때"의 `retract` 동작(4가지 옵션, 기본값
 Cancel)은 상세히 정의했지만, **Tween이 사용자 개입 없이 스스로 끝까지
@@ -662,9 +661,13 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 
 ## 문서 모순 — 발견 현황
 
-### 이미 고침 (이번 세션)
+### 이미 고침
 
-- `architecture.md`의 "Store/State/Source 온톨로지 확정 요약" 절이
+아래 첫 두 건은 이 감사 세션 자신이 정정했고, 세 번째는 나중 세션이
+해소한 뒤 `session/2026-08-16-03-doc-check-section-convention.md`에서
+"아직 안 고침"에 잘못 남아 있던 걸 발견해 여기로 옮긴 것이다.
+
+- `architecture.md`의 "Store/State/Source 온톨로지 — 확정됨 (요약)" 절이
   `source-state-plan.md`의 최신 재구성(Source가 State를 만족, `store.key`가
   Source를 직접 반환, `store.key:Set()`)을 못 따라가고 있던 것 — 이 감사
   세션 도중 발견해 직접 정정(커밋 `4b839b0`에서 별도로 이미 반영됨을 뒤늦게
@@ -673,12 +676,10 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   `__newindex` 모델, 옛 "Ref=CreatedRef 자체" 정의를 그대로 담고 있던 것 —
   이번 세션에서 직접 정정.
 
-### 아직 안 고침 (판단 필요해서 여기 남김)
-
 - **`State<Modifier>` 타입 차단(엔지니어링 비용 감수) vs Ref/Slot이
   Modifier 필드에 들어가는 건 UB로 방치 — 같은 문서 안에서 정반대 원칙이
-  나란히 적용됨.** `base/modifier-plan.md` "Modifier는 핸들러 계층을
-  모름" 절은 "권장 사용법은 아니지만 막을 이유도 없음 — 방어 로직 없는
+  나란히 적용됨.** `base/modifier-plan.md`의 옛 `Modifier는 핸들러 계층을
+  모름` 절은 "권장 사용법은 아니지만 막을 이유도 없음 — 방어 로직 없는
   UB로 남겨둠"이라 명시적으로 방어를 포기했는데, 바로 옆 7번 절은
   `State<Modifier>` 조합을 "UB로 확정, **가능하면 타입 시스템으로 아예 못
   넣게 막을 것**"이라며 정반대로 엔지니어링 비용을 들여 방어하기로 했다.
@@ -697,6 +698,9 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   아님 — 남은 차이는 `State<Modifier>` 쪽에 "되면 좋은 보너스"로
   타입 차단을 추가 시도해볼 여지가 있다는 것뿐(위 2-2번, 미검증이지만
   더 이상 필수 방어선이 아니라 우선순위 낮음).
+
+### 아직 안 고침 (판단 필요해서 여기 남김)
+
 - **Destroying 훅 신뢰도에 대한 서술이 `lifecycle-pattern.md` 내부에서도,
   `framework-comparison-findings.md`와의 사이에서도 어긋남** — 위 1-6
   항목에 상세, 여기서는 "아직 아무도 하나의 확정 문장으로 정리 안 함"이라는
@@ -742,6 +746,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   **[2026-08-13 첫 실측 라운드 결과]** `17`은 **통과**(제네릭 `__index` +
   `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염) — 다만
   최초 실행은 크래시했고 그 원인이 실은 **문서 결함**이었음(`modifier-plan.md`의
+  `내부 구현` 절 본문에 있던
   "데이터를 테이블에 직접 두고"가 self 최상위 리터럴 키로 읽히면 `__index`가
   `rawget` 성공 시 안 불려 두 번째 호출에서 죽음) — 문서 수정 후 통과.
   `16`은 **실패** — `types.newfunction` 시그니처가 설치된 Luau 버전의 실제

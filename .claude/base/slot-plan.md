@@ -206,8 +206,8 @@ dispatch-core-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때
 보장" 절 참고. **DOM류 물리 순서 백엔드에도 같은 base 메커니즘이 그대로
 재사용됨**(offset이 바뀌어도 이미 마운트된 원소를 물리적으로 옮길 필요
 없음 — `insertBefore`가 뒤 형제를 자연히 밀어주므로, backend Handler의
-"offset 변경 시 할 일"만 no-op으로 달라짐) — `architecture.md`의 "다른
-렌더 백엔드에서도 재사용 가능해야 한다"는 전제와도 부딪히지 않음.
+"offset 변경 시 할 일"만 no-op으로 달라짐) — `architecture.md`의 "패키지 경계"가
+세운 "다른 렌더 백엔드에서도 재사용 가능해야 한다"는 전제와도 부딪히지 않음.
 
 ## Slot과 Store 바인드의 관계 (`retract` 순서)
 
@@ -1020,7 +1020,7 @@ end` 관용구로 `userdata` 안에 담긴 리소스(예: `Observer:Subscribe()`
 나쁨 — 사용자가 "정리가 보장된다"고 오해하고 `Subscribe`류를 `userdata`에
 넣었다가 Destroy 경로에서 조용히 새는 게 실제로 훨씬 위험한 결과.
 `retract`가 Destroy 시엔 절대 안 불린다는 기존 원칙(`base/
-lifecycle-pattern.md` "quad는 라이프사이클 중간에 있지 않다")과 정확히
+lifecycle-pattern.md` "quad는 자신이 만든 Instance의 라이프사이클")과 정확히
 같은 이유로, `:List`에 새 반쪽짜리 예외를 만들 이유가 없음.
 
 **대신 명시적 제약으로 문서화**: **`userdata`에는 반환된 element(또는
@@ -1247,7 +1247,7 @@ future 재실행이 no-op됨(위 "`state:Observer(fn)`" 절 원칙 재사용) �
 `Relate(inst)`(weak-keyed) 아래 있어서 `inst`가 죽으면 그 안에 강참조로
 붙잡혀 있던 Observer/클로저(`mounted`/`userdata`/`keyIndex`를 포함해)가
 전부 같이 GC 대상이 되는 것으로 공짜로 해결 — 명시적으로 구독을 끊는
-새 코드가 필요 없음, `base/lifecycle-pattern.md`의 "정리는 기본적으로
+새 코드가 필요 없음, `base/lifecycle-pattern.md`의 "정리(`retract`)는 기본적으로
 GC에 위임" 원칙 그대로.
 
 **부수 관찰(설계 아님, 메모만)**: `bindLifetime`이 `Relate(inst)` 기반이라,
@@ -1597,8 +1597,8 @@ Roblox뿐 아니라 web에도 그대로 필요.
 
 `offset`/`sum`은 0-based 개수(카디널 수)고, `_elements`/`updateFn`의
 `index`는 1-based Lua 배열 관례 — `index + offset` 공식이 이 둘을
-의도적으로 섞는 것. 상세는 `base/dispatch-core-plan.md`의 "0-based
-개수" 절 참고.
+의도적으로 섞는 것. 상세는 `base/dispatch-core-plan.md`의 "`offset`/`sum`은
+0-based 개수" 절 참고.
 
 ## 반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용 (2026-08-11 일곱 번째 세션)
 
@@ -1883,8 +1883,8 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 **[정정, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
 대해 그냥 **`Dispatch.setOffsetSource(ownerKey, position, None)` +
 `Dispatch.setLength(ownerKey, position, 0)`을 다시 부르면 끝**.
-이건 이미 확정된 관용구 그대로임(`base/dispatch-core-plan.md`의 "실제
-마운트를 하지 않는 위치는 `None`을 등록 — `setLength`도 짝을 맞춰 `0`").
+이건 이미 확정된 관용구 그대로임(`base/dispatch-core-plan.md`의 "해제(그
+자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`").
 즉 **해제 = 0/`None`으로 재등록**이고 별도 unregister 함수가 없어도 됨 —
 앞서 "이게 실제 작업량"이라고 적었던 판단은 과했음.
 

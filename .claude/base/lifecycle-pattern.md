@@ -108,8 +108,8 @@ Destroy되면 그 대상에 묶인 것들(Tween 등)도 자연히 죽은 상태�
 가능하면 GC에 맡김.
 
 이 원칙 때문에 "값 교체 시 이전 처리를 무르는 것"(아래 `retract`)과 "완전
-소멸 시 정리"는 **하나로 통일** — 후자는 애초에 안 만듦. `research/
-tween-plan.md`/`base/slot-plan.md`의 "cleanup" 표기는 대부분 `retract`로
+소멸 시 정리"는 **하나로 통일** — 후자는 애초에 안 만듦. `base/tween-plan.md`
+와 `base/slot-plan.md`가 쓰던 용어 `cleanup` 표기는 대부분 `retract`로
 갱신됨(이름 변경 근거는 아래) — 잔여 표기 확인은 진행 중, 해당 문서들은
 각자 별도로 정리될 예정.
 
@@ -505,8 +505,10 @@ Roblox 엔진 자체가 Destroy 시 Tag/Attribute/실행 중인 Tween을 전부 
 철회한다"는 의미로 가장 정확 — `process`/`retract` 쌍으로 자연스럽게 대구를
 이룸.) 대부분의 문서에서 이 이름으로 갱신됨.
 
-**[확인 완료, 2026-08-13 여섯 번째 세션] `base/effect-plan.md`의 "cleanup"은
-잔여 stale이 아니라 의도된 별개 개념** — 매 감사마다 재지적되므로 여기
+**[확인 완료, 2026-08-13,
+`session/2026-08-13-06-commit-audit-dispatch-redesign-bugs.md`]
+`base/effect-plan.md`가 쓰는 용어 `cleanup`은 잔여 stale이 아니라 의도된
+별개 개념** — 매 감사마다 재지적되므로 여기
 못박아 둠. 두 층위가 다름:
 - **`retract`**: Handler 계약의 것. `process`가 반환하는 클로저로, quad
   **내부 배관**이 "이전 처리를 무른다".
