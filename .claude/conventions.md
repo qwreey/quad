@@ -259,11 +259,21 @@ haiku, 일반 작업은 sonnet. 특히 소스코드를 많이 읽어야 하는 �
   **로컬 git 커밋까지만** 하고 원격 추가/푸시는 하지 말 것. (2) Roblox Studio는
   메인 계정이 아닌 별도 계정으로만 사용 — 로그인 계정 전환을 사용자가 안 해줬다면
   Studio 관련 작업(MCP 연결 등)을 진행하지 말고 대기.
-- **⭐ [2026-08-18 신설] 이 레포의 모든 커밋에 사용자 GitHub 계정
-  (`github.com/qwreey`)을 co-author로 추가할 것 — 커밋 메시지 끝에
-  `Co-authored-by: qwreey <me@qwreey.moe>`를 하네스 기본값인
-  `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>`과 함께 넣는다.**
-  **사용자 확정**(2026-08-18, "항상 적용"). `github` 리모트로 싱크되어
+- **⭐ [2026-08-18 신설, 같은 날 정정] 이 레포의 모든 커밋에 사용자 GitHub
+  계정(`github.com/qwreey`)을 co-author로 추가할 것 — 커밋 메시지 끝에
+  `Co-authored-by: qwreey <me@qwreey.moe>`만 넣는다. 하네스 기본
+  `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` 트레일러는 이
+  레포에 한해 넣지 말 것.** **사용자 확정**(2026-08-18) — 커밋 계정 자체가
+  `qwreey-bot`이라 이미 에이전트 커밋임이 드러나므로 Claude 트레일러까지
+  이중으로 밝힐 필요는 없고, 대신 해당 GitHub 계정 프로필에 Claude를
+  사용한다고 명시해둘 예정("어차피 qwreey-bot 자체가 에이전트가 커밋했다고
+  알려주는지라 큰 필요는 없어"). `.claude/settings.json`에
+  `"includeCoAuthoredBy": false`도 선언해뒀지만 **[2026-08-18 확인] 하네스
+  버그로 무시됨**(`includeCoAuthoredBy`/`attribution.commit` 둘 다 알려진
+  미해결 버그 — GitHub Issue #7543/#65657) — 그래서 실제 억제는 이 문장을
+  세션이 읽고 지키는 방식으로만 보장된다. **qwreey 트레일러는 계속
+  추가한다** — 위 문단이 이미 그 근거(GitHub 기여 그래프 반영)를 서술함,
+  여기서 반복 안 함. `github` 리모트로 싱크되어
   `upstream`(`github.com/qwreey/quad`, 사용자 본인 소유)에 PR이 merge될 때
   GitHub 기여 그래프에 반영되게 하기 위함 — 관련 리모트 정책은 메모리
   `git-remote-push-policy` 및 위 `SAFETY.md` 항목 참고.
