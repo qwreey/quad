@@ -178,15 +178,17 @@
    (`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
    `operator-sugar-plan.md`).
-   **[2026-08-14 추가, 성격이 다름]** 시간 기반 전파 게이트
-   `Debounce`/`Throttle`(`research/debounce-throttle-plan.md`)도 백로그이긴
-   하나 위 항목들과 달리 **사용자가 직접 요청한 실제 기능 갭**이고 순수
-   슈가가 아님 — M0/M3를 막지는 않지만, **M3에서 `Blocker`를 구현할 때
-   게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 해야 함**(따로
-   하면 같은 설계를 두 번 함). 주입 op 2개(`setTimeout`/`clearTimeout`)가
-   백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
-   네 라운드로 대부분 확정됐고 남은 열린 질문은 `question.md` 3번(개수는
-   거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
+   **[2026-08-14 추가, 2026-08-19 설계 전부 해소 후 `base/`로 승격]** 시간
+   기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)도
+   백로그이지만 위 항목들과는 발단이 다름 — **사용자가 직접 요청한 실제
+   기능 갭**에서 시작됨(그 문서 13절). 다만 제어 핸들 설계까지 닫히고 나니
+   실제로 quad-base에 새 코어 메커니즘을 추가하지 않는 **순수 슈가**로
+   확인돼(같은 절), 위 항목들과 우선순위는 다시 같아짐 — M0/M3를 막지
+   않고, **M3에서 `Blocker`를 구현할 때 게이티드 노드를 공용 `Gate`로
+   빼두는 것만은 그 시점에 해야 함**(따로 하면 같은 설계를 두 번 함).
+   주입 op 2개(`setTimeout`/`clearTimeout`)가 백엔드 팩토리 표면에
+   추가될 예정이라는 것도 M1 설계 시 인지. 남은 열린 질문 없음(구
+   `question.md` 3번, 전량 해소로 항목 자체가 빠짐).
    **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
    신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
    (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때

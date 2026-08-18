@@ -909,10 +909,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       테스트는 2026-08-13 세 번째 세션에 불필요로 해소됨 —
       `archive/question-resolved.md` 참고, v2엔 대응 개념 자체가 없음)
 - [ ] Slot 형제 순서 보장(다중 백엔드 관점) — Roblox만이면 급하지 않음
-- [ ] **[2026-08-14 신설]** 시간 기반 전파 게이트 `Debounce`/`Throttle`
-      (`research/debounce-throttle-plan.md`) — **M3에서 `Blocker`를 구현할
-      때 게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 할 것**
-      (둘이 같은 노드를 공유하므로 따로 하면 같은 설계를 두 번 함).
+- [ ] **[2026-08-14 신설, 2026-08-19 설계 전부 해소 후 `base/`로 승격]**
+      시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
+      — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을
+      추가하지 않는 **순수 슈가**로 확인됨(`Blocker`의 gated state + `Ref` +
+      아래 주입 op 2개 위에 전부 얹힘, 그 문서 13절). **M3에서 `Blocker`를
+      구현할 때 게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 할
+      것**(둘이 같은 노드를 공유하므로 따로 하면 같은 설계를 두 번 함).
       프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M3를 막지 않음.
       주입 op 2개(`setTimeout(func, delay) -> Timeout` / `clearTimeout`,
       Roblox는 `task.delay`/`task.cancel`로 배선 — **인자 순서가 반대라
