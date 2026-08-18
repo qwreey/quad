@@ -1497,7 +1497,23 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 자기 `:List`를 최초 reconcile한 **뒤에야** 확정되므로, `setLength`를 그
 전에 부르면 등록 직후 값이 또 바뀌어 전파가 한 번 낭비된다. 올바른 순서는
 **`setOffsetSource`(즉시 계산) → (Slot이면) 실체화 → `setLength`(그제서야
-확정된 값으로 등록) → 물리 마운트**:
+확정된 값으로 등록) → 물리 마운트**.
+
+**[재정정, 2026-08-18 구현 전 QA 3라운드] "확정된 값으로 등록"은 값
+자체가 아니라 이 순서를 지키는 한 자연히 따라오는 결과를 가리킨 표현이지,
+`setLength` 호출 시점에 `slot.Length`의 **값**이 반드시 최종값이어야
+한다는 뜻은 아니다.** 실체화(`activateList`)와 물리 마운트(flush 루프)의
+순서를 더 트레이싱하며 `RC-3`/`RC-4`(둘 다 `activateList` 도중 아직
+`self._mounted`가 안 세팅된 상태를 요구한다는 게 드러남 — 아래 코드의
+"`_mounted`는 여기서 아직 세팅하지 않는다" 주석 참고)를 고치는 과정에서,
+`slot.Length`가 실제로 최종값으로 안정되는 시점은 `activateList` 직후가
+아니라 **flush 루프가 끝난 뒤의 마지막 `recompute`**로 한 단계 더
+밀렸다 — `Dispatch.setLength(ownerKey, position, slot.Length)`가 넘기는
+건 **State 객체 자신**이라, 등록 시점에 값이 아직 안 굳어 있어도
+무해하다(부모는 객체를 구독해뒀다가 나중에 값이 바뀌면 정상 반응).
+`setOffsetSource → setLength` 순서 자체(왜 `setOffsetSource`가 먼저여야
+하는지)는 안 바뀜 — 상세 트레이싱은
+`qa-request/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
 
 ```lua
 -- quad-base, Slot.luau — 재귀적 "attach" 하나로 최상위/중첩 마운트 통합
@@ -1509,23 +1525,52 @@ local function attachSlot(slot, physicalTarget, ownerKey, position)
     -- 쪽(destroySlotTree)이 이미 이 원칙대로였는데(자기 자신의 unbindLifetime은
     -- 안 하고 process가 반환하는 retract 클로저에서만 짝을 맞춤) process 쪽만 attachSlot 내부에
     -- ownerKey==physicalTarget 분기로 anchor 로직이 새어들어와 있던 비대칭이었음.
-    slot._mounted = true
-    slot._mountedInst = physicalTarget
 
     local offsetSource = Source(0)
     Dispatch.setOffsetSource(ownerKey, position, offsetSource)   -- 먼저 — 앞선 형제 합으로 즉시 계산
     slot.Offset = offsetSource
 
+    -- [재정정, 2026-08-18 구현 전 QA 3라운드, `RC-3`/`RC-4` 해결 —
+    -- 사용자 설계] `_mounted`는 여기서 아직 세팅하지 않는다 — 그래야
+    -- 아래 `activateList`가 실행되는 동안 `self._mounted`가 계속
+    -- `false`라, `:List`의 reconcile이 부르는 `rawAdd`가 "아직 마운트
+    -- 전"(= `_elements`에만 넣고 끝) 경로를 타서 이 시점엔 물리
+    -- 마운트도 Dispatch 등록도 전혀 안 일어난다. 옛 코드는 `_mounted`를
+    -- 맨 위에서 세팅해뒀었는데, 그러면 reconcile의 `rawAdd`가 매 항목마다
+    -- 즉시 물리 마운트 + `Dispatch.setLength`를 태워(아래 flush 루프가
+    -- 곧 다시 처리할 바로 그 자리를) 두 가지 문제를 냈다 — (a) 아직
+    -- Blocker가 없어(그건 flush 루프 직전에야 생김) 매 항목마다 게이팅
+    -- 없이 `recompute`가 돎(`RC-3`), (b) nested Slot 항목은 이 시점에
+    -- 이미 `attachSlot`이 한 번 불렸는데, 아래 flush 루프가 같은 요소를
+    -- 다시 순회하며 `attachSlot`을 **또** 불러 이중 실행됨(`RC-4`).
+    -- `_mounted`를 `activateList` 뒤로 미루면 이 함수 안에서 실제
+    -- 마운트가 일어나는 자리는 아래 flush 루프 단 하나로 통일된다 —
+    -- `:List`든 수동 CRUD든 구분할 필요가 없어짐. 상세 트레이싱은
+    -- `qa-request/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
     if slot._listed then
-        activateList(slot, physicalTarget)   -- 실체화 — 여기서 slot.Length가 진짜 값으로 확정됨
+        activateList(slot, physicalTarget)   -- reconcile이 채우는 건 `_elements`뿐 — 물리 마운트는 안 함(위 참고)
     end
 
-    Dispatch.setLength(ownerKey, position, slot.Length)   -- 실체화 뒤 — 확정된 값으로 등록, 재전파 낭비 없음
+    slot._mounted = true
+    slot._mountedInst = physicalTarget
 
-    -- [2026-08-18 신설, RC-1 해결] attach 전에 이미 들어와있던 요소들 flush —
-    -- 이 루프도 Dispatch.drive의 최상위 배열 순회와 똑같이 "slot._elements의
-    -- 개수(N)가 이미 정해진 채 position을 하나씩 등록"하는 배치라 같은
-    -- 크래시 위험이 있음. 이 Slot 자신의 owner 키로 별도 Blocker를 새로
+    -- **[정정, 2026-08-18 3라운드]** `slot.Length`는 이 시점에 아직
+    -- "확정된 값"이 아니다 — 최종 값은 아래 flush 루프 끝의 `recompute`가
+    -- 매긴다. 여기서 넘기는 건 값이 아니라 **State 객체 자신**이라 무해함:
+    -- 부모는 이 객체를 구독해뒀다가, 그 값이 나중에(flush 끝나고) 바뀌면
+    -- 정상적으로 다시 반응한다(부모 배치가 아직 안 끝났으면 부모 자신의
+    -- Blocker가 그 반응을 알아서 미룸 — 아래 "확인만 하고 새 결함 없음"
+    -- 절 참고). 옛 주석("확정된 값으로 등록")은 옛 순서(`_mounted`가
+    -- `activateList`보다 먼저라 그 안에서 이미 최종화되던 것) 기준이었고
+    -- 이제는 안 맞아 정정.
+    Dispatch.setLength(ownerKey, position, slot.Length)
+
+    -- attach 전에 이미 들어와있던 요소들(수동 CRUD로 마운트 전 `:Add()`된
+    -- 것) **및** 방금 `activateList`가 `_elements`에만 채워둔 `:List`
+    -- 결과물 — 이제 이 flush 루프가 어느 경로로 왔든 상관없이 유일한
+    -- 물리 마운트 지점이다. `slot._elements`의 개수(N)가 이미 정해진 채
+    -- position을 하나씩 등록하는 배치라 `Dispatch.drive`와 같은 크래시
+    -- 위험이 있음(`RC-1`) — 이 Slot 자신의 owner 키로 별도 Blocker를 새로
     -- 만들어(부모 Blocker와 절대 공유하지 않음 — base/blocker-plan.md의
     -- "재진입" 절) 같은 On→등록→OffWithoutEmit→recompute 패턴을 적용.
     local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
@@ -1543,9 +1588,25 @@ local function attachSlot(slot, physicalTarget, ownerKey, position)
     end
     blocker:OffWithoutEmit()
     local bk = getBookkeeping(slot)
-    if bk then recompute(slot, bk) end
+    if bk then recompute(slot, bk) end   -- 여기서 slot.Length가 비로소 진짜 값으로 확정됨
 end
 ```
+
+**⚠️ [신설, 2026-08-18 3라운드 감사 후속] 좁은 엣지 케이스 — 배치 밖에서
+이 Slot이 단독으로 (재)마운트되면, 부모의 `recompute`가 아직 안 굳은
+`slot.Length`로 한 번 헛돌 수 있다.** `Dispatch.setLength(ownerKey,
+position, slot.Length)`(위 코드)는 `slot.Length`가 `State`라 등록 즉시
+1회 실행을 동기로 태우는데, 이 `attachSlot` 호출이 `Dispatch.drive`의
+배치나 부모 Slot의 flush 루프 **안**이면 부모 Blocker가 아직 켜져 있어
+안전하게 스킵되지만, **배치 밖**(예: `state<Slot>` 값이 steady state에서
+반응형으로 교체될 때, 부모 owner의 Blocker는 이미 꺼진 채)이면 부모의
+`gatedRecompute`가 즉시 실행돼 아직 flush가 안 끝난 `slot.Length`로 한
+번 계산한다 — flush가 끝나고 `slot.Length:Set(최종값)`이 다시 발화하면
+정확한 값으로 자기 교정된다. 크래시도 영구적으로 틀린 값도 아니고
+최악의 경우 한 프레임짜리 낭비 재계산 — 손대지 않기로 함, 다만 이
+자리를 다시 만질 때 놓치지 않도록 기록. 트레이싱 원문은
+`qa-request/pre-implementation-qa-round3.md`의 "확인만 하고 새 결함
+없음" 절.
 
 **최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
 ```lua
@@ -1659,7 +1720,7 @@ function rawUnmount(self, index)
     releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
     if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
 
-    spliceArraysDown(self, index)
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)
 end
 
@@ -1676,10 +1737,51 @@ function rawRemove(self, index)
                                   -- 들어온 뒤로는 이 누락이 실동작 차이를 만듦
     if isSlot(element) then destroySlotTree(element) else element:Destroy() end
 
-    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList 전부 한 칸씩 당김
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
 end
 ```
+
+**[신설, 2026-08-18 구현 전 QA 3라운드] `spliceArraysDown`이 밀어야 하는
+배열 목록(아래)에 빠진 게 있었고, `bk.N`도 같이 줄여야 한다는 것 자체가
+이 코퍼스 어디에도 명시된 적이 없었음.**
+
+- **`bk.observers`도 같이 당겨야 함** — 위 코드가 이미 `bk.observers[index]`를
+  읽어 `unbindLifetime`하지만(제거되는 그 위치의 것), `spliceArraysDown`
+  자신이 이동시켜야 하는 배열 목록에 지금까지 `observers`가 빠져 있었다
+  (`_elements`/`lengthList`/`sourceList` 셋만 언급됨). `bk.observers[i]`는
+  `Dispatch.setLength`가 그 자리 length가 `State`일 때만 채우는(위
+  "`setLength` 구현" 절) position-indexed 배열이라, 나머지 셋과 똑같이
+  뒤 position들이 한 칸씩 당겨질 때 같이 안 당기면 이후 그 position의
+  observer가 엉뚱한 것(옛 이웃의 observer)을 가리키게 된다.
+- **`bk.N`도 여기서 하나 줄여야 함** — `recompute`(`base/dispatch-core-plan.md`
+  "Length/Offset" 절)가 `for i = 1, bk.N do`로 순회하는 그 상한. **`bk.N`의
+  정의 자체가 이 코퍼스 어디에도 없던 갭**이었다(`qa-request/
+  pre-implementation-qa-round3.md`의 "`bk.N`의 수명주기" 절 — **사용자
+  확정(2026-08-18)**: *"bk.N = 그때그때 실제 개수(새 최대 위치가 등록될
+  때마다 증가, spliceArraysDown이 압축할 때 감소)로 두 owner 타입에
+  동일하게 적용"*). 즉 `bk.N`은 `Dispatch.setLength`가 이전에 본 적
+  없는 더 큰 position을 등록할 때마다 그 값으로 늘어나고(`setOffsetSource`는
+  건드리지 않음 — 항상 `setLength`보다 먼저 불려서 그 시점엔
+  `lengthList[i]`가 아직 없으므로, `Dispatch.drive`/`attachSlot`의 flush
+  배치도, Slot의 런타임 단건
+  `rawAdd`도 이 하나의 규칙으로 통일), `spliceArraysDown`이 위치 하나를
+  물리적으로 지울 때(`rawRemove`/`rawUnmount`) 그만큼 줄어든다. **`Dispatch.drive`의
+  `inst`에서는 이 규칙이 사실상 눈에 안 띈다** — 최상위 배열 리터럴은
+  구조적으로 늘거나 줄지 않으므로(전체 재-dispatch만 있음) `bk.N`이
+  등록이 끝난 뒤로는 그냥 고정값처럼 보일 뿐, 별도 케이스가 아니라 같은
+  규칙의 특수한 안정 상태다.
+- **왜 이게 `RC-1`의 크래시를 다시 불러오지 않는가**: `Dispatch.drive`/
+  `attachSlot`의 배치 등록 중엔 `recompute`가 각 owner의 Blocker
+  게이팅으로 아예 안 도는데(`blocker:IsOn()`만 확인, `bk.N`은 안 봄) —
+  그래서 배치 도중 `bk.N`이 최종값보다 작은 채로 계속 늘어나는 중이어도
+  안전하다. `RC-1`의 원래 크래시는 **`bk.N`이 배치가 시작되기도 전에
+  이미 최종 크기로 고정돼 있었던 것**의 부산물이었다는 게 이번에 다시
+  확인됨 — 지금은 그 전제 자체가 없다. 그 대신 Blocker 게이팅이 여전히
+  필요한 이유는 크래시 방지가 아니라 **비용**(등록마다 `recompute`가
+  한 번씩 도는 O(N²) 대신 배치 끝에 O(1)번만) — `RC-1` 해결 논의에서
+  사용자가 직접 지적한 "이러면 첫 실행에서 계속 recompute 비용이 쌓임"
+  문제 그대로.
 
 **왜 `unbindLifetime`이 꼭 필요한지**: `bindLifetime`은 물리 target
 인스턴스 생명주기에 걸려있는데, 죽는 건 "이 nested Slot 하나"고 물리

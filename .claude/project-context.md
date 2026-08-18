@@ -71,8 +71,9 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   `type-recursive-issue-try-callback/` 등).
 - `.claude/qa-request/` — 원래는 "구현이 끝나고 사용자 실기기 QA만 남은 것"을
   담는 폴더였으나, **[2026-08-18]** 구현 전 사용자 심사 라운드의 산출물도
-  여기 둠(`pre-implementation-qa-round1.md`/`pre-implementation-qa-round2.md`
-  둘 다 **완료** — 라운드마다 새 파일). `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
+  여기 둠(`pre-implementation-qa-round1.md`/`pre-implementation-qa-round2.md`/
+  `pre-implementation-qa-round3.md` 전부 **완료** — 라운드마다 새
+  파일, 상태의 소스는 각 파일 자신). `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
   **[2026-08-18 기준] 폴더 자체가 아직 없음**.
   `.claude/archive/`는 원래 같은 취급이었으나
   2026-08-06 세 번째 세션부터 **완전히 뒤집힌 설계 결정을 원문+역전

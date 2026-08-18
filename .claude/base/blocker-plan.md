@@ -97,7 +97,11 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 "Length/Offset" 절이 `recompute`의 크래시(`RC-1`, 배열 위치가 하나씩
 순차 등록되는 동안 아직 등록 안 된 자리를 읽어 산술 에러가 나는 경로)를
 고치며 **Blocker를 gated state 없이 직접 쓰는 두 번째 용례**를 만들었다
-— 콜백 안에서 `blocker:IsOn()`을 직접 확인하고 스스로 전파를 건너뛰는
+— **[정정, 2026-08-18 구현 전 QA 3라운드]** 그 크래시 자체는 이후
+`bk.N`(순회 상한)의 정의를 고치며 사라졌지만(`base/dispatch-core-plan.md`
+"저장 위치" 절), 이 용례는 그대로 유효하다 — 이유가 크래시 방지에서
+배치 등록 비용(O(N²)→O(N)) 절감으로 바뀌었을 뿐. 콜백 안에서
+`blocker:IsOn()`을 직접 확인하고 스스로 전파를 건너뛰는
 방식(`Length` State의 Observer가 `if not blocker:IsOn() then recompute(...) end`
 형태로 자기 자신을 게이팅). 이 용례는 `state:Block()`을 전혀 호출하지
 않으므로 gated state도, 그 위에 걸리는 onunblock 핸들도 생기지 않는다 —

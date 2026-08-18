@@ -80,6 +80,54 @@ Blocker 재사용 설계를 직접 제시해 해결됨.
   절이 소스. 논의 원문(설계 제안 전문, 확인 질문 3개와 답변)은
   `qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절.
 
+## [해소됨, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 + `RC-3`/`RC-4`(`attachSlot`의 `:List` 초기 population 중복 처리)
+
+`recompute`가 순회 상한으로 쓰는 `bk.N`이 Slot을 ownerKey로 재사용할 때
+무엇이고 언제 갱신되는지 문서에 없던 갭(`qa-request/
+pre-implementation-qa-round3.md`가 원본) — 트레이싱 중 `attachSlot`이
+`:List`의 최초 population을 이중 처리하는 결함(`RC-3`/`RC-4`)도 같이
+발견됐고, 셋 다 같은 세션에 사용자가 직접 해법을 제시해 해결됨.
+
+- **`bk.N` = 그때그때 실제 개수**, `inst`/Slot 두 owner 타입 동일 규칙 —
+  `Dispatch.setLength`(항상 뒤에 불림, `setOffsetSource`는 안 건드림)가
+  이전에 없던 더 큰 position을
+  등록할 때마다 늘고, `spliceArraysDown`(Slot의 `rawRemove`/`rawUnmount`)이
+  위치를 구조적으로 지울 때 줄어듦. **최초 분석 오류를 사용자가 직접
+  정정**: 필자는 "그때그때 실제 개수"면 배치 등록 중 `RC-1`과 같은
+  크래시가 되돌아온다고 판단했으나, Blocker 게이팅은 `bk.N`이 아니라
+  `blocker:IsOn()`만 확인하므로 배치 중엔 `recompute` 자체가 안 돌아
+  `bk.N`이 무엇이든 무관함 — `RC-1`의 원래 크래시는 "`bk.N`이 배치 전에
+  이미 최종 크기로 고정"이라는, 이제는 사라진 전제의 부산물이었을 뿐.
+  Blocker 게이팅이 여전히 필요한 이유는 크래시 방지가 아니라 배치 비용
+  (O(N²)→O(N)).
+- **`RC-3`/`RC-4`**: `attachSlot`이 `slot._mounted = true`를 맨 위에서
+  세팅해뒀던 탓에, `:List`의 최초 reconcile(`activateList`, 아직
+  flush 루프의 Blocker가 켜지기 전)이 부르는 `rawAdd`가 "이미 마운트됨"
+  경로를 타 항목마다 무게이팅 `recompute`가 돌고(`RC-3`), nested Slot
+  요소는 그 자리에서 이미 `attachSlot`된 뒤 뒤이은 flush 루프가 같은
+  요소를 또 `attachSlot`해 이중 실행됐다(`RC-4`). **해법(사용자 제시)**:
+  `slot._mounted = true`를 `activateList` 호출 **뒤**로 옮기면 끝 —
+  `activateList` 도중엔 `rawAdd`가 "아직 마운트 전" 경로(그냥
+  `_elements`에만 push)를 타고, flush 루프가 `:List`/수동 CRUD 구분 없이
+  모든 요소를 처음이자 한 번만 물리 마운트한다. `rawAdd`의 "이미
+  마운트됨" 즉시-`attachSlot` 분기 자체는 그대로 남음 — 최초 flush
+  이후의 런타임 갱신(예: `:List`의 `data`가 나중에 바뀌어 nested Slot이
+  새로 추가되는 경우)엔 여전히 필요한 경로이기 때문.
+- **부수 발견**: `spliceArraysDown`이 밀어야 할 배열 목록에
+  `bk.observers`가 빠져 있었음(`_elements`/`lengthList`/`sourceList`
+  셋만 서술돼 있었음) — 같이 반영.
+- **`ROADMAP.md` 마일스톤 정합성**: `RC-1`의 Blocker 게이팅으로 M2
+  (`Dispatch.setLength`/`setOffsetSource`)가 M3 체크박스에 있는
+  `Blocker.luau`에 구조적으로 의존하게 됐는데 로드맵 어디에도 이 순서
+  의존이 명시가 안 돼 있던 것도 발견 — 가장 보수적인 조치(마일스톤
+  재편 없이 M2 체크박스에 각주만 추가)로 우선 반영, 재편 여부는 열려
+  있음.
+- 지금 유효한 설계는 `base/dispatch-core-plan.md`의 "저장 위치"/"배치
+  등록을 안전하게 만드는 Blocker 게이팅" 절, `base/slot-plan.md`의
+  "재귀 메커니즘"/"파괴" 절, `base/blocker-plan.md`의 "두 번째 용례"
+  절이 소스. 논의 원문(최초 분석·사용자 정정·확인 질문과 답변 전문)은
+  `qa-request/pre-implementation-qa-round3.md`.
+
 ---
 
 # 확인/결정 필요 목록

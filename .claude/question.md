@@ -114,6 +114,17 @@
 
 ## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
 
+- **[신설, 2026-08-18 구현 전 QA 3라운드] M2가 M3의 `Blocker.luau`에
+  구조적으로 의존하게 됨 — 이대로 각주만 두고 로드맵 순서를 유지할지,
+  `Blocker.luau`(또는 최소 표면 `On`/`Off`/`IsOn`/`OffWithoutEmit`)를 M2로
+  앞당길지, M2/M3 경계 자체를 재검토할지.** `RC-1`의 Blocker 게이팅 해법
+  때문에 `ROADMAP.md` M2의 `Dispatch.setLength`/`setOffsetSource` 체크박스가
+  `getBlocker`/`:On()`/`:IsOn()`/`:OffWithoutEmit()`을 호출하는데, 정작
+  `Blocker.luau` 자체는 M3 체크박스에 있다 — 로드맵 순서대로면 M2가 아직
+  없는 걸 참조하게 된다. 지금은 M2 체크박스에 이 사실만 각주로 남겨둔
+  임시 조치(가장 보수적인 선택, 마일스톤 재편은 안 함) — **M2 착수 전
+  필요**. 상세는 `qa-request/pre-implementation-qa-round3.md`의
+  "ROADMAP.md 마일스톤 정합성" 절.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등
   `:Compute`/`:Apply`용 슈가 함수 모음의 이름. 흔한 단어라 top-level

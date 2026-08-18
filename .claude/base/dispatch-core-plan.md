@@ -1244,10 +1244,49 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
 이건 **Handler 구현체 작성자만 지키는 계약**이고 일반 컴포넌트 작성자는
 이 존재 자체를 몰라도 됨(사용성 저하 없음), API 문서화만 명확히 하면 됨.
 
-**저장 위치**: `lengthList`/`sourceList`(부모 `inst` 하나에 귀속, 그
-`inst`의 array part 크기 `N` — `bk.N`으로 같이 저장, `Dispatch.drive`가
-최초 배열 파트 순회 시점에 이미 알고 있는 값) — `Relate(parentInst)`에
-lazy 생성.
+**저장 위치**: `lengthList`/`sourceList`/`observers`(부모 `inst` 하나에
+귀속) + 그 owner가 지금 등록해둔 position 개수 `N`(`bk.N`으로 같이 저장)
+— `Relate(parentInst)`에 lazy 생성.
+
+**[신설, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 — 두 owner
+타입(물리 `inst`, Slot 자신) 모두 같은 규칙 하나로 통일.** 이전엔
+`bk.N`을 "`Dispatch.drive`가 최초 배열 파트 순회 시점에 이미 아는, 저작
+시점에 고정된 값"으로만 서술했는데, `base/slot-plan.md`의 "재귀
+메커니즘" 절이 같은 `recompute`/`getBookkeeping`을 **Slot 자신**을
+ownerKey로 재사용하면서 이 전제(N이 고정)가 안 맞는 케이스가 생겼다 —
+Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이유). **사용자
+확정(2026-08-18)**: *"bk.N = 그때그때 실제 개수(새 최대 위치가 등록될
+때마다 증가, spliceArraysDown이 압축할 때 감소)로 두 owner 타입에
+동일하게 적용"* — 즉:
+- `Dispatch.setLength`가 이전에 등록된 적 없는 더 큰 position `i`를
+  등록할 때마다 `bk.N`이 `i`로 늘어난다(`Dispatch.drive`의 배열 파트
+  순회, `attachSlot`의 flush 배치, Slot의 런타임 단건 `rawAdd` 전부 이
+  하나의 규칙) — **`Dispatch.setOffsetSource`는 `bk.N`을 건드리지
+  않는다**, 호출 순서가 항상 `setOffsetSource(i)` → `setLength(i)`라서
+  (아래 "`setLength` 구현" 절) `bk.N`을 `setLength`에서만 올려야
+  `lengthList[i]`가 아직 안 채워진 채로 `bk.N`만 먼저 커지는 창이 안
+  생긴다.
+- `spliceArraysDown`(Slot의 `rawRemove`/`rawUnmount`가 부름, `base/
+  slot-plan.md` "파괴" 절)이 position 하나를 구조적으로 제거할 때마다
+  `bk.N`이 그만큼 줄어든다.
+- `Dispatch.drive`의 `inst`에서는 이 규칙이 사실상 안 보인다 — 최상위
+  배열 리터럴은 구조적으로 늘거나 줄지 않으므로(재-dispatch는 전체
+  교체) `bk.N`이 등록이 끝난 뒤로는 그냥 고정값처럼 보일 뿐, 별도
+  케이스가 아니라 같은 규칙의 특수한 안정 상태다.
+
+**이게 배치 등록 중 크래시(`RC-1`)를 다시 불러오지 않는 이유**: 배치
+등록 중(`Dispatch.drive`/`attachSlot`의 flush)엔 아래 "배치 등록을
+안전하게 만드는 Blocker 게이팅" 절의 `blocker:IsOn()` 게이트가
+`recompute` 호출 자체를 막는다 — 이 게이트는 `bk.N`을 전혀 보지 않으므로,
+배치 도중 `bk.N`이 최종 크기보다 작은 채로 계속 늘어나는 중이어도
+안전하다. `RC-1`의 원래 크래시는 **`bk.N`이 배치가 시작되기도 전에 이미
+최종 크기로 고정돼 있었던 것**의 부산물이었을 뿐 — 지금은 그 전제 자체가
+없다. 그런데도 Blocker 게이팅이 여전히 필요한 이유는 크래시 방지가
+아니라 **비용**이다(등록마다 `recompute`가 한 번씩 도는 O(N²) 대신
+배치 끝에 O(1)번만) — `RC-1` 해결 논의에서 사용자가 직접 지적한 "이러면
+첫 실행에서 계속 recompute 비용이 쌓임" 문제 그대로. 상세 트레이싱은
+`qa-request/pre-implementation-qa-round3.md`의 "`bk.N`의 수명주기가
+명세에 없음" 절.
 
 **`sourceList`에도 `nil`이 아니라 `None`을 쓰는 이유는 기존 배열 파트
 원칙 재사용** — 모든 number 인덱스를 반드시 채워야 하는데(위 UB 규칙)
@@ -1349,8 +1388,11 @@ end
 문제 없음 — 구현/문서화 시 "이 두 숫자는 서로 다른 기준(1-based 위치
 vs 0-based 개수)"이라는 걸 명시적으로 적어둘 것.
 
-전체 순회의 O(N) 비용은 무시 가능(`N`은 저작 시점에 고정된 배열 리터럴
-길이, 보통 작음) — 진짜 비싼 건 `Set`이 트리거하는 다운스트림 리액티브
+전체 순회의 O(N) 비용은 무시 가능(`Dispatch.drive`의 최상위 `inst`
+기준으로는 `N`이 저작 시점에 고정된 배열 리터럴 길이, 보통 작음 —
+Slot 자신이 `ownerKey`인 재귀 케이스는 `N`이 생애주기 내내 바뀌지만
+그 실제 개수 자체도 보통 작아서 결론은 같음, `N`의 정확한 수명주기는
+위 "저장 위치" 절 참고) — 진짜 비싼 건 `Set`이 트리거하는 다운스트림 리액티브
 캐스케이드(그 위치에 이미 마운트된 원소들의 `LayoutOrder` 재적용)라,
 `Get() ~= sum`일 때만 `Set`해서 안 바뀐 앞쪽 위치들은 캐스케이드가 안
 일어나게 막음.
@@ -1380,6 +1422,7 @@ function Dispatch.setLength(ownerKey, i, len)
     end
 
     bk.lengthList[i] = len
+    bk.N = math.max(bk.N or 0, i)   -- [2026-08-18 3라운드] N 수명주기 — "저장 위치" 절 참고
 
     local function gatedRecompute()
         if not blocker:IsOn() then
@@ -1412,6 +1455,14 @@ end
 채워진 뒤쪽 position을 `nil`로 읽어 산술 에러가 난다(`Frame{A,B}`처럼
 정적 자식 2개짜리도 재현됨, 트레이싱 상세는
 `qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절).
+
+**[정정, 2026-08-18 구현 전 QA 3라운드] 위 크래시는 `bk.N`이 "배치 시작
+전에 이미 최종 크기로 고정"이라는, 그때 당시의 전제 위에서만 성립한다 —
+그 전제 자체가 위 "저장 위치" 절에서 뒤집혔다(`bk.N`은 이제 그때그때
+실제 개수). 아래 게이팅은 여전히 필요하지만, 지금은 **크래시 방지가
+아니라 비용** 때문이다 — 게이팅 없이 등록마다 `recompute`가 한 번씩
+돌면 O(N²), 게이팅으로 배치 끝에 한 번만 돌면 O(N). 상세는 "저장 위치"
+절 참고.
 
 **해법의 핵심 — recompute를 배치가 끝날 때까지 미루고, offset은 그
 자리에서 직접 계산한다(사용자 설계, 2026-08-18)**:

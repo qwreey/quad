@@ -5,8 +5,8 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐ [2026-08-18 신설, 같은 날 완료] 구현 전 QA — 1·2라운드 전부
-   `base/`에 반영 완료.** 1라운드는 사용자가 `base/` 확정 문서 전체를
+00. **⭐⭐ [2026-08-18 신설, 같은 날 완료] 구현 전 QA — 1·2·3라운드
+   전부 `base/`에 반영 완료.** 1라운드는 사용자가 `base/` 확정 문서 전체를
    문항으로 재심사한 결과(원본 문답과 사용자 답변 원문은
    `.claude/qa-request/pre-implementation-qa-round1.md`가 소스), 확정으로
    적혀 있는데 실제로는 틀린 항목이 여러 건 나왔고 **같은 날 전부 정정
@@ -20,12 +20,37 @@
    Blocker 재사용 게이팅 설계로 해결·반영까지 완료됐다
    (`archive/question-resolved.md`의 `RC-1` 절).
 
-   **M3 착수 전에 결론이 필요한 미해결 항목만 여기 짚는다**(M0/M2는 여전히
-   막혀 있지 않음, 0번 항목 참고) — 대부분 `question.md` 3번에도 올라가
+   **3라운드(완료, `.claude/qa-request/pre-implementation-qa-round3.md`가
+   소스) — `RC-1` 해법이 실제로 `attachSlot`에 반영된 걸 트레이싱하다
+   새 문제 발견, 같은 세션에 전부 해결·반영까지 완료.** 처음엔 `activateList`가
+   자기 Slot의 Blocker가 켜지기 **전에** 실행돼 `:List` 초기 population이
+   문제(`RC-3`/`RC-4`)를 낸다고 봤고, `recompute`가 의존하는 `bk.N`(순회
+   상한)의 수명주기도 문서에 없어 "고정값/그때그때 실제 개수 둘 다 각기
+   다른 방식으로 깨진다"고 판단했으나 — **사용자가 이 분석 자체를
+   정정**했다: Blocker 게이팅은 `bk.N`이 아니라 `blocker:IsOn()`만 보므로
+   "그때그때 실제 개수" 모델이 배치 크래시를 되돌린다는 결론은 틀렸었다
+   (`bk.N` = 그때그때 실제 개수로 확정). `RC-3`/`RC-4`도 사용자가 더
+   단순한 해법을 직접 제시 — flush 루프를 분기하는 대신 `attachSlot`의
+   `slot._mounted = true`를 `activateList` 호출 뒤로 옮기는 것 하나로
+   둘 다 닫힘. 부수로 `spliceArraysDown`이 밀어야 할 배열에
+   `bk.observers`가 빠져 있던 것도 발견·반영, `ROADMAP.md` M2가 M3의
+   `Blocker.luau`에 구조적으로 의존하게 된 것도 각주로 반영(마일스톤
+   재편 여부는 열림 — `pre-implementation-qa-round3.md`의 "ROADMAP.md
+   마일스톤 정합성" 절 참고).
+
+   **아래는 M3 착수 전에 결론이 필요한 항목 목록**(M0/M2는 여전히 막혀
+   있지 않음, 0번 항목 참고 — **단, M2가 M3의 `Blocker.luau`를 선당겨야
+   하는지는 별개로 열려 있음, 바로 아래 첫 항목**) — 대부분 `question.md`
+   3번에도 올라가
    있고(**[정정, 2026-08-18 `/code-review high`] 사용자 판단이 필요한
    항목만 그렇다 — 아래 "dedup 경로" 대칭 확인, "Store 미선언 키" 실측
    확인 둘은 판단이 아니라 구현 시 검증 작업이라 `question.md`엔 없음,
    여기 목록이 소스**), 각 `base/` 문서에도 ⚠️로 표시돼 있다:
+   - **M2가 M3의 `Blocker.luau`에 의존하게 된 순서 문제**(`ROADMAP.md`
+     M2 체크박스 각주) — 지금은 각주만 달아둔 임시 조치, `Blocker.luau`
+     (또는 최소 표면)를 M2로 앞당길지 로드맵 순서를 유지할지 **M2 착수
+     전 필요**. `qa-request/pre-implementation-qa-round3.md`의
+     "ROADMAP.md 마일스톤 정합성" 절.
    - **중간 State GC 미검증**(`base/source-state-plan.md`) — 상류 strong /
      하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
    - **그룹 `Attribute`의 위치별 claim 설계**(`base/attribute-plan.md`) —

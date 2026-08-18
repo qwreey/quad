@@ -190,7 +190,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       해결됨** — `setLength`/`setOffsetSource`가 배치 등록 중엔
       `recompute`를 미루고 배치가 끝나면 명시적으로 한 번만 돎, 상세는
       `base/dispatch-core-plan.md`의 "배치 등록을 안전하게 만드는 Blocker
-      게이팅" 절.
+      게이팅" 절. **[정정, 2026-08-18 구현 전 QA 3라운드] 그 크래시 자체는
+      `bk.N`의 정의(그때그때 실제 개수로 확정, 같은 문서 "저장 위치" 절)가
+      바뀌며 사라졌음** — 지금 이 두 함수 구현이 여전히 `Blocker`
+      (`getBlocker`/`:On()`/`:IsOn()`/`:OffWithoutEmit()`)를 호출하는 이유는
+      크래시 방지가 아니라 배치 등록 비용(O(N²)→O(N)) 절감. **다만
+      호출하는 건 여전히 사실이라 — `Blocker.luau`는 아래 M3 체크박스에
+      있는데 이 항목은 M2 소속이라, 로드맵 순서대로면 M2가 아직 없는
+      `Blocker`를 참조하게 됨.** M2 착수 전 `Blocker`의 최소 표면
+      (`On`/`Off`/`IsOn`/`OffWithoutEmit`)을 M3보다 먼저(또는 M2와 병행)
+      만들 필요가 있는지 사용자 판단 필요 —
+      `qa-request/pre-implementation-qa-round3.md`의 "ROADMAP.md 마일스톤
+      정합성" 절.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
