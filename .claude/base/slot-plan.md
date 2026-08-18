@@ -91,12 +91,16 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   붙는 동적 리스트라 이 전제 자체가 없음** — Slot 안의 Ref가 "무엇"을
   가리켜야 하는지 정의가 안 됨. 대체 경로도 이미 있어 능력 손실 없음 —
   특정 child에 ref가 필요하면 그 child를 만드는 컴포넌트 호출 자체에
-  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })`).
+  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })` — **여기서 `Frame`은
+  `Ref`라는 named 파라미터를 받는 컴포넌트 함수다.** Instance 리터럴에
+  `Ref = ...`를 named 키로 놓는 건 leaf 바인딩이 아니고, 실제로는
+  `HANDLER_PRIORITY_FALLBACK` 가드가 잡아 에러를 낸다 — leaf 바인딩은
+  배열(숫자 키) 전용, `base/ref-plan.md`. **[명시 추가, 2026-08-18 구현 전
+  QA]**).
 - **`T`의 실제 의미**: 위 배제 덕에 "이 Slot이 실제로 담을 수 있는 최종
   마운트 가능한 값의 타입" 그 자체로 단순해짐 — quad-roblox엔 사실상
   `T = Instance` 하나뿐(컴포넌트 호출 결과도 결국 Instance)이라
-  `DI.InstSlot = Slot<<Instance>>`(`DI` 네임스페이스 이름 자체는
-  `question.md` 1번 용어정리 대기 중, 여기선 잠정 표기)가 사실상 "그"
+  `D.InstSlot = Slot<<Instance>>`가 사실상 "그"
   Slot 타입. `Slot<T>()`가
   기본값(`T` 생략 시) 없이 항상 명시를 요구하는지, `quad-base`에선
   `any`로 기본값을 두는지는 tbox 제네릭 적용 문법 확정 시 같이 정할 것
@@ -355,8 +359,9 @@ function SlotHandler.process(inst, k, slotValue, index)
         -- 예전엔 destroySlotTree를 불러 그 결정과 정면으로 모순됐음.
         unmountSlotTree(slotValue)
         -- 이 위치가 더 이상 기여하지 않음을 owner에게 알림 — **순서 고정**
-        -- (setLength가 끝에서 recompute를 돌리므로 offsetSource를 먼저 비워야
-        -- 죽는 중인 Source에 헛된 :Set()이 안 감, 아래 ⚠️ 절 참고)
+        -- (setLength가 끝에서 gatedRecompute를 경유해 recompute를 돌리므로
+        -- offsetSource를 먼저 비워야 죽는 중인 Source에 헛된 :Set()이 안 감,
+        -- 아래 ⚠️ 절 참고)
         Dispatch.setOffsetSource(inst, k, None)
         Dispatch.setLength(inst, k, 0)
         unbindLifetime(slotValue)  -- top-level 자신의 GC 앵커 해제 — SlotHandler.process의 bindLifetime과 짝
@@ -843,9 +848,10 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
     되는 식):
     - **버림** — 첫 번째 값으로 `nil`(또는 `None`, 동일 취급)을 반환.
       "지금 이 key는 렌더 안 함"(filter 탈락 등) — `prev`가 있었다면
-      **[정정, 2026-08-13 3차 감사] 파괴가 아니라 언마운트됨**(단순
-      `Visible = false`도 아님 — 위 "구현" 절 `rawUnmount` 참고, 이
-      문단 작성 당시엔 아직 destroy 모델이었음). 편의상
+      **[정정, 2026-08-13 3차 감사, 그러나 2026-08-18 구현 전 QA로 재역전
+      — "`nil` 리턴은 파괴가 기본" 절 참고] 파괴됨**(단순 `Visible =
+      false`도 아니고, 언마운트도 아님 — `rawRemove`. `PopOnly`를 명시
+      반환해야 대신 언마운트+재사용됨). 편의상
       `nil` 권장(반환값이 raw Slot 요소로 직접 들어가는 게 아니라
       `:List`의 reconcile이 해석만 하므로 "요소 타입 제약"의 raw
       `nil`/`None` 금지와 안 부딪힘).
@@ -970,12 +976,26 @@ end
 
 **해법**: `updateFn`을 매 사이클 호출하되, `prev`를 줘서 "바꿀 게 없으면
 그대로 돌려주기만 하면 되는" 저렴한 경로를 만들고, filter 탈락은 `nil`
-반환으로 **[정정, 2026-08-13 3차 감사] 언마운트**되게 함(위 캐비엇대로
-파괴 아님) — Visible 토글이 아니라 실제 물리 트리 이탈. 200개 중 20개만
-통과하는 필터면 20개만 실제로 마운트돼 있고 나머지 180개는 물리적으로
-존재하지 않음(애니메이션도 안 돎, 다만 아무도 안 들고 있지 않은 한
-GC되기 전까지 `nil` 아닌 언마운트된 채로 재사용 가능하게 남아있을 수
-있음 — 위 캐비엇 참고).
+반환으로 **[정정, 2026-08-13 3차 감사, 그러나 2026-08-18 구현 전 QA로
+재역전 — 아래 참고] 언마운트**되게 함(위 캐비엇대로 파괴 아님) — Visible
+토글이 아니라 실제 물리 트리 이탈. 200개 중 20개만 통과하는 필터면
+20개만 실제로 마운트돼 있고 나머지 180개는 물리적으로 존재하지 않음
+(애니메이션도 안 돎, 다만 아무도 안 들고 있지 않은 한 GC되기 전까지
+`nil` 아닌 언마운트된 채로 재사용 가능하게 남아있을 수 있음 — 위 캐비엇
+참고).
+
+**⚠️ [재정정, 2026-08-18 구현 전 QA, `/code-review high`로 이 절의 stale
+서술 발견] 바로 위 두 문단은 "filter 탈락 = 언마운트(비파괴)"를 결론으로
+쓰고 있는데, 그 결론은 이후 재역전됐다.** 지금 유효한 규칙은 "`nil`
+리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴" 절(SL-3 해소,
+`question.md`/`archive/question-resolved.md` 참고) — filter 탈락으로
+`updateFn`이 그냥 `nil`을 반환하면 이제 **파괴**(`rawRemove`)가 기본이고,
+"Instance.new/Destroy 비용을 아끼고 싶다"는 이 절의 동기를 살리려면
+`nil` 대신 명시적으로 `PopOnly`를 반환해야 언마운트+재사용이 된다. 이
+절의 **동기**(matched-item 애니메이션/이벤트가 계속 돌면 안 된다는 문제
+자체)는 여전히 유효하지만, "그래서 nil이 곧 언마운트"라는 결론 문장은
+`PopOnly` 신설로 대체됐다 — 이 절을 읽고 filter를 구현할 땐 반드시 위
+"`nil` 리턴은 파괴가 기본" 절도 같이 볼 것.
 
 **"이전 상태를 다음 호출에 어떻게 넘기냐" 문제는 `userdata`가 그 채널** —
 item이 plain table이라 매번 `Source`를 새로 안 만들고 재사용하려면 그
@@ -1077,6 +1097,10 @@ function activateList(self, inst)
             local candidateIndex = pos + 1   -- "이 item이 살아남으면 차지할" 압축 위치(생존 여부와 무관하게 계산 가능)
             local result, ud = updateFn(item, candidateIndex, offset, prev, userdata[key])
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
+            -- [2026-08-18] PopOnly(가칭)는 "이 자리를 비우되 죽이지는 말라"는 지시.
+            -- 아래 "PopOnly" 절 — 자리 계산 관점에선 nil과 똑같이 취급된다.
+            local popOnly = (result == PopOnly)
+            if popOnly then result = nil end
 
             if result ~= nil then
                 -- [2026-08-11 일곱 번째 세션] result가 nested Slot이면 그
@@ -1087,11 +1111,16 @@ function activateList(self, inst)
             end
 
             if result ~= prev then
-                -- [정정, 2026-08-13 여섯 번째 세션] 파괴가 아니라 **언마운트** —
-                -- rawUnmount는 rawRemove와 같되 element를 Destroy하지 않고
-                -- 소유권만 반납(unmountSlotTree 사용, 아래 "파괴" 절).
-                -- 명시적 CRUD Remove/Clear/dispose만 여전히 파괴.
-                if prev ~= nil then rawUnmount(self, prev) end
+                -- [재정정, 2026-08-18 구현 전 QA] 세 경로가 갈린다 — 아래
+                -- "`nil` 리턴은 파괴가 기본" 절이 소스:
+                --   (a) 교체(result ~= nil): 밀려난 prev는 **언마운트만**
+                --       — state<Frame> 교체와 동형, 지우라고 한 적이 없음.
+                --   (b) PopOnly: **언마운트만**, 재사용은 ud가 홀드.
+                --   (c) 그냥 nil/None: **파괴**(rawRemove) — "지워라"라는 지시.
+                if prev ~= nil then
+                    if result ~= nil or popOnly then rawUnmount(self, prev)
+                    else rawRemove(self, prev) end
+                end
                 if result ~= nil then rawAdd(self, result, pos) end -- 새로 배치, 압축 위치 기준
                 mounted[key] = result
             elseif prev ~= nil and keyIndex[key] ~= pos then
@@ -1099,12 +1128,13 @@ function activateList(self, inst)
             end
 
             userdata[key] = ud    -- result와 무관, 그대로 기록
+                                  -- (PopOnly 재사용은 여기 담긴 { old = ... }가 담당)
             newKeyIndex[key] = pos
         end
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = mounted[key]
-                if prev ~= nil then rawUnmount(self, prev) end   -- 위와 같은 이유로 비파괴
+                if prev ~= nil then rawRemove(self, prev) end -- [재정정, 2026-08-18] 파괴
                 mounted[key], userdata[key] = nil, nil
             end
         end
@@ -1177,19 +1207,17 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   실행)의 로컬 변수(클로저 업밸류) — 별도 전역 weak table(`Relate` 등)
   불필요, `inst`/`self`가 살아있는 동안만 존재하면 되고 죽으면 클로저도
   같이 GC됨(아래 "구독 시점" 절).
-- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawUnmount`/`rawMove`뿐**
-  (**[정정, 2026-08-13 여섯 번째 세션]** 예전엔 `rawRemove`(파괴)였으나
-  언마운트 전환으로 바뀜 — 데이터에서 빠진 아이템도 파괴되지 않고
-  언마운트만 되며, 아무도 안 들고 있으면 GC) —
-  `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
-  구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
-  셋을 직접 호출할 일이 없을 뿐 — **[정정, 2026-08-13 감사] "제거는
-  항상 파괴 확정이라 Extract 아닌 Remove 경로"라는 예전 근거는 언마운트
-  전환으로 이제 틀림**(바로 위에서 정정했듯 reconcile의 제거는 이제
-  비파괴 `rawUnmount`이고, 이 함수 자체가 `rawRemove`의 비파괴
-  짝으로서 `Extract` 계열과 공유하는 저수준 프리미티브 — 위 코드
+- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawUnmount`/`rawRemove`/
+  `rawMove`** (**[재정정, 2026-08-18 구현 전 QA]** 2026-08-13 여섯 번째
+  세션에 "reconcile의 제거는 전부 비파괴 언마운트"로 바꿨던 것을
+  **부분적으로 되돌림** — `nil` 리턴/키 소멸은 다시 **파괴**가 기본이고,
+  값 교체와 `PopOnly`만 비파괴. 아래 "`nil` 리턴은 파괴가 기본" 절이
+  소스) — `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는
+  가드+위임" 구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘
+  자체가 그 셋을 직접 호출할 일이 없을 뿐. `rawUnmount`는 `rawRemove`의
+  비파괴 짝으로서 `Extract` 계열과 공유하는 저수준 프리미티브 — 위 코드
   블록의 "rawRemove의 비파괴 짝 — `:List`의 reconcile과 `Extract`
-  계열이 씀" 주석 참고). reconcile이 공개 `Slot:Extract` 대신
+  계열이 씀" 주석 참고. reconcile이 공개 `Slot:Extract` 대신
   `rawUnmount`를 직접 부르는 진짜 이유는 파괴 여부가 아니라, reconcile이
   이미 자기 `mounted` 맵으로 element를 추적 중이라 `Extract`의 "제거한
   element를 호출자에게 반환" 계약이 불필요하고, 공개 CRUD의 가드/에러
@@ -1199,6 +1227,60 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
 - **리오더는 `Move`(의 가드 없는 버전)** — Parent를 안 건드리는 진짜
   저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
   미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.
+
+### `nil` 리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴 (2026-08-18 구현 전 QA, 확정 뒤집기)
+
+**[재정정]** 2026-08-13 여섯 번째 세션은 "자동 경로는 언마운트, 명시적으로
+지우라고 한 것만 파괴"라는 일반 규칙을 세우면서 `:List`의 reconcile까지
+전부 비파괴로 바꿨는데, **`:List`에는 그 일반화가 안 맞는다**는 게 사용자
+판정: *"List reconcile 에서 nil 리턴으로 지워지길 요구하는 경우는 비파괴일지,
+파괴일지 생각해보아야할 것이 많은듯. 기본적으로 파괴가 맞기는 한데…"*
+
+**세 경로로 갈린다**(위 `reconcile` 의사코드):
+
+| updateFn의 반환 | 이전 요소(`prev`) 처리 | 왜 |
+|---|---|---|
+| 새 값(`result ~= nil`) | **언마운트만** | 밀려난 것뿐이지 "지워라"가 아님. `state<Frame>` 교체와 동형이고, `Slot { State<Slot> }` sugar(`:Single`)가 이 경로를 타므로 아래 "`State<Slot>` 교체" 절의 확정도 그대로 유지됨 |
+| `nil` / `None` | **파괴**(`rawRemove`) | `updateFn`이 명시적으로 "이 자리를 지워라"라고 말한 것 |
+| `PopOnly`(가칭) | **언마운트만** + 재사용 대기 | 아래 |
+| 키가 데이터에서 사라짐 | **파괴**(`rawRemove`) | `nil` 리턴과 같은 의미(그 아이템은 이제 없음) |
+
+**`PopOnly`(가칭) — `Instance.new`/`Destroy` 비용을 아끼는 재사용 경로.**
+`filter` 용도처럼 "지금은 안 보이지만 곧 다시 필요할" 요소를 매번
+파괴/재생성하는 건 비싸다. 그래서 `updateFn`이 **`PopOnly`와 함께 userdata를
+반환**하면 그 자리는 파괴 없이 `Parent = nil`로만 내려오고 Slot에서 빠진다:
+
+```lua
+-- filter에서 걸러진 아이템 — 죽이지 말고 들고 있다가 나중에 되쓴다
+return PopOnly, { old = prev, source = ... }
+```
+
+- **보존 주체는 `userdata`** — reconcile은 `mounted[key]`에서만 뺄 뿐
+  `userdata[key]`는 그대로 기록하므로(위 의사코드), 반환한 테이블 안의
+  `old`가 그 요소를 강하게 붙잡아 GC를 막는다. 다음 사이클에 `updateFn`이
+  같은 `userdata`를 다섯 번째 인자로 다시 받으므로, 거기서 `old`를 꺼내
+  그대로 반환하면 **재마운트**된다(`rawAdd` 경로).
+- **userdata는 그 키가 데이터에 남아 있는 한, 명시적으로 `nil`을 반환하기
+  전까지 안 지워진다** — 즉 "언제 진짜로 버릴지"를 `updateFn`이 결정한다.
+- **⚠️ 단, 키가 데이터에서 아예 사라지면 얘기가 다르다(2026-08-18 감사에서
+  발견한 갭).** 그 경우 reconcile의 소멸 루프가 `mounted[key]`/`userdata[key]`를
+  **둘 다** 지우는데, `PopOnly`로 홀드 중이던 요소는 `mounted[key]`가 이미
+  `nil`이라 `rawRemove`(파괴) 대상이 아니다 — 결과적으로 그 요소는
+  **파괴되지도, `updateFn`에게 되돌려지지도 않고 참조만 끊겨 GC 대상이
+  된다**(Parent는 이미 `nil`). 이건 같은 절의 표가 "키가 사라지면 파괴"라고
+  못박은 것과도, 위 "버릴 시점은 `updateFn`이 정한다"와도 어긋난다.
+  **세 선택지 중 하나를 M8 착수 전에 정할 것**(`question.md` 3번):
+  (a) 소멸 루프가 `userdata[key].old`도 확인해 `rawRemove`로 파괴,
+  (b) 지금처럼 참조만 끊고 GC에 맡김(단 표와 서술을 그 사실에 맞게 고침),
+  (c) `updateFn`을 마지막으로 한 번 더 불러 처분을 묻는다.
+  **지금 문서는 (a)를 기본으로 가정하지 않는다** — 결정 전이므로 구현 금지.
+- **이름은 가칭** — 사용자 확정: *"PopOnly 확정. 다만 이름은 변경될 수
+  있음. 이름에 대해서는 더 생각해보아야함"*. `question.md` 용어 정리 항목에
+  올려둠. 메커니즘(반환 규약 + userdata 홀드 + 재마운트)은 확정.
+- **`Slot`의 다른 비파괴 API와의 관계**: `Extract`/`ExtractAll`/`Splice`가
+  이미 비파괴 추출을 제공하지만(위 "CRUD API 확정" 절) 그건 **호출자가
+  직접 부르는 명령형 경로**다. `PopOnly`는 같은 일을 **reconcile 안에서
+  선언적으로** 하기 위한 것이라 서로 대체 관계가 아니다.
 
 ### 구독 시점 — `:List()` 호출이 아니라 Slot 마운트 시점, lazy `bindLifetime`
 (2026-08-09 일곱 번째 세션)
@@ -1391,10 +1473,47 @@ nil/None 금지)는 그대로.
 
 ### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용
 
+**✅ [해결, 2026-08-18 구현 전 QA 2라운드 후속]** 아래가 재사용하는
+`Dispatch.setLength`/`setOffsetSource`/`recompute`가 배치 등록 중 크래시할
+수 있던 문제(`RC-1`)는 해결됨 — `base/dispatch-core-plan.md`의
+"배치 등록을 안전하게 만드는 Blocker 게이팅" 절이 소스. 이 문서에선 그
+해법이 `attachSlot`의 flush 루프에 어떻게 적용되는지만 다룬다(아래
+코드의 `blocker` 관련 줄).
+
 `base/dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
 owner 키(`inst`)가 물리 Instance일 필요가 없음(`Relate`가 아무 테이블이나
 weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 마운트와
 중첩 마운트가 완전히 같은 함수 호출**이 됩니다.
+
+**[재정정, 2026-08-18 구현 전 QA 2라운드 후속] 호출 순서가 뒤집혀 있었음
+— `setLength`가 먼저, `setOffsetSource`가 나중이던 것을 바로잡음.**
+`base/dispatch-core-plan.md`의 "`NilHandler`" 절이 이미 확정해둔 **"호출
+순서는 `setOffsetSource` → `setLength`"** 일반 규칙(해제 시점 계약에서
+나왔지만 등록 시점에도 그대로 적용)과 이 `attachSlot` 의사코드가 계속
+어긋나 있었던 것 — RC-1을 고치며 `setOffsetSource`가 즉시 계산을 하게
+되면서 이 불일치가 드러남. 사용자 확정: *"length 를 알게되는 시점은 각
+요소가 생성된 이후인데, 그럼 setOffset 이 먼저 안 되어있으면 offset
+전파가 한번 더 일어나게됨"* — Slot의 진짜 `.Length`는 `activateList`가
+자기 `:List`를 최초 reconcile한 **뒤에야** 확정되므로, `setLength`를 그
+전에 부르면 등록 직후 값이 또 바뀌어 전파가 한 번 낭비된다. 올바른 순서는
+**`setOffsetSource`(즉시 계산) → (Slot이면) 실체화 → `setLength`(그제서야
+확정된 값으로 등록) → 물리 마운트**.
+
+**[재정정, 2026-08-18 구현 전 QA 3라운드] "확정된 값으로 등록"은 값
+자체가 아니라 이 순서를 지키는 한 자연히 따라오는 결과를 가리킨 표현이지,
+`setLength` 호출 시점에 `slot.Length`의 **값**이 반드시 최종값이어야
+한다는 뜻은 아니다.** 실체화(`activateList`)와 물리 마운트(flush 루프)의
+순서를 더 트레이싱하며 `RC-3`/`RC-4`(둘 다 `activateList` 도중 아직
+`self._mounted`가 안 세팅된 상태를 요구한다는 게 드러남 — 아래 코드의
+"`_mounted`는 여기서 아직 세팅하지 않는다" 주석 참고)를 고치는 과정에서,
+`slot.Length`가 실제로 최종값으로 안정되는 시점은 `activateList` 직후가
+아니라 **flush 루프가 끝난 뒤의 마지막 `recompute`**로 한 단계 더
+밀렸다 — `Dispatch.setLength(ownerKey, position, slot.Length)`가 넘기는
+건 **State 객체 자신**이라, 등록 시점에 값이 아직 안 굳어 있어도
+무해하다(부모는 객체를 구독해뒀다가 나중에 값이 바뀌면 정상 반응).
+`setOffsetSource → setLength` 순서 자체(왜 `setOffsetSource`가 먼저여야
+하는지)는 안 바뀜 — 상세 트레이싱은
+`qa-request/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
 
 ```lua
 -- quad-base, Slot.luau — 재귀적 "attach" 하나로 최상위/중첩 마운트 통합
@@ -1406,29 +1525,88 @@ local function attachSlot(slot, physicalTarget, ownerKey, position)
     -- 쪽(destroySlotTree)이 이미 이 원칙대로였는데(자기 자신의 unbindLifetime은
     -- 안 하고 process가 반환하는 retract 클로저에서만 짝을 맞춤) process 쪽만 attachSlot 내부에
     -- ownerKey==physicalTarget 분기로 anchor 로직이 새어들어와 있던 비대칭이었음.
+
+    local offsetSource = Source(0)
+    Dispatch.setOffsetSource(ownerKey, position, offsetSource)   -- 먼저 — 앞선 형제 합으로 즉시 계산
+    slot.Offset = offsetSource
+
+    -- [재정정, 2026-08-18 구현 전 QA 3라운드, `RC-3`/`RC-4` 해결 —
+    -- 사용자 설계] `_mounted`는 여기서 아직 세팅하지 않는다 — 그래야
+    -- 아래 `activateList`가 실행되는 동안 `self._mounted`가 계속
+    -- `false`라, `:List`의 reconcile이 부르는 `rawAdd`가 "아직 마운트
+    -- 전"(= `_elements`에만 넣고 끝) 경로를 타서 이 시점엔 물리
+    -- 마운트도 Dispatch 등록도 전혀 안 일어난다. 옛 코드는 `_mounted`를
+    -- 맨 위에서 세팅해뒀었는데, 그러면 reconcile의 `rawAdd`가 매 항목마다
+    -- 즉시 물리 마운트 + `Dispatch.setLength`를 태워(아래 flush 루프가
+    -- 곧 다시 처리할 바로 그 자리를) 두 가지 문제를 냈다 — (a) 아직
+    -- Blocker가 없어(그건 flush 루프 직전에야 생김) 매 항목마다 게이팅
+    -- 없이 `recompute`가 돎(`RC-3`), (b) nested Slot 항목은 이 시점에
+    -- 이미 `attachSlot`이 한 번 불렸는데, 아래 flush 루프가 같은 요소를
+    -- 다시 순회하며 `attachSlot`을 **또** 불러 이중 실행됨(`RC-4`).
+    -- `_mounted`를 `activateList` 뒤로 미루면 이 함수 안에서 실제
+    -- 마운트가 일어나는 자리는 아래 flush 루프 단 하나로 통일된다 —
+    -- `:List`든 수동 CRUD든 구분할 필요가 없어짐. 상세 트레이싱은
+    -- `qa-request/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
+    if slot._listed then
+        activateList(slot, physicalTarget)   -- reconcile이 채우는 건 `_elements`뿐 — 물리 마운트는 안 함(위 참고)
+    end
+
     slot._mounted = true
     slot._mountedInst = physicalTarget
 
-    Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
-    local offsetSource = Source(0)
-    Dispatch.setOffsetSource(ownerKey, position, offsetSource)
-    slot.Offset = offsetSource
+    -- **[정정, 2026-08-18 3라운드]** `slot.Length`는 이 시점에 아직
+    -- "확정된 값"이 아니다 — 최종 값은 아래 flush 루프 끝의 `recompute`가
+    -- 매긴다. 여기서 넘기는 건 값이 아니라 **State 객체 자신**이라 무해함:
+    -- 부모는 이 객체를 구독해뒀다가, 그 값이 나중에(flush 끝나고) 바뀌면
+    -- 정상적으로 다시 반응한다(부모 배치가 아직 안 끝났으면 부모 자신의
+    -- Blocker가 그 반응을 알아서 미룸 — 아래 "확인만 하고 새 결함 없음"
+    -- 절 참고). 옛 주석("확정된 값으로 등록")은 옛 순서(`_mounted`가
+    -- `activateList`보다 먼저라 그 안에서 이미 최종화되던 것) 기준이었고
+    -- 이제는 안 맞아 정정.
+    Dispatch.setLength(ownerKey, position, slot.Length)
 
-    if slot._listed then
-        activateList(slot, physicalTarget)   -- 기존 :List lazy activation, 안 바뀜
-    end
-
-    -- attach 전에 이미 들어와있던 요소들 flush(이미 채워둔 Slot을 나중에
-    -- 마운트하는 흔한 패턴이 원래도 전제하고 있던 것 — 새 개념 아님)
+    -- attach 전에 이미 들어와있던 요소들(수동 CRUD로 마운트 전 `:Add()`된
+    -- 것) **및** 방금 `activateList`가 `_elements`에만 채워둔 `:List`
+    -- 결과물 — 이제 이 flush 루프가 어느 경로로 왔든 상관없이 유일한
+    -- 물리 마운트 지점이다. `slot._elements`의 개수(N)가 이미 정해진 채
+    -- position을 하나씩 등록하는 배치라 `Dispatch.drive`와 같은 크래시
+    -- 위험이 있음(`RC-1`) — 이 Slot 자신의 owner 키로 별도 Blocker를 새로
+    -- 만들어(부모 Blocker와 절대 공유하지 않음 — base/blocker-plan.md의
+    -- "재진입" 절) 같은 On→등록→OffWithoutEmit→recompute 패턴을 적용.
+    local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
+    blocker:On()
     for i, element in ipairs(slot._elements) do
         if isSlot(element) then
             attachSlot(element, physicalTarget, slot, i)   -- 재귀, ownerKey가 이제 slot 자신
         else
+            -- 평범한 Instance 요소도 같은 순서: 자기 자리의 offset은 아무도
+            -- 안 읽으므로 None(참여만, 소비 없음), length는 상수 1.
+            Dispatch.setOffsetSource(slot, i, None)
+            Dispatch.setLength(slot, i, 1)
             element.Parent = physicalTarget   -- quad-roblox 글루가 실제 수행
         end
     end
+    blocker:OffWithoutEmit()
+    local bk = getBookkeeping(slot)
+    if bk then recompute(slot, bk) end   -- 여기서 slot.Length가 비로소 진짜 값으로 확정됨
 end
 ```
+
+**⚠️ [신설, 2026-08-18 3라운드 감사 후속] 좁은 엣지 케이스 — 배치 밖에서
+이 Slot이 단독으로 (재)마운트되면, 부모의 `recompute`가 아직 안 굳은
+`slot.Length`로 한 번 헛돌 수 있다.** `Dispatch.setLength(ownerKey,
+position, slot.Length)`(위 코드)는 `slot.Length`가 `State`라 등록 즉시
+1회 실행을 동기로 태우는데, 이 `attachSlot` 호출이 `Dispatch.drive`의
+배치나 부모 Slot의 flush 루프 **안**이면 부모 Blocker가 아직 켜져 있어
+안전하게 스킵되지만, **배치 밖**(예: `state<Slot>` 값이 steady state에서
+반응형으로 교체될 때, 부모 owner의 Blocker는 이미 꺼진 채)이면 부모의
+`gatedRecompute`가 즉시 실행돼 아직 flush가 안 끝난 `slot.Length`로 한
+번 계산한다 — flush가 끝나고 `slot.Length:Set(최종값)`이 다시 발화하면
+정확한 값으로 자기 교정된다. 크래시도 영구적으로 틀린 값도 아니고
+최악의 경우 한 프레임짜리 낭비 재계산 — 손대지 않기로 함, 다만 이
+자리를 다시 만질 때 놓치지 않도록 기록. 트레이싱 원문은
+`qa-request/pre-implementation-qa-round3.md`의 "확인만 하고 새 결함
+없음" 절.
 
 **최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
 ```lua
@@ -1446,6 +1624,15 @@ end
 -- self가 아직 마운트 전이면 _elements에만 들어가고, self가 나중에
 -- attachSlot될 때 위 flush 루프가 처리
 ```
+
+**이 런타임 단건 경로는 Blocker 게이팅이 필요 없다(사용자 확인,
+2026-08-18)** — *"그건 이미 마운트가 된 이후라서 별 상관 없음... 새로운
+개체가 뒤에 붙는 현상에서는 위 요소들로 하여금 위치를 구하면 돼, 뒷
+요소를 밀어내는게 아니라서, setLength 가 emit 되지 않는것에 영향 안
+받고 수행 가능함"* — 이 시점엔 `self`의 Blocker가 이미 flush 배치를
+끝내고 `OffWithoutEmit()`으로 꺼져 있고, 새로 등록되는 position보다
+앞선 모든 position은 이미 안정적으로 채워져 있어 `nil` 자리가 생길
+여지 자체가 없다.
 
 `recompute`가 owner가 Slot이면 그 `.Length`에도 합계를 반영하도록
 확장됐으므로(`base/dispatch-core-plan.md` 참고) — `Slot.Length`는 더
@@ -1533,7 +1720,7 @@ function rawUnmount(self, index)
     releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
     if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
 
-    spliceArraysDown(self, index)
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)
 end
 
@@ -1550,10 +1737,51 @@ function rawRemove(self, index)
                                   -- 들어온 뒤로는 이 누락이 실동작 차이를 만듦
     if isSlot(element) then destroySlotTree(element) else element:Destroy() end
 
-    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList 전부 한 칸씩 당김
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
 end
 ```
+
+**[신설, 2026-08-18 구현 전 QA 3라운드] `spliceArraysDown`이 밀어야 하는
+배열 목록(아래)에 빠진 게 있었고, `bk.N`도 같이 줄여야 한다는 것 자체가
+이 코퍼스 어디에도 명시된 적이 없었음.**
+
+- **`bk.observers`도 같이 당겨야 함** — 위 코드가 이미 `bk.observers[index]`를
+  읽어 `unbindLifetime`하지만(제거되는 그 위치의 것), `spliceArraysDown`
+  자신이 이동시켜야 하는 배열 목록에 지금까지 `observers`가 빠져 있었다
+  (`_elements`/`lengthList`/`sourceList` 셋만 언급됨). `bk.observers[i]`는
+  `Dispatch.setLength`가 그 자리 length가 `State`일 때만 채우는(위
+  "`setLength` 구현" 절) position-indexed 배열이라, 나머지 셋과 똑같이
+  뒤 position들이 한 칸씩 당겨질 때 같이 안 당기면 이후 그 position의
+  observer가 엉뚱한 것(옛 이웃의 observer)을 가리키게 된다.
+- **`bk.N`도 여기서 하나 줄여야 함** — `recompute`(`base/dispatch-core-plan.md`
+  "Length/Offset" 절)가 `for i = 1, bk.N do`로 순회하는 그 상한. **`bk.N`의
+  정의 자체가 이 코퍼스 어디에도 없던 갭**이었다(`qa-request/
+  pre-implementation-qa-round3.md`의 "`bk.N`의 수명주기" 절 — **사용자
+  확정(2026-08-18)**: *"bk.N = 그때그때 실제 개수(새 최대 위치가 등록될
+  때마다 증가, spliceArraysDown이 압축할 때 감소)로 두 owner 타입에
+  동일하게 적용"*). 즉 `bk.N`은 `Dispatch.setLength`가 이전에 본 적
+  없는 더 큰 position을 등록할 때마다 그 값으로 늘어나고(`setOffsetSource`는
+  건드리지 않음 — 항상 `setLength`보다 먼저 불려서 그 시점엔
+  `lengthList[i]`가 아직 없으므로, `Dispatch.drive`/`attachSlot`의 flush
+  배치도, Slot의 런타임 단건
+  `rawAdd`도 이 하나의 규칙으로 통일), `spliceArraysDown`이 위치 하나를
+  물리적으로 지울 때(`rawRemove`/`rawUnmount`) 그만큼 줄어든다. **`Dispatch.drive`의
+  `inst`에서는 이 규칙이 사실상 눈에 안 띈다** — 최상위 배열 리터럴은
+  구조적으로 늘거나 줄지 않으므로(전체 재-dispatch만 있음) `bk.N`이
+  등록이 끝난 뒤로는 그냥 고정값처럼 보일 뿐, 별도 케이스가 아니라 같은
+  규칙의 특수한 안정 상태다.
+- **왜 이게 `RC-1`의 크래시를 다시 불러오지 않는가**: `Dispatch.drive`/
+  `attachSlot`의 배치 등록 중엔 `recompute`가 각 owner의 Blocker
+  게이팅으로 아예 안 도는데(`blocker:IsOn()`만 확인, `bk.N`은 안 봄) —
+  그래서 배치 도중 `bk.N`이 최종값보다 작은 채로 계속 늘어나는 중이어도
+  안전하다. `RC-1`의 원래 크래시는 **`bk.N`이 배치가 시작되기도 전에
+  이미 최종 크기로 고정돼 있었던 것**의 부산물이었다는 게 이번에 다시
+  확인됨 — 지금은 그 전제 자체가 없다. 그 대신 Blocker 게이팅이 여전히
+  필요한 이유는 크래시 방지가 아니라 **비용**(등록마다 `recompute`가
+  한 번씩 도는 O(N²) 대신 배치 끝에 O(1)번만) — `RC-1` 해결 논의에서
+  사용자가 직접 지적한 "이러면 첫 실행에서 계속 recompute 비용이 쌓임"
+  문제 그대로.
 
 **왜 `unbindLifetime`이 꼭 필요한지**: `bindLifetime`은 물리 target
 인스턴스 생명주기에 걸려있는데, 죽는 건 "이 nested Slot 하나"고 물리
@@ -1855,6 +2083,25 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 엔진 자체 `:Destroy()` 메소드와 동명이라 사용자가 "그냥 `:Destroy()`
 부르는 거 아님?"으로 착각할 위험이 있어 기각 — `dispose` 유지.
 
+**[백로그 후보, 2026-08-18 구현 전 QA] `SetAndDispose` 류 편의 콤비네이터.**
+위 "`Set`(언마운트) → 그 다음 정리" 순서 요구 때문에 호출부가 매번
+**`Get()`으로 이전 값을 미리 잡아두고 → `Set(new)` → 잡아둔 옛 값을
+`dispose`** 하는 3단계를 손으로 써야 해서 편의성이 떨어진다는 사용자 지적:
+*"source:apply(SetAndDispose( new )) 같은걸 구현해줄까는 생각해보았음(단
+여기서의 apply 는 source 를 넘겨주는 함수가 되어야함.). Get해놓고 Set 이후
+나중에 지우는게 편의성이 떨어지기 때문. 아니면 그냥 source 자체에 :콜론
+메서드로 가능하게 하는걸 넣어줄까 생각은 하고 있음."* 후보 둘:
+
+1. `source:Apply(SetAndDispose(new))` — 콤비네이터. **단 여기서의 `Apply`는
+   `State`가 아니라 `Source`를 넘겨주는 함수여야 함**(사용자 명시) — 지금
+   확정된 `state:Apply(factory)`는 `factory(self)`에 `State`를 넘기므로,
+   `Source` 전용 변형이 필요한지 같이 정해야 한다.
+2. `Source`에 콜론 메서드로 직접 얹기(`source:SetAndDispose(new)`).
+
+**미결**: 어느 쪽을 택할지, 그리고 이번 범위에 넣을지 백로그로 뺄지.
+`state:Apply`의 시그니처(`(State<T>) -> U`)에 영향이 갈 수 있으므로 **M3
+착수 전에 방향만이라도 정해둘 것**. `question.md`에 올려둠.
+
 #### 구현상 바뀌어야 하는 것
 
 **[반영 완료, 2026-08-13 감사 후속]** 비파괴 경로를 `unmountSlotTree`로
@@ -1866,14 +2113,20 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
    그대로 뒀으면 언마운트 결정 자체가 무의미해질 뻔함). 지금은 위 절의
    코드가 `unmountSlotTree` + `setOffsetSource(None)`/`setLength(0)` +
    `unbindLifetime` + `releaseOwner`를 부름.
-2. **`:List`의 `reconcile`** — 교체/소멸 시 `rawRemove`(파괴) 대신 같은
-   비파괴 경로. 데이터에서 빠진 아이템도 파괴되지 않고 언마운트만 되며,
-   아무도 안 들고 있으면 GC(quad 전역의 GC-native 원칙 그대로).
+2. **`:List`의 `reconcile`** — **[재정정, 2026-08-18 구현 전 QA]** 여기서
+   비파괴가 되는 건 **값 교체와 `PopOnly`뿐**이다. `updateFn`이 `nil`/`None`을
+   반환하거나 키가 데이터에서 사라진 경우는 **다시 파괴가 기본**(사용자
+   판정) — 상세와 이유는 위 "`nil` 리턴은 파괴가 기본" 절이 소스.
+   2026-08-13에 이 항목이 "교체/소멸 시 전부 비파괴"로 적혔던 것은
+   `:List`에는 안 맞는 일반화였음.
 
 **여전히 파괴인 것**: 명시적 CRUD `Slot:Remove(index)`/`Slot:Clear()`
-(CRUD 표가 "제거 **+ 파괴**"로 이미 정의)와 `dispose`. 즉 **"자동 경로는
-언마운트, 명시적으로 지우라고 한 것만 파괴"**로 갈림 — `Ref`/`Attribute`의
-"지울 거면 명시적으로" 철학과 정확히 같은 결.
+(CRUD 표가 "제거 **+ 파괴**"로 이미 정의), `dispose`, 그리고 위 2번의
+`:List` 소멸 경로. 즉 일반 규칙은 **"자동 경로는 언마운트, 명시적으로
+지우라고 한 것만 파괴"**이되, **`:List`에서 `nil`을 반환하는 것 자체가
+"지우라고 한 것"으로 센다** — `Ref`/`Attribute`의 "지울 거면 명시적으로"
+철학과 같은 결이고, `updateFn`이 지우지 않길 원하면 `PopOnly`로 그 의도를
+명시한다.
 
 `unmountSlotTree`는 `destroySlotTree`가 하는 일 중 **실제 파괴와 자식
 소유권 반납만 빼고 나머지는 그대로 함**(자식 observer `unbindLifetime`,
@@ -1892,9 +2145,12 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 (2026-08-13 여섯 번째 세션, 사용자 지적).** 마운트할 때와 달리 **해제할
 때는 이 순서를 반드시 지켜야 함**:
 
-- `Dispatch.setLength`는 끝에서 `recompute`를 돌리고, `recompute`는
-  `sourceList`를 순회하며 각 자리의 `offset:Set(sum)`을 호출함
-  (`base/dispatch-core-plan.md` "Length/Offset" 절).
+- `Dispatch.setLength`는 끝에서 `gatedRecompute`를 경유해(배치 게이팅
+  중이 아니면) `recompute`를 돌리고, `recompute`는 `sourceList`를
+  순회하며 각 자리의 `offset:Set(sum)`을 호출함(`base/dispatch-core-plan.md`
+  "Length/Offset" 절 — 해제는 배치 도중이 아니라 steady state에서 흔히
+  일어나므로 이 경로에서는 `gatedRecompute`가 거의 항상 즉시 `recompute`로
+  이어짐).
 - 그래서 **`setLength(0)`을 먼저 부르면**, 그 안의 `recompute`가 도는
   시점에 해제 중인 자리의 `sourceList[i]`엔 **아직 옛 Slot의 offset
   `Source`가 그대로 남아 있음** → 지금 막 떼어내는 서브트리의 Source에

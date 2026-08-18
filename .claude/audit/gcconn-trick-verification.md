@@ -77,10 +77,12 @@ Studio에서 실행된 사용자 자작 스크립트(공식 `10` 파일이 아�
 
 - **이중 바인딩 게이트 + unbind/Destroy 후 재바인딩 허용** — `bindLifetime`/
   `unbindLifetime` 로직 자체는 이 스크립트에 없음(순수 GC/Connection
-  메커니즘만 테스트함). **[2026-08-14 열한 번째 세션 재갱신]** 게이트는
-  `canBound(value)`이고(`if canBound(v) then error(...) end`, `canExecute`는
-  emit 게이팅 전용으로 분리 — `lifecycle-pattern.md` "`canBound` vs
-  `canExecute`" 절), 검증해야 할 명제는 안 바뀜: (a) 살아있는 바인딩을 가진
+  메커니즘만 테스트함). **[2026-08-14 열한 번째 세션 재갱신, 2026-08-18
+  방향 정정]** 게이트는 `canBound(value)`이고(`if not canBound(v) then
+  error(...) end` — `canBound` 참 = "지금 묶어도 됨", `canExecute`는
+  emit 게이팅 전용으로 분리되며 둘은 서로의 부정 —
+  `lifecycle-pattern.md` "`canBound` vs `canExecute`" 절),
+  검증해야 할 명제는 안 바뀜: (a) 살아있는 바인딩을 가진
   값을 다시 `bindLifetime`하면 error, (b) `unbindLifetime(value)` 후에는
   통과, (c) **`inst`가 Destroy된 뒤에도 통과**(모델이 명시적으로 허용).
   전부 미해소이고, 공식 `10` 파일은 **재작성 후에야** 이걸 확인할 수

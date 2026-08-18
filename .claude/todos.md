@@ -5,6 +5,72 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
+00. **⭐⭐ [2026-08-18 신설, 같은 날 완료] 구현 전 QA — 1·2·3라운드
+   전부 `base/`에 반영 완료.** 1라운드는 사용자가 `base/` 확정 문서 전체를
+   문항으로 재심사한 결과(원본 문답과 사용자 답변 원문은
+   `.claude/qa-request/pre-implementation-qa-round1.md`가 소스), 확정으로
+   적혀 있는데 실제로는 틀린 항목이 여러 건 나왔고 **같은 날 전부 정정
+   반영됐다**(개수는 그 문서가 소스, 여기서 세지 않음). 그대로 구현하면
+   반대로 돌던 두 건(`canBound` 게이트 방향, gcconn/gchold 강/약)도 닫혔다.
+   2라운드는 `:List`의 `reconcile`/`recompute` 같은 확정 의사코드를 실제로
+   손으로 실행해보는 작업(원본과 진행 로그는
+   `.claude/qa-request/pre-implementation-qa-round2.md`가 소스) — `recompute`
+   트레이싱에서 `Frame{A,B}`처럼 정적 자식 2개짜리도 첫 마운트에 크래시하는
+   경로(`RC-1`)를 찾았고, 같은 날 후속 대화에서 사용자가 직접 제시한
+   Blocker 재사용 게이팅 설계로 해결·반영까지 완료됐다
+   (`archive/question-resolved.md`의 `RC-1` 절).
+
+   **3라운드(완료, `.claude/qa-request/pre-implementation-qa-round3.md`가
+   소스) — `RC-1` 해법이 실제로 `attachSlot`에 반영된 걸 트레이싱하다
+   새 문제 발견, 같은 세션에 전부 해결·반영까지 완료.** 처음엔 `activateList`가
+   자기 Slot의 Blocker가 켜지기 **전에** 실행돼 `:List` 초기 population이
+   문제(`RC-3`/`RC-4`)를 낸다고 봤고, `recompute`가 의존하는 `bk.N`(순회
+   상한)의 수명주기도 문서에 없어 "고정값/그때그때 실제 개수 둘 다 각기
+   다른 방식으로 깨진다"고 판단했으나 — **사용자가 이 분석 자체를
+   정정**했다: Blocker 게이팅은 `bk.N`이 아니라 `blocker:IsOn()`만 보므로
+   "그때그때 실제 개수" 모델이 배치 크래시를 되돌린다는 결론은 틀렸었다
+   (`bk.N` = 그때그때 실제 개수로 확정). `RC-3`/`RC-4`도 사용자가 더
+   단순한 해법을 직접 제시 — flush 루프를 분기하는 대신 `attachSlot`의
+   `slot._mounted = true`를 `activateList` 호출 뒤로 옮기는 것 하나로
+   둘 다 닫힘. 부수로 `spliceArraysDown`이 밀어야 할 배열에
+   `bk.observers`가 빠져 있던 것도 발견·반영, `ROADMAP.md` M2가 M3의
+   `Blocker.luau`에 구조적으로 의존하게 된 것도 각주로 반영(마일스톤
+   재편 여부는 열림 — `pre-implementation-qa-round3.md`의 "ROADMAP.md
+   마일스톤 정합성" 절 참고).
+
+   **아래는 M3 착수 전에 결론이 필요한 항목 목록**(M0/M2는 여전히 막혀
+   있지 않음, 0번 항목 참고 — **단, M2가 M3의 `Blocker.luau`를 선당겨야
+   하는지는 별개로 열려 있음, 바로 아래 첫 항목**) — 대부분 `question.md`
+   3번에도 올라가
+   있고(**[정정, 2026-08-18 `/code-review high`] 사용자 판단이 필요한
+   항목만 그렇다 — 아래 "dedup 경로" 대칭 확인, "Store 미선언 키" 실측
+   확인 둘은 판단이 아니라 구현 시 검증 작업이라 `question.md`엔 없음,
+   여기 목록이 소스**), 각 `base/` 문서에도 ⚠️로 표시돼 있다:
+   - **M2가 M3의 `Blocker.luau`에 의존하게 된 순서 문제**(`ROADMAP.md`
+     M2 체크박스 각주) — 지금은 각주만 달아둔 임시 조치, `Blocker.luau`
+     (또는 최소 표면)를 M2로 앞당길지 로드맵 순서를 유지할지 **M2 착수
+     전 필요**. `qa-request/pre-implementation-qa-round3.md`의
+     "ROADMAP.md 마일스톤 정합성" 절.
+   - **중간 State GC 미검증**(`base/source-state-plan.md`) — 상류 strong /
+     하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
+   - **그룹 `Attribute`의 위치별 claim 설계**(`base/attribute-plan.md`) —
+     방향은 확정, 키 설계가 미정. M10 착수 전 필요.
+   - **`SetAndDispose` 방향**(`base/slot-plan.md`) — `state:Apply`
+     시그니처에 영향이 갈 수 있어 M3 착수 전 방향만이라도.
+   - **dedup 경로의 process/retract 대칭 확인**(`base/effect-plan.md`
+     `:Unsubscribe()` 절) — M3 착수 전 확인.
+   - **`PopOnly` 이름**(`base/slot-plan.md`) — 메커니즘은 확정, 이름만 열림.
+   - **`PopOnly` 홀드 중 키가 사라졌을 때의 처분**(`base/slot-plan.md`) —
+     지금 의사코드대로면 파괴도 반환도 안 되고 참조만 끊김. **[정정,
+     2026-08-18 `/code-review high` — `ROADMAP.md`의 M6 PopOnly 체크박스와
+     대조해 발견] M6(`:List`가 있는 마일스톤) 착수 전 필요** — M8(`Ref`)
+     아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥 지나칠 위험이 있었음.
+   - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
+     (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
+     됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
+   - **`Store` 미선언 키가 실제로 타입 에러가 나는지**(`base/store-plan.md`)
+     — M0에서 실측 확인.
+
 0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-14 열한 번째 세션 기준).**
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
    핸들 계약)는 13차 세션에, `0-Z`(Attribute 이름 소유권)와 `0-A`(재디스패치
@@ -17,7 +83,10 @@
    재도입**됨(2026-08-14 다섯 번째 세션에 하나로 합쳤던 걸 부분적으로
    되짚음 — "이미 묶여 있는가"(bound 문맥)와 "지금 발화해도 되는가"
    (execute 문맥)는 판정 로직은 공유해도 호출부의 질문이 다르다는 사용자
-   지적, `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절).
+   지적, `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절.
+   **[정정, 2026-08-18] 두 predicate는 값이 같은 게 아니라 서로의 부정**이고
+   게이트는 항상 `if not canBound(v) then error(...)` 모양이다 — 그 문서의
+   같은 절이 소스).
    `question.md`엔 이제 "결정 대기" 절 자체가 없음(비어서 헤딩째로 삭제).
 
    **M0 착수 전 반드시 읽을 것 — 이 두 개는 "결정"이 아니라 "구현 규약"이라
@@ -72,7 +141,8 @@
    stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
    2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
    목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
-   — 아직 진짜로 열려있는 것만 짚으면: `DI`→`D`(1순위), `Slot`(2순위),
+   — 아직 진짜로 열려있는 것만 짚으면(**[2026-08-18] `DI`→`D`는 확정·반영
+   완료로 목록에서 빠짐**, 대신 `PopOnly`(가칭)가 새로 들어옴): `Slot`(2순위),
    `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
    방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
    `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).
@@ -113,6 +183,14 @@
    백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
    네 라운드로 대부분 확정됐고 남은 열린 질문은 `question.md` 3번(개수는
    거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
+   **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
+   신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
+   (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때
+   `AbsoluteSize`/`AbsolutePosition` 갱신 여부 실측 필요)과 스프링 물리
+   기반 지속 업데이트 프리미티브 `quad-spring`(`research/spring-plan.md`,
+   참고 구현 `qwreey/spring.lua` 사용 가능성 확인 필요) — 둘 다 설계 논의
+   전 아이디어 단계이고 사용자가 직접 "아주 나중"으로 후순위 지정, M0/설계
+   게이트와 무관.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 6. **[신규 백로그, 2026-08-14 열네 번째 세션]** 문서 stale 감소용 include

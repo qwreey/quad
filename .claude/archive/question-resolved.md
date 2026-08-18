@@ -20,6 +20,114 @@
 > 유효한 규약은 `base/typing-limits.md`. 나머지(0-Z/0-A/0-B 등)는
 > 여전히 `question.md`가 소스.
 
+## [해소됨, 2026-08-18 구현 전 QA] `DI` → `D`(Declarative) 리네임 확정
+
+2026-08-08 용어 정리 라운드부터 `question.md` **1순위**로 열려 있던 항목.
+사용자가 구현 전 QA 라운드 중 직접 확정("이거 하면서 DI => D 확정하자").
+
+- **확정 내용 두 갈래**: (1) 네임스페이스/모듈 자체는 `DI` → **`D`**
+  (`D.Frame` / `D/init.luau` / `D.InstSlot` / `D.FrameModifier`),
+  (2) "특수 DI 키"라는 **설명용 표현**은 `D`로 바꾸지 않고 **"특수 키"로
+  단순화**(수식어를 빼도 문맥상 통한다는 판단).
+- **`D`로 가는 근거**: (1) "Instance" 전용 개념이 아니라 quad-* 전반의
+  declare 요소로 확장 가능한 이름, (2) 엔진 종속 없이 다른 백엔드에서도
+  재사용 가능, (3) `D.FrameModifier`류 타입 프리픽스가 짧아야 한다는 실용적
+  제약. 원래 이름 `DI`의 문제는 **"Dependency Injection"과 완전히 겹쳐 실제로
+  오해가 있었던 전례**.
+- **2026-08-08에 확정을 미룬 유일한 사유였던 "한 글자 식별자의 검색성/
+  자기설명력"은 표기 규약으로 보완** — 문서에서 `D`가 처음 나오는 자리에서는
+  항상 `D`(Declarative)로 풀어쓴다(`base/architecture.md`의 "코드 스타일 —
+  네이밍 케이싱" 절).
+- 지금 유효한 설계는 `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트
+  네이밍 인체공학" 절이 소스.
+
+## [해소됨, 2026-08-18 구현 전 QA 2라운드 후속] `RC-1` — `recompute` 트리거 모델 재설계
+
+`base/dispatch-core-plan.md`의 `recompute`가 배열 위치를 순차 등록하는
+동안(`Frame{A,B}`처럼 정적 자식 2개짜리도) 아직 등록 안 된 자리를 `nil`로
+읽어 산술 에러를 내던 크래시(`qa-request/pre-implementation-qa-round2.md`의
+"RC-1" 절에서 손 트레이싱으로 발견) — 같은 날 후속 세션에서 사용자가
+Blocker 재사용 설계를 직접 제시해 해결됨.
+
+- **핵심**: owner(물리 `inst` 또는 Slot)마다 `Relate`로 들고 있는 전용
+  `Blocker`를 배치(`Dispatch.drive`의 배열 파트 순회, `attachSlot`의 자기
+  `_elements` flush) 시작 시 `On`, `setLength`의 Observer 콜백(등록 즉시
+  1회 실행 포함)이 `blocker:IsOn()`이면 `recompute`를 건너뜀. 배치가
+  끝나면 `blocker:OffWithoutEmit()` + 명시적 `recompute` 딱 1회.
+  `setOffsetSource`는 등록되는 그 자리에서 앞선 형제들의 길이 합을 직접
+  계산해 즉시 `:Set`해서(recompute를 안 기다림) 배치 도중 `:List`가
+  실체화되며 옛 offset을 읽는 문제도 같이 없앰.
+- **Blocker에 신설된 API**: `IsOn()`(`IsBlocked` 조회 얇은 래퍼),
+  `OffWithoutEmit()`(끄되 gated state의 대기 emit은 흘려보내지 않음,
+  `HasBlockedEmit`은 그대로 리셋) — `state:Block()`을 거치지 않고 직접
+  쓰는 첫 사례. 처음 요청됐던 `HasBlocked`(Blocker 자신의 새 최상위
+  플래그)는 논의 중 불필요함이 확인돼 신설 안 함.
+- **중첩 Slot마다 별도 Blocker**(부모와 공유 금지, `blocker-plan.md`의
+  재진입 미지원 규칙 그대로), **런타임 단건 `slot:Add()`는 게이팅 불필요**
+  (이미 안정된 앞선 position만 참조하므로 무관) — 둘 다 사용자가 직접
+  확인.
+- **후속 정정 — `attachSlot` 호출 순서**: 기존 의사코드는 `setLength`를
+  먼저 불렀는데, "호출 순서는 `setOffsetSource` → `setLength`" 일반
+  규칙과 어긋나 있었음이 드러남(RC-1로 `setOffsetSource`가 즉시 계산을
+  하게 되며 순서가 겉으로 드러났기 때문) — Slot의 진짜 `.Length`는
+  `activateList` 실체화 뒤에야 확정되므로 `setOffsetSource` → 실체화 →
+  `setLength` → 물리 마운트 순으로 바로잡음. 같은 논의에서 **코루틴 yield
+  금지 불변식**도 확정(`Dispatch.process`/`attachSlot` 호출 체인 도중
+  yield는 UB).
+- 지금 유효한 설계는 `base/dispatch-core-plan.md`의 "배치 등록을 안전하게
+  만드는 Blocker 게이팅" 절, `base/slot-plan.md`의 "재귀 메커니즘" 절,
+  `base/blocker-plan.md`의 "`state:Block()` 없이 직접 쓰는 두 번째 용례"
+  절이 소스. 논의 원문(설계 제안 전문, 확인 질문 3개와 답변)은
+  `qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절.
+
+## [해소됨, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 + `RC-3`/`RC-4`(`attachSlot`의 `:List` 초기 population 중복 처리)
+
+`recompute`가 순회 상한으로 쓰는 `bk.N`이 Slot을 ownerKey로 재사용할 때
+무엇이고 언제 갱신되는지 문서에 없던 갭(`qa-request/
+pre-implementation-qa-round3.md`가 원본) — 트레이싱 중 `attachSlot`이
+`:List`의 최초 population을 이중 처리하는 결함(`RC-3`/`RC-4`)도 같이
+발견됐고, 셋 다 같은 세션에 사용자가 직접 해법을 제시해 해결됨.
+
+- **`bk.N` = 그때그때 실제 개수**, `inst`/Slot 두 owner 타입 동일 규칙 —
+  `Dispatch.setLength`(항상 뒤에 불림, `setOffsetSource`는 안 건드림)가
+  이전에 없던 더 큰 position을
+  등록할 때마다 늘고, `spliceArraysDown`(Slot의 `rawRemove`/`rawUnmount`)이
+  위치를 구조적으로 지울 때 줄어듦. **최초 분석 오류를 사용자가 직접
+  정정**: 필자는 "그때그때 실제 개수"면 배치 등록 중 `RC-1`과 같은
+  크래시가 되돌아온다고 판단했으나, Blocker 게이팅은 `bk.N`이 아니라
+  `blocker:IsOn()`만 확인하므로 배치 중엔 `recompute` 자체가 안 돌아
+  `bk.N`이 무엇이든 무관함 — `RC-1`의 원래 크래시는 "`bk.N`이 배치 전에
+  이미 최종 크기로 고정"이라는, 이제는 사라진 전제의 부산물이었을 뿐.
+  Blocker 게이팅이 여전히 필요한 이유는 크래시 방지가 아니라 배치 비용
+  (O(N²)→O(N)).
+- **`RC-3`/`RC-4`**: `attachSlot`이 `slot._mounted = true`를 맨 위에서
+  세팅해뒀던 탓에, `:List`의 최초 reconcile(`activateList`, 아직
+  flush 루프의 Blocker가 켜지기 전)이 부르는 `rawAdd`가 "이미 마운트됨"
+  경로를 타 항목마다 무게이팅 `recompute`가 돌고(`RC-3`), nested Slot
+  요소는 그 자리에서 이미 `attachSlot`된 뒤 뒤이은 flush 루프가 같은
+  요소를 또 `attachSlot`해 이중 실행됐다(`RC-4`). **해법(사용자 제시)**:
+  `slot._mounted = true`를 `activateList` 호출 **뒤**로 옮기면 끝 —
+  `activateList` 도중엔 `rawAdd`가 "아직 마운트 전" 경로(그냥
+  `_elements`에만 push)를 타고, flush 루프가 `:List`/수동 CRUD 구분 없이
+  모든 요소를 처음이자 한 번만 물리 마운트한다. `rawAdd`의 "이미
+  마운트됨" 즉시-`attachSlot` 분기 자체는 그대로 남음 — 최초 flush
+  이후의 런타임 갱신(예: `:List`의 `data`가 나중에 바뀌어 nested Slot이
+  새로 추가되는 경우)엔 여전히 필요한 경로이기 때문.
+- **부수 발견**: `spliceArraysDown`이 밀어야 할 배열 목록에
+  `bk.observers`가 빠져 있었음(`_elements`/`lengthList`/`sourceList`
+  셋만 서술돼 있었음) — 같이 반영.
+- **`ROADMAP.md` 마일스톤 정합성**: `RC-1`의 Blocker 게이팅으로 M2
+  (`Dispatch.setLength`/`setOffsetSource`)가 M3 체크박스에 있는
+  `Blocker.luau`에 구조적으로 의존하게 됐는데 로드맵 어디에도 이 순서
+  의존이 명시가 안 돼 있던 것도 발견 — 가장 보수적인 조치(마일스톤
+  재편 없이 M2 체크박스에 각주만 추가)로 우선 반영, 재편 여부는 열려
+  있음.
+- 지금 유효한 설계는 `base/dispatch-core-plan.md`의 "저장 위치"/"배치
+  등록을 안전하게 만드는 Blocker 게이팅" 절, `base/slot-plan.md`의
+  "재귀 메커니즘"/"파괴" 절, `base/blocker-plan.md`의 "두 번째 용례"
+  절이 소스. 논의 원문(최초 분석·사용자 정정·확인 질문과 답변 전문)은
+  `qa-request/pre-implementation-qa-round3.md`.
+
 ---
 
 # 확인/결정 필요 목록

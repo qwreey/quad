@@ -38,7 +38,15 @@ debounce-throttle-plan.md`)가 추가되면 같은 자리에 들어옴. 이걸 �
 Blocker() -> blocker                -- 생성자
 blocker:On() -> self                -- IsBlocked = true로만 설정, 그 외 아무것도 안 함
 blocker:Off() -> self               -- IsBlocked = false로 먼저 설정, 그 다음 등록된
-                                     -- onunblock 핸들 전부 실행(순서 무관, idempotent)
+                                     -- onunblock 핸들 전부 실행(emit=true로, 순서 무관, idempotent)
+blocker:OffWithoutEmit() -> self    -- [2026-08-18 신설] IsBlocked = false로 먼저 설정, 그 다음
+                                     -- 등록된 onunblock 핸들 전부 실행(emit=false로) — 각 핸들이
+                                     -- 자기 HasBlockedEmit은 그대로 리셋하되 실제 emit은 건너뜀.
+                                     -- `Off()`와 내부 로직을 공유(아래 "onunblock 핸들" 참고),
+                                     -- 차이는 넘기는 emit 플래그 하나뿐.
+blocker:IsOn() -> boolean           -- [2026-08-18 신설] `self.IsBlocked`를 그대로 반환하는
+                                     -- 얇은 조회 메소드 — 필드 `IsBlocked`는 그대로 유지(아래
+                                     -- "이름 확정" 참고), 호출부 가독성만을 위한 추가.
 
 state:Block(blocker) -> state       -- 새 gated state 반환. **호출되는 즉시**(나중에
                                      -- 처음 블록될 때가 아니라) onunblock 핸들을
@@ -49,9 +57,14 @@ gated state의 동작:
 - 원본 state가 emit(무효화)될 때, 이 gated state로 전파를 시도.
 - `blocker.IsBlocked`이면: 전파 안 하고 `HasBlockedEmit = true`만 세팅.
 - `blocker.IsBlocked`가 아니면: 평소처럼 그냥 전파(투명하게 통과).
-- `blocker:Off()`가 실행하는 onunblock 핸들은: `HasBlockedEmit`을 확인해
-  true면 그제서야 정확히 1회 전파(emit)하고 플래그를 리셋. 이미 false면
-  아무 것도 안 함(idempotent).
+- **onunblock 핸들은 이제 `emit: boolean` 인자를 받는다**(`blocker:Off()`/
+  `:OffWithoutEmit()`가 공유하는 내부 실행 경로, 2026-08-18 신설) —
+  `HasBlockedEmit`을 확인해 true면 `emit`이 참일 때만 그제서야 정확히
+  1회 전파(emit)하고, `emit`이 거짓이면 전파 없이 플래그만 리셋. 이미
+  `HasBlockedEmit`이 false면 `emit` 값과 무관하게 아무 것도 안 함
+  (idempotent). 즉 `Off()`는 "밀린 전파를 흘려보내며 끈다",
+  `OffWithoutEmit()`은 "밀린 전파를 버리며 끈다" — 어느 쪽이든 대기
+  상태(`HasBlockedEmit`)는 항상 깨끗하게 리셋됨.
 
 **`:Get()`엔 영향 없음** — 블록은 emit **전파**만 지연시킨다. 블록 중이라도
 누군가 명시적으로 `:Get()`하면 그 순간의 실제 값을 정상적으로 계산해서
@@ -77,6 +90,32 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 가까운 지점)에 거는 게 원칙 — 소스가 여러 개든, 하나가 한 주기에 여러 번
 바뀌든 상관없이 이 지점 하나만 지키면 됨. 소스 쪽에 각각 거는 게 아니다.
 
+## `state:Block()` 없이 직접 쓰는 두 번째 용례 — base 내부 부기 게이팅 (2026-08-18 신설)
+
+지금까지 위 예시는 전부 `state:Block(blocker)`로 만든 **gated state**를
+경유하는 사용자 대상 패턴이었다. `base/dispatch-core-plan.md`의
+"Length/Offset" 절이 `recompute`의 크래시(`RC-1`, 배열 위치가 하나씩
+순차 등록되는 동안 아직 등록 안 된 자리를 읽어 산술 에러가 나는 경로)를
+고치며 **Blocker를 gated state 없이 직접 쓰는 두 번째 용례**를 만들었다
+— **[정정, 2026-08-18 구현 전 QA 3라운드]** 그 크래시 자체는 이후
+`bk.N`(순회 상한)의 정의를 고치며 사라졌지만(`base/dispatch-core-plan.md`
+"저장 위치" 절), 이 용례는 그대로 유효하다 — 이유가 크래시 방지에서
+배치 등록 비용(O(N²)→O(N)) 절감으로 바뀌었을 뿐. 콜백 안에서
+`blocker:IsOn()`을 직접 확인하고 스스로 전파를 건너뛰는
+방식(`Length` State의 Observer가 `if not blocker:IsOn() then recompute(...) end`
+형태로 자기 자신을 게이팅). 이 용례는 `state:Block()`을 전혀 호출하지
+않으므로 gated state도, 그 위에 걸리는 onunblock 핸들도 생기지 않는다 —
+`blocker:Off()`/`:OffWithoutEmit()`을 불러도 실행할 핸들이 없어 두
+메소드가 이 용례에서는 사실상 동일하게 동작하지만, **의도를 코드에 남기기
+위해 `OffWithoutEmit()`을 쓴다**("이 배치가 끝나면 무엇이든 자동으로
+흘려보내지 말고, 호출자가 직접 정확히 한 번 후속 작업을 한다"는 의도
+표현). 상세 메커니즘·`Dispatch.setLength`/`setOffsetSource`가 이 Blocker를
+어떻게 만들고 어디에 저장하는지는 `base/dispatch-core-plan.md`의 "배치
+등록을 안전하게 만드는 Blocker 게이팅" 절이 소스 — 여기서 반복하지 않음.
+**재진입(네스팅) 미지원 규칙은 이 용례에도 그대로 적용** — 중첩된 owner
+(예: 부모 Slot 안의 자식 Slot)마다 각자 자기 owner 키로 별도 Blocker를
+새로 만들어야 하고, 부모 Blocker를 재사용/전달하면 안 됨(아래 "재진입" 절).
+
 ## 이름 확정
 
 - 클래스: `Blocker` — `Observer`/`Modifier`/`Ref`와 같은 명사-행위자
@@ -89,6 +128,16 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 - 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**
   (gated state의 대기 플래그, `Is`/`Has` 접두어로 불리언임을 바로 알려줌).
 - 메소드: `state:Block(blocker) -> state`.
+- **[2026-08-18 신설] `IsOn() -> boolean`**(`IsBlocked` 필드를 그대로 읽는
+  얇은 조회 메소드), **`OffWithoutEmit() -> self`**(위 "onunblock 핸들"
+  참고) — 사용자 확정: *"IsBlocked가 있다면 그냥 두어도 될듯 함.
+  HasBlockedEmit 만 처리된다면 괜찮다 생각"* — 즉 `IsBlocked`/
+  `HasBlockedEmit` 필드는 그대로 유지하고, 별도 `HasBlocked`(Blocker
+  자신의 새 최상위 플래그)는 **신설하지 않는다** — `OffWithoutEmit()`이
+  각 gated state의 기존 `HasBlockedEmit`을 그대로 리셋해주는 것으로
+  충분하다고 판단됐기 때문(처음 제안됐던 "`HasBlocked`"는 이 논의
+  과정에서 자연스럽게 불필요해짐 — `qa-request/pre-implementation-qa-round2.md`
+  "RC-1" 절에 논의 경위 기록).
 
 ## 재진입(네스팅) — 의도적으로 미지원, 강한 문서화 필수
 
@@ -104,7 +153,22 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 문서(API 레퍼런스 수준)에 명시적으로 강조할 것** — 네스팅을 시도하면
 조용히 잘못된 시점에 조기 해제되는, 원인 추적이 어려운 버그로 이어짐.
 
-## 상태: 핵심 메커니즘+이름 확정. [2026-08-07 기준] 남은 건 문서화뿐
+**base 내부 용례에도 이 규칙이 그대로 적용된 실제 사례(2026-08-18)** —
+위 "`state:Block()` 없이 직접 쓰는 두 번째 용례" 절의 Length/Offset
+배치 게이팅에서, 중첩된 Slot(부모 Slot 안의 자식 Slot)이 `attachSlot`을
+재귀할 때마다 **그 자식 Slot 자신의 owner 키로 새 `Blocker`를 만든다** —
+부모 Slot의 Blocker를 재사용하지 않음(사용자 확정: *"중첩마다 별도
+Blocker (권장)"*). 부모/자식이 같은 Blocker를 공유했다면, 자식의
+`OffWithoutEmit()`이 부모가 아직 배치 중인데도 그 자리에서 즉시 꺼버려
+부모의 나머지 등록이 게이팅을 잃는 사고가 났을 것 — 바로 위 문단이
+경고하는 실패 모드의 구체 사례.
+
+## 상태: 핵심 메커니즘+이름 확정. [2026-08-18 기준] 남은 건 문서화뿐
+
+**[2026-08-18 갱신]** `IsOn()`/`OffWithoutEmit()`(위 "메커니즘" 절)과
+`state:Block()` 없이 직접 쓰는 두 번째 용례는 이 날짜에 추가된 실제 API
+확장 — "남은 건 문서화뿐"이라는 결론 자체는 안 바뀌었지만(API 표면과
+메커니즘은 이 확장을 포함해 다시 확정 완료), 기준 날짜만 갱신.
 
 `quadnomicon`에서 "Batch를 기각하고 왜 Blocker로 갔는가"를 비교 설명하는
 게 좋은 소재(`archive/batch-rejected.md`와 나란히 인용).

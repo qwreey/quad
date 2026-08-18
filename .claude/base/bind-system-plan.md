@@ -8,7 +8,7 @@
 > | 나간 것 | 어디로 | 단계 |
 > |---|---|---|
 > | `Ref`/`PreRef` 전체 | `base/ref-plan.md` | 1단계(9차 세션) |
-> | 이벤트 바인딩(self 미전달, `false`로 disconnect) | `base/event-plan.md` | 1단계 |
+> | 이벤트 바인딩(self 미전달, `None`/`nil`로 disconnect) | `base/event-plan.md` | 1단계 |
 > | `Brand`(런타임 nominal 판별) | `base/brand-plan.md` | 1단계 |
 > | **디스패치 코어**(핸들러 계약 / 디스패치 모델 / `chains`·`retractFrom` / 체크리스트 / Length·Offset) | **`base/dispatch-core-plan.md`** | **2단계(14차 세션)** |
 > | **반응형 코어**(Source/State 온톨로지·서브타입, 전파 모델, `:With`/`:Compute`/`:Apply`/`previous`, `Observer`, 구독·생명주기 게이트) | **`base/source-state-plan.md`** | **3단계(2026-08-14)** |
@@ -53,7 +53,7 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
 - **`Ref` / `PreRef`** — 용도 재정의, `.Value`/`:Set`/`:Callback`/`:Wait` API,
   `Ref`의 retract, PreRef 호이스팅/1회용 가드 → **`base/ref-plan.md`**.
 - **이벤트 바인딩** — 핸들러가 self(Instance)를 안 받는다는 확정, 이벤트도
-  store-bind 가능(`false`로 disconnect) → **`base/event-plan.md`**. 단 이벤트
+  store-bind 가능(`None`/`nil`로 disconnect) → **`base/event-plan.md`**. 단 이벤트
   *네이밍* 관례는 인스턴스 생성과 한 절에 섞여 있어 아래 "인스턴스 생성 /
   이벤트 네이밍 인체공학" 절에 그대로 있음.
 - **`Brand`** — 런타임 nominal 타입 판별 통합 메커니즘(`Brand.set`/`Brand.get`,
@@ -112,9 +112,15 @@ RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들
 아니라 **같은 팩토리 재호출(무시) vs 다른 팩토리로 유일 슬롯 충돌(에러)이라는
 서로 다른 케이스를 각각 가리키고 있었음**. 구현은 모듈 테이블에 "누가
 초기화했는지" 마커(`_initializedBy = "roblox"`류, 정확한 이름은 구현 단계)만
-두면 됨. 모듈 스코핑(`New()`, `base/architecture.md` 13번)과의 관계도 실은
-열려있던 게 아니라 자연히 풀림 — `New()`가 생기면 각 인스턴스가 별도
-테이블이 되므로 이 마커도 테이블별로 독립적으로 스코핑됨, 재설계 불필요.
+두면 됨. 모듈 스코핑(`New()`, `base/architecture.md` 13번)과의 관계도
+실은 열려있던 게 아니라 자연히 풀림 — `New()`가 실제로 호출되면 그
+호출이 만드는 인스턴스가 별도 테이블이 되므로 이 마커도 테이블별로
+독립적으로 스코핑됨(**[재정정, 2026-08-19 — `architecture.md` 13번의
+재정정과 맞춤]** `Quad`는 이미 만들어진 기본 인스턴스이고 `New()`는 그
+안의 opt-in 필드다, "`Quad()`를 부르면 매번 새 인스턴스"가 아님. 단
+"자동으로"는 아님 — module-level state를 참조하는 코드들이 모듈
+인스턴스를 인자로 받도록 손을 봐야 하는 건 architecture.md 13번의 정정
+그대로, 여기서 반복 안 함).
 
 ## 인스턴스 생성 / 이벤트 네이밍 인체공학 — 확정(2026-08-04 3~4차 라운드, PA님 실 코드로 검증됨)
 
@@ -123,19 +129,73 @@ RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들
 문제와 같은 원인). 사용자가 실제 참고 코드를
 `.claude/initreq/artworks/DeclarativeProgramming/
 DeclarativeInstance.luau`(PA님 작성, UI 포함 전반적 설계 패턴을 시범 적용한
-데모 모듈)에 공유해줘서 직접 확인 — **"DI"는 Dependency Injection이 아니라
-"Declarative Instance"(선언형 인스턴스 생성)**.
+데모 모듈)에 공유해줘서 직접 확인 — 원래 가칭 `DI`는 Dependency Injection이
+아니라 "Declarative Instance"(선언형 인스턴스 생성)의 약자였음.
+**[2026-08-18 확정] 네임스페이스 이름은 `D`(Declarative)** — `DI`는 Dependency
+Injection과 완전히 겹쳐 실제로 오해가 있었던 전례가 있고, `D`는 (1)
+"Instance" 전용 개념이 아니라 quad-* 전반의 declare 요소로 확장 가능하며,
+(2) 엔진 종속 없이 다른 백엔드에서도 재사용 가능하고, (3) `D.FrameModifier`류
+타입 프리픽스가 짧아야 한다는 실용적 제약을 만족한다. 한 글자 식별자라
+grep이 어렵고 이름만으로 뜻이 안 드러나는 게 유일한 단점이었으므로,
+**문서에서 `D`가 처음 나오는 자리에서는 항상 `D`(Declarative)로 풀어쓴다**
+(표기 규약은 `base/architecture.md`의 "코드 스타일 — 네이밍 케이싱" 절).
 
-**인스턴스 생성 — PA님 코드 그대로 채택**: 처음 제안했던 "필드=1급 타입
-경로, 문자열=폴백"이라는 2트랙(`DI.Frame` vs `DI.New<<Frame>> "Frame"`) 구상
-보다 실제로는 더 단순했음(`DeclarativeInstance.luau:104-160`) —
-**제네릭 생성자 함수 하나(`new<ClassName>(className): from<index<UIInstances,
-ClassName>>`)가 알려진 타입과 모르는 타입을 전부 커버**하고, 그중 UI에서 자주
-쓰는 클래스 ~25개(`Frame`/`TextButton`/`UICorner` 등, `UIInstances` 타입
-테이블에 등록된 것들)만 모듈 로드 시점에 **즉시(eager)** `constructor.Frame =
-new("Frame")`처럼 필드로 미리 채워둠 — `__index` 메타메소드 지연 생성이
-아니라 그냥 정적 테이블. quad-v2도 이 모양 그대로 채택: 하나의 제네릭
-생성자 + 자주 쓰는 것만 정적으로 미리 바인딩.
+**인스턴스 생성 — 호출 모양은 PA님 코드 그대로, 타입은 생성기가 만든다
+([2026-08-18 구현 전 QA에서 후자를 정정])**: 처음 제안했던 "필드=1급 타입
+경로, 문자열=폴백"이라는 2트랙 구상보다 실제 호출 모양은 더 단순했음
+(`DeclarativeInstance.luau:104-160`) — **제네릭 생성자 함수 하나 +
+자주 쓰는 클래스를 필드로 미리 채운 정적 테이블**(`constructor.Frame =
+new("Frame")`, `__index` 지연 생성이 아니라 eager). quad-v2도 이 모양을
+그대로 채택한다. **다만 PA님 코드가 그 필드 타입을 뽑는 방식**
+(`new<ClassName>(className): from<index<UIInstances, ClassName>>` — 타입
+레벨 인덱싱)**은 채택하지 않는다**:
+
+1. **이벤트 필드가 콜백 타입이 안 나온다.** Roblox 타입 정의에서
+   `MouseButton1Click`은 시그널 계열 타입이라, 인덱싱으로 뽑으면
+   `RBXScriptSignal`이 그대로 나오고 quad가 원하는 `((...) -> ())?` 콜백
+   시그니처가 안 나옴.
+2. **LSP마다 `Frame` 타입을 다루는 방식이 다를 수 있어** 타입 함수/인덱싱에
+   의존하는 게 위험하다.
+3. **`T | State<T>`(그리고 `T | Tween<T>`, `None`/`nil` 등)까지 타입 함수로
+   조립해야 하는데**, 그럴 바엔 `D` 파일을 통째로 생성하는 쪽이 단순하다.
+
+**따라서 `D`는 전량 코드 생성 산출물이다** — 타입뿐 아니라 `New` 호출문까지
+생성기가 찍어낸다(사용자: *"전부 코드 생성이나, New 같은것도 생성기에서
+같이 적어주어야할 부분"*). 손으로 쓰지 않는다.
+
+**`New`는 커링, `D`는 처리 없는 별칭 테이블 (2026-08-18 확정)**:
+
+```luau
+-- New(name)이 생성자 함수를 반환하고, 그걸 props 테이블로 다시 호출
+New "Frame" { ... }          -- == New("Frame")({ ... })
+New<<Frame>> "Frame" { ... } -- 직접 사용도 같은 모양
+
+-- D는 그 결과에 캐스트만 얹은 순수 별칭 테이블 (생성기 산출물)
+D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
+```
+
+- **이름은 대문자 `New`로 통일**(사용자 확정: *"2. New입니다."*) — PA님 코드
+  인용의 소문자 `new`와 섞여 있던 것을 정리.
+- **뒤집는 게 아니라 명시화**다 — PA님 패턴의 `constructor.Frame =
+  new("Frame")`이 이미 사실상 커링이었고, 다만 (a) "커링이다", (b) 2단계 호출
+  계약, (c) `New "Name" {...}`라는 직접 호출 형태가 문서에 적힌 적이 없었다.
+- **기각된 "2트랙"과 혼동하지 말 것** — 기각된 건 *"필드=1급 타입 경로,
+  문자열=폴백"* 이라는 **능력 차이**였지 `New`라는 이름이나 문자열 호출
+  자체가 아니다. 이 확정은 오히려 두 형태가 **완전히 같은 것**(하나가 다른
+  하나의 미리 적용된 결과)임을 못박는다.
+- **생성 범위는 "GUI에 쓰이는 모든 인스턴스"**(사용자 확정) — 예전 서술의
+  "자주 쓰는 ~25개"도 아니고 Roblox 전체 클래스도 아님. 전량 생성하면 `D`
+  파일이 너무 커진다는 게 이유. "GUI에 쓰이는"의 정확한 판정 기준(API
+  덤프에서 `GuiObject` 하위 + `UIComponent` 하위 + `LayerCollector`류 등)은
+  생성기 구현 시점에 정한다.
+- **범위 밖 클래스는 느슨하게 `any`**(사용자 확정: *"느슨하게 any 로 하고,
+  필요하면 이를 직접 구현 가능하게 둡니다. cast 를 하든, 유저의 자유"*) —
+  `New<<X>> "X" {...}`를 직접 쓰면 props 타입은 `any`이고, 필요하면 사용자가
+  `::` 캐스트로 좁힌다. 새 확장 지점을 만드는 게 아니라 `D.Frame` 자신이
+  이미 캐스트 한 줄이므로 **같은 한 줄을 사용자가 직접 쓰면 되는 것**.
+  따라서 **"제네릭 생성자 함수 하나가 알려진 타입과 모르는 타입을 전부
+  커버"라는 옛 서술은 런타임에 대해서만 맞다** — 타입은 `D` 범위 안만
+  정확하고 밖은 `any`다.
 
 **이벤트 바인딩 — `On.EventName` 도트액세스 안 씀, PA님 방식(평범한 문자열
 키 + 런타임 리플렉션)으로 전환**: `DeclarativeInstance.luau:13-91`의
@@ -143,25 +203,51 @@ new("Frame")`처럼 필드로 미리 채워둠 — `__index` 메타메소드 지
 `GetEventsOfClass`로 클래스별 프로퍼티/이벤트 타입을 캐싱해두고, 키가
 `RBXScriptSignal` 타입이면 자동으로 `instance[key]:Connect(value)`로 처리함
 — `Frame { MouseButton1Click = fn }`처럼 별도 네임스페이스 없이 그냥 문자열
-키로 씀. 이건 타입 안전성을 어느 정도 포기하는 대가지만(콜백 시그니처까지
-Luau가 검증 못 함 — `apply<T,U>(instance: T, properties: U): T & U`가 스키마
-검증 없이 구조적으로만 merge), 이미 UB로 남긴 "테이블 리터럴 안 키별 값
-타입 자동 검증 불가"와 같은 급의 한계라 손해가 크지 않고, `On.` 접두어 없이
-문법이 더 간결해짐 — **사용자 확정**("PA 님 방식 괜찮은듯. 타이핑은 인라인이
-되긴 하겠지 정도면 괜찮다"). quad-v2 구현에서는 이 "키가 이벤트인가"
+키로 씀. `On.` 접두어 없이 문법이 더 간결해짐 — **사용자 확정**("PA 님
+방식 괜찮은듯. 타이핑은 인라인이 되긴 하겠지 정도면 괜찮다").
+
+**[정정, 2026-08-18 구현 전 QA] "콜백 시그니처까지 Luau가 검증 못 한다"는
+서술은 거짓이었음.** 옛 문장은 이 방식이 *"타입 안전성을 어느 정도 포기하는
+대가"* 이고 *"콜백 시그니처까지 Luau가 검증 못 함"* 이라고 적었는데, 사용자가
+직접 반례를 작성해 보여줬다:
+
+```luau
+function Frame (prop: {MouseButton1Click: ((a: number)->())?})
+end
+
+Frame{
+    MouseButton1Click = function(a) -- a: number 로 추론됨
+    end
+}
+```
+
+props 테이블 **타입에 필드로 선언돼 있으면 콜백 파라미터가 그대로
+추론된다.** 런타임 판별을 `ReflectionService`로 하는 것과 **타입을 생성기가
+제공하는 것은 완전히 별개 축**인데 옛 서술이 둘을 묶어버린 것.
+따라서 이건 "감수하는 대가"가 아니라 **`D` 생성기가 챙겨야 하는 구현
+체크리스트 항목**이다 — 생성기는 클래스별 props 타입에 **이벤트 필드까지
+정확한 콜백 타입으로** 포함시켜야 하고, 값 타입은 콜백뿐 아니라
+`State<...>`와 disconnect 센티널(`None`/`nil`, `base/event-plan.md`)까지
+포함하는 유니온이어야 한다. 이건 위 "타입은 생성기가 만든다"의 직접적
+근거이기도 하다(인덱싱으로는 시그널 타입이 그대로 나와서 안 됨) — 두 항목은
+같은 문제의 양면이므로 같이 볼 것. quad-v2 구현에서는 이 "키가 이벤트인가"
 판별을 `isHandlable`로 감싼 pluggable 핸들러(`quad-roblox`가 `Reflection
 Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근 구조 자체가
 불필요해짐.
 
-**Store 쪽 dot-access는 그대로 유지**: `store.key`(1급 타입 경로)/
-`store "key"`(문자열 커링, 동적 키 폴백)는 이벤트와 달리 실질적으로 Luau가
+**Store 쪽 dot-access는 그대로 유지**: `store.key`는 실질적으로 Luau가
 타입을 좁혀주는 이득이 있어서(Store 자체가 `{key: Source<number>, ...}`류
-평범한 레코드 타입으로 지어짐, `base/store-plan.md`) 그대로
-유지 — 이벤트만 예외였을 뿐, "정적으로 알려진 것=필드 접근" 원칙 자체가
-깨진 건 아님.
+평범한 레코드 타입으로 지어짐, `base/store-plan.md`) 그대로 유지.
+**[정정, 2026-08-18] `store "key"` 문자열 커링은 기각됐다** — 여기 폴백으로
+같이 적혀 있었으나 폐기됨(`"a"`가 그냥 `string`으로 들어가 `Source<T>`의
+`T`를 알 수 없고, dot-access + `type function` 타이핑이 자리잡아 더 이상
+필요 없어짐). 동적 키는 명시적 `store:GetDynamic<<T>>(name)`으로 간다 —
+`base/store-plan.md`가 소스.
+**이벤트가 이 관습의 예외인 성격도 바뀜** — "타입을 포기하는 예외"가 아니라
+**이름 지정 방식만 문자열 키인 예외**다(타입은 위 정정대로 생성기가 준다).
 
 **`GetPropertyChangedSignal`은 이 문자열 키 패턴이 안 통함 — 별도 `OnChange`
-DI 키로 확정(2026-08-10 세션).** 이벤트는 `inst[key]`가 이미 Signal이라
+특수 키로 확정(2026-08-10 세션).** 이벤트는 `inst[key]`가 이미 Signal이라
 그대로 `Connect`하면 되지만, `GetPropertyChangedSignal(name)`은 프로퍼티
 이름을 인자로 받아야 하고 그 이름이 "값 세팅" 키 네임스페이스와 겹쳐서
 평범한 문자열 키로는 세팅과 리스닝을 구분할 수 없음 — 상세는
@@ -196,10 +282,10 @@ DI 키로 확정(2026-08-10 세션).** 이벤트는 `inst[key]`가 이미 Signal
 `RobloxFactory` 재호출 가드)를 거치며 전부 확정됨. 그 라운드들 기준으로
 남았던 건 순수 API 표면 이름뿐이었음:
 
-- **`DI`(또는 다른 이름) 등 정확한 모듈 이름** — 방향은 전부 확정, 이름만
-  구현 단계에서 남음(`On` 모듈은 이벤트 바인딩이 PA님 방식으로 바뀌며 아예
-  불필요해짐 — 위 "인스턴스 생성 / 이벤트 네이밍" 절 참고). Source/State
-  쪽 이름 문제는 `base/source-state-plan.md`가 소스.
+- **[해소, 2026-08-18] 모듈 이름은 `D`로 확정** — 옛 항목("`DI`(또는 다른
+  이름) 등 정확한 모듈 이름")은 닫혔다. 근거는 위 "인스턴스 생성 / 이벤트
+  네이밍 인체공학" 절. Source/State 쪽 이름 문제는
+  `base/source-state-plan.md`가 소스.
 - **매 `process()` 호출마다 우선순위 스캔 비용** — 실제 구현/벤치마크 단계에서
   확인 필요(디자인 자체는 확정됐으므로 더 이상 사용자 확인 대상 아님, 구현
   검증 대상).

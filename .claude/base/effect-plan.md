@@ -77,8 +77,10 @@ source-state-plan.md`의 "동적 경로 가드" 절 참고.) `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =
-function(inst,k,v) error("EffectHandle은 children 배열 리터럴에만 놓을
-수 있음") end }`. `FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
+function(inst,k,v) error(`Effect binding should be array index item, but
+got {typeof(k)}`) end }`(**[2026-08-18]** 에러 메시지에 실제 `k` 타입을
+실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절).
+`FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
 named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
 값싸게 override 가능한 자리로 열어둠.
 
@@ -149,8 +151,31 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
     대부분이 GC-native인 것과 정반대라 혼동하기 쉬운 지점 — 사용자
     문서에 명시적으로 경고할 것(`:Subscribe()`를 부르는 순간부터 그
     핸들의 생애주기는 전적으로 수동 관리 대상이 됨).
-- **`:Unsubscribe()`는 Observer의 것을 그냥 위임하지 않는다 — Effect
-  계층에서 의미가 확장됨.** Observer의 `:Unsubscribe()`는 "미래 재실행만
+- **⚠️ [축소, 2026-08-18 구현 전 QA] `:Unsubscribe()`는 `:Subscribe()`의
+  짝이다 — leaf 바인딩된 핸들에는 적용되지 않는다.** 아래 확장된 의미는
+  **`:Subscribe()`로 등록한 핸들에 대해서만** 성립한다. `:Subscribe()`를
+  부른 적 없는(=leaf 바인딩된) 핸들에 `:Unsubscribe()`를 지원하면 안 되거나,
+  최소한 그 경로에서 cleanup을 앞당기면 안 된다. 사용자 판정: *"subscribe
+  한게 아니면 unsubscribe 는 지원하면 안 되거나, 적어도 리프 바운딩에선
+  그래선 안 됨 … subscribe 는 unsubscribe 의 짝이라고 생각함."*
+  - **왜 위험한가**: leaf 바인딩 + `State<Effect>`/`State<Observer>`
+    조합에서, 값이 실제로 안 바뀌면 **dedup 최적화 때문에 retract가 아무
+    일도 안 한다**(`base/source-state-plan.md`의 "Observer/Effect Leaf
+    dedup" 절의 `old ~= v`). 그런데 `:Unsubscribe()`가 cleanup을 미리
+    실행해버리면 뒤이은 재-dispatch에서 **dedup 때문에 재바인딩이 안
+    일어나** 그 Effect가 조용히 죽은 채로 남는다 — 의도한 동작이 아님.
+  - **⚠️ 같이 확인해야 할 별건(미해결)**: 그 dedup 경로에서 **retract가
+    아무것도 안 한 뒤 `process` 쪽도 정말 아무것도 안 하는지** 대칭이
+    실제로 성립하는지 확인 필요(사용자가 괄호로 남긴 것).
+    `ObserverEffectLeafHandler` 의사코드 기준으론 `process`의
+    `if old ~= v then bindLifetime(...) end`와 클로저의
+    `if nextValue ~= v then unbindLifetime(...) end`가 짝을 이루지만,
+    **`EffectHandle`은 내부 Observer로 cascade까지 해야 하므로** 그
+    cascade가 dedup 분기 안에 제대로 들어가 있는지는 별도 확인 대상이다.
+    M3 착수 전 확인할 것.
+- **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 그냥
+  위임하지 않는다 — Effect 계층에서 의미가 확장됨.** Observer의
+  `:Unsubscribe()`는 "미래 재실행만
   끊는다"(Observer 자체엔 정리할 상태가 없음)로 충분하지만, Effect의
   계약은 "생애주기가 끝나는 시점에 마지막 cleanup이 정확히 1회 호출된다"
   이고 leaf 사망은 그 "끝"의 신호 중 하나일 뿐이라, `:Unsubscribe()`도

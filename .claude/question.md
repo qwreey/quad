@@ -40,18 +40,19 @@
 `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절,
 `archive/canexecute-inst-arg-reversed.md` 하단 addendum 참고.)
 
-- **`DI`(Declarative Instance, 1순위)**: "Dependency Injection"의 업계
-  표준 축약어와 완전히 겹침 — 4차 라운드에서 이미 한 번 실제로 오해가
-  있었던 전례(`base/bind-system-plan.md`의 "인스턴스 생성" 절 참고).
-  **파급 효과(2026-08-06 추가)**: `DI`가 리네임되면 `DI.FrameModifier`류
-  Modifier 클래스별 타입 프리픽스도 같이 바뀌어야 함 — `DI` 리네임 논의
-  때 이 연쇄까지 같이 고려할 것. **(2026-08-08 추가)** 사용자가 `D`(Declarative
-  만 남김)로 축약하는 안을 제안 — 근거: (1) "Instance" 전용 개념이 아니라
-  quad-* 전반의 declare 요소로 확장해도 되는 이름, (2) 엔진 종속 없이 다른
-  백엔드에서도 재사용 가능, (3) 어차피 `D.FrameModifier`류 타입 프리픽스가
-  길면 못 쓰므로 짧아야 한다는 실용적 제약. 아직 최종 확정 아님 — 다음
-  세션에서 마저 논의(한 글자 식별자의 검색성/자기설명력 트레이드오프를
-  문서에서 어떻게 보완할지도 같이).
+- **[해소됨, 2026-08-18] `DI` → `D`(Declarative) 확정** — 원문과 근거는
+  `archive/question-resolved.md`. 요지: `DI`가 "Dependency Injection"과
+  완전히 겹쳐 실제 오해 전례가 있었고, `D`는 Instance 전용이 아닌 declare
+  요소 전반으로 확장 가능하며 `D.FrameModifier`류 타입 프리픽스도 짧게
+  유지된다. 미뤄뒀던 유일한 사유(한 글자 식별자의 검색성/자기설명력)는
+  "문서에서 처음 나올 때 항상 `D`(Declarative)로 풀어쓴다"는 표기 규약으로
+  보완하기로 같이 확정. 코퍼스 반영 완료 —
+  `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절.
+- **`PopOnly`(가칭, 2026-08-18 신설)**: `:List` reconcile에서 "파괴하지 말고
+  자리만 비우라"를 지시하는 반환 센티널(`base/slot-plan.md`의 "`nil` 리턴은
+  파괴가 기본" 절). 메커니즘은 확정됐고 **이름만 열려 있음** — 사용자:
+  *"PopOnly 확정. 다만 이름은 변경될 수 있음. 이름에 대해서는 더
+  생각해보아야함"*.
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
@@ -113,6 +114,17 @@
 
 ## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
 
+- **[신설, 2026-08-18 구현 전 QA 3라운드] M2가 M3의 `Blocker.luau`에
+  구조적으로 의존하게 됨 — 이대로 각주만 두고 로드맵 순서를 유지할지,
+  `Blocker.luau`(또는 최소 표면 `On`/`Off`/`IsOn`/`OffWithoutEmit`)를 M2로
+  앞당길지, M2/M3 경계 자체를 재검토할지.** `RC-1`의 Blocker 게이팅 해법
+  때문에 `ROADMAP.md` M2의 `Dispatch.setLength`/`setOffsetSource` 체크박스가
+  `getBlocker`/`:On()`/`:IsOn()`/`:OffWithoutEmit()`을 호출하는데, 정작
+  `Blocker.luau` 자체는 M3 체크박스에 있다 — 로드맵 순서대로면 M2가 아직
+  없는 걸 참조하게 된다. 지금은 M2 체크박스에 이 사실만 각주로 남겨둔
+  임시 조치(가장 보수적인 선택, 마일스톤 재편은 안 함) — **M2 착수 전
+  필요**. 상세는 `qa-request/pre-implementation-qa-round3.md`의
+  "ROADMAP.md 마일스톤 정합성" 절.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등
   `:Compute`/`:Apply`용 슈가 함수 모음의 이름. 흔한 단어라 top-level
@@ -159,6 +171,46 @@
   남은 근거는 편의성과 Slot offset이 밀리고 당겨지는 케이스뿐이라
   우선순위가 더 내려감 — `state:Flatten()`류 콤비네이터 아이디어는
   그대로 백로그. 상세는 `research/operator-sugar-plan.md` 마지막 절.
+- **[신설, 2026-08-18 커밋 전 `/code-review high`] `store:GetDynamic`을
+  콜론 메소드로 둘지, 탑레벨 함수로 둘지** — 콜론 메소드로 두면 Store의
+  lazy `__index`(없는 키를 인덱싱하면 그 자리에서 `Source`를 만들어 저장)와
+  부딪혀서, `__index`가 고정 메소드 테이블을 먼저 확인해야 하고 그 결과
+  **`GetDynamic`이 모든 Store의 예약 키 이름**이 된다(그 이름의 Source는
+  dot-access로 못 만듦). Store 키는 사용자 도메인 데이터 이름이라 충돌
+  확률이 `Modifier`의 예약 이름들보다 높다. 대안은 탑레벨
+  `getDynamic(store, name)` — "특정 프리미티브에 안 묶인 범용 유틸은 소문자
+  탑레벨"이라는 기존 네이밍 규칙에는 오히려 더 맞는다. **M3/M4 착수 전
+  필요**, `base/store-plan.md`의 "타입 추론 문제" 절.
+- **[신설, 2026-08-18 커밋 전 `/code-review high`] `PopOnly`로 홀드 중이던
+  요소의 키가 데이터에서 사라지면 어떻게 처분하는가** — 지금 의사코드대로면
+  `mounted[key]`가 이미 `nil`이라 파괴 대상이 아니고, 소멸 루프가
+  `userdata[key]`까지 지워서 **파괴되지도 `updateFn`에게 되돌려지지도 않고
+  참조만 끊긴다**. 같은 절의 표("키가 사라지면 파괴")와도, "버릴 시점은
+  `updateFn`이 정한다"와도 어긋남. 선택지 (a) 소멸 루프가 `userdata`의
+  `old`까지 확인해 파괴, (b) 지금 동작(참조만 끊고 GC)을 정식화하고 표를
+  고침, (c) `updateFn`을 마지막으로 한 번 더 불러 처분을 물음. **[정정,
+  2026-08-18 `/code-review high`] M6(`:List`가 있는 마일스톤) 착수 전
+  필요** — M8(`Ref`) 아님, `base/slot-plan.md`의 "`nil` 리턴은 파괴가
+  기본" 절.
+- **[신설, 2026-08-18 구현 전 QA] 그룹 `Attribute`의 위치별 claim 설계** —
+  같은 그룹 객체를 두 위치에 놓는 경우(`Frame { a, a }`)를 잡으려면 위치별
+  claim 레지스트리가 하나 필요하다는 **방향은 확정**됐고(`Ref`처럼
+  `bindLifetime`을 재사용할 수는 없음 — 그룹 값은 여러 곳에서 쓸 수 있어야
+  하므로), **키를 무엇으로 할지**(`(inst, groupValue) → k`인지 `groupKey`
+  단위인지)와 기존 `nameClaims`와의 공존 방식이 미정 —
+  `base/attribute-plan.md`의 "이름 소유권" 절.
+- **[신설, 2026-08-18 구현 전 QA] `SetAndDispose` 류 편의 콤비네이터** —
+  `Get()` → `Set(new)` → 옛 값 `dispose`의 3단계를 매번 손으로 쓰는 게
+  불편하다는 사용자 지적에서 나옴. `source:Apply(SetAndDispose(new))`
+  (단 이때 `Apply`는 `State`가 아니라 `Source`를 넘겨야 함)와
+  `source:SetAndDispose(new)` 콜론 메서드 중 어느 쪽인지, 그리고 이번
+  범위인지 백로그인지 미정 — **M3 착수 전 방향만이라도** 정할 것
+  (`state:Apply` 시그니처에 영향), `base/slot-plan.md`의 `dispose` 절.
+- **[신설, 2026-08-18 구현 전 QA] 중간 State GC 미검증** — `State → State →
+  State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도
+  없어 전파가 조용히 끊길 수 있음. 방향(상류 strong / 하류 weak)은 사용자가
+  지목했고, **명문화 여부 결정 + `luau-test` 실측이 M3 착수 전에 필요** —
+  `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절.
 - **[신설, 2026-08-14 리뷰] `AttributeGroupHandler.process`의 부분 실패
   롤백** — 이름 순회 도중 소유권 충돌 error가 나면 그 전에 등록된 이름들이
   이 사이클엔 회수되지 않음(클로저가 안 만들어짐). 피해는 그 인스턴스
@@ -166,12 +218,10 @@
   문서화만** 했는데(`base/attribute-plan.md` "메커니즘" 절), 원자적
   롤백(그룹 `process`에만 국소적인 unwind)을 넣을지는 열어둠. 지금 결정
   불필요 — M10 구현 시점에 판단.
-- **[신설, 2026-08-13 열네 번째 세션] `Attribute.Merged`의 이름 중복** —
-  두 Store가 같은 이름을 가지면 지금은 `:NameMap()` 평탄화 단계에서
-  조용히 하나가 이김(dispatch 이전이라 이름 claim이 못 잡는 자리).
-  합성 시점 1회 체크로 error를 내는 게 이 문서 다른 결정들과 결이
-  같지만, "Merged는 뒤가 이긴다"를 의도된 override로 볼 여지도 있어
-  사용자 확인 필요 — `base/attribute-plan.md` "열린 질문" 절.
+- **[해소됨, 2026-08-18] `Attribute.Merged`의 이름 중복** — `Merged`(겹치면
+  error)와 `Overridden`(겹치면 뒤가 이김)을 **둘 다 제공**하는 것으로 확정
+  (제3안). 근거·파급은 `base/attribute-plan.md`의 "채택안 — `Tag`와 동형인
+  array-part 값 객체" 절.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
@@ -180,7 +230,7 @@
   채택 안 함으로 확정, `base/event-plan.md` "이벤트 핸들러는
   self(Instance)를 받지 않는다" 절 참고). 사용자가 "quad 개발 완료 전엔
   착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M2 Dispatch/
-  M3 Source/M5 DI 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
+  M3 Source/M5 `D` 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
   패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.

@@ -1436,3 +1436,71 @@ blob과 바이트 단위로 동일, 메인이 `git rev-parse`로 독립 확인).
 도움이 되는 정보에 가깝지 이게 warn을 만들지는 못할듯" — 기계 검사 대상이
 아니라 읽는 쪽 판단 재료), (3) (C) 추적은 컨텍스트 보호를 위해 서브에이전트
 위임. `conventions.md`에 "문서 표기 규약" 절 신설.
+
+## 2026-08-18 — 구현 전 QA 결과를 `base/`에 일괄 반영
+
+원문: `session/2026-08-18-01-pre-implementation-qa-applied.md`
+
+`.claude/qa-request/pre-implementation-qa-round1.md`(사용자가 `base/` 확정 문서를 문항으로
+재심사해 "아니오"가 나온 것만 모아둔 문서)를 실제 문서에 반영. **그대로
+구현하면 반대로 돌던 두 건**이 닫혔다 — `canBound`가 이름과 반대 방향으로
+쓰이고 있어 정상 첫 바인드가 전부 에러날 뻔한 것(정정 결과 `canBound`와
+`canExecute`는 값이 같은 게 아니라 **서로의 부정**이고, 그게 오히려 이름
+분리의 명분이 됨), 그리고 gcconn/gchold를 `SetStrong`으로 적어 같은 문서가
+경고하는 두-`Relate` 상호 강참조 누수에 정확히 걸리던 것.
+
+설계가 바뀐 것: `Dispatch.drive`의 `None` 스킵 폐기 → `NoneHandler`는 재귀
+전담 + **`NilHandler` 신설**(깨진 전제는 "배열 파트의 `None`은 `process`를
+안 탄다" — `Frame{State<Slot|None>}`이면 탄다), 이벤트 disconnect 센티널
+`false`→`None`/`nil`, `Ref` 내부 구조를 `.Callbacks` 분리로 단순화,
+`:List` reconcile의 `nil` 리턴을 **다시 파괴**로 되돌리고 `PopOnly`(가칭)
+신설, base Fallback Handler 등록 주체를 **quad-base 로드 시로 재역전**
+(백엔드 미로드 상태에서 안내 에러 경로가 안 도는 게 이유 — `InitNamespace`
+거부 원칙과의 양립 근거를 새로 씀). **"이벤트 콜백 시그니처는 Luau가 검증
+못 한다"가 거짓**임이 사용자 반례로 확인돼 `onchange-plan.md`가 그걸 근거로
+쓰던 자리까지 같이 무너졌고(결론은 유지, 근거만 교체), 겸해서 `New` 커링과
+"`D`는 전량 코드 생성된 순수 별칭 테이블"이 명문화됨.
+
+이름 쪽: **`DI` → `D`(Declarative) 확정**(2026-08-08부터 1순위로 열려 있던
+항목) — 코퍼스 전수 반영, 미뤄온 유일한 사유였던 한 글자 식별자의 검색성은
+"처음 나올 때 항상 `D`(Declarative)로 풀어쓴다" 표기 규약으로 보완.
+`Attribute.Merged`/`Overridden`을 **둘 다 제공**하는 제3안으로 이름 겹침
+정책도 해소.
+
+판단이 갈리던 네 건(`PopOnly` 채택, D-7 재역전, `NoneHandler`/`NilHandler`
+역할 분담, 동적 키 `GetDynamic`)은 그 자리에서 사용자에게 물어 확정.
+남은 착수 금지 게이트(중간 State GC 미검증 등)는 `question.md` 3번과
+`todos.md` 00번이 소스. `doc-check.py` ERROR 0.
+
+**커밋 전 검증에서 배운 것**: `quad-doc-auditor` 1패스가 "배너는 고쳤는데
+그 배너가 부정하는 본문 bullet은 안 고친" 건을 하나 잡았고, 이어서 사용자가
+직접 돌린 `/code-review high`가 **10건을 더** 잡았다(전부 유효, 전부 반영) —
+감사자가 못 본 것들이라 **두 도구가 서로를 대체하지 않는다는 게 실측으로
+드러났다**(감사자는 코퍼스 전체 정합성, code-review는 diff 자체의 결함).
+그중엔 ROADMAP이 SL-3 역전을 안 따라와 M8 체크리스트대로 짜면 방금 되돌린
+결함을 다시 만드는 건, 그리고 **설계 갭 2건**(`GetDynamic` 콜론 메소드가
+Store의 lazy `__index`와 충돌 / `PopOnly` 홀드 중 키가 사라지면 파괴도 반환도
+안 됨)이 있어 새 열린 질문으로 올렸다. **감사 비용 메모**: 감사자 한 패스가
+서브에이전트 토큰 21만이라(코퍼스 전체를 다시 읽는 정의라서) 계획했던 4패스를
+중단했음. **그래서 사용자 지침으로 감사 절차 자체를 바꿨다** — 병렬 금지(한
+턴에 하나), 범위는 diff로 좁히고 라운드마다 각도를 바꿈, 종료 조건은 무발견
+1회(옛 "2연속"은 병렬 전제라 완화). `conventions.md`의 감사 루프 절이 소스.
+
+## 2026-08-19 — `New()` 내부 구성(InitXxx + Relate 멱등 가드) 확정, 세션 기록 공백 발견
+
+원문: `session/2026-08-19-01-new-initxxx-composition-relate-guard.md`
+
+사용자가 `New()`를 v1 스타일 `InitXxx(module)` 팩토리 체이닝으로 짜자고
+제안(이미 확정된 `InitRoblox(Module)` backend 주입 패턴을 quad-base 자기
+내부에도 대칭 적용) → 채택, `module-lifecycle-plan.md`에 "New()의 내부
+구성" 절 신설. 이어서 서브시스템 간 호출 순서 문제를 "Init을 `require`처럼
+멱등하게"(각 `InitXxx` 파일 톱레벨에 `Relate()` 하나 두고 `module`을 weak
+key로 완료 여부 기록) 방식으로 직접 해소하는 아이디어도 제안·반영 —
+`relate-plan.md`의 기존 확정 API/관례와 정확히 부합함을 확인. 핸드오버
+감사 2라운드를 거치며 라운드 1의 수정 자체가 절 인용 사각지대를 새로
+만든 걸 라운드 2가 잡는 등 실제로 반복 라운드가 필요함을 다시 확인.
+
+**부수 발견 — session/ 기록 공백**: 2026-08-18에 커밋 10개(QA 1~2라운드
+포함)가 있었는데 그날 session/ 파일은 1개뿐, 2026-08-19는 이 세션 전까지
+(QA 3라운드 커밋 1개가 있었음에도) 0개였음. 과거 대화 트랜스크립트에 접근 불가라 그 공백을 사후 재구성하는 건
+허위 기록 위험이 있어 보류 — 처리 방침은 사용자 확인 대기.

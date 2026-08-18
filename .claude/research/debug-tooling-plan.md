@@ -2,7 +2,7 @@
 
 **상태**: research — 착수 전, 사용자와 계속 논의 필요. 사용자가 "quad 개발이
 어느 정도 끝날 때까지는 실제 구현에 못 들어갈 것"이라고 스스로 판단한 후순위
-항목이지만, **base 설계(디스패치 엔진/Source/DI 생성자) 시점에 훅 확장
+항목이지만, **base 설계(디스패치 엔진/Source/`D` 생성자) 시점에 훅 확장
 지점만 미리 고려해두면 나중에 훨씬 싸게 먹힌다**는 문제의식으로 지금 미리
 정리해둠. `ROADMAP.md` 백로그 항목("범용 렌더 디버깅 도구로서의 quad-mock")과
 목적이 다름 — 아래 "quad-mock 백로그와의 관계" 절 참고.
@@ -123,7 +123,7 @@ Compute 함수가 어디서 생성됐는지"를 보여주는 **연결 그래프*
   등록하는 훅(기본 no-op). 켜졌을 때만 이 레지스트리가 존재하므로 GC-native
   원칙(`lifecycle-pattern.md`)과 충돌 없음 — 꺼져 있으면 레지스트리 자체가
   안 만들어짐.
-- **quad-roblox `DI/init.luau`의 제네릭 생성자(`new(className)`)** — 인스턴스
+- **quad-roblox `D/init.luau`의 제네릭 생성자(`New(className)`)** — 인스턴스
   생성 순간 `debug.info(2, "sl")`로 caller의 script+line을 얻어 기록하는
   훅(기본 no-op). Instance 생성은 프로퍼티 변경보다 훨씬 드물게 일어나므로
   (렌더 타임 1회), 여기서만 비교적 비싼 `debug.info` 호출을 해도 부담 적음.
@@ -376,7 +376,7 @@ columnNumber}`를 리터럴로 박아 넣는 컴파일타임 트랜스폼. 런�
 값으로 존재.
 
 **quad-debug 적용 후보**: 위 "계측 지점 3곳"에서 제안한
-`debug.info(2, "sl")` 런타임 캡처(DI 제네릭 생성자, 호출 시점 caller
+`debug.info(2, "sl")` 런타임 캡처(`D` 제네릭 생성자, 호출 시점 caller
 위치)의 대안/보완으로, **darklua** 같은 빌드타임 Luau 변환기로 quad
 생성자 호출부를 순회하며 파일/라인 리터럴을 인자로 미리 주입하는 방식을
 검토할 만함. `debug.info`가 "호출자(caller)의 정확한 라인"을 항상
@@ -457,7 +457,7 @@ Tween mock 등 동적 동작 포함")와 목적이 다름:
   나중에 완전 제거하고 싶을 때도 별도 패키지면 그냥 require 자체를 안 하면
   끝).
 - **`quad-debug-roblox`** — 게임(클라이언트) 쪽에서 require하는 provider.
-  quad-roblox의 Dispatch/DI에 실제 훅을 꽂고, BindableEvent/Function을
+  quad-roblox의 Dispatch/`D`에 실제 훅을 꽂고, BindableEvent/Function을
   **quad 모듈 자신의 Instance 트리 안에** 만들어 CollectionService
   태그로 노출(위 "데이터 채널" 절 — `ReplicatedStorage` 등 게임 트리에
   별도 주입 안 함), `IsStudio` 가드 포함.
@@ -476,7 +476,7 @@ Tween mock 등 동적 동작 포함")와 목적이 다름:
   만들 필요는 없음).
 - M3(Source) 구현 시 마찬가지로 나중에 weak-registry 등록 훅을 끼우기
   쉬운 생성자 모양인지만 유의.
-- M5(quad-roblox DI 제네릭 생성자) 구현 시 caller 정보를 나중에 끼워넣기
+- M5(quad-roblox `D` 제네릭 생성자) 구현 시 caller 정보를 나중에 끼워넣기
   쉬운 단일 진입점(생성자 함수 하나)인지만 유의 — 이건 이미
   `bind-system-plan.md`가 "제네릭 생성자 함수 하나로 통일"이라 확정해둔
   것과 자연히 맞아떨어짐, 별도 조치 불필요할 가능성이 큼.

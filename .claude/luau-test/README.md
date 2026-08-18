@@ -78,7 +78,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | **[⚠️ 2026-08-14 다섯 번째 세션: A 섹션이 폐기된 모델을 검증 중 → `rewrite-required/`, 열한 번째 세션에 `canBound` 재도입으로 재작성 사유 하나 더 추가]** (A) `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복. **A는 재작성 대상** — 파일 속 옛 `canBound`(9차 세션 정의)와 `bindLifetime`의 `value.Subscribed = true` 세팅, 2-인자 `canExecute(inst, value)`는 전부 낡음(현재 게이트는 이중 바인딩 확인은 `canBound(v)`, emit 게이팅은 `canExecute(v)` — 둘 다 `value` 단독 1-인자로 비공개 헬퍼를 공유, gcconn/gchold는 **Instance 생성 시점**에 생성). **[2026-08-13]** A 섹션 앞부분(ClassName 신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됐고 **새 모델에서도 그대로 유효**(오히려 더 중요 — `canBound`/`canExecute`가 `.Connected`를 직접 읽는 게 leaf 경로 판정의 전부), `audit/gcconn-trick-verification.md` 참고. 이중 바인딩 게이트/재바인딩 허용/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md` "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `source-state-plan.md` "이중 바인딩 금지", `.claude/session-summary.md` 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)이 들어오면 즉시 error" 절 + 7번 절 |
-| `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 DI 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
+| `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 특수 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` | (A, 타입) `PreRef<T>`가 `Ref<T>`를 구조적으로 만족하는지, (B, 런타임) `isRef`/`isPreRef` 합성이 재정정대로 동작하는지(`isRef(preRefInstance)`가 이제 `true`) + Leaf 핸들러가 `isRef(v) and not isPreRef(v)`로 명시적으로 좁혀야 하는 이유. **[2026-08-14 아홉 번째 세션] 재작성 시 `PostRef`도 같이 커버할 것** — 같은 `Ref` 런타임 재사용 + 브랜드 태그만 다른 형제라 A/B 둘 다 그대로 확장되고, Leaf predicate도 `isRef(v) and not isPreRef(v) and not isPostRef(v)`로 늘어남 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정) |
 | `14-type-nilable-default-overload.luau` (타입체크 전용) | `Source(default)`/`Ref(default)`의 `default` 생략이 `T`가 nilable일 때만 안전하다는 캐비엇을, 함수 오버로드(교차 타입)로 실제로 타입 레벨에서 막을 수 있는지 | `source-state-plan.md` "State는 쓰기 대상이 아님" 절의 `default` 생략 캐비엇 |
 | `15-type-compute-trailing-deps-typepack.luau` (타입체크 전용) | `:Compute(fn, ...)`의 trailing deps를 `fn`에 위치 인자(lazy State 핸들)로도 노출하는 확장, 최종 시그니처 `fn(self, previous?, ...deps)` — 이형(heterogeneous) 다중 deps를 제네릭 타입 팩(`U...`)으로 표현 가능한지, `previous?`가 팩 앞(정정된 순서)에서만 통과하고 팩 뒤(옛 순서)에서는 막히는지 | `source-state-plan.md` "trailing deps를 fn에 lazy positional 인자로도 노출" 절(2026-08-11 후속 세션, 순서는 같은 날 세 번째 세션에 정정) |
@@ -114,7 +114,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
   계속 `None` — 두 카테고리로 나눠 각각 재현).
 - `12`/`13`/`14`: **신규 추가.** 사용자 요청으로 "타입 관련 실측 필요
   항목, 특히 luau-lsp로 확인해야 하는 것"을 새로 찾아 만듦 — Attribute
-  제네릭 DI 키의 값 타입 narrowing(12), Ref/PreRef 구조적 서브타입 +
+  제네릭 특수 키의 값 타입 narrowing(12), Ref/PreRef 구조적 서브타입 +
   `isRef`/`isPreRef` 재정정(13), Source/Ref의 nilable-default 캐비엇을
   오버로드로 막을 수 있는지(14). 셋 다 base 문서가 "미검증"/"실측 필요"
   로 스스로 표시해둔 지점이거나(12, 14) 이번 f198fd9에서 뒤집힌 결정
@@ -239,13 +239,14 @@ Connected 즉시 전환"은 새 모델에서도 유효**(재작성 시 살릴 �
     재검토해야 하는 심각한 발견이니 바로 알려줄 것 — **[2026-08-13] 이
     조건은 이미 회피 확인됨**(`audit/gcconn-trick-verification.md`),
     재확인 불필요.
-  - **[2026-08-14 열한 번째 세션 재정정]** 이중 바인딩 게이트는
-    **`canBound(value)`**다(`if canBound(v) then error(...) end`) —
+  - **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중
+    바인딩 게이트는 **`canBound(value)`**다(`if not canBound(v) then
+    error(...) end` — `canBound` 참 = "지금 묶어도 됨") —
     `canExecute`는 State emit 전파 게이팅 전용으로 남고, `canBound`가
-    별도 진입점으로 재도입됨(판정 로직은 비공개 헬퍼 하나를 공유,
-    `lifecycle-pattern.md` "`canBound` vs `canExecute`" 절). 판정
-    기준은 안 바뀜: `unbindLifetime(value)` 이후 같은 값을 다시
-    `bindLifetime`할 수 있어야 하고(게이트가 `canBound` 거짓이라
+    별도 진입점으로 재도입됨(판정 로직은 비공개 헬퍼 하나를 공유하되
+    **서로의 부정**, `lifecycle-pattern.md` "`canBound` vs `canExecute`"
+    절). 판정 기준은 안 바뀜: `unbindLifetime(value)` 이후 같은 값을 다시
+    `bindLifetime`할 수 있어야 하고(게이트가 `canBound` **참**이라
     통과), **`inst`가 Destroy된 뒤의 재바인딩도 명시적으로 허용**임
     (살아있는 바인딩만 막는 게 게이트의 의도). 이게 실패하면 이
     재분리 설계 자체를 재검토해야 함 — **아직 미확인.**

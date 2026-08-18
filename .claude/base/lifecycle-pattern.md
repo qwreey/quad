@@ -135,6 +135,16 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 번째 세션에 `value` 단독으로 최종 정정**, **`canBound`는 2026-08-14 열한
 번째 세션에 별도 진입점으로 재도입** — 아래 "(3)" 절)
 
+> **[정정, 2026-08-18 구현 전 QA]** `canBound`의 **판정 방향이 뒤집혀
+> 있었다** — 이름 그대로 "지금 묶을 수 있는가"(참 = 아직 안 묶여 있어서
+> 묶어도 됨)여야 하는데, 문서 전체가 참 = "이미 묶여 있음"으로 쓰고
+> 게이트를 `if canBound(v) then error(...)`로 적어뒀었다. 그대로 구현하면
+> **정상적인 첫 바인드가 전부 에러나고 이중 바인드는 무사통과**한다.
+> 아래 (1)~(3) 절은 전부 정정된 방향(`canBound(v) == not isBoundAlive(v)`,
+> 게이트는 `if not canBound(v) then error(...)`)으로 다시 쓰여 있다.
+> 사용자 판정 원문과 파급 목록은
+> `.claude/qa-request/pre-implementation-qa-round1.md`의 `S-1`.
+
 **탑레벨 평범한 함수로 확정, 네임스페이스에 안 숨김.** `Dispatch.process`/
 `Handler.xxx`는 "시스템 내부 배관"이라 네임스페이스가 맞지만, `bindLifetime`/
 `canBound`/`canExecute`/`unbindLifetime`는 `isState`/`isObserver`처럼
@@ -145,7 +155,7 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 ```lua
 bindLifetime(inst: any, value: any): ()   -- inst가 필요한 건 이것 하나뿐
 unbindLifetime(value: any): ()
-canBound(value: any): boolean     -- "이미 유효하게 묶여 있는가" — 구조적 점유 확인
+canBound(value: any): boolean     -- "지금 묶어도 되는가" — 참이면 아직 안 묶여 있음(구조적 점유 없음)
 canExecute(value: any): boolean   -- "지금 발화해도 되는가" — emit 전파 게이팅
 ```
 
@@ -247,8 +257,8 @@ local InstData = Relate() -- inst  -> gchold/gcconn (위 (0)에서 채워짐)
 local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
 
 -- 비공개(export 안 함) — canBound/canExecute가 공유하는 실제 판정.
--- 이 값이 "구조적으로 이미 살아있는 바인딩을 갖고 있는가"는 어느 쪽
--- 진입점에서 물어도 항상 같은 값이라, 판정 로직은 여기 하나만 있음.
+-- "이 값이 구조적으로 이미 살아있는 바인딩을 갖고 있는가" 하나만 답한다.
+-- 두 공개 진입점은 이걸 서로 반대 방향으로 감싼다(아래 "(3)" 절).
 local function isBoundAlive(value)
     -- (a) inst-scoped 경로: bindLifetime이 복사해둔 gcconn을 value 자신에게서 찾음.
     --     inst가 Destroy되면 Connected가 즉시 false, 이후 GC가 항목까지 치움
@@ -266,9 +276,9 @@ end
 
 function bindLifetime(inst, value)
     -- 이중 바인딩 금지(base/source-state-plan.md) — 게이트는 canBound.
-    -- "이미 유효한 바인딩을 갖고 있다"를 묻는 자리이지 "지금 발화해도
-    -- 되는가"를 묻는 자리가 아님(둘의 구분은 아래 "(3)" 절 참고).
-    if canBound(value) then
+    -- "지금 묶어도 되는가"를 묻는 자리이지 "지금 발화해도 되는가"를 묻는
+    -- 자리가 아님(둘의 구분은 아래 "(3)" 절 참고). 못 묶는 경우만 에러.
+    if not canBound(value) then
         -- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
         -- 인덱싱하면 안 됨 — 게이트는 값 타입을 안 가려서 value가 평범한
         -- 클로저일 수도 있음(그 경우 필드 접근 자체가 에러).
@@ -296,18 +306,19 @@ function unbindLifetime(value)
     BindData:SetWeak(value, "gcconn", nil)
 end
 
--- "이미 유효하게 묶여 있는가" — 구조적 점유 확인용. bindLifetime의 이중
--- 바인딩 가드, Observer:Subscribe()의 이중 등록 가드, Ref가 두 자리에
--- 동시에 놓이는 걸 막는 가드(`question.md` 0-W, `base/ref-plan.md`)처럼
--- "이 값이 이미 다른 어딘가에 물려 있는가"를 묻는 자리는 전부 이걸 씀.
+-- "지금 묶어도 되는가" — 참이면 아직 아무 데도 안 묶여 있다는 뜻.
+-- bindLifetime의 이중 바인딩 가드, Observer:Subscribe()의 이중 등록 가드,
+-- Ref가 두 자리에 동시에 놓이는 걸 막는 가드(`base/ref-plan.md`)처럼
+-- "이 값을 지금 묶어도 되는가"를 묻는 자리는 전부 이걸 씀. 호출부는
+-- 항상 `if not canBound(v) then error(...) end` 모양이 된다.
 function canBound(value)
-    return isBoundAlive(value)
+    return not isBoundAlive(value)
 end
 
 -- "지금 발화해도 되는가" — State emit 전파 루프가 구독자를 게이팅할
--- 때만 씀(아래 "(4) 실제 호출부" 절). 오늘은 canBound와 판정값이 항상
--- 같지만(같은 isBoundAlive를 공유), 호출부의 질문 자체가 다르므로
--- 이름을 분리해둔다.
+-- 때만 씀(아래 "(4) 실제 호출부" 절). 같은 isBoundAlive를 공유하지만
+-- canBound와는 **반대 방향**(canBound(v) == not canExecute(v))이고,
+-- 호출부의 질문 자체도 다르므로 이름을 분리해둔다.
 function canExecute(value)
     return isBoundAlive(value)
 end
@@ -318,7 +329,8 @@ end
 1. **바인딩이 유효한 동안 `value`는 최소한 `inst`만큼은 산다** — `gchold[value]`
    강참조가 그것.
 2. **`value`는 `inst`가 살아있는지 스스로 확인할 방법을 갖는다** — `BindData`에
-   복사된 gcconn 참조가 그것. `canBound`/`canExecute`가 `inst` 없이 성립하는 이유.
+   복사된 gcconn 참조가 그것. `isBoundAlive`(따라서 `canBound`/`canExecute`)가
+   `inst` 없이 성립하는 이유.
 
 **`Subscribed`는 이 계약과 일절 무관하다 — 오직 전역 `:Subscribe()` 경로
 전용 필드.** `bindLifetime`/`unbindLifetime`은 이 필드를 **읽지도 쓰지도
@@ -337,7 +349,7 @@ end
 local Subscribed = {} -- 전역 강참조 레지스트리(weak 아님 — 살려두는 게 목적)
 
 function Observer:Subscribe()
-    if canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
+    if not canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
         error(if self.Subscribed
             then "이미 :Subscribe()된 값"
             else "이미 Instance에 바인딩된 값")
@@ -384,28 +396,36 @@ end
    전파 루프가 매 발화마다 각 구독자에게만 묻는 질문(아래 "(4)" 절) —
    `Effect`/`Observer`처럼 실제로 콜백을 실행하는 값에만 의미가 있음.
 
-**오늘 두 문맥의 판정값은 우연히 같다**(둘 다 `isBoundAlive` 하나로
-귀결 — gcconn이 살아있는가 OR `.Subscribed`인가). 다섯 번째 세션은 이
-우연한 일치를 "애초에 같은 질문"으로 결론지어 하나로 합쳤지만, 호출부가
-왜 그 질문을 묻는지는 서로 다름 — `Ref`처럼 발화라는 개념 자체가 없는
-값에게 "발화해도 되는가"(`canExecute`)를 묻는 건 개념이 안 맞고, 나중에
-"구조적으로는 묶여 있지만 일시적으로 발화만 멈춘" 상태가 생기면(지금은
-없음) `canBound`는 참인데 `canExecute`는 거짓이어야 하는 경우도 생길 수
-있음 — 판정값이 갈라질 여지 자체가 원래 있었다는 뜻.
+**[정정, 2026-08-18 구현 전 QA] 두 판정값은 같은 게 아니라 서로의
+부정이다** — `canBound(v) == not isBoundAlive(v)`, `canExecute(v) ==
+isBoundAlive(v)`. 열한 번째 세션은 "판정 로직도 같고 값도 항상 같은데
+호출부의 질문만 다르다"를 이름 분리의 근거로 적었는데, 그건 `canBound`를
+"이미 묶여 있는가"로 잘못 읽은 결과였다. 이름 그대로 읽으면 두 질문은
+**반대 방향**이고, 공유하는 건 판정 **로직**(`isBoundAlive`) 하나뿐이다.
+**부정 관계라는 사실은 이름 분리의 명분을 오히려 강화한다** — 같은 값을
+두 이름으로 부르는 게 아니라, 서로 다른 방향을 묻는 두 predicate이기
+때문에 호출부가 `not`을 붙이는지 여부로 의도가 드러난다.
+
+여전히 유효한 것 — **호출부가 왜 묻는지가 서로 다르다**: `Ref`처럼
+발화라는 개념 자체가 없는 값에게 "발화해도 되는가"(`canExecute`)를 묻는
+건 개념이 안 맞고, 나중에 "구조적으로는 묶여 있지만 일시적으로 발화만
+멈춘" 상태가 생기면(지금은 없음) 둘의 관계가 단순 부정에서 더 벌어질
+여지도 있다.
 
 **해법 — 이름은 둘, 판정 로직은 하나(사용자 제안).** 실제 gcconn/
 `.Subscribed` 체크는 비공개 헬퍼 `isBoundAlive(value)`(위 (1) 코드
-블록) 하나에만 있고, `canBound`/`canExecute`는 둘 다 그 헬퍼를 그대로
-호출하는 얇은 진입점 — 코드 중복 없이 호출부의 의미만 분리됨. **바뀐
-호출부**: `bindLifetime`의 가드(위 (1))와 `Observer:Subscribe()`의
-가드(위 (2))는 이제 `canBound`를 씀 — `canExecute`를 쓰던 옛 코드에서
-이름만 바뀜, 동작은 동일. **안 바뀐 호출부**: State 전파 루프(아래
-"(4)")만 여전히 `canExecute`를 씀.
+블록) 하나에만 있고, `canBound`/`canExecute`는 그 헬퍼를 각각 부정해서/
+그대로 감싸는 얇은 진입점 — 코드 중복 없이 호출부의 의미만 분리됨.
+**바뀐 호출부**: `bindLifetime`의 가드(위 (1))와 `Observer:Subscribe()`의
+가드(위 (2))는 이제 `canBound`를 씀 — 형태는 항상 **`if not canBound(v)
+then error(...) end`**(못 묶는 경우에만 에러). **안 바뀐 호출부**: State
+전파 루프(아래 "(4)")만 여전히 `canExecute`를 쓰고, 거기선 부정 없이
+그대로 씀.
 
-부수 효과(다섯 번째 세션 결론과 값은 동일, 이름만 갈라짐): **"바인딩이
-죽은 뒤의 재사용은 허용"** — `inst`가 Destroy됐거나 `unbindLifetime`된
-`value`는 `canBound`가 거짓이라 게이트를 통과함(다시 다른 `inst`에 걸
-수 있음). 살아있는 바인딩만 막는 게 이 게이트의 의도.
+부수 효과: **"바인딩이 죽은 뒤의 재사용은 허용"** — `inst`가
+Destroy됐거나 `unbindLifetime`된 `value`는 `canBound`가 **참**이라
+게이트를 통과함(다시 다른 `inst`에 걸 수 있음). 살아있는 바인딩만 막는
+게 이 게이트의 의도.
 
 #### (4) 실제 호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다
 
