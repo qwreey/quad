@@ -85,6 +85,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       소스 트리 구조 확정" 절 그대로)
 - [ ] quad-base용 최소 mock 테스트 하네스(Vide `test/mock.luau` 선례, 순수
       `luau` CLI, `architecture.md` "테스트 전략" 절 참고)
+- [ ] 최상위 `New()`/`InitXxx(module)` 팩토리 체이닝 골격 — 각 서브시스템
+      Init이 `module`을 파라미터로 받아 뮤테이션, `Relate` 기반 인스턴스별
+      멱등 가드(`base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절
+      그대로, 2026-08-19 확정)
 - [ ] 이 시점부터 `.claude/qa-request/`/`.claude/archive/` 폴더 실사용 시작
 
 ## M2 — 디스패치 엔진

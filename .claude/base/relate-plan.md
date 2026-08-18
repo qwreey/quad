@@ -166,6 +166,11 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 - **소유권/멤버십 전역 판정** — `Slot`의 `elementOwner`.
 - **"언제까지 실행돼도 되는가"** — `bindLifetime`/`canExecute`
   (`base/lifecycle-pattern.md`). 애초에 클로저 수명과 무관한 질문.
+- **"이 인스턴스에 이미 했는가"류 인스턴스별 멱등 가드**(2026-08-19
+  신설) — `New()`가 만드는 각 `module` 인스턴스별로 `InitXxx(module)`가
+  이미 실행됐는지 기록하는 것도 여러 호출 지점(다른 `InitXxx`가 자기
+  의존성으로 호출하는 경우 포함)을 가로질러야 해서 클로저 캡처로 대체
+  불가 — `base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절.
 
 **쓸 때 같이 지킬 것**:
 - **정리 조건을 실제 정리와 묶을 것.** `Relate` 엔트리를 지우는 코드가

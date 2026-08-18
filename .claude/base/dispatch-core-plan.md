@@ -623,7 +623,12 @@ end
   state를 참조하는 코드들이 모듈 인스턴스를 인자로 받도록
   (`InitModule(module)` 류) 손을 봐야 한다(`base/architecture.md` "확정된
   결정" 13번). 지금은 `New()` 자체가 노출 안 된 싱글톤 단계라
-  `Quad.Dispatch`로 바로 접근한다.
+  `Quad.Dispatch`로 바로 접근한다. **[2026-08-19 추가]** 이 문단이 말하는
+  "`InitModule(module)` 류"의 정확한 형태(각 서브시스템별 `InitXxx(module)`
+  팩토리 체이닝 + `Relate` 기반 인스턴스별 멱등 가드)가
+  `module-lifecycle-plan.md`의 "New()의 내부 구성" 절에 구체화됨 —
+  `Dispatch/init.luau`도 그 패턴을 따르는 `InitDispatch(module)` 하나로
+  구현된다.
 
 ### base가 소유하는 핸들러와 주입되는 엔진 op (2026-08-13 열네 번째 세션 신설)
 

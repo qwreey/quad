@@ -30,6 +30,123 @@ RBVM처럼 `init namespace` 하나하나 부르는 방식은 별로(`base/lifecy
 주고 사용자가 호출하도록. `base/architecture.md` 14번 항목과 동일한 결정 —
 여기서는 "왜"만 보강.
 
+## New()의 내부 구성 — InitXxx 팩토리 체이닝 (2026-08-19 신설)
+
+바로 위 절이 확정한 `InitRoblox(Module)` 패턴(팩토리가 모듈 테이블을
+뮤테이션)은 지금까지 서술상 **backend 주입**에만 적용되는 것처럼 보였는데,
+`New()` **자신**이 quad-base 내부 서브시스템(Dispatch 등)을 구성하는
+방식도 대칭적으로 같은 패턴을 쓴다 — 새 설계가 아니라 이미 확정된 원칙을
+quad-base 자기 자신에도 적용한 구체화. 논의 원문은
+`session/2026-08-19-01-new-initxxx-composition-relate-guard.md`.
+
+**사용자 제안 원문 요지**(2026-08-19): *"생성형식 자체는 비싱글톤이고,
+Dispatch 같은것도 `Init(module)` 을 받는 함수로써 ... `module.Dispatch = ...`
+형식들로 구현되고 ... 재익스포트식으로 구현하겠다는 이야기였음. 처음부터
+`InitModuleName` 식으로 구현하여 팩토리를 쌓아 모듈을 리턴하는 방식으로,
+quad v1 의 방식을 가져와봄직 하다."*
+
+**형태**(각 서브시스템 파일이 `Init` 함수를 export하고, 타입도 재익스포트):
+
+```lua
+-- Dispatch/init.luau
+local function Init(module)
+    local ... -- 여기서 레지스트리/릴레이션 생성
+    module.Dispatch = ...
+end
+export type Dispatch = ...
+return Init
+```
+
+```lua
+-- 최상위 init.luau
+local InitDispatch = require(...)
+type Dispatch = InitDispatch.Dispatch -- 재익스포트
+
+local function New(): { Dispatch: Dispatch, New: typeof(New), ... }
+    local module = { New = New }
+    InitDispatch(module)
+    -- 서브시스템 개수만큼 InitXxx(module) 을 순서대로 쌓음
+    return module
+end
+
+return New()
+```
+
+`module = {New = New}` 자기참조는 `base/architecture.md` "확정된 결정"
+13번이 이미 확정해둔 것과 정확히 같은 형태 — 별도 결정이 아니라 그 결정이
+실제로 어떻게 코드로 나오는지를 구체화한 것뿐.
+
+**타입 재익스포트는 실측 확인됨**(2026-08-19, 사용자: "그거 타입 익스포트
+잘 됨") — `type Dispatch = InitDispatch.Dispatch` 형태로 서브모듈의
+export 타입을 최상위에서 그대로 재노출하는 게 Luau에서 문제없이 동작한다.
+`base/typing-limits.md`가 우려하는 "명시 바인딩 필요" 케이스와는 다른
+자리라는 뜻 — 거긴 재귀 제네릭이 자기를 다른 타입 인자로 반환하는 게
+문제였고, 여긴 단순 alias라 그 한계에 안 걸린다.
+
+**순서 의존성은 각 `InitXxx`를 `require`처럼 멱등하게 만들어서 해소한다**
+(2026-08-19, 사용자 제안) — 서브시스템 간 호출 순서를 최상위 `New()`가
+직접 관리할 필요가 없다: 각 `InitXxx` 파일이 자기 톱레벨(함수 클로저
+**밖**, 파일 스코프)에 `local relate = Relate()`를 하나 두고, `module`을
+weak key 삼아 "이 `module` 인스턴스에 이미 Init됐는지"를 기록한다. 이미
+됐으면 그대로 스킵, 아니면 실제 작업을 한 번만 수행 — Lua의 `require`
+캐시와 같은 발상이지만, `require` 캐시는 **파일** 단위(Init 함수 자체는
+한 번만 로드)인 반면 `New()`는 여러 번 호출돼 서로 다른 `module` 테이블을
+여러 개 만들 수 있어서, "이 particular 인스턴스에" 멱등하려면 파일 스코프
+캐시로는 부족하고 `module`을 키로 하는 이 `Relate`가 따로 필요하다.
+
+```lua
+-- Dispatch/init.luau
+local Relate = require(...)
+local relate = Relate() -- 파일 스코프, 클로저 밖 — 이 Init 전체가 공유하는 단 하나의 인스턴스
+
+local function Init(module)
+    if relate:GetStrong(module, INITED) then
+        return -- 이미 이 module 인스턴스엔 Init됨, no-op
+    end
+    relate:SetStrong(module, INITED, true) -- 실제 작업 전에 먼저 표시(순환 의존 대비, 아래 참고)
+    -- 자신의 의존성도 그냥 require+호출 — 상대도 멱등하므로 중복/순서 걱정 없음
+    -- 예: InitLifetime(module)
+    local ...
+    module.Dispatch = ...
+end
+return Init
+```
+
+이렇게 하면 **의존하는 쪽이 자기 의존성을 직접 호출**하면 되고(`require`가
+의존 그래프를 알아서 풀어주는 것과 같은 감각), 최상위 `New()`는 순서를
+신경 쓰지 않고 아는 `InitXxx(module)`을 전부 호출해도 된다 — 이미 누가
+먼저 채웠으면 알아서 스킵된다.
+
+- **GC와도 자연히 맞물림**: `relate-plan.md`의 "API" 절에 따르면 `Relate`의
+  **첫 인자(`inst`, 여기선 `module`)는 항상 weak**다(선택의 여지가 없는
+  고정 동작 — `Weak`/`Strong` 구분은 오직 `value` 쪽 보관 방식만 가리킴).
+  그래서 `value` 쪽을 `SetWeak`으로 두든 `SetStrong`으로 두든 상관없이,
+  어떤 `Quad` 인스턴스(전체 `module` 테이블)가 더 이상 참조되지 않아
+  수거되면 이 Init-완료 기록도 같이 사라진다 — 별도 정리 로직 불필요.
+  `relate-plan.md`가 이미 확정해둔 "각 모듈이 자기 톱레벨에 `Relate()`
+  하나를 두고 재사용" 관례를 그대로 쓰는 것이라 새 메커니즘 아님.
+  (`relate-plan.md`가 별도로 명시한 "명시적으로 만든 기록은 명시적으로
+  지울 것" 원칙과 충돌하는 게 아니라 — 이 경우는 기록의 키 자체가 죽으면
+  그 기록을 다시 조회할 주체 자체가 사라지므로 지울 대상이 없어지는,
+  원칙이 애초에 상정하지 않은 자리다.)
+- **`value`는 `SetStrong`으로 통일**: 위 문단대로 GC 결과엔 차이가 없지만
+  (boolean 리터럴은 애초에 GC 대상이 아님), `relate-plan.md`의 일반 규칙
+  "다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`" 기준으로는 이 `true`
+  플래그를 다른 어디도 붙잡고 있지 않으므로 `SetStrong`이 그 규칙에 맞는
+  선택이다.
+- **`_initializedBy` 가드(아래 "Bind는 누가, 어떻게 구현하는가" 절, 실제
+  정의는 `base/bind-system-plan.md`)와는 다른 층위** — 그건 backend
+  팩토리가 유일 슬롯을 채웠는지 **누가** 채웠는지까지 구분해야 하는 공개
+  계약(같은 팩토리 재호출=no-op, 다른 팩토리=에러)이고, 이건 quad-base
+  내부 서브시스템 각각이 **한 번만** 도는지만 보면 되는 사적 구현
+  디테일이라 "다른 호출자면 에러" 같은 분기 자체가 없다. 이름이 겹치지
+  않게 구분해서 쓸 것.
+- **플래그를 실제 작업 전에 먼저 세우는 이유**: 나중에 `InitA`↔`InitB`처럼
+  상호 의존이 생기면([2026-08-19 기준] 지금은 없음, 대비만), 먼저
+  표시해두지 않으면 무한 재귀에 빠진다 — `require`가 순환 참조 시
+  미완성 exports를 돌려주는 것과 같은 이유로, 실제 작업 시작 전에 먼저
+  "완료"로 표시해둔다.
+
 ## Bind는 누가, 어떻게 구현하는가
 
 인터페이스 상 `bind`를 두고 이것도 pluggable하게 할지 고민 — 단 **1개만 존재할
