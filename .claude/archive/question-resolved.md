@@ -128,6 +128,32 @@ pre-implementation-qa-round3.md`가 원본) — 트레이싱 중 `attachSlot`이
   절이 소스. 논의 원문(최초 분석·사용자 정정·확인 질문과 답변 전문)은
   `qa-request/pre-implementation-qa-round3.md`.
 
+## [해소됨, 2026-08-19] `PopOnly` → `Detach` 리네임 + 공개 표면 위치 확정
+
+`:List` reconcile의 "파괴하지 말고 자리만 비우라" 반환 센티널은 2026-08-18
+가칭 `PopOnly`로 도입되며 사용자가 "이름은 변경될 수 있음, 더 생각해봐야함"
+이라 남긴 채 `question.md` 용어 정리 항목에 열려 있었음. 사용자가 후속
+세션에서 이름 아이디어를 요청 → 여러 후보(`Bench`/`Stash`/`Hold`/`Detach`
+등)를 검토한 뒤 `Detach`로 좁혔고, 이어서 "이걸 어디에 던져줘야 하나"(공개
+표면 위치)까지 같이 확정됨. 원문은
+`session/2026-08-19-02-detach-naming-and-placement.md`.
+
+- **이름 — `Detach`.** 근거 둘: (1) 이미 있는 `Extract`(호출자가 직접
+  부르는 명령형 추출)와 동사가 겹치면 헷갈리는데, `Detach`는 "화면(부모
+  계층)에서만 떼어낼 뿐 관리 주체는 여전히 reconcile"이라는 뜻이라
+  `Extract`의 "소유권을 통째로 호출자에게 넘긴다"와 자연스럽게 구분됨.
+  (2) `nil`(파괴)과의 대비도 더 직접적으로 드러남.
+- **공개 표면 위치 — 패키지 최상위 export.** `Slot`이 함수(팩토리)라
+  `Slot.Detach`처럼 붙이려면 callable-table+메타테이블이 새로 필요한데,
+  sentinel 상수 하나 때문에 그 구조를 들이는 건 "실제로 관측된 문제에만
+  구조를 쓴다" 원칙에 안 맞음(사용자 지적). 대신 `None`이 이미 쓰는 패턴을
+  그대로 따름 — `None`도 여러 곳(Slot 요소, Attribute, offsetSource)에서
+  쓰이지만 공개 표면은 패키지 최상위(`quad-base/src/init.luau` 재노출)이고
+  실제 정의는 관련 로직 옆(`Dispatch/None.luau`)에 있음. `Detach`도 같은
+  패턴 — 정의는 Slot 관련 파일 옆에 두고 `init.luau`에서 최상위로 재노출.
+- 지금 유효한 설계는 `base/slot-plan.md`의 "`nil` 리턴은 파괴가 기본" 절이
+  소스.
+
 ---
 
 # 확인/결정 필요 목록

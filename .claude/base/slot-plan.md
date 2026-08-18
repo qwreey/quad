@@ -850,7 +850,7 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
       "지금 이 key는 렌더 안 함"(filter 탈락 등) — `prev`가 있었다면
       **[정정, 2026-08-13 3차 감사, 그러나 2026-08-18 구현 전 QA로 재역전
       — "`nil` 리턴은 파괴가 기본" 절 참고] 파괴됨**(단순 `Visible =
-      false`도 아니고, 언마운트도 아님 — `rawRemove`. `PopOnly`를 명시
+      false`도 아니고, 언마운트도 아님 — `rawRemove`. `Detach`를 명시
       반환해야 대신 언마운트+재사용됨). 편의상
       `nil` 권장(반환값이 raw Slot 요소로 직접 들어가는 게 아니라
       `:List`의 reconcile이 해석만 하므로 "요소 타입 제약"의 raw
@@ -987,15 +987,15 @@ end
 **⚠️ [재정정, 2026-08-18 구현 전 QA, `/code-review high`로 이 절의 stale
 서술 발견] 바로 위 두 문단은 "filter 탈락 = 언마운트(비파괴)"를 결론으로
 쓰고 있는데, 그 결론은 이후 재역전됐다.** 지금 유효한 규칙은 "`nil`
-리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴" 절(SL-3 해소,
+리턴은 파괴가 기본 — `Detach`로만 비파괴" 절(SL-3 해소,
 `question.md`/`archive/question-resolved.md` 참고) — filter 탈락으로
 `updateFn`이 그냥 `nil`을 반환하면 이제 **파괴**(`rawRemove`)가 기본이고,
 "Instance.new/Destroy 비용을 아끼고 싶다"는 이 절의 동기를 살리려면
-`nil` 대신 명시적으로 `PopOnly`를 반환해야 언마운트+재사용이 된다. 이
+`nil` 대신 명시적으로 `Detach`를 반환해야 언마운트+재사용이 된다. 이
 절의 **동기**(matched-item 애니메이션/이벤트가 계속 돌면 안 된다는 문제
 자체)는 여전히 유효하지만, "그래서 nil이 곧 언마운트"라는 결론 문장은
-`PopOnly` 신설로 대체됐다 — 이 절을 읽고 filter를 구현할 땐 반드시 위
-"`nil` 리턴은 파괴가 기본" 절도 같이 볼 것.
+`Detach`(당시 가칭 `PopOnly`) 신설로 대체됐다 — 이 절을 읽고 filter를
+구현할 땐 반드시 위 "`nil` 리턴은 파괴가 기본" 절도 같이 볼 것.
 
 **"이전 상태를 다음 호출에 어떻게 넘기냐" 문제는 `userdata`가 그 채널** —
 item이 plain table이라 매번 `Source`를 새로 안 만들고 재사용하려면 그
@@ -1097,10 +1097,10 @@ function activateList(self, inst)
             local candidateIndex = pos + 1   -- "이 item이 살아남으면 차지할" 압축 위치(생존 여부와 무관하게 계산 가능)
             local result, ud = updateFn(item, candidateIndex, offset, prev, userdata[key])
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
-            -- [2026-08-18] PopOnly(가칭)는 "이 자리를 비우되 죽이지는 말라"는 지시.
-            -- 아래 "PopOnly" 절 — 자리 계산 관점에선 nil과 똑같이 취급된다.
-            local popOnly = (result == PopOnly)
-            if popOnly then result = nil end
+            -- [2026-08-18, 이름 2026-08-19 확정] Detach는 "이 자리를 비우되 죽이지는 말라"는 지시.
+            -- 아래 "Detach" 절 — 자리 계산 관점에선 nil과 똑같이 취급된다.
+            local detach = (result == Detach)
+            if detach then result = nil end
 
             if result ~= nil then
                 -- [2026-08-11 일곱 번째 세션] result가 nested Slot이면 그
@@ -1115,10 +1115,10 @@ function activateList(self, inst)
                 -- "`nil` 리턴은 파괴가 기본" 절이 소스:
                 --   (a) 교체(result ~= nil): 밀려난 prev는 **언마운트만**
                 --       — state<Frame> 교체와 동형, 지우라고 한 적이 없음.
-                --   (b) PopOnly: **언마운트만**, 재사용은 ud가 홀드.
+                --   (b) Detach: **언마운트만**, 재사용은 ud가 홀드.
                 --   (c) 그냥 nil/None: **파괴**(rawRemove) — "지워라"라는 지시.
                 if prev ~= nil then
-                    if result ~= nil or popOnly then rawUnmount(self, prev)
+                    if result ~= nil or detach then rawUnmount(self, prev)
                     else rawRemove(self, prev) end
                 end
                 if result ~= nil then rawAdd(self, result, pos) end -- 새로 배치, 압축 위치 기준
@@ -1128,7 +1128,7 @@ function activateList(self, inst)
             end
 
             userdata[key] = ud    -- result와 무관, 그대로 기록
-                                  -- (PopOnly 재사용은 여기 담긴 { old = ... }가 담당)
+                                  -- (Detach 재사용은 여기 담긴 { old = ... }가 담당)
             newKeyIndex[key] = pos
         end
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
@@ -1211,7 +1211,7 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   `rawMove`** (**[재정정, 2026-08-18 구현 전 QA]** 2026-08-13 여섯 번째
   세션에 "reconcile의 제거는 전부 비파괴 언마운트"로 바꿨던 것을
   **부분적으로 되돌림** — `nil` 리턴/키 소멸은 다시 **파괴**가 기본이고,
-  값 교체와 `PopOnly`만 비파괴. 아래 "`nil` 리턴은 파괴가 기본" 절이
+  값 교체와 `Detach`만 비파괴. 아래 "`nil` 리턴은 파괴가 기본" 절이
   소스) — `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는
   가드+위임" 구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘
   자체가 그 셋을 직접 호출할 일이 없을 뿐. `rawUnmount`는 `rawRemove`의
@@ -1228,7 +1228,7 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
   미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.
 
-### `nil` 리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴 (2026-08-18 구현 전 QA, 확정 뒤집기)
+### `nil` 리턴은 파괴가 기본 — `Detach`로만 비파괴 (2026-08-18 구현 전 QA, 확정 뒤집기; 이름 2026-08-19 확정)
 
 **[재정정]** 2026-08-13 여섯 번째 세션은 "자동 경로는 언마운트, 명시적으로
 지우라고 한 것만 파괴"라는 일반 규칙을 세우면서 `:List`의 reconcile까지
@@ -1242,17 +1242,17 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
 |---|---|---|
 | 새 값(`result ~= nil`) | **언마운트만** | 밀려난 것뿐이지 "지워라"가 아님. `state<Frame>` 교체와 동형이고, `Slot { State<Slot> }` sugar(`:Single`)가 이 경로를 타므로 아래 "`State<Slot>` 교체" 절의 확정도 그대로 유지됨 |
 | `nil` / `None` | **파괴**(`rawRemove`) | `updateFn`이 명시적으로 "이 자리를 지워라"라고 말한 것 |
-| `PopOnly`(가칭) | **언마운트만** + 재사용 대기 | 아래 |
+| `Detach` | **언마운트만** + 재사용 대기 | 아래 |
 | 키가 데이터에서 사라짐 | **파괴**(`rawRemove`) | `nil` 리턴과 같은 의미(그 아이템은 이제 없음) |
 
-**`PopOnly`(가칭) — `Instance.new`/`Destroy` 비용을 아끼는 재사용 경로.**
+**`Detach` — `Instance.new`/`Destroy` 비용을 아끼는 재사용 경로.**
 `filter` 용도처럼 "지금은 안 보이지만 곧 다시 필요할" 요소를 매번
-파괴/재생성하는 건 비싸다. 그래서 `updateFn`이 **`PopOnly`와 함께 userdata를
+파괴/재생성하는 건 비싸다. 그래서 `updateFn`이 **`Detach`와 함께 userdata를
 반환**하면 그 자리는 파괴 없이 `Parent = nil`로만 내려오고 Slot에서 빠진다:
 
 ```lua
 -- filter에서 걸러진 아이템 — 죽이지 말고 들고 있다가 나중에 되쓴다
-return PopOnly, { old = prev, source = ... }
+return Detach, { old = prev, source = ... }
 ```
 
 - **보존 주체는 `userdata`** — reconcile은 `mounted[key]`에서만 뺄 뿐
@@ -1264,7 +1264,7 @@ return PopOnly, { old = prev, source = ... }
   전까지 안 지워진다** — 즉 "언제 진짜로 버릴지"를 `updateFn`이 결정한다.
 - **⚠️ 단, 키가 데이터에서 아예 사라지면 얘기가 다르다(2026-08-18 감사에서
   발견한 갭).** 그 경우 reconcile의 소멸 루프가 `mounted[key]`/`userdata[key]`를
-  **둘 다** 지우는데, `PopOnly`로 홀드 중이던 요소는 `mounted[key]`가 이미
+  **둘 다** 지우는데, `Detach`로 홀드 중이던 요소는 `mounted[key]`가 이미
   `nil`이라 `rawRemove`(파괴) 대상이 아니다 — 결과적으로 그 요소는
   **파괴되지도, `updateFn`에게 되돌려지지도 않고 참조만 끊겨 GC 대상이
   된다**(Parent는 이미 `nil`). 이건 같은 절의 표가 "키가 사라지면 파괴"라고
@@ -1274,12 +1274,33 @@ return PopOnly, { old = prev, source = ... }
   (b) 지금처럼 참조만 끊고 GC에 맡김(단 표와 서술을 그 사실에 맞게 고침),
   (c) `updateFn`을 마지막으로 한 번 더 불러 처분을 묻는다.
   **지금 문서는 (a)를 기본으로 가정하지 않는다** — 결정 전이므로 구현 금지.
-- **이름은 가칭** — 사용자 확정: *"PopOnly 확정. 다만 이름은 변경될 수
-  있음. 이름에 대해서는 더 생각해보아야함"*. `question.md` 용어 정리 항목에
-  올려둠. 메커니즘(반환 규약 + userdata 홀드 + 재마운트)은 확정.
+- **이름 확정 — `Detach`(2026-08-19).** 처음엔 가칭 `PopOnly`로 도입됐고
+  사용자가 *"PopOnly 확정. 다만 이름은 변경될 수 있음. 이름에 대해서는 더
+  생각해보아야함"*이라고 남겨 `question.md` 용어 정리 항목에 올라가
+  있었음 — 이후 세션에서 후보들을 검토하다 `Detach`로 확정. 근거는 둘:
+  (1) 이미 있는 `Extract`(바로 아래 불릿, 호출자가 직접 부르는 명령형
+  추출)와 동사가 겹치면 헷갈리는데, `Detach`는 "화면(부모 계층)에서만
+  떼어낼 뿐 관리 주체는 여전히 reconcile"이라는 의미라 `Extract`의
+  "소유권을 통째로 호출자에게 넘긴다"는 것과 자연스럽게 구분됨. (2)
+  `nil`(파괴)과의 대비도 더 직접적으로 드러남. 메커니즘(반환 규약 +
+  userdata 홀드 + 재마운트)은 그대로 — 원문은
+  `session/2026-08-19-02-detach-naming-and-placement.md`.
+- **공개 표면 위치 확정 — 패키지 최상위 export(2026-08-19).** `Slot`은
+  함수(팩토리)라 `Slot.Detach`처럼 붙이려면 callable-table+메타테이블이
+  새로 필요한데, sentinel 상수 하나 때문에 그 구조를 들이는 건 과함
+  (`conventions.md`의 "드문 오용이나 가상의 미래 요구까지 방어/최적화하려고
+  구조를 복잡하게 만들지 않는다" 원칙). 대신 `None`과 같은 선례를 따른다 —
+  `None`도 여러 곳(Slot 요소, Attribute, offsetSource)에서 쓰이는
+  sentinel이지만 공개 표면은 패키지 최상위(`quad-base/src/init.luau`
+  재노출)이고 실제 정의는 관련 로직 옆(`Dispatch/None.luau`)에 있다.
+  `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot.luau` 또는
+  `Dispatch/Slot.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
+  지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
+  시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. 정확한 파일
+  배치는 M6 구현 시점에 확정.
 - **`Slot`의 다른 비파괴 API와의 관계**: `Extract`/`ExtractAll`/`Splice`가
   이미 비파괴 추출을 제공하지만(위 "CRUD API 확정" 절) 그건 **호출자가
-  직접 부르는 명령형 경로**다. `PopOnly`는 같은 일을 **reconcile 안에서
+  직접 부르는 명령형 경로**다. `Detach`는 같은 일을 **reconcile 안에서
   선언적으로** 하기 위한 것이라 서로 대체 관계가 아니다.
 
 ### 구독 시점 — `:List()` 호출이 아니라 Slot 마운트 시점, lazy `bindLifetime`
@@ -2114,7 +2135,7 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
    코드가 `unmountSlotTree` + `setOffsetSource(None)`/`setLength(0)` +
    `unbindLifetime` + `releaseOwner`를 부름.
 2. **`:List`의 `reconcile`** — **[재정정, 2026-08-18 구현 전 QA]** 여기서
-   비파괴가 되는 건 **값 교체와 `PopOnly`뿐**이다. `updateFn`이 `nil`/`None`을
+   비파괴가 되는 건 **값 교체와 `Detach`뿐**이다. `updateFn`이 `nil`/`None`을
    반환하거나 키가 데이터에서 사라진 경우는 **다시 파괴가 기본**(사용자
    판정) — 상세와 이유는 위 "`nil` 리턴은 파괴가 기본" 절이 소스.
    2026-08-13에 이 항목이 "교체/소멸 시 전부 비파괴"로 적혔던 것은
@@ -2125,7 +2146,7 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 `:List` 소멸 경로. 즉 일반 규칙은 **"자동 경로는 언마운트, 명시적으로
 지우라고 한 것만 파괴"**이되, **`:List`에서 `nil`을 반환하는 것 자체가
 "지우라고 한 것"으로 센다** — `Ref`/`Attribute`의 "지울 거면 명시적으로"
-철학과 같은 결이고, `updateFn`이 지우지 않길 원하면 `PopOnly`로 그 의도를
+철학과 같은 결이고, `updateFn`이 지우지 않길 원하면 `Detach`로 그 의도를
 명시한다.
 
 `unmountSlotTree`는 `destroySlotTree`가 하는 일 중 **실제 파괴와 자식

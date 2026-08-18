@@ -395,7 +395,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         차이는 딱 둘: 실제 `Destroy()`를 안 하고, 자식 `releaseOwner`도 안 함
         (자식은 계속 그 slot 소유라 통째로 재마운트 가능 = 포탈).
         **쓰는 자리**: `SlotHandler.process`가 반환하는 클로저, 그리고
-        `:List`의 `reconcile` 중 **값 교체와 `PopOnly`(가칭) 경로만**.
+        `:List`의 `reconcile` 중 **값 교체와 `Detach` 경로만**.
         **여전히 파괴인 것**: 명시적 `Remove`/`Clear`/`dispose`, 그리고
         **[재정정, 2026-08-18 구현 전 QA] `:List`에서 `updateFn`이
         `nil`/`None`을 반환하거나 키가 데이터에서 사라진 경로**(2026-08-13의
@@ -479,14 +479,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (filter/toggle 지원 — 첫 반환값 `nil` 시 실제 파괴, `Visible` 토글
       아님, 200+ 항목에서 lazy하지 않은 문제 회피), `prev` 그대로 반환하면
       저비용 재사용 경로.
-      **[2026-08-18 신설] `PopOnly`(가칭) 반환 경로** — `updateFn`이
-      `PopOnly, { old = ..., source = ... }`를 반환하면 그 자리는 **파괴하지
-      않고 `Parent = nil`로만 내려와** Slot에서 빠지고, 보존은 반환한
-      userdata가 담당(다음 사이클에 거기서 `old`를 꺼내 반환하면 재마운트).
-      `Instance.new`/`Destroy` 비용을 아끼는 filter용 경로.
-      **⚠️ 이름은 가칭이고, "키가 데이터에서 사라졌을 때 PopOnly로 홀드
-      중이던 요소를 어떻게 처분하는가"는 미결** — 착수 전 결론 필요
-      (`base/slot-plan.md`의 "`nil` 리턴은 파괴가 기본" 절, `question.md` 3번). 파라미터 순서는 반환값 순서(`prev`류 먼저,
+      **[2026-08-18 신설, 이름 2026-08-19 확정] `Detach` 반환 경로** —
+      `updateFn`이 `Detach, { old = ..., source = ... }`를 반환하면 그
+      자리는 **파괴하지 않고 `Parent = nil`로만 내려와** Slot에서 빠지고,
+      보존은 반환한 userdata가 담당(다음 사이클에 거기서 `old`를 꺼내
+      반환하면 재마운트). `Instance.new`/`Destroy` 비용을 아끼는 filter용
+      경로. 공개 표면은 `None`과 같이 패키지 최상위 export(`base/
+      slot-plan.md`의 "`nil` 리턴은 파괴가 기본" 절).
+      **⚠️ "키가 데이터에서 사라졌을 때 `Detach`로 홀드 중이던 요소를
+      어떻게 처분하는가"는 미결**(이름과 무관한 별개 항목) — 착수 전 결론
+      필요(같은 절, `question.md` 3번). 파라미터 순서는 반환값 순서(`prev`류 먼저,
       `userdata`류 나중)와 맞춤(2026-08-11 세션 정정, 원래 `userdata`가
       `prev`보다 앞이었음).
       **`updateFn`의 `index`는 `keyFn`의 raw `index`(원본 `data` 배열

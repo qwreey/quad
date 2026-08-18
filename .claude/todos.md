@@ -59,12 +59,15 @@
      시그니처에 영향이 갈 수 있어 M3 착수 전 방향만이라도.
    - **dedup 경로의 process/retract 대칭 확인**(`base/effect-plan.md`
      `:Unsubscribe()` 절) — M3 착수 전 확인.
-   - **`PopOnly` 이름**(`base/slot-plan.md`) — 메커니즘은 확정, 이름만 열림.
-   - **`PopOnly` 홀드 중 키가 사라졌을 때의 처분**(`base/slot-plan.md`) —
-     지금 의사코드대로면 파괴도 반환도 안 되고 참조만 끊김. **[정정,
-     2026-08-18 `/code-review high` — `ROADMAP.md`의 M6 PopOnly 체크박스와
-     대조해 발견] M6(`:List`가 있는 마일스톤) 착수 전 필요** — M8(`Ref`)
-     아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥 지나칠 위험이 있었음.
+   - **[2026-08-19 해소]** `PopOnly` 이름 — **`Detach`로 확정**(공개 표면
+     위치도 `None`과 같은 최상위 export로 같이 확정). 원문은
+     `archive/question-resolved.md`.
+   - **`Detach`(구 `PopOnly`) 홀드 중 키가 사라졌을 때의 처분**
+     (`base/slot-plan.md`) — 지금 의사코드대로면 파괴도 반환도 안 되고
+     참조만 끊김. **[정정, 2026-08-18 `/code-review high` — `ROADMAP.md`의
+     M6 `Detach` 체크박스와 대조해 발견] M6(`:List`가 있는 마일스톤) 착수
+     전 필요** — M8(`Ref`) 아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥
+     지나칠 위험이 있었음.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
@@ -142,7 +145,8 @@
    2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
    목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
    — 아직 진짜로 열려있는 것만 짚으면(**[2026-08-18] `DI`→`D`는 확정·반영
-   완료로 목록에서 빠짐**, 대신 `PopOnly`(가칭)가 새로 들어옴): `Slot`(2순위),
+   완료로 목록에서 빠짐**, **[2026-08-19] `PopOnly`→`Detach`도 확정·반영
+   완료로 목록에서 빠짐**): `Slot`(2순위),
    `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
    방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
    `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).

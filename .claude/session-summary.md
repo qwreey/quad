@@ -1504,3 +1504,18 @@ key로 완료 여부 기록) 방식으로 직접 해소하는 아이디어도 �
 포함)가 있었는데 그날 session/ 파일은 1개뿐, 2026-08-19는 이 세션 전까지
 (QA 3라운드 커밋 1개가 있었음에도) 0개였음. 과거 대화 트랜스크립트에 접근 불가라 그 공백을 사후 재구성하는 건
 허위 기록 위험이 있어 보류 — 처리 방침은 사용자 확인 대기.
+
+## 2026-08-19 — `PopOnly` → `Detach` 리네임 + 공개 표면 위치 확정
+
+원문: `session/2026-08-19-02-detach-naming-and-placement.md`
+
+가칭으로 남아있던 `:List` reconcile의 비파괴 반환 sentinel `PopOnly`의
+이름을 사용자 요청으로 브레인스토밍(풀링/보관 은유 계열, "언마운트+보류"
+계열, 기존 조어 구조 계열 후보 제시) → 사용자가 이미 있는 `Extract`(명령형
+추출)와 동사가 안 겹치면서 "화면에서만 떼고 관리 주체는 그대로"라는 뜻을
+살릴 수 있다는 이유로 `Detach`를 골라 확정. 이어서 공개 표면 위치("Slot이
+함수라 `Slot.Detach`로 못 붙임")도 논의 — `None` sentinel의 선례(공개
+표면은 패키지 최상위 export, 실제 정의는 관련 로직 옆)를 그대로 따르기로
+확정. `base/slot-plan.md`/`question.md`/`todos.md`/
+`archive/question-resolved.md`/`ROADMAP.md` 전량 반영, `doc-check.py`
+ERROR 0.
