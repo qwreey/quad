@@ -184,7 +184,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       UB, Handler 구현체 작성자만의 계약) — `recompute`는 leaf-lifetime
       경로(`bindLifetime`/`unbindLifetime`)로 등록, `:Subscribe()` 아님
       (2026-08-09 여섯 번째 세션, `base/dispatch-core-plan.md` "Length/Offset"
-      절 — `base/slot-plan.md` "여러 Slot이 섞일 때 순서 보장" 해소)
+      절 — `base/slot-plan.md` "여러 Slot이 섞일 때 순서 보장" 해소).
+      **[2026-08-18 구현 전 QA 2라운드 후속] `bk.N≥2`인 자리가 처음
+      채워지는 동안 크래시하던 경로(`RC-1`)는 owner별 `Blocker` 게이팅으로
+      해결됨** — `setLength`/`setOffsetSource`가 배치 등록 중엔
+      `recompute`를 미루고 배치가 끝나면 명시적으로 한 번만 돎, 상세는
+      `base/dispatch-core-plan.md`의 "배치 등록을 안전하게 만드는 Blocker
+      게이팅" 절.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
@@ -416,6 +422,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       dispatch-core-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
       이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
       UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
+      **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
+      해결됨**, 위 M2 항목 참고.
 - [x] **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
       `Get`/`IndexOf`/`Splice` CRUD 의미론 확정** (2026-08-09 세 번째 세션,
       2026-08-09 열한 번째 세션에 식별 기준 재정정, `Splice`는 2026-08-12
@@ -528,6 +536,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       숫자 기반 메커니즘이 web에도 그대로 필요하나, `insertBefore`/
       `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
       불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
+      **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
+      해결됨 — 위 M2 항목 참고, `attachSlot`이 자기 flush 루프를 자기
+      Blocker로 감싸는 형태로 반영됨(`base/slot-plan.md` "재귀 메커니즘" 절).**
 - [x] **`Slot(initial?: {T})` 생성자로 확장** — "인자 없는 빈 생성자로
       확정"을 뒤집음, `:Add` 반복 호출 sugar일 뿐(새 마운트 로직 없음).
       `initial ~= nil`이면(빈 테이블도) 즉시 `_crudUsed = true` — 상태상

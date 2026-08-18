@@ -359,8 +359,9 @@ function SlotHandler.process(inst, k, slotValue, index)
         -- 예전엔 destroySlotTree를 불러 그 결정과 정면으로 모순됐음.
         unmountSlotTree(slotValue)
         -- 이 위치가 더 이상 기여하지 않음을 owner에게 알림 — **순서 고정**
-        -- (setLength가 끝에서 recompute를 돌리므로 offsetSource를 먼저 비워야
-        -- 죽는 중인 Source에 헛된 :Set()이 안 감, 아래 ⚠️ 절 참고)
+        -- (setLength가 끝에서 gatedRecompute를 경유해 recompute를 돌리므로
+        -- offsetSource를 먼저 비워야 죽는 중인 Source에 헛된 :Set()이 안 감,
+        -- 아래 ⚠️ 절 참고)
         Dispatch.setOffsetSource(inst, k, None)
         Dispatch.setLength(inst, k, 0)
         unbindLifetime(slotValue)  -- top-level 자신의 GC 앵커 해제 — SlotHandler.process의 bindLifetime과 짝
@@ -847,9 +848,10 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
     되는 식):
     - **버림** — 첫 번째 값으로 `nil`(또는 `None`, 동일 취급)을 반환.
       "지금 이 key는 렌더 안 함"(filter 탈락 등) — `prev`가 있었다면
-      **[정정, 2026-08-13 3차 감사] 파괴가 아니라 언마운트됨**(단순
-      `Visible = false`도 아님 — 위 "구현" 절 `rawUnmount` 참고, 이
-      문단 작성 당시엔 아직 destroy 모델이었음). 편의상
+      **[정정, 2026-08-13 3차 감사, 그러나 2026-08-18 구현 전 QA로 재역전
+      — "`nil` 리턴은 파괴가 기본" 절 참고] 파괴됨**(단순 `Visible =
+      false`도 아니고, 언마운트도 아님 — `rawRemove`. `PopOnly`를 명시
+      반환해야 대신 언마운트+재사용됨). 편의상
       `nil` 권장(반환값이 raw Slot 요소로 직접 들어가는 게 아니라
       `:List`의 reconcile이 해석만 하므로 "요소 타입 제약"의 raw
       `nil`/`None` 금지와 안 부딪힘).
@@ -974,12 +976,26 @@ end
 
 **해법**: `updateFn`을 매 사이클 호출하되, `prev`를 줘서 "바꿀 게 없으면
 그대로 돌려주기만 하면 되는" 저렴한 경로를 만들고, filter 탈락은 `nil`
-반환으로 **[정정, 2026-08-13 3차 감사] 언마운트**되게 함(위 캐비엇대로
-파괴 아님) — Visible 토글이 아니라 실제 물리 트리 이탈. 200개 중 20개만
-통과하는 필터면 20개만 실제로 마운트돼 있고 나머지 180개는 물리적으로
-존재하지 않음(애니메이션도 안 돎, 다만 아무도 안 들고 있지 않은 한
-GC되기 전까지 `nil` 아닌 언마운트된 채로 재사용 가능하게 남아있을 수
-있음 — 위 캐비엇 참고).
+반환으로 **[정정, 2026-08-13 3차 감사, 그러나 2026-08-18 구현 전 QA로
+재역전 — 아래 참고] 언마운트**되게 함(위 캐비엇대로 파괴 아님) — Visible
+토글이 아니라 실제 물리 트리 이탈. 200개 중 20개만 통과하는 필터면
+20개만 실제로 마운트돼 있고 나머지 180개는 물리적으로 존재하지 않음
+(애니메이션도 안 돎, 다만 아무도 안 들고 있지 않은 한 GC되기 전까지
+`nil` 아닌 언마운트된 채로 재사용 가능하게 남아있을 수 있음 — 위 캐비엇
+참고).
+
+**⚠️ [재정정, 2026-08-18 구현 전 QA, `/code-review high`로 이 절의 stale
+서술 발견] 바로 위 두 문단은 "filter 탈락 = 언마운트(비파괴)"를 결론으로
+쓰고 있는데, 그 결론은 이후 재역전됐다.** 지금 유효한 규칙은 "`nil`
+리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴" 절(SL-3 해소,
+`question.md`/`archive/question-resolved.md` 참고) — filter 탈락으로
+`updateFn`이 그냥 `nil`을 반환하면 이제 **파괴**(`rawRemove`)가 기본이고,
+"Instance.new/Destroy 비용을 아끼고 싶다"는 이 절의 동기를 살리려면
+`nil` 대신 명시적으로 `PopOnly`를 반환해야 언마운트+재사용이 된다. 이
+절의 **동기**(matched-item 애니메이션/이벤트가 계속 돌면 안 된다는 문제
+자체)는 여전히 유효하지만, "그래서 nil이 곧 언마운트"라는 결론 문장은
+`PopOnly` 신설로 대체됐다 — 이 절을 읽고 filter를 구현할 땐 반드시 위
+"`nil` 리턴은 파괴가 기본" 절도 같이 볼 것.
 
 **"이전 상태를 다음 호출에 어떻게 넘기냐" 문제는 `userdata`가 그 채널** —
 item이 plain table이라 매번 `Source`를 새로 안 만들고 재사용하려면 그
@@ -1457,10 +1473,31 @@ nil/None 금지)는 그대로.
 
 ### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용
 
+**✅ [해결, 2026-08-18 구현 전 QA 2라운드 후속]** 아래가 재사용하는
+`Dispatch.setLength`/`setOffsetSource`/`recompute`가 배치 등록 중 크래시할
+수 있던 문제(`RC-1`)는 해결됨 — `base/dispatch-core-plan.md`의
+"배치 등록을 안전하게 만드는 Blocker 게이팅" 절이 소스. 이 문서에선 그
+해법이 `attachSlot`의 flush 루프에 어떻게 적용되는지만 다룬다(아래
+코드의 `blocker` 관련 줄).
+
 `base/dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
 owner 키(`inst`)가 물리 Instance일 필요가 없음(`Relate`가 아무 테이블이나
 weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 마운트와
 중첩 마운트가 완전히 같은 함수 호출**이 됩니다.
+
+**[재정정, 2026-08-18 구현 전 QA 2라운드 후속] 호출 순서가 뒤집혀 있었음
+— `setLength`가 먼저, `setOffsetSource`가 나중이던 것을 바로잡음.**
+`base/dispatch-core-plan.md`의 "`NilHandler`" 절이 이미 확정해둔 **"호출
+순서는 `setOffsetSource` → `setLength`"** 일반 규칙(해제 시점 계약에서
+나왔지만 등록 시점에도 그대로 적용)과 이 `attachSlot` 의사코드가 계속
+어긋나 있었던 것 — RC-1을 고치며 `setOffsetSource`가 즉시 계산을 하게
+되면서 이 불일치가 드러남. 사용자 확정: *"length 를 알게되는 시점은 각
+요소가 생성된 이후인데, 그럼 setOffset 이 먼저 안 되어있으면 offset
+전파가 한번 더 일어나게됨"* — Slot의 진짜 `.Length`는 `activateList`가
+자기 `:List`를 최초 reconcile한 **뒤에야** 확정되므로, `setLength`를 그
+전에 부르면 등록 직후 값이 또 바뀌어 전파가 한 번 낭비된다. 올바른 순서는
+**`setOffsetSource`(즉시 계산) → (Slot이면) 실체화 → `setLength`(그제서야
+확정된 값으로 등록) → 물리 마운트**:
 
 ```lua
 -- quad-base, Slot.luau — 재귀적 "attach" 하나로 최상위/중첩 마운트 통합
@@ -1475,24 +1512,38 @@ local function attachSlot(slot, physicalTarget, ownerKey, position)
     slot._mounted = true
     slot._mountedInst = physicalTarget
 
-    Dispatch.setLength(ownerKey, position, slot.Length)   -- slot.Length는 State<number>, 기존 로직 그대로
     local offsetSource = Source(0)
-    Dispatch.setOffsetSource(ownerKey, position, offsetSource)
+    Dispatch.setOffsetSource(ownerKey, position, offsetSource)   -- 먼저 — 앞선 형제 합으로 즉시 계산
     slot.Offset = offsetSource
 
     if slot._listed then
-        activateList(slot, physicalTarget)   -- 기존 :List lazy activation, 안 바뀜
+        activateList(slot, physicalTarget)   -- 실체화 — 여기서 slot.Length가 진짜 값으로 확정됨
     end
 
-    -- attach 전에 이미 들어와있던 요소들 flush(이미 채워둔 Slot을 나중에
-    -- 마운트하는 흔한 패턴이 원래도 전제하고 있던 것 — 새 개념 아님)
+    Dispatch.setLength(ownerKey, position, slot.Length)   -- 실체화 뒤 — 확정된 값으로 등록, 재전파 낭비 없음
+
+    -- [2026-08-18 신설, RC-1 해결] attach 전에 이미 들어와있던 요소들 flush —
+    -- 이 루프도 Dispatch.drive의 최상위 배열 순회와 똑같이 "slot._elements의
+    -- 개수(N)가 이미 정해진 채 position을 하나씩 등록"하는 배치라 같은
+    -- 크래시 위험이 있음. 이 Slot 자신의 owner 키로 별도 Blocker를 새로
+    -- 만들어(부모 Blocker와 절대 공유하지 않음 — base/blocker-plan.md의
+    -- "재진입" 절) 같은 On→등록→OffWithoutEmit→recompute 패턴을 적용.
+    local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
+    blocker:On()
     for i, element in ipairs(slot._elements) do
         if isSlot(element) then
             attachSlot(element, physicalTarget, slot, i)   -- 재귀, ownerKey가 이제 slot 자신
         else
+            -- 평범한 Instance 요소도 같은 순서: 자기 자리의 offset은 아무도
+            -- 안 읽으므로 None(참여만, 소비 없음), length는 상수 1.
+            Dispatch.setOffsetSource(slot, i, None)
+            Dispatch.setLength(slot, i, 1)
             element.Parent = physicalTarget   -- quad-roblox 글루가 실제 수행
         end
     end
+    blocker:OffWithoutEmit()
+    local bk = getBookkeeping(slot)
+    if bk then recompute(slot, bk) end
 end
 ```
 
@@ -1512,6 +1563,15 @@ end
 -- self가 아직 마운트 전이면 _elements에만 들어가고, self가 나중에
 -- attachSlot될 때 위 flush 루프가 처리
 ```
+
+**이 런타임 단건 경로는 Blocker 게이팅이 필요 없다(사용자 확인,
+2026-08-18)** — *"그건 이미 마운트가 된 이후라서 별 상관 없음... 새로운
+개체가 뒤에 붙는 현상에서는 위 요소들로 하여금 위치를 구하면 돼, 뒷
+요소를 밀어내는게 아니라서, setLength 가 emit 되지 않는것에 영향 안
+받고 수행 가능함"* — 이 시점엔 `self`의 Blocker가 이미 flush 배치를
+끝내고 `OffWithoutEmit()`으로 꺼져 있고, 새로 등록되는 position보다
+앞선 모든 position은 이미 안정적으로 채워져 있어 `nil` 자리가 생길
+여지 자체가 없다.
 
 `recompute`가 owner가 Slot이면 그 `.Length`에도 합계를 반영하도록
 확장됐으므로(`base/dispatch-core-plan.md` 참고) — `Slot.Length`는 더
@@ -1983,9 +2043,12 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 (2026-08-13 여섯 번째 세션, 사용자 지적).** 마운트할 때와 달리 **해제할
 때는 이 순서를 반드시 지켜야 함**:
 
-- `Dispatch.setLength`는 끝에서 `recompute`를 돌리고, `recompute`는
-  `sourceList`를 순회하며 각 자리의 `offset:Set(sum)`을 호출함
-  (`base/dispatch-core-plan.md` "Length/Offset" 절).
+- `Dispatch.setLength`는 끝에서 `gatedRecompute`를 경유해(배치 게이팅
+  중이 아니면) `recompute`를 돌리고, `recompute`는 `sourceList`를
+  순회하며 각 자리의 `offset:Set(sum)`을 호출함(`base/dispatch-core-plan.md`
+  "Length/Offset" 절 — 해제는 배치 도중이 아니라 steady state에서 흔히
+  일어나므로 이 경로에서는 `gatedRecompute`가 거의 항상 즉시 `recompute`로
+  이어짐).
 - 그래서 **`setLength(0)`을 먼저 부르면**, 그 안의 `recompute`가 도는
   시점에 해제 중인 자리의 `sourceList[i]`엔 **아직 옛 Slot의 offset
   `Source`가 그대로 남아 있음** → 지금 막 떼어내는 서브트리의 Source에

@@ -336,7 +336,7 @@ D-7의 재역전 여부, N-4의 `NoneHandler`/`NilHandler` 역할 분담, ST-2�
   어긋난다**(문서 스스로 이 상태를 UB로 규정). M3(Slot) 착수 전에 결론이
   필요한 항목.
 
-### D-7 — base 소유 Fallback Handler의 등록 주체가 다시 뒤집힐 수 있음 ⚠️ 재확인 필요
+### D-7 — base 소유 Fallback Handler의 등록 주체가 다시 뒤집힐 수 있음 ✅ 해소(같은 세션 내 재역전)
 
 - **판정**: 아니오(잠정) — 사용자는 **quad-base 로드 시 등록이 맞다고 했었다**고
   기억하며, 문서의 현재 확정과 반대. 다만 사용자도 "더 확인이 필요"라고 함.
@@ -359,6 +359,18 @@ D-7의 재역전 여부, N-4의 `NoneHandler`/`NilHandler` 역할 분담, ST-2�
   `archive/tag-attribute-load-time-registration-reversed.md`를 되살릴지
   아니면 새로 쓸지, (c) `InitNamespace` 거부 원칙과 어떻게 양립시킬지를
   같이 적어주시면 좋겠음.
+- **해소(같은 세션 내, 2026-08-18) — (a)/(b)/(c) 전부 답변됨**:
+  (a) **최종은 로드 시 등록** — "등록 주체는 다시 quad-base 자신이다
+  (모듈이 자기 레지스트리를 구성하는 시점)"으로 재역전 확정. (b) 새로
+  안 쓰고 **기존 `archive/tag-attribute-load-time-registration-reversed.md`에
+  재역전 배너만 추가**(그 문서 자체가 "이번에 재역전됐다"는 걸 스스로
+  알림 — 새 archive 문서 생성 없음). (c) `InitNamespace` 거부 원칙과의
+  양립: 그 원칙이 금지한 건 "사용자가 수동으로 init을 호출하게 만드는
+  것"과 "모듈 로드 시 *남의* 상태를 건드리는 것" 둘인데, base가 **자기
+  모듈 안의 자기 레지스트리**를 자기가 채우는 건 그 어느 쪽도 아니므로
+  충돌 없음. 지금 유효한 설계는 `base/dispatch-core-plan.md`의 "base가
+  소유하는 핸들러와 주입되는 엔진 op" 절의 "[재역전, 2026-08-18 구현 전
+  QA — 사용자 확정]" 배너가 소스.
 
 ---
 

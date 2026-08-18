@@ -41,6 +41,45 @@
 - 지금 유효한 설계는 `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트
   네이밍 인체공학" 절이 소스.
 
+## [해소됨, 2026-08-18 구현 전 QA 2라운드 후속] `RC-1` — `recompute` 트리거 모델 재설계
+
+`base/dispatch-core-plan.md`의 `recompute`가 배열 위치를 순차 등록하는
+동안(`Frame{A,B}`처럼 정적 자식 2개짜리도) 아직 등록 안 된 자리를 `nil`로
+읽어 산술 에러를 내던 크래시(`qa-request/pre-implementation-qa-round2.md`의
+"RC-1" 절에서 손 트레이싱으로 발견) — 같은 날 후속 세션에서 사용자가
+Blocker 재사용 설계를 직접 제시해 해결됨.
+
+- **핵심**: owner(물리 `inst` 또는 Slot)마다 `Relate`로 들고 있는 전용
+  `Blocker`를 배치(`Dispatch.drive`의 배열 파트 순회, `attachSlot`의 자기
+  `_elements` flush) 시작 시 `On`, `setLength`의 Observer 콜백(등록 즉시
+  1회 실행 포함)이 `blocker:IsOn()`이면 `recompute`를 건너뜀. 배치가
+  끝나면 `blocker:OffWithoutEmit()` + 명시적 `recompute` 딱 1회.
+  `setOffsetSource`는 등록되는 그 자리에서 앞선 형제들의 길이 합을 직접
+  계산해 즉시 `:Set`해서(recompute를 안 기다림) 배치 도중 `:List`가
+  실체화되며 옛 offset을 읽는 문제도 같이 없앰.
+- **Blocker에 신설된 API**: `IsOn()`(`IsBlocked` 조회 얇은 래퍼),
+  `OffWithoutEmit()`(끄되 gated state의 대기 emit은 흘려보내지 않음,
+  `HasBlockedEmit`은 그대로 리셋) — `state:Block()`을 거치지 않고 직접
+  쓰는 첫 사례. 처음 요청됐던 `HasBlocked`(Blocker 자신의 새 최상위
+  플래그)는 논의 중 불필요함이 확인돼 신설 안 함.
+- **중첩 Slot마다 별도 Blocker**(부모와 공유 금지, `blocker-plan.md`의
+  재진입 미지원 규칙 그대로), **런타임 단건 `slot:Add()`는 게이팅 불필요**
+  (이미 안정된 앞선 position만 참조하므로 무관) — 둘 다 사용자가 직접
+  확인.
+- **후속 정정 — `attachSlot` 호출 순서**: 기존 의사코드는 `setLength`를
+  먼저 불렀는데, "호출 순서는 `setOffsetSource` → `setLength`" 일반
+  규칙과 어긋나 있었음이 드러남(RC-1로 `setOffsetSource`가 즉시 계산을
+  하게 되며 순서가 겉으로 드러났기 때문) — Slot의 진짜 `.Length`는
+  `activateList` 실체화 뒤에야 확정되므로 `setOffsetSource` → 실체화 →
+  `setLength` → 물리 마운트 순으로 바로잡음. 같은 논의에서 **코루틴 yield
+  금지 불변식**도 확정(`Dispatch.process`/`attachSlot` 호출 체인 도중
+  yield는 UB).
+- 지금 유효한 설계는 `base/dispatch-core-plan.md`의 "배치 등록을 안전하게
+  만드는 Blocker 게이팅" 절, `base/slot-plan.md`의 "재귀 메커니즘" 절,
+  `base/blocker-plan.md`의 "`state:Block()` 없이 직접 쓰는 두 번째 용례"
+  절이 소스. 논의 원문(설계 제안 전문, 확인 질문 3개와 답변)은
+  `qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절.
+
 ---
 
 # 확인/결정 필요 목록

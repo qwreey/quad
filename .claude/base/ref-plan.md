@@ -521,7 +521,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     ProcessedPreRefHandler.isHandlable(inst, k, v) = (v == ProcessedPreRef)
     function ProcessedPreRefHandler.process(inst, i, v)
         -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저 — setLength가
-        -- 끝에서 recompute를 돌리므로(`base/dispatch-core-plan.md`의 해제 순서 계약)
+        -- 끝에서 gatedRecompute를 경유해 recompute를 돌리므로
+        -- (`base/dispatch-core-plan.md`의 해제 순서 계약)
         Dispatch.setOffsetSource(inst, i, None)
         Dispatch.setLength(inst, i, 0)
         return function() end  -- no-op retract, 이 자리는 fire가 끝나
@@ -606,9 +607,13 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
     전용 `Handler`를 하나 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
     isHandlable = function(inst,k,v) return isPreRef(v) end, process =
-    function(inst,k,v) error("PreRef는 children 배열 리터럴에만 놓을 수
-    있음") end }` — `k` 타입은 안 가림(숫자든 문자열이든 `isPreRef(v)`만
-    보고 매치). `NoneHandler`와 같은 결의 "한 값 종류만 전담하는 Handler"
+    function(inst,k,v) error(`PreRef binding should be array index item,
+    but got {typeof(k)}`) end }`(**[2026-08-18, `/code-review high`로
+    누락 발견 — `PostRef`의 "동적 경로 가드 Handler도 거울상으로 하나 더" 절/
+    `effect-plan.md`의 "동적 경로 가드" 절과 짝을 맞춤]** 에러 메시지에
+    실제 `k` 타입을 실을 것) — `k` 타입은 안 가림(숫자든 문자열이든
+    `isPreRef(v)`만 보고 매치). `NoneHandler`와 같은 결의 "한 값 종류만
+    전담하는 Handler"
     패턴 재사용, 새 메커니즘 아님. **[2026-08-14 열한 번째 세션] 우선순위는
     `HANDLER_PRIORITY_FALLBACK`**(무조건 매치하는 하드 블록이 아니라
     `Tag`/`Attribute`와 같은 "base가 소유하지만 백엔드/특정 자리에서

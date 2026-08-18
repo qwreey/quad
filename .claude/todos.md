@@ -5,17 +5,27 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐ [2026-08-18 신설, 같은 날 반영 완료] 구현 전 QA 결과는
-   `base/`에 전부 반영됐다 — 남은 건 아래 "결론 전에 착수 금지" 항목뿐.**
-   사용자가 `base/` 확정 문서 전체를 문항으로 재심사한 결과(원본 문답과
-   사용자 답변 원문은 `.claude/qa-request/pre-implementation-qa-round1.md`가
-   소스), 확정으로
+00. **⭐⭐ [2026-08-18 신설, 같은 날 완료] 구현 전 QA — 1·2라운드 전부
+   `base/`에 반영 완료.** 1라운드는 사용자가 `base/` 확정 문서 전체를
+   문항으로 재심사한 결과(원본 문답과 사용자 답변 원문은
+   `.claude/qa-request/pre-implementation-qa-round1.md`가 소스), 확정으로
    적혀 있는데 실제로는 틀린 항목이 여러 건 나왔고 **같은 날 전부 정정
    반영됐다**(개수는 그 문서가 소스, 여기서 세지 않음). 그대로 구현하면
    반대로 돌던 두 건(`canBound` 게이트 방향, gcconn/gchold 강/약)도 닫혔다.
+   2라운드는 `:List`의 `reconcile`/`recompute` 같은 확정 의사코드를 실제로
+   손으로 실행해보는 작업(원본과 진행 로그는
+   `.claude/qa-request/pre-implementation-qa-round2.md`가 소스) — `recompute`
+   트레이싱에서 `Frame{A,B}`처럼 정적 자식 2개짜리도 첫 마운트에 크래시하는
+   경로(`RC-1`)를 찾았고, 같은 날 후속 대화에서 사용자가 직접 제시한
+   Blocker 재사용 게이팅 설계로 해결·반영까지 완료됐다
+   (`archive/question-resolved.md`의 `RC-1` 절).
 
-   **M0/M3 착수 전에 결론이 필요한 미해결 항목만 여기 짚는다** — 전부
-   `question.md` 3번에 올라가 있고, 각 `base/` 문서에도 ⚠️로 표시돼 있다:
+   **M3 착수 전에 결론이 필요한 미해결 항목만 여기 짚는다**(M0/M2는 여전히
+   막혀 있지 않음, 0번 항목 참고) — 대부분 `question.md` 3번에도 올라가
+   있고(**[정정, 2026-08-18 `/code-review high`] 사용자 판단이 필요한
+   항목만 그렇다 — 아래 "dedup 경로" 대칭 확인, "Store 미선언 키" 실측
+   확인 둘은 판단이 아니라 구현 시 검증 작업이라 `question.md`엔 없음,
+   여기 목록이 소스**), 각 `base/` 문서에도 ⚠️로 표시돼 있다:
    - **중간 State GC 미검증**(`base/source-state-plan.md`) — 상류 strong /
      하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
    - **그룹 `Attribute`의 위치별 claim 설계**(`base/attribute-plan.md`) —
@@ -26,7 +36,10 @@
      `:Unsubscribe()` 절) — M3 착수 전 확인.
    - **`PopOnly` 이름**(`base/slot-plan.md`) — 메커니즘은 확정, 이름만 열림.
    - **`PopOnly` 홀드 중 키가 사라졌을 때의 처분**(`base/slot-plan.md`) —
-     지금 의사코드대로면 파괴도 반환도 안 되고 참조만 끊김. M8 착수 전 필요.
+     지금 의사코드대로면 파괴도 반환도 안 되고 참조만 끊김. **[정정,
+     2026-08-18 `/code-review high` — `ROADMAP.md`의 M6 PopOnly 체크박스와
+     대조해 발견] M6(`:List`가 있는 마일스톤) 착수 전 필요** — M8(`Ref`)
+     아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥 지나칠 위험이 있었음.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.

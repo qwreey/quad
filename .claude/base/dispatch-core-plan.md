@@ -127,10 +127,20 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   **이걸로 `module-lifecycle-plan.md`의 "열린 질문이었던 것 — 전부
   해소됨" 절에 있는 "provider가 아직 주입 안 된 상태에서 dispatch가
   호출되면?" 케이스(`pre-implementation-audit.md`
-  1-4)도 별도 분기 없이 자동으로 해소됨** — provider 미주입 상태는
+  1-4)도 별도 분기 없이 자동으로 해소됨** — **backend가 직접 소유하는
+  핸들러(`Property`/`Event`/`Slot`류)에 한해** provider 미주입 상태는
   결국 그 클래스를 다루는 핸들러가 레지스트리에 하나도 없는 상태이므로
-  "매치 실패"와 정확히 같은 경로로 수렴함. 오타 키/미지원 조합/provider
-  미주입을 서로 다른 에러 종류로 구분할 필요가 없음.
+  "매치 실패"와 정확히 같은 경로로 수렴함. **[한정, 2026-08-18 `/code-review
+  high` — `D-7` 재역전과의 정합성]** `Tag`/`Attribute`처럼 **base가
+  Fallback Handler를 자기 로드 시점에 스스로 등록하는 것**(위 문단,
+  "base가 소유하는 핸들러와 주입되는 엔진 op" 절)은 이 일반화의 예외다 —
+  백엔드가 하나도 없어도 그 Fallback Handler는 이미 레지스트리에 있으므로
+  **매치는 되고**, 실패는 "매치 실패" 에러가 아니라 그 자리에서 실행되는
+  주입 op 스텁의 명시적 에러(`addTag가 구현되지 않음...` 류)로 남
+  — "provider 미주입"과 "매치 실패"가 **에러 경로 자체는 다르지만 둘
+  다 명확한 에러로 수렴한다"**는 결론은 안 바뀜, 다만 오타 키/미지원
+  조합과 provider 미주입을 구분할 필요가 없다는 문장은 backend 소유
+  핸들러에만 해당한다.
 - **디버그 모드 — 핸들러 등록/정렬 시점에 동률 감지 시 print 경고 +
   전체 핸들러 목록 조회 함수.** 우선순위는 핸들러 등록 시점에 정적으로
   sort되므로 동률 감지 자체는 그 시점에 공짜로 가능 — `priority`가 같은
@@ -459,6 +469,13 @@ end
     `PostRef`를 fire하는 짧은 루프. 둘 다 배열 재순회가 아니라 pre-pass
     하나 + 실제 `PostRef` 개수만큼의 목록 순회라 비용이 작음 — 상세는
     `base/ref-plan.md`의 "`PostRef`" 절.
+    **[2026-08-18 구현 전 QA 2라운드 후속, `RC-1` 해결] 배열 파트 순회
+    전체를 `inst` 전용 `Blocker`로 감싼다** — 순회 시작 전에
+    `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고, 배열 파트 순회가
+    (pre-pass/post-pass 포함) 전부 끝나면 `:OffWithoutEmit()` 한 뒤
+    `recompute(inst, bk)`를 명시적으로 1회 호출 — 상세 근거·`setLength`/
+    `setOffsetSource`가 이 Blocker를 어떻게 쓰는지는 아래 "배치 등록을
+    안전하게 만드는 Blocker 게이팅" 절이 소스.
     **진입 인덱스는 항상 `1`**(2026-08-13 감사에서 명시화 — 인덱스 도입
     후에도 이 자리만 인자가 안 적혀 있었음) — `drive`는 그 키의 체인을
     처음 여는 자리이므로 "다른 키로 위임할 때는 그 키의 재귀 깊이와
@@ -511,8 +528,9 @@ function NilHandler.process(inst, k, v, index)
     -- 이 자리는 아무것도 마운트하지 않는다 — 순서 계산에서 빠지도록 등록만 한다.
     -- 순서 주의: setOffsetSource가 먼저, setLength가 나중(아래 "해제(그 자리가
     -- 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`" 절의 계약 —
-    -- setLength가 끝에서 recompute를 돌리므로 반대로 하면 죽는 중인 서브트리의
-    -- Source에 :Set()이 날아간다). [2026-08-18 감사에서 순서 정정]
+    -- setLength가 끝에서 gatedRecompute를 경유해 recompute를 돌리므로
+    -- 반대로 하면 죽는 중인 서브트리의 Source에 :Set()이 날아간다).
+    -- [2026-08-18 감사에서 순서 정정]
     Dispatch.setOffsetSource(inst, k, None)
     Dispatch.setLength(inst, k, 0)
     return function() end
@@ -581,16 +599,20 @@ end
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
   더 이상 별도로 등록되는 핸들러가 아님 — Property 핸들러 내부에서
   소비되는 값-레벨 래퍼로 재설계됨(`base/tween-plan.md`).
-- **모듈 재생성(`New()`)과의 관계 — 새 설계 불필요, 이미 있는 선례로 자연히
-  풀림.** v1처럼 `require`를 감싸 `Init(QuadId?)`로 격리 인스턴스를 만드는
+- **모듈 재생성(`Quad()`)과의 관계 — 새 설계 불필요, 이미 있는 선례로 자연히
+  풀림.**(**[정정, 2026-08-18 `/code-review high`] 헤딩이 옛 이름 `New()`를
+  쓰고 있었음 — `architecture.md` 13번 항목과 같은 이유로 `Quad()`로
+  통일, 아래 "[한정]" 문단이 이미 정확한 이름을 씀**) v1처럼 `require`를
+  감싸 `Init(QuadId?)`로 격리 인스턴스를 만드는
   방식은 안 씀(위 "확정된 것" 절 — id 기반 조회 자체가 Ref로 대체되며
   기각됨). 대신 이미 확정된 "base 유틸은 인터페이스, 실제 구현은 팩토리가
   `BaseModule`을 뮤테이션해서 주입"(`RobloxFactory(BaseModule)`) 패턴을
   그대로 따름 — Dispatch의 handler 레지스트리도 `BaseModule` 테이블에
   딸린 state 중 하나일 뿐이라, `_initializedBy` 마커에 대해 이미 확정된
-  것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`New()`가
+  것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`Quad()`가
   생기면 각 인스턴스가 별도 테이블이 되므로 이 마커도 테이블별로 독립적으로
-  스코핑됨, 재설계 불필요"). 다중 인스턴스화가 실제로 생기면 그 시점에
+  스코핑됨" — 단 아래 "[한정]" 문단대로 코드 손질은 필요, 재설계까지는
+  불필요). 다중 인스턴스화가 실제로 생기면 그 시점에
   BaseModule 전체를 인스턴스별 테이블로 만드는 메커니즘에 Dispatch도 자연히
   같이 딸려가고, 호출부는 `module.Dispatch.process(...)`처럼 그 인스턴스
   테이블을 통해 접근하게 됨 — 지금 미리 프리미티브화해둘 이유가 없음.
@@ -1084,6 +1106,16 @@ end
 중간 노드가 `inst`에 직접 부작용을 냈다면 그 흔적을 지울 주체가 없어짐.
 조건부로만 재위임하는 핸들러를 만들면 재위임을 건너뛰는 자리에서
 `Dispatch.retractFrom(inst, k, index + 1)`로 아래를 직접 정리할 것.
+
+**9. `process` 안에서(또는 `process`가 부르는 컴포넌트 함수/`updateFn`
+안에서) 코루틴 yield 금지(2026-08-18 신설, `/code-review high`로 이
+불변식이 "Length/Offset" 절에만 묻혀 있던 걸 발견해 여기로도 끌어올림).**
+아래 "Length/Offset" 절의 배치 게이팅(`Blocker`)이 "position이 항상
+순서대로, 다른 코드가 끼어들 틈 없이 동기로 처리된다"는 전제 위에
+서 있음 — 이 체인 도중 yield가 끼면 같은 owner의 `Blocker`를 다른
+코드가 그 사이에 건드릴 수 있어 게이팅 순서 보장이 깨짐. 상세 근거는
+"배치 등록을 안전하게 만드는 Blocker 게이팅" 절.
+
 ### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
 
 **문제(`base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 열린 질문,
@@ -1142,8 +1174,13 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   `State`라 알아서 전파됨, Handler가 매번 다시 부를 필요 없음). `state<Slot>`
   교체 시엔 이 Handler가 새 값으로 다시 `setLength`를 호출.
 - **`setOffsetSource`**: 이 위치가 자기 순서 계산에 쓸 `Source<number>`를
-  **스스로 만들어서** 등록 — Dispatch는 그냥 레지스트리에 넣어두기만
-  하고, `recompute`가 그 자리에 값을 `:Set()`함. Slot이 매치되는 경우
+  **스스로 만들어서** 등록. **[2026-08-18 구현 전 QA 2라운드 후속 —
+  `RC-1` 해결]** 예전엔 "Dispatch는 그냥 레지스트리에 넣어두기만 하고
+  `recompute`가 그 자리에 값을 `:Set()`한다"였는데, 이제 **등록되는 그
+  자리에서 자기보다 앞선 position들의 길이 합을 직접 계산해 즉시
+  `:Set()`한다**(아래 "배치 등록을 안전하게 만드는 Blocker 게이팅" 절의
+  "`setOffsetSource`의 즉시 계산" 참고) — `recompute`는 이후 값이 바뀔 때
+  전체를 다시 계산하는 역할로 남는다. Slot이 매치되는 경우
   이 Source는 그 자리에서 `Slot.Offset` 필드로도 그대로 저장됨(아래
   참고) — 순수 숫자 누적합 계산이라 엔진 지식이 전혀 필요 없어서, 이
   등록 자체는 `quad-base`(`Dispatch/Slot.luau`)가 함. **[정정,
@@ -1189,8 +1226,9 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
 별도 unregister API는 없고 `0`/`None` 재등록이 곧 해제인데, **순서가
-반대면 위험함**: `setLength`가 끝에서 `recompute`를 돌리므로, 먼저
-부르면 그 `recompute`가 아직 남아있는 옛 `Source`(지금 막 떼어내는
+반대면 위험함**: `setLength`가 끝에서 `gatedRecompute`를 경유해(배치
+게이팅 중이 아니면) `recompute`를 돌리므로, 먼저 부르면 그 `recompute`가
+아직 남아있는 옛 `Source`(지금 막 떼어내는
 서브트리의 것)에 `:Set()`을 날려 죽는 중인 다운스트림을 헛되이
 캐스케이드시킴. `setOffsetSource(None)`을 먼저 하면 아래 `recompute`의
 `offset ~= None` 가드에 바로 걸려 그 Source를 아예 안 건드림. 값이
@@ -1228,6 +1266,14 @@ lazy 생성.
 여부 구별과 접근 비용" 쪽.
 
 **recompute — 매번 전체 순회, `Get` 가드로 캐스케이드만 방지**:
+
+**✅ [해결, 2026-08-18 구현 전 QA 2라운드 후속] 아래 의사코드를 배치
+등록 중 안전하지 않게 만들던 크래시(`RC-1`)는 해결됨 — 해법은 "배치
+등록을 안전하게 만드는 Blocker 게이팅" 절(바로 아래)이 소스, 여기
+`recompute` 자체의 코드는 안 바뀜(off-by-one 수정 버전 그대로). 바뀐
+건 **언제 호출되는가**뿐 — `setLength`/`setOffsetSource`가 새로 개입한다.
+트레이싱 경위·논의 원문은 `qa-request/pre-implementation-qa-round2.md`의
+"RC-1" 절.
 
 **[정정, 2026-08-11 세션] `sum` 누적과 `offset:Set` 순서가 뒤바뀌어
 있던 off-by-one 버그.** 원래 코드는 `sum += lengthList[i]`를 먼저 한
@@ -1308,11 +1354,22 @@ vs 0-based 개수)"이라는 걸 명시적으로 적어둘 것.
 일어나게 막음.
 
 **`setLength` 구현 — leaf-lifetime 경로(`bindLifetime`/`unbindLifetime`),
-`:Subscribe()` 아님(2026-08-09 여섯 번째 세션)**:
+`:Subscribe()` 아님(2026-08-09 여섯 번째 세션).** **[재작성, 2026-08-18
+구현 전 QA 2라운드 후속 — `RC-1` 해결]** `setLength`는 더 이상 `recompute`를
+직접 부르지 않는다 — State든 상수든 항상 아래 `gatedRecompute` 하나를
+경유하고, 그 함수가 `blocker:IsOn()`을 확인해 배치 등록 중이면 건너뛴다
+(Observer의 "등록 즉시 1회 실행"으로 촉발되는 최초 호출도 예외 없이 이
+게이트를 통과한다 — 사용자: *"setLength 는 recompute 를 직접 수행하진
+않고, Observer 에서 recompute 를 수행해. 맨 처음 emit 에서도 blocker 가
+on 이면 무시하는식"*). `blocker`가 무엇이고 어디서 오는지는 바로 아래
+"배치 등록을 안전하게 만드는 Blocker 게이팅" 절 참고 — 이 함수는 그
+Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지 않음,
+그건 호출하는 배치 쪽 책임):
 
 ```lua
-function Dispatch.setLength(inst, i, len)
-    local bk = getBookkeeping(inst)   -- Relate(inst) 기반, lazy 생성
+function Dispatch.setLength(ownerKey, i, len)
+    local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
+    local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
 
     local oldObserver = bk.observers[i]
     if oldObserver then
@@ -1322,23 +1379,122 @@ function Dispatch.setLength(inst, i, len)
 
     bk.lengthList[i] = len
 
-    if isState(len) then
-        local observer = len:Observer(function()
-            recompute(inst, bk)
-        end)
-        bindLifetime(inst, observer)   -- inst 생명주기에 귀속, Subscribe 아님
-        bk.observers[i] = observer
+    local function gatedRecompute()
+        if not blocker:IsOn() then
+            recompute(ownerKey, bk)
+        end
     end
 
-    recompute(inst, bk)   -- 등록 즉시 1회(Observer 자체의 "등록 즉시 1회 실행"과 겹쳐도 무해)
+    if isState(len) then
+        local observer = len:Observer(gatedRecompute)   -- 등록 즉시 1회 실행도 게이팅됨
+        bindLifetime(ownerKey, observer)   -- ownerKey 생명주기에 귀속, Subscribe 아님
+        bk.observers[i] = observer
+    else
+        gatedRecompute()   -- 상수 길이도 같은 게이트를 통과 — setLength 자신은 recompute를 직접 안 부름
+    end
 end
 ```
 
 `:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
-본질적으로 `inst` 하나에 종속된 내부 배관이라, `inst`가 Destroy될 때
-같이 죽어야 함 — `:Subscribe()`는 명시적 `:Unsubscribe()`가 없으면 안
-끊기므로 안 맞음. `bindLifetime`/`unbindLifetime`이 이미 이 요구(GC-native,
-`inst` 생명주기에 자동 귀속)를 충족.
+본질적으로 `ownerKey` 하나에 종속된 내부 배관이라, `ownerKey`(물리 inst
+또는 Slot 자신)가 죽을 때 같이 죽어야 함 — `:Subscribe()`는 명시적
+`:Unsubscribe()`가 없으면 안 끊기므로 안 맞음. `bindLifetime`/
+`unbindLifetime`이 이미 이 요구(GC-native, `ownerKey` 생명주기에 자동
+귀속)를 충족.
+
+### 배치 등록을 안전하게 만드는 Blocker 게이팅 (2026-08-18, `RC-1` 해결)
+
+**문제 재확인**: `bk.N`(그 owner의 array part 크기)은 배치가 시작되는
+시점에 이미 정해져 있는데, `bk.lengthList[1..N]`은 각 position이 처리될
+때마다 하나씩 채워진다 — 순차 처리 도중에 `recompute`가 돌면 아직 안
+채워진 뒤쪽 position을 `nil`로 읽어 산술 에러가 난다(`Frame{A,B}`처럼
+정적 자식 2개짜리도 재현됨, 트레이싱 상세는
+`qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절).
+
+**해법의 핵심 — recompute를 배치가 끝날 때까지 미루고, offset은 그
+자리에서 직접 계산한다(사용자 설계, 2026-08-18)**:
+
+1. **배치를 여는 쪽(`Dispatch.drive` 최상위, 또는 `attachSlot`이 자기
+   자신의 `_elements`를 flush하는 자리 — 아래 "적용 지점" 참고)이 그
+   owner 전용 `Blocker`를 `Relate(ownerKey)`에 lazy 생성하고 배치 시작
+   전에 `:On()`한다.** 이 Blocker는 `state:Block()`을 거치지 않고
+   **직접** 쓰인다 — `base/blocker-plan.md`의 "`state:Block()` 없이
+   직접 쓰는 두 번째 용례" 절 참고.
+2. 배치가 도는 동안, 각 position의 `setLength`가 트리거하는
+   `gatedRecompute`(위)는 `blocker:IsOn()`이 참이라 전부 스킵된다 — 즉
+   **배치 도중엔 `recompute`가 단 한 번도 안 돈다**, 그래서
+   `bk.lengthList`의 빈 자리를 읽을 일 자체가 없다.
+3. **`setOffsetSource`는 그동안 손 놓고 있지 않는다 — 등록되는 그
+   자리에서 자기보다 앞선 position들의 길이 합을 직접 계산해 `:Set`한다**
+   (아래 "`setOffsetSource`의 즉시 계산" 참고). 배치가 항상 position을
+   순서대로(1,2,...,N) 처리하므로, position `i`를 등록하는 시점엔 `1..i-1`이
+   이미 전부 끝나 있어 이 합산이 항상 정확하다. **이게 "recompute를
+   미루면 초기 레이아웃이 이상해진다"는 우려를 없앤다** — `:List`가
+   실체화되며 `Slot.Offset`을 곧바로 읽어 쓰는 자리(`activateList`)가
+   배치 중이라도 항상 최신값을 보게 됨.
+4. 배치가 끝나면(`Dispatch.drive`의 배열 파트 순회 전체, 또는
+   `attachSlot`의 flush 루프 전체가 끝나면) `blocker:OffWithoutEmit()`을
+   부르고, **그 직후 딱 한 번** `recompute(ownerKey, bk)`를 명시적으로
+   호출한다. 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
+   `ownerKey`가 Slot이면 이 한 번의 recompute가 `ownerKey.Length`(위
+   재귀 케이스)도 같이 확정시킨다.
+
+**`setOffsetSource`의 즉시 계산(2026-08-18 신설)** — 등록되는 그 자리에서
+`bk.lengthList[1..i-1]`을 합산해 곧바로 `:Set`한다(단 `source == None`이면
+스킵 — 참여 안 하는 자리는 계산할 게 없음):
+
+```lua
+function Dispatch.setOffsetSource(ownerKey, i, source)
+    local bk = getBookkeeping(ownerKey)
+    bk.sourceList[i] = source
+    if source ~= None then
+        local sum = 0
+        for j = 1, i - 1 do
+            local v = bk.lengthList[j]   -- 배치가 순서대로 처리되므로 1..i-1은 항상 이미 등록돼 있음
+            sum += (if isState(v) then v:Get() else v)
+        end
+        if source:Get() ~= sum then
+            source:Set(sum)
+        end
+    end
+end
+```
+
+이건 `recompute`의 로직을 대체하는 게 아니라 **보완**한다 — 이 즉시
+계산은 "지금 막 등록되는 이 position의 초기값"만 맞춰줄 뿐이고, 이후 어느
+position의 length가 바뀌면(배치가 끝난 뒤 steady state에서) 그보다 뒤에
+있는 모든 position의 offset을 다시 계산해야 하므로 여전히 `recompute`의
+전체 순회가 필요하다 — 그 경로는 안 바뀜(위 `recompute` 코드 그대로).
+
+**적용 지점 — `Dispatch.drive`와 `attachSlot`, 각각 자기 owner 키로
+별도 Blocker**: 이 배치 패턴이 실제로 크래시 위험이 있는 자리는 정확히
+둘뿐이다(사용자 확인, 2026-08-18) — (a) `Dispatch.drive`가 최상위
+`inst`의 배열 파트를 순회할 때, (b) `attachSlot`이 **자기 자신의**
+`_elements`를 flush할 때(`base/slot-plan.md`의 "재귀 메커니즘" 절 —
+중첩된 Slot마다 그 Slot 자신의 owner 키로 **별도** Blocker를 새로 만듦,
+부모 Blocker 재사용 금지는 `base/blocker-plan.md`의 "재진입" 절 그대로).
+**런타임에 이미 마운트된 Slot에 한 번에 하나씩 `:Add()`하는 흔한 패턴은
+이 게이팅이 필요 없다** — 사용자 확인: *"그건 이미 마운트가 된
+이후라서 별 상관 없음... 새로운 개체가 뒤에 붙는 현상에서는 위
+요소들로 하여금 위치를 구하면 돼, 뒷 요소를 밀어내는게 아니라서,
+setLength 가 emit 되지 않는것에 영향 안 받고 수행 가능함"* — 이미
+마운트된 배치 밖에서 하나씩 추가되는 position은 그 앞의 모든 position이
+이미 안정적으로 등록돼 있어 `nil` 자리를 만들 여지가 없고, 그 owner의
+Blocker는 이미 `OffWithoutEmit()`으로 꺼진 채라 `gatedRecompute`가
+평소처럼 즉시 돈다.
+
+**⚠️ 불변식 — `Dispatch.process`/`attachSlot` 호출 체인 도중에는 코루틴
+yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체가
+"position이 항상 1,2,...,N 순서대로, 다른 코드가 끼어들 틈 없이 동기로
+처리된다"는 전제 위에 서 있다 — 이 체인 도중 어딘가(컴포넌트 함수,
+`updateFn`, Handler 등) yield가 끼면, 아직 배치가 안 끝난 owner의 같은
+`Blocker`를 다른 코드가 그 사이에 건드릴 수 있어(예: 다른 이벤트 콜백이
+같은 owner에 `setLength`를 부르는 것) 배치 도중/직후의 게이팅 순서 보장이
+깨진다. 사용자: *"모든 컴포넌트든 뭐든 yield 되면 안되는 sync 함수이여야
+할듯. 안 그럼 꼬이는 문제가 발생하지 않나 생각함"* — 웹 백엔드처럼
+`setLength`가 뒤섞이면 특히 골치 아파짐. 새 방어 로직을 넣는다는 뜻이
+아니라(이미 확정된 "일반적인 재진입/무한루프는 방어 안 함" 원칙과 같은
+톤), 이 계약을 어기면 UB라는 걸 문서로 못박아두는 것.
 
 **동기 순서 — offset 갱신이 마운트보다 먼저 끝나야 함(안 그러면 Roblox의
 실시간 `UIListLayout` reflow에서 한 프레임 순서가 깨진 채 노출될 위험)**:
