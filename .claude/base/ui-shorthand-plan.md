@@ -71,7 +71,7 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 타입체크되려면, 생성되는 `FrameModifier`류 정적 타입의 메소드 목록에
 `UICorner`/`UIPadding`/`UIScale`이 (진짜 프로퍼티들과 나란히) 포함돼
 있어야 함 — 순수 런타임 관점(제네릭 `__index`가 처리)에선 문제없지만,
-타입 레벨에선 별도로 챙겨야 하는 항목.** quad-roblox의 각종 타입(DI
+타입 레벨에선 별도로 챙겨야 하는 항목.** quad-roblox의 각종 타입(`D`
 인스턴스 타입, Modifier 타입 등)이 Roblox API 덤프를 읽어 Luau 타입
 파일을 구워내는 스크립트로 생성될 예정이라(구현 단계 결정 사항) — 이
 스크립트가 실제 Roblox 프로퍼티뿐 아니라 이 3개 숏핸드 키도 각
@@ -83,6 +83,30 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 자식으로 한정 — 타입만 보고(`UICorner`이기만 하면 아무거나) 재사용하지
 않음. 사용자가 직접 만든 `UICorner`를 quad가 멋대로 건드리는 부작용을
 피하기 위함.
+
+**[요구 추가, 2026-08-18 구현 전 QA] 다시 찾을 때 `FindFirstChild` 대신
+`Relate`에 저장해둔 참조를 쓸 것.** 사용자 요구: *"FindFirstChild 는 비용이
+ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 릴레이션으로
+저장하는것도 좋은 생각."*
+
+- **조회 경로**: `(inst, 숏핸드키) → child`를 `Relate`에 저장해두고 그걸로
+  되찾는다. `Relate`는 `inst`를 weak 키로 쓰므로 부모가 죽으면 항목도
+  자연히 빠진다(`base/relate-plan.md`).
+- **고정 이름 규약을 없애자는 뜻은 아님** — 이름(`_quad_corner`류)은
+  디버깅 가시성(`research/debug-tooling-plan.md`)과 "사용자가 만든
+  `UICorner`를 건드리지 않는다"는 위 판정에 여전히 필요하다. **이름은
+  표시·판정용, `Relate`는 조회용**으로 역할이 갈린다.
+- **⚠️ 확인 필요 — `inst`-키 `Relate`의 전제**: `inst`를 키로 쓰는
+  `Relate` 전체가 "Instance 생성 시점에 gcconn/gchold를 심어 userdata
+  동일성을 고정한다"는 셋업 위에서만 성립한다(`base/lifecycle-pattern.md`).
+  숏핸드가 만드는 **자식**도 quad가 만든 Instance이므로 그 셋업을 거치는지
+  구현 시 확인할 것 — 안 거치면 여기서만 조용히 미아가 된다.
+- **부수 요구 — 숏핸드가 만든 자식의 프로퍼티 세팅도 `Dispatch`에 위임**:
+  *"각 숏핸드가 만들어낸 요소의 프로퍼티 세팅은 새로운
+  dispatch.process(target,k,v) 로 위임해 tween 등이 자연스럽게 가능."*
+  즉 숏핸드 Handler가 자식 프로퍼티를 직접 쓰지 말고
+  `Dispatch.process(child, k, v, 1)`로 넘기면 `State`/`Tween` 래핑이
+  공짜로 따라온다.
 
 ### `v`가 `nil`인 경우 — `process`가 직접 자식 제거, 반환 클로저는 관여 안 함 (2026-08-07 여덟 번째 세션)
 

@@ -238,9 +238,16 @@ return Frame { props.Modifier or None, props.Ref or None, child }
   필요 없고, 기존 메커니즘을 그대로 재사용함 — `flatten` 단계는 애초에
   `isModifier(v)`가 거짓인 값은 그냥 건드리지 않고 통과시키므로
   (`None`은 Modifier가 아니라서 자동으로 이 경로), `props.Modifier or
-  None`이 최종적으로 배열 파트에 `None`인 채로 남으면 두 패스 루프
-  자신의 array-part `None`-스킵 규칙(위 "PreRef" 절)이 그대로 적용돼
-  아무 일도 안 일어남 — 새 특수 케이스 코드가 하나도 안 늘어남.
+  None`이 최종적으로 배열 파트에 `None`인 채로 남으면 **그 자리는 기여
+  0으로 정상 처리된다** — 새 특수 케이스 코드가 하나도 안 늘어남.
+  **[근거 정정, 2026-08-18 구현 전 QA]** 예전엔 근거를 "두 패스 루프
+  자신의 array-part `None`-스킵 규칙"으로 적었는데, 그 스킵 규칙 자체가
+  폐기됐다(반응형 값이 내놓는 `None`은 어차피 `Dispatch.process`에
+  도착하므로 — `base/dispatch-core-plan.md`의 "`None` 센티널" 절). 지금은
+  `NoneHandler`가 매치돼 `nil`로 재귀하고 `NilHandler`가 `setLength(0)`/
+  `setOffsetSource(None)`을 등록한다. **결론(`or None`을 쓰는 것)은 안
+  바뀜** — 여전히 "아무것도 안 놓은 것과 같은 효과"이고, 오히려 리터럴
+  경로와 반응형 경로가 같은 핸들러로 수렴해 더 단순해졌다.
 - 이 관용구는 컴포넌트 저작자가 **직접 챙겨야 하는 규율**(base가 강제로
   검증해줄 방법은 없음, Lua는 이런 걸 린트로만 잡을 수 있음) — quad
   문서화(초심자 가이드/`props.Modifier`/`props.Ref` 절)에 필수 패턴으로

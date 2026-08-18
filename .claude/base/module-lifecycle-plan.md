@@ -77,7 +77,26 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
 ## 모듈 스코핑 (참고, 확정은 `base/architecture.md` 13번)
 
 한 Lua 스레드에서 둘 이상의 모듈 분화체(Roblox+비Roblox 동시)를 쓸 일이
-거의 없을 거라 판단, 지금은 싱글톤으로 두고 필요해지면 `New()` 추가.
+거의 없을 거라 판단, 지금은 싱글톤으로 두고 필요해지면 다중 인스턴스화를
+추가. **[정정, 2026-08-18]** 그때의 API 이름은 `New()`가 아니라 `Quad()`이고,
+"코드 변경 없이 자동으로 스코핑"되는 게 아니라 module-level state를 참조하는
+코드들이 모듈 인스턴스를 인자로 받도록 손봐야 한다 —
+`base/architecture.md` "확정된 결정" 13번이 소스.
+
+## 모듈 표면의 디버그 플래그 — `Quad.debug` (2026-08-18 신설, 사용자 요구)
+
+**`Quad.debug: boolean`(기본 `false`)** — 라이브러리 자체의 디버그 모드
+스위치. 지금 이 플래그가 게이팅하는 것은 **핸들러 우선순위 동률 경고
+print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
+"개발 중에만 켜고 싶은" 진단 출력은 전부 여기 얹는다. 사용자 요구
+원문과 배경은 그 문서에 있음.
+
+- **기본이 `false`인 이유**: 라이브러리가 사용자 콘솔에 아무것도 안 찍는
+  게 기본이어야 함. 켜는 건 명시적 opt-in.
+- **다중 인스턴스화 시 인스턴스별인지 전역인지는 미정** — 위 "모듈 스코핑"
+  절과 같이 정할 것.
+- `Dispatch.listHandlers()`류 조회 함수가 같은 디버그 표면에 속하는지도
+  같이 정할 것(조회는 부작용이 없으니 항상 열어둬도 무방해 보임).
 
 ## Quad는 스크립트인가 라이브러리인가 (확정, 참고용)
 
@@ -141,9 +160,13 @@ init하려 하면 오류, 없는데 뭔가 생성해서 bind하려 해도 오류
   `archive/tag-attribute-load-time-registration-reversed.md`) —
   `HANDLER_PRIORITY_FALLBACK`에 실제로 꽂히는 건 이걸 감싸는
   `TagFallbackHandler`/`AttributeKeyFallbackHandler`/
-  `AttributeGroupFallbackHandler`이고, 등록 주체는 quad-base 모듈 자체가
-  아니라 백엔드 팩토리(바로 위 문단과 같은 `BaseModule` 뮤테이션 경로 —
-  새 예외 아님).** `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가
+  `AttributeGroupFallbackHandler`이고, **[재역전, 2026-08-18 구현 전 QA]
+  등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(백엔드 미로드
+  상태에서도 안내 에러 경로가 돌아야 하기 때문 — `base/dispatch-core-plan.md`의
+  "base가 소유하는 핸들러와 주입되는 엔진 op" 절이 소스. 이 문서의 일반
+  원칙 "등록/구현은 팩토리 뮤테이션 시점"의 **명시적 예외**이고, 예외인
+  이유는 이 핸들러들이 "아무도 자리를 안 가져갔을 때"를 위한 것이라
+  누군가 자리를 가져가는 시점에 등록되면 자기 목적을 못 이루기 때문).** `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가
   뮤테이션으로 채우는 타입 계약. 아직 아무 팩토리도 안 채운 슬롯의
   기본값은 quad-base가 명시적으로 에러내는 스텁으로 미리 채워둠(조용한
   no-op 추측 아님 — base가 임의 엔진의 "맞는 기본 동작"을 알 수 없어서).

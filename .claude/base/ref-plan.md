@@ -105,20 +105,24 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     상태여도 그 상태 그대로 호출. React의 `useEffect`가 매번 `.current`
     존재 여부부터 체크하는 것과 같은 이유, Ref가 자식으로 전달되는 경우
     채워지는 시점이 더 늦어질 수 있어서 "이미 채워졌는지" 확인이 항상
-    필요함. `:Wait()`의 대기자 리스트와 콜백 리스트는 같은 구조 재사용
-    가능(발화 후 해당 인덱스만 **`nil`로 소진** — 아래 구현 디테일 참고,
+    필요함. `:Wait()`의 대기자 리스트와 콜백 리스트는 같은 배열
+    (`self.Callbacks`) 하나를 재사용(발화 후 해당 인덱스만 **`nil`로 소진**
+    — 아래 구현 디테일 참고,
     **[재정정, 2026-08-09 열한 번째 세션] `None`이 아니라 `nil`이 맞음**,
     바로 아래 캐비엇 참고).
-  - **`.Value`는 이 테이블의 평범한 hash 필드로 직접 저장하지 않고
-    `__index` 메타메소드로 구현함(2026-08-09 열한 번째 세션 보강)** —
-    Ref 객체 자신이 곧 콜백/대기자 배열(숫자 키로 색인)이라, `.Value`를
-    `self.Value = v`로 그냥 얹으면 그 값 자체가 이 테이블의 hash 파트에
-    같이 걸림. `T`가 함수나 스레드 타입일 수 있는데(Ref는 범용 값 박스,
-    위 "object-ref/function-ref로 나누지 않음" 참고), `for i, v in self do`
-    같은 일반화 순회가 배열 파트뿐 아니라 hash 파트도 함께 훑으므로 이
-    경우 `.Value`가 콜백/대기자 처리 루프에 잘못 걸려 `type(v)`로
-    오분류될 위험이 생김. `__index`로 실제 저장 위치를 배열과 분리해두면
-    이 충돌 자체가 안 생김.
+  - **[재설계, 2026-08-18 구현 전 QA] 콜백/대기자는 별도 필드
+    `.Callbacks` 테이블에 담고, `.Value`는 그냥 평범한 hash 필드로 둔다.**
+    옛 설계(2026-08-09 열한 번째 세션 보강)는 **Ref 객체 자신이 곧
+    콜백/대기자 배열**(숫자 키 색인)이라, `T`가 함수/스레드일 때
+    `for i, v in self do` 순회가 hash 파트의 `.Value`까지 훑어 오분류되는
+    걸 막으려고 **`.Value`를 `__index` 메타메소드로** 구현해야 했다.
+    사용자 판정: *"단순히 .Callbacks: {fun, thread} 등이 있는게 맞지
+    않나라는 생각임. .Value 는 단순 해시필드로 주는게 더 간단해보임.
+    엔지니어링 난이도구 단순 테이블 하나 더 만드는게 쉽고, 크게 비싸지도
+    않다고 생각됨."* — 순회 대상이 `self`가 아니라 `self.Callbacks`가
+    되므로 **hash 파트 충돌 자체가 안 생기고, `__index` 우회 기법을 쓸
+    이유가 사라진다.** 대가는 Ref 하나당 테이블 하나가 더 만들어지는 것뿐
+    (`.Callbacks`를 첫 등록 시점에 lazy로 만들지는 구현 재량).
   - **`:Wait(thread?)`의 `thread` 인자(2026-08-07 여섯 번째 세션, 사용자
     제안, 확정)**: 생략(`nil`)하면 `coroutine.running()`으로 호출 중인
     코루틴 자신을 캡처해 대기자로 등록하고 그 자리에서 `coroutine.yield()`로
@@ -133,8 +137,9 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     `nil`이면 yield, 있으면 yield 안 함.
   - **구현 디테일(2026-08-07 세 번째 세션 제안, 여섯 번째 세션에서 resume
     payload 정정, 열한 번째 세션에서 소진 방식 최종 확정)**: 값이 새로
-    `:Set()`될 때, 같은 배열 하나를 `for i, v in <배열> do ... end`로 한 번만
-    순회하면서 `type(v) == "thread"`면 `:Wait()`가 만든 대기자로 보고
+    `:Set()`될 때, 같은 배열 하나를 `for i, v in self.Callbacks do ... end`로
+    한 번만 순회하면서(**[2026-08-18]** 순회 대상은 Ref 객체 자신이 아니라
+    `.Callbacks` 테이블 — 위 재설계) `type(v) == "thread"`면 `:Wait()`가 만든 대기자로 보고
     **`coroutine.resume(v, self)`** (즉 값이 아니라 **Ref 자기 자신**을
     resume 인자로 넘김 — 위 self-반환 관용구가 `:Wait()`의 yield
     경로에서도 그대로 성립하게 하기 위해, `coroutine.yield()`의
@@ -167,10 +172,18 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     `table.insert`의 `#t` 문제도 **`table.insert`를 아예 안 쓰고** 빈
     슬롯을 선형 탐색해 넣는 등록 함수로 우회하면 됨(`None`이 필요했던
     이유 자체가 없어짐). 결론: **순서가 안 중요하고 슬롯 재사용이
-    필요한 배열(Ref 콜백/대기자)은 `nil` 소진, 순서가 중요한 배열
-    (PreRef pre-pass 소진 슬롯, Length/Offset `sourceList`)은 계속
-    `None`** — 두 패턴이 서로 다른 문제를 풀고 있었을 뿐, 하나로 통일할
-    이유가 없었음.
+    필요한 배열(Ref 콜백/대기자)은 `nil` 소진, 순서가 중요한 배열은
+    실재하는 센티널로 소진** — 두 패턴이 서로 다른 문제를 풀고 있었을 뿐,
+    하나로 통일할 이유가 없었음.
+    **[정정, 2026-08-18 구현 전 QA] 후자의 예시가 부정확했음** — 옛
+    문장은 순서가 중요한 배열의 예로 "`PreRef` pre-pass 소진 슬롯,
+    Length/Offset `sourceList`"를 들며 둘 다 `None`으로 채운다고 적었는데,
+    **pre-pass가 소진시킨 자리는 `None`이 아니라 전용 센티널
+    `ProcessedPreRef`/`ProcessedPostRef`** 로 채워지고 전용 nop
+    핸들러가 정상 `Dispatch.process` 경로에서 그걸 캐치한다(아래 "PreRef"/
+    "`PostRef`" 절, `base/dispatch-core-plan.md`는 2026-08-14에 이미 이렇게
+    정정돼 있었고 이 문장만 갱신에서 빠졌음). `sourceList`가 `None`인 것은
+    맞음.
   - **주의(문서화 대상, 방어 로직 없음)**: 이미 죽은(완료/에러난) thread를
     `:Wait(thread)`에 넘기면 나중에 `coroutine.resume`이 에러남 — 이건
     다른 UB 케이스들과 같은 결로 라이브러리가 방어하지 않고 호출부 책임으로
@@ -254,9 +267,14 @@ skip"이라는 dedup은 `process`가 "이전에 뭐가 있었는지"를 알아�
 local relate = Relate()  -- Ref-leaf handler 전용, (inst,k)별 마지막으로 바인딩한 Ref 기억 —
                           -- process의 spurious 재바인딩 dedup 전용(클로저 캡처로는 대체 불가)
 
-RefLeafHandler.isHandlable(inst, k, v) = isRef(v) and not isPreRef(v) and not isPostRef(v)
+RefLeafHandler.isHandlable(inst, k, v) =
+    type(k) == "number" and isRef(v) and not isPreRef(v) and not isPostRef(v)
     -- [2026-08-14 열두 번째 세션 정정] PostRef 도입(아홉 번째 세션) 당시 이 자리가
     -- 안 갱신돼 있었음 — 아래 "타입/판별" 절의 최종 공식과 일치시킴
+    -- [2026-08-18 구현 전 QA] type(k) == "number" 체크가 빠져 있었음 — leaf 바인딩은
+    -- 배열 전용이고(사용자 확정: "배열 전용이 맞음"), 짝인 ObserverEffectLeafHandler엔
+    -- 이 체크가 필수라고 이미 명시돼 있었음. 빠지면 named 자리로 흘러온 Ref를 잡으려는
+    -- HANDLER_PRIORITY_FALLBACK 가드(아래 "동적 경로 가드")가 죽은 코드가 된다.
 
 function RefLeafHandler.process(inst, k, v, index)
     local old = relate:GetStrong(inst, k)
@@ -477,10 +495,13 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `ProcessedPreRefHandler`가 매치, **[정정] 예전엔 `None`이라 두 패스
     루프 자신이 `if v == None then continue end`로 직접 건너뛰고 어떤
     Handler도 안 거쳤으나, 지금은 일부러 정상 경로를 태워 Length/Offset
-    등록 책임을 기존 계약에 특수 취급 없이 그대로 얹음**). 진짜로
-    원래부터 빈 자리인 `None`(`props.Ref or None` 등)은 여전히 두 패스
-    루프가 직접 건너뜀 — 두 센티널이 이제 서로 다른 경로를 타므로
-    혼동 금지. "호이스팅"은 PreRef를 배열의 맨
+    등록 책임을 기존 계약에 특수 취급 없이 그대로 얹음**). **[정정,
+    2026-08-18 구현 전 QA] 원래부터 빈 자리인 `None`도 이제 정상 경로를
+    탄다** — 여기 "여전히 두 패스 루프가 직접 건너뜀"이라고 적혀 있었으나
+    그 스킵 분기 자체가 폐기됐다(아래 "[전면 정정, 2026-08-18 …]" 항목).
+    지금은 `NoneHandler`(재귀만) → `NilHandler`(등록 담당)를 거친다.
+    두 센티널은 **매치되는 Handler가 다를 뿐** 둘 다 정상
+    `Dispatch.process` 경로다. "호이스팅"은 PreRef를 배열의 맨
     앞으로 물리적으로 옮기는 게 아니라, **PreRef 전용 선행 루프가
     통째로 먼저 끝난 뒤에야 나머지 처리가 시작된다는 뜻** — 그래서
     소스에서 마지막 child로 적었어도 무조건 다른 모든 처리보다 먼저
@@ -499,33 +520,44 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     ProcessedPreRefHandler.priority = <매우 높음, NoneHandler와 동급>
     ProcessedPreRefHandler.isHandlable(inst, k, v) = (v == ProcessedPreRef)
     function ProcessedPreRefHandler.process(inst, i, v)
-        Dispatch.setLength(inst, i, 0)
+        -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저 — setLength가
+        -- 끝에서 recompute를 돌리므로(`base/dispatch-core-plan.md`의 해제 순서 계약)
         Dispatch.setOffsetSource(inst, i, None)
+        Dispatch.setLength(inst, i, 0)
         return function() end  -- no-op retract, 이 자리는 fire가 끝나
                                 -- 되돌릴 상태 자체가 없음
     end
     ```
     `isHandlable`이 `v == ProcessedPreRef`만 잡으므로 배열 파트 전용(해시
     파트엔 이 센티널이 등장할 경로 자체가 없음). 이걸로 `base/
-    dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 "이
-    위치를 처음 매치한 Handler가 등록 책임을 진다"는 계약을 특수 취급
-    없이 그대로 만족시킴 — 매치되는 Handler 자신이 곧 등록자라 "누가
+    dispatch-core-plan.md`의 "Length/Offset" 절이 확정해둔 "그 위치의
+    말단 Handler가 등록 책임을 진다"는 계약을 특수 취급
+    없이 그대로 만족시킴(**[정정, 2026-08-18]** 그 계약은 예전엔 "처음
+    매치한 Handler"라고 적혀 있었으나 중간 노드가 매치되는 경우가 있어
+    말단 기준으로 정정됨) — 매치되는 Handler 자신이 곧 등록자라 "누가
     등록하는가"라는 질문 자체가 안 생김. 반환하는 retract는 하드코딩된
     no-op인데, 이건 "PreRef는 취소 개념이 없다" 절(아래)이 말하는 것과
     같은 이유 — fire가 이미 실행한 부작용은 되돌릴 수 없으므로 이 자리가
     dispatch 체인에 실제로 올라가 있어도(**[정정] 예전 서술과 달리 이제는
     올라가 있음** — 아래 참고) retract가 할 일이 없는 것뿐.
-  - **명확화(2026-08-09 열한 번째 세션, 확인 질문에 답변) —
-    `NoneHandler.isHandlable(inst,k,v) = (v == None)`은 `k` 타입을 전혀
-    안 가리므로 숫자 키(`k=number`)에서도 이론상 매치될 수 있어 보이지만,
-    실제로 문제 안 되는 이유는 위에서 이미 확정한 그대로다: 배열 파트의
-    `None`은 **애초에 `Dispatch.process` 자체를 절대 안 탄다**(두 패스
-    루프가 `Dispatch.process` 호출 전에 자기 스스로
-    `if v == None then continue end`로 걸러냄). `NoneHandler`는
-    `Dispatch.process`를 거쳐야만 매치될 기회를 얻으므로, 배열 파트의
-    `None`이 거기 아예 도달하지 않는 이상 `k=number` 조합으로
-    `NoneHandler`가 실제로 매치되는 경우는 없음 — "재전파 없이 무시된다"가
-    정확한 설명.
+  - **[전면 정정, 2026-08-18 구현 전 QA] 배열 파트의 `None`도
+    `Dispatch.process`를 탄다 — 옛 "명확화(2026-08-09 열한 번째 세션)"는
+    전제가 거짓이었음.** 그 서술은 *"배열 파트의 `None`은 애초에
+    `Dispatch.process` 자체를 절대 안 탄다(두 패스 루프가
+    `if v == None then continue end`로 걸러냄)"*, 따라서 *"`k=number`
+    조합으로 `NoneHandler`가 실제로 매치되는 경우는 없음"*이라고 했는데,
+    리터럴 `Frame{None}`만 보면 맞아 보여도 **`Frame{ State<Slot|None> }`
+    처럼 반응형 값이 `None`을 내놓으면 그 `None`은 `StoreBind`의 재귀를
+    타고 `Dispatch.process`에 그대로 도착**한다(사용자 지적).
+    지금 확정된 모델은:
+    - `Dispatch.drive`에 `None` 스킵 분기가 **없다** — 전부 `process`를 탄다.
+    - `NoneHandler`는 `k` 타입과 무관하게 매치되고, 하는 일은
+      **`nil`로 바꿔 재귀하는 것 하나뿐**.
+    - `k`가 숫자면 그 재귀가 **`NilHandler`**(`k=number and v==nil` 전용,
+      `base/dispatch-core-plan.md`의 "`NilHandler`" 절)에 도착해 거기서
+      `setLength(0)`/`setOffsetSource(None)`을 등록한다.
+    즉 이 자리에서 "매치되는 경우가 없다"가 아니라 **매치되고, 정상
+    경로로 0 기여가 등록된다**가 정확한 설명이다.
   - **M0 스파이크 검증 항목 갱신(2026-08-07 열 번째 세션)**: 위 "props
     순회 순서" 절은 `{a=1, 2, b=3}`류 **구멍 없는** 테이블에서 배열
     파트가 해시 파트보다 먼저 나온다는 것만 실측 확인됨(2026-08-07 세
@@ -631,10 +663,21 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
       자체는 요소 타입으로 `Ref`/`PreRef`를 이미 금지하고 있어(위
       "요소 타입 제약" 절, `slot-plan.md`) 이 관용구가 실제로 문제되는
       자리는 `updateFn` 안에서 호출하는 컴포넌트 함수 내부뿐임.)
-- **일반 `Ref`는 계속 Modifier/Store 어디든 자유롭게
-  들어감** — Store를 통해 나중에 도착하는 Ref는 그냥 도착한 그 순간
+- **일반 `Ref`도 값으로서는 Modifier 필드/Store 값 어디로든 전달될 수
+  있음** — Store를 통해 나중에 도착하는 Ref는 그냥 도착한 그 순간
   처리하면 됨, phase 개념 자체가 필요 없음("만난 순간 처리"로 충분).
-- **quad v1의 `OnCreated` 특수 DI 키는 이식하지 않는다.**
+  **[한정, 2026-08-18 구현 전 QA] 다만 leaf 바인딩이 일어나는 자리는
+  배열(숫자 키) 전용이다** — 옛 문장("Modifier/Store 어디든 자유롭게
+  들어감")은 "named 해시 키에 놓아도 leaf 바인딩이 된다"로 읽혔는데 그건
+  틀리다. 어디로든 **흘러갈** 수 있다는 뜻이고, 실제로 `Ref:Set(inst)`가
+  일어나는 건 배열 자리뿐(아래 `RefLeafHandler.isHandlable`의 `k` 체크).
+  **왜 배열 전용인가(사용자 논거, 그동안 어디에도 안 적혀 있던 것)**:
+  `Ref`끼리는 **배열 index 순서가 통하므로**, "다른 `Ref` 처리를 먼저 해야
+  하는 순서 의존"이 있을 때도 그걸 표현할 수 있게 하려는 것 —
+  `PreRef`/`PostRef`의 "계열 안 fire 순서는 배열 index 순서" 보장과 같은
+  결의 근거다. 컴포넌트 함수에 `Ref`를 named 파라미터로 넘기는 건 이와
+  무관하게 얼마든지 가능(그건 그 함수의 인자일 뿐 leaf 바인딩이 아님).
+- **quad v1의 `OnCreated` 특수 키는 이식하지 않는다.**
   `Ref():Callback(function(inst) end)`를 children 배열에 넣는 것만으로
   완전히 대체됨(여러 개 등록도 자연히 지원, 별도 특수 키 불필요) —
   v1 대비 빠진 기능처럼 보이지 않도록 이 대체 관계를 문서에 남겨둠.
@@ -747,8 +790,9 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
 ProcessedPostRefHandler.priority = <매우 높음, ProcessedPreRefHandler와 동급>
 ProcessedPostRefHandler.isHandlable(inst, k, v) = (v == ProcessedPostRef)
 function ProcessedPostRefHandler.process(inst, i, v)
-    Dispatch.setLength(inst, i, 0)
+    -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저(위 ProcessedPreRefHandler와 동일 이유)
     Dispatch.setOffsetSource(inst, i, None)
+    Dispatch.setLength(inst, i, 0)
     return function() end  -- no-op retract, PreRef와 같은 이유(되돌릴 상태가 없음)
 end
 ```
@@ -768,8 +812,9 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
 정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
 레지스트리에 `{ priority = HANDLER_PRIORITY_FALLBACK, isHandlable =
-isPostRef(v), process = error("PostRef는 children 배열 리터럴에만 놓을
-수 있음") }` Handler를 등록(`k` 타입 안 가림 — `PreRef`의 "동적 경로
+isPostRef(v), process = error(`PostRef binding should be array index item,
+but got {typeof(k)}`) }` Handler를 등록(**[2026-08-18]** 에러 메시지에
+실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절)(`k` 타입 안 가림 — `PreRef`의 "동적 경로
 가드" 절과 완전히 같은 이유로 `HANDLER_PRIORITY_FALLBACK`, 2026-08-14
 열한 번째 세션) — pre-pass가 이미 소진시키므로 이게 매치되면 곧 타입
 차단을 우회한 버그라는 뜻.

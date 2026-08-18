@@ -134,7 +134,17 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
 - **디버그 모드 — 핸들러 등록/정렬 시점에 동률 감지 시 print 경고 +
   전체 핸들러 목록 조회 함수.** 우선순위는 핸들러 등록 시점에 정적으로
   sort되므로 동률 감지 자체는 그 시점에 공짜로 가능 — `priority`가 같은
-  두 핸들러가 등록되면 콘솔에 경고를 찍고, `Dispatch.listHandlers()`류
+  두 핸들러가 등록되면 콘솔에 경고를 찍되, **[요구 추가, 2026-08-18 구현 전
+  QA] 무조건 찍는 게 아니라 모듈 표면의 불리언 플래그 `Quad.debug`(기본
+  `false`)가 `true`일 때만 찍는다**(사용자: *"동률 print 는 라이브러리가
+  debug 모드일 때만. (Quad.debug: boolean = default false) 식이고, true 로
+  하면 디버깅 가능"*). `Quad.debug`는 **새 공개 API 표면**이라
+  `base/module-lifecycle-plan.md`(모듈 표면)에도 반영이 필요하고,
+  다중 인스턴스화(`Quad()`, `base/architecture.md` "확정된 결정" 13번) 시
+  이 플래그가 인스턴스별인지 전역인지는 그때 같이 정한다.
+  `Dispatch.listHandlers()`도 같은 디버그 표면에 속하는지(=플래그와 무관하게
+  항상 호출 가능한지) 구현 시 정할 것.
+  그리고 `Dispatch.listHandlers()`류
   함수로 현재 등록된 전체 핸들러(이름/priority)를 덤프할 수 있게 함.
   구현 비용이 거의 없고 실제 개발 중 디버깅에 바로 도움되는 항목이라
   M2(Dispatch 엔진) 착수 시 기본 기능으로 같이 넣음 — 런타임 플러그인인
@@ -312,7 +322,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
 
 - **props 순회 순서는 base 디스패치 드라이버가 명시적으로 두 단계로
   고정한다 — 배열 파트(숫자 키, children/Ref류) 먼저, 해시 파트(문자열 키,
-  프로퍼티/이벤트/특수 DI 키) 나중(2026-08-07 세 번째 세션).** Luau
+  프로퍼티/이벤트/특수 키) 나중(2026-08-07 세 번째 세션).** Luau
   테이블을 `pairs`/제네릭 `for`로 순회하면 실제로 배열 파트가 해시 파트보다
   먼저 나옴(`for i, v in {a=1, 2, b=3} do print(i,v) end` → `1 2`, `a 1`,
   `b 3` 순서 — 사용자가 직접 확인). 이 관찰된 동작에 그냥 얹혀가지 않고,
@@ -323,9 +333,17 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   기대면 이식성이 깨짐, (2) 어차피 숫자 키(children/Ref)와 문자열
   키(프로퍼티/이벤트)를 다른 의미로 취급해야 하니 구분 비용이 이미 드는
   참에 순서까지 명시적으로 고정하는 게 거의 공짜. **결과적으로 배열
-  슬롯에 놓인 어떤 값(Ref 포함)이든 모든 프로퍼티/이벤트 세팅보다 항상
-  먼저 처리된다는 게 base 자체의 보장**이 됨 — `ref-plan.md`의 "Ref 일반화" 절
-  뒤에 이어지는 "PreRef" 절이 이 보장 위에서 성립. **M0 스파이크에서 실제
+  슬롯에 놓인 어떤 값이든 모든 프로퍼티/이벤트 세팅보다 항상
+  먼저 처리된다는 게 base 자체의 보장**이 됨.
+  **[정정, 2026-08-18 구현 전 QA] `PreRef`/`PostRef`는 이 보장 위에서
+  성립하는 게 아니다** — 옛 서술은 `ref-plan.md`의 "PreRef" 절이 "이 보장
+  위에서 성립"한다고 적었는데, 실제로는 **두 패스 순회보다 더 위의 별도
+  pre-pass for 문**에서 먼저 처리되고 `flattened`에는 소진
+  마커(`ProcessedPreRef`/`ProcessedPostRef`)만 남는다(사용자: *"preref 랑
+  postref 는 정확히는 다른, 더 위에 있는 for 문에서 처리되고"*). 두 보장은
+  **서로 독립**이다 — `PreRef`가 먼저 도는 건 배열 파트 우선 규칙 때문이
+  아니라 pre-pass가 따로 있기 때문. 일반 `Ref`(pre-pass 대상이 아닌 것)가
+  프로퍼티보다 먼저 처리되는 것은 위 보장 그대로 유효. **M0 스파이크에서 실제
   Luau로 이 순회 동작 자체를 검증할 것**(지금까지 추론/관찰만으로 확정된
   항목 — `research/pre-implementation-audit.md`가 짚은 "실제 Luau로
   부딪혀본 적 없는 것" 범주와 같은 급이라 신중하게 다룸).
@@ -355,34 +373,49 @@ end
   바인딩/등록 하나가 "지금 살아있어서 실행돼도 되는가"만 보는 별개의
   라이프타임 게이트(`base/lifecycle-pattern.md` "생명 바인드 유틸" 절) —
   KV 매치와 무관.
-  **이 `NoneHandler`는 해시 파트(프로퍼티/이벤트) 전용 — 배열 파트에서
-  `None`을 만나는 건 완전히 다른 규칙(2026-08-07 열 번째 세션, "PreRef"
-  절 "호이스팅의 실제 구현" 참고).** 배열 파트의 `None`(`props.Ref or
-  None`처럼 애초에 아무것도 놓인 적 없는 자리)은 "빈 슬롯"
-  표시일 뿐 처리할 핸들러 자체가 없으므로, `Dispatch.drive`의 두 패스
-  루프 자신이 `NoneHandler`/`Dispatch.process`를 거치지 않고 바로
-  건너뜀 — 같은 센티널 값이지만 배열 파트냐 해시 파트냐에 따라 처리
-  경로가 다르다는 점에 유의. **[정정, 2026-08-14 두 번째 세션] "PreRef
-  pre-pass가 소진시킨 자리"는 이 규칙의 예가 아님** — 그 자리는 `None`이
-  아니라 별도 센티널 `ProcessedPreRef`로 소진되고, `ProcessedPreRefHandler`
-  (`base/ref-plan.md`의 "PreRef" 절)를 통해 정상 `Dispatch.process`
-  경로를 그대로 탐(아래 "Length/Offset" 절 참고). **[2026-08-14 아홉 번째
-  세션] `PostRef`가 소진시킨 자리(`ProcessedPostRef`)도 완전히 같은 취급**
-  — 전용 센티널 + 전용 `ProcessedPostRefHandler`(`base/ref-plan.md`의
-  "`PostRef`" 절), 즉 "정말 빈 자리인 `None`"만 두 패스 루프가 직접
-  건너뜀 — 예전엔 이 둘(원래부터
-  빈 자리 vs 한때 PreRef였다가 소진된 자리)이 똑같이 `None`으로 뭉뚱그려져
-  `setLength`/`setOffsetSource` 등록 책임 소재가 불분명한 갭이 있었음
-  (2026-08-14 첫 번째 세션 조사에서 발견), 지금은 서로 다른 센티널로
-  명확히 분리됨.
+  **[재설계, 2026-08-18 구현 전 QA] `NoneHandler`는 해시 파트 전용이
+  아니고, `Dispatch.drive`는 `None`을 건너뛰지 않는다.** 옛 서술은
+  "배열 파트의 `None`은 두 패스 루프가 `Dispatch.process`를 거치지 않고
+  바로 건너뛴다"였는데, 그 전제 자체가 거짓이었음 — 리터럴
+  `Frame{None}`만 생각하면 루프가 걸러내면 그만이지만
+  **`Frame{ State<Slot|None> }`처럼 반응형 값이 `None`을 내놓으면 그
+  `None`은 `StoreBind`의 재귀를 타고 `Dispatch.process`에 그대로
+  도착**하기 때문. 사용자 판정: *"drive 는 v == None 인지 확인 안하고
+  그냥 프로세스 태우는게 가장 적절한 처리로 보임"*. 따라서:
+  - **`Dispatch.drive`에 `None` 특수 분기는 없다** — 배열이든 해시든
+    모든 `(k,v)`가 `Dispatch.process(inst,k,v,1)`을 탄다.
+  - **`NoneHandler`가 하는 일은 재귀 하나뿐** — `v == None`을 매치해
+    `Dispatch.process(inst, k, nil, index+1)`로 내려보내는 것. 배열/해시
+    구분도 하지 않는다.
+  - **실질 정리(그리고 `setLength(0)`/`setOffsetSource(None)` 등록)는
+    아래 `NilHandler`가 맡는다** — 사용자 선택(2026-08-18): *"NoneHandler는
+    재귀만, NilHandler가 실질 담당"*. 즉 배열 자리가 비는 처리 로직은
+    `None` 경로든 진짜 `nil` 경로든 **한 곳에만** 있다.
+  - **`process` 자체가 이전 것을 걷어낸다** — `Tag` → `None` 전환에서
+    이전 `Tag` 기여가 실제로 사라져야 하는데, 이건 하강 diff가 자동으로
+    해준다(핸들러가 `TagHandler`에서 `NoneHandler`로 바뀌므로 아래
+    "Dispatch 체인" 절 (B) 분기가 `retractFrom`을 부름). `NoneHandler`가
+    반환하는 retractor 자체는 no-op이어도 된다.
+
+  **`ProcessedPreRef`/`ProcessedPostRef`는 그대로 별개다** — pre-pass가
+  소진시킨 자리는 `None`이 아니라 전용 센티널로 채워지고 전용 nop
+  핸들러(`ProcessedPreRefHandler`/`ProcessedPostRefHandler`,
+  `base/ref-plan.md`의 "PreRef"/"`PostRef`" 절)가 정상 `Dispatch.process`
+  경로에서 캐치한다. 예전엔 "원래부터 빈 자리"와 "한때 PreRef였다가 소진된
+  자리"가 똑같이 `None`으로 뭉뚱그려져 등록 책임 소재가 불분명한 갭이
+  있었고(2026-08-14 첫 번째 세션 조사), 지금은 서로 다른 센티널로 명확히
+  분리돼 있음.
+
   `NoneHandler.isHandlable`은 `v == None`(센티널 자체)을 잡는 것이지
-  `v == nil`이 아님 — 진짜 `nil`은 애초에 테이블 순회로 나올 수 없다는 게
-  이 문제의 출발점이었으므로, 매치 대상은 항상 `None` 마커.
+  `v == nil`이 아님 — 진짜 `nil`은 테이블 순회로 나올 수 없다는 게
+  이 문제의 출발점이었으므로, 매치 대상은 항상 `None` 마커(반응형 값이
+  내놓는 진짜 `nil`은 아래 `NilHandler`가 받는다).
   `Dispatch.process(inst, k, nil)`로 재귀 호출하는 순간 `None`은 더 이상
-  존재하지 않고 진짜 `nil`이 되므로, 다음 우선순위 스캔은 자연히 키 `k`를
-  원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand 등)로 흘러감 —
-  `StoreBind` 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로 좁혀지는
-  것과 정확히 같은 원리, 무한루프 걱정도 동일하게 없음.
+  존재하지 않고 진짜 `nil`이 되므로, 다음 우선순위 스캔은 자연히 그
+  `nil`을 담당하는 핸들러로 흘러감 — 배열 자리(`k`가 숫자)면 `NilHandler`,
+  해시 자리면 키 `k`를 원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand
+  등)로. `StoreBind` 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로
+  좁혀지는 것과 정확히 같은 원리, 무한루프 걱정도 동일하게 없음.
 - **`Dispatch.process`/`Handler.process` 이름 겹침 — 소유자 네임스페이싱으로
   해소, 새 이름 발명 안 함 (2026-08-07 여덟 번째 세션 후속).** 원래
   "확정된 디스패치 모델" 절은 "스캔+실행"과 "매치된 핸들러 자신의 처리
@@ -404,9 +437,10 @@ end
     OnChangeHandler/UICornerHandler 등)은 팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
     같은 패턴, 새 메커니즘 아님). **`Tag`/`Attribute`의 base 소유
-    Fallback Handler들(`TagFallbackHandler` 등)도 같은 팩토리 뮤테이션
-    시점에 같이 등록됨** — quad-base 모듈 로드 자체의 부작용이 아님,
-    상세는 아래 "base가 소유하는 핸들러와 주입되는 엔진 op" 절.
+    Fallback Handler들(`TagFallbackHandler` 등)은 이와 달리 quad-base
+    자신이 등록함**(**[재역전, 2026-08-18 구현 전 QA]** — 백엔드가 하나도
+    안 붙은 상태에서도 안내 에러 경로가 돌아야 하기 때문), 상세는 아래
+    "base가 소유하는 핸들러와 주입되는 엔진 op" 절.
   - Handler 자신의 필드는 계속 `process`/`retract`(이미 확정된 이름,
     `question.md`에 "특별한 문제 없음"으로 못박혀 있어 재검토 대상 아님) —
     겹침은 실제 런타임 충돌이 아니라 프로즈 표기 문제였을 뿐이라, 항상
@@ -463,6 +497,51 @@ end
   재호출도 이 메커니즘 위에서 동일하게 동작(`None`으로 유지되는 매
   사이클마다 담당자가 자연히 정확하게 갱신됨, 별도 특수 처리 불필요).
 
+### `NilHandler` — 배열 자리의 진짜 `nil`을 받는 짝 핸들러 (2026-08-18 신설, 사용자 요구)
+
+**왜 필요한가**: 반응형 값이 `None`이 아니라 **진짜 `nil`** 을 내놓는
+경우(`State<Slot|nil>`)도 정상 동작해야 한다는 사용자 요구. `None`을
+쓰라고 강제하지 않는다 — *"State<Slot|None> 일 수도 있지만,
+State<Slot|nil> 이여도 작동은 함"*.
+
+```lua
+NilHandler.priority = <매우 높음>
+NilHandler.isHandlable(inst, k, v) = (type(k) == "number" and v == nil)
+function NilHandler.process(inst, k, v, index)
+    -- 이 자리는 아무것도 마운트하지 않는다 — 순서 계산에서 빠지도록 등록만 한다.
+    -- 순서 주의: setOffsetSource가 먼저, setLength가 나중(아래 "해제(그 자리가
+    -- 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`" 절의 계약 —
+    -- setLength가 끝에서 recompute를 돌리므로 반대로 하면 죽는 중인 서브트리의
+    -- Source에 :Set()이 날아간다). [2026-08-18 감사에서 순서 정정]
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0)
+    return function() end
+end
+```
+
+- **매치 범위는 `k`가 숫자인 자리로 한정** — 해시 자리의 `nil`은 그 키를
+  원래 담당하던 핸들러(프로퍼티/이벤트)의 몫이다(`None` 재귀가 도착하는
+  기존 경로 그대로, 위 절). 이벤트 키에서 `nil`이 disconnect를 뜻한다는
+  규정은 `base/event-plan.md`가 소스.
+- **재귀는 하지 않는다** — 이미 `nil`이라 더 내려보낼 곳이 없다.
+  `NoneHandler`가 재귀만 담당하고 여기로 흘려보내므로, 배열 자리가 비는
+  처리 로직은 **이 한 곳에만** 있다(사용자 선택, 2026-08-18).
+- **호출 순서는 `setOffsetSource` → `setLength`** — 아래 "해제(그 자리가 더
+  이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`" 절이 계약으로
+  고정해둔 순서를 그대로 따른다. (`base/ref-plan.md`의
+  `ProcessedPreRefHandler`/`ProcessedPostRefHandler` 의사코드는 아직 반대
+  순서로 적혀 있음 — 이 세션 이전부터 있던 것이라 같이 고쳤다.)
+- **`setLength(0)` / `setOffsetSource(None)`의 비대칭은 의도된 것** —
+  타입이 각각 `number | State<number>`와 `Source<number> | None`이라서
+  (`base/ref-plan.md`의 "왜 `None`이 아니라 `nil`인가" 절, 아래
+  "Length/Offset" 절).
+- **retractor는 no-op이어도 된다** — 이전 것의 철거는 하강 diff가
+  `retractFrom`으로 해준다(위 `NoneHandler` 항목과 같은 이유).
+- **"중간 노드는 `inst`에 부작용을 가하지 않는다"(아래 "Dispatch 체인" 절)와
+  충돌하지 않는다** — `setLength`/`setOffsetSource`는 `inst`의 프로퍼티를
+  건드리는 게 아니라 Dispatch 자신의 순서 부기이고, 애초에 `NilHandler`는
+  재위임을 하지 않는 **말단** 핸들러다.
+
 ### Dispatch는 프리미티브가 아니다 — 탑레벨 싱글톤 확정 (2026-08-08 두 번째 세션)
 
 `Dispatch.process`/`getHandler`/`addHandler`/`drive`를 `Source`/`Ref`/`Store`/
@@ -511,10 +590,16 @@ end
   딸린 state 중 하나일 뿐이라, `_initializedBy` 마커에 대해 이미 확정된
   것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`New()`가
   생기면 각 인스턴스가 별도 테이블이 되므로 이 마커도 테이블별로 독립적으로
-  스코핑됨, 재설계 불필요"). `New()`가 실제로 생기면 그 시점에 BaseModule
-  전체를 인스턴스별 테이블로 만드는 메커니즘에 Dispatch도 자연히 같이
-  딸려가고, 호출부는 `module.Dispatch.process(...)`처럼 그 인스턴스
+  스코핑됨, 재설계 불필요"). 다중 인스턴스화가 실제로 생기면 그 시점에
+  BaseModule 전체를 인스턴스별 테이블로 만드는 메커니즘에 Dispatch도 자연히
+  같이 딸려가고, 호출부는 `module.Dispatch.process(...)`처럼 그 인스턴스
   테이블을 통해 접근하게 됨 — 지금 미리 프리미티브화해둘 이유가 없음.
+  **[한정, 2026-08-18 구현 전 QA]** 다만 "재설계 불필요"가 **"코드 변경
+  불필요"는 아니다** — 사용자 판정에 따르면 그때는 module-level state를
+  참조하는 코드들이 모듈 인스턴스를 인자로 받도록(`InitModule(module)` 류)
+  손을 봐야 하고, 미래 API 이름도 `New()`가 아니라 **`Quad()`**다
+  (`base/architecture.md` "확정된 결정" 13번). 지금은 싱글톤이라
+  `Quad.Dispatch`로 바로 접근한다.
 
 ### base가 소유하는 핸들러와 주입되는 엔진 op (2026-08-13 열네 번째 세션 신설)
 
@@ -565,24 +650,42 @@ setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름
 실제로 꽂히는 건 그 알고리즘을 그대로 감싸는 **별도 이름의 엔티티**
 (`TagFallbackHandler`/`AttributeKeyFallbackHandler`/
 `AttributeGroupFallbackHandler`) — "이게 기본 안전망으로 자동 설치되는
-대상"임을 이름 자체로 구분한다. **등록 주체는 quad-base 모듈 자체가
-아니라 필요한 엔진(백엔드 팩토리)** — quad-roblox 같은 백엔드가
-`BaseModule`을 구성할 때 자기 전용 Handler들(Property/Event/OnChange/
-UICorner)과 **같이** 이 base 소유 Fallback Handler들도 등록해준다(위
-`Dispatch.addHandler` 절과 같은 경로, `base/module-lifecycle-plan.md`가
-이미 확정해둔 "base는 인터페이스만, 등록/구현은 백엔드 팩토리가
-`BaseModule`을 뮤테이션하는 시점에" 원칙을 그대로 따르는 것뿐 — 새
-예외가 아님). "quad-base가 자기 모듈 로드 시점에 스스로 등록"이라던
-옛 모델은 정확히 `base/lifecycle-pattern.md`가 이미 거부해둔
-`InitNamespace`류 top-level 부작용 패턴과 같은 클래스라 틀렸음 — 원문·
-근거는 `archive/tag-attribute-load-time-registration-reversed.md`.
+대상"임을 이름 자체로 구분한다.
+
+**[재역전, 2026-08-18 구현 전 QA — 사용자 확정] 등록 주체는 다시
+quad-base 자신이다(모듈이 자기 레지스트리를 구성하는 시점).** 2026-08-14
+열두 번째 세션은 이걸 "백엔드 팩토리가 자기 Handler들과 같이 등록한다"로
+뒤집었었는데, 그러면 **quad-roblox를 아예 로드하지 않은 상태에서는 이
+Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `error`" 절이
+약속한 *"provider가 초기화됐는지 확인하라"* 안내 경로 자체가 동작하지
+않는다(사용자: *"안 그러면 quad-roblox 를 로드하지 않았을 때 로드했는지
+물어보는 요소가 처리가 안 된다"*). Fallback 밴드의 존재 이유가 "아무도 이
+자리를 안 가져갔을 때"인데, 그 등록을 "누군가 자리를 가져가는 시점"에
+의존시키면 밴드가 가장 필요한 상황에서 비어 있게 된다.
+
+**`InitNamespace` 거부 원칙과 충돌하지 않는 이유**: 그 원칙이 금지한 건
+**라이브러리마다 사용자가 수동으로 init을 호출하게 만드는 것**과 **모듈이
+로드되면서 *남의* 상태를 건드리는 것**이다(`base/lifecycle-pattern.md`의
+"rbvm에서 그대로 가져오면 안 되는 것" 절). base가 **자기 모듈 안의 자기
+레지스트리**를 자기가 채우는 건 그 어느 쪽도 아니다 — 외부에 노출되는 init
+표면이 늘지 않고, 순서 의존도 없고(레지스트리와 등록 코드가 같은 모듈),
+사용자가 할 일도 없다. 백엔드가 나중에 자기 Handler를 등록해 이기는 구조도
+그대로다(Fallback 밴드는 항상 최하위). A-3의 다중 인스턴스화(`Quad()`)로
+가더라도 자리는 그대로 — 그때는 "모듈 로드 시"가 "인스턴스 생성 시"가 될
+뿐이다.
+
+옛 역전 원문은 `archive/tag-attribute-load-time-registration-reversed.md`
+(그 문서 자체가 이번에 재역전됐다는 배너를 달아뒀음). **그 역전이 같이
+고쳤던 "이름" 쪽 결론은 그대로 유효** — 등록되는 엔티티는 알고리즘 구현체
+(`TagHandler` 등)가 아니라 그걸 감싼 `*FallbackHandler`다.
+
 `HANDLER_PRIORITY_FALLBACK`이라는 밴드 자체가 정확히 이런 용도 —
 "아무도 이 자리를 안 가져갔을 때의 안전한 기본 동작"을 base가 값싸게
 제공하는 것. 엔진 저자 입장에서 "자동/공짜"인 이유는 직접 알고리즘을
-안 짜도 되기 때문이지 quad-base 모듈 자체가 부작용을 내서가 아님 —
-모든 백엔드가 (자기 팩토리 뮤테이션 한 번으로) `Tag`/`Attribute` 부기를
-얻고, 특별히 뭔가를 더 하지 않아도 이 값들이 어떤 자리에 놓이든 최소한
-매치는 됨.
+안 짜도 되기 때문이고, **백엔드를 아직 안 붙였어도 이 밴드는 이미 채워져
+있다**(위 재역전) — 그래서 모든 백엔드가 `Tag`/`Attribute` 부기를 공짜로
+얻고, 백엔드가 하나도 없을 때조차 "이 값이 어떤 자리에 놓이든 최소한
+매치는 되고, 엔진 op이 없으면 그 자리에서 명확한 에러가 난다"가 성립한다.
 
 `addTag`/`removeTag`/`setAttribute`는 base가 시그니처만 소유하고
 실제 구현은 팩토리가 뮤테이션으로 주입하는 **타입 계약**(`bindLifetime`/
@@ -625,7 +728,7 @@ UICorner)과 **같이** 이 base 소유 Fallback Handler들도 등록해준다(�
 - **타입 패밀리는 백엔드 몫**: `AttributeKey<<T>>` 제네릭 생성자와
   스칼라 편의 패밀리(`StringAttribute`/`NumberAttribute`/`BooleanAttribute`)
   까지가 base이고, `Color3Attribute`류처럼 **엔진 고유 타입**에 묶인
-  패밀리는 그 백엔드(quad-roblox의 `D`/`DI` 층)가 자기 것으로 추가함 —
+  패밀리는 그 백엔드(quad-roblox의 `D` 층)가 자기 것으로 추가함 —
   "이 값이 이 백엔드에서 표현 가능한가"라는 검증도 base가 아니라 주입된
   `setAttribute`의 몫(`base/attribute-plan.md` "패키지 배치" 절).
 
@@ -730,6 +833,14 @@ end
   정의상 그 핸들러의 `isHandlable`을 만족함. 즉 말단 핸들러는 **`nil` 여부만
   구분하면 되고**, 옛 모델이 요구하던 `isX(hintValue)` 방어 가드는 필요
   없어짐(옛 규칙은 힌트의 타입 미보장을 메우던 임시방편이었음).
+  **[한정, 2026-08-18 구현 전 QA] 보장 범위는 "같은 핸들러"까지지 "같은 값
+  모양"까지가 아니다** — `isHandlable`이 **여러 모양의 값**을 받아들이는
+  핸들러라면 그 안에서 어느 모양인지 가르는 `is` 판별은 **여전히 필수**이고,
+  그건 그 핸들러 자신의 몫이다(사용자: *"처음부터 한 핸들러가 여러 값을
+  가질 수 있어 is 처리가 필요한건, 그 핸들러의 몫입니다"*). 실제 사례가
+  이미 있음 — `PropertyHandler`는 평범한 값과 `Tween<T>` 래퍼를 **둘 다**
+  받아 `isTween(realv)`로 분기한다(`base/tween-plan.md`). 없어진 건
+  **타입 미보장을 메우려던 방어 가드**뿐이다.
 - **깊은 체인에서도 힌트가 안 사라짐** — 힌트를 위에서 아래로 실어
   보내는 게 아니라 **각 레벨이 자기 재프로세스에서 자기 힌트를 받기**
   때문. `State<State<Tag>>`에서 바깥이 새 inner State를 내놓아도 인덱스 2는
@@ -758,6 +869,7 @@ end
   |---|---|---|
   | `StoreBind` | 중간 | 없음(구독 + 재위임만) |
   | `NoneHandler` | 중간 | 없음(재위임만) |
+  | `NilHandler` | 말단 | 없음(`setLength`/`setOffsetSource` 부기만 — 2026-08-18 신설) |
   | `PropertyHandler` | 말단 | 프로퍼티 세팅 |
   | `TagHandler` | 말단 | `addTag`/`removeTag` |
   | `AttributeKeyHandler` | 말단 | `setAttribute` |
@@ -908,8 +1020,13 @@ end
 깊은 인덱스엔 안 옴 / `nil`이라 가정 금지") 중 앞의 둘은 하강 diff로
 구조적으로 사라졌음:
 - 값이 넘어오는 건 **오직 같은 핸들러로 재프로세스될 때**이므로 그 값은
-  정의상 `isHandlable`을 만족함 → `isTag(...)` 같은 **방어 가드는 이제
-  불필요**(넣어도 무해하지만 죽은 코드).
+  정의상 `isHandlable`을 만족함 → **타입 미보장을 메우려던 방어 가드**
+  (`isTag(...)`를 "혹시 래퍼가 새어 들어왔을까 봐" 부르는 것)는 이제
+  불필요. **[한정, 2026-08-18 구현 전 QA] 다만 한 핸들러가 여러 값 모양을
+  받는다면 그 판별은 여전히 필수이고, 그건 그 핸들러 자신의 책임**
+  (`PropertyHandler`의 `isTween(realv)` 분기가 실제 사례 — 위 "Dispatch
+  체인" 절의 같은 한정 참고). 보장 범위는 "같은 핸들러"까지지 "같은 값
+  모양"까지가 아니다.
 - 깊이와 무관하게 **각 레벨이 자기 인자를 받음** → 깜빡임 방지 최적화가
   깊은 체인에서도 유효.
 - 다만 **`nil`이라고 가정하는 것은 여전히 금지**(단순 철거일 때만 `nil`).
@@ -1005,8 +1122,20 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   `1`(또는 `nil`/`None`이면 `0`), Slot은 자기 `.Length`(`State<number>`,
   아래 참고), `state<Frame>`처럼 store-bind로 오가는 단일 위치는 그
   store-bind 핸들러가 값이 바뀔 때마다 다시 호출. **호출 책임은 `Slot`
-  자신의 `:List`/CRUD가 아니라 그 위치를 처음 매치한 Handler(`Dispatch/
-  Slot.luau`)** — `Slot`은 `inst`/`i`를 모르는 독립 값(어디 마운트될지
+  자신의 `:List`/CRUD가 아니라 그 위치의 체인을 실제로 끝내는 말단
+  Handler(`Dispatch/Slot.luau`)** — **[정정, 2026-08-18 구현 전 QA]**
+  옛 서술은 "그 위치를 **처음** 매치한 Handler"였는데 부정확했다: 배열
+  위치에 `State<Slot>`이 오면 처음 매치하는 건 `StoreBind`(중간 노드)이고,
+  중간 노드는 `inst`에 부작용을 가하지 않는다는 계약(아래 "Dispatch 체인"
+  절)과 정면으로 어긋난다. 사용자 판정은 *"최종 말단 요소가 이를
+  처리하는게 더 올바른것으로 보이는데"* — 재귀가 끝나 실제 값을 받은
+  말단 Handler가 등록한다(`State<Slot>`이면 재귀 끝의 `Dispatch/Slot.luau`,
+  빈 자리면 `NilHandler`, `PreRef`/`PostRef` 소진 자리면 각 nop Handler).
+  같이 검토 대상이던 *"단순히 모든 핸들러가 `k=number`일 때 처리하도록
+  두는"* 안은 채택 안 함 — 그 안이 메우려던 갭(`State<Slot|None>`에서
+  `None`이 올 때 아무도 `0`을 안 채우는 것)이 위 `NilHandler` 신설로 이미
+  닫혔고, 말단 규칙 하나로 전부 커버되기 때문. `Slot`은 `inst`/`i`를
+  모르는 독립 값(어디 마운트될지
   자기가 결정 안 함)이라, `process(inst, i, slotValue)`가 매치되는
   시점에 그 Handler가 `Dispatch.setLength(inst, i, slotValue.Length)`를
   1회 호출(길이 자체가 바뀌는 매 순간은 이미 `slotValue.Length`가
@@ -1045,11 +1174,17 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   첫 번째 세션 조사에서 발견). 지금은 그 슬롯이 전용 센티널
   `ProcessedPreRef`로 소진되고, **`ProcessedPreRefHandler`(`base/
   ref-plan.md`의 "PreRef" 절)가 정상 매치 과정에서 직접 `setLength(0)`/
-  `setOffsetSource(None)`을 등록** — "이 위치를 처음 매치한 Handler가
-  등록 책임을 진다"는 위 원칙을 특수 취급 없이 그대로 만족.
+  `setOffsetSource(None)`을 등록** — "그 위치의 말단 Handler가 등록 책임을
+  진다"는 위 원칙을 특수 취급 없이 그대로 만족.
   **[2026-08-14 아홉 번째 세션] `PostRef` 소진 자리도 동일** —
   `ProcessedPostRefHandler`(`base/ref-plan.md`의 "`PostRef`" 절)가 같은
   두 등록을 하는 거울상 Handler라, 새 규칙 없이 그대로 맞물림.
+  **[정정, 2026-08-18 구현 전 QA] 값 자체가 `None`/`nil`인 자리도 이제
+  같은 원칙으로 덮인다** — `Dispatch.drive`가 `None`을 건너뛰지 않으므로
+  그 자리는 `NoneHandler`(재귀만) → `NilHandler`(말단)를 거치고,
+  **등록을 실제로 하는 건 `NilHandler`**(위 "`NilHandler`" 절).
+  `State<Slot|None>`처럼 반응형 값이 뒤늦게 `None`을 내놓는 경로도
+  같은 자리로 수렴한다.
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**

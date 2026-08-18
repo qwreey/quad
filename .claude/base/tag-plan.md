@@ -269,12 +269,13 @@ removeTag(inst: any, names: {string}): ()
 - **등록 우선순위는 `HANDLER_PRIORITY_FALLBACK` — 단 여기 꽂히는 건
   `TagHandler` 자신이 아니라 그걸 감싸는 `TagFallbackHandler`(2026-08-14
   열두 번째 세션 정정 — `TagHandler`는 참조 카운트 알고리즘 구현일
-  뿐, 스스로 등록되는 주체가 아님).** 등록 주체는 quad-base 모듈 자체가
-  아니라 백엔드 팩토리 — quad-roblox 같은 백엔드가 `BaseModule`을
-  구성할 때 자기 전용 Handler들과 같이 이 `TagFallbackHandler`도 등록해줌
-  (`base/module-lifecycle-plan.md`가 이미 확정해둔 "base는 인터페이스만,
-  등록은 팩토리 뮤테이션 시점" 원칙 그대로). 옛 "quad-base 모듈 로드
-  시점에 스스로 등록" 모델은
+  뿐, 스스로 등록되는 주체가 아님).** **[재역전, 2026-08-18 구현 전 QA]
+  등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(모듈이 자기
+  레지스트리를 구성하는 시점) — 백엔드를 아직 로드하지 않은 상태에서도
+  "provider가 초기화됐는지 확인하라"는 안내 에러 경로가 돌아야 하기
+  때문이고, 이건 `InitNamespace` 거부 원칙과 충돌하지 않는다(근거는
+  `base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는
+  엔진 op" 절이 소스). 경위는
   `archive/tag-attribute-load-time-registration-reversed.md`.
   `addTag`/`removeTag`만 백엔드 팩토리가 채우는 타입 계약, 안 채운
   슬롯의 base 기본값은 명시적으로 에러내는 스텁. 더 명확한 메시지나

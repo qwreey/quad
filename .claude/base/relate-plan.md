@@ -214,9 +214,17 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 
 - `base/dispatch-core-plan.md` "핸들러 내부 상태 저장" 절의 `base.perInstanceState(inst)`
   placeholder — Tween 등 핸들러가 `retract` 대상을 저장하는 용도, `SetStrong`으로.
-- `base/lifecycle-pattern.md`의 `bindLifetime`/`canExecute` — gcconn/gchold를
-  `Relate`의 `SetStrong`으로 저장(둘 다 존재 이유가 "안 죽는 것"이므로
-  strong).
+- `base/lifecycle-pattern.md`의 `bindLifetime`/`canBound`/`canExecute` —
+  gcconn/gchold를 `Relate`의 **`SetWeak`**으로 저장.
+  **[정정, 2026-08-18 구현 전 QA]** 옛 서술은 `SetStrong`("둘 다 존재
+  이유가 '안 죽는 것'이므로 strong")이었는데 **근거까지 통째로 틀렸다** —
+  둘의 생존은 gcconn 클로저의 upvalue와 `gchold[1]`이 이미 보장하므로,
+  위 "다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`" 절의 규칙이
+  그대로 적용된다. strong으로 구현하면 `gchold`가 `value`를 강하게 잡고
+  `BindData`가 `value`를 키로 `gchold`를 강하게 잡는 모양이 되어, 이
+  문서가 경고하는 **두-`Relate` 상호 강참조 순환**(Luau에 ephemeron이
+  없어 실제 누수)에 정확히 걸린다. 구현 스케치는 이미 전부 `SetWeak`으로
+  적혀 있었고(`base/lifecycle-pattern.md`) 이 요약 줄만 어긋나 있었음.
 
 ## 이름
 

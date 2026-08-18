@@ -91,12 +91,16 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   붙는 동적 리스트라 이 전제 자체가 없음** — Slot 안의 Ref가 "무엇"을
   가리켜야 하는지 정의가 안 됨. 대체 경로도 이미 있어 능력 손실 없음 —
   특정 child에 ref가 필요하면 그 child를 만드는 컴포넌트 호출 자체에
-  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })`).
+  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })` — **여기서 `Frame`은
+  `Ref`라는 named 파라미터를 받는 컴포넌트 함수다.** Instance 리터럴에
+  `Ref = ...`를 named 키로 놓는 건 leaf 바인딩이 아니고, 실제로는
+  `HANDLER_PRIORITY_FALLBACK` 가드가 잡아 에러를 낸다 — leaf 바인딩은
+  배열(숫자 키) 전용, `base/ref-plan.md`. **[명시 추가, 2026-08-18 구현 전
+  QA]**).
 - **`T`의 실제 의미**: 위 배제 덕에 "이 Slot이 실제로 담을 수 있는 최종
   마운트 가능한 값의 타입" 그 자체로 단순해짐 — quad-roblox엔 사실상
   `T = Instance` 하나뿐(컴포넌트 호출 결과도 결국 Instance)이라
-  `DI.InstSlot = Slot<<Instance>>`(`DI` 네임스페이스 이름 자체는
-  `question.md` 1번 용어정리 대기 중, 여기선 잠정 표기)가 사실상 "그"
+  `D.InstSlot = Slot<<Instance>>`가 사실상 "그"
   Slot 타입. `Slot<T>()`가
   기본값(`T` 생략 시) 없이 항상 명시를 요구하는지, `quad-base`에선
   `any`로 기본값을 두는지는 tbox 제네릭 적용 문법 확정 시 같이 정할 것
@@ -1077,6 +1081,10 @@ function activateList(self, inst)
             local candidateIndex = pos + 1   -- "이 item이 살아남으면 차지할" 압축 위치(생존 여부와 무관하게 계산 가능)
             local result, ud = updateFn(item, candidateIndex, offset, prev, userdata[key])
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
+            -- [2026-08-18] PopOnly(가칭)는 "이 자리를 비우되 죽이지는 말라"는 지시.
+            -- 아래 "PopOnly" 절 — 자리 계산 관점에선 nil과 똑같이 취급된다.
+            local popOnly = (result == PopOnly)
+            if popOnly then result = nil end
 
             if result ~= nil then
                 -- [2026-08-11 일곱 번째 세션] result가 nested Slot이면 그
@@ -1087,11 +1095,16 @@ function activateList(self, inst)
             end
 
             if result ~= prev then
-                -- [정정, 2026-08-13 여섯 번째 세션] 파괴가 아니라 **언마운트** —
-                -- rawUnmount는 rawRemove와 같되 element를 Destroy하지 않고
-                -- 소유권만 반납(unmountSlotTree 사용, 아래 "파괴" 절).
-                -- 명시적 CRUD Remove/Clear/dispose만 여전히 파괴.
-                if prev ~= nil then rawUnmount(self, prev) end
+                -- [재정정, 2026-08-18 구현 전 QA] 세 경로가 갈린다 — 아래
+                -- "`nil` 리턴은 파괴가 기본" 절이 소스:
+                --   (a) 교체(result ~= nil): 밀려난 prev는 **언마운트만**
+                --       — state<Frame> 교체와 동형, 지우라고 한 적이 없음.
+                --   (b) PopOnly: **언마운트만**, 재사용은 ud가 홀드.
+                --   (c) 그냥 nil/None: **파괴**(rawRemove) — "지워라"라는 지시.
+                if prev ~= nil then
+                    if result ~= nil or popOnly then rawUnmount(self, prev)
+                    else rawRemove(self, prev) end
+                end
                 if result ~= nil then rawAdd(self, result, pos) end -- 새로 배치, 압축 위치 기준
                 mounted[key] = result
             elseif prev ~= nil and keyIndex[key] ~= pos then
@@ -1099,12 +1112,13 @@ function activateList(self, inst)
             end
 
             userdata[key] = ud    -- result와 무관, 그대로 기록
+                                  -- (PopOnly 재사용은 여기 담긴 { old = ... }가 담당)
             newKeyIndex[key] = pos
         end
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = mounted[key]
-                if prev ~= nil then rawUnmount(self, prev) end   -- 위와 같은 이유로 비파괴
+                if prev ~= nil then rawRemove(self, prev) end -- [재정정, 2026-08-18] 파괴
                 mounted[key], userdata[key] = nil, nil
             end
         end
@@ -1177,19 +1191,17 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
   실행)의 로컬 변수(클로저 업밸류) — 별도 전역 weak table(`Relate` 등)
   불필요, `inst`/`self`가 살아있는 동안만 존재하면 되고 죽으면 클로저도
   같이 GC됨(아래 "구독 시점" 절).
-- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawUnmount`/`rawMove`뿐**
-  (**[정정, 2026-08-13 여섯 번째 세션]** 예전엔 `rawRemove`(파괴)였으나
-  언마운트 전환으로 바뀜 — 데이터에서 빠진 아이템도 파괴되지 않고
-  언마운트만 되며, 아무도 안 들고 있으면 GC) —
-  `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는 가드+위임"
-  구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘 자체가 그
-  셋을 직접 호출할 일이 없을 뿐 — **[정정, 2026-08-13 감사] "제거는
-  항상 파괴 확정이라 Extract 아닌 Remove 경로"라는 예전 근거는 언마운트
-  전환으로 이제 틀림**(바로 위에서 정정했듯 reconcile의 제거는 이제
-  비파괴 `rawUnmount`이고, 이 함수 자체가 `rawRemove`의 비파괴
-  짝으로서 `Extract` 계열과 공유하는 저수준 프리미티브 — 위 코드
+- **`reconcile`이 직접 호출하는 건 `rawAdd`/`rawUnmount`/`rawRemove`/
+  `rawMove`** (**[재정정, 2026-08-18 구현 전 QA]** 2026-08-13 여섯 번째
+  세션에 "reconcile의 제거는 전부 비파괴 언마운트"로 바꿨던 것을
+  **부분적으로 되돌림** — `nil` 리턴/키 소멸은 다시 **파괴**가 기본이고,
+  값 교체와 `PopOnly`만 비파괴. 아래 "`nil` 리턴은 파괴가 기본" 절이
+  소스) — `rawExtract`/`rawSwap`/`rawClear`도 (위 "모든 공개 CRUD는
+  가드+위임" 구조상) 당연히 존재하지만, `:List`의 reconcile 알고리즘
+  자체가 그 셋을 직접 호출할 일이 없을 뿐. `rawUnmount`는 `rawRemove`의
+  비파괴 짝으로서 `Extract` 계열과 공유하는 저수준 프리미티브 — 위 코드
   블록의 "rawRemove의 비파괴 짝 — `:List`의 reconcile과 `Extract`
-  계열이 씀" 주석 참고). reconcile이 공개 `Slot:Extract` 대신
+  계열이 씀" 주석 참고. reconcile이 공개 `Slot:Extract` 대신
   `rawUnmount`를 직접 부르는 진짜 이유는 파괴 여부가 아니라, reconcile이
   이미 자기 `mounted` 맵으로 element를 추적 중이라 `Extract`의 "제거한
   element를 호출자에게 반환" 계약이 불필요하고, 공개 CRUD의 가드/에러
@@ -1199,6 +1211,60 @@ raw `i`를 그대로 위치 인자로 썼는데, 앞쪽 item이 filter로 마운
 - **리오더는 `Move`(의 가드 없는 버전)** — Parent를 안 건드리는 진짜
   저비용 경로. 최소-이동 알고리즘(LIS 기반 등) 자체는 구현 시점 최적화로
   미룸, 여기선 계약(파괴 없이 위치만 바뀜)만 확정.
+
+### `nil` 리턴은 파괴가 기본 — `PopOnly`(가칭)로만 비파괴 (2026-08-18 구현 전 QA, 확정 뒤집기)
+
+**[재정정]** 2026-08-13 여섯 번째 세션은 "자동 경로는 언마운트, 명시적으로
+지우라고 한 것만 파괴"라는 일반 규칙을 세우면서 `:List`의 reconcile까지
+전부 비파괴로 바꿨는데, **`:List`에는 그 일반화가 안 맞는다**는 게 사용자
+판정: *"List reconcile 에서 nil 리턴으로 지워지길 요구하는 경우는 비파괴일지,
+파괴일지 생각해보아야할 것이 많은듯. 기본적으로 파괴가 맞기는 한데…"*
+
+**세 경로로 갈린다**(위 `reconcile` 의사코드):
+
+| updateFn의 반환 | 이전 요소(`prev`) 처리 | 왜 |
+|---|---|---|
+| 새 값(`result ~= nil`) | **언마운트만** | 밀려난 것뿐이지 "지워라"가 아님. `state<Frame>` 교체와 동형이고, `Slot { State<Slot> }` sugar(`:Single`)가 이 경로를 타므로 아래 "`State<Slot>` 교체" 절의 확정도 그대로 유지됨 |
+| `nil` / `None` | **파괴**(`rawRemove`) | `updateFn`이 명시적으로 "이 자리를 지워라"라고 말한 것 |
+| `PopOnly`(가칭) | **언마운트만** + 재사용 대기 | 아래 |
+| 키가 데이터에서 사라짐 | **파괴**(`rawRemove`) | `nil` 리턴과 같은 의미(그 아이템은 이제 없음) |
+
+**`PopOnly`(가칭) — `Instance.new`/`Destroy` 비용을 아끼는 재사용 경로.**
+`filter` 용도처럼 "지금은 안 보이지만 곧 다시 필요할" 요소를 매번
+파괴/재생성하는 건 비싸다. 그래서 `updateFn`이 **`PopOnly`와 함께 userdata를
+반환**하면 그 자리는 파괴 없이 `Parent = nil`로만 내려오고 Slot에서 빠진다:
+
+```lua
+-- filter에서 걸러진 아이템 — 죽이지 말고 들고 있다가 나중에 되쓴다
+return PopOnly, { old = prev, source = ... }
+```
+
+- **보존 주체는 `userdata`** — reconcile은 `mounted[key]`에서만 뺄 뿐
+  `userdata[key]`는 그대로 기록하므로(위 의사코드), 반환한 테이블 안의
+  `old`가 그 요소를 강하게 붙잡아 GC를 막는다. 다음 사이클에 `updateFn`이
+  같은 `userdata`를 다섯 번째 인자로 다시 받으므로, 거기서 `old`를 꺼내
+  그대로 반환하면 **재마운트**된다(`rawAdd` 경로).
+- **userdata는 그 키가 데이터에 남아 있는 한, 명시적으로 `nil`을 반환하기
+  전까지 안 지워진다** — 즉 "언제 진짜로 버릴지"를 `updateFn`이 결정한다.
+- **⚠️ 단, 키가 데이터에서 아예 사라지면 얘기가 다르다(2026-08-18 감사에서
+  발견한 갭).** 그 경우 reconcile의 소멸 루프가 `mounted[key]`/`userdata[key]`를
+  **둘 다** 지우는데, `PopOnly`로 홀드 중이던 요소는 `mounted[key]`가 이미
+  `nil`이라 `rawRemove`(파괴) 대상이 아니다 — 결과적으로 그 요소는
+  **파괴되지도, `updateFn`에게 되돌려지지도 않고 참조만 끊겨 GC 대상이
+  된다**(Parent는 이미 `nil`). 이건 같은 절의 표가 "키가 사라지면 파괴"라고
+  못박은 것과도, 위 "버릴 시점은 `updateFn`이 정한다"와도 어긋난다.
+  **세 선택지 중 하나를 M8 착수 전에 정할 것**(`question.md` 3번):
+  (a) 소멸 루프가 `userdata[key].old`도 확인해 `rawRemove`로 파괴,
+  (b) 지금처럼 참조만 끊고 GC에 맡김(단 표와 서술을 그 사실에 맞게 고침),
+  (c) `updateFn`을 마지막으로 한 번 더 불러 처분을 묻는다.
+  **지금 문서는 (a)를 기본으로 가정하지 않는다** — 결정 전이므로 구현 금지.
+- **이름은 가칭** — 사용자 확정: *"PopOnly 확정. 다만 이름은 변경될 수
+  있음. 이름에 대해서는 더 생각해보아야함"*. `question.md` 용어 정리 항목에
+  올려둠. 메커니즘(반환 규약 + userdata 홀드 + 재마운트)은 확정.
+- **`Slot`의 다른 비파괴 API와의 관계**: `Extract`/`ExtractAll`/`Splice`가
+  이미 비파괴 추출을 제공하지만(위 "CRUD API 확정" 절) 그건 **호출자가
+  직접 부르는 명령형 경로**다. `PopOnly`는 같은 일을 **reconcile 안에서
+  선언적으로** 하기 위한 것이라 서로 대체 관계가 아니다.
 
 ### 구독 시점 — `:List()` 호출이 아니라 Slot 마운트 시점, lazy `bindLifetime`
 (2026-08-09 일곱 번째 세션)
@@ -1855,6 +1921,25 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 엔진 자체 `:Destroy()` 메소드와 동명이라 사용자가 "그냥 `:Destroy()`
 부르는 거 아님?"으로 착각할 위험이 있어 기각 — `dispose` 유지.
 
+**[백로그 후보, 2026-08-18 구현 전 QA] `SetAndDispose` 류 편의 콤비네이터.**
+위 "`Set`(언마운트) → 그 다음 정리" 순서 요구 때문에 호출부가 매번
+**`Get()`으로 이전 값을 미리 잡아두고 → `Set(new)` → 잡아둔 옛 값을
+`dispose`** 하는 3단계를 손으로 써야 해서 편의성이 떨어진다는 사용자 지적:
+*"source:apply(SetAndDispose( new )) 같은걸 구현해줄까는 생각해보았음(단
+여기서의 apply 는 source 를 넘겨주는 함수가 되어야함.). Get해놓고 Set 이후
+나중에 지우는게 편의성이 떨어지기 때문. 아니면 그냥 source 자체에 :콜론
+메서드로 가능하게 하는걸 넣어줄까 생각은 하고 있음."* 후보 둘:
+
+1. `source:Apply(SetAndDispose(new))` — 콤비네이터. **단 여기서의 `Apply`는
+   `State`가 아니라 `Source`를 넘겨주는 함수여야 함**(사용자 명시) — 지금
+   확정된 `state:Apply(factory)`는 `factory(self)`에 `State`를 넘기므로,
+   `Source` 전용 변형이 필요한지 같이 정해야 한다.
+2. `Source`에 콜론 메서드로 직접 얹기(`source:SetAndDispose(new)`).
+
+**미결**: 어느 쪽을 택할지, 그리고 이번 범위에 넣을지 백로그로 뺄지.
+`state:Apply`의 시그니처(`(State<T>) -> U`)에 영향이 갈 수 있으므로 **M3
+착수 전에 방향만이라도 정해둘 것**. `question.md`에 올려둠.
+
 #### 구현상 바뀌어야 하는 것
 
 **[반영 완료, 2026-08-13 감사 후속]** 비파괴 경로를 `unmountSlotTree`로
@@ -1866,14 +1951,20 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
    그대로 뒀으면 언마운트 결정 자체가 무의미해질 뻔함). 지금은 위 절의
    코드가 `unmountSlotTree` + `setOffsetSource(None)`/`setLength(0)` +
    `unbindLifetime` + `releaseOwner`를 부름.
-2. **`:List`의 `reconcile`** — 교체/소멸 시 `rawRemove`(파괴) 대신 같은
-   비파괴 경로. 데이터에서 빠진 아이템도 파괴되지 않고 언마운트만 되며,
-   아무도 안 들고 있으면 GC(quad 전역의 GC-native 원칙 그대로).
+2. **`:List`의 `reconcile`** — **[재정정, 2026-08-18 구현 전 QA]** 여기서
+   비파괴가 되는 건 **값 교체와 `PopOnly`뿐**이다. `updateFn`이 `nil`/`None`을
+   반환하거나 키가 데이터에서 사라진 경우는 **다시 파괴가 기본**(사용자
+   판정) — 상세와 이유는 위 "`nil` 리턴은 파괴가 기본" 절이 소스.
+   2026-08-13에 이 항목이 "교체/소멸 시 전부 비파괴"로 적혔던 것은
+   `:List`에는 안 맞는 일반화였음.
 
 **여전히 파괴인 것**: 명시적 CRUD `Slot:Remove(index)`/`Slot:Clear()`
-(CRUD 표가 "제거 **+ 파괴**"로 이미 정의)와 `dispose`. 즉 **"자동 경로는
-언마운트, 명시적으로 지우라고 한 것만 파괴"**로 갈림 — `Ref`/`Attribute`의
-"지울 거면 명시적으로" 철학과 정확히 같은 결.
+(CRUD 표가 "제거 **+ 파괴**"로 이미 정의), `dispose`, 그리고 위 2번의
+`:List` 소멸 경로. 즉 일반 규칙은 **"자동 경로는 언마운트, 명시적으로
+지우라고 한 것만 파괴"**이되, **`:List`에서 `nil`을 반환하는 것 자체가
+"지우라고 한 것"으로 센다** — `Ref`/`Attribute`의 "지울 거면 명시적으로"
+철학과 같은 결이고, `updateFn`이 지우지 않길 원하면 `PopOnly`로 그 의도를
+명시한다.
 
 `unmountSlotTree`는 `destroySlotTree`가 하는 일 중 **실제 파괴와 자식
 소유권 반납만 빼고 나머지는 그대로 함**(자식 observer `unbindLifetime`,

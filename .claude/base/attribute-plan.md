@@ -30,7 +30,7 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attri
 프리미티브 신설, 이름 충돌 방지를 위해 기존 단일 키 생성자를
 `Attribute<<T>>` → `AttributeKey<<T>>`로 리네임(잠정 확정 — 최종 이름은
 여전히 `.claude/question.md` 용어정리 대기열). `[AttributeKey "Name"]`(구
-`[Attribute "Name"]`) DI 키의 존재 자체는 `architecture.md` 4번 항목에서
+`[Attribute "Name"]`) 특수 키의 존재 자체는 `architecture.md` 4번 항목에서
 이미 확정. UICorner 숏핸드/Tween처럼
 별도 전용 문서가 없던 걸 2026-08-07 여덟 번째 세션에 메꿈("1 프리미티브 1
 파일" 관례를 Tag/Attribute에도 적용해야 한다는 사용자 지적) —
@@ -63,15 +63,19 @@ Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Att
   `Attribute`가 아니라 이미 타입별로 갈라져 있어 아래 그룹 `Attribute(...)`와
   겹치지 않음 — 리네임 대상 아님.**
 
-**근거**: 이미 확정된 DI 인스턴스 생성 패턴(`bind-system-plan.md` "인스턴스
+**근거**: 이미 확정된 `D`(Declarative) 인스턴스 생성 패턴(`bind-system-plan.md` "인스턴스
 생성 / 이벤트 네이밍 인체공학" 절)과 구조적으로 똑같은 문제라 같은 결론
-재사용 — `new<ClassName>(className)` 제네릭 생성자 + 자주 쓰는 ~25개는
-정적 필드로 미리 바인딩했던 것과 동일한 절충. **내부 구현은 완전히
+재사용 — 제네릭 생성자 하나 + 클래스별 정적 필드를 미리 바인딩하는
+것과 동일한 절충(**[정정, 2026-08-18 구현 전 QA]** 그 생성자의 이름은
+`New`이고 타입은 `new<ClassName>(className): from<index<...>>` 같은 타입
+레벨 인덱싱이 **아니라 생성기가 찍어내며**, 범위도 "자주 쓰는 ~25개"가
+아니라 "GUI에 쓰이는 모든 인스턴스"다 — 재사용하는 건 절충의 **모양**이지
+그 수치가 아님). **내부 구현은 완전히
 동일**(같은 Handler를 타고, 같은 프리미티브) — 둘 사이 차이는 순전히
 호출부가 타입을 어떻게 명시하느냐(제네릭 파라미터 vs 이름)뿐이라 어느
 쪽을 쓰든 런타임 동작에 차이 없음.
 
-**[실측 필요, M0/M10]** `[AttributeKey<<boolean>> "name"] = value`처럼 DI
+**[실측 필요, M0/M10]** `[AttributeKey<<boolean>> "name"] = value`처럼 특수
 키 제네릭 파라미터로 `=` 뒤 `value`의 타입까지 실제로 좁혀지는지는
 미검증 — Luau 솔버가 이 조합을 못 풀면 `value`가 `any`로 남을 수 있음.
 단, **타입 추론이 안 되더라도 런타임 동작에는 영향 없음**(순수 정적
@@ -218,6 +222,30 @@ function AttributeKeyHandler.process(inst, k, v, index)
 end
 ```
 
+- **⚠️ [열린 항목, 2026-08-18 구현 전 QA] 같은 그룹 객체를 두 위치에 놓는
+  경우(`Frame { a, a }`)는 이 claim으로 안 잡힌다 — 위치별 claim이 따로
+  필요하다.** `groupKey(v, name)`이 **그룹 값 객체별·이름별 메모이즈**라,
+  같은 객체 `a`가 `k=1`과 `k=2`에 놓이면 양쪽이 **완전히 같은 키 객체**로
+  위임한다. 그러면 위 `nameClaims` 체크는 `cur == k`라 **통과**하고, 두
+  위치가 `(inst, 같은 key)`라는 **하나의 체인을 공유**하게 된다 — 더
+  치명적인 건 철거로, `k=1`이 retract되면 그 클로저가
+  `Dispatch.retractFrom(inst, key, 1)`을 불러 **`k=2`가 아직 쓰고 있는
+  바인딩까지 통째로 철거**한다.
+  - **`Ref`의 "이중 배치 방지"(`base/ref-plan.md`)와 같은 클래스의
+    문제지만 같은 해법을 쓸 수 없다** — 사용자 판정: *"Attribute 는
+    bindLifetime 를 못함. Ref 와 다르게 여기저기서 사용 가능하기 때문. 한
+    곳에서 바운딩 했다고 다시 바운딩 못할 순 없음. 따라서 위치별 claim 을
+    하나 두어야한다고 생각함."* `Ref`는 "한 곳에만 배치"가 규칙이지만
+    그룹 `Attribute` 값은 여러 곳에서 쓸 수 있어야 한다.
+  - **확정된 방향**: 위치별 claim 레지스트리를 하나 더 둬서 **같은 그룹
+    객체가 같은 위치 집합을 이중 점유하는 것만** 잡는다.
+  - **미정 — 구현 전에 정할 것**: 그 claim의 키를 무엇으로 할지
+    (`(inst, groupValue) → k`인지 `groupKey` 단위인지), 그리고 기존
+    `nameClaims`와 어떻게 공존하는지. `question.md`에 올려둠.
+  - **`Tag`는 왜 다른가**: `Tag`는 같은 객체를 여러 위치에서 재사용하는 게
+    **정상 관례**이고 위치(`k`) 기준 참조 카운트로 안전하다(`base/tag-plan.md`)
+    — 자원이 "이름 집합"이라 겹쳐도 합집합이면 되기 때문. 그룹
+    `Attribute`는 자원이 **값 하나**라 겹침이 곧 충돌이다.
 - **해제 → 재클레임 순서는 `Dispatch`가 보장함.** 같은 핸들러 재프로세스는
   `slot.retractor(v)` → `h.process(...)` 순서이고, 핸들러가 바뀌는 경우는
   `retractFrom` → `process` 순서(`base/dispatch-core-plan.md` "Dispatch
@@ -270,7 +298,8 @@ Store 필드 여러 개를 각각 `[AttributeKey<<T>> "name"] = store.name`으�
 
 ```
 Attribute(store1, store2, ..., {plain = "table도 됨"})  -- 생성자, 여러 개 받음
-Attribute.Merged(a, b, ...): Attribute                   -- Tag.Merged와 동일 이유(헤테로지니어스 합성)
+Attribute.Merged(a, b, ...): Attribute                   -- 합성, 이름이 겹치면 error
+Attribute.Overridden(a, b, ...): Attribute               -- 합성, 이름이 겹치면 조용히 뒤가 이김
 attr:NameMap(): {[string]: Source<any>}                  -- 평탄화된 이름→Source 맵(아래 "메커니즘" 절이 쓰는 것)
 Frame { Attribute(styleStore), Attribute(stateStore) }   -- 여러 개 나란히 둬도 각자 자기 키만 반영(Tag와 동일)
 ```
@@ -283,6 +312,26 @@ Frame { Attribute(styleStore), Attribute(stateStore) }   -- 여러 개 나란히
 `Attribute.Merged`가 내부적으로 하는 일은 각 Store에서 이름 붙은 `Source`
 슬롯을 그대로 가져와 자기 자신의 key→Source 맵에 넣는 것 — 아래 "레이어드
 Store 기각과 안 부딪히나" 참고.
+
+**[해소, 2026-08-18 구현 전 QA] 이름 겹침 정책은 `Merged`/`Overridden` 둘
+다 제공하는 것으로 확정** — 열려 있던 "겹치면 error냐 뒤가 이기냐"는
+**둘 중 하나를 고르는 문제가 아니었다**. 사용자 판정: *"차라리 Merged,
+Overridden 을 제공하면 될것 같음. 전자는 에러를 내주고, 후자는 그냥 조용히
+덮어써주는것. 사용자 의도에 따라 달라질 부분이라 분리해주는것이
+이로워보임."*
+
+- `Attribute.Merged(a, b, ...)` — 같은 이름이 겹치면 **즉시 error**(합성
+  시점 1회 체크라 싸다). 이 문서의 다른 결정들(이름 claim 충돌 = 즉시
+  error)과 결이 같음.
+- `Attribute.Overridden(a, b, ...)` — 겹치면 **조용히 뒤가 이김**.
+- **⚠️ 이 이름 쌍의 의미가 코퍼스 전체에서 재정렬된다** — 지금까지
+  `Merged`(=무손실 합집합, `Tag`)와 `Overridden`(=필드 단위 덮어쓰기,
+  `Modifier`)은 **연산의 종류**를 가르는 이름이었는데, `Attribute`에선
+  **충돌 시 정책**(error냐 덮어쓰기냐)을 가른다. `base/tag-plan.md`가
+  `Tag.Merged` 코드 주석에서 두 이름을 "집합 합치기 vs 이미 계산된 것
+  합치기"로 대조해둔 서술과 같이 읽을 것.
+- **`Tag`에는 `Overridden`이 필요 없다** — `Tag`는 이름 집합의 합집합이라
+  애초에 "충돌"이라는 개념이 없다(겹치면 그냥 하나로 합쳐지는 게 정답).
 
 ### 메커니즘 — 그룹 전용 키로 단일 키 경로에 위임 (2026-08-13 열네 번째 세션 확정)
 
@@ -445,8 +494,8 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 | 그룹 값 타입+API(`Attribute(...)`/`Merged`/`:NameMap`) | quad-base |
 | 단일 키 `AttributeKey<<T>>(name)` + 이름별 weak 캐시 | quad-base |
 | 스칼라 편의 패밀리(`StringAttribute`/`NumberAttribute`/`BooleanAttribute`) | quad-base |
-| `AttributeKeyHandler`(이름 claim 포함) / `AttributeGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로는 이걸 감싸는 `AttributeKeyFallbackHandler`/`AttributeGroupFallbackHandler`가 백엔드 팩토리 뮤테이션 시점에 등록됨(아래 참고) |
-| 엔진 고유 타입 패밀리(`Color3Attribute`/`UDim2Attribute`/`InstanceAttribute`류) | 백엔드(quad-roblox의 `D`/`DI` 층) |
+| `AttributeKeyHandler`(이름 claim 포함) / `AttributeGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로는 이걸 감싸는 `AttributeKeyFallbackHandler`/`AttributeGroupFallbackHandler`가 등록됨 — **[재역전, 2026-08-18] 등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op" 절) |
+| 엔진 고유 타입 패밀리(`Color3Attribute`/`UDim2Attribute`/`InstanceAttribute`류) | 백엔드(quad-roblox의 `D` 층) |
 | **`setAttribute(inst, name, v)`** — `v == nil`이면 그 이름을 지움 | 백엔드가 주입 |
 
 - **왜 타입 패밀리만 갈리는가**: Roblox attribute가 받는 타입 집합
@@ -458,9 +507,10 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
   claim 알고리즘 구현일 뿐, 스스로 등록되는 주체가 아님(2026-08-14 열두
   번째 세션 정정).** `HANDLER_PRIORITY_FALLBACK`에 실제로 꽂히는 건
   이걸 감싸는 `AttributeKeyFallbackHandler`/
-  `AttributeGroupFallbackHandler` — 등록 주체는 quad-base 모듈 자체가
-  아니라 백엔드 팩토리(`BaseModule` 뮤테이션 시점, 자기 전용 Handler들과
-  같이 등록). 옛 "quad-base 모듈 로드 시점에 스스로 등록" 모델은
+  `AttributeGroupFallbackHandler` — **[재역전, 2026-08-18 구현 전 QA]
+  등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(백엔드 미로드
+  상태에서도 안내 에러 경로가 돌아야 하기 때문, `base/dispatch-core-plan.md`의
+  "base가 소유하는 핸들러와 주입되는 엔진 op" 절이 소스). 경위는
   `archive/tag-attribute-load-time-registration-reversed.md`.
   `setAttribute`만 백엔드 팩토리가 채우는 타입 계약, 안 채운 슬롯의
   base 기본값은 명시적으로 에러내는 스텁. 더 명확한 메시지나 진짜
@@ -481,16 +531,13 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
   하강 diff 재디스패치(0-A)는 확정·반영 완료** — 위 "이름 소유권"/
   "메커니즘" 절이 정본, 뒤집힌 옛 모델은
   `archive/dispatch-hintvalue-model-reversed.md`.
-- **[열림, 사소함, 2026-08-13 열네 번째 세션 신설] `Attribute.Merged`에서
-  두 Store가 같은 이름을 가지면 지금은 조용히 하나가 이김** —
-  `:NameMap()` 평탄화가 dispatch 이전 단계라 위 이름 claim이 못 잡는
-  자리. 이름 겹침을 error로 잡는 게 이 문서의 다른 결정들과 결이 같고
-  구현도 싸지만(합성 시점 1회 체크), "Merged는 뒤가 이긴다"를 의도된
-  override로 볼 여지도 있어서 사용자 확인 대기 — `question.md` 3번.
+- **[해소, 2026-08-18 구현 전 QA] `Attribute.Merged`의 이름 겹침 정책** —
+  `Merged`(error)와 `Overridden`(뒤가 이김)을 **둘 다 제공**하는 것으로
+  확정. 상세는 위 "채택안 — `Tag`와 동형인 array-part 값 객체" 절.
 - **이름은 잠정 확정, 최종 확정은 대기열**: 겹침 방지를 위해 그룹 값은
   `Attribute`, 단일 키는 `AttributeKey<<T>>`로 코드/문서 전체 통일해서
-  당장의 해석 모호성은 없앴음 — 그래도 최종 이름은 다른 가칭들(`DI`→`D`/
-  `Slot`/`canExecute`/`Brand`)과 함께 `.claude/question.md` 용어정리
+  당장의 해석 모호성은 없앴음 — 그래도 최종 이름은 다른 가칭들(`Slot`/
+  `canExecute`/`Brand`)과 함께 `.claude/question.md` 용어정리
   대기열에 있음, 나중에 한꺼번에 재검토.
 - **[백로그, 2026-08-12 세션 후속]** 그룹이 이름을 조용히 놓아도
   `setAttribute(inst,name,nil)`을 자동으로 안 해준다는 위 "그룹 `Attribute(...)`"

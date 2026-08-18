@@ -17,7 +17,7 @@
 
 ## 확정
 
-- **`OnChange(propertyName): OnChangeKey`** — 프로퍼티 이름을 감싸는 DI 키
+- **`OnChange(propertyName): OnChangeKey`** — 프로퍼티 이름을 감싸는 특수 키
   팩토리, `AttributeKey(name)`/`Tag(...)`와 같은 패턴(`AttributeKey`는 구
   `Attribute` — 2026-08-11 아홉 번째 세션에 여러 Store를 묶는 그룹
   `Attribute(...)` 프리미티브가 신설되며 이름 충돌 방지로 리네임됨,
@@ -26,12 +26,17 @@
 - **제네릭 타입 파라미터 없음 — `OnChange<<T>>` 같은 타입 파라미터화는 안
   함.** 콜백 파라미터 타입은 호출부가 인라인으로 직접 명시
   (`function(v: UDim2) ... end`) — Luau가 그 타입이 실제 프로퍼티 타입과
-  일치하는지 검증해주지 않음. 이미 확정된 "이벤트 바인딩은 콜백 시그니처를
-  Luau가 검증 못 하는 대가를 받아들인다"는 결정(`base/bind-system-plan.md` "이벤트
-  바인딩 — `On.EventName` 도트액세스 안 씀" 절, "타입 안전성을 어느 정도
-  포기하는 대가")과 같은 급의 트레이드오프라 새로 정당화할 것 없음 — 오히려
-  `AttributeKey<<T>>`처럼 제네릭으로 정확히 맞추려는 시도는 이벤트 키보다 더
-  엄격한 걸 요구하는 셈이라 일관성이 깨짐.
+  일치하는지 검증해주지 않음.
+  **[근거 교체, 2026-08-18 구현 전 QA — 결론은 그대로]** 옛 근거는 *"이벤트
+  바인딩은 콜백 시그니처를 Luau가 검증 못 하는 대가를 받아들인다는 결정과
+  같은 급"* 이었는데, **그 전제가 거짓**이다(이벤트는 props 타입의 **필드**라
+  `D` 생성기가 콜백 타입을 정확히 줄 수 있음 —
+  `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절).
+  진짜 이유는 **`OnChange(name)`이 이름을 인자로 받는 팩토리라 그 경로가
+  없다는 것** — 필드가 아니므로 생성기가 미리 타입을 찍어둘 자리가 없고,
+  프로퍼티별로 전량 생성하는 안은 이미 기각돼 있다(아래 항목). 그래서
+  `AttributeKey<<T>>`처럼 제네릭으로 맞추려는 시도만 남는데, 그건 호출부가
+  매번 타입을 두 번 적게 만들 뿐이라 채택 안 함.
 - **기각안 — 프로퍼티별 정적 `OnChange.PropertyName` 전량 코드 생성**:
   `archive/onchange-per-property-codegen-rejected.md` 참고. Attribute의
   "제네릭 + 자주 쓰는 것만 정적 지름길" 절충과 겉보기엔 비슷해 보이지만
@@ -58,7 +63,7 @@
   캡처하므로 별도 `Relate` 저장/재조회가 필요 없음(`dispatch-core-plan.md`
   "핸들러 내부 상태 저장" 절).
 - **`State<function>` 지원 — 새 메커니즘 없음.** 이미 확정된 "이벤트도
-  store-bind 가능 — `false`로 disconnect" 메커니즘(`bind-system-plan.md`)이
+  store-bind 가능" 메커니즘(`base/event-plan.md`)이
   `OnChange` 키에도 그대로 적용됨 — `OnChangeHandler`는 `process`(와 그
   반환 클로저)만 구현하면 되고, `v`가 State/Source면 범용 `Dispatch/StoreBind.luau`가 알아서
   언랩+재귀 재-dispatch해서 `process`를 다시 호출해줌. `OnChange` 전용 분기
@@ -73,14 +78,16 @@
   의도적으로 허용해도 되는 동작 — 문제 없음(사용자 확인). `Handlers/OnChange.luau`
   안 `OnChange(name)` 팩토리에 `AttributeKey`와 동일한 캐시 구현.
 
-## 다른 특수 DI 키와의 대조
+## 다른 특수 키와의 대조
 
 | | 소스 | 값 타입 | 패키지 경계 |
 |---|---|---|---|
-| 이벤트(`MouseButton1Click = fn`) | `inst[key]`가 이미 Signal | 콜백, 타입 미검증 | quad-roblox(`Handlers/Event.luau`) |
+| 이벤트(`MouseButton1Click = fn`) | `inst[key]`가 이미 Signal | 콜백 — **[2026-08-18 정정] 타입 검증됨**(props 타입의 필드라 `D` 생성기가 콜백 시그니처를 찍어줌) | 판별은 quad-roblox(`Handlers/Event.luau`), 타입은 `D` 생성기 |
 | `AttributeKey(name)` | 주입된 `setAttribute` op | 값(제네릭 또는 정적 타입 패밀리로 타입 파라미터화) | **quad-base**(키+Handler, 2026-08-13 열네 번째 세션 재배치) / 엔진 op만 백엔드 |
 | `OnChange(name)` | `GetPropertyChangedSignal(name)` | 콜백, 타입 미검증(제네릭 없음) | quad-roblox(`Handlers/OnChange.luau`) |
 
-`OnChange`가 Attribute처럼 제네릭화되지 않은 이유는 "콜백을 받는다"는
-성질이 Attribute(값을 직접 받음)보다 이벤트에 더 가깝기 때문 — 카테고리가
-헷갈리지 않도록 표로 명확히 구분해둠.
+`OnChange`가 Attribute처럼 제네릭화되지 않은 이유는 위 "확정" 절의 정정된
+근거대로 **이름을 인자로 받는 팩토리라 타입을 미리 찍어둘 필드가 없기**
+때문 — "콜백을 받는다"는 성질이 이벤트에 가깝다는 분류 자체는 그대로지만,
+이벤트 쪽은 필드라서 타입이 나온다는 게 2026-08-18에 확인됐으므로 그
+유사성이 근거가 되지는 못한다.

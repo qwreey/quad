@@ -1,4 +1,4 @@
-# 이벤트 바인딩 — self 미전달, `false`로 disconnect
+# 이벤트 바인딩 — self 미전달, `None`/`nil`로 disconnect
 
 > **[2026-08-13 아홉 번째 세션] `bind-system-plan.md`에서 분리됨.**
 > 사용자가 "이벤트 연결은 다른 base 문서가 되어야 할 듯"이라고 직접
@@ -52,8 +52,7 @@ SyntheticEvent만 주는 것과 같은 모양).
    해당 Connection도 자연히 같이 정리됨 — 별도 Disconnect 관리가 애초에
    불필요. **[정정, 2026-08-06 후속 세션] 동적으로 Connect/Disconnect를
    반복하고 싶은 케이스는 Ref로 수동 처리하는 대신 store-bind로 네이티브
-   지원하기로 확정** — 아래 "이벤트도 store-bind 가능 — `false`로
-   disconnect" 절 참고. 엔지니어링 비용이 예상보다 훨씬 낮다는 게 나중에
+   지원하기로 확정** — 아래 "이벤트도 store-bind 가능" 절 참고. 엔지니어링 비용이 예상보다 훨씬 낮다는 게 나중에
    확인됨(기존 store-bind 재실행 래핑을 그대로 재사용, 새 디스패치
    메커니즘 불필요).
 
@@ -64,7 +63,7 @@ SyntheticEvent만 주는 것과 같은 모양).
 문서가 아니라 quad-roblox 로컬 결정 — 다른 백엔드 구현체를 만들 때
 참고할 만한 템플릿 정도로만 취급.
 
-## 이벤트도 store-bind 가능 — `false`로 disconnect (2026-08-06 후속 세션)
+## 이벤트도 store-bind 가능 — `None`/`nil`로 disconnect (2026-08-06 후속 세션, **센티널은 2026-08-18에 `false`→`None`/`nil`로 정정**)
 
 **결정**: 이벤트 핸들러 값으로 State를 넘기는 것(reactive하게 콜백을
 바꿔치기/해제하는 것)을 지원한다. quad-roblox 로컬 결정, base 변경 없음.
@@ -80,13 +79,39 @@ SyntheticEvent만 주는 것과 같은 모양).
 다섯 번째 세션]** 예전엔 별도 `retract` 필드 + per-instance `Relate`
 저장소였으나, 클로저 캡처로 저장소 자체가 불필요해짐).
 
-**`false`로 disconnect, `nil` 아님.** `nil`은 Lua 테이블에서 "키가 아예
-없음"과 구별이 안 됨(`pairs`에서도 안 보임) — "명시적으로 꺼짐"이라는
-신호를 값으로 전달하기엔 부적합. 대신 `false`(Luau에서 실재하는 싱글톤
-타입)를 "연결 없음" 센티널로 씀: `process(inst,k,false)`가 들어오면
-`retract`가 하던 일(기존 Connection 해제)만 하고 새로 Connect 안 함.
-이벤트인지 여부는 값이 아니라 키(리플렉션으로 판별)로 결정되므로, 다른
-boolean 프로퍼티 핸들러와 `(k, false)` 매칭이 겹칠 위험 없음.
+**[재확정, 2026-08-18 구현 전 QA] 센티널은 `None`(그리고 그 재귀가 만드는
+`nil`)이다 — `false` 아님.** 원래 결정(2026-08-06)은 *"`nil`은 Lua
+테이블에서 '키가 아예 없음'과 구별이 안 되니 실재하는 싱글톤 `false`를
+센티널로 쓴다"*였는데, **그건 `None` 센티널이 확정되기 전의 선택**이다.
+지금은 `None`이 정확히 그 역할("테이블에 실재하면서 '없음'을 뜻하는 값")로
+도입돼 있으므로(`base/modifier-plan.md` 2-1, `base/dispatch-core-plan.md`의
+"`None` 센티널" 절), 같은 문제를 푸는 센티널이 두 개가 되는 셈이라 이벤트만
+다른 걸 쓸 이유가 없음. 사용자 판정: *"이젠 None 이 있어서 false 을
+사용해야할 이유가 없어졌다고 봄 … 일관적이게 None/nil 을 주는게 맞다는
+생각"*.
+
+동작:
+
+- `MouseButton1Click = None`이면 `NoneHandler`가 매우 높은 우선순위로 먼저
+  매치해 `Dispatch.process(inst, k, nil, index+1)`로 재귀한다 — 즉
+  **`EventHandler`가 실제로 받는 값은 `nil`**이다.
+- 따라서 **`EventHandler.isHandlable`은 `v == nil`인 경우에도 매치돼야
+  한다** — 매치 판정은 값이 아니라 키(리플렉션으로 이벤트 이름인지 판별)로
+  하므로 원래도 값 모양에 의존하지 않았지만, "`nil`이면 매치 안 함" 같은
+  가드를 넣으면 안 된다는 게 이제 명시적 계약이다.
+- `(k=이벤트키, v=nil)`을 받으면 `retract`가 하던 일(기존 Connection 해제)만
+  하고 새로 Connect 하지 않는다.
+- **배열 자리의 `nil`을 잡는 `NilHandler`와 겹치지 않는다** —
+  `NilHandler`는 `type(k) == "number"` 전용이고 이벤트 키는 문자열이다
+  (`base/dispatch-core-plan.md`의 "`NilHandler`" 절).
+- 옛 근거였던 *"이벤트인지 여부는 키로 결정되므로 다른 boolean 프로퍼티
+  핸들러와 `(k, false)` 매칭이 겹칠 위험이 없다"* 는 `false`를 안 쓰는
+  이상 필요 없어져 삭제됨.
+
+**store-bind될 때의 타입도 같이 바뀐다** — 값 타입이 `((...) -> ())? |
+false`가 아니라 `((...) -> ()) | None | nil`(그리고 `State<...>`)이다.
+`D` 생성기가 이벤트 필드 타입을 찍을 때 이 유니온을 포함해야 함
+(`base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절).
 
 **quad가 미는 기본 패턴은 아님 — 부차적 옵션.** 저빈도 UI 이벤트(클릭류)를
 조건부로 켜고 끄고 싶은 흔한 케이스는 사실 이 메커니즘 없이도 됨 — 핸들러

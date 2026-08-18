@@ -34,12 +34,12 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
-4. **PA님 스타일 DI 키 계속 지원**: `[AttributeKey "Name"]`(구 `Attribute`,
+4. **PA님 스타일 특수 키 계속 지원**: `[AttributeKey "Name"]`(구 `Attribute`,
    2026-08-11 아홉 번째 세션에 그룹 `Attribute(...)`와 이름 충돌 방지로
    리네임) 같은 특수 바인드 키, store 컴퓨티드 바인드도 가능해야 함
    (`retract`, 구 cleanup, `base/lifecycle-pattern.md` 참고). **[정정,
    2026-08-08 세 번째 세션]** `Tag`는 더 이상 `[Tag ""] = true` 해시 파트
-   DI 키가 아님 — array-part 값 객체(`Tag(...)`)로 재설계됨,
+   특수 키가 아님 — array-part 값 객체(`Tag(...)`)로 재설계됨,
    `base/tag-plan.md` 참고(`archive/tag-hash-key-model-reversed.md`에 구
    모델 보존). **[2026-08-11 아홉 번째 세션]** `Attribute(...)`도 여러
    Store를 한 번에 attribute로 묶는 array-part 값 객체로 신설(`Tag`와
@@ -103,11 +103,24 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     추가. **메커니즘도 이미 정해짐(2026-08-08 두 번째 세션, 새 설계 아니라
     기존 패턴의 자연스러운 연장)**: v1처럼 `require`를 감싸 `Init(QuadId?)`로
     격리 인스턴스를 만드는 방식은 안 씀 — 대신 지금 있는 "팩토리가
-    `BaseModule`을 뮤테이션" 패턴(14번) 그대로, `New()`가 생기면 매번 새
-    `BaseModule` 테이블을 만들어 팩토리로 채우는 것뿐. Dispatch의 handler
-    레지스트리를 포함해 지금 module-level state로 사는 모든 것(`_initializedBy`
-    마커, Dispatch 레지스트리 등)이 자동으로 테이블별 스코핑됨 — 상세 근거는
+    `BaseModule`을 뮤테이션" 패턴(14번) 그대로, 매번 새 `BaseModule`
+    테이블을 만들어 팩토리로 채우는 것뿐. 상세 근거는
     `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절.
+    **[정정, 2026-08-18 구현 전 QA]** 옛 서술은 그렇게만 하면 지금
+    module-level state로 사는 모든 것(`_initializedBy` 마커, Dispatch
+    레지스트리 등)이 **"자동으로" 테이블별 스코핑된다**고 했는데, 사용자
+    판정은 다르다 — *"모듈이 하나의 인스턴스(dispatch 레지스트리 하나,
+    canExecute 등 계약 필드 하나) 만 가지고 있다면 예. 단, 나중에 …
+    require 를 감싸지는 않고 단순히 InitModule(module) 등을 받도록 각
+    코드들을 약간 고쳐서 이것을 해결함."* 즉 **코드 변경 없이 자동으로**
+    되는 게 아니라, module-level state를 참조하는 코드들이 모듈 인스턴스를
+    인자로 받도록 **손을 대야** 한다. 미래 API 이름도 `New()`가 아니라
+    **`Quad()`**(`Quad()`를 부르면 새 quad 인스턴스가 나오는 식)이고,
+    **지금은 단순 싱글톤이라 `Quad()` 없이 `Quad.Dispatch`로 바로 접근**한다.
+    - **M0 스캐폴딩에 주는 함의**: 레지스트리를 module-level upvalue로
+      직접 잡아두면 나중에 다중 인스턴스화할 때 전면 수정이 된다. 지금
+      싱글톤으로 가되, **그 참조 형태를 나중에 인자 하나 받는 걸로 바꾸기
+      쉬운 모양으로 둘지**를 M0에서 정할 것.
 14. **pluggable 초기화는 팩토리 함수로.** rbvm처럼 네임스페이스 하나하나 수동
     init 하는 방식(`base/lifecycle-pattern.md` 5번 항목 참고)은 피하고,
     `InitRoblox(Module)` 같은 팩토리 함수가 생성된 모듈을 뮤테이션하는 도구를
@@ -167,9 +180,10 @@ quad/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
+│       │   ├── None.luau           # NoneHandler(`v==None`을 `nil`로 바꿔 재귀만 — 배열/해시 구분 없음) + NilHandler(`k=number and v==nil` 전용 말단, `setLength(0)`/`setOffsetSource(None)` 등록) (`base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절, 2026-08-18 재설계 — `drive`의 `None` 스킵 분기 폐기)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/Effect/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`, Observer/Effect는 `ObserverEffectLeafHandler` 하나가 `type(k)=="number" and (isObserver(v) or isEffect(v))`로 같이 매치 — `base/source-state-plan.md` "Observer/Effect Leaf dedup" 절, 2026-08-14 열두 번째 세션), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
-│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `TagFallbackHandler`가 백엔드 팩토리 뮤테이션 시점에 등록됨(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
-│       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `AttributeKeyFallbackHandler`가 백엔드 팩토리 뮤테이션 시점에 등록됨
+│       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `TagFallbackHandler`가 quad-base 자신에 의해 등록됨(**[재역전, 2026-08-18]** 백엔드 팩토리가 아님)(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
+│       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `AttributeKeyFallbackHandler`가 quad-base 자신에 의해 등록됨(**[재역전, 2026-08-18]**)
 │       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절). `AttributeGroupFallbackHandler`가 같은 방식으로 감쌈
 │       │   └── Slot.luau           # add/remove/clear 재조정 로직(추상 자식 참조 기준)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
@@ -184,16 +198,16 @@ quad/
     └── src/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canBound/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
         ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), disposeInst(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
-        ├── LifetimeHandle.luau    # bindLifetime/canBound/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetStrong으로 gcconn/gchold 저장(`base/lifecycle-pattern.md`). `canBound`/`canExecute`는 비공개 헬퍼 하나를 공유하는 얇은 진입점(2026-08-14 열한 번째 세션). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
+        ├── LifetimeHandle.luau    # bindLifetime/canBound/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetWeak으로 gcconn/gchold 저장(**[정정, 2026-08-18] `SetStrong`이 아님 — 생존은 클로저 upvalue와 `gchold[1]`이 이미 보장, strong으로 잡으면 상호 강참조 누수**, `base/lifecycle-pattern.md`). `canBound`/`canExecute`는 비공개 헬퍼 하나를 공유하는 얇은 진입점(2026-08-14 열한 번째 세션). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)
         │   ├── Event.luau         # ReflectionService 기반 자동 판별
-        │   ├── OnChange.luau      # `OnChange(name)` DI 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩 + 이름별 weak 캐시(`AttributeKey`와 동일 기법, `base/onchange-plan.md`, 2026-08-10 세션)
+        │   ├── OnChange.luau      # `OnChange(name)` 특수 키 팩토리+Handler, `GetPropertyChangedSignal` 바인딩 + 이름별 weak 캐시(`AttributeKey`와 동일 기법, `base/onchange-plan.md`, 2026-08-10 세션)
         │   ├── Slot.luau          # base Slot 재조정 로직의 실제 적용/해제(Instance Parent 조작)
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
         ├── Animate.luau           # `Animate(info)` 편의 콤비네이터 — `factory(self)->State`, `:Apply`로 붙임(내부는 `:Compute`/`Tween{...}` 조합), base 프리미티브 아님(`base/tween-plan.md`)
-        ├── DI/
-        │   └── init.luau          # 제네릭 생성자 + ~25개 정적 필드(UIInstances)
+        ├── D/
+        │   └── init.luau          # **전량 코드 생성 산출물** — 제네릭 생성자 `New`(커링: `New "Frame" {...}`) + 클래스별 정적 별칭 필드(`D.Frame = New<<Frame>> "Frame" :: (({...}) -> Frame)`). 생성 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입/`State<T>`/`None`까지 타입으로 찍음(**[2026-08-18 확정]** `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)
         └── init.luau
 ```
 
@@ -221,10 +235,26 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
      `:Unsubscribe()`, `relate:SetWeak(...)`/`:GetWeak(...)`/`:SetStrong(...)`/
      `:GetStrong(...)`, `mod:FontSize(...)`(필드 setter 체이닝).
   3. 프리미티브 타입 자신의 네임스페이스에 달린 정적 결합 함수 —
-     `Modifier.Overridden(mod1, mod2, ...)`가 유일한 현재 사례. 콜론 메서드는
-     아니지만(여러 Modifier를 동등한 인자로 받아야 해서 self 하나로 안
-     됨) `Modifier` 타입 고유의 공개 연산이라는 점에서 1/2과 같은 부류 —
-     `Modifier()` 생성자와 같은 이유로 대문자.
+     `Modifier.Overridden(mod1, mod2, ...)`, `Attribute.Merged(...)`/
+     `Attribute.Overridden(...)`. **그 프리미티브 타입 고유의 공개 연산**
+     이라는 점에서 1/2과 같은 부류 — `Modifier()`/`Attribute()` 생성자와
+     같은 이유로 대문자.
+     **[정정, 2026-08-18 구현 전 QA]** 옛 서술은 이 분류를 만든 근거로
+     *"콜론 메서드는 아니지만 (여러 Modifier를 동등한 인자로 받아야 해서
+     self 하나로 안 됨)"* 을 들었는데 **그 근거는 성립하지 않는다** —
+     `Overridden`은 **콜론 체이닝(`a:Overridden(b)`)으로도 제공**된다
+     (사용자 확정: *"Overridden 도 편의 상 A: 체인으로 제공 가능함. 밖에서
+     직접 (A, B) 해주어도 좋고. 콜론과 닷 둘다 가능함"*). 분류 자체는
+     "닷 접근으로도 부를 수 있는 정적 결합 함수"라는 표면 차이로 유지하되,
+     2번(콜론 메서드)과 배타적이지 않다는 점에 유의.
+  4. **`D`(Declarative) 네임스페이스와 그 필드**(`D.Frame`/`D.InstSlot`/
+     `D.FrameModifier`) 및 생성자 `New` — **[2026-08-18 신설]** 프리미티브
+     타입은 아니지만 사용자가 직접 쓰는 선언형 표면이라 대문자.
+     **표기 규약: 문서에서 `D`가 처음 나오는 자리에서는 항상
+     `D`(Declarative)로 풀어쓸 것** — 한 글자 식별자라 grep이 어렵고
+     이름만으로 뜻이 안 드러난다는 게 2026-08-08부터 개명을 미뤄온 유일한
+     사유였고, 이 표기 규약이 그 보완책으로 같이 확정됐다
+     (`base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절).
 - **소문자 시작(camelCase)** — 특정 프리미티브 타입 하나에 안 묶이고 여러
   타입을 넘나드는 범용 유틸(`isState`/`isSource`/`isRef`/`isPreRef`/
   `isPostRef`/`isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
@@ -331,7 +361,7 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 `archive/invalidate-dedup-propagation-reversed.md`). State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
 `:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
-읽기는 `:Get()` 하나로 통일 — `.value` 표기는 Ref 전용으로 좁혀짐). 값 하나만
+읽기는 `:Get()` 하나로 통일 — 프로퍼티 읽기 표기는 Ref의 `.Value` 전용으로 좁혀짐. **[표기 정정, 2026-08-18]** 여기 소문자 `.value`로 적혀 있었음). 값 하나만
 다룰 땐 Store와 별개인 가벼운 `Source` 프리미티브를 독립적으로도 씀.
 `store.key` dot-access를 타입 추론 1급 경로로 삼는 것도 3차 라운드에서
 정식 확정됨 — **더 이상 열린 질문 아님**, [2026-08-04 기준] 남은 건 정확한

@@ -36,7 +36,7 @@
 목차를 잡으면 좋아 보임(그대로 확정은 아니고 초안):
 
 1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
-2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 `new<Class>` + 자주 쓰는 ~25개 클래스 정적 필드(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
+2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 생성자 `New` + 클래스별 정적 필드(**[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 전량 코드 생성)(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
 3. **속성 채우기** — `[Attribute "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
 4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`base/source-state-plan.md`, `base/store-plan.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
 5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)

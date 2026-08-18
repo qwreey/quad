@@ -25,7 +25,7 @@
 
 React/Vue류 프레임워크의 `OnCreated`/`OnRendered`/`OnDisposed` 생명주기
 훅을 quad에도 두면 좋겠다는 제안. 처음엔 `Frame{[OnCreated] = fn}`처럼
-싱글톤 프리미티브를 해시 파트 DI 키로 쓰는 안을 검토했으나, `:Compute`
+싱글톤 프리미티브를 해시 파트 특수 키로 쓰는 안을 검토했으나, `:Compute`
 콜백에 `State<function>`이 들어올 때의 처리가 까다로워질 것 같다는 우려로
 스스로 기각 — 대신 `OnCreated(fn)`이 이미 있는 `PreRef` 인스턴스를 반환하는
 **순수 팩토리 함수**(children 배열에 놓는 슈가)라면 그 우려 자체가 안
@@ -79,8 +79,8 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 
 이게 바로 사용자가 처음에 걱정했던 **"`:Compute` 콜백에 `State<function>`이
 들어오면 처리가 까다로워지지 않을까"** 문제가 애초에 안 생기는 이유와
-정확히 같은 뿌리: 그 우려는 `OnCreated`가 **해시 파트 DI 키**(예:
-`[OnCreated] = fn`)였다면 실제로 발생했을 문제임 — DI 키는 Store/Dispatch
+정확히 같은 뿌리: 그 우려는 `OnCreated`가 **해시 파트 특수 키**(예:
+`[OnCreated] = fn`)였다면 실제로 발생했을 문제임 — 특수 키는 Store/Dispatch
 디스패치 경로를 거쳐야 하고, 그 값이 `State<function>`으로 감싸이는
 경우까지 핸들러가 다뤄야 함. 반면 팩토리 함수 호출은 **Store/Dispatch
 경로를 아예 안 탐** — 순수 Lua 함수 호출이 즉시 평가되어 끝나고, 그
@@ -103,12 +103,12 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 "`phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설" 절에 이미 이렇게 확정돼
 있음:
 
-> quad v1의 `OnCreated` 특수 DI 키는 이식하지 않는다.
+> quad v1의 `OnCreated` 특수 키는 이식하지 않는다.
 > `Ref():Callback(function(inst) end)`를 children 배열에 넣는 것만으로
 > 완전히 대체됨(여러 개 등록도 자연히 지원, 별도 특수 키 불필요) — v1
 > 대비 빠진 기능처럼 보이지 않도록 이 대체 관계를 문서에 남겨둠.
 
-이 문장이 거부한 건 v1식 **"특수 DI 키"** 메커니즘(해시 파트에 매직
+이 문장이 거부한 건 v1식 **"특수 키"** 메커니즘(해시 파트에 매직
 키를 두고 Dispatch가 그 키를 특별 취급하는 것)이지, **"팩토리 함수가
 기존 `Ref`/`PreRef`를 반환해서 children 배열에 놓는 것"**과는 층위가
 다름 — 이 문서의 `OnCreated(fn)`은 정확히 저 문단이 이미 권장한
@@ -183,7 +183,7 @@ Frame {
 **생성자가 매번 새로 불려 독립된 인스턴스**를 만들어냄 — children
 배열의 서로 다른 숫자 슬롯에 놓이므로, 같은 인스턴스에 여러 개를
 나란히 등록하는 게 자연히 지원됨. 이건 `Ref():Callback(fn)` 단일
-슈가 관용구나 v1의 단일 DI 키 관례와 달리, **팩토리-함수 접근이 주는
+슈가 관용구나 v1의 단일 특수 키 관례와 달리, **팩토리-함수 접근이 주는
 공짜 이점**임(v1처럼 "이 키엔 콜백 하나만" 같은 제약이 아예 성립할
 자리가 없음 — 애초에 키가 아니라 매번 새로 만들어지는 값이므로).
 
@@ -291,16 +291,16 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 ## 이름 컨벤션
 
 - **`On` 접두 자체는 이미 선례가 있음** — `base/onchange-plan.md`의
-  `OnChange(name)`(`GetPropertyChangedSignal` 바인딩용 DI 키). 단
+  `OnChange(name)`(`GetPropertyChangedSignal` 바인딩용 특수 키). 단
   **메커니즘은 다름**: `OnChange`는 이름을 인자로 받아 캐시된 키 객체를
-  반환하는 **해시 파트 DI 키 팩토리**(`base/onchange-plan.md` "확정"
+  반환하는 **해시 파트 특수 키 팩토리**(`base/onchange-plan.md` "확정"
   절)인 반면, 이 문서의 `OnCreated`/`OnRendered`/`OnDestroyed`는 **배열
   파트에 놓이는 값(`PreRef`/`PostRef`/`EffectHandle`)을 만드는 팩토리**라
   이름 패턴만
-  같고 소속 카테고리가 다름 — `OnChange` 쪽 "다른 특수 DI 키와의 대조"
+  같고 소속 카테고리가 다름 — `OnChange` 쪽 "다른 특수 키와의 대조"
   표에 이 둘을 끼워 넣을 필요는 없어 보임(별도 표로 다루는 게 맞음).
 - `OnCreated`/`OnDestroyed` **이름 확정** — 다만 v1이 이미
-  `OnCreated`라는 이름을 다른 메커니즘(특수 DI 키)으로 썼던 전례가
+  `OnCreated`라는 이름을 다른 메커니즘(특수 키)으로 썼던 전례가
   있어 위 "①" 절의 대조 설명 없이 이름만 보면 헷갈릴 수 있음, 문서화
   시 명시할 것.
 - `OnDestroyed`는 최초 가칭이던 `OnDisposed`보다 사용자가 선호 —

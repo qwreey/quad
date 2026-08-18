@@ -78,8 +78,8 @@ RefSource라는 별도 타입은 폐기**하는 쪽으로 수렴.
   자리엔 Source를 넣을 수 있지만 역은 안 됨(Svelte의 `Writable<T> extends
   Readable<T>`와 같은 모양). Source는 State가 주는 모든 것(`:Get()`,
   `:With(...)`, `:Compute(fn)`) 위에 `:Set(value)`/`:Emit()`을
-  추가로 가짐([정정, 2026-08-07] `.value`는 State/Source에서 제외되고
-  `Get()`으로 통일됨, `.value` 표기는 Ref 전용으로 좁혀짐 — 아래
+  추가로 가짐([정정, 2026-08-07] 프로퍼티 읽기 표기는 State/Source에서 제외되고
+  `Get()`으로 통일됨, 그 표기는 Ref의 `.Value` 전용으로 좁혀짐 — 아래
   "`:With`/`:Compute` — self 인자도 lazy 핸들로 통일" 절 참고).
 - **`:With`/`:Compute`는 Source에서도 항상 `State<U>`를 반환** — Source
   자신을 변형하는 게 아니라, "Source의 State 뷰를 뽑아 그 위에 파이핑"하는
@@ -98,9 +98,10 @@ RefSource라는 별도 타입은 폐기**하는 쪽으로 수렴.
   다른 층위.** 그때 금지한 건 사용자가 짜는 컴포넌트 계층 구조(`Class:Extend()`류
   매직)였고, 지금은 두 프리미티브 타입 사이의 구조적 서브타이핑(런타임
   구현 델리게이션 포함)이라 그 금지와 충돌하지 않음.
-- **동적 키 폴백(`store "key"`)은 이제 `State<any>`가 아니라 `Source<any>`를
-  반환**하는 것으로 자연히 갱신됨(`base/store-plan.md`의 "타입 추론
-  문제" 절과 연동).
+- **동적 키 경로도 `State`가 아니라 `Source`를 반환**하는 것으로 자연히
+  갱신됨 — **[정정, 2026-08-18]** 그 경로는 `store "key"` 문자열 커링이
+  아니라 `store:GetDynamic<<T>>(name): Source<T>`다(문자열 커링은 기각,
+  `base/store-plan.md`의 "타입 추론 문제" 절).
 
 **[해소됨, 2026-08-13 첫 실측 라운드]** 핵심 질문(Source가 State를 구조적으로
 만족하는 제네릭 메소드 체이닝)은 `08-type-source-satisfies-state.luau`로
@@ -292,6 +293,38 @@ Observer와 동일한 패턴(외부 weak table, `{[child] = true}` 류)으로 �
 유일한 중복 방지 수단이 되면서 "State는 캐싱하는 존재"라는 근거가 더
 강해짐.
 
+### ⚠️ 미해결 — 중간 State가 살아남는가(구독 엣지의 방향성) (2026-08-18 구현 전 QA에서 제기, **M3 착수 전 결론 필요**)
+
+**사용자가 지목한 미검증 항목**: *"확인해봐야 하는게 State -> State ->
+State -> Observer Leaf Bind 에서 중간 State 는 참조되지 않아도 사라지지
+않음이 명확해야함. 물론 compute 등의 callback 상 가져서 안전할 수 있지만,
+With 등이 있는 경우 parent 와 연결된 상대를 자기 자신에 가지고 있어야
+할것임. 이게 되는지는 더 알아봐야할 필요가 있음."*
+
+확정된 두 서술을 겹치면 체인이 끊길 수 있다:
+
+- State는 자기 **구독자(하류)를 weak로** 담는다(위 문단, 그리고
+  `base/lifecycle-pattern.md`의 "(4) 실제 호출부" 절).
+- Observer는 `gchold`(leaf) 또는 전역 레지스트리가 살려준다.
+- 그러면 `A → B → C → Observer` 체인에서 **중간 노드 `B`/`C`를 강하게
+  붙잡는 주체가 지금 문서 어디에도 명시돼 있지 않다.** 체이닝을 한 줄로
+  쓰는 흔한 형태에선 아무도 `B`/`C`를 로컬 변수로 안 들고 있고, 하류 weak
+  링크만으로는 생존이 보장되지 않아 **중간 State가 수거되고 전파가 조용히
+  끊길** 수 있다.
+
+**사용자가 지목한 해법 방향 — 구독 엣지는 하류로 weak, 상류로 strong.**
+각 노드가 자기 parent(상류)를 강참조로 들고 있으면 leaf에서 root까지가
+한 줄로 살아있게 된다. `:Compute`는 콜백 클로저가 상류를 캡처해 **우연히**
+안전할 수 있지만, **`:With`가 만드는 pass-through 노드는 계산 함수가
+없어서** 그런 우연한 캡처가 없다 — 그래서 "우연"에 기대면 안 되고 방향성을
+불변식으로 못박아야 한다.
+
+**해야 할 일**: (a) 이 방향성(상류 strong / 하류 weak)을 이 문서의
+불변식으로 명문화할지 결정, (b) `luau-test`에 실측 스파이크 추가
+(`07-relate-weak-table-gc.luau`가 연쇄 GC를 이미 다루므로 그 옆에).
+**미검증 상태로 M3에 착수하면 안 되는 항목** — 아래 "결론"의 "관리 부담은
+작음"은 이 항목이 닫히기 전까지는 잠정이다.
+
 **결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
 플래튼+클론을 쓰는 건 애초에 캐싱이 필요 없는 정적 데이터라 성립하는
 것이고, State는 존재 이유 자체(캐싱)가 달라 같은 패턴을 적용할 수 없음.
@@ -451,20 +484,23 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
   `self:Get()`을 실제로 읽을 때만 계산이 트리거됨. with한 값과 동일한
   lazy 원칙을 self에도 그대로 적용 — 별도 `ComputeWithout` 변형은
   불필요, `Compute` 하나로 일관.
-- **[정정, 2026-08-07] `.value`는 State/Source에서 제외, `:Get()`만 지원.**
+- **[정정, 2026-08-07] 프로퍼티 읽기 표기는 State/Source에서 제외, `:Get()`만 지원.**
   이전엔 `Get()`을 감싼 읽기 전용 계산 속성(`base/lifecycle-pattern.md`의
   `Connected`와 동일한 "저장되는 필드가 아니라 계산된 속성" 패턴)으로
-  `.value`/`:Get()` 둘 다 지원하고 `.value`를 관용적 표기로 앞세웠으나,
+  `.value`/`:Get()` 둘 다 지원하고 프로퍼티 읽기를 관용적 표기로 앞세웠으나,
   "관측해야 실체화된다"는 원칙이 가장 날카롭게 느껴져야 할 지점에서
   프로퍼티 문법이 그 느낌을 무디게 한다는 재검토 끝에 함수 호출
-  `:Get()` 하나로 좁힘 — `:Set()`과의 동사 짝도 자연스러움. `.value`
-  표기 자체는 폐기하지 않고 **Ref 전용으로 좁힘**(Ref는 lazy가 아니라
+  `:Get()` 하나로 좁힘 — `:Set()`과의 동사 짝도 자연스러움. 프로퍼티
+  표기 자체는 폐기하지 않고 **Ref의 `.Value` 전용으로 좁힘**(**[표기 정정,
+  2026-08-18]** 이 문단이 소문자 `.value`로 쓰고 있었음 — 실제 필드는
+  대문자 `.Value`. Ref는 lazy가 아니라
   값을 읽어도 계산이 트리거되지 않으므로 프로퍼티 문법이 정직함 —
   `base/ref-plan.md`의 `.Value`가 그대로 유일한 존재가 됨, 이름
   충돌 자체가 사라져 별도 표기 정리 불필요).
-- 예시 갱신: `store "key1":With(store "key2"):Compute(function(key1) return
+- 예시 갱신: `store.key1:With(store.key2):Compute(function(key1) return
   key1:Get() + store.key2:Get() end)` — `key1`은 이제 raw 숫자가 아니라
-  State.
+  State. (**[2026-08-18]** 예시가 기각된 `store "key1"` 문자열 커링 문법으로
+  쓰여 있던 걸 dot-access로 고침.)
 
 **[2026-08-12 세션 감사에서 확인] `:Compute` 콜백 인자에 `:Get()`을 빠뜨리는
 실수가 반복되기 쉬움 — 실제로 `.claude/` 문서 예시 코드 4곳(`tag-plan.md`,
@@ -597,9 +633,13 @@ deps만 받고 싶어도 `previous`가 2번째 자리를 차지하므로, 그 �
 객체일 수 있음(예: 큰 로케일 테이블을 Roblox `LocalizationTable`
 Instance로 변환하는 경우 — `LocalizationTable`은 `Set`/`Get`/`List`로
 부분 갱신 가능한 userdata). 매번 새로 만들지 않고 이전 결과를 그대로
-재사용해 필드만 patch하고 싶을 때를 위해, `fn(value, previous)` 형태로
-**직전에 이 Compute 함수가 반환했던 값**을 두 번째 인자로 받을 수 있게
-한다.
+재사용해 필드만 patch하고 싶을 때를 위해, **직전에 이 Compute 함수가
+반환했던 값**을 두 번째 인자로 받을 수 있게 한다.
+**[표기 정정, 2026-08-18 구현 전 QA]** 이 절만 옛 표기 `fn(value,
+previous)`로 남아 있었는데, 최종 시그니처는 **`fn(self, previous?,
+...deps)`** 다 — 첫 인자는 raw 값이 아니라 **lazy 핸들**이라 안에서
+`self:Get()`을 불러야 한다(위 "`:With`/`:Compute` — self 인자도 lazy
+핸들로 통일" 절이 소스, `:Get()` 누락이 반복되는 실수라 별도 절까지 있음).
 
 - **opt-in**: 안 쓰는 Compute 함수는 두 번째 인자를 그냥 무시하면 됨 —
   비용 0. 대부분의 Compute는 이걸 쓸 필요 없음.
@@ -906,8 +946,17 @@ retract/Destroy되면 자동으로 정리됨.
 등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
 전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isObserver(v) end, process =
-function(inst,k,v) error("Observer는 children 배열 리터럴에만 놓을 수
-있음") end }`. `HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
+function(inst,k,v) error(`Ref/Observer binding should be array index item,
+but got {typeof(k)}`) end }`.
+**[요구 추가, 2026-08-18 구현 전 QA] 에러 메시지에 실제 `k`의 타입을
+실을 것.** 사용자 요구: *"Priority Fallback 이 type(k) == "string" 인
+상황에서는 가장 위에 Ref/Observer binding should be array index item, but
+got typeof k 처럼 알려줄 필요는 있는듯"*. 근거는 **메시지에 `k` 타입이
+없으면 최종 사용자가 두 원인을 구분할 수 없다는 것** — (a) 핸들러가
+등록이 안 된 것인지, (b) `MyRef = Ref(...)`처럼 named 자리에 잘못 쓴
+것인지. 같은 규칙이 `base/ref-plan.md`의 `PreRef`/`PostRef` 동적 경로
+가드와 `base/effect-plan.md`의 `Effect` 가드에도 그대로 적용된다.
+`HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
 하드 블록이 아니라 `Tag`/`Attribute`/`PreRef`와 같은 "base가 소유하되
 평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
 때문(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는
@@ -1087,28 +1136,30 @@ leaf 부착을 "weak table 기반 자동 추적"이라 불렀던 건 `bindLifeti
 
 ```lua
 -- :Subscribe() 진입부, bindLifetime 진입부(leaf 부착도 내부적으로 이걸 거침)
--- — 둘 다 진입 전 동일하게 확인
-if canBound(self) then
+-- — 둘 다 진입 전 동일하게 확인. [정정, 2026-08-18 구현 전 QA] canBound는
+-- "지금 묶어도 되는가"(참 = 아직 안 묶임)라 게이트는 `not`이 붙는다.
+if not canBound(self) then
   error(if self.Subscribed
     then "이미 :Subscribe()로 전역 바인딩된 값"
     else "이미 다른 Instance에 바인딩된 값")
 end
 ```
 
-- **"이미 유효하게 묶여 있다"(`canBound`)와 "지금 실행 가능하다"
-  (`canExecute`)는 판정 로직이 같아서**(둘 다 비공개 헬퍼
-  `isBoundAlive`를 그대로 부름, `base/lifecycle-pattern.md`) 값은 항상
-  같지만, 호출부의 질문이 서로 달라 이름은 분리돼 있음 — 이 절(이중
-  바인딩 금지)은 `canBound`를 쓰고, State emit 전파 루프만 `canExecute`를
-  씀.
+- **[정정, 2026-08-18 구현 전 QA] `canBound`와 `canExecute`는 값이 같은 게
+  아니라 서로의 부정이다** — `canBound(v) == not canExecute(v)`. 둘이
+  공유하는 건 판정 **로직**(비공개 헬퍼 `isBoundAlive`,
+  `base/lifecycle-pattern.md`)이지 판정 **값**이 아니다. 옛 서술("판정
+  로직이 같아서 값도 항상 같지만 호출부의 질문만 다르다")은 `canBound`를
+  "이미 묶여 있는가"로 잘못 읽은 것이었음. 이 절(이중 바인딩 금지)은
+  `canBound`를 쓰고, State emit 전파 루프만 `canExecute`를 씀.
 - **에러 메시지에서 어느 경로인지는 `.Subscribed`로 가름** — 이 필드는
   **전역 `:Subscribe()` 경로에서만 세팅되므로**(아래 정정) 참이면 전역,
-  거짓인데 `canBound`가 참이면 leaf 경로.
-- 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "이미 유효한
-  바인딩이 있음"만 답함 — 두 진입점이 똑같이 `canBound`를 확인하므로
-  순서와 무관하게 대칭적으로 막힘.
+  거짓인데 `canBound`가 **거짓**이면 leaf 경로.
+- 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "지금 묶어도 되는가"만
+  답함 — 두 진입점이 똑같이 `canBound`를 확인하므로 순서와 무관하게
+  대칭적으로 막힘.
 - **죽은 바인딩의 재사용은 허용** — `inst`가 Destroy됐거나
-  `unbindLifetime`된 값은 `canBound`가 거짓이라 게이트를 통과함(다른
+  `unbindLifetime`된 값은 `canBound`가 **참**이라 게이트를 통과함(다른
   `inst`에 다시 걸 수 있음). 게이트가 막는 건 **살아있는** 이중 바인딩뿐.
 
 **[정정, 2026-08-14 다섯 번째 세션] 옛 서술 — "`canBound`의 내부 플래그는
@@ -1119,9 +1170,9 @@ end
 그 필드를 읽지도 쓰지도 않음. leaf 경로의 생존은 `bindLifetime`이
 `value` 쪽 릴레이션에 복사해둔 gcconn 참조로 판정됨(`base/lifecycle-pattern.md`).
 옛 서술이 걱정했던 "필드를 둘로 나누면 `bindLifetime`으로만 등록된
-Observer가 `canBound`에서 항상 `false`로 오판됨"은 실제로는 안 일어남
-— `canBound`(와 `canExecute`가 공유하는 `isBoundAlive`)가 gcconn 경로를
-**먼저** 보기 때문. 역전 원문·오염 경로·교훈은
+Observer가 **안 묶인 것으로 오판**됨"은 실제로는 안 일어남 —
+`canBound`/`canExecute`가 공유하는 `isBoundAlive`가 gcconn 경로를
+**먼저** 보므로, 그런 Observer는 `canBound`가 제대로 거짓이 된다. 역전 원문·오염 경로·교훈은
 `archive/canexecute-inst-arg-reversed.md`(그 문서 하단에 이 재분리
 경위도 추가돼 있음).
 - **`:Unsubscribe()`는 `:Subscribe()` 경로의 해제만 담당, `bindLifetime`
@@ -1153,8 +1204,8 @@ Observer가 `canBound`에서 항상 `false`로 오판됨"은 실제로는 안 �
 
 `Dispatch.setLength`처럼 특정 `inst`에 종속된 내부 Observer를 등록할 때
 쓰는 `bindLifetime(inst, value)`(`base/lifecycle-pattern.md`)도 **같은
-`canExecute` 게이트를 확인** — 진입 전 `canExecute(value)`를 확인하고,
-통과하면 gchold 등록 + gcconn 참조 복사를 수행.
+`canBound` 게이트를 확인** — 진입 전 `canBound(value)`를 확인하고,
+참이면(=아직 안 묶여 있으면) gchold 등록 + gcconn 참조 복사를 수행.
 **children 배열 leaf 부착도 바로 이 `bindLifetime` 호출** —
 `Dispatch/Leaf.luau`가 `(i:number, v=Observer/Effect)`를 매치하면
 그 자리에서 `bindLifetime(inst, v)`를 호출하는 것뿐, 별도 "leaf 전용"
@@ -1166,8 +1217,10 @@ leaf 부착을 통한 간접 호출이든) 둘뿐** — 새 규칙을 따로 만
 
 ```lua
 function bindLifetime(inst, value)
-    if canBound(value) then  -- [정정, 2026-08-14 열두 번째 세션] 이 절이 확정한 대로
+    if not canBound(value) then -- [정정, 2026-08-14 열두 번째 세션] 이 절이 확정한 대로
                               -- bindLifetime의 게이트는 canBound, canExecute 아님
+                              -- [정정, 2026-08-18 구현 전 QA] 방향이 뒤집혀 있었음 —
+                              -- canBound 참 = 묶어도 됨이라 에러는 not 쪽
         error("이미 바인딩된 값")   -- 메시지 분기는 위 게이트 스케치 참고
     end
     ... -- gchold 등록 + gcconn 참조 복사(base/lifecycle-pattern.md)
@@ -1181,11 +1234,11 @@ end
 - **[정정, 2026-08-14 다섯 번째 세션] 게이트는 값 타입을 안 가린다** —
   옛 서술은 "`canBound`는 `.Subscribed` 필드가 있는 Observer/Effect 전용
   predicate라 그 외 값(예: Tween 내부 클로저, Slot)은 그냥 통과"였는데,
-  `canExecute`는 gcconn 경로를 먼저 보므로 **어떤 값이든** 이미 살아있는
-  바인딩이 있으면 걸러짐. 이게 더 맞음 — Slot을 두 `inst`에 이중 마운트하는
-  것도 원래 금지(`base/slot-plan.md`의 `elementOwner`)라, 같은 실수를
-  `bindLifetime` 층위에서도 공짜로 잡아줌.
-- 값이 `bindLifetime`으로 바인딩된 뒤엔 `canExecute`가 참이 되므로, 그
+  공유 헬퍼 `isBoundAlive`는 gcconn 경로를 먼저 보므로 **어떤 값이든** 이미
+  살아있는 바인딩이 있으면 걸러짐. 이게 더 맞음 — Slot을 두 `inst`에 이중
+  마운트하는 것도 원래 금지(`base/slot-plan.md`의 `elementOwner`)라, 같은
+  실수를 `bindLifetime` 층위에서도 공짜로 잡아줌.
+- 값이 `bindLifetime`으로 바인딩된 뒤엔 `canBound`가 **거짓**이 되므로, 그
   뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면 기존 두 진입점의 기존
   체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가 없이 이미 성립.
 

@@ -534,11 +534,11 @@ Modifier를 합친다"는 시나리오가 `Overridden`의 가장 그럴듯한 �
 
 **문제**: Modifier의 런타임 체이닝 엔진은 quad-base 소유가 맞지만, 클래스별
 정적 타입 안전성(`mod:UICorner(8)`가 `FrameModifier` 타입으로 추론되는
-것)은 "DI 쪽 '제네릭 생성자 함수 하나 + 자주 쓰는 것만 정적 필드' 패턴
-재사용"이라 문서 스스로 밝히듯 quad-roblox의 DI 타입 생성 계층(M5)에 강하게
+것)은 "`D` 쪽 '제네릭 생성자 함수 하나 + 정적 별칭 필드' 패턴
+재사용"이라 문서 스스로 밝히듯 quad-roblox의 `D` 타입 생성 계층(M5)에 강하게
 결합돼 있다. 그런데 `ROADMAP.md` M7 체크리스트(flatten-before-dispatch,
 `Modifier.Overridden`, `State<Modifier>` 차단)엔 이 클래스별 타입 생성 작업이
-전혀 없고, M5 DI 체크리스트에도 Modifier 언급이 없음.
+전혀 없고, M5 `D` 체크리스트에도 Modifier 언급이 없음.
 
 **제안**: M5 또는 M7 체크리스트에 "quad-roblox 클래스별 typed Modifier
 생성자(FrameModifier 등)" 항목을 명시적으로 추가해 누락을 막을 것.
