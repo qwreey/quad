@@ -113,6 +113,14 @@
    백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
    네 라운드로 대부분 확정됐고 남은 열린 질문은 `question.md` 3번(개수는
    거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
+   **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
+   신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
+   (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때
+   `AbsoluteSize`/`AbsolutePosition` 갱신 여부 실측 필요)과 스프링 물리
+   기반 지속 업데이트 프리미티브 `quad-spring`(`research/spring-plan.md`,
+   참고 구현 `qwreey/spring.lua` 사용 가능성 확인 필요) — 둘 다 설계 논의
+   전 아이디어 단계이고 사용자가 직접 "아주 나중"으로 후순위 지정, M0/설계
+   게이트와 무관.
 5. 자율 작업 루프/스케줄 설정 여부는 사용자 결정 대기 중
    (`HUMAN_TODO.md` 2번 항목).
 6. **[신규 백로그, 2026-08-14 열네 번째 세션]** 문서 stale 감소용 include
