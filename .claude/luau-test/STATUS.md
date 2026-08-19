@@ -1,10 +1,13 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-19 — M0/M1 스캐폴딩을 처음 실제로 짜보는 과정에서
-> `05`를 현행 모델("emit은 항상 전파, 재계산만 캐시로 dedup")로 재작성해
-> 통과 → `rewrite-required/` → `done/` 이동, `todos.md` 00번이 요구하던
-> "Store 미선언 키 타입 에러" 확인도 신규 스파이크 `21`로 완료 → `done/`
-> 직행. 직전 갱신은 2026-08-15 — `16`이 `types.newfunction` API 버전 드리프트
+> 마지막 갱신: 2026-08-19 — `13`을 타입 전용/런타임 두 파일로 분리
+> (A의 더미 스텁이 B 실행을 막던 문제 해결) + PostRef까지 확장, 런타임
+> 절반은 신규 `22`로 분가 → 둘 다 `done/`. 직전 갱신은 같은 날 —
+> M0/M1 스캐폴딩을 처음 실제로 짜보는 과정에서 `05`를 현행 모델("emit은
+> 항상 전파, 재계산만 캐시로 dedup")로 재작성해 통과 → `rewrite-required/`
+> → `done/` 이동, `todos.md` 00번이 요구하던 "Store 미선언 키 타입 에러"
+> 확인도 신규 스파이크 `21`로 완료 → `done/` 직행. 직전 갱신은
+> 2026-08-15 — `16`이 `types.newfunction` API 버전 드리프트
 > (배열이 아니라 `{head=..., tail=...}` 레코드를 받음) 수정으로 통과,
 > `rewrite-required/` → `done/` 이동. 근거:
 > `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절.
@@ -27,9 +30,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 5 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 4 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 18 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -54,7 +57,7 @@
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
 아님(계약 자체는 위에서 이미 확정됨).
 
-## 🟠 `rewrite-required/` — 스파이크가 낡음 (5건)
+## 🟠 `rewrite-required/` — 스파이크가 낡음 (4건)
 
 **[2026-08-13 열네 번째 세션] 앞의 두 건은 "코드가 깨진" 게 아니라 "설계가
 바뀐" 경우** — `question.md` 0-A/0-Z 확정으로 재디스패치가 **하강 diff**가
@@ -73,7 +76,6 @@
 |---|---|---|
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
-| `13-type-ref-preref-subtype.luau` | 타입 A섹션 ✅ 통과 / **런타임 B섹션 실행 불가** | B가 A의 더미 스텁(`fakePreRef = nil`)에 막혀 도달 못 함 — 두 섹션을 파일로 분리 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
@@ -86,11 +88,12 @@
 |---|---|
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (16건)
+## ✅ `done/` — 통과 or 판정 끝 (18건)
 
-**런타임 13개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] `04`/`19`는
+**런타임 14개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] `04`/`19`는
 검증 대상 설계가 바뀌어 `rewrite-required/`로 이동했고, [2026-08-19]
-`05`는 현행 모델로 재작성해 다시 여기로 돌아옴**:
+`05`는 현행 모델로 재작성해 다시 여기로 돌아왔고, 신규 `22`(구 `13`
+런타임 절반, PostRef까지 확장)가 합류**:
 
 | 파일 | 확인된 것 |
 |---|---|
@@ -104,6 +107,7 @@
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
 | `20-slot-splice-index-arithmetic` | `Splice` 산술 11개 경계 케이스 전부 참조 구현과 일치 |
+| `22-runtime-ref-preref-postref-brand` | **[2026-08-19 신규]** `isPreRef`/`isPostRef`가 서로 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)임을 확인, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라냄 |
 
 **타입 스파이크 중 판정이 끝나 더 할 일 없는 것**:
 
@@ -112,6 +116,7 @@
 | `08-type-source-satisfies-state` | ✅ 핵심 질문(Source⊇State 구조적 서브타이핑) 통과. 잔여 케이스(자기 이름을 다른 인자로 재귀 참조)는 **[2026-08-13 13차 세션] Luau 현 한계로 확정** — quad가 풀 대상 아님, `base/typing-limits.md` 1번 |
 | `09-type-modifier-overridden-subtype` | ✅ 통과 — 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로) |
+| `13-type-ref-preref-subtype` | **[2026-08-19 재작성]** ✅ 통과 — `PreRef<T>`/`PostRef<T>` 둘 다 `Ref<T>`를 구조적으로 만족(음성 대조군도 정확히 에러). 런타임 B섹션은 `22`로 분리(A의 더미 스텁이 B 실행을 막던 문제 해결) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
 | `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
 | `21-type-store-undeclared-key-rejected` | **[2026-08-19 신규]** ✅ 통과 — `16`의 `ProcessStoreType`을 재사용해 미선언 키 접근 2건(읽기, 메소드 체이닝)이 정확히 `TypeError`로 거부됨을 확인, 양성 경로(선언된 키 3개) 클린. `store-plan.md`가 "아마 그럴 것"으로만 적어뒀던 걸 M0에서 실측 확정 |
