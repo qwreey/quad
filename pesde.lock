@@ -10,3 +10,6 @@ roblox = "quad-base"
 
 [workspace."qwreey/quad_roblox"]
 roblox = "quad-roblox"
+
+[workspace."qwreey/quad_types"]
+roblox = "quad-types"

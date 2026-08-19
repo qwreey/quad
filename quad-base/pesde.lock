@@ -4,3 +4,10 @@ format = 2
 name = "qwreey/quad_base"
 version = "0.0.0"
 target = "roblox"
+
+[graph."qwreey/quad_types@0.0.0 roblox"]
+direct = ["quad_types", { workspace = "qwreey/quad_types", version = "^" }, "standard"]
+
+[graph."qwreey/quad_types@0.0.0 roblox".pkg_ref]
+ref_ty = "workspace"
+path = "quad-types"

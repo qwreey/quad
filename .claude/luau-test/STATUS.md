@@ -1,6 +1,10 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-19 — `13`을 타입 전용/런타임 두 파일로 분리
+> 마지막 갱신: 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T>`
+> 버전 체크 + `AddPlugin<Self,P>` 체이닝) 검증용 `23` 신규 추가 → `done/`
+> 직행. 그 과정에서 `type function`을 거친 값은 패스스루라도 이후
+> 제네릭 self 체이닝이 깨진다는 새 Luau 함정을 발견(`typing-limits.md`
+> §6로 승격). 직전 갱신은 같은 날 — `13`을 타입 전용/런타임 두 파일로 분리
 > (A의 더미 스텁이 B 실행을 막던 문제 해결) + PostRef까지 확장, 런타임
 > 절반은 신규 `22`로 분가 → 둘 다 `done/`. 직전 갱신은 같은 날 —
 > M0/M1 스캐폴딩을 처음 실제로 짜보는 과정에서 `05`를 현행 모델("emit은
@@ -32,7 +36,7 @@
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
 | `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 4 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 18 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 19 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -88,7 +92,7 @@
 |---|---|
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (18건)
+## ✅ `done/` — 통과 or 판정 끝 (19건)
 
 **런타임 14개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] `04`/`19`는
 검증 대상 설계가 바뀌어 `rewrite-required/`로 이동했고, [2026-08-19]
@@ -120,6 +124,7 @@
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
 | `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
 | `21-type-store-undeclared-key-rejected` | **[2026-08-19 신규]** ✅ 통과 — `16`의 `ProcessStoreType`을 재사용해 미선언 키 접근 2건(읽기, 메소드 체이닝)이 정확히 `TypeError`로 거부됨을 확인, 양성 경로(선언된 키 3개) 클린. `store-plan.md`가 "아마 그럴 것"으로만 적어뒀던 걸 M0에서 실측 확정 |
+| `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규]** ✅ 통과 — 실제 `quad-types`/`quad-base`로 `CheckedQuad<T>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격) — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
 
 ### 특별히 중요한 통과 3건
 

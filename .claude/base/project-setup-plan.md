@@ -214,6 +214,23 @@ Studio도 같은 파일시스템 계층을 쓰는 이상 다르게 동작할 이
 Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했듯 문제없이
 동작한다.
 
+**[2026-08-19 셋째 후속 세션] 이 함정이 이제 `quad-base` 자기 자신의
+프로덕션 진입점에도 실제로 닥침** — `quad-types` 워크스페이스 패키지가
+신설되며 `quad-base/src/init.luau`가 `require("./roblox_packages/quad_types")`를
+쓰게 됐는데(`quad-types-plan.md` 참고), 이건 M0/M1 스파이크가 아니라
+**실제 출하 소스**라 위 "우회는 스파이크에만"이라는 구분이 더 이상
+깔끔하게 안 맞음. 이 세션이 실제로 쓴 해법: `pesde install`이 만든
+심볼릭 링크를 **로컬 CLI 테스트용으로만** 실제 디렉토리 복사본으로
+치환(`find . -type l ... cp -r`류, 저장소 파일은 안 건드리고
+`roblox_packages/.pesde/`의 링크만 대상) — Rojo/Studio는 이미 symlink를
+투명하게 처리하므로 배포 경로엔 아무 영향 없고, 순수 이 샌드박스의
+`luau`/`luau-analyze` 실행을 가능하게 하는 로컬 조치다. **아직 반복
+가능한 스크립트/mise task로 정식화하진 않음** — 매번 `pesde install`
+후 수동으로 치환했음. 다음 세션이 CLI 테스트를 또 돌리려면 같은 수동
+치환이 필요하거나, 이 시점에 정식 스크립트화를 고려할 것(Luau의
+`.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
+그때 다시 볼 것).
+
 ## `.luaurc` — alias는 여전히 편집기 전용
 
 `.luaurc`의 `aliases`(`@quad-base`/`@quad-roblox`)는 **런타임

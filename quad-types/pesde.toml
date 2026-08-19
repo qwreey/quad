@@ -1,0 +1,9 @@
+name = "qwreey/quad_types"
+version = "0.0.0"
+description = "quad — Quad 공개 타입 계약(구현 없음) + 버전 호환성 type function. quad-base가 구현하고, quad-roblox 등 백엔드/플러그인 패키지는 무거운 quad-base 대신 이것만 의존"
+includes = ["src/*"]
+
+[target]
+environment = "roblox"
+build_files = ["src"]
+lib = "src/init.luau"

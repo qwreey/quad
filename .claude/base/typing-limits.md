@@ -220,12 +220,12 @@ type State<T> = {
   with different parameters"로 선언 시점에 막힘, 실측:
   `type-recursive-issue-with-typeof/spikes/
   19-oldsolver-crosscheck-rejects-typeof.luau`). ③을 관례로 채택해도
-  §8의 "M0 실착수 때 실제 에디터 환경(`luau-lsp`)에서 새 솔버 확정"
+  §9의 "M0 실착수 때 실제 에디터 환경(`luau-lsp`)에서 새 솔버 확정"
   전제는 그대로 유효 — ③이 이 요구사항을 없애주지 않습니다.
 
 **시도했지만 채택 안 함 — `setmetatable<{...}, {__index: typeof(...)}>`**:
 콜백 파라미터 자동 추론까지 노리고 `Modifier`의 `__index`+`table.clone`
-체이닝(§6)과 같은 계열로 확장을 시도했으나, quad의 실제 계약(콜백이
+체이닝(§7)과 같은 계열로 확장을 시도했으나, quad의 실제 계약(콜백이
 self 핸들 자체를 받음)에서 **콜백 반환 타입이 self의 원래 T와 다르면
 (= `Compute`가 존재하는 이유 그 자체) 올바른 대입에도 모순되는 진단
 두 개가 동시에 남는 Luau 0.733 솔버 버그**를 만남 — `setmetatable`
@@ -361,7 +361,68 @@ function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC�
 
 ---
 
-## 6. 성립이 확인된 것 (안심해도 되는 것)
+## 6. `type function`을 거친 값은 이후 제네릭 self 메소드 체이닝이 조용히 깨짐
+
+**[2026-08-19 신설, 근거: `quad-types-plan.md`, 실측 `luau-test/23`]**
+
+### 무엇이 안 되는가
+
+값의 **정적 타입**이 한 번이라도 `type function`을 거치면(설령 그
+`type function`이 입력을 그대로 반환하는 순수 패스스루라도), 그 뒤
+그 값에 **제네릭 self 파라미터를 쓰는 메소드**(`<Self, P>(self: Self,
+...) -> Self & P`류, `AddPlugin`이 실제 사례)를 부르면 진단이 조용히
+깨집니다:
+
+```lua
+type function CheckVersion(t: type): type
+	return t -- 순수 패스스루 — 재구성 없음
+end
+
+local checked: CheckVersion<Quad> = ... -- 여기까진 정상
+local extended = checked:AddPlugin(somePlugin) -- 여기서 깨짐:
+-- TypeError: Expected this to be exactly 'P & Self', but got 'P & Self'
+-- (양쪽이 글자 그대로 같은, 의미 없는 진단)
+```
+
+**핵심은 "재구성"이 아니라 "이력"입니다** — `types.newtable()`로 새로
+조립한 타입만 문제인 게 아니라, `return t`로 원본을 그대로 돌려줘도
+똑같이 깨집니다. 값이 `type function` 호출을 거쳤다는 사실 자체가
+이후 제네릭 self 추론을 방해하는 것으로 보입니다(정확한 내부 메커니즘은
+미상 — 솔버가 type function 출력을 "불투명한" 타입으로 취급해 self
+단일화에 필요한 정보를 잃는 것으로 추정됨).
+
+### 그래서 우리가 하는 것
+
+검증/변형용 `type function`은 **원본 타입을 절대 반환하지 않는다** —
+성공 시에도 트리비얼한 마커(`types.singleton(true)` 등)만 반환하고,
+그 결과를 원본과 **완전히 격리된 별도 필드**로만 노출합니다:
+
+```lua
+-- ✅ 원본 T는 type function을 한 번도 안 거침
+type CheckedQuad<T> = T & { __versionCheck: CheckVersion<T> }
+
+local checked: CheckedQuad<Quad> = ...
+local _ = checked.__versionCheck -- 강제 평가(아래 캐비엇 참고)
+local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T 부분은 순수함
+```
+
+`quad-types-plan.md`의 "`CheckedQuad<T>`" 절에 전체 배선과 실측 과정이
+있습니다 — ①`error()` 대신 `print`+`types.never`, ②검증은 함수 본문
+로컬 타입 별칭이 아니라 리턴/필드 타입 표현식 자체에 박아 넣어야
+호출부마다 재평가됨, ③(이 항목) 원본을 절대 반환하지 않고 별도 필드로
+격리, 세 가지가 함께 필요합니다.
+
+### 언제 마주치는가
+
+`AddPlugin`처럼 **제네릭 self 파라미터**를 쓰는 메소드가 있는 타입에,
+`type function` 기반 검사/변형을 적용하려는 모든 자리 — quad에서는
+지금 `quad-types`의 `CheckedQuad<T>`가 유일한 실사례지만, 앞으로 비슷한
+"타입 레벨 게이트 + 체이닝 가능한 API" 조합을 설계할 때마다 재발할 수
+있는 일반 패턴입니다. 아래 §8 체크리스트에 항목 추가.
+
+---
+
+## 7. 성립이 확인된 것 (안심해도 되는 것)
 
 한계만 모아두면 "타입이 다 안 되는구나"로 오독되기 쉬워서 같이 적습니다.
 아래는 **실측으로 통과 확인**된 것들이라 다시 의심하지 말 것:
@@ -381,7 +442,7 @@ function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC�
 
 ---
 
-## 7. 새 타입/API를 설계할 때 체크리스트
+## 8. 새 타입/API를 설계할 때 체크리스트
 
 1. **자기 이름을 다른 타입 인자로 감싸 반환하는가?**(`Foo<T>` 안에서
    `-> Foo<U>`) → 1번 한계에 걸림. 설계를 바꾸지 말고(0번 대전제),
@@ -412,6 +473,11 @@ function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC�
    스파이크를 추가하고 실측할 것. **추론만으로 "된다/안 된다"를
    확정하지 말 것** — 이 문서의 항목 중 여러 개가 "된다고 믿었다가
    실측에서 뒤집힌" 것들입니다.
+7. **`type function`으로 검사/변형한 값에 제네릭 self 메소드
+   (`<Self,P>(self:Self,...)`류)를 나중에 부를 계획인가?** → 6번 한계에
+   걸림. 그 `type function`이 원본 타입을 조금이라도 반환하면(패스스루
+   포함) 안 됨 — 검사 결과는 원본과 절대 안 섞이는 별도 필드로 격리하고,
+   원본 타입 자체는 `type function`을 아예 거치지 않게 할 것.
 
 > **실측 방법 주의**: `luau-analyze`가 진단 0건이어도 타입이 제대로
 > 해소됐다는 뜻이 아닙니다(1번이 정확히 그 사례). **`luau-analyze
@@ -421,7 +487,7 @@ function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC�
 
 ---
 
-## 8. 미해결 / 추적 중
+## 9. 미해결 / 추적 중
 
 - **[2026-08-19 설정 완료]** 에디터(`luau-lsp`)의 솔버 설정 — `luau-analyze`
   CLI는 새 솔버가 기본값이지만 `luau-lsp`는 **옛 솔버가 기본값**

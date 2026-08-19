@@ -193,11 +193,18 @@ build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup
 소스, 워크스페이스 의존성이 symlink로 연결되고 Rojo는 이를 투명하게
 따라감).
 실제 구현: 루트 `pesde.toml`(`private = true`,
-`workspace_members = ["quad-base", "quad-roblox"]`) + `quad-base/pesde.toml`/
-`quad-roblox/pesde.toml`(각각 `[target] environment = "roblox"`,
-`quad-roblox`는 `quad-base`에 workspace 의존), 툴체인은 `mise.toml`로 핀
+`workspace_members = ["quad-base", "quad-roblox", "quad-types"]`) +
+`quad-base/pesde.toml`/`quad-roblox/pesde.toml`/`quad-types/pesde.toml`
+(각각 `[target] environment = "roblox"`), 툴체인은 `mise.toml`로 핀
 (`rokit.toml`에서 전환, 2026-08-19 사용자 결정 — 더 범용적인 도구라는
 판단, `base/project-setup-plan.md`의 "툴체인" 절 참고).
+**[2026-08-19 같은 날 셋째 후속 세션]** `quad-roblox`는 `quad-base`가
+아니라 **`quad-types`(구현 없는 타입 계약 전용 패키지)에만 workspace
+의존** — `quad-base`는 `QuadRoblox(Quad): QuadRoblox` 패턴으로 **런타임
+주입**받으므로 pesde 의존 선언이 필요 없고, 오히려 무거운 quad-base
+전체를 dev-dependency로 두면 게시 후 소비자 환경에서 그 타입 전용
+require가 크래시하는 문제가 있어 별도 패키지로 뽑음 —
+`base/quad-types-plan.md`가 소스.
 pesde는 "패키지 안에 `default.project.json`을 두지 말 것"이 컨벤션(그
 파일은 소비자가 직접 만드는 sync 설정 몫) — 루트의 `default.project.json`은
 이 규칙의 예외가 아니라 애초에 그 규칙이 가리키는 대상이 아님(워크스페이스
@@ -232,10 +239,15 @@ op" 절.
 
 ```
 quad/
-├── .luaurc                      # @quad-base, @quad-roblox alias (편집기 경험용, 런타임 비의존)
+├── .luaurc                      # 편집기 경험용 alias(런타임 비의존, `base/project-setup-plan.md` 참고)
+├── mise.toml                     # pesde/rojo/luau-lsp/selene 버전 핀
+├── pesde.toml                    # 워크스페이스 루트(private, workspace_members)
 ├── default.project.json         # 루트 통합 개발/테스트용 Rojo 프로젝트
+├── quad-types/                   # 구현 없는 Quad 타입 계약 + CheckedQuad 버전체크(`base/quad-types-plan.md`)
+│   ├── pesde.toml
+│   └── src/init.luau
 ├── quad-base/
-│   ├── wally.toml
+│   ├── pesde.toml
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행) 전부 여기 소속
@@ -265,7 +277,7 @@ quad/
 │       ├── LifecycleHooks.luau    # OnCreated/OnRendered/OnDestroyed — PreRef/PostRef/Effect를 반환하는 순수 팩토리 슈가(`base/lifecycle-hooks-plan.md`), 새 타입/Dispatch 개념 없음
 │       └── init.luau
 └── quad-roblox/
-    ├── wally.toml
+    ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존
     └── src/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canBound/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
         ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), disposeInst(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
