@@ -43,9 +43,9 @@
    하는지는 별개로 열려 있음, 바로 아래 첫 항목**) — 대부분 `question.md`
    3번에도 올라가
    있고(**[정정, 2026-08-18 `/code-review high`] 사용자 판단이 필요한
-   항목만 그렇다 — 아래 "dedup 경로" 대칭 확인, "Store 미선언 키" 실측
-   확인 둘은 판단이 아니라 구현 시 검증 작업이라 `question.md`엔 없음,
-   여기 목록이 소스**), 각 `base/` 문서에도 ⚠️로 표시돼 있다:
+   항목만 그렇다 — 아래 "dedup 경로" 대칭 확인은 판단이 아니라 구현 시
+   검증 작업이라 `question.md`엔 없음, 여기 목록이 소스**), 각 `base/`
+   문서에도 ⚠️로 표시돼 있다:
    - **M2가 M3의 `Blocker.luau`에 의존하게 된 순서 문제**(`ROADMAP.md`
      M2 체크박스 각주) — 지금은 각주만 달아둔 임시 조치, `Blocker.luau`
      (또는 최소 표면)를 M2로 앞당길지 로드맵 순서를 유지할지 **M2 착수
@@ -71,8 +71,11 @@
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
-   - **`Store` 미선언 키가 실제로 타입 에러가 나는지**(`base/store-plan.md`)
-     — M0에서 실측 확인.
+   - **[2026-08-19 해소]** `Store` 미선언 키가 실제로 타입 에러가
+     나는지 — **예, 확인됨**(`luau-test/done/21-type-store-undeclared-key-rejected.luau`,
+     `ProcessStoreType`이 합성한 레코드 타입은 인덱서가 없어 미선언 키
+     접근이 정확히 `TypeError`로 거부됨). `base/store-plan.md`의 "Store =
+     Source들의 이름 붙은 모음" 절의 "확인 요구" 표시도 해소로 갱신 필요.
 
 0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-14 열한 번째 세션 기준).**
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
