@@ -10,10 +10,13 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**[2026-08-16 기준] 지금은 설계/계획 단계이고 구현은 아직 시작 전**(M0에
-착수하면 루트 `CLAUDE.md` 머리말도 같이 고칠 것 — 같은 상태를 두 곳이
-서술하고 있음) — 저장소 루트에 실제 소스
-코드(`src/` 등)가 없음. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
+**[2026-08-19 기준] M0(스파이크 검증)/M1(스캐폴딩) 완료, M2(디스패치
+엔진)부터 착수 예정**(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
+같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음) — 저장소 루트에
+`quad-base/src/`(`New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`)/
+`quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
+아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
+소스. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
 디스패치 모델, Store/State/Source 온톨로지, 소스 트리 구조, Modifier 메커니즘,
 컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에
 문서로 확정돼 있음 — 먼저 `.claude/base/architecture.md`를 읽을 것. 사용자가
@@ -73,8 +76,9 @@ modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션�
   담는 폴더였으나, **[2026-08-18]** 구현 전 사용자 심사 라운드의 산출물도
   여기 둠(`pre-implementation-qa-round1.md`/`pre-implementation-qa-round2.md`/
   `pre-implementation-qa-round3.md` 전부 **완료** — 라운드마다 새
-  파일, 상태의 소스는 각 파일 자신). `.claude/feedback/` — 구현 시작되면 쓰기 시작함,
-  **[2026-08-18 기준] 폴더 자체가 아직 없음**.
+  파일, 상태의 소스는 각 파일 자신). `.claude/feedback/` — **실사용**
+  피드백용(M0/M1 스캐폴딩이 아니라 실제로 렌더링해보고 쓰는 단계부터),
+  **[2026-08-19 기준] 폴더 자체가 아직 없음** — 첫 피드백이 생길 때 만들면 됨.
   `.claude/archive/`는 원래 같은 취급이었으나
   2026-08-06 세 번째 세션부터 **완전히 뒤집힌 설계 결정을 원문+역전
   이유+diff와 함께 보존하는 용도로도 사용 시작**(구현 완료 대상만이
