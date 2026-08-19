@@ -99,9 +99,24 @@ pesde 실물 설정은 `initreq/vide`(`pesde.toml`+`rokit.toml` 보유)를
   미선언 키, 신규) — 둘 다 `STATUS.md` 표 텍스트는 아직 안 고침(스스로
   발견한 것 — 다음에 손댈 것).
 
-## 5. 다음
+## 5. 커밋 후 후속 — 05/21 STATUS.md 반영, Rojo 설치·symlink 검증
 
-사용자가 이 세션 산출물(문서화 + 셋업 파일)만 먼저 커밋하길 원함 —
-`luau-test` 스파이크 변경은 별도로 취급. 커밋 후 "지금 상황에서 검증
-가능한 것들"을 계속 검증하는 방향으로 이어감(구체 목록은
-`project-setup-plan.md`의 "아직 확인 안 됨" 절 + `todos.md`).
+사용자가 산출물(문서화+셋업 파일)만 먼저 커밋하길 원해 그렇게 진행(`tooling:`
+커밋). 이어서 4가지를 전부 순서대로 진행하기로 함(사용자: "전부 차근차근
+진행해보면 될듯 함") — (1) `05`/`21` STATUS.md 텍스트 반영 후 별도 커밋
+(`qa:`), (2) Rojo 설치 후 symlink 처리 검증, (3) 스파이크 `13` 재작성,
+(4) `HUMAN_TODO` 6번 에디터 솔버 설정.
+
+**(2) 완료** — pesde와 같은 방식으로 `rojo`도 `/code/.local/bin`에 직접
+설치(`7.7.0`, `rokit.toml` 핀과 일치). `quad-roblox/`에 `src`+
+`roblox_packages`를 매핑하는 임시 project.json으로 `rojo
+sourcemap`/`rojo build`를 돌려본 결과, **symlink를 투명하게 따라가
+실제 `quad-base/src/init.luau` 등까지 정확히 해소함을 확인** —
+`project-setup-plan.md`가 가장 크게 남겨뒀던 미해결 항목이 이걸로
+닫힘. 결론: 이전 세션이 발견한 "workspace 의존성 symlink가 require를
+깨뜨린다"는 문제는 **Luau standalone CLI 전용**이고 Rojo/Studio 배포
+경로엔 영향 없음(Studio 실물 확인은 여전히 계정 분리 대기,
+`HUMAN_TODO.md` 1번). 임시 검증 파일(`test-symlink-check.project.json`)은
+확인 후 삭제, 결과만 `project-setup-plan.md`에 반영.
+
+다음: (3) 스파이크 `13`, (4) 에디터 솔버 설정.

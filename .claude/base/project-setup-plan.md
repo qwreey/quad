@@ -141,19 +141,36 @@ local v = require("./linked")
 **실무 영향**: `quad-roblox`가 실제로 `quad_base`를 쓰게 되면(M5+),
 표준 경로(`require(".../roblox_packages/quad_base")`)는 **`luau` CLI로
 직접 못 돌린다** — `could not resolve child component`로 즉시 깨짐.
-Roblox Studio/Rojo sync는 이 문제와 무관할 가능성이 높음(Rojo는 Luau의
-require 리졸버가 아니라 평범한 파일시스템 워크로 트리를 만듦 — **단,
-이 세션은 Rojo가 설치돼 있지 않아 실측은 못 했음, `HUMAN_TODO.md`에
-Studio 연동이 되면 같이 확인할 것**).
 
-**임시 우회(M0/M1식 CLI 스파이크/mock 테스트 한정)**: `roblox_packages/`를
-거치지 말고 실제 형제 패키지 경로를 직접 가리킬 것 — 예:
-`quad-roblox/src`에서 검증용 스크립트를 짤 때
+**[2026-08-19 후속 세션, 확인 완료] Rojo/Studio는 이 문제와 무관함 —
+`rojo`를 같은 방식으로 `/code/.local/bin`에 설치해 직접 검증.** `quad-roblox/`
+아래 `src`+`roblox_packages`를 매핑하는 임시 project.json으로
+`rojo sourcemap`을 돌려보니, symlink를 정확히 따라가 실제 파일까지
+해소함을 확인:
+
+```json
+{"name":"src","filePaths":["../quad-base/src/init.luau"],
+ "children":[
+   {"name":"Debug","filePaths":["../quad-base/src/Debug/init.luau"]},
+   {"name":"Relate","filePaths":["../quad-base/src/Relate.luau"]}
+ ]}
+```
+
+`rojo build`(실제 `.rbxm` 생성)도 같은 트리로 에러 없이 성공. 즉 Rojo는
+`fs::canonicalize`류 평범한 파일시스템 API로 트리를 만들어서 symlink를
+투명하게 통과하고, 위 함정은 **Luau standalone CLI의 require-by-string
+전용 문제**로 확정 — Studio 배포 경로엔 영향 없음. Studio 자체(플러그인
+연동)까지는 아직 미검증(`HUMAN_TODO.md` 1번, 계정 분리 대기)이지만,
+`rojo build`/`sourcemap` 레벨에서 이미 심볼릭 링크 순회가 확인됐으므로
+Studio도 같은 파일시스템 계층을 쓰는 이상 다르게 동작할 이유가 없다.
+
+**우회가 필요한 범위는 M0/M1식 CLI 스파이크/mock 테스트로 좁혀짐**:
+`roblox_packages/`를 거치지 말고 실제 형제 패키지 경로를 직접 가리킬
+것 — 예: `quad-roblox/src`에서 검증용 스크립트를 짤 때
 `require("../../quad-base/src")`처럼. **프로덕션 `quad-roblox` 소스
 자체는 그대로 표준 pesde 경로(`roblox_packages/quad_base`)를 쓸 것** —
-Rojo/Studio가 실제로 소비하는 건 그 경로고, 위 우회는 어디까지나 이
-환경의 CLI 스파이크 테스트용 임시 조치. Rojo의 symlink 처리가 실측
-확인되면 이 절 자체가 불필요해질 수 있음(그때 다시 볼 것).
+Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했듯 문제없이
+동작한다.
 
 ## `.luaurc` — alias는 여전히 편집기 전용
 
@@ -199,12 +216,26 @@ lockfile들이 **게시되는 대상이 아니기** 때문 — 루트는 `privat
 - `.luaurc` alias가 런타임에서 여전히 안 먹는다는 것(재확인)
 - 워크스페이스 의존성이 symlink로 연결되고, 그게 `luau` CLI의
   require-by-string과 충돌한다는 것(직접 재현 + Luau RFC로 원인 확인)
+- **[2026-08-19 후속 세션]** Rojo(`/code/.local/bin`에 직접 설치,
+  `7.7.0`, `rokit.toml` 핀과 일치)는 위 symlink 문제와 무관 — `rojo
+  sourcemap`/`rojo build` 둘 다 `roblox_packages`의 symlink를 실제
+  파일까지 투명하게 따라감을 확인. 위 심볼릭 링크 함정은 Luau standalone
+  CLI의 require-by-string 전용 문제로 범위가 좁혀짐
+- **덤 확인** — `rojo`가 PATH에 잡히자 `luau-lsp`(에디터)가 자동으로
+  `rojo sourcemap default.project.json --output sourcemap.json --watch`를
+  백그라운드로 띄움(루트 `default.project.json` 기준). 즉 지금 이
+  워크스페이스에서 에디터 타입 링킹이 실제로 살아있다는 뜻 — wally가
+  안고 있던 "설치된 패키지의 타입 정보 단절" 문제가 이 구성에선 재현
+  안 됨(`architecture.md`가 pesde 전환의 배경으로 들었던 문제 자체가
+  실제로 해소됐다는 간접 증거). 산출물 `sourcemap.json`은 재생성되는
+  빌드 산물이라 `.gitignore`에 추가
 
 **아직 확인 안 됨(다음에 도구/환경이 갖춰지면)**:
 - 루트 `pesde.toml`의 `[target]` 섹션이 실제로 의미가 있는지(지금은
   workspace 가이드 예제를 그대로 따라 둔 것, 검증 안 됨)
-- Rojo가 이 symlink들을 실제로 따라가서 Studio에 정상 동기화하는지 —
-  `HUMAN_TODO.md` 1번(Studio 연동)이 되면 확인
+- Roblox Studio 자체(플러그인 연동)까지의 실제 동기화 — `rojo
+  build`/`sourcemap` 레벨은 확인됐지만 `HUMAN_TODO.md` 1번(계정 분리)이
+  되기 전까진 Studio 실물로는 미확인
 - `quad_base` 설치 시 나온 "`roblox_sync_config_generator` 스크립트가
   없으면 linking에 문제가 생길 수 있다"는 WARN의 실제 영향 범위 — 지금은
   install 자체를 막지 않아서 방치, 실제 Rojo 동기화 단계에서 문제가
