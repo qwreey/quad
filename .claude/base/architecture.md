@@ -177,17 +177,39 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
 아래가 다음 세션에서 실제로 만들 구조. 지금은 문서 확정까지만, 실제
 폴더/`wally.toml`/`project.json` 스캐폴딩은 다음 세션.
 
-**패키징 방식(모노레포, RbxUtil 선례 채택)**: 최종적으로는 여러 개의 독립
-wally 패키지로 나누고 싶지만, 지금 Luau 툴링(특히 wally로 설치된 패키지의
-타입 정보 단절·`luau-lsp`의 심볼릭 링크 해석 문제 — 최근 `luau-lsp 1.63.0`
-에서야 수정됨)이 아직 불안정해서 **당장은 모놀리식**으로 감. `Sleitnick/
-RbxUtil`이 정확히 이 패턴(루트 하나로 통합 개발/테스트, 서브폴더마다 자체
-`wally.toml`로 독립 퍼블리시)을 쓰는 선례라 그대로 채택. `.luaurc`의
-`aliases`는 **런타임 require에서 아직 엔진이 지원 안 함**(Roblox 스태프가
-지원 예정이라고만 밝힌 상태, 2026-01 기준) — 그래서 alias는 편집기
-자동완성/타입체크용으로만 곁들이고, 실제 크로스패키지 require는 상대경로로
-쓴다. 나중에 실제로 레포를 쪼갤 때는 Rojo `project.json`의 트리 매핑 규칙만
-유지하면 되고, require는 그 시점에 한 번 기계적으로 바꾸는 정도로 감수.
+**패키징 방식(모노레포, RbxUtil 선례 채택) — [2026-08-19 정정] 패키지
+매니저를 wally에서 pesde로 전환.** 원래는 wally 툴링 불안정(설치된 패키지의
+타입 정보 단절·`luau-lsp` 심볼릭 링크 해석 문제)을 이유로 "최종적으론 독립
+패키지로 쪼개고 싶지만 당장은 모놀리식"으로 타협했었는데, **사용자 결정
+(2026-08-19): pesde로 간다** — dev-dependency를 1급으로 지원하는 등 wally보다
+툴링이 낫다는 판단. **모노레포 자체의 모양(루트 통합 개발, 서브패키지마다
+독립 게시)은 안 바뀜** — `Sleitnick/RbxUtil`이 wally로 하던 바로 그 패턴을
+pesde는 **네이티브 workspace**(Cargo 워크스페이스와 동형: 루트
+`workspace_members` + 멤버 간 `{ workspace = "scope/name", version = "^" }`
+의존)로 처음부터 1급 지원하므로, wally가 안고 있던 타입 정보 단절 문제
+자체도 이 전환으로 같이 해소될 것으로 기대(단, 이 세션은 pesde 바이너리가
+없는 샌드박스라 `pesde install`로 실제 링크 결과까지는 검증 못함 — 실제
+설치 검증은 사람이 로컬에서 `rokit install` 이후 확인할 것).
+실제 구현: 루트 `pesde.toml`(`private = true`,
+`workspace_members = ["quad-base", "quad-roblox"]`) + `quad-base/pesde.toml`/
+`quad-roblox/pesde.toml`(각각 `[target] environment = "roblox"`,
+`quad-roblox`는 `quad-base`에 workspace 의존), 툴체인은 `rokit.toml`로 핀.
+pesde는 "패키지 안에 `default.project.json`을 두지 말 것"이 컨벤션(그
+파일은 소비자가 직접 만드는 sync 설정 몫) — 루트의 `default.project.json`은
+이 규칙의 예외가 아니라 애초에 그 규칙이 가리키는 대상이 아님(워크스페이스
+루트 자신의 통합 개발/테스트용, 게시되는 패키지 안이 아니므로).
+`.luaurc`의 `aliases`는 여전히 **런타임 require에서 엔진이 지원 안 함**
+(2026-08-19 이 세션에 커스텀 alias로 직접 재확인 — `require("@alias/x")`가
+"could not jump to alias"로 실패) — 그래서 alias는 편집기 자동완성/타입체크용으로만
+곁들이고, 실제 크로스패키지 require는 상대경로로 쓴다(단, `init.luau`
+안에서는 평범한 상대경로가 아니라 **예약 alias `@self`**를 써야 함 —
+`init.luau`는 require-by-string 상 "자기 폴더 자체"를 가리키므로 `./`가
+아니라 `@self/`로 그 폴더 안의 형제 파일에 접근한다, 2026-08-19 사용자 지적
++ Luau RFC `abstract-module-paths-and-init-dot-luau`로 확인 — 실제로 이
+세션의 `quad-base/src/init.luau`가 이 착오로 크로스파일 require가 전부
+깨졌다가 `@self`로 고치고 나서야 정상화됨). 나중에 실제로 레포를 쪼갤 때는
+Rojo `project.json`의 트리 매핑 규칙만 유지하면 되고, require는 그 시점에
+한 번 기계적으로 바꾸는 정도로 감수.
 
 **패키지 경계**: `quad-base`는 다른 렌더 백엔드(GTK 등, 항목 12 참고)에서도
 재사용 가능해야 한다는 전제 — Store/State/Source 온톨로지+전파뿐 아니라

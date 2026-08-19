@@ -1,0 +1,15 @@
+{
+	"name": "quad",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"quad-base": {
+				"$path": "quad-base/src"
+			},
+			"quad-roblox": {
+				"$path": "quad-roblox/src"
+			}
+		}
+	}
+}

@@ -1,0 +1,10 @@
+# Rokit-관리 툴체인. `vide`(`.claude/initreq/vide/rokit.toml`) 선례를 따르되
+# wally 항목은 뺌(pesde로 전환, 2026-08-19 사용자 결정).
+#
+# ⚠️ 버전 핀은 이 세션이 웹에서 확인한 시점 기준 — 이 샌드박스엔 rokit/pesde
+# 바이너리가 없어 실제로 `rokit install`을 돌려 검증하지 못했다. 실제
+# 설치 전에 `rokit add pesde-pkg/pesde` / `rokit add rojo-rbx/rojo`로
+# 최신 태그를 직접 재확인할 것.
+[tools]
+pesde = "pesde-pkg/pesde@0.7.3+registry.0.2.3"
+rojo = "rojo-rbx/rojo@7.7.0"

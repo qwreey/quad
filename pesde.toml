@@ -1,0 +1,13 @@
+# 워크스페이스 루트 — 그 자체로는 게시되지 않음(`private = true`).
+# `quad-base`/`quad-roblox`가 실제 게시 대상 워크스페이스 멤버.
+# 구조는 `.claude/base/architecture.md` "구현 착수: 소스 트리 구조 확정" 절의
+# RbxUtil식 모노레포(루트 통합 개발, 서브패키지마다 독립 게시)를 그대로 따르되
+# 패키지 매니저만 wally -> pesde로 전환(사용자 결정, 2026-08-19 — dev-dependency
+# 지원이 더 낫다는 판단).
+name = "qwreey/quad"
+version = "0.0.0"
+private = true
+workspace_members = ["quad-base", "quad-roblox"]
+
+[target]
+environment = "roblox"

@@ -1,0 +1,10 @@
+{
+	"languageMode": "strict",
+	"lint": {
+		"*": true
+	},
+	"aliases": {
+		"quad-base": "quad-base/src",
+		"quad-roblox": "quad-roblox/src"
+	}
+}

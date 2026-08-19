@@ -1,0 +1,12 @@
+name = "qwreey/quad_roblox"
+version = "0.0.0"
+description = "quad — Roblox 백엔드: quad-base의 pluggable 인터페이스를 실제로 구현"
+includes = ["src/*"]
+
+[target]
+environment = "roblox"
+build_files = ["src"]
+lib = "src/init.luau"
+
+[dependencies]
+quad_base = { workspace = "qwreey/quad_base", version = "^" }

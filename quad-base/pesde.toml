@@ -1,0 +1,9 @@
+name = "qwreey/quad_base"
+version = "0.0.0"
+description = "quad — 엔진 무관 코어: Store/State/Source 온톨로지, pluggable 디스패치 엔진"
+includes = ["src/*"]
+
+[target]
+environment = "roblox"
+build_files = ["src"]
+lib = "src/init.luau"
