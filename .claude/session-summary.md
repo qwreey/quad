@@ -1535,3 +1535,77 @@ ERROR 0.
 드러나 **순수 슈가로 재평가**(옛 "실제 기능 갭이라 우선순위 위" 서술
 철회). `ROADMAP.md`/`question.md`/`todos.md`/`README.md`/
 `source-state-plan.md`/`blocker-plan.md` 전량 반영.
+
+## 2026-08-19 — M0/M1 스캐폴딩 첫 시도, wally→pesde 전환, `@self` require 함정
+
+원문: `session/2026-08-19-04-pesde-migration-and-project-setup.md`
+
+`ROADMAP.md` M0(스파이크 3종)/M1(스캐폴딩)을 revert 가능한 상태로 실제로
+짜보는 시도 — `quad-base/`/`quad-roblox/` 폴더, `Relate.luau` 전량 구현,
+`Debug/init.luau` + 최상위 `init.luau`, mock+스모크 테스트까지 작성. 그
+과정에서 크로스파일 require가 전부 깨지는 진짜 버그를 찾았으나 원인
+진단은 처음에 틀렸음(CWD 기준설로 오판) — 사용자가 Luau RFC를 근거로
+`init.luau`는 `@self/X`가 필요한 특수 케이스라고 직접 정정. 이어서 사용자
+결정으로 패키지 매니저를 wally에서 pesde로 전환, tbox 참고 후 실제 설치해
+워크스페이스 전체를 검증. 산출물은 `base/project-setup-plan.md`(신설)와
+`architecture.md`의 "패키징 방식" 절 정정.
+
+**커밋 후 후속(같은 세션, §5)**: 사용자가 "전부 차근차근"이라고 답해 이어서
+4가지 진행 — Rojo를 직접 설치해 `rojo sourcemap`/`rojo build`가 워크스페이스
+symlink를 투명하게 따라감을 확인(Luau standalone CLI 전용 문제였음을
+재확인, Studio 실물 검증만 계정 분리 대기로 남음), 스파이크 `13`을
+타입 전용/런타임(`22` 신규) 두 파일로 분리해 `PreRef`/`PostRef` 배타성까지
+검증, `luau-lsp`를 직접 설치해 새 Luau 솔버 필요성을 재귀 제네릭 스파이크로
+재확인하고 `.vscode/settings.json`에 반영, 스파이크 `05`/`21` STATUS.md
+텍스트 갱신.
+
+## 2026-08-19 — rokit→mise 전환, selene 린터 도입, darklua 검토 후 기각
+
+원문: `session/2026-08-19-05-mise-migration-and-selene-linter.md`
+
+사용자가 참고 GitHub 레포 `Word30210/roblox-project-example`의
+`mise.toml`을 제시("요즘은 rokit보단 mise로 까는듯") → 클론해 구조 전체를
+훑고 mise 전환/selene 린터/darklua/Justfile 네 후보를 멀티셀렉트로 제시,
+사용자는 mise 전환과 selene만 채택. darklua는 사용자가 직접 반박해 보류
+— "Roblox 엔진 자체가 이미 `@self`/`@game` string require를 지원하므로
+변환 계층이 불필요"라는 논거. mise 전환은 GitHub artifact attestation +
+SLSA provenance 검증까지 거쳐 실제 설치·검증 완료.
+
+## 2026-08-19 — `RunInit` 재설계, darklua 경계 정밀화, 한국어 진행 합의
+
+원문: `session/2026-08-19-06-runinit-redesign-and-darklua-precision.md`
+
+사용자 요청 두 가지: (1) darklua 기각 근거를 실측으로 정밀화 — 직접
+설치해 돌려보니 `@self`/`@game`은 안 건드리고 커스텀 `.luaurc` alias만
+변환한다는 정확한 경계 확인(지금은 불필요하지만 나중에 축약 alias를 쓰면
+필요해질 수 있음을 `project-setup-plan.md`에 반영). (2) `New()`의 멱등
+Init 가드를 파일마다 `Relate`+센티널을 두는 대신 **함수 자체를 릴레이션
+키로 쓰는 공유 `module:RunInit(initFn)`**로 재설계 — 실제 구현+3개
+시나리오 스모크 테스트까지 완료. 이후 대화를 한국어로 진행하기로 합의.
+
+## 2026-08-19 — `quad-types` 패키지 신설, `AddPlugin`/`CheckedQuad` 실측 설계
+
+원문: `session/2026-08-19-07-quad-types-package-addplugin-checkversion.md`
+
+`RunInit` vs backend 유일 슬롯 가드를 `_initializedBy`로 분리 확정한 뒤,
+사용자가 "quad-roblox가 quad-base를 런타임 주입으로만 받으면
+dev-dependency로도 타입이 못 산다"는 문제를 제기 — 실측으로 확인하고
+`quad-types`(구현 없는 타입 계약 전용 워크스페이스 패키지)를 신설,
+`AddPlugin<Self,P>` 플러그인 체이닝과 `CheckedQuad<T>` 컴파일 타임
+버전 체크를 설계·구현·검증까지 전부 마침. 과정에서 "값이 한 번이라도
+`type function`을 거치면 이후 제네릭 self 체이닝이 조용히 깨진다"는 새
+Luau 함정을 발견해 `typing-limits.md` §6으로 승격.
+
+## 2026-08-19 — `type-version-check` 패키지 추출, `CheckedQuad<T, Pattern>` 확장
+
+원문: `session/2026-08-19-08-type-version-check-package-extraction.md`
+
+직전 세션의 `CheckedQuad<T>`(정확 버전 일치만)가 `quad-spring`/
+`quad-spring-roblox`류 독립 게시 플러그인엔 너무 빡빡하다는 사용자 지적
+→ 글롭(`"*"`)/캐럿(`"N^"`) 패턴을 지원하는 `CheckedQuad<T, Pattern>`으로
+확장. 버전 매칭 로직 자체는 quad에 종속되지 않은 범용 워크스페이스 멤버
+`type-version-check`로 분리(사용자 지시: 지금은 모노레포 안에 두고 독립
+저장소 분리는 나중에 직접 — `HUMAN_TODO.md` 9번). 새 Luau 함정 2건 발견
+(`type function`은 outer local 참조 불가, cross-package엔 `export type
+function` + 이중 꺾쇠 제네릭 인스턴스화 필요). 핸드오버 감사 2라운드로
+구 시그니처 잔존/개수 하드코딩 8건 발견·수정 후 커밋.

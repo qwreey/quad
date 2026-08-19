@@ -5,8 +5,16 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 체크박스를 세분화해서 늘려도 되고, 끝나면 체크만 하면 됨 — 살아있는 문서.
 
 **2026-08-04 세션에 준비만 해둔 상태로 신설, 이후 여러 세션에 걸쳐 설계가
-확정될 때마다 각 마일스톤 체크박스가 계속 갱신돼왔음 — 그래도 아직 M0
-자체는 시작 안 함.** 다음 세션은 바로 M0부터.
+확정될 때마다 각 마일스톤 체크박스가 계속 갱신돼왔음.**
+
+> **✅ [2026-08-19 기준] M0 스파이크 4개 전부 통과, M1 스캐폴딩도 대부분
+> 완료(quad-base/quad-roblox 폴더+pesde.toml, 루트 default.project.json/
+> .luaurc, mock 테스트 하네스, `New()`/`RunInit`/`AddPlugin` 골격 — 아래
+> M0/M1 체크박스 참고). 다음은 M2(디스패치 엔진) 착수.** M1 착수 도중
+> wally→pesde 전환이 확정돼(`base/project-setup-plan.md`) M1 체크박스의
+> `wally.toml` 표기도 `pesde.toml`로 정정. 부수로 M3가 의존하는
+> `quad-types`/`type-version-check` 두 워크스페이스 멤버도 이 과정에서
+> 먼저 신설됨(`base/quad-types-plan.md`).
 
 > **✅ [2026-08-13 열네 번째 세션] M0 착수를 막던 결정이 전부 해소됐음.**
 > `0-Y`(13차 세션), `0-Z`(Attribute 이름 소유권)/`0-A`(재디스패치 하강
@@ -29,24 +37,29 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 `architecture.md`/`bind-system-plan.md` 등을 이 시점에 고치는 게 정상 —
 실패가 아니라 이 단계의 목적.
 
-- [ ] Store/State push-invalidate → pull-recompute propagation을 실제로
+- [x] Store/State push-invalidate → pull-recompute propagation을 실제로
       짜보기(다이아몬드 의존성 케이스 포함 — **[2026-08-14 정정]** 확인할
       것은 "이미 invalid면 전파 중단되는지"가 **아니라** 그 반대:
       **emit은 자기 invalid 상태와 무관하게 항상 전파되고**, 중복 재계산은
       `:Get()` 시점 캐시로만 막히는지. 특히 `:Get()`을 안 부르는
       `Observer`가 매 변경마다 계속 울리는지 — 옛 모델에선 두 번째부터
       침묵했음(`archive/invalidate-dedup-propagation-reversed.md`).
-      스파이크 `05-store-state-diamond-propagation.luau`는 옛 모델을
-      검증 중이라 `rewrite-required/`에 있음)
-- [ ] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
+      스파이크 `05-store-state-diamond-propagation.luau`는 **[2026-08-19
+      재작성 완료, `done/`]** 현행 모델("emit은 항상 전파 + `:Get()`
+      시점 캐시로만 dedup")로 재검증 통과)
+- [x] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
       Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 세 번째 세션,
       `base/source-state-plan.md` "Source가 State를 만족함" 절 — `State<T>`가
       `Source`를 참조하지 않는 단방향 의존으로 두면 위험한 상호 재귀는
-      피할 수 있어 보이나 실제 검증 전엔 확정 아님)
-- [ ] `process`(+반환 retractor 클로저) 재귀 재-process 디스패치를 실제로
-      짜보기(store-bind 핸들러 하나 + `isHandlable` 우선순위 스캔 포함)
-- [ ] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
+      피할 수 있어 보이나 실제 검증 전엔 확정 아님. **[통과]**
+      `luau-test/done/08-type-source-satisfies-state.luau` — 핵심 케이스
+      통과, 잔여 자기재귀 케이스는 Luau 한계로 별도 확정
+      (`base/typing-limits.md`), 설계 영향 없음)
+- [x] `process`(+반환 retractor 클로저) 재귀 재-process 디스패치를 실제로
+      짜보기(store-bind 핸들러 하나 + `isHandlable` 우선순위 스캔 포함 —
+      `luau-test/done/03-recursive-store-bind-dispatch.luau` 통과)
+- [x] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
       Luau 테이블에서 관찰한 대로 동작하는지 확인, `PreRef` pre-pass +
       일반 `Ref`의 위치 기반 순서까지 최소 스파이크로 검증
       (2026-08-07 세 번째 세션, `base/ref-plan.md` "`phase` 옵션
@@ -62,7 +75,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`base/ref-plan.md` "PreRef" 절, `base/dispatch-core-plan.md`
       "Length/Offset" 절) — 아래 `PreRef` pre-pass/동적 경로 가드
       체크리스트 항목도 이 값으로 스파이크할 것.
-- [ ] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,
+- [x] `props.Modifier`/`props.Ref` named-parameter로 받는 컴포넌트 하나 작성,
       `export type Params = {...}`로 타입 체크되는지 확인
       (`component-composition-plan.md` 최종 결론 1번) — **`props.Modifier or
       None`/`props.Ref or None` 관용구(2026-08-07 열 번째 세션 확정,
@@ -71,25 +84,38 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `or None`이 항상 non-nil을 보장하므로 `{nil, ref, child}`류 리터럴
       구멍 자체가 안 생김(`research/pre-implementation-audit.md` 1-5).
       M0에서 검증할 것은 "어떻게 막을지"가 아니라 이 관용구가 실제로
-      타입 체크/런타임 양쪽에서 문제없이 동작하는지**
-- [ ] 위 과정에서 소스 트리/메커니즘 문서에 고칠 부분이 생기면 그 자리에서
-      `.claude/base/` 갱신
+      타입 체크/런타임 양쪽에서 문제없이 동작하는지** —
+      `luau-test/done/06-component-boundary-nil-hole-props.luau` 통과
+- [x] 위 과정에서 소스 트리/메커니즘 문서에 고칠 부분이 생기면 그 자리에서
+      `.claude/base/` 갱신 — 실제로 여러 차례 발생, 그때마다 반영됨(각
+      스파이크 항목의 "정정"/"재작성" 표시가 그 기록)
 
-**통과 기준**: 세 개 다 Luau에서 자연스럽게 짜이는 게 확인되면 M1 진행.
-안 되면 여기서 관련 `base/` 문서부터 고치고 재시도.
+**통과 기준**: 위 항목들이 Luau에서 자연스럽게 짜이는 게 확인되면 M1
+진행 — **[2026-08-19] 전부 통과, M1 진행 중**(개수는 `luau-test/STATUS.md`가
+소스, 여기서 세지 않음).
 
 ## M1 — 실제 스캐폴딩
 
-- [ ] `quad-base/`, `quad-roblox/` 폴더 + 각 `wally.toml`
-- [ ] 루트 `default.project.json`, `.luaurc`(`architecture.md` "구현 착수:
+- [x] `quad-base/`, `quad-roblox/` 폴더 + 각 `pesde.toml`(**[2026-08-19
+      정정]** 이 체크박스는 원래 `wally.toml`이라 적혀 있었으나 같은 날
+      wally→pesde 전환이 확정돼 `pesde.toml`로 정정 —
+      `base/project-setup-plan.md` 참고. `quad-roblox/src`는 아직 빈
+      폴더 — 실제 소스는 M5)
+- [x] 루트 `default.project.json`, `.luaurc`(`architecture.md` "구현 착수:
       소스 트리 구조 확정" 절 그대로)
-- [ ] quad-base용 최소 mock 테스트 하네스(Vide `test/mock.luau` 선례, 순수
-      `luau` CLI, `architecture.md` "테스트 전략" 절 참고)
-- [ ] 최상위 `New()`/`InitXxx(module)` 팩토리 체이닝 골격 — 각 서브시스템
+- [x] quad-base용 최소 mock 테스트 하네스(Vide `test/mock.luau` 선례, 순수
+      `luau` CLI, `architecture.md` "테스트 전략" 절 참고) —
+      `quad-base/test/mock.luau` + `smoke.*.luau`, 전부 PASS
+- [x] 최상위 `New()`/`InitXxx(module)` 팩토리 체이닝 골격 — 각 서브시스템
       Init이 `module`을 파라미터로 받아 뮤테이션, `Relate` 기반 인스턴스별
       멱등 가드(`base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절
-      그대로, 2026-08-19 확정)
-- [ ] 이 시점부터 `.claude/qa-request/`/`.claude/archive/` 폴더 실사용 시작
+      그대로, 2026-08-19 확정) — `quad-base/src/init.luau`의 `New()`/
+      `RunInit`/`AddPlugin`으로 구현·smoke 테스트 검증 완료
+- [x] 이 시점부터 `.claude/qa-request/`/`.claude/archive/` 폴더 실사용
+      시작(**[2026-08-19 확인]** 두 폴더 모두 M1 이전인 설계 단계부터
+      이미 쓰이고 있었고 — QA 라운드/역전 결정 기록 — M1 착수 이후에도
+      계속 같은 방식으로 쓰이는 중이라 "실사용 시작"이라는 조건은 사실상
+      항상 충족돼 있었음)
 
 ## M2 — 디스패치 엔진
 
@@ -361,7 +387,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M5 — quad-roblox 최소 프로바이더
 
-- [ ] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드)
+> **⚠️ 구현 관례**: `quad-roblox`의 공개 타입은 지금부터 단일 파일
+> (`src/init.luau` 또는 `types.luau`)에 몰아둘 것 — 나중에 필요해지면
+> 백로그 `quad-roblox-types`(가칭, `quad-types`와 같은 패턴)로 쉽게
+> 분리할 수 있게 하기 위함. `base/quad-types-plan.md`의 "남은 것" 절이
+> 소스.
+
+- [ ] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드) — 진입점
+      `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
+      주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
 - [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)
 - [ ] `Handlers/Property.luau`, `Handlers/InstanceChild.luau`
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션

@@ -3,3 +3,14 @@
 # Python 바이트코드 — doc-check.py 실행 시 생김(32e9db0에 실수로 딸려 들어갔었음)
 __pycache__/
 *.pyc
+
+# pesde 설치 산출물(각 패키지 로컬에 생김) — pesde.lock 커밋 여부는 아직
+# 미정(라이브러리 컨벤션 확인 필요, HUMAN_TODO 참고)이라 여기 안 넣음
+roblox_packages/
+luau_packages/
+lune_packages/
+.pesde/
+
+# luau-lsp가 rojo 설치를 감지하면 백그라운드에서 자동 생성/watch함
+# (에디터 타입 링킹용 산출물, 커밋 대상 아님)
+sourcemap.json

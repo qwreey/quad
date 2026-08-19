@@ -1,0 +1,8 @@
+name = "qwreey/type_version_check"
+version = "0.0.0"
+description = "컴파일 타임 버전 패턴 매칭 — type function 하나로 semver 비슷한 문자열 리터럴 타입을 글롭(*)/캐럿(N^) 패턴과 대조. quad에 종속되지 않은 범용 유틸(quad-types의 CheckedQuad<T, Pattern>이 이 위에 얹힘). 현재는 quad 모노레포 안 워크스페이스 멤버로 두지만, 다른 프로젝트에서도 쓸 수 있게 독립 패키지로 분리 예정(HUMAN_TODO.md 참고) — 지금부터 quad 전용 타입/이름을 안 섞을 것."
+includes = ["src/*"]
+
+[target]
+environment = "luau"
+lib = "src/init.luau"

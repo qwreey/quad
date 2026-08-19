@@ -1,0 +1,13 @@
+# mise-관리 툴체인 — `rokit.toml`에서 전환(2026-08-19 사용자 결정, "요즘은
+# rokit 보단 mise로 까는듯 하네. 더 범용적이라 이걸 택하는듯"). 이 판단은
+# `Word30210/roblox-project-example`(`initreq/roblox-project-example`,
+# 참고용으로 클론)의 `mise.toml`을 실제로 이 세션에서 `mise install`로
+# 검증하며 확인됨 — pesde/rojo를 GitHub artifact attestation + SLSA
+# provenance 검증까지 거쳐 설치함(이 세션이 직접 curl로 받았던 방식보다
+# 안전). 이 샌드박스 자체가 이미 mise로 `luau`를 관리 중이라 rokit보다
+# 자연스럽게 맞물림.
+[tools]
+"github:pesde-pkg/pesde" = "0.7.3+registry.0.2.3"
+"github:rojo-rbx/rojo" = "7.7.0"
+"github:JohnnyMorganz/luau-lsp" = "1.69.0"
+"aqua:Kampfkarren/selene" = "0.31.0"

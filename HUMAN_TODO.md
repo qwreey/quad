@@ -124,23 +124,27 @@ B(Attribute의 Instance 참조 타입)/C(CollectionService 태그 왕복) —
 `architecture.md`의 해당 절을 갱신하고 기존 코드의
 `const` 전환 범위를 같이 상의할 것.
 
-## 6. **[2026-08-13 신설, 안 막음]** 에디터의 Luau 솔버 설정 확인
+## 6. ~~에디터의 Luau 솔버 설정 확인~~ **[2026-08-19 설정 완료 — VSCode 재시작만 확인해주면 됨]**
 
-`luau-analyze` CLI는 **새 솔버가 기본값**이지만 에디터가 쓰는
-`luau-lsp`는 **옛 솔버가 기본값**(`LuauSolverV2=false`)이라 **같은 코드에
-다른 진단이 나옵니다** — 이번 세션에 실제로 겪은 혼선의 원인이었음
-(CLI는 클린인데 에디터엔 빨간 줄).
+`luau-analyze` CLI는 새 솔버가 기본값이지만 에디터가 쓰는 `luau-lsp`는
+**옛 솔버가 기본값**(`LuauSolverV2=false`)이라 같은 코드에 다른 진단이
+나옴 — 예전엔 "실제 에디터 환경에서 확인 필요"로 사람에게 넘겨뒀던
+항목.
 
-옛 솔버는 quad의 `Compute` 시그니처 패턴 자체를 선언 시점에 거부하므로
-사실상 새 솔버 외에 선택지가 없어 보이지만, **실제 사용하시는 에디터
-환경에서 확인이 필요**합니다. VSCode의 "Luau Language Server" 확장이라면
-워크스페이스 `.vscode/settings.json`에:
+**[2026-08-19] `luau-lsp` 바이너리(1.69.0, `luau-lsp analyze` CLI 모드)를
+`/code/.local/bin`에 직접 설치해 `--flag:LuauSolverV2=true/false`
+양쪽으로 실측 — 새 솔버가 필요하다는 결론을 재확인**하고
+`quad/.vscode/settings.json`을 만들어 `{ "luau-lsp.fflags.enableNewSolver":
+true }`를 이미 커밋해뒀음(팀/에디터 전체에 공유됨, 사용자가 손댈 것
+없음). `tbox`(다른 참고 레포)도 동일 설정을 이미 쓰고 있어 교차 확인됨.
+같이 검토했던 `LuauDoNotExportBrokenTypeFunction` override(tbox가 씀)는
+quad의 현재 `type function` 스파이크(`16`/`21`)에서 유무 차이가 없어
+**채택 안 함**(불필요한 설정 추가 지양).
 
-```json
-{ "luau-lsp.fflags.enableNewSolver": true }
-```
-
-M0 착수 시점에 확인하면 되고 지금 막고 있진 않음. 배경은
+**사람이 확인해줄 것 하나만 남음**: 이건 CLI로 시뮬레이션한 것이지
+VSCode를 실제로 띄운 게 아님 — 다음에 VSCode를 열면 워크스페이스
+설정이 잘 먹었는지(같은 `.luau` 파일에서 CLI 결과와 에디터의 빨간 줄이
+일치하는지) 한 번만 눈으로 확인해주면 이 항목은 완전히 닫힘. 배경은
 `.claude/base/typing-limits.md` 8번, 실측은
 `.claude/audit/type-recursion-issue/REPORT.md` 5절.
 
@@ -156,6 +160,17 @@ Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 �
 지우기 전에 (1) 두 커밋이 `main` 조상인지, (2) 워크트리에 미커밋 변경이
 없는지, (3) `git worktree list`에 다른 에이전트 워크트리가 없는지를
 확인했습니다. 이 항목은 기록용으로만 남겨둡니다.
+
+## 9. **[2026-08-19 신설, 안 막음]** `type-version-check` 독립 저장소로 분리
+
+`type-version-check/`(컴파일 타임 버전 패턴 매칭 — 글롭/캐럿, `quad-types`의
+`CheckedQuad<T, Pattern>`이 이 위에 얹힘)는 quad에 종속되지 않은 범용
+유틸이라 **사용자가 직접 독립 저장소로 분리할 예정**("우선 이 프로젝트
+안에 넣어둬줘. 나중에 내가 다른 프로젝트로 분리해줄게.", 2026-08-19).
+지금은 quad 워크스페이스의 네 번째 멤버(`workspace_members`)로만 있음 —
+에이전트가 먼저 나서서 분리하지 말고 사용자가 하라고 할 때까지 대기.
+설계/구현 상세는 `.claude/base/quad-types-plan.md`의
+"`type-version-check`" 절.
 
 ## 3. `.claude/question.md`의 **나머지** 항목 검토 (급하지 않음)
 

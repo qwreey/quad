@@ -1,0 +1,31 @@
+std = "luau"
+exclude = ["**/.pesde/*", "*_packages/*"]
+
+[lints]
+almost_swapped = "deny"
+constant_table_comparison = "deny"
+deprecated = "warn"
+divide_by_zero = "warn"
+empty_if = "deny"
+empty_loop = "deny"
+high_cyclomatic_complexity = "warn"
+if_same_then_else = "deny"
+ifs_same_cond = "warn"
+incorrect_standard_library_use = "deny"
+manual_table_clone = "warn"
+mismatched_arg_count = "deny"
+mixed_table = "allow"
+multiple_statements = "deny"
+must_use = "warn"
+parenthese_conditions = "deny"
+suspicious_reverse_loop = "deny"
+type_check_inside_call = "deny"
+unbalanced_assignments = "warn"
+undefined_variable = "deny"
+unscoped_variables = "deny"
+unused_variable = "warn"
+
+[config]
+empty_if = { comments_count = true }
+empty_loop = { comments_count = true }
+multiple_statements = { one_line_if = "break-return-only" }

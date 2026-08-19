@@ -177,17 +177,58 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
 아래가 다음 세션에서 실제로 만들 구조. 지금은 문서 확정까지만, 실제
 폴더/`wally.toml`/`project.json` 스캐폴딩은 다음 세션.
 
-**패키징 방식(모노레포, RbxUtil 선례 채택)**: 최종적으로는 여러 개의 독립
-wally 패키지로 나누고 싶지만, 지금 Luau 툴링(특히 wally로 설치된 패키지의
-타입 정보 단절·`luau-lsp`의 심볼릭 링크 해석 문제 — 최근 `luau-lsp 1.63.0`
-에서야 수정됨)이 아직 불안정해서 **당장은 모놀리식**으로 감. `Sleitnick/
-RbxUtil`이 정확히 이 패턴(루트 하나로 통합 개발/테스트, 서브폴더마다 자체
-`wally.toml`로 독립 퍼블리시)을 쓰는 선례라 그대로 채택. `.luaurc`의
-`aliases`는 **런타임 require에서 아직 엔진이 지원 안 함**(Roblox 스태프가
-지원 예정이라고만 밝힌 상태, 2026-01 기준) — 그래서 alias는 편집기
-자동완성/타입체크용으로만 곁들이고, 실제 크로스패키지 require는 상대경로로
-쓴다. 나중에 실제로 레포를 쪼갤 때는 Rojo `project.json`의 트리 매핑 규칙만
-유지하면 되고, require는 그 시점에 한 번 기계적으로 바꾸는 정도로 감수.
+**패키징 방식(모노레포, RbxUtil 선례 채택) — [2026-08-19 정정] 패키지
+매니저를 wally에서 pesde로 전환.** 원래는 wally 툴링 불안정(설치된 패키지의
+타입 정보 단절·`luau-lsp` 심볼릭 링크 해석 문제)을 이유로 "최종적으론 독립
+패키지로 쪼개고 싶지만 당장은 모놀리식"으로 타협했었는데, **사용자 결정
+(2026-08-19): pesde로 간다** — dev-dependency를 1급으로 지원하는 등 wally보다
+툴링이 낫다는 판단. **모노레포 자체의 모양(루트 통합 개발, 서브패키지마다
+독립 게시)은 안 바뀜** — `Sleitnick/RbxUtil`이 wally로 하던 바로 그 패턴을
+pesde는 **네이티브 workspace**(Cargo 워크스페이스와 동형: 루트
+`workspace_members` + 멤버 간 `{ workspace = "scope/name", version = "^" }`
+의존)로 처음부터 1급 지원하므로, wally가 안고 있던 타입 정보 단절 문제
+자체도 이 전환으로 같이 해소됨 — **[2026-08-19 같은 날 후속 세션]**
+pesde/rojo 바이너리를 이 샌드박스에 직접 설치해 `pesde install`/`rojo
+build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup-plan.md`가
+소스, 워크스페이스 의존성이 symlink로 연결되고 Rojo는 이를 투명하게
+따라감).
+실제 구현: 루트 `pesde.toml`(`private = true`,
+`workspace_members = ["quad-base", "quad-roblox", "quad-types",
+"type-version-check"]`) +
+`quad-base/pesde.toml`/`quad-roblox/pesde.toml`/`quad-types/pesde.toml`
+(각각 `[target] environment = "roblox"`) + `type-version-check/pesde.toml`
+(`[target] environment = "luau"`, 아래 참고), 툴체인은 `mise.toml`로 핀
+(`rokit.toml`에서 전환, 2026-08-19 사용자 결정 — 더 범용적인 도구라는
+판단, `base/project-setup-plan.md`의 "툴체인" 절 참고). **[2026-08-19 같은
+날 후속]** `type-version-check`(`[target] environment = "luau"` — quad에
+종속되지 않은 범용 패키지라 다른 멤버와 달리 roblox가 아님)는 워크스페이스
+네 번째 멤버로 추가됐고, `quad-types`가 이것에 workspace 의존(자기 target이
+roblox라 명시적으로 `target = "luau"` 지정 필요) — `base/quad-types-plan.md`의
+"`type-version-check`" 절이 소스. 사용자가 나중에 독립 저장소로 분리할
+예정(`HUMAN_TODO.md` 9번).
+**[2026-08-19 같은 날 셋째 후속 세션]** `quad-roblox`는 `quad-base`가
+아니라 **`quad-types`(구현 없는 타입 계약 전용 패키지)에만 workspace
+의존** — `quad-base`는 `QuadRoblox(Quad): QuadRoblox` 패턴으로 **런타임
+주입**받으므로 pesde 의존 선언이 필요 없고, 오히려 무거운 quad-base
+전체를 dev-dependency로 두면 게시 후 소비자 환경에서 그 타입 전용
+require가 크래시하는 문제가 있어 별도 패키지로 뽑음 —
+`base/quad-types-plan.md`가 소스.
+pesde는 "패키지 안에 `default.project.json`을 두지 말 것"이 컨벤션(그
+파일은 소비자가 직접 만드는 sync 설정 몫) — 루트의 `default.project.json`은
+이 규칙의 예외가 아니라 애초에 그 규칙이 가리키는 대상이 아님(워크스페이스
+루트 자신의 통합 개발/테스트용, 게시되는 패키지 안이 아니므로).
+`.luaurc`의 `aliases`는 여전히 **런타임 require에서 엔진이 지원 안 함**
+(2026-08-19 이 세션에 커스텀 alias로 직접 재확인 — `require("@alias/x")`가
+"could not jump to alias"로 실패) — 그래서 alias는 편집기 자동완성/타입체크용으로만
+곁들이고, 실제 크로스패키지 require는 상대경로로 쓴다(단, `init.luau`
+안에서는 평범한 상대경로가 아니라 **예약 alias `@self`**를 써야 함 —
+`init.luau`는 require-by-string 상 "자기 폴더 자체"를 가리키므로 `./`가
+아니라 `@self/`로 그 폴더 안의 형제 파일에 접근한다, 2026-08-19 사용자 지적
++ Luau RFC `abstract-module-paths-and-init-dot-luau`로 확인 — 실제로 이
+세션의 `quad-base/src/init.luau`가 이 착오로 크로스파일 require가 전부
+깨졌다가 `@self`로 고치고 나서야 정상화됨). 나중에 실제로 레포를 쪼갤 때는
+Rojo `project.json`의 트리 매핑 규칙만 유지하면 되고, require는 그 시점에
+한 번 기계적으로 바꾸는 정도로 감수.
 
 **패키지 경계**: `quad-base`는 다른 렌더 백엔드(GTK 등, 항목 12 참고)에서도
 재사용 가능해야 한다는 전제 — Store/State/Source 온톨로지+전파뿐 아니라
@@ -206,10 +247,18 @@ op" 절.
 
 ```
 quad/
-├── .luaurc                      # @quad-base, @quad-roblox alias (편집기 경험용, 런타임 비의존)
+├── .luaurc                      # 편집기 경험용 alias(런타임 비의존, `base/project-setup-plan.md` 참고)
+├── mise.toml                     # pesde/rojo/luau-lsp/selene 버전 핀
+├── pesde.toml                    # 워크스페이스 루트(private, workspace_members)
 ├── default.project.json         # 루트 통합 개발/테스트용 Rojo 프로젝트
+├── quad-types/                   # 구현 없는 Quad 타입 계약 + CheckedQuad<T,Pattern> 버전체크(`base/quad-types-plan.md`)
+│   ├── pesde.toml                 # type_version_check workspace 의존(target="luau")
+│   └── src/init.luau
+├── type-version-check/           # quad에 종속되지 않은 범용 버전 패턴 매칭(`base/quad-types-plan.md` "`type-version-check`" 절) — 사용자가 나중에 독립 저장소로 분리 예정(HUMAN_TODO 9번)
+│   ├── pesde.toml                 # [target] environment = "luau"
+│   └── src/init.luau              # matchesPattern(런타임) + export type function CheckVersion
 ├── quad-base/
-│   ├── wally.toml
+│   ├── pesde.toml
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행) 전부 여기 소속
@@ -239,7 +288,7 @@ quad/
 │       ├── LifecycleHooks.luau    # OnCreated/OnRendered/OnDestroyed — PreRef/PostRef/Effect를 반환하는 순수 팩토리 슈가(`base/lifecycle-hooks-plan.md`), 새 타입/Dispatch 개념 없음
 │       └── init.luau
 └── quad-roblox/
-    ├── wally.toml
+    ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존
     └── src/
         ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canBound/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
         ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), disposeInst(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`) (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
