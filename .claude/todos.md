@@ -59,12 +59,15 @@
      시그니처에 영향이 갈 수 있어 M3 착수 전 방향만이라도.
    - **dedup 경로의 process/retract 대칭 확인**(`base/effect-plan.md`
      `:Unsubscribe()` 절) — M3 착수 전 확인.
-   - **`PopOnly` 이름**(`base/slot-plan.md`) — 메커니즘은 확정, 이름만 열림.
-   - **`PopOnly` 홀드 중 키가 사라졌을 때의 처분**(`base/slot-plan.md`) —
-     지금 의사코드대로면 파괴도 반환도 안 되고 참조만 끊김. **[정정,
-     2026-08-18 `/code-review high` — `ROADMAP.md`의 M6 PopOnly 체크박스와
-     대조해 발견] M6(`:List`가 있는 마일스톤) 착수 전 필요** — M8(`Ref`)
-     아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥 지나칠 위험이 있었음.
+   - **[2026-08-19 해소]** `PopOnly` 이름 — **`Detach`로 확정**(공개 표면
+     위치도 `None`과 같은 최상위 export로 같이 확정). 원문은
+     `archive/question-resolved.md`.
+   - **`Detach`(구 `PopOnly`) 홀드 중 키가 사라졌을 때의 처분**
+     (`base/slot-plan.md`) — 지금 의사코드대로면 파괴도 반환도 안 되고
+     참조만 끊김. **[정정, 2026-08-18 `/code-review high` — `ROADMAP.md`의
+     M6 `Detach` 체크박스와 대조해 발견] M6(`:List`가 있는 마일스톤) 착수
+     전 필요** — M8(`Ref`) 아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥
+     지나칠 위험이 있었음.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
@@ -142,7 +145,8 @@
    2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
    목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
    — 아직 진짜로 열려있는 것만 짚으면(**[2026-08-18] `DI`→`D`는 확정·반영
-   완료로 목록에서 빠짐**, 대신 `PopOnly`(가칭)가 새로 들어옴): `Slot`(2순위),
+   완료로 목록에서 빠짐**, **[2026-08-19] `PopOnly`→`Detach`도 확정·반영
+   완료로 목록에서 빠짐**): `Slot`(2순위),
    `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
    방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
    `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).
@@ -174,15 +178,17 @@
    (`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
    `operator-sugar-plan.md`).
-   **[2026-08-14 추가, 성격이 다름]** 시간 기반 전파 게이트
-   `Debounce`/`Throttle`(`research/debounce-throttle-plan.md`)도 백로그이긴
-   하나 위 항목들과 달리 **사용자가 직접 요청한 실제 기능 갭**이고 순수
-   슈가가 아님 — M0/M3를 막지는 않지만, **M3에서 `Blocker`를 구현할 때
-   게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 해야 함**(따로
-   하면 같은 설계를 두 번 함). 주입 op 2개(`setTimeout`/`clearTimeout`)가
-   백엔드 팩토리 표면에 추가될 예정이라는 것도 M1 설계 시 인지. 설계는
-   네 라운드로 대부분 확정됐고 남은 열린 질문은 `question.md` 3번(개수는
-   거기도 반복 안 함 — 소스는 `research/debounce-throttle-plan.md` 12절).
+   **[2026-08-14 추가, 2026-08-19 설계 전부 해소 후 `base/`로 승격]** 시간
+   기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)도
+   백로그이지만 위 항목들과는 발단이 다름 — **사용자가 직접 요청한 실제
+   기능 갭**에서 시작됨(그 문서 13절). 다만 제어 핸들 설계까지 닫히고 나니
+   실제로 quad-base에 새 코어 메커니즘을 추가하지 않는 **순수 슈가**로
+   확인돼(같은 절), 위 항목들과 우선순위는 다시 같아짐 — M0/M3를 막지
+   않고, **M3에서 `Blocker`를 구현할 때 게이티드 노드를 공용 `Gate`로
+   빼두는 것만은 그 시점에 해야 함**(따로 하면 같은 설계를 두 번 함).
+   주입 op 2개(`setTimeout`/`clearTimeout`)가 백엔드 팩토리 표면에
+   추가될 예정이라는 것도 M1 설계 시 인지. 남은 열린 질문 없음(구
+   `question.md` 3번, 전량 해소로 항목 자체가 빠짐).
    **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
    신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
    (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때

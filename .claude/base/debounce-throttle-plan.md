@@ -1,10 +1,18 @@
 # Debounce / Throttle — 시간 기반 전파 게이트
 
-**상태**: research — **[2026-08-14 신설]** 사용자 요청("`Blocker`와 유사하게
-Debounce/Throttle를 만들어야 한다")으로 신설. 여기 적힌 건 **에이전트가
-먼저 전부 정의해본 초안**이고, 확정된 건 하나도 없음 — 사용자가 이 문서를
-읽고 판단하는 게 다음 단계. 열린 결정은 맨 아래 "사용자 판단 대기" 절에
-번호로 모아뒀음.
+**상태**: base — **[2026-08-19 세션, 전부 해소되어 `research/`에서 승격]**
+12절 "사용자 판단 대기"에 남아있던 마지막 항목(이름/의미론/제어 핸들/
+`Time = 0`)까지 전부 결론이 나서 열린 결정이 없음 — 논의 원문은
+`session/2026-08-19-03-debounce-throttle-final-close.md`. 이 라운드에서
+드러난 것: 제어 핸들 설계까지 확정되고 나니 이 프리미티브는 **quad-base에
+새 코어 메커니즘을 추가하지 않는 순수 슈가**로 귀결됨(기존 `Blocker`의
+게이트 개념 + `Ref` + 주입 op 2개 위에 전부 얹힘) — 13절이 이를 반영해
+갱신됨.
+
+> **[2026-08-14 신설]** 사용자 요청("`Blocker`와 유사하게 Debounce/Throttle를
+> 만들어야 한다")으로 `research/`에 신설. 여기 적힌 건 **에이전트가 먼저
+> 전부 정의해본 초안**이었음 — 이후 네 라운드 리뷰를 거쳐 아래 배너들대로
+> 전부 확정됨.
 
 > **[2026-08-14 1차 리뷰 반영]** 사용자가 스로틀의 trailing 동작을 짚어준
 > 뒤 세 가지가 바뀜: (1) **Q5(패키지 경계) 해소** — quad-base + 엔진별
@@ -33,6 +41,24 @@ Debounce/Throttle를 만들어야 한다")으로 신설. 여기 적힌 건 **에
 > **`base/source-state-plan.md`의 무효화 dedup 문장이 확정된 `Observer`
 > 계약과 모순**되고 `base/architecture.md`와도 어긋난다는 게 드러나,
 > base 정정 항목(Q10)이 새로 생김.
+>
+> **[2026-08-19 4차 리뷰 반영, 최종]** 남아있던 Q1/Q2/Q4/Q8을 전부 닫음.
+> (1) **Q1 이름** — `Debounce`/`Throttle` 유지 확정, Roblox 관용 "debounce"
+> (재진입 방지 불리언)와 다르다는 경고를 사용자 문서 첫 줄에 못박기로.
+> (2) **Q2 의미론 — (A) emit-gate로 확정, (B) value-hold는 철회**.
+> `:Get()`이 값을 지연시키려면 게이트가 "창이 열리기 전 캐시가 확실히
+> valid하다"를 보장해야 하는데, invalid로 남은 채 아무도 안 읽다가 새 창이
+> 열리는 경우(드물지 않음 — 컴포넌트가 한동안 안 읽다가 다시 읽는 경우 등)
+> 그 보장이 깨져 "held value" 계약이 조용히 무너짐 — 이걸 고치려면 창이
+> 열리는 순간 upstream을 강제로 pull해야 하는데, 그건 정확히 Throttle이
+> 막으려는 그 비싼 연산을 게이트 자신이 강제로 돌리는 셈이라 laziness와
+> 상충. **결과적으로 Q7도 자동 소멸**(A는 `Blocker`와 완전히 같은 메커니즘이라
+> `blocker-plan.md`의 기존 "`Get()`은 라이브 레퍼런스" 문구가 그대로 맞고
+> 명확화가 따로 필요 없음). (3) **Q4 제어 핸들 — 넣기로 확정**, 다만 모양은
+> 초안 S1/S2 둘 다 아니고 세 번째 형태로 수렴 — 5-4절 "제어 핸들" 신설
+> 참고. (4) **Q8 `Time = 0`** — 허용, "defer될 수 있음"만 문서화, 금지/에러
+> 안 함. 부수로 **Time/MaxTime을 `number | State<number>`로 확장**하는 것도
+> 이 라운드에 같이 확정(5-2절) — 원문은 위 세션 파일.
 
 `research/operator-sugar-plan.md`가 "`Operator.*` 카탈로그 밖의 별도
 설계 질문"으로 분리해뒀던 항목이 이 문서의 출발점(그 문서 "열린 질문 —
@@ -320,42 +346,47 @@ quad의 전파 모델은 `base/source-state-plan.md`의 "전파 모델 확정" �
 근거는 순회 비용 최적화였지만 지금은 실제 중복 *계산*이라서).
 ---
 
-## 4. 의미론 — 지연되는 건 "전파"인가 "값"인가
+## 4. 의미론 — 지연되는 건 "전파"인가 "값"인가 — **(A) emit-gate로 확정 (2026-08-19)**
 
-두 갈래가 있고, 이게 이 문서에서 두 번째로 큰 결정.
+두 갈래를 놓고 두 라운드 동안 (B)를 권장안으로 들고 있었으나, **[2026-08-19]
+(A)로 확정하고 (B)는 철회**. 아래는 최종 결론과, 왜 (B)가 무너졌는지의 기록.
 
-### (A) emit-gate — `Blocker`와 완전히 동일
+### (A) emit-gate — `Blocker`와 완전히 동일 — **채택**
 
 게이트는 자기 `invalid`를 즉시 세우되 아래로 전파만 미룸. 창이 열려 있는
-동안 누가 `debounced:Get()`하면 **최신값**이 나옴.
+동안 누가 `debounced:Get()`하면 **최신값**이 나옴 — `Blocker`의 gated
+state와 글자 그대로 같은 동작.
 
-### (B) value-hold — 값 자체가 지연됨 (권장)
+### ~~(B) value-hold — 값 자체가 지연됨~~ — **철회됨, laziness와 상충**
 
-게이트는 창이 닫혀 있는 동안 **자기를 invalid로 만들지 않음**. 즉 캐시된
-직전 값을 계속 들고 있고, `debounced:Get()`은 **지연된 값**을 반환. 타이머가
-커밋할 때 비로소 invalid + 전파.
+게이트가 창이 닫혀 있는 동안 자기를 invalid로 만들지 않고 캐시된 직전
+값을 들고 있다가, `debounced:Get()`이 **지연된 값**을 반환하게 하려던
+안. 업계 선례(VueUse `useDebounce`/RxJS `debounceTime`)와의 일치, `Blocker`와의
+역할 분리를 근거로 두 라운드 동안 권장안이었음.
 
-**(B)를 권하는 이유**:
+**왜 무너졌는가**: 이 계약("`:Get()`은 항상 창 열리기 전의 held value")을
+지키려면 게이트가 **창이 열리는 시점에 자기 캐시가 확실히 valid함**을
+보장해야 하는데, 실제로는 안 그런 경로가 있음 — 직전 커밋에서
+`invalid = true`로 세팅된 채 아무도 `:Get()`을 안 부르고 있다가(다운스트림이
+한동안 안 읽는 경우, 예: 언마운트됐다 재마운트) 그 상태에서 새 창이
+열리면, "창 안에선 invalid 세팅 안 함"이라는 (B)의 규칙이 이미 세팅돼
+있던 `invalid=true`를 못 되돌려서 `:Get()`이 곧바로 최신값을 계산해버림 —
+"held value" 계약이 조용히 깨짐. 이걸 고치려면 창이 열리는 순간 게이트가
+upstream을 강제로 pull해 캐시를 스냅샷 떠야 하는데, **그건 정확히
+Throttle이 막으려던 그 비싼 연산을 게이트 자신이 매 창마다 강제로 돌리는
+것**이라 laziness가 깨짐 — Throttle의 주 용례(랙 걸리는 연산 게이팅)에서
+치명적.
 
-1. **업계 의미론과 일치.** VueUse `useDebounce`는 반환된 ref의 *값 자체*가
-   늦게 따라오고, RxJS `debounceTime`도 값의 방출을 미룸. "debounce된
-   상태"를 다른 곳에서 읽었을 때 debounce 안 된 값이 나오면 놀람.
-2. **`Blocker`와 역할이 깔끔히 갈림.** `Blocker`는 "지금 중간 상태니까
-   구독자에게 알리지 않을 뿐, 진실은 이미 새 값"이고, Debounce는 "이
-   노드의 값은 정의상 늦게 따라오는 값"임. 후자를 (A)로 만들면 두 도구가
-   같은 자리에서 미묘하게만 다른 애매한 물건이 됨.
-3. **확정된 원칙과 충돌하지 않음.** `base/blocker-plan.md`가 인용하는
-   "`Get()`은 라이브 레퍼런스를 준다" 원칙은 `base/source-state-plan.md`에서
-   실제로는 **레퍼런스 의미론**(테이블을 복사본이 아니라 라이브 참조로
-   준다, 그래서 `Get()` 결과를 캐시해두고 `==` 비교하면 안 됨)에 대한
-   것이지 "항상 상류 최신값"이라는 뜻이 아님. 게이트 노드의 *자기* 값이
-   지연된 값이라면 `:Get()`은 여전히 그 노드의 라이브 값을 주는 것.
-   → 다만 blocker-plan의 그 한 줄이 후자로 읽힐 여지가 있어, 확정되면
-   그 문장에 한 줄 명확화를 넣는 게 좋음(열린 질문 Q7).
+부수로, (B)를 지지했던 업계 선례(VueUse/RxJS)도 재검토하면 그대로 옮겨올
+근거가 약함 — 둘 다 push/eager 모델(Vue reactivity의 effect는 즉시 도는
+push, RxJS는 애초에 eager push 스트림)이라 "값이 지연된다"가 공짜로
+성립하는 세계고, quad처럼 **pull-lazy가 원칙**인 곳엔 그대로 안 맞는
+선례였음.
 
-**(B)의 캐비엇 하나**: 노드가 아직 한 번도 계산된 적 없으면(캐시 없음)
-붙잡고 있을 "이전 값"이 없어서 첫 `:Get()`은 그냥 최신값을 계산함.
-"지연은 두 번째 값부터"라는 뜻 — 자연스럽고 무해하지만 문서에 명시할 것.
+**(A) 채택의 부수 효과 — Q7 소멸**: (A)는 `Blocker`의 gated state와
+완전히 같은 메커니즘이라, `base/blocker-plan.md`가 이미 쓰고 있는
+"`Get()`은 라이브 레퍼런스를 준다" 문구가 그대로 맞고 별도 명확화가
+필요 없음(옛 Q7이 걱정했던 모순은 (B)를 택했을 때만 생기는 문제였음).
 
 ---
 
@@ -383,24 +414,35 @@ local sampled   = mousePos:Apply(Throttle{Time = 1 / 30})
 
 ```lua
 type DebounceOptions = {
-    Time: number,        -- 필수. 창 길이(초) — 신호마다 리셋됨
-    Leading: boolean?,   -- 기본 false. 버스트의 첫 신호를 즉시 통과시킬지
-    Trailing: boolean?,  -- 기본 true.  조용해진 뒤 한 번 통과시킬지
-    MaxTime: number?,    -- 기본 nil.   신호가 안 끊겨도 최대 이 간격마다 강제 통과
+    Time: number | State<number>,     -- 필수. 창 길이(초) — 신호마다 리셋됨
+    Leading: boolean?,                -- 기본 false. 버스트의 첫 신호를 즉시 통과시킬지
+    Trailing: boolean?,               -- 기본 true.  조용해진 뒤 한 번 통과시킬지
+    MaxTime: (number | State<number>)?, -- 기본 nil. 신호가 안 끊겨도 최대 이 간격마다 강제 통과
+    Handle: Ref<GateHandle>?,     -- 기본 nil. 이 인스턴스 전용 제어 핸들(5-4절)
 }
 
 type ThrottleOptions = {
-    Time: number,        -- 필수. 창 길이(초) — 신호가 리셋하지 못함
-    Leading: boolean?,   -- 기본 true.  창 밖 첫 신호를 즉시 통과시킬지
-    Trailing: boolean?,  -- 기본 true.  창 안에 눌러둔 게 있으면 창 끝에 통과시킬지
+    Time: number | State<number>,  -- 필수. 창 길이(초) — 신호가 리셋하지 못함
+    Leading: boolean?,              -- 기본 true.  창 밖 첫 신호를 즉시 통과시킬지
+    Trailing: boolean?,             -- 기본 true.  창 안에 눌러둔 게 있으면 창 끝에 통과시킬지
+    Handle: Ref<GateHandle>?,   -- 기본 nil. 이 인스턴스 전용 제어 핸들(5-4절)
 }
 ```
 
-- **모든 필드는 plain 값만** — `State`를 못 받음. `base/tween-plan.md`의
-  "옵션 값 모양" 절이 `Tween{...}`에 대해 확정한 것과 같은 규칙, 같은
-  이유(옵션 안에 두 번째 반응 경로를 만들지 않음). `Time`을 반응형으로
-  바꾸고 싶으면 `state:Apply(...)` 자체를 다시 만드는 상위 구조가 필요한데,
-  그건 이 프리미티브가 아니라 `State<State<T>>` 영역.
+- **[2026-08-19 확정] `Time`/`MaxTime`은 `number | State<number>` 허용** —
+  `Leading`/`Trailing`은 여전히 plain만(정적 정책값이라 반응형일 이유가
+  없음). `base/tween-plan.md`의 "옵션 값 모양" 절이 든 "옵션 안에 두 번째
+  반응 경로를 만들지 않음" 근거는 여기 안 부딪힘 — Debounce/Throttle은
+  `Time`을 **구독하지 않고**, `setTimeout`을 실제로 호출하는 그 순간에만
+  `:Get()`으로 값을 읽는 폴링이라 새 무효화 채널이 안 생김(`Animate`가
+  트윈 시작 시점에만 duration을 읽는 것과 같은 결).
+  - **이미 스케줄된 타이머엔 반영 안 됨** — `setTimeout(fn, delay)`로
+    한 번 예약된 delay는 못 바꾸므로, `Time`을 바꿔도 **다음 창부터만**
+    적용됨(진행 중인 창은 그대로 끝까지 감). 7절 의사코드의 `openWindow`/
+    `cap` 스케줄 지점이 유일한 읽기 지점.
+  - `Time`을 State로 만들고 싶으면 `state:Apply(...)` 상위 구조
+    (`State<State<T>>`)가 필요하다던 옛 서술은 무효 — 그런 상위 구조 없이
+    바로 지원됨.
 - `Leading = true, Trailing = false` → "버스트 시작에 한 번만"
 - `Leading = false, Trailing = true` → 기본값, 일반적인 debounce
 - 둘 다 `false`는 아무 일도 안 하는 설정 → **즉시 error** 권장(`Slot:Add`의
@@ -432,7 +474,81 @@ type ThrottleOptions = {
   끊이지 않으면 영원히 발화 안 함"이 디바운스의 정의라 그 안전장치가
   필요하지만, 스로틀은 원래 주기적으로 발화하므로 무의미함.
 
-→ 열린 질문 Q3(이 개정안 확인).
+**[2026-08-19 확정]** 이 개정안 그대로 채택 — 이후 라운드들이 전부 이
+`Reset` 한 비트 모델을 전제로 논의를 진행했고 별도 이의 없이 유지됨(구
+Q3).
+
+## 5-4. 제어 핸들 — `Flush`/`Cancel`, 개별은 `Ref`로 · 전체는 팩토리로 (2026-08-19 확정, 구 Q4)
+
+**결론**: 핸들을 넣는다. 초안이 제시했던 두 모양(S1: 핸들 없음, S2:
+`Blocker`와 똑같은 "재사용 가능한 외부 객체") 둘 다 아니고, **세 번째
+모양으로 수렴**했다 — `Debounce`/`Throttle`가 `Blocker`와 근본적으로 다른
+지점(이전 실행이 다음 실행에 영향을 주는 상태 기계라, `Blocker`처럼
+여러 파이프라인에 자유롭게 공유해도 안전한 물건이 아님)을 짚은 사용자
+지적에서 나왔다.
+
+### 왜 State 자신에 메소드를 붙이지 않는가
+
+가장 먼저 검토했던 대안(게이트가 반환하는 State 자체에 `:Flush()`/
+`:Cancel()`을 직접 붙임)은 기각됨 — 그러면 "디바운스로 만들어진 State"와
+"일반 State"가 구조적으로 다른 타입이 되어(메소드 유무로 타입이 갈림),
+State 계층에 조용히 서브타입 분기가 생긴다. quad가 피해온 OOP식 확장과
+같은 종류의 문제라 State 자신은 손대지 않기로 함.
+
+### 왜 `Blocker`처럼 "먼저 만들어 공유하는 외부 객체"도 아닌가
+
+`Blocker()`는 의도적으로 **여러 배치에 재사용 가능한 외부 객체** —
+`blocker:On()`/`Off()`가 그 블로커에 배선된 모든 gated state에 동시
+적용되는 게 정확히 원하는 동작. 그런데 Debounce/Throttle을 그대로
+따라하면(외부 `Debouncer{...}` 객체 하나를 여러 `state:Debounce(d)`에
+공유) **사용자가 지적한 문제가 그대로 재현됨** — 여러 파이프라인이 같은
+내부 타이머/pending 상태를 공유하게 되어, "누구의 신호가 창을 리셋하고
+누구의 값이 커밋되는가"가 불명확해진다. 5-1절이 이미 "재사용해도
+상태를 공유하지 않음, `:Apply`가 호출될 때마다 새 게이트"로 확정해둔
+것과도 정면으로 어긋남.
+
+### 채택된 모양 — 개별은 `Ref` 아웃파라미터, 전체는 팩토리 자체
+
+`:Apply()`의 기존 계약(`Operator` 관용구, "팩토리가 State 하나만 돌려준다")은
+안 건드리고, 옵션 필드로 핸들을 곁다리로 받는다 — `base/ref-plan.md`의
+`Ref`("채워지길 기다리는 빈 박스를 먼저 만들어 넘기고, 나중에 채워지면
+`:Callback()`/`.Value`로 받는" 이미 확정된 패턴)를 그대로 재사용:
+
+```lua
+export type GateHandle = {
+    Flush: () -> (),   -- 이 인스턴스만 즉시 커밋
+    Cancel: () -> (),  -- 이 인스턴스만 pending을 버림(전파 없음)
+}
+
+local h = Ref()
+local debounced = state:Apply(Debounce{Time = 0.3, Handle = h})
+-- 게이트가 실제로 만들어지는 시점(팩토리 호출 시)에 h가 채워짐:
+-- h.Value == { Flush = fn, Cancel = fn }  -- 이 게이트 인스턴스 하나만 제어
+h.Value:Flush()
+
+-- 이 인스턴스 하나만 즉시 커밋(pending이면 창 끝을 기다리지 않고 지금 통과)
+-- :Cancel()은 반대로 pending을 그냥 버림(통과 없이 타이머만 정리)
+```
+
+- **개별 제어**: 위처럼 `Handle = Ref()`로 특정 `:Apply()` 호출 하나만
+  겨냥.
+- **전체 브로드캐스트**: 팩토리 자신(`Debounce{...}`가 돌려주는 객체)에도
+  `:Flush()`/`:Cancel()`을 붙임 — 그 팩토리로 만들어진 **모든** 게이트
+  인스턴스에 한 번에 적용(저장 버튼 하나로 여러 debounce된 입력을 동시
+  커밋하는 식의 용례). 새 객체 종류를 만드는 게 아니라 이미 `Debounce{...}`가
+  돌려주던 팩토리 값에 메소드 두 개를 더하는 것뿐.
+  - **팩토리는 자기가 만든 게이트를 weak 레지스트리로만 추적** — strong
+    참조로 붙잡으면 다운스트림이 전부 죽어도 게이트가 팩토리에 살아있다는
+    이유로 GC가 안 돼 `base/lifecycle-pattern.md`의 "정리(`retract`)는
+    기본적으로 GC에 위임" 절과 충돌함. weak 등록이면 그 문제가 없음(코퍼스가
+    gcconn/gchold 구분에서 이미 쓰는 것과 같은 종류의 장치).
+  - `Flush`/`Cancel`은 게이트 인스턴스가 이미 갖고 있는 커밋/취소 내부
+    함수(7절의 `onWindowEnd`/타이머 정리 로직)를 그대로 호출 — 새 로직이
+    아니라 노출 방식만 다름.
+- **의미**: `Flush()`는 `pending`이면 창 끝을 기다리지 않고 즉시
+  `onWindowEnd`가 하는 커밋(passThrough + 창 재개방)을 강제 실행,
+  `pending`이 없으면 아무 일도 안 함(idempotent). `Cancel()`은 타이머를
+  정리하고 `pending = false`로 되돌리되 **전파는 안 함**(버림).
 
 ---
 
@@ -662,9 +778,16 @@ function clearTimeout(timeout: Timeout) timeout._native() end
 > **주의**: `Gate` 노드의 내부 훅(`onUpstreamSignal`, `commit`)은 아직
 > 이름도 계약도 확정되지 않은 가칭 — `Blocker`의 게이티드 노드가 이미
 > 필요로 하는 것과 같은 훅이라(1절), 실제 구현 시엔 그쪽과 같이 정의할 것.
+> 아래 코드의 `registry`/`Handle` 배선도 마찬가지로 스케치 수준 — 실제
+> 구현 시 이름은 자유.
 
 ```lua
 -- quad-base — 공용 코어. Reset 한 비트가 Debounce/Throttle을 가름(5-3절).
+
+local function readTime(t: number | State<number>): number
+    if type(t) == "number" then return t end
+    return t:Get()  -- setTimeout 호출 시점에만 읽음 — 이미 스케줄된 타이머엔 영향 없음
+end
 
 local function makeGate(reset: boolean, opts)
     if opts.Leading == false and opts.Trailing == false then
@@ -673,66 +796,103 @@ local function makeGate(reset: boolean, opts)
     local leading  = if reset then opts.Leading == true else opts.Leading ~= false
     local trailing = opts.Trailing ~= false
 
-    -- 팩토리 — :Apply가 state마다 한 번씩 호출하므로 아래 지역 상태는
-    -- 게이트 노드 하나당 하나씩 새로 생김(팩토리 재사용해도 공유 안 됨)
-    return function(self)
-        local gate    = Gate(self)  -- Blocker가 쓰는 것과 같은 게이트 노드
-        local pending = false       -- 창 안에서 상류 신호가 있었는가
-        local window  = nil         -- 살아있으면 "창 안", nil이면 idle
-        local cap     = nil         -- MaxTime 타이머(Debounce 전용)
+    -- 팩토리 레벨 상태 — makeGate 호출(=Debounce{...}/Throttle{...} 한 번)당 하나.
+    -- weak 레지스트리라 여기 등록돼도 게이트의 GC를 막지 않음(5-4절).
+    local instances = setmetatable({}, {__mode = "k"})
 
-        local openWindow, onWindowEnd
+    local function flushAll()
+        for gate in instances do gate._flush() end
+    end
+    local function cancelAll()
+        for gate in instances do gate._cancel() end
+    end
 
-        function openWindow()
-            window = setTimeout(onWindowEnd, opts.Time)
-        end
+    -- 팩토리 자체 — :Apply(factory)가 호출할 수 있는 함수이면서, 동시에
+    -- 전체 브로드캐스트 :Flush()/:Cancel()도 갖는 콜러블 객체(5-4절)
+    local factory = setmetatable({}, {
+        __call = function(_, self)
+            local gate    = Gate(self)  -- Blocker가 쓰는 것과 같은 게이트 노드
+            local pending = false       -- 창 안에서 상류 신호가 있었는가
+            local window  = nil         -- 살아있으면 "창 안", nil이면 idle
+            local cap     = nil         -- MaxTime 타이머(Debounce 전용)
 
-        function onWindowEnd()
-            window = nil
-            if pending and trailing then
-                -- Blocker와 같은 순서: 상태를 먼저 정리하고 그 다음 전파
-                -- (전파 도중 소비자가 동기적으로 상류를 :Set()해서 재진입해도
-                --  방금 닫은 창의 잔여 상태를 다시 건드리지 않게)
-                pending = false
-                if cap then clearTimeout(cap); cap = nil end
-                gate:passThrough()  -- invalid 세팅 + 아래로 1회 전파
-                openWindow()        -- 통과했으니 창을 다시 엶 = 다음 통과까지 최소 Time
+            local openWindow, onWindowEnd
+
+            function openWindow()
+                window = setTimeout(onWindowEnd, readTime(opts.Time))
             end
-            -- pending이 없으면 창을 안 열고 완전히 idle로 복귀
-        end
 
-        gate.onUpstreamSignal = function()
-            if window == nil then
-                -- 창 밖(idle)
-                if leading then gate:passThrough() else pending = true end
-                openWindow()
-            else
-                -- 창 안
-                pending = true
-                if reset then                  -- ← Debounce만: 창을 뒤로 민다
-                    clearTimeout(window)
+            function onWindowEnd()
+                window = nil
+                if pending and trailing then
+                    -- Blocker와 같은 순서: 상태를 먼저 정리하고 그 다음 전파
+                    -- (전파 도중 소비자가 동기적으로 상류를 :Set()해서 재진입해도
+                    --  방금 닫은 창의 잔여 상태를 다시 건드리지 않게)
+                    pending = false
+                    if cap then clearTimeout(cap); cap = nil end
+                    gate:passThrough()  -- invalid 세팅 + 아래로 1회 전파
+                    openWindow()        -- 통과했으니 창을 다시 엶 = 다음 통과까지 최소 Time
+                end
+                -- pending이 없으면 창을 안 열고 완전히 idle로 복귀
+            end
+
+            gate.onUpstreamSignal = function()
+                if window == nil then
+                    -- 창 밖(idle)
+                    if leading then gate:passThrough() else pending = true end
                     openWindow()
+                else
+                    -- 창 안
+                    pending = true
+                    if reset then                  -- ← Debounce만: 창을 뒤로 민다
+                        clearTimeout(window)
+                        openWindow()
+                    end
+                end
+
+                -- MaxTime: 창과 달리 절대 리셋되지 않는 두 번째 타이머.
+                -- "신호가 안 끊기면 영원히 발화 안 함"(1-1절)을 위한 안전장치라
+                -- Debounce에서만 의미 있음.
+                if opts.MaxTime and cap == nil and pending then
+                    cap = setTimeout(function()
+                        cap = nil
+                        if pending and trailing then
+                            pending = false
+                            if window then clearTimeout(window) end
+                            gate:passThrough()
+                            openWindow()
+                        end
+                    end, readTime(opts.MaxTime))
                 end
             end
 
-            -- MaxTime: 창과 달리 절대 리셋되지 않는 두 번째 타이머.
-            -- "신호가 안 끊기면 영원히 발화 안 함"(1-1절)을 위한 안전장치라
-            -- Debounce에서만 의미 있음.
-            if opts.MaxTime and cap == nil and pending then
-                cap = setTimeout(function()
-                    cap = nil
-                    if pending and trailing then
-                        pending = false
-                        if window then clearTimeout(window) end
-                        gate:passThrough()
-                        openWindow()
-                    end
-                end, opts.MaxTime)
+            -- 5-4절 제어 핸들 — Flush는 즉시 커밋(창 끝을 안 기다림), Cancel은 버림
+            gate._flush = function()
+                if pending and trailing then
+                    pending = false
+                    if window then clearTimeout(window) end
+                    if cap then clearTimeout(cap); cap = nil end
+                    gate:passThrough()
+                    openWindow()
+                end
             end
-        end
+            gate._cancel = function()
+                pending = false
+                if window then clearTimeout(window); window = nil end
+                if cap then clearTimeout(cap); cap = nil end
+            end
 
-        return gate
-    end
+            instances[gate] = true
+            if opts.Handle then
+                opts.Handle:Set({ Flush = gate._flush, Cancel = gate._cancel })
+            end
+
+            return gate
+        end,
+        __index = { Flush = flushAll, Cancel = cancelAll },
+    })
+
+    return factory
 end
 
 function Debounce(opts: DebounceOptions) return makeGate(true,  opts) end
@@ -754,10 +914,14 @@ function Throttle(opts: ThrottleOptions) return makeGate(false, opts) end
 3.5  입력 → window == nil → leading 즉시 통과 ●
 ```
 
-**(B) value-hold 의미론이 붙는 자리**: `gate`는 `onUpstreamSignal`에서
-자기 `invalid`를 세우지 않고, 오직 `passThrough()`에서만 세움 — 그래서
-창이 열려 있는 동안 `gate:Get()`은 캐시된 직전 값을 반환. (A)를 택하면
-`onUpstreamSignal` 진입 시 invalid만 세우고 전파를 미루는 형태로 바뀜.
+**(A) emit-gate가 붙는 자리(확정, 4절)**: `gate`는 다른 평범한 State와
+똑같이 **매 `onUpstreamSignal` 진입 시 자기 `invalid`를 즉시 세운다** —
+`source-state-plan.md`의 "전파 모델 확정" 절이 정한 "emit은 항상 전파된다"
+규칙이 게이트 자신에게도 그대로 적용됨. 위 코드의 `gate:passThrough()`가
+실제로 미루는 건
+**다운스트림 통지(전파)뿐**이지 invalid 세팅이 아님 — 그래서 창이 열려
+있는 동안 `gate:Get()`을 불러도 항상 최신값이 계산됨(캐시가 stale한
+채로 안 남음).
 
 ---
 
@@ -787,9 +951,9 @@ function Throttle(opts: ThrottleOptions) return makeGate(false, opts) end
 
 ---
 
-## 9. 이름
+## 9. 이름 — `Debounce`/`Throttle` 확정 (2026-08-19)
 
-### 9-1. ⚠️ Roblox 커뮤니티의 "debounce"와 충돌함
+### 9-1. ⚠️ Roblox 커뮤니티의 "debounce"와 충돌함 — 유지로 확정
 
 Roblox 생태계에서 `debounce`는 압도적으로 **재진입 방지 불리언**을
 가리킴(`local debounce = false ... if debounce then return end`). 웹
@@ -808,9 +972,9 @@ Roblox 생태계에서 `debounce`는 압도적으로 **재진입 방지 불리�
 | `Coalesce` | "합친다"는 동작 자체 | nil 병합(`Alternative`)과 어휘 충돌 |
 | `RateLimit` (Throttle 자리) | 의미 명확 | 서버 레이트 리밋 뉘앙스 |
 
-**권고**: `Debounce`/`Throttle` 유지 + **사용자 문서 첫 줄에 Roblox 관용
-"debounce"와 다르다는 걸 못박기**. 업계 표준 이름을 버리면 검색·이주
-비용이 더 큼. 단 이건 사용자 취향이 강하게 걸리는 영역이라 Q1로 넘김.
+**[2026-08-19 확정]** `Debounce`/`Throttle` 유지 + **사용자 문서 첫 줄에
+Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름을 버리면
+검색·이주 비용이 더 크다는 게 채택 근거 — 더 판단할 것 없음(구 Q1).
 
 ### 9-2. `-ed`를 안 붙이는 이유 (이건 코퍼스 규칙으로 결정됨)
 
@@ -856,24 +1020,24 @@ Roblox 생태계에서 `debounce`는 압도적으로 **재진입 방지 불리�
 
 ---
 
-## 12. 사용자 판단 대기 — 열린 질문
+## 12. 사용자 판단 대기 — 전부 해소됨 (2026-08-19)
 
-1. **이름** — `Debounce`/`Throttle` 유지(권장) vs 대안. Roblox 관용
-   "debounce"(재진입 불리언)와의 충돌을 문서 경고로만 다룰지. (9-1절)
-2. **의미론** — (A) emit-gate(`Blocker`와 동일, `:Get()`은 최신값) vs
-   **(B) value-hold(권장, `:Get()`도 지연된 값)**. (4절)
-3. **[2026-08-14 개정] 공개 생성자 2개 + 내부 구현 1개(`Reset` 한 비트)**
-   — 초안의 "`Throttle`은 `Debounce{MaxTime}` 프리셋"은 이중 발화 버그가
-   있어 폐기됨. 개정안 확인만 필요. (5-3절, 7절)
-4. **제어 핸들(`:Flush()`/`:Cancel()`)을 v1에 넣을지.** 세 가지 모양:
-   - **S1(권장, v1)**: `state:Apply(Debounce{...})` — 핸들 없음.
-     `Operator` 관용구와 완전 일치, 가장 단순.
-   - **S2**: `local d = Debouncer{...}; state:Debounce(d)` + `d:Flush()`/
-     `d:Cancel()` — **`Blocker`의 모양과 글자 그대로 같음**(외부 객체를
-     들고 `state:Block(blocker)`로 배선). 구조적 추가 비용이 사실상 없고,
-     "검색창에서 Enter 누르면 즉시 커밋" 같은 실사용 요구를 커버함.
-   - **S3**: `__call`을 가진 객체로 S1/S2를 겸함 — 매직이라 비권장.
-   실사용에서 Flush가 자주 필요하다고 보면 처음부터 S2가 나음.
+**[2026-08-19] 남아있던 Q1/Q2/Q4/Q8까지 전부 닫혀 열린 항목이 없음** —
+논의 원문은 `session/2026-08-19-03-debounce-throttle-final-close.md`.
+이력만 남겨둠(각 항목이 왜 그렇게 됐는지는 가리키는 절이 소스, 여기서
+반복 안 함):
+
+1. ~~**이름**~~ **[2026-08-19 해소]** — `Debounce`/`Throttle` 유지,
+   Roblox 관용 "debounce"와의 충돌은 문서 경고로만 대응. (9-1절)
+2. ~~**의미론**~~ **[2026-08-19 해소]** — **(A) emit-gate 채택**, (B)
+   value-hold는 laziness와 상충해 철회. (4절)
+3. ~~**공개 생성자 2개 + 내부 구현 1개(`Reset` 한 비트)**~~
+   **[2026-08-19 해소]** — 2026-08-14 개정안 그대로 채택, 이견 없었음.
+   (5-3절, 7절)
+4. ~~**제어 핸들**~~ **[2026-08-19 해소]** — 넣기로 확정. 초안의 S1(핸들
+   없음)/S2(`Blocker`와 같은 공유 외부 객체) 둘 다 아니고, 개별은
+   `Ref` 아웃파라미터·전체는 팩토리 자체의 `:Flush()`/`:Cancel()`(weak
+   레지스트리로 브로드캐스트)로 수렴. (5-4절)
 5. ~~**패키지 경계**~~ **[2026-08-14 해소]** — 사용자가 quad-base +
    엔진별 태스크 배선으로 확정. 주입 표면이 3개→5개로 늘어나는 비용은
    수용됨. op 이름/시그니처도 사용자가 지정
@@ -882,14 +1046,12 @@ Roblox 생태계에서 `debounce`는 압도적으로 **재진입 방지 불리�
    전제(무효화 dedup이 신호를 삼킴)가 틀린 것으로 드러나 질문 자체가
    없어짐. emit은 항상 재전파되므로 게이트는 어디에 걸든 정상 동작함.
    (3절)
-7. **`base/blocker-plan.md` 한 줄 명확화** — 그 문서가 인용하는
-   "`Get()`은 라이브 레퍼런스를 준다"는 실제로는 `base/source-state-plan.md`의
-   **레퍼런스 의미론** 원칙이지 "항상 상류 최신값"이 아님. Q2에서 (B)를
-   택하면 두 문서가 모순돼 보이므로 그 인용에 한 줄 주석을 넣는 게 좋음.
-   (확정 문서 수정이라 사용자 승인 후 반영 — 이 세션에선 안 건드림.)
-8. **`Time = 0`을 허용할지** — "이번 스텝 합치기" 용도로 유용하지만
-   스케줄러 타이밍에 의존하는 준-`Blocker`가 됨. 허용(권장) / 금지 /
-   별도 이름 부여 중 선택. (1절 인용문)
+7. ~~**`base/blocker-plan.md` 한 줄 명확화**~~ **[2026-08-19 소멸]** — Q2가
+   (A)로 확정되면서 이 항목이 걱정했던 모순(값-지연 의미론과 "`Get()`은
+   라이브 레퍼런스" 문구의 충돌)이 애초에 안 생김 — (A)는 `Blocker`와
+   완전히 같은 메커니즘이라 그 문구가 그대로 맞음. (4절)
+8. ~~**`Time = 0`을 허용할지**~~ **[2026-08-19 해소]** — 허용, "defer될
+   수 있음"만 문서화, 금지/에러 안 함. (1절 인용문)
 9. ~~**`Timeout` 핸들의 타입**~~ **[2026-08-14 완전 해소]** — 사용자 결정으로
    **`type Timeout = { __type_timeout: true, _native: any }`**(마커는
    런타임에도 실제로 넣고, 백엔드 페이로드 자리도 타입에 미리 선언).
@@ -906,18 +1068,41 @@ Roblox 생태계에서 `debounce`는 압도적으로 **재진입 방지 불리�
     전체 정정을 지시 — 같은 세션에 base/reference/research/ROADMAP/
     스파이크/audit까지 전부 반영했고, 역전 기록은
     `archive/invalidate-dedup-propagation-reversed.md`. 상세는 3절.
+11. ~~**`Time`/`MaxTime`을 `State`로 받을 수 있는가**~~ **[2026-08-19
+    신설·같은 날 해소]** — 허용. 구독이 아니라 `setTimeout`/`cap` 스케줄
+    시점의 폴링(`:Get()`)이라 새 무효화 채널이 안 생겨 5-2절이 인용하던
+    `tween-plan.md` 선례("옵션에 두 번째 반응 경로를 만들지 않음")와
+    안 부딪힘. 이미 스케줄된 타이머엔 미반영, 다음 창부터 적용. (5-2절)
 
 ---
 
-## 13. 우선순위 / 마일스톤
+## 13. 우선순위 / 마일스톤 — **[2026-08-19 재평가] 결국 순수 슈가로 귀결**
 
 **M0 착수를 막지 않음** — 이 문서의 어떤 결정도 디스패치/State 코어 계약을
-바꾸지 않음(11절에서 확인). 다만 `Operator` 슈가와 달리 **순수 슈가가
-아니라 실제 기능 갭**이라(타이머 없이는 사용자 코드로 재현하기 번거롭고,
-재현하면 laziness를 깨기 쉬움) 우선순위는 그쪽보다 위로 두는 게 맞아 보임.
+바꾸지 않음(11절에서 확인).
 
-**의존성**: State 코어(`ROADMAP.md` M3) + 백엔드 주입 표면. 그 둘이
-서면 언제든 얹을 수 있고, `Blocker` 구현과 **같은 시점에 하는 게 확실히
-쌈** — 1절에서 봤듯 게이트 노드를 공유하므로 따로 하면 같은 걸 두 번
-설계하게 됨. **권고: `Blocker` 구현 시점(M3)에 게이트 노드를 공용으로
-빼두고, Debounce/Throttle 자체는 그 위에 나중에 얹기.**
+**[2026-08-19] 옛 서술("`Operator` 슈가와 달리 순수 슈가가 아니라 실제
+기능 갭이라 우선순위를 위로 둔다")은 이번 라운드로 뒤집힘.** 제어 핸들
+설계(5-4절)까지 확정하고 나니, `Debounce`/`Throttle`이 실제로 새로
+필요로 하는 quad-base 코어 표면은 **주입 op 2개(`setTimeout`/`clearTimeout`)
+뿐**이고 — 게이트 메커니즘은 `Blocker`가 이미 확정한 gated state 개념
+위에서(1절), 제어 핸들은 이미 확정된 `Ref` 위에서(5-4절) 전부 얹히는 것으로
+드러남. 즉 **quad-base에 새 코어 메커니즘을 추가하지 않는 순수 슈가**다 —
+`Animate`/`Operator.*`와 같은 성격.
+
+**그래도 착수 시점이 뒤로 밀리진 않는다.** 설계 자체가 실제 기능 갭에서
+나온 요청(사용자가 "만들어야 한다"고 직접 지정, `research/
+additional-primitives-plan.md`가 원래 "안 만들어도 된다"고 판단했던 걸
+뒤집은 배경)이라는 사실은 안 바뀌고, 이 문서가 `research/`에서 `base/`로
+승격된 것도 별개로 유효 — 달라지는 건 오직 **구현 우선순위**뿐이다.
+순수 슈가라는 게 확인됐으니 `Operator` 콤비네이터 카탈로그와 같은 급으로
+맨 뒤로 미뤄도 됨(다른 기능이 이걸 의존하지 않고, 없어도 다른 기능이 안
+막힘).
+
+**의존성**: State 코어(`ROADMAP.md` M3) + 백엔드 주입 표면(`setTimeout`/
+`clearTimeout`) + `Blocker`(gated state) + `Ref`. 전부 M3/M8 안에서
+확정되는 것들이라 그 이후 언제든 얹을 수 있다. **`Blocker` 구현
+시점(M3)에 게이트 노드를 공용으로 빼두는 것만은 여전히 그 시점에 해야
+함** — 1절에서 봤듯 같은 노드를 공유하므로 따로 하면 같은 걸 두 번
+설계하게 됨. 프리미티브 자체(`Debounce`/`Throttle` 함수)는 그 위에 아무
+때나 나중에 얹으면 된다.
