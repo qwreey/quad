@@ -7,7 +7,7 @@
 name = "qwreey/quad"
 version = "0.0.0"
 private = true
-workspace_members = ["quad-base", "quad-roblox", "quad-types"]
+workspace_members = ["quad-base", "quad-roblox", "quad-types", "type-version-check"]
 
 [target]
 environment = "roblox"

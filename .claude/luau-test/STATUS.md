@@ -1,8 +1,9 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T>`
-> 버전 체크 + `AddPlugin<Self,P>` 체이닝) 검증용 `23` 신규 추가 → `done/`
-> 직행. 그 과정에서 `type function`을 거친 값은 패스스루라도 이후
+> 마지막 갱신: 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T, Pattern>`
+> 버전 패턴 체크 + `AddPlugin<Self,P>` 체이닝) 검증용 `23` 신규 추가 →
+> `done/` 직행, 같은 날 후속으로 `type-version-check` 분리에 맞춰 재작성.
+> 그 과정에서 `type function`을 거친 값은 패스스루라도 이후
 > 제네릭 self 체이닝이 깨진다는 새 Luau 함정을 발견(`typing-limits.md`
 > §6로 승격). 직전 갱신은 같은 날 — `13`을 타입 전용/런타임 두 파일로 분리
 > (A의 더미 스텁이 B 실행을 막던 문제 해결) + PostRef까지 확장, 런타임
@@ -124,7 +125,7 @@
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
 | `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
 | `21-type-store-undeclared-key-rejected` | **[2026-08-19 신규]** ✅ 통과 — `16`의 `ProcessStoreType`을 재사용해 미선언 키 접근 2건(읽기, 메소드 체이닝)이 정확히 `TypeError`로 거부됨을 확인, 양성 경로(선언된 키 3개) 클린. `store-plan.md`가 "아마 그럴 것"으로만 적어뒀던 걸 M0에서 실측 확정 |
-| `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규]** ✅ 통과 — 실제 `quad-types`/`quad-base`로 `CheckedQuad<T>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격) — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
+| `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규, 같은 날 후속으로 재작성]** ✅ 통과 — 실제 `quad-types`/`quad-base`/`type-version-check`로 `CheckedQuad<T, Pattern>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격), `export type function`/이중 꺾쇠 제네릭 인스턴스화 요구도 같이 실측 — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
 
 ### 특별히 중요한 통과 3건
 

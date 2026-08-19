@@ -25,6 +25,13 @@ M3 이후 실제 구현이 아님 — `quad-base/src`는 아직 `Relate.luau`/�
 
 ## pesde 워크스페이스 구조
 
+**전체 멤버 목록·최신 트리는 `architecture.md`의 "구현 착수: 소스 트리
+구조 확정" 절이 소스** — 새 워크스페이스 멤버가 늘 때마다 그쪽만 갱신하면
+되게 하기 위해 여기서 다시 나열/개수 세지 않는다(멤버 수가 실제로 2→3→4로
+늘어난 이력에서 이 문서의 구식 트리가 갱신을 놓쳤던 게 계기). 아래는 그
+구조가 실제로 동작하는 **pesde 메커니즘 자체**(문법/함정)만 다룬다 —
+예시엔 최소 2-멤버 형태만 남겨두고 서술 부담을 줄임:
+
 ```
 quad/
 ├── pesde.toml          # 워크스페이스 루트, private = true, workspace_members
@@ -37,8 +44,8 @@ quad/
     └── selene.toml
 ```
 
-- **루트 `pesde.toml`**: `private = true`(게시 안 됨) + `workspace_members =
-  ["quad-base", "quad-roblox"]`. `[target] environment = "roblox"`도
+- **루트 `pesde.toml`**: `private = true`(게시 안 됨) + `workspace_members`
+  (멤버 목록은 `architecture.md`가 소스). `[target] environment = "roblox"`도
   필요(공식 workspace 가이드 예제가 루트에도 `[target]`을 요구함 — 이
   세션엔 `roblox` 하나만 있어 실제로 검증 안 됨, 필요 여부/의미는 M5 이후
   재확인 후보).
@@ -59,9 +66,18 @@ quad/
   "package not found"로 실패한다. `[dependencies]`의 `workspace = "scope/name"`
   줄은 **직접 손으로 쓸 것**(위 표기 그대로 — 실제로 `pesde install`이
   받아들이는 걸 확인함).
-- **`pesde install`은 워크스페이스 루트에서 한 번**만 돌리면 전체가
-  갱신됨(`qwreey/quad`/`qwreey/quad_base`/`qwreey/quad_roblox` 셋 다
-  스캔·링크).
+- **`pesde install`은 워크스페이스 루트에서 한 번**만 돌리면 **모든
+  워크스페이스 멤버**가 스캔·링크됨(개수는 `architecture.md`의
+  `workspace_members`가 소스 — 새 멤버가 늘어도 이 동작은 안 바뀜).
+- **[2026-08-19 후속, `type-version-check` 신설 때 실측] 의존하는
+  워크스페이스 멤버의 `target`이 자기 자신의 기본 target과 다르면
+  `workspace = "..."` 의존 선언에 `target = "..."`를 명시해야 한다.**
+  `quad-types`(기본 target `roblox`)가 `type-version-check`(자기
+  `[target] environment = "luau"`)에 의존할 때, `target` 없이 `{
+  workspace = "qwreey/type_version_check", version = "^" }`만 쓰면
+  `pesde install`이 `no workspace member found with name
+  qwreey/type_version_check and target roblox`로 실패한다 — `target =
+  "luau"`를 추가해야 해소됨.
 
 ## 툴체인 — `rokit.toml`에서 `mise.toml`로 전환 (2026-08-19)
 
@@ -231,6 +247,22 @@ Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했�
 `.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
 그때 다시 볼 것).
 
+**[2026-08-19 같은 날 넷째 후속 세션] 의존 대상의 `target`에 따라 링크
+디렉토리 이름이 달라진다** — `quad-types`(target `roblox`)가
+`type-version-check`(target `luau`)에 의존하면, `quad-base`/`quad-roblox`가
+쓰는 `roblox_packages/`와 달리 `quad-types/src/init.luau`는
+`require("./luau_packages/type_version_check")`로 **`luau_packages/`**
+아래에서 링크를 찾는다 — pesde가 의존 대상 패키지 자신의 target 이름으로
+디렉토리를 분리하기 때문(`.gitignore`에 `luau_packages/`도 이미
+포함돼 있어 별도 조치 불필요).
+
+같은 워크어라운드가 2단 의존 체인에도 그대로 재적용됨 — `type-version-check` 신설로
+`quad-types`→`type-version-check`가 추가되면서 `quad-base`/`quad-roblox`→
+`quad-types`→`type-version-check`처럼 깊이 2인 워크스페이스 의존 그래프가
+생겼는데, `pesde install` 후 같은 심볼릭 링크 치환을 반복 적용하는 것만으로
+`luau-analyze`/`luau` 양쪽 다 문제없이 동작 확인됨 — 이 우회가 단일
+깊이에 국한되지 않고 일반화됨이 실측으로 재확인됨.
+
 ## `.luaurc` — alias는 여전히 편집기 전용
 
 `.luaurc`의 `aliases`(`@quad-base`/`@quad-roblox`)는 **런타임
@@ -275,8 +307,10 @@ require에서 여전히 안 먹는다** — `architecture.md`가 이미 이렇�
 **[2026-08-19 실측, 최초 서술 정정]** 처음엔 "워크스페이스 루트에 딱
 하나만 생긴다"고 적었으나 **틀렸음** — 실제로는 `pesde install`이
 **워크스페이스 멤버마다 각자의 `pesde.lock`도 같이 만든다**(루트
-`pesde.lock` 1개 + `quad-base/pesde.lock` + `quad-roblox/pesde.lock`,
-총 3개). 루트 것은 `[workspace."qwreey/quad_base"]`류 멤버 매핑만
+`pesde.lock` 1개 + 멤버마다 1개씩, 개수는 `architecture.md`의
+`workspace_members`를 따라간다 — 2026-08-19 이 세션 안에서만 2개
+멤버(2+1개 lock)에서 4개 멤버(4+1개 lock)로 늘어난 전례가 있어 여기 숫자를
+고정하지 않는다). 루트 것은 `[workspace."qwreey/quad_base"]`류 멤버 매핑만
 담고, 멤버 것들은 각자의 실제 의존성 그래프를 담는다(`quad_roblox`의
 lock엔 `[graph."qwreey/quad_base@0.0.0 roblox"]` + `pkg_ref.ref_ty =
 "workspace"`가 있음, `quad_base`는 의존성이 없어 메타데이터만).
@@ -295,7 +329,10 @@ lockfile들이 **게시되는 대상이 아니기** 때문 — 루트는 `privat
 ## 확인 완료 / 아직 확인 안 된 것
 
 **확인 완료(이 세션, 실제 pesde/luau 실행 근거)**:
-- pesde 워크스페이스 설치가 3개 패키지(루트+2서브) 전부에 대해 성공
+- pesde 워크스페이스 설치가 당시 워크스페이스 멤버 전부(그때는
+  루트+2서브)에 대해 성공(**[2026-08-19 후속]** 이후 `quad-types`/
+  `type-version-check` 추가로 멤버가 늘어난 뒤에도 같은 절차로 계속 성공 —
+  아래 후속 문단들 참고)
 - 패키지 이름 문자 제약(하이픈 금지)
 - `workspace = "scope/name"` 의존성 선언 문법
 - `@self`가 `init.luau`의 형제 파일 접근에 필수라는 것(런타임+

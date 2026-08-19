@@ -161,6 +161,17 @@ Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 �
 없는지, (3) `git worktree list`에 다른 에이전트 워크트리가 없는지를
 확인했습니다. 이 항목은 기록용으로만 남겨둡니다.
 
+## 9. **[2026-08-19 신설, 안 막음]** `type-version-check` 독립 저장소로 분리
+
+`type-version-check/`(컴파일 타임 버전 패턴 매칭 — 글롭/캐럿, `quad-types`의
+`CheckedQuad<T, Pattern>`이 이 위에 얹힘)는 quad에 종속되지 않은 범용
+유틸이라 **사용자가 직접 독립 저장소로 분리할 예정**("우선 이 프로젝트
+안에 넣어둬줘. 나중에 내가 다른 프로젝트로 분리해줄게.", 2026-08-19).
+지금은 quad 워크스페이스의 네 번째 멤버(`workspace_members`)로만 있음 —
+에이전트가 먼저 나서서 분리하지 말고 사용자가 하라고 할 때까지 대기.
+설계/구현 상세는 `.claude/base/quad-types-plan.md`의
+"`type-version-check`" 절.
+
 ## 3. `.claude/question.md`의 **나머지** 항목 검토 (급하지 않음)
 
 디자인 결정 중 Lua/Roblox 엔진에 대한 깊은 경험이 필요한 것들은 합리적 기본값으로

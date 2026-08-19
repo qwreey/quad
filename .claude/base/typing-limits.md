@@ -399,26 +399,29 @@ local extended = checked:AddPlugin(somePlugin) -- 여기서 깨짐:
 
 ```lua
 -- ✅ 원본 T는 type function을 한 번도 안 거침
-type CheckedQuad<T> = T & { __versionCheck: CheckVersion<T> }
+type CheckedQuad<T, Pattern> = T & { __versionCheck: CheckVersion<T, Pattern> }
 
-local checked: CheckedQuad<Quad> = ...
+local checked: CheckedQuad<Quad, "0.0.0"> = ...
 local _ = checked.__versionCheck -- 강제 평가(아래 캐비엇 참고)
 local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T 부분은 순수함
 ```
 
-`quad-types-plan.md`의 "`CheckedQuad<T>`" 절에 전체 배선과 실측 과정이
-있습니다 — ①`error()` 대신 `print`+`types.never`, ②검증은 함수 본문
-로컬 타입 별칭이 아니라 리턴/필드 타입 표현식 자체에 박아 넣어야
+`quad-types-plan.md`의 "`CheckedQuad<T, Pattern>`" 절에 전체 배선과 실측
+과정이 있습니다 — ①`error()` 대신 `print`+`types.never`, ②검증은 함수
+본문 로컬 타입 별칭이 아니라 리턴/필드 타입 표현식 자체에 박아 넣어야
 호출부마다 재평가됨, ③(이 항목) 원본을 절대 반환하지 않고 별도 필드로
-격리, 세 가지가 함께 필요합니다.
+격리, 세 가지가 함께 필요합니다. **[2026-08-19 후속]** 실제 버전 매칭
+로직(`CheckVersion`)은 quad에 종속되지 않은 별도 패키지
+`type-version-check`로 분리됐지만, 이 항목이 다루는 "패스스루도 이력만으로
+오염된다" 함정과 그 회피(별도 가상 필드 격리)는 그대로 유효합니다.
 
 ### 언제 마주치는가
 
 `AddPlugin`처럼 **제네릭 self 파라미터**를 쓰는 메소드가 있는 타입에,
 `type function` 기반 검사/변형을 적용하려는 모든 자리 — quad에서는
-지금 `quad-types`의 `CheckedQuad<T>`가 유일한 실사례지만, 앞으로 비슷한
-"타입 레벨 게이트 + 체이닝 가능한 API" 조합을 설계할 때마다 재발할 수
-있는 일반 패턴입니다. 아래 §8 체크리스트에 항목 추가.
+지금 `quad-types`의 `CheckedQuad<T, Pattern>`이 유일한 실사례지만, 앞으로
+비슷한 "타입 레벨 게이트 + 체이닝 가능한 API" 조합을 설계할 때마다 재발할
+수 있는 일반 패턴입니다. 아래 §8 체크리스트에 항목 추가.
 
 ---
 

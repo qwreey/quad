@@ -7,3 +7,6 @@ includes = ["src/*"]
 environment = "roblox"
 build_files = ["src"]
 lib = "src/init.luau"
+
+[dependencies]
+type_version_check = { workspace = "qwreey/type_version_check", version = "^", target = "luau" }

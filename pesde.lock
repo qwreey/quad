@@ -13,3 +13,6 @@ roblox = "quad-roblox"
 
 [workspace."qwreey/quad_types"]
 roblox = "quad-types"
+
+[workspace."qwreey/type_version_check"]
+luau = "type-version-check"

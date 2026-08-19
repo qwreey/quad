@@ -2,7 +2,11 @@
 
 **상태**: base — 2026-08-19 세션에 신설·구현·검증까지 완료. 워크스페이스
 세 번째 멤버 `quad-types`의 존재 이유, `AddPlugin`/`CheckedQuad`의 정확한
-사용법, 그 배선에서 실제로 깨졌던 Luau 함정들을 정리.
+사용법, 그 배선에서 실제로 깨졌던 Luau 함정들을 정리. **[같은 날 후속]**
+버전 패턴 매칭 자체는 quad에 종속되지 않은 범용 패키지
+`type-version-check`(워크스페이스 네 번째 멤버)로 분리됐고, `CheckedQuad<T>`는
+`CheckedQuad<T, Pattern>`으로 확장돼 그 위에 얹힌다 — 아래 "`type-version-check`"
+절.
 
 ## 왜 필요한가 — dev-dependency로는 못 푸는 문제
 
@@ -44,8 +48,12 @@ pesde의 워크스페이스 의존성은 **패키지 단위**로만 걸린다
 
 ```
 quad-types/
-├── pesde.toml            # name = "qwreey/quad_types"
-└── src/init.luau         # export type Quad, type function CheckVersion, export type CheckedQuad<T>
+├── pesde.toml            # name = "qwreey/quad_types", type_version_check workspace 의존
+└── src/init.luau         # export type Quad, export type CheckedQuad<T, Pattern>
+
+type-version-check/       # 워크스페이스 네 번째 멤버, quad에 종속되지 않음
+├── pesde.toml            # name = "qwreey/type_version_check", environment = "luau"
+└── src/init.luau         # matchesPattern(런타임), export type function CheckVersion
 ```
 
 - `quad-base`는 `quad_types`에 workspace 의존 — **자기 `Quad` 타입을
@@ -99,23 +107,73 @@ AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P
 identity에 의존하므로(`base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절),
 `AddPlugin`이 새 테이블을 반환하면 그 추적이 끊긴다.
 
-## `CheckedQuad<T>` — 버전 불일치를 컴파일 타임에 사람이 읽을 메시지로
+## `type-version-check` — 범용 버전 패턴 매칭 패키지
+
+**[2026-08-19 신설]** 처음엔 `CheckVersion<T>`가 정확 일치(`"0.0.0"`)만
+보는 quad-types 내부 함수였다. 그런데 정확 일치는 `quad-spring`/
+`quad-spring-roblox`처럼 **독립적으로 게시되는 백엔드 플러그인** 쌍엔 너무
+빡빡하다 — 최신 `quad-spring-roblox`가 예전 `quad-spring`도 잘 다루는
+경우가 흔할 텐데, 정확 일치를 강제하면 그때마다 재게시가 필요해진다
+(**사용자 판단**: "구현해주는것 정말 쉽고... 있으면 좋다고 생각함").
+그래서 글롭/캐럿 패턴을 지원하는 별도 패키지로 뺐다 — quad 전용 이름을
+안 섞어서 quad-spring류가 quad-base 전체를 끌고 올 필요 없이 이것만
+가볍게 의존하게 하기 위함이기도 하다.
+
+**[2026-08-19] 지금은 quad 모노레포 워크스페이스의 네 번째 멤버로 두지만,
+사용자가 나중에 독립 저장소로 직접 분리할 예정** — `HUMAN_TODO.md` 참고.
+
+**패턴 문법**(`.`로 나뉜 각 자리): `"*"` = 와일드카드, `"N^"` = 그 자리
+숫자값이 N **이상**이면 통과(caret), 그 외 = 정확히 같은 문자열이어야
+통과. 예: `"3.*.*"`(메이저만 고정), `"3.3^.4^"`(마이너 3 이상 + 패치
+4 이상), `"0.0.0"`(정확 일치 — quad-types가 지금 쓰는 패턴).
+
+```lua
+export type function CheckVersion(actual: type, pattern: type): type
+```
+
+`actual`/`pattern` 둘 다 문자열 리터럴(singleton) 타입이어야 하고, 일치하면
+트리비얼한 `true`(`types.singleton(true)`) 하나만 반환 — `quad-types`
+"함정 3"과 같은 이유로 원본 타입을 절대 반환하지 않는다.
+
+**Luau 신규 실측 함정 2건**(이 세션에 처음 발견, `typing-limits.md`가
+다루는 "타입 시스템 해석 한계"와는 결이 달라 여기 기록):
+- **`type function`은 같은 파일의 바깥 스코프 로컬 함수를 아예 참조 못
+  한다** — `Type function cannot reference outer local 'X'`로 컴파일
+  자체가 실패. 그래서 런타임용 `matchesPattern`과 `CheckVersion` 내부의
+  매칭 로직은 **물리적으로 별개 함수로 중복**돼 있다
+  (`type-version-check/src/init.luau`) — 하나를 고치면 반드시 다른
+  하나도 같이 고칠 것.
+- **cross-package 사용엔 `export type function`이 필요**하다(`type
+  function`만으론 안 됨) — 안 그러면 다른 파일에서 `Unknown type
+  'Module.CheckVersion'`으로 막힌다. 그리고 명시적 제네릭 인스턴스화가
+  **2개 이상**이면 단일 꺾쇠(`Foo<A, B>`)가 비교 연산자로 오파싱되니
+  반드시 이중 꺾쇠(`Foo<<A, B>>`)를 써야 한다(코퍼스에 이미 있던
+  `AttributeKey<<T>>` 관례와 같은 이유).
+
+`Version` 필드는 Luau 내장 `index<T, "Version">` type function으로 뽑는다
+(수동 `t:readproperty(...)`보다 간결 — **사용자 제안**으로 채택, 실측 확인
+완료).
+
+## `CheckedQuad<T, Pattern>` — 버전 불일치를 컴파일 타임에 사람이 읽을 메시지로
 
 **왜 필요한가**: `quad-roblox`가 `quad_base`를 pesde `[dependencies]`로
 선언하지 않고 런타임 주입으로만 받게 되면서, **pesde 자신의 semver 충돌
 방지 장치가 이 관계엔 전혀 안 걸린다** — 선언된 의존성이 아니라 그냥
-함수 인자라서. `CheckedQuad<T>`가 그 빈자리를 메꾸는 컴파일 타임
+함수 인자라서. `CheckedQuad<T, Pattern>`이 그 빈자리를 메꾸는 컴파일 타임
 대체 안전장치다(사용자 판단: "런타임 에러까지 내려면 quad-roblox
 소스에 버전을 하드코딩해야 하는데 그건 과함 — 타입 에러만 내는 걸로
-충분").
+충분"). `Pattern`은 위 `type-version-check`의 글롭/캐럿 패턴 문자열 —
+quad-base/quad-roblox처럼 같은 모노레포에서 항상 같이 개발되는 관계는
+정확 일치(`"0.0.0"`)를, quad-spring-roblox류 독립 게시 플러그인은
+`"0.*.*"` 같은 느슨한 패턴을 직접 골라 쓴다.
 
 ```lua
-export type CheckedQuad<T> = T & { __versionCheck: CheckVersion<T> }
+export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 ```
 
 **사용법**:
 ```lua
-local function CheckQuad<T>(quad: T): QuadTypes.CheckedQuad<T>
+local function CheckQuad<T>(quad: T): QuadTypes.CheckedQuad<T, "0.0.0">
 	return quad :: any
 end
 
@@ -141,8 +199,8 @@ local function QuadRoblox<T>(quad: T): T
 end
 ```
 체크는 **리턴 타입/필드 타입처럼 호출부마다 실제로 해석되는 자리**에
-박아 넣어야 한다. 이게 `CheckedQuad<T>`가 함수 파라미터/반환 타입
-표현식 안에 직접 나타나야 하는 이유고, `__versionCheck` 필드도 **실제로
+박아 넣어야 한다. 이게 `CheckedQuad<T, Pattern>`이 함수 파라미터/반환
+타입 표현식 안에 직접 나타나야 하는 이유고, `__versionCheck` 필드도 **실제로
 참조해야만** 평가된다(lazy) — 위 사용법 예제의 `local _ =
 checked.__versionCheck` 줄이 빠지면 검사가 조용히 스킵된다.
 
@@ -174,20 +232,30 @@ function`을 거치면 이후 제네릭 self 메소드 체이닝이 조용히 �
 ## 실측 근거
 
 `.claude/luau-test/done/23-type-quadtypes-checkversion-addplugin.luau` —
-실제 `quad-types`/`quad-base`를 `require`해서 위 사용법 그대로
-재현: 양성 경로(버전 일치 + `AddPlugin` 2회 체이닝 + 이전 확장 필드
-유지) 전부 클린, 음성 경로(버전 불일치)는 정확히 그 줄에서
-`TypeError: quad-base version mismatch: ...` 하나만.
+실제 `quad-types`/`quad-base`/`type-version-check`를 `require`해서 위
+사용법 그대로 재현: 양성 경로(버전 일치 + `AddPlugin` 2회 체이닝 + 이전
+확장 필드 유지) 전부 클린, 음성 경로(버전 불일치)는 정확히 그 줄에서
+`TypeError: type-version-check: version "9.9.9" does not match pattern
+"0.0.0"` 하나만.
 
 `quad-base/test/smoke.plugin.luau` — 실제 런타임 `AddPlugin` 구현(mutate
 + identity 보존 + 체이닝)을 실행 레벨로 검증.
 
 ## 남은 것
 
-- `quad-roblox`가 실제로 `CheckedQuad<T>`를 쓰는 진입점(`QuadRoblox` 등)
-  구현은 M5 — 지금은 quad-roblox/src가 비어 있어 이 문서의 사용법
-  예제가 실제 위치는 아직 없음.
+- `quad-roblox`가 실제로 `CheckedQuad<T, Pattern>`을 쓰는 진입점
+  (`QuadRoblox` 등) 구현은 M5 — 지금은 quad-roblox/src가 비어 있어 이
+  문서의 사용법 예제가 실제 위치는 아직 없음.
 - `_initializedBy`(별도 문자열 마커, backend 유일 슬롯 가드)와의 관계는
   `base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절 참고 — `CheckedQuad`는
   **버전** 호환성만 보고, **누가 이미 backend를 설치했는지**는 별개
   문제로 계속 `_initializedBy`가 담당한다.
+- **[백로그, 2026-08-19 신설]** `quad-roblox-types`(가칭) — `quad-types`와
+  같은 패턴으로, `quad-roblox` 전체 대신 그 타입만 필요한 모듈을 위한
+  패키지. **사용자가 지금 만들 필요는 없다고 명시적으로 후순위 지정** —
+  다만 이후 쉽게 뽑을 수 있게 `quad-roblox`의 공개 타입은 지금부터 단일
+  `src/init.luau`(또는 `types.luau`) 형태로 몰아두는 걸 관례로 유지할 것
+  (quad-types 자신이 이미 이 형태 — `Quad`/`CheckedQuad` 둘 다
+  `src/init.luau` 하나에 있음).
+- **[HUMAN_TODO]** `type-version-check`는 사용자가 나중에 독립 저장소로
+  직접 분리할 예정 — 루트 `HUMAN_TODO.md` 참고.

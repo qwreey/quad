@@ -193,11 +193,19 @@ build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup
 소스, 워크스페이스 의존성이 symlink로 연결되고 Rojo는 이를 투명하게
 따라감).
 실제 구현: 루트 `pesde.toml`(`private = true`,
-`workspace_members = ["quad-base", "quad-roblox", "quad-types"]`) +
+`workspace_members = ["quad-base", "quad-roblox", "quad-types",
+"type-version-check"]`) +
 `quad-base/pesde.toml`/`quad-roblox/pesde.toml`/`quad-types/pesde.toml`
-(각각 `[target] environment = "roblox"`), 툴체인은 `mise.toml`로 핀
+(각각 `[target] environment = "roblox"`) + `type-version-check/pesde.toml`
+(`[target] environment = "luau"`, 아래 참고), 툴체인은 `mise.toml`로 핀
 (`rokit.toml`에서 전환, 2026-08-19 사용자 결정 — 더 범용적인 도구라는
-판단, `base/project-setup-plan.md`의 "툴체인" 절 참고).
+판단, `base/project-setup-plan.md`의 "툴체인" 절 참고). **[2026-08-19 같은
+날 후속]** `type-version-check`(`[target] environment = "luau"` — quad에
+종속되지 않은 범용 패키지라 다른 멤버와 달리 roblox가 아님)는 워크스페이스
+네 번째 멤버로 추가됐고, `quad-types`가 이것에 workspace 의존(자기 target이
+roblox라 명시적으로 `target = "luau"` 지정 필요) — `base/quad-types-plan.md`의
+"`type-version-check`" 절이 소스. 사용자가 나중에 독립 저장소로 분리할
+예정(`HUMAN_TODO.md` 9번).
 **[2026-08-19 같은 날 셋째 후속 세션]** `quad-roblox`는 `quad-base`가
 아니라 **`quad-types`(구현 없는 타입 계약 전용 패키지)에만 workspace
 의존** — `quad-base`는 `QuadRoblox(Quad): QuadRoblox` 패턴으로 **런타임
@@ -243,9 +251,12 @@ quad/
 ├── mise.toml                     # pesde/rojo/luau-lsp/selene 버전 핀
 ├── pesde.toml                    # 워크스페이스 루트(private, workspace_members)
 ├── default.project.json         # 루트 통합 개발/테스트용 Rojo 프로젝트
-├── quad-types/                   # 구현 없는 Quad 타입 계약 + CheckedQuad 버전체크(`base/quad-types-plan.md`)
-│   ├── pesde.toml
+├── quad-types/                   # 구현 없는 Quad 타입 계약 + CheckedQuad<T,Pattern> 버전체크(`base/quad-types-plan.md`)
+│   ├── pesde.toml                 # type_version_check workspace 의존(target="luau")
 │   └── src/init.luau
+├── type-version-check/           # quad에 종속되지 않은 범용 버전 패턴 매칭(`base/quad-types-plan.md` "`type-version-check`" 절) — 사용자가 나중에 독립 저장소로 분리 예정(HUMAN_TODO 9번)
+│   ├── pesde.toml                 # [target] environment = "luau"
+│   └── src/init.luau              # matchesPattern(런타임) + export type function CheckVersion
 ├── quad-base/
 │   ├── pesde.toml
 │   └── src/

@@ -4,3 +4,10 @@ format = 2
 name = "qwreey/quad_types"
 version = "0.0.0"
 target = "roblox"
+
+[graph."qwreey/type_version_check@0.0.0 luau"]
+direct = ["type_version_check", { workspace = "qwreey/type_version_check", version = "^", target = "luau" }, "standard"]
+
+[graph."qwreey/type_version_check@0.0.0 luau".pkg_ref]
+ref_ty = "workspace"
+path = "type-version-check"
