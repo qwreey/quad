@@ -40,8 +40,32 @@ end
 ```
 
 연결 해제 시 `data.Signal = nil`만 하면 됨(`Connection.Dispose`) — 자료구조를
-바로 지우거나 재구성하지 않음. quad-v2도 이 모양을 그대로 채택: 라이프타임
-홀더는 "내가 아직 살아있게 하는 뒷받침 참조"가 nil인지만 확인하면 됨.
+바로 지우거나 재구성하지 않음.
+
+> **⚠️ [전면 정정, 2026-08-20 구현 전 QA 4라운드 `LP-1`] quad는 이 rbvm 코드를
+> 채택하지 않는다 — quad에서 `Connected`는 "계산된 속성"이 아니라 그냥 Roblox
+> `RBXScriptConnection`의 네이티브 필드다.** 옛 서술("quad-v2도 이 모양을 그대로
+> 채택: 라이프타임 홀더는 '내가 아직 살아있게 하는 뒷받침 참조'가 nil인지만
+> 확인하면 됨")은 rbvm의 프록시 계층 사정을 quad에 잘못 옮긴 것이었다. 사용자
+> 판정: *"Connected 는 단순히 RBXScriptConnect 안의 속성이고, Destroy 수행 시
+> 모든 커넥션이 죽으니 자연스럽게 Connected 가 false 이 되는것 뿐임. nil로
+> 참조를 만들 이유도 없음."*
+>
+> **quad의 실제 판정은 두 상태뿐**(`isBoundAlive`, 아래 "(1)" 코드 블록):
+> 1. **gcconn 자체가 없음** — 아직 바인드 안 됐거나, 이미 GC돼서 weak 릴레이션
+>    항목이 비워진 상태. `BindData:GetWeak(value, "gcconn")`이 `nil`.
+> 2. **gcconn은 있는데 `.Connected == false`** — `inst`가 방금 Destroy됐고
+>    아직 GC는 안 된 구간. 엔진이 Destroy 시점에 모든 커넥션을 끊어주므로
+>    quad가 아무것도 안 해도 이 값이 저절로 뒤집힌다.
+>
+> **quad가 `Signal = nil`처럼 직접 참조를 끊는 자리는 없다** — 유일하게 "직접
+> 끊는" 동작인 `unbindLifetime`도 `gchold[value] = nil`과 `BindData` 항목 제거일
+> 뿐 커넥션 자체를 만지지 않는다. rbvm에서 실제로 가져오는 건 **"gcconn 트릭으로
+> Instance 수명에 값을 매단다"는 관용구 하나**이고, `Connected`를 계산 속성으로
+> 만드는 구현은 가져오지 않는다.
+
+rbvm에서 실제로 재사용하는 부분은 아래 "(0)"/"(1)" 절의 gcconn/gchold
+관용구이고, 위 `__index` 계산 속성 코드는 **참고용 원본 인용**으로만 남긴다.
 
 ### 2. Instance 파괴는 `Instance.Destroying` 훅 하나로만 관측
 
@@ -49,6 +73,14 @@ rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로
 `inst.Destroying:Connect(...)` (`proxy/base.luau:150-156`), `Destroyed` 같은
 플래그를 그 콜백에서만 true로 뒤집음. `AncestryChanged`나 폴링 방식은 안 씀.
 quad-v2도 동일: 인스턴스 라이프사이클 훅 지점은 `Destroying` 하나로 통일.
+
+**[구체화, 2026-08-20 구현 전 QA 4라운드 `LP-2`] "예상보다 적을 수 있다"가 아니라
+지금은 정확히 한 곳뿐이다 — `Effect`.** 아래 "2026-08-04 검증 라운드에서 보강된
+내용" 절이 "이 훅을 쓰는 지점이 예상보다 적을 수 있다"고만 열어뒀던 걸 사용자가
+확정해줌(*"당장은 Effect 뿐임"*). `Effect`의 leaf-death cleanup(`base/effect-plan.md`)이
+이 훅을 쓰는 유일한 소비자이고, 그 위의 슈가 `OnDestroyed`(`base/lifecycle-hooks-plan.md`)도
+결국 같은 경로다. 나머지(Observer 게이팅, Tag/Attribute 정리, Tween 취소)는 전부
+gcconn `Connected` 판정이나 엔진 자체 정리로 커버되어 이 훅을 안 씀.
 
 ### 3. 정리(`retract`)는 기본적으로 GC에 위임, 예외적으로만 즉시(eager)
 
@@ -324,6 +356,40 @@ function canExecute(value)
 end
 ```
 
+#### (1-1) ⚠️ 첫 인자가 물리 Instance가 아닐 수도 있다 — 백엔드가 반드시 핸들링할 것 (2026-08-20 구현 전 QA 4라운드 `D-56`)
+
+**위 구현 스케치는 `inst`가 항상 Roblox Instance라고 가정하고 `InstData`에서
+gcconn/gchold를 찾는데, 실제 호출부 중엔 `inst` 자리에 `Slot`이 오는 경로가
+이미 있다.** `Dispatch.setLength(ownerKey, i, len)`이 그것 —
+`base/dispatch-core-plan.md`의 "`setLength` 구현" 절이 `bindLifetime(ownerKey,
+observer)`를 부르는데, 그 `ownerKey`는 Slot-in-Slot 중첩에서 **Slot 자신**이다
+(`base/slot-plan.md`의 "재귀 메커니즘" 절 — `attachSlot`이 `ownerKey`로 자기
+자신을 넘겨 최상위/중첩을 같은 함수로 통합한 그 설계).
+
+**사용자 판정(2026-08-20)**: *"ownerKey 가 Slot일 수도 있음. 각 엔진의
+bindLifetime 은 이를 잘 핸들링 해줘야함. 즉, Slot안에, 또는 바깥에 SetStrong
+으로 gchold 비슷한걸 수행하면 됨."*
+
+- **계약 두 개(위 절)는 그대로 유지된다** — 바뀌는 건 "그 계약을 무엇으로
+  구현하는가"뿐. 물리 Instance면 gcconn 트릭이 두 계약을 다 만족시키고,
+  Slot이면 **Slot 자신이 살아있는 동안 `value`를 붙잡는 강참조**(Slot 안의
+  필드든, `Relate(slot)`에 `SetStrong`이든)와 **`value`가 그 Slot의 생존을
+  되물을 수 있는 근거**를 백엔드가 제공하면 된다.
+- **왜 gcconn을 못 쓰는가**: gcconn 트릭은
+  `inst:GetPropertyChangedSignal("ClassName")`에 의존하므로 엔진 객체가 아닌
+  값(Slot은 평범한 Lua 테이블)엔 걸 수가 없다. Slot은 대신 **자기 자신이
+  reachable한가**가 곧 생존이라, `Relate(slot)`가 weak-keyed인 것만으로
+  "Slot이 죽으면 기록도 같이 사라진다"가 성립한다.
+- **`isBoundAlive`의 판정 분기도 이 경로를 알아야 함** — 지금 코드는
+  gcconn이 없으면 곧바로 `.Subscribed` 폴백으로 떨어지는데, Slot-owned
+  바인딩은 gcconn도 `.Subscribed`도 없어서 **살아있는데 `canBound`가 참으로
+  잘못 나온다**(= 이중 바인딩 가드가 이 경로에선 안 걸림). 백엔드 구현이
+  세 번째 분기를 추가하거나, Slot 쪽 홀더 존재 자체를 판정 근거로 삼아야 함.
+- **⚠️ 정확한 형태는 아직 미확정 — M2/M3 구현 시 확정할 것.** "Slot 안"(필드)
+  이냐 "바깥"(`Relate`)이냐, `isBoundAlive`의 세 번째 분기를 어떤 모양으로
+  둘지가 열려 있다. 지금 확정된 건 **"첫 인자가 Instance라고 가정하면 안
+  된다"는 요구사항 자체**뿐.
+
 **`bindLifetime`이 `value`와 맺는 계약은 정확히 둘**(이 둘이 위 구현의 전부):
 
 1. **바인딩이 유효한 동안 `value`는 최소한 `inst`만큼은 산다** — `gchold[value]`
@@ -513,9 +579,16 @@ quad는 자신이 만든 instance를 항상 끝까지 들고 있어서 이런 �
 Roblox 엔진 자체가 Destroy 시 Tag/Attribute/실행 중인 Tween을 전부 알아서
 정리해준다 — 라이브러리가 따로 처리할 필요가 없음. Roblox 이외의 엔진에서
 이런 정리가 필요하다면 그건 그 엔진의 `quad-X` 서브패키지가 책임질 문제(base
-관심사 아님). 사용자가 커스텀 Destroy-time 처리가 필요하면 `[Event
-"Destroying"]`을 직접 바인드해서 처리하면 되는 구조라, 라이브러리가 강제로
-제공할 필요도 없음.
+관심사 아님). 사용자가 커스텀 Destroy-time 처리가 필요하면 **`Effect`(그리고 그 슈가
+`OnDestroyed`)를 쓰면 되는 구조**라, 라이브러리가 강제로 제공할 필요도 없음.
+**[정정, 2026-08-20 구현 전 QA 4라운드 `LP-4`]** 옛 서술은 여기 정상 경로를
+`[Event "Destroying"]`을 직접 바인드하는 것으로 적었는데, 그건 사용자가 엔진
+이벤트를 손으로 다루라는 뜻이 되어 quad가 이미 제공하는 프리미티브를 우회하는
+안내였다 — 사용자 판정: *"Effect 임. 그리고 그 슈거인 OnDestroyed 존재"*.
+`Effect(fn)`이 반환하는 cleanup이 leaf 사망 시 정확히 1회 불린다는 계약
+(`base/effect-plan.md`)이 정확히 이 용도이고, `OnDestroyed(fn)`은 그걸 감싼
+순수 팩토리다(`base/lifecycle-hooks-plan.md`). `[Event "Destroying"]`을 직접
+바인드하는 것도 물론 막히진 않지만 권장 경로가 아니다.
 
 ## 이름: `cleanup` → `retract`
 

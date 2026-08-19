@@ -65,8 +65,10 @@
      하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
    - **그룹 `Attribute`의 위치별 claim 설계**(`base/attribute-plan.md`) —
      방향은 확정, 키 설계가 미정. M10 착수 전 필요.
-   - **`SetAndDispose` 방향**(`base/slot-plan.md`) — `state:Apply`
-     시그니처에 영향이 갈 수 있어 M3 착수 전 방향만이라도.
+   - **[2026-08-20 해소]** `SetAndDispose` 방향 — **`source:SetAndDispose(value)`
+     콜론 메서드로 확정**(`:Set`과 한 세트). `state:Apply` 시그니처엔 영향
+     없음(`Apply` 오버라이딩은 `Source`→`State` 단방향 때문에 타입이 안
+     성립해서 애초에 불가). `base/slot-plan.md`의 `dispose` 절.
    - **dedup 경로의 process/retract 대칭 확인**(`base/effect-plan.md`
      `:Unsubscribe()` 절) — M3 착수 전 확인.
    - **[2026-08-19 해소]** `PopOnly` 이름 — **`Detach`로 확정**(공개 표면

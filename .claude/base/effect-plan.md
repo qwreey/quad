@@ -155,7 +155,19 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   짝이다 — leaf 바인딩된 핸들에는 적용되지 않는다.** 아래 확장된 의미는
   **`:Subscribe()`로 등록한 핸들에 대해서만** 성립한다. `:Subscribe()`를
   부른 적 없는(=leaf 바인딩된) 핸들에 `:Unsubscribe()`를 지원하면 안 되거나,
-  최소한 그 경로에서 cleanup을 앞당기면 안 된다. 사용자 판정: *"subscribe
+  최소한 그 경로에서 cleanup을 앞당기면 안 된다.
+  **[강화, 2026-08-20 구현 전 QA 4라운드 `E-11`] "안 되거나/최소한"이 아니라
+  Observer와 정확히 같은 규칙으로 통일한다 — leaf 바인딩된 핸들에는
+  `:Unsubscribe()`가 아예 안 먹는다.** 사용자 지적: *"옵저버에선 leaf
+  바인딩에 Unsubscribe 못 하는것 처럼, Effect 또한 리프 바인딩에 있어서는
+  Unsubscribe 안 먹어야 하는거 아님?"* — 맞다. `Observer`의
+  `:Unsubscribe()`가 전역 경로 전용이고 leaf 해제는 `unbindLifetime`이
+  담당한다는 게 이미 확정된 규칙인데(`base/source-state-plan.md`의 "이중
+  바인딩 금지" 절), `Effect`만 애매하게 열어두면 두 프리미티브의 규칙이
+  갈린다. **`State<Effect>` 재-dispatch와의 상호작용도 이 통일로 같이
+  닫힌다** — leaf 바인딩된 핸들엔 `:Unsubscribe()`가 아예 안 먹으므로,
+  아래 dedup 시나리오(값이 안 바뀌어 retract가 no-op인데 cleanup만
+  앞당겨져 Effect가 조용히 죽는 것)가 발생할 경로 자체가 없어진다. 사용자 판정: *"subscribe
   한게 아니면 unsubscribe 는 지원하면 안 되거나, 적어도 리프 바운딩에선
   그래선 안 됨 … subscribe 는 unsubscribe 의 짝이라고 생각함."*
   - **왜 위험한가**: leaf 바인딩 + `State<Effect>`/`State<Observer>`

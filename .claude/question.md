@@ -179,16 +179,10 @@
   같은 그룹 객체를 두 위치에 놓는 경우(`Frame { a, a }`)를 잡으려면 위치별
   claim 레지스트리가 하나 필요하다는 **방향은 확정**됐고(`Ref`처럼
   `bindLifetime`을 재사용할 수는 없음 — 그룹 값은 여러 곳에서 쓸 수 있어야
-  하므로), **키를 무엇으로 할지**(`(inst, groupValue) → k`인지 `groupKey`
-  단위인지)와 기존 `nameClaims`와의 공존 방식이 미정 —
+  하므로), **[2026-08-20 QA 4라운드] 이름도 `groupClaimKeys`로 확정**.
+  남은 건 **키를 무엇으로 할지**(`(inst, groupValue) → k`인지 `groupKey`
+  단위인지)와 기존 `nameClaims`와의 공존 방식 —
   `base/attribute-plan.md`의 "이름 소유권" 절.
-- **[신설, 2026-08-18 구현 전 QA] `SetAndDispose` 류 편의 콤비네이터** —
-  `Get()` → `Set(new)` → 옛 값 `dispose`의 3단계를 매번 손으로 쓰는 게
-  불편하다는 사용자 지적에서 나옴. `source:Apply(SetAndDispose(new))`
-  (단 이때 `Apply`는 `State`가 아니라 `Source`를 넘겨야 함)와
-  `source:SetAndDispose(new)` 콜론 메서드 중 어느 쪽인지, 그리고 이번
-  범위인지 백로그인지 미정 — **M3 착수 전 방향만이라도** 정할 것
-  (`state:Apply` 시그니처에 영향), `base/slot-plan.md`의 `dispose` 절.
 - **[신설, 2026-08-18 구현 전 QA] 중간 State GC 미검증** — `State → State →
   State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도
   없어 전파가 조용히 끊길 수 있음. 방향(상류 strong / 하류 weak)은 사용자가

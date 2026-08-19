@@ -96,11 +96,21 @@ ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 �
   디버깅 가시성(`research/debug-tooling-plan.md`)과 "사용자가 만든
   `UICorner`를 건드리지 않는다"는 위 판정에 여전히 필요하다. **이름은
   표시·판정용, `Relate`는 조회용**으로 역할이 갈린다.
-- **⚠️ 확인 필요 — `inst`-키 `Relate`의 전제**: `inst`를 키로 쓰는
-  `Relate` 전체가 "Instance 생성 시점에 gcconn/gchold를 심어 userdata
-  동일성을 고정한다"는 셋업 위에서만 성립한다(`base/lifecycle-pattern.md`).
-  숏핸드가 만드는 **자식**도 quad가 만든 Instance이므로 그 셋업을 거치는지
-  구현 시 확인할 것 — 안 거치면 여기서만 조용히 미아가 된다.
+- **[해소, 2026-08-20 구현 전 QA 4라운드 `UI-5`] 자식도 반드시 gcconn/gchold
+  셋업을 거친다 — 안 거치면 이 숏핸드 자체가 애초에 동작을 못 한다.** 원래
+  "구현 시 확인할 것"으로 열어뒀던 항목인데, 사용자 판정으로 닫힘: *"애초에
+  똑같이 process 로 위임하는 이상, gcconn/gchold 없으면 옵저버 바인딩 부터
+  실패함. 일반 요소처럼 똑같이 UI...{} 처럼 생성되어도 되고, 어떤 방식으로든
+  gcconn/gchold 가 셋업되는게 맞음."*
+  - **논거**: 아래 "Tween 지원" 절대로 이 숏핸드는 자식 프로퍼티를 직접 쓰지
+    않고 `Dispatch.process(child, prop, v, 1)`로 위임하는데, 그 값이
+    `State`면 `StoreBind`가 `bindLifetime(child, observer)`를 부른다 — 그
+    시점에 `child`에 gcconn/gchold가 없으면 **거기서 곧바로 실패**한다.
+    즉 "조용히 미아가 되는" 시나리오가 아니라 **즉시 드러나는 전제 조건**이고,
+    숏핸드가 자식을 만드는 경로도 일반 인스턴스 생성과 같은 셋업을 타야 한다.
+  - **따라서 `ensureManagedChild`는 자식을 만들 때 일반 인스턴스 생성과
+    동일한 경로**(gcconn/gchold 셋업 포함)를 써야 한다 — 별도 확인 항목이
+    아니라 구현이 반드시 만족해야 하는 계약.
 - **부수 요구 — 숏핸드가 만든 자식의 프로퍼티 세팅도 `Dispatch`에 위임**:
   *"각 숏핸드가 만들어낸 요소의 프로퍼티 세팅은 새로운
   dispatch.process(target,k,v) 로 위임해 tween 등이 자연스럽게 가능."*
@@ -179,7 +189,14 @@ end
   State 레이어를 먼저 다 풀어내므로 이 Handler가 실제로 보는 `v`는
   `number` 아니면 `Tween<number>` 둘 중 하나.
 
-**한 가지 진짜로 필요한 부품 — `wrap`을 Tween 위로 들어올리기.** 숏핸드는
+**한 가지 진짜로 필요한 부품 — `wrap`을 Tween 위로 들어올리기.**
+**[승격, 2026-08-20 구현 전 QA 4라운드 `UI-8`] 아래 로컬 헬퍼 `mapTweenValue`는
+`Tween` 자신의 공개 메소드 `:Map(fn)`(이름 후보 `:Mapped`)으로 올라갔다** —
+`base/tween-plan.md`의 "`Tween<T>:Map(fn)`" 절이 소스. 이 문서에 로컬 헬퍼로
+두면 같은 변환이 다른 숏핸드/백엔드에서 또 복제되므로, 값 타입 자신이 제공하는
+게 맞다는 사용자 판단. 아래 스케치는 그 메소드가 하는 일을 풀어 쓴 것으로만
+읽을 것(`isTween(v)` 분기는 호출부에 남고, `Tween`이면 `v:Map(wrap)`, 아니면
+`wrap(v)`): 숏핸드는
 "스칼라를 받아 자식 프로퍼티 타입으로 감싸는" 변환을 갖고 있음(`UICorner = 8`
 → `CornerRadius = UDim.new(0, 8)`, 열린 질문 절의 룩업 테이블 `wrap=fn`).
 `v`가 `Tween<number>`면 그 변환을 **`Tween`을 벗기지 않고 `.Value`에만**
@@ -215,14 +232,24 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
 상황 — 계속 애니메이션되길 원하면 자식이 살아있도록 `nil`로 내리지 말고
 값만 바꿀 것.
 
-**자식을 없앨 때의 정리 책임은 이 Handler에 있음** — `v`가 `nil`이 되거나
-retractor가 `nil` 힌트로 불려 자식을 파괴할 때, 실행 중인 엔진 Tween이
-남아있을 수 있으므로 `Dispatch.retractFrom(child, prop, 1)`을 같이
-부르는 게 정석(자식 Instance를 `Destroy`하면 엔진 트윈도 같이 죽고
-`chains`도 weak-keyed라 결국 GC되지만, "즉시" 끊는 건 명시적 호출뿐).
-`retractor` 안에서 **다른 키**에 대한 `retractFrom`을 부르는 건 허용된
-경로임(`base/dispatch-core-plan.md`의 retract 계약 — 금지된 건 같은
-`(inst,k)`에 대한 재진입).
+**[정정, 2026-08-20 구현 전 QA 4라운드 `UI-11`] 자식을 파괴할 때
+`Dispatch.retractFrom(child, prop, 1)`을 "정석"으로 요구하지 않는다 — 실익이
+없다.** 옛 서술은 "실행 중인 엔진 Tween이 남아있을 수 있으므로 같이 부르는 게
+정석"이었는데, 사용자 판정: *"자식 파괴 시 사실 Tween 은 엔진에 의해 자동
+멈춤/무효/삭제 처리되고, 트윈 자체가 retract 되어도 아무것도 안 하는 nop 라
+의미가 없을것이다."*
+
+- **두 겹으로 무의미하다**: (a) Roblox 엔진이 Destroy 시점에 그 인스턴스에
+  걸린 Tween을 알아서 정리하고(`base/lifecycle-pattern.md`의 "retract는 Destroy 시점에 필요 없는 이유가
+  엔진 레벨에서 한 번 더 보강됨" 절), (b) `PropertyHandler`가 반환하는 retractor는 애초에
+  몸체가 no-op이라(`base/tween-plan.md`의 "왜 `retract`가 더 이상 필요
+  없는가" 절) 불러봐야 하는 일이 없다.
+- **그래도 호출이 금지되는 건 아니다** — `retractor` 안에서 **다른 키**에
+  대한 `retractFrom`을 부르는 것 자체는 여전히 허용된 경로다
+  (`base/dispatch-core-plan.md`의 retract 계약 — 금지된 건 같은 `(inst,k)`에
+  대한 재진입). 다만 이 자리에서 **필요하지 않다**는 것.
+- `chains`는 `child`에 대해 weak-keyed라 자식을 버리면 결국 GC된다 — 명시적
+  정리가 필요한 자원이 이 자리엔 없다.
 
 ## store-bind — 이 숏핸드도 지원
 

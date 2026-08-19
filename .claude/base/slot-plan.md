@@ -91,12 +91,15 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   붙는 동적 리스트라 이 전제 자체가 없음** — Slot 안의 Ref가 "무엇"을
   가리켜야 하는지 정의가 안 됨. 대체 경로도 이미 있어 능력 손실 없음 —
   특정 child에 ref가 필요하면 그 child를 만드는 컴포넌트 호출 자체에
-  Ref를 넘기면 됨(`slot:Add(Frame { Ref = myRef })` — **여기서 `Frame`은
-  `Ref`라는 named 파라미터를 받는 컴포넌트 함수다.** Instance 리터럴에
-  `Ref = ...`를 named 키로 놓는 건 leaf 바인딩이 아니고, 실제로는
-  `HANDLER_PRIORITY_FALLBACK` 가드가 잡아 에러를 낸다 — leaf 바인딩은
-  배열(숫자 키) 전용, `base/ref-plan.md`. **[명시 추가, 2026-08-18 구현 전
-  QA]**).
+  Ref를 넘기면 됨(`slot:Add(MyComponent { Ref = myRef })` — **여기서
+  `MyComponent`는 `Ref`라는 named 파라미터를 받는 사용자 컴포넌트 함수다.**
+  **[예시 이름 정정, 2026-08-20 구현 전 QA 4라운드 `SL-4`]** 예전엔 이 자리를
+  `Frame {...}`으로 적었는데, `Frame`은 코퍼스 전반에서 **인스턴스 리터럴**을
+  가리키는 이름이라 "리터럴의 named 키에 Ref를 놓아도 된다"로 읽히는
+  정반대 오해를 부른다 — 실제로 인스턴스 리터럴에 `Ref = ...`를 named 키로
+  놓으면 leaf 바인딩이 **아니고** `HANDLER_PRIORITY_FALLBACK` 가드가 잡아
+  에러를 낸다(leaf 바인딩은 배열 숫자 키 전용, `base/ref-plan.md`).
+  컴포넌트 함수임이 이름에서 바로 드러나도록 예시 이름을 바꿈).
 - **`T`의 실제 의미**: 위 배제 덕에 "이 Slot이 실제로 담을 수 있는 최종
   마운트 가능한 값의 타입" 그 자체로 단순해짐 — quad-roblox엔 사실상
   `T = Instance` 하나뿐(컴포넌트 호출 결과도 결국 Instance)이라
@@ -1690,7 +1693,9 @@ local function unmountSlotTree(slot)
         end
     end
     slot._mounted, slot._mountedInst = false, nil
-    slot.Offset = nil   -- 마운트 전 상태로 복원(위 "`Slot.Offset`은 마운트 전엔 nil")
+    -- [정정, 2026-08-20 `SL-75`] slot.Offset은 건드리지 않는다 — nil로 되돌리면
+    -- 그 Source를 이미 구독 중인 다운스트림이 영구히 끊긴다(포탈이 깨짐).
+    -- stale한 채 남겨두고, 재마운트 시 setOffsetSource의 즉시 계산이 덮어쓴다.
     -- slot 자신의 unbindLifetime / releaseOwner / owner쪽 setLength·setOffsetSource는
     -- 호출부 몫 — destroySlotTree와 동일한 층위 분리.
 end
@@ -2079,8 +2084,16 @@ end
   Slot처럼 "죽는 순간 `elementOwner`/`lengthList`/`sourceList`가
   어긋나는" 트리 부기 자체가 없음. 즉 dispose가 막으려는 문제(부기
   붕괴)가 Observer/Effect에는 원천적으로 발생하지 않음 — 아무도 안 들고
-  있으면 그냥 GC, 조기에 끊고 싶으면 `unbindLifetime`으로 충분하고
-  `dispose`가 다룰 이유가 없음.
+  있으면 그냥 GC. **[정정, 2026-08-20 구현 전 QA 4라운드 `SL-72`] 조기에 끊는
+  사용자 경로는 `unbindLifetime`이 아니다** — 옛 서술은 "조기에 끊고 싶으면
+  `unbindLifetime`으로 충분"이라 적어 이걸 사용자 API처럼 안내했는데, 사용자
+  판정: *"우린 조기에 끊는걸 명시적으로 unbindLifetime 로 지원하지 않음. 그건
+  유저에게 드러나는 표면이 아니고, State<Observer?> 를 사용하는게 적절."*
+  `bindLifetime`/`unbindLifetime`은 **Handler 작성자용 내부 배관**이고
+  (`base/lifecycle-pattern.md`), 사용자가 leaf에 붙은 Observer/Effect를 끄고
+  싶으면 그 자리를 `State<Observer?>`로 두고 `nil`을 emit하면 된다 — 그러면
+  기존 하강 diff가 알아서 이전 것을 retract한다(새 경로 불필요). 어느 쪽이든
+  `dispose`가 다룰 이유가 없다는 결론은 그대로.
   **주의 — Modifier 필드/`Slot:Add`·`:List` 원소 금지 규칙("핸들러 계층 값이
   들어오면 즉시 error")과 헷갈리지 말 것.** 그건 Modifier 필드나 Slot의
   CRUD 원소 자리에 관한 별개 규칙이고, children 배열의 leaf 위치(정적
@@ -2119,9 +2132,24 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
    `Source` 전용 변형이 필요한지 같이 정해야 한다.
 2. `Source`에 콜론 메서드로 직접 얹기(`source:SetAndDispose(new)`).
 
-**미결**: 어느 쪽을 택할지, 그리고 이번 범위에 넣을지 백로그로 뺄지.
-`state:Apply`의 시그니처(`(State<T>) -> U`)에 영향이 갈 수 있으므로 **M3
-착수 전에 방향만이라도 정해둘 것**. `question.md`에 올려둠.
+**[해소, 2026-08-20 구현 전 QA 4라운드 `SL-74`] 2번(`Source`의 콜론 메서드)으로
+확정 — `state:Apply` 시그니처엔 영향 없음.** 사용자 판정: *"타입 문제 때문에
+Apply 를 오버라이딩 해서 source 타입을 함수에 건내주는건 못함. 그럼 source ->
+state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는 못함. 따라서 영향이
+안 가고, 그냥 SetAndDispose() 로만 Set() 와 세트로 주는게 나아보이고, 그걸로
+확정지어야할것 같다는 생각임."*
+
+- **1번(`source:Apply(SetAndDispose(new))`)이 기각된 이유는 타입이다** —
+  `state:Apply(factory)`는 `factory`에 `State<T>`를 넘기는 것으로 이미 확정돼
+  있는데(`base/source-state-plan.md`), `Source` 전용으로 오버라이딩하면 같은
+  이름이 리시버 타입에 따라 다른 걸 넘기게 된다. `Source<T>`가 `State<T>`를
+  **단방향으로만** 만족하므로 그 반대 방향(넘겨받은 게 `Source`임을 보장)은
+  안전하게 성립하지 않는다 — 이름을 그대로 재사용할 수가 없음.
+- **확정 형태**: `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
+  묶인 `Source` 전용 콜론 메서드**. `Set`(언마운트) → 옛 값 `dispose` 순서를
+  안에서 수행하므로 호출부가 `Get()`으로 옛 값을 미리 잡아둘 필요가 없다.
+- **`state:Apply`는 손대지 않는다** — 시그니처 영향이 없으므로 M3 착수 전
+  결론이 필요하던 항목에서 빠진다(`question.md`/`.claude/todos.md`에서 제거).
 
 #### 구현상 바뀌어야 하는 것
 
@@ -2151,7 +2179,8 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
 
 `unmountSlotTree`는 `destroySlotTree`가 하는 일 중 **실제 파괴와 자식
 소유권 반납만 빼고 나머지는 그대로 함**(자식 observer `unbindLifetime`,
-`_mounted`/`_mountedInst` 복원, `slot.Offset = nil`). 옛 owner에 등록해둔
+`_mounted`/`_mountedInst` 복원 — **[정정, 2026-08-20 `SL-75`] `slot.Offset`은
+안 건드림**). 옛 owner에 등록해둔
 `Dispatch.setLength`/`setOffsetSource` 해제는 호출부 몫(아래).
 
 **[정정, 사용자 지적] "해제 짝"이라는 새 API는 필요 없음** — 옛 owner에
@@ -2188,10 +2217,27 @@ quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 �
   오류로 이어지진 않지만, 방어적으로 순서를 고정.
 
 **추가 방어 조치**:
-- **해제 시 `slot.Offset = nil`도 같이** — 이 문서의 "`Slot.Offset`은
-  마운트 시점에 세팅되고 마운트 전엔 `nil`" 규칙과 짝을 맞춤. 안 그러면
-  떼어낸 Slot이 옛 owner 기준의 stale한 `Offset`을 계속 공개해, 그걸
-  읽는 사용자 코드가 조용히 틀린 값을 씀.
+- **⚠️ [전면 정정, 2026-08-20 구현 전 QA 4라운드 `SL-75`/`D-60`] 해제 시
+  `slot.Offset`을 `nil`로 되돌리면 안 된다 — stale한 채로 그냥 둔다.**
+  옛 서술은 "해제 시 `slot.Offset = nil`도 같이"였는데, 그러면 **포탈(언마운트
+  후 다른 곳에 재마운트)이 깨진다** — 사용자 판정: *"nil 로 만들면 안 되는게,
+  포탈로 옮기는게 안 됨. 이미 offset 을 들고 가 바운딩 했다면 큰 문제가 생김.
+  그냥 stale하게 있는게 맞고, 나중에 offset이 멀쩡히 다시 설정되는게 옳음.
+  언마운트 시 offset stale 은 단순히 맞는 행동이고, 처음 생성 시 0 인것과 유사
+  동작임."*
+  - **누가 이미 그 `Source`를 구독하고 있을 수 있다** — `updateFn`이
+    `layoutOrder:With(offset):Compute(...)`처럼 `offset`을 파생 그래프에 엮어둔
+    상태에서 필드를 `nil`로 갈아치우면, 그 구독은 옛 Source를 계속 보는데
+    Slot은 새 Source를 만들어 등록하게 되어 둘이 영영 갈라진다. 재마운트가
+    "값이 다시 정상으로 채워지는" 일이 아니라 "연결이 끊긴 채 조용히 멈추는"
+    일이 되어버림.
+  - **stale한 값 자체는 위험하지 않다** — 언마운트 상태의 `Offset`은 그냥
+    "마지막으로 알던 위치"이고, 재마운트되면 `setOffsetSource`의 즉시 계산이
+    올바른 값으로 덮어쓴다. 이건 **처음 생성 시 `0`인 것과 같은 성격의
+    잠정값**이지 오염이 아니다.
+  - **따라서 `Slot.Offset`은 "마운트 전엔 `nil`"이 아니다** — 아래
+    "`Slot.Offset`도 `Slot.Length`와 마찬가지로 공개 필드" 관련 서술과
+    `unmountSlotTree` 의사코드도 이 정정에 맞춰 갱신됨(같은 라운드).
 - **`recompute`는 `sourceList[i]`가 `None`이든 `nil`이든 "참여 안 함"으로
   똑같이 관대하게 넘어갈 것** — 정상 상태에선 항상 `None`으로 채워지는 게
   계약이지만(`nil`은 배열에 구멍을 냄), 해제/재마운트가 얽히는 전이

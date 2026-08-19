@@ -84,6 +84,20 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
 가능" 절)과 같은 발상이지만, 처리 위치가 다름 — merge 단계가 아니라
 **디스패치 단계**에서 풀린다:
 
+- **⚠️ [명시 추가, 2026-08-20 구현 전 QA 4라운드 `M-5`] `None`만이 명시적
+  unsetter다 — `mod:TextColor3(nil)`은 "지운다"가 아니라 "그 필드가 아예 없는
+  새 Modifier를 만든다"이다.** 사용자 지적: *"mod:TextColor3(nil) mod 그룹에서
+  제거된걸 생성하게됨. None 이 오직 명시적 'unsetter' 임."* 둘의 관측 가능한
+  차이는 **`Overridden`/flatten에서 갈린다**:
+  - `mod:TextColor3(nil)` → 그 필드가 **없는** Modifier. 나중에
+    `Modifier.Overridden(other, mod)`로 합치면 `other`의 `TextColor3`가 **그대로
+    살아남는다**(덮어쓸 값 자체가 없으므로).
+  - `mod:TextColor3(None)` → 그 필드가 **`None`이라는 실재값으로 채워진**
+    Modifier. 같은 `Overridden`에서 `other`의 값을 **이긴 뒤**, 디스패치 단계의
+    `NoneHandler`가 실제로 지운다.
+  - `:Peek(key)`도 이 둘을 구별해서 돌려준다(`nil` vs `None`) — 위
+    "`:Peek`의 반환 타입" 항목이 `T | State<T> | None | nil`인 이유가 정확히
+    이것. 구현은 이미 이렇게 되겠지만 **문서화에서 이 구분을 반드시 짚을 것**.
 - **`{ TextColor3 = None, mod }`도, `mod:TextColor3(None)`도 둘 다 지원.**
   Modifier setter/Overridden/인라인 props 테이블은 `None`을 그냥 평범한 raw
   값으로 저장·교체할 뿐 특별 취급이 전혀 없음 — 애초에 문제였던 건 "`nil`이
@@ -152,7 +166,15 @@ mutable하게 구현하면 같은 modifier 레퍼런스를 공유하는 형제 �
 current*1.2 end)`(변환 함수) 둘 다 지원 — 한 줄로 끝내고 싶을 때는 리터럴,
 이전 값을 바탕으로 계산하고 싶을 때는 변환 함수 하나로 충분.
 
-**Getter는 만들지 않기로 확정(2026-08-06 후속 세션).** 애초에 getter가
+**Getter는 만들지 않기로 확정(2026-08-06 후속 세션).**
+**[관계 명시, 2026-08-20 구현 전 QA 4라운드 `M-9`] 다만 아래 9번 절의
+`:Peek(key)`가 사실상 getter 역할을 한다** — 사용자 지적(*"사실 Peek 가
+게터라고 봐도 되긴 함"*). 이 절이 "안 만든다"고 한 건 **setter와 짝을 이루는
+필드별 getter**(`:FontSize()` 무인자 호출로 값을 꺼내는 모양, 또는 dot-access
+겸용)이고, `:Peek`은 그것과 달리 **키를 인자로 받는 단일 범용 접근자**이며
+설계 동기도 다르다(setter 인체공학이 아니라 `Apply` 팩토리가 현재 상태를
+읽어야 해서). 두 서술이 모순이 아니라는 걸 문서화 시 같이 밝힐 것 —
+"getter가 없다"만 읽으면 `:Peek`의 존재와 부딪히는 것처럼 보인다. 애초에 getter가
 필요했던 유일한 이유가 "현재 값을 꺼내서 여러 줄에 걸쳐 계산한 뒤 리터럴로
 다시 넣는" 멀티라인 스타일이었는데, `:FontSize(function(old) ... end)`
 변환 함수 하나가 그 케이스를 인라인으로 완전히 커버함 — 별도 `:Get(key)`/

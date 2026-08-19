@@ -449,6 +449,37 @@ Tween(opts: {
 }) -> Tween<T>
 ```
 
+## `Tween<T>:Map(fn)` — 값만 갈아끼운 새 `Tween`을 반환 (2026-08-20 구현 전 QA 4라운드 `UI-8` 신설)
+
+**동기**: `base/ui-shorthand-plan.md`의 숏핸드가 스칼라를 자식 프로퍼티 타입으로
+감싸야 하는데(`UICorner = 8` → `CornerRadius = UDim.new(0, 8)`), 값이
+`Tween<number>`면 그 변환을 **`Tween`을 벗기지 않고 `.Value`에만** 적용해야 한다.
+그 문서가 `mapTweenValue(v, wrap)`라는 로컬 헬퍼로 적어뒀던 것을, 사용자 판정으로
+**`Tween` 자신의 공개 메소드로 승격**한다: *"그냥 펑터 구조를 그대로 줘도
+무방한듯. :Map 정도로써 새 Tween 을 새 관측된 Value 로 형성."*
+
+```lua
+tween:Map(fn: (T) -> U): Tween<U>   -- opts를 clone하고 Value만 fn(Value)로 교체해 새 Tween 반환
+```
+
+- **타입이 안전하게 성립한다** — `Tween<T>`는 immutable raw 값이고 `Value` 외의
+  필드는 값 타입과 무관한 옵션(`Time`/`Style`/…)이라, `Value`만 `U`로 바꾼
+  `Tween<U>`를 만드는 건 타입 레벨에서 깨끗하다.
+- **`Tween<T>`가 immutable이라는 기존 확정과 일관** — `:Map`은 원본을 안 건드리고
+  `table.clone` 후 `Value`만 교체해 `Tween(opts)`로 다시 만든다(`Tag`/`Modifier`의
+  clone 체이닝과 같은 계열).
+- **부수 효과 — 기본 `Tween` 정의를 만들어두고 재사용하는 패턴이 열린다.**
+  `local FAST = Tween{Value = 0, Time = 0.15}` 같은 상수를 두고
+  `FAST:Map(function() return targetPos end)`처럼 옵션만 재사용할 수 있다. 다만
+  **사용 케이스가 넓지는 않을 것**으로 봄 — 어차피 내부 구현에 필요해서 만드는
+  것이고, 외부에 보이는 게 무해하니 같이 공개하는 것뿐(사용자 판단).
+- **이름 — `Map` 또는 `Mapped`.** 코퍼스의 `-ed` 관례("clone 후 즉시 확정된 값"은
+  `Added`/`Removed`/`Overridden`처럼 과거분사, `base/source-state-plan.md`의
+  "네이밍 — `Compute`가 `-ed`가 아닌 이유" 절)를 그대로 적용하면 **`Mapped`가
+  더 일관적**이다 — `Tween`은 lazy가 아니라 즉시 확정되는 raw 값이므로.
+  사용자도 둘 다 열어둠(*"혹은 Mapped 의 immutable 의 ed 형태를 써도 좋아보임"*)
+  — **⚠️ 최종 이름은 미확정**, 코퍼스 일관성만 보면 `Mapped` 쪽이 맞다.
+
 ## 네임스페이스드 객체 (더 이상 유효한 관심사 아님)
 
 기존 모델(핸들러가 대상을 이름으로 찾아야 하는 가능성)을 염두에 두고
