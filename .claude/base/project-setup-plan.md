@@ -64,12 +64,12 @@ quad/
 ## 툴체인 — `rokit.toml`
 
 `initreq/vide`(참고 레포)의 `rokit.toml` 선례를 따르되 wally 항목은
-뺐다. **[2026-08-19] 이 세션이 `/code/.local/bin`에 pesde 바이너리를
-직접 다운로드해 설치·검증 완료** — `pesde 0.7.3`, `rokit.toml`의 핀
-(`pesde-pkg/pesde@0.7.3+registry.0.2.3`)과 정확히 일치. `rojo` 핀은
-GitHub 릴리스 페이지 조회로만 확인했고 실제 설치·실행 검증은 안 함(Rojo는
-Studio 연동이 필요해 `HUMAN_TODO.md` 1번과 같은 처지) — 버전이 오래되면
-`rokit add rojo-rbx/rojo`로 다시 확인할 것.
+뺐다. **[2026-08-19, 같은 날 후속 세션에 전부 완료]** `pesde`/`rojo`/
+`luau-lsp` **셋 다** `/code/.local/bin`에 직접 다운로드해 설치·검증
+완료 — 각각 `0.7.3`/`7.7.0`/`1.69.0`, `rokit.toml`의 핀과 정확히 일치.
+`rokit` 자체는 이 샌드박스에 없어 `rokit install`로 한 번에 검증한 건
+아니고 바이너리를 개별 다운로드해 버전을 대조한 것 — 실제 `rokit`
+워크플로 자체의 검증은 여전히 사람의 로컬 환경 몫.
 
 ## require 구조 — `@self`가 필수인 이유
 

@@ -423,12 +423,14 @@ function은 구체 타입에 대해서만 동작하는 실행 모델이라, RFC�
 
 ## 8. 미해결 / 추적 중
 
-- **에디터(`luau-lsp`)의 솔버 설정** — `luau-analyze` CLI는 새 솔버가
-  기본값이지만 `luau-lsp`는 **옛 솔버가 기본값**(`LuauSolverV2=false`)이라
-  같은 코드에 다른 진단이 나옵니다. 새 솔버로 맞추려면
-  `"luau-lsp.fflags.enableNewSolver": true`. **M0 실착수 때 실제 에디터
-  환경에서 확정할 것** — 옛 솔버는 1번 패턴을 아예 거부하므로 사실상
-  새 솔버 외에 선택지가 없어 보이지만, 실환경에서 확인 필요.
+- **[2026-08-19 설정 완료]** 에디터(`luau-lsp`)의 솔버 설정 — `luau-analyze`
+  CLI는 새 솔버가 기본값이지만 `luau-lsp`는 **옛 솔버가 기본값**
+  (`LuauSolverV2=false`)이라 같은 코드에 다른 진단이 남. `luau-lsp`
+  바이너리(1.69.0)를 직접 설치해 `luau-lsp analyze
+  --flag:LuauSolverV2=true/false`로 실측 — 새 솔버가 필요하다는 결론
+  재확인, `quad/.vscode/settings.json`에 `"luau-lsp.fflags.enableNewSolver":
+  true`를 반영·커밋 완료(`tbox`도 같은 설정 확인). 실제 VSCode 세션에서
+  이 설정이 반영되는지 육안 확인만 사람 몫으로 남음(`HUMAN_TODO.md` 6번).
 - **`luau-lang/luau#2380`** — 닫히면 1번 관례 재검증(③ 포함).
 - **`state:With(...)`/`state:Apply(factory)`에 1번 ③(`typeof`) 개별
   실측** — `Compute`에서만 확인됐고, base pseudocode에 실제로 반영할

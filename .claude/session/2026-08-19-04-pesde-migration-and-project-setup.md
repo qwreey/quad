@@ -119,4 +119,28 @@ sourcemap`/`rojo build`를 돌려본 결과, **symlink를 투명하게 따라가
 `HUMAN_TODO.md` 1번). 임시 검증 파일(`test-symlink-check.project.json`)은
 확인 후 삭제, 결과만 `project-setup-plan.md`에 반영.
 
-다음: (3) 스파이크 `13`, (4) 에디터 솔버 설정.
+**(3) 완료** — `13-type-ref-preref-subtype.luau`를 타입 전용으로 남기고
+(`PostRef<T>`도 `Ref<T>`를 만족하는지 추가), 런타임 절반은 신규
+`22-runtime-ref-preref-postref-brand.luau`로 분리(A의 더미 스텁이 B
+실행을 막던 문제 해결). `isPreRef`/`isPostRef`가 서로 배타적 형제이고
+Leaf 핸들러 흉내가 셋을 정확히 갈라냄을 확인. 둘 다 `done/`.
+
+**(4) 완료** — `luau-lsp` 바이너리(1.69.0)도 같은 방식으로
+`/code/.local/bin`에 직접 설치. `luau-lsp analyze
+--flag:LuauSolverV2=true/false`로 spike `08`(재귀 제네릭 패턴)을
+비교한 결과 새 솔버 필요성 재확인(옛 솔버는 같은 패턴에 에러 3건,
+새 솔버는 1건). `quad/.vscode/settings.json`에
+`enableNewSolver: true` 반영·커밋. 부수로 typing-limits.md §1의 핵심
+주장("`local s = n:Compute(fn); local wrong: number = s:Get()`가 0
+진단으로 통과") 자체도 Luau 0.734에서 여전히 재현됨을 별도 최소
+repro로 재확인(`s`가 `Unifiable<Error>`로 새는 것, `wrong` 줄은 진단
+0건 — base 문서 정정 불필요, 그대로 유효함만 재확인). tbox가 쓰던
+`LuauDoNotExportBrokenTypeFunction` override는 quad의 현재 type
+function 스파이크(`16`/`21`)에서 유무 차이가 없어 채택 안 함.
+`HUMAN_TODO.md` 6번/`typing-limits.md` §8 갱신, `rokit.toml`에
+`luau-lsp` 핀 추가.
+
+**남은 사람 몫**: VSCode를 실제로 열어 `.vscode/settings.json` 설정이
+반영됐는지 육안 확인(HUMAN_TODO 6번), Studio 실물 동기화(HUMAN_TODO
+1번, 계정 분리 대기). 이번 라운드로 이번 대화의 4개 후속 검증 항목은
+전부 닫힘.
