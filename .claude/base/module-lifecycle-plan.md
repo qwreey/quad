@@ -144,16 +144,35 @@ return Init
   하는 공개 계약(같은 팩토리 재호출=no-op, 다른 팩토리=에러)이고, `RunInit`은
   quad-base 내부 서브시스템이 **한 번만** 도는지만 보면 되는 사적 구현
   디테일이라 "다른 호출자면 에러" 분기 자체가 없다.
-  **⚠️ [2026-08-19 미결, 사용자 질문] `RunInit`을 `QuadRoblox(Quad):
-  QuadRoblox`(backend 설치 진입점) 내부에서도 재사용해도 되는가?**
-  `RunInit`은 함수 identity로만 추적하므로, `InitRoblox`/`InitGtk`처럼
-  **서로 다른 함수가 같은 "백엔드 슬롯"을 다투는 경우를 구분 못 한다**
-  (둘 다 "아직 안 돈 함수"라 각자 조용히 실행됨 — 다른 팩토리 재호출을
-  에러로 잡아야 하는 계약과 정면으로 다름). `RunInit`은 "이 함수가 이미
-  돌았는가"만 답할 수 있고 "이 *슬롯*을 다른 함수가 이미 채웠는가"는
-  답할 수 없다는 게 핵심 차이 — backend 가드에 그대로 재사용하려면
-  별도 슬롯 키(예: 고정 이름 `"backend"`)로 감싸는 한 겹이 더 필요해
-  보이나, 결론 미정. M2/M5 착수 전 확인 필요.
+  **[2026-08-19 해소, 사용자 결정] `RunInit`은 backend 설치에 재사용
+  안 함 — `_initializedBy` 마커를 그대로 별도로 둔다.** 근거는 위에서
+  이미 짚은 그대로: `RunInit`은 "이 함수가 이미 돌았는가"만 답하는
+  함수-identity 추적이라 "이 *슬롯*을 다른 함수가 이미 채웠는가"(다른
+  팩토리 재호출 = 에러)를 표현 못 함 — 억지로 슬롯 키를 얹어 확장하면
+  "멱등 실행"과 "유일 슬롯 점유"라는 서로 다른 두 의미가 API 하나에
+  섞여 `RunInit`의 단순함이 깨짐. `_initializedBy`는 `bind-system-plan.md`
+  3차 라운드가 이미 확정해둔 그대로 문자열 마커 하나로 남김:
+
+  ```lua
+  -- 예시(quad-roblox, M5 실제 구현 시)
+  local function InitRoblox(module)
+      if module._initializedBy == "roblox" then
+          return module -- 같은 팩토리 재호출 = no-op
+      end
+      if module._initializedBy ~= nil then
+          error(`Quad module already initialized by '{module._initializedBy}'`)
+      end
+      module._initializedBy = "roblox"
+      -- ... 실제 백엔드 설치(bindLifetime/canBound/addTag/removeTag/setAttribute 등 주입)
+      return module
+  end
+  ```
+
+  `RunInit`(quad-base 내부 서브시스템, 함수 identity 추적)과
+  `_initializedBy`(backend 유일 슬롯, 문자열 마커 + 다른 값이면 에러)는
+  계속 **서로 다른 메커니즘**으로 남는다 — 이름이 겹치지 않게 쓸 것.
+  실제 `RobloxFactory`/`InitRoblox` 구현은 M5(`architecture.md` 소스
+  트리의 `quad-roblox/src/RobloxFactory.luau`)에서.
 - **플래그를 실제 작업 전에 먼저 세우는 이유**: 나중에 `InitA`↔`InitB`처럼
   상호 의존이 생기면([2026-08-19 기준] 지금은 없음, 대비만), 먼저
   표시해두지 않으면 무한 재귀에 빠진다 — `require`가 순환 참조 시
