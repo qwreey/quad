@@ -85,67 +85,86 @@ export 타입을 최상위에서 그대로 재노출하는 게 Luau에서 문제
 
 **순서 의존성은 각 `InitXxx`를 `require`처럼 멱등하게 만들어서 해소한다**
 (2026-08-19, 사용자 제안) — 서브시스템 간 호출 순서를 최상위 `New()`가
-직접 관리할 필요가 없다: 각 `InitXxx` 파일이 자기 톱레벨(함수 클로저
-**밖**, 파일 스코프)에 `local relate = Relate()`를 하나 두고, `module`을
-weak key 삼아 "이 `module` 인스턴스에 이미 Init됐는지"를 기록한다. 이미
-됐으면 그대로 스킵, 아니면 실제 작업을 한 번만 수행 — Lua의 `require`
-캐시와 같은 발상이지만, `require` 캐시는 **파일** 단위(Init 함수 자체는
-한 번만 로드)인 반면 `New()`는 여러 번 호출돼 서로 다른 `module` 테이블을
-여러 개 만들 수 있어서, "이 particular 인스턴스에" 멱등하려면 파일 스코프
-캐시로는 부족하고 `module`을 키로 하는 이 `Relate`가 따로 필요하다.
+직접 관리할 필요가 없다.
+
+**[2026-08-19 같은 날 후속 정정] 멱등 가드는 `RunInit` 하나로 통합됨 —
+파일마다 `Relate()`/`INITED` 센티널을 따로 두지 않는다.** 원래는 각
+`InitXxx` 파일이 자기 톱레벨에 `local relate = Relate()`를 두고 파일
+전용 센티널 키(`INITED`)로 "이 `module`에 이미 Init됐는가"를 기록하는
+보일러플레이트를 파일마다 반복했는데, **사용자 지적**: 그 반복 자체가
+불필요하다 — **함수 자기 자신을 릴레이션 키로 쓰면** 센티널이 따로
+필요 없다(`Relate<T, (any)->any, boolean>`이 곧 "이 함수, 이 모듈에
+실행했는가" 표가 됨). `module` 인스턴스마다 공유하는 `RunInit` 메서드
+하나가 이 판단을 전담하고, 개별 `InitXxx` 파일은 **가드 없이 그냥
+뮤테이션만** 하면 된다:
 
 ```lua
--- Dispatch/init.luau
+-- 최상위 init.luau
 local Relate = require(...)
-local relate = Relate() -- 파일 스코프, 클로저 밖 — 이 Init 전체가 공유하는 단 하나의 인스턴스
+local runInitRelate = Relate() -- (module, initFn) -> 이미 실행됐는가, 파일 스코프 공유
 
-local function Init(module)
-    if relate:GetStrong(module, INITED) then
-        return -- 이미 이 module 인스턴스엔 Init됨, no-op
+local function New(): Quad
+    local module = { New = New } :: Quad
+
+    function module.RunInit(self, initFn)
+        if runInitRelate:GetStrong(self, initFn) then
+            return -- 이 module 인스턴스에 이 initFn은 이미 실행됨, no-op
+        end
+        runInitRelate:SetStrong(self, initFn, true) -- 실행 전에 먼저 표시(순환 의존 대비)
+        initFn(self)
     end
-    relate:SetStrong(module, INITED, true) -- 실제 작업 전에 먼저 표시(순환 의존 대비, 아래 참고)
-    -- 자신의 의존성도 그냥 require+호출 — 상대도 멱등하므로 중복/순서 걱정 없음
-    -- 예: InitLifetime(module)
-    local ...
-    module.Dispatch = ...
+
+    module:RunInit(InitDebug)
+    -- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 추가
+    return module
+end
+```
+
+```lua
+-- Debug/init.luau — 가드 없이 그냥 뮤테이션만(RunInit이 이미 1회만 보장)
+local function Init(module)
+    module.debug = false
 end
 return Init
 ```
 
-이렇게 하면 **의존하는 쪽이 자기 의존성을 직접 호출**하면 되고(`require`가
-의존 그래프를 알아서 풀어주는 것과 같은 감각), 최상위 `New()`는 순서를
-신경 쓰지 않고 아는 `InitXxx(module)`을 전부 호출해도 된다 — 이미 누가
-먼저 채웠으면 알아서 스킵된다.
-
-- **GC와도 자연히 맞물림**: `relate-plan.md`의 "API" 절에 따르면 `Relate`의
-  **첫 인자(`inst`, 여기선 `module`)는 항상 weak**다(선택의 여지가 없는
-  고정 동작 — `Weak`/`Strong` 구분은 오직 `value` 쪽 보관 방식만 가리킴).
-  그래서 `value` 쪽을 `SetWeak`으로 두든 `SetStrong`으로 두든 상관없이,
-  어떤 `Quad` 인스턴스(전체 `module` 테이블)가 더 이상 참조되지 않아
-  수거되면 이 Init-완료 기록도 같이 사라진다 — 별도 정리 로직 불필요.
-  `relate-plan.md`가 이미 확정해둔 "각 모듈이 자기 톱레벨에 `Relate()`
-  하나를 두고 재사용" 관례를 그대로 쓰는 것이라 새 메커니즘 아님.
-  (`relate-plan.md`가 별도로 명시한 "명시적으로 만든 기록은 명시적으로
-  지울 것" 원칙과 충돌하는 게 아니라 — 이 경우는 기록의 키 자체가 죽으면
-  그 기록을 다시 조회할 주체 자체가 사라지므로 지울 대상이 없어지는,
-  원칙이 애초에 상정하지 않은 자리다.)
-- **`value`는 `SetStrong`으로 통일**: 위 문단대로 GC 결과엔 차이가 없지만
-  (boolean 리터럴은 애초에 GC 대상이 아님), `relate-plan.md`의 일반 규칙
-  "다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`" 기준으로는 이 `true`
-  플래그를 다른 어디도 붙잡고 있지 않으므로 `SetStrong`이 그 규칙에 맞는
-  선택이다.
+- **의존성을 갖는 `InitXxx`도 패턴이 그대로 유지된다** — 자기 의존성을
+  `module:RunInit(InitLifetime)`처럼 부르기만 하면 되고, `RunInit` 자체가
+  멱등하므로 여러 `InitXxx`가 같은 의존성을 부르는 순서/중복은 걱정할
+  필요 없다(옛 설계와 결론은 같음, 가드 소유 위치만 파일별→공유로 이동).
+- **GC와도 자연히 맞물림** — `relate-plan.md`의 "API" 절에 따르면
+  `Relate`의 **첫 인자(`inst`, 여기선 `module`)는 항상 weak**이므로,
+  `Quad` 인스턴스가 더 이상 참조되지 않아 수거되면 이 Init-완료 기록도
+  같이 사라진다(별도 정리 로직 불필요, `value`는 `SetStrong` — boolean
+  리터럴이라 GC 결과엔 무관하지만 "다른 곳에서 안전하게 유지되는 것만
+  `SetWeak`" 일반 규칙에 맞음).
 - **`_initializedBy` 가드(아래 "Bind는 누가, 어떻게 구현하는가" 절, 실제
-  정의는 `base/bind-system-plan.md`)와는 다른 층위** — 그건 backend
-  팩토리가 유일 슬롯을 채웠는지 **누가** 채웠는지까지 구분해야 하는 공개
-  계약(같은 팩토리 재호출=no-op, 다른 팩토리=에러)이고, 이건 quad-base
-  내부 서브시스템 각각이 **한 번만** 도는지만 보면 되는 사적 구현
-  디테일이라 "다른 호출자면 에러" 같은 분기 자체가 없다. 이름이 겹치지
-  않게 구분해서 쓸 것.
+  정의는 `base/bind-system-plan.md`)와는 여전히 다른 층위** — 그건
+  backend 팩토리가 유일 슬롯을 채웠는지 **누가** 채웠는지까지 구분해야
+  하는 공개 계약(같은 팩토리 재호출=no-op, 다른 팩토리=에러)이고, `RunInit`은
+  quad-base 내부 서브시스템이 **한 번만** 도는지만 보면 되는 사적 구현
+  디테일이라 "다른 호출자면 에러" 분기 자체가 없다.
+  **⚠️ [2026-08-19 미결, 사용자 질문] `RunInit`을 `QuadRoblox(Quad):
+  QuadRoblox`(backend 설치 진입점) 내부에서도 재사용해도 되는가?**
+  `RunInit`은 함수 identity로만 추적하므로, `InitRoblox`/`InitGtk`처럼
+  **서로 다른 함수가 같은 "백엔드 슬롯"을 다투는 경우를 구분 못 한다**
+  (둘 다 "아직 안 돈 함수"라 각자 조용히 실행됨 — 다른 팩토리 재호출을
+  에러로 잡아야 하는 계약과 정면으로 다름). `RunInit`은 "이 함수가 이미
+  돌았는가"만 답할 수 있고 "이 *슬롯*을 다른 함수가 이미 채웠는가"는
+  답할 수 없다는 게 핵심 차이 — backend 가드에 그대로 재사용하려면
+  별도 슬롯 키(예: 고정 이름 `"backend"`)로 감싸는 한 겹이 더 필요해
+  보이나, 결론 미정. M2/M5 착수 전 확인 필요.
 - **플래그를 실제 작업 전에 먼저 세우는 이유**: 나중에 `InitA`↔`InitB`처럼
   상호 의존이 생기면([2026-08-19 기준] 지금은 없음, 대비만), 먼저
   표시해두지 않으면 무한 재귀에 빠진다 — `require`가 순환 참조 시
   미완성 exports를 돌려주는 것과 같은 이유로, 실제 작업 시작 전에 먼저
   "완료"로 표시해둔다.
+- **실측**: `quad-base/src/init.luau`+`Debug/init.luau`가 위 코드
+  그대로 구현돼 있고, `quad-base/test/smoke.init.luau`가 (a) 같은
+  `initFn`을 여러 번 `RunInit`해도 1회만 실행, (b) `New()`로 만든
+  서로 다른 인스턴스는 기록을 공유하지 않음(각자 독립 1회), (c) 서로
+  다른 `initFn`은 서로의 실행 여부에 영향 안 줌 — 셋 다 `luau`/
+  `luau-analyze`/`selene` 클린으로 확인.
 
 ## Bind는 누가, 어떻게 구현하는가
 

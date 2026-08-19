@@ -91,6 +91,28 @@ require-by-string 의미론(`@self` 등)을 그대로 지원하므로, darklua�
 형태로 변환할 필요성 자체가 낮다는 판단. quad-base는 엔진 무관이어야
 하므로 애초에 Roblox 전용 변환의 적용 대상도 아님.
 
+**[2026-08-19 후속 확인 — 정확한 경계]** `darklua` 바이너리(0.19.0)를
+직접 설치해 참고 레포에서 실제로 `darklua process`를 돌려 정확히 어디까지
+관여하는지 확인:
+- **`require("@self/X")`/`require("@game/...")`는 `convert_require`가
+  아예 손을 안 댐** — `unable to require resource: unknown source name
+  '@self'`로 경고만 찍고 원문 그대로 통과시킴. 즉 예약 alias는 런타임이
+  직접 처리한다고 전제하고 있고, 이 세션의 결론과 정합.
+- **커스텀 `.luaurc` alias(`@pkg` 등)는 다르다 — `convert_require`가
+  실제로 `@pkg/assets`를
+  `require(game:GetService('ReplicatedStorage'):WaitForChild('roblox_packages'):WaitForChild('assets'))`
+  로 치환함**(`.luaurc`의 alias 매핑 + Rojo sourcemap을 같이 읽어서
+  해석 — 대상 파일이 실제로 존재해야 성공, `pesde install` 전엔 실패).
+  즉 **커스텀 alias 기반 require를 실제로 쓰려면 darklua(또는 동급
+  빌드 스텝) 없이는 배포 시점에 그 문자열이 그대로 남아 동작을 보장할
+  근거가 없다** — standalone `luau` CLI가 커스텀 alias를 거부하는 것과
+  같은 결(`could not jump to alias`), Roblox 엔진이 예약 alias 밖의
+  커스텀 alias까지 자체적으로 푼다는 근거는 없음.
+- **결론**: quad는 커스텀 alias를 전혀 안 쓰고 상대경로+`@self`만
+  쓰므로 지금은 darklua가 불필요. **나중에 `@pkg/quad_base`류 축약
+  alias를 도입하고 싶어지면 그때는 darklua(혹은 동급 변환)가 실질적으로
+  필요해진다** — 그 시점에 이 절을 다시 열 것.
+
 ## require 구조 — `@self`가 필수인 이유
 
 **[2026-08-19, 사용자 지적 + Luau RFC `abstract-module-paths-and-init-dot-luau`로 확인]**
