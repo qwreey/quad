@@ -28,11 +28,13 @@ M3 이후 실제 구현이 아님 — `quad-base/src`는 아직 `Relate.luau`/�
 ```
 quad/
 ├── pesde.toml          # 워크스페이스 루트, private = true, workspace_members
-├── rokit.toml           # pesde/rojo 버전 핀
+├── mise.toml            # pesde/rojo/luau-lsp/selene 버전 핀
 ├── quad-base/
-│   └── pesde.toml       # name = "qwreey/quad_base"
+│   ├── pesde.toml       # name = "qwreey/quad_base"
+│   └── selene.toml
 └── quad-roblox/
-    └── pesde.toml       # name = "qwreey/quad_roblox", quad_base에 workspace 의존
+    ├── pesde.toml       # name = "qwreey/quad_roblox", quad_base에 workspace 의존
+    └── selene.toml
 ```
 
 - **루트 `pesde.toml`**: `private = true`(게시 안 됨) + `workspace_members =
@@ -61,15 +63,33 @@ quad/
   갱신됨(`qwreey/quad`/`qwreey/quad_base`/`qwreey/quad_roblox` 셋 다
   스캔·링크).
 
-## 툴체인 — `rokit.toml`
+## 툴체인 — `rokit.toml`에서 `mise.toml`로 전환 (2026-08-19)
 
-`initreq/vide`(참고 레포)의 `rokit.toml` 선례를 따르되 wally 항목은
-뺐다. **[2026-08-19, 같은 날 후속 세션에 전부 완료]** `pesde`/`rojo`/
-`luau-lsp` **셋 다** `/code/.local/bin`에 직접 다운로드해 설치·검증
-완료 — 각각 `0.7.3`/`7.7.0`/`1.69.0`, `rokit.toml`의 핀과 정확히 일치.
-`rokit` 자체는 이 샌드박스에 없어 `rokit install`로 한 번에 검증한 건
-아니고 바이너리를 개별 다운로드해 버전을 대조한 것 — 실제 `rokit`
-워크플로 자체의 검증은 여전히 사람의 로컬 환경 몫.
+원래는 `initreq/vide`(참고 레포)의 `rokit.toml` 선례를 따랐음(같은 날
+`pesde`/`rojo`/`luau-lsp` 셋 다 `/code/.local/bin`에 직접 다운로드해
+설치·핀과 버전 일치까지 검증). **같은 날 후속 세션에 `mise.toml`로
+재전환** — 사용자 결정("요즘은 rokit 보단 mise로 까는듯 하네. 더
+범용적이라 이걸 택하는듯"), 근거는
+`Word30210/roblox-project-example`(`initreq/roblox-project-example`로
+클론해 확인)의 `mise.toml`. `rokit`은 이 샌드박스에 아예 없어 한 번도
+직접 검증 못 했던 반면, **`mise`는 이 샌드박스 자체가 이미 `luau` 설치에
+쓰고 있어서 `mise install`을 그 자리에서 실행해 진짜로 검증**함 —
+`pesde`/`rojo`/`luau-lsp`/`selene` 넷 다 GitHub artifact attestation +
+SLSA provenance 검증까지 거쳐 설치됨(이전 세션이 `curl`로 직접 받던
+방식보다 공급망 신뢰도가 높음), `mise exec -- <tool> --version`으로
+버전 일치까지 확인. `mise.toml`의 tool 키는 백엔드 접두사가 붙는다
+(`github:owner/repo` / `aqua:owner/repo`) — `rokit.toml`의 `owner/repo@ver`
+평문 표기와 형태가 다르니 그대로 베끼지 말 것.
+
+**darklua는 검토 후 채택 안 함** — 참고 레포는 `.darklua.json`의
+`convert_require` 룰로 경로 기반 require를 빌드 시점에 Rojo sourcemap
+기준 `script.Parent`류로 변환하는데, **사용자 판단(2026-08-19)**: "Roblox
+안에서도 이미 string require가 적용되긴 하고, `@self`와 `@game`이
+먹는다. 같은 동작을 하지만 `./` 등으로 위치를 어떻게 두냐에 유의가
+필요할 뿐" — 즉 실제 Roblox 엔진도 이 세션이 확인한 것과 같은
+require-by-string 의미론(`@self` 등)을 그대로 지원하므로, darklua로 다른
+형태로 변환할 필요성 자체가 낮다는 판단. quad-base는 엔진 무관이어야
+하므로 애초에 Roblox 전용 변환의 적용 대상도 아님.
 
 ## require 구조 — `@self`가 필수인 이유
 
@@ -183,6 +203,34 @@ require에서 여전히 안 먹는다** — `architecture.md`가 이미 이렇�
 동작하는 것과 구분할 것). 그래서 alias는 편집기 자동완성/타입체크
 용도로만 남기고, 실제 require는 위 규칙대로 상대경로 + `@self`.
 
+## `selene` 린터 — 패키지별 설정, CWD 상대 config 탐색 함정
+
+**[2026-08-19 신설]** 사용자 결정으로 `selene`(참고 레포
+`initreq/roblox-project-example`의 `scripts/selene.toml` 그대로 채택)을
+도입 — `luau-analyze`(타입체크)와 겹치지 않는 별도 축(정의되지 않은
+변수, 사용 안 하는 변수, `assert` 메시지 누락 등 스타일/버그 패턴
+린트)이라 같이 씀. `quad-base/selene.toml`/`quad-roblox/selene.toml`
+각각 독립 배치(참고 레포도 패키지마다 독립 설정) — 아래 실측 이유 때문에
+루트 단일 설정은 안 씀.
+
+**⚠️ `selene`의 `--config` 탐색은 파일 트리를 거슬러 올라가며 찾는 게
+아니라 CWD 기준 고정 경로(`./selene.toml`)다.** 루트에 `selene.toml`
+하나만 두고 `selene quad-base/`를 저장소 루트에서 실행하면, 그 자리엔
+`selene.toml`이 없어(패키지 폴더 안에 있으므로) **Luau 문법 자체를 못
+읽는 기본(Lua 5.1) std로 조용히 폴백** — `type Quad = {...}` 같은 평범한
+타입 선언까지 전부 "unexpected token" 파싱 에러로 쏟아짐(30여 건, 전부
+가짜). 처음엔 이게 "이 selene 빌드가 Luau 타입 문법을 아예 지원 못
+한다"는 뜻인 줄 알았으나, `std = "luau"`가 든 `selene.toml`을 CWD에
+두면 정확히 같은 파일이 0 에러로 통과함 — 즉 **문제는 selene의 Luau
+지원이 아니라 config 탐색 방식**이었다.
+
+**규칙**: 항상 **패키지 디렉토리 안에서** 실행할 것 —
+`cd quad-base && selene .`(참고 레포의 Justfile도 정확히 이 패턴으로
+각 패키지를 순회함, `refresh`/`clean` 레시피). 저장소 루트에서
+`--config quad-base/selene.toml quad-base/`처럼 명시적으로 경로를
+지정해도 되지만, 그럴 거면 그냥 `cd`가 더 안전(설정 파일 지정을
+빠뜨리기 쉬움).
+
 ## `pesde.lock` — 커밋 권고 (미확정, 사용자 판단 필요)
 
 **[2026-08-19 실측, 최초 서술 정정]** 처음엔 "워크스페이스 루트에 딱
@@ -217,7 +265,7 @@ lockfile들이 **게시되는 대상이 아니기** 때문 — 루트는 `privat
 - 워크스페이스 의존성이 symlink로 연결되고, 그게 `luau` CLI의
   require-by-string과 충돌한다는 것(직접 재현 + Luau RFC로 원인 확인)
 - **[2026-08-19 후속 세션]** Rojo(`/code/.local/bin`에 직접 설치,
-  `7.7.0`, `rokit.toml` 핀과 일치)는 위 symlink 문제와 무관 — `rojo
+  `7.7.0`, 툴체인 핀과 일치)는 위 symlink 문제와 무관 — `rojo
   sourcemap`/`rojo build` 둘 다 `roblox_packages`의 symlink를 실제
   파일까지 투명하게 따라감을 확인. 위 심볼릭 링크 함정은 Luau standalone
   CLI의 require-by-string 전용 문제로 범위가 좁혀짐
@@ -229,6 +277,12 @@ lockfile들이 **게시되는 대상이 아니기** 때문 — 루트는 `privat
   안 됨(`architecture.md`가 pesde 전환의 배경으로 들었던 문제 자체가
   실제로 해소됐다는 간접 증거). 산출물 `sourcemap.json`은 재생성되는
   빌드 산물이라 `.gitignore`에 추가
+- **[2026-08-19 셋째 후속 세션]** `mise.toml`이 `pesde`/`rojo`/`luau-lsp`/
+  `selene` 넷 다 정확히 설치·버전 일치함을 `mise install` + `mise exec`로
+  직접 확인(attestation/provenance 검증까지 포함) — `rokit`은 끝내
+  한 번도 직접 검증 못 했던 것과 대비됨
+- `selene`의 `--config` 탐색이 파일 트리를 안 거슬러 올라가고 CWD
+  기준 고정 경로라는 것(위 "`selene` 린터" 절)
 
 **아직 확인 안 됨(다음에 도구/환경이 갖춰지면)**:
 - 루트 `pesde.toml`의 `[target]` 섹션이 실제로 의미가 있는지(지금은

@@ -187,13 +187,17 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
 pesde는 **네이티브 workspace**(Cargo 워크스페이스와 동형: 루트
 `workspace_members` + 멤버 간 `{ workspace = "scope/name", version = "^" }`
 의존)로 처음부터 1급 지원하므로, wally가 안고 있던 타입 정보 단절 문제
-자체도 이 전환으로 같이 해소될 것으로 기대(단, 이 세션은 pesde 바이너리가
-없는 샌드박스라 `pesde install`로 실제 링크 결과까지는 검증 못함 — 실제
-설치 검증은 사람이 로컬에서 `rokit install` 이후 확인할 것).
+자체도 이 전환으로 같이 해소됨 — **[2026-08-19 같은 날 후속 세션]**
+pesde/rojo 바이너리를 이 샌드박스에 직접 설치해 `pesde install`/`rojo
+build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup-plan.md`가
+소스, 워크스페이스 의존성이 symlink로 연결되고 Rojo는 이를 투명하게
+따라감).
 실제 구현: 루트 `pesde.toml`(`private = true`,
 `workspace_members = ["quad-base", "quad-roblox"]`) + `quad-base/pesde.toml`/
 `quad-roblox/pesde.toml`(각각 `[target] environment = "roblox"`,
-`quad-roblox`는 `quad-base`에 workspace 의존), 툴체인은 `rokit.toml`로 핀.
+`quad-roblox`는 `quad-base`에 workspace 의존), 툴체인은 `mise.toml`로 핀
+(`rokit.toml`에서 전환, 2026-08-19 사용자 결정 — 더 범용적인 도구라는
+판단, `base/project-setup-plan.md`의 "툴체인" 절 참고).
 pesde는 "패키지 안에 `default.project.json`을 두지 말 것"이 컨벤션(그
 파일은 소비자가 직접 만드는 sync 설정 몫) — 루트의 `default.project.json`은
 이 규칙의 예외가 아니라 애초에 그 규칙이 가리키는 대상이 아님(워크스페이스

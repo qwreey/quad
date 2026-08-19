@@ -29,9 +29,9 @@ do
 
 	local children = root:GetChildren()
 	assert(#children == 2, "expected 2 children")
-	assert(root:FindFirstChild("A") == child1)
-	assert(root:FindFirstChild("B") == child2)
-	assert(child1.Parent == root)
+	assert(root:FindFirstChild("A") == child1, "FindFirstChild must locate child by Name")
+	assert(root:FindFirstChild("B") == child2, "FindFirstChild must locate child by Name")
+	assert(child1.Parent == root, "Parent must read back what was assigned")
 
 	child1.Parent = nil
 	assert(#root:GetChildren() == 1, "removing Parent must detach from old parent's children")
