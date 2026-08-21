@@ -57,6 +57,17 @@
    **[2026-08-22 해소]** 여기 있던 "M2에 `Blocker`까지 넣을지"는 같은 날
    `ROADMAP.md` 전반 점검에서 **둘 다 M2**로 확정되며 닫혔다.
 
+   **⭐⭐ [2026-08-22 신설] 6라운드 — 손 트레이싱, 사용자 회신 대기.**
+   사용자 요청으로 최근 확정 5개 영역(`Effect(fn, ...deps)` / `Gate`·`Blocker` /
+   State 전파(`rawInvalid`·emit 지연) / Slot의 `native*`·offset·length·mount /
+   `Brand`·`Epoch`·`EpochMap`)을 실제 값으로 돌려봤고, **의사코드 그대로
+   구현하면 크래시하거나 조용히 어긋나는 것들이 나왔다.** 문항지가 아니라
+   발견 보고이고 **`base/`는 아직 한 줄도 안 고쳤다** — 소스는
+   `qa-request/pre-implementation-handtrace-round6.md`(발견 수·심각도·개별
+   항목은 여기서 세지 않는다). 사용자 판단이 필요한 건 `H-1` 하나(세 갈래
+   중 선택)이고 나머지는 확인만 하면 반영 가능. **M2/M3 구현에 직접
+   걸리므로 다음 세션의 첫 작업으로 볼 것.**
+
    **4라운드 — [2026-08-21] 종결.** 문항지는
    `.claude/qa-request/pre-implementation-qa-round4.md`, 사용자 회신 원문은
    `-response.md`, 처리 결과 전량은 **`-followup.md`가 소스**(여기서 목록을
