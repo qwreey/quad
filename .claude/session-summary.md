@@ -1654,7 +1654,7 @@ quad-제작 Instance는 **GC 폴백이 없다**는 걸 근거로 보존 주체�
 안에선 동시 만족 불가라는 진단이 근거였고, 사용자가 "지금 의사코드를
 건들이는 비용이 추후 실수가 누적되는 비용보다 싸다"로 확정.
 
-## 2026-08-21-02 — QA 5라운드(문항지·회신·1차 처리) + `Gate`/에포크 리서치 신설
+## 2026-08-21-02 — QA 5라운드 전량 처리 + `Gate` 표면·State 에포크 확정, `Epoch`/`Brand` 제안
 
 원문: `session/2026-08-21-02-qa-round5-and-gate-epoch-research.md`
 
@@ -1688,3 +1688,41 @@ lazy화, `KeyGone`엔 새 값 반환도 error, **`Owned=false`에서 `Detach`는
 물리보다 먼저")이 역전**됐다 — base엔 자리를 비워둘 수단이 없고 미는 주체는
 백엔드 삽입 연산 자신이라, 규칙이 "자기 자리 먼저 / 뒤를 미는 것 나중" 하나로
 줄었다. **`Gate`만 사용자 지시로 다음 세션 — M2를 막는 유일한 항목.**
+
+**같은 세션 후반 — 리서치로 신설했던 둘이 그 자리에서 확정됐다.**
+`Gate`는 **탑레벨 프리미티브 없이 `state:Gate(setup)` 메소드 + `GateNode`**로,
+State의 재계산/전파 판정은 **소스 에포크 비교 채택**으로 닫히며 두 문서가
+`research/` → `base/`로 승격(`base/gate-plan.md`, `base/state-epoch-plan.md`).
+그 여파로 `source-state-plan.md`의 확정 서술 둘("emit은 **항상** 전파 / quad가
+접지 않는 것은 중복 *통지*뿐")이 역전돼
+`archive/always-propagate-no-dedup-superseded.md`로 갔다 — **2026-08-14의
+`invalid` 기반 dedup 금지를 되돌린 게 아니라는 것**을 세 곳에 못박았고,
+스파이크 `05`는 핵심 assert가 정반대가 되어 `rewrite-required/`로 돌아갔다.
+
+**에포크 기제는 네 라운드에 걸쳐 사용자 정정으로 다듬어졌다** — 순회 조건이
+`rawInvalid == false`로 뒤집히고, emit은 count 없이 출처만 싣고, 순회가 값만
+앞당기고 통지는 상류 emit을 기다리게 하려고 맵이
+`sourceCountMap`/`sourceEmitMap` 둘로 갈렸다(에이전트가 한 번 철회했던 분리가
+**다른 근거로** 되살아난 것). 새 노드의 두 맵은 **비대칭 초기화**
+(emit 맵은 비우고, count 맵은 실제 값으로 채운 뒤 `rawInvalid = true`).
+게이트는 흡수 집합을 들고 **flush 시 스왑**해 배치를 떼어 넘기며, 게이트가
+게이트 emit을 받으면 **풀어서 자기 집합에 합치고**, **빈 배치면 통지 자체를
+안 한다**(기존 `HasBlockedEmit` 계약의 일반화). 그 따름정리로
+`Effect`의 설치 구간 억제가 `Gate` 소비자에서 빠졌다.
+
+**`/code-review high`를 두 번 돌려 19건이 나왔고 전부 유효했다** — 그중
+재진입 시 빈 배치가 새던 것과 `OffWithoutEmit`이 흡수 집합을 안 비우던 것은
+실제 유실 경로였다. 반대로 리뷰가 제기한 것 중 **에이전트 서술 자체가
+틀렸던 것도 셋** — "Gate 재진입 계약"은 `Blocker`의 인스턴스 중첩 규칙을
+잘못 옮긴 것이었고, "다중 소스 배치의 중복 계산"은 동기 전파를 놓친 것이었고,
+"빈 배치 = 무조건 통지" 권고는 State 층에 `Source:Emit`을 추가하는 격이라
+기각됐다.
+
+**마지막으로 사용자가 `Epoch`/`EpochMap`/`Brand` 재구성을 제안**했다 — 에포크
+부기를 State에서 떼어 컴포지션하고, emit 페이로드를 `Epoch` 인터페이스
+(`{Revision: number}`, 그 자체로 키)로 일반화하고, 그러려면 `Brand`를
+**인스턴스 브랜드**(다중 태깅)로 바꾸는 안. 발단은 **다중 의존성 `Effect`에서
+한 파동에 `fn`이 두 번 도는 갭**(공통 하류가 없어 에포크 dedup이 못 접는다)이고,
+`Effect`가 자기 `EpochMap`을 들면 그게 공통 하류가 되어 닫힌다. **사실상 전량
+확정됐으나 세션 길이 때문에 `base/` 승격은 다음 세션으로 미뤄졌다** —
+`research/epoch-brand-composition.md`가 소스, `todos.md` 000번이 진입점.

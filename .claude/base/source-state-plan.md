@@ -180,6 +180,14 @@ Handler가 애초에 다른 층위. 관련해서 Handler를 담는 엔진(`Dispa
 왜 프리미티브가 아니라 탑레벨 싱글톤인지는 `base/dispatch-core-plan.md`의
 "Dispatch는 프리미티브가 아니다" 절 참고.
 
+> **⚠️ [2026-08-21] 이 문서의 두 자리를 바꾸는 제안이 `research/`에 대기 중**
+> (`research/epoch-brand-composition.md`, 승격만 남음) — (1) `Source`가
+> **`Epoch` 인터페이스**(`{Revision: number}`)를 구조적으로 만족한다는 서술
+> 추가(`State`를 만족하는 기존 패턴과 같은 모양, 리비전 필드는 **공개**여야
+> 타입 레벨에서 성립), (2) 아래 "`state:Observer(fn)`" 절의 클로저가
+> `:Compute`와 같은 모양인 **`fn(self, from: Epoch|{Epoch})`**로 인자를 받음.
+> 값은 여전히 안 실어주므로 그 계약은 안 깨진다.
+
 ## 전파 모델 확정: push-invalidate(신호만) / pull-recompute(`Get()` 시점에만)
 
 **Fusion식 eager 노드·생성순 정렬은 안 만듦.**

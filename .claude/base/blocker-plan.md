@@ -67,6 +67,13 @@ gated state의 동작:
   `OffWithoutEmit()`은 "밀린 전파를 버리며 끈다" — 어느 쪽이든 대기
   상태(`HasBlockedEmit`)는 항상 깨끗하게 리셋됨.
 
+**⭐ [2026-08-21] `HasBlockedEmit`은 게이트 흡수 집합의 특수형이다.**
+`GateNode`가 드는 `withheld`(이번에 유보한 소스들)에 대해
+`HasBlockedEmit == (next(withheld) ~= nil)`이고, 아래 "밀린 전파가 없으면
+아무 것도 안 함(idempotent)"이 게이트 층위에서는 **"빈 배치면 통지 자체를
+안 한다"**로 일반화된다(`base/gate-plan.md`의 8번). 구현 시 두 개를 따로
+들지 말 것.
+
 **⭐ [2026-08-21 신설] `state:Block(blocker)`는 `state:Gate(setup)` 위에
 얹힌다.** 위 "gated state의 동작"은 `Blocker`만의 특수 노드가 아니라
 `base/gate-plan.md`가 확정한 **`GateNode`**(`ComputeNode`와 같은 층위)의

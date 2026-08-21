@@ -5,6 +5,24 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
+000. **⭐⭐⭐ [2026-08-21 신설] 다음 세션의 첫 작업 — `Epoch`/`EpochMap`/`Brand`
+   제안을 `base/`로 승격할 것.** 설계는 **사실상 전량 확정**됐고
+   (`research/epoch-brand-composition.md`가 소스, §4에 결정 상태 전부),
+   같은 날 세션이 너무 길어져 **사용자 지시로 승격만 다음 세션에 미뤘다**
+   (*"전면 승격을 하고 싶지만, 이 세션은 너무 길어요. 컨텍스트 피로 상
+   핸드오버 이후 승격조치를 해야할것 같습니다"*).
+   - **고쳐야 할 문서 넷**: `base/state-epoch-plan.md`(두 맵 → `EpochMap` 둘,
+     "Source의 에포크" → `Epoch`), `base/source-state-plan.md`(`Source`가
+     `Epoch`를 구조적으로 만족 + `Observer` 클로저가 `fn(self, from)`),
+     `base/effect-plan.md`(`Effect`가 자기 `EpochMap`을 들어 다중 dep 중복
+     발화를 접음 — 그 문서의 ⚠️ 미해결 항목이 이걸로 닫힌다),
+     `base/brand-plan.md`(인스턴스 브랜드로 전면 재작성).
+     넷 다 상단에 이 제안을 가리키는 ⚠️ 배너가 이미 달려 있다.
+   - **남은 미정은 하나** — 리비전 증가를 `bit32` 랩으로 할지 평이한 `+1`로
+     할지(둘 다 실질 위험 없음, `question.md` 1번).
+   - **감사는 승격 이후에 돌린다**(사용자 지시) — 지금 돌리면 곧 바뀔 서술을
+     감사하게 된다.
+
 00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~5라운드 전부 `base/`
    반영 완료. ⭐ 같은 날 마지막에 `Gate`와 State 에포크까지 확정되면서
    **M2 착수를 막는 설계 항목은 더 이상 없다.**** `Gate`는
