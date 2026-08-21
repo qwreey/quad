@@ -797,6 +797,82 @@ index 를 찾아야하던걸로 앎."*
   자체가 뒤를 밀고 당긴다. 단 **백엔드 op이 아토믹한 최소 단위**여야 한다는 게
   같이 확인된 요구사항.
 - **`B-2`(`getOffsetAt` O(N²)) → 접두합 캐시로.** `bk.offsetCache` +
-  `bk.offsetDirtyFrom`("이 인덱스 초과부터 무효"), 무효화 트리거 셋을 명시
-  (`setLength`는 `i+1`부터 / splice는 그 자리부터 / 베이스 변경은 전체).
-  **남은 작은 확인**: `recompute`의 전체 순회가 그 캐시를 같이 채우게 할지.
+  **`bk.invalidAfter`**("여기까지는 유효"). **[같은 자리에서 사용자가 의사코드로
+  정정]** 함수를 둘로 나누지 않고 **단일 `getOffsetAt`이 필요한 만큼만 이어붙인다**
+  — 순차 호출이면 한 칸씩 늘어나 전체 O(N)이고, `recompute`도 그 위에 얹힌다.
+  무효화 규칙도 하나로 줄었다: `invalidAfter = min(invalidAfter, i)`
+  (`setLength`도 splice도 **자기 인덱스까지**만 당긴다 — `i` 자리의 offset은
+  `1..i-1`의 합이라 안 바뀌므로. 베이스 변경만 `0`).
+
+
+---
+
+# L. `native*` 물리 조작 계층 확정 (2026-08-21, 대화 마지막 라운드)
+
+`mountInst`/`unmountInst`/`disposeInst` 셋으로는 **`Move`/`Swap`을 아예 표현할
+수 없다**는 지적에서 시작해, 물리 조작 계층 전체가 재설계됐다.
+
+## L-1. 층위 정의 (사용자)
+
+> **`raw*`는 그 Slot 스코프 안의 연산**(평탄화 전, `_elements` 인덱스),
+> **`native*`는 확정된 offset/length로 표현되는 물리 트리 연산**(평탄화 후, 절대 좌표).
+
+## L-2. 확정된 표면
+
+```lua
+nativeInsert (target, offset, elements)                          -- 삽입(자신이 밀어냄)
+nativeExtract(target, offset, elements, newElements?)            -- 빼되 살림 (+교체 삽입)
+nativeRemove (target, offset, elements, newElements?)            -- 빼면서 파괴 (+교체 삽입)
+nativeMove   (target, fromOffset, elements, toOffset)
+nativeSwap   (target, offsetA, elementsA, offsetB, elementsB)
+nativeDispose(element)                                           -- 트리 밖 값 파괴
+```
+
+정해진 것들:
+
+- **`Replace`는 별도 op이 아니다** — `newElements`가 있는 `Remove`/`Extract`.
+  `Splice`도 이 둘로 표현된다(사용자: *"count 만큼 공간을 축소 newElements
+  길이만큼 공간을 확장할 수 있게 한번에 처리. 안 그러면 splice 가 무거워짐"*).
+- **파괴/비파괴를 불리언이 아니라 이름으로 가른다** — 공개 CRUD의
+  `Remove`↔`Extract` 어휘를 물려받고, **백엔드 융합**을 연다(Roblox에서
+  `Parent = nil` 후 `Destroy()`가 그냥 `Destroy()`보다 비싸다는 사용자 지적).
+- **⭐ 빠지는 요소는 반드시 배열로 넘긴다** — 에이전트가 "count면 충분하지
+  않나"는 질문에 답하다 확인: `(target, offset, count)`로 대상을 찾을 수 있는 건
+  **DOM뿐**(`childNodes[offset]`)이고, **Roblox는 자식이 순서 없는 집합**이라
+  offset으로 인스턴스를 역으로 못 찾는다.
+- **`nativeSwap`은 별도** — `Move`는 사이를 전부 밀지만 `Swap`은 가운데를 고정한
+  채 양끝만 교환이라 다른 연산(사용자 지적).
+- **`nativeInsert`는 흡수하지 않는다** — 최빈 경로가 "0개를 빼는 extract"가 되는
+  모양을 피하고 일괄 삽입 최적화를 그 안에 숨기지 않기 위해.
+- **미주입이면 에러가 아니라 조합 폴백** — `addTag` 계열과 갈리는 지점.
+- **⚠️ 전제**: 한 Slot의 물리 자식은 부모 안에서 **연속 구간**을 차지한다(범위
+  op이 성립하는 근거 전부).
+
+## L-3. ⭐ 그 결과 `C-7` 일반 계약이 역전됐다
+
+*"부기가 물리보다 항상 먼저"*는 **"`Length`를 먼저 올려 밀어내고 그 공간에
+넣는다"**는 그림 위에 서 있었는데, **base에는 물리적으로 자리를 비워둘 수단이
+없다**(사용자: *"밀어내고 null을 넣어둘 수도 없는데, nativeInsert 라는것 자체가
+밀어내기 동작을 강제"*). 미는 주체는 언제나 백엔드의 삽입 연산 자신이다.
+
+**새 계약** — 순서 규칙이 "두 얼굴"에서 하나로 줄었다:
+
+> **자기 자리를 정하는 것(`setOffsetSource`)은 먼저 / 뒤를 미는 것
+> (`setLength` → `recompute`)은 나중.**
+
+`setOffsetSource`가 먼저여야 하는 이유는 그 자리의 offset이 `1..i-1`의 합이라
+**자기 삽입으로 안 변하고**, 삽입 위치 계산과 `activateList`(C1)가 그 값을 쓰기
+때문이다. 그래서 `rawAdd`는 `spliceArraysUp` → `setOffsetSource` →
+`nativeInsert` → `setLength` → `recompute`.
+
+**배치 경로(`materializeSlotTree` → `mountSlotTree`)는 그대로 부기 전량이
+먼저** — 그건 C6가 요구하는 별개 사안이고 새 규칙과 모순되지 않는다.
+
+역전 원문은 `archive/bookkeeping-before-physical-reversed.md`.
+
+## L-4. 반영 파일
+
+`slot-plan.md`(op 절 전면 재작성, `rawAdd`/`rawReplace`/`rawRemove`/`rawUnmount`/
+`rawDetach`/`mountSlotTree`/`unmountSlotTree` 의사코드), `dispatch-core-plan.md`
+(C-7 재정의 + 주입 op 목록), `architecture.md`(`EngineOps.luau`), `ROADMAP.md`(M5
+주입 표면), `archive/`(역전 원문), `README.md` 색인.

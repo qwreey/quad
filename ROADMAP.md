@@ -416,6 +416,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M5 — quad-roblox 최소 프로바이더
 
+> **[2026-08-21 5라운드] 주입 표면이 늘었다 — `native*` 물리 트리 조작 계층.**
+> `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/`nativeSwap`/
+> `nativeDispose`(이름 가칭). base가 `Parent`를 모른다는 원칙을 실제로 지키기
+> 위한 것이고, **미주입이면 에러가 아니라 조합 폴백**이라 최소 구현 부담은
+> `nativeInsert`/`nativeExtract`/`nativeDispose` 셋이다(나머지는 이득 있을 때만
+> 덮어씀 — Roblox는 `nativeRemove`를 "그 자리에서 바로 `Destroy`"로 융합하는 게
+> 실익). 상세는 `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
+
 > **⚠️ 구현 관례**: `quad-roblox`의 공개 타입은 지금부터 단일 파일
 > (`src/init.luau` 또는 `types.luau`)에 몰아둘 것 — 나중에 필요해지면
 > 백로그 `quad-roblox-types`(가칭, `quad-types`와 같은 패턴)로 쉽게

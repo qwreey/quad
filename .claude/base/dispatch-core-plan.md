@@ -1533,53 +1533,58 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 -- [신설, 2026-08-21 G절] 그 자리의 **절대 offset(0-based)** 을 그때그때 계산해 반환.
 -- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — mountInst의 삽입 위치,
 -- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
-function Dispatch.getOffsetAt(ownerKey, i)
+function Dispatch.getOffsetAt(ownerKey, at)
     local bk = getBookkeeping(ownerKey)
-    -- [2026-08-21 사용자 제안] **접두합 캐시 + "이 인덱스 초과부터 무효" 마커.**
-    -- 매번 1..i-1을 다시 더하면 호출당 O(i)라 reconcile 전체가 O(N²)가 된다.
-    -- 캐시된 접두합(`bk.offsetCache[j]` = j 자리의 절대 offset)은 **그 앞쪽이
-    -- 안 바뀐 한 계속 유효**하므로, 무효화는 "바뀐 자리부터 뒤"만 하면 된다.
-    local from = bk.offsetDirtyFrom or 1        -- 이 인덱스부터가 무효
-    if i < from then
-        return bk.offsetCache[i]                -- 앞쪽은 그대로 유효 — O(1)
+    -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**
+    -- `bk.offsetCache[i]` = i 자리의 절대 offset, `bk.invalidAfter` = **여기까지는
+    -- 캐시가 유효**(그 뒤부터 다시 누적해야 함). 함수를 둘로 나누지 않는다 —
+    -- 이 하나가 필요한 만큼만 앞으로 이어붙이므로, 순차 호출이면 한 칸씩만
+    -- 늘어나 전체가 O(N)이 된다(사용자: *"그러면 알아서 순차적으로 합캐시가
+    -- 처리됨"*).
+    if bk.invalidAfter == 0 then
+        -- 시작점 — 1번 자리의 offset은 이 owner의 베이스 그 자체.
+        bk.offsetCache[1] = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
+        bk.invalidAfter = 1
     end
-    -- 무효 구간만 이어붙여 다시 계산한다(유효한 마지막 자리의 값에서 출발).
-    local sum = if from > 1 then bk.offsetCache[from - 1] + contribution(bk, from - 1)
-                else (if isSlot(ownerKey) then ownerKey.Offset:Get() else 0)
-    for j = from, i - 1 do
-        bk.offsetCache[j] = sum
-        sum += contribution(bk, j)              -- lengthList[j](State면 :Get())
+    if at <= bk.invalidAfter then
+        return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
-    bk.offsetCache[i] = sum
-    bk.offsetDirtyFrom = i + 1                  -- 여기까지는 이제 유효
-    return sum
+    local cur = bk.offsetCache[bk.invalidAfter]
+    for i = bk.invalidAfter, at - 1 do
+        cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
+        bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
+    end
+    bk.invalidAfter = at                       -- 여기까지 유효해짐
+    return cur
 end
+```
 
-**⭐ [2026-08-21 사용자 제안] `getOffsetAt`의 접두합 캐시 — 무효화 규칙**
+**⭐ [2026-08-21] 캐시 무효화 — 규칙이 하나다**
 
-`offsetCache`/`offsetDirtyFrom`이 성립하려면 **"앞이 안 바뀌면 뒤도 안 바뀐다"**는
-단조성이 지켜져야 한다. 그래서 아래 셋 중 하나라도 일어나면 `offsetDirtyFrom`을
-그 인덱스로 내린다(더 작은 값으로만 갱신):
+`bk.invalidAfter`는 **"이 인덱스까지는 캐시가 유효"**를 뜻하고, 무효화는 전부
+같은 모양이다 — **`bk.invalidAfter = math.min(bk.invalidAfter, i)`**(앞으로만
+당긴다):
 
-1. **`setLength(ownerKey, i, ...)`** — `i` 자리의 기여도가 바뀌므로 `i + 1`부터
-   무효(그 자리 자신의 offset은 안 변한다). State 길이가 나중에 emit할 때도 같다.
-2. **`spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제)** — 그 인덱스부터 전부
-   밀리므로 그 자리부터 무효.
-3. **owner의 베이스가 바뀜**(`ownerKey.Offset` 변경 = `_baseObserver`가 도는
-   그 순간) — **전체 무효**(`offsetDirtyFrom = 1`).
+| 무엇이 바뀌나 | 어디까지 당기나 | 왜 |
+|---|---|---|
+| `setLength(ownerKey, i, ...)`, 그리고 그 State가 나중에 emit할 때 | `i` | **`i` 자리의 offset은 안 바뀐다**(그건 `1..i-1`의 합) — 바뀌는 건 그 **뒤**뿐. 사용자: *"정확히 입력받은 자신 인덱스까지 당김"* |
+| `spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제) | `i` | 같은 이유 — 삽입/삭제 후에도 `i` 자리의 offset은 여전히 `1..i-1`의 합이다 |
+| owner의 베이스 변경(`ownerKey.Offset`이 바뀜 = `_baseObserver`가 도는 순간) | `0` | 1번 자리부터 전부 다시 |
 
-**⚠️ 아직 안 정한 것**: `recompute`가 이미 전체를 순회하며 같은 접두합을
-계산하므로, **그 순회가 캐시를 그대로 채우게 할지**(그러면 `recompute` 직후엔
-캐시가 항상 완전) 아니면 두 경로를 분리해 둘지. 전자가 낭비가 없어 보이지만
-`recompute`는 `Set` 캐스케이드를 유발할 수 있어 호출 빈도가 다르다 —
-구현 시 확인.
+**`recompute`도 이 캐시 위에 얹힌다** — `1..N`을 순서대로 도는 함수라 매 자리에서
+`getOffsetAt`이 한 칸씩만 이어붙이므로 전체가 O(N)이고, 별도 접두합 로직을 따로
+두지 않는다. (그래서 "`recompute`가 캐시를 채울지 말지"라는 갈래 자체가 없어졌다 —
+사용자: *"함수를 나눠야할 이유를 모르겠음. 하나로 두는게 나아보임."*)
 
+```lua
 local function recompute(ownerKey, bk)
     -- [2026-08-21 G절] `0`이 아니라 이 owner의 베이스에서 시작한다.
     -- 베이스는 별도로 저장하지 않는다 — Slot이면 자기 `.Offset`이 곧 그 값이고
     -- (부모가 먼저 설정해두므로 이미 정확하다), 최상위 물리 inst엔 베이스가
     -- 아예 없어 항상 0이다. 위 `getOffsetAt`과 같은 식.
-    local base = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
+    -- [2026-08-21] offset 값은 위 `getOffsetAt`(접두합 캐시)에서 받는다 —
+    -- 여기서 따로 누적하지 않는다. 순서대로 도는 순회라 캐시가 한 칸씩만 늘어나
+    -- 전체 O(N).
     local sum = 0
     -- [2026-08-21 5라운드 감사] `bk.N or 0` — **빈 Slot 크래시 방어**.
     -- `bk.N`은 `setLength`가 처음 불릴 때 생기므로(`bk.N = math.max(bk.N or 0, i)`),
@@ -1598,8 +1603,9 @@ local function recompute(ownerKey, bk)
         if offset == nil then
             error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
         end
-        if offset ~= None and offset:Get() ~= base + sum then   -- 실제로 다를 때만 Set
-            offset:Set(base + sum)
+        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
+        if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
+            offset:Set(abs)
         end
         local v = bk.lengthList[i]
         sum += (if isState(v) then v:Get() else v)
@@ -1838,45 +1844,39 @@ yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체
 아니라(이미 확정된 "일반적인 재진입/무한루프는 방어 안 함" 원칙과 같은
 톤), 이 계약을 어기면 UB라는 걸 문서로 못박아두는 것.
 
-### ⭐ 일반 계약 — 부기가 물리 트리 조작보다 항상 먼저 끝난다 (2026-08-20 구현 전 QA 4라운드 `C-7` 승격)
+### ⭐ 일반 계약 — 물리와 부기의 순서 (2026-08-20 `C-7`로 승격, **2026-08-21 5라운드에 재정의**)
 
-**지금까지 이 규칙은 `rawAdd` 한 곳에만 적혀 있었다**(바로 아래 "동기 순서"
-문단). `rawRemove`/`rawUnmount`는 의사코드가 우연히 같은 모양이었을 뿐
-계약화돼 있지 않았고, `Splice`는 물리 detach/attach와 부기의 선후가 **아예
-안 적혀 있었다.** 사용자 판정으로 **모든 `raw*`가 따르는 일반 계약으로
-승격**한다(*"각각의 동작에 따라 다른 동작 보다, 일관성 있는 동작을 제공하는게
-나아보이고, 이것을 단순 일반 계약 승격으로 도달 될 수 있기 때문"*).
+> **🔄 [역전됨, 2026-08-21] "부기가 물리 트리 조작보다 항상 먼저 끝난다"는
+> 계약은 폐기됐다.** 원문은 `archive/bookkeeping-before-physical-reversed.md`.
 
-> **계약**: 어떤 CRUD/재조정 연산이든 **`Length`/`offset` 부기 갱신이 물리
-> 트리 조작(`Parent` 대입/해제)보다 먼저 완료**돼야 한다. 즉 "**먼저 밀어내고
-> 그 공간에 넣는다**" / "**먼저 비운 걸 반영하고 그 다음 당긴다**".
+**왜 뒤집혔나**: 그 계약은 *"`Length`를 먼저 올려 뒤 형제를 밀어내고, 비워진
+그 공간에 넣는다"*는 그림 위에 서 있었는데, **base에는 물리적으로 자리를
+비워둘 수단이 없다**(자리를 비워 `null`을 꽂아둘 수도 없다). 미는 주체는
+언제나 백엔드의 삽입 연산 자신이다 — `native*` 계층이 들어오면서 이게
+명확해졌다(사용자: *"nativeInsert 라는것 자체가 밀어내기 동작을 강제하는데,
+그렇다면 length 를 나중에 설정한 다음 offset들이 무시되어야함. 일종의 웹 돔과
+같은 동작을 내도록 강제하는 시스템"*).
 
-- **왜 일반 계약이어야 하나**: 백엔드가 "밀어내기"를 물리적으로 구현해야
-  하는 경우(DOM `insertBefore` 밖의 백엔드 등), **부기가 이미 정확하다**는 걸
-  전제할 수 있어야 자기 일을 할 수 있다. 연산마다 선후가 다르면 백엔드
-  작성자가 매번 다시 확인해야 한다.
-- **각 연산에 적용하면**:
-  - `rawAdd` — 부기(`setOffsetSource`/`setLength` 등록 → `recompute`) 완료 →
-    물리 마운트(`mountInst`). **[정정, 2026-08-21 5라운드 `C-2`]** 예전엔 여기
-    `Length:Set(newCount)`라고 적혀 있었으나 **틀렸다** — 아래 문단 참고.
-  - `rawRemove`/`rawUnmount`/**`rawDetach`**(**[2026-08-21]** `Detach`
-    경로용으로 신설된 세 번째 형제 — 소유권을 **유지**한 채 언마운트만
-    한다는 점만 다르고 순서는 같음, `base/slot-plan.md`) — 파괴/언마운트 →
-    `spliceArraysDown` →
-    `recompute`가 지금 의사코드인데, **이건 물리 조작이 먼저**라 계약과
-    어긋나 보인다. 다만 여기선 "빼는" 방향이라 부기를 먼저 줄이면 아직
-    트리에 있는 요소가 순서 계산에서 빠지는 역전이 생긴다 — **"빼기는
-    물리 먼저, 넣기는 부기 먼저"**가 실제로는 같은 원칙(항상 **좁은 쪽이
-    먼저**)의 두 얼굴이다. 문서화 시 이 대칭으로 적을 것.
-  - `Splice` — 제거 구간과 삽입 구간이 겹치므로 위 두 규칙을 그대로 이어
-    붙이면 된다(제거는 물리 먼저, 삽입은 부기 먼저). **shift/recompute를
-    1회로 묶는다는 최적화는 그 사이에서만** 일어난다.
-  - `rawMove`/`rawSwap` — `Parent`를 안 건드리므로 이 계약의 대상이 아님.
-- **⚠️ 프레임 경계는 어차피 안 낀다** — `process`/`attachSlot` 체인 도중
-  코루틴 yield가 금지돼 있으므로(위 "Handler 작성 체크리스트" 9번) 이
-  순서가 어긋나도 사용자에게 보일 프레임이 그 사이에 없다. 그래서 이
-  계약은 "안 지키면 깜빡인다"가 아니라 **"백엔드가 전제할 수 있게 하나로
-  고정한다"**가 진짜 이유다.
+**지금의 계약 — 셋으로 줄었다**:
+
+1. **물리 조작은 `native*`가 전담하고, 밀고 당기는 건 그 op 자신이 한다**
+   (DOM식 의미론을 시스템 전체가 강제).
+2. **base의 offset 부기는 "배치 지시"가 아니라 계산값이다** — 이미 배치된
+   것을 옮기지 않는다(`base/slot-plan.md`의 웹 백엔드 문단, 5라운드 확정).
+3. **순서 규칙은 "자기 자리를 정하는 것 먼저 / 뒤를 미는 것 나중"** 하나다:
+   - **`setOffsetSource`는 먼저** — 그 자리의 offset은 `1..i-1`의 합이라
+     **자기 삽입/제거로 안 변한다.** 게다가 삽입 위치 계산이 이 값이고,
+     Slot이면 `activateList`가 곧바로 그 값을 쓴다(C1).
+   - **`setLength` → `recompute`는 나중** — 이게 **뒤를 미는** 쪽이다.
+   - 그래서 `rawAdd`는 `spliceArraysUp` → `setOffsetSource` → `nativeInsert`
+     → `setLength` → `recompute` 순서다(`base/slot-plan.md`).
+4. **배치 경로는 여전히 "부기 전량 먼저"** — `materializeSlotTree` →
+   `mountSlotTree` 분해는 그대로다. 그때는 삽입 위치가 전부 확정된 뒤에
+   물리가 몰리는 것이고, C6("부모에게 미는 길이는 최종값")가 그걸 요구한다.
+   위 3번과 모순이 아니다 — 3번은 **단건 경로**의 규칙이다.
+- **⚠️ 프레임 경계는 여전히 안 낀다**(yield 금지) — 그래서 이 순서 변경으로
+  사용자에게 보이는 중간 상태가 생기지 않는다. 옛 계약이 내세웠던 "한 프레임
+  순서가 깨진 채 노출될 위험"은 그때 이미 근거에서 빠져 있었다.
 
 **동기 순서 — offset 갱신이 마운트보다 먼저 끝나야 함(안 그러면 Roblox의
 실시간 `UIListLayout` reflow에서 한 프레임 순서가 깨진 채 노출될 위험)**:

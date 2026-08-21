@@ -176,8 +176,28 @@
 
 **그리고 감사 회신 자리에서 결정 셋이 더 확정됐다** — `raw*`를 **index로 통일**
 (오래 열려 있던 캐비엇 종결), **래핑은 `raw*` 바깥**, 그리고 `getOffsetAt`의
-**접두합 캐시**(`offsetDirtyFrom`). offset 물리 재배치 질문도 "DOM은 insert가
+**접두합 캐시**(`invalidAfter` — 단일 함수가 필요한 만큼만 이어붙임). offset 물리 재배치 질문도 "DOM은 insert가
 알아서 밀어낸다"로 닫혔다.
+
+## 6-3. 마지막 라운드 — `native*` 계층 확정, `C-7` 역전
+
+주입 op 셋(`mountInst`/`unmountInst`/`disposeInst`)으로는 **`Move`/`Swap`을 아예
+표현할 수 없다**는 사용자 지적에서 시작해 물리 조작 계층이 재설계됐다.
+
+- **층위 정의가 생겼다** — `raw*` = Slot 스코프(평탄화 전), `native*` = 확정된
+  offset/length 기반 물리 연산(평탄화 후).
+- 표면은 여섯(`nativeInsert`/`Extract`/`Remove`/`Move`/`Swap`/`Dispose`).
+  `Replace`는 별도 op이 아니라 **`newElements`가 있는 Remove/Extract**이고,
+  파괴/비파괴는 **불리언이 아니라 이름**으로 가른다(Roblox의 "그 자리에서 바로
+  Destroy" 융합을 열기 위해).
+- **⭐ 대상 요소를 배열로 넘겨야 한다** — `(target, offset, count)`로 찾을 수
+  있는 건 DOM뿐이고 **Roblox는 자식이 순서 없는 집합**이라 offset 역조회가 안 된다.
+- **⭐ `C-7`("부기가 물리보다 항상 먼저")이 역전됐다** — base엔 물리적으로 자리를
+  비워둘 수단이 없고 미는 주체는 백엔드의 삽입 연산 자신이다. 규칙이
+  **"자기 자리를 정하는 것 먼저 / 뒤를 미는 것 나중"** 하나로 줄었다.
+  원문은 `archive/bookkeeping-before-physical-reversed.md`.
+- 같은 라운드에서 `getOffsetAt`의 접두합 캐시도 사용자 의사코드로 정정 —
+  **단일 함수 + `invalidAfter`**, 무효화는 `min(invalidAfter, i)` 하나.
 
 ## 7. 남긴 파일
 

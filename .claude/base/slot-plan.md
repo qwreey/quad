@@ -49,39 +49,60 @@ inst, inst, k)` 한 줄로 축약됨** — `Dispatch.setLength`/`activateList`
 호출은 `attachSlot` 내부로 옮겨감(로직은 그대로, 재귀 가능하도록만
 일반화됨), 상세는 아래 "Slot-in-Slot 중첩" 절 참고.
 
-### ⭐ 물리 조작은 주입 op다 — base는 `Parent`를 모른다 (2026-08-21 구현 전 QA 5라운드 `C-1`)
+### ⭐ 물리 조작은 주입 op다 — `native*` 계층 (2026-08-21 구현 전 QA 5라운드, 같은 날 확장)
 
 **사용자 지적**: *"element.Parent = self._mountedInst 부분은 실제 엔진이
 구현하게 되는 crud 셋을 사용하게 되어야할것이다. slot 의 해당 동작은 base
 이므로 parent 를 모른다."* 맞다 — 위 경계 문단이 "실제 트리 조작은 백엔드"라고
-이미 말해뒀는데, **의사코드는 계속 `element.Parent = ...` / `element:Destroy()`로
-Roblox 어휘를 직접 쓰고 있었다.** 이 문서의 의사코드를 전부 주입 op 호출로
-바꿨다(로직은 그대로, 표기만 정정):
+이미 말해뒀는데 의사코드는 계속 `element.Parent = ...` / `element:Destroy()`로
+Roblox 어휘를 직접 쓰고 있었다. 이 문서의 의사코드를 전부 주입 op 호출로 바꿨다.
 
-| op | 언제 | 대응하는 경계 훅 |
-|---|---|---|
-| `mountInst(target, element, index)` | 요소를 물리 트리에 붙일 때(`index` = 0-based 절대 offset, 아래 항목) | mount(`Add`) |
-| `unmountInst(element)` | 물리 트리에서만 떼어낼 때(파괴 아님) | unmount(`Remove`/`Extract`) |
-| `disposeInst(element)` | 요소를 실제로 파괴할 때 | 이미 확정된 주입 op(아래 `dispose` 절) |
+**층위 정의(사용자)**: **`raw*`는 그 Slot 스코프 안의 연산**(평탄화 전,
+`_elements` 인덱스)이고, **`native*`는 확정된 offset/length로 표현되는 물리 트리
+연산**(평탄화 후, 절대 좌표)이다.
 
-- **reposition(`Move`/`Swap`)은 base가 "Parent를 안 건드린다"는 계약만
-  강제**하므로 별도 op이 없다(위 문단 그대로) — 백엔드가 `LayoutOrder` 정렬에
-  기대 no-op으로 둘 수도 있다.
-- **⭐ [확정, 2026-08-21 5라운드 G절] `mountInst(target, element, index)` —
-  index는 절대 offset(0-based)이다.** 원래는 "형제 순서는 `Offset`/`LayoutOrder`
-  부기가 담당하니 안 넘긴다"였는데, 사용자 지적 — *"웹에서는 어떻게 되냐가
-  모호함. 어디 둘지 어떻게 아느냐는것"* — 대로 **DOM류 백엔드는 삽입 위치를
-  알아야 하고, 정작 plain 요소는 `setOffsetSource`에 `None`을 등록해 그 숫자가
-  계산조차 안 되고 있었다.** 지금은 `Dispatch.getOffsetAt(ownerKey, i)`가 발행
-  채널 유무와 무관하게 그 숫자를 준다(`base/dispatch-core-plan.md`의
-  "Length/Offset" 절). Roblox 백엔드는 이 인자를 그냥 무시한다 — `LayoutOrder`가
-  물리 순서와 분리돼 있으므로.
-  - **`unmountInst(element)`는 그대로 인자 없음** — 뺄 때는 자기 자신만 알면 된다.
-  - **0-based인 이유**: `offset`/`sum`이 이미 0-based 개수라 그쪽과 일관되고,
-    `updateFn`의 `index`(1-based 지역 위치)와 헷갈리지 않게 하기 위함.
-- **⚠️ 이름은 `disposeInst` 선례를 따른 가칭** — 주입 op 목록에 정식으로
-  추가할 때 확정할 것(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와
-  주입되는 엔진 op" 절).
+```lua
+nativeInsert (target, offset, elements)                          -- 삽입(자신이 밀어냄)
+nativeExtract(target, offset, elements, newElements?)            -- 빼되 **살림** (+그 자리에 교체 삽입)
+nativeRemove (target, offset, elements, newElements?)            -- 빼면서 **파괴** (+그 자리에 교체 삽입)
+nativeMove   (target, fromOffset, elements, toOffset)            -- 범위 이동(사이가 밀림)
+nativeSwap   (target, offsetA, elementsA, offsetB, elementsB)    -- 두 구간 맞교환(사이 고정)
+nativeDispose(element)                                           -- 트리 **밖** 값 파괴
+```
+
+- **`offset`은 전부 0-based 절대 offset**(`Dispatch.getOffsetAt`이 주는 그 값).
+  Roblox 백엔드는 이 인자를 그냥 무시한다 — `LayoutOrder`가 물리 순서와
+  분리돼 있으므로.
+- **⭐ 빠지는 요소는 반드시 `elements` 배열로 넘긴다** — `(target, offset, count)`만으로
+  대상을 찾을 수 있는 건 DOM뿐이다(`childNodes[offset]`). **Roblox는 자식이 순서
+  없는 집합**이고 quad의 offset은 순전히 논리값이라, 백엔드가 offset으로 인스턴스를
+  역으로 못 찾는다. `count`는 `#elements`로 따라온다.
+- **`Replace`는 별도 op이 아니다** — `newElements`가 있는 `nativeRemove`(파괴 교체)
+  또는 `nativeExtract`(비파괴 교체)다. `Splice`도 이 둘로 표현된다. 제거와 삽입을
+  한 호출로 합치는 이유는 **리플로우 2회와 그 사이 인덱스가 어긋난 창**을 없애기
+  위함(사용자: *"안 그러면 splice 가 무거워짐"*).
+- **파괴/비파괴를 불리언이 아니라 이름으로 가른 이유**: 공개 CRUD의
+  `Remove` ↔ `Extract` 어휘를 그대로 물려받고, **백엔드의 융합**을 열어주기
+  위해서다 — Roblox에서 `Parent = nil` 후 `Destroy()`는 그냥 `Destroy()`보다
+  비싸므로(사용자 지적), `nativeRemove`가 그 자리에서 바로 파괴할 수 있어야 한다.
+- **`nativeSwap`이 따로 있는 이유**: `Move`는 사이 요소를 전부 밀지만 `Swap`은
+  **가운데를 고정한 채 양끝만 교환**이라 다른 연산이다. `Move` 2회로 흉내내면
+  리플로우 2회 + 중간 인덱스 재계산이 필요하다.
+- **`nativeInsert`를 흡수하지 않은 이유**: `nativeExtract(target, offset, {}, elements)`로
+  표현은 되지만, **최빈 경로**(리스트 최초 채우기·단건 `Add`)가 "0개를 빼는 extract"라는
+  모양이 되고 `DocumentFragment`류 일괄 삽입 최적화도 그 안에 숨는다.
+- **기본 구현(조합 폴백) — 미주입이 에러가 아니다.** `addTag`/`setAttribute`가
+  "미주입이면 명확한 에러"인 것과 갈린다: 이쪽은 조합으로 항상 정의되기 때문이다.
+  `nativeRemove` = `nativeExtract` + `nativeDispose` 반복, `nativeMove` =
+  `nativeExtract` + `nativeInsert`, `nativeSwap` = `nativeMove` 2회. 백엔드는
+  **이득 있는 것만 덮어쓴다.**
+- **⚠️ 전제 — 한 Slot의 물리 자식은 부모 안에서 연속 구간을 차지한다.** 범위 op이
+  성립하는 근거가 전부 이것이다(offset이 누적합이고 중첩 Slot도 같은
+  `physicalTarget`을 공유하므로 구조적으로 참). quad 밖에서 그 부모에 자식을 끼워
+  넣는 게 UB인 진짜 이유이기도 하다(`base/dispatch-core-plan.md`의 Length/Offset 절 끝, "동적 자식 추가/제거의
+  유일한 정당 경로" 문단).
+- **⚠️ 이름은 여전히 가칭** — 주입 op 목록에 정식 등재할 때 확정할 것
+  (`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op" 절).
 
 **추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
 만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
@@ -1396,7 +1417,7 @@ function activateList(self, physicalTarget)
                 -- [2026-08-21 5라운드 `DE-13`] `_owned == false` 분기가 여기 있었으나
                 -- 제거했다 — unowned Slot은 `_detached`를 **애초에 채우지 않으므로**
                 -- (위 `settle`의 detach 분기) 여기 오는 건 전부 내 것이다.
-                if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
+                if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
                 self._detached[key] = nil
             end
         end
@@ -2082,7 +2103,7 @@ local function mountSlotTree(slot, physicalTarget)
             mountSlotTree(element, physicalTarget)    -- 자식은 자기 Offset에서 다시 시작
             acc += element.Length:Get()
         else
-            mountInst(physicalTarget, element, acc)   -- 주입 op(위 "물리 조작은 주입 op" 절)
+            nativeInsert(physicalTarget, acc, { element })   -- 주입 op(위 "native*" 절)
             acc += 1
         end
     end
@@ -2180,7 +2201,7 @@ local function unmountSlotTree(slot)
         if isSlot(element) then
             unmountSlotTree(element)   -- 재귀 — 중첩 Slot도 똑같이 비파괴
         else
-            unmountInst(element)       -- 파괴 아님(주입 op — 위 "물리 조작은 주입 op" 절)
+            nativeExtract(physicalTarget, Dispatch.getOffsetAt(slot, i), { element })   -- 파괴 아님(주입 op)
         end
         -- releaseOwner를 **안 부름** — 자식들은 여전히 이 slot의 소유. 이게
         -- destroySlotTree와의 핵심 차이(파괴는 소유권까지 반납, 언마운트는 유지).
@@ -2226,7 +2247,7 @@ local function destroySlotTree(slot)
         if isSlot(element) then
             destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
         else
-            disposeInst(element)
+            nativeDispose(element)
         end
     end
     -- [2026-08-21] Detach로 홀드 중인 요소도 같이 파괴 — 이것들은 `_elements`에
@@ -2234,7 +2255,7 @@ local function destroySlotTree(slot)
     -- 잘 죽이는가**의 답이 정확히 이 줄이다(아래 "`dispose`" 절).
     if slot._detached then                 -- [2026-08-21 5라운드 `DE-7`] lazy — 없으면 통째로 스킵
         for key, element in pairs(slot._detached) do
-            if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
+            if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
             slot._detached[key] = nil
         end
     end
@@ -2300,7 +2321,8 @@ function rawUnmount(self, index)
         unbindLifetime(bk.observers[index])
     end
     releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
-    if isSlot(element) then unmountSlotTree(element) else unmountInst(element) end
+    if isSlot(element) then unmountSlotTree(element)
+    else nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element }) end
 
     spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)
@@ -2317,7 +2339,8 @@ function rawDetach(self, index)
         unbindLifetime(bk.observers[index])
     end
     -- releaseOwner를 **안 부름** — 이게 rawUnmount와의 유일한 차이
-    if isSlot(element) then unmountSlotTree(element) else unmountInst(element) end
+    if isSlot(element) then unmountSlotTree(element)
+    else nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element }) end
 
     spliceArraysDown(self, index)
     recompute(self, bk)
@@ -2331,7 +2354,7 @@ end
 function releaseElement(self, index, element, wasDetached)
     if wasDetached then
         if self._owned ~= false then
-            if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
+            if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
         end
         return   -- 이미 물리 트리 밖 + 부기 밖이라 더 할 일 없음
     end
@@ -2367,11 +2390,15 @@ function rawAdd(self, element, index, fromDetached)
     if isSlot(element) then
         attachSlot(element, self._mountedInst, self, index)   -- 자식이 자기 부기+물리를 다 함
     else
-        Dispatch.setOffsetSource(self, index, None)   -- 순서는 늘 offsetSource → setLength(C4)
-        Dispatch.setLength(self, index, 1, self._mountedInst)
-        recompute(self, bk)                   -- 부기 완결(C7: 물리보다 먼저)
-        mountInst(self._mountedInst, element, Dispatch.getOffsetAt(self, index))
-                                              -- 그 다음에야 물리 마운트(주입 op, 위 그 절)
+        -- [순서 재정렬, 2026-08-21] **자기 자리를 정하는 것 먼저 / 뒤를 미는 것 나중.**
+        -- 옛 "부기 전부 먼저"는 base가 물리적으로 자리를 비워둘 수 있다는 전제였는데
+        -- 그런 수단이 없다 — 미는 주체는 `nativeInsert` 자신이다(아래 `dispatch-core-plan.md`
+        -- "물리와 부기의 순서" 절).
+        Dispatch.setOffsetSource(self, index, None)   -- 내 자리 offset은 1..index-1의 합이라
+                                                      -- 내 삽입으로 안 변한다 → 먼저 해도 안전
+        nativeInsert(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
+        Dispatch.setLength(self, index, 1, self._mountedInst)   -- **뒤를 미는 것**은 그 다음
+        recompute(self, bk)
     end
     return index
 end
@@ -2387,27 +2414,40 @@ function rawReplace(self, index, newElement, destroyOld)
     local oldElement = self._elements[index]
     claimOwner(newElement, self)              -- 새 요소 먼저 클레임(실패하면 아무것도 안 바뀜)
     releaseOwner(oldElement, self)
-
-    if self._mounted then
-        -- 빼기는 물리 먼저(C7의 "좁은 쪽이 먼저")
-        if isSlot(oldElement) then unmountSlotTree(oldElement) else unmountInst(oldElement) end
-    end
-    if destroyOld then
-        if isSlot(oldElement) then destroySlotTree(oldElement) else disposeInst(oldElement) end
-    end
-
     self._elements[index] = newElement         -- **시프트 없음** — 자리 수가 안 변한다
-    if not self._mounted then return end
+
+    if not self._mounted then
+        if destroyOld then                     -- 트리 밖이라 물리 op이 필요 없다
+            if isSlot(oldElement) then destroySlotTree(oldElement) else nativeDispose(oldElement) end
+        end
+        return
+    end
 
     local bk = getBookkeeping(self)
-    if isSlot(newElement) then
-        attachSlot(newElement, self._mountedInst, self, index)
-    else
+    local offset = Dispatch.getOffsetAt(self, index)
+
+    -- [2026-08-21] **원자적 교체** — 빼기와 넣기를 한 호출로 합친다(리플로우 1회,
+    -- 그 사이 인덱스가 어긋난 창이 없음). 파괴 여부는 op **이름**이 가른다.
+    if isSlot(oldElement) or isSlot(newElement) then
+        -- 어느 한쪽이 Slot이면 구간 길이가 1이 아니라 각자의 경로로 간다
+        if isSlot(oldElement) then
+            if destroyOld then destroySlotTree(oldElement) else unmountSlotTree(oldElement) end
+        else
+            local op = if destroyOld then nativeRemove else nativeExtract
+            op(self._mountedInst, offset, { oldElement })
+        end
+        if isSlot(newElement) then
+            attachSlot(newElement, self._mountedInst, self, index)
+            return
+        end
         Dispatch.setOffsetSource(self, index, None)
-        Dispatch.setLength(self, index, 1, self._mountedInst)
-        recompute(self, bk)
-        mountInst(self._mountedInst, newElement, Dispatch.getOffsetAt(self, index))
+        nativeInsert(self._mountedInst, offset, { newElement })
+    else
+        local op = if destroyOld then nativeRemove else nativeExtract
+        op(self._mountedInst, offset, { oldElement }, { newElement })   -- 한 번에
     end
+    Dispatch.setLength(self, index, 1, self._mountedInst)
+    recompute(self, bk)
 end
 
 function rawRemove(self, index)
@@ -2421,7 +2461,10 @@ function rawRemove(self, index)
                                   -- rawExtract가 releaseOwner를 부른다고 이미 명시하고
                                   -- 있었는데 코드만 불일치) — 엄격 releaseOwner가
                                   -- 들어온 뒤로는 이 누락이 실동작 차이를 만듦
-    if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
+    -- [2026-08-21] 파괴 경로는 **한 번에** — 빼기와 파괴를 백엔드가 융합할 수 있다
+    -- (Roblox는 Parent=nil 없이 그 자리에서 Destroy가 더 싸다).
+    if isSlot(element) then destroySlotTree(element)
+    else nativeRemove(self._mountedInst, Dispatch.getOffsetAt(self, index), { element }) end
 
     spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
@@ -2824,7 +2867,7 @@ function dispose(value)
         -- 위 elementOwner 기반 판정 재사용 — 요구 중이면 error, 아니면 재귀 파괴
         ...
     else
-        disposeInst(value)  -- 아래 주입 op
+        nativeDispose(value)  -- 아래 주입 op
     end
 end
 ```
@@ -2858,10 +2901,10 @@ end
   막는 것이고, `unbindLifetime`은 Observer/Effect류의 GC 앵커를 조기
   해제하는 것 — 축이 달라 서로 대체 불가.
 
-**base/backend 분리 — `disposeInst`는 주입 op**(`base/dispatch-core-plan.md`
+**base/backend 분리 — `nativeDispose`는 주입 op**(`base/dispatch-core-plan.md`
 "base가 소유하는 핸들러와 주입되는 엔진 op" 절과 같은 패턴, `addTag`/
 `removeTag`/`setAttribute`가 선례): `dispose`가 `isSlot`이 아닌 값을
-받으면 base가 시그니처만 소유하는 `disposeInst(inst: any): ()`로 위임 —
+받으면 base가 시그니처만 소유하는 `nativeDispose(inst: any): ()`로 위임 —
 quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 방식으로
 매핑.
 

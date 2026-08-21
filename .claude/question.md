@@ -192,11 +192,12 @@
   **사용자 제안 채택**: *"getOffsetAt 은 compute 된걸 캐시해도 될듯. length
   변경되는 뒤는 캐시가 무효화되도록 shouldRecomputeAfter 등을 둬서 특정 인덱스
   초과부는 offset 다시 계산하고, 해당 값 위치 자체는 유효하므로 그것을 통해 더
-  length 를 이어붙이면 될듯."* → `bk.offsetCache` + `bk.offsetDirtyFrom`으로
-  반영(`base/dispatch-core-plan.md`). 무효화 트리거 셋(`setLength`는 `i+1`부터,
-  splice는 그 자리부터, 베이스 변경은 전체)까지 명시. **남은 작은 확인 하나** —
-  `recompute`의 전체 순회가 그 캐시를 같이 채우게 할지는 구현 시 판단(그 문서에
-  ⚠️로 표시). 아래는 열려 있던 시점의 서술:
+  length 를 이어붙이면 될듯."* → `bk.offsetCache` + **`bk.invalidAfter`**("여기까지는 유효")로 반영
+  (`base/dispatch-core-plan.md`). **무효화 규칙은 하나** —
+  `invalidAfter = min(invalidAfter, i)`(`setLength`도 splice도 자기 인덱스까지,
+  베이스 변경만 `0`). `recompute`도 이 캐시 위에 얹혀 O(N)이라
+  **"캐시를 누가 채우나"라는 갈래가 없어졌다**(사용자 정정: 함수를 나눌 이유가
+  없다). 아래는 열려 있던 시점의 서술:
   `settle`이 키마다 `rawAdd`/`rawReplace`를 부르고 그 각각이 `getOffsetAt`(O(i))을
   부르므로, 이미 마운트된 리스트의 데이터가 통째로 바뀌면 **O(N²)**다(최초 마운트는
   `_mounted == false`라 얼리 리턴이 막아준다). `DC-9`에서 `setOffsetSource`의 즉시
