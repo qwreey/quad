@@ -22,8 +22,10 @@ mount/unmount 전용 유스케이스가 있고, 실제 leaf 생명주기 바인�
 합의됨.
 
 ```
-Effect(fn, state?) -> EffectHandle
+Effect(fn, ...deps) -> EffectHandle
 ```
+**[2026-08-21 5라운드 `C-6`]** 옛 시그니처는 `Effect(fn, state?)`(의존성 하나)였다 —
+아래 "`Effect(fn, ...deps)`" 절이 소스.
 
 **`state` 생략 시**: `fn()`을 즉시 1회 실행, 리턴값(`nil | () -> ()`)은
 이 Effect가 바인드된 leaf가 죽을 때 정확히 1회 호출. 재실행 없음
@@ -45,17 +47,17 @@ leaf가 죽을 때 **마지막 cleanup을 한 번 더 호출**. 결과적으로 
 `useEffect(fn, [dep])`와 동형(설치+재실행 사이/최종 cleanup 전부 같은
 반환 계약 하나로 처리).
 
-- **다수 의존성은 `:With(...)`로 먼저 하나의 State로 묶어서 넘길 것** —
-  React식 별도 deps 배열을 새로 만들지 않음, quad가 이미 가진 다중 의존성
-  결합 관용구(`base/source-state-plan.md` "`:With` + `:Compute`" 절)를
-  그대로 재사용해 같은 일 하는 두 번째 경로를 안 만듦. **`Effect(fn, a, b,
-  c)`처럼 trailing args로 바로 받는 sugar는 의도적으로 안 만듦**(2026-08-11
-  세션, `source-state-plan.md` "`:Compute(fn, ...)` — 추가 의존성을 trailing
-  args로 직접 받는 sugar" 절 참고) — `Compute`와 달리 Effect/Observer는
-  자기 자신이 결과를 담는 State 노드가 아니라서, 의존성이 둘 이상이면 그걸
-  합칠 **새 노드**(`:With`가 만드는 것)가 실제로 필요함. 그 비용을 sugar로
-  감추지 않고 `Effect(fn, state:With(a,b,c))`처럼 코드에 그대로 드러내는
-  게 의도된 선택.
+- **🔄 [역전됨, 2026-08-21 구현 전 QA 5라운드 `C-6`] "다수 의존성은 `:With`로
+  묶어서 넘길 것 / trailing args sugar는 안 만듦"(2026-08-11 세션) — 뒤집혔다.**
+  지금은 `Effect(fn, ...deps)`가 의존성을 **여러 개 직접 받고 각각에 구독을
+  건다**(아래 "`Effect(fn, ...deps)`" 절이 소스). 옛 근거("의존성이 둘 이상이면
+  합칠 새 노드가 실제로 필요하니 그 비용을 sugar로 감추지 말자")가 무너진
+  이유는 둘 — (1) **`Ref`는 State가 아니라 `:With`로 합칠 수가 없어서**, 그
+  모델에선 `Ref`가 Effect의 의존성이 될 방법이 **아예 없었다**(실제 갭),
+  (2) 각 의존성에 구독을 따로 걸면 **합치는 노드 자체가 안 생긴다** — 감출
+  비용이 애초에 없다. 옛 서술이 인용하던
+  `source-state-plan.md`의 "`:Compute(fn, ...)`" 선례는 이제 **따르는 쪽**의
+  근거가 됐다(인자 모양을 그 관용구 그대로 맞춤).
 - **`fn`은 커링 스타일도 권장(2026-08-07 여섯 번째 세션, 사용자 제안)** —
   `Effect(makeLogger("mount"), state)`처럼 팩토리 함수가 실제 `fn(state)`를
   만들어 반환하는 패턴, `Modifier`의 `Boldify(10)` 커링 관용구(`modifier-plan.md`
@@ -176,15 +178,28 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
     dedup" 절의 `old ~= v`). 그런데 `:Unsubscribe()`가 cleanup을 미리
     실행해버리면 뒤이은 재-dispatch에서 **dedup 때문에 재바인딩이 안
     일어나** 그 Effect가 조용히 죽은 채로 남는다 — 의도한 동작이 아님.
-  - **⚠️ 같이 확인해야 할 별건(미해결)**: 그 dedup 경로에서 **retract가
-    아무것도 안 한 뒤 `process` 쪽도 정말 아무것도 안 하는지** 대칭이
-    실제로 성립하는지 확인 필요(사용자가 괄호로 남긴 것).
-    `ObserverEffectLeafHandler` 의사코드 기준으론 `process`의
-    `if old ~= v then bindLifetime(...) end`와 클로저의
-    `if nextValue ~= v then unbindLifetime(...) end`가 짝을 이루지만,
-    **`EffectHandle`은 내부 Observer로 cascade까지 해야 하므로** 그
-    cascade가 dedup 분기 안에 제대로 들어가 있는지는 별도 확인 대상이다.
-    M3 착수 전 확인할 것.
+  - **✅ [해소, 2026-08-21 — 구현 전 QA 4라운드 `E-10` 결론을 5라운드 `EF-3`에서
+    실제로 반영] dedup 경로의 process/retract 대칭은 성립한다.** 4라운드에
+    결론이 났는데 **이 문서에 반영이 누락돼 "미해결"로 남아 있던 것**을
+    5라운드가 잡아냈다(그 자체가 followup의 "반영 완료" 표를 신뢰 소스로
+    쓰면 안 된다는 사례 — 소스는 항상 `base/` 본문).
+    - **성립하는 이유**: 핸들러가 **이전 값(`old`)을 `Relate`로 직접 들고
+      있고**, `process`의 `if old ~= v then ... end`와 클로저의
+      `if nextValue ~= v then ... end` **두 분기 안에서만** bind/unbind가
+      일어난다. 값이 같으면 retract도 아무것도 안 하고(= `old`를 지우지
+      않는다) `process`도 조회해서 같으면 그대로 넘어간다 — 양쪽이 같은
+      비교식을 쓰므로 한쪽만 도는 상태가 안 생긴다. **사용자 서술**(2026-08-20):
+      *"relate 로 effect 핸들러 쪽에서 old 값을 직접 들고 있어야 하고 dedup
+      이면 retract 에서 old 를 안 지워주고 process 로 조회해보고 같으면
+      dedup 되어야하는듯."*
+    - **⭐ 단, 내부 Observer cascade도 그 분기 *안*에 있어야 한다**
+      (5라운드 `EF-5`, 확인됨) — `EffectHandle`은 자기 자신뿐 아니라
+      `handle._observer`까지 같이 bind/unbind해야 하는데, 그 cascade가 dedup
+      분기 **밖**에 있으면 handle과 내부 Observer의 바인딩 상태가 갈린다
+      (handle은 그대로인데 Observer만 풀리는 식). 구현 시 이 한 줄을 반드시
+      같은 `if` 안에 둘 것.
+    - **[2026-08-21 기준]** 남은 건 **구현 시 회귀 확인**뿐이고, 설계상 열린
+      항목이 아니다.
 - **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 그냥
   위임하지 않는다 — Effect 계층에서 의미가 확장됨.** Observer의
   `:Unsubscribe()`는 "미래 재실행만
@@ -220,6 +235,41 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   전용(`:Unsubscribe()`는 `inst`를 몰라 대신 처리 못 함) — 금지되는 건
   여전히 `:Subscribe()`(전역 경로)와 `bindLifetime`(leaf 부착 포함,
   inst-scoped 경로)을 **같이** 쓰는 것뿐.
+
+## ⭐ `Effect(fn, ...deps)` — 여러 의존성을 직접 받는다, `Ref`도 포함 (2026-08-21 구현 전 QA 5라운드 `C-6` 확정)
+
+**갭이 실재했다**: 지금 `Effect`는 `state` 하나만 받고, 여럿을 엮으려면
+`:With`로 합쳐 하나의 State로 만들어야 한다. 그런데 **`Ref`는 State가 아니라**
+(`:Callback`만 있고 emit이 없다) `:With`로 합칠 수가 없어서, **오늘은 `Ref`가
+Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect 가 지금은 Ref에
+대해서 수행될 수가 없다. 단순히 Effect(, ...) 를 만들고 ... 요소를 With 으로
+합치는게 아니라 여러 요소에 대해서 Observe/Callback 하는게 어떻겠냐."*
+
+**확정된 계약**(전부 사용자 확인, 2026-08-21):
+
+- **`Effect(fn, ...deps)`가 의존성을 여러 개 받고, 각각에 맞는 구독을 건다** —
+  State/Source면 `Observer`, `Ref`면 `:Callback`. `:With`로 합치지 않는다.
+- **인자 모양은 `:Compute(fn, ...deps)`의 선례 그대로** — trailing deps를
+  **lazy 위치 인자**로 콜백에 넘긴다(`base/source-state-plan.md`의 "trailing
+  deps를 `fn`에 lazy positional 인자로도 노출" 절). 새 규칙이 아니다.
+- **최소 1회는 실행된다 — React `useEffect`와 동일.** 아직 안 채워진 `Ref`가
+  섞여 있어도 그대로 돈다(사용자: *"최초 1회에서 어차피 if 로 확인해내게
+  될것이므로 괜찮음"*). "전부 채워질 때까지 대기"는 안 한다.
+- **`Ref` 의존성의 발화 시점은 `Set`될 때뿐**이다(Ref는 반복 재설정이
+  가능하므로 그때마다). 채워지지 않은 상태는 발화가 아니다.
+- **최초 1회를 한 번만 돌리는 장치**: 의존성마다 구독을 걸면 각 구독의 "등록
+  즉시 1회 실행"이 N번 발화하므로, 설치 구간 동안 발화를 눌러뒀다가 마지막에
+  한 번만 실행한다 — **`Blocker`의 "`state:Block()` 없이 직접 쓰는" 용례**를
+  그대로 재사용(`base/blocker-plan.md`). **⚠️ 이 억제 장치의 정확한 모양은
+  `Gate`(공용 게이트 노드) 설계에 딸려 있다** — `research/gate-primitive.md`가
+  닫힌 뒤에 확정할 것.
+- **leaf dedup/cascade가 전부를 덮어야 한다** — 의존성이 N개면 내부 Observer도
+  N개라, `EffectHandle`의 bind/unbind cascade와 dedup 분기가 **그 전부**를
+  같이 처리해야 한다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피
+  모든 옵져버들이 내부에 들어가 있을것이므로 가능하다."*
+
+**우선순위**: 새 코어 메커니즘이 아니라 `Effect` 표면 확장이므로 M3의
+`Effect` 구현과 같이 간다 — 다만 위 ⚠️(억제 장치) 때문에 `Gate`보다 뒤다.
 
 ## 해결됨 — Effect/Observer 관계 (2026-08-07 여섯 번째 세션, 이전 미해결 절 대체)
 

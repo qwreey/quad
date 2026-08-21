@@ -49,6 +49,40 @@ inst, inst, k)` 한 줄로 축약됨** — `Dispatch.setLength`/`activateList`
 호출은 `attachSlot` 내부로 옮겨감(로직은 그대로, 재귀 가능하도록만
 일반화됨), 상세는 아래 "Slot-in-Slot 중첩" 절 참고.
 
+### ⭐ 물리 조작은 주입 op다 — base는 `Parent`를 모른다 (2026-08-21 구현 전 QA 5라운드 `C-1`)
+
+**사용자 지적**: *"element.Parent = self._mountedInst 부분은 실제 엔진이
+구현하게 되는 crud 셋을 사용하게 되어야할것이다. slot 의 해당 동작은 base
+이므로 parent 를 모른다."* 맞다 — 위 경계 문단이 "실제 트리 조작은 백엔드"라고
+이미 말해뒀는데, **의사코드는 계속 `element.Parent = ...` / `element:Destroy()`로
+Roblox 어휘를 직접 쓰고 있었다.** 이 문서의 의사코드를 전부 주입 op 호출로
+바꿨다(로직은 그대로, 표기만 정정):
+
+| op | 언제 | 대응하는 경계 훅 |
+|---|---|---|
+| `mountInst(target, element, index)` | 요소를 물리 트리에 붙일 때(`index` = 0-based 절대 offset, 아래 항목) | mount(`Add`) |
+| `unmountInst(element)` | 물리 트리에서만 떼어낼 때(파괴 아님) | unmount(`Remove`/`Extract`) |
+| `disposeInst(element)` | 요소를 실제로 파괴할 때 | 이미 확정된 주입 op(아래 `dispose` 절) |
+
+- **reposition(`Move`/`Swap`)은 base가 "Parent를 안 건드린다"는 계약만
+  강제**하므로 별도 op이 없다(위 문단 그대로) — 백엔드가 `LayoutOrder` 정렬에
+  기대 no-op으로 둘 수도 있다.
+- **⭐ [확정, 2026-08-21 5라운드 G절] `mountInst(target, element, index)` —
+  index는 절대 offset(0-based)이다.** 원래는 "형제 순서는 `Offset`/`LayoutOrder`
+  부기가 담당하니 안 넘긴다"였는데, 사용자 지적 — *"웹에서는 어떻게 되냐가
+  모호함. 어디 둘지 어떻게 아느냐는것"* — 대로 **DOM류 백엔드는 삽입 위치를
+  알아야 하고, 정작 plain 요소는 `setOffsetSource`에 `None`을 등록해 그 숫자가
+  계산조차 안 되고 있었다.** 지금은 `Dispatch.getOffsetAt(ownerKey, i)`가 발행
+  채널 유무와 무관하게 그 숫자를 준다(`base/dispatch-core-plan.md`의
+  "Length/Offset" 절). Roblox 백엔드는 이 인자를 그냥 무시한다 — `LayoutOrder`가
+  물리 순서와 분리돼 있으므로.
+  - **`unmountInst(element)`는 그대로 인자 없음** — 뺄 때는 자기 자신만 알면 된다.
+  - **0-based인 이유**: `offset`/`sum`이 이미 0-based 개수라 그쪽과 일관되고,
+    `updateFn`의 `index`(1-based 지역 위치)와 헷갈리지 않게 하기 위함.
+- **⚠️ 이름은 `disposeInst` 선례를 따른 가칭** — 주입 op 목록에 정식으로
+  추가할 때 확정할 것(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와
+  주입되는 엔진 op" 절).
+
 **추가로 필요해진 핸들러**: Slot과는 별개로, `k`가 number이고 `v`가 이미
 만들어진 Instance인 경우(중첩 인스턴스를 자식으로 직접 넣는 경우, 예:
 `Frame { Frame {} }`)를 위한 핸들러도 필요 — `quad-roblox/src/Handlers/
@@ -595,6 +629,7 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
 |---|---|---|---|
 | `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환** |
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
+| `Replace` | `Slot:Replace(index, newElement)` | **O(1)** | 그 자리 요소를 교체하고 **이전 것을 파괴** — `Extract(index, newElement)`의 파괴 짝(`Remove` ↔ `Extract` 관계와 동형). **[2026-08-21 5라운드 `B-5` 신설]** |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
 | `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환 |
 | `Splice` | `Slot:Splice(index, removeCount, ...newElements): {T}` | O(n) | 한 위치에서 `removeCount`개를 비파괴 추출(반환)하고 그 자리에 `newElements`를 삽입 — shift+recompute 1회로 통합 |
@@ -623,6 +658,28 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   정확히 같아서(교체도 "그 자리 걸 빼내고 새 걸 넣는" 것의 원자적 버전일
   뿐). `newElement`에도 `Add`와 같은 검증(이미 마운트/타입 제약)이
   똑같이 적용됨.
+- **⭐ `Replace` 신설(2026-08-21 구현 전 QA 5라운드 `B-5`)** — `Extract(index,
+  newElement)`가 이미 "그 자리 교체 + 이전 것 반환"을 O(1)로 해주는데, **흔한
+  경우는 이전 것을 그냥 버리는 것**이다. 그때 `Extract`로 받아서 직접
+  `dispose`하게 하면 `Remove`가 있는데도 `Extract(index):Destroy()`를 쓰게
+  하는 것과 같은 불편이라, 파괴 짝을 이름 하나로 준다.
+  **사용자 판정**: *"차라리, replace 를 제공하는게 나아보임. 해당 요소 자리에
+  교체분을 넣고, 이전건 파기해주는 것. extract 가 뽑아내는것과 다르게 이건
+  제거해준다."*
+  - **진짜 동기는 `:List`의 reconcile 쪽이다** — 교체를 "제거 후 삽입"으로
+    하면 `spliceArraysDown`(뒤 요소 당김) + `spliceArraysUp`(다시 밀어냄)이
+    쌍으로 돌아 **O(n) 시프트가 두 번, `recompute`도 두 번** 난다. 자리 수가
+    안 변하는 교체엔 둘 다 불필요하다(사용자: *"list 에서도 교체 작업이 제거
+    다음 붙여넣기일텐데, 밀고 당기는게 많아짐"*). 그래서 `settle`의 교체
+    분기가 `releaseElement` + `rawAdd`가 아니라 **`rawReplace` 하나**를
+    쓴다(아래 의사코드).
+  - **`Extract`와의 관계**: `Remove` ↔ `Extract`가 "파괴 / 비파괴"로 갈리는
+    것과 정확히 같은 축이다. 새 능력이 아니라 이름 하나.
+  - **[2026-08-21 감사] `rawReplace`의 `destroyOld`가 갈리는 지점**: 공개
+    `Replace`는 **항상 `true`**(사용자가 명시적으로 "이건 지워라"라고 부른
+    것이므로), `:List`의 `settle`만 `self._owned ~= false`를 넘긴다(남의
+    요소면 언마운트만). `_listed` Slot은 공개 CRUD가 막혀 있어 두 경로가
+    한 Slot에서 섞이지 않는다.
 - **`Splice` 신설(2026-08-12 열다섯 번째 세션)** — 한 구간을 제거하고
   동시에 새 요소들을 그 자리에 넣는 흔한 배치 갱신(`:List` 없이 수동
   CRUD로 큰 구간을 통째로 교체하는 경우)을 `Extract`/`Add`를 요소 수만큼
@@ -1132,12 +1189,17 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
 
 ```lua
-function Slot:List(data, updateFn, keyFn)
+function Slot:List(data, updateFn, keyFn, opts)
     assert(not self._listed, "Slot already has :List installed")
     self._listed = true
     self._listData = data
     self._updateFn = updateFn
     self._keyFn = keyFn or function(_, index) return index end
+    -- [2026-08-21 감사] `Owned`를 실제로 심는 유일한 자리 — 이 줄이 없으면
+    -- `settle`/`destroySlotTree`/`releaseElement`가 읽는 `self._owned`가
+    -- 영원히 nil(=owned)이라 `Owned = false` 확정이 코드에 도달하지 못한다.
+    -- 기본이 true이므로 **false일 때만** 필드를 세운다(nil = owned).
+    if opts and opts.Owned == false then self._owned = false end
 
     if self._mounted then
         activateList(self, self._mountedInst)  -- 이미 마운트돼 있으면 즉시 활성화
@@ -1186,35 +1248,66 @@ function activateList(self, physicalTarget)
     -- 소멸 루프가 같은 걸 쓴다(분기가 두 군데로 갈리면 반드시 어긋남).
     local function settle(key, result, detach, pos)
         local wasMounted  = mounted[key]
-        local wasDetached = self._detached[key]   -- Slot 필드(아래 "Detach된 요소는 `slot._detached`가 보유한다" 절)
+        -- [2026-08-21 5라운드 `DE-7`] `_detached`는 **lazy** — 없을 수 있다.
+        -- 읽기는 항상 nil 체크, 쓰기는 `getDetached(self)`(getOrCreate)로.
+        local detached    = self._detached
+        local wasDetached = detached and detached[key]
         local prev = wasMounted or wasDetached
 
         if detach then
-            -- "이 자리를 비우되 죽이지 마라". 이미 detach 상태면 **nop**.
+            -- "이 자리를 비우되 죽이지 마라."
+            -- **prev가 아예 없어도(마운트도 detach도 아님) nop** — 사용자가 "지금
+            -- prev가 있는지"를 추적할 의무가 없다. 이미 detach 상태여도 nop.
             if wasMounted ~= nil then
-                rawDetach(self, wasMounted)        -- 언마운트하되 **소유권은 유지**
-                self._detached[key], mounted[key] = wasMounted, nil
+                local idx = keyIndex[key]          -- 이 키가 지금 차지한 _elements 인덱스
+                if self._owned == false then
+                    -- [2026-08-21 5라운드 `DE-13`] **내 것이 아니면 붙잡지 않는다** —
+                    -- 언마운트 + 소유권 반납으로 끝내고 `_detached`에 넣지 않는다.
+                    -- 다음 사이클의 `prev`는 `nil`이 된다(아래 "`Owned = false`에서
+                    -- `Detach`" 절).
+                    rawUnmount(self, idx)
+                    mounted[key] = nil
+                else
+                    rawDetach(self, idx)           -- 언마운트하되 **소유권은 유지**
+                    getDetached(self)[key], mounted[key] = wasMounted, nil
+                end
             end
         elseif result == nil then
             -- "지워라". Owned=false면 파괴 대신 언마운트만(아래 "Owned" 절).
-            if prev ~= nil then releaseElement(self, prev, wasDetached ~= nil) end
-            mounted[key], self._detached[key] = nil, nil
-        elseif result == prev then
+            if prev ~= nil then releaseElement(self, keyIndex[key], prev, wasDetached ~= nil) end
+            mounted[key] = nil
+            if detached then detached[key] = nil end
+        elseif result == unwrapElement(prev) then
+            -- [2026-08-21 5라운드 `C-3`] 비교 대상은 **사용자가 받은 값**이다 —
+            -- `prev`는 물리 요소(State를 반환했으면 래퍼 Slot)라 그대로 비교하면
+            -- 같은 State를 다시 반환해도 "다른 값"으로 오인한다.
             if wasDetached ~= nil then
-                self._detached[key] = nil          -- **재마운트** — detach된 걸 되살림
+                detached[key] = nil                -- **재마운트** — detach된 걸 되살림
                 -- 4번째 인자 = fromDetached. 소유권을 놓은 적이 없으므로
                 -- `claimOwner`가 재클레임을 허용해야 한다(위 그 함수 주석).
-                rawAdd(self, result, pos, true)
-                mounted[key] = result
+                rawAdd(self, prev, pos, true)      -- 물리 요소(=래퍼)를 그대로 되돌림
+                mounted[key] = prev
             elseif keyIndex[key] ~= pos then
-                rawMove(self, prev, pos)           -- 그대로 쓰되 위치만 이동
+                rawMove(self, keyIndex[key], pos)  -- 그대로 쓰되 위치만 이동
             end
         else
-            -- 교체 — 밀려난 prev 처분은 Owned가 정한다
-            if prev ~= nil then releaseElement(self, prev, wasDetached ~= nil) end
-            self._detached[key] = nil
-            rawAdd(self, result, pos)
-            mounted[key] = result
+            -- 교체.
+            -- [2026-08-21 5라운드 `B-5`] 마운트 중이던 자리는 **`rawReplace`** —
+            -- "제거 후 삽입"으로 하면 `spliceArraysDown` + `spliceArraysUp`이 쌍으로
+            -- 돌아 O(n) 시프트와 `recompute`가 두 번씩 난다. 자리 수가 안 바뀌는
+            -- 교체엔 둘 다 불필요.
+            local element = wrapElement(result)    -- State면 래퍼 Slot, 아니면 그대로
+            if wasDetached ~= nil then
+                -- detach 중이던 건 이미 `_elements` 밖이라 "자리 교체"가 성립 안 함
+                releaseElement(self, nil, prev, true)   -- index 없음(트리 밖)
+                detached[key] = nil
+                rawAdd(self, element, pos)
+            elseif wasMounted ~= nil then
+                rawReplace(self, keyIndex[key], element, self._owned ~= false)
+            else
+                rawAdd(self, element, pos)
+            end
+            mounted[key] = element                 -- **물리 요소**를 기억한다(래퍼일 수 있음)
         end
     end
 
@@ -1231,7 +1324,9 @@ function activateList(self, physicalTarget)
 
             -- [2026-08-21] prev는 "이 키의 요소" — 마운트돼 있든 detach돼 있든.
             -- 그래서 detach된 걸 그대로 반환하면 재마운트가 된다(settle 참고).
-            local prev = mounted[key] or self._detached[key]
+            -- [2026-08-21 5라운드 `C-3`] `updateFn`에는 **래핑 전 값**을 준다
+            -- (물리 요소가 래퍼 Slot이어도 사용자는 자기가 준 State를 다시 본다).
+            local prev = unwrapElement(mounted[key] or (self._detached and self._detached[key]))
             local candidateIndex = pos + 1   -- "이 item이 살아남으면 차지할" 압축 위치(생존 여부와 무관하게 계산 가능)
             local result, ud = updateFn(item, candidateIndex, offset, prev, userdata[key])
             if result == None then result = nil end   -- 편의: None도 nil과 동일 취급
@@ -1258,14 +1353,17 @@ function activateList(self, physicalTarget)
         -- 아래 "`KeyGone`" 절이 소스.
         for key in pairs(keyIndex) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
-                local prev = mounted[key] or self._detached[key]
+                local prev = unwrapElement(mounted[key] or (self._detached and self._detached[key]))
                 local result, ud = updateFn(KeyGone, 0, offset, prev, userdata[key])
                 if result == None then result = nil end
                 local detach = (result == Detach)
                 if detach then result = nil end
-                if result ~= nil and result == prev then
-                    error("Slot:List — KeyGone에 prev를 그대로 반환할 수 없음(키가 없는데 마운트 유지는 모순). "
-                        .. "계속 들고 있으려면 Detach를 반환할 것")
+                -- [2026-08-21 5라운드 `DE-9`] prev든 **새 값이든** 전부 error.
+                -- KeyGone을 받은 자리는 "데이터가 다시 나타날 때를 위한 캐싱"
+                -- (= Detach) 아니면 파괴뿐이고, **새 마운트/생성은 거부**한다.
+                if result ~= nil then
+                    error("Slot:List — KeyGone에는 nil/None(파괴) 또는 Detach(홀드)만 반환할 수 있음 "
+                        .. "(자리가 없어진 키에 새 요소를 마운트할 수 없고, prev 유지도 모순)")
                 end
                 settle(key, result, detach, 0)   -- pos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
@@ -1287,6 +1385,7 @@ function activateList(self, physicalTarget)
     -- 게이팅할 뿐 죽는 순간의 콜백을 안 준다(`base/effect-plan.md`).
     self._detachCleanup = Effect(function()
         return function()
+            if not self._detached then return end   -- [2026-08-21] lazy — 한 번도 detach 안 했으면 끝
             for key, element in pairs(self._detached) do
                 -- releaseOwner를 **먼저, 두 분기 공통으로**. 빠뜨리면
                 -- `_owned == false` 요소가 죽은 Slot을 owner로 달고 남아,
@@ -1294,9 +1393,10 @@ function activateList(self, physicalTarget)
                 -- "이미 마운트돼 있음" error가 난다 — 위 "소유권 반납은
                 -- GC에 맡기면 안 됨" 절이 경계하는 실패 모드.
                 releaseOwner(element, self)
-                if self._owned ~= false then
-                    if isSlot(element) then destroySlotTree(element) else element:Destroy() end
-                end
+                -- [2026-08-21 5라운드 `DE-13`] `_owned == false` 분기가 여기 있었으나
+                -- 제거했다 — unowned Slot은 `_detached`를 **애초에 채우지 않으므로**
+                -- (위 `settle`의 detach 분기) 여기 오는 건 전부 내 것이다.
+                if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
                 self._detached[key] = nil
             end
         end
@@ -1454,10 +1554,33 @@ GC 폴백이 아예 없으므로 명시적 정리 경로가 **필수**다.
 
 **확정된 형태**:
 
-- **`slot._detached: {[key]: T}` — Slot 필드.** 클로저 업밸류가 아니라
-  필드여야 `destroySlotTree`/`dispose`의 walk가 닿는다. (`mounted`/`userdata`/
-  `keyIndex`가 `activateList`의 업밸류로 남는 것과 다른 이유 —
-  **마운트된 요소는 `_elements`를 통해 walk가 이미 닿기 때문**이다.)
+- **`slot._detached: {[key]: T}?` — Slot 필드, 단 lazy(`nil` 허용).** 클로저
+  업밸류가 아니라 필드여야 `destroySlotTree`/`dispose`의 walk가 닿는다.
+  (`mounted`/`userdata`/`keyIndex`가 `activateList`의 업밸류로 남는 것과 다른
+  이유 — **마운트된 요소는 `_elements`를 통해 walk가 이미 닿기 때문**이다.)
+  - **⭐ [2026-08-21 5라운드 `DE-7`] 모든 Slot이 이 테이블을 미리 갖지
+    않는다** — `_detached`를 채우는 건 `:List`의 `settle`뿐인데 Slot 대부분은
+    `:List`도, detach도 없다. **사용자 판정**: *"테이블 생성 비용을 모든
+    slot 이 가져야하나는 의문 … if 확인으로 nil 이면 스킵이 훨씬 싸게
+    먹히지 않는가? … 최적화에 드는 비용이 거의 없는데, 안 할 이유가 보이진
+    않음."* 그래서 **읽기는 항상 `if slot._detached then`, 쓰기는
+    `getDetached(slot)`(getOrCreate 유틸)**로 통일한다 — `Relate`의
+    `StrongMap`/`WeakMap`이 첫 `Set`에서야 만들어지는 것과 같은 관례
+    (`base/relate-plan.md`의 "실제 구조" 절).
+- **⭐ [2026-08-21 5라운드] `Detach`의 nop 조건은 둘이다** — (a) 이미
+  detach 중, (b) **`prev`가 아예 없음**(그 키에 마운트된 것도 detach된 것도
+  없음). 후자도 조용히 무시하므로 **`updateFn`이 "지금 prev가 있는지"를
+  추적할 의무가 없다**(사용자 질문에 대한 확정) — `if not shouldShow(item)
+  then return Detach end`처럼 조건만 보고 반환해도 안전하다.
+- **⭐ [2026-08-21 5라운드 `DE-13`] `Owned = false`에서 `Detach`는
+  `_detached`에 안 들어간다.** unowned 요소는 애초에 남의 것이라 "잠깐
+  빼두고 내가 계속 들고 있는다"가 성립하지 않는다 — 그래서 `rawDetach`가
+  아니라 **`rawUnmount`(언마운트 + 소유권 반납)**로 처리하고, 다음 사이클의
+  `prev`는 `nil`이 된다. **사용자 판정**: *"애초에 unowned 의 state 로 받은것은
+  더이상 가지고 있지 않는다. detach 에 들어가있지도 않는다. 외부로 반출된
+  것이라 다시 들고와서 자기 자신에 붙이지 않음."* 부수 결과 — unowned
+  `:List`에서는 `Detach`와 `nil`이 **같은 동작**이 되고(둘 다 언마운트+반납),
+  `_detached`가 영원히 `nil`이라 `_detachCleanup`도 할 일이 없다.
 - **소유권은 유지된다** — `Detach`는 `rawUnmount`(소유권 반납)가 아니라
   `rawDetach`(**소유권 유지**)를 쓴다. 아래 "raw 3형제" 참고.
 - **`prev`로 그대로 돌려준다** — reconcile이 `mounted[key] or self._detached[key]`를
@@ -1469,6 +1592,12 @@ GC 폴백이 아예 없으므로 명시적 정리 경로가 **필수**다.
 - **`ud`에 담는 것 자체는 여전히 자유** — 다만 **보존을 위해 담을 필요가
   없어졌고**, 담더라도 그건 사용자 몫이라 `:List`가 정리해주지 않는다
   (아래 "`userdata`의 생명주기 제약" 절).
+- **⚠️ [2026-08-21 5라운드 `DE-11`] 문서화 시 반드시 같이 적을 것 — 홀드된
+  요소는 owner가 죽을 때까지 쌓인다.** `Detach`는 **삽입/삭제가 빈번한
+  경우를 위한 재사용 최적화일 뿐 그 이상을 돕지 않는다**(사용자 확정).
+  키가 다시 안 나타나면 `_detachCleanup`이 도는 시점(owner 사망)까지
+  `_detached`에 남으므로, churn이 큰 리스트에서 이걸 무한정 쓰면 메모리가
+  는다 — 잘라내는 정책(LRU/최대 개수)은 **만들지 않는다**.
 
 ```lua
 -- filter에서 걸러진 아이템 — 그냥 Detach만 반환하면 된다
@@ -1497,9 +1626,15 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
 - **`updateFn`은 `if item == KeyGone then ... end`로 분기**해 처분을 고른다 —
   반환값 의미는 정상 사이클과 **완전히 같다**(`nil`=파괴, `Detach`=계속 홀드,
   새 값=교체). 그래서 reconcile의 처분 로직(`settle`)이 한 벌로 공유된다.
-- **`prev`를 그대로 반환하는 것만 `error`** — 키가 없는데 마운트를 유지하라는
-  건 모순이다. 계속 들고 있으려면 `Detach`를 반환해야 한다. (다른 CRUD 에러
-  조건들과 같은 fail-fast 톤.)
+- **⭐ [정정, 2026-08-21 5라운드 `DE-9`] `nil`/`None`/`Detach` 외의 반환은
+  전부 `error`** — `prev`를 그대로 반환하는 것뿐 아니라 **새 요소를 반환하는
+  것도** 거부한다. **사용자 판정**: *"KeyGone 을 받은 요소는 오직 데이터의
+  파괴 또는 detach 를 통해 다시 나오는 경우를 위한 캐싱 이외의 새로운
+  마운트나 생성을 거부한다."* 자리가 없어진 키에 새 요소를 마운트하면
+  넣을 위치 자체가 없다(옛 의사코드는 `pos = 0`으로 `rawAdd`를 불러 범위 밖
+  인덱스로 터졌을 것). 그래서 소멸 루프의 `settle` 호출은 **항상 `result ==
+  nil`**이고, 교체 분기에 도달하는 경로가 없다. (다른 CRUD 에러 조건들과 같은
+  fail-fast 톤.)
 - **`index`는 `0`** — 사라진 키는 자리를 안 차지한다. `offset`/`sum`이 이미
   0-based 개수라 "아무 자리도 없음"이 `0`으로 자연스럽고, `index: number`라는
   시그니처도 안 바뀐다(`nil`을 넣으면 타입이 바뀜). `offset`은 Slot의 것을
@@ -1563,6 +1698,7 @@ Slot:Single(state, updateFn?, opts?)
 | `updateFn`이 새 값 반환 | 밀려난 `prev` **파괴** | **언마운트만** |
 | `updateFn`이 `nil`/`None` 반환 | **파괴** | **언마운트만** |
 | 키가 데이터에서 사라짐 | **파괴** | **언마운트만** |
+| `updateFn`이 `Detach` 반환 | `_detached`가 보유(소유권 유지) | **언마운트 + 소유권 반납**(`_detached`에 안 들어감, 다음 `prev`는 `nil`) — **[2026-08-21 5라운드 `DE-13`]** |
 | owner가 죽음(`destroySlotTree`/`dispose`) | **파괴**(재귀) | **언마운트만** |
 | `Slot:Add(state)` sugar | — | **이걸로 설치됨** |
 
@@ -1735,7 +1871,7 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 ```lua
 local function identityUpdateFn(item) return item end
 
-function Slot:Single(state, updateFn)
+function Slot:Single(state, updateFn, opts)
     updateFn = updateFn or identityUpdateFn   -- [2026-08-11 일곱 번째 세션] 기본값 추가
 
     local data = if isState(state)
@@ -1744,7 +1880,7 @@ function Slot:Single(state, updateFn)
 
     return self:List(data, function(item, index, offset, prev, ud)
         return updateFn(item, offset, prev, ud)   -- index는 항상 상수라 안 넘김
-    end, function() return true end)   -- 고정 key
+    end, function() return true end, opts)   -- 고정 key, opts는 그대로 전달
 end
 ```
 
@@ -1854,10 +1990,18 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 -- (1) 부기만 만든다. 물리 마운트(`Parent` 대입)를 단 한 줄도 안 한다.
 local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- offset 먼저 — activateList가 updateFn에 이 값을 넘겨야 하므로(C1)
-    local offsetSource = Source(0)
+    -- [2026-08-21 5라운드 G절 검토 중 발견] **기존 Source가 있으면 재사용한다.**
+    -- 매번 `Source(0)`을 새로 만들면, 언마운트가 `slot.Offset`을 일부러 보존해둔
+    -- 이유(이미 렌더된 요소들이 그 Source를 **구독한 채 함께 딸려 나간다**,
+    -- `SL-75`/`DC-6`)가 재마운트에서 그대로 무너진다 — 그 구독자들은 옛 객체를
+    -- 계속 보고 있어 새 위치가 영원히 반영 안 됨. identity 유지가 포탈의 전제.
+    local offsetSource = slot.Offset or Source(0)
     Dispatch.setOffsetSource(ownerKey, position, offsetSource)
     slot.Offset = offsetSource
-
+    -- [2026-08-21 5라운드 G절] `recompute(slot, ...)`은 `0`이 아니라 **이
+    -- `slot.Offset`**에서 시작한다 — 그래야 자식 offset이 절대값이 된다(안 그러면
+    -- depth ≥ 2에서 부모 베이스만큼 어긋남). 베이스를 부기에 따로 복사해두지
+    -- 않는다(같은 값이 두 곳에 생김) — `base/dispatch-core-plan.md`의 `recompute`.
     -- `_mounted`는 여전히 false — reconcile의 rawAdd가 "아직 마운트 전"
     -- 경로(= `_elements`에만 넣고 끝)를 타야 함(RC-3/RC-4). 이제 이 조건이
     -- **함수 경계로 강제**된다: `_mounted`를 켜는 코드가 이 함수엔 아예 없음.
@@ -1868,6 +2012,23 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- 정의와 범위가 정확히 일치함(옛 코드는 물리 마운트까지 같이 감쌌음).
     local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
     blocker:On()
+
+    -- [2026-08-21 5라운드 G절] **깊은 전파** — 앞 형제의 길이가 변해 내 베이스가
+    -- 밀리면 내 자식들의 offset도 다시 계산돼야 한다.
+    -- `_listObserver`/`_detachCleanup`과 **같은 취급**: 생성 1회, 재마운트 땐
+    -- 앵커만 새 target으로(앵커가 물리 target인 근거는 위 `C-4`).
+    -- **생성이 `blocker:On()` *뒤*인 게 중요하다** — Observer의 "등록 즉시 1회
+    -- 실행"이 여기서 곧바로 `recompute`를 태우면 아직 자식 등록이 하나도 안 된
+    -- 상태를 훑게 된다. 게이트 안에서 만들면 그 1회가 그냥 삼켜지고, 아래
+    -- 마지막 `recompute`가 어차피 정확한 값을 계산한다.
+    if slot._baseObserver then
+        bindLifetime(physicalTarget, slot._baseObserver)
+    else
+        slot._baseObserver = offsetSource:Observer(function()
+            if not getBlocker(slot):IsOn() then recompute(slot, getBookkeeping(slot)) end
+        end)
+        bindLifetime(physicalTarget, slot._baseObserver)
+    end
     for i, element in ipairs(slot._elements) do
         if isSlot(element) then
             -- 재귀 — 자식이 자기 끝에서 setLength(slot, i, 자기Length)까지 하고 옴
@@ -1876,7 +2037,7 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
             -- 평범한 요소: 자기 자리의 offset은 아무도 안 읽으므로 None,
             -- length는 상수 1. 순서는 늘 offsetSource → setLength(C4).
             Dispatch.setOffsetSource(slot, i, None)
-            Dispatch.setLength(slot, i, 1)
+            Dispatch.setLength(slot, i, 1, physicalTarget)   -- 4번째 = 생명주기 앵커(5라운드 `C-4`)
         end
     end
     -- [2026-08-21 감사] 위 재귀가 **예외를 던지면 이 줄에 도달하지 못해
@@ -1896,20 +2057,34 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- 자기 길이를 부모에게. 이제 **처음부터 최종값**이고(C6), 동시에
     -- 어떤 Parent 대입보다도 먼저다(C7) — 단일 함수로는 둘을 동시에
     -- 만족시킬 수 없었던 지점.
-    Dispatch.setLength(ownerKey, position, slot.Length)
+    Dispatch.setLength(ownerKey, position, slot.Length, physicalTarget)
 end
 
 -- (2) 물리만 붙인다. 부기를 단 한 줄도 안 건드린다 → Blocker 불필요.
+-- **⚠️ [2026-08-21 감사] 전제: 반드시 `materializeSlotTree` 이후에만 부를 것.**
+-- 아래 `acc`가 `slot.Offset:Get()`에서 시작하는데, 그 값이 최종값이 되는 건
+-- materialize의 마지막 `recompute`가 끝난 뒤다. 순서를 뒤집거나 materialize를
+-- 건너뛰고 부르면 물리 삽입 위치가 조용히 어긋난다(공개 `attachSlot`이 둘을
+-- 붙여 부르는 것이 이 계약의 전부 — `research/slot-attach-decomposition.md`의
+-- "prepare만 하고 mount 안 한 중간 상태" 항목이 아직 열려 있는 이유이기도 하다).
 local function mountSlotTree(slot, physicalTarget)
     slot._mounted = true
     slot._mountedInst = physicalTarget
+    -- [2026-08-21 5라운드 G절] 물리 삽입 위치(절대 offset, 0-based)를 같이 넘긴다.
+    -- 러닝 누적이라 O(n) — 자리마다 getOffsetAt을 부르면 O(n²)가 된다.
+    local acc = slot.Offset:Get()
     -- [이관, 2026-08-21] `_detachCleanup` Effect 설치가 여기 있었으나
     -- `activateList`로 옮겼다 — `_detached`를 채우는 건 `:List`의 `settle`뿐이라
     -- List 없는 Slot마다 no-op Effect를 심고 있었다(위 그 함수의 주석이 소스).
     -- 그래서 이 함수는 이제 **정말로 물리 대입만** 한다.
     for i, element in ipairs(slot._elements) do
-        if isSlot(element) then mountSlotTree(element, physicalTarget)
-        else element.Parent = physicalTarget end   -- quad-roblox 글루가 실제 수행
+        if isSlot(element) then
+            mountSlotTree(element, physicalTarget)    -- 자식은 자기 Offset에서 다시 시작
+            acc += element.Length:Get()
+        else
+            mountInst(physicalTarget, element, acc)   -- 주입 op(위 "물리 조작은 주입 op" 절)
+            acc += 1
+        end
     end
 end
 
@@ -2005,7 +2180,7 @@ local function unmountSlotTree(slot)
         if isSlot(element) then
             unmountSlotTree(element)   -- 재귀 — 중첩 Slot도 똑같이 비파괴
         else
-            element.Parent = nil       -- Destroy 아님(quad-roblox 글루가 수행)
+            unmountInst(element)       -- 파괴 아님(주입 op — 위 "물리 조작은 주입 op" 절)
         end
         -- releaseOwner를 **안 부름** — 자식들은 여전히 이 slot의 소유. 이게
         -- destroySlotTree와의 핵심 차이(파괴는 소유권까지 반납, 언마운트는 유지).
@@ -2026,6 +2201,7 @@ local function unmountSlotTree(slot)
     -- 멱등 가드다. 파괴 쪽(`destroySlotTree`)만 핸들까지 `nil`로 지운다.
     if slot._listObserver then unbindLifetime(slot._listObserver) end
     if slot._detachCleanup then unbindLifetime(slot._detachCleanup) end
+    if slot._baseObserver then unbindLifetime(slot._baseObserver) end   -- [2026-08-21 G절]
     -- `slot._detached`는 **안 건드린다** — 언마운트는 파괴가 아니고,
     -- 재마운트되면 그대로 이어져야 한다(`_elements`를 보존하는 것과 같은 이유).
     slot._mounted, slot._mountedInst = false, nil
@@ -2050,15 +2226,17 @@ local function destroySlotTree(slot)
         if isSlot(element) then
             destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
         else
-            element:Destroy()
+            disposeInst(element)
         end
     end
     -- [2026-08-21] Detach로 홀드 중인 요소도 같이 파괴 — 이것들은 `_elements`에
     -- 없으므로(rawDetach가 뺐음) 위 루프가 못 닿는다. **`dispose`가 재귀적으로
     -- 잘 죽이는가**의 답이 정확히 이 줄이다(아래 "`dispose`" 절).
-    for key, element in pairs(slot._detached) do
-        if isSlot(element) then destroySlotTree(element) else element:Destroy() end
-        slot._detached[key] = nil
+    if slot._detached then                 -- [2026-08-21 5라운드 `DE-7`] lazy — 없으면 통째로 스킵
+        for key, element in pairs(slot._detached) do
+            if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
+            slot._detached[key] = nil
+        end
     end
     if slot._detachCleanup then
         unbindLifetime(slot._detachCleanup)   -- 이미 손으로 비웠으니 Effect는 할 일 없음
@@ -2077,6 +2255,10 @@ local function destroySlotTree(slot)
         unbindLifetime(slot._listObserver)
         slot._listObserver, slot._listActivated = nil, nil
     end
+    if slot._baseObserver then                 -- [2026-08-21 G절] 파괴는 핸들까지
+        unbindLifetime(slot._baseObserver)
+        slot._baseObserver = nil
+    end
     local bk = getBookkeeping(slot)    -- 이 slot이 자기 자식들 위해 등록해둔 observer들
     if bk then
         for i, observer in pairs(bk.observers) do
@@ -2094,11 +2276,19 @@ local function destroySlotTree(slot)
 end
 
 -- [명확화, 2026-08-13 감사에서 index/element 불일치 발견해 보강] 아래
--- 시그니처는 index 기준 예시 — 위 "raw* 내부 호출 규약" 절이 이미
--- 못박았듯 reconcile(위 "여러 Slot이 섞일 때" 절 근처)은 element 기준으로
--- rawRemove(self, prev)를 부름. **같은 불일치가 rawUnmount에도 그대로
--- 있음** — 아래 reconcile 예시의 rawUnmount(self, prev) 호출도 prev가
--- element(mounted[key])이지 index가 아님. 둘 중 하나로 통일할지 얇은
+-- **✅ [해소, 2026-08-21 5라운드 — index 기준으로 통일 확정]** 오래 열려 있던
+-- "raw*가 index 기준과 element 기준으로 섞여 있다"는 캐비엇은 **전부 index로
+-- 통일**하는 것으로 닫혔다(**사용자 확정**: *"index 로 전부 처리되면 될듯.
+-- 애초에 안에서 다시 element -> index 를 찾아야하던걸로 앎"*).
+--   * `rawRemove`/`rawUnmount`/`rawDetach`/`rawMove`/`rawSwap`/`rawExtract`/
+--     `rawSplice`/`rawReplace` — **전부 index를 받는다.**
+--   * 예외는 `rawAdd(self, element, index, fromDetached?)` 하나 — 새로 넣는
+--     대상이라 element가 인자인 게 당연하다(그 element는 **이미 래핑된 물리
+--     요소**여야 한다, 아래 "래핑은 raw 바깥에서" 항목).
+--   * 그래서 element만 손에 쥔 호출부(`:List`의 `settle`)가 index를 구해야
+--     하는데, **그 값은 이미 `keyIndex`가 들고 있다**(그 키가 지금 차지한
+--     압축 위치 = `_elements` 인덱스). `indexOfRaw`(O(n) 선형 탐색)는 그게
+--     없는 예외 경로용 폴백이지 기본 경로가 아니다. 둘 중 하나로 통일할지 얇은
 -- 변환 계층을 둘지는 아직 M6 구현 세부로 열려 있음 — 이 블록/아래
 -- reconcile 블록 둘 다 그 결정 전 illustrative 예시.
 -- [신설, 2026-08-13 여섯 번째 세션] rawRemove의 비파괴 짝 — `:List`의
@@ -2110,7 +2300,7 @@ function rawUnmount(self, index)
         unbindLifetime(bk.observers[index])
     end
     releaseOwner(element, self)   -- 소유권은 반납(이제 다른 곳에 넣을 수 있음)
-    if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
+    if isSlot(element) then unmountSlotTree(element) else unmountInst(element) end
 
     spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)
@@ -2127,7 +2317,7 @@ function rawDetach(self, index)
         unbindLifetime(bk.observers[index])
     end
     -- releaseOwner를 **안 부름** — 이게 rawUnmount와의 유일한 차이
-    if isSlot(element) then unmountSlotTree(element) else element.Parent = nil end
+    if isSlot(element) then unmountSlotTree(element) else unmountInst(element) end
 
     spliceArraysDown(self, index)
     recompute(self, bk)
@@ -2136,21 +2326,90 @@ end
 -- [신설, 2026-08-21] 밀려나거나 지워지는 요소의 처분 — `Owned`가 정한다
 -- (위 "`Owned` 옵션" 절). detach 중이던 요소는 이미 `_elements`에 없으므로
 -- spliceArraysDown/recompute가 필요 없어 경로가 갈린다.
-function releaseElement(self, element, wasDetached)
+-- [시그니처 정리, 2026-08-21] index 우선 — detach 중이던 요소만 index가 없다
+-- (트리 밖이라 자리 자체가 없음), 그 경우 `index = nil`로 부른다.
+function releaseElement(self, index, element, wasDetached)
     if wasDetached then
         if self._owned ~= false then
-            if isSlot(element) then destroySlotTree(element) else element:Destroy() end
+            if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
         end
         return   -- 이미 물리 트리 밖 + 부기 밖이라 더 할 일 없음
     end
-    if self._owned ~= false then rawRemove(self, element)   -- 파괴
-    else rawUnmount(self, element) end                      -- 언마운트만(사용자 것)
+    if self._owned ~= false then rawRemove(self, index)   -- 파괴
+    else rawUnmount(self, index) end                      -- 언마운트만(사용자 것)
 end
 
 -- **raw 3형제 — 갈리는 축이 둘(파괴하는가 / 소유권을 놓는가)**:
 --   rawRemove : 소유권 반납 + **파괴**
 --   rawUnmount: 소유권 반납 + 파괴 안 함   ← 요소를 살려서 내보내는 경로
 --   rawDetach : **소유권 유지** + 파괴 안 함 ← 내가 계속 들고 있는 경로
+-- 셋 다 **자리를 없애는** 연산이라 spliceArraysDown이 따라붙는다. 자리를
+-- 유지한 채 내용만 바꾸는 rawReplace(아래)는 그래서 별개 축이다.
+
+-- [신설, 2026-08-21 5라운드 `C-1`] rawAdd — 이 문서에서 가장 많이 참조되는데
+-- 정의가 없어서 `_mounted` 분기가 다른 함수 주석에만 흩어져 있었다. 새 결정은
+-- 없고 기존 서술을 모은 것(사용자 확인, 5라운드).
+function rawAdd(self, element, index, fromDetached)
+    claimOwner(element, self, fromDetached)   -- 이미 누가 갖고 있으면 error(detach 재마운트만 예외)
+    index = index or (#self._elements + 1)
+    table.insert(self._elements, index, element)
+
+    if not self._mounted then
+        -- **아직 마운트 전: 부기도 물리도 없다.** 이 분기가 `materializeSlotTree`가
+        -- `activateList`를 Blocker **밖**에서 불러도 안전한 이유다(5라운드 `AS-5`)
+        -- — 게이팅할 recompute 자체가 안 일어난다. 나중에 attachSlot이 통째로 처리.
+        return index
+    end
+
+    local bk = getBookkeeping(self)
+    spliceArraysUp(self, index)               -- _elements 외 배열들을 한 칸 밀고 bk.N 증가
+
+    if isSlot(element) then
+        attachSlot(element, self._mountedInst, self, index)   -- 자식이 자기 부기+물리를 다 함
+    else
+        Dispatch.setOffsetSource(self, index, None)   -- 순서는 늘 offsetSource → setLength(C4)
+        Dispatch.setLength(self, index, 1, self._mountedInst)
+        recompute(self, bk)                   -- 부기 완결(C7: 물리보다 먼저)
+        mountInst(self._mountedInst, element, Dispatch.getOffsetAt(self, index))
+                                              -- 그 다음에야 물리 마운트(주입 op, 위 그 절)
+    end
+    return index
+end
+
+-- [신설, 2026-08-21 5라운드 `B-5`] rawReplace — 자리를 유지한 채 내용만 교체.
+-- `destroyOld`는 호출부가 정한다(공개 `Replace`는 항상 true, `:List`는 `_owned`).
+-- [2026-08-21] `indexOfRaw(self, element)` — `_elements`를 **언래핑 없이 그대로**
+-- 선형 탐색해 인덱스를 찾는 비공개 폴백. 공개 `Slot:IndexOf`와 다르다: 그쪽은
+-- 사용자가 넘긴 **언래핑된 값**으로 찾아주는 API고(위 "래핑/언래핑" 절), 이쪽은
+-- 물리 요소를 그대로 찾는다. **기본 경로가 아니다** — reconcile은 `keyIndex`가
+-- 이미 인덱스를 들고 있어 이걸 부를 필요가 없다(위 raw* 인자 규약).
+function rawReplace(self, index, newElement, destroyOld)
+    local oldElement = self._elements[index]
+    claimOwner(newElement, self)              -- 새 요소 먼저 클레임(실패하면 아무것도 안 바뀜)
+    releaseOwner(oldElement, self)
+
+    if self._mounted then
+        -- 빼기는 물리 먼저(C7의 "좁은 쪽이 먼저")
+        if isSlot(oldElement) then unmountSlotTree(oldElement) else unmountInst(oldElement) end
+    end
+    if destroyOld then
+        if isSlot(oldElement) then destroySlotTree(oldElement) else disposeInst(oldElement) end
+    end
+
+    self._elements[index] = newElement         -- **시프트 없음** — 자리 수가 안 변한다
+    if not self._mounted then return end
+
+    local bk = getBookkeeping(self)
+    if isSlot(newElement) then
+        attachSlot(newElement, self._mountedInst, self, index)
+    else
+        Dispatch.setOffsetSource(self, index, None)
+        Dispatch.setLength(self, index, 1, self._mountedInst)
+        recompute(self, bk)
+        mountInst(self._mountedInst, newElement, Dispatch.getOffsetAt(self, index))
+    end
+end
+
 function rawRemove(self, index)
     local element = self._elements[index]
     local bk = getBookkeeping(self)
@@ -2162,7 +2421,7 @@ function rawRemove(self, index)
                                   -- rawExtract가 releaseOwner를 부른다고 이미 명시하고
                                   -- 있었는데 코드만 불일치) — 엄격 releaseOwner가
                                   -- 들어온 뒤로는 이 누락이 실동작 차이를 만듦
-    if isSlot(element) then destroySlotTree(element) else element:Destroy() end
+    if isSlot(element) then destroySlotTree(element) else disposeInst(element) end
 
     spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.N — 아래 참고
     recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
@@ -2288,15 +2547,69 @@ Single(element)`을 대신 삽입** — raw 반응형 요소는 전부 Slot-in-S
 중첩(위 절) 위에 얹힌 `:Single`의 얇은 sugar일 뿐이다:
 
 ```lua
+-- [정정, 2026-08-21 5라운드 `C-3`] 래핑을 공개 `Add` 안에 인라인으로 두지 않고
+-- **공용 헬퍼 하나**로 뺀다 — `Replace`/`Extract(index, new)`/`Splice`/`:List`의
+-- reconcile까지 전부 같은 래핑이 필요하기 때문(아래 절).
 function Slot:Add(element, index)
-    if isState(element) then
-        local sub = Slot()
-        sub:Single(element)   -- updateFn 생략 시 identity 기본값(아래 참고)
-        element = sub
-    end
-    return rawAdd(self, element, index)
+    return rawAdd(self, wrapElement(element), index)
 end
 ```
+
+### ⭐ 래핑/언래핑은 Slot 전체에 걸린 연산이다 (2026-08-21 구현 전 QA 5라운드 `C-3`)
+
+**사용자 지적**: *"replace, extract 등에서도 래핑해야하므로 래핑이 하나의
+함수로 나와야한다. 그리고, 또, IndexOf 와 Get 등은 래핑 전 객체를 주어야할텐데
+… 입력을 isState 인지 확인하고 래핑하거나 안 하거나 하는 래퍼와 반대로 get 등을
+위해 언랩하는 도구가 필요하다."* 그대로 확정한다.
+
+```lua
+-- Slot 내부 비공개 헬퍼 둘. 이 둘만이 래핑을 아는 자리다.
+local function wrapElement(v)
+    if not isState(v) then return v end
+    local sub = Slot()
+    sub:Single(v, nil, { Owned = false })   -- updateFn은 identity 기본값.
+                               -- **`Owned = false`를 여기서 실제로 넘긴다** — 안쪽
+                               -- 요소는 사용자 것이라 래퍼가 죽어도 파괴하면 안 됨.
+    sub._wrapped = v           -- ← 역참조. 언래핑이 O(1)이 되는 근거
+    return sub
+end
+
+local function unwrapElement(el)
+    if el == nil then return nil end
+    return el._wrapped or el   -- 래퍼면 원래 값, 아니면 자기 자신
+end
+```
+
+- **⭐ [확정, 2026-08-21] 래핑은 `raw*` **바깥**에서 한다 — `raw*`는 언제나
+  이미 래핑된 물리 요소만 다룬다.** 래핑 지점은 정확히 둘: 공개 표면
+  (`Slot:Add`/`Replace`/`Extract(index, new)`/`Splice`)과 `:List`의 `settle`.
+  (**사용자 확인**: *"raw들은 모두 래핑된거 그대로 넣고 빼도록 할까?"* — 그렇다.)
+  - **왜 `rawAdd` 안이 아닌가**: `raw*`가 래핑까지 하면 "이 함수가 받은 게
+    사용자 값인가 물리 요소인가"가 호출부마다 달라져, 지금 막 index로 통일한
+    인자 규약이 다시 흐려진다. 래핑을 바깥에 두면 `raw*`의 세계는 **물리
+    요소 하나로 균일**하다.
+  - 그래서 `mounted[key]`도, `_elements`도, `_detached`도 전부 **물리 요소**를
+    담는다. 언래핑은 **사용자에게 나갈 때만** 일어난다.
+- **`_elements`에는 항상 물리 요소(래퍼일 수 있음)가 들어간다** — 부기/물리
+  조작(`rawAdd`/`rawReplace`/`rawMove`/`rawRemove`/`attachSlot`)은 전부 이쪽을
+  본다.
+- **사용자에게 나가는 값은 전부 `unwrapElement`를 거친다** — `Get`/`IndexOf`/
+  `Extract`/`ExtractAll`/`Splice`의 반환값, 그리고 `:List`의 `updateFn`이 받는
+  `prev`. 사용자는 자기가 넣은 State를 그대로 돌려받지, quad가 만든 래퍼 Slot을
+  보지 않는다.
+- **`IndexOf(element)`는 언래핑 기준으로 비교**한다 — 사용자가 넣은 State를
+  그대로 넘겨도 그 자리를 찾아준다(비교가 O(n)인 건 원래 계약 그대로).
+- **⭐ 이 한 쌍이 있으면 "반환값 맵"과 "물리 요소 맵"을 따로 둘 필요가 없다.**
+  `:List`의 `mounted[key]`는 **물리 요소 하나만** 들고, 사용자 관점의 값이
+  필요할 때(=`prev` 전달, 멱등 비교) `unwrapElement`를 부르면 된다 — 사용자가
+  예상한 그대로다(*"이 래핑 언래핑이 구현되면 자연스럽게 wrappers[key] |
+  mounted[key] 분리가 필요하지 않아질 수도 있긴하다"*).
+- **래퍼 Slot의 소유 관계**: 래퍼는 quad가 만든 것이라 **부모가 파괴할 수 있고**,
+  래퍼 안의 요소는 사용자 것이라 `Owned = false`로 설치된다 — `destroySlotTree(래퍼)`가
+  `_owned == false`를 보고 안쪽은 언마운트만 하고 빠진다. 두 층이 정확히 이
+  구분으로 갈린다.
+- **`Extract`가 돌려주는 것도 언래핑된 값**이고, 그 시점에 래퍼는 할 일이
+  없어져 그냥 버려진다(언마운트로 자기 구독이 풀리므로 GC-native).
 
 **`:Single`의 `updateFn`을 선택 인자로 완화 — 기본값은 identity.** 이
 sugar가 성립하려면 `:Single(state)`(updateFn 생략)이 유효해야 함 —
@@ -2428,6 +2741,34 @@ return Slot {
 **그러면 안 지운 Slot은 언제 죽는가 — "들고 있다 죽으면 같이 소멸"**
 (GC-native, 이 프로젝트의 기본 원칙 그대로): 아무도 참조를 안 들고 있으면
 그냥 GC됨. 명시적으로 지금 죽이고 싶으면 `dispose`(아래).
+
+**⭐ [2026-08-21 5라운드 신설] 단, 아직 트리에 붙어 있는 동안 조상이 죽으면
+그 요소도 같이 죽는다 — `Owned = false`여도 마찬가지다.** 사용자 질문에서
+나온 확인 사항:
+
+```lua
+Frame {
+    Slot {
+        State(Frame),   -- unowned: quad는 이 Frame을 절대 파괴하지 않는다
+    },
+}
+```
+
+여기서 바깥 `Frame`이 `Destroy`되면 **엔진이 서브트리를 재귀적으로 파괴**하므로
+안쪽 `State(Frame)`의 값도 같이 죽는다. **이건 의도된 동작이고 quad가 개입할
+자리가 아니다**(사용자: *"엔진 자체가 recursive 호출로 전부 죽이는게
+일반적이기에 우리가 빼줄 수 있는 요소도 아니고, 같이 죽는게 의도 동작"*).
+
+- **`Owned = false`가 약속하는 건 "quad가 안 죽인다"뿐**이지 "무슨 일이 있어도
+  살아남는다"가 아니다. 언마운트(`Parent = nil`)가 조상 파괴보다 **먼저**
+  일어난 요소만 살아남는다.
+- **그래서 `state<Frame>`에서 값을 빼내 재사용하려면 조상이 살아있는 동안
+  꺼내야 한다** — 조상이 이미 죽은 뒤에 `state:Get()`으로 얻은 값은 **이미
+  죽은 Instance**다. 그 값에 다시 마운트를 시도하면 `bindLifetime`/`canExecute`
+  게이트에 걸린다(바로 아래 "부수 효과" 문단이 서술하는 그 경로).
+- 같은 이유로 `_detached`가 들고 있던 요소도 조상이 죽으면 같이 죽는다 —
+  detach는 `Parent = nil`이므로 **조상 트리에서 이미 빠져 있어** 이 경우엔
+  해당 없음(그쪽 정리는 `_detachCleanup`이 담당).
 
 **부수 효과 — 이미 파괴된 대상에 재마운트하려는 시도가 자연히 막힘.**
 Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 물리 target에

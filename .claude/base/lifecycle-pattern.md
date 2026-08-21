@@ -356,39 +356,20 @@ function canExecute(value)
 end
 ```
 
-#### (1-1) ⚠️ 첫 인자가 물리 Instance가 아닐 수도 있다 — 백엔드가 반드시 핸들링할 것 (2026-08-20 구현 전 QA 4라운드 `D-56`)
+#### (1-1) ✅ [역전됨, 2026-08-21 구현 전 QA 5라운드 `C-4`] 첫 인자는 **항상 물리 Instance**다
 
-**위 구현 스케치는 `inst`가 항상 Roblox Instance라고 가정하고 `InstData`에서
-gcconn/gchold를 찾는데, 실제 호출부 중엔 `inst` 자리에 `Slot`이 오는 경로가
-이미 있다.** `Dispatch.setLength(ownerKey, i, len)`이 그것 —
-`base/dispatch-core-plan.md`의 "`setLength` 구현" 절이 `bindLifetime(ownerKey,
-observer)`를 부르는데, 그 `ownerKey`는 Slot-in-Slot 중첩에서 **Slot 자신**이다
-(`base/slot-plan.md`의 "재귀 메커니즘" 절 — `attachSlot`이 `ownerKey`로 자기
-자신을 넘겨 최상위/중첩을 같은 함수로 통합한 그 설계).
+여기 있던 절(4라운드 `D-56`)은 *"`Dispatch.setLength`의 `ownerKey`가 Slot일 수
+있으니 백엔드의 `bindLifetime`이 비-Instance 첫 인자를 핸들링하고,
+`isBoundAlive`에 세 번째 분기를 둬야 한다"*였다. **5라운드에서 뒤집혔다** —
+`setLength`가 **부기 키(`ownerKey`)와 생명주기 앵커(`anchor`)를 따로 받도록**
+바뀌면서, 앵커는 언제나 물리 target이 된다(모든 호출부가 이미 그 값을 알고
+있다). 그래서:
 
-**사용자 판정(2026-08-20)**: *"ownerKey 가 Slot일 수도 있음. 각 엔진의
-bindLifetime 은 이를 잘 핸들링 해줘야함. 즉, Slot안에, 또는 바깥에 SetStrong
-으로 gchold 비슷한걸 수행하면 됨."*
-
-- **계약 두 개(위 절)는 그대로 유지된다** — 바뀌는 건 "그 계약을 무엇으로
-  구현하는가"뿐. 물리 Instance면 gcconn 트릭이 두 계약을 다 만족시키고,
-  Slot이면 **Slot 자신이 살아있는 동안 `value`를 붙잡는 강참조**(Slot 안의
-  필드든, `Relate(slot)`에 `SetStrong`이든)와 **`value`가 그 Slot의 생존을
-  되물을 수 있는 근거**를 백엔드가 제공하면 된다.
-- **왜 gcconn을 못 쓰는가**: gcconn 트릭은
-  `inst:GetPropertyChangedSignal("ClassName")`에 의존하므로 엔진 객체가 아닌
-  값(Slot은 평범한 Lua 테이블)엔 걸 수가 없다. Slot은 대신 **자기 자신이
-  reachable한가**가 곧 생존이라, `Relate(slot)`가 weak-keyed인 것만으로
-  "Slot이 죽으면 기록도 같이 사라진다"가 성립한다.
-- **`isBoundAlive`의 판정 분기도 이 경로를 알아야 함** — 지금 코드는
-  gcconn이 없으면 곧바로 `.Subscribed` 폴백으로 떨어지는데, Slot-owned
-  바인딩은 gcconn도 `.Subscribed`도 없어서 **살아있는데 `canBound`가 참으로
-  잘못 나온다**(= 이중 바인딩 가드가 이 경로에선 안 걸림). 백엔드 구현이
-  세 번째 분기를 추가하거나, Slot 쪽 홀더 존재 자체를 판정 근거로 삼아야 함.
-- **⚠️ 정확한 형태는 아직 미확정 — M2/M3 구현 시 확정할 것.** "Slot 안"(필드)
-  이냐 "바깥"(`Relate`)이냐, `isBoundAlive`의 세 번째 분기를 어떤 모양으로
-  둘지가 열려 있다. 지금 확정된 건 **"첫 인자가 Instance라고 가정하면 안
-  된다"는 요구사항 자체**뿐.
+- **`bindLifetime`/`unbindLifetime`/`isBoundAlive`는 예전처럼 물리 Instance만
+  상대한다** — 백엔드에 추가 요구사항이 없고, `isBoundAlive`의 **세 번째
+  분기도 필요 없다**(형태 미정인 채 열려 있던 항목이 이걸로 닫혔다).
+- 근거와 트레이싱은 `base/dispatch-core-plan.md`의 "`setLength` 구현" 절
+  바로 뒤 문단, 역전 전 원문은 `archive/bindlifetime-slot-owner-reversed.md`.
 
 **`bindLifetime`이 `value`와 맺는 계약은 정확히 둘**(이 둘이 위 구현의 전부):
 

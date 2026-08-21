@@ -191,11 +191,11 @@ end
 
 **한 가지 진짜로 필요한 부품 — `wrap`을 Tween 위로 들어올리기.**
 **[승격, 2026-08-20 구현 전 QA 4라운드 `UI-8`] 아래 로컬 헬퍼 `mapTweenValue`는
-`Tween` 자신의 공개 메소드 `:Map(fn)`(이름 후보 `:Mapped`)으로 올라갔다** —
-`base/tween-plan.md`의 "`Tween<T>:Map(fn)`" 절이 소스. 이 문서에 로컬 헬퍼로
+`Tween` 자신의 공개 메소드 `:Mapped(fn)`으로 올라갔다**(이름은 2026-08-21 5라운드 `TW-2`에서 확정) —
+`base/tween-plan.md`의 "`Tween<T>:Mapped(fn)`" 절이 소스. 이 문서에 로컬 헬퍼로
 두면 같은 변환이 다른 숏핸드/백엔드에서 또 복제되므로, 값 타입 자신이 제공하는
 게 맞다는 사용자 판단. 아래 스케치는 그 메소드가 하는 일을 풀어 쓴 것으로만
-읽을 것(`isTween(v)` 분기는 호출부에 남고, `Tween`이면 `v:Map(wrap)`, 아니면
+읽을 것(`isTween(v)` 분기는 호출부에 남고, `Tween`이면 `v:Mapped(wrap)`, 아니면
 `wrap(v)`): 숏핸드는
 "스칼라를 받아 자식 프로퍼티 타입으로 감싸는" 변환을 갖고 있음(`UICorner = 8`
 → `CornerRadius = UDim.new(0, 8)`, 열린 질문 절의 룩업 테이블 `wrap=fn`).

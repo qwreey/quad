@@ -207,9 +207,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M3 체크박스
       참고**), children 배열 leaf 부착이 실제로는 `bindLifetime` 호출이라
       이 게이트를 그대로 탐
-- [ ] `Dispatch.setLength(inst,i,len:number|State<number>)`/
-      `Dispatch.setOffsetSource(inst,i,offset:Source<number>|None)` —
-      array part 형제 순서 보장(Length/Offset 누적합→`LayoutOrder` 리액티브
+- [ ] `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?)`/
+      `Dispatch.setOffsetSource(ownerKey,i,offset:Source<number>|None)`/
+      **`Dispatch.getOffsetAt(ownerKey,i)`** —
+      **[2026-08-21 구현 전 QA 5라운드 반영]** `setLength`의 4번째 인자
+      `anchor`(생명주기 앵커, 항상 물리 Instance — 부기 키와 분리, **생략 시
+      `ownerKey`로 폴백**이라 최상위 호출부는 3-인자 그대로),
+      `setOffsetSource`는 `None`이면 얼리 리턴(그 `None`은 "발행 채널 없음"이지
+      "참여 안 함"이 아니다 — 참여 여부는 `setLength`가 답),
+      숫자가 필요한 쪽(예: 물리 삽입 위치)은 `getOffsetAt`으로 pull.
+      `recompute`는 owner의 베이스(Slot이면 자기 `.Offset`, 최상위면 0)에서
+      시작하고 중첩 Slot은 자기 `Offset`을 관측해 자식 offset을 다시 민다.
+      **이 셋이 하는 일**: array part 형제 순서 보장(Length/Offset 누적합→
+      `LayoutOrder` 리액티브
       바인딩), array part 모든 number 인덱스에 대해 둘 다 호출 필수(생략
       UB, Handler 구현체 작성자만의 계약) — `recompute`는 leaf-lifetime
       경로(`bindLifetime`/`unbindLifetime`)로 등록, `:Subscribe()` 아님
@@ -227,11 +237,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       크래시 방지가 아니라 배치 등록 비용(O(N²)→O(N)) 절감. **다만
       호출하는 건 여전히 사실이라 — `Blocker.luau`는 아래 M3 체크박스에
       있는데 이 항목은 M2 소속이라, 로드맵 순서대로면 M2가 아직 없는
-      `Blocker`를 참조하게 됨.** M2 착수 전 `Blocker`의 최소 표면
-      (`On`/`Off`/`IsOn`/`OffWithoutEmit`)을 M3보다 먼저(또는 M2와 병행)
-      만들 필요가 있는지 사용자 판단 필요 —
+      `Blocker`를 참조하게 됨.**
+      **✅ [해소, 2026-08-21 구현 전 QA 5라운드 `CR-3`] "게이팅 먼저"로
+      결정 — 게이팅을 M2로 앞당긴다**(사용자: *"게이팅 먼저. 게이팅을
+      base 에 만들 준비를 해야한다. 실질적 모양 정의가 필요함"*). 단
+      **앞당기는 대상이 `Blocker` 자체가 아니라 그 아래의 공용 `Gate`
+      노드**로 바뀌었다(같은 라운드 `DT-4` — 시간 기반 게이트는 공개
+      `Blocker` API 위에 못 얹히므로, emit을 가로채는 노드를 한 겹
+      일반화해 `Blocker`/`Debounce`/`Throttle`이 그 위의 정책이 되게
+      한다). **표면/이름은 아직 미정** — `research/gate-primitive.md`가
+      소스이고 `question.md` 3번에 열린 항목으로 올라가 있다. 최소한
+      배치 등록이 실제로 쓰는 `On`/`IsOn`/`OffWithoutEmit`이 도는
+      형태까지는 M2에 필요하다. 경위는
       `qa-request/pre-implementation-qa-round3.md`의 "ROADMAP.md 마일스톤
-      정합성" 절.
+      정합성" 절과 `pre-implementation-qa-round5-followup.md`.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
@@ -321,6 +340,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
+- [ ] **[2026-08-21 5라운드 — 순서 주의]** 아래 `Blocker.luau`가 올라서는
+      **공용 게이트 노드는 M2에서 이미 만들어져 있다**("게이팅 먼저" 결정,
+      위 M2 각주 + `research/gate-primitive.md`). M3에서 `Blocker`를 짤 때는
+      그 노드를 **다시 만들지 말고 그 위의 정책으로** 얹을 것.
+- [ ] **[2026-08-21 5라운드 — 착수 전 확인]** State 재계산 판정을 "소스
+      에포크 비교"로 바꿀지가 **미정인 채 열려 있다**(`research/state-epoch-validation.md`,
+      `question.md` 3번). 채택하면 **State 내부 표현이 바뀌므로**(노드가
+      `seen`/`computedAt` 두 카운트를 들고, `Get`이 상류 에포크를 검증)
+      아래 `Source.luau`/`State.luau`를 짜기 **전에** 결론이 나야 한다 —
+      그 문서 자신이 "M3 뒤로 미루면 되돌리는 비용이 크다"고 경고한다.
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
@@ -497,7 +526,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `newElement` 지정 시 O(1) 제자리 교체(이전 element 반환), 기존엔
       교체하려면 Extract+Add 이중 O(n) 시프트가 필요했던 문제 해결. 공개
       mutate 메소드 전부 "가드 확인 + `raw*` 위임" 얇은 wrapper(`Get`/
-      `IndexOf`는 순수 읽기라 가드 대상 아님). base/roblox 경계에
+      `IndexOf`는 순수 읽기라 가드 대상 아님).
+      **[2026-08-21 5라운드]** `Replace(index, newElement)` 추가(그 자리 교체
+      + 이전 것 **파괴** — `Extract`의 파괴 짝, `Remove` ↔ `Extract`와 같은 축)와
+      `rawReplace`/`rawAdd` 의사코드 확정, 그리고 **래핑/언래핑 한 쌍**
+      (`State`를 요소로 받으면 내부적으로 `:Single` 래퍼 Slot이 되는데,
+      `Get`/`IndexOf`/`Extract`가 돌려주는 값과 `:List`의 `prev`는 전부
+      **언래핑된 원래 값**이다). base/roblox 경계에
       mount/unmount 외 reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소
       타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
       실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
@@ -598,6 +633,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       숫자 기반 메커니즘이 web에도 그대로 필요하나, `insertBefore`/
       `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
       불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
+      **[2026-08-21 5라운드]** 그 web 경로가 실제로 삽입 위치를 알 수 있도록
+      물리 조작이 주입 op(`mountInst(target, element, index)`/`unmountInst`/
+      `disposeInst`)로 정리됐고, 중첩 offset이 부모 베이스를 못 받던 결함과
+      재마운트가 `Offset` Source를 새로 만들던 결함도 같이 수정됐다.
       **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
       해결됨 — 위 M2 항목 참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
       **[재설계, 2026-08-21] `attachSlot`은 비공개 재귀 둘로 분해됨** —
@@ -970,9 +1009,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
       — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을
       추가하지 않는 **순수 슈가**로 확인됨(`Blocker`의 gated state + `Ref` +
-      아래 주입 op 2개 위에 전부 얹힘, 그 문서 13절). **M3에서 `Blocker`를
-      구현할 때 게이티드 노드를 공용 `Gate`로 빼두는 것만은 그 시점에 할
-      것**(둘이 같은 노드를 공유하므로 따로 하면 같은 설계를 두 번 함).
+      아래 주입 op 2개 위에 전부 얹힘, 그 문서 13절). **[정정, 2026-08-21 5라운드]
+      그 공용 `Gate` 추출은 M3가 아니라 M2로 앞당겨졌다** — "게이팅 먼저"
+      결정(위 M2 각주)으로 `Dispatch.drive`의 배치 등록이 쓰는 게이팅부터
+      만들기로 했고, 그때 `Blocker`/`Debounce`/`Throttle`이 공유할 노드를
+      같이 빼둔다(따로 하면 같은 설계를 두 번 함). 표면/이름은 아직 미정 —
+      `research/gate-primitive.md`.
       프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M3를 막지 않음.
       주입 op 2개(`setTimeout(func, delay) -> Timeout` / `clearTimeout`,
       Roblox는 `task.delay`/`task.cancel`로 배선 — **인자 순서가 반대라

@@ -5,8 +5,10 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~4라운드 전부 `base/`
-   반영 완료로 종결. 열린 항목 없음.**
+00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~5라운드 전부 `base/`
+   반영 완료. 열린 항목은 **`Gate`(공용 게이트 노드) 하나뿐**이고, 그게 지금
+   **M2 착수를 막는 유일한 항목**이다**(사용자 지시로 설계는 다음 세션 —
+   재료는 `research/gate-primitive.md`).
 
    **4라운드 — [2026-08-21] 종결.** 문항지는
    `.claude/qa-request/pre-implementation-qa-round4.md`, 사용자 회신 원문은
@@ -16,8 +18,31 @@
    **`Owned` 설치 플래그**, 그리고 **`attachSlot` 분해**
    (`materializeSlotTree` + `mountSlotTree`, 근거는
    `research/slot-attach-decomposition.md`)가 전부 확정·반영됐다.
-   **5라운드 문항지는 만들지 않는다** — 사용자 지시("이후 stale 만 잡는것으로
-   끝낼 수 있어보임"). 아래는 그 회신 전 서술:
+   **[2026-08-21 정정] 5라운드 문항지를 만들었다** — 4라운드 처리 때는 사용자
+   지시("이후 stale 만 잡는것으로 끝낼 수 있어보임")로 안 만들기로 했으나, 같은
+   날 사용자가 5라운드를 요청("4차에서 예로 넘어갔던건 스킵하고, 새로운
+   부분들이나 다른 깊은 부분")해 `qa-request/pre-implementation-qa-round5.md`를
+   신설했다(**회신 대기**). 범위는 셋 — (1) 4라운드에 문항이 아예 없던 영역
+   (`base/project-setup-plan.md`/`base/quad-types-plan.md`, 그리고 문서가 아니라
+   **실제 커밋된 M1 코드**), (2) 4라운드 회신 이후 새로 확정된 것
+   (`Detach`/`_detached`/`KeyGone`/`Owned`/`attachSlot` 분해), (3) 큰 문서의 심화.
+   문항 수와 분포는 그 문서 자신이 소스.
+   **[2026-08-21 후속] 5라운드 회신 도착·처리 완료**(라운드 수는 여기서 안 셈) — 회신 원문은
+   `-round5-response.md`, 처리 결과의 소스는 **`-round5-followup.md`**.
+   즉시 반영된 것은 `slot._detached` lazy화, `KeyGone`에 새 값 반환도 error,
+   **`Owned = false`에서 `Detach`는 `_detached`에 안 들어감**, 조상 파괴 시
+   unowned 요소도 같이 죽는다는 계약 신설, `groupClaimKeys` 키 확정
+   (`(inst, groupValue) → k`), `Tween<T>:Mapped` 이름 확정, 4라운드가 반영을
+   빠뜨렸던 `E-10` dedup 대칭 결론 실반영, 그리고 **"게이팅 먼저"(M2로 앞당김)**.
+   **아직 회신 대기인 것은 그 followup의 C절**(`rawAdd` 의사코드 승인,
+   `rawAdd`의 `Length:Set` 제거, `updateFn`이 State를 반환할 때의 래핑/`prev`,
+   `setLength` 앵커를 물리 target으로 되돌리기, `Gate` 이름·표면, `Effect`
+   다중 의존성) — **[2026-08-21 2차 회신으로 전량 처리 완료]**, 소스는 그
+   파일의 **F절**. 그중 **`Gate`(공용 게이트 노드) 설계만 사용자 지시로 다음
+   세션으로 미뤄졌다**(*"고칠것이 많으므로 Gate 는 다음 세션에 다루겠음 …
+   지금 세션 상 지식만 이전될 수 있게 두세요"*) — 재료는
+   `research/gate-primitive.md`에 모아뒀고 **M2 착수를 막는 유일한 항목**이다.
+   아래는 4라운드 회신 전 서술:
 
    **(원 서술) 4라운드 문항지 작성 경위.** 사용자 요청("모든 확정 부분에 있어서 예가 되어야하는 질문들을
    계속 … 표면적 타입계약부터, 실제 내부 구현 계획과 동작 원리 등")으로

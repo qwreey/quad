@@ -58,6 +58,14 @@
   callable-table+메타테이블이 새로 필요해서 과함, `None`과 같은 선례를 따라
   **패키지 최상위 export**로. 코퍼스 반영 완료 — `base/slot-plan.md`의
   "`nil` 리턴은 파괴가 기본" 절.
+- **`Gate`(2순위, 2026-08-21 신설)**: `Blocker`/`Debounce`/`Throttle` 아래의
+  공용 게이트 노드 이름. 사용자 지적 — *"프리미티브 명을 Gater? 뭔가 이상하게
+  들어간다는게 약간의 문제"* — 코퍼스가 `Blocker`/`Modifier`/`Observer`처럼
+  `-er`를 많이 쓰는데 `Gater`는 영어로 어색하다. 에이전트 권고는 **`Gate`
+  그대로**(`gate`는 이미 행위자가 아니라 **장치**를 가리키는 명사라 `-er`가
+  불필요 — `Source`/`Ref`/`Slot`/`Tween`도 같은 계열), 대안 후보는
+  `Valve`/`Relay`. **설계 자체가 다음 세션으로 미뤄졌으므로 이름도 그때 같이**
+  — 3번 절의 `Gate` 항목과 `research/gate-primitive.md`가 소스.
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
@@ -126,8 +134,14 @@
 
 ## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[신설, 2026-08-18 구현 전 QA 3라운드] M2가 M3의 `Blocker.luau`에
-  구조적으로 의존하게 됨 — 이대로 각주만 두고 로드맵 순서를 유지할지,
+- **[해소, 2026-08-21 구현 전 QA 5라운드 `CR-3`] M2가 M3의 `Blocker.luau`에
+  구조적으로 의존하던 순서 문제 — "게이팅 먼저"로 결정.** 사용자 판정:
+  *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다. 실질적 모양 정의가
+  필요함."* 즉 로드맵 순서를 유지하지 않고 게이팅을 M2로 앞당긴다. **다만
+  앞당기는 대상이 `Blocker` 그 자체가 아니라 그 아래의 공용 `Gate` 노드로
+  바뀌었고**(같은 라운드 `DT-4`), 그 표면/이름이 미정이라 **새 열린 항목으로
+  이어진다 — 바로 아래 `Gate` 항목.** 아래는 해소 전 서술: 이대로 각주만 두고
+  로드맵 순서를 유지할지,
   `Blocker.luau`(또는 최소 표면 `On`/`Off`/`IsOn`/`OffWithoutEmit`)를 M2로
   앞당길지, M2/M3 경계 자체를 재검토할지.** `RC-1`의 Blocker 게이팅 해법
   때문에 `ROADMAP.md` M2의 `Dispatch.setLength`/`setOffsetSource` 체크박스가
@@ -137,6 +151,95 @@
   임시 조치(가장 보수적인 선택, 마일스톤 재편은 안 함) — **M2 착수 전
   필요**. 상세는 `qa-request/pre-implementation-qa-round3.md`의
   "ROADMAP.md 마일스톤 정합성" 절.
+- **[해소, 2026-08-21 구현 전 QA 5라운드 H절] `mountInst`의 삽입 위치 + 중첩
+  offset 결함 — `Dispatch.getOffsetAt(ownerKey, i)` 신설로 확정.**
+  `setOffsetSource(None)`은 얼리 리턴하고, 숫자가 필요한 쪽이 `getOffsetAt`을
+  직접 부른다(사용자안 — 병렬 배열을 안 늘리는 pull 방식). 베이스는 `isSlot`
+  분기의 정체가 "베이스가 있나"임을 명확히 했고(베이스는 따로 저장하지 않고
+  Slot의 `.Offset`을 그대로 읽는다 — 최상위 물리 inst는 항상 0), 중첩 Slot은
+  자기 `Offset`을 관측해 깊은 전파를 한다. 반영하다 **재마운트가 `Offset` Source를 새로 만들던 결함**도
+  같이 잡았다(identity 재사용). 상세는
+  `qa-request/pre-implementation-qa-round5-followup.md`의 H절.
+  아래는 열려 있던 시점의 서술: 둘이 한 덩어리다:
+  (a) `setOffsetSource`의 `None`이 "아무것도 안 차지함"과 "발행 채널 없음"
+  두 뜻을 겸하고 있어 **plain 요소의 offset 숫자가 계산조차 안 된다**(그래서
+  DOM류 백엔드가 삽입 위치를 알 방법이 없다 — 사용자 지적), (b) `recompute`가
+  `sum = 0`에서 시작해 `ownerKey.Offset`을 안 읽으므로 **depth ≥ 2에서 중첩
+  Slot의 자식 offset이 부모 베이스만큼 어긋난다**(이번에 발견, 지금까지 depth 1만
+  써서 안 드러났음). 제안은 `bk.offsetList` 신설(항상 숫자 계산) +
+  `mountInst(target, element, index)` + `recompute`의 `base` 시드 + 중첩 Slot이
+  자기 `Offset`을 관측해 재계산하는 구독 하나 —
+  `qa-request/pre-implementation-qa-round5-followup.md`의 G절이 소스.
+- **[해소, 2026-08-21] offset이 바뀌면 이미 배치된 물리 노드를 옮겨야 하는가 —
+  아니오.** **사용자 확정**: *"애초에 offset 바뀌여도 상관 없는게 위에서 넣고
+  빼면 insert 같은거로 일어나서 뒤로 밀린다는거였긴함"* — DOM류는 삽입/삭제
+  자체가 뒤 형제를 물리적으로 밀고 당기므로, **이미 놓인 노드를 다시 옮길 일이
+  없다.** offset 숫자는 그 자리가 **다음에** insert/remove할 때 쓰는 것뿐이라는
+  기존 서술이 그대로 맞다. 이게 성립하려면 백엔드 op이 **아토믹한 최소 단위**
+  (`mountInst`/`unmountInst`/reposition)여야 한다는 게 같이 확인된 요구사항.
+  아래는 열려 있던 시점의 서술: `mountInst(target, element,
+  index)`가 **삽입 시점의 위치만** 받는 일회성 호출이라, 이미 마운트된 요소의
+  물리 위치는 offset이 바뀌어도 갱신되지 않는다. Roblox는 `LayoutOrder`가
+  프로퍼티라 `updateFn`이 반응형으로 처리하면 되지만 **DOM은 물리 순서 자체가
+  배치**다. `dispatch-core-plan.md`는 "quad-web의 offset 핸들러는 no-op이고 숫자는
+  *다음에* 스스로 insert/remove할 때만 쓴다"고 적어뒀는데, 앞 형제의 길이가 변해
+  뒤 형제들의 offset이 밀리는 흔한 경우에 **이미 놓인 노드를 옮길지**가 그 서술만
+  으론 안 갈린다. 선택지는 (a) 옮긴다(백엔드가 offset 변경을 관측해 재배치),
+  (b) 안 옮긴다(그러면 DOM에선 순서가 실제로 어긋남), (c) `:List`가 재조정 때
+  필요한 것만 명시적으로 다시 `mountInst`. quad-web이 실제로 생길 때까지 미룰 수
+  있으나, **계약을 지금 정해두지 않으면 M6 구현이 (b)를 전제로 굳는다.**
+- **[해소, 2026-08-21] `:List` 재조정의 `getOffsetAt` 비용 — 접두합 캐시로.**
+  **사용자 제안 채택**: *"getOffsetAt 은 compute 된걸 캐시해도 될듯. length
+  변경되는 뒤는 캐시가 무효화되도록 shouldRecomputeAfter 등을 둬서 특정 인덱스
+  초과부는 offset 다시 계산하고, 해당 값 위치 자체는 유효하므로 그것을 통해 더
+  length 를 이어붙이면 될듯."* → `bk.offsetCache` + `bk.offsetDirtyFrom`으로
+  반영(`base/dispatch-core-plan.md`). 무효화 트리거 셋(`setLength`는 `i+1`부터,
+  splice는 그 자리부터, 베이스 변경은 전체)까지 명시. **남은 작은 확인 하나** —
+  `recompute`의 전체 순회가 그 캐시를 같이 채우게 할지는 구현 시 판단(그 문서에
+  ⚠️로 표시). 아래는 열려 있던 시점의 서술:
+  `settle`이 키마다 `rawAdd`/`rawReplace`를 부르고 그 각각이 `getOffsetAt`(O(i))을
+  부르므로, 이미 마운트된 리스트의 데이터가 통째로 바뀌면 **O(N²)**다(최초 마운트는
+  `_mounted == false`라 얼리 리턴이 막아준다). `DC-9`에서 `setOffsetSource`의 즉시
+  계산이 O(N²)인 걸 "배치 등록 1회니 감수"로 판단했지만 **이건 매 reconcile이라
+  빈도가 다르다.** 해법은 있다 — reconcile이 `pos`처럼 **절대 offset도 러닝
+  누적**으로 들고 다니면 O(n)(그게 `mountSlotTree`가 이미 하는 방식). 그렇게
+  할지, 아니면 실측 전엔 그냥 둘지 판단 필요.
+- **⭐ [신설, 2026-08-21 구현 전 QA 5라운드] 공용 `Gate` 노드의 이름과 표면 —
+  M2 착수 전 필요.** 위 항목의 결정("게이팅 먼저")에 따라 base에 만들 것이
+  `Blocker`가 아니라 **상류 emit을 가로채 정책이 통과 여부를 정하는 공용 게이트
+  노드**로 확정됐다(`Blocker`/`Debounce`/`Throttle`이 그 위의 정책). 사용자
+  스케치는 `Gate(function(emit) return function() ... end end)` 2단 구조이고,
+  **공개 API로 낸다**(사용자: *"이 API가 비공개일 이유는 없어보인다"*). 남은 것 —
+  (a) **이름**(사용자: *"프리미티브 명을 Gater? 뭔가 이상하게 들어간다는게 약간의
+  문제"*, 에이전트 권고는 `Gate` 그대로 — `gate`는 이미 장치를 가리키는 명사),
+  (b) `:Apply` 팩토리인지 독립 생성자인지, (c) `Blocker`가 그 위에 어떻게
+  얹히는지, (d) M2에 `Gate`만 넣을지 `Blocker`까지 넣을지. 상세는
+  `research/gate-primitive.md`.
+- **⭐ [신설, 2026-08-21 구현 전 QA 5라운드] State 재계산 판정을 "소스 에포크
+  비교"로 바꿀지 — M3 착수 전 필요.** 사용자 제안: 각 State가 자기 상류 루트
+  `Source`들의 카운트를 들고 있다가 `Get()` 때 비교해 재계산 여부를 정한다.
+  동기는 성능이 아니라 **정확성** — DFS 전파 도중 Observer가 `Get()`을 부르면
+  아직 신호를 못 받은 다른 가지의 옛 캐시가 섞여 들어가는 glitch가 지금 모델에
+  실재한다. 에이전트 분석 결과 진단·방향 모두 타당하고 선례도 있으나
+  (MobX/Adapton류 버전 검증), **중복 *통지*는 안 고쳐지고 "선언 안 된 의존성"을
+  UB로 명문화해야 한다.** State 내부 표현을 바꾸는 결정이라 M3 뒤로 미루면
+  되돌리는 비용이 크다. 상세는 `research/state-epoch-validation.md`.
+- **[해소, 2026-08-21 구현 전 QA 5라운드 `C-4`] `Dispatch.setLength`의 Observer
+  앵커 — 물리 target으로 확정(4라운드 `D-56` 역전).** `setLength`가
+  `(ownerKey, i, len, anchor)`로 4번째 인자를 받아 **부기 키와 생명주기 앵커를
+  분리**한다. 그래서 `bindLifetime`은 항상 물리 Instance만 상대하고,
+  `isBoundAlive`의 세 번째 분기(형태 미정으로 열려 있던 것)도 **필요 자체가
+  없어졌다.** 역전 원문은 `archive/bindlifetime-slot-owner-reversed.md`, 지금
+  결론은 `base/dispatch-core-plan.md`의 "`setLength` 구현" 절 뒤 문단. 아래는
+  열려 있던 시점의 서술: 그때 확정(4라운드 `D-56`)은
+  "`bindLifetime`의 첫 인자가 Slot일 수 있으니 백엔드가 그 경우를 핸들링하라"인데,
+  사용자가 그 전제 자체에 의문을 제기했다: *"애초에 Slot 이 effect 나 다른
+  요소들을 소유할 수가 없다 … 실제 observer/effect 는 실제 inst 에 불림 …
+  우리가 왜 slot 을 소유 대상으로 둘 수 있게 한거였는지 다시 생각해봐야할
+  부분."* 대안은 **부기 키(`ownerKey`)와 생명주기 앵커(물리 `physicalTarget`)를
+  분리**하는 것 — 그러면 `bindLifetime`은 항상 Instance만 받고,
+  `isBoundAlive`의 세 번째 분기(지금 ⚠️ 미정)도 통째로 불필요해진다. 상세와
+  트레이싱은 `qa-request/pre-implementation-qa-round5-followup.md`.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등
   `:Compute`/`:Apply`용 슈가 함수 모음의 이름. 흔한 단어라 top-level
@@ -196,9 +299,11 @@
   claim 레지스트리가 하나 필요하다는 **방향은 확정**됐고(`Ref`처럼
   `bindLifetime`을 재사용할 수는 없음 — 그룹 값은 여러 곳에서 쓸 수 있어야
   하므로), **[2026-08-20 QA 4라운드] 이름도 `groupClaimKeys`로 확정**.
-  남은 건 **키를 무엇으로 할지**(`(inst, groupValue) → k`인지 `groupKey`
-  단위인지)와 기존 `nameClaims`와의 공존 방식 —
-  `base/attribute-plan.md`의 "이름 소유권" 절.
+  **[해소, 2026-08-21 QA 5라운드 `AT-1`] 키도 `(inst, groupValue) → k`로 확정**
+  (사용자: *"group 에 따라 key 가 따로 생성되므로 다른 그룹에 대해서는 잡을
+  필요가 없고, 그건 key->name 이 유일성을 검증해준다"*), `nameClaims`보다
+  **위치 claim을 먼저** 본다 — `base/attribute-plan.md`의 "이름 소유권" 절.
+  **이 항목은 닫혔다.**
 - **[신설, 2026-08-18 구현 전 QA] 중간 State GC 미검증** — `State → State →
   State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도
   없어 전파가 조용히 끊길 수 있음. 방향(상류 strong / 하류 weak)은 사용자가

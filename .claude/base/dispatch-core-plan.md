@@ -741,6 +741,10 @@ end
   Dispatch 핸들러가 아니라 독립 탑레벨 유틸이지만, `isSlot`이 아닌 값은
   `elementOwner` 같은 순수 부기 판정 뒤에 마지막 한 줄만
   `disposeInst(inst: any): ()`로 위임(quad-roblox는 `inst:Destroy()`) —
+  **[2026-08-21 5라운드] 같은 계열로 `mountInst(target, element, index)`/
+  `unmountInst(element)`가 추가될 예정**(base는 `Parent`를 모른다는 지적에서
+  나옴, `base/slot-plan.md`의 "물리 조작은 주입 op다" 절). **이름은 아직
+  가칭**이라 이 목록에 정식 등재하는 건 그 확정 시점에 한다 —
   2026-08-14 열 번째 세션에 같은 원칙으로 확정.
 - **backend 소유**: `Property`/`Event`/`OnChange`(Reflection·시그널 같은
   엔진 개념 자체가 로직), `InstanceChild`, `Slot`의 실제 부모 조작
@@ -1259,9 +1263,13 @@ Slot1이 바뀔 때마다 Slot2에 다시 알려줘야 하는 캐스케이드 �
 **`Dispatch`의 두 API — 둘 다 Handler→Dispatch 등록(push) 방향**:
 
 ```lua
-Dispatch.setLength(inst, i, len: number | State<number>)
-Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
+Dispatch.setLength(ownerKey, i, len: number | State<number>, anchor?)
+Dispatch.setOffsetSource(ownerKey, i, offset: Source<number> | None)
+Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 자리의 절대 offset
 ```
+**[2026-08-21 5라운드]** `anchor`는 생명주기 앵커(생략 시 `ownerKey`, 자세한
+건 아래 "`setLength` 구현" 절), `getOffsetAt`은 발행 채널(`Source`) 없이
+숫자만 필요한 쪽(물리 삽입 위치 등)이 쓰는 pull 경로.
 
 **[2026-08-11 세션] 첫 인자(`inst`)는 물리 Instance일 필요가 없음 —
 `Relate`가 weak table 기반이라 아무 테이블이나 키로 가능.** 이 사실을
@@ -1320,8 +1328,13 @@ Dispatch.setOffsetSource(inst, i, offset: Source<number> | None)
   강제하지 않음), 반응형이 필요하면 자기 `userdata` 안에 직접 `Source`를
   만들어 `Frame { LayoutOrder = layoutOrder:With(offset):Compute(fn) }`처럼
   써넣으면 됨 — 새 메커니즘 불필요. 상세는 `base/slot-plan.md`의
-  `Slot:List` 절 참고. **실제 마운트를 하지 않는 위치는 `None`을 등록** — 순서 계산에
-  참여할 게 없다는 명시적 선언. 대상은 일반 `Ref`뿐 아니라 **그 배열
+  `Slot:List` 절 참고. **⭐ [정정, 2026-08-21 G절] `None`은 "발행 채널이 없다"는 뜻이다** —
+  옛 서술은 "실제 마운트를 하지 않는 위치"였는데, **plain 요소도 `None`을
+  등록**(마운트는 하지만 그 자리의 offset을 반응형으로 받아볼 소비자가 없음)하므로
+  정확하지 않았다. **순서 계산에 참여하는지는 `setLength`가 답한다**(0이면 안
+  차지). 숫자가 필요하면 채널 유무와 무관하게 `Dispatch.getOffsetAt(ownerKey, i)`을
+  부르면 된다. 아래 "짝을 맞춰 `0`" 규칙은 **값이 정말 없는 자리**(Ref/`nil`)에만
+  해당한다 — plain 요소는 `None` + `setLength(1)`이 정상이다. 대상은 일반 `Ref`뿐 아니라 **그 배열
   위치의 값 자체가 `None`인 모든 경우**(예: `props.Ref or None` 관용구로
   캐우칭된 미전달 Ref) — `setLength`도
   같은 위치엔 짝을 맞춰 `0`으로 등록해야 함(위 `setLength` 항목의
@@ -1461,6 +1474,13 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
 거는 것처럼 순수하게 사용자 코드가 만드는 경우뿐인데, 이건 이미 확정된
 "일반적인 재진입/무한루프는 방어 안 함, provider/사용자 코드 버그로
 간주"(2026-08-04) 원칙 그대로 두면 됨 — 별도 가드를 만들 근거가 없음.
+**⭐ [2026-08-21 5라운드 `DC-14`] 게다가 그 마지막 경로조차 사용자에겐
+막혀 있다** — `updateFn`이 도는 Slot은 정의상 `_listed`이고, `_crudUsed` ↔
+`_listed` 상호 배타 가드(`base/slot-plan.md`) 때문에 그 Slot의 공개 CRUD가
+이미 error다(사용자 지적: *"외부 입장에서는 그럴 방법이 없어보인다. crud 가
+list 시에는 더이상 불가능해지기 때문"*). 즉 같은 `(ownerKey, bk)` 재진입은
+**정상 API로는 만들 수 없다** — `updateFn` 안에서 *다른* Slot을 건드리는 건
+다른 `bk`라 무관하다.
 **결론: `recompute`는 off-by-one만 고친 순수 버전으로 유지, 재진입
 가드 없음.**
 
@@ -1477,12 +1497,98 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 아니라 이미 있는 단방향 흐름 원칙을 recompute라는 구체 지점에 적용한
 것뿐, 그래서 별도 방어 로직도 필요 없음.
 
+**⭐ [2026-08-21 구현 전 QA 5라운드 G절, 사용자 확정] 이 절이 두 번 고쳐졌다.**
+`mountInst`에 물리 삽입 위치를 어떻게 주느냐는 질문에서 결함 둘이 드러났고,
+사용자가 제시한 방향으로 정리됐다:
+
+1. **`sourceList`의 `None`은 "발행 채널 없음"만 뜻한다** — 예전엔 "실제 마운트를
+   하지 않는 위치"라고 정의해놓고 정작 plain 요소를 `None` + `setLength(1)`로
+   등록하고 있었다(그래서 그 자리의 offset 숫자가 **계산조차 안 됐고**, DOM류
+   백엔드가 삽입 위치를 알 방법이 없었다). **참여 여부는 `lengthList`가 이미
+   표현하므로** `sourceList`는 "반응형으로 받아볼 채널이 있나"만 답하면 된다.
+2. **숫자가 필요한 쪽은 `Dispatch.getOffsetAt(ownerKey, i)`로 직접 뽑는다**
+   (사용자 제안: *"setOffsetSource 에선 source 를 받으면 그건 set 해주지만,
+   아니면 그냥 얼리리턴에 None 으로만 둬주고, getOffsetAt 은 직접 호출하는걸로"*)
+   — 모든 자리에 숫자를 밀어 넣는 네 번째 병렬 배열을 만들지 않고 **pull로**
+   둔다("관측해야 실체화된다" 원칙과 같은 결).
+3. **`sum`이 owner의 자기 offset에서 시작한다** — 예전엔 `0`이라 **depth ≥ 2에서
+   중첩 Slot의 자식 offset이 부모 베이스만큼 어긋났다**(depth 1만 쓰던 동안
+   드러나지 않았음). **베이스를 따로 저장하지 않는다** — Slot이면 자기
+   `.Offset`이 곧 그 값이고(부모가 먼저 설정해주므로 이미 정확), 최상위 물리
+   inst엔 베이스라는 개념이 없어 항상 0이다. 한때 `bk.base` 필드에 복사해두는
+   안을 적었다가 **사용자 지적으로 걷어냈다**: *"bk.base 가 왜 필요한거임? …
+   이건 slot 안의 slot.offset 이랑 기능이 겹칠텐데, 부모 slot 의 offset 읽는게
+   이미 정확해 … 최상위에선 애초에 base자체가 없지 않아? 항상 0 일텐데."*
+   같은 값을 두 곳에 두면 갈라진다는, 이 코퍼스가 반복해서 물린 패턴 그대로다.
+   **`isSlot` 분기가 남는 건 타입 분기라서가 아니라 검사할 다른 방법이 없어서다**
+   — `ownerKey.Offset`을 그냥 인덱싱해 확인하는 duck-typing은 Roblox userdata에서
+   정의 안 된 키 인덱싱이 에러를 던질 수 있어 금지돼 있다(`base/brand-plan.md`의
+   duck-typing 기각 근거).
+4. **깊은 전파를 위해 중첩 Slot은 자기 `Offset`을 관측한다** — 앞 형제의 길이가
+   변해 자기 베이스가 밀리면 자기 자식들의 offset도 다시 계산돼야 한다(사용자:
+   *"자식 slot 의 offset 을 다시 설정해주기 위함이구나. offset의 깊은 전파를
+   위한거군"*).
+
 ```lua
+-- [신설, 2026-08-21 G절] 그 자리의 **절대 offset(0-based)** 을 그때그때 계산해 반환.
+-- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — mountInst의 삽입 위치,
+-- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
+function Dispatch.getOffsetAt(ownerKey, i)
+    local bk = getBookkeeping(ownerKey)
+    -- [2026-08-21 사용자 제안] **접두합 캐시 + "이 인덱스 초과부터 무효" 마커.**
+    -- 매번 1..i-1을 다시 더하면 호출당 O(i)라 reconcile 전체가 O(N²)가 된다.
+    -- 캐시된 접두합(`bk.offsetCache[j]` = j 자리의 절대 offset)은 **그 앞쪽이
+    -- 안 바뀐 한 계속 유효**하므로, 무효화는 "바뀐 자리부터 뒤"만 하면 된다.
+    local from = bk.offsetDirtyFrom or 1        -- 이 인덱스부터가 무효
+    if i < from then
+        return bk.offsetCache[i]                -- 앞쪽은 그대로 유효 — O(1)
+    end
+    -- 무효 구간만 이어붙여 다시 계산한다(유효한 마지막 자리의 값에서 출발).
+    local sum = if from > 1 then bk.offsetCache[from - 1] + contribution(bk, from - 1)
+                else (if isSlot(ownerKey) then ownerKey.Offset:Get() else 0)
+    for j = from, i - 1 do
+        bk.offsetCache[j] = sum
+        sum += contribution(bk, j)              -- lengthList[j](State면 :Get())
+    end
+    bk.offsetCache[i] = sum
+    bk.offsetDirtyFrom = i + 1                  -- 여기까지는 이제 유효
+    return sum
+end
+
+**⭐ [2026-08-21 사용자 제안] `getOffsetAt`의 접두합 캐시 — 무효화 규칙**
+
+`offsetCache`/`offsetDirtyFrom`이 성립하려면 **"앞이 안 바뀌면 뒤도 안 바뀐다"**는
+단조성이 지켜져야 한다. 그래서 아래 셋 중 하나라도 일어나면 `offsetDirtyFrom`을
+그 인덱스로 내린다(더 작은 값으로만 갱신):
+
+1. **`setLength(ownerKey, i, ...)`** — `i` 자리의 기여도가 바뀌므로 `i + 1`부터
+   무효(그 자리 자신의 offset은 안 변한다). State 길이가 나중에 emit할 때도 같다.
+2. **`spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제)** — 그 인덱스부터 전부
+   밀리므로 그 자리부터 무효.
+3. **owner의 베이스가 바뀜**(`ownerKey.Offset` 변경 = `_baseObserver`가 도는
+   그 순간) — **전체 무효**(`offsetDirtyFrom = 1`).
+
+**⚠️ 아직 안 정한 것**: `recompute`가 이미 전체를 순회하며 같은 접두합을
+계산하므로, **그 순회가 캐시를 그대로 채우게 할지**(그러면 `recompute` 직후엔
+캐시가 항상 완전) 아니면 두 경로를 분리해 둘지. 전자가 낭비가 없어 보이지만
+`recompute`는 `Set` 캐스케이드를 유발할 수 있어 호출 빈도가 다르다 —
+구현 시 확인.
+
 local function recompute(ownerKey, bk)
+    -- [2026-08-21 G절] `0`이 아니라 이 owner의 베이스에서 시작한다.
+    -- 베이스는 별도로 저장하지 않는다 — Slot이면 자기 `.Offset`이 곧 그 값이고
+    -- (부모가 먼저 설정해두므로 이미 정확하다), 최상위 물리 inst엔 베이스가
+    -- 아예 없어 항상 0이다. 위 `getOffsetAt`과 같은 식.
+    local base = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
     local sum = 0
-    for i = 1, bk.N do
+    -- [2026-08-21 5라운드 감사] `bk.N or 0` — **빈 Slot 크래시 방어**.
+    -- `bk.N`은 `setLength`가 처음 불릴 때 생기므로(`bk.N = math.max(bk.N or 0, i)`),
+    -- 요소가 하나도 없는 Slot(`Slot()` 직후, 데이터가 빈 `:List` 등)은 `N`이 `nil`인
+    -- 채로 `materializeSlotTree` 끝의 recompute에 도달한다 — `for i = 1, nil`은
+    -- 그 자리에서 터진다. 빈 Slot은 완전히 정상적인 상태라 이건 방어가 아니라 계약.
+    for i = 1, bk.N or 0 do
         local offset = bk.sourceList[i]
-        -- offset은 실제 Source이거나 None(참여 안 함) — None은 truthy라
+        -- offset은 실제 Source이거나 None(발행 채널 없음) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
         -- [전면 정정, 2026-08-20 QA 4라운드 `C-6`] `nil`은 skip이 아니라 error.
         -- 도달 경로가 없다는 게 재추적 결론이므로(bk.N=실제 개수, 배치 중엔
@@ -1492,14 +1598,14 @@ local function recompute(ownerKey, bk)
         if offset == nil then
             error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
         end
-        if offset ~= None and offset:Get() ~= sum then   -- 실제로 다를 때만 Set
-            offset:Set(sum)
+        if offset ~= None and offset:Get() ~= base + sum then   -- 실제로 다를 때만 Set
+            offset:Set(base + sum)
         end
         local v = bk.lengthList[i]
         sum += (if isState(v) then v:Get() else v)
     end
     if isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
-        ownerKey.Length:Set(sum)   -- ownerKey가 물리 inst가 아니라 Slot 자신인 재귀 케이스
+        ownerKey.Length:Set(sum)   -- **Length엔 base를 안 더한다** — 길이는 위치와 무관
     end                            -- (`base/slot-plan.md`의 "Slot-in-Slot 중첩" 절)
 end
 ```
@@ -1536,7 +1642,13 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 그건 호출하는 배치 쪽 책임):
 
 ```lua
-function Dispatch.setLength(ownerKey, i, len)
+-- [시그니처 변경, 2026-08-21 구현 전 QA 5라운드 `C-4`] 4번째 인자 `anchor` 신설 —
+-- **부기 키(`ownerKey`)와 생명주기 앵커(`anchor`)를 분리**한다. 아래 절 참고.
+-- **생략하면 `ownerKey`** — 최상위(물리 inst가 곧 owner)에선 둘이 같은 값이라
+-- 기존 3-인자 호출부가 전부 그대로 맞고, **`ownerKey`가 Slot일 때만** 물리
+-- target을 명시적으로 넘기면 된다(그 경우에만 둘이 갈린다).
+function Dispatch.setLength(ownerKey, i, len, anchor)
+    anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
 
@@ -1557,13 +1669,47 @@ function Dispatch.setLength(ownerKey, i, len)
 
     if isState(len) then
         local observer = len:Observer(gatedRecompute)   -- 등록 즉시 1회 실행도 게이팅됨
-        bindLifetime(ownerKey, observer)   -- ownerKey 생명주기에 귀속, Subscribe 아님
+        bindLifetime(anchor, observer)     -- **물리 target**의 생명주기에 귀속, Subscribe 아님
+                                           -- (ownerKey는 부기 키일 뿐 — 아래 절)
         bk.observers[i] = observer
     else
         gatedRecompute()   -- 상수 길이도 같은 게이트를 통과 — setLength 자신은 recompute를 직접 안 부름
     end
 end
 ```
+
+**⭐ [2026-08-21 구현 전 QA 5라운드 `C-4`] 부기 키와 생명주기 앵커는 별개다 —
+4라운드 `D-56`의 결론을 되돌린다.**
+
+4라운드는 "`ownerKey`가 Slot일 수 있으니 **백엔드의 `bindLifetime`이 Slot을
+첫 인자로 받는 경우를 핸들링**하고, `isBoundAlive`에 세 번째 분기를 둬라"로
+결론냈었다. 5라운드에서 사용자가 그 전제 자체에 의문을 제기했고(*"애초에
+Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 observer/effect 는
+실제 inst 에 불림 … 우리가 왜 slot 을 소유 대상으로 둘 수 있게 한거였는지
+다시 생각해봐야할 부분"*), 검토 결과 **되돌리는 쪽이 맞다**:
+
+- 이 Observer가 살아야 하는 기간은 "이 Slot이 **그 물리 트리에 마운트돼
+  있는 동안**"이고, 그건 `physicalTarget`이 정확히 표현한다. Slot 자신의
+  생존은 부모의 `_elements` 강참조가 이미 보장한다.
+- **`setLength`가 불리는 모든 자리에서 물리 target을 이미 알고 있다** —
+  `Dispatch.drive`(=`inst`), `materializeSlotTree`(=`physicalTarget`),
+  런타임 단건 `rawAdd`/`rawReplace`(=`self._mountedInst`).
+- 그래서 **`bindLifetime`의 첫 인자는 항상 물리 Instance**로 되돌아가고,
+  `base/lifecycle-pattern.md`가 지고 있던 백엔드 요구사항(비-Instance 첫 인자
+  핸들링)과 `isBoundAlive`의 **세 번째 분기가 통째로 불필요**해진다(그건
+  아직 형태가 미정인 채 열려 있던 항목이었다). 옛 결론 원문은
+  `archive/bindlifetime-slot-owner-reversed.md`.
+- **포탈(언마운트→재마운트)에서도 자연히 맞는다** — `unmountSlotTree`가
+  `bk.observers`를 `unbindLifetime`하고, 재마운트 시 `materializeSlotTree`가
+  새 `physicalTarget`을 앵커로 다시 등록한다.
+- **`getBookkeeping(ownerKey)`/`getBlocker(ownerKey)`는 그대로 Slot을 키로
+  쓴다** — 그건 `Relate`의 weak 키일 뿐 생명주기 앵커가 아니다.
+- **`anchor`는 `len`이 State일 때만 실제로 쓰인다**(상수 길이는 Observer를
+  안 만들므로). **생략 시 `ownerKey`로 폴백**하므로 최상위 호출부
+  (`Dispatch.drive`, `ProcessedPreRefHandler`/`NilHandler` 등 `inst`를 owner로
+  쓰는 자리 전부)는 **기존 3-인자 그대로 두면 된다** — 거기선 `ownerKey`가 곧
+  물리 target이다. 4번째 인자를 실제로 넘겨야 하는 건 **`ownerKey`가 Slot인
+  자리**(`materializeSlotTree`의 등록 루프, 런타임 `rawAdd`/`rawReplace`)뿐이다.
 
 `:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
 본질적으로 `ownerKey` 하나에 종속된 내부 배관이라, `ownerKey`(물리 inst
@@ -1616,24 +1762,36 @@ end
    호출한다. 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
    `ownerKey`가 Slot이면 이 한 번의 recompute가 `ownerKey.Length`(위
    재귀 케이스)도 같이 확정시킨다.
+   - **⭐ [2026-08-21 5라운드 `DC-11`] 이 마지막 호출이 실제로 하는 일은
+     "offset 채우기"가 아니다.** offset은 3번의 즉시 계산이 등록 시점마다
+     이미 정확히 넣어뒀고(position `i`의 offset은 `1..i-1`의 길이 합인데
+     그것들은 `i`보다 먼저 등록되므로), 이 호출에서 `offset:Get() ~= sum`
+     가드에 걸려 대부분 아무것도 안 쓴다. 실제 역할은 둘 —
+     **(a) `ownerKey`가 Slot이면 `ownerKey.Length`(= 기여도 합) 확정**
+     (사용자 추측대로 이게 주 목적), **(b) 등록된 뒤에 값이 바뀐 길이가
+     있으면 그 뒤 형제들의 offset 교정**. 그래서 `ownerKey`가 물리 `inst`인
+     `Dispatch.drive` 경로에선 (a)가 없어 사실상 검증 패스에 가깝지만,
+     O(N) 순회에 `Set`이 거의 없으므로 분기해서 빼지 않고 그냥 항상 부른다.
 
-**`setOffsetSource`의 즉시 계산(2026-08-18 신설)** — 등록되는 그 자리에서
-`bk.lengthList[1..i-1]`을 합산해 곧바로 `:Set`한다(단 `source == None`이면
-스킵 — 참여 안 하는 자리는 계산할 게 없음):
+**`setOffsetSource`의 즉시 계산(2026-08-18 신설, 2026-08-21 G절에 정리)** —
+등록되는 그 자리에서 **`Dispatch.getOffsetAt(ownerKey, i)`**(= 베이스 +
+`bk.lengthList[1..i-1]` 합)를 구해 곧바로 `:Set`한다. `source == None`이면
+**얼리 리턴** — 발행할 채널이 없으니 계산할 이유가 없고, 그 자리 숫자가
+필요한 쪽(예: `mountInst`의 삽입 위치)은 `getOffsetAt`을 직접 부른다:
 
 ```lua
+-- [정리, 2026-08-21 G절] 합산 루프가 `Dispatch.getOffsetAt`으로 빠지면서
+-- 이 함수는 "등록 + (채널이 있으면) 즉시 1회 발행"만 남는다.
 function Dispatch.setOffsetSource(ownerKey, i, source)
     local bk = getBookkeeping(ownerKey)
     bk.sourceList[i] = source
-    if source ~= None then
-        local sum = 0
-        for j = 1, i - 1 do
-            local v = bk.lengthList[j]   -- 배치가 순서대로 처리되므로 1..i-1은 항상 이미 등록돼 있음
-            sum += (if isState(v) then v:Get() else v)
-        end
-        if source:Get() ~= sum then
-            source:Set(sum)
-        end
+    if source == None then
+        return   -- 발행 채널이 없는 자리 — 계산할 이유가 없다. 숫자가 필요하면
+                 -- 그때 `Dispatch.getOffsetAt(ownerKey, i)`을 직접 부른다.
+    end
+    local offset = Dispatch.getOffsetAt(ownerKey, i)   -- 배치가 순서대로 처리되므로
+    if source:Get() ~= offset then                     -- 1..i-1은 항상 이미 등록돼 있음
+        source:Set(offset)
     end
 end
 ```
@@ -1698,8 +1856,9 @@ yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체
   전제할 수 있어야 자기 일을 할 수 있다. 연산마다 선후가 다르면 백엔드
   작성자가 매번 다시 확인해야 한다.
 - **각 연산에 적용하면**:
-  - `rawAdd` — `Length:Set(newCount)`(→ 뒤 형제 offset 갱신 동기 완료) →
-    `element.Parent = target`. 이미 이렇게 확정돼 있음(아래 문단).
+  - `rawAdd` — 부기(`setOffsetSource`/`setLength` 등록 → `recompute`) 완료 →
+    물리 마운트(`mountInst`). **[정정, 2026-08-21 5라운드 `C-2`]** 예전엔 여기
+    `Length:Set(newCount)`라고 적혀 있었으나 **틀렸다** — 아래 문단 참고.
   - `rawRemove`/`rawUnmount`/**`rawDetach`**(**[2026-08-21]** `Detach`
     경로용으로 신설된 세 번째 형제 — 소유권을 **유지**한 채 언마운트만
     한다는 점만 다르고 순서는 같음, `base/slot-plan.md`) — 파괴/언마운트 →
@@ -1721,11 +1880,30 @@ yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체
 
 **동기 순서 — offset 갱신이 마운트보다 먼저 끝나야 함(안 그러면 Roblox의
 실시간 `UIListLayout` reflow에서 한 프레임 순서가 깨진 채 노출될 위험)**:
-Slot의 `rawAdd`는 `self.Length:Set(newCount)`(→ 다운스트림 offset/LayoutOrder
-갱신이 동기적으로 여기서 끝남) 다음에 `element.Parent = target`(→ 이제
-트리에 보이는 시점엔 다운스트림이 이미 정합적) 순서로 호출. `Length:Set`
-자체도 이전 카운트와 실제로 다를 때만 호출(no-op 캐스케이드 방지, 위
-`Get` 가드와 같은 원칙을 호출부에서도 적용).
+Slot의 `rawAdd`는 **부기를 먼저 완결**하고(그 자리의 `setOffsetSource`/
+`setLength` 등록 → `recompute` → 뒤 형제 offset 갱신이 동기적으로 여기서 끝남)
+그 다음에 물리 마운트(`mountInst`)를 호출한다 — 트리에 보이는 시점엔
+다운스트림이 이미 정합적.
+
+**⭐ [전면 정정, 2026-08-21 구현 전 QA 5라운드 `C-2`] `rawAdd`가
+`self.Length:Set(newCount)`를 직접 부른다는 옛 서술은 틀렸다.** 사용자
+지적(*"rawAdd 에서도 필요한가는 모르겠음. 목적이 다르지 않나?"*)을 파고들다
+확인된 것 셋:
+
+1. **`newCount`(개수)는 더 이상 `Length`의 정의가 아니다** — `Length`는
+   "요소별 기여도의 합"(plain=1, nested Slot=그 `.Length`)이라, 중첩이 있는
+   순간 개수로 `Set`하면 틀린 값이 된다.
+2. **쓰는 주체가 둘이 되면 안 된다** — `recompute`가 이미
+   `ownerKey.Length:Set(sum)`으로 확정 기록을 한다.
+3. **그 자리의 `Get() ~= newCount` 가드는 아무것도 안 거른다** — `rawAdd`에선
+   카운트가 **항상** 달라지기 때문. 가드가 값을 하는 건 `recompute`의 전체
+   순회 쪽뿐이다(위 `Get` 가드 문단).
+
+**확정**: `Length`는 **`recompute`만 쓴다.** `rawAdd`/`rawReplace`는 자기 자리
+부기를 등록하고 `recompute`를 한 번 부를 뿐이고, 그게 `Parent` 대입 앞에
+오므로 "부기가 물리보다 먼저"는 그대로 지켜진다(사용자 확인: *"recompute 가
+length 를 잘 처리해놓고 나서 빈 공간에 들어가므로 해당 동작은 완결하다"*).
+의사코드는 `base/slot-plan.md`의 `rawAdd`/`rawReplace`가 소스.
 
 **`:List` reconcile에서 `Length` 갱신 시점**: 한 사이클(여러 항목이
 한꺼번에 추가/제거되는 경우 포함) 전체가 끝난 뒤 **한 번만** — 사이클
@@ -1734,7 +1912,11 @@ Slot의 `rawAdd`는 `self.Length:Set(newCount)`(→ 다운스트림 offset/Layou
 **웹 백엔드(quad-web, 아직 없음) — 같은 `lengthList`/`sourceList`/
 `recompute`를 그대로 재사용, 다른 건 "offset 변경 시 무엇을 하는가"뿐**:
 DOM의 `insertBefore`류는 물리적으로 삽입하면 뒤 형제가 자연히 밀려나므로,
-`offset`이 바뀌었다고 이미 마운트된 원소를 실제로 옮길 필요가 없음 —
+`offset`이 바뀌었다고 이미 마운트된 원소를 실제로 옮길 필요가 없음
+(**[2026-08-21 5라운드 재확인]** `mountInst`가 삽입 위치를 받게 된 뒤에도 이
+결론은 그대로다 — 사용자 확정: *"애초에 offset 바뀌여도 상관 없는게 위에서 넣고
+빼면 insert 같은거로 일어나서 뒤로 밀린다는거였긴함"*. 단 그게 성립하려면
+백엔드 op이 **아토믹한 최소 단위**여야 한다) —
 quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 no-op이고,
 `offset` 숫자는 그 위치가 **다음에** 스스로 insert/remove할 때 어느
 물리 인덱스에서 해야 하는지를 위해서만 부기됨. base 레벨 로직은 완전히
@@ -1760,7 +1942,13 @@ quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 n
 읽을 수 있는 `Source<number>`이고 마운트 전/언마운트 후엔 잠정값(`0` 또는 마지막
 값)을 들고 있을 뿐이다. `nil`로 갈아치우면 그 Source를 이미 구독 중인
 다운스트림이 끊겨 포탈이 깨진다 — 근거는 `base/slot-plan.md`의 "추가 방어 조치"
-항목. 위 정정대로 이 값을
+항목. **⭐ [2026-08-21 5라운드 `DC-6`, 사용자 정밀화] 더 정확히는, 언마운트
+시점에 그 Slot이 이미 렌더해둔 요소들이 `LayoutOrder` 등을 위해 이 Source를
+**계속 구독한 채로 함께 딸려 나간다**는 게 핵심이다. 그 상태에서 재마운트
+때 `slot.Offset`에 **다른 Source 객체**를 넣으면, 딸려 나갔던 요소들은 여전히
+옛 객체를 보고 있어 새 위치가 반영되지 않는다 — 포탈이 그 지점에서 깨진다.
+그래서 언마운트는 값이 stale하게 남는 걸 감수하고 **객체 identity를 유지**하고,
+재마운트 시 `setOffsetSource`의 즉시 계산이 같은 객체에 새 값을 `Set`한다. 위 정정대로 이 값을
 `LayoutOrder` 등에 실제로 반영하는 건 Slot 자신이 하지 않으므로,
 `:List`의 `updateFn`이 이 값을 받아 쓰거나(아래 `base/slot-plan.md`
 참고) 수동 CRUD 사용자가 직접 `slot.Offset`을 읽어 자기 원소 프로퍼티를
@@ -1774,9 +1962,10 @@ store-bind — 그 외 방식은 UB로 확정(2026-08-10 세션).** `Length`/`Of
 카운팅은 그 위치를 담당하는 Handler(`Dispatch/Slot.luau`, store-bind
 프로퍼티 핸들러)가 `Dispatch.setLength`/`Dispatch.setOffsetSource`를
 호출해줘야만 정합적으로 유지됨 — 이 두 API를 부르지 않고 quad가 관리하는
-부모 Instance에 자식을 끼워 넣는 경로(예: 사용자 코드가 `newInst.Parent =
+부모 Instance에 자식을 끼워 넣는 경로(예: **사용자 코드**가 `newInst.Parent =
 parentInst`를 직접 호출해 Slot이 마운트해둔 부모 밑에 자식을 몰래
-추가/제거하는 것)는 `lengthList`/`sourceList`가 그 변화를 전혀 모르게
+추가/제거하는 것 — base 의사코드 쪽의 `Parent` 직접 조작은 2026-08-21에
+전부 주입 op로 정정됐다, `base/slot-plan.md`의 "물리 조작은 주입 op다" 절)는 `lengthList`/`sourceList`가 그 변화를 전혀 모르게
 만들어 카운트·형제 순서 계산이 조용히 어긋남 — 별도 방어 로직 없는 UB.
 `Slot`이든 `state<Frame>`이든 둘 다 이미 이 두 API를 정확히 호출하는
 유일한 정당 경로로 확정돼 있음(위 `setLength`/`setOffsetSource` 절

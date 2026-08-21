@@ -1653,3 +1653,35 @@ quad-제작 Instance는 **GC 폴백이 없다**는 걸 근거로 보존 주체�
 분해** — "부모에게 미는 길이는 최종값"과 "부기가 물리보다 먼저"가 한 함수
 안에선 동시 만족 불가라는 진단이 근거였고, 사용자가 "지금 의사코드를
 건들이는 비용이 추후 실수가 누적되는 비용보다 싸다"로 확정.
+
+## 2026-08-21-02 — QA 5라운드(문항지·회신·1차 처리) + `Gate`/에포크 리서치 신설
+
+원문: `session/2026-08-21-02-qa-round5-and-gate-epoch-research.md`
+
+4라운드 종결 때 "안 만든다"고 했던 5라운드를 사용자 요청으로 신설 —
+**4라운드에 문항이 없던 영역**(`project-setup-plan.md`/`quad-types-plan.md`,
+그리고 문서가 아닌 **실제 커밋된 M1 코드**), **그 이후 확정된 것**
+(`Detach`/`KeyGone`/`Owned`/`attachSlot` 분해), **큰 문서의 심화**로 범위를
+좁힌 205문항. 같은 세션에 회신까지 받아 14건 즉시 반영 — `slot._detached`
+lazy화, `KeyGone`엔 새 값 반환도 error, **`Owned=false`에서 `Detach`는
+`_detached`에 안 들어감**, 조상 파괴 시 unowned도 같이 죽는다는 계약 신설,
+`groupClaimKeys` 키 확정, `Tween<T>:Mapped` 확정, 4라운드가 빠뜨렸던 `E-10`
+실반영, **"게이팅 먼저"(M2로 앞당김)**. 새로 열린 두 갈래는 `research/`로 —
+공용 **`Gate`** 노드(emit을 가로채는 정책 노드, `Blocker`/`Debounce`가 그 위)와
+**State 에포크 검증**(DFS 전파 중 `Get()`이 섞인 값을 캐시하는 glitch를
+정확성 문제로 다룸). **2차 회신으로 되물은 6건도 같은 세션에 전부 확정** —
+`Slot:Replace` 신설(교체가 시프트 2회 → 0회), 물리 조작을 주입 op로
+(`mountInst`/`unmountInst`, base는 `Parent`를 모른다), `rawAdd` 의사코드 신설,
+`rawAdd`의 `Length:Set` 제거, **래핑/언래핑 한 쌍**(`wrapElement`/`unwrapElement`),
+**`setLength`에 `anchor` 인자**(4라운드 `D-56` 역전 → `isBoundAlive` 세 번째
+분기 항목까지 닫힘), `Effect(fn, ...deps)`(`Ref`도 의존성). **3·4차에선 `mountInst`가 삽입 위치를 못 받는다는 지적에서
+시작해 offset 부기 모델이 정리됨** — `None`의 뜻을 "발행 채널 없음"으로 좁히고
+`Dispatch.getOffsetAt` 신설(pull), 그 과정에 **중첩 offset이 부모 베이스를 못
+받던 결함**(depth ≥ 2에서 통째로 밀림)과 **재마운트가 `Offset` Source를 새로
+만들던 결함**(포탈이 깨지는 자리)까지 발견·수정. **커밋 전 감사 2라운드가 또 실질적인 걸 잡았다** — 확정한 `Owned`가
+`Slot:List` 시그니처에 배선이 안 돼 코드에 도달 못 하던 것, `effect-plan.md`가
+역전 배너 없이 자기모순이던 것, 그리고 **손대지 않은 문서**(`ROADMAP` 백로그
+문단·`debounce-throttle-plan.md`)가 "Gate는 M3에서"로 남아 있던 사각지대.
+감사 회신 자리에서 **`raw*`의 index 통일**(오래 열린 캐비엇 종결), **래핑은
+`raw*` 바깥**, **`getOffsetAt` 접두합 캐시**까지 확정. **`Gate`만 사용자 지시로
+다음 세션 — M2를 막는 유일한 항목.**
