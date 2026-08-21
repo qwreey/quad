@@ -134,8 +134,8 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 
 ### `OnDestroyed(fn)`
 
-`Effect(function() return fn end)`를 반환하는 팩토리. `Effect(fn, state?)`가
-`state` 생략 시 "설치 시 즉시 1회 실행 + 반환값이 leaf 사망 시 정확히
+`Effect(function() return fn end)`를 반환하는 팩토리. `Effect(fn, ...deps)`가
+**deps 생략 시** "설치 시 즉시 1회 실행 + 반환값이 leaf 사망 시 정확히
 1회 호출되는 cleanup"이라는 기존 계약(`base/effect-plan.md` 28행)을
 그대로 재사용 — 다만 여기서는 **설치 단계에서 실행되는 함수가 `fn`
 자신이 아니라 `function() return fn end`라는 래퍼**라는 점에 주의.

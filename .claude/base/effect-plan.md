@@ -266,21 +266,41 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   성립하지 않는 게 확인됐다(`base/gate-plan.md`의 8번) — 설치 구간엔 어떤
   `Set`도 안 일어나 게이트에 쌓이는 소스가 없으므로 게이트가 내보낼 것 자체가
   없다. 설치 중 발화를 누르는 플래그 하나면 되고 새 메커니즘이 필요 없다.
-- **⚠️ [2026-08-21 신설 — 미해결] 의존성들이 공통 상류를 공유하면 한 파동에
-  `fn`이 여러 번 돈다.** `A → b`, `A → c`, `Effect(fn, b, c)`에서 `A:Set()`
-  한 번에 `b`가 자기 observer를, `c`가 자기 observer를 **각각 정당하게** 깨워
-  `fn`이 두 번 돈다. **소스 에포크 dedup으로는 안 접힌다** — `b`와 `c`는 서로
-  다른 노드라 접어줄 **공통 하류가 없고**, 둘 다 규칙 1에 정당하게 걸린다
-  (`base/state-epoch-plan.md`). 위의 "설치 구간 억제"도 이건 안 덮는다(그건
-  등록 시점만).
-  - **해법 후보**: `Effect`가 **자기 `EpochMap`을 하나 들고** 각 내부 observer가
-    그걸 `Update`해서 첫 번째만 통과시키는 것 —
-    `research/epoch-brand-composition.md`가 정확히 이걸 노린 제안이고
-    승격 대기 중이다. (검토했다 접은 대안: deps를 하나의 파생 노드로 수렴시켜
-    다이아몬드 dedup에 태우기 — 노드가 늘고 "N deps → N observers" 구조를
-    바꿔야 해서 위 안보다 못하다.)
-  - **그 제안을 안 쓴다면** `useEffect`처럼 "N번 돌아도 무방"으로 계약을
-    명시하는 선택지도 있다. **어느 쪽이든 M3 구현 전에 정할 것.**
+- **⭐ [2026-08-21 해소] 의존성들이 공통 상류를 공유해도 한 파동에 `fn`은 한 번만
+  돈다 — `Effect`가 자기 `EpochMap`을 하나 든다.** 갭은 실재했다: `A → b`,
+  `A → c`, `Effect(fn, b, c)`에서 `A:Set()` 한 번에 `b`가 자기 observer를,
+  `c`가 자기 observer를 **각각 정당하게** 깨워 `fn`이 두 번 돌았다. State 층
+  dedup으론 안 접힌다 — `b`와 `c`는 서로 다른 노드라 접어줄 **공통 하류가
+  없고**, 둘 다 §4의 1번 규칙에 정당하게 걸린다(`base/state-epoch-plan.md`).
+  위의 "설치 구간 억제"도 이건 안 덮는다(그건 등록 시점만).
+  - **확정된 해법**: `EffectHandle`이 `EpochMap`을 **하나** 들고, 각 내부
+    Observer의 클로저가 받은 `from`으로 그걸 `Update`한다. **`true`일 때만
+    `fn`을 부른다.** `Effect`가 곧 그 dep들의 **공통 하류**가 되므로, 한
+    파동에 몇 개가 깨우든 첫 번째만 통과한다.
+    ```lua
+    -- 각 dep의 내부 Observer가 공통으로 거는 클로저
+    function(self, from)
+        if handle._installing then return end  -- 설치 구간 억제 (아래)
+        if handle._epochs:Update(from) then
+            handle:Rerun()   -- 직전 cleanup 호출 후 fn 재실행
+        end
+    end
+    ```
+    **⚠️ 억제 플래그가 `Update`보다 먼저여야 한다** — 등록 시점의 즉시 1회
+    실행에는 `from`이 없어서(`nil`, `base/source-state-plan.md`의
+    "`state:Observer(fn)`" 절) `Update(nil)`이 들어가게 된다. 순서를 뒤집으면
+    설치 발화가 맵을 건드려 **그 파동의 첫 진짜 emit이 접힐** 수 있다
+    (2026-08-21 커밋 전 `/code-review high` 발견).
+  - **`Ref` 의존성은 이 맵에 안 낀다** — `Ref`는 `Epoch`가 아니고
+    `:Callback`으로 발화하므로 `from`이 없다. `Ref` 쪽 발화는 그대로 매번
+    `fn`을 돌린다(`Ref`는 반복 재설정마다 도는 게 계약이고, 공통 상류 문제
+    자체가 없다).
+  - **검토했다 접은 대안**: deps를 하나의 파생 노드로 수렴시켜 다이아몬드
+    dedup에 태우기 — 노드가 늘고 "N deps → N observers" 구조를 바꿔야 해서
+    위 안보다 못하다. `useEffect`처럼 "N번 돌아도 무방"으로 계약을 느슨하게
+    두는 선택지도 있었으나, 접는 비용이 맵 하나뿐이라 채택 안 함.
+  - 근거 기록은 `reference/epoch-brand-composition.md`(이 갭이 `EpochMap`
+    분리의 직접 발단이었다).
 - **leaf dedup/cascade가 전부를 덮어야 한다** — 의존성이 N개면 내부 Observer도
   N개라, `EffectHandle`의 bind/unbind cascade와 dedup 분기가 **그 전부**를
   같이 처리해야 한다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피

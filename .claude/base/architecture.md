@@ -268,8 +268,8 @@ quad/
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`) — 참조 카운트 Handler는 Dispatch/Tag.luau(아래), 엔진 호출은 주입된 addTag/removeTag(`base/tag-plan.md`)
 │       ├── Attribute.luau        # 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`/`:NameMap`, `Tag`와 동형) — Handler는 Dispatch/Attribute.luau(아래) (`base/attribute-plan.md`)
 │       ├── AttributeKey.luau     # 단일 키 `AttributeKey<<T>>(name)` + 이름별 weak 캐시(동등성 보장) + 스칼라 편의 패밀리(String/Number/BooleanAttribute) — 엔진 고유 타입 패밀리(Color3Attribute류)만 백엔드 소속(`base/attribute-plan.md` "패키지 배치" 절, 2026-08-13 열네 번째 세션 재배치)
-│       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenTag`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`base/tween-plan.md`, 2026-08-10 세션 재설계)
-│       ├── Effect.luau           # `Effect(fn, state?)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
+│       ├── Tween.luau            # 값 타입만(`Tween(opts)` 팩토리, `isTween`/`TweenBrand`) — 엔진 무관, 독립 Dispatch 핸들러 아님. 실제 애니메이션 처리는 quad-roblox Handlers/Property.luau 내부 분기(`base/tween-plan.md`, 2026-08-10 세션 재설계)
+│       ├── Effect.luau           # `Effect(fn, ...deps)` — state 없으면 설치1회+leaf사망시 정리, 있으면 State.Observer를 조합해 재실행(`base/effect-plan.md`)
 │       ├── Dispatch/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
@@ -322,7 +322,7 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
   프리미티브 타입 자신의 공개 어휘**라는 것:
   1. 프리미티브 타입 생성자, `Type(args)` 스타일: `Source(default)`/
      `Ref(default)`/`Store({defaults})`/`Modifier()`/`Relate()`/
-     `Effect(fn, state?)`/`PreRef(default)`/`PostRef(default)`.
+     `Effect(fn, ...deps)`/`PreRef(default)`/`PostRef(default)`.
   2. 그 인스턴스의 콜론 메서드: `state:Get()`/`:With(...)`/`:Compute(fn)`/
      `:Observer(fn)`/`:Apply(factory)`/`:Peek(key)`, `source:Set(v)`/`:Emit()`,
      `ref:Set(v)`/`:Callback(fn)`/`:Wait(thread?)`, `observer:Subscribe()`/
@@ -354,9 +354,11 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
   `isPostRef`/`isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
   `bindLifetime`, `base/lifecycle-pattern.md`), 그리고 **프리미티브가
   아닌** 내부 엔진/레지스트리의 네임스페이스 멤버(`Dispatch.process`/
-  `getHandler`/`addHandler`/`drive`, `Brand.set`/`get`) — 이 셋은 "타입
+  `getHandler`/`addHandler`/`drive`, `Brand()`의 `:register`/`:is`) — 이 셋은 "타입
   고유의 어휘"가 아니라 여러 타입에 걸쳐 쓰이거나(`isX`류) 프리미티브
-  자체가 아닌 것(Dispatch/Brand는 `Type(args)` 생성자가 없는 내부 엔진)의
+  자체가 아닌 것(Dispatch는 `Type(args)` 생성자가 없는 내부 엔진이고,
+  `Brand`는 생성자가 있지만 사용자 표면이 아닌 base 내부 유틸 — 사용자에게
+  노출되는 건 `isX` wrapper들이다)의
   구성원이라 PascalCase 대상이 아님. Handler 계약 필드(`isHandlable`/
   `priority`/`process` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
   반환값으로 합쳐지기 전엔 4종이었음)도 여기 속함 — 이건 애초에 "함수"라기보다
@@ -452,11 +454,12 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 **emit 전파는 자기 `invalid` 상태와 무관함**. 한때 `source-state-plan.md`가
 "이미 `invalid`면 전파 중단"으로 서술했으나 `Observer` 계약과 모순돼 역전됨 —
 `archive/invalidate-dedup-propagation-reversed.md`. **[2026-08-21 갱신]**
-전파를 접는 판정은 이제 `invalid`가 아니라 **소스 에포크 비교**가 한다 —
-같은 소스의 같은 에포크가 두 경로로 도착하면 두 번째는 접히고(다이아몬드에서
+전파를 접는 판정은 이제 `invalid`가 아니라 **`Epoch` 리비전 비교**가 한다 —
+같은 `Epoch`의 같은 리비전이 두 경로로 도착하면 두 번째는 접히고(다이아몬드에서
 값도 통지도 한 번), DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch도 같이
-사라진다. 규칙 전량은 `base/state-epoch-plan.md`, 명시적 게이트는
-`base/gate-plan.md`(`state:Gate`)와 그 위의 `Blocker`). State는 쓰기 대상이 아니고, 값을 쓰는
+사라진다. 그 부기는 재사용 가능한 **`EpochMap`**으로 떼어져 있어 State가 아닌
+소비자(`Effect`)도 같은 판정을 쓴다. 규칙 전량은 `base/state-epoch-plan.md`,
+명시적 게이트는 `base/gate-plan.md`(`state:Gate`)와 그 위의 `Blocker`). State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
 `:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
 읽기는 `:Get()` 하나로 통일 — 프로퍼티 읽기 표기는 Ref의 `.Value` 전용으로 좁혀짐. **[표기 정정, 2026-08-18]** 여기 소문자 `.value`로 적혀 있었음). 값 하나만

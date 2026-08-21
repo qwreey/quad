@@ -44,9 +44,15 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
-| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 13(런타임 부분), 17, 18, 19, 20 |
-| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13(타입 부분), 14, 15, 16 |
+| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22 |
+| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23 |
 | **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
+
+**[2026-08-21 정정]** 이 표가 `21`/`22`/`23`을 빠뜨린 채 `13`을 "런타임 부분/
+타입 부분"으로 쪼개 적고 있었다 — `13`의 런타임 절반은 2026-08-19에 `22`로
+분리돼 나갔으므로 지금 `13`은 **순수 타입 스파이크**다. **각 파일이 어느
+환경에서 도는지는 파일 맨 위 주석이 소스**이고, 이 표는 그걸 환경별로 묶어
+보여주는 편의 색인일 뿐이다 — 파일이 늘면 여기도 같이 고칠 것.
 
 **16은 특히 `type function`이라는 비교적 최근/계속 진화 중인 Luau 기능을
 쓰므로, luau-analyze 버전이 오래되면 아예 문법 자체를 못 알아볼 수 있음**
@@ -88,7 +94,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `19-ownership-refcount-relate-patterns.luau` | **[2026-08-13 신규, 같은 날 B/C 전면 재작성 — 지금은 현행 설계 기준]** 세 소유권/참조카운트 알고리즘 검증. **A**: Tag `tagNameMap` 참조 카운트(여러 위치가 같은 이름을 겹쳐 가져도 마지막 홀더가 빠질 때만 실제 `RemoveTag`. 옛 `kTagMap`은 클로저 캡처로 대체돼 삭제됨). **B**: Attribute 이름 소유권 — 공개 `AttributeKey(name)` 캐시 + `Dispatch.process`의 인덱스 1 **점유 체크**가 충돌을 잡는지(옛 `rawNew`+`owners` 수동 레지스트리는 폐기). **C**: Slot 소유권 — nested 엄격 `claimOwner`(같은 owner 재클레임도 error) vs top-level `claimOwnerAt(inst,k)`(정확히 같은 자리 재발행만 no-op). **셋 다 음성 대조군 포함** — 옛 로직이 `Slot{a,a}`/`Frame{slot,slot}`을 조용히 통과시키는 걸 재현. **[2026-08-13 열네 번째 세션] 0-Z가 확정되며 B 섹션이 낡음 → `rewrite-required/`** — 이제 "그룹 전용 키 + `AttributeKeyHandler`의 이름 claim"을 검증해야 함(A/C는 그대로 유효) | `tag-plan.md` "메커니즘", `attribute-plan.md` "이름 소유권", `slot-plan.md` "요소 소유권" |
 | `20-slot-splice-index-arithmetic.luau` | **[2026-08-13 신규]** `Slot:Splice(index, removeCount, ...newElements)`의 shift+recompute 1회 계산이, `Extract`/`Add` 반복으로 재현한 참조 구현과 항상 같은 결과를 내는지 — 제거/삽입 길이가 다를 때(delta 양수/음수) 뒤 요소가 밀리는 방향과 양을 헷갈리는 off-by-one 위험(이 프로젝트가 `Dispatch.recompute`에서 실제로 냈던 것과 같은 클래스의 버그)을 경계값 케이스로 검증 | `slot-plan.md` "확정" CRUD 표 + "`Splice` 신설" 절(2026-08-12 열다섯 번째 세션), `dispatch-core-plan.md`의 `recompute` off-by-one 수정 사례(2026-08-11 여섯 번째 세션) |
 | `21-type-store-undeclared-key-rejected.luau` (타입체크 전용) | **[2026-08-19 신규]** `Store<{field: T}>`로 선언 안 된 이름에 dot-access하면 `type function`이 합성한 결과 타입(`ProcessStoreType`, `16`과 동일)에 그 프로퍼티가 없어 타입 시간에 거부되는지 — `store-plan.md`가 "아마 그럴 것"으로만 적어뒀던 걸 M0에서 실측. 통과: 미선언 키 접근 2건이 정확히 `TypeError`로 걸림 | `store-plan.md` "Store = Source들의 이름 붙은 모음" 절의 "[확인 요구, 2026-08-18 구현 전 QA]" 항목, `todos.md` 00번 |
-| `22-runtime-ref-preref-postref-brand.luau` | **[2026-08-19 신규]** 구 `13`의 런타임(B) 절반을 분리한 것 — `isPreRef`/`isPostRef`가 같은 층위의 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)인지, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라내는지 | `ref-plan.md`의 "`PostRef`" 절, `brand-plan.md`의 `Brand` 절 |
+| `22-runtime-ref-preref-postref-brand.luau` | **[2026-08-19 신규]** 구 `13`의 런타임(B) 절반을 분리한 것 — `isPreRef`/`isPostRef`가 같은 층위의 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)인지, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라내는지. **[2026-08-21] `rewrite-required/`로 이동** — 파일이 직접 구현해 쓰는 `Brand.set`/`Brand.get`이 인스턴스 브랜드 재작성으로 역전된 옛 API가 됐다(검증 대상 자체는 그대로 유효, 상태와 재작성 지침은 `STATUS.md`가 소스) | `ref-plan.md`의 "`PostRef`" 절, `brand-plan.md`의 "⭐ 구현 — 인스턴스 브랜드" 절 |
 | `23-type-quadtypes-checkversion-addplugin.luau` (타입체크 전용) | **[2026-08-19 신규, 같은 날 후속으로 재작성]** 실제 `quad-types`/`quad-base`/`type-version-check`를 `require`해서 `CheckedQuad<T, Pattern>`(글롭/캐럿 버전 패턴 체크, `type-version-check` 위에 얹힘)이 `AddPlugin<Self,P>` 체이닝과 맞물려 동작하는지 — 양성(버전 일치 + 2단 체이닝 + 이전 확장 필드 보존), 음성(버전 불일치 → 강제 참조 시점에 정확히 `TypeError`). `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 깨진다는 걸 이 스파이크가 재작성 과정에서 직접 발견. 재작성 과정에서 `export type function`(cross-package 필수)과 2개 이상 명시 제네릭 인스턴스화의 이중 꺾쇠(`Foo<<A,B>>`) 요구도 추가로 실측 확인 | `quad-types-plan.md`, `typing-limits.md` §6 |
 
 ## 공통 유틸리티

@@ -1955,7 +1955,7 @@ nil/None 금지)는 그대로.
 > 않는다**는 것이었다(`setLength` 슬롯이 하나뿐이라 원리적으로 불가능).
 > **결론: `materializeSlotTree`(부기) + `mountSlotTree`(물리)로 분해하고
 > `attachSlot`은 그 둘을 부르는 두 줄짜리 래퍼로 남긴다** — 이름/시그니처/
-> 호출부 전부 불변. 근거 기록은 `research/slot-attach-decomposition.md`.
+> 호출부 전부 불변. 근거 기록은 `reference/slot-attach-decomposition.md`.
 
 **✅ [해결, 2026-08-18 구현 전 QA 2라운드 후속]** 아래가 재사용하는
 `Dispatch.setLength`/`setOffsetSource`/`recompute`가 배치 등록 중 크래시할
@@ -2006,7 +2006,7 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 -- [전면 재작성, 2026-08-21 구현 전 QA 4라운드 확정] 옛 단일 `attachSlot`을
 -- **비공개 재귀 둘 + 얇은 공개 진입점**으로 분해. 공개 표면(이름/시그니처/
 -- 호출부 셋)은 하나도 안 바뀐다 — 쪼갠 건 함수가 아니라 **재귀**다.
--- 근거와 대안 비교는 `research/slot-attach-decomposition.md`.
+-- 근거와 대안 비교는 `reference/slot-attach-decomposition.md`.
 
 -- (1) 부기만 만든다. 물리 마운트(`Parent` 대입)를 단 한 줄도 안 한다.
 local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
@@ -2086,7 +2086,7 @@ end
 -- 아래 `acc`가 `slot.Offset:Get()`에서 시작하는데, 그 값이 최종값이 되는 건
 -- materialize의 마지막 `recompute`가 끝난 뒤다. 순서를 뒤집거나 materialize를
 -- 건너뛰고 부르면 물리 삽입 위치가 조용히 어긋난다(공개 `attachSlot`이 둘을
--- 붙여 부르는 것이 이 계약의 전부 — `research/slot-attach-decomposition.md`의
+-- 붙여 부르는 것이 이 계약의 전부 — `reference/slot-attach-decomposition.md`의
 -- "prepare만 하고 mount 안 한 중간 상태" 항목이 아직 열려 있는 이유이기도 하다).
 local function mountSlotTree(slot, physicalTarget)
     slot._mounted = true
@@ -2117,7 +2117,7 @@ end
 ```
 
 **왜 쪼갰나 — 이득 넷**(상세와 기각된 대안은
-`research/slot-attach-decomposition.md`):
+`reference/slot-attach-decomposition.md`):
 
 1. **C6와 C7이 처음으로 동시에 만족된다.** 옛 코드는 `setLength`의 자리가
    하나뿐이라 "최종값으로 등록"(C6)과 "부기가 물리보다 먼저"(C7) 중 하나를

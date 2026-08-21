@@ -9,7 +9,7 @@
 않는다(사용자 지시). 아래 A~G절은 거기까지 온 처리 과정의 기록.
 
 **[2026-08-21] 3차 처리 — 아래 G절.**
-`F-4`는 전부 닫혔고(`F-4-3`은 `research/slot-attach-decomposition.md`로 넘어감),
+`F-4`는 전부 닫혔고(`F-4-3`은 `reference/slot-attach-decomposition.md`로 넘어감),
 그 시점에 남았던 건 `F-3`의 (1)~(3)과 "+"였다(요약은 `G-3`, H절에서 닫힘).
 
 **[2026-08-21] 2차 처리 — 아래 F절.**
@@ -1030,7 +1030,7 @@ if input[key] ~= nil then continue end   -- "이미 있으면 건너뛴다" = �
 맞을지도. attachSlot 의 기능이 너무 다양해진게 문제같음. 이 부분에 있어서는
 확장 논의를 하게 준비해두자."*
 
-→ **`research/slot-attach-decomposition.md` 신설.** `setLength`를 어느 줄에
+→ **`reference/slot-attach-decomposition.md` 신설.** `setLength`를 어느 줄에
 둘지 고르는 문제가 아니라 분해 문제라는 진단에 동의하고, 논의가 바로 시작될 수
 있게 재료만 모아뒀다(**아무것도 확정 안 함**, `base/slot-plan.md`가 여전히 정본):
 
@@ -1141,7 +1141,7 @@ if input[key] ~= nil then continue end   -- "이미 있으면 건너뛴다" = �
 
 ## H-4. `attachSlot` 분해 (확정·반영)
 
-`research/slot-attach-decomposition.md`를 **확정**으로 승격하고 의사코드를
+`reference/slot-attach-decomposition.md`를 **확정**으로 승격하고 의사코드를
 `base/slot-plan.md`에 반영했다. 결론은 후보 **(B)**:
 
 - **`materializeSlotTree(slot, physicalTarget, ownerKey, position)`** — 부기만.

@@ -1,6 +1,11 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: **2026-08-21** — QA 4라운드 `F-4-1`로 `Dispatch.drive`의
+> 마지막 갱신: **2026-08-21** — `Brand`가 **인스턴스 브랜드**로 전면
+> 재작성되면서(`base/brand-plan.md`) 옛 `Brand.set`/`Brand.get`을 직접 구현해
+> 쓰던 `22`가 `done/` → `rewrite-required/` 이동(검증 대상인 `isRef`/`isPreRef`
+> 포함 관계 자체는 그대로). 같은 날 `Epoch`/`EpochMap` 승격도 있었으나 그건
+> 이미 `rewrite-required/`에 있는 `05`의 지침에 반영돼 있다. 직전 갱신도
+> 같은 날 — QA 4라운드 `F-4-1`로 `Dispatch.drive`의
 > props 순회가 **단일 일반화 `for`**로 정정되면서, 두 루프 버전을 검증하던
 > `01`이 낡아 `done/` → `rewrite-required/` 이동(검증 대상인 순서 계약
 > 자체는 그대로). 같이 **만들어야 할 스파이크** 절 신설 — 아직 파일이
@@ -40,9 +45,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 6 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 7 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 17 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -67,7 +72,10 @@
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
 아님(계약 자체는 위에서 이미 확정됨).
 
-## 🟠 `rewrite-required/` — 스파이크가 낡음 (5건)
+## 🟠 `rewrite-required/` — 스파이크가 낡음
+
+(개수는 위 표와 폴더가 소스 — 여기서 다시 세지 않는다. 예전엔 이 제목이
+개수를 들고 있다가 실제와 어긋난 적이 있다.)
 
 **[2026-08-13 열네 번째 세션] 앞의 두 건은 "코드가 깨진" 게 아니라 "설계가
 바뀐" 경우** — `question.md` 0-A/0-Z 확정으로 재디스패치가 **하강 diff**가
@@ -86,6 +94,15 @@
 통과 상태로 `done/`에 두면 `01`은 구현이 안 하는 두 루프 순회를, `05`는
 **이제 접히는 중복 통지가 안 접힌다는 것**을 "검증됨"으로 오독하게 된다.
 
+**[2026-08-21 후속] `22`도 같은 이유로 합류** — `Brand`가 **인스턴스
+브랜드**로 전면 재작성되면서(`base/brand-plan.md`) 이 스파이크가 직접 구현해
+쓰는 `Brand.set`/`Brand.get`/`XxxTag`가 **역전된 옛 API**가 됐다
+(`archive/brand-shared-registry-reversed.md`). **검증 대상 자체는 그대로
+유효하다** — `isPreRef`/`isPostRef`가 서로 배타적 형제이고 둘 다 `isRef`엔
+`true`라는 포함 관계는 재작성 후에도 안 바뀌었다. 옮기는 이유는 결론이
+틀려서가 아니라, 통과 상태로 `done/`에 두면 **구현자가 그 파일의 `Brand`
+구현을 참고 모델로 오독**하기 때문이다.
+
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
 | `01-two-pass-array-hash-order.luau` | 옛 형태 기준으로는 ✅ 통과였음 | 숫자 `for` + 일반화 `for` **두 루프**로 짜여 있는데, 구현은 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — Luau의 일반화 `for`가 배열 파트를 먼저 다 돌고 해시 파트로 넘어간다는 것 자체를 **한 루프로** 검증하도록 다시 쓸 것. **검증 대상(순서 계약)은 그대로**라 결론이 바뀌는 건 아님 |
@@ -93,6 +110,7 @@
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
+| `22-runtime-ref-preref-postref-brand.luau` | 옛 `Brand` API 기준으로는 ✅ 통과였음 | **[2026-08-21] `Brand`가 인스턴스 브랜드로 재작성됨** — 파일 안의 `Brand.set(x, tag)`/`Brand.get(x)`/`XxxTag` 변수를 `Brand()` + `SomeBrand:register(x)`/`SomeBrand:is(x)`로 바꿔 쓸 것(`base/brand-plan.md`). **검증 대상(`isPreRef`/`isPostRef` 배타 + 둘 다 `isRef`엔 `true`, Leaf 핸들러 흉내)은 그대로**라 assert는 손댈 게 없다. **새로 넣을 것**: 다중 태깅이 실제로 되는지 — 한 값을 두 브랜드에 등록하고 양쪽 `:is`가 다 `true`인지(`Source`가 `SourceBrand`+`EpochBrand`인 자리, `base/state-epoch-plan.md` §2) |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
@@ -104,10 +122,15 @@
 |---|---|
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (17건)
+## ✅ `done/` — 통과 or 판정 끝
 
-**지금 `done/`에 있는 런타임 스파이크는 9건**(`02`/`03`/`06`/`07`/`11`/`17`/
-`18`/`20`/`22`), **전원 통과**(crash 0 / FAIL 0). 나머지 8건은 타입 스파이크다.
+(개수는 위 표와 폴더가 소스 — 여기서 다시 세지 않는다.)
+
+**지금 `done/`에 있는 런타임 스파이크는 `02`/`03`/`06`/`07`/`11`/`17`/`18`/`20`,
+전원 통과**(crash 0 / FAIL 0). 나머지는 타입 스파이크다.
+**[2026-08-21] `22`는 여기서 빠졌다** — `Brand` 인스턴스 브랜드 재작성으로
+파일이 쓰는 `Brand.set`/`Brand.get`이 옛 API가 되어 `rewrite-required/`로
+이동(검증 대상 자체는 유효, 위 표의 재작성 지침 참고).
 **[2026-08-21 정정]** 여기 "런타임 12개"라고 적혀 있었는데, 그 산술이 이미
 `rewrite-required/`로 나간 `04`/`10`/`19`까지 포함한 옛 총계에서 이어져 온
 것이라 실제와 안 맞았다(두 번째 `/code-review high` 발견). — **[열네 번째 세션] `04`/`19`는
@@ -126,7 +149,6 @@
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
 | `20-slot-splice-index-arithmetic` | `Splice` 산술 11개 경계 케이스 전부 참조 구현과 일치 |
-| `22-runtime-ref-preref-postref-brand` | **[2026-08-19 신규]** `isPreRef`/`isPostRef`가 서로 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)임을 확인, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라냄 |
 
 **타입 스파이크 중 판정이 끝나 더 할 일 없는 것**:
 

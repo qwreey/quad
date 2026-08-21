@@ -5,38 +5,28 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-000. **⭐⭐⭐ [2026-08-21 신설] 다음 세션의 첫 작업 — `Epoch`/`EpochMap`/`Brand`
-   제안을 `base/`로 승격할 것.** 설계는 **사실상 전량 확정**됐고
-   (`research/epoch-brand-composition.md`가 소스, §4에 결정 상태 전부),
-   같은 날 세션이 너무 길어져 **사용자 지시로 승격만 다음 세션에 미뤘다**
-   (*"전면 승격을 하고 싶지만, 이 세션은 너무 길어요. 컨텍스트 피로 상
-   핸드오버 이후 승격조치를 해야할것 같습니다"*).
-   - **고쳐야 할 문서 넷**: `base/state-epoch-plan.md`(두 맵 → `EpochMap` 둘,
-     "Source의 에포크" → `Epoch`), `base/source-state-plan.md`(`Source`가
-     `Epoch`를 구조적으로 만족 + `Observer` 클로저가 `fn(self, from)`),
-     `base/effect-plan.md`(`Effect`가 자기 `EpochMap`을 들어 다중 dep 중복
-     발화를 접음 — 그 문서의 ⚠️ 미해결 항목이 이걸로 닫힌다),
-     `base/brand-plan.md`(인스턴스 브랜드로 전면 재작성).
-     넷 다 상단에 이 제안을 가리키는 ⚠️ 배너가 이미 달려 있다.
-   - **남은 미정은 하나** — 리비전 증가를 `bit32` 랩으로 할지 평이한 `+1`로
-     할지(둘 다 실질 위험 없음, `question.md` 1번).
-   - **감사는 승격 이후에 돌린다**(사용자 지시) — 지금 돌리면 곧 바뀔 서술을
-     감사하게 된다.
-
 00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~5라운드 전부 `base/`
    반영 완료. ⭐ 같은 날 마지막에 `Gate`와 State 에포크까지 확정되면서
    **M2 착수를 막는 설계 항목은 더 이상 없다.**** `Gate`는
    `state:Gate(setup)` + `GateNode`로(`base/gate-plan.md`), State의
-   재계산/전파 판정은 **소스 에포크 비교** 채택으로(`base/state-epoch-plan.md`,
+   재계산/전파 판정은 **`Epoch` 리비전 비교** 채택으로(`base/state-epoch-plan.md`,
    구현은 M3) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
+   **[2026-08-21 후속] `Epoch`/`EpochMap`/`Brand` 승격도 같은 날 완료** —
+   부기가 재사용 가능한 `EpochMap`으로 떨어져 나오고, 판정 인터페이스가
+   `Source`에서 `Epoch`로 일반화되고, `Brand`가 인스턴스 브랜드로 재작성됐다
+   (근거 기록은 `reference/epoch-brand-composition.md`, 옛 `Brand` 표면은
+   `archive/brand-shared-registry-reversed.md`). 그 부수로 `effect-plan.md`의
+   다중 의존성 중복 발화 미해결 항목도 닫혔다. **[같은 날] 마지막 미정이던
+   리비전 증가 방식도 `bit32` 랩으로 확정** — `Epoch`/`EpochMap`/`Brand`에
+   열린 설계 항목은 **하나도 없다**(`base/state-epoch-plan.md` §2).
    **[2026-08-21 경위]** 같은 날 `/code-review high`가 "게이트가 유보했다
    내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M2 항목으로
    되돌아갔으나, **사용자가 그 자리에서 `emit(self)` + 흡수 집합으로
    확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번). 같이
-   제기됐던 에포크 쪽 세 자리도 **전량 확정**됐다(재계산 시 count 전부 갱신 /
-   새 노드는 `sourceEmitMap`은 비우고 `sourceCountMap`은 실제 count로 채운 뒤
+   제기됐던 에포크 쪽 세 자리도 **전량 확정**됐다(재계산 시 리비전 전부 갱신 /
+   새 노드는 `emitEpochMap`은 비우고 `valueEpochMap`은 실제 리비전으로 채운 뒤
    `rawInvalid = true` / 그래서 `:With` 병합 규칙은 불필요) —
-   `state-epoch-plan.md` §5 7번. **[같은 날 두 번째 `/code-review high`]**
+   `base/state-epoch-plan.md` §4. **[같은 날 두 번째 `/code-review high`]**
    7건이 더 나왔고 전부 유효했는데(재진입 시 빈 배치가 새어 변경이 증발하던
    것, `OffWithoutEmit`이 흡수 집합을 안 비우던 것 등), 그중 사용자 판단으로
    올라갔던 둘도 같은 날 닫혔다 — "재진입 계약"은 애초에 **잘못 옮긴
@@ -54,7 +44,7 @@
    **`Detach` 보존 주체(`userdata` → `slot._detached`)**, **`KeyGone` 센티널**,
    **`Owned` 설치 플래그**, 그리고 **`attachSlot` 분해**
    (`materializeSlotTree` + `mountSlotTree`, 근거는
-   `research/slot-attach-decomposition.md`)가 전부 확정·반영됐다.
+   `reference/slot-attach-decomposition.md`)가 전부 확정·반영됐다.
    **[2026-08-21 정정] 5라운드 문항지를 만들었다** — 4라운드 처리 때는 사용자
    지시("이후 stale 만 잡는것으로 끝낼 수 있어보임")로 안 만들기로 했으나, 같은
    날 사용자가 5라운드를 요청("4차에서 예로 넘어갔던건 스킵하고, 새로운
@@ -121,45 +111,19 @@
    재편 여부는 열림 — `pre-implementation-qa-round3.md`의 "ROADMAP.md
    마일스톤 정합성" 절 참고).
 
-   **아래는 M3 착수 전에 결론이 필요한 항목 목록**(M0/M2는 여전히 막혀
-   있지 않음, 0번 항목 참고 — **단, M2가 M3의 `Blocker.luau`를 선당겨야
-   하는지는 별개로 열려 있음, 바로 아래 첫 항목**) — 대부분 `question.md`
-   3번에도 올라가
-   있고(**[정정, 2026-08-18 `/code-review high`] 사용자 판단이 필요한
-   항목만 그렇다 — 아래 "dedup 경로" 대칭 확인은 판단이 아니라 구현 시
-   검증 작업이라 `question.md`엔 없음, 여기 목록이 소스**), 각 `base/`
-   문서에도 ⚠️로 표시돼 있다:
-   - **M2가 M3의 `Blocker.luau`에 의존하게 된 순서 문제**(`ROADMAP.md`
-     M2 체크박스 각주) — 지금은 각주만 달아둔 임시 조치, `Blocker.luau`
-     (또는 최소 표면)를 M2로 앞당길지 로드맵 순서를 유지할지 **M2 착수
-     전 필요**. `qa-request/pre-implementation-qa-round3.md`의
-     "ROADMAP.md 마일스톤 정합성" 절.
+   **아래는 M3 착수 전에 결론이 필요한 항목 목록** — M0/M2는 막혀 있지
+   않다(0번 항목 참고). 둘 다 `question.md` 3번에도 있고 각 `base/` 문서에도
+   ⚠️로 표시돼 있다. **[2026-08-21 정리]** 여기 쌓여 있던 `[해소]` 항목들
+   (`Blocker.luau` 마일스톤 순서, 그룹 `Attribute` 위치 claim 키,
+   `SetAndDispose`, `PopOnly`→`Detach`, `KeyGone` 처분, `Store` 미선언 키
+   타입 에러, dedup 경로 대칭)은 **전부 `archive/question-resolved.md`와
+   각 `base/` 문서로 옮겼다** — 목록이 절반 넘게 해소 항목으로 차 있어
+   "지금 할 일"로 읽히지 않던 것을 걷어낸 것.
    - **중간 State GC 미검증**(`base/source-state-plan.md`) — 상류 strong /
      하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
-   - **그룹 `Attribute`의 위치별 claim 설계**(`base/attribute-plan.md`) —
-     방향은 확정, 키 설계가 미정. M10 착수 전 필요.
-   - **[2026-08-20 해소]** `SetAndDispose` 방향 — **`source:SetAndDispose(value)`
-     콜론 메서드로 확정**(`:Set`과 한 세트). `state:Apply` 시그니처엔 영향
-     없음(`Apply` 오버라이딩은 `Source`→`State` 단방향 때문에 타입이 안
-     성립해서 애초에 불가). `base/slot-plan.md`의 `dispose` 절.
-   - **dedup 경로의 process/retract 대칭 확인**(`base/effect-plan.md`
-     `:Unsubscribe()` 절) — M3 착수 전 확인.
-   - **[2026-08-19 해소]** `PopOnly` 이름 — **`Detach`로 확정**(공개 표면
-     위치도 `None`과 같은 최상위 export로 같이 확정). 원문은
-     `archive/question-resolved.md`.
-   - **[2026-08-21 해소]** `Detach` 홀드 중 키가 사라졌을 때의 처분 —
-     **`KeyGone` 센티널로 `updateFn`에게 묻는 것**으로 확정. detach 요소는
-     `slot._detached` 필드가 보유하고 owner 사망 시 `activateList`가 건
-     `Effect`가 정리.
-     `base/slot-plan.md`의 "`KeyGone`" 절.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
-   - **[2026-08-19 해소]** `Store` 미선언 키가 실제로 타입 에러가
-     나는지 — **예, 확인됨**(`luau-test/done/21-type-store-undeclared-key-rejected.luau`,
-     `ProcessStoreType`이 합성한 레코드 타입은 인덱서가 없어 미선언 키
-     접근이 정확히 `TypeError`로 거부됨). `base/store-plan.md`의 "Store =
-     Source들의 이름 붙은 모음" 절의 "확인 요구" 표시도 해소로 갱신 필요.
 
 0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-14 열한 번째 세션 기준).**
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy

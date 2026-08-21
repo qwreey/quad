@@ -42,13 +42,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       것은 "이미 invalid면 전파 중단되는지"가 **아니라** 그 반대:
       **emit은 자기 invalid 상태와 무관하게 전파되고**, 중복 재계산은
       `:Get()` 시점 캐시로만 막히는지(**[2026-08-21]** 그 뒤 "항상"에서
-      "같은 에포크의 두 번째만 접힘"으로 좁혀졌다 — 아래 참고). 특히 `:Get()`을 안 부르는
+      "같은 `Epoch`의 같은 리비전이 두 번째로 도착했을 때만 접힘"으로 좁혀졌다 — 아래 참고). 특히 `:Get()`을 안 부르는
       `Observer`가 매 변경마다 계속 울리는지 — 옛 모델에선 두 번째부터
       침묵했음(`archive/invalidate-dedup-propagation-reversed.md`).
       스파이크 `05-store-state-diamond-propagation.luau`는 **[2026-08-19
       재작성 완료]** 그 모델("emit은 항상 전파 + `:Get()` 시점 캐시로만
       dedup")로 재검증 통과 — **[2026-08-21] 그 모델이 다시 바뀌어
-      `rewrite-required/`로 되돌아갔다**(소스 에포크 채택으로 다이아몬드
+      `rewrite-required/`로 되돌아갔다**(`Epoch` 리비전 비교 채택으로 다이아몬드
       Observer가 이제 변경당 **1회**만 울어야 함, `base/state-epoch-plan.md`))
 - [x] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
@@ -152,8 +152,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
       `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
       `process` 반환값으로 합쳐짐(2026-08-13 다섯 번째 세션))
-- [ ] `Brand.luau`(공유 weak-key 레지스트리, `Brand.set(x,tag)`/
-      `Brand.get(x)` — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
+- [ ] `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
+      브랜드마다 weak-key 집합 하나를 들고 `:register(x)`/`:is(x)`,
+      **다중 태깅 허용**(`Source`가 `SourceBrand`이면서 동시에 `EpochBrand`).
+      옛 공유 레지스트리 + `Brand.get(x) -> tag`는
+      `archive/brand-shared-registry-reversed.md`. **[2026-08-22] `isEpoch`도
+      여기 포함** — `Epoch` 인터페이스 확정으로 `EpochBrand`가 생겼고
+      `base/state-epoch-plan.md`/`base/source-state-plan.md`가 "런타임 분기는
+      `isEpoch`로"라고 확정했다 — `isState`뿐 아니라 `isObserver`/`isEffect`/`isTag`/
       `isAttributeKey`/`isAttribute`/`isTween`/`isBlocker`/`isSource`/
       `isStore`/`isSlot`/`isRef`/`isPreRef`/`isModifier`(2026-08-07 열 번째
       세션 추가 — 원래 태그 목록에서 빠져있었음. **[정정, 2026-08-09
@@ -256,6 +262,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       형태까지는 M2에 필요하다. 경위는
       `qa-request/pre-implementation-qa-round3.md`의 "ROADMAP.md 마일스톤
       정합성" 절과 `pre-implementation-qa-round5-followup.md`.
+      **[2026-08-21 추가] `GateNode`가 `emitEpochMap`을 쓰므로 `EpochMap.luau`
+      (M3 목록에 있음)도 M2에 같이 들어와야 한다** — `base/gate-plan.md` 4번,
+      `base/state-epoch-plan.md` §3.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
@@ -349,14 +358,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **공용 게이트 노드는 M2에서 이미 만들어져 있다**("게이팅 먼저" 결정,
       위 M2 각주 + `base/gate-plan.md`). M3에서 `Blocker`를 짤 때는
       그 노드를 **다시 만들지 말고 그 위의 정책으로** 얹을 것.
-- [ ] **[2026-08-21 5라운드 — 채택 확정]** State의 재계산/전파 판정은
-      **소스 에포크 비교**다(`base/state-epoch-plan.md`) — `invalid` 플래그가
-      아니다. 아래 `Source.luau`/`State.luau`가 이걸 전제로 짜여야 한다:
-      노드가 `sourceCountMap`(값 유효성)/`sourceEmitMap`(전파 dedup) 두
-      테이블을 들고, emit은 발행 source만 싣고, 순회는 `rawInvalid == false`
-      일 때만 돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드
-      중복 통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
+- [ ] **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
+      재계산/전파 판정은 **`Epoch` 리비전 비교**다(`base/state-epoch-plan.md`)
+      — `invalid` 플래그가 아니다. 아래 `Source.luau`/`State.luau`가 이걸
+      전제로 짜여야 한다: `Source`가 `type Epoch = { Revision: number }`를
+      구조적으로 만족하고(`EpochBrand`에도 등록), 부기는 재사용 가능한
+      **`EpochMap`**(`:Update(Epoch|EpochSet) -> boolean`, `:Refresh`, `:Sync`,
+      `:TrackFrom` — `EpochSet = {[Epoch]: true}`, **배열 아님**)
+      으로 떼어내며, State가 그걸 **둘** 컴포지션한다 — `valueEpochMap`(값
+      유효성)/`emitEpochMap`(전파 dedup). emit은 값도 리비전도 안 싣고
+      **출처(`Epoch`나 그 집합)만** 싣고, 순회는 `rawInvalid == false`일 때만
+      돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
+      통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
+- [ ] `EpochMap.luau` — 위 부기 객체. `Effect`(M3)와 `GateNode`(M2)도 같은
+      것을 쓰므로 `State.luau`에 묻지 말고 별도 모듈로 낼 것.
+      **`GateNode`가 M2로 앞당겨졌으므로 이 모듈도 실제로는 M2에 필요하다**
+      (위 M2 게이팅 각주).
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
@@ -370,10 +388,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
       is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
-- [ ] `Effect(fn, state?)`(`base/effect-plan.md`) — `state` 생략 시 설치
-      1회+leaf 사망 시 확정 정리, `state` 지정 시 내부적으로
-      `state:Observer(...)`를 조합해 재실행+cleanup 체이닝(React
-      `useEffect` 동형). Observer 구현 이후에 착수(의존 관계).
+- [ ] `Effect(fn, ...deps)`(`base/effect-plan.md`, **[2026-08-21 5라운드
+      `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
+      1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
+      (State/Source는 `Observer`, `Ref`는 `:Callback`)을 걸어
+      재실행+cleanup 체이닝(React `useEffect` 동형). **`EffectHandle`이
+      `EpochMap`을 하나 들어** 공통 상류로 인한 중복 발화를 접고, 설치 구간
+      억제 플래그가 그 `Update`보다 먼저 와야 함
+      (`base/state-epoch-plan.md`). Observer 구현 이후에 착수(의존 관계).
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
@@ -663,7 +685,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `recompute`가 2회→1회로 준다. 순서 제약이 줄 순서가 아니라 **함수
       경계로 강제**되므로 `RC-1`/`RC-3`/`RC-4` 같은 "줄 순서를 잘못 잡아서"
       나던 버그 클래스가 구조적으로 사라짐. 근거 기록은
-      `research/slot-attach-decomposition.md`.
+      `reference/slot-attach-decomposition.md`.
       **관측 가능한 변화 하나**: `Parent` 대입 순서는 그대로지만 물리 마운트가
       "부기 완료 후 일괄"이 되어, `ChildAdded` 핸들러가 볼 때 서브트리 전체의
       `Length`/`Offset`이 이미 최종값이다(옛 코드는 미완성 스냅샷을 보여줬음).
@@ -736,9 +758,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `:Apply(factory)` 팩토리 함수 체이닝(`modifier-plan.md` 8번, 예약 키
       `Apply`가 제네릭 `__index` 필드 setter와 안 겹치는지 확인)
 - [ ] `:Peek<<T>>(key): T|State<T>|nil` 필드 읽기 접근자 +
-      `isState(x)`/`isSource(x): boolean`(`Brand` 공유 레지스트리 기반 —
-      `modifier-plan.md` 9번, `brand-plan.md`의 `Brand` 절, M2의
-      `Brand.luau`에 이미 구현돼 있어야 함)
+      `isState(x)`/`isSource(x): boolean`(**[2026-08-21 갱신]** 인스턴스
+      브랜드 멤버십 기반 — `isSource(x)`는 `SourceBrand:is(x)`, `isState`는
+      그 위에 `StateBrand:is(x)`를 OR로 얹은 상위 개념. 옛 "공유 레지스트리 +
+      `Brand.get(x) == SourceTag`" 서술은 역전됨,
+      `archive/brand-shared-registry-reversed.md`. `modifier-plan.md` 9번,
+      `brand-plan.md`의 "`isX` wrapper" 절, M2의 `Brand.luau`에 이미
+      구현돼 있어야 함)
 - [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None` 센티널
       (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
       이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
@@ -970,7 +996,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`.
 
 - [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리, `isTween`/
-      `TweenTag` Brand, `Value: T` plain만 받고 State 재귀 없음)
+      `TweenBrand`, `Value: T` plain만 받고 State 재귀 없음)
 - [ ] `Handlers/Property.luau`에 `isTween(realv)` 분기 추가(기존
       `Handlers/Tween.luau` 독립 핸들러는 폐기) + 3-상태 릴레이션 슬롯
       (`RobloxTween | true | nil` — `nil`=첫 세팅, `true`=세팅됨/트윈

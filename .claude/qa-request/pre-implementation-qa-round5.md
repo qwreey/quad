@@ -45,7 +45,7 @@
 | `QT` | quad-types / 버전 체크 (4라운드 문항 없음) | `base/quad-types-plan.md` |
 | `IM` | **실제 커밋된 M1 코드** (문서 아님) | `quad-base/src`, `quad-types/src`, `type-version-check/src` |
 | `DE` | `Detach`/`_detached`/`KeyGone`/`Owned` (신규 확정) | `base/slot-plan.md` |
-| `AS` | `attachSlot` 분해 (신규 확정) | `base/slot-plan.md`, `research/slot-attach-decomposition.md` |
+| `AS` | `attachSlot` 분해 (신규 확정) | `base/slot-plan.md`, `reference/slot-attach-decomposition.md` |
 | `DC` | 디스패치 코어 심화 | `base/dispatch-core-plan.md` |
 | `SS` | Source/State 심화 | `base/source-state-plan.md` |
 | `LC` | 생명주기 배관 심화 | `base/lifecycle-pattern.md`, `base/relate-plan.md` |

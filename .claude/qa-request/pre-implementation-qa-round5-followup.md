@@ -724,7 +724,7 @@ G절에서 신설한 `_baseObserver`(자기 `Offset`을 관측해 자식 offset�
 | 2 | **`effect-plan.md`가 자기 자신과 모순** | 문서 최상단 시그니처가 `Effect(fn, state?)`이고 "**`Effect(fn, a, b, c)`처럼 trailing args로 받는 sugar는 의도적으로 안 만듦**"이라는 확정 문단이 그대로 남은 채, 같은 파일 아래에 `C-6`의 `Effect(fn, ...deps)` 절이 추가돼 있었다 — **역전 배너 없이 정반대 두 서술이 공존** | 시그니처를 `Effect(fn, ...deps)`로 갱신, 옛 문단에 🔄 역전 배너 + **옛 근거가 무너진 이유 둘**(`Ref`는 `:With`로 합칠 수 없어 애초에 의존성이 될 방법이 없었다 / 구독을 따로 걸면 합치는 노드 자체가 안 생겨 "감출 비용"이 없다) |
 | 3 | **`indexOfRaw`가 어디에도 정의돼 있지 않음** | 신설 `rawReplace`가 쓰는데 문서에 없었다. 구현자가 공개 `IndexOf`를 그대로 쓰면 **래핑된 자리에서 어긋난다**(그건 언래핑 기준 비교) | `indexOfRaw` 한 줄 정의 + `IndexOf`와의 차이 명시 |
 | 4 | **index/element 혼용 캐비엇 목록이 안 늘어남** | 기존 캐비엇이 `rawRemove`/`rawUnmount`만 나열하는데, 이번에 같은 불일치를 물려받은 `rawDetach`/`releaseElement`/`rawReplace`가 빠져 있었다 | 캐비엇에 셋 추가 |
-| 5 | **`mountSlotTree`의 전제가 코드에 없었다** | `acc = slot.Offset:Get()`이 정확하려면 **`materializeSlotTree`가 먼저 돌아야** 하는데, 분해된 함수의 계약이 주석에 없었다(`research/slot-attach-decomposition.md`에 "중간 상태 처리"가 열린 항목이라 더 위험) | ⚠️ 전제 주석 추가 |
+| 5 | **`mountSlotTree`의 전제가 코드에 없었다** | `acc = slot.Offset:Get()`이 정확하려면 **`materializeSlotTree`가 먼저 돌아야** 하는데, 분해된 함수의 계약이 주석에 없었다(`reference/slot-attach-decomposition.md`에 "중간 상태 처리"가 열린 항목이라 더 위험) | ⚠️ 전제 주석 추가 |
 | 6 | **`Replace`의 `destroyOld`가 base 본문에 없었다** | `rawReplace`에 인자가 있는데 CRUD 표/산문이 그 존재를 설명 안 함. followup은 처리 기록이지 소스가 아니다(이번 라운드 `CR-1`의 교훈 그대로) | 공개 `Replace`는 항상 파괴 / `:List`만 `_owned`를 넘긴다를 산문에 명시 |
 
 부수로 인덱스도 같이 정리했다 — **`Gate` 이름이 `question.md` 1번(용어

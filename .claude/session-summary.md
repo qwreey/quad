@@ -1725,4 +1725,67 @@ State의 재계산/전파 판정은 **소스 에포크 비교 채택**으로 닫
 한 파동에 `fn`이 두 번 도는 갭**(공통 하류가 없어 에포크 dedup이 못 접는다)이고,
 `Effect`가 자기 `EpochMap`을 들면 그게 공통 하류가 되어 닫힌다. **사실상 전량
 확정됐으나 세션 길이 때문에 `base/` 승격은 다음 세션으로 미뤄졌다** —
-`research/epoch-brand-composition.md`가 소스, `todos.md` 000번이 진입점.
+`reference/epoch-brand-composition.md`가 소스, `todos.md` 000번이 진입점.
+
+---
+
+## 2026-08-21 (세 번째) — `Epoch`/`EpochMap`/`Brand` 전면 승격, 그리고 해소 기록 flatten
+
+원문: `session/2026-08-21-03-epoch-brand-promotion-and-flatten.md`
+
+앞 세션이 미뤄둔 승격을 실제로 수행했다. **`Epoch`**(`{Revision: number}`,
+그 자체로 키가 되는 unique 테이블 — `Source`가 구조적으로 만족하고
+`EpochBrand`에도 등록됨)와 **`EpochMap`**(`:Update(Epoch|{Epoch}) -> boolean`이
+"뒤로 전파가 필요한가"를 답함, `:Refresh`/`:Sync`)이 `base/`에 들어갔고,
+State는 그걸 **둘** 컴포지션한다(`sourceCountMap`/`sourceEmitMap` →
+`valueEpochMap`/`emitEpochMap`). **`Brand`는 인스턴스 브랜드로 전면
+재작성**됐다 — `Brand()` + `:register`/`:is`, **다중 태깅 허용**, 역조회
+`Brand.get`은 제거(옛 표면은 `archive/brand-shared-registry-reversed.md`).
+그 부수로 **`effect-plan.md`의 다중 의존성 중복 발화 미해결 항목이
+닫혔다**(`EffectHandle`이 자기 `EpochMap`을 들어 첫 번째만 통과시킴).
+**마지막 미정이던 리비전 갱신 방식도 같은 세션에 `bit32.bnot(-rev)`로
+확정**됐다 — 사용자 논거는 *"2^53 포화는 어차피 도달 불가능한데 그걸
+피하겠다고 값을 double 영역까지 키울 이유가 없다, 매번 도는 코드라 값싸게
+가고 싶다"*. **에이전트가 이 형태를 `band(rev + 1, mask)`로 잘못 옮기고
+"그러니 `bit32`가 더 싼 건 아니다"라는 단서까지 붙였다가 사용자에게
+정정당했다**(*"제가 말한건, bit32.bnot(-a) 입니다"*) — 사용자가 근거로 든
+REPL 출력 셋이 예시가 아니라 **연산 자체**였다. `luau` 실측 결과
+`bit32.bnot(-a)`는 `a > 0`이면 `a - 1`, `0`이면 `4294967295`인 **랩어라운드
+감소**이고 갱신과 랩이 **FASTCALL 하나**로 끝난다. 즉 사용자 서술이 맞았고
+에이전트 단서가 틀렸다. 따름정리로 리비전은 **증가가 아니라 감소**하며,
+`==`/`~=`만 쓰는 지금 규칙에서만 무해하다는 경고를 `base/`에 남겼다.
+**`Epoch`/`EpochMap`/`Brand`에 열린 설계 항목은 없다.**
+
+커밋 전 `/code-review high`가 **9건을 더 냈고 전부 유효**했다(감사자 3라운드가
+수렴한 뒤였다 — 둘이 보는 축이 다르다는 `conventions.md` 서술의 재확인).
+치명적인 둘은 **표기가 실제 메커니즘과 안 맞던 것**이다: (1) `{Epoch}`가
+Luau에선 **배열**인데 실제 게이트 배치는 `{[Epoch]: true}` **집합**이라, 그대로
+`ipairs`로 구현하면 유보됐다 풀린 emit이 전부 삼켜진다 → `EpochSet`으로 확정,
+(2) 새 노드 시딩("상류의 `Epoch`를 전부 끌어와")이 **확정된 `EpochMap` 표면으로
+표현 불가능**했다(`:With`의 상류는 State이지 `Epoch`가 아니고, 키 열거/병합
+연산이 없었음) → `:TrackFrom` 신설. 그 외 `GateNode` 예외 미기록, 설치 발화의
+`from`이 non-optional, `2^32` 랩을 "똑같이 도달 불가능"이라 한 **틀린 수치
+근거**(같은 척도로 285년 vs 72분 — 실제 안전 근거는 도달 시간이 아니라 충돌
+조건이 한 점이라는 것), 옛 이름 잔재(`TweenTag` 3곳/`Effect(fn, state?)` 4곳),
+`§` 참조 3곳.
+
+**에이전트가 이름 붙인 연산 둘은 사용자 검토로 확정**됐다 — `:Refresh`는 그대로
+(*"Update 에 인자 없는건 좀 아니야 … 리프레시는 내가 받았던걸 처리하겠다는거라
+표면적 의미 자체가 다르지"*), `:Absorb`는 **`:TrackFrom`으로 개명**
+(*"absorb 는 … 상위 요소에서 제거할것만 같은 이름"* + `gate-plan.md`가 이미
+"흡수 집합"을 다른 뜻으로 씀). 이 세션의 반복 교훈은 하나 — **승격은 문장을
+옮기는 작업이 아니라 표기가 가리키는 것이 실제로 성립하는지 확인하는
+작업**이다(`bit32` 형태, `{Epoch}` 타입, 시딩 표현 셋 다 같은 유형이었다).
+
+**확정된 결정의 근거 기록이 갈 자리를 정했다 — `reference/`.**
+`slot-attach-decomposition.md`와 `epoch-brand-composition.md` 둘 다
+`research/`(아직 상의 필요)도 `archive/`(뒤집혔거나 기각됨)도 아니라
+"`base/`가 근거로 인용하는 온디맨드 자료"이므로. 폴더 기준 자체에 이 용도를
+명문화했다.
+
+**flatten** — 사용자 지적("재정정 기록이 쌓인 부분")대로 세 군데를 걷어냈다.
+`question.md`가 스스로 정한 규칙(해소되면 archive로 옮김)을 어기고 다시
+절반이 `[해소]`로 차 있어 **16건을 일괄 이관**(421→208줄), `todos.md`의
+"M3 착수 전 필요" 목록도 절반 넘게 해소 항목이라 실제로 열린 둘만 남겼다.
+이관한 히스토리의 원문은 소급해 고치지 않고 **머리에 "그 뒤 이름이 바뀌었다"
+경고만** 달았다.

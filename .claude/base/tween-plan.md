@@ -185,7 +185,7 @@ State<T | Tween<T>>`가 나옴 — Modifier/State/Source/StoreBind 코드엔
 
 **핸들러 계층 UB 체크와도 안 부딪힘** — `Tween<T>`는 `Ref`/`Observer`/
 `Slot`류처럼 dispatch 참가자(`process`를 가진 Handler에 매칭되는 값)가 아니라 `None`/
-`Tag`처럼 순수 raw 데이터 값(별도 `TweenTag` Brand)이라, Modifier 필드/
+`Tag`처럼 순수 raw 데이터 값(별도 `TweenBrand`)이라, Modifier 필드/
 `State<Modifier>`가 막는 "핸들러 계층 값" 규칙(`base/modifier-plan.md`)에
 안 걸림 — 그 문서가 원래 Tween을 Slot/Tag/Attribute와 같은 "dispatch
 참가자" 그룹으로 분류해뒀던 건 부정확했던 것으로 이번에 정정(아래
@@ -373,7 +373,7 @@ quad-roblox 레벨 편의 함수라 base 계약에 영향 없음.
 ## 패키지 경계 — `Tag`가 이미 밟은 것과 같은 분리 (2026-08-10 세션 확정)
 
 - **quad-base**: `Tween.luau` — 값 타입(`Tween(opts)` 팩토리, `isTween`
-  predicate/`TweenTag` Brand)만. 엔진 무관.
+  predicate/`TweenBrand` Brand)만. 엔진 무관.
 - **quad-roblox**: `Handlers/Property.luau`(기존 프로퍼티 세팅 로직에
   `isTween` 분기 + 3-상태 릴레이션 저장 + override 정책 추가) +
   `Animate.luau`(편의 콤비네이터, 신규).
