@@ -5,21 +5,19 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — 1·2·3라운드는 전부 `base/`에 반영
-   완료, [2026-08-19 신설] 4라운드는 문항지 작성만 끝나고 사용자 회신 대기 중.**
+00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~4라운드 전부 `base/`
+   반영 완료로 종결. 열린 항목 없음.**
 
-   **4라운드 — [2026-08-21] 회신 3차 처리 완료, `F-3` 일부만 열려 있음.** 문항지는
+   **4라운드 — [2026-08-21] 종결.** 문항지는
    `.claude/qa-request/pre-implementation-qa-round4.md`, 사용자 회신 원문은
-   `-response.md`, 처리 결과·재질문·판단 대기 항목은 **`-followup.md`가
-   소스**(여기서 목록을 세지 않음). 회신 중 판단이 명확했던 것은 그 자리에서
-   `base/`에 반영했다. **B절(설명 보강 재질문)은 2차 회신으로 전부 확인됐고,
-   C절 결정도 대부분 반영 완료** — 지금 열려 있는 건 followup **F절**뿐이다:
-   `F-3`의 **(1)~(3)과 "+"**(detached 요소를 `slot._detached` 필드가 들고
-   owner 죽을 때 `Effect`로 정리 / `KeyGone` 세부 / `dispose` 재귀) — 요약은
-   followup `G-3`. `F-3`의 `Owned` 설치 플래그와 `F-4` 셋은 전부 닫혔고,
-   `F-4-3`(`setLength` 위치)은 **`attachSlot` 책임 분해**라는 더 큰 논의로
-   넘어가 `research/slot-attach-decomposition.md`에 준비 자료를 만들어뒀다
-   (M6 착수 전 필요). 아래는 그 회신 전 서술:
+   `-response.md`, 처리 결과 전량은 **`-followup.md`가 소스**(여기서 목록을
+   세지 않음 — 마지막 H절이 최신). 4차 처리로 `F-3`이 전량 확인되며
+   **`Detach` 보존 주체(`userdata` → `slot._detached`)**, **`KeyGone` 센티널**,
+   **`Owned` 설치 플래그**, 그리고 **`attachSlot` 분해**
+   (`materializeSlotTree` + `mountSlotTree`, 근거는
+   `research/slot-attach-decomposition.md`)가 전부 확정·반영됐다.
+   **5라운드 문항지는 만들지 않는다** — 사용자 지시("이후 stale 만 잡는것으로
+   끝낼 수 있어보임"). 아래는 그 회신 전 서술:
 
    **(원 서술) 4라운드 문항지 작성 경위.** 사용자 요청("모든 확정 부분에 있어서 예가 되어야하는 질문들을
    계속 … 표면적 타입계약부터, 실제 내부 구현 계획과 동작 원리 등")으로
@@ -86,12 +84,10 @@
    - **[2026-08-19 해소]** `PopOnly` 이름 — **`Detach`로 확정**(공개 표면
      위치도 `None`과 같은 최상위 export로 같이 확정). 원문은
      `archive/question-resolved.md`.
-   - **`Detach`(구 `PopOnly`) 홀드 중 키가 사라졌을 때의 처분**
-     (`base/slot-plan.md`) — 지금 의사코드대로면 파괴도 반환도 안 되고
-     참조만 끊김. **[정정, 2026-08-18 `/code-review high` — `ROADMAP.md`의
-     M6 `Detach` 체크박스와 대조해 발견] M6(`:List`가 있는 마일스톤) 착수
-     전 필요** — M8(`Ref`) 아님, 이전엔 마일스톤을 잘못 적어 M6를 그냥
-     지나칠 위험이 있었음.
+   - **[2026-08-21 해소]** `Detach` 홀드 중 키가 사라졌을 때의 처분 —
+     **`KeyGone` 센티널로 `updateFn`에게 묻는 것**으로 확정. detach 요소는
+     `slot._detached` 필드가 보유하고 owner 사망 시 `Effect`가 정리.
+     `base/slot-plan.md`의 "`KeyGone`" 절.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
      됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.

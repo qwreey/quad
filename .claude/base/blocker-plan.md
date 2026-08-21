@@ -167,7 +167,9 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 **base 내부 용례에도 이 규칙이 그대로 적용된 실제 사례(2026-08-18)** —
 위 "`state:Block()` 없이 직접 쓰는 두 번째 용례" 절의 Length/Offset
 배치 게이팅에서, 중첩된 Slot(부모 Slot 안의 자식 Slot)이 `attachSlot`을
-재귀할 때마다 **그 자식 Slot 자신의 owner 키로 새 `Blocker`를 만든다** —
+재귀할 때마다(**[2026-08-21] 분해 후 정확히는 그 안의
+`materializeSlotTree`** — 물리 마운트 쪽은 Blocker가 필요 없다)
+**그 자식 Slot 자신의 owner 키로 새 `Blocker`를 만든다** —
 부모 Slot의 Blocker를 재사용하지 않음(사용자 확정: *"중첩마다 별도
 Blocker (권장)"*). 부모/자식이 같은 Blocker를 공유했다면, 자식의
 `OffWithoutEmit()`이 부모가 아직 배치 중인데도 그 자리에서 즉시 꺼버려

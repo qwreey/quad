@@ -1,8 +1,13 @@
 # 구현 전 QA **4라운드 followup** — 회신 처리 결과 + 재질문
 
-**상태**: **[2026-08-21] 3차 처리 완료 — 아래 G절이 최신.**
+**상태**: **[2026-08-21] 4차 처리로 종결 — 아래 H절이 최신이자 마지막.**
+`F-3`이 전량 확인됐고 `attachSlot` 분해도 확정돼 `base/`에 전부 반영됐다.
+**이 followup에 열린 질문은 남아있지 않다.** 5라운드 문항지는 만들지
+않는다(사용자 지시). 아래 A~G절은 거기까지 온 처리 과정의 기록.
+
+**[2026-08-21] 3차 처리 — 아래 G절.**
 `F-4`는 전부 닫혔고(`F-4-3`은 `research/slot-attach-decomposition.md`로 넘어감),
-**남은 건 `F-3`의 (1)~(3)과 "+"뿐**(요약은 `G-3`).
+그 시점에 남았던 건 `F-3`의 (1)~(3)과 "+"였다(요약은 `G-3`, H절에서 닫힘).
 
 **[2026-08-21] 2차 처리 — 아래 F절.**
 B절은 전부 확인됐고 C절 결정도 대부분 반영됐다. **지금 열려 있는 건 F절의
@@ -1069,3 +1074,104 @@ if input[key] ~= nil then continue end   -- "이미 있으면 건너뛴다" = �
 
 → **여기 동의가 나오면 `C-1`/`C-2`/`SL-45`/"+"가 한 번에 닫히고, 그때
 `base/` 반영과 `attachSlot` 분해 논의를 이어서 하면 된다.**
+
+---
+
+# H절 — 4차 처리 (2026-08-21): `F-3` 전량 확인 + 함수 분해 확정, `base/` 반영 완료
+
+**입력**: 사용자 회신 — "Detach 요소는 slot 안에 보관하는게 내 생각이였어서
+(2) 제안에 동의. ud 에 넣는거로는 최종 처분이 불가하다에 동의함. 이미 detach
+인데 또 detach 를 보내도록 하면 nop하게 두고, detach 를 다시 안 보내고 prev 를
+사용하게 된다면 재마운트 해주는거 괜찮은 아이디어같음. base에 전부 반영해줘.
+그런데 함수 분해는 확정해도 좋을것 같음. 이게 하나의 큰 복잡한 복합 함수라
+여러 session 간의 실수가 발생하던 부분이고, 지금 적절한 방향으로 이동하지
+않으면 계속 실수에 의한 시간/기술비용이 축적될것 같음. 지금 의사코드를
+건들이는 비용이, 추후 실수가 누적되는 비용보다 싸다고 생각함."
+
+이걸로 **`G-3`의 `F-3` (1)~(5)와 `G-2`의 분해 결정이 한 번에 닫혔다.**
+아래는 실제로 `base/`에 들어간 것.
+
+## H-1. `Detach` 보존 주체 — `userdata` → `slot._detached` (확정·반영)
+
+- `base/slot-plan.md`에 **"Detach된 요소는 `slot._detached`가 보유한다"** 절
+  신설. 옛 서술(보존은 반환한 `userdata`가 담당)은 그 자리에서 정정.
+- **raw 3형제로 분화** — `rawRemove`(소유권 해제 + 파괴) /
+  `rawUnmount`(소유권 해제 + 파괴 안 함, 요소가 떠남) /
+  **`rawDetach`(소유권 **유지** + 파괴 안 함, 내가 계속 들고 있음)**.
+  `Detach` 경로는 `rawDetach`를 쓴다 — 소유권을 놓으면 `destroySlotTree`가
+  못 줍는다.
+- **재-`Detach`는 nop**(이미 `_detached`에 있으면 아무것도 안 함),
+  **`prev`를 그대로 반환하면 재마운트**(`_detached`에서 빼고 `rawAdd`).
+  둘 다 `settle()` 안에서 `wasDetached` 분기로 처리 — 정상 사이클과 소멸
+  루프가 같은 함수를 공유하므로 두 경로가 갈라질 수 없다.
+- `releaseElement(self, element, wasDetached)` — detached 상태에서 처분될
+  땐 이미 소유권을 들고 있으므로 `rawRemove`가 아니라 바로 파괴
+  (`_owned ~= false`일 때).
+
+## H-2. `KeyGone` 센티널 (확정·반영)
+
+- 키가 데이터에서 사라진 자리는 조용히 처분하지 않고
+  **`updateFn(KeyGone, 0, offset, prev, userdata[key])`로 한 번 더 묻는다.**
+  반환은 정상 사이클과 같은 `settle()`로 흘린다.
+- **`index`는 `0`**(자리가 없어졌으므로 유효한 인덱스가 없음),
+  **`KeyGone`에 `prev`를 그대로 반환하면 `error`**(자리 없는 요소를 유지할
+  방법이 없음) — `G-3`의 추천 그대로 확정.
+- **다시 안 묻기는 자동 성립** — 소멸 루프가 이전 `keyIndex`만 돌기 때문.
+- owner가 죽을 때의 최종 처분은 `mountSlotTree`가 거는 `Effect`의 cleanup이
+  `slot._detached`를 전부 비우는 것으로 담당(`_owned == false`면 파괴 안 함).
+
+## H-3. `Owned` 옵션 (확정·반영)
+
+`Detach`(사이클 단위, "내 건데 잠깐 빼둠")와 `Owned`(설치 단위, "애초에 내
+게 아님")는 **직교하는 축**이라는 정리가 여기서 확정됐다. `:List`/`:Single`의
+설치 시점 플래그(기본 `true`)이고, `false`면 어떤 경로로도 파괴하지 않고
+언마운트만 한다 — `state<Frame>`처럼 사용자가 만들어 넘긴 요소용.
+`C-2`의 "`:List`의 값 교체 파괴가 `state<Frame>` 의미론과 충돌"이 이걸로
+닫힌다(값 교체는 `Owned = true`면 파괴가 맞다 — `updateFn`이 만든 걸 자기
+손으로 못 지우면 새는 쪽이 된다).
+
+## H-4. `attachSlot` 분해 (확정·반영)
+
+`research/slot-attach-decomposition.md`를 **확정**으로 승격하고 의사코드를
+`base/slot-plan.md`에 반영했다. 결론은 후보 **(B)**:
+
+- **`materializeSlotTree(slot, physicalTarget, ownerKey, position)`** — 부기만.
+  `Offset` 설치 → `activateList`(`_mounted`는 아직 `false`) → Blocker `On`
+  → 자식 재귀/`setLength` → `OffWithoutEmit` → `recompute` →
+  **마지막에 `setLength(ownerKey, position, slot.Length)`**.
+- **`mountSlotTree(slot, physicalTarget)`** — 물리 `Parent` 대입과
+  `_mounted = true`, `_detachCleanup` Effect 설치만. Blocker 불필요.
+- **공개 `attachSlot`은 그 둘을 순서대로 부르는 두 줄** — 이름/시그니처/호출부
+  전부 그대로라 다른 문서의 참조가 안 깨진다.
+
+이걸로 **C6("부모에게 미는 길이는 최종값이어야 한다")와 C7("부기가 물리보다
+먼저 끝난다")가 처음으로 동시에 만족된다** — 한 함수 안에서는
+`setLength` 슬롯이 하나뿐이라 원리적으로 불가능했던 조합이다. 부수로 배치
+밖 재마운트의 부모 `recompute`가 2회 → 1회.
+
+**사용자가 우려한 관측 가능한 차이**("일자 진행 vs 관측 이후 일괄 등록")는
+**`Parent` 대입 순서 자체는 안 바뀌고**, `ChildAdded` 핸들러가 볼 때 서브트리
+부기가 이미 최종값이라는 점만 바뀐다 — 옛 코드는 미완성 스냅샷을 보여줬으므로
+**엄밀히 더 정확해지는 방향**이다. 분석 원문은 그 문서의 7절.
+
+## H-5. `SL-38` userdata 제약 보강 (반영)
+
+`userdata`에 "GC만으로 정리되는 값만" 담으라는 제약의 예시에 **quad-제작
+Instance**를 추가했다 — gcconn 트릭 때문에 참조를 놓아도 회수되지 않아
+`Destroy` 없이는 영구 누수다. 기존 예시가 `:Subscribe()` Observer뿐이라
+Instance는 안전해 보였다.
+
+## H-6. `ROADMAP.md` 정합 (반영)
+
+M6의 `Detach` 항목 둘이 옛 설계(userdata 보존, 키 소멸 처분 ⚠️ 미결)를
+그대로 서술하고 있어 정정했고, Slot-in-Slot 항목에 분해 결과를 반영했다.
+"값 교체와 `Detach` 경로만 파괴 안 함"도 `Owned` 기준으로 재정정.
+
+## H-7. 남은 것
+
+- **`question.md` 3번의 관련 항목**은 이 처리로 전부 닫혔다.
+- 사용자 지시대로 **5라운드 문항지는 만들지 않는다** — "이후 stale 만 잡는
+  것으로 끝낼 수 있어보임"(D절 회신).
+- 실측으로 남은 것: 스파이크 `01` 재작성(단일 generalized `for`),
+  `table.insert` 구멍 재사용(`R-11`) 스파이크. 상태의 소스는
+  `luau-test/STATUS.md`.

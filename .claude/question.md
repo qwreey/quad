@@ -164,18 +164,18 @@
   `getDynamic(store, name)` — "특정 프리미티브에 안 묶인 범용 유틸은 소문자
   탑레벨"이라는 기존 네이밍 규칙에는 오히려 더 맞는다. **M3/M4 착수 전
   필요**, `base/store-plan.md`의 "타입 추론 문제" 절.
-- **[신설, 2026-08-18 커밋 전 `/code-review high`] `Detach`로 홀드 중이던
-  요소의 키가 데이터에서 사라지면 어떻게 처분하는가** — 지금 의사코드대로면
-  `mounted[key]`가 이미 `nil`이라 파괴 대상이 아니고, 소멸 루프가
-  `userdata[key]`까지 지워서 **파괴되지도 `updateFn`에게 되돌려지지도 않고
-  참조만 끊긴다**. 같은 절의 표("키가 사라지면 파괴")와도, "버릴 시점은
-  `updateFn`이 정한다"와도 어긋남. 선택지 (a) 소멸 루프가 `userdata`의
-  `old`까지 확인해 파괴, (b) 지금 동작(참조만 끊고 GC)을 정식화하고 표를
-  고침, (c) `updateFn`을 마지막으로 한 번 더 불러 처분을 물음. **[정정,
-  2026-08-18 `/code-review high`] M6(`:List`가 있는 마일스톤) 착수 전
-  필요** — M8(`Ref`) 아님, `base/slot-plan.md`의 "`nil` 리턴은 파괴가
-  기본" 절.
-- **[신설, 2026-08-21 구현 전 QA 4라운드] `attachSlot` 책임 분해** — 한
+- **[해소, 2026-08-21] `Detach` 홀드 중 키가 사라졌을 때의 처분** —
+  선택지 (c)로 확정: `updateFn`을 **`KeyGone`으로 한 번 더 불러 처분을
+  묻는다**. 같이 확정된 것 — detach된 요소는 `userdata`가 아니라
+  **`slot._detached` 필드**가 보유하고(그래야 `destroySlotTree` walk가
+  닿고 소유권도 유지됨), owner가 죽으면 `Effect`가 정리한다. 원래 갭이
+  치명적이었던 이유는 gcconn 트릭 때문에 detach된 quad-제작 Instance가
+  **GC 폴백조차 없이 영구히 남기** 때문. 상세는 `base/slot-plan.md`의
+  "Detach된 요소는 `slot._detached`가 보유한다"/"`KeyGone`" 절.
+- **[해소, 2026-08-21] `attachSlot` 책임 분해** — **(B) 분해 채택으로 확정**,
+  `base/slot-plan.md`에 반영 완료(`materializeSlotTree`/`mountSlotTree`/얇은
+  `attachSlot`). 근거 기록은 `research/slot-attach-decomposition.md`.
+  아래는 그 열려 있던 시점의 서술: 한
   함수가 부모 등록(offset/length) / `:List` 실체화 / 마운트 상태 전이 / 배치
   게이팅 / 자식 배치 / 재귀를 다 지고 있어서, **"부모에게 알리는 길이의
   최종값은 flush가 끝나야 정해진다"와 "부기가 물리 조작보다 먼저"가 동시에

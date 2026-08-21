@@ -429,7 +429,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         차이는 딱 둘: 실제 `Destroy()`를 안 하고, 자식 `releaseOwner`도 안 함
         (자식은 계속 그 slot 소유라 통째로 재마운트 가능 = 포탈).
         **쓰는 자리**: `SlotHandler.process`가 반환하는 클로저, 그리고
-        `:List`의 `reconcile` 중 **값 교체와 `Detach` 경로만**.
+        `:List`의 `reconcile` 중 **`Owned = false` 설치와 `Detach` 경로**
+        (**[재정정, 2026-08-21]** 값 교체는 `Owned = true`면 파괴가 맞다 —
+        `updateFn`이 만든 걸 자기 손으로 못 지우기 때문. `state<Frame>`
+        의미론은 `Owned = false`가 담당).
         **여전히 파괴인 것**: 명시적 `Remove`/`Clear`/`dispose`, 그리고
         **[재정정, 2026-08-18 구현 전 QA] `:List`에서 `updateFn`이
         `nil`/`None`을 반환하거나 키가 데이터에서 사라진 경로**(2026-08-13의
@@ -513,16 +516,24 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (filter/toggle 지원 — 첫 반환값 `nil` 시 실제 파괴, `Visible` 토글
       아님, 200+ 항목에서 lazy하지 않은 문제 회피), `prev` 그대로 반환하면
       저비용 재사용 경로.
-      **[2026-08-18 신설, 이름 2026-08-19 확정] `Detach` 반환 경로** —
-      `updateFn`이 `Detach, { old = ..., source = ... }`를 반환하면 그
-      자리는 **파괴하지 않고 `Parent = nil`로만 내려와** Slot에서 빠지고,
-      보존은 반환한 userdata가 담당(다음 사이클에 거기서 `old`를 꺼내
-      반환하면 재마운트). `Instance.new`/`Destroy` 비용을 아끼는 filter용
-      경로. 공개 표면은 `None`과 같이 패키지 최상위 export(`base/
-      slot-plan.md`의 "`nil` 리턴은 파괴가 기본" 절).
-      **⚠️ "키가 데이터에서 사라졌을 때 `Detach`로 홀드 중이던 요소를
-      어떻게 처분하는가"는 미결**(이름과 무관한 별개 항목) — 착수 전 결론
-      필요(같은 절, `question.md` 3번). 파라미터 순서는 반환값 순서(`prev`류 먼저,
+      **[2026-08-18 신설, 이름 2026-08-19 확정, 2026-08-21 보존 주체 정정]
+      `Detach` 반환 경로** — `updateFn`이 `Detach`를 반환하면 그 자리는
+      **파괴하지 않고 `Parent = nil`로만 내려와** Slot에서 빠진다.
+      **보존 주체는 `userdata`가 아니라 `slot._detached` 필드**(Slot 필드여야
+      `destroySlotTree` walk가 닿고 소유권도 유지됨 — `ud`로는 최종 처분이
+      불가능). reconcile이 `prev`로 그대로 돌려주므로 `ud`에 담을 필요 없이
+      **그대로 반환하면 재마운트**되고, 이미 detach 상태에서 또 `Detach`면
+      **nop**. 언마운트는 소유권을 유지하는 `rawDetach`를 씀(`rawUnmount`
+      아님). `Instance.new`/`Destroy` 비용을 아끼는 filter용 경로. 공개
+      표면은 `None`과 같이 패키지 최상위 export(`base/slot-plan.md`의
+      "Detach된 요소는 `slot._detached`가 보유한다" 절).
+      **[2026-08-21 해소] "키가 사라졌을 때 홀드 중이던 요소의 처분"은
+      `KeyGone` 센티널로 확정** — `updateFn(KeyGone, 0, offset, prev, ud)`로
+      한 번 더 물어 처분을 받고, owner가 죽으면 `mountSlotTree`가 건
+      `Effect`가 `_detached`를 전부 정리한다(같은 문서의 "`KeyGone`" 절).
+      **`Owned` 옵션 신설** — `:List`/`:Single`의 설치 시점 플래그(기본
+      `true`), `false`면 어떤 경로로도 파괴하지 않고 언마운트만(사용자가
+      `state`에 담아 넘긴 요소용, `Slot:Add(state)` sugar가 이걸로 설치). 파라미터 순서는 반환값 순서(`prev`류 먼저,
       `userdata`류 나중)와 맞춤(2026-08-11 세션 정정, 원래 `userdata`가
       `prev`보다 앞이었음).
       **`updateFn`의 `index`는 `keyFn`의 raw `index`(원본 `data` 배열
@@ -588,8 +599,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
       불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
       **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
-      해결됨 — 위 M2 항목 참고, `attachSlot`이 자기 flush 루프를 자기
-      Blocker로 감싸는 형태로 반영됨(`base/slot-plan.md` "재귀 메커니즘" 절).**
+      해결됨 — 위 M2 항목 참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
+      **[재설계, 2026-08-21] `attachSlot`은 비공개 재귀 둘로 분해됨** —
+      `materializeSlotTree`(부기만, Blocker가 감싸는 건 이제 여기뿐) +
+      `mountSlotTree`(물리 `Parent` 대입만, Blocker 불필요), 그리고 그 둘을
+      순서대로 부르는 **두 줄짜리 공개 `attachSlot`**(이름/시그니처/호출부
+      전부 그대로). 이걸로 "부모에게 알리는 길이가 최종값"과 "부기가 물리보다
+      먼저"가 처음으로 **동시에** 만족되고, 배치 밖 재마운트의 부모
+      `recompute`가 2회→1회로 준다. 순서 제약이 줄 순서가 아니라 **함수
+      경계로 강제**되므로 `RC-1`/`RC-3`/`RC-4` 같은 "줄 순서를 잘못 잡아서"
+      나던 버그 클래스가 구조적으로 사라짐. 근거 기록은
+      `research/slot-attach-decomposition.md`.
+      **관측 가능한 변화 하나**: `Parent` 대입 순서는 그대로지만 물리 마운트가
+      "부기 완료 후 일괄"이 되어, `ChildAdded` 핸들러가 볼 때 서브트리 전체의
+      `Length`/`Offset`이 이미 최종값이다(옛 코드는 미완성 스냅샷을 보여줬음).
 - [x] **`Slot(initial?: {T})` 생성자로 확장** — "인자 없는 빈 생성자로
       확정"을 뒤집음, `:Add` 반복 호출 sugar일 뿐(새 마운트 로직 없음).
       `initial ~= nil`이면(빈 테이블도) 즉시 `_crudUsed = true` — 상태상

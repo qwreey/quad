@@ -1381,7 +1381,7 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
 동일하게 적용"* — 즉:
 - `Dispatch.setLength`가 이전에 등록된 적 없는 더 큰 position `i`를
   등록할 때마다 `bk.N`이 `i`로 늘어난다(`Dispatch.drive`의 배열 파트
-  순회, `attachSlot`의 flush 배치, Slot의 런타임 단건 `rawAdd` 전부 이
+  순회, `materializeSlotTree`의 등록 배치, Slot의 런타임 단건 `rawAdd` 전부 이
   하나의 규칙) — **`Dispatch.setOffsetSource`는 `bk.N`을 건드리지
   않는다**, 호출 순서가 항상 `setOffsetSource(i)` → `setLength(i)`라서
   (아래 "`setLength` 구현" 절) `bk.N`을 `setLength`에서만 올려야
@@ -1396,7 +1396,7 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
   케이스가 아니라 같은 규칙의 특수한 안정 상태다.
 
 **이게 배치 등록 중 크래시(`RC-1`)를 다시 불러오지 않는 이유**: 배치
-등록 중(`Dispatch.drive`/`attachSlot`의 flush)엔 아래 "배치 등록을
+등록 중(`Dispatch.drive`/`materializeSlotTree`의 등록 루프)엔 아래 "배치 등록을
 안전하게 만드는 Blocker 게이팅" 절의 `blocker:IsOn()` 게이트가
 `recompute` 호출 자체를 막는다 — 이 게이트는 `bk.N`을 전혀 보지 않으므로,
 배치 도중 `bk.N`이 최종 크기보다 작은 채로 계속 늘어나는 중이어도
@@ -1645,7 +1645,13 @@ position의 length가 바뀌면(배치가 끝난 뒤 steady state에서) 그보�
 전체 순회가 필요하다 — 그 경로는 안 바뀜(위 `recompute` 코드 그대로).
 
 **적용 지점 — `Dispatch.drive`와 `attachSlot`, 각각 자기 owner 키로
-별도 Blocker**: 이 배치 패턴이 실제로 크래시 위험이 있는 자리는 정확히
+별도 Blocker**
+(**[2026-08-21] `attachSlot` 쪽은 이제 정확히는 그 안의
+`materializeSlotTree`다** — `attachSlot`이 "부기만 만드는 재귀"와 "물리만
+붙이는 재귀" 둘로 분해되면서 Blocker가 **등록 쪽 하나만** 감싸게 됐고,
+그래서 "배치 *등록* 게이팅"이라는 이 절의 정의와 실제 범위가 정확히
+일치하게 됐다. 옛 코드는 물리 마운트까지 같이 감싸고 있었음.
+`base/slot-plan.md`의 "재귀 메커니즘" 절이 소스): 이 배치 패턴이 실제로 크래시 위험이 있는 자리는 정확히
 둘뿐이다(사용자 확인, 2026-08-18) — (a) `Dispatch.drive`가 최상위
 `inst`의 배열 파트를 순회할 때, (b) `attachSlot`이 **자기 자신의**
 `_elements`를 flush할 때(`base/slot-plan.md`의 "재귀 메커니즘" 절 —

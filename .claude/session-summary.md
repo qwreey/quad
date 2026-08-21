@@ -1609,3 +1609,47 @@ Luau 함정을 발견해 `typing-limits.md` §6으로 승격.
 (`type function`은 outer local 참조 불가, cross-package엔 `export type
 function` + 이중 꺾쇠 제네릭 인스턴스화 필요). 핸드오버 감사 2라운드로
 구 시그니처 잔존/개수 하드코딩 8건 발견·수정 후 커밋.
+
+## 2026-08-19 — 구현 전 QA 4라운드 문항지 작성 (회신 대기)
+
+원문: `session/2026-08-19-04-qa-round4-questionnaire.md`
+
+사용자 요청("모든 확정 부분에 있어서 예가 되어야하는 질문들을 계속 …
+서브에이전트는 쓰지 말아줘")으로 `base/` 확정 주장 전체를 한 맥락에서 읽으며
+"예가 나와야 정상인 문항"으로 전수 문항화. **설계 결정도 정정도 하나도 안
+내리고** 문항지(`qa-request/pre-implementation-qa-round4.md`)만 남긴 채 회신
+대기로 끝난 세션.
+
+## 2026-08-19 — 핸드오버 준비, `session-summary.md`/`ROADMAP.md` stale 대청소
+
+원문: `session/2026-08-19-09-handover-prep-roadmap-status-sync.md`
+
+`quad-roblox-types` 언급 확인 요청에서 시작했으나 훨씬 큰 공백 둘을 발견 —
+이 색인에 당일 세션 5개(04~08)가 통째로 빠져 있었고,
+`CLAUDE.md`/`project-context.md`/`ROADMAP.md`가 "구현 아직 시작 전"이라는
+낡은 전제를 깔고 있었다(실제로는 M0/M1이 이미 완료·커밋됨). 둘 다 즉시
+반영하고 감사 라운드로 재검증.
+
+## 2026-08-20 — QA 4라운드 회신 1차 처리 + 업스트림 스캐폴딩 병합
+
+원문: `session/2026-08-20-01-qa-round4-response-processing.md`
+
+업스트림 12커밋(pesde 전환, mise/selene, RunInit 재설계, quad-types/
+type-version-check 신설, M0 스파이크)을 먼저 rebase로 병합한 뒤, 사용자
+회신을 (a) 바로 반영 / (b) 설명 보강 후 재질문 / (c) 사용자 판단 필요 /
+(d) 조사해서 답이 나옴으로 갈라 (a)만 `base/`에 반영. 나머지는
+`pre-implementation-qa-round4-followup.md`로 정리해 남김.
+
+## 2026-08-21 — `Detach` 보존 주체/`KeyGone`/`Owned` 확정, `attachSlot` 분해
+
+원문: `session/2026-08-21-01-detach-keygone-owned-and-attachslot-decomposition.md`
+
+QA 4라운드의 마지막 열린 항목이 닫힌 세션. gcconn 트릭 때문에 detach된
+quad-제작 Instance는 **GC 폴백이 없다**는 걸 근거로 보존 주체를
+`userdata` → **`slot._detached` 필드**로 뒤집고, 키 소멸 처분을 **`KeyGone`
+센티널**로 확정(재-`Detach`는 nop, `prev` 반환은 재마운트). `Detach`(사이클
+단위)와 **`Owned`**(설치 단위)를 직교 축으로 분리해 `state<Frame>` 의미론
+충돌도 해소. 같이 **`attachSlot`을 `materializeSlotTree`+`mountSlotTree`로
+분해** — "부모에게 미는 길이는 최종값"과 "부기가 물리보다 먼저"가 한 함수
+안에선 동시 만족 불가라는 진단이 근거였고, 사용자가 "지금 의사코드를
+건들이는 비용이 추후 실수가 누적되는 비용보다 싸다"로 확정.
