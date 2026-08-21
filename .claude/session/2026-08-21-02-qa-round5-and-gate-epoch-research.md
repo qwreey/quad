@@ -279,3 +279,18 @@ State 에포크도 **채택**했다(*"gate 와 epoch 가 제가 만족할만한 
 `rewrite-required/`로 갔다(다이아몬드 Observer가 이제 변경당 1회만 울어야
 해서 핵심 assert가 정반대). 처리 전량은
 `qa-request/pre-implementation-qa-round5-followup.md`의 O절.
+
+## 12. `/code-review high` — 12건 전부 유효, 그중 3건은 실제 설계 구멍
+
+O절 커밋 직후 사용자가 돌린 리뷰에서 12건이 나왔고 전부 유효했다. 특히
+**게이트가 유보했다 내보내는 emit이 어느 source를 싣는가**는 M절이 이미
+짚어뒀는데(*"`nil` 규약만 Gate 설계와 같이 확정하면 된다"*) 표면 확정 때
+같이 안 닫힌 것으로, 그대로 두면 `blocker:Off()`의 배치 통지가 하류에서
+삼켜진다 — `setup` 시그니처에 영향이 있어 **M2 착수 전 항목**으로 되돌렸다
+(같은 날 "M2를 막는 항목 없음"이라 적었던 `todos.md` 00번도 정정).
+
+교훈이 하나 더 있다: 이번에도 **감사자 각도가 아니라 diff 각도에서만 보이는
+것**이 다수였다(개수 하드코딩, 배너 vs 본문, 같은 파일 안의 모순 문장,
+방금 옮긴 파일을 가리키는 새 텍스트). `conventions.md`의 "`/code-review`는
+감사자를 대체하지 않는다" 항목이 다시 확인된 셈. 전량은
+`qa-request/pre-implementation-qa-round5-followup.md`의 P절.

@@ -936,7 +936,7 @@ emit 수신 규칙 셋: (1) count가 다르면 둘 다 갱신 + `rawInvalid` + �
 내부 발생 emit이 같은 진입점을 쓰는 것) — 해법으로는 부족한데, 막는 게이트는
 보통 순회하는 노드 자신이 아니라 **상류**에 있어 자기 `rawEmit`을 태워도
 누출이 남고, `nil` emit은 하류마다 전체 순회를 강제해 같은 문제를 연쇄시키기
-때문. 상세는 `research/state-epoch-validation.md` §2·§5-3.
+때문. 상세는 `base/state-epoch-plan.md` §2·§5-3(같은 날 `base/`로 승격됨).
 
 **메모**: 이 분리는 M절에서 **철회했던 `seen`/`computedAt` 분리가 다른 근거로
 되살아난 것**이다. 옛 근거는 여전히 틀렸고, 지금 근거는 **순회가 값과 통지를
@@ -951,7 +951,7 @@ state 의 전파를 손대는 작업이라 with 처럼 다른 노드가 나는�
 `:Apply`** 라는 층위 구분이다. 부수로 `Debounce`/`Throttle`의 `:Apply` 관용구는
 그대로 유효하고(팩토리가 내부에서 `:Gate`를 부름), `Blocker` 배선은 이미 확정된
 `state:Block(blocker)` 메소드로 자동 해소되며, `__call`은 안 쓴다.
-`research/gate-primitive.md`의 2번이 해소로 갱신됨.
+`base/gate-plan.md`(같은 날 `base/`로 승격)의 2번이 해소로 갱신됨.
 
 ---
 
@@ -999,3 +999,28 @@ Blocker 는 해당 내부 배선을 따른다 ← 동의합니다 해당 방법�
 M2 각주·M3 체크박스), `README.md`, `question.md`, `todos.md`,
 `luau-test/`(스파이크 `05`가 `rewrite-required/`로 되돌아감 — 다이아몬드
 Observer가 이제 변경당 **1회**만 울어야 하므로 핵심 assert가 정반대가 됨).
+
+---
+
+# P절 — `/code-review high` 12건 (2026-08-21, O절 커밋 직후)
+
+사용자가 `c58c97a`(O절) 직후 `/code-review high`를 돌려 **12건**이 나왔고
+**전부 유효**했다. 9건은 그 자리에서 수정, **3건은 실제로 안 정해진 설계
+구멍이라 열린 항목으로 세웠다**(임의로 정하지 않음).
+
+## P-1. 열린 항목으로 승격한 3건
+
+| # | 무엇 | 어디로 |
+|---|---|---|
+| High-1 | **게이트가 유보했다 내보내는 emit이 어느 source를 싣는가.** 확정 `setup`은 `(emit: () -> ()) -> (() -> ())`라 양쪽 다 source를 안 받는데, 에포크 수신 규칙은 전부 `[source]` 키 판정 → `blocker:Off()`의 배치 emit이 하류에서 **삼켜진다**. M절이 *"`nil` 규약만 Gate 설계와 같이 확정하면 된다"*고 짚었는데 O절이 안 닫았다 | `base/gate-plan.md` 4번 + `question.md` 3번. **M2 착수 전 필요**(시그니처가 바뀜). 권고는 (c) `emit(self)` — `GateNode`를 source처럼 취급 |
+| Med-2 | **재계산 후 `sourceCountMap` 갱신 범위.** 규칙 1이 발행 소스 항목만 건드리므로 다중 소스 배치에서 **같은 값을 두 번 계산**한다 | `state-epoch-plan.md` §5 7-(a). 권고: 자기가 읽은 상류 전부 갱신 → 뒤따르는 emit은 규칙 2로 "통지만" |
+| Med-3 | **두 맵의 초기값·`:With` 병합.** "상류에서 복사"를 문자 그대로 하면 순회가 앞당긴 지연분 상속 여부가 안 정해져 새 노드가 통지를 삼킬 수 있고, 희소 `pending` 구현 메모와도 안 맞는다 | 같은 곳 7-(b)/(c). 권고: 복사 대신 **첫 재계산 때 구성** — 그러면 (c)도 자동 해소 |
+
+## P-2. 그 자리에서 고친 9건
+
+- `state-epoch-plan.md`: §4/§5-2의 `sourceList` 잔재 제거(코퍼스에 `bk.sourceList`라는 **무관한 동명 식별자**가 이미 있어 오독 위험), §3의 "뒤늦은 신호에 `rawInvalid`가 켜져도"를 §2 규칙(안 켜짐)에 맞게 정정.
+- `gate-plan.md`: 배너가 부정하는 본문 두 문장("공개 프리미티브로 꺼낸다")을 같이 수정 — `conventions.md`가 최빈 실패로 지목한 패턴.
+- `question.md` 1번: `Gate` 이름 항목이 "다음 세션으로 미뤄졌다"로 열린 채였음 → 해소로 갱신.
+- `luau-test/STATUS.md`: `05` 이동이 반영 안 된 개수 3곳(`done/` 19→17·18건→17건, `rewrite-required/` 4→6, 런타임 13→12)과 "`05`가 다시 돌아왔다"는 같은 파일 안의 모순 문장.
+- `comparison-fusion-vide.md`: 배너 바로 위 본문("신호는 두 번 도착해도")이 배너와 어긋나던 것.
+- 이 파일 N절과 `README.md`가 가리키던 `research/` 옛 경로.
