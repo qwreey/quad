@@ -389,8 +389,11 @@ lazy State 핸들로 통일, 아래 "`:With`/`:Compute` — self 인자도 lazy 
 `Blocker` 참고.** 위 `:With`+`:Compute`만으로는 "state1, state2를 연달아
 Set하면 결합된 파생값이 두 번 재계산/재대입된다"는 문제(즉시 pull하는
 store-bind 소비자 기준)는 안 풀림 — 이건 별도 확정 프리미티브
-`base/blocker-plan.md`가 다룸(State 개발과 같은
-마일스톤, `ROADMAP.md` M3에서 함께 구현). lexical `Batch(fn)`으로 풀려던
+`base/blocker-plan.md`가 다룸(**[2026-08-22 정정]** 여기 "State 개발과 같은
+마일스톤, `ROADMAP.md` M3에서 함께 구현"이라 적혀 있었으나 `Blocker.luau`는
+**M2**로 이동했고, 바닥부터 짜는 게 아니라 공용 `GateNode`
+(`base/gate-plan.md`) 위의 정책이다 — 마일스톤 소속의 소스는
+`blocker-plan.md`의 정정 배너와 `ROADMAP.md` M2). lexical `Batch(fn)`으로 풀려던
 초기 시도는 코루틴 yield 위에서 구조적으로 위험해 기각됨 —
 `archive/batch-rejected.md` 참고.
 

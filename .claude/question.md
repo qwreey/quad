@@ -12,7 +12,11 @@
 
 ---
 
-## ⭐ 최우선 — **없음** (2026-08-14 열한 번째 세션 기준)
+## ⭐ 최우선 — 설계 결정은 **없음**, 다만 순서 문제 하나 (2026-08-22 갱신)
+
+> **[2026-08-22] 아래 2번(M2/M3 마일스톤 경계)이 M2 착수를 막습니다.**
+> 그건 "무엇을 확정할까"가 아니라 "어떤 순서로 짤까"라 성격이 달라서
+> 이 절이 아니라 2번에 뒀습니다 — **설계 결정 대기는 여전히 0건**입니다.
 
 > **M0 착수를 막던 항목이 전부 해소됐습니다.** `0-Y`(`:Compute(fn)`의
 > lazy 핸들 계약)는 열세 번째 세션에, `0-Z`(Attribute 이름 소유권)와
@@ -110,6 +114,41 @@
   셈 — 이번 정리에서 같은 패턴을 조심할 것.
 - `Store`/`Source`/`Modifier`/`process`/`retract`/`isHandlable`은 업계
   선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
+
+## 2. M2/M3 마일스톤 경계 — **M2 착수 전에 답이 필요** (2026-08-22 신설)
+
+**M2(디스패치 엔진)와 M3(Store/State/Source)의 의존이 양방향이라,
+`ROADMAP.md` 순서대로면 M2를 끝까지 짤 수 없습니다.**
+
+- **M2 → M3 (본체 의존)**: `Dispatch.setLength`가
+  `len: number | State<number>`를, `Dispatch.setOffsetSource`가
+  `Source<number>`를 받고, `recompute`가 `offset:Set()`을 부릅니다
+  (`base/dispatch-core-plan.md`의 "Length/Offset" 절). 2026-08-22에 M2로
+  옮긴 `GateNode`/`Blocker`도 State 위에 얹힙니다. 즉 **M2는
+  `Source.luau`/`State.luau` 없이는 구현이 안 됩니다.**
+- **M3 → M2 (얕은 의존)**: `state:Observer`/`Effect`의 동적 경로 가드가
+  `Dispatch.addHandler` + `Handler.luau` 계약을 씁니다 — 이건 레지스트리
+  등록 표면만 있으면 되므로 M2 **전체**를 요구하지 않습니다.
+  **⚠️ 다만 "M2 앞머리 두 항목(`Dispatch/init.luau` + `Handler.luau`)이면
+  된다"고는 말할 수 없습니다** — `Dispatch/init.luau`에는 `Dispatch.drive`가
+  들어 있고, `dispatch-core-plan.md`가 *"적용 지점 — `Dispatch.drive`와
+  `attachSlot`, 각각 자기 owner 키로 별도 Blocker"*라고 확정해 `drive`도
+  게이팅을 씁니다. 즉 그 첫 항목 자체가 State-free가 아닙니다. 선택지 (b)로
+  쪼갠다면 `drive`를 어느 쪽에 두느냐가 경계선이 됩니다.
+
+**선택지**:
+- **(a) M2와 M3의 순서를 바꾼다** — 반응형(Source/State/EpochMap/Gate/
+  Blocker)을 먼저 짜고 그 위에 디스패치를 올림. 얕은 쪽(가드 Handler)만
+  뒤로 미루면 됨. 지금까지의 결정 흐름("게이팅 먼저")과 방향이 같음.
+- **(b) M2를 둘로 쪼갠다** — `Dispatch.getHandler`/`process`/`retractFrom`/
+  `Handler`/`Brand`/`Relate`/`chains`까지가 M2a, State가 필요한
+  Length/Offset·게이팅은 M3 뒤의 M2b로.
+- **(c) 지금 구조를 두고 구현 시 알아서 오간다** — 로드맵은 "순서"가
+  아니라 "묶음"으로만 읽음.
+
+**[2026-08-22 기준] 이 항목이 M2 착수를 막습니다** — `.claude/todos.md`
+0번이 "M2 착수를 막는 설계 항목은 없다"고 하는 것은 **설계** 얘기이고,
+이건 설계가 아니라 **순서** 문제라 별개입니다.
 
 ## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
 

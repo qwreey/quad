@@ -18,12 +18,17 @@
 
 **store 개발(M3)과 밀접하게 연관됨** — `state:Block(blocker)`가 State
 위에 얹히는 메소드이므로 `base/source-state-plan.md`의 Source/State
-온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함. 별도 파일로 두되
-State와 같은 마일스톤(`ROADMAP.md` M3)에서 함께 구현할 것.
+온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함.
+**⚠️ [2026-08-22 정정] 구현 마일스톤은 M3가 아니라 M2다** — 여기 "State와
+같은 마일스톤(`ROADMAP.md` M3)에서 함께 구현할 것"이라고 적혀 있었으나,
+`Dispatch.drive`의 배치 등록이 `Blocker`를 호출하므로 "게이팅 먼저" 결정에
+따라 `Blocker.luau` 체크박스가 M2로 이동했다. 별도 파일로 두는 것은 그대로.
+**그리고 이제 `Blocker`는 바닥부터 짜는 게 아니라 공용 `GateNode`
+(`base/gate-plan.md`) 위에 얹는 정책이다** — 노드를 다시 만들지 말 것.
 
 **[2026-08-14 위치 명문화]** `Blocker`는 **quad에서 emit(무효화 신호) 전파를
 지연시킬 수 있는 유일한 요소**임. 평범한 State는 신호를 받으면 자기
-`invalid` 상태와 무관하게 **항상** 아래로 전파하고(`base/source-state-plan.md`
+`invalid` 상태를 이유로는 **절대 전파를 접지 않고**(`base/source-state-plan.md`
 "전파 모델 확정" 절), 그 흐름을 붙잡아둘 수 있는 건 명시적으로 배선된
 게이트뿐 — 지금은 `Blocker`가 유일하고, 시간 기반 게이트(`base/
 debounce-throttle-plan.md`, 설계 확정·구현은 아직)가 추가되면 같은 자리에

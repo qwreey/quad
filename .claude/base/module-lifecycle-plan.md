@@ -309,8 +309,13 @@ print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
 - base 유틸(per-instance 상태 저장소, 생명 바인드 유틸)이 인터페이스만 두고
   실제 구현은 백엔드 팩토리(`RobloxFactory(BaseModule)`류)가 뮤테이션으로
   주입한다는 패턴이 확정됨. **[2026-08-13 열네 번째 세션] 주입 대상 목록에
-  엔진 op 3개가 추가됨** — `addTag(inst,{string})`/`removeTag(inst,{string})`/
-  `setAttribute(inst,name,v)`(`v==nil`이면 삭제). `Tag`/`Attribute`의 부기
+  Tag/Attribute용 엔진 op이 추가됨** — `addTag(inst,{string})`/
+  `removeTag(inst,{string})`/`setAttribute(inst,name,v)`(`v==nil`이면 삭제).
+  **[2026-08-22 정정] 여기 "엔진 op 3개"라고 세어놨으나 그 셋이 전부가
+  아니다** — 이후 `native*` 물리 조작 계층과 `setTimeout`/`clearTimeout`이
+  같은 팩토리 뮤테이션 경로에 추가됐다. **주입 op 전체 목록의 소스는
+  `base/architecture.md`의 소스 트리 안 `EngineOps.luau` 줄** — 여기서
+  세지 않는다. `Tag`/`Attribute`의 부기
   알고리즘이 통째로 quad-base로 옮겨오면서, 엔진에 실제로 손대는 마지막
   한 줄만 이 경로로 주입받게 됨(`base/dispatch-core-plan.md` "base가
   소유하는 핸들러와 주입되는 엔진 op" 절). **`TagHandler`/
@@ -326,8 +331,11 @@ print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
   "base가 소유하는 핸들러와 주입되는 엔진 op" 절이 소스. 이 문서의 일반
   원칙 "등록/구현은 팩토리 뮤테이션 시점"의 **명시적 예외**이고, 예외인
   이유는 이 핸들러들이 "아무도 자리를 안 가져갔을 때"를 위한 것이라
-  누군가 자리를 가져가는 시점에 등록되면 자기 목적을 못 이루기 때문).** `addTag`/`removeTag`/`setAttribute`만 백엔드 팩토리가
-  뮤테이션으로 채우는 타입 계약. 아직 아무 팩토리도 안 채운 슬롯의
+  누군가 자리를 가져가는 시점에 등록되면 자기 목적을 못 이루기 때문).**
+  즉 이 경로에서 백엔드 팩토리가 뮤테이션으로 채우는 건 **핸들러가 아니라
+  엔진 op 쪽**이다(**[2026-08-22 정정]** 여기 "`addTag`/`removeTag`/
+  `setAttribute`**만**"이라고 셋으로 못박혀 있었으나 위와 같은 이유로
+  그 셋이 전부가 아니다). 아직 아무 팩토리도 안 채운 슬롯의
   기본값은 quad-base가 명시적으로 에러내는 스텁으로 미리 채워둠(조용한
   no-op 추측 아님 — base가 임의 엔진의 "맞는 기본 동작"을 알 수 없어서).
   더 명확한 메시지나 진짜 원자적 실패(부기 mutation 0회)를 원하는

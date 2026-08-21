@@ -2,7 +2,12 @@
 
 **상태**: **확정.** 사용자 제안으로 시작해 같은 날 여러 라운드에 걸쳐 다듬은 뒤
 **채택 확정**됨 — *"gate 와 epoch 가 제가 만족할만한 정도로 올라왔습니다.
-채택하면 될것 같아요."* 구현은 **M3(Source/State)**.
+채택하면 될것 같아요."*
+**구현 마일스톤은 둘로 갈린다** — **[2026-08-22 정정]** 여기 "구현은 M3"라고만
+적혀 있었다. 부기 객체 `EpochMap.luau`와 `Epoch` 인터페이스·리비전 갱신
+규칙은 **M2**(`GateNode`가 `emitEpochMap`을 쓰므로 — `ROADMAP.md` M2),
+그걸 `valueEpochMap`/`emitEpochMap` 둘로 컴포지션하는 **State 본체 통합은
+M3**다.
 
 **⚠️ 이 문서는 `base/source-state-plan.md`의 "전파 모델 확정" 절을 대체하는
 게 아니라 그 절이 정한 push-invalidate/pull-recompute 위에 **판정 규칙**을

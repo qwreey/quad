@@ -387,7 +387,7 @@ Frame의 children 배열에 각각 리터럴로 놓으면 — `Ref`는 항상 ch
 **children 배열에 놓는 Ref에 `{phase="created"|"mounted"}` 옵션으로 두
 타이밍을 고르게 하던 것 자체를 없앤다.** `base/dispatch-core-plan.md`의
 "확정된 디스패치 모델" 절에
-새로 추가된 두 패스 보장(배열 파트는 index 순서대로, 그 다음 해시 파트)
+새로 추가된 순서 보장(배열 파트는 index 순서대로, 그 다음 해시 파트)
 덕분에, 같은 인스턴스 안에서 **일반 `Ref`를** 다른 children보다 앞/뒤
 어디에 놓느냐가
 이미 "그 형제가 마운트되기 전/후"를 그대로 결정함 — 각 자식은 자기
@@ -442,12 +442,22 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   단순 위치 기반 순서만 따르면 그보다 앞선 형제(다른 child)가 먼저
   마운트되면서 그 형제가 부모에 Parent될 때 부모의 `ChildAdded`류가
   동기 발화할 수 있어 PreRef가 막으려는 문제가 그대로 재현됨. 그래서
-  base 드라이버는 위 두 패스(배열→해시) 루프를 돌기 **전에** 별도의
+  base 드라이버는 위 본체 루프(배열→해시 순서 계약)를 돌기 **전에** 별도의
   작은 pre-pass로 배열 파트를 훑어 `PreRef` 항목만 먼저 전부 fire하고,
-  그 다음 나머지(children/일반 Ref/프로퍼티/이벤트)를 평소처럼 두
-  패스로 처리하면 됨 — 이 pre-pass는 오직 `PreRef` 타입만 골라내므로
-  범위가 좁고, "확정된 디스패치 모델" 절의 두 패스 계약과 별개로 그
+  그 다음 나머지(children/일반 Ref/프로퍼티/이벤트)를 평소처럼 본체
+  루프로 처리하면 됨 — 이 pre-pass는 오직 `PreRef` 타입만 골라내므로
+  범위가 좁고, "확정된 디스패치 모델" 절의 배열→해시 순서 계약과 별개로 그
   앞에 얹히는 것.
+
+  **⚠️ [2026-08-22 용어] 이 문서가 여러 곳에서 쓰는 "두 패스"는 이
+  본체 루프의 옛 이름이다.** `Dispatch.drive`의 실제 구현은 **단일 일반화
+  `for` + `type(k) == "number"` 분기** 한 번이고(`F-4-1`,
+  `base/dispatch-core-plan.md`), "배열 파트 전체가 해시 파트보다 먼저"는
+  그 루프가 지키는 **계약**이지 루프를 두 번 돈다는 뜻이 아니다. 아래
+  "두 패스보다 먼저"/"두 패스가 전부 끝난 뒤" 같은 **시점** 표기는 그대로
+  유효하다 — pre-pass와 `postRefList` 소비 루프가 본체 루프의 앞뒤에
+  붙는다는 뜻이고, 그건 이번 정정과 무관하다. **다만 "두 패스로
+  처리한다"처럼 구현을 단정하는 용법은 폐기**다.
   - **복수 `PreRef` 간 순서(2026-08-07 아홉 번째 세션 확정, 2026-08-14
     아홉 번째 세션 재확인) — 새 규칙 불필요, 배열 index 순서 그대로
     보장.** 같은 인스턴스에 `PreRef`가 여럿 있으면, 이 pre-pass는 위
@@ -501,10 +511,10 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     누가 그 등록을 실제로 호출하는가"가 문서 어디에도 없는 갭이었음
     (2026-08-14 첫 번째 세션 조사에서 발견). `ProcessedPreRef`로 소진처를
     분리하면 이 갭이 구조적으로 사라짐 — 아래 `ProcessedPreRefHandler`
-    참고. (2) 그 다음에야 비로소 평소의 배열→해시 두 패스가
+    참고. (2) 그 다음에야 비로소 평소의 배열→해시 본체 루프가
     **같은 테이블**을 다시 순회 — 이때 `ProcessedPreRef`로 소진된 슬롯은
     **정상 `Dispatch.process` 경로를 그대로 탄다**(아래
-    `ProcessedPreRefHandler`가 매치, **[정정] 예전엔 `None`이라 두 패스
+    `ProcessedPreRefHandler`가 매치, **[정정] 예전엔 `None`이라 본체
     루프 자신이 `if v == None then continue end`로 직접 건너뛰고 어떤
     Handler도 안 거쳤으나, 지금은 일부러 정상 경로를 태워 Length/Offset
     등록 책임을 기존 계약에 특수 취급 없이 그대로 얹음**). **[정정,
@@ -556,7 +566,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   - **[전면 정정, 2026-08-18 구현 전 QA] 배열 파트의 `None`도
     `Dispatch.process`를 탄다 — 옛 "명확화(2026-08-09 열한 번째 세션)"는
     전제가 거짓이었음.** 그 서술은 *"배열 파트의 `None`은 애초에
-    `Dispatch.process` 자체를 절대 안 탄다(두 패스 루프가
+    `Dispatch.process` 자체를 절대 안 탄다(본체 루프가
     `if v == None then continue end`로 걸러냄)"*, 따라서 *"`k=number`
     조합으로 `NoneHandler`가 실제로 매치되는 경우는 없음"*이라고 했는데,
     리터럴 `Frame{None}`만 보면 맞아 보여도 **`Frame{ State<Slot|None> }`
@@ -594,8 +604,11 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     문서화까지 검토할 것.
   - **pre-pass는 어디 사는가 — `Dispatch.drive(inst, flattened)` 자신,
     새 함수 불필요(2026-08-07 아홉 번째 세션, 사용자 제안 검토 후 확정).**
-    `Dispatch.drive`가 이미 `(inst, flattened)`를 받아 배열→해시 두 패스를
-    도는 함수로 확정돼 있으므로, 그 앞에 좁은 pre-pass 한 줄을 얹는 것만으로
+    `Dispatch.drive`가 이미 `(inst, flattened)`를 받아 배열→해시 순서로
+    도는 함수로 확정돼 있으므로(**[2026-08-22 정정]** 여기 "두 패스를 도는
+    함수"라고 적혀 있었으나 그 순서는 **계약**이고 구현은 단일 일반화
+    `for`다 — `base/dispatch-core-plan.md`의 `F-4-1` 정정 문단),
+    그 앞에 좁은 pre-pass 한 줄을 얹는 것만으로
     충분 — `Handler.process`와 이름이 겹치는 새 `Dispatch.process(inst,
     flatten, prerefs)`류 함수를 따로 만들 필요가 없음(그 이름은 이미
     다른 뜻으로 쓰이는 `Dispatch.process(inst,k,v)` 오케스트레이터와 겹쳐서
@@ -640,7 +653,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `PreRef`는 pre-pass가 fire와 동시에 해당 슬롯을 소진(**[정정,
     2026-08-14 두 번째 세션] `None`이 아니라 `ProcessedPreRef` 처리**,
     위 "호이스팅의 실제 구현" 절)해 **이 가드 Handler(`isPreRef(v)`만
-    매치)에는 다시 노출되지 않게** 하므로(정상 두 패스 스캔 자체엔
+    매치)에는 다시 노출되지 않게** 하므로(정상 본체 루프 스캔 자체엔
     `ProcessedPreRefHandler`를 통해 여전히 노출됨 — "스캔에 안 걸림"이
     아니라 "이 가드에 안 걸림"이 정확한 설명), 이 Handler가 실제로
     매치되는 경우는 오직 "타입이 막았어야 했는데 어떻게든 동적으로
@@ -672,7 +685,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
       슬롯을 만났는데 그 객체가 이미 `_fired`면, fire하지 않고 그 자리에서
       즉시 `error("PreRef는 1회용 — 이미 다른 construction에 쓰인
       PreRef를 재사용할 수 없음, 매번 새로 만들 것")`. 위 "동적 경로 가드"
-      Handler(정상 두 패스에서 매치)와는 별개 코드 경로 — 이 가드는
+      Handler(정상 본체 루프에서 매치)와는 별개 코드 경로 — 이 가드는
       pre-pass 자신 안에, `_fired`가 아닌 정상 fire는 그대로 통과.
     - **관용구**: `Slot:List`의 `updateFn`처럼 반복 호출되는 자리에서
       `PreRef`가 필요하면 **호출마다 새 `PreRef()`를 만들 것** — 클로저에
@@ -793,7 +806,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
      갈리는 건 아래 3번뿐).
    - `postRefList`는 **`Relate` 같은 별도 저장소가 아님** — 이 함수
      콜스택 안에서만 살면 되므로 그냥 로컬 테이블.
-2. **정상 두 패스**(배열 → 해시)가 평소대로 돎. `ProcessedPostRef`로
+2. **정상 본체 루프**(배열 → 해시)가 평소대로 돎. `ProcessedPostRef`로
    소진된 슬롯은 `ProcessedPreRef`와 **완전히 대칭적으로** 정상
    `Dispatch.process` 경로를 타고 아래 전담 Handler에 매치됨.
 3. **두 패스가 끝난 뒤 `Dispatch.drive`가 `postRefList`를 순회하며 각

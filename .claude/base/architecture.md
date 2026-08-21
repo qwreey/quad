@@ -261,9 +261,10 @@ quad/
 │   ├── pesde.toml
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
-│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행) 전부 여기 소속
+│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행)/`:Gate`(`GateNode`, `ComputeNode`와 같은 층위 — `base/gate-plan.md`) 전부 여기 소속
+│       ├── EpochMap.luau         # 재사용 가능한 Epoch 부기 객체(`:Update`/`:Refresh`/`:Sync`/`:TrackFrom`) — `State.luau`에 묻지 않고 별도 모듈, `GateNode`/`State`/`Effect`가 전부 씀(`base/state-epoch-plan.md`)
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
-│       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`), State/Source와 밀접 연관돼 같은 위치
+│       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`) — 위 `state:Gate`의 `GateNode` 위에 얹히는 **정책**, 바닥부터 짜지 않음
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`) — 참조 카운트 Handler는 Dispatch/Tag.luau(아래), 엔진 호출은 주입된 addTag/removeTag(`base/tag-plan.md`)
 │       ├── Attribute.luau        # 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`/`:NameMap`, `Tag`와 동형) — Handler는 Dispatch/Attribute.luau(아래) (`base/attribute-plan.md`)
@@ -290,8 +291,8 @@ quad/
 └── quad-roblox/
     ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존
     └── src/
-        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상엔 bindLifetime/canBound/canExecute 외에 addTag/removeTag/setAttribute도 포함(2026-08-13 열네 번째 세션)
-        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), nativeDispose(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`), **[2026-08-21 5라운드, 이름 가칭] `native*` 물리 트리 조작 계층** — nativeInsert/nativeExtract/nativeRemove/nativeMove/nativeSwap(0-based 절대 offset + 대상 요소 배열을 받음; Roblox는 offset을 무시하고 배열을 쓰고 DOM은 둘 다 씀). 미주입이면 에러가 아니라 **조합 폴백** (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
+        ├── RobloxFactory.luau     # BaseModule 뮤테이션, 재호출 가드(같은 팩토리=무시/다른=에러) — 주입 대상 목록은 아래 EngineOps.luau 줄이 소스 — 여기서 다시 나열하지 않는다(**[2026-08-22]** 예전엔 addTag/removeTag/setAttribute까지만 적혀 있어 native*/setTimeout이 빠져 있었음). bindLifetime/canBound/canExecute도 같은 경로로 주입됨
+        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), nativeDispose(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`), **[2026-08-21 5라운드 신설, 이름 확정] `native*` 물리 트리 조작 계층** — nativeInsert/nativeExtract/nativeRemove/nativeMove/nativeSwap(0-based 절대 offset + 대상 요소 배열을 받음; Roblox는 offset을 무시하고 배열을 쓰고 DOM은 둘 다 씀). 미주입이면 에러가 아니라 **조합 폴백**. **[2026-08-22 추가] 시간 op 둘** — setTimeout(func, delay) -> Timeout / clearTimeout(t), Roblox는 task.delay/task.cancel로 배선(**인자 순서가 반대라 주의**); `Debounce`/`Throttle`이 얹힐 때 필요하고 그 전엔 미주입이어도 무방(`base/debounce-throttle-plan.md`). **이 줄이 주입 op 전체 목록의 단일 소스다** — 다른 문서는 개수를 세지 말고 여기를 가리킬 것 (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절)
         ├── LifetimeHandle.luau    # bindLifetime/canBound/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetWeak으로 gcconn/gchold 저장(**[정정, 2026-08-18] `SetStrong`이 아님 — 생존은 클로저 upvalue와 `gchold[1]`이 이미 보장, strong으로 잡으면 상호 강참조 누수**, `base/lifecycle-pattern.md`). `canBound`/`canExecute`는 비공개 헬퍼 하나를 공유하는 얇은 진입점(2026-08-14 열한 번째 세션). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
         │   ├── Property.luau      # 일반 프로퍼티 세팅 + `isTween(realv)` 분기(3-상태 릴레이션 슬롯 `RobloxTween|true|nil`, hasBeenSet 억제, override 정책) — 구 `Handlers/Tween.luau`(높은 우선순위 store-bind 핸들러)는 폐기(`archive/tween-special-bind-key-reversed.md`)

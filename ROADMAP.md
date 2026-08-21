@@ -7,10 +7,35 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 **2026-08-04 세션에 준비만 해둔 상태로 신설, 이후 여러 세션에 걸쳐 설계가
 확정될 때마다 각 마일스톤 체크박스가 계속 갱신돼왔음.**
 
-> **✅ [2026-08-19 기준] M0 스파이크 4개 전부 통과, M1 스캐폴딩도 대부분
-> 완료(quad-base/quad-roblox 폴더+pesde.toml, 루트 default.project.json/
-> .luaurc, mock 테스트 하네스, `New()`/`RunInit`/`AddPlugin` 골격 — 아래
-> M0/M1 체크박스 참고). 다음은 M2(디스패치 엔진) 착수.** M1 착수 도중
+> **✅ [2026-08-22 기준] M0/M1의 *원래* 체크박스는 전부 닫혔고 다음은
+> M2(디스패치 엔진)** — 단 M0에는 **[2026-08-22] "재검증 대기" 미체크
+> 항목들이 새로 붙었습니다**(설계가 바뀌어 무효화된 스파이크들, 아래 그
+> 절이 소스). 그건 아직 열린 작업이므로 "M0 완료"로 읽고 넘어가면 안 됩니다. — **⚠️ 다만 M2를 바로 착수하면 안 됩니다: M2와 M3의 의존이
+> 양방향이라 이 순서로는 M2를 끝까지 짤 수 없습니다**(설계가 아니라
+> 마일스톤 **순서** 문제 — 아래 M2 배너와 `.claude/question.md` 2번,
+> 사용자 회신 대기). M1까지의 산출물은
+> quad-base/quad-roblox 폴더+pesde.toml, 루트
+> default.project.json/.luaurc, mock 테스트 하네스, `New()`/`RunInit`/
+> `AddPlugin` 골격. **다만 M0의 검증 스파이크 여러 개가 설계 변경으로
+> 재작성 대기 상태입니다** — 아래 "재검증 대기" 절 참고(개수·현황의
+> 소스는 `.claude/luau-test/STATUS.md`, 여기서도 그 절에서도 세지 않음).
+>
+> **[2026-08-22] 이 문서에 이번에 반영된 것**: `Dispatch.drive`가 두
+> 패스가 아니라 단일 일반화 `for`(`F-4-1`) / 물리 조작 주입 op 이름이
+> `native*`로 확정 / `EpochMap`·`GateNode`·`Blocker`·`None`이 M2로 이동 /
+> M2↔M3 의존이 양방향이라는 것(M2 헤더 배너) / `[x]` 표기 의미 분리
+> (바로 아래).
+>
+> **⚠️ `[x]`의 의미** — 체크박스는 **"짜야 할 코드"만** 담습니다.
+> "설계가 확정됐다"/"타입을 실측해봤다"는 사실은 체크박스가 아니라 각
+> 마일스톤의 **`### 확정된 것`** 절(항목이 여럿일 때) 또는
+> **`- **[확정된 것 — 코드 아님]**`** 불릿(하나뿐일 때)에 둡니다. 예전엔
+> 둘이 같은 목록에 섞여 있어 `[x]`만 보고는 코드가 있는지 알 수
+> 없었습니다 — M0/M1의 `[x]`는 실제 구현이고, M3/M6/M11에 섞여 있던
+> `[x]`는 설계 확정·실측이었습니다. **새 항목을 추가할 때도 이 구분을
+> 지킬 것.**
+
+> M1 착수 도중
 > wally→pesde 전환이 확정돼(`base/project-setup-plan.md`) M1 체크박스의
 > `wally.toml` 표기도 `pesde.toml`로 정정. 부수로 M3가 의존하는
 > `quad-types`/`type-version-check` 두 워크스페이스 멤버도 이 과정에서
@@ -62,9 +87,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [x] `process`(+반환 retractor 클로저) 재귀 재-process 디스패치를 실제로
       짜보기(store-bind 핸들러 하나 + `isHandlable` 우선순위 스캔 포함 —
       `luau-test/done/03-recursive-store-bind-dispatch.luau` 통과)
-- [x] props 순회의 "배열 파트 먼저, 해시 파트 나중" 두 패스 계약이 실제
+- [x] props 순회의 "배열 파트 먼저, 해시 파트 나중" **계약**이 실제
       Luau 테이블에서 관찰한 대로 동작하는지 확인, `PreRef` pre-pass +
       일반 `Ref`의 위치 기반 순서까지 최소 스파이크로 검증
+      (**[2026-08-21 정정]** 이 계약을 **두 패스로 구현**한다는 서술은
+      `F-4-1`로 폐기 — 구현은 단일 일반화 `for`, 계약은 그대로. 그래서
+      두 루프로 짜인 스파이크 `01`이 `rewrite-required/`로 갔다 — 아래
+      "재검증 대기" 참고)
       (2026-08-07 세 번째 세션, `base/ref-plan.md` "`phase` 옵션
       폐기 → 위치로 표현, `PreRef` 신설" 절) — **PreRef pre-pass의 소진은
       `nil`이 아니라 실재하는 센티널로(2026-08-07 열 번째 세션 정정, 사용자가
@@ -73,7 +102,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "구멍 있는 테이블 순회" 자체를 검증할 필요는 없어짐(같은 절 "왜
       `nil`이 아니라 `None`인가" 참고). **[정정, 2026-08-14 두 번째 세션]
       소진 값은 이제 `None`이 아니라 전용 센티널 `ProcessedPreRef`** —
-      정상 두 패스가 그 자리를 `ProcessedPreRefHandler`로 매치해
+      정상 본체 루프가 그 자리를 `ProcessedPreRefHandler`로 매치해
       `Dispatch.setLength(0)`/`setOffsetSource(None)`을 등록하도록 재설계됨
       (`base/ref-plan.md` "PreRef" 절, `base/dispatch-core-plan.md`
       "Length/Offset" 절) — 아래 `PreRef` pre-pass/동적 경로 가드
@@ -96,6 +125,42 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 **통과 기준**: 위 항목들이 Luau에서 자연스럽게 짜이는 게 확인되면 M1
 진행 — **[2026-08-19] 전부 통과, M1 진행 중**(개수는 `luau-test/STATUS.md`가
 소스, 여기서 세지 않음).
+
+### 재검증 대기 — 위 `[x]`가 검증했던 스파이크 일부가 무효화됨
+
+**⚠️ [2026-08-22 신설]** M0의 *원래* 체크박스는 전부 닫혔지만, 그 뒤 설계가 바뀌면서
+**당시 통과했던 스파이크 몇 개가 지금 계약을 검증하지 않는 상태**가 됐다.
+`rewrite-required/`로 되돌아간 것들이고, **어느 마일스톤 체크박스에도
+없어서 그냥 잊히기 쉬운 자리**라 여기 모은다. **무엇이 지금 어느 폴더에
+있는지의 소스는 항상 `.claude/luau-test/STATUS.md`** — 여기서 세지 않는다.
+
+- [ ] **`01`(props 순회 순서)** — 두 루프로 짜여 있어 지금 계약의 구현
+      (단일 일반화 `for`, `F-4-1`)과 안 맞음. 재작성하면서 "배열 파트 전체가
+      해시보다 먼저 + 배열 안에서는 index 순서"를 그대로 확인할 것
+- [ ] **`05`(다이아몬드 전파)** — `Epoch` 리비전 비교 채택으로 다이아몬드
+      Observer가 이제 변경당 **1회**만 울어야 함(옛 "emit은 항상 전파" 모델을
+      검증 중). `base/state-epoch-plan.md` 기준으로 재작성
+- [ ] **`04`(Dispatch 체인 retractFrom)** — 하강 diff 확정으로 무효화.
+      **M2 착수 시 같이 처리**하는 게 자연스러움
+- [ ] **`19`(소유권/참조카운트 Relate 패턴)** — **B 섹션만** 낡음
+      (공개 `AttributeKey(name)` + 인덱스 1 점유 체크가 폐기되고 그룹 전용
+      키 + `AttributeKeyHandler`의 이름 claim으로 바뀜, `0-Z` 확정).
+      A/C 섹션은 손댈 것 없음 — **Attribute 소관이므로 M10 착수 시 같이
+      처리**(**[2026-08-22 정정]** 여기 "M6"라고 적었으나 B 섹션이 검증하는
+      건 Slot이 아니라 Attribute 이름 소유권이다)
+- [ ] **`22`(Ref/PreRef/PostRef 브랜드)** — `Brand`가 인스턴스 브랜드로
+      전면 재작성되며 옛 `Brand.set`/`Brand.get` 구현에 의존하던 부분이
+      깨짐(검증 대상인 `isRef`/`isPreRef` 포함 관계 자체는 그대로).
+      **M8 착수 시 같이 처리**
+- [ ] **`15`(`:Compute` trailing deps 타입팩)** — 이형 다중 deps를 제네릭
+      타입 팩으로 표현 가능한지 미실측(안 되면 동종 dep 1개로 한정).
+      **M3 착수 시 같이 처리**
+- [ ] **`10`(Roblox Studio 확인)** — `bindLifetime`/`canExecute`/
+      `unbindLifetime` 재정정으로 무효화. **Studio 작업이라
+      `HUMAN_TODO.md` 1번(계정 분리)이 선행**
+- [ ] **아직 파일이 없는 실측 항목** — `R-11`의 `table.insert` 구멍 재사용,
+      **중간 State GC**(`base/source-state-plan.md`, 상류 strong / 하류 weak
+      불변식 — `.claude/todos.md`가 "M3 착수 전 필요"로 지정)
 
 ## M1 — 실제 스캐폴딩
 
@@ -131,6 +196,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 분리 신설), 뒤집힌 옛 모델은
 > `.claude/archive/dispatch-hintvalue-model-reversed.md`.
 
+> **⚠️ [2026-08-22] M2는 이름과 달리 "디스패치만"이 아닙니다 — 반응형
+> 하부구조 일부가 여기 있습니다.** `EpochMap`/`GateNode`/`Blocker`/`None`
+> 체크박스가 M3·M7에서 옮겨왔습니다(각 항목의 이동 표시 참고). 그동안
+> 각주로만 예고돼 있어 M2 체크리스트를 훑는 구현자에게 **항목으로 보이지
+> 않던** 것을 고친 것이고, `LifetimeHandle` 인터페이스를 M8→M2로 옮겼던
+> 것과 같은 처리입니다.
+>
+> **⚠️ 다만 이동으로 드러난 더 큰 문제가 하나 남아 있습니다 — M2와 M3의
+> 의존이 양방향이라, 이 순서대로면 M2를 끝까지 짤 수 없습니다.**
+> 요지만: **M2는 `Source.luau`/`State.luau` 없이는 구현할 수 없고**
+> (Length/Offset 배관이 `State<number>`/`Source<number>`를 쓰고,
+> `Dispatch.drive` 자신도 배치 등록을 Blocker로 게이팅합니다),
+> 반대 방향은 핸들러 등록 표면만 요구하는 얕은 의존입니다.
+> **어느 쪽으로 가를지(순서 교체 / M2 분할 / 유지)는 사용자 결정
+> 대기이고, 근거와 선택지의 소스는 `.claude/question.md` 2번입니다** —
+> 여기서 반복하지 않습니다.
+
 
 - [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
       스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
@@ -140,14 +222,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       즉시 error) / **3-인자** `Dispatch.retractFrom(inst,k,index)`
       (아래 항목) / `Dispatch.addHandler(handler)`(레지스트리 등록,
       quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
-      flattened)`(배열→해시 두 패스 순회하며 각 `(k,v)`에
+      flattened)`(**일반화 `for` 한 번**으로 순회하며 각 `(k,v)`에
       `Dispatch.process(inst,k,v,1)` 호출 — `dispatch-core-plan.md`의 `None`
       센티널 절, 2026-08-07 여덟 번째 세션에 네이밍 확정).
-      **[2026-08-13 다섯 번째 세션 전면 재설계]** "이전 담당자와 다르면
-      그 `retract`"라는 옛 diff 모델은 폐기 — 정리 책임은 전적으로
-      재귀/래핑 핸들러(`StoreBind`/`NoneHandler`)가 재-dispatch 전에
-      스스로 `retractFrom`을 부르는 쪽에 있고, `Dispatch.process`는
-      diff를 하지 않음
+      **[2026-08-21 구현 전 QA 4라운드 `F-4-1`] 순회는 두 패스가 아니라
+      단일 일반화 `for`다** — "배열 파트 전체가 해시 파트보다 먼저"는 여전히
+      base가 보장하는 **계약**이지만, `flattened`가 항상 평범한 Luau
+      테이블이라 일반화 `for` 한 번이 그 순서를 그대로 주고 두 층위는
+      `type(k) == "number"` 분기로 가른다(`base/dispatch-core-plan.md`의
+      `F-4-1` 정정 문단). 옛 "명시적 두 패스" 서술은 구현까지 2회 순회로
+      못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기
+      (`luau-test/STATUS.md`)
 - [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
       `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
       `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
@@ -179,6 +264,46 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       참고) 전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None`
       항등 비교 — `brand-plan.md`의 `Brand` 절, 2026-08-07 여덟
       번째 세션 신설)
+- [ ] **[2026-08-22 M3에서 이동] `EpochMap.luau`** — 재사용 가능한 에포크
+      부기 객체(`:Update(Epoch|EpochSet) -> boolean`이 "뒤로 전파가
+      필요한가"를 답함, `:Refresh`/`:Sync`/`:TrackFrom`. `EpochSet =
+      {[Epoch]: true}`로 **배열이 아니라 집합**). `State.luau`에 묻지 말고
+      별도 모듈로 낼 것 — `GateNode`(아래)와 `State`(M3)/`Effect`(M3)가
+      전부 같은 것을 쓴다. `Epoch` 인터페이스 자체(`{ Revision: number }`)와
+      리비전 갱신(`bit32.bnot(-rev)`)도 여기서 확정 — `base/state-epoch-plan.md`
+- [ ] **[2026-08-22 M3에서 이동] `state:Gate(setup)` + `GateNode`** —
+      emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
+      (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
+      유보 배치는 `withheld : { [epoch] : true }`(집합), flush 때 테이블을
+      통째로 갈고, **내보내는 emit이 싣는 건 그렇게 떼어낸 `EpochSet`
+      스냅샷뿐이다 — 게이트 노드 자신은 안 싣는다**(하류가 게이트 identity를
+      한 번도 안 쓴다, `base/state-epoch-plan.md` §5). **빈 배치는
+      아무것도 안 함**. `emitEpochMap`을 쓰므로 위 `EpochMap.luau`가 선행 —
+      `base/gate-plan.md`. **"게이팅 먼저" 결정으로 M3에서 앞당겨진 항목**
+      (사용자: *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다"*)
+- [ ] **[2026-08-22 M3에서 이동] `Blocker.luau`** — 위 `GateNode` 위에
+      얹히는 **정책**(다시 노드를 만들지 말 것). 여러 Source를 한꺼번에
+      바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive
+      (`base/blocker-plan.md`). 아래 `Dispatch.setLength`/`setOffsetSource`의
+      배치 등록이 `:On()`/`:IsOn()`/`:OffWithoutEmit()` **세 메서드**를
+      호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
+      조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
+      쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M2에 필요**
+- [ ] **[2026-08-22 M7에서 이동] `None.luau`(센티널) + `Dispatch/None.luau`
+      (`NoneHandler` + `NilHandler`)** — `None`은 modifier 전용 값이 아니라
+      디스패치 배관이라 여기 소속(`architecture.md`의 소스 트리에 있는 건
+      핸들러 쪽 `Dispatch/None.luau`뿐 — **[2026-08-22] 탑레벨 센티널
+      `None.luau`와 `Brand.luau`는 그 트리에 아직 줄이 없다**, M2 구현 시
+      트리도 같이 채울 것).
+      `NoneHandler`는 배열/해시 구분 없이 `Dispatch.process(inst,k,nil,index+1)`
+      **재귀만** 하고(선행 `retractFrom` 없음 — 하강 diff), 실제 정리는
+      `NilHandler`(`isHandlable`이 `type(k) == "number" and v == nil`일 때만
+      매치하는 말단)가 `Dispatch.setLength(inst,k,0)` +
+      `Dispatch.setOffsetSource(inst,k,None)` 등록으로 맡는다.
+      **`Dispatch.drive`에 `None` 스킵 분기는 없다**(반응형 값이 내놓는
+      `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
+      `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.
+      Modifier 쪽 표면(인라인 키로 필드 지우기, `Peek` 반환 타입)은 M7
 - [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
       `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
       `inst`(첫 인자)는 항상 weak, `StrongMap`/`WeakMap` 서브테이블은 lazy
@@ -190,8 +315,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       함수 타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래
       M8에만 있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의
       `canExecute`)이 이미 이 인터페이스를 전제로 서술돼 있어 로드맵
-      순서가 역전돼 있었음(`pre-implementation-audit.md` 우선순위1-9,
-      `question.md` 2번 — 2026-08-07 네 번째 세션에 반영).
+      순서가 역전돼 있었음(`pre-implementation-audit.md` 우선순위1-9 —
+      2026-08-07 네 번째 세션에 반영. **[2026-08-22 정정]** 여기 있던
+      `question.md` 번호 참조는 그 항목이 해소되며 이미 깨져 있었고,
+      지금 그 번호는 다른 항목이 쓰고 있어서 지웠다).
       **[정정, 2026-08-14 다섯 번째 세션] `unbindLifetime`/`canExecute`는
       `inst`를 안 받는다** — 옛 2-인자 시그니처(`(inst, value)`)는 오염이었음.
       `bindLifetime`이 바인딩 시점에 `inst`의 gcconn 참조를 `value` 쪽
@@ -242,29 +369,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       게이팅" 절. **[정정, 2026-08-18 구현 전 QA 3라운드] 그 크래시 자체는
       `bk.N`의 정의(그때그때 실제 개수로 확정, 같은 문서 "저장 위치" 절)가
       바뀌며 사라졌음** — 지금 이 두 함수 구현이 여전히 `Blocker`
-      (`getBlocker`/`:On()`/`:IsOn()`/`:OffWithoutEmit()`)를 호출하는 이유는
-      크래시 방지가 아니라 배치 등록 비용(O(N²)→O(N)) 절감. **다만
-      호출하는 건 여전히 사실이라 — `Blocker.luau`는 아래 M3 체크박스에
-      있는데 이 항목은 M2 소속이라, 로드맵 순서대로면 M2가 아직 없는
-      `Blocker`를 참조하게 됨.**
-      **✅ [해소, 2026-08-21 구현 전 QA 5라운드 `CR-3`] "게이팅 먼저"로
-      결정 — 게이팅을 M2로 앞당긴다**(사용자: *"게이팅 먼저. 게이팅을
-      base 에 만들 준비를 해야한다. 실질적 모양 정의가 필요함"*). 단
-      **앞당기는 대상이 `Blocker` 자체가 아니라 그 아래의 공용 `Gate`
-      노드**로 바뀌었다(같은 라운드 `DT-4` — 시간 기반 게이트는 공개
-      `Blocker` API 위에 못 얹히므로, emit을 가로채는 노드를 한 겹
-      일반화해 `Blocker`/`Debounce`/`Throttle`이 그 위의 정책이 되게
-      한다). **[2026-08-21 확정] 그 노드의 표면은 `state:Gate(setup)`
-      메소드이고 노드 타입 이름은 `GateNode`**(`ComputeNode`와 같은 층위)
-      — 탑레벨 `Gate(...)` 프리미티브는 안 만든다. 상세와 남은 항목
-      (생명주기·재진입 계약, M2 범위)은 `base/gate-plan.md`. 최소한
-      배치 등록이 실제로 쓰는 `On`/`IsOn`/`OffWithoutEmit`이 도는
-      형태까지는 M2에 필요하다. 경위는
-      `qa-request/pre-implementation-qa-round3.md`의 "ROADMAP.md 마일스톤
-      정합성" 절과 `pre-implementation-qa-round5-followup.md`.
-      **[2026-08-21 추가] `GateNode`가 `emitEpochMap`을 쓰므로 `EpochMap.luau`
-      (M3 목록에 있음)도 M2에 같이 들어와야 한다** — `base/gate-plan.md` 4번,
-      `base/state-epoch-plan.md` §3.
+      (`:On()`/`:IsOn()`/`:OffWithoutEmit()` 세 메서드 + 그 인스턴스를
+      lazy 조회하는 Dispatch 쪽 헬퍼 `getBlocker(ownerKey)`)를 호출하는 이유는
+      크래시 방지가 아니라 배치 등록 비용(O(N²)→O(N)) 절감.
+      **[2026-08-22] 그래서 필요한 `GateNode`/`Blocker`/`EpochMap`은 이제
+      이 마일스톤에 체크박스로 있다**(위 세 항목) — 예전엔 M3에 있는 걸
+      각주로 가리키기만 했다. 결정 경위("게이팅 먼저", 그리고 앞당기는
+      대상이 `Blocker` 자체가 아니라 그 아래 공용 `Gate` 노드로 바뀐 것)는
+      `qa-request/pre-implementation-qa-round5-followup.md`와
+      `base/gate-plan.md`가 소스 — 여기서 반복하지 않는다.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
@@ -333,7 +446,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
       걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
       `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
-- [x] `store.key` dot-access 타입 추론 확인 — Luau `type function`
+- **[확정된 것 — 코드 아님]** `store.key` dot-access 타입 추론 확인 — Luau `type function`
       (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
       `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
       번째 세션, `base/typing-limits.md` §5) — **[2026-08-15 실측 완료]**
@@ -354,10 +467,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
-- [ ] **[2026-08-21 5라운드 — 순서 주의]** 아래 `Blocker.luau`가 올라서는
-      **공용 게이트 노드는 M2에서 이미 만들어져 있다**("게이팅 먼저" 결정,
-      위 M2 각주 + `base/gate-plan.md`). M3에서 `Blocker`를 짤 때는
-      그 노드를 **다시 만들지 말고 그 위의 정책으로** 얹을 것.
+> **[2026-08-22 이동] `EpochMap.luau` / `state:Gate` + `GateNode` /
+> `Blocker.luau`는 M2로 옮겼습니다** — 셋 다 M2가 실제로 호출하는데
+> 각주로만 예고돼 있어서, `LifetimeHandle` 인터페이스를 M8→M2로 옮겼던
+> 전례대로 체크박스 자체를 옮겼습니다. M3는 그 위에 State/Source 본체를
+> 얹기만 하면 됩니다.
 - [ ] **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
       재계산/전파 판정은 **`Epoch` 리비전 비교**다(`base/state-epoch-plan.md`)
       — `invalid` 플래그가 아니다. 아래 `Source.luau`/`State.luau`가 이걸
@@ -371,13 +485,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
-- [ ] `EpochMap.luau` — 위 부기 객체. `Effect`(M3)와 `GateNode`(M2)도 같은
-      것을 쓰므로 `State.luau`에 묻지 말고 별도 모듈로 낼 것.
-      **`GateNode`가 M2로 앞당겨졌으므로 이 모듈도 실제로는 M2에 필요하다**
-      (위 M2 게이팅 각주).
-- [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
-      한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
-      State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
 - [ ] `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
@@ -447,7 +554,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 > **[2026-08-21 5라운드] 주입 표면이 늘었다 — `native*` 물리 트리 조작 계층.**
 > `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/`nativeSwap`/
-> `nativeDispose`(이름 가칭). base가 `Parent`를 모른다는 원칙을 실제로 지키기
+> `nativeDispose`. base가 `Parent`를 모른다는 원칙을 실제로 지키기
 > 위한 것이고, **미주입이면 에러가 아니라 조합 폴백**이라 최소 구현 부담은
 > `nativeInsert`/`nativeExtract`/`nativeDispose` 셋이다(나머지는 이득 있을 때만
 > 덮어씀 — Roblox는 `nativeRemove`를 "그 자리에서 바로 `Destroy`"로 융합하는 게
@@ -489,6 +596,142 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > "Handler 작성 체크리스트" 1번). 클로저가 받는 값이 항상 `Slot`이거나
 > `nil`임이 계약으로 보장된다는 점만 새로 추가됨.
 
+### 확정된 것 — 코드 아님, 구현 전 필독
+
+아래는 **설계가 확정됐다**는 사실이지 짠 코드가 아니다 — 체크박스로
+두면 `[x]`가 "구현 완료"와 구분이 안 돼서 문서 머리 규약대로 분리했다
+(**[2026-08-22]**).
+
+- **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
+  세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/
+  dispatch-core-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
+  이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
+  UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
+  **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
+  해결됨**, 위 M2 항목 참고.
+- **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
+  `Get`/`IndexOf`/`Splice` CRUD 의미론 확정** (2026-08-09 세 번째 세션,
+  2026-08-09 열한 번째 세션에 식별 기준 재정정, `Splice`는 2026-08-12
+  열다섯 번째 세션 신설 — **[2026-08-13 5차 감사에서 추가] `Splice`가
+  이 체크리스트에 누락돼 있었음, `luau-test/20`으로 산술 실측 통과됨**)
+  — 에러 조건까지 전부 확정
+  (`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시 throw"도
+  `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너 기준이
+  명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
+  **[정정, 2026-08-09 열한 번째 세션] 식별 기준을 element 레퍼런스에서
+  인덱스 기준으로 전환** — `Remove(index)`/`Extract(index, newElement?)`
+  (O(n) 또는 O(1))/`Move(oldIndex, newIndex)`(O(n))/`Swap(indexA,
+  indexB)`(O(1)) 전부 인덱스, `Add(element, index?)`만 element를 직접
+  받음(새로 넣는 대상이라 참조가 당연히 있음). 호출부가 `Add` 리턴값을
+  안 담고 흘려버리는 경우가 흔해 레퍼런스 기준이 오히려 실사용과 안
+  맞았음 — 레퍼런스만 있으면 `IndexOf(element): number?`로 인덱스를
+  구하면 됨. `ExtractAll(): {T}`(Clear의 비파괴 버전), `Get(index): T?`
+  신설(`get`/`set` 드롭했던 걸 재추가). `Extract(index, newElement?)` —
+  `newElement` 지정 시 O(1) 제자리 교체(이전 element 반환), 기존엔
+  교체하려면 Extract+Add 이중 O(n) 시프트가 필요했던 문제 해결. 공개
+  mutate 메소드 전부 "가드 확인 + `raw*` 위임" 얇은 wrapper(`Get`/
+  `IndexOf`는 순수 읽기라 가드 대상 아님).
+  **[2026-08-21 5라운드]** `Replace(index, newElement)` 추가(그 자리 교체
+  + 이전 것 **파괴** — `Extract`의 파괴 짝, `Remove` ↔ `Extract`와 같은 축)와
+  `rawReplace`/`rawAdd` 의사코드 확정, 그리고 **래핑/언래핑 한 쌍**
+  (`State`를 요소로 받으면 내부적으로 `:Single` 래퍼 Slot이 되는데,
+  `Get`/`IndexOf`/`Extract`가 돌려주는 값과 `:List`의 `prev`는 전부
+  **언래핑된 원래 값**이다). base/roblox 경계에
+  mount/unmount 외 reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소
+  타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
+  실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
+  Effect/Modifier)은 self-ref 컨텍스트가 없어 의미 불성립이라 즉시
+  error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
+  Slot<<Instance>>`(**[2026-08-18]** `D` 네임스페이스 이름 확정 —
+  옛 `question.md` 1번 용어정리 항목은 해소되어
+  `archive/question-resolved.md`로 이전됨)가 quad-roblox의 사실상 유일한
+  Slot 타입.
+- **`Slot:Single(state, updateFn?)` 확정** — `:List`를 0/1개짜리
+  배열로 감싸는 순수 sugar, `index` 없이 `offset`/`prev`/`userdata`만
+  전달, 고정 key로 `prev` 재사용 보장(2026-08-11 세션, `base/
+  slot-plan.md` "`Slot:Single`" 절). **[2026-08-11 일곱 번째 세션]**
+  `updateFn`이 선택 인자로 완화됨(기본값 identity) — 아래 반응형
+  raw 요소 항목 참고.
+- **Slot-in-Slot 중첩 확정** — 요소 타입 제약에서 `Slot` 배제 해제
+  (`T = Instance | Slot<Instance>`, 자기 참조 제네릭은 실측 필요).
+  `Dispatch.setLength`/`setOffsetSource`를 물리 inst 대신 **Slot
+  자신을 owner 키**로 재사용하는 재귀 `attachSlot`으로 최상위/중첩
+  마운트 통합(새 프리미티브 없음). `Slot.Length`가 raw 개수에서
+  "요소별 기여도의 합"으로 의미 변경. 파괴는 재귀적 `Clear()`가
+  아니라 flat `destroySlotTree`(파괴 walk + `unbindLifetime` walk,
+  outer 쪽 recompute는 1회만) — 물리 target이 살아있는 채로 논리
+  서브트리만 죽는 경우 명시적 `unbindLifetime` 필요(GC-native 정리의
+  예외 케이스). DOM 백엔드가 nested Slot을 실제 `<div>` 중첩으로
+  매핑하는 안은 기각(Fragment와 같은 이유로 wrapper-less 유지 필요) —
+  숫자 기반 메커니즘이 web에도 그대로 필요하나, `insertBefore`/
+  `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
+  불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
+  **[2026-08-21 5라운드]** 그 web 경로가 실제로 삽입 위치를 알 수 있도록
+  물리 조작이 **`native*` 주입 op 계층**으로 정리됐고(M5 배너가 목록,
+  시그니처는 `base/slot-plan.md`의 "물리 조작은 주입 op다" 절 —
+  **[2026-08-22 정정]** 여기 확정 전 가칭 `mountInst`/`unmountInst`/
+  `disposeInst`가 남아 있었음), 중첩 offset이 부모 베이스를 못 받던 결함과
+  재마운트가 `Offset` Source를 새로 만들던 결함도 같이 수정됐다.
+  **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
+  해결됨 — 위 M2 항목 참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
+  **[재설계, 2026-08-21] `attachSlot`은 비공개 재귀 둘로 분해됨** —
+  `materializeSlotTree`(부기만, Blocker가 감싸는 건 이제 여기뿐) +
+  `mountSlotTree`(물리 `Parent` 대입만, Blocker 불필요), 그리고 그 둘을
+  순서대로 부르는 **두 줄짜리 공개 `attachSlot`**(이름/시그니처/호출부
+  전부 그대로). 이걸로 "부모에게 알리는 길이가 최종값"과 "부기가 물리보다
+  먼저"가 처음으로 **동시에** 만족되고, 배치 밖 재마운트의 부모
+  `recompute`가 2회→1회로 준다. 순서 제약이 줄 순서가 아니라 **함수
+  경계로 강제**되므로 `RC-1`/`RC-3`/`RC-4` 같은 "줄 순서를 잘못 잡아서"
+  나던 버그 클래스가 구조적으로 사라짐. 근거 기록은
+  `reference/slot-attach-decomposition.md`.
+  **관측 가능한 변화 하나**: `Parent` 대입 순서는 그대로지만 물리 마운트가
+  "부기 완료 후 일괄"이 되어, `ChildAdded` 핸들러가 볼 때 서브트리 전체의
+  `Length`/`Offset`이 이미 최종값이다(옛 코드는 미완성 스냅샷을 보여줬음).
+- **`Slot(initial?: {T})` 생성자로 확장** — "인자 없는 빈 생성자로
+  확정"을 뒤집음, `:Add` 반복 호출 sugar일 뿐(새 마운트 로직 없음).
+  `initial ~= nil`이면(빈 테이블도) 즉시 `_crudUsed = true` — 상태상
+  `Add→Remove`와 동일하므로. **`_crudUsed` ↔ `_listed` 상호 배타
+  가드 신설** — 기존엔 `:List` 설치 후 수동 CRUD만 막았지 반대(수동
+  CRUD 후 `:List` 설치)는 안 막아서 `:List`의 reconcile이 기존
+  요소를 모른 채 충돌하는 gap이 있었음(2026-08-11 세션, `base/
+  slot-plan.md` "CRUD API 확정" 절).
+- **`recompute` off-by-one 버그 수정**(2026-08-11 세션, `base/
+  dispatch-core-plan.md` "Length/Offset" 절) — `sum` 누적과
+  `offset:Set` 순서가 뒤바뀌어 `Offset`이 자기 자신을 포함해버리던
+  버그(예: 유일한 자식인데도 `Offset`이 0이 아니게 됨) 수정. 재진입
+  방지 가드는 검토 후 기각 — 각 Slot이 `Relate(자기 자신)`으로
+  독립된 `bk`를 가져서 nesting만으로는 같은 `bk`가 재진입되는 경로
+  자체가 없음이 재추적으로 확인됨. 진짜 재진입(부작용이 recompute
+  도중 같은 Slot의 length에 다시 쓰기)은 `Source⊇State`의 "단방향"
+  원칙과 같은 카테고리의 위반으로 **명시적 UB 명명**(방어 로직 없음,
+  기존 "일반적 재진입 방어 안 함" 원칙과 정합). `offset`/`sum`은
+  0-based 개수, `index`는 1-based Lua 관례라는 것도 명시.
+- **반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용**
+  (2026-08-11 일곱 번째 세션, 같은 세션에 정정) — `Slot:Add`가 받는
+  실제 타입은 `T | State<T> | Source<T>`(임의 깊이 조합 가능).
+  **[정정] 최초 검토한 "position-keyed StoreBind 구독 + Length를
+  Compute로 파생" 안은 기각**(nilable 지원하려면 배열 파트 `None`을
+  다시 끌어들여야 하고, Length 계산에 예외가 생기고, `Move`/`Swap`이
+  인덱스-구독 동기화 부담을 짐 — `:List`가 element 아닌 `key` 기준인
+  이유와 정면 충돌) — **새 메커니즘 없이 순수 `:Single` sugar로
+  확정**: `isState(element)`면 그 자리에 내부적으로 `Slot():
+  Single(element)`(updateFn 생략 시 identity 기본값)를 대신 삽입.
+  `_elements`엔 `None`이 절대 안 들어감(비어있는 nested Slot이 자연히
+  Length 0 기여), raw 직접 전달 요소에만 여전히 non-nil 요구.
+  `:Single`의 `updateFn`도 이 sugar가 성립하도록 선택 인자로 완화
+  (`Slot:Single(state, updateFn?)`, 기본값 identity). `:Single`/`:List`와는
+  대체 관계가 아니라 같은 메커니즘 위의 다른 `updateFn`일 뿐 — raw
+  `State<T>` 요소(identity)는 coarse swap, `updateFn` 직접 지정 시
+  `prev`/`userdata` patch-reuse + `offset` 접근(`:Single`이 애초에
+  생긴 이유). **부수 발견(사용자)**: `:List`의 `reconcile`이
+  nested-Slot 결과를 반환하는 아이템 다음 형제의 압축 `index`를
+  그 결과의 `.Length`만큼 건너뛰도록 `pos` 커밋 공식도 같이 수정
+  (`pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get()
+  or 1)`) — 안 그러면 멀티루트 아이템 다음 형제의 LayoutOrder가
+  겹침. `base/slot-plan.md` "반응형 raw 요소" 절.
+
+### 짜야 할 것
+
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
         비파괴 경로 `unmountSlotTree`를 `destroySlotTree`와 별도로 구현 —
@@ -528,57 +771,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       내지만 quad 자료구조가 깨지므로, quad가 관리 중인 값을 안전하게
       지우는 유일한 경로. 마운트 위치는 `elementOwner`가 이미 알고 있어
       새 부기 불필요. `isSlot(value)`면 그 경로, 아니면 백엔드가 주입하는
-      `disposeInst(inst): ()`(`addTag`/`removeTag`/`setAttribute`와 같은
-      "base 소유+op 주입" 패턴, quad-roblox는 `inst:Destroy()`)로 위임.
+      `nativeDispose(element): ()`(`addTag`/`removeTag`/`setAttribute`와 같은
+      "base 소유+op 주입" 패턴, quad-roblox는 `inst:Destroy()`)로 위임
+      (**[2026-08-22 정정]** 여기 `disposeInst`라 적혀 있었으나 이름은
+      2026-08-21에 `native*` 계층으로 확정됨 — M5 배너 참고).
       **`Observer`/`Effect`는 범위 밖**(GC-native `bindLifetime`/
       `unbindLifetime`만으로 충분, 트리 부기 없음) — 2026-08-14 열 번째
       세션에 `question.md` 0-B 해소, 정본은 `base/slot-plan.md`
       "`dispose(value)`" 절
 
-- [x] **"여러 Slot이 형제로 섞일 때 순서 보장" 해소**(2026-08-09 여섯 번째
-      세션) — `Dispatch.setLength`/`setOffsetSource` 메커니즘, `base/
-      dispatch-core-plan.md` "Length/Offset" 절. `Slot.Length: State<number>`도
-      이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
-      UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
-      **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
-      해결됨**, 위 M2 항목 참고.
-- [x] **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
-      `Get`/`IndexOf`/`Splice` CRUD 의미론 확정** (2026-08-09 세 번째 세션,
-      2026-08-09 열한 번째 세션에 식별 기준 재정정, `Splice`는 2026-08-12
-      열다섯 번째 세션 신설 — **[2026-08-13 5차 감사에서 추가] `Splice`가
-      이 체크리스트에 누락돼 있었음, `luau-test/20`으로 산술 실측 통과됨**)
-      — 에러 조건까지 전부 확정
-      (`base/slot-plan.md` "CRUD API 확정"). "재마운트 시 즉시 throw"도
-      `isMounted` 이중 추적 분리로 개별 element/Slot 컨테이너 기준이
-      명확히 갈림(같은 문서 "`isMounted` 이중 추적 분리" 절).
-      **[정정, 2026-08-09 열한 번째 세션] 식별 기준을 element 레퍼런스에서
-      인덱스 기준으로 전환** — `Remove(index)`/`Extract(index, newElement?)`
-      (O(n) 또는 O(1))/`Move(oldIndex, newIndex)`(O(n))/`Swap(indexA,
-      indexB)`(O(1)) 전부 인덱스, `Add(element, index?)`만 element를 직접
-      받음(새로 넣는 대상이라 참조가 당연히 있음). 호출부가 `Add` 리턴값을
-      안 담고 흘려버리는 경우가 흔해 레퍼런스 기준이 오히려 실사용과 안
-      맞았음 — 레퍼런스만 있으면 `IndexOf(element): number?`로 인덱스를
-      구하면 됨. `ExtractAll(): {T}`(Clear의 비파괴 버전), `Get(index): T?`
-      신설(`get`/`set` 드롭했던 걸 재추가). `Extract(index, newElement?)` —
-      `newElement` 지정 시 O(1) 제자리 교체(이전 element 반환), 기존엔
-      교체하려면 Extract+Add 이중 O(n) 시프트가 필요했던 문제 해결. 공개
-      mutate 메소드 전부 "가드 확인 + `raw*` 위임" 얇은 wrapper(`Get`/
-      `IndexOf`는 순수 읽기라 가드 대상 아님).
-      **[2026-08-21 5라운드]** `Replace(index, newElement)` 추가(그 자리 교체
-      + 이전 것 **파괴** — `Extract`의 파괴 짝, `Remove` ↔ `Extract`와 같은 축)와
-      `rawReplace`/`rawAdd` 의사코드 확정, 그리고 **래핑/언래핑 한 쌍**
-      (`State`를 요소로 받으면 내부적으로 `:Single` 래퍼 Slot이 되는데,
-      `Get`/`IndexOf`/`Extract`가 돌려주는 값과 `:List`의 `prev`는 전부
-      **언래핑된 원래 값**이다). base/roblox 경계에
-      mount/unmount 외 reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소
-      타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
-      실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
-      Effect/Modifier)은 self-ref 컨텍스트가 없어 의미 불성립이라 즉시
-      error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
-      Slot<<Instance>>`(**[2026-08-18]** `D` 네임스페이스 이름 확정 —
-      옛 `question.md` 1번 용어정리 항목은 해소되어
-      `archive/question-resolved.md`로 이전됨)가 quad-roblox의 사실상 유일한
-      Slot 타입.
 - [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
       `keyFn(item, index) -> key` 생략 시 원본 `data` 배열 위치(raw index)를
       그대로 key로 사용(중간 삽입/삭제 시 identity 보존 안 됨, 캐스케이드
@@ -650,88 +851,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
-- [x] **`Slot:Single(state, updateFn?)` 확정** — `:List`를 0/1개짜리
-      배열로 감싸는 순수 sugar, `index` 없이 `offset`/`prev`/`userdata`만
-      전달, 고정 key로 `prev` 재사용 보장(2026-08-11 세션, `base/
-      slot-plan.md` "`Slot:Single`" 절). **[2026-08-11 일곱 번째 세션]**
-      `updateFn`이 선택 인자로 완화됨(기본값 identity) — 아래 반응형
-      raw 요소 항목 참고.
-- [x] **Slot-in-Slot 중첩 확정** — 요소 타입 제약에서 `Slot` 배제 해제
-      (`T = Instance | Slot<Instance>`, 자기 참조 제네릭은 실측 필요).
-      `Dispatch.setLength`/`setOffsetSource`를 물리 inst 대신 **Slot
-      자신을 owner 키**로 재사용하는 재귀 `attachSlot`으로 최상위/중첩
-      마운트 통합(새 프리미티브 없음). `Slot.Length`가 raw 개수에서
-      "요소별 기여도의 합"으로 의미 변경. 파괴는 재귀적 `Clear()`가
-      아니라 flat `destroySlotTree`(파괴 walk + `unbindLifetime` walk,
-      outer 쪽 recompute는 1회만) — 물리 target이 살아있는 채로 논리
-      서브트리만 죽는 경우 명시적 `unbindLifetime` 필요(GC-native 정리의
-      예외 케이스). DOM 백엔드가 nested Slot을 실제 `<div>` 중첩으로
-      매핑하는 안은 기각(Fragment와 같은 이유로 wrapper-less 유지 필요) —
-      숫자 기반 메커니즘이 web에도 그대로 필요하나, `insertBefore`/
-      `removeChild`가 물리적으로 밀고 당겨줘서 이미 배치된 형제 재작성은
-      불필요(2026-08-11 세션, `base/slot-plan.md` "Slot-in-Slot 중첩" 절).
-      **[2026-08-21 5라운드]** 그 web 경로가 실제로 삽입 위치를 알 수 있도록
-      물리 조작이 주입 op(`mountInst(target, element, index)`/`unmountInst`/
-      `disposeInst`)로 정리됐고, 중첩 offset이 부모 베이스를 못 받던 결함과
-      재마운트가 `Offset` Source를 새로 만들던 결함도 같이 수정됐다.
-      **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
-      해결됨 — 위 M2 항목 참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
-      **[재설계, 2026-08-21] `attachSlot`은 비공개 재귀 둘로 분해됨** —
-      `materializeSlotTree`(부기만, Blocker가 감싸는 건 이제 여기뿐) +
-      `mountSlotTree`(물리 `Parent` 대입만, Blocker 불필요), 그리고 그 둘을
-      순서대로 부르는 **두 줄짜리 공개 `attachSlot`**(이름/시그니처/호출부
-      전부 그대로). 이걸로 "부모에게 알리는 길이가 최종값"과 "부기가 물리보다
-      먼저"가 처음으로 **동시에** 만족되고, 배치 밖 재마운트의 부모
-      `recompute`가 2회→1회로 준다. 순서 제약이 줄 순서가 아니라 **함수
-      경계로 강제**되므로 `RC-1`/`RC-3`/`RC-4` 같은 "줄 순서를 잘못 잡아서"
-      나던 버그 클래스가 구조적으로 사라짐. 근거 기록은
-      `reference/slot-attach-decomposition.md`.
-      **관측 가능한 변화 하나**: `Parent` 대입 순서는 그대로지만 물리 마운트가
-      "부기 완료 후 일괄"이 되어, `ChildAdded` 핸들러가 볼 때 서브트리 전체의
-      `Length`/`Offset`이 이미 최종값이다(옛 코드는 미완성 스냅샷을 보여줬음).
-- [x] **`Slot(initial?: {T})` 생성자로 확장** — "인자 없는 빈 생성자로
-      확정"을 뒤집음, `:Add` 반복 호출 sugar일 뿐(새 마운트 로직 없음).
-      `initial ~= nil`이면(빈 테이블도) 즉시 `_crudUsed = true` — 상태상
-      `Add→Remove`와 동일하므로. **`_crudUsed` ↔ `_listed` 상호 배타
-      가드 신설** — 기존엔 `:List` 설치 후 수동 CRUD만 막았지 반대(수동
-      CRUD 후 `:List` 설치)는 안 막아서 `:List`의 reconcile이 기존
-      요소를 모른 채 충돌하는 gap이 있었음(2026-08-11 세션, `base/
-      slot-plan.md` "CRUD API 확정" 절).
-- [x] **`recompute` off-by-one 버그 수정**(2026-08-11 세션, `base/
-      dispatch-core-plan.md` "Length/Offset" 절) — `sum` 누적과
-      `offset:Set` 순서가 뒤바뀌어 `Offset`이 자기 자신을 포함해버리던
-      버그(예: 유일한 자식인데도 `Offset`이 0이 아니게 됨) 수정. 재진입
-      방지 가드는 검토 후 기각 — 각 Slot이 `Relate(자기 자신)`으로
-      독립된 `bk`를 가져서 nesting만으로는 같은 `bk`가 재진입되는 경로
-      자체가 없음이 재추적으로 확인됨. 진짜 재진입(부작용이 recompute
-      도중 같은 Slot의 length에 다시 쓰기)은 `Source⊇State`의 "단방향"
-      원칙과 같은 카테고리의 위반으로 **명시적 UB 명명**(방어 로직 없음,
-      기존 "일반적 재진입 방어 안 함" 원칙과 정합). `offset`/`sum`은
-      0-based 개수, `index`는 1-based Lua 관례라는 것도 명시.
-- [x] **반응형 raw 요소 — `State<T>`/`Source<T>`도 Slot 요소로 허용**
-      (2026-08-11 일곱 번째 세션, 같은 세션에 정정) — `Slot:Add`가 받는
-      실제 타입은 `T | State<T> | Source<T>`(임의 깊이 조합 가능).
-      **[정정] 최초 검토한 "position-keyed StoreBind 구독 + Length를
-      Compute로 파생" 안은 기각**(nilable 지원하려면 배열 파트 `None`을
-      다시 끌어들여야 하고, Length 계산에 예외가 생기고, `Move`/`Swap`이
-      인덱스-구독 동기화 부담을 짐 — `:List`가 element 아닌 `key` 기준인
-      이유와 정면 충돌) — **새 메커니즘 없이 순수 `:Single` sugar로
-      확정**: `isState(element)`면 그 자리에 내부적으로 `Slot():
-      Single(element)`(updateFn 생략 시 identity 기본값)를 대신 삽입.
-      `_elements`엔 `None`이 절대 안 들어감(비어있는 nested Slot이 자연히
-      Length 0 기여), raw 직접 전달 요소에만 여전히 non-nil 요구.
-      `:Single`의 `updateFn`도 이 sugar가 성립하도록 선택 인자로 완화
-      (`Slot:Single(state, updateFn?)`, 기본값 identity). `:Single`/`:List`와는
-      대체 관계가 아니라 같은 메커니즘 위의 다른 `updateFn`일 뿐 — raw
-      `State<T>` 요소(identity)는 coarse swap, `updateFn` 직접 지정 시
-      `prev`/`userdata` patch-reuse + `offset` 접근(`:Single`이 애초에
-      생긴 이유). **부수 발견(사용자)**: `:List`의 `reconcile`이
-      nested-Slot 결과를 반환하는 아이템 다음 형제의 압축 `index`를
-      그 결과의 `.Length`만큼 건너뛰도록 `pos` 커밋 공식도 같이 수정
-      (`pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get()
-      or 1)`) — 안 그러면 멀티루트 아이템 다음 형제의 LayoutOrder가
-      겹침. `base/slot-plan.md` "반응형 raw 요소" 절.
-
 ## M7 — Modifier
 
 - [ ] `Modifier()`(빈 인스턴스 바닥 생성자, 2026-08-07 열 번째 세션
@@ -765,26 +884,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `archive/brand-shared-registry-reversed.md`. `modifier-plan.md` 9번,
       `brand-plan.md`의 "`isX` wrapper" 절, M2의 `Brand.luau`에 이미
       구현돼 있어야 함)
-- [ ] 인라인 키/setter로 modifier 필드를 명시적으로 지우는 `None` 센티널
-      (이름 확정, `modifier-plan.md` 2-1번, `Peek` 반환 타입에 `None` 추가) +
-      이를 `nil`로 재디스패치하는 base 내장 `NoneHandler`
-      (`dispatch-core-plan.md`의 `None` 센티널 절, M2 dispatch 엔진의
-      "이전 매치 핸들러 추적" 항목과 함께 구현 — `StoreBind` 핸들러와
-      동일한 재귀 재디스패치 패턴이라 새 메커니즘 아님) — `None` 센티널
-      자체는 확정 완료. **[2026-08-13 열네 번째 세션 갱신]** `NoneHandler`가
-      쓰는 재-dispatch 배관에서 **선행 `retractFrom` 호출은 폐기됨** —
-      그냥 `Dispatch.process(inst,k,nil,index+1)` 한 줄
-      (`base/dispatch-core-plan.md`).
-      **[2026-08-18 구현 전 QA 재설계]** `Dispatch.drive`의 `None` 스킵
-      분기는 **없앤다**(반응형 값이 내놓는 `None`은 어차피 `process`에
-      도착하므로) — `NoneHandler`는 배열/해시 구분 없이 **재귀만** 하고,
-      실제 정리는 아래 `NilHandler`가 맡는다
-- [ ] **[2026-08-18 신설]** `NilHandler` — `isHandlable`이
-      `type(k) == "number" and v == nil`일 때만 매치하는 말단 핸들러.
-      `Dispatch.setLength(inst,k,0)` + `Dispatch.setOffsetSource(inst,k,None)`
-      등록이 이 핸들러의 일이고 재귀는 안 함(`State<Slot|nil>`도 정상
-      동작해야 한다는 사용자 요구, `base/dispatch-core-plan.md`의
-      "`NilHandler`" 절)
+> **[2026-08-22 이동] `None` 센티널 + `Dispatch/None.luau`(`NoneHandler`/
+> `NilHandler`)는 M2로 옮겼습니다** — `None`은 modifier 전용 값이 아니라
+> quad-base 디스패치 배관이고(`architecture.md`의 소스 트리에서도
+> `Dispatch/None.luau`), M0의 `props.Modifier or None` 관용구 · M2의
+> `Dispatch.drive` · M6의 `setOffsetSource(..., None)`이 전부 이미 전제합니다.
+> M7에서는 **Modifier 쪽 표면만** 다룹니다 — 인라인 키/setter로 필드를
+> 지우는 용법과 `Peek` 반환 타입에 `None`을 추가하는 것(`modifier-plan.md`
+> 2-1번).
 - [ ] 프로퍼티류 필드 타입에 `T' = T | Tween<T>` 치환 반영(타입 생성
       스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
       끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`
@@ -808,8 +915,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       살아있으면 그 자리에서 즉시 error) — `base/ref-plan.md` "이중 배치
       방지" 절
 - [ ] `PreRef`/`PostRef` pre-pass — 새 `Dispatch.*` 함수 없이
-      `Dispatch.drive(inst, flattened)` 자신이 두 패스(배열→해시) 루프
-      전에 배열 파트를 **한 번** 훑어, `PreRef`는 그 자리에서 fire하고
+      `Dispatch.drive(inst, flattened)` 자신이 **본체 루프 전에** 배열
+      파트를 **한 번** 훑어(**[2026-08-22 정정]** 여기 "두 패스(배열→해시)
+      루프 전에"라고 적혀 있었으나 본체는 단일 일반화 `for`다 — `F-4-1`), `PreRef`는 그 자리에서 fire하고
       `PostRef`는 로컬 `postRefList`에 push만 함(Dispatch.process/getHandler
       우회하는 raw 루프, `flatten` 함수에는 얹지 않음 — 재바인드 시 flatten
       재호출 가능성과 충돌하므로 기각). **복수 `PreRef`/`PostRef`의 계열 안
@@ -820,9 +928,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       PreRef`류 조합이 반례). fire/수집된 슬롯은 그 자리에서 소진(**[정정, 2026-08-14 두
       번째 세션] `None`이 아니라 전용 센티널 `ProcessedPreRef`/
       `ProcessedPostRef` 처리** — 아래 `Processed*Handler` 항목이 그 자리를
-      정상 두 패스로 마저 처리)
+      정상 본체 루프로 마저 처리)
       — `base/ref-plan.md` "PreRef" 절 / "`PostRef`" 절
-- [ ] **[2026-08-14 아홉 번째 세션 신설]** `PostRef.luau` + 두 패스 뒤
+- [ ] **[2026-08-14 아홉 번째 세션 신설]** `PostRef.luau` + 본체 루프 뒤
       `postRefList` 소비 루프 — `PreRef.luau`와 같은 방식(`Ref` 런타임
       재사용 + 브랜드 태그만 다름, children 배열 리터럴 전용, Modifier/Store
       타입 차단, `_fired` 1회용 가드). `Dispatch.drive`가 해시 파트까지
@@ -914,13 +1022,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       명시, 이름별 weak 캐시로 `OnChange(a) == OnChange(a)` 동등성 보장
       (`AttributeKey`와 동일 기법), `base/onchange-plan.md`, 2026-08-10
       세션 확정·2026-08-11 아홉 번째 세션 후속(캐시))
-- [ ] **[2026-08-13 열네 번째 세션 재배치] `quad-roblox/EngineOps.luau` —
-      주입되는 엔진 op 3개**: `addTag(inst,{string})`/`removeTag(inst,{string})`
+- [ ] **[2026-08-13 열네 번째 세션 재배치] `quad-roblox/EngineOps.luau`의
+      Tag/Attribute 몫** — `addTag(inst,{string})`/`removeTag(inst,{string})`
       (`CollectionService`), `setAttribute(inst,name,v)`(`v==nil`이면 삭제).
       `RobloxFactory`가 `BaseModule`에 주입(`bindLifetime`/`canExecute`와
       같은 패턴) — 아래 base 핸들러들이 이걸 호출함
       (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는
-      엔진 op" 절)
+      엔진 op" 절). **[2026-08-22 정정] 여기 "주입되는 엔진 op 3개"라고
+      적혀 있었으나 이 파일이 담는 op은 그 셋이 전부가 아니다** — M5의
+      `native*` 계층이 같은 파일에 들어오고 백로그의 `setTimeout`/
+      `clearTimeout`도 예정돼 있다. **주입 op 전체 목록의 소스는
+      `base/architecture.md`의 소스 트리 안 `EngineOps.luau` 줄** — 여기서
+      세지 않는다.
 - [ ] `quad-base/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)` +
       이름별 weak 캐시로 동등성 보장 + 스칼라 편의 패밀리
       `String`/`Number`/`BooleanAttribute` — 엔진 고유 타입 패밀리
@@ -995,6 +1108,27 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 `Tween<T>` 래퍼 모델로 전환 — 상세는 `base/tween-plan.md`(전면
 재작성), 구 모델은 `archive/tween-special-bind-key-reversed.md`.
 
+### 확정된 것 — 코드 아님, 구현 전 필독
+
+아래는 **설계가 확정됐다**는 사실이지 짠 코드가 아니다 — 체크박스로
+두면 `[x]`가 "구현 완료"와 구분이 안 돼서 문서 머리 규약대로 분리했다
+(**[2026-08-22]**).
+
+- **override 정책 확정 완료**(2026-08-12 세션, `base/tween-plan.md`
+  "확정: `Tween{...}` 최종 모양" 절) — 검토했던 4가지가 **`Tween.Cancel`
+  (기본)/`Tween.Finish` 2값으로 압축**됨(로블록스 `TweenBase` API 현실상
+  나머지가 관찰상 Cancel과 동일). Tween→plain 전환도 두 옵션 모두
+  "정리 후 즉시 덮어쓰기"로 수렴해 5번째 옵션 불필요로 확정.
+  **구현 시 순서 주의**: 이전 트윈 정리 → 그 다음 새 값 세팅
+- **트윈 옵션 값 모양 확정 완료**(2026-08-12 세션, `base/tween-plan.md`)
+  — `Info: TweenInfo?` 우선 + 편의 필드(`Time`/`Style`/...) 폴백,
+  기본값은 로블록스 `TweenInfo.new()` 자체 기본값과 일치. 옵션 필드는
+  전부 plain만(State 불가)
+- **`initValue`(진입 애니메이션) — 에이전트 범위 제외로 확정**
+  (2026-08-12 세션, 사용자가 직접 처리하기로) — 재검토 항목 아님
+
+### 짜야 할 것
+
 - [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리, `isTween`/
       `TweenBrand`, `Value: T` plain만 받고 State 재귀 없음)
 - [ ] `Handlers/Property.luau`에 `isTween(realv)` 분기 추가(기존
@@ -1003,16 +1137,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       없음, 엔진 객체=활성 트윈) + 첫 세팅은 무조건 애니메이션 없이
       스냅(hasBeenSet 억제) + 활성 트윈 정리는 override 정책 완료 후에만
       새 값 세팅(순서 뒤바뀌면 트윈 다음 프레임이 방금 세팅한 값을 덮어씀)
-- [x] **override 정책 확정 완료**(2026-08-12 세션, `base/tween-plan.md`
-      "확정: `Tween{...}` 최종 모양" 절) — 검토했던 4가지가 **`Tween.Cancel`
-      (기본)/`Tween.Finish` 2값으로 압축**됨(로블록스 `TweenBase` API 현실상
-      나머지가 관찰상 Cancel과 동일). Tween→plain 전환도 두 옵션 모두
-      "정리 후 즉시 덮어쓰기"로 수렴해 5번째 옵션 불필요로 확정.
-      **구현 시 순서 주의**: 이전 트윈 정리 → 그 다음 새 값 세팅
-- [x] **트윈 옵션 값 모양 확정 완료**(2026-08-12 세션, `base/tween-plan.md`)
-      — `Info: TweenInfo?` 우선 + 편의 필드(`Time`/`Style`/...) 폴백,
-      기본값은 로블록스 `TweenInfo.new()` 자체 기본값과 일치. 옵션 필드는
-      전부 plain만(State 불가)
 - [ ] `quad-roblox/Animate.luau` — **시그니처도 이미 확정 완료**(2026-08-12
       두 번째/세 번째 세션, `base/tween-plan.md`): `Tween` opts(`Value` 제외)를
       `T|State<T>`로 받아 각 필드를 resolve한 뒤 `Tween{...}`을 반환하는
@@ -1020,9 +1144,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       아님, `research/operator-sugar-plan.md` "왜 `:Apply`인가"). `CanAnimate`
       필드 포함(`false`면 `Tween`으로 안 감싸고 plain 값 그대로). M11은
       **구현만** 하면 됨
-- [x] **`initValue`(진입 애니메이션) — 에이전트 범위 제외로 확정**
-      (2026-08-12 세션, 사용자가 직접 처리하기로) — 재검토 항목 아님
-
 ## 특정 마일스톤에 안 묶이고 병행 가능
 
 - [ ] 용어 정리 스윕 — `State`/`Slot` 등(`PerInstanceState`는 `Relate`로

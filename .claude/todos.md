@@ -9,8 +9,9 @@
    반영 완료. ⭐ 같은 날 마지막에 `Gate`와 State 에포크까지 확정되면서
    **M2 착수를 막는 설계 항목은 더 이상 없다.**** `Gate`는
    `state:Gate(setup)` + `GateNode`로(`base/gate-plan.md`), State의
-   재계산/전파 판정은 **`Epoch` 리비전 비교** 채택으로(`base/state-epoch-plan.md`,
-   구현은 M3) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
+   재계산/전파 판정은 **`Epoch` 리비전 비교** 채택으로(`base/state-epoch-plan.md`
+   — **[2026-08-22 정정]** 구현 마일스톤은 갈린다: `EpochMap`/`Epoch`
+   인터페이스는 **M2**, State 본체 통합은 **M3**) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
    **[2026-08-21 후속] `Epoch`/`EpochMap`/`Brand` 승격도 같은 날 완료** —
    부기가 재사용 가능한 `EpochMap`으로 떨어져 나오고, 판정 인터페이스가
    `Source`에서 `Epoch`로 일반화되고, `Brand`가 인스턴스 브랜드로 재작성됐다
@@ -21,8 +22,11 @@
    열린 설계 항목은 **하나도 없다**(`base/state-epoch-plan.md` §2).
    **[2026-08-21 경위]** 같은 날 `/code-review high`가 "게이트가 유보했다
    내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M2 항목으로
-   되돌아갔으나, **사용자가 그 자리에서 `emit(self)` + 흡수 집합으로
-   확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번). 같이
+   되돌아갔으나, **사용자가 그 자리에서 흡수 집합 스냅샷으로
+   확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번.
+   **[2026-08-22 표기 정정]** 여기 `emit(self)` + 흡수 집합이라 적혀
+   있었으나 그건 `Epoch` 일반화 **이전** 표기다 — 게이트 노드 자신은
+   페이로드에 안 싣는다). 같이
    제기됐던 에포크 쪽 세 자리도 **전량 확정**됐다(재계산 시 리비전 전부 갱신 /
    새 노드는 `emitEpochMap`은 비우고 `valueEpochMap`은 실제 리비전으로 채운 뒤
    `rawInvalid = true` / 그래서 `:With` 병합 규칙은 불필요) —
@@ -33,9 +37,25 @@
    서술**이었고, "빈 배치 emit"은 **아무것도 안 하는 것**으로 확정(그 따름정리로
    `Effect`의 설치 구간 억제가 `Gate` 소비자에서 빠지며 `effect-plan.md`의
    순서 제약도 사라짐). **다시, M2 착수를 막는 설계 항목은 없다.**
+
+   **⚠️ [2026-08-22 신설] 다만 설계가 아니라 *순서*가 막고 있다.**
+   `ROADMAP.md` 전반 점검에서 **M2와 M3의 의존이 양방향**인 게 드러났다 —
+   `Dispatch.setLength`/`setOffsetSource`/`recompute`가 `State<number>`/
+   `Source<number>`를 쓰므로 M2는 `Source.luau`/`State.luau` 없이 구현이
+   안 되고, 반대로 M3의 `Observer`/`Effect` 동적 경로 가드는 M2의
+   `Dispatch.addHandler`를 쓴다. 선택지 셋(M2/M3 순서 교체 / M2를 둘로
+   분할 / 지금 구조 유지)은 **`question.md` 2번이 소스** — 여기서 반복하지
+   않는다. 같은 점검에서 `EpochMap`/`GateNode`/`Blocker`/`None`이 M3·M7에서
+   **M2로 실제 이동**했고(각주로만 예고돼 있던 것), `Dispatch.drive`가
+   두 패스가 아니라 단일 일반화 `for`라는 `F-4-1` 정정과 물리 조작 주입 op
+   이름 `native*` 확정이 `ROADMAP.md`/`dispatch-core-plan.md`에 반영됐다.
+   M0 체크박스가 검증했던 스파이크 중 재작성 대기인 것들도
+   `ROADMAP.md`의 "재검증 대기" 절로 모았다(현황의 소스는 여전히
+   `luau-test/STATUS.md`).
    그 외 남은 것은 판단이 아니라 구현 시 정할 것들 — `Gate`의
-   생명주기·재진입 계약, M2에 `Blocker`까지 넣을지, 스파이크 `05` 재작성
-   (`luau-test/STATUS.md`).
+   생명주기·재진입 계약, 스파이크 `05` 재작성(`luau-test/STATUS.md`).
+   **[2026-08-22 해소]** 여기 있던 "M2에 `Blocker`까지 넣을지"는 같은 날
+   `ROADMAP.md` 전반 점검에서 **둘 다 M2**로 확정되며 닫혔다.
 
    **4라운드 — [2026-08-21] 종결.** 문항지는
    `.claude/qa-request/pre-implementation-qa-round4.md`, 사용자 회신 원문은
@@ -111,8 +131,10 @@
    재편 여부는 열림 — `pre-implementation-qa-round3.md`의 "ROADMAP.md
    마일스톤 정합성" 절 참고).
 
-   **아래는 M3 착수 전에 결론이 필요한 항목 목록** — M0/M2는 막혀 있지
-   않다(0번 항목 참고). 둘 다 `question.md` 3번에도 있고 각 `base/` 문서에도
+   **아래는 M3 착수 전에 결론이 필요한 항목 목록** — **설계** 게이트
+   얘기다. M0은 아예 막혀 있지 않고, M2도 설계로는 안 막혀 있으나
+   **[2026-08-22] 마일스톤 순서 문제 하나가 M2를 막는다**(위 00번의
+   ⚠️ 문단 + `question.md` 2번). 둘 다 `question.md` 3번에도 있고 각 `base/` 문서에도
    ⚠️로 표시돼 있다. **[2026-08-21 정리]** 여기 쌓여 있던 `[해소]` 항목들
    (`Blocker.luau` 마일스톤 순서, 그룹 `Attribute` 위치 claim 키,
    `SetAndDispose`, `PopOnly`→`Detach`, `KeyGone` 처분, `Store` 미선언 키

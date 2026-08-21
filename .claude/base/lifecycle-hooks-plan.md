@@ -210,7 +210,10 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 > 이르게 된 조사/논거를 그대로 보존한 것.
 
 `base/dispatch-core-plan.md`의 "확정된 디스패치 모델" 절이 계약하는
-두 패스(배열 파트 먼저, 해시 파트 나중) 기준으로 현재 base가 제공하는
+본체 루프의 배열→해시 순서 계약(**[2026-08-22 용어]** 이 문서가 쓰는
+"두 패스"는 그 본체 루프의 옛 이름이다 — 구현은 단일 일반화 `for`,
+`base/ref-plan.md`의 같은 용어 각주와 `base/dispatch-core-plan.md`의
+`F-4-1` 정정 문단) 기준으로 현재 base가 제공하는
 훅들의 타이밍을 정리하면:
 
 | 훅 | 시점 |
@@ -243,10 +246,10 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   걸리는 시점"을 `PreRef`와 동일하게 맞춤, 실제 콜백 fire와 시점이
   갈리는 건 아래 항목뿐).
 - **`ProcessedPostRefHandler`는 `ProcessedPreRefHandler`와 완전히
-  대칭**: 정상 두 패스가 `ProcessedPostRef`를 매치해
+  대칭**: 정상 본체 루프가 `ProcessedPostRef`를 매치해
   `setLength(0)`/`setOffsetSource(None)`을 등록하고 no-op retract를
   반환 — 새 비대칭 규칙이 필요 없음. **[정정] 이전 초안은 "PostRef는
-  소진 전 원본 값이 정상 두 패스의 매치 대상이어야 한다"고
+  소진 전 원본 값이 정상 본체 루프의 매치 대상이어야 한다"고
   잘못 짚었었는데, pre-pass에서 미리 소진해두면 그 비대칭 자체가 안
   생김** — `PreRef`의 "동적 경로 가드" Handler(정상 스캔에서
   `isPreRef(v)`를 잡아 즉시 error)와 짝이 되는 `PostRef`용 가드 Handler도
