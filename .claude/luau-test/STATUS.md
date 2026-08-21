@@ -102,7 +102,7 @@
 
 | 파일 | 확인된 것 |
 |---|---|
-| `01-two-pass-array-hash-order` | 배열 파트 전체 → 해시 파트 순. `Dispatch.drive` 두 패스 계약과 `PreRef` 호이스팅의 전제 |
+| `01-two-pass-array-hash-order` | 배열 파트 전체 → 해시 파트 순. `Dispatch.drive`의 순서 계약과 `PreRef` 호이스팅의 전제. **⚠️ [2026-08-21 재작성 필요]** 이 스파이크는 숫자 `for` + 일반화 `for` **두 루프** 버전인데, 구현이 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — 검증 대상(순서 계약)은 그대로이고 스파이크 코드만 그 형태로 다시 쓸 것 |
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
 | `05-store-state-diamond-propagation` | **[2026-08-19 재작성]** emit은 자기 invalid 상태와 무관하게 항상 전파(다이아몬드 두 경로 모두 끝까지 도달), 재계산은 `:Get()` 시점 캐시로 1회만, `:Get()`을 안 부르는 Observer는 source 변경마다 경로 수만큼(2) 계속 발화 — 옛(역전된) 모델이면 2번째 변경부터 침묵해야 하는데 안 그럼을 확인 |

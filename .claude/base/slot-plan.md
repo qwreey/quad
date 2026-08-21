@@ -1320,6 +1320,57 @@ return Detach, { old = prev, source = ... }
   지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
   시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. 정확한 파일
   배치는 M6 구현 시점에 확정.
+### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
+
+위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데
+`Slot:Add(state)` 라 sugar(`:Single` + 기본 identity `updateFn`, 아래 "반응형
+raw 요소" 절)로 들어온 요소는 **사용자가 `state`에 담아 넘긴 것**이라 Slot이
+죽이면 안 된다 — `state<Frame>` 교체가 이전 값을 파괴하지 않는다는 확정
+의미론(아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절)과 정면으로
+부딪히기 때문. 두 답을 다 만족시키는 축이 **"누가 그 요소를 만들었는가"**이고,
+그건 사이클마다 달라지는 게 아니라 **설치 시점에 고정되는 속성**이다
+(**사용자 확정, 2026-08-21**: *"unowned 로 나오는 경우가 state<Frame> 등을
+주는 경우이므로 설치 시점이다에 동의함"*).
+
+```lua
+Slot:List(data, updateFn, keyFn?, opts?)     -- opts.Owned: boolean? (기본 true)
+Slot:Single(state, updateFn?, opts?)
+```
+
+| | `Owned = true`(기본) | `Owned = false` |
+|---|---|---|
+| 누가 요소를 만드나 | `updateFn`(= `:List` 소유) | 사용자(`state`에 담아 넘김) |
+| `updateFn`이 새 값 반환 | 밀려난 `prev` **파괴** | **언마운트만** |
+| `updateFn`이 `nil`/`None` 반환 | **파괴** | **언마운트만** |
+| 키가 데이터에서 사라짐 | **파괴** | **언마운트만** |
+| owner가 죽음(`destroySlotTree`/`dispose`) | **파괴**(재귀) | **언마운트만** |
+| `Slot:Add(state)` sugar | — | **이걸로 설치됨** |
+
+- **`Detach`와는 직교하는 축이다** — `Detach`는 "지금은 안 쓰지만 **내 것**"
+  (사이클마다 달라지는 판단), `Owned = false`는 "**애초에 내 것이 아님**"
+  (설치 시점에 고정). 그래서 반환값 계열에 "unowned replace" 센티널을 하나 더
+  만들지 않는다 — 만들면 두 의미가 한 이름에 섞인다(사용자 지적: *"의미론이
+  분화한다"*).
+- **`destroySlotTree`/`dispose`도 이 플래그를 봐야 한다** — `Owned = false`인
+  Slot을 파괴할 땐 자기 요소를 죽이지 않고 언마운트만 한다. 그래서 플래그는
+  클로저 업밸류가 아니라 **Slot 필드**(`slot._owned`)여야 파괴 walk가 읽을 수
+  있다.
+- **수동 CRUD와 안 부딪힌다** — 이 플래그는 `:List`/`:Single` 설치 시에만
+  생기고, 그 Slot은 `_listed`라 수동 CRUD가 이미 막혀 있다(위 "`_crudUsed` ↔
+  `_listed` 대칭").
+- **혼합은 표현 못 함** — 한 리스트 안에 "내가 만든 것"과 "사용자 것"이 섞이는
+  경우는 이 플래그로 못 가른다. 실사용 사례가 안 보여 지금은 안 다루고,
+  필요해지면 `Detach` + 수동 관리로 우회할 수 있다.
+- **⚠️ 이름은 `Owned`로 잠정** — `elementOwner`/`claimOwner`/`releaseOwner`와
+  같은 뿌리라 골랐다. 다른 가칭들과 함께 용어 정리 대기열(`question.md` 1번).
+
+**⚠️ 아직 안 닫힌 짝 항목** — `Detach`로 홀드된 요소를 **어디에 보관하고
+언제 파괴하는지**(`slot._detached` 필드 + owner 죽을 때 `Effect`로 정리)와
+`KeyGone` 센티널은 별개로 확인 대기 중이다.
+`qa-request/pre-implementation-qa-round4-followup.md`의 `F-3` 절이 소스 —
+**그게 닫히기 전엔 이 절의 "파괴" 칸을 구현하지 말 것**(무엇을 파괴 대상으로
+훑을지가 거기서 정해짐).
+
 - **`Slot`의 다른 비파괴 API와의 관계**: `Extract`/`ExtractAll`/`Splice`가
   이미 비파괴 추출을 제공하지만(위 "CRUD API 확정" 절) 그건 **호출자가
   직접 부르는 명령형 경로**다. `Detach`는 같은 일을 **reconcile 안에서
@@ -1515,6 +1566,16 @@ result = SomeComponent(props)`가 `Instance`를 리턴하든 `Slot`(멀티루트
 nil/None 금지)는 그대로.
 
 ### 재귀 메커니즘 — 새 프리미티브 없이 `Dispatch.setLength`/`setOffsetSource`를 Slot 자신 키로 재사용
+
+> **🔭 [2026-08-21] `attachSlot`의 책임 분해가 확장 논의 대기 중** — 아래
+> 의사코드가 지금 정본이고 그대로 유효하지만, 이 함수 하나가 지고 있는 책임이
+> 일곱 개(부모 등록 offset/length, `:List` 실체화, 마운트 상태 전이, 배치
+> 게이팅, 자식 배치, 재귀)라는 사용자 지적이 있었다 — *"attachSlot 의 기능이
+> 너무 다양해진게 문제같음"*. 특히 **"부모에게 알리는 길이의 최종값은 flush가
+> 끝나야 정해진다"와 "부기가 물리 조작보다 먼저"가 단일 함수로는 동시에
+> 만족되지 않는다.** 책임 목록·순서 제약의 출처·분해 후보는
+> `research/slot-attach-decomposition.md`에 정리해뒀다. **M2/M3를 막지는
+> 않지만 M6(`:List`) 구현 전엔 결론이 나 있어야 한다.**
 
 **✅ [해결, 2026-08-18 구현 전 QA 2라운드 후속]** 아래가 재사용하는
 `Dispatch.setLength`/`setOffsetSource`/`recompute`가 배치 등록 중 크래시할
