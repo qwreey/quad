@@ -22,6 +22,12 @@ Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
 통합(component-composition-plan.md 4번 절이 이미 "`isSource`류 판별자로
 (`isObserver`와 동일한 패턴)"라고 이 방향을 예견해뒀던 것과 맞아떨어짐).
 
+**존재 이유 한 줄(2026-08-20 구현 전 QA 4라운드 `B-4`, 사용자 정리)**:
+**`Brand`는 데이터 타입에 부작용을 남기지 않고 런타임 명시 타이핑을 하기
+위한 것이다.** 값 자체엔 아무것도 안 심고(외부 weak 레지스트리), 판별이
+읽기 부작용도 안 만든다 — 아래 duck-typing 기각 근거 두 개가 정확히 이
+한 줄에서 나온다.
+
 **구현: 공유 weak-key 레지스트리 하나 + 테이블 아이덴티티를 태그로
 사용(문자열 아님).**
 
@@ -146,11 +152,19 @@ None 하면 되는 일, 혹은 isNone 구현 자체를 그렇게 해주면 되�
   것을 받아들인다 — 어느 쪽이든 `Brand` 쪽 코드는 그대로다.
 
 **duck-typing(예: `type(x) == "table" and x.Compute ~= nil`)을 쓰지 않는
-이유**: `Peek`가 돌려주는 `T`는 Modifier 필드에 들어갈 수 있는 임의의
-값(테이블, Roblox userdata 등)이라 — 우연히 비슷한 모양의 필드/메소드를
-가진 `T`에 false positive가 나거나, 일부 Roblox userdata는 정의 안 된 키
-인덱싱 자체에서 에러를 던지므로 duck-typing이 `pcall`로 감싸야 하는 지저분한
-엔지니어링이 되거나 최악의 경우 그냥 엔진이 죽는 상황까지 생길 수 있음.
+이유 — 서로 독립된 두 가지(2026-08-20 `B-4`에서 분리 명시)**:
+
+1. **정확성: false positive.** `Peek`가 돌려주는 `T`는 Modifier 필드에 들어갈
+   수 있는 **임의의 사용자 값**이다. 사용자가 우연히 `Compute`라는 필드를 가진
+   테이블을 넣으면 quad가 그걸 `State`로 오인한다. 브랜드는 quad가 만든 값에만
+   찍히므로 이 오인이 원천적으로 없다.
+2. **안전성/비용: 인덱싱 자체가 터질 수 있음.** 일부 Roblox userdata는 **정의
+   안 된 키를 인덱싱하는 것만으로 에러를 던진다** — duck-typing을 하려면 판별
+   코드를 전부 `pcall`로 감싸야 하고, 그건 "판별은 부작용 없이 빠르게"라는
+   `isHandlable` 계약(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)과
+   정면으로 부딪힌다. 최악의 경우 엔진이 죽는 상황까지 있다.
+
+weak-key 레지스트리 조회는 포인터 해싱 한 번이라 `pcall`도, 오인도 없다.
 weak-key 레지스트리는 rbvm 네임스페이스 추적(`base/lifecycle-pattern.md`)과
 같은 이미 확정된 패턴 재사용이라 새 아이디어 아님 — weak 키라 등록된 값이
 GC되면 레지스트리 엔트리도 자동으로 사라짐(살려두는 목적의 강참조

@@ -1,6 +1,11 @@
 # 구현 전 QA **4라운드 followup** — 회신 처리 결과 + 재질문
 
-**상태**: **[2026-08-20] 1차 처리 완료, 아래 B/C절 회신 대기.**
+**상태**: **[2026-08-21] 2차 처리 완료 — 아래 F절이 최신.**
+B절은 전부 확인됐고 C절 결정도 대부분 반영됐다. **지금 열려 있는 건 F절의
+`F-3`(`KeyGone`/`Owned` 설계 제안에 대한 확인)과 `F-4`(새로 발견한 불일치
+2건 + `setLength` 위치 재질문)뿐이다.** A~E절은 그 처리 과정의 기록.
+
+**[2026-08-20] 1차 처리 — 아래 A~E절.**
 
 **입력**: `pre-implementation-qa-round4-response.md`(사용자 회신 원문 — 그
 파일이 소스이고 여기서 전문을 반복하지 않음). 이 문서는 그 회신을 (a) 바로
@@ -657,3 +662,334 @@ selene/Rojo/darklua 경계)와 `base/quad-types-plan.md`(`AddPlugin<Self,P>`/
   주면 된다. **`C-1`(KeyGone)과 `C-2`(dispose vs `state<Frame>` 충돌)가
   가장 파급이 크고 나머지를 막고 있다.**
 - **D절** — 5라운드를 만들지만 알려주면 된다.
+
+---
+
+# F. 2차 회신 처리 (2026-08-21)
+
+**상태**: **B절 전부 확인 완료, C절 결정 대부분 반영 완료.** 남은 건 아래
+`F-3`(내 답변에 대한 확인)과 `F-4`(새로 발견한 불일치 2건 + 재질문 1건)뿐이다.
+
+## F-1. B절 — 전부 확인됨, 확인 과정에서 나온 보강만
+
+| 항목 | 결과 | 보강해서 반영한 것 |
+|---|---|---|
+| `B-1` | 확인 | **"(A) 분기는 교체이지 stack-down이 아니다"**를 명시 — `retractFrom`만 스택을 역순으로 풀고, (A)는 그 자리 하나를 갈아끼울 뿐 아래를 안 건드린다. "자기 아래는 이미 정리된 뒤"라는 보장도 `retractFrom` 경로 한정이고, (A)에서 아래가 살아 있는 게 바로 깜빡임 없는 갈아끼우기가 성립하는 이유. |
+| `B-2` | 확인(조건부) | **⚠️ 조건이 지금 안 맞는다 — `F-4-1` 참고.** |
+| `B-3` | 확인 | 가상 위반 예시(`MaybeWrapHandler`)를 base 문서에 그대로 넣음. |
+| `B-4` | 확인 | *"Brand는 데이터 타입에 부작용을 남기지 않고 런타임 명시 타이핑을 하기 위한 것"* 이라는 존재 이유 한 줄을 `brand-plan.md` 머리에 추가하고, duck-typing 기각 근거를 **정확성(false positive) / 안전성·비용(인덱싱이 터짐)** 둘로 분리해 적음. |
+| `B-5` | 확인 | 변경 없음. |
+| `B-6` | — | 새 질문이라 아래 `F-2`에서 답함. |
+| `B-7` | 확인 | 변경 없음(base의 "(b) owner" 표현은 아직 안 고침 — `F-4-3`). |
+| `B-8` | `C-6`로 흡수 | `error` 승격 반영 완료. |
+| `B-9` | 확인 | `C-5`/`C-7` 결정이 들어가면서 "먼저 length가 밀린다"의 적용 범위가 일반 계약으로 올라감(`C-7` 반영분). |
+| `B-10` | 확인 | *"우리에게 있어 렌더는 derive 되었는 결과일 뿐"* — 이 프레이밍이 `OnRendered` 이름 유지 근거를 더 정확하게 만든다. 문서화 시 쓸 문장으로 기록. |
+
+## F-2. `B-6` 답변 — 재귀적 Clear에 Blocker를 재귀적으로 쓰면 되지 않나
+
+**질문**: *"재귀적 clear 시 blocker를 다시 재귀적 on 하고, 재귀가 풀려 돌아올
+때 off 해나가도 되는것으로 보이는데, 아닌가?"*
+
+**답: 동작은 하지만, 문제의 절반만 없앤다.** 두 비용이 있는데 Blocker는 하나만
+잡는다.
+
+| 비용 | 재귀적 `Clear()` | Blocker로 가려지나 |
+|---|---|---|
+| `recompute` 전체 순회가 요소마다 1회 | 500개면 500회 × 500칸 | **가려짐** — `blocker:IsOn()`이면 스킵 |
+| `spliceArraysDown`이 요소마다 배열을 한 칸씩 당김 | 500회 × 평균 250칸 이동 | **안 가려짐** — Blocker와 무관한 순수 배열 조작 |
+
+- **그리고 배치 게이팅엔 "끝에 한 번"이 있는데 파괴엔 그게 없다.** Blocker
+  패턴은 `On` → 등록 → `OffWithoutEmit` → **마지막에 recompute 1회**가 한
+  세트인데, 죽는 서브트리에선 그 마지막 recompute조차 의미가 없다(결과를 읽을
+  주체가 없음). 즉 Blocker를 쓰면 "안 쓸 계산을 미뤘다가 안 쓰고 버리는" 모양이
+  된다.
+- **근본적으로는, 죽는 서브트리의 부기는 유지할 이유 자체가 없다.**
+  `destroySlotTree`가 `spliceArraysDown`도 `recompute`도 아예 안 부르는 게
+  "가리는" 것보다 싸고 단순하다. 바깥에서 딱 한 번(그 Slot이 차지하던 position에
+  대해 `setOffsetSource(None)` → `setLength(0)`) 도는 걸로 충분.
+- **다만 "중첩마다 Blocker를 새로 만들어 재귀 On/Off"라는 패턴 자체는 정당하다** —
+  `attachSlot`의 flush가 이미 정확히 그렇게 하고 있고(`base/blocker-plan.md`의
+  "재진입" 절이 요구하는 대로 부모 것을 재사용하지 않음), 파괴에만 안 쓰는 것.
+
+→ **이 판단이 맞나?** (맞으면 base의 "재귀적 `Clear()` 금지" 절에 "Blocker로
+가려도 shift 비용은 남는다"는 이유를 한 줄 추가하겠다.)
+
+## F-3. ⭐ `C-1`/`C-2` — 물어보신 것에 대한 답 + 구체 설계 제안
+
+**질문**: *"KeyGone 이여도 여전히 ud 로 홀드 가능하다 … 대신에 slot 의 소유주가
+죽으면 같이 죽는다. ud 도 모두 정리된다. 이 점에 대해서 어떻게 생각하는가?"*
+
+**동의한다. 그리고 그건 "있으면 좋은 것"이 아니라 없으면 안 되는 것이다** —
+아래 (1)이 그 이유다.
+
+### (1) 지적하신 누수는 "GC가 언젠가 치운다"가 아니라 **영구 누수**다
+
+`Detach`된 요소는 `Parent = nil`인 quad-제작 Instance인데, quad는 **자기가 만든
+Instance마다 gcconn을 걸고 그 클로저가 `inst`를 캡처**한다
+(`base/lifecycle-pattern.md`의 "(0)" 절). 그 문서가 이미 대가로 못박아둔 게
+정확히 이것 — **"quad가 만든 Instance는 참조를 놓는 것만으로는 회수되지 않고
+반드시 `Destroy`로 회수된다."**
+
+즉 detached 노드는 아무도 안 들고 있어도 **자기 자신의 시그널 커넥션이 자기를
+살려서** 영원히 남는다. "부모가 Destroy돼도 안 죽는다"는 지적이 정확할 뿐
+아니라, **GC 폴백조차 없다.** 그래서 명시적 정리 경로가 **필수**다.
+
+### (2) 제안 — detached 요소는 `userdata`가 아니라 **Slot의 필드**가 들고 있어야 한다
+
+`ud`로 홀드하는 것도 물론 가능하지만(사용자가 원하면), **`:List` 자신도 별도로
+들고 있어야** 한다. 이유 셋:
+
+1. **`userdata`는 `:List`에게 opaque하다** — 계약상 "안을 전혀 안 들여다본다"
+   이므로, 정리 시점에 **뭘 죽여야 하는지 알 수가 없다.**
+2. **소유권이 Slot에 남아야 한다** — `elementOwner`가 여전히 이 Slot을 가리켜야
+   detached 요소를 다른 곳에 못 붙인다(안 그러면 "떼어놨는데 남이 가져감").
+3. **파괴 walk가 닿아야 한다** — `destroySlotTree`는 `_elements`만 훑는데
+   detached는 거기 없다. **이게 마지막에 물어보신 "+" 항목(`dispose`가
+   재귀적으로 잘 죽이는가)의 핵심**이다 — 아래 (5).
+
+그래서 `slot._detached[key] = element` 같은 **Slot 필드**를 제안한다(클로저
+업밸류가 아니라 필드여야 파괴 경로가 닿음).
+
+**부수 이득 — `ud`로 홀드할 필요가 없어진다.** `:List`가 들고 있으므로 다음
+사이클에 그냥 **`prev`로 다시 넘겨주면 된다.** `updateFn`은 `prev`를 그대로
+반환하는 것만으로 재마운트되고, "detach된 prev"와 "마운트된 prev"를 구분할
+필요도 없다(재마운트가 필요한지는 `:List`가 안다). 사용자가 `ud`에도 넣고
+싶으면 그건 그냥 자유.
+
+### (3) owner 죽음 처리 — `Effect` 사용에 동의, 단 **소유 층위가 `attachSlot`**
+
+제안하신 대로 `Effect`가 맞다. `bindLifetime`은 "실행해도 되는가"만 게이팅할 뿐
+**죽는 순간의 콜백을 안 주므로**, 실제 파괴를 하려면 cleanup 계약을 가진
+`Effect`가 유일한 도구다(`LP-2`에서 확정한 *"당장은 Effect 뿐임"* 과도 일치).
+
+```lua
+-- attachSlot 안(개념 스케치)
+local handle = Effect(function()
+    return function()   -- physicalTarget이 죽을 때 정확히 1회
+        for key, element in pairs(slot._detached) do
+            if isSlot(element) then destroySlotTree(element) else element:Destroy() end
+        end
+        slot._detached = {}
+    end
+end)
+bindLifetime(physicalTarget, handle)
+```
+
+**⚠️ 단, `activateList`가 아니라 `attachSlot`/`unmountSlotTree` 쌍이 소유해야
+한다.** `activateList`는 마운트당 한 번이지만, Slot은 **언마운트 후 다른
+physicalTarget에 재마운트**될 수 있다(포탈, 이미 확정된 동작). Effect가 옛
+target에 묶인 채로 남으면 **그 옛 target이 죽을 때 지금 살아있는 Slot의
+detached 요소를 파괴**한다. 그래서:
+
+- `attachSlot` — Effect 생성 + `bindLifetime(physicalTarget, handle)`
+- `unmountSlotTree` — `unbindLifetime(handle)`(다른 observer들 푸는 자리와 같은 줄)
+
+### (4) `KeyGone` 후 "다시 안 묻기"는 자동으로 성립한다 — 새 규칙 불필요
+
+`C-1`에서 제가 걱정했던 "홀드하면 매 사이클 다시 물어보게 되나"는 **지금
+구조에서 저절로 풀린다**:
+
+- 소멸 루프는 **직전 사이클의 `keyIndex`**(= 그때 데이터에 있던 키)만 순회한다.
+- 데이터에서 사라진 키는 이번 사이클 `keyIndex`에 안 들어가므로 **다음
+  사이클엔 소멸 루프 대상이 아니다** → 재질문 없음.
+- 홀드된 것은 `_detached`/`userdata`에 조용히 남아 있다가:
+  - **키가 데이터에 다시 나타나면** `prev`로 부활(정확히 filter 재등장 시나리오),
+  - **owner가 죽으면** (3)의 Effect가 정리.
+
+즉 `C-1`의 미결 4개 중 **2·3번(userdata 수명, 소멸 루프 순회 대상)이 이걸로
+닫힌다.** 남는 건:
+
+- **`updateFn`이 `KeyGone`을 받았을 때 `prev`를 그대로 반환하면?** — 키가 없는데
+  계속 마운트해두라는 뜻이라 모순이다. **`error`가 맞다고 본다**(다른 CRUD
+  에러 조건들과 같은 fail-fast 톤). 확인 부탁.
+- **`index`/`offset` 인자** — 사라진 키엔 위치가 없다. `updateFn` 시그니처가
+  `index: number`로 확정돼 있어 `nil`을 넣으면 타입이 바뀐다. **`0`을 넘기는
+  것**을 제안한다 — `offset`/`sum`이 이미 0-based 개수라 "아무 자리도 차지하지
+  않음"이 0으로 자연스럽게 표현되고, 타입도 안 바뀐다. `offset`은 그냥 Slot의
+  것을 그대로(항상 유효).
+
+### (5) `C-2`(unowned replace)는 **`Detach`와 섞지 말고 설치 단위 플래그**로
+
+*"Detach 에서 replace 가 있냐 없냐고 Detach 를 지울지 말지 결정해야한다.
+따라서, 차라리 Detach 이외의 무언가가 필요하다"* — **정확한 진단이고, 그래서
+반환값 계열에 하나를 더 만드는 것보다 축을 아예 분리하는 게 맞다.** 두 개념이
+직교하기 때문이다:
+
+| | `Detach` | unowned |
+|---|---|---|
+| 뜻 | "지금은 안 쓰지만 **내 것**" | "**애초에 내 것이 아님**" |
+| owner 죽을 때 | **같이 죽는다** | 안 죽는다(사용자 것) |
+| 언제 정해지나 | **사이클마다** 다름 | **설치 시점에 고정**(누가 만들었는가) |
+| 소유권 | Slot이 유지 | Slot이 애초에 안 가짐 |
+
+**마지막 행이 결정적이다** — unowned는 per-cycle 판단이 아니라 **"이 `:List`가
+만드는 요소인가, 사용자가 넘긴 요소인가"** 라는 설치 단위 속성이다. 그래서
+반환값에 넣으면 매 사이클 같은 답을 반복하게 되고, `Detach`에 얹으면 지적하신
+대로 의미론이 분화한다.
+
+**제안**: `:List`/`:Single`에 옵션 하나.
+
+```lua
+Slot:Single(state, updateFn?, opts?)   -- opts.Owned: boolean? (기본 true)
+Slot:List(data, updateFn, keyFn?, opts?)
+```
+
+- `Owned = true`(기본) — `:List`가 만든 것으로 간주. 교체/소멸 시 **파괴**,
+  `Detach`면 홀드했다가 owner 죽을 때 파괴.
+- `Owned = false` — 사용자 소유. **어떤 경로로도 파괴하지 않고 언마운트만**
+  한다(교체·`KeyGone`·owner 죽음 전부). `Slot:Add(state)` sugar가 이걸로
+  설치한다.
+- **`destroySlotTree`/`dispose`도 이 플래그를 봐야 한다** — `Owned = false`인
+  Slot을 파괴할 땐 자기 요소를 죽이지 않고 언마운트만. (아래 (6)과 직결)
+- **수동 CRUD와 안 부딪힌다** — `Owned` 플래그는 `:List`/`:Single`을 설치할
+  때만 생기고, 그 Slot은 `_listed`라 수동 CRUD가 이미 막혀 있다.
+- **혼합 케이스**(한 리스트에 내 것과 남의 것이 섞임)는 표현 못 하지만, 실사용
+  사례가 안 떠오르고 필요하면 그때 `Detach` + 수동 관리로 우회 가능하다.
+
+**이름**: `Owned`가 무난해 보인다. `Unowned = true`(부정 기본값)보다 읽기 쉽고,
+`elementOwner`/`claimOwner`/`releaseOwner`라는 기존 어휘와 같은 뿌리다.
+**더 나은 이름이 있으면 알려주면 그걸 쓰겠다.**
+
+### (6) 마지막 "+" 항목 — `dispose`가 slot-in-slot에서 재귀적으로 잘 죽이는가
+
+**지금 상태 그대로면 "절반만" 죽인다.** 확인 결과:
+
+- ✅ **중첩 Slot 재귀는 이미 된다** — `destroySlotTree`가 `_elements`를 훑다
+  `isSlot(element)`면 `destroySlotTree`로 재귀한다.
+- ✅ **`dispose(slot)`도 그 walk를 그대로 탄다** — "아직 트리에 요구되고 있으면
+  거부, 아니면 재귀 파괴".
+- ❌ **detached 요소는 안 죽는다** — `_detached`는 `_elements`에 없으므로 walk가
+  닿지 않는다. (2)에서 필드로 두자고 한 이유가 이것.
+- ❌ **`:List`의 `mounted`/`userdata`/`keyIndex`는 `activateList`의 클로저
+  업밸류**라 파괴 walk가 손댈 수 없다. Slot이 통째로 unreachable해지면 클로저도
+  같이 죽으니 **부기 자체는 문제없지만**, 그 안에 사용자가 넣어둔 게 quad-제작
+  Instance면 (1)의 이유로 안 죽는다.
+
+**그래서 필요한 것**(위 제안들의 귀결):
+
+1. `slot._detached`를 **필드로** 두고 `destroySlotTree`가 `_elements` 다음에
+   그것도 훑어 파괴.
+2. `unmountSlotTree`는 **`_detached`를 안 건드린다**(언마운트는 파괴가 아니고,
+   재마운트 시 그대로 이어져야 함).
+3. `Owned = false`면 `destroySlotTree`도 파괴 대신 언마운트.
+4. `userdata` 안의 것은 여전히 **사용자 책임** — 이미 확정된 "`userdata`엔
+   GC만으로 정리되는 값만 담을 것" 제약(`SL-38`)에 **"quad가 만든 Instance는
+   GC로 안 죽는다"를 명시적 예시로 추가**해야 한다. 지금 그 절은
+   `:Subscribe()`한 Observer만 예로 들고 있어서 Instance는 안전해 보인다.
+
+→ **(1)~(6) 전체가 맞나?** 특히 (5)의 `Owned` 플래그 방향과 (2)의 "detached는
+Slot 필드"가 핵심이다. **여기 동의가 나오면 `C-1`/`C-2`/`SL-45`/"+"가 한 번에
+닫히고, 그때 base 반영을 하겠다**(지금은 하나도 안 고쳤다).
+
+## F-4. 새로 발견한 불일치 2건 + 재질문 1건
+
+### F-4-1. ⚠️ `B-2`의 조건이 지금 안 맞는다 — 두 패스가 정말 "단순 일반화 for"인가
+
+**조건부 확인**: *"ipairs, pairs 를 따로 사용하게 되는게 아닌 단순 일반화 for
+로써 얻어지는게 맞는 상태라면, 맞는 구현이다."*
+
+**확인해보니 지금은 그 조건이 안 맞는다.** M0 스파이크
+`luau-test/done/01-two-pass-array-hash-order.luau`는 **루프를 두 번 돈다**:
+
+```lua
+-- pass 1: 숫자 for
+local n = #flattened
+for i = 1, n do ... end
+-- pass 2: 일반화 for, 배열 인덱스(1..#t)는 건너뜀
+```
+
+`ipairs`/`pairs`를 따로 쓰는 건 아니지만 **순회 자체가 2회**다.
+
+**단일 일반화 `for` 하나로 줄일 수 있는가 — 가능해 보인다**:
+
+- `flattened`는 **항상 Luau 테이블**이다. 백엔드가 뭐든 props는 사용자가 쓴
+  Lua 테이블 리터럴에서 오므로, `B-2`에서 근거로 든 "다른 백엔드가 props를 Lua
+  테이블이 아닌 자료구조로 표현할 수도"는 **`inst`에는 해당해도 `flattened`에는
+  해당하지 않는다** — 그 근거가 과했던 것 같다.
+- 그러면 단일 일반화 `for k, v in flattened do`가 배열 → 해시 순서를 그대로
+  주고, `type(k) == "number"`로 두 층위를 가르면 된다. **순회 1회 절약.**
+- 어차피 `PreRef`/`PostRef` pre-pass가 별도 순회 하나를 쓰므로, 전체는
+  **2회(pre-pass + 본 루프)** vs 지금 **3회**가 된다.
+
+**남는 위험 하나**: 단일 일반화 `for`는 "배열 파트 전체가 해시 파트보다 먼저"를
+**Luau 테이블 구현에 의존**한다. `nil`-hole로 배열 파트가 쪼그라들면 일부 숫자
+키가 해시 파트로 밀려 순서가 섞이는데, 이건 `#flattened`를 쓰는 지금 방식도
+똑같이 깨지므로 **차이가 아니다**(둘 다 `02`/`06` 스파이크의 nil-hole 규율에
+의존).
+
+→ **판단 부탁**: (a) 단일 일반화 `for`로 바꾸고 스파이크 `01`도 그 형태로
+재작성, (b) 지금의 두 루프 유지. **저는 (a)를 추천**한다 — 순회가 하나 줄고,
+"명시적 두 패스"의 진짜 근거(이식성)는 `flattened`엔 애초에 적용되지 않기
+때문이다. 다만 `01`이 이미 통과한 스파이크라 재작성 판단은 사용자 몫.
+
+### F-4-2. ⚠️ `C-3` 코드의 반복 방향 — 정방향이면 merge 우선순위가 뒤집힌다
+
+주신 `flatten` 스케치를 그대로 반영하되 **반복 방향만 역순으로 고쳤다.** 이유:
+
+```lua
+if input[key] ~= nil then continue end   -- "이미 있으면 건너뛴다" = 먼저 쓴 쪽이 이김
+```
+
+- 정방향(`for i = 1, #input`)이면 배열 **앞쪽** modifier가 먼저 써서 이긴다.
+- 그런데 확정된 규칙은 `modifier-plan.md` 2번의 **"배열 순서상 *나중* modifier가
+  우선"**이다.
+- **역순(`for i = #input, 1, -1`)**으로 돌면 마지막 modifier가 먼저 써서 이기므로
+  규칙과 맞는다.
+- **인라인 우선은 어느 방향이든 그대로 성립** — 인라인 해시 키는 루프가 돌기
+  전에 이미 테이블에 있으므로 항상 이긴다. (`None`도 실재값이라 같이 잡힘 —
+  주신 "`nil` 확인으로 충분" 판단 그대로.)
+
+나머지(in-place 뮤테이션, 클론 안 함, `ProcessedModifier` 소진, 숫자 `for`
+도중 해시 키 추가 안전)는 그대로 반영했다.
+
+→ **역순이 맞나?** (혹시 merge 우선순위 쪽을 "앞이 이김"으로 바꿀 생각이셨다면
+그게 더 큰 변경이라 따로 알려주면 좋겠다.)
+
+### F-4-3. `C-5` — `setLength` 위치, 두 해석이 갈린다
+
+**"동의"를 받았는데 제 제안과 열거해주신 4단계가 서로 다른 자리를 가리켜서,
+임의로 안 고치고 그대로 뒀다.**
+
+- **제 `C-5` 제안**: `Dispatch.setLength(ownerKey, position, slot.Length)`를
+  **flush 루프 *뒤*(recompute 다음)**로 옮긴다 → 부모가 `Length = 0`으로 한 번
+  헛도는 걸 없앰.
+- **열거해주신 4단계**: 1 `setOffsetSource` → 2 액티베이션 → **3 `setLength`** →
+  4 실제 등록(마운트). 이 순서면 `setLength`가 flush **앞**이고, **그건 지금
+  코드와 같은 자리**다.
+
+**어느 쪽이든 트레이드오프가 하나씩 있다**:
+
+| | flush **앞**(현행/4단계) | flush **뒤**(제 제안) |
+|---|---|---|
+| 부모 recompute 횟수 | **2회** — 등록 즉시 1회(`Length`=0) + flush 끝나고 1회 | **1회** |
+| `C-7` 일반 계약("부기 먼저") | **지킴** — 이 Slot의 기여가 자기 요소 마운트보다 먼저 반영 | **어김** — 요소가 붙은 뒤에 부모 부기가 갱신됨 |
+| 값 정확성 | 결국 맞음(자기 교정) | 처음부터 맞음 |
+
+- **`Length`를 flush 앞에서 최종값으로 아는 건 불가능하다** — 중첩 Slot 요소의
+  `.Length`는 그 요소의 `attachSlot`이 돌아야 정해지는데, 그게 flush 루프
+  안이다. 그래서 "3단계에서 확정된 길이로 setLength"는 **평범한 Instance
+  요소만 있을 때만** 성립한다.
+- **프레임 경계는 어느 쪽이든 안 낀다**(yield 금지) — 그래서 "어겨도 안 깜빡인다"
+  이고, 순수하게 **일관성 vs 낭비 1회**의 선택이다.
+
+→ **판단 부탁**: (a) 현행 유지(일관성 우선, 낭비 1회 허용) / (b) flush 뒤로
+이동(낭비 제거, `C-7` 계약에 예외 하나 명시) / (c) flush 루프를 "부기 phase →
+마운트 phase" 둘로 쪼개 둘 다 만족(가장 정확하지만 재귀 구조를 손대야 해서
+비용이 큼). **저는 (a)를 추천**한다 — 낭비가 "뒤에 형제가 있을 때 offset이 두 번
+`Set`되는" 것뿐이고, `C-7`을 방금 일반 계약으로 올린 직후에 예외를 만드는 게
+더 비싸 보인다.
+
+## F-5. 이번에 base에 반영한 것
+
+| 항목 | 반영 내용 | 대상 |
+|---|---|---|
+| `B-1` | (A) 분기 = 교체, `retractFrom` = stack-down 구분 명시 | `dispatch-core-plan.md` |
+| `B-3` | `MaybeWrapHandler` 가상 위반 예시 추가 | `dispatch-core-plan.md` |
+| `B-4` | `Brand` 존재 이유 한 줄 + duck-typing 근거 2분할 | `brand-plan.md` |
+| `C-3` | flatten의 정확한 형태(in-place, `ProcessedModifier` 소진, 인라인 우선이 `~= nil`로 성립) — **반복 방향만 역순으로 정정**(`F-4-2`) | `modifier-plan.md` |
+| `C-4` | `destroySlotTree`의 명시적 `releaseOwner` 제거 + 왜 `rawRemove`와 갈리는지 | `slot-plan.md` |
+| `C-6` | `recompute`의 `sourceList[i] == nil`을 skip → **즉시 `error`** | `slot-plan.md`, `dispatch-core-plan.md` |
+| `C-7` | **"부기가 물리 트리 조작보다 항상 먼저"를 일반 계약으로 승격** — 각 `raw*`에 어떻게 적용되는지(빼기는 물리 먼저/넣기는 부기 먼저가 같은 원칙의 두 얼굴)와, 프레임 경계가 어차피 안 낀다는 진짜 근거까지 | `dispatch-core-plan.md` |
+
+**안 고친 것**: `C-1`/`C-2`(F-3 동의 대기), `C-5`(F-4-3 판단 대기),
+`B-7`의 base 표현(`ownerKey` vs "owner" — F-3/F-4가 정리되면 같이).

@@ -471,16 +471,35 @@ releaseOwner(element, slot)
 클레임 미접촉) 무조건 error가 맞음 —
 top-level만 `claimOwnerAt`으로 spurious 재발행을 구분함.
 
-**[2026-08-13 감사] 소유권 반납은 GC에 맡기면 안 됨.** `elementOwner`는
-값도 `SetWeak`이라 "파괴된 Slot이 아무에게도 참조되지 않게 되면 소유권
-기록도 저절로 사라진다"가 원리적으로는 맞지만, **그게 언제인지가 GC
-타이밍에 달려 있어서** 그 전에 같은 element를 다른 곳에 넣으려 하면
-"이미 마운트돼 있음" error가 비결정적으로 터짐(사용자가 직접 들고 있는
-nested `Slot`을 파괴 후 재사용하는 경로가 정확히 이 케이스). 그래서
-`rawRemove`/`rawExtract`뿐 아니라 **`destroySlotTree`도 자기 자식들의
-`releaseOwner`를 명시적으로 부름** — 원래 이 함수는 소유권을 전혀 안
-건드리고 있었음. top-level Slot 자신의 반납은 `SlotHandler.process`가
+**[2026-08-13 감사] 소유권 반납은 GC에 맡기면 안 됨** — `rawRemove`/
+`rawExtract`처럼 **요소를 살려서 내보내는** 경로에 한해 그렇다. `elementOwner`는
+값도 `SetWeak`이라 "아무에게도 참조되지 않게 되면 소유권 기록도 저절로
+사라진다"가 원리적으로는 맞지만, **그게 언제인지가 GC 타이밍에 달려 있어서**
+그 전에 같은 element를 다른 곳에 넣으려 하면 "이미 마운트돼 있음" error가
+비결정적으로 터짐. top-level Slot 자신의 반납은 `SlotHandler.process`가
 반환한 클로저가 담당(층위 분리는 `unbindLifetime`과 동일한 원칙).
+
+**[재정정, 2026-08-20 구현 전 QA 4라운드 `C-4`] 단, `destroySlotTree`는 이
+규칙의 대상이 아니다 — 명시적 `releaseOwner`를 도로 뺀다.** 2026-08-13
+감사가 같은 근거로 `destroySlotTree`에도 넣었었는데, 사용자 판정으로
+되돌림: *"Destroy 된 요소는 다른곳에 원래 마운트 못하는게 보통 엔진
+정상이고, 또, 릴리즈 안 되어 다른곳에 마운트 막혀도 상관 없고, 그게 정상
+동작일 수 있어보임."*
+
+- **막히는 게 정상이다** — 파괴된 요소를 다른 곳에 다시 넣으려는 코드는 그
+  자체로 버그다. "비결정적으로 실패"의 반대는 "성공"이 아니라 **"항상
+  실패"**이고, 그게 더 나은 동작이다. 명시적 반납은 오히려 그 버그를
+  통과시켜 죽은 Instance를 엉뚱한 데서 터지게 만든다.
+- **`rawRemove`/`rawExtract`와 갈리는 이유**: 그쪽은 요소를 **살려서**
+  호출자에게 돌려주는 경로라 "이제 다른 곳에 넣어도 된다"가 정상 시나리오다.
+  `destroySlotTree`는 그 반대 — 요소가 죽는다.
+- **남는 성질**: 반납을 안 하므로 GC 전엔 error, GC 후엔 통과라 **여전히
+  비결정적**이다. 그래도 두 결과 모두 "버그 있는 코드"에 대한 것이라
+  실사용 위험이 없고, 결정적으로 만들려면 "파괴됨" 마킹이라는 새 부기가
+  필요해 `conventions.md`의 "드문 오용이나 가상의 미래 요구까지 방어/
+  최적화하려고 구조를 복잡하게 만들지 않는다" 원칙에 어긋난다. 파괴된 값의
+  재사용이 UB라는 건 `Ref`("Destroy와는 무관")에서 이미 확립된 관례이기도
+  하다.
 
 `ownerKey`가 `inst`(top-level)든 `Slot`(nested)든 `elementOwner`는
 타입을 신경 안 써서 하나의 레지스트리로 충분 — `outerSlot`이 값으로
@@ -1702,9 +1721,9 @@ end
 
 local function destroySlotTree(slot)
     for i, element in ipairs(slot._elements) do
-        -- [정정, 2026-08-13 감사] 소유권 반납을 먼저 — 아래 "소유권 반납은
-        -- GC에 맡기면 안 됨" 참고
-        releaseOwner(element, slot)
+        -- [재정정, 2026-08-20 구현 전 QA 4라운드 `C-4`] 여기서 releaseOwner를
+        -- 명시적으로 부르지 **않는다** — 2026-08-13 감사가 넣었던 것을 되돌림.
+        -- 근거는 아래 "소유권 반납은 GC에 맡기면 안 됨" 절의 재정정 참고.
         if isSlot(element) then
             destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
         else
@@ -1989,12 +2008,15 @@ return Slot {
 중첩한 경우에도 정확히 같은 규칙 하나로 동작함(래퍼 sugar는 그저 그
 일반 메커니즘의 사용자일 뿐).
 
-**단 이 결론은 위 "요소 소유권" 절의 2026-08-13 감사 수정 셋을 전제함** —
+**단 이 결론은 위 "요소 소유권" 절의 2026-08-13 감사 수정 **둘**을 전제함** —
 (1) nested `claimOwner`가 엄격(같은 owner 재클레임도 error)이라
 `Slot { a, a }`가 실제로 막히고, (2) `rawRemove`/`rawUnmount`가
-`releaseOwner`를 실제로 부르고(의사코드에서 빠져 있었음), (3) `destroySlotTree`가 자식
-소유권을 GC에 안 맡기고 명시적으로 반납. 셋 중 하나라도 빠지면 이 표의
-중간 단계가 어긋남.
+`releaseOwner`를 실제로 부름(의사코드에서 빠져 있었음). 둘 중 하나라도
+빠지면 이 표의 중간 단계가 어긋남.
+**[정정, 2026-08-20 `C-4`]** 원래 여기 셋째로 "(3) `destroySlotTree`가 자식
+소유권을 명시적으로 반납"이 있었으나 그 수정 자체가 되돌려졌다(같은 절의
+재정정 참고) — **이 표와는 무관**하다. 이 표가 다루는 건 `reconcile`의
+`rawUnmount`→`rawAdd` 왕복이고 파괴 경로가 아니기 때문.
 
 ### [전면 정정, 2026-08-13 여섯 번째 세션 후속, 사용자 결정] `State<Slot>` 교체는 **파괴가 아니라 언마운트** — `state<Frame>`와 완전히 동일
 
@@ -2238,11 +2260,24 @@ state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는
   - **따라서 `Slot.Offset`은 "마운트 전엔 `nil`"이 아니다** — 아래
     "`Slot.Offset`도 `Slot.Length`와 마찬가지로 공개 필드" 관련 서술과
     `unmountSlotTree` 의사코드도 이 정정에 맞춰 갱신됨(같은 라운드).
-- **`recompute`는 `sourceList[i]`가 `None`이든 `nil`이든 "참여 안 함"으로
-  똑같이 관대하게 넘어갈 것** — 정상 상태에선 항상 `None`으로 채워지는 게
-  계약이지만(`nil`은 배열에 구멍을 냄), 해제/재마운트가 얽히는 전이
-  구간에서 `nil`이 관측돼도 크래시 대신 skip이어야 함. 이건 계약 완화가
-  아니라 **순수 방어** — 등록 쪽은 여전히 `None`을 쓸 의무가 있음.
+- **⚠️ [전면 정정, 2026-08-20 구현 전 QA 4라운드 `C-6`] `recompute`가
+  `sourceList[i] == nil`을 관대하게 skip하지 않는다 — 즉시 `error`다.**
+  옛 서술은 "해제/재마운트가 얽히는 전이 구간에서 `nil`이 관측돼도 크래시
+  대신 skip"이었는데, 사용자 의문(*"애초에 해제에서 nil이 관측 될 일이
+  없다고 생각하는데"*)을 받아 다시 추적한 결과 **지금 설계에서 도달
+  경로를 찾지 못했다**:
+  - `bk.N`이 "그때그때 실제 개수"로 확정돼(2026-08-18) `lengthList`/
+    `sourceList`가 아직 안 채워진 위치를 `recompute`가 읽을 일 자체가 없음.
+  - 배치 등록 중엔 Blocker 게이팅으로 `recompute`가 아예 안 돎.
+  - 해제는 `setOffsetSource(None)` → `setLength(0)`이라 `None`이지 `nil`이
+    아님.
+  - `spliceArraysDown`은 배열을 **압축**하므로 중간에 구멍을 안 남김.
+
+  그러면 `nil`이 관측된다는 건 **부기가 깨졌다는 신호**이고, 관대한 skip은
+  "위치 하나가 조용히 순서 계산에서 빠지는" 추적 어려운 오작동이 된다 —
+  `Dispatch`의 "매치 실패는 조용한 무시 없이 즉시 error"/`releaseOwner`
+  불일치 error와 같은 톤으로 **즉시 error**가 맞다(사용자 동의).
+  등록 쪽이 `None`을 쓸 의무는 그대로.
 
 **`state<state<Frame>>`류로 offset이 밀리고 당겨지는 문제는 "그냥 확인된
 것"으로 수용**(사용자 판단) — `state<state<Tag>>`와 같은 범주로,

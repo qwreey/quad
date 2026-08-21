@@ -39,6 +39,70 @@ cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 
 아닌 값은 flatten을 그냥 통과함 — `component-composition-plan.md`의
 "필수 관용구" 절 참고).
 
+### flatten의 정확한 형태 — in-place 뮤테이션 + `ProcessedModifier` 소진 (2026-08-20 구현 전 QA 4라운드 `M-2` 확정)
+
+**여기 있던 갭**: 위 문단은 "Modifier 항목의 필드를 뽑아 merge한다"고만 적고
+**뽑아낸 그 배열 자리를 어떻게 하는지를 한 번도 안 적었다.** 그냥 지우면
+배열에 구멍이 생기고, 그건 `PreRef` pre-pass가 `ProcessedPreRef`로 소진해야
+했던 바로 그 이유(구멍 하나로 테이블 전체가 해시 취급이 되어 배열 파트
+순서 보장을 잃음, `base/ref-plan.md`)에 정확히 걸린다.
+
+**확정(사용자 판정)**: `Pre`/`PostRef`와 **완전히 같은 방식** — 전용 센티널
+`ProcessedModifier`로 그 자리를 소진하고, 전담 nop Handler
+`ProcessedModifierHandler`가 정상 `Dispatch.process` 경로에서 캐치해
+`setOffsetSource(None)`/`setLength(0)`을 등록한다. **새 규칙이 하나도 안
+늘어난다.**
+
+**그리고 flatten은 새 테이블을 만들지 않는다 — 입력을 제자리에서 뮤테이션한다**
+(사용자 판정: *"flatten은 클론을 할 필요도 없음. derive 에 들어갈 것 자체가
+그 자체로 소비되는 테이블이라 그 이후 사용하는 경우가 존재하지 않고, 새
+테이블을 만드는 비용 자체를 지불할 필요가 없음"*). props 테이블 리터럴은
+그 호출 한 번을 위해 만들어져 소비되고 끝이므로 원본 보존 의무가 없고,
+`Pre`/`PostRef` 소진이 이미 `flattened`를 제자리에서 갈아치우는 것과 같은
+취급이다.
+
+```lua
+-- 사용자 제시 형태(반복 방향만 아래 ⚠️대로 정정)
+function flatten(input)
+    for i = #input, 1, -1 do          -- ⚠️ 역순 — 아래 참고
+        local value = input[i]
+        if not isModifier(value) then
+            continue
+        end
+        input[i] = ProcessedModifier   -- 구멍 대신 센티널로 소진
+
+        for key, modValue in value... do
+            if input[key] ~= nil then
+                -- 이미 누가 차지한 자리는 건드리지 않음.
+                -- 언셋은 `None`(실재값)이므로 `~= nil` 확인 하나로 충분 —
+                -- 인라인 `None`도 "이미 차지함"으로 잡혀 modifier를 이김.
+                continue
+            end
+            input[key] = modValue
+        end
+    end
+    return input
+end
+```
+
+- **왜 `~= nil` 하나로 인라인 우선이 성립하나**: 인라인 해시 키는 flatten이
+  돌기 **전에 이미 테이블에 들어 있다**. 그래서 "이미 값이 있으면 건너뛴다"가
+  곧 2번 절의 "인라인 키는 modifier보다 무조건 우선" 규칙이 된다 — 별도
+  분기가 필요 없음. 명시적 unset(`None`)도 실재값이라 같은 검사에 잡힌다.
+- **⚠️ 반복은 반드시 역순(`#input` → `1`)이어야 한다.** "이미 있으면
+  건너뛴다"는 **먼저 쓴 쪽이 이기는** 규칙이라, 정방향으로 돌면 배열
+  **앞쪽** modifier가 이겨 2번 절의 "배열 순서상 **나중** modifier가 우선"과
+  정반대가 된다. 역순으로 돌면 마지막 modifier가 먼저 써서 이긴다 —
+  인라인 우선은 어느 방향이든 그대로 성립(인라인은 루프 시작 전에 이미
+  들어 있으므로).
+- **배열 파트를 훑으며 해시 키를 같이 쓰는 것은 안전** — 숫자 `for`의 상한이
+  루프 진입 시 한 번만 평가되고, 해시 파트 추가는 그 순회에 영향을 주지
+  않는다.
+- **`ProcessedModifier`의 공개 표면 위치**는 `Detach`/`None`과 같은 판단을
+  따른다 — 다만 이건 사용자가 볼 일이 전혀 없는 **내부 센티널**이라
+  최상위로 재노출할 이유가 없어 보인다(`ProcessedPreRef`/`ProcessedPostRef`가
+  그렇듯). 구현 시 그 둘과 같은 자리에 둘 것.
+
 관련: 이미 마운트된 Instance에 재바인드할 때 Default→실값 flatten을 다시
 해야 하는지/clone이 필요한지는 별개 문제였는데, **[2026-08-14 세션] 그
 재바인드 기능 자체가 기각**되어 질문이 없어짐
