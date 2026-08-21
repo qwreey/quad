@@ -1,6 +1,7 @@
 # `Gate` — emit을 가로채는 공용 게이트 노드 (2026-08-21 신설)
 
-**상태**: research — **방향은 사용자 확정, 정확한 표면이 미정.
+**상태**: research — **방향은 사용자 확정, 정확한 표면이 미정(단 [2026-08-21]
+"`:Apply`가 아니라 State 메소드"까지는 확정됨 — 아래 2번).
 [2026-08-21] 사용자 지시로 설계 자체는 다음 세션으로 미룸** — *"고칠것이 많으므로
 Gate 는 다음 세션에 다루겠음. 해당 부분은 정정이 아니고 추가이고, 새 인터페이스를
 고민해야하므로 해결해야할 일로 남겨두길 바람. 단지 지금 세션 상 지식만 이전될 수
@@ -62,11 +63,32 @@ end)
    (`Source`/`Ref`/`Slot`/`Tween`도 전부 `-er` 없는 명사). 대안 후보:
    `Valve`(밸브 — 흐름 제어라는 뜻은 더 정확하지만 코퍼스 어휘와 멀다),
    `Relay`(전기 릴레이 — "받아서 다시 보낸다"는 뜻은 맞으나 "중계"로 오독 여지).
-2. **`:Apply` 팩토리인가, 독립 생성자인가.** `Debounce`/`Throttle`이
-   `state:Apply(Debounce{...})` 관용구로 확정돼 있으므로 `state:Apply(Gate(setup))`가
-   자연스럽다. 그런데 `Blocker()`는 **여러 state에 공유되는 외부 객체**라 모양이
-   다르다 — `Blocker`가 `Gate` 위에 어떻게 얹히는지(`blocker`가 각 gated state마다
-   `Gate`를 하나씩 만들어 자기 정책을 심는 형태?)를 같이 정해야 한다.
+2. **[2026-08-21 해소] `:Apply`가 아니라 State의 메소드다 — `state:Gate(setup)`.**
+   **사용자 확정**: *"gate 는 apply 불가하다고 판단함. 순수 슈가가 아니기 때문,
+   state 의 전파를 손대는 작업이라 with 처럼 다른 노드가 나는게 맞음."*
+   - **정확한 경계**: `Apply`는 `factory(self)`일 뿐이라(`base/source-state-plan.md`의
+     "`state:Apply(factory)`" 절) 팩토리가 노드를 만드는 것 **자체는** 금지가
+     아니다 — 확정 예시의 `capAt(100)`도 `:With` 노드를 만든다. 갈리는 지점은
+     **누가 프리미티브인가**다: `:With`/`:Compute`처럼 **전파 경로에 새 종류의
+     노드를 끼우는 것은 State의 메소드**, 그 프리미티브들을 조합한 **유저랜드
+     팩토리는 `:Apply`**. `Gate`는 전자다.
+   - **그래서 `Debounce`/`Throttle`은 `:Apply` 그대로 둔다** —
+     `Debounce{...}`가 돌려주는 팩토리가 내부에서 `s:Gate(policy)`를 부르면
+     되므로 `base/debounce-throttle-plan.md`의 확정 관용구는 안 건드려도 된다.
+   - **`Blocker` 배선 문제도 같이 사라진다.** `base/blocker-plan.md`가 이미
+     **`state:Block(blocker) -> state`(새 gated state 반환)** 라는 **메소드**로
+     확정해뒀으므로, `Block`이 내부에서 `self:Gate(blocker의 정책)`을 부르는
+     것으로 끝난다 — `blocker` 객체를 `Apply`에 넘길 일이 없다.
+   - **`__call`은 안 쓴다.** 사용자도 *"이상적이여 보이지는 않음"*이라 했고,
+     타입 쪽 근거가 하나 더 있다 — `__call` 테이블이 Luau에서 `(State<T>) -> U`
+     함수 타입 자리에 그대로 들어가는지가 불확실하다(들어가지 않는 쪽이 유력).
+     `Apply`를 쓸 이유 자체가 없어졌으므로 확인할 필요도 없어졌지만, 혹시
+     되살아나면 `luau-test` 스파이크 한 개로 판정할 것.
+   - **2단 구조는 그대로 유효하다** — 사용자 관찰(*"Gate 의 callback 으로 얻어진
+     emit과, 리턴해낸 클로저가 호출되는걸로 배선은 가능"*) 대로, 바깥 함수가
+     **그 노드의 `emit`을 캡처**하고 반환 클로저가 상류 emit마다 정책을 태운다.
+     `Blocker`처럼 **여러 노드가 공유하는 정책**은 공유 상태를 바깥 객체가 들고,
+     노드별 `emit`만 2단 구조로 받아 등록하면 된다.
 3. **`Get()`과의 관계.** `Blocker`는 `:Get()`에 영향이 없고(`base/blocker-plan.md`),
    `Debounce`/`Throttle`도 emit-gate로 확정됐다(`base/debounce-throttle-plan.md` §4).
    `Gate`도 **값이 아니라 통지만 막는다**로 통일하는 게 맞는지 확인 필요 —
