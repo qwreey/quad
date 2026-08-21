@@ -183,9 +183,141 @@ R1(부모 등록)까지 따로 떼는 안. `Dispatch.drive`의 최상위 배열 
 
 ## 5. 지금 상태 요약
 
+> **[2026-08-21 갱신] 사용자 판단으로 (B) 방향 + "공개 표면은 안 쪼갬"까지
+> 좁혀졌다** — 구체안은 아래 **6절**이 최신이고, 이 절과 3절은 거기까지 온
+> 경로다.
+
 - **확정된 건 없다.** `base/slot-plan.md`의 단일 `attachSlot`이 여전히 정본.
 - **급하지 않다** — (A)로 두어도 동작은 맞고(자기 교정), M2/M3 착수를 막지
   않는다. 다만 **M6(`:List`) 구현 전에는 정해두는 게 낫다** — 그 시점에
   `activateList`/`rawAdd`/`attachSlot`을 실제로 짜기 때문.
 - **선행 항목**: 위 4-6번대로 `F-3`(`Detach` 보관 위치 + `KeyGone`)이 먼저
   닫히면 이 논의의 요구사항이 완전해진다.
+
+---
+
+## 6. (B)를 실제로 쪼갠다면 — 구체안 (2026-08-21, 사용자 질문에 대한 답)
+
+**사용자 판단**: *"자식중 slot 이 있으면 activateList 로 실체화 하고 길이를
+구해서 대입해주는게 맞는듯. 즉 말했던것인 B. 그런데 쪼개야할지 의문이 들긴 함.
+attachSlot 이라는 이름이 하는 일로써 정당해보이긴 함 … 혹시 쪼갠다면 어떻게
+쪼갤것 같아?"*
+
+### 6-1. 먼저 — **공개 표면은 안 쪼개도 된다**
+
+`attachSlot`이라는 이름이 정당하다는 판단에 동의한다. **쪼개야 하는 건
+호출부에 보이는 함수가 아니라 재귀 자체다.**
+
+- (B)가 요구하는 건 **"부기는 bottom-up으로 다 만든 뒤, 물리는 top-down으로
+  붙인다"** 인데, 그러려면 재귀가 **두 번** 돌아야 한다(한 번은 길이를
+  올리려고, 한 번은 붙이려고).
+- 재귀를 두 번 돌리려면 진입점이 둘이거나 모드 파라미터가 필요하다 —
+  **그게 "쪼갠다"의 실체**이고, 공개 `attachSlot`을 없애자는 뜻이 전혀 아니다.
+- 그래서 제안은 **`attachSlot`은 이름·시그니처·호출부 전부 그대로 두고, 몸통을
+  비공개 재귀 헬퍼 둘로 나누는 것**. `attachSlot`의 몸통은 두 줄이 된다.
+
+### 6-2. 구체안 — `materializeSlotTree` / `mountSlotTree`
+
+이름은 코퍼스가 이미 쓰는 `unmountSlotTree`/`destroySlotTree`의 `...SlotTree`
+접미사(= 재귀 walk)를 그대로 따랐다.
+
+```lua
+-- 비공개 재귀 1: 부기만 만든다. 물리 마운트 없음.
+local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
+    -- R1 — offset 먼저(C1: activateList가 updateFn에 넘겨야 함)
+    local offsetSource = Source(0)
+    Dispatch.setOffsetSource(ownerKey, position, offsetSource)
+    slot.Offset = offsetSource
+
+    -- R2 — _mounted는 여전히 false (C2: RC-3/RC-4)
+    if slot._listed then activateList(slot, physicalTarget) end
+
+    -- R5 + R6a + R7 — 자식 부기만, 재귀로 길이를 bottom-up으로 확정
+    local blocker = getBlocker(slot)
+    blocker:On()
+    for i, element in ipairs(slot._elements) do
+        if isSlot(element) then
+            materializeSlotTree(element, physicalTarget, slot, i)  -- 자기 길이를 slot[i]에 등록하고 옴
+        else
+            Dispatch.setOffsetSource(slot, i, None)                -- C4 순서
+            Dispatch.setLength(slot, i, 1)
+        end
+    end
+    blocker:OffWithoutEmit()
+    recompute(slot, bk)                     -- 여기서 slot.Length가 최종값으로 확정
+
+    -- R4 — 자기 길이를 부모에게. 이제 **최종값**이다 (C6)
+    Dispatch.setLength(ownerKey, position, slot.Length)
+end
+
+-- 비공개 재귀 2: 물리만 붙인다.
+local function mountSlotTree(slot, physicalTarget)
+    slot._mounted = true                    -- R3 (C3)
+    slot._mountedInst = physicalTarget
+    for i, element in ipairs(slot._elements) do
+        if isSlot(element) then mountSlotTree(element, physicalTarget)
+        else element.Parent = physicalTarget end   -- R6b
+    end
+end
+
+-- 공개 진입점 — 이름/시그니처/호출부 전부 그대로
+local function attachSlot(slot, physicalTarget, ownerKey, position)
+    materializeSlotTree(slot, physicalTarget, ownerKey, position)
+    mountSlotTree(slot, physicalTarget)
+end
+```
+
+**핵심은 `setLength`가 `materializeSlotTree`의 *끝*으로 간 것** — 자기
+길이를 부모에게 알리는 일이 자기 서브트리 부기가 다 끝난 뒤이므로 **처음부터
+최종값**이고, 그러면서도 **어떤 `Parent` 대입보다도 먼저**다. 나머지 재귀
+단계에서 자연스럽게 대칭이 된다(중첩 슬롯은 자기 `materialize` 끝에서
+`slot[i]`에 자기 길이를 등록하므로, 부모 루프가 따로 등록해줄 필요가 없다).
+
+### 6-3. C1~C7 재점검 — 전부 유지된다
+
+| 제약 | 어디서 지켜지나 |
+|---|---|
+| C1 (`Offset` → `activateList`) | `materializeSlotTree` 앞 두 줄 |
+| C2 (`activateList`는 `_mounted == false`) | `_mounted`는 `mountSlotTree`에서만 켜짐 — **오히려 지금보다 더 확실해짐**(중간에 켜질 자리가 아예 없음) |
+| C3 (반환 시 `_mounted == true`) | `attachSlot`이 `mountSlotTree`를 부르고 끝남 |
+| C4 (`setOffsetSource` → `setLength`) | 중첩: 자식 materialize의 첫 줄(offset) → 마지막 줄(length). 평범: 루프 안 두 줄 |
+| C5 (Blocker가 자식 배치 전체를 감쌈) | `blocker:On()` … `OffWithoutEmit()`이 루프를 감쌈. 자식의 `setLength`가 부모 blocker에 막혀 스킵되는 것도 그대로 |
+| **C6 (최종값으로 등록)** | ✅ **이제 만족** — `recompute` 다음 줄이라 최종값 |
+| **C7 (부기가 물리보다 먼저)** | ✅ **이제 만족** — 모든 `Parent` 대입이 `mountSlotTree`에 몰려 있고 그건 부기가 다 끝난 뒤 |
+
+**부수 이득**: 지금은 배치 밖 재마운트에서 부모 `recompute`가 **2회**
+돌았는데(`Length=0`으로 한 번, 확정 후 한 번 — `SL-58`) **1회로 준다.**
+
+### 6-4. 비용과 남는 것
+
+- **`_elements` 순회가 2회**로 는다. 배열 walk 두 번이라 할당도 없고 실측에서
+  문제될 규모로 보이진 않지만, 명시해둘 비용.
+- **비공개 함수가 둘 는다.** 다만 호출부(셋: `SlotHandler.process`, 런타임
+  `rawAdd`, 재귀)는 **하나도 안 바뀐다** — "한쪽만 부르는" 오용 위험이
+  구조적으로 없다(공개 진입점이 여전히 하나).
+- **안 고쳐지는 것**: `materializeSlotTree`는 여전히 "내 부모에게 등록"(R1/R4)과
+  "내 자식 배치"(R5/R6a)를 같이 한다. 그것까지 떼려면 부모 등록을 호출부로
+  올려야 하는데, 그러면 호출부 셋이 전부 두 줄이 되고 순서 실수를 열어주므로
+  **과한 분해로 보인다.**
+- **비대칭 하나**: `mountSlotTree` ↔ `unmountSlotTree`는 정확한 거울상인데,
+  `materializeSlotTree`의 거울상(부기 철거)은 별도 함수가 아니라 호출부의
+  `setOffsetSource(None)` → `setLength(0)` 관용구다. 이름만 보고 짝을 찾으면
+  헷갈릴 수 있어 문서화 시 짚을 것.
+
+### 6-5. 그래서 쪼개야 하나 — 내 판단
+
+**쪼개는 쪽을 약하게 추천한다.** 근거는 셋인데 어느 하나도 결정적이진 않다:
+
+1. **C6/C7을 둘 다 만족시키는 유일한 방법**이고, 지금은 둘 중 하나를 포기하고
+   있다(자기 교정 1회). 값이 틀려지진 않지만 "일반 계약을 세워놓고 자기가
+   예외"인 상태가 남는다.
+2. **`_mounted`의 의미가 정직해진다** — 지금은 "`activateList`는 지났고 flush는
+   아직"이라는 중간 시점이라 `RC-3`/`RC-4`가 그 미묘함에서 나왔다. 분해하면
+   문자 그대로 "mount 단계를 지났는가"가 되고, 그 버그 클래스가 구조적으로
+   사라진다.
+3. `attachSlot` 몸통이 두 줄이 되어 **읽는 사람이 "무엇을 언제 하는가"를 두
+   이름만으로** 파악한다.
+
+**반대로 안 쪼갤 이유**도 정당하다 — 동작이 지금도 맞고(자기 교정), 순회가
+하나 늘며, 확정된 의사코드를 건드리는 변경이다. **M6 착수 시점에 실제로 짜보며
+정해도 늦지 않다.**
