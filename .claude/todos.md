@@ -11,14 +11,14 @@
    `state:Gate(setup)` + `GateNode`로(`base/gate-plan.md`), State의
    재계산/전파 판정은 **소스 에포크 비교** 채택으로(`base/state-epoch-plan.md`,
    구현은 M3) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
-   **⚠️ [2026-08-21 정정 — 같은 날 `/code-review high`] "막는 항목이 없다"는
-   너무 이르다.** 게이트가 유보했다 내보내는 emit이 **어느 source를 싣는지**가
-   안 정해져 있고(확정된 `setup`은 source를 안 받는데 에포크 수신 규칙은
-   `[source]` 키로 판정한다 — 그대로면 `blocker:Off()`의 배치 통지가 하류에서
-   삼켜진다), 이건 `setup` 시그니처를 바꿀 수 있어 **M2 착수 전 판단이
-   필요하다**(`question.md` 3번, `base/gate-plan.md`의 4번). M3 쪽으로는 두
-   맵의 초기값·병합·재계산 시 갱신 범위가 열려 있다(`state-epoch-plan.md`
-   §5 7번). 그 외 남은 것은 판단이 아니라 구현 시 정할 것들 — `Gate`의
+   **[2026-08-21 경위]** 같은 날 `/code-review high`가 "게이트가 유보했다
+   내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M2 항목으로
+   되돌아갔으나, **사용자가 그 자리에서 `emit(self)` + 흡수 집합으로
+   확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번). 같이
+   제기됐던 에포크 쪽 세 자리 중 "재계산 시 count 전부 갱신"도 확정,
+   나머지 둘(새 노드 맵 초기값 / `:With` 병합)은 **M3 구현 시 정하면 되는
+   낮은 위험 항목**으로 남았다(`state-epoch-plan.md` §5 7번).
+   그 외 남은 것은 판단이 아니라 구현 시 정할 것들 — `Gate`의
    생명주기·재진입 계약, M2에 `Blocker`까지 넣을지, 스파이크 `05` 재작성
    (`luau-test/STATUS.md`).
 
