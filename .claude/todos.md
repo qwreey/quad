@@ -18,7 +18,13 @@
    제기됐던 에포크 쪽 세 자리도 **전량 확정**됐다(재계산 시 count 전부 갱신 /
    새 노드는 `sourceEmitMap`은 비우고 `sourceCountMap`은 실제 count로 채운 뒤
    `rawInvalid = true` / 그래서 `:With` 병합 규칙은 불필요) —
-   `state-epoch-plan.md` §5 7번.
+   `state-epoch-plan.md` §5 7번. **[같은 날 두 번째 `/code-review high`]**
+   7건이 더 나왔고 전부 유효했는데(재진입 시 빈 배치가 새어 변경이 증발하던
+   것, `OffWithoutEmit`이 흡수 집합을 안 비우던 것 등), 그중 사용자 판단으로
+   올라갔던 둘도 같은 날 닫혔다 — "재진입 계약"은 애초에 **잘못 옮긴
+   서술**이었고, "빈 배치 emit"은 **아무것도 안 하는 것**으로 확정(그 따름정리로
+   `Effect`의 설치 구간 억제가 `Gate` 소비자에서 빠지며 `effect-plan.md`의
+   순서 제약도 사라짐). **다시, M2 착수를 막는 설계 항목은 없다.**
    그 외 남은 것은 판단이 아니라 구현 시 정할 것들 — `Gate`의
    생명주기·재진입 계약, M2에 `Blocker`까지 넣을지, 스파이크 `05` 재작성
    (`luau-test/STATUS.md`).
