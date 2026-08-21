@@ -204,6 +204,19 @@
 - `qa-request/pre-implementation-qa-round5.md` — 문항지(205문항)
 - `qa-request/pre-implementation-qa-round5-response.md` — 회신 원문
 - `qa-request/pre-implementation-qa-round5-followup.md` — **처리 결과의 소스**
-  (A~E절 1차, **F절이 최신**)
+  (절이 라운드마다 쌓임 — **마지막 절이 최신**)
 - `archive/bindlifetime-slot-owner-reversed.md` — 역전된 `D-56` 원문
 - `research/gate-primitive.md`, `research/state-epoch-validation.md`
+
+## 8. 후속 — State 에포크 안 3차 정정 (같은 날)
+
+사용자가 `research/state-epoch-validation.md`를 직접 읽고 기제 서술 세 건을
+정정했다: (1) `sourceList` 순회는 `rawInvalid`가 **false**일 때만 돈다(문서는
+반대로 적고 있었다, 목적은 "못 받은 emit 받기"), (2) `emit`은 count 없이
+**발행 source만** 싣는다, (3) 에이전트가 요구했던 **`seen`/`computedAt` 두
+카운트 분리는 철회** — count 갱신과 `rawInvalid = true`가 같은 스텝이라
+캐시 오인 경로가 없다. 부수로 "순회가 발견한 변경을 뒤로 emit 할 것인가"가
+열렸는데, 다이아몬드 쪽은 사용자가 스스로 안전으로 정정했고 게이트 쪽만
+**해제 emit이 `source = nil`을 싣는 규약**으로 남았다(게이트는 보통 최종단에
+쓰므로 채택을 막지 않는다는 판단). 상세는 그 문서의 §2·§5와
+`qa-request/pre-implementation-qa-round5-followup.md`의 M절.

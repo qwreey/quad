@@ -347,7 +347,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **[2026-08-21 5라운드 — 착수 전 확인]** State 재계산 판정을 "소스
       에포크 비교"로 바꿀지가 **미정인 채 열려 있다**(`research/state-epoch-validation.md`,
       `question.md` 3번). 채택하면 **State 내부 표현이 바뀌므로**(노드가
-      `seen`/`computedAt` 두 카운트를 들고, `Get`이 상류 에포크를 검증)
+      루트 Source별 count를 들고, `Get`이 상류 에포크를 검증)
       아래 `Source.luau`/`State.luau`를 짜기 **전에** 결론이 나야 한다 —
       그 문서 자신이 "M3 뒤로 미루면 되돌리는 비용이 크다"고 경고한다.
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를

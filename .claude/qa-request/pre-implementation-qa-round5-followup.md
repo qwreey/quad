@@ -876,3 +876,32 @@ nativeDispose(element)                                           -- 트리 밖 �
 `rawDetach`/`mountSlotTree`/`unmountSlotTree` 의사코드), `dispatch-core-plan.md`
 (C-7 재정의 + 주입 op 목록), `architecture.md`(`EngineOps.luau`), `ROADMAP.md`(M5
 주입 표면), `archive/`(역전 원문), `README.md` 색인.
+
+---
+
+# M절 — State 에포크 안: 사용자 3차 정정 (2026-08-21)
+
+`research/state-epoch-validation.md`를 사용자가 직접 읽고 **기제 서술의
+오류 세 건**을 정정했다. **채택 여부 자체는 여전히 미정**이지만, 채택하면
+어떤 모양이 되는지는 이제 거의 확정형이다. 반영은 그 문서(§2가 소스) +
+`README.md`/`question.md`/`ROADMAP.md` 인덱스.
+
+| # | 문서가 적고 있던 것 | 사용자 정정 |
+|---|---|---|
+| M-1 | `sourceList` 순회는 **`rawInvalid == true`일 때만** 돈다 | **반대.** `rawInvalid == false`일 때만 돈다. `true`면 이미 재계산이 확정이라 훑을 이유가 없고, 순회의 목적은 오직 **"못 받은 emit을 여기서 먼저 받는 것"**이다 |
+| M-2 | `emit`은 `(source, count)`를 실어 보낸다 | **source만** 보내면 된다 — 받는 쪽이 `source`의 count 필드를 그냥 읽는다 |
+| M-3 | 노드가 `seen`(전파 dedup)/`computedAt`(캐시 검증) **두 카운트**를 따로 들어야 한다 | **철회.** count 갱신과 `rawInvalid = true`가 **같은 스텝**에서 일어나므로 "전파 때 갱신된 count가 캐시를 신선한 것으로 오인시키는" 실패 모드가 없다. 캐시 유효성은 `rawInvalid`가 들고 count는 "이 에포크를 봤는가"만 답한다 — *"그냥 지금 순수 count 와 source 를 ref해두는 구현은 문제가 없어보인다"* |
+
+**emit 수신 규약(확정형)**: `sourceList[source] == source.count`면 삼키고,
+다르면 **count를 먼저 갱신** → `rawInvalid = true` → **그 다음** 뒤로 emit.
+다른 소스 항목은 건드리지 않는다(그 소스는 자기가 직접 emit 하므로).
+
+**부수로 열린 채 남은 것 — 순회로 발견한 변경을 뒤로 emit 할 것인가.**
+사용자가 `A → {B, C} → D` 다이아몬드로 (b) 즉시 emit의 위험을 의심했다가
+**스스로 안전하다고 정정**했다(*"D조차도 count를 업데이트 하기 때문에 중복을
+무시한다"*). **[2026-08-21 기준]** 그래서 걸리는 곳은 게이트 하나 — 앞에서 막아둔 emit이 뒤의 `Get()`이 촉발한
+순회로 새어나갈 수 있으므로 **block이 풀린 뒤의 emit까지 기다려야** 하고,
+게이트 해제 emit은 여러 소스가 섞여 있어 **`source = nil`을 싣고 받는 쪽이
+전체를 확인**하는 규약이 필요하다. 다만 사용자 판단은 *"중간에 blocker 낀건
+이전에도 있던 문제다. 이미 최종장에 쓰는게 일반적이므로 의미 없어보인다"* —
+**채택을 막는 요소가 아니고**, `nil` 규약만 `Gate` 설계와 같이 확정하면 된다.
