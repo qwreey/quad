@@ -1,8 +1,9 @@
 # 구현 전 QA **4라운드 followup** — 회신 처리 결과 + 재질문
 
-**상태**: **[2026-08-21] 4차 처리로 종결 + 반영 후 감사까지 완료 — 아래
-I절이 최신.** 감사 4라운드(의사코드 트레이싱)가 **실제 크래시 3건**을 잡아
-같은 날 전부 닫았다(`I-1`~`I-3`). H절이 반영 내용, I절이 그 감사 결과다.
+**상태**: **[2026-08-21] 4차 처리 + 감사 6라운드 + `/code-review high`
+까지 전부 완료 — 아래 I절이 최신이자 마지막.** H절이 반영 내용, I절이
+그 뒤의 검증 전량(감사 트레이싱이 잡은 크래시 3건 `I-1`~`I-3`, 사용자가
+가져온 이관 `I-7`, `/code-review`가 잡은 2건 `I-8`)이다.
 `F-3`이 전량 확인됐고 `attachSlot` 분해도 확정돼 `base/`에 전부 반영됐다.
 **이 followup에 열린 질문은 남아있지 않다.** 5라운드 문항지는 만들지
 않는다(사용자 지시). 아래 A~G절은 거기까지 온 처리 과정의 기록.
@@ -1345,3 +1346,25 @@ stale하게 남기지 않고(그 필드는 top-level `claimOwnerAt` 전용),
    Slot일 수는 없다 — 그 Slot은 이미 1번째 인자 `self`다. 옆 함수들
    (`materializeSlotTree`/`mountSlotTree`/`attachSlot`)과 이름을 맞춘
    **순수 리네이밍**.
+
+## I-8. `/code-review high` — 2건, 전부 반영
+
+`quad-doc-auditor` 6라운드가 수렴한 뒤 사용자가 `/code-review`(diff 기반)를
+직접 돌렸다. `conventions.md`의 "`/code-review`는 감사자를 대체하지 않는다"
+항목이 예고한 대로, 감사자 각도(코퍼스 전체 의미론적 정합성)에선 안 보이던
+**diff 자체의 결함**이 나왔다 — 둘 다 이번 세션에 새로 생긴 코드다.
+
+1. **`activateList`의 재마운트 분기가 `bindLifetime(physicalTarget, nil)`로
+   크래시할 수 있었다.** `_listObserver`는 `data`가 reactive(State/Source)일
+   때만 세팅되는데(`isState(data)` 분기), `data`가 plain table이면(문서가
+   지원하는 형태) 영원히 `nil`이다. 그런데 `I-7`이 넣은 재마운트 분기는
+   가드 없이 `bindLifetime(physicalTarget, self._listObserver)`를 불렀다 —
+   `bindLifetime`이 `gchold[value] = true`를 하므로 `value`가 `nil`이면
+   그 자리에서 죽는다. **짝인 언마운트 쪽은 이미 `if slot._listObserver
+   then`으로 방어돼 있었는데 이 재마운트 분기만 빠져 있었다** — `I-7`을
+   반영하며 대칭을 놓친 것. 가드 추가로 반영.
+2. **"구독 시점" 절에 `activateList`의 옛 파라미터 이름 `inst`가 리네이밍
+   후에도 남아 있었다.** 이 세션이 `physicalTarget`으로 통일한 이유가
+   "owner 키가 Slot일 수도 있는 문맥과 헷갈리지 않기 위해서"인데, 정작 그
+   절의 산문 설명만 안 옮겨져 있으면 구현자가 이 절만 읽고 옛 이름을
+   그대로 들고 갈 위험이 있었다. 두 곳 정정.

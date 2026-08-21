@@ -1165,7 +1165,14 @@ function activateList(self, physicalTarget)
         -- 자원이 옛 physicalTarget에 매달린 채로 남아, 그게 죽는 순간
         -- 살아있는 이 Slot의 `:List`가 조용히 반응을 멈추고(`_listObserver`)
         -- 살아있는 detached 요소가 파괴된다(`_detachCleanup`).
-        bindLifetime(physicalTarget, self._listObserver)
+        -- [2026-08-21 /code-review high] `_listObserver`는 `data`가 reactive
+        -- (State/Source)일 때만 세팅된다(아래 `isState(data)` 분기) — plain
+        -- table `data`(문서가 지원하는 형태)면 영원히 `nil`이라, 가드 없이
+        -- 부르면 `bindLifetime(physicalTarget, nil)`이 `gchold[nil] = true`로
+        -- 죽는다(`base/lifecycle-pattern.md`의 `bindLifetime` 계약).
+        -- 언마운트 쪽(`unmountSlotTree`)은 이미 `if slot._listObserver then`로
+        -- 방어돼 있었는데 이 재마운트 분기만 빠져 있었다.
+        if self._listObserver then bindLifetime(physicalTarget, self._listObserver) end
         bindLifetime(physicalTarget, self._detachCleanup)
         return
     end
@@ -1602,14 +1609,17 @@ Slot:Single(state, updateFn?, opts?)
 실제 `data:Observer(fn)` 구독 + 최초 `reconcile`은 Slot 컨테이너 자신이
 마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self,index)` — 위
 "`isMounted` 이중 추적 분리" 절이 이미 `self._mounted`를 세팅하는 바로 그
-지점)에 `activateList(self, inst)`가 수행. `Dispatch.setLength(inst,i,
-self.Length)`를 부르는 것과 같은 자리에서 같이 트리거되면 됨.
+지점)에 `activateList(self, physicalTarget)`가 수행(**[리네이밍,
+2026-08-21]** 2번째 인자 이름은 `inst`였으나 owner 키가 Slot일 수도 있는
+문맥과 헷갈리지 않도록 `physicalTarget`으로 통일 — 아래 실제 정의가 소스).
+`Dispatch.setLength(inst,i, self.Length)`를 부르는 것과 같은 자리에서 같이
+트리거되면 됨.
 
 **`:List()`가 마운트 이후에 불리는 경우 — `self._mounted`면 즉시 활성화
 (확정)**: 마운트는 1회성 이벤트라, `:List()`가 마운트보다 늦게 호출되면
 그 이벤트를 기다리는 방식으론 영영 활성화가 안 됨 — `:List()`가
 `self._mounted`를 확인해서 이미 참이면 그 자리에서 바로
-`activateList(self, self._mountedInst)`를 호출(마운트 시점에 `inst`를
+`activateList(self, self._mountedInst)`를 호출(마운트 시점에 물리 target을
 `self._mountedInst`로 같이 저장해둠). CRUD와의 상호배타 가드(`self._listed`)와
 같은 자리에서 자연스럽게 처리됨 — 호출 순서에 대한 새 제약을 추가하지 않음.
 
