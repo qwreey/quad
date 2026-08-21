@@ -86,7 +86,7 @@
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
-| `epoch-brand-composition.md` | **[2026-08-21 신설]** 에포크 부기를 State에서 떼어내 `EpochMap`으로 컴포지션하고, emit 페이로드를 `Source` 대신 **`Epoch` 인터페이스**(`{Count: number}`, 그 자체로 키)로 일반화하며, 그걸 위해 `Brand`를 **인스턴스화 가능**하게(다중 태깅) 바꾸자는 사용자 제안. 발단은 다중 의존성 `Effect`에서 한 파동에 `fn`이 두 번 도는 갭 — `Effect`가 자기 `EpochMap`을 들면 닫힌다. 에이전트 평가: 방향 타당, 다만 `Brand.get` 역조회 상실과 서브타입 포함관계가 생성자로 흩어지는 대가가 있음. **결정 7건 열림** | 중 — M3(State) 전, `Brand` 부분은 M2 전 |
+| `epoch-brand-composition.md` | **[2026-08-21 신설]** 에포크 부기를 State에서 떼어내 `EpochMap`으로 컴포지션하고, emit 페이로드를 `Source` 대신 **`Epoch` 인터페이스**(`{Count: number}`, 그 자체로 키)로 일반화하며, 그걸 위해 `Brand`를 **인스턴스화 가능**하게(다중 태깅) 바꾸자는 사용자 제안. 발단은 다중 의존성 `Effect`에서 한 파동에 `fn`이 두 번 도는 갭 — `Effect`가 자기 `EpochMap`을 들면 닫힌다. 에이전트가 짚었던 대가 둘(`Brand.get` 역조회 상실 / 포함관계가 흩어짐)은 **같은 날 둘 다 해소**(전자는 필요 없고, 후자는 착오 — predicate 합성으로 그대로 쓰면 됨). `Epoch`는 `Source`가 구조적으로 만족하고 리비전 필드는 공개까지 확정. **남은 결정은 숫자 리비전 vs 테이블 토큰, State가 `EpochMap`을 둘 드는지, `Observer` 클로저 인자 셋** | 중 — M3(State) 전. `Brand` 전환은 M1 코드가 아직 `Brand`를 안 써서 문서 비용뿐 |
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
 | `documentation-content-map.md` | 위 4축에 실제로 뭘 채울지 `base/` 전체를 초심자/api/심화/skip으로 서베이한 콘텐츠 맵 — 초심자 core loop 목차 초안 포함 | 하 — 문서화 착수 시점의 목차/우선순위표로 쓸 것 |
