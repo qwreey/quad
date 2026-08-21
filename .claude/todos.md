@@ -15,9 +15,10 @@
    내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M2 항목으로
    되돌아갔으나, **사용자가 그 자리에서 `emit(self)` + 흡수 집합으로
    확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번). 같이
-   제기됐던 에포크 쪽 세 자리 중 "재계산 시 count 전부 갱신"도 확정,
-   나머지 둘(새 노드 맵 초기값 / `:With` 병합)은 **M3 구현 시 정하면 되는
-   낮은 위험 항목**으로 남았다(`state-epoch-plan.md` §5 7번).
+   제기됐던 에포크 쪽 세 자리도 **전량 확정**됐다(재계산 시 count 전부 갱신 /
+   새 노드는 `sourceEmitMap`은 비우고 `sourceCountMap`은 실제 count로 채운 뒤
+   `rawInvalid = true` / 그래서 `:With` 병합 규칙은 불필요) —
+   `state-epoch-plan.md` §5 7번.
    그 외 남은 것은 판단이 아니라 구현 시 정할 것들 — `Gate`의
    생명주기·재진입 계약, M2에 `Blocker`까지 넣을지, 스파이크 `05` 재작성
    (`luau-test/STATUS.md`).
