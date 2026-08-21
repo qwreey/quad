@@ -952,3 +952,50 @@ state 의 전파를 손대는 작업이라 with 처럼 다른 노드가 나는�
 그대로 유효하고(팩토리가 내부에서 `:Gate`를 부름), `Blocker` 배선은 이미 확정된
 `state:Block(blocker)` 메소드로 자동 해소되며, `__call`은 안 쓴다.
 `research/gate-primitive.md`의 2번이 해소로 갱신됨.
+
+---
+
+# O절 — `Gate` 표면 확정 + State 에포크 **채택** (2026-08-21, 5라운드 종결)
+
+두 건이 같은 대화에서 닫히며 **M2 착수를 막던 설계 항목이 전부 사라졌다.**
+두 문서 모두 `research/` → **`base/`**로 승격됐다.
+
+## O-1. `Gate` — `state:Gate(setup)` 메소드 + `GateNode`
+
+**사용자 확정**: *"Gate 는 따로 프리미티브 없이 `state:Gate( (emit) -> ()->() )`
+처럼 선언되고 마치 Compute 처럼 GateNode(ComputeNode 처럼) 생성된다 그리고
+Blocker 는 해당 내부 배선을 따른다 ← 동의합니다 해당 방법대로 확정하면 됩니다."*
+
+처음 방향(*"공용 `Gate` 프리미티브를 꺼내고 `Blocker`가 컴포지션한다"*)이
+뒤집힌 것 — *"그럴 필요가 없네요. `:Gate` 는 또 Apply 에서 쓸만한 표면을
+주기도 하구요."* 따라온 결론:
+
+- 탑레벨 `Gate(...)` 생성자는 **안 만든다.** 이름 문제(`Gater`?)도 같이 소멸 —
+  메소드 자리에서 `Gate`는 `:With`/`:Compute`와 나란히 자연스럽다.
+- `Blocker`는 그 위의 별개 프리미티브. `state:Block(blocker)`가 내부에서
+  `self:Gate(policy)`를 부른다(`base/blocker-plan.md`에 신설 절).
+- `Debounce`/`Throttle`의 `state:Apply(...)` 관용구는 그대로 — 팩토리가
+  내부에서 `:Gate`를 부른다(`base/debounce-throttle-plan.md`의 권고 절이
+  "실현됨"으로 갱신).
+- `Get()`엔 영향 없음(통지만 막음)도 확정 — **`state-epoch-plan.md`가 이
+  계약에 의존한다.**
+
+## O-2. State 에포크 — **채택 확정**
+
+*"gate 와 epoch 가 제가 만족할만한 정도로 올라왔습니다. 채택하면 될것
+같아요."* 구현은 M3. 규칙 전량은 `base/state-epoch-plan.md`.
+
+**같이 역전된 것**(원문 → `archive/always-propagate-no-dedup-superseded.md`):
+`source-state-plan.md`가 확정해뒀던 두 서술 — emit은 자기 `invalid`와
+무관하게 **항상** 전파된다, 그리고 quad가 접지 않는 것은 중복 *통지*뿐이다. 지금 계약은 **"`invalid`로는 절대
+안 접고, 같은 소스의 같은 에포크가 두 번째로 도착했을 때만 접는다."**
+⚠️ 2026-08-14의 역전(`invalid` 기반 dedup 금지)을 되돌린 게 **아니다**.
+
+**반영 파일**: `base/state-epoch-plan.md`·`base/gate-plan.md`(승격),
+`base/source-state-plan.md`(전파 모델·다이아몬드 절 재작성),
+`base/blocker-plan.md`, `base/debounce-throttle-plan.md`,
+`base/architecture.md`, `reference/comparison-fusion-vide.md`,
+`archive/always-propagate-no-dedup-superseded.md`(신설), `ROADMAP.md`(M0 각주·
+M2 각주·M3 체크박스), `README.md`, `question.md`, `todos.md`,
+`luau-test/`(스파이크 `05`가 `rewrite-required/`로 되돌아감 — 다이아몬드
+Observer가 이제 변경당 **1회**만 울어야 하므로 핵심 assert가 정반대가 됨).

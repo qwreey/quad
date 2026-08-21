@@ -44,8 +44,12 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
   **[2026-08-14 보강]** quad가 이걸 피하는 방식은 "전파를 중간에 끊는 것"이
   아니라 **애초에 push 시점에 계산을 안 하는 것**(pull-recompute + 노드별
   캐시) — 신호는 두 경로로 두 번 도착해도 계산은 `:Get()` 때 한 번뿐.
-  즉 quad도 중복 *통지*는 접지 않고 중복 *재평가*만 안 일어남
+  즉 quad도 중복 *재평가*는 안 일어남
   (`base/source-state-plan.md`의 "다이아몬드 의존성은 무엇이 푸는가" 절).
+  **[2026-08-21 갱신]** 여기 있던 "중복 *통지*는 접지 않는다"는 뒤집혔다 —
+  소스 에포크 비교를 채택해 **두 번째 통지도 접힌다**
+  (`base/state-epoch-plan.md`, 역전 원문은
+  `archive/always-propagate-no-dedup-superseded.md`).
 - **정리 모델**: 의존성 엣지(`parents`)와 구조적 소유(`owner`/`owned`)를 같은
   `Node`에서 두 개의 별도 관계로 분리 — CHANGELOG 0.2.0에서 "destroy가 더 이상
   reactive dependent까지 타고 내려가지 않고 owned만" 으로 명시적으로 고침(초기

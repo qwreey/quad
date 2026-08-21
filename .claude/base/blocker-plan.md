@@ -67,9 +67,21 @@ gated state의 동작:
   `OffWithoutEmit()`은 "밀린 전파를 버리며 끈다" — 어느 쪽이든 대기
   상태(`HasBlockedEmit`)는 항상 깨끗하게 리셋됨.
 
+**⭐ [2026-08-21 신설] `state:Block(blocker)`는 `state:Gate(setup)` 위에
+얹힌다.** 위 "gated state의 동작"은 `Blocker`만의 특수 노드가 아니라
+`base/gate-plan.md`가 확정한 **`GateNode`**(`ComputeNode`와 같은 층위)의
+정책 하나다 — `Block`이 내부에서 `self:Gate(policy)`를 부르고, 그 `policy`가
+`blocker.IsBlocked`를 보고 `emit()`을 부를지 `HasBlockedEmit`만 세울지
+정한다. `Debounce`/`Throttle`도 같은 자리에 다른 정책으로 들어간다.
+**공개 표면(`Blocker()` 생성자와 `state:Block`)은 안 바뀐다** — 배선만
+공용 노드를 쓰는 것.
+
 **`:Get()`엔 영향 없음** — 블록은 emit **전파**만 지연시킨다. 블록 중이라도
 누군가 명시적으로 `:Get()`하면 그 순간의 실제 값을 정상적으로 계산해서
 준다 — `base/source-state-plan.md`의 "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`" 절("`Get()`은 라이브 레퍼런스를 준다" 캐비엇)과 일치.
+**[2026-08-21] 이 계약은 `base/state-epoch-plan.md`가 의존하는 전제다** — 그
+문서 §5의 3번이 "게이트를 에포크 경계로 만드는" 대안을 기각한 이유가 정확히
+이걸 뒤집지 않기 위해서다. 바꾸려면 그쪽도 같이 봐야 한다.
 
 ## 사용 예시
 

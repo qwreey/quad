@@ -40,13 +40,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [x] Store/State push-invalidate → pull-recompute propagation을 실제로
       짜보기(다이아몬드 의존성 케이스 포함 — **[2026-08-14 정정]** 확인할
       것은 "이미 invalid면 전파 중단되는지"가 **아니라** 그 반대:
-      **emit은 자기 invalid 상태와 무관하게 항상 전파되고**, 중복 재계산은
-      `:Get()` 시점 캐시로만 막히는지. 특히 `:Get()`을 안 부르는
+      **emit은 자기 invalid 상태와 무관하게 전파되고**, 중복 재계산은
+      `:Get()` 시점 캐시로만 막히는지(**[2026-08-21]** 그 뒤 "항상"에서
+      "같은 에포크의 두 번째만 접힘"으로 좁혀졌다 — 아래 참고). 특히 `:Get()`을 안 부르는
       `Observer`가 매 변경마다 계속 울리는지 — 옛 모델에선 두 번째부터
       침묵했음(`archive/invalidate-dedup-propagation-reversed.md`).
       스파이크 `05-store-state-diamond-propagation.luau`는 **[2026-08-19
-      재작성 완료, `done/`]** 현행 모델("emit은 항상 전파 + `:Get()`
-      시점 캐시로만 dedup")로 재검증 통과)
+      재작성 완료]** 그 모델("emit은 항상 전파 + `:Get()` 시점 캐시로만
+      dedup")로 재검증 통과 — **[2026-08-21] 그 모델이 다시 바뀌어
+      `rewrite-required/`로 되돌아갔다**(소스 에포크 채택으로 다이아몬드
+      Observer가 이제 변경당 **1회**만 울어야 함, `base/state-epoch-plan.md`))
 - [x] Source가 State를 구조적으로 만족하는 제네릭 타입(`:Compute<U>(self:
       Source<T>, ...) -> State<U>`류, self 타이핑 + State 참조 혼합)이
       Luau 솔버에서 안전하게 추론되는지 확인(2026-08-06 세 번째 세션,
@@ -245,8 +248,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       노드**로 바뀌었다(같은 라운드 `DT-4` — 시간 기반 게이트는 공개
       `Blocker` API 위에 못 얹히므로, emit을 가로채는 노드를 한 겹
       일반화해 `Blocker`/`Debounce`/`Throttle`이 그 위의 정책이 되게
-      한다). **표면/이름은 아직 미정** — `research/gate-primitive.md`가
-      소스이고 `question.md` 3번에 열린 항목으로 올라가 있다. 최소한
+      한다). **[2026-08-21 확정] 그 노드의 표면은 `state:Gate(setup)`
+      메소드이고 노드 타입 이름은 `GateNode`**(`ComputeNode`와 같은 층위)
+      — 탑레벨 `Gate(...)` 프리미티브는 안 만든다. 상세와 남은 항목
+      (생명주기·재진입 계약, M2 범위)은 `base/gate-plan.md`. 최소한
       배치 등록이 실제로 쓰는 `On`/`IsOn`/`OffWithoutEmit`이 도는
       형태까지는 M2에 필요하다. 경위는
       `qa-request/pre-implementation-qa-round3.md`의 "ROADMAP.md 마일스톤
@@ -342,14 +347,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       되면 동종 타입 dep 1개로 한정)
 - [ ] **[2026-08-21 5라운드 — 순서 주의]** 아래 `Blocker.luau`가 올라서는
       **공용 게이트 노드는 M2에서 이미 만들어져 있다**("게이팅 먼저" 결정,
-      위 M2 각주 + `research/gate-primitive.md`). M3에서 `Blocker`를 짤 때는
+      위 M2 각주 + `base/gate-plan.md`). M3에서 `Blocker`를 짤 때는
       그 노드를 **다시 만들지 말고 그 위의 정책으로** 얹을 것.
-- [ ] **[2026-08-21 5라운드 — 착수 전 확인]** State 재계산 판정을 "소스
-      에포크 비교"로 바꿀지가 **미정인 채 열려 있다**(`research/state-epoch-validation.md`,
-      `question.md` 3번). 채택하면 **State 내부 표현이 바뀌므로**(노드가
-      루트 Source별 count 테이블 둘을 들고, `Get`이 상류 에포크를 검증)
-      아래 `Source.luau`/`State.luau`를 짜기 **전에** 결론이 나야 한다 —
-      그 문서 자신이 "M3 뒤로 미루면 되돌리는 비용이 크다"고 경고한다.
+- [ ] **[2026-08-21 5라운드 — 채택 확정]** State의 재계산/전파 판정은
+      **소스 에포크 비교**다(`base/state-epoch-plan.md`) — `invalid` 플래그가
+      아니다. 아래 `Source.luau`/`State.luau`가 이걸 전제로 짜여야 한다:
+      노드가 `sourceCountMap`(값 유효성)/`sourceEmitMap`(전파 dedup) 두
+      테이블을 들고, emit은 발행 source만 싣고, 순회는 `rawInvalid == false`
+      일 때만 돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드
+      중복 통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
+      (`luau-test/STATUS.md`).
 - [ ] `Blocker.luau`(`base/blocker-plan.md` 참고 — 여러 Source를
       한꺼번에 바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive,
       State와 밀접히 연관돼 있어 같은 마일스톤에서 개발)
@@ -1021,8 +1028,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       그 공용 `Gate` 추출은 M3가 아니라 M2로 앞당겨졌다** — "게이팅 먼저"
       결정(위 M2 각주)으로 `Dispatch.drive`의 배치 등록이 쓰는 게이팅부터
       만들기로 했고, 그때 `Blocker`/`Debounce`/`Throttle`이 공유할 노드를
-      같이 빼둔다(따로 하면 같은 설계를 두 번 함). 표면/이름은 아직 미정 —
-      `research/gate-primitive.md`.
+      같이 빼둔다(따로 하면 같은 설계를 두 번 함). **[2026-08-21] 표면 확정 —
+      `state:Gate(setup)` 메소드**, `base/gate-plan.md`.
       프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M3를 막지 않음.
       주입 op 2개(`setTimeout(func, delay) -> Timeout` / `clearTimeout`,
       Roblox는 `task.delay`/`task.cancel`로 배선 — **인자 순서가 반대라

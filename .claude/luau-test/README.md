@@ -11,7 +11,7 @@
 | 폴더 | 뜻 | 누가 처리 |
 |---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요**(**[2026-08-13 13차 세션] 현재 비어 있음** — 마지막 한 건이던 `08`이 해소돼 `done/`으로 감) | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff / `10`, **[2026-08-14 5차 세션]** `canExecute` 1-인자 재정정 / `05`, **[2026-08-14 8차 세션]** "emit은 항상 전파" 정정) — **`16`은 [2026-08-15] 통과로 `done/`에 있음**(아래 참고) | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff / `10`, **[2026-08-14 5차 세션]** `canExecute` 1-인자 재정정 / `05`, **[2026-08-14 8차 세션]** "emit은 항상 전파" 정정 → 재작성 통과했다가 **[2026-08-21]** 소스 에포크 채택으로 다시 합류) — **`16`은 [2026-08-15] 통과로 `done/`에 있음**(아래 참고) | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림 — **[2026-08-14 5차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음 | 사용자 or MCP 연결 후 |
 | `done/` | 통과 or 판정 끝, 더 할 일 없음 | — |
 
@@ -71,7 +71,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `02-none-sentinel-vs-nil-holes.luau` | **[2026-08-09 커밋 f198fd9 반영해 전면 재작성]** 순서가 중요한 배열(PreRef pre-pass, sourceList)은 `None` 소진이 맞고, 순서가 안 중요하고 재사용이 필요한 배열(Ref 콜백/대기자)은 `nil`+슬롯 재사용이 맞다는 최종 구분 + `None`을 잘못 쓰면 배열이 무한정 자라는 버그의 정량적 재현 | `ref-plan.md` "왜 None이 아니라 nil인가"(2026-08-09 열한 번째 세션 최종 정정), ROADMAP M0-4 |
 | `03-recursive-store-bind-dispatch.luau` | `process`/`retract` 재귀 재-dispatch 기본 모델, 우선순위 스캔 | `dispatch-core-plan.md` "확정된 디스패치 모델", ROADMAP M0-3 |
 | `04-dispatch-chain-retractFrom.luau` | **[⚠️ 2026-08-13 열네 번째 세션: 하강 diff 확정으로 낡음 → `rewrite-required/`]** 아래는 옛 모델 기준 설명 — **[2026-08-13 감사에서 전면 재작성 + 파일명 변경]** 인덱스 기반 `chains`/`Dispatch.retractFrom`이 다단 재귀 위임에서 정확한지 — 3단 체인이 인덱스 1/2/3으로 안 겹치고 쌓이는지(= `State<State<T>>` **정상 동작**, UB 아님), 안/바깥 store 재발행 시 깊은 인덱스부터 정리되는지, hint가 target 인덱스에만 가는지 + **음성 대조군**: `chains:SetStrong`을 `handler.process` 뒤에 두면 최초 마운트에서 하위 retractor가 유실되는 버그 재현. 옛 버전은 핸들러 identity 기반 추적과 "중복 push 즉시 error" 가드를 검증했는데 그 가드는 다섯 번째 세션 재설계로 **없어져서** 설계와 정반대를 테스트하고 있었음 | `dispatch-core-plan.md` "Dispatch 체인"(2026-08-13 다섯 번째 세션 재설계) + 2026-08-13 감사 |
-| `05-store-state-diamond-propagation.luau` | push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지. **[2026-08-19 재작성 완료 → `done/`]** 현행 모델("emit은 자기 invalid 상태와 무관하게 항상 전파, 중복 재계산은 `:Get()` 시점 캐시로만 막힘")로 다시 짜서 통과 — 핵심 회귀 방지 장치는 `:Get()`을 안 부르는 Observer가 다이아몬드에서 source 변경마다 경로 수(2)만큼 계속 우는지(옛 모델이면 두 번째부터 침묵) | ROADMAP M0-1 |
+| `05-store-state-diamond-propagation.luau` | push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지. **[2026-08-19 재작성 → 2026-08-21 다시 `rewrite-required/`]** 2026-08-19엔 당시 모델("emit은 항상 전파, 중복 재계산은 `:Get()` 시점 캐시로만 막힘")로 짜서 통과했으나, **소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드 두 번째 통지가 접히게 되어** 핵심 assert가 정반대가 됨 — 이제 Observer는 변경당 **1회**만 울어야 한다. 상태의 소스는 `STATUS.md` | ROADMAP M0-1 |
 | `06-component-boundary-nil-hole-props.luau` | `props.Modifier or None` 관용구가 컴포넌트 경계 nil-hole을 막는지 + `Params` 타입 체크 | `component-composition-plan.md` "필수 관용구", ROADMAP M0-5 |
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `base/source-state-plan.md` "Source가 State를 만족함", ROADMAP M0-2 |

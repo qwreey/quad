@@ -82,13 +82,14 @@
 `10`은 **Studio 전용이라 재작성해도 이 환경에서는 못 돌린다** — 재작성
 후 다시 `not-run/`으로 내려가 사용자/MCP를 기다리는 자리다.
 
-**[2026-08-21] `01`이 합류** — 같은 "설계가 바뀐" 유형이다. 통과 상태로
-`done/`에 두면 이제는 구현이 안 하는 두 루프 순회를 "검증됨"으로 오독하게
-된다.
+**[2026-08-21] `01`과 `05`가 합류** — 둘 다 같은 "설계가 바뀐" 유형이다.
+통과 상태로 `done/`에 두면 `01`은 구현이 안 하는 두 루프 순회를, `05`는
+**이제 접히는 중복 통지가 안 접힌다는 것**을 "검증됨"으로 오독하게 된다.
 
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
 | `01-two-pass-array-hash-order.luau` | 옛 형태 기준으로는 ✅ 통과였음 | 숫자 `for` + 일반화 `for` **두 루프**로 짜여 있는데, 구현은 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — Luau의 일반화 `for`가 배열 파트를 먼저 다 돌고 해시 파트로 넘어간다는 것 자체를 **한 루프로** 검증하도록 다시 쓸 것. **검증 대상(순서 계약)은 그대로**라 결론이 바뀌는 건 아님 |
+| `05-store-state-diamond-propagation.luau` | 2026-08-19 재작성분은 그 시점 모델 기준 ✅ 통과였음 | **[2026-08-21] 모델이 또 바뀌었다** — 소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드에서 **두 번째 통지가 접힌다**. 그래서 이 스파이크의 핵심 assert("`:Get()`을 안 부르는 Observer가 변경당 경로 수(2)만큼 운다")가 **정반대**가 됐다 — 이제 **변경당 1회**여야 한다. **살릴 것**: `invalid` 기반 dedup이면 두 번째 변경부터 침묵하는 것을 잡는 음성 대조군(그 금지는 지금도 유효). **새로 넣을 것**: DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch가 에포크로 사라지는지(그 문서 §1의 시나리오) |
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
@@ -115,7 +116,6 @@
 |---|---|
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
-| `05-store-state-diamond-propagation` | **[2026-08-19 재작성]** emit은 자기 invalid 상태와 무관하게 항상 전파(다이아몬드 두 경로 모두 끝까지 도달), 재계산은 `:Get()` 시점 캐시로 1회만, `:Get()`을 안 부르는 Observer는 source 변경마다 경로 수만큼(2) 계속 발화 — 옛(역전된) 모델이면 2번째 변경부터 침묵해야 하는데 안 그럼을 확인 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
 | `11-modifier-illegal-value-error` | Modifier 필드/Source에 핸들러 계층 값 넣으면 즉시 error — 16개 케이스 전원 |

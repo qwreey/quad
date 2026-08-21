@@ -261,7 +261,7 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   즉시 1회 실행"이 N번 발화하므로, 설치 구간 동안 발화를 눌러뒀다가 마지막에
   한 번만 실행한다 — **`Blocker`의 "`state:Block()` 없이 직접 쓰는" 용례**를
   그대로 재사용(`base/blocker-plan.md`). **⚠️ 이 억제 장치의 정확한 모양은
-  `Gate`(공용 게이트 노드) 설계에 딸려 있다** — `research/gate-primitive.md`가
+  `Gate`(공용 게이트 노드) 설계에 딸려 있다** — `base/gate-plan.md`가
   닫힌 뒤에 확정할 것.
 - **leaf dedup/cascade가 전부를 덮어야 한다** — 의존성이 N개면 내부 Observer도
   N개라, `EffectHandle`의 bind/unbind cascade와 dedup 분기가 **그 전부**를

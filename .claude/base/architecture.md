@@ -449,10 +449,14 @@ push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
 의존성 중복 재계산 문제가 풀림(**[2026-08-14 보강]** 푸는 주체는
 **노드별 캐시**임을 명시 — `invalid`는 "내 캐시가 낡았다" 표시일 뿐이고
-**emit 전파는 자기 `invalid` 상태와 무관하게 항상 일어남**. 전파를 늦추는
-건 `Blocker` 같은 명시적 게이트뿐. 한때 `source-state-plan.md`가 "이미
-`invalid`면 전파 중단"으로 서술했으나 `Observer` 계약과 모순돼 역전됨 —
-`archive/invalidate-dedup-propagation-reversed.md`). State는 쓰기 대상이 아니고, 값을 쓰는
+**emit 전파는 자기 `invalid` 상태와 무관함**. 한때 `source-state-plan.md`가
+"이미 `invalid`면 전파 중단"으로 서술했으나 `Observer` 계약과 모순돼 역전됨 —
+`archive/invalidate-dedup-propagation-reversed.md`. **[2026-08-21 갱신]**
+전파를 접는 판정은 이제 `invalid`가 아니라 **소스 에포크 비교**가 한다 —
+같은 소스의 같은 에포크가 두 경로로 도착하면 두 번째는 접히고(다이아몬드에서
+값도 통지도 한 번), DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch도 같이
+사라진다. 규칙 전량은 `base/state-epoch-plan.md`, 명시적 게이트는
+`base/gate-plan.md`(`state:Gate`)와 그 위의 `Blocker`). State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
 `:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
 읽기는 `:Get()` 하나로 통일 — 프로퍼티 읽기 표기는 Ref의 `.Value` 전용으로 좁혀짐. **[표기 정정, 2026-08-18]** 여기 소문자 `.value`로 적혀 있었음). 값 하나만

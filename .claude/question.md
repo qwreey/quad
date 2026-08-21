@@ -65,7 +65,7 @@
   그대로**(`gate`는 이미 행위자가 아니라 **장치**를 가리키는 명사라 `-er`가
   불필요 — `Source`/`Ref`/`Slot`/`Tween`도 같은 계열), 대안 후보는
   `Valve`/`Relay`. **설계 자체가 다음 세션으로 미뤄졌으므로 이름도 그때 같이**
-  — 3번 절의 `Gate` 항목과 `research/gate-primitive.md`가 소스.
+  — 3번 절의 `Gate` 항목과 `base/gate-plan.md`가 소스.
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
@@ -205,8 +205,14 @@
   빈도가 다르다.** 해법은 있다 — reconcile이 `pos`처럼 **절대 offset도 러닝
   누적**으로 들고 다니면 O(n)(그게 `mountSlotTree`가 이미 하는 방식). 그렇게
   할지, 아니면 실측 전엔 그냥 둘지 판단 필요.
-- **⭐ [신설, 2026-08-21 구현 전 QA 5라운드] 공용 `Gate` 노드의 이름과 표면 —
-  M2 착수 전 필요.** 위 항목의 결정("게이팅 먼저")에 따라 base에 만들 것이
+- **[해소, 2026-08-21] 공용 게이트 노드의 이름과 표면 — `state:Gate(setup)`
+  메소드 + `GateNode`로 확정.** 탑레벨 프리미티브는 안 만들고, `Blocker`는
+  `state:Block(blocker)` 안에서 그 배선을 쓴다(사용자: *"Gate 는 따로
+  프리미티브 없이 state:Gate( (emit) -> ()->() ) 처럼 선언되고 마치 Compute
+  처럼 GateNode(ComputeNode 처럼) 생성된다"*). `Get()`엔 영향 없음(통지만
+  막음)까지 확정. **남은 것은 사용자 판단이 아니라 구현 시 정할 것들**
+  (생명주기·재진입 계약, M2에 `Blocker`까지 넣을지) — `base/gate-plan.md`가
+  소스. 아래는 열려 있던 시점의 서술: 위 항목의 결정("게이팅 먼저")에 따라 base에 만들 것이
   `Blocker`가 아니라 **상류 emit을 가로채 정책이 통과 여부를 정하는 공용 게이트
   노드**로 확정됐다(`Blocker`/`Debounce`/`Throttle`이 그 위의 정책). 사용자
   스케치는 `Gate(function(emit) return function() ... end end)` 2단 구조이고,
@@ -219,9 +225,11 @@
   `:With`류 State 메소드**(*"state 의 전파를 손대는 작업이라 with 처럼 다른
   노드가 나는게 맞음"*)이고, 그러면 `Blocker`는 이미 확정된
   `state:Block(blocker)` 메소드가 내부에서 그걸 부르면 되므로 배선 문제 자체가
-  없어진다. 상세는 `research/gate-primitive.md`.
-- **⭐ [신설, 2026-08-21 구현 전 QA 5라운드] State 재계산 판정을 "소스 에포크
-  비교"로 바꿀지 — M3 착수 전 필요.** 사용자 제안: 각 State가 자기 상류 루트
+  없어진다. 상세는 `base/gate-plan.md`.
+- **[해소, 2026-08-21] State 재계산/전파 판정을 "소스 에포크 비교"로 바꿀지 —
+  채택 확정**(사용자: *"gate 와 epoch 가 제가 만족할만한 정도로 올라왔습니다.
+  채택하면 될것 같아요."*). 규칙 전량은 `base/state-epoch-plan.md`, 구현은 M3.
+  아래는 열려 있던 시점의 서술: 사용자 제안: 각 State가 자기 상류 루트
   `Source`들의 카운트를 들고 있다가 `Get()` 때 비교해 재계산 여부를 정한다.
   동기는 성능이 아니라 **정확성** — DFS 전파 도중 Observer가 `Get()`을 부르면
   아직 신호를 못 받은 다른 가지의 옛 캐시가 섞여 들어가는 glitch가 지금 모델에
@@ -237,7 +245,7 @@
   기다립니다"*). 그래서 통지가 죽지도 게이트를 새지도 않아 `source = nil`
   규약도 필요 없어졌다. **남은 판단은 채택 여부 자체 하나**이고, State 내부 표현을
   바꾸는 결정이라 M3 뒤로 미루면 되돌리는 비용이 크다. 상세는
-  `research/state-epoch-validation.md`.
+  `base/state-epoch-plan.md`.
 - **[해소, 2026-08-21 구현 전 QA 5라운드 `C-4`] `Dispatch.setLength`의 Observer
   앵커 — 물리 target으로 확정(4라운드 `D-56` 역전).** `setLength`가
   `(ownerKey, i, len, anchor)`로 4번째 인자를 받아 **부기 키와 생명주기 앵커를

@@ -260,3 +260,22 @@ dedup, 상류의 진짜 emit을 기다림)을 따로 둔다. 순회는 emit을 �
 태워도 누출이 남고, `nil` emit은 하류마다 전체 순회를 강제해 연쇄한다).
 M절에서 철회했던 두-카운트 분리가 **다른 근거로 되살아난** 셈이다.
 이제 이 안은 기제가 다 정해졌고 **남은 건 채택 여부 자체**다.
+
+## 11. 종결 — `Gate` 표면 확정 + 에포크 채택, 두 문서 `base/` 승격 (같은 날)
+
+사용자가 `Gate`를 **탑레벨 프리미티브 없이 `state:Gate(setup)` 메소드 +
+`GateNode`**로 확정하고(*"Blocker 는 해당 내부 배선을 따른다"*), 이어서
+State 에포크도 **채택**했다(*"gate 와 epoch 가 제가 만족할만한 정도로
+올라왔습니다"*). `research/gate-primitive.md` → `base/gate-plan.md`,
+`research/state-epoch-validation.md` → `base/state-epoch-plan.md`로 승격.
+
+에포크 채택으로 `source-state-plan.md`의 두 확정 서술("항상 전파" / "중복
+통지는 안 접음")이 역전돼 `archive/always-propagate-no-dedup-superseded.md`로
+옮겼다. **2026-08-14의 `invalid` 기반 dedup 금지를 되돌린 게 아니라는 것**을
+역전 문서·`source-state-plan.md`·`README.md` 세 곳에 모두 못박았다 — 이
+구분이 흐려지면 "영구 침묵" 버그로 되돌아간다.
+
+부수로 스파이크 `05-store-state-diamond-propagation`이 다시
+`rewrite-required/`로 갔다(다이아몬드 Observer가 이제 변경당 1회만 울어야
+해서 핵심 assert가 정반대). 처리 전량은
+`qa-request/pre-implementation-qa-round5-followup.md`의 O절.
