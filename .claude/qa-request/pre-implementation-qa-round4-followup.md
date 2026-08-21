@@ -1,6 +1,8 @@
 # 구현 전 QA **4라운드 followup** — 회신 처리 결과 + 재질문
 
-**상태**: **[2026-08-21] 4차 처리로 종결 — 아래 H절이 최신이자 마지막.**
+**상태**: **[2026-08-21] 4차 처리로 종결 + 반영 후 감사까지 완료 — 아래
+I절이 최신.** 감사 4라운드(의사코드 트레이싱)가 **실제 크래시 3건**을 잡아
+같은 날 전부 닫았다(`I-1`~`I-3`). H절이 반영 내용, I절이 그 감사 결과다.
 `F-3`이 전량 확인됐고 `attachSlot` 분해도 확정돼 `base/`에 전부 반영됐다.
 **이 followup에 열린 질문은 남아있지 않다.** 5라운드 문항지는 만들지
 않는다(사용자 지시). 아래 A~G절은 거기까지 온 처리 과정의 기록.
@@ -373,6 +375,9 @@ observe 하기에 형제 slot 갱신에 무관한데, 그 이야기가 아닌것
 
 ### C-1. ⭐ `SL-40`/`SL-43`/`SL-45` — `KeyGone` 센티널 신설
 
+> **✅ [해소, 2026-08-21] 확정·반영 완료 — 아래 H-2가 결론이다.**
+> 이 절은 그 제안의 원문이다.
+
 **사용자 제안**: 키가 데이터에서 사라지면 `updateFn`을 `KeyGone`으로 한 번 더
 불러 처분을 묻고(`T | KeyGone`), `userdata`를 지울지도 사용자가 정하게 위임.
 이걸로 `SL-45`(Detach 홀드 중 키 소멸)가 닫힌다.
@@ -407,6 +412,9 @@ export**가 일관적이다(`None`/`Detach` 선례). 이름은 `KeyGone`이 의�
 **그대로 갈지 확인 부탁.**
 
 ### C-2. ⭐⭐ `SL-43` vs `SL-51` — "밀려난 `prev`는 dispose"와 `state<Frame>` 의미론이 충돌한다
+
+> **✅ [해소, 2026-08-21] `Owned` 설치 플래그로 확정 — 아래 H-3이 결론이다.**
+> 이 절은 그 충돌을 처음 짚은 원문이다.
 
 **이번 회신에서 나온 것 중 파급이 가장 크다.** 두 답변이 서로 반대 방향을
 가리킨다:
@@ -1140,7 +1148,9 @@ if input[key] ~= nil then continue end   -- "이미 있으면 건너뛴다" = �
   → 자식 재귀/`setLength` → `OffWithoutEmit` → `recompute` →
   **마지막에 `setLength(ownerKey, position, slot.Length)`**.
 - **`mountSlotTree(slot, physicalTarget)`** — 물리 `Parent` 대입과
-  `_mounted = true`, `_detachCleanup` Effect 설치만. Blocker 불필요.
+  `_mounted = true`만. Blocker 불필요. (**[정정, 2026-08-21 `I-7`]** 여기
+  `_detachCleanup` Effect 설치도 있었으나 `activateList`로 이관됐다 —
+  이제 이 함수는 정말로 물리 대입만 한다.)
 - **공개 `attachSlot`은 그 둘을 순서대로 부르는 두 줄** — 이름/시그니처/호출부
   전부 그대로라 다른 문서의 참조가 안 깨진다.
 
@@ -1175,3 +1185,163 @@ M6의 `Detach` 항목 둘이 옛 설계(userdata 보존, 키 소멸 처분 ⚠�
 - 실측으로 남은 것: 스파이크 `01` 재작성(단일 generalized `for`),
   `table.insert` 구멍 재사용(`R-11`) 스파이크. 상태의 소스는
   `luau-test/STATUS.md`.
+
+---
+
+# I절 — 반영 후 감사 (2026-08-21): 트레이싱이 실제 크래시 3건을 잡음
+
+H절의 반영을 커밋한 뒤 `quad-doc-auditor`를 각도를 바꿔 4라운드 돌렸다.
+1~3라운드(문서 대조)에서 나온 것은 전부 "고친 결정이 다른 자리에 안
+옮겨졌다" 유형이었고, **4라운드(의사코드 시나리오 손 트레이싱)에서 실제로
+실행이 깨지는 결함 3건**이 나왔다. 셋 다 **`Detach`가 신설한 새 경로가
+기존 불변식과 부딪히는데 그쪽이 안 고쳐진 것**이다.
+
+## I-1. detach 재마운트가 `claimOwner`에서 무조건 크래시 (⭐⭐ 치명)
+
+`rawDetach`는 일부러 `releaseOwner`를 안 부른다(소유권 유지가 설계의
+핵심). 그런데 재마운트는 `rawAdd`를 거치고, `rawAdd`가 부르는
+`claimOwner`는 **같은 owner의 재클레임도 무조건 error**다 — 2026-08-13
+감사가 `Slot{a, a}`를 막으려고 일부러 엄격하게 만든 것이다. 결과:
+**문서가 권장하는 "다음 사이클에 `prev`를 그대로 돌려주면 재마운트" 패턴이
+그대로 `error("이 요소는 이미 마운트돼 있음")`로 죽는다.**
+
+**확정(사용자 판단)**: `claimOwner`에 **detach 재마운트 전용 예외**를 넣는다
+— `claimOwner(element, ownerKey, fromDetached)`에서 `fromDetached and
+cur == ownerKey`일 때만 통과. top-level `claimOwnerAt`이 이미 "같은
+`(inst, k)` 자리의 재발행은 통과"라는 같은 모양의 예외를 갖고 있어 대칭이
+맞는다. **`fromDetached` 없이 "같은 owner면 통과"로 완화하면 안 된다** —
+`Slot{a, a}`가 다시 새어나간다.
+
+## I-2. 재마운트된 자식 Slot이 `activateList`를 두 번 실행 (⭐⭐)
+
+`I-1`을 고치면 바로 드러나는 다음 문제. `rawAdd`는 Slot 요소를 이미
+마운트된 부모에 넣을 때 `attachSlot`을 부르고, `materializeSlotTree`는
+`slot._listed`면 **무조건** `activateList`를 다시 실행한다. `:List`를 가진
+자식 Slot이 detach에서 돌아오면 `data:Observer` 구독이 하나 더 생기고
+`mounted`/`userdata`/`keyIndex` 클로저 상태가 **통째로 새로 만들어져**
+기존 요소를 전부 새 것으로 오인해 다시 그린다.
+
+**확정(사용자 판단)**: `activateList`에 **멱등 가드**(`slot._listActivated`).
+`_crudUsed`/`_listed`와 같은 결의 플래그다.
+
+**가드만으로는 반쪽이라 하나 더 닫았다** — `:List`의 `data:Observer`는
+`bindLifetime(inst, observer)`로 **물리 target에 앵커**돼 있는데,
+`unmountSlotTree`가 푸는 건 `bk.observers`뿐이라 이 구독은 **옛
+physicalTarget에 매달린 채** 남는다. 포탈로 다른 target에 재마운트하면
+옛 target이 죽는 순간 살아있는 Slot의 `:List`가 조용히 반응을 멈춘다.
+그래서 `slot._listObserver`로 핸들을 보관하고, `unmountSlotTree`가
+`unbindLifetime`만 하고(핸들과 `_listActivated`는 보존), 멱등 가드가
+`bindLifetime(inst, self._listObserver)`로 앵커를 새 target에 다시 건다.
+`_detachCleanup`이 이미 받고 있던 처리와 같은 모양이다.
+
+## I-3. `_detachCleanup`이 `releaseOwner`를 안 부름 (⭐)
+
+owner가 죽을 때 `_detached`를 비우는 `Effect`가 `_owned == false` 분기에서
+요소를 파괴하지 않는 건 맞는데, **소유권 기록도 안 푼다.** 그러면 그
+`state<Frame>`이 **죽은 Slot을 owner로 달고** 남아, 사용자가 같은 값을
+다른 Slot에 넣을 때 그 죽은 Slot이 GC되기 전까지 비결정적으로 "이미
+마운트돼 있음" error가 난다. 이 문서 스스로 "소유권 반납은 GC에 맡기면
+안 됨" 절에서 경계했던 실패 모드다.
+
+**반영**: 두 분기 공통으로 `releaseOwner(element, slot)`를 먼저 부른다
+(`rawRemove`도 파괴 전에 부르므로 대칭).
+
+## I-4. `materializeSlotTree` 중 예외 시 Blocker가 켜진 채 남음 — 문서화만
+
+`blocker:On()`과 `OffWithoutEmit()` 사이에서 자식 재귀가 예외를 던지면
+Blocker가 영구히 켜져 그 Slot의 `Length`가 영원히 stale해진다.
+
+**확정(사용자 판단)**: `pcall`로 감싸지 않고 **문서화만 한다.** 마운트
+도중 예외는 quad가 복구를 보장하지 않는 상태이고(에러 경계는
+`base/fallback-plan.md`), 아직 실제로 밟은 적 없는 경로다 —
+`conventions.md`의 "드문 오용이나 가상의 미래 요구까지" 절이 세운 원칙
+그대로. 이건 이번 분해가 만든 창이 아니라 옛 단일 `attachSlot`에도
+있었을 구조적 갭이다.
+
+## I-5. 문서 대조 라운드(1~3)에서 나온 것
+
+전부 "고친 결정이 다른 자리에 안 옮겨졌다" 유형이라 여기 나열하지 않는다
+— 커밋 diff가 소스. 대표적인 것만: `slot-plan.md`가 한쪽에선 `Owned`
+기준 표를, 다른 쪽에선 옛 "값 교체는 비파괴"를 동시에 서술하고 있었고,
+`attachSlot`의 flush 루프를 가리키던 문장 5곳이 `materializeSlotTree`로
+안 옮겨져 한 문서 안에 신/구 표현이 공존했으며, `luau-test/STATUS.md`가
+자기 규칙("폴더가 곧 상태")을 어기고 재작성 대상 스파이크를 `done/`에
+두고 있었다.
+
+## I-6. 5라운드(수정분 회귀 트레이싱) — 3건 더, 전부 반영
+
+`I-1`~`I-3`의 수정 자체를 다시 트레이싱한 라운드. 새 결함은 안 나왔지만
+**그 수정이 닿았어야 할 자리 3곳**이 나왔다.
+
+1. **`destroySlotTree`가 `_listObserver`를 안 푼다.** `unmountSlotTree`엔
+   넣었는데 파괴 경로엔 빠졌다. `physicalTarget`은 중첩 깊이와 무관하게
+   **트리 최상위 inst 하나**라(`materializeSlotTree`가 같은 값을 재귀에
+   그대로 넘김), 자식 Slot만 죽고 그 inst는 살아있는 게 흔한 경우 —
+   그러면 `gchold[inst]`가 observer와 그 클로저 상태(그리고 죽은 slot
+   자신)를 계속 붙잡고, `data`가 emit될 때마다 이미 죽은 자식들에 대해
+   reconcile이 계속 돈다. **반영**: 파괴이므로 `unmountSlotTree`와 달리
+   핸들과 `_listActivated`까지 `nil`로 지운다.
+2. **`claimOwner`의 옛 논증 두 문단이 `fromDetached`와 정면 모순.**
+   2026-08-13 세션의 *"nested엔 재클레임이라는 개념이 애초에 없다 …
+   무조건 error가 맞음"*이 그대로 남아 있었다 — 그 논증의 근거(reconcile은
+   항상 release → claim 순서)가 `Detach`로 깨졌는데 갱신이 안 따라갔다.
+   함수 정의 옆 주석만 정정돼 있었다. **반영**: 두 문단에 ⚠️ 정정을 달고,
+   "플래그 없이 같은 owner면 통과로 완화하면 `Slot { a, a }`가 다시
+   새어나간다"는 경계도 같이 명시.
+3. **소유권 예시 코드가 `C-4`와 모순.** `-- destroySlotTree(slot) 안,
+   자식들을 파괴하기 직전` + `releaseOwner(element, slot)` 예시가
+   2026-08-12 서술로 남아 있었는데, 2026-08-20 `C-4`가 그 호출을 도로
+   뺐고 실제 의사코드도 "부르지 **않는다**"라고 명시한다. 이번 감사
+   각도(`releaseOwner` 이중 호출 추적)에서 걸렸다. **반영**: 예시를
+   삭제 표시로 교체.
+
+**회귀 없음으로 확인된 것**: `claimOwner`의 early return은 `OWNER_POS`를
+stale하게 남기지 않고(그 필드는 top-level `claimOwnerAt` 전용),
+`fromDetached`를 안 넘기는 기존 호출부는 동작이 이전과 완전히 동일하며,
+`_listActivated` 가드는 정상 마운트/`Slot:List()` 경로를 막지 않고,
+언마운트~재마운트 구간에도 `_listObserver`는 Slot 필드 강참조라 GC되지
+않으며, `releaseOwner` 이중 호출 경로는 없다(`destroySlotTree`가 `C-4`
+이후 자식에 대해 안 부르므로).
+
+
+## I-7. `_detachCleanup`을 `activateList`로 이관 + `activateList`의 `inst` 리네이밍
+
+사용자가 별도 에이전트와 상의한 내용을 가져와 확정한 두 건. 둘 다 **의미
+변화 없는 배치/이름 정리**지만, 첫 건은 실제 낭비를 없앤다.
+
+1. **`_detachCleanup` Effect 설치가 `mountSlotTree` → `activateList`로 이관.**
+   `_detached`를 채우는 유일한 지점이 `settle`의 `rawDetach`이고 그건
+   `activateList` 클로저 안에만 있으므로, **`:List`가 없는 Slot의
+   `_detached`는 정의상 영원히 빈 테이블**이다. 그런데 `mountSlotTree`는
+   재귀 전체(중첩 포함)에 Effect + `bindLifetime`을 심고 있었다 — 트리
+   크기만큼의 no-op. 확인: `rawDetach` 호출부는 `settle` 한 곳뿐이고
+   `_detached`에 쓰는 코드도 전부 그 클로저 안이다.
+
+   **이관하면서 `_listObserver`와 완전히 같은 취급으로 통일했다** —
+   생성은 `activateList` 최초 1회, `unmountSlotTree`는 **앵커만 해제하고
+   핸들 보존**, 재마운트는 멱등 가드가 재앵커, `destroySlotTree`만 해제 +
+   `nil`. 이전엔 이 둘이 서로 다른 함수에서 만들어지고 언마운트 처분도
+   갈렸다(하나는 보존, 하나는 `nil`). 이제 **"`activateList`가 소유하고
+   물리 target에 앵커되는 자원"**이라는 한 범주가 되어, 이런 자원이 또
+   생겨도 훑을 자리가 하나다.
+
+   **⚠️ 이 이관에는 `I-2`의 멱등 가드와의 상호작용이 걸려 있다.** 원
+   제안의 근거는 *"`materializeSlotTree`가 `_listed`면 재마운트 때도
+   `activateList`를 다시 부르니 lifecycle이 보존된다"*였는데, 그건
+   **가드를 넣기 전 동작**이다(그리고 그게 `I-2`의 버그였다). 가드가 있는
+   지금은 두 번째 호출이 early return하므로, **가드 분기가
+   `_detachCleanup`도 같이 재앵커하지 않으면** 포탈 재마운트 후 그 Slot의
+   detached는 owner 사망 시 아무도 치우지 않는다. 가드 분기에서 두 자원을
+   같이 `bindLifetime`하도록 반영했다.
+
+   `_detached` **테이블 자체는 Slot 필드로 그대로 둔다** —
+   `destroySlotTree`가 `activateList` 클로저 **밖**에서 walk해야 하는 게
+   애초에 `ud`를 버리고 필드로 간 이유다(`I-1`의 (2)번 근거).
+
+2. **`activateList(self, inst)` → `activateList(self, physicalTarget)`.**
+   그 인자는 `bindLifetime`의 첫 인자로 들어가니 타입상 물리 Instance일
+   수밖에 없고, 호출부 둘(`materializeSlotTree`의 `physicalTarget`,
+   `Slot:List()`의 `self._mountedInst`)이 넘기는 값도 같은 개념이다.
+   Slot일 수는 없다 — 그 Slot은 이미 1번째 인자 `self`다. 옆 함수들
+   (`materializeSlotTree`/`mountSlotTree`/`attachSlot`)과 이름을 맞춘
+   **순수 리네이밍**.

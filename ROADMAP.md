@@ -529,7 +529,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "Detach된 요소는 `slot._detached`가 보유한다" 절).
       **[2026-08-21 해소] "키가 사라졌을 때 홀드 중이던 요소의 처분"은
       `KeyGone` 센티널로 확정** — `updateFn(KeyGone, 0, offset, prev, ud)`로
-      한 번 더 물어 처분을 받고, owner가 죽으면 `mountSlotTree`가 건
+      한 번 더 물어 처분을 받고, owner가 죽으면 `activateList`가 건
       `Effect`가 `_detached`를 전부 정리한다(같은 문서의 "`KeyGone`" 절).
       **`Owned` 옵션 신설** — `:List`/`:Single`의 설치 시점 플래그(기본
       `true`), `false`면 어떤 경로로도 파괴하지 않고 언마운트만(사용자가

@@ -1,6 +1,11 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T, Pattern>`
+> 마지막 갱신: **2026-08-21** — QA 4라운드 `F-4-1`로 `Dispatch.drive`의
+> props 순회가 **단일 일반화 `for`**로 정정되면서, 두 루프 버전을 검증하던
+> `01`이 낡아 `done/` → `rewrite-required/` 이동(검증 대상인 순서 계약
+> 자체는 그대로). 같이 **만들어야 할 스파이크** 절 신설 — 아직 파일이
+> 없는 실측 항목(`R-11`의 `table.insert` 구멍 재사용, 중간 State GC)을
+> 여기 모은다. 직전 갱신은 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T, Pattern>`
 > 버전 패턴 체크 + `AddPlugin<Self,P>` 체이닝) 검증용 `23` 신규 추가 →
 > `done/` 직행, 같은 날 후속으로 `type-version-check` 분리에 맞춰 재작성.
 > 그 과정에서 `type function`을 거친 값은 패스스루라도 이후
@@ -62,7 +67,7 @@
 `rewrite-required/`에 그대로 둠 — 재작성 대상이지 사람 결정 대상이
 아님(계약 자체는 위에서 이미 확정됨).
 
-## 🟠 `rewrite-required/` — 스파이크가 낡음 (4건)
+## 🟠 `rewrite-required/` — 스파이크가 낡음 (5건)
 
 **[2026-08-13 열네 번째 세션] 앞의 두 건은 "코드가 깨진" 게 아니라 "설계가
 바뀐" 경우** — `question.md` 0-A/0-Z 확정으로 재디스패치가 **하강 diff**가
@@ -77,8 +82,13 @@
 `10`은 **Studio 전용이라 재작성해도 이 환경에서는 못 돌린다** — 재작성
 후 다시 `not-run/`으로 내려가 사용자/MCP를 기다리는 자리다.
 
+**[2026-08-21] `01`이 합류** — 같은 "설계가 바뀐" 유형이다. 통과 상태로
+`done/`에 두면 이제는 구현이 안 하는 두 루프 순회를 "검증됨"으로 오독하게
+된다.
+
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
+| `01-two-pass-array-hash-order.luau` | 옛 형태 기준으로는 ✅ 통과였음 | 숫자 `for` + 일반화 `for` **두 루프**로 짜여 있는데, 구현은 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — Luau의 일반화 `for`가 배열 파트를 먼저 다 돌고 해시 파트로 넘어간다는 것 자체를 **한 루프로** 검증하도록 다시 쓸 것. **검증 대상(순서 계약)은 그대로**라 결론이 바뀌는 건 아님 |
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
@@ -93,16 +103,16 @@
 |---|---|
 | `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
 
-## ✅ `done/` — 통과 or 판정 끝 (19건)
+## ✅ `done/` — 통과 or 판정 끝 (18건)
 
-**런타임 14개 전원 통과**(crash 0 / FAIL 0) — **[열네 번째 세션] `04`/`19`는
+**런타임 13개 전원 통과**(crash 0 / FAIL 0 — **[2026-08-21]** `01`이
+`rewrite-required/`로 나가며 14 → 13) — **[열네 번째 세션] `04`/`19`는
 검증 대상 설계가 바뀌어 `rewrite-required/`로 이동했고, [2026-08-19]
 `05`는 현행 모델로 재작성해 다시 여기로 돌아왔고, 신규 `22`(구 `13`
 런타임 절반, PostRef까지 확장)가 합류**:
 
 | 파일 | 확인된 것 |
 |---|---|
-| `01-two-pass-array-hash-order` | 배열 파트 전체 → 해시 파트 순. `Dispatch.drive`의 순서 계약과 `PreRef` 호이스팅의 전제. **⚠️ [2026-08-21 재작성 필요]** 이 스파이크는 숫자 `for` + 일반화 `for` **두 루프** 버전인데, 구현이 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — 검증 대상(순서 계약)은 그대로이고 스파이크 코드만 그 형태로 다시 쓸 것 |
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
 | `05-store-state-diamond-propagation` | **[2026-08-19 재작성]** emit은 자기 invalid 상태와 무관하게 항상 전파(다이아몬드 두 경로 모두 끝까지 도달), 재계산은 `:Get()` 시점 캐시로 1회만, `:Get()`을 안 부르는 Observer는 source 변경마다 경로 수만큼(2) 계속 발화 — 옛(역전된) 모델이면 2번째 변경부터 침묵해야 하는데 안 그럼을 확인 |
@@ -157,3 +167,18 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 ```
 추측이 아니라 **실제로 GC가 안 됨** — `Slot`의 두-`Relate` 수정이 필수
 조치였음이 입증.
+
+
+## 🔵 만들어야 할 스파이크 — 아직 파일이 없음 (2026-08-21 신설)
+
+폴더가 곧 상태인 이 문서에서 **"아직 파일조차 없는 실측 항목"**은 어느
+폴더로도 표현되지 않아 그냥 잊혔다. 실제로 QA 4라운드 followup(H-7)이
+"실측으로 남은 것"의 소스로 이 문서를 지목했는데 여기 항목이 없었다.
+앞으로 이 절이 그 소스다 — 파일을 만들면 `not-run/` 또는 실행 결과에 따라
+해당 폴더로 옮기고 여기서 지운다.
+
+| 검증할 것 | 왜 | 출처 |
+|---|---|---|
+| `table.insert`가 배열 중간의 구멍을 재사용하는가 | `Ref` 콜백 배열이 죽은 슬롯을 `None`으로 두는 설계의 전제. 재사용하지 않으면 슬롯이 무한 증가한다 | QA 4라운드 `R-11`, `base/ref-plan.md` |
+| 중간 State가 상류 strong / 하류 weak 불변식으로 실제로 살아남는가 | `State → State → State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도 없어 전파가 조용히 끊길 수 있음. **M3 착수 전 필요** | `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절, `question.md` 3번 |
+| `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

@@ -61,6 +61,13 @@
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
+- **`Owned`(3순위, 2026-08-21 신설)**: `:List`/`:Single`의 설치 시점
+  플래그(기본 `true`, `false`면 어떤 경로로도 파괴 안 함).
+  `elementOwner`/`claimOwner`/`releaseOwner`와 같은 뿌리라 골랐지만
+  **잠정 이름**이다 — 형용사라 옵션 테이블 키로는 자연스러운데, 실제로
+  묻는 건 "이 Slot이 요소의 수명을 책임지는가"라서 `OwnsElements`처럼
+  주어를 드러내는 쪽이 나을 수도 있음. `base/slot-plan.md`의
+  "소유권은 설치 시점에 정해진다" 절.
 - **`canExecute`(3순위, 사소함)**: 실제로 "이 값이 아직 살아있나" 확인인데
   이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적이라는 제안이
   있었으나, **(2026-08-08 재검토)** `isAlive`는 top-level `isX` 계열
@@ -168,7 +175,8 @@
   선택지 (c)로 확정: `updateFn`을 **`KeyGone`으로 한 번 더 불러 처분을
   묻는다**. 같이 확정된 것 — detach된 요소는 `userdata`가 아니라
   **`slot._detached` 필드**가 보유하고(그래야 `destroySlotTree` walk가
-  닿고 소유권도 유지됨), owner가 죽으면 `Effect`가 정리한다. 원래 갭이
+  닿고 소유권도 유지됨), owner가 죽으면 `activateList`가 설치한 `Effect`가
+  정리한다. 원래 갭이
   치명적이었던 이유는 gcconn 트릭 때문에 detach된 quad-제작 Instance가
   **GC 폴백조차 없이 영구히 남기** 때문. 상세는 `base/slot-plan.md`의
   "Detach된 요소는 `slot._detached`가 보유한다"/"`KeyGone`" 절.

@@ -86,7 +86,8 @@
      `archive/question-resolved.md`.
    - **[2026-08-21 해소]** `Detach` 홀드 중 키가 사라졌을 때의 처분 —
      **`KeyGone` 센티널로 `updateFn`에게 묻는 것**으로 확정. detach 요소는
-     `slot._detached` 필드가 보유하고 owner 사망 시 `Effect`가 정리.
+     `slot._detached` 필드가 보유하고 owner 사망 시 `activateList`가 건
+     `Effect`가 정리.
      `base/slot-plan.md`의 "`KeyGone`" 절.
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
@@ -167,12 +168,11 @@
    stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
    2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
    목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
-   — 아직 진짜로 열려있는 것만 짚으면(**[2026-08-18] `DI`→`D`는 확정·반영
-   완료로 목록에서 빠짐**, **[2026-08-19] `PopOnly`→`Detach`도 확정·반영
-   완료로 목록에서 빠짐**): `Slot`(2순위),
-   `canExecute`(3순위 — `isAlive`는 검토 후 기각, `can` 계열 접두 유지
-   방향으로 기울었으나 구체 대안 미정), `Brand`(3순위), `Tag`/`Added`/
-   `Removed`/`Merged`(3순위), `Attribute`/`AttributeKey`(3순위).
+   — **[2026-08-21] 여기 있던 이름 나열은 지웠다.** 바로 위 문장이 이미
+   "`question.md` 1번이 최신 소스"라고 선언해놓고 다음 줄에서 목록을 다시
+   나열하고 있었고, 예고대로 실제로 갈라졌다(2026-08-21에 추가된 `Owned`와
+   그 전부터 있던 `hintValue`가 둘 다 빠져 있었음 — 감사가 발견).
+   **열린 항목이 뭔지는 `question.md` 1번을 열어볼 것.**
 3. **[2026-08-14 세션에 해소]** 오래 열려 있던 "이미 생성된 인스턴스
    재바인드"는 **기각**되어 `archive/existing-instance-bind-rejected.md`로
    이전됨 — 더 이상 상의할 스코프 항목이 아님.

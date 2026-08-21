@@ -1592,8 +1592,8 @@ end
 **해법의 핵심 — recompute를 배치가 끝날 때까지 미루고, offset은 그
 자리에서 직접 계산한다(사용자 설계, 2026-08-18)**:
 
-1. **배치를 여는 쪽(`Dispatch.drive` 최상위, 또는 `attachSlot`이 자기
-   자신의 `_elements`를 flush하는 자리 — 아래 "적용 지점" 참고)이 그
+1. **배치를 여는 쪽(`Dispatch.drive` 최상위, 또는 `materializeSlotTree`가
+   자기 자신의 `_elements`를 등록하는 자리 — 아래 "적용 지점" 참고)이 그
    owner 전용 `Blocker`를 `Relate(ownerKey)`에 lazy 생성하고 배치 시작
    전에 `:On()`한다.** 이 Blocker는 `state:Block()`을 거치지 않고
    **직접** 쓰인다 — `base/blocker-plan.md`의 "`state:Block()` 없이
@@ -1611,7 +1611,7 @@ end
    실체화되며 `Slot.Offset`을 곧바로 읽어 쓰는 자리(`activateList`)가
    배치 중이라도 항상 최신값을 보게 됨.
 4. 배치가 끝나면(`Dispatch.drive`의 배열 파트 순회 전체, 또는
-   `attachSlot`의 flush 루프 전체가 끝나면) `blocker:OffWithoutEmit()`을
+   `materializeSlotTree`의 등록 루프 전체가 끝나면) `blocker:OffWithoutEmit()`을
    부르고, **그 직후 딱 한 번** `recompute(ownerKey, bk)`를 명시적으로
    호출한다. 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
    `ownerKey`가 Slot이면 이 한 번의 recompute가 `ownerKey.Length`(위
@@ -1700,7 +1700,10 @@ yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체
 - **각 연산에 적용하면**:
   - `rawAdd` — `Length:Set(newCount)`(→ 뒤 형제 offset 갱신 동기 완료) →
     `element.Parent = target`. 이미 이렇게 확정돼 있음(아래 문단).
-  - `rawRemove`/`rawUnmount` — 파괴/언마운트 → `spliceArraysDown` →
+  - `rawRemove`/`rawUnmount`/**`rawDetach`**(**[2026-08-21]** `Detach`
+    경로용으로 신설된 세 번째 형제 — 소유권을 **유지**한 채 언마운트만
+    한다는 점만 다르고 순서는 같음, `base/slot-plan.md`) — 파괴/언마운트 →
+    `spliceArraysDown` →
     `recompute`가 지금 의사코드인데, **이건 물리 조작이 먼저**라 계약과
     어긋나 보인다. 다만 여기선 "빼는" 방향이라 부기를 먼저 줄이면 아직
     트리에 있는 요소가 순서 계산에서 빠지는 역전이 생긴다 — **"빼기는
