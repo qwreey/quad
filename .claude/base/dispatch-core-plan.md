@@ -579,13 +579,31 @@ end
     `PostRef`를 fire하는 짧은 루프. 둘 다 배열 재순회가 아니라 pre-pass
     하나 + 실제 `PostRef` 개수만큼의 목록 순회라 비용이 작음 — 상세는
     `base/ref-plan.md`의 "`PostRef`" 절.
-    **[2026-08-18 구현 전 QA 2라운드 후속, `RC-1` 해결] 배열 파트 순회
-    전체를 `inst` 전용 `Blocker`로 감싼다** — 순회 시작 전에
-    `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고, 배열 파트 순회가
-    (pre-pass/post-pass 포함) 전부 끝나면 `:OffWithoutEmit()` 한 뒤
-    `recompute(inst, bk)`를 명시적으로 1회 호출 — 상세 근거·`setLength`/
-    `setOffsetSource`가 이 Blocker를 어떻게 쓰는지는 아래 "배치 등록을
-    안전하게 만드는 Blocker 게이팅" 절이 소스.
+    **[2026-08-18 구현 전 QA 2라운드 후속, `RC-1` 해결 / 범위 정정
+    2026-08-24 `H-17`] `drive` 전체를 `inst` 전용 `Blocker`로 감싼다** —
+    진입 직후 `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고,
+    **`drive`가 할 일을 전부 마치면**(단일 일반화 순회 + post-pass 포함)
+    `:OffWithoutEmit()` 한 뒤 `recompute(inst, bk)`를 명시적으로 1회 호출 —
+    상세 근거·`setLength`/`setOffsetSource`가 이 Blocker를 어떻게 쓰는지는
+    아래 "배치 등록을 안전하게 만드는 Blocker 게이팅" 절이 소스.
+    - **왜 "배열 파트"가 아니라 "`drive` 전체"인가**: 옛 문장은 *"배열 파트
+      순회 전체를 … (pre-pass/post-pass 포함)"*이었는데 두 군데가 안 맞았다.
+      (1) `F-4-1`이 확정한 **단일 일반화 `for` + `type(k) == "number"` 분기**
+      에선 "배열 파트가 끝나는 시점"이 루프 밖에서 관측되지 않는다 — 첫
+      비숫자 키를 만나는 순간이거나 루프 종료이고, 어느 쪽인지는 그 인스턴스의
+      props에 해시 키가 있느냐에 달렸다. (2) `postRefList` 소비는 애초에
+      **해시 파트보다 뒤**다(`base/ref-plan.md`의 `PostRef` 절). 그래서 실제로
+      감쌀 수 있는 범위는 `drive` 전체다. 넓어지는 것 자체는 무해하다 —
+      해시 파트는 `setLength`를 안 부른다.
+    - **⚠️ 따라서 `PostRef` 콜백은 게이트가 켜진 채로 실행된다.** 그 콜백은
+      사용자 코드이고, `base/ref-plan.md`가 드는 대표 용례부터가 "이 시점
+      이후의 동적 변경을 구분하는 플래그를 세우는 것"이라 **그 자리에서
+      `slot:Add(...)`류를 부르는 게 자연스럽다.** 그러면 그 Slot 자신의
+      blocker는 이미 꺼져 있어 자기 `recompute`는 정상적으로 돌지만, 바뀐
+      `slot.Length`가 emit되어 올라온 부모 `inst`의 `gatedRecompute`는
+      **여기서 조용히 스킵된다.** 정합성은 직후의 명시적 `recompute(inst, bk)`
+      한 번에 전적으로 의존한다 — **[2026-08-24] 이걸 계약으로 못박는다**
+      (지금까지는 우연히 맞고 있었을 뿐 어디에도 적혀 있지 않았다).
     **진입 인덱스는 항상 `1`**(2026-08-13 감사에서 명시화 — 인덱스 도입
     후에도 이 자리만 인자가 안 적혀 있었음) — `drive`는 그 키의 체인을
     처음 여는 자리이므로 "다른 키로 위임할 때는 그 키의 재귀 깊이와
@@ -874,10 +892,20 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
   **선택적 업그레이드**일 뿐
   기본 요구사항은 아님 — base 기본 스텁 하나로도 이미 충분히 안전하게
   실패함(`AttributeGroupHandler`의 "부분 실패 경로" 절이 이미 정리한
-  "에러=패닉 상태, 그 이후 정합성은 관리 대상 아님" 원칙 + `nameClaims`/
-  `tagNameMap`이 `inst`에 대해 weak라 그 인스턴스가 GC되면 잔여 부기도
-  같이 사라지는 것으로 충분히 커버됨), 더 깔끔한 실패를 원하는 백엔드만
-  추가로 얹으면 됨.
+  "에러=패닉 상태, 그 이후 정합성은 관리 대상 아님" 원칙), 더 깔끔한 실패를
+  원하는 백엔드만 추가로 얹으면 됨.
+  - **⚠️ [정정, 2026-08-24 6라운드 손 트레이싱 `H-26`] 여기 원래 근거로 적혀
+    있던 *"`nameClaims`/`tagNameMap`이 `inst`에 대해 weak라 그 인스턴스가
+    GC되면 잔여 부기도 같이 사라진다"*는 **틀린 안전망 주장이라 삭제했다.***
+    quad는 자기가 만든 Instance마다 생성 즉시 gcconn을 걸고 그 클로저가
+    `inst`를 캡처하므로(`base/lifecycle-pattern.md`의 "(0)" 절),
+    **참조를 놓는 것만으로는 회수되지 않고 반드시 `Destroy`로만 회수된다.**
+    부분 실패한 `inst`에 대해 `Destroy`를 부를 주체가 없으면 그 인스턴스는
+    안 죽고, 따라서 weak 테이블의 엔트리도 안 사라진다. 남는 근거는 위의
+    "에러=패닉" 원칙 하나뿐이고, 그건 그대로 유효하다.
+    (부분 생성 후 예외로 생긴 Instance 자체의 회수 문제는 **백로그** —
+    `Fallback`/`Traceback`이 그 경로를 계속 살려두는 걸 존재 이유로 삼는
+    대표 사용처라 그 둘을 구현할 때 같이 다룬다.)
 - **타입 패밀리는 백엔드 몫**: `AttributeKey<<T>>` 제네릭 생성자와
   스칼라 편의 패밀리(`StringAttribute`/`NumberAttribute`/`BooleanAttribute`)
   까지가 base이고, `Color3Attribute`류처럼 **엔진 고유 타입**에 묶인
@@ -1024,12 +1052,23 @@ end
   | `NoneHandler` | 중간 | 없음(재위임만) |
   | `NilHandler` | 말단 | 없음(`setLength`/`setOffsetSource` 부기만 — 2026-08-18 신설) |
   | `PropertyHandler` | 말단 | 프로퍼티 세팅 |
-  | `TagHandler` | 말단 | `addTag`/`removeTag` |
+  | `TagHandler` | 말단 | `addTag`/`removeTag` (+ 부기 — `H-39`) |
   | `AttributeKeyHandler` | 말단 | `setAttribute` |
-  | `AttributeGroupHandler` | 자기 체인에선 말단 | 없음(다른 키로 위임) |
+  | `AttributeGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
   | `SlotHandler` | 말단 | 마운트/언마운트 |
-  | `RefLeafHandler` | 말단 | `Ref:Set` |
+  | `RefLeafHandler` | 말단 | `Ref:Set` (+ 부기 — `H-39`) |
+  | `ObserverEffectLeafHandler` | 말단 | `bindLifetime` (+ 부기 — `H-39`) |
+  | `ProcessedPreRefHandler` / `ProcessedPostRefHandler` | 말단 | 없음(부기만) |
+  | `ProcessedModifierHandler` | 말단 | 없음(부기만 — `H-35`) |
   | `UICornerHandler` | 말단 | 자식 Instance 생성/제거 |
+
+  **[2026-08-24 `H-39`/`H-35`] 이 표 자체가 비대칭을 드러내고 있었다** —
+  `NilHandler` 행엔 부기가 적혀 있는데 바로 아래 `RefLeafHandler` 행엔
+  `Ref:Set` 하나만 적혀 있었다. 말단 핸들러는 **예외 없이** 자기 배열 위치의
+  `setOffsetSource`/`setLength`를 등록한다(위 "짝을 맞춰 `0`" 문단의 `H-39`
+  블록). `ProcessedModifierHandler`는 이 표와 아래 등록 책임 열거 양쪽에서
+  통째로 빠져 있었다(`base/modifier-plan.md`의 flatten이 만드는 센티널의
+  전담 nop 핸들러 — `Modifier`가 하나라도 든 리터럴은 전부 이걸 거친다).
 
   이 계약이 필요한 이유: (A) 분기는 **아래를 안 건드린 채** 중간 노드만
   갈아치우므로, 중간 노드가 `inst`에 직접 손을 댔다면 그 흔적을 지울
@@ -1378,12 +1417,44 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   **[2026-08-14 아홉 번째 세션] `PostRef` 소진 자리도 동일** —
   `ProcessedPostRefHandler`(`base/ref-plan.md`의 "`PostRef`" 절)가 같은
   두 등록을 하는 거울상 Handler라, 새 규칙 없이 그대로 맞물림.
+  **[2026-08-24 `H-35`] `Modifier` 소진 자리도 동일** —
+  `flatten`이 배열 자리를 `ProcessedModifier` 센티널로 소진하고
+  `ProcessedModifierHandler`(`base/modifier-plan.md`)가 같은 두 등록을 한다.
+  이 열거에서 통째로 빠져 있었다 — `Modifier`가 하나라도 든 리터럴은 **전부**
+  이 핸들러를 거치므로, 이 문서만 보고 구현하면 그 존재 자체를 놓친다.
   **[정정, 2026-08-18 구현 전 QA] 값 자체가 `None`/`nil`인 자리도 이제
   같은 원칙으로 덮인다** — `Dispatch.drive`가 `None`을 건너뛰지 않으므로
   그 자리는 `NoneHandler`(재귀만) → `NilHandler`(말단)를 거치고,
   **등록을 실제로 하는 건 `NilHandler`**(위 "`NilHandler`" 절).
   `State<Slot|None>`처럼 반응형 값이 뒤늦게 `None`을 내놓는 경로도
   같은 자리로 수렴한다.
+
+  **⭐⭐ [2026-08-24 6라운드 손 트레이싱 `H-39`] 말단 핸들러 넷이 이 계약을
+  지키지 않고 있었다 — 전부 등록을 추가한다.** 위 원칙이 *"둘 다 array part의
+  모든 number 인덱스에 대해 반드시 호출 — 생략은 UB"*이고 일반 `Ref`까지
+  명시적으로 지목해뒀는데, 전수 grep 결과 아래 넷은 `setLength`/`setOffsetSource`를
+  **한 번도 부르지 않았다**:
+  - `TagHandler`(`base/tag-plan.md`) — 0건
+  - `AttributeGroupHandler`(`base/attribute-plan.md`) — 0건
+  - `RefLeafHandler`(`base/ref-plan.md`) — `Processed*` 둘에만 있고 이쪽엔 없음
+  - `ObserverEffectLeafHandler`(`base/source-state-plan.md`) — 0건
+
+  `bk.N`은 **다른 위치가 등록될 때** `math.max`로 커지므로, 등록을 건너뛴
+  위치가 그 범위 안에 끼면 `recompute`가 그 자리에서 `sourceList[i] == nil`을
+  만나 **명시적 error로 죽는다**(2026-08-20 `C-6`으로 관대한 skip에서 error로
+  승격된 그 자리). `Frame { Tag("card"), TextLabel { … } }`처럼 말단이 앞에
+  오는 아주 흔한 배치가 첫 마운트에 죽고, 같은 게
+  `Frame { Ref(myRef), Frame{} }` / `Frame { someObserver, Frame{} }` /
+  `Frame { Attribute(store), Slot() }`에서 그대로 재현된다. **해당 항목이 배열
+  맨 끝이면 `bk.N`이 거기까지 안 커져서 안 터지므로 "가끔 되고 가끔 터지는"
+  형태로 드러난다.**
+
+  확정: **넷 다 `process` 맨 앞에서 `setOffsetSource(inst, k, None)` →
+  `setLength(inst, k, 0)`을 등록한다**(순서는 계약대로 offsetSource 먼저).
+  `AttributeGroupHandler`도 예외로 두지 않는다 — "그룹 핸들러는 다른 키로
+  위임하는 성격이라 층위가 다르지 않나"라는 갈래가 있었지만, Tag/Attribute를
+  "Length/Offset에 참여하지 않는 별도 카테고리"로 재정의하면 `bk.N`의 의미가
+  바뀌어 파급이 크다(사용자 확정, 2026-08-24).
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
@@ -1407,6 +1478,19 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 **저장 위치**: `lengthList`/`sourceList`/`observers`(부모 `inst` 하나에
 귀속) + 그 owner가 지금 등록해둔 position 개수 `N`(`bk.N`으로 같이 저장)
 — `Relate(parentInst)`에 lazy 생성.
+
+**⭐ [2026-08-24 보강, 6라운드 손 트레이싱 `H-4`] 접두합 캐시 두 필드도 여기
+소속이고, 초기값을 명시한다.** `offsetCache`/`invalidAfter`가 이 열거에
+빠져 있어서 스펙상 존재하지 않는 필드였고, 초기값도 안 적혀 있었다.
+`bk.N`이 `nil`로 시작하는 lazy 규칙(그래서 `recompute`가 `bk.N or 0`으로
+방어한다)을 그대로 따르면 `invalidAfter`도 `nil`인데, `getOffsetAt`은
+`if bk.invalidAfter == 0 then`으로 시작한다 — `nil == 0`은 거짓이라 다음 줄
+`at <= bk.invalidAfter`에서 **`attempt to compare number with nil`**로 죽는다.
+**첫 position의 `setOffsetSource`가 바로 이 경로**라 fresh `bk`에서 반드시 밟는다.
+
+- **`getBookkeeping`이 `bk`를 만들 때 `offsetCache = {}`, `invalidAfter = 0`으로
+  초기화한다.** (`bk.N`만 `nil` 시작을 유지한다 — 그쪽은 `or 0` 방어가 이미
+  자리를 잡았고 "아직 아무 자리도 등록 안 됨"과 "0번까지 유효"가 다른 뜻이다.)
 
 **[신설, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 — 두 owner
 타입(물리 `inst`, Slot 자신) 모두 같은 규칙 하나로 통일.** 이전엔
@@ -1458,7 +1542,9 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
 이전엔 여기도 `None`)
 둘 다 실재하는 센티널로 채워 구멍을 피하는 것과 같은 원칙(`ref-plan.md`의
 "Ref 일반화" 절 "왜 `None`이 아니라 `nil`인가" 참고 — **단, 그 절에서
-최종적으로 `nil`로 되돌아간 건 Ref 콜백/대기자 배열 한정**이고
+최종적으로 `nil`로 되돌아간 건 Ref 콜백/대기자 집합 한정**(**[2026-08-24]**
+6라운드 `H-7`로 그건 배열이 아니라 **해시맵 셋**이 됐다 — 구멍 개념 자체가
+없어져 이 대비가 오히려 더 선명해졌다)이고
 `sourceList`/`flattened`처럼 순서가 실제로 중요하거나 "채워짐 여부"를
 엄밀히 구별해야 하는 배열은 여전히 실재하는 센티널이 맞음, 헷갈리지
 말 것). 다만 `recompute`가
@@ -1598,6 +1684,28 @@ end
 | `spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제) | `i` | 같은 이유 — 삽입/삭제 후에도 `i` 자리의 offset은 여전히 `1..i-1`의 합이다 |
 | owner의 베이스 변경(`ownerKey.Offset`이 바뀜 = `_baseObserver`가 도는 순간) | `0` | 1번 자리부터 전부 다시 |
 
+**⭐ [2026-08-24 6라운드 손 트레이싱 `H-3`] 이 표는 산문으로만 있었고 실제
+코드 경로가 하나도 없었다 — 배치할 자리를 명시한다.** 코퍼스 전체에서
+`bk.invalidAfter`에 대입하는 코드는 `getOffsetAt` 안의 `= 1`/`= at` 둘뿐이었고,
+`setLength`도 `gatedRecompute`도 `_baseObserver` 콜백도 `spliceArrays*`도
+캐시를 당기지 않았다. 그래서 `Frame { SlotA(Length 2), SlotB(Length 3) }`에서
+`SlotA`가 3으로 커져도 `recompute`의 `getOffsetAt(Frame, 2)`가 **캐시된 2를
+그대로 반환**해 `SlotB.Offset`이 영원히 2에 고정된다(`sum`은 `lengthList`에서
+매번 새로 더하므로 **위로는 맞고 옆으로만 틀린다** — 알아채기 특히 어렵다).
+재마운트는 더 나쁘다: `bk`는 `Relate(slot)` 위에 있어 언마운트를 넘어 살아남으므로
+`offsetCache[1]`에 **옛 베이스**가 남는다.
+
+세 자리 전부 **`recompute`보다 먼저** 당겨야 한다:
+
+1. **`Dispatch.setLength(ownerKey, i, ...)` 본문** — `lengthList[i]`를 쓴 직후,
+   `gatedRecompute()`를 부르기 전에 `bk.invalidAfter = math.min(bk.invalidAfter, i)`.
+   **그 자리 length가 State일 때 등록하는 Observer 콜백 안에서도 같은 줄**이
+   필요하다(나중 emit이 같은 무효화를 요구한다).
+2. **`spliceArraysUp`/`spliceArraysDown`** — 삽입·삭제한 위치 `i`로 같은 당김
+   (`base/slot-plan.md`의 그 함수들이 해야 하는 일 목록에 반영돼 있다).
+3. **`slot._baseObserver` 콜백** — 베이스가 바뀐 경우라 `bk.invalidAfter = 0`.
+   `recompute`를 부르기 전에 당긴다.
+
 **`recompute`도 이 캐시 위에 얹힌다** — `1..N`을 순서대로 도는 함수라 매 자리에서
 `getOffsetAt`이 한 칸씩만 이어붙이므로 전체가 O(N)이고, 별도 접두합 로직을 따로
 두지 않는다. (그래서 "`recompute`가 캐시를 채울지 말지"라는 갈래 자체가 없어졌다 —
@@ -1605,13 +1713,16 @@ end
 
 ```lua
 local function recompute(ownerKey, bk)
-    -- [2026-08-21 G절] `0`이 아니라 이 owner의 베이스에서 시작한다.
-    -- 베이스는 별도로 저장하지 않는다 — Slot이면 자기 `.Offset`이 곧 그 값이고
-    -- (부모가 먼저 설정해두므로 이미 정확하다), 최상위 물리 inst엔 베이스가
-    -- 아예 없어 항상 0이다. 위 `getOffsetAt`과 같은 식.
     -- [2026-08-21] offset 값은 위 `getOffsetAt`(접두합 캐시)에서 받는다 —
     -- 여기서 따로 누적하지 않는다. 순서대로 도는 순회라 캐시가 한 칸씩만 늘어나
-    -- 전체 O(N).
+    -- 전체 O(N). 베이스(이 owner의 시작 offset)를 더하는 것도 `getOffsetAt`의
+    -- 몫이다 — Slot이면 자기 `.Offset`, 최상위 물리 inst면 0.
+    -- **[주석 정정, 2026-08-24 6라운드 손 트레이싱 `H-10`]** 여기 원래
+    -- *"`0`이 아니라 이 owner의 베이스에서 시작한다"*고 적혀 있었는데, 접두합이
+    -- `getOffsetAt`으로 빠진 뒤로 `sum`은 **`Length` 전용**이 됐고 `0`에서
+    -- 시작하는 게 맞다(같은 함수 끝의 주석도 *"`Length`엔 base를 안 더한다"*로
+    -- 이미 그렇게 말한다). 옛 주석을 믿고 구현하면 `Length`에 베이스가 더해져
+    -- 상위 전체의 길이 합이 틀어진다.
     local sum = 0
     -- [2026-08-21 5라운드 감사] `bk.N or 0` — **빈 Slot 크래시 방어**.
     -- `bk.N`은 `setLength`가 처음 불릴 때 생기므로(`bk.N = math.max(bk.N or 0, i)`),
@@ -1693,8 +1804,12 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
 
     bk.lengthList[i] = len
     bk.N = math.max(bk.N or 0, i)   -- [2026-08-18 3라운드] N 수명주기 — "저장 위치" 절 참고
+    -- [2026-08-24 `H-3`] 접두합 캐시를 여기까지 당긴다 — `i` 자리의 offset은
+    -- `1..i-1`의 합이라 안 바뀌고, 바뀌는 건 그 **뒤**뿐(위 무효화 표).
+    bk.invalidAfter = math.min(bk.invalidAfter, i)
 
     local function gatedRecompute()
+        bk.invalidAfter = math.min(bk.invalidAfter, i)   -- 나중 emit도 같은 무효화가 필요
         if not blocker:IsOn() then
             recompute(ownerKey, bk)
         end
@@ -1710,6 +1825,23 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
     end
 end
 ```
+
+**⭐ [2026-08-24 6라운드 손 트레이싱 `H-19`] `recompute`를 부르는 책임은 여기
+하나다 — 호출부의 명시 `recompute`는 지운다.** `setLength`는 `len`이 상수여도
+마지막에 `gatedRecompute()`를 부르고, 런타임 단건 경로에선 그 owner의 Blocker가
+이미 꺼져 있으므로 그게 곧바로 `recompute`다. 그런데 `base/slot-plan.md`의
+`rawAdd`/`rawReplace` plain 분기는 **바로 다음 줄에서 또** `recompute(self, bk)`를
+불렀다. 크래시는 아니지만(두 번째 호출은 `offset:Get() ~= abs` 가드에 걸려
+대체로 아무것도 안 쓴다) O(N) 순회가 두 번 돌고, 더 중요하게는 **"`recompute`를
+누가 부르는가"의 소스가 두 곳**이 되어 위 `H-3`의 캐시 무효화를 어느 자리에
+둘지가 애매해진다. 확정: **자리의 길이가 바뀌면 `setLength`가 책임진다.**
+
+- **예외는 자리 자체가 없어지는 경로** — `rawRemove`/`rawUnmount`/`rawDetach`는
+  `spliceArraysDown` 뒤에 `setLength`가 없으므로 거기선 명시 `recompute`가
+  남는다(그 경로의 캐시 당김은 `spliceArraysDown`이 한다).
+- **배치 경로도 그대로** — `Dispatch.drive`/`materializeSlotTree`는 Blocker를
+  끈 뒤 마지막에 한 번 명시적으로 부른다(그 게이트가 존재하는 이유 자체가
+  등록마다 도는 걸 막는 것이다).
 
 **⭐ [2026-08-21 구현 전 QA 5라운드 `C-4`] 부기 키와 생명주기 앵커는 별개다 —
 4라운드 `D-56`의 결론을 되돌린다.**

@@ -327,9 +327,42 @@ function bindLifetime(inst, value)
     -- 둘 다 weak — gchold는 위 (0) 클로저가, gcconn은 gchold[1]이 이미 안전히 붙잡고 있음.
     BindData:SetWeak(value, "gchold", gchold)
     BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
+
+    -- **⭐ [신설, 2026-08-24 6라운드 손 트레이싱 `H-11`] `Effect`면 부수 배선까지
+    -- 여기서 한다.** `LP-2`가 *"`Effect`가 `Destroying` 훅을 쓰는 유일한
+    -- 소비자"*라고 확정해뒀는데 **그걸 실제로 거는 코드가 코퍼스 어디에도
+    -- 없었다** — 그래서 leaf가 죽어도 cleanup이 영영 안 불렸고,
+    -- `slot._detachCleanup`(Detach 요소를 파괴하는 유일 경로)과 `OnDestroyed`가
+    -- 통째로 무동작이었다(`base/effect-plan.md`).
+    -- **왜 이 자리인가**(사용자 판단 2026-08-24): `Destroying`은 엔진이 아는
+    -- 요소라 엔진을 다루는 자리에 있어야 하고, 이 함수는 이미 `Effect`의 내부
+    -- Observer 목록으로 cascade하며 값을 들여다본다. `Effect`가 바인드되는
+    -- 경로가 둘(children 배열 leaf / `activateList`의 `_detachCleanup` 직접
+    -- 바인드)이라 **호출부 쪽에 두면 반드시 한쪽이 샌다.**
+    if isEffect(value) then
+        for _, observer in ipairs(value._observers) do   -- N-deps cascade
+            bindLifetime(inst, observer)
+        end
+        value:_bindDestroying(inst)   -- Destroying 연결 + Ref dep 콜백 (재)등록
+                                      -- 의사코드는 `base/effect-plan.md`가 소스.
+                                      -- 그 안에서 주입 op `onDestroying(inst, fn)`을
+                                      -- 부른다(base는 Instance를 모른다).
+    end
 end
 
 function unbindLifetime(value)
+    -- [2026-08-24 `H-11`] bind의 대칭 — **cleanup은 부르지 않는다.**
+    -- `Destroying` 연결을 끊고 `Ref` dep 콜백을 떼기만 한다. cleanup을 여기서
+    -- 부르면 `destroySlotTree`가 `_detachCleanup`을 손으로 비운 뒤 unbind하는
+    -- 경로에서 이중 호출이 된다(`base/effect-plan.md`의 그 항목이 소스).
+    -- 이 대칭 덕에 포탈이 자연히 성립한다 — 언마운트가 떼고 재마운트가 다시 건다.
+    if isEffect(value) then
+        value:_unbindDestroying()
+        for _, observer in ipairs(value._observers) do
+            unbindLifetime(observer)
+        end
+    end
+
     local gchold = BindData:GetWeak(value, "gchold")
     if gchold then
         gchold[value] = nil -- inst는 안 건드림, 이 value 하나만 조기 해제

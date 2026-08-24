@@ -125,6 +125,61 @@ end
 `xpcall`+`debug.traceback`으로 **에러 나는 순간에만** 스택을 찍는
 패턴)를 그대로 재사용 — 새 트레이싱 메커니즘을 발명하지 않음.
 
+## ⚠️ 미해결 — 실패 이전에 생성된 부분 트리는 회수되지 않는다 (2026-08-24 신설, 6라운드 손 트레이싱 `H-26`)
+
+**상태: 백로그.** `Fallback`/`Traceback` 자체가 슈가라 **그 둘을 구현할 때 같이
+다룬다**(사용자 판단, 2026-08-24: *"의도적으로 error 를 사용하고자 하는 경우
+항상 컴포넌트들이 쌓이거든. 이건 후행에서 더 다뤄보도록 백로깅해줘.
+fallback/traceback 자체가 슈거라서, 그 때 가서 생각해도 될듯"*).
+
+**무엇이 문제인가**: quad는 자기가 만든 Instance마다 생성 즉시 gcconn을 걸고 그
+클로저가 `inst`를 캡처하므로(`base/lifecycle-pattern.md`의 "(0)" 절)
+**참조를 놓는 것만으로는 회수되지 않고 반드시 `Destroy`로만 회수된다.** 이
+모델은 "만든 Instance는 언젠가 반드시 `Destroy`된다"를 전제하는데, 컴포넌트가
+자기 리터럴을 만드는 도중 예외를 던지면 그때까지 완성된 형제/자손은 **트리에
+붙지도, `Destroy`되지도 않은 채** 예외에 실려 스코프를 빠져나간다.
+
+```lua
+local function Broken(props) error("bug!") end
+local function Parent(props)
+    return Frame {
+        Frame { Text = "child A" },   -- (1) 완주 — gcconn/gchold 확정
+        Broken {},                    -- (2) error
+        Frame { Text = "child C" },   -- (3) 도달 안 함
+    }
+end
+local SafeParent = Fallback(Parent, function(err) return Frame { Text = tostring(err) } end)
+```
+
+Lua 테이블 생성자는 원소를 좌→우로 완전히 평가하므로 `child A`는 실제
+Instance로 완성되고 gcconn이 걸린다. 바깥 `Frame(...)` 호출은 인자 테이블조차
+완성 못 해 **호출되지 않는다.** `Fallback`은 `pcall(base, ...)` 하나라 그
+존재를 알 방법이 없고, `child A`는 (a) 어떤 지역 변수에도 안 남고 (b) 세팅된
+적 없고 (c) 아무도 모르므로 — 자기 gcconn↔gchold 순환만이 그를 살려두고 그걸
+끊는 유일한 수단(`Destroy`)을 부를 주체가 없다. **참조 0개인데 세션 끝까지 안
+죽는다.** 실패 지점 앞에 중첩 서브트리가 있으면 그 전체가 대상이다.
+
+**왜 `Fallback`/`Traceback`이 대표 사용처인가**: 이 문제는 이 둘 전용이 아니라
+"부분 실패 후 아무도 `Destroy`를 안 부르는 모든 경로"의 일반적 위험인데,
+**그 경로를 계속 살려두는 것을 존재 이유로 삼는** 게 정확히 이 둘이다.
+예외가 밖으로 나가 아무것도 안 그려지는 기본 경로는 서술 정정으로 끝났지만
+(같은 날 `base/dispatch-core-plan.md`에서 잔여 부기가 인스턴스 GC로 정리된다고
+적은 **틀린 안전망 주장**을 삭제했다), 이쪽은 앱이 계속 도는 걸 약속하는
+자리라 층위가 다르다.
+
+**구현 시 검토할 갈래**(지금 정하지 않음):
+1. `New`/`Dispatch.drive`가 "이번 construction에서 만든 것" 목록을 쌓고
+   `pcall` 실패 시 역순 `Destroy` — 누수를 실제로 닫지만 **정상 경로에도**
+   부기 비용이 붙고, 중첩 구성 경계를 어떻게 잡을지가 또 문제다.
+2. gcconn 자기순환 재고(한 번도 Parent 안 된 채 참조가 끊기면 GC 가능하게) —
+   `lifecycle-pattern.md` (0)의 핵심 트레이드오프를 건드리므로 재설계 규모가 크다.
+3. UB로 명문화 + 컴포넌트 저작자에게 "생성 전에 검증부터" 권고.
+
+**참고 — 인접 사례는 이미 인정돼 있다**: `materializeSlotTree`의 예외 시
+Blocker가 켜진 채 남는 갭은 사용자 판단으로 이미 *"마운트 도중 예외는 quad가
+복구를 보장하지 않는 상태"*로 정리됐다(`base/slot-plan.md`). 다만 그건
+마운트 경로에 한정된 국소적 결과다.
+
 ## 패키지 배치
 
 `quad-base` — `base`를 그냥 호출하고 결과를 그대로 돌려주는 순수 함수라

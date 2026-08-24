@@ -80,6 +80,41 @@ export type Quad = {
 }
 ```
 
+**⭐⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25` — 실측] 이 레코드는 **닫혀
+있고**, 마일스톤마다 서브시스템 필드를 여기 추가해야 한다.**
+
+실제 커밋된 `quad-base/src/init.luau`의 `New(): Quad`가 이 별칭을 그대로 반환
+타입으로 쓰는데, `RunInit`은 `(self: Quad, initFn: (Quad) -> any) -> ()`로
+**반환값이 없어 타입을 못 넓히고**, 타입을 넓히는 유일한 경로인
+`AddPlugin<Self, P>`는 이 문서 자신이 **외부 플러그인**용이라고 선을 긋는다.
+그런데 `base/architecture.md`의 확정된 결정 13번은 *"`require(quad)`가 돌려준
+걸 바로 `Quad.Dispatch`처럼 씀"*을 **표준 사용법으로 확정**해뒀다.
+
+실측(`InitDebug`와 완전히 같은 모양의 `InitDispatch`로 재현):
+```lua
+local quad = New()
+quad.Dispatch.addHandler(function() end)
+```
+`luau-analyze` → `TypeError: Key 'Dispatch' not found in table 'Quad'`.
+즉 M2가 `Dispatch.luau`를 만들고 `module:RunInit(InitDispatch)` 패턴(이 문서가
+이미 예시로 보여준 그 패턴)으로 붙이면 **런타임엔 붙지만 타입엔 영원히 안
+보인다.** `ROADMAP.md` M5의 quad-roblox 주입 경로도 같은 벽에 부딪힌다 —
+quad-roblox는 `quad-types`의 좁은 `Quad`만 본다.
+
+**확정(사용자, 2026-08-24): `quad-types`의 `Quad`를 마일스톤마다 갱신한다.**
+- **M2**가 `Dispatch: Dispatch` 필드와 그 타입 재수출을 여기 추가한다 —
+  `ROADMAP.md` M2 체크리스트에 **항목으로 명시**한다(지금까지 아무도 이
+  필요성을 항목화해두지 않았다).
+- 이후 서브시스템도 같은 규칙을 따른다.
+- **"가벼운 타입 계약"이라는 이 패키지의 존재 이유와 상충하지 않는다** —
+  타입만 재수출하므로 런타임 무게는 안 는다.
+- 검토했다 기각된 둘: **quad-base 내부만 넓은 로컬 교차 타입**
+  (`New(): Quad & { Dispatch: Dispatch }`) — quad-roblox도 결국
+  `Dispatch.addHandler`를 부르므로 그 경로엔 별도 노출이 또 필요해진다.
+  **`(quad :: any).Dispatch` 캐스트** — 가장 싸지만
+  `base/typing-limits.md`가 시종 강조하는 명시 바인딩 원칙과 정면으로
+  배치되고 quad-base 자기 코드가 `--!strict`의 이득을 잃는다.
+
 `Version`은 리터럴(singleton) 타입 — `string`이 아니라 정확히 `"0.0.0"`.
 이 리터럴이 아래 `CheckVersion`의 판정 근거이자, 그 자체로도 평범한
 구조적 타이핑만으로 이미 어느 정도 버전 불일치를 잡아준다(다른 리터럴

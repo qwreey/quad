@@ -110,6 +110,33 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     — 아래 구현 디테일 참고,
     **[재정정, 2026-08-09 열한 번째 세션] `None`이 아니라 `nil`이 맞음**,
     바로 아래 캐비엇 참고).
+  - **⭐⭐ [재설계, 2026-08-24 6라운드 손 트레이싱 `H-7` 후속] `.Callbacks`는
+    배열이 아니라 `{[callback|thread] = true}` **해시맵 셋**이다.**
+    `Effect(fn, someRef)`의 leaf가 죽어도 콜백을 뗄 방법이 없다는 갭(`H-7`)을
+    **해제 경로 추가**로 닫기로 하면서 자료구조도 같이 바뀌었다 — 배열이면
+    삭제가 선형 탐색이다. **사용자 제안**(2026-08-24): *"Effect 의 callback
+    들은 해시맵이 되는게 나아보이는데 `[callback/루틴]=true`"*.
+    - **해제가 `t[fn] = nil` 하나로 끝난다** — 이게 `H-7`이 요구하는 연산이다.
+    - **`type(v) == "thread"` 분기는 그대로 성립한다** — 값이 아니라 **키**의
+      타입을 보면 된다(`for k in pairs(self.Callbacks)`).
+    - **중복 등록은 dedup을 계약화한다**(사용자 확정) — 같은 콜백/thread를
+      여러 번 등록해도 한 번만 발화한다. 해제가 `nil` 하나로 끝나야 하므로
+      "몇 번 해제해야 떨어지나"라는 질문이 생기면 안 된다. 사용자가 실수로
+      중복 등록하는 상황도 이 쪽이 안전하다.
+    - **⭐ 순회 전에 스냅샷을 뜬다** — `pairs` 순회 중 **새 키 추가는 Lua에서
+      미정의**다(기존 키를 `nil`로 지우는 소진은 합법). 같은 문제가 State
+      구독자 집합에서 **실측으로 재현**됐고(`base/source-state-plan.md`의
+      `H-23` 문단 — 실행마다 결과가 달랐고 한 구독자가 통째로 누락되기도 함),
+      **둘 다 같은 처방으로 닫는다**: 배열로 복사한 뒤 그 배열을 돈다.
+      "이번 발화 중에 등록된 콜백은 다음 발화부터 참여한다"가 계약이다.
+    - **⭐ 이 변경으로 `#t` border 실측 항목이 폐기된다** — 아래
+      `R-11` 항목의 ⚠️ 실측 대상("구멍 있는 테이블에서 `#t`가 항상 첫 `nil`
+      자리인가"를 M0/M8 스파이크로 확인)은 **해시맵엔 border 개념이 없어서
+      질문 자체가 사라진다.** 같은 이유로 아래 "`table.insert`가 구멍을
+      되찾아 쓴다"(`R-11`)와 "왜 `None`이 아니라 `nil`인가" 논의도 이 자료구조
+      아래에서는 **무의미해진다**(둘 다 배열 전제) — 결론(소진은 `nil`)은
+      `t[k] = nil`로 그대로 이어지지만 근거는 "구멍/border가 아예 없다"로
+      바뀐다. 두 항목은 역사 기록으로만 읽을 것.
   - **[재설계, 2026-08-18 구현 전 QA] 콜백/대기자는 별도 필드
     `.Callbacks` 테이블에 담고, `.Value`는 그냥 평범한 hash 필드로 둔다.**
     옛 설계(2026-08-09 열한 번째 세션 보강)는 **Ref 객체 자신이 곧
@@ -123,6 +150,28 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     되므로 **hash 파트 충돌 자체가 안 생기고, `__index` 우회 기법을 쓸
     이유가 사라진다.** 대가는 Ref 하나당 테이블 하나가 더 만들어지는 것뿐
     (`.Callbacks`를 첫 등록 시점에 lazy로 만들지는 구현 재량).
+  - **⭐ [신설, 2026-08-24 6라운드 손 트레이싱 `H-7`] 콜백 해제 경로 —
+    `:Callback(fn)`이 해제 핸들을 돌려준다.** 지금까지 `Ref`엔 등록만 있고
+    해제가 없어서, `Effect(fn, someRef)`의 leaf가 죽어도 클로저가 영원히
+    남았다(그 클로저가 `EffectHandle`을 강참조해 누수이고, 이후 `ref:Set`마다
+    **이미 죽은 leaf의 `fn`을 계속 실행**했다).
+    **[2026-08-24 보강, 사용자 지적] 해제 경로와 `canExecute` 게이팅은 택일이
+    아니라 둘 다 필요하다.** 여기 한때 *"`canExecute` 게이팅으로 덮으려던
+    대안은 채택하지 않았다"*고 적었는데, 해제만으로는 창이 남는다 —
+    `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이 안
+    도는데도 `canExecute`가 거짓이다. **해제는 누수를, 게이팅은 발화를** 막는다.
+    `Ref` 자신은 여전히 `canExecute`를 모르고(그건 Observer 쪽 배관이다)
+    `Effect`가 거는 **콜백 본문**이 자기 핸들에 대해 확인한다 —
+    `base/effect-plan.md`가 소스.
+    - `:Callback(fn)`은 **여전히 `self`를 반환한다**(체이닝 관용구
+      `Ref(default):Callback(fn)`이 코퍼스 전반에 쓰인다) — 해제 핸들은
+      **`:Uncallback(fn)`**으로 뗀다. 셋이라 `Callbacks[fn] = nil` 한 줄이고,
+      중복 등록이 dedup되므로(위) "몇 번 떼야 하나"가 없다.
+    - `EffectHandle`은 자기가 건 콜백을 들고 있다가 `unbindLifetime`과
+      `:Unsubscribe()`에서 `:Uncallback`한다 — State/Source dep의
+      `_observers`와 대칭(`base/effect-plan.md`).
+    - **`:Wait()`의 대기자는 이 표면의 대상이 아니다** — 발화 시 소진되므로
+      뗄 일이 없다.
   - **`:Wait(thread?)`의 `thread` 인자(2026-08-07 여섯 번째 세션, 사용자
     제안, 확정)**: 생략(`nil`)하면 `coroutine.running()`으로 호출 중인
     코루틴 자신을 캡처해 대기자로 등록하고 그 자리에서 `coroutine.yield()`로
@@ -135,7 +184,41 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     지점에서 정지시킨) thread 하나를 Ref에 등록해두고, 등록한 코드 자신은
     블록되지 않고 계속 진행하고 싶은 경우. 구현은 정말 단순함 — `thread`가
     `nil`이면 yield, 있으면 yield 안 함.
-  - **구현 디테일(2026-08-07 세 번째 세션 제안, 여섯 번째 세션에서 resume
+  - **⭐ [신설, 2026-08-24 6라운드 손 트레이싱 `H-53`] `:Set(value)`의 순서 —
+    `.Value`를 **콜백 순회 전에** 쓴다.** `.Value`를 *읽는* 관용구는 코퍼스에
+    여러 번 나오는데 `:Set`이 그걸 언제 쓰는지 보여주는 코드가 없었다
+    (`\.Value = ` grep 0건). 콜백은 값을 인자로 직접 받으므로 실무 영향은
+    낮지만, **콜백 A가 `.Value`를 읽는데 콜백 B가 아직 안 돈 시점에 무엇이
+    보이는가**가 사양에 없었다. 확정된 순서:
+    ```lua
+    function Ref:Set(value)
+        self.Value = value                       -- (1) 먼저 확정
+        local snapshot = {}                      -- (2) [`H-23`] 순회 전 스냅샷
+        for k in pairs(self.Callbacks) do table.insert(snapshot, k) end
+        for _, k in ipairs(snapshot) do
+            if self.Callbacks[k] == nil then continue end   -- 순회 중 해제됐으면 skip
+            if type(k) == "thread" then
+                self.Callbacks[k] = nil          -- 대기자는 소진
+                coroutine.resume(k, self)        -- 값이 아니라 **Ref 자신**(아래 참고)
+            else
+                k(value)                         -- 일반 콜백은 원래 값을 받고, 소진 안 함
+            end
+        end
+        return self
+    end
+    ```
+    `.Value`가 먼저이므로 **모든 콜백이 새 값을 본다** — 순서에 따라 옛 값이
+    보이는 창이 없다.
+  - **⚠️ [역사 기록, 2026-08-24 6라운드 `H-7` 후속] 아래 "구현 디테일" 문단은
+    `.Callbacks`가 **배열**이던 시절 서술이다 — 지금 자료구조는 해시맵 셋이고
+    확정 의사코드는 위 `:Set` 블록이 소스.** 배열 전제인 부분(`for i, v in
+    self.Callbacks`, `[i] = nil` 소진, `table.insert`의 빈 슬롯 재사용,
+    구멍 있는 테이블의 `#t` border)은 전부 **무효**다. 다만 그 문단이 확정한
+    **의미론 셋은 그대로 유효**하고 지금 의사코드도 그걸 지킨다:
+    (1) 대기자와 콜백을 같은 자료구조에 담고 `type(v) == "thread"`로 분기,
+    (2) 대기자는 `coroutine.resume(v, self)`로 **Ref 자기 자신**을 넘기며 소진,
+    (3) 일반 콜백은 **원래 값**을 받고 소진 안 함.
+  - **(역사) 구현 디테일(2026-08-07 세 번째 세션 제안, 여섯 번째 세션에서 resume
     payload 정정, 열한 번째 세션에서 소진 방식 최종 확정)**: 값이 새로
     `:Set()`될 때, 같은 배열 하나를 `for i, v in self.Callbacks do ... end`로
     한 번만 순회하면서(**[2026-08-18]** 순회 대상은 Ref 객체 자신이 아니라
@@ -289,6 +372,14 @@ RefLeafHandler.isHandlable(inst, k, v) =
     -- HANDLER_PRIORITY_FALLBACK 가드(아래 "동적 경로 가드")가 죽은 코드가 된다.
 
 function RefLeafHandler.process(inst, k, v, index)
+    -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져 있었다.
+    -- 일반 `Ref`가 등록 대상이라는 건 `base/dispatch-core-plan.md`가 명시적으로
+    -- 못박아뒀는데(값이 없는 자리도 짝을 맞춰 `0`), 정작 이 핸들러엔 없었다 —
+    -- `Frame { Ref(myRef), Frame{} }`처럼 leaf가 앞에 오면 첫 recompute가
+    -- `sourceList[k]가 nil`로 죽는다. 아래 `Processed*` 둘과 같은 모양.
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0, inst)
+
     local old = relate:GetStrong(inst, k)
     if old ~= v then  -- 이미 같은 Ref가 이 자리를 차지 중이면 재통지 skip
         bindLifetime(inst, v)  -- v가 이미 다른 자리에 살아있으면 여기서 즉시 error —
@@ -408,6 +499,33 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
 인터랙션을 기다리지 않고 **setup 도중 프로퍼티 대입/Parent 세팅 자체의
 부작용으로 동기적으로 발화**할 수 있음 — 이때 이벤트 핸들러가 아직 안
 채워진 self-ref를 읽으면 터짐.
+
+**⚠️ [조건 명시, 2026-08-24 6라운드 손 트레이싱 `H-42`] 그 "동기 발화"는
+`Workspace.SignalBehavior`에 조건부다.** 코퍼스 90개+ 문서 어디에도 이 설정이
+한 번도 등장하지 않은 채 무조건 사실처럼 서술돼 있었다.
+
+- `Enum.SignalBehavior`는 `Default`/`Immediate`/`Deferred`. **`Immediate`**에선
+  이벤트가 다른 이벤트를 트리거하면 두 번째 핸들러가 **즉시** 발화한다(중첩
+  실행) — 위 서술이 성립하는 경우다. **`Deferred`**에선 큐 뒤에 붙어 **다음
+  resumption point**(입력 처리, `RunService` 콜백, `task` 계열)에서 실행되므로
+  스크립트의 동기 실행 흐름을 끊지 않는다 — **그러면 이 레이스는 발생할 수
+  없고**(quad의 동기 마운트가 전부 끝난 뒤 콜백이 도므로 일반 `Ref`도 이미
+  채워져 있다) `PreRef`는 무해하게 불필요해질 뿐이다.
+- 공식 문서 기준 **신규 템플릿 place는 이미 `Deferred`가 기본**이고, 레거시
+  `Default`는 현재 `Immediate`와 같지만 앞으로 `Deferred`로 바뀔 예정이다.
+  출처: https://create.roblox.com/docs/scripting/events/deferred ,
+  https://create.roblox.com/docs/reference/engine/classes/Workspace#SignalBehavior
+- **왜 문구만 고치고 구조는 안 건드리나**: 크래시를 만드는 문제가 아니다.
+  진짜 이득은 **나중에 실측할 때** 나온다 — 언젠가 Studio에서 "이 레이스가
+  재현이 안 된다"는 결과가 나오면, 그게 quad 설계가 틀린 건지 place의
+  `SignalBehavior` 때문인지 구분할 수 있어야 한다. 실측 계획을 세울 때 place
+  설정을 같이 적게 만드는 것이 목적이다.
+- **`PreRef`/`PostRef`/pre-pass 구조 자체는 유지한다**(사용자 확정,
+  2026-08-24) — 레거시 place와 명시적 `Immediate` 설정이 살아있는 한 필요하고,
+  불필요해질 때의 비용이 싸다.
+- 참고: `base/dispatch-core-plan.md`의 *"프레임 경계는 여전히 안 낀다(yield
+  금지)"*는 **quad 자신의 코드가 yield 안 한다**는 얘기라 이 축과 다르다 —
+  반박이 아니다.
 
 **해결**: 이 케이스만 별도 타입 `PreRef`로 분리.
 - **구현은 `Ref` 그대로 재사용**(같은 `.Value`/`:Set()`/`:Callback()`/
@@ -541,12 +659,18 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     ```lua
     ProcessedPreRefHandler.priority = <매우 높음, NoneHandler와 동급>
     ProcessedPreRefHandler.isHandlable(inst, k, v) = (v == ProcessedPreRef)
-    function ProcessedPreRefHandler.process(inst, i, v)
+    -- [시그니처 정정, 2026-08-24 `H-20`] 계약은 `process(inst, k, v, index)`
+    -- 4-인자다. 이 핸들러는 재위임을 안 해서 `index`를 실제로 안 쓰지만
+    -- 표기는 계약대로 둔다(`NilHandler`/`NoneHandler`는 4-인자로 적혀 있어
+    -- 지금까지 표기가 갈려 있었다). 2번째 인자를 `i`가 아니라 `k`로 부르는
+    -- 것도 같은 이유 — 배열 위치(`k`)와 재귀 깊이(`index`)를 혼동한 전례가
+    -- 실제로 있다(`base/dispatch-core-plan.md`의 Handler 작성 체크리스트 6번).
+    function ProcessedPreRefHandler.process(inst, k, v, index)
         -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저 — setLength가
         -- 끝에서 gatedRecompute를 경유해 recompute를 돌리므로
         -- (`base/dispatch-core-plan.md`의 해제 순서 계약)
-        Dispatch.setOffsetSource(inst, i, None)
-        Dispatch.setLength(inst, i, 0)
+        Dispatch.setOffsetSource(inst, k, None)
+        Dispatch.setLength(inst, k, 0, inst)
         return function() end  -- no-op retract, 이 자리는 fire가 끝나
                                 -- 되돌릴 상태 자체가 없음
     end
@@ -819,10 +943,11 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
 ```lua
 ProcessedPostRefHandler.priority = <매우 높음, ProcessedPreRefHandler와 동급>
 ProcessedPostRefHandler.isHandlable(inst, k, v) = (v == ProcessedPostRef)
-function ProcessedPostRefHandler.process(inst, i, v)
+-- [시그니처 정정, 2026-08-24 `H-20`] 위 ProcessedPreRefHandler와 같은 이유로 4-인자
+function ProcessedPostRefHandler.process(inst, k, v, index)
     -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저(위 ProcessedPreRefHandler와 동일 이유)
-    Dispatch.setOffsetSource(inst, i, None)
-    Dispatch.setLength(inst, i, 0)
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0, inst)
     return function() end  -- no-op retract, PreRef와 같은 이유(되돌릴 상태가 없음)
 end
 ```

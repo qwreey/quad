@@ -155,9 +155,23 @@ local tagNameMap = Relate()   -- {[inst(weak)] = {[tagName]: {[k]: true}}} — �
 -- TagHandler 자신은 `.priority` 없음(직접 등록 안 됨) — 아래 "패키지 배치" 절의
 -- `TagFallbackHandler = { priority = HANDLER_PRIORITY_FALLBACK, isHandlable = TagHandler.isHandlable,
 -- process = TagHandler.process }`가 실제로 등록되는 얇은 래퍼(2026-08-14 열두 번째 세션 정정)
-TagHandler.isHandlable(inst, k, v) = isTag(v)  -- Brand 기반, array-part 전용
+-- [정정, 2026-08-24 6라운드 손 트레이싱 `H-52`] **`type(k) == "number"` 가드 추가.**
+-- 주석은 "array-part 전용"이라 말하면서 실제 판정은 값만 봤다. `RefLeafHandler`가
+-- 2026-08-18에 정확히 같은 버그를 고친 전례가 있다 — 빠지면 named 자리로 흘러온
+-- 값을 잡으려는 `HANDLER_PRIORITY_FALLBACK` 가드가 죽은 코드가 된다.
+TagHandler.isHandlable(inst, k, v) = (type(k) == "number" and isTag(v))
 
 function TagHandler.process(inst, k, v, index)
+    -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져 있었다.
+    -- `Tag`는 물리 리프를 하나도 기여하지 않으므로 짝을 맞춰 `0`. 없으면
+    -- `Frame { Tag("card"), TextLabel { … } }`처럼 Tag를 자식보다 앞에 두는
+    -- **아주 흔한 배치**가 첫 `recompute`에서 `sourceList[k]가 nil`로 죽는다
+    -- (`base/dispatch-core-plan.md`의 등록 책임 절). 그룹 `Attribute`와 함께
+    -- "Length/Offset 비참여 카테고리"로 재정의하는 갈래도 있었으나 `bk.N`의
+    -- 의미가 바뀌어 파급이 커서 기각(사용자 확정 2026-08-24).
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0, inst)
+
     local added = {}
     for name in v:Names() do
         local holders = tagNameMap:GetStrong(inst, name)

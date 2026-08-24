@@ -98,6 +98,30 @@ end
 - **배열 파트를 훑으며 해시 키를 같이 쓰는 것은 안전** — 숫자 `for`의 상한이
   루프 진입 시 한 번만 평가되고, 해시 파트 추가는 그 순회에 영향을 주지
   않는다.
+- **⭐ [신설, 2026-08-24 6라운드 손 트레이싱 `H-35`] `ProcessedModifierHandler`
+  의사코드** — 확정은 위 한 줄(*"전담 nop Handler … 캐치해
+  `setOffsetSource(None)`/`setLength(0)`을 등록"*)로 끝나 있었는데, 지목된
+  본보기(`ProcessedPreRefHandler`/`ProcessedPostRefHandler`)엔 실제 골격이
+  있는 반면 이쪽엔 없었다. 게다가 **색인 두 곳에서도 빠져 있었다** —
+  `base/dispatch-core-plan.md`의 Length/Offset 등록 책임 열거와 말단 핸들러
+  부작용 표, 그리고 `base/architecture.md`의 `Dispatch/` 파일트리
+  (`Modifier.luau` 항목이 flatten/체이닝만 적고 자기가 만드는 센티널의
+  핸들러를 언급 안 함). `Modifier`가 하나라도 든 `Frame{...}` 호출은 **전부**
+  이 핸들러를 거치므로, 이 문서를 안 읽고 색인만 보고 구현하면 존재 자체를
+  놓친다. 셋 다 반영했다.
+
+  ```lua
+  ProcessedModifierHandler.priority = <매우 높음, ProcessedPreRefHandler와 동급>
+  ProcessedModifierHandler.isHandlable(inst, k, v) = (v == ProcessedModifier)
+
+  function ProcessedModifierHandler.process(inst, k, v, index)
+      -- 순서는 늘 offsetSource 먼저(setLength가 끝에서 recompute를 태우므로)
+      Dispatch.setOffsetSource(inst, k, None)
+      Dispatch.setLength(inst, k, 0, inst)
+      return function() end   -- no-op retract — flatten이 이미 끝나 되돌릴 상태가 없음
+  end
+  ```
+
 - **`ProcessedModifier`의 공개 표면 위치**는 `Detach`/`None`과 같은 판단을
   따른다 — 다만 이건 사용자가 볼 일이 전혀 없는 **내부 센티널**이라
   최상위로 재노출할 이유가 없어 보인다(`ProcessedPreRef`/`ProcessedPostRef`가

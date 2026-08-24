@@ -265,6 +265,37 @@ end
     **정상 관례**이고 위치(`k`) 기준 참조 카운트로 안전하다(`base/tag-plan.md`)
     — 자원이 "이름 집합"이라 겹쳐도 합집합이면 되기 때문. 그룹
     `Attribute`는 자원이 **값 하나**라 겹침이 곧 충돌이다.
+- **⚠️⚠️ [2026-08-24 신설, 6라운드 손 트레이싱 `H-18`/`H-45`] 이름을 **서로 다른
+  두 자리 사이에서** 옮기는 것은 **UB다.** 아래 "해제 → 재클레임 순서" 보장은
+  **한 `(inst,k)` 체인 안에서만** 성립한다("자기 자신과 충돌하는 일이 없음"의
+  마지막 다섯 글자가 정확히 그 뜻이다).
+
+  ```lua
+  Frame {
+      groupA,   -- k=1, State<Attribute>. 지금 {"Hp"}를 잡고 있음
+      groupB,   -- k=2, State<Attribute>. 지금 {}
+  }
+  -- 런타임에: A는 "Hp"를 놓고, B가 "Hp"를 가져간다
+  ```
+
+  두 자리는 **완전히 별개의 체인**이고 각자 자기 `StoreBind`의 Observer가
+  독립적으로 깨어난다. `groupB` 쪽 emit이 먼저 처리되면 `nameClaims`가 아직
+  `groupA`의 키를 가리키므로 **`attribute "Hp" is already bound by another
+  owner` error**가 난다. `groupA` 쪽이 먼저면 정상 동작한다 — **같은 코드가
+  emit 순서에 따라 성공하거나 크래시한다.** 단건 `AttributeKey` ↔ 그룹
+  사이의 이전(`H-45`)도 정확히 같은 모양이다.
+
+  **확정: 막지 않는다.** **사용자 판단**(2026-08-24): *"state<attribute> 로 그
+  경로가 열리는데 어떤 방식으로 process 를 걸어도 외부에 바꿀지 말 지 알 방법이
+  없음. 외부에서 먼저 retract 가 나도록 유도하는게 아닌 한 알 방법이 없어보임.
+  애초에 싱크이기도 하고, 또 이걸 허용하면 process/retract 계약의 전체에 대한
+  예외들이 생기고 오버 엔지니어링으로 보임."*
+  - 검토했다 기각된 대안 둘: **claim 반납을 2단계로**(재프로세스 사이클 동안
+    "예약 해제" 상태를 두고 사이클 끝에 sweep — `Dispatch`에 사이클 개념을
+    들여야 해서 비쌈), **이전 소유자 생존 확인 후 인수**(판정 수단이 없고,
+    그걸 만들면 위 인용의 "예외들"이 정확히 그것이다).
+  - **저작 지침**: 이름을 다른 자리로 옮기려면 **놓는 쪽을 먼저 커밋**할 것.
+    한 프레임 안에서 동시에 하지 말 것.
 - **해제 → 재클레임 순서는 `Dispatch`가 보장함.** 같은 핸들러 재프로세스는
   `slot.retractor(v)` → `h.process(...)` 순서이고, 핸들러가 바뀌는 경우는
   `retractFrom` → `process` 순서(`base/dispatch-core-plan.md` "Dispatch
@@ -390,7 +421,31 @@ Dispatch 재진입 없이 직접 `SetAttribute`+수동 per-field StoreBind 구�
 클로저가 "이 호출이 등록한 키 목록"을 직접 캡처:
 
 ```lua
+-- [명시화, 2026-08-24 6라운드 `H-52`] `isHandlable`이 산문으로만 "배열 파트"라
+-- 서술돼 있고 코드가 없었다 — `TagHandler`와 같은 모양으로 명시한다.
+AttributeGroupHandler.isHandlable(inst, k, v) = (type(k) == "number" and isAttribute(v))
+
 function AttributeGroupHandler.process(inst, k, v, index)
+    -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져 있었다.
+    -- 그룹 핸들러는 "다른 키로 위임"하는 성격이라 층위 질문이 있었지만,
+    -- Tag/Attribute를 "Length/Offset 비참여 카테고리"로 재정의하면 `bk.N`의
+    -- 의미가 바뀌어 파급이 커서 **다른 말단 핸들러와 똑같이 등록**하는 것으로
+    -- 확정(사용자, 2026-08-24). 없으면 `Frame { Attribute(store), Slot() }`이
+    -- 첫 `recompute`에서 `sourceList[k]가 nil`로 죽는다.
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0, inst)
+
+    -- [2026-08-24 6라운드 `H-41`] **`groupClaimKeys` 위치 claim** — 5라운드
+    -- `AT-1`에서 `(inst, groupValue) → k`로 확정해놓고 의사코드에 배선되지
+    -- 않았다. `nameClaims`보다 **먼저**여야 한다(같은 그룹의 두 번째 위치는
+    -- 이름 claim까지 갈 것 없이 여기서 거부되어야 `nameClaims`에 절반만
+    -- 기록되는 중간 상태가 안 생긴다 — 위 그 항목이 소스).
+    local claimed = groupClaimKeys:GetStrong(inst, v)
+    if claimed ~= nil and claimed ~= k then
+        error("Attribute: 같은 그룹 값이 이 인스턴스의 두 위치에 놓임")
+    end
+    groupClaimKeys:SetStrong(inst, v, k)
+
     local keys = {}
     for name, source in pairs(v:NameMap()) do  -- isHandlable이 이미 isAttribute(v)를 보장
         -- 그룹 전용 키(비공개) — 공개 AttributeKey(name)이 아님.
@@ -406,6 +461,11 @@ function AttributeGroupHandler.process(inst, k, v, index)
         -- "다음 값에 이 이름이 있나"를 미리 알 필요가 없음.
         for key in pairs(keys) do
             Dispatch.retractFrom(inst, key, 1)
+        end
+        -- [2026-08-24 `H-41`] 위치 claim도 반납 — **자기 `k`일 때만**
+        -- (위 그 항목의 확정: "retract에서 자기 `k`일 때만 지운다").
+        if groupClaimKeys:GetStrong(inst, v) == k then
+            groupClaimKeys:SetStrong(inst, v, nil)
         end
     end
 end

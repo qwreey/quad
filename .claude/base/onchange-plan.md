@@ -53,10 +53,26 @@
   `GetPropertyChangedSignal` 자체가 Roblox 엔진 API라 base에
   둘 이유가 없음 — Tag처럼 백엔드 무관한 값/API 레이어가 따로 있는 경우와
   다름.
-- **`process(inst,k,v,index)`**: `inst:GetPropertyChangedSignal(name):Connect(
+- **`process(inst,k,v,index)`**: **먼저 `v == nil`이면 Connect를 건너뛰고
+  no-op 클로저를 반환**하고, 아니면 `inst:GetPropertyChangedSignal(name):Connect(
   function() v(inst[name]) end)` 후 **그 Connection을 `:Disconnect()`하는
   클로저를 반환**. 일반 `Handlers/Event.luau`와 같은 결(Connection
-  관리뿐, 새 메커니즘 없음). **[정정, 2026-08-13 다섯 번째 세션]** 원래는
+  관리뿐, 새 메커니즘 없음).
+  - **⭐ [정정, 2026-08-24 6라운드 손 트레이싱 `H-27`] 그 `v == nil` 얼리리턴이
+    빠져 있었다.** 이 문서는 스스로 *"일반 `Handlers/Event.luau`와 같은 결"*이라
+    결론냈는데, `base/event-plan.md`가 확정한 그 "같은 결"의 핵심이 정확히
+    **`(k=이벤트키, v=nil)`을 받으면 기존 Connection 해제만 하고 새로 Connect하지
+    않는다**이다. 없으면 `Frame { [OnChange "Position"] = someState }`에서
+    `someState:Set(None)`으로 콜백을 끌 때, `NoneHandler` → `NilHandler`를
+    거쳐 이 핸들러가 **`v == nil`로 다시 매치**되어(매치가 키 기반이라 `nil`도
+    잡고, `NilHandler`는 `type(k) == "number"` 전용이라 여기 안 걸린다)
+    `Connect(function() nil(inst.Position) end)`가 **실제로 심긴다.** 그 순간엔
+    아무 일도 안 일어나고, 나중에 `inst.Position`이 실제로 바뀌면
+    **`attempt to call a nil value`**로 터진다 — 즉 "콜백을 끈다"는 동작이
+    실제로는 **"나중에 터질 Connection을 새로 심는"** 동작이 된다.
+    `base/dispatch-core-plan.md`는 같은 종류의 방어를 `PropertyHandler`에는
+    이미 명시적으로 요구하고 있다(*"`v == nil`이면 셋을 건너뛰는 방어"*) —
+    `OnChange`만 빠져 있었다. **[정정, 2026-08-13 다섯 번째 세션]** 원래는
   별도 `retract(inst,k,v)` 필드가 Disconnect를 담당한다고 적혀 있었으나,
   Handler 계약이 `process` 1-메소드로 합쳐지며 그 로직이 반환 클로저로
   이동 — `connection`은 `process`의 로컬 변수를 클로저가 upvalue로 그대로

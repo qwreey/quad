@@ -684,7 +684,7 @@ export type Timeout = {
   호출 지점마다 캐스트를 흩뿌리는 방식은 나중에 누가 다른 필드를 더
   끼워넣어도 아무도 모르는 게 문제였음 — quad가 타입 검사를 조용히 끄는
   걸 싫어해온 것(`base/typing-limits.md`)과 결이 맞는 쪽으로 정리됨.
-- `_` 접두사는 코퍼스의 기존 private 필드 관례(`handle._observer`,
+- `_` 접두사는 코퍼스의 기존 private 필드 관례(`handle._observers`,
   `slot._mountedInst`, `_fired`)와 일치.
 - **`_native`에 뭘 담을지는 전적으로 백엔드 자유** — coroutine 하나일
   수도, 취소 플래그를 담은 테이블일 수도 있음(아래 "취소를 제공하지 않는
@@ -797,11 +797,67 @@ function clearTimeout(timeout: Timeout) timeout._native() end
 
 ## 7. 의사코드
 
-> **주의**: `Gate` 노드의 내부 훅(`onUpstreamSignal`, `commit`)은 아직
-> 이름도 계약도 확정되지 않은 가칭 — `Blocker`의 게이티드 노드가 이미
-> 필요로 하는 것과 같은 훅이라(1절), 실제 구현 시엔 그쪽과 같이 정의할 것.
-> 아래 코드의 `registry`/`Handle` 배선도 마찬가지로 스케치 수준 — 실제
-> 구현 시 이름은 자유.
+> **⚠️ [2026-08-24 무효화 배너, 6라운드 손 트레이싱 `H-33`] 아래 의사코드의
+> 골격은 확정된 API로는 성립하지 않는다 — 다시 쓸 것.** 옛 주의문은
+> *"내부 훅 이름이 아직 가칭"*이라고만 말했는데, 문제는 이름이 아니라 **모양**
+> 이다. 아래는 탑레벨 `Gate(self)` 생성자를 부르고 반환 객체에
+> `.onUpstreamSignal`/`._flush`/`._cancel`을 **사후 대입**하는데, 확정된 형태는
+> 정반대다:
+>
+> - `base/gate-plan.md`가 **`state:Gate(setup)`**(`setup: (emit) -> onUpstreamEmit`)로
+>   못박으면서 *"탑레벨 `Gate(...)` 생성자는 안 만든다"*고 명시했다 →
+>   `Gate`라는 호출 가능한 값이 없어 `attempt to call a nil value`.
+> - 이름을 `self:Gate(...)`로 고쳐도 `setup`이 핸들러를 **반환**해야 하는
+>   프로토콜과 안 맞는다.
+> - 호출자는 State 하나만 받고 **노드 객체에 접근할 수 없으므로**
+>   `Handle:Set({ Flush = gate._flush, ... })`는 표현 자체가 불가능하다.
+>
+> **다시 쓸 방향은 정해져 있다**(사용자 확정 2026-08-24,
+> `base/gate-plan.md`의 5번 항목이 소스): `Debounce`/`Throttle`은 **`emit`을
+> 아예 안 쥔다.** 자기 `Blocker`를 사적으로 하나 갖고(적용 핸들당 하나)
+> **언제 `On()`/`Off()`할지만** 정하며, 실제 발화/보류는
+> `blocker:Policy(emit)`이 돌려준 핸들에 위임한다:
+>
+> ```lua
+> state:Gate(function(emit)
+>     local b = Blocker()
+>     local pass = b:Policy(emit)
+>     return function()        -- 상류 emit 도착 (동기)
+>         -- 타이머/창 판단 후 b:On() / b:Off() / b:OffWithoutEmit()
+>         pass()
+>     end
+> end)
+> ```
+>
+> - `gate:passThrough()` → **`b:Off()`**(보류분 1회 방출), 그 뒤 다시 `b:On()`.
+> - `Trailing = false` 경로 → **`b:OffWithoutEmit()`**.
+> - **`pending`은 없앤다** — "보류된 게 있는가"는 Blocker의 `HasBlockedEmit`이
+>   이미 들고 있다(중복 상태를 안 만든다). 이게 `H-32`를 구조적으로 없앤다.
+> - `Flush`/`Cancel` 핸들은 `setup` 클로저 안에서 `b`를 캡처해 만든다 —
+>   노드 객체 참조가 필요 없다(`Blocker`가 onunblock 핸들을 등록하는 방식과
+>   같은 우회).
+>
+> 아래 코드는 **창/타이머 정책 자체의 참고용**으로만 읽을 것 —
+> `openWindow`/`onWindowEnd`/`MaxTime`의 분기 구조는 그대로 유효하다.
+
+**⭐ [2026-08-24 `H-32`] 같이 고쳐야 할 논리 결함 하나 — `Trailing = false`에서
+`pending`이 영구히 참으로 남는다.** 아래 코드는 창이 열려 있는 동안 오는 신호를
+`trailing`과 **무관하게** `pending = true`로 세우는데, `pending`을 `false`로
+되돌리는 자리는 **전부** `if pending and trailing then` 안에 있다
+(`onWindowEnd` / `MaxTime` 콜백 / `_flush` 셋 다). 그래서
+`Debounce{Leading=true, Trailing=false, MaxTime=…}`(문서가 *"버스트 시작에 한
+번만"*이라며 직접 드는 정상 사용례)에서 한 버스트에 신호가 둘 이상 오면:
+
+- `MaxTime`이 매번 재무장되며 **영원히 아무 효과가 없고**,
+- `opts.Handle`로 받은 `:Flush()`가 그 가드에 막혀 **영구 no-op**이 된다
+  (사용자가 명시적으로 커밋을 요청해도 반응이 없다). `:Cancel()`만이
+  `pending = false`를 무조건 하므로 유일한 탈출구다.
+
+**해소는 위 재작성에 흡수된다** — `pending`을 없애고 Blocker의
+`HasBlockedEmit`을 쓰면 "보류분이 있는가"와 "그걸 어떻게 풀 것인가"가 분리되어
+이 결함이 구조적으로 성립하지 않는다(`Trailing = false`는 `OffWithoutEmit()`
+으로 표현되고, 그건 보류분을 **버리면서** 상태도 같이 비운다). 아래 코드를
+참고할 때 이 결함을 그대로 옮기지 말 것.
 
 ```lua
 -- quad-base — 공용 코어. Reset 한 비트가 Debounce/Throttle을 가름(5-3절).
@@ -936,15 +992,23 @@ function Throttle(opts: ThrottleOptions) return makeGate(false, opts) end
 3.5  입력 → window == nil → leading 즉시 통과 ●
 ```
 
-**(A) emit-gate가 붙는 자리(확정, 4절)**: `gate`는 다른 평범한 State와
-똑같이 **매 `onUpstreamSignal` 진입 시 자기 `invalid`를 즉시 세운다** —
+**(A) emit-gate가 붙는 자리(확정, 4절)**: `GateNode`는 다른 평범한 State와
+똑같이 **매 `onUpstreamEmit` 진입 시 자기 `invalid`를 즉시 세운다** —
 `source-state-plan.md`의 "전파 모델 확정" 절이 정한 전파 규칙(**[2026-08-21]**
 "항상"이 아니라 "같은 에포크의 두 번째만 접는다" — `base/state-epoch-plan.md`)이
-게이트 자신에게도 그대로 적용됨. 위 코드의 `gate:passThrough()`가
-실제로 미루는 건
-**다운스트림 통지(전파)뿐**이지 invalid 세팅이 아님 — 그래서 창이 열려
-있는 동안 `gate:Get()`을 불러도 항상 최신값이 계산됨(캐시가 stale한
-채로 안 남음).
+게이트 자신에게도 그대로 적용됨. 정책이 미루는 건 **다운스트림 통지(전파)뿐**
+이지 invalid 세팅이 아님 — 그래서 창이 열려 있는 동안 `:Get()`을 불러도 항상
+최신값이 계산됨(캐시가 stale한 채로 안 남음).
+
+**⚠️ [용어 정정, 2026-08-24 6라운드 `H-33`] 이 문단도 위 무효화 배너의 적용
+대상이다.** 원래 `gate.onUpstreamSignal` / `gate:passThrough()`라는 **가칭
+스캐폴딩 이름**으로 쓰여 있었는데 둘 다 확정 API가 아니다 — 확정된 훅 이름은
+`setup(emit) -> onUpstreamEmit`이고(`base/gate-plan.md`), 재작성 후
+`Debounce`/`Throttle`은 `emit`을 직접 쥐지 않으므로 **`gate`라는 단일 객체를
+호출부가 손에 쥐는 모양 자체가 없다**(대신 자기 `Blocker`를 `On()`/`Off()`
+한다). **이 문단이 말하는 의미론적 결론(즉시 invalidate, 전파만 지연 —
+`Blocker`의 gated state와 동일)은 그대로 유효하고**, 바뀐 건 그걸 표현하는
+이름뿐이다.
 
 ---
 

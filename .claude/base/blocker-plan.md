@@ -57,6 +57,15 @@ blocker:IsOn() -> boolean           -- [2026-08-18 신설] `self.IsBlocked`를 �
 state:Block(blocker) -> state       -- 새 gated state 반환. **호출되는 즉시**(나중에
                                      -- 처음 블록될 때가 아니라) onunblock 핸들을
                                      -- blocker의 weak 배열에 등록.
+blocker:Policy(emit) -> onUpstreamEmit
+                                    -- [2026-08-24 신설] 이 blocker의 게이트 정책을
+                                     -- **값으로** 돌려준다. `state:Block(b)`가
+                                     -- 내부에서 쓰는 바로 그것:
+                                     --   state:Block(b)
+                                     --     == state:Gate(function(emit) return b:Policy(emit) end)
+                                     -- **[2026-08-24 정정]** 여기 `state:Gate(b.Policy)`라
+                                     -- 적었었는데 그건 언바운드 메소드라 `emit`이 `self`
+                                     -- 자리에 들어가 게이트가 영원히 안 열린다.
 ```
 
 gated state의 동작:
@@ -85,8 +94,22 @@ gated state의 동작:
 정책 하나다 — `Block`이 내부에서 `self:Gate(policy)`를 부르고, 그 `policy`가
 `blocker.IsBlocked`를 보고 `emit()`을 부를지 `HasBlockedEmit`만 세울지
 정한다. `Debounce`/`Throttle`도 같은 자리에 다른 정책으로 들어간다.
-**공개 표면(`Blocker()` 생성자와 `state:Block`)은 안 바뀐다** — 배선만
-공용 노드를 쓰는 것.
+
+**⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-33`/`H-49`] 그 정책을 값으로
+꺼내는 표면 `blocker:Policy(emit)`을 추가한다** — 표면이 하나 늘고,
+`Blocker()` 생성자와 `state:Block`은 그대로다.
+
+- **왜 필요한가**: `Debounce`/`Throttle`이 "언제 통과시킬지"를 정하면서
+  실제 emit/보류 배선은 Blocker에 위임할 수 있어야 한다. 정책을 값으로 낼 수
+  있으면 그게 그냥 함수 합성이 된다 — `setup`이 곧
+  `(emit) -> onUpstreamEmit`이라 타입이 이미 맞는다.
+- **정책이 하는 일은 안 바뀐다** — `Policy(emit)`을 부르는 시점에 onunblock
+  핸들이 등록되므로(지금 `state:Block`이 하던 것과 같은 자리), `Off()`가
+  풀 때 그 `emit`이 정확히 1회 불린다.
+- **`Debounce`/`Throttle`은 Blocker를 사적으로 하나 갖는다** — 적용 핸들당
+  하나(커링 결과가 여러 곳에 적용될 수 있으므로 `Apply` 시점 생성).
+  `pending` 같은 상태는 별도로 안 들고 `HasBlockedEmit`으로 흡수한다.
+  상세와 의사코드는 `base/gate-plan.md`의 5번 항목이 소스.
 
 **`:Get()`엔 영향 없음** — 블록은 emit **전파**만 지연시킨다. 블록 중이라도
 누군가 명시적으로 `:Get()`하면 그 순간의 실제 값을 정상적으로 계산해서

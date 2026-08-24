@@ -173,9 +173,15 @@ end)
      순간 떼어내는 게 원래 모양이고, 그러면 그 경로 자체가 없다:
      ```
      local batch = self._withheld
-     self._withheld = {}          -- 새 테이블. clear가 아니다
-     emitDownstream(self, batch)  -- 떼어낸 batch를 페이로드로 넘긴다
+     self._withheld = newWithheld()   -- 새 테이블. clear가 아니다
+     emitDownstream(self, batch)      -- 떼어낸 batch를 페이로드로 넘긴다
      ```
+     **⚠️ [정정, 2026-08-24 6라운드 손 트레이싱 `H-9`] 그 새 테이블도 weak여야
+     한다.** 여기 원래 `self._withheld = {}`라고 적혀 있었는데, 그러면 위에서
+     **weak key로 확정한 집합이 첫 flush 스왑에서 평범한 테이블로 바뀐다** —
+     그 뒤로는 그 게이트가 죽은 `Epoch`를 붙잡을 수 있다. `OffWithoutEmit`의
+     스왑도 같다. `newWithheld()`(= `setmetatable({}, {__mode = "k"})`) 헬퍼
+     하나로 생성 지점을 통일한다.
      하류가 순회하는 것은 `gate._withheld`가 아니라 **받은 `batch`** 다.
      중첩 파동은 새 테이블에 쌓이므로 바깥 전파와 안 섞인다. 같은 리비전이
      중첩으로 두 번 도달하는 경우는 애초에 문제가 아니다 — 하류 맵이 이미
@@ -226,8 +232,51 @@ end)
 
 5. **생명주기.** 게이트 노드가 잡는 자원(타이머/플래그)이 언제 죽는가 —
    지금 설계대로면 다운스트림이 다 죽으면 GC(팩토리는 weak 추적,
-   `debounce-throttle-plan.md` 5-4). `Gate` 자체에 `Flush`/`Cancel` 같은 표면을
-   둘지, 그건 정책(Debounce)만의 것으로 둘지.
+   `debounce-throttle-plan.md` 5-4).
+
+   **⭐ [2026-08-24 해소, 6라운드 손 트레이싱 `H-33`/`H-49`] `Gate` 노드엔
+   `Flush`/`Cancel` 같은 표면을 두지 않는다 — 정책이 `Blocker`를 조종한다.**
+   확정된 `state:Gate(setup)`는 **State 하나만** 돌려주고 노드 객체를 노출하지
+   않으므로, 제어 표면을 얹으려면 그 확정을 되돌려야 했다. 사용자 확정으로
+   방향이 반대로 잡혔다:
+
+   - **`Blocker`가 자기 정책을 값으로 낸다 — `blocker:Policy(emit) -> onUpstreamEmit`.**
+     `state:Block(b)`는 그 위의 얇은 래퍼가 된다. 노출되는 새 표면은 이 하나뿐이다.
+     **⚠️ [2026-08-24 표기 정정, `/code-review high` 지적]** 여기 한때
+     `state:Gate(b:Policy)`라고 적었는데 **그건 문법 오류다**(인자 목록 없는
+     `b:Policy`). `b.Policy`로 고쳐도 **언바운드 메소드**라 `Gate`가
+     `setup(emit)`으로 부르면 `emit`이 `self` 자리에 들어가 정책의 `emit`이
+     `nil`이 된다. 정확한 형태는 클로저로 묶는 것이다:
+     ```lua
+     state:Block(b)  ==  state:Gate(function(emit) return b:Policy(emit) end)
+     ```
+   - **`Debounce`/`Throttle`은 `emit`을 아예 안 쥔다.** 자기 `Blocker`를
+     사적으로 하나 갖고 **언제 `On()`/`Off()`할지만** 정하며, 실제 발화/보류
+     판정은 전부 Blocker에 위임한다. 동기 실행이라 같은 호출 안에서 정책이
+     바꾼 Blocker 상태를 그 다음 줄의 `pass()`가 그대로 본다:
+     ```lua
+     state:Gate(function(emit)
+         local b = Blocker()
+         local pass = b:Policy(emit)   -- 실제 emit/보류는 전부 여기 위임
+         return function()             -- 상류 emit 도착 (동기)
+             -- ...타이머 리셋 / b:On() / b:Off() 시점 판단만...
+             pass()
+         end
+     end)
+     ```
+   - **Blocker는 설정당 하나가 아니라 적용 핸들당 하나**다(사용자 지적) —
+     `Debounce{...}` 커링 결과는 여러 곳에 적용될 수 있으므로 `Apply` 시점에
+     생성된다.
+   - **`pending` 같은 정책 상태는 `HasBlockedEmit`으로 흡수한다** — "보류된 게
+     있는가"를 Blocker가 이미 들고 있으므로 중복 상태를 안 만든다.
+     `Trailing = false`는 `OffWithoutEmit()`, `Flush`는 `Off()`로 매핑된다.
+   - **정책 합성은 손으로 중첩한다** — `setup`이 곧 `(emit) -> onUpstreamEmit`
+     이라 그 자체가 합성 가능한 타입이다. `state:Gate(p1, p2, ...)` 같은
+     가변인자 슈가는 **두지 않는다**(누가 상류인지가 코드에 그대로 드러나는
+     편이 낫다).
+   - **기각된 배선(기록)**: "블로커를 바깥에 중첩"
+     (`blocker:Policy(debounceOnEmit)`)은 unblock 시 흘러나온 emit이 디바운스
+     창을 **새로 시작**시켜 창이 안 끝난다(사용자 지적).
 6. **[2026-08-21 정리 — 열린 항목 아님] 재진입.** 여기 한때 *"`onUpstreamEmit`
    안에서 같은 게이트의 `emit()`을 재귀적으로 부르는 경우"*라고 적혀 있었는데
    **잘못 옮긴 서술이었다**(사용자 지적). `blocker-plan.md`의 "재진입(네스팅)"

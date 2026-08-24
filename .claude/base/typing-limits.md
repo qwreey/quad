@@ -241,8 +241,33 @@ self 핸들 자체를 받음)에서 **콜백 반환 타입이 self의 원래 T�
 | `state:Compute(fn)` | `typeof(named fn)`(③) | 콜백 파라미터 명시 주석 필요 | ✅ 무주석이어도 안전(다운스트림) |
 | `state:With(...)` | 인라인 + 쪼개기 | 쪼개기로 해결(이형 dep 포함) | ❌ 명시 바인딩 필요 |
 | `state:Apply(factory)` | 인라인 | factory 파라미터 주석 필요 | ❌ 명시 바인딩 필요 |
-| `Effect(fn, state)` | — | 해당 없음(자유 함수) | 해당 없음(반환이 재귀 타입 아님) |
+| `Effect(fn, ...deps)` | — | 해당 없음(자유 함수) | 해당 없음(반환이 재귀 타입 아님) |
 | `state:Observer(fn)` | — | 해당 없음(로컬 제네릭 없음) | 해당 없음(`EffectHandle` 반환) |
+| `tween:Mapped(fn)` | 인라인 제네릭 메소드 | — | ❌ **조용히 통과**(아래 `H-24`) |
+| `tween:Mapped(fn)` | `typeof(named fn)`(③) | 콜백 파라미터 명시 주석 필요 | ✅ 안전 |
+
+**⭐ [2026-08-24 추가, 6라운드 손 트레이싱 `H-24` — 실측] `Tween<T>:Mapped`가
+이 표에서 빠져 있었다.** 확정된 시그니처 `tween:Mapped(fn: (T) -> U): Tween<U>`는
+위 1번이 *"이것만"* 문제라고 못박은 모양(`Foo<T>` 안에서 `-> Foo<U>`)과 **글자
+그대로 같은데**, 이 문서도 `base/tween-plan.md`도 그 사실을 몰랐다(양쪽 grep 0건).
+
+실측:
+```lua
+--!strict
+export type Tween<T> = { Value: T, Mapped: <U>(self: Tween<T>, fn: (T) -> U) -> Tween<U> }
+local t = (nil :: any) :: Tween<number>
+local mapped = t:Mapped(function(x: number) return tostring(x) end)
+local wrong: number = mapped.Value   -- Tween<string>.Value는 string → 에러여야 정상
+```
+`luau-analyze` → **진단 0건**(조용히 통과). 같은 검사를 ③(`typeof(named function)`
+선언)으로 바꾸면 `TypeError: Expected this to be 'number', but got 'string'`으로
+**정상적으로 잡힌다** — 즉 **기존 완화책이 그대로 통하는데 아무도 적용을
+지시하지 않고 있었다.** 새 설계 결정은 필요 없다.
+
+(§6의 `type function`을 거친 값과는 다른 문제다 — `Mapped`는 `type function`을
+안 거치는 순수 제네릭 메소드다. 같은 각도로 최근 확정 표면을 훑어봤고
+`state:Gate(setup)`/`EpochMap`/`Effect`는 **전부 이 패턴이 아니라 무관**했다 —
+셋 다 제네릭 self를 다른 타입 인자로 반환하지 않는다.)
 
 `state:With(...)`/`state:Apply(factory)`도 원리상 ③으로 같은 이득을
 받을 것으로 예상되나(둘 다 `Compute`와 같은 "재귀 자기 반환" 모양),

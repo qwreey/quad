@@ -554,7 +554,26 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
   안 늘어남(노드 1개). 구현은 `:With(...)`가 이미 하는 "구독 목록 확장"
   로직을 Compute 노드 생성 시점에 그대로 적용하는 것뿐 — 새 메커니즘
   아님.
-- **`Effect(fn, ...)`/`state:Observer(fn, ...)`류 trailing-args 확장은
+- **⭐⭐ [부분 역전, 2026-08-24 반영 — 근거는 5라운드 `C-6`, 발견은 6라운드
+  손 트레이싱 `H-13`] `Effect(fn, ...deps)`는 이제 **허용**된다. `Observer`만
+  기각으로 남는다.** 아래 문단은 그 역전 **이전** 서술이고, `base/effect-plan.md`가
+  이미 2026-08-21에 뒤집어둔 것을 이 문서가 반영하지 않아 **두 base 문서가
+  정반대를 말하고 있었다.** 이 문서가 반응형 코어의 정본이라 구현자가
+  `Effect` 표면을 짜기 전에 반드시 읽는 자리이고, 그대로 두면 5라운드가 닫은
+  갭(**`Ref`는 `:With`로 못 합치므로 `Effect`의 의존성이 될 방법이 아예 없다**)이
+  되돌아온다.
+  - **역전 근거**(`effect-plan.md`): *"각 의존성에 구독을 따로 걸면 **합치는
+    노드 자체가 안 생긴다** — 감출 비용이 애초에 없다."* 즉 아래 문단의 전제
+    ("의존성이 둘 이상이면 합칠 별도 노드가 필요하다")가 `Effect`에 대해서는
+    성립하지 않는다. `Effect`는 파생값을 안 만드는 leaf라 각 dep에 독립
+    구독을 걸면 그만이다.
+  - **`state:Observer(fn, ...)`는 기각을 유지한다. 다만 근거를 새로 쓴다**
+    (옛 근거는 `Effect`와 공유하던 것이라 지금은 비어 있다, 사용자 확정
+    2026-08-24): **`Observer`는 리시버 State 하나에 붙는 구독이고, 여럿을
+    엮는 건 `Effect`가 대신한다.** 즉 역할 분담이지 비용 은폐 회피가 아니다.
+  - **아래 "일반 원칙" 항목도 `:Compute` 한정으로 좁힌다** — 그 항목 자신의
+    정정 문단이 소스.
+- **(역전 전 원문) `Effect(fn, ...)`/`state:Observer(fn, ...)`류 trailing-args 확장은
   기각 — 여기선 진짜 새 노드가 생기기 때문.** Effect/Observer는 Compute와
   달리 **자기 자신이 결과를 담는 State 노드가 아님**(파생값을 안 만드는
   순수 leaf 소비자, 위 "독립 프리미티브 vs 파생 데이터" 분류에서도
@@ -572,7 +591,13 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
 - **일반 원칙으로 정리**: "trailing args sugar는 그게 정말 무료일 때만
   붙인다 — 호출부가 이미 만들어야 하는 노드에 엣지만 얹는 경우(Compute)엔
   sugar, 없던 노드를 새로 만들어야 하는 경우(Effect/Observer의 다중
-  의존성 병합)엔 sugar 없이 `:With`를 명시적으로 남긴다." `quadnomicon`
+  의존성 병합)엔 sugar 없이 `:With`를 명시적으로 남긴다."
+  **⚠️ [범위 축소, 2026-08-24 `H-13`] 이 원칙의 적용 범위는 `:Compute` 계열과
+  "정말 새 노드가 생기는" 자리로 좁힌다.** 괄호 안의 `Effect` 예시는 틀린
+  것으로 드러났다 — `Effect`의 다중 의존성은 각 dep에 독립 구독을 걸 뿐
+  **합치는 노드를 안 만들므로** 이 원칙의 대상이 아니다(위 역전 배너).
+  원칙 자체("숨겨지는 비용이 있는가")는 그대로 유효하고, 바뀐 건 *어디에
+  비용이 있는가*에 대한 사실 판단이다. `quadnomicon`
   에세이 후보로 좋음(`research/documentation-content-map.md` 6번 항목
   다음에 추가) — "왜 Compute만 여러 deps를 편하게 받고 Effect/Observer는
   안 그런가"가 겉보기엔 비일관적으로 보이지만 실제로는 "숨겨지는 비용이
@@ -1035,6 +1060,30 @@ override할 자리를 구조적으로 열어두는 것.)
   선호 — 포인터 해싱 비용만 들고 값 자체엔 부작용 없음. rbvm의
   `getNamespaceOf`류가 비슷한 외부 weak-table 인덱싱을 씀
   (`base/lifecycle-pattern.md` 참고).
+- **⭐⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-23` — 실측] 전파 루프는
+  구독자 집합을 **스냅샷으로 복사한 뒤** 돈다.** Lua/Luau에서 순회 중
+  **기존 키의 값 변경은 안전하지만 새 키 추가는 미정의**인데, **그 순회 도중
+  같은 테이블에 새 키가 추가되는 정상 경로가 있다.**
+  - **실측(로컬 `luau` 0.734)**: 구독자 8개짜리 집합을 순회하며 첫 콜백에서
+    새 구독자 1개를 등록했더니 `obs8 fired=2` / `obs4 fired=2` /
+    `obs1 fired=2, obs2 fired=0`처럼 **실행마다 결과가 달랐다**(어떤 실행은
+    깨끗했다). `pairs()`로 명시해도 같았고 **크래시는 안 났다** — 즉 터져서
+    금방 잡히는 종류가 아니라 **간헐적으로 한 Observer가 통째로 누락되는**
+    종류다.
+  - **가상의 오용이 아니라 문서가 권장하는 조합에서 나온다**:
+    `slot:List(store.items, function(...) return Row { Text = store.items:Compute(...) } end)`
+    — `store.items:Set(...)` → 전파 루프 시작 → 그중 `_listObserver`가
+    `reconcile` → `updateFn` → `Dispatch.drive` → `store.items:Compute(...)`가
+    **같은 집합에 새 키를 삽입**한다. 재진입 자체는 이미 정상 경로로
+    인정돼 있다(`Dispatch.process`의 (A)/(B) 분기).
+  - **`Epoch` 규칙으로는 못 막는다** — dedup은 "같은 emit이 두 번 도착했을 때
+    접는" 것이라 **이중 발화는 접히지만 누락은 안 접힌다.**
+  - **확정된 계약**: 순회 전에 배열로 스냅샷을 뜨고 그 배열을 돈다.
+    **이번 파동 중에 붙은 구독자는 다음 파동부터 참여한다.** 스냅샷과 실제
+    발화 사이에 죽은 구독자는 기존 `canExecute` 게이트가 걸러준다(그래서
+    스냅샷이 stale해도 안전하다). 비용은 파동마다 배열 하나.
+  - **같은 처방이 `Ref.Callbacks`에도 적용된다**(`base/ref-plan.md`) — 그쪽도
+    같은 모양의 순회이고, 같은 날 해시맵 셋으로 바뀌면서 더 분명해졌다.
 - **인자 없는 `state:Observer()` — "항상 관측" 유틸.** `fn`을 생략하면
   내부적으로 no-op 콜백을 쓰는 것으로 취급해, 그냥 "이 State를 계속
   능동적으로 관측 상태로 유지"하는 용도로만 씀. 위 "`previous` 인자"
@@ -1317,6 +1366,15 @@ ObserverEffectLeafHandler.isHandlable(inst, k, v) =
     -- 매치돼버려 죽은 코드가 됨(2026-08-14 열두 번째 세션 수정)
 
 function ObserverEffectLeafHandler.process(inst, k, v, index)
+    -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져
+    -- 있었다. 이 자리는 물리 리프를 하나도 기여하지 않으므로 짝을 맞춰 `0`.
+    -- 없으면 `Frame { someObserver, Frame{} }`처럼 leaf가 앞에 오는 배치가
+    -- 첫 `recompute`에서 `sourceList[k]가 nil`로 죽는다
+    -- (`base/dispatch-core-plan.md`가 확정한, 값이 없는 자리도 짝을 맞춰 `0`을
+    -- 등록한다는 규칙).
+    Dispatch.setOffsetSource(inst, k, None)
+    Dispatch.setLength(inst, k, 0, inst)
+
     local old = relate:GetStrong(inst, k)
     if old ~= v then  -- 이미 같은 값이 이 자리를 차지 중이면 재바인딩 skip
         bindLifetime(inst, v)  -- Effect는 내부적으로 자기 Observer까지 cascade(`base/effect-plan.md`)

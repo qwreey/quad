@@ -9,7 +9,8 @@
 > props 순회가 **단일 일반화 `for`**로 정정되면서, 두 루프 버전을 검증하던
 > `01`이 낡아 `done/` → `rewrite-required/` 이동(검증 대상인 순서 계약
 > 자체는 그대로). 같이 **만들어야 할 스파이크** 절 신설 — 아직 파일이
-> 없는 실측 항목(`R-11`의 `table.insert` 구멍 재사용, 중간 State GC)을
+> 없는 실측 항목(중간 State GC — **[2026-08-24]** 같이 나열돼 있던 `R-11`의
+> `table.insert` 구멍 재사용은 6라운드 `H-7`로 **전제가 사라져 폐기**됐다)을
 > 여기 모은다. 직전 갱신은 2026-08-19 — 신규 `quad-types` 패키지(`CheckedQuad<T, Pattern>`
 > 버전 패턴 체크 + `AddPlugin<Self,P>` 체이닝) 검증용 `23` 신규 추가 →
 > `done/` 직행, 같은 날 후속으로 `type-version-check` 분리에 맞춰 재작성.
@@ -141,7 +142,7 @@
 
 | 파일 | 확인된 것 |
 |---|---|
-| `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인 |
+| `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 **당시의** Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인. **[2026-08-24]** 그 대비의 한쪽(Ref 콜백)은 6라운드 `H-7`로 **해시맵 셋**이 되어 사라졌지만, 이 스파이크가 실제로 확인한 것(**일반 Lua 테이블에서 `nil` 구멍과 `None` 채움의 거동 차이**)은 그대로 유효하다 — `sourceList`/`flattened`처럼 순서가 중요한 배열이 여전히 그 결론 위에 선다 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
@@ -156,7 +157,7 @@
 |---|---|
 | `08-type-source-satisfies-state` | ✅ 핵심 질문(Source⊇State 구조적 서브타이핑) 통과. 잔여 케이스(자기 이름을 다른 인자로 재귀 참조)는 **[2026-08-13 13차 세션] Luau 현 한계로 확정** — quad가 풀 대상 아님, `base/typing-limits.md` 1번 |
 | `09-type-modifier-overridden-subtype` | ✅ 통과 — 문서가 우려한 `FrameModifier`↔`GuiObjectModifier` 서브타입 깨짐이 그대로 재현, fallback(`any`)은 정상 |
-| `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로) |
+| `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로). **[2026-08-24 `H-54`] 단 스파이크 자신의 주석이 실제 결과와 어긋난다** — *"이건 당연히 통과해야 함"*이라 적어둔 동질 대조군(line 41-43)이 실제로는 에러를 낸다(`AttributeKey<T>(name)`이 문맥에서 `T`를 못 추론해 `unknown`으로 남음). 오히려 "왜 진짜 테스트 대상이 조용히 통과하는지(= narrowing이 아예 안 일어남)"를 설명해주는 정합적 결과라 **이 총론은 그대로 유효**하고, 근거 라인만 다르다 — 재작성 시 참고 |
 | `13-type-ref-preref-subtype` | **[2026-08-19 재작성]** ✅ 통과 — `PreRef<T>`/`PostRef<T>` 둘 다 `Ref<T>`를 구조적으로 만족(음성 대조군도 정확히 에러). 런타임 B섹션은 `22`로 분리(A의 더미 스텁이 B 실행을 막던 문제 해결) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
 | `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
@@ -205,6 +206,6 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 
 | 검증할 것 | 왜 | 출처 |
 |---|---|---|
-| `table.insert`가 배열 중간의 구멍을 재사용하는가 | `Ref` 콜백 배열이 죽은 슬롯을 `None`으로 두는 설계의 전제. 재사용하지 않으면 슬롯이 무한 증가한다 | QA 4라운드 `R-11`, `base/ref-plan.md` |
+| ~~`table.insert`가 배열 중간의 구멍을 재사용하는가~~ **[2026-08-24 폐기]** | **전제 자체가 없어졌다** — 6라운드 `H-7`로 `Ref.Callbacks`가 배열에서 `{[callback\|thread] = true}` **해시맵 셋**으로 바뀌었고, 해시맵엔 border 개념도 구멍도 없다(`base/ref-plan.md`). 이 스파이크는 만들지 말 것 | QA 4라운드 `R-11`(폐기), 6라운드 `H-7` |
 | 중간 State가 상류 strong / 하류 weak 불변식으로 실제로 살아남는가 | `State → State → State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도 없어 전파가 조용히 끊길 수 있음. **M3 착수 전 필요** | `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절, `question.md` 3번 |
 | `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

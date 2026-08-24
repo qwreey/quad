@@ -31,15 +31,20 @@ Effect(fn, ...deps) -> EffectHandle
 이 Effect가 바인드된 leaf가 죽을 때 정확히 1회 호출. 재실행 없음
 (mount/unmount 전용, React `useEffect(fn, [])`와 동형).
 
-**`state` 지정 시(2026-08-07 여섯 번째 세션 확정)**: Effect는 내부적으로
-`state:Observer(...)`를 감싸는 걸로 구현 — `fn`은 포지셔널 인자로 `state`를
-받고(`fn(state)`, `:Compute`의 `fn(self)` 포지셔널-self 패턴 재사용,
-모듈화 목적 — 클로저 캡처 없이 `fn`을 독립적으로 정의/재사용 가능
-— **[2026-08-13 13차 세션 해소] 이 `fn(state)`가 lazy `State` 핸들을
-받는다는 전제는 확정 유지.** 한때 `question.md` 0-Y가 `Effect`를 영향
-대상으로 지목했으나, 실측 결과 **`Effect`는 애초에 무관**했음(자유
-함수라 문제의 조건인 "재귀 타입의 필드 + 로컬 제네릭"에 안 걸림) —
-`base/typing-limits.md` 1번 "영향 범위" 표 참고),
+**dep 지정 시(2026-08-07 여섯 번째 세션 확정, 2026-08-21 `C-6`으로 N-deps 확장)**:
+Effect는 내부적으로 각 dep에 구독을 거는 걸로 구현 — State/Source면
+`state:Observer(...)`, `Ref`면 `:Callback`.
+**⚠️ [표기 정정, 2026-08-24 6라운드 `H-14`] 여기 원래 *"`fn`은 포지셔널 인자로
+`state`를 받고(`fn(state)`)"*라고 적혀 있었는데 그건 폐기된 단수 시절
+표기다** — 확정 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
+**deps는 `fn`에 안 넘어간다**(아래 "`Effect(fn, ...deps)`" 절이 소스,
+dep 값은 사용자가 클로저로 직접 읽는다).
+같이 붙어 있던 *"이 `fn(state)`가 lazy `State` 핸들을 받는다는 전제는 확정
+유지"*(2026-08-13 13차 세션)도 그 표기에 묶인 서술이라 함께 폐기된다 —
+다만 그 항목이 실제로 확인한 것(**`Effect`는 재귀 제네릭 타입 누수와
+애초에 무관**하다, 자유 함수라 "재귀 타입의 필드 + 로컬 제네릭" 조건에 안
+걸림 — `base/typing-limits.md` 1번의 영향 범위 표)은 시그니처와 무관하게
+그대로 유효하다.
 Observer가 이제 등록 즉시 1회 실행되므로(아래 Observer 절 참고) 그 첫
 실행이 "설치"를 겸함. 이후 `state`가 무효화될 때마다 **직전 `fn` 호출이
 리턴한 cleanup을 먼저 호출한 뒤 `fn`을 재호출**, 그리고 Effect가 바인드된
@@ -59,8 +64,9 @@ leaf가 죽을 때 **마지막 cleanup을 한 번 더 호출**. 결과적으로 
   `source-state-plan.md`의 "`:Compute(fn, ...)`" 선례는 이제 **따르는 쪽**의
   근거가 됐다(인자 모양을 그 관용구 그대로 맞춤).
 - **`fn`은 커링 스타일도 권장(2026-08-07 여섯 번째 세션, 사용자 제안)** —
-  `Effect(makeLogger("mount"), state)`처럼 팩토리 함수가 실제 `fn(state)`를
-  만들어 반환하는 패턴, `Modifier`의 `Boldify(10)` 커링 관용구(`modifier-plan.md`
+  `Effect(makeLogger("mount"), state)`처럼 팩토리 함수가 실제 `fn`을
+  만들어 반환하는 패턴(**[2026-08-24 표기 정정]** 그 `fn`은 `fn(state)`가
+  아니라 `fn(self)`다 — 위 배너), `Modifier`의 `Boldify(10)` 커링 관용구(`modifier-plan.md`
   8번)와 같은 결. `state:Observer(fn)`도 동일하게 커링 스타일을 권장 대상으로
   같이 문서화(아래 Observer 절 참고) — 모듈화가 필요하면 둘 다 이 패턴을 쓸 것.
 - **재실행이 필요 없는 케이스와 혼동하지 말 것**: 값 변화와 무관하게 설치+최종
@@ -71,6 +77,140 @@ children 배열에 leaf로 놓는 기존 Observer 바인딩 패턴을 그대로 
 leaf가 살아있는 동안만 유효, leaf가 죽으면 최종 정리 콜백 호출). 비용은
 leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer보다
 비쌈) — 필요할 때만 쓰는 걸로 충분.
+
+### ⭐⭐ 그 `Destroying` 바인딩을 **누가 거는가** (2026-08-24 확정, 6라운드 손 트레이싱 `H-11`)
+
+**갭이 실재했다 — cleanup을 발화시키는 코드가 코퍼스 어디에도 없었다.**
+세 문서가 `Destroying`을 **전제로만** 쓰고 아무도 연결하지 않았다:
+`base/lifecycle-pattern.md`는 *"인스턴스 라이프사이클 훅 지점은 `Destroying`
+하나로 통일"*이라 못박고 `LP-2`가 **`Effect`가 그 훅을 쓰는 유일한 소비자**라
+확정했으며, 위 문단은 비용까지 적어뒀다. 그런데 leaf가 실제로 붙는 유일한
+경로는 `ObserverEffectLeafHandler.process`의 `bindLifetime(inst, v)` 한 줄이고,
+`bindLifetime`의 실 구현 스케치는 `gchold[value] = true` + `BindData`에
+gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그걸 부를
+주체도 없었다.** 그래서 leaf가 죽으면 `canExecute`가 거짓이 되어 *"앞으로
+발화하지 마라"*는 성립하지만 **cleanup은 영원히 안 불린다.**
+
+**파급이 국소적이지 않았다** — 이 한 줄이 없으면 `slot._detachCleanup`
+(`Detach`로 홀드된 요소를 파괴하는 **유일한** 경로,
+`base/slot-plan.md`가 *"GC 폴백이 아예 없으므로 명시적 정리 경로가 필수"*라고
+적어둔 그것)과 `OnDestroyed`(`base/lifecycle-hooks-plan.md`, `Effect` 위의 순수
+슈가라 통째로 무동작)가 같이 죽는다.
+
+**확정(사용자, 2026-08-24)**:
+
+1. **`bindLifetime`/`unbindLifetime`이 `isEffect(value)`를 보고 직접 처리한다.**
+   **[2026-08-24 재결정, `/code-review high` 지적]** 여기 한때 *"`EffectHandle`
+   쪽이 자기 `bindLifetime` 직후에 건다"*고 적었는데 **그 호출부가 실재하지
+   않는다** — 핸들은 남이 자기를 `bindLifetime`하는 걸 관측할 수 없다. 게다가
+   `Effect`가 바인드되는 경로는 **둘**이고(`ObserverEffectLeafHandler.process`의
+   children 배열 leaf, 그리고 `activateList`가 `_detachCleanup`을 직접 바인드하는
+   내부 경로 — `base/slot-plan.md`) **`Destroying`이 가장 절실한 쪽이 후자**라,
+   핸들러 층에 분기를 둬도 안 덮인다.
+   **사용자 판단(2026-08-24)**: *"`Destroying` 자체가 엔진이 아는 요소이기
+   때문에, 엔진이 처리하는 곳에 두긴 해야합니다. 옵져버는 바로 생성되기 때문에,
+   bind 상 옵져버 목록을 가져와 자신이 재귀하고, `bindLifetime` 이 처리하는게
+   나아보입니다."* — `bindLifetime`은 이미 `handle._observers`로 cascade하며
+   값을 들여다보는 자리이므로, 그 옆에 `Destroying` 배선을 두는 게 새 층을
+   만드는 것보다 낫다.
+   - **한때 근거로 든 *"게이트는 값 타입을 안 가린다"*는 이 자리에 안 맞는
+     인용이었다** — `base/source-state-plan.md`의 그 절이 말하는 건
+     **`canBound` 판정**이 `:Subscribe()`/`bindLifetime` 두 진입점에서 같다는
+     것이지, `bindLifetime`의 **부수 배선**이 값 종류를 못 본다는 게 아니다.
+     실제로 그 함수는 이미 `Effect`면 내부 Observer로 cascade한다.
+2. **`unbindLifetime`은 cleanup을 부르지 않는다.** `Destroying` 커넥션을 끊고
+   **`Ref` 콜백도 같이 해제**하되(아래 `H-7` 절과 대칭), cleanup은 그대로
+   남긴다 — `destroySlotTree`가 `_detachCleanup`을 `unbindLifetime`하며 달아둔
+   주석(*"이미 손으로 비웠으니 Effect는 할 일 없음"*)과 `E-11`(leaf 바인딩엔
+   `:Unsubscribe()`가 안 먹는다)이 그 전제 위에 서 있다. **이 계약을 명시한다** —
+   지금까진 어느 쪽도 안 적혀 있었다.
+   - **bind/unbind가 대칭이라 포탈이 자연히 성립한다** — 언마운트가 콜백을
+     떼고 재마운트의 `bindLifetime`이 다시 건다(`_observers` cascade와 같은 결).
+3. **cleanup은 `handle._cleanup` 필드에 보관한다.** `Rerun`이 이미 직전
+   cleanup을 필요로 하므로 필드 쪽이 자연스럽고, `Destroying` 클로저와
+   `Rerun`이 같은 자리를 읽게 된다.
+
+**의사코드 — `bindLifetime`이 부르는 두 훅**(**[2026-08-24 신설]** 감사 3라운드가
+*"호출부만 있고 정의가 없다"*고 지적해 보강. 다른 신설 헬퍼는 전부 바디가
+있는데 이 둘만 산문뿐이었다):
+
+```lua
+-- quad-base, Effect.luau — `base/lifecycle-pattern.md`의 bindLifetime에서만 불린다.
+-- 비공개(`_` 접두사): 사용자 표면이 아니라 배관이다.
+function EffectHandle:_bindDestroying(inst)
+    -- 재바인드(포탈 재마운트)면 옛 연결부터 끊는다 — 멱등.
+    self:_unbindDestroying()
+
+    -- (1) leaf가 죽는 순간 cleanup을 정확히 1회. `LP-2`가 확정한 유일한 훅 지점.
+    self._destroyConn = onDestroying(inst, function()
+        self:_unbindDestroying()          -- 자기 연결/콜백을 먼저 정리(재진입 방지)
+        local cleanup = self._cleanup
+        self._cleanup = nil               -- 두 번 안 불리게
+        if cleanup then cleanup() end
+    end)
+
+    -- (2) `Ref` dep 콜백 (재)등록 — State/Source dep의 `_observers` cascade와 대칭.
+    --     `unbind`가 뗐던 걸 여기서 다시 건다(그래서 포탈이 성립한다).
+    for _, ref in ipairs(self._refDeps) do
+        local cb = function(value)
+            -- ⭐ 발화 게이트 — State dep이 전파 루프에서 `canExecute(observer)`로
+            -- 걸러지는 것과 같은 자리(아래 `H-7` 절). 해제가 늦거나 누락되는
+            -- 창을 이게 덮는다.
+            if not canExecute(self) then return end
+            self:Rerun()
+        end
+        self._refCallbacks[ref] = cb      -- 해제 때 정확히 이 클로저를 떼려면 보관해야 함
+        ref:Callback(cb)
+    end
+end
+
+function EffectHandle:_unbindDestroying()
+    if self._destroyConn then
+        self._destroyConn:Disconnect()
+        self._destroyConn = nil
+    end
+    for ref, cb in pairs(self._refCallbacks) do
+        ref:Uncallback(cb)                -- `base/ref-plan.md`의 신설 표면(`H-7`)
+        self._refCallbacks[ref] = nil
+    end
+    -- **`_cleanup`은 안 부른다** — 위 2번 계약. 여기서 부르면 `destroySlotTree`가
+    -- `_detachCleanup`을 손으로 비운 뒤 unbind하는 경로에서 이중 호출이 된다.
+end
+```
+
+- **`onDestroying(inst, fn)`은 백엔드 주입 op이다** — base는 `Instance`를
+  모른다(`base/slot-plan.md`의 `native*` 절과 같은 이유). quad-roblox 구현은
+  `inst.Destroying:Connect(fn)` 한 줄. **[2026-08-24 반영 완료]** 주입 op
+  전체 목록의 단일 소스는 `base/architecture.md`의 `EngineOps.luau` 줄이고
+  거기에 등재했다(`ROADMAP.md` M5 배너에도 같이 적었다) — 한때 여기
+  *"`ROADMAP.md` M5에 추가할 것"*이라고만 적어 **소스를 잘못 지목**했었다.
+- **필드 셋이 새로 생긴다**: `_destroyConn`(연결 핸들), `_refDeps`(생성자가
+  `...deps` 중 `isRef`인 것만 모아둔 배열), `_refCallbacks`(`ref → 내가 건
+  클로저`). 앞의 둘은 `_observers`와 같은 층이고, 마지막 것은 **해제 시 정확히
+  자기 클로저만 떼기 위해** 필요하다(`Ref.Callbacks`가 셋이라 값으로 떼야 한다).
+
+### ⭐ `Ref` 의존성의 해제 경로 (2026-08-24 확정, 6라운드 손 트레이싱 `H-7`)
+
+`Effect(fn, someRef)`의 leaf가 죽어도 **`ref.Callbacks`에 클로저가 영원히
+남았다** — `Ref`엔 콜백 해제 API가 없었고(`:Uncallback` 류 없음)
+`canExecute` 게이팅도 안 걸린다(그건 Observer 쪽 배관이다). 그 클로저가
+`EffectHandle`을 강참조하므로 누수이고, 이후 `ref:Set`마다 **이미 죽은 leaf의
+직전 cleanup + `fn`을 계속 실행**한다. 같은 절이 *"leaf dedup/cascade가 전부를
+덮어야 한다"*고 요구하는데 `Ref` 쪽엔 그걸 만족시킬 수단 자체가 없었다.
+
+**확정: `Ref`에 콜백 해제 경로를 추가한다**(`base/ref-plan.md`가 소스).
+`EffectHandle`은 자기가 건 `Ref` 콜백 핸들을 들고 있다가, `unbindLifetime`과
+`:Unsubscribe()`에서 같이 해제한다 — `_observers`(State/Source dep)와 대칭이다.
+
+**⭐ [2026-08-24 추가, 사용자 지적] 해제 경로만으로는 부족하다 — `Ref` 콜백도
+발화 시점에 `canExecute`를 확인한다.** State/Source dep은 State의 전파 루프가
+구독자마다 `canExecute(observer)`를 보고 죽은 것을 건너뛰는데(`base/source-state-plan.md`),
+`Ref` 경로엔 그 게이트가 아예 없었다. 해제가 늦거나 누락되는 창이 실재한다 —
+예컨대 `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이
+안 도는데도 `canExecute`가 거짓이다. **확정된 형태**: `Effect`가 거는 `Ref`
+콜백은 본문 맨 앞에서 **자기 핸들에 대해** `canExecute(handle)`를 확인하고,
+거짓이면 그대로 리턴한다. 그러면 두 dep 경로가 같은 게이트를 공유하게 되어
+`Effect`의 발화 조건이 dep 종류와 무관해진다.
 
 ### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
 
@@ -89,13 +229,22 @@ named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순�
 **보강 — `EffectHandle`의 내부 Observer 바인딩 세부(2026-08-09 열한 번째
 세션, 재확인 후 명시화)**:
 
-- **`EffectHandle`은 내부 Observer를 필드로 강참조** — `handle._observer =
-  observer`(`state`가 주어진 경우만 존재). 이건 GC 방지가 목적이 아니라
+**⚠️ [2026-08-24 6라운드 손 트레이싱 `H-8`] 이 문단 전체가 아직 "Observer 하나"
+전제로 쓰여 있었다 — `_observer`(단수)를 `_observers`(배열)로 읽을 것.**
+아래 절이 확정한 `Effect(fn, ...deps)`(N-deps)와 정면으로 어긋났고, 그대로
+구현하면 **2번째 이후 dep의 Observer엔 `canExecute` 판정 근거가 아예 안 실려**
+그 Observer의 재실행이 통째로 죽는다 — 바로 이 문단 자신이 경고하는 실패
+모드다. 필드를 배열로 바꾸고 cascade/`Subscribe`/`Unsubscribe`를 전부 순회로
+고친다(새 결정 없음, 반영 누락). `Ref` dep은 Observer가 아니라 콜백이라 이
+배열에 안 들어간다 — 그쪽 해제는 아래 `H-7` 문단이 소스.
+
+- **`EffectHandle`은 내부 Observer를 필드로 강참조** — `handle._observers[i] =
+  observer`(dep이 State/Source인 경우만 존재). 이건 GC 방지가 목적이 아니라
   (그건 아래 `bindLifetime`/`gchold`가 담당) `:Unsubscribe()`/`bindLifetime`
   cascade가 이 필드를 통해 내부 Observer에 접근하기 위한 것.
 - **`bindLifetime(inst, handle)`은 `state`가 있는 경우 내부 Observer도
-  같은 `inst`로 `bindLifetime(inst, handle._observer)`를 cascade해야
-  함** — `Dispatch/Leaf.luau`가 children 배열의 `EffectHandle`을 매치해
+  같은 `inst`로 `handle._observers` **전부**에 대해
+  `bindLifetime(inst, observer)`를 cascade해야 함** — `Dispatch/Leaf.luau`가 children 배열의 `EffectHandle`을 매치해
   `bindLifetime(inst, handle)`을 부르는 시점(leaf 부착)과, `:Subscribe()`가
   `handle`을 전역 레지스트리에 등록하는 시점(아래) 둘 다 해당. 이유:
   `canExecute(observer)`가 보는 gcconn 참조는 **그 Observer 자신이
@@ -110,8 +259,8 @@ named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순�
   무관(`archive/canexecute-inst-arg-reversed.md`). cascade가 필요하다는
   결론은 그대로이고 오히려 근거가 더 직접적이 됨.
 - **`:Subscribe()`도 마찬가지로 `state`가 있으면 내부 Observer를 같은
-  전역 강참조 레지스트리에 같이 등록**(`handle` 자신 + `handle._observer`
-  둘 다, 또는 `handle._observer`만으로 충분한지는 구현 세부 — 어느 쪽이든
+  전역 강참조 레지스트리에 같이 등록**(`handle` 자신 + `handle._observers`
+  전부, 또는 `handle._observers`만으로 충분한지는 구현 세부 — 어느 쪽이든
   "`EffectHandle`은 등록됐는데 내부 Observer는 등록 안 됨" 상태가 생기면
   안 됨).
 
@@ -194,7 +343,7 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
       dedup 되어야하는듯."*
     - **⭐ 단, 내부 Observer cascade도 그 분기 *안*에 있어야 한다**
       (5라운드 `EF-5`, 확인됨) — `EffectHandle`은 자기 자신뿐 아니라
-      `handle._observer`까지 같이 bind/unbind해야 하는데, 그 cascade가 dedup
+      `handle._observers`까지 같이 bind/unbind해야 하는데, 그 cascade가 dedup
       분기 **밖**에 있으면 handle과 내부 Observer의 바인딩 상태가 갈린다
       (handle은 그대로인데 Observer만 풀리는 식). 구현 시 이 한 줄을 반드시
       같은 `if` 안에 둘 것.
@@ -249,9 +398,26 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
 
 - **`Effect(fn, ...deps)`가 의존성을 여러 개 받고, 각각에 맞는 구독을 건다** —
   State/Source면 `Observer`, `Ref`면 `:Callback`. `:With`로 합치지 않는다.
-- **인자 모양은 `:Compute(fn, ...deps)`의 선례 그대로** — trailing deps를
-  **lazy 위치 인자**로 콜백에 넘긴다(`base/source-state-plan.md`의 "trailing
-  deps를 `fn`에 lazy positional 인자로도 노출" 절). 새 규칙이 아니다.
+- **⭐ [확정, 2026-08-24 6라운드 손 트레이싱 `H-14`] `fn`의 시그니처는
+  `fn(self: EffectHandle) -> (() -> ())?` 이고, `...deps`는 의존성 선언일 뿐
+  `fn`에 넘어가지 않는다.**
+  **사용자 확정**: *"`Effect( fn(self: Effect)->()->(), ...deps )` 가 맞는듯.
+  Observer 처럼 바로 상위 state 가 있는게 아니라 Effect 를 주는게 맞아보이고,
+  Compute 랑은 완전 다름. 난 그냥 `...deps` 넣는게 compute 처럼 그냥 넣을 수
+  있게 하자는거였을 뿐임."*
+  - **여기 원래 적혀 있던 *"인자 모양은 `:Compute(fn, ...deps)`의 선례 그대로 —
+    trailing deps를 lazy 위치 인자로 콜백에 넘긴다"*는 삭제한다.** 그 선례의
+    확정 시그니처는 `fn(self, previous?, ...deps)`인데 `Effect`엔 **셋 다 안
+    맞는다**: `self` 자리에 올 리시버 State가 없고(자유 함수), `previous`가
+    담길 캐시 슬롯이 없으며(파생값을 안 만드는 leaf), 오히려 **반환값이
+    cleanup이라 의미가 정반대**다. 위쪽에 남아 있던 옛 단수 시절 표기
+    `fn(state)`도 같이 폐기된다.
+  - **그 따름정리로 dep 읽는 법의 비대칭 문제가 사라진다** — State/Source dep은
+    `:Get()`이고 `Ref` dep은 `.Value`(`:Get()`이 없다)라, 넘겨줬다면 사용자가
+    인자마다 다른 규칙을 위치로 기억해야 했다. 아무것도 안 넘기므로 그 질문
+    자체가 없어지고, dep 값은 사용자가 클로저로 직접 읽는다.
+  - `self`를 주는 덕에 `fn` 안에서 `self:Rerun()`/`self:Unsubscribe()` 같은
+    핸들 표면에 바로 닿는다.
 - **최소 1회는 실행된다 — React `useEffect`와 동일.** 아직 안 채워진 `Ref`가
   섞여 있어도 그대로 돈다(사용자: *"최초 1회에서 어차피 if 로 확인해내게
   될것이므로 괜찮음"*). "전부 채워질 때까지 대기"는 안 한다.

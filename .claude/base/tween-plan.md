@@ -466,6 +466,14 @@ tween:Mapped(fn: (T) -> U): Tween<U>   -- opts를 clone하고 Value만 fn(Value)
 - **타입이 안전하게 성립한다** — `Tween<T>`는 immutable raw 값이고 `Value` 외의
   필드는 값 타입과 무관한 옵션(`Time`/`Style`/…)이라, `Value`만 `U`로 바꾼
   `Tween<U>`를 만드는 건 타입 레벨에서 깨끗하다.
+  - **⚠️ [단서, 2026-08-24 6라운드 손 트레이싱 `H-24` — 실측] 단 선언 방식이
+    갈린다.** 이 시그니처는 `base/typing-limits.md` 1번이 지적한 재귀 제네릭
+    누수(`Foo<T>` 안에서 `-> Foo<U>`)와 **글자 그대로 같은 모양**이라,
+    인라인 제네릭 메소드로 선언하면 `luau-analyze`가 **진단 없이 조용히
+    통과**시킨다(`Tween<string>`의 `.Value`를 `number`에 넣어도 안 잡힘).
+    **구현 시 `typeof(named function)` 스타일(③)로 선언할 것** — 그러면 정상적으로
+    잡힌다. 위 "타입이 안전하게 성립한다"는 *의미론상* 맞지만 *체커가 지켜준다*는
+    뜻은 아니다.
 - **`Tween<T>`가 immutable이라는 기존 확정과 일관** — `:Mapped`는 원본을 안 건드리고
   `table.clone` 후 `Value`만 교체해 `Tween(opts)`로 다시 만든다(`Tag`/`Modifier`의
   clone 체이닝과 같은 계열).

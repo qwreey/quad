@@ -171,6 +171,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       폴더 — 실제 소스는 M5)
 - [x] 루트 `default.project.json`, `.luaurc`(`architecture.md` "구현 착수:
       소스 트리 구조 확정" 절 그대로)
+- [x] **[2026-08-24 소급 등재, 6라운드 `H-47`/`H-48`] `quad-base/src/Debug/init.luau`**
+      — `InitDebug(module)`이 `module.debug = false`를 심는다. **이미 커밋돼
+      있었는데 이 목록에도 `architecture.md` 소스 트리에도 없었다**(`ROADMAP.md`
+      전체에 "Debug"가 0건이었다). `ROADMAP.md`가 진행 상황의 소스인데 M1
+      체크박스만 보면 이 모듈의 존재도 완료 여부도 알 수 없던 상태.
+      같이 확인된 것: **`Quad.debug`의 스코프는 "인스턴스별"로 이미 확정돼
+      있다**(이 파일이 인스턴스 필드를 심고 `quad-types`의 `Quad`도
+      `debug: boolean`을 필드로 갖는다) — `base/module-lifecycle-plan.md`가
+      "미정"이라 적어둔 걸 `H-48`이 닫았다
 - [x] quad-base용 최소 mock 테스트 하네스(Vide `test/mock.luau` 선례, 순수
       `luau` CLI, `architecture.md` "테스트 전략" 절 참고) —
       `quad-base/test/mock.luau` + `smoke.*.luau`, 전부 PASS
@@ -233,6 +242,30 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `F-4-1` 정정 문단). 옛 "명시적 두 패스" 서술은 구현까지 2회 순회로
       못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기
       (`luau-test/STATUS.md`)
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-39`] 말단 핸들러는 예외
+      없이 자기 배열 자리의 `setOffsetSource(inst,k,None)` → `setLength(inst,k,0)`을
+      등록한다** — 이 계약을 핸들러 작성 체크리스트에 넣고, 실제로 넷이
+      빠져 있었으니 각 마일스톤에서 확인할 것: `TagHandler`(M10) /
+      `AttributeGroupHandler`(M10) / `RefLeafHandler`(M8) /
+      `ObserverEffectLeafHandler`(M3). 안 하면 `bk.N`이 다른 자리 등록으로
+      커질 때 그 구멍이 범위 안에 끼어 `recompute`가 **명시적 error로 죽는다**
+      (`Frame { Tag("card"), TextLabel{} }`처럼 말단이 앞에 오는 흔한 배치).
+      **배열 맨 끝이면 안 터지므로 "가끔 되고 가끔 터지는" 형태로 드러난다.**
+      소스는 `base/dispatch-core-plan.md`의 등록 책임 절
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25`] `quad-types`의 `Quad`
+      타입에 `Dispatch` 필드와 그 타입 재수출을 추가** — `Quad`가 5필드 닫힌
+      레코드이고 `RunInit`은 반환값이 없어 타입을 못 넓히므로, 이걸 안 하면
+      `module:RunInit(InitDispatch)` 뒤의 `quad.Dispatch` 접근이 **런타임엔
+      되는데 `luau-analyze`에선 타입에러**다(실측 재현). `base/architecture.md`의
+      확정된 결정 13번이 그 접근을 표준 사용법으로 못박아뒀다.
+      상세는 `base/quad-types-plan.md`의 "`Quad` 타입 — 확정된 표면" 절.
+      **⚠️ 이건 M2 한 번으로 끝나는 일이 아니다** — 그 문서가 *"마일스톤마다
+      갱신한다 … 이후 서브시스템도 같은 규칙을 따른다"*로 확정했으므로,
+      **서브시스템을 붙이는 모든 마일스톤이 같은 항목을 진다**:
+      M3(`Source`/`State`/`Store`) · M6(`Slot`) · M7(`Modifier`) ·
+      M8(`Ref`) · M10(`Tag`/`Attribute`). 빠뜨리면 그 마일스톤 완료 후
+      `quad.Store`/`quad.Slot` 접근이 런타임엔 되는데 `luau-analyze`에선
+      타입에러인, `H-25`가 실측한 그 문제가 **마일스톤마다 반복된다.**
 - [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
       `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
       `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
@@ -352,6 +385,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `setOffsetSource`는 `None`이면 얼리 리턴(그 `None`은 "발행 채널 없음"이지
       "참여 안 함"이 아니다 — 참여 여부는 `setLength`가 답),
       숫자가 필요한 쪽(예: 물리 삽입 위치)은 `getOffsetAt`으로 pull.
+      **⭐ [2026-08-24 6라운드 `H-3`/`H-4`/`H-19`] `getOffsetAt`의 접두합 캐시
+      계약을 반드시 같이 구현할 것** — 이게 빠지면 형제 Slot이 커져도 뒤 형제의
+      `Offset`이 **영원히 고정**된다(`sum`은 매번 새로 더하므로 위로는 맞고
+      옆으로만 틀려 알아채기 특히 어렵다):
+      (a) `getBookkeeping`이 `bk.offsetCache = {}`, `bk.invalidAfter = 0`으로
+      초기화(`nil` 시작이면 첫 `setOffsetSource`가 `nil` 비교에서 죽는다),
+      (b) **캐시를 앞으로 당기는 자리 셋** — `setLength` 본문과 그 자리 length가
+      State일 때 다는 Observer 콜백(`math.min(invalidAfter, i)`),
+      `spliceArraysUp`/`spliceArraysDown`(같은 식), `slot._baseObserver` 콜백
+      (베이스가 바뀐 경우라 `0`). 셋 다 `recompute`보다 **먼저**.
+      (c) **`recompute` 호출은 `setLength`의 단독 책임**이다 — `rawAdd`/
+      `rawReplace`의 명시 호출은 삭제됐고, 자리가 없어지는 경로
+      (`rawRemove`/`rawUnmount`/`rawDetach`)만 예외로 직접 부른다.
       `recompute`는 owner의 베이스(Slot이면 자기 `.Offset`, 최상위면 0)에서
       시작하고 중첩 Slot은 자기 `Offset`을 관측해 자식 offset을 다시 민다.
       **이 셋이 하는 일**: array part 형제 순서 보장(Length/Offset 누적합→
@@ -456,9 +502,35 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
       자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M3
-      스파이크에서 확인. `Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시
-      유지(의도적 비대칭, 같은 절 참고)
-- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(`fn(self,
+      스파이크에서 확인. **[2026-08-24 정정, 6라운드 `H-13`]** 여기 원래
+      *"`Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시 유지"*라고 적혀
+      있었는데 **`Effect`는 `C-6`에서 이미 역전됐다** — 각 dep에 구독을 따로
+      걸면 합치는 노드 자체가 안 생겨 감출 비용이 없다. **기각으로 남은 건
+      `Observer` 하나**이고 근거도 새로 쓰였다("Observer는 리시버 State
+      하나에 붙는 구독, 여럿을 엮는 건 Effect가 대신한다")
+- [ ] **⭐ [2026-08-24 신설, 6라운드] `Effect` 구현 시 같이 만들 것** —
+      **`handle._observers`**(배열, 단수 `_observer`에서 바뀜 `H-8`) ·
+      **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
+      같은 자리를 읽는다) · **`handle._refDeps`/`_refCallbacks`**(`Ref` dep과
+      거기 건 클로저 — 해제 시 값으로 떼야 해서 보관 필요) ·
+      **`handle._destroyConn`** · **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
+      (`bindLifetime`/`unbindLifetime`이 `isEffect`일 때 부르는 훅, `H-11`).
+      `fn` 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
+      **`...deps`는 `fn`에 안 넘어간다**(`H-14`). `Ref` 콜백은 본문 맨 앞에서
+      **`canExecute(handle)`를 확인**한다(`H-7`). 의사코드는
+      `base/effect-plan.md`가 소스
+- [ ] **[2026-08-24 `H-39`]** `ObserverEffectLeafHandler.process`가 자기 배열
+      자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을 등록 —
+      빠져 있었다(위 M2의 그 항목)
+- [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
+      스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
+      미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
+      누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Source`/`State`/
+      `Store` 필드 추가(위 M2 항목의 "마일스톤마다" 규칙)
+- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(**⚠️ [2026-08-24
+      `H-14`] 이 항목은 `:Compute` 한정이다** — `Effect`의 `fn`엔 deps가 안
+      넘어간다) — (`fn(self,
       previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
       리스트 맨 끝이어야 하는 것과 같은 이유로 `previous?`가 deps 팩
       **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
@@ -559,6 +631,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > `nativeInsert`/`nativeExtract`/`nativeDispose` 셋이다(나머지는 이득 있을 때만
 > 덮어씀 — Roblox는 `nativeRemove`를 "그 자리에서 바로 `Destroy`"로 융합하는 게
 > 실익). 상세는 `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
+>
+> **⚠️ [2026-08-24 정정, 6라운드 손 트레이싱 `H-34`/`H-44`] 위 "최소 구현 부담은
+> 셋" 서술을 좁힌다 — Roblox 백엔드는 `nativeMove`/`nativeSwap`도 반드시
+> 덮어써야 한다.** 조합 폴백(`nativeMove` = `nativeExtract` + `nativeInsert`)은
+> 여기선 "느린 정답"이 아니라 **관측 가능한 동작 차이**를 만든다:
+> `Move`/`Swap`을 공개 CRUD에 추가한 근거 자체가 *"`Extract`+`Add`는 실제
+> Parent 조작이 두 번(detach+reattach) 일어남"*을 피하려는 것이었는데, 폴백은
+> 정확히 그 두 번을 되돌려 `AncestryChanged` 재발화·깜빡임·재바인딩 비용을
+> 다시 만든다. offset을 무시하는 백엔드에서 순서 이동은 애초에 물리 조작이
+> 아니므로 **no-op으로 덮어쓰면 된다.**
+> 그리고 **주입 op이 둘 더 늘었다**(6라운드) — **`isInst`**(`H-40`): 요소 타입
+> 검증을 화이트리스트로 뒤집으면서 생긴 판정 술어, 조합 폴백이 불가능해
+> **미주입이면 에러**다(quad-roblox 구현은 `typeof(v) == "Instance"` 한 줄).
+> **`onDestroying(inst, fn)`**(`H-11`): `Effect`의 leaf 사망 cleanup을 발화시키는
+> 훅으로, `bindLifetime`이 `isEffect`일 때 부른다(quad-roblox 구현은
+> `inst.Destroying:Connect(fn)`). 이것도 조합으로 못 만들므로 미주입이면 에러다.
 
 > **⚠️ 구현 관례**: `quad-roblox`의 공개 타입은 지금부터 단일 파일
 > (`src/init.luau` 또는 `types.luau`)에 몰아둘 것 — 나중에 필요해지면
@@ -638,7 +726,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   `Get`/`IndexOf`/`Extract`가 돌려주는 값과 `:List`의 `prev`는 전부
   **언래핑된 원래 값**이다). base/roblox 경계에
   mount/unmount 외 reposition 훅 추가됨. **`Slot<T>()` 제네릭화, 요소
-  타입 제약 확정** — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
+  타입 제약 확정** — **[2026-08-24 6라운드 `H-40`로 전면 정정] 판정은
+  블랙리스트가 아니라 화이트리스트다**: `isSlot` → `isState`(래퍼 Slot으로
+  풀어 재귀) → **주입 술어 `isInst`**, 셋 중 어디에도 안 걸리면 error.
+  관문은 `wrapElement` 하나(공개 CRUD와 `:List`의 `settle`이 둘 다 지난다).
+  아래 나열은 이제 **그 화이트리스트의 따름정리**다(에러 메시지는 계속
+  구분해 낸다) — `nil`/`None` 둘 다 raw 요소로 금지(Slot 안엔
   실제 마운트 가능한 `T`만), 핸들러 계층 값(Ref/PreRef/Observer/
   Effect/Modifier)은 self-ref 컨텍스트가 없어 의미 불성립이라 즉시
   error(`Modifier` 필드와 같은 판별 메커니즘 재사용) — `D.InstSlot =
@@ -724,14 +817,45 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   `State<T>` 요소(identity)는 coarse swap, `updateFn` 직접 지정 시
   `prev`/`userdata` patch-reuse + `offset` 접근(`:Single`이 애초에
   생긴 이유). **부수 발견(사용자)**: `:List`의 `reconcile`이
-  nested-Slot 결과를 반환하는 아이템 다음 형제의 압축 `index`를
-  그 결과의 `.Length`만큼 건너뛰도록 `pos` 커밋 공식도 같이 수정
-  (`pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get()
-  or 1)`) — 안 그러면 멀티루트 아이템 다음 형제의 LayoutOrder가
-  겹침. `base/slot-plan.md` "반응형 raw 요소" 절.
+  nested-Slot 결과를 반환하는 아이템 다음 형제의 `index`가 그 결과의
+  물리 개수만큼 건너뛰어야 함 — 안 그러면 멀티루트 아이템 다음 형제의
+  LayoutOrder가 겹침. `base/slot-plan.md` "반응형 raw 요소" 절.
+  **⚠️ [2026-08-24 6라운드 `H-2`] 그 의도를 구현하던 옛 공식
+  (`pos = candidateIndex - 1 + (isSlot(result) and result.Length:Get() or 1)`)은
+  폐기됐다** — 두 좌표계(리프 개수 / `_elements` 자리)를 한 변수에 겹쳐 써서
+  `table.insert(t, 0, x)`로 조용한 영구 고아를 만들었고, `.Length`를 읽는
+  시점이 **항상 0**(마운트 전이라 `recompute`가 아직 안 돎)이라 애초에
+  아무것도 반영하지 못했다. 확정된 해법은 배열 자리를 `slotPos`로 따로 세고
+  `updateFn`의 `index`는 **`Dispatch.getOffsetAt`에서 뽑는** 것 — 같은 문서의
+  `reconcile` 의사코드가 소스.
 
 ### 짜야 할 것
 
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-46`] top-level
+      `quad-base/Slot.luau` — 값 타입 본체가 들어가는 파일.** 생성자, 공개
+      CRUD 11종, `:List`/`:Single`, `raw*` 세트, `wrapElement`/`unwrapElement`,
+      `attachSlot` 3형제(`materializeSlotTree`/`mountSlotTree`),
+      `elementOwner`/`claimOwner`/`releaseOwner`, `reindexFrom`,
+      `collectLeaves`, `dispose`, `Detach`/`KeyGone`. 아래 불릿들이 전부 이
+      파일의 내용이다. **`Dispatch/Slot.luau`(맨 아래)는 핸들러/부기만** —
+      다른 값 타입(`Modifier`/`Tag`/`Tween`/`Ref`/`Effect`)이 전부 top-level
+      파일을 갖는 것과 같은 대칭이고, `base/slot-plan.md`의 `attachSlot`
+      블록이 이미 머리에 이 파일명을 적어뒀다
+- [ ] **⭐ [2026-08-24, 6라운드] 이 마일스톤에서 새로 생긴 필드·헬퍼**
+      (구현 항목으로 드러나야 놓치지 않는다):
+      **`slot._elemIndex`**(물리 요소→`_elements` 인덱스 역방향 맵,
+      `indexOfRaw`가 이걸 O(1)로 조회하는 **기본 경로**) ·
+      **`reindexFrom(self, from)`**(`_elements`를 시프트하는 **모든** 자리가
+      부른다 — 실체화 여부와 무관하게 항상) ·
+      **`slot._physicalTarget`**(실체화 시점부터의 생명주기 앵커,
+      `_mountedInst`는 "마운트됨"만 뜻하게 좁혀졌다) ·
+      **`collectLeaves(slot)`**(중첩 Slot의 물리 리프 평탄화 —
+      `Move`/`Swap`/`Extract`/`Splice`가 `native*`에 넘길 `elements` 배열을
+      만드는 데 필요, 없어서 그 넷이 미작성이었다) ·
+      `:List`의 **`prevKeys`**(옛 `keyIndex`의 강등판, 단순 키 집합).
+      전부 `base/slot-plan.md`가 소스
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Slot` 필드 추가
+      (위 M2 항목의 "마일스톤마다" 규칙)
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
         비파괴 경로 `unmountSlotTree`를 `destroySlotTree`와 별도로 구현 —
@@ -804,6 +928,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `KeyGone` 센티널로 확정** — `updateFn(KeyGone, 0, offset, prev, ud)`로
       한 번 더 물어 처분을 받고, owner가 죽으면 `activateList`가 건
       `Effect`가 `_detached`를 전부 정리한다(같은 문서의 "`KeyGone`" 절).
+      **⚠️ [2026-08-24 `H-50`] 단 그 마지막 절반은 아직 "될 예정"이지 "된다"가
+      아니었다** — `Effect`의 leaf 사망 cleanup을 실제로 발화시키는 배선이
+      코퍼스 어디에도 없었다(6라운드 `H-11`). 같은 날 확정으로
+      **`bindLifetime`/`unbindLifetime`이 `isEffect(value)`를 보고 `Destroying`을
+      걸고/끊는 것**으로 닫혔고(`base/effect-plan.md` +
+      `base/lifecycle-pattern.md`의 그 의사코드), 이 문장은 그 배선이 구현된
+      뒤에야 참이 된다 — M3 `Effect` 구현이 M6의 이 항목을 **선행**한다는 뜻이다.
+      (**[같은 날 재결정]** 처음엔 *"`EffectHandle`이 자기 `bindLifetime` 직후에
+      건다"*였으나 `/code-review high`가 **그 호출부가 실재하지 않는다**는 걸
+      지적했다 — 핸들은 남이 자기를 bind하는 걸 관측할 수 없고, `Effect`가
+      바인드되는 경로가 둘이라 호출부 쪽에 두면 반드시 한쪽이 샌다.)
       **`Owned` 옵션 신설** — `:List`/`:Single`의 설치 시점 플래그(기본
       `true`), `false`면 어떤 경로로도 파괴하지 않고 언마운트만(사용자가
       `state`에 담아 넘긴 요소용, `Slot:Add(state)` sugar가 이걸로 설치). 파라미터 순서는 반환값 순서(`prev`류 먼저,
@@ -828,7 +963,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       안 구독한 상태라 무의미한 연산이 됨, `updateFn`만 이 갈래를 정확히
       알아 낭비를 피할 수 있음(반환값 두 개는 서로 독립, `result`가 `nil`이어도
       `userdata`는 명시적으로 반환 안 하는 한 안 지워짐). 정리 루프는
-      `mounted`가 아니라 직전 사이클 `keyIndex` 전체를 순회해야 함
+      `mounted`가 아니라 직전 사이클의 키 집합 `prevKeys` 전체를 순회해야 함
+      (**[2026-08-24 `H-1`]** 옛 이름은 `keyIndex`였고 인덱스 맵이었으나,
+      역방향 맵 `slot._elemIndex`가 생기며 **단순 키 집합으로 강등**됐다)
       (`userdata`만 살아있는 채로 key가 완전히 사라지는 케이스 커버).
       `userdata = userdata or {}` lazy-init 패턴이 Luau 제네릭에서 잘
       좁혀지는지 실측 필요. **`userdata`는 GC-native 값만 허용,
@@ -896,9 +1033,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       스크립트가 `Position: UDim2` 자리를 `UDim2 | Tween<UDim2>`로 만들면
       끝, Modifier 런타임/`__index` 자체엔 변경 없음 — `modifier-plan.md`
       10번, 2026-08-10 세션, `base/tween-plan.md`)
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-35`]
+      `quad-base/Dispatch/Modifier.luau` — `ProcessedModifierHandler`.**
+      `flatten`이 배열 자리를 `ProcessedModifier` 센티널로 소진하고, 이 전담
+      nop 핸들러가 정상 `Dispatch.process` 경로에서 캐치해
+      `setOffsetSource(None)`/`setLength(0)`만 등록한다(`Pre`/`PostRef`의
+      `Processed*` 핸들러와 완전히 같은 모양). **`Modifier`가 하나라도 든
+      `Frame{...}` 호출은 전부 이 핸들러를 거치는데** 색인 두 곳에서 통째로
+      빠져 있어 구현자가 존재 자체를 놓칠 수 있던 자리다. 의사코드는
+      `base/modifier-plan.md`의 flatten 절이 소스
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Modifier` 관련
+      표면이 노출돼야 하면 같이 갱신(위 M2 항목의 "마일스톤마다" 규칙)
 
 ## M8 — Ref
 
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Ref` 필드 추가
+      (위 M2 항목의 "마일스톤마다" 규칙)
 - [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
       `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
@@ -960,14 +1110,23 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       패턴. pre-pass가 소진시킨 자리가 Length/Offset에 "0 기여"를 등록할
       책임을 지는 자리 — `base/ref-plan.md` "PreRef" 절 / "`PostRef`" 절,
       `base/dispatch-core-plan.md` "Length/Offset" 절
-- [ ] Ref 콜백/대기자 실행 루프(`type(v)=="thread"`면
-      `coroutine.resume(v, self)`+`nil`로 소진(2026-08-09 열한 번째
-      세션 최종 정정 — 순서 안 중요 + 슬롯 재사용 위해 `None`이 아닌
-      `nil`, `table.insert` 대신 빈 슬롯 선형 탐색 등록), 함수면
-      `v(value)` 호출+유지 — 같은 배열 하나로 통합). `:Wait(thread?)`는
-      `thread`가 `nil`이면
+- [ ] Ref 콜백/대기자 실행 루프 — **[2026-08-24 6라운드 `H-7`로 재작성]**
+      `.Callbacks`는 **`{[callback|thread] = true}` 해시맵 셋**이다(배열 아님).
+      `:Set(value)`는 **`.Value`를 먼저 쓰고**, **순회 전 스냅샷을 뜬 뒤**
+      (`pairs` 순회 중 새 키 추가가 Lua에서 미정의라 — `H-23`과 같은 처방)
+      키 타입으로 분기: `type(k) == "thread"`면 `Callbacks[k] = nil`로 소진 후
+      `coroutine.resume(k, self)`(값이 아니라 **Ref 자신**), 함수면 `k(value)`
+      호출 + 유지. **중복 등록은 dedup이 계약**이고 해제는 신설된
+      **`:Uncallback(fn)`**(`Callbacks[fn] = nil` 한 줄).
+      의사코드는 `base/ref-plan.md`가 소스.
+      **⚠️ 옛 배열 설계(빈 슬롯 선형 탐색 등록, `[i] = nil` 소진, `#t` border
+      실측)는 전부 폐기됐다** — 해시맵엔 구멍도 border도 없다.
+      `:Wait(thread?)`는 그대로 — `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
+- [ ] **[2026-08-24 신설, 6라운드 `H-7`]** `Ref:Uncallback(fn)` — 해제 경로.
+      `Effect`가 자기 `Ref` dep 콜백을 뗄 때 쓰고(`_refCallbacks`에 보관해둔
+      바로 그 클로저를 값으로 뗀다), `unbindLifetime`/`:Unsubscribe()`가 부른다
 - [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
       `unbindLifetime`/`canBound`/`canExecute` 본체(인터페이스 자체는
       M2로 이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현
@@ -977,7 +1136,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       함수들은 `InstData`에서 찾아 쓰기만 함. `bindLifetime`은
       `gchold[value]=true`(강참조로 생존 보장)와 `BindData:SetWeak(value,
       "gchold"/"gcconn", ...)`(값이 자기 생존 판정 근거를 직접 들고 있게)
-      둘만 하고, `unbindLifetime(value)`은 그 셋을 되돌림. **[2026-08-14
+      둘을 하고, `unbindLifetime(value)`은 그걸 되돌림.
+      **⭐ [2026-08-24 6라운드 `H-11`] 그리고 `isEffect(value)`면 분기가 하나 더
+      붙는다** — `handle._observers` 전부로 cascade하고
+      `value:_bindDestroying(inst)` / `:_unbindDestroying()`를 부른다(전자는
+      주입 op `onDestroying`으로 `Destroying`을 연결하고 `Ref` dep 콜백을
+      (재)등록, 후자는 그 대칭). 여기 원래 *"둘만 하고"*라고 적혀 있었는데
+      이 분기와 직접 모순이었다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
+      발화시키는 유일한 배선**이고, M6의 `_detached` 정리가 여기 의존한다
+      (그 항목의 `H-50` 각주 참고). 의사코드는 `base/lifecycle-pattern.md`와
+      `base/effect-plan.md`가 소스. **[2026-08-14
       열한 번째 세션] `canBound(value)`/`canExecute(value)`는 비공개
       헬퍼 `isBoundAlive(value)` 하나(복사된 gcconn의 `.Connected` 또는
       `.Subscribed`를 봄)를 공유하는 얇은 진입점 둘로 분리** — `bindLifetime`/
@@ -1016,6 +1184,19 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > `archive/tag-attribute-load-time-registration-reversed.md`.
 
 
+- [ ] **[2026-08-24 `H-39`]** `TagHandler`/`AttributeGroupHandler`가 자기 배열
+      자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을 등록 —
+      **둘 다 0건이었다**(위 M2의 그 항목). 같이 **`type(k) == "number"` 가드**도
+      추가(`H-52` — `RefLeafHandler`가 2026-08-18에 받은 수정을 이 둘은 못 받았다)
+- [ ] **[2026-08-24 `H-41`]** `AttributeGroupHandler.process`에 `groupClaimKeys`
+      위치 claim 배선 — 5라운드 `AT-1`에서 `(inst, groupValue) → k`로 확정해놓고
+      의사코드에 안 들어가 있었다. **`nameClaims`보다 먼저** 해야 절반만 기록되는
+      중간 상태가 안 생긴다
+- [ ] **[2026-08-24 `H-27`]** `OnChangeHandler.process`에 `v == nil` 얼리리턴 —
+      없으면 `None`으로 콜백을 끄는 게 실제로는 **나중에 터질 Connection을 새로
+      심는** 동작이 된다
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Tag`/`Attribute`
+      필드 추가(위 M2 항목의 "마일스톤마다" 규칙)
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/OnChange.luau`(`OnChange(name)` 특수 키 팩토리+Handler,
       `GetPropertyChangedSignal` 바인딩 — 제네릭 없이 콜백 타입은 인라인
