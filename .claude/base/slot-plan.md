@@ -3383,7 +3383,7 @@ state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는
 - **확정 형태**: `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
   묶인 `Source` 전용 콜론 메서드**. `Set`(언마운트) → 옛 값 `dispose` 순서를
   안에서 수행하므로 호출부가 `Get()`으로 옛 값을 미리 잡아둘 필요가 없다.
-- **`state:Apply`는 손대지 않는다** — 시그니처 영향이 없으므로 M3 착수 전
+- **`state:Apply`는 손대지 않는다** — 시그니처 영향이 없으므로 M2 착수 전
   결론이 필요하던 항목에서 빠진다(`question.md`/`.claude/todos.md`에서 제거).
 
 #### 구현상 바뀌어야 하는 것

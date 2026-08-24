@@ -1217,3 +1217,78 @@ hot path다.
   `base/state-epoch-plan.md` §2, 근거 기록은
   `reference/epoch-brand-composition.md` §4의 4번.
   (필드 이름 `Revision`과 타입 `Epoch`는 확정, 승격 시 `base/`에 반영됨.)
+
+## [해소됨, 2026-08-24] M2/M3 마일스톤 경계 — 순서 교체로 확정
+
+2026-08-22 `ROADMAP.md` 전반 점검에서 드러난 항목. **설계 결정이 아니라
+마일스톤 *순서* 문제**라 당시 `question.md`의 최우선 절이 아니라 2번
+항목으로 따로 뒀었다. 2026-08-24에 사용자가 **(a) 순서 교체**를 선택해
+같은 날 전량 반영됐다.
+
+**발단** — 옛 M2(디스패치 엔진)와 옛 M3(Store/State/Source)의 의존이
+양방향이라 그 순서로는 M2를 끝까지 짤 수 없었다.
+
+- **디스패치 → 반응형 (본체 의존)**: `Dispatch.setLength`가
+  `len: number | State<number>`를, `Dispatch.setOffsetSource`가
+  `Source<number>`를 받고, `recompute`가 `offset:Set()`을 부른다
+  (`base/dispatch-core-plan.md`의 "Length/Offset" 절). 2026-08-22에
+  디스패치 쪽으로 앞당겼던 `GateNode`/`Blocker`도 State 위에 얹힌다.
+- **반응형 → 디스패치 (얕은 의존)**: `state:Observer`/`Effect`의 동적 경로
+  가드가 `Dispatch.addHandler` + `Handler.luau` 계약을 쓴다 — 레지스트리
+  등록 표면만 있으면 되므로 디스패치 **전체**를 요구하지 않는다.
+
+**선택지와 판단** — (a) 순서 교체 / (b) 디스패치를 둘로 분할 / (c) 지금
+구조를 두고 구현 시 알아서 오간다. **사용자 선택은 (a)**("(a) M2와 M3의
+순서를 바꾸는게 맞겠던데"). 그 자리에서 같이 확인된 근거:
+
+1. **의존의 비대칭**이 명확하다 — 무거운 쪽(본체 의존)을 아래에 깔고
+   가벼운 쪽(핸들러 등록)을 뒤로 미루는 게 맞다.
+2. 옛 순서로는 **디스패치 마일스톤의 `mock 대상 테스트` 체크박스가
+   원리적으로 불가능**했다(`setLength`/`recompute`를 State 없이 테스트할
+   수 없음). 반대로 반응형 코어는 순수 Lua라 `luau`만으로 단독 테스트가
+   된다.
+3. 2026-08-22의 `EpochMap`/`GateNode`/`Blocker` 앞당김이 **불필요해진다**
+   — 그 이동은 "디스패치가 먼저인데 디스패치가 쟤들을 호출한다"는 이유로
+   한 것이었다. 순서를 바꾸면 마일스톤 내용이 의존 계층과 그대로 일치하고
+   끌어온 항목이 0개가 된다. "게이팅 먼저"는 그대로 지켜진다.
+
+**(b)를 안 고른 이유**: 참조 비용이 오히려 더 크다 — 기존 `M2` 참조 전부가
+"M2a인가 M2b인가"로 애매해지는데 이건 순서 교체처럼 기계적으로 못 푼다.
+게다가 `Brand`를 앞으로 빼는 일은 (b)에서도 똑같이 해야 하고, 얻는 건
+"디스패치 코어를 조금 일찍 짠다"뿐인데 M4 전까지 그걸 소비하는 게 없다.
+**(c)를 안 고른 이유**: `project-context.md`가 못박은 *"어떤 순서로
+만드는가"*의 소스가 `ROADMAP.md`라는 원칙을 스스로 무효화한다.
+
+**같이 확정된 것 — 순서만 바꿔서는 안 끝났다.** 옛 M2 안에 반응형보다
+먼저 와야 하는 항목이 셋 섞여 있었고, 이들은 새 M2 앞머리의
+`### 공통 기반` 절로 옮겨졌다(State-free이자 dispatch-free):
+
+- **`Brand.luau`** — `Source`가 `SourceBrand`+`EpochBrand`에 등록돼야 함
+  (`base/source-state-plan.md`), `isState`/`isObserver`/`isEffect`가 전부
+  여기 얹힘.
+- **`Relate.luau`** — `bindLifetime`/`unbindLifetime`이 그 위에 구현됨
+  (`base/lifecycle-pattern.md`의 `InstData`/`BindData`).
+- **`LifetimeHandle.luau` 인터페이스** — State 전파 루프가 발화마다
+  `canExecute`를, 이중 바인딩 게이트가 `canBound`를 부름. 이미 M8→디스패치로
+  한 번 앞당긴 전례가 있던 항목이라 한 칸 더 앞당긴 것뿐.
+
+반대로 새 M3로 넘어간 것은 둘 — Observer/Effect **동적 경로 가드 등록**과
+**`ObserverEffectLeafHandler`**(`H-39`). 둘 다 "핸들러를 등록한다"뿐이라
+본체와 잘라내기 쉽고, **이것이 M2가 M3에 개념상 지던 유일한 의존**이었다 —
+그 둘을 M3로 미뤘으므로 **빌드 순서상 역방향 간선은 남지 않는다**:
+
+```
+L0 공통 기반   Brand · Relate · LifetimeHandle(인터페이스)      ┐
+L1 반응형      Source/State/Store · EpochMap · Gate/GateNode ·  ├ M2
+               Blocker · :Compute/:Apply · Observer · Effect    ┘
+L2 디스패치    Handler · Dispatch 코어 · chains · None ·          ┐
+               setLength/setOffsetSource/getOffsetAt ·           ├ M3
+               Leaf · 가드 등록 · ObserverEffectLeafHandler      ┘
+```
+
+**⚠️ 번호 재부여의 부작용** — 라이브 문서의 `M2`/`M3` 참조는 전부 새 번호로
+맞췄지만(코퍼스의 참조가 거의 전부 "그 내용이 사는 마일스톤"을 가리켜서
+기계적 맞교환으로 의미가 보존됨), **`session/`·`archive/`·`qa-request/`는
+히스토리 문서라 소급 수정하지 않았다.** 2026-08-24 이전에 쓰인 그 문서들의
+`M2`/`M3`는 **옛 의미**(M2=디스패치, M3=반응형)로 읽을 것. 이 경고는
+`ROADMAP.md`의 M2 배너에도 있다.

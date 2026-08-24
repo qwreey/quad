@@ -207,5 +207,5 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 | 검증할 것 | 왜 | 출처 |
 |---|---|---|
 | ~~`table.insert`가 배열 중간의 구멍을 재사용하는가~~ **[2026-08-24 폐기]** | **전제 자체가 없어졌다** — 6라운드 `H-7`로 `Ref.Callbacks`가 배열에서 `{[callback\|thread] = true}` **해시맵 셋**으로 바뀌었고, 해시맵엔 border 개념도 구멍도 없다(`base/ref-plan.md`). 이 스파이크는 만들지 말 것 | QA 4라운드 `R-11`(폐기), 6라운드 `H-7` |
-| 중간 State가 상류 strong / 하류 weak 불변식으로 실제로 살아남는가 | `State → State → State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도 없어 전파가 조용히 끊길 수 있음. **M3 착수 전 필요** | `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절, `question.md` 3번 |
+| 중간 State가 상류 strong / 하류 weak 불변식으로 실제로 살아남는가 | `State → State → State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도 없어 전파가 조용히 끊길 수 있음. **M2 착수 전 필요** | `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절, `question.md` 최우선 절 |
 | `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

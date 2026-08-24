@@ -8,7 +8,7 @@
 설치·`pesde install` 실행으로 검증]**
 
 **전제**: 이 문서가 서술하는 건 **M0/M1 스캐폴딩 단계에서 확인된 사실**이지
-M3 이후 실제 구현이 아님 — `quad-base/src`는 아직 `Relate.luau`/골격
+M2 이후 실제 구현이 아님 — `quad-base/src`는 아직 `Relate.luau`/골격
 `New()`/`Debug` 서브시스템뿐이고 `quad-roblox/src`는 비어 있음
 (`.claude/todos.md`가 여전히 진행 상황의 소스). 여기 적힌 require/pesde
 규칙은 실제 소스가 늘어나도 안 바뀔 구조적 사실이라 base로 승격했지만,

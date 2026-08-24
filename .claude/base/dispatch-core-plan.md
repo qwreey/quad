@@ -205,7 +205,7 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   그래서 `Dispatch.listHandlers()`는 현재 등록된 전체 핸들러(이름/priority)를
   **반환**하는 함수로 둔다.
   구현 비용이 거의 없고 실제 개발 중 디버깅에 바로 도움되는 항목이라
-  M2(Dispatch 엔진) 착수 시 기본 기능으로 같이 넣음 — 런타임 플러그인인
+  M3(Dispatch 엔진) 착수 시 기본 기능으로 같이 넣음 — 런타임 플러그인인
   `quad-debug`(후순위, `research/debug-tooling-plan.md`)와는 다른 층위의,
   라이브러리 자체에 내장된 개발자 편의 기능.
 

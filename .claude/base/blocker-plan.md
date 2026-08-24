@@ -16,13 +16,16 @@
 문제를 콜스택/코루틴이 아니라 사용자가 들고 있는 "값"으로 표현**해서 이
 위험을 구조적으로 우회한다.
 
-**store 개발(M3)과 밀접하게 연관됨** — `state:Block(blocker)`가 State
+**store 개발(M2)과 밀접하게 연관됨** — `state:Block(blocker)`가 State
 위에 얹히는 메소드이므로 `base/source-state-plan.md`의 Source/State
 온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함.
-**⚠️ [2026-08-22 정정] 구현 마일스톤은 M3가 아니라 M2다** — 여기 "State와
-같은 마일스톤(`ROADMAP.md` M3)에서 함께 구현할 것"이라고 적혀 있었으나,
-`Dispatch.drive`의 배치 등록이 `Blocker`를 호출하므로 "게이팅 먼저" 결정에
-따라 `Blocker.luau` 체크박스가 M2로 이동했다. 별도 파일로 두는 것은 그대로.
+**[2026-08-24 재확정] 구현 마일스톤은 다시 M2다 — "State와 같은
+마일스톤에서 함께 구현"이라는 원래 서술이 맞다.** 2026-08-22엔 "게이팅
+먼저"(`Dispatch.drive`의 배치 등록이 `Blocker`를 호출한다) 결정에 따라
+`Blocker.luau` 체크박스를 디스패치 쪽으로 앞당겼었는데, 2026-08-24에
+마일스톤 순서 자체가 교체되어(반응형이 M2, 디스패치가 M3) 앞당길 이유가
+사라졌다 — 게이팅은 여전히 디스패치보다 먼저 지어진다. 별도 파일로 두는
+것은 그대로.
 **그리고 이제 `Blocker`는 바닥부터 짜는 게 아니라 공용 `GateNode`
 (`base/gate-plan.md`) 위에 얹는 정책이다** — 노드를 다시 만들지 말 것.
 

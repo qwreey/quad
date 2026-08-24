@@ -7,23 +7,31 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 **2026-08-04 세션에 준비만 해둔 상태로 신설, 이후 여러 세션에 걸쳐 설계가
 확정될 때마다 각 마일스톤 체크박스가 계속 갱신돼왔음.**
 
-> **✅ [2026-08-22 기준] M0/M1의 *원래* 체크박스는 전부 닫혔고 다음은
-> M2(디스패치 엔진)** — 단 M0에는 **[2026-08-22] "재검증 대기" 미체크
+> **✅ [2026-08-24 기준] M0/M1의 *원래* 체크박스는 전부 닫혔고 다음은
+> M2(반응형 코어)** — 단 M0에는 **[2026-08-22] "재검증 대기" 미체크
 > 항목들이 새로 붙었습니다**(설계가 바뀌어 무효화된 스파이크들, 아래 그
-> 절이 소스). 그건 아직 열린 작업이므로 "M0 완료"로 읽고 넘어가면 안 됩니다. — **⚠️ 다만 M2를 바로 착수하면 안 됩니다: M2와 M3의 의존이
-> 양방향이라 이 순서로는 M2를 끝까지 짤 수 없습니다**(설계가 아니라
-> 마일스톤 **순서** 문제 — 아래 M2 배너와 `.claude/question.md` 2번,
-> 사용자 회신 대기). M1까지의 산출물은
+> 절이 소스). 그건 아직 열린 작업이므로 "M0 완료"로 읽고 넘어가면 안 됩니다.
+> **[2026-08-24] 착수를 막던 마일스톤 순서 문제는 해소됐습니다** — M2와
+> M3의 번호를 맞바꿔 반응형을 먼저 짓기로 확정했습니다(아래 M2 배너가
+> 소스). **⚠️ 다만 그 교체로 M2 착수 전에 답이 필요한 항목 둘이
+> `.claude/question.md` 최우선 절로 올라왔습니다** — 중간 State GC 실측과
+> `store:GetDynamic` 위치(원래 반응형의 게이트였는데 반응형이 앞으로
+> 오면서 같이 당겨짐). M1까지의 산출물은
 > quad-base/quad-roblox 폴더+pesde.toml, 루트
 > default.project.json/.luaurc, mock 테스트 하네스, `New()`/`RunInit`/
 > `AddPlugin` 골격. **다만 M0의 검증 스파이크 여러 개가 설계 변경으로
 > 재작성 대기 상태입니다** — 아래 "재검증 대기" 절 참고(개수·현황의
 > 소스는 `.claude/luau-test/STATUS.md`, 여기서도 그 절에서도 세지 않음).
 >
-> **[2026-08-22] 이 문서에 이번에 반영된 것**: `Dispatch.drive`가 두
-> 패스가 아니라 단일 일반화 `for`(`F-4-1`) / 물리 조작 주입 op 이름이
-> `native*`로 확정 / `EpochMap`·`GateNode`·`Blocker`·`None`이 M2로 이동 /
-> M2↔M3 의존이 양방향이라는 것(M2 헤더 배너) / `[x]` 표기 의미 분리
+> **[2026-08-24] 이 문서에 이번에 반영된 것**: M2(반응형)와 M3(디스패치)의
+> **번호·순서 교체**, 그에 따라 `Brand`/`Relate`/`LifetimeHandle`
+> 인터페이스가 M2 앞머리로 이동하고 `EpochMap`/`GateNode`/`Blocker`가 M2로
+> 복귀, Observer/Effect 동적 경로 가드 등록과 `ObserverEffectLeafHandler`가
+> M3로 이동.
+>
+> **[2026-08-22] 그 전 회차에 반영된 것**: `Dispatch.drive`가 두 패스가
+> 아니라 단일 일반화 `for`(`F-4-1`) / 물리 조작 주입 op 이름이 `native*`로
+> 확정 / `None`이 M7에서 디스패치로 이동 / `[x]` 표기 의미 분리
 > (바로 아래).
 >
 > **⚠️ `[x]`의 의미** — 체크박스는 **"짜야 할 코드"만** 담습니다.
@@ -31,13 +39,13 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 마일스톤의 **`### 확정된 것`** 절(항목이 여럿일 때) 또는
 > **`- **[확정된 것 — 코드 아님]**`** 불릿(하나뿐일 때)에 둡니다. 예전엔
 > 둘이 같은 목록에 섞여 있어 `[x]`만 보고는 코드가 있는지 알 수
-> 없었습니다 — M0/M1의 `[x]`는 실제 구현이고, M3/M6/M11에 섞여 있던
+> 없었습니다 — M0/M1의 `[x]`는 실제 구현이고, M2/M6/M11에 섞여 있던
 > `[x]`는 설계 확정·실측이었습니다. **새 항목을 추가할 때도 이 구분을
 > 지킬 것.**
 
 > M1 착수 도중
 > wally→pesde 전환이 확정돼(`base/project-setup-plan.md`) M1 체크박스의
-> `wally.toml` 표기도 `pesde.toml`로 정정. 부수로 M3가 의존하는
+> `wally.toml` 표기도 `pesde.toml`로 정정. 부수로 M2가 의존하는
 > `quad-types`/`type-version-check` 두 워크스페이스 멤버도 이 과정에서
 > 먼저 신설됨(`base/quad-types-plan.md`).
 
@@ -141,7 +149,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       Observer가 이제 변경당 **1회**만 울어야 함(옛 "emit은 항상 전파" 모델을
       검증 중). `base/state-epoch-plan.md` 기준으로 재작성
 - [ ] **`04`(Dispatch 체인 retractFrom)** — 하강 diff 확정으로 무효화.
-      **M2 착수 시 같이 처리**하는 게 자연스러움
+      **M3 착수 시 같이 처리**하는 게 자연스러움
 - [ ] **`19`(소유권/참조카운트 Relate 패턴)** — **B 섹션만** 낡음
       (공개 `AttributeKey(name)` + 인덱스 1 점유 체크가 폐기되고 그룹 전용
       키 + `AttributeKeyHandler`의 이름 claim으로 바뀜, `0-Z` 확정).
@@ -154,13 +162,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **M8 착수 시 같이 처리**
 - [ ] **`15`(`:Compute` trailing deps 타입팩)** — 이형 다중 deps를 제네릭
       타입 팩으로 표현 가능한지 미실측(안 되면 동종 dep 1개로 한정).
-      **M3 착수 시 같이 처리**
+      **M2 착수 시 같이 처리**
 - [ ] **`10`(Roblox Studio 확인)** — `bindLifetime`/`canExecute`/
       `unbindLifetime` 재정정으로 무효화. **Studio 작업이라
       `HUMAN_TODO.md` 1번(계정 분리)이 선행**
-- [ ] **아직 파일이 없는 실측 항목** — `R-11`의 `table.insert` 구멍 재사용,
-      **중간 State GC**(`base/source-state-plan.md`, 상류 strong / 하류 weak
-      불변식 — `.claude/todos.md`가 "M3 착수 전 필요"로 지정)
+- [ ] **아직 파일이 없는 실측 항목** — **중간 State GC**
+      (`base/source-state-plan.md`, 상류 strong / 하류 weak 불변식 —
+      `.claude/todos.md`가 "M2 착수 전 필요"로 지정. **[2026-08-24 승격]**
+      순서 교체로 반응형이 바로 다음 마일스톤이 되면서 `question.md`
+      최우선 절로 올라갔다). **[2026-08-24 정리]** 여기 같이 적혀 있던
+      `R-11`의 `table.insert` 구멍 재사용은 6라운드 `H-7`로
+      **전제 자체가 없어져 폐기**됐다(`Ref.Callbacks`가 해시맵 셋이 되어
+      구멍 개념이 없음) — `luau-test/STATUS.md`가 소스
 
 ## M1 — 실제 스캐폴딩
 
@@ -194,82 +207,34 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       계속 같은 방식으로 쓰이는 중이라 "실사용 시작"이라는 조건은 사실상
       항상 충족돼 있었음)
 
-## M2 — 디스패치 엔진
+## M2 — 반응형 코어 (Source/State/Store)
 
-> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료 — 아래
-> 체크리스트는 새 모델("하강 diff") 기준으로 갱신됐습니다.** 래핑 핸들러의
-> 선행 `retractFrom`은 폐기됐고, `Dispatch.process`가 슬롯의 `handler`를
-> 먼저 비교해 (같으면 그 자리 클로저에 새 값을 넘기고 자기 `process`
-> 재호출, 다르면 그 자리부터 전량 철거) 처리합니다. 정본은
-> `.claude/base/dispatch-core-plan.md`(같은 세션에 `bind-system-plan.md`에서
-> 분리 신설), 뒤집힌 옛 모델은
-> `.claude/archive/dispatch-hintvalue-model-reversed.md`.
-
-> **⚠️ [2026-08-22] M2는 이름과 달리 "디스패치만"이 아닙니다 — 반응형
-> 하부구조 일부가 여기 있습니다.** `EpochMap`/`GateNode`/`Blocker`/`None`
-> 체크박스가 M3·M7에서 옮겨왔습니다(각 항목의 이동 표시 참고). 그동안
-> 각주로만 예고돼 있어 M2 체크리스트를 훑는 구현자에게 **항목으로 보이지
-> 않던** 것을 고친 것이고, `LifetimeHandle` 인터페이스를 M8→M2로 옮겼던
-> 것과 같은 처리입니다.
+> **⭐ [2026-08-24 순서 교체] 옛 M3(반응형)와 옛 M2(디스패치)의 번호를
+> 맞바꿨습니다.** 의존이 양방향처럼 보였지만 실제로는 한 방향이었고
+> (디스패치 → 반응형이 본체 의존, 반대는 핸들러 등록 표면뿐), 옛 순서로는
+> 디스패치의 Length/Offset 배관도 그 마일스톤의 `mock 대상 테스트`도 State
+> 없이 짤 수 없었습니다. 근거와 기각된 선택지는
+> `.claude/archive/question-resolved.md`의 "마일스톤 경계" 절.
 >
-> **⚠️ 다만 이동으로 드러난 더 큰 문제가 하나 남아 있습니다 — M2와 M3의
-> 의존이 양방향이라, 이 순서대로면 M2를 끝까지 짤 수 없습니다.**
-> 요지만: **M2는 `Source.luau`/`State.luau` 없이는 구현할 수 없고**
-> (Length/Offset 배관이 `State<number>`/`Source<number>`를 쓰고,
-> `Dispatch.drive` 자신도 배치 등록을 Blocker로 게이팅합니다),
-> 반대 방향은 핸들러 등록 표면만 요구하는 얕은 의존입니다.
-> **어느 쪽으로 가를지(순서 교체 / M2 분할 / 유지)는 사용자 결정
-> 대기이고, 근거와 선택지의 소스는 `.claude/question.md` 2번입니다** —
-> 여기서 반복하지 않습니다.
+> **⚠️ 이 날짜 이전에 쓰인 `session/`·`archive/`·`qa-request/` 문서의
+> `M2`/`M3`는 옛 의미**(M2=디스패치, M3=반응형)입니다 — 히스토리 문서라
+> 소급 수정하지 않았습니다. 라이브 문서(`base/`/`research/`/`reference/`/
+> `luau-test/`/인덱스 레이어)는 전부 새 번호로 맞췄습니다.
+>
+> 부수로 **`Brand`/`Relate`/`LifetimeHandle` 인터페이스가 디스패치에서 이
+> 마일스톤 앞머리로 왔습니다** — 반응형이 이 셋을 먼저 요구하기 때문:
+> `Source`가 `SourceBrand`+`EpochBrand`에 등록되고(`Brand`), State 전파
+> 루프가 매 발화마다 `canExecute`를 부르며(`LifetimeHandle`), 그 판정이
+> `Relate`에 복사해둔 gcconn 위에 얹힙니다. 반대로 2026-08-22에 여기서
+> 디스패치로 옮겼던 **`EpochMap`/`GateNode`/`Blocker`는 되돌아왔습니다** —
+> 앞당길 이유 자체가 순서 교체로 사라졌고, "게이팅 먼저"는 그대로
+> 지켜집니다.
 
+### 공통 기반 — 반응형보다 먼저 (구 M2, 지금의 M3에서 이동)
 
-- [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
-      스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
-      (오케스트레이터: getHandler → **그 인덱스의 기존 핸들러와 비교** →
-      같으면 그 자리 클로저에 새 값을 넘기고 같은 핸들러의 `.process`로
-      자리 교체, 다르면 `retractFrom` 후 새로 설치. 반환값이 `nil`이면
-      즉시 error) / **3-인자** `Dispatch.retractFrom(inst,k,index)`
-      (아래 항목) / `Dispatch.addHandler(handler)`(레지스트리 등록,
-      quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
-      flattened)`(**일반화 `for` 한 번**으로 순회하며 각 `(k,v)`에
-      `Dispatch.process(inst,k,v,1)` 호출 — `dispatch-core-plan.md`의 `None`
-      센티널 절, 2026-08-07 여덟 번째 세션에 네이밍 확정).
-      **[2026-08-21 구현 전 QA 4라운드 `F-4-1`] 순회는 두 패스가 아니라
-      단일 일반화 `for`다** — "배열 파트 전체가 해시 파트보다 먼저"는 여전히
-      base가 보장하는 **계약**이지만, `flattened`가 항상 평범한 Luau
-      테이블이라 일반화 `for` 한 번이 그 순서를 그대로 주고 두 층위는
-      `type(k) == "number"` 분기로 가른다(`base/dispatch-core-plan.md`의
-      `F-4-1` 정정 문단). 옛 "명시적 두 패스" 서술은 구현까지 2회 순회로
-      못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기
-      (`luau-test/STATUS.md`)
-- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-39`] 말단 핸들러는 예외
-      없이 자기 배열 자리의 `setOffsetSource(inst,k,None)` → `setLength(inst,k,0)`을
-      등록한다** — 이 계약을 핸들러 작성 체크리스트에 넣고, 실제로 넷이
-      빠져 있었으니 각 마일스톤에서 확인할 것: `TagHandler`(M10) /
-      `AttributeGroupHandler`(M10) / `RefLeafHandler`(M8) /
-      `ObserverEffectLeafHandler`(M3). 안 하면 `bk.N`이 다른 자리 등록으로
-      커질 때 그 구멍이 범위 안에 끼어 `recompute`가 **명시적 error로 죽는다**
-      (`Frame { Tag("card"), TextLabel{} }`처럼 말단이 앞에 오는 흔한 배치).
-      **배열 맨 끝이면 안 터지므로 "가끔 되고 가끔 터지는" 형태로 드러난다.**
-      소스는 `base/dispatch-core-plan.md`의 등록 책임 절
-- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25`] `quad-types`의 `Quad`
-      타입에 `Dispatch` 필드와 그 타입 재수출을 추가** — `Quad`가 5필드 닫힌
-      레코드이고 `RunInit`은 반환값이 없어 타입을 못 넓히므로, 이걸 안 하면
-      `module:RunInit(InitDispatch)` 뒤의 `quad.Dispatch` 접근이 **런타임엔
-      되는데 `luau-analyze`에선 타입에러**다(실측 재현). `base/architecture.md`의
-      확정된 결정 13번이 그 접근을 표준 사용법으로 못박아뒀다.
-      상세는 `base/quad-types-plan.md`의 "`Quad` 타입 — 확정된 표면" 절.
-      **⚠️ 이건 M2 한 번으로 끝나는 일이 아니다** — 그 문서가 *"마일스톤마다
-      갱신한다 … 이후 서브시스템도 같은 규칙을 따른다"*로 확정했으므로,
-      **서브시스템을 붙이는 모든 마일스톤이 같은 항목을 진다**:
-      M3(`Source`/`State`/`Store`) · M6(`Slot`) · M7(`Modifier`) ·
-      M8(`Ref`) · M10(`Tag`/`Attribute`). 빠뜨리면 그 마일스톤 완료 후
-      `quad.Store`/`quad.Slot` 접근이 런타임엔 되는데 `luau-analyze`에선
-      타입에러인, `H-25`가 실측한 그 문제가 **마일스톤마다 반복된다.**
-- [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
-      `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
-      `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
-      `process` 반환값으로 합쳐짐(2026-08-13 다섯 번째 세션))
+> 셋 다 State-free이자 dispatch-free라 어느 쪽에도 안 걸립니다. 이 절이
+> 끝나야 아래 반응형 본체를 짤 수 있습니다.
+
 - [ ] `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
       브랜드마다 weak-key 집합 하나를 들고 `:register(x)`/`:is(x)`,
       **다중 태깅 허용**(`Source`가 `SourceBrand`이면서 동시에 `EpochBrand`).
@@ -294,49 +259,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       array-part `v`를 판별, `isTag`와 같은 결)로 분리됨 — 그룹
       `Attribute(...)` 프리미티브 신설로 같은 이름이 서로 다른 두
       대상(키 vs 값)을 가리키게 돼서 갈라짐, `base/attribute-plan.md`
-      참고) 전부의 기반. `isNone`만 예외로 레지스트리 없이 `x == None`
-      항등 비교 — `brand-plan.md`의 `Brand` 절, 2026-08-07 여덟
-      번째 세션 신설)
-- [ ] **[2026-08-22 M3에서 이동] `EpochMap.luau`** — 재사용 가능한 에포크
-      부기 객체(`:Update(Epoch|EpochSet) -> boolean`이 "뒤로 전파가
-      필요한가"를 답함, `:Refresh`/`:Sync`/`:TrackFrom`. `EpochSet =
-      {[Epoch]: true}`로 **배열이 아니라 집합**). `State.luau`에 묻지 말고
-      별도 모듈로 낼 것 — `GateNode`(아래)와 `State`(M3)/`Effect`(M3)가
-      전부 같은 것을 쓴다. `Epoch` 인터페이스 자체(`{ Revision: number }`)와
-      리비전 갱신(`bit32.bnot(-rev)`)도 여기서 확정 — `base/state-epoch-plan.md`
-- [ ] **[2026-08-22 M3에서 이동] `state:Gate(setup)` + `GateNode`** —
-      emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
-      (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
-      유보 배치는 `withheld : { [epoch] : true }`(집합), flush 때 테이블을
-      통째로 갈고, **내보내는 emit이 싣는 건 그렇게 떼어낸 `EpochSet`
-      스냅샷뿐이다 — 게이트 노드 자신은 안 싣는다**(하류가 게이트 identity를
-      한 번도 안 쓴다, `base/state-epoch-plan.md` §5). **빈 배치는
-      아무것도 안 함**. `emitEpochMap`을 쓰므로 위 `EpochMap.luau`가 선행 —
-      `base/gate-plan.md`. **"게이팅 먼저" 결정으로 M3에서 앞당겨진 항목**
-      (사용자: *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다"*)
-- [ ] **[2026-08-22 M3에서 이동] `Blocker.luau`** — 위 `GateNode` 위에
-      얹히는 **정책**(다시 노드를 만들지 말 것). 여러 Source를 한꺼번에
-      바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive
-      (`base/blocker-plan.md`). 아래 `Dispatch.setLength`/`setOffsetSource`의
-      배치 등록이 `:On()`/`:IsOn()`/`:OffWithoutEmit()` **세 메서드**를
-      호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
-      조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
-      쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M2에 필요**
-- [ ] **[2026-08-22 M7에서 이동] `None.luau`(센티널) + `Dispatch/None.luau`
-      (`NoneHandler` + `NilHandler`)** — `None`은 modifier 전용 값이 아니라
-      디스패치 배관이라 여기 소속(`architecture.md`의 소스 트리에 있는 건
-      핸들러 쪽 `Dispatch/None.luau`뿐 — **[2026-08-22] 탑레벨 센티널
-      `None.luau`와 `Brand.luau`는 그 트리에 아직 줄이 없다**, M2 구현 시
-      트리도 같이 채울 것).
-      `NoneHandler`는 배열/해시 구분 없이 `Dispatch.process(inst,k,nil,index+1)`
-      **재귀만** 하고(선행 `retractFrom` 없음 — 하강 diff), 실제 정리는
-      `NilHandler`(`isHandlable`이 `type(k) == "number" and v == nil`일 때만
-      매치하는 말단)가 `Dispatch.setLength(inst,k,0)` +
-      `Dispatch.setOffsetSource(inst,k,None)` 등록으로 맡는다.
-      **`Dispatch.drive`에 `None` 스킵 분기는 없다**(반응형 값이 내놓는
-      `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
-      `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.
-      Modifier 쪽 표면(인라인 키로 필드 지우기, `Peek` 반환 타입)은 M7
+      참고) 전부의 기반. `isNone`은 레지스트리를 안 쓰고 `x == None` 항등
+      비교이지만 **`Brand.luau`가 `None`을 참조하지는 않는다**
+      (**[2026-08-18 정정]** `brand-plan.md`가 *"`Brand → None` 의존을 만들지
+      않는다"*로 확정 — `isNone`은 `None.luau`(M3) 쪽에 산다. 이 마일스톤
+      분리로 처음 눈에 띈 잔재를 **[2026-08-24]** 정정한 것) —
+      `brand-plan.md`의 `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
 - [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
       `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
       `inst`(첫 인자)는 항상 weak, `StrongMap`/`WeakMap` 서브테이블은 lazy
@@ -373,9 +301,259 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `canExecute`/`unbindLifetime` — 확정" 절 참고. **이중 바인딩 금지
       게이트는 `canBound`**(`canExecute`는 emit 전파 게이팅 전용 —
       **[2026-08-14 열한 번째 세션] `canBound`가 별도 진입점으로 재도입되어
-      다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M3 체크박스
+      다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M2 체크박스
       참고**), children 배열 leaf 부착이 실제로는 `bindLifetime` 호출이라
       이 게이트를 그대로 탐
+
+### 반응형 본체
+
+- [ ] **`EpochMap.luau`** (**[2026-08-24]** 2026-08-22에 디스패치로 옮겼다가 순서 교체로 되돌아옴) — 재사용 가능한 에포크
+      부기 객체(`:Update(Epoch|EpochSet) -> boolean`이 "뒤로 전파가
+      필요한가"를 답함, `:Refresh`/`:Sync`/`:TrackFrom`. `EpochSet =
+      {[Epoch]: true}`로 **배열이 아니라 집합**). `State.luau`에 묻지 말고
+      별도 모듈로 낼 것 — `GateNode`(아래)와 `State`/`Effect`가
+      전부 같은 것을 쓴다. `Epoch` 인터페이스 자체(`{ Revision: number }`)와
+      리비전 갱신(`bit32.bnot(-rev)`)도 여기서 확정 — `base/state-epoch-plan.md`
+- [ ] **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
+      재계산/전파 판정은 **`Epoch` 리비전 비교**다(`base/state-epoch-plan.md`)
+      — `invalid` 플래그가 아니다. **아래 `Source.luau`/`State.luau`가 이걸
+      전제로 짜여야 하므로 `EpochMap.luau`(위 항목)가 State 본체보다 먼저
+      온다**(`State`가 `valueEpochMap`/`emitEpochMap` 둘을 컴포지션한다 —
+      **[2026-08-24] 감사에서 순서가 반대로 놓여 있던 걸 잡아 앞으로 옮김**): `Source`가 `type Epoch = { Revision: number }`를
+      구조적으로 만족하고(`EpochBrand`에도 등록), 부기는 재사용 가능한
+      **`EpochMap`**(`:Update(Epoch|EpochSet) -> boolean`, `:Refresh`, `:Sync`,
+      `:TrackFrom` — `EpochSet = {[Epoch]: true}`, **배열 아님**)
+      으로 떼어내며, State가 그걸 **둘** 컴포지션한다 — `valueEpochMap`(값
+      유효성)/`emitEpochMap`(전파 dedup). emit은 값도 리비전도 안 싣고
+      **출처(`Epoch`나 그 집합)만** 싣고, 순회는 `rawInvalid == false`일 때만
+      돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
+      통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
+      (`luau-test/STATUS.md`).
+- [ ] `Source.luau`/`State.luau`/`Store.luau`
+- [ ] **[2026-08-18 신설]** `store:GetDynamic<<T>>(name): Source<T>` — 런타임에
+      이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열 커링은
+      기각). **⚠️ 콜론 메소드로 두면 `__index`가 고정 메소드 테이블을 먼저
+      확인해야 하고 `GetDynamic`이 예약 키가 됨** — 탑레벨 함수로 둘지
+      아직 미결(`base/store-plan.md`의 "타입 추론 문제" 절, `question.md` 최우선 절)
+- [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
+      (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제
+      호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다" 절) —
+      State는 구독자(Observer의 emit 클로저)를 **weak로만** 담고, 살려두는
+      책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
+      (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐). 발화 시
+      각 구독자에 대해 `canExecute(observer)`가 거짓이면 **그 구독자만
+      조용히 건너뜀**(no-op) — 이게 `canExecute`의 유일한 실제 호출부이고,
+      `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
+      걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
+      `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
+- **[확정된 것 — 코드 아님]** `store.key` dot-access 타입 추론 확인 — Luau `type function`
+      (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
+      `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
+      번째 세션, `base/typing-limits.md` §5) — **[2026-08-15 실측 완료]**
+      `luau-test/done/16-type-store-key-typefunction.luau` 통과(원인은
+      설계 문제가 아니라 `types.newfunction` API 버전 드리프트였음)
+- [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
+      (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
+      절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
+      자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M2
+      스파이크에서 확인. **[2026-08-24 정정, 6라운드 `H-13`]** 여기 원래
+      *"`Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시 유지"*라고 적혀
+      있었는데 **`Effect`는 `C-6`에서 이미 역전됐다** — 각 dep에 구독을 따로
+      걸면 합치는 노드 자체가 안 생겨 감출 비용이 없다. **기각으로 남은 건
+      `Observer` 하나**이고 근거도 새로 쓰였다("Observer는 리시버 State
+      하나에 붙는 구독, 여럿을 엮는 건 Effect가 대신한다")
+- [ ] `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
+      절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
+      부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
+      기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
+- [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
+      실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
+      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`. **동적
+      경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
+      is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
+      열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
+      **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
+      자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
+- [ ] `Effect(fn, ...deps)`(`base/effect-plan.md`, **[2026-08-21 5라운드
+      `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
+      1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
+      (State/Source는 `Observer`, `Ref`는 `:Callback`)을 걸어
+      재실행+cleanup 체이닝(React `useEffect` 동형). **`EffectHandle`이
+      `EpochMap`을 하나 들어** 공통 상류로 인한 중복 발화를 접고, 설치 구간
+      억제 플래그가 그 `Update`보다 먼저 와야 함
+      (`base/state-epoch-plan.md`). Observer 구현 이후에 착수(의존 관계).
+      `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
+      모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
+      마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
+      **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
+      "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
+      **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
+      자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
+- [ ] **⭐ [2026-08-24 신설, 6라운드] `Effect` 구현 시 같이 만들 것** —
+      **`handle._observers`**(배열, 단수 `_observer`에서 바뀜 `H-8`) ·
+      **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
+      같은 자리를 읽는다) · **`handle._refDeps`/`_refCallbacks`**(`Ref` dep과
+      거기 건 클로저 — 해제 시 값으로 떼야 해서 보관 필요) ·
+      **`handle._destroyConn`** · **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
+      (`bindLifetime`/`unbindLifetime`이 `isEffect`일 때 부르는 훅, `H-11`).
+      `fn` 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
+      **`...deps`는 `fn`에 안 넘어간다**(`H-14`). `Ref` 콜백은 본문 맨 앞에서
+      **`canExecute(handle)`를 확인**한다(`H-7`). 의사코드는
+      `base/effect-plan.md`가 소스
+- [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
+      스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
+      미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
+      누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
+- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
+      `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
+      내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
+      세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
+      호출"로 정정 — 진짜 독립 경로는 둘뿐).
+      **[2026-08-14 다섯 번째 세션에 별도 predicate `canBound(handle)`을
+      폐기하고 `canExecute` 하나로 합쳤다가, 같은 날 열한 번째 세션에
+      다시 갈라짐]** — "지금 묶어도 되는가"(bound 문맥)와 "지금
+      발화해도 되는가"(execute 문맥)는 호출부의 질문이 다르고
+      **[2026-08-18 구현 전 QA 정정] 판정값도 같은 게 아니라 서로의
+      부정**이라(`canBound(v) == not canExecute(v)`, 게이트는 항상
+      `if not canBound(v) then error(...)`), `Ref` 이중 배치
+      방지(`question.md` 0-W)를 계기로 `canBound`가
+      별도 진입점으로 재도입됨 — 판정 로직(비공개 `isBoundAlive` 헬퍼)은
+      공유해 코드 중복은 없음. **이 절이 쓰는 게이트는 이제 `canBound`**
+      (emit 전파 게이팅 전용 `canExecute`가 아님). `.Subscribed` 필드가
+      leaf 경로와 무관하다는 것, leaf 생존 판정을 `bindLifetime`이 `value`
+      쪽 `Relate`에 복사해둔 gcconn으로 하는 것은 안 바뀜 — `base/
+      lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절, 역전 경위는
+      `archive/canexecute-inst-arg-reversed.md`. 부수 효과로 **바인딩이
+      죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를 통과**
+      (살아있는 바인딩만 막는 게 의도, 안 바뀜)
+- [ ] **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
+      emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
+      (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
+      유보 배치는 `withheld : { [epoch] : true }`(집합), flush 때 테이블을
+      통째로 갈고, **내보내는 emit이 싣는 건 그렇게 떼어낸 `EpochSet`
+      스냅샷뿐이다 — 게이트 노드 자신은 안 싣는다**(하류가 게이트 identity를
+      한 번도 안 쓴다, `base/state-epoch-plan.md` §5). **빈 배치는
+      아무것도 안 함**. `emitEpochMap`을 쓰므로 위 `EpochMap.luau`가 선행 —
+      `base/gate-plan.md`. **"게이팅 먼저" 결정의 산물**
+      (사용자: *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다"*)
+- [ ] **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
+      얹히는 **정책**(다시 노드를 만들지 말 것). 여러 Source를 한꺼번에
+      바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive
+      (`base/blocker-plan.md`). **M3의** `Dispatch.setLength`/`setOffsetSource`의
+      배치 등록이 `:On()`/`:IsOn()`/`:OffWithoutEmit()` **세 메서드**를
+      호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
+      조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
+      쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
+- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Source`/`State`/
+      `Store` 필드 추가 — **규칙 요지**: `New(): Quad`가 닫힌 레코드이고
+      `RunInit`은 반환값이 없어 타입을 못 넓히므로, 서브시스템을 붙이는
+      마일스톤마다 `quad-types`의 `Quad`에 그 필드와 타입 재수출을 같이
+      추가한다. 안 하면 그 마일스톤 완료 후 `quad.Store` 접근이 런타임엔
+      되는데 `luau-analyze`에선 타입에러다(`H-25` 실측). **순서 교체로
+      이 마일스톤이 그 규칙의 첫 적용 지점**이고, 규칙의 정본은
+      `base/quad-types-plan.md`의 "`Quad` 타입 — 확정된 표면" 절
+      (M3의 `H-25` 항목이 같은 규칙을 `Dispatch` 기준으로 서술한다)
+- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(**⚠️ [2026-08-24
+      `H-14`] 이 항목은 `:Compute` 한정이다** — `Effect`의 `fn`엔 deps가 안
+      넘어간다) — (`fn(self,
+      previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
+      리스트 맨 끝이어야 하는 것과 같은 이유로 `previous?`가 deps 팩
+      **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
+      세션에 순서 정정, `base/source-state-plan.md` "trailing deps를 fn에
+      lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
+      `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
+      이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
+      되면 동종 타입 dep 1개로 한정)
+- [ ] mock 대상 테스트
+
+## M3 — 디스패치 엔진
+
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델 교체 완료 — 아래
+> 체크리스트는 새 모델("하강 diff") 기준으로 갱신됐습니다.** 래핑 핸들러의
+> 선행 `retractFrom`은 폐기됐고, `Dispatch.process`가 슬롯의 `handler`를
+> 먼저 비교해 (같으면 그 자리 클로저에 새 값을 넘기고 자기 `process`
+> 재호출, 다르면 그 자리부터 전량 철거) 처리합니다. 정본은
+> `.claude/base/dispatch-core-plan.md`(같은 세션에 `bind-system-plan.md`에서
+> 분리 신설), 뒤집힌 옛 모델은
+> `.claude/archive/dispatch-hintvalue-model-reversed.md`.
+
+> **⭐ [2026-08-24 순서 교체] 이 마일스톤은 옛 M2입니다** — 번호를 반응형
+> 코어와 맞바꿔 그 뒤로 옮겼습니다(경위는 M2 배너가 소스, 여기서 반복하지
+> 않음). 2026-08-22에 여기로 옮겼던 `EpochMap`/`GateNode`/`Blocker`와,
+> 반응형이 먼저 요구하는 `Brand`/`Relate`/`LifetimeHandle` 인터페이스는
+> M2로 갔습니다. 여기 남은 것은 전부 디스패치 배관이고, **이제 이
+> 마일스톤은 M2 위에 단방향으로 얹힙니다.** 개념상 역방향이던 둘
+> (Observer/Effect 가드 등록, `ObserverEffectLeafHandler` — "핸들러를
+> 등록한다"뿐인 것)은 **맨 아래 두 항목으로 여기 옮겨져** 있으므로,
+> **빌드 순서상 역방향 간선은 없습니다.**
+
+
+- [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
+      스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
+      (오케스트레이터: getHandler → **그 인덱스의 기존 핸들러와 비교** →
+      같으면 그 자리 클로저에 새 값을 넘기고 같은 핸들러의 `.process`로
+      자리 교체, 다르면 `retractFrom` 후 새로 설치. 반환값이 `nil`이면
+      즉시 error) / **3-인자** `Dispatch.retractFrom(inst,k,index)`
+      (아래 항목) / `Dispatch.addHandler(handler)`(레지스트리 등록,
+      quad-roblox가 팩토리 뮤테이션 시점에 호출) / `Dispatch.drive(inst,
+      flattened)`(**일반화 `for` 한 번**으로 순회하며 각 `(k,v)`에
+      `Dispatch.process(inst,k,v,1)` 호출 — `dispatch-core-plan.md`의 `None`
+      센티널 절, 2026-08-07 여덟 번째 세션에 네이밍 확정).
+      **[2026-08-21 구현 전 QA 4라운드 `F-4-1`] 순회는 두 패스가 아니라
+      단일 일반화 `for`다** — "배열 파트 전체가 해시 파트보다 먼저"는 여전히
+      base가 보장하는 **계약**이지만, `flattened`가 항상 평범한 Luau
+      테이블이라 일반화 `for` 한 번이 그 순서를 그대로 주고 두 층위는
+      `type(k) == "number"` 분기로 가른다(`base/dispatch-core-plan.md`의
+      `F-4-1` 정정 문단). 옛 "명시적 두 패스" 서술은 구현까지 2회 순회로
+      못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기
+      (`luau-test/STATUS.md`)
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-39`] 말단 핸들러는 예외
+      없이 자기 배열 자리의 `setOffsetSource(inst,k,None)` → `setLength(inst,k,0)`을
+      등록한다** — 이 계약을 핸들러 작성 체크리스트에 넣고, 실제로 넷이
+      빠져 있었으니 각 마일스톤에서 확인할 것: `TagHandler`(M10) /
+      `AttributeGroupHandler`(M10) / `RefLeafHandler`(M8) /
+      `ObserverEffectLeafHandler`(이 마일스톤, 맨 아래). 안 하면 `bk.N`이 다른 자리 등록으로
+      커질 때 그 구멍이 범위 안에 끼어 `recompute`가 **명시적 error로 죽는다**
+      (`Frame { Tag("card"), TextLabel{} }`처럼 말단이 앞에 오는 흔한 배치).
+      **배열 맨 끝이면 안 터지므로 "가끔 되고 가끔 터지는" 형태로 드러난다.**
+      소스는 `base/dispatch-core-plan.md`의 등록 책임 절
+- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25`] `quad-types`의 `Quad`
+      타입에 `Dispatch` 필드와 그 타입 재수출을 추가** — `Quad`가 5필드 닫힌
+      레코드이고 `RunInit`은 반환값이 없어 타입을 못 넓히므로, 이걸 안 하면
+      `module:RunInit(InitDispatch)` 뒤의 `quad.Dispatch` 접근이 **런타임엔
+      되는데 `luau-analyze`에선 타입에러**다(실측 재현). `base/architecture.md`의
+      확정된 결정 13번이 그 접근을 표준 사용법으로 못박아뒀다.
+      상세는 `base/quad-types-plan.md`의 "`Quad` 타입 — 확정된 표면" 절.
+      **⚠️ 이건 M3 한 번으로 끝나는 일이 아니고, 첫 적용은 오히려 M2다** —
+      그 문서가 *"마일스톤마다 갱신한다 … 이후 서브시스템도 같은 규칙을
+      따른다"*로 확정했으므로, **서브시스템을 붙이는 모든 마일스톤이 같은
+      항목을 진다**: **M2(`Source`/`State`/`Store`, 규칙이 처음 적용되는
+      자리)** · M6(`Slot`) · M7(`Modifier`) · M8(`Ref`) ·
+      M10(`Tag`/`Attribute`). (**[2026-08-24]** 규칙 자체는 `Dispatch`를
+      계기로 쓰였지만 마일스톤 순서 교체로 M2가 앞에 오게 됐다 — M2를 짜는
+      사람이 이 항목을 앞으로 참조하지 않아도 되게, 규칙 요지는 M2의
+      `H-25` 파생 항목에도 적어뒀다.) 빠뜨리면 그 마일스톤 완료 후
+      `quad.Store`/`quad.Slot` 접근이 런타임엔 되는데 `luau-analyze`에선
+      타입에러인, `H-25`가 실측한 그 문제가 **마일스톤마다 반복된다.**
+- [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
+      `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
+      `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
+      `process` 반환값으로 합쳐짐(2026-08-13 다섯 번째 세션))
+- [ ] **[2026-08-22 M7에서 이동] `None.luau`(센티널) + `Dispatch/None.luau`
+      (`NoneHandler` + `NilHandler`)** — `None`은 modifier 전용 값이 아니라
+      디스패치 배관이라 여기 소속(`architecture.md`의 소스 트리에 있는 건
+      핸들러 쪽 `Dispatch/None.luau`뿐 — **[2026-08-22] 탑레벨 센티널
+      `None.luau`와 `Brand.luau`는 그 트리에 아직 줄이 없다**, M3 구현 시
+      트리도 같이 채울 것).
+      `NoneHandler`는 배열/해시 구분 없이 `Dispatch.process(inst,k,nil,index+1)`
+      **재귀만** 하고(선행 `retractFrom` 없음 — 하강 diff), 실제 정리는
+      `NilHandler`(`isHandlable`이 `type(k) == "number" and v == nil`일 때만
+      매치하는 말단)가 `Dispatch.setLength(inst,k,0)` +
+      `Dispatch.setOffsetSource(inst,k,None)` 등록으로 맡는다.
+      **`Dispatch.drive`에 `None` 스킵 분기는 없다**(반응형 값이 내놓는
+      `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
+      `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.
+      Modifier 쪽 표면(인라인 키로 필드 지우기, `Peek` 반환 타입)은 M7
 - [ ] `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?)`/
       `Dispatch.setOffsetSource(ownerKey,i,offset:Source<number>|None)`/
       **`Dispatch.getOffsetAt(ownerKey,i)`** —
@@ -418,9 +596,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`:On()`/`:IsOn()`/`:OffWithoutEmit()` 세 메서드 + 그 인스턴스를
       lazy 조회하는 Dispatch 쪽 헬퍼 `getBlocker(ownerKey)`)를 호출하는 이유는
       크래시 방지가 아니라 배치 등록 비용(O(N²)→O(N)) 절감.
-      **[2026-08-22] 그래서 필요한 `GateNode`/`Blocker`/`EpochMap`은 이제
-      이 마일스톤에 체크박스로 있다**(위 세 항목) — 예전엔 M3에 있는 걸
-      각주로 가리키기만 했다. 결정 경위("게이팅 먼저", 그리고 앞당기는
+      **[2026-08-24 정정] 그래서 필요한 `GateNode`/`Blocker`/`EpochMap`은
+      M2(반응형 코어)에 체크박스로 있다** — 2026-08-22엔 각주로만 예고돼
+      있던 걸 이 마일스톤으로 앞당겼었는데, 같은 달 24일 마일스톤 순서
+      교체로 M2가 먼저 지어지게 되면서 셋 다 그리로 되돌아갔다(앞당길 이유가
+      사라짐). 여기서는 **M2가 이미 만들어둔 것을 호출하기만 한다.**
+      결정 경위("게이팅 먼저", 그리고 앞당기는
       대상이 `Blocker` 자체가 아니라 그 아래 공용 `Gate` 노드로 바뀐 것)는
       `qa-request/pre-implementation-qa-round5-followup.md`와
       `base/gate-plan.md`가 소스 — 여기서 반복하지 않는다.
@@ -471,137 +652,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         `Dispatch.drive`의 진입도 항상 `1`
       - **소유권 충돌 감지는 Dispatch의 일이 아님**(옛 점유 error 폐지) —
         필요한 도메인이 직접(Attribute 이름 claim, M10)
-- [ ] mock 대상 테스트
-
-## M3 — Store/State/Source
-
-- [ ] `Source.luau`/`State.luau`/`Store.luau`
-- [ ] **[2026-08-18 신설]** `store:GetDynamic<<T>>(name): Source<T>` — 런타임에
-      이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열 커링은
-      기각). **⚠️ 콜론 메소드로 두면 `__index`가 고정 메소드 테이블을 먼저
-      확인해야 하고 `GetDynamic`이 예약 키가 됨** — 탑레벨 함수로 둘지
-      아직 미결(`base/store-plan.md`의 "타입 추론 문제" 절, `question.md` 3번)
-- [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
-      (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제
-      호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다" 절) —
-      State는 구독자(Observer의 emit 클로저)를 **weak로만** 담고, 살려두는
-      책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
-      (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐). 발화 시
-      각 구독자에 대해 `canExecute(observer)`가 거짓이면 **그 구독자만
-      조용히 건너뜀**(no-op) — 이게 `canExecute`의 유일한 실제 호출부이고,
-      `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
-      걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
-      `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
-- **[확정된 것 — 코드 아님]** `store.key` dot-access 타입 추론 확인 — Luau `type function`
-      (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
-      `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
-      번째 세션, `base/typing-limits.md` §5) — **[2026-08-15 실측 완료]**
-      `luau-test/done/16-type-store-key-typefunction.luau` 통과(원인은
-      설계 문제가 아니라 `types.newfunction` API 버전 드리프트였음)
-- [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
-      (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
-      절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
-      자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M3
-      스파이크에서 확인. **[2026-08-24 정정, 6라운드 `H-13`]** 여기 원래
-      *"`Effect`/`Observer`는 대칭 sugar 없이 `:With` 명시 유지"*라고 적혀
-      있었는데 **`Effect`는 `C-6`에서 이미 역전됐다** — 각 dep에 구독을 따로
-      걸면 합치는 노드 자체가 안 생겨 감출 비용이 없다. **기각으로 남은 건
-      `Observer` 하나**이고 근거도 새로 쓰였다("Observer는 리시버 State
-      하나에 붙는 구독, 여럿을 엮는 건 Effect가 대신한다")
-- [ ] **⭐ [2026-08-24 신설, 6라운드] `Effect` 구현 시 같이 만들 것** —
-      **`handle._observers`**(배열, 단수 `_observer`에서 바뀜 `H-8`) ·
-      **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
-      같은 자리를 읽는다) · **`handle._refDeps`/`_refCallbacks`**(`Ref` dep과
-      거기 건 클로저 — 해제 시 값으로 떼야 해서 보관 필요) ·
-      **`handle._destroyConn`** · **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
-      (`bindLifetime`/`unbindLifetime`이 `isEffect`일 때 부르는 훅, `H-11`).
-      `fn` 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
-      **`...deps`는 `fn`에 안 넘어간다**(`H-14`). `Ref` 콜백은 본문 맨 앞에서
-      **`canExecute(handle)`를 확인**한다(`H-7`). 의사코드는
-      `base/effect-plan.md`가 소스
-- [ ] **[2026-08-24 `H-39`]** `ObserverEffectLeafHandler.process`가 자기 배열
-      자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을 등록 —
-      빠져 있었다(위 M2의 그 항목)
-- [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
-      스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
-      미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
-      누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
-- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Source`/`State`/
-      `Store` 필드 추가(위 M2 항목의 "마일스톤마다" 규칙)
-- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(**⚠️ [2026-08-24
-      `H-14`] 이 항목은 `:Compute` 한정이다** — `Effect`의 `fn`엔 deps가 안
-      넘어간다) — (`fn(self,
-      previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
-      리스트 맨 끝이어야 하는 것과 같은 이유로 `previous?`가 deps 팩
-      **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
-      세션에 순서 정정, `base/source-state-plan.md` "trailing deps를 fn에
-      lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
-      `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
-      이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
-      되면 동종 타입 dep 1개로 한정)
-> **[2026-08-22 이동] `EpochMap.luau` / `state:Gate` + `GateNode` /
-> `Blocker.luau`는 M2로 옮겼습니다** — 셋 다 M2가 실제로 호출하는데
-> 각주로만 예고돼 있어서, `LifetimeHandle` 인터페이스를 M8→M2로 옮겼던
-> 전례대로 체크박스 자체를 옮겼습니다. M3는 그 위에 State/Source 본체를
-> 얹기만 하면 됩니다.
-- [ ] **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
-      재계산/전파 판정은 **`Epoch` 리비전 비교**다(`base/state-epoch-plan.md`)
-      — `invalid` 플래그가 아니다. 아래 `Source.luau`/`State.luau`가 이걸
-      전제로 짜여야 한다: `Source`가 `type Epoch = { Revision: number }`를
-      구조적으로 만족하고(`EpochBrand`에도 등록), 부기는 재사용 가능한
-      **`EpochMap`**(`:Update(Epoch|EpochSet) -> boolean`, `:Refresh`, `:Sync`,
-      `:TrackFrom` — `EpochSet = {[Epoch]: true}`, **배열 아님**)
-      으로 떼어내며, State가 그걸 **둘** 컴포지션한다 — `valueEpochMap`(값
-      유효성)/`emitEpochMap`(전파 dedup). emit은 값도 리비전도 안 싣고
-      **출처(`Epoch`나 그 집합)만** 싣고, 순회는 `rawInvalid == false`일 때만
-      돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
-      통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
-      (`luau-test/STATUS.md`).
-- [ ] `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
-      절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
-      부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
-      기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
-- [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
-      실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
-      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`. **동적
-      경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
-      is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
-      열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
-- [ ] `Effect(fn, ...deps)`(`base/effect-plan.md`, **[2026-08-21 5라운드
-      `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
-      1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
-      (State/Source는 `Observer`, `Ref`는 `:Callback`)을 걸어
-      재실행+cleanup 체이닝(React `useEffect` 동형). **`EffectHandle`이
-      `EpochMap`을 하나 들어** 공통 상류로 인한 중복 발화를 접고, 설치 구간
-      억제 플래그가 그 `Update`보다 먼저 와야 함
-      (`base/state-epoch-plan.md`). Observer 구현 이후에 착수(의존 관계).
-      `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
-      모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
-      마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
-      **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
-      "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
-- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
-      `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
-      내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
-      세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
-      호출"로 정정 — 진짜 독립 경로는 둘뿐).
-      **[2026-08-14 다섯 번째 세션에 별도 predicate `canBound(handle)`을
-      폐기하고 `canExecute` 하나로 합쳤다가, 같은 날 열한 번째 세션에
-      다시 갈라짐]** — "지금 묶어도 되는가"(bound 문맥)와 "지금
-      발화해도 되는가"(execute 문맥)는 호출부의 질문이 다르고
-      **[2026-08-18 구현 전 QA 정정] 판정값도 같은 게 아니라 서로의
-      부정**이라(`canBound(v) == not canExecute(v)`, 게이트는 항상
-      `if not canBound(v) then error(...)`), `Ref` 이중 배치
-      방지(`question.md` 0-W)를 계기로 `canBound`가
-      별도 진입점으로 재도입됨 — 판정 로직(비공개 `isBoundAlive` 헬퍼)은
-      공유해 코드 중복은 없음. **이 절이 쓰는 게이트는 이제 `canBound`**
-      (emit 전파 게이팅 전용 `canExecute`가 아님). `.Subscribed` 필드가
-      leaf 경로와 무관하다는 것, leaf 생존 판정을 `bindLifetime`이 `value`
-      쪽 `Relate`에 복사해둔 gcconn으로 하는 것은 안 바뀜 — `base/
-      lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절, 역전 경위는
-      `archive/canexecute-inst-arg-reversed.md`. 부수 효과로 **바인딩이
-      죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를 통과**
-      (살아있는 바인딩만 막는 게 의도, 안 바뀜)
+- [ ] **[2026-08-24 M2에서 이동] Observer/Effect 동적 경로 가드 등록** —
+      `{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v가
+      Observer/Effect, process = error(...)}` 둘을 `Dispatch.addHandler`로
+      등록(`k` 타입 안 가림, `PreRef`와 같은 패턴 —
+      `base/source-state-plan.md`의 Observer 절, `base/effect-plan.md`의
+      "동적 경로 가드" 절). **M2에서 Observer/Effect 본체를 짤 때는 이 등록만
+      빼고 간다** — 레지스트리(`Dispatch.addHandler` + `Handler.luau` 계약)가
+      이 마일스톤에서 생기기 때문. **M2가 M3에 개념상 지던 의존은 이 항목과
+      바로 아래 항목뿐이었고, 둘 다 "핸들러를 등록한다"뿐이라 이쪽으로 미룰
+      수 있었다** — 그래서 빌드 순서엔 역방향 간선이 남지 않는다.
+      순서 교체(2026-08-24)의 근거
+- [ ] **[2026-08-24 M2에서 이동, `H-39`]** `ObserverEffectLeafHandler.process`가
+      자기 배열 자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을
+      등록 — 빠져 있었다(위 말단 핸들러 항목)
 - [ ] mock 대상 테스트
 
 ## M4 — 첫 end-to-end 반응형 업데이트
@@ -619,7 +683,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       정확히 불린다" 확인 + **`State<State<T>>`(값이 또 State/Source)가
       인덱스 N/N+1로 안 겹치고 정상 동작하는지**(2026-08-13 다섯 번째
       세션에 UB→정상 지원으로 재정정) + **최초 마운트 직후 첫 재발행에서
-      인덱스 2의 retractor가 실제로 불리는지**(위 M2의 `SetStrong` 순서
+      인덱스 2의 retractor가 실제로 불리는지**(위 M3의 `SetStrong` 순서
       버그가 정확히 여기서 증상으로 나타남)
 
 ## M5 — quad-roblox 최소 프로바이더
@@ -696,7 +760,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   이때 확정(CRUD/`:List` 여부 무관 항상 노출, 순서 계산과 "n개 검색됨"
   UI 둘 다 겸함) — 구현 시 이 두 API를 `:List`/CRUD의 `raw*`가 호출.
   **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
-  해결됨**, 위 M2 항목 참고.
+  해결됨**, 위 M3의 `Dispatch.setLength`/`setOffsetSource` 항목 참고.
 - **Slot의 `Add`/`Remove`/`Extract`/`ExtractAll`/`Clear`/`Move`/`Swap`/
   `Get`/`IndexOf`/`Splice` CRUD 의미론 확정** (2026-08-09 세 번째 세션,
   2026-08-09 열한 번째 세션에 식별 기준 재정정, `Splice`는 2026-08-12
@@ -766,7 +830,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   `disposeInst`가 남아 있었음), 중첩 offset이 부모 베이스를 못 받던 결함과
   재마운트가 `Offset` Source를 새로 만들던 결함도 같이 수정됐다.
   **`recompute` 트리거 모델의 크래시(`RC-1`)는 Blocker 게이팅으로
-  해결됨 — 위 M2 항목 참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
+  해결됨 — 위 M3의 `Dispatch.setLength`/`setOffsetSource` 항목
+  참고(`base/slot-plan.md` "재귀 메커니즘" 절).**
   **[재설계, 2026-08-21] `attachSlot`은 비공개 재귀 둘로 분해됨** —
   `materializeSlotTree`(부기만, Blocker가 감싸는 건 이제 여기뿐) +
   `mountSlotTree`(물리 `Parent` 대입만, Blocker 불필요), 그리고 그 둘을
@@ -855,7 +920,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `:List`의 **`prevKeys`**(옛 `keyIndex`의 강등판, 단순 키 집합).
       전부 `base/slot-plan.md`가 소스
 - [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Slot` 필드 추가
-      (위 M2 항목의 "마일스톤마다" 규칙)
+      (위 M3 항목의 "마일스톤마다" 규칙)
 - [ ] **[2026-08-13 여섯 번째 세션 — 이 세션의 Slot 결정 전부, 구현 전 필독]**
       - **`State<Slot>` 교체 = 파괴가 아니라 언마운트**(`state<Frame>`와 동일).
         비파괴 경로 `unmountSlotTree`를 `destroySlotTree`와 별도로 구현 —
@@ -934,7 +999,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **`bindLifetime`/`unbindLifetime`이 `isEffect(value)`를 보고 `Destroying`을
       걸고/끊는 것**으로 닫혔고(`base/effect-plan.md` +
       `base/lifecycle-pattern.md`의 그 의사코드), 이 문장은 그 배선이 구현된
-      뒤에야 참이 된다 — M3 `Effect` 구현이 M6의 이 항목을 **선행**한다는 뜻이다.
+      뒤에야 참이 된다 — M2 `Effect` 구현이 M6의 이 항목을 **선행**한다는 뜻이다.
       (**[같은 날 재결정]** 처음엔 *"`EffectHandle`이 자기 `bindLifetime` 직후에
       건다"*였으나 `/code-review high`가 **그 호출부가 실재하지 않는다**는 걸
       지적했다 — 핸들은 남이 자기를 bind하는 걸 관측할 수 없고, `Effect`가
@@ -1022,9 +1087,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `brand-plan.md`의 "`isX` wrapper" 절, M2의 `Brand.luau`에 이미
       구현돼 있어야 함)
 > **[2026-08-22 이동] `None` 센티널 + `Dispatch/None.luau`(`NoneHandler`/
-> `NilHandler`)는 M2로 옮겼습니다** — `None`은 modifier 전용 값이 아니라
+> `NilHandler`)는 M3로 옮겼습니다** — `None`은 modifier 전용 값이 아니라
 > quad-base 디스패치 배관이고(`architecture.md`의 소스 트리에서도
-> `Dispatch/None.luau`), M0의 `props.Modifier or None` 관용구 · M2의
+> `Dispatch/None.luau`), M0의 `props.Modifier or None` 관용구 · M3의
 > `Dispatch.drive` · M6의 `setOffsetSource(..., None)`이 전부 이미 전제합니다.
 > M7에서는 **Modifier 쪽 표면만** 다룹니다 — 인라인 키/setter로 필드를
 > 지우는 용법과 `Peek` 반환 타입에 `None`을 추가하는 것(`modifier-plan.md`
@@ -1043,12 +1108,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       빠져 있어 구현자가 존재 자체를 놓칠 수 있던 자리다. 의사코드는
       `base/modifier-plan.md`의 flatten 절이 소스
 - [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Modifier` 관련
-      표면이 노출돼야 하면 같이 갱신(위 M2 항목의 "마일스톤마다" 규칙)
+      표면이 노출돼야 하면 같이 갱신(위 M3 항목의 "마일스톤마다" 규칙)
 
 ## M8 — Ref
 
 - [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Ref` 필드 추가
-      (위 M2 항목의 "마일스톤마다" 규칙)
+      (위 M3 항목의 "마일스톤마다" 규칙)
 - [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
       `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
@@ -1186,7 +1251,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 - [ ] **[2026-08-24 `H-39`]** `TagHandler`/`AttributeGroupHandler`가 자기 배열
       자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을 등록 —
-      **둘 다 0건이었다**(위 M2의 그 항목). 같이 **`type(k) == "number"` 가드**도
+      **둘 다 0건이었다**(위 M3의 그 항목). 같이 **`type(k) == "number"` 가드**도
       추가(`H-52` — `RefLeafHandler`가 2026-08-18에 받은 수정을 이 둘은 못 받았다)
 - [ ] **[2026-08-24 `H-41`]** `AttributeGroupHandler.process`에 `groupClaimKeys`
       위치 claim 배선 — 5라운드 `AT-1`에서 `(inst, groupValue) → k`로 확정해놓고
@@ -1196,7 +1261,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       없으면 `None`으로 콜백을 끄는 게 실제로는 **나중에 터질 Connection을 새로
       심는** 동작이 된다
 - [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Tag`/`Attribute`
-      필드 추가(위 M2 항목의 "마일스톤마다" 규칙)
+      필드 추가(위 M3 항목의 "마일스톤마다" 규칙)
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/OnChange.luau`(`OnChange(name)` 특수 키 팩토리+Handler,
       `GetPropertyChangedSignal` 바인딩 — 제네릭 없이 콜백 타입은 인라인
@@ -1352,13 +1417,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
       — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을
       추가하지 않는 **순수 슈가**로 확인됨(`Blocker`의 gated state + `Ref` +
-      아래 주입 op 2개 위에 전부 얹힘, 그 문서 13절). **[정정, 2026-08-21 5라운드]
-      그 공용 `Gate` 추출은 M3가 아니라 M2로 앞당겨졌다** — "게이팅 먼저"
-      결정(위 M2 각주)으로 `Dispatch.drive`의 배치 등록이 쓰는 게이팅부터
-      만들기로 했고, 그때 `Blocker`/`Debounce`/`Throttle`이 공유할 노드를
-      같이 빼둔다(따로 하면 같은 설계를 두 번 함). **[2026-08-21] 표면 확정 —
+      아래 주입 op 2개 위에 전부 얹힘, 그 문서 13절). **[정정, 2026-08-24]
+      그 공용 `Gate` 추출은 M2(반응형 코어)에서 이뤄진다** — 2026-08-21에
+      "게이팅 먼저" 결정으로 디스패치 쪽에 앞당겨뒀다가, 2026-08-24 마일스톤
+      순서 교체(위 M2 배너)로 반응형이 먼저가 되면서 앞당길 필요 자체가
+      사라졌다. `Blocker`/`Debounce`/`Throttle`이 공유할 노드를 거기서 같이
+      빼둔다(따로 하면 같은 설계를 두 번 함). **[2026-08-21] 표면 확정 —
       `state:Gate(setup)` 메소드**, `base/gate-plan.md`.
-      프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M3를 막지 않음.
+      프리미티브 자체는 그 위에 나중에 얹으면 되고 M0/M2를 막지 않음.
       주입 op 2개(`setTimeout(func, delay) -> Timeout` / `clearTimeout`,
       Roblox는 `task.delay`/`task.cancel`로 배선 — **인자 순서가 반대라
       주의**)가 `bindLifetime`/`canExecute`와 같은 base 범용 유틸 그룹에

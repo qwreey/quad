@@ -215,7 +215,14 @@ end
 ### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
 
 (2026-08-14 열한 번째 세션, `PreRef`/`Observer`와 같은 패턴, `base/
-source-state-plan.md`의 "동적 경로 가드" 절 참고.) `EffectHandle`도
+source-state-plan.md`의 "동적 경로 가드" 절 참고.)
+**⚠️ [2026-08-24] 이 가드를 실제로 `Dispatch.addHandler`로 등록하는 것은
+M3(디스패치)다.** `HANDLER_PRIORITY_FALLBACK` 상수도 `Dispatch.addHandler`도
+M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **핸들러 정의만
+준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
+경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
+M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+ `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =
@@ -472,7 +479,7 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   같이 처리해야 한다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피
   모든 옵져버들이 내부에 들어가 있을것이므로 가능하다."*
 
-**우선순위**: 새 코어 메커니즘이 아니라 `Effect` 표면 확장이므로 M3의
+**우선순위**: 새 코어 메커니즘이 아니라 `Effect` 표면 확장이므로 M2의
 `Effect` 구현과 같이 간다. **[2026-08-21]** 여기 있던 "억제 장치 때문에
 `Gate`보다 뒤"라는 순서 제약은 **없어졌다** — 억제가 `Effect` 내부 플래그로
 확정돼 `Gate`에 안 걸린다.

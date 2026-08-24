@@ -89,7 +89,7 @@ store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌
 여러 단계(A→B→C)로 겹칠 때 자기 자신의 상태와 위임한 핸들러의 상태가
 슬롯 하나를 두고 충돌하는 문제가 있어 기각되고, 대신 Dispatch 자신이
 전체 체인을 배열로 들고 있는 쪽으로 정리됨. 상세는 `base/
-dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
+dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M3/M4. 아래는
 원래 발견 당시 기록.
 
 **위치**: `base/dispatch-core-plan.md` "확정된 디스패치 모델" 절 90-91행 —
@@ -107,7 +107,7 @@ dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 
 **제안**: `Dispatch/StoreBind.luau`가 "마지막으로 선택된 핸들러" 자체를
 `(inst, k)`별 상태로 들고 있다가, 새 `realv` 처리 전에 그 핸들러의
-`retract`를 호출하는 식으로 지금 결정해두는 게 좋아 보임 — M2/M4에서 바로
+`retract`를 호출하는 식으로 지금 결정해두는 게 좋아 보임 — M3/M4에서 바로
 부딪힐 지점.
 
 ### 1-3. 우선순위 스캔의 동률 처리, 매치 실패 시 동작이 정의 안 됨 — [해소됨, 2026-08-12 열일곱 번째 세션]
@@ -116,7 +116,7 @@ dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 (`HANDLER_PRIORITY_HIGH` 등, "밴드+오프셋" 패턴)로 애초에 안 나게 유도,
 매치 실패는 조용한 무시 없이 즉시 `error`(브랜드+`typeof` 출력, provider
 초기화 확인 안내)로 확정. 핸들러 등록 시점 동률 감지 print 경고와
-`Dispatch.listHandlers()`류 전체 목록 조회 함수도 M2 기본 기능으로
+`Dispatch.listHandlers()`류 전체 목록 조회 함수도 M3 기본 기능으로
 확정 — 상세는 `base/dispatch-core-plan.md` "우선순위 동률/매치 실패 처리"
 절. 아래는 원래 발견 당시 기록.
 
@@ -131,7 +131,7 @@ dispatch-core-plan.md` "Dispatch 체인" 절, `ROADMAP.md` M2/M4. 아래는
 
 **제안**: 최소한 "매치 실패는 에러(silent 무시 금지)"만이라도 지금
 결정해두면 구현 중 인터럽트를 막을 수 있음. 동률은 "등록 순서가 tiebreak"
-정도로 명시만 해둬도 충분. M2(Dispatch 엔진) 착수 직전 확인.
+정도로 명시만 해둬도 충분. M3(Dispatch 엔진) 착수 직전 확인.
 
 ### 1-4. provider(팩토리) 미주입 상태에서 dispatch가 호출되면 어떻게 되는지 세 번째 케이스가 빠짐 — [해소됨, 2026-08-12 열일곱 번째 세션]
 
@@ -153,7 +153,7 @@ nil-index 크래시 vs 조용한 no-op)가 안 정해져 있음.
 
 **제안**: base dispatch 엔진이 "아직 provider 미주입" 상태를 감지해 명확한
 에러를 던지도록 지금 결정해두면, 구현 중 흔한 초기화 순서 실수를 훨씬 덜
-헷갈리게 만들 수 있음. 1-2번과 같은 타이밍(M2)에 같이 확정.
+헷갈리게 만들 수 있음. 1-2번과 같은 타이밍(M3)에 같이 확정.
 
 ### 1-5. `props.Modifier`/`props.Ref` forwarding 관례가 Lua 배열 리터럴의 nil-hole 함정에 그대로 노출됨
 
@@ -278,7 +278,8 @@ element별 weak-set) — throw 조건을 "Slot 핸들러의 `process`가 같은 
 
 **[2026-08-07 세 번째 세션 갱신 — 반영 완료.]** 아래 제안대로
 `LifetimeHandle.luau`/`PerInstanceState.luau` 인터페이스가 `ROADMAP.md`
-M2로 이동됐고, M8은 quad-roblox 실제 구현만 담당하도록 분리됨 — 더 이상
+M2로 이동됐고(**[2026-08-24]** 마일스톤 순서 교체로 반응형 코어 앞머리의
+"공통 기반" 절), M8은 quad-roblox 실제 구현만 담당하도록 분리됨 — 더 이상
 열린 항목 아님, 아래는 원래 발견 당시 기록.
 
 **위치(당시)**: `ROADMAP.md` M8 "Ref" — `"LifetimeHandle 인터페이스 + quad-roblox
@@ -287,40 +288,44 @@ M2로 이동됐고, M8은 quad-roblox 실제 구현만 담당하도록 분리됨
 **문제**: `base/lifecycle-pattern.md`("생명 바인드 유틸"을 State-invalidate
 리스너 클로저 등록에도 재사용)와 `base/slot-plan.md`(Slot의 `retract`가
 같은 canExecute 패턴을 그대로 씀)는 둘 다 이 유틸을 State/Store 구독
-(M3/M4 영역)과 Slot(M6)에서 이미 쓴다고 명시하는데, `LifetimeHandle`
+(M2/M4 영역)과 Slot(M6)에서 이미 쓴다고 명시하는데, `LifetimeHandle`
 인터페이스 자체는 M8에서야 정의된다. 즉 M4/M6이 개념적으로 필요로 하는
 base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 
-**제안**: `LifetimeHandle.luau`(quad-base, 인터페이스만)를 M2(Dispatch
-엔진) 또는 M3(Store/State)로 옮기고, M8은 "quad-roblox 실제 구현(Instance
+**제안**: `LifetimeHandle.luau`(quad-base, 인터페이스만)를 M3(Dispatch
+엔진) 또는 M2(Store/State)로 옮기고, M8은 "quad-roblox 실제 구현(Instance
 `Connected` 기반)"만 담당하도록 분리. M1 mock에도 이 인터페이스의 트리비얼
 스텁(항상 true)을 붙여두면 M4/M6 테스트가 자연스러워짐.
 
-### 1-10. `store.key`의 레코드 필드 타이핑 검증이 M0가 아니라 M3로 밀려 있음 — [해소됨, 2026-08-12 열일곱 번째 세션]
+### 1-10. `store.key`의 레코드 필드 타이핑 검증이 M0가 아니라 M2로 밀려 있음 — [해소됨, 2026-08-12 열일곱 번째 세션]
 
 **해소**: 걱정했던 "검증 난이도" 자체가 사라짐 — Luau `type function`
 (`https://luau.org/types/type-functions/`)으로 `Store<T>`가 `T`의 각
 필드를 `Source`로 감싼 레코드 타입을 실제로 합성 가능함을 확인(tbox에서도
 이미 쓰이는 패턴). 결과가 구조적으로 `Source<T>`를 만족하기만 하면 Luau가
 이름이 아니라 구조로 일치를 검사하므로 문제없음. 기술적으로 막힐 위험이
-없어졌으니 M0/M3 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
+없어졌으니 M0/M2 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
 안 옮겨도 됨. 상세는 `base/typing-limits.md` "`store.key` 레코드 필드
 타이핑" 절, 실제 문법 실측은 `luau-test/done/16-type-store-key-
 typefunction.luau`(**[2026-08-15] 통과** — 원래 스파이크가 API 버전
 드리프트로 깨져있던 걸 고침, `audit/type-recursive-issue-with-typeof/
 REPORT.md` 6-1절). 아래는 원래 발견 당시 기록.
 
-**위치**: `ROADMAP.md` M0 vs M3 `"store.key dot-access 타입 추론 확인"`.
+**위치**: `ROADMAP.md` M0 vs M2 `"store.key dot-access 타입 추론 확인"`.
 
 **문제**: M0의 정의 자체가 "추론만으로 확정하고 실제 Luau로 부딪혀본 적
 없는 것"을 검증하는 단계다. `base/source-state-plan.md`가 요청한 M0 항목(
 "Source가 State를 만족하는 제네릭 메소드 체이닝"의 솔버 안정성)은 이미
 반영됐지만, 이건 `:Compute` 같은 제네릭 메소드 체이닝만 다루고 `{key:
 Source<number>}` 같은 **레코드 필드로서의 dot-access 타이핑**(읽기/쓰기
-대칭성 논거의 핵심 전제)은 별개로 M3에 남아있다. 같은 리스크 카테고리인데
-M1(스캐폴딩)·M2(디스패치 엔진) 투자가 먼저 이뤄진 뒤에야 검증되는 셈이라,
-여기서 걸리면 이미 만든 스캐폴딩/디스패치 타입 시그니처를 다시 손봐야 할
-수 있음.
+대칭성 논거의 핵심 전제)은 별개로 Store/State 마일스톤에 남아있다. 같은
+리스크 카테고리인데 M1(스캐폴딩)·디스패치 엔진 투자가 먼저 이뤄진 뒤에야
+검증되는 셈이라, 여기서 걸리면 이미 만든 스캐폴딩/디스패치 타입 시그니처를
+다시 손봐야 할 수 있음. (**[2026-08-24]** 이 문단은 *발견 당시*의 서술이고,
+그 우려는 **[2026-08-15 실측 완료]**로 이미 해소됐다. 덧붙여 2026-08-24
+마일스톤 순서 교체로 Store/State가 디스패치보다 **먼저** 오게 되어 "디스패치
+투자를 다 한 뒤에야 검증된다"는 전제 자체도 더는 성립하지 않는다 — 히스토리
+블록이라 원문 논거는 그대로 두고 마일스톤 번호만 뺐다.)
 
 **제안**: M0 항목에 "`store.key`가 실제로 `Source<T>` 레코드 필드로
 안전하게 추론되는지"도 같이 넣을 것 — 어차피 같은 스파이크 파일에서 몇 줄
@@ -714,7 +719,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   개념을 참조하는 채로 남아있진 않은지 확인 — 이미 "Source가 State를
   만족함" 최신 모델로 정정돼 있어 문제없음.
 - `ROADMAP.md`에 `store.key = value`(구 `__newindex`) 모델을 암시하는
-  잔여 표현은 없음 — M3/M4 서술 모두 문법을 명시하지 않아 최신 `:Set()`
+  잔여 표현은 없음 — M2/M4 서술 모두 문법을 명시하지 않아 최신 `:Set()`
   모델과 직접 충돌하는 곳은 없음.
 - M9(컴포넌트 합성)이 M7(Modifier)·M8(Ref) 뒤에 오는 순서 — M9는 "M0
   스파이크(named-parameter 전달)를 정식 Modifier/Ref로 검증"하는 단계라고
@@ -732,7 +737,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 착수 전에 열려있는 우선순위1 항목이 없음. 아래는 남은 실측/검증 항목만
 정리(전부 "설계는 확정, 실제 Luau/구현으로 부딪혀볼 것만 남음" 상태):
 
-- **M2(Dispatch) 착수 시**: 1-2/1-3/1-4는 설계 확정 완료 — M2 스파이크에서
+- **M3(Dispatch) 착수 시**: 1-2/1-3/1-4는 설계 확정 완료 — M3 스파이크에서
   다단 체인 케이스, 동률 감지 디버그 print, 매치 실패 에러 경로가 실제로
   맞게 동작하는지 실측.
 - **M2/M3 착수 전**: 1-6(canExecute 실제 구현) 실측(1-9는 반영 완료, 위

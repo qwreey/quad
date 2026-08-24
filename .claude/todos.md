@@ -10,8 +10,9 @@
    **M2 착수를 막는 설계 항목은 더 이상 없다.**** `Gate`는
    `state:Gate(setup)` + `GateNode`로(`base/gate-plan.md`), State의
    재계산/전파 판정은 **`Epoch` 리비전 비교** 채택으로(`base/state-epoch-plan.md`
-   — **[2026-08-22 정정]** 구현 마일스톤은 갈린다: `EpochMap`/`Epoch`
-   인터페이스는 **M2**, State 본체 통합은 **M3**) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
+   — **[2026-08-24 재정정]** 둘 다 **M2**다: 2026-08-22엔 `EpochMap`/`Epoch`
+   인터페이스만 디스패치 쪽으로 앞당겨 갈라져 있었으나, 마일스톤 순서
+   교체로 되돌아와 State 본체와 같은 마일스톤이 됐다) 닫혔다. 두 문서 모두 `research/`가 아니라 **`base/`**에 있다.
    **[2026-08-21 후속] `Epoch`/`EpochMap`/`Brand` 승격도 같은 날 완료** —
    부기가 재사용 가능한 `EpochMap`으로 떨어져 나오고, 판정 인터페이스가
    `Source`에서 `Epoch`로 일반화되고, `Brand`가 인스턴스 브랜드로 재작성됐다
@@ -21,7 +22,7 @@
    리비전 증가 방식도 `bit32` 랩으로 확정** — `Epoch`/`EpochMap`/`Brand`에
    열린 설계 항목은 **하나도 없다**(`base/state-epoch-plan.md` §2).
    **[2026-08-21 경위]** 같은 날 `/code-review high`가 "게이트가 유보했다
-   내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M2 항목으로
+   내보내는 emit이 어느 출처를 싣는지"가 안 정해진 걸 잡아 한때 M3 항목으로
    되돌아갔으나, **사용자가 그 자리에서 흡수 집합 스냅샷으로
    확정**했다(`setup` 시그니처는 안 바뀜 — `base/gate-plan.md` 4번.
    **[2026-08-22 표기 정정]** 여기 `emit(self)` + 흡수 집합이라 적혀
@@ -38,24 +39,26 @@
    `Effect`의 설치 구간 억제가 `Gate` 소비자에서 빠지며 `effect-plan.md`의
    순서 제약도 사라짐). **다시, M2 착수를 막는 설계 항목은 없다.**
 
-   **⚠️ [2026-08-22 신설] 다만 설계가 아니라 *순서*가 막고 있다.**
-   `ROADMAP.md` 전반 점검에서 **M2와 M3의 의존이 양방향**인 게 드러났다 —
-   `Dispatch.setLength`/`setOffsetSource`/`recompute`가 `State<number>`/
-   `Source<number>`를 쓰므로 M2는 `Source.luau`/`State.luau` 없이 구현이
-   안 되고, 반대로 M3의 `Observer`/`Effect` 동적 경로 가드는 M2의
-   `Dispatch.addHandler`를 쓴다. 선택지 셋(M2/M3 순서 교체 / M2를 둘로
-   분할 / 지금 구조 유지)은 **`question.md` 2번이 소스** — 여기서 반복하지
-   않는다. 같은 점검에서 `EpochMap`/`GateNode`/`Blocker`/`None`이 M3·M7에서
-   **M2로 실제 이동**했고(각주로만 예고돼 있던 것), `Dispatch.drive`가
-   두 패스가 아니라 단일 일반화 `for`라는 `F-4-1` 정정과 물리 조작 주입 op
-   이름 `native*` 확정이 `ROADMAP.md`/`dispatch-core-plan.md`에 반영됐다.
-   M0 체크박스가 검증했던 스파이크 중 재작성 대기인 것들도
-   `ROADMAP.md`의 "재검증 대기" 절로 모았다(현황의 소스는 여전히
-   `luau-test/STATUS.md`).
+   **✅ [2026-08-24 해소] 설계가 아니라 *순서*가 막던 것도 닫혔다.**
+   2026-08-22 `ROADMAP.md` 전반 점검에서 옛 M2(디스패치)와 옛 M3(반응형)의
+   의존이 양방향인 게 드러났었는데, **사용자가 (a) 순서 교체를 선택**해
+   같은 날 전량 반영됐다 — 이제 **M2가 반응형 코어, M3가 디스패치 엔진**
+   이고 역방향 의존이 없다. 결정·근거·기각된 선택지는
+   `archive/question-resolved.md`의 "마일스톤 경계" 절이 소스, 새 마일스톤
+   구성은 `ROADMAP.md`의 M2 배너 — 여기서 반복하지 않는다. 부수로
+   `Brand`/`Relate`/`LifetimeHandle` 인터페이스가 M2 앞머리 "공통 기반"
+   절로 왔고, 2026-08-22에 디스패치로 앞당겼던
+   `EpochMap`/`GateNode`/`Blocker`는 M2로 되돌아왔으며, Observer/Effect
+   동적 경로 가드 등록과 `ObserverEffectLeafHandler`는 M3로 갔다.
+   **⚠️ 2026-08-24 이전에 쓰인 `session/`·`archive/`·`qa-request/`의
+   `M2`/`M3`는 옛 의미**(M2=디스패치, M3=반응형)로 읽을 것.
+   같은 2026-08-22 점검에서 `Dispatch.drive`가 두 패스가 아니라 단일 일반화
+   `for`라는 `F-4-1` 정정과 물리 조작 주입 op 이름 `native*` 확정도
+   `ROADMAP.md`/`dispatch-core-plan.md`에 반영됐고, M0 체크박스가 검증했던
+   스파이크 중 재작성 대기인 것들도 `ROADMAP.md`의 "재검증 대기" 절로
+   모았다(현황의 소스는 여전히 `luau-test/STATUS.md`).
    그 외 남은 것은 판단이 아니라 구현 시 정할 것 하나 — 스파이크 `05`
    재작성(`luau-test/STATUS.md`).
-   **[2026-08-22 해소]** 여기 있던 "M2에 `Blocker`까지 넣을지"는 같은 날
-   `ROADMAP.md` 전반 점검에서 **둘 다 M2**로 확정되며 닫혔다.
    **[2026-08-24 해소, 6라운드 `H-49`]** 여기 `Gate`의 "생명주기·재진입 계약"을
    같이 나열했었는데 **두 항목 다 부정확했다** — 재진입은 이미
    `[2026-08-21 정리 — 열린 항목 아님]`으로 닫혀 있었고, 생명주기는 "판단이
@@ -73,7 +76,7 @@
 
    **M2/M3에 직접 걸리던 것들이 전부 닫혔다** — 말단 핸들러 4종의
    `setLength`/`setOffsetSource` 미등록(`H-39`), `New(): Quad`가 닫힌 타입이라
-   `quad.Dispatch`가 타입에러인 것(`H-25`, M2 체크리스트에 항목 신설),
+   `quad.Dispatch`가 타입에러인 것(`H-25`, M3 체크리스트에 항목 신설),
    `Effect`의 leaf 사망 cleanup 배선 부재(`H-11`), `:List`의 인덱스/좌표계
    결함 둘(`H-1`/`H-2`).
 
@@ -112,7 +115,7 @@
    **`Owned = false`에서 `Detach`는 `_detached`에 안 들어감**, 조상 파괴 시
    unowned 요소도 같이 죽는다는 계약 신설, `groupClaimKeys` 키 확정
    (`(inst, groupValue) → k`), `Tween<T>:Mapped` 이름 확정, 4라운드가 반영을
-   빠뜨렸던 `E-10` dedup 대칭 결론 실반영, 그리고 **"게이팅 먼저"(M2로 앞당김)**.
+   빠뜨렸던 `E-10` dedup 대칭 결론 실반영, 그리고 **"게이팅 먼저"**(당시엔 디스패치 마일스톤으로 앞당기는 형태였으나 **[2026-08-24]** 순서 교체로 반응형이 먼저가 되며 그 앞당김은 불필요해짐).
    **아직 회신 대기인 것은 그 followup의 C절**(`rawAdd` 의사코드 승인,
    `rawAdd`의 `Length:Set` 제거, `updateFn`이 State를 반환할 때의 래핑/`prev`,
    `setLength` 앵커를 물리 target으로 되돌리기, `Gate` 이름·표면, `Effect`
@@ -158,26 +161,29 @@
    단순한 해법을 직접 제시 — flush 루프를 분기하는 대신 `attachSlot`의
    `slot._mounted = true`를 `activateList` 호출 뒤로 옮기는 것 하나로
    둘 다 닫힘. 부수로 `spliceArraysDown`이 밀어야 할 배열에
-   `bk.observers`가 빠져 있던 것도 발견·반영, `ROADMAP.md` M2가 M3의
-   `Blocker.luau`에 구조적으로 의존하게 된 것도 각주로 반영(마일스톤
-   재편 여부는 열림 — `pre-implementation-qa-round3.md`의 "ROADMAP.md
-   마일스톤 정합성" 절 참고).
+   `bk.observers`가 빠져 있던 것도 발견·반영, `ROADMAP.md` M3(디스패치)가
+   M2의 `Blocker.luau`에 구조적으로 의존하게 된 것도 각주로 반영
+   (**[2026-08-24]** 그때 열어뒀던 마일스톤 재편 여부가 순서 교체로
+   닫혔다 — 위 00번 머리말).
 
-   **아래는 M3 착수 전에 결론이 필요한 항목 목록** — **설계** 게이트
-   얘기다. M0은 아예 막혀 있지 않고, M2도 설계로는 안 막혀 있으나
-   **[2026-08-22] 마일스톤 순서 문제 하나가 M2를 막는다**(위 00번의
-   ⚠️ 문단 + `question.md` 2번). 둘 다 `question.md` 3번에도 있고 각 `base/` 문서에도
-   ⚠️로 표시돼 있다. **[2026-08-21 정리]** 여기 쌓여 있던 `[해소]` 항목들
+   **⚠️⚠️ [2026-08-24 승격] 아래 둘은 이제 *바로 다음* 마일스톤의
+   게이트다.** 순서 교체 전엔 반응형이 M3라 "한 마일스톤 뒤"의 일이었는데,
+   반응형이 M2가 되면서 **지금 착수 직전에 결론이 필요한 항목**이 됐다
+   (위 00번이 "M2 착수를 막는 **설계** 항목은 없다"고 하는 것과 모순되지
+   않는다 — 하나는 실측 미완, 하나는 표면 위치 선택이라 성격이 다르지만,
+   **어느 쪽이든 M2를 짜기 전에 답이 있어야 한다**). 둘 다
+   `question.md`의 **최우선 절**로 올라가 있고(2026-08-24에 낮은 우선순위
+   절에서 승격), 각 `base/` 문서에도 ⚠️로 표시돼 있다. **[2026-08-21 정리]** 여기 쌓여 있던 `[해소]` 항목들
    (`Blocker.luau` 마일스톤 순서, 그룹 `Attribute` 위치 claim 키,
    `SetAndDispose`, `PopOnly`→`Detach`, `KeyGone` 처분, `Store` 미선언 키
    타입 에러, dedup 경로 대칭)은 **전부 `archive/question-resolved.md`와
    각 `base/` 문서로 옮겼다** — 목록이 절반 넘게 해소 항목으로 차 있어
    "지금 할 일"로 읽히지 않던 것을 걷어낸 것.
    - **중간 State GC 미검증**(`base/source-state-plan.md`) — 상류 strong /
-     하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M3 착수 전 필요.**
+     하류 weak 불변식을 명문화할지 + `luau-test` 실측. **M2 착수 전 필요.**
    - **`store:GetDynamic`을 콜론 메소드로 둘지 탑레벨 함수로 둘지**
      (`base/store-plan.md`) — 콜론이면 `GetDynamic`이 모든 Store의 예약 키가
-     됨(lazy `__index`와 충돌). M3/M4 착수 전 필요.
+     됨(lazy `__index`와 충돌). M2/M4 착수 전 필요.
 
 0. **⭐ M0 착수를 막는 결정은 이제 없음 (2026-08-14 열한 번째 세션 기준).**
    `question.md`의 최우선 항목이 **전부 비었음** — `0-Y`(`:Compute` lazy
@@ -287,13 +293,13 @@
    백로그이지만 위 항목들과는 발단이 다름 — **사용자가 직접 요청한 실제
    기능 갭**에서 시작됨(그 문서 13절). 다만 제어 핸들 설계까지 닫히고 나니
    실제로 quad-base에 새 코어 메커니즘을 추가하지 않는 **순수 슈가**로
-   확인돼(같은 절), 위 항목들과 우선순위는 다시 같아짐 — M0/M3를 막지
+   확인돼(같은 절), 위 항목들과 우선순위는 다시 같아짐 — M0/M2를 막지
    않고, **그 게이티드 노드는 [2026-08-21] `state:Gate`로 확정돼 M2에서
    만들어진다**(`base/gate-plan.md`) — `Debounce`/`Throttle`은 그 위의
    정책으로 얹으면 되고, 같은 설계를 두 번 할 일은 없어졌다.
    주입 op 2개(`setTimeout`/`clearTimeout`)가 백엔드 팩토리 표면에
    추가될 예정이라는 것도 M1 설계 시 인지. 남은 열린 질문 없음(구
-   `question.md` 3번, 전량 해소로 항목 자체가 빠짐).
+   `question.md` 낮은 우선순위 절, 전량 해소로 항목 자체가 빠짐).
    **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
    신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
    (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때

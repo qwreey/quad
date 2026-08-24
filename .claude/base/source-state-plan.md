@@ -314,7 +314,7 @@ Observer와 동일한 패턴(외부 weak table, `{[child] = true}` 류)으로 �
 유일한 중복 방지 수단이 되면서 "State는 캐싱하는 존재"라는 근거가 더
 강해짐.
 
-### ⚠️ 미해결 — 중간 State가 살아남는가(구독 엣지의 방향성) (2026-08-18 구현 전 QA에서 제기, **M3 착수 전 결론 필요**)
+### ⚠️ 미해결 — 중간 State가 살아남는가(구독 엣지의 방향성) (2026-08-18 구현 전 QA에서 제기, **M2 착수 전 결론 필요**)
 
 **사용자가 지목한 미검증 항목**: *"확인해봐야 하는게 State -> State ->
 State -> Observer Leaf Bind 에서 중간 State 는 참조되지 않아도 사라지지
@@ -343,7 +343,7 @@ With 등이 있는 경우 parent 와 연결된 상대를 자기 자신에 가지
 **해야 할 일**: (a) 이 방향성(상류 strong / 하류 weak)을 이 문서의
 불변식으로 명문화할지 결정, (b) `luau-test`에 실측 스파이크 추가
 (`07-relate-weak-table-gc.luau`가 연쇄 GC를 이미 다루므로 그 옆에).
-**미검증 상태로 M3에 착수하면 안 되는 항목** — 아래 "결론"의 "관리 부담은
+**미검증 상태로 M2에 착수하면 안 되는 항목** — 아래 "결론"의 "관리 부담은
 작음"은 이 항목이 닫히기 전까지는 잠정이다.
 
 **결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
@@ -389,11 +389,12 @@ lazy State 핸들로 통일, 아래 "`:With`/`:Compute` — self 인자도 lazy 
 `Blocker` 참고.** 위 `:With`+`:Compute`만으로는 "state1, state2를 연달아
 Set하면 결합된 파생값이 두 번 재계산/재대입된다"는 문제(즉시 pull하는
 store-bind 소비자 기준)는 안 풀림 — 이건 별도 확정 프리미티브
-`base/blocker-plan.md`가 다룸(**[2026-08-22 정정]** 여기 "State 개발과 같은
-마일스톤, `ROADMAP.md` M3에서 함께 구현"이라 적혀 있었으나 `Blocker.luau`는
-**M2**로 이동했고, 바닥부터 짜는 게 아니라 공용 `GateNode`
-(`base/gate-plan.md`) 위의 정책이다 — 마일스톤 소속의 소스는
-`blocker-plan.md`의 정정 배너와 `ROADMAP.md` M2). lexical `Batch(fn)`으로 풀려던
+`base/blocker-plan.md`가 다룸(**[2026-08-24 재확정]** "State 개발과 같은
+마일스톤, `ROADMAP.md` M2에서 함께 구현"이 맞다 — 2026-08-22엔 `Blocker.luau`가
+디스패치 쪽으로 앞당겨져 갈라져 있었으나 마일스톤 순서 교체로 되돌아왔다.
+다만 바닥부터 짜는 게 아니라 공용 `GateNode`(`base/gate-plan.md`) 위의
+정책이라는 점은 그대로 — 마일스톤 소속의 소스는 `blocker-plan.md`의 정정
+배너와 `ROADMAP.md` M2). lexical `Batch(fn)`으로 풀려던
 초기 시도는 코루틴 yield 위에서 구조적으로 위험해 기각됨 —
 `archive/batch-rejected.md` 참고.
 
@@ -665,7 +666,7 @@ deps만 받고 싶어도 `previous`가 2번째 자리를 차지하므로, 그 �
 제약상 다른 선택지가 없음(대안은 애초에 이 확장 자체를 안 하는 것뿐).
 
 **실측 필요 — `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`
-신규(ROADMAP.md M3 반영).** 순서 문제 자체는 위 정정으로 구조적으로
+신규(ROADMAP.md M2 반영).** 순서 문제 자체는 위 정정으로 구조적으로
 풀렸으므로, 스파이크가 실제로 확인할 진짜 불확실성은 (B) 하나로 좁혀짐 —
 나머지는 그 결론을 뒷받침하는 대조군: (A) 균일 타입 dep 1개를 고정
 인자로 좁히는 대조군(실패하면 B/C/D를 볼 것도 없이 기반 자체가 문제),
@@ -1014,6 +1015,13 @@ retract/Destroy되면 자동으로 정리됨.
 ### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
 
 (2026-08-14 열한 번째 세션, `PreRef`의 동적 경로 가드와 같은 패턴.)
+**⚠️ [2026-08-24] 이 가드를 실제로 `Dispatch.addHandler`로 등록하는 것은
+M3(디스패치)다.** `HANDLER_PRIORITY_FALLBACK` 상수도 `Dispatch.addHandler`도
+M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **핸들러 정의만
+준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
+경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
+M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+
 `Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
 등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
 전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,

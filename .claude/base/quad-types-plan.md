@@ -96,16 +96,20 @@ local quad = New()
 quad.Dispatch.addHandler(function() end)
 ```
 `luau-analyze` → `TypeError: Key 'Dispatch' not found in table 'Quad'`.
-즉 M2가 `Dispatch.luau`를 만들고 `module:RunInit(InitDispatch)` 패턴(이 문서가
+즉 M3가 `Dispatch.luau`를 만들고 `module:RunInit(InitDispatch)` 패턴(이 문서가
 이미 예시로 보여준 그 패턴)으로 붙이면 **런타임엔 붙지만 타입엔 영원히 안
 보인다.** `ROADMAP.md` M5의 quad-roblox 주입 경로도 같은 벽에 부딪힌다 —
 quad-roblox는 `quad-types`의 좁은 `Quad`만 본다.
 
 **확정(사용자, 2026-08-24): `quad-types`의 `Quad`를 마일스톤마다 갱신한다.**
-- **M2**가 `Dispatch: Dispatch` 필드와 그 타입 재수출을 여기 추가한다 —
-  `ROADMAP.md` M2 체크리스트에 **항목으로 명시**한다(지금까지 아무도 이
-  필요성을 항목화해두지 않았다).
-- 이후 서브시스템도 같은 규칙을 따른다.
+- 규칙이 쓰인 계기는 `Dispatch`이고, **M3**가 `Dispatch: Dispatch` 필드와
+  그 타입 재수출을 여기 추가한다 — `ROADMAP.md` M3 체크리스트에 **항목으로
+  명시**한다(지금까지 아무도 이 필요성을 항목화해두지 않았다).
+- **[2026-08-24 정정] 다만 규칙이 *처음 적용되는* 마일스톤은 M2다** —
+  마일스톤 순서 교체로 반응형 코어가 앞에 오면서, `Source`/`State`/`Store`
+  필드 추가가 `Dispatch`보다 먼저 온다(`ROADMAP.md` M2의 `H-25` 파생 항목).
+- 이후 서브시스템도 같은 규칙을 따른다 — 서브시스템을 붙이는 **모든**
+  마일스톤(M2 · M3 · M6 · M7 · M8 · M10)이 같은 항목을 진다.
 - **"가벼운 타입 계약"이라는 이 패키지의 존재 이유와 상충하지 않는다** —
   타입만 재수출하므로 런타임 무게는 안 는다.
 - 검토했다 기각된 둘: **quad-base 내부만 넓은 로컬 교차 타입**

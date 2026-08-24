@@ -12,18 +12,42 @@
 
 ---
 
-## ⭐ 최우선 — 설계 결정은 **없음**, 다만 순서 문제 하나 (2026-08-22 갱신)
+## ⭐ 최우선 — **M2(반응형 코어) 착수 전에 답이 필요한 것 둘** (2026-08-24 갱신)
 
-> **[2026-08-22] 아래 2번(M2/M3 마일스톤 경계)이 M2 착수를 막습니다.**
-> 그건 "무엇을 확정할까"가 아니라 "어떤 순서로 짤까"라 성격이 달라서
-> 이 절이 아니라 2번에 뒀습니다 — **설계 결정 대기는 여전히 0건**입니다.
+> **[2026-08-24] M2/M3 마일스톤 경계 문제는 닫혔습니다.** 그건 설계 결정이
+> 아니라 순서 문제라 이 절이 아니라 별도 항목으로 뒀었는데, 사용자가
+> **(a) 순서 교체**(반응형이 M2, 디스패치가 M3)를 선택해 같은 날 전량
+> 반영됐습니다 — 결정과 근거는 `archive/question-resolved.md`의
+> "마일스톤 경계" 절, 새 마일스톤 구성은 `ROADMAP.md`의 M2 배너.
+>
+> **⚠️ 다만 그 교체의 부작용으로 아래 둘이 "한 마일스톤 뒤"에서
+> "바로 다음"으로 올라왔습니다.** 둘 다 반응형(옛 M3, 지금 M2)의 게이트라
+> 예전엔 급하지 않았는데, 반응형이 먼저 지어지게 되면서 **지금 답이
+> 필요합니다.** 순수한 *설계* 결정 대기는 여전히 0건입니다 — 하나는 실측
+> 미완이고 하나는 표면 위치 선택입니다.
+
+- **[신설, 2026-08-18 구현 전 QA] 중간 State GC 미검증** — `State → State →
+  State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도
+  없어 전파가 조용히 끊길 수 있음. 방향(상류 strong / 하류 weak)은 사용자가
+  지목했고, **명문화 여부 결정 + `luau-test` 실측이 M2 착수 전에 필요** —
+  `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절.
+- **[신설, 2026-08-18 커밋 전 `/code-review high`] `store:GetDynamic`을
+  콜론 메소드로 둘지, 탑레벨 함수로 둘지** — 콜론 메소드로 두면 Store의
+  lazy `__index`(없는 키를 인덱싱하면 그 자리에서 `Source`를 만들어 저장)와
+  부딪혀서, `__index`가 고정 메소드 테이블을 먼저 확인해야 하고 그 결과
+  **`GetDynamic`이 모든 Store의 예약 키 이름**이 된다(그 이름의 Source는
+  dot-access로 못 만듦). Store 키는 사용자 도메인 데이터 이름이라 충돌
+  확률이 `Modifier`의 예약 이름들보다 높다. 대안은 탑레벨
+  `getDynamic(store, name)` — "특정 프리미티브에 안 묶인 범용 유틸은 소문자
+  탑레벨"이라는 기존 네이밍 규칙에는 오히려 더 맞는다. **M2/M4 착수 전
+  필요**, `base/store-plan.md`의 "타입 추론 문제" 절.
 
 > **M0 착수를 막던 항목이 전부 해소됐습니다.** `0-Y`(`:Compute(fn)`의
 > lazy 핸들 계약)는 열세 번째 세션에, `0-Z`(Attribute 이름 소유권)와
 > `0-A`(재디스패치 하강 diff)는 열네 번째 세션에, **`0-W`(`Ref` 이중
 > 배치 방지)는 2026-08-14 열한 번째 세션에 확정·`base/` 반영 완료** —
-> 그래서 이 문서엔 이제 "결정 대기" 절 자체가 없음(비어서 헤딩째로
-> 삭제). 해소 전 원문과 결론은
+> 그래서 이 문서의 "결정 대기" 절은 한동안 비어 있었음(위 두 항목이
+> 2026-08-24 순서 교체로 올라오기 전까지). 해소 전 원문과 결론은
 > `archive/question-resolved.md`, 뒤집힌 옛 재디스패치 모델은
 > `archive/dispatch-hintvalue-model-reversed.md`.
 >
@@ -115,42 +139,7 @@
 - `Store`/`Source`/`Modifier`/`process`/`retract`/`isHandlable`은 업계
   선례와 잘 맞거나 이미 신중하게 결정된 이름들이라 특별한 문제 없음.
 
-## 2. M2/M3 마일스톤 경계 — **M2 착수 전에 답이 필요** (2026-08-22 신설)
-
-**M2(디스패치 엔진)와 M3(Store/State/Source)의 의존이 양방향이라,
-`ROADMAP.md` 순서대로면 M2를 끝까지 짤 수 없습니다.**
-
-- **M2 → M3 (본체 의존)**: `Dispatch.setLength`가
-  `len: number | State<number>`를, `Dispatch.setOffsetSource`가
-  `Source<number>`를 받고, `recompute`가 `offset:Set()`을 부릅니다
-  (`base/dispatch-core-plan.md`의 "Length/Offset" 절). 2026-08-22에 M2로
-  옮긴 `GateNode`/`Blocker`도 State 위에 얹힙니다. 즉 **M2는
-  `Source.luau`/`State.luau` 없이는 구현이 안 됩니다.**
-- **M3 → M2 (얕은 의존)**: `state:Observer`/`Effect`의 동적 경로 가드가
-  `Dispatch.addHandler` + `Handler.luau` 계약을 씁니다 — 이건 레지스트리
-  등록 표면만 있으면 되므로 M2 **전체**를 요구하지 않습니다.
-  **⚠️ 다만 "M2 앞머리 두 항목(`Dispatch/init.luau` + `Handler.luau`)이면
-  된다"고는 말할 수 없습니다** — `Dispatch/init.luau`에는 `Dispatch.drive`가
-  들어 있고, `dispatch-core-plan.md`가 *"적용 지점 — `Dispatch.drive`와
-  `attachSlot`, 각각 자기 owner 키로 별도 Blocker"*라고 확정해 `drive`도
-  게이팅을 씁니다. 즉 그 첫 항목 자체가 State-free가 아닙니다. 선택지 (b)로
-  쪼갠다면 `drive`를 어느 쪽에 두느냐가 경계선이 됩니다.
-
-**선택지**:
-- **(a) M2와 M3의 순서를 바꾼다** — 반응형(Source/State/EpochMap/Gate/
-  Blocker)을 먼저 짜고 그 위에 디스패치를 올림. 얕은 쪽(가드 Handler)만
-  뒤로 미루면 됨. 지금까지의 결정 흐름("게이팅 먼저")과 방향이 같음.
-- **(b) M2를 둘로 쪼갠다** — `Dispatch.getHandler`/`process`/`retractFrom`/
-  `Handler`/`Brand`/`Relate`/`chains`까지가 M2a, State가 필요한
-  Length/Offset·게이팅은 M3 뒤의 M2b로.
-- **(c) 지금 구조를 두고 구현 시 알아서 오간다** — 로드맵은 "순서"가
-  아니라 "묶음"으로만 읽음.
-
-**[2026-08-22 기준] 이 항목이 M2 착수를 막습니다** — `.claude/todos.md`
-0번이 "M2 착수를 막는 설계 항목은 없다"고 하는 것은 **설계** 얘기이고,
-이건 설계가 아니라 **순서** 문제라 별개입니다.
-
-## 3. 낮은 우선순위 — 열려 있지만 급하지 않음
+## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등
@@ -176,21 +165,6 @@
   남은 근거는 편의성과 Slot offset이 밀리고 당겨지는 케이스뿐이라
   우선순위가 더 내려감 — `state:Flatten()`류 콤비네이터 아이디어는
   그대로 백로그. 상세는 `research/operator-sugar-plan.md` 마지막 절.
-- **[신설, 2026-08-18 커밋 전 `/code-review high`] `store:GetDynamic`을
-  콜론 메소드로 둘지, 탑레벨 함수로 둘지** — 콜론 메소드로 두면 Store의
-  lazy `__index`(없는 키를 인덱싱하면 그 자리에서 `Source`를 만들어 저장)와
-  부딪혀서, `__index`가 고정 메소드 테이블을 먼저 확인해야 하고 그 결과
-  **`GetDynamic`이 모든 Store의 예약 키 이름**이 된다(그 이름의 Source는
-  dot-access로 못 만듦). Store 키는 사용자 도메인 데이터 이름이라 충돌
-  확률이 `Modifier`의 예약 이름들보다 높다. 대안은 탑레벨
-  `getDynamic(store, name)` — "특정 프리미티브에 안 묶인 범용 유틸은 소문자
-  탑레벨"이라는 기존 네이밍 규칙에는 오히려 더 맞는다. **M3/M4 착수 전
-  필요**, `base/store-plan.md`의 "타입 추론 문제" 절.
-- **[신설, 2026-08-18 구현 전 QA] 중간 State GC 미검증** — `State → State →
-  State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도
-  없어 전파가 조용히 끊길 수 있음. 방향(상류 strong / 하류 weak)은 사용자가
-  지목했고, **명문화 여부 결정 + `luau-test` 실측이 M3 착수 전에 필요** —
-  `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절.
 - **[신설, 2026-08-14 리뷰] `AttributeGroupHandler.process`의 부분 실패
   롤백** — 이름 순회 도중 소유권 충돌 error가 나면 그 전에 등록된 이름들이
   이 사이클엔 회수되지 않음(클로저가 안 만들어짐). 피해는 그 인스턴스
@@ -205,8 +179,8 @@
   읽는 게 quad 관습"이라는 언급은 2026-08-06 후속 세션에서 해소 —
   채택 안 함으로 확정, `base/event-plan.md` "이벤트 핸들러는
   self(Instance)를 받지 않는다" 절 참고). 사용자가 "quad 개발 완료 전엔
-  착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M2 Dispatch/
-  M3 Source/M5 `D` 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
+  착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M3 Dispatch/
+  M2 Source/M5 `D` 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
   패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
@@ -228,9 +202,13 @@
   Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
   **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
 
-> **없어진 번호에 대해**: 예전 "0번(추가 프리미티브)"과 "2번(구현 착수
-> 직전 감사 결과)"은 전원 해소되어 통째로 `archive/question-resolved.md`로
-> 갔음. 우선순위1 11개의 개별 상태가 궁금하면
+> **⚠️ 번호는 재사용된다 — 옛 문서가 가리키는 번호를 그대로 믿지 말 것.**
+> 예전 "0번(추가 프리미티브)"과 "2번(구현 착수 직전 감사 결과)"은 전원
+> 해소되어 통째로 `archive/question-resolved.md`로 갔고, 그 뒤 **"2번"은 두
+> 번 더 다른 내용으로 재사용됐다** — 2026-08-22엔 "M2/M3 마일스톤 경계"
+> (2026-08-24 해소·아카이브 이관), 지금은 바로 위 "낮은 우선순위" 절이다.
+> 옛 세션/아카이브 문서가 `question.md` N번을 가리키면 **그 문서가 쓰인
+> 시점의 번호**로 읽을 것. 우선순위1 11개의 개별 상태가 궁금하면
 > `research/pre-implementation-audit.md`가 원본이자 최신.
 
 ---
