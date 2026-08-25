@@ -1,5 +1,10 @@
 # 구현 전 손 트레이싱 **7라운드** — M2(반응형 코어) 범위 + M2→M3 경계
 
+**구성**: **패스 2개, 발견 22건(`H-55`~`H-76`).** 1차 패스는 문서 대 문서
+손 트레이싱(`H-55`~`H-70`), **2차 패스는 문서가 "확인했다"고 적은 주장을
+실제로 `luau`/`luau-analyze`에 걸어본 실측**(`H-71`~`H-76`, 2026-08-25 추가).
+발견 번호는 패스를 가로질러 이어서 매긴다(6라운드와 같은 방식).
+
 **상태**: **[2026-08-25] 발견 보고 — 아무것도 반영하지 않았다.** 판정은
 사용자가 이 목록을 보고 한다. 6라운드까지의 결정은 뒤집지 않는 것을
 기본으로 했고, 뒤집어야 한다고 보는 항목은 **그 근거의 어느 추론이
@@ -12,7 +17,7 @@
 트레이싱, 인덱스 레이어, `doc-check.py`)와 **겹치지 않는 것**을 찾으라는
 지시였다.
 
-**이번에 쓴 각도(6라운드와 다른 것)**:
+**1차 패스에 쓴 각도(6라운드와 다른 것)**:
 1. **M2 프리미티브 사이의 *호출 순서*를 실제 시간축으로 돌리기** — 생성자
    시점 / 바인드 시점 / 전파 시점 / 파괴 시점에 각 계약이 무엇을 요구하는지
    겹쳐 보기(6라운드는 함수 하나의 본문을 위주로 봤다).
@@ -24,7 +29,7 @@
 4. **"같은 것"을 두 문서가 다른 말로 부르는 자리** — 구독자 집합의 원소,
    구독 엣지의 등록 시점.
 
-**범위**: `base/source-state-plan.md` / `state-epoch-plan.md` / `store-plan.md` /
+**1차 패스의 범위**: `base/source-state-plan.md` / `state-epoch-plan.md` / `store-plan.md` /
 `gate-plan.md` / `blocker-plan.md` / `effect-plan.md` / `lifecycle-pattern.md` /
 `brand-plan.md` / `relate-plan.md` / `ref-plan.md`(Callbacks·`:Set`) /
 `debounce-throttle-plan.md`(7절 배너) / `typing-limits.md`(영향 범위 표) /
@@ -41,7 +46,8 @@ GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 �
 **읽는 순서**: 🔴 다섯이 그대로 구현하면 동작이 어긋나는 것, 🟡은 정의가
 비어 있거나 두 서술이 갈려 M2 구현자가 임의로 정하게 되는 것, 🟢은 문서
 정합·구현 시 정하면 되는 것. "미확정" 표시는 트레이싱으로 확신까지 못 간
-의심이다.
+의심이다. **2차 패스 표의 마지막 열은 그 항목을 실제로 돌려본 결과**라,
+거기 ✅가 붙은 것은 의심이 아니라 재현된 사실이다.
 
 | 번호 | 심각도 | 한 줄 | 주 대상 | 성격 |
 |---|---|---|---|---|
@@ -62,7 +68,21 @@ GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 �
 | `H-69` | 🟢 | 통과 모드 게이트가 emit마다 weak 테이블을 하나씩 할당한다 | `gate-plan.md` 4 | 구현 시 정하면 |
 | `H-70` | 🟢 | `Effect(fn, ...deps)`의 deps 검증·`nil` 구멍·같은 `Ref` 중복이 미정 | `effect-plan.md` | 구현 시 정하면 |
 
+**⭐ [2026-08-25] 2차 패스 — 실측 (`H-71`~`H-76`).** 1차가 안 쓴 각도로
+같은 라운드를 이어서 돌렸다. 상세는 아래 "2차 패스" 절.
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-71` | 🔴 | **단일 `Relate` 안의 자기참조(값 → 키)는 GC 안전하지 않다** — `relate-plan.md`가 안전하다고 단언한 바로 그 모양이 100% 샌다. `RefLeafHandler`가 정확히 그 모양 | `relate-plan.md`, `ref-plan.md`, `source-state-plan.md` leaf dedup | ✅ 커밋된 `Relate.luau`로 50/50 누수 |
+| `H-72` | 🟡 | `GateNode`가 `state-epoch-plan.md` §4 규칙 1~3을 돌려면 `emitEpochMap`을 **갱신하지 않고 비교**해야 하는데, `EpochMap` 표면에 그 연산이 없다 | `state-epoch-plan.md` §3·§4, `gate-plan.md` 4번 | 표면 대조(코드 없음) |
+| `H-73` | 🟡 | `store:GetDynamic<<T>>(name): Source<T>`는 **콜론이든 탑레벨이든 `T`를 바인딩할 방법이 없다** — Luau엔 호출부 명시 타입 인자가 없고 기대 타입 추론도 안 된다. 콜론 쪽은 합성 타입에 키 자체가 없어 타입에러 | `store-plan.md`, `question.md` 최우선 | ✅ `T`가 `unknown`으로 떨어짐 |
+| `H-74` | 🟡 | eager `defaults` 경로는 `__index`를 **통째로 우회**하므로 "고정 메소드 테이블을 먼저 확인"이라는 예약 키 방어가 성립하지 않는다 | `store-plan.md` | ✅ `attempt to call a table value` |
+| `H-75` | 🔴 | `WrapStore`가 스파이크 `16`의 **평평한** 모양이면 `store.key:Compute(무주석 콜백)`이 깨진다 — `typing-limits.md` ②쪼개기를 `type function` 안에서도 해야 한다 | `store-plan.md`, `typing-limits.md` §5, `luau-test/done/16` | ✅ 평평=실패 / 쪼개기=통과 |
+| `H-76` | 🔴 | `type function`은 **바깥 타입 별칭을 참조 못 한다** → `Source<T>` 전 표면을 구조적으로 중복 작성해야 하고, 메소드 self 파라미터가 **불변**이라 필드 하나만 어긋나도 `store.key`가 `State<T>` 파라미터 자리에 **안 들어간다**. 스파이크 `16`은 그 대입을 안 해봤다 | `store-plan.md`, `typing-limits.md` §5·§6 | ✅ 별칭 참조 실패 / `Revision` 누락만으로 대입 실패 |
+
 ---
+
+# 1차 패스 — 문서 대 문서 손 트레이싱
 
 ## 🔴 `H-55` — `setup(emit)` 하나만 쥔 정책은 흡수 집합을 **버릴** 수 없다
 
@@ -486,11 +506,525 @@ Frame2 { E }              → canBound(E) 참 → bindLifetime OK → _bindDestr
 
 ---
 
+# 2차 패스 — 문서가 "확인했다"고 적은 것을 실제로 돌려봤다 (2026-08-25)
+
+**왜 이 패스가 있는가**: 사용자 요청 — *"저기에 포함되지 않은 문제점을
+더 찾아봐. 찾은 다음에 진짜 있는 문제인지 재검증까지 다 해줘."*
+
+**1차 패스와 다른 각도**: 1차는 **문서 대 문서**의 손 트레이싱이었다.
+이번엔 **문서가 "확인했다"고 적어둔 런타임/타입 주장을 실제로
+`luau`/`luau-analyze`에 걸어봤다.** 그래서 아래 여섯 중 다섯은 추측이
+아니라 **실행 결과**이고, 각 항목에 재현 코드가 그대로 들어 있다.
+같이 확인된 것 — **"확인 완료"라고 적힌 스파이크들이 정작 위험한 모양을
+안 테스트한 경우가 반복적으로 나왔다**(`07`은 되참조 없는 payload만,
+`16`은 대입을 아예 안 해봄).
+
+**실측 환경**: `luau` / `luau-analyze`
+(`~/.local/share/mise/installs/luau/latest`, 2026-08-25 실행).
+
+**이 패스의 범위**: `base/relate-plan.md` / `lifecycle-pattern.md` (0)(1) /
+`store-plan.md` 전체 / `state-epoch-plan.md` §2~§5 / `gate-plan.md` 4번 /
+`blocker-plan.md` / `typing-limits.md` §1②·§5·§6·영향 범위 표 /
+`source-state-plan.md`의 leaf dedup·`:Compute` trailing deps /
+`ref-plan.md`의 `RefLeafHandler` / `brand-plan.md` / 커밋된
+`quad-base/src/Relate.luau`·`init.luau` / `luau-test/done/07`·`16`·`21` /
+`ROADMAP.md` M2. **1차 패스(`H-55`~`H-70`)와 겹치는 항목은 없다** —
+겹칠 뻔한 자리는 항목 안에 "이건 `H-xx`와 별개다"로 적었다.
+
+---
+
+## 🔴 `H-71` — 단일 `Relate` 안의 자기참조는 GC 안전하지 않다 (실측)
+
+**어디**: `base/relate-plan.md`의 "위험한 패턴 — 서로 다른 두 `Relate`의
+상호 강참조 순환" 절.
+
+**문서가 뭐라고 하나**: 그 절은 자기참조(값이 자기 키를 되참조)를 세 개
+예로 들고 — `Dispatch.setLength`의 observer 클로저가 `inst`를 캡처,
+`Ref.Value = inst`, `slot._mountedInst = physicalTarget` — **"단일 `Relate`
+안에서 일어나는 한 안전함"** 이라고 단언한다. 근거로 든 문장은
+*"그 `Relate`의 키(`inst`)가 테이블 바깥에서 독립적으로 reachable한지만
+판별하면 되기 때문"*이다.
+
+**무엇이 어긋나나**: 그 판별이 정확히 **ephemeron 테이블의 의미론**이고,
+같은 문서가 바로 아래 문단에서 **Luau엔 ephemeron이 없다**고(출처까지 달아)
+확정해뒀다. ephemeron이 없는 weak-key 테이블은 **값을 무조건 마킹**하므로,
+값에서 키로 가는 강한 경로가 하나라도 있으면 그 엔트리는 영원히 안 걷힌다.
+두 `Relate`가 필요한 게 아니라 **하나면 충분하다.** 즉 이 절은 자기 근거로
+자기 결론을 반증하고 있다.
+
+**실측** — 커밋된 `quad-base/src/Relate.luau`를 **그대로 require**해서 돌렸다:
+
+```lua
+local Relate = require("./Relate")  -- quad-base/src/Relate.luau 원본
+local function gc() for _ = 1, 10 do collectgarbage() end end
+local function countAlive(c) local n = 0 for _ in c do n += 1 end return n end
+
+-- 대조군: payload가 inst를 되참조하지 않음 (스파이크 07이 실제로 테스트한 모양)
+do
+    local r, canary = Relate(), setmetatable({}, {__mode = "v"})
+    do for i = 1, 50 do
+        local inst = {}
+        local payload = {tag = "p" .. i}
+        r:SetStrong(inst, "k", payload); canary[i] = payload
+    end end
+    gc(); print("[대조군]", countAlive(canary))
+end
+
+-- 케이스1: RefLeafHandler 모양 — relate:SetStrong(inst,k,v) + v:Set(inst)
+do
+    local r, canary = Relate(), setmetatable({}, {__mode = "v"})
+    do for i = 1, 50 do
+        local inst = {}
+        local ref = {Value = inst}
+        r:SetStrong(inst, 1, ref); canary[i] = ref
+    end end
+    gc(); print("[케이스1]", countAlive(canary))
+end
+
+-- 케이스2: setLength observer 모양 — StrongMap 값이 inst를 캡처한 클로저
+do
+    local r, canary = Relate(), setmetatable({}, {__mode = "v"})
+    do for i = 1, 50 do
+        local inst = {}
+        local observer = {emit = function() return inst end}
+        r:SetStrong(inst, "observer", observer); canary[i] = observer
+    end end
+    gc(); print("[케이스2]", countAlive(canary))
+end
+
+-- 케이스3: 같은 모양이지만 SetWeak (2026-08-18에 정정된 gchold/gcconn 저장 방식)
+do
+    local r, canary = Relate(), setmetatable({}, {__mode = "v"})
+    do for i = 1, 50 do
+        local inst = {}
+        local held = {back = inst}
+        r:SetWeak(inst, "gchold", held); canary[i] = held
+    end end
+    gc(); print("[케이스3]", countAlive(canary))
+end
+```
+
+```
+[대조군]  0   ← 정상
+[케이스1] 50  ← 하나도 안 걷힘
+[케이스2] 50  ← 하나도 안 걷힘
+[케이스3] 0   ← SetWeak은 정상
+```
+
+**즉 `SetStrong` + 값→키 되참조는 100% 샌다.** `SetWeak`은 안전하다 —
+2026-08-18에 `lifecycle-pattern.md`의 gchold/gcconn 저장을 `SetStrong`에서
+`SetWeak`으로 정정한 판단은 **결과적으로 맞았고**, 다만 그때 적은 근거
+("두-`Relate` 상호 순환에 걸린다")는 실제보다 좁았다 — 단일 `Relate`로도
+걸린다.
+
+**왜 지금까지 안 잡혔나 — 스파이크 `07`이 위험한 모양을 안 테스트했다.**
+`luau-test/done/07-relate-weak-table-gc.luau`는 스스로 *"`relate-plan.md`
+전체가 기대고 있는 바로 그 주장"* 을 검증한다고 적고 4번 절에서
+연쇄 GC를 확인하는데, 거기 쓰는 payload가
+`local payload = { tag = "payload" .. i }` — **`inst`를 되참조하지 않는
+모양**이다(위 대조군과 동일). 그래서 통과했다.
+
+**실제로 어디가 물리나**:
+- **`RefLeafHandler.process`**(`base/ref-plan.md`) — `relate:SetStrong(inst, k, v)`
+  하고 `v:Set(inst)`로 `v.Value = inst`를 세운다. **케이스1 그대로다.**
+  게다가 그 relate 엔트리를 지우는 코드는 retractor의 `nextValue ~= v`
+  분기 안에만 있어서, **평범한 `Destroy`(정리를 GC에 위임하는 정상 경로)
+  에서는 한 번도 안 지워진다.** 결과: `Frame { Ref(myRef) }` 하나마다
+  Instance userdata + `Ref` + 버킷이 프로세스 수명 동안 남는다.
+- **`ObserverEffectLeafHandler.process`**(`base/source-state-plan.md`의
+  "Observer/Effect Leaf dedup" 절) — 같은 모양(`relate:SetStrong(inst,k,v)`).
+  `v`가 `inst`를 되참조하는지는 사용자 `fn`이 뭘 캡처하느냐와
+  `EffectHandle._destroyConn`(그 `inst`의 `Destroying` 연결)에 달려 있어
+  케이스1만큼 확정적이진 않지만, **되참조하면 똑같이 샌다.**
+- `relate-plan.md`가 든 나머지 두 예(`setLength` observer, `slot._mountedInst`)는
+  각각 저장 방식이 `SetStrong`이냐 `SetWeak`이냐에 따라 갈린다 — **결론이
+  아니라 판정 기준 자체가 문서에 잘못 적혀 있으므로 전수 재확인이 필요하다.**
+
+**이건 `H-63`(Blocker의 weak 배열)과 별개다** — 그쪽은 값-weak 배열의
+순회/구멍 문제이고, 이건 키-weak 테이블의 마킹 의미론이다.
+
+**갈래(결정 전 목록)**:
+(a) **`relate-plan.md`의 그 절을 뒤집는다** — "자기참조는 `SetWeak`일 때만
+안전하고, `SetStrong` + 되참조는 금지"를 규칙으로 못박고, `SetStrong`을
+쓰는 자리(`ref-plan.md`, `source-state-plan.md` leaf dedup,
+`attribute-plan.md`의 `nameClaims`/`groupClaimKeys`, `tag-plan.md`의
+`tagNameMap`, `module-lifecycle-plan.md`의 `runInitRelate`)를 전수 훑어
+값이 키를 되참조하는지 확인한다. (참고: `runInitRelate`는 값이 `true`,
+`nameClaims`/`groupClaimKeys`/`tagNameMap`은 값이 부기 테이블이라 일단
+안전해 보이고, 확정적으로 물리는 건 `RefLeafHandler` 하나다.)
+(b) **dedup 기록을 `SetStrong` → `SetWeak`으로 낮춘다** — dedup은 순수
+성능 최적화라(그 절이 스스로 *"correctness 문제는 아님"* 이라고 못박음)
+weak로 낮춰 엔트리가 조기 소실돼도 "dedup을 한 번 놓친다"까지가 최대
+손해다. `relate-plan.md`의 **"다른 곳에서 안전하게 유지되는 것은 항상
+`SetWeak`"** 규칙에도 그대로 맞는다(`v`는 gchold가 이미 강하게 잡는다).
+(c) `unbindLifetime` 경로에서 relate 엔트리를 항상 지운다 — 정상 `Destroy`
+경로엔 `unbindLifetime` 호출이 없으므로 **이것만으로는 안 닫힌다.**
+(b)가 제일 싸 보이고 기존 규칙과도 일관된다.
+
+**같이 해야 할 것**: `luau-test/done/07`에 되참조 케이스를 **음성 대조군으로**
+추가할 것 — 지금 그 파일은 "GC-native 아키텍처의 핵심 전제를 검증했다"고
+여러 문서에 인용되고 있는데, 실제로는 안전한 모양만 봤다.
+
+## 🟡 `H-72` — `GateNode`가 규칙 1~3을 돌 수 있는 연산이 `EpochMap`에 없다
+
+**어디**: `base/state-epoch-plan.md` §4의 "⚠️ [2026-08-22 신설] `GateNode`는
+이 의사코드를 그대로 쓰지 않는다" 항목, §3의 `EpochMap` 표면,
+`base/gate-plan.md` 4번의 "게이트의 `emitEpochMap`은 수신 때가 아니라 실제로
+전파할 때" 항목.
+
+**무엇이 어긋나나**: §4의 수신 규칙은 두 boolean으로 세 갈래를 가른다.
+
+```lua
+local valueChanged = self.valueEpochMap:Update(from)
+local emitChanged  = self.emitEpochMap:Update(from)
+```
+
+게이트 예외는 **"판정(규칙 1~3)은 똑같이 먼저 돈다"** 면서 동시에
+**"`emitEpochMap:Update`를 수신 시점에 부르지 않는다"** 고 한다. 그런데
+`emitChanged`를 얻는 유일한 통로가 `:Update`이고, `:Update`는 정의상
+**읽고 나서 덮어쓴다**(§3: *"저장된 리비전과 `epoch.Revision`을 비교하고,
+다르면 새 값으로 덮는다"*). `EpochMap`의 나머지 표면도 전부 쓰기를 한다 —
+`:Refresh`는 자기 키를 다시 읽어 **갱신**하고, `:Sync`는 **쓰기 전용**,
+`:TrackFrom`은 키를 넘겨받아 **채운다**. **"갱신하지 않고 비교만 하는"
+연산이 하나도 없다.**
+
+즉 게이트 구현자는 셋 중 하나를 임의로 고르게 된다 — (1) `emitChanged`를
+포기하고 `valueChanged`만으로 판정한다(규칙 2·3이 사라진다), (2)
+`emitEpochMap:Update`를 그냥 부른다(§4 예외와 `gate-plan.md` 4번이 확정한
+"유보 중엔 아직 안 던졌다"는 맵의 뜻이 깨진다), (3) `EpochMap` 내부
+테이블에 게이트가 직접 손을 넣는다(컴포지션이 깨진다).
+
+**이건 `H-55`와 별개다** — `H-55`는 *정책이* 흡수 집합을 버릴 수 없다는
+것이고, 이건 *노드가* 자기 판정을 표현할 연산이 없다는 것이다. 다만 둘 다
+"`Epoch` 일반화 때 게이트 쪽 요구가 표면에 반영이 덜 됐다"는 같은 뿌리에서
+나오므로 같이 보는 게 낫다.
+
+**갈래**: (a) `EpochMap:Peek(Epoch | EpochSet) -> boolean`(읽기 전용 비교)을
+추가한다 — `Update`가 이미 `{읽기, 비교, 쓰기}`라 `Peek`은 그 앞 두 개만
+쓰는 것이고 코드 공유가 쉽다. (b) `Update(from, write: boolean?)`처럼
+플래그를 단다(표면이 하나 안 늘지만 호출부에서 의도가 덜 보인다).
+(c) 게이트는 `valueChanged`만 본다 — 그러면 §4의 규칙 2("값은 최신인데
+통지는 아직")가 게이트에서 사라지므로, 게이트가 붙들고 있는 동안 하류가
+`Get()`으로 앞당겨 읽은 뒤 게이트가 풀릴 때 **통지가 통째로 사라지는**
+경로가 생기는지 따로 따져야 한다.
+
+## 🟡 `H-73` — `GetDynamic<<T>>`는 어느 표면으로 둬도 `T`를 바인딩할 수 없다 (실측)
+
+**어디**: `base/store-plan.md`의 "타입 추론 문제" 절
+(`store:GetDynamic<<T>>(name): Source<T>`), `ROADMAP.md` M2의 그 체크박스,
+`.claude/question.md` 최우선 절(콜론 메소드냐 탑레벨 함수냐).
+
+**무엇이 어긋나나**: 열려 있는 질문은 *"콜론이면 예약 키가 된다"* 는
+**런타임** 충돌 하나였는데, 실측해보니 **타입 쪽이 먼저 막힌다.**
+
+**실측 1 — 콜론 메소드는 합성 타입에 키 자체가 없다.** 스파이크 `16`의
+`WrapStore`/`ProcessStoreType`을 그대로 쓰고 마지막 줄만 바꿨다:
+
+```lua
+type Processed = ProcessStoreType<{ ty: string, count: number }>
+local processed: Processed = nil :: any
+local dyn = processed:GetDynamic("runtimeName")
+```
+```
+TypeError: Key 'GetDynamic' not found in table 'Processed'
+```
+
+`ProcessStoreType`은 `ty:properties()`를 돌며 **`T`의 필드만** 심으므로
+고정 메소드는 결과 타입에 존재하지 않는다. 이건 스파이크 `21`이 확인한
+"미선언 키는 타입 에러"라는 **방어선이 그대로 자기 메소드에도 걸린 것**이다.
+콜론 메소드를 유지하려면 `ProcessStoreType`이 `GetDynamic`을 **명시적으로
+주입**해야 한다(그리고 그 순간 `H-74`의 eager 충돌이 같이 따라온다).
+
+**실측 2 — 주입해도 `T`가 안 묶인다.** `types.generic("T")`로 제네릭
+`GetDynamic`을 주입하면 키는 생기지만:
+
+```
+TypeError: Expected this to be 'Source<number>' but got
+  't1 where t1 = { Get: (t1) -> unknown, Set: (t1, unknown) -> () }'
+```
+
+`T`가 `unknown`으로 떨어진다.
+
+**실측 3 — 탑레벨 함수로 옮겨도 같다.** `type function`과 무관하게, 순수
+Luau에서:
+
+```lua
+local function getDynamic<T>(store: Store, name: string): Source<T>
+    return (nil :: any) :: Source<T>
+end
+local a: Source<number> = getDynamic(store, "x")   -- ❌ Source<unknown>
+local b = getDynamic(store, "y") :: Source<string> -- ✅ 캐스트는 통과
+```
+
+`T`를 실을 자리가 어디에도 없다 — Luau엔 **호출부 명시 타입 인자 문법이
+없고**(`ident<number>(1)`은 비교 연산자로 오파싱된다, 실측 확인), **기대
+타입으로부터의 제네릭 인스턴스화도 안 된다**(위 `a`). 인자에도 `T`가 안
+나타나므로 추론할 근거가 0이다.
+
+**따라서 `<<T>>` 표기 자체가 이 자리에선 성립하지 않는다** —
+`base/quad-types-plan.md`가 확정한 이중 꺾쇠 관례는 **타입 자리의 명시적
+인스턴스화**(`Foo<<A, B>>`)에 대한 것이고, `store:GetDynamic<<T>>(name)`은
+**값 호출부**라 그 관례가 적용될 자리가 아니다.
+
+**남는 선택지**: `GetDynamic`을 **비제네릭**으로 두고 `Source<any>`(또는
+`any`)를 돌려준 뒤 호출부가 `:: Source<number>`로 캐스팅하게 하는 것뿐이다.
+그러면 사용자 판정의 취지(*"여기서 타입 보장을 포기했다가 호출부에
+드러난다"*)는 오히려 더 정직하게 드러난다 — 캐스트가 코드에 남으니까.
+그리고 그 모양이면 **탑레벨 함수 쪽이 명확히 유리하다**: `type function`을
+전혀 안 고쳐도 되고(실측 1이 사라짐), 예약 키도 안 생기고(`H-74`가
+사라짐), `isState`/`bindLifetime`과 같은 "소문자 탑레벨 유틸" 관례에도
+맞는다. **이건 `question.md` 최우선 항목에 대한 실측 근거이지 결정이 아니다 —
+판단은 사용자 몫.**
+
+## 🟡 `H-74` — eager `defaults` 경로는 `__index`를 통째로 우회한다 (실측)
+
+**어디**: `base/store-plan.md`의 "Store = Source들의 이름 붙은 모음"
+절(eager 생성 스케치)과 "타입 추론 문제" 절의 ⚠️ 구현 주의
+(*"`__index`가 고정 메소드 테이블을 먼저 확인하고, 없을 때만 lazy `Source`
+생성으로 폴백해야 하며, 그 결과 `GetDynamic`은 Store의 예약 키 이름이
+된다"*).
+
+**무엇이 어긋나나**: `__index`는 **raw 키가 없을 때만** 불린다. 그런데 eager
+생성은 확정된 스케치대로 `table.clone(defaults)` 결과에 `Source`를 **직접
+써넣는다** — 그 키들은 raw로 존재하므로 `__index`가 아예 안 돈다. 따라서
+`defaults`에 `GetDynamic`이라는 도메인 키가 있으면 **고정 메소드가 조용히
+가려진다.** 문서가 확정한 *"그 이름의 Source는 dot-access로 못 만듦"* 은
+lazy 경로에만 참이고, eager 경로로는 **만들 수 있다.**
+
+**실측** — 확정 스케치를 그대로 옮긴 최소 모델:
+
+```lua
+local METHODS = {}
+function METHODS.GetDynamic(self, name) return "..." end
+
+local function Store(defaults)
+    local sources = table.clone(defaults or {})
+    for k, v in sources do sources[k] = Source(v) end
+    return setmetatable(sources, { __index = function(t, k)
+        local m = METHODS[k]; if m ~= nil then return m end   -- 고정 메소드 먼저
+        local s = Source(nil); rawset(t, k, s); return s      -- 없으면 lazy
+    end })
+end
+
+Store({ hp = 10 }):GetDynamic("x")                -- OK
+Store({ hp = 10, GetDynamic = 3 }):GetDynamic("x") -- ?
+```
+```
+(1) GetDynamic 타입: function   → 호출 OK
+(2) GetDynamic 타입: table      → attempt to call a table value
+```
+
+**타입 층도 못 잡는다** — `ProcessStoreType<{GetDynamic: number}>`는
+그 키를 그냥 `Source<number>`로 합성하므로, 타입상으로도 "메소드가 아니라
+Source"가 되어 일관되게 틀린다.
+
+**`Modifier`와 "정확히 같은 구조"가 아니다.** `base/modifier-plan.md`의
+"구현 시 주의"가 다루는 `__index`는 **필드 setter를 즉석에서 합성**하는
+것이라 미리 채워지는 raw 키가 없다 — 그래서 거기선 "고정 메소드를 먼저
+확인"이 실제로 방어가 된다. Store만 eager 경로를 갖는다.
+
+**갈래**: (a) `Store` 생성 시 `defaults`의 키를 예약 이름과 대조해
+**즉시 error**(가장 싸고, "런타임이 아니라 타입에 방어선을 둔다"는 확정과
+충돌하지 않는다 — 이건 타입이 못 잡는 자리라서), (b) eager 생성 결과를
+store 테이블이 아니라 **내부 백킹 테이블**에 넣고 `__index`가 항상 돌게
+한다(그러면 `store-plan.md`가 그림자 실값 저장소를 불필요하다고 적은
+서술을 손봐야 한다),
+(c) `H-73`대로 `GetDynamic`을 **탑레벨 함수로 옮겨** 예약 키를 아예 안
+만든다 — 그러면 이 항목이 통째로 사라진다.
+
+## 🔴 `H-75` — 평평한 `WrapStore`면 `store.key:Compute(무주석 콜백)`이 깨진다 (실측)
+
+**어디**: `base/store-plan.md`의 `WrapStore`/`ProcessStoreType` 스케치,
+`luau-test/done/16-type-store-key-typefunction.luau`,
+`base/typing-limits.md` §5(*"✅ 검증 완료"*)와 §1의 ②쪼개기.
+
+**무엇이 어긋나나**: 확정된 `WrapStore`는 `Get`/`Set`만 있는 **평평한**
+테이블 하나를 만든다. 거기에 `Compute`(로컬 제네릭 `U` + 자기 타입을
+self로 받는 메소드)를 그대로 얹으면, `typing-limits.md` §1이 확정한 바로
+그 실패 모드에 걸린다 — **콜백 파라미터 무주석 추론이 깨진다.**
+그런데 `store.key1:With(store.key2):Compute(fn)`은 `store-plan.md`가 직접
+드는 대표 관용구다.
+
+**실측 A — 평평한 모양(스파이크 16 형태 + `Compute`)**:
+
+```lua
+type function WrapSource(ty: type): type
+    local src = types.newtable()
+    src:setproperty(types.singleton("Get"), types.newfunction({head={src}}, {head={ty}}))
+    local U = types.generic("U")
+    src:setproperty(types.singleton("Compute"), types.newfunction(
+        {head={src, types.newfunction({head={src}}, {head={U}})}}, {head={U}}, {U}))
+    return src
+end
+...
+local b = store.ty:Compute(function(s) return #s:Get() end)
+```
+```
+TypeError: Expected this to be '(tp2) -> number where t1 = { Compute: ..., Get: ... }'
+but got '<T>(t1) -> len<T> where t1 = { read Get: (t1) -> (T, ...unknown) }'
+```
+
+**실측 B — 손으로 쓴 대조군도 똑같이 실패**(즉 `type function` 탓이
+아니라 §1의 알려진 문제):
+
+```lua
+type SourceS = { Get: (self: SourceS) -> string, Compute: <U>(self: SourceS, fn: (SourceS) -> U) -> U }
+local b = s:Compute(function(x) return #x:Get() end)   -- ❌ 같은 에러
+```
+
+**실측 C — ②쪼개기를 손으로 쓰면 통과**:
+
+```lua
+type SourceDataS = { Get: (self: SourceDataS) -> string }
+type SourceS = SourceDataS & { Compute: <U>(self: SourceDataS, fn: (self: SourceDataS) -> U) -> U }
+local b = s:Compute(function(x) return #x:Get() end)   -- ✅ 진단 0건
+```
+
+**실측 D — ②쪼개기를 `type function` 안에서도 할 수 있다(통과)**: `data`
+핸들과 `full` 핸들을 각각 `types.newtable()`로 만들고, `full`의 메소드
+self/콜백 파라미터가 전부 `data`를 가리키게 하면 무주석 콜백이 통과하고
+음성 대조군(`local bad: string = store.ty:Compute(... number ...)`)만
+정확히 에러난다.
+
+**그래서 무엇이 필요한가**: `WrapStore`는 **평평한 테이블 하나가 아니라
+데이터부/메소드부 두 핸들**로 지어야 한다. 지금 `store-plan.md` 스케치와
+스파이크 `16`은 평평한 모양이고, `typing-limits.md` §5는 그 평평한 모양을
+근거로 "✅ 검증 완료"라고 적는다 — **검증된 건 `Get`/`Set` 두 개뿐이고,
+콜백을 받는 메소드는 한 번도 안 걸어봤다.** §8 체크리스트에 "`type function`
+으로 타입을 합성할 때도 ②쪼개기를 적용할 것"이 빠져 있다.
+
+## 🔴 `H-76` — 합성 타입은 `Source<T>` 자리에 **안 들어갈 수 있다**, 그리고 그 사실이 검증된 적이 없다 (실측)
+
+**어디**: `base/store-plan.md`의 *"Luau는 이름이 아니라 '만족하는가'로
+구조적 일치를 검사하므로 문제없이 `Source<string>` 자리에 대입 가능"*,
+`base/typing-limits.md` §5·§6, `luau-test/done/16`.
+
+**세 가지가 겹친다.**
+
+**(1) `type function`은 바깥 타입 별칭을 참조할 수 없다(실측).**
+
+```lua
+export type Source<T> = { Get: (self: Source<T>) -> T, ... }
+type function WrapA(ty: type): type
+    return Source
+end
+type R = WrapA<string>
+```
+```
+TypeError: 'WrapA' type function: returned a non-type value
+```
+
+즉 `WrapStore`는 `Source<T>` 정본을 **가리킬 수가 없고 통째로 다시 지어야
+한다.** 이건 `quad-types-plan.md`가 이미 기록한 함정(*"`type function`은
+같은 파일의 바깥 스코프 로컬 함수를 아예 참조 못 한다"* → `matchesPattern`과
+`CheckVersion` 로직이 물리적으로 중복)의 **타입 별칭 판**이고, 지금
+`store-plan.md`엔 그 서술이 없다. 결과적으로 **`Source<T>`/`State<T>`의 전
+표면(`Get`/`Set`/`Emit`/`Revision`/`Compute`/`With`/`Observer`/`Apply`/
+`Gate`/`Block`…)이 두 곳에 손으로 중복 유지되며, 둘이 어긋나도 컴파일러가
+말해주지 않는다.**
+
+**(2) 메소드 self 파라미터는 불변(invariant)이라 조금만 어긋나도 대입이
+막힌다(실측).** ②쪼개기 모양으로 짓되 `Revision` **하나만** 빠뜨렸더니:
+
+```
+TypeError: Expected this to be 'SourceData<number> & { Compute: ..., Set: ... }'
+but got '{ Compute: ..., Get: (t1) -> number, Set: ... } where t1 = { Get: (t1) -> number }'
+  * Expected the 1st parameter of property `Compute` to be exactly `SourceData<number>`,
+    but got `t1 where t1 = { Get: (t1) -> number }`
+```
+
+`t1`과 `SourceData<number>`는 `Revision` 하나 차이인데, self 파라미터가
+**"exactly"** 를 요구하므로 그 하나 때문에 `store.key`가 `Source<number>`
+자리에 **안 들어간다.** `state:With(store.key)`, `Effect(fn, store.key)`,
+`Modifier` 필드 등 base가 `State<T>`를 받는 **모든 자리**가 여기 걸린다.
+
+**(3) 그 대입은 검증된 적이 없다.** 스파이크 `16`은
+`processed.ty:Get()`을 호출해보고 음성 대조군 4건을 확인할 뿐,
+**`processed.ty`를 `Source<string>` 타입 자리에 넣어보지 않는다.**
+평평한 2메소드 모양에 한해서는 실제로 통과하지만(확인함), 그건 실제
+`Source<T>`가 아니라 장난감 타입이다.
+
+**해답은 있다(실측으로 확인)** — 정본 `Source<T>`를 ②쪼개기 모양으로
+선언하고, `WrapStore`가 그걸 **충실히**(`Revision`까지) 같은 모양으로
+재현하면 `store.key:Compute(무주석 콜백)`과 `Source<number>` 대입이
+**둘 다 통과**한다. 그리고 드리프트를 잡으려면 타입 테스트에 **정합성 단언**
+한 줄을 상주시키면 된다:
+
+```lua
+-- WrapStore가 정본에서 어긋나는 순간 여기서 컴파일 에러가 난다
+local _probe = (nil :: any) :: ProcessStoreType<{ k: number }>
+local _conformance: Source<number> = _probe.k
+```
+(`::`를 한 식 안에서 두 번 체이닝하면 파싱이 깨지므로 두 줄로 나눠야
+한다 — 이 형태로 진단 0건 확인.)
+
+**그래서 결정이 필요한 것**: (a) 정본 `Source<T>`/`State<T>` 선언을 처음부터
+②쪼개기(`SourceData<T>` + 메소드부)로 확정할 것인가(`typing-limits.md` ②는
+이미 그 모양을 권하지만 `source-state-plan.md`/`store-plan.md`의 표면
+서술은 그 형태로 안 적혀 있다), (b) `WrapStore` 중복을 규약으로 못박고
+정합성 단언을 `luau-test`에 상주시킬 것인가, (c) 스파이크 `16`에 대입
+케이스와 `Compute` 케이스를 추가할 것인가. 셋 다 M2를 짜기 전에 정해야
+한다 — 나중에 발견하면 `Source`/`State`의 **타입 선언 모양 자체**를 바꾸는
+일이 된다.
+
+---
+
+## 부록 — 열려 있던 실측 항목 하나는 **성립**한다
+
+`base/source-state-plan.md`의 "trailing deps를 `fn`에 lazy positional
+인자로도 노출" 절과 `ROADMAP.md` M2가 남겨둔 미검증 항목 (B) —
+**"이형(heterogeneous) 타입 dep 여러 개를 제네릭 팩 하나로 정확히 좁혀
+받을 수 있는가"**(스파이크 `15`, 지금 `rewrite-required/`) — 를 같이
+재봤다. **된다.**
+
+```lua
+type StateData<T> = { Get: (self: StateData<T>) -> T }
+export type State<T> = StateData<T> & {
+    ComputeN: <U, D...>(self: StateData<T>, fn: (self: StateData<T>, prev: U?, D...) -> U, D...) -> U,
+}
+local s: State<string> = nil :: any
+local a: StateData<number> = nil :: any
+local b: StateData<boolean> = nil :: any
+
+local r = s:ComputeN(function(self, prev, d1: StateData<number>, d2: StateData<boolean>)
+    return if d2:Get() then d1:Get() else 0
+end, a, b)
+local rn: number = r      -- ✅ U == number 로 정확히 추론
+```
+
+- **양성**: 이형 2개(`number`/`boolean`)가 팩 하나로 정확히 좁혀진다.
+- **음성 대조군**: 콜백 파라미터 순서를 바꿔 넘기면 두 자리 모두 잡힌다
+  (`Expected 'StateData<boolean>' but got 'StateData<number>'` × 2).
+- **무주석 콜백도 타입 검사가 살아 있다** — 콜백 안에서 없는 메소드를
+  부르거나 `Get()` 결과를 틀린 타입으로 받으면 호출부에서 잡힌다.
+- 확정된 순서(`previous?`가 팩 **앞**)가 그대로 성립한다.
+- **다만 `previous?`를 안 쓸 때 자리를 비워야 하는 불편은 그대로다** —
+  `function(self, _, d1, d2)`.
+
+**부수 관찰(위 `H-75`와 같은 결)**: dep을 **팩이 아니라 고정 인자**로
+선언하면(`<U, D1>(..., dep1: StateData<D1>)`) 무주석 콜백 추론이 깨진다 —
+로컬 제네릭 `D1`이 콜백 파라미터에 나타나기 때문. quad가 확정한 모양은
+팩(`...deps`)이라 지금은 안 물리지만, "dep 1개짜리 특수 오버로드"를
+나중에 만들고 싶어지면 여기부터 볼 것.
+
+---
+
 ## 회신 방법
 
 6라운드와 같다 — 항목 번호로 결정만 적어주면 `-followup.md`를 만들고
-`base/`에 반영한다. 🔴 다섯 중 `H-55`/`H-58`/`H-59`는 같은 자리(정책·핸들이
+`base/`에 반영한다.
+
+**1차 패스**: 🔴 다섯 중 `H-55`/`H-58`/`H-59`는 같은 자리(정책·핸들이
 "손에 쥔 것"만으로 계약을 이행할 수 있는가)에서 나온 것이라 같이 결정하는
 편이 낫고, `H-57`/`H-64`/`H-65`는 "`unbindLifetime`이 cleanup을 안 부른다"
 결정의 호출부별 예외 목록이라 한 번에 보는 게 낫다. `H-56`/`H-62`는 전파
 루프 의사코드를 한 블록으로 쓰면 둘 다 닫힌다.
+
+**2차 패스**: `H-73`/`H-74`/`H-75`/`H-76`은 전부 **Store의 타입 합성 하나**
+에서 갈라져 나온 것이라 같이 보는 게 낫고, 특히 `H-73`은 `question.md`
+최우선 항목(콜론 메소드냐 탑레벨 함수냐)에 대한 **실측 근거**다 — 탑레벨
+쪽을 고르면 `H-74`도 같이 사라진다. `H-71`은 다른 것과 독립이고 **가장
+급하다**: 판정 기준 자체가 문서에 잘못 적혀 있어서, 고치지 않으면 앞으로
+`SetStrong`을 쓰는 모든 자리가 같은 실수를 반복한다. `H-72`는 `H-55`와
+같은 뿌리(`Epoch` 일반화 때 게이트 쪽 요구가 표면에 덜 반영됨)라 그것과
+같이 결정하는 게 낫다.
