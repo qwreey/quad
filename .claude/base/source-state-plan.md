@@ -10,7 +10,7 @@
 > | 갈라진 곳 | 담는 것 |
 > |---|---|
 > | **이 문서** | `Source`/`State` 온톨로지·서브타입, 전파 모델, `:With`/`:Compute`/`:Apply`, `previous`, `:Emit`, `Observer`, 구독/생명주기 게이트 |
-> | `base/store-plan.md` | Store = 이름 붙은 Source 모음 — `defaults`, eager/lazy 생성, `store.key` 타이핑, `:Set()` 문법 |
+> | `base/store-plan.md` | Store = 이름 붙은 Source 모음 — `defaults`, **명시적 초기화**(2026-08-25, 옛 eager/lazy 이중 모델 폐기), `store.key` 타이핑, `:Set()` 문법 |
 > | `base/dispatch-core-plan.md` | 디스패치 코어(핸들러 계약, `chains`, 하강 diff) |
 > | `base/bind-system-plan.md` | 인스턴스 생성/이벤트 네이밍 인체공학 + 분할 색인 |
 
@@ -89,7 +89,8 @@ RefSource라는 별도 타입은 폐기**하는 쪽으로 수렴.
   생기지 않음.
 - **`RefSource<T>` 같은 별도 타입은 불필요, `Store({defaults})`가
   내부적으로 `{[key] = Source(default), ...}`나 다름없게 됨** — Store
-  쪽 상세(eager/lazy 생성, `defaults` 템플릿의 성격, 구현 스케치)는
+  쪽 상세(**[2026-08-25]** 명시적 초기화 — 옛 eager/lazy 이중 모델 폐기,
+  `defaults`의 성격, 구현 스케치)는
   `base/store-plan.md`가 소스. 별도 `__values`류 그림자 실값 저장소도
   불필요 — Source 객체 자체가 저장소 역할을 함. 이 모델은 이전에
   검토했던 "State를 weak table로 캐싱" 절충안보다 더 싸다(래퍼 생성/
@@ -112,7 +113,8 @@ RefSource라는 별도 타입은 폐기**하는 쪽으로 수렴.
   구현 델리게이션 포함)이라 그 금지와 충돌하지 않음.
 - **동적 키 경로도 `State`가 아니라 `Source`를 반환**하는 것으로 자연히
   갱신됨 — **[정정, 2026-08-18]** 그 경로는 `store "key"` 문자열 커링이
-  아니라 `store:GetDynamic<<T>>(name): Source<T>`다(문자열 커링은 기각,
+  아니라 `store:Of<<T>>(name): Source<T>`다(**[2026-08-25]** 옛 이름
+  `GetDynamic` — 문자열 커링은 기각,
   `base/store-plan.md`의 "타입 추론 문제" 절).
 
 **[해소됨, 2026-08-13 첫 실측 라운드]** 핵심 질문(Source가 State를 구조적으로
@@ -205,8 +207,10 @@ Handler가 애초에 다른 층위. 관련해서 Handler를 담는 엔진(`Dispa
   전량은 **`base/state-epoch-plan.md`가 소스** — 여기선 이 절의 다른 서술과
   어긋나지 않게 요지만 적는다. 여기 있던 "emit은 *항상* 전파된다"는 무조건
   서술의 역전 원문은 `archive/always-propagate-no-dedup-superseded.md`.
-  - **`invalid`(구현 이름 `rawInvalid`) 플래그의 역할은 "내 캐시가 낡았다"는
-    표시 하나뿐** — 전파를 제어하는 장치가 **아님**. `:Get()`이 호출되면
+  - **"내 캐시가 낡았다"는 표시의 역할은 그것 하나뿐**(**[2026-08-25 정정]**
+    한때 *"구현 이름 `rawInvalid`"*라 적었는데 그 필드는 **폐기**됐다 —
+    지금은 `cacheTargetCount`/`cacheCurrCount` 카운터 쌍이고, 재계산 도중
+    도착한 무효화와 `fn` 예외를 같이 덮는다. `base/state-epoch-plan.md`) — 전파를 제어하는 장치가 **아님**. `:Get()`이 호출되면
     상류로 올라가 재계산하고, 그 결과를 캐시에 넣고, 플래그를 끈다.
   - **⚠️ `invalid`로 전파를 접는 것은 지금도 금지다.** 2026-08-14에 그
     방식이 폐기된 이유는 `:Get()`을 호출하지 않는 `Observer`(아래
@@ -230,6 +234,52 @@ Handler가 애초에 다른 층위. 관련해서 Handler를 담는 엔진(`Dispa
 - `emit`은 이 무효화 신호 하나로 좁혀짐 — 값을 안 실어보내므로 저렴함
   ("emit 필요 여부" 열린 질문은 이걸로 해소). 전파가 잦아도 부담이 작은
   이유이기도 함 — 신호 하나가 트리를 훑는 비용이지 재계산 비용이 아님.
+
+### ⭐⭐ 전파 루프 — 확정 의사코드 (2026-08-25 신설, 7라운드 `H-56`)
+
+지금까지 이 루프는 **산문으로만** 있었고, 그 공백에서 실제 결함이 나왔다 —
+`base/lifecycle-pattern.md`의 *"발화 시 각 구독자에 대해 `canExecute(observer)`를
+확인하고, 거짓이면 그 구독자만 조용히 건너뜀"*을 글자 그대로 짜면
+**자식 State 노드가 전부 걸러진다**(자식은 `bindLifetime`된 적도
+`:Subscribe()`된 적도 없어 `canExecute`가 항상 거짓이다). 그러면
+`A:Set()`이 `A:With(...)`/`A:Compute(...)` 노드에 **한 번도 안 닿고**
+파생 State 아래의 모든 Observer가 침묵한다.
+
+```lua
+function State:_emitDown(from)
+    -- H-23 확정: pairs 순회 중 새 키 추가는 미정의라 먼저 배열로 스냅샷
+    local snap = {}
+    for sub in self._subs do snap[#snap + 1] = sub end
+    for _, sub in ipairs(snap) do
+        if isState(sub) then          -- 자식 노드
+            sub:_receive(from)        -- state-epoch-plan.md §4 규칙 1~3
+        elseif canExecute(sub) then   -- Observer / Effect
+            sub.fn(sub, from)
+        end                           -- 거짓이면 조용히 건너뜀
+    end
+end
+```
+
+- **구독자 집합은 하나**(`self._subs`, weak-키)이고 **원소는 Observer
+  값**이다 — emit 클로저가 아니다. `bindLifetime(inst, observer)`가 Observer
+  **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를 담으면
+  `canExecute(클로저)`가 identity가 달라 **항상 거짓**이 된다.
+  `base/lifecycle-pattern.md` (4)의 *"Observer의 emit 클로저"* 표현은 이
+  결정에 맞춰 고쳤다.
+- **자식 State는 `canExecute`를 안 본다** — 그건 "이 값이 어떤 Instance에
+  묶여 살아 있는가"를 묻는 판정이고, 자식 노드의 생존은 위
+  "해소됨 — 중간 State는 `_hold`로 살아남는다" 절의 `_hold` 불변식이
+  책임진다.
+- **두 집합으로 나누는 안은 기각** — emit마다 스냅샷이 두 번이 되고
+  (아래 비용 참고) 등록/해제 경로도 둘로 갈린다.
+- **비용**(7라운드 `H-92`): 이 스냅샷은 **파동이 지나는 노드 수만큼** 배열을
+  할당한다. `base/state-epoch-plan.md` §2가 테이블 리비전을 기각한 근거가
+  *"`Set` 한 번마다 테이블 하나를 할당"*이었으므로, 그 문서 §7의 비용
+  서술은 이 할당을 셈에 넣어 실제와 맞춰야 한다. **정확성 문제는
+  아니다** — 순회 중 등록이 미정의인 이상 스냅샷은 필요하다.
+- **예외 안전성**: 구독자 콜백이 던지면 **그 파동의 나머지 구독자는 그
+  변경에 대해 영구 침묵**한다(값만 자가치유). `pcall`로 감싸지 않는다 —
+  `base/architecture.md`의 예외 계약 절이 소스.
 
 ### 다이아몬드 의존성은 무엇이 푸는가 (2026-08-14 명확화)
 
@@ -300,10 +350,20 @@ State를 여러 갈래가 공유하는 다이아몬드 형태(`b`에서 `c1 = b:
 수만큼 중복 실행됨 — `previous` 메커니즘이 막으려던 문제를 반대로 다시
 만들어내는 셈이라 방향이 안 맞음.
 
-**"별도 데이터스트럭처 관리" 부담은 실제로는 작음.** "관측해야
-실체화된다" 원칙 때문에 살아있는 노드-대-노드 구독 엣지가 필요한 건
-실제로 관측되는(`Get()`되는) State뿐 — 중간에 만들어놓고 아무도 안 보는
-State는 구독 등록 자체가 안 일어남. 다이아몬드에서 중복 재계산을 막는
+**"별도 데이터스트럭처 관리" 부담은 실제로는 작음.**
+**⭐⭐ [2026-08-25 정정, 7라운드 `H-62`] 여기 한때 *"실제로 관측되는(`Get()`되는)
+State뿐 — 중간에 만들어놓고 아무도 안 보는 State는 구독 등록 자체가 안
+일어남"*이라 적혀 있었는데 **틀렸다. 구독 엣지는 생성 즉시(eager) 등록된다.**
+**사용자 확정**: *"생성 즉시 밖에 없다. 옵져버가 실행 안 된다면 get 자체가
+안 되므로, lazy 하면 아에 등록 될 기회가 없다."* — lazy가 성립하려면 "먼저
+`Get()`이 일어난다"가 전제인데 `Get()`을 부르는 주체가 바로 그 등록되지
+못한 Observer라 순환이다. `Get()`을 안 하는 Observer가 *"매 변경마다 정확히
+한 번 운다"*는 확정과도 양립하지 않았다. 나머지 코퍼스는 이미 eager였다 —
+`base/state-epoch-plan.md` §4의 생성 시점 시딩, `base/blocker-plan.md`의
+*"호출되는 즉시"* 등록, 아래 ":With도 새 State 노드로 확정" 절.
+관리 부담이 작다는 **결론 자체는 유지된다** — 근거가 "엣지가 적다"에서
+**"엣지가 노드당 자기 상류 수만큼으로 유계이고 전부 weak-키"**로 바뀔 뿐이다.
+다이아몬드에서 중복 재계산을 막는
 것도 **노드별 캐시**(위 "다이아몬드 의존성은 무엇이 푸는가" 절)라 체인
 전체가 링크드일 것을 요구하지 않고 각 노드가 자기 구독자 목록 + 자기
 캐시만 가지면 되는 것이라, 이 결정과 무관하게 그대로 유지됨. 구현은
@@ -314,7 +374,7 @@ Observer와 동일한 패턴(외부 weak table, `{[child] = true}` 류)으로 �
 유일한 중복 방지 수단이 되면서 "State는 캐싱하는 존재"라는 근거가 더
 강해짐.
 
-### ⚠️ 미해결 — 중간 State가 살아남는가(구독 엣지의 방향성) (2026-08-18 구현 전 QA에서 제기, **M2 착수 전 결론 필요**)
+### ⭐ 해소됨 — 중간 State는 `_hold`로 살아남는다(구독 엣지의 방향성) (2026-08-18 제기, **2026-08-25 확정**)
 
 **사용자가 지목한 미검증 항목**: *"확인해봐야 하는게 State -> State ->
 State -> Observer Leaf Bind 에서 중간 State 는 참조되지 않아도 사라지지
@@ -340,11 +400,32 @@ With 등이 있는 경우 parent 와 연결된 상대를 자기 자신에 가지
 없어서** 그런 우연한 캡처가 없다 — 그래서 "우연"에 기대면 안 되고 방향성을
 불변식으로 못박아야 한다.
 
-**해야 할 일**: (a) 이 방향성(상류 strong / 하류 weak)을 이 문서의
-불변식으로 명문화할지 결정, (b) `luau-test`에 실측 스파이크 추가
-(`07-relate-weak-table-gc.luau`가 연쇄 GC를 이미 다루므로 그 옆에).
-**미검증 상태로 M2에 착수하면 안 되는 항목** — 아래 "결론"의 "관리 부담은
-작음"은 이 항목이 닫히기 전까지는 잠정이다.
+**⭐⭐ [2026-08-25 확정] `_hold` 불변식으로 닫혔다.** **사용자 확정**:
+*"단순히, 각 state 들이 상위 State|Source 를 홀드하는 `_hold` 를 놓는것으로
+바로 해결된다. 당연히 후행은 선행 요소들이 있어야하기 때문. 선행 state 가
+후행 state 를 얻으려 하는건 UB이므로 가능한 일이다.(이건 릴레이션도 아니라
+gc되긴 하지만.)"*
+
+| 방향 | 강도 |
+|---|---|
+| 하류 State → 상류 State/Source (`_hold`) | **강함** |
+| 상류 → 하류 (구독자 집합) | weak-키 |
+
+- **모든 파생 노드**(`:With`/`:Compute`/`:Gate`/`:Block`)가 자기 상류를
+  `_hold`에 강하게 담는다 — `:Compute`처럼 클로저가 **우연히** 캡처하는
+  것에 기대지 않는다(`:With`의 pass-through 노드엔 그 우연이 없다).
+- 체인은 **말단(Observer/Effect/leaf)이 살아 있는 동안** 통째로 살아 있고,
+  말단이 죽으면 통째로 수거된다. `Relate`가 아니므로 순환도 안 만든다.
+- **상류가 하류를 얻으려는 것은 UB**라 반대 방향 강참조가 필요 없다.
+- **따름정리 둘**(7라운드 `H-93`/`H-98`): 루트 `Epoch`(Source)가 하류보다
+  먼저 수거될 수 없으므로 *"`:Refresh()`가 `false`를 줘 낡은 값을 최신이라고
+  확신한다"*는 경로가 생기지 않고, `:Subscribe()`의 공개 계약 두 문장
+  (*"참조를 아무 데도 안 담아도 정상"* / *"GC되지 않고 영원히 계속 실행됨"*)이
+  서로 모순 없이 성립한다.
+- **남은 것은 실측 스파이크 하나** — `luau-test`에 "상류 strong / 하류 weak"
+  불변식을 음성 대조군까지 확인하는 파일을 추가한다
+  (`07-relate-weak-table-gc.luau`가 연쇄 GC를 이미 다루므로 그 옆에).
+  **M2 착수 게이트는 아니다**(`question.md` 최우선 절에서 내려갔다).
 
 **결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
 플래튼+클론을 쓰는 건 애초에 캐싱이 필요 없는 정적 데이터라 성립하는
@@ -431,7 +512,18 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
    전부 실제 노드로 두면 코드상의 호출 체인이 그래프 엣지와 1:1로 그대로
    대응됨. 빌더로 만들면 그래프 툴이 "이건 노드가 아니라 나중에 갈라지는
    지점"이라는 가상의 분기 모양을 따로 합성해야 함 — 그럴 이유가 없음.
-2. **공유 캐시를 못 타고 중복 계산이 생김. [2026-08-14 근거 재작성]**
+2. **엣지 수와 에포크 부기가 늘어남. [2026-08-25 근거 재작성, 7라운드 `H-82`]**
+   **여기 한때 "공유 캐시를 못 타고 중복 계산이 생김"이라 적혀 있었는데
+   `:With`엔 성립하지 않는다** — 같은 절이 `:With`를 *"계산 함수는 없고 값은
+   `self`를 그대로 통과(pass-through)"*로 확정하므로 **공유될 계산 자체가
+   없다**. 2026-08-14 재작성이 "근거가 더 강해졌다"면서 실제로는 정확도를
+   낮춘 자리다. 유효한 근거는 이것이다 — 빌더로 누적하면 최종 소비자마다
+   **자기 몫의 엣지 집합과 `EpochMap` 부기를 따로** 들게 되어, 실노드
+   하나가 그걸 공유하는 것보다 등록/판정 비용이 소비자 수만큼 늘어난다.
+   **결론(빌더 기각)은 안 바뀐다** — 근거 1·3이 그대로 유효하다.
+   아래 옛 서술은 `:Compute`에 대해서는 여전히 맞는 이야기다:
+
+   [옛 근거 — `:Compute`엔 유효, `:With`엔 무효]
    원래 이 항목은 "invalid 플래그로 다이아몬드 중복 워크 방지" 장치를
    근거로 들었으나 **그 장치는 폐기됨**(위 "전파 모델 확정" 절 정정) —
    근거를 실제로 유효한 것으로 바꿔 적음. With가 진짜 노드면
@@ -766,7 +858,9 @@ someSource:Compute(computeFn)
   가능해져 버린다"는 이전 우려는 이걸로 근본적으로 해소(그런 API 자체가
   없음).
 - **[정정, 2026-08-06 후속 세션] 값을 쓰는 경로는 `store.key = value`
-  (`__newindex`)가 아니라 `store.key:Set(value)`로 전환됨** — 이유와
+  (`__newindex`)가 아니라 `store.key:Set(value)`로 전환됨** — **[2026-08-25]**
+  같은 날 오전에 대입 문법을 되살렸다가 **철회**했다
+  (`archive/store-value-field-redesign-withdrawn.md`). 이유와
   상세는 `base/store-plan.md`의 "Store 값 설정 문법" 절 참고(요지:
   Source가 State를 만족하는 구조로 바뀌며 레코드 타입 읽기/쓰기 대칭을
   맞추려면 대입 문법을 포기해야 함 + `=`가 암시하는 "즉시 커밋"이 실제
@@ -783,8 +877,10 @@ someSource:Compute(computeFn)
   `Ref()`로 안 만들어질 특별한 이유는 없었고(이전 절에서 API 모양만
   다루고 생성자를 명시 안 해서 생긴 공백), `architecture.md`의 "복사(clone)
   구현 지양, 팩토리 함수로 대체" 원칙과도 정확히 일치. `Store({defaults})`도
-  같은 스타일로 지원(`defaults`는 선택 — 안 주고 `Store()`만 호출해도
-  됨, 순수 편의용 초기값 템플릿).
+  같은 스타일로 지원. **[2026-08-25 정정]** `defaults`는 더 이상 "선택 —
+  순수 편의용 초기값 템플릿"이 아니다 — **명시적 초기화**가 확정되며
+  `defaults`가 곧 **선언 키 집합**이 됐다(옛 lazy `__index` 폐기). 무인자
+  `Store<<{}>>()`는 빈 타입일 때만 유효하다(`base/store-plan.md`).
 - **[보강, 2026-08-09 열한 번째 세션] `Source(default)`/`Ref(default)`의
   `default` 인자가 "선택"이라는 서술은 정확히는 `T`가 `nil`을 포함할 때만
   성립함 — 생략하면 실제로 `nil`이 그 자리를 채우기 때문.** `Source()`
@@ -800,6 +896,20 @@ someSource:Compute(computeFn)
   경우뿐이라는 걸 문서 차원에서 명시할 것(non-nilable `T`에 `default`
   없이 생성하는 건 사용자 실수, 타입으로 막을 수 있으면 막고 안 되면
   UB로 문서 경고).
+
+### ⭐ `Source:Set(v)`는 동일값이어도 항상 갱신하고 emit한다 (2026-08-25 확정, 7라운드 `H-68`)
+
+지금까지 코퍼스 어디에도 이 경우가 안 적혀 있었다. **확정**: `v`가 현재
+값과 `==`여도 `Revision`을 갱신하고 정상적으로 emit한다.
+
+- 판정이 **값 동등성이 아니라 리비전**이라는 `Epoch` 모델
+  (`base/state-epoch-plan.md` §2)과 일관된다.
+- 더 중요한 건 **테이블 값**이다 — mutate한 뒤 같은 테이블을 다시
+  `Set`하는 것이 `==`로 dedup되면 **변경이 조용히 증발**한다. 아래
+  `:Emit()` 절이 다루는 것과 정확히 같은 상황인데, `Set`이 dedup하면
+  사용자가 그 구분을 항상 의식해야 한다.
+- 불필요한 파동을 접는 일은 이미 **하류**가 한다 — `EpochMap` 판정과
+  게이트(`base/gate-plan.md`).
 
 ## Source 값을 직접 mutate한 뒤 전파 — `:Emit()` (2026-08-06 후속 세션, 호출부 정정)
 
@@ -892,11 +1002,34 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   방식이 완전히 통일됨. `:With`/`:Compute` 자체를 대신 호출해주는
   자동화가 아니므로, 여전히 팩토리 본문 안에서 `:With`/`:Compute`를
   직접 호출하는 건 팩토리 작성자 몫.
+- **⭐⭐ [2026-08-25 확정, 7라운드 `H-94`] 팩토리는 함수이거나 "지정된
+  필드를 가진 객체"다 — `__call` 테이블은 안 받는다.** `Debounce{...}` /
+  `Throttle{...}`가 `__call` 테이블을 돌려주면
+  `state:Apply(Debounce{...})`가 **타입에러**다(`luau-analyze` 실측 —
+  `__call` 테이블은 함수 타입 자리에 안 들어간다. 런타임은 멀쩡하고
+  타입만 막히므로 `--!nocheck` 스파이크에선 안 드러난다). 같은 실측이
+  타입 레벨 `__call`의 다른 한계도 보였다 — `self`를 못 받고,
+  `typeof(f<<T>>)`로 타입 인자를 넘기는 것도 실패한다.
+  - **확정**: 애플리커티브 팩토리는 **`__call`이 아니라 지정된 필드**로
+    자기를 노출한다. **사용자 판단**: *"아에 어플리커티브 펑터로써,
+    `__call` 이 아닌 다른 필드로 들어가는게 맞아보여요. 외부에서 직접
+    `()` 호출하는건 의미 없게 둬야해요."*
+  - **부수 효과**: `Blocker`를 슈가로 못 두던 이유도 같이 풀린다 —
+    `Debounce`/`Throttle`/`Blocker`가 전부 같은 계약을 만족하게 된다.
+  - **함수와 콜러블의 유니온으로 여는 안은 기각** — 필드로 받으면
+    유니온도 캐스트도 필요 없다. 필드 이름과 정확한 시그니처는 구현 시
+    정한다.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
   존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌
   자체가 없음 — 그냥 고정 메소드 하나 추가하는 것.
-- **타입은 `factory: (State<T>) -> U): U`로 완전히 열어둠** — Modifier의
+- **타입은 반환 쪽을 완전히 열어둠** — **⚠️ [2026-08-25 정정, `H-94`]**
+  여기 한때 `factory: (State<T>) -> U): U`라 적혀 있었는데, 그 시그니처는
+  **함수만** 받으므로 위 `H-94` 항목이 확정한 "지정된 필드를 가진 객체"
+  형태를 **거부한다** — `state:Apply(Debounce{...})`가 그대로 타입에러다.
+  파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환 `U`만 열어둔다
+  (정확한 필드 이름과 시그니처는 구현 시 정한다). 아래 논거는 **반환 쪽**에
+  대한 것이라 그대로 유효하다 — Modifier의
   `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
   이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종
   요약된 plain 값)을 반환해 반응형 그래프를 벗어나는 탈출구로 쓰는 것도
@@ -1099,6 +1232,13 @@ override할 자리를 구조적으로 열어두는 것.)
   멈춘다")을 만족시키는 가장 단순한 도구 — 별도 콜백 로직 없이 그냥
   이 State가 계속 재계산되게만 강제하고 싶을 때 씀. 문서화만 확실히
   하면 별문제 없음(사용자 판단).
+  - **⭐ [2026-08-25 정정, 7라운드 `H-61`] 내부 콜백은 no-op가 아니라
+    `function(self) self:Get() end`이다.** 전파가 push-invalidate /
+    pull-recompute라 `Get()`을 안 부르면 재계산이 아예 안 일어난다 —
+    같은 절이 바로 위에서 *"값을 안 실어줌 — 반드시 `Get()`을 다시 해야
+    함"*이라 못박고 있으므로, no-op 콜백이었다면 이 유틸은 자기 용도
+    (`previous` 패턴의 mutate 로직을 계속 돌게 하기)를 **하나도 못
+    한다**. 이름("항상 관측")과도 이쪽이 맞는다.
 
 ### Slot 생존 확인 — 별도 메커니즘 아님, `canExecute` 재사용으로 확정
 
@@ -1124,6 +1264,24 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
 여기서 "weak-table 기반 자동 추적"이라 부른 것이 나중에 정식으로
 `bindLifetime`(`base/lifecycle-pattern.md`)으로 명명됨 — 별도 메커니즘
 두 개가 아니라 같은 것의 명명 전/후 표현.
+
+**⭐⭐ [2026-08-25 신설, 7라운드 `H-58`/`H-59`] `:WeakSubscribe()` /
+`:WeakUnsubscribe()` — 약하게 등록하는 짝.** `Weak` 쪽이 **프리미티브**이고
+평범한 `:Subscribe()`는 그 위에 "GC 안 되도록 킵" 하나를 더 얹은 것이다
+(**사용자 확정**: *"동작 자체는 Weak 아닌것과 동일하게 가고, 가드도 동일하나
+단순히 gc 안 되도록 킵 해주는 부분만 제거된 함수가 됩니다"*). 즉
+`Subscribe() = WeakSubscribe() + 강한 레지스트리에 킵`이고 구현이 한 벌이다.
+
+- **자료구조**: 전역 레지스트리에 **약하게** 들어간다. 살려두는 책임은
+  **잡고 있는 쪽**에 있다 — `Effect`가 자기 내부 Observer를 `_deps`에
+  강하게 들고 있는 게 그 예다(`base/effect-plan.md`의
+  "확정 구조 — 강한 주인은 항상 `Effect`" 절).
+- **왜 필요한가**: `Effect`가 dep마다 Observer를 만들 때 평범한
+  `:Subscribe()`를 쓰면 전역 레지스트리가 그 Observer를(따라서 `Effect`를)
+  영원히 붙든다. 그렇다고 바인드/언바인드마다 등록·해제하면
+  *"등록 시점에 즉시 1회 실행"*에 걸려 **바인드마다 `Rerun`이 dep 수만큼
+  돈다**. `WeakSubscribe`면 둘 다 사라진다.
+- `Ref` 쪽의 짝은 `ref:WeakCallback(fn)`이다(`base/ref-plan.md`).
 
 **해결**: 명시적 `:Subscribe()`/`:Unsubscribe()`를 추가로 지원. 이건 새
 설계가 아니라 PA님 코드 교차검증(아래 라이프사이클 절)에서 이미 예고해둔
@@ -1383,22 +1541,48 @@ function ObserverEffectLeafHandler.process(inst, k, v, index)
     Dispatch.setOffsetSource(inst, k, None)
     Dispatch.setLength(inst, k, 0, inst)
 
-    local old = relate:GetStrong(inst, k)
+    local old = relate:GetWeak(inst, k)   -- ⭐ [2026-08-25 `H-71`] 쓰기가 SetWeak이므로 읽기도 Weak
+                                          --   (안 맞추면 old가 항상 nil이라 dedup이 통째로 죽는다)
     if old ~= v then  -- 이미 같은 값이 이 자리를 차지 중이면 재바인딩 skip
-        bindLifetime(inst, v)  -- Effect는 내부적으로 자기 Observer까지 cascade(`base/effect-plan.md`)
+        bindLifetime(inst, v)  -- [2026-08-25 정정] Effect도 **핸들 하나만** 바인드된다 —
+                               -- dep은 생성자에서 `Weak*`로 걸려 있고 발화는
+                               -- `canExecute(handle)`이 게이팅(`base/effect-plan.md`)
     end
-    relate:SetStrong(inst, k, v)
+    relate:SetWeak(inst, k, v)   -- ⭐ [2026-08-25, 7라운드 `H-71`] Strong 아님 — 아래 참고
     return function(nextValue)
         if nextValue ~= v then
             unbindLifetime(v)
+            -- ⭐ [2026-08-25, 7라운드 `H-57`] 값 교체는 파괴에 준한다 — 그 Effect는
+            -- 다시 오지 않으므로 cleanup을 여기서 소진 호출한다.
+            if isEffect(v) then v:_consumeCleanup() end
             -- [`RefLeafHandler`와 같은 주의] relate 정리는 반드시 이 분기 *안*에서만 —
             -- 밖에 두면 spurious 재발행(nextValue == v)에서도 기록이 지워져 곧바로
             -- 이어지는 process가 `old ~= v`를 항상 참으로 보고 dedup이 무력화됨.
-            if relate:GetStrong(inst, k) == v then relate:SetStrong(inst, k, nil) end
+            if relate:GetWeak(inst, k) == v then relate:SetWeak(inst, k, nil) end
         end
     end
 end
 ```
+
+**⭐ [2026-08-25 신설, 7라운드 `H-71`] dedup 기록은 `SetWeak`이다.**
+`SetStrong`으로 두면 **값이 `inst`를 되참조할 때 100% 샌다** — 커밋된
+`Relate.luau`로 50/50 누수가 실측됐다(`base/relate-plan.md`의 슬롯별 강약
+표). dedup은 이 절이 스스로 밝히듯 **순수 성능 최적화**라, weak로 낮춰
+엔트리가 조기 소실돼도 "dedup을 한 번 놓친다"까지가 최대 손해다. `v`는
+`gchold`가 이미 강하게 잡고 있고, `relate-plan.md`의 **"다른 곳에서
+안전하게 유지되는 것은 항상 `SetWeak`"** 규칙에도 그대로 맞는다.
+`RefLeafHandler`도 같은 정정을 받는다(`base/ref-plan.md`).
+
+**⭐ [2026-08-25 신설, 7라운드 `H-57`] 값 교체 retract는 cleanup을 부른다.**
+`base/effect-plan.md`가 확정한 *"`unbindLifetime`은 cleanup을 부르지
+않는다"*는 **포탈 언마운트**를 보고 정한 것인데, `unbindLifetime`의 호출부는
+셋이다 — 포탈 언마운트 / 파괴 직전 / **값 교체 retract**. 앞의 둘은
+cleanup을 안 불러도 되지만 셋째는 **파괴에 준한다**(그 `Effect`는 다시 안
+온다). 안 부르면 `Frame { effectState }`에서 `effectState:Set(E2)` 뒤에도
+`E1`의 타이머가 영원히 돈다 — React로 치면 `useEffect` 클로저가 바뀌었는데
+이전 cleanup을 안 부르는 것. `_consumeCleanup()`이 **읽고 → 지우고 →
+실행**이라 파괴 경로와 이중 호출이 없고, `unbindLifetime`의 계약 자체는
+안 건드린다.
 
 ## PA님 코드와의 교차검증(2026-08-04 4차 라운드) — 둘 다 기존 확정 유지
 

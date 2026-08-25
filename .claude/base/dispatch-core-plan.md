@@ -983,6 +983,18 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = retractor }
     end
 end
+--[[
+⚠️ [2026-08-25 신설, 7라운드 `H-103`] `h.process`가 던지면 그 자리에 `NOOP`
+마커가 **영구히 남는다** — 그 자리의 정리가 통째로 사라지고, 명시적 철거로도
+회수되지 않는다(`retractFrom`이 `NOOP`을 부르면 아무 일도 안 한다). 예컨대
+`AttributeKeyHandler.process`는 `nameClaims:SetStrong` **뒤에** `setAttribute`를
+부르므로, 주입 op가 미주입 에러 스텁이면 **이름 claim만 남고 해제 경로가
+없는** 상태가 된다.
+
+**`pcall`로 감싸지 않는다** — `base/architecture.md`의 "예외 안전성 계약" 절이
+소스다. 자리당 hot path이고, 예외 이후의 부기 무결성을 quad가 보장하지
+않는다는 일반 계약을 여기에도 그대로 적용한다. **실제로 물리면 그때 넣는다.**
+]]
 
 function Dispatch.retractFrom(inst, k, index)
     -- index부터(포함) 끝까지, 꼬리(가장 깊은 인덱스)부터 역순으로 정리.
@@ -1664,6 +1676,11 @@ function Dispatch.getOffsetAt(ownerKey, at)
     end
     local cur = bk.offsetCache[bk.invalidAfter]
     for i = bk.invalidAfter, at - 1 do
+        -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
+        -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
+        if bk.lengthList[i] == nil then
+            error("Dispatch.getOffsetAt: lengthList[" .. i .. "]가 nil — bookkeeping is broken", 1)
+        end
         cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
     end
@@ -1729,7 +1746,19 @@ local function recompute(ownerKey, bk)
     -- 요소가 하나도 없는 Slot(`Slot()` 직후, 데이터가 빈 `:List` 등)은 `N`이 `nil`인
     -- 채로 `materializeSlotTree` 끝의 recompute에 도달한다 — `for i = 1, nil`은
     -- 그 자리에서 터진다. 빈 Slot은 완전히 정상적인 상태라 이건 방어가 아니라 계약.
-    for i = 1, bk.N or 0 do
+    -- ⭐⭐ [2026-08-25 재작성, 7라운드 `H-101`] 재진입 차단 + 되감기.
+    --   (a) 자기 전용 `recomputeBlocker`를 켜 재진입 recompute를 막는다
+    --       (배치 게이팅용 Blocker와 **별개 객체** — 합치면 배치 `Off()`의
+    --        onunblock 순회 도중 같은 Blocker가 다시 꺼져 핸들이 재귀한다.
+    --        `base/blocker-plan.md`가 네스팅을 의도적으로 미지원한다).
+    --   (b) 상한 `bk.N`을 **매 반복 재평가**한다 — 진입 시 한 번만 평가하면
+    --       재진입이 끝에 붙인 자리를 바깥 루프가 아예 안 본다.
+    --   (c) `bk.invalidAfter`가 낮아지면 **그 지점 다음부터 되감는다**.
+    --       접두합을 남겨두면 되감기 지점의 `sum`이 공짜로 복원된다.
+    bk.recomputeBlocker:On()
+    local prefix, i = {}, 1
+    while i <= (bk.N or 0) do
+        prefix[i] = sum
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(발행 채널 없음) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
@@ -1742,17 +1771,82 @@ local function recompute(ownerKey, bk)
             error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
         end
         local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
+        bk.invalidAfter = i                                     -- 여기까지 유효해짐
         if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
-            offset:Set(abs)
+            offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
         end
         local v = bk.lengthList[i]
         sum += (if isState(v) then v:Get() else v)
+
+        if bk.invalidAfter < i then      -- 누군가 낮췄다 → 되감기
+            -- ⭐ [2026-08-25] `+1`이 아니라 **그 자리부터** 다시 돈다.
+            --   `prefix[j+1]`은 **옛** `lengthList[j]`로 누적된 값이라, 길이가
+            --   바뀐 자리를 건너뛰면 `sum`이 낡은 채 `Length`에 실린다
+            --   (재진입은 블로커에 막혀 자가치유도 안 된다). `j`를 다시 돌아도
+            --   offset 쓰기는 바로 위 `~=` 가드가 막아 no-op다.
+            i = bk.invalidAfter
+            sum = prefix[i]
+        else
+            i += 1
+        end
     end
+    -- ⭐ [2026-08-25] 캐시 리셋과 블로커 해제를 **`Length:Set` 앞에** 둔다.
+    --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
+    --   낮춰진 `invalidAfter`를 뒤에서 무조건 덮으면 **캐시가 낡은 채로
+    --   "유효"로 표시**되고, 그때 불린 `gatedRecompute`는 블로커가 아직
+    --   켜져 있어 조기 반환했으므로 아무도 다시 안 돈다.
+    bk.invalidAfter = bk.N or 0
+    bk.recomputeBlocker:OffWithoutEmit()
     if isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
         ownerKey.Length:Set(sum)   -- **Length엔 base를 안 더한다** — 길이는 위치와 무관
     end                            -- (`base/slot-plan.md`의 "Slot-in-Slot 중첩" 절)
 end
 ```
+
+**⭐⭐ [2026-08-25 신설, 7라운드 `H-101`/`H-102`] 재진입과 되감기.**
+
+- **재진입 경로는 실재한다** — `offset:Set(abs)`가 **동기 전파**라 그
+  offset을 관측하는 사용자 코드가 그 자리에서 같은 owner를 건드릴 수
+  있다. 그러면 배치 게이팅 Blocker가 꺼진 정상 상태에서 **재진입
+  `recompute`가 완주해 올바른 값을 써놓고, 바깥 루프의 꼬리가 자기
+  옛 `sum`으로 그걸 덮는다.** 실제 재현에서는 `bk.N`이 자란 경우가
+  걸렸다(바깥은 옛 상한까지만 돌아 `sum`이 모자랐다).
+  - **원문이 든 트리거는 틀렸다** — `:List`의 `updateFn`은 offset 변경으로
+    **재실행되지 않는다**(offset을 State로 넘겨 관측하게 할 뿐이다).
+    남는 트리거는 그보다 좁은 것 하나 — **`slot.Offset` State를 관측하는
+    사용자 코드**.
+  - **`sum`이 낡는다는 서술도 대체로 틀렸다** — `contribution`을
+    `offset:Set` **직후**에 읽으므로, 그 Set이 유발한 자식 길이 변경은
+    이미 반영된 값이다(동기 계약 하에서).
+- **왜 되감아야 하나** — 앞자리가 당겨지는 splice가 도중에 나면 순차
+  순회로는 복구가 안 된다. **사용자 예시**: *"`{a,a,a, b,b, c,c}` 여기서
+  a,a 두개가 소멸했는데, 이미 c 에 왔다면, b,b 가 c,c 로 덮여지고 a,a 는
+  달라지는게 없을 가능성이 생기죠. 따라서 recompute 도중 변경이 생긴다면,
+  변경이 생긴 곳으로 위로 올라가야할것 같습니다."*
+- **되감기 신호는 `bk.invalidAfter` 하나로 통일한다** — 새 필드를 안
+  만든다. 두 뜻("캐시가 여기까지 유효"와 "여기 다음부터 다시 해야 함")이
+  실제로 같은 것이기 때문이고, `getOffsetAt`도 이미 `for i = bk.invalidAfter,
+  at - 1`로 그렇게 읽는다.
+  - **⭐ [2026-08-25 정정, `/code-review high`] 재개 지점은 `invalidAfter`
+    자신이다(`+1` 아님).** 한때 *"길이가 바뀐 자리의 자기 offset은 여전히
+    유효하다"*를 근거로 `+1`로 적었는데, **offset은 유효해도 `sum`이
+    아니다** — `prefix[j+1]`은 **옛** `lengthList[j]`로 누적된 값이라 그
+    자리를 건너뛰면 낡은 합계가 `ownerKey.Length`에 실리고, 재진입은
+    블로커에 막혀 있어 **자가치유도 안 된다.** `j`를 다시 도는 비용은
+    offset 쓰기 하나인데 그건 `offset:Get() ~= abs` 가드가 막아 no-op다.
+  - **그래서 splice도 `j - 1`이 아니라 `j`로 낮춘다** — 재개가
+    `invalidAfter`니까 `j`가 곧 "그 자리부터 다시"다. `getOffsetAt`의 캐시
+    의미(`offsetCache[j]` = 1..j-1의 합)도 splice/길이변경 어느 쪽에서든
+    `j` 이전은 안 바뀌므로 그대로 성립한다.
+- **`H-102`(splice가 observer를 옮겨도 클로저에 박힌 인덱스는 안 고쳐진다)가
+  이걸로 같이 닫힌다** — 아래 `setLength`의 `gatedRecompute`가 **인덱스를
+  캡처하지 않고 조회**한다. `slot._elemIndex`(물리 요소 → 인덱스 역방향
+  맵, 6라운드 `H-39`)와 같은 개념을 **Dispatch 층위로 격상**해 `bk`가
+  소유하고, splice가 배열을 당길 때 같이 갱신한다 — 그래서
+  `base/slot-plan.md`의 splice 요구 목록에 항목이 늘지 않는다.
+  (사용자: *"그것을 dispatch 로 격상시키는게 더 나아보이는 지점"*.)
+  `bk.invalidAfter = 0`으로 뭉개는 안은 기각 — *"0 으로 두면, 모든 부분에
+  있어 캐시가 무관해져요"*.
 
 **`offset`/`sum`은 0-based *개수*이지 Lua 배열 인덱스가 아님(2026-08-11
 세션 명시화).** Luau/Lua 배열은 1-based 관례지만, 여기서 계산하는
@@ -1804,15 +1898,37 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
 
     bk.lengthList[i] = len
     bk.N = math.max(bk.N or 0, i)   -- [2026-08-18 3라운드] N 수명주기 — "저장 위치" 절 참고
+    -- ⭐ [2026-08-25] 이 자리의 유일한 토큰 — 아래 클로저가 인덱스 대신 이걸 캡처한다.
+    local token = bk.tokens[i]
+    if token == nil then
+        token = {}
+        bk.tokens[i] = token
+    end
+    bk.indexOfToken[token] = i
     -- [2026-08-24 `H-3`] 접두합 캐시를 여기까지 당긴다 — `i` 자리의 offset은
     -- `1..i-1`의 합이라 안 바뀌고, 바뀌는 건 그 **뒤**뿐(위 무효화 표).
     bk.invalidAfter = math.min(bk.invalidAfter, i)
 
     local function gatedRecompute()
-        bk.invalidAfter = math.min(bk.invalidAfter, i)   -- 나중 emit도 같은 무효화가 필요
-        if not blocker:IsOn() then
-            recompute(ownerKey, bk)
-        end
+        -- ⭐ [2026-08-25, 7라운드 `H-102`] `i`를 **캡처하지 않는다** — splice가
+        -- 자리를 당기면 박힌 인덱스가 낡는다. `bk`가 소유한 역방향 맵에서
+        -- 현재 인덱스를 조회한다(`slot._elemIndex`와 같은 개념을 Dispatch로
+        -- 격상한 것 — 위 `recompute` 절).
+        --
+        -- ⚠️ [2026-08-25 정정, `/code-review high`] 키는 **`len`이 아니라 이
+        --   자리의 토큰**이다. `len`은 자리마다 유일하지 않다 — 같은
+        --   `Source`/`State`가 두 자리의 길이를 몰면 역방향 맵에서 **두
+        --   자리가 한 항목으로 접혀** 엉뚱한 인덱스를 무효화하고, 앞선
+        --   자리는 영영 다시 offset을 못 받는다. `token`은 등록 시점에
+        --   만드는 유일한 테이블로 `bk.tokens[i]`에 같이 저장되고 splice가
+        --   다른 배열과 **함께** 당긴다. (`slot._elemIndex`가 물리 요소를
+        --   키로 쓰는 건 요소가 자리마다 유일해서 성립하는 것 — 그 성질을
+        --   Dispatch에선 토큰이 맡는다.)
+        local cur = bk.indexOfToken[token]
+        bk.invalidAfter = math.min(bk.invalidAfter, cur)  -- 나중 emit도 같은 무효화가 필요
+        if blocker:IsOn() then return end                 -- 배치 등록 중
+        if bk.recomputeBlocker:IsOn() then return end     -- ⭐ recompute 재진입 중
+        recompute(ownerKey, bk)
     end
 
     if isState(len) then

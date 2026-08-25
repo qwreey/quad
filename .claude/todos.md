@@ -5,7 +5,38 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐ [2026-08-18 신설] 구현 전 QA — [2026-08-21] 1~5라운드 전부 `base/`
+00. **⭐⭐⭐ [2026-08-25] 7라운드까지 전부 처리 완료 — `question.md` 최우선
+   절이 비었고 M2 착수 게이트가 0이다.** 7라운드(손 트레이싱, 6패스,
+   발견 52건 `H-55`~`H-106`)와 그 검증 패스를 사용자와 대화형으로 처리해
+   `base/`에 전량 반영했다. **결정의 소스는
+   `qa-request/pre-implementation-handtrace-round7-followup.md`**(발견 원문은
+   `qa-request/pre-implementation-handtrace-round7.md`, 판정은
+   `qa-request/pre-implementation-handtrace-round7-verification.md` — 개수·개별 항목은 여기서
+   세지 않는다).
+   - **구조가 바뀐 것**: Store — **명시적 초기화**(옛 eager/lazy 이중 모델
+     폐기, `defaults`가 곧 선언 키 집합) + `WrapStore`/`ProcessStoreType`
+     폐기(**타입 함수를 안 쓰고** 타입 인자에 `Source<T>`를 직접) +
+     동적 키를 `store:Of<<T>>(name)` 하나로(옛 `GetDynamic` 흡수),
+     `Ref`가 `Epoch`로 승격, `Weak*` 등록 표면 신설(`Ref:WeakCallback` /
+     `Observer:WeakSubscribe`), `Effect`의 강한 dep 맵 + `Blocker` 억제,
+     전파 루프 의사코드 확정, `rawInvalid` → 캐시 카운터 쌍,
+     `recompute` 재진입 차단 + 되감기, `emit(commit) -> boolean`,
+     `EpochMap:Peek`, `_hold` 불변식.
+   - **⚠️ 같은 날 한 번 크게 되돌렸다**: 오전에 "`store.key`가 값,
+     `store:Of(k)`가 프리미티브, `index<>`/`keyof<>` + 팬텀 필드,
+     `store.key = v` 부활"이라는 Store 재설계를 넣었다가 **같은 날
+     철회**했다 — 살아남은 것은 명시적 초기화 하나다. 철회 이유와 원문은
+     `archive/store-value-field-redesign-withdrawn.md`, 거기서 나온 원칙
+     (*"타입 함수는 진단까지만"*)이 `base/typing-limits.md` §0으로 승격됐다.
+   - **역전 없음** — `store.key = value` 폐기(2026-08-06)는 **유지**된다.
+   - **툴체인 하나**: `luau` CLI가 심볼릭 링크를 못 탄다는 게 밝혀져
+     `scripts/relink.sh` + `scripts/test.sh` 신설 — 그 전엔 스모크 2개가
+     안 돌고 `luau-analyze`가 **거짓 클린**을 줬다.
+   - **새 error 계약**: `level` 이분(사용자 입력 2 / 내부 불변식 1),
+     메시지는 **영어**, 예외는 `pcall`로 안 감싼다
+     (`base/architecture.md`의 두 신설 절).
+
+   **[2026-08-21] 1~5라운드 전부 `base/`
    반영 완료. ⭐ 같은 날 마지막에 `Gate`와 State 에포크까지 확정되면서
    **M2 착수를 막는 설계 항목은 더 이상 없다.**** `Gate`는
    `state:Gate(setup)` + `GateNode`로(`base/gate-plan.md`), State의
@@ -166,7 +197,15 @@
    (**[2026-08-24]** 그때 열어뒀던 마일스톤 재편 여부가 순서 교체로
    닫혔다 — 위 00번 머리말).
 
-   **⚠️⚠️ [2026-08-24 승격] 아래 둘은 이제 *바로 다음* 마일스톤의
+   **✅ [2026-08-25 해소] 아래 둘은 전부 닫혔다** — `question.md` 최우선
+   절은 지금 **비어 있다**. 중간 State GC는 **`_hold` 불변식**(하류 → 상류
+   강함, 상류 → 하류 weak)으로 사용자가 확정했고, 동적 키 표면(옛 `GetDynamic`) 위치는
+   **콜론 유지 + `CheckReserved` 타입 함수**로 닫혔다(애초에 그 항목이 섰던
+   근거인 lazy `__index` 충돌 자체가 Store 재설계로 소멸). 남은 건 실측
+   스파이크 하나뿐이고 **착수 게이트가 아니다**(`luau-test/STATUS.md`의
+   "만들어야 할 스파이크" 절). 아래는 해소 전 서술:
+
+   **⚠️⚠️ [2026-08-24 승격, 2026-08-25 해소됨] 아래 둘은 이제 *바로 다음* 마일스톤의
    게이트다.** 순서 교체 전엔 반응형이 M3라 "한 마일스톤 뒤"의 일이었는데,
    반응형이 M2가 되면서 **지금 착수 직전에 결론이 필요한 항목**이 됐다
    (위 00번이 "M2 착수를 막는 **설계** 항목은 없다"고 하는 것과 모순되지

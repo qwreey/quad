@@ -13,10 +13,12 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 절이 소스). 그건 아직 열린 작업이므로 "M0 완료"로 읽고 넘어가면 안 됩니다.
 > **[2026-08-24] 착수를 막던 마일스톤 순서 문제는 해소됐습니다** — M2와
 > M3의 번호를 맞바꿔 반응형을 먼저 짓기로 확정했습니다(아래 M2 배너가
-> 소스). **⚠️ 다만 그 교체로 M2 착수 전에 답이 필요한 항목 둘이
-> `.claude/question.md` 최우선 절로 올라왔습니다** — 중간 State GC 실측과
-> `store:GetDynamic` 위치(원래 반응형의 게이트였는데 반응형이 앞으로
-> 오면서 같이 당겨짐). M1까지의 산출물은
+> 소스). **⭐ [2026-08-25] 그 교체로 올라왔던 항목 둘도 닫혔습니다** —
+> 중간 State GC는 `_hold` 불변식(하류 → 상류 강함)으로, 동적 키 표면
+> 위치는 `store:Of<<T>>(name)` 하나로(옛 `GetDynamic` 흡수) + 예약 키
+> 충돌은 `CheckReserved` 타입 함수로. `.claude/question.md`
+> 최우선 절은 지금 **비어 있습니다**. 결정 전량의 소스는
+> `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`. M1까지의 산출물은
 > quad-base/quad-roblox 폴더+pesde.toml, 루트
 > default.project.json/.luaurc, mock 테스트 하네스, `New()`/`RunInit`/
 > `AddPlugin` 골격. **다만 M0의 검증 스파이크 여러 개가 설계 변경으로
@@ -195,7 +197,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "미정"이라 적어둔 걸 `H-48`이 닫았다
 - [x] quad-base용 최소 mock 테스트 하네스(Vide `test/mock.luau` 선례, 순수
       `luau` CLI, `architecture.md` "테스트 전략" 절 참고) —
-      `quad-base/test/mock.luau` + `smoke.*.luau`, 전부 PASS
+      `quad-base/test/mock.luau` + `smoke.*.luau` — **[2026-08-25 정정,
+      7라운드 `H-78`] "전부 PASS"엔 전제조건이 있었다.** `luau` CLI가
+      **심볼릭 링크를 못 타는데**(디렉토리·파일 둘 다) pesde의 워크스페이스
+      링크가 전부 심볼릭이라, 그대로는 `smoke.init`/`smoke.plugin`이
+      `could not resolve child component "src"`로 죽고 `luau-analyze`는
+      **조용히 통과**한다(모듈을 `any`로 떨어뜨림 — "거짓 클린").
+      **`./scripts/test.sh`로 돌릴 것** — 그게 `scripts/relink.sh`를 먼저
+      돌려 심볼릭을 실제 복사로 바꾼다. 그 뒤 셋 전부 PASS 확인
 - [x] 최상위 `New()`/`InitXxx(module)` 팩토리 체이닝 골격 — 각 서브시스템
       Init이 `module`을 파라미터로 받아 뮤테이션, `Relate` 기반 인스턴스별
       멱등 가드(`base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절
@@ -325,33 +334,68 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `:TrackFrom` — `EpochSet = {[Epoch]: true}`, **배열 아님**)
       으로 떼어내며, State가 그걸 **둘** 컴포지션한다 — `valueEpochMap`(값
       유효성)/`emitEpochMap`(전파 dedup). emit은 값도 리비전도 안 싣고
-      **출처(`Epoch`나 그 집합)만** 싣고, 순회는 `rawInvalid == false`일 때만
+      **출처(`Epoch`나 그 집합)만** 싣고, 순회는 **캐시 카운터가 같을 때만**(옛 `rawInvalid == false` 자리 — **[2026-08-25 `H-85`]** 불린이 `cacheTargetCount`/`cacheCurrCount` 쌍으로 교체됐다)
       돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
-- [ ] **[2026-08-18 신설]** `store:GetDynamic<<T>>(name): Source<T>` — 런타임에
-      이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열 커링은
-      기각). **⚠️ 콜론 메소드로 두면 `__index`가 고정 메소드 테이블을 먼저
-      확인해야 하고 `GetDynamic`이 예약 키가 됨** — 탑레벨 함수로 둘지
-      아직 미결(`base/store-plan.md`의 "타입 추론 문제" 절, `question.md` 최우선 절)
+- [ ] **[2026-08-18 신설, 2026-08-25 확정]** `store:Of<<T>>(name): Source<T>` —
+      런타임에 이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열
+      커링은 기각). **콜론 메소드로 확정**했고, 예약 키
+      (`Of`/`Names`) 충돌은 `CheckReserved` 타입 함수가 사용 지점에서
+      잡는다(`base/store-plan.md`의 "타입 추론 문제" 절).
+      `<<T>>`가 값 호출부에서 실제로 `T`를 묶는 것도 실측 확인됨.
+      **[2026-08-25] 옛 이름은 `GetDynamic`이었다 — `Of`가 흡수했다**
+- [ ] **[2026-08-25 신설]** `store:Names(): { string }` — 선언된 키 집합
+      열거(그림자 테이블의 키). 그룹 `Attribute(...)`/`attr:NameMap()`이
+      요구한다(`base/attribute-plan.md`)
+- [ ] **[2026-08-25 신설]** `CheckReserved` 타입 함수 — 예약 키를 **검증만**
+      하고 `T`를 그대로 통과시킨다. `error()`가 아니라
+      `print(...)` + `return types.never`를 써야 한다.
+      **타입 함수는 이 용도(진단)까지만 쓴다** — `base/typing-limits.md` §0
+- [ ] **[2026-08-25 신설]** **명시적 초기화** — 타입 인자에 `Source<T>`를
+      직접 쓰고 `defaults`에도 `Source(v)`를 직접 넣는다. 옛 lazy `__index`
+      (없는 키를 그 자리에서 만들어 저장)는 **폐기**. 그래서 `defaults`가
+      곧 선언 키 집합이고 `Names()`가 성립한다
 - [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
       (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제
       호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다" 절) —
-      State는 구독자(Observer의 emit 클로저)를 **weak로만** 담고, 살려두는
+      State는 구독자를 **weak-키로만** 담고, 살려두는
       책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
-      (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐). 발화 시
-      각 구독자에 대해 `canExecute(observer)`가 거짓이면 **그 구독자만
-      조용히 건너뜀**(no-op) — 이게 `canExecute`의 유일한 실제 호출부이고,
-      `inst`를 인자로 받을 수 없는 이유(State는 자기가 어느 Instance에
-      걸렸는지 모름). `state:Observer(fn)`의 "등록 즉시 1회 실행"은
-      `bindLifetime` 이전에 동기적으로 일어나므로 이 게이팅과 무관
-- **[확정된 것 — 코드 아님]** `store.key` dot-access 타입 추론 확인 — Luau `type function`
-      (`WrapStore`/`ProcessStoreType`)으로 `Store<T>`가 `T`의 각 필드를
-      `Source`로 감싼 레코드 타입을 합성 가능함을 확인(2026-08-12 열일곱
-      번째 세션, `base/typing-limits.md` §5) — **[2026-08-15 실측 완료]**
-      `luau-test/done/16-type-store-key-typefunction.luau` 통과(원인은
-      설계 문제가 아니라 `types.newfunction` API 버전 드리프트였음)
+      (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐).
+      **⭐⭐ [2026-08-25 정정, 7라운드 `H-56`] 확정 의사코드는
+      `base/source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절이
+      소스다.** 여기 한때 적혀 있던 두 가지가 틀렸었다 —
+      (a) 집합의 원소는 "Observer의 emit 클로저"가 아니라 **Observer
+      값**이다(`bindLifetime`이 그 identity를 쓰므로 클로저를 담으면
+      `canExecute`가 항상 거짓), (b) **`canExecute`는 Observer/Effect
+      구독자에만 적용된다 — 자식 State 노드는 이 게이트를 안 탄다.**
+      "각 구독자에 대해"로 짜면 `:With`/`:Compute`/`:Gate`가 만든 파생
+      노드가 **전부 걸러져** 그 아래 모든 Observer가 침묵한다. 자식
+      노드의 생존은 `canExecute`가 아니라 같은 문서의 **`_hold`
+      불변식**(하류 → 상류 강함)이 책임진다.
+      ```lua
+      if isState(sub) then sub:_receive(from)        -- 자식 노드: 게이트 없음
+      elseif canExecute(sub) then sub.fn(sub, from)  -- Observer / Effect
+      end
+      ```
+      `canExecute`가 `inst`를 인자로 받을 수 없는 이유는 그대로다(State는
+      자기가 어느 Instance에 걸렸는지 모름). `state:Observer(fn)`의
+      "등록 즉시 1회 실행"은 `bindLifetime` 이전에 동기적으로 일어나므로
+      이 게이팅과 무관.
+      **순회 전 스냅샷 필수**(`H-23`) — `pairs` 순회 중 새 키 추가는
+      미정의다
+- **[확정된 것 — 코드 아님]** `store.key` dot-access 타입 추론 확인 —
+      **[2026-08-25 재작성]** 옛 `WrapStore`/`ProcessStoreType` 합성 접근은
+      **폐기**됐고(`archive/store-value-field-redesign-withdrawn.md`), 지금은
+      **타입 함수를 안 쓰고** 타입 인자에 `Source<T>`를 직접 써서 평범한
+      레코드로 짓는다(같은 날 `index<>`/`keyof<>` + 팬텀 필드 안을 넣었다가
+      §0 원칙에 따라 철회 —
+      `archive/store-value-field-redesign-withdrawn.md`). `luau-analyze`로 양성 9건 +
+      음성 대조군 전부 확인 — `base/store-plan.md`의
+      "`store.key` 레코드 필드 타이핑" 절이 소스. 스파이크 `16`/`21`은
+      폐기된 접근을 검증한 것이라 재작성 대기
+      (`luau-test/STATUS.md`)
 - [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
       (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
@@ -366,15 +410,28 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
+- [ ] **`Observer.luau`** — `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()`
+      전역 레지스트리의 소유 모듈**. `EpochMap.luau`와 같은 이유로
+      `State.luau`에 묻지 않는다(`Effect`/`GateNode`/leaf 핸들러가 전부 이
+      레지스트리를 본다) — `base/architecture.md` 소스 트리, 7라운드 `H-99`
 - [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
       실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
-      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()`. **동적
+      판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()` +
+      **`:WeakSubscribe()`/`:WeakUnsubscribe()`**(Weak 쪽이 프리미티브,
+      7라운드 `H-58`/`H-59`). **무인자 `state:Observer()`의 내부 콜백은
+      `function(self) self:Get() end`**(`H-61`). **동적
       경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
       is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] `Effect(fn, ...deps)`(`base/effect-plan.md`, **[2026-08-21 5라운드
+- [ ] `Effect(fn, ...deps)` — **⚠️ 선행: `Blocker`의 기본 메커니즘**
+      (`On`/`Off`/`IsOn`/`OffWithoutEmit`). 생성자가 등록 구간 억제에 사적
+      `Blocker` 하나를 쓴다(`base/effect-plan.md`). 아래 `Blocker.luau`
+      체크박스가 이 항목보다 뒤에 있지만 **그 기본 넷은 `GateNode`/`:Policy`와
+      무관하게 독립 완결**이라(`base/blocker-plan.md`의 "메커니즘" 절) 그
+      부분만 먼저 만들면 된다 — `:Policy`/`state:Block` 배선은 `GateNode`
+      뒤에. (`base/effect-plan.md`, **[2026-08-21 5라운드
       `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
       1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
       (State/Source는 `Observer`, `Ref`는 `:Callback`)을 걸어
@@ -389,17 +446,32 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] **⭐ [2026-08-24 신설, 6라운드] `Effect` 구현 시 같이 만들 것** —
-      **`handle._observers`**(배열, 단수 `_observer`에서 바뀜 `H-8`) ·
+- [ ] **⭐ [2026-08-24 신설, 6라운드 / 2026-08-25 7라운드로 필드 재편]
+      `Effect` 구현 시 같이 만들 것** —
+      **`handle._deps`**(`{[Ref|State] = fn|Observer}`, **강참조** — 옛
+      `_observers`/`_refDeps`/`_refCallbacks` 셋이 여기로 통합됐다) ·
+      **`handle._epochs`**(`EpochMap` — `Ref`도 `Epoch`라 dep 종류가 균일) ·
+      **`handle._blocker`**(등록 구간의 즉시-1회 호출 억제 — 옛 `_installing`
+      플래그 폐기, 그건 생성자 구간만 덮어 바인드 구간을 놓쳤다) ·
       **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
-      같은 자리를 읽는다) · **`handle._refDeps`/`_refCallbacks`**(`Ref` dep과
-      거기 건 클로저 — 해제 시 값으로 떼야 해서 보관 필요) ·
-      **`handle._destroyConn`** · **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
-      (`bindLifetime`/`unbindLifetime`이 `isEffect`일 때 부르는 훅, `H-11`).
-      `fn` 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
-      **`...deps`는 `fn`에 안 넘어간다**(`H-14`). `Ref` 콜백은 본문 맨 앞에서
-      **`canExecute(handle)`를 확인**한다(`H-7`). 의사코드는
-      `base/effect-plan.md`가 소스
+      같은 자리를 읽는다) · **`handle._installed`**(설치 여부 — `fn`의 cleanup
+      반환이 **선택**이라 `_cleanup`의 유무로는 판정할 수 없다) ·
+      **`handle._running`/`_pending`**(`Rerun` 재진입
+      지연) · **`handle._destroyConn`** ·
+      **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
+      (`bindLifetime`/`unbindLifetime`이 `isEffect`일 때 부르는 훅, `H-11`) ·
+      **`:Rerun()`**(정의는 `H-60`이 채웠다 — 실행 중 재진입은 **지연
+      재실행**, error는 UB) · **`:_consumeCleanup()`**(읽고 → 지우고 → 실행).
+      `fn` 시그니처는 **`fn(self: EffectHandle) -> ...(() -> ())`**이고
+      (**[2026-08-25 `H-95`]** 가변 반환 팩 — 옛 `-> (() -> ())?`는 콜백이
+      "선언보다 적게 반환"할 때 strict에서 막혀 정상 용례가 전부 안 통과했다)
+      **`...deps`는 `fn`에 안 넘어간다**(`H-14`).
+      **⭐ dep 등록은 생성자에서 한 번만** — `:WeakSubscribe()`/
+      `:WeakCallback()`으로 걸고, 바인드/언바인드는 dep을 아예 안 건드린다
+      (`H-58`/`H-59`). 발화 게이트는 전부 **`canExecute(handle)`** 하나다
+      (`H-7`). 캐치업은 바인드 직후 **조건부 최대 1회**
+      (`if not self._installed or self._epochs:Refresh() then self:Rerun() end`
+      — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
 - [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
@@ -435,17 +507,40 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       한 번도 안 쓴다, `base/state-epoch-plan.md` §5). **빈 배치는
       아무것도 안 함**. `emitEpochMap`을 쓰므로 위 `EpochMap.luau`가 선행 —
       `base/gate-plan.md`. **"게이팅 먼저" 결정의 산물**
-      (사용자: *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다"*)
+      (사용자: *"게이팅 먼저. 게이팅을 base 에 만들 준비를 해야한다"*).
+      **⭐⭐ [2026-08-25 갱신, 7라운드 `H-55`/`H-72`/`H-86`] `setup` 계약이
+      바뀌었다** — `setup: (emit: (commit: boolean?) -> boolean) ->
+      (onUpstreamEmit: () -> ())`. 인자 **목록**은 그대로지만
+      `emit(false)`가 **흡수 집합을 버리고**(정책이 그걸 할 통로가 없었다),
+      반환값이 **"실제로 내보내거나 버릴 게 있었는가"**를 준다(정책이
+      `pending`을 읽을 통로가 없어 `Throttle`의 창이 idle로 못 돌아왔다).
+      그리고 **수신 시점 판정은 `emitEpochMap:Peek`**을 쓴다 — `:Update`는
+      덮으므로 "유보 중엔 아직 안 던졌다"는 맵의 뜻과 양립하지 않는다.
+      flush 순서는 **빈 배치 얼리리턴 → 스왑 → `:Sync(batch)` → 전파**
 - [ ] **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
-      얹히는 **정책**(다시 노드를 만들지 말 것). 여러 Source를 한꺼번에
+      얹히는 **정책**(다시 노드를 만들지 말 것).
+      **⭐ [2026-08-25 추가, 7라운드 `H-63`] onunblock 핸들 보관 세 자리**:
+      (1) **weak-키 해시맵 셋**(`__mode = "k"`) — 값-weak 배열이면 구멍에서
+      `ipairs`가 멈춰 뒤의 살아있는 게이트가 `Off()`를 못 받는다,
+      (2) **강한 주인은 정책이 반환하는 `onUpstreamEmit` 클로저**(upvalue로
+      잡는다) — Blocker가 강하게 들면 거기 걸렸던 모든 gated state와 상류
+      체인이 영원히 산다, (3) `Off()`/`OffWithoutEmit()`은 **스냅샷 뒤 순회**. 여러 Source를 한꺼번에
       바꿔도 파생값 재계산/재대입이 한 번만 되게 하는 primitive
       (`base/blocker-plan.md`). **M3의** `Dispatch.setLength`/`setOffsetSource`의
       배치 등록이 `:On()`/`:IsOn()`/`:OffWithoutEmit()` **세 메서드**를
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Source`/`State`/
-      `Store` 필드 추가 — **규칙 요지**: `New(): Quad`가 닫힌 레코드이고
+- [ ] **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+      `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
+      `Source` / `Store` / `Effect` / `Blocker` / `Relate` /
+      `is*` 전량(`isState`/`isSource`/`isStore`/`isRef`/`isObserver`/
+      `isEffect`/`isEpoch`/`isModifier` …) / `bindLifetime`·`unbindLifetime`·
+      `canBound`·`canExecute` 4종. **⚠️ `State`는 런타임 생성자가 없다** —
+      파생(`:With`/`:Compute`/`:Gate`)으로만 생기므로 **타입만** 재수출한다.
+      옛 목록(`Source`/`State`/`Store` 셋)은 M2가 실제로 얹는 것의 일부만
+      담고 있었고, 빠진 것 전부가 `H-25`가 만든 바로 그 벽에 부딪힌다.
+      **규칙 요지**: `New(): Quad`가 닫힌 레코드이고
       `RunInit`은 반환값이 없어 타입을 못 넓히므로, 서브시스템을 붙이는
       마일스톤마다 `quad-types`의 `Quad`에 그 필드와 타입 재수출을 같이
       추가한다. 안 하면 그 마일스톤 완료 후 `quad.Store` 접근이 런타임엔
@@ -464,7 +559,24 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
-- [ ] mock 대상 테스트
+- [ ] **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Block(blocker)` /
+      `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
+      있는데 이 셋만 빠져 있었다
+- [ ] **[2026-08-25 신설, `H-81`]** `isModifier` 런타임 가드 — 적용 지점이
+      **전부 이 마일스톤의 코드**다(`Source:Set` / Store 생성 시 eager
+      `Source(default)` / State의 `:Compute` 결과 캐싱, 그리고
+      독립 `Source(someModifier)`). 체크박스가 M7에만 있었다.
+      `base/modifier-plan.md` 7번과 `base/source-state-plan.md`의 적용
+      지점 목록을 서로 맞출 것(한쪽에만 있는 항목이 있다)
+- [ ] **[2026-08-25 신설, `H-97`]** mock 백엔드용 생명주기 4종 최소 구현 —
+      `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`. 안 하면
+      **아래 "mock 대상 테스트"가 전파 루프를 한 번도 못 돈다**(루프가 매
+      발화마다 `canExecute`를 부르는데 그건 M8 구현이고 미주입 슬롯은
+      에러 스텁이다). 커밋된 `quad-base/test/mock.luau`에 signal/Connection이
+      이미 있으므로 그 `Destroying`을 그대로 쓰면 된다
+- [ ] mock 대상 테스트 — **전파 루프를 실제로 돌릴 것**(위 항목이 선행).
+      M2의 핵심이 전파 루프인데 그걸 한 번도 안 돌려보고 M3로 넘어가면
+      7라운드가 찾은 종류의 결함을 그대로 낳는다
 
 ## M3 — 디스패치 엔진
 
@@ -1115,7 +1227,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Ref` 필드 추가
       (위 M3 항목의 "마일스톤마다" 규칙)
 - [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
-      `:Wait(thread?)`, 전부 self 반환) + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
+      `:Wait(thread?)`, 전부 self 반환).
+      **⭐ [2026-08-25 추가, 7라운드 `H-58`/`H-64`/`H-70`] `Ref`가 `Epoch`를
+      만족하게 됐다** — 공개 필드 **`.Revision`**(`:Set()`이 `Source`와 같은
+      `bit32.bnot(-rev)`로 갱신) + **`EpochBrand:register(self)`**, 그리고
+      약하게 등록하는 **`:WeakCallback(fn)`**(weak-키 별도 테이블, `Weak` 쪽이
+      프리미티브이고 `:Callback`이 그 위에 "GC 킵"을 얹은 것).
+      **M2가 이미 이 표면을 전제한다** — `Effect` 생성자가 `Ref` dep을
+      `self._epochs:Sync(d)`로 `EpochMap`에 태운다(`base/effect-plan.md`).
+      `base/ref-plan.md`의 "`Ref`는 `Epoch`를 만족한다" 절이 소스 + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
       위치 무관 호이스팅 pre-pass — `base/ref-plan.md` "`phase`
       옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)
@@ -1181,17 +1301,30 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`pairs` 순회 중 새 키 추가가 Lua에서 미정의라 — `H-23`과 같은 처방)
       키 타입으로 분기: `type(k) == "thread"`면 `Callbacks[k] = nil`로 소진 후
       `coroutine.resume(k, self)`(값이 아니라 **Ref 자신**), 함수면 `k(value)`
-      호출 + 유지. **중복 등록은 dedup이 계약**이고 해제는 신설된
+      호출 + 유지. **중복 등록은 dedup이 계약**이고 해제는
       **`:Uncallback(fn)`**(`Callbacks[fn] = nil` 한 줄).
+      **⭐ [2026-08-25 추가, 7라운드 `H-58`/`H-59`] 약하게 등록하는 짝
+      `:WeakCallback(fn)`이 신설됐고 그쪽이 프리미티브다** —
+      `:Callback(fn)`은 거기에 "GC 안 되도록 킵" 하나를 더 얹은 것이다.
+      약한 등록은 **weak-키 테이블**(`__mode = "k"`)로 `.Callbacks`와
+      **별도**이고(Lua의 weak 모드는 테이블 단위), 발화 순회는 둘 다
+      훑으며 `:Uncallback`은 양쪽을 본다.
       의사코드는 `base/ref-plan.md`가 소스.
       **⚠️ 옛 배열 설계(빈 슬롯 선형 탐색 등록, `[i] = nil` 소진, `#t` border
       실측)는 전부 폐기됐다** — 해시맵엔 구멍도 border도 없다.
       `:Wait(thread?)`는 그대로 — `thread`가 `nil`이면
       `coroutine.running()` 캡처+yield, 있으면 등록만 하고 즉시 `self`
       반환(남의 thread를 여기서 대신 정지시킬 수 없어서)
-- [ ] **[2026-08-24 신설, 6라운드 `H-7`]** `Ref:Uncallback(fn)` — 해제 경로.
-      `Effect`가 자기 `Ref` dep 콜백을 뗄 때 쓰고(`_refCallbacks`에 보관해둔
-      바로 그 클로저를 값으로 뗀다), `unbindLifetime`/`:Unsubscribe()`가 부른다
+- [ ] **[2026-08-24 신설, 6라운드 `H-7` / 2026-08-25 범위 축소, 7라운드 `H-58`]**
+      `Ref:Uncallback(fn)` — 해제 경로(강·약 두 테이블을 다 본다).
+      **⚠️ `Effect`는 더 이상 이걸 안 부른다** — 여기 한때 *"`Effect`가 자기
+      `Ref` dep 콜백을 뗄 때 쓰고(`_refCallbacks`에 보관해둔 바로 그 클로저를
+      값으로 뗀다), `unbindLifetime`/`:Unsubscribe()`가 부른다"*고 적혀 있었는데
+      그 계약은 `base/effect-plan.md`가 명시적으로 retract했다. 지금은
+      `Effect`가 **생성자에서 `:WeakCallback`으로 한 번만** 걸고 강한 주인은
+      `_deps`이며(`_refCallbacks`는 폐기된 필드), 바인드/언바인드는 `Ref`를
+      아예 안 건드린다. `:Uncallback`은 **사용자가 직접 건 콜백을 떼는**
+      공개 표면으로 남는다
 - [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
       `unbindLifetime`/`canBound`/`canExecute` 본체(인터페이스 자체는
       M2로 이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현
@@ -1202,12 +1335,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `gchold[value]=true`(강참조로 생존 보장)와 `BindData:SetWeak(value,
       "gchold"/"gcconn", ...)`(값이 자기 생존 판정 근거를 직접 들고 있게)
       둘을 하고, `unbindLifetime(value)`은 그걸 되돌림.
-      **⭐ [2026-08-24 6라운드 `H-11`] 그리고 `isEffect(value)`면 분기가 하나 더
-      붙는다** — `handle._observers` 전부로 cascade하고
-      `value:_bindDestroying(inst)` / `:_unbindDestroying()`를 부른다(전자는
-      주입 op `onDestroying`으로 `Destroying`을 연결하고 `Ref` dep 콜백을
-      (재)등록, 후자는 그 대칭). 여기 원래 *"둘만 하고"*라고 적혀 있었는데
-      이 분기와 직접 모순이었다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
+      **⭐ [2026-08-24 6라운드 `H-11`, 2026-08-25 7라운드 `H-58`로 축소]
+      그리고 `isEffect(value)`면 분기가 하나 더 붙는다** —
+      `value:_bindDestroying(inst)` / `:_unbindDestroying()`를 부른다.
+      여기 원래 *"둘만 하고"*라고 적혀 있었는데 이 분기와 직접 모순이었다.
+      **⚠️ [2026-08-25 정정] `handle._observers` 전부로 cascade하지
+      않는다** — 그 필드 자체가 폐기됐다(`_deps` 하나로 통합). 그리고
+      `_bindDestroying`은 **`Ref` dep 콜백을 (재)등록하지 않는다** —
+      dep 등록은 생성자에서 끝나고, 여기서 하는 건 `Destroying` 연결과
+      **조건부 캐치업 한 줄**(`if not self._installed or
+      self._epochs:Refresh() then self:Rerun() end`)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
       발화시키는 유일한 배선**이고, M6의 `_detached` 정리가 여기 의존한다
       (그 항목의 `H-50` 각주 참고). 의사코드는 `base/lifecycle-pattern.md`와
       `base/effect-plan.md`가 소스. **[2026-08-14

@@ -57,18 +57,31 @@ State는 `:With`/`:Compute`로 만들어진 파생값일 수 있어 쓰기가 �
 의미 있음 — **사용자 확정**("맞음. 확실해"). 이 원칙 자체는 그대로 유지되고,
 아래 3번의 구체적 메커니즘만 2026-08-06 후속 세션에서 더 단순하게 갱신됨.
 
-### 3. Store는 내부 Source를 그대로 반환 — Source가 State를 구조적으로 만족
+### 3. Store는 내부 Source를 `store:Of(key)`로 준다 — Source가 State를 구조적으로 만족
+
+> **[2026-08-25] 이 절의 결론은 유지된다.** 같은 날 오전에
+> "`store.key`가 값이고 `store:Of(k)`가 프리미티브"라는 재설계를 넣었다가
+> **같은 날 철회**했다 — `archive/store-value-field-redesign-withdrawn.md`.
+> 바뀐 것은 **생성이 명시적 초기화가 됐다는 것 하나**다(아래 ⭐).
 
 **확정**: `Source<T>`가 구조적으로 `State<T>`를 만족하므로(단방향 호환,
-Svelte `Writable<T> extends Readable<T>`와 같은 모양), `store.key`는 Store
-생성 시 이미 만들어둔 진짜 Source 객체를 그대로 반환한다 — 별도 프록시
-타입도, 별도 캐싱 계층도 없음(Source 자체가 이미 State의 읽기 계약을
-전부 만족하고 거기에 `:Set(value)`/`:Emit()`이 추가로 있을 뿐이라 "원본이라
-쓰기 가능"이라는 위 2번 규칙과도 자연히 맞아떨어짐). 쓰기 문법도 같이
-바뀜: `store.key = v`가 아니라 `store.key:Set(v)`(레코드 타입 읽기/쓰기
-대칭 + lazy 동작에 `=`가 암시하는 "즉시 커밋"이 안 맞는다는 논거). 상세
-근거·타입 설계·Luau 솔버 검증 필요 항목은 `base/source-state-plan.md`의
-"Source가 State를 만족함" 절이 최종 소스.
+Svelte `Writable<T> extends Readable<T>`와 같은 모양), **`store.key`는
+진짜 Source 객체를 그대로 반환하는 평범한 레코드 필드다** — 별도 프록시
+타입도, 별도 캐싱 계층도, **타입 함수도** 없다(Source 자체가 이미 State의
+읽기 계약을 전부 만족하고 거기에 `:Set(value)`/`:Emit()`이 추가로 있을
+뿐이라 "원본이라 쓰기 가능"이라는 위 2번 규칙과도 자연히 맞아떨어짐).
+쓰기는 `store.key = v`가 아니라 `store.key:Set(v)`
+(`base/store-plan.md`의 "Store 값 설정 문법" 절).
+
+- **⭐ [2026-08-25] 생성은 명시적 초기화다** — 타입 인자에 `Source<T>`를
+  직접 쓰고 `defaults`에도 `Source(v)`를 직접 넣는다. 옛 lazy `__index`
+  (없는 키를 그 자리에서 만들어 저장)는 폐기됐고, 그래서 **선언 키 집합의
+  런타임 소스가 하나**가 된다. 부모가 값을 다 안 넘겨도 되게 하려면
+  **컴포넌트가 자기 `DEFAULTS`로 채워** 넘긴다.
+- 동적 키는 `store:Of<<T>>(name)` 하나다(옛 `GetDynamic` 흡수).
+
+상세 근거·타입 설계는 `base/source-state-plan.md`의
+"Source가 State를 만족함" 절과 `base/store-plan.md`가 최종 소스.
 
 **[이전에 확정했다가 폐기된 `StoreSource` 프록시 설계는 이 결론으로
 완전히 대체됨 — 원문·역전 이유·신구 비교표는
@@ -327,7 +340,8 @@ Ref를 받으면 그냥 전부 실행하면 됨 — Ref 콜백 리스트는 애�
   (`Modifier.Overridden`은 2026-08-08 세션에서 이름 확정, 이 목록에서
   빠짐). (`GetSource` 계열 접근자는 위 3번 정정으로 아예
   불필요해짐 — `store.key`가 직접 Source를 반환하므로 별도 접근자 자체가
-  없음.) `base/bind-system-plan.md`의 "남은 열린 질문" 절(정확한 함수/
+  없음. **[2026-08-25]** 단 **동적 키** 전용 창구 `store:Of<<T>>(name)`은
+  있다 — 옛 이름은 `GetDynamic`이었다.) `base/bind-system-plan.md`의 "남은 열린 질문" 절(정확한 함수/
   생성자 이름 미정)과 같은 급의 후순위 항목 — 구현 단계에서 다른
   이름들과 함께 확정.
 - **`quad2-try`는 확인 불필요로 재확인** — 진행이 중단된 상태라 이 논의와

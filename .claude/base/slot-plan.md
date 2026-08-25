@@ -991,7 +991,22 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
   위 "용어 주의" 참고.
 - **`updateFn<UD = any>(item, index: number, offset: Source<number>,
   prev: T?, userdata: UD?): (T | nil, UD?)` — 매 reconcile 사이클마다
-  모든 key에 대해 호출됨.** `:List`는 더 이상 item을 위해 `Source`를
+  모든 key에 대해 호출됨.**
+  - **⭐⭐ [2026-08-25 정정, 7라운드 `H-95`] 이 반환 타입 그대로면 strict에서
+    정상 용례가 전부 막힌다.** Luau는 콜백이 **선언된 것보다 적게
+    반환**하면 에러다(`Expected 'El?, number?', but got 'El?'`) — 이 문서가
+    드는 예시들이 `return frame` 한 값만 돌려주는데 그게 통과하지 않는다.
+    **확정 형태는 함수 타입의 유니온**이다:
+    ```lua
+    type UpdateFn<T, UD> = Fn2<T, UD> | Fn1<T> | Fn0
+    -- Fn2: (...) -> (T?, UD?)   Fn1: (...) -> T?   Fn0: (...) -> ()
+    ```
+    `luau-analyze` 실측에서 네 모양(2개/1개/`nil`/없음)이 전부 통과하고
+    **엉뚱한 타입을 돌려주면 여전히 잡힌다**(음성 대조군 확인).
+    *"항상 명시적으로 반환하라"*를 계약으로 두는 안은 기각 — 인체공학이
+    나쁘고 `--!nocheck` 코드에선 조용히 지나간다. 단일 옵셔널 반환인
+    `Effect`의 `fn`은 가변 반환 팩(`-> ...(() -> ())`)이 더 맞는다
+    (`base/effect-plan.md`). `:List`는 더 이상 item을 위해 `Source`를
   대신 만들어주지 않음(아래 "왜 `Source`를 `:List`가 안 만드는가" 참고,
   2026-08-11 세션에 `index`도 같은 원칙으로 편입) — `item`/`index`는
   매번 그 사이클의 raw 현재값 그대로 넘어감, 반응형으로 쓸지는
@@ -2577,7 +2592,7 @@ function rawUnmount(self, index)
         nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
     end
 
-    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.N — 아래 참고
+    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
     recompute(self, bk)             -- 자리가 없어지는 경로엔 setLength가 없으므로 여기서 명시 호출
 end
 
@@ -2597,7 +2612,8 @@ function rawDetach(self, index)
         nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
     end
 
-    spliceArraysDown(self, index)  -- `_elemIndex`에서도 이 요소가 빠진다(트리 밖이 됨)
+    spliceArraysDown(self, index)  -- `_elemIndex`/`bk.tokens`/`bk.indexOfToken`에서도
+                                   -- 이 요소·자리가 빠진다(트리 밖이 됨) — 아래 splice 요구 목록
     recompute(self, bk)
 end
 
@@ -2810,7 +2826,7 @@ function rawRemove(self, index)
         nativeDispose(element)      -- 트리 밖이라 offset이 필요 없다
     end
 
-    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.N
+    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
     recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
 end
 ```
@@ -2836,9 +2852,34 @@ end
   그쪽 error 가드엔 안 걸린다). **동기 재진입이라 "체인 도중 yield 금지"
   불변식으로는 안 덮인다.** `sourceList`가 `None`으로 채워지는 것과 대칭을
   맞춰 창 자체를 없앤다.
-- **캐시를 앞으로 당긴다**(`H-3`) — `bk.invalidAfter = math.min(bk.invalidAfter, index)`.
+- **캐시를 앞으로 당긴다**(`H-3`) —
+  `bk.invalidAfter = math.min(bk.invalidAfter, index)`.
   `base/dispatch-core-plan.md`의 무효화 표가 규정한 세 규칙 중 하나이고,
   지금까지 산문으로만 있고 코드 경로가 없었다.
+  **[2026-08-25 정정]** 한때 여기 `index - 1`로 적었는데, `recompute`의
+  되감기 재개 지점이 `invalidAfter + 1`에서 **`invalidAfter` 자신**으로
+  고쳐지며 그 `-1`이 불필요해졌다(그 문서의 `recompute` 절).
+  - **⭐ 이게 `recompute` 되감기의 신호이기도 하다** — recompute 도중
+    splice가 나면 그 값이 낮아지고, 진행 중인 루프가 그 지점 다음부터
+    되감는다(`base/dispatch-core-plan.md`의 `recompute` 절). 그래서
+    `{a,a,a, b,b, c,c}`에서 앞의 `a,a`가 사라졌는데 커서가 이미 `c`에
+    있어도 복구된다.
+- **⭐⭐ [2026-08-25 신설, 7라운드 `H-102`] `bk.tokens`와 `bk.indexOfToken`도
+  같이 밀어야 한다.** `setLength`가 만드는 `gatedRecompute` 클로저는 인덱스를
+  캡처하지 않고 **자리별 토큰**으로 `bk.indexOfToken[token]`을 조회한다
+  (`slot._elemIndex`와 같은 개념을 Dispatch 층위로 격상 —
+  `base/dispatch-core-plan.md`). 그래서 splice가 다음 둘을 반드시 해야 한다:
+  1. **`bk.tokens`를 다른 배열과 같이 당긴다**(`lengthList`/`sourceList`/
+     `observers`와 완전히 같은 처리).
+  2. **밀린 자리 전부에 대해 `bk.indexOfToken[token]`을 새 인덱스로
+     갱신하고, 사라진 자리의 토큰 항목은 지운다.** 강한 키 테이블이라
+     안 지우면 **누수**다.
+
+  **안 하면 `H-102`가 그대로 남는다** — 토큰은 안 낡지만 그 토큰이 가리키는
+  인덱스가 낡아, 제거 뒤 `gatedRecompute`가 **엉뚱한 위치로**
+  `bk.invalidAfter`를 당긴다(앞선 자리가 영영 다시 offset을 못 받는다).
+  이 목록에 *"옮겨진 클로저의 위치 추적"*이 셋 어디에도 없던 것이 원래
+  결함이었다.
 
 **[신설, 2026-08-18 구현 전 QA 3라운드] `spliceArraysDown`이 밀어야 하는
 배열 목록(아래)에 빠진 게 있었고, `bk.N`도 같이 줄여야 한다는 것 자체가
@@ -3298,7 +3339,12 @@ Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 �
 -- `dispose`가 막으려던 바로 그 UB가 일어난다. **가드를 분기 밖으로 올린다.**
 function dispose(value)
     -- (1) 소유권 가드 — 값 종류와 무관하다(`elementOwner` 조회는 타입을 안 봄)
-    if elementOwner:GetStrong(value) ~= nil then
+    -- ⚠️ [2026-08-25 정정, `/code-review high`] `GetStrong(value)`(1-인자)는
+    --   **항상 `nil`이라 가드가 죽은 코드였다** — `elementOwner`는 위에서
+    --   3-인자 `SetWeak(element, OWNER, ...)`로만 쓰이고 강한 맵엔 아무것도
+    --   안 들어간다(`Relate`는 항상 3-인자 `SetWeak`/2-인자 `GetWeak`, 409행).
+    --   `H-71`로 dedup 기록까지 `SetWeak`이 되며 강/약 짝맞춤이 더 중요해졌다.
+    if elementOwner:GetWeak(value, OWNER) ~= nil then
         error("dispose: 이 값은 아직 트리가 살아있길 요구 중임 — 먼저 Remove/Extract 할 것")
     end
     -- (2) [`H-43`] Slot도 Instance도 아닌 값이 백엔드로 그냥 흘러가지 않게

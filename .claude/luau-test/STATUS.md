@@ -46,9 +46,17 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 7 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 9 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 14 | — |
+
+**⚠️ [2026-08-25 신설] 타입 스파이크는 `./scripts/test.sh`가 하는 리링크를
+먼저 거쳐야 한다.** `luau` CLI가 심볼릭 링크를 못 타는데(디렉토리·파일 둘
+다) pesde의 워크스페이스 링크가 전부 심볼릭이라, 실제 패키지를 `require`하는
+스파이크(`23` 등)는 리링크 없이는 **의도한 진단 대신 링크 실패 진단**이
+뜬다 — 게다가 `luau-analyze`는 그걸 **조용히 통과**시키기도 한다(모듈을
+`any`로 떨어뜨림). `scripts/relink.sh`를 돌린 뒤 확인할 것. 경위는
+7라운드 `H-78`.
 
 **폴더를 옮기는 게 곧 상태 갱신** — 스파이크를 고치거나 돌렸으면 파일을
 해당 폴더로 `git mv`하고 아래 표의 줄도 같이 옮길 것. 파일별 "무엇을 왜
@@ -95,6 +103,18 @@
 통과 상태로 `done/`에 두면 `01`은 구현이 안 하는 두 루프 순회를, `05`는
 **이제 접히는 중복 통지가 안 접힌다는 것**을 "검증됨"으로 오독하게 된다.
 
+**[2026-08-25] `16`과 `21`이 합류** — Store 재설계로 **검증 대상 자체가
+폐기**됐다. `WrapStore`/`ProcessStoreType`로 결과 타입을 **합성**하는
+접근이 사라졌다 — 지금은 **타입 함수를 안 쓰고** 타입 인자에 `Source<T>`를
+직접 써서 평범한 레코드로 짓는다(`base/store-plan.md`). 같은 날
+`index<>`/`keyof<>` + 팬텀 필드 안을 넣었다가 `typing-limits.md` §0 원칙에
+따라 철회한 경위는 `archive/store-value-field-redesign-withdrawn.md`. 발단은 7라운드
+`H-75`/`H-76` 실측이다 — 평평한 합성이면 `store.key:Compute(무주석
+콜백)`이 깨지고, `type function`이 바깥 타입 별칭을 참조하지 못해 구조를
+통째로 중복 작성해야 하며 메소드 self 파라미터가 불변이라 필드 하나만
+어긋나도 대입이 실패한다. **`21`의 검증 대상(미선언 키는 타입 에러)은
+그대로 유효**하고 새 모양에서도 성립함이 확인됐다.
+
 **[2026-08-21 후속] `22`도 같은 이유로 합류** — `Brand`가 **인스턴스
 브랜드**로 전면 재작성되면서(`base/brand-plan.md`) 이 스파이크가 직접 구현해
 쓰는 `Brand.set`/`Brand.get`/`XxxTag`가 **역전된 옛 API**가 됐다
@@ -112,6 +132,8 @@
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `22-runtime-ref-preref-postref-brand.luau` | 옛 `Brand` API 기준으로는 ✅ 통과였음 | **[2026-08-21] `Brand`가 인스턴스 브랜드로 재작성됨** — 파일 안의 `Brand.set(x, tag)`/`Brand.get(x)`/`XxxTag` 변수를 `Brand()` + `SomeBrand:register(x)`/`SomeBrand:is(x)`로 바꿔 쓸 것(`base/brand-plan.md`). **검증 대상(`isPreRef`/`isPostRef` 배타 + 둘 다 `isRef`엔 `true`, Leaf 핸들러 흉내)은 그대로**라 assert는 손댈 게 없다. **새로 넣을 것**: 다중 태깅이 실제로 되는지 — 한 값을 두 브랜드에 등록하고 양쪽 `:is`가 다 `true`인지(`Source`가 `SourceBrand`+`EpochBrand`인 자리, `base/state-epoch-plan.md` §2) |
+| `16-type-store-key-typefunction.luau` | 옛 접근 기준으로는 ✅ 통과였음 | **[2026-08-25] 검증 대상이 폐기됨** — `WrapStore`/`ProcessStoreType` 합성 자체가 사라졌다. **재작성 지침**: 타입 함수 없는 평범한 레코드 모양(`base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절)을 검증하고, 음성 대조군에 **예약 키 충돌**(`CheckReserved`가 `types.never`로 무너뜨리는지)과 **없는 키 접근**을 포함할 것 |
+| `21-type-store-undeclared-key-rejected.luau` | 옛 접근 기준으로는 ✅ 통과였음 | `16`의 `ProcessStoreType`을 재사용하므로 같이 낡음. **검증 대상(미선언 키가 타입 에러)은 그대로 유효**하다 — 새 `Store<T>` 선언으로 바꿔 쓰기만 하면 된다(`store:Of("nope")`이 거부되는 것도 같이 넣을 것) |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
@@ -160,8 +182,6 @@
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로). **[2026-08-24 `H-54`] 단 스파이크 자신의 주석이 실제 결과와 어긋난다** — *"이건 당연히 통과해야 함"*이라 적어둔 동질 대조군(line 41-43)이 실제로는 에러를 낸다(`AttributeKey<T>(name)`이 문맥에서 `T`를 못 추론해 `unknown`으로 남음). 오히려 "왜 진짜 테스트 대상이 조용히 통과하는지(= narrowing이 아예 안 일어남)"를 설명해주는 정합적 결과라 **이 총론은 그대로 유효**하고, 근거 라인만 다르다 — 재작성 시 참고 |
 | `13-type-ref-preref-subtype` | **[2026-08-19 재작성]** ✅ 통과 — `PreRef<T>`/`PostRef<T>` 둘 다 `Ref<T>`를 구조적으로 만족(음성 대조군도 정확히 에러). 런타임 B섹션은 `22`로 분리(A의 더미 스텁이 B 실행을 막던 문제 해결) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
-| `16-type-store-key-typefunction` | **[2026-08-15]** ✅ 통과 — 원인은 설계 문제가 아니라 `types.newfunction` API 버전 드리프트(배열이 아니라 `{head=...}` 레코드). `ProcessStoreType<Input>`이 정확히 `{ty: Source<string>, count: Source<number>}` 구조를 만족, 음성 대조군 4건(틀린 Get/Set 타입 2건, 존재하지 않는 메소드) 전부 정확히 에러. 근거: `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 |
-| `21-type-store-undeclared-key-rejected` | **[2026-08-19 신규]** ✅ 통과 — `16`의 `ProcessStoreType`을 재사용해 미선언 키 접근 2건(읽기, 메소드 체이닝)이 정확히 `TypeError`로 거부됨을 확인, 양성 경로(선언된 키 3개) 클린. `store-plan.md`가 "아마 그럴 것"으로만 적어뒀던 걸 M0에서 실측 확정 |
 | `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규, 같은 날 후속으로 재작성]** ✅ 통과 — 실제 `quad-types`/`quad-base`/`type-version-check`로 `CheckedQuad<T, Pattern>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격), `export type function`/이중 꺾쇠 제네릭 인스턴스화 요구도 같이 실측 — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
 
 ### 특별히 중요한 통과 3건
@@ -207,5 +227,6 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 | 검증할 것 | 왜 | 출처 |
 |---|---|---|
 | ~~`table.insert`가 배열 중간의 구멍을 재사용하는가~~ **[2026-08-24 폐기]** | **전제 자체가 없어졌다** — 6라운드 `H-7`로 `Ref.Callbacks`가 배열에서 `{[callback\|thread] = true}` **해시맵 셋**으로 바뀌었고, 해시맵엔 border 개념도 구멍도 없다(`base/ref-plan.md`). 이 스파이크는 만들지 말 것 | QA 4라운드 `R-11`(폐기), 6라운드 `H-7` |
-| 중간 State가 상류 strong / 하류 weak 불변식으로 실제로 살아남는가 | `State → State → State → Observer` 체인에서 중간 노드를 강하게 붙잡는 주체가 문서 어디에도 없어 전파가 조용히 끊길 수 있음. **M2 착수 전 필요** | `base/source-state-plan.md`의 "미해결 — 중간 State가 살아남는가" 절, `question.md` 최우선 절 |
+| 중간 State가 `_hold`(하류 → 상류 강함) 불변식으로 실제로 살아남는가 | **[2026-08-25] 설계는 확정됐다** — 각 파생 노드가 자기 상류를 `_hold`로 강하게 든다(사용자 확정). 남은 건 실측뿐이고 **M2 착수 게이트는 아니다**(`question.md` 최우선 절에서 내려감). 음성 대조군으로 "`_hold` 없이 짜면 중간 노드가 수거돼 전파가 끊긴다"까지 볼 것 | `base/source-state-plan.md`의 "해소됨 — 중간 State는 `_hold`로 살아남는다" 절 |
+| `Relate` 값/내부 키가 바깥 키를 되참조하면 새는가 | **[2026-08-25 신설, 7라운드 `H-71`/`H-77`]** `done/07`은 **안전한 모양만** 봤는데 여러 문서가 그걸 "GC-native 아키텍처의 핵심 전제 검증"으로 인용한다. 실제로는 (a) `SetStrong`의 **값**이 되참조하면 100% 새고, (b) **내부 키**가 되참조하면 `SetStrong`/`SetWeak` **둘 다** 샌다. `07`에 음성 대조군으로 추가할 것 | `base/relate-plan.md`의 "위험한 패턴" 절 슬롯 표 |
 | `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

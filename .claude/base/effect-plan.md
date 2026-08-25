@@ -36,7 +36,10 @@ Effect는 내부적으로 각 dep에 구독을 거는 걸로 구현 — State/So
 `state:Observer(...)`, `Ref`면 `:Callback`.
 **⚠️ [표기 정정, 2026-08-24 6라운드 `H-14`] 여기 원래 *"`fn`은 포지셔널 인자로
 `state`를 받고(`fn(state)`)"*라고 적혀 있었는데 그건 폐기된 단수 시절
-표기다** — 확정 시그니처는 **`fn(self: EffectHandle) -> (() -> ())?`**이고
+표기다** — 확정 시그니처는 **`fn(self: EffectHandle) -> ...(() -> ())`**이고
+(**[2026-08-25 `H-95`]** 가변 반환 팩 — 옛 `-> (() -> ())?`는 콜백이 "선언보다
+적게 반환"할 때 strict에서 막혀 `Effect(function() print("x") end, s)` 같은
+정상 용례가 안 통과했다)
 **deps는 `fn`에 안 넘어간다**(아래 "`Effect(fn, ...deps)`" 절이 소스,
 dep 값은 사용자가 클로저로 직접 읽는다).
 같이 붙어 있던 *"이 `fn(state)`가 lazy `State` 핸들을 받는다는 전제는 확정
@@ -130,37 +133,138 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    cleanup을 필요로 하므로 필드 쪽이 자연스럽고, `Destroying` 클로저와
    `Rerun`이 같은 자리를 읽게 된다.
 
-**의사코드 — `bindLifetime`이 부르는 두 훅**(**[2026-08-24 신설]** 감사 3라운드가
-*"호출부만 있고 정의가 없다"*고 지적해 보강. 다른 신설 헬퍼는 전부 바디가
-있는데 이 둘만 산문뿐이었다):
+**⭐⭐ [2026-08-25 재설계, 7라운드 `H-58`/`H-59`/`H-64`/`H-70`] dep 등록은
+`bindLifetime`이 아니라 생성자에서 한 번만 한다.** 옛 의사코드는 `Ref` 콜백을
+`_bindDestroying`에서 (재)등록했는데, `ref-plan.md`가 확정한 *"등록 즉시 그
+값으로 1회 호출됨"*과 겹쳐 **바인드마다 `Rerun`이 `Ref` dep 수만큼 돌았다**.
+같은 문제가 State dep에도 있다 — `source-state-plan.md`가 확정한
+*"`fn`은 등록 시점에 즉시 1회 실행된다"* 때문이다.
+
+### 확정 구조 — 강한 주인은 항상 `Effect`, 발화 게이트는 `canExecute` 하나
+
+```
+Effect ──강──▶ _deps = { [Ref | State] = fn | Observer }   ← 강한 주인은 언제나 Effect
+Ref.Callbacks            ──약──▶ fn        (`ref:WeakCallback(fn)`)
+Observer 전역 레지스트리 ──약──▶ Observer  (`observer:WeakSubscribe()`)
+발화 게이트: 전부 `canExecute(handle)` 하나로
+```
+
+**사용자 확정(2026-08-25)**: *"그냥 간단하게 저 강한 map 을 Effect 가 가지고,
+WeakSub/WeakUnsub 를 WeakCallback 처럼 넣어줍시다. 의미론은 같습니다.
+callback 을 잡고 있지 않거나, sub 대상인 observer 를 잡고 있지 않으면 gc 될
+수 있다. **그러면 bindLifetime 은 effect 하나 구현을 한 이후 canExecute 로
+모두 처리한다. 간단해집니다.**"*
+
+- **dep마다 바인드/언바인드에서 등록·해제하던 춤이 통째로 사라진다.**
+  `bindLifetime`/`unbindLifetime`은 **`Effect` 핸들 하나**에만 적용되고,
+  내부 Observer와 `Ref` 콜백의 발화 여부는 `canExecute(handle)`이 전담한다.
+- 그래서 아래 `H-7` 절이 확정한 *"`unbindLifetime`과 `:Unsubscribe()`에서
+  `:Uncallback`한다"*는 **더 이상 필요 없다** — `ref-plan.md`의
+  *"해제는 누수를, 게이팅은 발화를 막는다"* 중 **앞쪽 절반을 `Weak*`가
+  대신한다**.
+- **왜 `WeakRef`가 아니라 `WeakCallback`인가**(사용자 지적): *"Ref 안에
+  항상 콜백이 쌓인다는것도 문제가 됨."* 클로저가 핸들을 약하게 잡는
+  `WeakRef`는 "`Ref`가 `Effect`를 붙든다"만 풀고 "`Ref.Callbacks`에 죽은
+  클로저가 쌓인다"는 못 푼다. `WeakCallback`은 둘 다 푼다 —
+  `Effect ↔ cb` 순환이 자기완결이라 Luau GC가 통째로 수거하고 `Ref` 쪽
+  항목도 같이 사라진다. **`WeakRef`는 만들지 않는다.**
+- 이건 `blocker-plan.md`의 onunblock 핸들 보관과 **같은 패턴**이다 —
+  강한 주인은 소비자 쪽, 등록처는 weak.
+
+### 의사코드 — 생성자 / `bindLifetime`이 부르는 두 훅 / `Rerun`
 
 ```lua
--- quad-base, Effect.luau — `base/lifecycle-pattern.md`의 bindLifetime에서만 불린다.
--- 비공개(`_` 접두사): 사용자 표면이 아니라 배관이다.
+-- quad-base, Effect.luau
+function Effect(fn, ...)
+    local self = setmetatable({ fn = fn, _deps = {}, _epochs = EpochMap() }, EffectHandle)
+    self._blocker = Blocker()
+
+    -- (0) deps 검증 — 생성자에서 한 번만 도는 검사라 hot path가 아니다.
+    --     `select("#", ...)`로 순회해야 `nil` 구멍이 조용히 배열을 자르지 않는다.
+    local seen = {}
+    for i = 1, select("#", ...) do
+        local d = select(i, ...)
+        if d == nil then error("Effect: dep #" .. i .. " is nil", 2) end
+        if not (isState(d) or isSource(d) or isRef(d)) then
+            error("Effect: dep #" .. i .. " is not a State/Source/Ref", 2)
+        end
+        if not seen[d] then seen[d] = true end   -- 중복 dep은 조용히 무시(error 아님)
+    end
+
+    -- (1) dep 등록 — **여기서 한 번만**. 즉시-1회 호출은 Blocker로 억제한다.
+    --     ⭐ 클로저는 **하나**로 통일한다 — 아래 "공통 상류를 공유해도 한
+    --     파동에 fn은 한 번만" 절의 그 클로저다. `from`을 받아
+    --     `_epochs:Update(from)`가 참일 때만 `Rerun`해야 다이아몬드 dedup이
+    --     산다(안 하면 `A → b`, `A → c`, `Effect(fn, b, c)`에서 `A:Set()`
+    --     한 번에 `fn`이 두 번 돈다 — 2026-08-21에 닫은 그 버그).
+    --     시그니처가 `(self, from)`인 것은 `state:Observer(fn)`의 확정
+    --     계약이다(`base/source-state-plan.md`).
+    self._blocker:On()
+    local function onDepFire(_, from)
+        if not canExecute(self) then return end        -- 발화 게이트
+        if self._blocker:IsOn() then return end        -- 등록 구간 억제(Update보다 먼저)
+        if self._epochs:Update(from) then
+            self:Rerun()
+        end
+    end
+    for d in seen do
+        if isRef(d) then
+            self._deps[d] = onDepFire                  -- ⭐ 강한 주인 = Effect
+            d:WeakCallback(onDepFire)                  -- Ref 쪽은 약함
+        else
+            local o = d:Observer(onDepFire)
+            self._deps[d] = o                          -- ⭐ 강한 주인 = Effect
+            o:WeakSubscribe()                          -- 전역 레지스트리는 약함
+        end
+        -- ⭐ dep이 `Epoch`인지로 갈린다 — `state-epoch-plan.md` §4의 시딩 규칙
+        --   그대로다. **`Source`/`Ref`는 `Epoch`지만 `State`는 아니다**(§2·§8) —
+        --   무조건 `Sync`하면 State dep이 `.Revision` 없는 키로 들어가
+        --   `Refresh()`가 영영 변화를 못 보고 포탈 캐치업이 죽는다.
+        if isEpoch(d) then
+            self._epochs:Sync(d)
+        else
+            self._epochs:TrackFrom(d.valueEpochMap)
+        end
+    end
+    self._blocker:OffWithoutEmit()
+
+    -- (2) 설치 — 생성 즉시 1회. **바인드로 미룰 수 없다**(아래 캐비엇).
+    self:Rerun()
+    return self
+end
+```
+
+- **`_installing` 플래그는 폐기됐다** — 그건 생성자 구간만 덮어 바인드
+  구간을 놓쳤다. 억제는 사적 `Blocker` 하나가 전담한다(**사용자 지적**:
+  *"해당 맥락의 도구인 Blocker 가 존재함 … 이미 Slot 에서 사용중임. 모든
+  옵저버와 callback 등록에 있어서 이를 수행해야할 것임."*).
+- **⚠️ 생성 즉시 1회 실행은 바인드로 미룰 수 없다.** **사용자 판단**:
+  *"Effect 가 바운딩 될 때 실행되는건 문제가 있습니다. 그 이팩트 실행
+  결과를 바로 받아서 처리하는 아래쪽 요소가 있으면, 순차 처리가 전혀 안
+  되거든요. 초기 값이 못 쓰게 되는거죠."* 그 따름정리로 **바운딩 없이
+  버려지는 `Effect`는 UB**다 — cleanup이 안 불린다. `Observer`와 달리
+  `Effect`는 "죽기 전에 처리해주겠다"가 계약이라 성격이 다르다.
+
+```lua
 function EffectHandle:_bindDestroying(inst)
-    -- 재바인드(포탈 재마운트)면 옛 연결부터 끊는다 — 멱등.
-    self:_unbindDestroying()
+    self:_unbindDestroying()          -- 재바인드(포탈 재마운트)면 옛 연결부터 — 멱등
 
     -- (1) leaf가 죽는 순간 cleanup을 정확히 1회. `LP-2`가 확정한 유일한 훅 지점.
     self._destroyConn = onDestroying(inst, function()
-        self:_unbindDestroying()          -- 자기 연결/콜백을 먼저 정리(재진입 방지)
-        local cleanup = self._cleanup
-        self._cleanup = nil               -- 두 번 안 불리게
-        if cleanup then cleanup() end
+        self:_unbindDestroying()
+        self:_consumeCleanup()
     end)
 
-    -- (2) `Ref` dep 콜백 (재)등록 — State/Source dep의 `_observers` cascade와 대칭.
-    --     `unbind`가 뗐던 걸 여기서 다시 건다(그래서 포탈이 성립한다).
-    for _, ref in ipairs(self._refDeps) do
-        local cb = function(value)
-            -- ⭐ 발화 게이트 — State dep이 전파 루프에서 `canExecute(observer)`로
-            -- 걸러지는 것과 같은 자리(아래 `H-7` 절). 해제가 늦거나 누락되는
-            -- 창을 이게 덮는다.
-            if not canExecute(self) then return end
-            self:Rerun()
-        end
-        self._refCallbacks[ref] = cb      -- 해제 때 정확히 이 클로저를 떼려면 보관해야 함
-        ref:Callback(cb)
+    -- (2) 캐치업 — **조건부 최대 1회**. dep 등록은 이미 생성자에서 끝났다.
+    --     설치돼 있지 않으면(파괴로 소진됐으면) 재설치, dep이 변했으면 재실행.
+    --     ⚠️ `Refresh()`를 **먼저 부른다** — 그건 비교만 하는 게 아니라 자기
+    --     키를 라이브로 다시 읽어 **갱신**한다. `or` 단축평가에 걸면
+    --     `not self._installed`가 참일 때(재설치 경로) 건너뛰어, 재설치 뒤에도
+    --     `_epochs`가 파괴 전 리비전을 들고 있어 **다음 emit이 헛되이 한 번
+    --     더 돈다**(`Rerun`은 `_epochs`를 안 건드린다).
+    local depsChanged = self._epochs:Refresh()
+    if not self._installed or depsChanged then
+        self:Rerun()
     end
 end
 
@@ -169,27 +273,115 @@ function EffectHandle:_unbindDestroying()
         self._destroyConn:Disconnect()
         self._destroyConn = nil
     end
-    for ref, cb in pairs(self._refCallbacks) do
-        ref:Uncallback(cb)                -- `base/ref-plan.md`의 신설 표면(`H-7`)
-        self._refCallbacks[ref] = nil
-    end
-    -- **`_cleanup`은 안 부른다** — 위 2번 계약. 여기서 부르면 `destroySlotTree`가
-    -- `_detachCleanup`을 손으로 비운 뒤 unbind하는 경로에서 이중 호출이 된다.
+    -- **`Ref` 콜백도 Observer도 안 뗀다** — `Weak*`로 걸려 있고 발화는
+    -- `canExecute`가 막는다. **`_cleanup`도 안 부른다**(아래 2번 계약).
+end
+
+-- cleanup 소진: 읽고 → 지우고 → 실행. 이 순서라야 이중 호출이 없고,
+-- `_cleanup`의 유무가 곧 "설치돼 있는가"가 된다.
+function EffectHandle:_consumeCleanup()
+    local c = self._cleanup
+    self._cleanup = nil
+    self._installed = false        -- ⭐ 아래 캐비엇 참고 — cleanup 유무로는 판정 못 한다
+    if c then c() end
 end
 ```
 
+**⚠️ [2026-08-25 `/code-review high` 정정] "설치돼 있는가"를 `_cleanup`의
+유무로 판정하면 안 된다 — 별도 `_installed` 플래그가 필요하다.** 여기 한때
+`if self._cleanup == nil or ...`라고 적어뒀는데, **`fn`의 cleanup 반환은
+선택**이라(`Effect(function() print("x") end, s)`처럼 아무것도 안 돌려주는
+게 흔한 정상 용례) `_cleanup`이 **항상 `nil`**인 Effect가 존재한다. 그러면
+바인드/포탈 재마운트마다 조건이 참이 되어 `fn`이 다시 돌고 — 이 재설계가
+없애려던 `H-58`(바인드마다 `Rerun`)이 **그대로 되살아난다.**
+`_installed`는 `Rerun`이 끝날 때 참, `_consumeCleanup`에서 거짓이 된다.
+
+**⭐ [2026-08-25 신설, 7라운드 `H-60`] `EffectHandle:Rerun()` 정의.**
+지금까지 호출부만 다섯 곳이고 정의가 없었다.
+
+```lua
+function EffectHandle:Rerun()          -- 공개 메소드, 무인자
+    if self._running then
+        self._pending = true           -- 실행 중 재진입 → 지연
+        return
+    end
+    self._running = true
+    repeat
+        self._pending = false
+        self:_consumeCleanup()
+        self._cleanup = self.fn(self)
+        self._installed = true         -- cleanup 반환 여부와 무관하게 "설치됨"
+    until not self._pending            -- 재요청이 또 오면 또 돈다
+    self._running = false
+end
+```
+
+- **재진입은 지연 재실행**이다. **사용자 판단**: *"Effect 의 실행 안에서
+  뭔가 수행되어 rerun 해야할 상황이 발생하면, 지연해 두었다 나중에 재실행
+  하는건 어떤지(실행이 끝나고 나서). 실제로 Effect 안에서 state 등을 바꾸는
+  상황은 react 등지에서 흔함."*
+- **`canExecute` 확인은 호출부가 한다** — `Ref` 콜백·전파 루프가 이미
+  그렇게 한다. 사용자가 `fn` 안에서 직접 부르는 경로는 게이트하지 않는다.
+- **error 시 UB** — 전파되고 복구하지 않는다(`_running`이 참으로 남는 것
+  포함). *"에러가 난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의
+  일반 동작"*(사용자). 수렴 책임은 사용자 `fn`에 있고 무한 루프도 UB다.
+
+**⭐ [2026-08-25 신설, 7라운드 `H-65`] 재바인드는 재설치, 재사용은 팩토리
+패턴.** 파괴로 cleanup이 소진된 `Effect`를 다시 바인드하면 위 (2)의
+`not self._installed`가 참이라 **재설치**된다. 죽음을 표시하는 별도 부기는
+만들지 않는다 — **사용자 지적**: *"파괴 클린업은 결국 inst.Destroying 에
+이벤트 바인딩인데 이 바인딩도 파괴 이후 자동 삭제된다 … gchold 나 gcconn 도
+알아서 잘 풀린 상태라, 그냥 가만히 두면 삭제 이후 다시 사용에 있어 다시
+실행해줘야한다는 것 이외엔 아무 문제가 없어요."*
+
+같은 `fn`을 **여러 인스턴스로** 쓰고 싶으면 `Effect`를 넘기지 말고
+**팩토리를 넘긴다**:
+
+```lua
+local function TimerEffectFactory(data: { timerSource: Source<number> }): Effect
+    return Effect(function(self)
+        ...
+        return function() ... end
+    end, data.timerSource)   -- 주입받은 것을 그대로 deps로도 쓸 수 있다
+end
+```
+
+- **사용자 결론**: *"차라리 Effect 를 만들어내는 팩토리를 넘기는 패턴을
+  권장해야할듯 해요 … Clone 도, Userdata 도, 템플릿도 필요하지 않다."*
+  초기 1회 실행 문제가 자연히 해결되고, 템플릿이 실행되어 찌꺼기로 남는 걸
+  막으려 따로 뭘 할 필요도 없다. 자식의 계약은 `({...}) -> Effect` 하나이고
+  부모가 더 큰 타입을 넘겨도 **부분 성립**으로 해결된다. 무엇보다 **주입받은
+  `Source`/`Ref`를 그대로 deps로 넣을 수 있다** — userdata로는 안 되던 것이다
+  (*"이건 ud 가 deps 에 대해서는 아무 처리가 못 했던것과 비교해 더 간단하면서도,
+  기능적임"*). modifier에서 이미 권해온 패턴이기도 하다.
+- 부수로 *"이팩트를 여러곳에 바인딩하면?"*도 자연히 해결된다(매번 새 인스턴스).
+- **검토 후 안 만들기로 한 것**: `Effect:Clone()`, `Effect<UD>:Userdata()` /
+  `SetUserdata`·`GetUserdata`, `Effect.Template`, `WeakRef`.
+
 - **`onDestroying(inst, fn)`은 백엔드 주입 op이다** — base는 `Instance`를
   모른다(`base/slot-plan.md`의 `native*` 절과 같은 이유). quad-roblox 구현은
-  `inst.Destroying:Connect(fn)` 한 줄. **[2026-08-24 반영 완료]** 주입 op
-  전체 목록의 단일 소스는 `base/architecture.md`의 `EngineOps.luau` 줄이고
-  거기에 등재했다(`ROADMAP.md` M5 배너에도 같이 적었다) — 한때 여기
-  *"`ROADMAP.md` M5에 추가할 것"*이라고만 적어 **소스를 잘못 지목**했었다.
-- **필드 셋이 새로 생긴다**: `_destroyConn`(연결 핸들), `_refDeps`(생성자가
-  `...deps` 중 `isRef`인 것만 모아둔 배열), `_refCallbacks`(`ref → 내가 건
-  클로저`). 앞의 둘은 `_observers`와 같은 층이고, 마지막 것은 **해제 시 정확히
-  자기 클로저만 떼기 위해** 필요하다(`Ref.Callbacks`가 셋이라 값으로 떼야 한다).
+  `inst.Destroying:Connect(fn)` 한 줄. 주입 op 전체 목록의 단일 소스는
+  `base/architecture.md`의 `EngineOps.luau` 줄이다.
+- **필드 목록**: `_destroyConn`(연결 핸들), **`_deps`**(`Ref|State` → 내가 건
+  `fn|Observer`, **강참조**), `_epochs`(`EpochMap` — `Ref`도 `Epoch`라 균일),
+  `_blocker`(등록 구간 억제), `_cleanup`, **`_installed`**(설치 여부 —
+  cleanup 반환이 선택이라 `_cleanup`으로는 판정 못 한다),
+  `_running`/`_pending`(재진입).
+  **옛 `_refDeps`/`_refCallbacks`/`_observers`/`_installing`은 `_deps` 하나와
+  `_blocker`로 대체됐다.**
 
 ### ⭐ `Ref` 의존성의 해제 경로 (2026-08-24 확정, 6라운드 손 트레이싱 `H-7`)
+
+> **⭐⭐ [2026-08-25 갱신, 7라운드 `H-58`/`H-59`] 해제 경로 대신 `Weak*`
+> 등록으로 바뀌었다.** 아래가 진단한 누수(*"leaf가 죽어도 `ref.Callbacks`에
+> 클로저가 영원히 남는다"*)는 그대로 유효하지만, **해법이 바뀌었다** —
+> `unbindLifetime`/`:Unsubscribe()`에서 `:Uncallback`하는 대신
+> `ref:WeakCallback(cb)`로 걸고 **강한 주인을 `Effect._deps`에 둔다**.
+> 그러면 `Effect`가 죽을 때 콜백도 같이 죽어 항목이 자연히 사라지고,
+> 바인드/언바인드마다 떼었다 붙이는 춤이 없어진다(그 춤이 `H-58`의
+> 중복 `Rerun`을 만들던 원인이다). 위 "확정 구조" 절이 소스.
+> **아래 `canExecute` 게이팅은 그대로 유효하다** — *"해제는 누수를,
+> 게이팅은 발화를 막는다"* 중 **뒤쪽 절반**이 여전히 이 절의 결론이다.
 
 `Effect(fn, someRef)`의 leaf가 죽어도 **`ref.Callbacks`에 클로저가 영원히
 남았다** — `Ref`엔 콜백 해제 API가 없었고(`:Uncallback` 류 없음)
@@ -236,7 +428,17 @@ named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순�
 **보강 — `EffectHandle`의 내부 Observer 바인딩 세부(2026-08-09 열한 번째
 세션, 재확인 후 명시화)**:
 
-**⚠️ [2026-08-24 6라운드 손 트레이싱 `H-8`] 이 문단 전체가 아직 "Observer 하나"
+> **⛔⛔ [2026-08-25 폐기, 7라운드 `H-58`/`H-59`] 이 문단 전체는 옛 모델이다.**
+> 위 "확정 구조 — 강한 주인은 항상 `Effect`" 절이 **정반대로** 확정했다 —
+> **`bindLifetime`/`unbindLifetime`은 `Effect` 핸들 하나에만 적용되고**
+> 내부 Observer로 cascade하지 않는다. dep 등록은 **생성자에서 한 번만**
+> `WeakSubscribe`/`WeakCallback`으로 하고, 발화 여부는 `canExecute(handle)`이
+> 전담한다. 아래가 서술하는 `_observers` 배열/cascade/`Subscribe` 순회는
+> **전부 `_deps` 하나와 `_blocker`로 대체됐다**(위 "필드 목록").
+> 아래는 히스토리로만 읽을 것 — **이 문단대로 짜면 `H-58`의 중복 `Rerun`이
+> 되살아난다.**
+
+**⚠️ [2026-08-24 6라운드 손 트레이싱 `H-8`, 2026-08-25 폐기] 이 문단 전체가 아직 "Observer 하나"
 전제로 쓰여 있었다 — `_observer`(단수)를 `_observers`(배열)로 읽을 것.**
 아래 절이 확정한 `Effect(fn, ...deps)`(N-deps)와 정면으로 어긋났고, 그대로
 구현하면 **2번째 이후 dep의 Observer엔 `canExecute` 판정 근거가 아예 안 실려**
@@ -295,9 +497,20 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 `self` 반환(Observer와 동일한 fluent 대칭).
 
 - **`:Subscribe()`** — Observer가 쓰는 것과 같은 강참조 레지스트리에
-  자신(또는 `state` 있는 경우 내부 Observer)을 등록 — 새 메커니즘 아님,
-  기존 레지스트리 재사용. 이후 로컬 변수로 참조를 안 들고 있어도 계속
-  살아있음(Observer와 동일 관용구).
+  **핸들 자신**을 등록 — 새 메커니즘 아님, 기존 레지스트리 재사용. 이후
+  로컬 변수로 참조를 안 들고 있어도 계속 살아있음(Observer와 동일 관용구).
+  - **⭐ [2026-08-25 확정, 7라운드 `H-59`] "핸들 자신이냐 내부 Observer냐"는
+    더 이상 구현 세부가 아니다 — 핸들 자신이다.** 옛 서술은
+    *"자신(또는 `state` 있는 경우 내부 Observer)"*, *"`handle._observers`만으로
+    충분한지는 구현 세부"*였는데, `H-7`/`H-11`이 **핸들 자신의 생존 판정**에
+    의존하는 배선을 추가하면서 그 선택이 계약이 됐다. 내부 Observer만
+    등록하면 (a) `handle.Subscribed`가 안 세워져 `canExecute(handle)`이
+    영원히 거짓이고, (b) deps 없는 `Effect(fn):Subscribe()`는 등록할 게
+    아예 없어 핸들이 GC되고 cleanup이 유실된다.
+  - **`:Subscribe()`가 하는 일은 그것 하나뿐이다** — 내부 Observer와 `Ref`
+    콜백은 **생성자에서 이미 `Weak*`로 걸려 있다**(위 "확정 구조" 절).
+    `Subscribed = true`가 서는 순간 `canExecute(handle)`이 참이 되어 그
+    경로들이 살아난다.
   - **⚠️ 용도는 완전히 top-level(모듈/스크립트 레벨, 어떤 Instance
     생명주기에도 안 묶인) 사이드 이펙트로 한정할 것 — 특정 `inst`에
     묶인 경우엔 leaf 부착(`bindLifetime`)을 쓰지 `:Subscribe()`를 쓰지
@@ -348,12 +561,14 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
       *"relate 로 effect 핸들러 쪽에서 old 값을 직접 들고 있어야 하고 dedup
       이면 retract 에서 old 를 안 지워주고 process 로 조회해보고 같으면
       dedup 되어야하는듯."*
-    - **⭐ 단, 내부 Observer cascade도 그 분기 *안*에 있어야 한다**
-      (5라운드 `EF-5`, 확인됨) — `EffectHandle`은 자기 자신뿐 아니라
-      `handle._observers`까지 같이 bind/unbind해야 하는데, 그 cascade가 dedup
-      분기 **밖**에 있으면 handle과 내부 Observer의 바인딩 상태가 갈린다
-      (handle은 그대로인데 Observer만 풀리는 식). 구현 시 이 한 줄을 반드시
-      같은 `if` 안에 둘 것.
+    - **⛔ [2026-08-25 폐기, 7라운드 `H-58`/`H-59`] `EF-5`의 "내부 Observer
+      cascade도 그 분기 안에" 요구는 사라졌다.** 원문은 *"`EffectHandle`은
+      자기 자신뿐 아니라 `handle._observers`까지 같이 bind/unbind해야 하는데,
+      그 cascade가 dedup 분기 밖에 있으면 handle과 내부 Observer의 바인딩
+      상태가 갈린다"*였는데, **`bindLifetime`/`unbindLifetime`이 이제 핸들
+      하나에만 적용되고 cascade 자체가 없다**(위 "확정 구조" 절,
+      `_observers` 필드도 `_deps`로 통합돼 폐기). 갈릴 상태가 없으므로
+      이 요구는 성립하지 않는다 — **그대로 구현하면 `nil`을 순회한다.**
     - **[2026-08-21 기준]** 남은 건 **구현 시 회귀 확인**뿐이고, 설계상 열린
       항목이 아니다.
 - **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 그냥
@@ -363,8 +578,13 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
   계약은 "생애주기가 끝나는 시점에 마지막 cleanup이 정확히 1회 호출된다"
   이고 leaf 사망은 그 "끝"의 신호 중 하나일 뿐이라, `:Unsubscribe()`도
   동일하게 "지금 끝났다"는 신호로 취급해야 계약이 일관됨:
-  1. `state`가 있으면 내부 Observer도 `:Unsubscribe()`해서 향후 재실행을
-     끊고,
+  1. **⚠️ [2026-08-25 정정, 7라운드 `H-58`/`H-59`]** 여기 원래 *"`state`가
+     있으면 내부 Observer도 `:Unsubscribe()`해서 향후 재실행을 끊고"*라
+     적혀 있었는데, 내부 Observer는 생성자에서 `:WeakSubscribe()`로 걸리고
+     **해제하지 않는다** — 발화는 `canExecute(handle)`이 막는다(위
+     "확정 구조" 절). `:Unsubscribe()`가 `handle.Subscribed = false`로
+     만들면 그 게이트가 곧바로 거짓이 되므로 **향후 재실행은 그것만으로
+     끊긴다.** 단수 `state` 전제도 이미 `...deps`로 대체됐다.
   2. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
      하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것.
   3. **idempotent, 그리고 이후 leaf가 실제로 죽어도 cleanup이 중복
@@ -405,8 +625,28 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
 
 - **`Effect(fn, ...deps)`가 의존성을 여러 개 받고, 각각에 맞는 구독을 건다** —
   State/Source면 `Observer`, `Ref`면 `:Callback`. `:With`로 합치지 않는다.
+  **[2026-08-25 정정]** 각각 `:WeakSubscribe()` / `:WeakCallback()`으로
+  걸고, 강한 주인은 `Effect._deps`다(위 "확정 구조" 절).
+- **⭐ [2026-08-25 확정, 7라운드 `H-70`] deps 검증** — 지금까지
+  비어 있던 세 자리를 정한다.
+  - **`nil` dep은 error.** `{...}` + `ipairs`로 순회하면 `nil` 구멍 뒤가
+    조용히 잘리므로 **`select("#", ...)`로 돌아야** 한다.
+  - **State/Source/`Ref`가 아닌 값은 error.** `H-40`이 `:List`의 요소
+    검증을 블랙리스트에서 화이트리스트로 뒤집은 것과 같은 성격이다 —
+    이물 dep은 전파할 것이 없으므로 조용히 무시하면 "왜 안 발화하지"만
+    남는다.
+  - **중복 dep은 조용히 무시**(error 아님). **사용자 근거**: *":With 이나
+    시소한 연산으로 다른 State 가 된다던가 하면 deps 가 겹쳐도, 근원
+    source 가 겹쳐도 에러를 안 냄. Ref 도 유사한 부분."* `Ref`가 `Epoch`로
+    승격돼(`base/ref-plan.md`) `EpochMap`이 키로 dedup하므로 **공짜로**
+    처리된다 — 옛 `_refCallbacks[ref] = cb` 덮어쓰기로 먼저 건 클로저가
+    `Ref.Callbacks`에 남던 버그도 같이 사라진다.
+  - 검증은 전부 **생성자에서 한 번만** 도므로 hot path가 아니다.
+    error `level`은 **2**(사용자 입력 검증) — `base/architecture.md`의
+    error 계약 절.
 - **⭐ [확정, 2026-08-24 6라운드 손 트레이싱 `H-14`] `fn`의 시그니처는
-  `fn(self: EffectHandle) -> (() -> ())?` 이고, `...deps`는 의존성 선언일 뿐
+  `fn(self: EffectHandle) -> ...(() -> ())` 이고(**[2026-08-25 `H-95`]** 가변
+  반환 팩으로 정정 — 옛 `-> (() -> ())?`는 정상 용례를 막았다), `...deps`는 의존성 선언일 뿐
   `fn`에 넘어가지 않는다.**
   **사용자 확정**: *"`Effect( fn(self: Effect)->()->(), ...deps )` 가 맞는듯.
   Observer 처럼 바로 상위 state 가 있는게 아니라 Effect 를 주는게 맞아보이고,
@@ -431,14 +671,20 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
 - **`Ref` 의존성의 발화 시점은 `Set`될 때뿐**이다(Ref는 반복 재설정이
   가능하므로 그때마다). 채워지지 않은 상태는 발화가 아니다.
 - **최초 1회를 한 번만 돌리는 장치**: 의존성마다 구독을 걸면 각 구독의 "등록
-  즉시 1회 실행"이 N번 발화하므로, 설치 구간 동안 발화를 눌러뒀다가 마지막에
-  한 번만 실행한다. **[2026-08-21 확정] 이건 `Effect` 내부 플래그로 한다 —
-  게이트도 `Blocker`도 안 쓴다.** 한때 *"`Blocker`의 "`state:Block()` 없이
-  직접 쓰는" 용례를 그대로 재사용"*이라 적고 정확한 모양을 `Gate` 설계에
-  걸어뒀는데, `Gate`가 **빈 배치일 땐 통지를 안 하는 것**으로 확정되면서
-  성립하지 않는 게 확인됐다(`base/gate-plan.md`의 8번) — 설치 구간엔 어떤
-  `Set`도 안 일어나 게이트에 쌓이는 소스가 없으므로 게이트가 내보낼 것 자체가
-  없다. 설치 중 발화를 누르는 플래그 하나면 되고 새 메커니즘이 필요 없다.
+  즉시 1회 실행"이 N번 발화하므로, 등록 구간 동안 발화를 눌러뒀다가 마지막에
+  한 번만 실행한다.
+  **⭐⭐ [2026-08-25 정정, 7라운드 `H-58`] 그 억제는 `Effect` 내부 플래그
+  (`_installing`)가 아니라 사적 `Blocker` 하나가 한다.** 여기 한때
+  *"[2026-08-21 확정] 이건 `Effect` 내부 플래그로 한다 — 게이트도 `Blocker`도
+  안 쓴다"*고 적혀 있었는데, 그 플래그는 **생성자 구간만 덮어 바인드 구간을
+  놓쳤다**(`Ref` 콜백을 바인드마다 재등록하던 옛 모델에서 `Rerun`이 dep 수만큼
+  돌았다). 지금은 dep 등록이 **생성자 한 곳**으로 모였고 억제는
+  `self._blocker:On()` … `:OffWithoutEmit()` 구간이 맡는다 —
+  `materializeSlotTree`가 쓰는 관용구와 같은 모양이고, 위 "확정 구조" 절과
+  생성자 의사코드가 소스다. **`_installing`은 폐기된 필드다.**
+  (2026-08-21에 `Gate` 재사용을 접었던 근거 — *"설치 구간엔 어떤 `Set`도 안
+  일어나 게이트에 쌓이는 소스가 없다"*, `base/gate-plan.md`의 8번 — 는 그대로
+  유효하다. 게이트가 아니라 `Blocker`를 쓰는 이유이기도 하다.)
 - **⭐ [2026-08-21 해소] 의존성들이 공통 상류를 공유해도 한 파동에 `fn`은 한 번만
   돈다 — `Effect`가 자기 `EpochMap`을 하나 든다.** 갭은 실재했다: `A → b`,
   `A → c`, `Effect(fn, b, c)`에서 `A:Set()` 한 번에 `b`가 자기 observer를,
@@ -453,21 +699,29 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     ```lua
     -- 각 dep의 내부 Observer가 공통으로 거는 클로저
     function(self, from)
-        if handle._installing then return end  -- 설치 구간 억제 (아래)
+        if not canExecute(handle) then return end   -- 발화 게이트
+        if handle._blocker:IsOn() then return end   -- 등록 구간 억제 (위 정정)
         if handle._epochs:Update(from) then
             handle:Rerun()   -- 직전 cleanup 호출 후 fn 재실행
         end
     end
     ```
-    **⚠️ 억제 플래그가 `Update`보다 먼저여야 한다** — 등록 시점의 즉시 1회
+    **⚠️ 억제 확인이 `Update`보다 먼저여야 한다** — 등록 시점의 즉시 1회
     실행에는 `from`이 없어서(`nil`, `base/source-state-plan.md`의
     "`state:Observer(fn)`" 절) `Update(nil)`이 들어가게 된다. 순서를 뒤집으면
     설치 발화가 맵을 건드려 **그 파동의 첫 진짜 emit이 접힐** 수 있다
-    (2026-08-21 커밋 전 `/code-review high` 발견).
-  - **`Ref` 의존성은 이 맵에 안 낀다** — `Ref`는 `Epoch`가 아니고
-    `:Callback`으로 발화하므로 `from`이 없다. `Ref` 쪽 발화는 그대로 매번
-    `fn`을 돌린다(`Ref`는 반복 재설정마다 도는 게 계약이고, 공통 상류 문제
-    자체가 없다).
+    (2026-08-21 커밋 전 `/code-review high` 발견). **[2026-08-25]** 플래그가
+    `_blocker:IsOn()`으로 바뀌었을 뿐 순서 제약은 그대로다.
+  - **⭐ [2026-08-25 정정, 7라운드 `H-58`] `Ref` 의존성도 이 맵에 낀다** —
+    여기 한때 *"`Ref`는 `Epoch`가 아니고 `:Callback`으로 발화하므로 `from`이
+    없다"*고 적혀 있었는데, **`Ref`가 `Epoch`로 승격**되며(`base/ref-plan.md`)
+    공개 `.Revision`을 갖게 됐다. 그래서 `_epochs`가 State/Source/`Ref`를
+    **같은 방식으로** 담고(**⚠️ [2026-08-25 정정]** 한때 여기 "State/Source/
+    `Ref`를 균일하게"라 적었는데 **`State`는 `Epoch`가 아니다** — 등록이
+    `isEpoch`로 갈려 `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`이다,
+    `base/state-epoch-plan.md` §4·§8), 같은 `Ref`를 두 번 dep으로 넣어도 키 dedup으로 접힌다
+    (`H-70`). `Ref`가 반복 재설정마다 도는 계약 자체는 안 바뀐다 — 리비전이
+    매번 갱신되므로 `Update`가 매번 `true`다.
   - **검토했다 접은 대안**: deps를 하나의 파생 노드로 수렴시켜 다이아몬드
     dedup에 태우기 — 노드가 늘고 "N deps → N observers" 구조를 바꿔야 해서
     위 안보다 못하다. `useEffect`처럼 "N번 돌아도 무방"으로 계약을 느슨하게
@@ -475,14 +729,20 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   - 근거 기록은 `reference/epoch-brand-composition.md`(이 갭이 `EpochMap`
     분리의 직접 발단이었다).
 - **leaf dedup/cascade가 전부를 덮어야 한다** — 의존성이 N개면 내부 Observer도
-  N개라, `EffectHandle`의 bind/unbind cascade와 dedup 분기가 **그 전부**를
-  같이 처리해야 한다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피
-  모든 옵져버들이 내부에 들어가 있을것이므로 가능하다."*
+  N개다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피 모든 옵져버들이
+  내부에 들어가 있을것이므로 가능하다."*
+  **⭐ [2026-08-25 정정, 7라운드 `H-58`/`H-59`] 다만 그 "전부"를 덮는 주체는
+  bind/unbind cascade가 아니다** — `bindLifetime`/`unbindLifetime`은 이제
+  **핸들 하나에만** 적용되고, N개 dep의 발화 여부는 `canExecute(handle)`
+  하나가 전담한다(위 "확정 구조" 절). 등록도 생성자 한 곳에서 끝난다.
 
 **우선순위**: 새 코어 메커니즘이 아니라 `Effect` 표면 확장이므로 M2의
 `Effect` 구현과 같이 간다. **[2026-08-21]** 여기 있던 "억제 장치 때문에
-`Gate`보다 뒤"라는 순서 제약은 **없어졌다** — 억제가 `Effect` 내부 플래그로
-확정돼 `Gate`에 안 걸린다.
+`Gate`보다 뒤"라는 순서 제약은 **없어졌다** — 억제가 `Gate`에 안 걸린다.
+**[2026-08-25 정정]** 억제 수단이 내부 플래그에서 **사적 `Blocker`**로
+바뀌었으므로 선행은 `Blocker`의 기본 메커니즘(`On`/`Off`/`IsOn`/
+`OffWithoutEmit`)이다 — 그건 `GateNode`/`:Policy`와 무관하게 독립 완결이라
+`Gate`보다 뒤일 필요는 여전히 없다(`ROADMAP.md` M2의 그 각주).
 
 ## 해결됨 — Effect/Observer 관계 (2026-08-07 여섯 번째 세션, 이전 미해결 절 대체)
 

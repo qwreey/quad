@@ -188,6 +188,11 @@ export type function CheckVersion(actual: type, pattern: type): type
   **2개 이상**이면 단일 꺾쇠(`Foo<A, B>`)가 비교 연산자로 오파싱되니
   반드시 이중 꺾쇠(`Foo<<A, B>>`)를 써야 한다(코퍼스에 이미 있던
   `AttributeKey<<T>>` 관례와 같은 이유).
+  **⭐ [2026-08-25 확장, 7라운드 `H-73`] 이 관례는 타입 자리 전용이
+  아니다** — Luau의 generic type instantiation은 **값 호출부**에서도,
+  **콜론 메소드**에서도 동작해 `T`를 실제로 묶는다
+  (`store:Of<<number>>("x")`). `luau-analyze` 음성 대조군까지
+  확인했다 — 상세는 `base/store-plan.md`의 "타입 추론 문제" 절.
 
 `Version` 필드는 Luau 내장 `index<T, "Version">` type function으로 뽑는다
 (수동 `t:readproperty(...)`보다 간결 — **사용자 제안**으로 채택, 실측 확인

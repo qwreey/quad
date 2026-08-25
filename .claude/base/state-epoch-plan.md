@@ -164,11 +164,32 @@ type EpochSet = { [Epoch]: true }   -- 배열이 아니라 집합이다 (아래 
 
 EpochMap() -> EpochMap
 
-EpochMap:Update(Epoch | EpochSet) -> boolean  -- "뒤로 전파가 필요한가"
+EpochMap:Update(Epoch | EpochSet) -> boolean  -- "뒤로 전파가 필요한가" (읽고, 비교하고, 덮음)
+EpochMap:Peek(Epoch | EpochSet) -> boolean    -- 같은 비교를 하되 **덮지 않음** (2026-08-25 신설)
 EpochMap:Refresh() -> boolean                 -- 자기 키 전부를 라이브로 다시 읽음
 EpochMap:Sync(Epoch | EpochSet)               -- 읽지 않고 쓰기만 (반환값 없음)
 EpochMap:TrackFrom(other: EpochMap)           -- other가 추적 중인 키를 넘겨받아 라이브 리비전으로 채움
 ```
+
+**⭐⭐ [2026-08-25 신설, 7라운드 `H-72`] `:Peek` — 갱신하지 않고 비교만 한다.**
+`GateNode`가 §4의 수신 규칙 1~3을 그대로 돌려면 `emitChanged`가 필요한데,
+그걸 얻는 유일한 통로였던 `:Update`는 **정의상 읽고 나서 덮는다**. 그런데
+같은 §4의 게이트 예외는 *"`emitEpochMap:Update`를 수신 시점에 부르지
+않는다"*(유보 중엔 아직 안 던졌다는 맵의 뜻을 지키려고)라, **두 요구를
+동시에 만족할 연산이 표면에 없었다.** 나머지 표면도 전부 쓰기를 한다 —
+`:Refresh`는 자기 키를 다시 읽어 **갱신**하고, `:Sync`는 **쓰기 전용**,
+`:TrackFrom`은 키를 넘겨받아 **채운다**.
+
+```lua
+-- GateNode:_receive
+local valueChanged = self.valueEpochMap:Update(from)
+local emitChanged  = self.emitEpochMap:Peek(from)    -- 갱신 안 함
+```
+
+`:Update`가 이미 `{읽기, 비교, 쓰기}`라 `:Peek`은 그 앞 두 개만 쓰는 것이고
+내부 코드 공유가 쉽다. 플래그(`Update(from, write)`)로 두는 안은 기각 —
+호출부에서 "안 쓴다"가 안 보이고 boolean 파라미터가 늘 그렇듯 읽기가
+나빠진다.
 
 **⚠️ [2026-08-22 정정] 여러 개를 넘길 때는 `{Epoch}`(배열)가 아니라
 `{[Epoch]: true}`(집합)다.** 여기 한때 `{Epoch}`로 적혀 있었는데, Luau에서
@@ -328,9 +349,68 @@ end
   폐기된 옛 dedup의 "영구 침묵"과 같은 계열이다
   (`archive/invalidate-dedup-propagation-reversed.md`).
 
+### ⭐⭐ `rawInvalid` 불린은 **캐시 카운터 쌍**으로 교체됐다 (2026-08-25, 7라운드 `H-85`)
+
+**문제**: 아래 "재계산이 끝나면"이 확정한 `rawInvalid = false`가 **재계산
+*도중* 도착한 무효화를 지운다.** `fn` 실행 중에 상류가 `Set`되면 규칙 1이
+`rawInvalid = true`를 세우는데, `fn`이 반환한 직후 꼬리가 그걸 무조건
+`false`로 덮는다 — 캐시가 **다음 `Set`까지 영구 stale**이고, 한 세대를
+조용히 건너뛰는 형태라 관측이 어렵다. 재계산 중 상류 쓰기는 흔하다(다른
+Store 필드에 결과를 적어두는 관용구, 헬퍼의 lazy 초기화, `fn`이 yield하는
+사이 타이머가 `Set`하는 경우 — yield 금지 불변식은 `Dispatch.process`/
+`attachSlot` 체인 **안**에만 적용된다).
+
+**확정**: `rawInvalid: boolean`을 **`cacheTargetCount` / `cacheCurrCount`**
+두 필드로 바꾼다. **사용자 확정**: *"state 는 epoch 를 구현해선 안 돼.
+중간이지, 초기 값 컨테이너 계층은 아니거든. 따라서 cache count 를 넣을것을
+추천해. `cacheTargetCount`, `cacheCurrCount` 를 놓는게 맞지 않을까?"*
+
+```lua
+-- 생성 시
+self.cacheTargetCount = 0
+self.cacheCurrCount   = nil                     -- 아직 계산된 적 없음 → 항상 다름
+
+-- 무효화 (아래 규칙 1의 `rawInvalid = true` 자리)
+if valueChanged then
+    self.cacheTargetCount = bit32.bnot(-self.cacheTargetCount)
+end
+
+-- 재계산
+local gen = self.cacheTargetCount               -- fn 직전 스냅샷
+self.cache = self.fn(self, self.cache, ...)
+for _, d in self.deps do d:_track(self.valueEpochMap) end
+self.cacheCurrCount = gen                       -- ⭐ 성공했을 때만
+
+-- 재계산 판정 (아래 `rawInvalid == true` 자리)
+if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
+```
+
+- **재계산 도중 도착한 무효화**가 `cacheTargetCount`를 앞서게 만들어
+  다음 `Get`이 반드시 재계산한다.
+- **`fn`이 던지면** `cacheCurrCount`가 안 갱신되므로 *계산된 적 없는
+  캐시를 유효하다고 확신*하는 일이 없다 — **사용자 지적**: *"특히 에러가
+  난다고 하면, 다시 계산 안하고 이전 결과를 다시 쓰겠네?"* (그래서
+  "`rawInvalid = false`를 `fn` 앞으로 옮긴다"는 한 줄짜리 대안은
+  **불충분하다**.)
+- 증가는 §2가 `Source.Revision`에 확정한 **`bit32.bnot(-n)` 랩** 그대로다 —
+  비교가 `~=`뿐이라 랩이 무해한 것도 같고, uint32 안에 머무르므로 평이한
+  `+1`이 갖는 2^53 포화 지점 자체가 없다.
+- **⚠️ 초기값은 `curr = nil`이어야 한다 — 두 숫자를 나란히 두면 안 된다.**
+  이 갱신은 **감소**다(§2의 실측 표: `1 → 0 → 4294967295`). 그래서 한때
+  적어뒀던 `target = 1, curr = 0`은 **첫 무효화에서 `target`이 `0`이 되어
+  `curr`와 같아진다** — 계산된 적 없는 캐시를 "유효"로 판정해 다음 `Set`이
+  올 때까지 그 값을 그대로 돌려준다(2026-08-25 `/code-review high` 발견).
+  `curr = nil`이면 어떤 숫자와도 다르고 **갱신 방향이 바뀌어도 안 깨진다.**
+  필드 타입은 `number?`이고, 첫 재계산 이후로는 계속 숫자다.
+- **State는 여전히 `Epoch`를 구현하지 않는다** — 이 카운터는 **자기 재계산
+  부기**이지 남이 키로 삼는 리비전이 아니다(§4가 State dep에 대해
+  `TrackFrom(dep.valueEpochMap)`을 쓰는 것과 일관).
+- 아래 두 절(`재계산 판정` / `재계산이 끝나면`)의 `rawInvalid`는 전부 이
+  카운터 비교로 읽을 것.
+
 ### 재계산이 끝나면
 
-- **`rawInvalid = false`**, 그리고 **`valueEpochMap`은 자기가 읽은 상류
+- **`rawInvalid = false`**(위 카운터로는 `cacheCurrCount = gen`), 그리고 **`valueEpochMap`은 자기가 읽은 상류
   전부에 대해 갱신한다**(발행 `Epoch` 항목만이 아니다). 맵의 뜻이 "내 값이 이
   `Epoch`에 대해 최신인가"이므로, 방금 계산한 값은 정의상 **모든** 상류에 대해
   최신이다. 사용자: *"invalid 에 대한 계산을 위한 count 테이블은 단순히 전부
@@ -395,6 +475,20 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
   재계산한다.
 - 맵 하나당 객체 하나가 늘지만(State당 둘), 옛 모양도 테이블 둘이었으므로
   컴포지션으로 바뀌며 늘어난 비용은 메소드 디스패치뿐이다.
+- **⭐ [2026-08-25 추가, 7라운드 `H-92`] 전파 루프의 구독자 스냅샷은 여기
+  셈에 안 들어가 있었다.** `base/source-state-plan.md`의 "전파 루프 — 확정
+  의사코드" 절이 확정한 대로, 순회 중 등록이 미정의라 매 발화마다 구독자
+  집합을 배열로 복사한다 — 즉 **파동이 지나는 노드 수만큼 배열 하나씩**이
+  할당된다. §2가 테이블 리비전 방식을 기각한 근거가 *"`Set` 한 번마다
+  테이블 하나를 할당"*이었으므로 이 비용은 정직하게 적어둔다. **정확성
+  문제는 아니고**(스냅샷 자체는 필수) 이 문서의 결정을 뒤집지도 않는다 —
+  테이블 리비전은 **노드마다 상시** 새 테이블을 만드는 것이고 이건 **발화
+  경로에만** 생기는 임시 배열이다.
+- **게이트 통과 모드의 할당**(7라운드 `H-69`): `base/gate-plan.md` 4번이
+  확정한 대로 게이트는 통과시킬 때도 `withheld`에 넣었다가 flush에서
+  새 weak 테이블로 스왑하므로 **emit마다 테이블 하나**를 쓴다. 역시
+  정확성 문제가 아니라 구현 시 최적화 여지(통과 모드면 스왑 없이 넘기기)로
+  적어둔다.
 
 ## 8. 구현 시 확인할 것
 
@@ -409,6 +503,13 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
   던지는게 맞다. 상류의 상태를 물어보므로 그러함. 이전과 다른게 없다고
   생각한다."* — 선언 안 한 Source를 클로저로 읽는 건 **옛 모델에서도 똑같이
   stale**이었고 이 변경이 악화시키는 게 없다.
+  - **⚠️ [2026-08-25 범위 정정, 7라운드 `H-91`] 위 인용의 *"항상 state 는
+    get 이 최신"*은 **선언한 의존성에 대해서**다.** 문장 그대로 읽으면
+    코퍼스에 **의도적 반례**가 있다 — `base/tween-plan.md`의 `Animate`가
+    *"`info.Style`이 State여도 이 내부 `:Compute`의 trailing deps로 안
+    넘어가므로 구독 목록에 안 걸림"*이라며 **미선언 읽기를 설계로** 쓴다.
+    바로 위 문장이 이미 "선언 안 한 것은 옛 모델에서도 stale"이라 말하고
+    있으므로 결론은 안 바뀌고, 범위만 좁혀 적는다.
 - **동적 의존성**은 `valueEpochMap`이 보수적 상위집합이 된다 — 틀리진 않고
   재계산이 조금 더 잦아질 뿐이다.
 - **`Source:Emit()`**(값을 제자리에서 mutate하고 알리는 경로)은 `Revision`만

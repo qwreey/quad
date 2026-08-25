@@ -258,7 +258,7 @@ Observer 값을 키로 `BindData`에 gcconn을 복사하므로, 집합의 원소
 `H-23`이 스냅샷을 확정했지만 그 스냅샷 안에서 **무엇을 호출하는지**는
 여전히 산문뿐이다.
 
-**이건 `question.md`의 "중간 State GC" 미해결과 별개다** — 그쪽은 자식
+**이건 `question.md` 최우선 절의 중간 State GC 미해결과 별개다** — 그쪽은 자식
 노드가 *살아남는가*, 이쪽은 살아있어도 *호출되는가*.
 
 **필요한 것**: 전파 루프의 실제 의사코드 — 구독자가 State 노드면
@@ -909,7 +909,7 @@ store 테이블이 아니라 **내부 백킹 테이블**에 넣고 `__index`가 
 ## 🔴 `H-75` — 평평한 `WrapStore`면 `store.key:Compute(무주석 콜백)`이 깨진다 (실측)
 
 **어디**: `base/store-plan.md`의 `WrapStore`/`ProcessStoreType` 스케치,
-`luau-test/done/16-type-store-key-typefunction.luau`,
+`luau-test/rewrite-required/16-type-store-key-typefunction.luau`,
 `base/typing-limits.md` §5(*"✅ 검증 완료"*)와 §1의 ②쪼개기.
 
 **무엇이 어긋나나**: 확정된 `WrapStore`는 `Get`/`Set`만 있는 **평평한**
@@ -2094,8 +2094,8 @@ GC 근거를 그에 맞게 완화한다(그러면 테이블 리비전 기각 근
 ## 🟢 `H-93` — 중간 State GC 미해결은 "전파 끊김"만이 아니라 "최신이라고 오판"으로도 나타난다
 
 **어디**: `base/state-epoch-plan.md` §3의 *"키는 weak다. `epoch`가 죽으면
-항목이 사라진다"*, `base/source-state-plan.md`의 "미해결 — 중간 State가
-살아남는가" 절.
+항목이 사라진다"*, `base/source-state-plan.md`의 "해소됨 — 중간 State는 `_hold`로
+살아남는다" 절.
 
 **미리 밝힘**: 이건 `question.md` 최우선 항목의 **파생**이라 이 라운드의
 검사 대상이 아니다(1차 패스가 명시적으로 뺐다). 그래도 적는 이유는 그
@@ -2436,7 +2436,7 @@ Connection까지 이미 구현해뒀다. 즉 gcconn 트릭을 흉내낼 재료�
 
 **어디**: `base/source-state-plan.md`의
 "Observer의 `:Subscribe()`/`:Unsubscribe()`" 절, 같은 문서의
-"미해결 — 중간 State가 살아남는가" 절.
+"해소됨 — 중간 State는 `_hold`로 살아남는다" 절.
 
 **무엇이 어긋나나**: `:Subscribe()` 절은 두 가지를 **공개 계약으로**
 못박았다 — *"`state:Observer(fn):Subscribe()`처럼 참조를 아무 데도 안

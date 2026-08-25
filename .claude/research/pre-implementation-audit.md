@@ -306,7 +306,7 @@ base 인터페이스가 그보다 늦은 M8에서 만들어지는 순서 역전.
 이름이 아니라 구조로 일치를 검사하므로 문제없음. 기술적으로 막힐 위험이
 없어졌으니 M0/M2 어느 시점에 검증해도 무방 — `ROADMAP.md` 배치를 억지로
 안 옮겨도 됨. 상세는 `base/typing-limits.md` "`store.key` 레코드 필드
-타이핑" 절, 실제 문법 실측은 `luau-test/done/16-type-store-key-
+타이핑" 절, 실제 문법 실측은 `luau-test/rewrite-required/16-type-store-key-
 typefunction.luau`(**[2026-08-15] 통과** — 원래 스파이크가 API 버전
 드리프트로 깨져있던 걸 고침, `audit/type-recursive-issue-with-typeof/
 REPORT.md` 6-1절). 아래는 원래 발견 당시 기록.
@@ -674,7 +674,14 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 
 - `architecture.md`의 "Store/State/Source 온톨로지 — 확정됨 (요약)" 절이
   `source-state-plan.md`의 최신 재구성(Source가 State를 만족, `store.key`가
-  Source를 직접 반환, `store.key:Set()`)을 못 따라가고 있던 것 — 이 감사
+  Source를 직접 반환, `store.key:Set()`)을 못 따라가고 있던 것 —
+  **⚠️ [2026-08-25 재오픈] 이 "고침"은 다시 낡았다가 다시 맞게 됐다.**
+  같은 날 오전에 `architecture.md`가 "`store.key`는 값" 재설계로 고쳐졌고,
+  오후에 그 재설계가 철회되며 원래 모델로 되돌아왔다
+  (`archive/store-value-field-redesign-withdrawn.md`). **지금 맞는 서술은
+  `base/store-plan.md`가 소스** — 이 목록의 "이미 고침"만 믿고 넘어가지
+  말 것(실제로 그 철회에서 `architecture.md` 두 자리가 누락됐고 감사가
+  잡았다). 이 감사
   세션 도중 발견해 직접 정정(커밋 `4b839b0`에서 별도로 이미 반영됨을 뒤늦게
   확인 — 같은 문제를 두 세션이 독립적으로 발견한 셈).
 - `architecture.md` 소스트리의 `Store.luau`/`Ref.luau` 주석이 각각 옛

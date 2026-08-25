@@ -238,7 +238,7 @@ D-7의 재역전 여부, N-4의 `NoneHandler`/`NilHandler` 역할 분담, ST-2�
     오버로드 함수 타입으로 정확히 추론하려는 시도는 포기하고…"
   - `base/store-plan.md:128` — "`store "key"` 문자열 커링은 동적 키가 필요할
     때 쓰는 미타입(`Source<any>`) 폴백으로 격하."
-  - `base/store-plan.md` "남는 것" 문단 — "`myStore "key"`(문자열 커링)는 …
+  - `base/store-plan.md`의 값 설정 문법 절 — "`myStore "key"`(문자열 커링)는 …
     그대로 유지"
   - `base/bind-system-plan.md:157` — "`store "key"`(문자열 커링, 동적 키
     폴백)는 이벤트와 달리 …"

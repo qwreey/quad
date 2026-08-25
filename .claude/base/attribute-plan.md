@@ -260,6 +260,17 @@ end
     - **`nameClaims`와의 순서**: 위치 claim이 **먼저**다 — 같은 그룹의 두 번째
       위치는 이름 claim까지 갈 것 없이 그 자리에서 거부되어야 하고, 그래야
       `nameClaims`에 절반만 기록되는 중간 상태가 안 생긴다.
+    - **⚠️⚠️ [2026-08-25 신설, `/code-review high`] GC 계약 — 그룹 값
+      객체(`groupValue`)는 `inst`를 되참조하면 안 된다.** 이 값은
+      `groupClaimKeys`의 **내부 키**로 쓰이는데, `Relate`의 내부 키는
+      `SetStrong`/`SetWeak` **어느 쪽이든 항상 강하다**(Luau엔 ephemeron이
+      없다 — `base/relate-plan.md`의 "위험한 패턴" 절 슬롯 표). 그래서 값이
+      `inst`로 되돌아가면 `buckets`의 weak 키가 자기 버킷을 통해 살아남아
+      **그 `inst`가 영원히 안 죽는다.** 실제로 밟기 어려운 모양은 아니다 —
+      같은 트리의 `Ref`가 그 `inst`로 채워진 뒤 그 Store에 담기면 된다.
+      **되참조가 필요해지면 내부 키를 값 객체가 아니라 이름/토큰으로
+      바꿔야 한다**(값 객체는 그때 값 슬롯으로 내려가고, 그 슬롯은
+      `SetWeak`으로 도망갈 수 있다). 지금은 그 요구가 없어 계약으로 둔다.
     - 이걸로 `Frame { a, a }` 갭(구 `AT-11`/5라운드 `AT-2`)도 **같이 닫힌다.**
   - **`Tag`는 왜 다른가**: `Tag`는 같은 객체를 여러 위치에서 재사용하는 게
     **정상 관례**이고 위치(`k`) 기준 참조 카운트로 안전하다(`base/tag-plan.md`)
@@ -354,6 +365,12 @@ Attribute(store1, store2, ..., {plain = "table도 됨"})  -- 생성자, 여러 �
 Attribute.Merged(a, b, ...): Attribute                   -- 합성, 이름이 겹치면 error
 Attribute.Overridden(a, b, ...): Attribute               -- 합성, 이름이 겹치면 조용히 뒤가 이김
 attr:NameMap(): {[string]: Source<any>}                  -- 평탄화된 이름→Source 맵(아래 "메커니즘" 절이 쓰는 것)
+-- ⭐ [2026-08-25, 7라운드 `H-79`] `:NameMap()`이 Store를 평탄화하려면 **Store가
+-- 자기 키 집합을 알아야 한다** — 그 표면이 없어서 키 집합이 접근 이력에
+-- 좌우되고 있었다(lazy `__index` 시절엔 0개/1개/2개로 갈렸다). Store가
+-- **명시적 초기화**로 바뀌며 `defaults`가 곧 선언 키 집합이 됐고,
+-- `store:Names()`가 그걸 준다(`base/store-plan.md`). `:NameMap()`은 각
+-- Store에 대해 `store:Names()`를 돌며 `store[name]`을 모은다.
 -- [명시 추가, 2026-08-20 구현 전 QA 4라운드] 생성자 자신의 이름 겹침 정책:
 -- Attribute(a, b)에서 a와 b가 같은 이름을 가지면 **뒤에 온 인자가 이긴다**
 -- (= Overridden과 같은 정책, error 아님). Merged의 "겹치면 error"는 그 함수만의

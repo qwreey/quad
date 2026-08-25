@@ -1692,8 +1692,8 @@ nil value`, (b) 이름을 `self:Gate(...)`로 고쳐도 `setup`이 핸들러를 
 ## 🟢 `H-36` — `store-plan.md`가 미해결 항목을 확정처럼 근거로 인용한다
 
 **어디**: `base/store-plan.md`(*"State/Source 그래프 구독이 전부 weak-keyed
-GC-native"*) vs `base/source-state-plan.md`의 "⚠️ 미해결 — 중간 State가
-살아남는가(구독 엣지의 방향성)" 절.
+GC-native"*) vs `base/source-state-plan.md`의 "해소됨 — 중간 State는 `_hold`로
+살아남는다" 절.
 
 **무엇이 어긋나나**: `store-plan.md`는 "그래프 구독이 **전부** weak-keyed"라는
 명제를 기정사실로 써서 다른 결론(이중 해제 걱정 불필요)을 내리는데, 그 명제

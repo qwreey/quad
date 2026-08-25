@@ -335,15 +335,22 @@ function bindLifetime(inst, value)
     -- `slot._detachCleanup`(Detach 요소를 파괴하는 유일 경로)과 `OnDestroyed`가
     -- 통째로 무동작이었다(`base/effect-plan.md`).
     -- **왜 이 자리인가**(사용자 판단 2026-08-24): `Destroying`은 엔진이 아는
-    -- 요소라 엔진을 다루는 자리에 있어야 하고, 이 함수는 이미 `Effect`의 내부
-    -- Observer 목록으로 cascade하며 값을 들여다본다. `Effect`가 바인드되는
+    -- 요소라 엔진을 다루는 자리에 있어야 하고, `Effect`가 바인드되는
     -- 경로가 둘(children 배열 leaf / `activateList`의 `_detachCleanup` 직접
     -- 바인드)이라 **호출부 쪽에 두면 반드시 한쪽이 샌다.**
+    --
+    -- ⭐⭐ [2026-08-25 정정, 7라운드 `H-58`/`H-59`] **내부 Observer로 cascade하지
+    --   않는다.** 여기 원래 `for _, observer in ipairs(value._observers) do
+    --   bindLifetime(inst, observer) end`가 있었는데, 그 필드 자체가 폐기됐고
+    --   (`_deps` 하나로 통합) dep 등록은 **생성자에서 한 번만** 일어난다
+    --   (`WeakSubscribe`/`WeakCallback`). 그대로 두면 `_observers`가 `nil`이라
+    --   순회에서 죽고, 피해 가도 **바인드마다 `Rerun`이 도는 `H-58`이
+    --   되살아난다.** 발화 게이팅은 전부 `canExecute(handle)` 하나가 맡는다 —
+    --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
     if isEffect(value) then
-        for _, observer in ipairs(value._observers) do   -- N-deps cascade
-            bindLifetime(inst, observer)
-        end
-        value:_bindDestroying(inst)   -- Destroying 연결 + Ref dep 콜백 (재)등록
+        value:_bindDestroying(inst)   -- Destroying 연결 + **조건부 캐치업 1회**
+                                      -- (`if not self._installed or
+                                      --   self._epochs:Refresh() then self:Rerun() end`)
                                       -- 의사코드는 `base/effect-plan.md`가 소스.
                                       -- 그 안에서 주입 op `onDestroying(inst, fn)`을
                                       -- 부른다(base는 Instance를 모른다).
@@ -352,15 +359,16 @@ end
 
 function unbindLifetime(value)
     -- [2026-08-24 `H-11`] bind의 대칭 — **cleanup은 부르지 않는다.**
-    -- `Destroying` 연결을 끊고 `Ref` dep 콜백을 떼기만 한다. cleanup을 여기서
-    -- 부르면 `destroySlotTree`가 `_detachCleanup`을 손으로 비운 뒤 unbind하는
-    -- 경로에서 이중 호출이 된다(`base/effect-plan.md`의 그 항목이 소스).
-    -- 이 대칭 덕에 포탈이 자연히 성립한다 — 언마운트가 떼고 재마운트가 다시 건다.
+    -- cleanup을 여기서 부르면 `destroySlotTree`가 `_detachCleanup`을 손으로
+    -- 비운 뒤 unbind하는 경로에서 이중 호출이 된다(`base/effect-plan.md`).
+    --
+    -- ⭐⭐ [2026-08-25 정정, 7라운드 `H-58`] **`Ref` 콜백도 내부 Observer도
+    --   안 뗀다.** 둘 다 생성자에서 `Weak*`로 걸려 있고 발화는 `canExecute`가
+    --   막는다 — 떼었다 붙이는 그 춤이 `H-58`의 원인이었다. 포탈은 이제
+    --   "떼고 다시 걸기"가 아니라 **재바인드 시 조건부 캐치업 1회**로
+    --   성립한다(`_bindDestroying`).
     if isEffect(value) then
-        value:_unbindDestroying()
-        for _, observer in ipairs(value._observers) do
-            unbindLifetime(observer)
-        end
+        value:_unbindDestroying()     -- Destroying 연결만 끊는다
     end
 
     local gchold = BindData:GetWeak(value, "gchold")
@@ -512,12 +520,26 @@ Destroy됐거나 `unbindLifetime`된 `value`는 `canBound`가 **참**이라
 `canExecute`가 "어디서 불리는가"는 지금까지 어느 문서에도 코드로 없었음(위
 정정 배너 참고). 확정된 위치는 **State의 전파 루프**:
 
-- State는 자기 구독자(Observer의 emit 클로저)를 **weak로** 담는다 — 살려두는
-  책임은 State가 아니라 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에
-  있고, 어디에도 안 묶인 Observer는 그냥 GC되어 구독 목록에서 자연히 빠짐.
-- 발화 시 각 구독자에 대해 `canExecute(observer)`를 확인하고, 거짓이면
-  **그 구독자만 조용히 건너뜀**(no-op) — 죽은 `inst`를 건드리는 시도가
-  일어나지 않게 막는 위 "해야 할 일은 딱 하나" 원칙의 실제 구현 지점.
+- State는 자기 구독자를 **weak-키로** 담는다 — 살려두는 책임은 State가
+  아니라 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있고, 어디에도
+  안 묶인 Observer는 그냥 GC되어 구독 목록에서 자연히 빠짐.
+  **⭐ [2026-08-25 정정, 7라운드 `H-56`] 집합의 원소는 "Observer의 emit
+  클로저"가 아니라 **Observer 값**이다.** `bindLifetime(inst, observer)`가
+  Observer **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를
+  담으면 identity가 달라 `canExecute`가 **항상 거짓**이 된다.
+- 발화 시 **Observer/Effect 구독자에 대해서만** `canExecute(observer)`를
+  확인하고, 거짓이면 **그 구독자만 조용히 건너뜀**(no-op) — 죽은 `inst`를
+  건드리는 시도가 일어나지 않게 막는 위 "해야 할 일은 딱 하나" 원칙의
+  실제 구현 지점.
+  **⭐⭐ [2026-08-25 정정, 7라운드 `H-56`] 자식 State 노드는 이 게이트를
+  안 탄다.** 여기 한때 *"각 구독자에 대해"*라고만 적혀 있었는데, 그대로
+  짜면 `:With`/`:Compute`/`:Gate`가 만든 자식 노드가 **전부 걸러진다**
+  (자식은 `bindLifetime`된 적도 `:Subscribe()`된 적도 없어
+  `isBoundAlive`가 항상 거짓) — `A:Set()`이 파생 State에 한 번도 안 닿아
+  그 아래 모든 Observer가 침묵한다. **확정 의사코드는
+  `base/source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절이 소스**이고,
+  자식 노드의 생존은 `canExecute`가 아니라 같은 문서의 `_hold` 불변식이
+  책임진다.
 
 **`state:Observer(fn)`의 "등록 즉시 1회 실행"은 이 게이팅과 무관**하다 —
 그건 Observer 생성자 자체의 계약이라 `bindLifetime` 이전에 동기적으로

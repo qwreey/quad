@@ -91,9 +91,42 @@ end)
    **확정 형태**:
 
    ```lua
-   -- setup: (emit: () -> ()) -> (onUpstreamEmit: () -> ())
+   -- setup: (emit: (commit: boolean?) -> boolean) -> (onUpstreamEmit: () -> ())
    local gated = state:Gate(setup)   -- ComputeNode처럼 GateNode를 하나 만든다
    ```
+
+   **⭐⭐ [2026-08-25 확정, 7라운드 `H-55`/`H-86`] `emit`에 인자와 반환값이
+   붙는다.** 인자 목록이 늘지 않으므로 `H-49`의 *"`setup` 시그니처는 안
+   바뀐다"*를 최소로만 되짚는다.
+
+   | 호출 | 뜻 |
+   |---|---|
+   | `emit()` / `emit(true)` | 평소대로 흡수 집합을 flush하고 전파 |
+   | `emit(false)` | **흡수 집합을 버리고** 전파하지 않는다 |
+   | 반환값 | "실제로 내보내거나 버릴 게 있었는가"(= 집합이 비어 있지 않았는가) |
+
+   - **왜 필요한가 (1) — 버릴 수가 없었다(`H-55`).** 아래 4번은 *"emit 없이
+     푸는 경로는 집합을 **버려야** 한다"*고 확정하는데, `Blocker`가
+     `blocker:Policy(emit)` **값**으로 떨어져 나온 뒤로 정책이 손에 쥔 건
+     `emit` 하나뿐이라 **집합에 닿는 통로가 없다.** 그래서
+     `Trailing = false`/`Cancel`/`OffWithoutEmit`이 "버린다"가 아니라
+     "미룬다"가 되어, 버리기로 했던 옛 원천들이 **다음 버스트에 실려
+     나간다**(4번이 경고한 바로 그 모양이 정책 분리로 되살아난 것).
+   - **왜 필요한가 (2) — 읽을 수가 없었다(`H-86`).** 5번이 *"`pending` 같은
+     정책 상태는 `HasBlockedEmit`으로 흡수한다"*고 확정했는데, `blocker-plan.md`가
+     `HasBlockedEmit`을 **게이트 노드의 `withheld`**로 흡수해버려 **양쪽 다
+     안 들고 있다.** 그 결과 `Throttle`의 창이 idle로 못 돌아가
+     **leading이 첫 버스트 이후 영구 소실**되고 타이머 체인이 안 끝나
+     `base/debounce-throttle-plan.md`의 "8. 라이프사이클 / GC 분석" 절이 확정한 "유계 GC"가 깨진다(실측 확인).
+   - **`Throttle`의 `onWindowEnd`가 이 한 줄로 닫힌다**:
+     ```lua
+     if not emit() then window = nil   -- 보류분 없었음 → 완전 idle 복귀
+     else rearm() end
+     ```
+   - **기각된 안**: `setup(emit, discard, hasWithheld)`처럼 핸들을 늘리는 것
+     (인자 목록 자체가 바뀌어 `H-49`를 더 크게 되짚는다), 정책이 자기
+     `pending`을 다시 드는 것(`H-32`를 손으로 다시 막아야 하고 버리기는
+     여전히 안 닫힌다).
 
    `Blocker`는 **그 위에 얹히는 별개 프리미티브**로, `state:Block(blocker)`가
    내부에서 이 배선을 그대로 쓴다. 탑레벨 `Gate(...)` 생성자는 **안 만든다.**
@@ -120,8 +153,13 @@ end)
    - **`__call`은 안 쓴다.** 사용자도 *"이상적이여 보이지는 않음"*이라 했고,
      타입 쪽 근거가 하나 더 있다 — `__call` 테이블이 Luau에서 `(State<T>) -> U`
      함수 타입 자리에 그대로 들어가는지가 불확실하다(들어가지 않는 쪽이 유력).
-     `Apply`를 쓸 이유 자체가 없어졌으므로 확인할 필요도 없어졌지만, 혹시
-     되살아나면 `luau-test` 스파이크 한 개로 판정할 것.
+     **⭐ [2026-08-25 실측 확정, 7라운드 `H-94`] 안 들어간다.**
+     `luau-analyze`로 재현했고(제네릭·비제네릭 양쪽), 타입 레벨 `__call`은
+     `self`도 못 받는다. 여기서 *"확인할 필요도 없어졌다"*고 접었지만
+     **`Debounce`/`Throttle` 쪽엔 그 불확실성이 그대로 남아 있었다** — 바로
+     아래 항목이 *"`Debounce`/`Throttle`은 `:Apply` 그대로 둔다"*를 확정하기
+     때문. 그래서 애플리커티브 팩토리는 `__call`이 아니라 **지정된 필드**로
+     자기를 노출한다(`base/source-state-plan.md`의 "`state:Apply(factory)`" 절).
    - **2단 구조는 그대로 유효하다** — 사용자 관찰(*"Gate 의 callback 으로 얻어진
      emit과, 리턴해낸 클로저가 호출되는걸로 배선은 가능"*) 대로, 바깥 함수가
      **그 노드의 `emit`을 캡처**하고 반환 클로저가 상류 emit마다 정책을 태운다.
@@ -173,11 +211,23 @@ end)
      중첩 flush의 `clear`가 돌아 **바깥 전파의 남은 갈래가 빈 집합**을 받는다.
      **모델이 아니라 그 의사코드가 문제였다** — `emit()`이 flush인 이상 들어가는
      순간 떼어내는 게 원래 모양이고, 그러면 그 경로 자체가 없다:
+     ```lua
+     -- ⭐ [2026-08-25 보강, 7라운드 `H-89`] 아래 8번과 `H-89`가 확정한
+     --   **네 단계**를 그대로 적는다. 한때 이 스니펫이 가운데 둘만 갖고
+     --   있어서, 이걸 보고 짜면 "빈 배치도 통지" + "`emitEpochMap`을 언제
+     --   `Sync`하는지 불명" 두 실수가 난다.
+     function GateNode:_flush(commit: boolean?)
+         if next(self._withheld) == nil then return false end  -- (1) 빈 배치 얼리리턴
+         local batch = self._withheld
+         self._withheld = newWeakK()                           -- (2) 새 테이블. clear가 아니다
+         if commit == false then return true end               -- 버리기(H-55) — 전파도 Sync도 안 함
+         self.emitEpochMap:Sync(batch)                         -- (3) 전파 **앞**에서 한꺼번에
+         emitDownstream(self, batch)                           -- (4) 떼어낸 batch를 페이로드로
+         return true
+     end
      ```
-     local batch = self._withheld
-     self._withheld = newWithheld()   -- 새 테이블. clear가 아니다
-     emitDownstream(self, batch)      -- 떼어낸 batch를 페이로드로 넘긴다
-     ```
+     반환값이 `emit(commit) -> boolean`의 그 반환값이다 — **"실제로
+     내보내거나 버릴 게 있었는가"**(위 2번, `H-55`/`H-86`).
      **⚠️ [정정, 2026-08-24 6라운드 손 트레이싱 `H-9`] 그 새 테이블도 weak여야
      한다.** 여기 원래 `self._withheld = {}`라고 적혀 있었는데, 그러면 위에서
      **weak key로 확정한 집합이 첫 flush 스왑에서 평범한 테이블로 바뀐다** —
@@ -212,7 +262,12 @@ end)
      게이트가 몇 겹으로 겹쳐도 각 층이 자기 집합을 들고 있으므로 어느 층이
      먼저 풀리든 정보가 안 샌다.
    - **게이트의 `emitEpochMap`은 수신 때가 아니라 실제로 전파할 때** 갱신한다
-     (집합 전체에 대해 한꺼번에, `:Sync(batch)`). **이건 `state-epoch-plan.md`
+     (집합 전체에 대해 한꺼번에, `:Sync(batch)`).
+     **⭐ [2026-08-25 명시, 7라운드 `H-89`] `:Sync(batch)`는 전파 *앞*이다** —
+     flush 순서는 **빈 배치 얼리리턴 → 스왑 → `:Sync(batch)` → 전파**다.
+     지금까지 *"실제로 전파할 때"*라고만 적혀 앞/뒤가 안 정해져 있었다.
+     그리고 **수신 시점의 판정에는 `:Peek`을 쓴다** — `:Update`는 덮으므로
+     이 예외와 양립하지 않는다(`base/state-epoch-plan.md` §3). **이건 `state-epoch-plan.md`
      §4 의사코드의 유일한 예외이고, 그 문서에 예외로 기록돼 있다.** 그래야 "내가 하류로 던진
      리비전"이라는 맵의 뜻이 게이트에서도 참이 된다 — 유보 중 같은 리비전이
      다른 경로로 또 오면 규칙 2로 걸려 정책을 한 번 더 태우는데, 이미 집합에
@@ -224,13 +279,84 @@ end)
      게이팅이 매 프레임 `On()` → … → `OffWithoutEmit()`을 도는 동안 집합이
      **단조 증가**하고, 나중에 아무 `Epoch`나 한 번 통과하는 순간 **버리기로
      했던 옛 원천들이 같이 실려 나가** 하류가 폐기된 통지로 무효화된다.
+     - **⭐⭐ [2026-08-25 정정, 7라운드 `H-67`] 여기 근거로 든 용례가
+       틀렸다.** `Dispatch.drive`의 배치 게이팅은 `base/blocker-plan.md`가
+       *"이 용례는 `state:Block()`을 전혀 호출하지 않으므로 gated state도 …
+       생기지 않는다"*고 명시한 경로라 **애초에 `withheld` 집합이 없다.**
+       결론(비워야 한다)은 그대로 유효하고 **근거가 될 용례만 바꾼다** —
+       `state:Block(b)`로 만든 gated state에 `b:OffWithoutEmit()`을 반복해
+       거는 경우, 또는 `Throttle{Trailing = false}`가 창마다 버리는 경우가
+       실제로 집합이 단조 증가하는 자리다.
+     - **⭐⭐ [2026-08-25] 정책은 이걸 스스로 할 수 없다** — 위 2번의
+       `emit(false)`가 그 통로다(`H-55`).
    - 그렇게 비우고 나면 하류의 `emitEpochMap`은 뒤에 남지만, 그 `Epoch`의
      다음 진짜 emit이 규칙 1/2로 걸려 **스스로 낫는다** — 별도 조치 불필요.
 
-   **⭐ 그래서 `setup` 시그니처는 안 바뀐다.** 집합을 채우는 건 정책이 아니라
-   **노드**이고, 노드는 정책이 뭘 하는지 들여다볼 필요조차 없다(위 단순화).
+   **⭐ 그래서 `setup`의 인자 목록은 안 바뀐다.** 집합을 **채우는** 건 정책이
+   아니라 **노드**이고, 노드는 정책이 뭘 하는지 들여다볼 필요조차 없다(위
+   단순화). **[2026-08-25 정정]** 다만 집합을 **버리고/읽는** 것은 정책이
+   해야 하는 일이었고 통로가 없었다 — 그래서 위 2번의
+   `emit(commit: boolean?) -> boolean`이 생겼다. 인자 **목록**은 그대로다.
    정책은 소스를 몰라도 되고, `Throttle`처럼 나중에 타이머에서 `emit()`을
    부르는 경우도 그대로 동작한다 — 그때 쌓여 있던 집합이 그대로 나간다.
+
+### ⭐⭐ `GateNode` 조립 — 필드 목록과 `:_receive`/`:_flush` (2026-08-25 신설)
+
+**새 결정이 아니라 조립이다.** 판정 규칙은 `base/state-epoch-plan.md` §4,
+흡수 집합은 위 4번, `emit` 시그니처는 위 2번 — 지금까지 **세 문서에 나뉘어
+있어 한 곳에서 순서를 볼 수 없었다.** 구현자가 조립을 잘못할 여지를
+없애려고 여기 모은다.
+
+```lua
+-- 필드 (ComputeNode와 같은 층위)
+GateNode = {
+    _hold          = { <상류 State/Source> },   -- 하류 → 상류 강참조(`source-state-plan.md`)
+    _subs          = <weak-키 구독자 집합>,      -- 원소는 Observer 값 / 자식 State
+    valueEpochMap  = EpochMap(),                -- §4 규칙: 값이 낡았는가
+    emitEpochMap   = EpochMap(),                -- ⚠️ 수신 때가 아니라 **flush 때** 갱신
+    _withheld      = newWeakK(),                -- 흡수 집합 { [Epoch] = true }
+    onUpstreamEmit = <정책이 돌려준 클로저>,     -- setup(emit)의 반환값
+}
+
+function GateNode:_receive(from)
+    -- (1) 판정은 §4 규칙 1~3을 **그대로** 돈다. 단 emit 쪽은 `Peek`이다 —
+    --     `Update`는 덮으므로 "유보 중엔 아직 안 던졌다"는 맵의 뜻이 깨진다.
+    local valueChanged = self.valueEpochMap:Update(from)
+    local emitChanged  = self.emitEpochMap:Peek(from)
+    if valueChanged then self:_invalidate() end          -- 캐시 카운터 갱신
+    if not (valueChanged or emitChanged) then return end -- 규칙 3: 삼킨다
+                                                         -- (정책도 안 돌고 집합에도 안 넣는다)
+
+    -- (2) 통과한 것만 흡수 집합에 합친다. `from`이 집합이면 unfold해서 합친다
+    --     — 게이트-게이트 중첩에서 중복이 저절로 접힌다(집합이라서).
+    if isEpochSet(from) then
+        for epoch in from do self._withheld[epoch] = true end
+    else
+        self._withheld[from] = true
+    end
+
+    -- (3) 정책에 넘긴다. 정책은 손에 `emit` 하나만 쥐고 있고,
+    --     그걸로 flush(`emit()`)도 버리기(`emit(false)`)도 조회(반환값)도 한다.
+    self.onUpstreamEmit()
+end
+
+function GateNode:_flush(commit: boolean?): boolean   -- 이게 정책이 받는 `emit`
+    if next(self._withheld) == nil then return false end  -- (1) 빈 배치면 아무것도 안 함
+    local batch = self._withheld
+    self._withheld = newWeakK()                           -- (2) 새 테이블. clear가 아니다
+    if commit == false then return true end               -- 버리기 — 전파도 Sync도 안 함
+    self.emitEpochMap:Sync(batch)                         -- (3) 전파 **앞**에서 한꺼번에
+    self:_emitDown(batch)                                 -- (4) 떼어낸 batch가 페이로드
+    return true
+end
+```
+
+- **반환값이 곧 위 2번의 `emit(commit) -> boolean`**이다 — "실제로 내보내거나
+  버릴 게 있었는가"(`H-55`/`H-86`).
+- **`valueEpochMap`도 있다는 걸 여기서 명시한다** — 지금까지 *"규칙 1~3을
+  그대로 돈다"*는 문장에서 추론해야 했다.
+- **`_emitDown`은 State와 같은 것**이다(`base/source-state-plan.md`의
+  "전파 루프 — 확정 의사코드" 절) — 게이트가 전파 루프를 따로 갖지 않는다.
 
 5. **생명주기.** 게이트 노드가 잡는 자원(타이머/플래그)이 언제 죽는가 —
    지금 설계대로면 다운스트림이 다 죽으면 GC(팩토리는 weak 추적,

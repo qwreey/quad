@@ -17,14 +17,21 @@ M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 
 교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"
 절, 새 구성은 `ROADMAP.md`의 M2 배너). **2026-08-24 이전에 쓰인
 `session/`·`archive/`·`qa-request/`의 `M2`/`M3`는 옛 의미**(M2=디스패치,
-M3=반응형)다. 그 교체의 부작용으로 **M2 착수 전에 답이 필요한 항목이
-`question.md` 최우선 절로 올라왔다**(무엇이 몇 개인지는 그 절이 소스 —
-여기서 세지 않는다. 설계 게이트가 아니라 실측·표면 선택이라, 설계 게이트가
-없다는 아래와 `todos.md`의 서술과 모순되지 않음). 저장소 루트에
+M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 절에 항목
+둘이 올라와 있었으나, **⭐ [2026-08-25] 둘 다 닫혀 그 절은 지금 비어 있다**
+(중간 State GC는 `_hold` 불변식으로, `store:GetDynamic` 위치는 콜론 유지 +
+`CheckReserved` 타입 함수로 — 7라운드 손 트레이싱 후속, 결정 전량의 소스는
+`qa-request/pre-implementation-handtrace-round7-followup.md`). **M2 착수를
+막는 항목은 설계든 실측이든 없다.** 저장소 루트에
 `quad-base/src/`(`New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`)/
 `quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
 아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
-소스. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
+소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —
+`luau` CLI가 **심볼릭 링크를 못 타는데**(디렉토리·파일 둘 다) pesde의
+워크스페이스 링크가 전부 심볼릭이라, 그냥 `luau`로 돌리면 스모크 2개가
+죽고 `luau-analyze`는 **조용히 통과**한다(모듈을 `any`로 떨어뜨림 —
+"거짓 클린"). 그 스크립트가 `scripts/relink.sh`를 먼저 돌려 심볼릭을 실제
+복사로 바꾼다. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
 디스패치 모델, Store/State/Source 온톨로지, 소스 트리 구조, Modifier 메커니즘,
 컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에
 문서로 확정돼 있음 — 먼저 `.claude/base/architecture.md`를 읽을 것. 사용자가

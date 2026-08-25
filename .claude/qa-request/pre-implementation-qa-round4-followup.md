@@ -658,7 +658,7 @@ function Dispatch.process(inst, k, v, index)   -- ← 오케스트레이터
 |---|---|
 | `ML-5` | 사용자가 회신에서 직접 짚음(*"새로운 커밋에서 이것이 달라짐"*). 파일마다 `Relate()`+`INITED` 센티널을 두는 설계가 **`RunInit` 하나로 통합**됐다 — **함수 자기 자신을 릴레이션 키로** 쓰므로 센티널이 불필요. `quad-base/src/init.luau`에 실제 구현 + `test/smoke.init.luau`로 검증까지 끝. **문항 `ML-5`는 폐기.** |
 | `ML-8` | 위 변경에 맞춰 `RunInit`(함수 identity) vs `_initializedBy`(문자열 마커) 구분으로 재서술됨. **결론은 그대로**(둘은 다른 층위, 재사용 안 함)이라 문항 자체는 여전히 유효. |
-| `ST-3` | "M0에서 실측 확인할 것"이 **실측 완료**됨 — `luau-test/done/21-type-store-undeclared-key-rejected.luau`가 미선언 키 접근 2건이 정확히 `TypeError`로 거부됨을 확인. **⚠️ 열린 항목이 아니게 됨.** |
+| `ST-3` | "M0에서 실측 확인할 것"이 **실측 완료**됨 — `luau-test/rewrite-required/21-type-store-undeclared-key-rejected.luau`가 미선언 키 접근 2건이 정확히 `TypeError`로 거부됨을 확인. **⚠️ 열린 항목이 아니게 됨.** |
 | `D-10` | 위 B-2 — 스파이크 `01`이 이미 통과. |
 | `A-2` | 패키징이 **wally → pesde**로 바뀌었고 `mise`/`selene`가 도입됨. 문항의 "wally 패키지" 표현이 stale(모놀리식 모노레포라는 **결론 자체는 유지**). |
 | 전반 | `M0`/`M1`이 **완료**됐다 — 문항지 여기저기의 "M0 착수 전/M0에서 확인" 표현은 이제 "M2 착수 전"으로 읽어야 맞는 것들이 섞여 있다. |

@@ -833,14 +833,35 @@ function clearTimeout(timeout: Timeout) timeout._native() end
 >
 > - `gate:passThrough()` → **`b:Off()`**(보류분 1회 방출), 그 뒤 다시 `b:On()`.
 > - `Trailing = false` 경로 → **`b:OffWithoutEmit()`**.
-> - **`pending`은 없앤다** — "보류된 게 있는가"는 Blocker의 `HasBlockedEmit`이
+> - **`pending`은 없앤다** — "보류된 게 있는가"는 게이트 노드의 흡수 집합이
 >   이미 들고 있다(중복 상태를 안 만든다). 이게 `H-32`를 구조적으로 없앤다.
+>   - **⭐⭐ [2026-08-25 정정, 7라운드 `H-86`] 읽는 통로는 `HasBlockedEmit`이
+>     아니라 `emit`의 반환값이다.** 여기 한때 *"Blocker의 `HasBlockedEmit`이
+>     이미 들고 있다"*고 적었는데, `base/blocker-plan.md`가 그 값을 **게이트
+>     노드의 `withheld`로** 흡수해 `Blocker` 객체 쪽엔 실체가 없다 — 정책이
+>     읽을 방법이 **0개**였다. 그대로 짜면 창을 닫을 조건을 못 읽어
+>     **창이 영원히 열린 채**가 되고, `Throttle`의 정의(*"첫 신호는 즉시
+>     통과"*)가 사라져 사실상 "항상 trailing"이 되며 타이머 체인이 자기를
+>     무한 재무장해 아래 8절의 "유계 GC" 분석도 깨진다(실측 대조 확인).
+>   - **확정된 통로**: `setup`이 받는 `emit`이
+>     `emit(commit: boolean?) -> boolean`이 되어, 반환값이 **"실제로
+>     내보내거나 버릴 게 있었는가"**를 준다(`base/gate-plan.md` 2번).
+>     `onWindowEnd`는 `if not emit() then window = nil else rearm() end`,
+>     `MaxTime` 재무장 조건도 같은 반환값으로 판정한다.
+>   - **버리는 경로도 같은 핸들이다** — `Trailing = false`/`Cancel`은
+>     `b:OffWithoutEmit()`만으로는 집합이 안 비므로 `emit(false)`가 필요하다
+>     (`H-55`).
 > - `Flush`/`Cancel` 핸들은 `setup` 클로저 안에서 `b`를 캡처해 만든다 —
 >   노드 객체 참조가 필요 없다(`Blocker`가 onunblock 핸들을 등록하는 방식과
 >   같은 우회).
 >
 > 아래 코드는 **창/타이머 정책 자체의 참고용**으로만 읽을 것 —
 > `openWindow`/`onWindowEnd`/`MaxTime`의 분기 구조는 그대로 유효하다.
+> **[2026-08-25 추가, 7라운드 `H-94`] 팩토리를 `setmetatable`+`__call`로
+> 만드는 표기도 이 배너 범위에 들어간다** — `__call` 테이블은 `:Apply`의
+> 함수 타입 자리에 **안 들어간다**(실측). 확정된 형태는 **지정된 필드**로
+> 자기를 노출하는 것이다(`base/source-state-plan.md`의
+> "`state:Apply(factory)`" 절).
 
 **⭐ [2026-08-24 `H-32`] 같이 고쳐야 할 논리 결함 하나 — `Trailing = false`에서
 `pending`이 영구히 참으로 남는다.** 아래 코드는 창이 열려 있는 동안 오는 신호를
@@ -887,8 +908,20 @@ local function makeGate(reset: boolean, opts)
         for gate in instances do gate._cancel() end
     end
 
-    -- 팩토리 자체 — :Apply(factory)가 호출할 수 있는 함수이면서, 동시에
-    -- 전체 브로드캐스트 :Flush()/:Cancel()도 갖는 콜러블 객체(5-4절)
+    -- 팩토리 자체 — :Apply(factory)가 쓸 수 있으면서, 동시에
+    -- 전체 브로드캐스트 :Flush()/:Cancel()도 갖는 객체(5-4절)
+    --
+    -- ⛔⛔ [2026-08-25 폐기, 7라운드 `H-94`] **`__call`은 안 쓴다.**
+    --   `luau-analyze` 실측에서 `__call` 테이블은 `(State<T>) -> U` 함수 타입
+    --   자리에 **안 들어간다**(제네릭·비제네릭 양쪽) — 런타임은 멀쩡하고
+    --   타입만 막히므로 `--!nocheck` 스파이크에선 안 드러난다. 타입 레벨
+    --   `__call`은 `self`도 못 받는다. **확정된 형태는 `__call`이 아니라
+    --   지정된 필드**로 자기를 노출하는 것이고, `Debounce`/`Throttle`/
+    --   `Blocker`가 전부 같은 계약을 만족한다 —
+    --   `base/source-state-plan.md`의 "`state:Apply(factory)`" 절이 소스
+    --   (필드 이름과 정확한 시그니처는 구현 시 정한다).
+    --   아래 `__call` 표기는 **창/타이머 정책 본문을 읽기 위한 자리표시자**로만
+    --   볼 것 — 위 7절 배너와 같은 취급이다.
     local factory = setmetatable({}, {
         __call = function(_, self)
             local gate    = Gate(self)  -- Blocker가 쓰는 것과 같은 게이트 노드

@@ -8,9 +8,10 @@ M2(반응형 코어 — Source/State/Store)**. **⚠️ [2026-08-24] M2와 M3의
 **2026-08-24 이전에 쓰인 `session/`·`archive/`·`qa-request/` 문서의
 `M2`/`M3`는 옛 의미로 읽을 것**(라이브 문서는 전부 새 번호로 맞춰뒀음).
 경위는 `.claude/archive/question-resolved.md`의 "마일스톤 경계" 절,
-새 구성은 `ROADMAP.md`의 M2 배너. **⚠️ M2 착수 전에 답이 필요한 항목이
-남아 있다** — 무엇이 몇 개인지는 여기서 세지 말고 `.claude/question.md`의
-최우선 절을 볼 것. 같은 상태를 `.claude/project-context.md`도
+새 구성은 `ROADMAP.md`의 M2 배너. **⭐ [2026-08-25] M2 착수를 막는 항목은
+없다** — `.claude/question.md`의 최우선 절이 **비었다**(7라운드 손 트레이싱
+후속에서 중간 State GC와 `store:GetDynamic` 위치가 같이 닫혔다, 결정 전량의
+소스는 `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`). 같은 상태를 `.claude/project-context.md`도
 서술하니 마일스톤이 넘어갈 때 두 곳을 같이 고칠 것. 진행 상황의 소스는
 항상 루트 `ROADMAP.md`.
 

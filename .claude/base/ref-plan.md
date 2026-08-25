@@ -167,11 +167,41 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
       `Ref(default):Callback(fn)`이 코퍼스 전반에 쓰인다) — 해제 핸들은
       **`:Uncallback(fn)`**으로 뗀다. 셋이라 `Callbacks[fn] = nil` 한 줄이고,
       중복 등록이 dedup되므로(위) "몇 번 떼야 하나"가 없다.
-    - `EffectHandle`은 자기가 건 콜백을 들고 있다가 `unbindLifetime`과
-      `:Unsubscribe()`에서 `:Uncallback`한다 — State/Source dep의
-      `_observers`와 대칭(`base/effect-plan.md`).
+    - **⛔ [2026-08-25 폐기, 7라운드 `H-58`] 여기 원래 *"`EffectHandle`은
+      자기가 건 콜백을 들고 있다가 `unbindLifetime`과 `:Unsubscribe()`에서
+      `:Uncallback`한다"*고 적혀 있었다.** 아래 `:WeakCallback` 항목이 그걸
+      **대체한다** — `Effect`는 생성자에서 `ref:WeakCallback(cb)`로 한 번만
+      걸고 강한 주인을 `_deps`에 두며, 바인드/언바인드는 `Ref`를 아예 안
+      건드린다(떼었다 붙이는 그 춤이 `H-58`의 "바인드마다 `Rerun`"을 만들던
+      원인이다). `:Uncallback`은 **사용자가 직접 건 콜백을 떼는** 공개
+      표면으로 남는다. `base/effect-plan.md`의 "확정 구조" 절이 소스.
     - **`:Wait()`의 대기자는 이 표면의 대상이 아니다** — 발화 시 소진되므로
       뗄 일이 없다.
+    - **⭐⭐ [2026-08-25 신설, 7라운드 `H-58`/`H-59`] `:WeakCallback(fn)` —
+      약하게 등록하는 짝.** `Weak` 쪽이 **프리미티브**이고 평범한
+      `:Callback(fn)`은 그 위에 "GC 안 되도록 킵" 하나를 더 얹은 것이다.
+      **사용자 확정**: *"동작 자체는 Weak 아닌것과 동일하게 가고, 가드도
+      동일하나 단순히 gc 안 되도록 킵 해주는 부분만 제거된 함수가 됩니다.
+      따라서 내부적으론 Weak 를 구현해 두고, Weak 아닌 곳에서 Weak 를
+      수행하고 gc 처리만 두면 돼요."*
+      - **자료구조**: 약한 등록은 **weak-키 테이블**(`__mode = "k"`)에
+        들어간다 — `.Callbacks`(강함)와 별도 테이블이다. Lua의 weak 모드는
+        테이블 단위라 항목별로 섞을 수 없다. 발화 순회는 두 테이블을 다
+        훑고(각각 스냅샷), `:Uncallback(fn)`은 양쪽을 다 본다.
+      - **왜 필요한가**: `Effect`가 자기 dep `Ref`에 콜백을 걸면
+        `.Callbacks`가 강한 셋이라 **`Ref`가 그 `Effect`를 영원히 붙든다**.
+        그렇다고 바인드/언바인드마다 떼었다 붙이면 *"등록 즉시 1회 호출"*에
+        걸려 **바인드마다 `Rerun`이 돈다**(`H-58`). `:WeakCallback`으로 걸고
+        **강한 주인을 `Effect._deps`에 두면** 둘 다 사라진다 —
+        `Effect ↔ cb` 순환이 자기완결이라 Luau GC가 통째로 수거하고
+        `Ref` 쪽 항목도 같이 없어진다(`base/effect-plan.md`의
+        "확정 구조 — 강한 주인은 항상 `Effect`" 절).
+      - **`WeakRef`(1-슬롯 약참조 박스)는 만들지 않는다** — 그건 "`Ref`가
+        `Effect`를 붙든다"만 풀고 "죽은 클로저가 `.Callbacks`에 쌓인다"는
+        못 푼다(사용자 지적). 아이디어만 기록:
+        `WeakRef:Set(v)`/`:Get()`만 주고(`.Value`가 아닌 이유는 내부 값이
+        항상 있다고 확정된 상태가 아니라서), 내부는
+        `setmetatable({}, {__mode = "v"})`의 1-슬롯.
   - **`:Wait(thread?)`의 `thread` 인자(2026-08-07 여섯 번째 세션, 사용자
     제안, 확정)**: 생략(`nil`)하면 `coroutine.running()`으로 호출 중인
     코루틴 자신을 캡처해 대기자로 등록하고 그 자리에서 `coroutine.yield()`로
@@ -325,6 +355,41 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
   담기는 용도/leaf에 바인딩하는 용도 둘 다에 여전히 맞아 더 나은 대안이
   없다는 결론, 용어 정리 대상에서 제외됨.
 
+### ⭐⭐ `Ref`는 `Epoch`를 만족한다 — `.Revision` 신설 (2026-08-25 확정, 7라운드 `H-58`/`H-64`/`H-70`)
+
+**사용자 제안**: *"혹은 Ref 까지도 Epoch 를 구현해줘도 좋다는 생각.
+'바뀌였나?' 보는건 source 에 대한 계약이라, 똑같이 실제 값을 가지는 Ref 도
+이를 구현해주는데 문제가 없음."*
+
+`base/state-epoch-plan.md` §2가 **이미 예상해둔 확장**이다 — 그 절이
+`Epoch`를 `Source`가 아니라 최소 인터페이스로 일반화한 실익으로 든 게
+*"`Source`가 아닌 원천(외부 시계 등)이 특수 분기 없이 낀다 … 그건
+`EpochBrand:register(self)` 한 줄로 끝난다"*였다.
+
+- **`Ref<T>`에 공개 필드 `Revision: number`가 생긴다.** `:Set()`이
+  `Source`와 **같은 한 줄**로 갱신한다 — `self.Revision = bit32.bnot(-self.Revision)`
+  (그 문서 §2의 랩어라운드 감소). 공개여야 구조적 만족이 타입 레벨에서
+  성립한다.
+- **`EpochBrand:register(self)`** — `Source`가 `SourceBrand`이면서 동시에
+  `EpochBrand`인 것과 같은 다중 태깅(`base/brand-plan.md`).
+- **`.Callbacks`(푸시 경로)는 그대로다** — `Epoch`는 **부기**일 뿐,
+  전파 메커니즘을 대체하지 않는다.
+- **무엇이 닫히나**:
+  - `Effect._epochs`(`EpochMap`)가 `Ref` dep을 **`Source`와 같은 방식으로**
+    담는다(**⚠️ [2026-08-25 정정]** 한때 "State/Source/`Ref`를 균일하게"라
+    적었는데 **`State`는 `Epoch`가 아니다** — 등록이 `isEpoch`로 갈려
+    `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`, `base/state-epoch-plan.md`
+    §4·§8. 균일해지는 건 **판정 쪽**이다).
+    그래서 포탈 재마운트의 캐치업이 dep 종류에 따라 갈리던 것(`H-64`)이
+    **대칭**이 되고, 판정이 `if self._epochs:Refresh() then self:Rerun() end`
+    한 줄이 된다.
+  - 같은 `Ref`를 deps에 두 번 넣어도 `EpochMap`이 키로 dedup하므로
+    **공짜로** 처리된다(`H-70`) — 옛 `_refCallbacks[ref] = cb` 덮어쓰기로
+    먼저 건 클로저가 `.Callbacks`에 남던 버그도 같이 사라진다.
+  - `Ref` dep 전용 스냅샷 배열 같은 별도 부기가 필요 없어진다.
+- **`Ref`는 여전히 `State`가 아니다** — emit(전파)이 없고 `Get`/`Compute`도
+  없다. `Epoch`를 만족한다는 건 "직전과 구별되는 표식을 들고 있다"뿐이다.
+
 ### `Ref`의 retract — `State<Ref>` 재바인드 시 이전 Ref에 `nil` (2026-08-12 여덟 번째 세션, `TagHandler`와 같은 메커니즘 재사용)
 
 > **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
@@ -380,13 +445,18 @@ function RefLeafHandler.process(inst, k, v, index)
     Dispatch.setOffsetSource(inst, k, None)
     Dispatch.setLength(inst, k, 0, inst)
 
-    local old = relate:GetStrong(inst, k)
+    local old = relate:GetWeak(inst, k)   -- ⭐ [2026-08-25 `H-71`] 쓰기가 SetWeak이므로 읽기도 Weak
+                                          --   (안 맞추면 old가 항상 nil이라 dedup이 통째로 죽는다)
     if old ~= v then  -- 이미 같은 Ref가 이 자리를 차지 중이면 재통지 skip
         bindLifetime(inst, v)  -- v가 이미 다른 자리에 살아있으면 여기서 즉시 error —
                                 -- 이중 배치 방지("이중 배치 방지" 절 참고), 별도 Relate 불필요
         v:Set(inst)
     end
-    relate:SetStrong(inst, k, v)
+    -- ⭐ [2026-08-25, 7라운드 `H-71`] `SetStrong` 아님 — `v:Set(inst)`로 값이
+    -- 자기 바깥 키를 되참조하므로 `SetStrong`이면 **100% 샌다**(실측 50/50).
+    -- dedup은 순수 성능 최적화라 weak로 낮춰도 최대 손해가 "한 번 놓침"이고,
+    -- `v`는 gchold가 이미 강하게 잡는다(`base/relate-plan.md`의 슬롯 표).
+    relate:SetWeak(inst, k, v)
     return function(nextValue)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
         -- 이 process 호출이 만든 클로저가 직접 캡처(Relate 재조회 불필요)
@@ -399,7 +469,7 @@ function RefLeafHandler.process(inst, k, v, index)
             -- 지워져, 곧바로 이어지는 process가 `old ~= v`를 항상 참으로 보고
             -- `v:Set(inst)`를 재실행함(콜백 헛 재통지). 즉 아래 dedup 항목이
             -- 약속한 "spurious면 둘 다 스킵"이 성립을 안 했음.
-            if relate:GetStrong(inst, k) == v then relate:SetStrong(inst, k, nil) end
+            if relate:GetWeak(inst, k) == v then relate:SetWeak(inst, k, nil) end
         end
     end
 end
@@ -411,7 +481,7 @@ end
   불리게 함.
 - **children 배열 리터럴 `Ref`도 같은 코드 경로를 그대로 씀** — 그 경우
   이전 클로저가 (StoreBind 경로가 아니라 이 리터럴 구성 자체가 처음이므로)
-  아예 없고 `relate:GetStrong(inst,k)`도 `nil`이라 `process`가 바로
+  아예 없고 `relate:GetWeak(inst,k)`도 `nil`이라 `process`가 바로
   `v:Set(inst)`로 끝남. "1회성 리터럴 구성"과 "반복 재바인드"가 하나의
   구현으로 자연히 커버됨, 케이스 분기 불필요.
 - **타입: 비-nilable `T`도 정당한 용도(사용자 확인, 2026-08-12 여덟 번째

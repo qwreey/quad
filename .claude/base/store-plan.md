@@ -9,8 +9,13 @@
 > **`base/source-state-plan.md`**.
 
 **상태**: base — Store가 부작용을 허용한다는 핵심 결정, "이름 붙은 Source
-모음"이라는 정의, eager+lazy 생성, `store.key` dot-access 타이핑, `:Set()`
-문법 전환까지 전부 확정. 원본: `.claude/initreq/raw-userinput.md`
+모음"이라는 정의, `store.key` dot-access 타이핑까지 전부 확정.
+**⭐ [2026-08-25] 두 가지가 바뀌었다** — (1) 생성이 **명시적 초기화**로
+확정되고 옛 lazy `__index`가 폐기됐다, (2) 타입은 **타입 함수를 안 쓰고**
+평범한 레코드로 짓는다(`WrapStore`/`ProcessStoreType` 폐기). 같은 날
+"`store.key`를 값으로" 재설계를 넣었다가 철회한 경위는
+`archive/store-value-field-redesign-withdrawn.md`. 원본:
+`.claude/initreq/raw-userinput.md`
 "store는 부작용을 허용함" / "스토어는 스토어를 저장 가능한가" 절.
 
 ## Store는 부작용을 허용하는 게 기본 디자인
@@ -39,53 +44,74 @@ purity-and-effects-plan.md`와 연결됨).
 어떻게 되는가"는 별도 메커니즘 없이 `canExecute` 재사용으로 해결됨 —
 `base/source-state-plan.md`의 "Slot 생존 확인" 절이 소스.
 
-## Store = Source들의 이름 붙은 모음 (eager + lazy 생성)
+## Store = Source들의 이름 붙은 모음 (명시적 초기화)
 
-`store.a`처럼 키로 접근하면 **이미 만들어진 Source가 있으면 그대로 반환,
-없으면 그 자리에서 만들어 저장한 뒤 반환** — 더 이상 별도 State wrapper를
-매번 만들거나 따로 캐싱하지 않음(Source 자체가 이미 State를 만족하므로
-wrapper 계층 자체가 불필요해짐, `base/source-state-plan.md`의 "Source가
-State를 만족함" 절).
+> **⭐⭐ [2026-08-25] 같은 날 두 번 바뀌었다 — 최종은 이 절이다.**
+> 오전에 "`store.key`가 값이고 `store:Of(k)`가 프리미티브"라는 재설계를
+> 넣었다가 **같은 날 철회**했다. 철회된 시도의 원문과 이유는
+> `archive/store-value-field-redesign-withdrawn.md`. 그 시도가 남긴 것은
+> **명시적 초기화**(eager/lazy 이중 모델 폐기) 하나이고, 나머지(값 필드,
+> `__index`/`__newindex` 슈가, 팬텀 필드, `index<>`/`keyof<>`)는 전부
+> 되돌렸다.
 
-- **`defaults`는 선택**(안 줘도 됨, 순수 편의용 초기값 템플릿) —
-  `Store({defaults})`가 내부적으로 `{[key] = Source(default), ...}`나
-  다름없게 됨.
-- **[정정, 2026-08-07] "Store 생성 시 전부 eager하게만 만들어진다"는 이전
-  서술은 부정확 — eager와 lazy가 둘 다 필요하다.** Luau 타입은 런타임에
-  강제되지 않으므로 `Store<<SomeType>>()`처럼 `defaults` 없이 만든 뒤
-  `.Key:Set(v)`를 부르는 경우, `__index`가 "없으면 그 자리에서 만들어
-  저장"까지 해주지 않으면 `.Key`가 `nil`이라 크래시남. 그래서 **Store
-  생성 시점의 eager 생성**(각 `defaults` 키마다 미리 만들어둠)과
-  **`store.key` 접근 시점의 lazy 생성**(아직 없는 키를 그 자리에서 만들어
-  저장, 이후 재접근은 재생성 없이 그대로 반환)이 **둘 다** 필요함.
-- **[2026-08-18 구현 전 QA, 2026-08-19 M0 실측으로 해소] lazy 생성이
-  오타/동적 키로 Source를 무한정 누적하는 트레이드오프는 그대로 수용하고,
-  방어선은 런타임이 아니라 타입에 둔다.** 사용자 판정: *"Store<{ field:
-  type }> 상 없는 네임에는 타입 시간에 Source 가 없는것으로 나와 타입
-  에러만 나면 됩니다. 아마 지금 설계가 그럴것이예요"* — 즉
-  `Store<{field: T}>`로 선언된 Store에 없는 이름을 쓰면 `type function`이
-  합성한 결과 타입에 그 프로퍼티가 없어 **타입 에러**가 나야 한다.
-  **[2026-08-19 실측 완료]** 맞았음 —
-  `luau-test/done/21-type-store-undeclared-key-rejected.luau`가
-  `ProcessStoreType`(`16`과 동일 type function)의 결과 타입에 미선언 키로
-  접근하면 정확히 `TypeError` 2건(읽기·메소드 체이닝)이 나고, 선언된 키
-  3개는 클린임을 확인. 런타임에 굳이 이름을 받아야 하는 경우는
-  `:GetDynamic`(아래 "타입 추론 문제" 절)이 정식 창구.
-- **`defaults` 테이블 원본을 나중에 mutate해도 UB가 아님** — 라이브 백킹
-  스토리지가 아니라 "아직 안 만들어진 Source를 만들 때 참고하는 초기값
-  템플릿"으로만 반복 참조되기 때문(`bind-system-plan.md`에 남아있던
-  "defaults 테이블 직접 mutate는 UB"라는 옛 서술은 2026-08-07에 정정됨).
-  별도 `__values`류 그림자 실값 저장소도 불필요 — Source 객체 자체가
-  저장소 역할을 함.
-- **구현 스케치(2026-08-07, 성능 근거): eager 생성은 `table.clone(defaults)`
-  후 그 결과를 순회하며 각 슬롯을 `Source(v)`로 교체하는 모양이어야 함**
-  (`local sources = table.clone(defaults); for k, v in sources do
-  sources[k] = Source(v) end` 류) — 빈 테이블을 새로 만들어 키를 하나씩
-  넣는 것보다, `table.clone`으로 원본의 해시/배열 슬롯 구조를 그대로
-  재사용하는 쪽이 Luau VM 입장에서 더 쌈(직접 해시 슬롯을 처음부터
-  구성하는 것보다 기존 슬롯을 복제하는 게 저렴). `Source()`(인자 없이
-  호출)는 `Source(nil)`과 동치 — `defaults`에 값이 없는 키를 `store.key`
-  접근 시점에 lazy 생성할 때 이 무인자 형태를 씀.
+**Store의 타입 인자에는 `Source<T>`를 직접 쓰고, `defaults`에도 `Source(v)`를
+직접 넣는다.**
+
+```lua
+local store = quad.Store<<{
+    hp:   Source<number>,
+    name: Source<string>,
+}>>({
+    hp   = Source(100),
+    name = Source(""),
+})
+
+store.hp:Get()                 -- 평범한 레코드 필드 접근 → Source<number>
+store.hp:Set(5)
+store.hp:Compute(function(s) ... end)
+```
+
+- **`store.key`는 평범한 레코드 필드다** — `Store<T>`가 `T`(그 자체로
+  `{hp: Source<number>, ...}`)를 그대로 포함하므로 **타입 함수가 하나도
+  안 든다.** 마법이 없고, 읽기/쓰기 의미론이 `Source`의 기존 계약
+  (`:Get()`/`:Set()`) 그대로다.
+- **⭐ 명시적 초기화가 기본** — 선언한 키는 생성 시 `Source`를 준다.
+  `defaults`에 없는 키는 **필드 자체가 없어** 타입에서 걸리고, 런타임에도
+  `nil` 역참조로 즉시 드러난다. 옛 lazy `__index`(없는 키를 그 자리에서
+  만들어 저장)는 **폐기**됐다 — **사용자 근거**: *"lazy 로 만들어낸다는
+  발상 자체가 약간 문제가 있어요. Set 을 안 해주면, 초기 값이 타입에
+  어긋날 수 있거든요. 애초에, `Source<number>` 인데, nil을 조용히 가지고
+  있을수도 있고, 타입으로 못 막네요."*
+  - **부수 효과**: 선언 키 집합의 **런타임 소스가 `defaults` 하나**로
+    확정된다. 그래서 `store:Names()`가 `pairs`로 성립한다 — 옛 lazy
+    모델에선 키 집합이 접근 이력에 좌우돼 0개/1개/2개로 갈렸다
+    (7라운드 `H-79`).
+- **부모가 값을 다 안 넘겨도 되게 하려면 컴포넌트가 자기 `DEFAULTS`로
+  채운다** — 타입에 `?`를 다는 게 아니라 **호출 규약**으로 표현한다
+  (**사용자 아이디어**: *"기본 값인 소스는 한 곳에 `Defaults = {}` 해두고
+  쓰는거죠"*). 그래야 생성자가 항상 완전한 테이블을 받는다.
+- **외부에서 만든 `Source`를 나중에 끼워 넣는 표면은 없다** — 생성 시점에
+  넣는 게 전부다(**사용자 판단**: *"다른곳에서 생성된 Source 를 다시
+  넣는다는게, 가능하게 해야할 표면적 이유가 없습니다"*).
+- **값이 없는 상태가 필요하면 `None`이 이미 그 자리다** — attribute를
+  실제로 지우는 것도 `Source<None> → None → nil`로 핸들러 계열을 타고
+  말단에서 set nil 된다. Store 키를 nilable로 만들 이유가 아니다.
+- **구현 스케치**: 생성 시 `table.clone(defaults or {})`로 그림자 테이블을
+  만든다(`table.clone`이 원본의 해시/배열 슬롯 구조를 재사용해 빈 테이블에
+  키를 하나씩 넣는 것보다 쌈 — 2026-08-07 성능 근거 그대로). 값이 이미
+  `Source`이므로 **슬롯 교체 순회가 없다**. **`or {}`가 필수다** — 무인자
+  `Store<<{}>>()`도 유효한데 `table.clone(nil)`은
+  `table expected, got nil`로 죽는다(**[2026-08-25]** 7라운드 `H-83` 실측).
+- **`store:Names()`** — 그 시점의 키 집합을 준다(그림자 테이블의 키). 그룹
+  `Attribute(...)`/`attr:NameMap()`이 이걸 요구한다
+  (`base/attribute-plan.md`, 7라운드 `H-79`).
+  **⚠️ "선언된 키"와 정확히 같지는 않다** — `defaults`의 키에 **동적 키
+  창구 `store:Of(name)`이 만든 것**이 더해진다(아래 "타입 추론 문제" 절).
+  둘의 차이는 `Of`를 쓴 Store에서만 생기고, `Of`는 "타입 보장을 포기했다"가
+  호출부에 드러나는 명시적 자리다. **그룹 `Attribute`에 미치는 영향**:
+  이미 배치된 `Attribute(store)` 바인딩은 그 시점의 `NameMap()` 스냅샷으로
+  구성되므로, 나중에 `Of`로 늘어난 키는 **다음 재디스패치 때** 반영된다
+  (`base/attribute-plan.md`의 그룹 절).
 
 v1이 모든 값을 Store 하나에 몰아넣던 습관은 "당시 정적 타입이 없어 단순하게
 쓰는 게 편해서"였다는 게 사용자의 회고적 재평가 — 지금은 타입이 핵심
@@ -95,38 +121,36 @@ Store는 "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐
 `Source(default)`를 쓸 것(`base/source-state-plan.md`의 "Source는 독립
 공개 프리미티브로 격상" 절).
 
-## Store 값 설정 문법 — `myStore.key = value` 폐기, `source:Set(value)`로 전환 (2026-08-06 후속 세션, 정정)
+## Store 값 설정 문법 — `myStore.key = value` 폐기, `store.key:Set(value)` (2026-08-06 후속 세션, 확정 유지)
 
-**이전 버전("v1 인체공학 유지, `__newindex` 기반 `myStore.key = value`
-그대로")은 폐기됨.** `base/source-state-plan.md`의 "Source가 State를
-만족함" 절 타입 설계와 맞물려 재검토된 결과:
+> **[2026-08-25] 이 결정은 유지된다.** 같은 날 오전에 한 번 뒤집었다가
+> (`store.key`를 값으로 만들면서 대입이 되살아났었다) **같은 날 철회**했다 —
+> `archive/store-value-field-redesign-withdrawn.md`. `store.key`가 다시
+> `Source<T>`이므로 아래 근거 셋이 전부 그대로 성립한다.
 
-1. **타입 대칭성**: `store.key`가 이제 `Source<T>`를 직접 반환하는
-   평범한 레코드 필드(`{key: Source<number>}`)로 타이핑되는데, 레코드
-   필드는 읽기/쓰기 타입이 같아야 Luau 구조적 타이핑이 깨끗하게 성립함.
+**`store.key = value`는 안 쓴다.** 값을 쓰는 경로는 `store.key:Set(value)`다.
+
+1. **타입 대칭성**: `store.key`가 `Source<T>`를 직접 반환하는 평범한 레코드
+   필드(`{key: Source<number>}`)로 타이핑되는데, 레코드 필드는 읽기/쓰기
+   타입이 같아야 Luau 구조적 타이핑이 깨끗하게 성립한다.
    `store.key = value`(raw `T` 대입)를 유지하면 읽기(`Source<T>`)/쓰기(`T`)
-   타입이 갈려 mismatch가 남음 — `store.key:Set(value)`로 통일하면 필드
-   타입이 항상 `Source<T>`로 대칭적이라 문제 자체가 안 생김(사용자 지적).
+   타입이 갈려 mismatch가 남는다 — `:Set(value)`로 통일하면 필드 타입이 항상
+   `Source<T>`로 대칭적이라 문제 자체가 안 생긴다(사용자 지적).
 2. **의미론적 정직성**: `=` 대입 문법은 관례상 "그 자리에서 즉시 확정되는
    부작용 없는 값 쓰기"를 암시하는데, quad의 실제 동작은 **lazy** —
    `Set`은 무효화 신호만 쏘고, 실제 재계산은 나중에 누군가 관측(`Get()`)할
-   때만 일어남("Emit으로 필요한 사람 있어? 하고 물어보고, 있어야 진짜
-   계산 시작"). 이건 `=`가 암시하는 "즉시 커밋"과 정서가 안 맞고, 메소드
-   호출(`:Set()`)이 "이건 프로세스를 트리거하는 연산"이라는 걸 더 정직하게
-   신호함(사용자 확정 논거).
-3. `:Set()`은 이미 확정된 "값을 바꾸는 연산엔 `:` 체이닝 허용" 원칙(`base/
-   architecture.md`)에도 자연스럽게 들어맞음 — 문법 자체가 새로 생기는 게
-   아니라 기존 원칙의 정상적인 적용.
+   때만 일어난다. 메소드 호출(`:Set()`)이 "이건 프로세스를 트리거하는
+   연산"이라는 걸 더 정직하게 신호한다(사용자 확정 논거).
+   **[2026-08-25 보강]** 철회된 재설계가 이 논거를 실제로 검증해줬다 —
+   `store.key = v`를 되살리자 *"`.Value = 1`이 정적 쓰기처럼 보이는데
+   거기서 error trace가 나오면 당황스럽고 약간 마법적"*(사용자)이라는
+   문제가 바로 드러났다.
+3. `:Set()`은 이미 확정된 "값을 바꾸는 연산엔 `:` 체이닝 허용" 원칙
+   (`base/architecture.md`)에도 자연스럽게 들어맞는다.
 
-**남는 것**: `:` 체이닝 원칙은 `:Set()` 자체가 그 사례라 유지.
-**[정정, 2026-08-18 구현 전 QA] `myStore "key"`(문자열 커링)는 기각됐다** —
-여기엔 "동적 키 전용 미타입 폴백으로 격하돼 그대로 유지"로 적혀 있었으나,
-사용자 판정은 폐기다: *"store "a" 식으로 문자열 호출하는것 또한 기각된
-바임. 저러면 "a" 가 string 으로 들어가서, Source<T> 의 타입을 모르기도
-하고, 우린 더이상 필요하지 않게 된 요소임."* 근거는 (a) `"a"`가 그냥
-`string`으로 들어가 `Source<T>`의 `T`를 알 수 없고, (b) dot-access +
-`type function` 타이핑이 자리잡아 더 이상 필요 없어졌다는 것. 동적 키는
-아래 `:GetDynamic` 항목으로 간다.
+**`myStore "key"`(문자열 커링)는 기각**이다(2026-08-18 사용자 판정) —
+*"저러면 "a" 가 string 으로 들어가서, Source<T> 의 타입을 모르기도 하고,
+우린 더이상 필요하지 않게 된 요소임."* 동적 키는 아래 `:Of`로 간다.
 
 `base/architecture.md`의 "복사(clone) 구현 지양, 팩토리 함수로 대체" 원칙과 함께
 읽을 것 — v1의 문제는 metatable 체이닝으로 매번 새 테이블을 할당하며
@@ -137,93 +161,119 @@ Store는 "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐
 
 - `store "key"`(문자열 커링)로 `state<T>`를 오버로드 함수 타입으로 정확히
   추론하려는 시도는 포기하고(그 문자열 커링 자체도 **[2026-08-18] 기각**,
-  위 절), **`store.key`(dot-access)를 1급 경로로 확정**
-  — Store 타입을 `{key: Source<number>, other: Source<string>}`류 평범한
-  레코드 타입으로 지으면 일반 구조적 필드 타이핑으로 자동 해결되고, 문자열
-  리터럴 narrowing 문제 자체가 안 생김([정정, 2026-08-06] 원래 `State<T>`
-  필드로 적혀있었으나 Source가 State를 만족하는 구조로 바뀌며 `Source<T>`로
-  갱신 — `store.key = value` 쓰기 문법이 `:Set()`으로 옮겨가 이 필드가
-  더 이상 `__newindex`로 쓰이지 않으므로 읽기/쓰기 타입 대칭 문제도 같이
-  해소됨, 위 "Store 값 설정 문법" 절 참고).
-  **[정정, 2026-08-18] 동적 키 경로는 문자열 커링이 아니라 명시적 메소드다** —
-  `store:GetDynamic<<T>>(name): Source<T>`. 런타임 동작 자체는 원래도
-  dot-access와 같았고(lazy `__index`가 없는 이름을 만들면 그 자리에서
-  Source를 만들어줌 — 아래 "없는 키" 항목) 문제는 **타입**뿐이었다:
-  선언되지 않은 이름은 `type function`이 합성한 레코드 타입에 없어서 타입
-  에러가 난다(그게 방어선이라는 게 사용자 확정). 그래서 "런타임에 이름이
-  정해지는" 정당한 용도를 위해 **타입을 호출자가 직접 주는 명시적 창구**를
-  둔다 — 사용자 판정: *"동적히는 여전히 그냥 Store.Name 하면 얻어는 짐.
-  타입 애러가 난다는 점인데, 이는 GetDynamic<T>(name): Source<T> 로
-  제공하는게 최선으로 보임."* 이름이 명시적이라 "여기서 타입 보장을
-  포기했다"가 호출부에 드러나는 것도 문자열 커링보다 나은 점.
-  - **⚠️ [구현 주의, 2026-08-18 감사에서 발견] 콜론 메소드는 Store의
-    lazy `__index`와 정면으로 부딪힌다.** 위 "Store = Source들의 이름 붙은
-    모음" 절이 확정한 대로 **없는 키를 인덱싱하면 그 자리에서 `Source`를
-    만들어 저장**하므로, 아무 장치 없이 `store:GetDynamic("x")`를 부르면
-    `store.GetDynamic`이 **`"GetDynamic"`이라는 이름의 새 `Source`를
-    만들어 반환**하고 그걸 함수로 호출해 런타임 에러가 난다. 따라서
-    **`__index`가 고정 메소드 테이블을 먼저 확인하고, 없을 때만 lazy
-    `Source` 생성으로 폴백**해야 하며, 그 결과 **`GetDynamic`은 Store의
-    예약 키 이름이 된다**(그 이름의 Source는 dot-access로 못 만듦).
-    `Modifier`가 `Apply`/`Peek`/`Overridden`을 같은 이유로 예약하는 것과
-    정확히 같은 구조(`base/modifier-plan.md`의 "구현 시 주의") — 다만
-    Store의 키 이름은 **사용자 도메인 데이터 이름**이라 Modifier(스타일
-    프로퍼티 이름)보다 충돌 확률이 높다는 게 차이.
-  - **대안(미결, 사용자 판단 필요)**: 예약 키를 하나도 만들고 싶지 않으면
-    **탑레벨 함수**(`getDynamic(store, name)`)로 두면 된다 — `isState`/
-    `bindLifetime`처럼 "특정 프리미티브에 안 묶인 범용 유틸은 소문자
-    탑레벨"이라는 기존 네이밍 규칙(`base/architecture.md`의 "코드 스타일 —
-    네이밍 케이싱")에도 오히려 더 맞는다. 사용자가 지정한 표기는
-    `GetDynamic<T>(name)`이므로 **일단 콜론 메소드 + 예약 키로 적어두되,
-    M2/M4 구현 전에 어느 쪽인지 확인할 것**(`question.md` 최우선 절).
+  위 절), **`store.key`(dot-access)를 1급 경로로 확정**. Store 타입을
+  `{key: Source<number>, other: Source<string>}`류 **평범한 레코드 타입**으로
+  지으면 일반 구조적 필드 타이핑으로 자동 해결되고, 문자열 리터럴 narrowing
+  문제 자체가 안 생긴다.
+- **⭐ [2026-08-25] 동적 키는 `store:Of<<T>>(name): Source<T>` 하나다** —
+  옛 이름 `GetDynamic`을 **흡수**했다(표면 둘을 유지할 이유가 없다).
+  선언되지 않은 이름은 레코드 타입에 없어서 dot-access는 타입 에러가
+  난다(그게 방어선이라는 게 사용자 확정). 그래서 "런타임에 이름이 정해지는"
+  정당한 용도를 위해 **타입을 호출자가 직접 주는 명시적 창구**를 둔다 —
+  사용자 판정:
+  *"이는 GetDynamic<T>(name): Source<T> 로 제공하는게 최선으로 보임."*
+  이름이 명시적이라 "여기서 타입 보장을 포기했다"가 호출부에 드러나는 것도
+  문자열 커링보다 나은 점.
+  - **⭐⭐ [2026-08-25 신설] `Of`는 없는 이름이면 그 자리에서 만들어 저장한다 —
+    여기가 lazy 생성이 남는 유일한 자리다.** 명시적 초기화로 dot-access 쪽
+    lazy `__index`는 폐기됐지만(위 절), **동적 키 창구는 그 위에 서 있었다**
+    (`/code-review high` 발견) — `defaults`에 없는 이름을 `Of`가 그냥
+    조회하면 `nil`을 `Source<U>` 타입으로 돌려주고 호출부가 `:Get()`에서
+    타입 에러 없이 nil 역참조한다.
+    ```lua
+    function Store:Of(name)          -- 동적 키 전용
+        local src = shadow[name]
+        if src == nil then
+            src = Source()           -- == Source(nil)
+            shadow[name] = src
+        end
+        return src
+    end
+    ```
+    - **`__index` lazy와 다른 점**: 그건 **암묵**이었고(오타가 조용히 새
+      Source를 만들었다) 이건 **명시**다 — 이름을 문자열로 넘기고 타입을
+      `<<T>>`로 직접 주는 자리라 "여기서 타입 보장을 포기했다"가 호출부에
+      드러난다. 그게 애초에 이 창구를 둔 이유다.
+    - **`store:Names()`는 그대로 성립한다** — 선언 키(`defaults`)에 `Of`가
+      만든 동적 키가 더해진 것이 그 시점의 실제 키 집합이고, `Names()`가
+      돌려주는 것도 그것이다.
+    - **오타 방어는 여전히 타입이 한다** — dot-access는 레코드 타입에 없는
+      이름을 거부한다. `Of`는 그 방어를 **의도적으로** 우회하는 창구다.
+  - **⭐ [2026-08-25 실측] `<<T>>`는 값 호출부에서 동작한다.**
+    7라운드 `H-73`이 *"Luau엔 호출부 명시 타입 인자 문법이 없다"*고
+    단정했으나 **틀렸다** — Luau의 **generic type instantiation**
+    (`luau.org/types/generics/#generic-type-instantiation`)이 값 호출부에서도,
+    콜론 메소드에서도 `T`를 실제로 묶는다. `luau-analyze` 실측:
+    ```lua
+    local ok:   Source<number> = store:Of<<number>>("x")   -- 진단 없음
+    local bad:  Source<string> = store:Of<<number>>("y")   -- 정확히 걸림
+    local none: Source<number> = store:Of("z")             -- Source<unknown>
+    ```
+    원문은 **인스턴스화를 생략한 호출만** 돌려보고 단정했다. 따라서
+    `base/quad-types-plan.md`의 이중 꺾쇠 관례는 타입 자리 전용이 아니다.
+- **⭐ [2026-08-25] 예약 키는 `Of`/`Names` 둘뿐이고, 충돌은 조용히 죽는다.**
+  실측: 사용자 키가 예약 이름과 겹치면 교집합이 뭉개져 **그 필드의 타입
+  검사가 통째로 꺼진다**(음성 대조군이 진단 0건으로 통과했다). 시끄럽게
+  막히는 게 아니라 그냥 지나간다.
+  - **그래서 `T`를 검증만 하고 그대로 통과시키는 작은 `type function`을
+    둔다.** 겹치면 사용 지점에
+    `TypeError: quad.Store: "Of" is a reserved key`가 뜬다.
+    **`error()`는 못 쓴다** — `type function` 자체가 실패한 걸로 판정돼
+    버려진다. `print(...)` + `return types.never` 조합만 된다
+    (`luau-test/rewrite-required/23-...`가 기록해둔 사실이고
+    `type-version-check`가 이미 쓰는 패턴).
+  - **이건 아래 §0 원칙의 허용 범위 안이다** — 타입 함수를 **진단을 띄우는
+    데만** 쓰고 접근 타입을 합성하는 데는 안 쓴다
+    (`base/typing-limits.md`).
 - 이 패턴은 Store에만 국한되지 않고 **인스턴스 생성까지 관통하는 프로젝트
   전역 관습으로 확정**됨 — 단 이벤트는 이후 4차 라운드에서 이 관습의
   **유일한 예외**로 빠졌음(PA님 방식인 문자열 키+런타임 리플렉션으로 전환).
   `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학"
   절이 최신 확정 내용.
 
-### `store.key` 레코드 필드 타이핑 — Luau 타입함수로 해결 확인 (2026-08-12 열일곱 번째 세션, `pre-implementation-audit.md` 1-10 해소)
+### `store.key` 레코드 필드 타이핑 — 타입 함수가 필요 없다 (2026-08-25 재확정)
 
-위 절이 "`store.key`를 평범한 레코드 필드 타이핑으로 자동 해결"이라
-서술했지만, `Store<T>`가 입력 `T`(예: `{ty: string}`)를 받아
-`{ty: Source<string>}`류 결과 타입을 실제로 어떻게 합성하는지는 미검증으로
-남아있었음. **Luau의 `type function`**(컴파일타임에 타입을 인자로 받아 새
-타입을 조립하는 기능, https://luau.org/types/type-functions/ ,
-https://luau.org/types-library/ — tbox에서도 이미 쓰이는 검증된 패턴)으로
-정확히 풀림:
+> **⭐⭐ [2026-08-25] 타입 함수로 접근 타입을 짓는 접근은 **두 번** 시도됐고
+> **두 번 다 폐기**됐다.** (1) `WrapStore`/`ProcessStoreType`로 결과 타입을
+> **합성**하는 안(2026-08-12~2026-08-15) — 7라운드 `H-75`/`H-76`이 두
+> 한계를 실측해 폐기. (2) `index<>`/`keyof<>` + 팬텀 필드로 짓는 안
+> (2026-08-25 오전) — 같은 날 철회
+> (`archive/store-value-field-redesign-withdrawn.md`).
 
-```luau
-type function WrapStore(ty: type): type
-    -- Source<T> 형태를 그대로 조립(:Get/:Set/:Compute/:With 등)
-    local result = types.newtable()
-    result:setproperty(types.singleton("Get"), types.newfunction(...))
-    return result
-end
+**지금은 타입 함수를 안 쓴다.** `Store<T>`의 `T`가 이미
+`{hp: Source<number>, ...}`이므로 `store.hp`는 **평범한 레코드 필드
+접근**이고, Luau가 그냥 해준다.
 
-type function ProcessStoreType(ty: type): type
-    local props = ty:properties() :: { [type]: { read: type?, write: type? } }
-    local result = types.newtable()
-    for i, v in props do
-        -- i는 프로퍼티 이름을 담은 singleton 타입, i:value()로 실제 문자열
-        result:setproperty(i, WrapStore(v))
-    end
-    return result
-end
+```lua
+type Store<T> = T & {
+    Of:    <U>(self: any, name: string) -> Source<U>,   -- 동적 키 전용
+    Names: (self: any) -> { string },
+}
 ```
 
-`ProcessStoreType<{ty: string}>` → `{ty: Source<string>}`가 나옴 — 결과는
-선언 시점에 이름 붙은 `Source<string>` 그 자체가 아니라 구조를 그대로 풀어낸
-(flatten) 익명 타입이지만, **Luau는 이름이 아니라 "만족하는가"로 구조적
-일치를 검사**하므로 문제없이 `Source<string>` 자리에 대입 가능 — 오히려 이
-방식과 정확히 맞는 조합. 이걸로 `store.key`가 실제로 타입 명시 가능함이
-확인돼 M0/M2 어느 시점에 검증해도 기술적으로 막힐 위험은 없음 —
-`ROADMAP.md`의 M0/M2 배치를 강제로 바꿀 필요는 없어짐, 설계 레벨의 검증
-난이도 문제였던 것만 해소. **[2026-08-15] 이 `type function` 접근 자체의
-실측도 완료** — 스파이크(`luau-test/done/16-type-store-key-
-typefunction.luau`)는 원래 `types.newfunction` 시그니처 불일치로 깨져
-있었으나 원인이 설계 문제가 아니라 API 버전 드리프트였음이 드러나 수정
-후 통과(음성 대조군 4건 포함), `base/typing-limits.md` §5로 승격.
-상세는 `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절.
+**`luau-analyze` 실측**(양성 + 음성 대조군):
+
+| 검사 | 결과 |
+|---|---|
+| `store.hp` | `Source<number>` ✅ (`Source<string>` 대조군 걸림) |
+| `store.hp:Get()` / `:Set(5)` | ✅ (틀린 타입 대조군 둘 다 걸림) |
+| `store.nope` | **거부** ✅ |
+| `store:Of<<boolean>>("dyn")` | `Source<boolean>` ✅ (대조군 걸림) |
+| 콜백 파라미터 추론(`store.hp:Compute(function(s) ... end)`) | ✅ `s`가 `StateData<number>`로 잡힘(`s:NoSuchField()`가 정확히 걸림) |
+
+- **⚠️ `Compute`/`Apply`의 반환 타입은 여전히 명시 주석이 필요하다** —
+  이건 Store와 무관한 `base/typing-limits.md` §1의 **문제 B**이고,
+  `store.hp`든 독립 `Source`든 **똑같이** 조용히 안전성을 잃는다(실측:
+  틀린 주석 `local x: State<string> = src:Compute(...)`이 양쪽 다 안 걸림).
+  `audit/type-recursion-issue/REPORT.md` 3-1절이 확정한 대로 **명시 주석
+  이후 다운스트림 전체는 정상 체크**되고 구멍은 그 한 줄뿐이다.
+  살아나는 건 **콜백 파라미터** 쪽이다 — 그리고 철회된 재설계의
+  `Self` 제네릭을 거치면 **그것마저 깨졌다**(`s`가 `unknown`으로 떨어짐).
+- **`__call` 경로는 죽었다** — 타입 레벨 `__call`은 `self`를 못 받고,
+  `typeof(f<<T>>)`로 타입 인자를 넘기는 것도 실패한다(실측). 같은 사실이
+  `base/source-state-plan.md`의 `:Apply`에도 적용된다(7라운드 `H-94`).
+
+실측 전량은 `audit/type-store-index-keyof/`가 소스.
 
 ## Store가 Store를 저장 가능한가
 

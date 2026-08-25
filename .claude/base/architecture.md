@@ -262,8 +262,9 @@ quad/
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행)/`:Gate`(`GateNode`, `ComputeNode`와 같은 층위 — `base/gate-plan.md`) 전부 여기 소속
+│       ├── Observer.luau        # ⭐ [2026-08-25 신설, 7라운드 `H-99`] `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()` 전역 레지스트리의 소유 모듈** — `EpochMap.luau`와 같은 이유로 `State.luau`에 묻지 않는다(`Effect`/`Gate`/leaf 핸들러가 전부 이 레지스트리를 본다)
 │       ├── EpochMap.luau         # 재사용 가능한 Epoch 부기 객체(`:Update`/`:Refresh`/`:Sync`/`:TrackFrom`) — `State.luau`에 묻지 않고 별도 모듈, `GateNode`/`State`/`Effect`가 전부 씀(`base/state-epoch-plan.md`)
-│       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환
+│       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환(**평범한 레코드 필드** — 타입 함수 안 씀). **[2026-08-25]** 생성은 **명시적 초기화**(타입 인자에 `Source<T>` 직접, `defaults`에도 `Source(v)` 직접 — 옛 lazy `__index` 폐기), 동적 키는 `:Of<<T>>(name)` 하나(옛 `GetDynamic` 흡수), `:Names()`, 예약 키 진단용 `CheckReserved`(`base/store-plan.md`)
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`) — 위 `state:Gate`의 `GateNode` 위에 얹히는 **정책**, 바닥부터 짜지 않음
 │       ├── Modifier.luau         # flatten-before-dispatch, immutable 체이닝, 제네릭 `__index` 필드 setter 합성 + `:Apply`/`:Peek`/`Overridden`(`base/modifier-plan.md`)
 │       ├── Tag.luau              # 값 타입+immutable clone 체이닝(`Tag(...)`/`:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`) — 참조 카운트 Handler는 Dispatch/Tag.luau(아래), 엔진 호출은 주입된 addTag/removeTag(`base/tag-plan.md`)
@@ -315,6 +316,53 @@ existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
 이전**됐고(`archive/existing-instance-bind-rejected.md`), 애초에 이 구조
 확정을 막던 항목도 아니었음(`purity-and-effects-plan.md`/`tween-plan.md`는
 이미 `base/`로 승격 완료).
+
+## error 계약 — `level` 이분과 메시지 언어 (2026-08-25 확정, 7라운드 `H-104`/`H-105`)
+
+quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전에 정해두면
+한 번에 맞고 나중에 바꾸면 전수를 다시 훑어야 한다.**
+
+- **⭐ `level` 이분** — *즉시 error*가 quad의 주 방어선인데, 지금까지 **한
+  군데도 `level` 인자가 없어** 전부 quad 내부 줄을 가리켰다. 사용자는 자기
+  코드 어디서 틀렸는지를 볼 수 없었다.
+
+  | 종류 | `level` | 예 |
+  |---|---|---|
+  | **사용자 입력 검증** | **2**(호출부를 가리킴) | deps 타입/`nil`, 이중 바인드, 예약 키, 요소 타입 |
+  | **내부 불변식 위반** | **1**(그 자리를 가리킴) | 부기가 깨짐(`lengthList[i] == nil` 등) |
+
+  ```lua
+  error("Effect: dep #3 is not a State/Source/Ref", 2)
+  error("Dispatch.getOffsetAt: lengthList[3] is nil — bookkeeping is broken", 1)
+  ```
+
+  내부 불변식 위반은 곧 **quad 자신의 버그**라, 호출부가 아니라 터진 자리를
+  가리켜야 리포트가 쓸모 있다.
+- **⭐ 메시지는 영어로 통일한다**(**사용자 확정**, 2026-08-25). 지금
+  코퍼스는 영어 6 / 한국어 약 23으로 이미 갈려 있고, 공개 표면인데
+  정해진 적이 없었다. `.claude/conventions.md`의 *"사용자가 보게 될 것은
+  한국어"*는 **이 프로젝트의 대화·문서** 규칙이고 **quad 라이브러리
+  사용자**에게까지 적용된다고 정해진 적이 없다 — 여기서 정한다. 이미
+  영어인 6곳(동적 경로 가드 4형제, 모듈 초기화, attribute 이름 충돌)이
+  핵심 경로라는 것도 같은 방향이다. `base/`의 예시 메시지도 영어로 쓴다.
+
+## 예외 안전성 계약 — 감싸지 않는다 (2026-08-25 확정, 7라운드 🅒)
+
+**예외가 나면 그 파동/그 자리의 부기는 복구되지 않는다.** `pcall`로
+감싸는 자리는 하나도 두지 않는다.
+
+- 2026-08-21에 `base/slot-plan.md`의 `materializeSlotTree`에 대해 내린
+  판단(*"마운트 도중 예외는 quad가 복구를 보장하지 않는 상태이고 … 아직
+  실제로 밟은 적 없는 경로다 … 실제로 물리면 그때 넣는다"*)을 **전 자리로
+  확장**한 것이다. `.claude/conventions.md`의 *"드문 오용이나 가상의 미래
+  요구까지 방어/최적화하려고 구조를 복잡하게 만들지 않는다"* 원칙 그대로.
+- **적용 자리 넷**(7라운드가 찾은 것): State 전파 루프(구독자당 hot path),
+  게이트 flush + `Blocker:Off()` 순회, `Dispatch.drive`의 배치 게이팅,
+  Dispatch 체인 슬롯. 각각의 실패 모드는 그 문서들이 적는다.
+- **같은 원칙이 `EffectHandle:Rerun()`에도 적용된다** — `fn`이 던지면
+  `_running`이 참으로 남는 것까지 포함해 복구하지 않는다(사용자: *"에러가
+  난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의 일반 동작"*).
+- **yield 금지와 같은 톤으로 사용자 문서에 명시할 것.**
 
 ## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
 
@@ -442,15 +490,20 @@ CollectionService 태그 등)를 흉내낼 필요가 없고, quad-base 자체 �
 ## Store/State/Source 온톨로지 — 확정됨 (요약)
 
 Store는 source(실제 값이 존재하는 단일 지점) 집합체이고, `store.key`로
-접근하면 이미 만들어져 있는 Source 객체를 그대로 반환하거나(defaults로
-Store 생성 시 미리 만들어둔 경우), 아직 없으면 그 자리에서 만들어 저장한
-뒤 반환한다(별도 wrapper 없음 — **[2026-08-06 후속 세션 정정, 2026-08-07
-추가 정정]** 원래 "매번 새 State를 감싸 반환"이었으나, `Source`가 구조적으로
-`State`를 만족하도록 재구성되며 wrapper 계층 자체가 불필요해짐. 이후
-"Store 생성 시 전부 eager하게만 만들어진다"로 한 차례 더 정리됐다가, Luau
-타입이 런타임에 강제되지 않아 defaults 없이 만든 키를 나중에 `:Set()`하면
-크래시난다는 점이 지적돼 lazy `__index`+저장 생성도 같이 필요함이 확인됨 —
-상세는 `base/source-state-plan.md` "Source가 State를 만족함" 절). 전파는
+접근하면 **그 키의 Source 객체를 그대로 반환한다** — 별도 wrapper도,
+프록시도, **타입 함수도** 없다(`Source`가 구조적으로 `State`를 만족하도록
+재구성되며 wrapper 계층 자체가 불필요해짐 — `base/source-state-plan.md`의
+"Source가 State를 만족함" 절).
+**⭐ [2026-08-25] 두 가지가 확정됐다** — (1) 생성은 **명시적 초기화**다:
+타입 인자에 `Source<T>`를 직접 쓰고 `defaults`에도 `Source(v)`를 직접
+넣는다. 옛 lazy `__index`(없는 키를 그 자리에서 만들어 저장)는 폐기됐고,
+그래서 `defaults`가 곧 선언 키 집합이라 `store:Names()`가 성립한다.
+(2) 레코드 필드 타이핑에 **타입 함수를 안 쓴다**
+(`WrapStore`/`ProcessStoreType` 폐기). 쓰기는 `store.key = v`가 아니라
+**`store.key:Set(v)`**이고, 동적 키는 `store:Of<<T>>(name)` 하나다.
+상세는 `base/store-plan.md`가 소스 — 같은 날 "`store.key`를 값으로"
+재설계를 넣었다가 철회한 경위는
+`archive/store-value-field-redesign-withdrawn.md`. 전파는
 push-invalidate(신호만)/
 pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬드
 의존성 중복 재계산 문제가 풀림(**[2026-08-14 보강]** 푸는 주체는

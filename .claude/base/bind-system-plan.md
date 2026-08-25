@@ -48,7 +48,9 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
   `:Subscribe()`/`:Unsubscribe()`, 이중 바인딩 금지 게이트 →
   **`base/source-state-plan.md`**.
 - **Store** — 이름 붙은 Source 모음, `defaults`와 eager/lazy 생성, `store.key`
-  dot-access 타이핑(+Luau `type function`), `store.key:Set(value)` 문법,
+  dot-access 타이핑(**[2026-08-25]** `type function` 합성은 폐기 —
+  타입 인자에 `Source<T>`를 직접 써서 **평범한 레코드**로 짓는다,
+  `base/store-plan.md`), `store.key:Set(value)` 문법,
   "Store가 Store를 저장 가능한가", Store 부작용 정책 → **`base/store-plan.md`**.
 - **`Ref` / `PreRef`** — 용도 재정의, `.Value`/`:Set`/`:Callback`/`:Wait` API,
   `Ref`의 retract, PreRef 호이스팅/1회용 가드 → **`base/ref-plan.md`**.
@@ -239,10 +241,12 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 **Store 쪽 dot-access는 그대로 유지**: `store.key`는 실질적으로 Luau가
 타입을 좁혀주는 이득이 있어서(Store 자체가 `{key: Source<number>, ...}`류
 평범한 레코드 타입으로 지어짐, `base/store-plan.md`) 그대로 유지.
+**[2026-08-25]** 그 레코드를 **타입 함수로 합성하던 것만** 폐기됐다 —
+지금은 타입 인자에 `Source<T>`를 직접 쓴다.
 **[정정, 2026-08-18] `store "key"` 문자열 커링은 기각됐다** — 여기 폴백으로
 같이 적혀 있었으나 폐기됨(`"a"`가 그냥 `string`으로 들어가 `Source<T>`의
 `T`를 알 수 없고, dot-access + `type function` 타이핑이 자리잡아 더 이상
-필요 없어짐). 동적 키는 명시적 `store:GetDynamic<<T>>(name)`으로 간다 —
+필요 없어짐). 동적 키는 명시적 `store:Of<<T>>(name)`으로 간다(**[2026-08-25]** 옛 이름 `GetDynamic`) —
 `base/store-plan.md`가 소스.
 **이벤트가 이 관습의 예외인 성격도 바뀜** — "타입을 포기하는 예외"가 아니라
 **이름 지정 방식만 문자열 키인 예외**다(타입은 위 정정대로 생성기가 준다).

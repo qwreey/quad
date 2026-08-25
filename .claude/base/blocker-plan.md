@@ -59,7 +59,7 @@ blocker:IsOn() -> boolean           -- [2026-08-18 신설] `self.IsBlocked`를 �
 
 state:Block(blocker) -> state       -- 새 gated state 반환. **호출되는 즉시**(나중에
                                      -- 처음 블록될 때가 아니라) onunblock 핸들을
-                                     -- blocker의 weak 배열에 등록.
+                                     -- blocker의 weak-키 셋에 등록(아래 "onunblock 핸들 보관").
 blocker:Policy(emit) -> onUpstreamEmit
                                     -- [2026-08-24 신설] 이 blocker의 게이트 정책을
                                      -- **값으로** 돌려준다. `state:Block(b)`가
@@ -98,6 +98,30 @@ gated state의 동작:
 `blocker.IsBlocked`를 보고 `emit()`을 부를지 `HasBlockedEmit`만 세울지
 정한다. `Debounce`/`Throttle`도 같은 자리에 다른 정책으로 들어간다.
 
+**⭐⭐ [2026-08-25 신설, 7라운드 `H-63`] onunblock 핸들 보관 — 세 자리를
+정한다.** 지금까지 *"blocker의 weak 배열"*이라고만 적혀 있었고 셋이
+비어 있었다.
+
+1. **자료구조는 weak-키 해시맵 셋** `{[handle] = true}`(`__mode = "k"`)이다.
+   값-weak **배열**이면 항목이 수거될 때 구멍이 생겨 `ipairs`가 첫 구멍에서
+   멈추고(`#`도 border 미정) **뒤의 살아있는 게이트가 `Off()`를 못 받는다.**
+   `H-7`이 `Ref.Callbacks`를 배열에서 해시맵 셋으로 바꾼 것과 같은 문제이고
+   같은 처방이다.
+2. **⭐ 핸들을 강하게 드는 주체는 정책이 반환하는 `onUpstreamEmit` 클로저다** —
+   그 클로저가 onunblock 핸들을 upvalue로 잡는다. 체인은
+   `GateNode → onUpstreamEmit → onunblock 핸들`이고, Blocker 쪽은 weak이라
+   **게이트 노드가 죽을 때만** 수거된다. 이게 안 정해져 있으면
+   `Debounce`의 `setup`을 문서 그대로 짰을 때 핸들이 다음 GC에서 사라져
+   `b:Off()`가 **조용히 아무것도 안 한다**(디바운스가 영영 안 나감) —
+   실패가 GC 타이밍에 따라 간헐적이라 나중에 잡기 제일 어려운 종류다.
+   - **Blocker가 강하게 드는 안은 기각** — 오래 사는 Blocker 하나가 거기
+     걸렸던 **모든 gated state와 그 상류 체인을 영원히 살려둔다**(`:List`
+     항목마다 게이트를 무는 패턴에서 직행 누수).
+3. **`Off()`/`OffWithoutEmit()`은 스냅샷을 뜬 뒤 순회한다** — 순회 중
+   새 등록(핸들 → flush → 하류 Observer가 `state:Block(b)`를 새로 만듦)이
+   `pairs`에서 미정의이기 때문. `Ref.Callbacks`/State 구독자 집합과 같은
+   처방(`base/source-state-plan.md`의 `H-23` 확정).
+
 **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-33`/`H-49`] 그 정책을 값으로
 꺼내는 표면 `blocker:Policy(emit)`을 추가한다** — 표면이 하나 늘고,
 `Blocker()` 생성자와 `state:Block`은 그대로다.
@@ -111,7 +135,15 @@ gated state의 동작:
   풀 때 그 `emit`이 정확히 1회 불린다.
 - **`Debounce`/`Throttle`은 Blocker를 사적으로 하나 갖는다** — 적용 핸들당
   하나(커링 결과가 여러 곳에 적용될 수 있으므로 `Apply` 시점 생성).
-  `pending` 같은 상태는 별도로 안 들고 `HasBlockedEmit`으로 흡수한다.
+  `pending` 같은 상태는 별도로 안 든다.
+  **⭐⭐ [2026-08-25 정정, 7라운드 `H-86`] "`HasBlockedEmit`으로 흡수한다"는
+  성립하지 않았다.** 아래 *"`HasBlockedEmit`은 게이트 흡수 집합의 특수형"*
+  절이 그 값을 **게이트 노드의 `withheld`로** 흡수해버려, `Blocker` 객체
+  쪽엔 **실체가 없다**. 두 흡수가 반대 방향이라 결과적으로 **아무도 안 들고
+  있었다** — 정책이 "지금 쌓인 게 있나"를 읽을 통로가 0개였고,
+  그래서 `Throttle`의 창이 idle로 못 돌아왔다. **통로는
+  `emit(commit: boolean?) -> boolean`의 반환값**이다
+  (`base/gate-plan.md` 2번).
   상세와 의사코드는 `base/gate-plan.md`의 5번 항목이 소스.
 
 **`:Get()`엔 영향 없음** — 블록은 emit **전파**만 지연시킨다. 블록 중이라도

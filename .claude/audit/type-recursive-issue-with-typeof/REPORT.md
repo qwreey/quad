@@ -197,7 +197,7 @@ quad 설계 문제가 아니라 **`setmetatable`+`typeof(genericFn<<T>>())`
 
 ## 6. `type function` — `Store<T>` 필드 합성은 고쳐짐, 재귀 `Compute`는 막다른 길
 
-### 6-1. `luau-test/done/16-type-store-key-typefunction.luau` 복구 성공(원래 `rewrite-required/`)
+### 6-1. `luau-test/rewrite-required/16-type-store-key-typefunction.luau` 복구 성공(원래 `rewrite-required/`)
 
 `spikes/09-typefunction-store-key-FIXED.luau` — 원래 스파이크가 깨진
 이유는 설계 문제가 아니라 **API 버전 드리프트**: `types.newfunction`의

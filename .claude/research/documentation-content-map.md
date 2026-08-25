@@ -38,7 +38,7 @@
 1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
 2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 생성자 `New` + 클래스별 정적 필드(**[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 전량 코드 생성)(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
 3. **속성 채우기** — `[Attribute "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
-4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`base/source-state-plan.md`, `base/store-plan.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 바뀜)
+4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`base/source-state-plan.md`, `base/store-plan.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 확정. **[2026-08-25]** 같은 모델이 유지되고, **생성이 명시적 초기화로** 바뀌었다 — 타입 인자에 `Source<T>`를 직접 쓰고 `defaults`에도 `Source(v)`를 직접. **초심자 트랙이 짚을 것**: 부모가 값을 다 안 넘겨도 되게 하려면 컴포넌트가 자기 `DEFAULTS`로 채워 넘긴다)
 5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)
 6. **자식 전달** — Slot 기본 개념(children 배열, add/remove/clear), 마운트된 slot 재마운트 시 throw (`slot-plan.md`)
 7. **컴포넌트 작성** — 컴포넌트 = 순수 함수, 리프 프로퍼티엔 State만 바인딩, 전역 store 직접 참조 금지(이식성) (`component-composition-plan.md`, `purity-and-effects-plan.md`)

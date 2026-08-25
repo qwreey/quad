@@ -52,9 +52,11 @@ v1(`.claude/initreq/quad/src`) 조사 결과, API는 성격이 다른 두 계층
   CLAUDE.md에 그런 서술은 없었음. 실제 소스는
   `base/component-composition-plan.md`의 "1. 컴포넌트 = 그냥 함수, "자기
   store 자동 소유" 매직은 폐기" 절(자동 흡수/자동 store 생성 매직 폐기,
-  사용자 확정)과 `base/store-plan.md`의 "Store 값 설정 문법 —
-  `myStore.key = value` 폐기, `source:Set(value)`로 전환" 절(`__newindex`
-  자동 위임 폐기)).
+  사용자 확정)과 `base/store-plan.md`의 "Store 값 설정 문법" 절(`__newindex`
+  자동 위임 폐기)). **[2026-08-25]** 여기 한때 *"`store.key = v`는
+  되살아났다"*고 적었는데 그건 같은 날 **철회된** 재설계다 — 대입 문법
+  폐기(2026-08-06)는 **유지**된다
+  (`archive/store-value-field-redesign-withdrawn.md`).
 
 ## 3. 계층별 실현 가능성
 

@@ -90,7 +90,66 @@ Destroy 전까지 userdata 동일성을 고정해주므로, 모든 `inst`-키 `R
 `slot._mountedInst`는 그 값(`slot`)이 자기 키(`physicalTarget`)를 다시
 참조하는 필드일 뿐이라 GC 안전 — `base/slot-plan.md` "재귀 메커니즘"
 절)는 **단일 `Relate` 안에서** 일어나는 한 안전함 — 그 `Relate`의 키(`inst`)가
-테이블 *바깥에서* 독립적으로 reachable한지만 판별하면 되기 때문. 하지만
+테이블 *바깥에서* 독립적으로 reachable한지만 판별하면 되기 때문.
+
+> **⛔⛔ [2026-08-25 전면 정정, 7라운드 `H-71`/`H-77`] 바로 위 "단일 `Relate`
+> 안에서는 안전함"은 **거짓이다.** 커밋된 `quad-base/src/Relate.luau`로
+> 실측했다.**
+>
+> 위험은 **값 기준 하나**가 아니라 **슬롯 셋**으로 갈린다:
+>
+> | 슬롯 | `SetStrong` | `SetWeak` |
+> |---|---|---|
+> | 바깥 키(`inst`) | weak(설계) | weak(설계) |
+> | **내부 키(`key`)** | **강함** | **강함** |
+> | 값(`value`) | **강함** | weak |
+>
+> ```lua
+> -- 커밋된 Relate.luau, 그대로
+> buckets[inst] = bucket            -- buckets는 __mode = "k"
+> bucket.StrongMap[key] = value     -- 평범한 테이블 → 키·값 모두 강함
+> bucket.WeakMap = setmetatable({}, { __mode = "v" })   -- **값만** weak
+> ```
+>
+> Luau엔 ephemeron이 없으므로 **버킷 안의 무엇이든 `inst`를 되참조하면
+> `buckets`의 weak 키가 자기 버킷을 통해 살아남는다.**
+>
+> - **`SetStrong`의 값이 `inst`를 되참조하면 100% 샌다**(`H-71`, 50/50
+>   실측). `SetWeak`으로 낮추면 0/50으로 안전해진다.
+> - **내부 키가 `inst`를 되참조하면 `SetStrong`/`SetWeak` 둘 다 샌다**
+>   (`H-77`, 50/50 · 50/50 실측) — `WeakMap`도 **키는 강하게** 잡기 때문.
+>   이 슬롯은 위 규칙 문단에 **아예 등장하지 않았다.**
+>
+> **그래서 지금 규칙은 이렇다**:
+>
+> 1. **값이 바깥 키를 되참조하면 `SetWeak`을 쓴다.** dedup 기록처럼
+>    "다른 곳에서 안전하게 유지되는 것"은 애초에 항상 `SetWeak`이라는
+>    아래 규칙과 같은 결이다. 실제로 물리던 자리는
+>    `RefLeafHandler.process`와 `ObserverEffectLeafHandler.process`의
+>    dedup 기록이고, 둘 다 `SetWeak`으로 정정됐다.
+> 2. **내부 키로 쓰는 객체는 바깥 키를 되참조하면 안 된다** — `SetWeak`으로
+>    도망갈 수 없는 슬롯이라 규칙으로 막는 수밖에 없다. 지금 내부 키가
+>    객체인 자리는 둘이다:
+>    - **`runInitRelate`**(내부 키 = `initFn`) — **안전하다.** `RunInit`은
+>      `initFn(self)`로 module을 **인자로** 받고, 멱등 가드가 성립하려면
+>      애초에 **하나의 고정 함수**여야 하므로(인라인 클로저면 매번 새
+>      identity라 dedup 자체가 무의미) 바깥 변수를 캡처할 이유가 없다.
+>    - **⚠️ `groupClaimKeys`**(내부 키 = 그룹 `Attribute`의 값 객체 `v`,
+>      `base/attribute-plan.md`) — **자동으로 안전하지 않다.** 그 값은
+>      사용자가 만든 Store/Source이고, 거기 담긴 값이 `inst`로 되돌아갈 수
+>      있다(예: 같은 트리의 `Ref`가 그 `inst`로 채워진 뒤 Store에 담기는
+>      경우). **[2026-08-25 `/code-review high` 지적]** 여기 한때 *"둘 다
+>      안전하다"*고 단정했는데 `runInitRelate` 쪽 논거만 있었다.
+>      **그래서 이건 증명이 아니라 계약이다** — 그룹 `Attribute`의 값
+>      객체는 `inst`를 되참조하면 안 되고, 그 제약을 `attribute-plan.md`가
+>      같이 적는다. 되참조가 필요해지면 내부 키를 값 객체가 아니라
+>      **이름/토큰**으로 바꿔야 한다(값 객체는 그때 값 슬롯으로 내려가고,
+>      그 슬롯은 `SetWeak`으로 도망갈 수 있다).
+> 3. **`luau-test/done/07`에 되참조 음성 대조군을 추가할 것** — 그 파일은
+>    "GC-native 아키텍처의 핵심 전제를 검증했다"고 여러 문서에 인용되는데
+>    실제로는 **안전한 모양만** 봤다.
+
+하지만
 **서로 다른 두 `Relate`가 서로의 키를 상대방 값으로 강하게 제공하는
 상호 순환**(예: `RelateA[inst]=value`(강)와 `RelateB[value]=inst`(강)가
 동시에 존재)은 완전히 다른, 더 위험한 모양 — `inst`의 reachability

@@ -14,3 +14,4 @@ lune_packages/
 # luau-lsp가 rojo 설치를 감지하면 백그라운드에서 자동 생성/watch함
 # (에디터 타입 링킹용 산출물, 커밋 대상 아님)
 sourcemap.json
+.relink-manifest

@@ -45,6 +45,28 @@
 사례 — 코드 생성 없이 타입 선언 두 개로 끝나고, 나중에 Luau가
 고쳐져도 손해가 없음).
 
+### ⭐⭐ [2026-08-25 신설, 사용자] 타입 함수는 **진단을 띄우는 데까지만** 쓴다
+
+**사용자 확정**: *"어쩌면 타입함수는 타입이 못 잡는 문제를 에러로 띄우기
+위한 정도 이상으로 가지 않는게 이로울 수도 있습니다."*
+
+- **허용**: 타입이 못 잡는 오용을 **컴파일 타임 에러로 만드는** 용도.
+  `type-version-check`의 `CheckVersion`(버전 불일치를 사람이 읽을
+  메시지로), Store의 `CheckReserved`(예약 키 충돌)가 그 사례다. 둘 다
+  **`T`를 검증만 하고 그대로 통과**시키고 결과 타입을 만들지 않는다.
+  `error()`가 아니라 `print(...)` + `return types.never`를 쓴다.
+- **안 함**: **접근 타입/결과 타입을 합성**하는 용도.
+- **왜**: 그 선을 넘으면 §6이 실측한 함정(합성을 거친 값은 이후 제네릭
+  self 체이닝이 조용히 깨짐)과 §5가 폐기한 한계(바깥 별칭 참조 불가,
+  메소드 self 파라미터 불변)를 그대로 떠안는다.
+- **⚠️ `index<>`/`keyof<>`도 타입 함수다** — Luau가 predefine해둔 것일
+  뿐 성질은 같다(**사용자 지적**: *"구현을 뜯어보면, 루아우에서
+  프리디파이닝한 타입함수임. 타입함수가 가지는 고질적 문제를 그대로
+  가져요."*). 실제로 2026-08-25에 `WrapStore`를 버리고 그쪽으로 갈아탔다가
+  **같은 날 철회**했다 — 그 조합의 `Self` 제네릭을 거치면 **콜백 파라미터
+  추론이 깨진다**(평범한 레코드 필드에선 정상, 실측 대조).
+  경위는 `archive/store-value-field-redesign-withdrawn.md`.
+
 ---
 
 ## 1. ⭐ 재귀 제네릭이 다른 타입 인자로 자기를 반환하면 타입 안전성이 조용히 사라짐
@@ -242,7 +264,7 @@ self 핸들 자체를 받음)에서 **콜백 반환 타입이 self의 원래 T�
 | `state:With(...)` | 인라인 + 쪼개기 | 쪼개기로 해결(이형 dep 포함) | ❌ 명시 바인딩 필요 |
 | `state:Apply(factory)` | 인라인 | factory 파라미터 주석 필요 | ❌ 명시 바인딩 필요 |
 | `Effect(fn, ...deps)` | — | 해당 없음(자유 함수) | 해당 없음(반환이 재귀 타입 아님) |
-| `state:Observer(fn)` | — | 해당 없음(로컬 제네릭 없음) | 해당 없음(`EffectHandle` 반환) |
+| `state:Observer(fn)` | — | 해당 없음(로컬 제네릭 없음) | 해당 없음(`Observer` 반환) |
 | `tween:Mapped(fn)` | 인라인 제네릭 메소드 | — | ❌ **조용히 통과**(아래 `H-24`) |
 | `tween:Mapped(fn)` | `typeof(named fn)`(③) | 콜백 파라미터 명시 주석 필요 | ✅ 안전 |
 
@@ -350,14 +372,34 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
 
 ---
 
-## 5. `store.key` 레코드 필드 타이핑(`type function`) — ✅ 검증 완료
+## 5. `store.key` 레코드 필드 타이핑 — ⛔ 이 접근은 폐기됨 (2026-08-25)
 
-**[2026-08-15 확정, 근거: `luau-test/done/16-type-store-key-typefunction.luau`,
-`audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절]**
+> **⭐⭐ [2026-08-25 폐기] `WrapStore`/`ProcessStoreType`로 결과 타입을
+> **합성**하는 접근 자체가 사라졌습니다.** 지금 Store는 **타입 함수를 안
+> 쓰고** 타입 인자에 `Source<T>`를 직접 써서 **평범한 레코드**로
+> 타이핑합니다(같은 날 `index<>`/`keyof<>` + 팬텀 필드로 가는 안을
+> 넣었다가 위 §0 원칙에 따라 철회했습니다 —
+> `archive/store-value-field-redesign-withdrawn.md`) —
+> `base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절이 소스,
+> 뒤집힌 원문은 `archive/store-value-field-redesign-withdrawn.md`.
+> 아래는 그 접근이 살아 있던 동안의 실측 기록이고, **`type function`
+> 자체의 성질**(API 시그니처, 재귀 호출 한계)은 여전히 유효합니다.
+>
+> **왜 폐기됐나**(7라운드 `H-75`/`H-76` 실측): (1) 합성 결과가 **평평하면**
+> `store.key:Compute(무주석 콜백)`이 깨진다 — 아래 1번의 ②쪼개기를
+> `type function` **안에서도** 해야 한다는 뜻인데 그게 문서 어디에도
+> 없었다. (2) `type function`은 **바깥 타입 별칭을 참조하지 못해**
+> `Source<T>` 전 표면을 구조적으로 중복 작성해야 하고, **메소드 self
+> 파라미터가 불변**이라 필드 하나만 어긋나도 `store.key`가 `State<T>`
+> 파라미터 자리에 안 들어간다. 스파이크 `16`은 그 대입을 한 번도
+> 해보지 않았다.
+
+**[2026-08-15 확정, 근거: `luau-test/rewrite-required/16-type-store-key-typefunction.luau`,
+`audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 — 폐기 전 기록]**
 
 `Store<T>` → `{[K]: Source<V>}` 합성을 Luau `type function`으로 하는
-설계(`pre-implementation-audit.md` 1-10)는 **설계와 실측 둘 다
-확정**입니다. 원래 스파이크가 깨졌던 이유는 설계 문제가 아니라
+설계(`pre-implementation-audit.md` 1-10)는 그 시점 **설계와 실측 둘 다
+확정**이었습니다. 원래 스파이크가 깨졌던 이유는 설계 문제가 아니라
 **`types.newfunction`의 API 버전 드리프트**였습니다 — 시그니처가
 `(parameters: {head: {type}?, tail: type?}, returns: {head: {type}?,
 tail: type?}?, generics: {type}?): type`로 parameters/returns 둘 다
@@ -466,7 +508,38 @@ local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T �
   `PostRef`도 같이 커버할 것.
 - **Modifier의 제네릭 `__index` + `table.clone` 체이닝** — `luau-test/done/17`.
 - **콜백 파라미터/본문의 타입 체크**(1번의 쪼개기 적용 시) — 진짜
-  살아있음.
+  살아있음. **⚠️ [2026-08-25 경계 명시, 7라운드 `H-96`] 단 trailing deps가
+  붙으면 dep 파라미터엔 주석이 필요하다** — deps가 0개면 콜백 파라미터가
+  무주석으로 추론되지만, `:Compute(fn, a, b)`처럼 trailing deps가 붙는
+  순간 그 dep 파라미터들은 해소되지 않아 `Consider annotating the return`이
+  뜬다. ②쪼개기가 푸는 범위 **밖**이다.
+- **명시적 제네릭 인스턴스화 `f<<T>>(...)`가 값 호출부에서 동작**한다
+  — 콜론 메소드에서도 된다(**[2026-08-25 실측]**, 7라운드 `H-73`이
+  "문법이 없다"고 단정했던 것을 뒤집음). 자세한 건
+  `base/store-plan.md`의 "타입 추론 문제" 절.
+- **⭐ [2026-08-25 실측] 싱글톤 보존 — 타입 후보 중에 싱글톤이 있으면
+  `string`으로 안 뭉개진다.** `index<>`/`keyof<>` 기반 키 타이핑 전체가
+  이 성질에 기대고 있어서 따로 확인했다:
+
+  | 선언 | `f("bbb")`의 `T` | 진단 |
+  |---|---|---|
+  | `f<T>(input: T): T` | `string` ❌ 뭉개짐 | 없음 |
+  | `f<T>(input: T & string): T` | `unknown` ❌ | 없음 |
+  | `f<T>(input: T & ""): T` | `"bbb"` ✅ | **에러**(교집합이 빔) |
+  | **`f<T>(input: T \| "" \| string): T`** | `"bbb"` ✅ | **없음** ✅ |
+  | **`f<T>(input: T & ("A" \| "B")): T`** | `"B"` ✅ | 범위 밖이면 정확히 걸림 ✅ |
+
+  **[2026-08-25] 다만 quad는 이 성질에 기대는 설계를 채택하지 않았다** —
+  `K & keyof<...>` 기반 Store 타이핑은 같은 날 철회됐다(위 §0). 아래는
+  Luau 자체의 성질로만 기록해둔다. 사용자 관찰:
+  *"K& 를 걸고 유니온 스트링을 걸면, K 가 싱글톤으로써, string 으로
+  뭉개지지 않고 전해진다."* 대조 전량은
+  `audit/type-store-index-keyof/REPORT.md`.
+- **⛔ 타입 레벨 `__call`은 죽은 경로다**(**[2026-08-25 실측]**) — `self`를
+  못 받고(`Argument count mismatch`), `typeof(f<<T>>)`로 타입 인자를
+  실어 나르는 것도 실패한다. 그래서 콜러블 팩토리는 `__call`이 아니라
+  **지정된 필드**로 자기를 노출한다(`base/source-state-plan.md`의
+  "`state:Apply(factory)`" 절).
 
 ---
 
