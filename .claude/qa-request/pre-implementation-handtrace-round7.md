@@ -1,9 +1,12 @@
 # 구현 전 손 트레이싱 **7라운드** — M2(반응형 코어) 범위 + M2→M3 경계
 
-**구성**: **패스 2개, 발견 22건(`H-55`~`H-76`).** 1차 패스는 문서 대 문서
+**구성**: **패스 3개, 발견 30건(`H-55`~`H-84`).** 1차 패스는 문서 대 문서
 손 트레이싱(`H-55`~`H-70`), **2차 패스는 문서가 "확인했다"고 적은 주장을
-실제로 `luau`/`luau-analyze`에 걸어본 실측**(`H-71`~`H-76`, 2026-08-25 추가).
-발견 번호는 패스를 가로질러 이어서 매긴다(6라운드와 같은 방식).
+실제로 `luau`/`luau-analyze`에 걸어본 실측**(`H-71`~`H-76`, 2026-08-25 추가),
+**3차 패스는 (a) 실제로 커밋된 M1 코드·툴체인을 이 저장소에서 그대로 돌려본
+것과 (b) 1·2차가 범위에서 뺐던 "M2를 *소비하는* 문서"**(`H-77`~`H-84`,
+2026-08-25 추가). 발견 번호는 패스를 가로질러 이어서 매긴다(6라운드와 같은
+방식).
 
 **상태**: **[2026-08-25] 발견 보고 — 아무것도 반영하지 않았다.** 판정은
 사용자가 이 목록을 보고 한다. 6라운드까지의 결정은 뒤집지 않는 것을
@@ -43,7 +46,8 @@
 GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 항목과 닿는
 지점은 "이건 그 미해결과 별개다"라고만 적었다.
 
-**읽는 순서**: 🔴 다섯이 그대로 구현하면 동작이 어긋나는 것, 🟡은 정의가
+**읽는 순서**: 🔴은 그대로 구현하면(또는 지금 상태 그대로 두면) 동작이
+어긋나는 것, 🟡은 정의가
 비어 있거나 두 서술이 갈려 M2 구현자가 임의로 정하게 되는 것, 🟢은 문서
 정합·구현 시 정하면 되는 것. "미확정" 표시는 트레이싱으로 확신까지 못 간
 의심이다. **2차 패스 표의 마지막 열은 그 항목을 실제로 돌려본 결과**라,
@@ -79,6 +83,20 @@ GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 �
 | `H-74` | 🟡 | eager `defaults` 경로는 `__index`를 **통째로 우회**하므로 "고정 메소드 테이블을 먼저 확인"이라는 예약 키 방어가 성립하지 않는다 | `store-plan.md` | ✅ `attempt to call a table value` |
 | `H-75` | 🔴 | `WrapStore`가 스파이크 `16`의 **평평한** 모양이면 `store.key:Compute(무주석 콜백)`이 깨진다 — `typing-limits.md` ②쪼개기를 `type function` 안에서도 해야 한다 | `store-plan.md`, `typing-limits.md` §5, `luau-test/done/16` | ✅ 평평=실패 / 쪼개기=통과 |
 | `H-76` | 🔴 | `type function`은 **바깥 타입 별칭을 참조 못 한다** → `Source<T>` 전 표면을 구조적으로 중복 작성해야 하고, 메소드 self 파라미터가 **불변**이라 필드 하나만 어긋나도 `store.key`가 `State<T>` 파라미터 자리에 **안 들어간다**. 스파이크 `16`은 그 대입을 안 해봤다 | `store-plan.md`, `typing-limits.md` §5·§6 | ✅ 별칭 참조 실패 / `Revision` 누락만으로 대입 실패 |
+
+**⭐ [2026-08-25] 3차 패스 — 커밋된 코드·툴체인 실측 + M2 소비자 문서 (`H-77`~`H-84`).**
+상세는 아래 "3차 패스" 절.
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-77` | 🔴 | **`Relate`의 *내부 키*가 `inst`를 되참조하면 `SetStrong`/`SetWeak` 둘 다 샌다** — 규칙에 이 슬롯 자체가 없고, `H-71`의 해법 (b)(“`SetWeak`으로 낮춘다”)가 여기선 **전혀 안 듣는다**. 커밋된 `RunInit`이 실제로 물린다 | `relate-plan.md`, `module-lifecycle-plan.md`, 커밋된 `quad-base/src/init.luau` | ✅ 커밋된 코드로 30/30 누수 |
+| `H-78` | 🔴 | **커밋된 M1 스모크 2개와 `done/`의 타입 스파이크 `23`이 지금 저장소 상태에서 안 돈다** — 게다가 실패 모드가 `luau-analyze` "진단 0건"이라 **통과로 오독된다**. `ROADMAP.md` M1은 날짜도 전제조건도 없이 "전부 PASS" | `ROADMAP.md` M1, `project-setup-plan.md`, `luau-test/STATUS.md` | ✅ 워크어라운드 전/후 대조 |
+| `H-79` | 🟡 | **`Store`에 열거 표면이 없는데** 그룹 `Attribute(...)`/`:NameMap()`이 그걸 요구한다 — lazy `__index` 때문에 키 집합이 **접근 이력에 좌우**되고, `defaults` 없이 만든 Store에선 빈 맵이 된다 | `store-plan.md`, `attribute-plan.md` | ✅ 0개 / 1개 / 2개로 갈림 |
+| `H-80` | 🟡 | M2가 `quad-types`의 `Quad`에 추가할 목록이 `Source`/`State`/`Store`뿐 — **`State`는 런타임 값이 아예 없고**, M2가 실제로 얹는 나머지 탑레벨 값(`Effect`·`is*` 전량·`bindLifetime` 4종…)이 전부 빠져 있다. 그 전부가 `H-25`가 만든 바로 그 벽에 부딪힌다 | `ROADMAP.md` M2, `quad-types-plan.md`, `source-state-plan.md` | 표면 대조 |
+| `H-81` | 🟡 | `isModifier` 런타임 가드는 **전부 M2 코드**(`Source:Set`/Store 생성/`:Compute` 캐싱)에 들어가는데 체크박스는 **M7에만** 있고 M2 체크리스트엔 한 줄도 없다. 게다가 적용 지점 목록이 두 문서에서 다르다 | `ROADMAP.md` M7, `modifier-plan.md` 7번, `source-state-plan.md` | 표면 대조 |
+| `H-82` | 🟢 | `:With`를 실노드로 확정한 **근거 2번이 pass-through 노드엔 성립하지 않는다** — 2026-08-14 재작성이 "근거가 더 강해졌다"면서 실제론 정확도를 낮췄다. 결론은 안 바뀜(근거 1·3이 유효) | `source-state-plan.md` | 문서 정합 |
+| `H-83` | 🟢 | 확정된 Store 구현 스케치를 그대로 쓰면 **무인자 `Store()`가 `table.clone(nil)`로 크래시**한다 — 같은 문서가 `defaults`는 선택이라고 확정해뒀다 | `store-plan.md` | ✅ `table expected, got nil` |
+| `H-84` | 🟢 | `:With(...)`/`state:Block(b)`/`Source:Emit()`이 M2 체크리스트에 개별 항목으로 없다 — `:Compute`/`:Apply`/`:Observer`는 각각 있는데 | `ROADMAP.md` M2 | 표면 대조 |
 
 ---
 
@@ -1009,6 +1027,494 @@ local rn: number = r      -- ✅ U == number 로 정확히 추론
 
 ---
 
+# 3차 패스 — 커밋된 코드·툴체인을 실제로 돌려봤다 + M2 소비자 문서 (2026-08-25)
+
+**왜 이 패스가 있는가**: 사용자 요청 — *"저기에 포함되지 않은 문제점을
+더 찾아봐. 찾은 다음에 진짜 있는 문제인지 재검증까지 다 해줘. 찾은걸
+이어붙이면 돼"*.
+
+**1·2차와 다른 각도 둘**:
+
+1. **2차는 문서가 주장하는 Luau 동작을 *새로 짠 최소 재현*으로 걸었다.
+   3차는 저장소에 이미 있는 것을 그대로 돌린다** — `quad-base/test/smoke.*.luau`,
+   `luau-test/done/`의 스파이크 전량, `python3 .claude/tools/doc-check.py`,
+   그리고 커밋된 `quad-base/src/*.luau`에 대한 `luau-analyze`. 즉 "설계가
+   맞나"가 아니라 **"지금 이 저장소가 문서가 말하는 상태인가"**를 본다.
+2. **1차 패스가 범위에서 명시적으로 뺐던 문서들** — `tween-plan.md` /
+   `modifier-plan.md` / `attribute-plan.md` / `onchange-plan.md` /
+   `bind-system-plan.md` / `quad-types-plan.md` / `architecture.md` /
+   `project-setup-plan.md` / `module-lifecycle-plan.md`. 이들은 M2를 만드는
+   문서가 아니라 **M2가 만든 것을 쓰는** 문서라, "소비자가 요구하는데 M2
+   설계엔 없는 것"이 여기서만 보인다.
+
+**실측 환경**: `luau` / `luau-analyze`
+(`~/.local/share/mise/installs/luau/latest`), `python3`, 2026-08-25 실행,
+작업 트리는 이 패스 시작 시점 상태 그대로(커밋되지 않은 변경 없음).
+**아래에서 `pesde` 링크를 실제 디렉토리로 치환한 구간이 있으나 검증 후
+전부 원상복구했고**(심볼릭 링크 20개, `git status` 클린), 그 폴더들은
+전부 `.gitignore` 대상이라 저장소 파일은 손대지 않았다.
+
+**이 패스의 범위**: 커밋된 `quad-base/src/`(`init.luau`/`Relate.luau`/
+`Debug/init.luau`) · `quad-types/src/` · `type-version-check/src/` ·
+`quad-base/test/` 3개 · 루트 `pesde.toml`/`.luaurc`/`default.project.json`/
+`mise.toml` · `.claude/luau-test/`(`STATUS.md` + `done/` 전량) ·
+`base/store-plan.md` 런타임 절 · `base/attribute-plan.md` 그룹 절 ·
+`base/modifier-plan.md` 7번 · `base/source-state-plan.md`의 온톨로지·전파
+모델·`:With` 절 · `base/state-epoch-plan.md` §2 · `base/quad-types-plan.md` ·
+`base/project-setup-plan.md` · `base/relate-plan.md` · `ROADMAP.md` M1/M2/M7.
+**1·2차 패스(`H-55`~`H-76`)와 겹치는 항목은 없다** — 겹칠 뻔한 자리는
+항목 안에 "이건 `H-xx`와 별개다"로 적었다.
+
+---
+
+## 🔴 `H-77` — `Relate`의 *내부 키*가 `inst`를 되참조하면 `SetStrong`/`SetWeak` **둘 다** 샌다 (실측)
+
+**어디**: `base/relate-plan.md`의 "위험한 패턴 — 서로 다른 두" 절,
+`base/module-lifecycle-plan.md`의 "New()의 내부 구성 — InitXxx 팩토리 체이닝" 절,
+그리고 **실제로 커밋된 `quad-base/src/init.luau`**.
+
+**`H-71`과 무엇이 다른가**: `H-71`은 `SetStrong(inst, key, **value**)`의
+**값**이 `inst`를 되참조하는 경우였고, 결론은 *"`SetWeak`은 안전하다"*
+(케이스3이 0/50)였다. 이 항목은 **가운데 인자(`key`)** 다. `Relate`의
+실제 구조상 —
+
+```lua
+-- quad-base/src/Relate.luau, 커밋된 그대로
+buckets[inst] = bucket          -- buckets는 __mode = "k"
+bucket.StrongMap[key] = value   -- 평범한 테이블 → 키·값 모두 강함
+bucket.WeakMap  = setmetatable({}, { __mode = "v" })   -- **값만** weak
+```
+
+`WeakMap`이 `__mode = "v"`이므로 **`SetWeak`도 키는 강하게 잡는다.**
+그래서 키가 `inst`를 잡으면 `buckets`의 weak 키가 자기 자신의 버킷을
+통해 살아남는다 — `SetStrong`이든 `SetWeak`이든 똑같이.
+
+**실측 1 — 커밋된 `Relate.luau`를 그대로 require**:
+
+```lua
+local Relate = require("./Relate")
+-- 대조군: 내부 키가 inst를 캡처하지 않음
+local keyFn = function() return i end        -- → 50개 중 0개 생존
+-- 케이스: 내부 키가 inst를 캡처
+local initFn = function() return inst end    -- → 50개 중 50개 생존
+-- 같은 모양을 SetWeak으로                    -- → 50개 중 50개 생존
+```
+
+```
+[대조군 — 키가 inst 미참조]  0
+[케이스 — 키가 inst 캡처]   50
+[SetWeak — 키가 inst 캡처]  50   ← H-71의 해법 (b)가 여기선 안 듣는다
+```
+
+**실측 2 — 커밋된 `quad-base/src/init.luau`의 `RunInit`이 실제로 물린다.**
+그 파일은 `runInitRelate:SetStrong(self, initFn, true)`로 **함수 자신을
+내부 키**로 쓰고, 바로 위에 이렇게 적어뒀다:
+
+> `New()가 몇 번 불려도 module마다 weak-키잉되므로 별도 정리 불필요(module이 GC되면 이 기록도 같이 사라짐).`
+
+`initFn`이 module을 캡처하는 순간 이 주석이 거짓이 된다:
+
+```lua
+local Quad = require("../src")
+-- A: initFn이 module을 캡처하지 않는 정상형
+local function initFn(m) m.tagA = true end
+for i = 1, 30 do local q = Quad.New(); q:RunInit(initFn); canaryA[i] = q end
+-- B: initFn이 바깥 module 변수를 캡처
+for i = 1, 30 do local q = Quad.New(); q:RunInit(function() q.tagB = true end); canaryB[i] = q end
+```
+
+```
+[A] initFn이 module 미캡처 — 살아남은 module 수: 0
+[B] initFn이 module 캡처   — 살아남은 module 수: 30
+```
+
+`runInitRelate`는 **모듈 레벨 상수**라 프로세스 수명 내내 산다. 즉 B
+모양으로 `RunInit`을 쓰면 그 `New()` 인스턴스는 **영원히 안 죽는다.**
+`q:RunInit(function() ... q ... end)`는 특별히 이상한 코드가 아니다 —
+`initFn(self)`가 `self`를 주긴 하지만, 바깥 변수를 그냥 쓰는 게 더 짧아서
+자연히 나온다.
+
+**어느 서술이 틀렸나**: `relate-plan.md`의 규칙 문단은 위험을 전부
+**"값"** 기준으로만 서술한다 — *"어떤 값(`inst` 아닌 임의 객체 …)을 다른
+`Relate`의 바깥 키로 쓰고 싶어지면 … 그 값 자체가 `inst`로 되돌아가는 강한
+back-reference를 갖고 있는지 먼저 확인할 것"*. **`Relate` 자신의 두 번째
+인자(내부 키)는 이 문서 어디에도 등장하지 않는다.** `H-71`이 이미 그
+절 전체를 다시 쓰기로 만들어놨으니, 다시 쓸 때 **슬롯을 셋으로 나눠**
+적어야 한다:
+
+| 슬롯 | `SetStrong` | `SetWeak` |
+|---|---|---|
+| 바깥 키(`inst`) | weak(설계) | weak(설계) |
+| 내부 키(`key`) | **강함** | **강함** ← 여기 규칙이 없었다 |
+| 값(`value`) | 강함(`H-71`이 다룸) | weak |
+
+**갈래(결정 전 목록)**:
+(a) **규칙만 넓힌다** — "`Relate`의 내부 키로 쓰는 객체는 `inst`를 되참조하면
+안 된다(문자열/숫자/`inst`와 무관한 값 객체만)"를 못박고, 지금 내부 키가
+객체인 자리를 전수 확인한다. 실제로 객체를 내부 키로 쓰는 건
+`runInitRelate`(함수)와 `groupClaimKeys`(그룹 `Attribute` 값 객체) 둘뿐이고,
+뒤는 값 객체가 `inst`를 안 잡으므로 안전하다 — **확정적으로 물리는 건
+`RunInit` 하나다.**
+(b) **`RunInit`의 키를 바꾼다** — 함수 자신 대신 호출부가 주는 이름/토큰을
+키로 쓴다. 다만 `module-lifecycle-plan.md`가 "함수 자체를 릴레이션 키로 쓴다"를
+**센티널을 없애는 근거**로 확정해뒀으므로(위 절 참고) 이걸 되짚는 셈이 된다.
+(c) **`Relate`에 내부 키까지 weak인 저장 모드를 추가한다** — `__mode = "kv"`
+서브맵. 표면이 하나 늘고, ephemeron이 없으므로 이번엔 **키가 값을 잡는**
+반대 방향 문제가 생긴다(값이 `true`인 `runInitRelate`엔 무해).
+(a)가 제일 싸고 `H-71`의 규칙 재작성과 한 번에 끝난다. 어느 쪽이든
+**`quad-base/src/init.luau`의 그 주석은 지금 거짓이므로 같이 고쳐야 한다.**
+
+**이건 `H-71`과 별개다** — 같은 파일의 같은 절을 고치게 되지만, `H-71`의
+해법 (b)(`SetStrong` → `SetWeak`)가 **이 경우엔 아무 효과가 없다**는 게
+실측으로 확인됐으므로 따로 결정해야 한다.
+
+## 🔴 `H-78` — 커밋된 M1 스모크 2개와 타입 스파이크 `23`이 지금 저장소 상태에서 안 돈다 (실측)
+
+**어디**: `ROADMAP.md` M1의 *"`quad-base/test/mock.luau` + `smoke.*.luau`, 전부 PASS"* /
+*"`RunInit`/`AddPlugin`으로 구현·smoke 테스트 검증 완료"*,
+`base/project-setup-plan.md`의 "워크스페이스 의존성은 심볼릭 링크로 연결된다" 절,
+`.claude/luau-test/STATUS.md`(스파이크 `23`이 `done/`).
+
+**실측 — 이 패스 시작 시점의 저장소 상태 그대로**:
+
+```
+$ luau quad-base/test/smoke.init.luau
+error while running module: ./quad-base/src/init.luau:17: error while running
+module: error requiring module "./.pesde/qwreey+quad_types/0.0.0/quad_types/src":
+could not resolve child component "src"
+
+$ luau quad-base/test/smoke.plugin.luau      → 같은 에러
+$ luau quad-base/test/smoke.mock.luau        → ALL PASS  (src를 require 안 함)
+```
+
+**원인은 심볼릭 링크다 — 격리해서 확인했다.** 이 `luau` CLI는 require
+경로에 심볼릭 링크가 끼면 디렉토리든 파일이든 해소하지 않는다:
+
+```lua
+require("./real/src")   -- 실제 디렉토리 → ok
+require("./linked")     -- 같은 곳을 가리키는 심볼릭 링크 → could not resolve child component
+```
+
+`pesde`의 워크스페이스 링크가 전부 심볼릭 링크이므로(`find -type l` → 20개),
+`quad-base/src/init.luau`가 `quad_types`를 require하는 순간 걸린다.
+
+**⭐ 더 나쁜 쪽은 타입 검사다 — 실패가 "진단 0건"처럼 보인다.**
+
+```
+$ luau-analyze quad-base/src/init.luau quad-base/src/Relate.luau ... 
+quad-base/roblox_packages/quad_types.luau(1,16): TypeError: Unknown require: unsupported path
+quad-base/roblox_packages/quad_types.luau(2,21): TypeError: Unknown type 'module.Quad'
+./quad-base/src/init.luau(37,3): TypeError: Cannot call a value of type *error-type* ...
+```
+
+즉 **`Quad` 타입 계약이 quad-base 쪽에서 아예 안 보인다.** 그리고
+`done/`에 들어 있는 `23-type-quadtypes-checkversion-addplugin.luau`는
+이 상태에서 **자기 음성 대조군이 한 건도 안 뜬다**:
+
+```
+$ luau-analyze .claude/luau-test/done/23-type-quadtypes-checkversion-addplugin.luau
+quad-types/luau_packages/type_version_check.luau(1,16): TypeError: Unknown require: unsupported path
+quad-types/luau_packages/type_version_check.luau(2,45): TypeError: Unknown type 'module.CheckVersion'
+```
+
+그 파일이 검증하려는 것(버전 불일치 시 진단)은 **한 줄도 안 나온다.**
+`base/project-setup-plan.md`가 이미 경고해둔 실패 모드 그대로다 —
+*"`luau-analyze`가 진단 0건이어도 타입이 제대로 해소됐다는 뜻이"* 아니다.
+
+**대조 — 문서가 적어둔 워크어라운드를 적용하면 전부 정상이다.**
+심볼릭 링크 20개를 실제 디렉토리 복사본으로 치환하고 다시 돌리면:
+
+```
+smoke.init.luau    → === ALL PASS ===
+smoke.plugin.luau  → === ALL PASS ===
+luau-analyze quad-base/src/... quad-types/src/... type-version-check/src/...  → 진단 0건
+스파이크 23        → TypeError: type-version-check: version "9.9.9" does not match pattern "0.0.0"
+                     (정확히 의도한 음성 대조군 1건, 그 외 0건)
+```
+
+**즉 설계도 코드도 멀쩡하다 — 빠진 건 "이 저장소를 돌릴 수 있게 만드는
+단계"가 어디에도 절차로 없다는 것이다.** `project-setup-plan.md`는 그
+치환을 **과거에 한 번 손으로 했다는 기록**으로만 적어두고 스스로
+*"아직 반복 가능한 스크립트/mise task로 정식화하진 않음"*이라고 밝힌다.
+그 사이에 —
+
+- `ROADMAP.md` M1의 "전부 PASS"에는 **날짜도 전제조건도 없다** —
+  `conventions.md`의 시한부 주장 규약(날짜를 붙일 것)에 걸리는 자리인데
+  `doc-check.py`는 이 문장 모양을 안 잡는다(실제로 지금 ERROR 0이다).
+- `luau-test/STATUS.md`는 `23`을 `done/`에 두고 실행법을
+  `luau-analyze <파일>`이라고만 적는다 — 그대로 따라 하면 위 상태가 된다.
+- **작업 트리가 이 패스 시작 시점에 이미 실패 상태였다.** 즉 그 사이의
+  어떤 세션이 `luau-analyze`를 돌렸다면 **거짓 클린**을 받았다.
+
+**왜 지금 이게 M2 문제인가**: M2는 **`quad-types`의 `Quad`에 필드를 추가하는
+첫 마일스톤**이고(`ROADMAP.md` M2의 `H-25` 파생 항목, 아래 `H-80`), 그
+추가가 실제로 먹었는지 확인하는 유일한 수단이 정확히 지금 조용히 망가져
+있는 그 경로다.
+
+**갈래**: (a) 치환을 `mise` task(또는 `.claude/tools/`의 스크립트)로
+정식화하고 `project-setup-plan.md`/`STATUS.md`/`ROADMAP.md`가 그걸
+가리키게 한다 — 문서가 이미 *"이 시점에 정식 스크립트화를 고려할 것"*이라
+예고해둔 선택지다. (b) 그 스크립트가 없으면 진단이 무의미하다는 걸
+`luau-test/README.md`/`STATUS.md`의 실행법 줄에 명시한다(최소 조치).
+(c) `ROADMAP.md` M1의 "전부 PASS"에 **날짜와 전제조건**을 붙인다.
+셋 다 서로 배타적이지 않다.
+
+**이건 `H-25`(닫힌 `Quad` 레코드)와 별개다** — 그쪽은 타입이 **좁아서**
+에러가 나는 것이고, 이쪽은 타입이 **아예 안 보여서** 에러가 안 나는 것이다.
+
+## 🟡 `H-79` — `Store`에 열거 표면이 없는데 그룹 `Attribute`가 그걸 요구한다 (실측)
+
+**어디**: `base/attribute-plan.md`의 "그룹 `Attribute(...)` — 여러 Store를 한 번에 attribute로" 절
+(`attr:NameMap(): {[string]: Source<any>}`, 그리고 *"각 Store에서 이름 붙은
+`Source` 슬롯을 그대로 가져와 자기 자신의 key→Source 맵에 넣는 것"*),
+같은 문서의 "메커니즘 — 그룹 전용 키로 단일 키 경로에 위임" 절
+(`for name, source in pairs(v:NameMap()) do`),
+`base/store-plan.md`의 "Store = Source들의 이름 붙은 모음" 절.
+
+**무엇이 어긋나나**: `Attribute(store)`는 Store를 **이름 집합으로 평탄화**해야
+하는데, `store-plan.md`는 열거 표면을 하나도 정의하지 않는다. 남는 건
+`pairs(store)`뿐이고, 그건 **raw 키만** 준다 — 그런데 같은 문서가 확정한
+Store 모델은 **eager + lazy**다:
+
+> `Store<<SomeType>>()`처럼 `defaults` 없이 만든 뒤 `.Key:Set(v)`를 부르는 경우
+
+이 형태의 Store는 **생성 직후 raw 키가 하나도 없다.**
+
+**실측** — 확정 스케치를 그대로 옮긴 최소 모델(eager `table.clone` +
+lazy `__index` + `rawset`):
+
+```lua
+local s1 = Store({hp = 10, mp = 5})
+local n = 0; for k in s1 do n += 1 end          --> 2
+
+local s2 = Store()          -- Store<{hp:number, mp:number}>() 상당
+local n2 = 0; for k in s2 do n2 += 1 end        --> 0   ← Attribute가 볼 이름이 없다
+local _ = s2.hp             -- 어딘가에서 한 번 읽히면
+local n3 = 0; for k in s2 do n3 += 1 end        --> 1   ← 이제 1개
+```
+
+```
+eager store 열거 개수: 2
+lazy-only store 열거 개수(Attribute가 볼 이름 수): 0
+hp 한 번 접근 후: 1
+```
+
+즉 `Attribute(store)`가 잡는 이름 집합이 **"그 시점까지 누가 어떤 키를
+읽었는가"에 좌우된다.** 렌더 순서가 조금만 바뀌어도 attribute가 붙었다
+안 붙었다 하는, 재현이 어려운 종류의 버그다.
+
+**여기서 갈라지는 부수 질문 하나** — `:NameMap()`이 **생성 시점 스냅샷**인지
+**호출 시점 라이브 조회**인지도 안 정해져 있다. `attribute-plan.md`의
+`Attribute.Merged` 서술은 *"자기 자신의 key→Source 맵에 넣는 것"*이라
+스냅샷처럼 읽히는데, 의사코드는 `process`마다 `v:NameMap()`을 다시 부른다.
+스냅샷이면 위 타이밍 의존이 그대로 굳고, 라이브면 **같은 그룹 값이
+디스패치마다 다른 키 집합을 내놓을 수 있어** 그 절이 확정한 "자기가
+등록했던 키 전부를 걷어내는" 클로저 계약과 부딪힌다(클로저는 `keys`를
+캡처하므로 실제론 안전하지만, 그러면 "라이브"인 의미가 없다).
+
+**필요한 것**: 셋 중 하나를 M2에서 정해야 한다 —
+(a) **Store가 선언된 키 집합을 런타임에도 안다** — `Store<T>(defaults)`가
+`defaults` 없이도 이름 목록을 받을 수 있게 하거나, 타입 쪽 선언에서
+런타임 목록을 만들 방법을 둔다(지금은 없다 — `store-plan.md`가 확정한
+방어선이 *"런타임이 아니라 타입"*이라 런타임엔 선언 정보가 0이다).
+(b) **`Attribute(store)`는 그 시점 materialize된 키만 본다고 계약으로
+못박는다** — 그러면 `defaults`를 주는 게 사실상 필수가 되고, 그 사실을
+`store-plan.md`/`attribute-plan.md` 양쪽에 적어야 한다.
+(c) **Store에 명시적 열거 표면을 하나 둔다**(`store:Names()` 류) —
+`Tag:Names()`/`attr:NameMap()`과 같은 계열이고, `H-73`/`H-74`가 이미
+제기한 "예약 키냐 탑레벨 함수냐" 문제를 같이 받는다.
+
+**이건 `H-74`(eager 경로가 `__index`를 우회한다)와 별개다** — 그쪽은
+예약 키가 가려지는 문제이고, 이쪽은 **키가 아직 존재하지 않는** 문제다.
+다만 둘 다 "eager와 lazy가 서로 다른 것을 보고 있다"는 같은 뿌리라
+같이 보는 게 낫다.
+
+## 🟡 `H-80` — M2가 `Quad`에 추가할 목록이 `Source`/`State`/`Store`뿐이다
+
+**어디**: `ROADMAP.md` M2의 `H-25` 파생 체크박스(*"`quad-types`의 `Quad`에
+`Source`/`State`/`Store` 필드 추가"*), `base/quad-types-plan.md`의
+"`Quad` 타입 — 확정된 표면" 절과 "`AddPlugin<Self, P>` — 실측 검증된 플러그인 체이닝" 절,
+`base/source-state-plan.md`의 "핵심 온톨로지" 절.
+
+**두 가지가 어긋난다.**
+
+**(1) `State`는 런타임 값이 아예 없다.** 코퍼스 어디에도 `State(...)`
+생성자가 없다 — State는 `:With`/`:Compute`/`:Gate`로만 생기고, 같은
+문서가 *"State는 쓰기 대상이 아님"*으로 확정해뒀다. 그래서 `Quad`에
+넣을 수 있는 건 **타입 재수출**(`export type State<T>`)뿐인데, 체크박스는
+`Source`/`Store`와 나란히 **"필드"**라고 적는다. 구현자가 그대로 읽으면
+`Quad`에 `State: ???`를 만들려다 막힌다.
+
+> **부수 — `state(state)`라는 옛 표기가 아직 살아 있다.**
+> `source-state-plan.md`의 "핵심 온톨로지" 절이 State의 합성 모델을
+> *"`state(state)`로 기존 state의 결과를 받아 새 state를 만들어 분기 가능"*
+> 이라고 적고, `base/architecture.md`의 소스 트리 주석(`State.luau`)도
+> *"state(state) 분기"*를 그대로 복사해뒀다. 이건 2026-08-04 시점 표기이고
+> 실제 확정 표면은 `:With`/`:Compute`다 — **호출 가능한 `State(x)`가 있는
+> 것처럼 읽히므로** (1)과 같이 정리하는 게 좋다.
+
+**(2) M2가 얹는 나머지 탑레벨 값이 전부 빠져 있다.** 같은 마일스톤의
+다른 체크박스들이 이미 요구하는 것만 모아도 —
+
+| M2가 만드는 탑레벨 값 | 어느 체크박스가 요구하나 |
+|---|---|
+| `Effect(fn, ...deps)` | M2 "`Effect(fn, ...deps)`" 항목 |
+| `is*` 전량(`isState`/`isSource`/`isObserver`/`isEffect`/`isEpoch`/`isStore`/…) | M2 `Brand.luau` 항목 |
+| `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` | M2 `LifetimeHandle.luau` 항목(*"네임스페이스 없이 탑레벨 함수로 export"*) |
+| `Relate()` | M2 `Relate.luau` 항목 |
+| `Blocker()` | M2 `Blocker.luau` 항목 |
+
+`H-25`가 실측으로 확인한 벽은 *"`New(): Quad`가 닫힌 레코드이고 `RunInit`은
+반환값이 없어 타입을 못 넓힌다"*였다. 그 벽은 `Dispatch` 하나에만 있는 게
+아니라 **위 전부에 똑같이 있다** — `quad.isState(v)`도 `quad.Effect(fn)`도
+지금 `Quad`엔 없으므로 `luau-analyze`에서 그대로 `Key not found`다.
+
+**갈래**: (a) M2 체크박스의 목록을 위 표까지 확장하고, `State`는
+"타입 재수출만"으로 명시한다(가장 싸다). (b) 규칙 자체를 *"그
+마일스톤이 `quad-base`의 `init.luau`에 심는 모든 표면"*으로 다시 쓰고
+마일스톤마다 목록을 안 세게 한다 — `quad-types-plan.md`의 그 절이 규칙의
+정본이므로 거기서 한 번만 정하면 된다. 어느 쪽이든 `ROADMAP.md` M3의
+같은 항목(`Dispatch` 기준)도 같이 봐야 한다.
+
+## 🟡 `H-81` — `isModifier` 런타임 가드는 전부 M2 코드인데 체크박스는 M7에만 있다
+
+**어디**: `base/modifier-plan.md`의 "7. State/Source가 Modifier를 값으로 담는 것" 절,
+`base/source-state-plan.md`의 "따름정리 — `Store<T>`/`Source<T>`의 `T`는 Modifier가 될 수 없음" 절,
+`ROADMAP.md` M7의 *"`State<Modifier>` 조합에 `isModifier` 기반 명시적 error 적용"* 체크박스.
+
+**(1) 마일스톤이 어긋난다.** `modifier-plan.md` 7번이 확정한 적용 지점은
+셋인데 **전부 M2가 쓰는 파일**이다:
+
+- `Source:Set(value)` → `Source.luau`(M2)
+- `Store({defaults})` 생성 시 각 키를 `Source(v)`로 만드는 시점 → `Store.luau`(M2)
+- State의 `:Compute(fn)` 결과를 캐시로 저장하기 직전 → `State.luau`(M2)
+
+판별자 `isModifier` 자체는 M2 앞머리 `Brand.luau` 항목에 이미 들어 있으므로
+**M2 시점에 쓸 수 있다.** 그런데 체크박스는 M7에만 있고 **M2 체크리스트엔
+한 줄도 없다.** 그대로 가면 (a) M2 구현자가 이 훅 자리를 모른 채 세 파일을
+짜고, (b) M7이 M2 코드를 다시 열어야 하며, (c) 그 사이 **M4(첫 end-to-end
+반응형 업데이트)가 가드 없이 돈다.**
+
+**(2) 적용 지점 목록이 두 문서에서 다르다.** `source-state-plan.md`의
+"따름정리" 절은 *"`Source<Modifier>`(Store를 거치지 않는 독립
+`Source(someModifier)`)에도 동일하게 적용됨"*이라고 **독립 생성자**를
+명시하는데, `modifier-plan.md` 7번의 적용 지점 열거엔 그 자리가 없다
+(`Source:Set` / Store defaults / `:Compute` 캐싱 셋뿐). 구현자가
+`modifier-plan.md`만 보면 `Source(someModifier)`가 그냥 통과한다.
+
+**필요한 것**: (a) `ROADMAP.md` M2에 "위 세 자리(+ `Source(v)` 생성자)에
+`isModifier` 게이트를 같이 심는다"를 항목으로 넣고 M7 항목은 그걸
+가리키게 한다, (b) `modifier-plan.md` 7번의 적용 지점 목록에 독립
+생성자를 추가해 두 문서를 맞춘다. 둘 다 순수 문서 작업이고 설계는 안
+바뀐다.
+
+## 🟢 `H-82` — `:With`를 실노드로 확정한 근거 2번이 pass-through 노드엔 성립하지 않는다
+
+**어디**: `base/source-state-plan.md`의 "`:With`도 새 State 노드로 확정, 가변인자로 체인 남발 방지" 절의
+근거 2번(*"공유 캐시를 못 타고 중복 계산이 생김. [2026-08-14 근거 재작성]"*).
+
+**무엇이 어긋나나**: 그 근거는 `w = key1:With(key2)`에서 갈라지는
+`c1 = w:Compute(g1)` / `c2 = w:Compute(g2)`를 들며 *"빌더면 `w`라는 노드가
+아예 없어서 c1/c2가 key1/key2에 각자 직접 구독을 걸고 각자 계산하므로,
+공유 지점이 사라짐"*이라고 한다. 그런데 **같은 절이 바로 아래에서
+`:With` 노드를 "계산 함수는 없고 값은 `self`를 그대로 통과(pass-through)"**
+로 확정한다.
+
+계산이 없으므로 **공유될 계산이 없다.** `c1`은 `g1`을, `c2`는 `g2`를
+돌리고, 그 둘이 읽는 `key1`/`key2`의 캐시는 **빌더든 노드든 어느 쪽이든
+key1/key2 자신이 들고 있다.** 실노드 `w`가 실제로 아끼는 건 계산이
+아니라 **엣지 수와 에포크 부기**다(`key1 → w` 하나 대 `key1 → c1`,
+`key1 → c2` 둘 — `state-epoch-plan.md` §7의 맵 크기가 그만큼 덜 는다).
+
+**왜 이게 눈에 띌 만한가**: 그 근거는 2026-08-14에 *"원래 이 항목은
+`invalid` 플래그로 다이아몬드 중복 워크 방지 장치를 근거로 들었으나 그
+장치는 폐기됨"*이라며 **일부러 다시 쓴 것**이고, 그러면서
+*"근거의 강도는 이 재작성으로 오히려 올라감: 예전 근거는 순회 비용
+최적화였지만, 지금 근거는 실제 중복 **계산**임"*이라고 스스로 평가한다.
+실제로는 **정확한 서술(순회 비용)에서 부정확한 서술(중복 계산)으로
+내려간 것**이다. 바로 위 "왜 State 체인을 Modifier처럼 플래튼하지 않는가" 절의
+같은 논증은 `b = a:Compute(f)`(계산이 **있는** 노드)를 예로 들어서 맞는데,
+그 논증을 계산이 없는 노드에 그대로 복사하면서 어긋났다.
+
+**결론은 안 바뀐다** — 근거 1(디버그 그래프 1:1 대응)과 근거 3(clone이
+Compute 노드의 캐시 슬롯까지 복사해 실제로 깨짐)이 그대로 유효하다.
+근거 2를 "엣지/부기 공유"로 고쳐 적기만 하면 된다.
+
+## 🟢 `H-83` — 확정된 Store 구현 스케치를 그대로 쓰면 무인자 `Store()`가 크래시한다 (실측)
+
+**어디**: `base/store-plan.md`의 "Store = Source들의 이름 붙은 모음" 절 —
+*"`defaults`는 선택(안 줘도 됨, 순수 편의용 초기값 템플릿)"*과, 같은 절의
+확정된 구현 스케치 *"`local sources = table.clone(defaults); for k, v in
+sources do sources[k] = Source(v) end`"*.
+
+```
+$ luau -e 'print(pcall(function() return table.clone(nil) end))'
+false   invalid argument #1 to 'clone' (table expected, got nil)
+```
+
+`defaults`가 선택인데 스케치엔 `or {}`가 없다. **`table.clone(defaults or {})`**
+한 곳만 고치면 된다 — 구현 시 자연히 걸릴 수도 있지만, 그 스케치는
+*"성능 근거"*까지 붙여 확정된 문장이라 그대로 옮겨 적힐 가능성이 높다.
+같은 자리에서 `Source()`(무인자 = `Source(nil)`)는 이미 확정돼 있으므로
+추가 결정은 없다.
+
+## 🟢 `H-84` — `:With`/`state:Block`/`Source:Emit`이 M2 체크리스트에 개별 항목으로 없다
+
+**어디**: `ROADMAP.md` M2의 "반응형 본체" 절.
+
+`:Compute(fn, ...)`·`state:Apply(factory)`·`state:Observer(fn)`·
+`state:Gate(setup)`는 각각 체크박스를 갖는데, 다음 셋은 `Source.luau`/
+`State.luau`/`Store.luau`라는 한 줄짜리 포괄 항목 안에만 있다:
+
+- **`:With(...)`** — 새 노드를 만드는 프리미티브이고, `source-state-plan.md`가
+  *"`:With`가 만드는 pass-through 노드는 계산 함수가 없어서"* 우연한 캡처가
+  없다며 **미해결 항목(중간 State GC)의 핵심 사례로 지목**한 바로 그 자리다.
+  그 미해결이 `question.md` 최우선 절에 있으므로, 체크박스가 없으면
+  "결론이 어디에 반영돼야 하는가"가 로드맵에서 안 보인다.
+- **`state:Block(b)`** — `Blocker.luau` 항목은 `:On()`/`:IsOn()`/
+  `:OffWithoutEmit()`만 나열한다. **State 쪽 진입점**은 안 적혀 있는데,
+  `blocker-plan.md`가 확정한 공개 API이고 `H-55`의 결정이 정확히 이
+  진입점의 계약을 바꾼다.
+- **`Source:Emit()`** — `state-epoch-plan.md` §8이 *"`Revision`만 갱신하면
+  그대로 동작한다"*로 확정해둔 자리이고, `H-68`(같은 값 `Set`의 동작)의
+  결정이 이것의 존재 이유를 바꾼다.
+
+순수 로드맵 정합이라 🟢이지만, **`H-55`/`H-68`과 "중간 State GC"의 결론이
+각각 어디로 가야 하는지가 지금 로드맵에 자리가 없다**는 뜻이라 그 셋을
+결정할 때 같이 처리하는 게 낫다.
+
+---
+
+## 부록 — 3차 패스에서 돌려봤는데 **문제가 없던 것**
+
+같은 각도로 훑었지만 실측 결과 문서와 일치했던 것들. 다음 라운드가
+같은 곳을 다시 파지 않도록 남긴다.
+
+- **`bit32.bnot(-rev)` 리비전 갱신** — `base/state-epoch-plan.md` §2의
+  실측 표(`0 → 4294967295`, `1 → 0`, `2 → 1`, `4294967295 → 4294967294`)가
+  **정확하다**. `0`에서 10회 돌려도 `4294967295`부터 1씩 내려가며 중복이
+  없다. `-0` 입력(`rev == 0`)도 문서 서술대로 동작한다.
+- **`python3 .claude/tools/doc-check.py`** — **ERROR 0건**, WARN 37건
+  (전부 판단이 필요한 종류: `-followup.md`류 상대 표기, 날짜 없는 완결
+  주장). 회귀 없음.
+- **`luau-test/done/`의 런타임 스파이크 8개**(`02`/`03`/`06`/`07`/`11`/
+  `17`/`18`/`20`) — **전원 재통과**, FAIL 문자열 0건.
+- **`luau-test/STATUS.md`의 개수 표** — 실제 폴더와 일치
+  (`done/` 16, `rewrite-required/` 7, `not-run/` 0+헬퍼 1).
+- **타입 스파이크의 진단 개수** — 워크어라운드 적용 후 `08`/`09`/`12`/
+  `13`/`14`/`16`/`21`/`23` 전부 각자 의도한 음성 대조군 수만큼만 뜬다
+  (`08`의 `Recursive type being used with different parameters`는
+  `base/typing-limits.md`가 확정한 **의도된** 결과다).
+- **커밋된 `quad-base/src/*.luau`의 타입** — 워크어라운드 적용 시
+  `luau-analyze` **진단 0건**. `H-78`의 에러는 전부 링크 해소 실패에서
+  파생된 것이고 소스 자체의 타입 문제가 아니다.
+- **`Relate.luau`의 `WeakMap` 공유 메타테이블/버킷 lazy 생성** —
+  `base/relate-plan.md`의 "실제 구조" 절 서술과 커밋된 코드가 일치한다
+  (문제는 코드가 아니라 `H-77`의 **규칙 쪽 공백**이다).
+
+
+---
+
 ## 회신 방법
 
 6라운드와 같다 — 항목 번호로 결정만 적어주면 `-followup.md`를 만들고
@@ -1028,3 +1534,12 @@ local rn: number = r      -- ✅ U == number 로 정확히 추론
 `SetStrong`을 쓰는 모든 자리가 같은 실수를 반복한다. `H-72`는 `H-55`와
 같은 뿌리(`Epoch` 일반화 때 게이트 쪽 요구가 표면에 덜 반영됨)라 그것과
 같이 결정하는 게 낫다.
+
+**3차 패스**: `H-77`은 **`H-71`과 반드시 같이** 볼 것 — 같은 절을 고치게
+되지만 `H-71`의 해법 (b)가 여기선 안 듣는다는 게 실측으로 확인됐다.
+`H-78`은 설계 결정이 아니라 **작업 환경 결정**이라 다른 것들과 독립이고,
+지금 상태로 두면 M2 내내 타입 검사가 조용히 무의미해지므로 **착수 전에
+닫는 게 낫다**. `H-79`/`H-83`은 Store 런타임 하나에서 갈라져 나온 것이라
+`H-73`/`H-74`와 같이 보면 되고, `H-80`/`H-81`/`H-84`는 전부 **로드맵
+체크리스트가 실제 작업을 다 안 담고 있다**는 한 가지 문제의 세 얼굴이라
+한 번에 고치면 된다. `H-82`는 순수 문서 정정이고 결론을 안 바꾼다.
