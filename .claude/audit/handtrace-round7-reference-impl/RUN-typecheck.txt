@@ -1,0 +1,94 @@
+=== ty1_apply_call ===
+./ty1_apply_call.luau(25,19): TypeError: Expected this to be
+	't1 where t1 = (t2) -> U ; t2 = { Apply: <U>(t2, t1) -> U, Compute: <U>({ Get: (*CYCLE*) -> number }, ({ Get: (*CYCLE*) -> number }) -> U) -> *error-type* } & { Get: (*CYCLE*) -> number }'
+but got
+	'GateFactory'
+=== ty1b ===
+./ty1b.luau(16,19): TypeError: Expected this to be
+	'(t1) -> t1 where t1 = { Apply: <U>(t1, (t1) -> U) -> U } & { Get: (*CYCLE*) -> number }'
+but got
+	'GateFactory'
+=== ty2_effect_deps ===
+./ty2_effect_deps.luau(18,14): TypeError: Unknown type 'Instance'
+./ty2_effect_deps.luau(27,50): TypeError: Expected this to be
+	'(StateData<any> & { Compute: <U>(StateData<any>, (StateData<any>) -> U) -> *error-type* }) | Ref<any>'
+but got
+	'{ foo: number }'
+=== ty3_epoch_effectfn ===
+./ty3_epoch_effectfn.luau(38,21): TypeError: Expected this to be
+	'Epoch | EpochSet'
+but got
+	'{ [SourceData<number> & { Compute: <U>(SourceData<number>, (SourceData<number>) -> U) -> StateData<U> & { Compute: <U>(StateData<U>, (StateData<U>) -> U) -> *error-type* }, Emit: (SourceData<number>) -> (), Set: (SourceData<number>, number) -> SourceData<number> }]: true }'
+./ty3_epoch_effectfn.luau(46,19): TypeError: Not all codepaths in this function return '(() -> ())?'.
+=== ty4_effect_ret ===
+./ty4_effect_ret.luau(6,9): TypeError: Not all codepaths in this function return '(() -> ())?'.
+./ty4_effect_ret.luau(13,1): TypeError: Not all codepaths in this function return '(() -> ())?'.
+=== ty5_updatefn ===
+./ty5_updatefn.luau(11,6): TypeError: Expected this to be
+	'(any, number, SourceN, Element?, unknown?) -> (Element?, unknown?)'
+but got
+	'(any, number, SourceN, unknown, unknown) -> Element'; 
+Expected the return types to be `Element?, unknown?`, but got `Element`
+./ty5_updatefn.luau(21,6): TypeError: Expected this to be 'T?, UD?', but got 'nil'
+./ty5_updatefn.luau(28,1): TypeError: Not all codepaths in this function return 'Element'.
+./ty5_updatefn.luau(26,6): TypeError: Expected this to be
+	'(any, number, SourceN, Element?, unknown?) -> (Element?, unknown?)'
+but got
+	'(any, number, SourceN, unknown, unknown) -> Element'; 
+Expected the return types to be `Element?, unknown?`, but got `Element`
+./ty5_updatefn.luau(31,6): TypeError: Expected this to be 'T?, UD?', but got '()'
+=== ty6_multiret ===
+./ty6_multiret.luau(6,18): TypeError: Expected this to be 'El?, number?', but got 'El?'
+./ty6_multiret.luau(7,18): TypeError: Expected this to be 'El?, number?', but got 'El?'
+./ty6_multiret.luau(8,6): TypeError: Not all codepaths in this function return 'El?, number?'.
+./ty6_multiret.luau(16,7): TypeError: Not all codepaths in this function return 'El?'.
+=== ty7_fix ===
+./ty7_fix.luau(12,7): TypeError: Expected this to be
+	'((number) -> ()) | ((number) -> (El?, number?)) | ((number) -> El?)'
+but got
+	'(number) -> number'
+=== ty8_gate_apply ===
+./ty8_gate_apply.luau(41,21): TypeError: Expected this to be
+	'(() -> ()) -> () -> ()'
+but got
+	'(Blocker, () -> ()) -> () -> ()'; 
+Expected the 1st parameter to be a supertype of `() -> ()`, but got `Blocker`
+=== ty9_mixed_deps ===
+./ty9_mixed_deps.luau(20,23): TypeError: Consider annotating the return with number
+./ty9_mixed_deps.luau(22,6): TypeError: Expected this to be
+	't1 where t1 = { read Get: (t1) -> (number, ...unknown) }'
+but got
+	'SourceData<number>'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * the return types of property `Get` of the 1st parameter of property `Get` are `number` and the return type pack tail of property `Get` of the 1st parameter of property `Get` is `...unknown`, and `number` is not a supertype of `...unknown`
+./ty9_mixed_deps.luau(22,9): TypeError: Expected this to be
+	't1 where t1 = { read Get: (t1) -> (unknown, ...unknown) }'
+but got
+	'StateData<boolean>'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * the return types of property `Get` of the 1st parameter of property `Get` are `boolean` and the return type pack tail of property `Get` of the 1st parameter of property `Get` is `...unknown`, and `boolean` is not a supertype of `...unknown`
+./ty9_mixed_deps.luau(28,6): TypeError: Expected this to be
+	'SourceData<number>'
+but got
+	'StateData<boolean>'; 
+this is because 
+	 * Expected the return type of property `Get` of the 1st parameter of property `Get` to be exactly `number`, but got `boolean`
+	 * Expected the return type of property `Get` to be exactly `number`, but got `boolean`
+./ty9_mixed_deps.luau(28,9): TypeError: Expected this to be
+	'StateData<boolean>'
+but got
+	'SourceData<number>'; 
+this is because 
+	 * Expected the return type of property `Get` of the 1st parameter of property `Get` to be exactly `boolean`, but got `number`
+	 * Expected the return type of property `Get` to be exactly `boolean`, but got `number`
+=== ty10_contrast ===
+./ty10_contrast.luau(16,23): TypeError: Consider annotating the return with number
+./ty10_contrast.luau(16,82): TypeError: Expected this to be
+	't1 where t1 = { read Get: (t1) -> (number, ...unknown) }'
+but got
+	'SourceData<number>'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * the return types of property `Get` of the 1st parameter of property `Get` are `number` and the return type pack tail of property `Get` of the 1st parameter of property `Get` is `...unknown`, and `number` is not a supertype of `...unknown`
