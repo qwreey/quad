@@ -1,13 +1,15 @@
 # 구현 전 손 트레이싱 **7라운드** — M2(반응형 코어) 범위 + M2→M3 경계
 
-**구성**: **패스 4개, 발견 39건(`H-55`~`H-93`).** 1차 패스는 문서 대 문서
+**구성**: **패스 5개, 발견 46건(`H-55`~`H-100`).** 1차 패스는 문서 대 문서
 손 트레이싱(`H-55`~`H-70`), **2차 패스는 문서가 "확인했다"고 적은 주장을
 실제로 `luau`/`luau-analyze`에 걸어본 실측**(`H-71`~`H-76`, 2026-08-25 추가),
 **3차 패스는 (a) 실제로 커밋된 M1 코드·툴체인을 이 저장소에서 그대로 돌려본
 것과 (b) 1·2차가 범위에서 뺐던 "M2를 *소비하는* 문서"**(`H-77`~`H-84`,
 2026-08-25 추가), **4차 패스는 (a) M2 코어를 문서 그대로 Luau로 짜서 돌린
 참조 구현과 (b) 아무 문서도 안 정한 예외 경로**(`H-85`~`H-93`, 2026-08-25
-추가). 발견 번호는 패스를 가로질러 이어서 매긴다(6라운드와 같은 방식).
+추가), **5차 패스는 확정된 M2 표면을 실제 Luau 타입으로 선언해
+`luau-analyze`에 건 것**(`H-94`~`H-100`, 2026-08-25 추가). 발견 번호는
+패스를 가로질러 이어서 매긴다(6라운드와 같은 방식).
 
 **상태**: **[2026-08-25] 발견 보고 — 아무것도 반영하지 않았다.** 판정은
 사용자가 이 목록을 보고 한다. 6라운드까지의 결정은 뒤집지 않는 것을
@@ -115,6 +117,20 @@ GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 �
 | `H-91` | 🟢 | §8의 *"항상 state 는 get 이 최신"* 이 과한 서술 — `Animate`가 그 반례를 **설계로** 쓴다 | `state-epoch-plan.md` §8, `tween-plan.md` | 문서 정합 |
 | `H-92` | 🟢 | 확정된 구독자 스냅샷이 **emit마다·노드마다 배열 하나**를 할당 — §2가 테이블 리비전을 기각한 GC 근거와 어긋난다 | `ROADMAP.md` M2, `state-epoch-plan.md` §2 | 구현 시 정하면 |
 | `H-93` | 🟢 | `EpochMap` 키가 weak라, 중간 State GC 미해결이 **"낡았는데 최신이라고 오판"**으로도 나타난다 | `state-epoch-plan.md` §3 | 미해결의 파생 |
+
+**⭐ [2026-08-25] 5차 패스 — 확정된 표면을 실제 타입으로 선언해봤다 (`H-94`~`H-100`).**
+상세는 아래 "5차 패스" 절. **루트 `.luaurc`가 `languageMode: strict`이므로
+아래 진단은 이 프로젝트에 그대로 적용된다.**
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-94` | 🔴 | **`__call` 테이블은 `(State<T>) -> U` 자리에 안 들어간다** — `state:Apply(Debounce{...})` 확정 관용구가 타입에러. `gate-plan.md`가 *"확인할 필요도 없어졌다"*며 접은 불확실성이 `Debounce`/`Throttle` 쪽에 남아 있었다 | `source-state-plan.md` `:Apply`, `debounce-throttle-plan.md` 5-4 | ✅ 재현 |
+| `H-95` | 🔴 | **콜백이 "선언보다 적게 반환"하면 strict에서 에러** — `Effect`의 `fn`과 `:List`의 `updateFn` 둘 다, 문서가 드는 정상 용례가 전부 안 통과한다 | `effect-plan.md`, `ROADMAP.md` M2, `slot-plan.md` | ✅ 해법 대조까지 |
+| `H-96` | 🟡 | **trailing deps가 붙는 순간 콜백 파라미터 무주석 추론이 깨진다** — ②쪼개기가 푸는 범위 밖인데 그 경계가 어디에도 없다 | `source-state-plan.md`, `typing-limits.md` §1②·§7 | ✅ 0-dep/N-dep 대조 |
+| `H-97` | 🟡 | **M2의 `mock 대상 테스트`가 전파 루프를 한 번도 못 돈다** — 루프가 매 발화마다 부르는 `canExecute`가 M8에서만 구현되고 미주입 슬롯은 에러 스텁이다 | `ROADMAP.md` M2, `architecture.md`, `module-lifecycle-plan.md` | 표면 대조 |
+| `H-98` | 🟡 | **`:Subscribe()`의 공개 계약이 중간 State GC 미해결에 종속돼 있다** — 잘못 닫히면 "GC도 안 되고 발화도 안 하는" 조합 | `source-state-plan.md` Subscribe 절 | ✅ 재현 |
+| `H-99` | 🟢 | `Observer`가 파일 자리를 못 받았고 `:Subscribe()` 전역 레지스트리의 주인이 없다 — `Effect.luau`는 있는데 | `architecture.md` 소스 트리 | 표면 대조 |
+| `H-100` | 🟢 | `{[Source<T>]: true}`가 `{[Epoch]: true}` 자리에 안 들어간다(인덱서 키 불변) | `state-epoch-plan.md` §3 | ✅ 재현 |
 
 ---
 
@@ -2122,6 +2138,420 @@ GC 근거를 그에 맞게 완화한다(그러면 테이블 리비전 기각 근
 
 ---
 
+# 5차 패스 — 확정된 표면을 실제 Luau 타입으로 선언해봤다 (2026-08-25)
+
+**왜 이 패스가 있는가**: 사용자 요청 — *"계속 이어서 5차 패스로 더 찾아봐"*.
+
+**1~4차와 다른 각도**:
+
+1. **M2 공개 표면을 문서에 적힌 시그니처 그대로 타입으로 선언하고
+   `luau-analyze`에 걸었다.** 2차 패스도 타입을 봤지만 대상이 **`Store`의
+   타입 합성 하나**였다(`H-73`~`H-76`). 이번엔 **호출부 관점**이다 —
+   `:Apply`/`:Gate`/`:Compute(fn, ...deps)`/`Effect(fn, ...deps)`/`EpochMap`
+   /`updateFn`을 사용자가 실제로 쓰는 모양 그대로 써보고, **문서가 확정한
+   시그니처가 그 모양을 받아주는지**를 봤다. 이 축은 "타입이 표현
+   가능한가"(2차)가 아니라 **"확정된 타입이 확정된 관용구를 통과시키는가"**다.
+2. **그 과정에서 드러난 패키지·테스트 배선 공백**도 같이 적는다 — 타입
+   실험을 하려면 "이 값이 어디서 오는가"를 따라가야 하는데, 그때
+   `mock 대상 테스트`와 `Observer`의 파일 자리가 비어 있는 게 드러났다.
+
+**실측 환경**: `luau-analyze`
+(`~/.local/share/mise/installs/luau/latest`), 2026-08-25 실행. **루트
+`.luaurc`가 `languageMode: strict`이므로 아래 진단은 전부 이 프로젝트에
+그대로 적용된다.** 선언 스타일은 `base/typing-limits.md`의
+"그래서 우리가 하는 것 — ② 타입 선언은" 절이 확정한 데이터부/메소드부
+쪼개기를 그대로 따랐다(그래야 이 문서가 이미 확인한 것과 조건이 같다).
+
+**이 패스의 범위**: `base/source-state-plan.md`의 `state:Apply` ·
+trailing deps · Observer의 `:Subscribe()` 절 / `base/gate-plan.md` 2·5번 /
+`base/blocker-plan.md`의 `Policy` / `base/state-epoch-plan.md` §2·§3 /
+`base/effect-plan.md`의 `fn` 시그니처 / `base/debounce-throttle-plan.md`
+5-1·5-4 / `base/slot-plan.md`의 `updateFn` 시그니처 / `base/typing-limits.md`
+§1②·§7 / `base/architecture.md`의 테스트 전략·소스 트리 /
+`base/module-lifecycle-plan.md`의 미주입 슬롯 규약 / `ROADMAP.md` M2 /
+커밋된 `quad-base/test/mock.luau`. **`H-55`~`H-93`과 겹치는 항목은 없다.**
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-94` | 🔴 | **`__call` 테이블은 `(State<T>) -> U` 자리에 안 들어간다** — `state:Apply(Debounce{...})`라는 확정 관용구가 그대로 타입에러다. `gate-plan.md`가 *"확인할 필요도 없어졌다"*며 접은 그 불확실성이 `Debounce`/`Throttle` 쪽에 그대로 남아 있었다 | `source-state-plan.md` `:Apply`, `debounce-throttle-plan.md` 5-1·5-4, `gate-plan.md` 2번 | ✅ 재현 |
+| `H-95` | 🔴 | **콜백이 "선언된 것보다 적게 반환"하면 strict에서 에러다** — `Effect`의 `fn(self) -> (() -> ())?`와 `:List`의 `updateFn -> (T?, UD?)` 둘 다, 문서가 정상 용례로 드는 모양이 전부 안 통과한다 | `effect-plan.md`, `ROADMAP.md` M2, `slot-plan.md` | ✅ 재현·해법 대조까지 |
+| `H-96` | 🟡 | **trailing deps가 붙는 순간 콜백 파라미터 무주석 추론이 깨진다** — `typing-limits.md` ②쪼개기가 해결한 범위 밖인데 그 경계가 어디에도 없고, 7라운드 부록의 서술도 이 구분을 안 했다 | `source-state-plan.md` trailing deps 절, `typing-limits.md` §1②·§7 | ✅ 0-dep/N-dep 대조 |
+| `H-97` | 🟡 | **M2의 `mock 대상 테스트`는 전파 루프를 한 번도 못 돈다** — 루프가 매 발화마다 부르는 `canExecute`가 M8(quad-roblox)에서만 구현되고, 미주입 슬롯의 확정 기본값은 **에러내는 스텁**이다 | `ROADMAP.md` M2, `architecture.md` 테스트 전략, `module-lifecycle-plan.md`, `lifecycle-pattern.md` | 표면 대조 + 커밋된 mock 확인 |
+| `H-98` | 🟡 | **`:Subscribe()`의 공개 계약(*"참조를 아무 데도 안 담아도 정상"*)이 중간 State GC 미해결에 걸려 있다** — 잘못 닫히면 "GC도 안 되고 발화도 안 하는" 최악의 조합이 된다 | `source-state-plan.md` Subscribe 절 · 미해결 절 | ✅ 재현 |
+| `H-99` | 🟢 | **`Observer`가 파일 자리를 못 받았고, `:Subscribe()`가 요구하는 전역 강참조 레지스트리의 소유 모듈이 어디에도 없다** — `Effect.luau`는 있는데 | `architecture.md` 소스 트리, `ROADMAP.md` M2 | 표면 대조 |
+| `H-100` | 🟢 | `{[Source<T>]: true}`가 `{[Epoch]: true}` 자리에 안 들어간다(인덱서 키는 불변) — 집합을 만드는 자리마다 캐스트가 필요하다 | `state-epoch-plan.md` §3 | ✅ 재현 |
+
+---
+
+## 🔴 `H-94` — `__call` 팩토리는 `:Apply`의 타입 자리에 안 들어간다 (실측)
+
+**어디**: `base/source-state-plan.md`의 "`state:Apply(factory)`" 절
+(*"타입은 `factory: (State<T>) -> U): U`로 완전히 열어둠"*),
+`base/debounce-throttle-plan.md`의 "5-4. 제어 핸들" 절(팩토리 자신에
+`:Flush()`/`:Cancel()`을 붙임)과 5-1절의 확정 관용구
+`state:Apply(Debounce{Time = 0.3})`, `base/gate-plan.md` 2번.
+
+**무엇이 어긋나나**: `gate-plan.md` 2번은 `__call` 타입 불확실성을 이렇게
+접었다 — *"`__call` 테이블이 Luau에서 `(State<T>) -> U` 함수 타입 자리에
+그대로 들어가는지가 불확실하다(들어가지 않는 쪽이 유력). `Apply`를 쓸 이유
+자체가 없어졌으므로 확인할 필요도 없어졌지만, 혹시 되살아나면 `luau-test`
+스파이크 한 개로 판정할 것."*
+
+그 *"쓸 이유가 없어졌다"* 는 **`Gate` 자신에 대해서만** 참이다. 같은 항목이
+바로 아래에서 *"그래서 `Debounce`/`Throttle`은 `:Apply` 그대로 둔다"*고
+확정했고, `debounce-throttle-plan.md` 5-4절은 그 팩토리를 **메소드 두 개가
+달린 콜러블 값**으로 확정했다. Lua 함수 값에는 필드를 못 붙이므로 그
+모양은 **`__call` 테이블일 수밖에 없다.** 즉 접어둔 불확실성이 확정된
+공개 관용구 위에 그대로 남아 있었다.
+
+**실측**:
+
+```lua
+type GateFactory = typeof(setmetatable(
+    {} :: { Flush: () -> (), Cancel: () -> () },
+    {} :: { __call: (any, State<number>) -> State<number> }
+))
+local Debounced: GateFactory = nil :: any
+local b = s:Apply(Debounced)      -- ← 여기
+```
+
+```
+TypeError: Expected this to be '(t2) -> U ...' but got 'GateFactory'
+```
+
+- **제네릭 `:Apply`만의 문제가 아니다** — 평범한
+  `(f: (State<number>) -> State<number>)` 파라미터 자리에서도 똑같이 걸린다.
+- **직접 호출은 된다** — `Debounced(s)`는 진단이 없다. 즉 런타임은
+  멀쩡하고 **타입만** 막힌다. 그래서 `--!nocheck`로 짠 스파이크에선 안
+  드러나고, strict인 실제 코드에서만 터진다.
+
+**갈래(결정 전 목록)**: (a) `:Apply`의 파라미터 타입을 **함수와 콜러블의
+유니온**으로 연다 — 실측에서 유니온은 양쪽 다 통과했다(정상 함수 팩토리도
+같이 통과, 엉뚱한 반환 타입은 여전히 잡힘). 대가는 `Apply` 구현 안에서
+캐스트 한 줄. (b) `Debounce{...}`가 **함수만** 돌려주고 전체 브로드캐스트
+`Flush`/`Cancel`은 다른 표면으로 옮긴다(5-4절의 "전체는 팩토리로" 결정을
+되짚어야 함 — 예: `opts.Handle` 아웃파라미터와 같은 방식으로 그룹 핸들을
+따로 받기). (c) `:Apply`의 factory 타입을 `any`로 열어둔다 — 지금 열려
+있는 건 **반환 타입**뿐이고 파라미터까지 열면 오타를 못 잡으므로 권하지
+않는다.
+
+**이건 `H-86`과 별개다** — 그쪽은 정책이 런타임에 상태를 못 읽는 문제이고,
+이쪽은 팩토리 값이 타입 자리에 못 들어가는 문제다. 다만 **둘 다
+`Debounce`/`Throttle`의 확정 표면에서 나왔다.**
+
+---
+
+## 🔴 `H-95` — 콜백이 "선언된 것보다 적게 반환"하면 strict에서 에러다 (실측)
+
+**어디**: `base/effect-plan.md`와 `ROADMAP.md` M2가 확정한
+**`fn(self: EffectHandle) -> (() -> ())?`**, 그리고 `base/slot-plan.md`가
+확정한 **`updateFn(item, index, offset, prev, userdata) -> (T|nil, UD?)`**.
+
+**무엇이 어긋나나**: Luau strict는 함수 타입의 **반환 개수**를 맞춘다.
+선언보다 적게 반환하거나 아예 반환하지 않으면 통과하지 않는다.
+
+**실측 1 — `Effect`의 `fn`**:
+
+```lua
+local function EffectA(fn: (self: EffectHandle) -> (() -> ())?) end
+EffectA(function(self) end)                        -- ❌
+EffectA(function(self) return nil end)             -- ✅
+EffectA(function(self) return function() end end)  -- ✅
+EffectA(function(self)                             -- ❌
+    if cond then return function() end end
+end)
+```
+
+```
+TypeError: Not all codepaths in this function return '(() -> ())?'.   (× 2)
+```
+
+즉 **cleanup이 없는 이펙트**(가장 흔한 모양)와 **조건부로만 cleanup을
+돌려주는 이펙트**가 둘 다 안 통과한다. `React`의 `useEffect`와 동형이라고
+확정해둔 그 관용구가 Luau에선 `return nil`을 손으로 붙여야 성립한다.
+
+**실측 2 — `:List`의 `updateFn`** (더 나쁘다). 확정 반환은 **두 값**
+(`(T|nil, UD?)`)인데:
+
+```lua
+local function take(fn: (n: number) -> (El?, number?)) end
+take(function(n) return { tag = "a" } end)     -- ❌ Expected 'El?, number?', but got 'El?'
+take(function(n) return nil end)               -- ❌ 같은 에러
+take(function(n) end)                          -- ❌ Not all codepaths...
+take(function(n) return { tag = "a" }, 1 end)  -- ✅
+take(function(n) return nil, nil end)          -- ✅
+```
+
+**`userdata`를 안 쓰는 모든 `updateFn`이 여기 걸린다.** `userdata`는
+`base/slot-plan.md`가 **선택 기능**으로 확정한 것이고, 문서 예시도 대부분
+값 하나만 돌려준다 — 그 전부가 `, nil`을 손으로 붙여야 한다.
+
+**해법 대조(실측)**: 두 가지가 통과한다.
+
+- **가변 반환 팩** — `-> ...(() -> ())`: `function(self) end`와 cleanup
+  반환 둘 다 통과. 단일 옵셔널 반환(`Effect`)에 잘 맞는다.
+- **함수 타입의 유니온** — `Fn2 | Fn1 | Fn0`: 네 모양(2개/1개/nil/없음)이
+  전부 통과하고, **엉뚱한 타입을 돌려주면 여전히 잡힌다**(음성 대조군
+  확인). 두 값짜리(`updateFn`)엔 이쪽이 맞는다.
+
+**갈래(결정 전 목록)**: (a) 두 시그니처를 위 형태로 고친다(문서 수정 +
+구현 시 그 타입으로 선언). (b) 시그니처는 그대로 두고 **"항상 명시적으로
+반환하라"를 계약으로 문서화**한다 — `return nil` / `return nil, nil`.
+비용 0이지만 `useEffect` 동형이라는 확정 서술과 인체공학이 어긋나고,
+사용자가 빠뜨리면 컴파일이 아니라 **타입 검사**에서만 걸리므로
+`--!nocheck` 코드에선 조용히 지나간다. (c) `Effect`만 (a), `updateFn`은
+(b) — `updateFn`은 이미 인자가 5개짜리 저수준 훅이라 명시 반환이 덜
+어색하다.
+
+**이건 `H-70`과 별개다** — 그쪽은 deps의 런타임 검증이고, 이쪽은 `fn`
+자신의 반환 타입이다.
+
+---
+
+## 🟡 `H-96` — trailing deps가 붙는 순간 콜백 파라미터 무주석 추론이 깨진다 (실측)
+
+**어디**: `base/source-state-plan.md`의
+"trailing deps를 `fn`에 lazy positional 인자로도 노출" 절,
+`base/typing-limits.md`의 "그래서 우리가 하는 것 — ② 타입 선언은" 절과
+"7. 성립이 확인된 것" 절, 그리고 이 문서 2차 패스의 부록.
+
+**무엇이 어긋나나**: ②쪼개기가 해결한다고 확인한 것은 **deps가 없는**
+`:Compute(fn)`이다. deps가 붙으면 로컬 제네릭 팩 `D...`가 콜백 파라미터에
+나타나므로 같은 문제가 되살아난다 — 그리고 **그 경계가 어디에도 안 적혀
+있다.**
+
+**실측(같은 파일 안 대조)**:
+
+```lua
+-- (A) deps 0개 — 무주석 통과 ✅
+local r1 = s:Compute(function(self) return self:Get() * 2 end)
+
+-- (B) deps 1개 + 무주석 — ❌
+local r2 = s:ComputeN(function(self, prev, d1) return self:Get() + d1:Get() end, a)
+
+-- (C) deps 1개 + dep 파라미터에만 주석 — ✅
+local r3 = s:ComputeN(function(self, prev, d1: SourceData<number>) ... end, a)
+```
+
+(B)가 내는 진단은 둘이다 — `Consider annotating the return with number`와,
+dep 인자가 `{ read Get: (t1) -> (number, ...unknown) }` 같은 미해소 모양으로
+남아 실제 `SourceData<number>`와 안 맞는다는 것.
+
+**이건 2차 패스 부록의 서술을 정정한다.** 그 부록은 *"무주석 콜백도 타입
+검사가 살아 있다"*고 적었는데, 그때 돌린 코드의 **dep 파라미터엔 주석이
+달려 있었다**(살아 있던 건 콜백 *본문*의 검사다). 위 (B)가 그 구분을
+명확히 한다.
+
+**부수로 확인된 것 — 이형 *종류* 섞기는 된다.** 2차 패스 부록은
+`StateData<number>`/`StateData<boolean>`처럼 **같은 종류, 다른 타입 인자**만
+봤다. 실제 코드는 `store.a`(**`Source`**)와 파생 State가 섞이는데,
+**주석을 달면 그것도 정확히 좁혀지고**(순서를 바꿔 넘기면 두 자리 모두
+잡힌다) 문제가 없다.
+
+**왜 지금 적나**: `base/typing-limits.md` §7("성립이 확인된 것 — 다시
+의심하지 말 것")에 *"콜백 파라미터/본문의 타입 체크(1번의 쪼개기 적용 시)
+— 진짜 살아있음"*이 있는데, 여기에 **"단 trailing deps가 붙으면 dep
+파라미터엔 주석이 필요하다"**가 빠져 있다. M2 구현자가 `:Compute(fn, ...)`
+관용구를 문서화할 때 이걸 모르면 예시가 전부 타입에러가 된다.
+
+**갈래**: 이건 결정이 필요한 게 아니라 **문서에 경계를 적는 것**이다 —
+§7과 `source-state-plan.md`의 그 절에 한 줄씩. 굳이 갈래를 든다면 (a)
+그대로 두고 "deps를 쓰면 주석을 달라"를 관용구로 명문화, (b) dep 1개짜리
+비제네릭 오버로드를 따로 두는 안 — 2차 패스 부록이 이미 *"dep을 팩이
+아니라 고정 인자로 선언하면 무주석 추론이 깨진다"*고 확인했으므로 (b)는
+효과가 없다. **(a)가 사실상 유일하다.**
+
+---
+
+## 🟡 `H-97` — M2의 `mock 대상 테스트`는 전파 루프를 한 번도 못 돈다
+
+**어디**: `ROADMAP.md` M2의 마지막 체크박스(`mock 대상 테스트`)와
+"State 전파 루프" 체크박스, `base/architecture.md`의
+"테스트 전략: quad-base용 최소 mock" 절, `base/module-lifecycle-plan.md`의
+미주입 슬롯 규약, `base/lifecycle-pattern.md`의 `canExecute` 실 구현 스케치.
+
+**무엇이 어긋나나**: 세 확정이 겹치면 M2 테스트가 아예 안 돈다.
+
+1. M2의 전파 루프는 **발화마다 각 구독자에 대해 `canExecute`를 부른다**
+   (그 체크박스가 *"이게 `canExecute`의 유일한 실제 호출부"*라고 못박음).
+2. `canExecute`는 `LifetimeHandle`의 일부이고, M2가 만드는 건
+   **인터페이스뿐**이다(그 체크박스 자신이 *"실 구현 없음 — quad-roblox
+   실 구현은 M8"*). `base/architecture.md`의 소스 트리도 실 구현을
+   quad-roblox 쪽에 두고, `bindLifetime`/`canBound`/`canExecute`가 백엔드
+   팩토리 뮤테이션으로 주입된다고 적는다.
+3. `base/module-lifecycle-plan.md`가 확정한 미주입 슬롯의 기본값은
+   *"quad-base가 명시적으로 에러내는 스텁"*(조용한 no-op 아님)이다.
+
+→ 백엔드가 없는 순수 `luau` 테스트에서 **`Source:Set()` 한 번이면 그
+스텁에 닿는다.** 그런데 M2 체크리스트엔 mock 쪽 배선 항목이 없고,
+`base/architecture.md`의 그 절은 mock의 범위를 *"parent/children 트리 +
+타입 검증 없는 property bag + property별 변경 시그널 정도"*로 좁히면서
+생명주기 쪽은 명시적으로 뺐다 — 커밋된 `quad-base/test/mock.luau`의 머리
+주석도 같은 말을 한다(*"그 동일성 문제는 quad-roblox의 LifetimeHandle
+(gcconn 트릭)이 다루는 자리라 quad-base 정적 스냅샷 테스트 범위 밖"*).
+
+**흥미로운 사실 하나 — 재료는 이미 있다.** 커밋된 mock은
+`GetPropertyChangedSignal`과 `Destroying`, 그리고 `.Connected`를 갖는
+Connection까지 이미 구현해뒀다. 즉 gcconn 트릭을 흉내낼 재료는 다 있는데
+**그걸 쓰는 쪽(mock용 LifetimeHandle 플러그인)이 없을 뿐**이다.
+
+**갈래(결정 전 목록)**: (a) M2에 **mock 백엔드 플러그인** 항목을 추가한다 —
+`AddPlugin`으로 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`를
+넣고, 이미 있는 mock의 signal/Connection 위에 얹는다. (b) **패키지 경계를
+다시 긋는다** — `canExecute`/`canBound`의 본문은 사실 순수 Lua다
+(`BindData:GetWeak(value, "gcconn")`의 `.Connected`와 `.Subscribed`를 읽을
+뿐이고, 엔진이 필요한 건 gcconn을 **만드는** `bindLifetime` 쪽이다). 판정
+둘과 `BindData`를 quad-base로 내리고 주입은 `bindLifetime`/`unbindLifetime`
+둘로 좁히면, base 테스트가 백엔드 없이 전파를 돌 수 있다. (c) M2의
+`mock 대상 테스트` 범위를 "전파를 안 타는 것"(`:Get()` 캐시, `EpochMap`
+단위 테스트, Store lazy 생성)으로 명시적으로 좁히고 전파 테스트는 M8
+이후로 미룬다 — 그러면 M2의 핵심(전파 규칙)이 마일스톤 안에서 한 번도
+검증 안 된다.
+
+---
+
+## 🟡 `H-98` — `:Subscribe()`의 공개 계약이 중간 State GC 미해결에 걸려 있다 (실측)
+
+**어디**: `base/source-state-plan.md`의
+"Observer의 `:Subscribe()`/`:Unsubscribe()`" 절, 같은 문서의
+"미해결 — 중간 State가 살아남는가" 절.
+
+**무엇이 어긋나나**: `:Subscribe()` 절은 두 가지를 **공개 계약으로**
+못박았다 — *"`state:Observer(fn):Subscribe()`처럼 참조를 아무 데도 안
+담아도 정상 … 예외 없이 그냥 계속 돎(그게 이 메커니즘의 핵심 포인트)"*,
+그리고 ⚠️ 항목의 *"로컬 변수 참조를 전부 놓아도 **GC되지 않고 영원히 계속
+실행됨**"*.
+
+그런데 전파 모델은 **구독자(하류)를 weak로만** 담고, Observer를 살리는 건
+전역 강참조 레지스트리다. 그 레지스트리는 **Observer만** 붙잡는다 —
+Observer가 자기 상류 State를 강하게 들고 있다는 서술은 어디에도 없다.
+그래서 한 줄 관용구에서 중간 노드를 아무도 안 들고 있으면 그게 수거되고,
+**Observer는 레지스트리에 살아남은 채 다시는 안 울린다.**
+
+**실측**(Observer가 상류를 되참조하지 않는 형태 + 실제 `collectgarbage`):
+
+```
+Observer 발화: 0    ← 공개 계약("예외 없이 그냥 계속 돎")대로면 1
+A의 구독자 수: 0    ← 중간 State가 수거됐다
+Observer는 레지스트리에 살아있다: true | 그러나 다시는 안 울린다
+```
+
+대조군으로 Observer가 상류를 강참조로 들게 하면 정상적으로 1회 발화한다.
+
+**왜 따로 적나**: 이건 `question.md` 최우선의 중간 State GC 항목과 **같은
+뿌리**지만, 지금까지 그 항목은 *"전파가 조용히 끊길 수 있다"*는 내부
+구현 문제로만 서술돼 있었다. 여기서 드러나는 건 **확정된 공개 계약 문장이
+그 미해결의 결과에 종속돼 있다**는 것이고, 결과가 나쁜 쪽으로 나면
+`:Subscribe()`는 **"GC도 안 되고 발화도 안 하는"** — 그 절이 경고하는
+누수와 그 절이 약속하는 동작을 **둘 다 어기는** 조합이 된다.
+
+**그래서 필요한 것**: 그 미해결을 (a)(상류 strong / 하류 weak)로 닫으면
+계약이 그대로 참이 된다. 다른 쪽으로 닫는다면 `:Subscribe()` 절의 두
+문장을 같이 고쳐야 한다 — **어느 쪽이든 그 항목을 닫을 때 이 절도 같이
+볼 것**이라는 표시가 지금 어디에도 없다. `H-93`이 같은 미해결의 또 다른
+얼굴(값이 최신이라고 오판)이므로 셋을 한 번에 보는 게 낫다.
+
+---
+
+## 🟢 `H-99` — `Observer`가 파일 자리를 못 받았고, 전역 레지스트리의 주인이 없다
+
+**어디**: `base/architecture.md`의 소스 트리(`State.luau` 줄이
+*"`:With`/`:Compute`/`:Observer`…/`:Gate` … 전부 여기 소속"*이라고 적고,
+`Observer.luau`는 트리 어디에도 없다), `ROADMAP.md` M2의
+`state:Observer(fn)` 체크박스.
+
+**무엇이 어긋나나**: `Observer`는 브랜드(`isObserver`)를 갖고, children
+배열에 놓이는 leaf 값이며, `:Subscribe()`/`:Unsubscribe()`라는 자기 표면을
+갖는다 — `Effect`와 정확히 같은 급인데 `Effect.luau`만 파일을 갖는다.
+6라운드 `H-46`이 `Slot`에 top-level 파일을 준 근거(*"다른 값 타입과 같은
+대칭"*)가 여기 그대로 적용된다.
+
+**더 구체적인 공백 — 전역 강참조 레지스트리의 주인.** `:Subscribe()` 절이
+확정한 `SubscribedObservers: {[observer]: true}`(**weak 아닌 강참조**)가
+어느 모듈에 사는지 트리에도 체크리스트에도 없다. 그리고 M2 체크리스트는
+`EffectHandle:Subscribe()`/`:Unsubscribe()`도 같이 만들라고 하므로 **그
+레지스트리를 `Observer`와 `Effect`가 공유해야 한다.** 지금처럼 `State.luau`
+안에 묻으면 `Effect.luau`가 그걸 쓰려고 `State.luau`를 require하는
+모양이 되는데(단방향이라 순환은 안 나지만) "구독 레지스트리"라는 관심사가
+State 모듈에 얹히는 건 `EpochMap.luau`를 *"`State.luau`에 묻지 말고 별도
+모듈로 낼 것"*이라고 못박은 판단과 결이 다르다.
+
+**갈래**: (a) `Observer.luau`를 신설하고 레지스트리를 거기 둔다(`Effect`가
+require) — `EpochMap.luau` 판단과 같은 결. (b) 레지스트리만 별도
+`Subscription.luau`류로 빼고 `Observer`는 `State.luau`에 그대로 둔다.
+(c) 지금대로 두되 **트리 주석에 "레지스트리도 여기"라고 적는다** —
+최소한 어디 사는지는 정해져야 한다.
+
+---
+
+## 🟢 `H-100` — `{[Source<T>]: true}`는 `{[Epoch]: true}` 자리에 안 들어간다 (실측)
+
+**어디**: `base/state-epoch-plan.md`의 "2. `Epoch` — 판정의 최소 인터페이스"
+절과 §3의 `EpochSet = { [Epoch]: true }`.
+
+**실측 — 좋은 소식 먼저**: §2가 *"`Source`가 이 인터페이스를 구조적으로
+만족한다"*, *"`Revision`은 공개 필드다. 비공개면 구조적 만족이 타입
+레벨에서 성립하지 않는다"*고 확정한 것은 **그대로 성립한다.**
+`Source<number>`를 `Epoch` 파라미터에 그대로 넘길 수 있고,
+`EpochMap:Update(src)`도 통과한다(§7의 "성립이 확인된 것" 목록엔
+`Source`가 **`State`**를 만족한다는 항목만 있고 `Epoch` 쪽은 없었는데,
+이제 실측됐다).
+
+**걸리는 자리는 집합 쪽 하나**다. 인덱서 **키** 타입은 불변이라:
+
+```lua
+local rawSet: { [Source<number>]: true } = { [src] = true }
+local u3 = m:Update(rawSet)   -- ❌
+```
+
+```
+TypeError: Expected this to be 'Epoch | EpochSet' but got '{ [SourceData<number> & {...}]: true }'
+```
+
+`local set: EpochSet = { [src :: Epoch] = true }`처럼 **키를 `Epoch`로
+캐스트해 넣으면** 통과한다.
+
+**영향 범위는 좁다** — 게이트의 `withheld`나 시딩 코드는 필드 타입을
+`EpochSet`으로 선언하고 `self._withheld[epoch] = true`로 넣을 것이므로
+키가 이미 `Epoch`다. 문제가 되는 건 **집합을 리터럴로 만들어 넘기는
+자리**(테스트, 그리고 `EpochSet`을 손으로 조립하는 유틸)뿐이다. **구현 시
+정하면 되는 것**이지만, `EpochSet` 타입 별칭을 쓰는 자리마다 캐스트가
+필요하다는 걸 모르면 "왜 안 되지"로 시간을 쓴다.
+
+---
+
+## 부록 — 5차 패스에서 걸어봤는데 **문제가 없던 것**
+
+타입으로 선언해 돌려봤지만 확정된 서술과 일치했던 것들.
+
+- **`state:Gate(function(emit) return b:Policy(emit) end)`가 타입으로
+  성립한다** — `gate-plan.md` 5번의 확정 형태 그대로. 그리고
+  **같은 절이 2026-08-24에 정정한 오답(`st:Gate(b.Policy)`)은 타입 검사가
+  잡아준다**(`Expected the 1st parameter to be a supertype of '() -> ()',
+  but got 'Blocker'`) — 그 정정이 문서 규율이 아니라 컴파일 게이트로
+  강제된다는 뜻이라 다시 밟을 위험이 없다.
+- **`Debounce`처럼 자기 `Blocker`를 사적으로 갖는 정책 클로저**도 타입이
+  깨끗하게 맞는다(`H-86`은 타입 문제가 아니라 런타임 상태 접근 문제다).
+- **`source:Apply(팩토리)`에 `State`용 팩토리를 그대로 넘길 수 있다** —
+  `base/tween-plan.md`의 `mySource:Apply(Animate{...})` 관용구가 성립한다.
+  `typing-limits.md` §7이 확인해둔 "Source가 State를 만족"이 **콜백
+  파라미터 자리(반변)에서도** 유지되는지는 따로 확인된 적이 없었는데,
+  된다.
+- **`Effect(fn, ...deps)`의 deps를 `State<any> | Ref<any>` 가변인자로
+  선언하면 이형 조합이 통과한다** — `Effect(fn, state, ref)`가 정상이고,
+  엉뚱한 테이블(`{foo = 1}`)은 정확히 거부된다. 즉 `Effect`의 다중 dep은
+  **타입으로 표현 가능하다**(`H-70`이 남긴 건 런타임 검증 쪽이다).
+- **게이트 2겹 unfold가 어느 순서로 풀려도 안 샌다** — `gate-plan.md`
+  4번의 *"게이트가 몇 겹으로 겹쳐도 각 층이 자기 집합을 들고 있으므로 어느
+  층이 먼저 풀리든 정보가 안 샌다"*를 4차 패스의 참조 구현으로 확인했다.
+  상류 먼저 풀든 하류 먼저 풀든 **Observer는 정확히 1회**, 배치 원소는
+  2개(두 루트), 값도 정확했다.
+- **`:Compute(fn, ...deps)`에 `Source`와 State가 섞여도 주석만 달면
+  정확히 좁혀진다** — 순서를 바꿔 넘기면 두 자리 모두 잡힌다(`H-96`의
+  부수 관찰).
+
+---
+
 ## 회신 방법
 
 6라운드와 같다 — 항목 번호로 결정만 적어주면 `-followup.md`를 만들고
@@ -2141,6 +2571,18 @@ GC 근거를 그에 맞게 완화한다(그러면 테이블 리비전 기각 근
 `SetStrong`을 쓰는 모든 자리가 같은 실수를 반복한다. `H-72`는 `H-55`와
 같은 뿌리(`Epoch` 일반화 때 게이트 쪽 요구가 표면에 덜 반영됨)라 그것과
 같이 결정하는 게 낫다.
+
+**5차 패스**: `H-94`/`H-95`/`H-96`/`H-100`은 전부 **"확정된 시그니처가
+확정된 관용구를 통과시키는가"** 하나에서 나왔고, 넷 다 결정이 아니라
+**시그니처를 어떻게 적을지**의 문제라 한 번에 보면 된다(각 항목에 통과하는
+형태를 실측으로 붙여뒀다). 이 중 `H-94`/`H-95`는 **M2/M6 구현 시작 전에
+닫는 게 낫다** — 나중에 고치면 공개 표면이 바뀌는 자리다. `H-97`은 설계가
+아니라 **마일스톤 구성** 결정이고(mock 플러그인을 M2에 넣을지, 패키지
+경계를 다시 그을지, 테스트 범위를 좁힐지), M2가 끝났을 때 "전파 규칙이 한
+번도 검증 안 된 채"가 되지 않으려면 지금 정해야 한다. `H-98`은 `H-93`과
+함께 **중간 State GC 항목을 닫을 때 같이 볼 목록**이다 — 그 항목의 결론이
+공개 계약 문장을 바꾼다는 게 지금 어디에도 표시돼 있지 않다. `H-99`는
+파일 배치 하나다.
 
 **4차 패스**: `H-88`/`H-89`는 **한 질문의 두 얼굴**이다 — "예외가 나면 부기를
 어디까지 되돌리는가". 지금 코퍼스에 그 문장이 하나도 없어서 어느 쪽도 안
