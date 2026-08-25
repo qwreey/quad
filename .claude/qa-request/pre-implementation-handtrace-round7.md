@@ -1,6 +1,6 @@
 # 구현 전 손 트레이싱 **7라운드** — M2(반응형 코어) 범위 + M2→M3 경계
 
-**구성**: **패스 5개, 발견 46건(`H-55`~`H-100`).** 1차 패스는 문서 대 문서
+**구성**: **패스 6개, 발견 52건(`H-55`~`H-106`).** 1차 패스는 문서 대 문서
 손 트레이싱(`H-55`~`H-70`), **2차 패스는 문서가 "확인했다"고 적은 주장을
 실제로 `luau`/`luau-analyze`에 걸어본 실측**(`H-71`~`H-76`, 2026-08-25 추가),
 **3차 패스는 (a) 실제로 커밋된 M1 코드·툴체인을 이 저장소에서 그대로 돌려본
@@ -8,8 +8,11 @@
 2026-08-25 추가), **4차 패스는 (a) M2 코어를 문서 그대로 Luau로 짜서 돌린
 참조 구현과 (b) 아무 문서도 안 정한 예외 경로**(`H-85`~`H-93`, 2026-08-25
 추가), **5차 패스는 확정된 M2 표면을 실제 Luau 타입으로 선언해
-`luau-analyze`에 건 것**(`H-94`~`H-100`, 2026-08-25 추가). 발견 번호는
-패스를 가로질러 이어서 매긴다(6라운드와 같은 방식).
+`luau-analyze`에 건 것**(`H-94`~`H-100`, 2026-08-25 추가), **6차 패스는
+(a) 그 참조 구현을 M2→M3 경계(Length/Offset 부기·Dispatch 체인)까지 이어
+붙여 돌린 것과 (b) quad 자신이 던지기로 확정한 error 42곳의 계약
+감사**(`H-101`~`H-106`, 2026-08-25 추가). 발견 번호는 패스를 가로질러
+이어서 매긴다(6라운드와 같은 방식).
 
 **상태**: **[2026-08-25] 발견 보고 — 아무것도 반영하지 않았다.** 판정은
 사용자가 이 목록을 보고 한다. 6라운드까지의 결정은 뒤집지 않는 것을
@@ -131,6 +134,18 @@ GC 실측, `store:GetDynamic` 위치)에서 파생되는 것. 아래에서 그 �
 | `H-98` | 🟡 | **`:Subscribe()`의 공개 계약이 중간 State GC 미해결에 종속돼 있다** — 잘못 닫히면 "GC도 안 되고 발화도 안 하는" 조합 | `source-state-plan.md` Subscribe 절 | ✅ 재현 |
 | `H-99` | 🟢 | `Observer`가 파일 자리를 못 받았고 `:Subscribe()` 전역 레지스트리의 주인이 없다 — `Effect.luau`는 있는데 | `architecture.md` 소스 트리 | 표면 대조 |
 | `H-100` | 🟢 | `{[Source<T>]: true}`가 `{[Epoch]: true}` 자리에 안 들어간다(인덱서 키 불변) | `state-epoch-plan.md` §3 | ✅ 재현 |
+
+**⭐ [2026-08-25] 6차 패스 — Length/Offset 부기 실측 + quad 자신의 error 계약 (`H-101`~`H-106`).**
+상세는 아래 "6차 패스" 절.
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-101` | 🔴 | **`recompute` 재진입 시 바깥 호출의 꼬리가 `ownerKey.Length`를 낡은 합계로 덮어쓴다** — 그 오차가 상위로 전파된다 | `dispatch-core-plan.md` Length/Offset 절 | ✅ 재현 |
+| `H-102` | 🔴 | **`spliceArraysDown`이 observer를 옮겨도 클로저에 박힌 position 인덱스는 안 고친다** — 이후 캐시 무효화가 어긋나 뒤 형제 offset이 낡은 채로 남는다 | `slot-plan.md` splice 계약, `dispatch-core-plan.md` | ✅ A/B 대조 |
+| `H-103` | 🟡 | **`process`가 던지면 그 체인 슬롯에 `NOOP`이 영구히 남아** 그 자리 정리가 통째로 사라진다(명시적 철거로도 회수 불가). 미주입 op 스텁이 이 경로를 흔하게 만든다 | `dispatch-core-plan.md` Dispatch 체인, `attribute-plan.md` | ✅ 재현 |
+| `H-104` | 🟡 | **error 42곳 전부에 `level` 인자가 없다** — "즉시 error"라는 주 방어선이 사용자 코드 위치를 못 가리킨다 | `base/` 전체 | ✅ 대조 |
+| `H-105` | 🟡 | **error 메시지 언어가 이미 갈려 있다**(한국어 17 / 영어 6) — 공개 표면인데 결정된 적이 없다 | `base/` 전체 | 전수 대조 |
+| `H-106` | 🟢 | `C-6`이 승격한 "부기가 깨졌음" 진단이 `getOffsetAt` 경로에선 우회돼 익명 산술 에러로 먼저 터진다 | `dispatch-core-plan.md` | ✅ 대조 |
 
 ---
 
@@ -2552,6 +2567,356 @@ TypeError: Expected this to be 'Epoch | EpochSet' but got '{ [SourceData<number>
 
 ---
 
+# 6차 패스 — Length/Offset 부기를 돌려봤다 + quad 자신의 error 계약 (2026-08-25)
+
+**왜 이 패스가 있는가**: 사용자 요청 — *"계속 이어서 6차 패스로 더 찾아봐."*
+
+**1~5차와 다른 각도 둘**:
+
+1. **4차 패스의 참조 구현을 M2→M3 경계까지 이어 붙여 돌렸다.** 4차는
+   반응형 코어(Source/State/Gate/Blocker)에서 멈췄는데, 이번엔 그 위에
+   `base/dispatch-core-plan.md`가 확정한 **Length/Offset 부기**(접두합 캐시
+   `getOffsetAt` · `recompute` · `setLength`/`setOffsetSource` · 배치 게이팅)와
+   **Dispatch 체인**(하강 diff · `retractFrom`)을 의사코드 그대로 옮겨
+   실행했다. 이 부기는 **2026-08-21의 접두합 캐시 도입과 2026-08-24 6라운드의
+   `H-3`/`H-5`/`H-19` 수정을 거친 뒤 한 번도 돌아본 적이 없다.**
+2. **quad가 *자기* error를 던지기로 확정한 자리 전수 감사.** 4차 패스는
+   **사용자 콜백이 던졌을 때** 부기가 어떻게 남는지를 봤다(전파 쪽). 이번엔
+   반대 방향 — **quad 자신이 던지기로 한 42곳**이 무엇을, 어떤 형식으로,
+   어디를 가리키며 던지는지, 그리고 그 자리가 던진 뒤 무엇을 남기는지.
+
+**실측 환경**: `luau` (`~/.local/share/mise/installs/luau/latest`),
+2026-08-25 실행. 참조 구현·시나리오는 세션 스크래치패드에서 돌렸고 저장소
+파일은 건드리지 않았다.
+
+**이 패스의 범위**: `base/dispatch-core-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장" ·
+"Dispatch 체인 — 인덱스 기반 추적, 재디스패치는 하강 diff" ·
+"배치 등록을 안전하게 만드는 Blocker 게이팅" / `base/slot-plan.md`의
+`spliceArraysUp`/`spliceArraysDown` 계약 / `base/attribute-plan.md`의
+"이름 소유권" / `base/module-lifecycle-plan.md`의 미주입 슬롯 규약 /
+`base/fallback-plan.md`의 "`err: any`임을 반드시 문서화" /
+`base/` 전체의 `error(` 42곳. **`H-55`~`H-100`과 겹치는 항목은 없다.**
+
+| 번호 | 심각도 | 한 줄 | 주 대상 | 실측 |
+|---|---|---|---|---|
+| `H-101` | 🔴 | **`recompute`가 순회 도중 재진입되면 바깥 호출의 꼬리가 `ownerKey.Length`를 낡은 합계로 덮어쓴다** — 그 `Length`는 상위로 전파되므로 오차가 위로 번진다 | `dispatch-core-plan.md` Length/Offset 절 | ✅ 재현(합계 3인데 2가 남음) |
+| `H-102` | 🔴 | **`spliceArraysDown`이 observer를 옮기지만 그 클로저가 캡처한 position 인덱스는 안 고친다** — 이후 그 자리의 길이 변경이 캐시를 엉뚱한 범위로 무효화해 **뒤 형제 offset이 낡은 채로 남는다** | `slot-plan.md` splice 계약, `dispatch-core-plan.md` 무효화 규칙 | ✅ A/B 대조 |
+| `H-103` | 🟡 | **`process`가 던지면 그 체인 슬롯에 `NOOP` retractor가 영구히 남는다** — 그 자리가 잡은 자원의 정리가 통째로 사라지고 **명시적 철거로도 회수되지 않는다**. 미주입 op 스텁이 이 경로를 아주 흔하게 만든다 | `dispatch-core-plan.md` Dispatch 체인, `attribute-plan.md` | ✅ 재현(이름이 영구 잠김) |
+| `H-104` | 🟡 | **quad가 던지는 error 42곳 전부에 `level` 인자가 없다** — 전부 quad 내부 줄을 가리켜, "즉시 error"라는 주 방어선이 정작 사용자 코드 위치를 못 알려준다 | `base/` 전체 | ✅ 대조 |
+| `H-105` | 🟡 | **error 메시지 언어가 코퍼스 안에서 이미 갈려 있다**(한국어 17 / 영어 6) — 라이브러리 공개 표면인데 결정된 적이 없다 | `base/` 전체 | 전수 대조 |
+| `H-106` | 🟢 | `C-6`이 "조용한 skip"에서 승격시킨 **"부기가 깨졌음" 진단이 `getOffsetAt` 경로에선 우회**돼, 같은 결함이 익명 산술 에러로 먼저 터진다 | `dispatch-core-plan.md` | ✅ 대조 |
+
+---
+
+## 🔴 `H-101` — `recompute` 재진입 시 꼬리의 `Length:Set(sum)`이 낡은 합계로 덮어쓴다 (실측)
+
+**어디**: `base/dispatch-core-plan.md`의 "Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장" 절의
+`recompute` 확정 의사코드.
+
+**무엇이 어긋나나**: `recompute`는 `1..bk.N`을 돌며 각 자리에
+`offset:Set(abs)`를 하고, **루프가 끝난 뒤** 누적한 `sum`으로
+`ownerKey.Length:Set(sum)`을 한다. 그런데 그 루프 안의 `offset:Set(abs)`는
+**동기 전파**다 — `Source:Set`이 그 자리에서 하류를 깨운다. 하류 소비자가
+같은 owner의 길이를 건드리면(자리 추가/제거, 길이 State 변경) **재진입
+`recompute`가 먼저 완주해 올바른 `Length`를 써놓고**, 그 다음 바깥 루프가
+끝나며 **자기가 들고 있던 옛 `sum`으로 그걸 덮어쓴다.**
+
+같이 낡는 것이 하나 더 있다 — `for i = 1, bk.N`의 상한은 **루프 진입 시
+한 번만** 평가되므로, 재진입이 추가한 자리는 바깥 루프가 아예 안 본다.
+
+**재현**(owner가 중첩 Slot, 위치 2의 offset을 보는 소비자가 그 통지 도중
+위치 3을 추가한다 — `base/gate-plan.md` 6번이 *"유한한 재진입은 지원한다"*고
+못박은 바로 그 동기 재진입 경로):
+
+```
+초기 owner.Length = 0 | s2.Offset = 0
+-- s1.Length:Set(2) --
+owner.Length = 2 | 실제 합계 = 3 | N = 3 | recompute: 3
+s2.Offset = 2 (기대 2) | 3번 자리 offset = 2 (기대 2)
+  ❌ owner.Length가 실제 합계와 다르다
+```
+
+**offset은 전부 맞고 `Length`만 틀린다** — 그래서 그 자리에선 아무 증상이
+없고, `ownerKey.Length`가 상위 owner의 `lengthList` 항목이므로 **한 단계
+위의 형제 offset부터 어긋난다.** 원인에서 먼 곳이 아프다.
+
+**얼마나 현실적인가**: 트리거는 "offset을 보는 소비자가 동기적으로 같은
+owner의 길이를 바꾸는 것"이다. `:List`의 `updateFn`은 **`offset`을 인자로
+받는 사용자 코드**이고(`base/slot-plan.md`), 거기서 형제 Slot을 조작하는
+걸 막는 규칙은 없다. 반대로 **`base/dispatch-core-plan.md`가 확정한 깊은
+전파 경로(중첩 Slot이 자기 `Offset`을 관측)** 자체는 자식의 offset만 다시
+계산하고 `Length`는 안 건드리므로 이 트리거가 **아니다** — 확인했다.
+
+**이건 `H-85`와 같은 계열이다** — 그쪽은 재계산의 꼬리가 `rawInvalid = false`로
+도중에 도착한 무효화를 지웠고, 이쪽은 순회의 꼬리가 도중에 갱신된 `Length`를
+지운다. **"긴 연산의 마지막 줄이, 그 연산 도중 바뀐 값을 조건 없이
+덮어쓴다"**는 같은 모양이 두 자리에서 나왔다.
+
+**갈래(결정 전 목록)**: (a) 꼬리에서 `sum`을 쓰지 말고 **그 자리에서 다시
+합산**한다(`1..bk.N`를 한 번 더 도는 대신, 재진입이 있었는지 세대 번호로
+확인해 있었으면 자기 쓰기를 포기 — 재진입 쪽이 이미 올바른 값을 썼으므로).
+(b) `recompute`에 **재진입 가드**를 둔다(`bk.inRecompute`면 바깥에 "다시
+돌아라" 표시만 남기고 즉시 반환, 바깥이 루프 끝에서 한 번 더 돈다) —
+`Blocker` 게이팅과 같은 결이고 배치 밖 단건 경로에도 그대로 적용된다.
+(c) "offset 소비자가 같은 owner의 길이를 바꾸는 것은 UB"를 yield 금지와
+같은 톤으로 명문화한다 — 다만 `updateFn`이 `offset`을 받는 이상 사용자가
+밟기 쉬운 자리라 권하기 어렵다.
+
+---
+
+## 🔴 `H-102` — splice가 observer를 옮겨도 그 안에 박힌 position 인덱스는 안 고쳐진다 (실측)
+
+**어디**: `base/slot-plan.md`의 `spliceArraysDown`이 해야 할 일 목록
+(**[2026-08-18]** `bk.observers`도 같이 당길 것, `bk.N`도 줄일 것 /
+**[2026-08-24 `H-3`]** `bk.invalidAfter = math.min(bk.invalidAfter, index)`),
+그리고 `base/dispatch-core-plan.md`의 `setLength` 확정 의사코드.
+
+**무엇이 어긋나나**: `setLength(ownerKey, i, len, anchor)`가 만드는
+`gatedRecompute` 클로저는 **`i`를 upvalue로 캡처**한다:
+
+```lua
+local function gatedRecompute()
+    bk.invalidAfter = math.min(bk.invalidAfter, i)   -- ← 이 i가 박혀 있다
+    if not blocker:IsOn() then recompute(ownerKey, bk) end
+end
+```
+
+`spliceArraysDown`은 `bk.observers` 배열을 한 칸 당기지만 **그 안의 클로저는
+그대로다.** 그래서 position 3에 있던 observer가 position 2로 내려온 뒤에도
+자기 길이가 바뀌면 `invalidAfter`를 **2가 아니라 3으로** 당긴다 —
+"3까지는 캐시가 유효"라는 뜻이므로, 실제로는 무효가 된 3번 자리의 offset이
+**낡은 캐시 값 그대로 반환**된다.
+
+**재현**(A/B 대조 — `s1`/`s2`/`s3` 각각 길이 1, 1번 자리를 splice로 제거한
+뒤 새 1번 자리(옛 `s2`)의 길이를 5로):
+
+```
+[확정 설계 그대로]  s3.Offset = 1 (기대 5) | invalidAfter = 2
+[위치 재조정함]     s3.Offset = 5 (기대 5) | invalidAfter = 2
+```
+
+즉 **`Slot:Remove(1)` 뒤에 다른 항목의 길이가 바뀌면 그 뒤 형제들의 위치가
+조용히 틀어진다.** `:List`가 항목을 하나 지우고 다른 항목이 커지는 건 아주
+흔한 조합이다.
+
+**왜 지금까지 안 보였나**: 두 규칙이 **각각 따로** 추가됐다 —
+`bk.observers`를 같이 당기라는 규칙은 2026-08-18(3라운드), 접두합 캐시와
+`invalidAfter` 무효화는 2026-08-21, 그걸 splice에도 걸라는 `H-3`은
+2026-08-24. **셋 다 옳은데, 셋이 겹치는 자리에서 "옮겨진 클로저 안의
+인덱스"라는 항목이 아무 목록에도 없다.**
+
+**갈래(결정 전 목록)**: (a) **위치를 가변 박스로 들고 splice가 고친다** —
+`setLength`가 `local box = {pos = i}`를 만들어 클로저가 `box.pos`를 읽게 하고,
+`spliceArrays*`가 옮긴 자리마다 `box.pos`를 새 인덱스로 갱신(위 대조군이
+이 방식이다, 통과 확인). (b) **splice가 옮긴 자리에 대해 `setLength`를 다시
+부른다** — 정확하지만 옮긴 개수만큼 Observer를 재생성/재바인드해 O(N)
+비용이 실제로 늘고, `unbindLifetime`/`bindLifetime`이 그만큼 더 돈다.
+(c) **클로저가 인덱스를 아예 안 쓰게 한다** — `gatedRecompute`가
+`bk.invalidAfter = math.min(bk.invalidAfter, splice가 마지막으로 건드린
+최소 인덱스)`처럼 보수적으로 당기면 정확성은 회복되지만 캐시 효율이
+떨어진다(가장 안전하고 가장 단순).
+
+---
+
+## 🟡 `H-103` — `process`가 던지면 그 자리의 정리가 영구히 사라진다 (실측)
+
+**어디**: `base/dispatch-core-plan.md`의
+"Dispatch 체인 — 인덱스 기반 추적, 재디스패치는 하강 diff" 절의 확정
+의사코드, `base/attribute-plan.md`의 "이름 소유권" 절,
+`base/module-lifecycle-plan.md`의 미주입 슬롯 규약.
+
+**무엇이 어긋나나**: 확정 의사코드는 `h.process`를 부르기 **전에** 자리를
+점유 마커로 채운다(정당한 이유가 있다 — 재귀 중 `#list`가 정의되게 하려고):
+
+```lua
+list[index] = { handler = h, retractor = NOOP }
+local retractor = h.process(inst, k, v, index)   -- ← 여기서 던지면
+list[index] = { handler = h, retractor = retractor }   -- 이 줄이 영영 안 온다
+```
+
+그러면 그 슬롯은 **`NOOP` retractor를 든 채 영구히 남는다.** `process`가
+던지기 **전에** 이미 잡아둔 것(이름 claim, Connection, 태그 참조 카운트)은
+아무도 못 놓는다 — `Dispatch.retractFrom`이 그 자리를 정리하려 해도
+부르는 건 `NOOP`이다. (A) 분기도 같다: 옛 retractor는 이미
+`slot.retractor(v)`로 **소비됐고** 새 것은 안 왔으므로, 그 자리의 정리
+책임이 통째로 증발한다.
+
+**재현** — `AttributeKeyHandler`의 확정 의사코드는 claim을 먼저 쓰고
+그 다음 주입 op `setAttribute`를 부른다. 그 op이 미주입이면 확정 규약대로
+**에러내는 스텁**이다:
+
+```
+-- 백엔드 미주입 상태에서 Attribute 한 번 --
+던졌는가: true | quad: setAttribute op이 주입되지 않았습니다
+claim 남았는가: true
+체인 슬롯: 있음(retractor=NOOP)
+-- 이제 백엔드를 붙이고 정상적으로 다시 시도 --
+성공했는가: false | attribute "Score" is already bound by another owner
+-- 명시적 철거로 회수되는가 --
+철거 후 claim 남았는가: true
+철거 후 재시도 성공?: false | attribute "Score" is already bound by another owner
+```
+
+**한 번의 실패가 그 인스턴스의 그 attribute 이름을 영구히 잠근다.** 그리고
+다음 사용자에게 보이는 건 진짜 원인(백엔드 미설치)이 아니라
+**"이미 다른 소유자가 잡고 있다"는 엉뚱한 이름 충돌 에러**다.
+
+**왜 흔한가**: 미주입 op 스텁은 예외 상황이 아니라 **확정된 정상 동작**이고
+(*"아직 아무 팩토리도 안 채운 슬롯의 기본값은 quad-base가 명시적으로
+에러내는 스텁"*), quad-base만 붙이고 백엔드를 아직 안 붙인 상태는 M2~M4
+내내 기본 상태다. 같은 모양이 `TagHandler`(주입 `addTag`),
+`OnChange`(`GetPropertyChangedSignal`), 프로퍼티 세터에도 그대로 있다.
+
+**이건 `H-87`과 같은 계열이지만 다른 자리·다른 처방이다** — `H-87`은
+배치 게이팅의 `Blocker`가 켜진 채 남는 것이고, 이쪽은 체인 슬롯이 `NOOP`으로
+남는 것이다. `H-87`의 처방(배치를 감싸 `OffWithoutEmit`을 보장)으로는 이게
+안 닫힌다.
+
+**갈래(결정 전 목록)**: (a) `Dispatch.process`가 `h.process`를 `pcall`로
+감싸고, 실패하면 **그 자리를 `retractFrom`으로 되돌린 뒤** error를 다시
+던진다(배치당이 아니라 **자리당** 비용이라 hot path에 `pcall`이 하나 붙는다 —
+`H-88`의 (a)와 같은 트레이드오프). (b) **핸들러가 부작용을 마지막에 하도록
+계약을 바꾼다** — "자기 상태를 쓰기 전에 던질 수 있는 것을 전부 먼저 던져라"
+(`AttributeKeyHandler`라면 `setAttribute`를 claim보다 먼저). `base/slot-plan.md`가
+`H-30`/`H-31`에서 **선행 검증 패스**를 도입한 것과 정확히 같은 처방이고,
+`Handler 작성 체크리스트`에 한 줄로 들어간다. (c) 아무것도 안 하고
+**"핸들러가 던지면 그 자리는 UB"**로 명문화한다.
+
+---
+
+## 🟡 `H-104` — quad가 던지는 error 42곳 전부에 `level` 인자가 없다 (실측)
+
+**어디**: `base/` 전체(`error(`가 42곳). `base/fallback-plan.md`의
+"`err: any`임을 반드시 문서화" 절만 `error(msg, 0)`의 의미를 설명하는데,
+그건 **사용자 코드가 던지는 쪽** 이야기이고 **quad 자신이 던지는 쪽**의
+규약은 어디에도 없다.
+
+**무엇이 어긋나나**: Luau `error(msg)`의 기본 level은 1이라 **`error`를
+호출한 그 줄**(= quad 내부)이 위치로 붙는다. quad는 방어의 주력을
+*"조용한 무시 없이 즉시 `error`"*에 걸어뒀는데, 그 error가 가리키는 건
+사용자가 잘못 쓴 줄이 아니라 라이브러리 내부 줄이다.
+
+```
+level 기본(1): ./e1_errlevel.luau:5:  Slot:Add — index가 범위 밖(1..3): 9
+level 2      : ./e1_errlevel.luau:12: Slot:Add — index가 범위 밖(1..3): 9
+```
+
+5번 줄은 `Slot.Add` 안, 12번 줄은 **부른 쪽**이다. 실제 프로젝트에선
+`Slot.luau:2973:`처럼 라이브러리 파일이 찍히고, 사용자는 자기 코드 어디서
+그 호출이 났는지 스택을 되짚어야 한다.
+
+**전부가 level 2인 것도 아니다** — 구분이 필요하다. **사용자 입력 검증**
+(`Slot:Add`의 index 범위, `claimOwner`의 이중 마운트, `Store` 미선언 키,
+`Leading`/`Trailing` 둘 다 false)은 **호출자를 가리켜야** 하고,
+**내부 불변식 위반**(`Dispatch.recompute: sourceList[i]가 nil`,
+`Dispatch: 인덱스 i에 슬롯이 없음`)은 **그 자리를 가리키는 게 맞다**(level 1).
+지금은 그 구분 없이 전부 후자로 통일돼 있다.
+
+**갈래**: (a) 두 부류를 나누고 사용자 입력 검증엔 `error(msg, 2)`를 쓰는
+규약을 `Handler 작성 체크리스트`나 `conventions.md`에 한 줄로 못박는다 —
+**42곳을 쓰기 전에 정하는 게 싸다**(나중에 고치면 42곳을 다시 훑어야 하고,
+빠뜨린 자리는 티가 안 난다). (b) 지금대로 두고 메시지 접두어(`Slot:Add — `)로
+버틴다 — 실제로 대부분의 메시지가 이미 접두어를 갖고 있으므로 "어느 API에서
+났나"는 알 수 있다. 다만 "**내** 코드 어디서 불렀나"는 여전히 안 나온다.
+(c) 래퍼 하나(`quadError(msg)`)를 두고 그 안에서 level을 통일 관리한다 —
+단, 래퍼가 한 겹 더 끼면 level이 3이 되므로 그 자체가 규약이 필요하다.
+
+---
+
+## 🟡 `H-105` — error 메시지 언어가 이미 갈려 있다 (한국어 17 / 영어 6)
+
+**어디**: `base/` 전체의 확정 의사코드.
+
+**무엇이 어긋나나**: 확정 의사코드에 든 error 문자열이 두 언어로 갈려
+있고, 어느 쪽으로 할지 **결정된 적이 없다**. 지금 분포:
+
+- **한국어(17)** — `Slot: nil/None은 요소가 될 수 없음 — 실제로 마운트
+  가능한 값만` / `dispose: 이 값은 아직 트리가 살아있길 요구 중임 — 먼저
+  Remove/Extract 할 것` / `Dispatch: 핸들러가 retractor 반환을 생략했음 —
+  생략 불가` / `이 요소는 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지` /
+  `Leading/Trailing 둘 다 false면 아무것도 통과하지 않음` 등.
+- **영어(6)** — `Quad module already initialized by '{...}'` /
+  `attribute "{k.Name}" is already bound by another owner` /
+  `{Ref|Observer|PreRef|PostRef|Effect} binding should be array index item,
+  but got {typeof(k)}`(동적 경로 가드 4형제).
+
+즉 **동적 경로 가드 계열과 모듈 초기화는 영어, Slot/Dispatch/dispose/Blocker는
+한국어**다. 한 라이브러리의 공개 표면에서 이렇게 갈리면 사용자가 검색으로
+찾기도 어렵고(에러 문구가 그대로 검색어가 된다), 문서 사이트
+(`research/documentation-plan.md`)의 에러 레퍼런스도 두 언어를 섞게 된다.
+
+**왜 결정이 필요한가**: `.claude/conventions.md`가 정한 것은
+*"사용자가 보게 될 것은 한국어"* 인데, 그 "사용자"는 **이 프로젝트의
+사용자(=본인)**이지 **quad 라이브러리의 사용자**가 아니다. quad는 공개
+라이브러리를 목표로 하므로(`project-context.md`의 *"개별 프로덕트가 아니라
+**라이브러리**로서의 코드 퀄리티"*) 이 둘이 같은 규칙일 이유가 없다 — 그래서
+**이건 에이전트가 임의로 정할 수 없는 사용자 결정**이다.
+
+**갈래**: (a) 전부 영어로 통일(라이브러리 관례, 검색 가능성). (b) 전부
+한국어로 통일. (c) 영어 메시지 + 한국어 문서(에러 코드/문구를 문서 사이트에서
+한국어로 해설). **지금 정해두면 42곳을 쓸 때 한 번에 맞출 수 있고, 나중에
+바꾸면 이미 배포된 문구가 바뀌는 셈이 된다.**
+
+---
+
+## 🟢 `H-106` — `C-6`이 승격한 진단이 `getOffsetAt` 경로에선 우회된다 (실측)
+
+**어디**: `base/dispatch-core-plan.md`의 `recompute` 의사코드
+(*"[전면 정정, 2026-08-20 QA 4라운드 `C-6`] `nil`은 skip이 아니라 error"*)와
+같은 문서의 `getOffsetAt`.
+
+**무엇이 어긋나나**: `C-6`은 부기 구멍을 **조용한 skip에서 명시적 error로
+승격**시키며 메시지까지 정했다 — *"`sourceList[i]`가 nil — 부기가 깨졌음
+(계약상 None이어야 함)"*. 그런데 2026-08-21에 들어온 접두합 캐시
+`getOffsetAt`은 `bk.lengthList[i]`를 **가드 없이** 더한다. 그리고
+`setOffsetSource`가 등록 시점마다 `getOffsetAt`을 부르므로, **같은 결함이
+`recompute`보다 훨씬 먼저 그 경로에서 터진다**:
+
+```
+setOffsetSource에서 터지는가: true
+메시지: attempt to perform arithmetic (add) on number and nil
+```
+
+`H-39`(말단 핸들러 넷이 등록을 빠뜨리던 것)가 재발하면 사용자가 보는 건
+`C-6`이 공들여 쓴 문장이 아니라 **익명 산술 에러**다.
+
+**부수 관찰**: 그 자리의 발행 채널이 `None`이면 `setOffsetSource`가
+얼리리턴해서 `getOffsetAt`을 아예 안 부르므로 **아무 진단도 안 나고**,
+나중 `recompute`에서 `C-6` 메시지로 잡힌다. 즉 같은 결함이 **그 자리에
+offset 소비자가 있느냐에 따라** 전혀 다른 두 얼굴로 나타난다.
+
+**갈래**: `getOffsetAt`의 `contribution`에도 같은 가드를 둔다(한 줄).
+**구현 시 정하면 되는 것**이지만, `C-6`이 그 진단을 승격시킨 이유(추적
+어려운 오작동을 즉시 드러내기)가 새 경로에서 반쯤 무효화돼 있다는 건 적어둘
+값이 있다.
+
+---
+
+## 부록 — 6차 패스에서 돌려봤는데 **문제가 없던 것**
+
+- **접두합 캐시(`getOffsetAt`)의 정확성 자체는 문제없다** — 기본 3자리
+  배치(offset 0,1,2), `Frame { Slot1, plain, Slot2 }`에서 Slot1의 길이가
+  0→3→0으로 오갈 때 뒤 형제 offset이 매번 정확했고(1→4→1), 다음 자리
+  offset(`nativeInsert`가 쓰는 값)도 맞았다. **`H-3`의 무효화 규칙
+  (`min(invalidAfter, i)`)도 splice가 끼지 않는 한 정확하다**(그 예외가
+  `H-102`다).
+- **배치 게이팅이 실제로 O(N)으로 접힌다** — 3자리 배치 등록 동안
+  `recompute`가 한 번도 안 돌고, `OffWithoutEmit()` 뒤 명시적 호출 1회로
+  끝났다.
+- **등록 시점의 길이가 최종값이 아니어도 런타임에 자가교정된다** —
+  `C-6`(*"부모에게 미는 길이는 최종값"*)이 어겨진 상태로 등록해도, 그 자리
+  길이가 State면 `setLength`가 건 Observer가 나중 변경을 잡아 뒤 형제
+  offset을 고친다. 즉 그 계약은 **초기 레이아웃 한 프레임의 정확성**에
+  대한 것이지 영구 파손 조건이 아니다.
+- **`bk.N or 0` 빈 Slot 방어가 실제로 필요하고 동작한다** — 요소가 하나도
+  없는 owner에 `recompute`를 불러도 조용히 통과한다.
+- **`Dispatch` 체인의 (A)/(B) 분기 정상 경로** — 같은 핸들러 재진입은
+  옛 retractor에 새 값을 넘기고 자리를 교체하고, 다른 핸들러는
+  `retractFrom` 뒤 새로 설치한다. 정상 경로에서 자리가 새거나 겹치지
+  않았다(문제는 `H-103`의 **error 경로**뿐이다).
+
+---
+
 ## 회신 방법
 
 6라운드와 같다 — 항목 번호로 결정만 적어주면 `-followup.md`를 만들고
@@ -2571,6 +2936,17 @@ TypeError: Expected this to be 'Epoch | EpochSet' but got '{ [SourceData<number>
 `SetStrong`을 쓰는 모든 자리가 같은 실수를 반복한다. `H-72`는 `H-55`와
 같은 뿌리(`Epoch` 일반화 때 게이트 쪽 요구가 표면에 덜 반영됨)라 그것과
 같이 결정하는 게 낫다.
+
+**6차 패스**: `H-101`/`H-102`는 **둘 다 Length/Offset 부기의 구현 순서
+문제**이고 고치는 건 각각 몇 줄이지만, **그대로 구현하면 증상이 원인에서 먼
+곳(상위 형제의 위치)에 나타나** 나중에 잡기가 매우 비싸다 — M3 착수 전에
+닫는 게 낫다. `H-103`은 `H-87`/`H-88`과 **같은 질문의 세 번째 자리**라
+(예외가 나면 부기를 어디까지 되돌리는가) 셋을 한 번에 정하는 게 낫고,
+처방도 하나로 묶인다(자리당 `pcall` vs 선행 검증 vs UB 명문화).
+`H-104`/`H-105`는 설계가 아니라 **표기 규약**이고 서로 독립이지만, **42곳을
+쓰기 전에** 정해두면 한 번에 맞출 수 있다 — 특히 `H-105`는 "라이브러리
+사용자"와 "이 프로젝트 사용자"가 다르다는 이유로 **에이전트가 임의로 정할
+수 없는 항목**이다. `H-106`은 한 줄짜리 가드다.
 
 **5차 패스**: `H-94`/`H-95`/`H-96`/`H-100`은 전부 **"확정된 시그니처가
 확정된 관용구를 통과시키는가"** 하나에서 나왔고, 넷 다 결정이 아니라
