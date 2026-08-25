@@ -18,11 +18,14 @@ M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 
 절, 새 구성은 `ROADMAP.md`의 M2 배너). **2026-08-24 이전에 쓰인
 `session/`·`archive/`·`qa-request/`의 `M2`/`M3`는 옛 의미**(M2=디스패치,
 M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 절에 항목
-둘이 올라와 있었으나, **⭐ [2026-08-25] 둘 다 닫혀 그 절은 지금 비어 있다**
+둘이 올라와 있었으나, **⭐ [2026-08-25] 둘 다 닫혔다**
 (중간 State GC는 `_hold` 불변식으로, `store:GetDynamic` 위치는 콜론 유지 +
 `CheckReserved` 타입 함수로 — 7라운드 손 트레이싱 후속, 결정 전량의 소스는
-`qa-request/pre-implementation-handtrace-round7-followup.md`). **M2 착수를
-막는 항목은 설계든 실측이든 없다.** 저장소 루트에
+`qa-request/pre-implementation-handtrace-round7-followup.md`). **⚠️
+[2026-08-26 정정] 다만 M2 착수는 다시 회신 대기다** — 8라운드 손 트레이싱
+(`qa-request/pre-implementation-handtrace-round8.md`)이 7라운드 반영분을
+겹쳐 트레이싱해 사용자 결정 문항 Q1~Q10을 올렸고(🔴 다섯이 착수 전 필요),
+`question.md` 최우선 절이 이를 가리킨다. 저장소 루트에
 `quad-base/src/`(`New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`)/
 `quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
 아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
