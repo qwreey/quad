@@ -38,10 +38,18 @@
 | `core.luau`/`dispatch.luau`의 부기가 **단일 `bk.invalidAfter`** | **두 필드로 갈라졌다** — `bk.offsetCacheValidUpTo`(캐시)와 `bk.offsetSetUpTo`(`:Set` 완료). 옛 단일 필드가 두 뜻을 겸한 게 되감기 신호가 지워지는 원인이었다 | `/code-review high` 4차 |
 | `d7_splice_fix.luau:14`의 splice 무효화가 `math.min(bk.invalidAfter, index)` | splice는 **`index - 1`**(커서 위치 splice가 "변경 없음"과 구분이 안 된다). `dispatch.luau:84`의 `setLength`용 `math.min(…, i)`는 **정정 대상이 아니다** — 그쪽 공식은 원래 `i`다 | `H-113` |
 | `Ref`를 쓰는 자리의 콜백 호출 | `fn(value, ref)` — 두 번째 인자가 `Ref` 자신(= `Epoch`). `:Set` 순서는 **값 → `Revision` → 콜백**, 순회는 `.Callbacks` + `.WeakCallbacks` | `H-107`/`H-108` |
+| **[2026-08-27 추가, 9라운드]** `dispatch.luau`의 `recompute`가 `lengthList[i]`를 읽고 누적한 **뒤** 되감기를 판정 | 되감기 판정이 **먼저**(`continue`), 읽기·누적은 되감지 않을 때만 — 옛 순서는 커서 뒤 자리 수가 줄면 `sum += nil` | `H-124`/Q1 |
+| **[2026-08-27 추가]** `dispatch.luau`의 `setLength`가 `box.pos`(가변 박스)로 위치를 캡처, 8라운드 전사물엔 `bk.tokens`/`indexOfToken` | **토큰 폐기** — 5번째 인자 `element`를 캡처해 `bk.indexOfElement[element]` 조회. `slot._elemIndex`도 이 맵으로 통합 | `H-141`/Q3 |
+| **[2026-08-27 추가]** `newSlot`이 `Offset`을 만들고 `materializeSlotTree` 상당이 `setOffsetSource` 뒤에 관측자를 붙임 | `Offset`·`_baseObserver`는 **생성자**에서, 순서는 `blocker:On()` → `bindLifetime` → `setOffsetSource` | `H-125`/Q2 |
 
-**`d7_splice_fix.luau`의 결론(`H-102`가 토큰 역참조로 닫힌다)은 영향받지
+**`d7_splice_fix.luau`의 결론(`H-102`가 역참조 *조회*로 닫힌다)은 영향받지
 않는다** — 그 테스트는 recompute가 끝난 뒤 splice하는 시나리오라 `H-113`이
 문제 삼은 "루프 커서 위치에서의 splice" 경계를 애초에 안 밟는다. 공식만 낡았다.
+(**[2026-08-27 정정]** 여기 한때 *"토큰 역참조로 닫힌다"*였는데, 토큰은 9라운드
+`H-141`/Q3로 폐기됐다 — 지금은 **요소 캡처 + `bk.indexOfElement` 조회**다. 결론
+("캡처 말고 조회")은 그대로다. 9라운드 전사물(요소 키)은 세션 스크래치패드
+`ref9/`에 있고 근거는 `qa-request/pre-implementation-handtrace-round9.md`에
+인라인 전사돼 있다.)
 
 ---
 

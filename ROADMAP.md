@@ -21,6 +21,9 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`,
 > 그리고 **[2026-08-26] 8라운드 몫은 `-round8-followup.md`**(7라운드
 > 반영분을 겹쳐 재트레이싱한 발견 17건 — 역전 없이 누락·충돌만 닫았습니다.
+> **[2026-08-27] 9라운드 몫은 `-round9-followup.md`** — Q1~Q3(`recompute` 되감기
+> 순서 / Slot 생성자의 `Offset`·`_baseObserver`·`_destroyed` / `bk.indexOfElement`로
+> 토큰 폐기)까지 반영됐고 Q4~Q10은 대기 중입니다.
 > **어느 체크박스가 바뀌었는지는 여기서 세지 않습니다** — 해당 체크박스에
 > 각각 `H-1xx` 표시가 붙어 있으니 그게 소스입니다. M2/M3 양쪽에 걸쳐
 > 있습니다). M1까지의 산출물은
@@ -710,7 +713,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
       `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.
       Modifier 쪽 표면(인라인 키로 필드 지우기, `Peek` 반환 타입)은 M7
-- [ ] `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?)`/
+- [ ] `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?,element?)`
+      (**[2026-08-27, 9라운드 Q3]** 5번째 `element` = 그 자리의 `inst|slot` —
+      `gatedRecompute`가 인덱스 대신 이걸 캡처해 **`bk.indexOfElement`**를
+      조회한다. 옛 `bk.tokens`/`indexOfToken`(사용자가 정한 적 없는 `token = {}`
+      신원)은 폐기. 상수 길이 자리(`Nil`/`None` 핸들러)는 생략)/
       `Dispatch.setOffsetSource(ownerKey,i,offset:Source<number>|None)`/
       **`Dispatch.getOffsetAt(ownerKey,i)`** —
       **[2026-08-21 구현 전 QA 5라운드 반영]** `setLength`의 4번째 인자
@@ -724,7 +731,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `Offset`이 **영원히 고정**된다(`sum`은 매번 새로 더하므로 위로는 맞고
       옆으로만 틀려 알아채기 특히 어렵다):
       (a) `getBookkeeping`이 `bk.offsetCache = {}`, **`bk.offsetCacheValidUpTo = 0`,
-      `bk.offsetSetUpTo = 0`**, `bk.recomputeBlocker = Blocker()`으로
+      `bk.offsetSetUpTo = 0`**, `bk.recomputeBlocker = Blocker()`,
+      `bk.indexOfElement = {}`(**[2026-08-27 Q3]**)으로
       초기화(`nil` 시작이면 첫 `setOffsetSource`가 `nil` 비교에서 죽는다),
       (b) **캐시를 앞으로 당기는 자리**(개수는 `base/dispatch-core-plan.md`의
       무효화 표가 소스) — `setLength` 본문과 그 자리 length가
@@ -1089,10 +1097,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       블록이 이미 머리에 이 파일명을 적어뒀다
 - [ ] **⭐ [2026-08-24, 6라운드] 이 마일스톤에서 새로 생긴 필드·헬퍼**
       (구현 항목으로 드러나야 놓치지 않는다):
-      **`slot._elemIndex`**(물리 요소→`_elements` 인덱스 역방향 맵,
-      `indexOfRaw`가 이걸 O(1)로 조회하는 **기본 경로**) ·
+      **`bk.indexOfElement`**(물리 요소→`_elements` 인덱스 역방향 맵,
+      `indexOfRaw`가 이걸 O(1)로 조회하는 **기본 경로**. **[2026-08-27, 9라운드
+      Q3]** 옛 이름 `slot._elemIndex` — 같은 뜻의 맵이 Slot 층과 Dispatch 층에
+      따로 살던 것을 **Dispatch 부기 하나**로 통일했다, `base/dispatch-core-plan.md`
+      `setLength` 절) ·
       **`reindexFrom(self, from)`**(`_elements`를 시프트하는 **모든** 자리가
-      부른다 — 실체화 여부와 무관하게 항상) ·
+      부른다 — 실체화 여부와 무관하게 항상; 갱신 대상은 위 `bk.indexOfElement`) ·
+      **⭐ [2026-08-27, 9라운드 Q2] 생성자에서 나는 `Offset`/`_baseObserver`**
+      (`Length`와 같은 자리 — 마운트 시점에 만들면 첫 마운트/재마운트가 갈려
+      재마운트 캐시가 낡았다, `H-125`. 둘 다 bind/unbind로만 관리하고
+      제거/생성하지 않는다) · **`slot._destroyed`**(파괴됨은 이 플래그 하나만
+      말한다 — 핸들을 `nil`로 지워 그 뜻을 겸하게 하지 않는다. 마운트·공개
+      CRUD·`:List` 진입에서 error level 2, 이중 `dispose`는 no-op,
+      `base/slot-plan.md`의 "파괴된 Slot은 재사용 불가" 절) ·
       **`slot._physicalTarget`**(실체화 시점부터의 생명주기 앵커,
       `_mountedInst`는 "마운트됨"만 뜻하게 좁혀졌다) ·
       **`collectLeaves(slot)`**(중첩 Slot의 물리 리프 평탄화 —
@@ -1121,7 +1139,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         `setOffsetSource(inst,k,None)` **먼저**, `setLength(inst,k,0)` **나중**.
         반대로 하면 `setLength` 안의 `recompute`가 죽는 중인 서브트리의 offset
         `Source`에 헛된 `:Set()`을 날림. `recompute`는 `sourceList[i]`가 `nil`
-        이어도 `None`처럼 skip(방어), 해제 시 `slot.Offset = nil`.
+        이어도 `None`처럼 skip(방어). (**⚠️ [2026-08-27 정정, 9라운드 `H-140`]**
+        여기 한때 *"해제 시 `slot.Offset = nil`"*이 붙어 있었는데 그건 4라운드
+        `SL-75`/`D-60`이 **폐기**한 문장이다 — `nil`로 갈아치우면 그 Source를
+        구독 중인 다운스트림이 끊겨 포탈이 깨진다. `slot.Offset`은 생성자에서
+        나서 Slot과 함께 죽는다(위 `_baseObserver` 항목과 같은 불변식).)
       - **소유권 판정을 둘로 분리** — nested(`rawAdd`)는 엄격 `claimOwner`
         (같은 owner 재클레임도 error, `Slot{a,a}` 차단, 반환값 없음),
         top-level은 `claimOwnerAt(element, inst, k)`(정확히 같은 `(inst,k)`의
@@ -1211,7 +1233,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `userdata`는 명시적으로 반환 안 하는 한 안 지워짐). 정리 루프는
       `mounted`가 아니라 직전 사이클의 키 집합 `prevKeys` 전체를 순회해야 함
       (**[2026-08-24 `H-1`]** 옛 이름은 `keyIndex`였고 인덱스 맵이었으나,
-      역방향 맵 `slot._elemIndex`가 생기며 **단순 키 집합으로 강등**됐다)
+      역방향 맵(지금은 `bk.indexOfElement` — 2026-08-27 Q3로 Dispatch 부기에
+      통일, 그때 이름은 `slot._elemIndex`)이 생기며 **단순 키 집합으로 강등**됐다)
       (`userdata`만 살아있는 채로 key가 완전히 사라지는 케이스 커버).
       `userdata = userdata or {}` lazy-init 패턴이 Luau 제네릭에서 잘
       좁혀지는지 실측 필요. **`userdata`는 GC-native 값만 허용,
@@ -1228,9 +1251,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `self._mounted` 확인 후 즉시 활성화)** (2026-08-09 일곱 번째 세션,
       `base/slot-plan.md` "`Slot:List(data, updateFn, keyFn?)`"의 "구독 시점" 절)
       **`Slot.Offset: Source<number>`도 `Slot.Length`처럼 공개 필드로
-      노출 — Slot 마운트 시점에 `Dispatch.setOffsetSource`가 등록하는
-      바로 그 Source를 `self.Offset`으로도 저장**(2026-08-11 세션,
-      `base/dispatch-core-plan.md`의 "Slot.Length와 Slot.Offset은 별개" 절)
+      노출 — `Length`와 같은 자리, 즉 생성자에서 `Source(0)`으로 만들고 마운트
+      시점엔 `Dispatch.setOffsetSource`가 그 Source를 **등록만** 한다**
+      (2026-08-11 세션, `base/dispatch-core-plan.md`의 "Slot.Length와 Slot.Offset은
+      별개" 절. **[2026-08-27 정정, 9라운드 `H-125`/Q2]** 여기 한때 *"마운트
+      시점에 `setOffsetSource`가 등록하는 바로 그 Source를 `self.Offset`으로도
+      저장"*이었다 — 그러면 첫 마운트와 재마운트가 갈려 재마운트 캐시가 낡는다)
 - [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)

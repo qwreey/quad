@@ -34,6 +34,25 @@
      검증(`error` level 2), `isModifier` 가드를 `Source` 생성자로 이동.
    - **문서화 대상 등록**: quad 두 벌 공존 시 `Brand`/`None`/`Subscribed`가
      사본마다 분리된다는 사실(`research/documentation-content-map.md` §4).
+   - **⭐ [2026-08-27] 9라운드를 돌렸고 Q1~Q3까지 확정·반영했다 — Q4~Q10 대기.**
+     발견은 `qa-request/pre-implementation-handtrace-round9.md`(`H-124`~`H-141`,
+     🔴 둘 다 실측 재현), **결정의 소스는 `-round9-followup.md`**(진행 표가
+     상태의 소스). 반영된 셋: `recompute` 되감기 판정을 `lengthList[i]` 읽기
+     앞으로 / `Offset`·`_baseObserver`를 Slot 생성자로 + `materializeSlotTree`
+     순서 + `_destroyed` / `element → index`를 `bk.indexOfElement` 하나로(사용자가
+     정한 적 없는 `token` 폐기). README 색인은 했고 `/code-review high`·커밋은
+     Q4~Q10 뒤. 아래는 돌리기 전(2026-08-26) 서술:
+     지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
+     **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤
+     `/code-review high` **7패스의 수정이 전부 그 커밋에 들어 있고 아무도
+     트레이싱한 적이 없다**(7차 수정분은 리뷰조차 안 됐다). 근거: 그 7패스의
+     HIGH 추이가 `1→1→0→1→0→3→0`이라 **직전 패스가 조용한 것이 수렴의
+     증거가 아님**이 같은 세션에 반증됐다(5차 HIGH 0 → 6차 HIGH 3, 전부 5차
+     수정이 만든 것). 반대로 전수 재트레이싱은 수율이 낮다는 것도 실측됐다 —
+     8라운드 3차 패스가 `base/`를 완독하고 🔴 0건이었다. **M2 착수 게이트는
+     아니다**(위 머리말대로 게이트는 0). 돌릴지 말지는 비용 판단이고, 돌린다면
+     그게 **마지막 종이 라운드**여야 한다는 게 이 지시서의 전제다 — 이후로는
+     M2 구현 자체가 더 나은 감사 도구다.
    아래는 8라운드 이전(2026-08-25) 시점 서술:
 
    **[2026-08-25] 7라운드까지 전부 처리 완료 — 당시 `question.md` 최우선
@@ -142,7 +161,7 @@
    `Effect`의 leaf 사망 cleanup 배선 부재(`H-11`), `:List`의 인덱스/좌표계
    결함 둘(`H-1`/`H-2`).
 
-   **구조가 바뀐 것 넷** — (1) `slot._elemIndex`(물리 요소 → 인덱스) 신설로
+   **구조가 바뀐 것 넷** — (1) `slot._elemIndex`(물리 요소 → 인덱스; **[2026-08-27]** 9라운드 Q3로 `bk.indexOfElement`에 통합됨) 신설로
    `:List`의 `keyIndex`가 단순 키 집합으로 강등, (2) `_mounted`가 "물리
    인스턴스 유무"만 뜻하게 좁혀지고 `slot._physicalTarget`이 신설되어 부기는
    실체화 시점부터 항상 수행, (3) `Ref.Callbacks`가 해시맵 셋 + 해제 경로

@@ -504,6 +504,33 @@ end
 다른 곳에 다시 넣으면 `attachSlot`이 새 물리 부모로 다시 flush함. 아무도
 안 들고 있으면 그냥 GC. 지금 확실히 죽이려면 `dispose`(아래 절).
 
+**⭐ [2026-08-27 신설, 9라운드 Q2] 파괴된 Slot은 재사용 불가 — `slot._destroyed`.**
+지금까지 파괴 쪽 계약이 어디에도 없었다. `destroySlotTree`는 **`_elements`를
+안 비운다**(요소만 `nativeDispose`) — 파괴된 Slot은 죽은 Instance를 든 좀비이고,
+`_mounted`를 `false`로 되돌려놓으므로 *"마운트된 Slot의 재마운트는 즉시 throw"*
+가드에도 안 걸려 재마운트하면 죽은 Instance를 다시 `Parent` 대입한다.
+
+- `destroySlotTree` 꼬리에서 `slot._destroyed = true`. **"파괴됨"은 이 플래그
+  하나만 말한다** — 핸들(`_baseObserver`/`_listObserver`/`_listActivated`)을
+  `nil`로 지워 그 뜻을 겸하게 하지 않는다(사용자: *"두 일을 겸하는걸 만들다가
+  사고가 난 적 많아"* — `invalidAfter`가 그랬다). 핸들은 `unbindLifetime`만.
+- **`attachSlot`/`materializeSlotTree` 진입과 공개 CRUD(`:Add` 등) 진입에서
+  `if self._destroyed then error(..., 2) end`** — 사용자 입력 검증이므로
+  `level 2`, 메시지는 영어(`base/architecture.md`의 error 계약). CRUD까지 막는
+  이유: `_elements`가 안 비워지므로 죽은 Slot에 `Add`하면 **조용히** 좀비 배열이
+  자란다.
+- **`Owned = false`인 Slot은 `_destroyed`가 서지 않는다** — `destroySlotTree`가 그
+  분기에서 `unmountSlotTree`로 빠져 꼬리(플래그 세팅)에 안 닿는다. 그 Slot은
+  요소를 만든 적이 없으니 좀비가 없고 재사용도 그대로 가능하다 — **사용자
+  확정**(*"owned = false 은 state<Frame> -> slot(single) 형태가 구현되는 것이라
+  맞아"*). "파괴 대신 언마운트만"이라는 그 분기의 뜻 그대로.
+- **이중 `dispose`는 얼리리턴 no-op** — teardown 경로가 겹치는 건 실재하고
+  GC-native 기조와 맞는다. 플래그 세팅도 얼리리턴도 `destroySlotTree` 쪽이라
+  다형 진입점 `dispose(value)`는 공짜로 물려받는다. 이름은 `_disposed`가
+  아니다 — 사용자: *"`dispose` 는 형질이 다른 엔진 요소를 포함할 수 있는 것에
+  대한 공동 소멸자인 네이밍. 자신이 삭제되고 그 여부는 `destroy` 가 맞아보이고,
+  `dispose` 는 슈거로써 `destroy` 와 별도의 맥락에서 해석해야해."*
+
 **[전면 정정, 2026-08-13 감사] `claimOwner`를 nested/top-level 두 함수로
 쪼개고, top-level은 `(inst, k)`까지 본다.** 원래는 하나의 `claimOwner`가
 "같은 ownerKey면 `false` 반환(no-op)"을 양쪽에 공유했는데, 그 분기가
@@ -705,6 +732,12 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
 **인덱스 기준**으로 재확정 — 레퍼런스만 갖고 있으면 `IndexOf`로 먼저
 인덱스를 구하면 됨(아래):
 
+**⭐ [2026-08-27, 9라운드 Q2] 아래 표의 mutate 연산 전부**(`Add`~`Swap` — 조회
+`Get`/`IndexOf` 제외)**가 진입 첫 줄에 `if self._destroyed then error(..., 2) end`를
+둔다.** 의사코드가 있는 건 `:Add`/`:List`뿐이라 거기만 적혀 있지만, 규칙은 표
+전체다 — `_elements`가 파괴 뒤에도 안 비워지므로 어느 하나라도 빠지면 죽은
+Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용 불가" 절).
+
 | 연산 | 시그니처 | 복잡도 | 의미 |
 |---|---|---|---|
 | `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환** |
@@ -869,9 +902,25 @@ Remove/Extract/Move하려 해도 참조를 안 들고 있는 경우가 잦음. `
   `Slot():Add(a):Add(b):Add(c)`와 같은 일을 하는 표기일 뿐이라서:
   ```lua
   function Slot(initial)
-      -- [2026-08-24 `H-1`] `_elements`와 짝인 역방향 맵 `_elemIndex`도 여기서
-      -- 같이 만든다(둘은 항상 함께 산다 — 위 raw* 인자 규약).
-      local self = setmetatable({ _elements = {}, _elemIndex = {}, ... }, Slot_mt)
+      -- ⭐⭐ [2026-08-27, 9라운드 `H-125`/Q2] **`Offset`과 `_baseObserver`도 여기서
+      -- 난다 — `Length`와 같은 자리.** 마운트 시점에 만들면 첫 마운트(생성 →
+      -- "등록 즉시 1회"가 우연히 캐시를 0으로)와 재마운트(`bindLifetime`만 →
+      -- 바인드는 발화가 아니라 안 함)가 갈려 재마운트 캐시가 낡았다. 이제 그
+      -- 분기가 없다. 둘 다 **bind/unbind로만 관리하고 제거/생성하지 않는다**
+      -- (사용자: *"단순히 bind/unbind 로 관리해야지 그것 자체를 제거/생성
+      -- 하는건 안 맞아보임"*). `SL-75`/`D-60`의 "마운트 전엔 `0`"이 이걸로
+      -- 코드에서도 성립한다. 콜백 본문은 아래 `materializeSlotTree` 절의
+      -- `makeBaseObserver`가 소스(머리에 미실체화 가드 — 이 "등록 즉시 1회"가
+      -- `bk`를 eager 생성하지 않도록).
+      -- **[2026-08-27, Q3] 옛 `_elemIndex`는 여기 없다** — 그 맵은
+      -- `bk.indexOfElement`로 Dispatch 부기에 산다(`indexOfRaw`가 조회).
+      local self = setmetatable({
+          _elements = {},
+          Length = Source(0),
+          Offset = Source(0),
+          ...
+      }, Slot_mt)
+      self._baseObserver = makeBaseObserver(self)   -- 등록 즉시 1회는 가드가 삼킨다
       if initial ~= nil then
           self._crudUsed = true   -- 빈 테이블이어도 즉시 잠금(아래 참고)
           for _, v in ipairs(initial) do   -- ipairs가 첫 nil에서 멈춤
@@ -1294,6 +1343,7 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 
 ```lua
 function Slot:List(data, updateFn, keyFn, opts)
+    if self._destroyed then error("Slot: destroyed Slot cannot be reused", 2) end   -- [2026-08-27 Q2]
     assert(not self._listed, "Slot already has :List installed")
     -- [2026-08-24 6라운드 손 트레이싱 `H-37`] **역방향 가드** — 산문(위 "CRUD API
     -- 확정" 절)이 확정해둔 대칭 가드가 의사코드에 안 옮겨져 있었다. 이게 없으면
@@ -1373,7 +1423,8 @@ function activateList(self, physicalTarget)
     -- 옛 설계는 `keyIndex[key]`를 `_elements` 인덱스로 쓰고 `raw*`에 그대로
     -- 넘겼는데, 그 값은 **사이클 도중엔 stale**이다(`rawAdd`/`rawRemove`가
     -- 배열을 시프트하는데 교체는 사이클 끝에 한 번뿐). 이제 인덱스는
-    -- `indexOfRaw(self, element)`(= `slot._elemIndex` 조회)로 그때그때 구하고,
+    -- `indexOfRaw(self, element)`(= `bk.indexOfElement` 조회 — **[2026-08-27 Q3]**
+    -- 옛 `slot._elemIndex`는 Dispatch 부기로 갔다)로 그때그때 구하고,
     -- 여기 남는 건 **"직전 사이클에 존재했던 키"**라는 집합 용도뿐이다.
     local mounted, userdata, prevKeys = {}, {}, {}
 
@@ -2203,21 +2254,68 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 -- 근거와 대안 비교는 `reference/slot-attach-decomposition.md`.
 
 -- (1) 부기만 만든다. 물리 마운트(`Parent` 대입)를 단 한 줄도 안 한다.
+-- ⭐⭐ [2026-08-27, 9라운드 `H-125`/Q2] `_baseObserver`의 콜백 — **Slot 생성자가
+-- 만든다**(위 `Slot(initial)`). 이 함수는 생성자가 부르는 팩토리일 뿐이고, 여기
+-- 두는 이유는 본문이 `bk`·`recompute`를 알아야 해서다.
+local function makeBaseObserver(slot)
+    return slot.Offset:Observer(function()
+        -- ⭐ 미실체화면 할 일이 없다 — 생성자의 "등록 즉시 1회"를 여기서 삼킨다.
+        --   이 가드가 없으면 그 1회가 **모든 Slot**에 대해 `getBookkeeping`을
+        --   불러 `bk` + `recomputeBlocker`를 eager 생성한다(한 번도 마운트 안 되는
+        --   Slot까지). 의미도 맞다 — 미실체화 Slot의 베이스 변경엔 할 일이 없다.
+        if slot._physicalTarget == nil then return end
+        -- ⭐ [2026-08-26, 8라운드 `H-119`/`H-3`] 두 줄이 빠져 있었다:
+        --   (1) 배치 Blocker만 보고 `recomputeBlocker`를 안 봐서 재진입 차단이
+        --       우회됐고, (2) `H-3`의 3번("베이스가 바뀐 경우라
+        --       두 필드 `0`")이 의사코드에 없었다.
+        local bk = getBookkeeping(slot)
+        -- [2026-08-26] 무효화는 **두 필드를 다** 내린다(캐시도 낡고 Set도
+        --   다시 해야 한다) — `dispatch-core-plan.md`의 "두 필드" 절.
+        bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0   -- 베이스가 바뀜 → 1번부터 전부
+        if getBlocker(slot):IsOn() or bk.recomputeBlocker:IsOn() then return end
+        recompute(slot, bk)
+    end)
+end
+
 local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
+    -- [2026-08-27, 9라운드 Q2] 파괴된 Slot은 마운트 불가(위 "파괴된 Slot은 재사용
+    -- 불가" 절). `attachSlot`이 이 함수를 거치므로 여기 한 번이면 된다.
+    if slot._destroyed then error("Slot: destroyed Slot cannot be mounted", 2) end
     -- [2026-08-24 6라운드 `H-2`] **앵커를 먼저 저장한다.** `setLength`의 4번째
     -- 인자(그리고 length가 State일 때 `bk.observers`의 앵커)가 실체화 시점부터
     -- 필요한데 `_mountedInst`는 `mountSlotTree`에서야 채워진다. `raw*`가 이
     -- 필드를 본다(위 "`isMounted` 이중 추적 분리" 절의 3상태).
     slot._physicalTarget = physicalTarget
-    -- offset 먼저 — activateList가 updateFn에 이 값을 넘겨야 하므로(C1)
-    -- [2026-08-21 5라운드 G절 검토 중 발견] **기존 Source가 있으면 재사용한다.**
-    -- 매번 `Source(0)`을 새로 만들면, 언마운트가 `slot.Offset`을 일부러 보존해둔
+
+    -- ⭐⭐ [2026-08-27 순서 재배치, 9라운드 `H-125`/Q2] **게이트와 관측자 바인드가
+    -- `setOffsetSource`(= 베이스가 바뀌는 emit) *위*로 왔다.** 옛 순서는
+    -- `setOffsetSource` → `blocker:On()` → (`_baseObserver`가 있으면 bind /
+    -- 없으면 생성)이었는데, 재마운트에선 그 관측자가 `unmountSlotTree`가
+    -- unbind해둔 상태라 emit이 `canExecute`에 걸러져 **두 필드가 0으로 안
+    -- 내려가고**, 꼬리 `recompute`가 옛 베이스의 `offsetCache[1]`을 그대로 썼다
+    -- (첫 마운트는 "등록 즉시 1회"가 *우연히* 0으로 만들어 안 보였다 — 그
+    -- 비대칭이 버그의 집). 이제 `Offset`/`_baseObserver`는 생성자에서 나므로
+    -- 여기엔 생성 분기가 없고, 바인드는 **발화가 아니므로** 순서가 곧 계약이다.
+    -- Blocker가 감싸는 게 **등록뿐**이라 "배치 등록 게이팅"이라는 정의와 범위가
+    -- 정확히 일치함(옛 코드는 물리 마운트까지 같이 감쌌음).
+    local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
+    blocker:On()
+    -- [2026-08-21 5라운드 G절] **깊은 전파** — 앞 형제의 길이가 변해 내 베이스가
+    -- 밀리면 내 자식들의 offset도 다시 계산돼야 한다. `_listObserver`/
+    -- `_detachCleanup`과 **같은 취급**: 재마운트 땐 앵커만 새 target으로(앵커가
+    -- 물리 target인 근거는 위 `C-4`). **바인드가 `blocker:On()` *뒤*인 게
+    -- 중요하다** — 아래 emit이 깨운 콜백이 게이트 없이 `recompute(slot)`를
+    -- 완주하면, 그 시점 `bk`는 언마운트 전 옛 부기(`Relate(slot)` 위에
+    -- 살아남는다)라 옛 `N`·옛 자식 목록으로 돈다. 이 Blocker는 이 Slot의 것이고
+    -- `setOffsetSource`는 **부모 owner의** blocker를 보므로 간섭이 없다.
+    bindLifetime(physicalTarget, slot._baseObserver)
+    -- offset — activateList가 updateFn에 이 값을 넘겨야 하므로(C1). 여기서
+    -- `slot.Offset`이 새 베이스로 `Set`되고, 위 관측자가 두 필드를 0으로 내린 뒤
+    -- 게이트에 걸려 돌아온다. **이미 있는 Source를 등록만 한다** — 매번
+    -- `Source(0)`을 새로 만들면 언마운트가 `slot.Offset`을 일부러 보존해둔
     -- 이유(이미 렌더된 요소들이 그 Source를 **구독한 채 함께 딸려 나간다**,
-    -- `SL-75`/`DC-6`)가 재마운트에서 그대로 무너진다 — 그 구독자들은 옛 객체를
-    -- 계속 보고 있어 새 위치가 영원히 반영 안 됨. identity 유지가 포탈의 전제.
-    local offsetSource = slot.Offset or Source(0)
-    Dispatch.setOffsetSource(ownerKey, position, offsetSource)
-    slot.Offset = offsetSource
+    -- `SL-75`/`DC-6`)가 무너진다. identity 유지가 포탈의 전제.
+    Dispatch.setOffsetSource(ownerKey, position, slot.Offset)
     -- [2026-08-21 5라운드 G절] `recompute(slot, ...)`은 `0`이 아니라 **이
     -- `slot.Offset`**에서 시작한다 — 그래야 자식 offset이 절대값이 된다(안 그러면
     -- depth ≥ 2에서 부모 베이스만큼 어긋남). 베이스를 부기에 따로 복사해두지
@@ -2231,44 +2329,12 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- `Dispatch.getOffsetAt`이 성립하고, `updateFn`에 넘기는 `index`를 거기서
     -- 구할 수 있다(아래 "`:List`의 `index`도 nested-Slot 결과의" 절).
 
-    -- 자식 부기만, 재귀로 길이를 bottom-up 확정.
-    -- Blocker가 감싸는 게 이제 **등록뿐**이라 "배치 등록 게이팅"이라는
-    -- 정의와 범위가 정확히 일치함(옛 코드는 물리 마운트까지 같이 감쌌음).
-    local blocker = getBlocker(slot)   -- Relate(slot) 기반, lazy 생성 — 이 Slot 전용
-    blocker:On()
-
     -- **⭐ [2026-08-24 순서 변경, `H-2`] `activateList`가 이제 Blocker *안*에서
     -- 돈다.** 5라운드 `AS-5`가 이걸 밖에 둬도 된다고 한 근거는 *"그 안에선
     -- 게이팅할 recompute 자체가 안 일어난다"*였는데, 위 정정으로 일어나게
     -- 됐다 — 밖에 두면 population 중 아이템마다 `recompute`가 돌아 O(n²)다.
     -- (`getOffsetAt`은 `lengthList`를 직접 읽으므로 게이트 안에서도 정확하다 —
     -- Blocker가 막는 건 `recompute`지 부기 등록이 아니다.)
-
-    -- [2026-08-21 5라운드 G절] **깊은 전파** — 앞 형제의 길이가 변해 내 베이스가
-    -- 밀리면 내 자식들의 offset도 다시 계산돼야 한다.
-    -- `_listObserver`/`_detachCleanup`과 **같은 취급**: 생성 1회, 재마운트 땐
-    -- 앵커만 새 target으로(앵커가 물리 target인 근거는 위 `C-4`).
-    -- **생성이 `blocker:On()` *뒤*인 게 중요하다** — Observer의 "등록 즉시 1회
-    -- 실행"이 여기서 곧바로 `recompute`를 태우면 아직 자식 등록이 하나도 안 된
-    -- 상태를 훑게 된다. 게이트 안에서 만들면 그 1회가 그냥 삼켜지고, 아래
-    -- 마지막 `recompute`가 어차피 정확한 값을 계산한다.
-    if slot._baseObserver then
-        bindLifetime(physicalTarget, slot._baseObserver)
-    else
-        slot._baseObserver = offsetSource:Observer(function()
-            -- ⭐ [2026-08-26, 8라운드 `H-119`/`H-3`] 두 줄이 빠져 있었다:
-            --   (1) 배치 Blocker만 보고 `recomputeBlocker`를 안 봐서 재진입 차단이
-            --       우회됐고, (2) `H-3`의 3번("베이스가 바뀐 경우라
-            --       두 필드 `0`")이 의사코드에 없었다.
-            local bk = getBookkeeping(slot)
-            -- [2026-08-26] 무효화는 **두 필드를 다** 내린다(캐시도 낡고 Set도
-            --   다시 해야 한다) — `dispatch-core-plan.md`의 "두 필드" 절.
-            bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0   -- 베이스가 바뀜 → 1번부터 전부
-            if getBlocker(slot):IsOn() or bk.recomputeBlocker:IsOn() then return end
-            recompute(slot, bk)
-        end)
-        bindLifetime(physicalTarget, slot._baseObserver)
-    end
     -- **⭐ [2026-08-24 분기, `H-2`. 같은 날 `/code-review high` 지적으로 조건 정정]**
     -- `activateList`가 **최초 population을 실제로 수행할 때만** 이 루프를
     -- 건너뛴다 — 그때는 그 안의 `rawAdd`가 이미 자리마다 등록을 마쳤으므로
@@ -2293,7 +2359,7 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
                 -- 평범한 요소: 자기 자리의 offset은 아무도 안 읽으므로 None,
                 -- length는 상수 1. 순서는 늘 offsetSource → setLength(C4).
                 Dispatch.setOffsetSource(slot, i, None)
-                Dispatch.setLength(slot, i, 1, physicalTarget)   -- 4번째 = 생명주기 앵커(5라운드 `C-4`)
+                Dispatch.setLength(slot, i, 1, physicalTarget, element)   -- 4번째 = 생명주기 앵커(5라운드 `C-4`), 5번째 = 요소(9라운드 Q3)
             end
         end
     end
@@ -2318,8 +2384,9 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
 
     -- 자기 길이를 부모에게. 이제 **처음부터 최종값**이고(C6), 동시에
     -- 어떤 Parent 대입보다도 먼저다(C7) — 단일 함수로는 둘을 동시에
-    -- 만족시킬 수 없었던 지점.
-    Dispatch.setLength(ownerKey, position, slot.Length, physicalTarget)
+    -- 만족시킬 수 없었던 지점. 5번째 = 이 Slot 자신(9라운드 Q3 — 길이가 State라
+    -- 지속 등록이 생기는 자리, 클로저가 `bk.indexOfElement[slot]`을 조회한다).
+    Dispatch.setLength(ownerKey, position, slot.Length, physicalTarget, slot)
 end
 
 -- (2) 물리만 붙인다. 부기를 단 한 줄도 안 건드린다 → Blocker 불필요.
@@ -2483,7 +2550,7 @@ local function unmountSlotTree(slot)
     -- 멱등 가드다. 파괴 쪽(`destroySlotTree`)만 핸들까지 `nil`로 지운다.
     if slot._listObserver then unbindLifetime(slot._listObserver) end
     if slot._detachCleanup then unbindLifetime(slot._detachCleanup) end
-    if slot._baseObserver then unbindLifetime(slot._baseObserver) end   -- [2026-08-21 G절]
+    unbindLifetime(slot._baseObserver)   -- [2026-08-21 G절; 2026-08-27 Q2] 생성자에서 나므로 항상 있다 — 가드 없음
     -- `slot._detached`는 **안 건드린다** — 언마운트는 파괴가 아니고,
     -- 재마운트되면 그대로 이어져야 한다(`_elements`를 보존하는 것과 같은 이유).
     slot._mounted, slot._mountedInst = false, nil
@@ -2497,6 +2564,9 @@ local function unmountSlotTree(slot)
 end
 
 local function destroySlotTree(slot)
+    -- [2026-08-27, 9라운드 Q2] 이중 파괴는 no-op — teardown 경로가 겹치는 건
+    -- 실재한다(`dispose`가 이 함수를 부르므로 이중 `dispose`도 여기서 흡수).
+    if slot._destroyed then return end
     -- [2026-08-21] Owned=false면 이 Slot은 요소를 만든 적이 없다 — 파괴 대신
     -- 언마운트만(위 "`Owned` 옵션" 절). `Slot:Add(state)` sugar가 그 경우.
     if slot._owned == false then
@@ -2535,14 +2605,18 @@ local function destroySlotTree(slot)
     -- 값을 재귀에 그대로 넘김) **자식 Slot만 죽고 그 inst는 살아있는 게 흔한
     -- 경우**다. 그러면 `data`가 emit될 때마다 이미 죽은 자식들에 대해
     -- reconcile이 계속 돈다.
-    if slot._listObserver then
-        unbindLifetime(slot._listObserver)
-        slot._listObserver, slot._listActivated = nil, nil
-    end
-    if slot._baseObserver then                 -- [2026-08-21 G절] 파괴는 핸들까지
-        unbindLifetime(slot._baseObserver)
-        slot._baseObserver = nil
-    end
+    -- ⭐⭐ [2026-08-27 정정, 9라운드 Q2] **핸들은 unbind만 하고 지우지 않는다.**
+    -- 여기 한때 `slot._listObserver, slot._listActivated = nil, nil`과
+    -- `slot._baseObserver = nil`이 있었다 — 근거(*"안 풀면 `gchold[physicalTarget]`이
+    -- observer를 계속 강하게 붙잡는다"*)는 실은 `unbindLifetime`이 하는 일이고,
+    -- `nil` 대입은 slot → observer 참조 하나를 놓는 것뿐인데 slot 자신이
+    -- 쓰레기라 공짜다. 대신 그 `nil`이 **"파괴됨"이라는 두 번째 뜻**을 세 필드에
+    -- 겸하게 했고(`_listObserver == nil`은 원래 "`data`가 plain table", 
+    -- `_listActivated == nil`은 "최초 population 전"이라는 자기 뜻이 있다) —
+    -- `invalidAfter`가 두 뜻을 겸하다 사고 난 것과 같은 모양이라 그만둔다.
+    -- 파괴됨은 아래 `_destroyed` 하나만 말한다.
+    if slot._listObserver then unbindLifetime(slot._listObserver) end
+    unbindLifetime(slot._baseObserver)         -- 생성자에서 났으므로 항상 있다(Q2)
     local bk = getBookkeeping(slot)    -- 이 slot이 자기 자식들 위해 등록해둔 observer들
     for i, observer in pairs(bk.observers) do   -- [2026-08-26] 가드 제거(위와 같은 이유)
         unbindLifetime(observer)
@@ -2552,6 +2626,10 @@ local function destroySlotTree(slot)
     -- 영원히 걸리고, `_mountedInst`가 죽은 inst를 계속 강하게 붙잡음.
     slot._mounted, slot._mountedInst = false, nil
     slot._physicalTarget = nil   -- [2026-08-24 `H-2`] 같은 이유로 앵커도
+    -- ⭐ [2026-08-27, 9라운드 Q2] 파괴됨은 이 플래그 하나가 말한다 — 마운트·공개
+    -- CRUD·`:List` 진입이 이걸 보고 error한다(위 "파괴된 Slot은 재사용 불가" 절).
+    -- `_mounted = false`만으로는 재마운트 throw 가드에 안 걸리는 게 문제였다.
+    slot._destroyed = true
     -- [2026-08-12 열여섯 번째 세션, 스코프 정정] slot 자신의 unbindLifetime은
     -- 여기서 안 부름 — attachSlot이 최상위에서만 bindLifetime하므로 짝도
     -- 최상위 파괴 지점(SlotHandler.process가 반환하는 클로저, 위)에서만 한 번.
@@ -2576,7 +2654,15 @@ end
 --     `keyIndex` 값은 전부 어긋나 있다(`[a,b]`→`[x,a,b]`가 조용히 `a,b,x`가
 --     되고, 전체 삭제는 해시 순회 순서에 따라 `nil` 인덱싱까지 간다).
 --   * **확정된 해법 — 역방향 인덱스 맵을 raw 층이 직접 든다.**
---     **`slot._elemIndex`**(`물리 요소 → _elements 인덱스`)를 `_elements`와
+--     **⭐ [2026-08-27 이동, 9라운드 Q3] 그 맵은 이제 `bk.indexOfElement`
+--     (Dispatch 부기)다** — 여기 한때 `slot._elemIndex`였는데, 7라운드 `H-102`가
+--     같은 뜻의 맵을 Dispatch 층에 따로 만들어(그것도 사용자가 정한 적 없는
+--     `token`으로) **같은 맵이 두 층에** 살게 됐고, 그게 사고의 원인이었다
+--     (사용자: *"elem->index 를 누가 관리하느냐가 어디서 관리하느냐가 명확하지
+--     않아서 자꾸 사고가 나는듯"*). 소유는 `bk` 하나, owner가 Slot이든 `inst`든
+--     규칙 하나. raw 층은 `getBookkeeping(self).indexOfElement`를 **읽고
+--     갱신**한다 — 아래 항목들의 "맵"은 전부 이것.
+--     (`물리 요소 → _elements 인덱스`)를 `_elements`와
 --     같은 수명으로 두고, **자리를 밀거나 당기는 모든 연산**
 --     (`spliceArraysUp`/`spliceArraysDown`/`rawMove`/`rawSwap`/`rawReplace`/
 --     `rawAdd`)이 같이 갱신한다. detach된 요소는 `_elements` 밖이므로
@@ -2586,9 +2672,10 @@ end
 --     - **`indexOfRaw(self, element)`가 이 맵 조회가 되고, 폴백이 아니라
 --       기본 경로로 승격된다.** `settle`은 `keyIndex[key]` 대신
 --       `indexOfRaw(self, prev)`를 쓴다.
---     - **층 분리는 오히려 더 깨끗해진다** — 맵이 `_elements`와 같은 층에
---       살아서 `raw*`가 `:List`의 클로저 상태(`mounted`/`prevKeys`)를 볼
---       필요가 없다. **사용자 판단**(2026-08-24): *"raw* 가 층위를 알아야할
+--     - **층 분리는 오히려 더 깨끗해진다** — 맵이 `raw*`가 이미 만지는 부기
+--       (`bk`)에 살아서 `raw*`가 `:List`의 클로저 상태(`mounted`/`prevKeys`)를 볼
+--       필요가 없다(**[2026-08-27]** 원문은 *"`_elements`와 같은 층에"*였다 —
+--       맵이 `bk`로 가도 이 논거는 그대로다). **사용자 판단**(2026-08-24): *"raw* 가 층위를 알아야할
 --       이유를 모르겠는 상태. 그냥 k->realElem 을 list 에선 저장하고 …
 --       realElem->index 해시맵을 만들어주고, index 밀고 당기는 동작에서 이걸
 --       같이 업데이트해주는 편이 나아보이기도. quad-base 의 현 모양에서 더
@@ -2622,7 +2709,7 @@ function rawUnmount(self, index)
         nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
     end
 
-    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.indexOfElement/bk.N — 아래 참고
     -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
     --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
     --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
@@ -2647,8 +2734,8 @@ function rawDetach(self, index)
         nativeExtract(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
     end
 
-    spliceArraysDown(self, index)  -- `_elemIndex`/`bk.tokens`/`bk.indexOfToken`에서도
-                                   -- 이 요소·자리가 빠진다(트리 밖이 됨) — 아래 splice 요구 목록
+    spliceArraysDown(self, index)  -- `bk.indexOfElement`에서도 이 요소·자리가
+                                   -- 빠진다(트리 밖이 됨) — 아래 splice 요구 목록
     -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
     --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
     --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
@@ -2694,10 +2781,13 @@ end
 -- `rawMove`/`rawSwap`/`rawExtract`/`rawSplice`/`rawClear`는 이름만 있었다
 -- (`rawMove`는 `reconcile`이 **직접 부르는** 함수인데도). 새 결정이 필요한 건
 -- 위 `collectLeaves` 하나였고, 나머지는 아래 규약대로 쓰면 된다:
---   1. **함께 치환되는 것** — `_elements`, `slot._elemIndex`(`H-1`),
+--   1. **함께 치환되는 것** — `_elements`, `bk.indexOfElement`(`H-1`,
+--      **[2026-08-27 Q3]** 옛 `slot._elemIndex` — `reindexFrom`이 갱신),
 --      `bk.lengthList`, `bk.sourceList`, `bk.observers`. 넷 다 **position
 --      인덱스**이고 `sourceList[i]`는 그 중첩 Slot 자신의 `slot.Offset`이라
 --      position이 아니라 **요소에 귀속**된다 → 전부 같은 순열로 움직인다.
+--      (**[2026-08-27]** 옛 `bk.tokens`/`bk.indexOfToken`은 폐기 — 이동 구간을
+--      규약 4가 `setLength`로 다시 태우므로 요소 키 맵은 거기서 다시 쓰인다.)
 --   2. **`bk.N`은 안 변한다** — 자리 수가 그대로이므로(`spliceArraysUp`/`Down`과
 --      갈리는 지점).
 --      ⚠️ [2026-08-26 범위 정정, 5·6차 `/code-review high`] **`rawSplice`·
@@ -2752,16 +2842,19 @@ end
 -- 통째로 지웠었다.** 상태는 **셋**인데(미실체화/실체화/마운트) `_mounted` 경계만
 -- 코드에 남기고 **첫 경계를 안 뒀다** — 그러면 `Slot { frameA }` 생성자가
 -- (그 자체가 `:Add`를 부른다, 위 그 절) `materializeSlotTree`보다 훨씬 먼저
--- `Dispatch.setLength(self, 1, 1, nil)` → `gatedRecompute` → `getOffsetAt` →
--- `ownerKey.Offset:Get()`에서 **`slot.Offset`이 아직 nil이라 즉시 죽는다.**
--- 중첩이면 더 나쁘다: `attachSlot(element, nil, …)` → `bindLifetime(nil, …)`은
--- 이 문서가 스스로 치명적이라 적어둔 그것이다.
+-- 부기를 시도한다. (**[2026-08-27 근거 정정, 9라운드 Q2]** 여기 한때 *"`getOffsetAt`
+-- → `ownerKey.Offset:Get()`에서 `slot.Offset`이 아직 nil이라 즉시 죽는다"*가
+-- 근거였는데, `Offset`이 생성자에서 나면서 **그 근거는 거짓**이 됐다 — 남는
+-- 근거는 아래 하나다.) 중첩이면 치명적이다: `attachSlot(element, nil, …)` →
+-- `bindLifetime(nil, …)`은 이 문서가 스스로 치명적이라 적어둔 그것이다.
 -- **`_physicalTarget`이 곧 "실체화됐는가"의 판정이다.**
 function rawAdd(self, element, index, fromDetached)
     claimOwner(element, self, fromDetached)   -- 이미 누가 갖고 있으면 error(detach 재마운트만 예외)
     index = index or (#self._elements + 1)
     table.insert(self._elements, index, element)
-    reindexFrom(self, index)                  -- `_elemIndex` 갱신 — **상태와 무관하게 항상**
+    reindexFrom(self, index)                  -- `bk.indexOfElement` 갱신 — **상태와 무관하게 항상**
+                                              -- ([2026-08-27 Q3] 그래서 미실체화 Slot도 `:Add`만 하면
+                                              --  `bk`가 생긴다 — `getBookkeeping`은 lazy라 안전)
 
     if self._physicalTarget == nil then
         -- **아직 실체화 전: 부기의 앵커도 베이스 offset도 없다.** `_elements`
@@ -2788,7 +2881,7 @@ function rawAdd(self, element, index, fromDetached)
         if self._mounted then                         -- [`H-12`] 물리 op만 가른다
             nativeInsert(self._mountedInst, Dispatch.getOffsetAt(self, index), { element })
         end
-        Dispatch.setLength(self, index, 1, self._physicalTarget)   -- **뒤를 미는 것**은 그 다음
+        Dispatch.setLength(self, index, 1, self._physicalTarget, element)   -- **뒤를 미는 것**은 그 다음 (5번째 = 요소, 9라운드 Q3)
         -- [`H-19`] 명시 `recompute(self, bk)`를 **삭제했다** — `setLength`가 상수
         -- 길이에도 마지막에 `gatedRecompute()`를 부르므로 두 번 돌고 있었고,
         -- "recompute를 누가 부르는가"의 소스가 두 곳이면 `H-3`의 캐시 무효화를
@@ -2800,7 +2893,8 @@ end
 -- [신설, 2026-08-21 5라운드 `B-5`] rawReplace — 자리를 유지한 채 내용만 교체.
 -- `destroyOld`는 호출부가 정한다(공개 `Replace`는 항상 true, `:List`는 `_owned`).
 -- [2026-08-21, **정정 2026-08-24 `H-1`**] `indexOfRaw(self, element)` —
--- **`self._elemIndex[element]` 한 번 조회**. 공개 `Slot:IndexOf`와 다른 점은
+-- **`getBookkeeping(self).indexOfElement[element]` 한 번 조회**(**[2026-08-27 Q3]**
+-- 옛 `self._elemIndex`). 공개 `Slot:IndexOf`와 다른 점은
 -- 그대로다: 그쪽은 사용자가 넘긴 **언래핑된 값**으로 찾아주는 API고(위
 -- "래핑/언래핑" 절), 이쪽은 물리 요소를 그대로 찾는다.
 -- **옛 서술("O(n) 선형 탐색하는 예외 경로용 폴백, reconcile은 `keyIndex`가
@@ -2813,8 +2907,11 @@ function rawReplace(self, index, newElement, destroyOld)
     releaseOwner(oldElement, self)
     self._elements[index] = newElement         -- **시프트 없음** — 자리 수가 안 변한다
     -- [2026-08-24 `H-1`] 역방향 맵도 같이 — 자리 수는 안 변해도 **주인이 바뀐다**
-    self._elemIndex[oldElement] = nil
-    self._elemIndex[newElement] = index
+    -- ([2026-08-27 Q3] 맵은 `bk.indexOfElement`. 아래 `setLength(…, newElement)`가
+    --  새 주인을 등록하지만, 미실체화 분기는 `setLength`를 안 부르므로 여기서 직접)
+    local bk0 = getBookkeeping(self)
+    bk0.indexOfElement[oldElement] = nil
+    bk0.indexOfElement[newElement] = index
 
     if not self._mounted then
         if destroyOld then                     -- 물리 트리 밖이라 native* 교체가 필요 없다
@@ -2827,7 +2924,7 @@ function rawReplace(self, index, newElement, destroyOld)
             if isSlot(newElement) then attachSlot(newElement, self._physicalTarget, self, index, false)
             else
                 Dispatch.setOffsetSource(self, index, None)
-                Dispatch.setLength(self, index, 1, self._physicalTarget)
+                Dispatch.setLength(self, index, 1, self._physicalTarget, newElement)   -- [Q3] 5번째 = 요소
             end
         end
         return
@@ -2856,7 +2953,7 @@ function rawReplace(self, index, newElement, destroyOld)
         local op = if destroyOld then nativeRemove else nativeExtract
         op(self._mountedInst, offset, { oldElement }, { newElement })   -- 한 번에
     end
-    Dispatch.setLength(self, index, 1, self._physicalTarget)
+    Dispatch.setLength(self, index, 1, self._physicalTarget, newElement)   -- [Q3] 5번째 = 요소
     -- [`H-19`] 명시 `recompute(self, bk)` 삭제 — `setLength`에 일임(위 `rawAdd` 참고)
 end
 
@@ -2887,7 +2984,7 @@ function rawRemove(self, index)
         nativeDispose(element)      -- 트리 밖이라 offset이 필요 없다
     end
 
-    spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
+    spliceArraysDown(self, index)   -- _elements/lengthList/sourceList/observers/bk.indexOfElement/bk.N — 아래 참고
     -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
     --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
     --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
@@ -2898,17 +2995,22 @@ end
 ```
 
 **⭐ [2026-08-24 6라운드 손 트레이싱 `H-1`/`H-5`/`H-3`] `spliceArraysUp`/
-`spliceArraysDown`이 해야 하는 일이 셋 늘었다.**
+`spliceArraysDown`이 해야 하는 일 — 아래 목록이 소스다**(**[2026-08-27, 9라운드
+`H-132`]** 한때 "셋 늘었다"고 세어뒀는데 그 뒤 항목이 늘고 줄어 개수가 어긋났다 —
+세지 않는다).
 
-- **`slot._elemIndex`는 별도 헬퍼 `reindexFrom(self, from)`이 맡는다**(`H-1`,
-  **[2026-08-24 분리]**). 이 맵은 `_elements`의 역방향이라 **실체화 여부와
-  무관하게 항상** 정확해야 하는데, `spliceArrays*`는 부기(`bk`)를 만지므로
-  실체화된 뒤에만 부를 수 있다 — 그래서 둘을 갈랐다. `reindexFrom`은
-  `from`부터 끝까지 `_elemIndex[self._elements[i]] = i`를 다시 쓰고,
-  제거 경로에선 빠지는 요소를 맵에서 **뺀 뒤** 부른다.
-  `_elements`를 시프트하는 자리는 **전부** 이걸 부른다(`rawAdd`의 미실체화
-  얼리리턴 포함). `spliceArraysUp`/`Down`은 자기 몫으로 이걸 같이 부르되,
-  하는 일은 아래 부기 항목들이다.
+- **`bk.indexOfElement`는 별도 헬퍼 `reindexFrom(self, from)`이 맡는다**(`H-1`,
+  **[2026-08-24 분리, 2026-08-27 맵 이동]**). 이 맵은 `_elements`의 역방향이라
+  **실체화 여부와 무관하게 항상** 정확해야 한다. `reindexFrom`은 `from`부터
+  끝까지 `bk.indexOfElement[self._elements[i]] = i`를 다시 쓰고, 제거 경로에선
+  빠지는 요소를 맵에서 **뺀 뒤** 부른다. `_elements`를 시프트하는 자리는
+  **전부** 이걸 부른다(`rawAdd`의 미실체화 얼리리턴 포함).
+  `spliceArraysUp`/`Down`은 자기 몫으로 이걸 같이 부르되, 하는 일은 아래 부기
+  항목들이다. (**[2026-08-27 Q3]** 분리의 옛 근거 *"`spliceArrays*`는 `bk`를
+  만지므로 실체화된 뒤에만 부를 수 있다"*는 맵이 `bk`로 가며 **소멸**했다 —
+  `getBookkeeping`은 lazy라 언제 불러도 된다. 분리는 "맵은 시프트마다, 부기
+  배열은 실체화 뒤"라는 **호출 시점 차이** 때문에 그대로 둔다. 따름정리:
+  미실체화 Slot도 `:Add`만 하면 `bk`가 생긴다.)
 - **`spliceArraysUp`은 `lengthList[index]`에 자리표시자(`0`)를 채운다**(`H-5`).
   옛 순서는 `spliceArraysUp`이 `bk.N`을 먼저 올리고 `lengthList[index]`는
   `setLength`가 마지막에 채워서, **그 사이에 `nativeInsert`가 끼어 있었다.**
@@ -2918,6 +3020,16 @@ end
   그쪽 error 가드엔 안 걸린다). **동기 재진입이라 "체인 도중 yield 금지"
   불변식으로는 안 덮인다.** `sourceList`가 `None`으로 채워지는 것과 대칭을
   맞춰 창 자체를 없앤다.
+- **⭐⭐ [2026-08-27 신설, 9라운드 `H-126`/Q3] 비워지는 자리는 세 배열 전부
+  처리한다.** `spliceArraysUp`은 `index` 자리에 `lengthList = 0` / `sourceList =
+  None` / **`observers = nil`**, `spliceArraysDown`은 당긴 뒤 꼬리(`N`) 세 자리를
+  `nil`로. 자리표시자 두 줄만 적혀 있고 `observers`는 말이 없어서, `t[i+1] =
+  t[i]` 복사 루프로 짜면 `observers[index]`에 옛 값이 남아 `index`와 `index+1`이
+  **같은 Observer**를 가리켰다 — 이어지는 `setLength(self, index, …)`가
+  `oldObserver`로 그걸 `unbindLifetime`해 **밀려난 요소의 길이 관측자를
+  죽인다**(그 요소가 커져도 뒤 형제가 영영 안 밀린다 — 9라운드 실측
+  `vacate=false`). `Down`의 꼬리 잔여는 `bk.N` 밖이라 당장은 안 보이지만 다음
+  `Up`이 그 자리를 범위 안으로 밀어 올리면 자리표시자 대신 유령 값이 들어온다.
 - **캐시를 앞으로 당긴다**(`H-3`) —
   **두 필드 다** `math.min(…, index - 1)`:
   `bk.offsetCacheValidUpTo`(캐시 유효 상한)와 `bk.offsetSetUpTo`(offset
@@ -2947,23 +3059,17 @@ end
     되감는다(`base/dispatch-core-plan.md`의 `recompute` 절). 그래서
     `{a,a,a, b,b, c,c}`에서 앞의 `a,a`가 사라졌는데 커서가 이미 `c`에
     있어도 복구된다.
-- **⭐⭐ [2026-08-25 신설, 7라운드 `H-102`] `bk.tokens`와 `bk.indexOfToken`도
-  같이 밀어야 한다.** `setLength`가 만드는 `gatedRecompute` 클로저는 인덱스를
-  캡처하지 않고 **자리별 토큰**으로 `bk.indexOfToken[token]`을 조회한다
-  (`slot._elemIndex`와 같은 개념을 Dispatch 층위로 격상 —
-  `base/dispatch-core-plan.md`). 그래서 splice가 다음 둘을 반드시 해야 한다:
-  1. **`bk.tokens`를 다른 배열과 같이 당긴다**(`lengthList`/`sourceList`/
-     `observers`와 완전히 같은 처리).
-  2. **밀린 자리 전부에 대해 `bk.indexOfToken[token]`을 새 인덱스로
-     갱신하고, 사라진 자리의 토큰 항목은 지운다.** 강한 키 테이블이라
-     안 지우면 **누수**다.
-
-  **안 하면 `H-102`가 그대로 남는다** — 토큰은 안 낡지만 그 토큰이 가리키는
-  인덱스가 낡아, 제거 뒤 `gatedRecompute`가 **엉뚱한 위치로**
-  `bk.offsetCacheValidUpTo`/`bk.offsetSetUpTo`를 당긴다(앞선 자리가 영영 다시
-  offset을 못 받는다).
-  이 목록에 *"옮겨진 클로저의 위치 추적"*이 셋 어디에도 없던 것이 원래
-  결함이었다.
+- **⛔ [2026-08-27 폐기, 9라운드 Q3/`H-141`] 여기 한때 *"`bk.tokens`와
+  `bk.indexOfToken`도 같이 밀어야 한다"*(7라운드 `H-102`, 2026-08-25)는 항목이
+  있었다.** `setLength`의 `gatedRecompute`가 인덱스 대신 캡처할 신원으로
+  `token = {}`을 두고, splice가 (1) `bk.tokens`를 같이 당기고 (2) 밀린 자리
+  전부의 `bk.indexOfToken[token]`을 갱신·사라진 항목을 지우라는 요구였다.
+  **토큰은 사용자가 정한 적 없는 신원**이고(`/code-review`가 "`len`은 자리마다
+  유일하지 않다"를 잡으며 요소 키로 되돌아가는 대신 발명), 같은 뜻의 맵을 두
+  층에 두는 원인이었다. 이제 클로저는 **요소를 캡처**하고 `bk.indexOfElement`를
+  조회하므로(위 첫 항목) 이 요구는 통째로 사라진다 — `H-102`의 결론(*"클로저에
+  박힌 인덱스가 낡는다 → 캡처 말고 조회"*)은 그대로이고, 조회 대상만 원래
+  사용자 지시(요소 → 인덱스)로 돌아왔다.
 
 **[신설, 2026-08-18 구현 전 QA 3라운드] `spliceArraysDown`이 밀어야 하는
 배열 목록(아래)에 빠진 게 있었고, `bk.N`도 같이 줄여야 한다는 것 자체가
@@ -3091,6 +3197,9 @@ Single(element)`을 대신 삽입** — raw 반응형 요소는 전부 Slot-in-S
 -- 한 줄이 전부였고, **같은 문서가 확정해둔 가드를 하나도 하지 않았다.**
 -- 산문이 이미 정확한 알고리즘을 서술해뒀으므로 옮기기만 한 것이다.
 function Slot:Add(element, index)
+    -- (0) [2026-08-27, 9라운드 Q2] 파괴된 Slot — 모든 공개 CRUD·`:List`·마운트
+    --     진입점이 같은 가드를 둔다(위 "파괴된 Slot은 재사용 불가" 절).
+    if self._destroyed then error("Slot: destroyed Slot cannot be reused", 2) end
     -- (1) `:List`가 설치돼 있으면 수동 CRUD 금지 (위 "CRUD API 확정" 절)
     assert(not self._listed, "Slot: :List가 설치된 Slot엔 수동 CRUD를 쓸 수 없음")
     -- (2) index 범위 검증 — **clamp 안 함**, 범위 밖이면 error

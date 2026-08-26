@@ -1344,7 +1344,7 @@ Slot1이 바뀔 때마다 Slot2에 다시 알려줘야 하는 캐스케이드 �
 **`Dispatch`의 두 API — 둘 다 Handler→Dispatch 등록(push) 방향**:
 
 ```lua
-Dispatch.setLength(ownerKey, i, len: number | State<number>, anchor?)
+Dispatch.setLength(ownerKey, i, len: number | State<number>, anchor?, element?)   -- [2026-08-27 9라운드 Q3] 5번째 = 그 자리의 inst|slot
 Dispatch.setOffsetSource(ownerKey, i, offset: Source<number> | None)
 Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 자리의 절대 offset
 ```
@@ -1493,6 +1493,9 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 
 **저장 위치**: `lengthList`/`sourceList`/`observers`(부모 `inst` 하나에
 귀속) + 그 owner가 지금 등록해둔 position 개수 `N`(`bk.N`으로 같이 저장)
++ **`indexOfElement`**(**[2026-08-27, 9라운드 Q3]** 그 자리에 등록된 요소
+`inst|slot` → position 인덱스. 옛 `slot._elemIndex`가 여기로 왔고, 옛
+`tokens`/`indexOfToken`은 폐기 — 아래 `setLength` 절)
 — `Relate(parentInst)`에 lazy 생성.
 
 **⭐ [2026-08-24 보강, 6라운드 손 트레이싱 `H-4`] 접두합 캐시 두 필드도 여기
@@ -1510,7 +1513,8 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   같은 파일 안에서 어떤 자리는 가드하고 어떤 자리는 안 하는 불일치를 만든다.
   **가드를 두지 말 것.**
 - **`getBookkeeping`이 `bk`를 만들 때 `offsetCache = {}`, `offsetCacheValidUpTo = 0`,
-  `offsetSetUpTo = 0`, `recomputeBlocker = Blocker()`으로 초기화한다.**
+  `offsetSetUpTo = 0`, `recomputeBlocker = Blocker()`, **`indexOfElement = {}`**
+  (**[2026-08-27 Q3]**)으로 초기화한다.**
   (**[2026-08-26]** `offsetCacheValidUpTo`은 같은 날 `offsetSetUpTo`에서 갈라져 나온
   필드다 — 아래 "두 필드" 절.) (`bk.N`만 `nil` 시작을
   유지한다 — 그쪽은 `or 0` 방어가 이미 자리를 잡았고 "아직 아무 자리도 등록
@@ -1518,9 +1522,12 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   **⭐ [2026-08-26 추가, `/code-review high`] `recomputeBlocker`가 이 열거에
   빠져 있었다** — `H-101`이 나중에 도입했는데 생성 규칙이 어디에도 없었고,
   `H-119`가 `base/slot-plan.md`에 `bk.recomputeBlocker:IsOn()` 역참조를 네 개
-  더 늘렸다. `_baseObserver`의 등록 즉시 1회 발화는 `getBlocker(slot):IsOn()`이
-  참이라 `or` 단락으로 **우연히** 살아나지만, 그 우연에 기대고 있었다 —
-  이 절이 `offsetSetUpTo`에 대해 잡아낸 것과 정확히 같은 종류의 nil 역참조다.
+  더 늘렸다. (**[2026-08-27 갱신, 9라운드 Q2]** 한때 여기 *"`_baseObserver`의
+  등록 즉시 1회 발화는 `getBlocker(slot):IsOn()`이 참이라 `or` 단락으로 우연히
+  살아난다"*고 적혀 있었는데, 그 Observer는 이제 **Slot 생성자**에서 나므로 그
+  1회는 콜백 머리의 `_physicalTarget == nil` 가드가 삼킨다 — `bk`에 닿지도
+  않는다. `base/slot-plan.md`의 `materializeSlotTree`가 소스.) 이 절이
+  `offsetSetUpTo`에 대해 잡아낸 것과 정확히 같은 종류의 nil 역참조다.
 
 **[신설, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 — 두 owner
 타입(물리 `inst`, Slot 자신) 모두 같은 규칙 하나로 통일.** 이전엔
@@ -1883,9 +1890,17 @@ local function recompute(ownerKey, bk)
         if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
             offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
         end
-        local v = bk.lengthList[i]
-        sum += (if isState(v) then v:Get() else v)
-
+        -- ⭐⭐ [2026-08-27 재배치, 9라운드 `H-124`] **되감기 판정이 `lengthList[i]`
+        --   읽기보다 먼저다.** 옛 순서(읽기·누적 → 판정)에선 `offset:Set(abs)` 안의
+        --   사용자 코드가 요소를 제거해 `i > bk.N`이 되면(커서가 마지막 자리일 때
+        --   아무 자리나 제거, 또는 `rawSplice`/`rawClear`의 다중 제거)
+        --   `lengthList[i]`가 이미 `nil`이라 `sum += nil`로 죽고, 그 error가
+        --   `recomputeBlocker:On()`과 `OffWithoutEmit()` 사이라 **차단기가 영원히
+        --   켜진 채 남는다**(그 owner의 레이아웃 영구 동결, `H-87` 부류). 되감으면
+        --   `sum`은 어차피 `prefix[i]`로 덮이므로 읽기·누적은 되감지 않을 때만
+        --   한다(사용자: *"되감는다면 sum 이 이전걸로 구해져서 새로 계산한 sum
+        --   자체를 안 씀"*). 제거가 커서보다 **뒤**(`p > i`)면 `offsetSetUpTo`가
+        --   `p-1 ≥ i`로만 내려가 판정이 거짓이고 그땐 `bk.N ≥ i`라 안전하다.
         if bk.offsetSetUpTo < i then      -- 누군가 낮췄다 → 되감기
             -- ⭐ [2026-08-25] `+1`이 아니라 **그 자리부터** 다시 돈다.
             --   `prefix[j+1]`은 **옛** `lengthList[j]`로 누적된 값이라, 길이가
@@ -1903,9 +1918,13 @@ local function recompute(ownerKey, bk)
             --   의미), `prefix[1] = 0`이라 1로 되감으면 정확하다.
             i = math.max(bk.offsetSetUpTo, 1)
             sum = prefix[i]
-        else
-            i += 1
+            continue
         end
+        -- 되감지 않을 때만 — 읽기는 여전히 `Set` **뒤**라 `H-113`의 *"`sum`은
+        -- 안 낡는다"* 논증이 그대로 성립한다(재방문 때도 마찬가지).
+        local v = bk.lengthList[i]
+        sum += (if isState(v) then v:Get() else v)
+        i += 1
     end
     -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.
     --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
@@ -1989,11 +2008,20 @@ end
       `offsetSetUpTo` 둘이다 — 위 "두 필드" 절.
 - **`H-102`(splice가 observer를 옮겨도 클로저에 박힌 인덱스는 안 고쳐진다)가
   이걸로 같이 닫힌다** — 아래 `setLength`의 `gatedRecompute`가 **인덱스를
-  캡처하지 않고 조회**한다. `slot._elemIndex`(물리 요소 → 인덱스 역방향
-  맵, 6라운드 `H-39`)와 같은 개념을 **Dispatch 층위로 격상**해 `bk`가
-  소유하고, splice가 배열을 당길 때 같이 갱신한다 — 그래서
-  `base/slot-plan.md`의 splice 요구 목록에 항목이 늘지 않는다.
-  (사용자: *"그것을 dispatch 로 격상시키는게 더 나아보이는 지점"*.)
+  캡처하지 않고 조회**한다. 옛 `slot._elemIndex`(물리 요소 → 인덱스 역방향
+  맵, 6라운드 `H-1`)를 **Dispatch 층위로 격상**해 `bk.indexOfElement`로 `bk`가
+  소유한다 — owner가 Slot이든 물리 `inst`든 **규칙 하나**다
+  (사용자: *"그것을 dispatch 로 격상시키는게 더 나아보이는 지점"*).
+  **⚠️ [2026-08-27 정정, 9라운드 `H-141`/Q3] 여기 한때 *"그래서 `slot-plan.md`의
+  splice 요구 목록에 항목이 늘지 않는다"*고 이어졌고, 실제 구현은 그 말과 달리
+  `bk.tokens`/`bk.indexOfToken`이라는 **사용자가 정한 적 없는 신원(`token = {}`)**을
+  만들어 요구 목록에 항목을 둘 늘렸다**(2026-08-25 `/code-review`가 "`len`은
+  자리마다 유일하지 않다"를 잡으며 원래 키(요소)로 되돌아가는 대신 발명한 것).
+  둘 다 **폐기**됐다 — 사용자: *"난 층위 상 어떠한 값이든, 마운트된 부기객체 ->
+  index(기여량이 아님) 를 얻고자 했음"*. 클로저는 **요소를 캡처**하고
+  `bk.indexOfElement[element]`를 조회한다 — 요소의 신원은 안 변하므로 splice가
+  클로저 쪽에서 갱신할 것이 없고, 맵은 Slot 층의 `reindexFrom`이 자기 이유로
+  이미 유지한다(`base/slot-plan.md`). 이제 요구 목록에 항목이 **실제로** 안 는다.
   두 필드를 `0`으로 뭉개는 안은 기각 — *"0 으로 두면, 모든 부분에
   있어 캐시가 무관해져요"*.
 
@@ -2034,7 +2062,11 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- **생략하면 `ownerKey`** — 최상위(물리 inst가 곧 owner)에선 둘이 같은 값이라
 -- 기존 3-인자 호출부가 전부 그대로 맞고, **`ownerKey`가 Slot일 때만** 물리
 -- target을 명시적으로 넘기면 된다(그 경우에만 둘이 갈린다).
-function Dispatch.setLength(ownerKey, i, len, anchor)
+-- ⭐⭐ [2026-08-27, 9라운드 Q3] 5번째 인자 `element` — **그 자리에 등록되는 요소
+-- (`inst|slot`)**. `gatedRecompute`가 인덱스 대신 이걸 캡처하고 `bk.indexOfElement`를
+-- 조회한다(아래). 길이가 상수인 자리(`NilHandler`/`NoneHandler`의 `0`)는 지속
+-- 클로저가 안 생기므로 생략해도 된다 — 그땐 캡처한 `i`가 그대로 유효하다.
+function Dispatch.setLength(ownerKey, i, len, anchor, element)
     anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
@@ -2047,13 +2079,10 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
 
     bk.lengthList[i] = len
     bk.N = math.max(bk.N or 0, i)   -- [2026-08-18 3라운드] N 수명주기 — "저장 위치" 절 참고
-    -- ⭐ [2026-08-25] 이 자리의 유일한 토큰 — 아래 클로저가 인덱스 대신 이걸 캡처한다.
-    local token = bk.tokens[i]
-    if token == nil then
-        token = {}
-        bk.tokens[i] = token
-    end
-    bk.indexOfToken[token] = i
+    -- ⭐ [2026-08-27, 9라운드 Q3] 요소 → 인덱스 **등록**. 자리가 밀리면(splice/move)
+    -- Slot 층의 `reindexFrom`이 이 맵을 다시 쓴다 — `lengthList`가 여기서 등록되고
+    -- `spliceArrays*`가 옮기는 것과 같은 분담. `None`/`nil` 자리는 안 적는다.
+    if element ~= nil then bk.indexOfElement[element] = i end
     -- [2026-08-24 `H-3`] 접두합 캐시를 여기까지 당긴다 — `i` 자리의 offset은
     -- `1..i-1`의 합이라 안 바뀌고, 바뀌는 건 그 **뒤**뿐(위 무효화 표).
     bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)   -- 무효화는 둘 다
@@ -2061,20 +2090,20 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
 
     local function gatedRecompute()
         -- ⭐ [2026-08-25, 7라운드 `H-102`] `i`를 **캡처하지 않는다** — splice가
-        -- 자리를 당기면 박힌 인덱스가 낡는다. `bk`가 소유한 역방향 맵에서
-        -- 현재 인덱스를 조회한다(`slot._elemIndex`와 같은 개념을 Dispatch로
-        -- 격상한 것 — 위 `recompute` 절).
+        -- 자리를 당기면 박힌 인덱스가 낡는다. **요소를 캡처**하고 `bk`가 소유한
+        -- 역방향 맵에서 현재 인덱스를 조회한다(위 `recompute` 절의 `H-102` 항목).
         --
-        -- ⚠️ [2026-08-25 정정, `/code-review high`] 키는 **`len`이 아니라 이
-        --   자리의 토큰**이다. `len`은 자리마다 유일하지 않다 — 같은
-        --   `Source`/`State`가 두 자리의 길이를 몰면 역방향 맵에서 **두
-        --   자리가 한 항목으로 접혀** 엉뚱한 인덱스를 무효화하고, 앞선
-        --   자리는 영영 다시 offset을 못 받는다. `token`은 등록 시점에
-        --   만드는 유일한 테이블로 `bk.tokens[i]`에 같이 저장되고 splice가
-        --   다른 배열과 **함께** 당긴다. (`slot._elemIndex`가 물리 요소를
-        --   키로 쓰는 건 요소가 자리마다 유일해서 성립하는 것 — 그 성질을
-        --   Dispatch에선 토큰이 맡는다.)
-        local cur = bk.indexOfToken[token]
+        -- ⚠️ [2026-08-25 정정, `/code-review high`] 키는 **`len`이 아니라 요소**다.
+        --   `len`은 자리마다 유일하지 않다 — 같은 `Source`/`State`가 두 자리의
+        --   길이를 몰면 역방향 맵에서 **두 자리가 한 항목으로 접혀** 엉뚱한
+        --   인덱스를 무효화하고, 앞선 자리는 영영 다시 offset을 못 받는다.
+        --   요소는 유일하다(Slot 안에선 `claimOwner`가 이중 배치를 막고 `None`은
+        --   `_elements`에 안 들어간다; `inst`의 배열 자리는 애초에 안 밀린다).
+        --   **⛔ [2026-08-27, 9라운드 Q3/`H-141`]** 여기 한때 그 키가 `token`
+        --   (등록 시점에 만드는 빈 테이블 + `bk.tokens`/`bk.indexOfToken`)이었다 —
+        --   사용자가 정한 적 없는 신원이라 폐기됐다. 요소를 캡처하면 신원이 안
+        --   변하므로 **클로저 쪽에서 갱신할 것이 없다**.
+        local cur = if element ~= nil then bk.indexOfElement[element] else i
         bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)  -- 나중 emit도
         bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        cur)  -- 같은 무효화가 필요
         if blocker:IsOn() then return end                 -- 배치 등록 중
@@ -2142,6 +2171,12 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
   쓰는 자리 전부)는 **기존 3-인자 그대로 두면 된다** — 거기선 `ownerKey`가 곧
   물리 target이다. 4번째 인자를 실제로 넘겨야 하는 건 **`ownerKey`가 Slot인
   자리**(`materializeSlotTree`의 등록 루프, 런타임 `rawAdd`/`rawReplace`)뿐이다.
+- **[2026-08-27, 9라운드 Q3] 5번째 `element`는 `anchor`와 축이 다르다** —
+  owner 종류가 아니라 **그 자리에 지속 등록(길이 State → Observer)이 생기는가**로
+  갈린다. 중첩 Slot의 `.Length`를 넘기는 자리(`materializeSlotTree` 꼬리,
+  최상위 `SlotHandler` 경로 포함)는 그 Slot 자신을 넘기고, plain 요소(`rawAdd`/
+  `rawReplace`)는 그 요소를 넘긴다. `NilHandler`/`NoneHandler`처럼 상수 `0`인
+  자리는 생략.
 
 `:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
 본질적으로 `ownerKey` 하나에 종속된 내부 배관이라, `ownerKey`(물리 inst
@@ -2369,9 +2404,15 @@ quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 n
 채워주는 입력값, 순서 계산 전용 — 서로 다른 두 `Source<number>`.
 
 **`Slot.Offset`도 `Slot.Length`와 마찬가지로 공개 필드(2026-08-11
-세션 명시화)** — Slot이 마운트되는 시점(`Dispatch/Slot.luau`가
-`setOffsetSource`를 등록하는 바로 그 자리)에 같은 Source 객체를
-`self.Offset`으로도 저장. **[정정, 2026-08-20 구현 전 QA 4라운드 `D-60`/`SL-75`]
+세션 명시화)** — **⭐ [2026-08-27 정정, 9라운드 `H-125`/Q2] `Length`와 같은
+자리, 즉 `Slot` 생성자에서 `Source(0)`으로 만든다**(여기 한때 *"Slot이
+마운트되는 시점에 `setOffsetSource`를 등록하는 바로 그 자리에서 같은 Source
+객체를 `self.Offset`으로도 저장"*이라고 적혀 있었다 — 그러면 첫 마운트와
+재마운트가 갈려 재마운트 캐시가 낡는다, `base/slot-plan.md`의
+`materializeSlotTree` 절). 마운트 시점엔 **이미 있는** `slot.Offset`을
+`setOffsetSource(ownerKey, position, slot.Offset)`로 등록만 한다. 아래 `D-60`/
+`SL-75`가 말한 "마운트 전엔 `0`"이 이걸로 코드에서도 성립한다.
+**[정정, 2026-08-20 구현 전 QA 4라운드 `D-60`/`SL-75`]
 마운트 전엔 `nil`이 아니라 `0`이고, 언마운트해도 `nil`로 되돌리지 않는다** —
 사용자 판정: *"마운트 전에는 0 이긴 함. 다만 list 의 관측으로 실체화된 값이
 나오는게 offset 설정 이후라서 그 땐 0 이 아닐 수 있을 뿐"*. 즉 `Offset`은 항상
