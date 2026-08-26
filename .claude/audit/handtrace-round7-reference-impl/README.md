@@ -23,6 +23,26 @@
 (타입 11개). 2026-08-25 실행분 그대로이고, 재실행이 이와 달라지면 그 자체가
 조사 대상이다.
 
+## ⚠️⚠️ [2026-08-26] 이 전사물은 **8라운드 이전 계약**이다
+
+8라운드(`qa-request/pre-implementation-handtrace-round8.md`)가 바로 이
+전사물이 돌지 **않은** 경로들에서 결함을 찾아냈고, 그 결과 **여기 옮겨진
+계약 몇 개가 바뀌었다**(결정의 소스는 `qa-request/pre-implementation-handtrace-round8-followup.md`). 이 폴더는
+2026-08-25 실측의 기록이라 **본문을 소급 수정하지 않는다** — 대신 재실행할 때
+아래를 알고 볼 것. **바뀐 계약을 이 코드로 "재확인"하지 말 것.**
+
+| 여기 있는 것 | 지금 확정된 것 | 근거 |
+|---|---|---|
+| `core.luau`의 `Observer:_receive`가 `self.fn(self, from)` — **2-인자**. `t9_gate_chain.luau` 등 Observer를 쓰는 스파이크 전부가 이 위에서 돈다 | **3-인자** `fn(targetState, self, emitFrom)`, 루프는 `sub.fn(sub._state, sub, from)`. `observer._state` 강참조 신설 | `H-109`/`H-110` |
+| `core.luau`의 State가 `rawInvalid: boolean` | **캐시 카운터 쌍**(`cacheTargetCount`/`cacheCurrCount`) — 7라운드 `H-85`가 이미 교체했는데 전사물이 옛 필드로 남았다. `t5_recompute_race`/`t5b_fix`는 **의도적**으로 이 필드의 버그·기각안을 보여주는 것이라 예외 | `H-85`(7라운드) |
+| `core.luau`/`dispatch.luau`의 부기가 **단일 `bk.invalidAfter`** | **두 필드로 갈라졌다** — `bk.offsetCacheValidUpTo`(캐시)와 `bk.offsetSetUpTo`(`:Set` 완료). 옛 단일 필드가 두 뜻을 겸한 게 되감기 신호가 지워지는 원인이었다 | `/code-review high` 4차 |
+| `d7_splice_fix.luau:14`의 splice 무효화가 `math.min(bk.invalidAfter, index)` | splice는 **`index - 1`**(커서 위치 splice가 "변경 없음"과 구분이 안 된다). `dispatch.luau:84`의 `setLength`용 `math.min(…, i)`는 **정정 대상이 아니다** — 그쪽 공식은 원래 `i`다 | `H-113` |
+| `Ref`를 쓰는 자리의 콜백 호출 | `fn(value, ref)` — 두 번째 인자가 `Ref` 자신(= `Epoch`). `:Set` 순서는 **값 → `Revision` → 콜백**, 순회는 `.Callbacks` + `.WeakCallbacks` | `H-107`/`H-108` |
+
+**`d7_splice_fix.luau`의 결론(`H-102`가 토큰 역참조로 닫힌다)은 영향받지
+않는다** — 그 테스트는 recompute가 끝난 뒤 splice하는 시나리오라 `H-113`이
+문제 삼은 "루프 커서 위치에서의 splice" 경계를 애초에 안 밟는다. 공식만 낡았다.
+
 ---
 
 ## 참조 구현 3개 — 원문 대조표

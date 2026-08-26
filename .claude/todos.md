@@ -5,13 +5,36 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐⭐ [2026-08-26 정정] 8라운드 손 트레이싱이 회신 대기다 — "M2 착수
-   게이트 0"은 그 회신 전까지 유보.** 8라운드
-   (`qa-request/pre-implementation-handtrace-round8.md`, 7라운드 반영분을
-   서로 겹쳐 재트레이싱 + 실측)가 사용자 결정 문항 Q1~Q10을 올렸고 그중
-   🔴 다섯은 **M2 착수 전 회신 필요**다(문항·개수는 그 문서 §4와
-   `question.md` 최우선 절이 소스). 아직 `base/` 반영 없음 — 결정이 나면
-   followup 파일을 새로 만든다. 아래는 8라운드 이전(2026-08-25) 시점 서술:
+00. **⭐⭐⭐ [2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**
+   8라운드(`qa-request/pre-implementation-handtrace-round8.md`, 7라운드
+   반영분을 서로 겹쳐 재트레이싱 + 실측, 3개 패스, 발견 17건
+   `H-107`~`H-123`)의 결정 문항 Q1~Q10을 사용자와 대화형으로 처리해
+   `base/`에 전량 반영했다. **결정의 소스는
+   `qa-request/pre-implementation-handtrace-round8-followup.md`**(개수·개별
+   항목은 여기서 세지 않는다). `question.md` 최우선 절은 **비어 있다.**
+   - **역전 없음** — 7라운드 확정 중 뒤집힌 건 하나도 없고, 고친 건 전부
+     7라운드가 `base/`에 내려앉을 때 생긴 **누락·충돌**이다(하루 차로
+     확정된 결정들이 서로를 못 본 자리).
+   - **계약이 바뀐 것 넷**: `Ref` 콜백이 `fn(value, ref)`(2번째가 곧 출처
+     `Epoch`) / Observer `fn`이 **세 자리**
+     `fn(targetState, self, emitFrom)` + `observer._state` 강참조 /
+     `WeakSubscribe`도 `.Subscribed = true`를 세움 /
+     예약 키 진단 타입 함수가 `T`가 아니라 **`keyof<T>`**를 받음(이름도
+     `CheckReserved` → **`CheckReservedKeys`**; `T`를 통째로
+     넘기는 배선은 실사용 `T`에서 **아예 안 돈다** — 실측).
+   - **⭐ 사용자가 전제를 정정한 것 둘**: (1) `Ref` 콜백과 Observer 콜백은
+     **이질적 개념이라 애초에 통합 대상이 아니다**(*"observer 에는 epoch 란게
+     존재하지 않음 … ref 는 그 자체로 epoch임"*) → `Effect`는 dep 종류별로
+     클로저 둘. (2) `H-118`은 소유권 문제가 아니라 `gate-plan` 5번의
+     **문장이 틀린** 것(🟡→🟢 강등).
+   - **M3 쪽 둘**: splice 무효화가 `j` → **`j - 1`**(커서 위치 splice가
+     "변경 없음"과 구분이 안 됐다), 명시 `recompute` 호출도 재진입 게이트를
+     탄다(`Add`는 안전한데 `Remove`가 깨져 있었다).
+   - **새로 생긴 구현 항목**: Store 생성자의 `defaults` `isSource` 화이트리스트
+     검증(`error` level 2), `isModifier` 가드를 `Source` 생성자로 이동.
+   - **문서화 대상 등록**: quad 두 벌 공존 시 `Brand`/`None`/`Subscribed`가
+     사본마다 분리된다는 사실(`research/documentation-content-map.md` §4).
+   아래는 8라운드 이전(2026-08-25) 시점 서술:
 
    **[2026-08-25] 7라운드까지 전부 처리 완료 — 당시 `question.md` 최우선
    절이 비었고 M2 착수 게이트가 0이었다.** 7라운드(손 트레이싱, 6패스,
@@ -208,7 +231,9 @@
    **✅ [2026-08-25 해소] 아래 둘은 전부 닫혔다** — `question.md` 최우선
    절은 지금 **비어 있다**. 중간 State GC는 **`_hold` 불변식**(하류 → 상류
    강함, 상류 → 하류 weak)으로 사용자가 확정했고, 동적 키 표면(옛 `GetDynamic`) 위치는
-   **콜론 유지 + `CheckReserved` 타입 함수**로 닫혔다(애초에 그 항목이 섰던
+   **콜론 유지 + 예약 키 진단 타입 함수**로 닫혔다(**[2026-08-26]** 그 함수는
+   8라운드 `H-112`로 `CheckReservedKeys<keyof<T>>`가 됐다 — `T`를 통째로
+   넘기는 옛 배선은 실사용 `T`에서 안 돈다. 애초에 그 항목이 섰던
    근거인 lazy `__index` 충돌 자체가 Store 재설계로 소멸). 남은 건 실측
    스파이크 하나뿐이고 **착수 게이트가 아니다**(`luau-test/STATUS.md`의
    "만들어야 할 스파이크" 절). 아래는 해소 전 서술:

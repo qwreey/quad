@@ -113,22 +113,45 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    **사용자 판단(2026-08-24)**: *"`Destroying` 자체가 엔진이 아는 요소이기
    때문에, 엔진이 처리하는 곳에 두긴 해야합니다. 옵져버는 바로 생성되기 때문에,
    bind 상 옵져버 목록을 가져와 자신이 재귀하고, `bindLifetime` 이 처리하는게
-   나아보입니다."* — `bindLifetime`은 이미 `handle._observers`로 cascade하며
-   값을 들여다보는 자리이므로, 그 옆에 `Destroying` 배선을 두는 게 새 층을
-   만드는 것보다 낫다.
+   나아보입니다."* — `bindLifetime`은 이미 값 종류를 들여다보는 자리이므로,
+   그 옆에 `Destroying` 배선을 두는 게 새 층을 만드는 것보다 낫다.
+   > **⚠️⚠️ [2026-08-26 정정, `/code-review high`] 이 항목이 근거로 들던
+   > *"`bindLifetime`은 이미 핸들의 내부 Observer로 cascade한다"*는 **거짓이다.**
+   > `H-58`(2026-08-25)이 그 cascade를 폐기했다 —
+   > `base/lifecycle-pattern.md`의 `bindLifetime` 의사코드가 *"내부 Observer로
+   > **cascade하지 않는다**"*고 명시하고, 그대로 두면 **바인드마다 `Rerun`이
+   > 도는 `H-58`이 되살아난다**(dep 등록은 생성자에서 한 번만, 발화 게이팅은
+   > 전부 `canExecute(handle)`). 8라운드 `H-114` 반영 때 옛 필드명
+   > `handle._observers`를 `_deps`로 **이름만** 고치는 바람에, 폐기된 동작
+   > 주장이 오히려 갓 정비된 것처럼 보이게 됐다. **결론(`Destroying` 배선을
+   > `bindLifetime` 옆에 둔다)은 그대로 유효하다** — 근거만 바뀐다: 그 함수가
+   > `isEffect`를 보고 `_bindDestroying`을 부르는 훅 자리이기 때문이다(`H-11`).
    - **한때 근거로 든 *"게이트는 값 타입을 안 가린다"*는 이 자리에 안 맞는
      인용이었다** — `base/source-state-plan.md`의 그 절이 말하는 건
      **`canBound` 판정**이 `:Subscribe()`/`bindLifetime` 두 진입점에서 같다는
      것이지, `bindLifetime`의 **부수 배선**이 값 종류를 못 본다는 게 아니다.
-     실제로 그 함수는 이미 `Effect`면 내부 Observer로 cascade한다.
-2. **`unbindLifetime`은 cleanup을 부르지 않는다.** `Destroying` 커넥션을 끊고
-   **`Ref` 콜백도 같이 해제**하되(아래 `H-7` 절과 대칭), cleanup은 그대로
+     실제로 그 함수는 `isEffect(value)`를 보고 `_bindDestroying`을 부른다
+     (**[2026-08-26 재정정, `/code-review high`]** 여기 한때 *"`Effect`면 내부
+     Observer로 cascade한다"*고 적혀 있었으나 그 cascade는 `H-58`이 폐기했다 —
+     위 ⚠️⚠️ 배너가 소스. 이 항목이 말하려는 것(그 함수가 값 종류를 본다)은
+     `isEffect` 분기로 그대로 성립한다).
+2. **`unbindLifetime`은 cleanup을 부르지 않는다.**
+   > **⚠️ [2026-08-26 정정, 8라운드 `H-114`] 아래 두 문장 중 "`Ref` 콜백도
+   > 같이 해제" / "언마운트가 콜백을 떼고 재마운트가 다시 건다"는 **폐기됐다.**
+   > 하루 뒤(2026-08-25) `H-58`이 정반대로 확정했다 — 같은 파일의
+   > `_unbindDestroying` 의사코드가 소스이고, 거기선 **`Ref` 콜백도 Observer도
+   > 안 뗀다**(그래야 바인드마다 `Rerun`이 도는 걸 막는다). 살아 있는 것은
+   > "cleanup을 안 부른다"는 이 항목의 제목뿐이다.
+   `Destroying` 커넥션을 끊고
+   ~~**`Ref` 콜백도 같이 해제**하되(아래 `H-7` 절과 대칭)~~, cleanup은 그대로
    남긴다 — `destroySlotTree`가 `_detachCleanup`을 `unbindLifetime`하며 달아둔
    주석(*"이미 손으로 비웠으니 Effect는 할 일 없음"*)과 `E-11`(leaf 바인딩엔
    `:Unsubscribe()`가 안 먹는다)이 그 전제 위에 서 있다. **이 계약을 명시한다** —
    지금까진 어느 쪽도 안 적혀 있었다.
-   - **bind/unbind가 대칭이라 포탈이 자연히 성립한다** — 언마운트가 콜백을
-     떼고 재마운트의 `bindLifetime`이 다시 건다(`_observers` cascade와 같은 결).
+   - ~~**bind/unbind가 대칭이라 포탈이 자연히 성립한다** — 언마운트가 콜백을
+     떼고 재마운트의 `bindLifetime`이 다시 건다.~~ **[2026-08-26 폐기,
+     `H-114`]** 위 배너대로 `H-58`이 뒤집었다. 포탈이 성립하는 실제 근거는
+     `H-64`의 **조건부 캐치업**(`_epochs:Refresh()`)이다.
 3. **cleanup은 `handle._cleanup` 필드에 보관한다.** `Rerun`이 이미 직전
    cleanup을 필요로 하므로 필드 쪽이 자연스럽고, `Destroying` 클로저와
    `Rerun`이 같은 자리를 읽게 된다.
@@ -144,7 +167,10 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
 
 ```
 Effect ──강──▶ _deps = { [Ref | State] = fn | Observer }   ← 강한 주인은 언제나 Effect
-Ref.Callbacks            ──약──▶ fn        (`ref:WeakCallback(fn)`)
+Ref.WeakCallbacks        ──약──▶ fn        (`ref:WeakCallback(fn)`)
+  ⚠️ [2026-08-26 `/code-review high` 7차] 한때 여기 `Ref.Callbacks`(강한 셋)라
+     적혀 있었다 — 그대로 읽으면 `Effect`의 클로저가 강한 셋에 들어가
+     **`Ref`가 그 `Effect`를 영원히 붙들어** `H-58`의 약한 설계가 통째로 죽는다.
 Observer 전역 레지스트리 ──약──▶ Observer  (`observer:WeakSubscribe()`)
 발화 게이트: 전부 `canExecute(handle)` 하나로
 ```
@@ -192,27 +218,37 @@ function Effect(fn, ...)
     end
 
     -- (1) dep 등록 — **여기서 한 번만**. 즉시-1회 호출은 Blocker로 억제한다.
-    --     ⭐ 클로저는 **하나**로 통일한다 — 아래 "공통 상류를 공유해도 한
-    --     파동에 fn은 한 번만" 절의 그 클로저다. `from`을 받아
-    --     `_epochs:Update(from)`가 참일 때만 `Rerun`해야 다이아몬드 dedup이
-    --     산다(안 하면 `A → b`, `A → c`, `Effect(fn, b, c)`에서 `A:Set()`
-    --     한 번에 `fn`이 두 번 돈다 — 2026-08-21에 닫은 그 버그).
-    --     시그니처가 `(self, from)`인 것은 `state:Observer(fn)`의 확정
-    --     계약이다(`base/source-state-plan.md`).
+    --     ⭐⭐ [2026-08-26 재확정, 8라운드 `H-107`] dep 종류마다 **클로저를
+    --     따로** 단다. 여기 한때 "클로저는 하나로 통일한다"고 적혀 있었으나,
+    --     그 통일을 시도할 근거 자체가 없었다 — **사용자 확정**:
+    --     *"Ref 의 callback 과 observer 의 콜백이 아주 헤테로지니어스한
+    --     개념이라, 둘을 전혀 합치고자 한 적 없고 … observer 에는 epoch 란게
+    --     존재하지 않음. emit 으로 온 epoch 를 넘겨줄 뿐, 그러나 ref 는 그
+    --     자체로 epoch임."* 실제로 두 계약은 자리 수부터 다르다 —
+    --     `Ref` 콜백은 `fn(value, ref)`(2번째가 곧 출처 `Epoch`),
+    --     Observer는 `fn(targetState, self, emitFrom)`(3번째가 출처).
+    --     ⚠️ dedup을 클로저 identity가 하는 게 아니다 — `_deps`(중복 dep 무시)와
+    --     `_epochs`(다이아몬드 판정)가 한다. 그래서 클로저를 나눠도
+    --     "공통 상류를 공유해도 한 파동에 fn은 한 번만"이 그대로 성립한다
+    --     (그게 아니었으면 `A → b`, `A → c`, `Effect(fn, b, c)`에서
+    --     `A:Set()` 한 번에 `fn`이 두 번 돈다 — 2026-08-21에 닫은 그 버그).
     self._blocker:On()
-    local function onDepFire(_, from)
+    local function fire(from)                          -- 공통 본문
         if not canExecute(self) then return end        -- 발화 게이트
         if self._blocker:IsOn() then return end        -- 등록 구간 억제(Update보다 먼저)
         if self._epochs:Update(from) then
             self:Rerun()
         end
     end
-    for d in seen do
+    local function onRefFire(_, ref) fire(ref) end            -- Ref: 2번째가 출처
+    local function onStateFire(_, _, from) fire(from) end     -- Observer: 3번째가 출처
+    for d in pairs(seen) do    -- [2026-08-26 `/code-review high` 7차] `for d in seen`은
+                               --   테이블을 호출하려 들어 죽는다
         if isRef(d) then
-            self._deps[d] = onDepFire                  -- ⭐ 강한 주인 = Effect
-            d:WeakCallback(onDepFire)                  -- Ref 쪽은 약함
+            self._deps[d] = onRefFire                  -- ⭐ 강한 주인 = Effect
+            d:WeakCallback(onRefFire)                  -- Ref 쪽은 약함
         else
-            local o = d:Observer(onDepFire)
+            local o = d:Observer(onStateFire)
             self._deps[d] = o                          -- ⭐ 강한 주인 = Effect
             o:WeakSubscribe()                          -- 전역 레지스트리는 약함
         end
@@ -392,7 +428,11 @@ end
 
 **확정: `Ref`에 콜백 해제 경로를 추가한다**(`base/ref-plan.md`가 소스).
 `EffectHandle`은 자기가 건 `Ref` 콜백 핸들을 들고 있다가, `unbindLifetime`과
-`:Unsubscribe()`에서 같이 해제한다 — `_observers`(State/Source dep)와 대칭이다.
+`:Unsubscribe()`에서 같이 해제한다 — State/Source dep 쪽과 대칭이다
+(**[2026-08-26 표기 정정, `H-114`]** 옛 `_observers` 표기를 지웠다 — 지금은
+`_deps` 하나다. **⚠️ 다만 이 문단의 "`unbindLifetime`에서 해제"는 `H-58`이
+뒤집었다** — 언바인드는 아무것도 안 떼고, 억제는 `_blocker`가 한다. 살아
+있는 것은 "`Ref`에 콜백 해제 경로(`:Uncallback`)를 둔다"는 결론뿐이다).
 
 **⭐ [2026-08-24 추가, 사용자 지적] 해제 경로만으로는 부족하다 — `Ref` 콜백도
 발화 시점에 `canExecute`를 확인한다.** State/Source dep은 State의 전파 루프가
@@ -464,7 +504,7 @@ named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순�
   Observer까지 같이 풀어야 대칭이 맞음.
   **[정정, 2026-08-14 다섯 번째 세션]** 이 항목이 원래 근거로 든
   "`canExecute`가 `Subscribed` 필드 + `inst`의 gcconn을 함께 본다"는
-  틀렸음 — `.Subscribed`는 전역 `:Subscribe()` 전용이고 leaf 경로와
+  틀렸음 — `.Subscribed`는 구독 경로 전용이고 leaf 경로와
   무관(`archive/canexecute-inst-arg-reversed.md`). cascade가 필요하다는
   결론은 그대로이고 오히려 근거가 더 직접적이 됨.
 - **`:Subscribe()`도 마찬가지로 `state`가 있으면 내부 Observer를 같은
@@ -587,7 +627,11 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
      끊긴다.** 단수 `state` 전제도 이미 `...deps`로 대체됐다.
   2. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
      하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것.
-  3. **idempotent, 그리고 이후 leaf가 실제로 죽어도 cleanup이 중복
+  3. **⚠️ [2026-08-26 정정, `/code-review high` 7차] "idempotent"는 폐기됐다** —
+     `Unsubscribe`는 이제 **fail-fast**다(약하게만 구독된 값이면 error,
+     `base/lifecycle-pattern.md`의 "(2) 전역 경로" 절. 6차가 같은 문장을
+     두 문서에서 지웠는데 **이 세 번째 사본을 놓쳤다**). 살아 있는 요구는
+     뒷부분뿐이다 — **이후 leaf가 실제로 죽어도 cleanup이 중복
      호출되면 안 됨** — 새 메커니즘 불필요, Observer가 이미 확정해둔
      `canExecute(value)` liveness 체크가 자동(리프=gcconn 참조)/수동
      (전역=`Subscribed` 필드) 두 경로를 하나의 게이트로 OR 묶어주므로
@@ -696,8 +740,17 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     Observer의 클로저가 받은 `from`으로 그걸 `Update`한다. **`true`일 때만
     `fn`을 부른다.** `Effect`가 곧 그 dep들의 **공통 하류**가 되므로, 한
     파동에 몇 개가 깨우든 첫 번째만 통과한다.
+    > **⛔⛔ [2026-08-26 폐기, 8라운드 `H-107`/Q2-후속] 아래 "공통으로 거는
+    > 클로저" 한 벌은 옛 모델이다.** dep 종류마다 콜백 계약의 **자리 수가
+    > 다르므로**(`Ref`는 `fn(value, ref)`로 출처가 2번째, Observer는
+    > `fn(targetState, self, emitFrom)`로 3번째) 하나로 못 합친다 —
+    > `onRefFire(_, ref)` / `onStateFire(_, _, from)` 둘로 갈라졌다. 확정
+    > 의사코드는 위 "확정 구조 — 강한 주인은 항상 `Effect`" 절의 생성자
+    > 블록이 소스. **이 절이 확정한 것 중 살아 있는 것은 `EpochMap` 하나로
+    > 다이아몬드를 접는다는 결론과, 바로 아래 ⚠️의 순서 제약뿐이다**(그
+    > 본문은 지금 `fire(from)` 공통 함수 안에 그대로 들어가 있다).
     ```lua
-    -- 각 dep의 내부 Observer가 공통으로 거는 클로저
+    -- ⛔ 옛 모델(2026-08-21). 지금은 dep 종류별로 클로저가 둘이다.
     function(self, from)
         if not canExecute(handle) then return end   -- 발화 게이트
         if handle._blocker:IsOn() then return end   -- 등록 구간 억제 (위 정정)

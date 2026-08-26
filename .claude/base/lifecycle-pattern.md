@@ -299,7 +299,12 @@ local function isBoundAlive(value)
     if gcconn ~= nil and gcconn.Connected then
         return true
     end
-    -- (b) 전역 경로: :Subscribe()가 세운 것. Observer/Effect에만 있는 필드.
+    -- (b) 전역 경로: 구독 경로(강/약)가 세운 것. Observer/Effect에만 있는 필드.
+    --     [2026-08-26, 8라운드 H-111] :WeakSubscribe()도 이 필드를 세운다 —
+    --     갈라지는 건 레지스트리를 강하게 잡느냐뿐이다. 한때 ":Subscribe()가
+    --     세운 것"이라고만 적혀 있었고, 그대로 읽으면 WeakSubscribe로만
+    --     등록되는 Effect의 내부 Observer가 이 게이트를 영영 못 통과해
+    --     Effect의 State dep 전량이 조용히 침묵한다.
     if isObserver(value) or isEffect(value) then
         return value.Subscribed == true
     end
@@ -317,7 +322,7 @@ function bindLifetime(inst, value)
         local isGlobal = isObserver(value) or isEffect(value)
         if isGlobal then isGlobal = value.Subscribed == true end
         error(if isGlobal
-            then "이미 :Subscribe()로 전역 바인딩된 값"
+            then "이미 구독된 값"   -- [2026-08-26 H-111] 강/약 어느 쪽이든
             else "이미 다른 Instance에 바인딩된 값")
     end
 
@@ -420,8 +425,9 @@ end
    복사된 gcconn 참조가 그것. `isBoundAlive`(따라서 `canBound`/`canExecute`)가
    `inst` 없이 성립하는 이유.
 
-**`Subscribed`는 이 계약과 일절 무관하다 — 오직 전역 `:Subscribe()` 경로
-전용 필드.** `bindLifetime`/`unbindLifetime`은 이 필드를 **읽지도 쓰지도
+**`Subscribed`는 이 계약과 일절 무관하다 — 오직 전역 구독 경로 전용
+필드**(**[2026-08-26 정정, `H-111`]** `:Subscribe()`뿐 아니라
+`:WeakSubscribe()`도 세운다 — 위 `isBoundAlive` (b) 주석 참고). `bindLifetime`/`unbindLifetime`은 이 필드를 **읽지도 쓰지도
 않음**. 옛 스케치가 `bindLifetime` 안에서 `value.Subscribed = true`를
 세팅하던 것이 이 문서의 오염 지점이었고, 그게 "`canExecute`가 `inst`를
 받아야 한다"는 잘못된 귀결까지 끌고 왔음(상세는
@@ -433,33 +439,117 @@ end
 규칙과 경고는 `base/source-state-plan.md`의 "`:Subscribe()`/`:Unsubscribe()`"
 절이 소스이고, 여기선 `canBound`가 보는 상태만 못박음:
 
-```lua
-local Subscribed = {} -- 전역 강참조 레지스트리(weak 아님 — 살려두는 게 목적)
+**⭐ [2026-08-26 재작성, 8라운드 `H-111`] 프리미티브는 `WeakSubscribe` 쪽이다** —
+여기 한때 `Subscribe`/`Unsubscribe` 둘만 있는 블록이 있었는데, 그건
+`:WeakSubscribe()`가 생기기 전(2026-08-25 이전) 서술이라 **약한 쪽이 어디서
+`.Subscribed`를 세우는지가 통째로 빠져 있었다.** 아래가 네 진입점 전량이고
+소스다(사용자 원문 *"구현이 한 벌"*):
 
-function Observer:Subscribe()
+```lua
+local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)
+local WeakSubscribed = setmetatable({}, {__mode = "k"})   -- 약한 레지스트리
+
+-- ── 프리미티브 ──────────────────────────────────────────────
+function Observer:WeakSubscribe()
     if not canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
         error(if self.Subscribed
-            then "이미 :Subscribe()된 값"
+            then "이미 구독된 값"          -- 강/약 어느 쪽이든 이 분기
             else "이미 Instance에 바인딩된 값")
     end
-    self.Subscribed = true
-    Subscribed[self] = true
+    self.Subscribed = true          -- ⭐ [H-111] 약한 쪽도 세운다 — 구독 경로 공용 플래그
+    WeakSubscribed[self] = true
+    return self
+end
+
+function Observer:WeakUnsubscribe()
+    -- ⭐ [2026-08-26, `/code-review high`] 강한 킵이 남아 있으면 error.
+    --   이게 없으면 `o:Subscribe()` 뒤 `o:WeakUnsubscribe()`가
+    --   `.Subscribed = false`로 **조용히 죽이면서** 강한 레지스트리엔 항목을
+    --   남겨 **영원히 GC 안 되는** 반쪽짜리 해제가 된다(바로 아래에서 금지하는
+    --   그것). 사용자 확정: fail-fast — `Subscribe()`로 건 건 `Unsubscribe()`로
+    --   푼다. 아래 `Unsubscribe`가 강한 킵을 **먼저** 지우고 위임하므로 자기
+    --   가드에 걸리지 않는다(순서가 계약이다).
+    if Subscribed[self] ~= nil then
+        error("...: subscribed strongly; use :Unsubscribe()", 2)
+    end
+    WeakSubscribed[self] = nil
+    self.Subscribed = false
+    return self
+end
+
+-- ── 그 위의 "GC 안 되게 킵" 한 겹 ───────────────────────────
+function Observer:Subscribe()
+    self:WeakSubscribe()            -- 게이트·플래그·약한 등록을 전부 여기서
+    Subscribed[self] = true         -- 강한 킵 하나만 더
     return self
 end
 
 function Observer:Unsubscribe()
-    Subscribed[self] = nil
-    self.Subscribed = false
-    return self
+    -- ⭐ [2026-08-26, `/code-review high` 5차] `WeakUnsubscribe`의 가드와
+    --   **대칭**으로 막는다(사용자 확정). 이게 없으면 `WeakSubscribe`로만
+    --   등록된 값에 `Unsubscribe`가 **조용히 성공**해서, 범용 정리 코드가
+    --   `Effect`의 내부 Observer(오직 `WeakSubscribe`로만 등록된다)를 죽이고
+    --   **State dep 전량이 침묵**한다. 계약은 한 줄로: **건 경로로 푼다.**
+    if Subscribed[self] == nil then
+        error("...: not subscribed strongly; use :WeakUnsubscribe()", 2)
+    end
+    Subscribed[self] = nil          -- 강한 킵을 먼저 놓고
+    return self:WeakUnsubscribe()   -- 나머지는 프리미티브에 위임(양쪽 테이블 대칭)
 end
 ```
 
-`.Subscribed` 필드와 `Subscribed` 테이블이 **둘 다** 있는 이유: 테이블은
-강참조 루트(생존 보장), 필드는 `canBound`/`canExecute`가 매번 읽는 O(1)
-경로 + 에러 메시지에서 "전역이냐 leaf냐"를 가르는 판별자. 둘은 항상 같이
-쓰고 같이 지우는 한 세트(`:Unsubscribe()`가 필드만 내리고 테이블을 안
-비우면 반쪽짜리 해제가 됨 — `base/source-state-plan.md`에 이미 확정된 규칙
-그대로).
+- **게이트는 한 번만 돈다** — `Subscribe`가 `WeakSubscribe`에 위임하므로
+  `canBound` 검사가 중복되지 않는다.
+- **해제는 반드시 양쪽을 지운다.** `Unsubscribe`가 `WeakSubscribed`를 안
+  지우면 항목이 약한 테이블에 남아 반쪽짜리 해제가 된다 — 그래서
+  `WeakUnsubscribe`에 위임하는 모양이 정본이다.
+- **⭐ 해제는 *건 경로로* 푼다 — 양방향 대칭 가드**(사용자 확정 2026-08-26).
+  강하게 구독된 값에 `WeakUnsubscribe`를 부르면 error, 약하게만 구독된 값에
+  `Unsubscribe`를 부르면 error. 후자가 없으면 **조용히 성공**해서 범용 정리
+  코드가 `Effect`의 내부 Observer(오직 `WeakSubscribe`로만 등록)를 죽이고
+  State dep 전량이 침묵한다. **"둘 중 뭐든 풀어주는" 범용 해제는 없다** —
+  필요하면 호출부가 `.Subscribed`가 아니라 어느 경로로 걸었는지를 알고 있어야
+  한다(핸들을 만든 쪽이 안다).
+- **⚠️ `:Subscribe()`는 idempotent가 아니다.** 이미 구독됐거나 leaf에
+  바인드된 값에 다시 부르면 `canBound` 게이트에 걸려 **error**다
+  (**[2026-08-26 확정, `/code-review high`]** `base/source-state-plan.md`가
+  한때 *"둘 다 idempotent … 에러 안 나고 그냥 no-op"*이라고 적었는데 그건
+  2026-08-18에 `canBound` 게이트가 들어오기 전 서술이라 정면 충돌해 있었다 —
+  **의사코드 쪽이 정본**이다).
+  **⚠️ [2026-08-26 재정정, `/code-review high` 6차] `:Unsubscribe()`도
+  idempotent가 아니다.** 여기 한때 *"게이트가 없어 구독 안 한 값에 불러도 그냥
+  지나간다. 비대칭이 의도된 것"*이라고 적혀 있었는데, **같은 날 대칭 가드가
+  들어오면서 거짓이 됐다**(위 의사코드: 약하게만 구독된 값이면 error).
+  지금 계약은 한 줄이다 — **해제는 건 경로로 푼다.** 구독한 적 없는 값에
+  부르는 것도 `Subscribed[self] == nil`이라 error다.
+- **에러 메시지 분기는 그대로 성립한다** — `.Subscribed`가 참이면 "구독
+  경로", 거짓인데 `canBound`가 거짓이면 "leaf 바인딩". 다만 **[2026-08-26]**
+  옛 메시지 *"이미 `:Subscribe()`된 값"*은 `WeakSubscribe`로 들어온 경우까지
+  가리키므로 *"이미 구독된 값"*으로 넓혔다(실제 문구는 영어 — error 계약은
+  `base/architecture.md`).
+
+`.Subscribed` 필드와 레지스트리 테이블이 **따로** 있는 이유: 테이블은
+참조 루트(강한 쪽은 생존 보장, 약한 쪽은 멤버십 기록), 필드는
+`canBound`/`canExecute`가 매번 읽는 O(1) 경로 + 에러 메시지에서 "구독이냐
+leaf냐"를 가르는 판별자.
+
+**⭐ [2026-08-26 정정, 8라운드 `H-111`] 필드와 *강한* 테이블은 한 세트가
+아니다.** 여기 한때 *"둘은 항상 같이 쓰고 같이 지우는 한 세트"*라고 적혀
+있었는데, `:WeakSubscribe()`가 생기면서 그게 거짓이 됐다 — 약한 구독은
+**필드는 세우고 강한 `Subscribed` 테이블은 안 건드린다.** 그 문장 그대로면
+`WeakSubscribe`의 정상 동작이 "반쪽짜리 해제"로 오독된다. 실제 짝은 위
+의사코드대로 이렇게 갈린다:
+
+| 진입점 | `.Subscribed` | `Subscribed`(강) | `WeakSubscribed`(약) |
+|---|---|---|---|
+| `:WeakSubscribe()` | `true` | — | 등록 |
+| `:Subscribe()` | `true` | 등록 | 등록 |
+| `:WeakUnsubscribe()` | `false` | — | 제거 |
+| `:Unsubscribe()` | `false` | 제거 | 제거 |
+
+**여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가
+강한 테이블만 비우고 `WeakUnsubscribe`에 위임하지 않으면(또는 필드만
+내리면) 그게 반쪽짜리 해제다.
 
 #### (3) `canBound` vs `canExecute` — 문맥이 달라 다시 갈라짐
 

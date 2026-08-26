@@ -102,6 +102,17 @@ store.hp:Compute(function(s) ... end)
   `Source`이므로 **슬롯 교체 순회가 없다**. **`or {}`가 필수다** — 무인자
   `Store<<{}>>()`도 유효한데 `table.clone(nil)`은
   `table expected, got nil`로 죽는다(**[2026-08-25]** 7라운드 `H-83` 실측).
+- **⭐ [2026-08-26 신설, 8라운드 `H-122`] 생성자가 `defaults` 값 전량을
+  런타임 검증한다 — `isSource` 화이트리스트.** 타입은 `Source<T>` 필드를
+  요구하지만 `--!nocheck`/동적 코드가 `{hp = 100}`(raw 값)을 넘기면 지금
+  스케치(`table.clone`)는 **조용히 받고** 첫 `store.hp:Get()`에서 엉뚱한
+  에러로 죽는다. `H-40`이 `:List` 요소 검증을 블랙리스트에서 화이트리스트로
+  뒤집은 것과 같은 성격의 자리다 — **사용자 확정**으로 여기도 화이트리스트를
+  둔다. `defaults`를 한 번 순회하며 `isSource(v)`가 거짓이면
+  **`error(..., 2)`**(사용자 입력 검증이므로 `level 2`, 메시지는 영어 —
+  `base/architecture.md`의 error 계약). 생성 시 1회라 hot path가 아니다.
+  `isModifier` 쪽 가드는 여기가 아니라 **`Source` 생성자**가 맡는다
+  (`base/modifier-plan.md` 7번).
 - **`store:Names()`** — 그 시점의 키 집합을 준다(그림자 테이블의 키). 그룹
   `Attribute(...)`/`attr:NameMap()`이 이걸 요구한다
   (`base/attribute-plan.md`, 7라운드 `H-79`).
@@ -211,12 +222,19 @@ Store는 "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐
     ```
     원문은 **인스턴스화를 생략한 호출만** 돌려보고 단정했다. 따라서
     `base/quad-types-plan.md`의 이중 꺾쇠 관례는 타입 자리 전용이 아니다.
-- **⭐ [2026-08-25] 예약 키는 `Of`/`Names` 둘뿐이고, 충돌은 조용히 죽는다.**
+- **⭐ [2026-08-25, 2026-08-26 개수 정정] 예약 키는 `Of`/`Names`/`__reservedCheck`
+  셋이고, 충돌은 조용히 죽는다.** (**[2026-08-26, `/code-review high`]** 한때
+  *"`Of`/`Names` 둘뿐"*이라 적혔는데, 진단용 팬텀 필드가 교집합 **안에**
+  살므로 그 이름 자신도 예약해야 자기 충돌이 조용히 지나가지 않는다 —
+  아래 타입 선언이 소스.)
   실측: 사용자 키가 예약 이름과 겹치면 교집합이 뭉개져 **그 필드의 타입
   검사가 통째로 꺼진다**(음성 대조군이 진단 0건으로 통과했다). 시끄럽게
   막히는 게 아니라 그냥 지나간다.
-  - **그래서 `T`를 검증만 하고 그대로 통과시키는 작은 `type function`을
-    둔다.** 겹치면 사용 지점에
+  - **그래서 예약 키를 검증만 하는 작은 `type function`을 둔다**
+    (**⚠️ [2026-08-26 정정, 8라운드 `H-112`]** 여기 한때 *"`T`를 검증만 하고
+    그대로 통과시키는"*이라고 적혀 있었는데 **`T`를 통째로 넘기는 배선은 실사용
+    `T`에서 아예 안 돈다** — 확정된 인자는 `keyof<T>`이고, 근거와 실측은 아래
+    "`store.key` 레코드 필드 타이핑" 절이 소스). 겹치면 사용 지점에
     `TypeError: quad.Store: "Of" is a reserved key`가 뜬다.
     **`error()`는 못 쓴다** — `type function` 자체가 실패한 걸로 판정돼
     버려진다. `print(...)` + `return types.never` 조합만 된다
@@ -248,8 +266,82 @@ Store는 "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐
 type Store<T> = T & {
     Of:    <U>(self: any, name: string) -> Source<U>,   -- 동적 키 전용
     Names: (self: any) -> { string },
+    __reservedCheck: CheckReservedKeys<keyof<T>>,       -- 팬텀 필드(진단 전용)
 }
+-- 검증 목록은 `Of` · `Names` · `__reservedCheck` 셋이다 — 팬텀 필드 자신도
+-- 교집합 안에 있으므로 자기 이름을 예약 목록에 넣어야 자기 충돌이 조용히
+-- 지나가지 않는다.
+--
+-- ⚠️ [2026-08-26, `/code-review high` 5차] **`__reservedCheck`는 런타임
+--   대응물이 없다.** 생성자는 `table.clone(defaults or {})`뿐이라
+--   `store.__reservedCheck`는 **타입은 `true`, 런타임은 `nil`**이다 — 이
+--   문서가 옆에서 "선언 안 된 키 접근은 타입 에러"임을 스파이크로 증명해두는
+--   것과 대비되는 unsound한 자리다. 팬텀 필드의 존재 이유가 진단 하나뿐이라
+--   감수하되, 두 가지를 문서화한다:
+--   (1) **읽지 말 것** — 사용자 표면이 아니다.
+--   (2) `store:Names()`(그림자 테이블의 키)에는 **안 들어간다**. 그래서
+--       `store:Of("__reservedCheck")`는 런타임에선 그냥 통과해 충돌하는
+--       `Source`를 만든다 — 타입 쪽은 `CheckReservedKeys`가 막지만
+--       **동적 키는 이름이 타입에 안 실리므로** 못 막는다.
 ```
+
+**⭐⭐ [2026-08-26 확정, 8라운드 `H-112`] 예약 키 진단 타입 함수는 `T`가 아니라
+`keyof<T>`를 받는다.** 2026-08-25엔 *"`T`를 검증만 하고 그대로 통과시키는
+작은 `type function`"*으로 확정돼 있었는데, **그 배선은 실사용 `T`에서 아예
+돌지 않는다**(실측 재현):
+
+- 최종 Store의 타입 인자는 정의상 `{hp: Source<number>, …}` — **모든 실사용
+  `T`에 `Source<T>` 필드가 들어간다.**
+- 확정 선언 스타일(`base/typing-limits.md` §1②의 인라인 쪼개기 — 콜백
+  파라미터 무주석 추론이 사는 유일한 스타일)에서 `Source<T>`는 `Compute`의
+  `-> State<U>` 재귀 반환 누수 때문에 내부에 `*error-type*`을 품는다.
+- **Luau 타입 함수는 `*error-type*`이 든 타입을 받는 순간 실패한다** —
+  그래서 `CheckReserved<T>`를 어디에 배선하든 **예약 키가 없는 완전히 유효한
+  Store 사용 지점 전부**에 `TypeError: Type functions do not currently
+  support types of the form '*error-type*'`가 뜬다. 접근 경로에 배선하면
+  (`Store<T> = CheckReserved<T> & {…}`) 거기 더해 `does not have key 'hp'`로
+  **필드 접근까지 전멸**한다.
+- 7라운드가 이걸 못 본 이유: 그때 돌린 스파이크
+  (`audit/type-store-index-keyof/spikes/05-checkreserved.luau`)의 `T`가
+  **철회된 재설계의 스칼라 필드**(`{hp: number}`)였다. 최종형에선 필드가
+  스칼라가 아니라 `Source<T>`다.
+
+**통과하는 배선**(실측 완료 — `keyof<T>`는 키 싱글톤 유니온이라 `Source`
+타입이 인자에 아예 안 실리고, `*error-type*` 직렬화 문제가 원천 소멸한다):
+
+```lua
+type function CheckReservedKeys(keys: type)
+    -- keys: "hp" | "name" 같은 싱글톤 유니온.
+    -- "Of"/"Names"/"__reservedCheck"가 섞여 있으면 print(...) + return types.never.
+    -- (error()는 못 쓴다 — 타입 함수 자체가 실패한 걸로 판정돼 버려진다)
+    return types.singleton(true)
+end
+```
+
+측정 결과: 예약 키 충돌 시 `TypeError: quad.Store: "Of" is a reserved key`가
+**캐스트 지점과 생성자 호출 지점 양쪽에서** 강제 평가 없이 뜨고,
+`store.hp:Get()` 양성 통과 / 음성 대조군 정확히 걸림, 그리고
+`store.hp:Compute(function(x) return x:Get() * 2 end)`의 **무주석 콜백 추론이
+생존**한다. `base/typing-limits.md` §0(*타입 함수는 진단까지만*)의 허용 범위
+안이다 — 결과가 접근 타입에 안 섞이고(팬텀 필드 값은 `types.singleton(true)`),
+같은 §0이 경고하는 내장 `index<>`/`keyof<>`도 **형제 필드의 `*error-type*`에
+오염되지 않는다**는 것이 별도 실측(`CheckedQuad`)으로 재확인됐다.
+
+**⚠️ [2026-08-26, `/code-review high`] 빈 Store(`Store<<{}>>()`)는 아직 실측
+안 됐다.** `H-83`은 무인자 생성이 유효해야 한다고 확정했는데(`or {}` 방어의
+존재 이유), 위 실측은 **키가 있는 `T`로만** 돌았다. `keyof<{}>`가 Luau에서
+빈 유니온이 되는지 에러가 되는지에 따라 **무인자 Store 전체가 스퓨리어스
+타입 에러를 뒤집어쓸 수 있다** — `H-112`가 `CheckReserved<T>`에서 찾은 실패
+모드와 정확히 같은 형태다. `luau-test/STATUS.md`의 `16`/`21` 재작성 때
+`Store<{}>`를 대조군으로 넣을 것.
+
+**기각된 대안**: (b) `CheckReserved` 자체를 포기하고 "예약 키가 겹치면 그
+필드의 타입 검사가 조용히 꺼진다"를 문서 경고로만 남기는 안,
+(c) 선언 스타일을 §1③(`typeof`)으로 전환하는 안 — ③ 전면 전환은 `Get()`이
+`unknown`으로 붕괴하고 하이브리드는 무주석 콜백 추론이 깨지는 것이 실측됐다
+(둘 다 `CheckReserved` 유무와 무관한 선언 스타일 자체의 문제 — 대조군 확인).
+즉 **"콜백 추론 + 예약 키 진단" 동시 성립 배선은 `T`를 통째로 넘기는 한
+존재하지 않는다.**
 
 **`luau-analyze` 실측**(양성 + 음성 대조군):
 
@@ -273,7 +365,24 @@ type Store<T> = T & {
   `typeof(f<<T>>)`로 타입 인자를 넘기는 것도 실패한다(실측). 같은 사실이
   `base/source-state-plan.md`의 `:Apply`에도 적용된다(7라운드 `H-94`).
 
-실측 전량은 `audit/type-store-index-keyof/`가 소스.
+실측 전량은 `audit/type-store-index-keyof/`가 소스. **⚠️ [2026-08-26,
+8라운드 `H-115`] 다만 그 폴더에 최종형 결합을 도는 파일이 없다** — 대부분이
+철회된 재설계(`__store` 팬텀 + `keyof<index<…>>`, 값 필드가 스칼라)를
+대상으로 한다(REPORT 상단 배너도 철회를 명시). 위 표의 측정값 자체는
+8라운드 스파이크로 대체 재확인됐고(단 `CheckReserved` 결합은 표와 달리
+실패 — `H-112`), **출처 문제는 `luau-test/STATUS.md`의 `16`/`21` 재작성 때
+최종형 + `CheckReservedKeys` 배선을 같이 넣으면 닫힌다.** 그 폴더의 `02`와
+`06`은 최종형에서도 유효한 측정이니(필드가 `Source<T>`이고 `__store` 팬텀도
+`keyof`/`index`도 없다) **재작성 때 버리지 말 것.**
+
+**⚠️ [2026-08-26 보강, 8라운드 `H-117`] `store:Of("k")`를 인스턴스화 없이
+부르면 주석까지도 무력하다.** 위 실측 블록의 `local none: Source<number> =
+s:Of("z")`가 `Source<unknown>`이 된다는 것만 적혀 있었는데,
+`Source<unknown>`은 **아무 구체 타입 주석과도 충돌하지 않는다** — 실측에서
+`local d: Source<boolean> = s:Of("dyn")`이 진단 0건으로 통과했다. 즉
+*"`Of`는 타입 보장을 포기했다가 호출부에 드러나는 자리"*는 **`<<T>>`를
+실제로 적었을 때** 얘기고, 빠뜨리면 조용히 unsound하다(§1의 명시 바인딩
+구멍과 같은 부류지만 자리가 다르다).
 
 ## Store가 Store를 저장 가능한가
 

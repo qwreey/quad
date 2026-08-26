@@ -686,8 +686,10 @@ export type Timeout = {
   호출 지점마다 캐스트를 흩뿌리는 방식은 나중에 누가 다른 필드를 더
   끼워넣어도 아무도 모르는 게 문제였음 — quad가 타입 검사를 조용히 끄는
   걸 싫어해온 것(`base/typing-limits.md`)과 결이 맞는 쪽으로 정리됨.
-- `_` 접두사는 코퍼스의 기존 private 필드 관례(`handle._observers`,
-  `slot._mountedInst`, `_fired`)와 일치.
+- `_` 접두사는 코퍼스의 기존 private 필드 관례(`handle._deps`,
+  `slot._mountedInst`, `_fired`)와 일치(**[2026-08-26 표기 정정]** 여기 예시가
+  `handle._observers`였는데 그 필드는 7라운드 `H-58`에 폐기됐다 — `_deps`
+  하나로 통합, `base/effect-plan.md`).
 - **`_native`에 뭘 담을지는 전적으로 백엔드 자유** — coroutine 하나일
   수도, 취소 플래그를 담은 테이블일 수도 있음(아래 "취소를 제공하지 않는
   엔진" 절). base는 이 필드를 **읽지도 쓰지도 않고** 그저 `setTimeout`이
@@ -815,9 +817,18 @@ function clearTimeout(timeout: Timeout) timeout._native() end
 >   `Handle:Set({ Flush = gate._flush, ... })`는 표현 자체가 불가능하다.
 >
 > **다시 쓸 방향은 정해져 있다**(사용자 확정 2026-08-24,
-> `base/gate-plan.md`의 5번 항목이 소스): `Debounce`/`Throttle`은 **`emit`을
-> 아예 안 쥔다.** 자기 `Blocker`를 사적으로 하나 갖고(적용 핸들당 하나)
-> **언제 `On()`/`Off()`할지만** 정하며, 실제 발화/보류는
+> `base/gate-plan.md`의 5번 항목이 소스. **⚠️ [2026-08-26 표기 갱신, 8라운드
+> `H-118`]** 여기 한때 *"`Debounce`/`Throttle`은 **`emit`을 아예 안 쥔다**"*로
+> 시작했는데 **그 문장은 그 사이 `gate-plan.md` 5번에서 폐기됐다** —
+> `setup(emit)`이 곧 계약이라 `emit`은 **정의상 정책 손에 있고**, 정책은 그걸
+> `b:Policy(emit)`에 넘겨야 배선이 성립한다. 위임되는 건 `emit`이 아니라
+> **"emit된 적 있던가"의 부기**다. 그대로 두면 이 문서 자신의 7·8절이 확정한
+> **타이머 경로의 `emit()`/`emit(false)` 직접 호출**(`H-55`/`H-86`)과 서로
+> 모순되는 것처럼 읽힌다. 경로는 둘이고 각자 몫이 있다 — 상류 emit 도착은
+> `pass()`, 타이머/제어 핸들의 flush·버리기·조회는 `emit()` 직접 호출):
+> `Debounce`/`Throttle`은 **보류 판정·`pending` 부기를 직접 구현하지
+> 않는다.** 자기 `Blocker`를 사적으로 하나 갖고(적용 핸들당 하나)
+> **언제 `On()`/`Off()`할지** 정하며, 상류 emit이 도착하는 경로의 발화/보류는
 > `blocker:Policy(emit)`이 돌려준 핸들에 위임한다:
 >
 > ```lua

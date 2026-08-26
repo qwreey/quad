@@ -252,11 +252,19 @@ local emitChanged  = self.emitEpochMap:Peek(from)    -- 갱신 안 함
 
 ## 4. State는 `EpochMap`을 둘 컴포지션한다
 
+> **⚠️ [2026-08-26, 8라운드 `H-114`] `rawInvalid: boolean`은 폐기된 필드다** —
+> 아래 "`rawInvalid` 불린은 **캐시 카운터 쌍**으로 교체됐다" 절이 소스다.
+> 그 절의 안내 문장은 *"아래 두 절"*(재계산 판정 / 재계산이 끝나면)만
+> 가리켰는데, **이 구조체 선언과 바로 아래 수신 규칙은 그 절보다 위에
+> 있다** — 위에서부터 읽으면 폐기된 필드로 구조체를 먼저 확정하게 된다.
+> 아래 서술에서 `rawInvalid`가 나오면 전부 카운터 쌍으로 읽을 것.
+
 ```
 State
-    valueEpochMap : EpochMap   -- "내 값이 이 Epoch에 대해 최신인가" (값 유효성)
-    emitEpochMap  : EpochMap   -- "이 Epoch의 이 리비전을 하류로 이미 던졌는가" (전파 dedup)
-    rawInvalid    : boolean    -- "재계산이 필요하다"는 확정 플래그
+    valueEpochMap  : EpochMap   -- "내 값이 이 Epoch에 대해 최신인가" (값 유효성)
+    emitEpochMap   : EpochMap   -- "이 Epoch의 이 리비전을 하류로 이미 던졌는가" (전파 dedup)
+    cacheTargetCount : number   -- ┐ 옛 `rawInvalid`. 둘이 다르면 "재계산 필요"
+    cacheCurrCount   : number?  -- ┘ (시드는 target = 0, curr = nil)
 ```
 
 **⭐ 왜 둘인가 — 순회 때문이다.** 사용자 정리: *"'내 값이, 상류의 상태로
@@ -405,8 +413,10 @@ if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
 - **State는 여전히 `Epoch`를 구현하지 않는다** — 이 카운터는 **자기 재계산
   부기**이지 남이 키로 삼는 리비전이 아니다(§4가 State dep에 대해
   `TrackFrom(dep.valueEpochMap)`을 쓰는 것과 일관).
-- 아래 두 절(`재계산 판정` / `재계산이 끝나면`)의 `rawInvalid`는 전부 이
-  카운터 비교로 읽을 것.
+- **[2026-08-26 정정, `H-114`] §4의 `rawInvalid`는 *전부* 이 카운터 비교로
+  읽을 것** — 여기 한때 *"아래 두 절(`재계산 판정` / `재계산이 끝나면`)"*
+  이라고만 적혀 있었는데, 이 절보다 **위**에 있는 구조체 선언과 수신 규칙도
+  같은 대상이다(그쪽엔 배너를 달아뒀다).
 
 ### 재계산이 끝나면
 
@@ -456,8 +466,12 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
 절이 소스.
 
 **그래서 `Observer` 클로저는 출처를 인자로 받는다** —
-`fn(self, from: (Epoch | EpochSet)?)`. `:Compute`의 `fn(self, ...)`와 같은
-모양이고(설치 발화에는 출처가 없어 `nil`이다),
+`fn(targetState, self, emitFrom: (Epoch | EpochSet)?)`
+(**[2026-08-26 정정, 8라운드 `H-109`]** 여기 한때 2-인자 `fn(self, from)`으로
+적혀 있었는데, 그때의 `self`는 **리시버 State의 lazy 핸들**을 뜻했고 전파 루프
+의사코드는 같은 자리에 Observer 값을 넘기고 있었다 — Observer 핸들이 가운데
+자리로 들어와 세 자리가 됐다). 1번 자리는 `:Compute`의 `fn(self, ...)`와 같은
+모양이고(설치 발화에는 출처가 없어 `emitFrom`이 `nil`이다),
 값이 아니라 **핸들과 메타데이터**만 넘기므로 "값을 안 실어주는 구독" 계약은
 안 깨진다. `base/source-state-plan.md`의 "`state:Observer(fn)`" 절이 소스.
 

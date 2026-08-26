@@ -16,9 +16,14 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 소스). **⭐ [2026-08-25] 그 교체로 올라왔던 항목 둘도 닫혔습니다** —
 > 중간 State GC는 `_hold` 불변식(하류 → 상류 강함)으로, 동적 키 표면
 > 위치는 `store:Of<<T>>(name)` 하나로(옛 `GetDynamic` 흡수) + 예약 키
-> 충돌은 `CheckReserved` 타입 함수로. `.claude/question.md`
+> 충돌은 예약 키 진단 타입 함수로. `.claude/question.md`
 > 최우선 절은 지금 **비어 있습니다**. 결정 전량의 소스는
-> `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`. M1까지의 산출물은
+> `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`,
+> 그리고 **[2026-08-26] 8라운드 몫은 `-round8-followup.md`**(7라운드
+> 반영분을 겹쳐 재트레이싱한 발견 17건 — 역전 없이 누락·충돌만 닫았습니다.
+> **어느 체크박스가 바뀌었는지는 여기서 세지 않습니다** — 해당 체크박스에
+> 각각 `H-1xx` 표시가 붙어 있으니 그게 소스입니다. M2/M3 양쪽에 걸쳐
+> 있습니다). M1까지의 산출물은
 > quad-base/quad-roblox 폴더+pesde.toml, 루트
 > default.project.json/.luaurc, mock 테스트 하네스, `New()`/`RunInit`/
 > `AddPlugin` 골격. **다만 M0의 검증 스파이크 여러 개가 설계 변경으로
@@ -296,8 +301,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       있고, `canExecute`의 실제 호출부(State 전파 루프)엔 `inst`가 없어서
       2-인자로는 호출 자체가 불가능했음. 판정은 (a) 복사된 gcconn의
       `.Connected` 또는 (b) Observer/Effect의 `.Subscribed` 둘 중 하나 —
-      **`.Subscribed`는 전역 `:Subscribe()` 전용 필드라
-      `bindLifetime`/`unbindLifetime`이 읽지도 쓰지도 않음**. 역전 원문은
+      **`.Subscribed`는 전역 구독 경로 전용 필드라
+      `bindLifetime`/`unbindLifetime`이 읽지도 쓰지도 않음**
+      (**[2026-08-26 표기 정정, 8라운드 `H-111`]** *"전역 `:Subscribe()` 전용"*
+      이라고 적혀 있었으나 `:WeakSubscribe()`도 이 필드를 세운다 — 강·약이
+      갈리는 건 레지스트리를 강하게 잡느냐뿐이다. 이 문장의 요지
+      (`bindLifetime`이 안 건드린다)는 그대로 유효). 역전 원문은
       `archive/canexecute-inst-arg-reversed.md`.
       **`unbindLifetime(value)` 추가(2026-08-09 여섯 번째 세션)** —
       `inst` 전체 죽기 전에 특정 값 하나만
@@ -342,16 +351,25 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **[2026-08-18 신설, 2026-08-25 확정]** `store:Of<<T>>(name): Source<T>` —
       런타임에 이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열
       커링은 기각). **콜론 메소드로 확정**했고, 예약 키
-      (`Of`/`Names`) 충돌은 `CheckReserved` 타입 함수가 사용 지점에서
-      잡는다(`base/store-plan.md`의 "타입 추론 문제" 절).
+      (`Of`/`Names`/**`__reservedCheck`** — **[2026-08-26 `/code-review high`]**
+      팬텀 필드가 교집합 안에 살아 자기 이름도 예약해야 한다) 충돌은
+      `CheckReservedKeys<keyof<T>>` 타입 함수가 사용
+      지점에서 잡는다(**[2026-08-26 `H-112`]** 옛 이름·배선은
+      `CheckReserved<T>`였는데 `T`를 통째로 넘기면 실사용 `T`에서 아예 안
+      돈다 — `base/store-plan.md`의 "타입 추론 문제" 절).
       `<<T>>`가 값 호출부에서 실제로 `T`를 묶는 것도 실측 확인됨.
       **[2026-08-25] 옛 이름은 `GetDynamic`이었다 — `Of`가 흡수했다**
 - [ ] **[2026-08-25 신설]** `store:Names(): { string }` — 선언된 키 집합
       열거(그림자 테이블의 키). 그룹 `Attribute(...)`/`attr:NameMap()`이
       요구한다(`base/attribute-plan.md`)
-- [ ] **[2026-08-25 신설]** `CheckReserved` 타입 함수 — 예약 키를 **검증만**
-      하고 `T`를 그대로 통과시킨다. `error()`가 아니라
-      `print(...)` + `return types.never`를 써야 한다.
+- [ ] **[2026-08-25 신설, 2026-08-26 배선 정정 `H-112`]** `CheckReservedKeys`
+      타입 함수 — **`T`가 아니라 `keyof<T>`**(키 싱글톤 유니온)를 받아
+      예약 키를 검증만 하고, 팬텀 필드 `__reservedCheck`로 격리한다.
+      `error()`가 아니라 `print(...)` + `return types.never`를 써야 한다.
+      **`T`를 통째로 넘기는 옛 배선은 실사용 `T`에서 아예 안 돈다** —
+      최종 Store의 `T`는 `{hp: Source<number>, …}`이고 그 `Source`가
+      `*error-type*`을 품어 **유효한 Store 전부**에 스퓨리어스 타입 함수
+      에러가 뜬다(실측). 근거·통과 배선은 `base/store-plan.md`.
       **타입 함수는 이 용도(진단)까지만 쓴다** — `base/typing-limits.md` §0
 - [ ] **[2026-08-25 신설]** **명시적 초기화** — 타입 인자에 `Source<T>`를
       직접 쓰고 `defaults`에도 `Source(v)`를 직접 넣는다. 옛 lazy `__index`
@@ -375,8 +393,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       노드의 생존은 `canExecute`가 아니라 같은 문서의 **`_hold`
       불변식**(하류 → 상류 강함)이 책임진다.
       ```lua
-      if isState(sub) then sub:_receive(from)        -- 자식 노드: 게이트 없음
-      elseif canExecute(sub) then sub.fn(sub, from)  -- Observer / Effect
+      if isState(sub) then sub:_receive(from)                 -- 자식 노드: 게이트 없음
+      elseif canExecute(sub) then       -- Observer만 (Effect는 자기 내부 Observer로 온다)
+          sub.fn(sub._state, sub, from)   -- [H-109] (리시버 State, Observer 자신, 출처)
       end
       ```
       `canExecute`가 `inst`를 인자로 받을 수 없는 이유는 그대로다(State는
@@ -418,8 +437,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
       판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()` +
       **`:WeakSubscribe()`/`:WeakUnsubscribe()`**(Weak 쪽이 프리미티브,
-      7라운드 `H-58`/`H-59`). **무인자 `state:Observer()`의 내부 콜백은
-      `function(self) self:Get() end`**(`H-61`). **동적
+      7라운드 `H-58`/`H-59`).
+      **⭐⭐ [2026-08-26 추가, `H-109`/`H-110`; `/code-review high` 7차가 누락을
+      잡음] `fn`의 시그니처는 세 자리 `fn(targetState, self, emitFrom)`이고,
+      생성 시 `observer._state = state`(리시버 강참조)를 세운다** — 전파 루프가
+      그 필드를 1번 인자로 읽는다(위 루프 스니펫). 이걸 빼고 `Observer.luau`를
+      짜면 `sub._state`가 `nil`이라 **모든 콜백이 리시버 자리에 `nil`을 받고**
+      무인자 유틸이 `nil:Get()`으로 죽는다 — `H-109`가 고치려던 그 크래시.
+      `observer._state`는 Observer의 `_hold` 상당이기도 하다(`H-110`).
+      **무인자 `state:Observer()`의 내부 콜백은
+      `function(targetState) targetState:Get() end`**(`H-61`; **[2026-08-26]**
+      파라미터 이름이 `self`였는데 1번 자리는 Observer가 아니라 리시버다). **동적
       경로 가드**(`{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v
       is Observer, process = error(...)}`, `k` 타입 안 가림, 2026-08-14
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
@@ -451,6 +479,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **`handle._deps`**(`{[Ref|State] = fn|Observer}`, **강참조** — 옛
       `_observers`/`_refDeps`/`_refCallbacks` 셋이 여기로 통합됐다) ·
       **`handle._epochs`**(`EpochMap` — `Ref`도 `Epoch`라 dep 종류가 균일) ·
+      **⭐ [2026-08-26 추가, 8라운드 `H-107`/Q2-후속] dep 등록 클로저는 종류별로
+      *둘*이다** — `onRefFire(_, ref)`(Ref 콜백은 `fn(value, ref)`라 출처가
+      **2번째**)와 `onStateFire(_, _, from)`(Observer는
+      `fn(targetState, self, emitFrom)`라 출처가 **3번째**). **하나로 합치려
+      들지 말 것** — 한때 effect-plan에 *"클로저는 하나로 통일한다"*고 적혀
+      있었으나 근거 없는 서술이라 삭제됐다(사용자 확정: 두 콜백은 이질적이고,
+      Observer엔 자기 epoch가 없지만 `Ref`는 그 자체가 epoch다). dedup은
+      클로저 identity가 아니라 `_deps`/`_epochs` 맵이 한다 ·
       **`handle._blocker`**(등록 구간의 즉시-1회 호출 억제 — 옛 `_installing`
       플래그 폐기, 그건 생성자 구간만 덮어 바인드 구간을 놓쳤다) ·
       **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
@@ -562,12 +598,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Block(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
-- [ ] **[2026-08-25 신설, `H-81`]** `isModifier` 런타임 가드 — 적용 지점이
-      **전부 이 마일스톤의 코드**다(`Source:Set` / Store 생성 시 eager
-      `Source(default)` / State의 `:Compute` 결과 캐싱, 그리고
-      독립 `Source(someModifier)`). 체크박스가 M7에만 있었다.
-      `base/modifier-plan.md` 7번과 `base/source-state-plan.md`의 적용
-      지점 목록을 서로 맞출 것(한쪽에만 있는 항목이 있다)
+- [ ] **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
+      `isModifier` 런타임 가드 — 적용 지점이
+      **전부 이 마일스톤의 코드**다: **`Source(...)` 생성자** / `Source:Set` /
+      State의 `:Compute` 결과 캐싱. 체크박스가 M7에만 있었다.
+      **[2026-08-26]** 여기 한때 *"Store 생성 시 eager `Source(default)`"*가
+      적혀 있었으나 명시적 초기화 이후 **`defaults` 경로엔 그 지점이 없다**
+      (**[2026-08-26 정밀화]** 동적 키 창구 `store:Of(name)`은 여전히 만든다) —
+      가드를 `Source` 생성자에 두면 그 둘이 **한 번에 커버**된다
+      (`base/modifier-plan.md` 7번이 소스)
+- [ ] **[2026-08-26 신설, `H-122`]** `Store` 생성자의 `defaults` 런타임
+      검증 — 값 전량에 `isSource` 화이트리스트, 거짓이면 `error(..., 2)`
+      (영어 메시지). 타입은 `Source<T>`를 요구하지만 `--!nocheck`/동적
+      코드가 raw 값을 넘기면 지금 스케치(`table.clone`)는 조용히 받고 첫
+      `:Get()`에서 엉뚱한 에러로 죽는다. 생성 시 1회라 hot path 아님
 - [ ] **[2026-08-25 신설, `H-97`]** mock 백엔드용 생명주기 4종 최소 구현 —
       `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`. 안 하면
       **아래 "mock 대상 테스트"가 전파 루프를 한 번도 못 돈다**(루프가 매
@@ -679,15 +723,37 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       계약을 반드시 같이 구현할 것** — 이게 빠지면 형제 Slot이 커져도 뒤 형제의
       `Offset`이 **영원히 고정**된다(`sum`은 매번 새로 더하므로 위로는 맞고
       옆으로만 틀려 알아채기 특히 어렵다):
-      (a) `getBookkeeping`이 `bk.offsetCache = {}`, `bk.invalidAfter = 0`으로
+      (a) `getBookkeeping`이 `bk.offsetCache = {}`, **`bk.offsetCacheValidUpTo = 0`,
+      `bk.offsetSetUpTo = 0`**, `bk.recomputeBlocker = Blocker()`으로
       초기화(`nil` 시작이면 첫 `setOffsetSource`가 `nil` 비교에서 죽는다),
-      (b) **캐시를 앞으로 당기는 자리 셋** — `setLength` 본문과 그 자리 length가
-      State일 때 다는 Observer 콜백(`math.min(invalidAfter, i)`),
-      `spliceArraysUp`/`spliceArraysDown`(같은 식), `slot._baseObserver` 콜백
-      (베이스가 바뀐 경우라 `0`). 셋 다 `recompute`보다 **먼저**.
+      (b) **캐시를 앞으로 당기는 자리**(개수는 `base/dispatch-core-plan.md`의
+      무효화 표가 소스) — `setLength` 본문과 그 자리 length가
+      State일 때 다는 Observer 콜백(**두 필드 다** `math.min(…, i)`),
+      `spliceArraysUp`/`spliceArraysDown`(**두 필드 다 `math.min(…, i - 1)`** —
+      **[2026-08-26 정정, 8라운드 `H-113`]** 한때 `setLength`와 "같은 식"이라
+      적혀 있었으나 `i`로 당기면 `recompute`의 커서가 정확히 `i`일 때
+      "변경 없음"과 구분이 안 돼 되감기가 안 걸린다),
+      `slot._baseObserver` 콜백
+      (베이스가 바뀐 경우라 `0`), 그리고 **⭐ [2026-08-26 신설,
+      `/code-review high`] `rawMove`/`rawSwap`/`rawExtract`류**(자리 수는
+      그대로, 순서만 바뀜 — 두 필드 다 `math.min(…, minPos - 1)`, `H-29` 규약
+      3번). **전부 `recompute`보다 먼저.**
       (c) **`recompute` 호출은 `setLength`의 단독 책임**이다 — `rawAdd`/
       `rawReplace`의 명시 호출은 삭제됐고, 자리가 없어지는 경로
       (`rawRemove`/`rawUnmount`/`rawDetach`)만 예외로 직접 부른다.
+      **⭐ [2026-08-26 추가, 8라운드 `H-119`] 그 명시 호출도 재진입 게이트를
+      먼저 본다** — `blocker:IsOn() or bk.recomputeBlocker:IsOn()`이면
+      건너뛴다(건너뛴 몫은 splice가 당겨둔 `offsetSetUpTo`로 바깥 루프의
+      되감기가 복구). 안 그러면 `Add`는 안전한데 `Remove`만 중첩 `recompute`가
+      완주해 바깥의 `Length`를 낡은 합으로 덮는다. `_baseObserver` 콜백도
+      같은 게이트 + **두 필드 `0`**.
+      **⭐⭐ [2026-08-26 신설, `/code-review high` 4차] 부기 필드가 하나에서
+      둘로 갈라졌다** — `bk.offsetCacheValidUpTo`(`offsetCache`가 여기까지
+      정확, `getOffsetAt`이 올림)와 `bk.offsetSetUpTo`(offset `Source`에
+      여기까지 `:Set` 완료, **`recompute`만** 올림). 옛 단일 `invalidAfter`는
+      두 뜻을 겸했고, 그래서 `getOffsetAt`의 부수효과가 되감기 신호를 조용히
+      지웠다. 무효화는 **둘 다** 내린다. `base/dispatch-core-plan.md`의
+      "두 필드" 절이 소스.
       `recompute`는 owner의 베이스(Slot이면 자기 `.Offset`, 최상위면 0)에서
       시작하고 중첩 Slot은 자기 `Offset`을 관측해 자식 offset을 다시 민다.
       **이 셋이 하는 일**: array part 형제 순서 보장(Length/Offset 누적합→
@@ -915,7 +981,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   옛 `question.md` 1번 용어정리 항목은 해소되어
   `archive/question-resolved.md`로 이전됨)가 quad-roblox의 사실상 유일한
   Slot 타입.
-- **`Slot:Single(state, updateFn?)` 확정** — `:List`를 0/1개짜리
+- **`Slot:Single(state, updateFn?, opts?)` 확정** — (**[2026-08-26 표기 정정,
+  8라운드 `H-123`]** 3번째 `opts`(= `Owned`)는 `H-22` 확정 의사코드가 받아
+  `:List`로 전달한다 — 여기와 아래가 2-인자 표기로 남아 있었다.)
+  `:List`를 0/1개짜리
   배열로 감싸는 순수 sugar, `index` 없이 `offset`/`prev`/`userdata`만
   전달, 고정 key로 `prev` 재사용 보장(2026-08-11 세션, `base/
   slot-plan.md` "`Slot:Single`" 절). **[2026-08-11 일곱 번째 세션]**
@@ -989,7 +1058,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
   `_elements`엔 `None`이 절대 안 들어감(비어있는 nested Slot이 자연히
   Length 0 기여), raw 직접 전달 요소에만 여전히 non-nil 요구.
   `:Single`의 `updateFn`도 이 sugar가 성립하도록 선택 인자로 완화
-  (`Slot:Single(state, updateFn?)`, 기본값 identity). `:Single`/`:List`와는
+  (`Slot:Single(state, updateFn?, opts?)`, 기본값 identity). `:Single`/`:List`와는
   대체 관계가 아니라 같은 메커니즘 위의 다른 `updateFn`일 뿐 — raw
   `State<T>` 요소(identity)는 coarse swap, `updateFn` 직접 지정 시
   `prev`/`userdata` patch-reuse + `offset` 접근(`:Single`이 애초에
@@ -1300,9 +1369,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `:Set(value)`는 **`.Value`를 먼저 쓰고**, **순회 전 스냅샷을 뜬 뒤**
       (`pairs` 순회 중 새 키 추가가 Lua에서 미정의라 — `H-23`과 같은 처방)
       키 타입으로 분기: `type(k) == "thread"`면 `Callbacks[k] = nil`로 소진 후
-      `coroutine.resume(k, self)`(값이 아니라 **Ref 자신**), 함수면 `k(value)`
-      호출 + 유지. **중복 등록은 dedup이 계약**이고 해제는
-      **`:Uncallback(fn)`**(`Callbacks[fn] = nil` 한 줄).
+      `coroutine.resume(k, self)`(값이 아니라 **Ref 자신**), 함수면
+      **`k(value, self)`** 호출 + 유지(**[2026-08-26, 8라운드 `H-107`]** 두 번째
+      인자로 `Ref` 자신 = `Epoch`을 준다 — `Effect`가 `Update(from)`에 넘길
+      통로다). **순회 대상은 두 테이블** — `.Callbacks`(강)와
+      `.WeakCallbacks`(weak-키)를 각각 스냅샷한다(`H-108`). 그리고 `.Value`
+      대입 **직후·순회 전**에 `self.Revision = bit32.bnot(-self.Revision)`
+      (순서 계약: **값 → 리비전 → 콜백**). **중복 등록은 dedup이 계약**이고
+      해제는 **`:Uncallback(fn)`**(양쪽 테이블을 다 본다).
       **⭐ [2026-08-25 추가, 7라운드 `H-58`/`H-59`] 약하게 등록하는 짝
       `:WeakCallback(fn)`이 신설됐고 그쪽이 프리미티브다** —
       `:Callback(fn)`은 거기에 "GC 안 되도록 킵" 하나를 더 얹은 것이다.
@@ -1569,8 +1643,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       라이브러리라 주입 대상 아님(단 절대 시각이 아니라 diff 전용)
 - [ ] **[2026-08-14 아홉 번째 세션 신설]** 생명주기 훅 슈가
       `OnCreated`/`OnRendered`/`OnDestroyed`(`base/lifecycle-hooks-plan.md`)
-      — 각각 `PreRef():Callback(fn)`/`PostRef():Callback(fn)`/
+      — 각각 `PreRef():Callback(guard(fn))`/`PostRef():Callback(guard(fn))`/
       `Effect(function() return fn end)`를 반환하는 순수 팩토리 함수
+      (**⚠️ [2026-08-26, 8라운드 `H-120`] `guard`는 생략할 수 없다** —
+      `Ref` 콜백은 "등록 즉시 1회, 값이 nil이어도" 호출되므로 default 없는
+      `PreRef()`에 맨 `fn`을 걸면 **생성 시점에 `fn(nil)`이 먼저 불려**
+      `inst`를 바로 쓰는 콜백이 pre-pass 전에 죽는다.
+      `guard(fn) = function(v, r) if v ~= nil then fn(v, r) end end` — **2-인자를
+      그대로 흘린다**, `Ref` 콜백이 `fn(value, ref)`라 1-인자로 짜면 `Epoch`를
+      조용히 삼킨다)
       3개라, 착수 시점에 그 문서의 코드 스케치를 그대로 옮기면 끝(새 타입/
       Dispatch 개념 없음, 패키지는 quad-base 확정). **설계는 확정됐지만
       구현은 형제 백로그(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)와

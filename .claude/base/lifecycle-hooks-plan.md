@@ -51,12 +51,33 @@ React/Vue류 프레임워크의 `OnCreated`/`OnRendered`/`OnDisposed` 생명주�
 plain 함수일 뿐**이기 때문.
 
 ```lua
-local function OnCreated(fn: (inst: Instance) -> ()): PreRef<Instance>
-    return PreRef():Callback(fn)
+-- ⭐⭐ [2026-08-26 확정, 8라운드 `H-120`] 훅 슈가는 **nil 가드 래퍼**를 끼운다.
+--   `Ref`의 콜백 계약은 "등록 즉시 1회 호출, 값이 nil/미설정이어도 그대로"라
+--   (`base/ref-plan.md`), `PreRef()`/`PostRef()`처럼 default 없이 만든 뒤
+--   콜백을 걸면 **생성 시점에 `fn(nil)`이 먼저 한 번 불린다.** 그러면
+--   `OnCreated(function(inst) inst.Name = "x" end)`은 pre-pass에 도달하기도
+--   전에 "attempt to index nil"로 죽는다 — `fn`의 선언 타입이 non-nil
+--   `Instance`인데도 그렇다. `Ref` 계약을 바꾸는 대신 여기서 막는다
+--   (사용자 확정: `Ref` 쪽은 무수정).
+local function guard(fn)
+    -- ⭐ [2026-08-26, `/code-review high` 5차] **2-인자를 그대로 흘린다.**
+    --   같은 라운드에 `Ref` 콜백이 `fn(value, ref)`가 됐다(`H-107`) — 1-인자로
+    --   짜면 두 번째 인자(`Ref` 자신 = `Epoch`)를 조용히 삼킨다. 훅 셋은
+    --   지금 그걸 안 쓰지만, 아래 children 배열 관용구가 "위와 같은 가드"를
+    --   쓰라고 하므로 `_epochs:Update(ref)` 같은 소비자가 `nil`을 받게 된다.
+    return function(v, r) if v ~= nil then fn(v, r) end end
 end
 
-local function OnRendered(fn: (inst: Instance) -> ()): PostRef<Instance>
-    return PostRef():Callback(fn)   -- [2026-08-14 아홉 번째 세션 확정]
+-- ⚠️ [2026-08-26, `/code-review high` 6차] `fn`의 선언 타입이 **2-인자**다 —
+--   `guard`가 `fn(v, r)`로 부르므로 1-인자로 선언하면 `--!strict`에서 arity
+--   에러다. 사용자가 1-인자 람다를 넘기는 건 그대로 된다(Luau 함수 타입은
+--   파라미터에 반변이라 인자를 덜 받는 함수가 대입 가능).
+local function OnCreated(fn: (inst: Instance, ref: PreRef<Instance>) -> ()): PreRef<Instance>
+    return PreRef():Callback(guard(fn))
+end
+
+local function OnRendered(fn: (inst: Instance, ref: PostRef<Instance>) -> ()): PostRef<Instance>
+    return PostRef():Callback(guard(fn))   -- [2026-08-14 아홉 번째 세션 확정]
 end
 
 local function OnDestroyed(fn: () -> ()): EffectHandle
@@ -64,12 +85,22 @@ local function OnDestroyed(fn: () -> ()): EffectHandle
 end
 ```
 
+**⚠️ 같은 함정이 children 배열 관용구에도 있다** — `base/ref-plan.md`가
+v1 대체안으로 제시하는 `Ref():Callback(function(inst) ... end)`도 default가
+`nil`인 흔한 경우 **생성 시점에 `fn(nil, ref)`가 한 번 돈다.** 문서에서 이
+관용구를 보일 때는 위와 같은 가드를 함께 보이거나, `Ref(default)`로 채워진
+경우임을 명시할 것. **기각된 대안 둘**: (b) `:Callback`의 즉시 1회 호출을
+"한 번이라도 `Set`된 뒤"로 좁히는 안(`Ref` 계약 자체를 되짚어야 하고
+"미설정 상태를 알고 싶어 콜백을 거는" 용례의 파급 확인이 필요),
+(c) *"콜백은 nil을 항상 처리하라"*는 문서 경고만 두는 안(훅 슈가의
+인체공학 약속과 어긋난다).
+
 *(위 시그니처의 `Instance`는 읽기 편하라고 quad-roblox 기준으로 적은
 것 — 이 셋은 quad-base 소속이므로 실제 선언은 `Ref<T>`가 그렇듯 백엔드
 Instance 타입을 모르는 제네릭/불투명 타입 자리로 남음. `bindLifetime(inst,
 value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관례.)*
 
-호출 즉시 `PreRef():Callback(fn)`/`PostRef():Callback(fn)`/`Effect(...)`가
+호출 즉시 `PreRef():Callback(guard(fn))`/`PostRef():Callback(guard(fn))`/`Effect(...)`가
 실행되고, children 배열에 실제로 놓이는 건 **그 결과인 `PreRef`/`PostRef`/
 `EffectHandle` 인스턴스 자체**임 — `OnCreated`라는 이름이나 개념은 이
 시점 이후 어디에도
@@ -93,7 +124,8 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 
 ### `OnCreated(fn)`
 
-`PreRef():Callback(fn)`를 반환하는 순수 팩토리. `PreRef`의 기존 계약을
+`PreRef():Callback(guard(fn))`를 반환하는 순수 팩토리(**[2026-08-26 `H-120`]**
+`guard`는 생략 불가 — 위 확정 스케치가 소스). `PreRef`의 기존 계약을
 그대로 물려받음(`base/ref-plan.md` "`phase` 옵션 폐기 → 위치로 표현,
 `PreRef` 신설" 절) — 다른 모든 children/프로퍼티/이벤트보다 먼저
 호이스팅되어 fire, 즉 "이 인스턴스에 뭐가 됐든 일어나기 전"에 콜백이
@@ -112,13 +144,13 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 키를 두고 Dispatch가 그 키를 특별 취급하는 것)이지, **"팩토리 함수가
 기존 `Ref`/`PreRef`를 반환해서 children 배열에 놓는 것"**과는 층위가
 다름 — 이 문서의 `OnCreated(fn)`은 정확히 저 문단이 이미 권장한
-관용구(`Ref()`/`PreRef():Callback(fn)`)를 이름 하나로 감싼 것뿐이라
+관용구(`Ref()`/`PreRef():Callback(guard(fn))`)를 이름 하나로 감싼 것뿐이라
 모순이 아니라 그 결론의 자연스러운 재포장임. 이름이 v1과 같아 헷갈릴
 수 있다는 점만 "이름 컨벤션" 절에서 별도로 짚음.
 
 ### `OnRendered(fn)` (2026-08-14 아홉 번째 세션 확정)
 
-`PostRef():Callback(fn)`를 반환하는 순수 팩토리 — `OnCreated`와 완전히
+`PostRef():Callback(guard(fn))`를 반환하는 순수 팩토리 — `OnCreated`와 완전히
 같은 패턴이고, 반환하는 프리미티브만 거울상. `PostRef`의 계약을 그대로
 물려받으므로(`base/ref-plan.md`의 "`PostRef`" 절):
 
@@ -269,7 +301,7 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   거울상 그대로 재사용. 비용도 애초 우려("루프 한 번이 추가되는 비용")보다
   작음 — 추가되는 건 전체 배열 재순회가 아니라 `postRefList`(실제
   `PostRef` 개수만큼)의 순회뿐이라, "공짜"는 아니어도 이전 "후행 스캔"
-  초안보다 훨씬 저렴. `OnRendered(fn)`은 `PostRef():Callback(fn)`을
+  초안보다 훨씬 저렴. `OnRendered(fn)`은 `PostRef():Callback(guard(fn))`을
   반환하는 팩토리로, 위 `OnCreated`와 완전히 같은 패턴이 됨.
 
 **스코프 — 해소됨(2026-08-14 아홉 번째 세션).** 원래 이 자리엔 "렌더
@@ -405,7 +437,7 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
   형제 백로그 항목들과 동급, 맨 뒤(`quad-mock`/`quad-debug`/`Operator`/
   `Fallback`과 같이 "quad 개발 상당 부분 끝난 뒤"). 착수 시점에 위 코드
   스케치를 그대로 옮기면 될 만큼 단순하고, 순수 슈가라 없어도
-  `PreRef()/PostRef():Callback(fn)`·`Effect(fn)`를 직접 쓰면 되므로
+  `PreRef()/PostRef():Callback(guard(fn))`·`Effect(fn)`를 직접 쓰면 되므로
   기능 격차가 없음.
 
 ## 열린 질문

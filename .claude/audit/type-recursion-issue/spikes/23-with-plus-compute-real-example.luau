@@ -1,4 +1,11 @@
 --!strict
+-- ⚠️ [2026-08-26, 8라운드 `H-121`] 이 파일이 모델링한 "With로 모은 값이
+--   콜백에 포지셔널로 넘어온다"는 **quad의 확정 콜백 계약이 아니다.**
+--   확정 계약은 `fn(self, previous?, ...trailingDeps)`이고, `:With`로 모은
+--   값은 **클로저로 직접 읽는다**(`base/source-state-plan.md`).
+--   이 스파이크의 측정값(타입 추론 자체)은 그대로 유효하지만, 여기 적힌
+--   호출 모양을 "확정 관용구"로 재인용하지 말 것 — `slot-plan.md`의 그
+--   예시는 같은 라운드에 교정됐다.
 -- slot-plan.md 914행 실제 코드: layoutOrder:With(offset):Compute(function(i, o)
 --   return i:Get() + o:Get() end) -- With로 모은 뒤 Compute 콜백이 여러 개의
 -- lazy 핸들을 무주석으로 받는 실사용 패턴을 split 트릭으로 재현.

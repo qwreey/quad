@@ -253,13 +253,45 @@ function State:_emitDown(from)
     for _, sub in ipairs(snap) do
         if isState(sub) then          -- 자식 노드
             sub:_receive(from)        -- state-epoch-plan.md §4 규칙 1~3
-        elseif canExecute(sub) then   -- Observer / Effect
-            sub.fn(sub, from)
+        elseif canExecute(sub) then   -- Observer (Effect는 자기 내부 Observer로 여기 온다)
+            sub.fn(sub._state, sub, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
         end                           -- 거짓이면 조용히 건너뜀
     end
 end
 ```
 
+- **⭐⭐ [2026-08-26 확정, 8라운드 `H-109`/`H-110`] Observer `fn`의 시그니처는
+  `fn(targetState, self, emitFrom)` 세 자리다.** 여기 한때
+  `sub.fn(sub, from)`이라고 적혀 있었는데(2026-08-25 `H-56` 반영 시점),
+  그건 같은 문서의 *"`self`는 이 Observer가 붙은 State의 **lazy 핸들**"*
+  계약과 정면으로 충돌했다 — 그대로 짜면 `H-61`이 확정한 무인자
+  `state:Observer()`의 내부 콜백(`self:Get()`)이 "attempt to call missing
+  method Get"으로 즉사한다(Observer엔 `:Get()`이 없다). 확정된 자리 배치:
+  | 자리 | 무엇 | 왜 |
+  |---|---|---|
+  | 1 | `targetState` — 이 Observer가 붙은 State의 lazy 핸들 | 기존 계약 그대로. `:Compute`의 `fn(self, ...)`와 같은 모양 |
+  | 2 | `self` — Observer 값 자신 | 핸들 조작(`:Unsubscribe()` 등) |
+  | 3 | `emitFrom: Epoch \| EpochSet` | `EpochMap:Update(from)`에 그대로 넘어간다 |
+  - **왜 값이 앞인가(사용자 확정)** — `Ref` 콜백 `fn(value, ref)`와 같은
+    원칙이다: 실제로 쓰이는 값이 앞자리에 온다.
+  - **⭐ 그래서 Observer는 리시버를 강하게 든다 — `observer._state = state`**
+    (생성 시점). 루프가 그 필드를 읽어 넘기므로 **이게 곧 Observer의
+    `_hold` 상당**이고, `H-110`(Observer→상류 강참조가 어디에도 없어
+    `:Subscribe()`의 *"GC되지 않고 영원히 계속 실행됨"* 계약이 다시 열림)이
+    같은 결정으로 닫힌다. 그 전엔 `fn` 클로저가 리시버를 **우연히 캡처**하는
+    것 말고 근거가 없었고, 캡처가 없는 확정 사례가 이미 둘이었다
+    (`H-61`의 내부 콜백, `Effect`의 dep 콜백).
+  - **⚠️ `Ref` 콜백과 통합하지 않는다(사용자 확정)** — 두 콜백은 이질적
+    개념이다: *"observer 에는 epoch 란게 존재하지 않음. emit 으로 온 epoch 를
+    넘겨줄 뿐, 그러나 ref 는 그 자체로 epoch임"*. 그래서 `Effect`는 dep
+    종류별로 클로저를 **따로** 단다(`base/effect-plan.md`).
+- **⚠️ [2026-08-26 주석 정정, `/code-review high`] 위 `elseif` 가지의 주석이
+  한때 "Observer / Effect"였는데, `_state`는 **Observer에만** 있다** —
+  `Effect` 핸들의 강한 상류는 `_deps`이고 `_state` 필드가 없다. `Effect`는
+  `_subs`에 직접 들어가지 않고 **자기 내부 Observer를 통해** 이 루프에
+  닿는다(생성자가 dep마다 `d:Observer(onStateFire)` + `WeakSubscribe`).
+  주석대로 `Effect`를 `_subs`에 직접 넣으면 사용자 `fn`이 리시버 자리에
+  `nil`을 받는다.
 - **구독자 집합은 하나**(`self._subs`, weak-키)이고 **원소는 Observer
   값**이다 — emit 클로저가 아니다. `bindLifetime(inst, observer)`가 Observer
   **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를 담으면
@@ -414,6 +446,15 @@ gc되긴 하지만.)"*
 - **모든 파생 노드**(`:With`/`:Compute`/`:Gate`/`:Block`)가 자기 상류를
   `_hold`에 강하게 담는다 — `:Compute`처럼 클로저가 **우연히** 캡처하는
   것에 기대지 않는다(`:With`의 pass-through 노드엔 그 우연이 없다).
+- **⭐ [2026-08-26 보강, 8라운드 `H-110`] 말단 핸들도 마찬가지다.**
+  파생 노드만 적어두면 **Observer가 우연에 남는다** — 이 절이 바로 위에서
+  금지한 그 우연이다. 확정 결정의 소스인
+  `qa-request/pre-implementation-handtrace-round7-followup.md` 🅚 절도
+  *"핸들이 `_hold`로 상류를 잡는다"*라고 핸들까지 포함해 적었는데 반영이
+  파생 노드로 좁혀졌었다. 실제 자리:
+  - **Observer** → `observer._state`(생성 시 강참조). 전파 루프가 이 필드를
+    `fn`의 1번 인자로 읽으므로 부기가 따로 늘지 않는다(위 전파 루프 절).
+  - **Effect** → `_deps` 강한 맵이 이미 그 역할을 한다.
 - 체인은 **말단(Observer/Effect/leaf)이 살아 있는 동안** 통째로 살아 있고,
   말단이 죽으면 통째로 수거된다. `Relate`가 아니므로 순환도 안 만든다.
 - **상류가 하류를 얻으려는 것은 UB**라 반대 방향 강참조가 필요 없다.
@@ -963,9 +1004,15 @@ Modifier는 정적 flatten으로 dispatch와 완전히 별개인 단계에서 �
 (`base/modifier-plan.md`) — Store/State/dispatch 경로엔 애초에
 Modifier용 processor가 없음. **[정정, 2026-08-09 세션]** `State<Modifier>`
 조합은 "UB, 가능하면 타입 차단"이 아니라 **명시적 `error`로 확정**
-(`modifier-plan.md` 7번) — `isModifier` predicate를 `Source:Set()`/
-Store 생성 시 eager `Source(default)`/State의 `:Compute` 결과 캐싱
-지점에서 확인해 런타임에 직접 막음, 타입 차단은 되면 좋은 보너스일
+(`modifier-plan.md` 7번) — `isModifier` predicate를 `Source(...)` 생성자/
+`Source:Set()`/State의 `:Compute` 결과 캐싱
+지점에서 확인해 런타임에 직접 막음(**⭐ [2026-08-26 정정, 8라운드 `H-122`]**
+여기 한때 *"Store 생성 시 eager `Source(default)`"*라고 적혀 있었으나
+**명시적 초기화 확정(2026-08-25) 이후 그 지점은 코드상 존재하지 않는다** (**⚠️ [2026-08-26 정밀화, `/code-review high`]** 정확히는 **`defaults` 경로에서** 안 만든다는 뜻이다 — 동적 키 창구 `store:Of(name)`은 여전히 그 자리에서 `Source`를 만든다(`base/store-plan.md`). 결론은 그대로다: 가드를 `Source` 생성자에 두면 `Of` 경로까지 **한 번에 커버**된다.) —
+`defaults`엔 사용자가 만든 `Source(v)`가 그대로 들어오고 생성자는
+`table.clone`뿐이라 그 지점이 코드상 존재하지 않는다. 가드를 `Source`
+생성자로 옮기면 defaults 경로가 **자동으로 커버**되어 목록이 오히려
+짧아진다 — 사용자 확정), 타입 차단은 되면 좋은 보너스일
 뿐 유일한 방어선이 아님. **[2026-08-06 후속 세션 추가]** Source가
 State를 구조적으로 만족하게 되면서 이 제약은 `Source<Modifier>`(Store를
 거치지 않는 독립 `Source(someModifier)`)에도 동일하게 적용됨을 명시 —
@@ -1094,18 +1141,27 @@ retract/Destroy되면 자동으로 정리됨.
   두는 것만으로 최초 적용까지 공짜로 됨(별도의 "설치 시 1회 적용" 코드를
   따로 안 짜도 됨). `state:Observer()`(인자 없는 "항상 관측" 유틸)도
   이 규칙을 그대로 따름 — 호출 즉시 한 번 관측이 트리거됨.
-- **⭐ [2026-08-21 확정] `fn`의 시그니처는
-  `fn(self, from: (Epoch | EpochSet)?)` — `:Compute`와 같은 모양이다.** 사용자: *"Compute 와 유사하게 나올 수
+- **⭐ [2026-08-21 확정, 2026-08-26 자리 하나 추가] `fn`의 시그니처는
+  `fn(targetState, self, emitFrom: (Epoch | EpochSet)?)`이다.** 사용자:
+  *"Compute 와 유사하게 나올 수
   있다 봐요. self 를 넘겨주고, 그 뒤에 epoch|{epoch} 를 주는게 맞아보입니다."*
   위 "`:With`/`:Compute` — self 인자도 lazy 핸들로 통일" 절과 같은 결이다.
-  - `self`는 이 Observer가 붙은 State의 **lazy 핸들**(값이 아님).
-  - `from`은 **이 통지의 출처**다 — `Epoch` 하나이거나 `Epoch`들의 **집합**
+  **[2026-08-26 확정, 8라운드 `H-109`]** 여기 한때 2-인자
+  (`fn(self, from)`)로 적혀 있었는데, 그때의 `self`는 **리시버 State의 lazy
+  핸들**을 뜻했고 전파 루프 의사코드는 같은 자리에 **Observer 값**을 넘기고
+  있었다 — 두 확정이 정면으로 충돌해 있었다. 사용자 확정으로 **Observer
+  핸들이 가운데 자리로 들어와 세 자리**가 됐다(*"실 값이 앞에 놓이도록"* —
+  `Ref` 콜백 `fn(value, ref)`와 같은 원칙). 자리 배치와 근거는 위
+  "전파 루프 — 확정 의사코드" 절이 소스.
+  - `targetState`는 이 Observer가 붙은 State의 **lazy 핸들**(값이 아님).
+  - `self`는 **Observer 값 자신**이다 — 핸들 조작용.
+  - `emitFrom`은 **이 통지의 출처**다 — `Epoch` 하나이거나 `Epoch`들의 **집합**
     (`{[Epoch]: true}`, 게이트가 유보를 풀며 떼어낸 스냅샷). 값도 리비전도
     안 실린다. 분기는 `isEpoch`로. 계약은 `base/state-epoch-plan.md` §5가 소스.
-  - **⚠️ [2026-08-22 신설] 등록 시점의 즉시 1회 실행에는 `from`이 없다** —
-    그건 통지가 아니라 설치라 출처가 존재하지 않는다. 그래서 `from`은
+  - **⚠️ [2026-08-22 신설] 등록 시점의 즉시 1회 실행에는 `emitFrom`이 없다** —
+    그건 통지가 아니라 설치라 출처가 존재하지 않는다. 그래서 `emitFrom`은
     **옵셔널**이고, 이때만 `nil`이다(2026-08-21 커밋 전 `/code-review high`
-    발견 — 한때 non-optional로 적혀 있었다). `fn`이 `from`을 실제로 쓰는
+    발견 — 한때 non-optional로 적혀 있었다). `fn`이 `emitFrom`을 실제로 쓰는
     소비자라면 `nil`을 "설치 발화"로 분기해야 한다.
   - **이건 "값을 안 실어주는 구독" 계약을 안 깬다** — 넘기는 건 값이 아니라
     **핸들과 메타데이터**뿐이다.
@@ -1233,7 +1289,10 @@ override할 자리를 구조적으로 열어두는 것.)
   이 State가 계속 재계산되게만 강제하고 싶을 때 씀. 문서화만 확실히
   하면 별문제 없음(사용자 판단).
   - **⭐ [2026-08-25 정정, 7라운드 `H-61`] 내부 콜백은 no-op가 아니라
-    `function(self) self:Get() end`이다.** 전파가 push-invalidate /
+    `function(targetState) targetState:Get() end`이다**(**[2026-08-26
+    표기 정정, `H-109`]** — 파라미터 이름이 `self`였는데 확정된 전파 루프
+    시그니처에서 1번 자리는 Observer가 아니라 **리시버 State**다. 값은
+    처음부터 그걸 뜻했다). 전파가 push-invalidate /
     pull-recompute라 `Get()`을 안 부르면 재계산이 아예 안 일어난다 —
     같은 절이 바로 위에서 *"값을 안 실어줌 — 반드시 `Get()`을 다시 해야
     함"*이라 못박고 있으므로, no-op 콜백이었다면 이 유틸은 자기 용도
@@ -1272,6 +1331,29 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
 단순히 gc 안 되도록 킵 해주는 부분만 제거된 함수가 됩니다"*). 즉
 `Subscribe() = WeakSubscribe() + 강한 레지스트리에 킵`이고 구현이 한 벌이다.
 
+- **⭐⭐ [2026-08-26 확정, 8라운드 `H-111`] `WeakSubscribe`도 `.Subscribed = true`를
+  세운다.** 즉 갈라지는 지점은 **레지스트리를 강하게 잡느냐뿐**이고,
+  `.Subscribed` 플래그는 **강·약 구독 경로 공용**이다. 이게 정해져 있지
+  않아서 두 해석이 각자 다른 확정 문장에 뿌리를 두고 있었고, 안 세우는
+  쪽으로 읽으면 전파 루프의 `canExecute(sub)` 게이트가 항상 거짓이 되어
+  **`Effect`의 State dep 전량이 조용히 침묵**한다(`Effect`의 내부 Observer는
+  `WeakSubscribe`로만 등록되고, gcconn 경로는 핸들에만 있으므로 남는 판정
+  근거가 `.Subscribed`뿐이다). 사용자 원문 *"구현이 한 벌"*과도 이쪽이
+  정합하다. 따라서:
+  - `WeakSubscribe()` = 가드 + `.Subscribed = true` + 약한 레지스트리 등록
+  - `Subscribe()` = 그 위에 **강한 킵 하나만** 추가
+  - `Unsubscribe()`/`WeakUnsubscribe()`는 대칭으로 `.Subscribed`를 내린다
+  - **⭐ [2026-08-26 신설, `/code-review high` 5차] 해제는 *건 경로로* 푼다** —
+    강하게 구독된 값에 `WeakUnsubscribe`, 약하게만 구독된 값에 `Unsubscribe`는
+    **둘 다 error**다(양방향 fail-fast, 사용자 확정). 후자를 안 막으면 조용히
+    성공해서 범용 정리 코드가 `Effect`의 내부 Observer(오직 `WeakSubscribe`로만
+    등록된다)를 죽이고 **State dep 전량이 침묵**한다. 의사코드는
+    `base/lifecycle-pattern.md`의 "(2) 전역 경로" 절이 소스.
+  - `base/lifecycle-pattern.md`의 `isBoundAlive` (b) 경로 주석이 이에 맞춰
+    "전역 경로: `:Subscribe()`가 세운 것"에서 "구독 경로(강/약)가 세운 것"
+    으로 정정됐다. **기각된 대안**: `canExecute`의 전역 경로 판정을 필드
+    대신 레지스트리 멤버십으로 바꾸는 안 — 동작은 같지만 해제가 양쪽
+    테이블을 지워야 하는 대칭 요구가 새로 생긴다.
 - **자료구조**: 전역 레지스트리에 **약하게** 들어간다. 살려두는 책임은
   **잡고 있는 쪽**에 있다 — `Effect`가 자기 내부 Observer를 `_deps`에
   강하게 들고 있는 게 그 예다(`base/effect-plan.md`의
@@ -1300,7 +1382,7 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   -- 개념 스케치. 확정 구현은 base/lifecycle-pattern.md가 소스
   local gcconn = BindData:GetWeak(self, "gcconn")   -- leaf 경로(bindLifetime이 복사해둠)
   if gcconn ~= nil and gcconn.Connected then return true end
-  return self.Subscribed == true                    -- 전역 경로(:Subscribe()만 세팅)
+  return self.Subscribed == true                    -- 구독 경로(강/약 공용, H-111)
   ```
   **[정정, 2026-08-14 다섯 번째 세션]** 이 절의 옛 스케치는 `self.Subscribed`를
   먼저 보고 `self.Connection`을 폴백으로 두는 모양이었는데, `.Subscribed`는
@@ -1316,10 +1398,30 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
   **`:Unsubscribe()`는 이 레지스트리에서 반드시 `SubscribedObservers[observer]
   = nil`까지 해야 함** — `Subscribed` 플래그만 내리고 강참조를 안 끊으면
-  GC 대상이 안 되는 반쪽짜리 해제가 됨, 둘은 항상 같이 일어나는 한 세트.
-- **`:Subscribe()`/`:Unsubscribe()` 둘 다 idempotent** — 이미 구독 중인데
-  또 Subscribe해도, 구독 안 했는데 Unsubscribe해도 에러 안 나고 그냥
-  no-op. 토글 로직 짤 때 상태 추적 부담을 줄여줌.
+  GC 대상이 안 되는 반쪽짜리 해제가 됨.
+  **⭐ [2026-08-26 정정, 8라운드 `H-111`]** 여기 한때 *"둘은 항상 같이
+  일어나는 한 세트"*라고 적혀 있었는데, `:WeakSubscribe()`가 생기면서
+  거짓이 됐다 — **약한 구독은 `.Subscribed`는 세우고 이 강한 레지스트리는
+  안 건드린다**(약한 레지스트리만 채운다). 그 문장 그대로면 `WeakSubscribe`의
+  정상 동작이 반쪽짜리 해제로 오독된다. 네 진입점의 짝 표는
+  `base/lifecycle-pattern.md`의 "(2) 전역 경로" 절이 소스. **여전히 참인
+  것**: `:Unsubscribe()`는 자기 짝(강한 레지스트리 + 필드)을 다 지워야 한다.
+- **⛔ [2026-08-26 폐기, `/code-review high`] "둘 다 idempotent"는 틀렸다.**
+  여기 한때 *"이미 구독 중인데 또 Subscribe해도, 구독 안 했는데
+  Unsubscribe해도 에러 안 나고 그냥 no-op. 토글 로직 짤 때 상태 추적 부담을
+  줄여줌"*이라고 적혀 있었는데, **2026-08-18에 `canBound` 게이트가 들어오면서
+  `:Subscribe()`는 error가 됐고** 그 모순이 그대로 방치돼 있었다(`H-111`로
+  `WeakSubscribe`도 같은 게이트를 타면서 표면이 더 넓어졌다). **사용자 확정:
+  확정 의사코드가 정본**이다.
+  - **`:Subscribe()`는 idempotent가 아니다** — 이미 구독됐거나 leaf에
+    바인드된 값에 다시 부르면 **error**(`base/lifecycle-pattern.md`의
+    "(2) 전역 경로" 절). 이중 바인딩 금지가 `canBound` 하나로 통일돼 있고
+    (`bindLifetime`도 같은 게이트), 조용한 no-op보다 fail-fast가 이 코퍼스의
+    기조다.
+  - **⚠️ [2026-08-26 재정정, `/code-review high` 6차] `:Unsubscribe()`도
+    idempotent가 아니다.** 여기 한때 *"게이트가 없어 … 비대칭이 의도된 것"*
+    이라고 적혀 있었는데, 같은 날 **대칭 가드**가 들어오며 거짓이 됐다(위 항목).
+    지금 계약은 **해제는 건 경로로 푼다** 하나다.
 - **[정정, 2026-08-09 여섯 번째 세션] "`:Unsubscribe()`는 자동(리프)
   케이스에도 동일하게 씀"은 틀림 — 리프/`bindLifetime` 경로의 조기
   해제는 `unbindLifetime(value)`가 담당, `:Unsubscribe()`는
@@ -1402,10 +1504,22 @@ leaf 부착을 "weak table 기반 자동 추적"이라 불렀던 건 `bindLifeti
 -- "지금 묶어도 되는가"(참 = 아직 안 묶임)라 게이트는 `not`이 붙는다.
 if not canBound(self) then
   error(if self.Subscribed
-    then "이미 :Subscribe()로 전역 바인딩된 값"
+    then "이미 구독된 값"        -- [2026-08-26 H-111] 강/약 어느 쪽이든 이 분기
     else "이미 다른 Instance에 바인딩된 값")
 end
 ```
+
+> **⚠️ [2026-08-26 정정, 8라운드 `H-111`] 아래 세 항목과 이 절 끝의 정정
+> 문단이 `.Subscribed`를 "전역 `:Subscribe()` 전용"이라고 부르는데, 그건
+> `:WeakSubscribe()`가 생기기 전 서술이다.** 지금은 **구독 경로(강/약) 공용**
+> 이다 — 약한 쪽도 이 필드를 세우고, 갈라지는 건 레지스트리를 강하게
+> 잡느냐뿐이다(위 `:WeakSubscribe()` 절, `base/lifecycle-pattern.md`의
+> 네 진입점 의사코드가 소스). **`bindLifetime`/`unbindLifetime`이 이 필드를
+> 읽지도 쓰지도 않는다는 요지는 그대로 유효하다** — 바뀐 건 "구독 쪽에서
+> 누가 세우는가"뿐이다. 옛 에러 문구 *"이미 `:Subscribe()`로 전역 바인딩된
+> 값"*은 `WeakSubscribe`로만 등록된 값(예: `Effect`의 내부 Observer)까지
+> 가리키므로 **틀린 원인을 지목한다** — 위 스니펫처럼 넓혔다(실제 문구는
+> 영어, `base/architecture.md`의 error 계약).
 
 - **[정정, 2026-08-18 구현 전 QA] `canBound`와 `canExecute`는 값이 같은 게
   아니라 서로의 부정이다** — `canBound(v) == not canExecute(v)`. 둘이
@@ -1415,7 +1529,7 @@ end
   "이미 묶여 있는가"로 잘못 읽은 것이었음. 이 절(이중 바인딩 금지)은
   `canBound`를 쓰고, State emit 전파 루프만 `canExecute`를 씀.
 - **에러 메시지에서 어느 경로인지는 `.Subscribed`로 가름** — 이 필드는
-  **전역 `:Subscribe()` 경로에서만 세팅되므로**(아래 정정) 참이면 전역,
+  **구독 경로에서만 세팅되므로**(위 ⚠️: 강·약 공용, `H-111`) 참이면 구독,
   거짓인데 `canBound`가 **거짓**이면 leaf 경로.
 - 이 predicate는 어느 경로가 먼저 왔는지와 무관하게 "지금 묶어도 되는가"만
   답함 — 두 진입점이 똑같이 `canBound`를 확인하므로 순서와 무관하게
@@ -1427,8 +1541,10 @@ end
 **[정정, 2026-08-14 다섯 번째 세션] 옛 서술 — "`canBound`의 내부 플래그는
 `canExecute`가 이미 보는 `.Subscribed` 필드 그 자체이고, `bindLifetime`도
 그 필드를 세팅한다"(2026-08-09 여섯 번째 세션)는 틀렸음.**
-`.Subscribed`는 **전역 `:Subscribe()`/`:Unsubscribe()` 전용 필드로,
-`bindLifetime`/`unbindLifetime`과는 일절 이해관계가 없다** — 이 둘은
+`.Subscribed`는 **구독 경로 전용 필드로,
+`bindLifetime`/`unbindLifetime`과는 일절 이해관계가 없다**(**[2026-08-26
+`H-111`]** 여기 "전역 `:Subscribe()`/`:Unsubscribe()` 전용"이라 적혀 있었으나
+`:WeakSubscribe()`/`:WeakUnsubscribe()`도 같은 필드를 쓴다 — 위 ⚠️) — 이 둘은
 그 필드를 읽지도 쓰지도 않음. leaf 경로의 생존은 `bindLifetime`이
 `value` 쪽 릴레이션에 복사해둔 gcconn 참조로 판정됨(`base/lifecycle-pattern.md`).
 옛 서술이 걱정했던 "필드를 둘로 나누면 `bindLifetime`으로만 등록된

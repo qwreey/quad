@@ -166,6 +166,13 @@
    `base/source-state-plan.md`의 "`:With`/`:Compute` — self 인자도 lazy
    핸들로 통일" 절과 같은 결이고, 값이 아니라 **핸들과 메타데이터**만
    넘기므로 *"값을 안 실어주는 구독"* 계약도 안 깨진다.
+
+   > **⚠️ [2026-08-26] 위 2-인자 표기는 2026-08-21 시점 기록이다** —
+   > 지금 확정된 시그니처는 **세 자리** `fn(targetState, self, emitFrom)`이다
+   > (8라운드 `H-109`: 여기서 `self`가 뜻하던 "리시버 State의 lazy 핸들"과
+   > 전파 루프가 실제로 넘기던 Observer 값이 충돌해 있었고, Observer 핸들이
+   > 가운데 자리로 들어왔다). **이 문서는 근거 기록이라 본문을 소급 수정하지
+   > 않는다** — 지금 유효한 계약은 `base/source-state-plan.md`가 소스.
    - 반영 시 같이 손볼 것: 그 계약 문단과 인자 없는 `state:Observer()` 유틸,
      그리고 `base/effect-plan.md`의 내부 Observer 등록부(여기서 `Effect`가
      자기 `EpochMap`을 `Update`한다).
@@ -181,7 +188,8 @@
 - `base/brand-plan.md` — 인스턴스 브랜드(옛 단일 레지스트리는
   `archive/brand-shared-registry-reversed.md`).
 - `base/source-state-plan.md` — `Source`가 `Epoch`를 구조적으로 만족,
-  `state:Observer(fn)`의 `fn(self, from)` 계약.
+  `state:Observer(fn)`의 콜백 계약(**[2026-08-26]** 지금은 세 자리
+  `fn(targetState, self, emitFrom)` — 위 6번의 ⚠️ 참고).
 - `base/effect-plan.md` — `Effect`가 자기 `EpochMap`을 들어 다중 deps 중복
   발화를 접는다(이 제안이 닫은 갭).
 - `base/gate-plan.md` — 배치 페이로드(4번), 빈 배치 무통지(8번).

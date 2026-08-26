@@ -101,8 +101,17 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     then ref.Value
     else ref:Wait().Value
   ```
+  - **콜백 시그니처는 `fn(value, ref)`다** — 두 번째 인자로 그 `Ref`
+    자신(= `Epoch`)이 온다(**[2026-08-26 확정, 8라운드 `H-107`]** — 근거와
+    의사코드는 아래 `:Set(value)`의 순서 절). 사용자 콜백은 두 번째 인자를
+    무시하면 그만이다.
   - 콜백은 이미 채워져 있으면 등록 즉시 그 값으로 1회 호출됨 — nil/미설정
-    상태여도 그 상태 그대로 호출. React의 `useEffect`가 매번 `.current`
+    상태여도 그 상태 그대로 호출. **⚠️ [2026-08-26, 8라운드 `H-120`]
+    그래서 `default` 없는 `Ref()`에 콜백을 걸면 그 콜백이 생성 시점에
+    `fn(nil, ref)`로 한 번 불린다** — children 배열 관용구
+    `Ref():Callback(fn)`과 `OnCreated`/`OnRendered` 슈가가 이 경로를 탄다.
+    처분은 `base/lifecycle-hooks-plan.md`의 nil 가드 래퍼(사용자 확정:
+    `Ref` 계약은 안 건드린다). React의 `useEffect`가 매번 `.current`
     존재 여부부터 체크하는 것과 같은 이유, Ref가 자식으로 전달되는 경우
     채워지는 시점이 더 늦어질 수 있어서 "이미 채워졌는지" 확인이 항상
     필요함. `:Wait()`의 대기자 리스트와 콜백 리스트는 같은 배열
@@ -165,8 +174,14 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     `base/effect-plan.md`가 소스.
     - `:Callback(fn)`은 **여전히 `self`를 반환한다**(체이닝 관용구
       `Ref(default):Callback(fn)`이 코퍼스 전반에 쓰인다) — 해제 핸들은
-      **`:Uncallback(fn)`**으로 뗀다. 셋이라 `Callbacks[fn] = nil` 한 줄이고,
+      **`:Uncallback(fn)`**으로 뗀다. 셋이라 `Callbacks[fn] = nil` 한 줄씩이고,
       중복 등록이 dedup되므로(위) "몇 번 떼야 하나"가 없다.
+      **⚠️ [2026-08-26 정정, `/code-review high`] 단 "한 줄"이 아니라 **두
+      테이블을 다 본다** — `.Callbacks`(강)와 `.WeakCallbacks`(약) 양쪽에서
+      지운다(아래 `:WeakCallback` 항목이 이미 그렇게 확정해뒀는데 여기만
+      한 줄로 남아 있었다). 한 줄로 짜면 **약하게 등록된 콜백을 영영 뗄 수
+      없고**(예: `Effect`의 `onRefFire`), 새 `:Set`의 스킵 가드가
+      `WeakCallbacks[k]`를 보므로 계속 발화한다.
     - **⛔ [2026-08-25 폐기, 7라운드 `H-58`] 여기 원래 *"`EffectHandle`은
       자기가 건 콜백을 들고 있다가 `unbindLifetime`과 `:Unsubscribe()`에서
       `:Uncallback`한다"*고 적혀 있었다.** 아래 `:WeakCallback` 항목이 그걸
@@ -185,7 +200,10 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
       따라서 내부적으론 Weak 를 구현해 두고, Weak 아닌 곳에서 Weak 를
       수행하고 gc 처리만 두면 돼요."*
       - **자료구조**: 약한 등록은 **weak-키 테이블**(`__mode = "k"`)에
-        들어간다 — `.Callbacks`(강함)와 별도 테이블이다. Lua의 weak 모드는
+        들어간다 — `.Callbacks`(강함)와 별도 테이블이고, 이름은
+        **`.WeakCallbacks`**다(**[2026-08-26]** 8라운드 `H-108` 반영 때
+        `:Set` 의사코드가 이 테이블을 순회해야 해서 그 자리에서 이름을
+        붙였다 — 그 전엔 "별도 테이블"이라고만 불렸다). Lua의 weak 모드는
         테이블 단위라 항목별로 섞을 수 없다. 발화 순회는 두 테이블을 다
         훑고(각각 스냅샷), `:Uncallback(fn)`은 양쪽을 다 본다.
       - **왜 필요한가**: `Effect`가 자기 dep `Ref`에 콜백을 걸면
@@ -220,23 +238,64 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     (`\.Value = ` grep 0건). 콜백은 값을 인자로 직접 받으므로 실무 영향은
     낮지만, **콜백 A가 `.Value`를 읽는데 콜백 B가 아직 안 돈 시점에 무엇이
     보이는가**가 사양에 없었다. 확정된 순서:
+    **⭐⭐ [2026-08-26 갱신, 8라운드 `H-107`/`H-108`] 아래 블록이 소스다.**
+    원래 이 블록은 2026-08-24에 쓰였고 하루 뒤(2026-08-25) 확정된 두 가지 —
+    `.Revision` 갱신과 약한 콜백 테이블 — 를 **소급으로 못 받았다.** 그
+    블록대로 짜면 `Effect`의 캐치업(`_epochs:Refresh()`)과 `Update(ref)`
+    판정이 전부 죽고, `Effect`가 건 `:WeakCallback`은 한 번도 발화하지
+    않는다. 확정된 순서는 **값 → 리비전 → 콜백**이다:
     ```lua
     function Ref:Set(value)
         self.Value = value                       -- (1) 먼저 확정
-        local snapshot = {}                      -- (2) [`H-23`] 순회 전 스냅샷
+        self.Revision = bit32.bnot(-self.Revision)  -- (2) 콜백보다 **앞**
+        local snapshot = {}                      -- (3) [`H-23`] 순회 전 스냅샷
         for k in pairs(self.Callbacks) do table.insert(snapshot, k) end
+        for k in pairs(self.WeakCallbacks) do
+            -- 양쪽에 다 있는 키는 한 번만 — 안 그러면 그 콜백이 두 번 불린다.
+            -- ⭐ [2026-08-26, `/code-review high`] **thread는 이 경우가 없다** —
+            --   대기자를 만드는 `:Wait()`는 `.Callbacks`(강)에만 넣는다
+            --   (`WeakWait`는 없다). 그래서 아래 소진이 `.Callbacks`만 비우는
+            --   게 맞다. 이 dedup은 **함수 키** 전용이다(같은 `fn`을
+            --   `:Callback`과 `:WeakCallback`으로 각각 건 경우).
+            if self.Callbacks[k] == nil then table.insert(snapshot, k) end
+        end
         for _, k in ipairs(snapshot) do
-            if self.Callbacks[k] == nil then continue end   -- 순회 중 해제됐으면 skip
+            if self.Callbacks[k] == nil and self.WeakCallbacks[k] == nil then
+                continue                         -- 순회 중 해제됐으면 skip
+            end
             if type(k) == "thread" then
                 self.Callbacks[k] = nil          -- 대기자는 소진
                 coroutine.resume(k, self)        -- 값이 아니라 **Ref 자신**(아래 참고)
             else
-                k(value)                         -- 일반 콜백은 원래 값을 받고, 소진 안 함
+                k(value, self)                   -- ⭐ 값 + **Ref 자신**(= `Epoch`)
             end
         end
         return self
     end
     ```
+    - **왜 `k(value, self)`인가(`H-107`, 사용자 확정 2026-08-26)** — `Effect`가
+      `Ref`를 dep으로 걸면 발화 시 `EpochMap:Update(from)`에 넘길 `Epoch`가
+      필요한데, `k(value)`뿐이면 그 통로가 없어 `Update(nil)`이 된다
+      (`nil` 순회 크래시, 실측 재현). `Ref`는 **그 자체가 `Epoch`**이므로
+      자기를 두 번째 인자로 주면 통로가 닫힌다. 기존 사용자 콜백
+      (`function(inst) ... end`)은 두 번째 인자를 무시하면 그대로다.
+    - **왜 리비전이 콜백보다 앞인가(`H-108`)** — 뒤면 콜백 안의
+      `Update(ref)`가 **옛 리비전**을 읽어 `false`를 돌려주고, 그 `Set`의
+      `Rerun`이 접힌 채 다음 `Refresh()` 때에야 뒤늦게 돈다(간헐 지연).
+    - **두 테이블을 다 훑는다** — `.Callbacks`(강한 셋)와
+      `.WeakCallbacks`(weak-키)를 **각각 스냅샷**해 한 배열로 잇되,
+      **양쪽에 다 있는 키는 한 번만 싣는다**(*"중복 등록은 dedup이 계약"*이
+      한 테이블 안에서만 성립하면 안 된다 — 같은 `fn`을 `:Callback`과
+      `:WeakCallback`으로 각각 걸면 두 번 불리고, `thread` 키라면 이미
+      소진된 대기자를 다시 `resume`하게 된다). `Effect`가 거는 콜백은
+      후자에만 있다. **⚠️ [2026-08-26, `/code-review high`] 이 dedup의 근거를
+      "thread를 두 번 `resume`하게 된다"로 적으면 안 된다** — 그렇게 읽으면
+      `thread` 키가 양쪽에 살 수 있다는 뜻이 되는데, 그러면 소진이
+      `.Callbacks`만 비우므로 다음 `:Set`이 **죽은 코루틴을 영원히 `resume`**
+      하게 된다(`resume`은 죽은 스레드에 대해 error가 아니라 `false`를 돌려줘
+      **조용하다**). 실제 불변식은 **대기자(thread)는 `.Callbacks`에만
+      산다**(`:Wait()`가 강한 쪽에만 넣고 `WeakWait`는 없다)이고, 교차 dedup은
+      함수 키 전용이다.
     `.Value`가 먼저이므로 **모든 콜백이 새 값을 본다** — 순서에 따라 옛 값이
     보이는 창이 없다.
   - **⚠️ [역사 기록, 2026-08-24 6라운드 `H-7` 후속] 아래 "구현 디테일" 문단은

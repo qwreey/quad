@@ -29,7 +29,12 @@
 `bk.recomputeBlocker` · `EffectHandle:Rerun`(정의) · `_consumeCleanup`
 **폐기**: `WrapStore`/`ProcessStoreType` · `_installing` · `rawInvalid` ·
 `_refDeps`/`_refCallbacks`/`_observers`(→ `_deps` 하나) · Store의 lazy 우선 모델
-**역전**: `store.key = value` 부활(`archive/store-value-field-redesign-withdrawn.md`)
+**역전 없음** (**⚠️ [2026-08-26 정정, 8라운드 처리 중 발견]** 여기 한때
+*"역전: `store.key = value` 부활"*이라고 적혀 있었는데 **그건 같은 날 오전에
+넣었다 철회한 Store 재설계의 서술이 요약 머리에 남은 것**이다 —
+`archive/store-value-field-redesign-withdrawn.md`의 대조표가
+*"`store.key = v` 부활 → **폐기 유지**"*라고 명시하고 `todos.md` 00번도
+"역전 없음"이라고 적는다. `store.key = value` 폐기(2026-08-06)는 유지된다)
 **툴체인**: `scripts/relink.sh` + `scripts/test.sh` 신설 — `luau` CLI가
 심볼릭 링크를 못 탄다는 것이 최소 재현으로 밝혀졌다(`H-78`).
 

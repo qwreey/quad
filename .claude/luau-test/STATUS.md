@@ -103,6 +103,24 @@
 통과 상태로 `done/`에 두면 `01`은 구현이 안 하는 두 루프 순회를, `05`는
 **이제 접히는 중복 통지가 안 접힌다는 것**을 "검증됨"으로 오독하게 된다.
 
+**⭐ [2026-08-26, 8라운드 `H-122`/`H-123`] `11-modifier-illegal-value-error`가
+합류했다** — 그 파일의 Store 생성자가 **eager `Source(v)` 모델**을 코드로
+박제한 채 `done/`에서 "통과" 상태로 앉아 있었다. 명시적 초기화 확정
+(2026-08-25) 이후 Store는 `Source`를 만들지 않으므로, 그대로 두면 옛 모델을
+"검증됨"으로 오독하게 된다. 재작성 지침은 위 표의 그 행.
+
+**⭐ [2026-08-26, 8라운드 `H-115`/`H-112`] `16`/`21` 재작성 때 넣을 것** —
+`base/store-plan.md`의 최종형 실측 표가 `audit/type-store-index-keyof/`를
+출처로 인용하는데 **그 폴더에 최종형 결합을 도는 파일이 없다**(대부분 철회된
+재설계 대상). 재작성이 최종형(`Store<T> = T & {Of, Names, __reservedCheck}`,
+필드가 `Source<T>`)과 **`CheckReservedKeys<keyof<T>>` 배선**을 같이 담으면
+그 출처 문제가 닫힌다. 그 폴더의 `02`/`06`은 최종형에서도 유효한 측정이니
+버리지 말 것. **그리고 `Store<<{}>>()`(무인자, `keyof<{}>`)를 대조군으로
+반드시 넣을 것** — `/code-review high`(2026-08-26)가 지적한 미실측 자리다.
+`H-83`이 무인자 생성을 유효하다고 확정했는데 `H-112`의 실측은 키가 있는 `T`로만
+돌았고, `keyof<{}>`가 빈 유니온인지 에러인지에 따라 **무인자 Store 전체가
+스퓨리어스 타입 에러**를 받을 수 있다.
+
 **[2026-08-25] `16`과 `21`이 합류** — Store 재설계로 **검증 대상 자체가
 폐기**됐다. `WrapStore`/`ProcessStoreType`로 결과 타입을 **합성**하는
 접근이 사라졌다 — 지금은 **타입 함수를 안 쓰고** 타입 인자에 `Source<T>`를
@@ -132,7 +150,8 @@
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `15-type-compute-trailing-deps-typepack.luau` | **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `22-runtime-ref-preref-postref-brand.luau` | 옛 `Brand` API 기준으로는 ✅ 통과였음 | **[2026-08-21] `Brand`가 인스턴스 브랜드로 재작성됨** — 파일 안의 `Brand.set(x, tag)`/`Brand.get(x)`/`XxxTag` 변수를 `Brand()` + `SomeBrand:register(x)`/`SomeBrand:is(x)`로 바꿔 쓸 것(`base/brand-plan.md`). **검증 대상(`isPreRef`/`isPostRef` 배타 + 둘 다 `isRef`엔 `true`, Leaf 핸들러 흉내)은 그대로**라 assert는 손댈 게 없다. **새로 넣을 것**: 다중 태깅이 실제로 되는지 — 한 값을 두 브랜드에 등록하고 양쪽 `:is`가 다 `true`인지(`Source`가 `SourceBrand`+`EpochBrand`인 자리, `base/state-epoch-plan.md` §2) |
-| `16-type-store-key-typefunction.luau` | 옛 접근 기준으로는 ✅ 통과였음 | **[2026-08-25] 검증 대상이 폐기됨** — `WrapStore`/`ProcessStoreType` 합성 자체가 사라졌다. **재작성 지침**: 타입 함수 없는 평범한 레코드 모양(`base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절)을 검증하고, 음성 대조군에 **예약 키 충돌**(`CheckReserved`가 `types.never`로 무너뜨리는지)과 **없는 키 접근**을 포함할 것 |
+| `16-type-store-key-typefunction.luau` | 옛 접근 기준으로는 ✅ 통과였음 | **[2026-08-25] 검증 대상이 폐기됨** — `WrapStore`/`ProcessStoreType` 합성 자체가 사라졌다. **재작성 지침**: 타입 함수 없는 평범한 레코드 모양(`base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절)을 검증하고, 음성 대조군에 **예약 키 충돌**(`CheckReservedKeys<keyof<T>>`가 `types.never`로 무너뜨리는지 — **[2026-08-26 `H-112`]** 인자가 `T`가 아니라 `keyof<T>`다)과 **없는 키 접근**을 포함할 것 |
+| `11-modifier-illegal-value-error.luau` | 옛 형태 기준으로는 ✅ 통과였음(16개 케이스 전원) | **[2026-08-26, 8라운드 `H-122`/`H-123`] 검증 코드가 폐기된 모델을 박제하고 있다** — 그 파일의 Store 생성자가 **eager `Source(v)`** 모델이다. 명시적 초기화 확정(2026-08-25) 이후 **`defaults` 경로에선** Store가 `Source`를 만들지 않는다(동적 키 창구 `store:Of(name)`은 여전히 만든다 — 그래서 가드가 `Source` 생성자로 갔다). **재작성 지침**: `isModifier` 가드의 새 자리는 **`Source` 생성자**(+`Source:Set`, `:Compute` 결과 캐싱)이고, Store 생성자가 하는 건 `defaults`의 **`isSource` 화이트리스트 검증**(error level 2)이다 — 둘을 각각 양성/음성으로 볼 것. **검증 대상(핸들러 계층 값 즉시 error)은 그대로**라 결론이 바뀌는 건 아님 |
 | `21-type-store-undeclared-key-rejected.luau` | 옛 접근 기준으로는 ✅ 통과였음 | `16`의 `ProcessStoreType`을 재사용하므로 같이 낡음. **검증 대상(미선언 키가 타입 에러)은 그대로 유효**하다 — 새 `Store<T>` 선언으로 바꿔 쓰기만 하면 된다(`store:Of("nope")`이 거부되는 것도 같이 넣을 것) |
 | `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
@@ -168,7 +187,6 @@
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
-| `11-modifier-illegal-value-error` | Modifier 필드/Source에 핸들러 계층 값 넣으면 즉시 error — 16개 케이스 전원 |
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
 | `20-slot-splice-index-arithmetic` | `Splice` 산술 11개 경계 케이스 전부 참조 구현과 일치 |
@@ -229,4 +247,5 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 | ~~`table.insert`가 배열 중간의 구멍을 재사용하는가~~ **[2026-08-24 폐기]** | **전제 자체가 없어졌다** — 6라운드 `H-7`로 `Ref.Callbacks`가 배열에서 `{[callback\|thread] = true}` **해시맵 셋**으로 바뀌었고, 해시맵엔 border 개념도 구멍도 없다(`base/ref-plan.md`). 이 스파이크는 만들지 말 것 | QA 4라운드 `R-11`(폐기), 6라운드 `H-7` |
 | 중간 State가 `_hold`(하류 → 상류 강함) 불변식으로 실제로 살아남는가 | **[2026-08-25] 설계는 확정됐다** — 각 파생 노드가 자기 상류를 `_hold`로 강하게 든다(사용자 확정). 남은 건 실측뿐이고 **M2 착수 게이트는 아니다**(`question.md` 최우선 절에서 내려감). 음성 대조군으로 "`_hold` 없이 짜면 중간 노드가 수거돼 전파가 끊긴다"까지 볼 것 | `base/source-state-plan.md`의 "해소됨 — 중간 State는 `_hold`로 살아남는다" 절 |
 | `Relate` 값/내부 키가 바깥 키를 되참조하면 새는가 | **[2026-08-25 신설, 7라운드 `H-71`/`H-77`]** `done/07`은 **안전한 모양만** 봤는데 여러 문서가 그걸 "GC-native 아키텍처의 핵심 전제 검증"으로 인용한다. 실제로는 (a) `SetStrong`의 **값**이 되참조하면 100% 새고, (b) **내부 키**가 되참조하면 `SetStrong`/`SetWeak` **둘 다** 샌다. `07`에 음성 대조군으로 추가할 것 | `base/relate-plan.md`의 "위험한 패턴" 절 슬롯 표 |
+| **[2026-08-26 신설, 8라운드 `H-112`]** `CheckedQuad<T, Pattern>`이 M2 표면 추가 후에도 사는가 | 8라운드에 **한 번 실측해 통과**했지만(배선이 격리형이라 `Quad`에 `Source` 필드를 더해도 클린), 실제 M2 반영 뒤 `Quad` 타입의 선언 스타일이 정해지면 다시 봐야 한다. `23`(`done/`에서 **통과** 상태)이 `CheckedQuad`를 쓰므로 그걸 다시 돌리는 배치. **[2026-08-26 정정, `/code-review high`]** 여기 한때 "`rewrite-required/23`의 재작성과 같은 배치"라고 적었는데 **`rewrite-required/`에 `23`은 없다** — 일어나지 않을 재작성에 실측을 매달아 고아가 될 뻔했다 | `ROADMAP.md` M2의 `H-80` 체크박스, 8라운드 `H-112` |
 | `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

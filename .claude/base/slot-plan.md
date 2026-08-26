@@ -1132,7 +1132,14 @@ function updateFn(item, index, offset, prev, ud)
         -- 다시 그림(새 원소) — 이전 Source 재사용/Set 없이 처음부터 올바른 값으로 생성
         local layoutOrder = Source(index)
         return Frame {
-            LayoutOrder = layoutOrder:With(offset):Compute(function(i, o) return i:Get() + o:Get() end),
+            -- ⭐ [2026-08-26 교정, 8라운드 `H-121`] 한때 여기가
+            --   `:With(offset):Compute(function(i, o) ... o:Get() ...)`였는데
+            --   **확정 콜백 계약과 어긋난다** — `:With`로 모은 값은 포지셔널로
+            --   안 넘어오고(`source-state-plan.md`: *"with한 값을 포지셔널 인자로
+            --   받지 않고 클로저로 직접 읽는다"*), 2번째 자리에 실제로 오는 건
+            --   `previous`다(첫 사이클엔 `nil` → `o:Get()`이 즉사, 이후엔 직전
+            --   결과 숫자 → `number:Get()`으로 또 죽는다).
+            LayoutOrder = layoutOrder:With(offset):Compute(function(i) return i:Get() + offset:Get() end),
             ...
         }, { layoutOrder = layoutOrder }
     end
@@ -1315,7 +1322,13 @@ function Slot:List(data, updateFn, keyFn, opts)
         activateList(self, self._physicalTarget)
         blocker:OffWithoutEmit()
         local bk = getBookkeeping(self)
-        if bk then recompute(self, bk) end
+        -- ⭐ [2026-08-26 추가, `/code-review high`] 배치 Blocker는 방금 껐지만
+        -- `bk.recomputeBlocker`는 따로 봐야 한다 — 사용자 코드가 바깥
+        -- `recompute`의 `offset:Set(abs)` 안에서 이 Slot을 재진입 마운트하면
+        -- (`H-119`가 세운 바로 그 전제) 중첩 `recompute`가 완주하고 그 꼬리의
+        -- `bk.offsetSetUpTo = bk.N` + `recomputeBlocker:OffWithoutEmit()`이
+        -- **바깥 루프의 되감기 신호를 지운다.**
+        if not bk.recomputeBlocker:IsOn() then recompute(self, bk) end
     end
     return self
 end
@@ -1952,8 +1965,11 @@ Slot:Single(state, updateFn?, opts?)
 애초에 최초 실행은 `canExecute`로 게이팅되는 대상이 아니라서 상관없음
 (**[정정, 2026-08-14 다섯 번째 세션]** 원래 "`bindLifetime`이 `Subscribed`를
 세팅 전이라"고 적혀 있었으나 `bindLifetime`은 그 필드를 안 건드림 —
-`.Subscribed`는 전역 `:Subscribe()` 전용,
-`archive/canexecute-inst-arg-reversed.md`). `bindLifetime`은 그
+`.Subscribed`는 구독 경로 전용,
+`archive/canexecute-inst-arg-reversed.md`.
+**[2026-08-26 표기 정정, 8라운드 `H-111`]** 그때 "전역 `:Subscribe()` 전용"
+이라 적었으나 **구독 경로(강/약) 공용**이 맞다 — `:WeakSubscribe()`도
+세운다. `bindLifetime`이 안 건드린다는 요지는 그대로 유효). `bindLifetime`은 그
 직후에 걸려서 **이후의** 재실행(`data`가 다시 바뀔 때)만 게이팅 —
 `Dispatch.setLength`의 `bindLifetime(inst,observer)` 다음 줄에 있는
 "등록 즉시 1회와 겹쳐도 무해"라는 주석과 정확히 같은 구조.
@@ -2048,7 +2064,7 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
 조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김.
 
-## `Slot:Single(state, updateFn?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
+## `Slot:Single(state, updateFn?, opts?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
 
 기존 "백로그, 미착수"에서 실제 설계까지 완료됨 — 새 reconcile 로직
 없이 **`:List`를 정확히 0/1개짜리 배열로 감싸는 sugar**:
@@ -2240,7 +2256,16 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
         bindLifetime(physicalTarget, slot._baseObserver)
     else
         slot._baseObserver = offsetSource:Observer(function()
-            if not getBlocker(slot):IsOn() then recompute(slot, getBookkeeping(slot)) end
+            -- ⭐ [2026-08-26, 8라운드 `H-119`/`H-3`] 두 줄이 빠져 있었다:
+            --   (1) 배치 Blocker만 보고 `recomputeBlocker`를 안 봐서 재진입 차단이
+            --       우회됐고, (2) `H-3`의 3번("베이스가 바뀐 경우라
+            --       두 필드 `0`")이 의사코드에 없었다.
+            local bk = getBookkeeping(slot)
+            -- [2026-08-26] 무효화는 **두 필드를 다** 내린다(캐시도 낡고 Set도
+            --   다시 해야 한다) — `dispatch-core-plan.md`의 "두 필드" 절.
+            bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0   -- 베이스가 바뀜 → 1번부터 전부
+            if getBlocker(slot):IsOn() or bk.recomputeBlocker:IsOn() then return end
+            recompute(slot, bk)
         end)
         bindLifetime(physicalTarget, slot._baseObserver)
     end
@@ -2284,7 +2309,12 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- 있었을 구조적 갭이다(옛 코드도 같은 구간에 정리 코드가 없었음).
     blocker:OffWithoutEmit()
     local bk = getBookkeeping(slot)
-    if bk then recompute(slot, bk) end   -- 여기서 slot.Length가 최종값으로 확정
+    -- ⭐ [2026-08-26 추가, `/code-review high`] 위와 같은 이유로
+    --   `recomputeBlocker`도 본다(`H-119`가 "명시 호출부 **전부**"라고 했는데
+    --   이 자리와 `:List` 활성화 꼬리 둘이 빠져 있었다).
+    if not bk.recomputeBlocker:IsOn() then
+        recompute(slot, bk)              -- 여기서 slot.Length가 최종값으로 확정
+    end
 
     -- 자기 길이를 부모에게. 이제 **처음부터 최종값**이고(C6), 동시에
     -- 어떤 Parent 대입보다도 먼저다(C7) — 단일 함수로는 둘을 동시에
@@ -2435,11 +2465,13 @@ local function unmountSlotTree(slot)
         -- releaseOwner를 **안 부름** — 자식들은 여전히 이 slot의 소유. 이게
         -- destroySlotTree와의 핵심 차이(파괴는 소유권까지 반납, 언마운트는 유지).
     end
+    -- [2026-08-26, `/code-review high` 6차] `if bk then` 가드를 뺐다 —
+    --   `getBookkeeping`은 lazy 생성이라 절대 nil이 아니다
+    --   (`base/dispatch-core-plan.md`). 같은 파일 안에서 어떤 자리는 가드하고
+    --   어떤 자리는 안 하던 불일치를 없앤다.
     local bk = getBookkeeping(slot)
-    if bk then
-        for i, observer in pairs(bk.observers) do
-            unbindLifetime(observer)   -- 물리 target에 걸린 배관만 해제
-        end
+    for i, observer in pairs(bk.observers) do
+        unbindLifetime(observer)       -- 물리 target에 걸린 배관만 해제
     end
     -- [2026-08-21] `activateList`가 소유하는 두 자원의 **앵커만** 푼다.
     -- 안 풀면 옛 physicalTarget이 죽을 때, 지금은 다른 곳에 살아있는 이
@@ -2512,10 +2544,8 @@ local function destroySlotTree(slot)
         slot._baseObserver = nil
     end
     local bk = getBookkeeping(slot)    -- 이 slot이 자기 자식들 위해 등록해둔 observer들
-    if bk then
-        for i, observer in pairs(bk.observers) do
-            unbindLifetime(observer)
-        end
+    for i, observer in pairs(bk.observers) do   -- [2026-08-26] 가드 제거(위와 같은 이유)
+        unbindLifetime(observer)
     end
     -- [정정, 2026-08-13 감사] 마운트 상태도 되돌림 — 안 그러면 파괴된 Slot이
     -- `_mounted == true`로 남아 "마운트된 Slot의 재마운트는 즉시 throw"(위 절)에
@@ -2593,7 +2623,12 @@ function rawUnmount(self, index)
     end
 
     spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
-    recompute(self, bk)             -- 자리가 없어지는 경로엔 setLength가 없으므로 여기서 명시 호출
+    -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
+    --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
+    --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
+    if not (getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn()) then
+        recompute(self, bk)         -- 자리가 없어지는 경로엔 setLength가 없으므로 여기서 명시 호출
+    end
 end
 
 -- [신설, 2026-08-21] rawUnmount의 "소유권 유지" 짝 — `Detach`가 쓴다.
@@ -2614,7 +2649,12 @@ function rawDetach(self, index)
 
     spliceArraysDown(self, index)  -- `_elemIndex`/`bk.tokens`/`bk.indexOfToken`에서도
                                    -- 이 요소·자리가 빠진다(트리 밖이 됨) — 아래 splice 요구 목록
-    recompute(self, bk)
+    -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
+    --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
+    --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
+    if not (getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn()) then
+        recompute(self, bk)         -- [`H-119`] 게이트 통과 시에만
+    end
 end
 
 -- [신설, 2026-08-21] 밀려나거나 지워지는 요소의 처분 — `Owned`가 정한다
@@ -2660,7 +2700,28 @@ end
 --      position이 아니라 **요소에 귀속**된다 → 전부 같은 순열로 움직인다.
 --   2. **`bk.N`은 안 변한다** — 자리 수가 그대로이므로(`spliceArraysUp`/`Down`과
 --      갈리는 지점).
---   3. **캐시는 당긴다** — 바뀐 최소 위치로 `bk.invalidAfter`를 `math.min`(`H-3`).
+--      ⚠️ [2026-08-26 범위 정정, 5·6차 `/code-review high`] **`rawSplice`·
+--        `rawClear`·`rawExtract`의 제거 형태는 예외다** — 자리 수를 바꾼다.
+--        (`rawExtract`는 조건부다: `newElement`를 **지정하면 교체**라 자리 수가
+--         그대로지만, **생략하면 제거**라 뒤가 당겨지며 준다 — 위 CRUD 표의
+--         `Extract` 행. 6차 리뷰가 5차의 예외 목록에서 이걸 빠뜨린 걸 잡았다.) 이 규약을 그대로
+--        적용해 `rawClear`를 짜면 `_elements`는 비는데 `bk.N`이 옛 개수로
+--        남아, 다음 `recompute`가 `i <= bk.N`으로 끝을 넘어가 `sourceList[i]`가
+--        `nil` → **부기가 멀쩡한데 "부기가 깨졌음" error로 죽는다.** 그것들은
+--        `spliceArraysUp`/`Down`과 같은 취급(자리 수 갱신 + 무효화)을 받아야
+--        한다. 아래 3·4번은 다섯 함수 전부에 적용된다.
+--   3. **캐시는 당긴다** — 바뀐 최소 위치의 **하나 앞**으로
+--      `bk.offsetCacheValidUpTo`와 `bk.offsetSetUpTo`를 **둘 다** `math.min`
+--      (`H-3`; 두 필드 분리는 [2026-08-26] `dispatch-core-plan.md`의
+--      "두 필드" 절). ⭐ [2026-08-26 정정, `/code-review high`] 여기 한때
+--      "바뀐 최소 위치로"라고만 적혀 있었는데, 그건 `H-113`이 거짓임을 증명한
+--      바로 그 공식이다 — `rawSwap(i, j)`가 `recompute`의 커서 `i`에서 일어나면
+--      `math.min(i, i) = i`라 되감기 조건 `offsetSetUpTo < i`가 거짓이고, 그
+--      자리로 옮겨온 **다른 요소의 offset Source가 이번 패스에서 `Set`을 못
+--      받는다**(우리가 Set한 건 옮겨나간 옛 요소의 Source다). 루프 꼬리의
+--      `bk.offsetSetUpTo = bk.N`이 "Set을 다 마쳤다"로 마감하므로 다음 계기까지 그
+--      요소만 옆으로 어긋난 채 남는다. `spliceArrays*`와 같은 처방
+--      (`math.min(…, minPos - 1)`(두 필드 다))을 쓴다.
 --   4. **`recompute`는 `setLength`에 일임**(`H-19`) — 순서만 바뀌어 길이 합이
 --      그대로여도 offset은 전부 바뀌므로, 자리 이동 후 해당 위치들의
 --      `setLength`를 다시 태워 게이트를 통과시킨다.
@@ -2827,7 +2888,12 @@ function rawRemove(self, index)
     end
 
     spliceArraysDown(self, index)   -- _elements/_elemIndex/lengthList/sourceList/observers/bk.tokens/bk.indexOfToken/bk.N — 아래 참고
-    recompute(self, bk)             -- outer 자기 자신 레벨에서 딱 1회만
+    -- ⭐ [2026-08-26, 8라운드 `H-119`] 명시 호출도 재진입 게이트를 먼저 본다.
+    --   건너뛴 몫은 위 spliceArraysDown이 당겨둔 `bk.offsetSetUpTo`로
+    --   바깥 `recompute`의 되감기가 복구한다(`dispatch-core-plan.md`).
+    if not (getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn()) then
+        recompute(self, bk)         -- outer 자기 자신 레벨에서 딱 1회만
+    end
 end
 ```
 
@@ -2853,12 +2919,29 @@ end
   불변식으로는 안 덮인다.** `sourceList`가 `None`으로 채워지는 것과 대칭을
   맞춰 창 자체를 없앤다.
 - **캐시를 앞으로 당긴다**(`H-3`) —
-  `bk.invalidAfter = math.min(bk.invalidAfter, index)`.
-  `base/dispatch-core-plan.md`의 무효화 표가 규정한 세 규칙 중 하나이고,
+  **두 필드 다** `math.min(…, index - 1)`:
+  `bk.offsetCacheValidUpTo`(캐시 유효 상한)와 `bk.offsetSetUpTo`(offset
+  `Source`에 `:Set`을 마친 지점). **[2026-08-26]** 옛 단일 필드
+  `invalidAfter`가 두 뜻을 겸하던 게 되감기 신호가 조용히 지워지는 원인이라
+  갈라졌다 — `base/dispatch-core-plan.md`의 "두 필드" 절이 소스.
+  `base/dispatch-core-plan.md`의 무효화 표가 규정한 규칙 중 하나이고
+  (**[2026-08-26]** "세 규칙"이라 세어뒀는데 `/code-review high`가 그 표에
+  `rawMove`/`rawSwap`류 행이 빠진 걸 잡아 넷이 됐다 — 개수는 그 표가 소스),
   지금까지 산문으로만 있고 코드 경로가 없었다.
-  **[2026-08-25 정정]** 한때 여기 `index - 1`로 적었는데, `recompute`의
-  되감기 재개 지점이 `invalidAfter + 1`에서 **`invalidAfter` 자신**으로
-  고쳐지며 그 `-1`이 불필요해졌다(그 문서의 `recompute` 절).
+  **⭐⭐ [2026-08-26 재정정, 8라운드 `H-113`] `-1`이 다시 필요하다.**
+  여기 한때 `index - 1`이었다가 2026-08-25에 *"되감기 재개 지점이
+  `invalidAfter + 1`에서 그 필드 자신으로 고쳐지며 그 `-1`이
+  불필요해졌다"*는 이유로 `index`가 됐는데, **그 논증이 `index == i`(= 지금
+  `recompute`가 처리 중인 커서 자리)에서 거짓이다** — 루프가 매 반복
+  `bk.offsetSetUpTo = i`를 쓰므로 `math.min(i, i) = i`가 되어 **"아무 일도
+  없던 것"과 값이 같아지고**, 되감기 조건 `offsetSetUpTo < i`가 거짓이라
+  재방문이 없다. 그러면 splice로 그 자리에 밀려 들어온 요소의 offset이
+  이번 패스에서 `Set`을 못 받고 조용히 낡는다. `-1`로 두면 `i-1`부터
+  되감아 `i`를 재방문하고(그 자리 offset 쓰기는 `~=` 가드로 no-op),
+  **재개 지점은 `offsetSetUpTo` 그대로**라 2026-08-25의 그 변경 자체는
+  유지된다 — 둘은 독립이다. 근거 전량은 `base/dispatch-core-plan.md`의
+  "되감기 신호는 `bk.invalidAfter` 하나로 통일한다" 절(**[2026-08-26]** 그 절
+  제목의 확정은 같은 날 역전됐다 — 두 필드로 갈라졌다).
   - **⭐ 이게 `recompute` 되감기의 신호이기도 하다** — recompute 도중
     splice가 나면 그 값이 낮아지고, 진행 중인 루프가 그 지점 다음부터
     되감는다(`base/dispatch-core-plan.md`의 `recompute` 절). 그래서
@@ -2877,7 +2960,8 @@ end
 
   **안 하면 `H-102`가 그대로 남는다** — 토큰은 안 낡지만 그 토큰이 가리키는
   인덱스가 낡아, 제거 뒤 `gatedRecompute`가 **엉뚱한 위치로**
-  `bk.invalidAfter`를 당긴다(앞선 자리가 영영 다시 offset을 못 받는다).
+  `bk.offsetCacheValidUpTo`/`bk.offsetSetUpTo`를 당긴다(앞선 자리가 영영 다시
+  offset을 못 받는다).
   이 목록에 *"옮겨진 클로저의 위치 추적"*이 셋 어디에도 없던 것이 원래
   결함이었다.
 
@@ -3122,7 +3206,10 @@ end
 
 **`:Single`의 `updateFn`을 선택 인자로 완화 — 기본값은 identity.** 이
 sugar가 성립하려면 `:Single(state)`(updateFn 생략)이 유효해야 함 —
-`Slot:Single(state, updateFn?)`, 생략 시 `function(item) return item end`.
+`Slot:Single(state, updateFn?, opts?)`, 생략 시 `function(item) return item end`
+(**[2026-08-26 표기 정정, 8라운드 `H-123`]** 3번째 `opts`(= `Owned`)는 `H-22`
+확정 의사코드가 받아 `:List`로 그대로 전달한다 — 이 줄과 절 제목이 2-인자로
+남아 있었다).
 
 **이게 최초안의 세 문제를 전부 없애는 이유**:
 - **`_elements`엔 `None`이 절대 안 들어감** — 바깥 Slot 입장에서 이

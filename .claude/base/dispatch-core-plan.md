@@ -583,7 +583,11 @@ end
     2026-08-24 `H-17`] `drive` 전체를 `inst` 전용 `Blocker`로 감싼다** —
     진입 직후 `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고,
     **`drive`가 할 일을 전부 마치면**(단일 일반화 순회 + post-pass 포함)
-    `:OffWithoutEmit()` 한 뒤 `recompute(inst, bk)`를 명시적으로 1회 호출 —
+    `:OffWithoutEmit()` 한 뒤 `recompute(inst, bk)`를 명시적으로 1회 호출
+    (**⭐ [2026-08-26, `/code-review high` 4차] 이 호출도 `H-119`의 재진입
+    게이트를 탄다** — `bk.recomputeBlocker:IsOn()`이면 건너뛴다. 사용자 코드가
+    같은 `inst`에 재디스패치를 내면 중첩 `recompute`가 완주하며 바깥의
+    `offsetSetUpTo`를 지우고 차단기를 끄는, `raw*` 삭제와 **똑같은** 구멍이었다) —
     상세 근거·`setLength`/`setOffsetSource`가 이 Blocker를 어떻게 쓰는지는
     아래 "배치 등록을 안전하게 만드는 Blocker 게이팅" 절이 소스.
     - **왜 "배열 파트"가 아니라 "`drive` 전체"인가**: 옛 문장은 *"배열 파트
@@ -1492,17 +1496,31 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 — `Relate(parentInst)`에 lazy 생성.
 
 **⭐ [2026-08-24 보강, 6라운드 손 트레이싱 `H-4`] 접두합 캐시 두 필드도 여기
-소속이고, 초기값을 명시한다.** `offsetCache`/`invalidAfter`가 이 열거에
+소속이고, 초기값을 명시한다.** `offsetCache`/`offsetCacheValidUpTo`/`offsetSetUpTo`가 이 열거에
 빠져 있어서 스펙상 존재하지 않는 필드였고, 초기값도 안 적혀 있었다.
 `bk.N`이 `nil`로 시작하는 lazy 규칙(그래서 `recompute`가 `bk.N or 0`으로
-방어한다)을 그대로 따르면 `invalidAfter`도 `nil`인데, `getOffsetAt`은
-`if bk.invalidAfter == 0 then`으로 시작한다 — `nil == 0`은 거짓이라 다음 줄
-`at <= bk.invalidAfter`에서 **`attempt to compare number with nil`**로 죽는다.
+방어한다)을 그대로 따르면 `offsetCacheValidUpTo`도 `nil`인데, `getOffsetAt`은
+`if bk.offsetCacheValidUpTo == 0 then`으로 시작한다 — `nil == 0`은 거짓이라 다음 줄
+`at <= bk.offsetCacheValidUpTo`에서 **`attempt to compare number with nil`**로 죽는다.
 **첫 position의 `setOffsetSource`가 바로 이 경로**라 fresh `bk`에서 반드시 밟는다.
 
-- **`getBookkeeping`이 `bk`를 만들 때 `offsetCache = {}`, `invalidAfter = 0`으로
-  초기화한다.** (`bk.N`만 `nil` 시작을 유지한다 — 그쪽은 `or 0` 방어가 이미
-  자리를 잡았고 "아직 아무 자리도 등록 안 됨"과 "0번까지 유효"가 다른 뜻이다.)
+- **⭐ [2026-08-26 명문화, `/code-review high` 5차] `getBookkeeping(ownerKey)`은
+  **절대 `nil`을 돌려주지 않는다** — `Relate(ownerKey)` 기반 **lazy 생성**이라
+  없으면 그 자리에서 만든다. 그래서 호출부의 `if bk then` 가드는 흔적이고,
+  같은 파일 안에서 어떤 자리는 가드하고 어떤 자리는 안 하는 불일치를 만든다.
+  **가드를 두지 말 것.**
+- **`getBookkeeping`이 `bk`를 만들 때 `offsetCache = {}`, `offsetCacheValidUpTo = 0`,
+  `offsetSetUpTo = 0`, `recomputeBlocker = Blocker()`으로 초기화한다.**
+  (**[2026-08-26]** `offsetCacheValidUpTo`은 같은 날 `offsetSetUpTo`에서 갈라져 나온
+  필드다 — 아래 "두 필드" 절.) (`bk.N`만 `nil` 시작을
+  유지한다 — 그쪽은 `or 0` 방어가 이미 자리를 잡았고 "아직 아무 자리도 등록
+  안 됨"과 "0번까지 유효"가 다른 뜻이다.)
+  **⭐ [2026-08-26 추가, `/code-review high`] `recomputeBlocker`가 이 열거에
+  빠져 있었다** — `H-101`이 나중에 도입했는데 생성 규칙이 어디에도 없었고,
+  `H-119`가 `base/slot-plan.md`에 `bk.recomputeBlocker:IsOn()` 역참조를 네 개
+  더 늘렸다. `_baseObserver`의 등록 즉시 1회 발화는 `getBlocker(slot):IsOn()`이
+  참이라 `or` 단락으로 **우연히** 살아나지만, 그 우연에 기대고 있었다 —
+  이 절이 `offsetSetUpTo`에 대해 잡아낸 것과 정확히 같은 종류의 nil 역참조다.
 
 **[신설, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 — 두 owner
 타입(물리 `inst`, Slot 자신) 모두 같은 규칙 하나로 통일.** 이전엔
@@ -1661,21 +1679,23 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 function Dispatch.getOffsetAt(ownerKey, at)
     local bk = getBookkeeping(ownerKey)
     -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**
-    -- `bk.offsetCache[i]` = i 자리의 절대 offset, `bk.invalidAfter` = **여기까지는
+    -- `bk.offsetCache[i]` = i 자리의 절대 offset, `bk.offsetCacheValidUpTo` = **여기까지는
     -- 캐시가 유효**(그 뒤부터 다시 누적해야 함). 함수를 둘로 나누지 않는다 —
     -- 이 하나가 필요한 만큼만 앞으로 이어붙이므로, 순차 호출이면 한 칸씩만
     -- 늘어나 전체가 O(N)이 된다(사용자: *"그러면 알아서 순차적으로 합캐시가
     -- 처리됨"*).
-    if bk.invalidAfter == 0 then
+    -- ⭐⭐ [2026-08-26 재작성, `/code-review high` 4차] 이 함수는 **`offsetCacheValidUpTo`만
+    --   만진다 — `bk.offsetSetUpTo`는 건드리지 않는다.** 아래 "두 필드" 절이 소스.
+    if bk.offsetCacheValidUpTo == 0 then
         -- 시작점 — 1번 자리의 offset은 이 owner의 베이스 그 자체.
         bk.offsetCache[1] = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
-        bk.invalidAfter = 1
+        bk.offsetCacheValidUpTo = 1
     end
-    if at <= bk.invalidAfter then
+    if at <= bk.offsetCacheValidUpTo then
         return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
-    local cur = bk.offsetCache[bk.invalidAfter]
-    for i = bk.invalidAfter, at - 1 do
+    local cur = bk.offsetCache[bk.offsetCacheValidUpTo]
+    for i = bk.offsetCacheValidUpTo, at - 1 do
         -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
         -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
         if bk.lengthList[i] == nil then
@@ -1684,26 +1704,77 @@ function Dispatch.getOffsetAt(ownerKey, at)
         cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
     end
-    bk.invalidAfter = at                       -- 여기까지 유효해짐
+    bk.offsetCacheValidUpTo = at                          -- 캐시가 여기까지 유효해짐
     return cur
 end
 ```
 
-**⭐ [2026-08-21] 캐시 무효화 — 규칙이 하나다**
+### ⭐⭐ [2026-08-26 신설] 두 필드 — `offsetCacheValidUpTo`와 `offsetSetUpTo`
 
-`bk.invalidAfter`는 **"이 인덱스까지는 캐시가 유효"**를 뜻하고, 무효화는 전부
-같은 모양이다 — **`bk.invalidAfter = math.min(bk.invalidAfter, i)`**(앞으로만
-당긴다):
+**`H-101`이 *"되감기 신호는 `bk.invalidAfter` 하나로 통일한다 — 새 필드를 안
+만든다. 두 뜻('캐시가 여기까지 유효'와 '여기 다음부터 다시 해야 함')이 실제로
+같은 것이기 때문"*이라고 확정했는데, 그 전제가 틀렸다**(사용자 진단,
+`/code-review high` 4차): *"캐시와 컴퓨팅 위치를 같이 둔 것이 폭탄이였는듯 …
+지금의 큰 문제는, **Set을 해줬느냐**와 **캐시가 유효하지 않느냐**라는 다른
+목적의 값을 같은 값이 쥐고 있음."*
+
+| 필드 | 뜻 | 올리는 쪽 | 내리는 쪽 |
+|---|---|---|---|
+| **`bk.offsetCacheValidUpTo`** | `offsetCache`가 **여기까지 정확**하다 | `getOffsetAt`이 채운 만큼 (어디서 불리든) | 무효화 사이트 전부(아래 표) |
+| **`bk.offsetSetUpTo`** | 여기까지는 offset `Source`에 **`:Set`을 마쳤다** | **`recompute`만** (매 반복 + 꼬리) | 무효화 사이트 전부(아래 표) |
+
+- **무효화(구조 변경)는 둘 다 내린다** — 자리가 바뀌면 캐시도 낡고 `Set`도
+  다시 해야 한다. 아래 무효화 표의 인덱스는 **두 필드에 똑같이** 적용된다.
+- **`getOffsetAt`은 `offsetCacheValidUpTo`만 올린다 — 어디서 불려도 안전하다.**
+  그 함수가 실제로 캐시를 그 지점까지 정확히 채우고 나서 올리기 때문이다.
+  캐시를 복원하는 건 그 함수의
+  일이지만, **누가 `Set`을 받았는지는 모른다.**
+- **⭐ `offsetSetUpTo`를 올리는 건 `recompute` **하나뿐**이다.** 되감기 판정도
+  이 필드만 본다. **버그의 원인이 정확히 "`recompute` 밖에서 이 값이
+  올라가는 것"이었으므로, 이 배타성이 이 분리의 핵심이다.**
+
+**왜 갈라야 하는가 — 겹쳐 두면 되감기 신호가 조용히 지워진다.** 한 필드일 때:
+바깥 `recompute`가 커서 `i`를 돌던 중 `offset:Set(abs)`가 사용자 코드를
+돌리고, 그 코드가 `slot:Remove(j)`(j<i)로 신호를 `j-1`까지 내린 **뒤 같은
+콜백에서** `slot:Add(x)`를 하면 — `setOffsetSource`가 `getOffsetAt`을 부르고
+그 꼬리가 필드를 다시 `N+1`로 **올려버린다.** 복귀한 루프의 되감기 조건
+`offsetSetUpTo < i`가 거짓이 되어 `j..i` 자리의 offset `Source`가 **이번
+패스에서 영영 `Set`을 못 받는다**(캐시는 정확한데 Source만 낡는 —
+`H-3`/`H-113`이 닫으려던 바로 그 증상). **필드를 나누면 `getOffsetAt`이
+올리는 건 `offsetCacheValidUpTo`뿐이라 `offsetSetUpTo = j-1`이 살아남고 되감기가 돈다.**
+
+**한 프리미티브 *안*에서는 원래 안전했다**(사용자 지적) — `rawRemove`는
+`nativeExtract(..., getOffsetAt(self, index), ...)`를 `spliceArraysDown`
+**앞**에서 부른다. 깨지는 건 **한 콜백에서 CRUD를 두 번** 할 때뿐이고,
+그래서 여섯 라운드의 감사와 세 번의 code-review를 통과해 살아남았다.
+
+**⭐ [2026-08-21, 2026-08-26 재작성] 캐시 무효화 — 모양은 하나, 인덱스는 넷**
+
+**무효화는 두 필드를 **둘 다** 내린다** — 구조가 바뀌면 캐시도 낡고 `Set`도
+다시 해야 한다(위 "두 필드" 절). 모양은 둘 다 같고 아래 표의 인덱스가 똑같이
+적용된다(앞으로만 당긴다):
+
+```lua
+bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, ?)
+bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        ?)
+```
+
+**⚠️ [2026-08-26 정정, `/code-review high`] 그리고 `?` 자리는 갈린다** —
+여기 한때 *"무효화는 전부 같은 모양이다 — `math.min(bk.invalidAfter, i)`"*(옛 단일 필드)라고
+한 줄로 적혀 있었는데, `H-113` 이후 **아래 표가 서로 다른 인덱스를
+규정한다**(개수는 표가 소스 — 여기서 세지 않는다). 산문만 보고 짜면 splice에 `i`를 써서 `H-113`이 고치려던 그
+버그(커서 위치 splice의 되감기 불발)를 그대로 재현한다. **표가 소스다**:
 
 | 무엇이 바뀌나 | 어디까지 당기나 | 왜 |
 |---|---|---|
 | `setLength(ownerKey, i, ...)`, 그리고 그 State가 나중에 emit할 때 | `i` | **`i` 자리의 offset은 안 바뀐다**(그건 `1..i-1`의 합) — 바뀌는 건 그 **뒤**뿐. 사용자: *"정확히 입력받은 자신 인덱스까지 당김"* |
-| `spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제) | `i` | 같은 이유 — 삽입/삭제 후에도 `i` 자리의 offset은 여전히 `1..i-1`의 합이다 |
+| `spliceArraysUp`/`spliceArraysDown`(자리 삽입·삭제) | **`i - 1`** | **[2026-08-26 정정, `H-113`]** 한때 `i`였다 — `recompute`의 커서가 정확히 `i`일 때 `i`로 당기면 "변경 없음"과 구분이 안 돼 되감기가 안 걸린다. 근거는 아래 "되감기 신호는 `bk.invalidAfter` 하나로 통일한다" 절(제목은 역전 *전* 이름 그대로다 — 그 절이 폐기를 서술한다) |
+| `rawMove`/`rawSwap`, 그리고 `rawExtract`의 **교체 형태**(`newElement` 지정) — **자리 수가 안 바뀌는 경로만.** ⚠️ `rawSplice`/`rawClear`/`rawExtract`의 **제거 형태**(`newElement` 생략)는 자리 수가 바뀌므로 위 splice 행 | **`minPos - 1`** | **[2026-08-26 신설, `/code-review high`]** splice와 같은 이유다 — 바뀐 최소 위치가 커서와 같으면 `math.min(i, i) = i`라 되감기가 안 걸리고, 그 자리로 옮겨온 요소의 offset이 조용히 낡는다. `base/slot-plan.md`의 `H-29` 규약 3번이 짝이고, 이 표에 행이 없어 "세 규칙"으로 세어지던 자리다 |
 | owner의 베이스 변경(`ownerKey.Offset`이 바뀜 = `_baseObserver`가 도는 순간) | `0` | 1번 자리부터 전부 다시 |
 
 **⭐ [2026-08-24 6라운드 손 트레이싱 `H-3`] 이 표는 산문으로만 있었고 실제
 코드 경로가 하나도 없었다 — 배치할 자리를 명시한다.** 코퍼스 전체에서
-`bk.invalidAfter`에 대입하는 코드는 `getOffsetAt` 안의 `= 1`/`= at` 둘뿐이었고,
+옛 단일 필드 `bk.invalidAfter`에 대입하는 코드는 `getOffsetAt` 안의 `= 1`/`= at` 둘뿐이었고,
 `setLength`도 `gatedRecompute`도 `_baseObserver` 콜백도 `spliceArrays*`도
 캐시를 당기지 않았다. 그래서 `Frame { SlotA(Length 2), SlotB(Length 3) }`에서
 `SlotA`가 3으로 커져도 `recompute`의 `getOffsetAt(Frame, 2)`가 **캐시된 2를
@@ -1712,16 +1783,53 @@ end
 재마운트는 더 나쁘다: `bk`는 `Relate(slot)` 위에 있어 언마운트를 넘어 살아남으므로
 `offsetCache[1]`에 **옛 베이스**가 남는다.
 
-세 자리 전부 **`recompute`보다 먼저** 당겨야 한다:
+위 표의 자리 전부 **`recompute`보다 먼저** 당겨야 한다(개수는 표가 소스):
 
 1. **`Dispatch.setLength(ownerKey, i, ...)` 본문** — `lengthList[i]`를 쓴 직후,
-   `gatedRecompute()`를 부르기 전에 `bk.invalidAfter = math.min(bk.invalidAfter, i)`.
+   `gatedRecompute()`를 부르기 전에 **두 필드 다** `math.min(…, i)`.
    **그 자리 length가 State일 때 등록하는 Observer 콜백 안에서도 같은 줄**이
    필요하다(나중 emit이 같은 무효화를 요구한다).
-2. **`spliceArraysUp`/`spliceArraysDown`** — 삽입·삭제한 위치 `i`로 같은 당김
-   (`base/slot-plan.md`의 그 함수들이 해야 하는 일 목록에 반영돼 있다).
-3. **`slot._baseObserver` 콜백** — 베이스가 바뀐 경우라 `bk.invalidAfter = 0`.
+2. **`spliceArraysUp`/`spliceArraysDown`** — 삽입·삭제한 위치의 **`i - 1`**로
+   당김(**[2026-08-26 정정, `H-113`]** 여기 한때 `setLength`와 같은 `i`라고
+   적혀 있었다 — 아래 되감기 절이 소스다. `base/slot-plan.md`의 그 함수들이
+   해야 하는 일 목록도 같은 커밋에서 맞췄다).
+3. **`slot._baseObserver` 콜백** — 베이스가 바뀐 경우라 **두 필드 다 `0`**.
    `recompute`를 부르기 전에 당긴다.
+4. **⭐ [2026-08-26 신설, `/code-review high`] `rawMove`/`rawSwap`/`rawExtract`류**
+   — 자리 수는 안 바뀌고 순서만 바뀌는 경로. 바뀐 최소 위치로
+   **두 필드 다** `math.min(…, minPos - 1)`.
+   **이 항목이 빠져 있었다** — 표에 행만 넣고 배치 자리를 안 적었는데, 이
+   절의 존재 이유가 정확히 *"표는 산문으로만 있었고 실제 코드 경로가 하나도
+   없었다"*(`H-3`)를 닫는 것이라 같은 상태로 되돌아가 있었다. 짝은
+   `base/slot-plan.md`의 `H-29` 규약 3번.
+
+**⭐⭐ [2026-08-26 확정, 8라운드 `H-119`] `recompute`를 명시 호출하는 자리는
+전부 재진입 게이트를 먼저 본다.** `H-101`의 재진입 차단은 실체가
+`gatedRecompute` 안의 두 검사(`blocker:IsOn()` / `bk.recomputeBlocker:IsOn()`)
+인데, **명시 호출 경로는 그걸 안 거친다** — `recompute` 자신은 머리에서
+`bk.recomputeBlocker:On()`만 하고(멱등 세팅) 재진입을 검사하지 않기 때문이다.
+그래서 같은 재진입 시나리오에서 **`Add`는 안전한데 `Remove`는 깨졌다**:
+
+- `Add` — `rawAdd` → `setLength` → `gatedRecompute` → 두 검사에 막힘 →
+  되감기에 위임 ✅
+- `Remove` — `rawRemove`/`rawUnmount`/`rawDetach`가
+  `H-19`의 예외 조항대로 **`recompute`를 직접 호출** → 차단기가 켜져 있는데도
+  중첩 `recompute`가 완주하고, 그 꼬리가 `bk.offsetSetUpTo = bk.N`으로
+  **바깥 루프의 되감기 신호를 지우며** `recomputeBlocker:OffWithoutEmit()`으로
+  **바깥이 아직 도는 중에 차단기를 꺼버린다.** 제어가 바깥으로 돌아오면
+  자기 옛 `sum`으로 `ownerKey.Length:Set(...)` — 중첩이 이미 써둔 올바른
+  `Length`를 낡은 합으로 덮는다(`H-101`이 막기로 한 바로 그 모양).
+
+확정된 처분: **명시 호출부를 전부 "게이트 확인 후 호출"로 통일한다** —
+`if blocker:IsOn() or bk.recomputeBlocker:IsOn() then` 이면 건너뛴다.
+건너뛴 몫은 `spliceArraysDown`/`_baseObserver`가 이미 당겨둔 `offsetSetUpTo`로
+**바깥 루프의 되감기가 복구한다**(`H-101` 설계 그대로 — 새 메커니즘이 없다).
+`_baseObserver` 콜백은 지금 배치 `blocker:IsOn()`만 보고 있으므로 **거기에
+`recomputeBlocker`를 더하고, 위 3번이 요구하는 **두 필드 `0`**도 실제
+의사코드에 넣는다**(`base/slot-plan.md`가 소스 — 지금 그 줄이 없다).
+**기각된 대안**: `recompute` 자신의 머리에서 검사해 조기 반환하는 안 —
+호출부를 안 고쳐도 되지만 *"명시 호출은 반드시 돈다"*는 `H-19`의 표면 의미가
+바뀌고, 조기 반환 시 되감기 신호 유지 요구는 어차피 똑같다.
 
 **`recompute`도 이 캐시 위에 얹힌다** — `1..N`을 순서대로 도는 함수라 매 자리에서
 `getOffsetAt`이 한 칸씩만 이어붙이므로 전체가 O(N)이고, 별도 접두합 로직을 따로
@@ -1753,7 +1861,7 @@ local function recompute(ownerKey, bk)
     --        `base/blocker-plan.md`가 네스팅을 의도적으로 미지원한다).
     --   (b) 상한 `bk.N`을 **매 반복 재평가**한다 — 진입 시 한 번만 평가하면
     --       재진입이 끝에 붙인 자리를 바깥 루프가 아예 안 본다.
-    --   (c) `bk.invalidAfter`가 낮아지면 **그 지점 다음부터 되감는다**.
+    --   (c) `bk.offsetSetUpTo`가 낮아지면 **그 지점 다음부터 되감는다**.
     --       접두합을 남겨두면 되감기 지점의 `sum`이 공짜로 복원된다.
     bk.recomputeBlocker:On()
     local prefix, i = {}, 1
@@ -1771,31 +1879,44 @@ local function recompute(ownerKey, bk)
             error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
         end
         local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
-        bk.invalidAfter = i                                     -- 여기까지 유효해짐
+        bk.offsetSetUpTo = i                                    -- 여기까지 Set 완료
         if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
             offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
         end
         local v = bk.lengthList[i]
         sum += (if isState(v) then v:Get() else v)
 
-        if bk.invalidAfter < i then      -- 누군가 낮췄다 → 되감기
+        if bk.offsetSetUpTo < i then      -- 누군가 낮췄다 → 되감기
             -- ⭐ [2026-08-25] `+1`이 아니라 **그 자리부터** 다시 돈다.
             --   `prefix[j+1]`은 **옛** `lengthList[j]`로 누적된 값이라, 길이가
             --   바뀐 자리를 건너뛰면 `sum`이 낡은 채 `Length`에 실린다
             --   (재진입은 블로커에 막혀 자가치유도 안 된다). `j`를 다시 돌아도
             --   offset 쓰기는 바로 위 `~=` 가드가 막아 no-op다.
-            i = bk.invalidAfter
+            -- ⭐⭐ [2026-08-26 보강, `/code-review high`] **1로 클램프한다.**
+            --   `H-113`이 splice 무효화를 `index - 1`로 바꾸고 `H-119`가
+            --   `_baseObserver`에 `bk.offsetSetUpTo = 0`을 넣으면서 **0이 될 수
+            --   있는 경로가 둘** 생겼다. 클램프 없이 대입하면 `sum = prefix[0]`
+            --   (**nil**) → 다음 반복에서 `sourceList[0]`이 nil → 바로 위
+            --   `error("...부기가 깨졌음")` — **부기가 멀쩡한데 깨졌다는
+            --   메시지로 죽는다.** `offsetSetUpTo = 0`은 "1번 자리부터 전부
+            --   다시"라는 뜻이고(`getOffsetAt`의 `== 0` 부트스트랩 분기와 같은
+            --   의미), `prefix[1] = 0`이라 1로 되감으면 정확하다.
+            i = math.max(bk.offsetSetUpTo, 1)
             sum = prefix[i]
         else
             i += 1
         end
     end
-    -- ⭐ [2026-08-25] 캐시 리셋과 블로커 해제를 **`Length:Set` 앞에** 둔다.
+    -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.
     --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
-    --   낮춰진 `invalidAfter`를 뒤에서 무조건 덮으면 **캐시가 낡은 채로
-    --   "유효"로 표시**되고, 그때 불린 `gatedRecompute`는 블로커가 아직
+    --   낮춰진 `offsetSetUpTo`를 뒤에서 무조건 덮으면 **아직 Set 안 한 자리가
+    --   "Set 완료"로 표시**되고, 그때 불린 `gatedRecompute`는 블로커가 아직
     --   켜져 있어 조기 반환했으므로 아무도 다시 안 돈다.
-    bk.invalidAfter = bk.N or 0
+    -- ⭐ [2026-08-26 근거 재작성, `/code-review high` 5차] 이 근거가 한때
+    --   *"캐시가 낡은 채로 '유효'로 표시된다"*였는데, **두 필드 분리 뒤 이
+    --   꼬리는 캐시 필드를 아예 안 만진다** — 하는 일은 "Set 커서 마감"
+    --   하나다. 이름만 바꾸고 근거를 안 고치면 `H-114`가 지적한 그 실패 모드.
+    bk.offsetSetUpTo = bk.N or 0
     bk.recomputeBlocker:OffWithoutEmit()
     if isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
         ownerKey.Length:Set(sum)   -- **Length엔 base를 안 더한다** — 길이는 위치와 무관
@@ -1823,21 +1944,49 @@ end
   a,a 두개가 소멸했는데, 이미 c 에 왔다면, b,b 가 c,c 로 덮여지고 a,a 는
   달라지는게 없을 가능성이 생기죠. 따라서 recompute 도중 변경이 생긴다면,
   변경이 생긴 곳으로 위로 올라가야할것 같습니다."*
-- **되감기 신호는 `bk.invalidAfter` 하나로 통일한다** — 새 필드를 안
-  만든다. 두 뜻("캐시가 여기까지 유효"와 "여기 다음부터 다시 해야 함")이
-  실제로 같은 것이기 때문이고, `getOffsetAt`도 이미 `for i = bk.invalidAfter,
-  at - 1`로 그렇게 읽는다.
-  - **⭐ [2026-08-25 정정, `/code-review high`] 재개 지점은 `invalidAfter`
+- **⛔⛔ [2026-08-26 역전, `/code-review high` 4차] *"되감기 신호는
+  `bk.invalidAfter` 하나로 통일한다 — 새 필드를 안 만든다"*는 폐기됐다.**
+  그 근거였던 *"두 뜻('캐시가 여기까지 유효'와 '여기 다음부터 다시 해야
+  함')이 실제로 같은 것"*이 **틀렸다** — 사용자 진단: *"Set을 해줬느냐와
+  캐시가 유효하지 않느냐라는 다른 목적의 값을 같은 값이 쥐고 있음. 그것
+  자체가 문제였는듯."* 지금은 **`offsetCacheValidUpTo`(캐시)와 `offsetSetUpTo`
+  (Set/되감기) 둘**이고, 위 "두 필드" 절이 소스다. 옛 이름 `invalidAfter`는
+  **완전히 없앴다** — 그 이름이 두 뜻을 겸했던 게 원인이라 남겨두면 읽는 쪽이
+  옛 의미를 그대로 가져온다.
+  - **⭐ [2026-08-25 정정, `/code-review high`] 재개 지점은 `offsetSetUpTo`
     자신이다(`+1` 아님).** 한때 *"길이가 바뀐 자리의 자기 offset은 여전히
     유효하다"*를 근거로 `+1`로 적었는데, **offset은 유효해도 `sum`이
     아니다** — `prefix[j+1]`은 **옛** `lengthList[j]`로 누적된 값이라 그
     자리를 건너뛰면 낡은 합계가 `ownerKey.Length`에 실리고, 재진입은
     블로커에 막혀 있어 **자가치유도 안 된다.** `j`를 다시 도는 비용은
     offset 쓰기 하나인데 그건 `offset:Get() ~= abs` 가드가 막아 no-op다.
-  - **그래서 splice도 `j - 1`이 아니라 `j`로 낮춘다** — 재개가
-    `invalidAfter`니까 `j`가 곧 "그 자리부터 다시"다. `getOffsetAt`의 캐시
-    의미(`offsetCache[j]` = 1..j-1의 합)도 splice/길이변경 어느 쪽에서든
-    `j` 이전은 안 바뀌므로 그대로 성립한다.
+  - **⭐⭐ [2026-08-26 재정정, 8라운드 `H-113`] splice의 무효화는 `j`가 아니라
+    `j - 1`이다.** 여기 한때 *"splice도 `j - 1`이 아니라 `j`로 낮춘다"*라고
+    적혀 있었는데, **그 문장은 `j == i`(커서 위치)에서 거짓이다** — `recompute`
+    루프가 매 반복 `bk.offsetSetUpTo = i`를 쓰므로, `offset:Set(abs)` 도중
+    사용자 코드가 **지금 처리 중인 자리 i에서** 요소를 제거/삽입하면
+    `math.min(offsetSetUpTo, i) = i`가 되어 **아무 일도 없던 것과 같은 값**이
+    된다. 되감기 조건 `offsetSetUpTo < i`가 거짓이라 재방문이 없고, splice로
+    i 자리에 밀려 들어온 요소의 offset `Source`는 이번 패스에서 `Set`을 못
+    받는다(우리가 `Set`한 건 제거된 옛 요소의 Source다). 루프 끝의
+    `bk.offsetSetUpTo = bk.N or 0`이 "Set을 다 마쳤다"로 마감하므로 다음 계기까지
+    **그 요소만 옆으로 어긋난 레이아웃**이 남는다 — `H-3`이 경고한
+    *"위로는 맞고 옆으로만 틀린다"*와 같은, 알아채기 어려운 부류다.
+    (`sum`은 안 낡는다 — `lengthList[i]` 읽기가 `Set` 뒤라 새 요소의 길이가
+    실린다. 낡는 건 offset 하나다.)
+    - **`j - 1`이면 닫힌다**: `j == i`면 `offsetSetUpTo = i-1 < i` → i-1부터
+      되감고 i를 재방문한다(그 자리 offset 쓰기는 `offset:Get() ~= abs`
+      가드로 no-op). `j < i`도 한 자리 여분 재방문만 생기고 정합하다.
+    - **재개 지점은 `offsetSetUpTo` 그대로다** — 위 정정(`+1` 폐기)은 유지된다.
+      `/code-review`가 무효화를 `j`로 바꾼 동기는 그 재개 변경에 맞춘 쌍이었는데,
+      재개가 그 필드로 남는 한 `j-1`로도 안 깨진다: `prefix[j-1]`은
+      `1..j-2`의 합이라 splice와 무관하게 유효하다.
+    - **⭐ [2026-08-26 채택] 되감기 신호를 캐시 상한과 **분리했다**.**
+      여기 한때 이게 *"기각된 대안 — `H-101`의 '새 필드를 안 만든다' 확정을
+      되짚는 것이라 비용이 더 크다"*로 적혀 있었는데, `/code-review high`
+      4차가 **그 통합이 정확히 버그의 원인**임을 드러냈다(`getOffsetAt`의
+      부수효과가 되감기 신호를 지운다). 지금은 `offsetCacheValidUpTo`와
+      `offsetSetUpTo` 둘이다 — 위 "두 필드" 절.
 - **`H-102`(splice가 observer를 옮겨도 클로저에 박힌 인덱스는 안 고쳐진다)가
   이걸로 같이 닫힌다** — 아래 `setLength`의 `gatedRecompute`가 **인덱스를
   캡처하지 않고 조회**한다. `slot._elemIndex`(물리 요소 → 인덱스 역방향
@@ -1845,7 +1994,7 @@ end
   소유하고, splice가 배열을 당길 때 같이 갱신한다 — 그래서
   `base/slot-plan.md`의 splice 요구 목록에 항목이 늘지 않는다.
   (사용자: *"그것을 dispatch 로 격상시키는게 더 나아보이는 지점"*.)
-  `bk.invalidAfter = 0`으로 뭉개는 안은 기각 — *"0 으로 두면, 모든 부분에
+  두 필드를 `0`으로 뭉개는 안은 기각 — *"0 으로 두면, 모든 부분에
   있어 캐시가 무관해져요"*.
 
 **`offset`/`sum`은 0-based *개수*이지 Lua 배열 인덱스가 아님(2026-08-11
@@ -1907,7 +2056,8 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
     bk.indexOfToken[token] = i
     -- [2026-08-24 `H-3`] 접두합 캐시를 여기까지 당긴다 — `i` 자리의 offset은
     -- `1..i-1`의 합이라 안 바뀌고, 바뀌는 건 그 **뒤**뿐(위 무효화 표).
-    bk.invalidAfter = math.min(bk.invalidAfter, i)
+    bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)   -- 무효화는 둘 다
+    bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        i)
 
     local function gatedRecompute()
         -- ⭐ [2026-08-25, 7라운드 `H-102`] `i`를 **캡처하지 않는다** — splice가
@@ -1925,7 +2075,8 @@ function Dispatch.setLength(ownerKey, i, len, anchor)
         --   키로 쓰는 건 요소가 자리마다 유일해서 성립하는 것 — 그 성질을
         --   Dispatch에선 토큰이 맡는다.)
         local cur = bk.indexOfToken[token]
-        bk.invalidAfter = math.min(bk.invalidAfter, cur)  -- 나중 emit도 같은 무효화가 필요
+        bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)  -- 나중 emit도
+        bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        cur)  -- 같은 무효화가 필요
         if blocker:IsOn() then return end                 -- 배치 등록 중
         if bk.recomputeBlocker:IsOn() then return end     -- ⭐ recompute 재진입 중
         recompute(ownerKey, bk)
@@ -2040,7 +2191,8 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 4. 배치가 끝나면(`Dispatch.drive`의 배열 파트 순회 전체, 또는
    `materializeSlotTree`의 등록 루프 전체가 끝나면) `blocker:OffWithoutEmit()`을
    부르고, **그 직후 딱 한 번** `recompute(ownerKey, bk)`를 명시적으로
-   호출한다. 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
+   호출한다(**[2026-08-26]** 이 명시 호출도 `bk.recomputeBlocker:IsOn()`이면
+   건너뛴다 — `H-119`). 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
    `ownerKey`가 Slot이면 이 한 번의 recompute가 `ownerKey.Length`(위
    재귀 케이스)도 같이 확정시킨다.
    - **⭐ [2026-08-21 5라운드 `DC-11`] 이 마지막 호출이 실제로 하는 일은
@@ -2332,9 +2484,9 @@ end
   "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime`" 절).
   **[정정, 2026-08-14 다섯 번째 세션]** 이 항목의 옛 근거(*"Observer가 이미
   자기 `Subscribed` 상태로 게이팅됨, `bindLifetime`도 그 필드를 세팅/해제"*)는
-  틀렸음 — `.Subscribed`는 전역 `:Subscribe()` 전용 필드이고 `bindLifetime`은
+  틀렸음 — `.Subscribed`는 구독 경로 전용 필드이고 `bindLifetime`은
   건드리지 않음. 결론(핸들러가 따로 안 짜도 됨)은 그대로, 근거만 바뀜.
-  상세는 `archive/canexecute-inst-arg-reversed.md`.
+  상세는 `archive/canexecute-inst-arg-reversed.md`. (**[2026-08-26 표기 정정, 8라운드 `H-111`]** *"전역 `:Subscribe()` 전용"*이 아니라 **구독 경로(강/약) 공용**이다 — `:WeakSubscribe()`도 세운다. 이 문장의 요지, 즉 leaf 경로/`bindLifetime`과 무관하다는 것은 그대로 유효하다.)
 - Observer가 "등록 즉시 1회 실행"이므로 **최초 적용과 이후 재실행이 같은
   코드 경로로 자동 통일**됨 — 프로퍼티 store-bind 핸들러가 "설치 시 1회
   적용"을 별도로 안 짜도 되는 이유(`base/bind-system-plan.md`의 Observer 절의

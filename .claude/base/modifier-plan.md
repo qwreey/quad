@@ -473,10 +473,18 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
 `error`가 항상 잡아준다.
 
 - **적용 지점**: "어떤 값이 Source/State의 현재 값으로 확정되는 모든
-  지점" — `Source:Set(value)` 호출 시, `Store({defaults})` 생성 시
-  각 `defaults` 키를 `Source(v)`로 만드는 시점, 그리고 State의
+  지점" — **`Source(...)` 생성자**, `Source:Set(value)` 호출 시, 그리고 State의
   `:Compute(fn)` 결과를 캐시로 저장하기 직전(`fn`이 반환한 값이
-  `isModifier`면 캐싱 전에 `error`). 새 체크 지점을 여러 곳에 흩는 게
+  `isModifier`면 캐싱 전에 `error`).
+  **⭐ [2026-08-26 정정, 8라운드 `H-122`]** 여기 한때 *"`Store({defaults})`
+  생성 시 각 `defaults` 키를 `Source(v)`로 만드는 시점"*이 셋 중 하나로
+  적혀 있었는데, **명시적 초기화 확정(2026-08-25) 이후 그 지점은 코드상
+  존재하지 않는다** — `defaults`엔 사용자가
+  이미 만든 `Source(v)`가 그대로 들어오며 생성자는 `table.clone`뿐이다. (**⚠️ [2026-08-26 정밀화, `/code-review high`]** 정확히는 **`defaults` 경로에서** 안 만든다는 뜻이다 — 동적 키 창구 `store:Of(name)`은 여전히 그 자리에서 `Source`를 만든다(`base/store-plan.md`). 결론은 그대로다: 가드를 `Source` 생성자에 두면 `Of` 경로까지 **한 번에 커버**된다.)
+  가드를 **`Source` 생성자**로 옮기면 defaults 경로가 자동으로 커버되고
+  (독립 `Source(someModifier)`와 한 자리로 수렴) 목록이 오히려 짧아진다 —
+  **사용자 확정.** Store 생성자가 별도로 하는 일은 `isModifier`가 아니라
+  `isSource` 화이트리스트 검증이다(`base/store-plan.md`). 새 체크 지점을 여러 곳에 흩는 게
   아니라, "값이 State/Source의 값으로 확정되는" 이미 존재하는 몇 안
   되는 지점에 `isModifier` 검사 한 줄씩 얹는 것뿐.
 - **Slot/Tag/Attribute 등 다른 핸들러 계층 값은 여전히 아무
