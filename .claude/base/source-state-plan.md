@@ -1421,7 +1421,11 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   - **⚠️ [2026-08-26 재정정, `/code-review high` 6차] `:Unsubscribe()`도
     idempotent가 아니다.** 여기 한때 *"게이트가 없어 … 비대칭이 의도된 것"*
     이라고 적혀 있었는데, 같은 날 **대칭 가드**가 들어오며 거짓이 됐다(위 항목).
-    지금 계약은 **해제는 건 경로로 푼다** 하나다.
+    지금 계약은 **해제는 건 경로로 푼다** 하나다. **[2026-08-27 9라운드
+    `H-133`]** 그 대칭 가드는 *경로 교차*(강↔약)만 막는다 — 구독한 적 없는
+    값·이미 약하게 풀린 값에 `WeakUnsubscribe`는 **조용히 통과**(의도된 관대함,
+    사용자 논거와 함께 `base/lifecycle-pattern.md` (2)가 소스), 같은 값에
+    `Unsubscribe`는 error.
 - **[정정, 2026-08-09 여섯 번째 세션] "`:Unsubscribe()`는 자동(리프)
   케이스에도 동일하게 씀"은 틀림 — 리프/`bindLifetime` 경로의 조기
   해제는 `unbindLifetime(value)`가 담당, `:Unsubscribe()`는

@@ -8,21 +8,56 @@
 **진행 방식**: 그 문서 §4가 배치 회신용으로 묶어둔 **결정 문항 Q1~Q10** 순서를
 따른다. 8라운드와 같다.
 
-**⚠️ [2026-08-27 기준] 진행 중이다.** 아래 표가 어디까지 왔는지의 소스다.
-처음엔 "문항을 다 처리한 뒤 일괄 반영"으로 잡았으나, Q1~Q3가 같은 `slot-plan.md`
-구간에 몰려 있고 서로 얽혀(Q2의 생성자 이동이 Q3의 `_elemIndex` 삭제와 같은
-줄) 사용자 지시로 **Q3까지 먼저 반영**했다. Q4 이후는 결정 뒤 반영한다.
+**✅ [2026-08-27] Q1~Q10·`H-138`·`H-139`·`H-142`까지 전량 처리·반영됐다.** 아래
+표가 항목별 상태의 소스다. (경위: 처음엔 "문항을 다 처리한 뒤 일괄 반영"으로
+잡았으나, Q1~Q3가 같은 `slot-plan.md` 구간에 몰려 있고 서로 얽혀(Q2의 생성자
+이동이 Q3의 `_elemIndex` 삭제와 같은 줄) 사용자 지시로 Q3까지 먼저 반영하고
+체크포인트 커밋했고, Q4 이후는 같은 날 이어진 세션이 결정 뒤 반영했다.)
 
 | 문항 | 발견 | 상태 |
 |---|---|---|
 | Q1 | `H-124` `recompute` 루프 순서 | ✅ **확정** — (a), `continue` 형태 |
 | Q2 | `H-125` 재마운트 캐시 | ✅ **확정** — 생성자 이동 + (c) 순서 + `_destroyed` |
 | Q3 | `H-126` splice 빈자리 (+ `H-137` 소멸, `H-141` 신설) | ✅ **확정** — `element → index`는 `bk`가 소유, 토큰 폐기 |
-| Q4~Q10 | `H-127`~`H-133` | ⏳ 대기 |
-| — | `H-134`~`H-140` | ⏳ 대기(레인 B·부수 발견) |
+| Q4 | `H-127` `EffectHandle:Unsubscribe` 순서 | ✅ **확정·반영** — (a) 의사코드, Observer 게이트 먼저 |
+| Q5 | `H-128` M2×M8 `Ref` | ✅ **확정·반영** — (a) M2 공통 기반에 `Ref` 최소형 |
+| Q6 | `H-133` `WeakUnsubscribe` 비대칭 | ✅ **확정·반영** — (a) 의도된 관대함 |
+| Q7 | `H-130` 폐기 블록 편집 | ✅ **확정·반영** — (b) `archive/`로 이전 |
+| Q8 | `H-134` `InstanceChildHandler` 부기 | ✅ **확정·반영** — (a) |
+| Q9 | `H-135` 숏핸드 retractor | ✅ **확정·반영** — 문항 전제 정정, Tween 절 스케치 한 줄이 복사 오류(🟡→🟢) |
+| Q10 | `H-136` reconcile 배치 Blocker | ✅ **확정·반영** — (a) |
+| — | `H-129`/`H-131` | ✅ 정정 반영(판단 불필요) |
+| — | `H-138` 숏핸드 우선순위 | ✅ **확정·반영** — 숏핸드가 높다, 충돌 방지는 `UI` 접두어 |
+| — | `H-139` `New`/`D` 파이프라인 | ✅ **의사코드 신설** — 쓰면서 `H-142` 발견 |
+| — | `H-132`/`H-137`/`H-140` | ✅ Q1~Q3 처리 때 닫힘 |
+| — | `H-142` 해시 파트 `Parent` 순서 | ✅ **확정·반영** — props에 `Parent` 금지(순서 문제 소멸) |
+| — | `H-143`~`H-146` (`/code-review high` 발견 중 새 메커니즘 넷) | ⏳ **판단 대기** — `fn` 안 `Unsubscribe` 고아 cleanup / 재`Subscribe` 재설치 / `indexOfElement` 잔존 / 루트 마운트 경로 |
 
 **[2026-08-27] Q1~Q3는 `base/`·`ROADMAP.md`에 반영했다** — 반영 중 드러난 것과
-열어둔 확인은 아래 "반영 기록" 절.
+열어둔 확인은 아래 "반영 기록" 절. **같은 날 이어서 Q4~Q8·Q10·`H-138`·`H-139`를
+확정·반영했다**(아래 Q4 이하 절). **[같은 날 마지막] Q9 확인과 `H-142` 판단도
+닫혀 9라운드 발견은 전량 처리됐다** — 그 뒤 감사 8라운드와 `/code-review high`를
+돌렸고, **리뷰가 낸 새 메커니즘 넷(`H-143`~`H-146`)이 판단 대기**(아래
+"`/code-review high`" 절).
+
+**사용자 회신 원문(Q4~Q10 일괄, 2026-08-27)**: *"Q5 까지는 권고에 전부 동의함.
+WeakSubscribed 자체가 사라질 수 있는 요소라서, 그 사라지는걸 유저가 정하게 하는
+요소라서 에러를 내야할지 말아야할지 애매한 부분이긴 한듯. 다만 weak 에 대한
+홀드를 유저가 유지하는게 강제라면 b가 되긴 해야하나, 그럴 이유가 없어서 a가
+되는게 맞는듯. 7번은 프로젝트 컨벤션대로, 권고 b적용. 8번도 권고대로. 9는 뭔가
+이상한데? nil은 파괴가 맞고 파괴 자체가 트윈을 지움. 메니지드를 지우는 스케치가
+왜 트윈에 있는지도 모르겠는 부분..? 트윈은 inst 를 바꾸어 재프로세싱 하는거라
+연관이 없는 부분인데. 다시 생각하고 말해볼래? Q10 은 이제 그래도 되어보임.
+이전에는 native* 가 없어 모두 dom 식 elem 입출력이 강제가 아니였는데, 이젠
+그렇기 때문에 최초 방식으로 recompute 되는것 처럼 처리되어도 되는 지점.
+부작용으론, offset 이 먼저 설정되어진 다음 후행 요소들이 밀리거나 당겨진 다음
+후행으로 넘어가느냐가 차이가 나는데, 이미 우린 set upto 와 valid upto 가 나뉜
+지점이고, 싱크라서 괜찮아보임. 권고대로 진입해도 된다 보는데 어떻게 생각하는지?
+H138은 당연히 숏핸드 우선순위가 높음. 안 그러면 프로퍼티 핸들러가 숏핸드 계층을
+인지하고 준비한다는 말이 돼. 그리고 프로퍼티에 UI를 붙인 이유도 우연히 겹치는걸
+막기 위함임. UI 프리픽스는 로블록스 프로퍼티에 발견되진 않거든. H139 은 실 구현
+전에 의사코드를 써보자. 그걸로 인해서 감추어졌던 설계 결함이나 폭탄이 발견된
+경우가 많아서, 커지기 전에 확인해볼 필요가 있음. 중요 계층이라서"*
 
 ---
 
@@ -336,6 +371,165 @@ if slot._physicalTarget == nil then return end
 
 ---
 
+## Q4 — `EffectHandle:Unsubscribe()`는 Observer 게이트를 **먼저** 통과한 뒤 cleanup (`H-127`, 확정 (a))
+
+- `effect-plan.md`의 "`EffectHandle:Subscribe()`" 절에 의사코드 한 블록 신설 —
+  `Subscribe`/`WeakSubscribe`/`WeakUnsubscribe`는 **Observer의 함수를 메소드
+  테이블에 그대로 배정**(같은 레지스트리·같은 `canBound` 게이트·같은
+  `.Subscribed`), `Unsubscribe`만 `Observer.Unsubscribe(self)` 통과 뒤
+  `self:_consumeCleanup()`. `WeakUnsubscribe`는 cleanup을 안 건드린다(약한
+  구독은 GC에 맡기는 경로라 해제가 종료 신호가 아니다).
+- 산문의 번호 목록(플래그 → cleanup → fail-fast)은 **의미 목록이지 실행 순서가
+  아니라고** 그 자리에 적었다. `lifecycle-pattern.md`의 *"아래가 네 진입점
+  전량이고 소스다"*는 *"Observer의 네 진입점 … `EffectHandle`은 같은 넷을 그대로
+  재사용"*으로.
+
+## Q5 — M2 공통 기반에 `Ref` 최소형 체크박스 (`H-128`, 확정 (a))
+
+- `ROADMAP.md` M2 "공통 기반" 절에 체크박스 신설 — `.Value`/`.Revision`/`:Set`/
+  `:WeakCallback`/`:Callback`/`:Uncallback`/`isRef` + `EpochBrand:register`.
+  M8 `Ref.luau` 체크박스는 *"최소형은 M2로 앞당겨졌다 — 여기 남는 건 `:Wait`,
+  `PreRef`/`PostRef`, 디스패치 핸들러"*로. 절 머리의 *"셋 다 State-free"*는
+  개수 없이 *"여기 있는 것 전부"*로.
+
+## Q6 — `WeakUnsubscribe`의 관대함은 의도된 것 (`H-133`, 확정 (a))
+
+- `lifecycle-pattern.md` (2) 의사코드 주석 + 산문 bullet 신설. **사용자 논거**
+  (위 원문): 약한 등록의 생존은 사용자가 쥔 참조에 달린 것이고 quad가 그 홀드를
+  강제하지 않으므로 "없는 항목의 약한 해제"를 오류로 볼 근거가 없다 — 홀드
+  유지가 강제였다면 (b)여야 했다. 강한 등록은 quad가 살려두는 것이라 "없음"이
+  곧 호출부 실수라 엄격. leaf 바인딩된 값에 `WeakUnsubscribe`도 같은 이유로
+  통과(무해).
+
+## Q7 — 폐기 블록을 `archive/`로 (`H-130`, 확정 (b))
+
+- `effect-plan.md`의 ⛔⛔ 배너 아래 블록(`_observers` 배열 + cascade)을
+  `archive/effect-internal-observer-cascade-reversed.md`로 옮기고 포인터 한
+  문단만 남겼다. 옮긴 원문은 **`9dd8213`이 배너 아래를 편집한 흔적 그대로**이고
+  파일 머리에 그 경위를 적었다. 새 규칙은 안 만들었다 — `conventions.md`
+  핸드오버 체크리스트 3번이 이미 이 실패 모드를 규정한다(사용자: *"프로젝트
+  컨벤션대로"*).
+
+## Q8 — `InstanceChildHandler`도 부기를 등록한다 (`H-134`, 확정 (a))
+
+- `dispatch-core-plan.md` 말단 표에 행 신설 + `H-39` 블록에 "다섯째" 문단:
+  `process` 맨 앞에서 `setOffsetSource(inst, k, None)` →
+  **`setLength(inst, k, 1, inst, v)`** → `v.Parent = inst`; 반환 클로저는
+  `None` → `0` 순서로 해제. `ROADMAP.md` M5 체크박스에 같은 두 줄. 5번째
+  인자(요소)는 Q3의 `setLength` 시그니처를 따른 것 — 상수 길이라 지속 클로저는
+  안 생기지만 등록 모양을 다른 말단과 맞췄다.
+
+## Q9 — 재고: 두 "확정"이 아니라 Tween 절 스케치의 **복사 오류** (`H-135`, 확정)
+
+사용자가 문항의 전제를 정정했다(*"nil은 파괴가 맞고 파괴 자체가 트윈을 지움.
+메니지드를 지우는 스케치가 왜 트윈에 있는지도 모르겠는 부분..? 트윈은 inst 를
+바꾸어 재프로세싱 하는거라 연관이 없는 부분인데"*). 다시 본 결과:
+
+- `v == nil` → `process`가 자식을 파괴하는 규칙은 두 절이 **같다**. 이상한 건
+  Tween 절 스케치의 마지막 줄 `return function(hint) if hint == nil then
+  destroyManagedChild(inst,k) end end` 하나 — 그 절의 주제는 *자식 프로퍼티
+  세팅을 `Dispatch.process(child, "CornerRadius", …)`로 되돌려준다*뿐이라
+  관리 자식의 생사를 정할 자리가 아닌데, `v == nil`(값)과 `hint == nil`
+  (retractor 인자)을 겹쳐 적은 **복사 오류**로 보인다.
+- 제가 (B) 분기에서 *"트윈이 끊긴다"*를 피해로 든 것은 틀렸다 — 자식이
+  파괴되면 그 위의 트윈이 사라지는 건 당연한 결과지 결함이 아니다. 그 줄을
+  지워야 하는 이유는 **파괴 경로가 하나여야 한다**(`process(inst,k,nil)`)는 것
+  하나이고, 이중 파괴는 그 중복의 증상이다.
+- 트레이스: `(inst,"UICorner")` 체인은 어떤 값이든 `UICornerHandler.process`에
+  `number|Tween|nil`로 닿고(`StoreBind`가 State를 풀고 `NoneHandler`가 `nil`로),
+  키 자체가 사라지는 건 인스턴스 teardown뿐이라 그때는 자식이 부모와 같이
+  죽는다 — retractor가 할 일이 없다.
+- **✅ [2026-08-27 확정]** 사용자: *"9 맞음. v == nil 로 신규 들어오면 파괴가 맞고
+  retract 는 nop 맞아. 파괴 자체가 사실 inst 바꿔서 넣은 process 를 처리할 필요
+  없게 만들어버리고, 우린 파괴에 대해서 retract 안하던게 맞아서, Tween 과 무관한
+  것도 맞지."* — `ui-shorthand-plan.md` Tween 절 스케치의 그 줄을
+  `return function() end`로 고치고 정정 bullet을 달았다. `H-135`는 🟡→🟢.
+
+## Q10 — `reconcile` 재실행도 배치 Blocker로 (`H-136`, 확정 (a))
+
+- `slot-plan.md`의 `reconcile` 머리(중복 키 선행 패스 뒤)에 `getBlocker(self)`
+  획득, 꼬리에 `OffWithoutEmit()` + `recomputeBlocker` 확인 후 `recompute` 1회.
+  **Blocker가 네스팅이 안 되므로**(불리언, `blocker-plan.md`) 최초 population
+  처럼 바깥 배치 안에서 오면 `IsOn()`으로 알아보고 손대지 않는다(`ownsGate` —
+  이 판정은 사용자가 승인한 (a)의 문구 밖에 있는 **구현 세부**다. 같은
+  `reconcile` 클로저가 바깥 배치 안(최초 population)과 밖(재실행) 양쪽에서
+  불리는데 Blocker에 네스팅이 없어서 필요한 것이고, 함수 지역 변수라 표면엔
+  안 드러난다).
+- **사용자 논거**(위 원문): `native*` 계층이 생기기 전엔 DOM식 요소 입출력이
+  강제가 아니라 raw op마다 `recompute`가 돌아야 했지만, 이제는 물리 위치를
+  `native*`가 부기와 무관하게 정확히 넣으므로 최초 population처럼 한 번에
+  따라잡아도 된다. 부작용으로 "offset이 먼저 잡힌 뒤 후행 요소가 밀리느냐,
+  밀린 뒤 넘어가느냐"가 갈리지만 `offsetSetUpTo`/`offsetCacheValidUpTo`가
+  분리돼 있고 동기라 괜찮다. `dispatch-core-plan.md`의 *"한 사이클 … 한 번만"*
+  문단에 같은 근거를 적었다.
+- 제 판단: 동의 — `raw*`의 명시 호출이 이미 `getBlocker(self):IsOn()`을 보므로
+  (`H-119`) 추가 배선이 없고, `getOffsetAt`/`physIndex`는 Blocker와 무관하게
+  정확하다(최초 population과 같은 논증). `updateFn`이 던지면 Blocker가 켜진 채
+  남는 것도 `materializeSlotTree`와 같은 부류다.
+
+## `H-138` — 숏핸드 핸들러가 `PropertyHandler`보다 우선순위가 높다 (확정)
+
+- `ui-shorthand-plan.md` "메커니즘" 절에 문단 신설, "결론" 절의 접두어 확정에
+  두 번째 근거 추가. **사용자 논거**(위 원문): 리플렉션 거부에 기대면 하위
+  계층(프로퍼티)이 상위 계층(숏핸드)의 키 집합을 알아야 하는 역방향 의존이
+  생긴다; 충돌 방지는 우선순위가 아니라 `UI` 접두어의 몫(Roblox 프로퍼티
+  이름엔 `UI` 접두어가 없다). 구체 상수는 구현 시.
+
+## `H-139` — `New(name)(props)` 파이프라인 의사코드 (신설) + 거기서 나온 것
+
+- `bind-system-plan.md` "인스턴스 생성 / 이벤트 네이밍 인체공학" 절에
+  `New` ①~④(물리 생성 → gcconn/gchold → `flatten` → `Dispatch.drive`)와
+  `drive` (a)~(c)(pre-pass → 단일 일반화 `for` 본체 + 배치 Blocker →
+  `postRefList`) 의사코드 신설. 단계 안의 규칙은 각 소스 문서가 정본이고 여기는
+  **순서**만 확정. `ROADMAP.md` M3 `Dispatch.drive` 항목에서 가리킨다.
+- 이름 충돌(모듈 팩토리 `New()` vs 생성자 `New "Frame"`)은 산문 표기 규칙
+  한 줄로 닫았다(패키지가 달라 런타임 충돌은 없다).
+- **쓰면서 드러난 것 셋** — 사용자가 예상한 그대로:
+  1. ~~**배치를 닫는 자리가 어디에도 없었다.**~~ **⚠️ 이 주장은 틀렸다**(감사
+     1라운드) — `dispatch-core-plan.md`의 `H-17` 절이 이미 *"`drive` 전체
+     (post-pass 포함)를 감싼다, `PostRef` 콜백은 게이트가 켜진 채 실행된다"*로
+     정해뒀는데 제가 그 절을 안 보고 "해시 파트 앞에서 닫는" 의사코드를 썼고,
+     사용자 확인 1번은 **그 틀린 전제 위에서** 받은 것이다. 의사코드를 `H-17`대로
+     (진입 직후 On, `postRefList` 뒤 Off + `recompute`) 고쳤다 — 확인 1번은
+     무효, 계약은 원래 것 그대로. 실제로 낡아 있던 건 같은 문서 "해법의 핵심"
+     4번의 옛 문구(*"배열 파트 순회 전체"*) 하나라 같이 정정.
+  2. **자식 없는 Instance에도 Blocker/`bk`가 생기는 경로.** `getBlocker(inst)`를
+     무조건 부르면 `Frame { Size = … }`마다 Blocker + `bk` + `Relate` 항목이
+     eager 생성된다 — Q2/Q3가 Slot 쪽에서 막은 것과 같은 부류.
+     `flattened[1] ~= nil` 가드로 막았다. 확인 요청.
+  3. **`H-142` 🟡 신설 — 해시 파트 안의 `Parent` 순서가 미정.** `Frame { Parent
+     = x, Size = … }`에서 `Parent` 대입이 다른 프로퍼티보다 먼저 올 수 있다
+     (Luau 해시 순회 순서는 계약이 아니다). 처방 후보(순서 미루기/문서화/무시)가
+     전부 새 메커니즘이라 정하지 않고 올렸다.
+     **✅ [2026-08-27 확정 — 순서가 아니라 키 금지]** 사용자: *"Parent대입 자체가
+     오면 안 돼. 그건 부모에서 할 일이거든. 자신이 바로 하는 경우는 없어. 그걸
+     허용해준다는것 자체가, '외부에서 직접 Parent 설정해주지 말것' 을 해치는
+     요인이 되기도 해.(암묵적으고 가능하도록 둬버려서)"* — `slot-plan.md`의
+     "동적 자식은 반드시 `Slot` 또는 `state<Frame>`류 store-bind를 통해서만" 원칙의
+     정적 리터럴 판. 반영: `bind-system-plan.md` 파이프라인 절에 규칙 + `ROADMAP.md` M5
+     (`D` 생성기가 props 타입에서 `Parent` 제외 / `PropertyHandler.isHandlable`이
+     `"Parent"` 거부 → 기존 "매치 핸들러 없음 → 즉시 error"에 걸림). **런타임
+     배선은 제 선택**(새 메커니즘 없이 기존 계약 재사용)이라 문서에 그렇게
+     갈라 적었다.
+- **1·2 확인 완료**(사용자: *"1과 2는 확인했어. 2는 특히 생성 이후 다시 process
+  를 주는걸 우린 안 하기로 해서 충분히 가능한 일"*). 2에 대해 사용자가 남긴
+  의심 — *"Frame{} 으로 나온 bk없는게 Slot 안에 멀쩡히 들어가는데 문제
+  없을까"* — 를 코퍼스의 호출부 전수로 확인했다: **문제 없다.**
+  - `getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`의 첫 인자
+    (`ownerKey`)는 코퍼스 전체에서 **Slot 자신(`self`/`slot`) 또는 `drive`를
+    도는 최상위 `inst`뿐**이다. Slot에 들어간 `Frame{}`은 언제나 **요소**
+    (`setLength`의 5번째)나 **앵커/물리 target**(4번째, `bindLifetime`·
+    `nativeInsert`의 첫 인자)으로만 나온다 — 앵커는 gchold(②에서 무조건
+    생성)를 쓰지 `bk`를 안 본다.
+  - 그 Frame이 owner가 되는 경우는 자기 props에 배열 파트가 있을 때뿐이고,
+    그땐 `flattened[1] ~= nil`이라 가드가 안 걸린다. `outerSlot:Add(innerSlot)`
+    처럼 나중에 중첩 Slot이 그 Frame을 물리 target으로 써도 owner는
+    `outerSlot`이다.
+  - "`bk.base`"는 이미 걷어낸 필드다(`dispatch-core-plan.md` 3번, 사용자
+    지적으로 — 최상위 `inst`의 베이스는 항상 0이라 저장할 게 없다). 설령
+    예상 못 한 경로가 `getBookkeeping(frame)`을 불러도 **lazy 생성**이라
+    크래시가 아니라 그때 만들어질 뿐이다.
+
 ## 반영 기록 — Q1~Q3 (2026-08-27)
 
 **바뀐 파일**: `base/dispatch-core-plan.md`(`recompute` 루프 재배치 / `setLength`
@@ -379,7 +573,10 @@ elem->index 를 위치를 재설정 해준다면 괜찮아"* — `rawReplace`의
 맞아. 그래야 인덱싱 매핑을 만드니까"*. (4) *"slot._baseObserver 는 unbind 만 했고,
 nil 로 지우는것만 안 한다면 맞아"*.
 
-**아직 안 한 것**: `/code-review high`, 커밋 — Q4~Q10 반영 뒤 한 번에. README
+**아직 안 한 것**(Q1~Q3 체크포인트 시점 문장 — **[2026-08-27 후속] Q4~Q10도
+전량 반영됐고**, 그 반영분의 감사 루프는 아래 "감사 루프 (2026-08-27, Q4~Q10
+반영분)" 절; 남은 건 라운드 전체에 대한 `/code-review high`와 커밋뿐):
+`/code-review high`, 커밋 — Q4~Q10 반영 뒤 한 번에. README
 색인과 `todos.md` 00번 갱신은 감사 1라운드 지적으로 그 자리에서 했다. 감사
 루프는 Q1~Q3 반영분에 대해 돌았고 6라운드에서 수렴했다(아래 "감사 루프" 절).
 
@@ -396,3 +593,54 @@ nil 로 지우는것만 안 한다면 맞아"*.
 | 4 | 앞 라운드 수정분 자체 + followup/발견 문서 내부 정합 | 확실 1 | `CLAUDE.md`·`project-context.md`(둘 다 `@import`)가 결정 소스로 8라운드까지만 나열 — 9라운드 한 줄 추가. 그 외 앞 수정분·두 문서 내부 정합은 줄 단위 대조로 이상 없음 |
 | 5 | 4라운드 수정분 + 델타 밖 `base/` 문서 | 확실 1 · 판단 1 | `README.md`의 `dispatch-core`/`slot-plan` 색인 행에 Q1/Q2 요약 추가 / `architecture.md`의 `Slot.luau` 한 줄에 생성자 필드·`_destroyed` 표기(판단 항목 — 8라운드 행들이 같은 밀도라 넣음) |
 | 6 | 5라운드 수정분 + 신설 규칙 문단 | **확실 0** · 의심 1 | *"`Owned=false`는 `_destroyed`가 안 선다"*가 README 요약과 followup에만 있고 `slot-plan.md` 산문엔 없던 것 — 사용자 확정 인용과 함께 명문화. **수렴**(확실 0) |
+
+## `/code-review high` (2026-08-27, Q4~Q10 반영분 + 감사 8라운드 뒤)
+
+10건(검증 12 CONFIRMED · 5 PLAUSIBLE · 1 REFUTED). **여섯은 기존 규칙 적용이라
+그 자리에서 반영**, **넷은 처방이 새 메커니즘·표면이라 문항으로**(`-round9.md`의
+`H-143`~`H-146`, `question.md` 최우선 절).
+
+반영한 여섯:
+1. **`InstanceChildHandler` retractor가 옛 자식을 안 내렸다** — `Parent = nil`
+   추가(파괴 아님 — `slot-plan.md`의 "`State<Slot>` 교체는 파괴가 아니라
+   언마운트" 절 근거 1이 바로 `state<Frame>`의 이 동작). `state:Set(B)`에서 A가
+   물리 자식으로 남은 채 `lengthList[k] == 1`이 되던 것.
+2. **같은 핸들러의 순서** — `setLength` → `Parent`였던 것을 `Parent` →
+   `setLength`로("일반 계약 — 물리와 부기의 순서" 3번과 같게). 단건 경로에서
+   `recompute`가 부착 전에 돌았다.
+3. **같은 핸들러의 5번째 인자 `v`** — 제가 "모양을 맞추려" 넣은 것인데, 해제
+   `setLength(…, 0)`이 옛 키를 안 지워 교체마다 `bk.indexOfElement`에 옛 자식이
+   강참조로 쌓였다. Q3 계약대로 상수 길이는 **생략**. (Slot 쪽 같은 구멍은
+   `H-145`로.)
+4. **`H-17`에 빈 배열 파트 가드가 없었다** — 사용자 확인 2번이 스케치에만 적혀
+   정본(`dispatch-core-plan.md`)은 여전히 "무조건 On"이었다. 정본과 "해법의
+   핵심" 1번에 반영.
+5. **`quad-types`의 `Quad`에 `Ref` 필드** — `H-128`로 최소형이 M2에 왔는데 그
+   필드 체크박스는 M8에 남아 `H-25` 공백을 다시 열었다. M2 `H-80` 목록에 `Ref`
+   추가, M8 항목은 흡수 표기.
+6. **Modifier 메소드 목록의 `Parent`** — props 타입에서만 빼면
+   `Modifier():Parent(x)`가 타입을 통과한다. `bind-system-plan.md` `H-142` 타입
+   항목 + ROADMAP M7 체크박스.
+7. **`effect-plan.md` 번호 목록 재정렬** — "실행 순서가 아니다" 괄호만 달고 옛
+   순서를 남겨둔 것이 `H-130`과 같은 모양이라 게이트 → 플래그 → cleanup으로
+   다시 씀.
+
+기각 1(REFUTED): "`drive` 의사코드가 `dispatch-core-plan.md`를 중복한다" — 사용자
+요청으로 신설한 블록. 캡에 밀린 하위 발견(`Slot:List` 잉여 블록 잔존 등)은 이미
+"잉여" 주석으로 처리된 것과 같은 항목.
+
+## 감사 루프 (2026-08-27, Q4~Q10 반영분)
+
+관례대로 `quad-doc-auditor` 한 턴에 하나, diff 범위, 라운드마다 각도 변경.
+
+| 라운드 | 각도 | 새 발견 | 처분 |
+|---|---|---|---|
+| 1 | `base/` 정합성 | 확실 3 · 판단 1 · 의심 1 | ⭐ `drive` 의사코드가 `H-17`(*"`drive` 전체를 감싼다, `PostRef` 콜백은 게이트 안"*)을 어김 — 제 *"닫는 자리가 없다"* 주장이 틀렸고 사용자 확인 1번은 무효(`H-139` 절) / `question.md` 최우선 절 "Q4~Q10 대기" 잔재 / README `effect-plan` 행 `:Callback` 잔재 / ROADMAP `Property.luau`에 "거부 배선은 에이전트 선택" caveat / Blocker 시작점 "진입 직후"로 |
+| 2 | 인덱스 레이어 + 새 문단 자기모순 | 확실 1 · 의심 2 | ROADMAP M8 `Ref.luau` 체크박스가 자기 `H-128` 노트와 모순 → "나머지(`:Wait`)"로 재작성 / Q9 헤더 "확인 대기" 잔재 / `Slot:List` wrap이 `reconcile` 게이트와 중복 → "잉여" 주석 |
+| 3 | 주변 폴더 인용처 + 인용문 역방향 + 수정분 | 확실 2 · 의심 2 | ROADMAP 머리 배너 "Q4~Q10 대기" 잔재 / 이 파일 "아직 안 한 것" 문장 / (의심) `ownsGate`는 승인 문구 밖의 구현 세부 — 지역 변수라 그대로, `H-136` 절에 그렇게 표기 / (의심) M8 체크박스의 *"서술도 같이 갔다"*가 과장 → 문구 정정. 인용문 역방향은 전부 일치 |
+| 4 | 1~3라운드 수정분 + 발견/결정 문서 내부 정합 | 확실 3 · 의심 2 | 발견 문서 요약 표에 `H-142` 행 없음 / `H-135` 심각도 표 vs 헤더 / §4 아래 Q9 "확인 대기" 잔재 / (의심) `Slot:List` "잉여" 주석 범위를 블록 전체로 / (의심) M8 체크박스의 표면 목록 반복 → M2 참조로 |
+| 5 | 4라운드 수정분 + 델타 밖 `base/` | 확실 1 · 의심 2 | `source-state-plan.md`의 *둘 다 error · 계약은 하나* 문장에 `H-133` 캐비엇 / `blocker-plan.md` 재진입 절에 "`IsOn()` 소유권 판정은 네스팅이 아니다" 한 줄 / `architecture.md` `Ref.luau` 한 줄에 `Epoch` 표면·M2 최소형 |
+| 6 | 5라운드 수정분 + 신설 규칙 vs 기존 규정 | 확실 1 · 의심 0 | 이 파일 머리 배너 *"진행 중이다"* 잔재(5라운드 동안 빠졌던 것) → "전량 처리"로. 신설 규칙 여섯 자리(`Parent` 금지 / gcconn 시점 / `New` 표기 / `WeakUnsubscribe` 비소진 / 숏핸드 우선순위 / 다섯째 말단) 전부 기존 규정과 충돌 없음 |
+| 7 | 6라운드 수정분 + 세션 기록 사실성 | 확실 3 · 의심 0 | README `bind-system-plan` 행이 "배치 닫는 자리 … `Parent` 순서 미정"으로 1라운드 정정·`H-142` 확정 이전 상태 / `todos.md` 00번에서 "`/code-review high`·커밋 남음" 액션이 사라짐 → 복원 / 이 파일의 "48줄" 개수 주장(실제 47) → 개수 삭제. 세션 파일·summary·todos 본문 서술은 전부 사실과 일치 |
+| 8 | 7라운드 수정분만(좁게) | 확실 1 | `project-context.md`의 볼드 마커가 홀수(이번 갱신이 닫는 `**`를 지움) → 짝 맞춤. 지정 세 자리는 회귀 없음. **여기서 멈춤** — 1라운드 이후 설계 내용 발견은 0이고 [2026-08-27 8라운드 시점] 남은 건 기록 문서의 표기뿐이라, 비용 대비 `/code-review high`로 넘어가는 게 낫다고 판단(추이 5→3→4→5→3→1→3→1, 단조 수렴은 아님) |
+

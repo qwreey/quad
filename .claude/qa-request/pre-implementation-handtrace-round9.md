@@ -49,13 +49,18 @@ high` 7패스의 수정)를 처음부터 다시 트레이싱한 결과. 발견 �
 | `H-132` | 🟢 | `slot-plan.md` 2900행의 *"…해야 하는 일이 **셋** 늘었다"* 헤딩 아래 bullet이 넷(`H-102`가 넷째를 더함) | `slot-plan.md` 2900 | 사냥 #3 | — |
 | `H-133` | 🟢 | `WeakUnsubscribe`는 **구독한 적 없는 값**에 조용히 통과한다(가드가 "강한 킵 있음"만 본다) — *"해제는 건 경로로 푼다 … 양방향 fail-fast"* 산문과 비대칭. 의도라면 명문화 | `lifecycle-pattern.md` (2) | 계약 정합 (E) | ✅ 실측 |
 | `H-134` | 🟡 | `InstanceChildHandler`(`Frame { Frame {} }`의 정적 자식)의 배열 자리 부기(`setOffsetSource`/`setLength(…, 1)`)가 **어디에도 명세돼 있지 않다** — 말단 표에 행이 없고 의사코드도 없어 `H-39`의 "전수"가 못 잡았다. `Frame { Frame{}, Slot() }`이 첫 마운트에 `H-106` 가드로 즉사 | `dispatch-core-plan.md` 말단 표 × `architecture.md` × `ROADMAP.md` M5 | 레인 B (M5) | 값 트레이스 |
-| `H-135` | 🟡 | `ui-shorthand-plan.md` 안에 숏핸드 retractor 모양이 **둘** — *"`function() end`이면 충분"*(136행) vs Tween 절 스케치 `function(hint) if hint == nil then destroyManagedChild end`(169행). 후자면 (A)-`nil`에서 이중 파괴, (B)에서 자식 파괴·재생성으로 트윈 스냅 | `ui-shorthand-plan.md` | 레인 B (M5) | 값 트레이스 |
+| `H-135` | 🟡→🟢 | `ui-shorthand-plan.md` 안에 숏핸드 retractor 모양이 **둘** — *"`function() end`이면 충분"*(136행) vs Tween 절 스케치 `function(hint) if hint == nil then destroyManagedChild end`(169행). 후자면 (A)-`nil`에서 이중 파괴, (B)에서 자식 파괴·재생성으로 트윈 스냅 | `ui-shorthand-plan.md` | 레인 B (M5) | 값 트레이스 |
 | `H-136` | 🟡 | `:List` **재실행** reconcile은 배치 Blocker 없이 돌아 raw op마다 `recompute` + `Length:Set`이 난다 — *"한 사이클 전체가 끝난 뒤 한 번만"*(`dispatch-core-plan.md` 2344) 서술과 모순, 최초 population만 감싼 O(n²) 논거가 재실행엔 빠져 있다 | `slot-plan.md` `activateList`/`reconcile` × `dispatch-core-plan.md` | 레인 B (M6) | 값 트레이스 |
 | `H-137` | 🟢 | `rawMove`/`rawSwap` `H-29` 규약 1의 치환 목록에 `bk.tokens`/`bk.indexOfToken`이 없다(`H-102`가 splice에만 요구) — 규약 4(이동 구간 **전부** `setLength` 재등록)에 암묵 의존, 토큰은 자리 귀속이라 치환하면 안 된다는 것도 미명시 | `slot-plan.md` `H-29` 규약 | 레인 B | — |
 | `H-138` | 🟢 | `UICorner`류 숏핸드 핸들러와 `PropertyHandler`의 매치 구분(리플렉션 거부? 우선순위?)이 명세에 없다 — 이름이 우연히 프로퍼티와 겹치면 조용히 `PropertyHandler`가 먹는다 | `ui-shorthand-plan.md` × `bind-system-plan.md` | 레인 B | — |
 | `H-141` | 🟡 | **확정의 근거로 인용된 사용자 발언이 실제로는 다른 것을 승인한 것** — `H-102`의 *"dispatch 로 격상"* 인용 옆에 사용자가 정한 적 없는 `bk.tokens`/`indexOfToken`(`token = {}`, 2026-08-25 `/code-review`가 발명)이 확정 메커니즘처럼 앉아 있었고, 같은 문단의 *"splice 요구 목록에 항목이 늘지 않는다"*는 구현이 스스로 깼다(둘 늘렸다). 같은 뜻의 맵(`slot._elemIndex`)이 Slot 층에 따로 살아 두 층 이원화 | `dispatch-core-plan.md` `H-102` 문단 × `slot-plan.md` | 사냥 #1(인용문 판) — Q3 처리 중 발견 | — |
 | `H-140` | 🟢 | `ROADMAP.md:1124`가 아직 *"해제 시 `slot.Offset = nil`"* — `SL-75`/`D-60`이 전면 정정한 문장인데 **구현자가 실제로 보는 체크박스**에 살아남았다. 그대로 짜면 포탈 구독자가 영구히 끊긴다 | `ROADMAP.md` M6 | 사냥 #7 | — |
 | `H-139` | 🟢 | `New`가 둘(모듈 팩토리 `New(): Quad` / 인스턴스 생성자 `New "Frame" {…}`)이고, `D.Frame {…}`의 파이프라인(생성 → gcconn → flatten → drive)은 네 문서에 흩어져 있어 의사코드가 한 곳에 없다 | `module-lifecycle-plan.md` / `bind-system-plan.md` | 레인 B | — |
+| `H-142` | 🟡→닫힘 | **[2026-08-27 `H-139` 의사코드에서 발견]** `Dispatch.drive`의 해시 파트 순서가 계약이 아니라 `Frame { Parent = x, Size = … }`의 `Parent` 대입이 다른 프로퍼티보다 먼저 올 수 있다 — 사용자 확정은 순서가 아니라 **props에 `Parent` 금지** | `bind-system-plan.md` × `ROADMAP.md` M5 | 사냥 밖 — 의사코드 작성이 드러냄 | — |
+| `H-143` | 🟡 | **[2026-08-27 `/code-review high`]** `fn` 안에서 `self:Unsubscribe()`를 부르면(문서가 허용하는 자리) `Rerun`이 `fn`의 반환 cleanup을 그대로 `_cleanup`에 저장하고 `_installed = true`로 되돌려 **아무도 소진 못 하는 cleanup**이 남는다 — "마지막 cleanup 정확히 1회" 계약 위반 | `effect-plan.md` `Rerun` | 사냥 밖 — 리뷰 발견, 처방은 새 메커니즘 | — |
+| `H-144` | 🟡 | **[2026-08-27 `/code-review high`]** `EffectHandle.Subscribe = Observer.Subscribe` 배정이라 `Unsubscribe`로 cleanup을 소진한 핸들을 다시 `Subscribe`하면 `.Subscribed = true`만 서고 **재설치(`Rerun`)가 없다** — leaf 재바인드 경로(`_bindDestroying`의 `not _installed → Rerun`, `H-65`)와 비대칭 | `effect-plan.md` | 리뷰 발견, 처방은 새 메커니즘 | — |
+| `H-145` | 🟡 | **[2026-08-27 `/code-review high`]** 최상위 `SlotHandler` retractor가 `setLength(inst, k, 0)`으로 해제할 때 `bk(inst).indexOfElement[slot]`이 **안 지워진다**(해제 호출엔 요소가 없고 `setLength`는 `element ~= nil`일 때만 쓴다) — 교체마다 옛 Slot이 부모 `bk`에 강참조로 쌓여 부모가 죽을 때까지 산다(`InstanceChildHandler` 쪽은 5번째 인자를 안 넘기는 것으로 닫았지만 Slot은 `Length`가 State라 요소가 필요하다) | `dispatch-core-plan.md` `setLength` × `slot-plan.md` 494 | 리뷰 발견, 처방은 새 메커니즘 | — |
+| `H-146` | 🟡 | **[2026-08-27 `/code-review high`]** `H-142`(props에 `Parent` 금지, 대입은 자식을 받는 쪽만)를 닫고 나니 **루트**(`ScreenGui` → `PlayerGui`)를 붙이는 승인된 경로가 코퍼스 어디에도 없다 — 유일한 선례는 v1 `Mount(ScreenGui, …)`, `slot-plan.md` 233행의 *"v2는 mount 함수 자체가"*의 그 함수는 어느 표면에도 없다. 부수로 거부 배선의 에러가 일반 매치 실패 메시지(*"provider가 초기화됐는지 확인"*)라 오해를 부른다 | `bind-system-plan.md` `H-142` | 리뷰 발견, 처방은 새 표면 | — |
 
 ---
 
@@ -433,7 +438,7 @@ Length/Offset 절 머리(1365행)가 *"정적 단일 자식은 상수 `1`"*이�
 등록)은 이미 기각된 안(*"모든 핸들러가 `k=number`일 때 처리하도록 두는"*,
 1387행)이라 비권고. 갈래는 사실상 없다 — 확인만.
 
-### `H-135` 🟡 — 숏핸드 retractor의 두 모양
+### `H-135` 🟢 — 숏핸드 retractor의 두 모양 (**[2026-08-27] 🟡→🟢 강등 — 문항의 전제가 틀렸다**, 아래 처방 갈래가 아니라 Tween 절 스케치의 복사 오류 한 줄; `-round9-followup.md` Q9)
 
 **무엇이 문제인가.** `ui-shorthand-plan.md`의 *"`v`가 `nil`인 경우"* 절(136행)은
 *"반환 클로저가 할 일이 없어 `function() end`이면 충분"*이라 확정하는데, 같은
@@ -584,7 +589,91 @@ slotPos, S.Offset)`이 `S.Offset:Set(newAbs)`를 내는데, 그 시점 `S._baseO
 맵을 `bk.indexOfElement` 하나로 통일하고 `token`을 폐기**하는 형태로 닫혔다 —
 그 결과 **`H-137`은 소멸**했다(토큰이 없어졌으므로).
 
+**⚠️ [2026-08-27 같은 날 후속] Q4~Q8·Q10과 `H-138`·`H-139`도 확정·반영됐다** —
+Q4/Q5/Q8/Q10은 권고 (a), Q6은 (a)(의도된 관대함), Q7은 (b)(`archive/`로).
+**Q9는 사용자가 문항의 전제를 정정**했다 — 두 "확정"이 경쟁하는 게 아니라
+Tween 절 스케치의 `hint == nil` 줄이 `v == nil` 규칙을 잘못 옮긴 복사 오류이고,
+(B) 분기의 "트윈이 끊긴다"는 피해가 아니다(자식 파괴가 트윈을 지우는 건 당연).
+**[같은 날 확정]** 사용자: *"9 맞음 … retract 는 nop 맞아"* — `H-135`는 🟢로.
+`H-139` 의사코드를 쓰면서 **`H-142`**가 나왔다(아래). 결정의 소스는
+`-round9-followup.md`.
+
+### `H-142` 🟡 — 해시 파트 안의 `Parent` 순서가 미정 (`H-139` 의사코드에서 발견)
+
+`Dispatch.drive`의 본체가 단일 일반화 `for`(`F-4-1`)라 해시 파트 순서는 Luau의
+내부 순회 순서다 — 계약이 아니다. `Frame { Parent = x, Size = …, Position = … }`
+에서 `Parent` 대입이 다른 프로퍼티보다 **먼저** 올 수 있고, 그러면 부모에 붙은
+뒤에 프로퍼티가 바뀐다. 프레임 경계가 안 끼므로 사용자에게 보이는 중간 상태는
+없지만 엔진 쪽 레이아웃 재계산이 프로퍼티 수만큼 붙는다. 코퍼스 어디에도
+`Parent`의 처리 순서 서술이 없다(`PostRef` 절은 *"자기 `.Parent`는 아직일 수
+있다"*라고 부모 쪽 시점만 말한다). 처방 후보는 전부 새 메커니즘이라 정하지
+않았다 — (a) `drive`가 `Parent` 키를 루프 뒤로 미룸, (b) 문서화만(사용자가
+`Parent`를 별도로 대입), (c) 무시. **사용자 판단.**
+
+**[2026-08-27 확정 — 셋 다 아님, 키 금지]** 사용자: *"Parent대입 자체가 오면 안
+돼. 그건 부모에서 할 일이거든."* props에 `Parent`는 올 수 없고(타입 제외 +
+`PropertyHandler` 거부 → 기존 no-handler error), 순서 문제는 소멸. 소스는
+`-round9-followup.md`의 `H-142` 항목.
+
 ---
+
+### `H-143`~`H-146` — 2026-08-27 `/code-review high`가 Q4~Q10 반영분에서 잡은 것 (사용자 판단)
+
+반영 뒤 돌린 `/code-review high`(10건, 검증 12 CONFIRMED)가 낸 것 중 **처방이 새
+메커니즘·표면인 넷**. 나머지 여섯(`InstanceChildHandler` retractor의 `Parent = nil`
+누락·순서·5번째 인자 / `H-17`에 빈 배열 파트 가드 / `Quad.Ref` 필드 마일스톤 /
+Modifier 메소드 목록의 `Parent` 제외 / `EffectHandle` 산문 순서)은 기존 규칙
+적용이라 그 자리에서 반영했다(`-round9-followup.md`의 code-review 절).
+
+**`H-143` 🟡 — `fn` 안 `self:Unsubscribe()` 뒤 반환 cleanup이 고아.**
+`effect-plan.md`가 *"`fn` 안에서 `self:Rerun()`/`self:Unsubscribe()` 같은 핸들
+표면에 바로 닿는다"*고 허용하는데, `Rerun`은 `_consumeCleanup()` → `fn` → 반환값을
+`_cleanup`에 저장 + `_installed = true`다. `fn` 안에서 `Unsubscribe`가 통과하면
+(레지스트리 제거, `_consumeCleanup` no-op — 이미 nil) 그 뒤 `fn`이 돌려준 새
+cleanup이 저장되는데, 핸들은 이제 어느 레지스트리에도 없고 leaf도 아니라 재
+`Unsubscribe`는 error, `WeakUnsubscribe`는 소진 안 함, dep도 못 깨운다 → 영원히
+안 불린다(예: 타이머 정지 cleanup). **갈래**: (a) `Rerun`이 `fn` 반환 뒤
+`canExecute(self)`가 거짓이면 반환 cleanup을 **즉시 소진**(저장 안 함) / (b) `fn`
+안 `Unsubscribe`를 금지하고 그 문장을 지움 / (c) 허용하되 "그 실행의 cleanup은
+사용자 책임"으로 문서화. **권고 (a)** — 계약(*"끝나는 시점에 마지막 cleanup 정확히
+1회"*)을 코드가 지키는 유일한 갈래. 다만 `Rerun` 꼬리에 분기 하나가 는다.
+
+**`H-144` 🟡 — `Unsubscribe` 후 재`Subscribe`에 재설치가 없다.**
+`Observer.Subscribe`를 그대로 배정해서 `canBound` 게이트를 통과하면
+`.Subscribed = true`만 서고 `fn`은 안 돈다. deps 없는 Effect는 아무도 `Rerun`을
+못 불러 레지스트리가 살려두는 죽은 핸들(누수), deps 있으면 다음 emit까지 죽어
+있다가 조용히 재설치. leaf 재바인드는 `_bindDestroying`이 `not _installed`면
+`Rerun`한다(`H-65`)라 비대칭. **갈래**: (a) `EffectHandle:Subscribe` 래퍼 —
+`Observer.Subscribe(self)` 뒤 `if not self._installed then self:Rerun() end`
+(leaf 경로와 대칭) / (b) 소진된 핸들의 재구독을 error / (c) 허용하되 재설치 없음을
+문서화. **권고 (a)** — `H-65`가 leaf 쪽에 이미 세운 규칙과 같은 모양.
+
+**`H-145` 🟡 — 최상위 Slot 교체 시 `bk(inst).indexOfElement[oldSlot]` 잔존.**
+`setLength(inst, k, 0)` 해제엔 요소가 없어 옛 키가 안 지워지고(`setLength`는
+`element ~= nil`일 때만 쓴다), `indexOfElement`는 강한 키 맵이라 `Relate(inst)`
+부기가 옛 Slot을 부모가 죽을 때까지 붙든다 — Q3가 세운 맵의 부작용이고
+`rawReplace`(Slot 층)는 옛 키를 지우지만 inst 층 핸들러는 `bk`에 못 닿는다.
+`InstanceChildHandler`는 5번째 인자를 안 넘기는 것으로 닫았지만 Slot은 `Length`가
+State라 요소가 필요하다. **갈래**: (a) `indexOfElement`를 **weak-key**로(마운트
+중엔 `_elements`/`Relate`가 강하게 잡으므로 사라질 일 없고, 해제 뒤엔 저절로
+빠진다) / (b) 해제 호출 `setLength(inst, k, 0, inst, oldSlot)`에도 요소를 넘기면
+`setLength`가 `len == 0`일 때 그 키를 지운다(시그니처 의미 확장) / (c) Slot 층처럼
+inst 층에도 명시 삭제 API. **권고 (a)** — 코드 한 단어이고 "다른 곳에서 안전하게
+유지되는 것은 weak로"(`lifecycle-pattern.md` (0)) 규칙 그대로.
+
+**`H-146` 🟡 — 루트를 붙이는 승인된 경로가 없다.**
+`H-142`대로 `.Parent` 대입은 자식을 받는 쪽(`InstanceChildHandler`/Slot `native*`)만
+하는데, 부모가 quad 밖인 루트(`ScreenGui` → `PlayerGui`)는 그 어느 쪽도 아니다.
+사용자가 `D.ScreenGui { … }`를 만든 뒤 props `Parent`는 error, `Mount`류 API는
+없음, 밖에서 `gui.Parent = PlayerGui`는 인용문(*"외부에서 직접 Parent 설정해주지
+말것"*)상 금지처럼 읽힌다. 부수로 거부 배선의 에러가 *"no handler … check
+quad-roblox provider"*라 provider 설정을 의심하게 만든다. **갈래**: (a) **루트는
+예외** — quad가 만든 트리의 최상위를 quad 밖 부모에 붙이는 건 사용자가 밖에서
+`.Parent =`로 한다고 명문화(금지되는 건 *quad가 관리하는 자식 자리*에 끼우는 것) /
+(b) `Mount(root, parent)`류 표면 신설 / (c) 루트 전용 props 키. 에러 메시지는 어느
+갈래든 `PropertyHandler`가 `"Parent"`를 거부할 때 전용 문구를 내는 게 낫다(그건
+배선 세부라 갈래와 무관). **권고 (a)** — 새 표면 없이 인용문의 범위만 정확히
+적는 것.
 
 ## §5 이상 없다고 확인한 것 (다음 라운드가 다시 파지 않도록)
 

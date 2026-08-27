@@ -34,14 +34,21 @@
      검증(`error` level 2), `isModifier` 가드를 `Source` 생성자로 이동.
    - **문서화 대상 등록**: quad 두 벌 공존 시 `Brand`/`None`/`Subscribed`가
      사본마다 분리된다는 사실(`research/documentation-content-map.md` §4).
-   - **⭐ [2026-08-27] 9라운드를 돌렸고 Q1~Q3까지 확정·반영했다 — Q4~Q10 대기.**
+   - **⭐ [2026-08-27] 9라운드를 돌렸고 Q1~Q10·`H-138`·`H-139`·`H-142` 전량 확정·반영했다.**
      발견은 `qa-request/pre-implementation-handtrace-round9.md`(`H-124`~`H-141`,
      🔴 둘 다 실측 재현), **결정의 소스는 `-round9-followup.md`**(진행 표가
      상태의 소스). 반영된 셋: `recompute` 되감기 판정을 `lengthList[i]` 읽기
      앞으로 / `Offset`·`_baseObserver`를 Slot 생성자로 + `materializeSlotTree`
      순서 + `_destroyed` / `element → index`를 `bk.indexOfElement` 하나로(사용자가
-     정한 적 없는 `token` 폐기). README 색인은 했고 `/code-review high`·커밋은
-     Q4~Q10 뒤. 아래는 돌리기 전(2026-08-26) 서술:
+     정한 적 없는 `token` 폐기). 같은 날 후속으로 Q4~Q8·Q10(`EffectHandle` 네
+     진입점 의사코드 / M2에 `Ref` 최소형 / `WeakUnsubscribe` 관대 / 폐기 블록
+     `archive/` / `InstanceChildHandler` 부기 / `reconcile` 배치 Blocker)과
+     `H-138`(숏핸드 우선순위)·`H-139`(`New`/`drive` 파이프라인 의사코드 — 거기서
+     `H-142` `Parent` 순서 발견 → props에 `Parent` **금지**로 확정)까지 반영.
+     Q9는 문항 전제가 틀린 것(Tween 절 스케치 한 줄 복사 오류)으로 닫힘.
+     **[2026-08-27 기준] 감사 8라운드·`/code-review high`까지 돌렸다 — 리뷰 10건 중
+     여섯은 반영, 넷(`H-143`~`H-146`, 새 메커니즘)은 `question.md` 최우선 절에
+     판단 대기. 남은 액션: 커밋, 그리고 그 넷의 결정.** 아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
      **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤
      `/code-review high` **7패스의 수정이 전부 그 커밋에 들어 있고 아무도

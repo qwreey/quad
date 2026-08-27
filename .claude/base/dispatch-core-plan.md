@@ -581,7 +581,11 @@ end
     `base/ref-plan.md`의 "`PostRef`" 절.
     **[2026-08-18 구현 전 QA 2라운드 후속, `RC-1` 해결 / 범위 정정
     2026-08-24 `H-17`] `drive` 전체를 `inst` 전용 `Blocker`로 감싼다** —
-    진입 직후 `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고,
+    진입 직후 `Relate(inst)`에 lazy 생성한 Blocker를 `:On()`하고
+    (**[2026-08-27 9라운드 `H-139`, 사용자 확인]** 단, **배열 파트가 비어
+    있으면(`flattened[1] == nil`) 열지 않는다** — 안 그러면 자식 없는 모든
+    Instance마다 Blocker + `bk`가 eager 생성된다. pre-pass는 자리를 센티널로
+    바꿀 뿐 비우지 않아 이 판정은 진입 시점에 해도 같다),
     **`drive`가 할 일을 전부 마치면**(단일 일반화 순회 + post-pass 포함)
     `:OffWithoutEmit()` 한 뒤 `recompute(inst, bk)`를 명시적으로 1회 호출
     (**⭐ [2026-08-26, `/code-review high` 4차] 이 호출도 `H-119`의 재진입
@@ -1068,6 +1072,7 @@ end
   | `NoneHandler` | 중간 | 없음(재위임만) |
   | `NilHandler` | 말단 | 없음(`setLength`/`setOffsetSource` 부기만 — 2026-08-18 신설) |
   | `PropertyHandler` | 말단 | 프로퍼티 세팅 |
+  | `InstanceChildHandler` | 말단 | `Parent` 대입 (+ 부기 — `H-134`) |
   | `TagHandler` | 말단 | `addTag`/`removeTag` (+ 부기 — `H-39`) |
   | `AttributeKeyHandler` | 말단 | `setAttribute` |
   | `AttributeGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
@@ -1471,6 +1476,36 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   위임하는 성격이라 층위가 다르지 않나"라는 갈래가 있었지만, Tag/Attribute를
   "Length/Offset에 참여하지 않는 별도 카테고리"로 재정의하면 `bk.N`의 의미가
   바뀌어 파급이 크다(사용자 확정, 2026-08-24).
+
+  **⭐⭐ [2026-08-27 9라운드 `H-134`] 다섯째 — `InstanceChildHandler`.** 위
+  전수 grep은 **의사코드가 있는 핸들러만** 잡을 수 있었는데, 정적 자식
+  Instance를 받는 이 핸들러(`quad-roblox/src/Handlers/InstanceChild.luau`,
+  `k:number, v:Instance` — `architecture.md`의 소스 트리)는 코퍼스 어디에도
+  의사코드가 없었고 위 표에도 행이 없었다. 아래 Length/Offset 절 머리가
+  *"정적 단일 자식은 상수 `1`"*이라고만 하고 **누가** 등록하는지는 안 적어서,
+  `Frame { Frame{}, Slot() }`처럼 **정적 자식 뒤에 Slot이 오는 가장 흔한
+  배치가 첫 마운트에서 죽는다** — Slot의 `setOffsetSource(inst, 2, …)` →
+  `getOffsetAt(inst, 2)`가 `lengthList[1] == nil`을 만나 `H-106` 가드로 error
+  (순서를 뒤집으면 `bk.N`이 1에서 멈춰 안 터진다 — 위와 같은 "가끔" 모양).
+  확정(사용자, 갈래 없음 — `H-39`의 "예외 없이"에 이 핸들러를 넣는 것뿐):
+  `process`에서 `setOffsetSource(inst, k, None)` → **`v.Parent = inst`** →
+  **`setLength(inst, k, 1, inst)`**(상수 `1`). 반환 클로저는 (A)/(B) 분기·단순
+  철거에서 **`v.Parent = nil`** → `setOffsetSource(inst, k, None)` →
+  `setLength(inst, k, 0)`(`SlotHandler`의 retractor가 `unmountSlotTree`를 먼저
+  부르는 것과 같은 모양, 부기 둘의 순서 근거는 아래 "해제" 문단).
+  **[2026-08-27 `/code-review high` 정정 셋]** — (1) 옛 자식은 **내린다**(파괴
+  아님): `store.child:Set(otherFrame)`이 이전 `Frame`을 `Destroy`하지 않고
+  트리에서 내리기만 한다는 것이 `base/slot-plan.md`의 "`State<Slot>` 교체는
+  파괴가 아니라 언마운트" 절의 근거 1이라, retractor가 `Parent = nil`을 안
+  하면 옛 자식이 물리 자식으로 남은 채 `lengthList[k] == 1`이 된다. (2) 순서는
+  **물리 먼저, `setLength` 나중** — 아래 "일반 계약 — 물리와 부기의 순서" 3번
+  (`nativeInsert` → `setLength` → `recompute`)과 같게. 옛 서술(`setLength` →
+  `Parent`)은 단건 경로에서 `recompute`가 부착 전에 돌았다. (3) **5번째 인자
+  `element`는 안 넘긴다** — 상수 길이라 지속 클로저가 없어 Q3 계약상 생략
+  대상이고, 넘기면 `setLength(…, 0)` 해제가 `bk.indexOfElement`의 옛 키를
+  안 지워(해제 호출엔 요소가 없다) 교체마다 옛 자식이 강참조로 쌓인다. 대안 — `Dispatch.drive`가 `type(k) == "number"` 분기에서 일괄 등록 —
+  은 아래 *"모든 핸들러가 `k=number`일 때 처리하도록 두는"*에서 **이미 기각된
+  안**이라 다시 열지 않는다. `ROADMAP.md` M5 체크박스에 같은 두 줄을 적었다.
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**
@@ -2208,7 +2243,8 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 1. **배치를 여는 쪽(`Dispatch.drive` 최상위, 또는 `materializeSlotTree`가
    자기 자신의 `_elements`를 등록하는 자리 — 아래 "적용 지점" 참고)이 그
    owner 전용 `Blocker`를 `Relate(ownerKey)`에 lazy 생성하고 배치 시작
-   전에 `:On()`한다.** 이 Blocker는 `state:Block()`을 거치지 않고
+   전에 `:On()`한다**(`Dispatch.drive`는 배열 파트가 있을 때만 — 위 `H-17`
+   절의 2026-08-27 가드). 이 Blocker는 `state:Block()`을 거치지 않고
    **직접** 쓰인다 — `base/blocker-plan.md`의 "`state:Block()` 없이
    직접 쓰는 두 번째 용례" 절 참고.
 2. 배치가 도는 동안, 각 position의 `setLength`가 트리거하는
@@ -2223,8 +2259,10 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
    미루면 초기 레이아웃이 이상해진다"는 우려를 없앤다** — `:List`가
    실체화되며 `Slot.Offset`을 곧바로 읽어 쓰는 자리(`activateList`)가
    배치 중이라도 항상 최신값을 보게 됨.
-4. 배치가 끝나면(`Dispatch.drive`의 배열 파트 순회 전체, 또는
-   `materializeSlotTree`의 등록 루프 전체가 끝나면) `blocker:OffWithoutEmit()`을
+4. 배치가 끝나면(`Dispatch.drive`가 할 일을 **전부** 마치면 — post-pass 포함,
+   위 `H-17` 절 / 또는 `materializeSlotTree`의 등록 루프 전체가 끝나면;
+   **[2026-08-27 정정]** 여기 *"배열 파트 순회 전체"*라고 남아 있던 건 `H-17`이
+   범위를 넓히기 전 문구다) `blocker:OffWithoutEmit()`을
    부르고, **그 직후 딱 한 번** `recompute(ownerKey, bk)`를 명시적으로
    호출한다(**[2026-08-26]** 이 명시 호출도 `bk.recomputeBlocker:IsOn()`이면
    건너뛴다 — `H-119`). 이 시점엔 `bk.N`개 position이 전부 등록돼 있어 안전하고,
@@ -2378,7 +2416,17 @@ yield 금지(2026-08-18 신설, 사용자 확정).** 이 배치 게이팅 전체
 
 **`:List` reconcile에서 `Length` 갱신 시점**: 한 사이클(여러 항목이
 한꺼번에 추가/제거되는 경우 포함) 전체가 끝난 뒤 **한 번만** — 사이클
-도중 항목마다 갱신하면 캐스케이드가 그만큼 반복됨.
+도중 항목마다 갱신하면 캐스케이드가 그만큼 반복됨. **⭐ [2026-08-27 확정,
+9라운드 `H-136`] 재실행 사이클도 포함한다** — 의사코드는 최초 population만
+Blocker로 감싸고 `data:Set(…)`으로 `reconcile`이 다시 돌 땐 raw op마다
+`recompute`가 완주해(O(n²) + 부모 캐스케이드 n회) 이 문장과 어긋나 있었다.
+이제 `reconcile` 본문 자체가 게이트를 쥔다(`base/slot-plan.md`의
+`reconcile` 머리·꼬리). 사용자 논거: *"이전에는 native* 가 없어 모두 dom 식
+elem 입출력이 강제가 아니였는데, 이젠 그렇기 때문에 최초 방식으로 recompute
+되는것 처럼 처리되어도 되는 지점 … 이미 우린 set upto 와 valid upto 가 나뉜
+지점이고, 싱크라서 괜찮아보임"* — 배치 중엔 offset이 뒤늦게 한 번에 잡히지만
+`native*` 계층이 물리 위치를 부기와 무관하게 정확히 넣고, 무효화 커서 둘이
+분리돼 있어 마지막 `recompute` 한 번이 전부 따라잡는다.
 
 **웹 백엔드(quad-web, 아직 없음) — 같은 `lengthList`/`sourceList`/
 `recompute`를 그대로 재사용, 다른 건 "offset 변경 시 무엇을 하는가"뿐**:

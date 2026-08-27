@@ -23,7 +23,9 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 반영분을 겹쳐 재트레이싱한 발견 17건 — 역전 없이 누락·충돌만 닫았습니다.
 > **[2026-08-27] 9라운드 몫은 `-round9-followup.md`** — Q1~Q3(`recompute` 되감기
 > 순서 / Slot 생성자의 `Offset`·`_baseObserver`·`_destroyed` / `bk.indexOfElement`로
-> 토큰 폐기)까지 반영됐고 Q4~Q10은 대기 중입니다.
+> 토큰 폐기)에 이어 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량**
+> 반영됐습니다(`EffectHandle` 진입점 / M2에 `Ref` 최소형 / `InstanceChildHandler`
+> 부기 / `reconcile` 배치 Blocker / `New`·`drive` 파이프라인 / props `Parent` 금지).
 > **어느 체크박스가 바뀌었는지는 여기서 세지 않습니다** — 해당 체크박스에
 > 각각 `H-1xx` 표시가 붙어 있으니 그게 소스입니다. M2/M3 양쪽에 걸쳐
 > 있습니다). M1까지의 산출물은
@@ -249,8 +251,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ### 공통 기반 — 반응형보다 먼저 (구 M2, 지금의 M3에서 이동)
 
-> 셋 다 State-free이자 dispatch-free라 어느 쪽에도 안 걸립니다. 이 절이
-> 끝나야 아래 반응형 본체를 짤 수 있습니다.
+> 여기 있는 것 전부 State-free이자 dispatch-free라 어느 쪽에도 안 걸립니다.
+> 이 절이 끝나야 아래 반응형 본체를 짤 수 있습니다.
 
 - [ ] `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
       브랜드마다 weak-key 집합 하나를 들고 `:register(x)`/`:is(x)`,
@@ -325,6 +327,22 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M2 체크박스
       참고**), children 배열 leaf 부착이 실제로는 `bindLifetime` 호출이라
       이 게이트를 그대로 탐
+- [ ] **⭐ [2026-08-27 9라운드 `H-128` 신설] `Ref.luau` 최소형** — 아래
+      `Effect(fn, ...deps)`의 `Ref` dep 분기(`isRef(d)` →
+      `d:WeakCallback(onRefFire)` → `self._epochs:Sync(d)`)가 **M2 안에서
+      실제로 돌려면** 필요한 표면만: `.Value`/`.Revision`/`:Set(value)`/
+      `:WeakCallback(fn)`/`:Callback(fn)`/`:Uncallback(fn)`/`isRef` +
+      `EpochBrand:register(self)`(`Epoch`를 만족하는 데 필요한 것 전부).
+      `PreRef`/`PostRef`/`:Wait`/디스패치 핸들러(`(v=Ref)` 매치, `Processed*`)는
+      **M8 그대로**. 근거: `Ref`가 `Epoch`인 것 자체가 M2의 결정
+      (`H-58`/`H-64`/`H-70`)이고, `Effect`의 `isEpoch` 분기를 M2의 mock
+      테스트가 한 번은 실제로 태워야 한다 — 그 전엔 M8 머리가 *"M2가 이미 이
+      표면을 전제한다"*고 **인정만** 하고 M2 쪽엔 앞으로 참조가 없어, 구현자가
+      `isRef` 스텁으로 비워두기와 M8 절반 앞당기기 중 임의로 고르게 돼 있었다.
+      소스는 `base/ref-plan.md`의 "`Ref`는 `Epoch`를 만족한다" 절.
+      **[2026-08-27 `/code-review`]** 아래 `H-80` 탑레벨 목록의 규칙(*"이
+      마일스톤이 얹는 탑레벨 값 전부"*)대로 **`quad-types`의 `Quad`에 `Ref`
+      생성자 필드도 여기서** 추가한다 — M8의 `H-25` 체크박스는 이걸로 흡수.
 
 ### 반응형 본체
 
@@ -465,7 +483,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       뒤에. (`base/effect-plan.md`, **[2026-08-21 5라운드
       `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
       1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
-      (State/Source는 `Observer`, `Ref`는 `:Callback`)을 걸어
+      (State/Source는 `Observer`, `Ref`는 `:WeakCallback` — **[2026-08-27
+      9라운드 `H-129`]** 옛 `:Callback` 표기는 `H-58`이 정정한 것의 잔재로,
+      강한 셋에 걸면 `Ref`가 `Effect`를 영원히 붙든다)을 걸어
       재실행+cleanup 체이닝(React `useEffect` 동형). **`EffectHandle`이
       `EpochMap`을 하나 들어** 공통 상류로 인한 중복 발화를 접고, 설치 구간
       억제 플래그가 그 `Update`보다 먼저 와야 함
@@ -572,7 +592,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
 - [ ] **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
-      `Source` / `Store` / `Effect` / `Blocker` / `Relate` /
+      `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Ref`**(최소형,
+      2026-08-27 `H-128`) /
       `is*` 전량(`isState`/`isSource`/`isStore`/`isRef`/`isObserver`/
       `isEffect`/`isEpoch`/`isModifier` …) / `bindLifetime`·`unbindLifetime`·
       `canBound`·`canExecute` 4종. **⚠️ `State`는 런타임 생성자가 없다** —
@@ -658,6 +679,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       flattened)`(**일반화 `for` 한 번**으로 순회하며 각 `(k,v)`에
       `Dispatch.process(inst,k,v,1)` 호출 — `dispatch-core-plan.md`의 `None`
       센티널 절, 2026-08-07 여덟 번째 세션에 네이밍 확정).
+      **[2026-08-27 9라운드 `H-139`]** `New` ①~④ + `drive` (a)~(c) 전체
+      파이프라인 의사코드는 `base/bind-system-plan.md`의 "`New(name)(props)`
+      파이프라인 의사코드" 절 — 배치 Blocker를 여닫는 자리와 빈 배열 파트
+      가드도 거기.
       **[2026-08-21 구현 전 QA 4라운드 `F-4-1`] 순회는 두 패스가 아니라
       단일 일반화 `for`다** — "배열 파트 전체가 해시 파트보다 먼저"는 여전히
       base가 보장하는 **계약**이지만, `flattened`가 항상 평범한 Luau
@@ -907,8 +932,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드) — 진입점
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
-- [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)
-- [ ] `Handlers/Property.luau`, `Handlers/InstanceChild.luau`
+- [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절). **[2026-08-27 9라운드 `H-142`] 생성되는 props 타입에서 `Parent`를 제외할 것** — props에 `Parent`는 올 수 없다(부모가 하는 일, 같은 문서의 파이프라인 절). `New` ①~④ 순서는 그 절의 의사코드가 소스
+- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음), `Handlers/InstanceChild.luau` —
+      **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
+      부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →
+      `v.Parent = inst` → `setLength(inst, k, 1, inst)`(정적 단일 자식은 상수
+      `1`, 5번째 인자 없음). 반환 클로저는 `v.Parent = nil`(내리기만, 파괴
+      아님) → `setOffsetSource(inst, k, None)` → `setLength(inst, k, 0)`.
+      **[2026-08-27 `/code-review` 정정]** 옛 순서(`setLength` → `Parent`)와
+      "5번째 인자 `v`"는 틀렸었다 — 근거는 `base/dispatch-core-plan.md`의 그
+      문단. 빠뜨리면
+      `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
+      `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에
@@ -1262,6 +1297,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
 ## M7 — Modifier
 
+- [ ] **[2026-08-27 9라운드 `H-142` 후속, `/code-review`]** 생성기가 찍는
+      `FrameModifier`류 메소드 목록에서도 **`Parent`를 제외**할 것 — props
+      타입에서만 빼면 `Modifier():Parent(x)`가 타입을 통과하고 `flatten`이
+      `Parent`를 해시 파트로 merge해 런타임에서야 죽는다. `PreRef`/`PostRef`가
+      Modifier 타입으로 차단되는 것과 같은 자리(`base/bind-system-plan.md`의
+      `H-142` 항목).
+
 - [ ] `Modifier()`(빈 인스턴스 바닥 생성자, 2026-08-07 열 번째 세션
       명시 — `Source(default)`/`Ref(default)`/`Store({defaults})`와 같은
       `Type(args)` 팩토리 관습, `modifier-plan.md` 3번)
@@ -1319,18 +1361,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ## M8 — Ref
 
-- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Ref` 필드 추가
-      (위 M3 항목의 "마일스톤마다" 규칙)
-- [ ] `Ref.luau`(`.Value` 읽기 전용 필드 + `:Set(value)`/`:Callback(fn)`/
-      `:Wait(thread?)`, 전부 self 반환).
-      **⭐ [2026-08-25 추가, 7라운드 `H-58`/`H-64`/`H-70`] `Ref`가 `Epoch`를
-      만족하게 됐다** — 공개 필드 **`.Revision`**(`:Set()`이 `Source`와 같은
-      `bit32.bnot(-rev)`로 갱신) + **`EpochBrand:register(self)`**, 그리고
-      약하게 등록하는 **`:WeakCallback(fn)`**(weak-키 별도 테이블, `Weak` 쪽이
-      프리미티브이고 `:Callback`이 그 위에 "GC 킵"을 얹은 것).
-      **M2가 이미 이 표면을 전제한다** — `Effect` 생성자가 `Ref` dep을
-      `self._epochs:Sync(d)`로 `EpochMap`에 태운다(`base/effect-plan.md`).
-      `base/ref-plan.md`의 "`Ref`는 `Epoch`를 만족한다" 절이 소스 + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
+- [x] ~~**[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Ref` 필드 추가~~
+      — **[2026-08-27 `H-128` 후속]** `Ref` 최소형과 함께 M2 공통 기반으로
+      이동(그 체크박스). `PreRef`/`PostRef` 필드는 아래 항목이 얹는다
+- [ ] `Ref.luau`의 **나머지** — `:Wait(thread?)`(self 반환). **[2026-08-27
+      9라운드 `H-128`] 최소형은 M2 "공통 기반" 절로 앞당겨졌다**(표면 목록은
+      그 체크박스가 소스 — 여기 반복하지 않는다) — `Ref`가 `Epoch`를 만족한다는 2026-08-25 확정
+      (7라운드 `H-58`/`H-64`/`H-70`: `.Revision`은 `:Set()`이 `Source`와 같은
+      `bit32.bnot(-rev)`로 갱신, `Weak` 쪽이 프리미티브이고 `:Callback`이 그
+      위에 "GC 킵"을 얹은 것, `Effect` 생성자가 `self._epochs:Sync(d)`로 태움)은
+      그 표면의 일부라 M2 몫이다 — 세부는 체크박스에 재서술하지 않고
+      `base/ref-plan.md`의 "`Ref`는 `Epoch`를 만족한다" 절이 소스. + `PreRef.luau`/`PostRef.luau`(별도 파일, Ref
       런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단,
       위치 무관 호이스팅 pre-pass — `base/ref-plan.md` "`phase`
       옵션 폐기 → 위치로 표현, `PreRef` 신설" 절 + "API 모양" 절)

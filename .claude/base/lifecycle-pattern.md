@@ -442,8 +442,12 @@ end
 **⭐ [2026-08-26 재작성, 8라운드 `H-111`] 프리미티브는 `WeakSubscribe` 쪽이다** —
 여기 한때 `Subscribe`/`Unsubscribe` 둘만 있는 블록이 있었는데, 그건
 `:WeakSubscribe()`가 생기기 전(2026-08-25 이전) 서술이라 **약한 쪽이 어디서
-`.Subscribed`를 세우는지가 통째로 빠져 있었다.** 아래가 네 진입점 전량이고
-소스다(사용자 원문 *"구현이 한 벌"*):
+`.Subscribed`를 세우는지가 통째로 빠져 있었다.** 아래가 **Observer의** 네
+진입점 전량이고 소스다(사용자 원문 *"구현이 한 벌"*). **[2026-08-27 9라운드
+`H-127`]** `EffectHandle`도 같은 넷을 **그대로 재사용**한다(같은 레지스트리,
+같은 게이트) — `Unsubscribe`만 이 게이트를 통과한 *뒤에* cleanup 소진을
+덧붙이며, 그 의사코드는 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`"
+절이 소스:
 
 ```lua
 local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)
@@ -472,6 +476,9 @@ function Observer:WeakUnsubscribe()
     if Subscribed[self] ~= nil then
         error("...: subscribed strongly; use :Unsubscribe()", 2)
     end
+    -- ⭐ [2026-08-27 확정, 9라운드 `H-133`] 여기까지가 가드 전부다 — 구독한 적
+    --   없는 값·이미 약하게 풀린 값은 **조용히 통과**(아래 두 줄이 no-op).
+    --   의도된 관대함이지 누락이 아니다(아래 산문).
     WeakSubscribed[self] = nil
     self.Subscribed = false
     return self
@@ -510,6 +517,20 @@ end
   State dep 전량이 침묵한다. **"둘 중 뭐든 풀어주는" 범용 해제는 없다** —
   필요하면 호출부가 `.Subscribed`가 아니라 어느 경로로 걸었는지를 알고 있어야
   한다(핸들을 만든 쪽이 안다).
+- **⭐ [2026-08-27 확정, 9라운드 `H-133`] 그 대칭은 *경로 교차*만 막는다 —
+  `WeakUnsubscribe`는 관대하고 `Unsubscribe`는 엄격하다.** 구독한 적 없는
+  값·이미 약하게 풀린 값에 `WeakUnsubscribe`를 부르면 error 없이 지나간다
+  (`WeakSubscribed[self] = nil; .Subscribed = false`가 그대로 no-op — 실측
+  `t12_subscribe_failfast.luau`). 같은 값에 `Unsubscribe`는 error다. 사용자
+  논거: *"WeakSubscribed 자체가 사라질 수 있는 요소라서, 그 사라지는걸 유저가
+  정하게 하는 요소라서 에러를 내야할지 말아야할지 애매한 부분 … 다만 weak 에
+  대한 홀드를 유저가 유지하는게 강제라면 b가 되긴 해야하나, 그럴 이유가 없어서
+  a가 되는게 맞는듯"* — 약한 등록의 생존은 사용자가 쥔 참조에 달린 것이고
+  quad는 그 홀드를 강제하지 않으므로, "없는 항목의 약한 해제"를 오류로 볼
+  근거가 없다. 강한 등록은 quad가 살려두는 것이라 "없음"은 반드시 호출부
+  실수다. **leaf 바인딩된 값에 `WeakUnsubscribe`를 불러도 같은 이유로
+  통과**한다 — `.Subscribed = false` 대입만 하고 gcconn 경로는 안 건드려
+  무해하다.
 - **⚠️ `:Subscribe()`는 idempotent가 아니다.** 이미 구독됐거나 leaf에
   바인드된 값에 다시 부르면 `canBound` 게이트에 걸려 **error**다
   (**[2026-08-26 확정, `/code-review high`]** `base/source-state-plan.md`가

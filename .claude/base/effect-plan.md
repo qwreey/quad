@@ -242,8 +242,10 @@ function Effect(fn, ...)
     end
     local function onRefFire(_, ref) fire(ref) end            -- Ref: 2번째가 출처
     local function onStateFire(_, _, from) fire(from) end     -- Observer: 3번째가 출처
-    for d in pairs(seen) do    -- [2026-08-26 `/code-review high` 7차] `for d in seen`은
-                               --   테이블을 호출하려 들어 죽는다
+    for d in pairs(seen) do    -- 스타일 통일(`pairs` 명시). **[2026-08-27 9라운드
+                               --   `H-131`]** 옛 근거 *"`for d in seen`은 테이블을
+                               --   호출하려 들어 죽는다"*는 **거짓** — Luau의 일반화
+                               --   반복은 런타임·`--!strict` 둘 다 통과한다(실측).
         if isRef(d) then
             self._deps[d] = onRefFire                  -- ⭐ 강한 주인 = Effect
             d:WeakCallback(onRefFire)                  -- Ref 쪽은 약함
@@ -465,53 +467,12 @@ got {typeof(k)}`) end }`(**[2026-08-18]** 에러 메시지에 실제 `k` 타입�
 named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
 값싸게 override 가능한 자리로 열어둠.
 
-**보강 — `EffectHandle`의 내부 Observer 바인딩 세부(2026-08-09 열한 번째
-세션, 재확인 후 명시화)**:
-
-> **⛔⛔ [2026-08-25 폐기, 7라운드 `H-58`/`H-59`] 이 문단 전체는 옛 모델이다.**
-> 위 "확정 구조 — 강한 주인은 항상 `Effect`" 절이 **정반대로** 확정했다 —
-> **`bindLifetime`/`unbindLifetime`은 `Effect` 핸들 하나에만 적용되고**
-> 내부 Observer로 cascade하지 않는다. dep 등록은 **생성자에서 한 번만**
-> `WeakSubscribe`/`WeakCallback`으로 하고, 발화 여부는 `canExecute(handle)`이
-> 전담한다. 아래가 서술하는 `_observers` 배열/cascade/`Subscribe` 순회는
-> **전부 `_deps` 하나와 `_blocker`로 대체됐다**(위 "필드 목록").
-> 아래는 히스토리로만 읽을 것 — **이 문단대로 짜면 `H-58`의 중복 `Rerun`이
-> 되살아난다.**
-
-**⚠️ [2026-08-24 6라운드 손 트레이싱 `H-8`, 2026-08-25 폐기] 이 문단 전체가 아직 "Observer 하나"
-전제로 쓰여 있었다 — `_observer`(단수)를 `_observers`(배열)로 읽을 것.**
-아래 절이 확정한 `Effect(fn, ...deps)`(N-deps)와 정면으로 어긋났고, 그대로
-구현하면 **2번째 이후 dep의 Observer엔 `canExecute` 판정 근거가 아예 안 실려**
-그 Observer의 재실행이 통째로 죽는다 — 바로 이 문단 자신이 경고하는 실패
-모드다. 필드를 배열로 바꾸고 cascade/`Subscribe`/`Unsubscribe`를 전부 순회로
-고친다(새 결정 없음, 반영 누락). `Ref` dep은 Observer가 아니라 콜백이라 이
-배열에 안 들어간다 — 그쪽 해제는 아래 `H-7` 문단이 소스.
-
-- **`EffectHandle`은 내부 Observer를 필드로 강참조** — `handle._observers[i] =
-  observer`(dep이 State/Source인 경우만 존재). 이건 GC 방지가 목적이 아니라
-  (그건 아래 `bindLifetime`/`gchold`가 담당) `:Unsubscribe()`/`bindLifetime`
-  cascade가 이 필드를 통해 내부 Observer에 접근하기 위한 것.
-- **`bindLifetime(inst, handle)`은 `state`가 있는 경우 내부 Observer도
-  같은 `inst`로 `handle._observers` **전부**에 대해
-  `bindLifetime(inst, observer)`를 cascade해야 함** — `Dispatch/Leaf.luau`가 children 배열의 `EffectHandle`을 매치해
-  `bindLifetime(inst, handle)`을 부르는 시점(leaf 부착)과, `:Subscribe()`가
-  `handle`을 전역 레지스트리에 등록하는 시점(아래) 둘 다 해당. 이유:
-  `canExecute(observer)`가 보는 gcconn 참조는 **그 Observer 자신이
-  `bindLifetime(inst, observer)`될 때 그 Observer 쪽 릴레이션에
-  복사되는 것**이라, `EffectHandle`만 바인드하고 내부 Observer는 안 하면
-  그 Observer에겐 판정 근거가 아예 없어서 `canExecute`가 항상 거짓이 됨
-  (=재실행이 통째로 죽음). 같은 이유로 `unbindLifetime(handle)`도 내부
-  Observer까지 같이 풀어야 대칭이 맞음.
-  **[정정, 2026-08-14 다섯 번째 세션]** 이 항목이 원래 근거로 든
-  "`canExecute`가 `Subscribed` 필드 + `inst`의 gcconn을 함께 본다"는
-  틀렸음 — `.Subscribed`는 구독 경로 전용이고 leaf 경로와
-  무관(`archive/canexecute-inst-arg-reversed.md`). cascade가 필요하다는
-  결론은 그대로이고 오히려 근거가 더 직접적이 됨.
-- **`:Subscribe()`도 마찬가지로 `state`가 있으면 내부 Observer를 같은
-  전역 강참조 레지스트리에 같이 등록**(`handle` 자신 + `handle._observers`
-  전부, 또는 `handle._observers`만으로 충분한지는 구현 세부 — 어느 쪽이든
-  "`EffectHandle`은 등록됐는데 내부 Observer는 등록 안 됨" 상태가 생기면
-  안 됨).
+**보강 — `EffectHandle`의 내부 Observer 바인딩 세부** — **⛔ [2026-08-25
+폐기, 7라운드 `H-58`/`H-59`; 2026-08-27 `archive/`로 이전, 9라운드 `H-130`]**
+옛 모델(`_observers` 배열 + `bindLifetime`/`:Subscribe()` cascade)의 원문은
+`archive/effect-internal-observer-cascade-reversed.md`. 위 "확정 구조 — 강한
+주인은 항상 `Effect`" 절이 정반대로 확정했고, 배너 아래 죽은 문단이 두 번
+살아 있는 문장처럼 편집되는 사고가 나서(그 파일 머리) 본문에서 뺐다.
 
 **Observer 자체에 cleanup 반환 계약을 추가하는 안은 여전히 기각** — React
 `useEffect`식으로 `fn`의 반환값을 자동으로 배선해주는 안을 검토했으나,
@@ -535,6 +496,40 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 
 **확정**: `EffectHandle`에도 `:Subscribe()`/`:Unsubscribe()` 추가, 둘 다
 `self` 반환(Observer와 동일한 fluent 대칭).
+
+**⭐ [2026-08-27 확정, 9라운드 `H-127`] 의사코드 — 네 진입점은 Observer의
+것을 재사용하고, `Unsubscribe`만 *통과한 뒤* cleanup을 덧붙인다.** 아래
+산문(번호 목록)은 이 블록을 풀어 쓴 것이고, **순서는 이 블록이 정본**이다.
+산문의 번호 순서(플래그 → cleanup → fail-fast)대로 짜면 leaf 바인딩된 핸들에
+`:Unsubscribe()`를 불렀을 때 **cleanup을 소진한 뒤에야 error**가 나서 `E-11`이
+막으려던 피해(cleanup 앞당김, `_installed = false`)가 이미 일어난 뒤다 —
+Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
+
+```lua
+-- 레지스트리(`Subscribed`/`WeakSubscribed`)·`canBound` 게이트·`.Subscribed`
+-- 플래그 전부 `base/lifecycle-pattern.md` (2)의 Observer 네 진입점과 **같은
+-- 구현**이다 — 메소드 테이블에 그대로 배정한다. 등록되는 건 **핸들 자신뿐**
+-- (내부 Observer·`Ref` 콜백은 생성자에서 이미 `Weak*`로 걸려 있다, `H-59`).
+EffectHandle.Subscribe       = Observer.Subscribe        -- canBound 게이트 + 강한 킵
+EffectHandle.WeakSubscribe   = Observer.WeakSubscribe    -- 게이트 + 약한 등록 + 플래그
+EffectHandle.WeakUnsubscribe = Observer.WeakUnsubscribe  -- 관대(`H-133`) — cleanup 안 건드림
+
+function EffectHandle:Unsubscribe()
+    Observer.Unsubscribe(self)   -- ⭐ 게이트가 **먼저** — 강하게 구독된 적 없으면(leaf
+                                 --   바인딩·약한 구독·미구독) 여기서 error, cleanup엔
+                                 --   손도 안 댄다(`E-11`). 통과하면 강한 킵 해제 +
+                                 --   `.Subscribed = false`(향후 재실행 차단).
+    self:_consumeCleanup()       -- 통과했을 때만: 직전 cleanup 정확히 1회, `_installed = false`
+    return self
+end
+```
+
+- **`WeakUnsubscribe`는 cleanup을 소진하지 않는다** — 약한 구독은 "GC에
+  맡기는" 경로라 해제가 곧 종료 신호가 아니다. 종료 신호는 강한 구독의
+  `Unsubscribe`와 leaf 사망(`unbindLifetime`의 훅) 둘뿐.
+- 실측(9라운드 `core9.luau`, `t12` 매트릭스): 이 배정으로 leaf 바인딩된
+  핸들의 `:Unsubscribe()`가 cleanup을 건드리지 않고 error, `:Subscribe()`
+  후 `:Unsubscribe()`는 cleanup 1회 — 전부 기대대로.
 
 - **`:Subscribe()`** — Observer가 쓰는 것과 같은 강참조 레지스트리에
   **핸들 자신**을 등록 — 새 메커니즘 아님, 기존 레지스트리 재사용. 이후
@@ -611,31 +606,33 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
       이 요구는 성립하지 않는다 — **그대로 구현하면 `nil`을 순회한다.**
     - **[2026-08-21 기준]** 남은 건 **구현 시 회귀 확인**뿐이고, 설계상 열린
       항목이 아니다.
-- **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 그냥
-  위임하지 않는다 — Effect 계층에서 의미가 확장됨.** Observer의
+- **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 위임한 뒤
+  cleanup 하나를 덧붙인다 — Effect 계층에서 의미가 확장됨.** Observer의
   `:Unsubscribe()`는 "미래 재실행만
   끊는다"(Observer 자체엔 정리할 상태가 없음)로 충분하지만, Effect의
   계약은 "생애주기가 끝나는 시점에 마지막 cleanup이 정확히 1회 호출된다"
   이고 leaf 사망은 그 "끝"의 신호 중 하나일 뿐이라, `:Unsubscribe()`도
-  동일하게 "지금 끝났다"는 신호로 취급해야 계약이 일관됨:
-  1. **⚠️ [2026-08-25 정정, 7라운드 `H-58`/`H-59`]** 여기 원래 *"`state`가
-     있으면 내부 Observer도 `:Unsubscribe()`해서 향후 재실행을 끊고"*라
-     적혀 있었는데, 내부 Observer는 생성자에서 `:WeakSubscribe()`로 걸리고
-     **해제하지 않는다** — 발화는 `canExecute(handle)`이 막는다(위
-     "확정 구조" 절). `:Unsubscribe()`가 `handle.Subscribed = false`로
-     만들면 그 게이트가 곧바로 거짓이 되므로 **향후 재실행은 그것만으로
-     끊긴다.** 단수 `state` 전제도 이미 `...deps`로 대체됐다.
-  2. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
-     하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것.
-  3. **⚠️ [2026-08-26 정정, `/code-review high` 7차] "idempotent"는 폐기됐다** —
-     `Unsubscribe`는 이제 **fail-fast**다(약하게만 구독된 값이면 error,
-     `base/lifecycle-pattern.md`의 "(2) 전역 경로" 절. 6차가 같은 문장을
-     두 문서에서 지웠는데 **이 세 번째 사본을 놓쳤다**). 살아 있는 요구는
-     뒷부분뿐이다 — **이후 leaf가 실제로 죽어도 cleanup이 중복
-     호출되면 안 됨** — 새 메커니즘 불필요, Observer가 이미 확정해둔
-     `canExecute(value)` liveness 체크가 자동(리프=gcconn 참조)/수동
-     (전역=`Subscribed` 필드) 두 경로를 하나의 게이트로 OR 묶어주므로
-     여기 그대로 얹힘.
+  동일하게 "지금 끝났다"는 신호로 취급해야 계약이 일관됨. **순서는 위
+  의사코드가 정본이고 아래 번호는 그 순서 그대로다**(**[2026-08-27
+  `/code-review high` 재정렬]** 옛 목록은 플래그 → cleanup → fail-fast 순이라
+  leaf 바인딩된 핸들에서 cleanup을 소진한 뒤 error가 났다):
+  1. **게이트 — fail-fast.** 강하게 구독된 적 없는 값(leaf 바인딩·약한
+     구독·미구독)이면 여기서 error, cleanup엔 손도 안 댄다(`E-11`).
+     **[2026-08-26 정정, `/code-review high` 7차]** 옛 "idempotent"는 폐기됐다
+     (`base/lifecycle-pattern.md`의 "(2) 전역 경로" 절 — 6차가 같은 문장을 두
+     문서에서 지웠는데 이 세 번째 사본을 놓쳤었다).
+  2. **강한 킵 해제 + `handle.Subscribed = false`.** 이것만으로 향후 재실행이
+     끊긴다 — `canExecute(handle)` 게이트가 곧바로 거짓이 되므로. **[2026-08-25
+     정정, 7라운드 `H-58`/`H-59`]** 옛 문장 *"`state`가 있으면 내부 Observer도
+     `:Unsubscribe()`해서"*는 틀렸다 — 내부 Observer는 생성자에서
+     `:WeakSubscribe()`로 걸리고 **해제하지 않는다**(위 "확정 구조" 절), 단수
+     `state` 전제도 `...deps`로 대체됐다.
+  3. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
+     하던 것과 정확히 같은 이벤트를 수동으로 앞당기는 것. **이후 leaf가 실제로
+     죽어도 cleanup이 중복 호출되면 안 됨** — 새 메커니즘 불필요,
+     `canExecute(value)` liveness 체크가 자동(리프=gcconn 참조)/수동(전역=
+     `Subscribed` 필드) 두 경로를 하나의 게이트로 OR 묶어주므로 여기 그대로
+     얹힘.
 - **`state` 없는 mount-only Effect엔 특별한 분기 불필요** — install은 이미
   `Effect(fn)` 호출 시점에 끝나 있으므로, `:Unsubscribe()`는 그냥 "지금
   leaf-사망 cleanup을 수동으로 트리거"하는 것과 완전히 동치.
@@ -708,7 +705,10 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     인자마다 다른 규칙을 위치로 기억해야 했다. 아무것도 안 넘기므로 그 질문
     자체가 없어지고, dep 값은 사용자가 클로저로 직접 읽는다.
   - `self`를 주는 덕에 `fn` 안에서 `self:Rerun()`/`self:Unsubscribe()` 같은
-    핸들 표면에 바로 닿는다.
+    핸들 표면에 바로 닿는다. **⚠️ [2026-08-27 `/code-review high`, 판단 대기
+    `H-143`]** `fn` 안 `Unsubscribe`는 그 실행이 돌려준 cleanup을 `Rerun`이
+    그대로 저장해 **아무도 소진 못 하게** 만든다 — 처방(`Rerun` 꼬리 분기 /
+    금지 / 문서화)은 `question.md` 최우선 절.
 - **최소 1회는 실행된다 — React `useEffect`와 동일.** 아직 안 채워진 `Ref`가
   섞여 있어도 그대로 돈다(사용자: *"최초 1회에서 어차피 if 로 확인해내게
   될것이므로 괜찮음"*). "전부 채워질 때까지 대기"는 안 한다.

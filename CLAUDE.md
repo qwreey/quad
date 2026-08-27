@@ -13,8 +13,9 @@ M2(반응형 코어 — Source/State/Store)**. **⚠️ [2026-08-24] M2와 M3의
 결정의 소스는
 `.claude/qa-request/pre-implementation-handtrace-round8-followup.md`
 (7라운드 몫은 `-round7-followup.md`; **[2026-08-27] 9라운드 몫은
-`-round9-followup.md` — Q1~Q3 반영 완료, Q4~Q10 대기**)이고 `.claude/question.md` 최우선
-절은 비어 있다. 같은 상태를 `.claude/project-context.md`도
+`-round9-followup.md` — Q1~Q10·`H-138`·`H-139`·`H-142` 전량 반영 완료**)이고 `.claude/question.md` 최우선
+절엔 **그 반영분에 `/code-review`가 낸 새 메커니즘 넷(`H-143`~`H-146`)이 판단
+대기**로 올라 있다(M2 착수 게이트는 아님). 같은 상태를 `.claude/project-context.md`도
 서술하니 마일스톤이 넘어갈 때 두 곳을 같이 고칠 것. 진행 상황의 소스는
 항상 루트 `ROADMAP.md`.
 

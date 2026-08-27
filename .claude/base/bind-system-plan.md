@@ -200,6 +200,139 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   커버"라는 옛 서술은 런타임에 대해서만 맞다** — 타입은 `D` 범위 안만
   정확하고 밖은 `any`다.
 
+**⭐ [2026-08-27 신설, 9라운드 `H-139`] `New(name)(props)` 파이프라인 의사코드 —
+네 문서에 흩어져 있던 순서를 한 자리에.** 사용자 지시: *"실 구현 전에
+의사코드를 써보자. 그걸로 인해서 감추어졌던 설계 결함이나 폭탄이 발견된 경우가
+많아서, 커지기 전에 확인해볼 필요가 있음. 중요 계층이라서"*. 각 단계의 소스는
+주석의 문서이고 **여기는 순서만 확정**한다 — 단계 안의 규칙은 그 문서가 정본.
+(이름 주의: 여기 `New`는 quad-roblox `D/init.luau`의 **인스턴스 생성자**이고,
+`module-lifecycle-plan.md`의 `New(): Quad`는 quad-base의 **모듈 팩토리**다.
+패키지가 달라 런타임 충돌은 없지만 산문에서 섞이니, 생성자는 항상
+`New "Frame"` 꼴로, 팩토리는 `New()` 꼴로 쓸 것.)
+
+```lua
+-- quad-roblox/src/D/init.luau — 생성기가 찍는 커링 생성자. 아래 ①~④ 순서가 계약.
+local function New(className: string)
+    return function(props)
+        -- ① 물리 생성 — 백엔드의 일. base는 `Instance`를 모른다
+        --    (`dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op").
+        local inst = Instance.new(className)
+
+        -- ② gcconn/gchold — 생성 **직후, 무조건**(핸들러/바인딩 유무와 무관).
+        --    `lifecycle-pattern.md` (0)의 코드 그대로: 클로저가 `gchold`와 `inst`를
+        --    같이 캡처해 userdata 동일성을 고정하고 `InstData:SetWeak(inst, …)`.
+        --    ③④보다 앞인 이유 — 거기서부터 `inst`를 키로 쓰는 `Relate`
+        --    (`elementOwner`/`nameClaims`/`bk`/`chains`)가 생기는데, 키의 동일성
+        --    고정이 그보다 먼저여야 한다.
+        --    (lifecycle-pattern.md (0)의 인라인 코드 — 헬퍼 이름은 구현 시)
+
+        -- ③ flatten — Modifier 항목을 제자리에서 `ProcessedModifier`로 소진하고
+        --    필드를 해시 파트로 merge. 새 테이블 없음, `inst`를 안 받는 순수 변환
+        --    (`modifier-plan.md`의 "flatten의 정확한 형태"). `PreRef`/`PostRef`가
+        --    Modifier 필드에 오는 건 타입으로 차단돼 있어 여기선 안 다룬다.
+        local flattened = flatten(props)
+
+        -- ④ 디스패치 — pre-pass → 본체 → `postRefList`. 전부 `Dispatch.drive`가 소유.
+        Dispatch.drive(inst, flattened)
+
+        return inst   -- `D.Frame`은 이 함수에 캐스트만 얹은 별칭(위 확정)
+    end
+end
+```
+
+```lua
+-- quad-base: Dispatch/init.luau
+function Dispatch.drive(inst, flattened)
+    -- ⓪ 배치 Blocker — **진입 직후** 켜고 `drive`가 할 일을 전부 마친 뒤(post-pass
+    --    포함) 끈다: `dispatch-core-plan.md`의 `H-17` 계약(*"`drive` 전체를 `inst`
+    --    전용 `Blocker`로 감싼다"* / *"`PostRef` 콜백은 게이트가 켜진 채로 실행된다"*).
+    --    ⚠️ 배열 파트가 비어 있으면 열지 않는다 — 안 그러면 `Frame { Size = … }`
+    --    처럼 자식 없는 모든 Instance마다 Blocker + `bk`가 eager 생성된다
+    --    (9라운드 Q2/Q3가 Slot 쪽에서 막은 것과 같은 부류). pre-pass는 자리를
+    --    센티널로 바꿀 뿐 비우지 않으므로 이 판정은 pre-pass 앞뒤가 같다.
+    local batching = flattened[1] ~= nil
+    local blocker = if batching then getBlocker(inst) else nil
+    if batching then blocker:On() end
+
+    -- (a) pre-pass — 배열 파트만, index 순서(`ref-plan.md`의 "메커니즘 — pre-pass 한 스윕" 절).
+    --     `PreRef`는 그 자리에서 fire(`v:Set(inst)`) + 소진,
+    --     `PostRef`는 수집 + 소진. `_fired` 1회용 가드는 둘 다 **여기서** 선다.
+    local postRefList = {}                          -- 이 호출에만 로컬 — Relate 아님
+    for i, v in ipairs(flattened) do
+        if isPreRef(v) then
+            if v._fired then error("PreRef instance reused", 2) end
+            v._fired = true
+            v:Set(inst)                             -- 콜백 fire — 아직 자식도 프로퍼티도 없다
+            flattened[i] = ProcessedPreRef
+        elseif isPostRef(v) then
+            if v._fired then error("PostRef instance reused", 2) end
+            v._fired = true
+            table.insert(postRefList, v)
+            flattened[i] = ProcessedPostRef
+        end
+    end
+
+    -- (b) 본체 — **단일 일반화 `for`**(`F-4-1`). 배열 → 해시 순서는 Luau 순회에
+    --     기댄다. 배열 파트가 Length/Offset **배치 등록 구간**이고 해시 파트는
+    --     부기를 안 만진다(`dispatch-core-plan.md`의 "해법의 핵심" 1번·4번).
+    for k, v in flattened do
+        Dispatch.process(inst, k, v, 1)             -- 체인 index는 항상 1부터
+    end
+
+    -- (c) `postRefList` — push 순서 = index 순서. 이 시점에 끝나 있는 것/아닌 것은
+    --     `ref-plan.md`의 "`PostRef`" 절(자기 서브트리와 프로퍼티는 완성,
+    --     **자기 `.Parent`는 아직**일 수 있다). **게이트가 켜진 채 돈다** — 콜백이
+    --     `slot:Add(…)`로 이 `inst`에 emit을 올려도 `gatedRecompute`는 스킵되고
+    --     정합성은 아래 마지막 `recompute` 한 번에 의존한다(`H-17`).
+    for _, v in ipairs(postRefList) do v:Set(inst) end
+
+    -- ⓪' 배치 닫기 — `drive`가 할 일을 전부 마친 뒤 딱 한 번.
+    if batching then
+        blocker:OffWithoutEmit()
+        local bk = getBookkeeping(inst)             -- 배열 파트가 있었으니 이미 존재
+        if not bk.recomputeBlocker:IsOn() then recompute(inst, bk) end   -- `H-119`
+    end
+end
+```
+
+**이 의사코드를 쓰면서 드러난 것**(결정은 `qa-request/pre-implementation-handtrace-round9-followup.md`의
+`H-139` 절 — 여기선 목록만):
+- **배치를 닫는 자리** — 처음엔 *"어디에도 안 적혀 있다"*고 보고 해시 파트
+  앞에서 닫는 모양으로 썼는데, **틀렸다**(감사 1라운드가 잡음):
+  `dispatch-core-plan.md`의 `H-17` 절이 이미 *"`drive` 전체(post-pass 포함)를
+  감싼다, `PostRef` 콜백은 게이트가 켜진 채 실행된다"*로 정해뒀고 그 이유(단일
+  루프에선 배열 파트의 끝이 루프 밖에서 관측되지 않는다 / `postRefList`는 해시
+  파트보다 뒤다)까지 적혀 있었다. 위 의사코드는 그 계약대로 고쳤다. 실제로
+  드러난 건 그 절의 아래쪽 "해법의 핵심" 4번이 옛 문구(*"배열 파트 순회
+  전체"*)로 남아 있던 것 하나.
+- **자식 없는 Instance에도 Blocker/`bk`가 생기는 경로** — `getBlocker(inst)`를
+  무조건 부르면 그렇게 된다. `flattened[1] ~= nil` 가드로 막았다.
+- **⭐ [2026-08-27 확정, 9라운드 `H-142`] props에 `Parent`는 올 수 없다 — 그건
+  부모가 하는 일이다.** 의사코드를 쓰다 "해시 파트 안의 `Parent` 대입 순서가
+  미정"이 드러났는데, 사용자는 순서를 정하는 대신 **키 자체를 금지**했다:
+  *"Parent대입 자체가 오면 안 돼. 그건 부모에서 할 일이거든. 자신이 바로 하는
+  경우는 없어. 그걸 허용해준다는것 자체가, '외부에서 직접 Parent 설정해주지
+  말것' 을 해치는 요인이 되기도 해.(암묵적으고 가능하도록 둬버려서)"* —
+  `slot-plan.md`가 *"동적 자식은 반드시 `Slot` 또는 `state<Frame>`류 store-bind를
+  통해서만"* 이라고 세운 원칙(외부 코드가 `.Parent`로 자식을 끼우면 `Length`/
+  형제 순서가 조용히 어긋난다)의 **정적 리터럴 판**이다. `.Parent` 대입은
+  자식을 받는 쪽 — `InstanceChildHandler`(정적 자식, `H-134`)와 Slot의
+  `native*` 주입 op — 만 한다.
+  - **타입**: `D` 생성기가 각 클래스의 props 타입에서 `Parent`를 **제외**한다
+    (`ROADMAP.md` M5 `D/init.luau` 체크박스) — **그리고 `FrameModifier`류
+    메소드 목록에서도**(`ROADMAP.md` M7; **[2026-08-27 `/code-review`]** 두
+    목록이 같은 API 덤프에서 따로 생성되는데 한쪽만 빼면
+    `Modifier():Parent(x)`가 타입을 통과하고 `flatten`이 해시 파트로 merge한다 —
+    `PreRef`/`PostRef`를 Modifier 타입으로 차단하는 것과 같은 자리). 범위 밖 클래스의 `New<<X>> "X"`는
+    `any`라 타입으로 못 막고 아래 런타임 가드가 잡는다.
+  - **런타임**: 새 메커니즘 없이 기존 계약으로 — `PropertyHandler.isHandlable`이
+    `"Parent"`를 거부하면 그 키에 매치되는 핸들러가 없어 `Dispatch.process`의
+    *"매치 핸들러 없음 → 즉시 error"* 계약(`ROADMAP.md` M3)에 걸린다. (이
+    배선은 사용자 확정이 아니라 **규칙을 기존 계약에 얹은 제 선택**이다 —
+    `H-142` 처방 후보 (a)/(b)/(c)가 전부 새 메커니즘이라 정하지 않았던 것을
+    "키 금지"로 바꾸니 필요한 코드가 이 거부 한 줄뿐이다. 다른 모양이 낫다면
+    갈아끼울 것.) 순서 문제는 키가 없어지면서 소멸한다.
+
 **이벤트 바인딩 — `On.EventName` 도트액세스 안 씀, PA님 방식(평범한 문자열
 키 + 런타임 리플렉션)으로 전환**: `DeclarativeInstance.luau:13-91`의
 `assign(instance, key, value)`가 `ReflectionService:GetPropertiesOfClass`/

@@ -1367,6 +1367,12 @@ function Slot:List(data, updateFn, keyFn, opts)
     if self._physicalTarget then
         -- 초기 population도 `materializeSlotTree`와 같은 이유로 게이팅한다 —
         -- 안 그러면 아이템마다 `recompute`가 돌아 O(n²)(그 절의 `blocker:On()` 문단).
+        -- [2026-08-27, `H-136` 후속] `reconcile`이 이제 자기 게이트를 쥐므로(`ownsGate`)
+        -- **이 `if` 블록 전체가 잉여**다 — `On()`/`OffWithoutEmit()`뿐 아니라 아래
+        -- `recomputeBlocker` 확인 + `recompute` 호출까지 `reconcile` 꼬리가 똑같이
+        -- 한다. 안쪽에선 `ownsGate = false`로 걸러져 동작은 같다.
+        -- `materializeSlotTree`와 모양을 맞추려 두지만, 구현 시 블록째 지우고
+        -- `activateList(self, self._physicalTarget)` 한 줄만 남겨도 무방하다.
         local blocker = getBlocker(self)
         blocker:On()
         activateList(self, self._physicalTarget)
@@ -1541,6 +1547,21 @@ function activateList(self, physicalTarget)
             keys[i] = key
         end
 
+        -- ⭐ [2026-08-27 확정, 9라운드 `H-136`] **한 사이클은 한 배치다** — 재실행
+        -- (`data:Set(…)` → 이 함수)도 최초 population과 똑같이 Blocker로 감싼다.
+        -- 안 그러면 raw op마다 `recompute`가 완주해 O(n²) + 부모 캐스케이드가
+        -- 아이템 수만큼 나고, `dispatch-core-plan.md`의 *"한 사이클 … 한 번만"*이
+        -- 거짓이 된다. `raw*`의 명시 호출은 이미 `getBlocker(self):IsOn()`을
+        -- 보므로(`H-119`) 추가 배선은 없다.
+        -- **Blocker는 네스팅이 안 된다**(불리언, `base/blocker-plan.md`) — 최초
+        -- population은 `Slot:List`/`materializeSlotTree`가 이미 켜둔 **바깥 배치
+        -- 안에서** 여기 오므로, 이미 켜져 있으면 손대지 않고 바깥이 끄게 둔다.
+        -- `updateFn`이 도중에 던지면 켜진 채 남는 것은 `materializeSlotTree`가
+        -- 이미 감수하는 것과 같은 부류(`pcall` 안 씀 — error 계약).
+        local blocker = getBlocker(self)
+        local ownsGate = not blocker:IsOn()
+        if ownsGate then blocker:On() end
+
         local slotPos = 0   -- `_elements` 자리 카운터 — 생존 아이템마다 정확히 +1
 
         for i, item in ipairs(items) do
@@ -1606,6 +1627,15 @@ function activateList(self, physicalTarget)
                 prevKeys[key] = nil              -- [`H-38`] 이 키는 이제 없다 —
                                                  -- **다음 사이클엔 다시 안 묻는다**
             end
+        end
+
+        -- ⭐ [2026-08-27, `H-136`] 배치 닫기 — `Slot:List`의 `_physicalTarget` 분기와
+        -- 같은 꼬리. `recomputeBlocker`는 따로 본다(사용자 코드가 바깥 `recompute`
+        -- 안에서 이 사이클을 일으킨 재진입이면 바깥 루프가 되감아 따라잡는다).
+        if ownsGate then
+            blocker:OffWithoutEmit()
+            local bk = getBookkeeping(self)
+            if not bk.recomputeBlocker:IsOn() then recompute(self, bk) end
         end
     end
 

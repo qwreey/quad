@@ -1943,3 +1943,21 @@ ref 는 그 자체로 epoch임"*), `H-118`은 소유권 문제가 아니라 `gat
 high`는 Q4~Q10 반영 뒤로. 결정의 소스는
 `qa-request/pre-implementation-handtrace-round9-followup.md`, 경위는
 `session/2026-08-27-01-handtrace-round9-q1-q3.md`. **Q4~Q10은 다음 세션.**
+
+## 2026-08-27-02 — 9라운드 Q4~Q10 결정·반영 + `H-138`/`H-139`/`H-142` (전량 처리)
+
+Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubscribe`만 게이트
+통과 뒤 cleanup) / Q5(M2 공통 기반에 `Ref` 최소형) / Q6(`WeakUnsubscribe` 관대 —
+약한 홀드를 강제하지 않으므로) / Q7(폐기 블록 `archive/effect-internal-observer-cascade-reversed.md`)
+/ Q8(`InstanceChildHandler` 부기) / Q10(`reconcile` 재실행도 배치 Blocker,
+네스팅 불가라 `ownsGate`). **Q9는 문항의 전제가 틀렸다** — Tween 절 스케치의
+`hint == nil` 줄이 `v == nil` 규칙의 복사 오류, 파괴 경로는 `process(nil)` 하나.
+`H-138` 숏핸드 우선순위 > `PropertyHandler`(충돌 방지는 `UI` 접두어). **`H-139`
+파이프라인 의사코드**(`New` ①~④ + `drive` (a)~(c), `bind-system-plan.md`)를
+쓰면서 배치 닫는 자리·빈 배열 파트 가드·`Parent` 순서가 드러났고, 마지막은
+**`H-142` — props에 `Parent` 금지**(*"그건 부모에서 할 일"*)로 순서 문제 자체가
+소멸. 감사 8라운드 뒤 `/code-review high` 10건 — 여섯 반영(그중 셋이 이 세션의
+`H-134` 반영분이 만든 것), **넷은 새 메커니즘이라 문항으로**(`H-143`~`H-146`,
+`question.md` 최우선 절). 결정의 소스는
+`qa-request/pre-implementation-handtrace-round9-followup.md`, 경위는
+`session/2026-08-27-02-handtrace-round9-q4-q10.md`.

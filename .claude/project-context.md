@@ -27,7 +27,7 @@ M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 �
 (소스는 `qa-request/pre-implementation-handtrace-round8-followup.md`),
 `question.md` 최우선 절은 다시 비어 있다. **[2026-08-27] 9라운드**(그 커밋
 `9dd8213`의 델타 재트레이싱, 발견 `H-124`~`H-141`)는 **Q1~Q3가 `base/`에
-반영됐고 Q4~Q10 대기** — 소스는 `-round9-followup.md`. 게이트는 여전히 0. 저장소 루트에
+반영됐고**, 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량 반영** — 소스는 `-round9-followup.md`. 그 반영분에 `/code-review high`가 낸 **새 메커니즘 넷(`H-143`~`H-146`)이 `question.md` 최우선 절에 판단 대기**(M2 `Effect` 둘·M3·M5 하나씩). 게이트는 여전히 0. 저장소 루트에
 `quad-base/src/`(`New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`)/
 `quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
 아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가

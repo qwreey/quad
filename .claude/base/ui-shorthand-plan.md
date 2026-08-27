@@ -48,6 +48,10 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 비슷한 이름의 부가 Modifier 필드인지 구분이 안 됨(사용자 지적). 접두어
 `UI`를 붙이면 실제 대응하는 Roblox Instance 클래스 이름과 1:1로 읽혀서
 이 모호함 자체가 사라짐 — `Frame { UICorner = 8 }`, `mod:UICorner(8)`.
+**[2026-08-27 추가, 9라운드 `H-138`]** 접두어의 두 번째 근거 — Roblox 프로퍼티
+이름엔 `UI` 접두어가 없어서 숏핸드 키가 실제 프로퍼티와 **우연히 겹치는 일을
+구조적으로 막는다**(아래 "메커니즘" 절의 우선순위 문단 — 충돌 방지는 접두어,
+선택은 우선순위로 역할이 갈린다).
 
 ## 메커니즘 — 새 아키텍처 개념 불필요
 
@@ -66,6 +70,19 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 작동함, `architecture.md`의 `[AttributeKey "Name"]`류 특수 키와 같은 층위.
 자동 생성된 자식은 기존 관례대로 `_`/`QUAD_` 접두어 네이밍
 (`research/debug-tooling-plan.md` 9번, v1의 `_quad_round`류 그대로 재사용).
+
+**⭐ [2026-08-27 확정, 9라운드 `H-138`] 매치 우선순위 — 숏핸드 핸들러가
+`PropertyHandler`보다 높다.** `Frame { UICorner = 8 }`에서
+`getHandler(inst, "UICorner", 8)`이 `UICornerHandler`를 고르는 근거는
+`PropertyHandler`가 리플렉션으로 그 키를 거부해서가 **아니라** `priority`다
+(구체 상수는 구현 시 — `PropertyHandler`보다 높은 밴드면 된다). 사용자 논거:
+*"당연히 숏핸드 우선순위가 높음. 안 그러면 프로퍼티 핸들러가 숏핸드 계층을
+인지하고 준비한다는 말이 돼"* — 거부에 기대면 하위 계층(프로퍼티)이 상위
+계층(숏핸드)의 키 집합을 알아야 하는 역방향 의존이 생긴다. 이름 충돌 방지도
+우선순위가 아니라 **`UI` 접두어**가 맡는다: *"프로퍼티에 UI를 붙인 이유도
+우연히 겹치는걸 막기 위함임. UI 프리픽스는 로블록스 프로퍼티에 발견되진
+않거든"*(위 "결론" 절의 접두어 확정에 이 근거가 하나 더 붙는다 — 그 절은
+Modifier 메소드와의 모호함만 들었다).
 
 **[보강, 2026-08-09 열한 번째 세션] `mod:UICorner(8)`류 체이닝이 실제로
 타입체크되려면, 생성되는 `FrameModifier`류 정적 타입의 메소드 목록에
@@ -165,11 +182,23 @@ function UICornerHandler.process(inst, k, v, index)
     end
     local child = ensureManagedChild(inst, k)   -- 없으면 Instance.new + Parent, 있으면 재사용
     Dispatch.process(child, "CornerRadius", mapTweenValue(v, toUDim), 1)
-    return function(hint)
-        if hint == nil then destroyManagedChild(inst, k) end
-    end
+    return function() end   -- ⭐ [2026-08-27 정정, 9라운드 `H-135`] no-op — 아래 참고
 end
 ```
+
+- **⭐ [2026-08-27 정정, 9라운드 `H-135`] 반환 클로저는 `function() end`다 —
+  여기 한때 `function(hint) if hint == nil then destroyManagedChild(inst, k) end
+  end`가 적혀 있었는데, 그건 위 "`v`가 `nil`인 경우" 절의 `v == nil`(값) 규칙을
+  `hint == nil`(retractor 인자)로 잘못 옮긴 **복사 오류**였다.** 이 절의 주제는
+  자식 프로퍼티 세팅을 `Dispatch.process`로 되돌려주는 것뿐이고 관리 자식의
+  생사는 그 절이 정한다. **사용자 확정**: *"v == nil 로 신규 들어오면 파괴가
+  맞고 retract 는 nop 맞아. 파괴 자체가 사실 inst 바꿔서 넣은 process 를 처리할
+  필요 없게 만들어버리고, 우린 파괴에 대해서 retract 안하던게 맞아서, Tween 과
+  무관한 것도 맞지."* — 파괴 경로는 `process(inst, k, nil)` **하나**이고,
+  자식이 파괴되면 그 위에 위임됐던 `(child, "CornerRadius")` 체인·트윈 문맥은
+  Instance와 함께 사라지므로 retractor가 되돌릴 것이 없다. 옛 줄대로 짜면 (A)
+  분기에서 `R(nil)` + `process(nil)`이 같은 자식을 두 번 파괴하고, (B) 분기
+  (`State<State<…>>`의 안쪽이 값↔State로 바뀔 때)에서 자식이 파괴·재생성됐다.
 
 - **`process` 도중에 대상 `inst`를 바꾸는 것은 UB가 아님(사용자 확정)** —
   키가 바뀔 수 있는 것과 정확히 같음. `chains`가 `(inst,k)` 쌍으로
