@@ -332,7 +332,10 @@ end
 게 흔한 정상 용례) `_cleanup`이 **항상 `nil`**인 Effect가 존재한다. 그러면
 바인드/포탈 재마운트마다 조건이 참이 되어 `fn`이 다시 돌고 — 이 재설계가
 없애려던 `H-58`(바인드마다 `Rerun`)이 **그대로 되살아난다.**
-`_installed`는 `Rerun`이 끝날 때 참, `_consumeCleanup`에서 거짓이 된다.
+`_installed`는 `Rerun`이 끝날 때 참(**[2026-08-27 `H-143`]** 단 그 실행 중에
+핸들이 죽었으면 — `wasAlive and not canExecute` — 세우지 않는다,
+`_consumeCleanup`이 걸어둔 거짓이 그대로 남는다), `_consumeCleanup`에서 거짓이
+된다.
 
 **⭐ [2026-08-25 신설, 7라운드 `H-60`] `EffectHandle:Rerun()` 정의.**
 지금까지 호출부만 다섯 곳이고 정의가 없었다.
@@ -347,8 +350,34 @@ function EffectHandle:Rerun()          -- 공개 메소드, 무인자
     repeat
         self._pending = false
         self:_consumeCleanup()
-        self._cleanup = self.fn(self)
-        self._installed = true         -- cleanup 반환 여부와 무관하게 "설치됨"
+        local wasAlive = canExecute(self)  -- `fn` 진입 전 상태
+        local c = self.fn(self)
+        -- ⭐ [2026-08-27 확정, 9라운드 `H-143`] **이 실행 중에 죽었으면 cleanup만
+        --   한다.** `fn` 안에서 `self:Unsubscribe()`(또는 `WeakUnsubscribe`)가
+        --   통과했으면(강/약 구독 핸들 — leaf 바인딩 핸들은 자기 해제로 죽지
+        --   않으므로 이 분기에 오지 않는다) 이 핸들은 더 이상 어느 레지스트리에도
+        --   없고 leaf도 아니라 **아무도 이 cleanup을 소진할 수 없다** — 저장하지
+        --   말고 즉시 소진한다.
+        --   판정은 "살아 있다가 → 죽었다"(`wasAlive and not canExecute`)다.
+        --   `not canExecute` 하나로 하면 안 된다 — **생성자의 최초 `Rerun()`은
+        --   어떤 바인드·구독보다 먼저** 돌아 `canExecute`가 항상 거짓이라, 첫
+        --   실행의 cleanup을 그 자리에서 소진하고 `_installed`를 거짓으로 남겨
+        --   첫 바인드에서 `fn`이 또 돈다(감사 2라운드가 잡은 회귀 — `H-58`의
+        --   재현). 약한 해제도 같은 경로로 소진된다(죽은 핸들에 매달린 cleanup은
+        --   "영원히 안 불림"보다 "한 번 불림"이 계약에 가깝다). 사용자 확정:
+        --   *"특정 state 에 변경을 딱 한번만 처리하고 cleanup 되는걸 만드는 요구가
+        --   존재하지 않을 이유가 딱히 없다"*, *"실행중 죽으면 클린업만 하기"* —
+        --   `fn` 안 `Unsubscribe`는 지원 대상이다.
+        if wasAlive and not canExecute(self) then
+            if c then c() end          -- `_installed`는 이미 `_consumeCleanup`이 거짓으로
+            self._pending = false      -- 죽은 핸들의 재요청(`fn` 안 `self:Rerun()`)은 버린다
+                                       --   — `fire`가 죽은 핸들의 emit을 버리는 것과 같은 규칙.
+                                       --   안 버리면 아래 `until`이 한 바퀴 더 돌아 죽은
+                                       --   핸들에서 `fn`이 또 돌고 그 cleanup이 다시 고아가 된다.
+        else
+            self._cleanup = c
+            self._installed = true     -- cleanup 반환 여부와 무관하게 "설치됨"
+        end
     until not self._pending            -- 재요청이 또 오면 또 돈다
     self._running = false
 end
@@ -404,7 +433,8 @@ end
   `fn|Observer`, **강참조**), `_epochs`(`EpochMap` — `Ref`도 `Epoch`라 균일),
   `_blocker`(등록 구간 억제), `_cleanup`, **`_installed`**(설치 여부 —
   cleanup 반환이 선택이라 `_cleanup`으로는 판정 못 한다),
-  `_running`/`_pending`(재진입).
+  `_running`/`_pending`(재진입), **`.Subscribed`**(공개 플래그 — `canExecute`가
+  읽는 그것, 네 진입점이 세우고 내린다, 아래 "`EffectHandle:Subscribe()`" 절).
   **옛 `_refDeps`/`_refCallbacks`/`_observers`/`_installing`은 `_deps` 하나와
   `_blocker`로 대체됐다.**
 
@@ -497,37 +527,122 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 **확정**: `EffectHandle`에도 `:Subscribe()`/`:Unsubscribe()` 추가, 둘 다
 `self` 반환(Observer와 동일한 fluent 대칭).
 
-**⭐ [2026-08-27 확정, 9라운드 `H-127`] 의사코드 — 네 진입점은 Observer의
-것을 재사용하고, `Unsubscribe`만 *통과한 뒤* cleanup을 덧붙인다.** 아래
-산문(번호 목록)은 이 블록을 풀어 쓴 것이고, **순서는 이 블록이 정본**이다.
+**⭐ [2026-08-27 확정, 9라운드 `H-127` → 같은 날 (b)로 정정] 의사코드 — 네
+진입점은 `EffectHandle` 자기 것**(Observer와 같은 레지스트리·같은 `canBound`
+게이트를 쓰되 함수 본문은 공유하지 않는다 — 아래 블록 머리 주석), **`Unsubscribe`는
+게이트를 *통과한 뒤* cleanup을 덧붙인다.** 아래 산문(번호 목록)은 이 블록을 풀어
+쓴 것이고, **순서는 이 블록이 정본**이다.
 산문의 번호 순서(플래그 → cleanup → fail-fast)대로 짜면 leaf 바인딩된 핸들에
 `:Unsubscribe()`를 불렀을 때 **cleanup을 소진한 뒤에야 error**가 나서 `E-11`이
 막으려던 피해(cleanup 앞당김, `_installed = false`)가 이미 일어난 뒤다 —
 Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 
 ```lua
--- 레지스트리(`Subscribed`/`WeakSubscribed`)·`canBound` 게이트·`.Subscribed`
--- 플래그 전부 `base/lifecycle-pattern.md` (2)의 Observer 네 진입점과 **같은
--- 구현**이다 — 메소드 테이블에 그대로 배정한다. 등록되는 건 **핸들 자신뿐**
--- (내부 Observer·`Ref` 콜백은 생성자에서 이미 `Weak*`로 걸려 있다, `H-59`).
-EffectHandle.Subscribe       = Observer.Subscribe        -- canBound 게이트 + 강한 킵
-EffectHandle.WeakSubscribe   = Observer.WeakSubscribe    -- 게이트 + 약한 등록 + 플래그
-EffectHandle.WeakUnsubscribe = Observer.WeakUnsubscribe  -- 관대(`H-133`) — cleanup 안 건드림
+-- ⭐⭐ [2026-08-27 확정 (b), 9라운드 `H-144` 후속 — 감사 4라운드] **`EffectHandle`은
+-- 네 진입점을 자기 것으로 가진다 — Observer의 함수 본문을 배정하지 않는다.**
+-- 공유하는 건 **레지스트리 두 개**(`Subscribed`/`WeakSubscribed`, 소유 모듈은
+-- `Observer.luau` — `H-99`)와 **`canBound` 게이트**(`LifetimeHandle.luau`의
+-- 탑레벨 함수)뿐이고, `.Subscribed` 플래그의 뜻도 같다. 여기 한때(Q4/`H-127`)
+-- `EffectHandle.Subscribe = Observer.Subscribe`처럼 **함수 객체를 그대로 배정**해
+-- 뒀는데, `Observer:Subscribe`의 본문이 `self:WeakSubscribe()`로 **콜론 위임**하는
+-- 탓에 `self`가 `EffectHandle`이면 그 조회가 `EffectHandle`의 오버라이드로 가서
+-- 재구독 꼬리가 두 번 돌고, 첫 번째는 강한 킵이 서기 **전에** `Rerun`해 `fn` 안
+-- `self:Unsubscribe()`(`H-143`이 지원하는 패턴)가 *"not subscribed strongly"*로
+-- error했다(로컬 `luau`로 재현). **사용자 확정**: *"b가 맞아. 내 머리에서 나왔던
+-- 처음 구조는 그것이였어. … '하나의 무언가가 두 일을 동작하지 않는가에
+-- 유의하자' — 이것도 마찬가지야. 버그를 유발하기 좋은 포인트였고"* —
+-- Observer와 Effect는 이질적 타입이라(생성 방법부터 다르다) 본문을 섞지 않는다
+-- (`conventions.md`의 "설계 원칙" 절에 원칙으로 승격). 등록되는 건 **핸들
+-- 자신뿐**(내부 Observer·`Ref` 콜백은 생성자에서 이미 `Weak*`로 걸려 있다,
+-- `H-59`). 레지스트리 두 테이블을 `Effect.luau`가 어떻게 받는지(모듈 내부
+-- export, 공개 API 아님)는 구현 세부 — 이름은 구현 시.
+
+-- ⭐ [2026-08-27 확정, 9라운드 `H-144`] 구독 둘은 등록 뒤 leaf 재바인드
+-- (`_bindDestroying`, `H-65`)와 **정확히 같은 꼬리**를 붙인다. `Unsubscribe`로
+-- cleanup을 소진한 핸들을 다시 `Subscribe`하면 `.Subscribed = true`만 서고 `fn`이
+-- 안 돌아, deps 없는 Effect는 레지스트리가 살려두는 죽은 핸들(누수)이 되고
+-- deps 있는 것은 다음 emit까지 죽어 있었다. `Refresh()`를 **먼저** 부르는 이유는
+-- 287행 캐비엇과 같다 — 해제 중 도착한 emit은 `fire`의 `canExecute` 가드가
+-- `_epochs:Update` 앞에서 버리므로 `_epochs`가 해제 전 리비전에 멈춰 있고, 안
+-- 맞추면 재구독 뒤 첫 emit(예: 게이트 유보가 풀리며 오는 배치)에 같은 값으로
+-- `fn`이 한 번 더 돈다. 사용자 확정: *"초기에 epoch 를 전부 잘 설정해주는게
+-- 나을수도 … 처음 연산 기준에 있어서도 전부 값은 최신 값이거든. 따라서 다음
+-- emit 을 받아야할 이유가 없을수도 있어."* Blocker는 안 쓴다 — dep을 다시
+-- 등록하지 않으므로(생성자에서 한 번, `_deps` 강참조 유지) 억제할 발화가 없다.
+local function resubscribeTail(self)
+    local depsChanged = self._epochs:Refresh()
+    if not self._installed or depsChanged then
+        self:Rerun()
+    end
+end
+
+-- 꼬리는 항상 **등록이 전부 끝난 뒤** 한 번 — `Subscribe`는 `WeakSubscribe`를
+-- 부르지 않고 등록 세 줄을 자기 안에 펼쳐 쓴다. 위임하면(콜론이든 dot이든)
+-- 꼬리가 강한 킵 **앞**에서 돌거나 두 번 돈다 — 감사 4라운드가 잡은 바로 그
+-- 모양이다. 게이트·메시지 분기는 Observer의 것과 같다(`lifecycle-pattern.md` (2)).
+function EffectHandle:WeakSubscribe()
+    if not canBound(self) then
+        error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
+    end
+    self.Subscribed = true
+    WeakSubscribed[self] = true
+    resubscribeTail(self)
+    return self
+end
+
+function EffectHandle:Subscribe()
+    if not canBound(self) then
+        error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
+    end
+    self.Subscribed = true
+    WeakSubscribed[self] = true
+    Subscribed[self] = true                    -- 강한 킵이 선 **뒤에** 꼬리 — `Rerun` 안의
+    resubscribeTail(self)                      --   `fn`이 `self:Unsubscribe()`해도 가드 통과
+    return self
+end
+
+function EffectHandle:WeakUnsubscribe()        -- 관대(`H-133`) — cleanup 안 건드림
+    if Subscribed[self] ~= nil then
+        error("subscribed strongly; use :Unsubscribe()", 2)
+    end
+    WeakSubscribed[self] = nil
+    self.Subscribed = false
+    return self
+end
 
 function EffectHandle:Unsubscribe()
-    Observer.Unsubscribe(self)   -- ⭐ 게이트가 **먼저** — 강하게 구독된 적 없으면(leaf
-                                 --   바인딩·약한 구독·미구독) 여기서 error, cleanup엔
-                                 --   손도 안 댄다(`E-11`). 통과하면 강한 킵 해제 +
-                                 --   `.Subscribed = false`(향후 재실행 차단).
-    self:_consumeCleanup()       -- 통과했을 때만: 직전 cleanup 정확히 1회, `_installed = false`
+    if Subscribed[self] == nil then            -- ⭐ 게이트가 **먼저** — 강하게 구독된 적 없으면
+        error("not subscribed strongly; use :WeakUnsubscribe()", 2)  --   (leaf 바인딩·약한
+    end                                        --   구독·미구독) 여기서 error, cleanup엔 손도
+    Subscribed[self] = nil                     --   안 댄다(`E-11`).
+    WeakSubscribed[self] = nil
+    self.Subscribed = false                    -- 향후 재실행 차단
+    self:_consumeCleanup()                     -- 통과했을 때만: 직전 cleanup 정확히 1회, `_installed = false`
     return self
 end
 ```
 
-- **`WeakUnsubscribe`는 cleanup을 소진하지 않는다** — 약한 구독은 "GC에
-  맡기는" 경로라 해제가 곧 종료 신호가 아니다. 종료 신호는 강한 구독의
-  `Unsubscribe`와 leaf 사망(`unbindLifetime`의 훅) 둘뿐.
-- 실측(9라운드 `core9.luau`, `t12` 매트릭스): 이 배정으로 leaf 바인딩된
+- **`WeakUnsubscribe` 자체는 cleanup을 소진하지 않는다** — 약한 구독은 "GC에
+  맡기는" 경로라 해제가 곧 종료 신호가 아니다. 종료 신호는 **[2026-08-27 `H-143`
+  으로 셋]** — 강한 구독의 `Unsubscribe`, leaf 사망(`unbindLifetime`의 훅), 그리고
+  **`fn`이 실행 중에 자기 핸들을 죽인 경우**(`fn` 안 `self:Unsubscribe()` /
+  `self:WeakUnsubscribe()` — `WeakUnsubscribe` 본문은 여전히 cleanup에 손대지
+  않지만, 그걸 감싼 `Rerun`의 죽음 판정 `wasAlive and not canExecute`가 그
+  실행이 돌려준 cleanup을 즉시 소진한다, 위 `Rerun` 의사코드). 여기 한때
+  "둘뿐"이라 적혀 있었다(감사 7라운드 정정).
+- **`fn` 안에서 허용되는 핸들 호출은 `self:Rerun()`과 자기 해제다 — 단 자기
+  해제는 *건 경로로*: 강구독 핸들은 `self:Unsubscribe()`, 약구독 핸들은
+  `self:WeakUnsubscribe()`. leaf 바인딩된 핸들엔 자기 해제 경로가 없다**(종료는
+  leaf 사망뿐 — `Unsubscribe()`는 가드에서 error하고 그 error는 `Rerun`을 뚫고
+  나가 `_running`이 참으로 남는 UB, `WeakUnsubscribe()`는 관대 통과하지만
+  `isBoundAlive`가 그대로라 죽지 않는다; **[2026-08-28 `/code-review`]**). `fn` 안
+  재구독(`self:Subscribe()`/
+  `self:WeakSubscribe()`)은 **[2026-08-27 기준] 서술하지 않는다**(트레이싱상
+  `resubscribeTail`의 `Rerun`이 `_running` 재진입으로 `_pending`만 세워 크래시는
+  안 하지만 지원 목록이 아니다 — 필요가 관측되면 그때 정한다).
+- 실측(9라운드 `core9.luau`, `t12` 매트릭스 — **당시 함수 배정 형태에서의 실측**이고
+  (b) 재작성 뒤 재실행하지는 않았다[2026-08-27 기준]; 게이트 순서는 그대로라
+  같은 결과가 나올 것으로 추정할 뿐, 확정 근거는 M2 구현 테스트가 될 것): leaf 바인딩된
   핸들의 `:Unsubscribe()`가 cleanup을 건드리지 않고 error, `:Subscribe()`
   후 `:Unsubscribe()`는 cleanup 1회 — 전부 기대대로.
 
@@ -542,10 +657,15 @@ end
     등록하면 (a) `handle.Subscribed`가 안 세워져 `canExecute(handle)`이
     영원히 거짓이고, (b) deps 없는 `Effect(fn):Subscribe()`는 등록할 게
     아예 없어 핸들이 GC되고 cleanup이 유실된다.
-  - **`:Subscribe()`가 하는 일은 그것 하나뿐이다** — 내부 Observer와 `Ref`
+  - **`:Subscribe()`가 등록하는 것은 그것 하나뿐이다** — 내부 Observer와 `Ref`
     콜백은 **생성자에서 이미 `Weak*`로 걸려 있다**(위 "확정 구조" 절).
     `Subscribed = true`가 서는 순간 `canExecute(handle)`이 참이 되어 그
-    경로들이 살아난다.
+    경로들이 살아난다. **[2026-08-27 `H-144`]** 등록 뒤 꼬리로 `_epochs:Refresh()`
+    + 조건부 `Rerun`이 붙는다(위 의사코드) — **그 사이 dep이 안 변했으면**
+    no-op이다. 첫 구독이라도 생성과 `Subscribe()` 사이에 emit이 있었으면
+    (`.Subscribed`가 거짓이라 `fire`가 첫 가드에서 버린다) `Refresh()`가 참을
+    돌려 캐치업으로 `fn`이 다시 돈다 — 바람직한 동작이고, "첫 구독은 재실행
+    안 한다"를 테스트에 인코딩하지 말 것(**[2026-08-28 `/code-review`]**).
   - **⚠️ 용도는 완전히 top-level(모듈/스크립트 레벨, 어떤 Instance
     생명주기에도 안 묶인) 사이드 이펙트로 한정할 것 — 특정 `inst`에
     묶인 경우엔 leaf 부착(`bindLifetime`)을 쓰지 `:Subscribe()`를 쓰지
@@ -606,8 +726,8 @@ end
       이 요구는 성립하지 않는다 — **그대로 구현하면 `nil`을 순회한다.**
     - **[2026-08-21 기준]** 남은 건 **구현 시 회귀 확인**뿐이고, 설계상 열린
       항목이 아니다.
-- **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer의 것을 위임한 뒤
-  cleanup 하나를 덧붙인다 — Effect 계층에서 의미가 확장됨.** Observer의
+- **`:Subscribe()`한 핸들에서는 `:Unsubscribe()`가 Observer와 같은 게이트·레지스트리
+  조작을 한 뒤 cleanup 하나를 덧붙인다 — Effect 계층에서 의미가 확장됨.** Observer의
   `:Unsubscribe()`는 "미래 재실행만
   끊는다"(Observer 자체엔 정리할 상태가 없음)로 충분하지만, Effect의
   계약은 "생애주기가 끝나는 시점에 마지막 cleanup이 정확히 1회 호출된다"
@@ -705,10 +825,12 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     인자마다 다른 규칙을 위치로 기억해야 했다. 아무것도 안 넘기므로 그 질문
     자체가 없어지고, dep 값은 사용자가 클로저로 직접 읽는다.
   - `self`를 주는 덕에 `fn` 안에서 `self:Rerun()`/`self:Unsubscribe()` 같은
-    핸들 표면에 바로 닿는다. **⚠️ [2026-08-27 `/code-review high`, 판단 대기
-    `H-143`]** `fn` 안 `Unsubscribe`는 그 실행이 돌려준 cleanup을 `Rerun`이
-    그대로 저장해 **아무도 소진 못 하게** 만든다 — 처방(`Rerun` 꼬리 분기 /
-    금지 / 문서화)은 `question.md` 최우선 절.
+    핸들 표면에 바로 닿는다. **[2026-08-27 확정, 9라운드 `H-143`]** `fn` 안
+    `Unsubscribe`는 **지원 대상**이다("이 dep의 변경을 딱 한 번만 처리하고
+    끝나는 Effect") — 그 실행이 돌려준 cleanup을 `Rerun`이 그대로 저장하면
+    아무도 소진 못 하므로, `Rerun` 꼬리가 "이 실행 중에 죽었다"(`wasAlive and
+    not canExecute`)를 보면 **즉시 소진**하고 재요청도 버린다(위 `Rerun`
+    의사코드).
 - **최소 1회는 실행된다 — React `useEffect`와 동일.** 아직 안 채워진 `Ref`가
   섞여 있어도 그대로 돈다(사용자: *"최초 1회에서 어차피 if 로 확인해내게
   될것이므로 괜찮음"*). "전부 채워질 때까지 대기"는 안 한다.

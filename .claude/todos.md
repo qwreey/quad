@@ -47,8 +47,13 @@
      `H-142` `Parent` 순서 발견 → props에 `Parent` **금지**로 확정)까지 반영.
      Q9는 문항 전제가 틀린 것(Tween 절 스케치 한 줄 복사 오류)으로 닫힘.
      **[2026-08-27 기준] 감사 8라운드·`/code-review high`까지 돌렸다 — 리뷰 10건 중
-     여섯은 반영, 넷(`H-143`~`H-146`, 새 메커니즘)은 `question.md` 최우선 절에
-     판단 대기. 남은 액션: 커밋, 그리고 그 넷의 결정.** 아래는 돌리기 전(2026-08-26) 서술:
+     여섯은 반영, 넷(`H-143`~`H-146`, 새 메커니즘)은 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 사용자 결정으로
+     전부 권고 (a) 확정·반영(`Rerun` 꼬리 즉시 소진 / 재구독 꼬리 `Refresh` 먼저(진입점은 `EffectHandle` 자기 것) /
+     `bk.indexOfElement` weak-key / 루트 부착은 금지 범위 밖). **[2026-08-28]** 그
+     반영분에 `/code-review high`가 또 셋(`H-147`~`H-149`)을 냈고, 사용자 판단으로
+     **10라운드 문항지**(`qa-request/pre-implementation-handtrace-round10.md`)로
+     올려 신선한 탐사자의 광범위 탐사(지시서 `-round10-brief.md`)와 함께 **배치
+     회신 대기**. 남은 액션: 그 회신 처리 → M2 착수.** 아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
      **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤
      `/code-review high` **7패스의 수정이 전부 그 커밋에 들어 있고 아무도

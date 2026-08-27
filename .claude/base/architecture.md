@@ -262,7 +262,7 @@ quad/
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
 │       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행)/`:Gate`(`GateNode`, `ComputeNode`와 같은 층위 — `base/gate-plan.md`) 전부 여기 소속
-│       ├── Observer.luau        # ⭐ [2026-08-25 신설, 7라운드 `H-99`] `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()` 전역 레지스트리의 소유 모듈** — `EpochMap.luau`와 같은 이유로 `State.luau`에 묻지 않는다(`Effect`/`Gate`/leaf 핸들러가 전부 이 레지스트리를 본다)
+│       ├── Observer.luau        # ⭐ [2026-08-25 신설, 7라운드 `H-99`] `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()` 전역 레지스트리의 소유 모듈** — `EpochMap.luau`와 같은 이유로 `State.luau`에 묻지 않는다(`Effect`/`Gate`/leaf 핸들러가 전부 이 레지스트리를 본다 — **[2026-08-27 `H-144` (b)]** `Effect.luau`는 이 두 테이블과 `canBound`만 공유하고 네 진입점 본문은 자기 것)
 │       ├── EpochMap.luau         # 재사용 가능한 Epoch 부기 객체(`:Update`/`:Refresh`/`:Sync`/`:TrackFrom`) — `State.luau`에 묻지 않고 별도 모듈, `GateNode`/`State`/`Effect`가 전부 씀(`base/state-epoch-plan.md`)
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환(**평범한 레코드 필드** — 타입 함수 안 씀). **[2026-08-25]** 생성은 **명시적 초기화**(타입 인자에 `Source<T>` 직접, `defaults`에도 `Source(v)` 직접 — 옛 lazy `__index` 폐기), 동적 키는 `:Of<<T>>(name)` 하나(옛 `GetDynamic` 흡수), `:Names()`, 예약 키 진단용 `CheckReservedKeys<keyof<T>>`(**[2026-08-26 `H-112`]** 옛 이름 `CheckReserved`는 `T`를 통째로 받아 실사용 `T`에서 안 돌았다 — `base/store-plan.md`)
 │       ├── Blocker.luau          # 값 기반 emit 지연/합치기(`base/blocker-plan.md`) — 위 `state:Gate`의 `GateNode` 위에 얹히는 **정책**, 바닥부터 짜지 않음

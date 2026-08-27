@@ -1502,8 +1502,9 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   (`nativeInsert` → `setLength` → `recompute`)과 같게. 옛 서술(`setLength` →
   `Parent`)은 단건 경로에서 `recompute`가 부착 전에 돌았다. (3) **5번째 인자
   `element`는 안 넘긴다** — 상수 길이라 지속 클로저가 없어 Q3 계약상 생략
-  대상이고, 넘기면 `setLength(…, 0)` 해제가 `bk.indexOfElement`의 옛 키를
-  안 지워(해제 호출엔 요소가 없다) 교체마다 옛 자식이 강참조로 쌓인다. 대안 — `Dispatch.drive`가 `type(k) == "number"` 분기에서 일괄 등록 —
+  대상이다(**[2026-08-27 `H-145`]** 처음엔 "넘기면 해제가 옛 키를 안 지워
+  강참조로 쌓인다"도 근거였으나 그 맵이 weak-key가 되며 그 근거는 사라졌다 —
+  남는 근거는 "지속 클로저가 없어 조회할 일이 없다" 하나). 대안 — `Dispatch.drive`가 `type(k) == "number"` 분기에서 일괄 등록 —
   은 아래 *"모든 핸들러가 `k=number`일 때 처리하도록 두는"*에서 **이미 기각된
   안**이라 다시 열지 않는다. `ROADMAP.md` M5 체크박스에 같은 두 줄을 적었다.
 
@@ -1548,8 +1549,29 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   같은 파일 안에서 어떤 자리는 가드하고 어떤 자리는 안 하는 불일치를 만든다.
   **가드를 두지 말 것.**
 - **`getBookkeeping`이 `bk`를 만들 때 `offsetCache = {}`, `offsetCacheValidUpTo = 0`,
-  `offsetSetUpTo = 0`, `recomputeBlocker = Blocker()`, **`indexOfElement = {}`**
-  (**[2026-08-27 Q3]**)으로 초기화한다.**
+  `offsetSetUpTo = 0`, `recomputeBlocker = Blocker()`,
+  **`indexOfElement = setmetatable({}, { __mode = "k" })`**(**[2026-08-27 Q3]**,
+  **[2026-08-27 weak-key 확정, 9라운드 `H-145`]**)으로 초기화한다.**
+  - **왜 weak-key인가**: 최상위 `SlotHandler` retractor의 해제 `setLength(inst,
+    k, 0)`엔 요소 인자가 없어 옛 Slot 키가 안 지워지고, `bk`는 `Relate(inst)`라
+    강한 키 맵이면 **`State<Slot>` 교체마다 옛 Slot(과 그 트리)이 부모가 죽을
+    때까지 산다.** 마운트 중엔 `_elements`/`bindLifetime`이 강하게 잡으므로
+    키가 빠질 일이 없고, 해제 뒤엔 저절로 빠진다 — "다른 곳에서 안전하게
+    유지되는 것은 항상 weak로 잡는다"(`base/lifecycle-pattern.md`) 그대로. 값이
+    정수라 Luau의 ephemeron 미지원(값이 키를 참조하면 안 빠지는 것)도 안
+    걸린다. 사용자 확정(*"컴퓨팅 비용이 더 안들고, 복잡하지 않고 깔끔한
+    경로"*) — 단점으로 짚은 "한 Slot이 포탈로 여러 `bk`에 들락거리면 여러
+    맵에 남을 수 있다"는 Slot 수·포탈 경로 수가 적어 문제 아님, 단 **요소가
+    마운트 중 GC되지 않아야 한다**는 조건 부착. 사용자는 그 보장자로 *"자신을
+    gchold 로 잡으니"*를 들었는데 **[2026-08-28 `/code-review` 정정]** gchold는
+    `inst → 값` 방향 홀더라 `inst` 자신을 잡지 않는다 — 실제 보장자는
+    **`slot._elements`(강한 배열)와 `gatedRecompute`의 요소 캡처**다. 이 둘을
+    약하게 바꾸면 이 맵의 키가 마운트 중 빠져 `bk.indexOfElement[element]`가
+    `nil`이 된다 — 그 둘은 이 맵의 불변식을 지탱하는 자리로 표시할 것.
+    Instance를 `__mode = "k"` 키로 쓰는 경로 자체는
+    `audit/gcconn-trick-verification.md`가 **미확인**으로 남겨둔 항목이라 M3
+    구현 시 실측 대상. 해제에 요소를 넘겨 `setLength`가 지우게 하는 안(시그니처 의미 확장)과
+    inst 층 명시 삭제 API는 기각.
   (**[2026-08-26]** `offsetCacheValidUpTo`은 같은 날 `offsetSetUpTo`에서 갈라져 나온
   필드다 — 아래 "두 필드" 절.) (`bk.N`만 `nil` 시작을
   유지한다 — 그쪽은 `or 0` 방어가 이미 자리를 잡았고 "아직 아무 자리도 등록

@@ -440,8 +440,9 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`, `base/state-epoch-plan.md`
     §4·§8. 균일해지는 건 **판정 쪽**이다).
     그래서 포탈 재마운트의 캐치업이 dep 종류에 따라 갈리던 것(`H-64`)이
-    **대칭**이 되고, 판정이 `if self._epochs:Refresh() then self:Rerun() end`
-    한 줄이 된다.
+    **대칭**이 되고, 판정이 `local depsChanged = self._epochs:Refresh()` +
+    `if not self._installed or depsChanged then self:Rerun() end` 두 줄이 된다
+    (`Refresh()`는 항상 먼저 — `base/effect-plan.md`의 `_bindDestroying` 캐비엇).
   - 같은 `Ref`를 deps에 두 번 넣어도 `EpochMap`이 키로 dedup하므로
     **공짜로** 처리된다(`H-70`) — 옛 `_refCallbacks[ref] = cb` 덮어쓰기로
     먼저 건 클로저가 `.Callbacks`에 남던 버그도 같이 사라진다.

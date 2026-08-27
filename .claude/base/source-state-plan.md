@@ -1570,9 +1570,12 @@ Observer가 **안 묶인 것으로 오판**됨"은 실제로는 안 일어남 �
   `unbindLifetime`이 leaf 해제의 실제 통로).
 - **Effect도 동일 규칙 적용(사용자 확인)** — Effect가 `state` 인자로
   내부적으로 Observer를 조합하는 경우든, `state` 없는 경우든 같은
-  `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — Effect
-  자신이 아니라 내부 Observer가 게이트를 갖고 있어서, Effect 구현이
-  이 정정을 몰라도 자동으로 커버됨. 이전에 그 문서에 적어뒀던 "leaf
+  `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — **[2026-08-28
+  정정]** 여기 한때 "Effect 자신이 아니라 내부 Observer가 게이트를 갖고 있어서
+  자동으로 커버됨"이라 적혀 있었는데 틀렸다: 내부 Observer는 생성자에서
+  `Weak*`로만 걸리고 발화는 `canExecute(handle)`이 막으므로(`H-58`/`H-59`) 그
+  게이트는 핸들의 이중 바인드를 막지 못한다. `EffectHandle`이 **자기 네
+  진입점에서 `canBound(self)`를 직접 돈다**(`H-144` (b)). 이전에 그 문서에 적어뒀던 "leaf
   부착과 `:Subscribe()`를 동시에 쓰는 것도 안전"이라는 서술은 **이
   규칙으로 대체(정정)** — 안전하게 지원하는 게 아니라 애초에 막아야
   하는 조합이었음.

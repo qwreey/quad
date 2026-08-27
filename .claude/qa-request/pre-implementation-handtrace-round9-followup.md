@@ -31,14 +31,14 @@
 | — | `H-139` `New`/`D` 파이프라인 | ✅ **의사코드 신설** — 쓰면서 `H-142` 발견 |
 | — | `H-132`/`H-137`/`H-140` | ✅ Q1~Q3 처리 때 닫힘 |
 | — | `H-142` 해시 파트 `Parent` 순서 | ✅ **확정·반영** — props에 `Parent` 금지(순서 문제 소멸) |
-| — | `H-143`~`H-146` (`/code-review high` 발견 중 새 메커니즘 넷) | ⏳ **판단 대기** — `fn` 안 `Unsubscribe` 고아 cleanup / 재`Subscribe` 재설치 / `indexOfElement` 잔존 / 루트 마운트 경로 |
+| — | `H-143`~`H-146` (`/code-review high` 발견 중 새 메커니즘 넷) | ✅ **확정·반영 (전부 권고 (a))** — `Rerun` 꼬리 실행 중 사망이면 즉시 소진(`wasAlive`) / 재구독 꼬리(`Refresh` 먼저; 감사 4라운드로 진입점 소유권 (b) — `EffectHandle` 자기 것 — 추가 확정) / `indexOfElement` weak-key / 루트는 금지 범위 밖 + 전용 문구 |
 
 **[2026-08-27] Q1~Q3는 `base/`·`ROADMAP.md`에 반영했다** — 반영 중 드러난 것과
 열어둔 확인은 아래 "반영 기록" 절. **같은 날 이어서 Q4~Q8·Q10·`H-138`·`H-139`를
 확정·반영했다**(아래 Q4 이하 절). **[같은 날 마지막] Q9 확인과 `H-142` 판단도
 닫혀 9라운드 발견은 전량 처리됐다** — 그 뒤 감사 8라운드와 `/code-review high`를
-돌렸고, **리뷰가 낸 새 메커니즘 넷(`H-143`~`H-146`)이 판단 대기**(아래
-"`/code-review high`" 절).
+돌렸고, 리뷰가 낸 새 메커니즘 넷(`H-143`~`H-146`)은 **[2026-08-27 다음 세션]
+전량 확정·반영**(아래 "`H-143`~`H-146`" 절).
 
 **사용자 회신 원문(Q4~Q10 일괄, 2026-08-27)**: *"Q5 까지는 권고에 전부 동의함.
 WeakSubscribed 자체가 사라질 수 있는 요소라서, 그 사라지는걸 유저가 정하게 하는
@@ -377,7 +377,10 @@ if slot._physicalTarget == nil then return end
   `Subscribe`/`WeakSubscribe`/`WeakUnsubscribe`는 **Observer의 함수를 메소드
   테이블에 그대로 배정**(같은 레지스트리·같은 `canBound` 게이트·같은
   `.Subscribed`), `Unsubscribe`만 `Observer.Unsubscribe(self)` 통과 뒤
-  `self:_consumeCleanup()`. `WeakUnsubscribe`는 cleanup을 안 건드린다(약한
+  `self:_consumeCleanup()`. **⚠️ [2026-08-27 같은 날 정정] 함수 배정은 (b)로
+  뒤집혔다** — 네 진입점은 `EffectHandle` 자기 것, 공유는 레지스트리·게이트뿐
+  (아래 `H-144` 절의 감사 4라운드 항목). 게이트가 먼저라는 이 문항의 결정
+  자체는 그대로다. `WeakUnsubscribe`는 cleanup을 안 건드린다(약한
   구독은 GC에 맡기는 경로라 해제가 종료 신호가 아니다).
 - 산문의 번호 목록(플래그 → cleanup → fail-fast)은 **의미 목록이지 실행 순서가
   아니라고** 그 자리에 적었다. `lifecycle-pattern.md`의 *"아래가 네 진입점
@@ -629,6 +632,121 @@ nil 로 지우는것만 안 한다면 맞아"*.
 요청으로 신설한 블록. 캡에 밀린 하위 발견(`Slot:List` 잉여 블록 잔존 등)은 이미
 "잉여" 주석으로 처리된 것과 같은 항목.
 
+## `H-143`~`H-146` — 전부 권고 (a) 확정 (2026-08-27)
+
+문항·갈래 원문은 `-round9.md`의 `H-143`~`H-146` 절. 반영 자리는 각 항목에.
+
+**사용자 회신 원문**: *"H-143: 동의. 메니징된 effect 에서 해당 부분을 지원 안
+해야할 이유가 딱히 존재하지 않아. 특정 state 에 변경을 딱 한번만 처리하고
+cleanup 되는걸 만드는 요구가 존재하지 않을 이유가 딱히 없다고 봐. (a) 갈래를
+택하는데 큰 문제가 없어보여. H-144: 재설치 처리는 동의해. 그리고 원래 처음
+설치에서도 모든 옵저버와 ref 콜백이 하나하나 실행되지 않도록 blocker 를 통해서
+전부 블로킹 하고 명시적으로 실행한다는 점을 생각해야해 이건 그 동작과 유사해. 재
+sub 에서도 똑같게, 후행에서는 실행해야하는 부분이지. 그러고 나서는 사실 어떤
+것이라도 가만히 둬도 좋아. 그 이후 받는 모든 emit 의 경우는 들어올 때 기준으로
+항상 '다시 받는 emit' 에 속할것이거든. … 근데 blocker 로 블록된 다음 나중에
+들어오는 것에 대해서 어떻게 처리할지는 갈리는 부분이야. 그걸 생각하면 초기에
+epoch 를 전부 잘 설정해주는게 나을수도 있어. 왜냐하면 처음 연산 기준에 있어서도
+전부 값은 최신 값이거든. 따라서 다음 emit 을 받아야할 이유가 없을수도 있어. 이건
+중간 값이 emit 을 보류하는거랑 다른 이야기인듯. observer 에도 연관되는
+이야기일텐데 한번 확인 해볼래? H-145: (A) 의 단점은 slot 자체가 여기저기에
+마운트된다면 여러 bk 에서 남아있을 수 있다는건데, 그건 큰 문제가 안 돼. slot
+자체가 소수의 생성이 되는 요소인데다가 포탈 경로가 많지 않거든. 아마 그래서
+충분히 weak 로 두는건 괜찮은 발상이야. 컴퓨팅 비용이 더 안들고, 복잡하지 않고
+깔끔한 경로거든. 다만 다른 inst 들이 삭제 되지 않는게 확실히 보장되어야해.
+기본적으로 자신을 gchold 로 잡으니 괜찮아보여. H-146: 나도 (A) 갈래에 동의해.
+왜냐하면, 실제로 React 에서도 최상위 경로는 보통 App.tsx 나 main 을 나누고 root
+를 돔 api 로 가져오고 거기에 바운딩 하는 처리를 해야하거든. 유사하게 메인
+컴포넌트에 대해서 생성 결과를 Parent 를 설정해주는건 옳을 수 있어. 우선 해당
+방식은 엔진 마다 다를 수 있다는 점도 생각해야해. Quad 가 제공하는 마운트는
+완전히 다른 성격이라서(부기에 대한 처리가 들어가는데 PlayerGUI 등 Quad 가
+제공하지 않은 부기가 없는 객체에 대해서 Quad 의 객체를 주입하는 성격의 API 는
+아니거든) 해당 부분을 해결하기 위해서 다른 API 를 제공 할 이유가 없기도 해. 해당
+부분은 각 엔진을 사용하는 최종 사용자의 몫."*
+
+### `H-143` — `Rerun` 꼬리에서 실행 중 사망(`wasAlive and not canExecute`)이면 반환 cleanup 즉시 소진 (a)
+
+- 하위 결정: 판정은 **"이 실행 중에 죽었는가"(`wasAlive and not canExecute`)**
+  — `fn` 안 `WeakUnsubscribe`도 같은 경로로 소진된다.
+  - ⚠️ 처음엔 `not canExecute` 하나로 썼는데 **감사 2라운드가 회귀를 잡았다**:
+    생성자의 최초 `Rerun()`은 어떤 바인드·구독보다 먼저 돌아 `canExecute`가
+    항상 거짓 → 첫 실행 cleanup 즉시 소진 + `_installed` 거짓 → 첫 바인드에서
+    `fn`이 또 돈다(`H-58` 재현, "생성 즉시 1회 실행은 바인드로 미룰 수 없다"와
+    충돌). 진입 전 상태를 로컬로 잡아 "살아 있다가 죽었다"만 잡는 것으로 정정,
+    같은 자리에서 죽은 핸들의 `_pending` 재요청도 버리기로(안 버리면 `fn` 안
+    `Unsubscribe()` + `Rerun()` 조합이 죽은 핸들에서 `fn`을 한 번 더 돌린다 —
+    감사 2라운드 의심 항목). **사용자 확정**: *"오 그렇네. 실행중 죽으면
+    클린업만 하기, 해당 방식 맞아보여"*. `H-133`의 "약한 해제는 cleanup을 안 건드린다"는
+  *`WeakUnsubscribe` 자신*의 계약이고, 여기선 `Rerun`이 방금 받은 것을 죽은
+  핸들에 매다느냐의 문제라 행위자가 다르다. 강한 해제만 잡으려면 별도 판정이
+  필요해 더 든다(a2 기각).
+- 반영: `base/effect-plan.md` `Rerun` 의사코드 + "`self`를 주는 덕에" bullet
+  (허용 문장이 확정으로), `ROADMAP.md` M2 `Effect` 체크박스.
+
+### `H-144` — `Subscribe`/`WeakSubscribe` 등록 끝에 `Refresh()` 먼저, `not _installed or depsChanged → Rerun` (a) + 진입점은 `EffectHandle` 자기 것 (b, 감사 4라운드)
+
+사용자가 요청한 **재트레이싱** 결과(회신의 두 질문):
+1. *재구독 뒤 "다음 emit"이 오면 꼬여도 괜찮은가* — 괜찮다. `fire`의 가드
+   순서가 `canExecute → blocker:IsOn → _epochs:Update → Rerun`이라 해제 중
+   도착한 emit은 **첫 가드에서 버려져 `_epochs`를 안 건드린다.** 재구독 뒤 첫
+   emit은 리비전이 새로우니 정상 `Rerun`, 읽는 값은 항상 최신(State는 lazy,
+   수신 시점에 `valueEpochMap` 갱신). 다이아몬드 접힘도 그대로.
+2. *재구독 시점에 epoch를 맞춰두는 게 나은가* — 낫고, **leaf 경로가 이미 그
+   모양**이다(`_bindDestroying`: `Refresh()` 먼저, 아니면 "다음 emit이 헛되이
+   한 번 더 돈다" 캐비엇). 구체 케이스: `state:Gate`가 유보 중일 때 재구독 →
+   `Rerun`이 읽는 값은 이미 새 리비전(게이트는 값은 수신 시점에 갱신하고 emit만
+   유보, `state-epoch-plan.md` §4 게이트 예외) → 유보가 풀려 `{A@r2}`가 오면
+   `Refresh` 안 했으면 같은 값으로 `fn`+cleanup이 한 번 더, 했으면 접힌다.
+- Blocker는 재구독에 안 쓴다 — dep 재등록이 없으므로(생성자에서 한 번, `_deps`
+  강참조 유지) 억제할 발화가 없고 명시 `Rerun`만 하면 된다.
+- Observer: 관련 없음 확인 — epoch가 없고(`H-107`) 구독 시 설치 발화도 없어
+  재`Subscribe`는 첫 구독과 동일. 고칠 자리 없음.
+- 하위 결정: **`WeakSubscribe`도 같은 꼬리** — `WeakUnsubscribe`(cleanup 미소진,
+  `_installed` 유지) 뒤 재`WeakSubscribe`도 한 모양으로 맞는다(dep 안 변했으면
+  no-op, 변했으면 옛 cleanup 소진 후 재실행).
+- ⚠️ **감사 4라운드가 배선 결함을 잡았다 → (b) 네 진입점을 `EffectHandle` 자기
+  것으로.** 처음엔 Q4(`H-127`)의 "Observer 함수를 그대로 배정" 위에 래퍼를
+  얹었는데, `Observer:Subscribe`의 본문이 `self:WeakSubscribe()`로 **콜론
+  위임**하므로 `self`가 `EffectHandle`이면 그 조회가 새 `EffectHandle:WeakSubscribe`
+  래퍼로 가서 꼬리가 **두 번** 돌고, 첫 번째는 `Subscribed[self] = true`(강한 킵)
+  **전에** `Rerun`해 `fn` 안 `self:Unsubscribe()`(`H-143`이 지원하는 패턴)가
+  *"not subscribed strongly"*로 error(로컬 `luau`로 재현: 콜론 위임은 꼬리
+  2회·첫 번째 킵 전, dot 위임은 1회·킵 뒤). 갈래 (a) Observer 본문의 내부 위임을
+  dot 호출로 / (b) 함수 공유를 접고 `EffectHandle`이 네 진입점을 따로(공유는
+  `Observer.luau`의 레지스트리 둘과 `canBound`뿐). **사용자 확정 (b)**: *"b가
+  맞아. 내 머리에서 나왔던 처음 구조는 그것이였어. 항상 언급되는 말이지만,
+  '하나의 무언가가 두 일을 동작하지 않는가에 유의하자' - 이것도 마찬가지야.
+  버그를 유발하기 좋은 포인트였고, 감사자의 좋은 지적이였어."* 앞서 *"애초에
+  observer 랑 effect 랑 헤테로지니어스한 타입인데. effect 가 observer 를
+  만족시키진 않아. 생성 방법도 다르고"*라 결함 자체가 진짜인지 물었고, 재현으로
+  확인. 원칙은 `conventions.md`의 "설계 원칙" 절로 승격. Q4의 "그대로 배정"은
+  이로써 **좁혀졌다**(레지스트리·게이트 공유만 남음).
+  `Subscribe`는 `WeakSubscribe`를 부르지 않고 등록 세 줄을 펼쳐 쓴다 — 꼬리가
+  강한 킵 뒤에 정확히 한 번 돌아야 하므로.
+- 반영: `base/effect-plan.md` `EffectHandle` 의사코드 블록(`resubscribeTail`) +
+  "`:Subscribe()`가 등록하는 것은" bullet, `base/lifecycle-pattern.md`의 (2) 절
+  머리 문단(`EffectHandle` 재사용 범위 정정), `ROADMAP.md` M2.
+
+### `H-145` — `bk.indexOfElement`를 weak-key로 (a)
+
+- 사용자가 붙인 조건: 요소 `inst`가 마운트 중 GC되지 않는 보장 — (0)의
+  gchold(`lifecycle-pattern.md`)가 그것. 값이 정수라 Luau ephemeron 미지원도
+  무관.
+- (b) 해제에 요소를 넘겨 `setLength`가 지우기(시그니처 의미 확장) / (c) inst
+  층 명시 삭제 API 기각.
+- 반영: `base/dispatch-core-plan.md` `getBookkeeping` 초기화 + `InstanceChildHandler`
+  5번째 인자 근거 정리(weak가 되며 "옛 키 잔존" 근거는 사라지고 "지속 클로저
+  없음"만 남음), `ROADMAP.md` M3 `getBookkeeping` 체크박스.
+
+### `H-146` — 루트는 금지 범위 밖, `Mount` 표면 없음, 거부는 전용 문구 (a)
+
+- 인용문 *"외부에서 직접 Parent 설정해주지 말것"*의 범위를 **quad가 관리하는
+  자식 자리**로 명문화. 루트 부착은 엔진마다 다른 최종 사용자 코드. (b)
+  `Mount(root, parent)` / (c) 루트 전용 props 키 기각.
+- 반영: `base/bind-system-plan.md` `H-142` 항목에 루트 bullet + 전용 문구,
+  `base/slot-plan.md`의 "동적 자식은 반드시" 절 각주 + "v2는 mount 함수 자체가"
+  문구 정정(v1식 `Mount`는 v2에 없다), `ROADMAP.md` M5 `Property.luau`.
+
 ## 감사 루프 (2026-08-27, Q4~Q10 반영분)
 
 관례대로 `quad-doc-auditor` 한 턴에 하나, diff 범위, 라운드마다 각도 변경.
@@ -644,3 +762,50 @@ nil 로 지우는것만 안 한다면 맞아"*.
 | 7 | 6라운드 수정분 + 세션 기록 사실성 | 확실 3 · 의심 0 | README `bind-system-plan` 행이 "배치 닫는 자리 … `Parent` 순서 미정"으로 1라운드 정정·`H-142` 확정 이전 상태 / `todos.md` 00번에서 "`/code-review high`·커밋 남음" 액션이 사라짐 → 복원 / 이 파일의 "48줄" 개수 주장(실제 47) → 개수 삭제. 세션 파일·summary·todos 본문 서술은 전부 사실과 일치 |
 | 8 | 7라운드 수정분만(좁게) | 확실 1 | `project-context.md`의 볼드 마커가 홀수(이번 갱신이 닫는 `**`를 지움) → 짝 맞춤. 지정 세 자리는 회귀 없음. **여기서 멈춤** — 1라운드 이후 설계 내용 발견은 0이고 [2026-08-27 8라운드 시점] 남은 건 기록 문서의 표기뿐이라, 비용 대비 `/code-review high`로 넘어가는 게 낫다고 판단(추이 5→3→4→5→3→1→3→1, 단조 수렴은 아님) |
 
+## 감사 루프 (2026-08-27, `H-143`~`H-146` 반영분)
+
+`quad-doc-auditor` 한 턴에 하나, diff 범위, 라운드마다 각도 교체. 새 발견
+1→1→1→1→1→1→1→**0** (8라운드에서 수렴).
+
+| 라운드 | 각도 | 발견 | 처리 |
+|---|---|---|---|
+| 1 | 인덱스·문구 잔존 | `effect-plan.md`의 *`_installed`는 `Rerun`이 끝날 때 참* 문장이 무조건 서술 | 조건 반영 |
+| 2 | `base/` 의미론 | **`H-143` 판정식 `not canExecute`가 생성자 최초 설치를 죽임**(회귀) + `fn` 안 `Unsubscribe`+`Rerun` 재진입 미서술 | 사용자 결정 → `wasAlive and not canExecute` + `_pending` 버림 |
+| 3 | audit/archive/reference | `session-summary.md`가 정정 전 판정식을 요약 | 정정 |
+| 4 | 수정분 재검토 | **Observer 함수 배정 + 콜론 위임 → 재구독 꼬리 2회, 강한 킵 전 `Rerun`**(설계 결함) | 사용자 결정 → (b) 진입점 자기 것 + 원칙 승격 |
+| 5 | (b) 수정분 재검토 | `README.md` 색인 행 미갱신 / Observer `WeakSubscribe` `error` `level` 누락 / 실측 문구 과장 | 셋 다 정정 |
+| 6 | 인덱스 레이어 | followup `H-143` 헤딩·진행 표가 정정 전 표현 | 정정 |
+| 7 | `effect-plan.md` 통독 | "종료 신호 둘뿐"이 `Rerun` 꼬리와 모순 / 필드 목록에 `.Subscribed` 누락 / `fn` 안 재구독 미서술 | 셋 → 정정·명시 |
+| 8 | 전체 diff 재통독 | **0건** | — |
+
+2·4라운드 발견은 둘 다 "권고 (a)의 의도는 맞는데 메인 세션이 고른 판정식·배선이
+틀린" 종류 — 1라운드(문구 잔존) 각도로는 안 나왔고, 의미론·수정분 재검토
+각도에서만 나왔다.
+
+## `/code-review high` (2026-08-28, `H-143`~`H-146` 반영분 + 감사 8라운드 뒤)
+
+10건(7 CONFIRMED 검증). **일곱은 기존 규칙 적용이라 반영**, **셋은 새 메커니즘·
+기존 결정 변경이라 10라운드 문항으로**(`-round10.md` `H-147`~`H-149`).
+
+반영한 일곱:
+1. `effect-plan.md` "`EffectHandle:Subscribe()`" 절 머리 볼드가 여전히 "Observer의
+   것을 재사용" — (b)로 정정. 717행 "Observer의 것을 위임한 뒤"도.
+2. `Refresh()` 먼저의 계약을 세웠는데 `ROADMAP.md`(M2·M6)·`lifecycle-pattern.md`·
+   `ref-plan.md`가 단축평가형 `if not _installed or Refresh()` 한 줄을 그대로 —
+   전부 두 줄 형태로.
+3. "첫 구독에선 no-op"은 거짓(생성~첫 구독 사이 emit은 `fire`가 버려 `Refresh`가
+   참) — "그 사이 dep이 안 변했으면 no-op"으로.
+4. `fn` 안 자기 해제의 범위 — 건 경로로만(강구독 `Unsubscribe`, 약구독
+   `WeakUnsubscribe`), leaf 바인딩 핸들엔 자기 해제 경로 없음(종료는 leaf 사망).
+   `Rerun` 주석의 "leaf도 아니라"도 한정.
+5. `source-state-plan.md`의 *내부 Observer가 게이트를 갖고 있어 Effect 구현이
+   몰라도 자동 커버* 서술 — 틀림(내부 Observer는 `Weak*`, 발화는 `canExecute(handle)`).
+   (b)대로 `EffectHandle`이 직접 `canBound`.
+6. weak-key `indexOfElement`의 보장자 — 사용자가 든 gchold는 `inst → 값` 홀더라
+   `inst` 자신을 안 잡음. 실제 보장자는 `slot._elements` + `gatedRecompute` 캡처로
+   정정, Instance weak key 미확인(`audit/gcconn-trick-verification.md`) 포인터.
+7. `-round9.md` `H-144` 셀 "둘 다 래퍼"·`ROADMAP.md` 배너 "재구독 래퍼" →
+   (b) 표현으로. 캡 아래 넷(`question.md`의 *판단 대기 없음* 과장, "다음 세션" →
+   파일 ID, 중복 세 줄, 한국어 자리표시자)도 앞 둘은 정정.
+
+문항으로 올린 셋은 `-round10.md`가 소스.

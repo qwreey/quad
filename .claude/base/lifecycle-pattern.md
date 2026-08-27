@@ -354,8 +354,8 @@ function bindLifetime(inst, value)
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
     if isEffect(value) then
         value:_bindDestroying(inst)   -- Destroying 연결 + **조건부 캐치업 1회**
-                                      -- (`if not self._installed or
-                                      --   self._epochs:Refresh() then self:Rerun() end`)
+                                      -- (`local depsChanged = self._epochs:Refresh()` 먼저,
+                                      --   `if not self._installed or depsChanged then self:Rerun() end`)
                                       -- 의사코드는 `base/effect-plan.md`가 소스.
                                       -- 그 안에서 주입 op `onDestroying(inst, fn)`을
                                       -- 부른다(base는 Instance를 모른다).
@@ -444,10 +444,17 @@ end
 `:WeakSubscribe()`가 생기기 전(2026-08-25 이전) 서술이라 **약한 쪽이 어디서
 `.Subscribed`를 세우는지가 통째로 빠져 있었다.** 아래가 **Observer의** 네
 진입점 전량이고 소스다(사용자 원문 *"구현이 한 벌"*). **[2026-08-27 9라운드
-`H-127`]** `EffectHandle`도 같은 넷을 **그대로 재사용**한다(같은 레지스트리,
-같은 게이트) — `Unsubscribe`만 이 게이트를 통과한 *뒤에* cleanup 소진을
-덧붙이며, 그 의사코드는 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`"
-절이 소스:
+`H-127`, 같은 날 (b)로 정정]** `EffectHandle`은 **같은 레지스트리 둘과 같은
+`canBound` 게이트를 쓰되 네 진입점 본문은 자기 것**이다 — 한때 "같은 넷을
+그대로 재사용(함수 배정)"으로 적었는데, 아래 `Subscribe`/`Unsubscribe`가
+`self:WeakSubscribe()`/`self:WeakUnsubscribe()`로 **콜론 위임**하므로 그 함수를
+`EffectHandle`에 배정하면 위임이 `EffectHandle`의 오버라이드로 가서(재구독 꼬리
+두 번, 첫 번째는 강한 킵 전) 깨진다(감사 4라운드, `luau` 재현). **사용자
+확정**: *"observer 랑 effect 랑 헤테로지니어스한 타입인데 … '하나의 무언가가 두
+일을 동작하지 않는가에 유의하자'"* — Observer 본문은 Observer만 쓴다. `Effect`
+쪽 넷(`Unsubscribe`는 cleanup 소진, `Subscribe`/`WeakSubscribe`는
+**[2026-08-27 `H-144`]** 등록 끝에 `_epochs:Refresh()` + 조건부 `Rerun`)은
+`base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
 
 ```lua
 local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)
@@ -458,7 +465,8 @@ function Observer:WeakSubscribe()
     if not canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
         error(if self.Subscribed
             then "이미 구독된 값"          -- 강/약 어느 쪽이든 이 분기
-            else "이미 Instance에 바인딩된 값")
+            else "이미 Instance에 바인딩된 값", 2)   -- [2026-08-27] `level 2` — 아래 둘과 같게
+                                                     --   (자리표시자 문구, 실제 메시지는 영어)
     end
     self.Subscribed = true          -- ⭐ [H-111] 약한 쪽도 세운다 — 구독 경로 공용 플래그
     WeakSubscribed[self] = true

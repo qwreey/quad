@@ -1961,3 +1961,21 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 `question.md` 최우선 절). 결정의 소스는
 `qa-request/pre-implementation-handtrace-round9-followup.md`, 경위는
 `session/2026-08-27-02-handtrace-round9-q4-q10.md`.
+
+- **`session/2026-08-27-03-handtrace-round9-h143-h146.md`** — 9라운드 후속:
+  `/code-review`가 낸 새 메커니즘 넷 **전부 권고 (a) 확정·반영**. `H-143`
+  `Rerun` 꼬리가 **실행 중에 죽었으면**(`wasAlive and not canExecute`) 반환
+  cleanup 즉시 소진 + 재요청 버림(`fn` 안 `self:Unsubscribe()` 지원 — 처음 쓴
+  `not canExecute` 하나짜리 판정은 생성자 최초 설치를 죽여 감사 2라운드가 정정) / `H-144` `Subscribe`·`WeakSubscribe` 등록 끝에
+  `_epochs:Refresh()` + `not _installed or depsChanged → Rerun` 꼬리(사용자
+  요청으로 재구독 뒤 emit·epoch·Blocker 상호작용을 재트레이싱, leaf
+  `_bindDestroying`과 동형) — **그리고 감사 4라운드가 Q4의 "Observer 함수
+  배정"이 콜론 위임 때문에 이 꼬리를 두 번 태우는 걸 잡아 (b) `EffectHandle`
+  네 진입점 자기 것으로 확정**(*"하나의 무언가가 두 일을 동작하지 않는가"* →
+  `conventions.md` 설계 원칙) / `H-145` `bk.indexOfElement` weak-key / `H-146`
+  루트 부착은 금지 범위 밖 — `Mount` 표면 없이 사용자 몫(*"각 엔진을 사용하는
+  최종 사용자의 몫"*), `Parent` 거부는 전용 문구. `question.md` 최우선 절 비움.
+  결정의 소스는 `qa-request/pre-implementation-handtrace-round9-followup.md`.
+  **[2026-08-28]** 감사 8라운드 수렴 → `/code-review high` 10건(일곱 반영, 셋은
+  판단 필요) → 사용자 판단으로 **10라운드 문항지**(`-round10.md`, `H-147`~`H-149`
+  씨앗 + 광범위 탐사)로 이관, 배치 회신 대기.

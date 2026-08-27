@@ -25,7 +25,12 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 순서 / Slot 생성자의 `Offset`·`_baseObserver`·`_destroyed` / `bk.indexOfElement`로
 > 토큰 폐기)에 이어 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량**
 > 반영됐습니다(`EffectHandle` 진입점 / M2에 `Ref` 최소형 / `InstanceChildHandler`
-> 부기 / `reconcile` 배치 Blocker / `New`·`drive` 파이프라인 / props `Parent` 금지).
+> 부기 / `reconcile` 배치 Blocker / `New`·`drive` 파이프라인 / props `Parent` 금지),
+> 그 반영분에 `/code-review`가 낸 `H-143`~`H-146`(`Rerun` 꼬리 실행 중 사망이면 즉시
+> 소진 / 재구독 꼬리 + 진입점은 `EffectHandle` 자기 것 / `bk.indexOfElement`
+> weak-key / 루트 부착은 사용자 몫)도 같은 날 확정·반영. **[2026-08-28]** 그 반영분의
+> `/code-review`가 낸 셋(`H-147`~`H-149`)은 **10라운드 문항지**(`-round10.md`)에서
+> 광범위 탐사 결과와 함께 배치 회신 대기(게이트 아님).
 > **어느 체크박스가 바뀌었는지는 여기서 세지 않습니다** — 해당 체크박스에
 > 각각 `H-1xx` 표시가 붙어 있으니 그게 소스입니다. M2/M3 양쪽에 걸쳐
 > 있습니다). M1까지의 산출물은
@@ -493,6 +498,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
+      **[2026-08-27 9라운드 `H-143`/`H-144`]** `Rerun` 꼬리는 `fn` 실행 중에
+      핸들이 죽었으면(`wasAlive and not canExecute`) 반환 cleanup을 **즉시
+      소진**하고 `_pending`을 버린다(`fn` 안 `self:Unsubscribe()` 지원 —
+      `not canExecute` 하나로 판정하면 생성자 최초 설치가 죽는다), 네 진입점은
+      **`EffectHandle` 자기 것**(Observer 함수 본문을 배정하지 않는다 — 공유는
+      `Observer.luau`의 레지스트리 둘과 `canBound`뿐; 콜론 위임이 오버라이드를
+      타 꼬리가 두 번 도는 걸 감사가 잡아 사용자가 (b)로 확정), `Subscribe`/
+      `WeakSubscribe`는 등록 끝에 `_epochs:Refresh()` + `not _installed or
+      depsChanged → Rerun` 꼬리(재구독 재설치, leaf `_bindDestroying`과 동형) —
+      의사코드는 `base/effect-plan.md`.
       **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
@@ -529,7 +544,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `:WeakCallback()`으로 걸고, 바인드/언바인드는 dep을 아예 안 건드린다
       (`H-58`/`H-59`). 발화 게이트는 전부 **`canExecute(handle)`** 하나다
       (`H-7`). 캐치업은 바인드 직후 **조건부 최대 1회**
-      (`if not self._installed or self._epochs:Refresh() then self:Rerun() end`
+      (`local depsChanged = self._epochs:Refresh()` **먼저**, 그다음 `if not self._installed or depsChanged then self:Rerun() end` — `or` 한 줄로 단축평가에 걸면 재설치 경로에서 `Refresh()`가 건너뛰어져 다음 emit이 헛돈다, `base/effect-plan.md` 캐비엇
       — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
 - [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
@@ -757,7 +772,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       옆으로만 틀려 알아채기 특히 어렵다):
       (a) `getBookkeeping`이 `bk.offsetCache = {}`, **`bk.offsetCacheValidUpTo = 0`,
       `bk.offsetSetUpTo = 0`**, `bk.recomputeBlocker = Blocker()`,
-      `bk.indexOfElement = {}`(**[2026-08-27 Q3]**)으로
+      `bk.indexOfElement = setmetatable({}, { __mode = "k" })`(**[2026-08-27
+      Q3]**, weak-key는 **[2026-08-27 `H-145`]** — 최상위 Slot 교체 시 해제
+      `setLength(…, 0)`이 옛 키를 못 지우므로)으로
       초기화(`nil` 시작이면 첫 `setOffsetSource`가 `nil` 비교에서 죽는다),
       (b) **캐시를 앞으로 당기는 자리**(개수는 `base/dispatch-core-plan.md`의
       무효화 표가 소스) — `setLength` 본문과 그 자리 length가
@@ -933,7 +950,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
 - [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절). **[2026-08-27 9라운드 `H-142`] 생성되는 props 타입에서 `Parent`를 제외할 것** — props에 `Parent`는 올 수 없다(부모가 하는 일, 같은 문서의 파이프라인 절). `New` ①~④ 순서는 그 절의 의사코드가 소스
-- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음), `Handlers/InstanceChild.luau` —
+- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음; **[2026-08-27 `H-146`]** 그 거부는 **전용 에러 문구** — "`Parent` is not a prop" 취지 — 를 내고, 루트를 quad 밖 부모에 붙이는 건 사용자가 밖에서 `.Parent =`로 한다(`Mount` 표면 없음, 같은 항목)), `Handlers/InstanceChild.luau` —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
       부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →
       `v.Parent = inst` → `setLength(inst, k, 1, inst)`(정적 단일 자식은 상수
@@ -1484,8 +1501,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       않는다** — 그 필드 자체가 폐기됐다(`_deps` 하나로 통합). 그리고
       `_bindDestroying`은 **`Ref` dep 콜백을 (재)등록하지 않는다** —
       dep 등록은 생성자에서 끝나고, 여기서 하는 건 `Destroying` 연결과
-      **조건부 캐치업 한 줄**(`if not self._installed or
-      self._epochs:Refresh() then self:Rerun() end`)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
+      **조건부 캐치업 두 줄**(`local depsChanged = self._epochs:Refresh()` 뒤
+      `if not self._installed or depsChanged then self:Rerun() end` — `Refresh()`를
+      `or` 뒤에 두면 단축평가로 건너뛰어진다)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
       발화시키는 유일한 배선**이고, M6의 `_detached` 정리가 여기 의존한다
       (그 항목의 `H-50` 각주 참고). 의사코드는 `base/lifecycle-pattern.md`와
       `base/effect-plan.md`가 소스. **[2026-08-14
