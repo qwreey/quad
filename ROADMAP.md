@@ -766,8 +766,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`NoneHandler` + `NilHandler`)** — `None`은 modifier 전용 값이 아니라
       디스패치 배관이라 여기 소속(`architecture.md`의 소스 트리에 있는 건
       핸들러 쪽 `Dispatch/None.luau`뿐 — **[2026-08-22] 탑레벨 센티널
-      `None.luau`와 `Brand.luau`는 그 트리에 아직 줄이 없다**, M3 구현 시
-      트리도 같이 채울 것).
+      `None.luau`는 그 트리에 아직 줄이 없다**, M3 구현 시 트리도 같이
+      채울 것. **[2026-08-28]** 여기 같이 적혀 있던 `Brand.luau`는 M2 첫
+      단위에서 줄이 생겼다).
       `NoneHandler`는 배열/해시 구분 없이 `Dispatch.process(inst,k,nil,index+1)`
       **재귀만** 하고(선행 `retractFrom` 없음 — 하강 diff), 실제 정리는
       `NilHandler`(`isHandlable`이 `type(k) == "number" and v == nil`일 때만

@@ -732,10 +732,15 @@ quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn
 이건 `base/dispatch-core-plan.md`의 "핸들러 내부 상태 저장" 유틸(`Relate`
 직접 사용)과 짝을 이루는 별도 유틸 — 하나는 "상태를 어디에 저장할지"
 (`Relate:SetStrong`/`:SetWeak`), 다른 하나는 "언제까지 실행되어도 되는지"
-(`bindLifetime` + `canBound`/`canExecute`)를 다룸. 후자는 내부적으로 전자가 제공하는
-같은 `Relate` 프리미티브 위에 얹혀 구현됨(위 절) — 별도 저장 메커니즘을
-새로 만든 게 아니라 `Relate` 하나를 두 용도로 재사용. 둘 다 base가 제공하는
-범용 유틸로 확정.
+(`bindLifetime` + `canBound`/`canExecute`)를 다룸. 후자의 **실 구현**은 전자가
+제공하는 같은 `Relate` 프리미티브 위에 얹힘(위 절) — 별도 저장 메커니즘을
+새로 만든 게 아니라 `Relate` 하나를 두 용도로 재사용. **[2026-08-28 정정, M2
+첫 단위]** 다만 그 실 구현을 갖는 건 base가 아니라 **백엔드**다 — quad-base의
+`LifetimeHandle.luau`는 `InitLifetimeHandle(module)`이 에러 스텁 4종을 모듈
+인스턴스에 설치하는 인터페이스뿐이고 `Relate`를 require하지 않는다(아래
+"base가 인터페이스로만 내보내는 것" 절, `base/architecture.md` 소스 트리).
+여기 한때 *"둘 다 base가 제공하는 범용 유틸로 확정"*이라 적혀 있었으나 그건
+`Relate` 쪽에만 맞는 말이다.
 
 **교차검증(2026-08-04 4차 라운드)**: 사용자가 공유해준 실제 참고 코드
 (`.claude/initreq/artworks/EventDrivenProgramming/`, PA님 작성)는 GC-native가
