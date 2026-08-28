@@ -415,7 +415,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설]** `store:Names(): { string }` — 선언된 키 집합
       열거(그림자 테이블의 키). 그룹 `Attribute(...)`/`attr:NameMap()`이
       요구한다(`base/attribute-plan.md`)
-- [x] **[2026-08-28 완료 — 단위 2]** `quad-types`에 `export type function`으로]** **[2026-08-25 신설, 2026-08-26 배선 정정 `H-112`]** `CheckReservedKeys`
+- [x] **[2026-08-28 완료 — 단위 2, `quad-types`에 `export type function`으로 구현]** **[2026-08-25 신설, 2026-08-26 배선 정정 `H-112`]** `CheckReservedKeys`
       타입 함수 — **`T`가 아니라 `keyof<T>`**(키 싱글톤 유니온)를 받아
       예약 키를 검증만 하고, 팬텀 필드 `__reservedCheck`로 격리한다.
       `error()`가 아니라 `print(...)` + `return types.never`를 써야 한다.

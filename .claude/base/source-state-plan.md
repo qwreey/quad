@@ -956,8 +956,10 @@ someSource:Compute(computeFn)
   프리미티브로 노출** — Store는 다수의 source를 등록/관리하는 무거운
   구조라, 값 하나만 반응형으로 다루고 싶을 때 Store를 통째로 만드는 건
   비효율이라는 게 사용자 판단("store가 source 수십 개 만드는건 비효율이니
-  둘이 다른 구현이라 봐도 될듯"). `Source(initial)` 류의 독립 생성자
-  (정확한 이름은 구현 단계에서 확정)가 Store와 나란히 존재.
+  둘이 다른 구현이라 봐도 될듯"). `Source(default)` 독립 생성자가
+  Store와 나란히 존재(**[2026-08-28]** 이름은 아래 항목대로 `Source(default)`로 확정됐고
+  M2 단위 2 `quad-base/src/Source.luau`가 그 이름이다 — 한때 여기 "구현 단계에서
+  확정"이라 열려 있었다).
 - **생성자 스타일 확정(2026-08-06 후속 세션): Kotlin Compose식 "타입
   이름 자체를 팩토리 함수로" — `Source(default)`, `Ref(default)`,
   `Store({defaults})`.** Ref도 예외 없이 이 스타일을 따름 — Ref가
@@ -1118,7 +1120,9 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   - **함수와 콜러블의 유니온으로 여는 안은 기각** — 필드로 받으면
     유니온도 캐스트도 필요 없다. 필드 이름은 **`__apply`**(**[2026-08-28 10라운드
     `H-158` 사용자 확정]** *"키는 __apply 로 하기로 했던거로 기억중임"* —
-    `base/blocker-plan.md` 배너), 정확한 시그니처는 구현 시 정한다.
+    `base/blocker-plan.md` 배너), 시그니처는 **[2026-08-28 M2 단위 2 확정]** 메소드형
+    `__apply: (self: any, state: State<T>) -> U` — `quad-types/src/init.luau`의 `State<T>.Apply`
+    파라미터 타입과 `State.luau`의 `(factory :: any):__apply(self)` 호출이 소스.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
   존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌
@@ -1128,7 +1132,7 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   **함수만** 받으므로 위 `H-94` 항목이 확정한 "지정된 필드를 가진 객체"
   형태를 **거부한다** — `state:Apply(Debounce{...})`가 그대로 타입에러다.
   파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환 `U`만 열어둔다
-  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 구현 시 정한다). 아래 논거는 **반환 쪽**에
+  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 위 항목대로 M2 단위 2에서 확정). 아래 논거는 **반환 쪽**에
   대한 것이라 그대로 유효하다 — Modifier의
   `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
   이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종
