@@ -2015,3 +2015,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   이중 claim은 셋업 유무로 error(*"claim 은 slot 이랑 무관"* — 리뷰 전제 기각) /
   **`PlayerGui`는 공동 소유 객체라 claim 대상 아님**, 루트는 `ScreenGui`·`SurfaceGui` /
   `FrameParam<E>` 원소 타입 파라미터.
+- **`session/2026-08-28-03-m2-unit1-common-base.md`** — **M2 착수.** 다른 에이전트가
+  초안한 자율 구현 규약을 검토해 순서 오류 하나(`EpochMap`이 `Effect` 뒤 → State 본체
+  앞)와 소스 단일화를 고쳐 채택(`qa-request/pre-implementation-handtrace-round11-brief.md`,
+  세 갈래 분류 / 단위 넷 / 두 층 커밋 게이트, `HUMAN_TODO.md` 2번 닫힘). 첫 단위(공통
+  기반)를 사용자 확인(*"진행하면 될것 같아"*) 뒤 구현 — `Void`/`Brand`(인스턴스 15 +
+  `is*` 11 한 잎 파일)/`LifetimeHandle`(`InitLifetimeHandle` 에러 스텁)/`Ref` 최소형/
+  `quad-types` 타입/mock `installLifetime`(+`Destroy`가 Connection 전부 끊음)/spec 5개,
+  `test.sh`에 `spec.*`+`luau-analyze`. 발견 `H-165`(pesde shim은 생성 시점 export만 —
+  `pesde install` 재실행)·`H-166`(`Revision` 초기값 0) 둘 다 ①. ②/③ 없음.

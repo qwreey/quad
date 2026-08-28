@@ -272,7 +272,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 여기 있는 것 전부 State-free이자 dispatch-free라 어느 쪽에도 안 걸립니다.
 > 이 절이 끝나야 아래 반응형 본체를 짤 수 있습니다.
 
-- [ ] `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
+- [x] **[2026-08-28 완료 — `quad-base/src/Brand.luau` + `test/spec.brand.luau`, 브랜드 인스턴스 15개와 M2 `is*` 11개가 이 잎 파일에]** `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
       브랜드마다 weak-key 집합 하나를 들고 `:register(x)`/`:is(x)`,
       **다중 태깅 허용**(`Source`가 `SourceBrand`이면서 동시에 `EpochBrand`).
       옛 공유 레지스트리 + `Brand.get(x) -> tag`는
@@ -302,7 +302,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       않는다"*로 확정 — `isNone`은 `None.luau`(M3) 쪽에 산다. 이 마일스톤
       분리로 처음 눈에 띈 잔재를 **[2026-08-24]** 정정한 것) —
       `brand-plan.md`의 `Brand` 절, 2026-08-07 여덟 번째 세션 신설)
-- [ ] `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
+- [x] **[2026-08-28 완료 — `relate-plan.md` 대조 일치, `test/spec.relate.luau`, 타입은 `quad-types`로 옮겨 재export]** `Relate.luau`(전체가 quad-base, 순수 Lua — `base/relate-plan.md`) —
       **[2026-08-28 확인] 파일은 M1 커밋 `205af32`에 이미 있다**(`RunInit`이
       쓴다) — 이 체크박스의 남은 일은 `base/relate-plan.md` 대조와 테스트뿐.
       `Relate()` 비싱글톤 생성자, `:SetWeak`/`:GetWeak`/`:SetStrong`/`:GetStrong`.
@@ -310,7 +310,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       생성(첫 `Set` 호출 시에만), `WeakMap`은 공유 메타테이블(`{__mode="v"}`)
       재사용 — 구 `base.perInstanceState(inst)`/`PerInstanceState.luau`를
       대체(2026-08-08 세션 신설).
-- [ ] `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
+- [x] **[2026-08-28 완료 — `InitLifetimeHandle(module)`이 모듈 인스턴스에 영어 `level 2` 에러 스텁 4종 설치, `test/spec.lifetime.luau`]** `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
       `unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨
       함수 타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래
       M8에만 있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의
@@ -347,7 +347,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       다시 갈라짐, 판정 로직은 공유하는 비공개 헬퍼 하나 — M2 체크박스
       참고**), children 배열 leaf 부착이 실제로는 `bindLifetime` 호출이라
       이 게이트를 그대로 탐
-- [ ] **⭐ [2026-08-27 9라운드 `H-128` 신설] `Ref.luau` 최소형** — 아래
+- [x] **[2026-08-28 완료 — `quad-base/src/Ref.luau` + `test/spec.ref.luau`(`:Set` 순서·`bit32` 랩·dedup·weak GC·스냅샷 순회·thread 소진)]** **⭐ [2026-08-27 9라운드 `H-128` 신설] `Ref.luau` 최소형** — 아래
       `Effect(fn, ...deps)`의 `Ref` dep 분기(`isRef(d)` →
       `d:WeakCallback(onRefFire)` → `self._epochs:Sync(d)`)가 **M2 안에서
       실제로 돌려면** 필요한 표면만: `.Value`/`.Revision`/`:Set(value)`/
@@ -363,7 +363,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **[2026-08-27 `/code-review`]** 아래 `H-80` 탑레벨 목록의 규칙(*"이
       마일스톤이 얹는 탑레벨 값 전부"*)대로 **`quad-types`의 `Quad`에 `Ref`
       생성자 필드도 여기서** 추가한다 — M8의 `H-25` 체크박스는 이걸로 흡수.
-- [ ] **[2026-08-28 `H-162`] `Void`** — 단일 no-op 함수 export. no-op 클로저를
+- [x] **[2026-08-28 완료 — `quad-base/src/Void.luau` + `test/spec.void.luau`]** **[2026-08-28 `H-162`] `Void`** — 단일 no-op 함수 export. no-op 클로저를
       돌려주는 자리는 새 클로저 대신 이것. 아래 `H-80` 탑레벨 목록에만 있고
       여기 체크박스가 없어 "개수·목록은 소스 하나" 규약에 어긋나던 것을 M2
       착수 규약 커밋에서 신설.
@@ -629,7 +629,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [ ] **[2026-08-28 부분 — 첫 단위분(`Relate`/`Void`/`Ref`/`is*` 11개/생명주기 4종)은 `quad-types` `Quad`에 추가됨, `Source`/`Store`/`Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
@@ -675,7 +675,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (영어 메시지). 타입은 `Source<T>`를 요구하지만 `--!nocheck`/동적
       코드가 raw 값을 넘기면 지금 스케치(`table.clone`)는 조용히 받고 첫
       `:Get()`에서 엉뚱한 에러로 죽는다. 생성 시 1회라 hot path 아님
-- [ ] **[2026-08-25 신설, `H-97`]** mock 백엔드용 생명주기 4종 최소 구현 —
+- [x] **[2026-08-28 완료 — 첫 단위로 당겨서 `test/mock.luau`의 `installLifetime(quad)`, `lifecycle-pattern.md` (0)/(1) 스케치 그대로; mock `Destroy`가 모든 Connection을 끊도록 보강]** **[2026-08-25 신설, `H-97`]** mock 백엔드용 생명주기 4종 최소 구현 —
       `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`. 안 하면
       **아래 "mock 대상 테스트"가 전파 루프를 한 번도 못 돈다**(루프가 매
       발화마다 `canExecute`를 부르는데 그건 M8 구현이고 미주입 슬롯은

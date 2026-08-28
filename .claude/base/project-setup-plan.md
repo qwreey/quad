@@ -248,7 +248,14 @@ Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했�
 (8라운드에서 실제로 실행해 확인). 지금 규칙은 하나다 — **테스트는
 `./scripts/test.sh`로 돌린다**(그 스크립트가 `relink.sh`를 먼저 부른다).
 그냥 `luau`로 돌리면 스모크가 죽고 `luau-analyze`는 모듈을 `any`로 떨어뜨려
-**조용히 통과**한다("거짓 클린"). Luau의
+**조용히 통과**한다("거짓 클린"). **[2026-08-28 M2 첫 단위, `H-165`] 둘째
+함정 — `quad-types`에 `export type`을 추가하면 `pesde install`을 다시 돌려야
+한다.** pesde가 만드는 링크 파일(`quad-base/roblox_packages/quad_types.luau`)은
+`return module` 위에 **그 시점에 존재하던 export 타입만** `export type X =
+module.X`로 손으로 나열한 shim이라, `quad-types/src/init.luau`에 타입을 새로
+export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Unknown type"으로
+죽는다(`relink.sh`는 복사만 갱신하지 shim은 못 고친다 — 실측). `test.sh`는
+**[2026-08-28]** `luau-analyze`도 같이 돌리므로 이 실패는 조용하지 않다. Luau의
 `.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
 그때 다시 볼 것.
 

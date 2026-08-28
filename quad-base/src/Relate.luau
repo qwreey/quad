@@ -3,12 +3,10 @@
 	`.claude/base/relate-plan.md` "API"/"실제 구조" 절 그대로 구현.
 ]]
 
-export type Relate = {
-	SetStrong: (self: Relate, inst: any, key: any, value: any) -> (),
-	GetStrong: (self: Relate, inst: any, key: any) -> any?,
-	SetWeak: (self: Relate, inst: any, key: any, value: any) -> (),
-	GetWeak: (self: Relate, inst: any, key: any) -> any?,
-}
+local QuadTypes = require("../roblox_packages/quad_types")
+
+-- 타입의 소스는 `quad-types`(`Quad.Relate` 필드가 같은 타입을 써야 함) — 여기선 재export만.
+export type Relate = QuadTypes.Relate
 
 type Bucket = {
 	StrongMap: { [any]: any }?,

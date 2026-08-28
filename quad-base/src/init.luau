@@ -14,8 +14,12 @@
 ]]
 
 local Relate = require("@self/Relate")
+local Brand = require("@self/Brand")
+local Ref = require("@self/Ref")
+local Void = require("@self/Void")
 local QuadTypes = require("./roblox_packages/quad_types")
 local InitDebug = require("@self/Debug")
+local InitLifetimeHandle = require("@self/LifetimeHandle")
 
 type Quad = QuadTypes.Quad
 
@@ -27,6 +31,22 @@ local function New(): Quad
 	local module = {
 		New = New,
 		Version = "0.0.0",
+
+		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
+		Relate = Relate,
+		Void = Void,
+		Ref = Ref,
+		isEpoch = Brand.isEpoch,
+		isSource = Brand.isSource,
+		isState = Brand.isState,
+		isStore = Brand.isStore,
+		isObserver = Brand.isObserver,
+		isEffect = Brand.isEffect,
+		isBlocker = Brand.isBlocker,
+		isModifier = Brand.isModifier,
+		isRef = Brand.isRef,
+		isPreRef = Brand.isPreRef,
+		isPostRef = Brand.isPostRef,
 	} :: Quad
 
 	function module.RunInit(self, initFn)
@@ -46,6 +66,7 @@ local function New(): Quad
 	end
 
 	module:RunInit(InitDebug)
+	module:RunInit(InitLifetimeHandle) -- 생명주기 4종 에러 스텁 — 백엔드가 덮어씀
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	return module

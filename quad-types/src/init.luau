@@ -17,12 +17,66 @@
 
 local TypeVersionCheck = require("./luau_packages/type_version_check")
 
+-- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
+-- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
+export type Epoch = { Revision: number }
+
+-- `Relate` — inst를 weak 키로 하는 릴레이션(`.claude/base/relate-plan.md` "API").
+-- `inst`는 항상 weak, `Weak`/`Strong`은 value의 보관 방식만 가리킨다.
+export type Relate = {
+	SetStrong: (self: Relate, inst: any, key: any, value: any) -> (),
+	GetStrong: (self: Relate, inst: any, key: any) -> any?,
+	SetWeak: (self: Relate, inst: any, key: any, value: any) -> (),
+	GetWeak: (self: Relate, inst: any, key: any) -> any?,
+}
+
+-- `Ref<T>` 최소형(`.claude/base/ref-plan.md`, M2 `H-128`). 콜백은 `fn(value, ref)` —
+-- 두 번째 인자가 Ref 자신(= `Epoch`). `:Wait`는 M8.
+export type RefCallback<T> = (value: T?, ref: Ref<T>) -> ()
+export type Ref<T> = {
+	Value: T?,
+	Revision: number,
+	Callbacks: { [RefCallback<T> | thread]: true }, -- 강한 해시맵 셋(+ M8 `:Wait` 대기자)
+	WeakCallbacks: { [RefCallback<T>]: true }, -- weak-key 테이블
+	Set: (self: Ref<T>, value: T?) -> Ref<T>,
+	Callback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
+	WeakCallback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
+	Uncallback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
+}
+
 export type Quad = {
 	Version: "0.0.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
 	New: () -> Quad,
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
 	AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P,
+
+	-- M2 공통 기반이 얹는 탑레벨 값(`ROADMAP.md` M2 `H-80`). `Source`/`Store`/
+	-- `Effect`/`Blocker`는 각 단위에서 추가된다.
+	Relate: () -> Relate,
+	Void: (...any) -> (),
+	Ref: <T>(default: T?) -> Ref<T>,
+
+	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
+	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
+	bindLifetime: (inst: any, value: any) -> (),
+	unbindLifetime: (value: any) -> (),
+	canBound: (value: any) -> boolean,
+	canExecute: (value: any) -> boolean,
+
+	-- 브랜드 술어(`.claude/base/brand-plan.md`). 나머지(`isTag`/`isAttribute*`/
+	-- `isTween`/`isSlot`)는 그 타입의 마일스톤에서.
+	isEpoch: (x: any) -> boolean,
+	isSource: (x: any) -> boolean,
+	isState: (x: any) -> boolean,
+	isStore: (x: any) -> boolean,
+	isObserver: (x: any) -> boolean,
+	isEffect: (x: any) -> boolean,
+	isBlocker: (x: any) -> boolean,
+	isModifier: (x: any) -> boolean,
+	isRef: (x: any) -> boolean,
+	isPreRef: (x: any) -> boolean,
+	isPostRef: (x: any) -> boolean,
 }
 
 --[[

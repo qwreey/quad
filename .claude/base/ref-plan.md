@@ -430,7 +430,9 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
 - **`Ref<T>`에 공개 필드 `Revision: number`가 생긴다.** `:Set()`이
   `Source`와 **같은 한 줄**로 갱신한다 — `self.Revision = bit32.bnot(-self.Revision)`
   (그 문서 §2의 랩어라운드 감소). 공개여야 구조적 만족이 타입 레벨에서
-  성립한다.
+  성립한다. **[2026-08-28 M2 첫 단위, `H-166`] 초기값은 `0`** — 어느 문서도
+  적지 않았던 것을 구현이 정했다. 계약은 `==`/`~=`뿐이라 값 자체는 무관하고,
+  첫 `:Set`이 `4294967295`로 감는 것까지 테스트(`spec.ref.luau`)가 고정한다.
 - **`EpochBrand:register(self)`** — `Source`가 `SourceBrand`이면서 동시에
   `EpochBrand`인 것과 같은 다중 태깅(`base/brand-plan.md`).
 - **`.Callbacks`(푸시 경로)는 그대로다** — `Epoch`는 **부기**일 뿐,

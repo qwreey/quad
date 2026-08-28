@@ -10,11 +10,25 @@
 	엔진 userdata의 GC 동일성을 흉내내려는 것이고, 그 동일성 문제는
 	quad-roblox의 LifetimeHandle(gcconn 트릭)이 다루는 자리라 quad-base
 	정적 스냅샷 테스트 범위 밖.
+
+	**[2026-08-28 M2, ROADMAP `H-97`] `installLifetime(quad)`** — 생명주기 4종
+	(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)의 mock 백엔드.
+	quad-roblox가 할 모듈 뮤테이션을 그대로 흉내내며, 본문은
+	`.claude/base/lifecycle-pattern.md` (0)/(1)의 실 구현 스케치를 그대로 옮긴
+	것(gcconn = 절대 안 발화하는 `ClassName` 변경 시그널의 Connection,
+	gchold = inst에 매달린 값들의 강참조 홀더, `InstData`/`BindData` 두 Relate).
+	이걸 위해 `Destroy`가 Roblox처럼 **그 인스턴스의 모든 Connection을 끊는다**
+	(`Connected = false`) — gcconn의 `.Connected`가 곧 생존 판정이라서.
+	Roblox와 다른 점 하나: gcconn/gchold 셋업(`nativeClaim`)은 quad가 Instance를
+	만들 때 하는 일인데 mock Instance는 quad 밖에서 만들어지므로 여기선
+	`bindLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
+	(userdata 동일성 구멍, 같은 문서 (0) 절).
 ]]
 
 export type Signal = {
 	Connect: (self: Signal, fn: (...any) -> ()) -> Connection,
 	Fire: (self: Signal, ...any) -> (),
+	DisconnectAll: (self: Signal) -> (),
 }
 
 export type Connection = {
@@ -44,6 +58,15 @@ function Signal:Connect(fn: (...any) -> ()): Connection
 	end
 	table.insert(connections, conn)
 	return (conn :: any) :: Connection
+end
+
+-- Destroy가 부른다 — Roblox는 Destroy 시 그 인스턴스의 모든 연결을 끊는다.
+function Signal:DisconnectAll()
+	local connections = (self :: any).connections
+	for i = #connections, 1, -1 do
+		connections[i].Connected = false
+		connections[i] = nil
+	end
 end
 
 function Signal:Fire(...: any)
@@ -205,6 +228,12 @@ end
 function methods.Destroy(inst: any)
 	local data = getData(inst)
 	data.destroying:Fire()
+	-- Roblox처럼 이 인스턴스의 모든 연결을 끊는다(Destroying 포함) —
+	-- gcconn(`ClassName` 변경 시그널)의 `.Connected`가 생존 판정의 근거.
+	data.destroying:DisconnectAll()
+	for _, sig in data.changed do
+		sig:DisconnectAll()
+	end
 	if data.parent then
 		local siblings = data.parent.children
 		local i = table.find(siblings, data)
@@ -220,8 +249,121 @@ local function isMockInstance(value: any): boolean
 	return dataOf[value] ~= nil
 end
 
+--[[
+	installLifetime(quad) — `.claude/base/lifecycle-pattern.md` (0)/(1) 스케치를
+	mock 시그널 위에 그대로 옮김. quad 모듈 인스턴스를 뮤테이션한다(quad-roblox와
+	같은 경로). 반환값은 없고, 같은 quad에 두 번 부르면 두 번째는 무시된다.
+]]
+local Relate = require("../src/Relate")
+
+local installed = setmetatable({}, { __mode = "k" }) :: { [any]: true }
+
+local function installLifetime(quad: any)
+	if installed[quad] then
+		return
+	end
+	installed[quad] = true
+
+	local isObserver, isEffect = quad.isObserver, quad.isEffect
+
+	local InstData = Relate() -- inst  -> gchold/gcconn ((0)에서 채움)
+	local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
+
+	-- `false or`: local 함수가 상수 접힘/인라인되면 아래 클로저의 업밸류 캡처가 사라진다
+	local nop = (false or function(...: any) end) :: (...any) -> ()
+
+	-- (0) nativeClaim 상당 — mock에선 lazy(헤더 주석 참고)
+	local function claim(inst: any)
+		if InstData:GetWeak(inst, "gchold") ~= nil then
+			return
+		end
+		local gchold = {}
+		local gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
+			nop(gchold, inst) -- 절대 발화 안 함. 클로저가 gchold와 inst를 업밸류로 붙잡는 게 전부
+		end)
+		gchold[1] = gcconn -- 배열 자리 1번은 gcconn 전용(값들은 해시 자리에)
+		InstData:SetWeak(inst, "gchold", gchold)
+		InstData:SetWeak(inst, "gcconn", gcconn)
+	end
+
+	-- 비공개 — canBound/canExecute가 공유하는 실제 판정.
+	local function isBoundAlive(value: any): boolean
+		-- (a) inst-scoped 경로: bindLifetime이 복사해둔 gcconn을 value 자신에게서 찾음
+		local gcconn = BindData:GetWeak(value, "gcconn")
+		if gcconn ~= nil and gcconn.Connected then
+			return true
+		end
+		-- (b) 전역 경로: 구독 경로(강/약)가 세운 것. Observer/Effect에만 있는 필드.
+		if isObserver(value) or isEffect(value) then
+			return value.Subscribed == true
+		end
+		return false
+	end
+
+	local function canBound(value: any): boolean
+		return not isBoundAlive(value)
+	end
+
+	local function canExecute(value: any): boolean
+		return isBoundAlive(value)
+	end
+
+	local function bindLifetime(inst: any, value: any)
+		if not isMockInstance(inst) then
+			error("bindLifetime: inst is not a mock instance", 2)
+		end
+		if not canBound(value) then
+			-- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
+			-- 인덱싱하면 안 됨 — value가 평범한 클로저일 수도 있음.
+			local isGlobal = isObserver(value) or isEffect(value)
+			if isGlobal then
+				isGlobal = value.Subscribed == true
+			end
+			error(
+				if isGlobal
+					then "bindLifetime: value is already subscribed"
+					else "bindLifetime: value is already bound to another Instance",
+				2
+			)
+		end
+		claim(inst)
+
+		local gchold = InstData:GetWeak(inst, "gchold")
+		gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
+		-- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2). 둘 다 weak.
+		BindData:SetWeak(value, "gchold", gchold)
+		BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
+
+		if isObserver(value) then
+			value:_catchUp() -- [H-159] 묶이기 전 홀드된 emit 1회 (단위 3에서 합류)
+		end
+		if isEffect(value) then
+			value:_bindDestroying(inst) -- Destroying 연결 + 홀드 캐치업 1회 (단위 3)
+		end
+	end
+
+	local function unbindLifetime(value: any)
+		-- bind의 대칭 — cleanup은 부르지 않고, Ref 콜백/내부 Observer도 안 뗀다.
+		if isEffect(value) then
+			value:_unbindDestroying() -- Destroying 연결만 끊는다 (단위 3)
+		end
+		local gchold = BindData:GetWeak(value, "gchold")
+		if gchold then
+			gchold[value] = nil -- inst는 안 건드림, 이 value 하나만 조기 해제
+		end
+		BindData:SetWeak(value, "gchold", nil)
+		BindData:SetWeak(value, "gcconn", nil)
+	end
+
+	quad.bindLifetime = bindLifetime
+	quad.unbindLifetime = unbindLifetime
+	quad.canBound = canBound
+	quad.canExecute = canExecute
+end
+
 return {
 	Instance = Instance,
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
+	installLifetime = installLifetime,
 }
