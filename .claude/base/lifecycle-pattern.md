@@ -491,12 +491,15 @@ end
 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
 
 ```lua
+-- ⭐ [2026-08-29 `H-174`/`H-194`] 이 블록 전체는 `Observer.Init(module)`이 만드는 **인스턴스별 임플
+-- 팩토리 안**이라고 읽을 것 — 두 레지스트리는 그 클로저 로컬(인스턴스마다 한 벌)이고,
+-- `canBound`는 탑레벨 함수가 아니라 `module.canBound`(발화 시점에 읽는 인스턴스 필드)다.
 local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)
 local WeakSubscribed = setmetatable({}, {__mode = "k"})   -- 약한 레지스트리
 
 -- ── 프리미티브 ──────────────────────────────────────────────
 function Observer:WeakSubscribe()
-    if not canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
+    if not module.canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
         error(if self.Subscribed
             then "이미 구독된 값"          -- 강/약 어느 쪽이든 이 분기
             else "이미 Instance에 바인딩된 값", 2)   -- [2026-08-27] `level 2` — 아래 둘과 같게
@@ -534,7 +537,7 @@ function Observer:Subscribe()
     --   가리키고(`H-104` level 계약 위반), (2) 콜론 위임은 서브 테이블의 오버라이드를
     --   탄다(`H-144` (b)의 교훈). 사용자: *"weak 나 아닌거나 줄 차이가 그리 안 커서,
     --   분리할 큰 이유가 없음."*
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed
             then "이미 구독된 값"
             else "이미 Instance에 바인딩된 값", 2)

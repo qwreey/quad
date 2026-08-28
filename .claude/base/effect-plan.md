@@ -617,6 +617,9 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 
 ```lua
+-- ⭐ [2026-08-29 `H-174`/`H-194`] 이 블록은 `Effect.Init(module)`이 만드는 **인스턴스별 임플 팩토리
+-- 안**이다 — `Subscribed`/`WeakSubscribed`는 `Observer.implFor(module)`에서 받은 그 인스턴스의
+-- 레지스트리이고, `canBound`는 `module.canBound`(인스턴스 필드, 발화 시점에 읽음)다.
 -- ⭐⭐ [2026-08-27 확정 (b), 9라운드 `H-144` 후속 — 감사 4라운드] **`EffectHandle`은
 -- 네 진입점을 자기 것으로 가진다 — Observer의 함수 본문을 배정하지 않는다.**
 -- 공유하는 건 **레지스트리 두 개**(`Subscribed`/`WeakSubscribed`, 소유 모듈은
@@ -671,7 +674,7 @@ end
 -- **[2026-08-28 `H-149`]** Observer 쪽도 같은 이유로 위임을 풀고 인라인했다).
 function EffectHandle:WeakSubscribe()
     if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
     end
     self.Subscribed = true
@@ -682,7 +685,7 @@ end
 
 function EffectHandle:Subscribe()
     if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
     end
     self.Subscribed = true
