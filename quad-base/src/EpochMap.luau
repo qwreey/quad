@@ -19,8 +19,8 @@
 	decided at runtime with `isEpoch` (§5 "런타임 분기는 `isEpoch`로").
 
 	Keys are weak: when an `Epoch` dies its entry goes with it. Values are
-	plain numbers, so `relate-plan.md`'s "value must not refer back to the
-	key" caveat does not apply.
+	plain numbers, so the weak-table hazard relate-plan.md warns about (a
+	value that refers back to its key keeps the key alive) cannot arise here.
 ]]
 
 local Brand = require("./Brand")

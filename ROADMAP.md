@@ -397,7 +397,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
-- [x] **[2026-08-28 완료 — 단위 2]** `Source.luau`/`State.luau`/`Store.luau` — `InitState`/`InitSource`/`InitStore` 팩토리(`H-174`), `test/spec.{epochmap,source,state,store}.luau`
+- [x] **[2026-08-28 완료 — 단위 2]** `Source.luau`/`State.luau`/`Store.luau` — `State.Init`/`InitSource`/`InitStore` 팩토리(`H-174`), `test/spec.{epochmap,source,state,store}.luau`
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-28 10라운드 `H-153`]** Store 생성자의 `isSource` 순회와 `store:Of(name)`에
       **예약 이름 런타임 가드**(`error(…, 2)`) — 동적 키는 타입이 못 막는다;
       그림자 = store 자신(`base/store-plan.md`).

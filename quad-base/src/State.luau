@@ -2,7 +2,7 @@
 	State — derived reactive node (`:Compute` / `:With` / `:Apply`), the
 	propagation loop, and the epoch-based recompute judgement.
 
-	Assembly (`H-174`, user-confirmed 2026-08-28): `InitState(module)` builds
+	Assembly (`H-174`, user-confirmed 2026-08-28): `State.Init(module)` builds
 	one implementation table per `quad` instance and keeps `module` in its
 	closure, so later units (`Observer`, `Gate`) can read lifetime gates as
 	`module.canExecute(...)` AT FIRE TIME (never captured at init — the
@@ -193,7 +193,7 @@ end
 local function implFor(module: any)
 	local impl = implByModule[module]
 	if impl == nil then
-		error("State: InitState(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
+		error("State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
 	end
 	return impl
 end
