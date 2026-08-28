@@ -26,6 +26,8 @@
 | `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
 | `H-176` | ① | 2 | 🟡 | `:Compute`의 trailing deps를 타입팩 `D...`로 좁히는 선언은 strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힌다(스파이크 15가 "미검증"으로 남긴 자리) | ✅ `...any` + 콜백 주석으로 확정, `source-state-plan.md` 실측 기록 |
 | `H-177` | ① | 2 | 🟢 | `InitSource`/`InitStore`가 `State.implFor`만 불러 `New()`의 `RunInit` 순서에 의존했다 — `module-lifecycle-plan.md`는 "각 `InitXxx`가 `require`처럼 멱등하게 자기 의존성을 당겨온다"로 확정 | ✅ 각 Init이 `module:RunInit(dep)`를 직접 호출(감사 3라운드) |
+| `H-179` | ① | 4 | 🟡 | `state:Apply(factory)`의 파라미터를 유니온 하나로 선언하면 `state:Apply(blocker)`가 strict에서 막힌다(필드가 더 있는 객체는 제네릭 `U` 자리에서 너비 서브타이핑 실패) | ✅ 교집합 오버로드로 확정(`luau-test/done/26-*`, `typing-limits.md` §1②) |
+| `H-180` | ① | 4 | 🟢 | 폐기된 `state:Block` 표기가 라이브 문서 둘에 남아 있었다(`source-state-plan.md` `_hold` 파생 노드 목록, `blocker-plan.md` 사용 예시) | ✅ 정정 |
 | `H-178` | ① | 3 | 🟢 | 코드의 사적 필드는 `_` 접두(`_valueEpochMap`·`_emitEpochMap`·`_subs`·`_hold`…)인데 `base/` 의사코드는 `valueEpochMap`처럼 접두 없이 쓴다 — 이름은 1:1이고 밑줄만 다르다 | ✅ 기록만(문서 무변경 — 코드 관례, `H-174` 조립 세부와 같은 급) |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
@@ -169,6 +171,28 @@
 
 ### 단위 3 — `Observer` → `Effect` (2026-08-29)
 
+### 단위 4 — `GateNode` → `Blocker` (2026-08-29)
+
+### `H-179` 🟡 — `:Apply`의 파라미터 타입 표기 (①)
+
+- **어디서**: `quad-types/src/init.luau` `State<T>.Apply` / `base/source-state-plan.md`
+  "`state:Apply(factory)`"(`H-94`: *"함수 또는 그 필드를 가진 객체를 받고 반환 `U`만
+  열어둔다"*) / `base/typing-limits.md` §1②.
+- **무엇이**: 단위 2가 `((State<T>) -> U) | { __apply: (self, State<T>) -> U }` 유니온으로
+  적었고 함수 팩토리·`__apply`만 가진 객체는 통과했는데, 단위 4의 실제 `Blocker`(필드가
+  더 있음)를 `s:Apply(b)`에 넣자 *"Expected this to be t1 where t1 = … | { __apply: … }"*.
+  스파이크 4개(유니온·인덱서·제네릭 `__apply`·`any` 파라미터)로 좁힌 결과 유니온-제네릭
+  파라미터에서 추가 필드가 있는 객체의 너비 서브타이핑이 안 된다. **교집합 오버로드**
+  (함수 쪽 제네릭 `U` / 객체 쪽 `-> any`)만 양쪽을 다 받고 음성 대조군도 잡는다.
+- **처리**: 그 표기로 확정, 스파이크를 `luau-test/done/26-*`로 보존, `typing-limits.md`
+  §1②에 기록. `H-94`의 뜻(둘 다 받고 반환은 열어둔다)은 그대로 — 객체 쪽 반환이 `any`라
+  호출부가 결과 타입을 명시한다(§1① 관례).
+
+### `H-180` 🟢 — `state:Block` 잔재 (①)
+
+- **처리**: `source-state-plan.md`의 `_hold` 파생 노드 목록과 `blocker-plan.md` 사용 예시에서
+  `:Apply(blocker)`로. `gate-plan.md` 149-151은 정정 문구가 이미 뒤따라 그대로.
+
 ### `H-178` 🟢 — 사적 필드의 `_` 접두 (①)
 
 - **어디서**: `effect-plan.md` 생성자 의사코드의 `d.valueEpochMap` / `state-epoch-plan.md` §4의
@@ -273,6 +297,21 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
   `fire`가 그걸 `Update` 못 하는 값으로 **자기 사정**으로 거를 뿐이다.
 - 테스트 작성 함정: `table.insert(t, nil)`은 길이를 안 늘린다 — `emitFrom == nil` 발화를 셀 땐
   래퍼로 기록할 것(한 번 오진했다).
+
+**단위 4 (메인 세션, 2026-08-29)**:
+- `GateNode`는 `State.luau` 안(`architecture.md` 소스 트리가 `:Gate`를 `State.luau` 소속으로
+  둠) — `newNode({self}, passThrough, GateImpl)`로 만들어 `StateBrand` 등록·시딩·`_hold`를
+  그대로 받고, `_receive`(emit 맵은 `Peek`, unfold 합류, 정책 호출)와 `_flush`(빈 배치
+  false → 스왑 → `Sync(batch)` → `_emitDown(batch)`; `emit(false)`는 버리기)만 덮어쓴다.
+  `Get`은 상속(pass-through + 카운터). 값은 안 가린다(3번) — `spec.gate.luau` 9절.
+- `Blocker.luau`는 잎 모듈(게이트 표면을 안 만짐 — §6의 상속 우려는 해당 없음): `On`/`Off`/
+  `OffWithoutEmit`/`IsOn`/`Policy`/`__apply`, 핸들 weak-key 셋 + 강한 주인은 `onUpstreamEmit`
+  클로저(그 클로저가 `handle(true)`로 통과시켜 업밸류를 산 채로), `Off`류는 스냅샷 순회 —
+  `spec.blocker.luau` 7절(GC 실측 포함).
+- 단위 3 감사 1라운드 잔여: `Observer`/`Effect` 생성자의 `fn` 타입 검사(`error(…, 2)`)는
+  문서에 없고 코드가 더한 입력 검증 — `newNode` dep 검증과 같은 급(`architecture.md` 계약의
+  예), 기록만. 스파이크 `05`는 `spec.state`/`spec.effect` 3번이 대체 → `done/`.
+- `Debounce`/`Throttle`·`setTimeout`/`clearTimeout` 주입 op는 백로그 — 이번 단위에 없음.
 
 **툴링 사실 둘**(설계 아님, 다음 단위가 알아야 함):
 - `require("@self/X")`는 **`init.luau`에서만** 통한다 — 일반 파일에서 `@self`는 그 파일

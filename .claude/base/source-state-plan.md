@@ -481,7 +481,7 @@ gc되긴 하지만.)"*
 | 하류 State → 상류 State/Source (`_hold`) | **강함** |
 | 상류 → 하류 (구독자 집합) | weak-키 |
 
-- **모든 파생 노드**(`:With`/`:Compute`/`:Gate`/`:Block`)가 자기 상류를
+- **모든 파생 노드**(`:With`/`:Compute`/`:Gate` — `state:Apply(blocker)`도 `:Gate`다, **[2026-08-29]** 옛 `:Block` 표기 정리)가 자기 상류를
   `_hold`에 강하게 담는다 — `:Compute`처럼 클로저가 **우연히** 캡처하는
   것에 기대지 않는다(`:With`의 pass-through 노드엔 그 우연이 없다).
 - **⭐ [2026-08-26 보강, 8라운드 `H-110`] 말단 핸들도 마찬가지다.**

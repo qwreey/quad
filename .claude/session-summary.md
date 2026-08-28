@@ -2035,3 +2035,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **2026-08-29 새벽(컨테이너 이사 뒤)**: 단위 2 감사 4·5라운드 반영(`H-177` 포함), **단위 3
   구현** — `Observer`(레지스트리 소유, 네 진입점)/`Effect`(`rawRerun`·홀드·cleanup 세 자리·
   네 진입점 자기 본문)/`onDestroying` 스텁·mock, spec 17절 ALL PASS. `H-178`(`_` 접두) 기록.
+  **단위 4 구현** — `GateNode`(`State.luau` `:Gate`)/`Blocker.luau`, spec 16절, `H-179`(`Apply`
+  타입은 교집합 오버로드)·`H-180`(`:Block` 잔재). M2 체크박스 전부 `[x]`.

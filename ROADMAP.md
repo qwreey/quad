@@ -598,7 +598,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `archive/canexecute-inst-arg-reversed.md`. 부수 효과로 **바인딩이
       죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를 통과**
       (살아있는 바인딩만 막는 게 의도, 안 바뀜)
-- [ ] **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
+- [x] **[2026-08-29 완료 — 단위 4]** **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
       emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
       (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
       **[2026-08-28 10라운드 `H-152`] 조립 첫 줄은 `StateBrand:register(node)`** —
@@ -620,7 +620,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       그리고 **수신 시점 판정은 `emitEpochMap:Peek`**을 쓴다 — `:Update`는
       덮으므로 "유보 중엔 아직 안 던졌다"는 맵의 뜻과 양립하지 않는다.
       flush 순서는 **빈 배치 얼리리턴 → 스왑 → `:Sync(batch)` → 전파**
-- [ ] **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
+- [x] **[2026-08-29 완료 — 단위 4]** **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
       얹히는 **정책**(다시 노드를 만들지 말 것).
       **⭐ [2026-08-25 추가, 7라운드 `H-63`] onunblock 핸들 보관 세 자리**:
       (1) **weak-키 해시맵 셋**(`__mode = "k"`) — 값-weak 배열이면 구멍에서
@@ -634,7 +634,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-28 부분 — 단위 1·2·3분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종+`onDestroying`/`Source`/`Store`/`Effect` + `State`·`Source`·`Store`·`Observer`·`EffectHandle` 타입)은 `quad-types` `Quad`에 추가됨, `Blocker`는 단위 4에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [x] **[2026-08-29 완료 — 단위 1~4분 전부(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종+`onDestroying`/`Source`/`Store`/`Effect`/`Blocker` + `State`·`Source`·`Store`·`Observer`·`EffectHandle`·`Blocker`·`GateSetup` 타입)가 `quad-types` `Quad`에 추가됨 — M2 몫은 닫힘]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
@@ -665,7 +665,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정 — 실측 결과 채택된 건 이 대안이 아니라
       deps 자리 `...any` + 콜백 주석이다)
-- [ ] **[2026-08-28 부분 — 단위 2에서 `:With`/`Source:Emit()` 완료, `state:Apply(blocker)`는 `Apply`의 `__apply` 경로로 단위 4에서 실제 Blocker와 합류할 때 닫힘]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
+- [x] **[2026-08-29 완료 — 단위 2에서 `:With`/`Source:Emit()`, 단위 4에서 `state:Apply(blocker)`(`Blocker.__apply` → `state:Gate`, `spec.blocker` 2번)]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**

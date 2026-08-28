@@ -258,7 +258,7 @@ do
 		self.calls += 1
 		return st
 	end
-	local viaObj = s:Apply(factory :: any)
+	local viaObj = s:Apply(factory) -- 객체 오버로드: 추가 필드(`calls`)가 있어도 통과해야 한다
 	assert(viaObj == s and factory.calls == 1, "__apply is called as a METHOD on the factory object (H-158)")
 	print("PASS")
 end

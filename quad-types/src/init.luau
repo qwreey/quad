@@ -80,6 +80,24 @@ export type EffectHandle = {
 }
 export type EffectFn = (self: EffectHandle) -> ...(() -> ())
 
+-- `state:Gate(setup)`의 정책 계약(`gate-plan.md` 2번): 바깥은 생성 시 1회, 반환 클로저는 상류
+-- emit마다. `emit()`/`emit(true)` = 흡수 집합 flush, `emit(false)` = 버리기, 반환 = 쌓인 게 있었나.
+export type GateEmit = (commit: boolean?) -> boolean
+export type GateSetup = (emit: GateEmit) -> () -> ()
+
+-- `Blocker` — `GateNode` 위의 정책(`blocker-plan.md`). `state:Apply(blocker)`가 `__apply`로 배선.
+export type Blocker = {
+	IsBlocked: boolean,
+	IsOn: (self: Blocker) -> boolean,
+	On: (self: Blocker) -> Blocker,
+	Off: (self: Blocker) -> Blocker,
+	OffWithoutEmit: (self: Blocker) -> Blocker,
+	Policy: (self: Blocker, emit: GateEmit) -> () -> (),
+	-- `state:Apply(b)`는 gated `State<T>`(같은 T)를 돌려준다 — 호출부가 결과 타입을 명시
+	-- (`State<T>.Apply`의 객체 오버로드 주석 참고).
+	__apply: (self: any, state: any) -> any,
+}
+
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
@@ -87,9 +105,15 @@ export type State<T> = StateData<T> & {
 	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
 	With: (self: StateData<T>, ...any) -> State<T>,
 	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
-	Apply: <U>(self: StateData<T>, factory: ((State<T>) -> U) | { __apply: (self: any, state: State<T>) -> U }) -> U,
+	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
+	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
+	-- 받아 `state:Apply(blocker)`가 strict에서 막힌다. 객체 쪽은 `any`를 돌려주므로 결과는
+	-- `local g: State<number> = s:Apply(b)`로 명시(§1①의 파생 State 명시 주석 관례와 같다).
+	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
 	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
 	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
+	-- 전파 경로에 GateNode 하나(값은 안 가린다, 통지만 유보). 같은 T.
+	Gate: (self: StateData<T>, setup: GateSetup) -> State<T>,
 }
 -- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
 export type Source<T> = State<T> & {
@@ -140,6 +164,8 @@ export type Quad = {
 	Store: <T>(defaults: T?) -> Store<T>,
 	-- 단위 3. deps는 State/Source/Ref(`H-70`), `fn`엔 안 넘어간다.
 	Effect: (fn: EffectFn, ...any) -> EffectHandle,
+	-- 단위 4.
+	Blocker: () -> Blocker,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.

@@ -93,7 +93,13 @@
   `Observer`·`EffectHandle`·`Quad.Effect`. spec.observer 8절·spec.effect 9절 ALL PASS, analyze 0.
   발견 `H-178`(사적 필드 `_` 접두, 기록만).
 
+- 단위 2 감사 6라운드 수렴(0건). 단위 3 감사 1라운드: `todos.md` stale 1 + 의심 2(반영).
+- **단위 4 구현** — `State.luau`에 `GateImpl`/`:Gate`, `Blocker.luau`(잎), `quad-types`에
+  `GateSetup`/`Blocker`/`State.Gate`/`Quad.Blocker`, `spec.gate` 9절·`spec.blocker` 7절.
+  발견 `H-179`(`Apply` 파라미터는 교집합 오버로드 — 스파이크 4개, `luau-test/done/26-*`),
+  `H-180`(`:Block` 잔재). ROADMAP M2 체크박스 전부 `[x]`(`H-80` 포함).
+
 ## 다음
 
-단위 2·3 합쳐 끝 절차: 감사 루프(6라운드 진행 중) → `/code-review high` → 탐사자 → §4.
-그다음 단위 4(`GateNode` → `Blocker` + 탑레벨 마무리).
+단위 3·4 끝 절차(감사 루프 병렬 2 → `/code-review high` → 탐사자 → §4), 그 뒤 M2 전체
+마무리 보고. M3은 이 자율 구간의 범위 밖(규약 §1은 M2 단위 넷까지).

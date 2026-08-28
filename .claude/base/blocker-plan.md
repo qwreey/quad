@@ -169,7 +169,7 @@ gated state의 동작:
 
 ## 사용 예시
 
-`state1`/`state2` 각각이 아니라 **결합된 결과(`state3`) 하나에만** `:Block`을
+`state1`/`state2` 각각이 아니라 **결합된 결과(`state3`) 하나에만** `:Apply(blocker)`(**[2026-08-29]** 옛 `:Block`)를
 건다:
 
 ```lua

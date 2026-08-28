@@ -168,6 +168,12 @@ export type State<T> = StateData<T> & {
   손으로 쓰는 타입 선언이 하나 늘 뿐입니다. (한때 검토했던 "T별로
   구워서 인라이닝"은 채택 안 함 — 0번 대전제 위반이고, 제네릭을
   없애버려서 나중에 Luau가 고쳐져도 수혜를 못 받음.)
+- **[2026-08-29 M2 단위 4 실측] `:Apply`의 파라미터는 교집합 오버로드로 선언한다** —
+  `(<U>(self, fn: (State<T>) -> U) -> U) & ((self, obj: { __apply: (any, any) -> any }) -> any)`.
+  유니온 하나(`((State<T>) -> U) | { __apply: … -> U }`)로 두면 `Blocker`처럼 필드가
+  더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못 받아 `state:Apply(blocker)`가
+  strict에서 막힌다(인덱서 `[string]: any`로 열어도 같다 — `luau-test/done/26-*`).
+  객체 쪽 반환이 `any`라 결과는 명시 주석(①과 같은 관례). `round11.md` `H-179`.
 - **캐비엇**: 콜백이 받는 `s`는 `StateData<T>`라 `Compute`/`With`가
   없습니다. 콜백 안에서 다시 `s:Compute(...)`를 부르는 자리
   (`:Apply`의 factory가 대표적)는 이 방식으로 못 풀고

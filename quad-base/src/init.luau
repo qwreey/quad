@@ -25,6 +25,7 @@ local InitSource = require("@self/Source")
 local InitStore = require("@self/Store")
 local Observer = require("@self/Observer")
 local Effect = require("@self/Effect")
+local Blocker = require("@self/Blocker")
 
 type Quad = QuadTypes.Quad
 
@@ -41,6 +42,7 @@ local function New(): Quad
 		Relate = Relate,
 		Void = Void,
 		Ref = Ref,
+		Blocker = Blocker, -- 단위 4 — 게이트 정책 잎 모듈(인스턴스 간 공유)
 		isEpoch = Brand.isEpoch,
 		isSource = Brand.isSource,
 		isState = Brand.isState,

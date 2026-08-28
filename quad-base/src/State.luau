@@ -35,6 +35,12 @@
 	    advances the value only — never notifies).
 	  - `.claude/base/modifier-plan.md` 7번: a `:Compute` result that is a
 	    Modifier errors before it is cached.
+	  - `.claude/base/gate-plan.md` "`GateNode` 조립" (unit 4): `state:Gate(setup)`
+	    makes a `GateNode` — a pass-through State node whose `_receive` judges
+	    with `Peek` on the emit map, merges the source into a weak-key
+	    `_withheld` set, and hands control to the policy; `_flush(commit)` is
+	    the `emit` the policy holds (empty → false; swap → `Sync(batch)` →
+	    `_emitDown(batch)`; `emit(false)` discards). Value is never gated (3번).
 ]]
 
 local Brand = require("./Brand")
@@ -80,10 +86,10 @@ local function createImpl(module: any)
 	Impl._emitDown = emitDown
 
 	-- ── node creation ─────────────────────────────────────────────────
-	local function newNode(deps: { any }, fn: any): any
+	local function newNode(deps: { any }, fn: any, mt: any?): any
 		for i, dep in ipairs(deps) do
 			if not isState(dep) then
-				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With to the user's call
+				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With/Gate to the user's call
 			end
 		end
 		local self = setmetatable({
@@ -95,8 +101,8 @@ local function createImpl(module: any)
 			_cacheTargetCount = 0,
 			_cacheCurrCount = nil, -- never computed yet → always differs
 			_cache = nil,
-		}, Impl)
-		StateBrand:register(self)
+		}, mt or Impl)
+		StateBrand:register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
 		-- §4 seeding: valueEpochMap takes every upstream epoch, live.
 		for _, dep in ipairs(deps) do
 			dep._subs[self] = true
@@ -178,6 +184,70 @@ local function createImpl(module: any)
 			deps[#deps + 1] = (select(i, ...))
 		end
 		return newNode(deps, fn) -- one node: edges only, no combining node
+	end
+
+	-- ── GateNode (`gate-plan.md` "`GateNode` 조립") — same layer as a ComputeNode ──
+	local GateImpl = setmetatable({}, { __index = Impl })
+	GateImpl.__index = GateImpl
+
+	local function newWithheld()
+		return setmetatable({}, WEAK_KEY_MT) -- `H-9`: every withheld table is weak-keyed, the swapped-in one too
+	end
+
+	-- The ONLY exception to §4: the emit map is Peeked at receive time and
+	-- written at flush (`Sync(batch)`), so "what I have sent downstream" stays true.
+	function GateImpl._receive(self: any, from: any)
+		local valueChanged = self._valueEpochMap:Update(from)
+		local emitChanged = self._emitEpochMap:Peek(from) -- Peek, not Update (`H-72`)
+		if valueChanged then
+			self:_invalidate()
+		end
+		if not (valueChanged or emitChanged) then
+			return -- rule 3: swallowed — no policy, not added to the set
+		end
+		-- Merge the source(s) into the withheld set. A batch is UNFOLDED (never held
+		-- by reference — an upstream gate's batch is a one-shot snapshot).
+		local withheld = self._withheld
+		if isEpoch(from) then
+			withheld[from] = true
+		else
+			for epoch in pairs(from) do
+				withheld[epoch] = true
+			end
+		end
+		self._onUpstreamEmit() -- the policy decides: emit() / emit(false) / nothing
+	end
+
+	-- This IS the `emit(commit) -> boolean` the policy holds.
+	function GateImpl._flush(self: any, commit: boolean?): boolean
+		local batch = self._withheld
+		if next(batch) == nil then
+			return false -- (1) empty batch: nothing at all (8번)
+		end
+		self._withheld = newWithheld() -- (2) swap, never clear — nested waves get a fresh table
+		if commit == false then
+			return true -- discard (`H-55`): no Sync, no propagation
+		end
+		self._emitEpochMap:Sync(batch) -- (3) BEFORE propagating, all at once
+		emitDown(self, batch) -- (4) the detached batch is the payload — the gate itself never is
+		return true
+	end
+
+	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
+	function Impl.Gate(self: any, setup: any): any
+		if type(setup) ~= "function" then
+			error("State: Gate setup must be a function (emit) -> onUpstreamEmit", 2)
+		end
+		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
+		node._withheld = newWithheld()
+		local onUpstreamEmit = (setup :: any)(function(commit: boolean?): boolean
+			return node:_flush(commit)
+		end)
+		if type(onUpstreamEmit) ~= "function" then
+			error("State: Gate setup must return the onUpstreamEmit function", 2)
+		end
+		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
+		return node
 	end
 
 	-- `state:Observer(fn?)` — leaf subscriber, fires once at registration
