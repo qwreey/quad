@@ -294,7 +294,11 @@ InstData:SetWeak(inst, "gcconn", gcconn)
 #### (1) `bindLifetime` / `unbindLifetime` / `canBound` / `canExecute`
 
 ```lua
--- quad-roblox 실 구현 스케치
+-- quad-roblox 실 구현 스케치. [2026-08-28] 아래 `function bindLifetime(...)` 등은
+-- 읽기 편하게 평범한 함수로 적었지만, 실제로는 InitLifetimeHandle이 심어둔
+-- 모듈 인스턴스 필드(module.bindLifetime 등)에 최종 대입되는 본체다 — 위
+-- "탑레벨 평범한 함수로 확정" 절의 정정 참고. mock 백엔드(test/mock.luau의
+-- installLifetime)가 이 스케치를 그 모양으로 옮긴 실물이다.
 local InstData = Relate() -- inst  -> gchold/gcconn (위 (0)에서 채워짐)
 local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
 
@@ -772,7 +776,8 @@ store-plan.md`가 예전에 "state 옵저빙 결과로 slot을 조작할 때 생
 Destroy 시 모든 커넥션을 즉시 끊어주지만, 다른 엔진에서도 라이프사이클을
 확인할 수 있어야 하므로 base는 "이 바인드가 아직 유효한가"를 묻는 람다/인터페이스만
 정의하고, quad-roblox가 그 구현을 Roblox의 실제 `Connected`로 채워넣는다(구현
-주입 방식은 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절 참고). 이게
+주입 방식 — 모듈 인스턴스 필드를 백엔드 팩토리가 뮤테이션 — 은
+`base/module-lifecycle-plan.md`가 base 유틸 전반에 대해 일반화해둔 것과 같다). 이게
 필요한 이유: rbvm처럼 GC 트릭으로 라이프사이클을 연결하면 GC가 즉발이 아니라서
 중간에 죽은 참조가 남아있을 수 있고, 그 시점에 store에 새 값이 들어오면 죽은
 대상에 처리를 시도하다 터질 수 있음 — 그래서 처리 직전에 유효성을 확인.
