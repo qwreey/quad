@@ -11,7 +11,9 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 길게 잡음.
 
 **[2026-08-24 기준] M0(스파이크 검증)/M1(스캐폴딩) 완료, 다음은 M2(반응형
-코어 — Source/State/Store)**(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
+코어 — Source/State/Store)** — **⭐ [2026-08-28] M2 착수, 자율 구현 구간 진행
+중**(규약 `qa-request/pre-implementation-handtrace-round11-brief.md`, 발견
+`-round11.md`; 단위 넷 중 첫 단위 = 공통 기반 + `H-97` mock 생명주기)(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
 같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음). **⚠️ [2026-08-24] M2와
 M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 문제가 (a) 순서
 교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"

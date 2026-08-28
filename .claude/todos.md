@@ -5,7 +5,15 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐⭐ [2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**
+00. **⭐⭐⭐ [2026-08-28] M2 착수 — 자율 구현 구간 진행 중.** 규약은
+   `qa-request/pre-implementation-handtrace-round11-brief.md`(세 갈래 분류 /
+   단위 넷 / 관여 시점), 발견과 배치 문항은 `-round11.md`(§4 표가 사용자가
+   읽을 유일한 자리). **진행 상태의 소스는 `ROADMAP.md` M2 체크박스**, 여기서
+   세지 않는다. 첫 단위 = 공통 기반(`Brand`/`Relate` 대조/`LifetimeHandle`
+   인터페이스/`Ref` 최소형/`Void`) + `H-97` mock 생명주기 4종.
+   아래는 착수 전(2026-08-26) 서술:
+
+   **[2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**
    8라운드(`qa-request/pre-implementation-handtrace-round8.md`, 7라운드
    반영분을 서로 겹쳐 재트레이싱 + 실측, 3개 패스, 발견 17건
    `H-107`~`H-123`)의 결정 문항 Q1~Q10을 사용자와 대화형으로 처리해

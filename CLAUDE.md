@@ -2,7 +2,9 @@
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
 **[2026-08-24 기준] M0(스파이크 검증)/M1(스캐폴딩)까지 완료, 다음은
-M2(반응형 코어 — Source/State/Store)**. **⚠️ [2026-08-24] M2와 M3의
+M2(반응형 코어 — Source/State/Store)** — **⭐ [2026-08-28] M2 착수, 자율 구현
+구간 진행 중**(규약은 `.claude/qa-request/pre-implementation-handtrace-round11-brief.md`,
+발견·배치 문항은 `-round11.md`). **⚠️ [2026-08-24] M2와 M3의
 번호·순서가 맞바뀌었다** — 예전엔 M2=디스패치, M3=반응형이었는데 의존이
 한 방향(디스패치 → 반응형)이라 반응형을 먼저 짓기로 확정했다. 그래서
 **2026-08-24 이전에 쓰인 `session/`·`archive/`·`qa-request/` 문서의
