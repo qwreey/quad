@@ -14,13 +14,17 @@
 | `H-149` | Observer `Subscribe` 위임과 `level 2` | ✅ **확정 (a)** — `Subscribe`/`Unsubscribe`도 게이트·등록을 인라인, 위임 없음 |
 | `H-150` | `Effect._blocker` 죽은 부품 | ✅ **확정 (a)** — 제거, 억제는 Effect 핸들의 `canExecute` |
 | `H-151` | 게이트 우회 계약 | ✅ **확정 — (a) 문서화 + `Refresh` 캐치업 폐기**: Effect의 `_epochs`는 emit 수신 때만 갱신, 재바인드/재구독은 초기 설치와 같다 |
-| `H-158` | `state:Block(blocker)` 슈가 잔존 (이 대화에서 나옴) | ⏳ 권고: 폐기 → `state:Apply(blocker)` |
-| `H-159`~`H-161` | 반영 뒤 `/code-review high`가 낸 새 메커니즘 셋 (`-round10.md` §4 하단) | ⏳ 판단 대기 — 바인드 전 emit 캐치업 / `Destroying` 경로 cleanup `Rerun` / M5 루트 부착·다중 스크립트 `Claim` |
+| `H-158` | `state:Block(blocker)` 슈가 잔존 (이 대화에서 나옴) | ✅ **확정 폐기** → `state:Apply(blocker)`, 필드 `__apply` |
+| `H-159` | 바인드 전 emit 캐치업 | ✅ **확정 — 사용자 제안 `_rerunRequired`(Gate식 홀드)**, `_installed` 흡수, Observer 대칭, `fire`는 `Update → Rerun`만 |
+| `H-162` | `Void` no-op export (이 대화에서 나옴) | ✅ **확정** — quad-base export(잎 모듈 `Void.luau`), no-op 클로저 자리는 전부 `Void` |
+| `H-163`/`H-164` | `H-159` 반영분에 `/code-review high`가 낸 둘 | ⏳ 판단 대기 — Slot 내부 Observer × 홀드 발화 / 홀드 발화의 `emitFrom == nil` |
+| `H-160` | `Destroying` 경로 cleanup `Rerun` | ✅ **확정 (a) → `H-159`로 정정**: `rawRerun`이 `_cleanupRunning`이면 **버리지 않고 `_rerunRequired`로 홀드** + "error 나면 그 Effect는 죽는다" 계약 |
+| `H-161` | M5 루트 부착·다중 스크립트 `Claim` | ✅ **확정 (a)** `Claim`을 M5 스코프로; §5-7 다중 스크립트는 미결 |
 | `H-153` | Store 예약 이름 런타임 가드 | ✅ **확정 (a)** — 생성자·`Of(name)`에 예약 이름 검사(level 2), 그림자 = store 자신 (I) |
 | `H-154` | `InstanceChildHandler` dedup | ✅ **확정 (a)** — retractor 첫 줄 `if nextValue == v then return end` |
 | `H-152`/`H-155`~`H-157` | 갈래 없음 | ✅ 반영(`gate-plan.md` 조립 첫 줄 `StateBrand:register` / `ROADMAP.md` M6×3·M11 / `debounce-throttle-plan.md` 7절 `H-32` 문단 / `store-plan.md` 빈 Store 실측 완료) |
 
-## `H-147` — 전제 정정: `fn`/cleanup은 자기 구독을 바꿀 수 없다 (A) — `H-143` 소멸
+## `H-147` — 전제 정정: `fn`/cleanup은 자기 구독을 바꿀 수 없다 (A) — `H-143` 소멸 (`Rerun` 모양은 이후 `H-159`로 다시 바뀜 — 아래)
 
 문항은 "(a) UB / (b) `_everAlive` / (c) `wasAlive` 위치"였는데, 대화 중에 **문제의
 뿌리가 `H-143`의 허용 자체**라는 것이 드러났다.
@@ -93,10 +97,10 @@
 / `Claim` DFS(내려가며 해석 → 자식부터 `drive`)는 derive 위의 한 겹 / 부기 대상
 자식은 전부 매핑, 숏핸드(`UI*`)는 부기 밖 — quad가 직접 쓰거나 실제 객체로
 매핑하거나 / 이름 중복·부재는 UB + debug 모드 `seen` 검사 / `nativeFindChild`
-프로바이더 op, 순회는 quad-base / 다중 quad 한 트리 UB / M5 이후.
+프로바이더 op, 순회는 quad-base / 다중 quad 한 트리 UB / M5 스코프(`H-161`로 당김).
 **따름**: 전용 문구 **철회**(일반 매치 실패 그대로), `H-146` (a)의 "루트는 밖에서
 `.Parent =`" **폐기**(루트가 quad 소유). `H-142` 키 금지는 그대로.
-**미결 6개**는 그 research 문서 §5 — 다음 배치 문항.
+**미결**(개수는 그 research 문서 §5가 소스)은 다음 배치 문항.
 
 ## `H-149` — Observer `Subscribe`/`Unsubscribe`도 인라인 (a)
 
@@ -134,7 +138,7 @@
 체크박스의 "선행: `Blocker` 기본 메커니즘" 문구(Effect 자체는 이제 Blocker 불필요
 — `Blocker.luau` 선행 요구는 `GateNode`/Slot 쪽만).
 
-## `H-151` — 게이트는 유보만 한다; Effect는 emit 받을 때만 `_epochs`를 갱신 (`Refresh` 캐치업 폐기)
+## `H-151` — 게이트는 유보만 한다; Effect는 emit 받을 때만 `_epochs`를 갱신 (`Refresh` 캐치업 폐기 — "캐치업 없음"은 이후 `H-159`의 홀드로 대체, 아래)
 
 **사용자 확정**: *"해당 우회는 더 크게 보면, 처음부터 Effect 가 Rerun 되는
 경로라서 그건 맞아. 그리고 Observer 에서 받은 emit 의 epoch|{epoch:boolean} 를
@@ -216,7 +220,7 @@ then return end`(`SlotHandler` 동형). 같은 값 재발행에 `Parent = nil �
 `-round9-followup.md`/`-round9.md`의 `H-143`/`H-144`/`H-146` 소멸·정정 배너.
 
 **남은 미결**: `H-158`(`state:Block` 슈가 폐기 → `state:Apply(blocker)`, 권고만) —
-`question.md`에; `research/existing-mount-plan.md` §5 갈래 6개 — 다음 배치.
+`question.md`에; `research/existing-mount-plan.md` §5 갈래 — 다음 배치. (이후 `H-158`은 확정, 아래 절.)
 
 ## 감사 루프 (2026-08-28, 10라운드 반영분)
 
@@ -255,3 +259,109 @@ then return end`(`SlotHandler` 동형). 같은 값 재발행에 `Parent = nil �
 7. stale 문장 — `effect-plan.md`의 *게이트가 아니라 `Blocker`를 쓰는 이유* / 포탈
    근거를 *`H-64` 캐치업*으로 적은 것(재마운트는 `_installed` 참이라 캐치업이 아예
    없다) / `source-state-plan.md`의 *구현이 한 벌*(위임 아님으로 정정).
+
+## `H-158` — `state:Block(blocker)` 폐기 → `state:Apply(blocker)` (확정)
+
+**사용자 확정**: *"H158은 폐기로 하자. 내가 이미 그렇게 정했었는데, 전파가 안 된
+부분이라서. 이제 Compute 와 유사하게 Gate 만 놓일 뿐, Apply 로 Blocker 처리가 가능함.
+왜냐면 펑터와 적용성펑터를 전부 허용하니까 ( map|{...map} ) 키는 __apply 로 하기로
+했던거로 기억중임."* — `source-state-plan.md`의 "`state:Apply(factory)`" 절은
+애플리커티브 팩토리를 "지정된 필드"로 받되 이름은 "구현 시"로 열어뒀었다 → 이
+발언으로 **`__apply`**. `Blocker.__apply = function(state) return state:Gate(function(emit)
+return self:Policy(emit) end) end`. 반영: `blocker-plan.md` 배너·API·이름 절,
+`gate-plan.md`·`dispatch-core-plan.md`·`debounce-throttle-plan.md`·`ROADMAP.md`·
+`README.md`의 `state:Block` 전부 치환, `qa-round2.md`의 절 인용.
+
+## `H-160` — `rawRerun`은 `_cleanupRunning`이면 버린다 (a) + error 계약 상향 (→ `H-159`로 "홀드"로 정정. 문별 동작: `Rerun`/`fire` 경로는 조용히 홀드, 네 진입점·`_bindDestroying`은 error)
+
+**사용자 확정**: *"H-160 는 a 동의. 그런데 이로 인해 cleanup 이 error 를 내면
+cleanupRunning 플래그가 풀리지 않는 문제가 날듯. 모든 재 진입이 막히는건데, 문제 될
+것은 없어보이나 문서화가 필요한것 같아. 한번 죽는게 나오면 Effect 가 전부 죽는다가
+계약으로 상향되어도 문제는 없는듯. 이미 _running 도 그러한 제약을 받으니까."* —
+`effect-plan.md` "error 시 UB" bullet을 **"그 Effect는 죽는다"** 계약으로.
+
+## `H-161` — `Claim`을 M5 스코프로 (a); §5-7은 미결
+
+**사용자 확정**: *"H-161 는 확인. M5 스코프로 올라가도 될것으로 보임."* — `ROADMAP.md`
+M5 체크박스·`research/existing-mount-plan.md` 헤더·§5-6. 다중 스크립트/루트 컨테이너
+(§5-7)는 답이 없어 미결 유지.
+
+## `H-159` — `_rerunRequired` 홀드 플래그 (사용자 제안, 확정) — `_installed` 흡수, `H-160` 정정
+
+`/code-review`의 권고 (a)("묶이는 시점 1회 `Refresh` 복원")를 올렸더니 사용자가
+다른 모양을 냈다: *"observrer 는 생성과 동시에 바운딩 처리가 되는게 일반적임. 그리고
+이건 또한 observer 에도 유사한 문제가 있는 부분으로 보임 - 바운딩 전에 바뀌다가,
+바운딩 되면 그대로 다 씹힘. 따라서 Gate 와 유사하게 _rerunRequired 정도가 필요한듯.
+언바운딩 상태에서 이것을 true 로 만들지 관리. canExecute 가 거짓이면 모두 홀드하는게
+맞아보임. 각 둘의 정의는 '초기에 한번은 불러주고, 각 변경에 불러주겠다' 인데(바인드
+빼고 보면) 바인드가 들어오면서 각 변경에 아에 스킵하는 경우가 생겨났다는 의미."*
+
+**메인 세션 판단**: `Refresh` 복원보다 낫다 — 갱신 경로는 `fire`의 `Update` 하나로
+유지(`H-151` 계약 그대로)하고, 실행 불가일 때 *버리는 대신 홀드*한다. Gate의 유보와
+같은 그림이되 Effect는 "한 번 다시 돌면 된다"라 불리언 하나.
+
+**대화로 다듬어진 것 넷**:
+1. **`_cleanupRunning` 중의 변경도 홀드** — 처음 메인 세션이 "cleanup 중 `dep:Set()`은
+   `_epochs`에 반영되니 버려도 된다"고 했는데 사용자가 정정: *"변경을 '아에 보고
+   안함' 이라는 경로가 생김. State<Effect> 형태로 포탈을 만들었다고 가정하면, cleanup
+   도중에도 여전히 _rerunRequired 는 셋업되어야함. 안 그러면 다음 바운딩에 최신값
+   측정이라는 목표를 잃거든."* → `H-160`의 "버림"도 홀드로 정정. 세 상황이 갈린다:
+   `fn` 실행 중 → `_pending`(같은 루프) / 실행 불가(안 묶임·죽음·cleanup 중) →
+   `_rerunRequired`(다음 바인드) / 그 외 → 즉시. `_pending`과 `_rerunRequired`의 분리는
+   사용자 *"완전 동의"*.
+2. **`fire`는 `Update → Rerun`만** — 사용자: *"self._cleanupRunning 확인이 아래에
+   있다면 … fire 는 그냥 rerun 을 호출해도 될것"*. 상태 판정은 `rawRerun` 한 곳.
+3. **`_installed` 폐기 → `_rerunRequired`로 통합** — 사용자: *"rerun 의 force 가
+   self._rerunRequired = true 하는것과 같은 동작을 낼것으로 보임. … '초기실행' 과
+   '실행 안하던 중에 바뀐것' 이 사실 같은 요소"*. `_installed`는 그 플래그의
+   부정형이었다. 세워지는 곳: 생성자·`_consumeCleanup`·`rawRerun` 홀드 / 내려가는 곳:
+   `rawRerun`이 `fn`을 실제로 돌리는 자리 하나. **`force`는 시점 예외 하나만** —
+   사용자: *"force 는 딱 하나의 역할을 해. canExecute 를 무시하고도 호출할 수 있냐.
+   오직 그게 전부야."* 초기 실행을 바인드로 미룰 수 없다는 결정(순차 처리)은 유지.
+4. **`fire`의 `from == nil` 가드는 유지** — 사용자가 *"ref<...> 가 Frame->nil 가는
+   경로를 막을 이유가 없지 않나?"*라 물었는데 그건 오해: `from`은 값이 아니라 출처
+   `Epoch`라 `Ref` 경로에선 항상 `ref` 객체이고, `nil`은 내부 Observer의 설치 발화
+   (`emitFrom == nil`)뿐 — `Update(nil)`이 정의돼 있지 않아 걸러야 한다(2026-08-21
+   `/code-review`가 잡았던 자리). 주석에 그 구분을 명시.
+
+**Observer 대칭**: 전파 루프가 `canExecute(observer)` 거짓이면 `_rerunRequired`를 세우고,
+`bindLifetime`·`Subscribe`·`WeakSubscribe`가 그 플래그를 보면 1회 발화(`emitFrom = nil`,
+설치 발화와 같은 모양). 실효 범위는 "구독자 집합엔 있지만 아직 안 묶인" 창.
+**[반영 뒤 감사 3라운드]** Observer의 "등록 시점 즉시 1회 실행"(2026-08-07 확정)은
+생성자가 무조건 하는 것이라 이 플래그와 **별개** — Observer의 `_rerunRequired`는
+거짓으로 시작한다(Effect는 생성자가 참으로 세우고 `force`로 즉시 돌리는 것과 대비).
+감사자가 "초기화가 없어 한 번도 안 돈다"로 읽을 수 있음을 짚어 두 문서에 명시.
+
+**반영**: `effect-plan.md`(`fire`·생성자·`rawRerun`·`_consumeCleanup`·`_bindDestroying`·
+`resubscribeTail`·필드 목록·캐비엇·포탈 근거·`H-65` 문단), `lifecycle-pattern.md`
+(bindLifetime Observer 분기·Observer `Subscribe`/`WeakSubscribe` 꼬리·주석),
+`source-state-plan.md` 전파 루프, `ROADMAP.md` M2 넷·M6, `README.md`.
+
+## `H-162` — `Void` no-op export (확정)
+
+사용자: *"지금 상황에서 의도적으로 클린업이 없는 Void 함수를 많이 만들게 될 것으로
+보이는데, 이걸 quad-base 에서 Void = function()end 를 제공하는게 편해보임."* —
+quad-base가 단일 no-op 함수 `Void`를 export(quad-roblox 핸들러도 쓰므로 공개),
+no-op 클로저를 돌려주는 자리(숏핸드 retractor 등)는 새 클로저 대신 `Void`. 사용자
+Effect `fn`이 `return Void`로 "cleanup 없음"을 명시하는 것도 자연히 허용(반환 안 하는
+것과 동일 취급). 반영: `dispatch-core-plan.md` 반환값 규칙, `ui-shorthand-plan.md` 둘,
+`ROADMAP.md` M2 공통 기반.
+
+## 감사 루프 (2026-08-28, `H-158`~`H-162` 반영분)
+
+새 발견 7→6→1→**0**(4라운드에서 수렴). 1 문구 잔존(`Block` 현재형 / `__apply` 전파 /
+`Void` 9곳 / "`fire`의 첫 줄 `canExecute`" stale 4곳 / `architecture.md` `Void` 자리 /
+session 후속 절) · 2 의미론(**`_rerunRequired` 상태 기계 자체는 모순 없음**; debounce
+`__apply` / `Void` 5곳 더 / session-summary 후속 / `init.luau` 모호 / gate 계약 절
+포인터 / Observer 필드 목록 신설) · 3 수정분 재검토(Observer 생성자 1회 실행이
+플래그와 별개임을 명시 — 감사자의 오독 가능성) · 4 수렴 **0건**.
+
+## `/code-review high` (2026-08-28, `H-158`~`H-162` 반영분 + 감사 4라운드 뒤)
+
+10건. **여덟 반영**, **둘 문항**(`H-163`/`H-164`, `-round10.md` §4).
+반영: `__apply` 호출 규약(메소드형 `factory:__apply(state)`, 에이전트 배선) /
+`Void`는 잎 모듈 `Void.luau`(최상위 `init.luau`에 두면 순환 require) / Observer 생성자
+순서 `fn` 1회 → `_subs` 삽입 / `gate-plan.md` 계약 절 괄호 정정 / `effect-plan.md`
+stale 셋(`Blocker` 억제·"`fire` 첫 줄"·"죽은 핸들은 no-op") / `ROADMAP.md` M2 `Rerun`
+no-op → 홀드 / `lifecycle-pattern.md`의 *조용히 건너뜀* → 홀드 / "M5 이후" 잔존 셋 /
+followup 절 제목 포인터·개수.

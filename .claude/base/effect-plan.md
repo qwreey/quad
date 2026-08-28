@@ -153,9 +153,9 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
      `H-114`]** 위 배너대로 `H-58`이 뒤집었다. 포탈이 성립하는 실제 근거는
      **dep 등록이 생성자에 고정돼 언바인드가 아무것도 안 뗀다**는 것 — 재마운트는
      `Destroying` 연결만 다시 건다(`_bindDestroying`). 포탈 사이에 놓친 emit의
-     캐치업은 없다(**[2026-08-28 `H-151`]** 옛 `_epochs:Refresh()` 폐기 — `_installed`가
-     참인 채 재마운트되므로 `not _installed → Rerun`도 안 걸린다; 다음 emit이
-     리비전 차이로 잡는다).
+     캐치업은 **홀드 플래그로**(**[2026-08-28 `H-151`/`H-159`]** 옛 `_epochs:Refresh()`
+     폐기 — 대신 언마운트~재마운트 사이에 온 emit은 `rawRerun`이 `_rerunRequired`로
+     잡아 두고 재마운트의 `_bindDestroying`이 1회 돌린다).
 3. **cleanup은 `handle._cleanup` 필드에 보관한다.** `Rerun`이 이미 직전
    cleanup을 필요로 하므로 필드 쪽이 자연스럽고, `Destroying` 클로저와
    `Rerun`이 같은 자리를 읽게 된다.
@@ -220,7 +220,8 @@ function Effect(fn, ...)
         if not seen[d] then seen[d] = true end   -- 중복 dep은 조용히 무시(error 아님)
     end
 
-    -- (1) dep 등록 — **여기서 한 번만**. 즉시-1회 호출은 Blocker로 억제한다.
+    -- (1) dep 등록 — **여기서 한 번만**. 즉시-1회 호출(설치 발화)은 `fire`의 `from == nil`
+    --     가드가 거른다(**[2026-08-28]** 옛 `Blocker`/`canExecute` 억제 서술은 폐기).
     --     ⭐⭐ [2026-08-26 재확정, 8라운드 `H-107`] dep 종류마다 **클로저를
     --     따로** 단다. 여기 한때 "클로저는 하나로 통일한다"고 적혀 있었으나,
     --     그 통일을 시도할 근거 자체가 없었다 — **사용자 확정**:
@@ -235,18 +236,21 @@ function Effect(fn, ...)
     --     "공통 상류를 공유해도 한 파동에 fn은 한 번만"이 그대로 성립한다
     --     (그게 아니었으면 `A → b`, `A → c`, `Effect(fn, b, c)`에서
     --     `A:Set()` 한 번에 `fn`이 두 번 돈다 — 2026-08-21에 닫은 그 버그).
-    -- ⭐ [2026-08-28 확정, 10라운드 `H-150`] 등록 즉시 1회 발화(내부 Observer·`Ref`
-    --   콜백의 설치 발화는 **그대로 일어난다**)는 아래 `fire`의 첫 줄 — **Effect
-    --   핸들의** `canExecute` — 이 흡수한다: 생성자 안에선 아직 어디에도 안 묶여
-    --   있어 항상 거짓이다. 한때 여기 사적 `Blocker`(`_blocker:On()` … `OffWithoutEmit()`)
-    --   가 같은 억제를 한 번 더 하려고 있었는데, 실측(10라운드 `t18`)상 어떤 경로에서도
-    --   판정에 닿지 않는 죽은 부품이라 **제거**(사용자 확정: *"Effect 의 canExecute 를
-    --   보겠다는거지? 그럼 그건 맞는것 같아"*). `H-147`로 `fn`이 생성자 안에서 자기를
-    --   묶을 수도 없으므로 "생성자 구간 = 안 묶임 = `canExecute` 거짓"은 불변식이다.
+    -- ⭐ [2026-08-28 확정, 10라운드 `H-150`] 사적 `Blocker`(`_blocker:On()` …
+    --   `OffWithoutEmit()`)는 **제거** — 실측(10라운드 `t18`)상 어떤 경로에서도 판정에
+    --   닿지 않는 죽은 부품이었다(사용자 확정: *"Effect 의 canExecute 를 보겠다는거지?
+    --   그럼 그건 맞는것 같아"*). 설치 발화의 억제는 아래 `from == nil` 가드가, 실행
+    --   가능 여부는 `rawRerun`이 한 곳에서 본다(**[같은 날 `H-159`]** `fire` 자신은
+    --   상태를 판정하지 않는다 — 사용자: *"fire 는 그냥 rerun 을 호출해도 될것"*).
     local function fire(from)                          -- 공통 본문
-        if not canExecute(self) then return end        -- 발화 게이트 — `Update`보다 먼저(아래 ⚠️)
-        if self._epochs:Update(from) then              -- ⭐ [`H-151`] `_epochs`가 갱신되는 **유일한** 자리
-            self:Rerun()
+        if from == nil then return end                 -- 내부 Observer의 **설치 발화**(등록 즉시 1회,
+                                                       --   `emitFrom == nil` — `source-state-plan.md`)는
+                                                       --   출처가 없어 `Update(nil)`을 못 한다. ⚠️ `Ref`
+                                                       --   값이 `nil`인 것과 무관 — `Ref` 경로의 `from`은
+                                                       --   항상 그 `ref` 객체다(`onRefFire`).
+        if self._epochs:Update(from) then              -- ⭐ [`H-151`] `_epochs`가 갱신되는 **유일한** 자리 —
+            self:Rerun()                               --   묶여 있든 아니든 항상. 실행 불가면 `rawRerun`이
+                                                       --   `_rerunRequired`로 홀드한다(`H-159`).
         end
     end
     local function onRefFire(_, ref) fire(ref) end            -- Ref: 2번째가 출처
@@ -275,9 +279,12 @@ function Effect(fn, ...)
     end
 
     -- (2) 설치 — 생성 즉시 1회. **바인드로 미룰 수 없다**(아래 캐비엇).
-    --     ⭐ [2026-08-28 `H-147`] 공개 `Rerun()`이 아니라 본체를 `force`로 부른다 —
-    --     초기 설치는 "re"-run이 아니고, 아직 안 묶여 있어 공개 진입의
-    --     `canExecute` 게이트를 통과하지 못한다.
+    --     ⭐ [2026-08-28 `H-147`/`H-159`] "한 번도 안 돌았다"는 `_rerunRequired`로
+    --     표시하고(초기 실행과 "실행 못 하던 중의 변경"은 같은 요구 — 사용자),
+    --     본체를 `force`로 부른다. `force`의 뜻은 **하나** — *"canExecute 를 무시하고도
+    --     호출할 수 있냐. 오직 그게 전부야."*(사용자). 초기 실행을 바인드로 미룰 수
+    --     없다는 결정(순차 처리) 때문에 이 시점 예외 하나가 남는다.
+    self._rerunRequired = true
     rawRerun(self, true)
     return self
 end
@@ -285,8 +292,8 @@ end
 
 - **`_installing` 플래그도, 그 뒤를 이은 사적 `_blocker`도 폐기됐다** —
   `_installing`은 생성자 구간만 덮어 바인드 구간을 놓쳤고(7라운드 `H-58`),
-  `_blocker`는 그 자리에 들어왔지만 **[2026-08-28 10라운드 `H-150`]** `fire`의
-  첫 줄 `canExecute`가 이미 같은 억제를 하고 있어 한 번도 판정에 닿지 않았다
+  `_blocker`는 그 자리에 들어왔지만 **[2026-08-28 10라운드 `H-150`]** `canExecute`(당시
+  `fire` 첫 줄, `H-159` 뒤엔 `rawRerun` 진입)가 이미 같은 억제를 하고 있어 한 번도 판정에 닿지 않았다
   (실측 `t18`: `drop:canExecute` 3 / `drop:blocker` 0). `H-58`의 사용자 지시
   (*"해당 맥락의 도구인 Blocker 가 존재함 … 모든 옵저버와 callback 등록에 있어서
   이를 수행해야할 것임."*)는 그 전제("등록 즉시 1회가 `Rerun`에 닿는다")가
@@ -313,17 +320,17 @@ function EffectHandle:_bindDestroying(inst)
         self:_consumeCleanup()
     end)
 
-    -- (2) 캐치업 — **재설치 1회뿐**. dep 등록은 이미 생성자에서 끝났다.
-    --     ⭐ [2026-08-28 확정, 10라운드 `H-151`] 여기 한때 `_epochs:Refresh()`로
-    --     "dep이 변했으면 재실행"까지 했는데 **폐기** — `_epochs`는 `fire`의
-    --     `Update(from)`에서만, 즉 **emit을 받을 때만** 갱신한다(Observer·중간
-    --     State와 같다). 재바인드는 초기 설치와 같은 뜻이라 소진돼 있으면 다시
-    --     설치할 뿐이고, 죽어 있는 동안 떨어뜨린 emit은 다음 emit의 리비전 차이로
-    --     잡힌다(Observer와 같은 정도의 캐치업 없음 — 계약). 사용자: *"우린 애초에
-    --     Refersh 를 할 필요가 없는거야. 재진입은 초기 설정해주는 요소이고, 그건
-    --     처음 생성할때랑 같은거야."* gcconn 연결 **뒤**라 공개 `Rerun`의 게이트를
-    --     통과한다.
-    if not self._installed then
+    -- (2) 캐치업 — **`_rerunRequired`가 서 있으면 1회**. dep 등록은 이미 생성자에서
+    --     끝났다. ⭐ [2026-08-28 `H-151`→`H-159`] `_epochs:Refresh()`는 폐기(`_epochs`는
+    --     `fire`의 `Update(from)`에서만 갱신 — 사용자: *"우린 애초에 Refersh 를 할
+    --     필요가 없는거야"*), 대신 **실행 불가 상태(안 묶임·죽음·cleanup 중)에 온
+    --     변경은 `rawRerun`이 `_rerunRequired`로 홀드**해 두고 여기서 한 번 돌린다
+    --     (Gate의 유보와 같은 그림 — Effect는 "한 번 다시 돌면 된다"라 불리언 하나).
+    --     소진된 뒤의 재바인드도 같은 플래그(`_consumeCleanup`이 세운다). 사용자:
+    --     *"'초기실행' 과 '실행 안하던 중에 바뀐것' 이 사실 같은 요소"* — 옛
+    --     `_installed`는 이 플래그의 부정형이라 통합했다. gcconn 연결 **뒤**라 공개
+    --     `Rerun`의 게이트를 통과한다.
+    if self._rerunRequired then
         self:Rerun()
     end
 end
@@ -350,7 +357,7 @@ end
 function EffectHandle:_consumeCleanup()
     local c = self._cleanup
     self._cleanup = nil
-    self._installed = false        -- ⭐ 아래 캐비엇 참고 — cleanup 유무로는 판정 못 한다
+    self._rerunRequired = true     -- ⭐ 소진됐다 = 다음 기회에 다시 설치해야 한다(아래 캐비엇)
     if c then
         -- ⭐ [2026-08-28 확정, 10라운드 감사 2라운드] cleanup은 **세 자리**에서 돈다 —
         --   `rawRerun` 루프 머리 / `Unsubscribe()` / leaf `Destroying` 콜백. 뒤의 둘은
@@ -366,16 +373,17 @@ function EffectHandle:_consumeCleanup()
 end
 ```
 
-**⚠️ [2026-08-25 `/code-review high` 정정] "설치돼 있는가"를 `_cleanup`의
-유무로 판정하면 안 된다 — 별도 `_installed` 플래그가 필요하다.** 여기 한때
-`if self._cleanup == nil or ...`라고 적어뒀는데, **`fn`의 cleanup 반환은
+**⚠️ [2026-08-25 `/code-review high` 정정; 2026-08-28 `H-159`로 플래그 통합] "설치돼
+있는가"를 `_cleanup`의 유무로 판정하면 안 된다 — 별도 플래그가 필요하다.** 여기
+한때 `if self._cleanup == nil or ...`라고 적어뒀는데, **`fn`의 cleanup 반환은
 선택**이라(`Effect(function() print("x") end, s)`처럼 아무것도 안 돌려주는
 게 흔한 정상 용례) `_cleanup`이 **항상 `nil`**인 Effect가 존재한다. 그러면
 바인드/포탈 재마운트마다 조건이 참이 되어 `fn`이 다시 돌고 — 이 재설계가
-없애려던 `H-58`(바인드마다 `Rerun`)이 **그대로 되살아난다.**
-`_installed`는 `rawRerun`이 `fn`을 돌리고 끝날 때 참, `_consumeCleanup`에서
-거짓이 된다(**[2026-08-28 `H-147`]** `fn` 실행 중에 핸들이 죽는 경로는 더 이상
-없다 — 아래 `Rerun` 정의).
+없애려던 `H-58`(바인드마다 `Rerun`)이 **그대로 되살아난다.** 그 플래그는
+2026-08-25~28엔 `_installed`(설치됨)였고, **[2026-08-28 `H-159`]** 지금은
+**`_rerunRequired`**("`fn`이 돌아야 하는데 아직 안 돌았다") 하나다 — 세워지는 곳은
+생성자·`_consumeCleanup`·`rawRerun`의 홀드 셋, 내려가는 곳은 `rawRerun`이 `fn`을
+실제로 돌리는 자리 하나. `_installed`는 이 플래그의 부정형이라 통합했다.
 
 **⭐ [2026-08-25 신설, 7라운드 `H-60`; 2026-08-28 10라운드 `H-147`로 재정의]
 `rawRerun(self, force)` 본체 + 공개 `EffectHandle:Rerun()`.**
@@ -396,18 +404,22 @@ local function rawRerun(self, force: boolean)
         self._pending = true           -- 실행 중 재진입 → 지연
         return
     end
-    if not force and not canExecute(self) then
-        return                         -- ⭐ 죽은 핸들·안 묶인 핸들의 재실행 요청은 **정의된
-    end                                --   no-op** — `fire`가 죽은 핸들의 emit을 버리는 것과
-                                       --   같은 규칙(`H-147`: `Unsubscribe` 뒤 늦게 오는
-                                       --   타이머의 `Rerun()`, 해제 뒤 cleanup의 재요청 등).
+    if self._cleanupRunning or (not force and not canExecute(self)) then
+        self._rerunRequired = true     -- ⭐ [2026-08-28 `H-159`/`H-160`] 실행 불가 상태(cleanup 중 /
+        return                         --   안 묶임 / 죽음)에 온 요청은 **버리지 않고 홀드** — 다음에
+    end                                --   묶이는 순간 1회 돈다. 버리면 "변경을 아예 보고 안 함" 경로가
+                                       --   생긴다(사용자: `State<Effect>` 포탈의 언마운트 cleanup 도중
+                                       --   dep이 바뀌면 재마운트가 최신값을 못 본다). leaf `Destroying`
+                                       --   cleanup 안의 `self:Rerun()`/`dep:Set()`도 여기 — gcconn이 아직
+                                       --   연결돼 `canExecute`만으론 못 막는다(`H-160`). `Unsubscribe` 뒤
+                                       --   늦게 오는 타이머의 `Rerun()`도 홀드(재구독하면 돈다).
     self._running = true
     repeat
         self._pending = false
-        self:_consumeCleanup()
+        self:_consumeCleanup()         -- 안에서 `_rerunRequired = true`
+        self._rerunRequired = false    -- ⭐ 실제로 돈다 — 이 플래그가 내려가는 **유일한** 자리
         self._cleanup = self.fn(self)
-        self._installed = true         -- cleanup 반환 여부와 무관하게 "설치됨"
-    until not self._pending            -- 재요청이 또 오면 또 돈다
+    until not self._pending            -- 재요청이 또 오면 또 돈다(`_pending` = 실행 **중**에 온 요청)
     self._running = false
 end
 
@@ -437,18 +449,21 @@ end
   뭔가 수행되어 rerun 해야할 상황이 발생하면, 지연해 두었다 나중에 재실행
   하는건 어떤지(실행이 끝나고 나서). 실제로 Effect 안에서 state 등을 바꾸는
   상황은 react 등지에서 흔함."*
-- **`canExecute` 확인은 진입에서 한 번** — `fire`(`Ref` 콜백·전파 루프 경유)가
-  첫 줄에서 보고, 공개 `Rerun()`도 **[2026-08-28 `H-147`]** 진입에서 본다(죽은·안
-  묶인 핸들은 no-op). 그래서 `rawRerun` 루프 안엔 판정이 없다. (한때 "사용자가
-  `fn` 안에서 직접 부르는 경로는 게이트하지 않는다"였는데, 그 문장은 `Rerun`에
-  게이트가 없던 시절 것.)
-- **error 시 UB** — 전파되고 복구하지 않는다(`_running`/`_cleanupRunning`이 참으로
-  남는 것 포함). *"에러가 난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의
+- **`canExecute` 확인은 `rawRerun` 진입에서 한 번** — **[2026-08-28 `H-159`]** `fire`는
+  판정하지 않고 `Update → Rerun`만 하며, 실행 불가(안 묶임·죽음·cleanup 중)면
+  `rawRerun`이 `_rerunRequired`로 **홀드**한다(no-op이 아니다 — 다음 바인드에서 1회).
+  그래서 루프 안엔 판정이 없다. (한때 "`fire` 첫 줄에서 보고 죽은 핸들은 no-op"
+  이었는데 그 문장은 `H-159` 이전 것.)
+- **error 시 UB — 그 Effect는 죽는다.** 전파되고 복구하지 않는다: `fn`이 error하면
+  `_running`이, cleanup이 error하면 `_cleanupRunning`이 참으로 남아 **이후 모든
+  재진입(`Rerun`·네 진입점·재바인드)이 막힌다**. **[2026-08-28 `H-160` 사용자 확정]**
+  *"한번 죽는게 나오면 Effect 가 전부 죽는다가 계약으로 상향되어도 문제는 없는듯.
+  이미 _running 도 그러한 제약을 받으니까."* — 계약으로 명문화. *"에러가 난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의
   일반 동작"*(사용자). 수렴 책임은 사용자 `fn`에 있고 무한 루프도 UB다.
 
 **⭐ [2026-08-25 신설, 7라운드 `H-65`] 재바인드는 재설치, 재사용은 팩토리
 패턴.** 파괴로 cleanup이 소진된 `Effect`를 다시 바인드하면 위 (2)의
-`not self._installed`가 참이라 **재설치**된다. 죽음을 표시하는 별도 부기는
+`_rerunRequired`가 참이라(**[2026-08-28 `H-159`]** 옛 `not _installed`) **재설치**된다. 죽음을 표시하는 별도 부기는
 만들지 않는다 — **사용자 지적**: *"파괴 클린업은 결국 inst.Destroying 에
 이벤트 바인딩인데 이 바인딩도 파괴 이후 자동 삭제된다 … gchold 나 gcconn 도
 알아서 잘 풀린 상태라, 그냥 가만히 두면 삭제 이후 다시 사용에 있어 다시
@@ -484,9 +499,11 @@ end
   `base/architecture.md`의 `EngineOps.luau` 줄이다.
 - **필드 목록**: `_destroyConn`(연결 핸들), **`_deps`**(`Ref|State` → 내가 건
   `fn|Observer`, **강참조**), `_epochs`(`EpochMap` — `Ref`도 `Epoch`라 균일),
-  `_cleanup`, **`_installed`**(설치 여부 —
-  cleanup 반환이 선택이라 `_cleanup`으로는 판정 못 한다),
-  `_running`/`_pending`(재진입), **`_cleanupRunning`**(cleanup 실행 중 — `_running`과
+  `_cleanup`, **`_rerunRequired`**(`fn`이 돌아야 하는데 아직 안 돌았다 — 생성 직후 /
+  소진 뒤 / 실행 불가 상태에 온 변경. cleanup 반환이 선택이라 `_cleanup`으로는 판정
+  못 한다; **[2026-08-28 `H-159`]** 옛 `_installed`의 부정형을 흡수),
+  `_running`/`_pending`(재진입 — `_pending`은 실행 **중**에 온 요청, `_rerunRequired`는
+  실행 **불가 상태**에 온 요청), **`_cleanupRunning`**(cleanup 실행 중 — `_running`과
   별개, 네 진입점 가드가 둘 다 본다, **[2026-08-28]**), **`.Subscribed`**(공개 플래그 — `canExecute`가
   읽는 그것, 네 진입점이 세우고 내린다, 아래 "`EffectHandle:Subscribe()`" 절).
   **옛 `_refDeps`/`_refCallbacks`/`_observers`/`_installing`은 `_deps` 하나로
@@ -589,7 +606,7 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 쓴 것이고, **순서는 이 블록이 정본**이다.
 산문의 번호 순서(플래그 → cleanup → fail-fast)대로 짜면 leaf 바인딩된 핸들에
 `:Unsubscribe()`를 불렀을 때 **cleanup을 소진한 뒤에야 error**가 나서 `E-11`이
-막으려던 피해(cleanup 앞당김, `_installed = false`)가 이미 일어난 뒤다 —
+막으려던 피해(cleanup 앞당김, `_rerunRequired = true`)가 이미 일어난 뒤다 —
 Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 
 ```lua
@@ -624,8 +641,8 @@ Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 -- 있어. 그 경우도 그냥 재실행 해주지."*). Blocker는 안 쓴다 — dep을 다시
 -- 등록하지 않으므로(생성자에서 한 번, `_deps` 강참조 유지) 억제할 발화가 없다.
 local function resubscribeTail(self)
-    if not self._installed then        -- 등록 뒤라 공개 `Rerun`의 게이트를 통과한다
-        self:Rerun()
+    if self._rerunRequired then        -- 소진됐거나 죽어 있는 동안 변경이 홀드됐으면 1회(`H-159`).
+        self:Rerun()                   --   등록 뒤라 공개 `Rerun`의 게이트를 통과한다
     end
 end
 
@@ -685,7 +702,7 @@ function EffectHandle:Unsubscribe()
     Subscribed[self] = nil                     --   안 댄다(`E-11`).
     WeakSubscribed[self] = nil
     self.Subscribed = false                    -- 향후 재실행 차단
-    self:_consumeCleanup()                     -- 통과했을 때만: 직전 cleanup 정확히 1회, `_installed = false`
+    self:_consumeCleanup()                     -- 통과했을 때만: 직전 cleanup 정확히 1회, `_rerunRequired = true`
     return self
 end
 ```
@@ -720,11 +737,10 @@ end
   - **`:Subscribe()`가 등록하는 것은 그것 하나뿐이다** — 내부 Observer와 `Ref`
     콜백은 **생성자에서 이미 `Weak*`로 걸려 있다**(위 "확정 구조" 절).
     `Subscribed = true`가 서는 순간 `canExecute(handle)`이 참이 되어 그
-    경로들이 살아난다. **[2026-08-27 `H-144`]** 등록 뒤 꼬리로 `not _installed →
-    Rerun`이 붙는다(위 의사코드) — 첫 구독은 설치돼 있으니 no-op, **소진된 뒤의
-    재구독**만 재설치. **[2026-08-28 `H-151`]** 생성과 `Subscribe()` 사이에 온
-    emit은 `fire`가 버렸고 여기서 따라잡지 않는다 — 다음 emit의 리비전 차이로
-    잡힌다(Observer와 같은 정도의 캐치업 없음).
+    경로들이 살아난다. **[2026-08-27 `H-144`]** 등록 뒤 꼬리로 `_rerunRequired →
+    Rerun`이 붙는다(위 의사코드) — 소진된 뒤의 재구독은 재설치, **[2026-08-28
+    `H-159`]** 생성과 `Subscribe()` 사이에 온 변경도 `rawRerun`이 홀드해 뒀다가
+    여기서 1회 따라잡는다(첫 구독이라도 그 사이 변경이 없었으면 no-op).
   - **⚠️ 용도는 완전히 top-level(모듈/스크립트 레벨, 어떤 Instance
     생명주기에도 안 묶인) 사이드 이펙트로 한정할 것 — 특정 `inst`에
     묶인 경우엔 leaf 부착(`bindLifetime`)을 쓰지 `:Subscribe()`를 쓰지
@@ -900,7 +916,7 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   핸들의 `canExecute`가 한다.** 여기 한때 *"[2026-08-21 확정] 이건 `Effect` 내부
   플래그로 한다"*고 적혀 있었고 그 플래그는 생성자 구간만 덮어 바인드 구간을
   놓쳤다(`H-58`). 그 자리에 `self._blocker:On()` … `:OffWithoutEmit()`이 들어왔는데,
-  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 `fire`의 첫 줄 `canExecute`가
+  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 `canExecute`(**[`H-159`]** 지금은 `fire`가 아니라 `rawRerun` 진입에서 본다)가
   설치 발화를 전부 떨어뜨리므로 `_blocker`는 **한 번도 판정에 닿지 않았다**
   (실측 `t18`). 위 생성자 의사코드가 소스다. **`_installing`도 `_blocker`도 폐기된
   필드다.**
@@ -943,8 +959,8 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     설치 발화가 맵을 건드려 **그 파동의 첫 진짜 emit이 접힐** 수 있다
     (2026-08-21 커밋 전 `/code-review high` 발견). **[2026-08-25]** 플래그가
     `_blocker:IsOn()`으로 바뀌었을 뿐 순서 제약은 그대로였고, **[2026-08-28
-    `H-150`]** 그 억제 주체가 `canExecute`가 된 지금도 같다 — `canExecute`가
-    `fire`의 첫 줄, `Update`는 그 뒤.
+    `H-150`→`H-159`]** 지금은 `fire`가 `Update`를 **먼저** 하므로 설치 발화는
+    명시적 `from == nil` 가드가 `Update` 앞에서 거른다(같은 제약, 자리만 바뀜).
   - **⭐ [2026-08-25 정정, 7라운드 `H-58`] `Ref` 의존성도 이 맵에 낀다** —
     여기 한때 *"`Ref`는 `Epoch`가 아니고 `:Callback`으로 발화하므로 `from`이
     없다"*고 적혀 있었는데, **`Ref`가 `Epoch`로 승격**되며(`base/ref-plan.md`)

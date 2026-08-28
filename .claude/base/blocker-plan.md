@@ -16,7 +16,20 @@
 문제를 콜스택/코루틴이 아니라 사용자가 들고 있는 "값"으로 표현**해서 이
 위험을 구조적으로 우회한다.
 
-**store 개발(M2)과 밀접하게 연관됨** — `state:Block(blocker)`가 State
+**⭐ [2026-08-28 확정, 10라운드 `H-158`] `state:Block(blocker)` 동사는 폐기 — 배선은
+`state:Apply(blocker)`다.** 사용자: *"이제 Compute 와 유사하게 Gate 만 놓일 뿐, Apply 로
+Blocker 처리가 가능함. 왜냐면 펑터와 적용성펑터를 전부 허용하니까 ( map|{...map} ) 키는
+`__apply` 로 하기로 했던거로 기억중임."* — `source-state-plan.md`의 "`state:Apply(factory)`"
+절이 애플리커티브 팩토리를 **지정된 필드**로 받기로 확정해뒀고(필드 이름은 "구현 시"로
+열려 있었다 — 이 발언으로 **`__apply`**), `Blocker`가 그 필드를 **메소드**로 노출한다 — `function Blocker:__apply(state)
+return state:Gate(function(emit) return self:Policy(emit) end) end`(`self` = 이 blocker
+인스턴스; 호출 규약은 `source-state-plan.md`의 "`state:Apply(factory)`" 절). 아래 본문의
+`state:Apply(blocker)`는 전부 옛 `state:Block(blocker)`를 기계 치환한 것 — 의미는 같다
+(2026-08-21에 *"`Debounce`/`Throttle`/`Blocker`가 전부 같은 계약을 만족하게 된다"*고
+예고한 그것). 이 문서는 **`Blocker` = `Policy`를 주는 프리미티브 + `__apply` 슈가**를
+서술한다.
+
+**store 개발(M2)과 밀접하게 연관됨** — `state:Apply(blocker)`가 State
 위에 얹히는 메소드이므로 `base/source-state-plan.md`의 Source/State
 온톨로지, 특히 push-invalidate/pull-recompute 전파 모델(`base/source-state-plan.md` "전파 모델 확정" 절)을 전제로 함.
 **[2026-08-24 재확정] 구현 마일스톤은 다시 M2다 — "State와 같은
@@ -57,14 +70,15 @@ blocker:IsOn() -> boolean           -- [2026-08-18 신설] `self.IsBlocked`를 �
                                      -- 얇은 조회 메소드 — 필드 `IsBlocked`는 그대로 유지(아래
                                      -- "이름 확정" 참고), 호출부 가독성만을 위한 추가.
 
-state:Block(blocker) -> state       -- 새 gated state 반환. **호출되는 즉시**(나중에
+state:Apply(blocker) -> state       -- [2026-08-28 `H-158`] `Blocker.__apply`를 통한 `state:Apply` —
+                                     -- 옛 `state:Block(blocker)`. 새 gated state 반환. **호출되는 즉시**(나중에
                                      -- 처음 블록될 때가 아니라) onunblock 핸들을
                                      -- blocker의 weak-키 셋에 등록(아래 "onunblock 핸들 보관").
 blocker:Policy(emit) -> onUpstreamEmit
                                     -- [2026-08-24 신설] 이 blocker의 게이트 정책을
-                                     -- **값으로** 돌려준다. `state:Block(b)`가
+                                     -- **값으로** 돌려준다. `state:Apply(b)`가
                                      -- 내부에서 쓰는 바로 그것:
-                                     --   state:Block(b)
+                                     --   state:Apply(b)
                                      --     == state:Gate(function(emit) return b:Policy(emit) end)
                                      -- **[2026-08-24 정정]** 여기 `state:Gate(b.Policy)`라
                                      -- 적었었는데 그건 언바운드 메소드라 `emit`이 `self`
@@ -91,10 +105,10 @@ gated state의 동작:
 안 한다"**로 일반화된다(`base/gate-plan.md`의 8번). 구현 시 두 개를 따로
 들지 말 것.
 
-**⭐ [2026-08-21 신설] `state:Block(blocker)`는 `state:Gate(setup)` 위에
+**⭐ [2026-08-21 신설] `state:Apply(blocker)`는 `state:Gate(setup)` 위에
 얹힌다.** 위 "gated state의 동작"은 `Blocker`만의 특수 노드가 아니라
 `base/gate-plan.md`가 확정한 **`GateNode`**(`ComputeNode`와 같은 층위)의
-정책 하나다 — `Block`이 내부에서 `self:Gate(policy)`를 부르고, 그 `policy`가
+정책 하나다 — `Blocker.__apply`(옛 `Block`)가 내부에서 `state:Gate(policy)`를 부르고, 그 `policy`가
 `blocker.IsBlocked`를 보고 `emit()`을 부를지 `HasBlockedEmit`만 세울지
 정한다. `Debounce`/`Throttle`도 같은 자리에 다른 정책으로 들어간다.
 
@@ -118,20 +132,20 @@ gated state의 동작:
      걸렸던 **모든 gated state와 그 상류 체인을 영원히 살려둔다**(`:List`
      항목마다 게이트를 무는 패턴에서 직행 누수).
 3. **`Off()`/`OffWithoutEmit()`은 스냅샷을 뜬 뒤 순회한다** — 순회 중
-   새 등록(핸들 → flush → 하류 Observer가 `state:Block(b)`를 새로 만듦)이
+   새 등록(핸들 → flush → 하류 Observer가 `state:Apply(b)`를 새로 만듦)이
    `pairs`에서 미정의이기 때문. `Ref.Callbacks`/State 구독자 집합과 같은
    처방(`base/source-state-plan.md`의 `H-23` 확정).
 
 **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-33`/`H-49`] 그 정책을 값으로
 꺼내는 표면 `blocker:Policy(emit)`을 추가한다** — 표면이 하나 늘고,
-`Blocker()` 생성자와 `state:Block`은 그대로다.
+`Blocker()` 생성자와 배선(`state:Apply(blocker)` — 옛 `state:Block`)은 그대로다.
 
 - **왜 필요한가**: `Debounce`/`Throttle`이 "언제 통과시킬지"를 정하면서
   실제 emit/보류 배선은 Blocker에 위임할 수 있어야 한다. 정책을 값으로 낼 수
   있으면 그게 그냥 함수 합성이 된다 — `setup`이 곧
   `(emit) -> onUpstreamEmit`이라 타입이 이미 맞는다.
 - **정책이 하는 일은 안 바뀐다** — `Policy(emit)`을 부르는 시점에 onunblock
-  핸들이 등록되므로(지금 `state:Block`이 하던 것과 같은 자리), `Off()`가
+  핸들이 등록되므로(지금 `state:Apply(blocker)`가 하던 것과 같은 자리), `Off()`가
   풀 때 그 `emit`이 정확히 1회 불린다.
 - **`Debounce`/`Throttle`은 Blocker를 사적으로 하나 갖는다** — 적용 핸들당
   하나(커링 결과가 여러 곳에 적용될 수 있으므로 `Apply` 시점 생성).
@@ -160,7 +174,7 @@ gated state의 동작:
 
 ```lua
 local blocker = Blocker()
-local gated3 = state3:Block(blocker)  -- 소비자는 gated3를 구독
+local gated3 = state3:Apply(blocker)  -- 소비자는 gated3를 구독
 
 blocker:On()
 state1:Set(1)  -- state3 무효화 → gated3로 전파 시도 → 블록됨 → HasBlockedEmit=true
@@ -173,9 +187,9 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 가까운 지점)에 거는 게 원칙 — 소스가 여러 개든, 하나가 한 주기에 여러 번
 바뀌든 상관없이 이 지점 하나만 지키면 됨. 소스 쪽에 각각 거는 게 아니다.
 
-## `state:Block()` 없이 직접 쓰는 두 번째 용례 — base 내부 부기 게이팅 (2026-08-18 신설)
+## `state:Apply(blocker)` 없이 직접 쓰는 두 번째 용례 — base 내부 부기 게이팅 (2026-08-18 신설)
 
-지금까지 위 예시는 전부 `state:Block(blocker)`로 만든 **gated state**를
+지금까지 위 예시는 전부 `state:Apply(blocker)`로 만든 **gated state**를
 경유하는 사용자 대상 패턴이었다. `base/dispatch-core-plan.md`의
 "Length/Offset" 절이 `recompute`의 크래시(`RC-1`, 배열 위치가 하나씩
 순차 등록되는 동안 아직 등록 안 된 자리를 읽어 산술 에러가 나는 경로)를
@@ -186,7 +200,7 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 배치 등록 비용(O(N²)→O(N)) 절감으로 바뀌었을 뿐. 콜백 안에서
 `blocker:IsOn()`을 직접 확인하고 스스로 전파를 건너뛰는
 방식(`Length` State의 Observer가 `if not blocker:IsOn() then recompute(...) end`
-형태로 자기 자신을 게이팅). 이 용례는 `state:Block()`을 전혀 호출하지
+형태로 자기 자신을 게이팅). 이 용례는 `state:Apply(blocker)`를 전혀 호출하지
 않으므로 gated state도, 그 위에 걸리는 onunblock 핸들도 생기지 않는다 —
 `blocker:Off()`/`:OffWithoutEmit()`을 불러도 실행할 핸들이 없어 두
 메소드가 이 용례에서는 사실상 동일하게 동작하지만, **의도를 코드에 남기기
@@ -204,13 +218,12 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
 - 클래스: `Blocker` — `Observer`/`Modifier`/`Ref`와 같은 명사-행위자
   네이밍 관례와 일치.
 - Blocker 자신의 토글: **`On()`/`Off()` -> self** (`Block()`/`Unblock()`
-  아님) — `state:Block(blocker)`가 이미 "배선(wiring)" 동작의 동사로
-  "Block"을 쓰고 있어서, Blocker 자신의 토글까지 같은 단어를 쓰면
-  `blocker:Block()`(블로커를 켠다)과 `state:Block(blocker)`(state를 이
-  블로커에 배선한다)가 같은 단어로 다른 두 동작을 가리키게 됨.
+  아님) — 원래 근거는 배선 동사 `state:Block(blocker)`와의 충돌이었고,
+  **[2026-08-28 `H-158`]** 그 동사가 `state:Apply(blocker)`로 바뀐 뒤에도 이름은
+  유지한다(`On`/`Off`가 `IsOn`/`IsBlocked`와 이미 짝이고, 바꿀 이유가 없다).
 - 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**
   (gated state의 대기 플래그, `Is`/`Has` 접두어로 불리언임을 바로 알려줌).
-- 메소드: `state:Block(blocker) -> state`.
+- 메소드: `state:Apply(blocker) -> state`(**[2026-08-28 `H-158`]** 옛 `state:Block(blocker)` — 별도 메소드가 아니라 `Blocker.__apply`).
 - **[2026-08-18 신설] `IsOn() -> boolean`**(`IsBlocked` 필드를 그대로 읽는
   얇은 조회 메소드), **`OffWithoutEmit() -> self`**(위 "onunblock 핸들"
   참고) — 사용자 확정: *"IsBlocked가 있다면 그냥 두어도 될듯 함.
@@ -253,7 +266,7 @@ Blocker 자신은 여전히 단순 불리언이고 두 번 켜지지 않는다 �
 아니라 소유권 판정이다.
 
 **base 내부 용례에도 이 규칙이 그대로 적용된 실제 사례(2026-08-18)** —
-위 "`state:Block()` 없이 직접 쓰는 두 번째 용례" 절의 Length/Offset
+위 "`state:Apply(blocker)` 없이 직접 쓰는 두 번째 용례" 절의 Length/Offset
 배치 게이팅에서, 중첩된 Slot(부모 Slot 안의 자식 Slot)이 `attachSlot`을
 재귀할 때마다(**[2026-08-21] 분해 후 정확히는 그 안의
 `materializeSlotTree`** — 물리 마운트 쪽은 Blocker가 필요 없다)
@@ -267,7 +280,7 @@ Blocker (권장)"*). 부모/자식이 같은 Blocker를 공유했다면, 자식�
 ## 상태: 핵심 메커니즘+이름 확정. [2026-08-18 기준] 남은 건 문서화뿐
 
 **[2026-08-18 갱신]** `IsOn()`/`OffWithoutEmit()`(위 "메커니즘" 절)과
-`state:Block()` 없이 직접 쓰는 두 번째 용례는 이 날짜에 추가된 실제 API
+`state:Apply(blocker)` 없이 직접 쓰는 두 번째 용례는 이 날짜에 추가된 실제 API
 확장 — "남은 건 문서화뿐"이라는 결론 자체는 안 바뀌었지만(API 표면과
 메커니즘은 이 확장을 포함해 다시 확정 완료), 기준 날짜만 갱신.
 

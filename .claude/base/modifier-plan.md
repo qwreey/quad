@@ -118,7 +118,7 @@ end
       -- 순서는 늘 offsetSource 먼저(setLength가 끝에서 recompute를 태우므로)
       Dispatch.setOffsetSource(inst, k, None)
       Dispatch.setLength(inst, k, 0, inst)
-      return function() end   -- no-op retract — flatten이 이미 끝나 되돌릴 상태가 없음
+      return Void             -- no-op retract — flatten이 이미 끝나 되돌릴 상태가 없음 ([2026-08-28 `H-162`] 단일 `Void`)
   end
   ```
 

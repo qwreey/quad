@@ -69,7 +69,7 @@ Lua 문법상 `Tween{Value=target, Time=0.3}`처럼 괄호를 생략해 호출. 
 
 **PropertyHandler.process(inst,k,realv,index)의 새 로직** — `realv`는 이미
 StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이 함수는
-계약대로 마지막에 no-op 클로저 `function() end`을 반환 — 아래 "왜
+계약대로 마지막에 no-op 클로저 `Void`(**[2026-08-28 `H-162`]**)를 반환 — 아래 "왜
 `retract`가 더 이상 필요 없는가" 절):
 
 1. `isTween(realv)`가 거짓이면 — 기존과 동일하게(아래 "3-상태 저장" 참고,

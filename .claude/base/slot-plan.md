@@ -2148,7 +2148,7 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김. **[2026-08-28 10라운드
 `H-148`]** 루트(`PlayerGui` 등 quad 밖 부모)는 사용자가 `.Parent =`로 붙이는 게
 아니라 **quad가 `Claim`으로 소유**하는 쪽으로 방향이 확정됐다
-(`research/existing-mount-plan.md`, M5 이후) — 그래서 이 금지에 예외가 없어진다.
+(`research/existing-mount-plan.md`, M5 스코프 — `H-161`) — 그래서 이 금지에 예외가 없어진다.
 (2026-08-27에 하루 있었던 "루트는 밖에서" 예외는 폐기.)
 
 ## `Slot:Single(state, updateFn?, opts?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)

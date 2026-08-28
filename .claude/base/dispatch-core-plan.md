@@ -66,7 +66,11 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   전반에서 이 인자를 `hintValue`라고 부르는데 이는 타입이 보장되지 않던
   옛 모델에서 온 이름이고, 지금은 "힌트"가 아니라 보장된 값임에 유의
   (이름 자체는 `question.md` 용어 정리 대기열). **반환값 생략 불가 —
-  정리할 게 없는 핸들러도 항상 `function() end`(no-op) 형태로 반환할 것** —
+  정리할 게 없는 핸들러도 항상 no-op 클로저를 반환할 것 — [2026-08-28 `H-162`]
+  새 클로저 `function() end`가 아니라 quad-base가 export하는 단일 `Void`를
+  반환한다**(사용자: *"의도적으로 클린업이 없는 Void 함수를 많이 만들게 될 것 …
+  quad-base 에서 Void = function()end 를 제공하는게 편해보임"* — 할당 없음, 신원
+  비교 가능) —
   `Dispatch.process`(아래 절)가 이 반환값을 `chains`에 저장해뒀다가
   나중에 정확히 이 클로저 하나만 호출해서 정리하므로(예전 "retract 필드
   생략 불가" 규칙과 같은 이유, 자리만 옮겨옴). **생략했을 때 실제로
@@ -278,8 +282,8 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   Destroy될 때는 이 클로저가 호출되지 않음(`base/lifecycle-pattern.md`의
   "quad는 자신이 만든 Instance의 라이프사이클" 절의 원칙 참고).
   - 일반 프로퍼티는 애초에 "unset" 개념이 없음(`nil`로 셋하는 것도 그냥 셋
-    동작) — 그래서 프로퍼티 핸들러는 보통 no-op 클로저(`function() end`)만
-    반환하면 됨.
+    동작) — 그래서 프로퍼티 핸들러는 보통 no-op 클로저(`Void`, **[2026-08-28
+    `H-162`]**)만 반환하면 됨.
   - **[정정 이력, 2026-08-12 열한 번째 → 2026-08-13 다섯 번째 → 열네 번째
     세션] 이 클로저는 "핸들러 타입이 바뀔 때만" 불리는 게 아니라, store
     바인드가 재발행될 때마다(값이 뭐로 바뀌든) 항상 불림** — 다만 **누가
@@ -478,7 +482,7 @@ NoneHandler.priority = <매우 높음>
 NoneHandler.isHandlable(inst, k, v) = (v == None)
 function NoneHandler.process(inst, k, v, index)
     Dispatch.process(inst, k, nil, index + 1)  -- 재귀 재호출, 별개 인덱스
-    return function() end  -- 자기 자신은 아무 상태도 없어 no-op
+    return Void            -- 자기 자신은 아무 상태도 없어 no-op ([2026-08-28 `H-162`] 단일 `Void`)
 end
 ```
 
@@ -638,7 +642,7 @@ end
 - **반환하는 retractor는 여기서 할 일이 없음** — `NoneHandler`는 `v==None`을
   매치했을 때 재귀 호출로 곧바로 `Dispatch.process(inst,k,nil,index+1)`을
   부르는 게 전부고 자기 자신이 들고 있는 별도 상태가 없어서(`Relate` 등
-  전혀 안 씀) `function() end`(no-op)만 반환하면 됨 — 일반 프로퍼티
+  전혀 안 씀) `Void`(no-op, **[2026-08-28 `H-162`]**)만 반환하면 됨 — 일반 프로퍼티
   핸들러가 no-op 클로저를 반환하는 것과 같은 이유. 자기 아래(index+1)에
   쌓인 것의 정리는 `Dispatch.retractFrom`의 순회 구조가 대신해줌(위
   "핸들러 계약" 절 참고), `NoneHandler` 자신이 손댈 필요 없음.
@@ -669,7 +673,7 @@ function NilHandler.process(inst, k, v, index)
     -- [2026-08-18 감사에서 순서 정정]
     Dispatch.setOffsetSource(inst, k, None)
     Dispatch.setLength(inst, k, 0)
-    return function() end
+    return Void            -- [2026-08-28 `H-162`] no-op은 단일 `Void`
 end
 ```
 
@@ -949,7 +953,7 @@ Observer 구독)와, A가 재귀로 위임한 핸들러 B의 생명주기가 **�
 ```lua
 -- Dispatch/init.luau
 local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(strong)}}
-local NOOP = function() end
+local NOOP = Void          -- [2026-08-28 `H-162`] 새 클로저가 아니라 export된 단일 no-op
 
 function Dispatch.process(inst, k, v, index)
     -- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* 끝나야 함 —
@@ -1110,7 +1114,7 @@ end
           Dispatch.process(inst, k, v.inner, index + 1)  -- 재위임함
       end
       -- v.enabled가 false면 아무것도 안 함 ← 여기가 문제
-      return function() end
+      return Void            -- [2026-08-28 `H-162`] no-op은 단일 `Void`
   end
   ```
 
@@ -1306,7 +1310,7 @@ end
 이 `index`는 완전히 다른 것 — `AttributeGroupHandler`가 배열 위치를
 `index`라고 이름 붙였다가 시그니처 자체가 계약과 어긋난 전례가 있음.
 
-**7. 반환 생략 금지.** 정리할 게 없어도 `function() end`. `nil`을
+**7. 반환 생략 금지.** 정리할 게 없어도 `Void`(**[2026-08-28 `H-162`]** 단일 no-op export). `nil`을
 반환하면 그 자리 슬롯이 완성되지 못해 `#list`가 정의되지 않게 되고
 (`retractFrom` 순회 시작점이 어긋남) 체인 추적 자체가 깨짐 —
 `Dispatch.process`가 (A)/(B) 양쪽에서 즉시 error를 냄. **[정정, 2026-08-13
@@ -2275,8 +2279,8 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
    자기 자신의 `_elements`를 등록하는 자리 — 아래 "적용 지점" 참고)이 그
    owner 전용 `Blocker`를 `Relate(ownerKey)`에 lazy 생성하고 배치 시작
    전에 `:On()`한다**(`Dispatch.drive`는 배열 파트가 있을 때만 — 위 `H-17`
-   절의 2026-08-27 가드). 이 Blocker는 `state:Block()`을 거치지 않고
-   **직접** 쓰인다 — `base/blocker-plan.md`의 "`state:Block()` 없이
+   절의 2026-08-27 가드). 이 Blocker는 `state:Apply(blocker)`를 거치지 않고
+   **직접** 쓰인다 — `base/blocker-plan.md`의 "`state:Apply(blocker)` 없이
    직접 쓰는 두 번째 용례" 절 참고.
 2. 배치가 도는 동안, 각 position의 `setLength`가 트리거하는
    `gatedRecompute`(위)는 `blocker:IsOn()`이 참이라 전부 스킵된다 — 즉

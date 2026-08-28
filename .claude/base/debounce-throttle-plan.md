@@ -932,7 +932,8 @@ local function makeGate(reset: boolean, opts)
     --   지정된 필드**로 자기를 노출하는 것이고, `Debounce`/`Throttle`/
     --   `Blocker`가 전부 같은 계약을 만족한다 —
     --   `base/source-state-plan.md`의 "`state:Apply(factory)`" 절이 소스
-    --   (필드 이름과 정확한 시그니처는 구현 시 정한다).
+    --   (필드 이름은 `__apply`, **메소드형** `obj:__apply(state) -> State` — [2026-08-28 `H-158`],
+    --   호출 규약은 그 절이 소스; 아래 `__call = function(_, self)` 자리 수는 자리표시자일 뿐).
     --   아래 `__call` 표기는 **창/타이머 정책 본문을 읽기 위한 자리표시자**로만
     --   볼 것 — 위 7절 배너와 같은 취급이다.
     local factory = setmetatable({}, {
@@ -1138,7 +1139,7 @@ Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름�
   평소처럼 무효화를 받아 `:Get()`할 뿐.
 - **`Tween`**: 직교. `debounced:Apply(Animate{...})`처럼 겹쳐 쓸 수 있고,
   둘 다 시간을 다루지만 층이 다름(하나는 값 보간, 하나는 전파 타이밍).
-- **`Blocker`**: 직교하게 겹쳐 쓸 수 있음(`state:Apply(Debounce{...}):Block(b)`).
+- **`Blocker`**: 직교하게 겹쳐 쓸 수 있음(`state:Apply(Debounce{...}):Apply(b)`).
   실사용 사례는 잘 안 떠오르지만 구조적으로 막을 이유도 없음.
 - **`Effect`/`Observer`**: 게이트 아래에 붙으면 자동으로 debounce된
   빈도로 재실행됨 — 별도 장치 불필요. **[2026-08-28 `H-151`]** 단 게이트는

@@ -288,7 +288,7 @@ print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
   `priority`/`process(inst,key,value,index)` **3종**(**[정정, 2026-08-13
   다섯 번째 세션]** 원래 별도 `retract(inst,key,value)` 필드가 있던 4종
   계약이었으나, `process`가 자기 retract 클로저 `(nextValue: any?) -> ()`를
-  반환하는 1-메소드로 합쳐짐), 정리할 게 없어도 `function() end`
+  반환하는 1-메소드로 합쳐짐), 정리할 게 없어도 `Void`(**[2026-08-28 `H-162`]** 단일 no-op)
   반환 생략 불가까지 확정. `base/dispatch-core-plan.md` "핸들러 계약" 절.
 - ~~**네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히
   뭐라고 부를지("provider" vs "processor" vs 그냥 "plug") 아직 안 정함~~

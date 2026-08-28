@@ -12,23 +12,22 @@
 
 ---
 
-## ⭐ 최우선 — 10라운드 후속 둘 (2026-08-28 갱신)
+## ⭐ 최우선 — `Claim` 갈래 (2026-08-28 갱신)
 
-**[2026-08-28] 10라운드 §4 문항 7건은 사용자와 대화형으로 전량 결정·반영됐습니다**
-(소스는 `qa-request/pre-implementation-handtrace-round10-followup.md`). 그 대화에서
-새로 생긴 것만 남아 있습니다 — **둘 다 M2 게이트 아님**:
-- **`H-158`** `state:Block(blocker)` 슈가가 `blocker-plan.md`에 아직 있다 — 사용자
-  언급(*"Apply(Blocker) 이긴 할꺼야 (표면은 :Gate 만 남아 …)"*)대로 **폐기하고
-  `state:Apply(blocker)`로** 갈지 확인(권고 (a) 폐기).
-- **`H-159`~`H-161`** (`-round10.md` §4 표 아래 셋, 10라운드 반영분에
-  `/code-review high`가 낸 것) — `H-151`이 잃은 "바인드 전 emit(특히 `Ref`)"
-  캐치업(권고 (a) 묶이는 시점 1회 `Refresh`만 복원) / leaf `Destroying` 경로의
-  cleanup 안 `Rerun`(권고 (a) `_cleanupRunning`이면 `rawRerun` no-op) / **M5
-  루트 부착 경로 부재 + 다중 스크립트 `Claim`**(권고 (a) `Claim`을 M5로, 다중
-  스크립트는 권고 없음).
+**[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-162`)까지
+사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
+`qa-request/pre-implementation-handtrace-round10-followup.md`). 남은 건 하나 —
+**M2 게이트 아님**:
+- **`H-163`/`H-164`** (`-round10.md` §4 표 마지막 둘, `H-159` 반영분에
+  `/code-review high`가 낸 것) — Slot 내부 Observer × 홀드 발화(권고 (a) Slot이
+  재바인드 전에 플래그를 지움) / Observer 홀드 발화의 `emitFrom == nil` 모호(권고
+  (a) 마지막 `from`을 넘김, 한 필드 두 뜻이 걸리면 (b) 센티널).
 - **`research/existing-mount-plan.md` §5** — 루트/템플릿을 quad가 소유하는
   `Claim` + `D.Mapper`의 갈래들(루트 디스크립터 이름·물리 순서 계약·비루트
-  사용·debug 검사 범위·표면 이름·마일스톤 … — 개수는 그 문서 §5가 소스). 방향은 확정, M5 이후.
+  사용·debug 검사 범위·표면 이름 … — 개수는 그 문서 §5가 소스). 방향은 확정, M5
+  스코프(`H-161`). **특히 §5-7**(여러 스크립트/여러 quad가 같은 `PlayerGui`를
+  쓰는 경우 — "전부 매핑" 계약이 루트 컨테이너엔 안 맞는다는 신호, 권고 없음)이
+  `Claim` 설계의 핵심 미결입니다.
 
 **[2026-08-27] 9라운드**(Q1~Q10·`H-138`·`H-139`·`H-142`·`H-143`~`H-146`)는
 전량 처리·반영됐습니다 — 소스는 `-round9-followup.md`.

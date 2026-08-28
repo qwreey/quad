@@ -1988,5 +1988,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `_epochs`는 emit 때만 갱신, `Refresh` 캐치업 폐기 + "게이트는 emit 경로만 미룬다"
   계약(`H-151`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름 런타임
   가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`) / ROADMAP·debounce·store
-  stale(`H-155`~`H-157`). 미결 `H-158`(`:Block` 슈가). 소스는
+  stale(`H-155`~`H-157`). **같은 세션 후속**으로 `/code-review` 3건 + `H-158`~`H-162`도
+  확정 — `:Block` 폐기(`__apply`) / **`_rerunRequired` 홀드 플래그**(사용자 제안,
+  `_installed` 흡수, Observer 대칭) / `Claim` M5 스코프 / `Void` export. 미결은
+  `Claim` 갈래(특히 다중 스크립트)뿐. 소스는
   `qa-request/pre-implementation-handtrace-round10-followup.md`.

@@ -342,7 +342,7 @@ end
     상위에 있고 거기에 GUI 를 여럿 바운딩 해야해서 `Slot { Shop{} … }` 하는게 안
     될것 같은 느낌이 듦. 이건 Parent 이상의 문제인것 같아."* 루트는 밖에서
     `Parent`를 만지는 게 아니라 **quad가 `Claim`으로 소유**한다(PlayerGui·`Clone()`
-    사본·Studio GUI — 그 research 문서가 소스, M5 이후). 그러면 `.Parent =`를
+    사본·Studio GUI — 그 research 문서가 소스, **M5 스코프**(`H-161`)). 그러면 `.Parent =`를
     사용자가 쓸 자리 자체가 없어진다. 아래는 폐기 전 서술:
     **[2026-08-27 확정, 9라운드 `H-146`] 루트는 이 금지의 범위 밖이다 —
     quad 트리의 최상위를 quad 밖 부모에 붙이는 건 사용자가 밖에서 `.Parent =`로

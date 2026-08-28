@@ -24,7 +24,7 @@
 설계로 확정**됐다(아래 "해결 — Blocker 게이팅" 절). 해법이 실제
 반영된 곳은 `base/dispatch-core-plan.md`의 "배치 등록을 안전하게 만드는
 Blocker 게이팅" 절, `base/slot-plan.md`의 "재귀 메커니즘" 절,
-`base/blocker-plan.md`의 "`state:Block()` 없이 직접 쓰는 두 번째 용례"
+`base/blocker-plan.md`의 "`state:Apply(blocker)` 없이 직접 쓰는 두 번째 용례"(2026-08-28 `H-158`로 개명 — 당시 이름은 `state:Block()`)
 절 — 이 문서는 그 결론에 이르는 논의 원문만 보존한다.
 
 ### 발견한 크래시 경로

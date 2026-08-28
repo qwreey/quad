@@ -150,7 +150,7 @@ ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 �
   바뀌어도, `dispatch-core-plan.md` 일반 retract 계약 절 정정분 참고), 이
   Handler는 `process(inst,k,v,index)` 자체가 `v`가 `nil`이든 숫자든
   전부 완결적으로 처리하므로(있으면 지우거나 만들거나) 반환 클로저가 할 일이
-  없어 `function() end`이면 충분 — 일반 프로퍼티 핸들러가 no-op 클로저를
+  없어 `Void`(**[2026-08-28 `H-162`]**)면 충분 — 일반 프로퍼티 핸들러가 no-op 클로저를
   반환하는 것과 같은 이유. 값이 나중에 다시 숫자로(`2`→`nil`→`3`처럼)
   바뀌면 `process`가 다시 자식을 만들면 그만이라 클로저 쪽에 별도로
   구현할 게 없음.
@@ -178,15 +178,15 @@ function UICornerHandler.process(inst, k, v, index)
     if v == nil then
         -- 기존 규칙 그대로: 만들어둔 자식이 있으면 지움(아래 "v가 nil인 경우" 절)
         destroyManagedChild(inst, k)
-        return function() end
+        return Void             -- [2026-08-28 `H-162`]
     end
     local child = ensureManagedChild(inst, k)   -- 없으면 Instance.new + Parent, 있으면 재사용
     Dispatch.process(child, "CornerRadius", mapTweenValue(v, toUDim), 1)
-    return function() end   -- ⭐ [2026-08-27 정정, 9라운드 `H-135`] no-op — 아래 참고
+    return Void             -- ⭐ [2026-08-27 정정, 9라운드 `H-135`] no-op — 아래 참고. [2026-08-28 `H-162`] `Void` export
 end
 ```
 
-- **⭐ [2026-08-27 정정, 9라운드 `H-135`] 반환 클로저는 `function() end`다 —
+- **⭐ [2026-08-27 정정, 9라운드 `H-135`] 반환 클로저는 no-op(`Void`, **[2026-08-28 `H-162`]** — 옛 표기 `function() end`)다 —
   여기 한때 `function(hint) if hint == nil then destroyManagedChild(inst, k) end
   end`가 적혀 있었는데, 그건 위 "`v`가 `nil`인 경우" 절의 `v == nil`(값) 규칙을
   `hint == nil`(retractor 인자)로 잘못 옮긴 **복사 오류**였다.** 이 절의 주제는

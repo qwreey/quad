@@ -128,7 +128,7 @@ end)
      `pending`을 다시 드는 것(`H-32`를 손으로 다시 막아야 하고 버리기는
      여전히 안 닫힌다).
 
-   `Blocker`는 **그 위에 얹히는 별개 프리미티브**로, `state:Block(blocker)`가
+   `Blocker`는 **그 위에 얹히는 별개 프리미티브**로, `state:Apply(blocker)`가
    내부에서 이 배선을 그대로 쓴다. 탑레벨 `Gate(...)` 생성자는 **안 만든다.**
    `:Gate`가 메소드라고 `:Apply`와 배타적인 것도 아니다 — 사용자 지적대로
    *"`:Gate` 는 또 Apply 에서 쓸만한 표면을 주기도"* 하므로,
@@ -149,7 +149,9 @@ end)
    - **`Blocker` 배선 문제도 같이 사라진다.** `base/blocker-plan.md`가 이미
      **`state:Block(blocker) -> state`(새 gated state 반환)** 라는 **메소드**로
      확정해뒀으므로, `Block`이 내부에서 `self:Gate(blocker의 정책)`을 부르는
-     것으로 끝난다 — `blocker` 객체를 `Apply`에 넘길 일이 없다.
+     것으로 끝난다 — **[2026-08-28 `H-158` 정정]** 그 메소드는 폐기됐고 지금은
+     정확히 반대로 `blocker` 객체를 `state:Apply(blocker)`에 넘긴다(`blocker:__apply(state)`가
+     `state:Gate(...)`를 감싼다 — 메소드형, `self`는 blocker). 결과 노드가 `GateNode`인 건 같다.
    - **`__call`은 안 쓴다.** 사용자도 *"이상적이여 보이지는 않음"*이라 했고,
      타입 쪽 근거가 하나 더 있다 — `__call` 테이블이 Luau에서 `(State<T>) -> U`
      함수 타입 자리에 그대로 들어가는지가 불확실하다(들어가지 않는 쪽이 유력).
@@ -281,10 +283,10 @@ end)
      했던 옛 원천들이 같이 실려 나가** 하류가 폐기된 통지로 무효화된다.
      - **⭐⭐ [2026-08-25 정정, 7라운드 `H-67`] 여기 근거로 든 용례가
        틀렸다.** `Dispatch.drive`의 배치 게이팅은 `base/blocker-plan.md`가
-       *"이 용례는 `state:Block()`을 전혀 호출하지 않으므로 gated state도 …
+       *"이 용례는 `state:Apply(blocker)`를 전혀 호출하지 않으므로 gated state도 …
        생기지 않는다"*고 명시한 경로라 **애초에 `withheld` 집합이 없다.**
        결론(비워야 한다)은 그대로 유효하고 **근거가 될 용례만 바꾼다** —
-       `state:Block(b)`로 만든 gated state에 `b:OffWithoutEmit()`을 반복해
+       `state:Apply(b)`로 만든 gated state에 `b:OffWithoutEmit()`을 반복해
        거는 경우, 또는 `Throttle{Trailing = false}`가 창마다 버리는 경우가
        실제로 집합이 단조 증가하는 자리다.
      - **⭐⭐ [2026-08-25] 정책은 이걸 스스로 할 수 없다** — 위 2번의
@@ -375,14 +377,14 @@ end
    방향이 반대로 잡혔다:
 
    - **`Blocker`가 자기 정책을 값으로 낸다 — `blocker:Policy(emit) -> onUpstreamEmit`.**
-     `state:Block(b)`는 그 위의 얇은 래퍼가 된다. 노출되는 새 표면은 이 하나뿐이다.
+     `state:Apply(b)`는 그 위의 얇은 래퍼가 된다. 노출되는 새 표면은 이 하나뿐이다.
      **⚠️ [2026-08-24 표기 정정, `/code-review high` 지적]** 여기 한때
      `state:Gate(b:Policy)`라고 적었는데 **그건 문법 오류다**(인자 목록 없는
      `b:Policy`). `b.Policy`로 고쳐도 **언바운드 메소드**라 `Gate`가
      `setup(emit)`으로 부르면 `emit`이 `self` 자리에 들어가 정책의 `emit`이
      `nil`이 된다. 정확한 형태는 클로저로 묶는 것이다:
      ```lua
-     state:Block(b)  ==  state:Gate(function(emit) return b:Policy(emit) end)
+     state:Apply(b)  ==  state:Gate(function(emit) return b:Policy(emit) end)
      ```
    - **`Debounce`/`Throttle`은 보류 판정·`pending` 부기를 직접 구현하지
      않는다 — `Blocker`에 위임한다.**
@@ -503,7 +505,7 @@ end
 ## 계약 — 게이트는 emit 경로만 미룬다 (2026-08-28 확정, 10라운드 `H-151`)
 
 게이트가 하는 일은 **다운스트림 통지의 유보**뿐이고, 값은 안 가린다
-(`base/debounce-throttle-plan.md` 4절이 확정한 (A) emit-gate). 그래서 통지가 emit이 아닌 경로로 오면 게이트를 **거치지 않는다**:
+(`base/debounce-throttle-plan.md` 4절이 확정한 (A) emit-gate). 그래서 통지가 emit이 아닌 경로로 오면 게이트를 **거치지 않는다**(**[같은 날 `H-159`]** 그 캐치업의 메커니즘은 `_epochs:Refresh()`가 아니라 `rawRerun`이 세우는 `_rerunRequired` 홀드 플래그 — `base/effect-plan.md`. 재구독 시 소진돼 있었으면(`_consumeCleanup`이 플래그를 세운다) 게이트 상태와 무관하게 재설치로 한 번 돌고, 유보분은 flush 때 `Update`로 또 한 번 — 둘 다 정상):
 - **`Effect`의 재바인드/재구독 캐치업** — 소진된 핸들이 다시 묶이면 초기 설치와
   같은 뜻으로 `fn`이 돈다(`base/effect-plan.md` `_bindDestroying`). 유보 중이어도
   돈다.

@@ -32,7 +32,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > (`-round10-followup.md`가 소스) — 그중 둘은 하루 만에 다시 뒤집혔다: `fn`/cleanup은
 > 자기 구독을 못 바꾼다(`H-147`, `H-143` 소멸 · `rawRerun(force)`/`Rerun` 분리) /
 > 루트는 밖에서 `.Parent =`가 아니라 **quad가 `Claim`으로 소유**(`H-148`,
-> `research/existing-mount-plan.md`, M5 이후). 그 밖에 `_epochs`는 emit 때만 갱신
+> `research/existing-mount-plan.md`, **M5 스코프** — `H-161`). 그 밖에 `_epochs`는 emit 때만 갱신
 > (`Refresh` 캐치업 폐기, `H-151`) / `Effect._blocker` 제거(`H-150`) / Observer
 > 진입점 인라인(`H-149`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름
 > 런타임 가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`).
@@ -430,6 +430,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       if isState(sub) then sub:_receive(from)                 -- 자식 노드: 게이트 없음
       elseif canExecute(sub) then       -- Observer만 (Effect는 자기 내부 Observer로 온다)
           sub.fn(sub._state, sub, from)   -- [H-109] (리시버 State, Observer 자신, 출처)
+      else sub._rerunRequired = true    -- [2026-08-28 `H-159`] 묶이기 전의 변경은 홀드 → 바인드/구독 시 1회
       end
       ```
       `canExecute`가 `inst`를 인자로 받을 수 없는 이유는 그대로다(State는
@@ -489,7 +490,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
 - [ ] `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
       (**[2026-08-28 10라운드 `H-150`]** 선행 요구 **해소** — 생성자의 사적
-      `Blocker`는 `fire` 첫 줄의 `canExecute`가 이미 같은 억제를 해서 한 번도
+      `Blocker`는 `canExecute`(지금은 `rawRerun` 진입, `H-159`)가 이미 같은 억제를 해서 한 번도
       판정에 닿지 않는 죽은 부품이라 제거됐다. `Blocker.luau`는 이제 `GateNode`/
       Slot 쪽 요구뿐.) (`base/effect-plan.md`, **[2026-08-21 5라운드
       `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
@@ -505,14 +506,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
       **[2026-08-28 10라운드 `H-147`]** `rawRerun(self, force)` 본체 + 공개
-      `Rerun()`(진입에서 `canExecute` 게이트 — 죽은·안 묶인 핸들은 정의된 no-op),
+      `Rerun()`(진입에서 `canExecute` 게이트 — 죽은·안 묶인 핸들의 요청은 **[`H-159`]** `_rerunRequired`로 홀드),
       생성자는 `rawRerun(self, true)`. **`fn`/cleanup은 자기 구독을 못 바꾼다** —
       네 진입점 첫 줄에 `_running` 가드(2026-08-27의 "`fn` 안 `Unsubscribe` 지원"
       `H-143`과 `wasAlive` 꼬리는 소멸). 네 진입점은 **`EffectHandle` 자기 것**
       (`H-144` (b) — 공유는 `Observer.luau`의 레지스트리 둘과 `canBound`뿐),
-      `Subscribe`/`WeakSubscribe`는 등록 끝에 `not _installed → Rerun`(재구독
-      재설치; **[`H-151`]** `_epochs:Refresh()` 캐치업은 폐기 — `_epochs`는
-      `fire`의 `Update`에서만 갱신) — 의사코드는 `base/effect-plan.md`.
+      `Subscribe`/`WeakSubscribe`는 등록 끝에 `_rerunRequired → Rerun`(재구독
+      재설치 + 홀드된 변경; **[`H-151`/`H-159`]** `_epochs:Refresh()` 캐치업은 폐기 —
+      `_epochs`는 `fire`의 `Update`에서만 갱신하고, 실행 불가 상태에 온 변경은
+      `rawRerun`이 `_rerunRequired`로 홀드) — 의사코드는 `base/effect-plan.md`.
       **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
@@ -531,11 +533,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       Observer엔 자기 epoch가 없지만 `Ref`는 그 자체가 epoch다). dedup은
       클로저 identity가 아니라 `_deps`/`_epochs` 맵이 한다 ·
       ~~**`handle._blocker`**~~(**[2026-08-28 `H-150`]** 제거 — 등록 구간의
-      즉시-1회 호출은 별도 필드 없이 `fire` 첫 줄의 `canExecute`가 억제한다; 옛
+      즉시-1회 호출은 별도 필드 없이 `fire`의 `from == nil` 가드와 `rawRerun`의 `canExecute`가 억제한다(`H-159`); 옛
       `_installing` 플래그도 생성자 구간만 덮어 폐기됐었다) ·
       **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
-      같은 자리를 읽는다) · **`handle._installed`**(설치 여부 — `fn`의 cleanup
-      반환이 **선택**이라 `_cleanup`의 유무로는 판정할 수 없다) ·
+      같은 자리를 읽는다) · **`handle._rerunRequired`**(`fn`이 돌아야 하는데 아직 안 돌았다 — 생성 직후 /
+      소진 뒤 / 실행 불가 상태에 온 변경; **[2026-08-28 `H-159`]** 옛 `_installed`를 흡수.
+      `fn`의 cleanup 반환이 **선택**이라 `_cleanup`의 유무로는 판정할 수 없다) ·
       **`handle._running`/`_pending`**(`Rerun` 재진입
       지연) · **`handle._destroyConn`** ·
       **`:_bindDestroying(inst)`/`:_unbindDestroying()`**
@@ -549,9 +552,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **⭐ dep 등록은 생성자에서 한 번만** — `:WeakSubscribe()`/
       `:WeakCallback()`으로 걸고, 바인드/언바인드는 dep을 아예 안 건드린다
       (`H-58`/`H-59`). 발화 게이트는 전부 **`canExecute(handle)`** 하나다
-      (`H-7`). 캐치업은 바인드 직후 **재설치 1회뿐**(`if not self._installed then
-      self:Rerun() end` — **[2026-08-28 `H-151`]** 옛 `_epochs:Refresh()`는 폐기,
-      `_epochs`는 emit 받을 때만 갱신 — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
+      (`H-7`). 캐치업은 바인드 직후 **`_rerunRequired`면 1회**(`if self._rerunRequired then
+      self:Rerun() end` — **[2026-08-28 `H-151`/`H-159`]** 옛 `_epochs:Refresh()`는 폐기,
+      `_epochs`는 emit 받을 때만 갱신하되 실행 불가 상태의 변경은 홀드 — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
 - [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
@@ -616,7 +619,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
 - [ ] **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
-      `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Ref`**(최소형,
+      `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
       `is*` 전량(`isState`/`isSource`/`isStore`/`isRef`/`isObserver`/
       `isEffect`/`isEpoch`/`isModifier` …) / `bindLifetime`·`unbindLifetime`·
@@ -643,7 +646,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
-- [ ] **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Block(blocker)` /
+- [ ] **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
 - [ ] **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
@@ -844,7 +847,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `base/gate-plan.md`가 소스 — 여기서 반복하지 않는다.
 - [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
-      `function() end`를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
+      `Void`(**[2026-08-28 `H-162`]** 단일 no-op)를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
       호출, `base/dispatch-core-plan.md` "핸들러 계약" 절, 2026-08-08 세션
       / **2026-08-13 다섯 번째 세션에 별도 `retract` 필드가 `process`
       반환값으로 합쳐지며 대상만 바뀜**)
@@ -970,7 +973,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       문단. 빠뜨리면
       `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
       `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
-- [ ] **[2026-08-28 백로그, M5 이후]** `Claim(inst, D.Mapper.<Class> "Name" {…})` — 이미 있는 트리(PlayerGui·`Clone()` 사본)를 quad가 소유. 프로바이더 op `nativeFindChild` 필요. 갈래 미결 — `research/existing-mount-plan.md` §5가 소스(개수도), 다음 배치 문항.
+- [ ] **[2026-08-28 M5 스코프, `H-161`]** `Claim(inst, D.Mapper.<Class> "Name" {…})` — 이미 있는 트리(PlayerGui·`Clone()` 사본)를 quad가 소유. `H-146` 루트 예외를 폐기한 뒤 M5에 승인된 루트 부착 경로가 이것뿐이라 **백로그가 아니라 M5 안**(사용자 확정). 프로바이더 op `nativeFindChild` 필요. 갈래 미결(특히 §5-7 다중 스크립트/루트 컨테이너) — `research/existing-mount-plan.md` §5가 소스(개수도), 다음 배치 문항.
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에
@@ -1514,8 +1517,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       않는다** — 그 필드 자체가 폐기됐다(`_deps` 하나로 통합). 그리고
       `_bindDestroying`은 **`Ref` dep 콜백을 (재)등록하지 않는다** —
       dep 등록은 생성자에서 끝나고, 여기서 하는 건 `Destroying` 연결과
-      **재설치 캐치업 한 줄**(`if not self._installed then self:Rerun() end` —
-      **[2026-08-28 `H-151`]** 옛 `Refresh()` 판정은 폐기)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
+      **홀드 캐치업 한 줄**(`if self._rerunRequired then self:Rerun() end` —
+      **[2026-08-28 `H-151`/`H-159`]** 옛 `Refresh()` 판정은 폐기)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
       발화시키는 유일한 배선**이고, M6의 `_detached` 정리가 여기 의존한다
       (그 항목의 `H-50` 각주 참고). 의사코드는 `base/lifecycle-pattern.md`와
       `base/effect-plan.md`가 소스. **[2026-08-14

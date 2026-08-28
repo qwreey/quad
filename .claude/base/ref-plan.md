@@ -803,7 +803,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
         -- (`base/dispatch-core-plan.md`의 해제 순서 계약)
         Dispatch.setOffsetSource(inst, k, None)
         Dispatch.setLength(inst, k, 0, inst)
-        return function() end  -- no-op retract, 이 자리는 fire가 끝나
+        return Void            -- no-op retract([2026-08-28 `H-162`]), 이 자리는 fire가 끝나
                                 -- 되돌릴 상태 자체가 없음
     end
     ```
@@ -1080,7 +1080,7 @@ function ProcessedPostRefHandler.process(inst, k, v, index)
     -- [순서 정정, 2026-08-18 감사] setOffsetSource가 먼저(위 ProcessedPreRefHandler와 동일 이유)
     Dispatch.setOffsetSource(inst, k, None)
     Dispatch.setLength(inst, k, 0, inst)
-    return function() end  -- no-op retract, PreRef와 같은 이유(되돌릴 상태가 없음)
+    return Void            -- no-op retract([2026-08-28 `H-162`]), PreRef와 같은 이유(되돌릴 상태가 없음)
 end
 ```
 

@@ -352,10 +352,19 @@ function bindLifetime(inst, value)
     --   순회에서 죽고, 피해 가도 **바인드마다 `Rerun`이 도는 `H-58`이
     --   되살아난다.** 발화 게이팅은 전부 `canExecute(handle)` 하나가 맡는다 —
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
+    if isObserver(value) and value._rerunRequired then
+        -- ⭐ [2026-08-28 `H-159`] Observer도 대칭 — 묶이기 전(생성~바인드 사이)에 온 emit은
+        --   전파 루프가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md` 전파 루프),
+        --   묶이는 순간 1회 발화(출처 없음 — 설치 발화와 같은 모양). Observer엔 epoch가
+        --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다.
+        value._rerunRequired = false
+        value.fn(value._state, value, nil)
+    end
     if isEffect(value) then
-        value:_bindDestroying(inst)   -- Destroying 연결 + **조건부 캐치업 1회**
-                                      -- (`if not self._installed then self:Rerun() end` —
-                                      --   [2026-08-28 `H-151`] 옛 `_epochs:Refresh()` 캐치업은 폐기)
+        value:_bindDestroying(inst)   -- Destroying 연결 + **홀드된 변경 캐치업 1회**
+                                      -- (`if self._rerunRequired then self:Rerun() end` —
+                                      --   [2026-08-28 `H-151`/`H-159`] 옛 `_epochs:Refresh()`는 폐기,
+                                      --   실행 불가 상태에 온 변경은 홀드됐다가 여기서 1회)
                                       -- 의사코드는 `base/effect-plan.md`가 소스.
                                       -- 그 안에서 주입 op `onDestroying(inst, fn)`을
                                       -- 부른다(base는 Instance를 모른다).
@@ -454,7 +463,7 @@ end
 확정**: *"observer 랑 effect 랑 헤테로지니어스한 타입인데 … '하나의 무언가가 두
 일을 동작하지 않는가에 유의하자'"* — Observer 본문은 Observer만 쓴다. `Effect`
 쪽 넷(`Unsubscribe`는 cleanup 소진, `Subscribe`/`WeakSubscribe`는
-**[2026-08-27 `H-144`]** 등록 끝에 `not _installed → Rerun`, 넷 다 첫 줄에
+**[2026-08-27 `H-144`]** 등록 끝에 `_rerunRequired → Rerun`, 넷 다 첫 줄에
 **[2026-08-28 `H-147`]** `_running`/`_cleanupRunning` 가드 — `fn`/cleanup은 자기 구독을
 못 바꾼다)은
 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
@@ -473,6 +482,10 @@ function Observer:WeakSubscribe()
     end
     self.Subscribed = true          -- ⭐ [H-111] 약한 쪽도 세운다 — 구독 경로 공용 플래그
     WeakSubscribed[self] = true
+    if self._rerunRequired then     -- [2026-08-28 `H-159`] 구독 전에 홀드된 변경 1회(바인드와 대칭)
+        self._rerunRequired = false
+        self.fn(self._state, self, nil)
+    end
     return self
 end
 
@@ -510,6 +523,10 @@ function Observer:Subscribe()
     self.Subscribed = true
     WeakSubscribed[self] = true
     Subscribed[self] = true         -- 강한 킵 하나만 더
+    if self._rerunRequired then     -- [2026-08-28 `H-159`] 위 `WeakSubscribe`와 같은 꼬리
+        self._rerunRequired = false
+        self.fn(self._state, self, nil)
+    end
     return self
 end
 
@@ -595,6 +612,16 @@ leaf냐"를 가르는 판별자.
 | `:WeakUnsubscribe()` | `false` | — | 제거 |
 | `:Unsubscribe()` | `false` | 제거 | 제거 |
 
+**Observer 인스턴스 필드 목록 (2026-08-28 명문화)** — `fn`(콜백, `fn(targetState, self,
+emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-plan.md`),
+**`.Subscribed`**(공개 플래그, 위 표), **`_rerunRequired`**(**[2026-08-28 10라운드
+`H-159`]** 묶이기 전에 온 emit을 전파 루프가 홀드 — `bindLifetime`/`Subscribe`/
+`WeakSubscribe`가 1회 발화. **거짓으로 시작**한다: `state:Observer(fn)`의 "등록 시점
+즉시 1회 실행"(`source-state-plan.md`)은 생성자가 **무조건** 하는 것이라 이 플래그와
+무관하고, 플래그는 그 뒤 ~ 묶이기 전 사이에 온 변경만 기록한다 — 감사 3라운드가
+"초기화가 없어 한 번도 안 돈다"로 오독할 수 있음을 짚어 명시). 레지스트리 두 테이블은 인스턴스 필드가 아니라
+`Observer.luau`의 모듈 로컬. Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
+
 **여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가
 강한 테이블만 비우고 `WeakUnsubscribe`에 위임하지 않으면(또는 필드만
 내리면) 그게 반쪽짜리 해제다.
@@ -666,7 +693,8 @@ Destroy됐거나 `unbindLifetime`된 `value`는 `canBound`가 **참**이라
   Observer **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를
   담으면 identity가 달라 `canExecute`가 **항상 거짓**이 된다.
 - 발화 시 **Observer/Effect 구독자에 대해서만** `canExecute(observer)`를
-  확인하고, 거짓이면 **그 구독자만 조용히 건너뜀**(no-op) — 죽은 `inst`를
+  확인하고, 거짓이면 **그 구독자에게 `_rerunRequired`만 세우고 건너뜀**(**[2026-08-28
+  `H-159`]** 옛 "조용히 건너뜀" — 이제 묶일 때 1회 따라잡는다) — 죽은 `inst`를
   건드리는 시도가 일어나지 않게 막는 위 "해야 할 일은 딱 하나" 원칙의
   실제 구현 지점.
   **⭐⭐ [2026-08-25 정정, 7라운드 `H-56`] 자식 State 노드는 이 게이트를

@@ -278,20 +278,21 @@ quad/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
-│       │   ├── None.luau           # NoneHandler(`v==None`을 `nil`로 바꿔 재귀만 — 배열/해시 구분 없음) + NilHandler(`k=number and v==nil` 전용 말단, `setLength(0)`/`setOffsetSource(None)` 등록) (`base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절, 2026-08-18 재설계 — `drive`의 `None` 스킵 분기 폐기)
+│       │   ├── None.luau           # (**[2026-08-28 `H-162`]** 센티널 `None`과 같은 급으로 quad-base가 export하는 단일 no-op 함수 **`Void`**는 의존 없는 잎 모듈 `Void.luau`(아래)에 정의하고 최상위 `init.luau`가 재export한다 — `Dispatch/init.luau`가 파일 스코프 `local NOOP = Void`로 쓰므로 최상위에 두면 순환 require(`/code-review` 지적); 핸들러 retractor·cleanup 자리의 `function() end`를 전부 대체) NoneHandler(`v==None`을 `nil`로 바꿔 재귀만 — 배열/해시 구분 없음) + NilHandler(`k=number and v==nil` 전용 말단, `setLength(0)`/`setOffsetSource(None)` 등록) (`base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절, 2026-08-18 재설계 — `drive`의 `None` 스킵 분기 폐기)
 │       │   ├── Leaf.luau           # (i:number, v=Ref/Observer/Effect/PreRef/PostRef) children-array leaf 매칭 Handler(일반 Ref 매치는 `isRef(v) and not isPreRef(v) and not isPostRef(v)`, Observer/Effect는 `ObserverEffectLeafHandler` 하나가 `type(k)=="number" and (isObserver(v) or isEffect(v))`로 같이 매치 — `base/source-state-plan.md` "Observer/Effect Leaf dedup" 절, 2026-08-14 열두 번째 세션), StoreBind와 같은 층위(범용/엔진무관, 2026-08-08 두 번째 세션 확정)
 │       │   ├── Tag.luau            # TagHandler — 이름별 참조 카운트(`tagNameMap`), 실제 호출은 주입된 addTag/removeTag(inst, {string}). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `TagFallbackHandler`가 quad-base 자신에 의해 등록됨(**[재역전, 2026-08-18]** 백엔드 팩토리가 아님)(`base/tag-plan.md`, 2026-08-13 열네 번째 세션 base로 이동)
 │       │   ├── AttributeKey.luau   # AttributeKeyHandler — 이름 claim(`nameClaims`, 소유권 충돌 즉시 error) + 주입된 setAttribute(inst,name,v) 호출, `None`→nil은 재디스패치로 자동(`base/attribute-plan.md` "이름 소유권" 절). `HANDLER_PRIORITY_FALLBACK`에는 이걸 감싸는 `AttributeKeyFallbackHandler`가 quad-base 자신에 의해 등록됨(**[재역전, 2026-08-18]**)
 │       │   ├── Attribute.luau      # AttributeGroupHandler — 그룹 전용 키(비공개 GetKey)로 이름마다 AttributeKey 경로에 인덱스 1 위임, 클로저가 자기 키 전부 retractFrom(`base/attribute-plan.md` "메커니즘" 절). `AttributeGroupFallbackHandler`가 같은 방식으로 감쌈
 │       │   ├── Slot.luau           # SlotHandler — 마운트/언마운트 + 그 자리 Length/Offset 부기(값 타입 본체는 위 top-level `Slot.luau`)
 │       │   └── Modifier.luau       # [2026-08-24 `H-35`] ProcessedModifierHandler — flatten이 소진한 자리를 캐치해 `setOffsetSource(None)`/`setLength(0)`만 등록하는 nop 핸들러(`base/modifier-plan.md`)
+│       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value/.Revision 읽기 + :Set()/:WeakCallback()/:Callback()/:Uncallback()/:Wait(); `Epoch`를 만족 — `base/ref-plan.md`. **[2026-08-27 `H-128`]** `:Wait`·핸들러 뺀 최소형은 M2 공통 기반), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       ├── PostRef.luau           # PreRef의 거울상 — 같은 Ref 런타임/제약, 같은 pre-pass가 수집만 하고 두 패스가 전부 끝난 뒤 fire(`ref-plan.md` "`PostRef`" 절, 2026-08-14 아홉 번째 세션 확정)
 │       ├── LifecycleHooks.luau    # OnCreated/OnRendered/OnDestroyed — PreRef/PostRef/Effect를 반환하는 순수 팩토리 슈가(`base/lifecycle-hooks-plan.md`), 새 타입/Dispatch 개념 없음
-│       └── init.luau
+│       └── init.luau          # 패키지 최상위 export — `Quad` 값 테이블(`New`/`Source`/…/`None`/**`Void`**(재export — 정의는 위 `Void.luau`, `H-162`))
 └── quad-roblox/
     ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존
     └── src/

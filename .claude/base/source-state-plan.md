@@ -255,7 +255,11 @@ function State:_emitDown(from)
             sub:_receive(from)        -- state-epoch-plan.md §4 규칙 1~3
         elseif canExecute(sub) then   -- Observer (Effect는 자기 내부 Observer로 여기 온다)
             sub.fn(sub._state, sub, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
-        end                           -- 거짓이면 조용히 건너뜀
+        else
+            sub._rerunRequired = true -- ⭐ [2026-08-28 `H-159`] 묶이기 전의 변경은 버리지 않고 홀드 —
+        end                           --   `bindLifetime`/`Subscribe`가 1회 발화(`lifecycle-pattern.md`).
+                                      --   (Effect의 내부 Observer는 `WeakSubscribe`돼 있어 여기 안 옴 —
+                                      --   Effect 쪽 홀드는 `rawRerun`이 한다)
     end
 end
 ```
@@ -1029,7 +1033,13 @@ Source가 State 계약을 만족하는 이상 같은 이유(Modifier용 processo
 State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양이라 —
 `state:Apply(factory)`는 그냥 `factory(state)`를 메소드 체이닝 문법으로
 쓴 것뿐이고 그 이상의 계약은 없음(`Modifier:Apply`와 완전히 동일한
-정의: `function(self, factory) return factory(self) end`).
+정의: `function(self, factory) return factory(self) end`). **[2026-08-28 `H-158`
+호출 규약 — `/code-review` 지적으로 명시, 에이전트 배선]** 애플리커티브 팩토리는
+**메소드형** `__apply`다: `function(self, factory) if type(factory) == "function"
+then return factory(self) else return factory:__apply(self) end end` — 즉
+`Blocker`/`Debounce`는 `function Blocker:__apply(state) … end`로 정의하고 `self`는
+그 인스턴스다(클래스 테이블의 `__apply`를 `self` 없이 부르면 첫 emit에서 `nil`
+인덱스로 죽는다). 세 소비자(`Blocker`·`Debounce`·`Throttle`)가 같은 자리 수.
 
 - **동기**: 커링 팩토리 두 개 이상을 이미 있는 문법만으로 이으면 바깥에서
   안으로 겹쳐 읽어야 하는 중첩 호출이 됨 — 실제 형태로 예를 들면,
@@ -1064,8 +1074,9 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   - **부수 효과**: `Blocker`를 슈가로 못 두던 이유도 같이 풀린다 —
     `Debounce`/`Throttle`/`Blocker`가 전부 같은 계약을 만족하게 된다.
   - **함수와 콜러블의 유니온으로 여는 안은 기각** — 필드로 받으면
-    유니온도 캐스트도 필요 없다. 필드 이름과 정확한 시그니처는 구현 시
-    정한다.
+    유니온도 캐스트도 필요 없다. 필드 이름은 **`__apply`**(**[2026-08-28 10라운드
+    `H-158` 사용자 확정]** *"키는 __apply 로 하기로 했던거로 기억중임"* —
+    `base/blocker-plan.md` 배너), 정확한 시그니처는 구현 시 정한다.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
   존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌
@@ -1075,7 +1086,7 @@ State/Source도 `:With`/`:Compute`마다 새 노드가 나오는 같은 모양�
   **함수만** 받으므로 위 `H-94` 항목이 확정한 "지정된 필드를 가진 객체"
   형태를 **거부한다** — `state:Apply(Debounce{...})`가 그대로 타입에러다.
   파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환 `U`만 열어둔다
-  (정확한 필드 이름과 시그니처는 구현 시 정한다). 아래 논거는 **반환 쪽**에
+  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 구현 시 정한다). 아래 논거는 **반환 쪽**에
   대한 것이라 그대로 유효하다 — Modifier의
   `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
   이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종
@@ -1131,7 +1142,13 @@ Frame {
 retract/Destroy되면 자동으로 정리됨.
 
 - **`fn`은 등록 시점에 즉시 1회 실행된다(2026-08-07 여섯 번째 세션,
-  사용자 확정 — 이전까지 미명시였던 항목).** 근거: (1) 이미 채워진
+  사용자 확정 — 이전까지 미명시였던 항목).** (**[2026-08-28 `H-159`]** 이 1회는
+  `state:Observer(fn)` 생성자가 무조건 하는 것이고, 같은 날 신설된 `_rerunRequired`
+  홀드는 그 **뒤** ~ 묶이기 전 사이의 변경만 다룬다 — 별개다. **생성자 순서는 `fn`
+  1회 실행 → `_subs` 삽입**(`/code-review` 지적으로 고정): 반대면 설치 발화가 자기
+  State를 `Set`할 때 그 emit이 아직 안 묶인 자신에게 와 `_rerunRequired`가 서고 첫
+  바인드에서 `fn`이 한 번 더 돈다. Effect의 내부
+  Observer가 이 설치 발화를 `from == nil`로 거르는 이유이기도 하다.) 근거: (1) 이미 채워진
   State를 나중에 구독하면 그 값을 반영하는 연산이 아예 한 번도 안
   일어나는 문제가 생겨 초기화 순서에 디버깅 부담이 생김. (2) 초회
   실행을 하지 말아야 할 구체적 근거가 약함. (3) **이 결정 덕에
@@ -1162,7 +1179,9 @@ retract/Destroy되면 자동으로 정리됨.
     그건 통지가 아니라 설치라 출처가 존재하지 않는다. 그래서 `emitFrom`은
     **옵셔널**이고, 이때만 `nil`이다(2026-08-21 커밋 전 `/code-review high`
     발견 — 한때 non-optional로 적혀 있었다). `fn`이 `emitFrom`을 실제로 쓰는
-    소비자라면 `nil`을 "설치 발화"로 분기해야 한다.
+    소비자라면 `nil`을 "설치 발화"로 분기해야 한다. **⚠️ [2026-08-28 판단 대기,
+    `H-164`]** `H-159`의 Observer 홀드 발화(묶일 때 1회)도 지금 `nil`을 넘겨 이
+    분기와 구분이 안 된다 — 갈래는 `-round10.md` §4.
   - **이건 "값을 안 실어주는 구독" 계약을 안 깬다** — 넘기는 건 값이 아니라
     **핸들과 메타데이터**뿐이다.
   - 인자 없는 `state:Observer()`(항상 관측 유틸)도 그대로 성립한다 — 넘겨줄
