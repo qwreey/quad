@@ -9,8 +9,10 @@
    `qa-request/pre-implementation-handtrace-round11-brief.md`(세 갈래 분류 /
    단위 넷 / 관여 시점), 발견과 배치 문항은 `-round11.md`(§4 표가 사용자가
    읽을 유일한 자리). **진행 상태의 소스는 `ROADMAP.md` M2 체크박스**, 여기서
-   세지 않는다. 첫 단위 = 공통 기반(`Brand`/`Relate` 대조/`LifetimeHandle`
-   인터페이스/`Ref` 최소형/`Void`) + `H-97` mock 생명주기 4종.
+   세지 않는다. **[2026-08-28 저녁 기준]** 단위 1 완료(배치 회신까지 반영), 단위 2
+   (`EpochMap`/`State`/`Source`/`Store`) 구현·감사 3라운드까지 완료 — **재개 지점은
+   단위 2 끝 절차의 감사 4라운드부터**(그다음 `/code-review high` → 탐사자), 소스는
+   `session/2026-08-28-03-m2-unit1-common-base.md` 마지막 절.
    아래는 착수 전(2026-08-26) 서술:
 
    **[2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**
