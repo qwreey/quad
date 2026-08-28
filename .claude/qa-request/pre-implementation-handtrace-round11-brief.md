@@ -130,7 +130,7 @@
 
 | 파일 | 내용 | 옮겨 적는 절 |
 |---|---|---|
-| `Brand.luau` | `Brand()` 생성자 + **브랜드 인스턴스 열다섯을 이 잎 파일에**(`brand-plan.md` 스니펫이 한 자리에 선언하는 그대로 — `EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + M2 타입의 `is*`(`isEpoch`/`isSource`/`isState`/`isStore`/`isObserver`/`isEffect`/`isBlocker`/`isRef`/`isPreRef`/`isPostRef`/`isModifier`). `isTag`/`isAttribute*`/`isTween`/`isSlot`은 그 타입의 마일스톤에서 | `base/brand-plan.md` "구현 — 인스턴스 브랜드" / `isRef` 계층 절 |
+| `Brand.luau` | `Brand()` 생성자 + **브랜드 인스턴스 전부를 이 잎 파일에**(개수는 그 파일이 소스)(`brand-plan.md` 스니펫이 한 자리에 선언하는 그대로 — `EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + M2 타입의 `is*`(`isEpoch`/`isSource`/`isState`/`isStore`/`isObserver`/`isEffect`/`isBlocker`/`isRef`/`isPreRef`/`isPostRef`/`isModifier`). `isTag`/`isAttribute*`/`isTween`/`isSlot`은 그 타입의 마일스톤에서 | `base/brand-plan.md` "구현 — 인스턴스 브랜드" / `isRef` 계층 절 |
 | `Relate.luau` | **기존 파일**(M1). 코드 변경 없음 — `base/relate-plan.md` "API"/"실제 구조" 대조 + 테스트만 | `base/relate-plan.md` |
 | `LifetimeHandle.luau` | 4종 타입 시그니처 + **미주입 에러 스텁**(영어, `error(…, 2)`) + 공유 술어 `isBoundAlive`는 백엔드 몫이라 여기 없음 | `base/lifecycle-pattern.md` "확정" 절, `module-lifecycle-plan.md` 주입 절 |
 | `Ref.luau` | 최소형 — `.Value`/`.Revision`/`:Set`/`:Callback`/`:WeakCallback`/`:Uncallback`, `Callbacks`(강) + `WeakCallbacks`(weak-key), `:Set` 순서 값→리비전(`bit32.bnot(-rev)`)→스냅샷 순회·함수키 dedup·thread 소진, `EpochBrand`+`RefBrand` 등록 | `base/ref-plan.md` "`Ref`는 `Epoch`를 만족한다" 절 + `H-128` |

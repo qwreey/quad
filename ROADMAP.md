@@ -272,7 +272,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 여기 있는 것 전부 State-free이자 dispatch-free라 어느 쪽에도 안 걸립니다.
 > 이 절이 끝나야 아래 반응형 본체를 짤 수 있습니다.
 
-- [x] **[2026-08-28 완료 — `quad-base/src/Brand.luau` + `test/spec.brand.luau`, 브랜드 인스턴스 15개와 M2 `is*` 11개가 이 잎 파일에]** `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
+- [x] **[2026-08-28 완료 — `quad-base/src/Brand.luau` + `test/spec.brand.luau`, 브랜드 인스턴스 전부와 M2 `is*`가 이 잎 파일에 — 개수는 그 파일이 소스]** `Brand.luau`(**[2026-08-21 재작성]** 인스턴스 브랜드 — `Brand()`가
       브랜드마다 weak-key 집합 하나를 들고 `:register(x)`/`:is(x)`,
       **다중 태깅 허용**(`Source`가 `SourceBrand`이면서 동시에 `EpochBrand`).
       옛 공유 레지스트리 + `Brand.get(x) -> tag`는
@@ -629,7 +629,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-28 부분 — 첫 단위분(`Relate`/`Void`/`Ref`/`is*` 11개/생명주기 4종)은 `quad-types` `Quad`에 추가됨, `Source`/`Store`/`Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [ ] **[2026-08-28 부분 — 첫 단위분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종)은 `quad-types` `Quad`에 추가됨, `Source`/`Store`/`Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /

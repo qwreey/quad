@@ -182,7 +182,13 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 `canBound`/`canExecute`/`unbindLifetime`는 `isState`/`isObserver`처럼
 핸들러 작성자가 직접 호출하는 **1급 프리미티브 연산**이라
 `LifetimeHandle.bind(...)`류로 감싸면 안 됨 — `LifetimeHandle.luau` 파일
-안에 있어도 되지만 export는 평평한 함수:
+안에 있어도 되지만 export는 평평한 함수. **[2026-08-28 정정, M2 첫 단위]
+"평평한"은 모듈 인스턴스의 필드라는 뜻이다** — `quad.bindLifetime(inst, v)`처럼
+`isState`와 같은 자리에 놓이는 것이고, 파일 `LifetimeHandle.luau` 자신이 이
+넷을 return하는 게 아니다(파일은 `InitLifetimeHandle(module)`을 return하고, 그
+팩토리가 `module.bindLifetime = …` 에러 스텁 4종을 심는다 — 백엔드가 같은 필드를
+덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절).
+아래 시그니처의 이름은 그 필드 이름이다:
 
 ```lua
 bindLifetime(inst: any, value: any): ()   -- inst가 필요한 건 이것 하나뿐
@@ -738,7 +744,7 @@ quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn
 첫 단위]** 다만 그 실 구현을 갖는 건 base가 아니라 **백엔드**다 — quad-base의
 `LifetimeHandle.luau`는 `InitLifetimeHandle(module)`이 에러 스텁 4종을 모듈
 인스턴스에 설치하는 인터페이스뿐이고 `Relate`를 require하지 않는다(아래
-"base가 인터페이스로만 내보내는 것" 절, `base/architecture.md` 소스 트리).
+"`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절, `base/architecture.md` 소스 트리).
 여기 한때 *"둘 다 base가 제공하는 범용 유틸로 확정"*이라 적혀 있었으나 그건
 `Relate` 쪽에만 맞는 말이다.
 
@@ -766,7 +772,7 @@ store-plan.md`가 예전에 "state 옵저빙 결과로 slot을 조작할 때 생
 Destroy 시 모든 커넥션을 즉시 끊어주지만, 다른 엔진에서도 라이프사이클을
 확인할 수 있어야 하므로 base는 "이 바인드가 아직 유효한가"를 묻는 람다/인터페이스만
 정의하고, quad-roblox가 그 구현을 Roblox의 실제 `Connected`로 채워넣는다(구현
-주입 방식은 아래 "base 유틸은 인터페이스, 구현은 백엔드 팩토리" 절 참고). 이게
+주입 방식은 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절 참고). 이게
 필요한 이유: rbvm처럼 GC 트릭으로 라이프사이클을 연결하면 GC가 즉발이 아니라서
 중간에 죽은 참조가 남아있을 수 있고, 그 시점에 store에 새 값이 들어오면 죽은
 대상에 처리를 시도하다 터질 수 있음 — 그래서 처리 직전에 유효성을 확인.
