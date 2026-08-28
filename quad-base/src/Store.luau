@@ -25,10 +25,12 @@
 	  one lazy spot left, and it is explicit about giving up type safety.
 
 	Assembly (`H-174`): `InitStore(module)` — `Of` creates values through
-	`module.Source`, read at call time.
+	`module.Source`, read at call time; the init pulls `InitSource` in itself
+	(`RunInit` is idempotent), so `New()` order is irrelevant.
 ]]
 
 local Brand = require("./Brand")
+local InitSource = require("./Source")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 export type Store<T> = QuadTypes.Store<T>
@@ -42,6 +44,7 @@ local isSource = Brand.isSource
 local RESERVED = { Of = true, Names = true, __reservedCheck = true }
 
 local function Init(module: any)
+	module:RunInit(InitSource) -- `Of` needs `module.Source`; pull it in ourselves (idempotent)
 	local Impl = {}
 	Impl.__index = Impl
 

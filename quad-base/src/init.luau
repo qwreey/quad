@@ -70,8 +70,8 @@ local function New(): Quad
 
 	module:RunInit(InitDebug)
 	module:RunInit(InitLifetimeHandle) -- 생명주기 4종 에러 스텁 — 백엔드가 덮어씀
-	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. State 임플이 먼저 있어야
-	-- Source가 `__index` 체인을 걸 수 있다(순서 의존, `State.implFor`가 검사).
+	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. 각 Init이 자기 의존성을
+	-- `module:RunInit(...)`로 직접 당겨오므로(멱등) 여기 순서는 무관하다.
 	module:RunInit(State.Init)
 	module:RunInit(InitSource)
 	module:RunInit(InitStore)

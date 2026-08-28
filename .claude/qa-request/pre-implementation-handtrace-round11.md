@@ -25,6 +25,7 @@
 | `H-173` | ① | 1 | 🟢 | `ROADMAP.md` M7 체크박스·`tween-plan.md` 352가 `isTween`/`TweenBrand`를 `Tween.luau`에 둔다고 아직 서술(감사 3라운드가 두 곳만 고침) | ✅ 반영 |
 | `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
 | `H-176` | ① | 2 | 🟡 | `:Compute`의 trailing deps를 타입팩 `D...`로 좁히는 선언은 strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힌다(스파이크 15가 "미검증"으로 남긴 자리) | ✅ `...any` + 콜백 주석으로 확정, `source-state-plan.md` 실측 기록 |
+| `H-177` | ① | 2 | 🟢 | `InitSource`/`InitStore`가 `State.implFor`만 불러 `New()`의 `RunInit` 순서에 의존했다 — `module-lifecycle-plan.md`는 "각 `InitXxx`가 `require`처럼 멱등하게 자기 의존성을 당겨온다"로 확정 | ✅ 각 Init이 `module:RunInit(dep)`를 직접 호출(감사 3라운드) |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
 ## 상세
@@ -154,6 +155,17 @@
 - **처리**: deps 자리 `...any`, 콜백 안에서 `dep: StateData<U>` 주석(콜백 파라미터 주석 관례
   그대로). 런타임 계약 무변경. 문서에 실측 기록, 스파이크 `15` 닫힘.
 
+### `H-177` 🟢 — 반응형 Init의 순서 의존 (①)
+
+- **어디서**: `quad-base/src/{Source,Store}.luau`의 `Init` / `init.luau`의 `RunInit` 순서 주석 vs
+  `base/module-lifecycle-plan.md` "New()의 내부 구성" 절의 *"순서 의존성은 각 `InitXxx`를
+  `require`처럼 멱등하게 만들어서 해소한다"*.
+- **무엇이**: 단위 2 첫 커밋은 `init.luau`가 State → Source → Store 순서를 지키게 하고
+  `implFor`가 어기면 error하게 했다 — 동작은 하지만 문서 원칙과 다른 길. 감사 3라운드가
+  "사용자 판단"으로 올렸으나 문서가 이미 답을 갖고 있어 ①.
+- **처리**: `Source.Init`이 `module:RunInit(State.Init)`, `Store.Init`이 `module:RunInit(InitSource)`를
+  직접 호출. `init.luau` 순서 주석을 "무관"으로.
+
 ### `H-175` 🟢 — 클로저 캐시 규칙의 범위 (①)
 
 - **어디서**: 이 파일 §5 "툴링 사실 둘"의 둘째 항, `spec.ref.luau` 7번 주석.
@@ -218,8 +230,9 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 - `Store`: `H-122`/`H-153`/`H-83` 전부 `spec.store`. `Names()`는 `pairs(self)` — 메소드가
   `__index`라 안 센다는 `H-153` 전제가 실측으로 성립.
 - **조립 세부**(`H-174`의 구현, 새 표면 아님): `State.luau`는 `Init(module)`이 인스턴스별 임플을
-  만들고 `implFor(module)`로 `Source`/`Store` Init에 건넨다(`RunInit` 순서 의존 — 어기면
-  `implFor`가 level 1 error). `Source`의 `__index` 체인이 그 임플을 가리켜 `With`/`Compute`/
+  만들고 `implFor(module)`로 `Source`/`Store` Init에 건넨다(각 Init이 `module:RunInit(dep)`로
+  의존성을 직접 당겨오므로 `New()` 순서 무관 — `H-177`; `implFor`의 level 1 error는 그래도 남겨둔
+  불변식 검사). `Source`의 `__index` 체인이 그 임플을 가리켜 `With`/`Compute`/
   `Apply`가 위임된다. `Ref`/`Void`/`Relate`/`Brand`만 인스턴스 간 공유 잎.
 - **입력 검증 하나 추가**(`architecture.md` error 계약의 예 *"dep #3 is not a State/Source/Ref"*
   그대로): `newNode`가 dep이 `isState`가 아니면 `error(…, 3)` — 없으면 `dep._subs` nil 인덱스로

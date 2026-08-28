@@ -19,7 +19,8 @@
 	    payload ("출처" only — no value, no revision).
 
 	Assembly (`H-174`): `InitSource(module)` — needs the per-instance State
-	impl for its `__index` chain, so `InitState` must have run first.
+	impl for its `__index` chain, and pulls it in itself via
+	`module:RunInit(State.Init)` (idempotent), so `New()` order is irrelevant.
 ]]
 
 local Brand = require("./Brand")
@@ -35,6 +36,10 @@ local isModifier = Brand.isModifier
 local WEAK_KEY_MT = { __mode = "k" }
 
 local function Init(module: any)
+	-- Pull our dependency ourselves, `require`-style (`module-lifecycle-plan.md`
+	-- "순서 의존성은 각 `InitXxx`를 `require`처럼 멱등하게 만들어서 해소한다") —
+	-- `RunInit` is idempotent, so `New()` need not order us after `State.Init`.
+	module:RunInit(State.Init)
 	local StateImpl = State.implFor(module)
 	local emitDown = StateImpl._emitDown
 
