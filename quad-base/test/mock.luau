@@ -7,9 +7,11 @@
 	않으므로 mock이 실제 Roblox 충실도를 가질 이유가 없다(같은 절).
 
 	Vide의 mock과 달리 GC-독립 userdata 프록시 트릭을 안 씀 — 그건 Roblox
-	엔진 userdata의 GC 동일성을 흉내내려는 것이고, 그 동일성 문제는
-	quad-roblox의 LifetimeHandle(gcconn 트릭)이 다루는 자리라 quad-base
-	정적 스냅샷 테스트 범위 밖.
+	엔진 userdata가 Lua 참조와 무관하게 회수·재생성되는 **엔진 GC 동일성**을
+	흉내내려는 것이고, 그건 quad-roblox의 `nativeClaim`이 실기기에서 다루는
+	자리라 mock 범위 밖. 반면 **생명주기 계약 로직**(`bindLifetime`/`canBound`/
+	`canExecute`/`unbindLifetime`이 gcconn의 `.Connected`로 판정하는 것)은
+	mock 시그널 위에서 그대로 재현한다 — 아래 `installLifetime`.
 
 	**[2026-08-28 M2, ROADMAP `H-97`] `installLifetime(quad)`** — 생명주기 4종
 	(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)의 mock 백엔드.

@@ -286,8 +286,9 @@ quad/
 │       │   ├── Slot.luau           # SlotHandler — 마운트/언마운트 + 그 자리 Length/Offset 부기(값 타입 본체는 위 top-level `Slot.luau`)
 │       │   └── Modifier.luau       # [2026-08-24 `H-35`] ProcessedModifierHandler — flatten이 소진한 자리를 캐치해 `setOffsetSource(None)`/`setLength(0)`만 등록하는 nop 핸들러(`base/modifier-plan.md`)
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
+│       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** `Brand()` 생성자 + **브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export). 의존 없는 잎(`base/brand-plan.md`)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
-│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만), 내부는 Relate 사용(`base/lifecycle-pattern.md`)
+│       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만) — **[2026-08-28 M2 첫 단위]** `InitLifetimeHandle(module)`이 모듈 인스턴스에 영어 `level 2` 에러 스텁 4종을 설치하고 백엔드가 덮어쓴다, `Relate`는 안 쓴다(그건 아래 quad-roblox 실 구현 몫 — `base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value/.Revision 읽기 + :Set()/:WeakCallback()/:Callback()/:Uncallback()/:Wait(); `Epoch`를 만족 — `base/ref-plan.md`. **[2026-08-27 `H-128`]** `:Wait`·핸들러 뺀 최소형은 M2 공통 기반), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       ├── PostRef.luau           # PreRef의 거울상 — 같은 Ref 런타임/제약, 같은 pre-pass가 수집만 하고 두 패스가 전부 끝난 뒤 fire(`ref-plan.md` "`PostRef`" 절, 2026-08-14 아홉 번째 세션 확정)

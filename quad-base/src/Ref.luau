@@ -15,6 +15,9 @@
 	  - `.claude/base/state-epoch-plan.md` §2: revision bump is the uint32
 	    wrap-around decrement `bit32.bnot(-rev)`; only `==`/`~=` are contract.
 
+	Single type parameter, `Ref<T>(T) -> Ref<T>` (`ref-plan.md` "제네릭
+	시그니처"): a nil-able slot is widened by the caller, `Ref<<T?>>(nil)`.
+
 	Callback signature is `fn(value, ref)` — the second argument is the Ref
 	itself, i.e. the `Epoch` a consumer (`Effect`) feeds to `EpochMap:Update`.
 	Plain user callbacks just ignore it.
@@ -37,7 +40,7 @@ local WEAK_KEY_MT = { __mode = "k" }
 local RefImpl = {}
 RefImpl.__index = RefImpl
 
-function RefImpl.Set<T>(self: Ref<T>, value: T?): Ref<T>
+function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 	self.Value = value -- (1) settle the value first
 	self.Revision = bit32.bnot(-self.Revision) -- (2) before callbacks (`H-108`)
 
@@ -98,7 +101,7 @@ function RefImpl.Uncallback<T>(self: Ref<T>, fn: Callback<T>): Ref<T>
 	return self
 end
 
-local function Ref<T>(default: T?): Ref<T>
+local function Ref<T>(default: T): Ref<T>
 	local self = setmetatable({
 		Value = default,
 		Revision = 0,

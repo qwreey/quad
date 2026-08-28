@@ -16,6 +16,7 @@
 |---|---|---|---|---|---|
 | `H-165` | ① | 1 | 🟡 | `quad-types`에 `export type`을 더하면 pesde shim이 그걸 모른다 — `pesde install` 재실행 없이는 `QuadTypes.Ref`가 Unknown type | ✅ 반영(`project-setup-plan.md`) |
 | `H-166` | ① | 1 | 🟢 | `Ref.Revision` 초기값을 어느 문서도 안 정했다 | ✅ 반영(`ref-plan.md`: `0`) |
+| `H-167` | ① | 1 | 🟡 | 옮기며 `Ref<T>(default: T?)`/`.Value: T?`로 바꿔 놓았다 — 문서는 `Ref<T>(T)` 단일 파라미터, nil은 `Ref<<T?>>(nil)`로 | ✅ 코드를 문서에 맞춤(감사 2라운드) |
 
 ## 상세
 
@@ -42,6 +43,16 @@
 - **어디서**: `base/ref-plan.md` "`Ref`는 `Epoch`를 만족한다" 절 / `base/state-epoch-plan.md` §2.
 - **무엇이**: 갱신식(`bit32.bnot(-rev)`)과 표만 있고 시작값이 없다.
 - **처리**: `0`으로 구현하고 그 절에 한 줄 추가. 계약이 `==`/`~=`뿐이라 값은 무관.
+
+### `H-167` 🟡 — 구현이 `Ref` 시그니처를 `T?`로 바꿔 놓았다 (자기 실수)
+
+- **어디서**: `quad-types/src/init.luau`·`quad-base/src/Ref.luau` vs `base/ref-plan.md`
+  "제네릭 시그니처(2026-08-07 확정)".
+- **무엇이**: 문서는 `Ref<T>(T) -> Ref<T>`, `.Value: T` — nil이 올 수 있는 자리는 호출자가
+  `Ref<<T?>>(nil)`로 넓힌다(그 문서의 언바인딩 절도 같은 전제). 옮기면서 `Ref()` 관용구를
+  타입에서 받으려고 `default: T?`/`Value: T?`로 적었는데 그러면 `Ref(5).Value`까지
+  nil 검사를 강요한다 — 문서가 이미 기각한 모양. 감사 2라운드가 발견.
+- **처리**: 코드를 문서대로 되돌림. 테스트의 `Ref()`는 `Ref<<number?>>(nil)`로.
 
 ## §4 ⭐ 사용자 결정이 필요한 것 (배치 회신용)
 

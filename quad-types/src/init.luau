@@ -31,14 +31,16 @@ export type Relate = {
 }
 
 -- `Ref<T>` 최소형(`.claude/base/ref-plan.md`, M2 `H-128`). 콜백은 `fn(value, ref)` —
--- 두 번째 인자가 Ref 자신(= `Epoch`). `:Wait`는 M8.
-export type RefCallback<T> = (value: T?, ref: Ref<T>) -> ()
+-- 두 번째 인자가 Ref 자신(= `Epoch`). `:Wait`는 M8. **단일 타입 파라미터
+-- `Ref<T>(T)`** — nil이 들어올 수 있는 자리는 호출자가 `Ref<<T?>>(nil)`로 넓힌다
+-- (`ref-plan.md` "제네릭 시그니처").
+export type RefCallback<T> = (value: T, ref: Ref<T>) -> ()
 export type Ref<T> = {
-	Value: T?,
+	Value: T,
 	Revision: number,
 	Callbacks: { [RefCallback<T> | thread]: true }, -- 강한 해시맵 셋(+ M8 `:Wait` 대기자)
 	WeakCallbacks: { [RefCallback<T>]: true }, -- weak-key 테이블
-	Set: (self: Ref<T>, value: T?) -> Ref<T>,
+	Set: (self: Ref<T>, value: T) -> Ref<T>,
 	Callback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
 	WeakCallback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
 	Uncallback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
@@ -55,7 +57,7 @@ export type Quad = {
 	-- `Effect`/`Blocker`는 각 단위에서 추가된다.
 	Relate: () -> Relate,
 	Void: (...any) -> (),
-	Ref: <T>(default: T?) -> Ref<T>,
+	Ref: <T>(default: T) -> Ref<T>,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.

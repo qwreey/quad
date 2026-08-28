@@ -19,8 +19,8 @@ do
 	assert(not Quad.isPreRef(r) and not Quad.isPostRef(r) and not Quad.isState(r), "plain Ref only")
 	assert((getmetatable(r.WeakCallbacks :: any) :: any).__mode == "k", "WeakCallbacks is weak-keyed")
 	assert(getmetatable(r.Callbacks) == nil, "Callbacks is a plain strong set")
-	local empty = Ref()
-	assert(empty.Value == nil, "Ref() has no value")
+	local empty = Ref(nil :: number?) -- nil이 올 수 있는 자리는 호출자가 `T?`로 넓힌다(`ref-plan.md` "제네릭 시그니처")
+	assert(empty.Value == nil, "Ref(nil) has no value")
 	print("PASS")
 end
 
@@ -45,7 +45,7 @@ end
 print()
 print("=== 3. 리비전 — bit32.bnot(-rev) 랩어라운드 감소: 0 → 4294967295 → 4294967294, 매번 다름 ===")
 do
-	local r = Ref()
+	local r = Ref(nil :: number?)
 	r:Set(1)
 	assert(r.Revision == 4294967295, "0 wraps to 4294967295, got " .. r.Revision)
 	r:Set(2)
@@ -62,7 +62,7 @@ end
 print()
 print("=== 4. 즉시 1회 호출 — nil/미설정이어도 그 상태 그대로 (H-120), Weak도 동일 ===")
 do
-	local r = Ref()
+	local r = Ref(nil :: number?)
 	local calls = 0
 	local weakCalls = 0
 	r:Callback(function(value)
