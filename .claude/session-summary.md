@@ -1991,5 +1991,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   stale(`H-155`~`H-157`). **같은 세션 후속**으로 `/code-review` 3건 + `H-158`~`H-162`도
   확정 — `:Block` 폐기(`__apply`) / **`_rerunRequired` 홀드 플래그**(사용자 제안,
   `_installed` 흡수, Observer 대칭) / `Claim` M5 스코프 / `Void` export. 미결은
-  `Claim` 갈래(특히 다중 스크립트)뿐. 소스는
+  `Claim` 갈래(특히 다중 스크립트)뿐. **후속 2**: `H-163`/`H-164` → **`EmitReceive`**
+  (전파 루프는 `sub:_receive(from)`만, 사용자 지시) · Slot 재마운트 캐치업 (a′) ·
+  `emitFrom == nil` = 출처 없음 · `Observer:_catchUp()`. 소스는
   `qa-request/pre-implementation-handtrace-round10-followup.md`.
