@@ -660,10 +660,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **앞**에 와야 함, 2026-08-11 후속 세션 제안 → 같은 날 세 번째
       세션에 순서 정정, `base/source-state-plan.md` "trailing deps를 fn에
       lazy positional 인자로도 노출" 절) — 방향/순서는 확정,
+      **[2026-08-28 실측 전 서술 — 결과는 위 배너, 아래는 원문]**
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
-      되면 동종 타입 dep 1개로 한정)
-- [x] **[2026-08-28 단위 2 — `:With`/`Source:Emit()` 완료, `state:Apply(blocker)`는 `Apply`의 `__apply` 경로로 단위 4에서 실제 Blocker와 합류]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
+      되면 동종 타입 dep 1개로 한정 — 실측 결과 채택된 건 이 대안이 아니라
+      deps 자리 `...any` + 콜백 주석이다)
+- [ ] **[2026-08-28 부분 — 단위 2에서 `:With`/`Source:Emit()` 완료, `state:Apply(blocker)`는 `Apply`의 `__apply` 경로로 단위 4에서 실제 Blocker와 합류할 때 닫힘]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
