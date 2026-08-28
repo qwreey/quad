@@ -1,5 +1,5 @@
 --[[
-	Ref 최소형 계약 — `.claude/base/ref-plan.md` "API 모양" / "`.Callbacks`는 … 해시맵 셋" /
+	Ref 최소형 계약 — `.claude/base/ref-plan.md` "API 모양" / "`.Callbacks`는 배열이 아니라" /
 	"`:WeakCallback(fn)`" / "`:Set(value)`의 순서" / "`Ref`는 `Epoch`를 만족한다",
 	`.claude/base/state-epoch-plan.md` §2(리비전 랩).
 ]]
@@ -198,7 +198,8 @@ do
 	assert(got == r, "waiter is resumed with the Ref itself")
 	assert(r.Callbacks[co] == nil, "waiter is consumed")
 	assert(coroutine.status(co) == "dead", "waiter ran to completion")
-	r:Set(2) -- 소진됐으니 다시 resume 안 함(죽은 코루틴 resume이면 여기서 티가 남)
+	r:Set(2) -- 소진 확인은 위 Callbacks[co] == nil로 충분 — coroutine.resume은 에러를 올리지 않아
+	-- 죽은 코루틴을 다시 resume해도 여기서 티가 안 난다(리뷰 `H-170`, §4 문항)
 	print("PASS")
 end
 

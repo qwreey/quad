@@ -33,7 +33,22 @@
   업밸류 클로저 캐시) — §5.
 - ②/③ 갈래 발견 **없음** — §4 표는 비어 있다.
 
+## 단위 끝 절차 (같은 날, 뒤이어)
+
+- 감사 루프 **8라운드** 수렴(3→4→1→2→4→4→1→0). 잡힌 것: `todos.md` 5번 stale /
+  `smoke.init` 갱신 누락 / `quad-types-plan.md` `Quad` 블록 stale → 코드 포인터 /
+  mock docstring 자기모순 / `architecture.md` 소스 트리(`Brand.luau` 누락·`LifetimeHandle`
+  "내부는 Relate"·`Tween.luau`) / **`H-167`** `Ref<T>(T?)`로 옮겨 놓은 자기 실수 →
+  문서대로 `Ref<T>(T)` / `TweenBrand` 위치 / `ROADMAP` "`Brand.luau` 트리에 없음" /
+  `lifecycle-pattern.md`의 옛 "base가 Relate로 구현" 서술·원 확정 문단·순환 절 인용 /
+  `ref-plan.md` 같은-파일 절 인용 둘 / 개수 리터럴 / `conventions.md` 단위 나열.
+  **내 수정이 새 결함을 만든 것 둘**(순환 절 인용, 단위 나열 5세그먼트) — 코퍼스의
+  기록된 실패 모드 그대로.
+- `/code-review high` 10건 → ② `H-168`(`Ref()` 무인자 vs `Ref<T>(T)`) / `H-169`(재진입
+  `:Set`의 옛 `value`) / `H-170`(resume이 에러를 삼킴)은 §4 표로, ① `H-171`(mock lazy
+  claim GC 타이밍) / `H-172`(mock `Destroy` 의미론) / `H-173`(M7 `TweenBrand` 잔재) 반영,
+  잔손질 셋 반영, 기각 셋.
+
 ## 다음
 
-단위 끝 절차(규약 §4): 감사 루프 → `/code-review high` → 커밋 → fable 탐사자 →
-사용자에게 "§4를 보라".
+fable 탐사자(규약 §5) → 사용자에게 "`round11.md` §4를 보라". §4엔 문항 셋, 권고 전부 (a).

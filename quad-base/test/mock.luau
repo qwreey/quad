@@ -19,8 +19,9 @@
 	`.claude/base/lifecycle-pattern.md` (0)/(1)의 실 구현 스케치를 그대로 옮긴
 	것(gcconn = 절대 안 발화하는 `ClassName` 변경 시그널의 Connection,
 	gchold = inst에 매달린 값들의 강참조 홀더, `InstData`/`BindData` 두 Relate).
-	이걸 위해 `Destroy`가 Roblox처럼 **그 인스턴스의 모든 Connection을 끊는다**
-	(`Connected = false`) — gcconn의 `.Connected`가 곧 생존 판정이라서.
+	이걸 위해 `Destroy`가 Roblox처럼 동작한다 — Destroying 발화 → Parent nil →
+	**자손까지 Destroy** → **그 인스턴스의 모든 Connection을 끊는다**(`Connected =
+	false`), 두 번째 Destroy는 no-op. gcconn의 `.Connected`가 곧 생존 판정이라서.
 	Roblox와 다른 점 하나: gcconn/gchold 셋업(`nativeClaim`)은 quad가 Instance를
 	만들 때 하는 일인데 mock Instance는 quad 밖에서 만들어지므로 여기선
 	`bindLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
@@ -102,6 +103,7 @@ type Data = {
 	changed: { [any]: Signal },
 	properties: { [any]: any },
 	destroying: Signal,
+	destroyed: boolean,
 }
 
 local dataOf = setmetatable({}, { __mode = "k" }) :: { [any]: Data }
@@ -194,6 +196,7 @@ function Instance.new(className: string): MockInstance
 		changed = {},
 		properties = {},
 		destroying = newSignal(),
+		destroyed = false,
 	}
 	return (getProxy(data) :: any) :: MockInstance
 end
@@ -229,13 +232,14 @@ end
 
 function methods.Destroy(inst: any)
 	local data = getData(inst)
-	data.destroying:Fire()
-	-- Roblox처럼 이 인스턴스의 모든 연결을 끊는다(Destroying 포함) —
-	-- gcconn(`ClassName` 변경 시그널)의 `.Connected`가 생존 판정의 근거.
-	data.destroying:DisconnectAll()
-	for _, sig in data.changed do
-		sig:DisconnectAll()
+	if data.destroyed then
+		return -- Roblox처럼 두 번째 Destroy는 no-op (Destroying 핸들러 안의 재귀 Destroy 포함)
 	end
+	data.destroyed = true
+	-- Roblox 순서: Destroying 발화 → Parent = nil(변경 시그널 관측 가능) → 자손 Destroy
+	-- → 이 인스턴스의 모든 연결 해제. gcconn(`ClassName` 변경 시그널)의 `.Connected`가
+	-- 생존 판정의 근거라 마지막 단계가 곧 canExecute의 전환이다.
+	data.destroying:Fire()
 	if data.parent then
 		local siblings = data.parent.children
 		local i = table.find(siblings, data)
@@ -244,6 +248,13 @@ function methods.Destroy(inst: any)
 		end
 		data.parent = nil
 		fireChanged(data, "Parent")
+	end
+	for _, childData in table.clone(data.children) do
+		methods.Destroy(getProxy(childData))
+	end
+	data.destroying:DisconnectAll()
+	for _, sig in data.changed do
+		sig:DisconnectAll()
 	end
 end
 
@@ -284,6 +295,13 @@ local function installLifetime(quad: any)
 			nop(gchold, inst) -- 절대 발화 안 함. 클로저가 gchold와 inst를 업밸류로 붙잡는 게 전부
 		end)
 		gchold[1] = gcconn -- 배열 자리 1번은 gcconn 전용(값들은 해시 자리에)
+		if getData(inst).destroyed then
+			-- lazy claim의 구멍(리뷰 `H-171`): 이미 Destroy된 인스턴스의 옛 gcconn은 연결이
+			-- 끊겨 GC되므로 여기로 다시 들어오는데, 새 gcconn이 Connected=true면 그 값은
+			-- 영원히 산다. Roblox에선 nativeClaim이 생성 시 1회라 이 경로 자체가 없다 —
+			-- 죽은 인스턴스에 묶인 값은 즉시 죽은 상태로 시작하게 맞춘다.
+			gcconn:Disconnect()
+		end
 		InstData:SetWeak(inst, "gchold", gchold)
 		InstData:SetWeak(inst, "gcconn", gcconn)
 	end

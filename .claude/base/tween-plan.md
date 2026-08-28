@@ -349,8 +349,8 @@ end)
 `:Apply`로 붙이는 factory는 항상 `State`를 반환해야 한다는 불변식.)
 
 **base 프리미티브 아님 — 여전히 quad-roblox 유틸**(아래 "패키지 경계"
-절) — `Tween<T>` 값 타입/`isTween`만 base(`quad-base/Tween.luau`)에
-있고, `Animate`는 이미 있는 `:Compute`/`Tween{...}`/`isState`를 조합한
+절) — `Tween<T>` 값 타입만 base(`quad-base/Tween.luau`, `isTween`은
+**[2026-08-28]** 다른 술어와 같이 `Brand.luau`)에 있고, `Animate`는 이미 있는 `:Compute`/`Tween{...}`/`isState`를 조합한
 quad-roblox 레벨 편의 함수라 base 계약에 영향 없음.
 
 ## 초기 진입 애니메이션(`initValue`) — **에이전트 작업 범위 제외로 확정, 사용자가 직접 처리**

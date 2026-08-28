@@ -112,6 +112,43 @@ do
 end
 
 print()
+print("=== 6b. 이미 Destroy된 inst에 bind — GC 여부와 무관하게 죽은 상태로 시작 (H-171) ===")
+do
+	local inst = Instance.new("Frame")
+	quad.bindLifetime(inst, {})
+	inst:Destroy()
+	local a = {}
+	quad.bindLifetime(inst, a)
+	assert(quad.canExecute(a) == false, "bound onto a destroyed inst: dead immediately (no GC yet)")
+	collectgarbage()
+	collectgarbage()
+	local b = {}
+	quad.bindLifetime(inst, b)
+	assert(quad.canExecute(b) == false, "bound onto a destroyed inst after GC: still dead")
+	print("PASS")
+end
+
+print()
+print("=== 6c. 조상 Destroy — 자손에 묶인 값도 같이 죽는다 (H-172) ===")
+do
+	local root = Instance.new("Frame")
+	local child = Instance.new("Frame")
+	child.Parent = root
+	local v = {}
+	quad.bindLifetime(child, v)
+	local parentChanges = 0
+	child:GetPropertyChangedSignal("Parent"):Connect(function()
+		parentChanges += 1
+	end)
+	root:Destroy()
+	assert(child.Parent == nil, "descendant is detached")
+	assert(quad.canExecute(v) == false, "value bound to a descendant dies with the ancestor")
+	assert(parentChanges == 1, "Parent change is observable before connections are cut")
+	root:Destroy() -- 두 번째는 no-op
+	print("PASS")
+end
+
+print()
 print("=== 7. 첫 인자는 mock Instance여야 함 ===")
 do
 	local ok, err = pcall(function()

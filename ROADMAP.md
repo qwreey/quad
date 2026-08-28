@@ -1707,8 +1707,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ### 짜야 할 것
 
-- [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리, `isTween`/
-      `TweenBrand`, `Value: T` plain만 받고 State 재귀 없음)
+- [ ] `quad-base/Tween.luau`(값 타입만 — `Tween(opts)` 팩토리가 `TweenBrand`에
+      등록, **[2026-08-28]** 브랜드 인스턴스와 `isTween`은 `Brand.luau`에 추가,
+      `Value: T` plain만 받고 State 재귀 없음)
 - [ ] `Handlers/Property.luau`에 `isTween(realv)` 분기 추가(기존
       `Handlers/Tween.luau` 독립 핸들러는 폐기) + 3-상태 릴레이션 슬롯
       (**[2026-08-28 `H-155`]** `base/tween-plan.md`의 "3-상태 저장" 절이 소스 —

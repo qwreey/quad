@@ -7,7 +7,7 @@
 	Sources, as-is:
 	  - `.claude/base/ref-plan.md` "API 모양" (surface, self-returning
 	    mutations, "already filled → call once on registration"),
-	    "`.Callbacks`는 … 해시맵 셋" (dedup contract, snapshot before
+	    "`.Callbacks`는 배열이 아니라" (dedup contract, snapshot before
 	    iterating), "`:WeakCallback(fn)`" (weak-key table `.WeakCallbacks`,
 	    Weak is the primitive and `:Callback` only adds the GC keep),
 	    "`:Set(value)`의 순서" (value → revision → callbacks; the code below

@@ -2023,4 +2023,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `is*` 11 한 잎 파일)/`LifetimeHandle`(`InitLifetimeHandle` 에러 스텁)/`Ref` 최소형/
   `quad-types` 타입/mock `installLifetime`(+`Destroy`가 Connection 전부 끊음)/spec 5개,
   `test.sh`에 `spec.*`+`luau-analyze`. 발견 `H-165`(pesde shim은 생성 시점 export만 —
-  `pesde install` 재실행)·`H-166`(`Revision` 초기값 0) 둘 다 ①. ②/③ 없음.
+  `pesde install` 재실행)·`H-166`(`Revision` 초기값 0) 둘 다 ①. 단위 끝: 감사 8라운드
+  수렴(`H-167` `Ref<T>(T)` 되돌림 포함), `/code-review high` 10건 → ② 셋(`H-168` `Ref()`
+  무인자 관용구 / `H-169` 재진입 `:Set` 옛 값 / `H-170` resume이 에러 삼킴, 권고 전부 (a))
+  §4로, ① 셋(mock lazy claim·`Destroy` 의미론·M7 `TweenBrand` 잔재) 반영.
