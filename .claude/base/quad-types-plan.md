@@ -70,15 +70,11 @@ type-version-check/       # 워크스페이스 네 번째 멤버, quad에 종속
 
 ## `Quad` 타입 — 확정된 표면
 
-```lua
-export type Quad = {
-	Version: "0.0.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
-	debug: boolean,
-	New: () -> Quad,
-	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
-	AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P,
-}
-```
+**[2026-08-28] 필드 목록의 소스는 실제 코드 `quad-types/src/init.luau` 하나다** —
+여기 있던 M1 시점 코드 블록(`Version`/`debug`/`New`/`RunInit`/`AddPlugin`)은 M2 첫
+단위가 `Relate`/`Void`/`Ref`/`is*`/생명주기 4종을 얹으면서 stale해져 지웠다(감사가
+발견). 마일스톤별로 무엇이 추가돼야 하는지는 `ROADMAP.md`의 `H-80` 체크박스가
+소스이고, 이 문서는 아래처럼 **왜 그 모양인지**만 적는다.
 
 **⭐⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25` — 실측] 이 레코드는 **닫혀
 있고**, 마일스톤마다 서브시스템 필드를 여기 추가해야 한다.**

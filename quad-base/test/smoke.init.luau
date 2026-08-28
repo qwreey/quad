@@ -64,4 +64,19 @@ do
 end
 
 print()
+print("=== 5. [2026-08-28 M2 첫 단위] 탑레벨 값이 New()마다 실려 있음 ===")
+do
+	local m = Quad.New()
+	assert(type(m.Relate) == "function" and type(m.Void) == "function" and type(m.Ref) == "function", "Relate/Void/Ref constructors")
+	for _, name in { "isEpoch", "isSource", "isState", "isStore", "isObserver", "isEffect", "isBlocker", "isModifier", "isRef", "isPreRef", "isPostRef" } do
+		assert(type((m :: any)[name]) == "function", name .. " must be a function")
+	end
+	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute" } do
+		assert(type((m :: any)[name]) == "function", name .. " stub must be installed")
+	end
+	assert(m.Void == Quad.Void and m.Ref == Quad.Ref, "leaf modules are shared across instances")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
