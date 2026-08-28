@@ -14,8 +14,8 @@
 
 ## ⭐ 최우선 — `Claim` 갈래 (2026-08-28 갱신)
 
-**[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-162`)까지
-사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
+**[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-164` — `EmitReceive`·
+`Observer:_catchUp` 포함)까지 사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
 `qa-request/pre-implementation-handtrace-round10-followup.md`). 남은 건 하나 —
 **M2 게이트 아님**:
 - **`research/existing-mount-plan.md` §5** — 루트/템플릿을 quad가 소유하는

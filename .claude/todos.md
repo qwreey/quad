@@ -58,7 +58,8 @@
      재구독·재바인드의 `Refresh` 캐치업 폐기(`H-151`) / 루트는 밖에서 `.Parent =`가
      아니라 quad가 `Claim`으로 소유(`H-148`, `research/existing-mount-plan.md`). **같은 날 후속** `H-158`~`H-162`(`:Block` 폐기 → `state:Apply(blocker)` /
      `_rerunRequired` 홀드 플래그가 `_installed`를 흡수 / `Claim` M5 스코프 / `Void` export)도
-     확정·반영. 남은 미결은 `question.md` 최우선 절의 `Claim` 갈래(특히 §5-7 다중
+     확정·반영, **후속 2** `H-163`/`H-164`(`EmitReceive` 인터페이스 — 전파 루프는
+     `sub:_receive(from)`만 / Slot 재마운트 캐치업 / `emitFrom == nil` 계약 / `Observer:_catchUp`)까지. 남은 미결은 `question.md` 최우선 절의 `Claim` 갈래(특히 §5-7 다중
      스크립트) 하나 — 게이트 아님. 남은 액션: M2 착수.**
      아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
