@@ -1474,7 +1474,7 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
   자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
   (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
-  **`:Unsubscribe()`는 이 레지스트리에서 반드시 `SubscribedObservers[observer]
+  **`:Unsubscribe()`는 이 레지스트리에서 반드시 `Subscribed[observer]`(옛 표기 `SubscribedObservers[observer]`
   = nil`까지 해야 함** — `Subscribed` 플래그만 내리고 강참조를 안 끊으면
   GC 대상이 안 되는 반쪽짜리 해제가 됨.
   **⭐ [2026-08-26 정정, 8라운드 `H-111`]** 여기 한때 *"둘은 항상 같이
