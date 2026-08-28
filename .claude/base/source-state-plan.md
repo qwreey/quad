@@ -1470,7 +1470,7 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   경로에도 겸용하라는 근거가 못 됨 — 실제로 2026-08-08 세션이 그렇게
   겸용했다가 `canExecute` 시그니처까지 오염됐음
   (`archive/canexecute-inst-arg-reversed.md`). 실측은 구현 단계에서 확인.
-- **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류를
+- **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류(**[2026-08-29]** 예시용 옛 이름 — 실제 이름은 `Subscribed`/`WeakSubscribed`, 소스는 `base/lifecycle-pattern.md` "(2) 전역 경로")를
   **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
   자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
   (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
