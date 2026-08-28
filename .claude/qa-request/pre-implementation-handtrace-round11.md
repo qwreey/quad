@@ -293,7 +293,7 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
   스텁을 설치(주입 op 목록의 소스는 `architecture.md` EngineOps 줄 — 스텁 파일 배치는 코드
   배치). mock은 `installLifetime`이 `inst.Destroying:Connect(fn)`으로 채운다.
 - 색인이 짚은 문서 긴장(`base/source-state-plan.md` "`state:Observer(fn)`" 절의 *"Effect의 내부 Observer가 이 설치 발화를 `from == nil`로 거르는 이유이기도 하다"* — 한때 여기 `ss:1197`이라는 색인 약호로 적혀 있었다 —
-  거른다" vs `H-164`)은 코드에서 모순 없음 — Observer 계약은 `nil` = 출처 없음이고, Effect의
+  vs `H-164`)은 코드에서 모순 없음 — Observer 계약은 `nil` = 출처 없음이고, Effect의
   `fire`가 그걸 `Update` 못 하는 값으로 **자기 사정**으로 거를 뿐이다.
 - 테스트 작성 함정: `table.insert(t, nil)`은 길이를 안 늘린다 — `emitFrom == nil` 발화를 셀 땐
   래퍼로 기록할 것(한 번 오진했다).
