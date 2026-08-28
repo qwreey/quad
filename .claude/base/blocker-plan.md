@@ -221,7 +221,7 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
   아님) — 원래 근거는 배선 동사 `state:Block(blocker)`와의 충돌이었고,
   **[2026-08-28 `H-158`]** 그 동사가 `state:Apply(blocker)`로 바뀐 뒤에도 이름은
   유지한다(`On`/`Off`가 `IsOn`/`IsBlocked`와 이미 짝이고, 바꿀 이유가 없다).
-- 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**
+- 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**(**[2026-08-29]** 개념 이름 — 리터럴 필드가 아니라 게이트 `withheld`의 `next(…) ~= nil` 파생값, 위 "`HasBlockedEmit`은 게이트 흡수 집합의 특수형이다" 절)
   (gated state의 대기 플래그, `Is`/`Has` 접두어로 불리언임을 바로 알려줌).
 - 메소드: `state:Apply(blocker) -> state`(**[2026-08-28 `H-158`]** 옛 `state:Block(blocker)` — 별도 메소드가 아니라 `Blocker.__apply`).
 - **[2026-08-18 신설] `IsOn() -> boolean`**(`IsBlocked` 필드를 그대로 읽는

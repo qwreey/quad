@@ -311,6 +311,8 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 - 단위 3 감사 1라운드 잔여: `Observer`/`Effect` 생성자의 `fn` 타입 검사(`error(…, 2)`)는
   문서에 없고 코드가 더한 입력 검증 — `newNode` dep 검증과 같은 급(`architecture.md` 계약의
   예), 기록만. 스파이크 `05`는 `spec.state`/`spec.effect` 3번이 대체 → `done/`.
+- `Impl.Gate`의 `setup` 타입 검사와 `setup(emit)` 반환값 검사(`error(…, 2)`) 둘도 문서에
+  없고 코드가 더한 입력 검증 — `newNode` dep 검증·단위 3의 `fn` 검사와 같은 급, 기록만.
 - `Debounce`/`Throttle`·`setTimeout`/`clearTimeout` 주입 op는 백로그 — 이번 단위에 없음.
 
 **툴링 사실 둘**(설계 아님, 다음 단위가 알아야 함):
