@@ -228,7 +228,8 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
   얇은 조회 메소드), **`OffWithoutEmit() -> self`**(위 "onunblock 핸들"
   참고) — 사용자 확정: *"IsBlocked가 있다면 그냥 두어도 될듯 함.
   HasBlockedEmit 만 처리된다면 괜찮다 생각"* — 즉 `IsBlocked`/
-  `HasBlockedEmit` 필드는 그대로 유지하고, 별도 `HasBlocked`(Blocker
+  `HasBlockedEmit` 필드(그 시점 표현 — `HasBlockedEmit`은 위 각주대로 파생값이지
+  리터럴 필드가 아니다)는 그대로 유지하고, 별도 `HasBlocked`(Blocker
   자신의 새 최상위 플래그)는 **신설하지 않는다** — `OffWithoutEmit()`이
   각 gated state의 기존 `HasBlockedEmit`을 그대로 리셋해주는 것으로
   충분하다고 판단됐기 때문(처음 제안됐던 "`HasBlocked`"는 이 논의
