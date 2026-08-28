@@ -381,8 +381,8 @@ haiku, 일반 작업은 sonnet. 특히 소스코드를 많이 읽어야 하는 �
   건 `H-nnn`으로 기록하고 `base/`+코드를 같은 커밋에서 자율로 고침 / 새
   필드·인자·이름·메커니즘·확정 역전은 코드에 넣지 말고 `round11.md` §4 표에
   쌓아 배치 회신(코드엔 `-- TODO(H-nnn)` 마커만) / 짠 코드 상당 부분을 무효화할
-  규모면 즉시 중단·보고. (2) 단위 넷(공통 기반+mock 생명주기 → `EpochMap` →
-  `Source/State/Store` → `Observer`/`Effect` → `GateNode`/`Blocker`+탑레벨)이
+  규모면 즉시 중단·보고. (2) 단위 넷(① 공통 기반+mock 생명주기 / ② `EpochMap` 다음
+  `Source/State/Store` / ③ `Observer`/`Effect` / ④ `GateNode`/`Blocker`+탑레벨)이
   끝날 때마다 감사 루프 → `/code-review high` → 커밋 → 신선한 탐사자 → 사용자에게
   "§4를 보라" 한 줄. (3) 커밋 게이트는 두 층 — 매 커밋 doc-check ERROR 0, 단위
   끝 감사 루프. 이걸로 `HUMAN_TODO.md` 2번(자율 루프 설정 여부)은 닫혔다 —
