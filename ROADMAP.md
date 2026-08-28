@@ -28,9 +28,14 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 부기 / `reconcile` 배치 Blocker / `New`·`drive` 파이프라인 / props `Parent` 금지),
 > 그 반영분에 `/code-review`가 낸 `H-143`~`H-146`(`Rerun` 꼬리 실행 중 사망이면 즉시
 > 소진 / 재구독 꼬리 + 진입점은 `EffectHandle` 자기 것 / `bk.indexOfElement`
-> weak-key / 루트 부착은 사용자 몫)도 같은 날 확정·반영. **[2026-08-28]** 그 반영분의
-> `/code-review`가 낸 셋(`H-147`~`H-149`)은 **10라운드 문항지**(`-round10.md`)에서
-> 광범위 탐사 결과와 함께 배치 회신 대기(게이트 아님).
+> weak-key / 루트 부착은 사용자 몫)도 같은 날 확정·반영. **[2026-08-28] 10라운드**
+> (`-round10-followup.md`가 소스) — 그중 둘은 하루 만에 다시 뒤집혔다: `fn`/cleanup은
+> 자기 구독을 못 바꾼다(`H-147`, `H-143` 소멸 · `rawRerun(force)`/`Rerun` 분리) /
+> 루트는 밖에서 `.Parent =`가 아니라 **quad가 `Claim`으로 소유**(`H-148`,
+> `research/existing-mount-plan.md`, M5 이후). 그 밖에 `_epochs`는 emit 때만 갱신
+> (`Refresh` 캐치업 폐기, `H-151`) / `Effect._blocker` 제거(`H-150`) / Observer
+> 진입점 인라인(`H-149`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름
+> 런타임 가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`).
 > **어느 체크박스가 바뀌었는지는 여기서 세지 않습니다** — 해당 체크박스에
 > 각각 `H-1xx` 표시가 붙어 있으니 그게 소스입니다. M2/M3 양쪽에 걸쳐
 > 있습니다). M1까지의 산출물은
@@ -374,6 +379,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
 - [ ] `Source.luau`/`State.luau`/`Store.luau`
+- [ ] **[2026-08-28 10라운드 `H-153`]** Store 생성자의 `isSource` 순회와 `store:Of(name)`에
+      **예약 이름 런타임 가드**(`error(…, 2)`) — 동적 키는 타입이 못 막는다;
+      그림자 = store 자신(`base/store-plan.md`).
 - [ ] **[2026-08-18 신설, 2026-08-25 확정]** `store:Of<<T>>(name): Source<T>` —
       런타임에 이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열
       커링은 기각). **콜론 메소드로 확정**했고, 예약 키
@@ -479,13 +487,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] `Effect(fn, ...deps)` — **⚠️ 선행: `Blocker`의 기본 메커니즘**
-      (`On`/`Off`/`IsOn`/`OffWithoutEmit`). 생성자가 등록 구간 억제에 사적
-      `Blocker` 하나를 쓴다(`base/effect-plan.md`). 아래 `Blocker.luau`
-      체크박스가 이 항목보다 뒤에 있지만 **그 기본 넷은 `GateNode`/`:Policy`와
-      무관하게 독립 완결**이라(`base/blocker-plan.md`의 "메커니즘" 절) 그
-      부분만 먼저 만들면 된다 — `:Policy`/`state:Block` 배선은 `GateNode`
-      뒤에. (`base/effect-plan.md`, **[2026-08-21 5라운드
+- [ ] `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
+      (**[2026-08-28 10라운드 `H-150`]** 선행 요구 **해소** — 생성자의 사적
+      `Blocker`는 `fire` 첫 줄의 `canExecute`가 이미 같은 억제를 해서 한 번도
+      판정에 닿지 않는 죽은 부품이라 제거됐다. `Blocker.luau`는 이제 `GateNode`/
+      Slot 쪽 요구뿐.) (`base/effect-plan.md`, **[2026-08-21 5라운드
       `C-6`]** 옛 시그니처는 `Effect(fn, state?)`) — deps 생략 시 설치
       1회+leaf 사망 시 확정 정리, deps 지정 시 **각각에 맞는 구독**
       (State/Source는 `Observer`, `Ref`는 `:WeakCallback` — **[2026-08-27
@@ -498,16 +504,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `EffectHandle:Subscribe()`/`:Unsubscribe()`도 추가(leaf 없이 쓰는
       모듈/스크립트 레벨 Effect) — `:Unsubscribe()`는 Observer와 달리
       마지막 cleanup을 1회 트리거해야 함(2026-08-07 일곱 번째 세션).
-      **[2026-08-27 9라운드 `H-143`/`H-144`]** `Rerun` 꼬리는 `fn` 실행 중에
-      핸들이 죽었으면(`wasAlive and not canExecute`) 반환 cleanup을 **즉시
-      소진**하고 `_pending`을 버린다(`fn` 안 `self:Unsubscribe()` 지원 —
-      `not canExecute` 하나로 판정하면 생성자 최초 설치가 죽는다), 네 진입점은
-      **`EffectHandle` 자기 것**(Observer 함수 본문을 배정하지 않는다 — 공유는
-      `Observer.luau`의 레지스트리 둘과 `canBound`뿐; 콜론 위임이 오버라이드를
-      타 꼬리가 두 번 도는 걸 감사가 잡아 사용자가 (b)로 확정), `Subscribe`/
-      `WeakSubscribe`는 등록 끝에 `_epochs:Refresh()` + `not _installed or
-      depsChanged → Rerun` 꼬리(재구독 재설치, leaf `_bindDestroying`과 동형) —
-      의사코드는 `base/effect-plan.md`.
+      **[2026-08-28 10라운드 `H-147`]** `rawRerun(self, force)` 본체 + 공개
+      `Rerun()`(진입에서 `canExecute` 게이트 — 죽은·안 묶인 핸들은 정의된 no-op),
+      생성자는 `rawRerun(self, true)`. **`fn`/cleanup은 자기 구독을 못 바꾼다** —
+      네 진입점 첫 줄에 `_running` 가드(2026-08-27의 "`fn` 안 `Unsubscribe` 지원"
+      `H-143`과 `wasAlive` 꼬리는 소멸). 네 진입점은 **`EffectHandle` 자기 것**
+      (`H-144` (b) — 공유는 `Observer.luau`의 레지스트리 둘과 `canBound`뿐),
+      `Subscribe`/`WeakSubscribe`는 등록 끝에 `not _installed → Rerun`(재구독
+      재설치; **[`H-151`]** `_epochs:Refresh()` 캐치업은 폐기 — `_epochs`는
+      `fire`의 `Update`에서만 갱신) — 의사코드는 `base/effect-plan.md`.
       **동적 경로 가드**도 Observer와 같은 패턴으로 등록(`base/effect-plan.md`
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
@@ -525,8 +530,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       있었으나 근거 없는 서술이라 삭제됐다(사용자 확정: 두 콜백은 이질적이고,
       Observer엔 자기 epoch가 없지만 `Ref`는 그 자체가 epoch다). dedup은
       클로저 identity가 아니라 `_deps`/`_epochs` 맵이 한다 ·
-      **`handle._blocker`**(등록 구간의 즉시-1회 호출 억제 — 옛 `_installing`
-      플래그 폐기, 그건 생성자 구간만 덮어 바인드 구간을 놓쳤다) ·
+      ~~**`handle._blocker`**~~(**[2026-08-28 `H-150`]** 제거 — 등록 구간의
+      즉시-1회 호출은 별도 필드 없이 `fire` 첫 줄의 `canExecute`가 억제한다; 옛
+      `_installing` 플래그도 생성자 구간만 덮어 폐기됐었다) ·
       **`handle._cleanup`**(직전 cleanup 보관, `Rerun`과 `Destroying` 클로저가
       같은 자리를 읽는다) · **`handle._installed`**(설치 여부 — `fn`의 cleanup
       반환이 **선택**이라 `_cleanup`의 유무로는 판정할 수 없다) ·
@@ -543,9 +549,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **⭐ dep 등록은 생성자에서 한 번만** — `:WeakSubscribe()`/
       `:WeakCallback()`으로 걸고, 바인드/언바인드는 dep을 아예 안 건드린다
       (`H-58`/`H-59`). 발화 게이트는 전부 **`canExecute(handle)`** 하나다
-      (`H-7`). 캐치업은 바인드 직후 **조건부 최대 1회**
-      (`local depsChanged = self._epochs:Refresh()` **먼저**, 그다음 `if not self._installed or depsChanged then self:Rerun() end` — `or` 한 줄로 단축평가에 걸면 재설치 경로에서 `Refresh()`가 건너뛰어져 다음 emit이 헛돈다, `base/effect-plan.md` 캐비엇
-      — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
+      (`H-7`). 캐치업은 바인드 직후 **재설치 1회뿐**(`if not self._installed then
+      self:Rerun() end` — **[2026-08-28 `H-151`]** 옛 `_epochs:Refresh()`는 폐기,
+      `_epochs`는 emit 받을 때만 갱신 — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
 - [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
@@ -575,6 +581,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
       emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
       (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
+      **[2026-08-28 10라운드 `H-152`] 조립 첫 줄은 `StateBrand:register(node)`** —
+      빠지면 `_emitDown`의 `isState`가 거짓이라 통지만 조용히 죽는다(`base/gate-plan.md`
+      조립 절). **[`H-151`]** 게이트는 emit 경로만 미룬다는 계약(같은 문서).
       유보 배치는 `withheld : { [epoch] : true }`(집합), flush 때 테이블을
       통째로 갈고, **내보내는 emit이 싣는 건 그렇게 떼어낸 `EpochSet`
       스냅샷뿐이다 — 게이트 노드 자신은 안 싣는다**(하류가 게이트 identity를
@@ -950,7 +959,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
 - [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절). **[2026-08-27 9라운드 `H-142`] 생성되는 props 타입에서 `Parent`를 제외할 것** — props에 `Parent`는 올 수 없다(부모가 하는 일, 같은 문서의 파이프라인 절). `New` ①~④ 순서는 그 절의 의사코드가 소스
-- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음; **[2026-08-27 `H-146`]** 그 거부는 **전용 에러 문구** — "`Parent` is not a prop" 취지 — 를 내고, 루트를 quad 밖 부모에 붙이는 건 사용자가 밖에서 `.Parent =`로 한다(`Mount` 표면 없음, 같은 항목)), `Handlers/InstanceChild.luau` —
+- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로) — 루트는 밖에서 `.Parent =`가 아니라 quad가 `Claim`으로 소유하는 쪽으로(`research/existing-mount-plan.md`, 아래 백로그)), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
       부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →
       `v.Parent = inst` → `setLength(inst, k, 1, inst)`(정적 단일 자식은 상수
@@ -961,6 +970,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       문단. 빠뜨리면
       `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
       `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
+- [ ] **[2026-08-28 백로그, M5 이후]** `Claim(inst, D.Mapper.<Class> "Name" {…})` — 이미 있는 트리(PlayerGui·`Clone()` 사본)를 quad가 소유. 프로바이더 op `nativeFindChild` 필요. 갈래 미결 — `research/existing-mount-plan.md` §5가 소스(개수도), 다음 배치 문항.
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에
@@ -1190,8 +1200,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       - **해제 시 owner 등록 되돌리는 순서 고정** —
         `setOffsetSource(inst,k,None)` **먼저**, `setLength(inst,k,0)` **나중**.
         반대로 하면 `setLength` 안의 `recompute`가 죽는 중인 서브트리의 offset
-        `Source`에 헛된 `:Set()`을 날림. `recompute`는 `sourceList[i]`가 `nil`
-        이어도 `None`처럼 skip(방어). (**⚠️ [2026-08-27 정정, 9라운드 `H-140`]**
+        `Source`에 헛된 `:Set()`을 날림. `recompute`는 `sourceList[i]`가 `nil`이면
+        **즉시 `error`**(부기가 깨졌다는 신호 — 4라운드 `C-6`; **[2026-08-28
+        `H-155`]** 여기 한때 "`None`처럼 skip(방어)"라 적혀 있었다, `base/slot-plan.md`가 소스). (**⚠️ [2026-08-27 정정, 9라운드 `H-140`]**
         여기 한때 *"해제 시 `slot.Offset = nil`"*이 붙어 있었는데 그건 4라운드
         `SL-75`/`D-60`이 **폐기**한 문장이다 — `nil`로 갈아치우면 그 Source를
         구독 중인 다운스트림이 끊겨 포탈이 깨진다. `slot.Offset`은 생성자에서
@@ -1202,8 +1213,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         spurious 재발행만 `false`, `Frame{slot,slot}`은 error).
         `releaseOwner`는 불일치 시 즉시 error.
       - **`rawRemove`가 `releaseOwner`를 부를 것**(옛 의사코드에서 누락돼 있었음),
-        **`destroySlotTree`가 자식 소유권 반납 + `_mounted`/`_mountedInst` 복원**
-        (GC에 맡기면 재사용이 GC 타이밍 의존으로 비결정적 실패).
+        ~~**`destroySlotTree`가 자식 소유권 반납 + `_mounted`/`_mountedInst` 복원**~~
+        (**[2026-08-28 `H-155`]** 이 수정은 5라운드 `C-4`로 **되돌려졌다** —
+        `base/slot-plan.md`의 `State<Slot>` 재설정 표 정정 문단이 소스).
       - **`SlotHandler.process`는 claim 실패 시에도 파괴적 클로저를 반환해야 함**
         — no-op을 반환하면 다음 진짜 교체 때 정리 주체가 사라짐(`retractFrom`은
         클로저가 early-return해도 체인에서 항상 소비하므로).
@@ -1300,7 +1312,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **`data:Observer(fn)` 구독은 `:List()` 호출 시점이 아니라 Slot
       마운트 시점까지 lazy — `Dispatch.setLength`와 같은 패턴으로
       `bindLifetime(inst,observer)`(마운트 이후 `:List()`가 불리면
-      `self._mounted` 확인 후 즉시 활성화)** (2026-08-09 일곱 번째 세션,
+      `self._physicalTarget` 확인 후 즉시 활성화 — **[2026-08-28 `H-155`]** 옛
+      `_mounted` 기준은 6라운드 `H-2`로 바뀌었다)** (2026-08-09 일곱 번째 세션,
       `base/slot-plan.md` "`Slot:List(data, updateFn, keyFn?)`"의 "구독 시점" 절)
       **`Slot.Offset: Source<number>`도 `Slot.Length`처럼 공개 필드로
       노출 — `Length`와 같은 자리, 즉 생성자에서 `Source(0)`으로 만들고 마운트
@@ -1501,9 +1514,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       않는다** — 그 필드 자체가 폐기됐다(`_deps` 하나로 통합). 그리고
       `_bindDestroying`은 **`Ref` dep 콜백을 (재)등록하지 않는다** —
       dep 등록은 생성자에서 끝나고, 여기서 하는 건 `Destroying` 연결과
-      **조건부 캐치업 두 줄**(`local depsChanged = self._epochs:Refresh()` 뒤
-      `if not self._installed or depsChanged then self:Rerun() end` — `Refresh()`를
-      `or` 뒤에 두면 단축평가로 건너뛰어진다)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
+      **재설치 캐치업 한 줄**(`if not self._installed then self:Rerun() end` —
+      **[2026-08-28 `H-151`]** 옛 `Refresh()` 판정은 폐기)뿐이다. **이게 `Effect`의 leaf 사망 cleanup을 실제로
       발화시키는 유일한 배선**이고, M6의 `_detached` 정리가 여기 의존한다
       (그 항목의 `H-50` 각주 참고). 의사코드는 `base/lifecycle-pattern.md`와
       `base/effect-plan.md`가 소스. **[2026-08-14
@@ -1675,8 +1687,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `TweenBrand`, `Value: T` plain만 받고 State 재귀 없음)
 - [ ] `Handlers/Property.luau`에 `isTween(realv)` 분기 추가(기존
       `Handlers/Tween.luau` 독립 핸들러는 폐기) + 3-상태 릴레이션 슬롯
-      (`RobloxTween | true | nil` — `nil`=첫 세팅, `true`=세팅됨/트윈
-      없음, 엔진 객체=활성 트윈) + 첫 세팅은 무조건 애니메이션 없이
+      (**[2026-08-28 `H-155`]** `base/tween-plan.md`의 "3-상태 저장" 절이 소스 —
+      활성 트윈은 엔진 객체가 아니라 `{Tween, Value}` **테이블**, `Tween.Finish`가
+      목표값을 알아야 해서; 옛 표기 `RobloxTween | true | nil`) + 첫 세팅은 무조건 애니메이션 없이
       스냅(hasBeenSet 억제) + 활성 트윈 정리는 override 정책 완료 후에만
       새 값 세팅(순서 뒤바뀌면 트윈 다음 프레임이 방금 세팅한 값을 덮어씀)
 - [ ] `quad-roblox/Animate.luau` — **시그니처도 이미 확정 완료**(2026-08-12

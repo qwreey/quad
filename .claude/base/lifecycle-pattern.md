@@ -354,8 +354,8 @@ function bindLifetime(inst, value)
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
     if isEffect(value) then
         value:_bindDestroying(inst)   -- Destroying 연결 + **조건부 캐치업 1회**
-                                      -- (`local depsChanged = self._epochs:Refresh()` 먼저,
-                                      --   `if not self._installed or depsChanged then self:Rerun() end`)
+                                      -- (`if not self._installed then self:Rerun() end` —
+                                      --   [2026-08-28 `H-151`] 옛 `_epochs:Refresh()` 캐치업은 폐기)
                                       -- 의사코드는 `base/effect-plan.md`가 소스.
                                       -- 그 안에서 주입 op `onDestroying(inst, fn)`을
                                       -- 부른다(base는 Instance를 모른다).
@@ -446,14 +446,17 @@ end
 진입점 전량이고 소스다(사용자 원문 *"구현이 한 벌"*). **[2026-08-27 9라운드
 `H-127`, 같은 날 (b)로 정정]** `EffectHandle`은 **같은 레지스트리 둘과 같은
 `canBound` 게이트를 쓰되 네 진입점 본문은 자기 것**이다 — 한때 "같은 넷을
-그대로 재사용(함수 배정)"으로 적었는데, 아래 `Subscribe`/`Unsubscribe`가
-`self:WeakSubscribe()`/`self:WeakUnsubscribe()`로 **콜론 위임**하므로 그 함수를
+그대로 재사용(함수 배정)"으로 적었는데, 당시 `Subscribe`/`Unsubscribe`가
+`self:WeakSubscribe()`/`self:WeakUnsubscribe()`로 **콜론 위임**하고 있어서 그 함수를
 `EffectHandle`에 배정하면 위임이 `EffectHandle`의 오버라이드로 가서(재구독 꼬리
-두 번, 첫 번째는 강한 킵 전) 깨진다(감사 4라운드, `luau` 재현). **사용자
+두 번, 첫 번째는 강한 킵 전) 깨졌다(감사 4라운드, `luau` 재현; **[2026-08-28
+`H-149`]** 그 위임 자체도 이제 없다 — 아래 코드는 인라인). **사용자
 확정**: *"observer 랑 effect 랑 헤테로지니어스한 타입인데 … '하나의 무언가가 두
 일을 동작하지 않는가에 유의하자'"* — Observer 본문은 Observer만 쓴다. `Effect`
 쪽 넷(`Unsubscribe`는 cleanup 소진, `Subscribe`/`WeakSubscribe`는
-**[2026-08-27 `H-144`]** 등록 끝에 `_epochs:Refresh()` + 조건부 `Rerun`)은
+**[2026-08-27 `H-144`]** 등록 끝에 `not _installed → Rerun`, 넷 다 첫 줄에
+**[2026-08-28 `H-147`]** `_running`/`_cleanupRunning` 가드 — `fn`/cleanup은 자기 구독을
+못 바꾼다)은
 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
 
 ```lua
@@ -479,8 +482,8 @@ function Observer:WeakUnsubscribe()
     --   `.Subscribed = false`로 **조용히 죽이면서** 강한 레지스트리엔 항목을
     --   남겨 **영원히 GC 안 되는** 반쪽짜리 해제가 된다(바로 아래에서 금지하는
     --   그것). 사용자 확정: fail-fast — `Subscribe()`로 건 건 `Unsubscribe()`로
-    --   푼다. 아래 `Unsubscribe`가 강한 킵을 **먼저** 지우고 위임하므로 자기
-    --   가드에 걸리지 않는다(순서가 계약이다).
+    --   푼다. 아래 `Unsubscribe`는 이 함수에 위임하지 않고 양쪽을 직접 지우므로
+    --   (**[2026-08-28 `H-149`]**) 이 가드와는 무관하다.
     if Subscribed[self] ~= nil then
         error("...: subscribed strongly; use :Unsubscribe()", 2)
     end
@@ -494,7 +497,18 @@ end
 
 -- ── 그 위의 "GC 안 되게 킵" 한 겹 ───────────────────────────
 function Observer:Subscribe()
-    self:WeakSubscribe()            -- 게이트·플래그·약한 등록을 전부 여기서
+    -- ⭐ [2026-08-28 확정, 10라운드 `H-149`] `self:WeakSubscribe()`에 **위임하지 않고
+    --   펼쳐 쓴다.** 위임하면 (1) `error(…, 2)`가 사용자 호출부가 아니라 이 본문을
+    --   가리키고(`H-104` level 계약 위반), (2) 콜론 위임은 서브 테이블의 오버라이드를
+    --   탄다(`H-144` (b)의 교훈). 사용자: *"weak 나 아닌거나 줄 차이가 그리 안 커서,
+    --   분리할 큰 이유가 없음."*
+    if not canBound(self) then
+        error(if self.Subscribed
+            then "이미 구독된 값"
+            else "이미 Instance에 바인딩된 값", 2)
+    end
+    self.Subscribed = true
+    WeakSubscribed[self] = true
     Subscribed[self] = true         -- 강한 킵 하나만 더
     return self
 end
@@ -508,16 +522,21 @@ function Observer:Unsubscribe()
     if Subscribed[self] == nil then
         error("...: not subscribed strongly; use :WeakUnsubscribe()", 2)
     end
-    Subscribed[self] = nil          -- 강한 킵을 먼저 놓고
-    return self:WeakUnsubscribe()   -- 나머지는 프리미티브에 위임(양쪽 테이블 대칭)
+    Subscribed[self] = nil          -- 강한 킵을 놓고
+    WeakSubscribed[self] = nil      -- 약한 쪽도 직접(양쪽 테이블 대칭) — [`H-149`] 위임 없음
+    self.Subscribed = false
+    return self
 end
 ```
 
-- **게이트는 한 번만 돈다** — `Subscribe`가 `WeakSubscribe`에 위임하므로
-  `canBound` 검사가 중복되지 않는다.
+- **각 진입점이 자기 게이트를 정확히 한 번 돈다** — **[2026-08-28 `H-149`]**
+  한때 "`Subscribe`가 `WeakSubscribe`에 위임하므로 검사가 중복되지 않는다"였는데
+  위임을 풀었다(위 주석). 중복되는 세 줄은 같은 타입 안이라 dot 호출 로컬
+  헬퍼로 빼도 되지만 **`error(…, 2)` 줄만은 본문에 남길 것** — 헬퍼 안에서
+  던지면 level 2가 헬퍼의 호출 줄(quad 내부)을 가리킨다(`H-104`).
 - **해제는 반드시 양쪽을 지운다.** `Unsubscribe`가 `WeakSubscribed`를 안
-  지우면 항목이 약한 테이블에 남아 반쪽짜리 해제가 된다 — 그래서
-  `WeakUnsubscribe`에 위임하는 모양이 정본이다.
+  지우면 항목이 약한 테이블에 남아 반쪽짜리 해제가 된다 — 위임 대신 두 줄을
+  직접 쓴다.
 - **⭐ 해제는 *건 경로로* 푼다 — 양방향 대칭 가드**(사용자 확정 2026-08-26).
   강하게 구독된 값에 `WeakUnsubscribe`를 부르면 error, 약하게만 구독된 값에
   `Unsubscribe`를 부르면 error. 후자가 없으면 **조용히 성공**해서 범용 정리

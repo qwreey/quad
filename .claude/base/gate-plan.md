@@ -309,6 +309,12 @@ end)
 
 ```lua
 -- 필드 (ComputeNode와 같은 층위)
+-- ⭐ [2026-08-28 확정, 10라운드 `H-152`] 조립의 **첫 줄은 `StateBrand:register(node)`**다 —
+--   `_emitDown`은 자식을 `isState(sub)`로만 가르므로(`source-state-plan.md`) 등록이
+--   빠지면 상류 emit이 `_receive`로 안 오고 `canExecute(gate)`도 거짓이라 **통지만
+--   조용히 죽는다**(`Get()`은 `_hold`로 최신값을 주니 값 검사로는 안 잡힌다 — 실측
+--   `t24`: 하류 발화 2 → 0). `GateNode`는 State 생성자를 안 지나고 이 절이 곧
+--   생성자라 여기 없으면 어디에도 없다.
 GateNode = {
     _hold          = { <상류 State/Source> },   -- 하류 → 상류 강참조(`source-state-plan.md`)
     _subs          = <weak-키 구독자 집합>,      -- 원소는 Observer 값 / 자식 State
@@ -445,8 +451,11 @@ end
    소비자가 **아니다**.** 한때 이 용례까지 게이트가 커버해야 한다고 적어뒀으나,
    위 8번(빈 배치는 통지 안 함)으로 **성립하지 않는 게 확인됐다** — 설치 구간엔
    어떤 `Set`도 안 일어나 쌓이는 소스가 없으므로 게이트가 내보낼 것 자체가 없다.
-   `Effect`가 **자기 내부 플래그로** 설치 중 발화를 누르고 마지막에 한 번
-   직접 실행하면 되고, 새 메커니즘이 필요 없다. `base/effect-plan.md`의 그
+   `Effect`가 설치 중 발화를 누르고 마지막에 한 번 직접 실행하면 되고, 새
+   메커니즘이 필요 없다(**[2026-08-28 10라운드 `H-150`]** 그 억제 주체는 "자기
+   내부 플래그"도 그 뒤의 사적 `Blocker`도 아니라 Effect 핸들의 `canExecute`다 —
+   생성자 안에선 아직 안 묶여 있어 설치 발화가 첫 가드에서 떨어진다,
+   `base/effect-plan.md` 생성자 의사코드). `base/effect-plan.md`의 그
    항목에 달려 있던 "⚠️ `Gate` 설계에 딸려 있다"도 같이 해소됐다. 아래는
    원 서술:
    2026-08-21 5라운드 `C-6`에서 확정된 다중 의존성 `Effect`는, 의존성마다 구독을
@@ -490,6 +499,25 @@ end
    그 앞당김은 되돌려졌고, 셋은 반응형 쪽으로 복귀했다. 결과적으로
    "게이팅 먼저"는 그대로 지켜진다 — 게이팅이 디스패치보다 먼저 지어진다.
    `Blocker`는 `GateNode`를 다시 만들지 말고 그 위의 정책으로 얹을 것.
+
+## 계약 — 게이트는 emit 경로만 미룬다 (2026-08-28 확정, 10라운드 `H-151`)
+
+게이트가 하는 일은 **다운스트림 통지의 유보**뿐이고, 값은 안 가린다
+(`base/debounce-throttle-plan.md` 4절이 확정한 (A) emit-gate). 그래서 통지가 emit이 아닌 경로로 오면 게이트를 **거치지 않는다**:
+- **`Effect`의 재바인드/재구독 캐치업** — 소진된 핸들이 다시 묶이면 초기 설치와
+  같은 뜻으로 `fn`이 돈다(`base/effect-plan.md` `_bindDestroying`). 유보 중이어도
+  돈다.
+- **게이트 없는 형제 dep** — `Effect(fn, gated, plain)`에서 `plain`이 깨우면 `fn`
+  안의 `gated:Get()`은 최신값이다.
+- 유보됐던 emit이 나중에 풀려 들어오면 그냥 재실행 — 생성 직후 유보분이 들어오는
+  것과 같은 경로. `Effect`의 `_epochs`는 emit을 받을 때만 갱신된다(Observer·중간
+  State와 같다).
+
+**사용자 원문**: *"block 은 단지 유보만 해줄뿐이라서. - Effect 도 observer 랑
+똑같게, 중간 state 랑 똑같게, emit 받을때에만 epoch 맵을 업데이트 하면 돼. 계약
+추가로 끝나는 일로 보여"*. 막는 갈래(캐치업이 dep 노드의 `emitEpochMap`을 보게
+하기 / value-hold 재개방)는 둘 다 기각 — 전자는 `EpochMap` 계약 변경, 후자는
+`base/debounce-throttle-plan.md` 4절이 철회한 (B). 발견 원문은 `qa-request/pre-implementation-handtrace-round10.md` `H-151`.
 
 ## 관련 문서
 

@@ -31,7 +31,7 @@
 | — | `H-139` `New`/`D` 파이프라인 | ✅ **의사코드 신설** — 쓰면서 `H-142` 발견 |
 | — | `H-132`/`H-137`/`H-140` | ✅ Q1~Q3 처리 때 닫힘 |
 | — | `H-142` 해시 파트 `Parent` 순서 | ✅ **확정·반영** — props에 `Parent` 금지(순서 문제 소멸) |
-| — | `H-143`~`H-146` (`/code-review high` 발견 중 새 메커니즘 넷) | ✅ **확정·반영 (전부 권고 (a))** — `Rerun` 꼬리 실행 중 사망이면 즉시 소진(`wasAlive`) / 재구독 꼬리(`Refresh` 먼저; 감사 4라운드로 진입점 소유권 (b) — `EffectHandle` 자기 것 — 추가 확정) / `indexOfElement` weak-key / 루트는 금지 범위 밖 + 전용 문구 |
+| — | `H-143`~`H-146` (`/code-review high` 발견 중 새 메커니즘 넷) | ✅ 2026-08-27 확정·반영 → **⚠️ [2026-08-28] 10라운드가 셋을 뒤집음**(`-round10-followup.md`가 소스): `H-143` 소멸(`fn` 안 자기 해제 지원 폐기, `H-147`) / `H-144` 꼬리는 유지하되 `Refresh` 먼저는 폐기(`H-151`), 진입점은 `EffectHandle` 자기 것 (b) / `H-145` weak-key **유지** / `H-146` 루트 예외·전용 문구 폐기(`H-148` → `Claim`) |
 
 **[2026-08-27] Q1~Q3는 `base/`·`ROADMAP.md`에 반영했다** — 반영 중 드러난 것과
 열어둔 확인은 아래 "반영 기록" 절. **같은 날 이어서 Q4~Q8·Q10·`H-138`·`H-139`를
@@ -664,7 +664,11 @@ epoch 를 전부 잘 설정해주는게 나을수도 있어. 왜냐하면 처음
 아니거든) 해당 부분을 해결하기 위해서 다른 API 를 제공 할 이유가 없기도 해. 해당
 부분은 각 엔진을 사용하는 최종 사용자의 몫."*
 
-### `H-143` — `Rerun` 꼬리에서 실행 중 사망(`wasAlive and not canExecute`)이면 반환 cleanup 즉시 소진 (a)
+### `H-143` — ⛔ [2026-08-28 소멸, 10라운드 `H-147`] `fn` 안 자기 해제 지원 자체가 폐기됨 — 아래는 하루 살았던 결정
+
+**`-round10-followup.md` `H-147`이 소스.** `fn`/cleanup은 자기 구독을 못 바꾼다(leaf와 대칭), `Rerun` 꼬리의 사망 판정도 없다.
+
+#### (폐기) `Rerun` 꼬리에서 실행 중 사망(`wasAlive and not canExecute`)이면 반환 cleanup 즉시 소진 (a)
 
 - 하위 결정: 판정은 **"이 실행 중에 죽었는가"(`wasAlive and not canExecute`)**
   — `fn` 안 `WeakUnsubscribe`도 같은 경로로 소진된다.
@@ -683,7 +687,7 @@ epoch 를 전부 잘 설정해주는게 나을수도 있어. 왜냐하면 처음
 - 반영: `base/effect-plan.md` `Rerun` 의사코드 + "`self`를 주는 덕에" bullet
   (허용 문장이 확정으로), `ROADMAP.md` M2 `Effect` 체크박스.
 
-### `H-144` — `Subscribe`/`WeakSubscribe` 등록 끝에 `Refresh()` 먼저, `not _installed or depsChanged → Rerun` (a) + 진입점은 `EffectHandle` 자기 것 (b, 감사 4라운드)
+### `H-144` — `Subscribe`/`WeakSubscribe` 등록 끝에 재설치 꼬리 (a) + 진입점은 `EffectHandle` 자기 것 (b, 감사 4라운드) — **[2026-08-28 10라운드 `H-151`] `Refresh()` 먼저는 폐기**(`_epochs`는 emit 때만 갱신, 꼬리는 `not _installed → Rerun` 하나)
 
 사용자가 요청한 **재트레이싱** 결과(회신의 두 질문):
 1. *재구독 뒤 "다음 emit"이 오면 꼬여도 괜찮은가* — 괜찮다. `fire`의 가드
@@ -738,7 +742,11 @@ epoch 를 전부 잘 설정해주는게 나을수도 있어. 왜냐하면 처음
   5번째 인자 근거 정리(weak가 되며 "옛 키 잔존" 근거는 사라지고 "지속 클로저
   없음"만 남음), `ROADMAP.md` M3 `getBookkeeping` 체크박스.
 
-### `H-146` — 루트는 금지 범위 밖, `Mount` 표면 없음, 거부는 전용 문구 (a)
+### `H-146` — ⛔ [2026-08-28 폐기, 10라운드 `H-148`] 루트는 밖에서 `.Parent =`가 아니라 quad가 `Claim`으로 소유 — 아래는 하루 살았던 결정
+
+**`research/existing-mount-plan.md`와 `-round10-followup.md` `H-148`이 소스.** 전용 문구도 철회.
+
+#### (폐기) 루트는 금지 범위 밖, `Mount` 표면 없음, 거부는 전용 문구 (a)
 
 - 인용문 *"외부에서 직접 Parent 설정해주지 말것"*의 범위를 **quad가 관리하는
   자식 자리**로 명문화. 루트 부착은 엔진마다 다른 최종 사용자 코드. (b)

@@ -97,7 +97,9 @@ store.hp:Compute(function(s) ... end)
   실제로 지우는 것도 `Source<None> → None → nil`로 핸들러 계열을 타고
   말단에서 set nil 된다. Store 키를 nilable로 만들 이유가 아니다.
 - **구현 스케치**: 생성 시 `table.clone(defaults or {})`로 그림자 테이블을
-  만든다(`table.clone`이 원본의 해시/배열 슬롯 구조를 재사용해 빈 테이블에
+  만든다(**[2026-08-28 확정, 10라운드 `H-153`]** 그림자 = **store 자신** — `store.key`가
+  평범한 레코드 필드라는 계약과 맞고, 메소드는 `__index`에 있어 `Names()`가 안
+  센다; 별도 테이블 + 프록시 안은 기각. `table.clone`이 원본의 해시/배열 슬롯 구조를 재사용해 빈 테이블에
   키를 하나씩 넣는 것보다 쌈 — 2026-08-07 성능 근거 그대로). 값이 이미
   `Source`이므로 **슬롯 교체 순회가 없다**. **`or {}`가 필수다** — 무인자
   `Store<<{}>>()`도 유효한데 `table.clone(nil)`은
@@ -109,7 +111,11 @@ store.hp:Compute(function(s) ... end)
   에러로 죽는다. `H-40`이 `:List` 요소 검증을 블랙리스트에서 화이트리스트로
   뒤집은 것과 같은 성격의 자리다 — **사용자 확정**으로 여기도 화이트리스트를
   둔다. `defaults`를 한 번 순회하며 `isSource(v)`가 거짓이면
-  **`error(..., 2)`**(사용자 입력 검증이므로 `level 2`, 메시지는 영어 —
+  **`error(..., 2)`**(**[2026-08-28 10라운드 `H-153`]** 같은 순회에서 **예약 이름**
+  (`RESERVED` 테이블 — 아래 `Of` 절의 리터럴이 런타임 단일 소스; `__reservedCheck`는
+  팬텀이라 `__index`에서 도출할 수 없다)도 `error(..., 2)` — `Store({ Of = Source(1) })`가 통과하면
+  첫 `s:Of(…)`가 *attempt to call a table value*로 엉뚱한 자리에서 죽는다, 실측
+  `t23`; 사용자 확정 *"나도 a 동의"*)(사용자 입력 검증이므로 `level 2`, 메시지는 영어 —
   `base/architecture.md`의 error 계약). 생성 시 1회라 hot path가 아니다.
   `isModifier` 쪽 가드는 여기가 아니라 **`Source` 생성자**가 맡는다
   (`base/modifier-plan.md` 7번).
@@ -192,11 +198,20 @@ Store는 "이름 붙은 Source 모음, 그 이상 아님"으로 더 단순해짐
     조회하면 `nil`을 `Source<U>` 타입으로 돌려주고 호출부가 `:Get()`에서
     타입 에러 없이 nil 역참조한다.
     ```lua
+    -- ⭐ [2026-08-28 `H-153`] 예약 이름의 **런타임 단일 소스**. 세 이름을 리터럴로 —
+    --   `__reservedCheck`는 팬텀이라 `__index`에서 도출할 수 없다(아래 주석).
+    --   타입 함수 `CheckReservedKeys`의 목록은 이 테이블의 사본이라 이름을 바꿀 땐
+    --   둘을 같이(코퍼스의 다른 산문 나열은 전부 이 테이블을 가리키기만 할 것).
+    local RESERVED = { Of = true, Names = true, __reservedCheck = true }
+
     function Store:Of(name)          -- 동적 키 전용
-        local src = shadow[name]
+        if RESERVED[name] then       -- 동적 키는 타입이 못 막는다
+            error("reserved store key: " .. name, 2)
+        end
+        local src = rawget(self, name)   -- 그림자 = store 자신(`H-153`) — `__index`를 안 타게 raw
         if src == nil then
             src = Source()           -- == Source(nil)
-            shadow[name] = src
+            self[name] = src
         end
         return src
     end
@@ -280,9 +295,9 @@ type Store<T> = T & {
 --   감수하되, 두 가지를 문서화한다:
 --   (1) **읽지 말 것** — 사용자 표면이 아니다.
 --   (2) `store:Names()`(그림자 테이블의 키)에는 **안 들어간다**. 그래서
---       `store:Of("__reservedCheck")`는 런타임에선 그냥 통과해 충돌하는
---       `Source`를 만든다 — 타입 쪽은 `CheckReservedKeys`가 막지만
---       **동적 키는 이름이 타입에 안 실리므로** 못 막는다.
+--       `store:Of("__reservedCheck")`는 타입 쪽 `CheckReservedKeys`가 못 막는다
+--       (**동적 키는 이름이 타입에 안 실린다**) — 그래서 **[2026-08-28 `H-153`]**
+--       `Of(name)`과 생성자가 런타임 예약 이름 가드로 `error(…, 2)`한다(위).
 ```
 
 **⭐⭐ [2026-08-26 확정, 8라운드 `H-112`] 예약 키 진단 타입 함수는 `T`가 아니라
@@ -327,8 +342,12 @@ end
 같은 §0이 경고하는 내장 `index<>`/`keyof<>`도 **형제 필드의 `*error-type*`에
 오염되지 않는다**는 것이 별도 실측(`CheckedQuad`)으로 재확인됐다.
 
-**⚠️ [2026-08-26, `/code-review high`] 빈 Store(`Store<<{}>>()`)는 아직 실측
-안 됐다.** `H-83`은 무인자 생성이 유효해야 한다고 확정했는데(`or {}` 방어의
+**✅ [2026-08-28 실측 완료, 10라운드 `H-157`] 빈 Store(`Store<<{}>>()`)는 클린이다** —
+최종형(`StateData<T>`/`State<T>` 쪼개기, `Source<T>` 필드, `CheckReservedKeys<keyof<T>>`)
+에 `Store({} :: {})`를 넣으면 진단 0(`keyof<{}>`는 에러가 아니라 빈 유니온이라
+검사가 그냥 통과), `Names()`/`Of("dyn")` 정상(`audit/handtrace-round10-reference-impl/`
+`ty11`). 아래는 실측 전 서술: **[2026-08-26, `/code-review high`] 빈 Store는 아직
+실측 안 됐다.** `H-83`은 무인자 생성이 유효해야 한다고 확정했는데(`or {}` 방어의
 존재 이유), 위 실측은 **키가 있는 `T`로만** 돌았다. `keyof<{}>`가 Luau에서
 빈 유니온이 되는지 에러가 되는지에 따라 **무인자 Store 전체가 스퓨리어스
 타입 에러를 뒤집어쓸 수 있다** — `H-112`가 `CheckReserved<T>`에서 찾은 실패

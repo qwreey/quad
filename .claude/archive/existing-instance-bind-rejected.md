@@ -3,6 +3,13 @@
 > **⛔ [2026-08-14 세션, 사용자 확정 — 기각]** `research/`에서
 > `archive/`로 이전. **더 이상 "열린 가능성"이 아니라 미지원으로 확정.**
 >
+> **⭐ [2026-08-28] 좁은 형태로 부활 — `research/existing-mount-plan.md`.** 여기서
+> 기각된 것은 *"이미 있는 Instance에 나중에 새 props를 다시 바인드"*이고 그
+> 사유(바깥이 자식 구성을 밀고 당기면 부기가 깨진다)는 그대로 유효하다. 부활한
+> 것은 그 반대 방향 — **한 번 `Claim`하면 quad가 소유하고 직계 자식은 사용자가
+> 전부 매핑한다**(claim-once · own-all, 재바인드는 여전히 미지원). 루트(PlayerGui)와
+> `Clone()` 템플릿이 그 용도다.
+>
 > **기각 사유(사용자)**: 이게 가능하다고 하면 `Dispatch.setOffsetSource`/
 > `setLength`(`base/dispatch-core-plan.md`의 "Length/Offset" 절) 같은,
 > quad가 자기가 만든 트리에 대해서만 성립한다고 전제하고 세운 부기를

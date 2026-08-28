@@ -12,16 +12,23 @@
 
 ---
 
-## ⭐ 최우선 — 10라운드 문항지 (2026-08-28 갱신, 배치 회신 대기)
+## ⭐ 최우선 — 10라운드 후속 둘 (2026-08-28 갱신)
 
-**[2026-08-28] 10라운드 문항지가 `qa-request/pre-implementation-handtrace-round10.md`에
-있습니다** — §4 표를 위에서 아래로 읽고 갈래만 회신하시면 됩니다. 씨앗은
-`H-143`~`H-146` 반영분에 `/code-review high`가 낸 판단 대기 셋(`H-147` 죽은
-핸들에서 `Rerun` / `H-148` `Parent` 거부 전용 문구는 새 메커니즘 / `H-149`
-Observer `Subscribe` 위임과 `level 2`), 그 아래에 신선한 탐사자의 **광범위
-탐사**(M2~M8, 레인 A/C/B/D — 지시서 `-round10-brief.md`) 결과가 이어집니다.
-**M2 착수 게이트는 아닙니다**(셋 다 구현 중 정해도 되는 크기). 사용자 판단:
-*"인간을 기다리는거 엄청 비효율이라서 … batch 로 처리될 필요가 있는듯"*.
+**[2026-08-28] 10라운드 §4 문항 7건은 사용자와 대화형으로 전량 결정·반영됐습니다**
+(소스는 `qa-request/pre-implementation-handtrace-round10-followup.md`). 그 대화에서
+새로 생긴 것만 남아 있습니다 — **둘 다 M2 게이트 아님**:
+- **`H-158`** `state:Block(blocker)` 슈가가 `blocker-plan.md`에 아직 있다 — 사용자
+  언급(*"Apply(Blocker) 이긴 할꺼야 (표면은 :Gate 만 남아 …)"*)대로 **폐기하고
+  `state:Apply(blocker)`로** 갈지 확인(권고 (a) 폐기).
+- **`H-159`~`H-161`** (`-round10.md` §4 표 아래 셋, 10라운드 반영분에
+  `/code-review high`가 낸 것) — `H-151`이 잃은 "바인드 전 emit(특히 `Ref`)"
+  캐치업(권고 (a) 묶이는 시점 1회 `Refresh`만 복원) / leaf `Destroying` 경로의
+  cleanup 안 `Rerun`(권고 (a) `_cleanupRunning`이면 `rawRerun` no-op) / **M5
+  루트 부착 경로 부재 + 다중 스크립트 `Claim`**(권고 (a) `Claim`을 M5로, 다중
+  스크립트는 권고 없음).
+- **`research/existing-mount-plan.md` §5** — 루트/템플릿을 quad가 소유하는
+  `Claim` + `D.Mapper`의 갈래들(루트 디스크립터 이름·물리 순서 계약·비루트
+  사용·debug 검사 범위·표면 이름·마일스톤 … — 개수는 그 문서 §5가 소스). 방향은 확정, M5 이후.
 
 **[2026-08-27] 9라운드**(Q1~Q10·`H-138`·`H-139`·`H-142`·`H-143`~`H-146`)는
 전량 처리·반영됐습니다 — 소스는 `-round9-followup.md`.

@@ -1978,4 +1978,15 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   결정의 소스는 `qa-request/pre-implementation-handtrace-round9-followup.md`.
   **[2026-08-28]** 감사 8라운드 수렴 → `/code-review high` 10건(일곱 반영, 셋은
   판단 필요) → 사용자 판단으로 **10라운드 문항지**(`-round10.md`, `H-147`~`H-149`
-  씨앗 + 광범위 탐사)로 이관, 배치 회신 대기.
+  씨앗 + 광범위 탐사)로 이관.
+- **`session/2026-08-28-01-handtrace-round10-resolution.md`** — 10라운드 7문항 대화형
+  결정·반영. **뒤집힌 것 둘**: `fn`/cleanup은 자기 구독을 못 바꾼다(`H-147` (A) —
+  어제 `H-143`의 원샷 지원 소멸, `rawRerun(force)`/`Rerun` 분리, 네 진입점 `_running`
+  가드) / 루트는 밖에서 `.Parent =`가 아니라 **quad가 `Claim`으로 소유**(`H-148` →
+  `research/existing-mount-plan.md`, 2026-08-14 기각과 다른 claim-once·own-all).
+  나머지: Observer 진입점 인라인(`H-149`) / `Effect._blocker` 제거(`H-150`) /
+  `_epochs`는 emit 때만 갱신, `Refresh` 캐치업 폐기 + "게이트는 emit 경로만 미룬다"
+  계약(`H-151`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름 런타임
+  가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`) / ROADMAP·debounce·store
+  stale(`H-155`~`H-157`). 미결 `H-158`(`:Block` 슈가). 소스는
+  `qa-request/pre-implementation-handtrace-round10-followup.md`.

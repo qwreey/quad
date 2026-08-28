@@ -8,7 +8,7 @@
 > 새로 만들고 `base/`에 반영한다 — **이 파일은 발견 당시의 기록**이라 각 항목의
 > "갈래"는 선택 전 목록이니 반영 뒤엔 그대로 믿지 말 것.
 >
-> 상태: **[2026-08-28 기준] 탐사 완료(발견 `H-150`~`H-157`, 🔴 0 · 🟡 5 · 🟢 3, §4 문항 7) / 회신 대기.** `H-147`~`H-149`는
+> 상태: **[2026-08-28] 탐사 완료(발견 `H-150`~`H-157`, 🔴 0 · 🟡 5 · 🟢 3, §4 문항 7) → 같은 날 사용자와 대화형으로 전량 결정·반영 — 결정의 소스는 `-round10-followup.md`.** 미결로 남은 것은 거기서 새로 생긴 `H-158`(`:Block` 슈가)과 `research/existing-mount-plan.md` §5의 갈래들뿐(개수는 거기가 소스). `H-147`~`H-149`는
 > `H-143`~`H-146` 반영분에 `/code-review high`가 낸 10건 중 새 메커니즘·기존
 > 결정 변경이라 문항으로 올린 셋(나머지 일곱은 반영 — `-round9-followup.md`의
 > 마지막 code-review 절).
@@ -347,9 +347,52 @@ spurious 재발행은 `Source:Set`이 같은 값도 emit한다는 확정(`t18`�
 | **`H-151`** | 게이트 우회(캐치업 `Refresh` / 형제 dep) | (a) 계약으로 문서화(게이트는 emit 경로만 미룬다) / (b) 캐치업을 dep `emitEpochMap` 기준으로(새 메커니즘) / (c) value-hold 재개방(기각안) | **(a)** — 이미 성립하는 사실, (b)(c)는 확정 둘을 되짚음 |
 | **`H-153`** | Store 예약 이름 런타임 가드 | (a) 생성자 순회 + `Of(name)`에 예약 이름 검사(`error(…, 2)`) / (b) 문서화만(UB) / (c) 그림자 (II) 고정 + `Of`만 가드 | **(a)** — `H-122` 화이트리스트와 같은 자리·논거. 부수: 그림자 = store 자신(I)로 못박기 |
 | **`H-154`** | `InstanceChildHandler` spurious dedup | (a) retractor `if nextValue == v then return end`(`SlotHandler` 동형) / (b) 그대로(정책 문서화) | **(a)** — `Slot`/`Ref`/Leaf가 이미 채택한 정책 |
+| **`H-159`** | **[2026-08-28 `/code-review`, 반영 뒤]** `H-151`이 잃은 캐치업 — 바인드 **전**에 온 emit(특히 `Ref`)은 다시 안 온다 | (a) `_bindDestroying`/`resubscribeTail`에 **"묶이는 시점 1회 `Refresh`"**만 되살림(emit 경로의 `_epochs` 갱신은 `H-151`대로 `Update`만) / (b) `Ref` dep만 바인드 시 `.Revision` 대조 / (c) 계약으로 두고 사용자에게 "`Ref`를 dep으로 쓰는 Effect는 그 leaf 뒤에 두라" 문서화 | **(a)** — `H-151`의 근거("다음 emit이 잡는다")가 `Ref`엔 성립하지 않는다; (a)는 `H-151`을 되돌리는 게 아니라 "emit 경로만 미룬다"는 계약과 양립(바인드는 emit 경로가 아님) |
+| **`H-160`** | leaf `Destroying` 콜백이 도는 cleanup 안의 `self:Rerun()`/`dep:Set()` — `canExecute`가 아직 참이라 죽는 inst에서 `fn`이 돌고 새 cleanup이 영구 고아 | (a) `rawRerun` 진입에서 `_cleanupRunning`이면 **버린다**(no-op) — "cleanup은 자기 생명주기를 못 바꾼다"의 `Rerun`판 / (b) `Destroying` 콜백이 `_consumeCleanup` **전에** `.Subscribed`류 표식으로 죽음을 먼저 세움(새 상태) / (c) UB 문서화 | **(a)** — 새 상태 없이 기존 플래그 하나로, `Unsubscribe` 경로와 같은 결과 |
+| **`H-161`** | `H-148` 이후 **M5에 승인된 루트 부착 경로가 없다** + 여러 스크립트가 같은 `PlayerGui`를 `Claim`하면 이중 claim error / 다중 quad UB라 `Claim`이 자기 동기 사례를 막는다 | (a) `Claim`을 **M5 스코프**로 당기고(프로바이더 마일스톤이라 자연스러움) `research/existing-mount-plan.md` §5-7·8 갈래를 같이 정한다 / (b) `Claim` 전까지 임시로 `H-146` 루트 예외(밖에서 `.Parent =`)를 M5 한정으로 되살림 / (c) 루트 컨테이너(부기 대상 아님)는 claim 없이 자식만 붙이는 얇은 표면 신설 | **(a)** — 임시 예외는 하루 만에 뒤집힌 것을 되살리는 것이고, (c)는 `Mount` 기각의 재개방. §5-7(다중 스크립트)은 `Claim`의 "전부 매핑" 계약이 **루트 컨테이너에는 안 맞는다**는 신호라 갈래를 그 문서에 적었다 |
 
 갈래 없는 것(회신 불필요, 반영만): `H-152`(브랜드 등록 한 줄), `H-155`(ROADMAP 넷),
 `H-156`(`H-32` 문단), `H-157`(실측 완료 표기).
+
+**[2026-08-28 추가] `H-159`~`H-161`은 §4 문항 7건을 반영한 뒤 `/code-review high`가
+낸 10건 중 새 메커니즘·기존 결정 변경인 셋**(나머지 일곱은 반영 — `-round10-followup.md`
+마지막 code-review 절). 상세는 아래.
+
+### `H-159` 🟡 — `H-151`이 잃은 캐치업: 바인드 전에 온 emit은 다시 안 온다
+
+`D.Frame { Effect(function(self) if ref.Value then … end end, ref), D.TextButton { ref } }`.
+Lua는 배열 원소를 순서대로 평가한다 — `Effect(...)`가 먼저 생성돼 `fn`이 1회 돌고
+(`ref.Value == nil`), 그다음 `D.TextButton { ref }`가 `ref:Set(button)` → `fire` →
+`canExecute(E)` 거짓(아직 안 묶임) → **`_epochs`를 안 건드리고 버림**. 그 뒤 Frame의
+`drive`가 E를 leaf에 묶음 → `_bindDestroying` → `_installed == true`라 `Rerun` 없음.
+`Ref`는 `Set`될 때만 발화하므로 **`fn`은 영원히 버튼을 못 본다**(배열 순서를 바꾸면
+된다 — 순서 의존 버그). 같은 구멍이 생성자 안에도 있다: `fn`이 자기 dep을 `Set`하면
+그 emit은 `fire` 첫 가드에서 버려지고(`self:Rerun()`처럼 지연되지 않는다) `_installed`가
+참이 돼 바인드가 재실행하지 않는다. 옛 `_epochs:Refresh()`는 둘 다 잡았다. `H-151`의
+근거 *"죽어 있는 동안 떨어뜨린 emit은 다음 emit의 리비전 차이로 잡힌다"*는 **다음
+emit이 오는 dep**에만 성립한다. 갈래·권고는 §4 표.
+
+### `H-160` 🟡 — leaf `Destroying` 경로의 cleanup은 `canExecute`가 아직 참인 채 돈다
+
+`SignalBehavior = Immediate`: `inst:Destroy()` → `Destroying` → `_unbindDestroying()`(
+`_destroyConn`만 해제, gcconn은 아직 `.Connected`) → `_consumeCleanup()` → cleanup이
+`self:Rerun()`(또는 `dep:Set()` → `fire`) → `rawRerun(false)`: `_running` 거짓,
+`canExecute` **참** → 죽는 inst에서 `fn`이 돌고 `_cleanup = c2`, `_installed = true`;
+`_destroyConn`은 이미 nil이라 c2를 소진할 연결이 없고, 나중 포탈 재바인드는
+`_installed` 참을 보고 재설치를 건너뛴다(조용히 죽은 Effect). `Unsubscribe()` 경로가
+안전한 건 `.Subscribed = false`를 소진 **전에** 세우기 때문 — `Destroying` 경로엔
+그 대응물이 없다. `rawRerun` 주석의 *"해제 뒤 cleanup의 재요청 … 정의된 no-op"*은 이
+경로에서 거짓. 갈래·권고는 §4 표.
+
+### `H-161` 🟡 — M5에 승인된 루트 부착 경로가 없다 / `Claim`이 자기 동기 사례를 막는다
+
+`H-148`이 `H-146`의 루트 예외를 폐기하고 `Claim`은 "M5 이후" 백로그라, M5(프로바이더·
+`D`·`InstanceChildHandler`)가 끝나도 quad가 만든 트리를 `PlayerGui`에 붙이는 승인된
+경로가 코퍼스에 없다. 그리고 `research/existing-mount-plan.md`의 *이중 claim은 error /
+여러 quad가 한 트리를 claim은 UB / 부기 대상 자식은 전부 매핑* 계약을 그대로 두면
+`Shop.client.luau`와 `Inventory.client.luau`가 각각 `Claim(PlayerGui, …)`하는 **가장
+흔한 사례가 error**다 — 그 문서 §5엔 이 문항이 없었다(추가: §5-7·§5-8). 갈래·권고는
+§4 표.
 
 ## §5 이상 없다고 확인한 것
 

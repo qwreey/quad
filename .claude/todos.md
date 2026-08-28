@@ -48,12 +48,17 @@
      Q9는 문항 전제가 틀린 것(Tween 절 스케치 한 줄 복사 오류)으로 닫힘.
      **[2026-08-27 기준] 감사 8라운드·`/code-review high`까지 돌렸다 — 리뷰 10건 중
      여섯은 반영, 넷(`H-143`~`H-146`, 새 메커니즘)은 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 사용자 결정으로
-     전부 권고 (a) 확정·반영(`Rerun` 꼬리 즉시 소진 / 재구독 꼬리 `Refresh` 먼저(진입점은 `EffectHandle` 자기 것) /
+     전부 권고 (a) 확정·반영(`Rerun` 꼬리 즉시 소진 / 재구독 꼬리(진입점은 `EffectHandle` 자기 것) /
      `bk.indexOfElement` weak-key / 루트 부착은 금지 범위 밖). **[2026-08-28]** 그
      반영분에 `/code-review high`가 또 셋(`H-147`~`H-149`)을 냈고, 사용자 판단으로
      **10라운드 문항지**(`qa-request/pre-implementation-handtrace-round10.md`)로
-     올려 신선한 탐사자의 광범위 탐사(지시서 `-round10-brief.md`)와 함께 **배치
-     회신 대기**. 남은 액션: 그 회신 처리 → M2 착수.** 아래는 돌리기 전(2026-08-26) 서술:
+     올려 신선한 탐사자의 광범위 탐사(지시서 `-round10-brief.md`, 발견 `H-150`~`H-157`)
+     와 함께 **같은 날 대화형으로 전량 결정·반영**(소스 `-round10-followup.md`).
+     **어제 결정 중 뒤집힌 것 셋**: `fn`/cleanup은 자기 구독을 못 바꾼다(`H-147`, `H-143` 소멸) /
+     재구독·재바인드의 `Refresh` 캐치업 폐기(`H-151`) / 루트는 밖에서 `.Parent =`가
+     아니라 quad가 `Claim`으로 소유(`H-148`, `research/existing-mount-plan.md`). 남은 미결은 `question.md` 최우선 절의 둘
+     (`H-158` `:Block` 슈가, `Claim` 갈래 — 개수는 `research/existing-mount-plan.md` §5가 소스) — 게이트 아님. 남은 액션: M2 착수.**
+     아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
      **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤
      `/code-review high` **7패스의 수정이 전부 그 커밋에 들어 있고 아무도

@@ -1490,7 +1490,16 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   확정(사용자, 갈래 없음 — `H-39`의 "예외 없이"에 이 핸들러를 넣는 것뿐):
   `process`에서 `setOffsetSource(inst, k, None)` → **`v.Parent = inst`** →
   **`setLength(inst, k, 1, inst)`**(상수 `1`). 반환 클로저는 (A)/(B) 분기·단순
-  철거에서 **`v.Parent = nil`** → `setOffsetSource(inst, k, None)` →
+  철거에서 **`if nextValue == v then return end`**(**[2026-08-28 확정, 10라운드
+  `H-154`]** 같은 값 재발행 dedup — `SlotHandler`의 retractor 쪽 `slotValue ==
+  nextValue` 얼리리턴과 동형. 없으면 `store.child:Set(store.child:Get())` 한 줄에
+  `Parent = nil → inst`와 `recompute`가 두 번 돌아 `ChildRemoved`/`ChildAdded`가
+  실제로 나간다, 실측 `d23`. **정확히 무엇이 줄어드나**: 물리 detach/attach와
+  `recompute` 한 번 — (A) 분기는 retractor 뒤 `process`를 다시 부르므로
+  `setOffsetSource(None)`·`Parent = inst`(같은 값, 엔진 no-op)·`setLength(1)`의
+  `recompute` 1회는 남는다(2→1이지 0이 아님; `SlotHandler`는 `claimOwnerAt`이
+  process 쪽도 접지만 이 핸들러는 옛 값을 process에서 모른다 — 그 skip은 안 둔다); 사용자: *"말단 핸들러가 v 를 정확히 알아서 retract
+  가 정확히 해소되는 부분"*) → **`v.Parent = nil`** → `setOffsetSource(inst, k, None)` →
   `setLength(inst, k, 0)`(`SlotHandler`의 retractor가 `unmountSlotTree`를 먼저
   부르는 것과 같은 모양, 부기 둘의 순서 근거는 아래 "해제" 문단).
   **[2026-08-27 `/code-review high` 정정 셋]** — (1) 옛 자식은 **내린다**(파괴

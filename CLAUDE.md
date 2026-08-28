@@ -14,9 +14,11 @@ M2(반응형 코어 — Source/State/Store)**. **⚠️ [2026-08-24] M2와 M3의
 `.claude/qa-request/pre-implementation-handtrace-round8-followup.md`
 (7라운드 몫은 `-round7-followup.md`; **[2026-08-27] 9라운드 몫은
 `-round9-followup.md` — Q1~Q10·`H-138`·`H-139`·`H-142`, 그리고 `/code-review`가
-낸 `H-143`~`H-146`까지 전량 반영 완료**)이고, **[2026-08-28] `.claude/question.md`
-최우선 절엔 10라운드 문항지(`-round10.md` §4 — `H-147`~`H-149` + 광범위 탐사
-결과)가 배치 회신 대기**로 올라 있다(M2 착수 게이트는 아님). 같은 상태를 `.claude/project-context.md`도
+낸 `H-143`~`H-146`까지 전량 반영 완료**; **[2026-08-28] 10라운드 몫은
+`-round10-followup.md`** — 광범위 탐사 `H-150`~`H-157`까지 전량 결정·반영, 그중
+`H-143`과 `H-146` 루트 예외는 하루 만에 뒤집힘)이고, `.claude/question.md` 최우선
+절엔 그 대화에서 새로 생긴 둘(`H-158` `:Block` 슈가 / `Claim` 갈래 —
+`research/existing-mount-plan.md` §5)만 남아 있다(M2 착수 게이트는 아님). 같은 상태를 `.claude/project-context.md`도
 서술하니 마일스톤이 넘어갈 때 두 곳을 같이 고칠 것. 진행 상황의 소스는
 항상 루트 `ROADMAP.md`.
 

@@ -241,8 +241,8 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     **⭐⭐ [2026-08-26 갱신, 8라운드 `H-107`/`H-108`] 아래 블록이 소스다.**
     원래 이 블록은 2026-08-24에 쓰였고 하루 뒤(2026-08-25) 확정된 두 가지 —
     `.Revision` 갱신과 약한 콜백 테이블 — 를 **소급으로 못 받았다.** 그
-    블록대로 짜면 `Effect`의 캐치업(`_epochs:Refresh()`)과 `Update(ref)`
-    판정이 전부 죽고, `Effect`가 건 `:WeakCallback`은 한 번도 발화하지
+    블록대로 짜면 `Effect`의 `Update(ref)` 판정이 전부 죽고(**[2026-08-28 `H-151`]**
+    옛 `_epochs:Refresh()` 캐치업은 폐기됐다), `Effect`가 건 `:WeakCallback`은 한 번도 발화하지
     않는다. 확정된 순서는 **값 → 리비전 → 콜백**이다:
     ```lua
     function Ref:Set(value)
@@ -281,7 +281,9 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
       (`function(inst) ... end`)은 두 번째 인자를 무시하면 그대로다.
     - **왜 리비전이 콜백보다 앞인가(`H-108`)** — 뒤면 콜백 안의
       `Update(ref)`가 **옛 리비전**을 읽어 `false`를 돌려주고, 그 `Set`의
-      `Rerun`이 접힌 채 다음 `Refresh()` 때에야 뒤늦게 돈다(간헐 지연).
+      `Rerun`이 접힌 채 **다음 `Set`의 리비전 차이**로나 돈다(간헐 지연 —
+      **[2026-08-28 `H-151`]** 옛 표기 "다음 `Refresh()` 때"는 캐치업이 폐기돼
+      더 이상 없는 경로).
     - **두 테이블을 다 훑는다** — `.Callbacks`(강한 셋)와
       `.WeakCallbacks`(weak-키)를 **각각 스냅샷**해 한 배열로 잇되,
       **양쪽에 다 있는 키는 한 번만 싣는다**(*"중복 등록은 dedup이 계약"*이
@@ -440,9 +442,9 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`, `base/state-epoch-plan.md`
     §4·§8. 균일해지는 건 **판정 쪽**이다).
     그래서 포탈 재마운트의 캐치업이 dep 종류에 따라 갈리던 것(`H-64`)이
-    **대칭**이 되고, 판정이 `local depsChanged = self._epochs:Refresh()` +
-    `if not self._installed or depsChanged then self:Rerun() end` 두 줄이 된다
-    (`Refresh()`는 항상 먼저 — `base/effect-plan.md`의 `_bindDestroying` 캐비엇).
+    **대칭**이 되고, 판정이 `fire`의 `_epochs:Update(from)` 하나로 균일해진다
+    (**[2026-08-28 `H-151`]** 재바인드 캐치업의 `Refresh()`는 폐기 — `_epochs`는
+    emit을 받을 때만 갱신, `base/effect-plan.md`의 `_bindDestroying`).
   - 같은 `Ref`를 deps에 두 번 넣어도 `EpochMap`이 키로 dedup하므로
     **공짜로** 처리된다(`H-70`) — 옛 `_refCallbacks[ref] = cb` 덮어쓰기로
     먼저 건 클로저가 `.Callbacks`에 남던 버그도 같이 사라진다.

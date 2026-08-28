@@ -1329,7 +1329,10 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
 평범한 `:Subscribe()`는 그 위에 "GC 안 되도록 킵" 하나를 더 얹은 것이다
 (**사용자 확정**: *"동작 자체는 Weak 아닌것과 동일하게 가고, 가드도 동일하나
 단순히 gc 안 되도록 킵 해주는 부분만 제거된 함수가 됩니다"*). 즉
-`Subscribe() = WeakSubscribe() + 강한 레지스트리에 킵`이고 구현이 한 벌이다.
+`Subscribe() = WeakSubscribe() + 강한 레지스트리에 킵`이다(**[2026-08-28 `H-149`]**
+"구현이 한 벌"은 이제 **의미**가 한 벌이라는 뜻이지 위임이 아니다 — `Subscribe`가
+`self:WeakSubscribe()`를 부르면 `error(…, 2)`가 quad 내부 줄을 가리키고 콜론
+위임이 서브 테이블 오버라이드를 타므로 인라인했다, `lifecycle-pattern.md` (2)).
 
 - **⭐⭐ [2026-08-26 확정, 8라운드 `H-111`] `WeakSubscribe`도 `.Subscribed = true`를
   세운다.** 즉 갈라지는 지점은 **레지스트리를 강하게 잡느냐뿐**이고,

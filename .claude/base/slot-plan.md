@@ -233,8 +233,9 @@ Slot에 들어간 요소는 **ownership이 귀속**되며 다른 곳에 마운�
 절대 일어나지 않도록 강제**하는 게 v1 대비 핵심 디자인 변화. v1의 `mount()`는
 별다른 강제를 안 했지만(`reference/quad-v1-architecture.md`의 mount.lua 분석 참고 —
 실제로는 부모/자식 부기까지 했지만 다중 마운트 방지는 없었음), v2는 **Slot의
-마운트 경로 자체**(`attachSlot` 분해분 — 별도 `Mount` 함수가 아니다, **[2026-08-27
-`H-146`]** v2에 v1식 `Mount(parent, tree)` 표면은 없다)가 이 강제를 담당.
+마운트 경로 자체**(`attachSlot` 분해분 — 별도 `Mount` 함수가 아니다; **[2026-08-28]**
+이미 있는 트리를 quad가 소유하는 `Claim`은 `research/existing-mount-plan.md`에서
+논의 중이고 그것도 이 단일 마운트 불변식을 그대로 진다)가 이 강제를 담당.
 
 Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 부기"로만
 구현했고(재사용 가능한 1급 프리미티브가 아님), Vide는 아예 이 개념이 없어서
@@ -2144,10 +2145,11 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 정확히 호출하는 유일한 정당 경로라, 이걸 우회해서(예: 외부 코드가 Slot이
 마운트해둔 부모 Instance에 직접 `.Parent = parentInst`로 자식을 끼워
 넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
-조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김. **[2026-08-27 확정,
-9라운드 `H-146`] 이 금지의 범위는 *quad가 관리하는 자식 자리*다 — quad 트리의
-루트를 quad 밖 부모(`PlayerGui` 등)에 붙이는 `.Parent =`는 여기 해당하지 않고
-사용자가 밖에서 한다**(`base/bind-system-plan.md`의 `H-142` 항목).
+조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김. **[2026-08-28 10라운드
+`H-148`]** 루트(`PlayerGui` 등 quad 밖 부모)는 사용자가 `.Parent =`로 붙이는 게
+아니라 **quad가 `Claim`으로 소유**하는 쪽으로 방향이 확정됐다
+(`research/existing-mount-plan.md`, M5 이후) — 그래서 이 금지에 예외가 없어진다.
+(2026-08-27에 하루 있었던 "루트는 밖에서" 예외는 폐기.)
 
 ## `Slot:Single(state, updateFn?, opts?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
 

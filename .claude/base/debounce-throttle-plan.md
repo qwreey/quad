@@ -887,11 +887,13 @@ function clearTimeout(timeout: Timeout) timeout._native() end
   (사용자가 명시적으로 커밋을 요청해도 반응이 없다). `:Cancel()`만이
   `pending = false`를 무조건 하므로 유일한 탈출구다.
 
-**해소는 위 재작성에 흡수된다** — `pending`을 없애고 Blocker의
-`HasBlockedEmit`을 쓰면 "보류분이 있는가"와 "그걸 어떻게 풀 것인가"가 분리되어
-이 결함이 구조적으로 성립하지 않는다(`Trailing = false`는 `OffWithoutEmit()`
-으로 표현되고, 그건 보류분을 **버리면서** 상태도 같이 비운다). 아래 코드를
-참고할 때 이 결함을 그대로 옮기지 말 것.
+**해소는 위 재작성에 흡수된다** — `pending`을 없애고 **`emit()`의 반환값**으로
+"보류분이 있는가"를 읽으면(**[2026-08-28 정정, 10라운드 `H-156`]** 여기 한때
+"`HasBlockedEmit`을 쓰면"이라 적혀 있었는데 그건 7라운드 `H-86`이 뒤집은 통로다)
+"보류분이 있는가"와 "그걸 어떻게 풀 것인가"가 분리되어 이 결함이 구조적으로
+성립하지 않는다(`Trailing = false`는 **`emit(false)`**로 버린다 — `H-55`:
+`OffWithoutEmit()`만으로는 흡수 집합이 안 빈다). 아래 코드를 참고할 때 이 결함을
+그대로 옮기지 말 것.
 
 ```lua
 -- quad-base — 공용 코어. Reset 한 비트가 Debounce/Throttle을 가름(5-3절).
@@ -1139,7 +1141,10 @@ Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름�
 - **`Blocker`**: 직교하게 겹쳐 쓸 수 있음(`state:Apply(Debounce{...}):Block(b)`).
   실사용 사례는 잘 안 떠오르지만 구조적으로 막을 이유도 없음.
 - **`Effect`/`Observer`**: 게이트 아래에 붙으면 자동으로 debounce된
-  빈도로 재실행됨 — 별도 장치 불필요. `Effect`가 deps 배열을 안 만들고
+  빈도로 재실행됨 — 별도 장치 불필요. **[2026-08-28 `H-151`]** 단 게이트는
+  emit 경로만 미룬다 — `Effect`의 재바인드/재구독 캐치업과 게이트 없는 형제
+  dep의 emit은 창을 무시하고 `fn`이 돌며 그때 `:Get()`은 최신값(계약,
+  `base/gate-plan.md`의 "계약 — 게이트는 emit 경로만 미룬다" 절). `Effect`가 deps 배열을 안 만들고
   `:With`를 재사용한 것과 같은 결로, "debounce된 Effect"라는 별도 API를
   만들 필요가 없다는 뜻.
 - **테스트/`quad-mock`**: 주입 op 2개 덕분에 **가상 시계로 결정론적 테스트가
