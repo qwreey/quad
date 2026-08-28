@@ -2036,4 +2036,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   구현** — `Observer`(레지스트리 소유, 네 진입점)/`Effect`(`rawRerun`·홀드·cleanup 세 자리·
   네 진입점 자기 본문)/`onDestroying` 스텁·mock, spec 17절 ALL PASS. `H-178`(`_` 접두) 기록.
   **단위 4 구현** — `GateNode`(`State.luau` `:Gate`)/`Blocker.luau`, spec 16절, `H-179`(`Apply`
-  타입은 교집합 오버로드)·`H-180`(`:Block` 잔재). M2 체크박스 전부 `[x]`.
+  타입은 교집합 오버로드)·`H-180`(`:Block` 잔재). M2 체크박스 전부 `[x]`. 단위 3·4 감사
+  수렴 뒤 `/code-review high` 10건: ① `H-181` 🔴(weak-key 임플 맵이 인스턴스를 영구 핀 →
+  `module._impl`)·`H-188`~`H-190` 반영, ② `H-182`~`H-187` §4.

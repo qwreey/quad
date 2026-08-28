@@ -27,7 +27,7 @@ local Brand = require("./Brand")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 type Epoch = QuadTypes.Epoch
-export type EpochSet = { [Epoch]: true }
+export type EpochSet = QuadTypes.EpochSet
 export type EpochMap = {
 	Update: (self: EpochMap, from: Epoch | EpochSet) -> boolean,
 	Peek: (self: EpochMap, from: Epoch | EpochSet) -> boolean,

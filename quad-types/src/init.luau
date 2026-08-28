@@ -56,6 +56,8 @@ export type Ref<T> = {
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 export type StateData<T> = { Get: (self: StateData<T>) -> T }
 
+-- TODO(H-187): 아래 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 `base/`에 없는
+--   이름이다 — 시그니처는 문서 그대로이나 이름은 구현이 붙였다(§4 문항).
 -- `Observer` — 값을 안 실어주는 leaf 구독(`source-state-plan.md` "`state:Observer(fn)`").
 -- `fn(targetState, self, emitFrom?)`: 3번째가 출처(`Epoch` | 집합), 설치·캐치업 발화는 `nil`.
 -- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.

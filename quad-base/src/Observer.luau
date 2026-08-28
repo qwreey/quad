@@ -39,7 +39,18 @@ local ObserverBrand = Brand.ObserverBrand
 
 local WEAK_KEY_MT = { __mode = "k" }
 
-local implByModule = setmetatable({}, WEAK_KEY_MT) :: { [any]: any }
+-- Per-instance impls live ON the module instance (`module._impl`, private — the
+-- `H-174` (a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
+-- keyed by `module` would never collect: the impl's closures capture `module`, and
+-- Luau has no ephemerons (`relate-plan.md`), so every `Quad.New()` would be pinned.
+local function implsOf(module: any): { [string]: any }
+	local impls = rawget(module, "_impl")
+	if impls == nil then
+		impls = {}
+		rawset(module, "_impl", impls)
+	end
+	return impls
+end
 
 local function createImpl(module: any)
 	local Impl = {}
@@ -132,8 +143,11 @@ local function createImpl(module: any)
 			fn = fn or alwaysObserve,
 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
 			_rerunRequired = true,
+			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
 		ObserverBrand:register(o)
+		-- TODO(H-183): no re-entry guard — `fn` calling Subscribe/bindLifetime on `self` during
+		--   this install fire replays through `_catchUp` (Effect has `isRunning`, H-147).
 		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
 		o._rerunRequired = false -- (2) the install fire lowers the flag
 		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
@@ -144,11 +158,11 @@ local function createImpl(module: any)
 end
 
 local function Init(module: any)
-	implByModule[module] = createImpl(module)
+	implsOf(module).Observer = createImpl(module)
 end
 
 local function implFor(module: any)
-	local impl = implByModule[module]
+	local impl = implsOf(module).Observer
 	if impl == nil then
 		error("Observer: Observer.Init(module) has not run for this quad instance", 1) -- invariant; callers pull it in first
 	end

@@ -46,6 +46,7 @@
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
 local Observer = require("./Observer")
+local Void = require("./Void")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 export type StateData<T> = QuadTypes.StateData<T>
@@ -60,7 +61,18 @@ local isModifier = Brand.isModifier
 local WEAK_KEY_MT = { __mode = "k" }
 
 -- One implementation per quad instance (`H-174`).
-local implByModule = setmetatable({}, WEAK_KEY_MT) :: { [any]: any }
+-- Per-instance impls live ON the module instance (`module._impl`, private — the
+-- `H-174` (a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
+-- keyed by `module` would never collect: the impl's closures capture `module`, and
+-- Luau has no ephemerons (`relate-plan.md`), so every `Quad.New()` would be pinned.
+local function implsOf(module: any): { [string]: any }
+	local impls = rawget(module, "_impl")
+	if impls == nil then
+		impls = {}
+		rawset(module, "_impl", impls)
+	end
+	return impls
+end
 
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- `:Observer` needs the per-instance Observer impl (idempotent pull, `H-177`)
@@ -68,7 +80,6 @@ local function createImpl(module: any)
 
 	local Impl = {}
 	Impl.__index = Impl
-	Impl._module = module -- read lazily by later units, never captured
 
 	-- ── propagation loop ──────────────────────────────────────────────
 	-- Shared by every node type that has `_subs` (Source nodes too).
@@ -240,10 +251,12 @@ local function createImpl(module: any)
 		end
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
+		node._onUpstreamEmit = Void -- until setup returns: a throwing setup must not leave a nil callee
 		local onUpstreamEmit = (setup :: any)(function(commit: boolean?): boolean
 			return node:_flush(commit)
 		end)
 		if type(onUpstreamEmit) ~= "function" then
+			self._subs[node] = nil -- detach the half-built node before reporting (no orphan in `_subs`)
 			error("State: Gate setup must return the onUpstreamEmit function", 2)
 		end
 		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
@@ -263,6 +276,9 @@ local function createImpl(module: any)
 		if type(factory) == "function" then
 			return (factory :: any)(self)
 		end
+		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
+			error("State: Apply factory must be a function or an object with an __apply method", 2)
+		end
 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
 	end
 
@@ -270,11 +286,11 @@ local function createImpl(module: any)
 end
 
 local function Init(module: any)
-	implByModule[module] = createImpl(module)
+	implsOf(module).State = createImpl(module)
 end
 
 local function implFor(module: any)
-	local impl = implByModule[module]
+	local impl = implsOf(module).State
 	if impl == nil then
 		error("State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
 	end

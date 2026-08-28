@@ -260,6 +260,13 @@ do
 	end
 	local viaObj = s:Apply(factory) -- 객체 오버로드: 추가 필드(`calls`)가 있어도 통과해야 한다
 	assert(viaObj == s and factory.calls == 1, "__apply is called as a METHOD on the factory object (H-158)")
+	for _, bad in { {} :: any, 5 :: any, nil :: any } do
+		local ok, err = pcall(function()
+			(s :: any):Apply(bad) -- `any` 인자는 오버로드를 못 고르므로 리시버 쪽을 캐스트
+		end)
+		assert(not ok and string.find(tostring(err), "__apply", 1, true) ~= nil, "non-factory rejected with level 2: " .. tostring(err))
+		assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	end
 	print("PASS")
 end
 

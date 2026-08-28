@@ -348,6 +348,9 @@ local function installLifetime(quad: any)
 		end
 		claim(inst)
 
+		-- TODO(H-184): the binding is committed below BEFORE `_bindDestroying` runs its `isRunning`
+		--   guard; if that guard throws, the Effect stays bound with no Destroying connection
+		--   (order transcribed from lifecycle-pattern.md (1) — quad-roblox inherits it).
 		local gchold = InstData:GetWeak(inst, "gchold")
 		gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
 		-- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2). 둘 다 weak.

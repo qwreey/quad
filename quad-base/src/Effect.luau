@@ -42,9 +42,18 @@ local isSource = Brand.isSource
 local isRef = Brand.isRef
 local isEpoch = Brand.isEpoch
 
-local WEAK_KEY_MT = { __mode = "k" }
-
-local implByModule = setmetatable({}, WEAK_KEY_MT) :: { [any]: any }
+-- Per-instance impls live ON the module instance (`module._impl`, private — the
+-- `H-174` (a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
+-- keyed by `module` would never collect: the impl's closures capture `module`, and
+-- Luau has no ephemerons (`relate-plan.md`), so every `Quad.New()` would be pinned.
+local function implsOf(module: any): { [string]: any }
+	local impls = rawget(module, "_impl")
+	if impls == nil then
+		impls = {}
+		rawset(module, "_impl", impls)
+	end
+	return impls
+end
 
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- registries live there (`H-99`)
@@ -76,6 +85,8 @@ local function createImpl(module: any)
 			self._pending = false
 			self:_consumeCleanup() -- sets `_rerunRequired = true`
 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
+			-- TODO(H-185): `EffectFn` is typed `-> ...(() -> ())` (H-95 pack) but only the first
+			--   return is kept; extra cleanups are silently dropped.
 			self._cleanup = self.fn(self)
 		until not self._pending
 		self._running = false
@@ -95,6 +106,9 @@ local function createImpl(module: any)
 		end
 		self:_unbindDestroying() -- rebind (portal remount): drop the old connection first — idempotent
 		-- (1) leaf dies → cleanup exactly once. The one hook point (`LP-2`).
+		-- TODO(H-182): after this callback, `canExecute` stays true for the rest of the Destroy
+		--   wave (gcconn is cut last), so a dep change later in the wave re-runs fn on the
+		--   dying leaf and stores a cleanup nothing consumes.
 		self._destroyConn = module.onDestroying(inst, function() -- injected op, read at call time
 			self:_unbindDestroying()
 			self:_consumeCleanup()
@@ -207,6 +221,8 @@ local function createImpl(module: any)
 
 		-- (0) deps validation — once, in the constructor. `select("#")` so a nil hole
 		--     does not silently truncate the list.
+		-- TODO(H-186): no check that a dep belongs to THIS quad instance — a cross-instance dep
+		--   is gated by the dep's backend (`d:Observer` resolves through its own impl).
 		local seen = {}
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))
@@ -243,11 +259,12 @@ local function createImpl(module: any)
 				self._deps[d] = o -- strong owner = Effect
 				o:WeakSubscribe() -- the global registry side is weak
 			end
-			-- seeding by "is it an Epoch" — Source/Ref are, State is not (§4 rule)
+			-- seeding by "is it an Epoch" — Source/Ref are (`Sync`), a State hands over
+			-- what it tracks (`_track` → `TrackFrom`, same polymorphic hook `_recompute` uses)
 			if isEpoch(d) then
 				self._epochs:Sync(d)
 			else
-				self._epochs:TrackFrom(d._valueEpochMap)
+				d:_track(self._epochs)
 			end
 		end
 
@@ -262,11 +279,11 @@ local function createImpl(module: any)
 end
 
 local function Init(module: any)
-	implByModule[module] = createImpl(module)
+	implsOf(module).Effect = createImpl(module)
 end
 
 local function implFor(module: any)
-	local impl = implByModule[module]
+	local impl = implsOf(module).Effect
 	if impl == nil then
 		error("Effect: Effect.Init(module) has not run for this quad instance", 1)
 	end

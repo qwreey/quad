@@ -30,6 +30,7 @@ do
 	assert((o :: any)._state == s, "observer holds its State strongly")
 	assert((s :: any)._subs[o] == true, "joined the subscriber set after the install fire")
 	assert((o :: any)._rerunRequired == false, "install fire lowered the hold flag")
+	assert(o.Subscribed == false, "Subscribed starts false (shared flag, same as Effect — H-189)")
 	-- 설치 발화가 자기 State를 Set해도 플래그가 서지 않는다(순서 계약)
 	local s2 = Source(0)
 	local o2 = s2:Observer(function(target, _, from)

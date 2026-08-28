@@ -6,6 +6,7 @@
 ]]
 
 local Quad = require("../src")
+local mock = require("./mock")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 type Quad = QuadTypes.Quad
@@ -27,6 +28,25 @@ do
 	assert(type(m.bindLifetime) == "function" and type(m.unbindLifetime) == "function", "lifetime stubs")
 	assert(type(m.canBound) == "function" and type(m.canExecute) == "function", "lifetime stubs")
 	assert(m.Void == Quad.Void and m.Ref == Quad.Ref and m.Relate == Quad.Relate, "leaf modules are shared across instances")
+	print("PASS")
+end
+
+print()
+print("=== 2. [H-181] New() 인스턴스는 참조를 놓으면 수거된다 — 임플을 모듈 비공개 필드에 두므로 순환이 자기완결 ===")
+do
+	local collectgarbage = (_G :: any).collectgarbage :: () -> ()
+	local weak = setmetatable({}, { __mode = "v" }) :: { any }
+	local function make()
+		local q = Quad.New()
+		mock.installLifetime(q)
+		local s = q.Source(1)
+		q.Effect(function() end, s):Subscribe() -- 강한 레지스트리까지 채워도 인스턴스째 죽어야 한다
+		weak[1] = q
+	end
+	make()
+	collectgarbage()
+	collectgarbage()
+	assert(weak[1] == nil, "a dropped quad instance is collected (no module-keyed weak map pinning it)")
 	print("PASS")
 end
 

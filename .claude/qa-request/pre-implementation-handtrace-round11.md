@@ -26,6 +26,16 @@
 | `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
 | `H-176` | ① | 2 | 🟡 | `:Compute`의 trailing deps를 타입팩 `D...`로 좁히는 선언은 strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힌다(스파이크 15가 "미검증"으로 남긴 자리) | ✅ `...any` + 콜백 주석으로 확정, `source-state-plan.md` 실측 기록 |
 | `H-177` | ① | 2 | 🟢 | `InitSource`/`InitStore`가 `State.implFor`만 불러 `New()`의 `RunInit` 순서에 의존했다 — `module-lifecycle-plan.md`는 "각 `InitXxx`가 `require`처럼 멱등하게 자기 의존성을 당겨온다"로 확정 | ✅ 각 Init이 `module:RunInit(dep)`를 직접 호출(감사 3라운드) |
+| `H-181` | ① | 2~4 | 🔴 | 인스턴스별 임플을 `module` 키의 weak-key 맵에 뒀는데 값(임플 클로저)이 키(`module`)를 캡처 — Luau엔 ephemeron이 없어 `Quad.New()`마다 영영 안 죽고 그 강한 레지스트리의 Observer/Effect 그래프까지 핀됨 | ✅ 임플을 `module._impl`(비공개 필드 — `H-174` (a)안 원문 모양)에, `spec.init` 2 |
+| `H-182` | **②** | 3 | 🟡 | leaf `Destroying` 콜백이 cleanup을 소진한 뒤에도 같은 파동 안에서는 `canExecute`가 참(gcconn은 마지막에 끊김) → 파동 후반의 dep 변경이 죽는 leaf 위에서 `fn`을 다시 돌리고 아무도 소진 안 할 cleanup을 저장 | §4 대기 (`-- TODO(H-182)`) |
+| `H-183` | **②** | 3 | 🟡 | Observer 설치 발화 안에서 `self:Subscribe()`/`bindLifetime(inst, self)`를 부르면 `_catchUp`이 `fn`을 중첩 재생하고 생성자가 "already subscribed"로 죽음 — Effect의 `isRunning` 가드(`H-147`)에 해당하는 것이 Observer엔 없음 | §4 대기 (`-- TODO(H-183)`) |
+| `H-184` | **②** | 1·3 | 🟡 | `bindLifetime`이 부기를 커밋한 **뒤** `_bindDestroying`의 `isRunning` 가드가 던지면 Effect가 묶인 채(`canExecute` 참) `Destroying` 연결 없이 남음 — 순서는 `lifecycle-pattern.md` (1) 그대로라 quad-roblox도 상속 | §4 대기 (`-- TODO(H-184)`) |
+| `H-185` | **②** | 3 | 🟢 | `EffectFn`은 `-> ...(() -> ())` 팩(H-95)인데 런타임은 첫 반환만 cleanup으로 저장 — `return stopA, stopB`가 타입은 통과하고 `stopB`는 조용히 버려짐 | §4 대기 (`-- TODO(H-185)`) |
+| `H-186` | **②** | 3 | 🟡 | 교차 인스턴스 dep(`A.Effect(fn, B.Source(0))`)을 막지도 정의하지도 않음 — dep의 백엔드가 게이팅하고 에러가 엉뚱한 인스턴스를 가리킴; `architecture.md` 13번은 다중 `New()`를 지원으로 서술 | §4 대기 (`-- TODO(H-186)`) |
+| `H-187` | **②** | 3·4 | 🟢 | `quad-types`의 새 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)이 `base/`에 없는 이름 — 시그니처는 문서 그대로, 이름은 구현이 붙임 | §4 대기 (`-- TODO(H-187)`) |
+| `H-188` | ① | 4 | 🟡 | `state:Gate(setup)`가 검증 실패로 error할 때 반쯤 만든 노드가 상류 `_subs`에 남아 다음 `Set`이 `nil` 호출로 죽음(GC 타이밍 의존) | ✅ 실패 시 detach + setup 전 `_onUpstreamEmit = Void`, `spec.gate` 1 |
+| `H-189` | ① | 3 | 🟢 | `Observer.Subscribed`가 초기화되지 않아 `nil`(타입은 `boolean`, Effect는 `false`) | ✅ `false`로, `spec.observer` 1 |
+| `H-190` | ① | 2 | 🟢 | `Apply`의 비함수 분기가 검증 없이 `factory:__apply`를 불러 quad 내부 줄을 가리키는 raw 에러 | ✅ `level 2` 검증(형제 생성자들과 같은 급), `spec.state` 10 |
 | `H-179` | ① | 4 | 🟡 | `state:Apply(factory)`의 파라미터를 유니온 하나로 선언하면 `state:Apply(blocker)`가 strict에서 막힌다(필드가 더 있는 객체는 제네릭 `U` 자리에서 너비 서브타이핑 실패) | ✅ 교집합 오버로드로 확정(`luau-test/done/26-*`, `typing-limits.md` §1②) |
 | `H-180` | ① | 4 | 🟢 | 폐기된 `state:Block` 표기가 라이브 문서 둘에 남아 있었다(`source-state-plan.md` `_hold` 파생 노드 목록, `blocker-plan.md` 사용 예시) | ✅ 정정 |
 | `H-178` | ① | 3 | 🟢 | 코드의 사적 필드는 `_` 접두(`_valueEpochMap`·`_emitEpochMap`·`_subs`·`_hold`…)인데 `base/` 의사코드는 `valueEpochMap`처럼 접두 없이 쓴다 — 이름은 1:1이고 밑줄만 다르다 | ✅ 기록만(문서 무변경 — 코드 관례, `H-174` 조립 세부와 같은 급) |
@@ -188,6 +198,45 @@
   §1②에 기록. `H-94`의 뜻(둘 다 받고 반환은 열어둔다)은 그대로 — 객체 쪽 반환이 `any`라
   호출부가 결과 타입을 명시한다(§1① 관례).
 
+### 단위 3·4 `/code-review high` (2026-08-29) — 10건 중 ① 넷(`H-181`/`H-188`/`H-189`/`H-190`) 반영, ② 여섯(`H-182`~`H-187`) §4
+
+### `H-181` 🔴 — 인스턴스별 임플의 저장 자리가 인스턴스를 영영 살렸다 (①)
+
+- **어디서**: `State.luau`/`Observer.luau`/`Effect.luau`의 `implByModule`(weak-key, `module` 키).
+- **무엇이**: 값인 임플의 메소드 클로저가 `module`을 캡처 — weak-key 테이블의 값이 키를 되참조하면
+  ephemeron이 없는 Luau에선 절대 수거되지 않는다(`relate-plan.md`가 `H-71`로 경고한 바로 그
+  모양). `init.luau`가 `New()`마다 세 Init을 무조건 돌리므로 **아무것도 안 써도** 모든 인스턴스가
+  핀되고, 강한 레지스트리(`Subscribed`)에 든 Observer/Effect 그래프까지 같이 산다. 리뷰 실측.
+- **처리**: 임플을 `module._impl`(비공개 필드)에 둔다 — `H-174` (a)안 원문이 *"RunInit 뒤의
+  비공개 필드로 형제 Init에 넘김"*이라 새 모양이 아니다. `module ↔ impl` 순환은 자기완결이라
+  인스턴스를 놓으면 통째로 수거된다(`spec.init.luau` 2). `State.Impl._module` 미사용 필드도 제거.
+
+### `H-188` 🟡 — 반쯤 만든 `GateNode` (①)
+
+- **처리**: 검증 실패 시 `self._subs[node] = nil`로 떼고 error; setup이 돌기 전 `_onUpstreamEmit`을
+  `Void`로 두어 setup이 던져도 나중 `Set`이 `nil`을 부르지 않게(예외 후 부기는 UB라는 계약은
+  그대로 — 이건 우리가 통제하는 검증 경로만 닫은 것).
+
+### `H-189` 🟢 / `H-190` 🟢 (①)
+
+- `Observer` 생성자에 `Subscribed = false`; `Apply`의 객체 분기에 `type(factory.__apply) ==
+  "function"` 검증(`level 2`). 둘 다 형제 코드와 같은 급.
+
+### `H-182` ~ `H-187` (②) — 코드엔 `-- TODO(H-nnn)` 마커만, 결정은 §4
+
+- **`H-182`**: `Destroying` 콜백(cleanup 소진·연결 해제) 뒤 같은 파동에서 `canExecute`가 아직
+  참. 리뷰 실측: 부모 Effect A(dep `count`) / 자식 Effect B의 cleanup이 `count:Set(...)` →
+  `parent:Destroy()`에 `parent-run:0, child-run, parent-clean, parent-run:-1, child-clean`,
+  끝에 `A._cleanup ~= nil`, `A._destroyConn == nil`. `H-160`은 cleanup **실행 중**만 막았다.
+- **`H-183`**: 설치 발화(`o.fn(state, o, nil)`) 중 `_rerunRequired`가 아직 참이라 그 안의
+  `Subscribe`가 `_catchUp`으로 `fn`을 중첩 재생. `H-147`의 원칙(*"`fn`은 자기 생명주기를 못
+  바꾼다"*)을 Observer에도 적용할지, UB로 문서화할지.
+- **`H-184`**: `bindLifetime`의 순서(부기 커밋 → 훅). 훅의 `isRunning` 가드가 던지면 반쯤 묶임.
+- **`H-185`**: cleanup 팩. 런타임이 첫 반환만 쓴다.
+- **`H-186`**: 교차 인스턴스 dep. 리뷰 실측: `A.Effect(fn, B.Source(0))`가 B의 미주입 스텁
+  에러로 죽는다(A는 다 갖췄는데).
+- **`H-187`**: 타입 별칭 이름 넷.
+
 ### `H-180` 🟢 — `state:Block` 잔재 (①)
 
 - **처리**: `source-state-plan.md`의 `_hold` 파생 노드 목록과 `blocker-plan.md` 사용 예시에서
@@ -223,6 +272,12 @@
 | **`H-168`** | `Ref<T>(T)` vs 무인자 `Ref()` 관용구 | (a) 시그니처 유지, 문서의 빈 호출 관용구를 전부 `Ref<<T?>>()`(nil-able 파라미터는 생략 가능)로 고쳐 씀 / (b) `default: T?`, `.Value: T?`(H-167 이전 모양 — `Ref(5).Value`까지 nil 검사 강요) / (c) 두 오버로드 `Ref<T>(T)` ∪ `Ref<T>() -> Ref<T?>` | **(a)** | "제네릭 시그니처" 확정(단일 파라미터, 명시 확장으로 넓힘)을 그대로 두고 관용구만 그 규칙에 맞추는 것 — (b)는 문서가 기각한 모양, (c)는 그 절이 기각한 2-파라미터 솔버 문제의 재개방 | (b)가 그렇다 |
 | **`H-169`** | 재진입 `:Set` 뒤 남은 콜백의 인자 | (a) 블록을 `k(self.Value, self)`로(항상 최신 값, 문서 불변식 그대로) / (b) 문서에 "재진입 시 바깥 파동의 남은 콜백은 자기 파동의 값을 받는다"로 계약화(코드 유지) / (c) 재진입 자체를 금지(error) | **(a)** | 문서 불변식(*"옛 값이 보이는 창이 없다"*)이 이미 (a)를 말하고 있고 한 토큰 차이 — (b)는 인자와 `.Value`가 다른 창을 계약으로 열고, (c)는 새 가드 | 아니오 |
 | **`H-170`** | resume이 삼키는 에러 | (a) `local ok, err = coroutine.resume(k, self); if not ok then error(err, 0) end` — 대기자 에러를 `:Set` 호출부로 다시 올림 / (b) UB로 문서화(대기자 에러는 사라진다) / (c) 대기자 소진을 `task.spawn`류 주입 op로(Roblox `task.spawn`은 에러를 콘솔로 보냄) | **(a)** | `architecture.md` "예외 안전성 계약"(감싸지 않는다 = 에러는 전파)과 같은 결. 다만 **새 코드 두 줄(re-raise)** 이라 사용자 결정 자리. (c)는 새 주입 op | 아니오 |
+| **`H-182`** (`/code-review`, 단위 3) | Destroy 파동 안 cleanup 뒤의 재실행 창 | (a) `Destroying` 콜백이 `_dying = true`를 세우고 `rawRerun`이 `canExecute`와 함께 본다(재바인드 `_bindDestroying`이 내림) / (b) `_destroyConn == nil`이면서 gcconn이 살아 있는 상태를 "죽는 중"으로 판정(새 필드 없음, 단 `Subscribe`로 묶인 핸들과 구분 못 함) / (c) UB 문서화(`fn` 안 `inst:Destroy()` UB의 이웃) | **(a)** | `H-160`이 "cleanup 중"을 홀드로 닫은 것과 같은 결 — 파동 후반은 같은 상태의 연장. 새 플래그 하나 | 아니오 |
+| **`H-183`** (`/code-review`, 단위 3) | Observer 설치 발화 재진입 | (a) Observer에도 `_running` 가드 — 네 진입점·`bindLifetime` 훅 첫 줄 `error(…, 2)`(`H-147` 대칭) / (b) 생성자 순서만 바꿔(플래그 내림 → fn) 중첩 재생을 없애고 나머지는 UB / (c) UB 문서화 | **(a)** | `H-147`의 근거("유저 함수가 본인을 죽이고 살린다는 점 자체가 모순")가 Observer에도 그대로 — Effect만 막을 이유가 없다 | 아니오 |
+| **`H-184`** (`/code-review`, 단위 1·3) | `bindLifetime` 부기 커밋 vs 훅 가드 순서 | (a) `bindLifetime`이 `isEffect(value)`면 훅 가드를 **먼저** 묻고(예: `value:_assertBindable()` 훅 하나) 통과 후 커밋 / (b) 훅이 던지면 부기를 되감음 / (c) UB(`fn` 안 bind는 `H-147`로 이미 금지) | **(a)** | (b)는 pcall 없이는 못 하고 예외 안전성 계약과 충돌; (c)는 반쯤 묶인 핸들이 남아 이후 bind가 전부 "already bound"로 막히는 실측이라 UB로 두기엔 무겁다 | 아니오 |
+| **`H-185`** (`/code-review`, 단위 3) | cleanup 팩 vs 첫 반환만 | (a) 런타임이 반환 전부를 cleanup 목록으로 소진(역순) / (b) 타입을 `-> (() -> ())?`류로 좁힘(`H-95`가 기각한 모양 — 무반환 `fn`이 막힘) / (c) 문서·타입 주석에 "첫 반환만" 명시 | **(a)** | 타입이 이미 팩을 광고하고 다중 자원 정리는 자연스러운 용례 — 소진 순서만 정하면 됨(`_consumeCleanup` 한 곳) | 아니오 |
+| **`H-186`** (`/code-review`, 단위 3) | 교차 인스턴스 dep | (a) `Effect`/`Observer`/`Compute` 생성 시 dep의 인스턴스가 다르면 `error(…, 2)`(임플이 `module`을 아니 판정 가능) / (b) UB 문서화 / (c) 지원(dep의 백엔드가 게이팅 — 지금 동작) | **(a)** | 지금 동작은 두 백엔드가 한 핸들을 나눠 판정해 에러 귀속이 틀린다; `architecture.md` 13번의 다중 `New()`는 "같은 인스턴스 안"이 전제 | 아니오 |
+| **`H-187`** (`/code-review`, 단위 3·4) | 타입 별칭 이름 넷 | (a) 그대로 승인(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`) / (b) 인라인으로 풀어 이름을 없앰 / (c) 다른 이름 | **(a)** | 시그니처는 문서 그대로이고 이름이 없으면 `quad-types` 선언이 세 배로 길어진다 | 아니오 |
 | **`H-174`** (탐사자, **단위 2 착수 전 필요**) | 반응형 모듈이 자기 `quad` 인스턴스의 `canExecute`/`canBound`에 닿는 법 | (a) `Source.luau`/`State.luau`/`Observer.luau`/`Effect.luau`를 `InitSource(module)`류 **팩토리**로 — 클래스와 `Subscribed`/`WeakSubscribed` 레지스트리를 `module`을 닫은 클로저 안에서 만들고 `module.Source = …`로 심음(`InitDispatch`와 같은 모양, `EpochMap`/`Brand`/`Ref`는 그대로 잎). 공개 필드가 없는 `State`/`Observer` 클래스는 `Init`의 반환값이나 `module.RunInit` 뒤의 비공개 필드로 형제 `Init`에 넘김 / (b) 잎 모듈 유지 + 값마다 역참조 필드(`observer._quad`)를 두고 `self._quad.canExecute(self)` / (c) 잎 모듈 유지 + 모듈 로컬 슬롯 하나를 백엔드가 채움(인스턴스 격리 포기) | **(a)** | `architecture.md` 13번(*"모듈 인스턴스를 인자로 받도록"*)과 `module-lifecycle-plan.md` "New()의 내부 구성"이 이미 이 모양이고, `Observer`의 두 레지스트리가 인스턴스별이 되어 *"완전히 별도의 새 Quad 네임스페이스"*와 맞음. (b)는 새 필드 + 값이 자기 모듈을 강참조(`Relate` 되참조 계열 위험), (c)는 `spec.lifetime` 8·`New()`의 존재 이유와 충돌. 어느 쪽이든 **필드는 발화 시점에 늦게 읽는다**(상세 절의 하위 함정) | 아니오 |
 
 **[2026-08-28 회신 — 단위 1 배치 전량 확정]** 사용자 원문: *"174 는 module.canExecute 로
@@ -236,7 +291,7 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 번 불리는 문제를 남겼다. 반영 위치는 위 표의 상태 열.
 
 코드 쪽 잔여 마커: `grep -rn "TODO(H-" quad-base/src` — 이 표의 문항과 1:1이어야
-한다. **[2026-08-28 기준] 마커 0개** — 위 셋은 단위 1 모듈을 막지 않아 코드는 문서
+한다. **[2026-08-28 기준] 마커 0개**였고 **[2026-08-29 단위 3·4 리뷰 뒤] `H-182`~`H-187` 여섯 개 마커**가 코드에 있다(`grep -rn "TODO(H-" quad-base quad-types`) — 위 셋(`H-168`~`H-170`)은 단위 1 모듈을 막지 않아 코드는 문서
 블록 그대로 두고 문항만 올렸다(`H-168`은 코드가 아니라 M8 문서의 관용구 문제).
 
 ## §5 이상 없다고 확인한 것

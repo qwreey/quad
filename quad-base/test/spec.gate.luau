@@ -76,6 +76,14 @@ do
 		end)
 	end)
 	assert(not bad2, "setup must return the onUpstreamEmit function")
+	s:Set(3) -- [H-188] the half-built node was detached — this must not crash on a nil callee
+	local left = 0
+	for sub in pairs((s :: any)._subs) do
+		if sub ~= g then
+			left += 1
+		end
+	end
+	assert(left == 0, "a failed Gate left nothing in the upstream's subscriber set")
 	print("PASS")
 end
 
