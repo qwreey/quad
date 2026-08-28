@@ -1125,7 +1125,8 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
     `H-179` 정정]** 메소드형 `__apply: (self: any, state: any) -> any` — 호출은 `State.luau`의
     `(factory :: any):__apply(self)`. `State<T>.Apply`의 파라미터 타입은 **교집합 오버로드**
     (함수 팩토리는 제네릭 `U`, 객체 팩토리는 `any` 반환 → 호출부가 결과를 명시)이고 그
-    정확한 표기와 근거는 `base/typing-limits.md` §1②가 소스 — 한때 여기 `(self: any, state:
+    글자 그대로의 표기는 `quad-types/src/init.luau`의 `State<T>.Apply`, 근거는 `base/typing-limits.md`
+    §1② — 한때 여기 `(self: any, state:
     State<T>) -> U`라 적었는데 그 유니온 표기는 `Blocker`처럼 필드가 더 있는 객체를 못 받는다.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
@@ -1135,8 +1136,10 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   여기 한때 `factory: (State<T>) -> U): U`라 적혀 있었는데, 그 시그니처는
   **함수만** 받으므로 위 `H-94` 항목이 확정한 "지정된 필드를 가진 객체"
   형태를 **거부한다** — `state:Apply(Debounce{...})`가 그대로 타입에러다.
-  파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환 `U`만 열어둔다
-  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 위 항목대로 M2 단위 2에서 확정). 아래 논거는 **반환 쪽**에
+  파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환은 열어둔다 —
+  **[2026-08-29 `H-179`]** 함수 쪽은 제네릭 `U`, 객체 쪽은 `any`(호출부가 명시)
+  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 위 항목대로 M2 단위 4
+  `H-179`에서 확정). 아래 논거는 **반환 쪽**에
   대한 것이라 그대로 유효하다 — Modifier의
   `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
   이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종

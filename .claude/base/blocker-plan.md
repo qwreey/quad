@@ -182,7 +182,7 @@ state2:Set(2)  -- state3 무효화 → gated3로 전파 시도 → 이미 true, 
 blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 번 emit
 ```
 
-**일반 사용 가이드(확정, 문서화 필수)**: Block은 **파이프라인의 최종 연산
+**일반 사용 가이드(확정, 문서화 필수)**: 블록(= `state:Apply(blocker)`)은 **파이프라인의 최종 연산
 지점**(실제로 무거운 계산이 일어나는 derived state, eager 소비자에 가장
 가까운 지점)에 거는 게 원칙 — 소스가 여러 개든, 하나가 한 주기에 여러 번
 바뀌든 상관없이 이 지점 하나만 지키면 됨. 소스 쪽에 각각 거는 게 아니다.
