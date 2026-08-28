@@ -8,7 +8,7 @@
 > 새로 만들고 `base/`에 반영한다 — **이 파일은 발견 당시의 기록**이라 각 항목의
 > "갈래"는 선택 전 목록이니 반영 뒤엔 그대로 믿지 말 것.
 >
-> 상태: **[2026-08-28] 탐사 완료(발견 `H-150`~`H-157`, 🔴 0 · 🟡 5 · 🟢 3, §4 문항 7) → 같은 날 사용자와 대화형으로 전량 결정·반영 — 결정의 소스는 `-round10-followup.md`.** 후속 `H-158`~`H-162`도 같은 날 확정(`H-159`는 `/code-review` 권고 (a) `Refresh` 복원이 아니라 사용자 제안 **`_rerunRequired` 홀드**로). 미결은 `research/existing-mount-plan.md` §5의 갈래들뿐(개수는 거기가 소스). `H-147`~`H-149`는
+> 상태: **[2026-08-28] 탐사 완료(발견 `H-150`~`H-157`, 🔴 0 · 🟡 5 · 🟢 3, §4 문항 7) → 같은 날 사용자와 대화형으로 전량 결정·반영 — 결정의 소스는 `-round10-followup.md`.** 후속 `H-158`~`H-162`도 같은 날 확정(`H-159`는 `/code-review` 권고 (a) `Refresh` 복원이 아니라 사용자 제안 **`_rerunRequired` 홀드**로). 남았던 `Claim` 갈래 여덟도 같은 날 전량 확정돼 `research/`에서 `base/claim-plan.md`로 승격(결정 기록은 그 §7). `H-147`~`H-149`는
 > `H-143`~`H-146` 반영분에 `/code-review high`가 낸 10건 중 새 메커니즘·기존
 > 결정 변경이라 문항으로 올린 셋(나머지 일곱은 반영 — `-round9-followup.md`의
 > 마지막 code-review 절).
@@ -349,7 +349,7 @@ spurious 재발행은 `Source:Set`이 같은 값도 emit한다는 확정(`t18`�
 | **`H-154`** | `InstanceChildHandler` spurious dedup | (a) retractor `if nextValue == v then return end`(`SlotHandler` 동형) / (b) 그대로(정책 문서화) | **(a)** — `Slot`/`Ref`/Leaf가 이미 채택한 정책 |
 | **`H-159`** | **[2026-08-28 `/code-review`, 반영 뒤]** `H-151`이 잃은 캐치업 — 바인드 **전**에 온 emit(특히 `Ref`)은 다시 안 온다 | (a) `_bindDestroying`/`resubscribeTail`에 **"묶이는 시점 1회 `Refresh`"**만 되살림(emit 경로의 `_epochs` 갱신은 `H-151`대로 `Update`만) / (b) `Ref` dep만 바인드 시 `.Revision` 대조 / (c) 계약으로 두고 사용자에게 "`Ref`를 dep으로 쓰는 Effect는 그 leaf 뒤에 두라" 문서화 | **(a)** — `H-151`의 근거("다음 emit이 잡는다")가 `Ref`엔 성립하지 않는다; (a)는 `H-151`을 되돌리는 게 아니라 "emit 경로만 미룬다"는 계약과 양립(바인드는 emit 경로가 아님) |
 | **`H-160`** | leaf `Destroying` 콜백이 도는 cleanup 안의 `self:Rerun()`/`dep:Set()` — `canExecute`가 아직 참이라 죽는 inst에서 `fn`이 돌고 새 cleanup이 영구 고아 | (a) `rawRerun` 진입에서 `_cleanupRunning`이면 **버린다**(no-op) — "cleanup은 자기 생명주기를 못 바꾼다"의 `Rerun`판 / (b) `Destroying` 콜백이 `_consumeCleanup` **전에** `.Subscribed`류 표식으로 죽음을 먼저 세움(새 상태) / (c) UB 문서화 | **(a)** — 새 상태 없이 기존 플래그 하나로, `Unsubscribe` 경로와 같은 결과 |
-| **`H-161`** | `H-148` 이후 **M5에 승인된 루트 부착 경로가 없다** + 여러 스크립트가 같은 `PlayerGui`를 `Claim`하면 이중 claim error / 다중 quad UB라 `Claim`이 자기 동기 사례를 막는다 | (a) `Claim`을 **M5 스코프**로 당기고(프로바이더 마일스톤이라 자연스러움) `research/existing-mount-plan.md` §5-7·8 갈래를 같이 정한다 / (b) `Claim` 전까지 임시로 `H-146` 루트 예외(밖에서 `.Parent =`)를 M5 한정으로 되살림 / (c) 루트 컨테이너(부기 대상 아님)는 claim 없이 자식만 붙이는 얇은 표면 신설 | **(a)** — 임시 예외는 하루 만에 뒤집힌 것을 되살리는 것이고, (c)는 `Mount` 기각의 재개방. §5-7(다중 스크립트)은 `Claim`의 "전부 매핑" 계약이 **루트 컨테이너에는 안 맞는다**는 신호라 갈래를 그 문서에 적었다 |
+| **`H-161`** | `H-148` 이후 **M5에 승인된 루트 부착 경로가 없다** + 여러 스크립트가 같은 `PlayerGui`를 `Claim`하면 이중 claim error / 다중 quad UB라 `Claim`이 자기 동기 사례를 막는다 | (a) `Claim`을 **M5 스코프**로 당기고(프로바이더 마일스톤이라 자연스러움) `base/claim-plan.md` §5-7·8 갈래(승격 뒤 번호는 §7-7·§7-8)를 같이 정한다 / (b) `Claim` 전까지 임시로 `H-146` 루트 예외(밖에서 `.Parent =`)를 M5 한정으로 되살림 / (c) 루트 컨테이너(부기 대상 아님)는 claim 없이 자식만 붙이는 얇은 표면 신설 | **(a)** — 임시 예외는 하루 만에 뒤집힌 것을 되살리는 것이고, (c)는 `Mount` 기각의 재개방. §5-7(다중 스크립트)은 `Claim`의 "전부 매핑" 계약이 **루트 컨테이너에는 안 맞는다**는 신호라 갈래를 그 문서에 적었다 |
 | **`H-163`** ✅ (a) → **(a′)** | **[2026-08-28 `/code-review`, `H-159` 반영 뒤]** Slot 내부 Observer(`_listObserver`·`_baseObserver`)에도 홀드 발화가 걸려 재마운트의 `bindLifetime`이 `materializeSlotTree` **도중** `reconcile`을 동기 실행 → 자리 이중 등록, 중첩 Slot이면 `canBound` error | (a) Slot이 자기 내부 Observer를 다시 묶기 전에 `_rerunRequired`를 **지운다**(재마운트 캐치업은 `activateList`가 이미 명시적으로 한다 — 이중) / (b) 홀드 발화를 사용자 Observer에만(내부 Observer는 브랜드로 구분 — 새 구분) / (c) 홀드 발화를 `bindLifetime` 안이 아니라 `materializeSlotTree` 끝(`blocker:OffWithoutEmit()` 뒤)으로 미룸 | **(a) → (a′)** — (a)의 전제("재마운트 캐치업은 `activateList`가 이미 한다")는 감사 2라운드가 반증(그 분기는 앵커만 옮긴다) → 트리 확정 뒤 끄고 묶고 홀드가 있었으면 reconcile 1회. 소스는 `-round10-followup.md` |
 | **`H-164`** ✅ (c) — 문항 전제 정정 | Observer 홀드 발화가 `emitFrom = nil`로 오면 계약("`nil` = 설치 발화")과 구분 불가 — `if emitFrom == nil then initOnly()`로 짠 소비자가 변경을 놓침 | (a) 홀드 시 **마지막 `from`을 보관**(`_rerunRequired = from`, 진리값으로 플래그 겸용)해 그것을 넘김 / (b) 전용 센티널(`HeldEmit`) / (c) 계약 문구만 "`nil` = 설치 **또는** 묶일 때 캐치업" | **(c) — 문항 전제 정정**: 홀드 발화는 출처 있는 통지가 아니라 "묶였으니 값을 읽어라"라 설치 발화와 같은 종류 — `nil` = 출처 없음(설치 또는 캐치업). (a)의 `from` 보관은 사용자 기각(여러 홀드가 오면 앞 것이 날아감, 보관할 이유 없음). 소스는 `-round10-followup.md` |
 
@@ -390,10 +390,10 @@ emit이 오는 dep**에만 성립한다. 갈래·권고는 §4 표.
 
 `H-148`이 `H-146`의 루트 예외를 폐기하고 `Claim`은 "M5 이후" 백로그라, M5(프로바이더·
 `D`·`InstanceChildHandler`)가 끝나도 quad가 만든 트리를 `PlayerGui`에 붙이는 승인된
-경로가 코퍼스에 없다. 그리고 `research/existing-mount-plan.md`의 *이중 claim은 error /
+경로가 코퍼스에 없다. 그리고 `base/claim-plan.md`의 *이중 claim은 error /
 여러 quad가 한 트리를 claim은 UB / 부기 대상 자식은 전부 매핑* 계약을 그대로 두면
 `Shop.client.luau`와 `Inventory.client.luau`가 각각 `Claim(PlayerGui, …)`하는 **가장
-흔한 사례가 error**다 — 그 문서 §5엔 이 문항이 없었다(추가: §5-7·§5-8). 갈래·권고는
+흔한 사례가 error**다 — 그 문서 §5엔 이 문항이 없었다(추가: §5-7·§5-8 — 승격 뒤 `base/claim-plan.md` §7-7·§7-8). 갈래·권고는
 §4 표.
 
 ## §5 이상 없다고 확인한 것

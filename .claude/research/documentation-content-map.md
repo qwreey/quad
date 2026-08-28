@@ -176,6 +176,16 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
     무시될 수도 있다. 지금 설계로 막을 일이 아니라 **문서화할 사실**이다
     (버전 정책의 타입 레벨 축은 `type-version-check`가 이미 다룬다 —
     이건 그 런타임 판별 판). 코퍼스 어디에도 언급이 없어서 여기 등록한다
+21. **[2026-08-28 신설] 이미 있는 트리 — `Claim`과 루트 `.Parent`** —
+    `base/claim-plan.md` §9의 문서화 대상: (1) claim-once·own-all 계약 — 부기 대상
+    자식은 전부 매핑, 디스크립터 순서가 정본, 숏핸드 `UI*`는 (i) 템플릿에 없고
+    quad가 만들거나 (ii) 실제 객체로 매핑하거나 둘 중 하나(섞으면 UB), 이름
+    중복·부재는 UB(debug에서 error); (2) **루트의 `.Parent =`는 밖에서, 그 아래는
+    절대 직접 하지 말 것** — props에 `Parent`를 넣으면 일반 매치 실패 문구가 나오는
+    이유도 여기서 설명; (3) 여러 스크립트가 한 `PlayerGui`를 쓸 땐 각자 `ScreenGui`를
+    만들어 `.Parent = PlayerGui`, PlayerGui 직하 Slot을 공유해야 하면 `Claim`을 한
+    번 하고 Slot을 반환하는 중간 모듈 패턴(**단 PlayerGui 자체를 claim하는 것은
+    `base/claim-plan.md` §10-C 미결** — 확정 전엔 쓰지 말 것)
 
 (13번이었던 "Fusion/Vide 경험자용 비교 섹션"은 2026-08-06 재분류로 아래 6번
 `quadnomicon`으로 이동)

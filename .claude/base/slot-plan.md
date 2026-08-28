@@ -115,7 +115,10 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
     quad 자신의 배관은 `Destroying` 하나만 보므로 안 깨진다 — 영향은
     사용자 코드/렌더 쪽이다.
   - `isInst`는 이 조합 폴백의 예외다(위 문단) — 판정이라 조합으로 만들 수
-    없고, 미주입이면 명확한 에러여야 한다.
+    없고, 미주입이면 명확한 에러여야 한다. 같은 예외가 **`onDestroying`**(`H-11`,
+    훅)과 **[2026-08-28] `nativeFindChild`**(`Claim`의 조회 op, `base/claim-plan.md` —
+    예외 분류는 에이전트 판단)에도 적용된다. 전체 목록의 소스는
+    `base/architecture.md`의 소스 트리(`EngineOps.luau` 줄).
 - **⚠️ 전제 — 한 Slot의 물리 자식은 부모 안에서 연속 구간을 차지한다.** 범위 op이
   성립하는 근거가 전부 이것이다(offset이 누적합이고 중첩 Slot도 같은
   `physicalTarget`을 공유하므로 구조적으로 참). quad 밖에서 그 부모에 자식을 끼워
@@ -234,8 +237,8 @@ Slot에 들어간 요소는 **ownership이 귀속**되며 다른 곳에 마운�
 별다른 강제를 안 했지만(`reference/quad-v1-architecture.md`의 mount.lua 분석 참고 —
 실제로는 부모/자식 부기까지 했지만 다중 마운트 방지는 없었음), v2는 **Slot의
 마운트 경로 자체**(`attachSlot` 분해분 — 별도 `Mount` 함수가 아니다; **[2026-08-28]**
-이미 있는 트리를 quad가 소유하는 `Claim`은 `research/existing-mount-plan.md`에서
-논의 중이고 그것도 이 단일 마운트 불변식을 그대로 진다)가 이 강제를 담당.
+이미 있는 트리를 quad가 소유하는 `Claim`(`base/claim-plan.md`, 같은 `inst` 이중
+claim은 error)도 이 단일 마운트 불변식을 그대로 진다)가 이 강제를 담당.
 
 Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 부기"로만
 구현했고(재사용 가능한 1급 프리미티브가 아님), Vide는 아예 이 개념이 없어서
@@ -2152,11 +2155,14 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 정확히 호출하는 유일한 정당 경로라, 이걸 우회해서(예: 외부 코드가 Slot이
 마운트해둔 부모 Instance에 직접 `.Parent = parentInst`로 자식을 끼워
 넣는 것) 자식을 추가/제거하면 `Length`/형제 순서 계산이 그 변화를 몰라
-조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김. **[2026-08-28 10라운드
-`H-148`]** 루트(`PlayerGui` 등 quad 밖 부모)는 사용자가 `.Parent =`로 붙이는 게
-아니라 **quad가 `Claim`으로 소유**하는 쪽으로 방향이 확정됐다
-(`research/existing-mount-plan.md`, M5 스코프 — `H-161`) — 그래서 이 금지에 예외가 없어진다.
-(2026-08-27에 하루 있었던 "루트는 밖에서" 예외는 폐기.)
+조용히 어긋남 — 별도 방어 로직 없음, 문서 경고로만 남김. **[2026-08-28 확정]** 이 금지는
+**quad가 소유한 부모 *아래***에만 걸린다 — **루트**(quad 트리의 최상위, `New`로 만든
+것이든 `Claim`한 것이든)의 `.Parent`는 어느 부기에도 속하지 않으므로 사용자가 밖에서
+`root.Parent = PlayerGui`로 붙이고 떼는 것은 허용이다(`base/claim-plan.md` §5 —
+10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 좁혀
+복원, 사용자: *"밖에서 .Parent 설정하는건 괜찮아"*). 이미 있는 트리(PlayerGui
+전체·`Clone()` 사본)를 quad 소유 부모로 만들어 그 아래 Slot을 두는 것은 별개 표면
+`Claim`(M5 스코프 — `H-161`).
 
 ## `Slot:Single(state, updateFn?, opts?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
 

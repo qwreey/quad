@@ -1983,7 +1983,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   결정·반영. **뒤집힌 것 둘**: `fn`/cleanup은 자기 구독을 못 바꾼다(`H-147` (A) —
   어제 `H-143`의 원샷 지원 소멸, `rawRerun(force)`/`Rerun` 분리, 네 진입점 `_running`
   가드) / 루트는 밖에서 `.Parent =`가 아니라 **quad가 `Claim`으로 소유**(`H-148` →
-  `research/existing-mount-plan.md`, 2026-08-14 기각과 다른 claim-once·own-all).
+  `base/claim-plan.md`, 2026-08-14 기각과 다른 claim-once·own-all).
   나머지: Observer 진입점 인라인(`H-149`) / `Effect._blocker` 제거(`H-150`) /
   `_epochs`는 emit 때만 갱신, `Refresh` 캐치업 폐기 + "게이트는 emit 경로만 미룬다"
   계약(`H-151`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름 런타임
@@ -1995,3 +1995,19 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   (전파 루프는 `sub:_receive(from)`만, 사용자 지시) · Slot 재마운트 캐치업 (a′) ·
   `emitFrom == nil` = 출처 없음 · `Observer:_catchUp()`. 소스는
   `qa-request/pre-implementation-handtrace-round10-followup.md`.
+- **`session/2026-08-28-02-claim-promotion.md`** — 10라운드가 남긴 `Claim` 갈래 여덟을
+  사용자가 한 메시지로 답하고(1~5) 에이전트가 §5-7을 "한 quad·여러 스크립트" 문제로
+  다시 세워 되물은 뒤 전량 확정 → `research/existing-mount-plan`을 **`base/claim-plan.md`로
+  승격**. 루트 키 센티널(맨 테이블 + `Claim<<T>>`는 타입 자동완성 손실로 기각, `type
+  <Class>Param` 공유) / 디스크립터 순서 정본 / `New` 자식 허용(위치는 프로바이더 몫) /
+  debug 검사 범위는 `debug-tooling-plan.md`로 / 이름 `Claim`·`D.Mapper` / **루트의
+  `.Parent =`는 밖에서 허용으로 복원**(`H-146` 예외가 `Claim`한 루트까지 넓혀 복원,
+  `Claim`은 1회·전체 소유, PlayerGui 직하 Slot 공유는 중간 모듈) / 매핑된 자식은
+  `InstanceChildHandler` 그대로. `nativeFindChild` 주입 op 등록. `question.md` 최우선 절 비움.
+  감사 6라운드(발견 2→3→1→3→2→0, 3~5라운드는 전부 낮의 "폐기" 배너가 저녁의 복원을
+  모르던 것) → `/code-review high` 10건: 서술·라벨·stale 여섯 반영, **새 메커니즘 넷**은
+  `base/claim-plan.md` §10 + `question.md` 문항으로(gcconn/gchold 셋업 자리 / 이중 claim
+  레지스트리 / `PlayerGui` own-all vs `ResetOnSpawn` / `<Class>Param` 배열 파트). 리뷰가
+  잡은 실질 정정: `Claim<T>` 추론은 `Clone()`이 `Instance`를 돌려줘 성립 안 함 →
+  반환은 inst 타입 그대로 / `Processed` 관용구는 플래그 절반만 / claim된 inst에선
+  `PreRef`/`OnCreated` 불변식이 약해짐.

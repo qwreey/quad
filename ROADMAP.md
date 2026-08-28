@@ -31,8 +31,10 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > weak-key / 루트 부착은 사용자 몫)도 같은 날 확정·반영. **[2026-08-28] 10라운드**
 > (`-round10-followup.md`가 소스) — 그중 둘은 하루 만에 다시 뒤집혔다: `fn`/cleanup은
 > 자기 구독을 못 바꾼다(`H-147`, `H-143` 소멸 · `rawRerun(force)`/`Rerun` 분리) /
-> 루트는 밖에서 `.Parent =`가 아니라 **quad가 `Claim`으로 소유**(`H-148`,
-> `research/existing-mount-plan.md`, **M5 스코프** — `H-161`). 그 밖에 `_epochs`는 emit 때만 갱신
+> 이미 있는 트리는 **quad가 `Claim`으로 소유**(`H-148`, `base/claim-plan.md`,
+> **M5 스코프** — `H-161`; 같은 날 갈래까지 전량 확정 — 그 과정에서 **루트의
+> `.Parent =`는 밖에서 허용으로 복원**, 요지는 M5 `Claim` 체크박스; `/code-review`가
+> 낸 M5 착수 전 문항 넷은 그 문서 §10). 그 밖에 `_epochs`는 emit 때만 갱신
 > (`Refresh` 캐치업 폐기, `H-151`) / `Effect._blocker` 제거(`H-150`) / Observer
 > 진입점 인라인(`H-149`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름
 > 런타임 가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`).
@@ -949,6 +951,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > **`onDestroying(inst, fn)`**(`H-11`): `Effect`의 leaf 사망 cleanup을 발화시키는
 > 훅으로, `bindLifetime`이 `isEffect`일 때 부른다(quad-roblox 구현은
 > `inst.Destroying:Connect(fn)`). 이것도 조합으로 못 만들므로 미주입이면 에러다.
+> **[2026-08-28]** 셋째로 **`nativeFindChild(inst, key)`**(`Claim`의 조회 op, 아래
+> `Claim` 체크박스·`base/claim-plan.md`) — 같은 예외 취급(에이전트 분류). 전체
+> 목록의 소스는 `base/architecture.md`.
 
 > **⚠️ 구현 관례**: `quad-roblox`의 공개 타입은 지금부터 단일 파일
 > (`src/init.luau` 또는 `types.luau`)에 몰아둘 것 — 나중에 필요해지면
@@ -960,7 +965,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
 - [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절). **[2026-08-27 9라운드 `H-142`] 생성되는 props 타입에서 `Parent`를 제외할 것** — props에 `Parent`는 올 수 없다(부모가 하는 일, 같은 문서의 파이프라인 절). `New` ①~④ 순서는 그 절의 의사코드가 소스
-- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로) — 루트는 밖에서 `.Parent =`가 아니라 quad가 `Claim`으로 소유하는 쪽으로(`research/existing-mount-plan.md`, 아래 백로그)), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
+- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로). 루트 부착 경로가 무엇인지는 아래 `Claim` 체크박스가 소스), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
       부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →
       `v.Parent = inst` → `setLength(inst, k, 1, inst)`(정적 단일 자식은 상수
@@ -971,7 +976,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       문단. 빠뜨리면
       `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
       `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
-- [ ] **[2026-08-28 M5 스코프, `H-161`]** `Claim(inst, D.Mapper.<Class> "Name" {…})` — 이미 있는 트리(PlayerGui·`Clone()` 사본)를 quad가 소유. `H-146` 루트 예외를 폐기한 뒤 M5에 승인된 루트 부착 경로가 이것뿐이라 **백로그가 아니라 M5 안**(사용자 확정). 프로바이더 op `nativeFindChild` 필요. 갈래 미결(특히 §5-7 다중 스크립트/루트 컨테이너) — `research/existing-mount-plan.md` §5가 소스(개수도), 다음 배치 문항.
+- [ ] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **⚠️ 착수 전 사용자 문항 넷**(gcconn/gchold 셋업 자리 / 이중 claim 레지스트리 / `PlayerGui` own-all / `<Class>Param` 배열 파트) — `base/claim-plan.md` §10. `D/init.luau` 생성기는 `type <Class>Param`(필드 파트)을 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다.
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에

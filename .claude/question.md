@@ -12,18 +12,15 @@
 
 ---
 
-## ⭐ 최우선 — `Claim` 갈래 (2026-08-28 갱신)
+## ⭐ 최우선 — 비어 있음 (2026-08-28 갱신)
 
 **[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-164` — `EmitReceive`·
 `Observer:_catchUp` 포함)까지 사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
-`qa-request/pre-implementation-handtrace-round10-followup.md`). 남은 건 하나 —
-**M2 게이트 아님**:
-- **`research/existing-mount-plan.md` §5** — 루트/템플릿을 quad가 소유하는
-  `Claim` + `D.Mapper`의 갈래들(루트 디스크립터 이름·물리 순서 계약·비루트
-  사용·debug 검사 범위·표면 이름 … — 개수는 그 문서 §5가 소스). 방향은 확정, M5
-  스코프(`H-161`). **특히 §5-7**(여러 스크립트/여러 quad가 같은 `PlayerGui`를
-  쓰는 경우 — "전부 매핑" 계약이 루트 컨테이너엔 안 맞는다는 신호, 권고 없음)이
-  `Claim` 설계의 핵심 미결입니다.
+`qa-request/pre-implementation-handtrace-round10-followup.md`). 같은 날 마지막으로
+남아 있던 **`Claim` 갈래 여덟도 전량 확정**돼 `research/`에서 `base/claim-plan.md`로
+승격됐습니다(결정 기록은 그 §7, 원문은 `session/2026-08-28-02-claim-promotion.md`,
+해소 요지는 `archive/question-resolved.md`의 "`Claim` 갈래" 절). **M2 착수를 막는
+항목은 없습니다.**
 
 **[2026-08-27] 9라운드**(Q1~Q10·`H-138`·`H-139`·`H-142`·`H-143`~`H-146`)는
 전량 처리·반영됐습니다 — 소스는 `-round9-followup.md`.
@@ -76,6 +73,21 @@
 > **M0 착수 전 읽을 것**: `base/typing-limits.md`(0-Y가 남긴 구현 규약),
 > `base/dispatch-core-plan.md`(0-A/0-Z가 반영된 디스패치 코어 — 열네 번째
 > 세션에 `bind-system-plan.md`에서 분리 신설).
+
+## ⭐ M5 착수 전 — `Claim` 문항 넷 (2026-08-28 신설, M2 게이트 아님)
+
+**[2026-08-28 저녁, `/code-review high`] `Claim` 승격 뒤 M5 착수 전 문항 넷** — M2
+게이트 아님, 결정은 M5 착수 때까지면 됨. 소스는 `base/claim-plan.md` §10(권고 포함):
+- **A.** claim한 inst의 gcconn/gchold (0) 셋업 자리 — 프로바이더 op(`nativeAdopt` 가칭) /
+  `Claim` 본체를 프로바이더로 / (0)을 quad-base로. 권고 op.
+- **B.** 같은 `inst` 이중 claim 판정 레지스트리 — `elementOwner`는 못 씀(claim한 inst를
+  Slot 요소로 쓰는 §6과 충돌). 권고 per-inst `InstData` 플래그.
+- **C.** 엔진이 자식을 넣는 컨테이너(`PlayerGui`, `ResetOnSpawn`)와 own-all 계약 —
+  권고 "UB로 명문화, 흔한 경로는 `.Parent =`". 매퍼 생성기 범위에 컨테이너 포함 여부도.
+- **D.** `type <Class>Param`의 children 배열 파트 — 원소 타입 파라미터 vs 필드만 공유.
+  권고 파라미터 + 스파이크.
+- 부수(우선순위 낮음): `Claim` debug 검사 범위는 `research/debug-tooling-plan.md`
+  "열린 질문" 절로 이관돼 있음 — 디버깅 도구 설계 때.
 
 ## 1. 용어 정리 — 아직 안 정해진 것만 (사용자 요청, 진행 중)
 

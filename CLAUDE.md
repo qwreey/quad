@@ -16,9 +16,8 @@ M2(반응형 코어 — Source/State/Store)**. **⚠️ [2026-08-24] M2와 M3의
 `-round9-followup.md` — Q1~Q10·`H-138`·`H-139`·`H-142`, 그리고 `/code-review`가
 낸 `H-143`~`H-146`까지 전량 반영 완료**; **[2026-08-28] 10라운드 몫은
 `-round10-followup.md`** — 광범위 탐사 `H-150`~`H-157`까지 전량 결정·반영, 그중
-`H-143`과 `H-146` 루트 예외는 하루 만에 뒤집힘)이고, `.claude/question.md` 최우선
-절엔 `Claim` 갈래(`research/existing-mount-plan.md` §5, 특히 다중 스크립트)만
-남아 있다(M2 착수 게이트는 아님). 같은 상태를 `.claude/project-context.md`도
+`H-143`과 `H-146` 루트 예외는 하루 만에 뒤집힘 — 후자는 같은 날 다시 좁혀 복원)이고, **같은 날 `Claim` 갈래까지 전량 확정돼 `research/`에서
+`base/claim-plan.md`로 승격** — `.claude/question.md` 최우선 절은 **비어 있다**. 같은 상태를 `.claude/project-context.md`도
 서술하니 마일스톤이 넘어갈 때 두 곳을 같이 고칠 것. 진행 상황의 소스는
 항상 루트 `ROADMAP.md`.
 

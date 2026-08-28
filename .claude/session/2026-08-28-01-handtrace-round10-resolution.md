@@ -16,7 +16,7 @@
    없다"*고 한 것을 스스로 *"엄청난 모순이네"*로 뒤집은 자리.
 2. `H-148`에서 사용자가 더 큰 공백을 짚음 — 루트가 Slot일 수 없다(`PlayerGui`
    아래 `Slot { Shop{} }` 불가). 2026-08-14 기각(재바인드)과 다른 방향(claim-once·
-   own-all)임을 archive와 대조해 확인하고 `research/existing-mount-plan.md` 신설.
+   own-all)임을 archive와 대조해 확인하고 research 문서 신설(당시 `research/existing-mount-plan`, 같은 날 세션 02에서 `base/claim-plan.md`로 승격).
    `H-146`의 "루트는 밖에서 `.Parent =`" 예외는 하루 만에 폐기.
 3. `H-149`~`H-154`는 권고대로. `H-151`에서 사용자가 *"우린 애초에 Refresh 를 할
    필요가 없는거야"* — 어제 `H-144`에서 세운 "`Refresh` 먼저" 하위 결정이 소멸.

@@ -131,6 +131,8 @@ value)`류 base 유틸을 문서가 `inst`라고만 부르는 것과 같은 관�
 호이스팅되어 fire, 즉 "이 인스턴스에 뭐가 됐든 일어나기 전"에 콜백이
 불림. 새 Dispatch 메커니즘 불필요, `PreRef` 그대로 재사용.
 
+**[2026-08-28 `Claim` 캐비엇]** `Claim`(`base/claim-plan.md` §4)한 inst에선 이 보장이 약해진다 — inst는 이미 템플릿의 자식·프로퍼티를 갖고 있고 `OnCreated`가 뜻하는 건 "quad가 손대기 전"뿐이다.
+
 **v1과의 관계 — 이름이 같아 보여도 메커니즘은 다름.** `base/ref-plan.md`
 "`phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설" 절에 이미 이렇게 확정돼
 있음:

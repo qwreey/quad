@@ -1292,3 +1292,16 @@ L2 디스패치    Handler · Dispatch 코어 · chains · None ·          ┐
 히스토리 문서라 소급 수정하지 않았다.** 2026-08-24 이전에 쓰인 그 문서들의
 `M2`/`M3`는 **옛 의미**(M2=디스패치, M3=반응형)로 읽을 것. 이 경고는
 `ROADMAP.md`의 M2 배너에도 있다.
+
+## [해소됨, 2026-08-28] `Claim` 갈래 — `research/existing-mount-plan` §5 여덟 항목
+
+**2026-08-28 10라운드 `H-148`에서 신설된 research 문서의 §5 갈래 여덟 개가 같은 날
+사용자와 대화형으로 전량 확정돼 `base/claim-plan.md`로 승격됐다** — 결정과 사용자
+원문은 그 문서 §7, 대화 원문은 `session/2026-08-28-02-claim-promotion.md`. 요지:
+루트 키는 센티널(맨 테이블 + `Claim<<T>>`는 타입 자동완성 손실로 기각) / 디스크립터
+순서 정본 / claim된 부모 안 `New` 자식 허용(위치는 프로바이더 몫) / debug 검사 범위는
+`research/debug-tooling-plan.md`로 이동 / 이름 `Claim` + `D.Mapper` / M5 /
+**§5-7(여러 스크립트가 한 `PlayerGui`)은 `Claim` 1회·전체 소유 유지 + 루트의
+`.Parent =`는 밖에서 허용으로 복원**(사용자: *"정확히는 두번 Claim 불가하다는 의미.
+필요하다면 Slot 을 안에 만들고 리턴하는 중간 모듈을 만들어야함. 밖에서 .Parent
+설정하는건 괜찮아"*) / 매핑된 정적 자식은 같은 `InstanceChildHandler`.

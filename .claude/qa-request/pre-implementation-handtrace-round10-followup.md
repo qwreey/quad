@@ -10,7 +10,7 @@
 | 문항 | 무엇 | 상태 |
 |---|---|---|
 | `H-147` | 죽은 핸들에서 `Rerun()` | ✅ **확정 — 문항의 전제를 뒤집음**: `fn`/cleanup은 자기 생명주기를 못 바꾼다(A). `H-143`도 함께 소멸 |
-| `H-148` | `Parent` 거부 문구 | ✅ **전제 정정** — 문구가 아니라 루트 마운트 표면의 부재. `research/existing-mount-plan.md` 신설(`Claim` + `D.Mapper`), `H-146` 루트 예외 폐기, 전용 문구 철회 |
+| `H-148` | `Parent` 거부 문구 | ✅ **전제 정정** — 문구가 아니라 루트 마운트 표면의 부재. `base/claim-plan.md` 신설(`Claim` + `D.Mapper`), `H-146` 루트 예외 폐기(**→ 같은 날 후속 3에서 좁혀 복원** — 루트의 `.Parent =`는 밖에서 허용, 아래 마지막 절), 전용 문구 철회 |
 | `H-149` | Observer `Subscribe` 위임과 `level 2` | ✅ **확정 (a)** — `Subscribe`/`Unsubscribe`도 게이트·등록을 인라인, 위임 없음 |
 | `H-150` | `Effect._blocker` 죽은 부품 | ✅ **확정 (a)** — 제거, 억제는 Effect 핸들의 `canExecute` |
 | `H-151` | 게이트 우회 계약 | ✅ **확정 — (a) 문서화 + `Refresh` 캐치업 폐기**: Effect의 `_epochs`는 emit 수신 때만 갱신, 재바인드/재구독은 초기 설치와 같다 |
@@ -20,7 +20,7 @@
 | `H-163` | Slot 내부 Observer × 홀드 발화 | ✅ **확정 (a′)** `_listObserver`는 트리 확정 뒤(`materializeSlotTree` 꼬리)에 끄고 묶고, 홀드가 있었으면 reconcile 1회; `_baseObserver`는 끄고 묶음 + **`EmitReceive` 인터페이스**(전파 루프 계층 분리) |
 | `H-164` | 홀드 발화의 `emitFrom == nil` | ✅ **전제 정정 (c)** — `nil` = 출처 없음(설치 또는 캐치업), `from` 보관 기각 |
 | `H-160` | `Destroying` 경로 cleanup `Rerun` | ✅ **확정 (a) → `H-159`로 정정**: `rawRerun`이 `_cleanupRunning`이면 **버리지 않고 `_rerunRequired`로 홀드** + "error 나면 그 Effect는 죽는다" 계약 |
-| `H-161` | M5 루트 부착·다중 스크립트 `Claim` | ✅ **확정 (a)** `Claim`을 M5 스코프로; §5-7 다중 스크립트는 미결 |
+| `H-161` | M5 루트 부착·다중 스크립트 `Claim` | ✅ **확정 (a)** `Claim`을 M5 스코프로; §5-7 다중 스크립트는 미결 → **같은 날 후속 3에서 확정**(`Claim` 1회·전체 소유 + 루트의 `.Parent =`는 밖에서 허용, `base/claim-plan.md` §7-7) |
 | `H-153` | Store 예약 이름 런타임 가드 | ✅ **확정 (a)** — 생성자·`Of(name)`에 예약 이름 검사(level 2), 그림자 = store 자신 (I) |
 | `H-154` | `InstanceChildHandler` dedup | ✅ **확정 (a)** — retractor 첫 줄 `if nextValue == v then return end` |
 | `H-152`/`H-155`~`H-157` | 갈래 없음 | ✅ 반영(`gate-plan.md` 조립 첫 줄 `StateBrand:register` / `ROADMAP.md` M6×3·M11 / `debounce-throttle-plan.md` 7절 `H-32` 문단 / `store-plan.md` 빈 Store 실측 완료) |
@@ -92,7 +92,7 @@
 거기에 GUI 를 여럿 바운딩 해야해서 `Slot { Shop{} … }` 하는게 안 될것 같은
 느낌이 듦. 이건 Parent 이상의 문제인것 같아."* → 이미 있는 트리를 quad가
 소유하는 `Claim(inst, D.Mapper.<Class> "Name" {…})` 제안(원문·확정·갈래 전량은
-`research/existing-mount-plan.md`).
+`base/claim-plan.md`).
 
 **확정된 것**: 방향 자체 / 디스크립터는 `D.Mapper`에(`D.Frame`에 직접 얹지 않음)
 / `Claim` DFS(내려가며 해석 → 자식부터 `drive`)는 derive 위의 한 겹 / 부기 대상
@@ -100,8 +100,11 @@
 매핑하거나 / 이름 중복·부재는 UB + debug 모드 `seen` 검사 / `nativeFindChild`
 프로바이더 op, 순회는 quad-base / 다중 quad 한 트리 UB / M5 스코프(`H-161`로 당김).
 **따름**: 전용 문구 **철회**(일반 매치 실패 그대로), `H-146` (a)의 "루트는 밖에서
-`.Parent =`" **폐기**(루트가 quad 소유). `H-142` 키 금지는 그대로.
-**미결**(개수는 그 research 문서 §5가 소스)은 다음 배치 문항.
+`.Parent =`" **폐기**(루트가 quad 소유) — **[당시 결정, 같은 날 후속 3에서 좁혀
+복원됨]** 루트의 `Parent`는 부기 밖이라 밖에서 대입 허용(`base/claim-plan.md` §5).
+`H-142` 키 금지는 그대로.
+**미결**이던 갈래 여덟은 같은 날 전량 확정(이 파일 마지막 절, 결정 기록은
+`base/claim-plan.md` §7).
 
 ## `H-149` — Observer `Subscribe`/`Unsubscribe`도 인라인 (a)
 
@@ -221,7 +224,7 @@ then return end`(`SlotHandler` 동형). 같은 값 재발행에 `Parent = nil �
 `-round9-followup.md`/`-round9.md`의 `H-143`/`H-144`/`H-146` 소멸·정정 배너.
 
 **남은 미결**: `H-158`(`state:Block` 슈가 폐기 → `state:Apply(blocker)`, 권고만) —
-`question.md`에; `research/existing-mount-plan.md` §5 갈래 — 다음 배치. (이후 `H-158`은 확정, 아래 절.)
+`question.md`에; `base/claim-plan.md` §5 갈래 — 다음 배치. (이후 `H-158`은 확정, 아래 절.)
 
 ## 감사 루프 (2026-08-28, 10라운드 반영분)
 
@@ -281,11 +284,11 @@ cleanupRunning 플래그가 풀리지 않는 문제가 날듯. 모든 재 진입
 계약으로 상향되어도 문제는 없는듯. 이미 _running 도 그러한 제약을 받으니까."* —
 `effect-plan.md` "error 시 UB" bullet을 **"그 Effect는 죽는다"** 계약으로.
 
-## `H-161` — `Claim`을 M5 스코프로 (a); §5-7은 미결
+## `H-161` — `Claim`을 M5 스코프로 (a); §5-7은 미결 → 같은 날 후속 3에서 확정
 
 **사용자 확정**: *"H-161 는 확인. M5 스코프로 올라가도 될것으로 보임."* — `ROADMAP.md`
-M5 체크박스·`research/existing-mount-plan.md` 헤더·§5-6. 다중 스크립트/루트 컨테이너
-(§5-7)는 답이 없어 미결 유지.
+M5 체크박스·`base/claim-plan.md` 헤더·§5-6. 다중 스크립트/루트 컨테이너
+(§5-7)는 답이 없어 미결 유지 — **[같은 날 후속 3에서 확정]** `Claim` 1회·전체 소유 + 루트의 `.Parent =`는 밖에서 허용(`base/claim-plan.md` §7-7, 아래 마지막 절).
 
 ## `H-159` — `_rerunRequired` 홀드 플래그 (사용자 제안, 확정) — `_installed` 흡수, `H-160` 정정
 
@@ -408,3 +411,14 @@ observer 측에서 해당 emit 을 처리하는 함수를 만들어주는게 맞
 짝. Slot 꼬리는 bind 자체가 확정 뒤라 `bindLifetime` 안의 `_catchUp`이 reconcile 1회를
 맡는다 — 별도 끄기/호출 제거. 반영: `source-state-plan.md`(정의), `lifecycle-pattern.md`
 셋 + 필드 목록, `slot-plan.md` 꼬리.
+
+## [2026-08-28 후속 3] `Claim` 갈래 전량 확정 — `research/`에서 `base/claim-plan.md`로 승격
+
+위 `H-148`/`H-161`이 남겨둔 research 문서 §5의 갈래 여덟(루트 키 / 물리 순서 /
+claim된 부모 안 `New` / debug 검사 범위 / 표면 이름 / 마일스톤 / 여러 스크립트 /
+`Parent` 재대입)이 같은 날 사용자와 대화형으로 전부 닫혔다. **결정과 사용자 원문은
+`base/claim-plan.md` §7이 소스**, 대화 원문은 `session/2026-08-28-02-claim-promotion.md`.
+이 파일 위쪽의 *"`base/claim-plan.md` §5 갈래 — 다음 배치"*류 서술은 당시 기록이다
+(경로만 승격 뒤 이름으로 치환됨). 눈에 띄는 것 하나 — **`H-146`의 "루트는 밖에서
+`.Parent =`"는 `H-148`에서 폐기됐다가 여기서 좁혀 복원됐다**(루트의 `Parent`는 만든
+방법과 무관하게 부기 밖). `Claim`은 여전히 1회·전체 소유.

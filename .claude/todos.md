@@ -56,11 +56,17 @@
      와 함께 **같은 날 대화형으로 전량 결정·반영**(소스 `-round10-followup.md`).
      **어제 결정 중 뒤집힌 것 셋**: `fn`/cleanup은 자기 구독을 못 바꾼다(`H-147`, `H-143` 소멸) /
      재구독·재바인드의 `Refresh` 캐치업 폐기(`H-151`) / 루트는 밖에서 `.Parent =`가
-     아니라 quad가 `Claim`으로 소유(`H-148`, `research/existing-mount-plan.md`). **같은 날 후속** `H-158`~`H-162`(`:Block` 폐기 → `state:Apply(blocker)` /
+     아니라 quad가 `Claim`으로 소유(`H-148`, `base/claim-plan.md`). **같은 날 후속** `H-158`~`H-162`(`:Block` 폐기 → `state:Apply(blocker)` /
      `_rerunRequired` 홀드 플래그가 `_installed`를 흡수 / `Claim` M5 스코프 / `Void` export)도
      확정·반영, **후속 2** `H-163`/`H-164`(`EmitReceive` 인터페이스 — 전파 루프는
-     `sub:_receive(from)`만 / Slot 재마운트 캐치업 / `emitFrom == nil` 계약 / `Observer:_catchUp`)까지. 남은 미결은 `question.md` 최우선 절의 `Claim` 갈래(특히 §5-7 다중
-     스크립트) 하나 — 게이트 아님. 남은 액션: M2 착수.**
+     `sub:_receive(from)`만 / Slot 재마운트 캐치업 / `emitFrom == nil` 계약 / `Observer:_catchUp`)까지. **[2026-08-28 후속 3]** `Claim` 갈래 여덟도 같은 날 전량 확정돼
+     `research/`에서 **`base/claim-plan.md`로 승격**(결정 기록은 그 §7 — 루트 키 센티널 /
+     디스크립터 순서 정본 / debug 검사 범위는 `research/debug-tooling-plan.md`로 /
+     **루트의 `.Parent =`는 밖에서 허용으로 복원**, `Claim`은 1회·전체 소유).
+     `question.md` 최우선 절은 비어 있다. 승격 뒤 `/code-review high`가 **M5 착수 전
+     문항 넷**(gcconn/gchold 셋업 자리 / 이중 claim 레지스트리 / `PlayerGui` own-all /
+     `<Class>Param` 배열 파트)을 냈다 — `base/claim-plan.md` §10·`question.md`, M2 게이트
+     아님. 남은 액션: M2 착수.**
      아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
      **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤
