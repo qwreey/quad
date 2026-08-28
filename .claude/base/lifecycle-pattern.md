@@ -352,14 +352,14 @@ function bindLifetime(inst, value)
     --   순회에서 죽고, 피해 가도 **바인드마다 `Rerun`이 도는 `H-58`이
     --   되살아난다.** 발화 게이팅은 전부 `canExecute(handle)` 하나가 맡는다 —
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
-    if isObserver(value) and value._rerunRequired then
+    if isObserver(value) then
         -- ⭐ [2026-08-28 `H-159`] Observer도 대칭 — 묶이기 전(생성~바인드 사이)에 온 emit은
         --   Observer 자신의 `_receive`가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md`의
         --   `Observer:_receive` — 전파 루프는 `EmitReceive`로만 본다),
         --   묶이는 순간 1회 발화(출처 없음 — 설치 발화와 같은 모양). Observer엔 epoch가
-        --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다.
-        value._rerunRequired = false
-        value.fn(value._state, value, nil)
+        --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다. 본문은 `Observer:_catchUp`
+        --   (같은 문서) — `Subscribe`/`WeakSubscribe`와 같은 한 곳.
+        value:_catchUp()
     end
     if isEffect(value) then
         value:_bindDestroying(inst)   -- Destroying 연결 + **홀드된 변경 캐치업 1회**
@@ -483,10 +483,7 @@ function Observer:WeakSubscribe()
     end
     self.Subscribed = true          -- ⭐ [H-111] 약한 쪽도 세운다 — 구독 경로 공용 플래그
     WeakSubscribed[self] = true
-    if self._rerunRequired then     -- [2026-08-28 `H-159`] 구독 전에 홀드된 변경 1회(바인드와 대칭)
-        self._rerunRequired = false
-        self.fn(self._state, self, nil)
-    end
+    self:_catchUp()                 -- [2026-08-28 `H-159`] 구독 전에 홀드된 변경 1회(바인드와 대칭)
     return self
 end
 
@@ -524,10 +521,7 @@ function Observer:Subscribe()
     self.Subscribed = true
     WeakSubscribed[self] = true
     Subscribed[self] = true         -- 강한 킵 하나만 더
-    if self._rerunRequired then     -- [2026-08-28 `H-159`] 위 `WeakSubscribe`와 같은 꼬리
-        self._rerunRequired = false
-        self.fn(self._state, self, nil)
-    end
+    self:_catchUp()                 -- [2026-08-28 `H-159`] 위 `WeakSubscribe`와 같은 꼬리
     return self
 end
 
@@ -620,7 +614,8 @@ emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-pl
 `WeakSubscribe`가 1회 발화. Effect와 같은 뜻("`fn`이 돌아야 하는데 아직 안 돌았다"):
 생성 시 참 → `state:Observer(fn)` 생성자의 "등록 시점 즉시 1회 실행"이 돌면서 거짓 →
 그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_receive(from)`**(`EmitReceive` —
-`source-state-plan.md`의 `_emitDown` 아래). 레지스트리 두 테이블은 인스턴스 필드가 아니라
+`source-state-plan.md`의 `_emitDown` 아래), **`_catchUp()`**(홀드가 있었으면 출처 없이 1회 —
+`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 인스턴스 필드가 아니라
 `Observer.luau`의 모듈 로컬. Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
 
 **여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가

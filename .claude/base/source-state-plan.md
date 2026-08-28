@@ -272,6 +272,17 @@ function Observer:_receive(from)
     end                                    --   (Effect의 내부 Observer도 이 경로 — `fire`가 `fn`이다)
 end
 
+-- ⭐ [2026-08-28 확정] 캐치업 — 묶이거나 구독될 때 홀드가 있었으면 1회. 출처 없음(`nil`)이라
+--   `_receive`가 아니라 별도 내부 메소드(사용자: *"observer 계열의 rerun 느낌이네. 외부적으로
+--   쓸 일은 안 보여서"* — 공개 표면 아님). `bindLifetime`·`Subscribe`·`WeakSubscribe`가
+--   부르는 유일한 자리 — 네 곳이 각자 세 줄을 반복하던 것을 여기로(감사 4라운드 지적).
+function Observer:_catchUp()
+    if self._rerunRequired then
+        self._rerunRequired = false
+        self.fn(self._state, self, nil)
+    end
+end
+
 -- `EmitReceive` — 구독자 집합 `_subs`의 원소가 만족하는 인터페이스(`Epoch`처럼 구조적).
 type EmitReceive = { _receive: (self: any, from: Epoch | EpochSet) -> () }
 -- 구현: `ComputeNode`/`GateNode`(state-epoch-plan.md §4 규칙 1~3 / gate-plan.md 조립 절), `Observer`(위).

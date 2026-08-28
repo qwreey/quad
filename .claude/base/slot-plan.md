@@ -2431,19 +2431,15 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     --   **트리가 확정된 여기서** — `activateList` 재마운트 분기가 넘겨둔 일. 언마운트
     --   사이에 `data`가 바뀌었으면(`_receive`가 세운 `_rerunRequired`) 끄고 묶은 뒤
     --   reconcile을 **정확히 1회** — 상류 `data`는 epoch가 최신이라 `Get` 한 번이면 된다.
-    --   `bindLifetime` 자신의 홀드 발화에 맡기지 않는 이유: 그건 gcconn 연결 직후
-    --   묶이는 자리에서 돌아 순서를 이 꼬리에 못 맞춘다(`_baseObserver`는 위에서 끄고
-    --   묶었다 — 그쪽 캐치업은 `setOffsetSource` 경로가 한다).
+    --   bind 자체가 이 꼬리에서 일어나므로 `bindLifetime`의 `Observer:_catchUp()`이 그
+    --   1회를 맡는다 — 별도 끄기/호출 없음(`_baseObserver`는 위에서 끄고 묶었다 — 그쪽
+    --   캐치업은 `setOffsetSource` 경로가 한다).
     --   ⚠️ **재마운트일 때만** — 최초 population은 위 `activateList`의 fresh 경로가 이미
     --   observer를 만들고 묶었다(감사 3라운드: 여기서 또 묶으면 `canBound` error). 늦은
     --   `:List()`(이미 마운트된 Slot에 설치, `Slot:List`)는 이 함수를 안 거치므로 fresh
     --   경로의 bind가 유일 — 그래서 fresh 경로의 bind를 여기로 옮길 수도 없다.
     if remountingList and slot._listObserver then
-        local listObserver = slot._listObserver
-        local held = listObserver._rerunRequired
-        listObserver._rerunRequired = false
-        bindLifetime(physicalTarget, listObserver)
-        if held then listObserver.fn(slot._listData, listObserver, nil) end   -- == reconcile(data:Get())
+        bindLifetime(physicalTarget, slot._listObserver)   -- 안의 `_catchUp()`이 홀드 시 reconcile(data:Get()) 1회
     end
 
     -- 자기 길이를 부모에게. 이제 **처음부터 최종값**이고(C6), 동시에

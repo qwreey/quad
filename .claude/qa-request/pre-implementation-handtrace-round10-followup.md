@@ -398,3 +398,13 @@ observer 측에서 해당 emit 을 처리하는 함수를 만들어주는게 맞
 같은 뜻으로 **생성 시 참 → 설치 발화가 내림 → 묶이기 전 변경이 다시 세움**(사용자
 확인: *"설치 발화 이후엔 rerunRequired = false 되긴 해."*). 반영: `source-state-plan.md`
 1171행 계약 문구.
+
+## 캐치업 발화의 단일화 — `Observer:_catchUp()` (감사 4라운드 → 사용자 확정)
+
+`bindLifetime`·`Observer:Subscribe`·`WeakSubscribe`·`materializeSlotTree` 꼬리 넷이
+"`_rerunRequired` 끄고 → `fn(state, self, nil)`"을 각자 반복하던 것을 내부 메소드
+하나로. **사용자**: *"a 나쁘지 않은것 같아. observer 계열의 rerun 느낌이네. 외부적으로
+쓸 일은 안 보여서, 그대로 구현하면 될것 같아."* `_receive(from)`(출처 있는 통지)와
+짝. Slot 꼬리는 bind 자체가 확정 뒤라 `bindLifetime` 안의 `_catchUp`이 reconcile 1회를
+맡는다 — 별도 끄기/호출 제거. 반영: `source-state-plan.md`(정의), `lifecycle-pattern.md`
+셋 + 필드 목록, `slot-plan.md` 꼬리.
