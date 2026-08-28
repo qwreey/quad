@@ -40,6 +40,13 @@
 | `H-180` | ① | 4 | 🟢 | 폐기된 `state:Block` 표기가 라이브 문서 둘에 남아 있었다(`source-state-plan.md` `_hold` 파생 노드 목록, `blocker-plan.md` 사용 예시) | ✅ 정정 |
 | `H-178` | ① | 3 | 🟢 | 코드의 사적 필드는 `_` 접두(`_valueEpochMap`·`_emitEpochMap`·`_subs`·`_hold`…)인데 `base/` 의사코드는 `valueEpochMap`처럼 접두 없이 쓴다 — 이름은 1:1이고 밑줄만 다르다 | ✅ 기록만(문서 무변경 — 코드 관례, `H-174` 조립 세부와 같은 급) |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
+| `H-191` | ① | 3 | 🟡 | `effect-plan.md` "`Ref` 의존성의 해제 경로" 절 꼬리가 아직 *"`Ref` 콜백은 본문 맨 앞에서 `canExecute(handle)`를 확인하고 거짓이면 그대로 리턴"*(= 버림)이고 절 머리 배너가 그걸 *"그대로 유효"*라 재확인한다 — `H-159` 뒤 코드는 `fire`가 판정 없이 `Update → Rerun`, `rawRerun`이 **홀드**(안 묶인 채 온 `ref:Set`이 바인드 때 1회 재생 — `spec.effect` 2) | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-192` | ① | 3·4 | 🟢 | 설치 발화 N회의 억제 주체가 두 문서에서 `canExecute`로 서술됨(`gate-plan.md` 7번 *"첫 가드에서 떨어진다"*, `effect-plan.md` "`Effect(fn, ...deps)`" 절 *"설치 발화를 전부 떨어뜨리므로"*) — 실제 억제는 `fire`의 `from == nil` 가드(같은 문서 생성자 주석·코드). `H-159` 뒤 `canExecute` 경로는 버리는 게 아니라 홀드라, 그리로 갔다면 첫 바인드에서 `H-58`(바인드마다 재실행)이 되살아난다 — 실측 3-dep `Effect`: 생성 `runs=1`, `_rerunRequired=false`, 바인드 뒤에도 1 | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-193` | ① | 4 | 🟢 | `gate-plan.md` "`GateNode` 조립"의 `H-152` 주석이 `H-163` 이전 모양 — *"`_emitDown`은 자식을 `isState(sub)`로만 가르므로 … `canExecute(gate)`도 거짓"*, *"GateNode는 State 생성자를 안 지나고 이 절이 곧 생성자"*. 지금 `_emitDown`은 `EmitReceive`만 부르고 게이트는 `canExecute`를 안 타며, 코드는 `newNode`가 만들어 첫 줄에서 등록한다(결론 "등록"은 유효 — `newNode` dep 검증·`Effect` deps·`isState`가 본다) | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-194` | ① | 3 | 🟢 | `H-174` 잔재 둘 — `effect-plan.md` "`EffectHandle:Subscribe()`" 절 블록 머리 *"`canBound` 게이트(`LifetimeHandle.luau`의 탑레벨 함수)"*, `lifecycle-pattern.md` "Observer 인스턴스 필드 목록" *"레지스트리 두 테이블은 … `Observer.luau`의 모듈 로컬"* — 지금은 인스턴스 필드 `module.canBound` / 인스턴스별 임플 클로저 로컬(`Impl._Subscribed`) | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-195` | ① | 3 | 🟢 | `effect-plan.md` "의사코드 — 생성자" 절의 `_consumeCleanup` 머리 주석 *"`_cleanup`의 유무가 곧 '설치돼 있는가'가 된다"*가 바로 아래 ⚠️ 문단(*"`_cleanup`의 유무로 판정하면 안 된다"*)·코드 주석과 정면 충돌 | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-196` | ① | 3 | 🟢 | `source-state-plan.md` "`state:Observer(fn)`" 절(*"owning leaf가 이미 죽었으면 no-op"*)·"Slot 생존 확인" 절(*"거짓이면 그냥 no-op"*)이 `H-159` 이전 서술 — 지금은 홀드 뒤 재바인드 시 1회 | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-197` | ① | 3·4 | 🟢 | `spec.init.luau` 1이 `Effect`/`Blocker`/`onDestroying`의 존재를 안 본다 — 그 파일 헤더가 *"이 런타임 확인이 유일한 가드"*라 하는 `H-80` 드리프트 가드에 단위 3·4 값이 빠짐 | ✅ 반영(2026-08-29, 메인 세션)|
 
 ## 상세
 
@@ -262,8 +269,100 @@
   업밸류 없는 클로저는 GC 뒤에도 살아남음(생존 1/2). 단위 3 `Effect`가 `handle`을 잡고
   `ref:WeakCallback(cb)`로 거는 모양을 그대로 흉내내면 `WeakCallbacks` 항목이 0으로
   사라진다 — 즉 지금 문장대로면 단위 3 GC 테스트가 잘못 경보를 낼 수 있다.
-- **처리**: 미반영(탐사자는 고치지 않음). §5 문장을 *"업밸류가 없거나 톱레벨 불변 업밸류만
+- **처리**: ✅ 반영(2026-08-28, 메인 세션). §5 문장을 *"업밸류가 없거나 톱레벨 불변 업밸류만
   잡는 클로저"*로 좁히면 된다.
+
+### 단위 3·4 — 탐사자 (2026-08-29, 커밋 `dca789e`..`3670e88`)
+
+전부 ①이고 전부 **문서 쪽**이다 — 코드는 확정 의사코드를 그대로 옮겼고(대조 결과는 §5),
+어긋난 자리는 모두 "더 최근 결정(`H-159`/`H-163`/`H-174`)이 옛 문장을 못 지운 것"이다.
+②·③ 없음. `H-182`~`H-187`은 재발견하지 않았고 반박 근거도 없다(`H-186`에 이웃 실측 하나를
+§6에 보탰다).
+
+### `H-191` 🟡 — `Ref` 콜백의 "거짓이면 리턴"은 `H-159` 이전 모양 (①)
+
+- **어디서**: `base/effect-plan.md` "`Ref` 의존성의 해제 경로" 절 끝 문단(*"확정된 형태: `Effect`가
+  거는 `Ref` 콜백은 본문 맨 앞에서 자기 핸들에 대해 `canExecute(handle)`를 확인하고, 거짓이면
+  그대로 리턴한다"*)과 그 절 머리 배너(*"아래 `canExecute` 게이팅은 그대로 유효하다 — 뒤쪽
+  절반"*) vs `quad-base/src/Effect.luau`의 `fire`/`rawRerun`.
+- **무엇이**: 코드는 `onRefFire → fire(ref) → _epochs:Update(ref) → Rerun → rawRerun`이고
+  실행 불가면 `_rerunRequired`로 **홀드**한다 — 콜백 본문엔 판정이 없다(`H-159` *"fire 는 그냥
+  rerun 을 호출해도 될것"*). 관측 차이가 있다: 문서대로면 안 묶인 채 온 `ref:Set`은 **버려지고**
+  `_epochs`도 안 움직이는데, 코드는 홀드했다가 바인드 때 1회 재생한다(`spec.effect` 2가 이걸
+  고정 — `r:Set(2)` 뒤 `bindLifetime` → `runs == 2`). 같은 문서의 생성자 의사코드는 이미
+  `H-159` 모양이라 **문서 안에서 두 절이 서로 다른 계약**을 말한다.
+- **문서가 답을 갖고 있나**: 있다 — `H-159`(`qa-request/pre-implementation-handtrace-round10-followup.md`)와 같은 문서의 생성자 블록.
+- **처리**: ✅ 반영. 그 문단을 "`fire`는 판정하지 않고 `rawRerun`이 홀드한다(생성자 블록이
+  소스)"로, 배너의 "뒤쪽 절반"도 같은 뜻으로 좁히면 된다.
+
+### `H-192` 🟢 — 설치 발화 억제 주체 서술이 둘로 갈린다 (①)
+
+- **어디서**: `base/gate-plan.md` 7번(*"생성자 안에선 아직 안 묶여 있어 설치 발화가 첫 가드에서
+  떨어진다"*), `base/effect-plan.md` "`Effect(fn, ...deps)`" 절의 "최초 1회를 한 번만 돌리는
+  장치" 항목(*"`canExecute`(지금은 `rawRerun` 진입에서 본다)가 설치 발화를 전부
+  떨어뜨리므로"*) vs 같은 문서 생성자 의사코드 주석(*"즉시-1회 호출(설치 발화)은 `fire`의
+  `from == nil` 가드가 거른다(옛 `Blocker`/`canExecute` 억제 서술은 폐기)"*)과 코드.
+- **무엇이**: 내부 Observer의 설치 발화는 `onStateFire(_, _, nil) → fire(nil) → return`에서
+  끝난다 — `rawRerun`에 닿지 않는다. `H-159` 뒤 `rawRerun`의 `canExecute` 가드는 **버리는
+  게 아니라 홀드**이므로, 그리로 갔다면 dep마다 `_rerunRequired = true`가 서고 첫 바인드에서
+  `fn`이 한 번 더 돈다 — 바로 `H-58`이다. 실측(스크래치): `Effect(fn, s1, s2, s3)` 생성 직후
+  `runs == 1`, `_rerunRequired == false`, `bindLifetime` 뒤에도 `runs == 1`.
+- **처리**: ✅ 반영. 두 자리를 "설치 발화는 `from == nil` 가드가 거른다(`canExecute`는 그
+  뒤의 진짜 emit을 홀드한다)"로.
+
+### `H-193` 🟢 — `GateNode` 조립의 `H-152` 근거가 `H-163` 이전 모양 (①)
+
+- **어디서**: `base/gate-plan.md` "`GateNode` 조립" 블록 머리 주석(`H-152`) vs
+  `base/source-state-plan.md` "전파 루프 — 확정 의사코드"(`H-163`)와 `quad-base/src/State.luau`.
+- **무엇이**: 주석은 *"`_emitDown`은 자식을 `isState(sub)`로만 가르므로 … 등록이 빠지면 상류
+  emit이 `_receive`로 안 오고 `canExecute(gate)`도 거짓이라"*, *"GateNode는 State 생성자를 안
+  지나고 이 절이 곧 생성자"*라 한다. 지금 `_emitDown`은 `sub:_receive(from)`만 부르고
+  (`isState` 분기 없음), 게이트는 `canExecute`를 안 타며(`H-56`), 코드의 `Impl.Gate`는
+  `newNode({self}, passThrough, GateImpl)`로 만들어 **`newNode` 첫 줄**에서 `StateBrand:register`
+  한다 — 별도 생성자가 아니다. 등록 자체는 여전히 필요하다(`newNode`의 dep 검증, `Effect`
+  deps 검증, `Quad.isState`가 본다 — `spec.gate` 1이 고정).
+- **처리**: ✅ 반영. 근거 문장만 지금 모양(`newNode` 공유, 등록의 소비자는 검증·술어)으로.
+
+### `H-194` 🟢 — `H-174` 잔재 둘 (①)
+
+- **어디서**: `base/effect-plan.md` "`EffectHandle:Subscribe()`" 절 블록 머리(*"`canBound`
+  게이트(`LifetimeHandle.luau`의 탑레벨 함수)"*), `base/lifecycle-pattern.md`
+  "Observer 인스턴스 필드 목록" 끝(*"레지스트리 두 테이블은 인스턴스 필드가 아니라 `Observer.luau`의
+  모듈 로컬"*).
+- **무엇이**: `H-174` (a) 뒤 게이트는 `module.canBound`(인스턴스 필드, 발화 시점에 늦게 읽음)
+  이고, 레지스트리 둘은 `Observer.Init(module)`이 만드는 **인스턴스별 임플의 클로저 로컬**
+  (`Impl._Subscribed`/`_WeakSubscribed`, `spec.observer` 8이 인스턴스 분리를 고정)이다.
+  `lifecycle-pattern.md`의 `H-174` 문단은 게이트 쪽만 정정했고 레지스트리 문장은 안 건드렸다.
+- **처리**: ✅ 반영. 두 문장만(`effect-plan.md` 쪽은 스윕이 먼저 고쳤다).
+
+### `H-195` 🟢 — `_consumeCleanup` 머리 주석의 자기모순 (①)
+
+- **어디서**: `base/effect-plan.md` "의사코드 — 생성자" 절, `_consumeCleanup` 블록 위 주석
+  *"이 순서라야 이중 호출이 없고, `_cleanup`의 유무가 곧 '설치돼 있는가'가 된다"* vs 바로 아래
+  ⚠️ 문단 *"'설치돼 있는가'를 `_cleanup`의 유무로 판정하면 안 된다 — 별도 플래그"*와
+  `Effect.luau`의 같은 자리 주석(*"`_cleanup`'s presence is not 'installed' — the flag is"*).
+- **처리**: ✅ 반영. 주석 뒷절 삭제.
+
+### `H-196` 🟢 — Observer 쪽 "죽었으면 no-op" 둘 (①)
+
+- **어디서**: `base/source-state-plan.md` "`state:Observer(fn)`" 절의 *"발화 시점과 처리 시점
+  사이에 owning leaf가 이미 죽었으면 no-op"*, 같은 문서 "Slot 생존 확인" 절의 *"거짓이면 그냥
+  no-op"*.
+- **무엇이**: `H-159` 뒤 `Observer:_receive`는 거짓이면 `_rerunRequired`를 세우고, 재바인드
+  (`bindLifetime`)·`Subscribe`·`WeakSubscribe`가 `_catchUp`으로 1회 재생한다 — 죽은 leaf에
+  묶인 채로는 no-op과 같지만 `H-65`(죽은 바인딩의 재사용)와 겹치면 관측이 다르다
+  (`spec.observer` 2: Destroy 뒤 `Set` → 홀드). 같은 절의 두 줄 위는 이미 "홀드"로 고쳐져 있어
+  한 절 안에서 표현이 갈린다.
+- **처리**: ✅ 반영. "no-op" → "홀드(재바인드 시 1회)".
+
+### `H-197` 🟢 — `spec.init` 1이 단위 3·4 탑레벨 값을 안 본다 (①)
+
+- **어디서**: `quad-base/test/spec.init.luau` 1절 vs 그 파일 헤더(*"`init.luau`의 `{...} :: Quad`
+  캐스트는 빠진 필드를 안 잡으므로 이 런타임 확인이 유일한 가드"*).
+- **무엇이**: `Relate`/`Void`/`Ref`/`Source`/`Store`/술어 11/생명주기 4만 단언하고
+  `Effect`/`Blocker`/`onDestroying`은 없다 — 단위 3·4가 `Quad` 타입에 더한 셋이 가드 밖이다
+  (`spec.init` 2가 `q.Effect`를 부르긴 하지만 그건 `H-181` GC 검사다).
+- **처리**: ✅ 반영. 1절에 세 줄.
 
 ## §4 ⭐ 사용자 결정이 필요한 것 (배치 회신용)
 
@@ -429,6 +528,73 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 기각 셋(gcconn 슬롯 중복·mock claim 불멸·공유 본문 빌더 — 전부 `lifecycle-pattern.md`
 (0)/(1) 그대로이거나 `claim-plan.md` §7-9가 이미 기각한 모양).
 
+**단위 3·4 (탐사자, 2026-08-29)** — 커밋 `dca789e`..`3670e88`, 신선한 컨텍스트, `git stash` 안 씀:
+- **실행**: `./scripts/test.sh` 전체 — relink 39 갱신, `luau-analyze quad-base/src + spec.* +
+  mock.luau` 진단 0, 20파일 전부 `ALL PASS`. `grep -rn "TODO(H-" quad-base quad-types` —
+  추적 파일에 여섯(`H-182`~`H-187`), §4 표와 1:1(`roblox_packages/` 안의 `quad_types` 사본에
+  `H-187`이 한 번 더 보이는데 relink 복사본이고 무시 대상).
+- **한 줄 대조(코드 ↔ `base/` 절), 코드가 어긋난 곳 없음** — 어긋난 건 전부 문서 쪽 옛 문장
+  (`H-191`~`H-196`): `Observer.luau` ↔ `source-state-plan.md` "전파 루프 — 확정 의사코드"
+  (`_receive` 게이팅·홀드, `_catchUp` 유일 재생 자리, 생성자 순서 fn → 플래그 → `_subs`,
+  `alwaysObserve`가 `targetState:Get()`), `lifecycle-pattern.md` "(2) 전역 경로"(네 진입점
+  토큰 단위 동일 — 인라인 게이트, `H-133` 관대/엄격, 양쪽 테이블 해제, `error(…, 2)`가 본문에) /
+  `Effect.luau` ↔ `effect-plan.md` "의사코드 — 생성자"(`select("#")` 검증 셋, dep 종류별 클로저
+  둘, `fire`의 `from == nil` → `Update` → `Rerun`, `isEpoch` 시딩 — `TrackFrom(d.valueEpochMap)`
+  자리만 단위 2의 `d:_track(map)` 훅), `_bindDestroying`/`_unbindDestroying`/`_consumeCleanup`/
+  `rawRerun`/`Rerun`(토큰 단위 동일, `local function` 선언 순서까지), "`EffectHandle:Subscribe()`"
+  (네 진입점 + `resubscribeTail` + `isRunning` 술어) / `State.luau`의 `GateImpl` ↔ `gate-plan.md`
+  "`GateNode` 조립"(`_receive`: `Update`/`Peek`/invalidate/규칙 3 리턴/unfold/정책; `_flush`:
+  빈 배치 false → 스왑 → `Sync(batch)` → `_emitDown(batch)`, `emit(false)` 버리기, 스왑 테이블도
+  weak `H-9`), 2번(`emit(commit) -> boolean`)·3번(값 안 가림)·8번(빈 배치 no-op) /
+  `Blocker.luau` ↔ `blocker-plan.md` "메커니즘 (확정)"(`On`/`Off` 순서/`OffWithoutEmit`/`IsOn`/
+  `Policy`/`__apply` 전부, `H-63` 셋 — weak-key 셋, 강한 주인은 `onUpstreamEmit` 클로저의
+  업밸류 `handle`, 스냅샷 순회) / `quad-types` ↔ 각 절의 시그니처(`ObserverFn` 세 자리·`emitFrom?`,
+  `EffectFn` 팩, `GateEmit`/`GateSetup` 2단, `Blocker` 여섯, `Quad`에 `Effect`/`Blocker`/
+  `onDestroying`). 코드가 문서보다 더 가진 것은 이미 기록된 입력 검증(`fn`/`setup` 타입,
+  `setup` 반환 검사, `Apply` 객체 검사)과 `H-188`의 detach뿐.
+- **런타임 실측(스크래치 프로브 21건, 전부 계약대로)**: (a) `gate-plan.md` "계약 — 게이트는
+  emit 경로만 미룬다"의 셋 — 유보 중 형제 plain dep이 깨우면 `fn` 안 `gated:Get()`이 최신 /
+  `Unsubscribe`(소진) → `Subscribe`가 유보 중이어도 재설치 1회 / 풀린 배치로 1회 더, 빈 flush는
+  무. (b) `H-65` — leaf `Destroy` → cleanup → `canBound` 참 → 다른 inst에 재바인드 → 재설치
+  1회 → 새 inst에서 발화. (c) 죽은 바인딩 재사용 — Destroy 뒤 `Observer:Subscribe()` 통과·발화.
+  (d) 한 번도 안 묶인 `Effect`/`Observer`/plain에 `unbindLifetime` — 전부 no-op(단위 1 §6의
+  의심 닫힘 — `_unbindDestroying`은 `_destroyConn == nil`이면 아무것도 안 한다). (e) leaf-bound
+  Effect에 `WeakUnsubscribe` — 조용히 통과하고 gcconn 경로는 그대로(`canExecute` 참, 계속 발화) /
+  `Unsubscribe` — `E-11` 그대로 error, cleanup 무손. (f) 다이아몬드 — `Effect(fn, a, a:Compute)`
+  1회 / `Effect(fn, a, a:Apply(b))`는 유보 중 직접 dep로 1회, `b:Off()`의 배치는 같은 리비전이라
+  **추가 실행 없음**(`_epochs` 키 dedup이 게이트 배치에도 성립). (g) `Ref` dep 재진입(`fn` 안
+  `r:Set`) — `_pending` 지연 1회. (h) `H-192` 실측(위). (i) Observer `fn` 예외 — `Set` 밖으로
+  전파, Observer는 죽지 않음(재진입 플래그 없음 — 다음 `Set`에 정상 발화; Effect와 다른 계약이고
+  문서도 Observer엔 사망을 안 정했다). (j) `H-160` — `Unsubscribe` 경로 cleanup 안 `dep:Set` →
+  홀드, 재구독 꼬리 1회. (k) `setup` 안에서 `emit()` — 빈 배치 false, `_onUpstreamEmit = Void`
+  덕에 크래시 없음. (l) `GateNode`를 `Compute` dep·`Effect` dep로 — `Get`/`_track` 상속으로
+  유보 중 값 가시, 풀리면 하류 1회. (m) unbind → 변경 둘(홀드) → 다른 inst → 정확히 1회. (n)
+  `WeakSubscribe`된 Observer에 `bindLifetime` — error 뒤 상태 무변경. (o) 설치 `fn`이 자기
+  dep을 `Set` — `_pending` 1회, 플래그 전부 내려감. (p) deps 0개 `Effect`(`slot-plan.md`의
+  `_detachCleanup` 모양) — bind/unbind/rebind 무재실행, Destroy 소진, 죽은 뒤 `unbindLifetime`
+  안전.
+- **M3(디스패치)가 이 코어를 부르는 모양 — 막히는 자리 없음**: `dispatch-core-plan.md`의
+  `len:Observer(gatedRecompute)` + `bindLifetime(anchor, observer)`(콜백이 인자를 안 받아도
+  됨 — `fn(targetState, self, from)`은 여분 인자), `unbindLifetime(oldObserver)` 뒤 재등록,
+  store-bind의 `state:Observer(fn)` + `bindLifetime(inst, observer)` + 클로저의
+  `unbindLifetime`; `slot-plan.md`의 `Effect(function() return function() … end end)` deps 0개 +
+  `bindLifetime(physicalTarget, …)`/언마운트 `unbindLifetime`/재마운트 재바인드(무재실행)/파괴
+  시 `unbindLifetime`(cleanup 미소진 — 손으로 비웠으니 의도); `getBlocker` → `Blocker()` 직접
+  사용(`On`/`IsOn`/`OffWithoutEmit`, gated state 없음 — 핸들 0개라 `Off`류가 no-op). 전부
+  지금 표면에서 그대로 돈다(위 프로브). **M3가 옮길 때 바꿀 것은 이름 해석 하나** — 문서의
+  자유 이름 `bindLifetime`/`canExecute`/`Effect`/`Blocker`는 `InitDispatch(module)`이 쥔
+  `module.bindLifetime`…이고 생명주기 넷은 발화 시점에 늦게 읽는다(`H-174` (a)). `quad-types`의
+  `Quad`엔 M3가 읽을 값이 전부 있다(`Effect`/`Blocker`/`onDestroying`/생명주기 4/술어 11).
+  Slot 재마운트 캐치업(`H-163`)은 `bindLifetime` 안의 `_catchUp()` 한 줄이 맡는다 — mock이
+  그렇게 하고 있고 quad-roblox도 같은 줄이 필요하다(`lifecycle-pattern.md` (1)).
+- **백엔드 없는 인스턴스(스텁만)의 실제 동작**(툴링 사실): `s:Observer(fn)` 생성과 deps 0개
+  `Effect(fn)`은 되지만, `Effect(fn, dep)`은 내부 Observer의 `WeakSubscribe`에서, Observer가
+  달린 State의 첫 `Set`은 `_receive`에서 **스텁 에러**가 난다(*"canBound/canExecute is not
+  available"*, 위치는 `Observer.luau` 안 — 스텁의 `level 2`가 quad 내부를 가리킨다). 설계대로
+  "조용한 no-op 아님"이고, M5가 기본 인스턴스를 감싸기 전엔 반응형을 못 쓴다는 뜻.
+- **관측만(발견 아님)**: `b:Off()` 순회 중 하류 Observer가 `b:On()`을 다시 켜도 스냅샷의
+  남은 핸들은 그대로 flush된다(`blocker-plan.md` "재진입(네스팅)" 미지원 그대로).
+
 ## §6 남은 의심 / 못 본 것
 
 **단위 1 (탐사자, 2026-08-28)**:
@@ -447,3 +613,20 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
   않았다 — 아직 핫패스를 부르는 코드가 없다. `ref-plan.md` "API 모양"의 *"`.Value`(읽기
   전용 필드)"*는 타입 레벨(`read` 프로퍼티)로는 강제하지 않는다 — 문서가 타입 강제를
   요구하지 않으므로 발견으로 안 올림.
+
+**단위 3·4 (탐사자, 2026-08-29)**:
+- **`H-186`의 이웃(같은 문항에 실어 답할 것, 새 번호 없음)**: dep뿐 아니라 **생명주기
+  진입점도** 교차한다 — 실측: `quad`의 Observer `o`에 `other.bindLifetime(inst, o)`를 부르면
+  **조용히 성공**하고 `other.canExecute(o) == true`인데 `o`의 `_receive`는 자기 `quad.canExecute(o)`
+  (거짓)를 읽어 **영영 안 울린다**. `H-186` (a)를 택한다면 판정 자리가 하나 더 있다(`bindLifetime`
+  쪽은 백엔드 코드라 base가 못 막고, 핸들 쪽에서 막으려면 핸들이 자기 `module`을 알아야 한다 —
+  임플이 `module`을 닫고 있으니 가능).
+- **M3가 Observer의 사적 필드를 직접 쓴다**: `slot-plan.md`의 `materializeSlotTree`가
+  `slot._baseObserver._rerunRequired = false`를 대입한다(`H-163` 결정). 접근자는 없고 Luau가
+  막지도 않지만 계층 경계를 넘는 쓰기라, M3 탐사자가 다시 볼 자리(이 단위 밖).
+- **못 본 것**: `lifecycle-pattern.md` (4)의 *"실측 필요(M0/M2)"* — `canExecute`가 매 발화마다
+  `BindData:GetWeak` 2단 조회를 하는 비용은 측정하지 않았다(핫패스 코드가 아직 없음).
+  `Debounce`/`Throttle`(백로그)이 `GateNode` 위에 실제로 얹히는지는 정책 스텁(`switchPolicy`)으로만
+  확인했다 — 타이머 경로(`setTimeout` 주입 op)는 없다.
+- **`H-184`의 마커가 mock에만 있다** — quad-roblox의 `bindLifetime`도 같은 순서라(`lifecycle-pattern.md`
+  (1)) 결정이 나면 두 곳(스케치·M8 구현)에 같이 반영해야 한다.

@@ -2038,4 +2038,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **단위 4 구현** — `GateNode`(`State.luau` `:Gate`)/`Blocker.luau`, spec 16절, `H-179`(`Apply`
   타입은 교집합 오버로드)·`H-180`(`:Block` 잔재). M2 체크박스 전부 `[x]`. 단위 3·4 감사
   수렴 뒤 `/code-review high` 10건: ① `H-181` 🔴(weak-key 임플 맵이 인스턴스를 영구 핀 →
-  `module._impl`)·`H-188`~`H-190` 반영, ② `H-182`~`H-187` §4.
+  `module._impl`)·`H-188`~`H-190` 반영, ② `H-182`~`H-187` §4. 탐사자 ① 7건(`H-191`~`H-197`,
+  전부 옛 문장) 반영, 전 코퍼스 스윕으로 `HasBlockedEmit`·`LifetimeHandle` 표기 정리.
+  **M2 단위 넷 구현·감사·리뷰·탐사 완료** — 남은 건 §4 회신.

@@ -1317,7 +1317,8 @@ override할 자리를 구조적으로 열어두는 것.)
 
 - **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
-  — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
+  — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 **홀드**
+  (`_rerunRequired`, 재바인드·구독 때 1회 — `H-159`; **[2026-08-29 `H-196`]** 한때 "no-op").
   **[명시화, 2026-08-14 다섯 번째 세션] 이 게이팅이 일어나는 자리는 State의
   전파 루프**다 — State는 구독자를 **weak로** 담고 `sub:_receive(from)`을 부르며, 발화
   시 Observer 자신의 `_receive`가 `canExecute(observer)`를 확인해 거짓이면 홀드
@@ -1383,8 +1384,8 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
 새로 만들 필요 없이, `base/lifecycle-pattern.md`의 "생명 바인드
 유틸"(canExecute predicate)을 state-invalidate 리스너 클로저 등록에도
 그대로 재사용하면 됨: 발화 시 `canExecute(value)`(2026-08-14 다섯 번째
-세션 최종 시그니처, `inst`를 안 받음) 하나만 확인하고 거짓이면 그냥
-no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
+세션 최종 시그니처, `inst`를 안 받음) 하나만 확인하고 거짓이면 **홀드**(`H-159`
+— **[2026-08-29 `H-196`]** 한때 "그냥 no-op"). 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
 거짓이면 불허" 분기 초안은 폐기 — `isInit` 분기라는 별도 개념 자체가
 불필요(사용자 확정: "canExecute 하나로 통일").
 

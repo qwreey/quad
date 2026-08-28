@@ -636,8 +636,9 @@ emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-pl
 생성 시 참 → `state:Observer(fn)` 생성자의 "등록 시점 즉시 1회 실행"이 돌면서 거짓 →
 그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_receive(from)`**(`EmitReceive` —
 `source-state-plan.md`의 `_emitDown` 아래), **`_catchUp()`**(홀드가 있었으면 출처 없이 1회 —
-`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 인스턴스 필드가 아니라
-`Observer.luau`의 모듈 로컬. Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
+`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 Observer 인스턴스의
+필드가 아니라 **quad 인스턴스별 임플의 클로저 로컬**(`Observer.Init(module)`이 만든다, `H-174`;
+**[2026-08-29 `H-194`]** 한때 "`Observer.luau`의 모듈 로컬"). Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
 
 **여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가
 강한 테이블만 비우고 `WeakUnsubscribe`에 위임하지 않으면(또는 필드만

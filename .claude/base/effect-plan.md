@@ -352,8 +352,8 @@ function EffectHandle:_unbindDestroying()
     -- `canExecute`가 막는다. **`_cleanup`도 안 부른다**(아래 2번 계약).
 end
 
--- cleanup 소진: 읽고 → 지우고 → 실행. 이 순서라야 이중 호출이 없고,
--- `_cleanup`의 유무가 곧 "설치돼 있는가"가 된다.
+-- cleanup 소진: 읽고 → 지우고 → 실행. 이 순서라야 이중 호출이 없다
+-- ("설치돼 있는가"는 `_cleanup`의 유무가 아니라 아래 `_rerunRequired` — `H-195`로 옛 뒷절 삭제).
 function EffectHandle:_consumeCleanup()
     local c = self._cleanup
     self._cleanup = nil
@@ -522,6 +522,9 @@ end
 > 중복 `Rerun`을 만들던 원인이다). 위 "확정 구조" 절이 소스.
 > **아래 `canExecute` 게이팅은 그대로 유효하다** — *"해제는 누수를,
 > 게이팅은 발화를 막는다"* 중 **뒤쪽 절반**이 여전히 이 절의 결론이다.
+> **[2026-08-29 `H-191`]** 다만 그 게이팅의 자리는 콜백 본문이 아니라 `rawRerun` 진입이고,
+> 거짓이면 버리는 게 아니라 **홀드**(`_rerunRequired`, `H-159`)다 — 아래 문단의 "본문 맨
+> 앞에서 … 거짓이면 그대로 리턴"은 `H-159` 이전 모양. 소스는 위 생성자 블록.
 
 `Effect(fn, someRef)`의 leaf가 죽어도 **`ref.Callbacks`에 클로저가 영원히
 남았다** — `Ref`엔 콜백 해제 API가 없었고(`:Uncallback` 류 없음)
@@ -544,10 +547,13 @@ end
 "전파 루프가" — `base/source-state-plan.md`),
 `Ref` 경로엔 그 게이트가 아예 없었다. 해제가 늦거나 누락되는 창이 실재한다 —
 예컨대 `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이
-안 도는데도 `canExecute`가 거짓이다. **확정된 형태**: `Effect`가 거는 `Ref`
-콜백은 본문 맨 앞에서 **자기 핸들에 대해** `canExecute(handle)`를 확인하고,
-거짓이면 그대로 리턴한다. 그러면 두 dep 경로가 같은 게이트를 공유하게 되어
-`Effect`의 발화 조건이 dep 종류와 무관해진다.
+안 도는데도 `canExecute`가 거짓이다. **확정된 형태(`H-159`로 갱신)**: `Effect`가 거는
+`Ref` 콜백(`onRefFire`)은 판정하지 않고 `fire → _epochs:Update → Rerun`만 하며,
+**`rawRerun` 진입**이 자기 핸들에 대해 `canExecute(handle)`를 보고 거짓이면 **홀드**
+(`_rerunRequired`, 다음 바인드/구독 때 1회)한다 — 한때 여기 *"콜백 본문 맨 앞에서 확인하고
+거짓이면 그대로 리턴"*이라 적혀 있었다(`H-191`; 버리기와 홀드는 관측이 다르다 —
+안 묶인 채 온 `ref:Set`이 바인드 때 재생된다, `spec.effect.luau` 2). 그러면 두 dep 경로가
+같은 게이트를 공유하게 되어 `Effect`의 발화 조건이 dep 종류와 무관해진다.
 
 ### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
 
@@ -918,8 +924,10 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   핸들의 `canExecute`가 한다.** 여기 한때 *"[2026-08-21 확정] 이건 `Effect` 내부
   플래그로 한다"*고 적혀 있었고 그 플래그는 생성자 구간만 덮어 바인드 구간을
   놓쳤다(`H-58`). 그 자리에 `self._blocker:On()` … `:OffWithoutEmit()`이 들어왔는데,
-  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 `canExecute`(**[`H-159`]** 지금은 `fire`가 아니라 `rawRerun` 진입에서 본다)가
-  설치 발화를 전부 떨어뜨리므로 `_blocker`는 **한 번도 판정에 닿지 않았다**
+  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 설치 발화가 전부 떨어지므로(**[2026-08-29
+  `H-192` 정정]** 떨어뜨리는 건 `fire`의 `from == nil` 가드다 — `canExecute`는 `H-159` 뒤
+  버리지 않고 홀드하므로 그리로 갔다면 `H-58`이 되살아난다; 실측 `Effect(fn, s1, s2, s3)`
+  생성 직후 `runs == 1`·`_rerunRequired == false`) `_blocker`는 **한 번도 판정에 닿지 않았다**
   (실측 `t18`). 위 생성자 의사코드가 소스다. **`_installing`도 `_blocker`도 폐기된
   필드다.**
   (2026-08-21에 `Gate` 재사용을 접었던 근거 — *"설치 구간엔 어떤 `Set`도 안

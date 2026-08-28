@@ -311,12 +311,13 @@ end)
 
 ```lua
 -- 필드 (ComputeNode와 같은 층위)
--- ⭐ [2026-08-28 확정, 10라운드 `H-152`] 조립의 **첫 줄은 `StateBrand:register(node)`**다 —
---   `_emitDown`은 자식을 `isState(sub)`로만 가르므로(`source-state-plan.md`) 등록이
---   빠지면 상류 emit이 `_receive`로 안 오고 `canExecute(gate)`도 거짓이라 **통지만
---   조용히 죽는다**(`Get()`은 `_hold`로 최신값을 주니 값 검사로는 안 잡힌다 — 실측
---   `t24`: 하류 발화 2 → 0). `GateNode`는 State 생성자를 안 지나고 이 절이 곧
---   생성자라 여기 없으면 어디에도 없다.
+-- ⭐ [2026-08-28 확정, 10라운드 `H-152`] 조립의 **첫 줄은 `StateBrand:register(node)`**다.
+--   **[2026-08-29 `H-193` 근거 갱신]** 당시 근거(*"`_emitDown`이 `isState(sub)`로 가른다"*,
+--   *"State 생성자를 안 지난다"*)는 `H-163`·단위 4 이전 모양 — 지금 `_emitDown`은
+--   `sub:_receive(from)` 단일 인터페이스라 등록 여부로 안 가르고, 게이트는 `canExecute`를
+--   안 타며(`H-56`), 코드의 `Impl.Gate`는 `newNode({self}, passThrough, GateImpl)`로 만들어
+--   `newNode` 첫 줄이 등록한다. 등록이 여전히 필요한 이유는 **소비자가 술어**이기 때문 —
+--   `newNode`/`Effect`의 dep 검증과 `isState`(`spec.gate.luau` 1)가 본다.
 GateNode = {
     _hold          = { <상류 State/Source> },   -- 하류 → 상류 강참조(`source-state-plan.md`)
     _subs          = <weak-키 구독자 집합>,      -- 원소는 Observer 값 / 자식 State
@@ -456,8 +457,9 @@ end
    어떤 `Set`도 안 일어나 쌓이는 소스가 없으므로 게이트가 내보낼 것 자체가 없다.
    `Effect`가 설치 중 발화를 누르고 마지막에 한 번 직접 실행하면 되고, 새
    메커니즘이 필요 없다(**[2026-08-28 10라운드 `H-150`]** 그 억제 주체는 "자기
-   내부 플래그"도 그 뒤의 사적 `Blocker`도 아니라 Effect 핸들의 `canExecute`다 —
-   생성자 안에선 아직 안 묶여 있어 설치 발화가 첫 가드에서 떨어진다,
+   내부 플래그"도 그 뒤의 사적 `Blocker`도 아니라 Effect 핸들 쪽 가드다 — **[2026-08-29
+   `H-192` 정정]** 정확히는 `fire`의 `from == nil` 가드가 설치 발화를 거른다(`canExecute`는
+   `H-159` 뒤 버리지 않고 홀드하므로 그게 주체였다면 첫 바인드에서 `fn`이 한 번 더 돈다),
    `base/effect-plan.md` 생성자 의사코드). `base/effect-plan.md`의 그
    항목에 달려 있던 "⚠️ `Gate` 설계에 딸려 있다"도 같이 해소됐다. 아래는
    원 서술:
