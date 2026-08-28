@@ -251,16 +251,39 @@ function State:_emitDown(from)
     local snap = {}
     for sub in self._subs do snap[#snap + 1] = sub end
     for _, sub in ipairs(snap) do
-        if isState(sub) then          -- 자식 노드
-            sub:_receive(from)        -- state-epoch-plan.md §4 규칙 1~3
-        elseif canExecute(sub) then   -- Observer (Effect는 자기 내부 Observer로 여기 온다)
-            sub.fn(sub._state, sub, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
-        else
-            sub._rerunRequired = true -- ⭐ [2026-08-28 `H-159`] 묶이기 전의 변경은 버리지 않고 홀드 —
-        end                           --   `bindLifetime`/`Subscribe`가 1회 발화(`lifecycle-pattern.md`).
-                                      --   (Effect의 내부 Observer는 `WeakSubscribe`돼 있어 여기 안 옴 —
-                                      --   Effect 쪽 홀드는 `rawRerun`이 한다)
-    end
+        sub:_receive(from)            -- ⭐ [2026-08-28 확정, `H-163` 대화] 구독자는 전부 **`EmitReceive`**
+    end                               --   (`:_receive(from)` 하나짜리 인터페이스 — `Epoch`과 같은 급).
+                                      --   State 노드(`ComputeNode`/`GateNode`)는 §4 규칙, Observer는 아래
+                                      --   `Observer:_receive`. 한때 여기서 `isState`/`canExecute`로 갈라
+                                      --   Observer의 `fn`을 직접 부르고 `_rerunRequired`까지 세웠는데
+                                      --   **계층 간 지식이 섞여** 있었다 — 사용자: *"State:_emitDown 에
+                                      --   … 계층간 확인 구조가 있거든? 그냥 Epoch 처럼 EmitReceive 를
+                                      --   만들고, 각 state 나 observer 측에서 해당 emit 을 처리하는 함수를
+                                      --   만들어주는게 맞는듯. _rerunRequired 를 여기서 설정하는게
+                                      --   문제가 되어보여(계층간 지식이 분리 안되어있음)."*
+end
+
+-- Observer 쪽 `EmitReceive` 구현(`Observer.luau`). 판정과 홀드가 **여기** 산다.
+function Observer:_receive(from)
+    if canExecute(self) then
+        self.fn(self._state, self, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
+    else
+        self._rerunRequired = true         -- [2026-08-28 `H-159`] 묶이기 전의 변경은 홀드 — 묶일 때 1회
+    end                                    --   (Effect의 내부 Observer도 이 경로 — `fire`가 `fn`이다)
+end
+
+-- `EmitReceive` — 구독자 집합 `_subs`의 원소가 만족하는 인터페이스(`Epoch`처럼 구조적).
+type EmitReceive = { _receive: (self: any, from: Epoch | EpochSet) -> () }
+-- 구현: `ComputeNode`/`GateNode`(state-epoch-plan.md §4 규칙 1~3 / gate-plan.md 조립 절), `Observer`(위).
+
+-- `state:Observer(fn)` 생성자 — 순서가 계약이다(**[2026-08-28 `H-159`/`H-164`]**).
+function State:Observer(fn)
+    local o = setmetatable({ fn = fn, _state = self, _rerunRequired = true }, Observer)
+    ObserverBrand:register(o)
+    o.fn(self, o, nil)                 -- (1) 등록 시점 즉시 1회 — 출처 없음(`nil`)
+    o._rerunRequired = false           -- (2) 설치 발화가 플래그를 내린다(사용자 확인)
+    self._subs[o] = true               -- (3) 그다음 구독자 집합에 — 순서를 뒤집으면 (1)이 자기
+    return o                           --     State를 Set할 때 그 emit이 자신의 _receive에 와 플래그가 선다
 end
 ```
 
@@ -1143,10 +1166,11 @@ retract/Destroy되면 자동으로 정리됨.
 
 - **`fn`은 등록 시점에 즉시 1회 실행된다(2026-08-07 여섯 번째 세션,
   사용자 확정 — 이전까지 미명시였던 항목).** (**[2026-08-28 `H-159`]** 이 1회는
-  `state:Observer(fn)` 생성자가 무조건 하는 것이고, 같은 날 신설된 `_rerunRequired`
-  홀드는 그 **뒤** ~ 묶이기 전 사이의 변경만 다룬다 — 별개다. **생성자 순서는 `fn`
-  1회 실행 → `_subs` 삽입**(`/code-review` 지적으로 고정): 반대면 설치 발화가 자기
-  State를 `Set`할 때 그 emit이 아직 안 묶인 자신에게 와 `_rerunRequired`가 서고 첫
+  `state:Observer(fn)` 생성자가 무조건 하는 것(Effect 생성자와 같은 모양 —
+  `_rerunRequired = true`로 시작해 이 1회가 내린다)이고, 같은 날 신설된 홀드는
+  그 **뒤** ~ 묶이기 전 사이의 변경만 다룬다. **생성자 순서는 `fn` 1회 실행 →
+  `_subs` 삽입**(`/code-review` 지적으로 고정): 반대면 설치 발화가 자기 State를
+  `Set`할 때 그 emit이 아직 안 묶인 자신의 `_receive`에 와 플래그가 서고 첫
   바인드에서 `fn`이 한 번 더 돈다. Effect의 내부
   Observer가 이 설치 발화를 `from == nil`로 거르는 이유이기도 하다.) 근거: (1) 이미 채워진
   State를 나중에 구독하면 그 값을 반영하는 연산이 아예 한 번도 안
@@ -1179,9 +1203,13 @@ retract/Destroy되면 자동으로 정리됨.
     그건 통지가 아니라 설치라 출처가 존재하지 않는다. 그래서 `emitFrom`은
     **옵셔널**이고, 이때만 `nil`이다(2026-08-21 커밋 전 `/code-review high`
     발견 — 한때 non-optional로 적혀 있었다). `fn`이 `emitFrom`을 실제로 쓰는
-    소비자라면 `nil`을 "설치 발화"로 분기해야 한다. **⚠️ [2026-08-28 판단 대기,
-    `H-164`]** `H-159`의 Observer 홀드 발화(묶일 때 1회)도 지금 `nil`을 넘겨 이
-    분기와 구분이 안 된다 — 갈래는 `-round10.md` §4.
+    소비자라면 `nil`을 **"출처 없음 — 값을 읽어라"**로 다뤄야 한다. **[2026-08-28
+    `H-164` 확정]** `nil`은 설치 발화 **또는** 묶일 때의 캐치업(`H-159` 홀드 발화)
+    둘 다다 — 둘 다 "특정 출처의 통지"가 아니라 "지금 값을 반영하라"라 같은 종류.
+    홀드된 출처를 보관해 넘기는 안은 기각(사용자: *"_rerunRequired 를 from 으로
+    저장하면 여러 홀드 변경이 오면 from 이 날아가지 않아? 애초에 from 을 저장할
+    이유가 왜 있어?"*). `nil`을 "초기화 전용"으로 분기하는 소비자 패턴은 계약이
+    아니다.
   - **이건 "값을 안 실어주는 구독" 계약을 안 깬다** — 넘기는 건 값이 아니라
     **핸들과 메타데이터**뿐이다.
   - 인자 없는 `state:Observer()`(항상 관측 유틸)도 그대로 성립한다 — 넘겨줄
@@ -1262,8 +1290,9 @@ override할 자리를 구조적으로 열어두는 것.)
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
   — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
   **[명시화, 2026-08-14 다섯 번째 세션] 이 게이팅이 일어나는 자리는 State의
-  전파 루프**다 — State는 구독자를 **weak로** 담고, 발화 시 각 구독자마다
-  `canExecute(observer)`를 확인해 거짓이면 그 구독자만 건너뜀. 여기에
+  전파 루프**다 — State는 구독자를 **weak로** 담고 `sub:_receive(from)`을 부르며, 발화
+  시 Observer 자신의 `_receive`가 `canExecute(observer)`를 확인해 거짓이면 홀드
+  (**[2026-08-28 `EmitReceive`]**). 여기에
   `inst`가 없다는 사실이 `canExecute`가 `value` 하나만 받아야 하는
   이유(`base/lifecycle-pattern.md`의 "실제 호출부" 절, 옛 2-인자
   시그니처의 역전 경위는 `archive/canexecute-inst-arg-reversed.md`).
@@ -1357,7 +1386,7 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   세운다.** 즉 갈라지는 지점은 **레지스트리를 강하게 잡느냐뿐**이고,
   `.Subscribed` 플래그는 **강·약 구독 경로 공용**이다. 이게 정해져 있지
   않아서 두 해석이 각자 다른 확정 문장에 뿌리를 두고 있었고, 안 세우는
-  쪽으로 읽으면 전파 루프의 `canExecute(sub)` 게이트가 항상 거짓이 되어
+  쪽으로 읽으면 `Observer:_receive`의 `canExecute(sub)` 게이트(**[2026-08-28 `EmitReceive`]** 옛 표현 "전파 루프의")가 항상 거짓이 되어
   **`Effect`의 State dep 전량이 조용히 침묵**한다(`Effect`의 내부 Observer는
   `WeakSubscribe`로만 등록되고, gcconn 경로는 핸들에만 있으므로 남는 판정
   근거가 `.Subscribed`뿐이다). 사용자 원문 *"구현이 한 벌"*과도 이쪽이

@@ -1418,7 +1418,14 @@ function activateList(self, physicalTarget)
         -- 죽는다(`base/lifecycle-pattern.md`의 `bindLifetime` 계약).
         -- 언마운트 쪽(`unmountSlotTree`)은 이미 `if slot._listObserver then`로
         -- 방어돼 있었는데 이 재마운트 분기만 빠져 있었다.
-        if self._listObserver then bindLifetime(physicalTarget, self._listObserver) end
+        -- ⭐ [2026-08-28 확정, 10라운드 `H-163` (a′)] `_listObserver`는 **여기서 묶지 않는다** —
+        --   `materializeSlotTree`의 꼬리(트리 확정 뒤)가 묶는다. 언마운트 사이의 emit은
+        --   `_receive`가 `_rerunRequired`로 홀드해 뒀는데, 트리가 미확정인 이 시점에 묶으면
+        --   `bindLifetime`의 홀드 발화가 reconcile을 동기 실행해 자리 이중 등록·중첩 Slot
+        --   `canBound` error가 난다. 사용자: *"슬롯트리가 미확정 상황에는 bind 안하고,
+        --   확정될 때 bind 전에 rerun 끈다"*, 유실 대신 확정 뒤 1회 reconcile은 *"권고가
+        --   맞는듯. get 자체가 안 나니까"*(재마운트 분기 자체는 reconcile을 안 돌린다 —
+        --   감사 2라운드 지적). plain table `data`면 `_listObserver`가 `nil`이라 꼬리도 건너뛴다.
         bindLifetime(physicalTarget, self._detachCleanup)
         return
     end
@@ -2344,6 +2351,7 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- 완주하면, 그 시점 `bk`는 언마운트 전 옛 부기(`Relate(slot)` 위에
     -- 살아남는다)라 옛 `N`·옛 자식 목록으로 돈다. 이 Blocker는 이 Slot의 것이고
     -- `setOffsetSource`는 **부모 owner의** blocker를 보므로 간섭이 없다.
+    slot._baseObserver._rerunRequired = false   -- [2026-08-28 `H-163`] 위 `_listObserver`와 같은 이유
     bindLifetime(physicalTarget, slot._baseObserver)
     -- offset — activateList가 updateFn에 이 값을 넘겨야 하므로(C1). 여기서
     -- `slot.Offset`이 새 베이스로 `Set`되고, 위 관측자가 두 필드를 0으로 내린 뒤
@@ -2381,8 +2389,10 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- `_elements` 안의 중첩 Slot들이 **다시 실체화되지 않는다** —
     -- `_physicalTarget`이 `nil`인 채 `_mounted`만 켜지고, `_baseObserver`가
     -- **죽은 옛 target**에 매달린 채 남는다(그 가드 자신이 경고하는 실패 모드).
+    local remountingList = slot._listed and slot._listActivated   -- [2026-08-28 `H-163` (a′)] 꼬리가 본다 —
+                                                                   --   아래 activateList가 플래그를 켜기 **전**에 잡는다
     if slot._listed and not slot._listActivated then
-        activateList(slot, physicalTarget)   -- 최초 population — rawAdd가 자리마다 등록
+        activateList(slot, physicalTarget)   -- 최초 population — rawAdd가 자리마다 등록(observer도 여기서 묶는다)
     else
         if slot._listed then
             activateList(slot, physicalTarget)   -- 재마운트: 앵커만 새 target으로
@@ -2416,6 +2426,24 @@ local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     --   이 자리와 `:List` 활성화 꼬리 둘이 빠져 있었다).
     if not bk.recomputeBlocker:IsOn() then
         recompute(slot, bk)              -- 여기서 slot.Length가 최종값으로 확정
+    end
+    -- ⭐ [2026-08-28 확정, 10라운드 `H-163` (a′)] 재마운트의 `_listObserver` 바인드는
+    --   **트리가 확정된 여기서** — `activateList` 재마운트 분기가 넘겨둔 일. 언마운트
+    --   사이에 `data`가 바뀌었으면(`_receive`가 세운 `_rerunRequired`) 끄고 묶은 뒤
+    --   reconcile을 **정확히 1회** — 상류 `data`는 epoch가 최신이라 `Get` 한 번이면 된다.
+    --   `bindLifetime` 자신의 홀드 발화에 맡기지 않는 이유: 그건 gcconn 연결 직후
+    --   묶이는 자리에서 돌아 순서를 이 꼬리에 못 맞춘다(`_baseObserver`는 위에서 끄고
+    --   묶었다 — 그쪽 캐치업은 `setOffsetSource` 경로가 한다).
+    --   ⚠️ **재마운트일 때만** — 최초 population은 위 `activateList`의 fresh 경로가 이미
+    --   observer를 만들고 묶었다(감사 3라운드: 여기서 또 묶으면 `canBound` error). 늦은
+    --   `:List()`(이미 마운트된 Slot에 설치, `Slot:List`)는 이 함수를 안 거치므로 fresh
+    --   경로의 bind가 유일 — 그래서 fresh 경로의 bind를 여기로 옮길 수도 없다.
+    if remountingList and slot._listObserver then
+        local listObserver = slot._listObserver
+        local held = listObserver._rerunRequired
+        listObserver._rerunRequired = false
+        bindLifetime(physicalTarget, listObserver)
+        if held then listObserver.fn(slot._listData, listObserver, nil) end   -- == reconcile(data:Get())
     end
 
     -- 자기 길이를 부모에게. 이제 **처음부터 최종값**이고(C6), 동시에

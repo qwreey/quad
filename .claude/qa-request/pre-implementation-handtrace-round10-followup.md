@@ -17,7 +17,8 @@
 | `H-158` | `state:Block(blocker)` 슈가 잔존 (이 대화에서 나옴) | ✅ **확정 폐기** → `state:Apply(blocker)`, 필드 `__apply` |
 | `H-159` | 바인드 전 emit 캐치업 | ✅ **확정 — 사용자 제안 `_rerunRequired`(Gate식 홀드)**, `_installed` 흡수, Observer 대칭, `fire`는 `Update → Rerun`만 |
 | `H-162` | `Void` no-op export (이 대화에서 나옴) | ✅ **확정** — quad-base export(잎 모듈 `Void.luau`), no-op 클로저 자리는 전부 `Void` |
-| `H-163`/`H-164` | `H-159` 반영분에 `/code-review high`가 낸 둘 | ⏳ 판단 대기 — Slot 내부 Observer × 홀드 발화 / 홀드 발화의 `emitFrom == nil` |
+| `H-163` | Slot 내부 Observer × 홀드 발화 | ✅ **확정 (a′)** `_listObserver`는 트리 확정 뒤(`materializeSlotTree` 꼬리)에 끄고 묶고, 홀드가 있었으면 reconcile 1회; `_baseObserver`는 끄고 묶음 + **`EmitReceive` 인터페이스**(전파 루프 계층 분리) |
+| `H-164` | 홀드 발화의 `emitFrom == nil` | ✅ **전제 정정 (c)** — `nil` = 출처 없음(설치 또는 캐치업), `from` 보관 기각 |
 | `H-160` | `Destroying` 경로 cleanup `Rerun` | ✅ **확정 (a) → `H-159`로 정정**: `rawRerun`이 `_cleanupRunning`이면 **버리지 않고 `_rerunRequired`로 홀드** + "error 나면 그 Effect는 죽는다" 계약 |
 | `H-161` | M5 루트 부착·다중 스크립트 `Claim` | ✅ **확정 (a)** `Claim`을 M5 스코프로; §5-7 다중 스크립트는 미결 |
 | `H-153` | Store 예약 이름 런타임 가드 | ✅ **확정 (a)** — 생성자·`Of(name)`에 예약 이름 검사(level 2), 그림자 = store 자신 (I) |
@@ -365,3 +366,35 @@ session 후속 절) · 2 의미론(**`_rerunRequired` 상태 기계 자체는 �
 stale 셋(`Blocker` 억제·"`fire` 첫 줄"·"죽은 핸들은 no-op") / `ROADMAP.md` M2 `Rerun`
 no-op → 홀드 / `lifecycle-pattern.md`의 *조용히 건너뜀* → 홀드 / "M5 이후" 잔존 셋 /
 followup 절 제목 포인터·개수.
+
+## `H-163` — Slot은 재바인드 전에 내부 Observer의 홀드를 끈다 (a) + `EmitReceive` 인터페이스
+
+**사용자 확정**: *"slot 의 canExecute 를 따라 이것도 쌓아두는 등의 작업을 할 필요는 안
+보이는듯. 이건 단일 대상에 대해 observe 하는거라서, 상류 state 의 온전한 epochmap
+처리를 받거든. _rerunRequired 를 직접 false 로 바꿔두고 bind 하는건 확실히 맞아보여.
+… 그냥 슬롯트리가 미확정 상황에는 bind 안하고, 확정될 때 bind 전에 rerun 끈다는
+괜찮은 생각."* — 처음엔 `activateList` 재마운트 분기에서 끄고 묶었는데 **감사
+2라운드가 그 분기는 reconcile을 다시 돌리지 않는다**(앵커만 옮기고 return)고 잡아,
+그대로면 언마운트 중 `data` 변경이 다음 `Set`까지 유실됐다. 갈래 (a′) 트리 확정 뒤
+(`materializeSlotTree` 꼬리, `OffWithoutEmit`·`recompute` 뒤) 끄고 묶고 홀드가 있었으면
+`reconcile(data:Get())` 1회 / (b′) 유실을 계약으로 → **사용자 확정 (a′)**: *"권고가
+맞는듯. get 자체가 안 나니까"*. `_baseObserver`는 `materializeSlotTree` 머리에서 끄고
+묶는다(그쪽 캐치업은 `setOffsetSource` 경로).
+
+**같은 발언에서 나온 구조 결정 — `EmitReceive`**: *"State:_emitDown 에 관한 이야기인데,
+여기 계층간 확인 구조가 있거든? 그냥 Epoch 처럼 EmitReceive 를 만들고, 각 state 나
+observer 측에서 해당 emit 을 처리하는 함수를 만들어주는게 맞는듯. _rerunRequired 를
+여기서 설정하는게 문제가 되어보여(계층간 지식이 분리 안되어있음)."* → 전파 루프는
+`sub:_receive(from)` 한 줄, `Observer:_receive`가 `canExecute` 판정과 홀드를 자기 안에
+둔다(`source-state-plan.md` `_emitDown` 아래, `lifecycle-pattern.md` (4)절, `ROADMAP.md`).
+
+## `H-164` — 문항 전제 정정: `emitFrom == nil` = 출처 없음(설치 또는 캐치업), `from` 보관 기각 (c)
+
+**사용자**: *"H164는 뭔가 이상함. 설치 발화 후 홀드된 변경이 무슨말인지 모르겠음. 아에
+별도의 이야기일텐데? … _rerunRequired 를 from 으로 저장하면 여러 홀드 변경이 오면 from 이
+날아가지 않아? 애초에 from 을 저장할 이유가 왜 있어?"* — 맞다. 홀드 발화는 출처 있는
+통지가 아니라 "묶였으니 값을 읽어라"라 설치 발화와 같은 종류이고, `nil`을 "초기화
+전용"으로 분기하는 소비자 패턴은 계약이 아니다. Observer의 `_rerunRequired`는 Effect와
+같은 뜻으로 **생성 시 참 → 설치 발화가 내림 → 묶이기 전 변경이 다시 세움**(사용자
+확인: *"설치 발화 이후엔 rerunRequired = false 되긴 해."*). 반영: `source-state-plan.md`
+1171행 계약 문구.

@@ -410,8 +410,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (없는 키를 그 자리에서 만들어 저장)는 **폐기**. 그래서 `defaults`가
       곧 선언 키 집합이고 `Names()`가 성립한다
 - [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
-      (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제
-      호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다" 절) —
+      (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제 호출부" 절) —
       State는 구독자를 **weak-키로만** 담고, 살려두는
       책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
       (어디에도 안 묶인 Observer는 GC되어 목록에서 자연히 빠짐).
@@ -427,12 +426,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       노드의 생존은 `canExecute`가 아니라 같은 문서의 **`_hold`
       불변식**(하류 → 상류 강함)이 책임진다.
       ```lua
-      if isState(sub) then sub:_receive(from)                 -- 자식 노드: 게이트 없음
-      elseif canExecute(sub) then       -- Observer만 (Effect는 자기 내부 Observer로 온다)
-          sub.fn(sub._state, sub, from)   -- [H-109] (리시버 State, Observer 자신, 출처)
-      else sub._rerunRequired = true    -- [2026-08-28 `H-159`] 묶이기 전의 변경은 홀드 → 바인드/구독 시 1회
-      end
+      sub:_receive(from)   -- [2026-08-28 `EmitReceive`] 구독자 전부 같은 인터페이스 — State 노드는 §4 규칙,
+                           --   Observer:_receive가 canExecute 판정·홀드(`_rerunRequired`)를 자기 안에서
       ```
+      (한때 여기서 `isState`/`canExecute`로 갈라 Observer의 `fn`을 직접 불렀다 —
+      계층 지식이 섞여 사용자 지시로 인터페이스화, `base/source-state-plan.md`)
       `canExecute`가 `inst`를 인자로 받을 수 없는 이유는 그대로다(State는
       자기가 어느 Instance에 걸렸는지 모름). `state:Observer(fn)`의
       "등록 즉시 1회 실행"은 `bindLifetime` 이전에 동기적으로 일어나므로
@@ -1526,7 +1524,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       헬퍼 `isBoundAlive(value)` 하나(복사된 gcconn의 `.Connected` 또는
       `.Subscribed`를 봄)를 공유하는 얇은 진입점 둘로 분리** — `bindLifetime`/
       `Observer:Subscribe()`의 이중 바인딩 가드는 `canBound`, State emit
-      전파 루프만 `canExecute`.
+      `Observer:_receive`만 `canExecute`(**[2026-08-28 `EmitReceive`]** 옛 표현 "전파 루프만").
       **저장은 전부 `SetWeak`**(`SetStrong` 아님 — gchold/gcconn은 아래 M5
       클로저↔`gchold[1]` 상호 참조로 이미 안전하게 살아있고, "다른 곳에서
       안전하게 유지되는 것은 항상 weak로 잡는다"가 일반 규칙).

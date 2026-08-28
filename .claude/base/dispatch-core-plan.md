@@ -2601,8 +2601,9 @@ end
   캡처하므로, 예전처럼 `relate:SetStrong(inst,k,observer)`로 저장해뒀다가
   나중에 `relate:GetStrong(inst,k)`로 다시 찾아올 필요가 없어짐(위
   "핸들러 계약"/"핸들러 내부 상태 저장" 절 참고).
-- **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — State의
-  전파 루프가 발화 때마다 `canExecute(observer)`로 각 구독자를 게이팅하고,
+- **핸들러가 직접 `canExecute`/liveness를 재구현할 필요 없음** — 발화 때마다
+  Observer 자신의 `_receive`가 `canExecute(observer)`로 게이팅하고(**[2026-08-28
+  `EmitReceive`]** 옛 표현 "State의 전파 루프가"),
   그 판정 근거(`inst` 생존)는 `bindLifetime`이 `observer` 쪽에 복사해둔
   gcconn 참조가 제공함(`base/lifecycle-pattern.md`의
   "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime`" 절).

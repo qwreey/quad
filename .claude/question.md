@@ -18,10 +18,6 @@
 사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
 `qa-request/pre-implementation-handtrace-round10-followup.md`). 남은 건 하나 —
 **M2 게이트 아님**:
-- **`H-163`/`H-164`** (`-round10.md` §4 표 마지막 둘, `H-159` 반영분에
-  `/code-review high`가 낸 것) — Slot 내부 Observer × 홀드 발화(권고 (a) Slot이
-  재바인드 전에 플래그를 지움) / Observer 홀드 발화의 `emitFrom == nil` 모호(권고
-  (a) 마지막 `from`을 넘김, 한 필드 두 뜻이 걸리면 (b) 센티널).
 - **`research/existing-mount-plan.md` §5** — 루트/템플릿을 quad가 소유하는
   `Claim` + `D.Mapper`의 갈래들(루트 디스크립터 이름·물리 순서 계약·비루트
   사용·debug 검사 범위·표면 이름 … — 개수는 그 문서 §5가 소스). 방향은 확정, M5

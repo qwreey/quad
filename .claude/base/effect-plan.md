@@ -539,8 +539,9 @@ end
 있는 것은 "`Ref`에 콜백 해제 경로(`:Uncallback`)를 둔다"는 결론뿐이다).
 
 **⭐ [2026-08-24 추가, 사용자 지적] 해제 경로만으로는 부족하다 — `Ref` 콜백도
-발화 시점에 `canExecute`를 확인한다.** State/Source dep은 State의 전파 루프가
-구독자마다 `canExecute(observer)`를 보고 죽은 것을 건너뛰는데(`base/source-state-plan.md`),
+발화 시점에 `canExecute`를 확인한다.** State/Source dep은 Observer 자신의 `_receive`가
+`canExecute(observer)`를 보고 죽은 것을 건너뛰는데(**[2026-08-28 `EmitReceive`]** 옛 표현은
+"전파 루프가" — `base/source-state-plan.md`),
 `Ref` 경로엔 그 게이트가 아예 없었다. 해제가 늦거나 누락되는 창이 실재한다 —
 예컨대 `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이
 안 도는데도 `canExecute`가 거짓이다. **확정된 형태**: `Effect`가 거는 `Ref`

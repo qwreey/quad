@@ -354,7 +354,8 @@ function bindLifetime(inst, value)
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
     if isObserver(value) and value._rerunRequired then
         -- ⭐ [2026-08-28 `H-159`] Observer도 대칭 — 묶이기 전(생성~바인드 사이)에 온 emit은
-        --   전파 루프가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md` 전파 루프),
+        --   Observer 자신의 `_receive`가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md`의
+        --   `Observer:_receive` — 전파 루프는 `EmitReceive`로만 본다),
         --   묶이는 순간 1회 발화(출처 없음 — 설치 발화와 같은 모양). Observer엔 epoch가
         --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다.
         value._rerunRequired = false
@@ -615,11 +616,11 @@ leaf냐"를 가르는 판별자.
 **Observer 인스턴스 필드 목록 (2026-08-28 명문화)** — `fn`(콜백, `fn(targetState, self,
 emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-plan.md`),
 **`.Subscribed`**(공개 플래그, 위 표), **`_rerunRequired`**(**[2026-08-28 10라운드
-`H-159`]** 묶이기 전에 온 emit을 전파 루프가 홀드 — `bindLifetime`/`Subscribe`/
-`WeakSubscribe`가 1회 발화. **거짓으로 시작**한다: `state:Observer(fn)`의 "등록 시점
-즉시 1회 실행"(`source-state-plan.md`)은 생성자가 **무조건** 하는 것이라 이 플래그와
-무관하고, 플래그는 그 뒤 ~ 묶이기 전 사이에 온 변경만 기록한다 — 감사 3라운드가
-"초기화가 없어 한 번도 안 돈다"로 오독할 수 있음을 짚어 명시). 레지스트리 두 테이블은 인스턴스 필드가 아니라
+`H-159`]** 묶이기 전에 온 emit을 자기 `_receive`가 홀드 — `bindLifetime`/`Subscribe`/
+`WeakSubscribe`가 1회 발화. Effect와 같은 뜻("`fn`이 돌아야 하는데 아직 안 돌았다"):
+생성 시 참 → `state:Observer(fn)` 생성자의 "등록 시점 즉시 1회 실행"이 돌면서 거짓 →
+그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_receive(from)`**(`EmitReceive` —
+`source-state-plan.md`의 `_emitDown` 아래). 레지스트리 두 테이블은 인스턴스 필드가 아니라
 `Observer.luau`의 모듈 로컬. Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
 
 **여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가
@@ -680,10 +681,12 @@ Destroy됐거나 `unbindLifetime`된 `value`는 `canBound`가 **참**이라
 게이트를 통과함(다시 다른 `inst`에 걸 수 있음). 살아있는 바인딩만 막는
 게 이 게이트의 의도.
 
-#### (4) 실제 호출부 — State 전파(`emit`)가 `canExecute`로 게이팅한다
+#### (4) 실제 호출부 — Observer의 `_receive`가 `canExecute`로 게이팅한다
 
 `canExecute`가 "어디서 불리는가"는 지금까지 어느 문서에도 코드로 없었음(위
-정정 배너 참고). 확정된 위치는 **State의 전파 루프**:
+정정 배너 참고). 확정된 위치는 **`Observer:_receive(from)`**(**[2026-08-28]** State의
+전파 루프는 구독자를 `EmitReceive`로만 보고 `sub:_receive(from)`을 부른다 —
+`base/source-state-plan.md`의 `_emitDown`; 판정·홀드는 Observer 자신의 몫):
 
 - State는 자기 구독자를 **weak-키로** 담는다 — 살려두는 책임은 State가
   아니라 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있고, 어디에도
@@ -692,9 +695,9 @@ Destroy됐거나 `unbindLifetime`된 `value`는 `canBound`가 **참**이라
   클로저"가 아니라 **Observer 값**이다.** `bindLifetime(inst, observer)`가
   Observer **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를
   담으면 identity가 달라 `canExecute`가 **항상 거짓**이 된다.
-- 발화 시 **Observer/Effect 구독자에 대해서만** `canExecute(observer)`를
-  확인하고, 거짓이면 **그 구독자에게 `_rerunRequired`만 세우고 건너뜀**(**[2026-08-28
-  `H-159`]** 옛 "조용히 건너뜀" — 이제 묶일 때 1회 따라잡는다) — 죽은 `inst`를
+- 발화 시 Observer 자신의 `_receive`가 `canExecute(self)`를 확인하고, 거짓이면
+  **`_rerunRequired`만 세우고 건너뜀**(**[2026-08-28 `H-159`]** 옛 "조용히 건너뜀" —
+  이제 묶일 때 1회 따라잡는다) — 죽은 `inst`를
   건드리는 시도가 일어나지 않게 막는 위 "해야 할 일은 딱 하나" 원칙의
   실제 구현 지점.
   **⭐⭐ [2026-08-25 정정, 7라운드 `H-56`] 자식 State 노드는 이 게이트를
