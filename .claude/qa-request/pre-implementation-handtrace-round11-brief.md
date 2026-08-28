@@ -120,6 +120,41 @@
    한다). 2번 갈래는 §4 표에 갈래 + 권고 + 권고 근거, "옛 메커니즘 복원" 표시.
 5. 이상 없다고 확인한 자리도 §5 형식으로 적는다(다음 탐사자가 다시 파지 않게).
 
-## §6 첫 단위(공통 기반) 작업 계획
+## §6 첫 단위(공통 기반) 작업 계획 — **[2026-08-28 사용자 확정]** (*"진행하면 될것 같아"*)
 
-사용자 확인 뒤 여기에 확정본을 적는다 — **[2026-08-28 기준] 확인 대기.**
+소스는 `ROADMAP.md` "공통 기반 — 반응형보다 먼저" 절 + `H-97`. 여기 적힌 배치
+결정 셋(브랜드 인스턴스 위치 / mock 생명주기 위치 / 테스트 파일 이름)은 `base/`가
+정하지 않은 **코드 배치**라 이 계획이 소스다 — 설계 결정이 아니다.
+
+**소스 (`quad-base/src/`)**
+
+| 파일 | 내용 | 옮겨 적는 절 |
+|---|---|---|
+| `Brand.luau` | `Brand()` 생성자 + **브랜드 인스턴스 열다섯을 이 잎 파일에**(`brand-plan.md` 스니펫이 한 자리에 선언하는 그대로 — `EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + M2 타입의 `is*`(`isEpoch`/`isSource`/`isState`/`isStore`/`isObserver`/`isEffect`/`isBlocker`/`isRef`/`isPreRef`/`isPostRef`/`isModifier`). `isTag`/`isAttribute*`/`isTween`/`isSlot`은 그 타입의 마일스톤에서 | `base/brand-plan.md` "구현 — 인스턴스 브랜드" / `isRef` 계층 절 |
+| `Relate.luau` | **기존 파일**(M1). 코드 변경 없음 — `base/relate-plan.md` "API"/"실제 구조" 대조 + 테스트만 | `base/relate-plan.md` |
+| `LifetimeHandle.luau` | 4종 타입 시그니처 + **미주입 에러 스텁**(영어, `error(…, 2)`) + 공유 술어 `isBoundAlive`는 백엔드 몫이라 여기 없음 | `base/lifecycle-pattern.md` "확정" 절, `module-lifecycle-plan.md` 주입 절 |
+| `Ref.luau` | 최소형 — `.Value`/`.Revision`/`:Set`/`:Callback`/`:WeakCallback`/`:Uncallback`, `Callbacks`(강) + `WeakCallbacks`(weak-key), `:Set` 순서 값→리비전(`bit32.bnot(-rev)`)→스냅샷 순회·함수키 dedup·thread 소진, `EpochBrand`+`RefBrand` 등록 | `base/ref-plan.md` "`Ref`는 `Epoch`를 만족한다" 절 + `H-128` |
+| `Void.luau` | `return function() end` | `H-162`, `architecture.md` 잎 모듈 |
+| `init.luau` | `Relate`/`Void`/`Ref`/`is*`/생명주기 4종 스텁 재export | `H-80` |
+| `quad-types/src/init.luau` | `Quad` 타입에 위 탑레벨 값 추가(`Source`/`Store`/`Effect`/`Blocker`는 각 단위에서) | `H-80`/`H-25` |
+
+**mock (`quad-base/test/mock.luau`)** — `H-97` 4종을 **이 파일 안에** `installLifetime(quad)`로
+둔다(quad-roblox가 할 모듈 뮤테이션을 그대로 흉내; `Destroying:Connect`의 `Connection`을
+`Relate` weak 슬롯 `"gcconn"`에 두고 `.Connected`로 판정, `.Subscribed` 경로는 단위 3에서
+합류). 별도 파일을 안 만드는 이유: mock 백엔드가 곧 이 파일 하나다.
+
+**테스트 (`quad-base/test/spec.<module>.luau`)** — `scripts/test.sh`의 glob을
+`smoke.*` + `spec.*`로 넓히고, relink 뒤 `luau-analyze quad-base/src`도 같이 돌린다
+(relink가 거짓 클린의 원인을 없애므로 analyze가 이제 의미 있다).
+
+| 파일 | 검증하는 계약 |
+|---|---|
+| `spec.brand.luau` | register/is · 다중 태깅 · 브랜드 간 독립 · weak-key(GC 뒤 사라짐) · `isRef(PreRef 등록값) == true`, `isPreRef`/`isPostRef` 배타 |
+| `spec.relate.luau` | 4 메서드 · 서브테이블 lazy 생성 · `WeakMap` 값 GC · `inst` weak-key GC · 공유 메타테이블 |
+| `spec.lifetime.luau` | 미주입 스텁이 영어 메시지로 error · 주입 후 `bindLifetime` → `canBound` false/`canExecute` true · `Destroy` → 반대 · `unbindLifetime` 조기 해제 · 이중 바인드 게이트 모양 `if not canBound then error(…, 2)` |
+| `spec.ref.luau` | 초기 `Revision` · `:Set` 순서(콜백이 볼 때 이미 새 값·새 리비전) · `bit32` 랩(0 → 4294967295) · `Callback`/`WeakCallback`/`Uncallback` · `fn(value, ref)` · 같은 fn 양쪽 등록 시 1회 · weak 콜백 GC 뒤 침묵 · 발화 중 `Uncallback` 안전(스냅샷) · thread 콜백 1회 소진 · `isRef`/`isEpoch` |
+| `spec.void.luau` | 반환값 없음 · 항등(항상 같은 함수) |
+| `smoke.init.luau`(갱신) | 탑레벨 값 존재·타입 |
+
+**커밋 단위**: 모듈마다 하나(구현 + spec + `base/` 정정이 있으면 같은 커밋), 마지막에
+`test.sh`/`quad-types` 커밋. 단위 끝 절차는 §4.
