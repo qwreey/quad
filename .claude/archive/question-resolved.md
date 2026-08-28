@@ -1305,3 +1305,10 @@ L2 디스패치    Handler · Dispatch 코어 · chains · None ·          ┐
 `.Parent =`는 밖에서 허용으로 복원**(사용자: *"정확히는 두번 Claim 불가하다는 의미.
 필요하다면 Slot 을 안에 만들고 리턴하는 중간 모듈을 만들어야함. 밖에서 .Parent
 설정하는건 괜찮아"*) / 매핑된 정적 자식은 같은 `InstanceChildHandler`.
+
+같은 날 저녁 `/code-review high`가 낸 **M5 착수 전 문항 넷**(gcconn/gchold 셋업 자리 /
+이중 claim 레지스트리 / `PlayerGui` own-all / `<Class>Param` 배열 파트)도 **몇 시간 안에
+답이 와서 닫혔다** — `base/claim-plan.md` §7-9~12: 주입 op `nativeClaim(inst)`에 (0)
+경로 전부(`New`도 호출) / 이중 claim은 셋업 유무로 error, 문항의 `elementOwner` 충돌은
+"claim은 slot과 무관"이라 틀린 전제 / `PlayerGui`는 *"공동 소유 가능 객체"*라 claim
+대상이 아니고 루트는 `ScreenGui`·`SurfaceGui` / `FrameParam<E>` 원소 타입 파라미터.

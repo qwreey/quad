@@ -133,3 +133,18 @@ M2 배너·M5 두 체크박스 / `question.md` 최우선 절 비움 + `archive/q
 own-all vs `ResetOnSpawn` / 공유 `Param` 배열 파트)은 `base/claim-plan.md` §10과
 `question.md`에 문항으로 — 사용자 결정 대기. 리뷰가 제안한 이름(`nativeAdopt`,
 `FrameParam<C>`)은 전부 가칭.
+
+## 사용자 원문 (3차 메시지) — `/code-review` 문항 넷의 답
+
+> A. 이건 nativeClaim 을 만들고 gchold/gcconn 경로를 여기에 전부 두면 되지 않을까
+> 생각중. B. 정확히는, claim 은 slot 이랑 무관하지 않아? 이중 claim 자체가 무슨
+> 상황이야. C. 는 애초에 PlayerGui 자체를 Own 한다는게 좀 잘못되었어. 공동 소유
+> 가능 객체인데 그러는거지. ScreenGui/SurfaceGui 등으로 생각해야지. D. 내가 생각한게
+> 원소를 파라미터로 받는거였어. 거기에 Instance 또는 Instance|MapperDescriptor 가
+> 오는거지
+
+읽기와 반영은 `base/claim-plan.md` §7-9~12. 에이전트 읽기 하나 — A의 "전부"를 `New`
+②단계도 `nativeClaim`을 부르는 것으로 옮겼다(`bind-system-plan.md` 의사코드 주석,
+`lifecycle-pattern.md` (0) 머리). B는 리뷰 문항의 전제(`elementOwner` 충돌)가 틀렸다는
+답이라 레지스트리 없이 셋업 유무로 판정. C로 §6의 `Claim(PlayerGui, …)` 예시가
+폐기되고 중간 모듈 패턴의 루트가 `ScreenGui`로 바뀌었다.

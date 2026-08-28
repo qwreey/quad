@@ -60,9 +60,9 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   쓰게 되는 것뿐이고, `D`가 전량 생성기 산출물이라 손으로 쓸 곳은 없다.
 
   ```luau
-  type FrameParam = { … }                                   -- 생성기 산출물 (필드 파트)
-  D.Frame        :: (FrameParam) -> Frame
-  D.Mapper.Frame :: (key: string | MapperRoot) -> (FrameParam) -> MapperDescriptor
+  type FrameParam<E> = { [number]: E, … }                    -- §7-12: 원소 타입이 파라미터
+  D.Frame        :: (FrameParam<NewChild>) -> Frame            -- NewChild = 기존 children 유니언
+  D.Mapper.Frame :: (key: string | MapperRoot) -> (FrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
   Claim          :: <T>(inst: T, desc: MapperDescriptor) -> T   -- T는 inst에서 그대로
   ```
 
@@ -70,8 +70,10 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   children 배열엔 `MapperDescriptor`가 올 수 없고(오면 런타임 "매치 핸들러 없음"),
   매퍼의 배열엔 와야 한다(§2 예시의 `M.TextLabel "Title" {…}`). 사용자 인용은
   **필드 파트의 타입 공유**를 승인한 것이고 배열 파트를 어떻게 가를지는 정하지
-  않았다 → §10-D. `base/bind-system-plan.md`의 `D` 생성기 절엔 아직 `<Class>Param`이
-  없다 — 생성기 구현(`ROADMAP.md` M5 `D/init.luau`)이 이 문서를 같이 본다.
+  않았다 → **[같은 날 확정, §7-12] 원소 타입을 파라미터로**: `type FrameParam<E> =
+  { [number]: E, …필드 }`, `D.Frame`은 `E` = 기존 children 원소 유니언(Instance·Slot·
+  State…), `D.Mapper.Frame`은 거기에 `| MapperDescriptor`. `base/bind-system-plan.md`의
+  `D` 생성기 절엔 포인터만 — 생성기 구현(`ROADMAP.md` M5 `D/init.luau`)이 이 문서를 본다.
 
 - **`Claim(inst, descriptor) -> inst`가 최상위이고 타입 인자를 받지 않는다.**
   사용자: *"Claim 자체는 타입을 받는건 말이 안되어보임. New 와는 완전 다른
@@ -84,7 +86,7 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   같은 취급). 디스크립터 클래스 ↔ `inst` 클래스 대조는 **debug 검사**(§3)의 몫.
   `inst`는 quad 밖에서 온 것. 이 호출로 `inst`와
   매핑된 하위 전부가 **quad 소유**가 된다 — `New`가 만든 것과 같은 gcconn/gchold·부기
-  (그 셋업을 누가 하는지는 §10-A).
+  (그 (0) 셋업은 아래 `nativeClaim` — §7-9).
 - **디스크립터는 1회용** — `PreRef`의 `_fired`처럼 **디스크립터 객체에 소진
   플래그**를 세우고 재사용이면 `error(…, 2)`. **[2026-08-28 `/code-review` 정정]**
   `PreRef` 관용구의 다른 절반(배열 슬롯을 `ProcessedPreRef` 센티널로 교체)은
@@ -93,7 +95,16 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   테이블을 in-place로 바꿀지 새 테이블을 만들지(그러면 `ProcessedModifier` 자리와
   인덱스가 `New`와 달라진다)와 Modifier 필드 안에 숨은 디스크립터를 DFS가 보는지는
   **구현 시 정할 것**(§9). **같은 `inst`를 두 번 `Claim`하는 것도 error**(§7-7) —
-  어느 레지스트리로 판정하는지는 §10-B.
+  판정은 위 `nativeClaim` 항목(§7-10).
+- **⭐ [2026-08-28 후속, §7-9] 소유는 프로바이더 주입 op `nativeClaim(inst)`** —
+  `lifecycle-pattern.md` (0)의 gcconn/gchold 셋업(클로저가 `gchold`와 `inst`를 캡처해
+  userdata 동일성을 고정하고 `InstData:SetWeak`)이 **이 op 안에만** 산다. `New`의
+  ②단계도 인라인이 아니라 같은 op를 부른다(`base/bind-system-plan.md`). `Claim`은
+  DFS로 해석한 inst마다(루트 포함) `drive` **앞에** `nativeClaim`을 부른다 — ②가
+  ③④보다 앞인 것과 같은 이유(그 뒤부터 `inst`를 키로 쓰는 `Relate`가 생긴다).
+  **이미 quad 데이터가 있는 inst**(`InstData:GetWeak(inst, "gchold") ~= nil` — 앞서
+  claim됐거나 `New`가 만든 것)면 `error(…, 2)` — 이것이 "같은 `inst` 이중 claim
+  error"의 전부이고 별도 레지스트리는 없다(§7-10).
 - **매칭은 프로바이더 주입 op** `nativeFindChild(inst, key)`(가칭) — Roblox는
   `Name`, web은 id/selector. **quad-base가 순회·부기 전반을 구현하고
   프로바이더는 이 핸들만 낸다**(사용자: *"quad-base 에서 전반을 구현해주고
@@ -171,26 +182,21 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   거부 배선의 에러 문구는 일반 매치 실패 그대로(`H-148`), 오해는 사용자 문서가 맡는다.
 - **여러 스크립트가 한 `PlayerGui`를 쓰는 흔한 경우는 이걸로 닫힌다** — 각
   스크립트가 자기 `ScreenGui`를 `New`(또는 `Claim`)하고 `.Parent = PlayerGui`
-  (이 경로는 PlayerGui를 claim하지 않으므로 §6/§10-C의 한계와 무관).
-  `Claim(PlayerGui, …)`은 **PlayerGui 전체를 그 스크립트가 소유하겠다**는 뜻이라
-  한 번만 가능하고, 여러 스크립트가 PlayerGui 직하 `Slot`을 공유해야 하면
-  **`Claim`을 한 번 하고 그 안에 Slot을 만들어 반환하는 중간 모듈**을 둔다
-  (사용자: *"정확히는 두번 Claim 불가하다는 의미. 필요하다면 Slot 을 안에 만들고
-  리턴하는 중간 모듈을 만들어야함"*) — 단 PlayerGui 자체를 claim하는 그 경우는
-  §6/§10-C(엔진이 자식을 넣는 컨테이너)의 답에 걸린다.
+  (PlayerGui는 붙이는 자리일 뿐 claim 대상이 아니다 — §7-11).
+  **`PlayerGui` 자체는 claim 대상이 아니다**(§7-11 — 공동 소유 컨테이너). 여러
+  스크립트가 한 `Slot`을 공유해야 하면 **`ScreenGui` 하나를 만들거나 claim하고 그 안에
+  Slot을 만들어 반환하는 중간 모듈**을 둔다(사용자: *"정확히는 두번 Claim 불가하다는
+  의미. 필요하다면 Slot 을 안에 만들고 리턴하는 중간 모듈을 만들어야함"* — 그 모듈의
+  루트가 `ScreenGui`인 것이 §7-11의 따름).
 
 ## 6. 이 문서가 여는 것
 
-- **루트 컨테이너**: `Claim(PlayerGui, M.PlayerGui(M.Root) { Slot {…} })` — PlayerGui가
-  quad 소유 부모가 되어 Slot이 그 아래 산다(한 스크립트가 PlayerGui 전체를
-  소유하는 경우). **⚠️ [2026-08-28 `/code-review`] 이건 own-all 계약(§3)의 한계
-  사례다** — Roblox `PlayerGui`는 엔진이 `StarterGui`를 스폰·리스폰마다 새로 복제해
-  넣는 컨테이너라(`ResetOnSpawn`), 디스크립터가 매핑할 수 없는 자식이 **quad 소유
-  부모 아래 밖에서** 들어온다(`base/slot-plan.md`의 "동적 자식은 반드시" 절이 UB로
-  못 박은 그것). 계약 그대로면 *"엔진이 자식을 넣는 컨테이너를 claim하는 것은 UB"*
-  이고 흔한 경로는 §5의 `.Parent =`다 — 이 한계를 계약으로 명문화할지, `StarterGui`를
-  안 쓰는 전제를 문서화로 둘지는 **§10-C**. 같은 자리: 매퍼 생성기 범위(GUI 클래스)에
-  `PlayerGui`류 컨테이너가 들어가는지도 거기서.
+- **루트**: `Claim(existingScreenGui, M.ScreenGui(M.Root) { Slot {…} })` — Studio에서
+  만들어 둔 `ScreenGui`(또는 `SurfaceGui`·`BillboardGui`)를 quad 소유 부모로 삼아 그
+  아래 Slot을 둔다. **`PlayerGui`/`CoreGui`류 공동 소유 컨테이너는 claim 대상이
+  아니다**(§7-11 — 엔진이 `StarterGui`를 리스폰마다 복제해 넣고 여러 스크립트가
+  나눠 쓰는 자리라 "소유"가 성립하지 않는다). 그런 컨테이너엔 §5의 `.Parent =`로
+  붙일 뿐이다. 처음 스케치의 `Claim(PlayerGui, M.PlayerGui(M.Root) {…})`는 **폐기**.
 - **템플릿 대량 생성**: `template:Clone()` → `Claim` — 각 사본이 독립 소유.
   Claim이 Instance를 돌려주므로 **Slot 요소로도 그대로 쓸 수 있다**(요소는
   `inst`) — "요소가 너무 많은 경우"의 답.
@@ -255,6 +261,33 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
 8. **매핑된 정적 자식의 `Parent` 대입 — 같은 핸들러, 재대입 감수.** 사용자:
    *"5-8 확인완료."* 근거는 §4.
 
+**[2026-08-28 후속 — 승격 뒤 `/code-review high`가 낸 문항 넷(옛 §10 A~D)의 답]**
+
+9. **gcconn/gchold 셋업 자리 — 프로바이더 op `nativeClaim(inst)`, (0) 경로는 거기에만.**
+   사용자: *"nativeClaim 을 만들고 gchold/gcconn 경로를 여기에 전부 두면 되지 않을까
+   생각중."* "전부"이므로 `New` ②단계의 인라인 코드도 이 op 호출로 바뀐다(에이전트
+   읽기 — `New`가 다른 경로를 따로 가지면 "전부"가 아니다). 리뷰 갈래 (b) `Claim`
+   본체를 프로바이더로 / (c) (0)을 quad-base로는 안 씀. 이름 `nativeAdopt`(리뷰 가칭)
+   폐기.
+10. **이중 claim — 레지스트리 없음, "이미 quad 데이터가 있는 inst"면 error.** 사용자:
+    *"정확히는, claim 은 slot 이랑 무관하지 않아? 이중 claim 자체가 무슨 상황이야."*
+    — 리뷰가 세운 `elementOwner`(Slot 소유권) 충돌은 **문항 자체가 틀린 것**: claim은
+    Slot 요소 소유권과 다른 축이다. 이중 claim이 실제로 뜻하는 상황은 둘 — 같은
+    inst를 `Claim`에 두 번 넣는 것, 그리고 `New`가 만든(이미 quad 소유인) inst를
+    claim하는 것. 둘 다 9번의 셋업이 이미 있다는 사실 하나로 판정된다(§2).
+11. **`PlayerGui`는 claim 대상이 아니다 — 공동 소유 컨테이너.** 사용자: *"애초에
+    PlayerGui 자체를 Own 한다는게 좀 잘못되었어. 공동 소유 가능 객체인데 그러는거지.
+    ScreenGui/SurfaceGui 등으로 생각해야지."* own-all 계약(§3)은 손대지 않고 **대상
+    정의**가 답이다: claim은 배타 소유가 성립하는 요소(`ScreenGui`·`SurfaceGui`·
+    `BillboardGui`·`Frame`류·`Clone()` 사본)에만. 리뷰 갈래 (a) "UB로 명문화"는
+    계약이 아니라 대상 밖이라는 뜻으로 흡수, (b) 부분 매핑은 §7-7대로 기각. 매퍼
+    생성기 범위에 컨테이너를 넣을 일도 없다(`D`와 같은 범위).
+12. **`type <Class>Param`의 배열 파트 — 원소 타입을 파라미터로.** 사용자: *"내가
+    생각한게 원소를 파라미터로 받는거였어. 거기에 Instance 또는 Instance|MapperDescriptor
+    가 오는거지"*. `FrameParam<E>` — `D.Frame`은 `E` = 기존 children 원소 유니언,
+    `D.Mapper.Frame`은 `E` = 그것 `| MapperDescriptor`(§2). 실제 Luau에서 도는지는
+    `luau-analyze` 스파이크로(§9).
+
 ## 8. 검토 후 안 만들기로 한 것
 
 - `Claim<<"Frame">>` 타입 인자 / 루트를 맨 테이블로(§7-1).
@@ -264,18 +297,27 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
 - `Mount(root, parent)`류 표면(`H-146`, §5).
 - 이미 있는 Instance에 나중에 props를 재바인드(`archive/existing-instance-bind-rejected.md`,
   헤더).
+- **[2026-08-28 후속]** 이중 claim용 별도 레지스트리·`elementOwner` 기록(§7-10) /
+  `nativeAdopt`라는 이름, `Claim` 본체를 프로바이더에 두기, (0) 셋업을 quad-base로
+  옮기기(§7-9) / `PlayerGui`·`CoreGui`류 공동 소유 컨테이너 claim, 매퍼 생성 범위에
+  컨테이너 추가(§7-11) / 필드 파트만 빼고 배열은 각자 두는 타입 둘(§7-12).
 
 ## 9. 구현 체크리스트 (M5) · 문서화 대상
 
-- `D.Mapper.<Class>` 생성기 산출 + `type <Class>Param` 필드 파트 공유(사용자 확정;
-  배열 파트는 §10-D) + 루트 센티널(사용자 확정 — 놓는 자리 `D.Mapper.Root`는
-  에이전트 제안) + 디스크립터 브랜드(`MapperDescriptor`는 가칭 — `Brand` 인스턴스
-  브랜드로 만든다는 것은 `base/brand-plan.md`의 일반 규칙이지 새 결정 아님).
-- `Claim(inst, desc) -> inst` — DFS 해석 → bottom-up `drive`, 소진 플래그(§2), 같은
-  `inst` 이중 claim error(레지스트리는 §10-B), 이미 quad 소유인 inst의 gcconn/gchold
-  셋업(§10-A). **구현 시 정할 것**: 사용자 테이블 in-place 교체 vs 새 테이블,
-  Modifier 안의 디스크립터 처리, 패키지 안 정의 파일 위치(`quad-base/src/Claim.luau`
-  가칭 — `base/architecture.md` 소스 트리에 반영은 M5 착수 때).
+- `D.Mapper.<Class>` 생성기 산출 + `type <Class>Param<E>`(사용자 확정, §7-12 — `E`
+  파라미터가 실제 Luau에서 `D.Frame`/`D.Mapper.Frame` 둘을 통과시키는지 `luau-analyze`
+  스파이크, `luau-test/STATUS.md`에 등록) + 루트 센티널(사용자 확정 — 놓는 자리
+  `D.Mapper.Root`는 에이전트 제안) + 디스크립터 브랜드(`MapperDescriptor`는 가칭 —
+  `Brand` 인스턴스 브랜드로 만든다는 것은 `base/brand-plan.md`의 일반 규칙이지 새 결정
+  아님).
+- `Claim(inst, desc) -> inst` — DFS 해석 → 해석한 inst마다 `nativeClaim` → bottom-up
+  `drive`, 소진 플래그(§2), 이중 claim은 `nativeClaim` 앞의 `InstData` 검사(§7-10).
+  **구현 시 정할 것**: 사용자 테이블 in-place 교체 vs 새 테이블, Modifier 안의
+  디스크립터 처리, 패키지 안 정의 파일 위치(`quad-base/src/Claim.luau` 가칭 —
+  `base/architecture.md` 소스 트리에 반영은 M5 착수 때).
+- 프로바이더 op **`nativeClaim(inst)`**(§7-9) — `lifecycle-pattern.md` (0)의 코드가 본체,
+  `New` ②단계가 같은 op를 부르도록 `base/bind-system-plan.md` 의사코드 주석 갱신됨.
+  `base/architecture.md` 주입 op 목록에 추가됨(조합 폴백 예외 — 셋업이라 조합 불가).
 - 프로바이더 op `nativeFindChild(inst, key)`(이름 가칭) — `base/architecture.md` 주입 op
   목록에 추가됨(quad-roblox는 `inst:FindFirstChild(key)`). "`native*` 조합 폴백의
   예외 — 조회라 조합으로 만들 수 없어 `isInst`처럼 미주입이면 명확한 error"는
@@ -287,35 +329,10 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   여러 스크립트의 PlayerGui는 각자 `ScreenGui` + 중간 모듈 패턴, claim된 inst에선
   `PreRef`/`OnCreated`가 "이미 있는 것 위에서" 뜬다는 것(§4).
 
-## 10. 사용자 판단 필요 — M5 착수 전 (2026-08-28 `/code-review high`가 낸 공백)
+## 10. [해소됨, 2026-08-28 같은 날] 승격 뒤 `/code-review high`가 낸 문항 넷
 
-전부 **새 메커니즘이 필요한 공백**이라 `conventions.md` 규칙대로 결정 없이 본문에
-넣지 않았다. M2 게이트 아님. `question.md`에도 같은 넷이 올라가 있다.
-
-- **A. claim한 inst의 gcconn/gchold 셋업 자리.** §2는 *"`New`가 만든 것과 같은
-  gcconn/gchold·부기"*를 약속하는데, 그 (0) 셋업은 quad-roblox `New` ②단계의
-  **인라인 코드**(`base/bind-system-plan.md`의 `New` 의사코드 ② 단계, `lifecycle-pattern.md`
-  (0))이고 `Claim`은 quad-base다. §4대로 `drive`만 부르면 claim된 루트 아래 첫
-  `Slot`이 `bindLifetime`의 `gchold[value] = true`에서 nil 인덱스로 죽는다. 갈래:
-  (a) 프로바이더가 (0) 셋업을 op로 노출(`nativeAdopt(inst)` 가칭)하고 `Claim`이
-  해석한 inst마다 부른다 / (b) `Claim` 본체를 프로바이더에 둔다(quad-base는 순회
-  알고리즘만) / (c) (0) 셋업 자체를 quad-base 함수로 옮기고 `New`도 그걸 쓴다.
-  **권고 (a)** — `nativeFindChild`와 같은 모양이고 `New`의 경로가 안 바뀐다.
-- **B. 같은 `inst` 이중 claim의 판정 레지스트리.** 기존 소유권 레지스트리
-  `elementOwner`(`base/slot-plan.md`)에 기록하면 `claimOwner`가 §6의 *"claim한
-  inst를 Slot 요소/정적 자식으로 그대로 쓴다"*를 error로 죽인다. 갈래: (a) (0)
-  셋업이 만드는 per-inst `InstData`에 `claimed` 플래그 — 셋업과 같은 자리라 새
-  Relate가 없다 / (b) 별도 weak-key 레지스트리. **권고 (a)** — A의 답에 따라
-  자동으로 정해지는 모양.
-- **C. 엔진이 자식을 넣는 컨테이너(`PlayerGui`)와 own-all 계약.** §6 첫 항목. 갈래:
-  (a) 계약에 *"엔진이 자식을 넣는 컨테이너를 claim하는 것은 UB"*를 명문화하고
-  흔한 경로는 `.Parent =`(§5)로 — `StarterGui`를 안 쓰는 프로젝트만 PlayerGui를
-  claim / (b) 컨테이너용 부분 매핑 — §7-7에서 이미 기각. **권고 (a)**. 부수: 매퍼
-  생성기 범위에 `PlayerGui`류 컨테이너를 넣을지(`base/bind-system-plan.md`의 생성 범위
-  *"GUI에 쓰이는 모든 인스턴스"*엔 없다).
-- **D. `type <Class>Param`의 배열 파트.** 필드 파트 공유는 확정(§2). children
-  배열의 원소 유니언은 `New`(Instance·Slot·State…)와 매퍼(+ `MapperDescriptor`)가
-  달라야 한다. 갈래: (a) `type FrameParam<C> = { [number]: C, …필드 }`처럼 원소
-  타입을 파라미터로 — 생성기 한 줄 / (b) 필드 파트만 `FrameFields`로 빼고 배열은
-  각자 — 타입 둘. **권고 (a)**. 어느 쪽이든 `luau-analyze` 스파이크로 확인
-  (`base/typing-limits.md` 설계 체크리스트 6번 — *"추론만으로 … 확정하지 말 것"*).
+**전부 사용자가 같은 날 답해 §7의 9~12번으로 들어갔다** — A(gcconn/gchold 셋업 자리)
+→ §7-9 `nativeClaim` / B(이중 claim 레지스트리) → §7-10 문항 자체가 틀림, 셋업 유무로
+판정 / C(`PlayerGui` own-all) → §7-11 claim 대상이 아님 / D(`<Class>Param` 배열 파트)
+→ §7-12 원소 타입 파라미터. 당시 갈래·권고 원문은 `session/2026-08-28-02-claim-promotion.md`
+끝 절. 이 절 번호를 가리키던 바깥 문서들은 그 절로 가리키게 고쳤다.

@@ -117,7 +117,8 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
   - `isInst`는 이 조합 폴백의 예외다(위 문단) — 판정이라 조합으로 만들 수
     없고, 미주입이면 명확한 에러여야 한다. 같은 예외가 **`onDestroying`**(`H-11`,
     훅)과 **[2026-08-28] `nativeFindChild`**(`Claim`의 조회 op, `base/claim-plan.md` —
-    예외 분류는 에이전트 판단)에도 적용된다. 전체 목록의 소스는
+    예외 분류는 에이전트 판단)·**`nativeClaim`**(gcconn/gchold 셋업, `Claim` §7-9)에도
+    적용된다. 전체 목록의 소스는
     `base/architecture.md`의 소스 트리(`EngineOps.luau` 줄).
 - **⚠️ 전제 — 한 Slot의 물리 자식은 부모 안에서 연속 구간을 차지한다.** 범위 op이
   성립하는 근거가 전부 이것이다(offset이 누적합이고 중첩 Slot도 같은

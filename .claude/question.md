@@ -74,21 +74,6 @@
 > `base/dispatch-core-plan.md`(0-A/0-Z가 반영된 디스패치 코어 — 열네 번째
 > 세션에 `bind-system-plan.md`에서 분리 신설).
 
-## ⭐ M5 착수 전 — `Claim` 문항 넷 (2026-08-28 신설, M2 게이트 아님)
-
-**[2026-08-28 저녁, `/code-review high`] `Claim` 승격 뒤 M5 착수 전 문항 넷** — M2
-게이트 아님, 결정은 M5 착수 때까지면 됨. 소스는 `base/claim-plan.md` §10(권고 포함):
-- **A.** claim한 inst의 gcconn/gchold (0) 셋업 자리 — 프로바이더 op(`nativeAdopt` 가칭) /
-  `Claim` 본체를 프로바이더로 / (0)을 quad-base로. 권고 op.
-- **B.** 같은 `inst` 이중 claim 판정 레지스트리 — `elementOwner`는 못 씀(claim한 inst를
-  Slot 요소로 쓰는 §6과 충돌). 권고 per-inst `InstData` 플래그.
-- **C.** 엔진이 자식을 넣는 컨테이너(`PlayerGui`, `ResetOnSpawn`)와 own-all 계약 —
-  권고 "UB로 명문화, 흔한 경로는 `.Parent =`". 매퍼 생성기 범위에 컨테이너 포함 여부도.
-- **D.** `type <Class>Param`의 children 배열 파트 — 원소 타입 파라미터 vs 필드만 공유.
-  권고 파라미터 + 스파이크.
-- 부수(우선순위 낮음): `Claim` debug 검사 범위는 `research/debug-tooling-plan.md`
-  "열린 질문" 절로 이관돼 있음 — 디버깅 도구 설계 때.
-
 ## 1. 용어 정리 — 아직 안 정해진 것만 (사용자 요청, 진행 중)
 
 사용자 원 메모: "quad는 register라던가 좀 부정확하거나 느낌이 바로 와닿지

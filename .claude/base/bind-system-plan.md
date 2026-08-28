@@ -177,9 +177,10 @@ New<<Frame>> "Frame" { ... } -- 직접 사용도 같은 모양
 D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
 ```
 
-**[2026-08-28 `Claim`]** 그 `{ ...타입명시 }`의 **필드 파트**는 생성기가 `type
-<Class>Param`으로 이름 붙여 찍고 `D.Mapper.<Class>`와 공유한다(사용자 확정,
-`base/claim-plan.md` §2). children 배열 파트를 어떻게 가르는지는 그 문서 §10-D.
+**[2026-08-28 `Claim`]** 그 `{ ...타입명시 }`는 생성기가 `type <Class>Param<E>`로
+이름 붙여 찍고 `D.Mapper.<Class>`와 공유한다 — 필드 파트는 같고 children 배열의
+원소 타입 `E`만 파라미터(`D.Frame`은 기존 유니언, 매퍼는 `| MapperDescriptor`).
+사용자 확정, `base/claim-plan.md` §2·§7-12.
 
 - **이름은 대문자 `New`로 통일**(사용자 확정: *"2. New입니다."*) — PA님 코드
   인용의 소문자 `new`와 섞여 있던 것을 정리.
@@ -228,7 +229,8 @@ local function New(className: string)
         --    ③④보다 앞인 이유 — 거기서부터 `inst`를 키로 쓰는 `Relate`
         --    (`elementOwner`/`nameClaims`/`bk`/`chains`)가 생기는데, 키의 동일성
         --    고정이 그보다 먼저여야 한다.
-        --    (lifecycle-pattern.md (0)의 인라인 코드 — 헬퍼 이름은 구현 시)
+        --    [2026-08-28 `Claim` §7-9] 인라인이 아니라 주입 op `nativeClaim(inst)` 호출 —
+        --    (0)의 코드는 그 op 안에만 산다(`Claim`도 같은 op를 부른다, `base/claim-plan.md`).
 
         -- ③ flatten — Modifier 항목을 제자리에서 `ProcessedModifier`로 소진하고
         --    필드를 해시 파트로 merge. 새 테이블 없음, `inst`를 안 받는 순수 변환

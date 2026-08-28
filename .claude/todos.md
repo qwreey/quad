@@ -63,10 +63,10 @@
      `research/`에서 **`base/claim-plan.md`로 승격**(결정 기록은 그 §7 — 루트 키 센티널 /
      디스크립터 순서 정본 / debug 검사 범위는 `research/debug-tooling-plan.md`로 /
      **루트의 `.Parent =`는 밖에서 허용으로 복원**, `Claim`은 1회·전체 소유).
-     `question.md` 최우선 절은 비어 있다. 승격 뒤 `/code-review high`가 **M5 착수 전
-     문항 넷**(gcconn/gchold 셋업 자리 / 이중 claim 레지스트리 / `PlayerGui` own-all /
-     `<Class>Param` 배열 파트)을 냈다 — `base/claim-plan.md` §10·`question.md`, M2 게이트
-     아님. 남은 액션: M2 착수.**
+     `question.md` 최우선 절은 비어 있다. 승격 뒤 `/code-review high`가 낸 **M5 착수 전
+     문항 넷**도 같은 날 확정(`base/claim-plan.md` §7-9~12 — `nativeClaim` 주입 op에
+     gcconn/gchold 경로 전부 / 이중 claim은 셋업 유무로 / `PlayerGui`는 claim 대상 아님 /
+     `<Class>Param<E>`). `question.md`엔 `Claim` 항목이 없다. 남은 액션: M2 착수.**
      아래는 돌리기 전(2026-08-26) 서술:
      지시서는 `qa-request/pre-implementation-handtrace-round9-brief.md`. 스코프는
      **커밋 `9dd8213` 하나의 델타**다 — 8라운드 결정 반영과 그 뒤

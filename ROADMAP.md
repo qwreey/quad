@@ -34,7 +34,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 이미 있는 트리는 **quad가 `Claim`으로 소유**(`H-148`, `base/claim-plan.md`,
 > **M5 스코프** — `H-161`; 같은 날 갈래까지 전량 확정 — 그 과정에서 **루트의
 > `.Parent =`는 밖에서 허용으로 복원**, 요지는 M5 `Claim` 체크박스; `/code-review`가
-> 낸 M5 착수 전 문항 넷은 그 문서 §10). 그 밖에 `_epochs`는 emit 때만 갱신
+> 낸 M5 착수 전 문항 넷도 같은 날 확정 — 그 문서 §7-9~12). 그 밖에 `_epochs`는 emit 때만 갱신
 > (`Refresh` 캐치업 폐기, `H-151`) / `Effect._blocker` 제거(`H-150`) / Observer
 > 진입점 인라인(`H-149`) / `GateNode` 브랜드 등록(`H-152`) / Store 예약 이름
 > 런타임 가드(`H-153`) / `InstanceChildHandler` dedup(`H-154`).
@@ -951,9 +951,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > **`onDestroying(inst, fn)`**(`H-11`): `Effect`의 leaf 사망 cleanup을 발화시키는
 > 훅으로, `bindLifetime`이 `isEffect`일 때 부른다(quad-roblox 구현은
 > `inst.Destroying:Connect(fn)`). 이것도 조합으로 못 만들므로 미주입이면 에러다.
-> **[2026-08-28]** 셋째로 **`nativeFindChild(inst, key)`**(`Claim`의 조회 op, 아래
-> `Claim` 체크박스·`base/claim-plan.md`) — 같은 예외 취급(에이전트 분류). 전체
-> 목록의 소스는 `base/architecture.md`.
+> **[2026-08-28]** 셋째·넷째로 **`nativeFindChild(inst, key)`**(`Claim`의 조회 op,
+> 예외 분류는 에이전트 판단)와 **`nativeClaim(inst)`**(gcconn/gchold 셋업의 유일한
+> 자리 — `New` ②단계도 이걸 부른다, 사용자 확정) — 아래 `Claim` 체크박스·
+> `base/claim-plan.md` §7-9. 전체 목록의 소스는 `base/architecture.md`.
 
 > **⚠️ 구현 관례**: `quad-roblox`의 공개 타입은 지금부터 단일 파일
 > (`src/init.luau` 또는 `types.luau`)에 몰아둘 것 — 나중에 필요해지면
@@ -976,7 +977,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       문단. 빠뜨리면
       `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
       `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
-- [ ] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **⚠️ 착수 전 사용자 문항 넷**(gcconn/gchold 셋업 자리 / 이중 claim 레지스트리 / `PlayerGui` own-all / `<Class>Param` 배열 파트) — `base/claim-plan.md` §10. `D/init.luau` 생성기는 `type <Class>Param`(필드 파트)을 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다.
+- [ ] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **[같은 날 후속]** `/code-review`가 낸 문항 넷도 확정(`base/claim-plan.md` §7-9~12): gcconn/gchold 셋업은 주입 op **`nativeClaim(inst)`**에만(`New` ②단계도 호출) / 이중 claim은 그 셋업 유무로 error(레지스트리 없음) / **`PlayerGui`류 공동 소유 컨테이너는 claim 대상 아님**(루트는 `ScreenGui`·`SurfaceGui`) / `D/init.luau` 생성기는 `type <Class>Param<E>`(원소 타입 파라미터)를 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다 — `luau-analyze` 스파이크 필요.
 - [ ] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에
@@ -989,7 +990,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`elementOwner`/`nameClaims`/Tag 참조카운트 등)가 성립함. 대가는
       "quad가 만든 Instance는 참조를 놓는 것만으로 회수되지 않고 반드시
       `Destroy`가 필요" — 바인딩이 하나라도 걸리면 어차피 같은 순환이
-      생기므로 실질적 신규 제약은 아님
+      생기므로 실질적 신규 제약은 아님. **[2026-08-28 `Claim` §7-9]** 이
+      셋업은 `New` 안 인라인이 아니라 **주입 op `nativeClaim(inst)`의 본체**로
+      구현한다 — `New` ②단계와 `Claim`(이미 있는 트리, 위 체크박스)이 같은
+      op를 부르고, 이미 셋업된 inst면 error(이중 claim 판정). 사용자 확정
+      *"gchold/gcconn 경로를 여기에 전부"*.
 - [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — **Studio 작업이라
       `HUMAN_TODO.md` 1번(계정 분리) 먼저 되어야 진행 가능, `SAFETY.md` 준수**
 

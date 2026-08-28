@@ -249,8 +249,12 @@ userdata 포인터**다. Lua 쪽에서 아무도 참조를 안 들고 있으면 
 **자기가 만든 Instance마다 생성 즉시 Lua 쪽 강참조를 하나 심어** 바인딩이
 살아있는 동안 userdata 동일성을 고정한다:
 
+**[2026-08-28 `Claim` §7-9]** 아래 코드는 주입 op **`nativeClaim(inst)`**의 본체다 —
+`New`의 ②단계와 `Claim`(이미 있는 트리를 소유할 때, `base/claim-plan.md`)이 같은
+op를 부른다. quad가 소유하는 Instance마다 정확히 한 번.
+
 ```lua
--- quad-roblox: Instance를 만든 직후 무조건 실행(핸들러/바인딩 유무와 무관)
+-- quad-roblox: nativeClaim(inst) — Instance를 만든 직후 / claim 직후 무조건 실행
 local nop = false or function(...) end -- local이라 상수 접힘/인라인 안 됨
 
 local gchold = {}                       -- 이 inst에 매달린 값들의 강참조 홀더

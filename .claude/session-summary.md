@@ -2010,4 +2010,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   레지스트리 / `PlayerGui` own-all vs `ResetOnSpawn` / `<Class>Param` 배열 파트). 리뷰가
   잡은 실질 정정: `Claim<T>` 추론은 `Clone()`이 `Instance`를 돌려줘 성립 안 함 →
   반환은 inst 타입 그대로 / `Processed` 관용구는 플래그 절반만 / claim된 inst에선
-  `PreRef`/`OnCreated` 불변식이 약해짐.
+  `PreRef`/`OnCreated` 불변식이 약해짐. **같은 날 문항 넷도 답이 와 닫힘**(§7-9~12):
+  주입 op **`nativeClaim(inst)`**에 gcconn/gchold (0) 경로 전부(`New` ②도 호출) /
+  이중 claim은 셋업 유무로 error(*"claim 은 slot 이랑 무관"* — 리뷰 전제 기각) /
+  **`PlayerGui`는 공동 소유 객체라 claim 대상 아님**, 루트는 `ScreenGui`·`SurfaceGui` /
+  `FrameParam<E>` 원소 타입 파라미터.
