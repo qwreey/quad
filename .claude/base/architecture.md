@@ -461,6 +461,11 @@ falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 
 ## 테스트 전략: quad-base용 최소 mock (2026-08-04)
 
+> **[2026-08-29 포인터]** 아래는 2026-08-04의 mock 범위 결정이고 지금도 유효하다. 실제 테스트
+> 체계는 그 위에 얹혔다 — `./scripts/test.sh`(relink → `luau-analyze` → `smoke.*`/`spec.*`,
+> `base/project-setup-plan.md`), mock의 `installLifetime`(생명주기 4종 + `onDestroying`, M2 단위 1
+> `H-97`), 모듈별 `quad-base/test/spec.<module>.luau` 계약 테스트.
+
 **결정**: quad-base 테스트는 Vide 선례(`initreq/vide/test/mock.luau`, 약
 300줄)를 따라 최소한의 mock으로 감 — parent/children 트리 + 타입 검증 없는
 property bag + property별 변경 시그널 정도만 흉내내고, `IsA()`/클래스별
