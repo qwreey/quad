@@ -14,6 +14,8 @@ print("=== 1. New()마다 M2 첫 단위 탑레벨 값이 실려 있음 ===")
 do
 	local m: Quad = Quad.New()
 	assert(type(m.Relate) == "function" and type(m.Void) == "function" and type(m.Ref) == "function", "Relate/Void/Ref constructors")
+	assert(type(m.Source) == "function" and type(m.Store) == "function", "Source/Store constructors (unit 2, per instance)")
+	assert(m.Source ~= Quad.Source, "Source is an instance-level factory (H-174), not a shared leaf")
 	local predicates: { (any) -> boolean } = {
 		m.isEpoch, m.isSource, m.isState, m.isStore, m.isObserver, m.isEffect,
 		m.isBlocker, m.isModifier, m.isRef, m.isPreRef, m.isPostRef,

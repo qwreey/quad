@@ -836,6 +836,13 @@ deps만 받고 싶어도 `previous`가 2번째 자리를 차지하므로, 그 �
 비워둬야 함 — deps만 쓰는 흔한 케이스가 약간 불편해지지만, Luau 문법
 제약상 다른 선택지가 없음(대안은 애초에 이 확장 자체를 안 하는 것뿐).
 
+**⭐ [2026-08-28 실측, M2 단위 2 `H-176`] (B)는 안 된다** — `Compute: <U, D...>(self, fn:
+(self, U?, D...) -> U, D...) -> State<U>`로 선언하면 `luau-analyze --!strict`가 trailing dep의
+콜백 파라미터를 `{ read Get: (t1) -> (number, ...unknown) }`로 뒤틀어 **정상 호출까지**
+`Expected … but got …`로 막는다(`quad-base/test/spec.state.luau` 3·7·9에서 재현 뒤 철회).
+확정 선언은 **deps 자리 `...any`**, 콜백 안에서 dep 파라미터에 `dep: StateData<U>` 주석 —
+런타임 계약(위치·순서·lazy)은 그대로다. 스파이크 `15`는 이 결과로 닫힌다
+(`luau-test/STATUS.md`). 아래는 실측 전 서술:
 **실측 필요 — `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`
 신규(ROADMAP.md M2 반영).** 순서 문제 자체는 위 정정으로 구조적으로
 풀렸으므로, 스파이크가 실제로 확인할 진짜 불확실성은 (B) 하나로 좁혀짐 —

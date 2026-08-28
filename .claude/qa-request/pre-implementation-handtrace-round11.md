@@ -24,6 +24,7 @@
 | `H-172` | ① | 1 | 🟡 | mock `Destroy`가 자손을 안 죽이고(조상 파괴 계약 검증 불가), `Parent` 변경 시그널이 연결 해제 뒤라 관측 불가, 재귀 Destroy 무한 루프 | ✅ mock: Destroying → Parent nil → 자손 Destroy → 연결 해제, 이중 Destroy no-op(`spec.lifetime` 6c) |
 | `H-173` | ① | 1 | 🟢 | `ROADMAP.md` M7 체크박스·`tween-plan.md` 352가 `isTween`/`TweenBrand`를 `Tween.luau`에 둔다고 아직 서술(감사 3라운드가 두 곳만 고침) | ✅ 반영 |
 | `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
+| `H-176` | ① | 2 | 🟡 | `:Compute`의 trailing deps를 타입팩 `D...`로 좁히는 선언은 strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힌다(스파이크 15가 "미검증"으로 남긴 자리) | ✅ `...any` + 콜백 주석으로 확정, `source-state-plan.md` 실측 기록 |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
 ## 상세
@@ -140,6 +141,19 @@
   등"*이 방향만 준다. 어느 모양이든 **새 조립 메커니즘**이라 §4.
 - **갈래**: §4. 단위 1 코드는 어느 선택지에서도 그대로다(③ 아님).
 
+### 단위 2 — `EpochMap` → `Source`/`State`/`Store` (2026-08-28)
+
+### `H-176` 🟡 — 타입팩 deps 선언은 strict에서 안 산다 (①)
+
+- **어디서**: `quad-types/src/init.luau` `State<T>.Compute` / `base/source-state-plan.md` "trailing
+  deps를 `fn`에 lazy positional 인자로도 노출"의 "(B) 이형 다중 deps를 제네릭 팩으로".
+- **무엇이**: `<U, D...>(self, fn: (self, U?, D...) -> U, D...)`로 선언하자 `spec.state.luau`의
+  정상 호출 셋(3·7·9)이 *"Expected `{ read Get: (t1) -> (number, ...unknown) }` but got
+  `Source<number>`"*로 막혔다 — 팩이 콜백 파라미터 쪽으로 역추론되며 `Get`을 read-only
+  `...unknown` 반환으로 뒤튼다. 문서가 "실측 필요"로 남겨둔 바로 그 (B)다.
+- **처리**: deps 자리 `...any`, 콜백 안에서 `dep: StateData<U>` 주석(콜백 파라미터 주석 관례
+  그대로). 런타임 계약 무변경. 문서에 실측 기록, 스파이크 `15` 닫힘.
+
 ### `H-175` 🟢 — 클로저 캐시 규칙의 범위 (①)
 
 - **어디서**: 이 파일 §5 "툴링 사실 둘"의 둘째 항, `spec.ref.luau` 7번 주석.
@@ -192,6 +206,27 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
   dedup(강+약 동시 등록 시 1회)과 순회 중 해제 skip이 실제로 성립한다.
 - `brand-plan.md` 합성 술어(`isState = isSource or StateBrand`, `isRef = isPreRef or
   isPostRef or RefBrand`)와 weak-key 멤버십 — 성립.
+
+**단위 2 (메인 세션, 2026-08-28)**:
+- `EpochMap` 6 연산 ↔ `state-epoch-plan.md` §3 일치(`spec.epochmap`). `Update`의 "한 번 다름을
+  찾으면 나머지는 쓰기만" 최적화 포함. 키 weak 실측.
+- `State:_receive` 규칙 1~3, 시딩(`Sync`/`TrackFrom` 분기), 카운터 쌍(`curr = nil` 시작, 재계산
+  도중 무효화·`fn` 예외 케이스), `Get`의 `Refresh` 순회(값만, 통지 없음), 다이아몬드 접힘 —
+  전부 `spec.state`가 고정. `_hold` 불변식(하류→상류 강, 상류→하류 weak) GC 실측 통과 —
+  `luau-test/STATUS.md`의 "만들어야 할 스파이크"(중간 State GC)는 이걸로 대신한다.
+- `Source:Set` 동일값 갱신(`H-68`), `Emit`, `isModifier` 가드 셋(생성자/`Set`/`Compute` 캐싱).
+- `Store`: `H-122`/`H-153`/`H-83` 전부 `spec.store`. `Names()`는 `pairs(self)` — 메소드가
+  `__index`라 안 센다는 `H-153` 전제가 실측으로 성립.
+- **조립 세부**(`H-174`의 구현, 새 표면 아님): `State.luau`는 `Init(module)`이 인스턴스별 임플을
+  만들고 `implFor(module)`로 `Source`/`Store` Init에 건넨다(`RunInit` 순서 의존 — 어기면
+  `implFor`가 level 1 error). `Source`의 `__index` 체인이 그 임플을 가리켜 `With`/`Compute`/
+  `Apply`가 위임된다. `Ref`/`Void`/`Relate`/`Brand`만 인스턴스 간 공유 잎.
+- **입력 검증 하나 추가**(`architecture.md` error 계약의 예 *"dep #3 is not a State/Source/Ref"*
+  그대로): `newNode`가 dep이 `isState`가 아니면 `error(…, 3)` — 없으면 `dep._subs` nil 인덱스로
+  quad 내부 줄에서 죽는다. 새 메커니즘이 아니라 계약이 이미 요구하는 자리라 ①로 둔다.
+- `Apply`의 팩토리 파라미터가 유니온(함수 | `__apply` 객체)이라 **콜백 파라미터 무주석
+  추론이 안 된다** — `typing-limits.md` §1②가 이미 캐비엇으로 적어둔 자리(`:Apply`의 factory는
+  주석 필요). 테스트는 주석으로.
 
 **툴링 사실 둘**(설계 아님, 다음 단위가 알아야 함):
 - `require("@self/X")`는 **`init.luau`에서만** 통한다 — 일반 파일에서 `@self`는 그 파일

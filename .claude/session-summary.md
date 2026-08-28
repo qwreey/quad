@@ -2029,4 +2029,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   §4로, ① 셋(mock lazy claim·`Destroy` 의미론·M7 `TweenBrand` 잔재) 반영. 탐사자
   🔴 `H-174`(생명주기 필드 조립 형태). **같은 날 배치 회신으로 넷 다 확정**: `H-174`
   팩토리형 + `module.canExecute` 늦게 읽기 / `H-169` 사용자 안(리비전 바뀌면 파동을
-  놓음, 권고안 기각) / `H-168` `Ref<<T?>>()` / `H-170` 즉시 실패만 re-raise. 단위 2 게이트 0.
+  놓음, 권고안 기각) / `H-168` `Ref<<T?>>()` / `H-170` 즉시 실패만 re-raise. **이어서 단위 2
+  구현** — `EpochMap`/`State`(`Init(module)`+`implFor`)/`Source`/`Store` + `quad-types`
+  최종형 타입(`ty11`) + spec 4개, ALL PASS. `H-176` 타입팩 deps 선언 기각(`...any`).

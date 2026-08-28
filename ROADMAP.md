@@ -375,14 +375,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 금지 — 백엔드가 `New()` 뒤에 덮어쓴다). 의사코드의 `canExecute(self)`는 전부 그 뜻.
 > 소스는 `base/lifecycle-pattern.md`의 `H-174` 문단.
 
-- [ ] **`EpochMap.luau`** (**[2026-08-24]** 2026-08-22에 디스패치로 옮겼다가 순서 교체로 되돌아옴) — 재사용 가능한 에포크
+- [x] **[2026-08-28 완료 — 단위 2]** **`EpochMap.luau`** (**[2026-08-24]** 2026-08-22에 디스패치로 옮겼다가 순서 교체로 되돌아옴) — 재사용 가능한 에포크
       부기 객체(`:Update(Epoch|EpochSet) -> boolean`이 "뒤로 전파가
       필요한가"를 답함, `:Refresh`/`:Sync`/`:TrackFrom`. `EpochSet =
       {[Epoch]: true}`로 **배열이 아니라 집합**). `State.luau`에 묻지 말고
       별도 모듈로 낼 것 — `GateNode`(아래)와 `State`/`Effect`가
       전부 같은 것을 쓴다. `Epoch` 인터페이스 자체(`{ Revision: number }`)와
       리비전 갱신(`bit32.bnot(-rev)`)도 여기서 확정 — `base/state-epoch-plan.md`
-- [ ] **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-21 5라운드 — 채택 확정, 같은 날 `Epoch`로 일반화]** State의
       재계산/전파 판정은 **`Epoch` 리비전 비교**다(`base/state-epoch-plan.md`)
       — `invalid` 플래그가 아니다. **아래 `Source.luau`/`State.luau`가 이걸
       전제로 짜여야 하므로 `EpochMap.luau`(위 항목)가 State 본체보다 먼저
@@ -397,11 +397,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
-- [ ] `Source.luau`/`State.luau`/`Store.luau`
-- [ ] **[2026-08-28 10라운드 `H-153`]** Store 생성자의 `isSource` 순회와 `store:Of(name)`에
+- [x] **[2026-08-28 완료 — 단위 2]** `Source.luau`/`State.luau`/`Store.luau` — `InitState`/`InitSource`/`InitStore` 팩토리(`H-174`), `test/spec.{epochmap,source,state,store}.luau`
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-28 10라운드 `H-153`]** Store 생성자의 `isSource` 순회와 `store:Of(name)`에
       **예약 이름 런타임 가드**(`error(…, 2)`) — 동적 키는 타입이 못 막는다;
       그림자 = store 자신(`base/store-plan.md`).
-- [ ] **[2026-08-18 신설, 2026-08-25 확정]** `store:Of<<T>>(name): Source<T>` —
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-18 신설, 2026-08-25 확정]** `store:Of<<T>>(name): Source<T>` —
       런타임에 이름이 정해지는 동적 키의 정식 창구(옛 `store "key"` 문자열
       커링은 기각). **콜론 메소드로 확정**했고, 예약 키
       (`Of`/`Names`/**`__reservedCheck`** — **[2026-08-26 `/code-review high`]**
@@ -412,10 +412,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       돈다 — `base/store-plan.md`의 "타입 추론 문제" 절).
       `<<T>>`가 값 호출부에서 실제로 `T`를 묶는 것도 실측 확인됨.
       **[2026-08-25] 옛 이름은 `GetDynamic`이었다 — `Of`가 흡수했다**
-- [ ] **[2026-08-25 신설]** `store:Names(): { string }` — 선언된 키 집합
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설]** `store:Names(): { string }` — 선언된 키 집합
       열거(그림자 테이블의 키). 그룹 `Attribute(...)`/`attr:NameMap()`이
       요구한다(`base/attribute-plan.md`)
-- [ ] **[2026-08-25 신설, 2026-08-26 배선 정정 `H-112`]** `CheckReservedKeys`
+- [x] **[2026-08-28 완료 — 단위 2]** `quad-types`에 `export type function`으로]** **[2026-08-25 신설, 2026-08-26 배선 정정 `H-112`]** `CheckReservedKeys`
       타입 함수 — **`T`가 아니라 `keyof<T>`**(키 싱글톤 유니온)를 받아
       예약 키를 검증만 하고, 팬텀 필드 `__reservedCheck`로 격리한다.
       `error()`가 아니라 `print(...)` + `return types.never`를 써야 한다.
@@ -424,11 +424,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `*error-type*`을 품어 **유효한 Store 전부**에 스퓨리어스 타입 함수
       에러가 뜬다(실측). 근거·통과 배선은 `base/store-plan.md`.
       **타입 함수는 이 용도(진단)까지만 쓴다** — `base/typing-limits.md` §0
-- [ ] **[2026-08-25 신설]** **명시적 초기화** — 타입 인자에 `Source<T>`를
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설]** **명시적 초기화** — 타입 인자에 `Source<T>`를
       직접 쓰고 `defaults`에도 `Source(v)`를 직접 넣는다. 옛 lazy `__index`
       (없는 키를 그 자리에서 만들어 저장)는 **폐기**. 그래서 `defaults`가
       곧 선언 키 집합이고 `Names()`가 성립한다
-- [ ] **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
+- [x] **[2026-08-28 완료 — 단위 2: `State.luau`의 `_emitDown`, 구독자 전부 `sub:_receive(from)`; Observer 쪽 `_receive`는 단위 3]** **State 전파 루프 — 구독자는 weak, 발화마다 `canExecute` 게이팅**
       (2026-08-14 다섯 번째 세션 확정, `base/lifecycle-pattern.md`의 "실제 호출부" 절) —
       State는 구독자를 **weak-키로만** 담고, 살려두는
       책임은 `gchold`(leaf) 또는 전역 `Subscribed` 테이블(전역)에 있음
@@ -467,7 +467,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "`store.key` 레코드 필드 타이핑" 절이 소스. 스파이크 `16`/`21`은
       폐기된 접근을 검증한 것이라 재작성 대기
       (`luau-test/STATUS.md`)
-- [ ] `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
+- [x] **[2026-08-28 완료 — 단위 2]** `:Compute(fn, ...)` — trailing args로 추가 의존성 직접 받는 sugar
       (2026-08-11 세션, `base/source-state-plan.md` "`:Compute(fn, ...)`"
       절) — `:With(...):Compute(fn)` 체인과 달리 노드 1개(Compute 노드
       자신에 구독만 추가)로 끝나야 함, 새 노드 생성 없이 구현되는지 M0/M2
@@ -477,7 +477,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       걸면 합치는 노드 자체가 안 생겨 감출 비용이 없다. **기각으로 남은 건
       `Observer` 하나**이고 근거도 새로 쓰였다("Observer는 리시버 State
       하나에 붙는 구독, 여럿을 엮는 건 Effect가 대신한다")
-- [ ] `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
+- [x] **[2026-08-28 완료 — 단위 2]** `state:Apply(factory)`(`base/source-state-plan.md` "`state:Apply(factory)`"
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
@@ -572,7 +572,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`H-7`). 캐치업은 바인드 직후 **`_rerunRequired`면 1회**(`if self._rerunRequired then
       self:Rerun() end` — **[2026-08-28 `H-151`/`H-159`]** 옛 `_epochs:Refresh()`는 폐기,
       `_epochs`는 emit 받을 때만 갱신하되 실행 불가 상태의 변경은 홀드 — `H-64`/`H-65`). 의사코드는 `base/effect-plan.md`가 소스
-- [ ] **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-24 `H-23`]** State 전파 루프는 구독자 집합을 **배열로
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
       누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
@@ -634,7 +634,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-28 부분 — 첫 단위분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종)은 `quad-types` `Quad`에 추가됨, `Source`/`Store`/`Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [ ] **[2026-08-28 부분 — 단위 1·2분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종/`Source`/`Store` + `State`·`Source`·`Store` 타입)은 `quad-types` `Quad`에 추가됨, `Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
@@ -652,7 +652,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       이 마일스톤이 그 규칙의 첫 적용 지점**이고, 규칙의 정본은
       `base/quad-types-plan.md`의 "`Quad` 타입 — 확정된 표면" 절
       (M3의 `H-25` 항목이 같은 규칙을 `Dispatch` 기준으로 서술한다)
-- [ ] trailing deps를 `fn`에 lazy positional 인자로도 노출(**⚠️ [2026-08-24
+- [x] **[2026-08-28 단위 2 — 런타임은 완료(`fn(self, previous?, ...deps)`), 타입은 `...any`: 타입팩 `D...`로 좁히는 형태는 strict에서 콜백 dep 추론이 깨져 실측 기각(`round11.md` `H-176`)]** trailing deps를 `fn`에 lazy positional 인자로도 노출(**⚠️ [2026-08-24
       `H-14`] 이 항목은 `:Compute` 한정이다** — `Effect`의 `fn`엔 deps가 안
       넘어간다) — (`fn(self,
       previous?, dep1, ..., depN)` — 순서는 Luau 값 레벨 `...`가 파라미터
@@ -663,10 +663,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `luau-test`의 `15-type-compute-trailing-deps-typepack.luau`로
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정)
-- [ ] **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
+- [x] **[2026-08-28 단위 2 — `:With`/`Source:Emit()` 완료, `state:Apply(blocker)`는 `Apply`의 `__apply` 경로로 단위 4에서 실제 Blocker와 합류]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
-- [ ] **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
       `isModifier` 런타임 가드 — 적용 지점이
       **전부 이 마일스톤의 코드**다: **`Source(...)` 생성자** / `Source:Set` /
       State의 `:Compute` 결과 캐싱. 체크박스가 M7에만 있었다.
@@ -675,7 +675,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (**[2026-08-26 정밀화]** 동적 키 창구 `store:Of(name)`은 여전히 만든다) —
       가드를 `Source` 생성자에 두면 그 둘이 **한 번에 커버**된다
       (`base/modifier-plan.md` 7번이 소스)
-- [ ] **[2026-08-26 신설, `H-122`]** `Store` 생성자의 `defaults` 런타임
+- [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-26 신설, `H-122`]** `Store` 생성자의 `defaults` 런타임
       검증 — 값 전량에 `isSource` 화이트리스트, 거짓이면 `error(..., 2)`
       (영어 메시지). 타입은 `Source<T>`를 요구하지만 `--!nocheck`/동적
       코드가 raw 값을 넘기면 지금 스케치(`table.clone`)는 조용히 받고 첫

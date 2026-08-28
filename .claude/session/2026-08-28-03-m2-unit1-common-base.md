@@ -62,6 +62,18 @@
 재진입 절·`:Wait` 정정·"제네릭 시그니처" 규칙, `lifecycle-hooks`/`debounce-throttle`
 배너, `lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체에 `H-174`.
 
+## 단위 2 — `EpochMap` → `Source`/`State`/`Store` (같은 날, 이어서)
+
+- 입력: 탐사자 색인으로 `base/` 의사코드 범위를 읽고, 10라운드 참조 구현
+  `audit/handtrace-round10-reference-impl/spikes/core10.luau`를 출발점으로(단, `H-163` 이전
+  모양이라 `_emitDown`은 `sub:_receive` 단일 인터페이스로 옮김), 타입은 `ty11_store_final.luau`
+  최종형 그대로 `quad-types`에.
+- 구현: `EpochMap.luau`(잎) / `State.luau`(`Init(module)` + `implFor`, `H-174`) / `Source.luau` /
+  `Store.luau` / `init.luau` 배선 / spec 4개(epochmap·source·state·store). `./scripts/test.sh`
+  ALL PASS, analyze 0.
+- 발견 `H-176`(타입팩 deps 선언은 strict에서 기각 → `...any`), §5에 조립 세부·dep 검증·`Apply`
+  유니온 추론 캐비엇 기록.
+
 ## 다음
 
-단위 2(`EpochMap` → `Source`/`State`/`Store`) 착수 — 게이트 없음.
+단위 2 끝 절차(감사 루프 → `/code-review high` → 탐사자 → "§4를 보라").

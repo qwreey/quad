@@ -46,6 +46,55 @@ export type Ref<T> = {
 	Uncallback: (self: Ref<T>, fn: RefCallback<T>) -> Ref<T>,
 }
 
+-- ── 반응형 코어(M2 단위 2) ────────────────────────────────────────────
+-- 선언 스타일은 `.claude/base/typing-limits.md` §1②의 "데이터부/메소드부" 쪼개기 —
+-- 콜백 파라미터 무주석 추론이 사는 유일한 스타일(`audit/handtrace-round10-reference-impl/
+-- spikes/ty11_store_final.luau`가 최종형 실측). `Compute`의 `-> State<U>` 반환은 §1①의
+-- 알려진 한계라 **파생 State를 만드는 자리는 결과 타입을 명시 주석**할 것.
+-- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
+-- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
+export type StateData<T> = { Get: (self: StateData<T>) -> T }
+export type State<T> = StateData<T> & {
+	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
+	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
+	-- "미검증"으로 남겨둔 자리). 콜백 안에서 dep 파라미터에 주석을 달 것.
+	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
+	With: (self: StateData<T>, ...any) -> State<T>,
+	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
+	Apply: <U>(self: StateData<T>, factory: ((State<T>) -> U) | { __apply: (self: any, state: State<T>) -> U }) -> U,
+}
+-- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
+export type Source<T> = State<T> & {
+	Revision: number,
+	Set: (self: Source<T>, v: T) -> Source<T>,
+	Emit: (self: Source<T>) -> Source<T>,
+}
+
+-- 예약 키 진단 — `keyof<T>`(키 싱글톤 유니온)만 받는다(`H-112`). `error()`는 못 쓴다
+-- (타입 함수 자체가 실패로 판정) — `print` + `types.never`. 목록은 quad-base
+-- `Store.luau`의 `RESERVED` 테이블의 사본이라 이름을 바꿀 땐 둘을 같이.
+-- `.claude/base/typing-limits.md` §0: 타입 함수는 **진단까지만**.
+export type function CheckReservedKeys(keys: type)
+	local list = if keys:is("union") then keys:components() else { keys }
+	for _, k in list do
+		if k:is("singleton") then
+			local v = k:value()
+			if v == "Of" or v == "Names" or v == "__reservedCheck" then
+				print(`quad.Store: "{v}" is a reserved key`)
+				return types.never
+			end
+		end
+	end
+	return types.singleton(true)
+end
+-- `Store<T>` — `T`는 `{hp: Source<number>, …}` 그대로(평범한 레코드, 타입 함수 없음).
+-- `__reservedCheck`는 팬텀(런타임 nil, 읽지 말 것, `Names()`에 안 들어감).
+export type Store<T> = T & {
+	Of: <U>(self: any, name: string) -> Source<U>,
+	Names: (self: any) -> { string },
+	__reservedCheck: CheckReservedKeys<keyof<T>>,
+}
+
 export type Quad = {
 	Version: "0.0.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
@@ -58,6 +107,9 @@ export type Quad = {
 	Relate: () -> Relate,
 	Void: (...any) -> (),
 	Ref: <T>(default: T) -> Ref<T>,
+	-- 단위 2. `State`는 런타임 생성자가 없다(파생 전용) — 타입만 위에서 export.
+	Source: <T>(v: T) -> Source<T>,
+	Store: <T>(defaults: T?) -> Store<T>,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.

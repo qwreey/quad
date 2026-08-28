@@ -20,6 +20,9 @@ local Void = require("@self/Void")
 local QuadTypes = require("./roblox_packages/quad_types")
 local InitDebug = require("@self/Debug")
 local InitLifetimeHandle = require("@self/LifetimeHandle")
+local State = require("@self/State")
+local InitSource = require("@self/Source")
+local InitStore = require("@self/Store")
 
 type Quad = QuadTypes.Quad
 
@@ -67,6 +70,11 @@ local function New(): Quad
 
 	module:RunInit(InitDebug)
 	module:RunInit(InitLifetimeHandle) -- 생명주기 4종 에러 스텁 — 백엔드가 덮어씀
+	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. State 임플이 먼저 있어야
+	-- Source가 `__index` 체인을 걸 수 있다(순서 의존, `State.implFor`가 검사).
+	module:RunInit(State.Init)
+	module:RunInit(InitSource)
+	module:RunInit(InitStore)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	return module
