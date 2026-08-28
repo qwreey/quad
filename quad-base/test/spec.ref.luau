@@ -121,9 +121,10 @@ do
 	local strongCalls, weakCalls = 0, 0
 	-- ⚠️ 두 가지 GC 함정을 피한 모양: (1) 별도 함수 안에서 등록 — 같은 프레임의
 	-- 죽은 레지스터가 클로저를 붙잡는 스택 잔재를 피한다. (2) 클로저가 업밸류를
-	-- **직접 변경**한다 — 불변 업밸류만 잡는 클로저는 Luau가 프로토에 캐시해
-	-- 강참조로 붙들어 영영 GC되지 않는다(`lifecycle-pattern.md`의 `false or`
-	-- 트릭이 막는 것과 같은 최적화).
+	-- **직접 변경**한다 — 업밸류가 없거나 전부 톱레벨 불변 로컬인 클로저는 Luau가
+	-- 프로토에 캐시해 강참조로 붙들어 영영 GC되지 않는다(이 테스트 파일의 탑레벨이
+	-- 정확히 그 자리; `lifecycle-pattern.md`의 `false or` 트릭이 막는 것과 같은 최적화.
+	-- 함수 인자·지역을 잡는 클로저는 해당 없음 — `H-175`).
 	local function register()
 		r:Callback(function()
 			strongCalls += 1

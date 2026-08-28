@@ -23,6 +23,8 @@
 | `H-171` | ① | 1 | 🟡 | mock lazy claim: Destroy된 inst에 다시 bind하면 GC 전엔 죽은 gcconn 재사용, GC 뒤엔 새 Connected gcconn — 결과가 GC 타이밍에 따라 갈림 | ✅ mock: 죽은 inst의 새 gcconn은 즉시 Disconnect(`spec.lifetime` 6b) |
 | `H-172` | ① | 1 | 🟡 | mock `Destroy`가 자손을 안 죽이고(조상 파괴 계약 검증 불가), `Parent` 변경 시그널이 연결 해제 뒤라 관측 불가, 재귀 Destroy 무한 루프 | ✅ mock: Destroying → Parent nil → 자손 Destroy → 연결 해제, 이중 Destroy no-op(`spec.lifetime` 6c) |
 | `H-173` | ① | 1 | 🟢 | `ROADMAP.md` M7 체크박스·`tween-plan.md` 352가 `isTween`/`TweenBrand`를 `Tween.luau`에 둔다고 아직 서술(감사 3라운드가 두 곳만 고침) | ✅ 반영 |
+| `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | §4 대기 |
+| `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
 ## 상세
 
@@ -106,6 +108,52 @@
 
 - **처리**: `ROADMAP.md` M7 체크박스, `tween-plan.md` "base 프리미티브 아님" 문단.
 
+### 단위 1 — 탐사자 (2026-08-28, 커밋 `d9898d6`..`325f3f0`)
+
+### `H-174` 🔴 — `canExecute`/`canBound`는 인스턴스 필드인데 반응형 의사코드는 자유 함수로 부른다 (②)
+
+- **어디서**: `quad-base/src/LifetimeHandle.luau`(`Init(module)`이 `module.bindLifetime = …`
+  네 슬롯을 **인스턴스마다** 심음) + `quad-base/test/mock.luau` `installLifetime(quad)`(그
+  `quad` 하나만 덮어씀) + `spec.lifetime.luau` 8("다른 `New()`엔 안 퍼짐"을 고정) —
+  vs `base/source-state-plan.md` "전파 루프 — 확정 의사코드"의 `Observer:_receive`
+  (`if canExecute(self) then`), `base/lifecycle-pattern.md` (2)의 `Observer:WeakSubscribe`
+  (`if not canBound(self) then`), `base/effect-plan.md`의 `rawRerun`(`canExecute(self)`)과
+  `EffectHandle` 네 진입점.
+- **무엇이**: 이 단위가 확정대로 옮긴 결과 네 함수는 **자유 함수가 아니라 `quad` 인스턴스의
+  필드**다(`lifecycle-pattern.md` 186행 *"평평한은 모듈 인스턴스의 필드라는 뜻"*, `architecture.md`
+  13번 *"모듈이 하나의 인스턴스(… canExecute 등 계약 필드 하나)"*). 그런데 다음 단위가
+  옮길 의사코드는 전부 `canExecute(self)`처럼 **어느 인스턴스인지 말하지 않고** 부른다.
+  `Ref.luau`처럼 `Source.luau`/`State.luau`/`Observer.luau`를 인스턴스 간 공유되는 잎
+  모듈로 쓰면(`spec.init` 27행이 `Ref`/`Void`/`Relate`에 대해 고정한 모양) 발화 시 **어느
+  `quad`의 `canExecute`를 부를지 알 수 없다** — 백엔드가 둘이면(mock + roblox, `New()`의
+  존재 이유) 잘못된 인스턴스의 게이트를 타거나, 아직 스텁인 인스턴스에서 `error`가 난다.
+  코퍼스를 grep해도(`InitSource`/`InitState`/`InitObserver`/`_quad`/`_module`) 반응형 모듈의
+  조립 형태를 정한 문장이 없다 — `module-lifecycle-plan.md` "New()의 내부 구성"이 정한 건
+  `InitDispatch(module)` 하나의 예시뿐이고, `ROADMAP.md` "반응형 본체" 체크박스도 침묵한다.
+- **같이 걸리는 하위 함정(결정과 무관하게 참)**: 백엔드는 `New()`가 **끝난 뒤** 필드를
+  덮어쓴다(mock도 같은 순서). 그래서 반응형 모듈이 `Init` 시점에 `local canExecute =
+  module.canExecute`로 **스텁을 캡처하면 영원히 스텁**이다 — 발화 시점마다
+  `module.canExecute(self)`로 **늦게 읽어야** 한다. `spec.lifetime` 8은 `quad.bindLifetime ==
+  before`(재설치 무시)만 보고 이 순서는 안 본다.
+- **문서가 답을 갖고 있나**: 아니다. `architecture.md` 13번의 *"module-level state를
+  참조하는 코드들이 모듈 인스턴스를 인자로 받도록 손을 대야 한다 — `InitModule(module)`
+  등"*이 방향만 준다. 어느 모양이든 **새 조립 메커니즘**이라 §4.
+- **갈래**: §4. 단위 1 코드는 어느 선택지에서도 그대로다(③ 아님).
+
+### `H-175` 🟢 — 클로저 캐시 규칙의 범위 (①)
+
+- **어디서**: 이 파일 §5 "툴링 사실 둘"의 둘째 항, `spec.ref.luau` 7번 주석.
+- **무엇이**: *"불변 업밸류만 잡는 클로저는 프로토에 캐시돼 영영 GC되지 않는다"*는 범위가
+  넓다. Luau 컴파일러 `shouldShareClosure`의 실제 조건은 **업밸류가 없거나, 전부
+  `functionDepth == 0`(톱레벨) 불변 로컬**일 때뿐이다 — 함수 안의 지역/인자를 잡는 클로저는
+  불변이어도 공유되지 않는다(컴파일러 주석: 공유하면 *"임시 객체가 영구가 된다"*라
+  휴리스틱으로 좁혀둠). 실측(스크래치, `luau`): `mk(handle)`가 돌려준 클로저는 GC됨,
+  업밸류 없는 클로저는 GC 뒤에도 살아남음(생존 1/2). 단위 3 `Effect`가 `handle`을 잡고
+  `ref:WeakCallback(cb)`로 거는 모양을 그대로 흉내내면 `WeakCallbacks` 항목이 0으로
+  사라진다 — 즉 지금 문장대로면 단위 3 GC 테스트가 잘못 경보를 낼 수 있다.
+- **처리**: 미반영(탐사자는 고치지 않음). §5 문장을 *"업밸류가 없거나 톱레벨 불변 업밸류만
+  잡는 클로저"*로 좁히면 된다.
+
 ## §4 ⭐ 사용자 결정이 필요한 것 (배치 회신용)
 
 | 문항 | 무엇 | 선택지 | 권고 | 권고 근거 | 옛 메커니즘 복원? |
@@ -113,6 +161,7 @@
 | **`H-168`** | `Ref<T>(T)` vs 무인자 `Ref()` 관용구 | (a) 시그니처 유지, 문서의 빈 호출 관용구를 전부 `Ref<<T?>>()`(nil-able 파라미터는 생략 가능)로 고쳐 씀 / (b) `default: T?`, `.Value: T?`(H-167 이전 모양 — `Ref(5).Value`까지 nil 검사 강요) / (c) 두 오버로드 `Ref<T>(T)` ∪ `Ref<T>() -> Ref<T?>` | **(a)** | "제네릭 시그니처" 확정(단일 파라미터, 명시 확장으로 넓힘)을 그대로 두고 관용구만 그 규칙에 맞추는 것 — (b)는 문서가 기각한 모양, (c)는 그 절이 기각한 2-파라미터 솔버 문제의 재개방 | (b)가 그렇다 |
 | **`H-169`** | 재진입 `:Set` 뒤 남은 콜백의 인자 | (a) 블록을 `k(self.Value, self)`로(항상 최신 값, 문서 불변식 그대로) / (b) 문서에 "재진입 시 바깥 파동의 남은 콜백은 자기 파동의 값을 받는다"로 계약화(코드 유지) / (c) 재진입 자체를 금지(error) | **(a)** | 문서 불변식(*"옛 값이 보이는 창이 없다"*)이 이미 (a)를 말하고 있고 한 토큰 차이 — (b)는 인자와 `.Value`가 다른 창을 계약으로 열고, (c)는 새 가드 | 아니오 |
 | **`H-170`** | resume이 삼키는 에러 | (a) `local ok, err = coroutine.resume(k, self); if not ok then error(err, 0) end` — 대기자 에러를 `:Set` 호출부로 다시 올림 / (b) UB로 문서화(대기자 에러는 사라진다) / (c) 대기자 소진을 `task.spawn`류 주입 op로(Roblox `task.spawn`은 에러를 콘솔로 보냄) | **(a)** | `architecture.md` "예외 안전성 계약"(감싸지 않는다 = 에러는 전파)과 같은 결. 다만 **새 코드 두 줄(re-raise)** 이라 사용자 결정 자리. (c)는 새 주입 op | 아니오 |
+| **`H-174`** (탐사자, **단위 2 착수 전 필요**) | 반응형 모듈이 자기 `quad` 인스턴스의 `canExecute`/`canBound`에 닿는 법 | (a) `Source.luau`/`State.luau`/`Observer.luau`/`Effect.luau`를 `InitSource(module)`류 **팩토리**로 — 클래스와 `Subscribed`/`WeakSubscribed` 레지스트리를 `module`을 닫은 클로저 안에서 만들고 `module.Source = …`로 심음(`InitDispatch`와 같은 모양, `EpochMap`/`Brand`/`Ref`는 그대로 잎). 공개 필드가 없는 `State`/`Observer` 클래스는 `Init`의 반환값이나 `module.RunInit` 뒤의 비공개 필드로 형제 `Init`에 넘김 / (b) 잎 모듈 유지 + 값마다 역참조 필드(`observer._quad`)를 두고 `self._quad.canExecute(self)` / (c) 잎 모듈 유지 + 모듈 로컬 슬롯 하나를 백엔드가 채움(인스턴스 격리 포기) | **(a)** | `architecture.md` 13번(*"모듈 인스턴스를 인자로 받도록"*)과 `module-lifecycle-plan.md` "New()의 내부 구성"이 이미 이 모양이고, `Observer`의 두 레지스트리가 인스턴스별이 되어 *"완전히 별도의 새 Quad 네임스페이스"*와 맞음. (b)는 새 필드 + 값이 자기 모듈을 강참조(`Relate` 되참조 계열 위험), (c)는 `spec.lifetime` 8·`New()`의 존재 이유와 충돌. 어느 쪽이든 **필드는 발화 시점에 늦게 읽는다**(상세 절의 하위 함정) | 아니오 |
 
 코드 쪽 잔여 마커: `grep -rn "TODO(H-" quad-base/src` — 이 표의 문항과 1:1이어야
 한다. **[2026-08-28 기준] 마커 0개** — 위 셋은 단위 1 모듈을 막지 않아 코드는 문서
@@ -138,9 +187,53 @@
 - `require("@self/X")`는 **`init.luau`에서만** 통한다 — 일반 파일에서 `@self`는 그 파일
   자신이라 `could not resolve child component`. 형제 모듈은 `./X`, 패키지는 `../roblox_packages/...`.
 - GC 테스트 함정 둘: 같은 프레임의 죽은 레지스터가 임시값을 붙잡는다(별도 함수 안에서
-  만들 것) / **불변 업밸류만 잡는 클로저는 Luau가 프로토에 캐시해 영영 GC되지 않는다**
-  (테스트 클로저가 업밸류를 직접 변경하게 할 것 — `lifecycle-pattern.md` (0)의
-  `false or` 트릭이 막는 것과 같은 최적화).
+  만들 것) / **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬인 클로저는 Luau가
+  프로토에 캐시해 영영 GC되지 않는다**(**[`H-175` 정정]** 함수 인자·지역을 잡는 클로저는
+  정상 GC됨 — 테스트의 탑레벨 클로저는 업밸류를 직접 변경하게 할 것,
+  `lifecycle-pattern.md` (0)의 `false or` 트릭이 막는 것과 같은 최적화).
+
+**단위 1 (탐사자, 2026-08-28)** — 커밋 `d9898d6`..`325f3f0`, 신선한 컨텍스트, `git stash` 안 씀:
+- **실행**: `./scripts/test.sh` 전체 — relink 30 갱신, `luau-analyze quad-base/src + spec.* +
+  mock.luau` 진단 0, 9파일 전부 `ALL PASS`. `grep -rn "TODO(H-" quad-base/src` 0건(§4 표와
+  1:1 — 표의 넷은 전부 코드 밖 문항).
+- **한 줄 대조(코드 ↔ `base/` 절), 어긋난 곳 없음**: `Brand.luau` ↔ `brand-plan.md` "구현 —
+  인스턴스 브랜드"/"`isX` wrapper"(생성자·15 인스턴스·11 술어·합성 방향·소문자 메소드·`None`
+  무의존) / `Relate.luau` ↔ "API (확정)"/"실제 구조 (확정, 2026-08-08 세션)"(범위 안 diff는
+  타입 재export뿐, 본문 무변경 확인) / `LifetimeHandle.luau` ↔ `lifecycle-pattern.md` "탑레벨
+  평범한 함수로 확정"의 2026-08-28 정정 + `architecture.md` error 계약(영어, `level 2`, 스텁은
+  조용한 no-op 아님) / `Ref.luau` ↔ `ref-plan.md` "`:Set(value)`의 순서" 블록(토큰 단위 동일 —
+  `H-169`/`H-170`은 블록 자체의 문제), "API 모양"(self 반환, 등록 즉시 1회, `fn(value, ref)`),
+  "`.Callbacks`는 배열이 아니라", "`:WeakCallback(fn)`"(weak-key 별도 테이블, `Uncallback`은
+  양쪽), "`Ref`는 `Epoch`를 만족한다"(`Revision` 공개, `EpochBrand` 다중 태깅),
+  `state-epoch-plan.md` §2(`bit32.bnot(-rev)`) / `mock.luau` `installLifetime` ↔ (0)/(1)/(2)
+  스케치(`isBoundAlive` 두 경로, 게이트 모양, `gchold[value]`, `BindData` 둘 다 weak, Observer
+  `_catchUp`/Effect `_bindDestroying`·`_unbindDestroying`, `unbindLifetime`이 cleanup·콜백을 안
+  뗌) — mock만의 추가는 `isMockInstance` 검사와 `H-171` 분기뿐 / `init.luau`·`quad-types`
+  `Quad` ↔ brief §6 표(재export 목록·술어 11개 이름 일치).
+- **다음 단위가 쓸 표면, 타입 레벨 실측(`luau-analyze`, strict, 진단 0)**: `Ref<T>`가
+  `QuadTypes.Epoch`에 그대로 들어감(`sync(e: Epoch)`에 `Ref(5)`), `Ref<number>` → `Ref<any>`
+  인자 전달 OK(`Effect(fn, ...deps)`의 dep 합집합에 필요), `{ [Epoch]: number }` weak-key 맵에
+  `Ref`를 키로 OK(`EpochMap` 내부 모양), `Epoch | Ref<any>` 합집합 OK, 콜백 인자 생략
+  (`function(v)`/`function()`) OK, 두 번째 인자를 `Epoch`로 넘기기 OK. **`H-168`의 전제와
+  (a) 둘 다 실측**: `Quad.Ref()`는 *"Function expects 1 argument"*, `Quad.Ref<<number?>>()`는
+  **인자 없이도 진단 0**이고 `.Value: number?` — 권고 (a)의 관용구가 실제로 성립한다.
+- **런타임 실측(스크래치, 인라인)**: mock의 `.Subscribed` 경로는 지금 이미 돈다(`ObserverBrand`
+  등록 + `Subscribed = true` → `canExecute` true/`canBound` false, `bindLifetime` → *"already
+  subscribed"*) / `ObserverBrand` 등록값을 `_catchUp` 없이 바인드하면 `attempt to call missing
+  method '_catchUp'` — 단위 2의 `Observer`가 이 메소드를 반드시 갖는다는 뜻(`EffectBrand`는
+  `_bindDestroying`/`_unbindDestroying`, 단위 3) / `Ref`를 `bindLifetime`의 value로 — 정상(바인드
+  후 `canExecute` true, `Destroy` 후 false) / `Effect` 모양(`handle`을 잡는 클로저를
+  `WeakCallback`)의 항목은 `handle`을 놓으면 GC 뒤 0개(`H-175`) / thread 키를 **양쪽** 테이블에
+  넣으면 첫 `:Set`이 `.Callbacks`만 비우고 둘째 `:Set`이 죽은 코루틴을 **조용히** resume —
+  `ref-plan.md`가 적은 불변식(*"대기자는 `.Callbacks`에만"*)은 가드가 아니라 관례이고 M8
+  `:Wait`가 유일한 쓰기 지점이므로 지금은 문제 아님.
+- **mock의 인스턴스 불멸성(툴링 사실)**: `claim`된 mock 인스턴스는 참조를 놓아도 `Destroy`
+  전엔 GC되지 않는다(실측: inst를 떨어뜨리고 GC 2회 뒤에도 묶인 값 생존). 이유는 의도가
+  아니라 **`dataOf`가 weak-key·강한 값(Luau엔 ephemeron 없음)**이라 `data → changed 시그널 →
+  gcconn 클로저 → inst`로 키가 자기 값을 통해 살아남기 때문. 결과적으로 `lifecycle-pattern.md`
+  (0)의 *"quad가 만든 Instance는 … 반드시 `Destroy`로 회수된다"*와 같은 관측을 주지만 근거가
+  다르다 — 다음 단위 GC 테스트는 만든 인스턴스를 **반드시 `Destroy`**할 것(안 하면 그
+  인스턴스에 묶인 값 전부가 뒤 테스트의 GC 단언에 남는다).
 
 **단위 1 끝 절차 기록**: 감사 루프 8라운드(발견 3→4→1→2→4→4→1→0, 5·6라운드 절반은
 각도를 넓혀 잡힌 옛 같은-파일 절 인용 부채) → `/code-review high` 1회 10건: ② 셋(`H-168`~
@@ -150,3 +243,20 @@
 (0)/(1) 그대로이거나 `claim-plan.md` §7-9가 이미 기각한 모양).
 
 ## §6 남은 의심 / 못 본 것
+
+**단위 1 (탐사자, 2026-08-28)**:
+- **`H-174`의 결정이 `EpochMap`엔 안 걸리지만 `GateNode`/`Blocker`(단위 4)엔 걸릴 수 있다** —
+  `GateNode`는 State 노드라 `canExecute`를 안 보지만(`H-56`), `Blocker`가 Observer/Effect의
+  구독 표면을 만지면 같은 인스턴스 문제를 상속한다. 단위 4 전에 다시 볼 것.
+- **`unbindLifetime`을 한 번도 안 묶인 `EffectBrand` 값에 부르면 `value:_unbindDestroying()`이
+  먼저 돈다**(mock·스케치 동일) — 단위 3의 `_unbindDestroying`은 미연결 상태에서 no-op이어야
+  한다(`unbindLifetime`의 *"안 걸려있던 값에 불러도 안전한 no-op"* 계약을 지키려면). 문서엔
+  그 요구가 명시돼 있지 않다 — 단위 3 탐사자 몫.
+- **quad-roblox 쪽 마일스톤 표기가 둘로 갈린다**: `ROADMAP.md` M5의 `RobloxFactory.luau`가
+  `bindLifetime`/`canExecute`를 주입한다고 하고(`architecture.md` 소스 트리 300행도 같음),
+  실 구현 체크박스는 M8(1523행)이다. `LifetimeHandle.luau` 도크스트링은 M8을 따랐다. 이
+  단위 범위 밖(코드는 어느 쪽이든 같음)이라 발견으로 세지 않고 여기만 적는다.
+- **못 본 것**: `Relate` 핫패스 비용(`relate-plan.md` "M2 착수 시 실측 확인")은 측정하지
+  않았다 — 아직 핫패스를 부르는 코드가 없다. `ref-plan.md` "API 모양"의 *"`.Value`(읽기
+  전용 필드)"*는 타입 레벨(`read` 프로퍼티)로는 강제하지 않는다 — 문서가 타입 강제를
+  요구하지 않으므로 발견으로 안 올림.
