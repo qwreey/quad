@@ -614,8 +614,9 @@ Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 -- ⭐⭐ [2026-08-27 확정 (b), 9라운드 `H-144` 후속 — 감사 4라운드] **`EffectHandle`은
 -- 네 진입점을 자기 것으로 가진다 — Observer의 함수 본문을 배정하지 않는다.**
 -- 공유하는 건 **레지스트리 두 개**(`Subscribed`/`WeakSubscribed`, 소유 모듈은
--- `Observer.luau` — `H-99`)와 **`canBound` 게이트**(`LifetimeHandle.luau`의
--- 탑레벨 함수)뿐이고, `.Subscribed` 플래그의 뜻도 같다. 여기 한때(Q4/`H-127`)
+-- `Observer.luau` — `H-99`)와 **`canBound` 게이트**(quad 인스턴스의 필드 —
+-- `module.canBound`, `H-174`; 한때 "`LifetimeHandle.luau`의 탑레벨 함수"라 적었다)뿐이고,
+-- `.Subscribed` 플래그의 뜻도 같다. 여기 한때(Q4/`H-127`)
 -- `EffectHandle.Subscribe = Observer.Subscribe`처럼 **함수 객체를 그대로 배정**해
 -- 뒀는데, `Observer:Subscribe`의 본문이 `self:WeakSubscribe()`로 **콜론 위임**하는
 -- 탓에 `self`가 `EffectHandle`이면 그 조회가 `EffectHandle`의 오버라이드로 가서
