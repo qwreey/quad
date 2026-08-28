@@ -1121,9 +1121,12 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   - **함수와 콜러블의 유니온으로 여는 안은 기각** — 필드로 받으면
     유니온도 캐스트도 필요 없다. 필드 이름은 **`__apply`**(**[2026-08-28 10라운드
     `H-158` 사용자 확정]** *"키는 __apply 로 하기로 했던거로 기억중임"* —
-    `base/blocker-plan.md` 배너), 시그니처는 **[2026-08-28 M2 단위 2 확정]** 메소드형
-    `__apply: (self: any, state: State<T>) -> U` — `quad-types/src/init.luau`의 `State<T>.Apply`
-    파라미터 타입과 `State.luau`의 `(factory :: any):__apply(self)` 호출이 소스.
+    `base/blocker-plan.md` 배너), 시그니처는 **[2026-08-28 M2 단위 2 확정, 2026-08-29 단위 4
+    `H-179` 정정]** 메소드형 `__apply: (self: any, state: any) -> any` — 호출은 `State.luau`의
+    `(factory :: any):__apply(self)`. `State<T>.Apply`의 파라미터 타입은 **교집합 오버로드**
+    (함수 팩토리는 제네릭 `U`, 객체 팩토리는 `any` 반환 → 호출부가 결과를 명시)이고 그
+    정확한 표기와 근거는 `base/typing-limits.md` §1②가 소스 — 한때 여기 `(self: any, state:
+    State<T>) -> U`라 적었는데 그 유니온 표기는 `Blocker`처럼 필드가 더 있는 객체를 못 받는다.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
   존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌

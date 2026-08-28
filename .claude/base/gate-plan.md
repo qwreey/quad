@@ -337,7 +337,8 @@ function GateNode:_receive(from)
 
     -- (2) 통과한 것만 흡수 집합에 합친다. `from`이 집합이면 unfold해서 합친다
     --     — 게이트-게이트 중첩에서 중복이 저절로 접힌다(집합이라서).
-    if isEpochSet(from) then
+    if isEpochSet(from) then   -- (의사 술어 — 실제 코드는 `isEpoch(from)`의 반대 분기,
+                               --  `state-epoch-plan.md` §5 "런타임 분기는 `isEpoch`로"; 단위 4)
         for epoch in from do self._withheld[epoch] = true end
     else
         self._withheld[from] = true
