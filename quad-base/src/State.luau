@@ -7,7 +7,9 @@
 	closure, so later units (`Observer`, `Gate`) can read lifetime gates as
 	`module.canExecute(...)` AT FIRE TIME (never captured at init — the
 	backend overwrites those fields after `New()`). `implFor(module)` hands
-	the same table to `Source.luau`/`Store.luau` inits.
+	the same table to `Source.luau`'s init (its only caller — `Store.luau`
+	never touches it; it reaches State only through the `Source` values it
+	creates).
 
 	There is no runtime `State` constructor — nodes exist only as results of
 	`:Compute`/`:With` (and `:Gate`, unit 4). `State` is NOT an `Epoch`
@@ -191,7 +193,7 @@ end
 local function implFor(module: any)
 	local impl = implByModule[module]
 	if impl == nil then
-		error("State: InitState(module) has not run for this quad instance — RunInit order is broken", 1)
+		error("State: InitState(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
 	end
 	return impl
 end

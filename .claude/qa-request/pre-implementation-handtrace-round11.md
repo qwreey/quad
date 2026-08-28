@@ -230,10 +230,10 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 - `Store`: `H-122`/`H-153`/`H-83` 전부 `spec.store`. `Names()`는 `pairs(self)` — 메소드가
   `__index`라 안 센다는 `H-153` 전제가 실측으로 성립.
 - **조립 세부**(`H-174`의 구현, 새 표면 아님): `State.luau`는 `Init(module)`이 인스턴스별 임플을
-  만들고 `implFor(module)`로 `Source`/`Store` Init에 건넨다(각 Init이 `module:RunInit(dep)`로
+  만들고 `implFor(module)`로 `Source` Init에 건넨다(`Store` Init은 이 임플을 직접 안 받고 `module.Source`를 통해서만 State에 닿는다; 각 Init이 `module:RunInit(dep)`로
   의존성을 직접 당겨오므로 `New()` 순서 무관 — `H-177`; `implFor`의 level 1 error는 그래도 남겨둔
   불변식 검사). `Source`의 `__index` 체인이 그 임플을 가리켜 `With`/`Compute`/
-  `Apply`가 위임된다. `Ref`/`Void`/`Relate`/`Brand`만 인스턴스 간 공유 잎.
+  `Apply`가 위임된다. `Ref`/`Void`/`Relate`/`Brand`/`EpochMap`만 인스턴스 간 공유 잎.
 - **입력 검증 하나 추가**(`architecture.md` error 계약의 예 *"dep #3 is not a State/Source/Ref"*
   그대로): `newNode`가 dep이 `isState`가 아니면 `error(…, 3)` — 없으면 `dep._subs` nil 인덱스로
   quad 내부 줄에서 죽는다. 새 메커니즘이 아니라 계약이 이미 요구하는 자리라 ①로 둔다.
