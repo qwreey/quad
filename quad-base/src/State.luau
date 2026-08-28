@@ -39,6 +39,7 @@
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local Observer = require("./Observer")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 export type StateData<T> = QuadTypes.StateData<T>
@@ -56,6 +57,9 @@ local WEAK_KEY_MT = { __mode = "k" }
 local implByModule = setmetatable({}, WEAK_KEY_MT) :: { [any]: any }
 
 local function createImpl(module: any)
+	module:RunInit(Observer.Init) -- `:Observer` needs the per-instance Observer impl (idempotent pull, `H-177`)
+	local ObserverImpl = Observer.implFor(module)
+
 	local Impl = {}
 	Impl.__index = Impl
 	Impl._module = module -- read lazily by later units, never captured
@@ -174,6 +178,15 @@ local function createImpl(module: any)
 			deps[#deps + 1] = (select(i, ...))
 		end
 		return newNode(deps, fn) -- one node: edges only, no combining node
+	end
+
+	-- `state:Observer(fn?)` — leaf subscriber, fires once at registration
+	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
+	function Impl.Observer(self: any, fn: any?): any
+		if fn ~= nil and type(fn) ~= "function" then
+			error("State: Observer fn must be a function (or nil for the always-observe utility)", 2)
+		end
+		return ObserverImpl.new(self, fn)
 	end
 
 	function Impl.Apply(self: any, factory: any): any

@@ -81,7 +81,19 @@
 - 아직 안 한 것: 감사 4라운드(0건 확인) → `/code-review high` → fable 탐사자(규약 §5) →
   "`round11.md` §4를 보라". §4엔 지금 새 문항 없음(단위 2 발견은 전부 ①: `H-176`, `H-177`).
 
-## 다음 (재개 지점)
+## 2026-08-29 새벽 — 컨테이너 이사 뒤 재개 (사용자: *"내가 자는동안 많은 작업을 수행해도 좋아"*)
 
-`./scripts/test.sh` ALL PASS·doc-check ERROR 0인 상태. 감사 4라운드부터 이어서
-(범위 `4169d7b`..`8aa13ed`, 각도: diff 정합성 수렴 확인), 그다음 `/code-review high`, 탐사자.
+- 이사 검증: `upstream/main`에서 26커밋 fast-forward, `pesde install`, ALL PASS. Studio MCP
+  연결(`Place1`, Edit) — M5 전까지 안 씀.
+- 단위 2 감사 4·5라운드 반영(`442d800`, `67fb61e`: `implFor` 호출자 정정, `EpochMap`도 공유 잎,
+  `_hold` 본문 닫힘, `H-174` 잎 목록은 파일 헤더가 소스, `InitState` → `State.Init` 표기).
+- **단위 3 구현** — `Observer.luau`(인스턴스별 임플 + 레지스트리 둘, 네 진입점 인라인)/
+  `Effect.luau`(`rawRerun(force)`·`_rerunRequired` 홀드·`_cleanupRunning`·네 진입점 자기 본문)/
+  `State:Observer` 위임/`LifetimeHandle`에 `onDestroying` 스텁/mock `onDestroying`/`quad-types`
+  `Observer`·`EffectHandle`·`Quad.Effect`. spec.observer 8절·spec.effect 9절 ALL PASS, analyze 0.
+  발견 `H-178`(사적 필드 `_` 접두, 기록만).
+
+## 다음
+
+단위 2·3 합쳐 끝 절차: 감사 루프(6라운드 진행 중) → `/code-review high` → 탐사자 → §4.
+그다음 단위 4(`GateNode` → `Blocker` + 탑레벨 마무리).

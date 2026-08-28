@@ -22,6 +22,8 @@
 
 	They are flat top-level functions, not `LifetimeHandle.bind(...)` —
 	first-class primitives handler authors call directly, like `isState`.
+	The `onDestroying(inst, fn)` engine op stub is installed here too (M2 unit
+	3) — it belongs to the same backend injection and `Effect` needs it.
 ]]
 
 local function notInstalled(name: string): (...any) -> ...any
@@ -39,6 +41,11 @@ local function Init(module: any)
 	module.unbindLifetime = notInstalled("unbindLifetime")
 	module.canBound = notInstalled("canBound")
 	module.canExecute = notInstalled("canExecute")
+	-- `onDestroying(inst, fn): Connection` — the injected engine op `Effect._bindDestroying`
+	-- calls (`architecture.md` EngineOps line: a hook, not a manipulation, so no
+	-- composition fallback — missing means a clear error). The same backend that
+	-- fills the four above fills this one; until then, the same loud stub.
+	module.onDestroying = notInstalled("onDestroying")
 end
 
 return Init

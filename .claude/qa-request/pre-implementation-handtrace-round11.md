@@ -26,6 +26,7 @@
 | `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
 | `H-176` | ① | 2 | 🟡 | `:Compute`의 trailing deps를 타입팩 `D...`로 좁히는 선언은 strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힌다(스파이크 15가 "미검증"으로 남긴 자리) | ✅ `...any` + 콜백 주석으로 확정, `source-state-plan.md` 실측 기록 |
 | `H-177` | ① | 2 | 🟢 | `InitSource`/`InitStore`가 `State.implFor`만 불러 `New()`의 `RunInit` 순서에 의존했다 — `module-lifecycle-plan.md`는 "각 `InitXxx`가 `require`처럼 멱등하게 자기 의존성을 당겨온다"로 확정 | ✅ 각 Init이 `module:RunInit(dep)`를 직접 호출(감사 3라운드) |
+| `H-178` | ① | 3 | 🟢 | 코드의 사적 필드는 `_` 접두(`_valueEpochMap`·`_emitEpochMap`·`_subs`·`_hold`…)인데 `base/` 의사코드는 `valueEpochMap`처럼 접두 없이 쓴다 — 이름은 1:1이고 밑줄만 다르다 | ✅ 기록만(문서 무변경 — 코드 관례, `H-174` 조립 세부와 같은 급) |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
 ## 상세
@@ -166,6 +167,17 @@
 - **처리**: `Source.Init`이 `module:RunInit(State.Init)`, `Store.Init`이 `module:RunInit(InitSource)`를
   직접 호출. `init.luau` 순서 주석을 "무관"으로.
 
+### 단위 3 — `Observer` → `Effect` (2026-08-29)
+
+### `H-178` 🟢 — 사적 필드의 `_` 접두 (①)
+
+- **어디서**: `effect-plan.md` 생성자 의사코드의 `d.valueEpochMap` / `state-epoch-plan.md` §4의
+  `self.valueEpochMap` vs 코드 `_valueEpochMap`(단위 2부터).
+- **무엇이**: 단위 2가 State의 사적 필드를 전부 `_` 접두로 옮겼고(`_subs`/`_hold`/`_cache`/
+  카운터 둘/맵 둘), 단위 3 `Effect`가 `d._valueEpochMap`로 읽는다. 문서는 접두 없음. 뜻·개수는
+  1:1이라 문서를 고칠 이유가 없고(의사코드는 문서 안에서 자기완결), 코드 쪽 관례로 기록만.
+- **처리**: 없음 — 다음 단위(`GateNode`가 `valueEpochMap`을 컴포지션)도 같은 접두로.
+
 ### `H-175` 🟢 — 클로저 캐시 규칙의 범위 (①)
 
 - **어디서**: 이 파일 §5 "툴링 사실 둘"의 둘째 항, `spec.ref.luau` 7번 주석.
@@ -240,6 +252,27 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 - `Apply`의 팩토리 파라미터가 유니온(함수 | `__apply` 객체)이라 **콜백 파라미터 무주석
   추론이 안 된다** — `typing-limits.md` §1②가 이미 캐비엇으로 적어둔 자리(`:Apply`의 factory는
   주석 필요). 테스트는 주석으로.
+
+**단위 3 (메인 세션, 2026-08-29)**:
+- `Observer` — 생성자 순서(fn 1회 → 플래그 내림 → `_subs`), `_receive`의 `canExecute` 게이팅과
+  홀드, `_catchUp`이 유일한 재생 자리(출처 `nil`), 네 진입점(Weak 프리미티브·인라인 게이트·
+  관대/엄격·양쪽 테이블 해제), 강/약 GC, 파동 중 구독자 스냅샷 — `spec.observer.luau` 8절.
+- `Effect` — deps 검증 셋(`H-70`), dep 종류별 클로저 둘(`H-107`), `fire`의 `from == nil` 가드,
+  `_epochs` 갱신은 `fire`뿐(`H-151`), 다이아몬드 1회, cleanup 세 자리(루프 머리/`Unsubscribe`/
+  `Destroying`), cleanup 없는 `fn`의 재바인드 무재실행(`H-58` 회귀), 재진입 지연(`_pending`),
+  네 진입점의 `isRunning` 가드가 `fn`·cleanup 안 전부 막음(`H-147`), 에러 시 사망 계약, 강한
+  주인 GC — `spec.effect.luau` 9절.
+- **조립 세부**: `Observer.luau`가 인스턴스별 레지스트리 둘(`_Subscribed`/`_WeakSubscribed`)을
+  임플에 매달고 `Effect.luau`가 `implFor`로 받는다(`H-99`의 "모듈 내부 export, 이름은 구현 시").
+  `State.Init`이 `Observer.Init`을 당겨 `state:Observer`를 `ObserverImpl.new`로 위임.
+- **`onDestroying` 스텁의 자리**: `LifetimeHandle.luau`의 `Init`이 생명주기 4종과 같이 에러
+  스텁을 설치(주입 op 목록의 소스는 `architecture.md` EngineOps 줄 — 스텁 파일 배치는 코드
+  배치). mock은 `installLifetime`이 `inst.Destroying:Connect(fn)`으로 채운다.
+- 색인이 짚은 문서 긴장(`ss:1197` "Effect의 내부 Observer가 설치 발화를 `from == nil`로
+  거른다" vs `H-164`)은 코드에서 모순 없음 — Observer 계약은 `nil` = 출처 없음이고, Effect의
+  `fire`가 그걸 `Update` 못 하는 값으로 **자기 사정**으로 거를 뿐이다.
+- 테스트 작성 함정: `table.insert(t, nil)`은 길이를 안 늘린다 — `emitFrom == nil` 발화를 셀 땐
+  래퍼로 기록할 것(한 번 오진했다).
 
 **툴링 사실 둘**(설계 아님, 다음 단위가 알아야 함):
 - `require("@self/X")`는 **`init.luau`에서만** 통한다 — 일반 파일에서 `@self`는 그 파일

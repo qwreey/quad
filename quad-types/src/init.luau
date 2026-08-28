@@ -20,6 +20,7 @@ local TypeVersionCheck = require("./luau_packages/type_version_check")
 -- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
 -- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
 export type Epoch = { Revision: number }
+export type EpochSet = { [Epoch]: true } -- 집합이지 배열이 아니다(게이트 배치가 그대로 넘어온다)
 
 -- `Relate` — inst를 weak 키로 하는 릴레이션(`.claude/base/relate-plan.md` "API").
 -- `inst`는 항상 weak, `Weak`/`Strong`은 value의 보관 방식만 가리킨다.
@@ -54,6 +55,31 @@ export type Ref<T> = {
 -- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 export type StateData<T> = { Get: (self: StateData<T>) -> T }
+
+-- `Observer` — 값을 안 실어주는 leaf 구독(`source-state-plan.md` "`state:Observer(fn)`").
+-- `fn(targetState, self, emitFrom?)`: 3번째가 출처(`Epoch` | 집합), 설치·캐치업 발화는 `nil`.
+-- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.
+export type Observer = {
+	Subscribed: boolean,
+	Subscribe: (self: Observer) -> Observer,
+	WeakSubscribe: (self: Observer) -> Observer,
+	Unsubscribe: (self: Observer) -> Observer,
+	WeakUnsubscribe: (self: Observer) -> Observer,
+}
+export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
+
+-- `EffectHandle` — `Effect(fn, ...deps)`의 핸들(`effect-plan.md`). `fn(self) -> ...cleanup`.
+-- 네 진입점은 Observer와 같은 이름·같은 게이트이되 **본문은 자기 것**(`H-144`).
+export type EffectHandle = {
+	Subscribed: boolean,
+	Rerun: (self: EffectHandle) -> EffectHandle,
+	Subscribe: (self: EffectHandle) -> EffectHandle,
+	WeakSubscribe: (self: EffectHandle) -> EffectHandle,
+	Unsubscribe: (self: EffectHandle) -> EffectHandle,
+	WeakUnsubscribe: (self: EffectHandle) -> EffectHandle,
+}
+export type EffectFn = (self: EffectHandle) -> ...(() -> ())
+
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
@@ -62,6 +88,8 @@ export type State<T> = StateData<T> & {
 	With: (self: StateData<T>, ...any) -> State<T>,
 	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
 	Apply: <U>(self: StateData<T>, factory: ((State<T>) -> U) | { __apply: (self: any, state: State<T>) -> U }) -> U,
+	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
+	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
 }
 -- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
 export type Source<T> = State<T> & {
@@ -110,6 +138,8 @@ export type Quad = {
 	-- 단위 2. `State`는 런타임 생성자가 없다(파생 전용) — 타입만 위에서 export.
 	Source: <T>(v: T) -> Source<T>,
 	Store: <T>(defaults: T?) -> Store<T>,
+	-- 단위 3. deps는 State/Source/Ref(`H-70`), `fn`엔 안 넘어간다.
+	Effect: (fn: EffectFn, ...any) -> EffectHandle,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
@@ -117,6 +147,8 @@ export type Quad = {
 	unbindLifetime: (value: any) -> (),
 	canBound: (value: any) -> boolean,
 	canExecute: (value: any) -> boolean,
+	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
+	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
 
 	-- 브랜드 술어(`.claude/base/brand-plan.md`). 나머지(`isTag`/`isAttribute*`/
 	-- `isTween`/`isSlot`)는 그 타입의 마일스톤에서.

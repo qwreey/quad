@@ -375,10 +375,20 @@ local function installLifetime(quad: any)
 		BindData:SetWeak(value, "gcconn", nil)
 	end
 
+	-- 주입 op `onDestroying(inst, fn): Connection` — quad-roblox는 `inst.Destroying:Connect(fn)`
+	-- 한 줄(`architecture.md` EngineOps). mock은 그 시그널을 그대로 쓴다.
+	local function onDestroying(inst: any, fn: () -> ()): any
+		if not isMockInstance(inst) then
+			error("onDestroying: inst is not a mock instance", 2)
+		end
+		return inst.Destroying:Connect(fn)
+	end
+
 	quad.bindLifetime = bindLifetime
 	quad.unbindLifetime = unbindLifetime
 	quad.canBound = canBound
 	quad.canExecute = canExecute
+	quad.onDestroying = onDestroying
 end
 
 return {

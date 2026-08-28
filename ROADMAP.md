@@ -481,11 +481,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
-- [ ] **`Observer.luau`** — `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()`
+- [x] **[2026-08-29 완료 — 단위 3]** **`Observer.luau`** — `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()`
       전역 레지스트리의 소유 모듈**. `EpochMap.luau`와 같은 이유로
       `State.luau`에 묻지 않는다(`Effect`/`GateNode`/leaf 핸들러가 전부 이
       레지스트리를 본다) — `base/architecture.md` 소스 트리, 7라운드 `H-99`
-- [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
+- [x] **[2026-08-29 완료 — 단위 3]** `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
       실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
       판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()` +
       **`:WeakSubscribe()`/`:WeakUnsubscribe()`**(Weak 쪽이 프리미티브,
@@ -505,7 +505,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
+- [x] **[2026-08-29 완료 — 단위 3]** `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
       (**[2026-08-28 10라운드 `H-150`]** 선행 요구 **해소** — 생성자의 사적
       `Blocker`는 `canExecute`(지금은 `rawRerun` 진입, `H-159`)가 이미 같은 억제를 해서 한 번도
       판정에 닿지 않는 죽은 부품이라 제거됐다. `Blocker.luau`는 이제 `GateNode`/
@@ -536,7 +536,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] **⭐ [2026-08-24 신설, 6라운드 / 2026-08-25 7라운드로 필드 재편]
+- [x] **[2026-08-29 완료 — 단위 3]** **⭐ [2026-08-24 신설, 6라운드 / 2026-08-25 7라운드로 필드 재편]
       `Effect` 구현 시 같이 만들 것** —
       **`handle._deps`**(`{[Ref|State] = fn|Observer}`, **강참조** — 옛
       `_observers`/`_refDeps`/`_refCallbacks` 셋이 여기로 통합됐다) ·
@@ -576,7 +576,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
       누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
-- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
+- [x] **[2026-08-29 완료 — 단위 3]** Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
@@ -634,7 +634,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-28 부분 — 단위 1·2분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종/`Source`/`Store` + `State`·`Source`·`Store` 타입)은 `quad-types` `Quad`에 추가됨, `Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [ ] **[2026-08-28 부분 — 단위 1·2·3분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종+`onDestroying`/`Source`/`Store`/`Effect` + `State`·`Source`·`Store`·`Observer`·`EffectHandle` 타입)은 `quad-types` `Quad`에 추가됨, `Blocker`는 단위 4에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
@@ -688,7 +688,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       발화마다 `canExecute`를 부르는데 그건 M8 구현이고 미주입 슬롯은
       에러 스텁이다). 커밋된 `quad-base/test/mock.luau`에 signal/Connection이
       이미 있으므로 그 `Destroying`을 그대로 쓰면 된다
-- [ ] mock 대상 테스트 — **전파 루프를 실제로 돌릴 것**(위 항목이 선행).
+- [x] **[2026-08-29 완료 — 단위 3: `spec.observer.luau` 2·`spec.effect.luau` 2가 mock Instance에 묶은 채 전파 루프를 실제로 돌린다(홀드 → 바인드 캐치업 → 발화 → 파괴)]** mock 대상 테스트 — **전파 루프를 실제로 돌릴 것**(위 항목이 선행).
       M2의 핵심이 전파 루프인데 그걸 한 번도 안 돌려보고 M3로 넘어가면
       7라운드가 찾은 종류의 결함을 그대로 낳는다
 
