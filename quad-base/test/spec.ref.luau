@@ -199,8 +199,61 @@ do
 	assert(got == r, "waiter is resumed with the Ref itself")
 	assert(r.Callbacks[co] == nil, "waiter is consumed")
 	assert(coroutine.status(co) == "dead", "waiter ran to completion")
-	r:Set(2) -- 소진 확인은 위 Callbacks[co] == nil로 충분 — coroutine.resume은 에러를 올리지 않아
-	-- 죽은 코루틴을 다시 resume해도 여기서 티가 안 난다(리뷰 `H-170`, §4 문항)
+	r:Set(2) -- 소진됐으니 다시 resume 안 함(위 Callbacks[co] == nil이 그 증거)
+	print("PASS")
+end
+
+print()
+print("=== 10. [H-170] 대기자 안의 에러는 :Set 호출부로 올라온다 (즉시 반환된 false 확인) ===")
+do
+	local r = Ref(0)
+	local co = coroutine.create(function()
+		coroutine.yield()
+		error("waiter exploded")
+	end)
+	coroutine.resume(co)
+	r.Callbacks[co] = true
+	local ok, err = pcall(function()
+		r:Set(1)
+	end)
+	assert(not ok and string.find(tostring(err), "waiter exploded", 1, true) ~= nil, "resume failure must surface: " .. tostring(err))
+	assert(r.Callbacks[co] == nil and r.Value == 1, "the waiter was still consumed and the value settled before the error")
+	-- 이미 죽은 thread를 대기자로 넣는 것도 같은 경로로 드러난다
+	local dead = coroutine.create(function() end)
+	coroutine.resume(dead)
+	r.Callbacks[dead] = true
+	local ok2 = pcall(function()
+		r:Set(2)
+	end)
+	assert(not ok2, "resuming a dead waiter surfaces as an error")
+	print("PASS")
+end
+
+print()
+print("=== 11. [H-169] 재진입 :Set — 순회는 자기 리비전이 바뀌면 놓고, 후행 Set이 전부 호출 ===")
+do
+	local r = Ref(0)
+	local seen: { { value: number, current: number } } = {}
+	local walking = false
+	local function a(v: number, ref: any)
+		if walking and v == 1 then
+			ref:Set(2) -- 안쪽 파동: 등록된 콜백 전부가 2를 받는다
+		end
+	end
+	local function b(v: number, ref: any)
+		if walking then
+			table.insert(seen, { value = v, current = ref.Value :: number })
+		end
+	end
+	r:Callback(a):Callback(b)
+	walking = true
+	r:Set(1)
+	walking = false
+	-- b는 안쪽 파동에서 (2, 2)를 받았고, 바깥 파동의 남은 순회는 놓아졌으므로 (1, 2)는 없다
+	for _, s in seen do
+		assert(s.value == s.current, "a callback must never receive a value older than ref.Value, got " .. s.value .. " vs " .. s.current)
+	end
+	assert(#seen >= 1 and seen[#seen].value == 2, "the newest value reached b")
 	print("PASS")
 end
 

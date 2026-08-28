@@ -188,7 +188,14 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 넷을 return하는 게 아니다(파일은 `InitLifetimeHandle(module)`을 return하고, 그
 팩토리가 `module.bindLifetime = …` 에러 스텁 4종을 심는다 — 백엔드가 같은 필드를
 덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절).
-아래 시그니처의 이름은 그 필드 이름이다:
+아래 시그니처의 이름은 그 필드 이름이다. **⭐ [2026-08-28 `H-174`, 사용자 확정]
+반응형 모듈(`Source`/`State`/`Observer`/`Effect`…)은 이 넷을 `module.canExecute(self)`처럼
+모듈 인스턴스에서 발화 시점에 늦게 읽는다** — 조립은 `InitXxx(module)` 팩토리가
+`module`을 클로저로 쥐는 형태(`base/module-lifecycle-plan.md` "New()의 내부 구성")이고,
+`Init` 시점에 `local canExecute = module.canExecute`로 캡처하면 백엔드가 `New()` 뒤에
+덮어쓰기 전의 **스텁을 영원히 잡는다**. 이 문서와 `source-state-plan.md`/`effect-plan.md`
+의사코드의 `canExecute(self)`/`canBound(self)`는 전부 그렇게 읽을 것(사용자: *"module.canExecute
+로 lazy 하게 읽으면 되는거 아냐?"*).
 
 ```lua
 bindLifetime(inst: any, value: any): ()   -- inst가 필요한 건 이것 하나뿐

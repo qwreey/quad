@@ -60,13 +60,26 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			table.insert(snapshot, k)
 		end
 	end
+	local revision = self.Revision
 	for _, k in ipairs(snapshot) do
+		if self.Revision ~= revision then
+			-- [`H-169`, user-confirmed 2026-08-28] a callback re-entered `:Set`: that
+			-- inner walk already delivered the newer value to everyone, so this
+			-- walk drops the rest — a callback never receives a stale value.
+			break
+		end
 		if callbacks[k] == nil and weakCallbacks[k] == nil then
 			continue -- released while we were walking
 		end
 		if type(k) == "thread" then
 			callbacks[k] = nil -- waiters are consumed
-			coroutine.resume(k, self) -- the Ref itself, not the value
+			-- the Ref itself, not the value. [`H-170`, user-confirmed] `resume` never
+			-- raises; the immediately returned failure is re-raised here (a later
+			-- yield's fate is out of our hands), per the "no pcall" contract.
+			local ok, err = coroutine.resume(k, self)
+			if not ok then
+				error(err, 0)
+			end
 		else
 			-- value + the Ref itself (= `Epoch`). The cast only quiets the checker:
 			-- `k` comes from a `{ any }` snapshot and the `thread` branch is above.

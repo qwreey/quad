@@ -2026,4 +2026,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `pesde install` 재실행)·`H-166`(`Revision` 초기값 0) 둘 다 ①. 단위 끝: 감사 8라운드
   수렴(`H-167` `Ref<T>(T)` 되돌림 포함), `/code-review high` 10건 → ② 셋(`H-168` `Ref()`
   무인자 관용구 / `H-169` 재진입 `:Set` 옛 값 / `H-170` resume이 에러 삼킴, 권고 전부 (a))
-  §4로, ① 셋(mock lazy claim·`Destroy` 의미론·M7 `TweenBrand` 잔재) 반영.
+  §4로, ① 셋(mock lazy claim·`Destroy` 의미론·M7 `TweenBrand` 잔재) 반영. 탐사자
+  🔴 `H-174`(생명주기 필드 조립 형태). **같은 날 배치 회신으로 넷 다 확정**: `H-174`
+  팩토리형 + `module.canExecute` 늦게 읽기 / `H-169` 사용자 안(리비전 바뀌면 파동을
+  놓음, 권고안 기각) / `H-168` `Ref<<T?>>()` / `H-170` 즉시 실패만 re-raise. 단위 2 게이트 0.

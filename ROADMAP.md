@@ -370,6 +370,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ### 반응형 본체
 
+> **[2026-08-28 `H-174`, 사용자 확정]** 이 절의 모듈은 `InitXxx(module)` 팩토리로 조립하고
+> 생명주기 게이트는 `module.canExecute(self)`로 **발화 시점에** 읽는다(`Init` 시점 캡처
+> 금지 — 백엔드가 `New()` 뒤에 덮어쓴다). 의사코드의 `canExecute(self)`는 전부 그 뜻.
+> 소스는 `base/lifecycle-pattern.md`의 `H-174` 문단.
+
 - [ ] **`EpochMap.luau`** (**[2026-08-24]** 2026-08-22에 디스패치로 옮겼다가 순서 교체로 되돌아옴) — 재사용 가능한 에포크
       부기 객체(`:Update(Epoch|EpochSet) -> boolean`이 "뒤로 전파가
       필요한가"를 답함, `:Refresh`/`:Sync`/`:TrackFrom`. `EpochSet =

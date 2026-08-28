@@ -72,6 +72,9 @@ end
 --   `guard`가 `fn(v, r)`로 부르므로 1-인자로 선언하면 `--!strict`에서 arity
 --   에러다. 사용자가 1-인자 람다를 넘기는 건 그대로 된다(Luau 함수 타입은
 --   파라미터에 반변이라 인자를 덜 받는 함수가 대입 가능).
+-- [2026-08-28 `H-168`] 무인자 `PreRef()`/`PostRef()`는 strict에서 타입 에러 —
+--   실제 코드는 `PreRef<<Instance?>>()`처럼 명시 확장으로 쓴다(`base/ref-plan.md`
+--   "제네릭 시그니처"). 아래는 관용구 원문 그대로.
 local function OnCreated(fn: (inst: Instance, ref: PreRef<Instance>) -> ()): PreRef<Instance>
     return PreRef():Callback(guard(fn))
 end

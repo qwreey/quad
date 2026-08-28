@@ -259,13 +259,19 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
             --   `:Callback`과 `:WeakCallback`으로 각각 건 경우).
             if self.Callbacks[k] == nil then table.insert(snapshot, k) end
         end
+        local revision = self.Revision           -- (4) [2026-08-28 `H-169`] 이 파동의 표식
         for _, k in ipairs(snapshot) do
+            if self.Revision ~= revision then
+                break   -- 콜백이 `:Set`을 재진입했다 — 안쪽 파동이 이미 새 값을 전부
+                        -- 돌렸으므로 이 파동의 나머지는 놓는다(아래 재진입 절)
+            end
             if self.Callbacks[k] == nil and self.WeakCallbacks[k] == nil then
                 continue                         -- 순회 중 해제됐으면 skip
             end
             if type(k) == "thread" then
                 self.Callbacks[k] = nil          -- 대기자는 소진
-                coroutine.resume(k, self)        -- 값이 아니라 **Ref 자신**(아래 참고)
+                local ok, err = coroutine.resume(k, self) -- 값이 아니라 **Ref 자신**(아래 참고)
+                if not ok then error(err, 0) end -- [2026-08-28 `H-170`] 즉시 돌아온 실패는 올린다
             else
                 k(value, self)                   -- ⭐ 값 + **Ref 자신**(= `Epoch`)
             end
@@ -273,6 +279,21 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
         return self
     end
     ```
+    - **⭐ [2026-08-28 `H-169`, 사용자 확정] 재진입 — 순회는 자기 리비전이 바뀌면
+      놓는다.** 콜백 A가 `ref:Set(2)`를 다시 부르면 안쪽 파동이 (스냅샷을 새로 떠서)
+      등록된 콜백 전부에 2를 돌리고 돌아온다 — 바깥 파동이 그대로 이어지면 남은 콜백
+      B가 `.Value == 2`인 채로 인자 `value == 1`을 받는다(`/code-review` 재현). 사용자:
+      *"반복문을 자신 epoch 를 보며 달라져버렸다면 놓으면 될듯. 후행 Set 이 전부
+      호출하도록. (진짜 항상 콜백이 받는건 최신임)"* — 그래서 (4)의 리비전 비교 한 줄.
+      `k(self.Value, self)`로 바꾸는 안(리뷰 권고)은 B가 같은 파동에서 **두 번**(안쪽에서
+      2, 바깥에서 또 2) 불리는 문제를 남겨 채택하지 않았다. 불변식 *"옛 값이 보이는
+      창이 없다"*는 이 모양으로 성립한다(`spec.ref.luau` 11).
+    - **[2026-08-28 `H-170`, 사용자 확정] `coroutine.resume`은 에러를 던지지 않는다** —
+      `(false, err)`를 돌려줄 뿐이라 대기자 안의 에러가 `:Set`에서 조용히 사라졌었다.
+      즉시 돌아온 실패는 `error(err, 0)`으로 올린다(`architecture.md` "예외 안전성 계약 —
+      감싸지 않는다"와 같은 결). 대기자가 다시 yield한 뒤 나는 에러는 우리 손 밖이다
+      (사용자: *"후행 yield 로 나가는건 우리가 처리 어렵긴 해. 그치만 당장 돌아오는 결과
+      false 은 확인 해줄 수 있는듯"*).
     - **왜 `k(value, self)`인가(`H-107`, 사용자 확정 2026-08-26)** — `Effect`가
       `Ref`를 dep으로 걸면 발화 시 `EpochMap:Update(from)`에 넘길 `Epoch`가
       필요한데, `k(value)`뿐이면 그 통로가 없어 `Update(nil)`이 된다
@@ -371,11 +392,19 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     정정돼 있었고 이 문장만 갱신에서 빠졌음). `sourceList`가 `None`인 것은
     맞음.
   - **주의(문서화 대상, 방어 로직 없음)**: 이미 죽은(완료/에러난) thread를
-    `:Wait(thread)`에 넘기면 나중에 `coroutine.resume`이 에러남 — 이건
-    다른 UB 케이스들과 같은 결로 라이브러리가 방어하지 않고 호출부 책임으로
-    둠.
+    `:Wait(thread)`에 넘기면 나중에 `:Set`이 그 thread를 resume할 때 실패한다
+    (**[2026-08-28 `H-170` 정정]** `coroutine.resume` 자체는 에러를 던지지 않고
+    `(false, "cannot resume dead coroutine")`를 돌려주므로, `:Set`이 그 실패를
+    `error`로 올린다 — 위 `:Set` 블록) — 이건 다른 UB 케이스들과 같은 결로
+    라이브러리가 방어하지 않고 호출부 책임으로 둠.
 - **제네릭 시그니처(2026-08-07 확정): `Ref<T>(T) -> Ref<T>` — 단일 타입
-  파라미터.** React `useRef<T, U=T>(U): T|U`류 "초기값 타입과 최종 타입을
+  파라미터.** **⭐ [2026-08-28 `H-168`, 사용자 확정 — 시그니처 유지] 무인자 `Ref()`는
+  `--!strict`에서 타입 에러다**(*"Function expects 1 argument"*, M2 첫 단위 실측). 이
+  코퍼스가 관용구로 쓰는 `Ref()`/`PreRef()`/`PostRef()`/`Handle = Ref()`는 전부
+  **`Ref<<T?>>()`로 읽을 것** — 파라미터가 nil-able이면 Luau가 인자 생략을 허용하므로
+  명시 확장 하나로 빈 호출까지 성립한다(사용자: *"`A<<{}?>>()` 로 쓰면 없어도 호출
+  가능해짐. 시그니처 유지 권고를 따르고자 해"*). `default: T?`로 넓히는 안은 `Ref(5).Value`
+  까지 nil 검사를 강요해 기각(`H-167`). 관용구 원문은 그대로 두고 이 규칙으로 읽는다. React `useRef<T, U=T>(U): T|U`류 "초기값 타입과 최종 타입을
   분리"하는 2파라미터 설계도 검토했으나(예: `Ref<<HTMLDivElement>>(null)`
   → `HTMLDivElement|null`), Luau 솔버로는 명시된 타입 파라미터 하나와
   인자에서 추론되는 다른 타입 파라미터가 만드는 합집합이 깔끔하게

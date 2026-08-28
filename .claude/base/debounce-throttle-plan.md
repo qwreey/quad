@@ -539,7 +539,7 @@ export type GateHandle = {
     Cancel: () -> (),  -- 이 인스턴스만 pending을 버림(전파 없음)
 }
 
-local h = Ref()
+local h = Ref()   -- [2026-08-28 `H-168`] 실제 코드는 `Ref<<DebounceHandle?>>()`(`base/ref-plan.md` "제네릭 시그니처")
 local debounced = state:Apply(Debounce{Time = 0.3, Handle = h})
 -- 게이트가 실제로 만들어지는 시점(팩토리 호출 시)에 h가 채워짐:
 -- h.Value == { Flush = fn, Cancel = fn }  -- 이 게이트 인스턴스 하나만 제어

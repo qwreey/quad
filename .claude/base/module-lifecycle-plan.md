@@ -32,6 +32,14 @@ RBVM처럼 `init namespace` 하나하나 부르는 방식은 별로(`base/lifecy
 
 ## New()의 내부 구성 — InitXxx 팩토리 체이닝 (2026-08-19 신설)
 
+> **⭐ [2026-08-28 `H-174`, 사용자 확정] 반응형 모듈도 같은 팩토리형이다.** M2 첫 단위가
+> 생명주기 4종을 `InitLifetimeHandle(module)`로 **인스턴스별 필드**로 만들었으므로,
+> `Source`/`State`/`Observer`/`Effect`처럼 그 게이트를 부르는 모듈은 `InitXxx(module)`이
+> `module`을 클로저로 쥐고 **발화 시점에 `module.canExecute(self)`로 늦게 읽는다**(백엔드가
+> `New()` 뒤에 덮어쓰므로 `Init` 시점 캡처는 스텁을 영원히 잡는다). `Ref`/`Void`/`Relate`/
+> `Brand`처럼 게이트를 안 부르는 잎 모듈만 인스턴스 간 공유된다. 소스는
+> `base/lifecycle-pattern.md` "탑레벨 평범한 함수로 확정" 절의 `H-174` 문단.
+
 바로 위 절이 확정한 `InitRoblox(Module)` 패턴(팩토리가 모듈 테이블을
 뮤테이션)은 지금까지 서술상 **backend 주입**에만 적용되는 것처럼 보였는데,
 `New()` **자신**이 quad-base 내부 서브시스템(Dispatch 등)을 구성하는

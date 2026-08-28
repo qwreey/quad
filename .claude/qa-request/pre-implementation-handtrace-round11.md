@@ -17,13 +17,13 @@
 | `H-165` | ① | 1 | 🟡 | `quad-types`에 `export type`을 더하면 pesde shim이 그걸 모른다 — `pesde install` 재실행 없이는 `QuadTypes.Ref`가 Unknown type | ✅ 반영(`project-setup-plan.md`) |
 | `H-166` | ① | 1 | 🟢 | `Ref.Revision` 초기값을 어느 문서도 안 정했다 | ✅ 반영(`ref-plan.md`: `0`) |
 | `H-167` | ① | 1 | 🟡 | 옮기며 `Ref<T>(default: T?)`/`.Value: T?`로 바꿔 놓았다 — 문서는 `Ref<T>(T)` 단일 파라미터, nil은 `Ref<<T?>>(nil)`로 | ✅ 코드를 문서에 맞춤(감사 2라운드) |
-| `H-168` | **②** | 1 | 🟡 | `Ref<T>(T)`면 무인자 `Ref()`가 strict에서 TypeError("expects 1 argument") — 그런데 `ref-plan.md`/`lifecycle-hooks-plan.md`/`debounce-throttle-plan.md`가 `Ref()`/`PreRef()`를 관용구로 가르친다 | §4 대기 |
-| `H-169` | **②** | 1 | 🟡 | `:Set` 블록이 스냅샷 콜백에 닫힌 인자 `value`를 넘겨서, 콜백 안 재진입 `ref:Set(new)` 뒤 남은 콜백이 **옛 값**을 받는다 — 문서 블록 그대로인데 문서의 "옛 값이 보이는 창이 없다"와 어긋남 | §4 대기 |
-| `H-170` | **②** | 1 | 🟡 | `coroutine.resume(k, self)`는 에러를 올리지 않는다 — 대기자 안의 에러·죽은 thread resume이 `:Set`에서 조용히 삼켜짐. `ref-plan.md` *"나중에 `coroutine.resume`이 에러남"*은 사실이 아님 | §4 대기 |
+| `H-168` | **②** | 1 | 🟡 | `Ref<T>(T)`면 무인자 `Ref()`가 strict에서 TypeError("expects 1 argument") — 그런데 `ref-plan.md`/`lifecycle-hooks-plan.md`/`debounce-throttle-plan.md`가 `Ref()`/`PreRef()`를 관용구로 가르친다 | ✅ (a) 사용자 확정 — 시그니처 유지, 관용구는 `Ref<<T?>>()`로 읽음(`ref-plan.md` "제네릭 시그니처") |
+| `H-169` | **②** | 1 | 🟡 | `:Set` 블록이 스냅샷 콜백에 닫힌 인자 `value`를 넘겨서, 콜백 안 재진입 `ref:Set(new)` 뒤 남은 콜백이 **옛 값**을 받는다 — 문서 블록 그대로인데 문서의 "옛 값이 보이는 창이 없다"와 어긋남 | ✅ 사용자 확정(권고 (a) 아님) — 순회가 자기 리비전이 바뀌면 놓고 후행 `Set`이 전부 호출(`spec.ref` 11) |
+| `H-170` | **②** | 1 | 🟡 | `coroutine.resume(k, self)`는 에러를 올리지 않는다 — 대기자 안의 에러·죽은 thread resume이 `:Set`에서 조용히 삼켜짐. `ref-plan.md` *"나중에 `coroutine.resume`이 에러남"*은 사실이 아님 | ✅ (a) 사용자 확정 — 즉시 반환된 실패만 `error(err, 0)`(`spec.ref` 10) |
 | `H-171` | ① | 1 | 🟡 | mock lazy claim: Destroy된 inst에 다시 bind하면 GC 전엔 죽은 gcconn 재사용, GC 뒤엔 새 Connected gcconn — 결과가 GC 타이밍에 따라 갈림 | ✅ mock: 죽은 inst의 새 gcconn은 즉시 Disconnect(`spec.lifetime` 6b) |
 | `H-172` | ① | 1 | 🟡 | mock `Destroy`가 자손을 안 죽이고(조상 파괴 계약 검증 불가), `Parent` 변경 시그널이 연결 해제 뒤라 관측 불가, 재귀 Destroy 무한 루프 | ✅ mock: Destroying → Parent nil → 자손 Destroy → 연결 해제, 이중 Destroy no-op(`spec.lifetime` 6c) |
 | `H-173` | ① | 1 | 🟢 | `ROADMAP.md` M7 체크박스·`tween-plan.md` 352가 `isTween`/`TweenBrand`를 `Tween.luau`에 둔다고 아직 서술(감사 3라운드가 두 곳만 고침) | ✅ 반영 |
-| `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | §4 대기 |
+| `H-174` | **②** | 1→2 | 🔴 | 생명주기 4종은 **`New()` 인스턴스마다 다른 필드**(이 단위가 그렇게 만들었고 `spec.lifetime` 8이 고정)인데, 단위 2·3의 `base/` 의사코드(`Observer:_receive`의 `canExecute(self)`, `Subscribe` 넷의 `canBound(self)`, `EffectHandle.rawRerun`)는 **자유 함수**로 부른다 — `Observer.luau`/`Source.luau`가 자기 인스턴스의 필드에 어떻게 닿는지 어느 문서도 안 정했다. 결정 없이는 단위 2의 `_receive`를 쓸 수 없다 | ✅ (a) 사용자 확정 — 팩토리형, `module.canExecute(self)`를 발화 시점에 늦게 읽음(`lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체) |
 | `H-175` | ① | 1 | 🟢 | §5 "불변 업밸류만 잡는 클로저는 프로토에 캐시"는 범위가 넓다 — 실제 규칙은 **업밸류가 없거나 전부 톱레벨(함수 깊이 0) 불변 로컬**일 때만(컴파일러 `shouldShareClosure`). 함수 인자·지역을 잡는 클로저(단위 3 `Effect`의 콜백 모양)는 정상 GC됨을 실측 | ✅ §5·`spec.ref` 주석 좁힘 |
 
 ## 상세
@@ -162,6 +162,16 @@
 | **`H-169`** | 재진입 `:Set` 뒤 남은 콜백의 인자 | (a) 블록을 `k(self.Value, self)`로(항상 최신 값, 문서 불변식 그대로) / (b) 문서에 "재진입 시 바깥 파동의 남은 콜백은 자기 파동의 값을 받는다"로 계약화(코드 유지) / (c) 재진입 자체를 금지(error) | **(a)** | 문서 불변식(*"옛 값이 보이는 창이 없다"*)이 이미 (a)를 말하고 있고 한 토큰 차이 — (b)는 인자와 `.Value`가 다른 창을 계약으로 열고, (c)는 새 가드 | 아니오 |
 | **`H-170`** | resume이 삼키는 에러 | (a) `local ok, err = coroutine.resume(k, self); if not ok then error(err, 0) end` — 대기자 에러를 `:Set` 호출부로 다시 올림 / (b) UB로 문서화(대기자 에러는 사라진다) / (c) 대기자 소진을 `task.spawn`류 주입 op로(Roblox `task.spawn`은 에러를 콘솔로 보냄) | **(a)** | `architecture.md` "예외 안전성 계약"(감싸지 않는다 = 에러는 전파)과 같은 결. 다만 **새 코드 두 줄(re-raise)** 이라 사용자 결정 자리. (c)는 새 주입 op | 아니오 |
 | **`H-174`** (탐사자, **단위 2 착수 전 필요**) | 반응형 모듈이 자기 `quad` 인스턴스의 `canExecute`/`canBound`에 닿는 법 | (a) `Source.luau`/`State.luau`/`Observer.luau`/`Effect.luau`를 `InitSource(module)`류 **팩토리**로 — 클래스와 `Subscribed`/`WeakSubscribed` 레지스트리를 `module`을 닫은 클로저 안에서 만들고 `module.Source = …`로 심음(`InitDispatch`와 같은 모양, `EpochMap`/`Brand`/`Ref`는 그대로 잎). 공개 필드가 없는 `State`/`Observer` 클래스는 `Init`의 반환값이나 `module.RunInit` 뒤의 비공개 필드로 형제 `Init`에 넘김 / (b) 잎 모듈 유지 + 값마다 역참조 필드(`observer._quad`)를 두고 `self._quad.canExecute(self)` / (c) 잎 모듈 유지 + 모듈 로컬 슬롯 하나를 백엔드가 채움(인스턴스 격리 포기) | **(a)** | `architecture.md` 13번(*"모듈 인스턴스를 인자로 받도록"*)과 `module-lifecycle-plan.md` "New()의 내부 구성"이 이미 이 모양이고, `Observer`의 두 레지스트리가 인스턴스별이 되어 *"완전히 별도의 새 Quad 네임스페이스"*와 맞음. (b)는 새 필드 + 값이 자기 모듈을 강참조(`Relate` 되참조 계열 위험), (c)는 `spec.lifetime` 8·`New()`의 존재 이유와 충돌. 어느 쪽이든 **필드는 발화 시점에 늦게 읽는다**(상세 절의 하위 함정) | 아니오 |
+
+**[2026-08-28 회신 — 단위 1 배치 전량 확정]** 사용자 원문: *"174 는 module.canExecute 로
+lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복문을 자신 epoch 를 보며
+달라져버렸다면 놓으면 될듯. 후행 Set 이 전부 호출하도록. (진짜 항상 콜백이 받는건
+최신임) / ref 쪽에서는 `local function A<T>(a: T)end A<<{}?>>()` 로 쓰면 없어도 호출
+가능해짐. 시그니처 유지 권고를 따르고자 해. / coroutine.resume 은 애초에 에러가 날지 안
+날지 후행 yield 로 나가는건 우리가 처리 어렵긴 해. 그치만 당장 돌아오는 결과 false 은
+확인 해줄 수 있는듯. a 권고사항 따르기로"*. `H-169`만 권고 (a)(`k(self.Value, self)`)가
+아니라 **사용자 안**(리비전 비교로 파동을 놓음)으로 — 권고안은 같은 파동에서 콜백이 두
+번 불리는 문제를 남겼다. 반영 위치는 위 표의 상태 열.
 
 코드 쪽 잔여 마커: `grep -rn "TODO(H-" quad-base/src` — 이 표의 문항과 1:1이어야
 한다. **[2026-08-28 기준] 마커 0개** — 위 셋은 단위 1 모듈을 막지 않아 코드는 문서

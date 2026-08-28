@@ -49,6 +49,19 @@
   claim GC 타이밍) / `H-172`(mock `Destroy` 의미론) / `H-173`(M7 `TweenBrand` 잔재) 반영,
   잔손질 셋 반영, 기각 셋.
 
+- fable 탐사자: 🔴 `H-174`(생명주기 4종이 인스턴스 필드인데 반응형 의사코드는 자유
+  함수 — 조립 형태 미정) / 🟢 `H-175`(클로저 캐시 규칙 범위) → "§4를 보라".
+
+## 배치 회신 (같은 날)
+
+사용자가 §4 넷을 한 번에 답함(원문은 `round11.md` §4). `H-174` 팩토리형 +
+`module.canExecute` 늦게 읽기 / `H-169` **사용자 안** — 순회가 자기 리비전이 바뀌면 놓고
+후행 `Set`이 전부 호출(권고 `k(self.Value, self)`는 콜백 이중 호출을 남겨 기각) /
+`H-168` 시그니처 유지, 관용구는 `Ref<<T?>>()` / `H-170` 즉시 반환 `false`만 올림.
+반영: `Ref.luau`(리비전 가드·resume 확인) + `spec.ref` 10·11, `ref-plan.md` `:Set` 블록·
+재진입 절·`:Wait` 정정·"제네릭 시그니처" 규칙, `lifecycle-hooks`/`debounce-throttle`
+배너, `lifecycle-pattern.md`·`module-lifecycle-plan.md`·`ROADMAP` 반응형 본체에 `H-174`.
+
 ## 다음
 
-fable 탐사자(규약 §5) → 사용자에게 "`round11.md` §4를 보라". §4엔 문항 셋, 권고 전부 (a).
+단위 2(`EpochMap` → `Source`/`State`/`Store`) 착수 — 게이트 없음.
