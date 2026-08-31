@@ -561,8 +561,11 @@ function RefLeafHandler.process(inst, k, v, index)
     -- 다룬다 — Ref는 Observer/Effect와 달리 위 v:Set(inst)가 임의 사용자
     -- 콜백을 SetWeak 기록 *전에* 동기 실행하므로, 그 콜백이 같은 (inst,k)를
     -- 같은 v로 재귀 재-dispatch하면 기록 순서 미스로 canBound 크래시가
-    -- 가능하다(감사 2라운드 지적). 실사용 패턴인지 불명 — M8에서
-    -- RefLeafHandler를 짤 때 확인할 것(round12 §6).
+    -- 가능하다(감사 2라운드 지적). 실사용 패턴인지 불명 — 기존 확정
+    -- "일반적인 재진입/무한루프는 방어 안 함(사용자 코드 버그로 간주)"
+    -- 원칙(2026-08-04, dispatch-core-plan 등이 인용)이 이 사례를 커버해
+    -- UB로 닫을 수 있는지까지 포함해 M8에서 RefLeafHandler를 짤 때
+    -- 판단할 것(round12 §6).
     relate:SetWeak(inst, k, v)
     return function(nextValue)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
