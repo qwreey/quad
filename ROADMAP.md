@@ -795,7 +795,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
       `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
       `process` 반환값으로 합쳐짐(2026-08-13 다섯 번째 세션))
-- [ ] **[2026-08-22 M7에서 이동] `None.luau`(센티널) + `Dispatch/None.luau`
+- [x] **[2026-08-31 M3 단위 3 — `spec.nonenil.luau` 5절 실측(해시 None 재귀 /
+      배열 0 등록 / 값↔None 전환 / 매치 경계). 센티널 값 자체는 `H-233`으로
+      단위 2에 선행 생성됐고, "탑레벨 `None.luau`" 별도 파일은 없다 — 정의는
+      `Dispatch/None.luau`(+`register`), 최상위 `init.luau`가 값 재export
+      (`slot-plan.md`의 재노출 서술 그대로)]**
+      **[2026-08-22 M7에서 이동] `None.luau`(센티널) + `Dispatch/None.luau`
       (`NoneHandler` + `NilHandler`)** — `None`은 modifier 전용 값이 아니라
       디스패치 배관이라 여기 소속(`architecture.md`의 소스 트리에 있는 건
       핸들러 쪽 `Dispatch/None.luau`뿐 — **[2026-08-22] 탑레벨 센티널

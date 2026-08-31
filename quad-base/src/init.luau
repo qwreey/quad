@@ -28,7 +28,7 @@ local Observer = require("@self/Observer")
 local Effect = require("@self/Effect")
 local Blocker = require("@self/Blocker")
 local InitDispatch = require("@self/Dispatch")
-local None = require("@self/Dispatch/None")
+local None = require("@self/Dispatch/None").None
 
 type Quad = QuadTypes.Quad
 

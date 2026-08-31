@@ -317,9 +317,18 @@ do
 	q.Dispatch.addHandler(high)
 	high.name = "HighLeaf" -- 선택 진단 필드(`H-214` (a)) — 매치·순서엔 무영향
 	local listed = q.Dispatch.listHandlers()
-	assert(#listed == 3, "returns every registered handler")
-	assert(listed[1] == high and listed[2] == low and listed[3] == fallback, "scan (priority) order")
-	assert(listed[1].name == "HighLeaf" and listed[2].name == nil, "optional name rides along; absent stays nil")
+	-- 단위 3부터 내장 둘(NoneHandler/NilHandler)이 항상 먼저 등록돼 있다
+	assert(#listed == 5, "returns every registered handler (3 test + 2 built-in)")
+	local ours: { QuadTypes.Handler } = {}
+	for _, h in listed do
+		if h == high or h == low or h == fallback then
+			table.insert(ours, h)
+		end
+	end
+	-- 내장 둘은 HIGH라 test high와 동률 — 동률 간 순서는 계약상 미정, 상대
+	-- 순서(높은 밴드 먼저)만 단언한다
+	assert(#ours == 3 and ours[1] == high and ours[2] == low and ours[3] == fallback, "scan (priority) order among ours")
+	assert(high.name == "HighLeaf" and low.name == nil, "optional name rides along; absent stays nil")
 	table.clear(listed) -- 사본이라 레지스트리에 영향 없음
 	assert(q.Dispatch.getHandler(Instance.new("Frame"), "k", 5) == high, "mutating the returned list does not disturb the registry")
 	print("PASS")

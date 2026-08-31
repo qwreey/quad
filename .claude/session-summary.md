@@ -2111,3 +2111,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `H-246` 세션 원문 증보 / `H-247` 게이트 위반 기록), ② 둘 §4 대기 —
   **`H-240` 🔴**(recompute Get-창 커서 스톰프, CONFIRMED — 권고 (a) 읽기 뒤
   재검사로 의사코드 보강)·`H-241`(drive 재진입 Blocker — 권고 (a) UB 문서화).
+  탐사자 5건(`H-248`~`H-252` — ① 넷 반영: 주석 둘·spec.drive 헤더·test.sh
+  analyze에 quad-types/quad-error 추가, ② `H-250` debug.info 스파이크 §4).
+  **단위 3(None/NilHandler) 구현** — `Dispatch/None.luau`에 핸들러 둘(재귀
+  전용/0 등록 말단, 인스턴스별 register), `spec.nonenil` 5절, ROADMAP `[x]`,
+  `H-253`(① 배치).

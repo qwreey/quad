@@ -40,7 +40,9 @@ local Void = require("./Void")
 local Brand = require("./Brand")
 local Blocker = require("./Blocker")
 local Err = require("./ErrorNamespace")
-local None = require("@self/None")
+local NoneModule = require("@self/None")
+
+local None = NoneModule.None
 local QuadTypes = require("../luau_packages/quad_types")
 local HandlerModule = require("@self/Handler")
 
@@ -521,6 +523,11 @@ local function Init(module: any)
 			Err.setFuncLevel(v, SURFACE)
 		end
 	end
+
+	-- M3 unit 3: quad-base fills its own registry with the None pair —
+	-- NoneHandler (recursion only) + NilHandler (the one place an empty array
+	-- position is registered out of the order math).
+	NoneModule.register(Dispatch)
 
 	module.Dispatch = Dispatch
 end
