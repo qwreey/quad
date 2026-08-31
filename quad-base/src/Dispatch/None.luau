@@ -30,6 +30,7 @@
 ]]
 
 local Void = require("../Void")
+local QuadTypes = require("../../luau_packages/quad_types")
 
 local None = table.freeze(setmetatable({}, {
 	__tostring = function()
@@ -43,7 +44,9 @@ local module = { None = None }
 -- is assembled — the handlers close over that instance's dispatch (the
 -- factory pattern, `H-174`). addHandler tags the received functions into the
 -- shared error namespace itself.
-function module.register(dispatch: any)
+-- `H-259`: typed against the shared contract — the only two production
+-- handlers must not be the only untyped ones (the drift hole `H-227` closed).
+function module.register(dispatch: QuadTypes.Dispatch)
 	dispatch.addHandler({
 		name = "NoneHandler",
 		-- the sentinel itself — real nil can't come out of a table traversal;

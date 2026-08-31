@@ -2115,4 +2115,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   analyze에 quad-types/quad-error 추가, ② `H-250` debug.info 스파이크 §4).
   **단위 3(None/NilHandler) 구현** — `Dispatch/None.luau`에 핸들러 둘(재귀
   전용/0 등록 말단, 인스턴스별 register), `spec.nonenil` 5절, ROADMAP `[x]`,
-  `H-253`(① 배치).
+  `H-253`(① 배치). 단위 3 끝 절차: 감사 3라운드 수렴(`H-254` + 2라운드 교정),
+  `/code-review high` 10건(`H-255`~`H-263`) — ① 여덟 반영(nil 힌트/타입
+  register/spec 검출력·팩토리/`mock.newQuad` 추출/소급 원장), ② 둘 §4:
+  **`H-256` 🔴**(희소·비정수 배열 키가 부기 오염+영구 동결, 재현 — 권고 (a)
+  부기 진입점 정수 검증)·`H-258`(nil 값 자리 retractor 신호 — 권고 (a) 계약
+  문서화). **§4 대기 다섯**(`H-240`/`H-241`/`H-250`/`H-256`/`H-258`).

@@ -124,6 +124,10 @@ local function Init(module: any)
 		end
 		return `quad.Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
 			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
+			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
+			-- recursion erases the provenance) — say so, or the user is told they
+			-- passed the one value None exists to be distinguishable from
+			.. (if v == nil then " (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)" else "")
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string

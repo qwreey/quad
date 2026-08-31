@@ -14,11 +14,7 @@ local Instance = mock.Instance
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
-local function newQuad()
-	local q = Quad.New()
-	mock.installLifetime(q)
-	return q
-end
+local newQuad = mock.newQuad -- `H-261`: 공용 헬퍼는 mock이 소유
 
 -- 값 변경을 세는 프로브 — Source에 Observer를 달아 Set 횟수를 센다
 local function probe(q: QuadTypes.Quad, src: any): () -> number

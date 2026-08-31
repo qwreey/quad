@@ -17,11 +17,7 @@ local Instance = mock.Instance
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
-local function newQuad()
-	local q = Quad.New()
-	mock.installLifetime(q)
-	return q
-end
+local newQuad = mock.newQuad -- `H-261`: 공용 헬퍼는 mock이 소유
 
 type Handler = QuadTypes.Handler
 
@@ -323,13 +319,19 @@ do
 			table.insert(ours, h)
 		end
 	end
-	-- 내장 둘은 HIGH라 test high와 동률 — 동률 간 순서는 계약상 미정, 상대
-	-- 순서(높은 밴드 먼저)만 단언한다
+	-- 내장들도 HIGH라 test high와 동률일 수 있다 — 동률 간 순서는 계약상
+	-- 미정, 상대 순서(높은 밴드 먼저)만 단언한다(내장 개수는 여기서 안 센다)
 	assert(#ours == 3 and ours[1] == high and ours[2] == low and ours[3] == fallback, "scan (priority) order among ours")
 	-- 내장 핸들러들(단위 3의 None 쌍, 이후 단위가 더 등록)이 항상 같이 있다 —
-	-- 총 개수 하드코딩 없이("개수의 소스는 하나만") 내장 존재 자체는 검출
-	assert(#listed > #ours, "built-in handlers are registered alongside ours")
-	assert(high.name == "HighLeaf" and low.name == nil, "optional name rides along; absent stays nil")
+	-- 총 개수 하드코딩 없이("개수의 소스는 하나만") 이름으로 쌍을 검출
+	local builtin: { [string]: boolean } = {}
+	for _, h in listed do
+		if h.name ~= nil then
+			builtin[h.name :: string] = true
+		end
+	end
+	assert(builtin["NoneHandler"] and builtin["NilHandler"], "the None pair is registered alongside ours")
+	assert(ours[1].name == "HighLeaf" and ours[2].name == nil, "optional name rides along through the returned list; absent stays nil")
 	table.clear(listed) -- 사본이라 레지스트리에 영향 없음
 	assert(q.Dispatch.getHandler(Instance.new("Frame"), "k", 5) == high, "mutating the returned list does not disturb the registry")
 	print("PASS")

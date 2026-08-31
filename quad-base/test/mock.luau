@@ -405,9 +405,19 @@ local function installLifetime(quad: any)
 	end
 end
 
+-- `H-261`: 세 spec이 같은 헬퍼를 그대로 복사하고 있었다(`H-206` 선례 —
+-- 3벌 복사가 추출 트리거). mock이 install 표면의 소유자라 여기가 집이다.
+local Quad = require("../src")
+local function newQuad(): any
+	local q = Quad.New()
+	installLifetime(q)
+	return q
+end
+
 return {
 	Instance = Instance,
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
 	installLifetime = installLifetime,
+	newQuad = newQuad,
 }
