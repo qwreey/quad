@@ -130,7 +130,34 @@ vacuous를 잡아 재교정 — `H-255`로 소급 원장), `/code-review high` 1
 (`H-255`~`H-263`): ① 여덟 반영, ② 둘 §4 합류(`H-256` 🔴 희소·비정수 키
 부기 오염+영구 동결(재현) / `H-258` nil 값 자리 retractor 신호 충돌).
 
+## 단위 4 — Leaf 핸들러 + 동적 경로 가드 + 종합 테스트 (같은 세션 계속)
+
+단위 3 끝 절차 종료 후 곧바로 착수(§4 열린 다섯은 단위 4를 막지 않음).
+규약 게이트대로 "Handler 작성 체크리스트" 절 필독 후:
+
+- **`Dispatch/Leaf.luau`** — `ObserverEffectLeafHandler`(HIGH 밴드 —
+  "`HANDLER_PRIORITY_FALLBACK` — 최하위 밴드" 절이 `Leaf`를 StoreBind/
+  NoneHandler와 함께 골격으로 명시) + FALLBACK 가드 둘(`k` 무관 매치,
+  메시지는 사용자 확정 문구 그대로 + `typeof(k)`). 핸들러 본문은
+  `source-state-plan.md` "Observer/Effect Leaf dedup" 의사코드 1:1(`H-39`
+  등록, `H-71` weak dedup, `H-57` 값 교체 cleanup 소진). 가드 error는
+  `errorBefore`(최외곽) — 매치 실패와 같은 논증(가장 가까운 태그 프레임이
+  가드 자신이라 nearest-blame은 안쪽을 가리킴), `spec.leaf` 6이 drive를
+  뚫고 spec 파일을 blame하는 것까지 실측.
+- **발견 `H-266`(①)** — dedup 채택 근거(*"없어도 안 깨짐"*, 2026-08-14)가
+  이후 확정된 `canBound` 가드·바인드 부수효과와 모순 — dedup은 이제
+  load-bearing(process 쪽만 빼면 (A) spurious 재발행이 already-bound로
+  크래시). 결론 유지, 근거 승격 — 두 문서 정정 배너.
+- **테스트** — `spec.leaf.luau` 7절(바인딩·캐치업 / Effect 재실행 / dedup
+  실측("통과 자체가 증거") / 교체 unbind+cleanup / nil 철거 / 가드 메시지·
+  blame / FALLBACK override) + `spec.integration.luau` 4절(ROADMAP "mock
+  대상 테스트" — 혼합 drive 한 트리 / 자리 타입 교대·오프셋 이동 /
+  Destroy는 retract 없음(메모리 해제 계약) / `H-229` GC end-to-end).
+  전 스위트 그린, analyze 클린. §6에 비고 하나(debug 동률 print가 base
+  내장 쌍에도 걸림 — 문서 허용 범위, 구조 안 만듦).
+
 ## 이 다음
 
-탐사자(단위 3 범위) → 사용자에게 "§4를 보라" 한 줄(대기 다섯: `H-240` 🔴/
-`H-241`/`H-250`/`H-256` 🔴/`H-258`) → 회신 반영 후 단위 4(Leaf·가드·종합).
+단위 4 끝 절차(감사 루프 → `/code-review high` → 탐사자) → 사용자에게
+"§4를 보라" 한 줄(대기 다섯: `H-240` 🔴/`H-241`/`H-250`/`H-256` 🔴/`H-258`)
+→ 회신 반영 후 M3 마감(ROADMAP·머리말 3층).

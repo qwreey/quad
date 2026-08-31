@@ -41,6 +41,7 @@ local Brand = require("./Brand")
 local Blocker = require("./Blocker")
 local Err = require("./ErrorNamespace")
 local NoneModule = require("@self/None")
+local LeafModule = require("@self/Leaf")
 
 local None = NoneModule.None
 local QuadTypes = require("../luau_packages/quad_types")
@@ -532,6 +533,9 @@ local function Init(module: any)
 	-- NoneHandler (recursion only) + NilHandler (the one place an empty array
 	-- position is registered out of the order math).
 	NoneModule.register(Dispatch)
+	-- M3 unit 4: ObserverEffectLeafHandler (HIGH — dispatch skeleton) + the
+	-- two named-slot dynamic-path guards (FALLBACK — override-able).
+	LeafModule.register(Dispatch, module)
 
 	module.Dispatch = Dispatch
 end

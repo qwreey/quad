@@ -1379,20 +1379,16 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
   (`RefLeafHandler`가 정확히 이 버그였음).
 - **`Observer`/`Effect`의 Leaf 바인딩(`Dispatch/Leaf.luau`)도 `RefLeafHandler`와
-  같은 `old ~= v` dedup을 둠 — correctness 문제는 아니지만 순수 성능
-  최적화로 채택(2026-08-14 세션, 사용자 판단).** `State<Observer>`/
-  `State<Effect>`가 재-dispatch될 때 안쪽 값이 실제로 안 바뀌어도(같은
-  객체가 다시 옴) (A) 분기는 무조건 `retractor(v)`→`h.process(inst,k,v,index)`를
-  다시 부름 — `Ref`와 달리 이걸 그냥 둬도 **깨지진 않음**: `bindLifetime`/
-  `unbindLifetime`은 `Relate` weak 테이블 쓰기 몇 개뿐이라(`base/
-  lifecycle-pattern.md`) 같은 값에 unbind 직후 바로 rebind해도 실제 Roblox
-  커넥션을 만들거나 끊지 않고, 사용자에게 보이는 재통지도 없음(`Observer`/
-  `Effect`의 `fn`은 이 leaf 바인딩이 아니라 자기 내부 구독이 따로 발화시킴 —
-  `base/effect-plan.md`). 하지만 **`==` 비교(바이트코드 1개+분기)가 매번 여러
-  weak 테이블 쓰기(해싱 비용)를 도는 것보다 항상 더 쌈** — 이득이 공짜에
-  가까운데 안 넣을 이유가 없다는 판단으로 `RefLeafHandler`와 동일한 패턴을
-  그대로 적용. 상세 pseudocode는 `base/source-state-plan.md`의
-  "Observer/Effect Leaf dedup" 절.
+  같은 `old ~= v` dedup을 둠 — 채택 당시(2026-08-14, 사용자 판단)엔 순수
+  성능 최적화였으나 **[2026-08-31 정정, M3 단위 4 `H-266`] 지금은
+  load-bearing**이다.** `bindLifetime`이 `canBound` 가드로 이미 묶인 값의
+  재바인드를 즉시 error로 거부하므로(이중 배치 방지), retractor의
+  `nextValue ~= v` 체크가 unbind를 건너뛴 spurious 재발행에서 `old ~= v`가
+  없으면 (A) 분기가 크래시한다 — 그리고 `bindLifetime`은 이제 weak 쓰기
+  몇 개가 아니라 Observer `_catchUp`/Effect `_bindDestroying`(실제
+  `Destroying` 연결)을 수행한다. 정정 상세와 그 시점 원문은
+  `base/source-state-plan.md`의 "Observer/Effect Leaf dedup" 절(상세
+  pseudocode도 거기).
 
 **5. `Dispatch`를 통해서만 진입한다.**
 `handler.process(...)`를 직접 부르면 핸들러 비교와 `chains` 기록이 통째로

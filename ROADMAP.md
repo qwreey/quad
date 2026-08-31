@@ -951,7 +951,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         `Dispatch.drive`의 진입도 항상 `1`
       - **소유권 충돌 감지는 Dispatch의 일이 아님**(옛 점유 error 폐지) —
         필요한 도메인이 직접(Attribute 이름 claim, M10)
-- [ ] **[2026-08-24 M2에서 이동] Observer/Effect 동적 경로 가드 등록** —
+- [x] **[2026-08-31 M3 단위 4 — `Dispatch/Leaf.luau`의 FALLBACK 가드 둘,
+      `spec.leaf.luau` 6·7이 메시지·override 의미론 실측]**
+      **[2026-08-24 M2에서 이동] Observer/Effect 동적 경로 가드 등록** —
       `{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v가
       Observer/Effect, process = error(...)}` 둘을 `Dispatch.addHandler`로
       등록(`k` 타입 안 가림, `PreRef`와 같은 패턴 —
@@ -962,10 +964,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       바로 아래 항목뿐이었고, 둘 다 "핸들러를 등록한다"뿐이라 이쪽으로 미룰
       수 있었다** — 그래서 빌드 순서엔 역방향 간선이 남지 않는다.
       순서 교체(2026-08-24)의 근거
-- [ ] **[2026-08-24 M2에서 이동, `H-39`]** `ObserverEffectLeafHandler.process`가
+- [x] **[2026-08-31 M3 단위 4 — `Dispatch/Leaf.luau`, HIGH 밴드("base 소속
+      핸들러가 전부 여기 오는 게 아님"의 `Leaf`), `old ~= v` dedup +
+      `H-57` 값 교체 cleanup 소진까지 — `spec.leaf.luau` 1~5]**
+      **[2026-08-24 M2에서 이동, `H-39`]** `ObserverEffectLeafHandler.process`가
       자기 배열 자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을
       등록 — 빠져 있었다(위 말단 핸들러 항목)
-- [ ] mock 대상 테스트
+- [x] **[2026-08-31 M3 단위 4]** mock 대상 테스트 — `spec.integration.luau`
+      4절(혼합 drive 한 트리 / 자리 타입 교대와 오프셋 이동 / Destroy는
+      retract 없이 발화만 멎음 / `H-229` GC end-to-end)
 
 ## M4 — 첫 end-to-end 반응형 업데이트
 

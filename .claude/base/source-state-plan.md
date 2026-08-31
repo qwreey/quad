@@ -1714,7 +1714,18 @@ end
 
 ### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴, 순수 성능 최적화(2026-08-14 세션)
 
-**correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.** `State<Observer>`/
+**correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.**
+**⚠️ [2026-08-31 정정, M3 단위 4 `H-266`] 이 주장은 이제 사실이 아니다 —
+dedup은 load-bearing이다.** 이 문장이 쓰인 2026-08-14 이후 두 계약이 그
+전제를 무너뜨렸다: (1) `bindLifetime`은 `canBound` 가드로 **이미 묶인 값의
+재바인드를 즉시 error로 거부**한다(이중 배치 방지 — `base/ref-plan.md`,
+`base/lifecycle-pattern.md`). 아래 의사코드의 retractor는 `nextValue ~= v`일
+때만 unbind하므로, `old ~= v`를 빼면 (A) 분기의 spurious 재발행에서
+`bindLifetime(inst, v)`가 아직 묶인 `v`를 받아 **크래시**한다. (2)
+`bindLifetime`은 더 이상 weak 쓰기 몇 개가 아니다 — Observer는 `_catchUp`
+1회, Effect는 `_bindDestroying`(실제 `Destroying` 연결 + 캐치업)을 수행한다.
+결론은 그대로(dedup 유지)이고 근거만 "공짜 최적화"에서 "계약상 필수"로
+승격됐다. 아래 원문은 그 시점 서술로 남긴다: `State<Observer>`/
 `State<Effect>`가 재-dispatch될 때 안쪽 값이 그대로여도(같은 객체가 다시 옴)
 Dispatch의 (A) 분기(`base/dispatch-core-plan.md` "Dispatch 체인" 절)는 무조건
 `retractor(v)`→`process(inst,k,v,index)`를 다시 부름 — 이걸 그냥 둬도
