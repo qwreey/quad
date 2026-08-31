@@ -248,19 +248,18 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     function Ref:Set(value)
         self.Value = value                       -- (1) 먼저 확정
         self.Revision = bit32.bnot(-self.Revision)  -- (2) 콜백보다 **앞**
-        local snapshot = {}                      -- (3) [`H-23`] 순회 전 스냅샷
-        for k in pairs(self.Callbacks) do table.insert(snapshot, k) end
-        for k in pairs(self.WeakCallbacks) do
-            -- 양쪽에 다 있는 키는 한 번만 — 안 그러면 그 콜백이 두 번 불린다.
-            -- ⭐ [2026-08-26, `/code-review high`] **thread는 이 경우가 없다** —
-            --   대기자를 만드는 `:Wait()`는 `.Callbacks`(강)에만 넣는다
-            --   (`WeakWait`는 없다). 그래서 아래 소진이 `.Callbacks`만 비우는
-            --   게 맞다. 이 dedup은 **함수 키** 전용이다(같은 `fn`을
-            --   `:Callback`과 `:WeakCallback`으로 각각 건 경우).
-            if self.Callbacks[k] == nil then table.insert(snapshot, k) end
-        end
+        -- (3) [`H-23`] 순회 전 스냅샷 — ⭐ [2026-08-31 `H-208`, 사용자] 배열 재구축이
+        --     아니라 **`table.clone` + 집합 병합**("table.clone 으로 찍어도 충분해 —
+        --     더 싸"). 강한 평범한 클론이라 순회 동안 약한 등록도 살아 있고, 양쪽에
+        --     다 있는 키의 dedup은 집합 의미론으로 공짜다(순서는 원래 계약이 아님 —
+        --     "`.Callbacks`는 배열이 아니라" 절).
+        -- ⭐ [2026-08-26, `/code-review high`] **thread는 양쪽에 있을 수 없다** —
+        --   대기자를 만드는 `:Wait()`는 `.Callbacks`(강)에만 넣는다(`WeakWait`는
+        --   없다). 그래서 아래 소진이 `.Callbacks`만 비우는 게 맞다.
+        local snapshot = table.clone(self.Callbacks)
+        for k in self.WeakCallbacks do snapshot[k] = true end
         local revision = self.Revision           -- (4) [2026-08-28 `H-169`] 이 파동의 표식
-        for _, k in ipairs(snapshot) do
+        for k in snapshot do
             if self.Revision ~= revision then
                 break   -- 콜백이 `:Set`을 재진입했다 — 안쪽 파동이 이미 새 값을 전부
                         -- 돌렸으므로 이 파동의 나머지는 놓는다(아래 재진입 절)

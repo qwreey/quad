@@ -66,7 +66,7 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 첫 줄에서 이 훅으로 이동, level 3), Gate 생성이 setup 동안 `_subs`에서 떼었다 성공 후
 재등록, `Blocker.runHandles`가 핸들마다 `IsBlocked` 재확인. 문서는 `effect-plan`/
 `lifecycle-pattern`/`source-state-plan`/`gate-plan`/`blocker-plan`/`ref-plan`(+
-`documentation-content-map` 22번, `quad-types-plan` `H-187`)에 반영. 스펙 넷 추가
+`documentation-content-map` `H-170` 항목, `quad-types-plan` `H-187`)에 반영. 스펙 넷 추가
 (`spec.effect` 10 / `spec.observer` 9 / `spec.gate` 1 확장 / `spec.blocker` 8).
 코드 마커는 셋 남음(`H-186`/`H-198`/`H-205`).
 
@@ -76,3 +76,42 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 재시작 루프는 성립하되 게이트 너머 움직임의 탐지는 결국 fn 직전 스냅샷 비교로 귀결 —
 사용자 안 = 스냅샷 탐지 + `Get` 재시작 루프, 캐비엇은 자기-dep `Set`의 무한 재시작
 (UB로 접을지 함께 결정 필요).
+
+## 같은 날 후속 2 — §4 전량 종결 (2026-08-31, 회신 3)
+
+사용자가 잔여 셋과 코드 검토 둘을 회신: `H-186` (b) UB 문서화("확인. UB로 놓는게
+맞아보여" — `architecture.md` 13번 + content-map §4, 추후 생각해볼 점) / `H-198`
+사용자 안 확정("이미 있는 표면들로 충분히 구현 가능해서 동의함") — 상류 스탬프를
+`fn` 직전으로 + `Get` 재시작 루프, 무한 케이스 UB(구현이 루프라 관측은 스택오버플로우가
+아니라 무한 재계산 — round11 §4 회신 3 블록에 각주) / `H-205` (a) level 3 /
+`H-174`는 기결정 (a) 재확인 / **`H-208`** `Ref:Set` 스냅샷을 `table.clone`+집합
+병합으로("더 싸") / **`H-209`** 전반 `pairs`/`ipairs` → generalized iteration
+("최적화로 인해 더 빠르거든") — 메타테이블 있는 테이블(weak/`__index`)의 raw 순회를
+스크래치로 실측 확인 후 src 전 파일 전환, 문서 의사코드 표기는 `H-178`과 같은 급으로
+무변경. `H-198` 반영으로 **계약이 강화**됐다: `Get`은 이제 fn 도중 온 변경(재진입이든
+게이트 유보든)을 같은 호출 안에서 수렴시켜 항상 최신을 돌려준다 — `spec.state` 6이
+옛 계약("다음 Get이 재계산")을 단언하고 있어 새 계약으로 갱신, `spec.gate` 10에 리뷰
+재현 시나리오(영구 stale이던 그것)가 "같은 Get에서 99 + flush는 통지만"으로 고정.
+`spec.state` 12는 level 3 프레임 단언 추가. **§4 열린 문항 0, 코드 마커 0** — 남은
+마무리는 파일명 변경(사용자와 이름 결정)과 M2 종료 보고.
+
+## 같은 날 후속 3 — 툴링 픽스 둘(H-210/H-211)과 감사 반영
+
+- **`H-210`** (사용자 발견): 루트 `default.project.json`에 `roblox_packages`가 없어
+  rojo 통합 luau-lsp가 *"Unknown require: game/ReplicatedStorage/roblox_packages/
+  quad_types"*. 처음엔 `ReplicatedStorage.roblox_packages` 하나로 붙였다가 **사용자
+  정정**(*"quad-base quad-roblox 안에 따로 roblox_packages 가 들어가야"*) — 공유 하나면
+  quad-roblox가 의존성을 갖는 순간 충돌. 패키지별 Folder 아래 `src`+`roblox_packages`
+  형제 매핑으로(pesde 가이드의 멀티 패키지 판), `rojo sourcemap` + `luau-lsp analyze`로
+  unknown-require 0 실측. 커밋 `274da35`, `project-setup-plan.md` 셋째 함정.
+- **`H-211`** (사용자 발견): `Relate:SetWeak`의 캐스트 없는
+  `bucket.WeakMap = setmetatable(…)` 대입이 IDE(strict)에서 TypeError — 메타테이블
+  붙은 타입은 평범한 인덱서의 서브타입이 아님. 플레인 `luau-analyze`(test.sh 게이트)는
+  솔버 차로 조용 — **IDE와 CLI가 다른 걸 본다는 사실 자체가 기록 대상**. 처방은 로컬
+  주석 + `:: any` 경유(모든 솔버 통과). 전 파일 luau-lsp 스윕에서 이웃 `::` 직접
+  캐스트들(Brand/EpochMap/Observer/Relate 생성자)이 신형 솔버 CLI에서만 "unrelated"로
+  걸리는 것도 확인 — 사용자 IDE·현행 게이트 모두 무발화라 무변경(관측된 문제만),
+  신형 솔버가 게이트가 되는 날 일괄 전환.
+- 회신 3 감사 1라운드(확실 1·의심 1) 반영: `state-epoch-plan.md` H-85 절의 옛 계약
+  문장("다음 Get이 반드시 재계산")을 H-198 재시작 루프로 정정, `todos.md` 00의 H-번호
+  나열을 소스 포인터로 축소(머리말 규칙).

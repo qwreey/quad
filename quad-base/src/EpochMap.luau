@@ -61,7 +61,7 @@ function EpochMapImpl.Update(self: EpochMap, from: Epoch | EpochSet): boolean
 		return updateOne(map, from :: Epoch)
 	end
 	local changed = false
-	for epoch in pairs(from :: EpochSet) do
+	for epoch in from :: EpochSet do
 		if changed then
 			map[epoch] = epoch.Revision -- answer already fixed: write only
 		else
@@ -77,7 +77,7 @@ function EpochMapImpl.Peek(self: EpochMap, from: Epoch | EpochSet): boolean
 		local epoch = from :: Epoch
 		return map[epoch] ~= epoch.Revision
 	end
-	for epoch in pairs(from :: EpochSet) do
+	for epoch in from :: EpochSet do
 		if map[epoch] ~= epoch.Revision then
 			return true
 		end
@@ -88,7 +88,7 @@ end
 function EpochMapImpl.Refresh(self: EpochMap): boolean
 	local map = (self :: any)._map
 	local changed = false
-	for epoch, revision in pairs(map) do
+	for epoch, revision in map do
 		local live = epoch.Revision
 		if live ~= revision then
 			changed = true
@@ -105,14 +105,14 @@ function EpochMapImpl.Sync(self: EpochMap, from: Epoch | EpochSet)
 		map[epoch] = epoch.Revision
 		return
 	end
-	for epoch in pairs(from :: EpochSet) do
+	for epoch in from :: EpochSet do
 		map[epoch] = epoch.Revision
 	end
 end
 
 function EpochMapImpl.TrackFrom(self: EpochMap, other: EpochMap)
 	local map = (self :: any)._map
-	for epoch in pairs((other :: any)._map) do
+	for epoch in (other :: any)._map do
 		map[epoch] = epoch.Revision -- live revision, not other's stored one
 	end
 end

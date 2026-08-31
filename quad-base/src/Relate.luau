@@ -60,7 +60,9 @@ function RelateImpl:SetWeak(inst: any, key: any, value: any)
 	local bucket = getOrCreateBucket(self, inst)
 	local weakMap = bucket.WeakMap
 	if weakMap == nil then
-		local newMap = setmetatable({}, WEAK_VALUE_MT)
+		-- `:: any` detour: the metatable-carrying type `{ @metatable WEAK_VALUE_MT, {} }`
+		-- is not a subtype of the plain indexer `Bucket.WeakMap` expects (`H-211`).
+		local newMap: { [any]: any } = setmetatable({}, WEAK_VALUE_MT) :: any
 		bucket.WeakMap = newMap
 		newMap[key] = value
 		return

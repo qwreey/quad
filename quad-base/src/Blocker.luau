@@ -52,10 +52,10 @@ end
 -- Shared by Off/OffWithoutEmit — the only difference is the flag passed on.
 local function runHandles(self: any, doEmit: boolean)
 	local snapshot: { (boolean) -> () } = {}
-	for handle in pairs(self._handles) do -- `H-63` (3): snapshot, then walk
+	for handle in self._handles do -- `H-63` (3): snapshot, then walk
 		snapshot[#snapshot + 1] = handle
 	end
-	for _, handle in ipairs(snapshot) do
+	for _, handle in snapshot do
 		if self.IsBlocked then
 			-- `H-203` (a): a downstream fired by an earlier handle's flush re-blocked
 			-- this blocker — stop; the remaining handles keep their withheld batches

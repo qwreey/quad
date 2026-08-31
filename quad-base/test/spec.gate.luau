@@ -259,4 +259,35 @@ do
 end
 
 print()
+print("=== 10. H-198 — 닫힌 게이트 너머 fn 도중의 Set: 같은 Get 안에서 재시작해 최신으로 수렴, flush는 통지만 ===")
+do
+	-- 리뷰 재현 모양(영구 stale이던 그 시나리오): fn 도중의 S:Set(99)는 게이트가
+	-- emit을 유보해 N의 _receive에 안 오지만, fn 직전 스탬프와 Refresh 드리프트로
+	-- 잡혀 같은 Get이 재시작한다(H-85의 카운터가 못 보는 자리를 스냅샷이 본다).
+	local S = Source(1)
+	local b = Quad.Blocker()
+	local g2: State<number> = S:Apply(b)
+	b:On()
+	local first = true
+	local runs = 0
+	local N: State<number> = g2:Compute(function(x)
+		runs += 1
+		local v = x:Get()
+		if first then
+			first = false
+			S:Set(99) -- lands DURING fn, behind the closed gate
+		end
+		return v
+	end)
+	assert(N:Get() == 99 and runs == 2, "the same Get restarted and returned the post-Set value")
+	assert(N:Get() == 99 and runs == 2, "stable — no further recompute")
+	-- 나중 flush는 규칙 2로 떨어진다: 통지만, 재계산 없음
+	local p = probe(N)
+	b:Off()
+	assert(p.count == 1, "the flush still notifies downstream (rule 2)")
+	assert(runs == 2, "…but recomputes nothing — the value was already current")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

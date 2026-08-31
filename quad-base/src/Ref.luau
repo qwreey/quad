@@ -44,24 +44,20 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 	self.Value = value -- (1) settle the value first
 	self.Revision = bit32.bnot(-self.Revision) -- (2) before callbacks (`H-108`)
 
-	-- (3) snapshot before iterating (`H-23`): registering/unregistering
-	-- during the walk must not disturb `pairs`.
-	local snapshot: { any } = {}
+	-- (3) snapshot before iterating (`H-23`): registering/unregistering during
+	-- the walk must not disturb the iteration. `H-208` (user, 2026-08-31):
+	-- `table.clone` + set-merge — cheaper than rebuilding an array, and the
+	-- strong plain clone keeps weak-registered callbacks alive for the walk.
+	-- Both-table dedup is free (set semantics); `:Wait()` (M8) puts its thread
+	-- waiters in `.Callbacks` only, so draining below stays right.
 	local callbacks = self.Callbacks
 	local weakCallbacks = self.WeakCallbacks
-	for k in pairs(callbacks) do
-		table.insert(snapshot, k)
-	end
-	for k in pairs(weakCallbacks) do
-		-- A key present in both tables is carried once — otherwise that
-		-- callback fires twice. Function keys only: `:Wait()` (M8) puts its
-		-- thread waiters in `.Callbacks` only, so draining below is right.
-		if callbacks[k] == nil then
-			table.insert(snapshot, k)
-		end
+	local snapshot: { [any]: true } = table.clone(callbacks)
+	for k in weakCallbacks do
+		snapshot[k] = true
 	end
 	local revision = self.Revision
-	for _, k in ipairs(snapshot) do
+	for k in snapshot do
 		if self.Revision ~= revision then
 			-- [`H-169`, user-confirmed 2026-08-28] a callback re-entered `:Set`: that
 			-- inner walk already delivered the newer value to everyone, so this

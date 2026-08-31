@@ -74,13 +74,13 @@ local function createImpl(module: any)
 	-- ── propagation loop ──────────────────────────────────────────────
 	-- Shared by every node type that has `_subs` (Source nodes too).
 	local function emitDown(self: any, from: any)
-		-- H-23: adding a key during `pairs` is undefined, so snapshot first.
+		-- H-23: adding a key during iteration is undefined, so snapshot first.
 		-- "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약.
 		local snap = {}
-		for sub in pairs(self._subs) do
+		for sub in self._subs do
 			snap[#snap + 1] = sub
 		end
-		for _, sub in ipairs(snap) do
+		for _, sub in snap do
 			(sub :: any):_receive(from) -- every subscriber is an `EmitReceive` (`H-163`)
 		end
 	end
@@ -88,7 +88,7 @@ local function createImpl(module: any)
 
 	-- ── node creation ─────────────────────────────────────────────────
 	local function newNode(deps: { any }, fn: any, mt: any?): any
-		for i, dep in ipairs(deps) do
+		for i, dep in deps do
 			if not isState(dep) then
 				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With/Gate to the user's call
 			end
@@ -105,7 +105,7 @@ local function createImpl(module: any)
 		}, mt or Impl)
 		StateBrand:register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
 		-- §4 seeding: valueEpochMap takes every upstream epoch, live.
-		for _, dep in ipairs(deps) do
+		for _, dep in deps do
 			dep._subs[self] = true
 			if isEpoch(dep) then
 				self._valueEpochMap:Sync(dep)
@@ -141,34 +141,45 @@ local function createImpl(module: any)
 	function Impl._recompute(self: any)
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
 		local hold = self._hold
+		-- `H-198` (user-confirmed 2026-08-31): stamp upstream revisions BEFORE fn —
+		-- anything that moves DURING fn (a reentrant Set, or one withheld by a
+		-- closed gate, which never reaches our `_receive`) then shows up afterwards
+		-- as `Refresh` drift and `Get`'s loop recomputes. Stamping after fn marked
+		-- those moves as already seen (permanent stale cache).
+		for _, dep in hold do
+			dep:_track(self._valueEpochMap)
+		end
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
-			-- TODO(H-205): level 2 here always blames Impl.Get's own line (its only
-			-- callers are internal) — the contract wants user-code blame; level TBD.
-			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 2)
+			-- `H-205`: level 3 — `_recompute`'s only callers are Get's own lines, so 2
+			-- always blamed quad internals; 3 reaches the user on a direct `Get` and is
+			-- never worse through a pass-through chain (no fixed level reaches user code there).
+			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 3)
 		end
 		self._cache = result
-		for _, dep in ipairs(hold) do
-			-- TODO(H-198): tracking LIVE revisions here marks as seen an upstream Set
-			-- that landed DURING fn but whose emit a closed gate withheld — the later
-			-- flush then forwards downstream without `_invalidate` (permanent stale cache).
-			dep:_track(self._valueEpochMap) -- fresh value is current w.r.t. EVERY upstream
-		end
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
 	end
 
 	function Impl.Get(self: any): any
-		if self._cacheCurrCount ~= self._cacheTargetCount then
-			self:_recompute()
-		elseif self._valueEpochMap:Refresh() then
-			-- 순회: catch an emit that never reached us (gate, wave not arrived) —
-			-- advance the VALUE only; notification waits for the real emit.
-			self:_invalidate()
-			self:_recompute()
+		-- `H-198` (user-confirmed): a LOOP, not a single pass — restart until one
+		-- recompute completes with nothing moving under it, so every Get returns a
+		-- value computed from the latest reads ("항상 최신 값만 읽게되어"). Counter
+		-- mismatch catches Sets our `_receive` saw (`H-85`); `Refresh` drift catches
+		-- the ones it never did (behind a closed gate). Values only — notification
+		-- still waits for the real emit. An fn that re-Sets its own (transitive)
+		-- dep on every pass never converges: UB (user-confirmed).
+		while true do
+			if self._cacheCurrCount ~= self._cacheTargetCount then
+				self:_recompute()
+			elseif self._valueEpochMap:Refresh() then
+				self:_invalidate()
+				self:_recompute()
+			else
+				return self._cache
+			end
 		end
-		return self._cache
 	end
 
 	-- ── derived-node methods (shared by Source through `__index`) ─────
@@ -229,7 +240,7 @@ local function createImpl(module: any)
 		if isEpoch(from) then
 			withheld[from] = true
 		else
-			for epoch in pairs(from) do
+			for epoch in from do
 				withheld[epoch] = true
 			end
 		end

@@ -2053,4 +2053,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   반영(`H-182` `_dying` / `H-183` Observer `_running` / `H-184` `_assertBindable` 커밋 전
   문의 / `H-185` 단일 cleanup 문서화(권고 기각) / `H-187` / `H-200` detach-중-setup /
   `H-203` 순회 중 `IsBlocked` 재확인), 재질문 둘(`H-186`/`H-198` — 메인 답변은
-  그 §4 회신 2 블록), 보류 하나(`H-205`). 남은 코드 마커 셋.
+  그 §4 회신 2 블록), 보류 하나(`H-205`). **같은 날 회신 3으로 §4 전량 종결** —
+  `H-186` UB 문서화 / `H-198` 사용자 안(스탬프를 fn 직전 + `Get` 재시작 루프 — 계약
+  강화: 모든 `Get`이 최신 수렴값 반환, 무한 케이스 UB) / `H-205` level 3 / 코드 검토
+  `H-208`(`table.clone` 스냅샷)·`H-209`(generalized iteration 전환). 열린 문항 0·마커 0,
+  남은 마무리는 round11 파일명 변경과 M2 종료 보고.

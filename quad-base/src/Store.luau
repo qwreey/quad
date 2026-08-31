@@ -69,7 +69,7 @@ local function Init(module: any)
 
 	function Impl.Names(self: any): { string }
 		local names = {}
-		for name in pairs(self) do
+		for name in self do
 			names[#names + 1] = name
 		end
 		return names
@@ -88,7 +88,7 @@ local function Init(module: any)
 			end
 		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)
-		for name, value in pairs(self) do
+		for name, value in self do
 			if RESERVED[name :: any] then
 				error(`Store: "{tostring(name)}" is a reserved store key`, 2)
 			end

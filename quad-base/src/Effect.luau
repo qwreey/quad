@@ -228,8 +228,9 @@ local function createImpl(module: any)
 
 		-- (0) deps validation — once, in the constructor. `select("#")` so a nil hole
 		--     does not silently truncate the list.
-		-- TODO(H-186): no check that a dep belongs to THIS quad instance — a cross-instance dep
-		--   is gated by the dep's backend (`d:Observer` resolves through its own impl).
+		-- `H-186` (user-confirmed 2026-08-31): a dep from ANOTHER quad instance is UB —
+		--   deliberately not checked (a guard here closes only half the hole: a foreign
+		--   `bindLifetime` on our handle is unreachable from base). Documented, revisit at M5.
 		local seen = {}
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))
@@ -257,7 +258,7 @@ local function createImpl(module: any)
 		local function onStateFire(_targetState: any, _observer: any, from: any)
 			fire(from) -- Observer: the 3rd arg is the source
 		end
-		for d in pairs(seen) do
+		for d in seen do
 			if isRef(d) then
 				self._deps[d] = onRefFire -- strong owner = Effect
 				d:WeakCallback(onRefFire) -- the Ref side is weak
