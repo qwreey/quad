@@ -16,19 +16,70 @@
 
 | 번호 | 갈래 | 단위 | 심각도 | 한 줄 | 상태 |
 |---|---|---|---|---|---|
-| (아직 없음) | | | | | |
+| `H-212` | ① | 1 | 🟢 | `dispatch-core-plan.md` "Dispatch 체인" 의사코드의 error 세 자리가 한국어·`level` 없음 — 그 절(2026-08-13)보다 늦게 확정된 `architecture.md` error 계약(영어, level 이분, 2026-08-25)이 미반영 | ✅ 반영(`dispatch-core-plan.md` 의사코드 영어+level, `H-212` 문단) |
+| `H-213` | ① | 1 | 🟢 | `HANDLER_PRIORITY_*` 상수의 실제 숫자값을 어느 문서도 안 정했다 — 문서가 정한 건 이름·순서(HIGH > NORMAL > LOW > FALLBACK)·열린 공간(± 오프셋)뿐 | ✅ 구현이 채움: 1000 / 0 / -1000 / -1000000 (밴드 간 ± 오프셋 여유, `Dispatch/init.luau` 주석) |
+| `H-214` | **②** | 1 | 🟡 | `listHandlers`가 "이름/priority를 반환"이고 동률 경고·`quad-debug` 체인 덤프도 핸들러 이름을 원하는데, Handler 계약(3종)엔 `name` 필드가 없다 — 새 필드라 자율 반영 불가 | ⏳ §4 대기 — 코드는 핸들러 객체 배열 반환 + `TODO(H-214)` 마커 |
+
+### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
+
+`process`의 retractor 생략 error 두 자리와 `retractFrom`의 배열 구멍 error가
+한국어 메시지에 `level` 인자 없음 — `base/architecture.md`의 "error 계약 —
+`level` 이분과 메시지 언어" 절(*"`base/`의 예시 메시지도 영어로 쓴다"*)이 그
+의사코드보다 늦게 확정되며 반영이 안 된 자리다. 문서가 이미 답(영어 + level
+이분)을 갖고 있어 ①: retractor 생략은 핸들러(제공자) 계약 위반이라 호출부를
+가리키는 `2`, 배열 구멍은 내부 부기 파손이라 그 자리를 가리키는 `1`.
+`base/`와 코드를 같은 커밋에서 맞췄다.
+
+### `H-213` — 우선순위 밴드 상수의 리터럴 값 (①)
+
+"우선순위 동률/매치 실패 처리" 절은 상수 **이름 넷**과 순서, "열린 숫자 공간
+위의 편의 상수"(`HANDLER_PRIORITY_HIGH + 1`식 미세 조정)만 정하고 값은 안
+정했다. 구현 선택: `HIGH = 1000` / `NORMAL = 0` / `LOW = -1000` /
+`FALLBACK = -1000000`. 근거 — 밴드 사이 간격이 커서 ± 오프셋이 이웃 밴드를
+침범하기 어렵고, `FALLBACK + 1`(base Fallback을 가로채는 관례 자리)이 `LOW`
+보다 한참 아래에 남는다. 계약 의미(순서·밴드)는 값과 무관해 사용자 결정
+대상이 아니라고 판단 — 다른 값을 원하면 §4 회신에 얹으면 된다.
+
+### `H-214` — `listHandlers`/동률 경고가 원하는 핸들러 "이름"이 계약에 없다 (②)
+
+`dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절: *"`Dispatch.listHandlers()`는
+현재 등록된 전체 핸들러(이름/priority)를 **반환**"*. `research/debug-tooling-plan.md`
+쪽 서술(체인 슬롯을 "이름으로 바로 덤프")도 같은 걸 전제한다. 그런데 핸들러
+계약은 `isHandlable`/`priority`/`process` **3종으로 못 박혀** 있고(같은 문서
+"핸들러 계약" 절: *"다음 3개를 제공하는"*), `name`을 붙이는 건 **새 필드**라
+규약 §2의 ② 갈래다. 기각 이력 grep: Handler에 이름 필드를 검토·기각한 기록
+없음(등록 엔티티 이름 논의(`TagFallbackHandler` 등)는 **변수명** 이야기지
+계약 필드가 아님). 임시 구현: 등록된 핸들러 객체 배열(우선순위순 사본)을
+그대로 반환 — 정의된 정보(priority, 함수들)는 다 담기고 새 개념이 없다.
+동률 경고 print는 priority 값만 찍는다. 코드 마커 `TODO(H-214)` 1곳
+(`Dispatch/init.luau`의 `listHandlers`).
 
 ## §4 배치 문항지 (사용자가 읽을 유일한 자리)
 
-**[2026-08-31 기준] 열린 문항 없음.**
-
 | 번호 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
-| (아직 없음) | | | | |
+| `H-214` | `listHandlers`·동률 경고·(나중의) `quad-debug` 덤프가 쓸 핸들러 **이름** — Handler 계약(3종)엔 `name`이 없다 | (a) 계약에 **선택 필드 `name: string?`** 추가 — 있으면 경고·덤프·`listHandlers`가 쓰고 없으면 priority만 / (b) 이름 없이 감 — `listHandlers`는 핸들러 객체 배열만 반환(지금 임시 구현), "이름/priority" 서술을 문서에서 걷어냄 / (c) 다른 방식(별도 등록 인자 `addHandler(h, name)` 등) | **(a)** | 문서 두 곳(`dispatch-core-plan.md` "우선순위 동률/매치 실패 처리", `research/debug-tooling-plan.md`)이 이미 "이름"을 전제하고, 선택 필드면 기존 3종 계약을 안 깬다. (c)는 이름이 핸들러 자신이 아니라 레지스트리에 살게 돼 체인 슬롯 덤프(슬롯엔 handler 객체만 저장)가 역조회를 또 요구함 |
 
 ## §5 이상 없음 확인 (탐사자·구현이 확인만 하고 문제 없었던 자리)
 
-(아직 없음)
+- **[2026-08-31, 단위 1 구현]** "Dispatch 체인" 절 의사코드를 한 줄씩 옮기며
+  대조 — (A)/(B) 분기, (A)의 소비 직후 `NOOP` 교체, (B)의 점유 마커 선행,
+  `chains:SetStrong`이 `h.process` 앞, retractor 생략 즉시 error 양쪽,
+  `retractFrom` 꼬리 역순·항상 소비·구멍 error, `H-103` 주석(pcall 안 감쌈)
+  전부 그대로 — 전사 차이는 `H-212`(error 표기)뿐. `spec.dispatch.luau`
+  1~12가 각 계약을 실측(같은 핸들러 두 슬롯 = `State<State<T>>` 유사 구조,
+  깊은 체인 (A) 연쇄에서 각 레벨이 자기 힌트를 받는 것 포함).
+- **[2026-08-31]** `F-4-1`의 언어 동작(일반화 `for`가 배열 파트 전체를
+  해시보다 먼저, 배열 안은 index 순서) — `spec.drive.luau` 1번이 실측 통과.
+  스파이크 `01` 재작성은 이 spec이 상시 회귀로 대체(§6 계획, `STATUS.md`에
+  기록).
+- **[2026-08-31]** 매치 실패 메시지의 "브랜드 출력"은 기각된 Brand 역조회
+  (`archive/brand-shared-registry-reversed.md`)를 재도입하지 않고 모듈 공개
+  술어(`is*`) 프로브로 구현 — 실패 경로에서만 돌고(지연 생성 규칙), 새 표면
+  없음.
+- **[2026-08-31]** `H-165`(quad-types에 `export type` 추가 시 pesde shim
+  재생성 필요)를 예고대로 밟았고 `pesde install` 재실행으로 해소 —
+  `Handler`/`Dispatch`가 shim에 올라옴. 새 발견 아님(문서 그대로).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
 

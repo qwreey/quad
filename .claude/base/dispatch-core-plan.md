@@ -979,7 +979,7 @@ function Dispatch.process(inst, k, v, index)
                                 -- (h.process가 재귀하는 동안 잠깐 열려 있는 구간)
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("Dispatch: 핸들러가 retractor 반환을 생략했음 — 생략 불가")
+            error("quad.Dispatch: handler returned no retractor — return Void when there is nothing to undo", 2)
         end
         slot.retractor = retractor
     else
@@ -990,7 +990,7 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = NOOP }
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("Dispatch: 핸들러가 retractor 반환을 생략했음 — 생략 불가")
+            error("quad.Dispatch: handler returned no retractor — return Void when there is nothing to undo", 2)
         end
         list[index] = { handler = h, retractor = retractor }
     end
@@ -1016,13 +1016,20 @@ function Dispatch.retractFrom(inst, k, index)
     for i = #list, index, -1 do
         local slot = list[i]
         if slot == nil then
-            error("Dispatch: 인덱스 " .. i .. "에 슬롯이 없음 — 배열에 구멍이 뚫렸음")
+            error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
         end
         slot.retractor(nil)
         list[i] = nil
     end
 end
 ```
+
+**[2026-08-31 `H-212`]** 위 의사코드의 error 세 자리가 한국어·`level` 없음으로
+남아 있었다 — 이 절이 쓰인 뒤(2026-08-13) 확정된 `base/architecture.md`의
+"error 계약 — `level` 이분과 메시지 언어" 절(*"`base/`의 예시 메시지도 영어로
+쓴다"*)이 반영 안 된 것. M3 단위 1 구현과 같은 커밋에서 영어 + `level`로
+정정했다 — retractor 생략은 핸들러(제공자) 쪽 계약 위반이라 호출부를 가리키는
+`2`, 배열 구멍은 내부 부기 파손이라 그 자리를 가리키는 `1`.
 
 - **래핑 핸들러는 재-dispatch 전에 아무것도 철거하지 않는다 — 그냥 아래로
   내려보낸다.** `StoreBind`/`NoneHandler`가 하는 일은 이제 한 줄:

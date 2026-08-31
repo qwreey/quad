@@ -26,6 +26,7 @@ local InitStore = require("@self/Store")
 local Observer = require("@self/Observer")
 local Effect = require("@self/Effect")
 local Blocker = require("@self/Blocker")
+local InitDispatch = require("@self/Dispatch")
 
 type Quad = QuadTypes.Quad
 
@@ -81,6 +82,7 @@ local function New(): Quad
 	module:RunInit(InitStore)
 	module:RunInit(Observer.Init) -- 단위 3 — 레지스트리 둘의 소유 모듈(`H-99`)
 	module:RunInit(Effect.Init)
+	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	return module

@@ -166,9 +166,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 없어서 그냥 잊히기 쉬운 자리**라 여기 모은다. **무엇이 지금 어느 폴더에
 있는지의 소스는 항상 `.claude/luau-test/STATUS.md`** — 여기서 세지 않는다.
 
-- [ ] **`01`(props 순회 순서)** — 두 루프로 짜여 있어 지금 계약의 구현
-      (단일 일반화 `for`, `F-4-1`)과 안 맞음. 재작성하면서 "배열 파트 전체가
-      해시보다 먼저 + 배열 안에서는 index 순서"를 그대로 확인할 것
+- [x] **`01`(props 순회 순서)** — **[2026-08-31 닫힘, 재작성 안 함]** M3
+      단위 1의 `spec.drive.luau` 1번이 재작성이 물어야 했던 언어 동작
+      (일반화 `for` 한 번이 배열 파트 전체를 해시보다 먼저, 배열 안은 index
+      순서)을 실제 `Dispatch.drive`에 대고 상시 회귀로 실측 — 스파이크는
+      폐기, `done/`으로 이동(round12 brief §6 사용자 승인,
+      `luau-test/STATUS.md`의 그 행이 소스)
 - [x] **`05`(다이아몬드 전파)** — **[2026-08-29 닫힘, 재작성 안 함]** M2
       구현의 `spec.state.luau` 3번(다이아몬드 규칙 3, 조인 1회)·
       `spec.effect.luau` 3번이 실제 구현에서 같은 것을 고정해 스파이크는
@@ -728,7 +731,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > **빌드 순서상 역방향 간선은 없습니다.**
 
 
-- [ ] `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
+- [x] **[2026-08-31 M3 단위 1]** `Dispatch/init.luau` — `Dispatch.getHandler(inst,k,v): Handler?`(순수
       스캔, `isHandlable`+`priority`) / `Dispatch.process(inst,k,v,index)`
       (오케스트레이터: getHandler → **그 인덱스의 기존 핸들러와 비교** →
       같으면 그 자리 클로저에 새 값을 넘기고 같은 핸들러의 `.process`로
@@ -749,8 +752,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       테이블이라 일반화 `for` 한 번이 그 순서를 그대로 주고 두 층위는
       `type(k) == "number"` 분기로 가른다(`base/dispatch-core-plan.md`의
       `F-4-1` 정정 문단). 옛 "명시적 두 패스" 서술은 구현까지 2회 순회로
-      못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기
-      (`luau-test/STATUS.md`)
+      못박은 것처럼 읽혀 정정됨 — 그 때문에 스파이크 `01`도 재작성 대기였다가
+      **[2026-08-31]** `spec.drive.luau`가 대체하며 폐기(`luau-test/STATUS.md`).
+      **[2026-08-31 단위 1 범위 절단(round12 brief §6)]** 지금 커밋된 `drive`는
+      파이프라인 (b) 본체 루프만이다 — ⓪/⓪' 배치 Blocker 게이팅은 M3 단위
+      2(`getBlocker`/부기가 생기는 자리)에서, (a) pre-pass와 (c) `postRefList`는
+      M8(`PreRef`/`PostRef` 본체)에서 배선된다
 - [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-39`] 말단 핸들러는 예외
       없이 자기 배열 자리의 `setOffsetSource(inst,k,None)` → `setLength(inst,k,0)`을
       등록한다** — 이 계약을 핸들러 작성 체크리스트에 넣고, 실제로 넷이
@@ -761,7 +768,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`Frame { Tag("card"), TextLabel{} }`처럼 말단이 앞에 오는 흔한 배치).
       **배열 맨 끝이면 안 터지므로 "가끔 되고 가끔 터지는" 형태로 드러난다.**
       소스는 `base/dispatch-core-plan.md`의 등록 책임 절
-- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25`] `quad-types`의 `Quad`
+- [x] **[2026-08-31 M3 단위 1 완료]** **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-25`] `quad-types`의 `Quad`
       타입에 `Dispatch` 필드와 그 타입 재수출을 추가** — `Quad`가 5필드 닫힌
       레코드이고 `RunInit`은 반환값이 없어 타입을 못 넓히므로, 이걸 안 하면
       `module:RunInit(InitDispatch)` 뒤의 `quad.Dispatch` 접근이 **런타임엔
@@ -779,7 +786,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `H-25` 파생 항목에도 적어뒀다.) 빠뜨리면 그 마일스톤 완료 후
       `quad.Store`/`quad.Slot` 접근이 런타임엔 되는데 `luau-analyze`에선
       타입에러인, `H-25`가 실측한 그 문제가 **마일스톤마다 반복된다.**
-- [ ] `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
+- [x] **[2026-08-31 M3 단위 1]** `Handler.luau`(핸들러 계약 타입: `isHandlable(inst,k,v)`/`priority`/
       `process(inst,k,v,index) -> (hintValue)->()` **3종** — `isHandlable`도
       `inst`를 받도록 확정(2026-08-07 여덟 번째 세션), 별도 `retract` 필드는
       `process` 반환값으로 합쳐짐(2026-08-13 다섯 번째 세션))
@@ -879,13 +886,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       대상이 `Blocker` 자체가 아니라 그 아래 공용 `Gate` 노드로 바뀐 것)는
       `qa-request/pre-implementation-qa-round5-followup.md`와
       `base/gate-plan.md`가 소스 — 여기서 반복하지 않는다.
-- [ ] 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
+- [x] **[2026-08-31 M3 단위 1]** 핸들러 계약 검증: `process`가 retractor 클로저를 **반환하지 않는**
       핸들러를 등록하면 리뷰/린트에서 걸러내기(정리할 게 없어도 항상
       `Void`(**[2026-08-28 `H-162`]** 단일 no-op)를 반환 — `Dispatch.retractFrom`이 nil 체크 없이
       호출, `base/dispatch-core-plan.md` "핸들러 계약" 절, 2026-08-08 세션
       / **2026-08-13 다섯 번째 세션에 별도 `retract` 필드가 `process`
       반환값으로 합쳐지며 대상만 바뀜**)
-- [ ] 우선순위 동률/매치 실패 처리(2026-08-12 열일곱 번째 세션 확정,
+- [x] **[2026-08-31 M3 단위 1 — 단, 목록의 핸들러 "이름"은 계약에 `name`
+      필드가 없어 `H-214`로 §4 대기, `listHandlers`는 임시로 핸들러 객체
+      배열 반환]** 우선순위 동률/매치 실패 처리(2026-08-12 열일곱 번째 세션 확정,
       `base/dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절) —
       `HANDLER_PRIORITY_HIGH`/`_NORMAL`/`_LOW`/**`_FALLBACK`**(base 제공
       핸들러의 기본 밴드 — 백엔드가 평범한 우선순위로 자기 핸들러를
@@ -902,7 +911,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
       dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절)
-- [ ] `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
+- [x] **[2026-08-31 M3 단위 1]** `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
       — **재귀 깊이 인덱스 → (담당 핸들러, 그가 반환한 retractor 클로저)**) +
       **3-인자** `Dispatch.retractFrom(inst,k,index)` — 재귀 재-dispatch
       (StoreBind/NoneHandler)의 정리를 다단 체인까지 정확히 전파(2026-08-08
