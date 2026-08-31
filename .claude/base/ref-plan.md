@@ -975,8 +975,9 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     - **구현**: pre-pass가 첫 fire 때 해당 `PreRef` 객체에 내부 플래그
       (`_fired = true`)를 세팅. pre-pass가 배열을 훑다 `isPreRef(v)`인
       슬롯을 만났는데 그 객체가 이미 `_fired`면, fire하지 않고 그 자리에서
-      즉시 `error("PreRef는 1회용 — 이미 다른 construction에 쓰인
-      PreRef를 재사용할 수 없음, 매번 새로 만들 것")`. 위 "동적 경로 가드"
+      즉시 `error("PreRef instance reused", 2)`(문구는
+      `bind-system-plan.md`의 파이프라인 의사코드와 같은 리터럴 — 1회용이라
+      매번 새로 만들라는 뜻). 위 "동적 경로 가드"
       Handler(정상 본체 루프에서 매치)와는 별개 코드 경로 — 이 가드는
       pre-pass 자신 안에, `_fired`가 아닌 정상 fire는 그대로 통과.
     - **관용구**: `Slot:List`의 `updateFn`처럼 반복 호출되는 자리에서

@@ -1691,7 +1691,7 @@ function bindLifetime(inst, value)
                               -- bindLifetime의 게이트는 canBound, canExecute 아님
                               -- [정정, 2026-08-18 구현 전 QA] 방향이 뒤집혀 있었음 —
                               -- canBound 참 = 묶어도 됨이라 에러는 not 쪽
-        error("이미 바인딩된 값")   -- 메시지 분기는 위 게이트 스케치 참고
+        error("bindLifetime: value is already bound", 2) -- 실제 메시지 분기는 위 게이트 스케치 참고
     end
     ... -- gchold 등록 + gcconn 참조 복사(base/lifecycle-pattern.md)
 end

@@ -459,7 +459,7 @@ function AttributeGroupHandler.process(inst, k, v, index)
     -- 기록되는 중간 상태가 안 생긴다 — 위 그 항목이 소스).
     local claimed = groupClaimKeys:GetStrong(inst, v)
     if claimed ~= nil and claimed ~= k then
-        error("Attribute: 같은 그룹 값이 이 인스턴스의 두 위치에 놓임")
+        error("Attribute: the same group value is placed at two positions of this instance", 2)
     end
     groupClaimKeys:SetStrong(inst, v, k)
 

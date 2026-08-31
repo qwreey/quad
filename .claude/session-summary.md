@@ -2061,3 +2061,17 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `mN-implementation-roundNN`, 라운드 번호는 마일스톤 가로질러 단순 증가 —
   `README.md` `qa-request/` 행이 소스), 툴링 픽스 둘(`H-210` rojo 트리 /
   `H-211` Relate 타입)도 이 세션. 다음 액션은 M3 착수 규약 문항.
+
+- **`session/2026-08-31-02-m3-kickoff-unit1-dispatch-core.md`** — M3 착수. round12
+  규약 확정(§0 Q1~Q3 전부 권고 (a), §6 첫 단위 계획 승인 — 대화형 선택지 한 번),
+  단위 1(디스패치 코어) 구현: `Handler` 타입(quad-types 소유)+`Quad.Dispatch`(`H-25`),
+  `InitDispatch(module)`(하강 diff process/3-인자 retractFrom/addHandler/
+  listHandlers/drive (b) 루프만 — ⓪⓪'는 단위 2, (a)(c)는 M8), `spec.dispatch` 12절
+  +`spec.drive` 3절 ALL PASS. 발견: `H-212`(① base 의사코드 error 영어+level 정정)/
+  `H-213`(① 우선순위 밴드 리터럴)/`H-214`(② 핸들러 이름 필드 — §4 문항). 스파이크
+  `01` 폐기(`spec.drive`가 상시 회귀로 대체). `H-165` 재현 — pesde install로 해소.
+  **같은 날 단위 끝 절차** — 감사 루프 5라운드(1: 기계적 누락 4 / 2: STATUS 부채 2+`H-215` 등재 /
+  3: error 영어화 확장+`H-214` 근거 정정 / 4: `H-216` slot-plan 11곳 / 5: 계수 정정+`H-217`
+  4곳 — base 코드 리터럴 한국어 error 0), §4 배치 회신 도착(*"전부 권고안에 동의해"*) —
+  `H-214` (a) Handler 선택 필드 `name: string?` / `H-215` (a) 스파이크 `04` 폐기(잔여
+  `StoreBind` 경유 경로는 ROADMAP M4 mock 항목). 단위 1 §4 열린 문항 0·코드 마커 0.

@@ -127,11 +127,16 @@ export type Source<T> = State<T> & {
 }
 
 -- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
--- `Handler` — 핸들러 계약 **3종**(`.claude/base/dispatch-core-plan.md` "핸들러
--- 계약"): `isHandlable`은 부작용 없는 순수 판별(inst도 받음), `process`는 자기
--- 자신을 무르는 1-인자 retractor를 반환(생략 불가 — 정리할 게 없어도 `Void`).
--- retractor 인자는 `nil`(단순 철거)이거나 같은 핸들러가 처리할 새 값, 둘뿐.
+-- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`**(`.claude/base/
+-- dispatch-core-plan.md` "핸들러 계약"): `isHandlable`은 부작용 없는 순수
+-- 판별(inst도 받음), `process`는 자기 자신을 무르는 1-인자 retractor를
+-- 반환(생략 불가 — 정리할 게 없어도 `Void`). retractor 인자는 `nil`(단순
+-- 철거)이거나 같은 핸들러가 처리할 새 값, 둘뿐. `name`은 진단 전용
+-- (`H-214` (a) 사용자 확정, 2026-08-31) — 동률 경고·`listHandlers`·
+-- `quad-debug` 체인 덤프가 있으면 쓰고 없으면 priority만 보인다,
+-- 스캔·매치엔 아무 영향 없음.
 export type Handler = {
+	name: string?,
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
 	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?) -> (),

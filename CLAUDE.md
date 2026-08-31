@@ -2,7 +2,7 @@
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
 **⭐ [2026-08-31 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)까지 완료, **M3(디스패치 엔진) 진행 중**** — M2는 자율 구현
+Source/State/Store)까지 완료, M3(디스패치 엔진) 진행 중** — M2는 자율 구현
 구간(규약 `.claude/qa-request/m2-implementation-round11-brief.md`, 발견·배치
 문항 `-round11.md`)으로 돌아 2026-08-28 착수~08-31 종결: 단위 넷 구현·감사·
 리뷰·탐사 완료, `ROADMAP.md` M2 체크박스 전부 `[x]`, §4 문항·코드 마커 0.

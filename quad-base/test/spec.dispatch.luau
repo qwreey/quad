@@ -301,9 +301,11 @@ do
 	q.Dispatch.addHandler(low)
 	q.Dispatch.addHandler(fallback)
 	q.Dispatch.addHandler(high)
+	high.name = "HighLeaf" -- 선택 진단 필드(`H-214` (a)) — 매치·순서엔 무영향
 	local listed = q.Dispatch.listHandlers()
 	assert(#listed == 3, "returns every registered handler")
 	assert(listed[1] == high and listed[2] == low and listed[3] == fallback, "scan (priority) order")
+	assert(listed[1].name == "HighLeaf" and listed[2].name == nil, "optional name rides along; absent stays nil")
 	table.clear(listed) -- 사본이라 레지스트리에 영향 없음
 	assert(q.Dispatch.getHandler({}, "k", 5) == high, "mutating the returned list does not disturb the registry")
 	print("PASS")

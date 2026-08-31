@@ -179,8 +179,11 @@ local function Init(module: any)
 		if module.debug then
 			for _, existing in handlers do
 				if existing.priority == handler.priority then
+					-- `name` is the optional diagnostics-only contract field
+					-- (`H-214` (a)) — fall back to priority alone when absent.
 					print(
 						`quad.Dispatch: handler priority tie at {handler.priority}`
+							.. ` between "{existing.name or "?"}" and "{handler.name or "?"}"`
 							.. " — ties have no defined order; offset from a HANDLER_PRIORITY_* band"
 					)
 					break
@@ -196,10 +199,9 @@ local function Init(module: any)
 	function Dispatch.listHandlers(): { Handler }
 		-- Pure query — returns the registered handlers in scan order, prints
 		-- nothing (`D-8`); whether to display them is the caller's business.
-		-- A copy, so callers can't disturb the scan order.
-		-- TODO(H-214): the Handler contract has no `name` field, but this doc'd
-		-- surface ("이름/priority") and the tie warning/`quad-debug` chain dump
-		-- want one — pending §4 batch decision.
+		-- A copy, so callers can't disturb the scan order. Each handler carries
+		-- the doc'd name/priority via the optional `name` contract field
+		-- (`H-214` (a) — absent name just shows as nil).
 		return table.clone(handlers)
 	end
 

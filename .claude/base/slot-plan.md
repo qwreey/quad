@@ -430,7 +430,7 @@ local function claimOwner(element, ownerKey, fromDetached)
         -- `fromDetached` 없이 같은 owner라는 것만으로 통과시키면
         -- `Slot{a, a}`가 다시 조용히 새어나간다(2026-08-13 감사가 막은 것).
         if not (fromDetached and cur == ownerKey) then
-            error("이 요소는 이미 마운트돼 있음 — 다중 마운트 금지")
+            error("Slot: this element is already mounted — multiple mounts are not allowed", 2)
         end
         return   -- 이미 내 것이므로 SetWeak도 불필요
     end
@@ -445,7 +445,7 @@ local function claimOwnerAt(element, inst, k)
         return false  -- 정확히 이 자리가 이미 들고 있음 — 재확인만, no-op
     end
     if current ~= nil then
-        error("이 요소는 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
+        error("Slot: this element is already mounted elsewhere — multiple mounts are not allowed", 2)
     end
     elementOwner:SetWeak(element, OWNER, inst)
     elementOwner:SetWeak(element, OWNER_POS, k)
@@ -460,7 +460,7 @@ local function releaseOwner(element, ownerKey)
     -- 무시 없이 즉시 error" 원칙과 같은 결로 즉시 error.
     local current = elementOwner:GetWeak(element, OWNER)
     if current ~= ownerKey then
-        error("releaseOwner: 이 element는 이 ownerKey가 소유하고 있지 않음 — 호출측 소유권 추적이 깨졌음")
+        error("releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", 1)
     end
     elementOwner:SetWeak(element, OWNER, nil)
     elementOwner:SetWeak(element, OWNER_POS, nil)
@@ -1554,7 +1554,7 @@ function activateList(self, physicalTarget)
         for i, item in ipairs(items) do
             local key = keyFn(item, i)   -- keyFn은 raw i를 받음(:List 파라미터 설명 참고)
             if seen[key] then
-                error("Slot:List — duplicate key: " .. tostring(key))
+                error("Slot:List — duplicate key: " .. tostring(key), 2)
             end
             seen[key] = true
             keys[i] = key
@@ -1632,8 +1632,8 @@ function activateList(self, physicalTarget)
                 -- KeyGone을 받은 자리는 "데이터가 다시 나타날 때를 위한 캐싱"
                 -- (= Detach) 아니면 파괴뿐이고, **새 마운트/생성은 거부**한다.
                 if result ~= nil then
-                    error("Slot:List — KeyGone에는 nil/None(파괴) 또는 Detach(홀드)만 반환할 수 있음 "
-                        .. "(자리가 없어진 키에 새 요소를 마운트할 수 없고, prev 유지도 모순)")
+                    error("Slot:List — KeyGone accepts only nil/None (destroy) or Detach (hold) "
+                        .. "(cannot mount a new element at a key whose slot is gone; keeping prev is contradictory)", 2)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
@@ -3271,7 +3271,7 @@ function Slot:Add(element, index)
     assert(not self._listed, "Slot: :List가 설치된 Slot엔 수동 CRUD를 쓸 수 없음")
     -- (2) index 범위 검증 — **clamp 안 함**, 범위 밖이면 error
     if index ~= nil and (index < 1 or index > #self._elements + 1) then
-        error("Slot:Add — index가 범위 밖(1.." .. (#self._elements + 1) .. "): " .. tostring(index))
+        error("Slot:Add — index out of range (1.." .. (#self._elements + 1) .. "): " .. tostring(index), 2)
     end
     -- (3) 요소 타입 검증은 `wrapElement`가 한다(위 그 함수 — `isSlot`/`isState`/`isInst`)
     local wrapped = wrapElement(element)
@@ -3316,13 +3316,13 @@ local function wrapElement(v)
     if not isState(v) then
         -- 진단을 위해 핸들러 계층 값은 따로 잡는다(왜 안 되는지 근거가 다르다)
         if isRef(v) or isPreRef(v) or isPostRef(v) or isObserver(v) or isEffect(v) or isModifier(v) then
-            error("Slot: 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Modifier)은 요소가 될 수 없음")
+            error("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", 2)
         end
         if v == nil or v == None then
-            error("Slot: nil/None은 요소가 될 수 없음 — 실제로 마운트 가능한 값만")
+            error("Slot: nil/None cannot be an element — only actually mountable values", 2)
         end
         if not isInst(v) then     -- 백엔드 주입 술어(위 `native*` 절)
-            error("Slot: 이 백엔드가 마운트할 수 없는 값")
+            error("Slot: this backend cannot mount this value", 2)
         end
         return v
     end
@@ -3608,7 +3608,7 @@ function dispose(value)
     --   안 들어간다(`Relate`는 항상 3-인자 `SetWeak`/2-인자 `GetWeak`, 409행).
     --   `H-71`로 dedup 기록까지 `SetWeak`이 되며 강/약 짝맞춤이 더 중요해졌다.
     if elementOwner:GetWeak(value, OWNER) ~= nil then
-        error("dispose: 이 값은 아직 트리가 살아있길 요구 중임 — 먼저 Remove/Extract 할 것")
+        error("dispose: this value still requires its tree to be alive — Remove/Extract it first", 2)
     end
     -- (2) [`H-43`] Slot도 Instance도 아닌 값이 백엔드로 그냥 흘러가지 않게
     if isSlot(value) then
@@ -3616,7 +3616,7 @@ function dispose(value)
     elseif isInst(value) then
         nativeDispose(value)     -- 아래 주입 op
     else
-        error("dispose: 이 백엔드가 파괴할 수 없는 값")
+        error("dispose: this backend cannot dispose this value", 2)
     end
 end
 ```

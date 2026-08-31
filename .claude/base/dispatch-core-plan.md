@@ -129,6 +129,19 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   >   이야기**다 — (A) 분기에서 클로저가 불릴 땐 아래가 그대로 살아 있고,
   >   그게 바로 "깜빡임 없이 갈아끼우기"가 성립하는 이유다.
 
+- **⭐ [2026-08-31 신설, `H-214` (a) 사용자 확정] 선택 필드 `name: string?` —
+  진단 전용.** 위 필수 3종에 더해, 핸들러는 자기 이름을 선택적으로 실을 수
+  있다. 쓰는 곳은 진단뿐 — 동률 경고 print, `Dispatch.listHandlers()`가
+  돌려주는 목록(아래 "우선순위 동률/매치 실패 처리" 절의 "이름/priority"가
+  이 필드), 나중의 `quad-debug` 체인 슬롯 덤프(아래 "부수 효과 — quad-debug에
+  유리" 항목). **스캔·매치·체인 부기엔 아무 영향 없고, 없으면 priority만
+  보인다.** 배경: `listHandlers`와 체인 덤프 서술이 "이름"을 전제하는데 계약
+  3종엔 이름이 없다는 게 M3 단위 1 구현에서 드러났고
+  (`qa-request/m3-implementation-round12.md` `H-214`), 사용자가 선택 필드
+  안을 채택했다(2026-08-31, *"전부 권고안에 동의해"*). 별도 등록 인자
+  (`addHandler(h, name)`) 안은 이름이 레지스트리에 살게 돼 체인 슬롯
+  덤프(슬롯엔 handler 객체만 저장)가 역조회를 요구해서 기각.
+
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
 열린 레지스트리). tbox의 `TUnion` 런타임 체커가 이미 이 "순서대로 스캔, 첫 매치
@@ -877,9 +890,13 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 
 - **아직 아무 팩토리도 채우지 않은 슬롯의 기본값은 quad-base가 준다 —
   단 "동작하는 구현을 추측"하지 않고 명시적으로 에러내는 스텁으로.**
-  `BaseModule.addTag = function() error("addTag가 구현되지 않음 —
-  provider가 초기화됐는지, 이 백엔드가 Tag를 지원하는지 확인하라") end`
-  류. base가 "그럴듯한 기본 동작"(예: 조용한 no-op)을 대신 만들어주는
+  `BaseModule.addTag = function() error("quad: addTag is not available —
+  check that the provider is initialized and that this backend supports
+  Tag") end` 류(**[2026-08-31 `H-212` 확장]** 예시 메시지를 영어로 —
+  M2가 커밋한 `LifetimeHandle.luau`의 미주입 스텁과 같은 어조. `level`
+  숫자는 이 스텁이 quad 내부 프레임(`TagHandler.process`)을 거쳐 불려
+  "사용자 호출부"까지의 프레임 수를 문서 시점엔 못 세므로 여기 안 박는다 —
+  M5/M10 구현 시점에 도착지 계약(`architecture.md`)대로 정할 것). base가 "그럴듯한 기본 동작"(예: 조용한 no-op)을 대신 만들어주는
   건 기각 — 임의의 엔진에 뭐가 맞는 기본값인지 base는 알 수 없고,
   조용한 no-op은 실수(provider 초기화를 잊음)를 가려버림. 명시적 에러가
   유일하게 안전한 기본값.
@@ -893,7 +910,7 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
   ```lua
   { priority = HANDLER_PRIORITY_FALLBACK + 1,
     isHandlable = function(inst,k,v) return isTag(v) end,
-    process = function(inst,k,v) error("이 백엔드는 Tag를 지원하지 않음") end }
+    process = function(inst,k,v) error("this backend does not support Tag") end }
   ```
   실제로 `FALLBACK`에 등록돼 있는 `TagFallbackHandler`보다 한 단계
   높아 스캔에서 먼저 매치되고(2026-08-14 열두 번째 세션 정정 — `TagHandler`
@@ -1783,7 +1800,7 @@ function Dispatch.getOffsetAt(ownerKey, at)
         -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
         -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
         if bk.lengthList[i] == nil then
-            error("Dispatch.getOffsetAt: lengthList[" .. i .. "]가 nil — bookkeeping is broken", 1)
+            error("Dispatch.getOffsetAt: lengthList[" .. i .. "] is nil — bookkeeping is broken", 1)
         end
         cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
@@ -1960,7 +1977,7 @@ local function recompute(ownerKey, bk)
         -- 부기가 깨진 것 — 조용히 건너뛰면 위치 하나가 순서 계산에서 빠지는
         -- 추적 어려운 오작동이 된다. 상세는 base/slot-plan.md의 "추가 방어 조치".
         if offset == nil then
-            error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
+            error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
         end
         local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
         bk.offsetSetUpTo = i                                    -- 여기까지 Set 완료
