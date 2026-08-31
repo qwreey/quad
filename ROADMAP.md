@@ -169,9 +169,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] **`01`(props 순회 순서)** — 두 루프로 짜여 있어 지금 계약의 구현
       (단일 일반화 `for`, `F-4-1`)과 안 맞음. 재작성하면서 "배열 파트 전체가
       해시보다 먼저 + 배열 안에서는 index 순서"를 그대로 확인할 것
-- [ ] **`05`(다이아몬드 전파)** — `Epoch` 리비전 비교 채택으로 다이아몬드
-      Observer가 이제 변경당 **1회**만 울어야 함(옛 "emit은 항상 전파" 모델을
-      검증 중). `base/state-epoch-plan.md` 기준으로 재작성
+- [x] **`05`(다이아몬드 전파)** — **[2026-08-29 닫힘, 재작성 안 함]** M2
+      구현의 `spec.state.luau` 3번(다이아몬드 규칙 3, 조인 1회)·
+      `spec.effect.luau` 3번이 실제 구현에서 같은 것을 고정해 스파이크는
+      폐기, `done/`으로 이동(`luau-test/STATUS.md`의 그 행이 소스)
 - [ ] **`04`(Dispatch 체인 retractFrom)** — 하강 diff 확정으로 무효화.
       **M3 착수 시 같이 처리**하는 게 자연스러움
 - [ ] **`19`(소유권/참조카운트 Relate 패턴)** — **B 섹션만** 낡음
@@ -184,17 +185,30 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       전면 재작성되며 옛 `Brand.set`/`Brand.get` 구현에 의존하던 부분이
       깨짐(검증 대상인 `isRef`/`isPreRef` 포함 관계 자체는 그대로).
       **M8 착수 시 같이 처리**
-- [ ] **`15`(`:Compute` trailing deps 타입팩)** — 이형 다중 deps를 제네릭
-      타입 팩으로 표현 가능한지 미실측(안 되면 동종 dep 1개로 한정).
-      **M2 착수 시 같이 처리**
+- [x] **`15`(`:Compute` trailing deps 타입팩)** — **[2026-08-28 닫힘, 재작성
+      안 함]** M2 단위 2가 실제 `quad-types` 선언에서 타입팩 형태를 실측해
+      **기각**했다(`m2-implementation-round11.md` `H-176`: strict에서 콜백
+      dep 추론이 깨짐 → deps 자리 `...any` 확정). 물으려던 답이 나와 폐기,
+      `done/`으로 이동
 - [ ] **`10`(Roblox Studio 확인)** — `bindLifetime`/`canExecute`/
       `unbindLifetime` 재정정으로 무효화. **Studio 작업이라
       `HUMAN_TODO.md` 1번(계정 분리)이 선행**
-- [ ] **아직 파일이 없는 실측 항목** — **중간 State GC**
-      (`base/source-state-plan.md`, 상류 strong / 하류 weak 불변식 —
-      `.claude/todos.md`가 "M2 착수 전 필요"로 지정. **[2026-08-24 승격]**
-      순서 교체로 반응형이 바로 다음 마일스톤이 되면서 `question.md`
-      최우선 절로 올라갔다). **[2026-08-24 정리]** 여기 같이 적혀 있던
+- [ ] **`11`(modifier 불법 값 error) / `16`·`21`(Store 타입)** —
+      **[2026-08-31 소급 등재]** 셋 다 이 절 신설(08-22) **이후** 합류
+      (`11`은 8라운드 `H-122`/`H-123`으로 08-26에, `16`/`21`은 Store 재설계로
+      08-25에)했는데 이 목록에 안 올라 있었다 — `11`은 ROADMAP 어디에도
+      없었고 `16`/`21`은 이제 닫힌 M2 본문 속 한 줄뿐. 재작성 지침은
+      `luau-test/STATUS.md`의 각 행이 소스. **단 `11`은 폐기 후보다** —
+      재작성이 검증하려는 것(`isModifier` 가드는 `Source` 생성자/`Set`/
+      `Compute` 캐싱, Store는 `isSource` 화이트리스트)을 M2 구현의
+      `spec.source.luau`·`spec.store.luau`가 이미 실제 구현에서 고정하고
+      있어 `05`/`15`와 같은 근거가 성립한다 — 다음 라운드에서 판정할 것
+- [x] **아직 파일이 없던 실측 항목 — 중간 State GC** — **[2026-08-28 닫힘]**
+      `_hold` 불변식(하류 → 상류 강함; 설계는 2026-08-25 사용자 확정으로
+      `question.md`에서 이미 내려가 있었다)을 M2 구현의 `spec.state.luau`
+      11번이 양성(체인 생존)·음성(하류를 놓으면 수거) 둘 다 실측 —
+      별도 스파이크는 안 만든다(`luau-test/STATUS.md` "만들어야 할 스파이크"
+      절의 그 행이 소스). **[2026-08-24 정리]** 여기 같이 적혀 있던
       `R-11`의 `table.insert` 구멍 재사용은 6라운드 `H-7`로
       **전제 자체가 없어져 폐기**됐다(`Ref.Callbacks`가 해시맵 셋이 되어
       구멍 개념이 없음) — `luau-test/STATUS.md`가 소스
@@ -262,7 +276,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 지켜집니다.
 >
 > **⭐ [2026-08-28 착수] M2는 자율 구현 구간으로 돕니다** — 규약(세 갈래 분류,
-> 단위 넷, 관여 시점)은 `.claude/qa-request/pre-implementation-handtrace-round11-brief.md`가
+> 단위 넷, 관여 시점)은 `.claude/qa-request/m2-implementation-round11-brief.md`가
 > 소스, 발견은 `-round11.md`. 단위 순서는 이 문서의 체크박스 순서 그대로이되
 > **`H-97`의 mock 생명주기 4종은 첫 단위(공통 기반)로 당겨** 짠다 — 그게 없으면
 > 두 번째 단위부터 전파 루프 테스트가 안 돈다.
@@ -397,7 +411,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       돌며 **값만 앞당기고 통지는 상류 emit을 기다린다**. 다이아몬드 중복
       통지가 접히므로 스파이크 `05`도 그에 맞춰 재작성해야 한다
       (`luau-test/STATUS.md`).
-- [x] **[2026-08-28 완료 — 단위 2]** `Source.luau`/`State.luau`/`Store.luau` — `InitState`/`InitSource`/`InitStore` 팩토리(`H-174`), `test/spec.{epochmap,source,state,store}.luau`
+- [x] **[2026-08-28 완료 — 단위 2]** `Source.luau`/`State.luau`/`Store.luau` — `State.Init`/`InitSource`/`InitStore` 팩토리(`H-174`), `test/spec.{epochmap,source,state,store}.luau`
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-28 10라운드 `H-153`]** Store 생성자의 `isSource` 순회와 `store:Of(name)`에
       **예약 이름 런타임 가드**(`error(…, 2)`) — 동적 키는 타입이 못 막는다;
       그림자 = store 자신(`base/store-plan.md`).
@@ -481,11 +495,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       절, 2026-08-07 일곱 번째 세션) — `factory(self)`를 체이닝 문법으로
       부르는 순수 설탕, `factory: (State<T>) -> U): U`로 열린 타입. Source도
       기존 `:With`/`:Compute` 델리게이션에 얹혀 자동 포함
-- [ ] **`Observer.luau`** — `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()`
+- [x] **[2026-08-29 완료 — 단위 3]** **`Observer.luau`** — `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()`
       전역 레지스트리의 소유 모듈**. `EpochMap.luau`와 같은 이유로
       `State.luau`에 묻지 않는다(`Effect`/`GateNode`/leaf 핸들러가 전부 이
       레지스트리를 본다) — `base/architecture.md` 소스 트리, 7라운드 `H-99`
-- [ ] `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
+- [x] **[2026-08-29 완료 — 단위 3]** `state:Observer(fn)` — children 배열 leaf 참가자, **등록 즉시 1회
       실행 확정**(`base/source-state-plan.md`의 Observer 절), `isObserver`
       판별자, canExecute 게이팅, `:Subscribe()`/`:Unsubscribe()` +
       **`:WeakSubscribe()`/`:WeakUnsubscribe()`**(Weak 쪽이 프리미티브,
@@ -505,7 +519,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       열한 번째 세션 — `PreRef`와 같은 패턴)도 같이 등록
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
+- [x] **[2026-08-29 완료 — 단위 3]** `Effect(fn, ...deps)` — ~~**⚠️ 선행: `Blocker`의 기본 메커니즘**~~
       (**[2026-08-28 10라운드 `H-150`]** 선행 요구 **해소** — 생성자의 사적
       `Blocker`는 `canExecute`(지금은 `rawRerun` 진입, `H-159`)가 이미 같은 억제를 해서 한 번도
       판정에 닿지 않는 죽은 부품이라 제거됐다. `Blocker.luau`는 이제 `GateNode`/
@@ -536,7 +550,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       "동적 경로 가드" 절, 2026-08-14 열한 번째 세션)
       **⚠️ [2026-08-24] 단 그 가드를 `Dispatch.addHandler`로 등록하는 것
       자체는 M3다** — 레지스트리가 거기서 생긴다(M3의 그 항목).
-- [ ] **⭐ [2026-08-24 신설, 6라운드 / 2026-08-25 7라운드로 필드 재편]
+- [x] **[2026-08-29 완료 — 단위 3]** **⭐ [2026-08-24 신설, 6라운드 / 2026-08-25 7라운드로 필드 재편]
       `Effect` 구현 시 같이 만들 것** —
       **`handle._deps`**(`{[Ref|State] = fn|Observer}`, **강참조** — 옛
       `_observers`/`_refDeps`/`_refCallbacks` 셋이 여기로 통합됐다) ·
@@ -576,7 +590,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       스냅샷한 뒤** 돈다 — 순회 중 새 구독자 추가가 정상 경로인데 Lua에서
       미정의라, 실측에서 실행마다 결과가 달라지고 한 Observer가 통째로
       누락됐다. "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약
-- [ ] Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
+- [x] **[2026-08-29 완료 — 단위 3]** Observer/Effect 이중 바인딩 금지 — `canBound(value)` 게이트로
       `:Subscribe()`(전역)와 `bindLifetime`(inst-scoped, leaf 부착도
       내부적으로 이걸 호출)이 동시에 걸리면 즉시 `error`(`base/source-state-plan.md` "이중 바인딩 금지" 절, 2026-08-07 일곱 번째
       세션 신설, 2026-08-09 여섯 번째 세션에서 "leaf 부착=bindLifetime
@@ -598,7 +612,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `archive/canexecute-inst-arg-reversed.md`. 부수 효과로 **바인딩이
       죽은 뒤(`Destroy`/`unbindLifetime`)의 재사용은 게이트를 통과**
       (살아있는 바인딩만 막는 게 의도, 안 바뀜)
-- [ ] **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
+- [x] **[2026-08-29 완료 — 단위 4]** **`state:Gate(setup)` + `GateNode`** (**[2026-08-24]** 위 `EpochMap`과 같이 되돌아옴) —
       emit을 가로채 유보했다가 한 번에 내보내는 공용 게이트 노드
       (`ComputeNode`와 같은 층위, 탑레벨 `Gate(...)` 프리미티브는 안 만듦).
       **[2026-08-28 10라운드 `H-152`] 조립 첫 줄은 `StateBrand:register(node)`** —
@@ -620,7 +634,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       그리고 **수신 시점 판정은 `emitEpochMap:Peek`**을 쓴다 — `:Update`는
       덮으므로 "유보 중엔 아직 안 던졌다"는 맵의 뜻과 양립하지 않는다.
       flush 순서는 **빈 배치 얼리리턴 → 스왑 → `:Sync(batch)` → 전파**
-- [ ] **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
+- [x] **[2026-08-29 완료 — 단위 4]** **`Blocker.luau`** (**[2026-08-24]** 위 둘과 같이 되돌아옴) — 위 `GateNode` 위에
       얹히는 **정책**(다시 노드를 만들지 말 것).
       **⭐ [2026-08-25 추가, 7라운드 `H-63`] onunblock 핸들 보관 세 자리**:
       (1) **weak-키 해시맵 셋**(`__mode = "k"`) — 값-weak 배열이면 구멍에서
@@ -634,7 +648,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       호출하므로(`base/gate-plan.md` 9번이 소스 — Blocker 인스턴스를 lazy
       조회하는 `getBlocker(ownerKey)`는 Blocker 메서드가 아니라 Dispatch
       쪽 헬퍼다) **최소한 그 셋이 도는 형태까지는 M3(디스패치)가 요구**
-- [ ] **[2026-08-28 부분 — 단위 1·2분(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종/`Source`/`Store` + `State`·`Source`·`Store` 타입)은 `quad-types` `Quad`에 추가됨, `Effect`/`Blocker`는 각 단위에서]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
+- [x] **[2026-08-29 완료 — 단위 1~4분 전부(`Relate`/`Void`/`Ref`/`is*`/생명주기 4종+`onDestroying`/`Source`/`Store`/`Effect`/`Blocker` + `State`·`Source`·`Store`·`Observer`·`EffectHandle`·`Blocker`·`GateSetup` 타입)가 `quad-types` `Quad`에 추가됨 — M2 몫은 닫힘]** **[2026-08-24 `H-25` 파생, 2026-08-25 `H-80`으로 목록 확장]**
       `quad-types`의 `Quad`에 **이 마일스톤이 얹는 탑레벨 값 전부** 추가 —
       `Source` / `Store` / `Effect` / `Blocker` / `Relate` / **`Void`**(단일 no-op 함수 export — no-op 클로저를 돌려주는 자리는 새 클로저 대신 이것, **[2026-08-28 `H-162`]**) / **`Ref`**(최소형,
       2026-08-27 `H-128`) /
@@ -665,7 +679,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       이형 다중 deps를 제네릭 타입 팩으로 표현 가능한지만 실측 필요(안
       되면 동종 타입 dep 1개로 한정 — 실측 결과 채택된 건 이 대안이 아니라
       deps 자리 `...any` + 콜백 주석이다)
-- [ ] **[2026-08-28 부분 — 단위 2에서 `:With`/`Source:Emit()` 완료, `state:Apply(blocker)`는 `Apply`의 `__apply` 경로로 단위 4에서 실제 Blocker와 합류할 때 닫힘]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
+- [x] **[2026-08-29 완료 — 단위 2에서 `:With`/`Source:Emit()`, 단위 4에서 `state:Apply(blocker)`(`Blocker.__apply` → `state:Gate`, `spec.blocker` 2번)]** **[2026-08-25 신설, `H-84`]** `:With(...)` / `state:Apply(blocker)` /
       `Source:Emit()` — `:Compute`/`:Apply`/`:Observer`는 각각 체크박스가
       있는데 이 셋만 빠져 있었다
 - [x] **[2026-08-28 완료 — 단위 2]** **[2026-08-25 신설, `H-81`; 2026-08-26 자리 정정 `H-122`]**
@@ -688,7 +702,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       발화마다 `canExecute`를 부르는데 그건 M8 구현이고 미주입 슬롯은
       에러 스텁이다). 커밋된 `quad-base/test/mock.luau`에 signal/Connection이
       이미 있으므로 그 `Destroying`을 그대로 쓰면 된다
-- [ ] mock 대상 테스트 — **전파 루프를 실제로 돌릴 것**(위 항목이 선행).
+- [x] **[2026-08-29 완료 — 단위 3: `spec.observer.luau` 2·`spec.effect.luau` 2가 mock Instance에 묶은 채 전파 루프를 실제로 돌린다(홀드 → 바인드 캐치업 → 발화 → 파괴)]** mock 대상 테스트 — **전파 루프를 실제로 돌릴 것**(위 항목이 선행).
       M2의 핵심이 전파 루프인데 그걸 한 번도 안 돌려보고 M3로 넘어가면
       7라운드가 찾은 종류의 결함을 그대로 낳는다
 

@@ -306,16 +306,33 @@ end
   `Effect`는 "죽기 전에 처리해주겠다"가 계약이라 성격이 다르다.
 
 ```lua
+-- ⭐ [2026-08-31 `H-184`, 사용자 확정] `bindLifetime`이 부기를 커밋하기 **전에**
+--   이 훅을 먼저 묻는다 — 가드가 거부해도 반쯤 묶인 핸들(묶였는데 `Destroying`
+--   연결 없음)이 남지 않는다. `H-147` (A)의 가드는 `_bindDestroying` 첫 줄에서
+--   여기로 이동했다(그쪽의 유일한 호출자인 `bindLifetime`이 이미 물었으므로).
+--   level 3: 이 메소드와 `bindLifetime`을 지나 사용자 호출부. Observer도 같은
+--   이름의 훅을 가진다(`H-183` — 자기 `_running`을 본다). 값이 훅을 안 가지면
+--   (평범한 클로저 등) `bindLifetime`은 물을 것이 없다.
+function EffectHandle:_assertBindable()
+    if isRunning(self) then
+        error("cannot bind an Effect from inside its own fn or cleanup", 3)
+    end
+end
+
 function EffectHandle:_bindDestroying(inst)
-    if isRunning(self) then           -- ⭐ [2026-08-28 `/code-review`] (A)의 강제 — `fn` 안에서
-        error("cannot bind an Effect from inside its own fn or cleanup", 2)
-    end                               --
-                                      --   `New "Frame" { self }`로 자기를 leaf에 묶는 경로도 막는다
-                                      --   (`bindLifetime`은 범용이라 Effect 훅인 여기서 건다)
     self:_unbindDestroying()          -- 재바인드(포탈 재마운트)면 옛 연결부터 — 멱등
+    self._dying = false               -- ⭐ [2026-08-31 `H-182`] Destroy 파동의 생존자를 재무장
 
     -- (1) leaf가 죽는 순간 cleanup을 정확히 1회. `LP-2`가 확정한 유일한 훅 지점.
     self._destroyConn = onDestroying(inst, function()
+        -- ⭐ [2026-08-31 `H-182`, 사용자 확정] 이 콜백 뒤에도 같은 Destroy 파동
+        --   안에선 `canExecute`가 참(gcconn은 마지막에 끊김) — `_dying`이 그 창을
+        --   닫아 파동 후반의 dep 변경이 죽는 leaf 위에서 `fn`을 다시 돌리는 대신
+        --   **홀드**된다(`rawRerun`이 `canExecute`와 같이 본다). 이름이 Slot의
+        --   `_destroyed`와 다른 건 의도다 — Slot은 죽으면 재바인딩 못 하지만 Effect
+        --   핸들은 다시 bind될 수 있어 "죽는 도중"만 뜻한다(사용자: *"네이밍의 다른
+        --   이유가 확실함"*). 재무장 자리는 위 bind와 `Subscribe`/`WeakSubscribe`.
+        self._dying = true
         self:_unbindDestroying()
         self:_consumeCleanup()
     end)
@@ -352,8 +369,8 @@ function EffectHandle:_unbindDestroying()
     -- `canExecute`가 막는다. **`_cleanup`도 안 부른다**(아래 2번 계약).
 end
 
--- cleanup 소진: 읽고 → 지우고 → 실행. 이 순서라야 이중 호출이 없고,
--- `_cleanup`의 유무가 곧 "설치돼 있는가"가 된다.
+-- cleanup 소진: 읽고 → 지우고 → 실행. 이 순서라야 이중 호출이 없다
+-- ("설치돼 있는가"는 `_cleanup`의 유무가 아니라 아래 `_rerunRequired` — `H-195`로 옛 뒷절 삭제).
 function EffectHandle:_consumeCleanup()
     local c = self._cleanup
     self._cleanup = nil
@@ -404,7 +421,7 @@ local function rawRerun(self, force: boolean)
         self._pending = true           -- 실행 중 재진입 → 지연
         return
     end
-    if self._cleanupRunning or (not force and not canExecute(self)) then
+    if self._cleanupRunning or self._dying or (not force and not canExecute(self)) then
         self._rerunRequired = true     -- ⭐ [2026-08-28 `H-159`/`H-160`] 실행 불가 상태(cleanup 중 /
         return                         --   안 묶임 / 죽음)에 온 요청은 **버리지 않고 홀드** — 다음에
     end                                --   묶이는 순간 1회 돈다. 버리면 "변경을 아예 보고 안 함" 경로가
@@ -413,12 +430,18 @@ local function rawRerun(self, force: boolean)
                                        --   cleanup 안의 `self:Rerun()`/`dep:Set()`도 여기 — gcconn이 아직
                                        --   연결돼 `canExecute`만으론 못 막는다(`H-160`). `Unsubscribe` 뒤
                                        --   늦게 오는 타이머의 `Rerun()`도 홀드(재구독하면 돈다).
+                                       --   ⭐ [2026-08-31 `H-182`] `_dying`(자기 `Destroying` 콜백이 소진한
+                                       --   뒤, 같은 파동의 잔여 구간)도 같은 홀드 — `H-160`의 연장이다.
     self._running = true
     repeat
         self._pending = false
         self:_consumeCleanup()         -- 안에서 `_rerunRequired = true`
         self._rerunRequired = false    -- ⭐ 실제로 돈다 — 이 플래그가 내려가는 **유일한** 자리
-        self._cleanup = self.fn(self)
+        self._cleanup = self.fn(self)  -- ⭐ [2026-08-31 `H-185`, 사용자 확정] cleanup은 **첫 반환 하나뿐** —
+                                       --   여러 정리는 `function() a() b() end`로 묶는 게 계약. 반환 전부를
+                                       --   목록으로 소진하는 안은 기각(재진입·`_rerunRequired`·`_pending`과
+                                       --   엮이는 표면만 늘고, 클로저로 묶는 데 아무 문제가 없음). 타입의
+                                       --   팩 표기는 "반환 안 해도 됨"(`H-95`)을 위한 것이지 목록 계약이 아니다.
     until not self._pending            -- 재요청이 또 오면 또 돈다(`_pending` = 실행 **중**에 온 요청)
     self._running = false
 end
@@ -504,7 +527,10 @@ end
   못 한다; **[2026-08-28 `H-159`]** 옛 `_installed`의 부정형을 흡수),
   `_running`/`_pending`(재진입 — `_pending`은 실행 **중**에 온 요청, `_rerunRequired`는
   실행 **불가 상태**에 온 요청), **`_cleanupRunning`**(cleanup 실행 중 — `_running`과
-  별개, 네 진입점 가드가 둘 다 본다, **[2026-08-28]**), **`.Subscribed`**(공개 플래그 — `canExecute`가
+  별개, 네 진입점 가드가 둘 다 본다, **[2026-08-28]**), **`_dying`**(**[2026-08-31
+  `H-182`]** Destroy 파동에서 자기 `Destroying` 콜백이 소진한 뒤의 잔여 구간 —
+  `rawRerun`이 홀드 조건으로 보고, 재바인드·`Subscribe`류가 내린다),
+  **`.Subscribed`**(공개 플래그 — `canExecute`가
   읽는 그것, 네 진입점이 세우고 내린다, 아래 "`EffectHandle:Subscribe()`" 절).
   **옛 `_refDeps`/`_refCallbacks`/`_observers`/`_installing`은 `_deps` 하나로
   대체됐고, `_installing` 자리에 잠깐 있던 `_blocker`도 [2026-08-28 `H-150`]
@@ -522,6 +548,9 @@ end
 > 중복 `Rerun`을 만들던 원인이다). 위 "확정 구조" 절이 소스.
 > **아래 `canExecute` 게이팅은 그대로 유효하다** — *"해제는 누수를,
 > 게이팅은 발화를 막는다"* 중 **뒤쪽 절반**이 여전히 이 절의 결론이다.
+> **[2026-08-29 `H-191`]** 다만 그 게이팅의 자리는 콜백 본문이 아니라 `rawRerun` 진입이고,
+> 거짓이면 버리는 게 아니라 **홀드**(`_rerunRequired`, `H-159`)다 — 아래 문단의 "본문 맨
+> 앞에서 … 거짓이면 그대로 리턴"은 `H-159` 이전 모양. 소스는 위 생성자 블록.
 
 `Effect(fn, someRef)`의 leaf가 죽어도 **`ref.Callbacks`에 클로저가 영원히
 남았다** — `Ref`엔 콜백 해제 API가 없었고(`:Uncallback` 류 없음)
@@ -544,10 +573,13 @@ end
 "전파 루프가" — `base/source-state-plan.md`),
 `Ref` 경로엔 그 게이트가 아예 없었다. 해제가 늦거나 누락되는 창이 실재한다 —
 예컨대 `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이
-안 도는데도 `canExecute`가 거짓이다. **확정된 형태**: `Effect`가 거는 `Ref`
-콜백은 본문 맨 앞에서 **자기 핸들에 대해** `canExecute(handle)`를 확인하고,
-거짓이면 그대로 리턴한다. 그러면 두 dep 경로가 같은 게이트를 공유하게 되어
-`Effect`의 발화 조건이 dep 종류와 무관해진다.
+안 도는데도 `canExecute`가 거짓이다. **확정된 형태(`H-159`로 갱신)**: `Effect`가 거는
+`Ref` 콜백(`onRefFire`)은 판정하지 않고 `fire → _epochs:Update → Rerun`만 하며,
+**`rawRerun` 진입**이 자기 핸들에 대해 `canExecute(handle)`를 보고 거짓이면 **홀드**
+(`_rerunRequired`, 다음 바인드/구독 때 1회)한다 — 한때 여기 *"콜백 본문 맨 앞에서 확인하고
+거짓이면 그대로 리턴"*이라 적혀 있었다(`H-191`; 버리기와 홀드는 관측이 다르다 —
+안 묶인 채 온 `ref:Set`이 바인드 때 재생된다, `spec.effect.luau` 2). 그러면 두 dep 경로가
+같은 게이트를 공유하게 되어 `Effect`의 발화 조건이 dep 종류와 무관해진다.
 
 ### 동적 경로 가드 — `k` 무관 매치, `HANDLER_PRIORITY_FALLBACK`
 
@@ -611,11 +643,15 @@ quad의 반응형 그래프/cleanup 인체공학만 재사용하는 경우)로 �
 Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 
 ```lua
+-- ⭐ [2026-08-29 `H-174`/`H-194`] 이 블록은 `Effect.Init(module)`이 만드는 **인스턴스별 임플 팩토리
+-- 안**이다 — `Subscribed`/`WeakSubscribed`는 `Observer.implFor(module)`에서 받은 그 인스턴스의
+-- 레지스트리이고, `canBound`는 `module.canBound`(인스턴스 필드, 발화 시점에 읽음)다.
 -- ⭐⭐ [2026-08-27 확정 (b), 9라운드 `H-144` 후속 — 감사 4라운드] **`EffectHandle`은
 -- 네 진입점을 자기 것으로 가진다 — Observer의 함수 본문을 배정하지 않는다.**
 -- 공유하는 건 **레지스트리 두 개**(`Subscribed`/`WeakSubscribed`, 소유 모듈은
--- `Observer.luau` — `H-99`)와 **`canBound` 게이트**(`LifetimeHandle.luau`의
--- 탑레벨 함수)뿐이고, `.Subscribed` 플래그의 뜻도 같다. 여기 한때(Q4/`H-127`)
+-- `Observer.luau` — `H-99`)와 **`canBound` 게이트**(quad 인스턴스의 필드 —
+-- `module.canBound`, `H-174`; 한때 "`LifetimeHandle.luau`의 탑레벨 함수"라 적었다)뿐이고,
+-- `.Subscribed` 플래그의 뜻도 같다. 여기 한때(Q4/`H-127`)
 -- `EffectHandle.Subscribe = Observer.Subscribe`처럼 **함수 객체를 그대로 배정**해
 -- 뒀는데, `Observer:Subscribe`의 본문이 `self:WeakSubscribe()`로 **콜론 위임**하는
 -- 탓에 `self`가 `EffectHandle`이면 그 조회가 `EffectHandle`의 오버라이드로 가서
@@ -664,10 +700,11 @@ end
 -- **[2026-08-28 `H-149`]** Observer 쪽도 같은 이유로 위임을 풀고 인라인했다).
 function EffectHandle:WeakSubscribe()
     if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
     end
     self.Subscribed = true
+    self._dying = false                        -- ⭐ [2026-08-31 `H-182`] 실행 가능성을 재무장하는 모든 자리가 내린다
     WeakSubscribed[self] = true
     resubscribeTail(self)
     return self
@@ -675,10 +712,11 @@ end
 
 function EffectHandle:Subscribe()
     if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed then "already subscribed" else "already bound to an Instance", 2)
     end
     self.Subscribed = true
+    self._dying = false                        -- `H-182`
     WeakSubscribed[self] = true
     Subscribed[self] = true                    -- 강한 킵이 선 **뒤에** 꼬리 한 번
     resubscribeTail(self)
@@ -917,8 +955,10 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   핸들의 `canExecute`가 한다.** 여기 한때 *"[2026-08-21 확정] 이건 `Effect` 내부
   플래그로 한다"*고 적혀 있었고 그 플래그는 생성자 구간만 덮어 바인드 구간을
   놓쳤다(`H-58`). 그 자리에 `self._blocker:On()` … `:OffWithoutEmit()`이 들어왔는데,
-  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 `canExecute`(**[`H-159`]** 지금은 `fire`가 아니라 `rawRerun` 진입에서 본다)가
-  설치 발화를 전부 떨어뜨리므로 `_blocker`는 **한 번도 판정에 닿지 않았다**
+  생성자 안의 핸들은 아직 어디에도 안 묶여 있어 설치 발화가 전부 떨어지므로(**[2026-08-29
+  `H-192` 정정]** 떨어뜨리는 건 `fire`의 `from == nil` 가드다 — `canExecute`는 `H-159` 뒤
+  버리지 않고 홀드하므로 그리로 갔다면 `H-58`이 되살아난다; 실측 `Effect(fn, s1, s2, s3)`
+  생성 직후 `runs == 1`·`_rerunRequired == false`) `_blocker`는 **한 번도 판정에 닿지 않았다**
   (실측 `t18`). 위 생성자 의사코드가 소스다. **`_installing`도 `_blocker`도 폐기된
   필드다.**
   (2026-08-21에 `Gate` 재사용을 접었던 근거 — *"설치 구간엔 어떤 `Set`도 안

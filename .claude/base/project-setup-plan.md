@@ -257,7 +257,18 @@ export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Un
 죽는다(`relink.sh`는 복사만 갱신하지 shim은 못 고친다 — 실측). `test.sh`는
 **[2026-08-28]** `luau-analyze`도 같이 돌리므로 이 실패는 조용하지 않다. Luau의
 `.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
-그때 다시 볼 것.
+그때 다시 볼 것. **[2026-08-31, `H-210`] 셋째 함정 — 루트
+`default.project.json`의 트리에 각 패키지의 `roblox_packages`가 같이
+올라가야 한다**(사용자 발견: rojo 통합 luau-lsp가 *"Unknown require:
+game/ReplicatedStorage/roblox_packages/quad_types"*). 코드의
+`require("../roblox_packages/…")`가 인스턴스 공간에서도 같은 상대 위치로
+풀리려면, pesde 가이드(`https://docs.pesde.dev/guides/roblox/`)대로 패키지마다
+`src`와 `roblox_packages`를 **형제로** 매핑해야 한다 — 이 레포는 멀티 패키지라
+`ReplicatedStorage.quad-base`(Folder) 아래 `src` + `roblox_packages`,
+`quad-roblox`도 같은 모양(한 `ReplicatedStorage.roblox_packages`를 공유하면
+quad-roblox가 자기 의존성을 갖는 순간 충돌 — 사용자 지적). 검증은
+`rojo sourcemap` + `luau-lsp analyze --sourcemap`으로 unknown-require 0 실측.
+빈 `src`(quad-roblox, M5 전)는 rojo가 조용히 생략하므로 무해.
 
 **[2026-08-19 같은 날 넷째 후속 세션] 의존 대상의 `target`에 따라 링크
 디렉토리 이름이 달라진다** — `quad-types`(target `roblox`)가

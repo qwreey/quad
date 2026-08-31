@@ -10,10 +10,14 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**[2026-08-24 기준] M0(스파이크 검증)/M1(스캐폴딩) 완료, 다음은 M2(반응형
-코어 — Source/State/Store)** — **⭐ [2026-08-28] M2 착수, 자율 구현 구간 진행
-중**(규약 `qa-request/pre-implementation-handtrace-round11-brief.md`, 발견
-`-round11.md`; 단위 넷 중 첫 단위 = 공통 기반 + `H-97` mock 생명주기)(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
+**⭐ [2026-08-31 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+Source/State/Store) 완료, M3(디스패치 엔진) 진행 중** — M2는 자율 구현
+구간(규약 `qa-request/m2-implementation-round11-brief.md`, 발견 `-round11.md`)
+으로 2026-08-28 착수~08-31 종결(단위 넷 구현·감사·리뷰·탐사 완료, §4 문항·
+코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수** — 규약은
+`qa-request/m3-implementation-round12-brief.md`(같은 날 §0 세 문항·§6 첫 단위
+계획 사용자 확정), 발견은 `-round12.md`(`H-212`부터). 진행 상태는
+`.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
 같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음). **⚠️ [2026-08-24] M2와
 M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 문제가 (a) 순서
 교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"
@@ -30,7 +34,7 @@ M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 �
 `question.md` 최우선 절은 다시 비어 있다. **[2026-08-27] 9라운드**(그 커밋
 `9dd8213`의 델타 재트레이싱, 발견 `H-124`~`H-141`)는 **Q1~Q3가 `base/`에
 반영됐고**, 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량 반영** — 소스는 `-round9-followup.md`. 그 반영분에 `/code-review high`가 낸 새 메커니즘 넷(`H-143`~`H-146`)도 **같은 날 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 전부 권고 (a)로 확정·반영**돼 **[2026-08-28] 10라운드**(`-round10.md`, 광범위 탐사 `H-150`~`H-157` 포함)도 같은 날 전량 결정·반영(소스 `-round10-followup.md`) — 둘이 뒤집혔다(`fn`은 자기 구독을 못 바꿈 / 루트는 `Claim`으로 quad 소유, `base/claim-plan.md` — 다만 루트의 `.Parent =`는 같은 날 밖에서 허용으로 복원). 같은 날 후속 `H-158`~`H-164`(`EmitReceive`·`_catchUp` 포함)까지 반영. 같은 날 `Claim` 갈래까지 전량 확정돼 `base/claim-plan.md`로 승격 — `question.md` 최우선 절은 다시 비어 있다. 저장소 루트에
-`quad-base/src/`(`New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`)/
+`quad-base/src/`(M1의 `New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`에 M2의 반응형 코어 전부가 더해짐 — 실제 구성은 `base/architecture.md` 소스 트리가 소스)/
 `quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
 아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
 소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —

@@ -36,8 +36,9 @@ RBVM처럼 `init namespace` 하나하나 부르는 방식은 별로(`base/lifecy
 > 생명주기 4종을 `InitLifetimeHandle(module)`로 **인스턴스별 필드**로 만들었으므로,
 > `Source`/`State`/`Observer`/`Effect`처럼 그 게이트를 부르는 모듈은 `InitXxx(module)`이
 > `module`을 클로저로 쥐고 **발화 시점에 `module.canExecute(self)`로 늦게 읽는다**(백엔드가
-> `New()` 뒤에 덮어쓰므로 `Init` 시점 캡처는 스텁을 영원히 잡는다). `Ref`/`Void`/`Relate`/
-> `Brand`처럼 게이트를 안 부르는 잎 모듈만 인스턴스 간 공유된다. 소스는
+> `New()` 뒤에 덮어쓰므로 `Init` 시점 캡처는 스텁을 영원히 잡는다). 게이트를 안 부르는
+> 잎 모듈만 인스턴스 간 공유된다 — 어느 파일이 잎인지는 **각 파일의 헤더 주석이 소스**
+> (여기 나열하지 않는다, 실제로 한 번 갈라졌다). 소스는
 > `base/lifecycle-pattern.md` "탑레벨 평범한 함수로 확정" 절의 `H-174` 문단.
 
 바로 위 절이 확정한 `InitRoblox(Module)` 패턴(팩토리가 모듈 테이블을

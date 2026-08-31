@@ -57,7 +57,7 @@ git.qwreey.moe에 제한된 계정 생성). 로컬 git 저장소는 이미 초�
 ## 2. ~~자율 작업 루프/스케줄 설정~~ **[해소됨, 2026-08-28]**
 
 **사용자가 M2를 세션 안 자율 구현 구간으로 확정**했다 — 규약은
-`.claude/qa-request/pre-implementation-handtrace-round11-brief.md`, 요지는
+`.claude/qa-request/m2-implementation-round11-brief.md`, 요지는
 `.claude/conventions.md`의 "M2 자율 구현 규약" 항목. cron/`/schedule`은 안 쓴다
 (사용자 개입 지점은 단위가 끝날 때 `-round11.md` §4 표를 배치로 회신하는 것뿐).
 아래는 해소 전 원문.
@@ -212,7 +212,7 @@ Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 �
   Tween 자체가 다른 base 요소와 깊게 안 얽혀 있어(거의 전부
   `Handlers/Property.luau` 한 파일 + 릴레이션 슬롯) 사용자가 직접 처리하는 데
   범위상 문제가 없다.
-- **지금 상태**: 미확정("필요성 낮은 쪽으로 기움", 완전 폐기는 아님). **M0/M2(지금 착수 대상)를
+- **지금 상태**: 미확정("필요성 낮은 쪽으로 기움", 완전 폐기는 아님). **M0/M2(**[2026-08-29]** 둘 다 완료)를
   막지 않으므로 급하지 않고**, 실제로 진입 애니메이션이 필요해지는 시점에
   사용자가 착수하면 된다. 설계 맥락은 `base/tween-plan.md`의 "초기 진입
   애니메이션(`initValue`)" 절.

@@ -347,6 +347,15 @@ function bindLifetime(inst, value)
             else "이미 다른 Instance에 바인딩된 값")
     end
 
+    -- ⭐ [2026-08-31 `H-184`, 사용자 확정] 값이 자기 훅 가드를 가지면(`Effect`/`Observer`의
+    -- `_assertBindable` — `H-147`/`H-183`의 "fn 안에서 bind 금지") 부기를 커밋하기
+    -- **전에** 먼저 묻는다 — 안 그러면 가드가 던질 때 이미 묶인 채(canExecute 참)
+    -- `Destroying` 연결 없는 반쯤 묶인 핸들이 남는다(실측). 평범한 클로저처럼 훅이
+    -- 없는 값은 물을 것이 없다. mock(installLifetime)과 M8 실 구현 둘 다 이 순서.
+    if type(value) == "table" and value._assertBindable ~= nil then
+        value:_assertBindable()
+    end
+
     local gchold = InstData:GetWeak(inst, "gchold")
     gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
     -- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2).
@@ -491,12 +500,21 @@ end
 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
 
 ```lua
+-- ⭐ [2026-08-29 `H-174`/`H-194`] 이 블록 전체는 `Observer.Init(module)`이 만드는 **인스턴스별 임플
+-- 팩토리 안**이라고 읽을 것 — 두 레지스트리는 그 클로저 로컬(인스턴스마다 한 벌)이고,
+-- `canBound`는 탑레벨 함수가 아니라 `module.canBound`(발화 시점에 읽는 인스턴스 필드)다.
+-- ⭐ [2026-08-31 `H-183`, 사용자 확정] Observer도 `fn`이 자기 생명주기를 못 바꾼다
+-- (`H-147` 대칭) — `_running` 플래그를 모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`)
+-- 둘레에 세우고, 네 진입점 첫 줄이 이를 거부하며, `bindLifetime`은 커밋 전
+-- `_assertBindable`(같은 판정, level 3)로 묻는다(`H-184`). `fn`이 error로 죽으면
+-- 플래그가 선 채 남는 건 인정된 설계다(사용자: *"오류가 날 때 구조가 깨짐은 설계 상
+-- 인정한 부분"*). 아래 블록들의 첫 줄 가드는 지면상 생략 — 실물은 `Observer.luau`.
 local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)
 local WeakSubscribed = setmetatable({}, {__mode = "k"})   -- 약한 레지스트리
 
 -- ── 프리미티브 ──────────────────────────────────────────────
 function Observer:WeakSubscribe()
-    if not canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
+    if not module.canBound(self) then -- bindLifetime과 정확히 같은 게이트(같은 isBoundAlive 공유)
         error(if self.Subscribed
             then "이미 구독된 값"          -- 강/약 어느 쪽이든 이 분기
             else "이미 Instance에 바인딩된 값", 2)   -- [2026-08-27] `level 2` — 아래 둘과 같게
@@ -534,7 +552,7 @@ function Observer:Subscribe()
     --   가리키고(`H-104` level 계약 위반), (2) 콜론 위임은 서브 테이블의 오버라이드를
     --   탄다(`H-144` (b)의 교훈). 사용자: *"weak 나 아닌거나 줄 차이가 그리 안 커서,
     --   분리할 큰 이유가 없음."*
-    if not canBound(self) then
+    if not module.canBound(self) then
         error(if self.Subscribed
             then "이미 구독된 값"
             else "이미 Instance에 바인딩된 값", 2)
@@ -634,10 +652,14 @@ emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-pl
 `H-159`]** 묶이기 전에 온 emit을 자기 `_receive`가 홀드 — `bindLifetime`/`Subscribe`/
 `WeakSubscribe`가 1회 발화. Effect와 같은 뜻("`fn`이 돌아야 하는데 아직 안 돌았다"):
 생성 시 참 → `state:Observer(fn)` 생성자의 "등록 시점 즉시 1회 실행"이 돌면서 거짓 →
-그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_receive(from)`**(`EmitReceive` —
+그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_running`**(**[2026-08-31 `H-183`]**
+모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`) 둘레에 서는 재진입 플래그 — 네 진입점과
+`_assertBindable`이 거부에 쓴다, 위 (2) 배너), **`_receive(from)`**(`EmitReceive` —
 `source-state-plan.md`의 `_emitDown` 아래), **`_catchUp()`**(홀드가 있었으면 출처 없이 1회 —
-`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 인스턴스 필드가 아니라
-`Observer.luau`의 모듈 로컬. Effect와 달리 epoch 맵·cleanup·재진입 플래그는 없다.
+`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 Observer 인스턴스의
+필드가 아니라 **quad 인스턴스별 임플의 클로저 로컬**(`Observer.Init(module)`이 만든다, `H-174`;
+**[2026-08-29 `H-194`]** 한때 "`Observer.luau`의 모듈 로컬"). Effect와 달리 epoch 맵·cleanup은 없다
+(**[2026-08-31 정정]** 재진입 플래그는 `H-183`으로 생겼다 — 위 `_running`).
 
 **여전히 참인 것**: 자기 짝은 반드시 같이 지운다 — `:Unsubscribe()`가
 강한 테이블만 비우고 `WeakUnsubscribe`에 위임하지 않으면(또는 필드만

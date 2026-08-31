@@ -157,6 +157,14 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     바로 접근**한다. `New()` 자신이 내부적으로 어떤 형태로 조립되는지(v1
     스타일 `InitXxx(module)` 팩토리 체이닝, 타입 재익스포트)는
     `module-lifecycle-plan.md`의 "New()의 내부 구성" 절 참고.
+    - **⭐ [2026-08-31 `H-186`, 사용자 확정] 다중 `New()` 지원은 "같은
+      인스턴스 안"이 전제다 — 인스턴스를 **가로지르는** 값 혼용(`A`의
+      `Effect`에 `B`의 `Source`를 dep으로, `A`의 핸들을 `B`의
+      `bindLifetime`에)은 **UB**. 막는 가드를 일부러 안 둔다 — dep 쪽
+      가드는 절반만 막고(교차 `bindLifetime`은 base가 못 봄), 완전히
+      막으려면 주입 op 계약까지 번진다. 문서화 대상
+      (`research/documentation-content-map.md` §4 — `H-116` 두 벌 공존
+      항목의 이웃), M5에서 실 백엔드가 둘이 되면 재검토("추후 생각해볼 점").
     - **M0 스캐폴딩에 주는 함의 — [2026-08-19] 정해짐, 실제로는 M0가 아니라
       `ROADMAP.md` M1(실제 스캐폴딩)에 적용됨.** 레지스트리를 module-level
       upvalue로 직접 잡아두면 나중에 다중 인스턴스화할 때 전면 수정이
@@ -288,6 +296,7 @@ quad/
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
 │       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** `Brand()` 생성자 + **브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export). 의존 없는 잎(`base/brand-plan.md`)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
+│       ├── ImplRegistry.luau      # **[2026-08-31 `H-206`]** 인스턴스별 임플 저장 접근 `implsOf(module)`(`module._impl`, `H-181`) 한 벌 — State/Observer/Effect에 verbatim 세 벌이던 것을 잎으로 추출(순수 데이터 접근, 내부 전용 — `init.luau` 재export 없음)
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만) — **[2026-08-28 M2 첫 단위]** `InitLifetimeHandle(module)`이 모듈 인스턴스에 영어 `level 2` 에러 스텁 4종을 설치하고 백엔드가 덮어쓴다, `Relate`는 안 쓴다(그건 아래 quad-roblox 실 구현 몫 — `base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value/.Revision 읽기 + :Set()/:WeakCallback()/:Callback()/:Uncallback()/:Wait(); `Epoch`를 만족 — `base/ref-plan.md`. **[2026-08-27 `H-128`]** `:Wait`·핸들러 뺀 최소형은 M2 공통 기반), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
@@ -339,7 +348,10 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   ```
 
   내부 불변식 위반은 곧 **quad 자신의 버그**라, 호출부가 아니라 터진 자리를
-  가리켜야 리포트가 쓸모 있다.
+  가리켜야 리포트가 쓸모 있다. **[2026-08-31 명료화]** 표의 `2`는 리터럴이
+  아니라 **"사용자 호출부를 가리킨다"의 기본형**이다 — 검증이 내부 헬퍼
+  프레임을 하나 거치면(`newNode`의 dep 검증, `collectDeps`의 nil 검증) 같은
+  뜻을 지키기 위해 `3`을 쓴다. 프레임 수가 아니라 도착지가 계약이다.
 - **⭐ 메시지는 영어로 통일한다**(**사용자 확정**, 2026-08-25). 지금
   코퍼스는 영어 6 / 한국어 약 23으로 이미 갈려 있고, 공개 표면인데
   정해진 적이 없었다. `.claude/conventions.md`의 *"사용자가 보게 될 것은
@@ -460,6 +472,11 @@ falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 말 것 — 툴링 성숙도 문제일 뿐 문법 자체를 모르거나 기각한 게 아님.
 
 ## 테스트 전략: quad-base용 최소 mock (2026-08-04)
+
+> **[2026-08-29 포인터]** 아래는 2026-08-04의 mock 범위 결정이고 지금도 유효하다. 실제 테스트
+> 체계는 그 위에 얹혔다 — `./scripts/test.sh`(relink → `luau-analyze` → `smoke.*`/`spec.*`,
+> `base/project-setup-plan.md`), mock의 `installLifetime`(생명주기 4종 + `onDestroying`, M2 단위 1
+> `H-97`), 모듈별 `quad-base/test/spec.<module>.luau` 계약 테스트.
 
 **결정**: quad-base 테스트는 Vide 선례(`initreq/vide/test/mock.luau`, 약
 300줄)를 따라 최소한의 mock으로 감 — parent/children 트리 + 타입 검증 없는

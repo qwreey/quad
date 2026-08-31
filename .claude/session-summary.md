@@ -2017,7 +2017,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `FrameParam<E>` 원소 타입 파라미터.
 - **`session/2026-08-28-03-m2-unit1-common-base.md`** — **M2 착수.** 다른 에이전트가
   초안한 자율 구현 규약을 검토해 순서 오류 하나(`EpochMap`이 `Effect` 뒤 → State 본체
-  앞)와 소스 단일화를 고쳐 채택(`qa-request/pre-implementation-handtrace-round11-brief.md`,
+  앞)와 소스 단일화를 고쳐 채택(`qa-request/m2-implementation-round11-brief.md`,
   세 갈래 분류 / 단위 넷 / 두 층 커밋 게이트, `HUMAN_TODO.md` 2번 닫힘). 첫 단위(공통
   기반)를 사용자 확인(*"진행하면 될것 같아"*) 뒤 구현 — `Void`/`Brand`(인스턴스 15 +
   `is*` 11 한 잎 파일)/`LifetimeHandle`(`InitLifetimeHandle` 에러 스텁)/`Ref` 최소형/
@@ -2032,3 +2032,32 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   놓음, 권고안 기각) / `H-168` `Ref<<T?>>()` / `H-170` 즉시 실패만 re-raise. **이어서 단위 2
   구현** — `EpochMap`/`State`(`Init(module)`+`implFor`)/`Source`/`Store` + `quad-types`
   최종형 타입(`ty11`) + spec 4개, ALL PASS. `H-176` 타입팩 deps 선언 기각(`...any`).
+  **2026-08-29 새벽(컨테이너 이사 뒤)**: 단위 2 감사 4·5라운드 반영(`H-177` 포함), **단위 3
+  구현** — `Observer`(레지스트리 소유, 네 진입점)/`Effect`(`rawRerun`·홀드·cleanup 세 자리·
+  네 진입점 자기 본문)/`onDestroying` 스텁·mock, spec 17절 ALL PASS. `H-178`(`_` 접두) 기록.
+  **단위 4 구현** — `GateNode`(`State.luau` `:Gate`)/`Blocker.luau`, spec 16절, `H-179`(`Apply`
+  타입은 교집합 오버로드)·`H-180`(`:Block` 잔재). M2 체크박스 전부 `[x]`. 단위 3·4 감사
+  수렴 뒤 `/code-review high` 10건: ① `H-181` 🔴(weak-key 임플 맵이 인스턴스를 영구 핀 →
+  `module._impl`)·`H-188`~`H-190` 반영, ② `H-182`~`H-187` §4. 탐사자 ① 7건(`H-191`~`H-197`,
+  전부 옛 문장) 반영, 전 코퍼스 스윕으로 `HasBlockedEmit`·`LifetimeHandle` 표기 정리.
+  **M2 단위 넷 구현·감사·리뷰·탐사 완료** — 남은 건 §4 회신.
+
+- **`session/2026-08-31-01-unit2-code-review.md`** — 체크포인트 재개 첫 항목: 단위 2 파일
+  `/code-review high` 완주(포크 조기 반환을 `SendMessage` 재개로 해결 — 재실행보다 이
+  방법 먼저). 8각도 22후보 → 검증 생존 10: ① 여섯 반영(`H-199` nil dep `collectDeps` /
+  `H-201`·`H-202`·`H-204` 입력 검증 셋 / `H-206` `ImplRegistry.luau` 신설 / `H-207`
+  `Set`→`Emit` 위임), ② 넷 §4 합류(`H-198` 🔴 닫힌 게이트 너머 `fn` 도중 `Set` 영구
+  stale — §4 확정 의사코드 자체의 구멍 / `H-200` setup throw 좀비 / `H-203` `Off` 중
+  재차단 / `H-205` Modifier 가드 level). 문서 이름 변경(pre-implementation 아님)은
+  사용자 지시로 §4 회신 뒤로 미룸. **같은 날 §4 배치 회신 1차 처리** — 확정 일곱
+  반영(`H-182` `_dying` / `H-183` Observer `_running` / `H-184` `_assertBindable` 커밋 전
+  문의 / `H-185` 단일 cleanup 문서화(권고 기각) / `H-187` / `H-200` detach-중-setup /
+  `H-203` 순회 중 `IsBlocked` 재확인), 재질문 둘(`H-186`/`H-198` — 메인 답변은
+  그 §4 회신 2 블록), 보류 하나(`H-205`). **같은 날 회신 3으로 §4 전량 종결** —
+  `H-186` UB 문서화 / `H-198` 사용자 안(스탬프를 fn 직전 + `Get` 재시작 루프 — 계약
+  강화: 모든 `Get`이 최신 수렴값 반환, 무한 케이스 UB) / `H-205` level 3 / 코드 검토
+  `H-208`(`table.clone` 스냅샷)·`H-209`(generalized iteration 전환). 열린 문항 0·마커 0.
+  **같은 날 파일 개명·M2 종결** — `m2-implementation-round11*`로(명명 규약
+  `mN-implementation-roundNN`, 라운드 번호는 마일스톤 가로질러 단순 증가 —
+  `README.md` `qa-request/` 행이 소스), 툴링 픽스 둘(`H-210` rojo 트리 /
+  `H-211` Relate 타입)도 이 세션. 다음 액션은 M3 착수 규약 문항.

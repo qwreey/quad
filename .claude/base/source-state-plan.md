@@ -264,6 +264,10 @@ function State:_emitDown(from)
 end
 
 -- Observer 쪽 `EmitReceive` 구현(`Observer.luau`). 판정과 홀드가 **여기** 산다.
+-- ⭐ [2026-08-31 `H-183`] 아래 세 자리의 `fn` 호출은 실제 코드에선 전부
+--   `_running` 플래그로 둘러싼다(설치 발화 포함) — `fn`이 자기 생명주기를 못
+--   바꾼다는 `H-147`의 Observer 대칭. 근거·가드 목록은 `lifecycle-pattern.md`
+--   (2) 배너, 실제 코드는 `Observer.luau`.
 function Observer:_receive(from)
     if canExecute(self) then
         self.fn(self._state, self, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
@@ -481,7 +485,7 @@ gc되긴 하지만.)"*
 | 하류 State → 상류 State/Source (`_hold`) | **강함** |
 | 상류 → 하류 (구독자 집합) | weak-키 |
 
-- **모든 파생 노드**(`:With`/`:Compute`/`:Gate`/`:Block`)가 자기 상류를
+- **모든 파생 노드**(`:With`/`:Compute`/`:Gate` — `state:Apply(blocker)`도 `:Gate`다, **[2026-08-29]** 옛 `:Block` 표기 정리)가 자기 상류를
   `_hold`에 강하게 담는다 — `:Compute`처럼 클로저가 **우연히** 캡처하는
   것에 기대지 않는다(`:With`의 pass-through 노드엔 그 우연이 없다).
 - **⭐ [2026-08-26 보강, 8라운드 `H-110`] 말단 핸들도 마찬가지다.**
@@ -501,10 +505,11 @@ gc되긴 하지만.)"*
   확신한다"*는 경로가 생기지 않고, `:Subscribe()`의 공개 계약 두 문장
   (*"참조를 아무 데도 안 담아도 정상"* / *"GC되지 않고 영원히 계속 실행됨"*)이
   서로 모순 없이 성립한다.
-- **남은 것은 실측 스파이크 하나** — `luau-test`에 "상류 strong / 하류 weak"
-  불변식을 음성 대조군까지 확인하는 파일을 추가한다
-  (`07-relate-weak-table-gc.luau`가 연쇄 GC를 이미 다루므로 그 옆에).
-  **M2 착수 게이트는 아니다**(`question.md` 최우선 절에서 내려갔다).
+- **[2026-08-28 닫힘] 실측은 `quad-base/test/spec.state.luau` 11번이 한다** — 양성(말단을
+  들고 있으면 루트·중간 노드가 GC를 넘긴다)과 음성(말단을 놓으면 하류가 수거되고 상류의
+  구독자 집합에서 사라진다) 둘 다. 한때 여기 *"남은 것은 실측 스파이크 하나 —
+  `luau-test`에 … 파일을 추가한다"*로 열려 있었고 **M2 착수 게이트는 아니었다**
+  (`luau-test/STATUS.md`의 그 행도 같은 날 닫혔다).
 
 **결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
 플래튼+클론을 쓰는 건 애초에 캐싱이 필요 없는 정적 데이터라 성립하는
@@ -1120,9 +1125,13 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   - **함수와 콜러블의 유니온으로 여는 안은 기각** — 필드로 받으면
     유니온도 캐스트도 필요 없다. 필드 이름은 **`__apply`**(**[2026-08-28 10라운드
     `H-158` 사용자 확정]** *"키는 __apply 로 하기로 했던거로 기억중임"* —
-    `base/blocker-plan.md` 배너), 시그니처는 **[2026-08-28 M2 단위 2 확정]** 메소드형
-    `__apply: (self: any, state: State<T>) -> U` — `quad-types/src/init.luau`의 `State<T>.Apply`
-    파라미터 타입과 `State.luau`의 `(factory :: any):__apply(self)` 호출이 소스.
+    `base/blocker-plan.md` 배너), 시그니처는 **[2026-08-28 M2 단위 2 확정, 2026-08-29 단위 4
+    `H-179` 정정]** 메소드형 `__apply: (self: any, state: any) -> any` — 호출은 `State.luau`의
+    `(factory :: any):__apply(self)`. `State<T>.Apply`의 파라미터 타입은 **교집합 오버로드**
+    (함수 팩토리는 제네릭 `U`, 객체 팩토리는 `any` 반환 → 호출부가 결과를 명시)이고 그
+    글자 그대로의 표기는 `quad-types/src/init.luau`의 `State<T>.Apply`, 근거는 `base/typing-limits.md`
+    §1② — 한때 여기 `(self: any, state:
+    State<T>) -> U`라 적었는데 그 유니온 표기는 `Blocker`처럼 필드가 더 있는 객체를 못 받는다.
 - **구현 비용 거의 0**: Modifier와 달리 State/Source는 제네릭 `__index`로
   필드 setter를 즉석 합성하는 메커니즘이 없어서(고정된 메소드 표면만
   존재), Modifier의 `Apply`처럼 "필드 이름으로 예약해야 하는" 충돌
@@ -1131,8 +1140,9 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   여기 한때 `factory: (State<T>) -> U): U`라 적혀 있었는데, 그 시그니처는
   **함수만** 받으므로 위 `H-94` 항목이 확정한 "지정된 필드를 가진 객체"
   형태를 **거부한다** — `state:Apply(Debounce{...})`가 그대로 타입에러다.
-  파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환 `U`만 열어둔다
-  (필드 이름은 `__apply` — **[2026-08-28 `H-158`]**; 시그니처는 위 항목대로 M2 단위 2에서 확정). 아래 논거는 **반환 쪽**에
+  파라미터는 **함수 또는 그 필드를 가진 객체**를 받고 반환은 열어둔다 — 정확한
+  표기(함수 쪽 제네릭 `U` / 객체 쪽 `any`, 교집합 오버로드)는 **위 `__apply` 시그니처
+  문단이 소스**(`H-179`; 여기 반복하지 않는다). 아래 논거는 **반환 쪽**에
   대한 것이라 그대로 유효하다 — Modifier의
   `Apply`는 `factory: (M) -> M`으로 같은 타입을 유지해야 체이닝이
   이어지지만, State의 `:Apply`는 팩토리가 State가 아닌 값(예: 최종
@@ -1311,7 +1321,8 @@ override할 자리를 구조적으로 열어두는 것.)
 
 - **콜백 실행은 기존 `canExecute` predicate로 게이팅**(Slot 생존 확인과
   동일한 재사용 — "canExecute 하나로 통일" 원칙, 새 메커니즘 발명 아님)
-  — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 no-op.
+  — 발화 시점과 처리 시점 사이에 owning leaf가 이미 죽었으면 **홀드**
+  (`_rerunRequired`, 재바인드·구독 때 1회 — `H-159`; **[2026-08-29 `H-196`]** 한때 "no-op").
   **[명시화, 2026-08-14 다섯 번째 세션] 이 게이팅이 일어나는 자리는 State의
   전파 루프**다 — State는 구독자를 **weak로** 담고 `sub:_receive(from)`을 부르며, 발화
   시 Observer 자신의 `_receive`가 `canExecute(observer)`를 확인해 거짓이면 홀드
@@ -1377,8 +1388,8 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
 새로 만들 필요 없이, `base/lifecycle-pattern.md`의 "생명 바인드
 유틸"(canExecute predicate)을 state-invalidate 리스너 클로저 등록에도
 그대로 재사용하면 됨: 발화 시 `canExecute(value)`(2026-08-14 다섯 번째
-세션 최종 시그니처, `inst`를 안 받음) 하나만 확인하고 거짓이면 그냥
-no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
+세션 최종 시그니처, `inst`를 안 받음) 하나만 확인하고 거짓이면 **홀드**(`H-159`
+— **[2026-08-29 `H-196`]** 한때 "그냥 no-op"). 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
 거짓이면 불허" 분기 초안은 폐기 — `isInit` 분기라는 별도 개념 자체가
 불필요(사용자 확정: "canExecute 하나로 통일").
 
@@ -1466,12 +1477,12 @@ no-op. 한때 검토했던 "`isInit=false`면 허용, `isInit=true`+생존확인
   경로에도 겸용하라는 근거가 못 됨 — 실제로 2026-08-08 세션이 그렇게
   겸용했다가 `canExecute` 시그니처까지 오염됐음
   (`archive/canexecute-inst-arg-reversed.md`). 실측은 구현 단계에서 확인.
-- **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류를
+- **내부 강참조 레지스트리**: `SubscribedObservers: {[observer]: true}`류(**[2026-08-29]** 예시용 옛 이름 — 실제 이름은 `Subscribed`/`WeakSubscribed`, 소스는 `base/lifecycle-pattern.md` "(2) 전역 경로")를
   **weak 아닌 강참조**로 둠 — 여기서 weak면 "구독해서 살려둔다"는 목적
   자체가 무의미해짐. 위 자동 케이스의 weak table과 역할이 명확히 갈림
   (weak table=자동/리프 전용, 강참조 레지스트리=수동 구독 전용).
-  **`:Unsubscribe()`는 이 레지스트리에서 반드시 `SubscribedObservers[observer]
-  = nil`까지 해야 함** — `Subscribed` 플래그만 내리고 강참조를 안 끊으면
+  **`:Unsubscribe()`는 이 레지스트리에서 반드시 `Subscribed[observer] = nil`(옛 표기
+  `SubscribedObservers[observer]`)까지 해야 함** — `Subscribed` 플래그만 내리고 강참조를 안 끊으면
   GC 대상이 안 되는 반쪽짜리 해제가 됨.
   **⭐ [2026-08-26 정정, 8라운드 `H-111`]** 여기 한때 *"둘은 항상 같이
   일어나는 한 세트"*라고 적혀 있었는데, `:WeakSubscribe()`가 생기면서

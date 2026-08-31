@@ -43,6 +43,21 @@ do
 		Store({ ok = Source(1), bad = Quad.Ref(1) } :: any)
 	end)
 	assert(not ok2, "a Ref is not a Source")
+	-- H-204: the bag itself is validated before clone — a non-table used to die
+	-- inside table.clone, a bare Source got an error naming a Source-internal field.
+	local ok3, err3 = pcall(function()
+		Store(5 :: any)
+	end)
+	assert(not ok3 and string.find(tostring(err3), "must be a table", 1, true) ~= nil, "non-table defaults: " .. tostring(err3))
+	assert(string.find(tostring(err3), "spec.store.luau", 1, true) ~= nil, "level 2 points at the caller")
+	local ok4, err4 = pcall(function()
+		Store(Source(100) :: any)
+	end)
+	assert(not ok4 and string.find(tostring(err4), "plain table", 1, true) ~= nil, "bare Source as defaults: " .. tostring(err4))
+	local ok5 = pcall(function()
+		Store(setmetatable({}, { __metatable = "locked" }) :: any)
+	end)
+	assert(not ok5, "protected metatable rejected before clone")
 	print("PASS")
 end
 
@@ -61,6 +76,20 @@ do
 		assert(not ok2 and string.find(tostring(err2), "reserved", 1, true) ~= nil, name .. " via Of: " .. tostring(err2))
 		assert(string.find(tostring(err2), "spec.store.luau", 1, true) ~= nil, "level 2")
 	end
+	-- H-201: Of exists for computed names, so a computed nil/number must error
+	-- here (nil used to allocate a Source then die at an internal frame; a number
+	-- silently broke `Names(): { string }`).
+	local s = Store({} :: {})
+	local okNil, errNil = pcall(function()
+		s:Of(nil :: any)
+	end)
+	assert(not okNil and string.find(tostring(errNil), "Of name must be a string", 1, true) ~= nil, "nil Of name: " .. tostring(errNil))
+	assert(string.find(tostring(errNil), "spec.store.luau", 1, true) ~= nil, "level 2 points at the caller")
+	local okNum, errNum = pcall(function()
+		s:Of(123 :: any)
+	end)
+	assert(not okNum and string.find(tostring(errNum), "Of name must be a string", 1, true) ~= nil, "number Of name: " .. tostring(errNum))
+	assert(#s:Names() == 0, "nothing was allocated by the rejected names")
 	print("PASS")
 end
 

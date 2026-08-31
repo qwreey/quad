@@ -50,6 +50,12 @@ local function Init(module: any)
 
 	-- Dynamic keys only: the type cannot stop a computed name, so the runtime does.
 	function Impl.Of(self: any, name: string): any
+		if type(name) ~= "string" then
+			-- `H-201`: `Of` exists precisely for computed names — a nil/number name
+			-- must not pass (nil died at `self[name] =` with an internal frame after
+			-- already allocating a Source; a number silently broke `Names(): { string }`).
+			error(`Store: Of name must be a string (got {typeof(name)})`, 2)
+		end
 		if RESERVED[name] then
 			error(`Store: "{name}" is a reserved store key`, 2)
 		end
@@ -63,15 +69,26 @@ local function Init(module: any)
 
 	function Impl.Names(self: any): { string }
 		local names = {}
-		for name in pairs(self) do
+		for name in self do
 			names[#names + 1] = name
 		end
 		return names
 	end
 
 	local function Store(defaults: any?): any
+		-- `H-204`: validate the bag itself before cloning it — a non-table died
+		-- inside `table.clone`, and a bare Source (forgot the wrapping table) got
+		-- pairs-walked into an error naming a Source-internal field.
+		if defaults ~= nil then
+			if type(defaults) ~= "table" then
+				error(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, 2)
+			end
+			if getmetatable(defaults) ~= nil then
+				error("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", 2)
+			end
+		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)
-		for name, value in pairs(self) do
+		for name, value in self do
 			if RESERVED[name :: any] then
 				error(`Store: "{tostring(name)}" is a reserved store key`, 2)
 			end

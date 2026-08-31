@@ -2,12 +2,14 @@
 	State — derived reactive node (`:Compute` / `:With` / `:Apply`), the
 	propagation loop, and the epoch-based recompute judgement.
 
-	Assembly (`H-174`, user-confirmed 2026-08-28): `InitState(module)` builds
+	Assembly (`H-174`, user-confirmed 2026-08-28): `State.Init(module)` builds
 	one implementation table per `quad` instance and keeps `module` in its
 	closure, so later units (`Observer`, `Gate`) can read lifetime gates as
 	`module.canExecute(...)` AT FIRE TIME (never captured at init — the
 	backend overwrites those fields after `New()`). `implFor(module)` hands
-	the same table to `Source.luau`/`Store.luau` inits.
+	the same table to `Source.luau`'s init (its only caller — `Store.luau`
+	never touches it; it reaches State only through the `Source` values it
+	creates).
 
 	There is no runtime `State` constructor — nodes exist only as results of
 	`:Compute`/`:With` (and `:Gate`, unit 4). `State` is NOT an `Epoch`
@@ -33,10 +35,19 @@
 	    advances the value only — never notifies).
 	  - `.claude/base/modifier-plan.md` 7번: a `:Compute` result that is a
 	    Modifier errors before it is cached.
+	  - `.claude/base/gate-plan.md` "`GateNode` 조립" (unit 4): `state:Gate(setup)`
+	    makes a `GateNode` — a pass-through State node whose `_receive` judges
+	    with `Peek` on the emit map, merges the source into a weak-key
+	    `_withheld` set, and hands control to the policy; `_flush(commit)` is
+	    the `emit` the policy holds (empty → false; swap → `Sync(batch)` →
+	    `_emitDown(batch)`; `emit(false)` discards). Value is never gated (3번).
 ]]
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local ImplRegistry = require("./ImplRegistry")
+local Observer = require("./Observer")
+local Void = require("./Void")
 local QuadTypes = require("../roblox_packages/quad_types")
 
 export type StateData<T> = QuadTypes.StateData<T>
@@ -50,34 +61,36 @@ local isModifier = Brand.isModifier
 
 local WEAK_KEY_MT = { __mode = "k" }
 
--- One implementation per quad instance (`H-174`).
-local implByModule = setmetatable({}, WEAK_KEY_MT) :: { [any]: any }
+-- One implementation per quad instance (`H-174`); storage scheme in `ImplRegistry.luau`.
+local implsOf = ImplRegistry.implsOf
 
 local function createImpl(module: any)
+	module:RunInit(Observer.Init) -- `:Observer` needs the per-instance Observer impl (idempotent pull, `H-177`)
+	local ObserverImpl = Observer.implFor(module)
+
 	local Impl = {}
 	Impl.__index = Impl
-	Impl._module = module -- read lazily by later units, never captured
 
 	-- ── propagation loop ──────────────────────────────────────────────
 	-- Shared by every node type that has `_subs` (Source nodes too).
 	local function emitDown(self: any, from: any)
-		-- H-23: adding a key during `pairs` is undefined, so snapshot first.
+		-- H-23: adding a key during iteration is undefined, so snapshot first.
 		-- "이번 파동 중에 붙은 구독자는 다음 파동부터"가 계약.
 		local snap = {}
-		for sub in pairs(self._subs) do
+		for sub in self._subs do
 			snap[#snap + 1] = sub
 		end
-		for _, sub in ipairs(snap) do
+		for _, sub in snap do
 			(sub :: any):_receive(from) -- every subscriber is an `EmitReceive` (`H-163`)
 		end
 	end
 	Impl._emitDown = emitDown
 
 	-- ── node creation ─────────────────────────────────────────────────
-	local function newNode(deps: { any }, fn: any): any
-		for i, dep in ipairs(deps) do
+	local function newNode(deps: { any }, fn: any, mt: any?): any
+		for i, dep in deps do
 			if not isState(dep) then
-				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With to the user's call
+				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With/Gate to the user's call
 			end
 		end
 		local self = setmetatable({
@@ -89,10 +102,10 @@ local function createImpl(module: any)
 			_cacheTargetCount = 0,
 			_cacheCurrCount = nil, -- never computed yet → always differs
 			_cache = nil,
-		}, Impl)
-		StateBrand:register(self)
+		}, mt or Impl)
+		StateBrand:register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
 		-- §4 seeding: valueEpochMap takes every upstream epoch, live.
-		for _, dep in ipairs(deps) do
+		for _, dep in deps do
 			dep._subs[self] = true
 			if isEpoch(dep) then
 				self._valueEpochMap:Sync(dep)
@@ -128,29 +141,45 @@ local function createImpl(module: any)
 	function Impl._recompute(self: any)
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
 		local hold = self._hold
+		-- `H-198` (user-confirmed 2026-08-31): stamp upstream revisions BEFORE fn —
+		-- anything that moves DURING fn (a reentrant Set, or one withheld by a
+		-- closed gate, which never reaches our `_receive`) then shows up afterwards
+		-- as `Refresh` drift and `Get`'s loop recomputes. Stamping after fn marked
+		-- those moves as already seen (permanent stale cache).
+		for _, dep in hold do
+			dep:_track(self._valueEpochMap)
+		end
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
-			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 2)
+			-- `H-205`: level 3 — `_recompute`'s only callers are Get's own lines, so 2
+			-- always blamed quad internals; 3 reaches the user on a direct `Get` and is
+			-- never worse through a pass-through chain (no fixed level reaches user code there).
+			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 3)
 		end
 		self._cache = result
-		for _, dep in ipairs(hold) do
-			dep:_track(self._valueEpochMap) -- fresh value is current w.r.t. EVERY upstream
-		end
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
 	end
 
 	function Impl.Get(self: any): any
-		if self._cacheCurrCount ~= self._cacheTargetCount then
-			self:_recompute()
-		elseif self._valueEpochMap:Refresh() then
-			-- 순회: catch an emit that never reached us (gate, wave not arrived) —
-			-- advance the VALUE only; notification waits for the real emit.
-			self:_invalidate()
-			self:_recompute()
+		-- `H-198` (user-confirmed): a LOOP, not a single pass — restart until one
+		-- recompute completes with nothing moving under it, so every Get returns a
+		-- value computed from the latest reads ("항상 최신 값만 읽게되어"). Counter
+		-- mismatch catches Sets our `_receive` saw (`H-85`); `Refresh` drift catches
+		-- the ones it never did (behind a closed gate). Values only — notification
+		-- still waits for the real emit. An fn that re-Sets its own (transitive)
+		-- dep on every pass never converges: UB (user-confirmed).
+		while true do
+			if self._cacheCurrCount ~= self._cacheTargetCount then
+				self:_recompute()
+			elseif self._valueEpochMap:Refresh() then
+				self:_invalidate()
+				self:_recompute()
+			else
+				return self._cache
+			end
 		end
-		return self._cache
 	end
 
 	-- ── derived-node methods (shared by Source through `__index`) ─────
@@ -158,25 +187,119 @@ local function createImpl(module: any)
 		return s:Get()
 	end
 
-	function Impl.With(self: any, ...: any): any
+	-- `H-199`: a nil dep must error, not vanish — `deps[#deps + 1]` would drop it
+	-- silently AND shift later deps left, so `fn`'s positional lazy-dep args land
+	-- in the wrong slots. Index numbering matches `newNode`'s (self is dep #1).
+	local function collectDeps(self: any, ...: any): { any }
 		local deps = { self }
 		for i = 1, select("#", ...) do
-			deps[#deps + 1] = (select(i, ...))
+			local dep = (select(i, ...))
+			if dep == nil then
+				error(`State: dep #{i + 1} is nil`, 3) -- 3: past With/Compute to the user's call
+			end
+			deps[i + 1] = dep
 		end
-		return newNode(deps, passThrough) -- value is `self`'s, subscriptions are wider
+		return deps
+	end
+
+	function Impl.With(self: any, ...: any): any
+		return newNode(collectDeps(self, ...), passThrough) -- value is `self`'s, subscriptions are wider
 	end
 
 	function Impl.Compute(self: any, fn: any, ...: any): any
-		local deps = { self }
-		for i = 1, select("#", ...) do
-			deps[#deps + 1] = (select(i, ...))
+		if type(fn) ~= "function" then
+			-- `H-202`: without this the crash lands at the first `Get` deep inside
+			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
+			error("State: Compute fn must be a function", 2)
 		end
-		return newNode(deps, fn) -- one node: edges only, no combining node
+		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
+	end
+
+	-- ── GateNode (`gate-plan.md` "`GateNode` 조립") — same layer as a ComputeNode ──
+	local GateImpl = setmetatable({}, { __index = Impl })
+	GateImpl.__index = GateImpl
+
+	local function newWithheld()
+		return setmetatable({}, WEAK_KEY_MT) -- `H-9`: every withheld table is weak-keyed, the swapped-in one too
+	end
+
+	-- The ONLY exception to §4: the emit map is Peeked at receive time and
+	-- written at flush (`Sync(batch)`), so "what I have sent downstream" stays true.
+	function GateImpl._receive(self: any, from: any)
+		local valueChanged = self._valueEpochMap:Update(from)
+		local emitChanged = self._emitEpochMap:Peek(from) -- Peek, not Update (`H-72`)
+		if valueChanged then
+			self:_invalidate()
+		end
+		if not (valueChanged or emitChanged) then
+			return -- rule 3: swallowed — no policy, not added to the set
+		end
+		-- Merge the source(s) into the withheld set. A batch is UNFOLDED (never held
+		-- by reference — an upstream gate's batch is a one-shot snapshot).
+		local withheld = self._withheld
+		if isEpoch(from) then
+			withheld[from] = true
+		else
+			for epoch in from do
+				withheld[epoch] = true
+			end
+		end
+		self._onUpstreamEmit() -- the policy decides: emit() / emit(false) / nothing
+	end
+
+	-- This IS the `emit(commit) -> boolean` the policy holds.
+	function GateImpl._flush(self: any, commit: boolean?): boolean
+		local batch = self._withheld
+		if next(batch) == nil then
+			return false -- (1) empty batch: nothing at all (8번)
+		end
+		self._withheld = newWithheld() -- (2) swap, never clear — nested waves get a fresh table
+		if commit == false then
+			return true -- discard (`H-55`): no Sync, no propagation
+		end
+		self._emitEpochMap:Sync(batch) -- (3) BEFORE propagating, all at once
+		emitDown(self, batch) -- (4) the detached batch is the payload — the gate itself never is
+		return true
+	end
+
+	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
+	function Impl.Gate(self: any, setup: any): any
+		if type(setup) ~= "function" then
+			error("State: Gate setup must be a function (emit) -> onUpstreamEmit", 2)
+		end
+		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
+		node._withheld = newWithheld()
+		node._onUpstreamEmit = Void -- until setup returns: a throwing setup must not leave a nil callee
+		-- `H-200` (b): detach while user code (`setup`) runs — whether it THROWS or
+		-- returns garbage, no zombie subscriber is left behind (no pcall needed). The
+		-- window is unobservable: the withheld set stays empty while detached.
+		self._subs[node] = nil
+		local onUpstreamEmit = (setup :: any)(function(commit: boolean?): boolean
+			return node:_flush(commit)
+		end)
+		if type(onUpstreamEmit) ~= "function" then
+			error("State: Gate setup must return the onUpstreamEmit function", 2)
+		end
+		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
+		self._subs[node] = true -- re-attach: the gate starts hearing emits only now
+		return node
+	end
+
+	-- `state:Observer(fn?)` — leaf subscriber, fires once at registration
+	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
+	function Impl.Observer(self: any, fn: any?): any
+		if fn ~= nil and type(fn) ~= "function" then
+			error("State: Observer fn must be a function (or nil for the always-observe utility)", 2)
+		end
+		return ObserverImpl.new(self, fn)
 	end
 
 	function Impl.Apply(self: any, factory: any): any
 		if type(factory) == "function" then
 			return (factory :: any)(self)
+		end
+		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
+			error("State: Apply factory must be a function or an object with an __apply method", 2)
 		end
 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
 	end
@@ -185,13 +308,13 @@ local function createImpl(module: any)
 end
 
 local function Init(module: any)
-	implByModule[module] = createImpl(module)
+	implsOf(module).State = createImpl(module)
 end
 
 local function implFor(module: any)
-	local impl = implByModule[module]
+	local impl = implsOf(module).State
 	if impl == nil then
-		error("State: InitState(module) has not run for this quad instance — RunInit order is broken", 1)
+		error("State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
 	end
 	return impl
 end

@@ -23,6 +23,9 @@ local InitLifetimeHandle = require("@self/LifetimeHandle")
 local State = require("@self/State")
 local InitSource = require("@self/Source")
 local InitStore = require("@self/Store")
+local Observer = require("@self/Observer")
+local Effect = require("@self/Effect")
+local Blocker = require("@self/Blocker")
 
 type Quad = QuadTypes.Quad
 
@@ -39,6 +42,7 @@ local function New(): Quad
 		Relate = Relate,
 		Void = Void,
 		Ref = Ref,
+		Blocker = Blocker, -- 단위 4 — 게이트 정책 잎 모듈(인스턴스 간 공유)
 		isEpoch = Brand.isEpoch,
 		isSource = Brand.isSource,
 		isState = Brand.isState,
@@ -75,6 +79,8 @@ local function New(): Quad
 	module:RunInit(State.Init)
 	module:RunInit(InitSource)
 	module:RunInit(InitStore)
+	module:RunInit(Observer.Init) -- 단위 3 — 레지스트리 둘의 소유 모듈(`H-99`)
+	module:RunInit(Effect.Init)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	return module

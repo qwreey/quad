@@ -24,7 +24,7 @@
 - `scripts/test.sh`: `spec.*` 수집 + `luau-analyze quad-base/src + spec + mock`.
 - spec 5개(brand/relate/lifetime/ref/void).
 
-## 발견 (`qa-request/pre-implementation-handtrace-round11.md`)
+## 발견 (`qa-request/m2-implementation-round11.md`)
 
 - `H-165` ① pesde shim은 생성 시점 export 타입만 안다 → `pesde install` 재실행,
   `project-setup-plan.md`에 둘째 함정으로 기록.
@@ -81,7 +81,56 @@
 - 아직 안 한 것: 감사 4라운드(0건 확인) → `/code-review high` → fable 탐사자(규약 §5) →
   "`round11.md` §4를 보라". §4엔 지금 새 문항 없음(단위 2 발견은 전부 ①: `H-176`, `H-177`).
 
-## 다음 (재개 지점)
+## 2026-08-29 새벽 — 컨테이너 이사 뒤 재개 (사용자: *"내가 자는동안 많은 작업을 수행해도 좋아"*)
 
-`./scripts/test.sh` ALL PASS·doc-check ERROR 0인 상태. 감사 4라운드부터 이어서
-(범위 `4169d7b`..`8aa13ed`, 각도: diff 정합성 수렴 확인), 그다음 `/code-review high`, 탐사자.
+사용자 원문(01:00 KST): *"내가 자는동안 많은 작업을 수행해도 좋아. 코퍼스 전체를 순회하거나
+구현을 계속하거나 등, opus 모델을 잘 섞어서 수행하면 괜찮아. 2개 정도까지 병렬로 돌려도
+토큰 비용 문제 없어. … 내일 2시에서 4시 사이에 내가 돌아오게 될거야."* — 그래서 이 구간은
+감사자 2개 병렬(`conventions.md`의 2026-08-18 "하나씩" 규칙의 비용 근거를 사용자가 걷음,
+예외로 명문화). 감사자 모델은 sonnet 유지, 색인·탐사엔 opus.
+
+- 이사 검증: `upstream/main`에서 26커밋 fast-forward, `pesde install`, ALL PASS. Studio MCP
+  연결(`Place1`, Edit) — M5 전까지 안 씀.
+- 단위 2 감사 4·5라운드 반영(`442d800`, `67fb61e`: `implFor` 호출자 정정, `EpochMap`도 공유 잎,
+  `_hold` 본문 닫힘, `H-174` 잎 목록은 파일 헤더가 소스, `InitState` → `State.Init` 표기).
+- **단위 3 구현** — `Observer.luau`(인스턴스별 임플 + 레지스트리 둘, 네 진입점 인라인)/
+  `Effect.luau`(`rawRerun(force)`·`_rerunRequired` 홀드·`_cleanupRunning`·네 진입점 자기 본문)/
+  `State:Observer` 위임/`LifetimeHandle`에 `onDestroying` 스텁/mock `onDestroying`/`quad-types`
+  `Observer`·`EffectHandle`·`Quad.Effect`. spec.observer 8절·spec.effect 9절 ALL PASS, analyze 0.
+  발견 `H-178`(사적 필드 `_` 접두, 기록만).
+
+- 단위 2 감사 6라운드 수렴(0건). 단위 3 감사 1라운드: `todos.md` stale 1 + 의심 2(반영).
+- **단위 4 구현** — `State.luau`에 `GateImpl`/`:Gate`, `Blocker.luau`(잎), `quad-types`에
+  `GateSetup`/`Blocker`/`State.Gate`/`Quad.Blocker`, `spec.gate` 9절·`spec.blocker` 7절.
+  발견 `H-179`(`Apply` 파라미터는 교집합 오버로드 — 스파이크 4개, `luau-test/done/26-*`),
+  `H-180`(`:Block` 잔재). ROADMAP M2 체크박스 전부 `[x]`(`H-80` 포함).
+
+- 단위 3·4 감사 루프 수렴(단위 3: 3→4→4→3→0, 단위 4: 4→3→1→0 — 전부 문서 stale·표기·
+  마크업 파손, 그중 셋은 내 수정이 만든 것).
+- `/code-review high`(단위 3·4) 10건: **① 넷** — `H-181` 🔴 `implByModule`(weak-key, 값이 키
+  캡처 → ephemeron 없어 인스턴스 영구 핀) → `module._impl` 비공개 필드(`H-174` (a) 원문) /
+  `H-188` 반쯤 만든 `GateNode` / `H-189` `Observer.Subscribed` 초기값 / `H-190` `Apply` 검증.
+  **② 여섯** `H-182`~`H-187`(Destroy 파동 재실행 창 / Observer 설치 발화 재진입 / `bindLifetime`
+  커밋-훅 순서 / cleanup 팩 / 교차 인스턴스 dep / 타입 별칭 이름 넷) → §4 표 + 코드 마커.
+
+- fable 탐사자(단위 3·4): ① 7건(`H-191` 🟡 `Ref` 콜백 "거짓이면 리턴"이 `H-159` 이전 모양 /
+  `H-192`~`H-197` 🟢 — 설치 발화 억제 주체 서술 둘, `H-152` 근거, `H-174` 잔재, `_consumeCleanup`
+  주석, Observer "no-op" 둘, `spec.init` 보강) 전부 반영. ②·③·🔴 없음. 코드-문서 불일치 없음.
+  M3가 막힐 자리 없음(옮길 때 자유 이름 → `module.xxx` 하나).
+- 전 코퍼스 스윕 1(M3 문서의 M2 표면 인용): `debounce-throttle-plan.md` `HasBlockedEmit` 개념
+  이름 둘, `effect-plan.md` "`LifetimeHandle` 탑레벨 함수" — 반영. 스윕 2(인덱스·research의
+  M2 미래형) 진행 중.
+
+- 전 코퍼스 스윕 2(인덱스·research의 M2 미래형) 7건 반영, 마무리 감사(`H-174` 의사코드 블록
+  둘) 반영, `round11.md` 내부 정합 감사 0건, 스파이크 `23` 재실행 통과.
+- **못 한 것 하나**: 단위 2 파일의 `/code-review high`. 첫 실행은 `H-181` 수정 전 범위를 보고
+  누수만 확인한 채 끝났고, 경로 대상 재실행은 하위 탐색자 완료 전에 포크가 반복 조기 반환했다
+  (하네스 특성). opus 집중 리뷰로 대체하려다 사용자 요청으로 중단 — **재개 시 첫 항목**.
+
+## 체크포인트 — 2026-08-29 아침, 사용자 요청으로 중단 (*"우선은 여기까지 해줘. 체크포인트 찍고 오늘은 진행 멈추자"*)
+
+- 상태: M2 단위 넷 구현 완료, 감사 루프 전 단위 수렴, `/code-review high`는 단위 1·3·4 반영
+  완료(단위 2는 위 "못 한 것"), 탐사자 단위 1·3·4 반영 완료. `./scripts/test.sh` ALL PASS(spec
+  13 + smoke 3), `luau-analyze` 0, doc-check ERROR 0. 코드 마커 `TODO(H-182)`~`(H-187)` 여섯.
+- **재개 지점**: (1) `round11.md` §4 문항 여섯(`H-182`~`H-187`) 사용자 회신 → 반영 → 마커 제거;
+  (2) 단위 2 파일 코드 리뷰(위); (3) 그 뒤 M2 종료 보고. M3은 새 규약 문항.

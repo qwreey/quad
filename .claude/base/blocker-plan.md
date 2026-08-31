@@ -135,6 +135,15 @@ gated state의 동작:
    새 등록(핸들 → flush → 하류 Observer가 `state:Apply(b)`를 새로 만듦)이
    `pairs`에서 미정의이기 때문. `Ref.Callbacks`/State 구독자 집합과 같은
    처방(`base/source-state-plan.md`의 `H-23` 확정).
+   - **⭐ [2026-08-31 `H-203`, 사용자 확정] 순회는 핸들마다 `IsBlocked`를 다시
+     읽고, 참이면 그 자리에서 멈춘다** — 앞선 핸들의 flush가 깨운 하류가
+     `b:On()`으로 재차단하면 남은 핸들은 유보를 그대로 쥔 채 다음 `Off()`를
+     기다린다. 안 멈추면 `IsOn() == true`인데 통지가 새는 창이 생긴다(실측).
+     그 결과로 남는 "절반만 emit된" 상태는 quad 정의상 문제가 없다는 게 사용자
+     판정(*"여전히 중간에서 멈춰도 quad 정의 상 문제는 없는 상태"*) — 재차단
+     자체를 막지는 않는다(권장 패턴은 아니지만 막을 이유도 없음). 기존
+     `Off`의 "IsBlocked = false 먼저" 주석은 **여는 방향** 재진입만 다루는
+     별개 항목이다.
 
 **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-33`/`H-49`] 그 정책을 값으로
 꺼내는 표면 `blocker:Policy(emit)`을 추가한다** — 표면이 하나 늘고,
@@ -169,7 +178,7 @@ gated state의 동작:
 
 ## 사용 예시
 
-`state1`/`state2` 각각이 아니라 **결합된 결과(`state3`) 하나에만** `:Block`을
+`state1`/`state2` 각각이 아니라 **결합된 결과(`state3`) 하나에만** `:Apply(blocker)`(**[2026-08-29]** 옛 `:Block`)를
 건다:
 
 ```lua
@@ -182,7 +191,7 @@ state2:Set(2)  -- state3 무효화 → gated3로 전파 시도 → 이미 true, 
 blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 번 emit
 ```
 
-**일반 사용 가이드(확정, 문서화 필수)**: Block은 **파이프라인의 최종 연산
+**일반 사용 가이드(확정, 문서화 필수)**: 블록(= `state:Apply(blocker)`)은 **파이프라인의 최종 연산
 지점**(실제로 무거운 계산이 일어나는 derived state, eager 소비자에 가장
 가까운 지점)에 거는 게 원칙 — 소스가 여러 개든, 하나가 한 주기에 여러 번
 바뀌든 상관없이 이 지점 하나만 지키면 됨. 소스 쪽에 각각 거는 게 아니다.
@@ -221,14 +230,15 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
   아님) — 원래 근거는 배선 동사 `state:Block(blocker)`와의 충돌이었고,
   **[2026-08-28 `H-158`]** 그 동사가 `state:Apply(blocker)`로 바뀐 뒤에도 이름은
   유지한다(`On`/`Off`가 `IsOn`/`IsBlocked`와 이미 짝이고, 바꿀 이유가 없다).
-- 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**
+- 필드: **`IsBlocked`**(Blocker 자신의 On/Off 상태), **`HasBlockedEmit`**(**[2026-08-29]** 개념 이름 — 리터럴 필드가 아니라 게이트 `withheld`의 `next(…) ~= nil` 파생값, 위 "`HasBlockedEmit`은 게이트 흡수 집합의 특수형이다" 절)
   (gated state의 대기 플래그, `Is`/`Has` 접두어로 불리언임을 바로 알려줌).
 - 메소드: `state:Apply(blocker) -> state`(**[2026-08-28 `H-158`]** 옛 `state:Block(blocker)` — 별도 메소드가 아니라 `Blocker.__apply`).
 - **[2026-08-18 신설] `IsOn() -> boolean`**(`IsBlocked` 필드를 그대로 읽는
   얇은 조회 메소드), **`OffWithoutEmit() -> self`**(위 "onunblock 핸들"
   참고) — 사용자 확정: *"IsBlocked가 있다면 그냥 두어도 될듯 함.
   HasBlockedEmit 만 처리된다면 괜찮다 생각"* — 즉 `IsBlocked`/
-  `HasBlockedEmit` 필드는 그대로 유지하고, 별도 `HasBlocked`(Blocker
+  `HasBlockedEmit` 필드(그 시점 표현 — `HasBlockedEmit`은 위 각주대로 파생값이지
+  리터럴 필드가 아니다)는 그대로 유지하고, 별도 `HasBlocked`(Blocker
   자신의 새 최상위 플래그)는 **신설하지 않는다** — `OffWithoutEmit()`이
   각 gated state의 기존 `HasBlockedEmit`을 그대로 리셋해주는 것으로
   충분하다고 판단됐기 때문(처음 제안됐던 "`HasBlocked`"는 이 논의

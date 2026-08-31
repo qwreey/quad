@@ -1,6 +1,11 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: **2026-08-21** — `Brand`가 **인스턴스 브랜드**로 전면
+> 마지막 갱신: **2026-08-29** — M2 구현이 스파이크 셋을 닫음: `05`(다이아몬드,
+> `spec.state`/`spec.effect` 3번이 대체)·`15`(타입팩, `H-176` 기각 실측) **폐기 →
+> `done/`**, 신규 `26`(`:Apply` 교집합 오버로드, `H-179`) `done/` 직행, "만들어야 할
+> 스파이크"의 중간 State GC(`spec.state` 11번)·`CheckedQuad` 재실행(`23`) 닫힘 —
+> 각 행의 날짜 표기가 소스. 직전 갱신 2026-08-26(8라운드 `H-122`/`H-123`으로
+> `11`이 `done/` → `rewrite-required/`). 그 전 갱신: **2026-08-21** — `Brand`가 **인스턴스 브랜드**로 전면
 > 재작성되면서(`base/brand-plan.md`) 옛 `Brand.set`/`Brand.get`을 직접 구현해
 > 쓰던 `22`가 `done/` → `rewrite-required/` 이동(검증 대상인 `isRef`/`isPreRef`
 > 포함 관계 자체는 그대로). 같은 날 `Epoch`/`EpochMap` 승격도 있었으나 그건
@@ -46,9 +51,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 9 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 8 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 14 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
 
 **⚠️ [2026-08-25 신설] 타입 스파이크는 `./scripts/test.sh`가 하는 리링크를
 먼저 거쳐야 한다.** `luau` CLI가 심볼릭 링크를 못 타는데(디렉토리·파일 둘
@@ -145,7 +150,6 @@
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
 | `01-two-pass-array-hash-order.luau` | 옛 형태 기준으로는 ✅ 통과였음 | 숫자 `for` + 일반화 `for` **두 루프**로 짜여 있는데, 구현은 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — Luau의 일반화 `for`가 배열 파트를 먼저 다 돌고 해시 파트로 넘어간다는 것 자체를 **한 루프로** 검증하도록 다시 쓸 것. **검증 대상(순서 계약)은 그대로**라 결론이 바뀌는 건 아님 |
-| `05-store-state-diamond-propagation.luau` | 2026-08-19 재작성분은 그 시점 모델 기준 ✅ 통과였음 | **[2026-08-21] 모델이 또 바뀌었다** — 소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드에서 **두 번째 통지가 접힌다**. 그래서 이 스파이크의 핵심 assert("`:Get()`을 안 부르는 Observer가 변경당 경로 수(2)만큼 운다")가 **정반대**가 됐다 — 이제 **변경당 1회**여야 한다. **살릴 것**: `invalid` 기반 dedup이면 두 번째 변경부터 침묵하는 것을 잡는 음성 대조군(그 금지는 지금도 유효). **새로 넣을 것**: DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch가 에포크로 사라지는지(그 문서 §1의 시나리오) |
 | `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `22-runtime-ref-preref-postref-brand.luau` | 옛 `Brand` API 기준으로는 ✅ 통과였음 | **[2026-08-21] `Brand`가 인스턴스 브랜드로 재작성됨** — 파일 안의 `Brand.set(x, tag)`/`Brand.get(x)`/`XxxTag` 변수를 `Brand()` + `SomeBrand:register(x)`/`SomeBrand:is(x)`로 바꿔 쓸 것(`base/brand-plan.md`). **검증 대상(`isPreRef`/`isPostRef` 배타 + 둘 다 `isRef`엔 `true`, Leaf 핸들러 흉내)은 그대로**라 assert는 손댈 게 없다. **새로 넣을 것**: 다중 태깅이 실제로 되는지 — 한 값을 두 브랜드에 등록하고 양쪽 `:is`가 다 `true`인지(`Source`가 `SourceBrand`+`EpochBrand`인 자리, `base/state-epoch-plan.md` §2) |
@@ -182,7 +186,9 @@
 
 | 파일 | 확인된 것 |
 |---|---|
-| `15-type-compute-trailing-deps-typepack.luau` | **[2026-08-28 폐기 → `done/`로 이동, 재작성 안 함]** M2 단위 2가 실제 `quad-types` 선언에서 타입팩 형태를 실측해 기각했다(`round11.md` `H-176`: strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힘 → deps 자리 `...any`). 이 스파이크가 물으려던 (B)의 답이 나왔으므로 파일은 역사로만 `done/`에 남긴다. 아래는 폐기 전 상태: **파싱 실패**(SyntaxError) | 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
+| `26-type-apply-object-factory-overload.luau` (타입체크 전용) | ✅ **[2026-08-29 M2 단위 4]** `state:Apply(factory)`의 파라미터 타입은 **교집합 오버로드**(함수 팩토리 제네릭 `U` / `__apply` 객체 `any` 반환) — 유니온 하나는 필드가 더 있는 객체(`Blocker`)를 못 받는다. 기대 진단 2건(음성 대조군)만 — 근거: `qa-request/m2-implementation-round11.md` `H-179`, `quad-types/src/init.luau` `State<T>.Apply` |
+| `05-store-state-diamond-propagation.luau` | **[2026-08-29 폐기 → `done/`로 이동, 재작성 안 함]** M2 단위 2·3의 `quad-base/test/spec.state.luau` 3번(다이아몬드에서 두 번째 도착이 규칙 3으로 접힘, 조인 1회 계산)·`spec.effect.luau` 3번(Effect도 1회)이 실제 구현에서 같은 것을 고정한다 — 이 스파이크가 물으려던 "변경당 1회"의 답. 아래는 폐기 전 상태: 2026-08-19 재작성분은 그 시점 모델 기준 ✅ 통과였음 — 근거: **[2026-08-21] 모델이 또 바뀌었다** — 소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드에서 **두 번째 통지가 접힌다**. 그래서 이 스파이크의 핵심 assert("`:Get()`을 안 부르는 Observer가 변경당 경로 수(2)만큼 운다")가 **정반대**가 됐다 — 이제 **변경당 1회**여야 한다. **살릴 것**: `invalid` 기반 dedup이면 두 번째 변경부터 침묵하는 것을 잡는 음성 대조군(그 금지는 지금도 유효). **새로 넣을 것**: DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch가 에포크로 사라지는지(그 문서 §1의 시나리오) |
+| `15-type-compute-trailing-deps-typepack.luau` | **[2026-08-28 폐기 → `done/`로 이동, 재작성 안 함]** M2 단위 2가 실제 `quad-types` 선언에서 타입팩 형태를 실측해 기각했다(`qa-request/m2-implementation-round11.md` `H-176`: strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힘 → deps 자리 `...any`). 이 스파이크가 물으려던 (B)의 답이 나왔으므로 파일은 역사로만 `done/`에 남긴다. 아래는 폐기 전 상태: **파싱 실패**(SyntaxError) — 근거: 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 **당시의** Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인. **[2026-08-24]** 그 대비의 한쪽(Ref 콜백)은 6라운드 `H-7`로 **해시맵 셋**이 되어 사라졌지만, 이 스파이크가 실제로 확인한 것(**일반 Lua 테이블에서 `nil` 구멍과 `None` 채움의 거동 차이**)은 그대로 유효하다 — `sourceList`/`flattened`처럼 순서가 중요한 배열이 여전히 그 결론 위에 선다 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
@@ -247,5 +253,5 @@ inst 5개만 살린 상태 → 살아남은 payload 5 / 엔트리 5   (기대치
 | ~~`table.insert`가 배열 중간의 구멍을 재사용하는가~~ **[2026-08-24 폐기]** | **전제 자체가 없어졌다** — 6라운드 `H-7`로 `Ref.Callbacks`가 배열에서 `{[callback\|thread] = true}` **해시맵 셋**으로 바뀌었고, 해시맵엔 border 개념도 구멍도 없다(`base/ref-plan.md`). 이 스파이크는 만들지 말 것 | QA 4라운드 `R-11`(폐기), 6라운드 `H-7` |
 | 중간 State가 `_hold`(하류 → 상류 강함) 불변식으로 실제로 살아남는가 | **[2026-08-28 닫힘 — `quad-base/test/spec.state.luau` 11번이 양성(체인 생존)·음성(하류를 놓으면 수거) 둘 다 실측]** 아래는 닫히기 전 서술: **[2026-08-25] 설계는 확정됐다** — 각 파생 노드가 자기 상류를 `_hold`로 강하게 든다(사용자 확정). 남은 건 실측뿐이고 **M2 착수 게이트는 아니다**(`question.md` 최우선 절에서 내려감). 음성 대조군으로 "`_hold` 없이 짜면 중간 노드가 수거돼 전파가 끊긴다"까지 볼 것 | `base/source-state-plan.md`의 "해소됨 — 중간 State는 `_hold`로 살아남는다" 절 |
 | `Relate` 값/내부 키가 바깥 키를 되참조하면 새는가 | **[2026-08-25 신설, 7라운드 `H-71`/`H-77`]** `done/07`은 **안전한 모양만** 봤는데 여러 문서가 그걸 "GC-native 아키텍처의 핵심 전제 검증"으로 인용한다. 실제로는 (a) `SetStrong`의 **값**이 되참조하면 100% 새고, (b) **내부 키**가 되참조하면 `SetStrong`/`SetWeak` **둘 다** 샌다. `07`에 음성 대조군으로 추가할 것 | `base/relate-plan.md`의 "위험한 패턴" 절 슬롯 표 |
-| **[2026-08-26 신설, 8라운드 `H-112`]** `CheckedQuad<T, Pattern>`이 M2 표면 추가 후에도 사는가 | 8라운드에 **한 번 실측해 통과**했지만(배선이 격리형이라 `Quad`에 `Source` 필드를 더해도 클린), 실제 M2 반영 뒤 `Quad` 타입의 선언 스타일이 정해지면 다시 봐야 한다. `23`(`done/`에서 **통과** 상태)이 `CheckedQuad`를 쓰므로 그걸 다시 돌리는 배치. **[2026-08-26 정정, `/code-review high`]** 여기 한때 "`rewrite-required/23`의 재작성과 같은 배치"라고 적었는데 **`rewrite-required/`에 `23`은 없다** — 일어나지 않을 재작성에 실측을 매달아 고아가 될 뻔했다 | `ROADMAP.md` M2의 `H-80` 체크박스, 8라운드 `H-112` |
+| **[2026-08-26 신설, 8라운드 `H-112`]** `CheckedQuad<T, Pattern>`이 M2 표면 추가 후에도 사는가 | **[2026-08-29 닫힘]** M2 단위 넷(`Quad`에 `Source`/`Store`/`Effect`/`Blocker`/생명주기/`is*` 추가) 뒤 `done/23`을 다시 돌림 — `luau-analyze` 진단은 음성 대조군(`"9.9.9" does not match "0.0.0"`) 하나뿐, 통과. 아래는 닫히기 전 서술: 8라운드에 **한 번 실측해 통과**했지만(배선이 격리형이라 `Quad`에 `Source` 필드를 더해도 클린), 실제 M2 반영 뒤 `Quad` 타입의 선언 스타일이 정해지면 다시 봐야 한다. `23`(`done/`에서 **통과** 상태)이 `CheckedQuad`를 쓰므로 그걸 다시 돌리는 배치. **[2026-08-26 정정, `/code-review high`]** 여기 한때 "`rewrite-required/23`의 재작성과 같은 배치"라고 적었는데 **`rewrite-required/`에 `23`은 없다** — 일어나지 않을 재작성에 실측을 매달아 고아가 될 뻔했다 | `ROADMAP.md` M2의 `H-80` 체크박스, 8라운드 `H-112` |
 | `Visible = false`인 GuiObject의 `AbsoluteSize`/`AbsolutePosition`이 갱신되는가 | `quad-roblox-fastscroll` 설계의 선행 실측. **Studio 필요** — 만들면 `not-run/`행 | `research/fastscroll-plan.md` |

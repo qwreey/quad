@@ -20,6 +20,7 @@ local TypeVersionCheck = require("./luau_packages/type_version_check")
 -- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
 -- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
 export type Epoch = { Revision: number }
+export type EpochSet = { [Epoch]: true } -- 집합이지 배열이 아니다(게이트 배치가 그대로 넘어온다)
 
 -- `Relate` — inst를 weak 키로 하는 릴레이션(`.claude/base/relate-plan.md` "API").
 -- `inst`는 항상 weak, `Weak`/`Strong`은 value의 보관 방식만 가리킨다.
@@ -54,6 +55,53 @@ export type Ref<T> = {
 -- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 export type StateData<T> = { Get: (self: StateData<T>) -> T }
+
+-- 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 구현이 붙였고
+-- `H-187` (a)로 사용자 승인(2026-08-31, "이름 그대로 사용해도 좋음").
+-- `Observer` — 값을 안 실어주는 leaf 구독(`source-state-plan.md` "`state:Observer(fn)`").
+-- `fn(targetState, self, emitFrom?)`: 3번째가 출처(`Epoch` | 집합), 설치·캐치업 발화는 `nil`.
+-- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.
+export type Observer = {
+	Subscribed: boolean,
+	Subscribe: (self: Observer) -> Observer,
+	WeakSubscribe: (self: Observer) -> Observer,
+	Unsubscribe: (self: Observer) -> Observer,
+	WeakUnsubscribe: (self: Observer) -> Observer,
+}
+export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
+
+-- `EffectHandle` — `Effect(fn, ...deps)`의 핸들(`effect-plan.md`). `fn(self) -> ...cleanup`.
+-- 네 진입점은 Observer와 같은 이름·같은 게이트이되 **본문은 자기 것**(`H-144`).
+export type EffectHandle = {
+	Subscribed: boolean,
+	Rerun: (self: EffectHandle) -> EffectHandle,
+	Subscribe: (self: EffectHandle) -> EffectHandle,
+	WeakSubscribe: (self: EffectHandle) -> EffectHandle,
+	Unsubscribe: (self: EffectHandle) -> EffectHandle,
+	WeakUnsubscribe: (self: EffectHandle) -> EffectHandle,
+}
+-- ⚠️ 팩 표기는 "반환 안 해도 됨"을 위한 것(`H-95`) — 런타임이 소진하는 cleanup은
+-- **첫 반환 하나뿐**이다(`H-185` 확정: 여러 정리는 `function() a() b() end`로 묶을 것).
+export type EffectFn = (self: EffectHandle) -> ...(() -> ())
+
+-- `state:Gate(setup)`의 정책 계약(`gate-plan.md` 2번): 바깥은 생성 시 1회, 반환 클로저는 상류
+-- emit마다. `emit()`/`emit(true)` = 흡수 집합 flush, `emit(false)` = 버리기, 반환 = 쌓인 게 있었나.
+export type GateEmit = (commit: boolean?) -> boolean
+export type GateSetup = (emit: GateEmit) -> () -> ()
+
+-- `Blocker` — `GateNode` 위의 정책(`blocker-plan.md`). `state:Apply(blocker)`가 `__apply`로 배선.
+export type Blocker = {
+	IsBlocked: boolean,
+	IsOn: (self: Blocker) -> boolean,
+	On: (self: Blocker) -> Blocker,
+	Off: (self: Blocker) -> Blocker,
+	OffWithoutEmit: (self: Blocker) -> Blocker,
+	Policy: (self: Blocker, emit: GateEmit) -> () -> (),
+	-- `state:Apply(b)`는 gated `State<T>`(같은 T)를 돌려준다 — 호출부가 결과 타입을 명시
+	-- (`State<T>.Apply`의 객체 오버로드 주석 참고).
+	__apply: (self: any, state: any) -> any,
+}
+
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
@@ -61,7 +109,15 @@ export type State<T> = StateData<T> & {
 	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
 	With: (self: StateData<T>, ...any) -> State<T>,
 	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
-	Apply: <U>(self: StateData<T>, factory: ((State<T>) -> U) | { __apply: (self: any, state: State<T>) -> U }) -> U,
+	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
+	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
+	-- 받아 `state:Apply(blocker)`가 strict에서 막힌다. 객체 쪽은 `any`를 돌려주므로 결과는
+	-- `local g: State<number> = s:Apply(b)`로 명시(§1①의 파생 State 명시 주석 관례와 같다).
+	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
+	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
+	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
+	-- 전파 경로에 GateNode 하나(값은 안 가린다, 통지만 유보). 같은 T.
+	Gate: (self: StateData<T>, setup: GateSetup) -> State<T>,
 }
 -- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
 export type Source<T> = State<T> & {
@@ -110,6 +166,10 @@ export type Quad = {
 	-- 단위 2. `State`는 런타임 생성자가 없다(파생 전용) — 타입만 위에서 export.
 	Source: <T>(v: T) -> Source<T>,
 	Store: <T>(defaults: T?) -> Store<T>,
+	-- 단위 3. deps는 State/Source/Ref(`H-70`), `fn`엔 안 넘어간다.
+	Effect: (fn: EffectFn, ...any) -> EffectHandle,
+	-- 단위 4.
+	Blocker: () -> Blocker,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
@@ -117,6 +177,8 @@ export type Quad = {
 	unbindLifetime: (value: any) -> (),
 	canBound: (value: any) -> boolean,
 	canExecute: (value: any) -> boolean,
+	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
+	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
 
 	-- 브랜드 술어(`.claude/base/brand-plan.md`). 나머지(`isTag`/`isAttribute*`/
 	-- `isTween`/`isSlot`)는 그 타입의 마일스톤에서.

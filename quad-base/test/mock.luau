@@ -346,6 +346,12 @@ local function installLifetime(quad: any)
 				2
 			)
 		end
+		-- [H-184] 훅 가드를 커밋 **전에** 묻는다 — 가드가 거부해도 반쯤 묶인 핸들
+		-- (묶였는데 Destroying 연결 없음)이 남지 않는다. 값이 훅을 안 가지면(평범한
+		-- 클로저 등) 물을 것이 없다. quad-roblox의 bindLifetime도 같은 순서여야 한다.
+		if type(value) == "table" and (value :: any)._assertBindable ~= nil then
+			(value :: any):_assertBindable()
+		end
 		claim(inst)
 
 		local gchold = InstData:GetWeak(inst, "gchold")
@@ -375,10 +381,20 @@ local function installLifetime(quad: any)
 		BindData:SetWeak(value, "gcconn", nil)
 	end
 
+	-- 주입 op `onDestroying(inst, fn): Connection` — quad-roblox는 `inst.Destroying:Connect(fn)`
+	-- 한 줄(`architecture.md` EngineOps). mock은 그 시그널을 그대로 쓴다.
+	local function onDestroying(inst: any, fn: () -> ()): any
+		if not isMockInstance(inst) then
+			error("onDestroying: inst is not a mock instance", 2)
+		end
+		return inst.Destroying:Connect(fn)
+	end
+
 	quad.bindLifetime = bindLifetime
 	quad.unbindLifetime = unbindLifetime
 	quad.canBound = canBound
 	quad.canExecute = canExecute
+	quad.onDestroying = onDestroying
 end
 
 return {

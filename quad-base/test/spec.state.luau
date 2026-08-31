@@ -142,7 +142,7 @@ do
 end
 
 print()
-print("=== 6. 캐시 카운터 쌍 (H-85) — 재계산 도중 온 무효화는 다음 Get이 반드시 다시 계산 ===")
+print("=== 6. 캐시 카운터 쌍 (H-85) + Get 재시작 루프 (H-198) — 재계산 도중 온 무효화는 같은 Get이 수렴할 때까지 다시 계산 ===")
 do
 	local s = Source(1)
 	local runs = 0
@@ -155,8 +155,9 @@ do
 		end
 		return v
 	end)
-	assert(d:Get() == 1 and runs == 1, "first compute saw 1 (and set 2 mid-way)")
-	assert(d:Get() == 2 and runs == 2, "the mid-recompute invalidation was not lost")
+	-- [H-198, 사용자 확정 2026-08-31] 옛 계약("다음 Get이 다시 계산")에서 강화 —
+	-- Get이 루프라 같은 호출 안에서 재시작해 항상 최신으로 수렴한 값을 돌려준다.
+	assert(d:Get() == 2 and runs == 2, "the same Get restarted and returned the converged value")
 	assert(d:Get() == 2 and runs == 2, "then stable")
 	-- fn이 던지면 cacheCurrCount가 안 갱신돼 다음 Get이 다시 시도한다
 	local boom = true
@@ -258,8 +259,15 @@ do
 		self.calls += 1
 		return st
 	end
-	local viaObj = s:Apply(factory :: any)
+	local viaObj = s:Apply(factory) -- 객체 오버로드: 추가 필드(`calls`)가 있어도 통과해야 한다
 	assert(viaObj == s and factory.calls == 1, "__apply is called as a METHOD on the factory object (H-158)")
+	for _, bad in { {} :: any, 5 :: any, nil :: any } do
+		local ok, err = pcall(function()
+			(s :: any):Apply(bad) -- `any` 인자는 오버로드를 못 고르므로 리시버 쪽을 캐스트
+		end)
+		assert(not ok and string.find(tostring(err), "__apply", 1, true) ~= nil, "non-factory rejected with level 2: " .. tostring(err))
+		assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	end
 	print("PASS")
 end
 
@@ -299,7 +307,7 @@ do
 end
 
 print()
-print("=== 12. 가드 — Compute 결과가 Modifier면 캐싱 전에 error(level 2); dep이 State가 아니면 error ===")
+print("=== 12. 가드 — Compute 결과가 Modifier면 캐싱 전에 error(level 3, H-205); dep이 State가 아니면 error ===")
 do
 	local mod = {}
 	Brand.ModifierBrand:register(mod)
@@ -311,6 +319,9 @@ do
 		d:Get()
 	end)
 	assert(not ok and string.find(tostring(err), "Modifier", 1, true) ~= nil, "rejected: " .. tostring(err))
+	-- [H-205, 사용자 확정 2026-08-31] level 3 — 직접 Get이면 사용자 호출부를 가리킨다
+	-- (체인 경유면 상류 Get의 내부 프레임 — 어떤 고정 level도 거기선 유저 코드에 못 닿음)
+	assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "direct Get: blames the caller, not quad internals")
 	assert((d :: any)._cache == nil, "nothing was cached")
 	local ok2, err2 = pcall(function()
 		s:Compute(function(x)
@@ -319,6 +330,39 @@ do
 	end)
 	assert(not ok2 and string.find(tostring(err2), "dep #2", 1, true) ~= nil, "non-State dep: " .. tostring(err2))
 	assert(string.find(tostring(err2), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	print("PASS")
+end
+
+print()
+print("=== 13. 가드 (H-199/H-202) — nil dep은 조용히 사라지지 않고 error, Compute fn은 함수여야 ===")
+do
+	local s = Source(1)
+	-- H-199: a nil mid-list used to shift later deps left (fn's positional args
+	-- landed in the wrong slots); a single trailing nil used to vanish entirely.
+	local ok, err = pcall(function()
+		s:Compute(function(x)
+			return x:Get()
+		end, nil :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "dep #2 is nil", 1, true) ~= nil, "trailing nil dep: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	local other = Source(2)
+	local ok2, err2 = pcall(function()
+		s:Compute(function(x)
+			return x:Get()
+		end, other, nil :: any, other)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "dep #3 is nil", 1, true) ~= nil, "mid-list nil dep: " .. tostring(err2))
+	local ok3 = pcall(function()
+		s:With(nil :: any)
+	end)
+	assert(not ok3, "With rejects nil deps through the same collector")
+	-- H-202: non-function fn errors at Compute, not at the first Get deep in _recompute.
+	local ok4, err4 = pcall(function()
+		(s :: any):Compute(42)
+	end)
+	assert(not ok4 and string.find(tostring(err4), "Compute fn must be a function", 1, true) ~= nil, "non-function fn: " .. tostring(err4))
+	assert(string.find(tostring(err4), "spec.state.luau", 1, true) ~= nil, "points at the caller")
 	print("PASS")
 end
 
