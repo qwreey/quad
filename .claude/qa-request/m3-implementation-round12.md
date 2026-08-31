@@ -69,6 +69,7 @@
 | `H-251` | ① | 2 | 🟢 | (탐사자) `spec.drive.luau` 헤더가 *"M3 unit-1 scope: pipeline stage (b) only"*로 stale — 단위 2가 `drive`에 ⓪/⓪' 배치 게이팅을 배선했다(`Dispatch/init.luau` 헤더는 갱신됨). 부수로 그 spec-로컬 핸들러는 배열 자리의 `setLength`/`setOffsetSource` 등록 계약(생략 UB)을 안 지킨 채 `drive`를 태운다 — F-4-1 측정 목적이라 무해하지만(빈 `bk`로 `recompute`가 no-op) 의도임을 주석으로 밝힐 자리 | ✅ 반영 — 헤더를 ⓪(b)⓪' 현행으로 + 등록 생략이 의도(순회 측정 전용)임을 명시 |
 | `H-252` | ① | 2 | 🟢 | (탐사자) `test.sh`의 `luau-analyze` 대상에 단위 2가 신설한 **`quad-error/src`가 없다**(require 경유 트랜지티브 타입만 읽힘) — 그 스크립트 자신의 주석이 "거짓 클린이 없다"를 목적으로 말하는 자리인데, 새 런타임 패키지의 strict 진단이 게이트 밖이다. `quad-types/src`도 같은 상태(전부터). 지금 직접 돌리면 둘 다 클린(실측 — `luau-analyze quad-error/src`·`quad-types/src` 각각 무출력 exit 0) | ✅ 반영 — `test.sh` analyze 대상에 `quad-types/src`·`quad-error/src` 추가(전체 그린 재확인) |
 | `H-264` | ① | 3 | 🟢 | (탐사자) `H-257`의 nil 한정 힌트가 **코드에만 있다** — 정본 `dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절은 여전히 *"그 이상의 특수 분기는 두지 않음"*이라 그 커밋(`4c01be2`)이 넣은 nil 조건 분기 문구를 정면 부정한다(그 커밋은 `base/` 파일을 하나도 안 건드림 — ①의 "`base/`+코드 같은 커밋" 규약이 안 지켜진 자리) | ✅ 반영 — 매치 실패 절에 `H-257` 예외 명시(분기 로직 아닌 진단 문구 보강) |
+| `H-268` | ① | 4 | 🟢 | (감사 2라운드) `H-266`의 마지막 미전파 — `.claude/README.md` 색인의 두 행(`source-state-plan.md` 행 *"성능 최적화, correctness엔 불필요"* / `dispatch-core-plan.md` 행 *"dedup 채택(성능 최적화)"*)이 정확히 `H-266`이 뒤집은 문장 그대로; 부수로 bare `Err`/`SURFACE` 표기가 정의 포인터 없이 세 문서로 확장된 것(기존 관례이긴 함) | ✅ 반영 — 두 색인 행에 load-bearing 승격 표시, 세 문서 첫 사용 자리에 `architecture.md` "error 계약" 절 포인터 |
 | `H-267` | ① | 4 | 🟢 | (감사 1라운드) 단위 4 diff의 미전파 다섯 — `ref-plan.md` RefLeafHandler SetWeak 주석의 *"순수 성능 최적화라 … 한 번 놓침"*이 `H-266`과 모순(같은 canBound 가드라 Ref도 동일하게 load-bearing) / `source-state-plan.md` dedup 절이 배너만 달리고 절 제목·의사코드 주석·SetWeak 문단이 옛 프레이밍 그대로(배너가 부정하는 문장을 같은 커밋에서 안 고친 전형) / 가드 등록 "M3에서 미룬다" 미래형 서술 둘(`source-state-plan.md`·`effect-plan.md`)이 완료 미반영 / ROADMAP `Dispatch/Leaf.luau` 체크박스가 무주석 `[ ]`라 "파일이 아직 없다"로 오독 여지 / 가드 의사코드 넷이 이관 전 리터럴 `error(...)`(`H-249` 부류 잔존 — PreRef/PostRef 포함) | ✅ 반영 — 정정 배너·완료 표시·`[ ]` 유지 주석·`Err.errorBefore(…, SURFACE)` 갱신. SetWeak 안전성의 실근거(미스 창 부재 — bound 동안 gchold 강참조)를 두 문서에 명문화 |
 | `H-266` | ① | 4 | 🟢 | Leaf dedup의 채택 근거(*"correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐"*, 2026-08-14)가 현행 계약과 모순 — 이후 확정된 `bindLifetime`의 `canBound` 가드(이중 배치 방지, 재바인드 즉시 error)와 바인드 부수효과(Observer `_catchUp`/Effect `_bindDestroying` 실제 `Destroying` 연결) 때문에 retractor만 dedup하고 process 쪽을 빼면 (A) spurious 재발행이 크래시한다 — dedup은 순수 성능 최적화가 아니라 load-bearing | ✅ 반영 — 결론(dedup 유지)은 그대로, 근거만 승격: `source-state-plan.md` dedup 절에 정정 배너, `dispatch-core-plan.md` 체크리스트 4번 요약 갱신. `spec.leaf.luau` 3이 "통과 자체가 dedup의 증거"로 실측 |
 | `H-265` | ① | 3 | 🟢 | (탐사자) None 쌍의 분업·배치 서술이 어긋난 자리 셋 — `dispatch-core-plan.md` "Length/Offset" 절 `setLength` 의사코드 주석의 *"길이가 상수인 자리(`NilHandler`/`NoneHandler`의 `0`)"*(NoneHandler는 등록을 안 한다 — 재귀만) / `source-state-plan.md` "세 번째 카테고리" 절의 *"`Dispatch/StoreBind.luau`의 `NoneHandler`"*(실물 배치는 `Dispatch/None.luau` — `H-253`·`architecture.md` 트리) / ROADMAP 단위 3 체크박스의 `setLength(0)` + `setOffsetSource(None)` 나열 순서(계약 순서와 반대로 읽힘 — 상세 절 참고) | ✅ 반영 — `NilHandler`만으로 정정 둘(`dispatch-core-plan.md` 두 자리), `Dispatch/None.luau` 소속 정정(`source-state-plan.md`), ROADMAP 나열 순서를 해제 계약대로 |
@@ -514,3 +515,12 @@ stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하�
   사용자가 base 내장 쌍 경고를 노이즈로 볼 수 있다 — 손보려면 새 메커니즘
   (base 등록 면제 등)이라 지금은 안 만든다("실제로 관측된 문제에만 구조"
   원칙). 실제로 불편이 관측되면 그때 문항으로.
+- **[2026-08-31, 감사 2라운드 비고 — M8이 확인할 자리]** `RefLeafHandler`의
+  dedup 미스 창 논증(`H-267`로 이식)은 **GC 조기소실만** 커버한다 — Ref는
+  `v:Set(inst)`가 dedup 기록(`relate:SetWeak`) **전에** 임의 사용자 콜백을
+  동기 실행하므로, 그 콜백이 같은 `(inst,k)`를 같은 `v`로 재귀 재-dispatch
+  하면 **기록 순서** 미스 → `canBound` 크래시가 가능하다. Observer/Effect의
+  바인드 부수효과는 임의 사용자 코드를 동기 호출하지 않아 이 경로가 없다.
+  실사용 패턴인지("드문 오용" 원칙 해당 여부) 불명 — 코드가 M8에나 생기므로
+  그때 기록 순서(SetWeak을 `v:Set` 앞으로?)를 확인할 것. `ref-plan.md`의
+  해당 주석에도 같은 한정을 달아뒀다.

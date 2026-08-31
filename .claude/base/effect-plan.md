@@ -601,7 +601,8 @@ function(inst,k,v) Err.errorBefore(`Effect binding should be array index
 item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-18]** 에러 메시지에
 실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드"
 절; **[2026-08-31 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
-같은 절의 논증 참고).
+같은 절의 논증 참고, `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의
+"error 계약" 절).
 `FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
 named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
 값싸게 override 가능한 자리로 열어둠.

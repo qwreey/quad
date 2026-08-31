@@ -557,7 +557,12 @@ function RefLeafHandler.process(inst, k, v, index)
     -- "한 번 놓침"이 아니라 크래시다. 다만 미스 창 자체가 없다: v는 bound 동안
     -- gchold가 강하게 잡아 weak 엔트리가 조기 소실될 수 없다(`base/relate-plan.md`의
     -- 슬롯 표 — SetWeak 선택 자체는 유지, 상세는 `base/source-state-plan.md`의
-    -- "Observer/Effect Leaf dedup" 절 배너).
+    -- "Observer/Effect Leaf dedup" 절 배너). 단, 이 논증은 GC 조기소실만
+    -- 다룬다 — Ref는 Observer/Effect와 달리 위 v:Set(inst)가 임의 사용자
+    -- 콜백을 SetWeak 기록 *전에* 동기 실행하므로, 그 콜백이 같은 (inst,k)를
+    -- 같은 v로 재귀 재-dispatch하면 기록 순서 미스로 canBound 크래시가
+    -- 가능하다(감사 2라운드 지적). 실사용 패턴인지 불명 — M8에서
+    -- RefLeafHandler를 짤 때 확인할 것(round12 §6).
     relate:SetWeak(inst, k, v)
     return function(nextValue)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
@@ -932,7 +937,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 M3
     단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 — 같은 부류인
     Observer/Effect 가드가 `Dispatch/Leaf.luau`에서 실제로 이 모양으로
-    구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절)
+    구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절;
+    `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 "error 계약" 절)
     (**[2026-08-18, `/code-review high`로
     누락 발견 — `PostRef`의 "동적 경로 가드 Handler도 거울상으로 하나 더" 절/
     `effect-plan.md`의 "동적 경로 가드" 절과 짝을 맞춤]** 에러 메시지에

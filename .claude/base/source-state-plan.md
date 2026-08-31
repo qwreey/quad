@@ -1301,7 +1301,8 @@ isHandlable = function(inst,k,v) return isObserver(v) end, process =
 function(inst,k,v) Err.errorBefore(`Ref/Observer binding should be array
 index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 단위 4]**
 error 발화는 `H-231` 워커의 최외곽 스캔 — 매치 실패와 같은 논증으로
-`drive`를 뚫고 사용자 진입점을 blame한다, `Dispatch/Leaf.luau` 헤더 주석).
+`drive`를 뚫고 사용자 진입점을 blame한다, `Dispatch/Leaf.luau` 헤더 주석.
+`Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 "error 계약" 절).
 **[요구 추가, 2026-08-18 구현 전 QA] 에러 메시지에 실제 `k`의 타입을
 실을 것.** 사용자 요구: *"Priority Fallback 이 type(k) == "string" 인
 상황에서는 가장 위에 Ref/Observer binding should be array index item, but
