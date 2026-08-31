@@ -40,7 +40,7 @@
 | `H-234` | ① | 2 | 🟡 | (사용자 발견·결정, 회신 7) `luau_packages`가 rojo 트리·sourcemap에 안 들어가 IDE 타입에러·rojo 빌드 오류 — 근본 원인은 quad-base가 roblox target인 것(*"처음부터 quad-base 자체가 roblox package는 아니라서 luau로 바꿔야 … 어떤 백엔드이더라도 무관히 돌아가니까"*) | ✅ 반영 — quad-base·quad-types target `luau` 전환(build_files 제거, 의존 target 오버라이드 정리), require 전부 `luau_packages/quad_types`로, `default.project.json`이 각 패키지의 `luau_packages` 매핑, `relink.sh` 꼬리에 `rojo sourcemap --output` 재생성(사용자 요청). `rojo build`·전체 테스트 클린. `project-setup-plan.md` `H-234` 문단·`architecture.md` 갱신 |
 | `H-235` | ① | 2 | 🟢 | (감사 1라운드, 단위 2 범위) 문서 4곳이 같은 커밋 범위의 결정을 안 따라옴 — `dispatch-core-plan.md` `H-219` 문단이 "M5 재평가"로 열림 유지 / 같은 문서 의사코드 retractor 생략 error 두 줄이 이관 전 리터럴 / `architecture.md` error 계약 예시 첫 줄이 이관 전 형태 / `ui-shorthand-plan.md` `UI-11` 주제문이 15줄 아래 역전과 정반대 | ✅ 전부 반영(같은 커밋) — H-219 조기 해소 표시, 의사코드 `Err.errorBeforeNearest`로 동기, 예시에 개념 예시 주석, UI-11 주제문 취소선+포인터. 의심 1(quad-types-plan "런타임 구현 사실상 없음")도 상수 언급으로 정밀화 |
 | `H-236` | ① | 2 | 🟢 | (감사 2라운드) `H-234`/`H-231` 여파 4곳 — `architecture.md` quad-error export 나열이 Nearest 쌍·`new()` 누락 / quad-types 트리 주석에 `quad_error` 의존 누락 / `relink.sh` 머리 예시가 옛 `roblox_packages` 경로 / `project-setup-plan.md` 심볼릭 링크 절의 현재형 지침·`H-165` shim 경로가 옛 디렉토리 | ✅ 반영 — export 나열·의존 주석 갱신, relink 예시 경로 갱신, 심볼릭 링크 절 머리에 `H-234` 경로 배너(히스토리는 보존, 현재형만 갱신) |
-| `H-237` | ① | 2 | 🟢 | (감사 3라운드) 셋 — `H-232` 문단의 "배치 Blocker 등도 같은 원칙" 일반화가 사용자 확정 범위(`bk` 하나)를 벗어남(Blocker는 owner 되참조가 없어 분기 대상 아님) / `project-setup-plan.md` "넷째 후속" 문단이 옛 target 배치를 현재형으로 / "Length/Offset" 절의 "새 함수를 만들 필요 없음"이 `H-232` 분기와 반대 인상 | ✅ 반영 — 일반화를 조건("값이 owner를 되참조하는가")으로 좁힘, 넷째 후속 문단에 `H-234` 배너, Length/Offset 절에 `H-232` 각주 |
+| `H-237` | ① | 2 | 🟢 | (감사 3라운드) 셋 — `H-232` 문단의 "배치 Blocker 등도 같은 원칙" 일반화가 사용자 확정 범위(`bk` 하나)를 벗어남(Blocker는 owner 되참조가 없어 분기 대상 아님) / `project-setup-plan.md`의 "의존 대상의" 절이 옛 target 배치를 현재형으로 / "Length/Offset" 절의 "새 함수를 만들 필요 없음"이 `H-232` 분기와 반대 인상 | ✅ 반영 — 일반화를 조건("값이 owner를 되참조하는가")으로 좁힘, 그 절에 `H-234` 배너, Length/Offset 절에 `H-232` 각주. **[감사 4라운드 회귀 정정]** 3라운드가 그 배너를 볼드 태그 **안**에 밀어넣어 태그가 80자를 넘겨 절이 통째로 인용 불가가 됐었다(doc-check ERROR) — 태그를 짧게 되돌리고 설명은 본문으로, 이 행의 인용도 실제 제목으로 교정 |
 | `H-231` | **②** | 1 | 🟡 | (사용자 설계, 회신 3) **error 유틸 모듈** — `setLevel(fn, tag)` 등록 맵 + `debug.info(i, "f")` 스택 워커로 "원하는 계층까지 올려서" error를 내는 유틸(type-version-check처럼 독립 패키지). 프레임 수 손 세기(2·3 갈림, `H-219`의 drive 도착지 한계, `H-212` 스텁 level 미정)가 전부 자연 해소되고 level이 진짜 의미 Enum이 된다. 에러는 cold path라 `debug.info` 비용 무시 가능(사용자 논거, 동의) | ✅ 설계 확정(2026-08-31 회신 4, *"에러 유틸은 error-util-ignoreme.luau를 보면 될 것 같아"* — 실험 파일이 워커 방향(최상단 하강)·API(`setFuncLevel`/`getFirstMatch`/`errorAt`/`errorBefore`/`ERROR_LEVEL_DEFAULT`)·프레임 산술까지 확정) — **`quad-error` 워크스페이스 패키지로 구현**(이름은 가칭 통보 — 게시 전 개명 쌈), `spec.errorutil` 5절 실측 통과(실험 파일의 단언 + weak 맵 + 샌드위치 강건성). 잔여였던 태그 체계·이관은 회신 5·6으로 종결(§4 "H-231 잔여" 행) |
 
 ### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
@@ -304,4 +304,8 @@ quad-types에 할당하는 건 어떤지?"* → `H-230`).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
 
-(아직 없음)
+- **[2026-08-31, 감사 4라운드 비고]** "기존 짧은 선두 태그 안에 새 배너
+  설명을 이어붙이는" 패턴이 태그를 80자 넘겨 그 절을 조용히 인용 불가로
+  만든다(`doc-check.py`의 태그 벗기기 상한). 이번엔 한 곳을 잡았지만 전
+  코퍼스에 같은 부류가 더 있을 수 있다 — 80자 초과 선두 볼드 태그 스윕이
+  다음 전 코퍼스 감사 때 파볼 자리.
