@@ -12,32 +12,9 @@ local mock = require("./mock")
 local Instance = mock.Instance
 
 local newQuad = mock.newQuad -- `H-261`: 공용 헬퍼는 mock이 소유
-
 -- `H-263`: 3·4번이 같은 leaf 등록 계약을 두 벌 들고 있었다 — 한 팩토리로.
--- 문자열 값 전담, 자리 기여 1: setOffsetSource → setLength 등록(재사용
--- Source memo), retractor는 log가 있으면 기록.
-local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
-	q.Dispatch.addHandler({
-		name = "SpecLeaf",
-		isHandlable = function(_inst: any, k: any, v: any): boolean
-			return type(k) == "number" and type(v) == "string"
-		end,
-		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, k: any, _v: any, _index: number): (any?) -> ()
-			local src = sources[k] or q.Source(-1)
-			sources[k] = src
-			q.Dispatch.setOffsetSource(inst, k, src)
-			q.Dispatch.setLength(inst, k, 1)
-			if log ~= nil then
-				local logList: { string } = log
-				return function(hint: any?)
-					table.insert(logList, `leaf:retract:{k}:{tostring(hint)}`)
-				end
-			end
-			return Quad.Void
-		end,
-	} :: QuadTypes.Handler)
-end
+-- `H-271`: 그 팩토리가 spec.integration에서 또 복사돼 mock으로 승격됨.
+local addSpecLeaf = mock.addSpecLeaf
 
 print("=== 1. None 값 — 단일 센티널, frozen, tostring ===")
 do

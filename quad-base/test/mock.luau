@@ -414,10 +414,39 @@ local function newQuad(): any
 	return q
 end
 
+-- `H-271`: spec-로컬 문자열 leaf 핸들러(자리 기여 1, 재사용 Source memo,
+-- 등록 순서 setOffsetSource → setLength)도 두 spec이 복사하고 있었다 —
+-- H-263이 spec.nonenil 안에서 접은 걸 spec.integration이 한 파일 건너 다시
+-- 벌렸다. 같은 근거(공유 헬퍼는 mock 소유)로 여기로. log가 있으면 retractor가
+-- 기록한다.
+local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
+	q.Dispatch.addHandler({
+		name = "SpecLeaf",
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			return type(k) == "number" and type(v) == "string"
+		end,
+		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(inst: any, k: any, _v: any, _index: number): (any?) -> ()
+			local src = sources[k] or q.Source(-1)
+			sources[k] = src
+			q.Dispatch.setOffsetSource(inst, k, src)
+			q.Dispatch.setLength(inst, k, 1)
+			if log ~= nil then
+				local logList: { string } = log
+				return function(hint: any?)
+					table.insert(logList, `leaf:retract:{k}:{tostring(hint)}`)
+				end
+			end
+			return Quad.Void
+		end,
+	} :: QuadTypes.Handler)
+end
+
 return {
 	Instance = Instance,
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
 	installLifetime = installLifetime,
 	newQuad = newQuad,
+	addSpecLeaf = addSpecLeaf,
 }

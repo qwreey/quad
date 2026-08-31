@@ -121,6 +121,19 @@ do
 	end)
 	assert(not ok, "no matching layer still raises")
 	assert(string.find(tostring(err), "boom-nomatch", 1, true) ~= nil, "message survives the fallback")
+	-- `H-269`: 폴백은 raise 자리를 blame한다 — quad-error 내부 줄이 아니라
+	assert(string.find(tostring(err), "spec.errorutil.luau", 1, true) ~= nil, `fallback blames the raise site, got: {tostring(err)}`)
+	assert(string.find(tostring(err), "quad-error", 1, true) == nil, "fallback never lands inside quad-error")
+	local ok2, err2 = pcall(function()
+		Err.errorAtNearest("boom-nomatch-near", 99)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "spec.errorutil.luau", 1, true) ~= nil, `nearest fallback too: {tostring(err2)}`)
+	-- `H-270`: layer 0(무태그) 요청이 유령 최상단 프레임에 오매치되지 않는다 —
+	-- 실재하는 최외곽 무태그 프레임(이 파일)을 blame
+	local ok3, err3 = pcall(function()
+		Err.errorAt("boom-zero", QuadError.ERROR_LEVEL_DEFAULT)
+	end)
+	assert(not ok3 and string.find(tostring(err3), "spec.errorutil.luau", 1, true) ~= nil, `layer 0 matches a real frame: {tostring(err3)}`)
 	print("PASS")
 end
 

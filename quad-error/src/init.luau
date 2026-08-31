@@ -78,10 +78,17 @@ function module.new(): Namespace
 
 	-- The error() level (as seen from ns.errorAt/errorBefore) that points at
 	-- the OUTERMOST frame tagged `level`. Scans from the stack top down.
-	-- No match -> 1 (the raise site).
+	-- No match -> 1, a sentinel the error* wrappers translate to the raise
+	-- site so blame never lands inside quad-error (`H-269`). (A genuine 1
+	-- would need a tagged ns.error* frame at i == 2 — ns functions are never
+	-- tagged, so the sentinel is unambiguous in practice.)
 	function ns.getFirstMatch(level: number): number
-		-- ignore getFirstMatch (2)
-		for i = module.getToplevel(), 2, -1 do
+		-- getToplevel counted with its own frame still live; from this frame
+		-- the stack is one shorter, so start one below — starting AT it makes
+		-- the first probe a phantom nil frame, which getFuncLevel reads as
+		-- layer 0 and spuriously matches an ERROR_LEVEL_DEFAULT request
+		-- (`H-270`). ignore getFirstMatch (2)
+		for i = module.getToplevel() - 1, 2, -1 do
 			if ns.getFuncLevel(debug.info(i, "f")) == level then
 				return i - 1
 			end
@@ -93,6 +100,7 @@ function module.new(): Namespace
 	-- Same, but the NEAREST (innermost) tagged frame — ascends from the raise
 	-- site outward, skipping untagged frames. Equivalent to a hand-written
 	-- level 2 on the tagged surface function, regardless of helper depth.
+	-- No match -> the same 1 sentinel as getFirstMatch (`H-269`).
 	function ns.getNearestMatch(level: number): number
 		-- 2: skip getNearestMatch itself; walk outward until the stack ends
 		local i = 2
@@ -108,20 +116,29 @@ function module.new(): Namespace
 		end
 	end
 
+	-- `H-269`: the raw sentinel (1) as an error() level would blame the
+	-- ns.error* function's own line inside quad-error — the documented
+	-- fallback is the RAISE SITE, which sits at level 2 from these frames.
+	-- Both At/Before collapse to it (there is no matched frame to be
+	-- "before" of).
 	function ns.errorAt(content: any, level: number): never
-		error(content, ns.getFirstMatch(level))
+		local at = ns.getFirstMatch(level)
+		error(content, if at <= 1 then 2 else at)
 	end
 
 	function ns.errorBefore(content: any, level: number): never
-		error(content, ns.getFirstMatch(level) + 1)
+		local at = ns.getFirstMatch(level)
+		error(content, if at <= 1 then 2 else at + 1)
 	end
 
 	function ns.errorAtNearest(content: any, level: number): never
-		error(content, ns.getNearestMatch(level))
+		local at = ns.getNearestMatch(level)
+		error(content, if at <= 1 then 2 else at)
 	end
 
 	function ns.errorBeforeNearest(content: any, level: number): never
-		error(content, ns.getNearestMatch(level) + 1)
+		local at = ns.getNearestMatch(level)
+		error(content, if at <= 1 then 2 else at + 1)
 	end
 
 	return ns :: Namespace

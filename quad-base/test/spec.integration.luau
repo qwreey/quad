@@ -6,7 +6,6 @@
 	트리 하나에서 같이 굴러가는지만 본다.
 ]]
 
-local Quad = require("../src")
 local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("./mock")
 
@@ -15,7 +14,7 @@ local newQuad = mock.newQuad
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
 -- spec-로컬 소비자 둘 — 해시 키는 mock property에 그대로 쓰는 핸들러,
--- 배열 문자열은 자리 기여 1로 등록하는 leaf(재사용 Source memo).
+-- 배열 문자열은 mock 공유 leaf(`H-271` — SpecElement 복사본을 접음).
 local function addConsumers(q: any, sources: { any })
 	q.Dispatch.addHandler({
 		name = "SpecProperty",
@@ -32,20 +31,7 @@ local function addConsumers(q: any, sources: { any })
 			end
 		end,
 	} :: QuadTypes.Handler)
-	q.Dispatch.addHandler({
-		name = "SpecElement",
-		isHandlable = function(_inst: any, k: any, v: any): boolean
-			return type(k) == "number" and type(v) == "string"
-		end,
-		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, k: any, _v: any, _index: number): (any?) -> ()
-			local src = sources[k] or q.Source(-1)
-			sources[k] = src
-			q.Dispatch.setOffsetSource(inst, k, src)
-			q.Dispatch.setLength(inst, k, 1)
-			return Quad.Void
-		end,
-	} :: QuadTypes.Handler)
+	mock.addSpecLeaf(q, sources)
 end
 
 print("=== 1. 혼합 drive — 해시 프로퍼티 + 배열(문자열/Observer/None/Effect)이 한 트리에서 ===")

@@ -18,8 +18,7 @@ local Quad = require("../src")
 local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("./mock")
 
-local q = Quad.New()
-mock.installLifetime(q) -- `H-229`: 체인 앵커가 bindLifetime을 부른다
+local q = mock.newQuad() -- `H-261`/`H-271`: 공용 헬퍼는 mock이 소유 (앵커가 bindLifetime을 부름, `H-229`)
 local Instance = mock.Instance
 local log: { string } = {}
 q.Dispatch.addHandler({
