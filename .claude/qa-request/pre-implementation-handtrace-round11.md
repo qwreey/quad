@@ -47,6 +47,16 @@
 | `H-195` | ① | 3 | 🟢 | `effect-plan.md` "의사코드 — 생성자" 절의 `_consumeCleanup` 머리 주석 *"`_cleanup`의 유무가 곧 '설치돼 있는가'가 된다"*가 바로 아래 ⚠️ 문단(*"`_cleanup`의 유무로 판정하면 안 된다"*)·코드 주석과 정면 충돌 | ✅ 반영(2026-08-29, 메인 세션)|
 | `H-196` | ① | 3 | 🟢 | `source-state-plan.md` "`state:Observer(fn)`" 절(*"owning leaf가 이미 죽었으면 no-op"*)·"Slot 생존 확인" 절(*"거짓이면 그냥 no-op"*)이 `H-159` 이전 서술 — 지금은 홀드 뒤 재바인드 시 1회 | ✅ 반영(2026-08-29, 메인 세션)|
 | `H-197` | ① | 3·4 | 🟢 | `spec.init.luau` 1이 `Effect`/`Blocker`/`onDestroying`의 존재를 안 본다 — 그 파일 헤더가 *"이 런타임 확인이 유일한 가드"*라 하는 `H-80` 드리프트 가드에 단위 3·4 값이 빠짐 | ✅ 반영(2026-08-29, 메인 세션)|
+| `H-198` | **②** | 2 | 🔴 | `_recompute` 꼬리의 `dep:_track`이 **라이브** 리비전을 찍어서, `fn` 도중 닫힌 게이트 상류에서 난 `Set`을 "본 것"으로 오인 — 카운터 쌍은 게이트가 `_receive`를 삼켜 안 움직이고 `Refresh`도 눈멀어, 나중 flush가 `_invalidate` 없이 하류로 전달(영구 stale 캐시, 실측 재현). §4 확정 의사코드 자체의 구멍 | §4 대기 (`-- TODO(H-198)`) |
+| `H-199` | ① | 2 | 🟡 | `With`/`Compute`의 vararg 수집(`deps[#deps + 1]`)이 nil dep을 조용히 버림 — 중간 nil은 뒤 dep들을 왼쪽으로 밀어 `fn`의 positional lazy 인자가 엉뚱한 자리에 감(실측) | ✅ `collectDeps` 공유 + `dep #N is nil` error(level 3), `spec.state` 13 |
+| `H-200` | **②** | 4 | 🟡 | `Impl.Gate`의 detach(`H-188`)는 "비함수 반환" 경로만 — `setup`이 **던지면** 반쯤 만든 노드가 상류 `_subs`에 좀비로 남음(`_onUpstreamEmit = Void`라 크래시는 없지만 유보 집합을 영영 못 비움). `spec.gate` 1의 "아무것도 안 남긴다" 단언은 반환 경로만 검사 | §4 대기 (`-- TODO(H-200)`) |
+| `H-201` | ① | 2 | 🟡 | `store:Of(nil)`이 RESERVED·rawget을 통과해 Source를 할당한 **뒤** `self[name] =`에서 Luau 내부 에러로 죽고, `Of(123)`은 조용히 성공해 `Names(): { string }`이 숫자를 반환 | ✅ `type(name) ~= "string"` → error level 2, `spec.store` 3 |
+| `H-202` | ① | 2 | 🟢 | `Compute`가 `fn`이 함수인지 안 봄(형제 표면 Gate/Observer/Apply는 전부 검증) — 첫 `Get`의 `_recompute` 안 내부 프레임에서 죽음 | ✅ level 2 검증(형제와 같은 급), `spec.state` 13 |
+| `H-203` | **②** | 4 | 🟡 | `Off()`의 스냅샷 순회가 `IsBlocked`를 다시 안 읽음 — 첫 게이트 flush의 하류가 `b:On()`을 다시 켜도 남은 핸들이 전부 flush돼 `IsOn() == true`인데 통지가 새어나감(실측). 문서의 미지원 선언은 네스팅(`On`/`On`/`Off` 카운팅)만 다룸 | §4 대기 (`-- TODO(H-203)`) |
+| `H-204` | ① | 2 | 🟢 | `Store(defaults)`가 `defaults`가 평범한 테이블인지 안 봄 — 비테이블은 `table.clone` 내부 프레임에서, 맨 Source는 내부 필드(`Revision`)를 지목하는 에러로 죽음 | ✅ 테이블·메타테이블 검증(level 2), `spec.store` 2 |
+| `H-205` | **②** | 2 | 🟢 | `_recompute`의 Modifier 가드 `error(…, 2)`가 항상 `Impl.Get`의 자기 줄을 지목(유일한 호출자가 내부 두 줄) — `architecture.md` error 계약이 없애려던 바로 그 결과. lazy 체인이라 어떤 고정 level도 유저 코드에 못 닿음 | §4 대기 (`-- TODO(H-205)`) |
+| `H-206` | ① | 2·3 | 🟢 | `implsOf` 헬퍼 + 4줄 ephemeron 근거 주석이 세 파일(`State`/`Observer`/`Effect`)에 verbatim 중복 — 저장 방식이 바뀌면 세 곳을 다 고쳐야 하고, 미묘하게 다른 네 번째 사본이 레지스트리를 조용히 가름 | ✅ `ImplRegistry.luau` 신설(순수 데이터 접근 — 공유 허용 범위) |
+| `H-207` | ① | 2 | 🟢 | `Source.Set`이 `Emit`의 꼬리(리비전 범프 + `emitDown` + self 반환) 전체를 복제 — 한 파일 안에 같아야 하는 계약 두 벌 | ✅ `Set`이 `Impl.Emit(self)` 직접 호출로 위임(같은 타입·같은 임플 — 공유 허용 범위) |
 
 ## 상세
 
@@ -364,6 +374,114 @@
   (`spec.init` 2가 `q.Effect`를 부르긴 하지만 그건 `H-181` GC 검사다).
 - **처리**: ✅ 반영. 1절에 세 줄.
 
+### 단위 2 — `/code-review high` (2026-08-31, 체크포인트 재개 첫 항목) — 10건 중 ① 여섯(`H-199`/`H-201`/`H-202`/`H-204`/`H-206`/`H-207`) 반영, ② 넷(`H-198`/`H-200`/`H-203`/`H-205`) §4
+
+체크포인트의 "못 한 것 하나"였던 단위 2 파일 리뷰. 8개 각도 파인더가 후보 22건 →
+dedup 10건, 정확성 8건 전부 실제 코드에 재현 스크립트로 확인(효율 배치는 "관측된
+병목에만 구조" 원칙 위반으로, 약한 정리 항목들은 심각도 미달로 기각). 대상은 단위 2
+파일 넷이었지만 교차 추적이 단위 4 표면(`Gate`/`Blocker`) 둘을 같이 잡았다.
+
+### `H-198` 🔴 — 닫힌 게이트 너머의 `fn` 도중 `Set`이 영구 stale 캐시가 된다 (②)
+
+- **어디서**: `State.luau` `_recompute`의 `dep:_track(self._valueEpochMap)` 꼬리 —
+  `state-epoch-plan.md` "재계산이 끝나면"(*"`valueEpochMap`은 자기가 읽은 상류 전부에
+  대해 갱신한다"*, 사용자 확정 *"단순히 전부 업데이트 하는건 맞아보입니다"*)을 그대로
+  옮긴 것.
+- **무엇이**: `S = Source(1); g = S:Apply(blocker); blocker:On(); N = g:Compute(fn)`에서
+  `fn` 도중 `S:Set(99)`가 나면 — 게이트가 emit을 유보하므로 N의 `_receive`가 안 불려
+  카운터 쌍(`H-85`)이 안 움직이고, `_track`은 g의 **라이브** 맵(S@새 리비전)을 그대로
+  받아 "이미 본 것"으로 기록한다. `Get`의 `Refresh` 안전망도 눈멀고, 나중에
+  `blocker:Off()`가 flush하면 `Update`가 false(이미 최신)라 **`_invalidate` 없이 하류로
+  전달만** 한다 — `N:Get()`은 S가 다시 움직일 때까지 영원히 1(재현: *"N:Get() #2 after
+  flush = 1 (should be 99)"*), 그런데 하류 구독자들은 통지를 **받았다**. `H-85`가 닫은
+  것과 같은 실패 계열(재계산 도중 상류 쓰기 — 그 절이 "흔하다"고 명시)의 게이트 경유
+  변형이고, **확정 의사코드 자체의 구멍**이라 옮기기 실수가 아니다.
+- **갈래**: §4 — 처방이 §4 확정 의사코드 수정이라 어느 모양이든 사용자 결정.
+
+### `H-199` 🟡 — nil dep이 조용히 사라지고 뒤 dep들이 밀린다 (①)
+
+- **어디서**: `State.luau` `With`/`Compute`의 수집 루프(`deps[#deps + 1] = (select(i, ...))`).
+- **무엇이**: 실측 — `s:Compute(fn, typoNilVar)`가 에러 없이 dep 1개짜리 노드가 되어
+  의도한 dep 변경에 영영 반응 안 함; `s:Compute(fn, a, nil, b)`는 b가 nil 자리로 밀려
+  `fn`의 positional 인자가 어긋남. 진단 0으로 조용히 틀린 반응성.
+- **문서가 답을 갖고 있나**: 있다 — `architecture.md` error 계약의 예시(*"dep #3 is not
+  a State/Source/Ref"*)와 `newNode`의 기존 dep 검증이 이 자리의 계약. nil만 수집 단계에서
+  빠져나가고 있었다.
+- **처리**: 수집을 `collectDeps` 하나로(두 메소드 공유), nil이면 `dep #N is nil`
+  error(level 3 — `newNode`와 같은 번호 체계, self가 #1). `spec.state` 13.
+
+### `H-200` 🟡 — `setup` throw 경로의 좀비 GateNode (②)
+
+- **어디서**: `State.luau` `Impl.Gate` — `H-188`의 detach는 `setup` **반환값이 비함수**인
+  경로에만 있다.
+- **무엇이**: `pcall(function() s:Gate(function() error("boom") end) end)` 뒤 `s._subs`에
+  노드가 남는다(재현). `_onUpstreamEmit = Void`(H-188)라 이후 `Set`이 크래시하진 않지만,
+  노드는 `_hold`로 s를 강참조한 채 매 emit을 받아 유보 집합을 쌓고 영영 flush 못 한다
+  (weak `_subs` 키라 GC가 언젠가 걷어갈 때까지). `spec.gate` 1의 *"실패한 Gate는 구독자
+  집합에 아무것도 안 남긴다"* 단언은 반환 경로만 돌려서 이 경로를 가려왔다.
+- **문서 긴장**: `architecture.md` "예외 안전성 계약 — 감싸지 않는다"(예외 후 부기는
+  복구 안 됨)를 따르면 UB가 맞고 spec 문구만 좁히면 되지만, `H-188` 자신이 "우리가
+  통제하는 검증 경로"를 닫은 전례라 어느 쪽인지 사용자 결정 자리.
+- **갈래**: §4.
+
+### `H-201` 🟡 / `H-202` 🟢 / `H-204` 🟢 — 입력 검증 셋 (①)
+
+- **`H-201`**: `store:Of(nil)`이 Source를 **할당한 뒤** `self[name] = src`에서 *"table
+  index is nil"*(내부 프레임)로 죽고, `Of(123)`은 조용히 성공해 `Names(): { string }`에
+  숫자가 섞임(재현). `Of`는 정확히 계산된 이름을 위한 문이라 이게 주 오용 경로.
+  `type(name) ~= "string"` → error level 2, 할당 전에. `spec.store` 3.
+- **`H-202`**: `s:Compute(42)`가 노드를 만들고 첫 `Get`이 `State.luau` 내부 프레임
+  (*"attempt to call a number value"*)에서 죽음 — 형제 표면(Gate 249/Observer 269/
+  Apply 279)은 전부 자기 자리에서 검증. 같은 급으로 추가. `spec.state` 13.
+- **`H-204`**: `Store(5)`는 `table.clone` 내부 프레임에서, `Store(Source(100))`(감싸는
+  테이블을 잊음)은 Source 내부 필드를 지목하는 에러(*"default for "Revision" is not a
+  Source"*)로, 보호 메타테이블은 clone에서 죽음(전부 재현). clone 전에 "테이블 + 메타테이블
+  없음" 검증(level 2). `spec.store` 2.
+- 셋 다 `H-190`·단위 3 `fn` 검사와 같은 급(형제 검증과 동급의 입력 검증, 문서 무변경)이라 ①.
+
+### `H-203` 🟡 — `Off()` 순회 중 재차단이 안 먹힌다 (②)
+
+- **어디서**: `Blocker.luau` `runHandles`의 스냅샷 순회.
+- **무엇이**: 한 Blocker에 게이트 둘 — 첫 게이트 flush의 하류 `_receive`가 `b:On()`을
+  다시 켜도, 스냅샷의 남은 핸들은 무조건 `handle(true)`로 flush된다(재현, 순서 무관) —
+  `b:IsOn() == true`인데 통지가 나간다. `Off` 63행 주석(*"IsBlocked = false first, so a
+  flush that re-enters sees the blocker open"*)은 여는 방향 재진입만 다룬다.
+- **문서 긴장**: 단위 3·4 탐사자는 같은 관측을 `blocker-plan.md` "재진입(네스팅)" 미지원의
+  연장으로 보고 발견으로 안 세었다(§5 끝 "관측만"). 리뷰는 `IsOn` 불변식 위반으로 봤다 —
+  그 절의 미지원 선언은 카운팅 네스팅만 명시하므로 어느 쪽인지는 계약 결정.
+- **갈래**: §4.
+
+### `H-205` 🟢 — Modifier 가드의 level 2가 항상 quad 내부를 지목 (②)
+
+- **어디서**: `State.luau` `_recompute`의 `isModifier(result)` 가드(`modifier-plan.md` 7번).
+- **무엇이**: `_recompute`의 유일한 호출자가 `Impl.Get`의 내부 두 줄이라 level 2는 항상
+  `State.luau`의 `Get` 본문을 지목한다 — `architecture.md` error 계약이 사용자 입력을
+  level 2로 정한 근거(*옛 코드가 quad 내부만 지목*)를 정확히 재현하는 결과. lazy
+  체인(passThrough → 상류 `Get`)이라 **어떤 고정 level도 유저 코드에 못 닿는다** —
+  직접 `Get`일 때만 level 3이 유저 호출부를 가리킴.
+- **갈래**: §4 — level 선택이 계약 결정.
+
+### `H-206` 🟢 / `H-207` 🟢 — 중복 제거 둘 (①)
+
+- **`H-206`**: `implsOf` + ephemeron 근거 주석 4줄이 `State`/`Observer`/`Effect`에
+  verbatim 세 벌 — 저장 방식 변경이 세 파일 수정이 되고, 미묘하게 다른 사본이 인스턴스별
+  임플 레지스트리를 조용히 가른다. **`ImplRegistry.luau` 신설**(잎, 의존 없음)로 한 벌 —
+  순수 데이터 접근이라 `conventions.md` 설계 원칙의 공유 허용 범위("공유해도 되는 건
+  데이터와 순수 술어")이고, 새 표면이 아니라 코드 배치(스텁 파일 배치 전례와 같은 급).
+- **`H-207`**: `Source.Set`이 `Emit`의 꼬리(리비전 범프 + `emitDown` + `return self`)를
+  복제 — `Set`이 `return Impl.Emit(self)`로 위임(직접 호출 — 같은 타입·같은 임플 테이블,
+  서브타입 오버라이드가 없어 콜론 위임 함정(`H-144` 계열) 해당 없음). 기존 spec이 동작
+  고정(`spec.source` 2·3).
+
+### 단위 2 리뷰가 이상 없다고 확인한 것 (§5 성격, 여기 둠)
+
+`EpochMap` 5 연산 ↔ §3, 다이아몬드 dedup 규칙 1~3, `GateNode` swap/`Sync`/discard,
+`bit32` 리비전 카운터, `RESERVED` ↔ `CheckReservedKeys` 동기, quad-types 표면 이름·인자
+수 일치, `init.luau` `RunInit` 멱등 배선(마킹-후-실행, 순환 없음, 키 충돌 없음). 리뷰가
+파일했다 기각한 것 중 기록할 것 하나 — Effect의 `Ref` dep 등록이 생성 중 `onRefFire`를
+`from = ref`로 즉시 발화해 `_epochs:Update` + 홀드 `Rerun`을 태우는 모양은 "신선한
+Effect는 `canExecute`가 항상 거짓"이라 실패를 못 만들어 발견으로 안 올림.
+
 ## §4 ⭐ 사용자 결정이 필요한 것 (배치 회신용)
 
 | 문항 | 무엇 | 선택지 | 권고 | 권고 근거 | 옛 메커니즘 복원? |
@@ -377,6 +495,10 @@
 | **`H-185`** (`/code-review`, 단위 3) | cleanup 팩 vs 첫 반환만 | (a) 런타임이 반환 전부를 cleanup 목록으로 소진(역순) / (b) 타입을 `-> (() -> ())?`류로 좁힘(`H-95`가 기각한 모양 — 무반환 `fn`이 막힘) / (c) 문서·타입 주석에 "첫 반환만" 명시 | **(a)** | 타입이 이미 팩을 광고하고 다중 자원 정리는 자연스러운 용례 — 소진 순서만 정하면 됨(`_consumeCleanup` 한 곳) | 아니오 |
 | **`H-186`** (`/code-review`, 단위 3) | 교차 인스턴스 dep | (a) `Effect`/`Observer`/`Compute` 생성 시 dep의 인스턴스가 다르면 `error(…, 2)`(임플이 `module`을 아니 판정 가능) / (b) UB 문서화 / (c) 지원(dep의 백엔드가 게이팅 — 지금 동작) | **(a)** | 지금 동작은 두 백엔드가 한 핸들을 나눠 판정해 에러 귀속이 틀린다; `architecture.md` 13번의 다중 `New()`는 "같은 인스턴스 안"이 전제 | 아니오 |
 | **`H-187`** (`/code-review`, 단위 3·4) | 타입 별칭 이름 넷 | (a) 그대로 승인(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`) / (b) 인라인으로 풀어 이름을 없앰 / (c) 다른 이름 | **(a)** | 시그니처는 문서 그대로이고 이름이 없으면 `quad-types` 선언이 세 배로 길어진다 | 아니오 |
+| **`H-198`** (`/code-review`, 단위 2) 🔴 | `fn` 도중 닫힌 게이트 상류의 `Set`이 영구 stale 캐시(§4 확정 의사코드의 구멍 — `_track`이 라이브 리비전을 찍어 안 본 변경을 "본 것"으로 기록) | (a) `_recompute`가 **`fn` 직전에 dep 리비전을 스냅샷**하고 성공 시 그 스냅샷을 찍음 — `fn` 도중 변경은 "안 본 것"으로 남아 flush가 규칙 1(재계산)로 떨어짐 / (b) UB 문서화(게이트 너머 재계산 중 `Set`) / (c) `Get` 시점마다 읽은 리비전을 그때그때 기록 | **(a)** | `H-85`의 해법(*"fn 직전 스냅샷"* — `gen` 카운터)과 정확히 같은 결을 에포크 맵에 적용하는 것. 문서의 "전부 갱신"이 값을 하는 자리(게이트 유보 중 앞당겨 읽기 → 통지만)는 스냅샷도 재계산 **시작 시점** 리비전이라 그대로 성립. (b)는 `H-85` 근거(*"재계산 중 상류 쓰기는 흔하다"*)와 정면 충돌, (c)는 읽기 훅이 필요한 새 구조 | 아니오 |
+| **`H-200`** (`/code-review`, 단위 4) | `Gate` `setup`이 **던질 때** 반쯤 만든 노드가 `_subs`에 좀비로 남음 | (a) 예외 계약대로 UB 유지 + `spec.gate` 1 단언 문구를 반환 경로로 좁힘(코드 무변경) / (b) `newNode` 직후 `self._subs[node] = nil`로 떼고 `setup` 성공 후 재등록 — throw면 자연히 미등록(pcall 없음, 두 줄) / (c) `pcall`로 감싸 되감기(예외 계약 위반) | **(b)** | `H-188`이 이미 "우리가 통제하는 검증 경로는 닫는다"를 택한 전례고, (b)는 pcall 없이 spec의 단언(*"아무것도 안 남긴다"*)을 두 실패 경로 모두에서 참으로 만듦. 부수 효과는 setup 실행 중 emit을 게이트가 못 받는 창 하나인데 그 구간은 유보 집합이 항상 비어 있어 관측 불가 | 아니오 |
+| **`H-203`** (`/code-review`, 단위 4) | `Off()` 순회 중 하류의 `b:On()` 재차단이 남은 핸들 flush를 못 막음(`IsOn() == true`인데 통지가 샘) | (a) 순회가 핸들마다 `IsBlocked`를 다시 읽고 참이면 중단 — 남은 배치는 유보 유지, 다음 `Off`가 마저 flush / (b) 스냅샷 의미론을 계약으로 문서화("한 번 시작된 `Off`는 끝까지 flush") — 탐사자가 §5에서 미지원 연장으로 본 그 판정 / (c) 순회 중 `On()`을 error로 | **(a)** | `IsOn()`이 참인데 통지가 나가는 창은 하류가 합리적으로 기대할 불변식 위반이고, 비용이 핸들당 불린 비교 하나. `blocker-plan.md` 미지원 선언의 근거는 카운팅 네스팅("`On()` 여러 번")이라 이 경우를 안 다룸. 다만 (b)도 탐사자 판정과 일치하는 방어 가능한 자리라 사용자 결정 | 아니오 |
+| **`H-205`** (`/code-review`, 단위 2) | `_recompute`의 Modifier 가드 level — 지금 level 2는 항상 `Impl.Get` 내부 줄을 지목 | (a) level 3으로 — 직접 `Get`이면 유저 호출부, 체인 경유면 지금과 같은 내부 프레임(엄격히 우세, 더 나빠지는 경우 없음) / (b) 정직한 level 1 + 메시지에 맥락 의존(사용자 입력인데 내부 표기라 계약과 어긋남) / (c) 현행 유지 + 한계를 문서화 | **(a)** | lazy 체인이라 어떤 고정 level도 항상 유저 코드에 닿진 못하지만, (a)는 닿을 수 있는 유일한 경우(직접 `Get`)를 살리고 나머지에서 현행과 동일 — 유일하게 손해 없는 개선 | 아니오 |
 | **`H-174`** (탐사자, **단위 2 착수 전 필요**) | 반응형 모듈이 자기 `quad` 인스턴스의 `canExecute`/`canBound`에 닿는 법 | (a) `Source.luau`/`State.luau`/`Observer.luau`/`Effect.luau`를 `InitSource(module)`류 **팩토리**로 — 클래스와 `Subscribed`/`WeakSubscribed` 레지스트리를 `module`을 닫은 클로저 안에서 만들고 `module.Source = …`로 심음(`InitDispatch`와 같은 모양, `EpochMap`/`Brand`/`Ref`는 그대로 잎). 공개 필드가 없는 `State`/`Observer` 클래스는 `Init`의 반환값이나 `module.RunInit` 뒤의 비공개 필드로 형제 `Init`에 넘김 / (b) 잎 모듈 유지 + 값마다 역참조 필드(`observer._quad`)를 두고 `self._quad.canExecute(self)` / (c) 잎 모듈 유지 + 모듈 로컬 슬롯 하나를 백엔드가 채움(인스턴스 격리 포기) | **(a)** | `architecture.md` 13번(*"모듈 인스턴스를 인자로 받도록"*)과 `module-lifecycle-plan.md` "New()의 내부 구성"이 이미 이 모양이고, `Observer`의 두 레지스트리가 인스턴스별이 되어 *"완전히 별도의 새 Quad 네임스페이스"*와 맞음. (b)는 새 필드 + 값이 자기 모듈을 강참조(`Relate` 되참조 계열 위험), (c)는 `spec.lifetime` 8·`New()`의 존재 이유와 충돌. 어느 쪽이든 **필드는 발화 시점에 늦게 읽는다**(상세 절의 하위 함정) | 아니오 |
 
 **[2026-08-28 회신 — 단위 1 배치 전량 확정]** 사용자 원문: *"174 는 module.canExecute 로
@@ -390,7 +512,7 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 번 불리는 문제를 남겼다. 반영 위치는 위 표의 상태 열.
 
 코드 쪽 잔여 마커: `grep -rn "TODO(H-" quad-base/src` — 이 표의 문항과 1:1이어야
-한다. **[2026-08-28 기준] 마커 0개**였고 **[2026-08-29 단위 3·4 리뷰 뒤] `H-182`~`H-187` 여섯 개 마커**가 코드에 있다(`grep -rn "TODO(H-" quad-base quad-types`) — 위 셋(`H-168`~`H-170`)은 단위 1 모듈을 막지 않아 코드는 문서
+한다. **[2026-08-28 기준] 마커 0개**였고 **[2026-08-29 단위 3·4 리뷰 뒤] `H-182`~`H-187` 여섯 개**, **[2026-08-31 단위 2 리뷰 뒤] `H-198`/`H-200`/`H-203`/`H-205` 넷이 더해져 열 개 마커**가 코드에 있다(`grep -rn "TODO(H-" quad-base quad-types`) — 마커 없이 답변된 §4 행은 넷(`H-168`~`H-170`, `H-174`)이고, 그중 셋(`H-168`~`H-170`)은 단위 1 모듈을 막지 않아 코드는 문서
 블록 그대로 두고 문항만 올렸다(`H-168`은 코드가 아니라 M8 문서의 관용구 문제).
 
 ## §5 이상 없다고 확인한 것

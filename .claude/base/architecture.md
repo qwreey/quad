@@ -288,6 +288,7 @@ quad/
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
 │       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** `Brand()` 생성자 + **브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export). 의존 없는 잎(`base/brand-plan.md`)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
+│       ├── ImplRegistry.luau      # **[2026-08-31 `H-206`]** 인스턴스별 임플 저장 접근 `implsOf(module)`(`module._impl`, `H-181`) 한 벌 — State/Observer/Effect에 verbatim 세 벌이던 것을 잎으로 추출(순수 데이터 접근, 내부 전용 — `init.luau` 재export 없음)
 │       ├── LifetimeHandle.luau    # `bindLifetime(inst,value)`/`unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨 함수 "인터페이스"(타입/계약만) — **[2026-08-28 M2 첫 단위]** `InitLifetimeHandle(module)`이 모듈 인스턴스에 영어 `level 2` 에러 스텁 4종을 설치하고 백엔드가 덮어쓴다, `Relate`는 안 쓴다(그건 아래 quad-roblox 실 구현 몫 — `base/lifecycle-pattern.md`)
 │       ├── Ref.luau               # 범용 값 박스(.Value/.Revision 읽기 + :Set()/:WeakCallback()/:Callback()/:Uncallback()/:Wait(); `Epoch`를 만족 — `base/ref-plan.md`. **[2026-08-27 `H-128`]** `:Wait`·핸들러 뺀 최소형은 M2 공통 기반), `Ref(default)`를 children 배열 숫자 슬롯에 직접 놓으면 (v=Ref) 매치 핸들러가 바인드 — 별도 CreatedRef 래퍼 없음
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
@@ -339,7 +340,10 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   ```
 
   내부 불변식 위반은 곧 **quad 자신의 버그**라, 호출부가 아니라 터진 자리를
-  가리켜야 리포트가 쓸모 있다.
+  가리켜야 리포트가 쓸모 있다. **[2026-08-31 명료화]** 표의 `2`는 리터럴이
+  아니라 **"사용자 호출부를 가리킨다"의 기본형**이다 — 검증이 내부 헬퍼
+  프레임을 하나 거치면(`newNode`의 dep 검증, `collectDeps`의 nil 검증) 같은
+  뜻을 지키기 위해 `3`을 쓴다. 프레임 수가 아니라 도착지가 계약이다.
 - **⭐ 메시지는 영어로 통일한다**(**사용자 확정**, 2026-08-25). 지금
   코퍼스는 영어 6 / 한국어 약 23으로 이미 갈려 있고, 공개 표면인데
   정해진 적이 없었다. `.claude/conventions.md`의 *"사용자가 보게 될 것은

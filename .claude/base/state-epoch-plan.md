@@ -420,6 +420,14 @@ if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
 
 ### 재계산이 끝나면
 
+> **⚠️ [2026-08-31, `H-198` 결정 대기]** 이 절의 "전부 갱신"(라이브 리비전)에
+> 실측 구멍이 발견됐다 — `fn` **도중** 닫힌 게이트 상류에서 난 `Set`은 emit이
+> 유보돼 카운터 쌍(`H-85`)이 안 움직이는데, 꼬리의 `_track`이 라이브 리비전을
+> 찍어 "본 것"으로 기록하므로 나중 flush가 `_invalidate` 없이 통지만 하고
+> 캐시가 영구 stale이 된다(재현 실측). 문항과 선택지는
+> `qa-request/pre-implementation-handtrace-round11.md` §4의 `H-198` — 회신
+> 전까지 이 절을 무결한 확정으로 읽지 말 것(코드는 이 절 그대로 + `TODO(H-198)`).
+
 - **`rawInvalid = false`**(위 카운터로는 `cacheCurrCount = gen`), 그리고 **`valueEpochMap`은 자기가 읽은 상류
   전부에 대해 갱신한다**(발행 `Epoch` 항목만이 아니다). 맵의 뜻이 "내 값이 이
   `Epoch`에 대해 최신인가"이므로, 방금 계산한 값은 정의상 **모든** 상류에 대해

@@ -2041,3 +2041,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `module._impl`)·`H-188`~`H-190` 반영, ② `H-182`~`H-187` §4. 탐사자 ① 7건(`H-191`~`H-197`,
   전부 옛 문장) 반영, 전 코퍼스 스윕으로 `HasBlockedEmit`·`LifetimeHandle` 표기 정리.
   **M2 단위 넷 구현·감사·리뷰·탐사 완료** — 남은 건 §4 회신.
+
+- **`session/2026-08-31-01-unit2-code-review.md`** — 체크포인트 재개 첫 항목: 단위 2 파일
+  `/code-review high` 완주(포크 조기 반환을 `SendMessage` 재개로 해결 — 재실행보다 이
+  방법 먼저). 8각도 22후보 → 검증 생존 10: ① 여섯 반영(`H-199` nil dep `collectDeps` /
+  `H-201`·`H-202`·`H-204` 입력 검증 셋 / `H-206` `ImplRegistry.luau` 신설 / `H-207`
+  `Set`→`Emit` 위임), ② 넷 §4 합류(`H-198` 🔴 닫힌 게이트 너머 `fn` 도중 `Set` 영구
+  stale — §4 확정 의사코드 자체의 구멍 / `H-200` setup throw 좀비 / `H-203` `Off` 중
+  재차단 / `H-205` Modifier 가드 level). 문서 이름 변경(pre-implementation 아님)은
+  사용자 지시로 §4 회신 뒤로 미룸. 남은 재개 지점은 §4 문항 열 개 회신뿐.

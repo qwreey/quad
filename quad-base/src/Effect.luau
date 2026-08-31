@@ -34,6 +34,7 @@
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
 
 local EffectBrand = Brand.EffectBrand
@@ -42,18 +43,8 @@ local isSource = Brand.isSource
 local isRef = Brand.isRef
 local isEpoch = Brand.isEpoch
 
--- Per-instance impls live ON the module instance (`module._impl`, private — the
--- `H-174` (a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
--- keyed by `module` would never collect: the impl's closures capture `module`, and
--- Luau has no ephemerons (`relate-plan.md`), so every `Quad.New()` would be pinned.
-local function implsOf(module: any): { [string]: any }
-	local impls = rawget(module, "_impl")
-	if impls == nil then
-		impls = {}
-		rawset(module, "_impl", impls)
-	end
-	return impls
-end
+-- One implementation per quad instance (`H-174`); storage scheme in `ImplRegistry.luau`.
+local implsOf = ImplRegistry.implsOf
 
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- registries live there (`H-99`)

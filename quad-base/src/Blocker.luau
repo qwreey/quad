@@ -55,6 +55,10 @@ local function runHandles(self: any, doEmit: boolean)
 	for handle in pairs(self._handles) do -- `H-63` (3): snapshot, then walk
 		snapshot[#snapshot + 1] = handle
 	end
+	-- TODO(H-203): the walk never re-reads `IsBlocked` — a subscriber fired by an
+	-- earlier handle's flush that calls `blocker:On()` cannot stop the remaining
+	-- handles: their batches propagate while `IsOn() == true`. (The line-comment in
+	-- `Off` covers only the open-direction re-entry; the doc disclaims nesting only.)
 	for _, handle in ipairs(snapshot) do
 		handle(doEmit)
 	end

@@ -45,6 +45,7 @@
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
 local Void = require("./Void")
 local QuadTypes = require("../roblox_packages/quad_types")
@@ -60,19 +61,8 @@ local isModifier = Brand.isModifier
 
 local WEAK_KEY_MT = { __mode = "k" }
 
--- One implementation per quad instance (`H-174`).
--- Per-instance impls live ON the module instance (`module._impl`, private — the
--- `H-174` (a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
--- keyed by `module` would never collect: the impl's closures capture `module`, and
--- Luau has no ephemerons (`relate-plan.md`), so every `Quad.New()` would be pinned.
-local function implsOf(module: any): { [string]: any }
-	local impls = rawget(module, "_impl")
-	if impls == nil then
-		impls = {}
-		rawset(module, "_impl", impls)
-	end
-	return impls
-end
+-- One implementation per quad instance (`H-174`); storage scheme in `ImplRegistry.luau`.
+local implsOf = ImplRegistry.implsOf
 
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- `:Observer` needs the per-instance Observer impl (idempotent pull, `H-177`)
@@ -155,10 +145,15 @@ local function createImpl(module: any)
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
+			-- TODO(H-205): level 2 here always blames Impl.Get's own line (its only
+			-- callers are internal) — the contract wants user-code blame; level TBD.
 			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 2)
 		end
 		self._cache = result
 		for _, dep in ipairs(hold) do
+			-- TODO(H-198): tracking LIVE revisions here marks as seen an upstream Set
+			-- that landed DURING fn but whose emit a closed gate withheld — the later
+			-- flush then forwards downstream without `_invalidate` (permanent stale cache).
 			dep:_track(self._valueEpochMap) -- fresh value is current w.r.t. EVERY upstream
 		end
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
@@ -181,20 +176,32 @@ local function createImpl(module: any)
 		return s:Get()
 	end
 
-	function Impl.With(self: any, ...: any): any
+	-- `H-199`: a nil dep must error, not vanish — `deps[#deps + 1]` would drop it
+	-- silently AND shift later deps left, so `fn`'s positional lazy-dep args land
+	-- in the wrong slots. Index numbering matches `newNode`'s (self is dep #1).
+	local function collectDeps(self: any, ...: any): { any }
 		local deps = { self }
 		for i = 1, select("#", ...) do
-			deps[#deps + 1] = (select(i, ...))
+			local dep = (select(i, ...))
+			if dep == nil then
+				error(`State: dep #{i + 1} is nil`, 3) -- 3: past With/Compute to the user's call
+			end
+			deps[i + 1] = dep
 		end
-		return newNode(deps, passThrough) -- value is `self`'s, subscriptions are wider
+		return deps
+	end
+
+	function Impl.With(self: any, ...: any): any
+		return newNode(collectDeps(self, ...), passThrough) -- value is `self`'s, subscriptions are wider
 	end
 
 	function Impl.Compute(self: any, fn: any, ...: any): any
-		local deps = { self }
-		for i = 1, select("#", ...) do
-			deps[#deps + 1] = (select(i, ...))
+		if type(fn) ~= "function" then
+			-- `H-202`: without this the crash lands at the first `Get` deep inside
+			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
+			error("State: Compute fn must be a function", 2)
 		end
-		return newNode(deps, fn) -- one node: edges only, no combining node
+		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
 	end
 
 	-- ── GateNode (`gate-plan.md` "`GateNode` 조립") — same layer as a ComputeNode ──
@@ -252,6 +259,9 @@ local function createImpl(module: any)
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
 		node._onUpstreamEmit = Void -- until setup returns: a throwing setup must not leave a nil callee
+		-- TODO(H-200): if `setup` THROWS here, the node stays in `self._subs` as a
+		-- zombie subscriber (the detach below only covers the non-function return) —
+		-- spec.gate §1's "nothing left in the subscriber set" only holds for that path.
 		local onUpstreamEmit = (setup :: any)(function(commit: boolean?): boolean
 			return node:_flush(commit)
 		end)

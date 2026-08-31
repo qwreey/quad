@@ -330,4 +330,37 @@ do
 end
 
 print()
+print("=== 13. 가드 (H-199/H-202) — nil dep은 조용히 사라지지 않고 error, Compute fn은 함수여야 ===")
+do
+	local s = Source(1)
+	-- H-199: a nil mid-list used to shift later deps left (fn's positional args
+	-- landed in the wrong slots); a single trailing nil used to vanish entirely.
+	local ok, err = pcall(function()
+		s:Compute(function(x)
+			return x:Get()
+		end, nil :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "dep #2 is nil", 1, true) ~= nil, "trailing nil dep: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	local other = Source(2)
+	local ok2, err2 = pcall(function()
+		s:Compute(function(x)
+			return x:Get()
+		end, other, nil :: any, other)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "dep #3 is nil", 1, true) ~= nil, "mid-list nil dep: " .. tostring(err2))
+	local ok3 = pcall(function()
+		s:With(nil :: any)
+	end)
+	assert(not ok3, "With rejects nil deps through the same collector")
+	-- H-202: non-function fn errors at Compute, not at the first Get deep in _recompute.
+	local ok4, err4 = pcall(function()
+		(s :: any):Compute(42)
+	end)
+	assert(not ok4 and string.find(tostring(err4), "Compute fn must be a function", 1, true) ~= nil, "non-function fn: " .. tostring(err4))
+	assert(string.find(tostring(err4), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

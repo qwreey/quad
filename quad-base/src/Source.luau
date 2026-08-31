@@ -50,6 +50,14 @@ local function Init(module: any)
 		return self._value
 	end
 
+	-- In-place mutation was done by the caller; only the signal is sent.
+	-- Root Sources only — derived States have no such concept ("하드 경계").
+	function Impl.Emit(self: any): any
+		self.Revision = bit32.bnot(-self.Revision)
+		emitDown(self, self) -- payload = the source epoch itself
+		return self
+	end
+
 	-- `H-68`: same value still bumps the revision and emits — dedup is the
 	-- downstream's job (EpochMap judgement, gates), and `==` would silently
 	-- drop in-place table mutations.
@@ -58,17 +66,9 @@ local function Init(module: any)
 			error("Source: cannot Set a Modifier as a Source value", 2)
 		end
 		self._value = value
-		self.Revision = bit32.bnot(-self.Revision)
-		emitDown(self, self) -- payload = the source epoch itself
-		return self
-	end
-
-	-- In-place mutation was done by the caller; only the signal is sent.
-	-- Root Sources only — derived States have no such concept ("하드 경계").
-	function Impl.Emit(self: any): any
-		self.Revision = bit32.bnot(-self.Revision)
-		emitDown(self, self)
-		return self
+		-- `H-207`: one copy of the bump-and-emit tail. Direct call, not colon
+		-- delegation — same type, same impl table, no subtype override to hit.
+		return Impl.Emit(self)
 	end
 
 	function Impl._track(self: any, map: any)
