@@ -28,6 +28,7 @@ local Observer = require("@self/Observer")
 local Effect = require("@self/Effect")
 local Blocker = require("@self/Blocker")
 local InitDispatch = require("@self/Dispatch")
+local None = require("@self/Dispatch/None")
 
 type Quad = QuadTypes.Quad
 
@@ -46,6 +47,7 @@ local function New(): Quad
 		-- `H-231`: 공유 에러 네임스페이스 — 백엔드·플러그인은 자기 quad-error
 		-- 사본으로 네임스페이스를 만들지 말고 이걸 받아 태깅/raise할 것
 		errorNamespace = Err,
+		None = None, -- M3 단위 2 — 센티널(`architecture.md` 최상위 export)
 		Ref = Ref,
 		Blocker = Blocker, -- 단위 4 — 게이트 정책 잎 모듈(인스턴스 간 공유)
 		isEpoch = Brand.isEpoch,

@@ -162,6 +162,14 @@ export type Dispatch = {
 	addHandler: (handler: Handler) -> (),
 	listHandlers: () -> { Handler },
 	drive: (inst: any, flattened: { [any]: any }) -> (),
+	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
+	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
+	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
+	setLength: (ownerKey: any, i: number, len: number | State<number>, anchor: any?, element: any?) -> (),
+	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
+	getOffsetAt: (ownerKey: any, at: number) -> number,
+	getBlocker: (ownerKey: any) -> Blocker,
+	getBookkeeping: (ownerKey: any) -> any,
 	HANDLER_PRIORITY_HIGH: number,
 	HANDLER_PRIORITY_NORMAL: number,
 	HANDLER_PRIORITY_LOW: number,
@@ -222,6 +230,10 @@ export type Quad = {
 	-- 태그 맵을 써야 워커가 경계를 본다. 백엔드는 자기 quad-error 사본의
 	-- 네임스페이스를 만들지 말고 이걸 받을 것.
 	errorNamespace: ErrorNamespace,
+
+	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
+	-- 여기선 재export. `isNone`은 `v == None` 신원 비교).
+	None: any,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.

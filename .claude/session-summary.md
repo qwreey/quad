@@ -2094,4 +2094,10 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `H-231` 완성: 사용자 발견 둘(중첩 진입 blame → `errorAtNearest`/`errorBeforeNearest`
   쌍 추가 / 사본 네임스페이스 분리 → 상태 없는 `new()` + `Quad.errorNamespace` 공유)
   반영, M2·단위 1 error 자리 전량 이관 + 전 표면 태깅 + error 계약 절 재서술
-  (`H-219` M5 재평가 조기 해소). **단위 1 몫 §4 열린 문항 0.** 다음: 단위 2.
+  (`H-219` M5 재평가 조기 해소). **단위 1 몫 §4 열린 문항 0.** **같은 날 단위
+  2(Length/Offset 부기) 구현** — `getBookkeeping`/`getBlocker`/`getOffsetAt`
+  (접두합 캐시)/`recompute`(재진입 차단·되감기)/`setLength`(두 커서 무효화·
+  anchor·element)/`setOffsetSource`(즉시 계산) + drive ⓪⓪' 배선,
+  `spec.lengthoffset` 8절 실측. 발견: `H-232`(② Slot owner의 bk 앵커 — M6 전
+  결정, 권고 (a) slot 사적 필드)/`H-233`(① None 값 선행 생성 — 핸들러는 단위
+  3). bk에도 `H-229` 패턴 적용(H-71 동형).

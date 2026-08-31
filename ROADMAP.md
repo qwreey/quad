@@ -811,7 +811,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
       `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.
       Modifier 쪽 표면(인라인 키로 필드 지우기, `Peek` 반환 타입)은 M7
-- [ ] `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?,element?)`
+- [x] **[2026-08-31 M3 단위 2 — 접두합 캐시·두 필드·재진입 게이트·되감기·배치
+      게이팅까지 `spec.lengthoffset.luau` 8절 실측. 무효화 표의 splice/`rawMove`류
+      자리는 그 함수들이 생기는 M6 몫, `_baseObserver` 자리도 M6(Slot 생성자)]**
+      `Dispatch.setLength(ownerKey,i,len:number|State<number>,anchor?,element?)`
       (**[2026-08-27, 9라운드 Q3]** 5번째 `element` = 그 자리의 `inst|slot` —
       `gatedRecompute`가 인덱스 대신 이걸 캡처해 **`bk.indexOfElement`**를
       조회한다. 옛 `bk.tokens`/`indexOfToken`(사용자가 정한 적 없는 `token = {}`
