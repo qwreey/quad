@@ -2089,5 +2089,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   (spec 전부 mock Instance 전환, Destroy 후 통째 회수 실측 13번). `H-231`은
   사용자가 `error-util-ignoreme.luau` 실험으로 설계를 직접 확정(최상단 하강
   워커, `setFuncLevel`/`errorAt`/`errorBefore`) → **`quad-error` 워크스페이스
-  패키지**(다섯째 멤버)로 구현, `spec.errorutil` 5절 통과. 잔여: 태그 체계
-  (레이어 하나 제안)·이관 시점·`H-230` — §4 대기.
+  패키지**(다섯째 멤버)로 구현, `spec.errorutil` 5절 통과. **회신 5·6**으로 전부 종결 —
+  `H-230` (a): `HANDLER_PRIORITY_*`+`ERROR_LEVEL_SURFACE`가 quad-types 상수로 /
+  `H-231` 완성: 사용자 발견 둘(중첩 진입 blame → `errorAtNearest`/`errorBeforeNearest`
+  쌍 추가 / 사본 네임스페이스 분리 → 상태 없는 `new()` + `Quad.errorNamespace` 공유)
+  반영, M2·단위 1 error 자리 전량 이관 + 전 표면 태깅 + error 계약 절 재서술
+  (`H-219` M5 재평가 조기 해소). **단위 1 몫 §4 열린 문항 0.** 다음: 단위 2.

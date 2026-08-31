@@ -28,6 +28,8 @@
 
 local Brand = require("./Brand")
 local QuadTypes = require("../roblox_packages/quad_types")
+local Err = require("./ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Ref<T> = QuadTypes.Ref<T>
 type Callback<T> = QuadTypes.RefCallback<T>
@@ -120,6 +122,11 @@ local function Ref<T>(default: T): Ref<T>
 	RefBrand:register(self)
 	EpochBrand:register(self) -- multi-tagging: a Ref is also an Epoch
 	return (self :: any) :: Ref<T>
+end
+
+-- `H-231`: public surface joins the shared error-namespace tag layer
+for _, fn in { RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, RefImpl.Uncallback, Ref } do
+	Err.setFuncLevel(fn, SURFACE)
 end
 
 return Ref

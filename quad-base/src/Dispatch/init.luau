@@ -25,17 +25,18 @@
 	    are born); the (a) PreRef/PostRef pre-pass and (c) postRefList come with
 	    M8 (where those values are born).
 
-	Error levels follow `architecture.md` "error 계약": user-side validation
-	points at the caller (level 2), broken internal bookkeeping points at
-	itself (level 1). Messages in English. The `level 2` on the two
-	handler-contract violations (no match / no retractor) is a provisional
-	implementation choice — the contract table has no "provider contract
-	violation" row and the blame destination through `drive` is an open
-	question (`H-219`/`H-222`, round12 §4).
+	Errors follow `architecture.md` "error 계약" via the shared error
+	namespace (`H-231`): match failure climbs to the user's entry
+	(`errorBefore` — outermost surface scan, closing `H-219`'s drive-path
+	limit), the provider-contract violation (no retractor) blames the nearest
+	surface's caller (`errorBeforeNearest`, `H-222`), broken internal
+	bookkeeping stays a plain level-1 `error`. Messages in English. All public
+	functions and every received handler function join the SURFACE tag layer.
 ]]
 
 local Relate = require("./Relate")
 local Void = require("./Void")
+local Err = require("./ErrorNamespace")
 local QuadTypes = require("../roblox_packages/quad_types")
 local HandlerModule = require("@self/Handler")
 
@@ -44,13 +45,14 @@ export type Dispatch = QuadTypes.Dispatch
 
 type Slot = { handler: Handler, retractor: (nextValue: any?) -> () }
 
--- Band constants. The docs fix only the names, the ordering (HIGH > NORMAL >
--- LOW > FALLBACK) and that the space is open for ± offsets — the literals are
--- implementation-chosen with room between bands (`H-213`).
-local HANDLER_PRIORITY_HIGH = 1000
-local HANDLER_PRIORITY_NORMAL = 0
-local HANDLER_PRIORITY_LOW = -1000
-local HANDLER_PRIORITY_FALLBACK = -1000000
+-- Band constants live in quad-types (`H-230` (a) — backends reach them
+-- without quad-base; single source, re-exported on `module.Dispatch` below).
+-- Ordering/band semantics are the contract, literals are `H-213`.
+local HANDLER_PRIORITY_HIGH = QuadTypes.HANDLER_PRIORITY_HIGH
+local HANDLER_PRIORITY_NORMAL = QuadTypes.HANDLER_PRIORITY_NORMAL
+local HANDLER_PRIORITY_LOW = QuadTypes.HANDLER_PRIORITY_LOW
+local HANDLER_PRIORITY_FALLBACK = QuadTypes.HANDLER_PRIORITY_FALLBACK
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- Probed (cold path only) to name a value's brand in the match-failure
 -- message — there is deliberately no reverse lookup on Brand
@@ -172,10 +174,15 @@ local function Init(module: any)
 		end
 
 		local slot = list[index]
-		local h = getHandler(inst, k, v)
-		if h == nil then
-			error(noMatchMessage(k, v), 2)
+		local matched = getHandler(inst, k, v)
+		if matched == nil then
+			-- `H-219`/`H-231`: outermost scan — climbs every wrapper (drive, a
+			-- delegating handler, later the M5 pipeline) to the user's entry.
+			Err.errorBefore(noMatchMessage(k, v), SURFACE)
 		end
+		-- errorBefore never returns; the cast just tells the checker (field
+		-- calls typed `-> never` don't narrow like the `error` builtin does)
+		local h: Handler = matched :: any
 
 		if slot ~= nil and slot.handler == h then
 			-- (A) same handler — leave everything below untouched; hand the new
@@ -186,7 +193,8 @@ local function Init(module: any)
 			slot.retractor = NOOP -- consumed; no double call while h.process recurses
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				error(noRetractorMessage(h, k, index), 2)
+				-- provider-contract violation — nearest surface's caller (`H-222`)
+				Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
 			end
 			slot.retractor = retractor
 		else
@@ -199,7 +207,7 @@ local function Init(module: any)
 			list[index] = { handler = h, retractor = NOOP }
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				error(noRetractorMessage(h, k, index), 2)
+				Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
 			end
 			list[index] = { handler = h, retractor = retractor }
 		end
@@ -233,6 +241,11 @@ local function Init(module: any)
 		table.sort(handlers, function(a: Handler, b: Handler)
 			return a.priority > b.priority
 		end)
+		-- `H-231`: received closures join the surface layer at receipt time
+		-- (user's rule — "입력 받은 측에서 level을 설정") so the walker sees
+		-- provider frames as quad machinery, not as user code.
+		Err.setFuncLevel(handler.isHandlable, SURFACE)
+		Err.setFuncLevel(handler.process, SURFACE)
 	end
 
 	local function listHandlers(): { Handler }
@@ -270,6 +283,14 @@ local function Init(module: any)
 		HANDLER_PRIORITY_LOW = HANDLER_PRIORITY_LOW,
 		HANDLER_PRIORITY_FALLBACK = HANDLER_PRIORITY_FALLBACK,
 	}
+
+	-- `H-231`: the public surface joins the tag layer — the walker's boundary.
+	Err.setFuncLevel(getHandler, SURFACE)
+	Err.setFuncLevel(process, SURFACE)
+	Err.setFuncLevel(retractFrom, SURFACE)
+	Err.setFuncLevel(addHandler, SURFACE)
+	Err.setFuncLevel(listHandlers, SURFACE)
+	Err.setFuncLevel(drive, SURFACE)
 
 	module.Dispatch = Dispatch
 end

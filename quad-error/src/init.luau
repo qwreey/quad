@@ -1,31 +1,49 @@
 --[[
-	quad-error — level-tag based error raising. Design and API are the user's
-	own experiment, taken as-is (2026-08-31, round12 `H-231` — the experiment
-	file measured the frame math; its assertions live on as spec.errorutil).
+	quad-error — level-tag based error raising. Design and core API are the
+	user's own experiment, taken as-is (2026-08-31, round12 `H-231`).
 
 	Why: `error(msg, n)` counts frames, so the correct `n` depends on how many
 	wrappers sit between the raise site and the frame you mean — hand-counting
 	(2 vs 3) breaks whenever a helper frame is added, and cannot reach through
 	a variable-depth pipeline at all. Instead, tag functions with a *layer
-	number* once (`setFuncLevel`); at raise time the util walks the live stack
-	with `debug.info(i, "f")` **from the top down** and finds the outermost
-	frame whose function is tagged with the requested layer:
+	number* once (`setFuncLevel`); at raise time the walker inspects the live
+	stack with `debug.info(i, "f")` and finds a frame whose function carries
+	the requested layer tag. Two scan directions, both needed (user decision,
+	same round):
 
-	  errorAt(msg, layer)     -- blame the line *inside* that frame
-	  errorBefore(msg, layer) -- blame that frame's *caller* (one frame out)
+	  errorAt(msg, layer)      -- OUTERMOST tagged frame: blame the line
+	  errorBefore(msg, layer)  --   inside it / at its caller. Use when the
+	                           --   error must climb through any number of
+	                           --   wrappers to the user's entry point
+	                           --   (e.g. dispatch match failure).
+	  errorAtNearest(msg, layer)     -- NEAREST (innermost) tagged frame:
+	  errorBeforeNearest(msg, layer) --   same meaning as a hand-written
+	                           --   level 2/3, made depth-proof. Use for
+	                           --   argument validation / reentrancy guards,
+	                           --   where a surface call nested inside a
+	                           --   callback must blame the callback's line,
+	                           --   not the outer entry.
 
-	Untagged functions count as layer 0 (`ERROR_LEVEL_DEFAULT`); if no frame
-	matches, the error falls back to the raise site. Errors are cold paths, so
-	the walk cost is irrelevant. The tag map is weak-keyed — tagging
-	per-instance closures (e.g. an InitXxx(module)'s functions) does not pin
-	them.
+	Untagged functions count as layer 0 (`ERROR_LEVEL_DEFAULT`); untagged
+	frames are *skipped*, never cut the scan short. No match falls back to the
+	raise site. Errors are cold paths, so the walk cost is irrelevant.
+
+	**Namespace shape (user decision)**: this module is a stateless
+	constructor — `require(quad_error).new()` returns a namespace holding its
+	own weak-keyed tag map. Package copies are the reason: pesde gives each
+	depending package its own copy of this module, so a module-level map would
+	silently split the tag space between quad-base and its backends. The owner
+	(quad-base) creates ONE namespace and shares it (`Quad.errorNamespace`);
+	consumers must tag and raise through that shared object, never through a
+	namespace of their own copy.
 ]]
 
 local module = {}
 
--- Index of the topmost (outermost) live frame, from the caller's perspective
--- of nothing in particular — callers inside this module account for their own
--- extra frame; external callers rarely need this directly.
+module.ERROR_LEVEL_DEFAULT = 0
+
+-- Index of the topmost (outermost) live frame, from this function's own
+-- perspective (callers account for their extra frames).
 function module.getToplevel(): number
 	local curr = 2 -- 1: getToplevel
 	while debug.info(curr, "f") ~= nil do
@@ -34,39 +52,79 @@ function module.getToplevel(): number
 	return curr - 1
 end
 
-local funcLevels = setmetatable({}, { __mode = "k" }) :: { [any]: number }
+export type Namespace = {
+	setFuncLevel: (func: any, level: number) -> (),
+	getFuncLevel: (func: any) -> number,
+	getFirstMatch: (level: number) -> number,
+	getNearestMatch: (level: number) -> number,
+	errorAt: (content: any, level: number) -> never,
+	errorBefore: (content: any, level: number) -> never,
+	errorAtNearest: (content: any, level: number) -> never,
+	errorBeforeNearest: (content: any, level: number) -> never,
+}
 
-module.ERROR_LEVEL_DEFAULT = 0
+function module.new(): Namespace
+	local funcLevels = setmetatable({}, { __mode = "k" }) :: { [any]: number }
 
-function module.setFuncLevel(func: any, level: number)
-	funcLevels[func] = level
-end
+	local ns = {} :: any
 
-function module.getFuncLevel(func: any): number
-	return funcLevels[func] or module.ERROR_LEVEL_DEFAULT
-end
+	function ns.setFuncLevel(func: any, level: number)
+		funcLevels[func] = level
+	end
 
--- The error() level that points at the outermost frame tagged `level`,
--- as seen from this function's caller (errorAt/errorBefore). Scans from the
--- stack top down, so an untagged closure sandwiched between tagged layers
--- can never cut the search short. No match -> 1 (the raise site).
-function module.getFirstMatch(level: number): number
-	-- ignore getFirstMatch (2)
-	for i = module.getToplevel(), 2, -1 do
-		if module.getFuncLevel(debug.info(i, "f")) == level then
-			return i - 1
+	function ns.getFuncLevel(func: any): number
+		return funcLevels[func] or module.ERROR_LEVEL_DEFAULT
+	end
+
+	-- The error() level (as seen from ns.errorAt/errorBefore) that points at
+	-- the OUTERMOST frame tagged `level`. Scans from the stack top down.
+	-- No match -> 1 (the raise site).
+	function ns.getFirstMatch(level: number): number
+		-- ignore getFirstMatch (2)
+		for i = module.getToplevel(), 2, -1 do
+			if ns.getFuncLevel(debug.info(i, "f")) == level then
+				return i - 1
+			end
+		end
+
+		return 1
+	end
+
+	-- Same, but the NEAREST (innermost) tagged frame — ascends from the raise
+	-- site outward, skipping untagged frames. Equivalent to a hand-written
+	-- level 2 on the tagged surface function, regardless of helper depth.
+	function ns.getNearestMatch(level: number): number
+		-- 2: skip getNearestMatch itself; walk outward until the stack ends
+		local i = 2
+		while true do
+			local fn = debug.info(i, "f")
+			if fn == nil then
+				return 1
+			end
+			if ns.getFuncLevel(fn) == level then
+				return i - 1
+			end
+			i += 1
 		end
 	end
 
-	return 1
-end
+	function ns.errorAt(content: any, level: number): never
+		error(content, ns.getFirstMatch(level))
+	end
 
-function module.errorAt(content: any, level: number)
-	error(content, module.getFirstMatch(level))
-end
+	function ns.errorBefore(content: any, level: number): never
+		error(content, ns.getFirstMatch(level) + 1)
+	end
 
-function module.errorBefore(content: any, level: number)
-	error(content, module.getFirstMatch(level) + 1)
+	function ns.errorAtNearest(content: any, level: number): never
+		error(content, ns.getNearestMatch(level))
+	end
+
+	function ns.errorBeforeNearest(content: any, level: number): never
+		error(content, ns.getNearestMatch(level) + 1)
+	end
+
+	return ns :: Namespace
 end
 
 return module

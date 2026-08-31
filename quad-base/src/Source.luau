@@ -26,6 +26,8 @@
 local Brand = require("./Brand")
 local State = require("./State")
 local QuadTypes = require("../roblox_packages/quad_types")
+local Err = require("./ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Source<T> = QuadTypes.Source<T>
 
@@ -63,7 +65,7 @@ local function Init(module: any)
 	-- drop in-place table mutations.
 	function Impl.Set(self: any, value: any): any
 		if isModifier(value) then
-			error("Source: cannot Set a Modifier as a Source value", 2)
+			Err.errorBeforeNearest("Source: cannot Set a Modifier as a Source value", SURFACE)
 		end
 		self._value = value
 		-- `H-207`: one copy of the bump-and-emit tail. Direct call, not colon
@@ -77,7 +79,7 @@ local function Init(module: any)
 
 	local function Source(default: any): any
 		if isModifier(default) then
-			error("Source: cannot hold a Modifier as a Source value", 2)
+			Err.errorBeforeNearest("Source: cannot hold a Modifier as a Source value", SURFACE)
 		end
 		local self = setmetatable({
 			_value = default,
@@ -87,6 +89,11 @@ local function Init(module: any)
 		SourceBrand:register(self)
 		EpochBrand:register(self)
 		return self
+	end
+
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.Get, Impl.Emit, Impl.Set, Source } do
+		Err.setFuncLevel(fn, SURFACE)
 	end
 
 	module.Source = Source

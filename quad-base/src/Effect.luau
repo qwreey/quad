@@ -34,6 +34,9 @@
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local Err = require("./ErrorNamespace")
+local QuadTypes = require("../roblox_packages/quad_types")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
 
@@ -98,7 +101,7 @@ local function createImpl(module: any)
 	-- connection). Level 3: past this method and `bindLifetime` to the user's call.
 	function Impl._assertBindable(self: any)
 		if isRunning(self) then
-			error("Effect: cannot bind an Effect from inside its own fn or cleanup", 3) -- `H-147` (A)
+			Err.errorBeforeNearest("Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)
 		end
 	end
 
@@ -153,10 +156,10 @@ local function createImpl(module: any)
 	-- ── four entry points — EffectHandle's OWN bodies (`H-144` (b)) ────
 	function Impl.WeakSubscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.canBound(self) then
-			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
+			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`: every path that re-arms executability lowers it
@@ -167,10 +170,10 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.canBound(self) then
-			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
+			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`
@@ -182,10 +185,10 @@ local function createImpl(module: any)
 
 	function Impl.WeakUnsubscribe(self: any): any -- lenient (`H-133`) — does not touch the cleanup
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if Subscribed[self] ~= nil then
-			error("Effect: subscribed strongly; use :Unsubscribe()", 2)
+			Err.errorBeforeNearest("Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		WeakSubscribed[self] = nil
 		self.Subscribed = false
@@ -194,10 +197,10 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if Subscribed[self] == nil then -- gate FIRST: never strongly subscribed → error, cleanup untouched
-			error("Effect: not subscribed strongly; use :WeakUnsubscribe()", 2)
+			Err.errorBeforeNearest("Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil
@@ -209,7 +212,7 @@ local function createImpl(module: any)
 	-- ── constructor ──────────────────────────────────────────────────
 	local function Effect(fn: any, ...: any): any
 		if type(fn) ~= "function" then
-			error("Effect: fn must be a function", 2)
+			Err.errorBeforeNearest("Effect: fn must be a function", SURFACE)
 		end
 		local self = setmetatable({
 			fn = fn,
@@ -235,10 +238,10 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))
 			if d == nil then
-				error(`Effect: dep #{i} is nil`, 2)
+				Err.errorBeforeNearest(`Effect: dep #{i} is nil`, SURFACE)
 			end
 			if not (isState(d) or isSource(d) or isRef(d)) then
-				error(`Effect: dep #{i} is not a State/Source/Ref`, 2)
+				Err.errorBeforeNearest(`Effect: dep #{i} is not a State/Source/Ref`, SURFACE)
 			end
 			seen[d] = true -- duplicates are silently ignored (dedup lives in `_deps`/`_epochs`)
 		end
@@ -283,6 +286,11 @@ local function createImpl(module: any)
 	end
 
 	module.Effect = Effect
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.Rerun, Impl.WeakSubscribe, Impl.Subscribe, Impl.WeakUnsubscribe, Impl.Unsubscribe, Effect } do
+		Err.setFuncLevel(fn, SURFACE)
+	end
+
 	return Impl
 end
 

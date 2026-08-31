@@ -1,6 +1,7 @@
 --!strict
 --[[
-	`Quad` 공개 타입 계약 — 구현 없음, 런타임 값은 없다시피 함(빈 테이블).
+	`Quad` 공개 타입 계약 — 구현 없음. 런타임 값은 공유 **상수**뿐
+	(`H-230` — 파일 끝의 반환 테이블, 로직은 여전히 0).
 	`quad-base`가 이 타입을 구현하고, `quad-roblox`/향후 백엔드·플러그인
 	패키지는 무거운 `quad-base` 전체 대신 이 패키지만 의존한다.
 
@@ -16,6 +17,13 @@
 ]]
 
 local TypeVersionCheck = require("./luau_packages/type_version_check")
+local QuadError = require("./luau_packages/quad_error")
+
+-- 에러 네임스페이스(`H-231` — quad-error는 상태 없는 생성자, 태그 맵은
+-- quad-base가 만든 단일 네임스페이스에 산다. 사본 분리 문제의 해법 — 사용자
+-- 설계 "quad-base에 errorNamespace 같은 무언가가 있어야 하고 error util이
+-- 그걸 받는 구조").
+export type ErrorNamespace = QuadError.Namespace
 
 -- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
 -- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
@@ -210,6 +218,11 @@ export type Quad = {
 	-- `quad.Dispatch` 접근이 런타임엔 되는데 `luau-analyze`에선 타입에러다.
 	Dispatch: Dispatch,
 
+	-- 공유 에러 네임스페이스(`H-231`) — quad-base의 모든 표면·백엔드가 같은
+	-- 태그 맵을 써야 워커가 경계를 본다. 백엔드는 자기 quad-error 사본의
+	-- 네임스페이스를 만들지 말고 이걸 받을 것.
+	errorNamespace: ErrorNamespace,
+
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
 	bindLifetime: (inst: any, value: any) -> (),
@@ -261,4 +274,17 @@ export type Quad = {
 ]]
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 
-return {}
+-- ── 공유 상수(`H-230` (a) 사용자 확정, 2026-08-31) ──────────────────────
+-- 타입 계약과 같은 이유로 여기 산다 — 백엔드가 무거운 quad-base 없이 닿아야
+-- 하는 값들. `HANDLER_PRIORITY_*`는 밴드 상수(이름·순서·± 오프셋 공간이
+-- 계약, 리터럴은 `H-213` — quad-base `Dispatch`가 재노출). `ERROR_LEVEL_SURFACE`는
+-- quad-error 태그 레이어(`H-231` — 우선 "공개 표면" 하나만, 필요해지면 늘림):
+-- 모든 공개 표면 함수와 `addHandler`가 수령하는 핸들러 함수가 이 레이어로
+-- 태그되고, 사용자 입력·제공자 계약 위반 에러가 이 레이어를 겨냥한다.
+return {
+	HANDLER_PRIORITY_HIGH = 1000,
+	HANDLER_PRIORITY_NORMAL = 0,
+	HANDLER_PRIORITY_LOW = -1000,
+	HANDLER_PRIORITY_FALLBACK = -1000000,
+	ERROR_LEVEL_SURFACE = 1,
+}

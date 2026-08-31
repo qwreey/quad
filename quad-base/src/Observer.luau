@@ -35,6 +35,9 @@
 
 local Brand = require("./Brand")
 local ImplRegistry = require("./ImplRegistry")
+local Err = require("./ErrorNamespace")
+local QuadTypes = require("../roblox_packages/quad_types")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ObserverBrand = Brand.ObserverBrand
 
@@ -81,19 +84,19 @@ local function createImpl(module: any)
 	-- must not leave a half-bound handle. Level 3: past this and `bindLifetime`.
 	function Impl._assertBindable(self: any)
 		if self._running then
-			error("Observer: cannot bind an Observer from inside its own fn", 3) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
 		end
 	end
 
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
 	function Impl.WeakSubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183` (`H-147` symmetric)
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
 		end
 		if not module.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
-			error(
+			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
-				2
+				SURFACE
 			)
 		end
 		self.Subscribed = true -- `H-111`: the weak path raises the flag too
@@ -104,11 +107,11 @@ local function createImpl(module: any)
 
 	function Impl.WeakUnsubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- A strong keep left behind would make a half-released, never-GC'd handle: fail fast.
 		if Subscribed[self] ~= nil then
-			error("Observer: subscribed strongly; use :Unsubscribe()", 2)
+			Err.errorBeforeNearest("Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		-- `H-133`: that is the whole guard — never subscribed / already weakly released pass silently.
 		WeakSubscribed[self] = nil
@@ -118,14 +121,14 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.
 		if not module.canBound(self) then
-			error(
+			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
-				2
+				SURFACE
 			)
 		end
 		self.Subscribed = true
@@ -137,11 +140,11 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
-			error("Observer: not subscribed strongly; use :WeakUnsubscribe()", 2)
+			Err.errorBeforeNearest("Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil -- both tables, directly (`H-149`: no delegation)
@@ -169,6 +172,11 @@ local function createImpl(module: any)
 		o._rerunRequired = false -- (2) the install fire lowers the flag
 		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
 		return o --     State would land in this Observer's `_receive` and raise the flag
+	end
+
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.WeakSubscribe, Impl.WeakUnsubscribe, Impl.Subscribe, Impl.Unsubscribe } do
+		Err.setFuncLevel(fn, SURFACE)
 	end
 
 	return Impl

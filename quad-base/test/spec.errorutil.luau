@@ -7,7 +7,11 @@
 	site. The tag map is weak-keyed.
 ]]
 
-local Err = require("../luau_packages/quad_error")
+local QuadError = require("../luau_packages/quad_error")
+
+-- 네임스페이스 형태(사용자 결정 — 사본 분리 문제): 유틸은 상태 없는 생성자,
+-- 태그 맵은 네임스페이스 인스턴스에 산다. 여기선 자체 네임스페이스로 계약만 검증.
+local Err = QuadError.new()
 
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
@@ -111,7 +115,7 @@ end
 print()
 print("=== 4. 무태그 기본 — 매치 없으면 raise 자리로 폴백, 등록 안 된 함수는 level 0 ===")
 do
-	assert(Err.getFuncLevel(function() end) == Err.ERROR_LEVEL_DEFAULT, "untagged -> ERROR_LEVEL_DEFAULT (0)")
+	assert(Err.getFuncLevel(function() end) == QuadError.ERROR_LEVEL_DEFAULT, "untagged -> ERROR_LEVEL_DEFAULT (0)")
 	local ok, err = pcall(function()
 		Err.errorAt("boom-nomatch", 99)
 	end)

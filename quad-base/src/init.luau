@@ -14,6 +14,7 @@
 ]]
 
 local Relate = require("@self/Relate")
+local Err = require("@self/ErrorNamespace")
 local Brand = require("@self/Brand")
 local Ref = require("@self/Ref")
 local Void = require("@self/Void")
@@ -42,6 +43,9 @@ local function New(): Quad
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,
 		Void = Void,
+		-- `H-231`: 공유 에러 네임스페이스 — 백엔드·플러그인은 자기 quad-error
+		-- 사본으로 네임스페이스를 만들지 말고 이걸 받아 태깅/raise할 것
+		errorNamespace = Err,
 		Ref = Ref,
 		Blocker = Blocker, -- 단위 4 — 게이트 정책 잎 모듈(인스턴스 간 공유)
 		isEpoch = Brand.isEpoch,
@@ -84,6 +88,10 @@ local function New(): Quad
 	module:RunInit(Effect.Init)
 	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
+
+	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
+	Err.setFuncLevel(module.RunInit, QuadTypes.ERROR_LEVEL_SURFACE)
+	Err.setFuncLevel(module.AddPlugin, QuadTypes.ERROR_LEVEL_SURFACE)
 
 	return module
 end

@@ -30,6 +30,8 @@
 
 local Brand = require("./Brand")
 local QuadTypes = require("../roblox_packages/quad_types")
+local Err = require("./ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Blocker = QuadTypes.Blocker
 
@@ -113,6 +115,11 @@ local function Blocker(): Blocker
 	}, BlockerImpl)
 	BlockerBrand:register(self)
 	return (self :: any) :: Blocker
+end
+
+-- `H-231`: public surface joins the shared error-namespace tag layer
+for _, fn in { BlockerImpl.IsOn, BlockerImpl.On, BlockerImpl.Off, BlockerImpl.OffWithoutEmit, BlockerImpl.Policy, BlockerImpl.__apply, Blocker } do
+	Err.setFuncLevel(fn, SURFACE)
 end
 
 return Blocker

@@ -32,6 +32,8 @@
 local Brand = require("./Brand")
 local InitSource = require("./Source")
 local QuadTypes = require("../roblox_packages/quad_types")
+local Err = require("./ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Store<T> = QuadTypes.Store<T>
 
@@ -54,10 +56,10 @@ local function Init(module: any)
 			-- `H-201`: `Of` exists precisely for computed names — a nil/number name
 			-- must not pass (nil died at `self[name] =` with an internal frame after
 			-- already allocating a Source; a number silently broke `Names(): { string }`).
-			error(`Store: Of name must be a string (got {typeof(name)})`, 2)
+			Err.errorBeforeNearest(`Store: Of name must be a string (got {typeof(name)})`, SURFACE)
 		end
 		if RESERVED[name] then
-			error(`Store: "{name}" is a reserved store key`, 2)
+			Err.errorBeforeNearest(`Store: "{name}" is a reserved store key`, SURFACE)
 		end
 		local src = rawget(self, name) -- shadow = the store itself; never go through `__index`
 		if src == nil then
@@ -81,24 +83,29 @@ local function Init(module: any)
 		-- pairs-walked into an error naming a Source-internal field.
 		if defaults ~= nil then
 			if type(defaults) ~= "table" then
-				error(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, 2)
+				Err.errorBeforeNearest(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
 			end
 			if getmetatable(defaults) ~= nil then
-				error("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", 2)
+				Err.errorBeforeNearest("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
 			end
 		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)
 		for name, value in self do
 			if RESERVED[name :: any] then
-				error(`Store: "{tostring(name)}" is a reserved store key`, 2)
+				Err.errorBeforeNearest(`Store: "{tostring(name)}" is a reserved store key`, SURFACE)
 			end
 			if not isSource(value) then
-				error(`Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})`, 2)
+				Err.errorBeforeNearest(`Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})`, SURFACE)
 			end
 		end
 		setmetatable(self, Impl)
 		StoreBrand:register(self)
 		return self
+	end
+
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.Of, Impl.Names, Store } do
+		Err.setFuncLevel(fn, SURFACE)
 	end
 
 	module.Store = Store
