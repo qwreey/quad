@@ -15,3 +15,4 @@ lune_packages/
 # (에디터 타입 링킹용 산출물, 커밋 대상 아님)
 sourcemap.json
 .relink-manifest
+*ignoreme*
