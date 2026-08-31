@@ -552,8 +552,12 @@ function RefLeafHandler.process(inst, k, v, index)
     end
     -- ⭐ [2026-08-25, 7라운드 `H-71`] `SetStrong` 아님 — `v:Set(inst)`로 값이
     -- 자기 바깥 키를 되참조하므로 `SetStrong`이면 **100% 샌다**(실측 50/50).
-    -- dedup은 순수 성능 최적화라 weak로 낮춰도 최대 손해가 "한 번 놓침"이고,
-    -- `v`는 gchold가 이미 강하게 잡는다(`base/relate-plan.md`의 슬롯 표).
+    -- [2026-08-31 `H-266` 정정] dedup은 이제 load-bearing — 위 bindLifetime의
+    -- canBound 가드가 묶인 v의 재바인드를 즉시 error로 거부하므로 dedup 미스는
+    -- "한 번 놓침"이 아니라 크래시다. 다만 미스 창 자체가 없다: v는 bound 동안
+    -- gchold가 강하게 잡아 weak 엔트리가 조기 소실될 수 없다(`base/relate-plan.md`의
+    -- 슬롯 표 — SetWeak 선택 자체는 유지, 상세는 `base/source-state-plan.md`의
+    -- "Observer/Effect Leaf dedup" 절 배너).
     relate:SetWeak(inst, k, v)
     return function(nextValue)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
@@ -924,8 +928,12 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
     전용 `Handler`를 하나 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
     isHandlable = function(inst,k,v) return isPreRef(v) end, process =
-    function(inst,k,v) error(`PreRef binding should be array index item,
-    but got {typeof(k)}`) end }`(**[2026-08-18, `/code-review high`로
+    function(inst,k,v) Err.errorBefore(`PreRef binding should be array
+    index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 M3
+    단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 — 같은 부류인
+    Observer/Effect 가드가 `Dispatch/Leaf.luau`에서 실제로 이 모양으로
+    구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절)
+    (**[2026-08-18, `/code-review high`로
     누락 발견 — `PostRef`의 "동적 경로 가드 Handler도 거울상으로 하나 더" 절/
     `effect-plan.md`의 "동적 경로 가드" 절과 짝을 맞춤]** 에러 메시지에
     실제 `k` 타입을 실을 것) — `k` 타입은 안 가림(숫자든 문자열이든
@@ -1136,8 +1144,10 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
 정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
 레지스트리에 `{ priority = HANDLER_PRIORITY_FALLBACK, isHandlable =
-isPostRef(v), process = error(`PostRef binding should be array index item,
-but got {typeof(k)}`) }` Handler를 등록(**[2026-08-18]** 에러 메시지에
+isPostRef(v), process = Err.errorBefore(`PostRef binding should be array
+index item, but got {typeof(k)}`, SURFACE) }` Handler를 등록
+(**[2026-08-31 M3 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
+`PreRef`의 "동적 경로 가드" 절과 같은 논증)(**[2026-08-18]** 에러 메시지에
 실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절)(`k` 타입 안 가림 — `PreRef`의 "동적 경로
 가드" 절과 완전히 같은 이유로 `HANDLER_PRIORITY_FALLBACK`, 2026-08-14
 열한 번째 세션) — pre-pass가 이미 소진시키므로 이게 매치되면 곧 타입

@@ -926,7 +926,11 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef/PostRef)` children-array
       leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
       quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
-      dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절)
+      dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절).
+      **[2026-08-31 M3 단위 4] 파일은 이미 존재한다** — Observer/Effect
+      몫(`ObserverEffectLeafHandler` + 가드 둘)은 아래 단위 4 항목들로
+      구현 완료, 이 체크박스에 남은 것은 `Ref`/`PreRef`/`PostRef` 매칭
+      합류(M8 — `base/ref-plan.md`)뿐이라 `[ ]` 유지
 - [x] **[2026-08-31 M3 단위 1]** `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
       — **재귀 깊이 인덱스 → (담당 핸들러, 그가 반환한 retractor 클로저)**) +
       **3-인자** `Dispatch.retractFrom(inst,k,index)` — 재귀 재-dispatch

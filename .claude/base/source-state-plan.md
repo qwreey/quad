@@ -1290,13 +1290,18 @@ M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **
 준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+**[2026-08-31 M3 단위 4] 그 등록은 완료됐다** — `Dispatch/Leaf.luau`가 가드
+둘(Observer/Effect)을 실제로 등록하고(`spec.leaf.luau` 6·7이 메시지·override
+의미론 실측), 해당 체크박스는 `[x]`다.
 
 `Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
 등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
 전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isObserver(v) end, process =
-function(inst,k,v) error(`Ref/Observer binding should be array index item,
-but got {typeof(k)}`) end }`.
+function(inst,k,v) Err.errorBefore(`Ref/Observer binding should be array
+index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 단위 4]**
+error 발화는 `H-231` 워커의 최외곽 스캔 — 매치 실패와 같은 논증으로
+`drive`를 뚫고 사용자 진입점을 blame한다, `Dispatch/Leaf.luau` 헤더 주석).
 **[요구 추가, 2026-08-18 구현 전 QA] 에러 메시지에 실제 `k`의 타입을
 실을 것.** 사용자 요구: *"Priority Fallback 이 type(k) == "string" 인
 상황에서는 가장 위에 Ref/Observer binding should be array index item, but
@@ -1712,7 +1717,7 @@ end
   뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면 기존 두 진입점의 기존
   체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가 없이 이미 성립.
 
-### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴, 순수 성능 최적화(2026-08-14 세션)
+### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴(2026-08-14 채택, 2026-08-31 `H-266`로 load-bearing 승격)
 
 **correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.**
 **⚠️ [2026-08-31 정정, M3 단위 4 `H-266`] 이 주장은 이제 사실이 아니다 —
@@ -1741,8 +1746,8 @@ ref-plan.md` "`Ref`의 retract" 절)와 완전히 같은 모양을 그대로 재
 
 ```lua
 local relate = Relate()  -- Observer/Effect-leaf 전용, (inst,k)별 마지막으로 바인딩한 값 기억 —
-                          -- process 재실행 시 identical-value dedup(순수 성능 최적화,
-                          -- Ref처럼 재통지 부작용이 있어서가 아님)
+                          -- process 재실행 시 identical-value dedup([2026-08-31 `H-266`]
+                          -- load-bearing — 없으면 canBound 가드가 already-bound error)
 
 ObserverEffectLeafHandler.isHandlable(inst, k, v) =
     type(k) == "number" and (isObserver(v) or isEffect(v))
@@ -1786,11 +1791,16 @@ end
 **⭐ [2026-08-25 신설, 7라운드 `H-71`] dedup 기록은 `SetWeak`이다.**
 `SetStrong`으로 두면 **값이 `inst`를 되참조할 때 100% 샌다** — 커밋된
 `Relate.luau`로 50/50 누수가 실측됐다(`base/relate-plan.md`의 슬롯별 강약
-표). dedup은 이 절이 스스로 밝히듯 **순수 성능 최적화**라, weak로 낮춰
-엔트리가 조기 소실돼도 "dedup을 한 번 놓친다"까지가 최대 손해다. `v`는
-`gchold`가 이미 강하게 잡고 있고, `relate-plan.md`의 **"다른 곳에서
-안전하게 유지되는 것은 항상 `SetWeak`"** 규칙에도 그대로 맞는다.
-`RefLeafHandler`도 같은 정정을 받는다(`base/ref-plan.md`).
+표). **[2026-08-31 `H-266` 정정]** 이 문단은 원래 *"dedup은 순수 성능
+최적화라 weak로 낮춰도 최대 손해가 한 번 놓침"*을 안전성 근거로 썼는데,
+dedup이 load-bearing이 된 지금(위 배너) 미스는 놓침이 아니라 크래시다 —
+SetWeak이 여전히 안전한 실제 이유는 **미스 창 자체가 없다**는 것: `v`는
+bound인 동안 `gchold`가 강하게 잡고 있어(inst도 호출자가 쥐고 있어야
+process가 가능) weak 엔트리가 dedup이 필요한 창 안에서 조기 소실될 수
+없다(`quad-base/src/Dispatch/Leaf.luau`의 relate 주석이 같은 논증).
+`relate-plan.md`의 **"다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`"**
+규칙에도 그대로 맞는다. `RefLeafHandler`도 같은 정정을 받는다
+(`base/ref-plan.md`).
 
 **⭐ [2026-08-25 신설, 7라운드 `H-57`] 값 교체 retract는 cleanup을 부른다.**
 `base/effect-plan.md`가 확정한 *"`unbindLifetime`은 cleanup을 부르지

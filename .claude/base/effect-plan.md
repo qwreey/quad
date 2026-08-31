@@ -591,13 +591,17 @@ M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **
 준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+**[2026-08-31 M3 단위 4] 그 등록은 완료됐다** — `Dispatch/Leaf.luau`가
+등록하며(`spec.leaf.luau` 6이 메시지·blame 실측), 해당 체크박스는 `[x]`다.
  `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =
-function(inst,k,v) error(`Effect binding should be array index item, but
-got {typeof(k)}`) end }`(**[2026-08-18]** 에러 메시지에 실제 `k` 타입을
-실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절).
+function(inst,k,v) Err.errorBefore(`Effect binding should be array index
+item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-18]** 에러 메시지에
+실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드"
+절; **[2026-08-31 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
+같은 절의 논증 참고).
 `FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
 named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
 값싸게 override 가능한 자리로 열어둠.
