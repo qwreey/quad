@@ -126,6 +126,35 @@ export type Source<T> = State<T> & {
 	Emit: (self: Source<T>) -> Source<T>,
 }
 
+-- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
+-- `Handler` — 핸들러 계약 **3종**(`.claude/base/dispatch-core-plan.md` "핸들러
+-- 계약"): `isHandlable`은 부작용 없는 순수 판별(inst도 받음), `process`는 자기
+-- 자신을 무르는 1-인자 retractor를 반환(생략 불가 — 정리할 게 없어도 `Void`).
+-- retractor 인자는 `nil`(단순 철거)이거나 같은 핸들러가 처리할 새 값, 둘뿐.
+export type Handler = {
+	isHandlable: (inst: any, key: any, value: any) -> boolean,
+	priority: number,
+	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?) -> (),
+}
+
+-- `Dispatch` — 스캔/실행 엔진(`dispatch-core-plan.md` "Dispatch 체인" /
+-- "우선순위 동률/매치 실패 처리"). 프리미티브가 아니라 모듈 인스턴스별
+-- 네임스페이스(`InitDispatch(module)`가 설치, 멤버는 lowercase 네임스페이스
+-- 규칙 — `architecture.md` "코드 스타일"). `HANDLER_PRIORITY_*`는 열린 숫자
+-- 공간 위의 밴드 상수(`+ 1` 미세 조정 가능).
+export type Dispatch = {
+	getHandler: (inst: any, key: any, value: any) -> Handler?,
+	process: (inst: any, key: any, value: any, index: number) -> (),
+	retractFrom: (inst: any, key: any, index: number) -> (),
+	addHandler: (handler: Handler) -> (),
+	listHandlers: () -> { Handler },
+	drive: (inst: any, flattened: { [any]: any }) -> (),
+	HANDLER_PRIORITY_HIGH: number,
+	HANDLER_PRIORITY_NORMAL: number,
+	HANDLER_PRIORITY_LOW: number,
+	HANDLER_PRIORITY_FALLBACK: number,
+}
+
 -- 예약 키 진단 — `keyof<T>`(키 싱글톤 유니온)만 받는다(`H-112`). `error()`는 못 쓴다
 -- (타입 함수 자체가 실패로 판정) — `print` + `types.never`. 목록은 quad-base
 -- `Store.luau`의 `RESERVED` 테이블의 사본이라 이름을 바꿀 땐 둘을 같이.
@@ -170,6 +199,11 @@ export type Quad = {
 	Effect: (fn: EffectFn, ...any) -> EffectHandle,
 	-- 단위 4.
 	Blocker: () -> Blocker,
+
+	-- 디스패치 엔진(M3 단위 1, `H-25` — 마일스톤마다 서브시스템 필드를 여기
+	-- 같이 갱신하는 규칙의 M3 몫). 닫힌 레코드라 이 필드가 없으면
+	-- `quad.Dispatch` 접근이 런타임엔 되는데 `luau-analyze`에선 타입에러다.
+	Dispatch: Dispatch,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
