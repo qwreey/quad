@@ -176,7 +176,11 @@ ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 �
 -- 개념 스케치. Handler 계약은 base/dispatch-core-plan.md가 정본
 function UICornerHandler.process(inst, k, v, index)
     if v == nil then
-        -- 기존 규칙 그대로: 만들어둔 자식이 있으면 지움(아래 "v가 nil인 경우" 절)
+        -- 기존 규칙 그대로: 만들어둔 자식이 있으면 지움(아래 "v가 nil인 경우" 절).
+        -- [2026-08-31 `H-218` (a)] 파괴 전에 자식 체인 정리는 이제 의무 —
+        -- 위임한 (child, prop) 체인을 chains에서 걷어내지 않으면 반응형
+        -- 숏핸드 값의 구독이 파괴/재생성 사이클마다 누적된다(위 `UI-11` 정정 참고)
+        Dispatch.retractFrom(child, "CornerRadius", 1) -- child = 관리 자식(없으면 스킵)
         destroyManagedChild(inst, k)
         return Void             -- [2026-08-28 `H-162`]
     end
@@ -278,14 +282,19 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
   (`base/dispatch-core-plan.md`의 retract 계약 — 금지된 건 같은 `(inst,k)`에
   대한 재진입). 다만 이 자리에서 **필요하지 않다**는 것.
 - ~~`chains`는 `child`에 대해 weak-keyed라 자식을 버리면 결국 GC된다~~ —
-  **[2026-08-31 정정, `H-218`]** 이 근거는 **틀렸다**: 체인의 retractor
-  클로저가 `child`를 캡처해 버킷 값이 weak 키를 되참조하므로 GC가 안 되고
-  (`relate-plan.md` `H-71` 실측 패턴), quad 제작 인스턴스는 gcconn 때문에
-  `Destroy`로만 회수된다. 위 (a)/(b) 근거(엔진의 Tween 자동 정리 /
-  `PropertyHandler` retractor가 no-op)는 **정적 값일 때** 그대로 유효하지만,
-  숏핸드 값이 **반응형**(`UICorner = state`)이면 `StoreBind` 구독이 chains에
-  남아 자식 파괴/재생성 사이클마다 누적된다 — `UI-11` 결론을 반응형 경로까지
-  유지할지는 round12 §4의 `H-218`이 정한다.
+  **[2026-08-31 정정, `H-218` — 같은 날 (a) 사용자 확정으로 `UI-11` 부분
+  역전]** 이 근거는 **틀렸다**: 체인의 retractor 클로저가 `child`를 캡처해
+  버킷 값이 weak 키를 되참조하므로 GC가 안 되고(`relate-plan.md` `H-71`
+  실측 패턴), quad 제작 인스턴스는 gcconn 때문에 `Destroy`로만 회수된다.
+  위 (a)/(b) 근거(엔진의 Tween 자동 정리 / `PropertyHandler` retractor가
+  no-op)는 **정적 값일 때** 그대로 유효하지만, 숏핸드 값이 **반응형**
+  (`UICorner = state`)이면 `StoreBind` 구독이 chains에 남아 자식 파괴/재생성
+  사이클마다 누적된다. **확정: 자식을 버릴 때 `retractFrom(child, prop, 1)`
+  호출은 이제 의무다**(값의 반응형 여부와 무관하게 무조건 — 정적이면 no-op
+  retractor라 비용 ~0, 조건 없는 계약이 어기기 어렵다는 근거로 사용자 채택).
+  `UI-11`의 "요구하지 않는다"에서 살아남는 것은 "retractor 호출이 Tween을
+  정리하기 위해 필요하지는 않다"는 (a)/(b) 사실뿐이다 — 소스는
+  `base/dispatch-core-plan.md`의 같은 `H-218` 블록.
 
 ## store-bind — 이 숏핸드도 지원
 

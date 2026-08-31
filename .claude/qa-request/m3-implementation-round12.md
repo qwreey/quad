@@ -22,17 +22,19 @@
 | `H-215` | **②** | 1 | 🟢 | 스파이크 `04`(Dispatch 체인 retractFrom) 처분 — `spec.dispatch.luau`가 검증 대상 대부분을 실측했는데 재귀 재발행 경로는 로컬 wrapping 핸들러 근사라 실제 `StoreBind`(M4) 몫이 남는다. 폐기는 `01`처럼 사용자 승인 사안(감사 2라운드 발견) | ✅ **(a) 사용자 확정**(2026-08-31 §4 회신) — 폐기·`done/` 이동, 잔여 몫(실제 `StoreBind` 경유 재발행)은 ROADMAP M4 mock 테스트 항목에 명시. `STATUS.md`·`README.md`·ROADMAP 재검증 대기 절 `[x]` |
 | `H-216` | ① | 1 | 🟢 | `slot-plan.md`의 옛 error 예시 11곳(감사 5라운드가 계수 정정 — 처음 12로 잘못 셌다)이 한국어·`level` 없음(대표: `Slot:Add` 범위 검증, 요소 타입 3종, `dispose` 둘) — `H-212`와 같은 부류로, 그 문서 자신이 별도 절에서 "level 2, 영어" 규칙을 알고 있으면서 예시가 안 따라온 자리. M3 단위 2~4·M6이 옮겨 적기 전에 정리(감사 4라운드 발견) | ✅ 반영(`slot-plan.md` — 사용자 입력 검증은 level 2, `releaseOwner` 소유권 추적 파손만 내부 불변식 level 1) |
 | `H-217` | ① | 1 | 🟢 | 같은 부류 마지막 4곳 — `attribute-plan.md`(그룹 이중 배치)/`debounce-throttle-plan.md`(Leading·Trailing 둘 다 false)/`ref-plan.md`(`PreRef` 재사용 — 파이프라인 의사코드의 `"PreRef instance reused"`와 다른 문구로 갈라져 있던 것도 통일)/`source-state-plan.md`(`bindLifetime` 이중 바인드 — mock 실구현이 던지는 두 분기 메시지의 공통 접두를 딴 **근사**, 실분기는 그 절의 게이트 스케치 몫)가 한국어·`level` 없음(감사 5라운드 전수 스윕) | ✅ 반영 — 전부 영어+level 2. **base/ 코드 리터럴의 한국어 error는 이제 0**(잔여는 산문·옛 모델 인용·주석뿐) |
-| `H-218` | **②** | 1 | 🟡 | (`/code-review high`) `chains` 리스트의 retractor 클로저가 `inst`를 캡처해 **weak 키를 버킷 값이 되참조** — `H-71`이 실측한 "100% 새는" 패턴이라, `dispatch-core-plan.md`의 *"자식을 버리면 결국 GC되지만"* 주장과 그 위에 선 `ui-shorthand-plan.md` `UI-11`의 GC 근거가 **거짓**. 반응형 숏핸드 자식을 파괴/재생성하는 사이클마다 구독·gchold가 누적. 구현은 확정 의사코드에 충실 — 처방(위임 자식 철거 시 `retractFrom` 의무화 여부)이 계약 변경 | 거짓 사실 주장 둘은 정정 완료(`dispatch-core-plan.md`·`ui-shorthand-plan.md`, `H-218` 대기 표시) — **의무화 여부는 §4 대기** |
-| `H-219` | **②** | 1 | 🟡 | (`/code-review high`) 매치 실패 `error(…, 2)`의 도착지가 `drive` 경로(가장 흔한 사용자 경로)에선 사용자 코드가 아니라 quad 내부 프레임 — *"프레임 수가 아니라 도착지가 계약"* 위반. 단 `process`는 핸들러 재귀도 받는 공개 진입점이라 level 하나로 두 경로를 다 못 맞춤 — 증상 확정, 처방(재상승 등)은 새 메커니즘 | ⏳ §4 대기 |
+| `H-218` | **②** | 1 | 🟡 | (`/code-review high`) `chains` 리스트의 retractor 클로저가 `inst`를 캡처해 **weak 키를 버킷 값이 되참조** — `H-71`이 실측한 "100% 새는" 패턴이라, `dispatch-core-plan.md`의 *"자식을 버리면 결국 GC되지만"* 주장과 그 위에 선 `ui-shorthand-plan.md` `UI-11`의 GC 근거가 **거짓**. 반응형 숏핸드 자식을 파괴/재생성하는 사이클마다 구독·gchold가 누적. 구현은 확정 의사코드에 충실 — 처방(위임 자식 철거 시 `retractFrom` 의무화 여부)이 계약 변경 | ✅ **(a) 사용자 확정**(2026-08-31 회신 2, *"a 로 가면 될것 같아"*) — 위임 핸들러는 자식을 버릴 때 무조건 `retractFrom(child, prop, 1)`(`UI-11` 부분 역전). `dispatch-core-plan.md`·`ui-shorthand-plan.md`(스케치 포함) 반영. **사용자 되물음(Destroy 경로도 같은 문제 아닌가)은 검증 결과 맞았다 — `H-229`로 분리** |
+| `H-219` | **②** | 1 | 🟡 | (`/code-review high`) 매치 실패 `error(…, 2)`의 도착지가 `drive` 경로(가장 흔한 사용자 경로)에선 사용자 코드가 아니라 quad 내부 프레임 — *"프레임 수가 아니라 도착지가 계약"* 위반. 단 `process`는 핸들러 재귀도 받는 공개 진입점이라 level 하나로 두 경로를 다 못 맞춤 — 증상 확정, 처방(재상승 등)은 새 메커니즘 | ✅ **(a) 사용자 확정**(2026-08-31 회신 2) — 현행 유지 + 한계 명시(`dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절), M5 파이프라인 완성 시 재평가 |
 | `H-220` | ① | 1 | 🟡 | (`/code-review high`) `BRAND_PROBES`가 상위 술어 `isRef`를 `isPreRef`/`isPostRef`보다 앞에 둬 둘이 도달 불능 — `brand-plan.md`의 술어 합성(`isRef` = PreRef∪PostRef∪RefBrand)이 소스라 specific-first가 답 | ✅ 반영 — 순서 재배열 + "손 복사 목록이라 새 브랜드 마일스톤마다 확장" 주석 |
 | `H-221` | ① | 1 | 🟢 | (`/code-review high`) ROADMAP 우선순위 체크박스 주석이 `H-214`를 여전히 "§4 대기·임시 반환"으로 서술 — 같은 커밋에서 종결됐는데 배너가 부정하는 문장을 안 고친 자리 | ✅ 반영 — "(a) 확정으로 닫힘"으로 갱신 |
-| `H-222` | **②** | 1 | 🟢 | (`/code-review high`) `H-212` 문단이 *"제공자 계약 위반 → 2"*라는 **계약 표에 없는 제3 분류**를 확정 서술처럼 `base/`에 넣었다 — 표는 "사용자 입력 검증(2)/내부 불변식(1)" 두 행뿐 | 문단은 "잠정 구현 선택" 표시로 완화 완료 — **표 확장 여부는 §4 대기** |
+| `H-222` | **②** | 1 | 🟢 | (`/code-review high`) `H-212` 문단이 *"제공자 계약 위반 → 2"*라는 **계약 표에 없는 제3 분류**를 확정 서술처럼 `base/`에 넣었다 — 표는 "사용자 입력 검증(2)/내부 불변식(1)" 두 행뿐 | ✅ **(a) 사용자 확정**(2026-08-31 회신 2) — `architecture.md` 표에 제3 행("제공자 계약 위반 = 2, 가장 가까운 호출 구조") 신설, `H-212` 문단의 잠정 표시 해제 |
 | `H-223` | ① | 1 | 🟢 | (`/code-review high`) retractor 생략 error가 위반 핸들러를 특정할 정보(방금 확정된 `name`·priority·k·index)를 하나도 안 실음 — `h.process` 프레임은 이미 반환돼 어떤 level로도 도달 불가라 메시지가 유일한 단서 | ✅ 반영 — `noRetractorMessage(h, k, index)`(코드+의사코드 동기), 동률 경고도 같은 `describeHandler` 사용 |
 | `H-224` | ① | 1 | 🟢 | (`/code-review high`) `H-215`가 M4로 넘긴 잔여 몫 문구가 순서 단언만 요구해, 스파이크 `04`의 존재 이유였던 **효과 수준 검증**(retractor가 실제로 구독을 끊는다)을 떨어뜨림 | ✅ 반영 — ROADMAP M4 mock 항목에 효과 단언(옛 구독 0, stale Set 불전파) 보강 |
 | `H-225` | ① | 1 | 🟢 | (`/code-review high`) 세션 파일이 감사 루프를 5라운드에서 멈춘 것처럼 서술(6라운드 수렴·리뷰 반영 미기재) | ✅ 반영 — 세션 파일·summary에 6라운드 수렴과 리뷰 결과까지 기록 |
 | `H-226` | 기각 | 1 | 🟢 | (`/code-review high`) `process` (A)/(B) 꼬리 병합·(B) 이중 할당 제거·`retractFrom` 재조회 제거 리팩터 제안 | ❌ 반영 안 함 — 확정 의사코드와의 1:1 유지가 우선이고 실측 병목 아님("실제로 관측된 문제에만 구조"). 메시지 drift 우려는 `H-223`의 공용 `noRetractorMessage`로 소멸 |
 | `H-227` | ① | 1 | 🟡 | (`/code-review high`) `local Dispatch = {} :: any`가 생산자 표면을 `quad-types` 선언과 대조 불능으로 만듦 — `H-25`가 막으려던 드리프트가 생산자 쪽에서 무검사 | ✅ 반영 — 로컬 함수 정의 후 `local Dispatch: Dispatch = { … }` 타입 주석 조립(analyze가 표면 검사) |
 | `H-228` | ① | 1 | 🟢 | (탐사자) `describeHandler`가 `name` 부재 시 `"?"`를 이름 자리에 찍는다 — `dispatch-core-plan.md` "핸들러 계약" 절의 `H-214` 블록은 *"없으면 priority만 보인다"*. 실측: `handler priority tie between "?" (priority 5) and "?" (priority 5)` | ✅ 반영 — 코드를 문서에 맞춤: 이름 부재 시 `(priority N)`만 |
+| `H-229` | **②** | 1 | 🔴 | (사용자 되물음 → 검증 확인) **`H-218`의 누수는 위임 경로만의 문제가 아니다 — 일반 `Destroy` 경로 전체가 같은 패턴으로 샌다.** Destroy 시 retract를 안 부르는 건 계약("오직 같은 key에 새 값" 시나리오만)인데, gchold 섬은 Destroy로 무너져도 **`chains`의 강한 버킷 값이 retractor→`inst`를 별도 루트로 붙잡아** weak 항목이 영영 안 비워진다 — 반응형 바인딩이 하나라도 있던 모든 파괴 인스턴스가 소량 부기+`inst` userdata를 영구 잔존시키고, 죽은 Observer가 상류 State의 전파 순회에 계속 남는다(회당 `canExecute` 스킵 비용) | ⏳ §4 대기 — 분석 상세는 아래 `H-229` 절 |
+| `H-230` | **②** | 1 | 🟢 | (사용자 제안) 공유 상수의 배치 — `HANDLER_PRIORITY_*`를 quad-base 밖(백엔드)에서도 의미 있게 쓰려면 `quad-const` 신설 또는 `quad-types` 승격이 필요하다는 제안 + error `level` 넘버도 Enum화하자는 제안 | ⏳ §4 대기 — 권고: 우선순위 상수는 `quad-types` 승격 (a), level Enum화는 비권고(프레임 수라 자리마다 값이 갈림) |
 
 ### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
 
@@ -94,12 +96,53 @@ quad.Dispatch: handler priority tie between "?" (priority 5) and "?" (priority 5
 이름 부분을 생략하든(`(priority 5)`만), 문서에 자리표시자 표기를 명시하든
 어느 쪽이든 한 줄이다. 순수 진단 문자열이라 계약·부기 영향 없음.
 
+### `H-229` — Destroy 경로 검증: 사용자 되물음이 맞았다 (②, 🔴)
+
+사용자 되물음(2026-08-31): *"핸들러가 자식을 버릴 때 Destroy가 호출되어
+bind들이 자동으로 끊어지고 gchold가 사라질 수 있었다는 건데 … 그냥 Destroy
+호출되는 것도 retract가 안 먹어서 문제가 생긴다는 부분 아냐?"*
+
+**검증 결과: 맞다.** 경로를 끝까지 따라가면:
+
+1. `inst:Destroy()` — 엔진이 커넥션을 끊는다. gcconn 클로저↔gchold 상호
+   참조 섬은 이 절단으로 무너지고(`lifecycle-pattern.md` (0)의 *"Destroy가
+   유일한 절단면"*), gchold가 강하게 쥐던 바인딩 값들이 풀린다. **여기까지는
+   설계대로.**
+2. 그런데 `chains`는 **두 번째 강한 루트**다 — `buckets[inst(weak)] =
+   bucket(강)` 이고 bucket → 리스트 → retractor 클로저 → `inst`(캡처).
+   Luau에 ephemeron이 없으므로 "값이 자기 weak 키를 되참조"하는 이 항목은
+   **영영 안 비워진다**(`H-71` 실측 패턴 그대로). Destroy가 끊는 것은 엔진
+   쪽 참조뿐이고 이 루트는 안 건드린다.
+3. Destroy 시 retract를 안 부르는 건 계약이라(*"오직 같은 key에 새 값이
+   들어와서 이전 처리를 갈아치우는 시나리오에만"*) 아무도 `list[i] = nil`을
+   해주지 않는다 — 즉 **반응형 바인딩이 하나라도 있던(= retractor나 그
+   Observer가 `inst`를 캡처한) 모든 파괴 인스턴스**의 버킷·retractor·
+   Observer·`inst` userdata가 모듈 `chains`에 영구 잔존한다.
+4. 부수 비용: 잔존 Observer는 상류 State의 weak 구독 집합에 살아 있어(강한
+   경로가 chains에 있으므로 weak라도 안 걷힘) 상류 emit마다 전파 루프가
+   그것들을 방문해 `canExecute` false로 스킵한다 — 메모리에 더해 **전파
+   비용이 파괴 누적에 비례해 자란다.**
+
+`H-218` (a)의 의무화가 닫는 것은 **위임 경로**뿐이다(retractFrom 호출 후엔
+리스트가 비어 버킷 값이 `inst`를 안 잡으므로 weak 항목이 정상 회수된다).
+최상위 인스턴스·Slot 요소처럼 **retract 없이 Destroy로만 죽는 일반 경로**가
+이 항목이고, 처방 선택지는 §4 표. 정적 값만 있는 인스턴스는 retractor가
+전부 `Void`(캡처 없음)라 새지 않는다 — 새는 것은 반응형 바인딩이 있던
+것들이다.
+
 ## §4 배치 문항지 (사용자가 읽을 유일한 자리)
 
 **⭐ [2026-08-31 회신 1]** 사용자: *"배치 문항은 중간확인 완료했어. 전부
 권고안에 동의해. 나중에 천천히 반영해줘"* — `H-214`·`H-215` 둘 다 **권고 (a)
-채택**, 같은 날 반영 완료(각 행 상태 참고). **그 뒤 `/code-review high`가
-문항 셋(`H-218`/`H-219`/`H-222`)을 새로 올렸다 — 아래 표가 회신 대기.**
+채택**, 같은 날 반영 완료(각 행 상태 참고).
+
+**⭐ [2026-08-31 회신 2]** `/code-review high`가 올린 셋도 확정 —
+`H-218` (a)(*"확인함. a 로 가면 될것 같아"*) / `H-219` 동의 / `H-222` 동의,
+전부 반영 완료. 같은 회신이 둘을 새로 열었다: `H-218`에 대한 **되물음**
+(*"Destroy 호출되는 것도 retract가 안 먹어서 문제가 생긴다는 부분 아냐?
+한번만 다시 봐줘"* → 검증 결과 **맞았다**, `H-229`)과 **상수 배치 제안**
+(*"quad-const 등을 만드는 게 좋아보임 … 혹은 그러한 Enum 값도 타입으로 보고
+quad-types에 할당하는 건 어떤지?"* → `H-230`). **아래 두 행이 회신 대기.**
 
 | 번호 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
@@ -107,6 +150,8 @@ quad.Dispatch: handler priority tie between "?" (priority 5) and "?" (priority 5
 | `H-218` | **위임 자식 철거 시 `retractFrom(child, prop, 1)`을 계약으로 의무화할지** — chains의 retractor 클로저가 `inst`를 캡처해 자식을 버리는 것만으론 회수 안 됨(`H-71` 패턴, 거짓 GC 주장 둘은 이미 정정). 반응형 숏핸드(`UICorner = state`) 자식 파괴/재생성 사이클마다 구독·gchold 누적 | (a) **항상 의무화** — 위임 핸들러는 자식을 버릴 때 무조건 `retractFrom(child, prop, 1)`(정적 값이면 no-op retractor라 비용 ~0; **`UI-11`의 "필요하지 않다" 결론 일부 역전** — 옛 결정 역전 표시) / (b) 반응형 값이 걸린 자식만 의무(정적은 `UI-11` 유지 — 단 폐기 주체가 값의 반응형 여부를 추적해야) / (c) 다른 방식(chains 구조 변경 등 — 단 리스트 `SetWeak` 전환은 살아있는 체인을 잃는 오답) | **(a)** | 계약이 조건 없이 한 줄이라 어기기 어렵고, 정적 경로 비용이 사실상 0이라 `UI-11`의 실익 논거("불러봐야 하는 일이 없다")와 실충돌이 없다 — 그 논거는 "호출 금지"가 아니라 "요구 안 함"이었고, 새로 드러난 누수가 요구할 이유를 만들었다. (b)는 폐기 주체마다 반응형 추적 부기가 하나 더 생긴다 |
 | `H-219` | 매치 실패 `error`의 **도착지** — `drive` 경로(리터럴 props의 미지원 값, 가장 흔한 사용자 실수)에서 level 2가 사용자 코드가 아니라 quad 내부 프레임을 가리킨다. `process`는 핸들러 재귀도 받는 공개 진입점이라 level 하나로 두 경로를 다 못 맞춤 | (a) **지금 유지 + 한계 명시** — 메시지가 key·typeof·브랜드·provider 안내로 자기설명적이라 위치 없이도 진단 가능. M5에서 `New` 파이프라인이 완성돼 drive 경유 프레임 수가 고정되면 재평가 / (b) `drive`가 매치 실패를 잡아 사용자 호출부 level로 재상승 — 단 `pcall` 금지 계약(예외 안전성)과 긴장, 새 메커니즘 / (c) 다른 방식 | **(a)** | (b)는 `pcall`을 안 쓰기로 한 전 자리 계약과 정면 충돌하고, 지금 잃는 건 위치 접두뿐 메시지 자체는 원인을 다 싣는다. 재평가 시점(M5)이 자연스럽게 온다 |
 | `H-222` | 제공자(핸들러 작성자) 계약 위반 — retractor 생략·매치 실패류 — 의 **`level` 분류**가 `architecture.md` 계약 표(사용자 입력 2 / 내부 불변식 1)에 없다. 지금 코드는 잠정 2 | (a) **표에 세 번째 행 신설** — "제공자 계약 위반 = 2(그 계약을 어긴 호출 구조에 가장 가까운 프레임)" / (b) 표는 안 늘리고 잠정 2 유지(주석만) / (c) 내부 불변식으로 보고 1 | **(a)** | M3 단위 2~4·M5·M10의 provider-facing error 전부가 같은 분류를 반복해서 물을 자리라, 표에 한 줄 넣는 게 자리마다 잠정 표시를 다는 것보다 싸다. (c)는 "quad 자신의 버그"가 아니라 제공자의 버그라 표의 1행 정의와 안 맞다 |
+| `H-229` | **일반 `Destroy` 경로의 chains 잔존** — Destroy는 retract를 안 부르는 게 계약이고 gchold 섬은 Destroy로 무너지지만, `chains`의 **강한 버킷 값**(retractor→`inst` 캡처)이 별도 루트로 남아 weak 항목이 영영 안 비워진다. 반응형 바인딩이 있던 모든 파괴 인스턴스가 부기+userdata 영구 잔존, 죽은 Observer가 상류 전파 순회에 잔류(상세는 `H-229` 절) | (a) **체인 리스트의 GC 앵커를 gchold로 통일** — `chains`는 리스트를 `SetWeak`으로만 잡고, 버킷 첫 생성 시 `bindLifetime(inst, list)`로 리스트를 gchold에 앵커(Destroy → gchold 붕괴 → 리스트·retractor·`inst` 전부 회수; retractor는 **호출 안 함** — 계약 유지, 메모리만 해제). 선례: `slot-plan.md` 13차 세션이 두-`Relate` 상호 순환을 정확히 이 약(전부 weak + 앵커는 `bindLifetime` 하나)으로 고침. ⚠️ 결합 캐비엇: Dispatch가 생명주기 주입을 요구하게 돼 순수 디스패치 테스트도 mock 인스턴스가 필요해짐(단위 1 spec의 평범한 테이블 inst 수정) / (b) 버킷 첫 생성 시 `onDestroying(inst, …)` 훅으로 버킷 드롭 — 같은 결합 + Connection 부기 추가 / (c) 수용·문서화(파괴 인스턴스당 소량 영구 잔존 + 상류 emit 순회 비용) | **(a)** | 같은 병(값이 weak 키를 되참조하는 상호 순환)을 같은 약으로 고친 확정 선례가 있고, 새 개념 없이 기존 프리미티브(`bindLifetime`/gchold) 재사용이다. (b)는 앵커 대신 훅이라 Connection 관리가 하나 더 생기고, (c)는 장수명 게임의 동적 UI에서 무한 누적이라 라이브러리 목표(정확성 우선)와 안 맞다 |
+| `H-230` | **공유 상수의 배치** — ① `HANDLER_PRIORITY_*`: 백엔드(M5 quad-roblox)가 핸들러 등록 시 필요. 지금도 `InitRoblox(module)`이 받는 인스턴스의 `module.Dispatch.*`로 닿긴 하지만, 사용자 제안대로 의미가 드러나는 단일 소스가 낫다. ② error `level` 넘버(1/2/3)의 Enum화 | (a) **우선순위 상수만 `quad-types`로 승격** — 이미 모든 패키지가 의존하는 의존성-0 계약 패키지고 런타임 테이블을 반환하므로 값 넷을 싣는 비용이 0에 가깝다(`Dispatch`는 require해 재노출, 단일 소스; 머리말의 "런타임 값은 없다시피" 서술 갱신). **level은 Enum화하지 않는다** — `level`은 의미 enum이 아니라 **프레임 수**라 같은 의미("사용자 호출부")가 자리에 따라 2·3으로 갈리고(`architecture.md` *"프레임 수가 아니라 도착지가 계약"*, `H-205`의 level 3이 실사례), `ERROR_LEVEL_USER = 2` 상수는 헬퍼 프레임이 끼는 자리에서 거짓말을 하게 된다 / (b) `quad-const` 패키지 신설(상수 전부 이관) / (c) 현행 유지(모듈 인스턴스 경유) | **(a)** | (b)는 숫자 넷에 워크스페이스 멤버·pesde shim·relink 비용이 과하고(`H-165`류 함정도 하나 더 생김), 지금 상수가 이것뿐이라 "상수 패키지"가 설 자리가 아직 없다 — 상수가 실제로 불어나면 그때 분리해도 늦지 않다("실제로 관측된 문제에만 구조"). level 비권고 근거는 왼쪽 칸 |
 | `H-215` | 스파이크 `04`(Dispatch 체인 retractFrom, `rewrite-required/`) 처분 — `spec.dispatch.luau`가 체인 깊이·레벨별 힌트·3-인자 `retractFrom`·`SetStrong` 음성 대조군을 이미 실측했으나, 재귀 재발행은 spec-로컬 wrapping 핸들러 **근사**다(실제 `StoreBind`는 M4) | (a) 지금 폐기(`01`처럼 `done/` 이동) — 잔여 몫(실제 `StoreBind` 경유 재발행 경로)은 **M4 StoreBind spec이 진다**고 그 단위 계획에 명시 / (b) M4까지 `rewrite-required/`에 유지(현 ROADMAP 문구 "M3 착수 시 같이 처리"를 "M4에서"로 정정) / (c) 지금 재작성 | **(a)** | 체인 메커니즘 자체는 `spec.dispatch.luau` 12절이 실제 구현에 대고 고정했고(스파이크는 격리 재현이라 오히려 약함), `05`/`15`/`01` 폐기와 같은 근거 구조다. 잔여 몫을 M4 spec 항목으로 옮겨 적으면 잊히지 않는다 |
 
 ## §5 이상 없음 확인 (탐사자·구현이 확인만 하고 문제 없었던 자리)

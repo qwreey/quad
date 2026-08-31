@@ -2078,4 +2078,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `/code-review high` 10건(`H-218`~`H-227`): ① 여섯 반영(`BRAND_PROBES` 순서 /
   retractor 생략 error에 핸들러 특정 / 타입 주석 조립 등), ② 셋 §4 합류(`H-218`
   chains 캡처 누수 — 거짓 GC 주장 정정 선반영 / `H-219` error 도착지 / `H-222`
-  제공자 level 분류), 기각 하나(`H-226`). 코드 마커 0, §4 열린 문항 셋.
+  제공자 level 분류), 기각 하나(`H-226`). 탐사자 1건(`H-228`) 반영. **회신 2**로
+  `H-218`(a — retractFrom 의무화, `UI-11` 부분 역전)/`H-219`(a)/`H-222`(a — error
+  계약 표 제3 행) 반영. 사용자 되물음 검증 결과 **Destroy 경로 전체가 같은 누수
+  패턴**(`H-229` 🔴, chains가 두 번째 강한 루트 — gchold 앵커 통일안 권고)과
+  상수 배치 제안(`H-230` — HANDLER_PRIORITY_*는 quad-types 승격 권고, level
+  Enum화는 비권고)이 §4 대기.
