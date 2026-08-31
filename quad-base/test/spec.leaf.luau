@@ -124,7 +124,10 @@ do
 	assert(not q.canExecute(e), "retracted: unbound")
 	assert(cleanups == 1, "plain retract (nil) also consumes cleanup via the swap branch")
 	local bk = q.Dispatch.getBookkeeping(inst)
-	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "NilHandler re-registered the position")
+	-- `H-276`: 이 단언은 NilHandler의 재등록과 leaf 자신의 등록 잔존값을 구별하지
+	-- 못한다(둘 다 None/0) — "자리가 등록된 채 남는다"까지만 단언하고, NilHandler
+	-- 등록 자체의 회귀는 spec.nonenil 3이 잡는다.
+	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "the position stays registered (None/0)")
 	print("PASS")
 end
 
@@ -178,6 +181,23 @@ do
 	} :: QuadTypes.Handler)
 	q.Dispatch.drive(inst, { MyThing = o })
 	assert(#log == 1 and log[1] == "named:MyThing", "the NORMAL handler wins over the FALLBACK guard")
+	print("PASS")
+end
+
+print()
+print("=== 8. 이중 배치 — 디스패치 경유 designed error가 quad 내부가 아니라 사용자를 blame(H-272) ===")
+do
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local s = q.Source(1)
+	local o = s:Observer(function() end)
+	local ok, err = pcall(function()
+		q.Dispatch.drive(inst, { o, o })
+	end)
+	assert(not ok and string.find(tostring(err), "already bound", 1, true) ~= nil, `double placement errors: {tostring(err)}`)
+	-- 리터럴 level 2였다면 Leaf.luau 줄이 찍혔다 — errorBefore가 drive를 뚫는다
+	assert(string.find(tostring(err), "spec.leaf.luau", 1, true) ~= nil, `blame reaches user code: {tostring(err)}`)
+	assert(string.find(tostring(err), "Leaf.luau", 1, true) == nil, "never blames quad internals")
 	print("PASS")
 end
 

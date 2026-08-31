@@ -355,9 +355,15 @@ function bindLifetime(inst, value)
         -- 클로저일 수도 있음(그 경우 필드 접근 자체가 에러).
         local isGlobal = isObserver(value) or isEffect(value)
         if isGlobal then isGlobal = value.Subscribed == true end
-        error(if isGlobal
-            then "이미 구독된 값"   -- [2026-08-26 H-111] 강/약 어느 쪽이든
-            else "이미 다른 Instance에 바인딩된 값")
+        -- [2026-08-31 M3 단위 4 `H-272`] 리터럴 error(level 2)가 아니라 워커의
+        -- 최외곽 스캔 — 단위 4 이후 bindLifetime의 주 호출부가 디스패치 깊이
+        -- (Leaf.process)라 level 2는 quad 내부를 blame한다. errorBefore면 직접
+        -- 호출(최외곽 태그 = bindLifetime 자신)과 디스패치 경유(최외곽 = drive)
+        -- 양쪽에서 사용자 줄에 닿는다. 메시지도 error 계약대로 영어
+        -- (`H-216` 부류의 잔존이 이 스케치에 남아 있었다).
+        Err.errorBefore(if isGlobal
+            then "bindLifetime: value is already subscribed"   -- [2026-08-26 H-111] 강/약 어느 쪽이든
+            else "bindLifetime: value is already bound to another Instance", SURFACE)
     end
 
     -- ⭐ [2026-08-31 `H-184`, 사용자 확정] 값이 자기 훅 가드를 가지면(`Effect`/`Observer`의

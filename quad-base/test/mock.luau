@@ -279,6 +279,12 @@ local function installLifetime(quad: any)
 	installed[quad] = true
 
 	local isObserver, isEffect = quad.isObserver, quad.isEffect
+	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
+	-- bindLifetime의 주 호출부가 디스패치 깊이(Leaf.process)라 리터럴 level 2는
+	-- quad 내부를 blame했다. errorBefore(최외곽)면 직접 호출·디스패치 경유
+	-- 양쪽에서 사용자 줄에 닿는다(`lifecycle-pattern.md` 스케치도 같이 정정).
+	local Err = quad.errorNamespace
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	local InstData = Relate() -- inst  -> gchold/gcconn ((0)에서 채움)
 	local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
@@ -331,7 +337,7 @@ local function installLifetime(quad: any)
 
 	local function bindLifetime(inst: any, value: any)
 		if not isMockInstance(inst) then
-			error("bindLifetime: inst is not a mock instance", 2)
+			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE)
 		end
 		if not canBound(value) then
 			-- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
@@ -340,11 +346,11 @@ local function installLifetime(quad: any)
 			if isGlobal then
 				isGlobal = value.Subscribed == true
 			end
-			error(
+			Err.errorBefore(
 				if isGlobal
 					then "bindLifetime: value is already subscribed"
 					else "bindLifetime: value is already bound to another Instance",
-				2
+				SURFACE
 			)
 		end
 		-- [H-184] 훅 가드를 커밋 **전에** 묻는다 — 가드가 거부해도 반쯤 묶인 핸들
@@ -386,7 +392,7 @@ local function installLifetime(quad: any)
 	-- 한 줄(`architecture.md` EngineOps). mock은 그 시그널을 그대로 쓴다.
 	local function onDestroying(inst: any, fn: () -> ()): any
 		if not isMockInstance(inst) then
-			error("onDestroying: inst is not a mock instance", 2)
+			Err.errorBefore("onDestroying: inst is not a mock instance", SURFACE)
 		end
 		return inst.Destroying:Connect(fn)
 	end

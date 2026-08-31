@@ -69,6 +69,11 @@
 | `H-251` | ① | 2 | 🟢 | (탐사자) `spec.drive.luau` 헤더가 *"M3 unit-1 scope: pipeline stage (b) only"*로 stale — 단위 2가 `drive`에 ⓪/⓪' 배치 게이팅을 배선했다(`Dispatch/init.luau` 헤더는 갱신됨). 부수로 그 spec-로컬 핸들러는 배열 자리의 `setLength`/`setOffsetSource` 등록 계약(생략 UB)을 안 지킨 채 `drive`를 태운다 — F-4-1 측정 목적이라 무해하지만(빈 `bk`로 `recompute`가 no-op) 의도임을 주석으로 밝힐 자리 | ✅ 반영 — 헤더를 ⓪(b)⓪' 현행으로 + 등록 생략이 의도(순회 측정 전용)임을 명시 |
 | `H-252` | ① | 2 | 🟢 | (탐사자) `test.sh`의 `luau-analyze` 대상에 단위 2가 신설한 **`quad-error/src`가 없다**(require 경유 트랜지티브 타입만 읽힘) — 그 스크립트 자신의 주석이 "거짓 클린이 없다"를 목적으로 말하는 자리인데, 새 런타임 패키지의 strict 진단이 게이트 밖이다. `quad-types/src`도 같은 상태(전부터). 지금 직접 돌리면 둘 다 클린(실측 — `luau-analyze quad-error/src`·`quad-types/src` 각각 무출력 exit 0) | ✅ 반영 — `test.sh` analyze 대상에 `quad-types/src`·`quad-error/src` 추가(전체 그린 재확인) |
 | `H-264` | ① | 3 | 🟢 | (탐사자) `H-257`의 nil 한정 힌트가 **코드에만 있다** — 정본 `dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절은 여전히 *"그 이상의 특수 분기는 두지 않음"*이라 그 커밋(`4c01be2`)이 넣은 nil 조건 분기 문구를 정면 부정한다(그 커밋은 `base/` 파일을 하나도 안 건드림 — ①의 "`base/`+코드 같은 커밋" 규약이 안 지켜진 자리) | ✅ 반영 — 매치 실패 절에 `H-257` 예외 명시(분기 로직 아닌 진단 문구 보강) |
+| `H-272` | ① | 4 | 🟡 | (탐사자 F-1) 이중 배치 designed error의 blame이 quad 내부(`Leaf.luau:60`)에 떨어짐 — 단위 4로 `bindLifetime`의 주 호출부가 디스패치 깊이가 되면서 리터럴 level 2가 어긋남(`H-231` 일괄 이관이 백엔드 교체 함수를 못 본 사각; `lifecycle-pattern.md` 스케치엔 한국어 리터럴도 잔존 — `H-216` 부류) | ✅ 반영 — mock `bindLifetime`/`onDestroying`의 오용 error 셋과 스케치를 `errorBefore(…, SURFACE)`로(직접 호출·디스패치 경유 양쪽에서 사용자 blame — 논증은 스케치 주석), `spec.leaf` 8 신설 + `spec.lifetime` 단언 명의 갱신 |
+| `H-273` | ① | 4 | 🟡 | (탐사자 F-2) `pcall(q.Dispatch.drive, …)` **직전달**이면 outermost 목표가 C 프레임에 얹혀 파일:줄 접두가 통째로 사라짐(메시지는 생존; 태그 프레임이 최상단일 때 `+1`도 같은 결과 — 크래시 없음, 실측) | ✅ 반영 — 알려진 한계로 문서화(`quad-error` 헤더 Known limits + `architecture.md` error 계약 절), 방어선은 `H-219` (a)의 "메시지 자기설명" 논거. 메커니즘 안 만듦 |
+| `H-274` | ① | 4 | 🟡 | (탐사자 F-3) 재진입 진입(observer `fn` 안 `drive`)에서 매치 실패의 최외곽 스캔이 실수 자리(안쪽 호출)가 아니라 **바깥 진입 줄**(`s:Set`)을 blame — 확정 방향(최외곽)의 내재 한계, `H-231` 회신의 Nearest 배정은 재진입 가드만 다뤘음 | ✅ 반영 — 같은 두 자리에 한계로 문서화(안쪽 지목이 필요한 자리는 Nearest 쌍의 몫). 메커니즘 안 만듦 |
+| `H-275` | ② | 4 | 🟡 | (탐사자 F-4) **형상이 바뀌는 배열 재`drive`의 지원 여부가 미명시** — 축소(`{o1,o2,o3}`→`{o1,o2}`)는 자리 3을 아무도 철거 안 해 조용한 잔존(o3 발화 지속, `bk.N=3`), 교환(`{oA,oB}`→`{oB,oA}`)은 (A) 분기가 아직 자리 2에 묶인 oB를 bind하다 already-bound 크래시 + slot 1 `H-103` NOOP 잔존. 같은 형상 재drive는 sanctioned(spec.leaf 3), 재진입 drive는 `H-241`로 별도 — 이건 **순차 재호출** 축 | §4 — 권고 (a) |
+| `H-276` | ① | 4 | 🟢 | (탐사자 F-5) `spec.leaf` 5의 "NilHandler re-registered" 단언이 vacuous — NilHandler 등록 제거 뮤테이션에도 통과(leaf 잔존값과 동일해 구별 불능; 실회귀는 `spec.nonenil` 3이 잡음) | ✅ 반영 — 단언 명의를 "자리가 등록된 채 남는다"로 정정 + 커버리지 소재 주석 |
 | `H-269` | ① | 4 | 🟡 | (리뷰) quad-error no-match 폴백 `error(content, 1)`이 헤더 계약(*"No match falls back to the raise site"*)과 달리 `errorAt`/`errorAtNearest` **자신의 줄**(quad-error 내부)을 blame — `errorBefore` 쌍만 `+1` 덕에 우연히 맞았다 | ✅ 반영 — 네 wrapper가 센티널(1)을 raise 자리(level 2)로 번역, `spec.errorutil` 4에 "quad-error를 blame하지 않는다" 단언 추가 |
 | `H-270` | ① | 4 | 🟡 | (리뷰) `getFirstMatch`의 스캔 시작이 진짜 최상단보다 1 위 — `getToplevel`이 자기 프레임이 살아있는 관점으로 세므로, 첫 프로브가 항상 유령 nil 프레임이고 `getFuncLevel(nil) == 0`이라 **layer 0(`ERROR_LEVEL_DEFAULT`) 요청이 유령 프레임에 오매치**(현재 유일 사용 태그 SURFACE=1엔 무해한 잠복 엣지) | ✅ 반영 — 시작을 `getToplevel() - 1`로(관점 시프트 주석), `spec.errorutil` 4에 layer 0 실프레임 매치 단언 |
 | `H-271` | ① | 4 | 🟢 | (리뷰) 같은 diff가 닫은 드리프트 채널 둘이 곧바로 재개방 — `spec.drive`가 `H-261`이 접은 `Quad.New()`+`installLifetime` 쌍을 인라인 유지 / `spec.integration`의 `SpecElement`가 `H-263`이 접은 leaf 등록 본문의 세 번째 사본 | ✅ 반영 — `addSpecLeaf`를 mock으로 승격(공유 헬퍼 소유자, `H-261` 근거 재사용), `spec.drive`는 `mock.newQuad`로. `spec.lengthoffset` 4의 프로브 변형은 프로브 자체가 테스트 대상이라 잔류 |
@@ -336,6 +341,18 @@ stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하�
 (§5), `TODO(H-` 마커 0, `./scripts/test.sh` 전체 그린. **§4 대기는 다섯
 그대로**(`H-240`(🔴)·`H-241`·`H-250`·`H-256`(🔴)·`H-258` — 새 ② 없음).
 
+**⭐ [2026-08-31 단위 4 끝]** 감사 3라운드 수렴(5→1→0) → `/code-review high`
+7건(셋은 §4 대기의 독립 재발견 — 교차 검증, `H-269`~`H-271` ① 반영) →
+탐사자 5건(`H-272`~`H-276`, 스파이크 4본 실측 — ① 넷 반영, ② 하나 합류).
+탐사자가 §4 재료도 보탰다: `H-256`은 **leaf 경로로도 재현**(소수·희소 키
+크래시+recomputeBlocker 영구 On, 음수 키는 조용한 오염 후 익명 산술 에러 —
+권고 (a)의 "(b)는 다른 말단 핸들러로 가면 재발" 논거 실증)되고 designed
+error(이중 배치)가 **drive 배치 Blocker를 On 채로 남기는 것**도 같은 가족
+(예외 후 부기 무보장 계약 범위이나 (a) 처리 시 함께 볼 것). `H-250`엔
+코루틴 폴백이 문서대로 raise 자리로 떨어지는 실측 데이터 확보(스파이크
+재료). `H-186`은 교차 quad bind가 문서화된 UB 그대로임을 실측 확인(§5).
+**§4 대기는 여섯: `H-240`(🔴)·`H-241`·`H-250`·`H-256`(🔴)·`H-258`·`H-275`.**
+
 | 번호 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
 | `H-214` | `listHandlers`·동률 경고·(나중의) `quad-debug` 덤프가 쓸 핸들러 **이름** — Handler 계약(3종)엔 `name`이 없다 | (a) 계약에 **선택 필드 `name: string?`** 추가 — 있으면 경고·덤프·`listHandlers`가 쓰고 없으면 priority만 / (b) 이름 없이 감 — `listHandlers`는 핸들러 객체 배열만 반환(지금 임시 구현), "이름/priority" 서술을 문서에서 걷어냄 / (c) 다른 방식(별도 등록 인자 `addHandler(h, name)` 등) | **(a)** | `dispatch-core-plan.md` **두 자리**("우선순위 동률/매치 실패 처리"의 `listHandlers` 이름/priority + "부수 효과 — quad-debug에 유리"의 체인 슬롯 이름 덤프)가 이미 "이름"을 전제하고(**[감사 3라운드 정정]** 후자를 처음엔 `research/debug-tooling-plan.md`로 잘못 인용 — 거긴 대신 선택적 `describe` 훅(가칭)이 전례), 선택 필드면 기존 3종 계약을 안 깬다. **(b)를 고르면 두 자리 다 걷어야 한다.** (c)는 이름이 핸들러 자신이 아니라 레지스트리에 살게 돼 체인 슬롯 덤프(슬롯엔 handler 객체만 저장)가 역조회를 또 요구함 |
@@ -353,8 +370,18 @@ stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하�
 | `H-215` | 스파이크 `04`(Dispatch 체인 retractFrom, `rewrite-required/`) 처분 — `spec.dispatch.luau`가 체인 깊이·레벨별 힌트·3-인자 `retractFrom`·`SetStrong` 음성 대조군을 이미 실측했으나, 재귀 재발행은 spec-로컬 wrapping 핸들러 **근사**다(실제 `StoreBind`는 M4) | (a) 지금 폐기(`01`처럼 `done/` 이동) — 잔여 몫(실제 `StoreBind` 경유 재발행 경로)은 **M4 StoreBind spec이 진다**고 그 단위 계획에 명시 / (b) M4까지 `rewrite-required/`에 유지(현 ROADMAP 문구 "M3 착수 시 같이 처리"를 "M4에서"로 정정) / (c) 지금 재작성 | **(a)** | 체인 메커니즘 자체는 `spec.dispatch.luau` 12절이 실제 구현에 대고 고정했고(스파이크는 격리 재현이라 오히려 약함), `05`/`15`/`01` 폐기와 같은 근거 구조다. 잔여 몫을 M4 spec 항목으로 옮겨 적으면 잊히지 않는다 |
 | `H-250` | `quad-error` 워커의 **미실측 전제 둘** — `H-231` 절이 *"추론으로 확정하지 않는다"*며 예약한 선행 스파이크 중 (a) `-O2` 인라이닝·네이티브 코드젠에서 태그 프레임이 `debug.info` 걷기에 계속 보이는지, (b) 코루틴 경계(스택 루트가 코루틴 진입점일 때의 degrade)가 실측 없이 채택·이관까지 끝났다. (c) 프레임 산술만 `spec.errorutil`이 O1에서 실측. 실패 모드는 blame 열화뿐(크래시 아님) — 태그 함수 대부분이 테이블 저장이라 인라인 후보도 아니라는 추론은 있으나, 그게 정확히 "추론" | (a) `luau-test` 스파이크 신설 — luau CLI의 `-O2`/`--codegen` 플래그와 코루틴 래핑으로 3축 실측(비용 작음, 스파이크 관례 그대로) / (b) 명시 기각을 기록 — "진단 열화뿐이고 실물릴 때 스파이크"를 `H-231` 절/`STATUS.md`에 적어 예약을 닫음 / (c) 다른 방식 | **(a)** | 이 코퍼스의 스파이크 관례가 정확히 이 부류("추론만으로 확정하고 실제 Luau로 부딪혀본 적 없는 것")를 위한 것이고, 예약을 세운 문장이 남아 있는 채로 실측도 기각도 없으면 다음 세션이 "확인됨"으로 오독한다. (b)도 유효한 선택 — 열화가 진단 한정임은 분명하므로, 비용 판단은 사용자 몫 |
 
+| `H-275` | **형상이 바뀌는 배열 재`drive`의 지원 여부**(탐사자 F-4, 실측) — 축소(`{o1,o2,o3}`→`{o1,o2}`)는 자리 3을 아무도 철거 안 해 **조용한 잔존**(o3 bound·발화 지속, `bk.N=3` 유지), 교환(`{oA,oB}`→`{oB,oA}`)은 자리 1의 (A) 분기가 아직 자리 2에 묶인 oB를 bind하다 **already-bound 크래시**(+ slot 1 `H-103` NOOP 잔존). 같은 형상 재drive는 sanctioned(spec.leaf 3이 스스로 사용), 재진입 drive는 `H-241` — 이건 **순차 재호출** 축으로 미명시 | (a) **UB 문서화** — `drive`는 `New` 파이프라인의 1회 진입이고(배열 재구성은 M6 `:List`/Slot 몫), "형상이 바뀌는 재drive"를 `H-241`과 같은 결의 UB로 명명(축소의 조용한 잔존이 crash보다 나쁜 형태임을 명시) / (b) 재drive를 diff 연산으로 지원(잔존 자리 retractFrom + 교환 안전 순서 — 새 메커니즘, `:List`와 책임 중복) / (c) 다른 방식 | **(a)** | drive의 확정 역할은 최초 구성이고 배열의 시간 변화는 `:List`(M6)가 정본 소유자다 — (b)는 그 책임을 drive에 중복 이식하는 새 구조("실제로 관측된 문제에만"). 크래시 축(교환)은 이미 이중 배치 계약(`0-W`)의 자연 결과라 방어 불요, 축소 축만 "조용함"이 함정이라 문서화 가치가 있다 |
+
 ## §5 이상 없음 확인 (탐사자·구현이 확인만 하고 문제 없었던 자리)
 
+- **[2026-08-31, 단위 4 탐사자]** 실측 확인만 하고 문제 없던 자리 —
+  dedup 제거 뮤테이션에서 `spec.leaf` 3이 실제로 크래시(`H-266`
+  load-bearing 주장의 음성 대조 실증) / bound 중 GC 2회 후 재drive 무사
+  (dedup weak 엔트리 미스 창 부재 실증) / 값 교체 cleanup 정확히 1회
+  (observer→effect→nil 체인 포함) / 가드 문구·`typeof(k)`·override 의미론 /
+  `{["1"]=o}` 숫자 문자열 키는 가드가 "got string"으로 정상 처리 / 교차
+  quad bind는 `H-186` 문서화된 UB 그대로(조용한 성공 후 Destroying 덮어씀 —
+  Effect.luau 자기 서술과 일치) / 코루틴 **안** drive의 blame 정상.
 - **[2026-08-31, 단위 4 `/code-review high`]** §4 대기 셋(`H-256` 🔴/`H-240`
   🔴/`H-241`)을 독립 탐색자들이 **재발견** — §4 분류가 교차 검증됐고 새
   등재는 없음. 리뷰가 스스로 기각한 것 셋: 같은 핸들 이중 배치의 두 번째

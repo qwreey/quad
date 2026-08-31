@@ -156,8 +156,31 @@ vacuous를 잡아 재교정 — `H-255`로 소급 원장), `/code-review high` 1
   전 스위트 그린, analyze 클린. §6에 비고 하나(debug 동률 print가 base
   내장 쌍에도 걸림 — 문서 허용 범위, 구조 안 만듦).
 
+## 단위 4 끝 절차 (같은 세션 계속)
+
+- **감사 루프 3라운드 수렴(5→1→0)** — 1라운드 `H-267`(H-266 미전파 다섯:
+  ref-plan SetWeak 주석 모순 / source-state 같은 절 안 자기모순(배너만 달고
+  본문 방치 — 체크리스트 2번의 전형) / 가드 등록 미래형 둘 / ROADMAP
+  Leaf.luau 무주석 / 가드 의사코드 리터럴 error 넷), 2라운드 `H-268`(README
+  색인 두 행 + bare `Err`/`SURFACE` 포인터), 3라운드 확실 0(사용자 판단
+  1건은 기존 재진입 원칙 상호참조로 기록만).
+- **`/code-review high` 7건** — 셋은 §4 대기(`H-256`/`H-240`/`H-241`)의
+  독립 재발견(교차 검증, §5), 기각 셋(이중 배치=`0-W` 계약 / 꼬리 병합=
+  `H-226` 선례 / 동률 무해). 신규 ① 셋 반영: `H-269`(quad-error no-match
+  폴백이 quad 내부 blame → raise 자리 번역), `H-270`(getFirstMatch 유령
+  최상단 프레임 — layer 0 오매치 → `getToplevel()-1`), `H-271`(같은 diff가
+  닫은 드리프트 채널 재개방 — addSpecLeaf를 mock 승격, spec.drive
+  newQuad).
+- **탐사자 5건**(스파이크 4본 실측) — `H-272` ①(이중 배치 designed error가
+  quad 내부 blame — mock bindLifetime·스케치의 리터럴 error를
+  `errorBefore`로, `H-231` 사각 + 스케치 한국어 잔존), `H-273`/`H-274`
+  ①(워커 알려진 한계 둘 문서화 — pcall 직전달 C 프레임 접두 소실 / 재진입
+  진입의 최외곽 blame), `H-275` ②(형상 바뀌는 재drive 미명시 — 축소 조용한
+  잔존·교환 크래시, §4 합류), `H-276` ①(spec.leaf 5 vacuous 단언 명의).
+  §4 재료: `H-256` leaf 경로 재현 + designed error가 배치 Blocker를 On 채로
+  남김, `H-250` 코루틴 폴백 실측, `H-186` UB 실측 확인.
+
 ## 이 다음
 
-단위 4 끝 절차(감사 루프 → `/code-review high` → 탐사자) → 사용자에게
-"§4를 보라" 한 줄(대기 다섯: `H-240` 🔴/`H-241`/`H-250`/`H-256` 🔴/`H-258`)
-→ 회신 반영 후 M3 마감(ROADMAP·머리말 3층).
+사용자에게 "§4를 보라" 한 줄(**대기 여섯**: `H-240` 🔴/`H-241`/`H-250`/
+`H-256` 🔴/`H-258`/`H-275`) → 회신 반영 후 M3 마감(ROADMAP·머리말 3층).

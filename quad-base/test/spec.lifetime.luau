@@ -63,7 +63,7 @@ do
 	end)
 	assert(not ok, "binding an already-bound value must error")
 	assert(string.find(tostring(err), "already bound", 1, true) ~= nil, "message: " .. tostring(err))
-	assert(string.find(tostring(err), "spec.lifetime.luau", 1, true) ~= nil, "level 2 points at the caller: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.lifetime.luau", 1, true) ~= nil, "blames the caller (errorBefore, H-272): " .. tostring(err))
 	-- 같은 inst에 다시 묶는 것도 이중 바인딩
 	local ok2 = pcall(function()
 		quad.bindLifetime(a, value)

@@ -28,6 +28,17 @@
 	frames are *skipped*, never cut the scan short. No match falls back to the
 	raise site. Errors are cold paths, so the walk cost is irrelevant.
 
+	Known limits (2026-08-31, unit-4 explorer — `H-273`/`H-274`, measured):
+	  - A C-frame caller of a tagged surface (`pcall(drive, ...)` passing the
+	    function directly) leaves errorBefore's target on the C frame: the
+	    message survives, the file:line prefix is dropped. Wrap the call in a
+	    closure when the prefix matters; messages are self-describing by
+	    contract (the `H-219` (a) rationale) so nothing is lost silently.
+	  - Reentrant entries (dispatch invoked from inside an observer fn) make
+	    the OUTERMOST scan blame the outer entry's line, not the inner call —
+	    inherent to the approved direction. The Nearest pair exists for sites
+	    that must blame the inner frame (reentry guards).
+
 	**Namespace shape (user decision)**: this module is a stateless
 	constructor — `require(quad_error).new()` returns a namespace holding its
 	own weak-keyed tag map. Package copies are the reason: pesde gives each
