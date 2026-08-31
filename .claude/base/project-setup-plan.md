@@ -171,6 +171,13 @@ require-by-string 의미론(`@self` 등)을 그대로 지원하므로, darklua�
 
 ## 워크스페이스 의존성은 심볼릭 링크로 연결된다 — CLI 테스트의 함정
 
+> **⚠️ [2026-08-31 `H-234` 경로 갱신]** 이 절의 실측(2026-08-19)은 전부
+> quad-base·quad-types가 roblox target이던 시절이라 예시 경로가
+> `roblox_packages/`로 적혀 있다 — **지금 워크스페이스 내부 링크는 전부
+> `luau_packages/`다**(target 전환, 아래 `H-234` 문단이 소스). 심볼릭
+> 링크라는 사실과 함정 자체는 디렉토리 이름과 무관하게 그대로 유효하다.
+> 아래 히스토리 경로는 당시 사실이라 안 고친다 — 현재형 지침만 갱신해뒀다.
+
 **[2026-08-19 실측]** `pesde install`이 워크스페이스 멤버 간 의존성을
 해소하는 방식은 **심볼릭 링크**다 — `quad-roblox/roblox_packages/`
 안에 실제로 이렇게 생긴다:
@@ -223,10 +230,11 @@ local v = require("./linked")
 Studio도 같은 파일시스템 계층을 쓰는 이상 다르게 동작할 이유가 없다.
 
 **우회가 필요한 범위는 M0/M1식 CLI 스파이크/mock 테스트로 좁혀짐**:
-`roblox_packages/`를 거치지 말고 실제 형제 패키지 경로를 직접 가리킬
+패키지 링크 디렉토리(**[2026-08-31 이후]** `luau_packages/`)를 거치지 말고
+실제 형제 패키지 경로를 직접 가리킬
 것 — 예: `quad-roblox/src`에서 검증용 스크립트를 짤 때
 `require("../../quad-base/src")`처럼. **프로덕션 `quad-roblox` 소스
-자체는 그대로 표준 pesde 경로(`roblox_packages/quad_base`)를 쓸 것** —
+자체는 그대로 표준 pesde 경로(**[2026-08-31 이후]** `luau_packages/quad_base`)를 쓸 것** —
 Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했듯 문제없이
 동작한다.
 
@@ -250,7 +258,7 @@ Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했�
 그냥 `luau`로 돌리면 스모크가 죽고 `luau-analyze`는 모듈을 `any`로 떨어뜨려
 **조용히 통과**한다("거짓 클린"). **[2026-08-28 M2 첫 단위, `H-165`] 둘째
 함정 — `quad-types`에 `export type`을 추가하면 `pesde install`을 다시 돌려야
-한다.** pesde가 만드는 링크 파일(`quad-base/roblox_packages/quad_types.luau`)은
+한다.** pesde가 만드는 링크 파일(`quad-base/luau_packages/quad_types.luau` — **[2026-08-31 `H-234`]** 옛 경로는 `roblox_packages/`였다)은
 `return module` 위에 **그 시점에 존재하던 export 타입만** `export type X =
 module.X`로 손으로 나열한 shim이라, `quad-types/src/init.luau`에 타입을 새로
 export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Unknown type"으로

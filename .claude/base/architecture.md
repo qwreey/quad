@@ -264,14 +264,14 @@ quad/
 ├── pesde.toml                    # 워크스페이스 루트(private, workspace_members)
 ├── default.project.json         # 루트 통합 개발/테스트용 Rojo 프로젝트
 ├── quad-types/                   # 구현 없는 Quad 타입 계약 + CheckedQuad<T,Pattern> 버전체크(`base/quad-types-plan.md`)
-│   ├── pesde.toml                 # type_version_check workspace 의존(target="luau")
+│   ├── pesde.toml                 # type_version_check + quad_error workspace 의존(`ErrorNamespace` 타입 재export용 — `H-231`)
 │   └── src/init.luau
 ├── type-version-check/           # quad에 종속되지 않은 범용 버전 패턴 매칭(`base/quad-types-plan.md` "`type-version-check`" 절) — 사용자가 나중에 독립 저장소로 분리 예정(HUMAN_TODO 9번)
 │   ├── pesde.toml                 # [target] environment = "luau"
 │   └── src/init.luau              # matchesPattern(런타임) + export type function CheckVersion
 ├── quad-error/                   # [2026-08-31 `H-231`, 사용자 설계] 레벨 태그 에러 유틸 — setFuncLevel(fn, layer) 맵 + debug.info 스택 워크(최상단 하강)로 errorAt/errorBefore가 프레임 수 손 세기 없이 원하는 계층에 blame. type-version-check와 같은 지위(quad 비종속 범용, [target] environment = "luau"), quad-base가 workspace 의존(target="luau"). 태그 체계·기존 error 자리 이관은 round12 `H-231` §4가 소스
 │   ├── pesde.toml                 # [target] environment = "luau"
-│   └── src/init.luau              # getToplevel/setFuncLevel/getFuncLevel/getFirstMatch/errorAt/errorBefore
+│   └── src/init.luau              # 상태 없는 new(): Namespace(사본 분리 해법) + getToplevel. Namespace: setFuncLevel/getFuncLevel/getFirstMatch/getNearestMatch/errorAt/errorBefore/errorAtNearest/errorBeforeNearest(안쪽 스캔 쌍은 사용자 확정 이름)
 ├── quad-base/
 │   ├── pesde.toml
 │   └── src/
