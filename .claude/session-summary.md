@@ -2049,4 +2049,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `Set`→`Emit` 위임), ② 넷 §4 합류(`H-198` 🔴 닫힌 게이트 너머 `fn` 도중 `Set` 영구
   stale — §4 확정 의사코드 자체의 구멍 / `H-200` setup throw 좀비 / `H-203` `Off` 중
   재차단 / `H-205` Modifier 가드 level). 문서 이름 변경(pre-implementation 아님)은
-  사용자 지시로 §4 회신 뒤로 미룸. 남은 재개 지점은 §4 문항 열 개 회신뿐.
+  사용자 지시로 §4 회신 뒤로 미룸. **같은 날 §4 배치 회신 1차 처리** — 확정 일곱
+  반영(`H-182` `_dying` / `H-183` Observer `_running` / `H-184` `_assertBindable` 커밋 전
+  문의 / `H-185` 단일 cleanup 문서화(권고 기각) / `H-187` / `H-200` detach-중-setup /
+  `H-203` 순회 중 `IsBlocked` 재확인), 재질문 둘(`H-186`/`H-198` — 메인 답변은
+  그 §4 회신 2 블록), 보류 하나(`H-205`). 남은 코드 마커 셋.

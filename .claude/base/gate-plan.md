@@ -361,6 +361,13 @@ function GateNode:_flush(commit: boolean?): boolean   -- 이게 정책이 받는
 end
 ```
 
+- **⭐ [2026-08-31 `H-200`, 사용자 확정] 생성 배선 — `setup`이 도는 동안 노드를
+  상류 `_subs`에서 떼어둔다.** `state:Gate(setup)`는 `newNode`로 노드를 만든 직후
+  `_subs`에서 떼고(`setup` 전 `_onUpstreamEmit`은 `Void`), 유저 코드인 `setup`이
+  **던지든 비함수를 돌려주든** 좀비 구독자가 남지 않게 한 뒤(`pcall` 없음 —
+  "예외 안전성 계약"과 충돌하지 않는 순서 재배치), 정책이 돌아온 뒤에야
+  재등록한다 — 게이트는 그때부터 emit을 듣는다. 떼어둔 창은 관측 불가다:
+  유보 집합이 그동안 항상 비어 있다.
 - **반환값이 곧 위 2번의 `emit(commit) -> boolean`**이다 — "실제로 내보내거나
   버릴 게 있었는가"(`H-55`/`H-86`).
 - **`valueEpochMap`도 있다는 걸 여기서 명시한다** — 지금까지 *"규칙 1~3을

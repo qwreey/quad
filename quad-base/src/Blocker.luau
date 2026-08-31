@@ -55,11 +55,14 @@ local function runHandles(self: any, doEmit: boolean)
 	for handle in pairs(self._handles) do -- `H-63` (3): snapshot, then walk
 		snapshot[#snapshot + 1] = handle
 	end
-	-- TODO(H-203): the walk never re-reads `IsBlocked` — a subscriber fired by an
-	-- earlier handle's flush that calls `blocker:On()` cannot stop the remaining
-	-- handles: their batches propagate while `IsOn() == true`. (The line-comment in
-	-- `Off` covers only the open-direction re-entry; the doc disclaims nesting only.)
 	for _, handle in ipairs(snapshot) do
+		if self.IsBlocked then
+			-- `H-203` (a): a downstream fired by an earlier handle's flush re-blocked
+			-- this blocker — stop; the remaining handles keep their withheld batches
+			-- for the next Off. A half-flushed stop is fine by quad's contract
+			-- (user, 2026-08-31: "중간에서 멈춰도 quad 정의 상 문제는 없는 상태").
+			return
+		end
 		handle(doEmit)
 	end
 end

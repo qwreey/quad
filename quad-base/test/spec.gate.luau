@@ -76,14 +76,22 @@ do
 		end)
 	end)
 	assert(not bad2, "setup must return the onUpstreamEmit function")
-	s:Set(3) -- [H-188] the half-built node was detached — this must not crash on a nil callee
+	-- [H-200 (b)] the node is DETACHED while setup runs — a THROWING setup must not
+	-- leave a zombie subscriber either (H-188 covered only the non-function return).
+	local bad3, err3 = pcall(function()
+		s:Gate(function()
+			error("setup boom")
+		end)
+	end)
+	assert(not bad3 and string.find(tostring(err3), "setup boom", 1, true) ~= nil, "a throwing setup propagates")
+	s:Set(3) -- [H-188/H-200] the half-built nodes were never attached — no nil callee, no zombie
 	local left = 0
 	for sub in pairs((s :: any)._subs) do
 		if sub ~= g then
 			left += 1
 		end
 	end
-	assert(left == 0, "a failed Gate left nothing in the upstream's subscriber set")
+	assert(left == 0, "a failed Gate (throw or bad return) left nothing in the upstream's subscriber set")
 	print("PASS")
 end
 

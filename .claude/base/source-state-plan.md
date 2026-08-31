@@ -264,6 +264,10 @@ function State:_emitDown(from)
 end
 
 -- Observer 쪽 `EmitReceive` 구현(`Observer.luau`). 판정과 홀드가 **여기** 산다.
+-- ⭐ [2026-08-31 `H-183`] 아래 세 자리의 `fn` 호출은 실제 코드에선 전부
+--   `_running` 플래그로 둘러싼다(설치 발화 포함) — `fn`이 자기 생명주기를 못
+--   바꾼다는 `H-147`의 Observer 대칭. 근거·가드 목록은 `lifecycle-pattern.md`
+--   (2) 배너, 실제 코드는 `Observer.luau`.
 function Observer:_receive(from)
     if canExecute(self) then
         self.fn(self._state, self, from)   -- ⭐ (리시버 State, Observer 자신, 출처)

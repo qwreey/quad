@@ -48,3 +48,31 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 `./scripts/test.sh` 전부 통과(`spec.state` 13절·`spec.store` 2·3절에 새 가드 테스트 추가),
 `luau-analyze` 진단 0, 코드 마커 `TODO(H-)` 열 개 = §4 문항 열 개와 1:1. **재개 지점은
 §4 배치 회신 하나로 줄었다**(여섯 + 이번 넷). M2 종료 보고는 그 회신 처리 뒤.
+
+## 같은 날 후속 — §4 배치 회신 1차 처리 (2026-08-31)
+
+사용자가 §4 열 문항(+ 앞 라운드 셋 재확인)을 자유서술로 회신. 갈래: **확정 일곱**
+(`H-182` (a)+`_dying` 네이밍 / `H-183` (a) Observer `_running` / `H-184` (a)
+`_assertBindable` 커밋 전 문의 / `H-185` 권고 기각 — 단일 cleanup 문서화 /
+`H-187` (a) / `H-200` (b) detach-중-setup / `H-203` (a) 순회 중 `IsBlocked` 재확인),
+**재질문 둘**(`H-186` — "새 메커니즘 불가피하지 않나?", `H-198` — 재시작 루프 대안),
+**보류 하나**(`H-205`). 인용 원문과 반영 위치는 `round11.md` §4의 "[2026-08-31 회신 2]"
+블록이 소스.
+
+구현 요지: `Effect._dying`(Destroying 콜백이 세움, 재바인드·`Subscribe`류가 내림 —
+죽은 바인딩 재사용 계약과의 충돌 때문에 재무장 자리가 셋), Observer `_running`
+(모든 fn 실행 둘레 + 네 진입점 첫 줄, error 시 잔류는 설계상 인정), 공통 훅
+`_assertBindable`(mock bindLifetime이 커밋 전 문의 — `H-147` 가드는 `_bindDestroying`
+첫 줄에서 이 훅으로 이동, level 3), Gate 생성이 setup 동안 `_subs`에서 떼었다 성공 후
+재등록, `Blocker.runHandles`가 핸들마다 `IsBlocked` 재확인. 문서는 `effect-plan`/
+`lifecycle-pattern`/`source-state-plan`/`gate-plan`/`blocker-plan`/`ref-plan`(+
+`documentation-content-map` 22번, `quad-types-plan` `H-187`)에 반영. 스펙 넷 추가
+(`spec.effect` 10 / `spec.observer` 9 / `spec.gate` 1 확장 / `spec.blocker` 8).
+코드 마커는 셋 남음(`H-186`/`H-198`/`H-205`).
+
+`H-186` 답변(메인): 비교 자체는 메타테이블 신원(임플 테이블 = `module._impl` 경유)으로
+새 per-노드 등록 없이 가능하나 어쨌든 형제 임플 노출이 필요하고, §6 이웃(교차
+`bindLifetime`)은 그걸로도 못 막음 — (b) UB 문서화를 권고로 되돌림. `H-198` 답변(메인):
+재시작 루프는 성립하되 게이트 너머 움직임의 탐지는 결국 fn 직전 스냅샷 비교로 귀결 —
+사용자 안 = 스냅샷 탐지 + `Get` 재시작 루프, 캐비엇은 자기-dep `Set`의 무한 재시작
+(UB로 접을지 함께 결정 필요).

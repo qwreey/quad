@@ -152,4 +152,39 @@ do
 end
 
 print()
+print("=== 8. H-203 — Off 순회 중 재차단: 남은 핸들은 유보 유지, IsOn true인 채 통지가 새지 않는다 ===")
+do
+	local b = Blocker()
+	local s, t = Source(0), Source(0)
+	local gs: State<number> = s:Apply(b)
+	local gt: State<number> = t:Apply(b)
+	-- 어느 게이트가 먼저 flush되든(스냅샷 순서는 비결정), 먼저 깨어난 쪽이 재차단한다
+	local delivered = 0
+	local function reblock()
+		delivered += 1
+		b:On()
+	end
+	local ps, pt = probe(gs), probe(gt)
+	local origPs, origPt = ps._receive, pt._receive
+	ps._receive = function(self: any, from: any)
+		origPs(self, from)
+		reblock()
+	end
+	pt._receive = function(self: any, from: any)
+		origPt(self, from)
+		reblock()
+	end
+	b:On()
+	s:Set(1)
+	t:Set(1)
+	assert(delivered == 0, "both withheld")
+	b:Off()
+	assert(delivered == 1, "exactly one gate flushed — the re-block stopped the walk")
+	assert(b:IsOn() == true, "the mid-walk On() sticks")
+	b:Off()
+	assert(delivered == 2, "the survivor's withheld batch flushes on the next Off")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

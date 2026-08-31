@@ -259,17 +259,18 @@ local function createImpl(module: any)
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
 		node._onUpstreamEmit = Void -- until setup returns: a throwing setup must not leave a nil callee
-		-- TODO(H-200): if `setup` THROWS here, the node stays in `self._subs` as a
-		-- zombie subscriber (the detach below only covers the non-function return) —
-		-- spec.gate §1's "nothing left in the subscriber set" only holds for that path.
+		-- `H-200` (b): detach while user code (`setup`) runs — whether it THROWS or
+		-- returns garbage, no zombie subscriber is left behind (no pcall needed). The
+		-- window is unobservable: the withheld set stays empty while detached.
+		self._subs[node] = nil
 		local onUpstreamEmit = (setup :: any)(function(commit: boolean?): boolean
 			return node:_flush(commit)
 		end)
 		if type(onUpstreamEmit) ~= "function" then
-			self._subs[node] = nil -- detach the half-built node before reporting (no orphan in `_subs`)
 			error("State: Gate setup must return the onUpstreamEmit function", 2)
 		end
 		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
+		self._subs[node] = true -- re-attach: the gate starts hearing emits only now
 		return node
 	end
 

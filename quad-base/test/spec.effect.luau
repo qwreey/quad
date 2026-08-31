@@ -1,7 +1,7 @@
 --[[
 	Effect 계약 — `.claude/base/effect-plan.md` "확정 구조" / "의사코드 — 생성자" / `_bindDestroying` /
 	`_unbindDestroying` / `_consumeCleanup` / `rawRerun`+`Rerun` / "`EffectHandle:Subscribe()`" /
-	"`Effect(fn, ...deps)`". `H-70`/`H-107`/`H-144`/`H-147`/`H-150`/`H-151`/`H-159`/`H-160`.
+	"`Effect(fn, ...deps)`". `H-70`/`H-107`/`H-144`/`H-147`/`H-150`/`H-151`/`H-159`/`H-160`/`H-182`/`H-184`.
 ]]
 
 local Quad = require("../src")
@@ -274,6 +274,66 @@ do
 	calls = 0
 	s:Set(9)
 	assert(calls == 1, "strongly subscribed Effect survives with no references")
+	print("PASS")
+end
+
+print()
+print("=== 10. H-182 — Destroy 파동 안 cleanup 소진 뒤의 dep 변경은 홀드(_dying); H-184 — 거부된 bind는 아무것도 커밋 안 함 ===")
+do
+	-- H-182 재현(리뷰 실측 모양): parent의 Destroying(A cleanup)이 먼저, child의
+	-- Destroying(B cleanup)이 그 파동 후반에 dep을 Set — gcconn은 파동 끝에 끊기므로
+	-- canExecute만으론 A가 죽는 중임을 못 본다.
+	local count = Source(0)
+	local parent = Instance.new("Frame")
+	local child = Instance.new("Frame")
+	child.Parent = parent
+	local runsA = 0
+	local cleansA = 0
+	local A: any = Effect(function()
+		runsA += 1
+		return function()
+			cleansA += 1
+		end
+	end, count)
+	quad.bindLifetime(parent, A)
+	local B = Effect(function()
+		return function()
+			count:Set(-1) -- fires A's internal observer mid-wave, after A's Destroying ran
+		end
+	end)
+	quad.bindLifetime(child, B)
+	assert(runsA == 1 and cleansA == 0, "setup: one install run")
+	parent:Destroy()
+	assert(cleansA == 1, "A's cleanup ran exactly once in the wave")
+	assert(runsA == 1, "the mid-wave dep change did NOT re-run fn on the dying leaf (_dying holds)")
+	assert(A._cleanup == nil, "no cleanup was stored that nothing would consume")
+	assert(A._rerunRequired == true, "the change was held, not dropped")
+	-- 재무장: 재바인드가 _dying을 내리고 홀드를 1회 재생
+	local fresh = Instance.new("Frame")
+	quad.bindLifetime(fresh, A)
+	assert(runsA == 2, "rebinding replays the held change once")
+	assert(A._dying == false, "rebind re-armed the handle")
+	fresh:Destroy()
+	-- Subscribe 경로도 재무장한다
+	assert(A._dying == true, "its own Destroying raised the flag again")
+	A:Subscribe()
+	assert(A._dying == false and runsA == 3, "Subscribe re-arms and replays the hold")
+	A:Unsubscribe()
+	-- H-184: fn 안의 bindLifetime은 커밋 전에 거부된다 — 반쯤 묶인 핸들이 없다
+	local inst2 = Instance.new("Frame")
+	local bindErr: any = nil
+	local C: any = Effect(function(self)
+		local ok, err = pcall(function()
+			quad.bindLifetime(inst2, self)
+		end)
+		if not ok then
+			bindErr = tostring(err)
+		end
+	end)
+	assert(bindErr ~= nil and string.find(bindErr, "inside its own fn or cleanup", 1, true) ~= nil, "bind inside fn refused: " .. tostring(bindErr))
+	assert(quad.canBound(C), "nothing was committed — not half-bound")
+	quad.bindLifetime(inst2, C)
+	assert(quad.canExecute(C), "binds cleanly afterwards")
 	print("PASS")
 end
 

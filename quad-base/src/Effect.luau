@@ -67,8 +67,8 @@ local function createImpl(module: any)
 			self._pending = true -- re-entered while running → deferred re-run
 			return
 		end
-		if self._cleanupRunning or (not force and not module.canExecute(self)) then
-			self._rerunRequired = true -- `H-159`/`H-160`: unexecutable (cleanup running / unbound / dead)
+		if self._cleanupRunning or self._dying or (not force and not module.canExecute(self)) then
+			self._rerunRequired = true -- `H-159`/`H-160`/`H-182`: unexecutable (cleanup running / dying / unbound / dead)
 			return --   → HOLD, replayed once on the next bind/subscribe
 		end
 		self._running = true
@@ -76,8 +76,9 @@ local function createImpl(module: any)
 			self._pending = false
 			self:_consumeCleanup() -- sets `_rerunRequired = true`
 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
-			-- TODO(H-185): `EffectFn` is typed `-> ...(() -> ())` (H-95 pack) but only the first
-			--   return is kept; extra cleanups are silently dropped.
+			-- `H-185` (user, 2026-08-31): the cleanup is ONE function — wrap several
+			-- teardowns in one closure (`function() a() b() end`); extra returns are
+			-- deliberately not collected (a list would widen the re-entry surface).
 			self._cleanup = self.fn(self)
 		until not self._pending
 		self._running = false
@@ -91,16 +92,28 @@ local function createImpl(module: any)
 	end
 
 	-- ── hooks called by `bindLifetime` / `unbindLifetime` ─────────────
-	function Impl._bindDestroying(self: any, inst: any)
+
+	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding, so a refusal
+	-- cannot leave a half-bound handle (bound, `canExecute` true, no Destroying
+	-- connection). Level 3: past this method and `bindLifetime` to the user's call.
+	function Impl._assertBindable(self: any)
 		if isRunning(self) then
-			error("Effect: cannot bind an Effect from inside its own fn or cleanup", 2) -- `H-147` (A)
+			error("Effect: cannot bind an Effect from inside its own fn or cleanup", 3) -- `H-147` (A)
 		end
+	end
+
+	function Impl._bindDestroying(self: any, inst: any)
+		-- `H-147`'s guard moved to `_assertBindable` (`H-184`) — `bindLifetime` is the
+		-- only caller and has already asked it before committing the binding.
 		self:_unbindDestroying() -- rebind (portal remount): drop the old connection first — idempotent
+		self._dying = false -- `H-182`: rebinding a survivor of a Destroy wave re-arms it
 		-- (1) leaf dies → cleanup exactly once. The one hook point (`LP-2`).
-		-- TODO(H-182): after this callback, `canExecute` stays true for the rest of the Destroy
-		--   wave (gcconn is cut last), so a dep change later in the wave re-runs fn on the
-		--   dying leaf and stores a cleanup nothing consumes.
 		self._destroyConn = module.onDestroying(inst, function() -- injected op, read at call time
+			-- `H-182`: `canExecute` stays true for the rest of the Destroy wave (gcconn
+			-- is cut last) — the flag closes that window so a dep change later in the
+			-- wave HOLDS instead of re-running fn on the dying leaf. NOT `_destroyed`
+			-- (Slot's word): a Slot never rebinds, this handle may — the bind above re-arms.
+			self._dying = true
 			self:_unbindDestroying()
 			self:_consumeCleanup()
 		end)
@@ -146,6 +159,7 @@ local function createImpl(module: any)
 			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
 		end
 		self.Subscribed = true
+		self._dying = false -- `H-182`: every path that re-arms executability lowers it
 		WeakSubscribed[self] = true
 		resubscribeTail(self)
 		return self
@@ -159,6 +173,7 @@ local function createImpl(module: any)
 			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
 		end
 		self.Subscribed = true
+		self._dying = false -- `H-182`
 		WeakSubscribed[self] = true
 		Subscribed[self] = true -- the strong keep is up BEFORE the tail runs
 		resubscribeTail(self)
@@ -205,6 +220,7 @@ local function createImpl(module: any)
 			_running = false,
 			_pending = false,
 			_cleanupRunning = false,
+			_dying = false, -- `H-182`: inside a Destroy wave, after our Destroying ran
 			_destroyConn = nil,
 			Subscribed = false,
 		}, Impl)

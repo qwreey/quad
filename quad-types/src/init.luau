@@ -56,8 +56,8 @@ export type Ref<T> = {
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 export type StateData<T> = { Get: (self: StateData<T>) -> T }
 
--- TODO(H-187): 아래 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 `base/`에 없는
---   이름이다 — 시그니처는 문서 그대로이나 이름은 구현이 붙였다(§4 문항).
+-- 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 구현이 붙였고
+-- `H-187` (a)로 사용자 승인(2026-08-31, "이름 그대로 사용해도 좋음").
 -- `Observer` — 값을 안 실어주는 leaf 구독(`source-state-plan.md` "`state:Observer(fn)`").
 -- `fn(targetState, self, emitFrom?)`: 3번째가 출처(`Epoch` | 집합), 설치·캐치업 발화는 `nil`.
 -- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.
@@ -80,6 +80,8 @@ export type EffectHandle = {
 	Unsubscribe: (self: EffectHandle) -> EffectHandle,
 	WeakUnsubscribe: (self: EffectHandle) -> EffectHandle,
 }
+-- ⚠️ 팩 표기는 "반환 안 해도 됨"을 위한 것(`H-95`) — 런타임이 소진하는 cleanup은
+-- **첫 반환 하나뿐**이다(`H-185` 확정: 여러 정리는 `function() a() b() end`로 묶을 것).
 export type EffectFn = (self: EffectHandle) -> ...(() -> ())
 
 -- `state:Gate(setup)`의 정책 계약(`gate-plan.md` 2번): 바깥은 생성 시 1회, 반환 클로저는 상류

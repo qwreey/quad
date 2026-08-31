@@ -293,7 +293,13 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
       즉시 돌아온 실패는 `error(err, 0)`으로 올린다(`architecture.md` "예외 안전성 계약 —
       감싸지 않는다"와 같은 결). 대기자가 다시 yield한 뒤 나는 에러는 우리 손 밖이다
       (사용자: *"후행 yield 로 나가는건 우리가 처리 어렵긴 해. 그치만 당장 돌아오는 결과
-      false 은 확인 해줄 수 있는듯"*).
+      false 은 확인 해줄 수 있는듯"*). **[2026-08-31 재확인 — 이 한계는 공개 문서화
+      대상이다**(`research/documentation-content-map.md` §4)**.** 사용자 원문: *"중간에
+      yield 되어버린 다음 다른곳에서 resume 되는건 우리가 처리해줄 수 없음. 그러나 그
+      부분은 우리의 처리 관할이 아님, 필요한 경우 루프 resume 으로 감싸거나, 안에서
+      spawn 을 하도록, 단일 resume 에서만 생긴 에러만 throw 해줄 뿐임"* — 다단
+      yield가 필요한 대기자는 사용자가 스스로 루프 resume으로 감싸거나 안에서
+      `task.spawn`류를 쓰는 게 계약이다.
     - **왜 `k(value, self)`인가(`H-107`, 사용자 확정 2026-08-26)** — `Effect`가
       `Ref`를 dep으로 걸면 발화 시 `EpochMap:Update(from)`에 넘길 `Epoch`가
       필요한데, `k(value)`뿐이면 그 통로가 없어 `Update(nil)`이 된다

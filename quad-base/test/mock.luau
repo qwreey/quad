@@ -346,11 +346,14 @@ local function installLifetime(quad: any)
 				2
 			)
 		end
+		-- [H-184] 훅 가드를 커밋 **전에** 묻는다 — 가드가 거부해도 반쯤 묶인 핸들
+		-- (묶였는데 Destroying 연결 없음)이 남지 않는다. 값이 훅을 안 가지면(평범한
+		-- 클로저 등) 물을 것이 없다. quad-roblox의 bindLifetime도 같은 순서여야 한다.
+		if type(value) == "table" and (value :: any)._assertBindable ~= nil then
+			(value :: any):_assertBindable()
+		end
 		claim(inst)
 
-		-- TODO(H-184): the binding is committed below BEFORE `_bindDestroying` runs its `isRunning`
-		--   guard; if that guard throws, the Effect stays bound with no Destroying connection
-		--   (order transcribed from lifecycle-pattern.md (1) — quad-roblox inherits it).
 		local gchold = InstData:GetWeak(inst, "gchold")
 		gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
 		-- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2). 둘 다 weak.

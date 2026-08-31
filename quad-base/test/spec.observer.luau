@@ -1,7 +1,8 @@
 --[[
 	Observer 계약 — `.claude/base/source-state-plan.md` "전파 루프 — 확정 의사코드"(`_receive`/`_catchUp`/
 	생성자 순서) / "`state:Observer(fn)`" 절(등록 즉시 1회, `fn(targetState, self, emitFrom?)`, `nil` 계약),
-	`.claude/base/lifecycle-pattern.md` "(2) 전역 경로"(네 진입점) / "(4) 실제 호출부"(`canExecute` 게이팅).
+	`.claude/base/lifecycle-pattern.md` "(2) 전역 경로"(네 진입점, `H-183` `_running`) / "(1)"(`bindLifetime`의
+	커밋 전 `_assertBindable` 문의 — `H-184`) / "(4) 실제 호출부"(`canExecute` 게이팅).
 ]]
 
 local Quad = require("../src")
@@ -204,6 +205,74 @@ do
 	mock.installLifetime(other)
 	local oo = other.Source(0):Observer(function() end)
 	assert(getmetatable(oo :: any) ~= getmetatable(late :: any), "each quad instance has its own Observer impl (H-174)")
+	print("PASS")
+end
+
+print()
+print("=== 9. H-183 — fn은 자기 생명주기를 못 바꾼다(_running 가드, H-147 대칭); H-184 — 거부돼도 반쯤 묶이지 않음 ===")
+do
+	local s = Source(1)
+	local inst = Instance.new("Frame")
+	local subErr: any, bindErr: any = nil, nil
+	local o = s:Observer(function(_, self)
+		local ok, err = pcall(function()
+			(self :: any):Subscribe()
+		end)
+		if not ok then
+			subErr = tostring(err)
+		end
+		local ok2, err2 = pcall(function()
+			quad.bindLifetime(inst, self)
+		end)
+		if not ok2 then
+			bindErr = tostring(err2)
+		end
+	end)
+	assert(subErr ~= nil and string.find(subErr, "inside its own fn", 1, true) ~= nil, "Subscribe inside the install fire errors: " .. tostring(subErr))
+	assert(bindErr ~= nil and string.find(bindErr, "inside its own fn", 1, true) ~= nil, "bindLifetime inside the install fire errors: " .. tostring(bindErr))
+	-- H-184: the refused bind committed NOTHING — the handle binds cleanly afterwards
+	assert(quad.canBound(o), "not half-bound after the refusal")
+	quad.bindLifetime(inst, o)
+	assert(quad.canExecute(o), "binds cleanly after construction")
+	-- _receive-time fn runs are guarded the same way
+	local recvErr: any = nil
+	local s3 = Source(0)
+	local o3: any
+	o3 = s3:Observer(function(_, self, from)
+		if from ~= nil then
+			local ok, err = pcall(function()
+				(self :: any):WeakSubscribe()
+			end)
+			if not ok then
+				recvErr = tostring(err)
+			end
+		end
+	end)
+	quad.bindLifetime(Instance.new("Frame"), o3)
+	s3:Set(1)
+	assert(recvErr ~= nil and string.find(recvErr, "inside its own fn", 1, true) ~= nil, "entry point inside a _receive fn errors: " .. tostring(recvErr))
+	-- fn이 error로 죽으면 _running이 선 채 남는다 — 진입점은 막히지만 발화는 계속
+	-- (오류 시 구조 깨짐은 설계상 인정 — 사용자 확정 2026-08-31)
+	local s4 = Source(0)
+	local fires = 0
+	local o4: any = s4:Observer(function(_, _, from)
+		fires += 1
+		if from ~= nil then
+			error("observer fn boom")
+		end
+	end)
+	quad.bindLifetime(Instance.new("Frame"), o4)
+	assert(not pcall(function()
+		s4:Set(1)
+	end), "the fn error propagates out of Set")
+	assert(o4._running == true, "the flag stays up after an error (dead by contract)")
+	assert(not pcall(function()
+		o4:Subscribe()
+	end), "entry points refuse while the flag is up")
+	local okAfter = pcall(function()
+		s4:Set(2)
+	end)
+	assert(not okAfter and fires == 3, "firing itself is not gated by the flag (next Set still runs fn)")
 	print("PASS")
 end
 

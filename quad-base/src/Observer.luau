@@ -58,7 +58,9 @@ local function createImpl(module: any)
 	-- ── EmitReceive ──────────────────────────────────────────────────
 	function Impl._receive(self: any, from: any)
 		if module.canExecute(self) then -- read at fire time (`H-174`)
-			self.fn(self._state, self, from) -- (receiver State, Observer itself, source)
+			self._running = true -- `H-183`: fn may not change its own lifecycle (`H-147` symmetric);
+			self.fn(self._state, self, from) --   an fn that throws leaves it set — dead by contract
+			self._running = false
 		else
 			self._rerunRequired = true -- `H-159`: change before binding is held — replayed once when bound
 		end
@@ -69,12 +71,25 @@ local function createImpl(module: any)
 	function Impl._catchUp(self: any)
 		if self._rerunRequired then
 			self._rerunRequired = false
+			self._running = true -- `H-183`
 			self.fn(self._state, self, nil)
+			self._running = false
+		end
+	end
+
+	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding — a refusal
+	-- must not leave a half-bound handle. Level 3: past this and `bindLifetime`.
+	function Impl._assertBindable(self: any)
+		if self._running then
+			error("Observer: cannot bind an Observer from inside its own fn", 3) -- `H-183`
 		end
 	end
 
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
 	function Impl.WeakSubscribe(self: any): any
+		if self._running then
+			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183` (`H-147` symmetric)
+		end
 		if not module.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
 			error(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
@@ -88,6 +103,9 @@ local function createImpl(module: any)
 	end
 
 	function Impl.WeakUnsubscribe(self: any): any
+		if self._running then
+			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+		end
 		-- A strong keep left behind would make a half-released, never-GC'd handle: fail fast.
 		if Subscribed[self] ~= nil then
 			error("Observer: subscribed strongly; use :Unsubscribe()", 2)
@@ -99,6 +117,9 @@ local function createImpl(module: any)
 	end
 
 	function Impl.Subscribe(self: any): any
+		if self._running then
+			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.
 		if not module.canBound(self) then
@@ -115,6 +136,9 @@ local function createImpl(module: any)
 	end
 
 	function Impl.Unsubscribe(self: any): any
+		if self._running then
+			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+		end
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
 			error("Observer: not subscribed strongly; use :WeakUnsubscribe()", 2)
@@ -135,12 +159,13 @@ local function createImpl(module: any)
 			fn = fn or alwaysObserve,
 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
 			_rerunRequired = true,
+			_running = false, -- `H-183`: raised around every fn run; entry points refuse while up
 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
 		ObserverBrand:register(o)
-		-- TODO(H-183): no re-entry guard — `fn` calling Subscribe/bindLifetime on `self` during
-		--   this install fire replays through `_catchUp` (Effect has `isRunning`, H-147).
+		o._running = true -- `H-183`: the install fire is an fn run like any other
 		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
+		o._running = false
 		o._rerunRequired = false -- (2) the install fire lowers the flag
 		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
 		return o --     State would land in this Observer's `_receive` and raise the flag
