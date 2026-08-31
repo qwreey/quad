@@ -269,9 +269,10 @@ local function Init(module: any)
 	-- observers stored in bk hold gatedRecompute closures that capture
 	-- ownerKey, so a strong Relate value would back-reference its own weak key
 	-- (`H-71` — the exact chains leak, one shelf over).
-	-- ⚠️ M6 note: a Slot ownerKey cannot be bindLifetime'd (not claimable) —
-	-- how a Slot anchors its own bk is an open M6 design question (round12
-	-- `H-232`); until then only claimable insts reach this path.
+	-- M6 note (`H-232` (a), user-confirmed): a Slot ownerKey cannot be
+	-- bindLifetime'd (not claimable) and its bk must outlive unmounts, so the
+	-- SLOT owns its bk strongly as `slot._bk` — getBookkeeping branches on
+	-- SlotBrand when M6 lands. Until then only claimable insts reach this path.
 	local bookkeeping = Relate()
 	-- ownerKey(weak) -> batch Blocker. Strong is fine here: a Blocker holds no
 	-- reference back to the ownerKey, so the weak key still collects.

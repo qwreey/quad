@@ -1218,7 +1218,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 ### 짜야 할 것
 
 - [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-46`] top-level
-      `quad-base/Slot.luau` — 값 타입 본체가 들어가는 파일.** 생성자, 공개
+      `quad-base/Slot.luau` — 값 타입 본체가 들어가는 파일.** 생성자(**[2026-08-31
+      `H-232` (a)]** `slot._bk`도 여기서 — Slot-owner 부기의 강한 앵커,
+      `base/slot-plan.md` 생성자 절), 공개
       CRUD 11종, `:List`/`:Single`, `raw*` 세트, `wrapElement`/`unwrapElement`,
       `attachSlot` 3형제(`materializeSlotTree`/`mountSlotTree`),
       `elementOwner`/`claimOwner`/`releaseOwner`, `reindexFrom`,

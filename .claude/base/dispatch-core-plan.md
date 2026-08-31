@@ -987,6 +987,14 @@ Dispatch에 들어오는 `inst`는 설치된 생명주기 백엔드가 claim할 
 한다(실 Instance는 `nativeClaim`, 테스트는 mock — spec들이 mock Instance로
 전환된 이유). 별해로 검토된 "retractor가 `inst`를 인자로 받기"는 Observer
 콜백의 캡처 경로가 남아 불충분했다(round12 `H-229` 절).
+**[2026-08-31 `H-232` (a) 사용자 확정] Slot owner의 앵커는 gchold가 아니라
+Slot 자신이다** — Slot은 claim 불가라 `bindLifetime`을 못 타고, `bk`는
+언마운트를 넘어 살아야 한다(재마운트 캐시 계약). 그래서 **Slot 생성자가
+`slot._bk` 사적 필드로 자기 `bk`를 강하게 소유**하고(수명 = Slot 수명),
+`getBookkeeping(ownerKey)`은 owner가 Slot이면 그 필드를 쓰고(없으면 만들어
+채움) 아니면 지금의 weak+gchold 앵커를 쓴다. `bk`뿐 아니라 **Slot을 키로
+쓰는 같은 부류 부기(배치 Blocker 등)도 같은 원칙** — 값이 Slot을 되참조하면
+Slot이 소유한다. 소스는 round12 `H-232`와 `base/slot-plan.md`의 생성자 절.
 
 **문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StoreBind`처럼 자기
 `process` 안에서 `Dispatch.process(inst,k,realv,...)`를 다시 부르는 래핑

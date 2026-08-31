@@ -920,8 +920,19 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
       -- `bk`를 eager 생성하지 않도록).
       -- **[2026-08-27, Q3] 옛 `_elemIndex`는 여기 없다** — 그 맵은
       -- `bk.indexOfElement`로 Dispatch 부기에 산다(`indexOfRaw`가 조회).
+      -- ⭐ [2026-08-31 `H-232` (a) 사용자 확정] **`_bk`도 여기서 난다** —
+      -- Slot을 ownerKey로 쓰는 Dispatch 부기(`getBookkeeping`)의 **강한
+      -- 앵커**. inst owner는 gchold 앵커(`H-229`)를 쓰지만 Slot은 claim
+      -- 불가라 `bindLifetime`을 못 타고, `bk`는 언마운트를 넘어 살아야
+      -- 한다(재마운트 캐시 계약) — 소유 주체가 Slot 자신이면 수명이 정확히
+      -- 맞다(언마운트 생존 ✓, Slot이 버려지면 같이 ✓). Dispatch의
+      -- `getBookkeeping`은 owner가 Slot이면 이 필드를 쓴다(사용자:
+      -- *"slot._bk 로써 bk 순환 문제를 해결"*). 값은 lazy — 첫
+      -- `getBookkeeping(slot)`이 채운다(`bk` 초기값 규칙은
+      -- `dispatch-core-plan.md`가 소스).
       local self = setmetatable({
           _elements = {},
+          _bk = nil,             -- [H-232] 첫 getBookkeeping(slot)이 채우는 강한 앵커
           Length = Source(0),
           Offset = Source(0),
           ...
