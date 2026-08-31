@@ -126,3 +126,14 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 `git mv` + 전 코퍼스 치환 22곳(잔존 0), round1~10의 `pre-implementation-*` 옛 이름은
 실제로 구현 전 라운드라 그대로. CLAUDE.md/project-context.md 머리말을 "M0~M2 완료,
 다음은 M3"로, todos 00을 종결로. **M2 종결** — 다음 액션은 M3 착수 규약 문항.
+
+## 같은 날 후속 5 — M3 규약 문항지 신설
+
+사용자 요청(*"m3 규약 문항지 만들어줘. M2 와 같은 방식으로 개발되어도 괜찮을것
+같아?"*)으로 `qa-request/m3-implementation-round12-brief.md` 신설 — M2 규약 준용
+초안 + §0 문항 셋(Q1 규약 재사용(+Handler 체크리스트 게이트 추가) / Q2 단위 넷:
+코어 → Length/Offset 부기 → None·Nil 핸들러 → Leaf·가드·종합 / Q3 M2 하자 혼입
+규칙 — 경미는 M3 라운드에 ①, 결정 규모면 m2-implementation-round13 신설). 메인
+의견: M2 방식 재사용 권고 — 실측 근거(③ 0회, 배치 회신 3번에 47건, 관여 촘촘).
+M3 특이점 셋만 얹음: Handler 작성 체크리스트 필독 게이트, 자유 이름 → module.xxx
+해석 규칙(H-174), spec-로컬 테스트 핸들러(코드 배치). §0 회신 대기.
