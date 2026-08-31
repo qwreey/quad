@@ -87,12 +87,20 @@ local function describeHandler(h: Handler): string
 end
 
 local function Init(module: any)
-	-- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(strong)}}
-	-- ⚠️ The list values hold retractor closures that capture `inst`, so a
-	-- chain entry does NOT go away by dropping outside references to `inst`
-	-- (no ephemerons in Luau — `relate-plan.md` `H-71`); whoever abandons a
-	-- delegated (inst, k) must retract it explicitly. The base-doc contract
-	-- wording around this is pending `H-218` (round12 §4).
+	-- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(weak value)}}
+	-- `H-229`: the lists hold retractor closures that (transitively) capture
+	-- `inst`, so holding them strongly here would make the bucket value
+	-- back-reference its own weak key — the `H-71` "leaks 100%" pattern (no
+	-- ephemerons in Luau), and Destroy calls no retract by contract. So the
+	-- strong anchor is NOT chains but the instance's own gchold:
+	-- `module.bindLifetime(inst, list)` on list creation ties the list's
+	-- lifetime to the bind lifetime — Destroy collapses the gchold island and
+	-- the whole chain graph (lists, retractors, observers, the inst userdata)
+	-- becomes collectable, with retractors never called (contract kept; this
+	-- is memory release, not teardown). Same medicine as the two-Relate cycle
+	-- fix in `slot-plan.md` (everything weak + one anchor via bindLifetime).
+	-- Consequence: any inst entering Dispatch must be claimable by the
+	-- installed lifetime backend (nativeClaim'd real Instance, or the mock).
 	local chains = Relate()
 	local handlers: { Handler } = {} -- kept sorted, higher priority first
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
@@ -132,7 +140,7 @@ local function Init(module: any)
 		-- From index (inclusive) to the tail, retracted tail-first (deepest
 		-- index first — LIFO: the shallower slot created the deeper one).
 		-- The argument is always nil here: plain retract with no follow-up.
-		local list: { Slot }? = chains:GetStrong(inst, k) :: any
+		local list: { Slot }? = chains:GetWeak(inst, k) :: any
 		if list == nil then
 			return
 		end
@@ -152,10 +160,15 @@ local function Init(module: any)
 		-- 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 없으면
 		-- 재귀 호출이 자기만의 새 테이블을 만들어 저장한 뒤 바깥이 덮어써서
 		-- 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
-		local list: { Slot } = chains:GetStrong(inst, k) :: any
+		local list: { Slot } = chains:GetWeak(inst, k) :: any
 		if list == nil then
 			list = {}
-			chains:SetStrong(inst, k, list)
+			-- Anchor first (`H-229`): the list lives exactly as long as the
+			-- inst's bind lifetime (gchold), chains only holds it weakly.
+			-- bindLifetime treats a value matching no known type as a pure GC
+			-- relation (user-confirmed contract, `lifecycle-pattern.md`).
+			module.bindLifetime(inst, list)
+			chains:SetWeak(inst, k, list)
 		end
 
 		local slot = list[index]

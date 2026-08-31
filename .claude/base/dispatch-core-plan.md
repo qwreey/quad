@@ -964,6 +964,26 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 핸들러를 먼저 비교하는 "하강 diff"** 모델 — 뒤집힌 옛 모델의 원문·재현
 사례·역전 근거는 `archive/dispatch-hintvalue-model-reversed.md`.
 
+**⭐ [2026-08-31 신설, `H-229` 사용자 확정] 체인 리스트의 GC 앵커는 chains가
+아니라 inst의 gchold다 — Destroy가 체인 그래프 전체를 회수 가능하게 만든다.**
+리스트가 chains에 강하게 걸리면 retractor 클로저가 (Observer 콜백을 거쳐)
+`inst`를 캡처하는 순간 버킷 값이 자기 weak 키를 되참조해 `H-71`의 "100%
+새는" 패턴이 되고, Destroy는 계약상 retract를 안 부르므로 **반응형 바인딩이
+있던 모든 파괴 인스턴스가 영구 잔존**했다(경위와 실측 논증은
+`qa-request/m3-implementation-round12.md`의 `H-229` 절 — 사용자가 Destroy
+경로를 되물어 드러났다). 해법은 사용자 제안 그대로 — *"bindLifetime이 할 일
+같은데, 아무 타입과도 일치하지 않으면 단순히 GC 릴레이션만 해주는 건
+어때?"*: `Dispatch.process`가 (inst,k) 리스트를 처음 만들 때
+`bindLifetime(inst, list)`로 gchold에 앵커하고 chains엔 `SetWeak`으로만
+건다. Destroy → gchold 섬 붕괴 → 리스트·retractor·Observer·`inst` userdata
+전부 수거(retractor는 **호출되지 않는다** — 파괴 시 무-retract 계약 유지,
+이건 철거가 아니라 메모리 해제다). `slot-plan.md` 13차 세션의 두-`Relate`
+순환 해법(전부 weak + 앵커는 `bindLifetime` 하나)과 같은 약. **따름 계약**:
+Dispatch에 들어오는 `inst`는 설치된 생명주기 백엔드가 claim할 수 있어야
+한다(실 Instance는 `nativeClaim`, 테스트는 mock — spec들이 mock Instance로
+전환된 이유). 별해로 검토된 "retractor가 `inst`를 인자로 받기"는 Observer
+콜백의 캡처 경로가 남아 불충분했다(round12 `H-229` 절).
+
 **문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StoreBind`처럼 자기
 `process` 안에서 `Dispatch.process(inst,k,realv,...)`를 다시 부르는 래핑
 핸들러가 있으면, 같은 `(inst,k)`에 대해 "지금 누가 담당 중인가"를 슬롯
@@ -979,7 +999,9 @@ Observer 구독)와, A가 재귀로 위임한 핸들러 B의 생명주기가 **�
 
 ```lua
 -- Dispatch/init.luau
-local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(strong)}}
+-- [2026-08-31 `H-229` (사용자 확정)] 리스트는 chains엔 **weak 값**으로만 걸리고,
+-- 강한 앵커는 inst의 gchold 하나다(생성 시 bindLifetime(inst, list)) — 아래 확정 문단.
+local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(weak value)}}
 local NOOP = Void          -- [2026-08-28 `H-162`] 새 클로저가 아니라 export된 단일 no-op
 
 function Dispatch.process(inst, k, v, index)
@@ -988,10 +1010,13 @@ function Dispatch.process(inst, k, v, index)
     -- 정상 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 안 들어가
     -- 있으면 재귀 호출이 `or {}`로 자기만의 새 테이블을 만들어 저장해버린 뒤 바깥이
     -- 그걸 덮어써서 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
-    local list = chains:GetStrong(inst, k)
+    local list = chains:GetWeak(inst, k)
     if not list then
         list = {}
-        chains:SetStrong(inst, k, list)
+        -- [`H-229`] 앵커 먼저 — 리스트 수명 = inst의 바인드 수명(gchold). bindLifetime은
+        -- 아는 타입이 아닌 값이면 순수 GC 릴레이션만 한다(`lifecycle-pattern.md`의 확장 계약)
+        bindLifetime(inst, list)
+        chains:SetWeak(inst, k, list)
     end
 
     local slot = list[index]
@@ -1040,7 +1065,7 @@ end
 function Dispatch.retractFrom(inst, k, index)
     -- index부터(포함) 끝까지, 꼬리(가장 깊은 인덱스)부터 역순으로 정리.
     -- 힌트는 항상 nil — "뒤따르는 process가 없는 단순 철거"가 이 함수의 유일한 용도.
-    local list = chains:GetStrong(inst, k)
+    local list = chains:GetWeak(inst, k)
     if not list then return end
     for i = #list, index, -1 do
         local slot = list[i]
@@ -1209,9 +1234,10 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   될것 같아"* — 정적 값이면 retractor가 no-op이라 비용 ~0이고, 호출 뒤엔
   리스트가 비워져 버킷 값이 `inst`를 더 안 잡으므로 weak 항목이 정상
   회수된다). `ui-shorthand-plan.md` `UI-11`의 "요구하지 않는다"는 이
-  결정으로 **부분 역전**됐다 — 그 문서의 같은 절 참고. ⚠️ 이 의무화는
-  **위임 경로**의 누수만 닫는다 — retract 없이 `Destroy`로만 죽는 일반
-  경로의 chains 잔존은 별개 문제로 열려 있다(round12 `H-229`).)
+  결정으로 **부분 역전**됐다 — 그 문서의 같은 절 참고. 이 의무화는
+  **위임 경로**의 누수를 닫고, retract 없이 `Destroy`로만 죽는 일반 경로는
+  같은 날 `H-229`(리스트의 gchold 앵커 — 위 "Dispatch 체인" 절의 확정 문단)가
+  닫았다.)
 - **`handler.process(inst,k,v,index)`를 `Dispatch.process`를 거치지 않고
   직접 호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할
   것.** 이유: 핸들러 비교·`chains` 저장 bookkeeping이 `Dispatch.process`

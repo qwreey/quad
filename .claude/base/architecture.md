@@ -202,7 +202,7 @@ build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup
 따라감).
 실제 구현: 루트 `pesde.toml`(`private = true`,
 `workspace_members = ["quad-base", "quad-roblox", "quad-types",
-"type-version-check"]`) +
+"type-version-check", "quad-error"]` — 다섯째 멤버는 **[2026-08-31 `H-231`]**) +
 `quad-base/pesde.toml`/`quad-roblox/pesde.toml`/`quad-types/pesde.toml`
 (각각 `[target] environment = "roblox"`) + `type-version-check/pesde.toml`
 (`[target] environment = "luau"`, 아래 참고), 툴체인은 `mise.toml`로 핀
@@ -265,6 +265,9 @@ quad/
 ├── type-version-check/           # quad에 종속되지 않은 범용 버전 패턴 매칭(`base/quad-types-plan.md` "`type-version-check`" 절) — 사용자가 나중에 독립 저장소로 분리 예정(HUMAN_TODO 9번)
 │   ├── pesde.toml                 # [target] environment = "luau"
 │   └── src/init.luau              # matchesPattern(런타임) + export type function CheckVersion
+├── quad-error/                   # [2026-08-31 `H-231`, 사용자 설계] 레벨 태그 에러 유틸 — setFuncLevel(fn, layer) 맵 + debug.info 스택 워크(최상단 하강)로 errorAt/errorBefore가 프레임 수 손 세기 없이 원하는 계층에 blame. type-version-check와 같은 지위(quad 비종속 범용, [target] environment = "luau"), quad-base가 workspace 의존(target="luau"). 태그 체계·기존 error 자리 이관은 round12 `H-231` §4가 소스
+│   ├── pesde.toml                 # [target] environment = "luau"
+│   └── src/init.luau              # getToplevel/setFuncLevel/getFuncLevel/getFirstMatch/errorAt/errorBefore
 ├── quad-base/
 │   ├── pesde.toml
 │   └── src/

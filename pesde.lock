@@ -8,6 +8,9 @@ target = "roblox"
 [workspace."qwreey/quad_base"]
 roblox = "quad-base"
 
+[workspace."qwreey/quad_error"]
+luau = "quad-error"
+
 [workspace."qwreey/quad_roblox"]
 roblox = "quad-roblox"
 

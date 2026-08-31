@@ -1,0 +1,8 @@
+name = "qwreey/quad_error"
+version = "0.0.0"
+description = "레벨 태그 기반 에러 유틸 — 함수에 레이어 번호를 태그(setFuncLevel)해두면 errorAt/errorBefore가 debug.info 스택 워크로 그 레이어(최상단 일치)를 찾아 정확한 error level을 계산한다. 프레임 수 손 세기 없이 여러 래퍼를 관통해 원하는 지점에 blame. quad에 종속되지 않은 범용 유틸(type-version-check와 같은 지위) — quad 전용 타입/이름을 섞지 말 것."
+includes = ["src/*"]
+
+[target]
+environment = "luau"
+lib = "src/init.luau"

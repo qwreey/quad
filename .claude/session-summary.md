@@ -2083,4 +2083,11 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   계약 표 제3 행) 반영. 사용자 되물음 검증 결과 **Destroy 경로 전체가 같은 누수
   패턴**(`H-229` 🔴, chains가 두 번째 강한 루트 — gchold 앵커 통일안 권고)과
   상수 배치 제안(`H-230` — HANDLER_PRIORITY_*는 quad-types 승격 권고, level
-  Enum화는 비권고)이 §4 대기.
+  Enum화는 비권고)이 §4 대기. **회신 4**로 둘 다 진전 — `H-229` 확정·반영:
+  `bindLifetime` 확장 계약(모르는 타입 = 순수 GC 릴레이션, `lifecycle-pattern.md`
+  (0.5)) + Dispatch 체인 리스트를 `SetWeak`+`bindLifetime(inst, list)` 앵커로
+  (spec 전부 mock Instance 전환, Destroy 후 통째 회수 실측 13번). `H-231`은
+  사용자가 `error-util-ignoreme.luau` 실험으로 설계를 직접 확정(최상단 하강
+  워커, `setFuncLevel`/`errorAt`/`errorBefore`) → **`quad-error` 워크스페이스
+  패키지**(다섯째 멤버)로 구현, `spec.errorutil` 5절 통과. 잔여: 태그 체계
+  (레이어 하나 제안)·이관 시점·`H-230` — §4 대기.

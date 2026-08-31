@@ -12,8 +12,11 @@
 
 local Quad = require("../src")
 local QuadTypes = require("../roblox_packages/quad_types")
+local mock = require("./mock")
 
 local q = Quad.New()
+mock.installLifetime(q) -- `H-229`: 체인 앵커가 bindLifetime을 부른다
+local Instance = mock.Instance
 local log: { string } = {}
 q.Dispatch.addHandler({
 	isHandlable = function(_inst: any, _k: any, _v: any): boolean
@@ -31,7 +34,7 @@ do
 	table.clear(log)
 	local flattened: { [any]: any } =
 		{ "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10", Size = "s", Text = "t", Name = "n" }
-	q.Dispatch.drive({}, flattened)
+	q.Dispatch.drive(Instance.new("Frame"), flattened)
 	assert(#log == 13, `13 entries processed, got {#log}`)
 	for i = 1, 10 do
 		assert(log[i] == `{i}=a{i}@1`, `array slot {i} in index order before any hash key, got "{log[i]}"`)
@@ -57,7 +60,7 @@ print()
 print("=== 3. 빈 props — no-op (아무 핸들러도 안 불림) ===")
 do
 	table.clear(log)
-	q.Dispatch.drive({}, {})
+	q.Dispatch.drive(Instance.new("Frame"), {})
 	assert(#log == 0, "empty flattened processes nothing")
 	print("PASS")
 end

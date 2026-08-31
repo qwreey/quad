@@ -10,3 +10,4 @@ lib = "src/init.luau"
 
 [dependencies]
 quad_types = { workspace = "qwreey/quad_types", version = "^" }
+quad_error = { workspace = "qwreey/quad_error", version = "^", target = "luau" }

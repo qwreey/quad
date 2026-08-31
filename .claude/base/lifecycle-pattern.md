@@ -298,6 +298,19 @@ InstData:SetWeak(inst, "gcconn", gcconn)
   생기므로(예: `dispatch-core-plan.md`의 `StoreBind.process`), 이번
   변경은 "아무것도 안 걸린 Instance"까지 같은 규칙으로 통일한 것뿐.
 
+#### (0.5) `bindLifetime`의 확장 계약 — 모르는 타입이면 순수 GC 릴레이션 (2026-08-31, `H-229` 사용자 확정)
+
+**`bindLifetime(inst, value)`는 `value`가 어떤 알려진 타입과도 일치하지
+않으면(평범한 테이블/클로저) 단순히 GC 릴레이션만 한다** — gchold 강참조 +
+gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestroying`)
+없음. 사용자 원문: *"bindLifetime이 할 일 같은데, 아무 타입과도 일치하지
+않으면 단순히 GC 릴레이션만 해주는 건 어때?"* — 새 동작이 아니라 기존
+구현(mock·(1)의 스케치)이 이미 그렇게 돌던 것을 **공개 계약으로 승격**한
+것이다. 첫 소비자는 `Dispatch`의 체인 리스트 앵커(`H-229` —
+`dispatch-core-plan.md`의 "Dispatch 체인" 절): "이 값의 수명을 inst의 바인드
+수명에 묶는다"는 원래 일과 같은 일이라 별도 앵커 표면을 만들지 않는다
+(표면이 커지는 대안을 사용자가 명시적으로 피함).
+
 #### (1) `bindLifetime` / `unbindLifetime` / `canBound` / `canExecute`
 
 ```lua
