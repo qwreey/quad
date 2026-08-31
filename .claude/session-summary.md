@@ -2100,4 +2100,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   anchor·element)/`setOffsetSource`(즉시 계산) + drive ⓪⓪' 배선,
   `spec.lengthoffset` 8절 실측. 발견: `H-232`(② Slot owner의 bk 앵커 — M6 전
   결정, 권고 (a) slot 사적 필드)/`H-233`(① None 값 선행 생성 — 핸들러는 단위
-  3). bk에도 `H-229` 패턴 적용(H-71 동형).
+  3). bk에도 `H-229` 패턴 적용(H-71 동형). **회신 7(툴체인)**: `H-234` — quad-base·quad-types pesde target
+  `roblox`→`luau` 전환(엔진 무관 코어·타입이라 처음부터 luau가 맞았음, luau
+  의존이 rojo 트리에서 빠지던 문제의 근본 해법) + require 전환 + rojo 트리
+  `luau_packages` 매핑 + `relink.sh` 꼬리 sourcemap 재생성. 단위 2 감사
+  1라운드 4건(`H-235` — H-219 조기 해소 미반영 등 문서 drift) 반영.

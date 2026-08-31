@@ -258,17 +258,34 @@ export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Un
 **[2026-08-28]** `luau-analyze`도 같이 돌리므로 이 실패는 조용하지 않다. Luau의
 `.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
 그때 다시 볼 것. **[2026-08-31, `H-210`] 셋째 함정 — 루트
-`default.project.json`의 트리에 각 패키지의 `roblox_packages`가 같이
+`default.project.json`의 트리에 각 패키지의 **패키지 링크 디렉토리**가 같이
 올라가야 한다**(사용자 발견: rojo 통합 luau-lsp가 *"Unknown require:
 game/ReplicatedStorage/roblox_packages/quad_types"*). 코드의
-`require("../roblox_packages/…")`가 인스턴스 공간에서도 같은 상대 위치로
+`require("../…_packages/…")`가 인스턴스 공간에서도 같은 상대 위치로
 풀리려면, pesde 가이드(`https://docs.pesde.dev/guides/roblox/`)대로 패키지마다
-`src`와 `roblox_packages`를 **형제로** 매핑해야 한다 — 이 레포는 멀티 패키지라
-`ReplicatedStorage.quad-base`(Folder) 아래 `src` + `roblox_packages`,
-`quad-roblox`도 같은 모양(한 `ReplicatedStorage.roblox_packages`를 공유하면
+`src`와 링크 디렉토리를 **형제로** 매핑해야 한다 — 이 레포는 멀티 패키지라
+`ReplicatedStorage.quad-base`(Folder) 아래 `src` + 링크 디렉토리,
+`quad-roblox`도 같은 모양(하나를 공유하면
 quad-roblox가 자기 의존성을 갖는 순간 충돌 — 사용자 지적). 검증은
 `rojo sourcemap` + `luau-lsp analyze --sourcemap`으로 unknown-require 0 실측.
 빈 `src`(quad-roblox, M5 전)는 rojo가 조용히 생략하므로 무해.
+**[2026-08-31 같은 날, `H-234` 사용자 결정] 그 링크 디렉토리는 이제
+`luau_packages`다 — quad-base·quad-types의 pesde target을 `roblox` →
+`luau`로 전환했다.** 사용자 발견·논거: `luau_packages`(quad-error 등 luau
+의존이 실제로 설치되는 곳)가 rojo 트리·sourcemap에 안 들어가 IDE 타입에러와
+rojo 빌드 오류가 났고, *"처음부터 quad-base 자체가 roblox package는 아니라서
+luau로 바꿔야 하지 않아? (어떤 백엔드이더라도 무관히 돌아가니까)"* —
+`architecture.md`의 패키지 경계 원칙(quad-base는 엔진 무관) 그대로다.
+quad-base가 luau target이 되려면 자기 의존 `quad-types`도 luau여야 해서
+같이 전환(둘 다 `build_files` 제거, 의존 선언의 `target = "luau"` 오버라이드는
+동일 target이 되어 불필요해짐 — quad-roblox의 `quad_types` 의존에만 남는다).
+결과: 모든 내부 링크가 `luau_packages/` 하나로 통일되고(코드 require 전부
+`roblox_packages/quad_types` → `luau_packages/quad_types`),
+`default.project.json`도 그 디렉토리를 매핑한다. `rojo build`·전체 테스트
+클린 실측. **같은 결정의 짝**: `relink.sh` 꼬리에 `rojo sourcemap
+default.project.json --output sourcemap.json` 재생성 추가(사용자: *"rojo
+sourcemap … --output 도 relink에서 실행되도록 … 안 그럼 ide에서
+타입에러남"*) — rojo가 없으면 조용히 건너뛴다.
 
 **[2026-08-19 같은 날 넷째 후속 세션] 의존 대상의 `target`에 따라 링크
 디렉토리 이름이 달라진다** — `quad-types`(target `roblox`)가

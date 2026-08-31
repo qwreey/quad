@@ -9,4 +9,4 @@ build_files = ["src"]
 lib = "src/init.luau"
 
 [dependencies]
-quad_types = { workspace = "qwreey/quad_types", version = "^" }
+quad_types = { workspace = "qwreey/quad_types", version = "^", target = "luau" }

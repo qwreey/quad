@@ -48,7 +48,7 @@ local EpochMap = require("./EpochMap")
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
 local Void = require("./Void")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 

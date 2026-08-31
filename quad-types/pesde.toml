@@ -4,10 +4,9 @@ description = "quad — Quad 공개 타입 계약(구현 없음) + 버전 호환
 includes = ["src/*"]
 
 [target]
-environment = "roblox"
-build_files = ["src"]
+environment = "luau"
 lib = "src/init.luau"
 
 [dependencies]
-type_version_check = { workspace = "qwreey/type_version_check", version = "^", target = "luau" }
-quad_error = { workspace = "qwreey/quad_error", version = "^", target = "luau" }
+type_version_check = { workspace = "qwreey/type_version_check", version = "^" }
+quad_error = { workspace = "qwreey/quad_error", version = "^" }

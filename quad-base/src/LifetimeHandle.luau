@@ -27,7 +27,7 @@
 ]]
 
 local Err = require("./ErrorNamespace")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function notInstalled(name: string): (...any) -> ...any

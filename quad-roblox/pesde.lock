@@ -9,20 +9,20 @@ target = "roblox"
 ref_ty = "workspace"
 path = "quad-error"
 
-[graph."qwreey/quad_types@0.0.0 roblox"]
-direct = ["quad_types", { workspace = "qwreey/quad_types", version = "^" }, "standard"]
+[graph."qwreey/quad_types@0.0.0 luau"]
+direct = ["quad_types", { workspace = "qwreey/quad_types", version = "^", target = "luau" }, "standard"]
 
-[graph."qwreey/quad_types@0.0.0 roblox".dependencies]
+[graph."qwreey/quad_types@0.0.0 luau".dependencies]
 quad_error = ["qwreey/quad_error@0.0.0 luau", "standard"]
 type_version_check = ["qwreey/type_version_check@0.0.0 luau", "standard"]
 
-[graph."qwreey/quad_types@0.0.0 roblox".pkg_ref]
+[graph."qwreey/quad_types@0.0.0 luau".pkg_ref]
 ref_ty = "workspace"
 path = "quad-types"
 
-[graph."qwreey/quad_types@0.0.0 roblox".pkg_ref.dependencies]
-quad_error = [{ workspace = "qwreey/quad_error", version = "^", target = "luau" }, "standard"]
-type_version_check = [{ workspace = "qwreey/type_version_check", version = "^", target = "luau" }, "standard"]
+[graph."qwreey/quad_types@0.0.0 luau".pkg_ref.dependencies]
+quad_error = [{ workspace = "qwreey/quad_error", version = "^" }, "standard"]
+type_version_check = [{ workspace = "qwreey/type_version_check", version = "^" }, "standard"]
 
 [graph."qwreey/type_version_check@0.0.0 luau".pkg_ref]
 ref_ty = "workspace"

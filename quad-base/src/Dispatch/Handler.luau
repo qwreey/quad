@@ -23,7 +23,7 @@
 	re-exported here.
 ]]
 
-local QuadTypes = require("../../roblox_packages/quad_types")
+local QuadTypes = require("../../luau_packages/quad_types")
 
 export type Handler = QuadTypes.Handler
 

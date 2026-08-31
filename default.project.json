@@ -9,8 +9,8 @@
 				"src": {
 					"$path": "quad-base/src"
 				},
-				"roblox_packages": {
-					"$path": "quad-base/roblox_packages"
+				"luau_packages": {
+					"$path": "quad-base/luau_packages"
 				}
 			},
 			"quad-roblox": {
@@ -18,8 +18,8 @@
 				"src": {
 					"$path": "quad-roblox/src"
 				},
-				"roblox_packages": {
-					"$path": "quad-roblox/roblox_packages"
+				"luau_packages": {
+					"$path": "quad-roblox/luau_packages"
 				}
 			}
 		}

@@ -204,7 +204,11 @@ build`까지 실제로 돌려 링크 결과를 확인 완료(`base/project-setup
 `workspace_members = ["quad-base", "quad-roblox", "quad-types",
 "type-version-check", "quad-error"]` — 다섯째 멤버는 **[2026-08-31 `H-231`]**) +
 `quad-base/pesde.toml`/`quad-roblox/pesde.toml`/`quad-types/pesde.toml`
-(각각 `[target] environment = "roblox"`) + `type-version-check/pesde.toml`
+(**[2026-08-31 `H-234` 사용자 결정]** quad-base·quad-types는 `[target]
+environment = "luau"`다 — 엔진 무관 코어·타입 계약이라 처음부터 roblox일
+이유가 없었고, luau 의존(`quad-error` 등)이 `luau_packages`로 들어와 rojo
+트리에서 빠지는 문제의 근본 해법. `roblox`로 남는 건 `quad-roblox`뿐,
+경위는 `base/project-setup-plan.md`의 `H-234` 문단) + `type-version-check/pesde.toml`
 (`[target] environment = "luau"`, 아래 참고), 툴체인은 `mise.toml`로 핀
 (`rokit.toml`에서 전환, 2026-08-19 사용자 결정 — 더 범용적인 도구라는
 판단, `base/project-setup-plan.md`의 "툴체인" 절 참고). **[2026-08-19 같은
@@ -353,6 +357,10 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   구조 + **메시지가 핸들러 특정 정보를 싣는 것**이 계약의 나머지 절반이다.
 
   ```lua
+  -- 개념 예시 — level 이분(도착지)을 보여주는 것. [2026-08-31 `H-231`] 실제
+  -- 구현에서 첫 줄류(사용자 입력 검증)는 리터럴 2가 아니라
+  -- Err.errorBeforeNearest(msg, SURFACE)다(아래 워커 문단). 둘째 줄(내부
+  -- 불변식, level 1)은 지금도 리터럴 그대로가 맞다.
   error("Effect: dep #3 is not a State/Source/Ref", 2)
   error("Dispatch.getOffsetAt: lengthList[3] is nil — bookkeeping is broken", 1)
   ```

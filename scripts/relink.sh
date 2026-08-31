@@ -89,3 +89,10 @@ if [ -n "$leftover" ]; then
 	echo "$leftover" >&2
 	exit 1
 fi
+
+# 4) IDE 타입 링킹용 sourcemap 재생성(사용자 결정, 2026-08-31 — round12 `H-234`).
+#    luau-lsp가 rojo 트리를 알아야 크로스 패키지 require의 타입이 IDE에서 안
+#    깨진다. rojo가 없으면(비-mise 환경) 조용히 건너뛴다 — 테스트 자체는 무관.
+if command -v rojo >/dev/null 2>&1; then
+	rojo sourcemap default.project.json --output sourcemap.json
+fi

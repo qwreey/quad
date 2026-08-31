@@ -191,8 +191,12 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
     "drive가 잡아 재상승"은 전 자리 `pcall` 금지 계약(`architecture.md`의
     "예외 안전성 계약" 절)과 정면 충돌해 기각 — 메시지가 key·typeof·
     브랜드·provider 안내로 자기설명적이라 위치 접두 없이도 진단이 된다.
-    **M5에서 `New` 파이프라인이 완성돼 drive까지의 프레임 수가 고정되면
-    재평가**(round12 `H-219`).
+    ~~**M5에서 `New` 파이프라인이 완성돼 drive까지의 프레임 수가 고정되면
+    재평가**~~(round12 `H-219`) — **[2026-08-31 같은 날 조기 해소, `H-231`]**
+    quad-error 스택 워커 도입으로 이 한계 자체가 사라졌다: 매치 실패는
+    `errorBefore(msg, SURFACE)`(최상단 표면 일치)로 **어떤 프레임 수의
+    래퍼를 지나든 사용자 진입점을 가리킨다.** 위 "한계 명시 + 현행 유지"
+    서술은 워커 도입 전 반나절 동안의 상태다.
   **이걸로 `module-lifecycle-plan.md`의 "열린 질문이었던 것 — 전부
   해소됨" 절에 있는 "provider가 아직 주입 안 된 상태에서 dispatch가
   호출되면?" 케이스(`pre-implementation-audit.md`
@@ -1032,8 +1036,9 @@ function Dispatch.process(inst, k, v, index)
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
             -- 메시지는 핸들러 특정 정보(name/priority)와 k·index를 싣는다(`H-223` —
-            -- h.process 프레임은 이미 반환돼 어떤 level로도 도달 불가하므로 메시지가 유일한 단서)
-            error(noRetractorMessage(h, k, index), 2)
+            -- h.process 프레임은 이미 반환돼 어떤 level로도 도달 불가하므로 메시지가 유일한 단서).
+            -- [2026-08-31 `H-231`] 제공자 계약 위반 — 가장 가까운 표면의 호출부(`H-222`)
+            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
         end
         slot.retractor = retractor
     else
@@ -1044,7 +1049,7 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = NOOP }
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error(noRetractorMessage(h, k, index), 2)
+            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
         end
         list[index] = { handler = h, retractor = retractor }
     end

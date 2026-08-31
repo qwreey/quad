@@ -27,7 +27,7 @@
 ]]
 
 local Brand = require("./Brand")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 

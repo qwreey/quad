@@ -8,7 +8,7 @@
 ]]
 
 local Quad = require("../src")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("./mock")
 
 -- `H-229`: process는 (inst,k) 체인 리스트를 만들 때 `bindLifetime(inst, list)`로

@@ -41,7 +41,7 @@ local Brand = require("./Brand")
 local Blocker = require("./Blocker")
 local Err = require("./ErrorNamespace")
 local None = require("@self/None")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 local HandlerModule = require("@self/Handler")
 
 export type Handler = HandlerModule.Handler
