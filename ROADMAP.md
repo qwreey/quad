@@ -811,8 +811,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `NoneHandler`는 배열/해시 구분 없이 `Dispatch.process(inst,k,nil,index+1)`
       **재귀만** 하고(선행 `retractFrom` 없음 — 하강 diff), 실제 정리는
       `NilHandler`(`isHandlable`이 `type(k) == "number" and v == nil`일 때만
-      매치하는 말단)가 `Dispatch.setLength(inst,k,0)` +
-      `Dispatch.setOffsetSource(inst,k,None)` 등록으로 맡는다.
+      매치하는 말단)가 `Dispatch.setOffsetSource(inst,k,None)` →
+      `Dispatch.setLength(inst,k,0)` 등록으로 맡는다(**[2026-08-31 `H-265`]**
+      나열 순서를 해제 계약(offsetSource 먼저)에 맞게 정정 — 같은 문서의
+      `H-39` 항목과 갈라져 있었다).
       **`Dispatch.drive`에 `None` 스킵 분기는 없다**(반응형 값이 내놓는
       `None`은 어차피 `process`에 도착하므로 — 2026-08-18 재설계) —
       `base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절.

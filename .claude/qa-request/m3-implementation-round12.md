@@ -68,6 +68,8 @@
 | `H-250` | **②** | 2 | 🟢 | (탐사자) `H-231` 절이 *"추론으로 확정하지 않는다"*로 명시한 선행 스파이크 셋 중 **(c) 프레임 산술만** `spec.errorutil`로 닫혔다(luau CLI 기본 O1에서) — **(a) `-O2` 인라이닝·네이티브 코드젠에서의 `debug.info` 프레임 가시성, (b) 코루틴 경계**는 실측도 명시 기각 기록도 없이 넘어갔다. 실패 모드는 크래시가 아니라 blame 열화(태그 프레임이 안 보이면 워커가 한 겹 밖/raise 자리로 폴백). 실측/기각은 사용자 판단이라 ② | ⏳ §4 대기 |
 | `H-251` | ① | 2 | 🟢 | (탐사자) `spec.drive.luau` 헤더가 *"M3 unit-1 scope: pipeline stage (b) only"*로 stale — 단위 2가 `drive`에 ⓪/⓪' 배치 게이팅을 배선했다(`Dispatch/init.luau` 헤더는 갱신됨). 부수로 그 spec-로컬 핸들러는 배열 자리의 `setLength`/`setOffsetSource` 등록 계약(생략 UB)을 안 지킨 채 `drive`를 태운다 — F-4-1 측정 목적이라 무해하지만(빈 `bk`로 `recompute`가 no-op) 의도임을 주석으로 밝힐 자리 | ✅ 반영 — 헤더를 ⓪(b)⓪' 현행으로 + 등록 생략이 의도(순회 측정 전용)임을 명시 |
 | `H-252` | ① | 2 | 🟢 | (탐사자) `test.sh`의 `luau-analyze` 대상에 단위 2가 신설한 **`quad-error/src`가 없다**(require 경유 트랜지티브 타입만 읽힘) — 그 스크립트 자신의 주석이 "거짓 클린이 없다"를 목적으로 말하는 자리인데, 새 런타임 패키지의 strict 진단이 게이트 밖이다. `quad-types/src`도 같은 상태(전부터). 지금 직접 돌리면 둘 다 클린(실측 — `luau-analyze quad-error/src`·`quad-types/src` 각각 무출력 exit 0) | ✅ 반영 — `test.sh` analyze 대상에 `quad-types/src`·`quad-error/src` 추가(전체 그린 재확인) |
+| `H-264` | ① | 3 | 🟢 | (탐사자) `H-257`의 nil 한정 힌트가 **코드에만 있다** — 정본 `dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절은 여전히 *"그 이상의 특수 분기는 두지 않음"*이라 그 커밋(`4c01be2`)이 넣은 nil 조건 분기 문구를 정면 부정한다(그 커밋은 `base/` 파일을 하나도 안 건드림 — ①의 "`base/`+코드 같은 커밋" 규약이 안 지켜진 자리) | ✅ 반영 — 매치 실패 절에 `H-257` 예외 명시(분기 로직 아닌 진단 문구 보강) |
+| `H-265` | ① | 3 | 🟢 | (탐사자) None 쌍의 분업·배치 서술이 어긋난 자리 셋 — `dispatch-core-plan.md` "Length/Offset" 절 `setLength` 의사코드 주석의 *"길이가 상수인 자리(`NilHandler`/`NoneHandler`의 `0`)"*(NoneHandler는 등록을 안 한다 — 재귀만) / `source-state-plan.md` "세 번째 카테고리" 절의 *"`Dispatch/StoreBind.luau`의 `NoneHandler`"*(실물 배치는 `Dispatch/None.luau` — `H-253`·`architecture.md` 트리) / ROADMAP 단위 3 체크박스의 `setLength(0)` + `setOffsetSource(None)` 나열 순서(계약 순서와 반대로 읽힘 — 상세 절 참고) | ✅ 반영 — `NilHandler`만으로 정정 둘(`dispatch-core-plan.md` 두 자리), `Dispatch/None.luau` 소속 정정(`source-state-plan.md`), ROADMAP 나열 순서를 해제 계약대로 |
 
 ### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
 
@@ -228,6 +230,44 @@ type-version-check와 유사하게 외부에 유틸을 파. `setLevel(fn, num)` 
 유틸 기준으로 재서술된다 — "도착지가 계약"이라는 원칙 자체는 그대로이고,
 도착지를 세는 방법이 손에서 워커로 바뀌는 것.
 
+### `H-264` — `H-257` 힌트의 정본 미갱신 (①, 탐사자)
+
+`Dispatch/init.luau`의 `noMatchMessage`는 `v == nil`일 때 *"(a nil at this
+depth may be an unwrapped None or a reactive nil — the key's own handler must
+accept nil)"*을 덧붙인다(`H-257` ① 반영, 커밋 `4c01be2`). 그런데 그 메시지의
+정본인 `dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절은 메시지
+내용을 *"`Brand`(있으면)와 `typeof(v)` … provider … 안내만 덧붙임 — 그
+이상의 특수 분기는 두지 않음"*으로 못박은 채 그대로다 — 지금 그 문장은
+코드가 실제로 하는 일을 부정한다. `4c01be2`의 파일 목록에 `base/`가 0개라
+①의 "같은 커밋에서 `base/`+코드" 규약이 이 항목에서 빠진 것. 수정은 한
+줄이다 — 그 절에 `H-257` 예외(nil 값 한정 힌트)를 명시하고 "그 이상의 특수
+분기는 두지 않음"의 범위를 좁히면 된다.
+
+### `H-265` — None 쌍 분업·배치 서술 어긋남 셋 (①, 탐사자)
+
+셋 다 확정 계약(`NoneHandler`는 재귀만·등록은 `NilHandler` 한 곳,
+2026-08-18 사용자 선택 / 배치는 `Dispatch/None.luau`, `H-253`)이 이미 답을
+갖고 있어 ①:
+
+1. **`dispatch-core-plan.md` "Length/Offset" 절** — `setLength` 의사코드의
+   `element` 인자 주석(2026-08-27 9라운드 Q3)이 *"길이가 상수인 자리
+   (`NilHandler`/`NoneHandler`의 `0`)는 지속 클로저가 안 생기므로 생략해도
+   된다"* — `NoneHandler`는 `setLength`를 부르지 않는다(같은 문서
+   "`None` 센티널" 절: 등록은 `NilHandler` **한 곳에만**). 상수 `0`을 쥔
+   말단은 `NilHandler` 하나다.
+2. **`source-state-plan.md` "세 번째 카테고리" 절** — Handler 계약을 채우는
+   구현 예시로 *"`Dispatch/StoreBind.luau`의 `NoneHandler`"*를 든다. 파일
+   분리(단위 3) 이후 실물은 `Dispatch/None.luau`이고 `StoreBind.luau`는 M4의
+   별개 파일이다(`architecture.md` 소스 트리).
+3. **ROADMAP M3 단위 3 체크박스** — 등록을 *"`Dispatch.setLength(inst,k,0)` +
+   `Dispatch.setOffsetSource(inst,k,None)`"* 순으로 나열한다. `+` 나열이라
+   순서 주장은 아니지만, 계약 순서는 그 반대(`setOffsetSource` **먼저** —
+   `setLength` 꼬리의 recompute가 죽는 중인 Source에 `:Set`을 날리는 걸 막는
+   해제 순서 계약)이고, 같은 부류의 역순 표기가 `ref-plan.md` 의사코드에서
+   실제로 정정된 전례가 있다(같은 체크박스의 `H-39` 항목 자신은 올바른
+   순서로 적혀 있어 한 문서 안에서 갈린다). 코드·`Dispatch/None.luau`는
+   계약 순서 그대로다(실측 — spec·프로브 전부 통과).
+
 ## §4 배치 문항지 (사용자가 읽을 유일한 자리)
 
 **⭐ [2026-08-31 회신 1]** 사용자: *"배치 문항은 중간확인 완료했어. 전부
@@ -261,6 +301,13 @@ stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하�
 (**`H-250`** — 워커의 `-O2`·코드젠·코루틴 미실측 예약)가 이 표에 합류.
 실행·프로브 실측에서 동작 결함은 0건(§5) — **§4 대기는
 `H-240`(🔴)·`H-241`·`H-250` 셋.**
+
+**⭐ [2026-08-31 단위 3 탐사자]** 신선한 탐사자가 2건(`H-264`~`H-265`, 둘 다
+① 문서 — 코드는 정본대로고 문서 쪽이 어긋난 자리)을 냈다. 실행·프로브
+실측(같은 자리 None 재발행 / 깊은 체인 index 2+ 도착 / retractFrom 후
+재설치 / 해시 재발행 (A) 연쇄 / 숫자 키 nil 재발행)에서 **동작 결함 0건**
+(§5), `TODO(H-` 마커 0, `./scripts/test.sh` 전체 그린. **§4 대기는 다섯
+그대로**(`H-240`(🔴)·`H-241`·`H-250`·`H-256`(🔴)·`H-258` — 새 ② 없음).
 
 | 번호 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
@@ -385,6 +432,49 @@ stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하�
   Observer/Effect/Ref/Blocker/Dispatch/RunInit/AddPlugin/생명주기 스텁/mock
   5종까지 일관(`module.New`·`Relate`·brand 술어는 미태그이나 그 아래로
   던지는 error 경로 자체가 없어 실질 영향 0 — 발견으로 안 올림).
+
+- **[2026-08-31, 단위 3 탐사자] `./scripts/test.sh` 전체 exit 0**
+  (`luau-analyze` 무출력 클린 포함 — `Dispatch/None.luau`도 대상),
+  `grep -rn "TODO(H-"` 0건(quad-base/quad-types/quad-error), doc-check
+  ERROR 0, 작업 트리 클린. `Dispatch/None.luau`를 "`None` 센티널"/
+  "`NilHandler`" 절·`modifier-plan.md` "2-1"절과 재차 한 줄 대조 —
+  `isHandlable`(`v == None` 신원 / `type(k) == "number" and v == nil`),
+  둘 다 `<매우 높음>`(`HANDLER_PRIORITY_HIGH`, `H-253`), `NoneHandler`
+  재귀만(`index + 1`, 배열/해시 무구분, 선행 `retractFrom` 없음),
+  `NilHandler` 말단(재귀 없음, `setOffsetSource(None)` → `setLength(0)`
+  해제 순서 계약 그대로, 상수 길이라 `anchor`/`element` 생략 — "Length/Offset"
+  절 규칙 그대로), 둘 다 retractor `Void`, `drive`에 `None` 스킵 분기 없음 —
+  전부 일치. Handler 작성 체크리스트 1~9도 위반 없음(8번: `NoneHandler`는
+  항상 재위임, `inst` 무접촉; `H-218` 의무는 같은 키 재귀라 해당 없음).
+  전사 차이는 문서 쪽 `H-264`(nil 힌트가 코드에만) 하나.
+- **[2026-08-31, 단위 3 탐사자] spec이 안 태우던 경로들을 프로브로 실측,
+  전부 계약대로**(스크립트는 임시 파일로 돌리고 지움):
+  1. **같은 자리 None 재발행**(`State<X|None>` 재발행 근사 — 같은
+     `(inst,1)`에 `process(…, None, 1)` 반복) — (A) 연쇄 두 단
+     (`NoneHandler`의 Void가 `None`을, `NilHandler`의 Void가 `nil`을 받음)
+     모두 무해, 등록 멱등(`bk.N`·`lengthList[1]=0`·`sourceList[1]=None`
+     유지), 뒤 자리 offset·접두합 캐시 안정.
+  2. **깊은 체인** — 래퍼(HIGH+1) 아래 `None`이 index 2에 도착:
+     `NoneHandler`@2 → `nil`@3 → `NilHandler`@3 등록, 값→None 전환에서 (B)가
+     옛 말단을 retract(`hint nil`), 깊은 (A) 연쇄 재발행 멱등, 복원까지 정상.
+  3. **`retractFrom` 후 None 자리 재설치** — 슬롯 소비 후 `process(None)`
+     재설치 (B) 정상, 부기 그대로(NilHandler retractor가 Void라 등록은 안
+     걷힘 — 계약), 값 재설치도 정상.
+  4. **해시 None 재발행** — (A)@1 `NoneHandler` → `nil` 재귀 → (A)@2 키
+     담당 핸들러가 `retractor(nil)`+`process(nil)`을 받음(이 자리의 nil
+     신호 중의성은 기록된 `H-258` 그대로 — 재보고 아님), None→실값 전환은
+     (B)@1로 꼬리 철거 후 실값 핸들러@1 신설.
+  5. **숫자 키 진짜 nil 재발행** — `NilHandler` (A) 반복 멱등.
+- **[2026-08-31, 단위 3 탐사자] 희소 배열 입력은 재보고하지 않음** —
+  `drive(inst, {[3]=None})`·`{nil, "a"}` 리터럴류(배치 게이트
+  `flattened[1] ~= nil`이 열리지 않는 것 포함)는 전부 `H-256`(§4 대기)의
+  희소·비정수 키 가족이라 그 처방에 묶인다.
+- **[2026-08-31, 단위 3 탐사자] ROADMAP의 "`isNone`은 `None.luau`(M3) 쪽에
+  산다"는 발견으로 안 올림** — 실물엔 `isNone`이라는 함수가 없고
+  `Dispatch/None.luau` 헤더가 "`isNone` is `v == None`"(항등 비교 서술)로
+  대신하는데, `brand-plan.md`가 *"그런 이름의 함수를 두더라도"*로 함수화
+  자체를 허용형으로 열어둔 자리라 어긋남이 아니다(`Brand.luau` 헤더도 같은
+  서술).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
 

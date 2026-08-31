@@ -183,6 +183,10 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   `typeof(v)`를 함께 출력하고, "quad-roblox 등 필요한 provider가
   초기화됐는지 확인하라"는 안내만 덧붙임 — 그 이상의 특수 분기는 두지
   않음(다른 라이브러리에서도 흔한 "매치 실패=에러" 패턴 그대로).
+  **[2026-08-31 `H-257` 예외 하나]** `v == nil`일 때만 힌트 한 줄을 더
+  싣는다 — *"이 깊이의 nil은 벗겨진 `None`이거나 반응형 nil일 수 있다"* —
+  `NoneHandler` 재귀가 센티널 출처를 지우므로(사용자는 nil을 쓴 적이
+  없는데 nil이라고 보고됨) 진단 문구만 보강한 것, 분기 로직이 아니다.
   - **[2026-08-31 `H-219` (a) 사용자 확정] `level 2`의 도착지 한계를
     명시하고 현행 유지한다.** `process`는 핸들러 재귀도 받는 공개
     진입점이라 level 하나로 모든 경로의 "사용자 호출부"를 맞출 수 없고,
@@ -2231,7 +2235,7 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- target을 명시적으로 넘기면 된다(그 경우에만 둘이 갈린다).
 -- ⭐⭐ [2026-08-27, 9라운드 Q3] 5번째 인자 `element` — **그 자리에 등록되는 요소
 -- (`inst|slot`)**. `gatedRecompute`가 인덱스 대신 이걸 캡처하고 `bk.indexOfElement`를
--- 조회한다(아래). 길이가 상수인 자리(`NilHandler`/`NoneHandler`의 `0`)는 지속
+-- 조회한다(아래). 길이가 상수인 자리(`NilHandler`의 `0` — **[2026-08-31 `H-265` 정정]** `NoneHandler`는 재귀만 하고 등록 자체를 안 한다)는 지속
 -- 클로저가 안 생기므로 생략해도 된다 — 그땐 캡처한 `i`가 그대로 유효하다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
     anchor = anchor or ownerKey
@@ -2342,8 +2346,9 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
   owner 종류가 아니라 **그 자리에 지속 등록(길이 State → Observer)이 생기는가**로
   갈린다. 중첩 Slot의 `.Length`를 넘기는 자리(`materializeSlotTree` 꼬리,
   최상위 `SlotHandler` 경로 포함)는 그 Slot 자신을 넘기고, plain 요소(`rawAdd`/
-  `rawReplace`)는 그 요소를 넘긴다. `NilHandler`/`NoneHandler`처럼 상수 `0`인
-  자리는 생략.
+  `rawReplace`)는 그 요소를 넘긴다. `NilHandler`처럼 상수 `0`인
+  자리는 생략(**[2026-08-31 `H-265` 정정]** 여기 `NoneHandler`도 나열돼
+  있었으나 그 핸들러는 등록을 안 한다 — 재귀 전용).
 
 `:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
 본질적으로 `ownerKey` 하나에 종속된 내부 배관이라, `ownerKey`(물리 inst

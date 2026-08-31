@@ -184,7 +184,7 @@ vs 원천에 대한 메소드)을 결정하는 기준으로 쓸 수 있음.
 "quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
 없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
 `Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은
-`PropertyHandler`/`TagHandler`/`Dispatch/StoreBind.luau`의 `NoneHandler`처럼
+`PropertyHandler`/`TagHandler`/`Dispatch/None.luau`의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 `StoreBind.luau` 소속이라 잘못)
 **구현하는 쪽**이 리터럴 테이블로 직접 채워 넣는 것), State/Observer처럼
 어떤 원천에 종속된 파생물도 아님(애초에 "원천"이라는 개념 자체가 안 맞음).
 Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우는 확장
