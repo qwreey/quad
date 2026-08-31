@@ -2104,4 +2104,10 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `roblox`→`luau` 전환(엔진 무관 코어·타입이라 처음부터 luau가 맞았음, luau
   의존이 rojo 트리에서 빠지던 문제의 근본 해법) + require 전환 + rojo 트리
   `luau_packages` 매핑 + `relink.sh` 꼬리 sourcemap 재생성. 단위 2 감사
-  1라운드 4건(`H-235` — H-219 조기 해소 미반영 등 문서 drift) 반영.
+  루프 5라운드 수렴(`H-235`~`H-237`, 3라운드 자기회귀 1 포함) + `H-232` (a)
+  `slot._bk` 확정 반영. `/code-review high`(범위 전체) 10건: ① 여덟 반영
+  (`H-238` mock 태깅 / `H-239` spec4 실단언 / `H-242` 태그 테이블 순회 /
+  `H-244` contribution 단일화 / `H-245` 주석 / `H-243` 소비자 갭 문서화 /
+  `H-246` 세션 원문 증보 / `H-247` 게이트 위반 기록), ② 둘 §4 대기 —
+  **`H-240` 🔴**(recompute Get-창 커서 스톰프, CONFIRMED — 권고 (a) 읽기 뒤
+  재검사로 의사코드 보강)·`H-241`(drive 재진입 Blocker — 권고 (a) UB 문서화).

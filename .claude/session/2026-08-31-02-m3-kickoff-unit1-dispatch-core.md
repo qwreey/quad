@@ -80,7 +80,40 @@ chains 캡처 누수 — 거짓 GC 주장 둘은 사실 정정만 선반영 / `H
 경로의 error 도착지 / `H-222` 제공자 계약 위반의 level 분류), 기각 하나
 (`H-226` 꼬리 병합 리팩터 — 확정 의사코드 1:1 유지 우선).
 
+## 단위 1 마감 후 — 회신 연쇄와 단위 2 (같은 세션 계속)
+
+탐사자까지 끝난 뒤 사용자 회신이 연달아 와 §4가 실시간으로 닫히고 새
+설계가 둘 태어났다(개별 결정·인용의 소스는 round12 §4와 요약 표 — 여기선
+흐름만):
+
+- **회신 2** — `H-218`(a, retractFrom 의무화·`UI-11` 부분 역전)/`H-219`(a)/
+  `H-222`(a, error 계약 표 제3 행). 되물음 *"Destroy 호출되는 것도 retract가
+  안 먹어서 문제가 생긴다는 부분 아냐?"* → 검증 결과 **맞았다**(`H-229` —
+  chains가 두 번째 강한 루트, gchold 섬이 무너져도 안 걷힘).
+- **회신 3** — error 유틸 설계(사용자 실험 `error-util-ignoreme.luau`):
+  `setFuncLevel` 맵 + `debug.info` 워커. 유의점("중간에 짤림"/최상단 하강)과
+  중첩 진입 blame 질문(선택지) → **스캔 둘 다 제공**(`errorAtNearest` 쌍
+  이름 사용자 선택), 사본 네임스페이스 분리 지적 → **상태 없는 `new()` +
+  `Quad.errorNamespace` 공유**(사용자 구조 제안).
+- **회신 4~5** — `H-229`(a, bindLifetime 확장 계약 — *"아무 타입과도 일치하지
+  않으면 단순히 GC 릴레이션만"*) / `H-230`(a, 상수 quad-types) / `H-231`
+  이관 승인(*"이관 할 부분을 이관하고 다음 단위 착수하자"*) → quad-error
+  패키지 신설, M2·단위 1 error 전량 이관, 전 표면 태깅.
+- **단위 2 구현** — Length/Offset 부기 전체(`getBookkeeping`/`getBlocker`/
+  `getOffsetAt`/`recompute`/`setLength`/`setOffsetSource` + drive ⓪⓪'),
+  `spec.lengthoffset` 8절. `bk`도 `H-71` 동형이라 `H-229` 패턴 적용, Slot
+  owner 몫은 `H-232`로 분리 → **회신 8**로 (a) `slot._bk` 확정.
+- **회신 7(툴체인)** — `H-234`: quad-base·quad-types target `luau` 전환 +
+  rojo 트리 `luau_packages` + relink 꼬리 sourcemap(사용자 발견·결정).
+- **단위 끝 절차** — 감사 5라운드(4→3+1→3→1(자기회귀)→0 수렴,
+  `H-235`~`H-237`; 3라운드 반영이 볼드 태그 80자 초과 회귀를 만들어
+  4라운드가 잡음 — §6에 전 코퍼스 태그 스윕 등재), `/code-review high`
+  10건(`H-238`~`H-247`): ① 여덟 반영(mock 태깅, spec4 실단언, 태그 테이블
+  순회, contribution 단일화, 잔존 주석, 소비자 갭 문서화, 이 세션 원문
+  증보, `158c354` 게이트 위반 기록), ② 둘 §4 대기(`H-240` 🔴 Get-창 커서
+  스톰프 / `H-241` drive 재진입 Blocker).
+
 ## 이 다음
 
-리뷰 반영 커밋 → fable 탐사자(round12.md에 발견 이어붙임) → 사용자에게
-"§4를 보라" 한 줄(열린 문항: `H-218`/`H-219`/`H-222`).
+리뷰 ② 회신 대기(`H-240`/`H-241`) → fable 탐사자(round12.md 이어붙임) →
+사용자에게 "§4를 보라" 한 줄 → 단위 3(`None` 핸들러들).

@@ -290,7 +290,13 @@ quad-base가 luau target이 되려면 자기 의존 `quad-types`도 luau여야 �
 결과: 모든 내부 링크가 `luau_packages/` 하나로 통일되고(코드 require 전부
 `roblox_packages/quad_types` → `luau_packages/quad_types`),
 `default.project.json`도 그 디렉토리를 매핑한다. `rojo build`·전체 테스트
-클린 실측. **같은 결정의 짝**: `relink.sh` 꼬리에 `rojo sourcemap
+클린 실측. **⚠️ [같은 날, 리뷰 지적 `H-243`] 외부 소비자 갭 — 게시 시점
+숙제**: 표준 pesde-Roblox 가이드를 따르는 외부 소비자는 `roblox_packages`만
+rojo 트리에 매핑하므로, luau target인 quad-base/quad-types가 설치되는
+`luau_packages`가 트리에서 빠져 Studio 런타임에서 내부 require가 깨질 수
+있다 — 지금은 이 레포의 `default.project.json`이 손 매핑해서 문제없지만,
+**quad를 밖에서 처음 소비하는 시점(M5 이후 게시/가이드 작성)에 소비자용
+매핑 안내(또는 pesde의 luau-in-roblox 링킹 확인)가 필요하다.** **같은 결정의 짝**: `relink.sh` 꼬리에 `rojo sourcemap
 default.project.json --output sourcemap.json` 재생성 추가(사용자: *"rojo
 sourcemap … --output 도 relink에서 실행되도록 … 안 그럼 ide에서
 타입에러남"*) — rojo가 없으면 조용히 건너뛴다.

@@ -99,6 +99,7 @@ print("=== 4. drive 배치 게이팅 — 등록 중 recompute 0회, 닫힌 뒤 �
 do
 	local q = newQuad()
 	local sources: { any } = {}
+	local setCounts: { number } = {}
 	q.Dispatch.addHandler({
 		name = "SpecLeaf",
 		isHandlable = function(_inst: any, k: any, _v: any): boolean
@@ -108,6 +109,14 @@ do
 		process = function(inst: any, k: any, v: any, _index: number): (any?) -> ()
 			local src = q.Source(-1)
 			sources[k] = src
+			-- 프로브를 **등록 전에** 설치해야 배치 중의 모든 Set이 세어진다 —
+			-- drive가 끝난 뒤 달면 vacuous(리뷰 지적, `H-239`)
+			setCounts[k] = 0
+			local obs = (src :: any):Observer(function()
+				setCounts[k] += 1
+			end):Subscribe()
+			local _ = obs
+			setCounts[k] = 0 -- 등록 즉시 1회 실행 보정
 			q.Dispatch.setOffsetSource(inst, k, src)
 			q.Dispatch.setLength(inst, k, v) -- v = 이 자리의 기여도(숫자)
 			return q.Void
@@ -130,11 +139,11 @@ do
 	assert(q.Dispatch.getBlocker(inst):IsOn() == false, "batch blocker closed after drive")
 	assert(q.Dispatch.getBookkeeping(inst).N == 3, "bk.N = registered array positions")
 
-	-- 배치 중 각 Source가 정확히 1회만 Set을 받았는지 — 즉시 계산 1회, 마지막
-	-- recompute는 ~= 가드로 전부 no-op(검증 패스)
-	local s2Sets = probe(q, sources[2])
-	q.Dispatch.getBookkeeping(inst) -- no-op 접근
-	assert(s2Sets() == 0, "final recompute wrote nothing extra")
+	-- 배치 중 각 Source가 정확히 1회만 Set을 받았다 — 즉시 계산 1회, 배치 중
+	-- gatedRecompute는 전부 스킵, 마지막 recompute는 ~= 가드로 no-op(검증 패스)
+	for k = 1, 3 do
+		assert(setCounts[k] == 1, `source {k} received exactly one Set during the batch (got {setCounts[k]})`)
+	end
 	print("PASS")
 end
 

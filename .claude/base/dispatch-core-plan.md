@@ -2087,8 +2087,10 @@ local function recompute(ownerKey, bk)
         end
         -- 되감지 않을 때만 — 읽기는 여전히 `Set` **뒤**라 `H-113`의 *"`sum`은
         -- 안 낡는다"* 논증이 그대로 성립한다(재방문 때도 마찬가지).
-        local v = bk.lengthList[i]
-        sum += (if isState(v) then v:Get() else v)
+        -- [2026-08-31 `H-244`] 강제(coercion)는 `getOffsetAt`과 같은 단일
+        -- `contribution(bk, i)` 하나다 — 인라인 사본 둘이면 강제에 케이스가
+        -- 늘 때(M6) 한쪽만 고쳐져 Length와 offset이 갈라진다.
+        sum += contribution(bk, i)
         i += 1
     end
     -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.

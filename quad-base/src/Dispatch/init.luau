@@ -381,8 +381,9 @@ local function Init(module: any)
 				sum = prefix[i]
 				continue
 			end
-			local v = bk.lengthList[i]
-			sum += (if Brand.isState(v) then v:Get() else v)
+			-- `H-244`: same single coercion as getOffsetAt's cache fill — two
+			-- inline copies would drift when the coercion gains a case (M6).
+			sum += contribution(bk, i)
 			i += 1
 		end
 		-- Cursor close + blocker release BEFORE Length:Set — that Set can run
@@ -512,10 +513,13 @@ local function Init(module: any)
 	}
 
 	-- `H-231`: the public surface joins the tag layer — the walker's boundary.
-	for _, fn in
-		{ getHandler, process, retractFrom, addHandler, listHandlers, drive, setLength, setOffsetSource, getOffsetAt, getBlocker, getBookkeeping } :: { any }
-	do
-		Err.setFuncLevel(fn, SURFACE)
+	-- `H-242`: tag by iterating the assembled surface itself — a hand-written
+	-- list here just duplicated the table above and could silently drift
+	-- (a missed entry degrades blame with nothing failing).
+	for _, v in Dispatch :: { [string]: any } do
+		if type(v) == "function" then
+			Err.setFuncLevel(v, SURFACE)
+		end
 	end
 
 	module.Dispatch = Dispatch

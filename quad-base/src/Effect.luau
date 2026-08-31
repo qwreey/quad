@@ -98,7 +98,8 @@ local function createImpl(module: any)
 
 	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding, so a refusal
 	-- cannot leave a half-bound handle (bound, `canExecute` true, no Destroying
-	-- connection). Level 3: past this method and `bindLifetime` to the user's call.
+	-- connection). Blame: nearest SURFACE frame past this and `bindLifetime`
+	-- (`H-231` walker — the old hand-counted 3 is gone).
 	function Impl._assertBindable(self: any)
 		if isRunning(self) then
 			Err.errorBeforeNearest("Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)

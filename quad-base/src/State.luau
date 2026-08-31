@@ -92,7 +92,7 @@ local function createImpl(module: any)
 	local function newNode(deps: { any }, fn: any, mt: any?): any
 		for i, dep in deps do
 			if not isState(dep) then
-				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- 3: past Compute/With/Gate to the user's call
+				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/With/Gate the user called
 			end
 		end
 		local self = setmetatable({
@@ -155,9 +155,9 @@ local function createImpl(module: any)
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
-			-- `H-205`: level 3 — `_recompute`'s only callers are Get's own lines, so 2
-			-- always blamed quad internals; 3 reaches the user on a direct `Get` and is
-			-- never worse through a pass-through chain (no fixed level reaches user code there).
+			-- `H-205` history: this used to be a hand-counted level 3; the walker
+			-- (`H-231`) now finds the nearest SURFACE frame (the user's Get/entry),
+			-- which is what that 3 was approximating — no counting left to maintain.
 			Err.errorBeforeNearest("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
 		end
 		self._cache = result
@@ -197,7 +197,7 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local dep = (select(i, ...))
 			if dep == nil then
-				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- 3: past With/Compute to the user's call
+				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the With/Compute the user called
 			end
 			deps[i + 1] = dep
 		end

@@ -81,7 +81,8 @@ local function createImpl(module: any)
 	end
 
 	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding — a refusal
-	-- must not leave a half-bound handle. Level 3: past this and `bindLifetime`.
+	-- must not leave a half-bound handle. Blame: nearest SURFACE frame past this
+	-- and `bindLifetime` (`H-231` walker — the old hand-counted 3 is gone).
 	function Impl._assertBindable(self: any)
 		if self._running then
 			Err.errorBeforeNearest("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
