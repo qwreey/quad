@@ -1,7 +1,11 @@
 --[[
-	Dispatch.drive — M3 unit-1 scope: pipeline stage (b) only, the single
-	generalized `for` (`.claude/base/bind-system-plan.md` "`New(name)(props)`
-	파이프라인 의사코드"; scope cut: round12 brief §6).
+	Dispatch.drive — the pipeline's ⓪ + (b) + ⓪' (`.claude/base/
+	bind-system-plan.md` "`New(name)(props)` 파이프라인 의사코드"; unit 1 wired
+	stage (b), unit 2 added the ⓪/⓪' batch gating — (a)/(c) are M8). This spec
+	measures the traversal-order half; the batch-gating half lives in
+	spec.lengthoffset 4. The spec-local handler deliberately skips the
+	Length/Offset registrations (contract UB for real handlers, harmless here —
+	only traversal order is measured).
 
 	This spec measures the *language behavior* the contract leans on (`F-4-1`):
 	a generalized `for` over a plain Luau table gives the whole array part

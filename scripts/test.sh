@@ -12,8 +12,8 @@ fi
 fail=0
 # 타입 검사 — relink 뒤라 심볼릭 링크 때문에 조용히 통과하는 "거짓 클린"이 없다.
 # smoke.*는 M1 임시 스모크라 제외(느슨하게 쓰였음) — src와 spec/mock만 strict로 본다.
-echo "=== luau-analyze quad-base/src quad-base/test/spec.*.luau quad-base/test/mock.luau"
-luau-analyze quad-base/src quad-base/test/spec.*.luau quad-base/test/mock.luau || fail=1
+echo "=== luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau"
+luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau || fail=1
 for f in "${files[@]}"; do
 	echo "=== $f"
 	luau "$f" || fail=1

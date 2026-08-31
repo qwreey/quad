@@ -397,7 +397,7 @@ local function installLifetime(quad: any)
 	quad.canExecute = canExecute
 	quad.onDestroying = onDestroying
 
-	-- `H-239`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
+	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
 	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying } :: { any } do

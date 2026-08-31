@@ -15,7 +15,7 @@
 	- Constructor validation, one pass over `defaults` (`H-122` + `H-153`):
 	  every value must pass `isSource` (whitelist — raw values would be
 	  accepted silently and die at the first `:Get()`), and no key may be a
-	  reserved name. Both are user input → `error(..., 2)`, English.
+	  reserved name. Both are user input → `Err.errorBeforeNearest(…, SURFACE)` (`H-231` walker), English.
 	- `RESERVED` here is the runtime single source of the reserved names;
 	  the type function `CheckReservedKeys` in quad-types carries a copy —
 	  rename both together. `__reservedCheck` is a phantom (type-only) field.

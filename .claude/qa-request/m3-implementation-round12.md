@@ -52,6 +52,11 @@
 | `H-246` | ① | 2 | 🟡 | (`/code-review high`) 이 구간의 사용자 확정 여덟(`H-218`~`H-234`)이 round12 §4 셀에만 있고 `session/` 원문이 없음 — `conventions.md`의 세션 원문 규율 위반 | ✅ 반영 — `session/2026-08-31-02-*`에 단위 2·회신 4~8 절 증보, summary 갱신 |
 | `H-247` | ① | 2 | 🟢 | (`/code-review high`) `158c354`가 doc-check ERROR를 품은 채 커밋됨(같은 커밋 안의 두 편집 사이에만 검사를 돌렸음) — 매 커밋 ERROR 0 게이트 위반, 다음 커밋(`0f59de4`)이 정정 | ✅ 기록 — 재발 방지 습관: doc-check는 **스테이징 직전** 마지막 편집 후에 1회 더 |
 | `H-231` | **②** | 1 | 🟡 | (사용자 설계, 회신 3) **error 유틸 모듈** — `setLevel(fn, tag)` 등록 맵 + `debug.info(i, "f")` 스택 워커로 "원하는 계층까지 올려서" error를 내는 유틸(type-version-check처럼 독립 패키지). 프레임 수 손 세기(2·3 갈림, `H-219`의 drive 도착지 한계, `H-212` 스텁 level 미정)가 전부 자연 해소되고 level이 진짜 의미 Enum이 된다. 에러는 cold path라 `debug.info` 비용 무시 가능(사용자 논거, 동의) | ✅ 설계 확정(2026-08-31 회신 4, *"에러 유틸은 error-util-ignoreme.luau를 보면 될 것 같아"* — 실험 파일이 워커 방향(최상단 하강)·API(`setFuncLevel`/`getFirstMatch`/`errorAt`/`errorBefore`/`ERROR_LEVEL_DEFAULT`)·프레임 산술까지 확정) — **`quad-error` 워크스페이스 패키지로 구현**(이름은 가칭 통보 — 게시 전 개명 쌈), `spec.errorutil` 5절 실측 통과(실험 파일의 단언 + weak 맵 + 샌드위치 강건성). 잔여였던 태그 체계·이관은 회신 5·6으로 종결(§4 "H-231 잔여" 행) |
+| `H-248` | ① | 2 | 🟢 | (탐사자) `mock.luau`의 생명주기 5종 태깅 루프 주석이 `H-239`를 인용 — 그 수정의 발견 번호는 **`H-238`**이다(`H-239`는 `spec.lengthoffset` 4번의 vacuous 프로브). 이 코퍼스에선 주석이 설계 참조라 grep이 엉뚱한 발견에 닿는다 | ✅ 반영 — 주석 번호 `H-238`로 교정 |
+| `H-249` | ① | 2 | 🟢 | (탐사자) `H-245`(손 세기 시절 주석 정리)가 놓친 두 자리 — `Store.luau` 헤더의 *"Both are user input → `error(..., 2)`, English"*와 `Effect.luau` `isRunning` 옆 *"`error` stays in each body (level 2)"*. 두 경로의 실제 raise는 이미 `errorBeforeNearest(..., SURFACE)`인데 주석만 이관 전 리터럴 계약을 서술 | ✅ 반영 — 두 주석을 워커 서술로 |
+| `H-250` | **②** | 2 | 🟢 | (탐사자) `H-231` 절이 *"추론으로 확정하지 않는다"*로 명시한 선행 스파이크 셋 중 **(c) 프레임 산술만** `spec.errorutil`로 닫혔다(luau CLI 기본 O1에서) — **(a) `-O2` 인라이닝·네이티브 코드젠에서의 `debug.info` 프레임 가시성, (b) 코루틴 경계**는 실측도 명시 기각 기록도 없이 넘어갔다. 실패 모드는 크래시가 아니라 blame 열화(태그 프레임이 안 보이면 워커가 한 겹 밖/raise 자리로 폴백). 실측/기각은 사용자 판단이라 ② | ⏳ §4 대기 |
+| `H-251` | ① | 2 | 🟢 | (탐사자) `spec.drive.luau` 헤더가 *"M3 unit-1 scope: pipeline stage (b) only"*로 stale — 단위 2가 `drive`에 ⓪/⓪' 배치 게이팅을 배선했다(`Dispatch/init.luau` 헤더는 갱신됨). 부수로 그 spec-로컬 핸들러는 배열 자리의 `setLength`/`setOffsetSource` 등록 계약(생략 UB)을 안 지킨 채 `drive`를 태운다 — F-4-1 측정 목적이라 무해하지만(빈 `bk`로 `recompute`가 no-op) 의도임을 주석으로 밝힐 자리 | ✅ 반영 — 헤더를 ⓪(b)⓪' 현행으로 + 등록 생략이 의도(순회 측정 전용)임을 명시 |
+| `H-252` | ① | 2 | 🟢 | (탐사자) `test.sh`의 `luau-analyze` 대상에 단위 2가 신설한 **`quad-error/src`가 없다**(require 경유 트랜지티브 타입만 읽힘) — 그 스크립트 자신의 주석이 "거짓 클린이 없다"를 목적으로 말하는 자리인데, 새 런타임 패키지의 strict 진단이 게이트 밖이다. `quad-types/src`도 같은 상태(전부터). 지금 직접 돌리면 둘 다 클린(실측 — `luau-analyze quad-error/src`·`quad-types/src` 각각 무출력 exit 0) | ✅ 반영 — `test.sh` analyze 대상에 `quad-types/src`·`quad-error/src` 추가(전체 그린 재확인) |
 
 ### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
 
@@ -236,6 +241,13 @@ quad-types에 할당하는 건 어떤지?"* → `H-230`).
 `debug.info` 스택 워커, "중간에 짤림" 유의점과 최상단 하강 대안까지 사용자
 제안 → `H-231`). **아래 세 행이 회신 대기.**
 
+**⭐ [2026-08-31 단위 2 탐사자]** 신선한 탐사자가 5건(`H-248`~`H-252`)을
+냈다 — ① 넷(주석 번호 오인용 / 손 세기 잔재 주석 둘 / `spec.drive` 헤더
+stale / analyze 게이트에 `quad-error/src` 누락)은 반영 대기, ② 하나
+(**`H-250`** — 워커의 `-O2`·코드젠·코루틴 미실측 예약)가 이 표에 합류.
+실행·프로브 실측에서 동작 결함은 0건(§5) — **§4 대기는
+`H-240`(🔴)·`H-241`·`H-250` 셋.**
+
 | 번호 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
 | `H-214` | `listHandlers`·동률 경고·(나중의) `quad-debug` 덤프가 쓸 핸들러 **이름** — Handler 계약(3종)엔 `name`이 없다 | (a) 계약에 **선택 필드 `name: string?`** 추가 — 있으면 경고·덤프·`listHandlers`가 쓰고 없으면 priority만 / (b) 이름 없이 감 — `listHandlers`는 핸들러 객체 배열만 반환(지금 임시 구현), "이름/priority" 서술을 문서에서 걷어냄 / (c) 다른 방식(별도 등록 인자 `addHandler(h, name)` 등) | **(a)** | `dispatch-core-plan.md` **두 자리**("우선순위 동률/매치 실패 처리"의 `listHandlers` 이름/priority + "부수 효과 — quad-debug에 유리"의 체인 슬롯 이름 덤프)가 이미 "이름"을 전제하고(**[감사 3라운드 정정]** 후자를 처음엔 `research/debug-tooling-plan.md`로 잘못 인용 — 거긴 대신 선택적 `describe` 훅(가칭)이 전례), 선택 필드면 기존 3종 계약을 안 깬다. **(b)를 고르면 두 자리 다 걷어야 한다.** (c)는 이름이 핸들러 자신이 아니라 레지스트리에 살게 돼 체인 슬롯 덤프(슬롯엔 handler 객체만 저장)가 역조회를 또 요구함 |
@@ -249,6 +261,7 @@ quad-types에 할당하는 건 어떤지?"* → `H-230`).
 | `H-241` | **`drive` 재진입과 배치 Blocker 공유** — owner당 Blocker 하나를 배치마다 재사용해, 같은 inst에 재진입 drive가 끼면 안쪽 `OffWithoutEmit()`이 바깥 배치를 조기 개방(등록마다 recompute — O(N²), 크래시는 아님). `blocker-plan.md`의 네스팅 미지원(겹치면 새 Blocker) 서술과 긴장 | (a) **UB 문서화** — 재진입 drive(같은 inst를 자기 구성 도중 다시 drive)는 정상 API로 만들 수 없고(파이프라인 동기 + `H-198`류), 기확정 "재진입 무방어" 원칙 그대로 UB로 명명 + Blocker 문서에 이 자리가 예외적 재사용임을 각주 / (b) 배치마다 새 Blocker(단 `gatedRecompute`가 `getBlocker` 결과를 캡처하므로 게이트 조회를 늦게 바꾸는 재설계 필요) / (c) 다른 방식 | **(a)** | (b)는 실측된 문제 없이 구조를 늘린다("실제로 관측된 문제에만"). 성능 저하일 뿐 정합성은 유지되고, 트리거 자체가 비정상 사용 | 
 | `H-232` | M6에서 Slot이 ownerKey일 때 `bk`(와 자기 체인류 부기)의 **GC 앵커** — Slot은 claim 불가라 `bindLifetime(slot, bk)`가 error. `bk`는 언마운트를 넘어 살아야 한다(재마운트 캐시 계약)는 제약도 있음 | (a) **Slot 생성자가 자기 `bk`를 강한 사적 필드로 소유**(예: `slot._bk` — 이름은 그때 확정) — 수명이 정확히 Slot 수명(언마운트 생존 ✓, Slot 버려지면 같이 ✓), Dispatch의 `getBookkeeping`은 owner가 Slot이면 그 필드를 쓰고 아니면 지금의 gchold 앵커 / (b) `bindLifetime` 확장 계약을 한 번 더 넓혀 "claim 불가 owner면 앵커 생략"(Slot owner의 bk는 Relate 강한 값으로 — 역참조 누수가 Slot 쪽에 되살아남) / (c) 다른 방식 | **(a)** | (b)는 `H-229`가 방금 닫은 누수를 Slot 쪽에 그대로 되살린다. (a)는 "다른 곳에서 안전하게 유지되는 것만 weak" 규칙 그대로고, `bk`가 Slot 수명을 정확히 따라간다 — 단 새 사적 필드라 사용자 확정 대상. **M6 착수 전에만 답이 필요**(단위 2·3·4는 inst owner뿐). **✅ [2026-08-31 회신 8로 (a) 확정 — 이름 `slot._bk` 포함, 정본 두 곳 반영]** |
 | `H-215` | 스파이크 `04`(Dispatch 체인 retractFrom, `rewrite-required/`) 처분 — `spec.dispatch.luau`가 체인 깊이·레벨별 힌트·3-인자 `retractFrom`·`SetStrong` 음성 대조군을 이미 실측했으나, 재귀 재발행은 spec-로컬 wrapping 핸들러 **근사**다(실제 `StoreBind`는 M4) | (a) 지금 폐기(`01`처럼 `done/` 이동) — 잔여 몫(실제 `StoreBind` 경유 재발행 경로)은 **M4 StoreBind spec이 진다**고 그 단위 계획에 명시 / (b) M4까지 `rewrite-required/`에 유지(현 ROADMAP 문구 "M3 착수 시 같이 처리"를 "M4에서"로 정정) / (c) 지금 재작성 | **(a)** | 체인 메커니즘 자체는 `spec.dispatch.luau` 12절이 실제 구현에 대고 고정했고(스파이크는 격리 재현이라 오히려 약함), `05`/`15`/`01` 폐기와 같은 근거 구조다. 잔여 몫을 M4 spec 항목으로 옮겨 적으면 잊히지 않는다 |
+| `H-250` | `quad-error` 워커의 **미실측 전제 둘** — `H-231` 절이 *"추론으로 확정하지 않는다"*며 예약한 선행 스파이크 중 (a) `-O2` 인라이닝·네이티브 코드젠에서 태그 프레임이 `debug.info` 걷기에 계속 보이는지, (b) 코루틴 경계(스택 루트가 코루틴 진입점일 때의 degrade)가 실측 없이 채택·이관까지 끝났다. (c) 프레임 산술만 `spec.errorutil`이 O1에서 실측. 실패 모드는 blame 열화뿐(크래시 아님) — 태그 함수 대부분이 테이블 저장이라 인라인 후보도 아니라는 추론은 있으나, 그게 정확히 "추론" | (a) `luau-test` 스파이크 신설 — luau CLI의 `-O2`/`--codegen` 플래그와 코루틴 래핑으로 3축 실측(비용 작음, 스파이크 관례 그대로) / (b) 명시 기각을 기록 — "진단 열화뿐이고 실물릴 때 스파이크"를 `H-231` 절/`STATUS.md`에 적어 예약을 닫음 / (c) 다른 방식 | **(a)** | 이 코퍼스의 스파이크 관례가 정확히 이 부류("추론만으로 확정하고 실제 Luau로 부딪혀본 적 없는 것")를 위한 것이고, 예약을 세운 문장이 남아 있는 채로 실측도 기각도 없으면 다음 세션이 "확인됨"으로 오독한다. (b)도 유효한 선택 — 열화가 진단 한정임은 분명하므로, 비용 판단은 사용자 몫 |
 
 ## §5 이상 없음 확인 (탐사자·구현이 확인만 하고 문제 없었던 자리)
 
@@ -317,6 +330,45 @@ quad-types에 할당하는 건 어떤지?"* → `H-230`).
   1회 실행만 하고 **구독/바인드 전엔 emit에 발화하지 않는다**(canExecute
   게이트 — 계약대로). `setLength` 꼬리의 동기 `recompute`가 캐시를 즉시
   재구축해 무효화 커서의 중간 상태는 밖에서 관측 불가(값으로 검증).
+- **[2026-08-31, 단위 2 탐사자] `./scripts/test.sh` 전체 exit 0**
+  (`luau-analyze` 무출력 클린 포함), `grep -rn "TODO(H-"` 0건, doc-check
+  ERROR 0. 부기 코드(`getOffsetAt`/`recompute`/`setLength`/`setOffsetSource`/
+  `drive` ⓪⓪')를 "Length/Offset"·"두 필드"·무효화 표·배치 게이팅 절
+  의사코드와 재차 한 줄 대조 — 전사 차이는 확정 계약 둘(영어 error(`H-212`)
+  / `Err.*` 워커 이관(`H-231`))뿐. "두 필드" 배타성(올리는 쪽:
+  `getOffsetAt`→`offsetCacheValidUpTo`만, `recompute`→`offsetSetUpTo`만)도
+  코드에서 그대로 성립.
+- **[2026-08-31, 단위 2 탐사자] spec이 안 태우던 경로들을 프로브로 실측,
+  전부 계약대로**(스크립트는 스크래치, 남기지 않음):
+  1. **`getOffsetAt` 부트스트랩 반복** — fresh owner(`bk.N == nil`)에
+     `getOffsetAt(inst, 1)` 연속 호출 둘 다 `0`, 빈 bk에 `getOffsetAt(inst, 2)`는
+     `H-106` 가드로 즉시 error(`lengthList[1] is nil — bookkeeping is broken`).
+     `getOffsetAt(inst, N+1)`(꼬리 삽입 위치)은 정상 `5` 반환.
+  2. **`setLength` 같은 자리 재등록** — State→State 스왑 후 옛 채널
+     `oldLen:Set(99)`가 죽어 있고(`s2` 불변) 새 채널만 동작, State→상수
+     전환 시 `bk.observers[i]`가 `nil`로 비워지고 옛 State emit 무시.
+     해제(`setOffsetSource(None)` → `setLength(0)`)에서 해제된 Source에
+     재-`Set` 없음(순서 계약의 목적 그대로).
+  3. **drive 배치에 State 길이 + 재-drive** — `drive(inst, {2, len2, 1})` 직후
+     offset `0/2/5`, 배치 밖 `len2:Set(10)`에 `0/2/12`, 같은 inst 재-drive((A)
+     분기)에서 옛 길이 Observer가 `unbindLifetime`으로 죽고 새 것만 동작,
+     블로커·`recomputeBlocker` 둘 다 off로 마감.
+  4. **error 도착지(pcall 메시지의 파일:줄)** — drive 경유 매치 실패가
+     사용자 함수 안의 `drive` 호출 줄을 정확히 blame:
+     `./…/tmp-probe1.luau:19: quad.Dispatch: no handler matched key Size
+     (value: number) — …` (`H-219` 조기 해소 실증). retractor 생략
+     (`errorBeforeNearest`)은 직접 `process` 호출에선 호출부 줄을, drive
+     경유에선 가장 가까운 표면(process)의 호출부인 `Dispatch/init.luau`의
+     drive 루프 줄을 blame — `H-222` (a)의 "가장 가까운 호출 구조" 정의
+     그대로이고 메시지가 핸들러 특정 정보를 실어 진단 가능(`H-223`).
+- **[2026-08-31, 단위 2 탐사자] error 이관 전수 확인** — src 전체에서 남은
+  리터럴 `error(`는 level 1 내부 불변식 다섯(`retractFrom` 구멍 /
+  `getOffsetAt`·`recompute` 부기 파손 / `Effect.Init` 미실행)과 `Ref`
+  재던지기 `error(err, 0)` 하나뿐 — `H-231` 잔여 행의 *"레벨 1 불변식·`Ref`
+  재던지기(0)만 리터럴 유지"* 그대로. 표면 태깅도 State/Source/Store/
+  Observer/Effect/Ref/Blocker/Dispatch/RunInit/AddPlugin/생명주기 스텁/mock
+  5종까지 일관(`module.New`·`Relate`·brand 술어는 미태그이나 그 아래로
+  던지는 error 경로 자체가 없어 실질 영향 0 — 발견으로 안 올림).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
 

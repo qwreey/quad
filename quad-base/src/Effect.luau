@@ -59,7 +59,7 @@ local function createImpl(module: any)
 	Impl.__index = Impl
 
 	-- ── local helpers, declared before their callers ─────────────────
-	local function isRunning(self: any): boolean -- predicate only; `error` stays in each body (level 2)
+	local function isRunning(self: any): boolean -- predicate only; the raise stays in each body (nearest-SURFACE walker)
 		return self._running == true or self._cleanupRunning == true
 	end
 
