@@ -295,8 +295,11 @@ default.project.json --output sourcemap.json` 재생성 추가(사용자: *"rojo
 sourcemap … --output 도 relink에서 실행되도록 … 안 그럼 ide에서
 타입에러남"*) — rojo가 없으면 조용히 건너뛴다.
 
-**[2026-08-19 같은 날 넷째 후속 세션] 의존 대상의 `target`에 따라 링크
-디렉토리 이름이 달라진다** — `quad-types`(target `roblox`)가
+**[2026-08-19 같은 날 넷째 후속 세션 — ⚠️ 2026-08-31 `H-234`로 예시의
+target 배치가 옛 것이 됨(지금은 quad-base·quad-types도 `luau`라 내부 링크가
+전부 `luau_packages/` 하나다, 위 `H-234` 문단이 소스 — 아래는 당시 사실)]
+의존 대상의 `target`에 따라 링크
+디렉토리 이름이 달라진다** — `quad-types`(당시 target `roblox`)가
 `type-version-check`(target `luau`)에 의존하면, `quad-base`/`quad-roblox`가
 쓰는 `roblox_packages/`와 달리 `quad-types/src/init.luau`는
 `require("./luau_packages/type_version_check")`로 **`luau_packages/`**

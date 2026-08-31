@@ -992,9 +992,11 @@ Slot 자신이다** — Slot은 claim 불가라 `bindLifetime`을 못 타고, `b
 언마운트를 넘어 살아야 한다(재마운트 캐시 계약). 그래서 **Slot 생성자가
 `slot._bk` 사적 필드로 자기 `bk`를 강하게 소유**하고(수명 = Slot 수명),
 `getBookkeeping(ownerKey)`은 owner가 Slot이면 그 필드를 쓰고(없으면 만들어
-채움) 아니면 지금의 weak+gchold 앵커를 쓴다. `bk`뿐 아니라 **Slot을 키로
-쓰는 같은 부류 부기(배치 Blocker 등)도 같은 원칙** — 값이 Slot을 되참조하면
-Slot이 소유한다. 소스는 round12 `H-232`와 `base/slot-plan.md`의 생성자 절.
+채움) 아니면 지금의 weak+gchold 앵커를 쓴다. **원칙의 적용 조건은 "값이
+owner를 되참조하는가"다** — 배치 Blocker는 ownerKey를 되참조하지 않아 강한
+Relate 값으로도 안 새므로(코드 주석이 소스) **이 분기 대상이 아니다**;
+사용자가 확정한 범위도 `bk` 하나다. 소스는 round12 `H-232`와
+`base/slot-plan.md`의 생성자 절.
 
 **문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StoreBind`처럼 자기
 `process` 안에서 `Dispatch.process(inst,k,realv,...)`를 다시 부르는 래핑
@@ -1456,7 +1458,10 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 재사용해 **Slot 자신을 owner 키로 써서 같은 두 함수를 한 번 더
 부르면, 최상위(Dispatch.drive의 리터럴 배열)와 중첩(Slot이 자기
 자신의 요소들에 대해)이 완전히 같은 메커니즘으로 재귀됨** — 새 함수를
-만들 필요 없음. 상세 재귀 흐름(Slot-in-Slot)은 `base/slot-plan.md`의
+만들 필요 없음(**[2026-08-31 `H-232` 각주]** 단 `getBookkeeping`의 **GC
+앵커는 owner 타입으로 분기**한다 — inst owner는 weak 값+gchold 앵커
+(`H-229`), Slot owner는 claim 불가·언마운트 생존 요구 때문에 Slot이
+`slot._bk`로 강하게 소유. "Dispatch 체인" 절의 `H-232` 문단이 소스). 상세 재귀 흐름(Slot-in-Slot)은 `base/slot-plan.md`의
 "Slot-in-Slot 중첩" 절 참고, 이 문서는 그 절이 재사용하는 `recompute`
 자체만 다룸(아래).
 
