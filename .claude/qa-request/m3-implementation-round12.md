@@ -32,6 +32,7 @@
 | `H-225` | ① | 1 | 🟢 | (`/code-review high`) 세션 파일이 감사 루프를 5라운드에서 멈춘 것처럼 서술(6라운드 수렴·리뷰 반영 미기재) | ✅ 반영 — 세션 파일·summary에 6라운드 수렴과 리뷰 결과까지 기록 |
 | `H-226` | 기각 | 1 | 🟢 | (`/code-review high`) `process` (A)/(B) 꼬리 병합·(B) 이중 할당 제거·`retractFrom` 재조회 제거 리팩터 제안 | ❌ 반영 안 함 — 확정 의사코드와의 1:1 유지가 우선이고 실측 병목 아님("실제로 관측된 문제에만 구조"). 메시지 drift 우려는 `H-223`의 공용 `noRetractorMessage`로 소멸 |
 | `H-227` | ① | 1 | 🟡 | (`/code-review high`) `local Dispatch = {} :: any`가 생산자 표면을 `quad-types` 선언과 대조 불능으로 만듦 — `H-25`가 막으려던 드리프트가 생산자 쪽에서 무검사 | ✅ 반영 — 로컬 함수 정의 후 `local Dispatch: Dispatch = { … }` 타입 주석 조립(analyze가 표면 검사) |
+| `H-228` | ① | 1 | 🟢 | (탐사자) `describeHandler`가 `name` 부재 시 `"?"`를 이름 자리에 찍는다 — `dispatch-core-plan.md` "핸들러 계약" 절의 `H-214` 블록은 *"없으면 priority만 보인다"*. 실측: `handler priority tie between "?" (priority 5) and "?" (priority 5)` | ✅ 반영 — 코드를 문서에 맞춤: 이름 부재 시 `(priority N)`만 |
 
 ### `H-212` — base 의사코드 error가 error 계약 이전 표기로 남아 있었다 (①)
 
@@ -76,6 +77,23 @@ quad-debug에 유리" 항목에 있다(처음엔 `research/debug-tooling-plan.md
 양쪽 이름, 마커 제거) / `dispatch-core-plan.md` "핸들러 계약" 절 신설 항목 /
 `spec.dispatch` 11번(이름 왕복·부재 시 nil). 코드 마커 0.
 
+### `H-228` — 진단 라벨의 이름 부재 표기가 문서와 다르다 (①, 탐사자)
+
+`Dispatch/init.luau`의 `describeHandler(h)`는 `` `"{h.name or "?"}" (priority {h.priority})` ``
+— `name`이 없으면 `"?"`라는 자리표시자를 이름처럼 찍는다. 그런데
+`dispatch-core-plan.md` "핸들러 계약" 절의 `H-214` 확정 블록은 **"없으면
+priority만 보인다"** — 문서가 이미 답을 가진 자리라 ①이다(동률 경고와
+`H-223`의 retractor 생략 메시지 양쪽이 이 라벨을 쓴다). 실측(무이름 동률
+경고, 탐사자 프로브):
+
+```
+quad.Dispatch: handler priority tie between "?" (priority 5) and "?" (priority 5) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+```
+
+수정은 메인 세션 몫(탐사자는 round12.md만 편집) — 코드가 문서를 따라
+이름 부분을 생략하든(`(priority 5)`만), 문서에 자리표시자 표기를 명시하든
+어느 쪽이든 한 줄이다. 순수 진단 문자열이라 계약·부기 영향 없음.
+
 ## §4 배치 문항지 (사용자가 읽을 유일한 자리)
 
 **⭐ [2026-08-31 회신 1]** 사용자: *"배치 문항은 중간확인 완료했어. 전부
@@ -111,6 +129,39 @@ quad-debug에 유리" 항목에 있다(처음엔 `research/debug-tooling-plan.md
 - **[2026-08-31]** `H-165`(quad-types에 `export type` 추가 시 pesde shim
   재생성 필요)를 예고대로 밟았고 `pesde install` 재실행으로 해소 —
   `Handler`/`Dispatch`가 shim에 올라옴. 새 발견 아님(문서 그대로).
+- **[2026-08-31, 단위 1 탐사자]** `./scripts/test.sh` 전체 exit 0
+  (`luau-analyze` 무출력 클린 포함), `grep -rn "TODO(H-"` 0건, 작업 트리
+  클린. `Dispatch/init.luau`를 "Dispatch 체인" 절 의사코드와 재차 한 줄
+  대조 — (A)/(B) 분기·`NOOP` 교체/점유 마커·`SetStrong` 선행·retractor 생략
+  error 양쪽·`retractFrom` 꼬리 역순/항상 소비/구멍 error(level 1) 전부
+  일치, 전사 차이는 `H-228`(진단 라벨 표기) 하나뿐.
+- **[2026-08-31, 단위 1 탐사자] `getHandler`가 매치 실패에 error가 아니라
+  `nil`을 돌려주는 건 발견이 아니다** — brief §6 행은 error를 `getHandler`
+  괄호 안에 적었지만, 정본인 `dispatch-core-plan.md`의 "`Dispatch.process`/
+  `Handler.process` 이름 겹침" 항목이 `getHandler(inst,k,v): Handler?` =
+  순수 스캔/부작용 없음, error는 오케스트레이터(`process`)의 일로 이미
+  갈라뒀다. 코드·`quad-types`·spec 1번이 전부 정본 쪽이다.
+- **[2026-08-31, 단위 1 탐사자] `Handler` 타입의 정의 위치(quad-types 소유,
+  `Dispatch/Handler.luau`는 재수출)는 §6 표기("quad-types … `Handler` 타입
+  재수출")와 방향이 반대로 읽히지만 구현 방향이 유일하게 가능한 쪽이다** — quad-types는
+  quad-base를 require할 수 없고(의존이 base → types 단방향) `Dispatch`
+  타입이 `Handler`를 참조하므로 정의는 types 쪽에만 살 수 있다. 잎 유지
+  계약("Dispatch를 되참조하지 않는다")은 그대로 성립.
+- **[2026-08-31, 단위 1 탐사자] spec이 안 태우던 경로 셋을 프로브로 실측,
+  전부 계약대로** (스크립트는 스크래치, 남기지 않음): (1) `H-223` —
+  retractor 생략 메시지가 name·priority·k·index를 실제로 싣는다
+  (`handler "MyLeaf" (priority 7) returned no retractor at key SomeKey,
+  index 1`). (2) `H-103` — `h.process`가 던지면 `NOOP` 마커가 남고, 이후
+  `retractFrom`은 조용히 소비(에러 없음, 정리 0회)하며 그 뒤 재설치·철거는
+  정상(문서가 말한 "부기 무결성 비보장 + 크래시는 아님" 그대로). (3) 매치
+  실패 후 같은 `(inst,k)`에 핸들러를 등록하면 정상 동작 — 실패 경로가
+  chains에 빈 리스트 하나를 남기지만 의사코드도 같은 순서(list 확보가
+  getHandler보다 앞)라 전사 차이 아님.
+- **[2026-08-31, 단위 1 탐사자]** `addHandler`의 `table.sort`는 불안정
+  정렬이라 **동률** 핸들러끼리의 스캔 순서가 등록이 추가될 때마다 뒤섞일
+  수 있는데, 이는 문서가 이미 확정한 "동률 tiebreak 규칙은 강제하지
+  않는다"(우선순위 동률/매치 실패 처리 절) 범위 안이다 — 가드·안정화
+  제안 안 함(관측된 문제 없음 원칙).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
 

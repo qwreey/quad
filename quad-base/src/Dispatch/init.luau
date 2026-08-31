@@ -80,9 +80,10 @@ local BRAND_PROBES = {
 }
 
 -- Diagnostics label for a handler in error/warning messages — uses the
--- optional `name` contract field (`H-214` (a)), falls back to priority.
+-- optional `name` contract field (`H-214` (a)); when absent, only the
+-- priority shows (`H-228` — the confirmed wording is "없으면 priority만").
 local function describeHandler(h: Handler): string
-	return `"{h.name or "?"}" (priority {h.priority})`
+	return if h.name ~= nil then `"{h.name}" (priority {h.priority})` else `(priority {h.priority})`
 end
 
 local function Init(module: any)
