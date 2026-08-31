@@ -317,8 +317,9 @@ do
 	q.Dispatch.addHandler(high)
 	high.name = "HighLeaf" -- 선택 진단 필드(`H-214` (a)) — 매치·순서엔 무영향
 	local listed = q.Dispatch.listHandlers()
-	-- 단위 3부터 내장 둘(NoneHandler/NilHandler)이 항상 먼저 등록돼 있다
-	assert(#listed == 5, "returns every registered handler (3 test + 2 built-in)")
+	-- 내장 핸들러들(단위 3의 None 쌍, 이후 단위가 더 등록)이 항상 같이 있다 —
+	-- 총 개수는 단위마다 자라므로 하드코딩하지 않는다("개수의 소스는 하나만")
+	assert(#listed >= 3, "returns registered handlers including ours")
 	local ours: { QuadTypes.Handler } = {}
 	for _, h in listed do
 		if h == high or h == low or h == fallback then
