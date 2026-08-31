@@ -5,8 +5,8 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐⭐ [2026-08-28] M2 착수 — 자율 구현 구간 진행 중.** 규약은
-   `qa-request/pre-implementation-handtrace-round11-brief.md`(세 갈래 분류 /
+00. **⭐⭐⭐ [2026-08-28 착수 → 2026-08-31 종결] M2 자율 구현 구간 — 완료.** 규약은
+   `qa-request/m2-implementation-round11-brief.md`(세 갈래 분류 /
    단위 넷 / 관여 시점), 발견과 배치 문항은 `-round11.md`(§4 표가 사용자가
    읽을 유일한 자리). **진행 상태의 소스는 `ROADMAP.md` M2 체크박스**, 여기서
    세지 않는다. **[2026-08-29 새벽 기준]** 단위 1·2 완료(단위 2 감사 6라운드 수렴),
@@ -18,9 +18,14 @@
    회신 블록들이 소스 — 여기서 세지 않는다), **§4 열린 문항 0·코드 마커 0** —
    진행 원문은
    `session/2026-08-28-03-m2-unit1-common-base.md` 마지막 절과
-   `session/2026-08-31-01-unit2-code-review.md`. 남은 할 일:
-   `pre-implementation-handtrace-round11*` 파일명 변경(사용자 2026-08-31 — 구현 중
-   문서라 pre-implementation이 안 맞음; 새 이름은 사용자와 정할 것)과 M2 종료 보고.
+   `session/2026-08-31-01-unit2-code-review.md`. **[2026-08-31] 파일명 변경까지
+   완료** — 옛 `pre-implementation-handtrace-round11*`을 `m2-implementation-round11*`로
+   개명(구현 중 문서라 옛 이름이 안 맞았음; 명명 규약 `mN-implementation-roundNN`은
+   `.claude/README.md` `qa-request/` 행이 소스 — 라운드 번호는 마일스톤을 가로질러
+   단순 증가). M2 종료 보고도 전달 — **M2 종결.**
+   **다음 액션: M3(디스패치 엔진) 착수 — 자율 구현 규약을 M2처럼 쓸지, 단위를
+   어떻게 자를지 등 새 규약 문항을 만들어 사용자와 정할 것**(2026-08-29
+   체크포인트의 "M3은 새 규약 문항" 그대로).
    아래는 착수 전(2026-08-26) 서술:
 
    **[2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**

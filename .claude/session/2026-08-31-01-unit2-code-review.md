@@ -7,7 +7,7 @@
 지시했다. §4 문항 여섯(`H-182`~`H-187`)의 회신은 이 세션 시작 시점에 아직 없음.
 
 부수 결정 하나 — 사용자: *"이건 pre-implementation 은 아닌듯 하네, 이름은 나중에
-바꾸자"*. `pre-implementation-handtrace-round11*.md`는 구현 **중** 발견 문서라 이름이
+바꾸자"*. `m2-implementation-round11*.md`는 구현 **중** 발견 문서라 이름이
 안 맞는다는 것. **이름 변경은 §4 회신 처리 뒤로 미룸**(문항지·brief와 인용처를 한꺼번에
 옮겨야 해서) — 아직 안 했고, 잊지 말 것.
 
@@ -24,7 +24,7 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 
 정확성 8건 전부 실제 코드에 재현 스크립트로 확인. 효율 배치는 리뷰 스스로 "관측된
 병목에만 구조" 원칙 위반으로 기각, 약한 정리 항목들은 심각도 미달 기각. 발견 상세와
-처리의 소스는 `qa-request/pre-implementation-handtrace-round11.md`(요약 표
+처리의 소스는 `qa-request/m2-implementation-round11.md`(요약 표
 `H-198`~`H-207`, 상세 절 "단위 2 — `/code-review high`") — 여기선 갈래만:
 
 - **① 여섯**(같은 커밋에서 반영): `H-199`(nil dep 조용한 탈락 — `collectDeps` + error),
@@ -115,3 +115,14 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 - 회신 3 감사 1라운드(확실 1·의심 1) 반영: `state-epoch-plan.md` H-85 절의 옛 계약
   문장("다음 Get이 반드시 재계산")을 H-198 재시작 루프로 정정, `todos.md` 00의 H-번호
   나열을 소스 포인터로 축소(머리말 규칙).
+
+## 같은 날 후속 4 — round11 파일 개명과 명명 규약, M2 종결
+
+사용자 선택 (2): `pre-implementation-handtrace-round11*` → **`m2-implementation-round11*`**.
+**명명 규약 확정**: `mN-implementation-roundNN` — 라운드 번호는 마일스톤을 가로질러
+**단순 증가**, 마일스톤 접두가 소속을 담는다. 사용자 근거: *"m3 을 진행하다 m2 에
+하자가 있음을 확인하면 다시 m2 로 올라가 round 가 진행되다 돌아오는 경우도 있을것 …
+접두가 둘 다 있는게 정보를 온전히 담아줘"* — 규약 본문은 `README.md` `qa-request/` 행.
+`git mv` + 전 코퍼스 치환 22곳(잔존 0), round1~10의 `pre-implementation-*` 옛 이름은
+실제로 구현 전 라운드라 그대로. CLAUDE.md/project-context.md 머리말을 "M0~M2 완료,
+다음은 M3"로, todos 00을 종결로. **M2 종결** — 다음 액션은 M3 착수 규약 문항.

@@ -379,7 +379,7 @@ haiku, 일반 작업은 sonnet. 특히 소스코드를 많이 읽어야 하는 �
   GitHub 기여 그래프에 반영되게 하기 위함 — 관련 리모트 정책은 메모리
   `git-remote-push-policy` 및 위 `SAFETY.md` 항목 참고.
 - **⭐ [2026-08-28 신설] M2 자율 구현 규약 — 본문은
-  `qa-request/pre-implementation-handtrace-round11-brief.md`가 소스, 여기선
+  `qa-request/m2-implementation-round11-brief.md`가 소스, 여기선
   가리키기만.** 사용자 결정(2026-08-28, *"수정하고 너가 진행하자"*)으로 M2는
   자율 구간으로 돈다. 요지 셋: (1) 발견은 **세 갈래** — 문서가 이미 답을 가진
   건 `H-nnn`으로 기록하고 `base/`+코드를 같은 커밋에서 자율로 고침 / 새

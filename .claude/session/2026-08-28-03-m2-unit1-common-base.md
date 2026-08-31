@@ -24,7 +24,7 @@
 - `scripts/test.sh`: `spec.*` 수집 + `luau-analyze quad-base/src + spec + mock`.
 - spec 5개(brand/relate/lifetime/ref/void).
 
-## 발견 (`qa-request/pre-implementation-handtrace-round11.md`)
+## 발견 (`qa-request/m2-implementation-round11.md`)
 
 - `H-165` ① pesde shim은 생성 시점 export 타입만 안다 → `pesde install` 재실행,
   `project-setup-plan.md`에 둘째 함정으로 기록.

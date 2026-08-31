@@ -2017,7 +2017,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `FrameParam<E>` 원소 타입 파라미터.
 - **`session/2026-08-28-03-m2-unit1-common-base.md`** — **M2 착수.** 다른 에이전트가
   초안한 자율 구현 규약을 검토해 순서 오류 하나(`EpochMap`이 `Effect` 뒤 → State 본체
-  앞)와 소스 단일화를 고쳐 채택(`qa-request/pre-implementation-handtrace-round11-brief.md`,
+  앞)와 소스 단일화를 고쳐 채택(`qa-request/m2-implementation-round11-brief.md`,
   세 갈래 분류 / 단위 넷 / 두 층 커밋 게이트, `HUMAN_TODO.md` 2번 닫힘). 첫 단위(공통
   기반)를 사용자 확인(*"진행하면 될것 같아"*) 뒤 구현 — `Void`/`Brand`(인스턴스 15 +
   `is*` 11 한 잎 파일)/`LifetimeHandle`(`InitLifetimeHandle` 에러 스텁)/`Ref` 최소형/
@@ -2056,5 +2056,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   그 §4 회신 2 블록), 보류 하나(`H-205`). **같은 날 회신 3으로 §4 전량 종결** —
   `H-186` UB 문서화 / `H-198` 사용자 안(스탬프를 fn 직전 + `Get` 재시작 루프 — 계약
   강화: 모든 `Get`이 최신 수렴값 반환, 무한 케이스 UB) / `H-205` level 3 / 코드 검토
-  `H-208`(`table.clone` 스냅샷)·`H-209`(generalized iteration 전환). 열린 문항 0·마커 0,
-  남은 마무리는 round11 파일명 변경과 M2 종료 보고.
+  `H-208`(`table.clone` 스냅샷)·`H-209`(generalized iteration 전환). 열린 문항 0·마커 0.
+  **같은 날 파일 개명·M2 종결** — `m2-implementation-round11*`로(명명 규약
+  `mN-implementation-roundNN`, 라운드 번호는 마일스톤 가로질러 단순 증가 —
+  `README.md` `qa-request/` 행이 소스), 툴링 픽스 둘(`H-210` rojo 트리 /
+  `H-211` Relate 타입)도 이 세션. 다음 액션은 M3 착수 규약 문항.

@@ -57,7 +57,7 @@ git.qwreey.moe에 제한된 계정 생성). 로컬 git 저장소는 이미 초�
 ## 2. ~~자율 작업 루프/스케줄 설정~~ **[해소됨, 2026-08-28]**
 
 **사용자가 M2를 세션 안 자율 구현 구간으로 확정**했다 — 규약은
-`.claude/qa-request/pre-implementation-handtrace-round11-brief.md`, 요지는
+`.claude/qa-request/m2-implementation-round11-brief.md`, 요지는
 `.claude/conventions.md`의 "M2 자율 구현 규약" 항목. cron/`/schedule`은 안 쓴다
 (사용자 개입 지점은 단위가 끝날 때 `-round11.md` §4 표를 배치로 회신하는 것뿐).
 아래는 해소 전 원문.

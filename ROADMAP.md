@@ -262,7 +262,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 지켜집니다.
 >
 > **⭐ [2026-08-28 착수] M2는 자율 구현 구간으로 돕니다** — 규약(세 갈래 분류,
-> 단위 넷, 관여 시점)은 `.claude/qa-request/pre-implementation-handtrace-round11-brief.md`가
+> 단위 넷, 관여 시점)은 `.claude/qa-request/m2-implementation-round11-brief.md`가
 > 소스, 발견은 `-round11.md`. 단위 순서는 이 문서의 체크박스 순서 그대로이되
 > **`H-97`의 mock 생명주기 4종은 첫 단위(공통 기반)로 당겨** 짠다 — 그게 없으면
 > 두 번째 단위부터 전파 루프 테스트가 안 돈다.
