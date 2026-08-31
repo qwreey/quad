@@ -996,7 +996,9 @@ function Dispatch.process(inst, k, v, index)
                                 -- (h.process가 재귀하는 동안 잠깐 열려 있는 구간)
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("quad.Dispatch: handler returned no retractor — return Void when there is nothing to undo", 2)
+            -- 메시지는 핸들러 특정 정보(name/priority)와 k·index를 싣는다(`H-223` —
+            -- h.process 프레임은 이미 반환돼 어떤 level로도 도달 불가하므로 메시지가 유일한 단서)
+            error(noRetractorMessage(h, k, index), 2)
         end
         slot.retractor = retractor
     else
@@ -1007,7 +1009,7 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = NOOP }
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("quad.Dispatch: handler returned no retractor — return Void when there is nothing to undo", 2)
+            error(noRetractorMessage(h, k, index), 2)
         end
         list[index] = { handler = h, retractor = retractor }
     end
@@ -1045,8 +1047,11 @@ end
 남아 있었다 — 이 절이 쓰인 뒤(2026-08-13) 확정된 `base/architecture.md`의
 "error 계약 — `level` 이분과 메시지 언어" 절(*"`base/`의 예시 메시지도 영어로
 쓴다"*)이 반영 안 된 것. M3 단위 1 구현과 같은 커밋에서 영어 + `level`로
-정정했다 — retractor 생략은 핸들러(제공자) 쪽 계약 위반이라 호출부를 가리키는
-`2`, 배열 구멍은 내부 부기 파손이라 그 자리를 가리키는 `1`.
+정정했다 — 배열 구멍은 내부 부기 파손이라 그 자리를 가리키는 `1`.
+retractor 생략의 `2`는 **잠정 구현 선택**이다(`H-222`, round12 §4 대기) —
+`architecture.md`의 계약 표는 "사용자 입력 검증(2) / 내부 불변식 위반(1)"
+두 행뿐이라 **"제공자 계약 위반"이 어느 행인지 정한 적이 없다**(이 자리에
+한때 그걸 확정 서술처럼 적었었다 — 리뷰 지적으로 잠정 표시).
 
 - **래핑 핸들러는 재-dispatch 전에 아무것도 철거하지 않는다 — 그냥 아래로
   내려보낸다.** `StoreBind`/`NoneHandler`가 하는 일은 이제 한 줄:
@@ -1182,9 +1187,16 @@ end
   `base/tween-plan.md`). 단 **그 자식의 수명은 위임한 핸들러가 책임진다**
   — Dispatch는 `(child,prop)` 체인이 누구 소유인지 모르므로, 자식을
   없앨 때 `retractFrom(child, prop, 1)`까지 부르는 건 위임한 쪽 몫
-  (자식 Instance 자체를 버리면 `chains`가 `inst`로 weak-keyed라 결국
-  GC되지만, 실행 중인 Tween/구독처럼 즉시 끊어야 하는 게 있으면 명시적
-  정리가 필요).
+  (**[2026-08-31 정정, `H-218`]** 여기 한때 *"자식 Instance 자체를 버리면
+  `chains`가 `inst`로 weak-keyed라 결국 GC되지만"*이라 적혀 있었으나
+  **틀렸다** — 체인 리스트의 retractor 클로저가 `inst`를 캡처하므로 버킷
+  값이 weak 키를 되참조해 GC가 안 되고(`relate-plan.md`의 `H-71` 실측
+  패턴 그대로), quad 제작 인스턴스는 gcconn 때문에 애초에 `Destroy`로만
+  회수된다(위 `H-26` 정정과 같은 사실). 즉 명시적 `retractFrom(child,
+  prop, 1)`은 "즉시 끊어야 하는 게 있으면"이 아니라 **사실상 항상**
+  필요하다 — 이걸 위임 핸들러의 계약으로 의무화할지(그리고
+  `ui-shorthand-plan.md`의 자식 폐기 경로를 어떻게 고칠지)는 round12 §4의
+  `H-218` 대기).
 - **`handler.process(inst,k,v,index)`를 `Dispatch.process`를 거치지 않고
   직접 호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할
   것.** 이유: 핸들러 비교·`chains` 저장 bookkeeping이 `Dispatch.process`

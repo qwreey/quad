@@ -277,8 +277,15 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
   대한 `retractFrom`을 부르는 것 자체는 여전히 허용된 경로다
   (`base/dispatch-core-plan.md`의 retract 계약 — 금지된 건 같은 `(inst,k)`에
   대한 재진입). 다만 이 자리에서 **필요하지 않다**는 것.
-- `chains`는 `child`에 대해 weak-keyed라 자식을 버리면 결국 GC된다 — 명시적
-  정리가 필요한 자원이 이 자리엔 없다.
+- ~~`chains`는 `child`에 대해 weak-keyed라 자식을 버리면 결국 GC된다~~ —
+  **[2026-08-31 정정, `H-218`]** 이 근거는 **틀렸다**: 체인의 retractor
+  클로저가 `child`를 캡처해 버킷 값이 weak 키를 되참조하므로 GC가 안 되고
+  (`relate-plan.md` `H-71` 실측 패턴), quad 제작 인스턴스는 gcconn 때문에
+  `Destroy`로만 회수된다. 위 (a)/(b) 근거(엔진의 Tween 자동 정리 /
+  `PropertyHandler` retractor가 no-op)는 **정적 값일 때** 그대로 유효하지만,
+  숏핸드 값이 **반응형**(`UICorner = state`)이면 `StoreBind` 구독이 chains에
+  남아 자식 파괴/재생성 사이클마다 누적된다 — `UI-11` 결론을 반응형 경로까지
+  유지할지는 round12 §4의 `H-218`이 정한다.
 
 ## store-bind — 이 숏핸드도 지원
 

@@ -2074,4 +2074,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   3: error 영어화 확장+`H-214` 근거 정정 / 4: `H-216` slot-plan 11곳 / 5: 계수 정정+`H-217`
   4곳 — base 코드 리터럴 한국어 error 0), §4 배치 회신 도착(*"전부 권고안에 동의해"*) —
   `H-214` (a) Handler 선택 필드 `name: string?` / `H-215` (a) 스파이크 `04` 폐기(잔여
-  `StoreBind` 경유 경로는 ROADMAP M4 mock 항목). 단위 1 §4 열린 문항 0·코드 마커 0.
+  `StoreBind` 경유 경로는 ROADMAP M4 mock 항목). 감사 6라운드 수렴(확실 0) 뒤
+  `/code-review high` 10건(`H-218`~`H-227`): ① 여섯 반영(`BRAND_PROBES` 순서 /
+  retractor 생략 error에 핸들러 특정 / 타입 주석 조립 등), ② 셋 §4 합류(`H-218`
+  chains 캡처 누수 — 거짓 GC 주장 정정 선반영 / `H-219` error 도착지 / `H-222`
+  제공자 level 분류), 기각 하나(`H-226`). 코드 마커 0, §4 열린 문항 셋.

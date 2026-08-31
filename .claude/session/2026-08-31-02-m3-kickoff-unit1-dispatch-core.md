@@ -65,7 +65,22 @@ debounce-throttle·ref(`"PreRef instance reused"` 문구 통일)·source-state
 `04` 폐기·`done/` 이동(잔여 `StoreBind` 경유 재발행 경로는 ROADMAP M4 mock
 항목에 명시). 테스트·analyze·doc-check 전부 클린.
 
+**감사 6라운드(수렴 확인)** — 회신 반영 커밋 `da67a8c`의 diff 전수 점검,
+**새 확실 발견 0건**(의심 1건: `H-217` 요약의 "mock 문구에 맞춤" 표현 정밀도
+— "공통 접두를 딴 근사"로 정정). 감사 루프는 여기서 수렴.
+
+## `/code-review high` — 10건 (`H-218`~`H-227`)
+
+수렴 직후 리뷰가 10건을 냈다(감사자와 보는 축이 다르다는 관례 그대로).
+분류·처리는 round12 요약 표가 소스 — 요지: ① 여섯 반영(`H-220` `BRAND_PROBES`
+specific-first / `H-221` ROADMAP stale / `H-223` retractor 생략 error에 핸들러
+특정 정보 / `H-224` M4 잔여 몫에 효과 수준 단언 복원 / `H-225` 이 파일의 루프
+서술 stale / `H-227` `{} :: any` → 타입 주석 조립), ② 셋 §4 합류(`H-218`
+chains 캡처 누수 — 거짓 GC 주장 둘은 사실 정정만 선반영 / `H-219` `drive`
+경로의 error 도착지 / `H-222` 제공자 계약 위반의 level 분류), 기각 하나
+(`H-226` 꼬리 병합 리팩터 — 확정 의사코드 1:1 유지 우선).
+
 ## 이 다음
 
-`/code-review high` → 커밋 → fable 탐사자(round12.md에 발견 이어붙임) →
-사용자에게 "§4를 보라" 한 줄.
+리뷰 반영 커밋 → fable 탐사자(round12.md에 발견 이어붙임) → 사용자에게
+"§4를 보라" 한 줄(열린 문항: `H-218`/`H-219`/`H-222`).
