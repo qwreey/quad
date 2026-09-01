@@ -21,7 +21,20 @@
 
 ---
 
-## 1. Roblox Studio에 MCP로 연결 (테스트 자동화용)
+## ✅ 1. ~~Roblox Studio에 MCP로 연결~~ **[2026-09-01 해소 — 연결 실측 완료]**
+
+**사용자가 본 계정과 무관한 별도 계정(`qwreey_selene`)을 별도 컨테이너에
+준비**했고(다른 사용자 미사용 — `SAFETY.md`의 별도 계정 게이트 충족), MCP
+프록시가 `http://studio:8787/mcp`에 떠 있다. 인증 토큰은 **레포가 아니라
+전역 Claude 설정(`~/.claude.json`의 `mcpServers.roblox-studio` 헤더)에만**
+들어 있음 — 레포 문서에 토큰을 적지 말 것. 연결 실측(2026-09-01):
+`list_roblox_studios` → 인스턴스 1개("Place1"), Edit 모드,
+`execute_luau`로 Instance 생성·`GetPropertyChangedSignal("ClassName")`
+(gcconn 트릭 재료)까지 정상 동작 확인(version 0.736). **이로써 아래 5번
+(스파이크 `10` 잔여)을 에이전트가 대신 돌릴 수 있게 됐다** — 단 A 섹션
+재작성이 선행. 아래는 해소 전 원문:
+
+## (구 1번 원문) Roblox Studio에 MCP로 연결 (테스트 자동화용)
 
 Roblox가 2026-02부터 Studio에 **MCP 서버를 내장**했음 — 예전처럼 Rust로 직접
 `studio-rust-mcp-server`를 빌드할 필요 없이 Studio 자체 베타 기능으로 켜면 됨.
