@@ -88,7 +88,8 @@ leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer�
 `base/lifecycle-pattern.md`는 *"인스턴스 라이프사이클 훅 지점은 `Destroying`
 하나로 통일"*이라 못박고 `LP-2`가 **`Effect`가 그 훅을 쓰는 유일한 소비자**라
 확정했으며, 위 문단은 비용까지 적어뒀다. 그런데 leaf가 실제로 붙는 유일한
-경로는 `ObserverEffectLeafHandler.process`의 `bindLifetime(inst, v)` 한 줄이고,
+경로는 leaf 핸들러 `process`(당시 결합 `ObserverEffectLeafHandler` — 현
+`EffectLeafHandler`, `H-278`)의 `bindLifetime(inst, v)` 한 줄이고,
 `bindLifetime`의 실 구현 스케치는 `gchold[value] = true` + `BindData`에
 gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그걸 부를
 주체도 없었다.** 그래서 leaf가 죽으면 `canExecute`가 거짓이 되어 *"앞으로
@@ -106,8 +107,8 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    **[2026-08-24 재결정, `/code-review high` 지적]** 여기 한때 *"`EffectHandle`
    쪽이 자기 `bindLifetime` 직후에 건다"*고 적었는데 **그 호출부가 실재하지
    않는다** — 핸들은 남이 자기를 `bindLifetime`하는 걸 관측할 수 없다. 게다가
-   `Effect`가 바인드되는 경로는 **둘**이고(`ObserverEffectLeafHandler.process`의
-   children 배열 leaf, 그리고 `activateList`가 `_detachCleanup`을 직접 바인드하는
+   `Effect`가 바인드되는 경로는 **둘**이고(leaf 핸들러(`H-278` 후
+   `EffectLeafHandler`)의 children 배열 leaf, 그리고 `activateList`가 `_detachCleanup`을 직접 바인드하는
    내부 경로 — `base/slot-plan.md`) **`Destroying`이 가장 절실한 쪽이 후자**라,
    핸들러 층에 분기를 둬도 안 덮인다.
    **사용자 판단(2026-08-24)**: *"`Destroying` 자체가 엔진이 아는 요소이기

@@ -1184,7 +1184,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   | `AttributeGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
   | `SlotHandler` | 말단 | 마운트/언마운트 |
   | `RefLeafHandler` | 말단 | `Ref:Set` (+ 부기 — `H-39`) |
-  | `ObserverEffectLeafHandler` | 말단 | `bindLifetime` (+ 부기 — `H-39`) |
+  | `ObserverLeafHandler` / `EffectLeafHandler`(**[2026-09-01 `H-278`]** 옛 결합 `ObserverEffectLeafHandler`가 소유 모듈별 둘로) | 말단 | `bindLifetime` (+ 부기 — `H-39`) |
   | `ProcessedPreRefHandler` / `ProcessedPostRefHandler` | 말단 | 없음(부기만) |
   | `ProcessedModifierHandler` | 말단 | 없음(부기만 — `H-35`) |
   | `UICornerHandler` | 말단 | 자식 Instance 생성/제거 |
