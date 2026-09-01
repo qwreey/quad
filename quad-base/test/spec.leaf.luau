@@ -1,5 +1,6 @@
 --[[
-	ObserverEffectLeafHandler + dynamic-path guards — `.claude/base/
+	Observer/Effect leaf handlers + dynamic-path guards (`H-278`: one pair
+	per owning module — ObserverLeafHandler/EffectLeafHandler) — `.claude/base/
 	source-state-plan.md` "Observer/Effect Leaf dedup" / "동적 경로 가드",
 	`.claude/base/effect-plan.md` "동적 경로 가드" (M3 unit 4).
 ]]

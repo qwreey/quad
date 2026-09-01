@@ -56,9 +56,11 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   이 한 줄로만 기록.
 - `priority: number` — 우선순위. 등록 순서(Fusion의 4단계 고정 stage, Vide의
   action() 우선순위)보다 일반화된 **열린 숫자 공간**으로.
-- `process(inst, key, value, index): (nextValue: any?) -> ()` — 실제 처리
-  수행(아래 "확정된 디스패치 모델"/"Dispatch 체인" 절 참고) 하고,
-  **자기 자신이 방금 벌인 일을 무르는 1-인자 클로저를 반환**.
+- `process(inst, key, value, index): (nextValue: any?, retracting: boolean) -> ()`
+  — 실제 처리 수행(아래 "확정된 디스패치 모델"/"Dispatch 체인" 절 참고)
+  하고, **자기 자신이 방금 벌인 일을 무르는 클로저를 반환**
+  (**[2026-09-01 `H-258`]** 2번째 인자 `retracting` — "Dispatch 체인" 절의
+  계약 문단이 소스; 한때 1-인자였다).
   v1/기존 논의에서 "bind"라 부르던 것과 동일한 역할 + 예전의 `retract`
   필드가 여기로 합쳐짐(**[전면 재정정, 2026-08-13 다섯 번째 세션]**,
   계기·근거는 아래 "Dispatch 체인" 절). 그 인자는 **`nil`(단순 철거)

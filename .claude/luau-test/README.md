@@ -283,7 +283,8 @@ Connected 즉시 전환"은 새 모델에서도 유효**(재작성 시 살릴 �
   메시지(어느 줄, 어떤 문구)를 그대로 붙여서 알려주면 다음 문서 갱신이
   빠름.
 - `13`은 A(타입)/B(런타임) 둘 다 확인해줄 것 — B의 assert가 실패하면
-  `Dispatch/Leaf.luau` 설계(`isRef(v) and not isPreRef(v)`) 자체가
+  Ref leaf 핸들러 설계(`isRef(v) and not isPreRef(v)` — [2026-09-01
+  `H-278`] 소속은 M8의 `Ref.luau`) 자체가
   잘못 짜인 것이니 우선순위 높게 알려줄 것.
 - `16`은 **어느 쪽으로 나와도 유용** — 통과하면 `store.key` 타이핑을 이
   type function 방식으로 그대로 채택, API 이름이 틀려서 막히면(`type
