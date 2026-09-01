@@ -923,14 +923,15 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       무조건 찍지 않고 **모듈 표면의 `Quad.debug`(boolean, 기본 `false`)가
       참일 때만** — `Quad.debug` 자체가 이번에 신설된 새 공개 표면이다
       (`base/module-lifecycle-plan.md`의 "모듈 표면의 디버그 플래그" 절)
-- [ ] `Dispatch/Leaf.luau` — `(i:number, v=Ref/Observer/PreRef/PostRef)` children-array
-      leaf 매칭 Handler, `StoreBind.luau`와 같은 층위(범용/엔진무관) —
-      quad-base 소속으로 확정(2026-08-08 두 번째 세션, `base/
-      dispatch-core-plan.md` "Dispatch는 프리미티브가 아니다" 절).
-      **[2026-08-31 M3 단위 4] 파일은 이미 존재한다** — Observer/Effect
-      몫(`ObserverEffectLeafHandler` + 가드 둘)은 아래 단위 4 항목들로
-      구현 완료, 이 체크박스에 남은 것은 `Ref`/`PreRef`/`PostRef` 매칭
-      합류(M8 — `base/ref-plan.md`)뿐이라 `[ ]` 유지
+- [ ] children-array leaf 매칭 Handler들 — `(i:number, v=Ref/Observer/
+      Effect/PreRef/PostRef)`, quad-base 소속(2026-08-08 두 번째 세션).
+      **⚠️ [2026-09-01 `H-278` 사용자 확정 — 파일 배치 역전]** 옛 확정지
+      `Dispatch/Leaf.luau`는 해체됐다 — 등록 소유는 **각 값의 선언 모듈**
+      ("각 객체를 아는 곳은 각 객체가 선언된 곳"): Observer/Effect 몫
+      (`ObserverLeafHandler`/`EffectLeafHandler` + 가드 둘)은
+      `Observer.luau`/`Effect.luau`의 `registerDispatchHandlers`로 **구현
+      완료**(아래 단위 4 항목들), 남은 것은 `Ref`/`PreRef`/`PostRef` 몫이
+      **`Ref.luau`에** 합류하는 것(M8 — `base/ref-plan.md`)뿐이라 `[ ]` 유지
 - [x] **[2026-08-31 M3 단위 1]** `chains`(Relate 기반, `{[inst(weak)]={[k]={[index]={handler, retractor}}}}`
       — **재귀 깊이 인덱스 → (담당 핸들러, 그가 반환한 retractor 클로저)**) +
       **3-인자** `Dispatch.retractFrom(inst,k,index)` — 재귀 재-dispatch
@@ -955,8 +956,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         `Dispatch.drive`의 진입도 항상 `1`
       - **소유권 충돌 감지는 Dispatch의 일이 아님**(옛 점유 error 폐지) —
         필요한 도메인이 직접(Attribute 이름 claim, M10)
-- [x] **[2026-08-31 M3 단위 4 — `Dispatch/Leaf.luau`의 FALLBACK 가드 둘,
-      `spec.leaf.luau` 6·7이 메시지·override 의미론 실측]**
+- [x] **[2026-08-31 M3 단위 4 — FALLBACK 가드 둘(`H-278`로 등록 소유가
+      `Observer.luau`/`Effect.luau`로 이동), `spec.leaf.luau` 6·7이
+      메시지·override 의미론 실측]**
       **[2026-08-24 M2에서 이동] Observer/Effect 동적 경로 가드 등록** —
       `{priority = HANDLER_PRIORITY_FALLBACK, isHandlable = v가
       Observer/Effect, process = error(...)}` 둘을 `Dispatch.addHandler`로
@@ -968,9 +970,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       바로 아래 항목뿐이었고, 둘 다 "핸들러를 등록한다"뿐이라 이쪽으로 미룰
       수 있었다** — 그래서 빌드 순서엔 역방향 간선이 남지 않는다.
       순서 교체(2026-08-24)의 근거
-- [x] **[2026-08-31 M3 단위 4 — `Dispatch/Leaf.luau`, HIGH 밴드("base 소속
-      핸들러가 전부 여기 오는 게 아님"의 `Leaf`), `old ~= v` dedup +
-      `H-57` 값 교체 cleanup 소진까지 — `spec.leaf.luau` 1~5]**
+- [x] **[2026-08-31 M3 단위 4 — HIGH 밴드("base 소속 핸들러가 전부 여기
+      오는 게 아님"의 `Leaf`), `old ~= v` dedup + `H-57` 값 교체 cleanup
+      소진까지 — `spec.leaf.luau` 1~5; `H-278`로 소유가
+      `Observer.luau`/`Effect.luau`의 모듈별 핸들러 둘로 이동]**
       **[2026-08-24 M2에서 이동, `H-39`]** `ObserverEffectLeafHandler.process`가
       자기 배열 자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을
       등록 — 빠져 있었다(위 말단 핸들러 항목)

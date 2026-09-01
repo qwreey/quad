@@ -591,8 +591,9 @@ M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **
 준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
-**[2026-08-31 M3 단위 4] 그 등록은 완료됐다** — `Dispatch/Leaf.luau`가
-등록하며(`spec.leaf.luau` 6이 메시지·blame 실측), 해당 체크박스는 `[x]`다.
+**[2026-08-31 M3 단위 4] 그 등록은 완료됐다**(`spec.leaf.luau` 6이 메시지·
+blame 실측, 해당 체크박스는 `[x]`) — **[2026-09-01 `H-278`]** 등록 소유는
+`Effect.luau` 자신의 `registerDispatchHandlers`다(`Dispatch/Leaf.luau` 해체).
  `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,

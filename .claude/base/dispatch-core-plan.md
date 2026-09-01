@@ -764,7 +764,8 @@ end
   Handler도 여기 속함(`inst`를 `any`로 취급, 엔진 특정 API 불필요 —
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
-  `Dispatch/Leaf.luau`, `Dispatch.addHandler`로 등록). quad-roblox의
+  **[2026-09-01 `H-278`]** 등록 주체는 각 값의 선언 모듈(`Observer.luau`/`Effect.luau`,
+  M8은 `Ref.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
   Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
@@ -1396,7 +1397,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 - 그리고 `Relate`에 쓴 걸 클로저에서 지울 땐 **"내가 실제로 물러날
   때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
   (`RefLeafHandler`가 정확히 이 버그였음).
-- **`Observer`/`Effect`의 Leaf 바인딩(`Dispatch/Leaf.luau`)도 `RefLeafHandler`와
+- **`Observer`/`Effect`의 Leaf 바인딩(`H-278`로 각자 `Observer.luau`/`Effect.luau` 소유)도 `RefLeafHandler`와
   같은 `old ~= v` dedup을 둠 — 채택 당시(2026-08-14, 사용자 판단)엔 순수
   성능 최적화였으나 **[2026-08-31 정정, M3 단위 4 `H-266`] 지금은
   load-bearing**이다.** `bindLifetime`이 `canBound` 가드로 이미 묶인 값의
@@ -1444,6 +1445,20 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 "배치 등록을 안전하게 만드는 Blocker 게이팅" 절.
 
 ### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
+
+> **⭐ [2026-09-01 `H-277` 사용자 확정 — 이 절의 구현 소속이 옮겨졌다.**
+> 사용자 진단: *"Dispatch 가 너무 많은 일을 하는듯한 느낌 … setLength,
+> setOffsetSource, getOffsetAt, getBookkeeping 는 drive/process 와 밀접한
+> 영향을 가지지만 핸들러의 영역은 아닌편"* — 이 절 전체(부기·접두합 캐시·
+> 두 커서·배치 Blocker)는 이제 **`quad-base/src/Bookkeeping.luau`**
+> (`InitBookkeeping(module)` → 사적 `module._bookkeeping`)가 구현 소유자다.
+> 의존 방향은 사용자 제안 그대로 **{Slot, Dispatch} → Bookkeeping**(부기는
+> 둘 다 모름 — `SlotBrand` 프로브는 브랜드 잎 판별이지 Slot 의존이 아니다).
+> **공개 호출 표면은 그대로 `quad.Dispatch.setLength` 등**이다 — 말단 핸들러
+> 계약(`H-39`/`H-25`)이 그 이름으로 확정돼 있어 InitDispatch가 같은 함수
+> 객체를 래퍼 없이 재노출한다. M6에서 Slot은 `module._bookkeeping`을 직접
+> 쓴다(표면 개명 여부는 그때 재론). 아래 서술의 `Dispatch.setLength`류
+> 표기는 호출 표면 기준이라 그대로 유효하다.
 
 **문제(`base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 열린 질문,
 2026-08-04 신설)**: `Frame { Slot1, Element, Slot2 }`처럼 Slot과 정적
@@ -1884,20 +1899,46 @@ function Dispatch.getOffsetAt(ownerKey, at)
     if at <= bk.offsetCacheValidUpTo then
         return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
-    local cur = bk.offsetCache[bk.offsetCacheValidUpTo]
-    for i = bk.offsetCacheValidUpTo, at - 1 do
+    -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 채우기 루프가 **자가 치유**한다.
+    -- 캐시 커서를 한 칸 쓸 때마다 **바로 그만큼만** 올리고(불변식: 각 스텝
+    -- 머리에서 커서 == i), 길이 State의 `:Get()` 안 사용자 코드가 커서를
+    -- 낮췄으면 그 지점부터 채우기를 **재시작**한다 — 옛 꼬리 일괄 쓰기
+    -- (`= at`)는 그 하강 신호를 덮어 낡은 캐시를 "유효"로 표시했다. 순수
+    -- 캐시 채우기(Set 없음)라 재시작이 자유롭다.
+    local i = bk.offsetCacheValidUpTo
+    local cur = bk.offsetCache[i]
+    while i < at do
         -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
         -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
         if bk.lengthList[i] == nil then
             error("Dispatch.getOffsetAt: lengthList[" .. i .. "] is nil — bookkeeping is broken", 1)
         end
-        cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
+        cur += contribution(bk, i)             -- lengthList[i](State면 :Get()) ← 사용자 코드 창
+        if bk.offsetCacheValidUpTo < i then
+            -- 그 사용자 코드가 아래를 무효화했다 — 하강점 너머에 이미 쓴
+            -- 엔트리는 낡은 길이로 만든 것, 거기서부터 다시.
+            -- (max 1: M3의 하강은 1 밑으로 안 내려간다 — splice의 `j-1 = 0`
+            -- 케이스는 M6에서 오고, 그땐 베이스 재독까지 필요)
+            i = math.max(bk.offsetCacheValidUpTo, 1)
+            cur = bk.offsetCache[i]
+            continue
+        end
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
+        bk.offsetCacheValidUpTo = i + 1        -- 한 칸씩 — 방금 쓴 것 너머로 절대 안 올림
+        i += 1
     end
-    bk.offsetCacheValidUpTo = at                          -- 캐시가 여기까지 유효해짐
     return cur
 end
 ```
+
+**[2026-09-01 `H-240` 인지된 UB 경계 — 방어하지 않고 문서화만.**
+자리 `i`의 길이 `:Get()` **안에서** 바로 그 자리 `i`를
+`setLength(owner, i, …)`로 **교체**하는 것(자기 자신을 읽는 도중 자기
+재정의): 정확히 커서 위치로의 하강은 무하강 기준선과 값으로 구분이 안 돼
+어느 검사로도 안 걸린다 — 기존 "일반적인 재진입/무한루프는 방어 안 함"
+가족의 한 사례로 명명한다. 참고로 발행 경로(offset Source)는 어차피
+`getOffsetAt`을 다시 지나므로, 이 사각이 닿는 건 `sum`(→ Slot `Length`,
+M6)과 prefix 복원값뿐이다 — M6 손 트레이싱에서 splice와 함께 재점검.
 
 ### ⭐⭐ [2026-08-26 신설] 두 필드 — `offsetCacheValidUpTo`와 `offsetSetUpTo`
 
@@ -2057,6 +2098,11 @@ local function recompute(ownerKey, bk)
     local prefix, i = {}, 1
     while i <= (bk.N or 0) do
         prefix[i] = sum
+        -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 진입 스냅샷 — 아래
+        -- `getOffsetAt`의 `:Get()` 읽기 창에서도 사용자 코드가 커서를 낮출
+        -- 수 있는데, 기준선이 경로마다 다르다(평시 `i-1`, 되감기 복귀 직후
+        -- `i`) — 실제 진입값과 비교해야 양쪽 다 정확하다.
+        local entryCursor = bk.offsetSetUpTo
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(발행 채널 없음) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
@@ -2068,7 +2114,14 @@ local function recompute(ownerKey, bk)
         if offset == nil then
             error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
         end
-        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
+        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유) ← 사용자 코드 창
+        -- `H-240` 검사 ① — 아래 커서 쓰기가 신호를 덮기 **전에**. 옛 코드는
+        -- 이 쓰기가 무조건이라 읽기 창의 하강이 여기서 지워졌다(재현 확인).
+        if bk.offsetSetUpTo < entryCursor then
+            i = math.max(bk.offsetSetUpTo, 1)
+            sum = prefix[i]
+            continue
+        end
         bk.offsetSetUpTo = i                                    -- 여기까지 Set 완료
         if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
             offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
@@ -2108,9 +2161,21 @@ local function recompute(ownerKey, bk)
         -- [2026-08-31 `H-244`] 강제(coercion)는 `getOffsetAt`과 같은 단일
         -- `contribution(bk, i)` 하나다 — 인라인 사본 둘이면 강제에 케이스가
         -- 늘 때(M6) 한쪽만 고쳐져 Length와 offset이 갈라진다.
-        sum += contribution(bk, i)
+        sum += contribution(bk, i)             -- ← 사용자 코드 창(길이 State의 :Get)
+        -- `H-240` 검사 ② — contribution의 자기 창. 오염됐을 수 있는 위 `+=`는
+        -- 되감기의 prefix 복원이 버린다. (뮤테이션 실측: 이 검사를 빼면
+        -- `spec.lengthoffset` 10이 실제로 실패한다 — 검사 ①은 이 케이스를
+        -- 다음 반복 진입에서 못 본다, 스냅샷이 이미 낮은 값이라.)
+        if bk.offsetSetUpTo < i then
+            i = math.max(bk.offsetSetUpTo, 1)
+            sum = prefix[i]
+            continue
+        end
         i += 1
     end
+    -- [2026-09-01 `H-240`] 두 꼬리 쓰기가 안전한 이유 — 루프 탈출은 항상
+    -- "마지막 검사 통과 직후, 사용자 코드 창 없음"을 지나므로 덮을 신호가
+    -- 없다(구조적 보장, 별도 검사 불요).
     -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.
     --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
     --   낮춰진 `offsetSetUpTo`를 뒤에서 무조건 덮으면 **아직 Set 안 한 자리가

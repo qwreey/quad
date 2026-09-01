@@ -180,7 +180,40 @@ vacuous를 잡아 재교정 — `H-255`로 소급 원장), `/code-review high` 1
   §4 재료: `H-256` leaf 경로 재현 + designed error가 배치 Blocker를 On 채로
   남김, `H-250` 코루틴 폴백 실측, `H-186` UB 실측 확인.
 
+## §4 회신 (2026-09-01, 대화형 두 라운드)
+
+**회신 1** — 여섯 중 다섯 확정: `H-241`/`H-275` UB(후자는 *"무엇이 되었든
+drive 는 한번 뿐임"*으로 범위 확장 — modifier·PreRef 재수행 근거,
+existing-instance-binding 기각과 혼동 주의) / `H-250` (a) 스파이크(사용자
+예측 *"네이티브 코드젠이 되지는 않을꺼야"*) / `H-256` (a)(*">0 %1==0 확인은
+비싸지 않아"*) / `H-258`은 권고 대신 **사용자 설계** — retractor 2번째 인자
+(*"retractUnder 로 불렸으면 true … 미리 준비해두는게 나쁠 게 없음"*).
+`H-240`은 재질문(체크 하나로 되나 / `H-124` 재발 안 하나). **같은 회신에서
+구조 셋 제기**: `H-277`(Bookkeeping 분리 — *"Dispatch 가 너무 많은 일을
+하는듯"*, `{Slot, Dispatch} → Bookkeeping`), `H-278`(Leaf 등록 소유 —
+*"각 객체를 아는 곳은 각 객체가 선언된 곳"*), `H-279`(drive pre-hook —
+*"단순 리서치 요소로"*).
+
+**반영 1** — 다섯 반영(스파이크 `27`이 **발견 하나**: `-O2`가 로컬 직접
+호출 태그 함수를 인라인해 폴백 발화 — quad의 실모양(테이블 경유)은 4플래그
+전부 가시, "태그는 테이블 경유 호출에만" 규칙 명문화; 계측이 대상을
+교란하는 함정 둘도 파일에 박제) + `H-240` 분석 답변 + `H-277`/`H-278` 의견
+회신 + `research/drive-hook-plan.md` 신설.
+
+**회신 2** — *"확인했어. H240 도 이해해서 수행하면 될것 같아"* → 셋 확정.
+
+**반영 2** — (1) `H-277`: `src/Bookkeeping.luau` 신설(부기 전량 이동,
+`module._bookkeeping` 사적 네임스페이스, 공개 표면은 `quad.Dispatch.*`
+유지·같은 함수 객체 재노출). (2) `H-240`: 쓰기 직전 검사 셋(진입 스냅샷
+①/기존 H-124/② contribution 뒤) + `getOffsetAt` 증분 커서·재시작 자가
+치유 + 인지된 UB 경계(자기 자리 mid-read 교체) — `spec.lengthoffset` 10이
+원 재현 회귀, **뮤테이션 실측으로 ②가 load-bearing 확인**(빼면 실패).
+(3) `H-278`: `Dispatch/Leaf.luau` 해체 — Observer/Effect 각자
+`registerDispatchHandlers`(RunInit 멱등 당김으로 순서 해결), 결합 핸들러가
+모듈별 둘로. 문서 전파: dispatch-core(H-277 배너·의사코드 동기)·
+architecture 트리·source-state/effect/ref/brand/slot-plan·ROADMAP.
+
 ## 이 다음
 
-사용자에게 "§4를 보라" 한 줄(**대기 여섯**: `H-240` 🔴/`H-241`/`H-250`/
-`H-256` 🔴/`H-258`/`H-275`) → 회신 반영 후 M3 마감(ROADMAP·머리말 3층).
+감사 루프(구조 개편 규모 — 각도별 라운드) → `/code-review high` → M3 마감
+(ROADMAP·머리말 3층). **§4 열린 문항 0.**

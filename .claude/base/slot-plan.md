@@ -187,7 +187,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   `error`** — `Modifier` 필드가 이 값들을 담으면 즉시 `error`로 확정했던
   것(`modifier-plan.md` 7번)과 같은 판별 메커니즘(`isRef`/`isPreRef`/`isPostRef`/
   `isObserver`/`isEffect`/`isModifier` Brand predicate)을 그대로 재사용.
-  근거: `Dispatch/Leaf.luau`가 처리하는 "children 배열에 `Ref`/`Observer`/
+  근거: leaf 핸들러들(`H-278` — 각 값의 선언 모듈 소유)이 처리하는 "children 배열에 `Ref`/`Observer`/
   `PreRef`가 직접 놓이는" 케이스는 **그 컴포넌트가 지금 만들고 있는
   Instance 자기 자신을 가리키는 self-ref 캡처**(`Frame { PreRef():Callback(fn) }`가
   그 Frame 자신을 잡는 것)라 `inst`가 "지금 생성 중인 바로 그 하나의
@@ -3633,7 +3633,7 @@ end
 ```
 
 - **왜 `Observer`/`Effect`는 dispose 대상이 아닌가**: 이 둘은 children
-  배열 leaf 위치에 놓이면 `Dispatch/Leaf.luau`가 매치해 내부적으로
+  배열 leaf 위치에 놓이면 leaf 핸들러(`H-278` — 각 선언 모듈 소유)가 매치해 내부적으로
   `bindLifetime(inst, value)`를 호출하고(`base/source-state-plan.md`
   "이중 바인딩 금지" 절), 생존은 그 GC 앵커(gcconn)만으로 판정됨 —
   Slot처럼 "죽는 순간 `elementOwner`/`lengthList`/`sourceList`가

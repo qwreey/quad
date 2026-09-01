@@ -39,6 +39,9 @@ local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
+local Relate = require("./Relate")
+local Void = require("./Void")
+local InitDispatch = require("./Dispatch")
 
 local EffectBrand = Brand.EffectBrand
 local isState = Brand.isState
@@ -295,8 +298,59 @@ local function createImpl(module: any)
 	return Impl
 end
 
+-- Dispatch-side registrations for the Effect VALUE (`H-278` — mirror of
+-- Observer.luau's `registerDispatchHandlers`, see the rationale there; the
+-- only body difference is the `H-57` cleanup consumption on swap/teardown).
+local function registerDispatchHandlers(module: any)
+	module:RunInit(InitDispatch)
+	local dispatch: QuadTypes.Dispatch = module.Dispatch
+	local None = module.None
+	local relate = Relate() -- (inst, k) -> last bound handle; weak value (`H-71`)
+
+	dispatch.addHandler({
+		name = "EffectLeafHandler",
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			return type(k) == "number" and Brand.isEffect(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_HIGH,
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
+			dispatch.setOffsetSource(inst, k, None) -- `H-39`
+			dispatch.setLength(inst, k, 0)
+
+			local old = relate:GetWeak(inst, k) -- `H-71`; load-bearing dedup (`H-266`)
+			if old ~= v then
+				module.bindLifetime(inst, v)
+			end
+			relate:SetWeak(inst, k, v)
+			return function(nextValue: any?, _retracting: boolean)
+				if nextValue ~= v then
+					module.unbindLifetime(v)
+					-- `H-57`: value-swap retract is destruction-equivalent for
+					-- an Effect (it never comes back) — consume its cleanup.
+					v:_consumeCleanup()
+					if relate:GetWeak(inst, k) == v then
+						relate:SetWeak(inst, k, nil)
+					end
+				end
+			end
+		end,
+	})
+	dispatch.addHandler({
+		name = "EffectDynamicPathGuard",
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return Brand.isEffect(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			Err.errorBefore(`Effect binding should be array index item, but got {typeof(k)}`, SURFACE)
+			return Void -- unreachable; keeps the contract type
+		end,
+	})
+end
+
 local function Init(module: any)
 	implsOf(module).Effect = createImpl(module)
+	registerDispatchHandlers(module)
 end
 
 local function implFor(module: any)

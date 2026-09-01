@@ -196,9 +196,9 @@ do
 		q.Dispatch.drive(inst, { o, o })
 	end)
 	assert(not ok and string.find(tostring(err), "already bound", 1, true) ~= nil, `double placement errors: {tostring(err)}`)
-	-- 리터럴 level 2였다면 Leaf.luau 줄이 찍혔다 — errorBefore가 drive를 뚫는다
+	-- 리터럴 level 2였다면 Observer.luau(핸들러 소유 모듈) 줄이 찍혔다 — errorBefore가 drive를 뚫는다
 	assert(string.find(tostring(err), "spec.leaf.luau", 1, true) ~= nil, `blame reaches user code: {tostring(err)}`)
-	assert(string.find(tostring(err), "Leaf.luau", 1, true) == nil, "never blames quad internals")
+	assert(string.find(tostring(err), "src/Observer", 1, true) == nil, "never blames quad internals")
 	print("PASS")
 end
 

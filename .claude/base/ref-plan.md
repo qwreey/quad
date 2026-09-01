@@ -939,8 +939,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     function(inst,k,v) Err.errorBefore(`PreRef binding should be array
     index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 M3
     단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 — 같은 부류인
-    Observer/Effect 가드가 `Dispatch/Leaf.luau`에서 실제로 이 모양으로
-    구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절;
+    Observer/Effect 가드가 실제로 이 모양으로(각자 `Observer.luau`/
+    `Effect.luau`에서 — `H-278`) 구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절;
     `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 "error 계약" 절)
     (**[2026-08-18, `/code-review high`로
     누락 발견 — `PostRef`의 "동적 경로 가드 Handler도 거울상으로 하나 더" 절/
@@ -1169,8 +1169,8 @@ index item, but got {typeof(k)}`, SURFACE) }` Handler를 등록
 no-op이라 되돌릴 상태가 없음.
 
 **타입/판별**: `isPostRef`는 `isPreRef`와 같은 층위의 가장 구체적인 항등
-체크이고, `isRef`가 그 위에 얹히는 상위 개념 — `Dispatch/Leaf.luau`의
-일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
+체크이고, `isRef`가 그 위에 얹히는 상위 개념 — Ref leaf 핸들러(M8,
+`H-278`로 `Ref.luau` 소유)의 일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
 상세는 `base/brand-plan.md`.
 
 **대표 유스케이스(사용자 제시)** — `ChildAdded` 같은 이벤트에서 **나중에
