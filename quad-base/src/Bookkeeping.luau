@@ -112,6 +112,7 @@ local function Init(module: any)
 	-- is indistinguishable from the no-op baseline, kin to the standing
 	-- "재진입/자기 재정의 무방어" family.
 	local function getOffsetAt(ownerKey: any, at: number): number
+		checkPosition("getOffsetAt", at) -- 공개 표면 셋 중 하나 (`H-256`/`H-280`)
 		local bk = getBookkeeping(ownerKey)
 		if bk.offsetCacheValidUpTo == 0 then
 			-- bootstrap: position 1's offset is this owner's base itself —

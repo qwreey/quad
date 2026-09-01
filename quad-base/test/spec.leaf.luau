@@ -11,6 +11,7 @@ local mock = require("./mock")
 
 local Instance = mock.Instance
 local newQuad = mock.newQuad
+local assertBlamesUser = mock.assertBlamesUser -- `H-282`
 
 print("=== 1. Observer leaf — 배열 자리 바인딩: H-39 부기(None/0) + gchold로 실행 가능해진다 ===")
 do
@@ -150,7 +151,7 @@ do
 		`observer guard message: {tostring(err)}`
 	)
 	-- errorBefore(최외곽 표면)라 drive를 뚫고 사용자 호출부(이 파일)를 blame
-	assert(string.find(tostring(err), "spec.leaf.luau", 1, true) ~= nil, `blame reaches user code: {tostring(err)}`)
+	assertBlamesUser(err, "spec.leaf.luau", "guard blame")
 
 	local ok2, err2 = pcall(function()
 		q.Dispatch.drive(inst, { OtherThing = e })
@@ -198,8 +199,7 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "already bound", 1, true) ~= nil, `double placement errors: {tostring(err)}`)
 	-- 리터럴 level 2였다면 Observer.luau(핸들러 소유 모듈) 줄이 찍혔다 — errorBefore가 drive를 뚫는다
-	assert(string.find(tostring(err), "spec.leaf.luau", 1, true) ~= nil, `blame reaches user code: {tostring(err)}`)
-	assert(string.find(tostring(err), "src/Observer", 1, true) == nil, "never blames quad internals")
+	assertBlamesUser(err, "spec.leaf.luau", "double-placement blame")
 	print("PASS")
 end
 

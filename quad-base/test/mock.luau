@@ -439,13 +439,24 @@ local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
 			q.Dispatch.setLength(inst, k, 1)
 			if log ~= nil then
 				local logList: { string } = log
-				return function(hint: any?)
-					table.insert(logList, `leaf:retract:{k}:{tostring(hint)}`)
+				return function(hint: any?, retracting: boolean)
+					-- `H-258` 플래그까지 기록 — 공유 헬퍼가 관측을 막으면
+					-- 어떤 spec도 이 계약을 검증할 수 없다 (`H-281`)
+					table.insert(logList, `leaf:retract:{k}:{tostring(hint)}:{tostring(retracting)}`)
 				end
 			end
 			return Quad.Void
 		end,
 	} :: QuadTypes.Handler)
+end
+
+-- `H-282`: blame 단언 관용구(사용자 파일을 찍고 quad 내부는 안 찍는다)가
+-- spec들에 여러 벌 복사되며 내부-제외 검사가 한 곳에서 드리프트했다 — 한
+-- 헬퍼로. `/src/`는 quad-base/src·quad-error/src 둘 다 걸린다(테스트 경로엔 없음).
+local function assertBlamesUser(err: any, wantFile: string, label: string?)
+	local msg = tostring(err)
+	assert(string.find(msg, wantFile, 1, true) ~= nil, `{label or "blame"}: expected {wantFile} in: {msg}`)
+	assert(string.find(msg, "/src/", 1, true) == nil, `{label or "blame"}: must not blame quad internals: {msg}`)
 end
 
 return {
@@ -455,4 +466,5 @@ return {
 	installLifetime = installLifetime,
 	newQuad = newQuad,
 	addSpecLeaf = addSpecLeaf,
+	assertBlamesUser = assertBlamesUser,
 }

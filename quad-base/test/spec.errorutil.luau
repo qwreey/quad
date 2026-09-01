@@ -8,6 +8,8 @@
 ]]
 
 local QuadError = require("../luau_packages/quad_error")
+local mock = require("./mock")
+local assertBlamesUser = mock.assertBlamesUser -- `H-282`
 
 -- 네임스페이스 형태(사용자 결정 — 사본 분리 문제): 유틸은 상태 없는 생성자,
 -- 태그 맵은 네임스페이스 인스턴스에 산다. 여기선 자체 네임스페이스로 계약만 검증.
@@ -39,7 +41,6 @@ do
 	end
 	Err.setFuncLevel(inner, 4)
 	local function outer()
-		callLine = curline() + 1
 		inner()
 	end
 	Err.setFuncLevel(outer, 3)
@@ -48,9 +49,6 @@ do
 	assert(not ok, "errorAt raises")
 	assertBlames(err, raiseLine, "boom-inner") -- 레이어 4(=inner) 안의 errorAt 호출 줄
 
-	local ok2, err2 = pcall(outer)
-	assert(not ok2, "second raise still errors")
-	local _ = err2
 	-- 레이어 3(=outer)을 겨냥하면 outer 안(inner를 부른 줄)이 blame
 	local function inner3()
 		Err.errorAt("boom-outer", 3)
@@ -122,12 +120,24 @@ do
 	assert(not ok, "no matching layer still raises")
 	assert(string.find(tostring(err), "boom-nomatch", 1, true) ~= nil, "message survives the fallback")
 	-- `H-269`: 폴백은 raise 자리를 blame한다 — quad-error 내부 줄이 아니라
-	assert(string.find(tostring(err), "spec.errorutil.luau", 1, true) ~= nil, `fallback blames the raise site, got: {tostring(err)}`)
-	assert(string.find(tostring(err), "quad-error", 1, true) == nil, "fallback never lands inside quad-error")
+	assertBlamesUser(err, "spec.errorutil.luau", "errorAt fallback")
 	local ok2, err2 = pcall(function()
 		Err.errorAtNearest("boom-nomatch-near", 99)
 	end)
-	assert(not ok2 and string.find(tostring(err2), "spec.errorutil.luau", 1, true) ~= nil, `nearest fallback too: {tostring(err2)}`)
+	assert(not ok2, "nearest raises")
+	assertBlamesUser(err2, "spec.errorutil.luau", "errorAtNearest fallback")
+	-- `H-283`: Before 쌍의 폴백도 raise 자리 — 4/4 전부 커버(센티널 번역이
+	-- 4벌 복사인 채 유지되는 이유는 quad-error 본문 주석 참고: 프레임 산술)
+	local okB, errB = pcall(function()
+		Err.errorBefore("boom-nomatch-before", 99)
+	end)
+	assert(not okB, "before raises")
+	assertBlamesUser(errB, "spec.errorutil.luau", "errorBefore fallback")
+	local okBN, errBN = pcall(function()
+		Err.errorBeforeNearest("boom-nomatch-bnear", 99)
+	end)
+	assert(not okBN, "beforeNearest raises")
+	assertBlamesUser(errBN, "spec.errorutil.luau", "errorBeforeNearest fallback")
 	-- `H-270`: layer 0(무태그) 요청이 유령 최상단 프레임에 오매치되지 않는다 —
 	-- 실재하는 최외곽 무태그 프레임(이 파일)을 blame
 	local ok3, err3 = pcall(function()

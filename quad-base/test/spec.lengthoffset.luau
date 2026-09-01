@@ -259,7 +259,7 @@ do
 			`setLength rejects {tostring(bad)}: {tostring(err)}`
 		)
 		-- errorBeforeNearest(사용자 입력) — 부른 쪽(이 파일)을 blame
-		assert(string.find(tostring(err), "spec.lengthoffset.luau", 1, true) ~= nil, `blames the caller: {tostring(err)}`)
+		mock.assertBlamesUser(err, "spec.lengthoffset.luau", "gate blame") -- `H-282`: 내부-제외까지
 		local ok2, err2 = pcall(function()
 			q.Dispatch.setOffsetSource(owner, bad :: any, q.None)
 		end)
@@ -281,6 +281,11 @@ do
 		`contiguity is still recompute's own error, not this gate's: {tostring(err3)}`
 	)
 	assert(bk.N == 3, "the sparse position itself passed the gate before recompute objected")
+	-- `H-280`: 공개 표면 셋째(getOffsetAt)도 같은 게이트 — 0이면 cache[0](nil) 반환이었다
+	local ok4, err4 = pcall(function()
+		q.Dispatch.getOffsetAt(owner, 0)
+	end)
+	assert(not ok4 and string.find(tostring(err4), "positive integer", 1, true) ~= nil, `getOffsetAt gated too: {tostring(err4)}`)
 	print("PASS")
 end
 

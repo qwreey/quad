@@ -138,6 +138,12 @@ function module.new(): Namespace
 		end
 	end
 
+	-- ⚠️ `H-283`: the four sentinel translations below are deliberately NOT
+	-- extracted into a shared local helper — error(msg, n) counts frames from
+	-- the function that calls error, so a helper adds a frame whose presence
+	-- is OPTIMIZATION-DEPENDENT: -O2 inlines local direct-called functions
+	-- (spike 27), which would shift blame by one frame only under -O2. The
+	-- duplication is load-bearing frame arithmetic.
 	-- `H-269`: the raw sentinel (1) as an error() level would blame the
 	-- ns.error* function's own line inside quad-error — the documented
 	-- fallback is the RAISE SITE, which sits at level 2 from these frames.

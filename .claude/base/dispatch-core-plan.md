@@ -1884,6 +1884,7 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 -- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — nativeInsert의 삽입 위치,
 -- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
 function Dispatch.getOffsetAt(ownerKey, at)
+    checkPosition("getOffsetAt", at) -- [2026-09-01 H-280] 게이트 셋째 — 0이면 cache[0](nil)이 number로 반환됐다
     local bk = getBookkeeping(ownerKey)
     -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**
     -- `bk.offsetCache[i]` = i 자리의 절대 offset, `bk.offsetCacheValidUpTo` = **여기까지는
@@ -2319,7 +2320,8 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- 조회한다(아래). 길이가 상수인 자리(`NilHandler`의 `0` — **[2026-08-31 `H-265` 정정]** `NoneHandler`는 재귀만 하고 등록 자체를 안 한다)는 지속
 -- 클로저가 안 생기므로 생략해도 된다 — 그땐 캡처한 `i`가 그대로 유효하다.
 -- ⭐ [2026-09-01 `H-256` (a) 사용자 확정] 부기 진입점의 위치 검증 게이트 —
--- setLength/setOffsetSource 머리에서 `i`가 양의 정수인지 한 번 확인한다
+-- setLength/setOffsetSource(**[같은 날 `H-280`]** getOffsetAt까지 — 공개
+-- 표면 셋 전부) 머리에서 `i`가 양의 정수인지 한 번 확인한다
 -- (`type(i) ~= "number" or i % 1 ~= 0 or i <= 0` → errorBeforeNearest, 사용자
 -- 입력). 소수·음수·0·NaN이 그대로 들어오면 깨끗한 에러 대신 **부기 오염 +
 -- `recomputeBlocker` 영구 잠김**(조용한 최악 UB — 실측 재현)이 되기 때문.

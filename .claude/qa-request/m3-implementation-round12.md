@@ -69,6 +69,13 @@
 | `H-251` | ① | 2 | 🟢 | (탐사자) `spec.drive.luau` 헤더가 *"M3 unit-1 scope: pipeline stage (b) only"*로 stale — 단위 2가 `drive`에 ⓪/⓪' 배치 게이팅을 배선했다(`Dispatch/init.luau` 헤더는 갱신됨). 부수로 그 spec-로컬 핸들러는 배열 자리의 `setLength`/`setOffsetSource` 등록 계약(생략 UB)을 안 지킨 채 `drive`를 태운다 — F-4-1 측정 목적이라 무해하지만(빈 `bk`로 `recompute`가 no-op) 의도임을 주석으로 밝힐 자리 | ✅ 반영 — 헤더를 ⓪(b)⓪' 현행으로 + 등록 생략이 의도(순회 측정 전용)임을 명시 |
 | `H-252` | ① | 2 | 🟢 | (탐사자) `test.sh`의 `luau-analyze` 대상에 단위 2가 신설한 **`quad-error/src`가 없다**(require 경유 트랜지티브 타입만 읽힘) — 그 스크립트 자신의 주석이 "거짓 클린이 없다"를 목적으로 말하는 자리인데, 새 런타임 패키지의 strict 진단이 게이트 밖이다. `quad-types/src`도 같은 상태(전부터). 지금 직접 돌리면 둘 다 클린(실측 — `luau-analyze quad-error/src`·`quad-types/src` 각각 무출력 exit 0) | ✅ 반영 — `test.sh` analyze 대상에 `quad-types/src`·`quad-error/src` 추가(전체 그린 재확인) |
 | `H-264` | ① | 3 | 🟢 | (탐사자) `H-257`의 nil 한정 힌트가 **코드에만 있다** — 정본 `dispatch-core-plan.md` "우선순위 동률/매치 실패 처리" 절은 여전히 *"그 이상의 특수 분기는 두지 않음"*이라 그 커밋(`4c01be2`)이 넣은 nil 조건 분기 문구를 정면 부정한다(그 커밋은 `base/` 파일을 하나도 안 건드림 — ①의 "`base/`+코드 같은 커밋" 규약이 안 지켜진 자리) | ✅ 반영 — 매치 실패 절에 `H-257` 예외 명시(분기 로직 아닌 진단 문구 보강) |
+| `H-280` | ① | 회신 | 🟡 | (리뷰, PLAUSIBLE→확인) `H-256` 게이트가 공개 표면 셋 중 둘에만 — `getOffsetAt(inst, 0)`이 `offsetCache[0]`(nil)을 `: number` 시그니처로 반환(익명 산술 에러·오염) | ✅ 반영 — `checkPosition("getOffsetAt", at)` 추가(코드·의사코드), `spec.lengthoffset` 9 단언 |
+| `H-281` | ① | 회신 | 🟢 | (리뷰, CONFIRMED) 공유 `mock.addSpecLeaf`의 log retractor가 `H-258` 이전 1-인자 형태(`:: Handler` 캐스트가 은폐) — `retracting` 플래그를 어떤 spec도 관측 불가 | ✅ 반영 — 플래그까지 기록, `spec.nonenil` 4가 `(nil, true)` 실단언 |
+| `H-282` | ① | 회신 | 🟢 | (리뷰, CONFIRMED) blame 단언 관용구가 spec들에 여러 벌 복사, 한 곳(`spec.lengthoffset` 9)은 내부-제외 검사 누락으로 이미 드리프트 | ✅ 반영 — `mock.assertBlamesUser` 승격(`H-261` 소유자 규칙), 네 자리 교체 |
+| `H-283` | ① | 회신 | 🟡 | (리뷰, CONFIRMED — 단 처방은 반증) quad-error 센티널 번역이 4함수 4벌 + spec은 2/4만 커버. **공유 헬퍼 추출은 반증**: error(msg, n)은 error를 부른 함수 기준 프레임 산술이라 헬퍼 프레임의 존재가 최적화 의존(-O2가 로컬 직접 호출을 인라인 — 스파이크 27 실측)이 돼 blame이 -O2에서만 한 프레임 밀린다 — 중복이 load-bearing | ✅ 반영 — 본문에 비추출 사유 주석, `spec.errorutil` 4가 4/4 폴백 전부 커버 |
+| `H-284` | ① | 회신 | 🟢 | (리뷰, CONFIRMED) `spec.errorutil` 1의 죽은 저장(`callLine` 미독 덮어씀) + 아무것도 새로 검증 않는 중복 pcall | ✅ 반영 — 둘 다 제거 |
+| `H-285` | 기각 | 회신 | 🟢 | (리뷰 정리 제안 셋 — 기각) `invalidateFrom` 커서 쌍 추출(확정 의사코드 1:1 우선 — `H-226` 선례) / `getOffsetAtBk` 내부 분리(실측된 병목 없음 + 확정 시그니처 이탈) / 초기발화 보정 관용구 2벌(3벌 추출 트리거 미달 — 리뷰 자신도 경미 표기) | — 기각 사유 기록만 |
+| `H-286` | §6 | 회신 | 🟡 | 리뷰를 유한 절차 규약(conventions 2026-09-01)으로 종결한 시점에 검증 그룹 3·4·7의 **13건이 판정 미도착** — 주장 원문을 §6에 등재(기결정과 충돌하는 전제 오류로 보이는 것 다수 + 실질 후보 셋) | ✅ §6 등재 — 실질 후보는 다음 감사 라운드·M6 몫 명시 |
 | `H-277` | ② | 회신 | 🟡 | (사용자 제기) **Dispatch가 두 일을 한다** — process/handler 대응이 본령인데 Length/Offset 부기(setLength/setOffsetSource/getOffsetAt/getBookkeeping)가 같이 껴 있고, M6에서 Slot이 엮이면 복잡해진다. 사용자 제안: `{Slot, Dispatch} → Bookkeeping` 의존 방향의 서브시스템 분리(*"당장 잘 작동하나 … 분리처리가 나아보이는데"*) | ✅ [2026-09-01 확정 — *"확인했어"*] `src/Bookkeeping.luau` 신설(`InitBookkeeping(module)` → 사적 `module._bookkeeping`), 공개 호출 표면은 `quad.Dispatch.*` 유지(같은 함수 객체 재노출) — `dispatch-core-plan.md` "Length/Offset" 절 배너·`architecture.md` 트리 행이 정본 |
 | `H-278` | ② | 회신 | 🟡 | (사용자 제기) **Leaf.luau가 Observer/Effect를 안다** — 각 객체를 아는 곳은 각 객체가 선언된 곳이라는 원칙 위반. 제안: `Observer.luau`/`Effect.luau`가 자기 `Init`에서 Dispatch를 받아 `addHandler`(*"각 객체의 Observer.luau 등지에서 … addHandler 하는게 맞다고 보는데"*) | ✅ [2026-09-01 확정 — *"확인했어"*, 2026-08-08 배치 확정 역전] `Dispatch/Leaf.luau` 해체 — `Observer.luau`/`Effect.luau`의 `registerDispatchHandlers`가 자기 Init에서 leaf+가드 등록(결합 핸들러가 `ObserverLeafHandler`/`EffectLeafHandler` 둘로 — 값 공간 배타라 동등, dedup relate 각자), M8 Ref 몫은 `Ref.luau`로 예약. Init 순서는 RunInit 멱등 당김(`H-174` 관용구)으로 해결 |
 | `H-279` | 리서치 | 회신 | 🟢 | (사용자 제기) **drive pre-hook** — `Processed*`로 바꾸고 처리하는 요소가 많아 drive가 서브시스템들을 알게 되는 결합 문제. 사용자 지시: *"이건 단순 리서치 요소로 두어요"* | ✅ `research/drive-hook-plan.md` 신설(아이디어 단계, M8 전 재론) |
@@ -563,6 +570,31 @@ Bookkeeping` 의존 방향 제안) / Leaf 핸들러 등록 소유권을 각 객�
   서술).
 
 ## §6 남은 의심 (발견은 아니지만 다음 라운드가 파볼 자리)
+
+- **⭐ [2026-09-01, `H-286`] `/code-review high` 미검증 주장 13건** — 리뷰를
+  유한 절차 규약으로 종결할 때 검증 그룹 3·4·7이 판정 미도착이라 주장만
+  회수(판정 없음). 메인 세션의 코퍼스 대조 소견을 붙여 분류:
+  - **전제 오류로 보임(반박 근거 병기)**: Source 동일 값 재-Set 전파("emit은
+    항상 전파"가 확정 설계 그 자체) / Store `Of` 경로 isSource 화이트리스트
+    미적용(`Of`는 입력을 안 받고 자기 Source를 만든다 — `spec.store` 4) /
+    None truthiness로 false 오분류(`isHandlable`은 `v == None` 항등) /
+    LifetimeHandle 옛 `_destroyed` 가드 삭제(그런 가드가 확정된 적 없음 —
+    mock의 `H-171`이 그 자리) / Observer 가드 메시지가 "Ref/Observer"인데
+    술어는 Observer만(문구는 사용자 확정 원문이고 M8 전 Ref 오배치는 매치
+    실패 error가 정상 — 감사 기확인).
+  - **실질 후보(다음 감사 라운드·해당 마일스톤 몫)**: ① Effect rerun 드레인
+    루프 후미 플래그 리셋이 cleanup 중 `Rerun` 요청을 지우는지(`spec.effect`
+    재점검) ② `unbindLifetime`이 leaf dedup relate를 못 비워 언바인드→재발행
+    경로에서 재바인드가 스킵되는지 — 정상 재발행이 아니라 **포탈 언마운트→
+    재마운트**(M6 `H-164` 캐치업)에서 실체화되는 축이라 M6 몫 ③ Observer
+    `_catchUp`의 에포크 단일 비교와 bit32 랩 충돌(`state-epoch-plan` §2 랩
+    설계와 대조).
+  - **정리 제안류(기각)**: `registerDispatchHandlers` 거울 복사 팩토리화 —
+    **기각**(`H-278` 소유권 결정 + "이질적인 타입끼리 구현 본문을 공유하지
+    않는다" 원칙 정면 충돌) / 수기 SURFACE 태그 목록 드리프트 우려(모듈당
+    소수라 보류 — `H-242`는 표면 테이블 순회가 가능했던 Dispatch 한정) /
+    `batching` 이름·우선순위 별칭 로컬·슬롯 테이블 2회 할당(스타일·미세
+    최적화 — 실측 원칙 기각).
 
 - **[2026-08-31, 감사 4라운드 비고]** "기존 짧은 선두 태그 안에 새 배너
   설명을 이어붙이는" 패턴이 태그를 80자 넘겨 그 절을 조용히 인용 불가로

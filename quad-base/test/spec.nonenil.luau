@@ -84,7 +84,8 @@ do
 	table.clear(log)
 	q.Dispatch.process(inst, 1, q.None, 1)
 	-- (B) 분기: leaf 철거(nil) 후 NoneHandler 설치 → nil 재귀 → NilHandler가 0 등록
-	assert(log[1] == "leaf:retract:1:nil", "previous occupant retracted by the descending diff")
+	-- (nil, true) — retractFrom 경유 단순 철거 신호(`H-258`; 관측은 `H-281`)
+	assert(log[1] == "leaf:retract:1:nil:true", "previous occupant retracted by the descending diff, flagged as teardown")
 	assert(sources[2]:Get() == 0, "trailing offset follows the 0 contribution")
 
 	-- 자리 1: None → 값 (복원)
