@@ -6,7 +6,6 @@
 	(the bk itself is gchold-anchored — `H-229` pattern).
 ]]
 
-local Quad = require("../src")
 local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("./mock")
 

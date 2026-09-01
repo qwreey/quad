@@ -2134,3 +2134,17 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `/code-review` 운용 규약 신설(conventions — 문서 추론형 비분할, 감사·리뷰는
   유한 절차; fable 포크 비용 실측이 계기). 리뷰는 유한 절차로 종결 — 생존
   8건 반영·기각(`H-280`~`H-285`), 미검증 13건 §6(`H-286`).
+
+- `session/2026-09-01-01-m4-storebind-implementation.md` **[M4 착수·구현 완료]**
+  사용자 조건부 승인(*"막는게 없다면 M4 구현 시작해보자"*)으로 round13 §0
+  권고 (a) 넷 채택 — 착수 전 정본 절 의사코드가 실코드 부품((B) 점유 마커
+  선행·Observer 등록 즉시 발화·mock 생명주기·`isState` 합성)과 전부 맞물림을
+  검증 후 착수. `Dispatch/StoreBind.luau`(정본 1:1, HIGH 밴드, `InitDispatch`
+  꼬리 등록) + `spec.storebind.luau` 6절(첫 end-to-end 반응형 업데이트 —
+  인덱스 2 retractor 실호출/타입 교대/`State<State<T>>`/깊은 인덱스 우선+효과
+  수준(옛 구독 0)/스파이크 `03` 몫(None→nil·부기 반응형 이동)/Destroy 후
+  발화 무시). 스파이크 `03` 폐기 확정(Q4 (a)). 문서-코드 어긋남 0건이었으나
+  감사 1라운드가 실회귀를 잡음 — `H-287`(StoreBind가 `spec.dispatch` 2번의
+  `q.Source` 브랜드 예시를 가로채 스위트가 깨졌는데 구현 세션이 grep 계수만
+  보고 "ALL PASS"로 오기록 — 예시를 `q.Blocker()`로 교체, 이후 판정은 exit
+  code로) + `H-288`(ImportUnused 둘 제거). 교정 후 25/25 exit 0.

@@ -2,8 +2,12 @@
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
 **⭐ [2026-09-01 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)/M3(디스패치 엔진)까지 완료 — 다음은 M4(첫 end-to-end
-반응형 업데이트, 규약 문항지 신설 대기)** — M2는 자율 구현
+Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)까지
+완료 — 다음은 M5(quad-roblox 최소 프로바이더, 규약 문항지 신설 대기)** —
+**M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
+`.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
+`-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +
+`spec.storebind.luau`, 스파이크 `03` 폐기). M2는 자율 구현
 구간(규약 `.claude/qa-request/m2-implementation-round11-brief.md`, 발견·배치
 문항 `-round11.md`)으로 돌아 2026-08-28 착수~08-31 종결: 단위 넷 구현·감사·
 리뷰·탐사 완료, `ROADMAP.md` M2 체크박스 전부 `[x]`, §4 문항·코드 마커 0.

@@ -584,11 +584,21 @@ Bookkeeping` 의존 방향 제안) / Leaf 핸들러 등록 소유권을 각 객�
     실패 error가 정상 — 감사 기확인).
   - **실질 후보(다음 감사 라운드·해당 마일스톤 몫)**: ① Effect rerun 드레인
     루프 후미 플래그 리셋이 cleanup 중 `Rerun` 요청을 지우는지(`spec.effect`
-    재점검) ② `unbindLifetime`이 leaf dedup relate를 못 비워 언바인드→재발행
-    경로에서 재바인드가 스킵되는지 — 정상 재발행이 아니라 **포탈 언마운트→
-    재마운트**(M6 `H-164` 캐치업)에서 실체화되는 축이라 M6 몫 ③ Observer
+    재점검) — **[2026-09-01 기각, M4 감사 3라운드 재현 실측]** `rawRerun`은
+    `_running`을 `repeat` 루프 전체에 걸쳐 세워두므로 루프 안 cleanup發
+    `Rerun`은 항상 `_pending` 분기로 가고, 후미 리셋은 `_pending`을 안
+    건드린다(캐스케이드 3연쇄 재현 — 유실 0); 루프 밖(destroy-wave) 소비는
+    `_cleanupRunning` 분기가 `_rerunRequired` HOLD로 보존(둘 다 함수 본문
+    전사 스파이크로 실측) ② `unbindLifetime`이 leaf dedup relate를 못 비워
+    언바인드→재발행 경로에서 재바인드가 스킵되는지 — 정상 재발행이 아니라
+    **포탈 언마운트→재마운트**(M6 `H-164` 캐치업)에서 실체화되는 축이라 M6
+    몫(**[2026-09-01 기준] 유일하게 열린 채 남은 항목**) ③ Observer
     `_catchUp`의 에포크 단일 비교와 bit32 랩 충돌(`state-epoch-plan` §2 랩
-    설계와 대조).
+    설계와 대조) — **[2026-09-01 기각, 같은 라운드]** 전제가 실물과 다르다:
+    `_catchUp`은 에포크 비교가 아니라 불리언 홀드 플래그(`_rerunRequired`)
+    판정이고(Observer는 에포크 부기를 안 가진다 — `Observer.luau` 헤더),
+    에포크 기반 캐치업은 `H-151`(2026-08-28)로 이미 폐기된 옛 메커니즘이다.
+    랩 충돌 일반론은 `state-epoch-plan.md` §2가 이미 확정적으로 다룬 기결정.
   - **정리 제안류(기각)**: `registerDispatchHandlers` 거울 복사 팩토리화 —
     **기각**(`H-278` 소유권 결정 + "이질적인 타입끼리 구현 본문을 공유하지
     않는다" 원칙 정면 충돌) / 수기 SURFACE 태그 목록 드리프트 우려(모듈당

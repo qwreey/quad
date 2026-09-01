@@ -40,6 +40,7 @@ local Void = require("./Void")
 local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
 local NoneModule = require("@self/None")
+local StoreBindModule = require("@self/StoreBind")
 
 local QuadTypes = require("../luau_packages/quad_types")
 local HandlerModule = require("@self/Handler")
@@ -339,6 +340,11 @@ local function Init(module: any)
 	-- NoneHandler (recursion only) + NilHandler (the one place an empty array
 	-- position is registered out of the order math).
 	NoneModule.register(Dispatch)
+	-- M4: StoreBind — the descending diff's own recursion, so it registers
+	-- here like the None pair, not from a value module (round13 §0 Q3 (a);
+	-- `H-278`'s scope was leaf handlers for one value type). It needs `module`
+	-- too: lifetime fields are read at fire time (`H-174`).
+	StoreBindModule.register(Dispatch, module)
 	-- M3 unit 4 leaf handlers + guards: registered by their OWNING modules
 	-- (`H-278`, user-directed — Observer.luau/Effect.luau pull InitDispatch
 	-- via RunInit and addHandler in their own Init; "각 객체를 아는 곳은 각

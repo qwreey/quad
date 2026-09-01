@@ -97,12 +97,15 @@ do
 	assert(string.find(msg, "number", 1, true) ~= nil, `message carries typeof(v): {msg}`)
 	assert(string.find(msg, "provider", 1, true) ~= nil, `message points at provider init: {msg}`)
 
-	local src = q.Source(1)
+	-- 브랜드 예시는 Blocker — Source는 M4부터 내장 StoreBind에 항상 매치돼
+	-- "핸들러 없는 브랜드 값"이 될 수 없다(언랩된 실제값이 대신 실패한다 —
+	-- round13 `H-287` 회귀의 자리)
+	local blocker = q.Blocker()
 	local ok2, err2 = pcall(function()
-		q.Dispatch.process(inst, "Size", src, 1)
+		q.Dispatch.process(inst, "Size", blocker, 1)
 	end)
 	assert(not ok2, "branded value with no handler -> error")
-	assert(string.find(tostring(err2), "brand: Source", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
+	assert(string.find(tostring(err2), "brand: Blocker", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
 	print("PASS")
 end
 

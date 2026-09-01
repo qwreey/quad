@@ -996,11 +996,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 항목은 `base/dispatch-core-plan.md`의 하강 diff 기준으로 읽을 것.
 
 
-- [ ] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — **선행
+- [x] `Dispatch/StoreBind.luau`(재귀 재실행 로직, 엔진 무관 — **선행
       `retractFrom` 없이** `Dispatch.process(inst,k,realv,index+1)` 한 줄
       (2026-08-13 열네 번째 세션 하강 diff), 반환 클로저는 자기 Observer
       구독만 해제. `base/dispatch-core-plan.md` "Dispatch 체인" 절)
-- [ ] mock 대상으로 "store 값 바꾸면 `process`가 다시 호출된다" +
+      **[2026-09-01 완료, M4 round13]** — 정본 절 의사코드 그대로, 등록은
+      `InitDispatch` 꼬리(`None.luau` 선례 — round13 §0 Q3 (a)), 우선순위
+      HIGH 밴드. quad-types 갱신 없음 확인(공개 표면 아님 — `H-25` 이번 몫)
+- [x] mock 대상으로 "store 값 바꾸면 `process`가 다시 호출된다" +
       "이전 값이 다른 타입이면 이전 `process`가 반환했던 retractor 클로저가
       정확히 불린다" 확인 + **`State<State<T>>`(값이 또 State/Source)가
       인덱스 N/N+1로 안 겹치고 정상 동작하는지**(2026-08-13 다섯 번째
@@ -1015,6 +1018,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       존재 이유로 명시했던 **효과 수준 검증**(retractor가 로그가 아니라
       실제로 옛 store 구독을 끊는다: 재발행 후 옛 store 구독 0, 죽은
       store를 건드려도 값이 안 덮인다)까지 단언해야 잔여 몫이 닫힌다
+      **[2026-09-01 완료, M4 round13]** — `spec.storebind.luau` 6절: 위 전
+      항목 + 효과 수준(구독 0은 GC 후 `_subs` 계수, 죽은 store `Set` 불덮임)
+      + 스파이크 `03` 몫(배열 자리 `None`→`nil` 핸드오프·재귀 종료·부기
+      반응형 이동, §0 Q4 (a)로 `03` 폐기 — `luau-test/STATUS.md`가 소스)
 
 ## M5 — quad-roblox 최소 프로바이더
 
