@@ -21,10 +21,10 @@
 	  - `bind-system-plan.md` "`New(name)(props)` 파이프라인 의사코드" — `drive`
 	    (stages ⓪ + (b) + ⓪' as of M3 unit 2; the (a) PreRef/PostRef pre-pass
 	    and (c) postRefList come with M8, where those values are born).
-	  - `dispatch-core-plan.md` "Length/Offset" / "두 필드" / "배치 등록을
-	    안전하게 만드는 Blocker 게이팅" — setLength/setOffsetSource/getOffsetAt,
-	    the prefix-sum cache with its two cursors, recompute with reentry block
-	    + rewind, per-owner batch Blockers (M3 unit 2).
+	  - Length/Offset bookkeeping: NOT implemented here — `H-277` moved the
+	    whole subsystem to `src/Bookkeeping.luau` (its header carries those
+	    sources); this file only re-exports the same function objects on the
+	    Dispatch table (the public calling surface, H-39/H-25).
 
 	Errors follow `architecture.md` "error 계약" via the shared error
 	namespace (`H-231`): match failure climbs to the user's entry
