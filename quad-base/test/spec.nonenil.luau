@@ -39,7 +39,7 @@ do
 			return type(k) == "string" -- 해시 키 전담(진짜 nil 포함 — NilHandler는 숫자 키만)
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_LOW,
-		process = function(_inst: any, k: any, v: any, index: number): (any?) -> ()
+		process = function(_inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
 			table.insert(log, `prop:{k}:{tostring(v)}@{index}`)
 			return Quad.Void
 		end,

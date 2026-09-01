@@ -26,7 +26,7 @@ q.Dispatch.addHandler({
 		return true
 	end,
 	priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-	process = function(_inst: any, k: any, v: any, index: number): (any?) -> ()
+	process = function(_inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
 		table.insert(log, `{tostring(k)}={tostring(v)}@{index}`)
 		return Quad.Void
 	end,

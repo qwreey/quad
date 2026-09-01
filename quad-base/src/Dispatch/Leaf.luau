@@ -47,7 +47,7 @@ function module.register(dispatch: QuadTypes.Dispatch, quad: any)
 			return type(k) == "number" and (Brand.isObserver(v) or Brand.isEffect(v))
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
-		process = function(inst: any, k: any, v: any, _index: number): (any?) -> ()
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — this
 			-- leaf contributes no physical element, so the pair is None/0.
 			-- Constant length → no element argument (Q3), anchor defaults to
@@ -88,7 +88,7 @@ function module.register(dispatch: QuadTypes.Dispatch, quad: any)
 			return Brand.isObserver(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
-		process = function(_inst: any, k: any, _v: any, _index: number): (any?) -> ()
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			Err.errorBefore(`Ref/Observer binding should be array index item, but got {typeof(k)}`, QuadTypes.ERROR_LEVEL_SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,
@@ -99,7 +99,7 @@ function module.register(dispatch: QuadTypes.Dispatch, quad: any)
 			return Brand.isEffect(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
-		process = function(_inst: any, k: any, _v: any, _index: number): (any?) -> ()
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			Err.errorBefore(`Effect binding should be array index item, but got {typeof(k)}`, QuadTypes.ERROR_LEVEL_SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,

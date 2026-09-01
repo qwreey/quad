@@ -65,8 +65,9 @@ do
 	q.Dispatch.drive(inst, { o })
 	-- (A) 분기: retractor(nextValue == v)는 unbind를 건너뛰므로, process 쪽
 	-- dedup이 없다면 여기서 bindLifetime이 "already bound"로 죽는다 — 통과
-	-- 자체가 dedup의 증거.
-	q.Dispatch.drive(inst, { o })
+	-- 자체가 dedup의 증거. 재발행은 process 경유가 정본 경로다 — drive는
+	-- 1회 계약(`H-275`, 사용자: "무엇이 되었든 drive는 한번 뿐").
+	q.Dispatch.process(inst, 1, o, 1)
 	assert(q.canExecute(o), "still bound after spurious re-dispatch")
 	print("PASS")
 end
@@ -174,7 +175,7 @@ do
 			return type(k) == "string" and q.isObserver(v)
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(_inst: any, k: any, _v: any, _index: number): (any?) -> ()
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			table.insert(log, `named:{k}`)
 			return Quad.Void
 		end,

@@ -28,6 +28,17 @@
 	frames are *skipped*, never cut the scan short. No match falls back to the
 	raise site. Errors are cold paths, so the walk cost is irrelevant.
 
+	Load-bearing usage rule (2026-09-01, spike 27 — `H-250`, measured under
+	-O2/--codegen/both): tag ONLY functions that are stored in and called
+	through a table field. A local, directly-called function gets inlined
+	under -O2 and its tag disappears from the walk (the no-match fallback
+	fires — correct message, degraded position). Every tagged site in quad
+	already satisfies this (`q.Dispatch.*`, `h.process`/`h.isHandlable`,
+	`quad.bindLifetime`, the ns.error* themselves); keep it that way.
+	Coroutines: a raise walks only its own coroutine's stack — tags on the
+	resumer's side cannot match, and the raise-site fallback holds (same
+	spike, section 4).
+
 	Known limits (2026-08-31, unit-4 explorer — `H-273`/`H-274`, measured):
 	  - A C-frame caller of a tagged surface (`pcall(drive, ...)` passing the
 	    function directly) leaves errorBefore's target on the C frame: the

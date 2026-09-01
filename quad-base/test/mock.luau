@@ -432,7 +432,7 @@ local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
 			return type(k) == "number" and type(v) == "string"
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, k: any, _v: any, _index: number): (any?) -> ()
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			local src = sources[k] or q.Source(-1)
 			sources[k] = src
 			q.Dispatch.setOffsetSource(inst, k, src)

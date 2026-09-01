@@ -50,7 +50,7 @@ local HandlerModule = require("@self/Handler")
 export type Handler = HandlerModule.Handler
 export type Dispatch = QuadTypes.Dispatch
 
-type Slot = { handler: Handler, retractor: (nextValue: any?) -> () }
+type Slot = { handler: Handler, retractor: (nextValue: any?, retracting: boolean) -> () }
 
 -- Band constants live in quad-types (`H-230` (a) — backends reach them
 -- without quad-base; single source, re-exported on `module.Dispatch` below).
@@ -152,7 +152,9 @@ local function Init(module: any)
 	local function retractFrom(inst: any, k: any, index: number)
 		-- From index (inclusive) to the tail, retracted tail-first (deepest
 		-- index first — LIFO: the shallower slot created the deeper one).
-		-- The argument is always nil here: plain retract with no follow-up.
+		-- Arguments are always (nil, true) here: plain retract with no
+		-- follow-up — the `retracting` flag is the `H-258` signal that lets
+		-- nil-accepting handlers tell teardown apart from a nil VALUE.
 		local list: { Slot }? = chains:GetWeak(inst, k) :: any
 		if list == nil then
 			return
@@ -162,7 +164,7 @@ local function Init(module: any)
 			if slot == nil then
 				error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
 			end
-			slot.retractor(nil)
+			slot.retractor(nil, true)
 			list[i] = nil
 		end
 	end
@@ -200,7 +202,9 @@ local function Init(module: any)
 			-- value to the sitting retractor so it does its own transition, then
 			-- replace this one slot with the fresh retractor.
 			-- v is guaranteed to satisfy h.isHandlable — getHandler picked h on v.
-			slot.retractor(v)
+			-- retracting=false (`H-258`): the same handler re-processes next,
+			-- so even a nil v is a VALUE here, never a teardown signal.
+			slot.retractor(v, false)
 			slot.retractor = NOOP -- consumed; no double call while h.process recurses
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
@@ -410,7 +414,20 @@ local function Init(module: any)
 	-- for the position (`H-141`/Q3): the persistent closure captures it and
 	-- looks the current index up in bk.indexOfElement instead of freezing `i`;
 	-- constant-length slots omit it.
+	-- `H-256` (a): the one validation gate for array positions entering the
+	-- bookkeeping arithmetic — a fractional/negative/zero/NaN position poisons
+	-- the prefix sums and can freeze recomputeBlocker permanently (silent
+	-- worst-case UB), so both entry points reject it up front. Sparse positive
+	-- integers stay legal here; recompute's existing sourceList nil error owns
+	-- contiguity. User-input class -> nearest blame (the handler that called).
+	local function checkPosition(fnName: string, i: any)
+		if type(i) ~= "number" or i % 1 ~= 0 or i <= 0 then
+			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: position must be a positive integer, got {tostring(i)}`, SURFACE)
+		end
+	end
+
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
+		checkPosition("setLength", i)
 		anchor = anchor or ownerKey
 		local bk = getBookkeeping(ownerKey)
 		local blocker = getBlocker(ownerKey)
@@ -459,6 +476,7 @@ local function Init(module: any)
 	-- None means "no publish channel", NOT "not participating" (that is
 	-- lengthList's answer); pull the number via getOffsetAt when needed.
 	local function setOffsetSource(ownerKey: any, i: number, source: any)
+		checkPosition("setOffsetSource", i)
 		local bk = getBookkeeping(ownerKey)
 		bk.sourceList[i] = source
 		if source == None then

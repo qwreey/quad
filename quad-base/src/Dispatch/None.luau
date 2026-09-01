@@ -55,7 +55,7 @@ function module.register(dispatch: QuadTypes.Dispatch)
 			return v == None
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
-		process = function(inst: any, k: any, _v: any, index: number): (any?) -> ()
+		process = function(inst: any, k: any, _v: any, index: number): (any?, boolean) -> ()
 			-- recursion only — once we pass nil the sentinel no longer exists,
 			-- and the next priority scan narrows naturally (same shape as
 			-- StoreBind's realv recursion; same no-infinite-loop argument).
@@ -69,7 +69,7 @@ function module.register(dispatch: QuadTypes.Dispatch)
 			return type(k) == "number" and v == nil
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
-		process = function(inst: any, k: any, _v: any, _index: number): (any?) -> ()
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			-- no recursion — already nil, nothing further to hand down
 			dispatch.setOffsetSource(inst, k, None)
 			dispatch.setLength(inst, k, 0)

@@ -1044,7 +1044,9 @@ function Dispatch.process(inst, k, v, index)
         -- (A) 같은 핸들러 — 아래를 안 건드리고, 이 자리 클로저에 새 값을 넘겨
         -- 스스로 전이를 처리하게 한 뒤 같은 자리를 새 클로저로 교체.
         -- v는 getHandler가 h를 골랐다는 사실만으로 h.isHandlable(inst,k,v)를 만족함이 보장됨.
-        slot.retractor(v)
+        -- [2026-09-01 `H-258`, 사용자 설계] 2번째 인자 retracting=false —
+        -- 같은 핸들러의 재처리가 곧 따라온다(nil이어도 그건 "값"이다).
+        slot.retractor(v, false)
         slot.retractor = NOOP   -- 이미 소비된 클로저가 두 번 불릴 여지를 없앰
                                 -- (h.process가 재귀하는 동안 잠깐 열려 있는 구간)
         local retractor = h.process(inst, k, v, index)
@@ -1083,7 +1085,8 @@ end
 
 function Dispatch.retractFrom(inst, k, index)
     -- index부터(포함) 끝까지, 꼬리(가장 깊은 인덱스)부터 역순으로 정리.
-    -- 힌트는 항상 nil — "뒤따르는 process가 없는 단순 철거"가 이 함수의 유일한 용도.
+    -- 인자는 항상 (nil, true) — "뒤따르는 process가 없는 단순 철거"가 이
+    -- 함수의 유일한 용도고, retracting=true가 그 사실의 신호다(`H-258`).
     local list = chains:GetWeak(inst, k)
     if not list then return end
     for i = #list, index, -1 do
@@ -1091,11 +1094,23 @@ function Dispatch.retractFrom(inst, k, index)
         if slot == nil then
             error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
         end
-        slot.retractor(nil)
+        slot.retractor(nil, true)
         list[i] = nil
     end
 end
 ```
+
+**⭐ [2026-09-01 `H-258`, 사용자 설계] retractor는 2번째 인자
+`retracting: boolean`을 받는다.** `retractFrom` 경유(단순 철거 — 이 자리는
+다시 처리되지 않는다)면 `true`, (A) 분기(같은 핸들러의 재처리가 곧
+따라온다)면 `false`. **nil을 값으로 받는 핸들러**(반응형 nil — `NilHandler`
+아래 자리 등)에서 "철거의 nil"과 "값인 nil"이 구별 불능이던 신호 충돌을
+닫는다. 사용자 원문: *"retract 인자에 retractUnder 로 불렸으면 true, 아니면
+false 인 한 인자를 넣어줘도 되지 않을까 … 나중에 비슷한 문제가 또 열리기
+보다 그냥 미리 준비해두는게 나쁠 게 없음 - 인자 하나 추가되는게 다라서"*
+(인자 이름 `retracting`은 구현 제안 — 계약 타입은 `quad-types`의 `Handler`가
+소스). 기존 retractor는 인자를 무시해도 그대로 정확하다(Lua가 초과 인자를
+버리는 게 아니라 **부족한 파라미터**로 받는 쪽이라 하위 호환).
 
 **[2026-08-31 `H-212`]** 위 의사코드의 error 세 자리가 한국어·`level` 없음으로
 남아 있었다 — 이 절이 쓰인 뒤(2026-08-13) 확정된 `base/architecture.md`의
@@ -1367,6 +1382,9 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 - 다만 **`nil`이라고 가정하는 것은 여전히 금지**(단순 철거일 때만 `nil`).
   `assert(v == nil)`류를 쓰면 안 됨 — 이미 한 번 전면 정정된 이력이 있음
   (`archive/retract-always-fires-reversed.md`).
+- **[2026-09-01 `H-258`] "단순 철거인가"는 값이 아니라 2번째 인자
+  `retracting`으로 판별한다** — nil을 값으로 받는 핸들러는 `nextValue`만으로
+  두 경우를 가를 수 없다. 계약 본문은 "Dispatch 체인" 절의 `H-258` 문단.
 
 **4. "이전 값"을 알고 싶으면 클로저 캡처, "여러 위치/사이클을 가로지르는
 누적 상태"만 `Relate`.** 이 경계를 헷갈리면 양방향으로 틀림:
@@ -2233,7 +2251,17 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- (`inst|slot`)**. `gatedRecompute`가 인덱스 대신 이걸 캡처하고 `bk.indexOfElement`를
 -- 조회한다(아래). 길이가 상수인 자리(`NilHandler`의 `0` — **[2026-08-31 `H-265` 정정]** `NoneHandler`는 재귀만 하고 등록 자체를 안 한다)는 지속
 -- 클로저가 안 생기므로 생략해도 된다 — 그땐 캡처한 `i`가 그대로 유효하다.
+-- ⭐ [2026-09-01 `H-256` (a) 사용자 확정] 부기 진입점의 위치 검증 게이트 —
+-- setLength/setOffsetSource 머리에서 `i`가 양의 정수인지 한 번 확인한다
+-- (`type(i) ~= "number" or i % 1 ~= 0 or i <= 0` → errorBeforeNearest, 사용자
+-- 입력). 소수·음수·0·NaN이 그대로 들어오면 깨끗한 에러 대신 **부기 오염 +
+-- `recomputeBlocker` 영구 잠김**(조용한 최악 UB — 실측 재현)이 되기 때문.
+-- 사용자: *">0 %1==0 확인은 비싸지 않아"*. 한 자리 게이트라 전 말단 핸들러가
+-- 커버된다((b) 핸들러 술어 좁히기는 다른 핸들러 경로에서 재발 — 기각 근거).
+-- **희소 양의 정수는 여기서 안 막는다** — 연속성(1..N)은 recompute의 기존
+-- `sourceList[i] is nil` error 몫. 부기를 하나라도 만지기 전에 검사한다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
+    checkPosition("setLength", i) -- 위 게이트
     anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
@@ -2412,6 +2440,29 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
      `Dispatch.drive` 경로에선 (a)가 없어 사실상 검증 패스에 가깝지만,
      O(N) 순회에 `Set`이 거의 없으므로 분기해서 빼지 않고 그냥 항상 부른다.
 
+**⭐ [2026-09-01 `H-241`/`H-275` 사용자 확정 — `drive`의 두 UB.**
+탐사자·리뷰 실측(round12)으로 드러난 두 경로 다 "지원하지 않음"으로 닫는다:
+
+- **재진입 `drive`(`H-241`)** — 핸들러의 `process`(또는 그 아래 동기 경로)가
+  **같은 inst**에 `drive`를 다시 부르는 것. owner당 배치 Blocker가 하나라
+  안쪽 `OffWithoutEmit()`이 바깥 배치를 조기 개방한다(등록마다 recompute —
+  O(N²), 크래시는 아니고 성능·순서 열화). 사용자 확정: *"그런건 지원할
+  생각이 없었고, UB로 두는게 맞다고 봐"* — 기확정 "일반적인 재진입/무한루프는
+  방어 안 함" 원칙 그대로. Blocker 재사용이 네스팅 미지원 서술과 긴장하는
+  자리라는 각주는 `base/blocker-plan.md`에.
+- **재`drive` 일반(`H-275`)** — **`drive`는 `New` 파이프라인의 1회 진입이고,
+  같은 inst에 다시 부르는 것은 형상 불문 계약 밖이다.** 사용자 확정:
+  *"무엇이 되었든 drive 는 한번 뿐임. 안 그러면 애초에 modifier 로 인한
+  부분을 처리하기도 어렵고, preref 가 다시 수행되는 등 사고가 나서, 재drive
+  라는것 자체가 우리 프로젝트에서 허용되는 범주가 아님"* — 재바인딩 불가
+  결정(`archive/existing-instance-bind-rejected.md`)과 같은 축이니 그 기각과
+  혼동하지 말 것(그건 "남이 만든 inst를 바인드"였고 이건 "내가 만든 inst에
+  두 번째 drive"). 실측된 증상(형상 축소 시 옛 자리 **조용한 잔존** —
+  crash보다 나쁜 형태 / 교환 시 이중 배치 계약의 already-bound 크래시)은
+  UB의 모양 기록일 뿐 방어 대상이 아니다. 배열의 시간 변화는 M6
+  `:List`/Slot이 정본 소유자다. **개별 키 재발행은 이것과 무관하게 정상
+  경로다** — 반응형 재발행은 `Dispatch.process(inst, k, v, 1)`로 온다.
+
 **`setOffsetSource`의 즉시 계산(2026-08-18 신설, 2026-08-21 G절에 정리)** —
 등록되는 그 자리에서 **`Dispatch.getOffsetAt(ownerKey, i)`**(= 베이스 +
 `bk.lengthList[1..i-1]` 합)를 구해 곧바로 `:Set`한다. `source == None`이면
@@ -2422,6 +2473,7 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 -- [정리, 2026-08-21 G절] 합산 루프가 `Dispatch.getOffsetAt`으로 빠지면서
 -- 이 함수는 "등록 + (채널이 있으면) 즉시 1회 발행"만 남는다.
 function Dispatch.setOffsetSource(ownerKey, i, source)
+    checkPosition("setOffsetSource", i) -- [2026-09-01 H-256 (a)] 아래 검증 게이트 문단
     local bk = getBookkeeping(ownerKey)
     bk.sourceList[i] = source
     if source == None then

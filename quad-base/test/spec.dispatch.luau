@@ -27,7 +27,7 @@ local function makeLeaf(log: { string }, tag: string, match: (any) -> boolean, p
 			return match(v)
 		end,
 		priority = priority,
-		process = function(_inst: any, k: any, v: any, index: number): (any?) -> ()
+		process = function(_inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
 			table.insert(log, `{tag}:process:{tostring(k)}:{tostring(v)}:{index}`)
 			return function(hint: any?)
 				table.insert(log, `{tag}:retract:{tostring(k)}:{tostring(hint)}`)
@@ -44,7 +44,7 @@ local function makeWrap(dispatch: QuadTypes.Dispatch, log: { string }, tag: stri
 			return type(v) == "table" and (v :: any).inner ~= nil
 		end,
 		priority = priority,
-		process = function(inst: any, k: any, v: any, index: number): (any?) -> ()
+		process = function(inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
 			table.insert(log, `{tag}:process:{index}`)
 			dispatch.process(inst, k, (v :: any).inner, index + 1)
 			return function(hint: any?)
@@ -147,7 +147,7 @@ do
 			return type(v) == "string"
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(_inst: any, _k: any, _v: any, _index: number): (any?) -> ()
+		process = function(_inst: any, _k: any, _v: any, _index: number): (any?, boolean) -> ()
 			calls += 1
 			if calls == 1 then
 				return Quad.Void
@@ -229,7 +229,7 @@ do
 			return type(v) == "table" and (v :: any).enabled ~= nil
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_HIGH,
-		process = function(inst: any, k: any, v: any, index: number): (any?) -> ()
+		process = function(inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
 			if (v :: any).enabled then
 				q.Dispatch.process(inst, k, (v :: any).inner, index + 1)
 			else
@@ -259,7 +259,7 @@ do
 			return type(v) == "table" and (v :: any).other ~= nil
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_HIGH,
-		process = function(inst: any, _k: any, v: any, _index: number): (any?) -> ()
+		process = function(inst: any, _k: any, v: any, _index: number): (any?, boolean) -> ()
 			q.Dispatch.process(inst, "otherKey", (v :: any).other, 1)
 			return function(hint: any?)
 				if hint == nil then
@@ -368,7 +368,7 @@ do
 			return type(v) == "string"
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, _k: any, _v: any, _index: number): (any?) -> ()
+		process = function(inst: any, _k: any, _v: any, _index: number): (any?, boolean) -> ()
 			local retractor = function(_hint: any?)
 				local _ = inst -- 실제 반응형 retractor처럼 inst를 캡처
 			end
@@ -388,6 +388,32 @@ do
 	collectgarbage()
 	collectgarbage()
 	assert(probe[1] == nil, "after Destroy the whole chain graph is collectable — no retract call needed")
+	print("PASS")
+end
+
+print()
+print("=== 14. H-258 — retractor 2번째 인자: retractFrom는 (nil, true), (A) 재프로세스는 (v, false) ===")
+do
+	local q = newQuad()
+	local log: { string } = {}
+	q.Dispatch.addHandler({
+		name = "FlagProbe",
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return type(v) == "string"
+		end,
+		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(_inst: any, _k: any, v: any, _index: number): (any?, boolean) -> ()
+			return function(nextValue: any?, retracting: boolean)
+				log[#log + 1] = `{tostring(v)}:{tostring(nextValue)}:{tostring(retracting)}`
+			end
+		end,
+	} :: QuadTypes.Handler)
+	local inst = Instance.new("Frame")
+	q.Dispatch.process(inst, "k", "a", 1)
+	q.Dispatch.process(inst, "k", "b", 1) -- (A): 같은 핸들러 재프로세스
+	assert(log[1] == "a:b:false", `(A) branch hands (newValue, false): {log[1]}`)
+	q.Dispatch.retractFrom(inst, "k", 1) -- 단순 철거
+	assert(log[2] == "b:nil:true", `retractFrom hands (nil, true): {log[2]}`)
 	print("PASS")
 end
 

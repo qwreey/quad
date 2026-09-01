@@ -102,7 +102,7 @@ do
 			return type(k) == "number"
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, k: any, v: any, _index: number): (any?) -> ()
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			local src = q.Source(-1)
 			sources[k] = src
 			-- 프로브를 **등록 전에** 설치해야 배치 중의 모든 Set이 세어진다 —
@@ -124,7 +124,7 @@ do
 			return type(k) ~= "number"
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_LOW,
-		process = function(_inst: any, _k: any, _v: any, _index: number): (any?) -> ()
+		process = function(_inst: any, _k: any, _v: any, _index: number): (any?, boolean) -> ()
 			return q.Void
 		end,
 	} :: QuadTypes.Handler)
@@ -241,6 +241,46 @@ do
 	anchor:Destroy()
 	len:Set(7)
 	assert(s2:Get() == 3, "after the anchor dies the length observer no longer fires (canExecute gate)")
+	print("PASS")
+end
+
+print()
+print("=== 9. H-256 — 부기 진입점의 양의 정수 검증: 소수·음수·0·비숫자는 즉시 error ===")
+do
+	local q = newQuad()
+	local owner = Instance.new("Frame")
+	local bads: { any } = { 1.5, -1, 0, "1", 0 / 0 }
+	for _, bad in bads do
+		local ok, err = pcall(function()
+			q.Dispatch.setLength(owner, bad :: any, 1)
+		end)
+		assert(
+			not ok and string.find(tostring(err), "positive integer", 1, true) ~= nil,
+			`setLength rejects {tostring(bad)}: {tostring(err)}`
+		)
+		-- errorBeforeNearest(사용자 입력) — 부른 쪽(이 파일)을 blame
+		assert(string.find(tostring(err), "spec.lengthoffset.luau", 1, true) ~= nil, `blames the caller: {tostring(err)}`)
+		local ok2, err2 = pcall(function()
+			q.Dispatch.setOffsetSource(owner, bad :: any, q.None)
+		end)
+		assert(
+			not ok2 and string.find(tostring(err2), "positive integer", 1, true) ~= nil,
+			`setOffsetSource rejects {tostring(bad)}: {tostring(err2)}`
+		)
+	end
+	-- 오염이 전혀 안 남았는지 — 검증이 부기 변형 전에 있다
+	local bk = q.Dispatch.getBookkeeping(owner)
+	assert(bk.N == nil and bk.offsetCacheValidUpTo == 0, "rejected inputs left the bookkeeping untouched")
+	-- 희소 양의 정수는 이 게이트를 통과한다 — 연속성은 recompute의 기존 error 몫
+	q.Dispatch.setOffsetSource(owner, 3, q.None)
+	local ok3, err3 = pcall(function()
+		q.Dispatch.setLength(owner, 3, 0)
+	end)
+	assert(
+		not ok3 and string.find(tostring(err3), "sourceList", 1, true) ~= nil,
+		`contiguity is still recompute's own error, not this gate's: {tostring(err3)}`
+	)
+	assert(bk.N == 3, "the sparse position itself passed the gate before recompute objected")
 	print("PASS")
 end
 

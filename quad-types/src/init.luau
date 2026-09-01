@@ -147,7 +147,11 @@ export type Handler = {
 	name: string?,
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
-	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?) -> (),
+	-- retractor 계약(`H-258`, 사용자 설계): 두 번째 인자 `retracting`이 참이면
+	-- 단순 철거(retractFrom 경유 — 이 자리는 다시 처리되지 않는다), 거짓이면
+	-- 같은 핸들러의 재처리가 곧 따라온다((A) 분기). nil을 값으로 받는
+	-- 핸들러가 "철거의 nil"과 "값인 nil"을 이 플래그로 구별한다.
+	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?, retracting: boolean) -> (),
 }
 
 -- `Dispatch` — 스캔/실행 엔진(`dispatch-core-plan.md` "Dispatch 체인" /

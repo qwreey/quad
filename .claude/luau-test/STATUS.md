@@ -58,7 +58,7 @@
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
 | `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 6 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 18 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 19 | — |
 
 **⚠️ [2026-08-25 신설] 타입 스파이크는 `./scripts/test.sh`가 하는 리링크를
 먼저 거쳐야 한다.** `luau` CLI가 심볼릭 링크를 못 타는데(디렉토리·파일 둘
@@ -195,6 +195,7 @@
 
 | 파일 | 확인된 것 |
 |---|---|
+| `27-error-walker-o2-codegen-coroutine.luau` | ✅ **[2026-09-01 신설, `H-250` (a) — 루트에서 4플래그 조합(기본/`-O2`/`--codegen`/둘 다) 전부 실측 ALL PASS]** quad-error 워커의 미실측 전제 둘을 닫음. **발견 하나**: `-O2`는 **로컬 직접 호출** 태그 함수를 인라인해 태그가 안 보이고 raise 자리 폴백이 발화한다(섹션 1이 양쪽 결과를 관측·출력). 단 quad의 태그 함수는 전부 **테이블 경유 호출**(`q.Dispatch.*`/`h.process`/`quad.bindLifetime`/ns.error* 자신)이라 인라이너가 callee를 못 풀고 — 섹션 2·3이 그 모양은 전 플래그에서 태그가 보임을 단언. **⇒ 부하 지지 규칙: 태그는 테이블 경유로 호출되는 함수에만**(`quad-error` 헤더·`architecture.md` error 계약 절에 명문화). 코루틴은 문서 예상 그대로 — 안쪽 스택 태그는 정상, 리주머 쪽 태그는 안 보여 raise 자리 폴백(섹션 4). 스파이크는 실물 `quad-error`를 require(무의존이라 가능), 기대 라인은 `debug.info` 동적 캡처(하드코딩 없음 — 처음 하드코딩 버전이 편집마다 깨졌다). **주의: 계측이 대상을 교란한다** — 관측 함수 몸통에 `debug.info`를 넣거나 함수를 pcall에 값으로 넘기면 인라이닝이 사라져 관측 불능(파일 주석에 박제) |
 | `26-type-apply-object-factory-overload.luau` (타입체크 전용) | ✅ **[2026-08-29 M2 단위 4]** `state:Apply(factory)`의 파라미터 타입은 **교집합 오버로드**(함수 팩토리 제네릭 `U` / `__apply` 객체 `any` 반환) — 유니온 하나는 필드가 더 있는 객체(`Blocker`)를 못 받는다. 기대 진단 2건(음성 대조군)만 — 근거: `qa-request/m2-implementation-round11.md` `H-179`, `quad-types/src/init.luau` `State<T>.Apply` |
 | `04-dispatch-chain-retractFrom.luau` | **[2026-08-31 폐기 → `done/`로 이동, 재작성 안 함 — `H-215` (a) 사용자 확정]** M3 단위 1의 `quad-base/test/spec.dispatch.luau`(12절)가 재작성 지침의 검증 대상 — 하강 diff (A)/(B), 3-인자 `retractFrom`, 각 레벨이 자기 값을 받는 것, `SetStrong` 순서 음성 대조군 — 을 실제 구현에 대고 실측한다. **잔여 몫 하나**(실제 `StoreBind` 경유 재귀 재발행 경로 — spec은 로컬 wrapping 핸들러 근사)는 `ROADMAP.md` M4의 mock 테스트 항목이 명시적으로 진다. 파일은 역사로만 남김. 아래는 폐기 전 상태: 옛 모델(핸들러 identity 추적) 기준 ✅ 통과였고 하강 diff 확정으로 재작성 대기였음 |
 | `01-two-pass-array-hash-order.luau` | **[2026-08-31 폐기 → `done/`로 이동, 재작성 안 함]** M3 단위 1의 `quad-base/test/spec.drive.luau` 1번이 재작성이 물어야 했던 그 질문 — **일반화 `for` 한 번**이 배열 파트 전체를 해시보다 먼저, 배열 안은 index 순서로 주는가(`F-4-1`) — 를 실제 `Dispatch.drive`에 대고 상시 회귀로 실측한다(round12 brief §6, 사용자 승인). 파일은 역사로만 남긴다. 아래는 폐기 전 상태: 숫자 `for` + 일반화 `for` **두 루프** 버전이라 옛 형태 기준으로는 ✅ 통과였으나, 구현이 단일 일반화 `for`로 정정되며(`base/dispatch-core-plan.md` "props 순회 순서" 절) 언어 동작 자체를 묻도록 재작성 대기였음 |

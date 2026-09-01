@@ -22,7 +22,7 @@ local function addConsumers(q: any, sources: { any })
 			return type(k) == "string" and (type(v) == "string" or type(v) == "number" or v == nil)
 		end,
 		priority = q.Dispatch.HANDLER_PRIORITY_LOW,
-		process = function(inst: any, k: any, v: any, _index: number): (any?) -> ()
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			inst[k] = v
 			return function(nextValue: any?)
 				if nextValue == nil then
