@@ -242,8 +242,12 @@ do
 	q.Dispatch.drive(inst2, { Title = src2 })
 	table.clear(log)
 	inst2:Destroy()
+	-- 구독 자체는 그대로 남아 있어야 한다(H-289 탐사자 보강) — 이게 0이면
+	-- 아래 침묵이 "게이팅"이 아니라 "구독 소멸"이라 단언이 헐거워진다
+	assert(countSubs(src2) == 1, "Destroy leaves the subscription in place — silencing is canExecute's job")
 	src2:Set("v2") -- gcconn이 끊겨 canExecute=false — no-op이어야 한다
 	expectLog(log, {})
+	assert(countSubs(src2) == 1, "the gated observer is still subscribed after the ignored emit")
 	print("PASS")
 end
 

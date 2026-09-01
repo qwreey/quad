@@ -18,6 +18,7 @@
 |---|---|---|---|---|
 | `H-287` | ① | 🟡 | (감사 1라운드) StoreBind 등록이 `spec.dispatch.luau` 2번을 깨뜨렸다 — "핸들러 없는 브랜드 값" 예시가 `q.Source(1)`인데, M4부터 Source는 **항상** StoreBind에 매치돼 언랩된 실제값(number)이 대신 매치 실패한다(`brand: Source` 문구가 메시지에서 사라짐). **구현 세션이 스위트 실패를 놓친 채 "전 스위트 ALL PASS"로 기록**한 것까지가 발견이다 — `grep -c "ALL PASS"`가 24를 줬는데 기대 총수(25)와 대조하지 않았고 exit code도 안 봤다 | ✅ 반영 — 가로채기는 정본 절이 확정한 설계 그대로라(*"v가 State/Source인 경우를 잡아내는, 우선순위가 매우 높은 핸들러"* — 여기 재검토 없음) 테스트의 예시 값만 stale: 핸들러가 없는 브랜드 값을 `q.Blocker()`로 교체(`brand: Blocker` 단언), 주석에 사유. 스위트 25/25 exit 0 재확인. 감사자는 "설계 재검토" 갈래도 제시했으나 그건 확정 역전 재론이라 열지 않음 — 이 판단이 틀렸다면 사용자가 뒤집을 것 |
 | `H-288` | ① | 🟢 | (감사 1라운드 부수) `luau-analyze` `ImportUnused` 둘 — `spec.storebind.luau`가 자기 미사용 `Quad` import를 갖고 태어남 + `spec.lengthoffset.luau`의 같은 기존 부채(diff 이전부터). exit 0이라 게이트엔 안 걸리지만 "analyze 클린" 서술과 안 맞았다 | ✅ 반영 — 두 import 제거, analyze 경고 0 |
+| `H-289` | ① | 🟢 | (탐사자) `dispatch-core-plan.md` "확정된 디스패치 모델" 절의 StoreBind 예시 1번("라이프타임(`Connected`)을 확인")이 확인의 구현 주체를 안 가리켜, 그 절만 읽는 구현자가 핸들러 안에 중복 검사를 넣을 수 있다 — 정본 절은 "핸들러가 직접 재구현할 필요 없음"(Observer `_receive`의 `canExecute` 게이팅)으로 확정돼 있고 코드도 그렇다. 부수: `spec.storebind` 6절의 Destroy 침묵 단언이 "게이팅"과 "구독 소멸"을 구분 못 함 | ✅ 반영 — 예시 항목에 주체 명시+정본 절 포인터, spec 6절에 Destroy 전후 `countSubs == 1` 단언 둘 추가(구독은 남고 발화만 게이팅됨을 고정). 스위트 exit 0 재확인 |
 
 **[2026-09-01 구현 커밋 시점] 문서-코드 어긋남 발견 0건, 감사 1라운드
 발견 둘(위 표 — 회귀 하나 + 린트 둘)** — 정본 절(`dispatch-core-plan.md`의
