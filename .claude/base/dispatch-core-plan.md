@@ -1716,8 +1716,10 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
     약하게 바꾸면 이 맵의 키가 마운트 중 빠져 `bk.indexOfElement[element]`가
     `nil`이 된다 — 그 둘은 이 맵의 불변식을 지탱하는 자리로 표시할 것.
     Instance를 `__mode = "k"` 키로 쓰는 경로 자체는
-    `audit/gcconn-trick-verification.md`가 **미확인**으로 남겨둔 항목이라 M3
-    구현 시 실측 대상. 해제에 요소를 넘겨 `setLength`가 지우게 하는 안(시그니처 의미 확장)과
+    **[2026-09-01 실측 확인]** 스파이크 `10` 완주의 A-7이 닫았다 —
+    Destroy+GC 후 항목이 plain table과 동일하게 치워진다
+    (`audit/spike10-full-run-2026-09-01.md`; 한때 여기 "미확인이라 M3 구현
+    시 실측 대상"이라 적혀 있었다). 해제에 요소를 넘겨 `setLength`가 지우게 하는 안(시그니처 의미 확장)과
     inst 층 명시 삭제 API는 기각.
   (**[2026-08-26]** `offsetCacheValidUpTo`은 같은 날 `offsetSetUpTo`에서 갈라져 나온
   필드다 — 아래 "두 필드" 절.) (`bk.N`만 `nil` 시작을

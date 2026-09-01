@@ -1,6 +1,11 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: **2026-09-01** — M4(round13 §0 Q4 (a) 사용자 확정)가 `03`을
+> 마지막 갱신: **2026-09-01(2건)** — ① Studio MCP 연결(HUMAN_TODO 1번 해소)
+> 직후 **`10`을 A 섹션 현행 모델 재작성 후 완주** — 전 항목 PASS,
+> `rewrite-required/` → `done/`. 결과 전문·발견 둘(무claim inst userdata
+> 1사이클 수거 = `nativeClaim` 전제 실증 / Attribute Instance 참조는
+> `InstanceHandle` 언랩 경유)은 `audit/spike10-full-run-2026-09-01.md`가
+> 소스. ② M4(round13 §0 Q4 (a) 사용자 확정)가 `03`을
 > 닫음: `quad-base/test/spec.storebind.luau`가 같은 질문(재귀 종료·
 > `None`→`nil` 핸드오프·우선순위 스캔)을 실제 `StoreBind` 구현에서 상시
 > 회귀로 실측하므로 **통과 → 폐기**(파일은 `done/`에 그대로, 그 행 참고).
@@ -60,9 +65,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 6 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 5 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 19 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 20 | — |
 
 **⚠️ [2026-08-25 신설] 타입 스파이크는 `./scripts/test.sh`가 하는 리링크를
 먼저 거쳐야 한다.** `luau` CLI가 심볼릭 링크를 못 타는데(디렉토리·파일 둘
@@ -107,11 +112,11 @@
 "검증됨"으로 오독하게 되므로** 옮김. 새 정본은
 `base/dispatch-core-plan.md`/`base/attribute-plan.md`.
 
-**[2026-08-14 다섯 번째 세션] `10`도 같은 이유로 합류** — `bindLifetime`/
-`canExecute`/`unbindLifetime` 재정정으로 A 섹션이 폐기된 모델(`canBound`,
-`bindLifetime`의 `.Subscribed` 세팅, 2-인자 `canExecute`)을 검증 중.
-`10`은 **Studio 전용이라 재작성해도 이 환경에서는 못 돌린다** — 재작성
-후 다시 `not-run/`으로 내려가 사용자/MCP를 기다리는 자리다.
+**[2026-08-14 다섯 번째 세션 합류 → 2026-09-01 해소] `10`** — A 섹션이
+폐기된 모델을 검증 중이라 여기 있었는데, Studio MCP 연결이 열리면서
+"재작성해도 이 환경에서는 못 돌린다"는 전제가 사라졌다 — 현행 모델로
+재작성 후 **같은 날 MCP로 완주(전 항목 PASS), `done/`로 이동**(상단 배너·
+`done/` 표의 그 행, 결과는 `audit/spike10-full-run-2026-09-01.md`).
 
 **[2026-08-21 신설 — 2026-08-29·2026-08-31에 해소됨]** `01`과 `05`가 이때
 합류했었다 — 둘 다 같은 "설계가 바뀐" 유형(통과 상태로 `done/`에 두면 `01`은
@@ -166,23 +171,27 @@
 | `16-type-store-key-typefunction.luau` | 옛 접근 기준으로는 ✅ 통과였음 | **[2026-08-25] 검증 대상이 폐기됨** — `WrapStore`/`ProcessStoreType` 합성 자체가 사라졌다. **재작성 지침**: 타입 함수 없는 평범한 레코드 모양(`base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절)을 검증하고, 음성 대조군에 **예약 키 충돌**(`CheckReservedKeys<keyof<T>>`가 `types.never`로 무너뜨리는지 — **[2026-08-26 `H-112`]** 인자가 `T`가 아니라 `keyof<T>`다)과 **없는 키 접근**을 포함할 것 |
 | `11-modifier-illegal-value-error.luau` | 옛 형태 기준으로는 ✅ 통과였음(16개 케이스 전원) | **[2026-08-26, 8라운드 `H-122`/`H-123`] 검증 코드가 폐기된 모델을 박제하고 있다** — 그 파일의 Store 생성자가 **eager `Source(v)`** 모델이다. 명시적 초기화 확정(2026-08-25) 이후 **`defaults` 경로에선** Store가 `Source`를 만들지 않는다(동적 키 창구 `store:Of(name)`은 여전히 만든다 — 그래서 가드가 `Source` 생성자로 갔다). **재작성 지침**: `isModifier` 가드의 새 자리는 **`Source` 생성자**(+`Source:Set`, `:Compute` 결과 캐싱)이고, Store 생성자가 하는 건 `defaults`의 **`isSource` 화이트리스트 검증**(error level 2)이다 — 둘을 각각 양성/음성으로 볼 것. **검증 대상(핸들러 계층 값 즉시 error)은 그대로**라 결론이 바뀌는 건 아님 |
 | `21-type-store-undeclared-key-rejected.luau` | 옛 접근 기준으로는 ✅ 통과였음 | `16`의 `ProcessStoreType`을 재사용하므로 같이 낡음. **검증 대상(미선언 키가 타입 에러)은 그대로 유효**하다 — 새 `Store<T>` 선언으로 바꿔 쓰기만 하면 된다(`store:Of("nope")`이 거부되는 것도 같이 넣을 것) |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
 
 **[2026-08-14 다섯 번째 세션] 스파이크는 0건** — 유일했던 `10`이
-`rewrite-required/`로 갔음(위 표). 남은 건 헬퍼 하나뿐.
+`rewrite-required/`로 갔음(**[2026-09-01]** 이후 재작성·완주돼 지금은
+`done/`). 남은 건 헬퍼 하나뿐. **[2026-09-01] Studio MCP 연결이 열려서
+"이 환경에서 못 돌림"이라는 이 폴더의 전제 자체가 약해졌다** — Studio
+전용 스파이크도 이제 `execute_luau`로 에이전트가 직접 돌릴 수 있다
+(`10` 완주가 첫 사례, GC 대기는 청크 분할로).
 
 | 파일 | 이유 |
 |---|---|
-| `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
+| `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀(2026-09-01 완주 실측에서 실사용 — 매 대기 2~3 epoch에 끝남) |
 
 ## ✅ `done/` — 통과 or 판정 끝
 
 (개수는 위 표와 폴더가 소스 — 여기서 다시 세지 않는다.)
 
 **[2026-09-01 기준] 지금 `done/`에 있는 런타임(비타입) 스파이크는
-`01`/`02`/`03`/`04`/`05`/`06`/`07`/`17`/`18`/`20`** — `11`은 2026-08-26에
+`01`/`02`/`03`/`04`/`05`/`06`/`07`/`10`/`17`/`18`/`20`**(`10`은 Studio
+전용 — 같은 날 MCP 완주로 합류) — `11`은 2026-08-26에
 `rewrite-required/`로 나갔고(위 표), `01`/`03`/`04`/`05`는 "통과"가 아니라
 spec 대체 폐기 상태다(각 행 참고 — `03`은 통과로 들어와 있다가 2026-09-01에
 폐기로 판정), 나머지는 전원 통과(crash 0 / FAIL 0). 나머지는 타입
@@ -209,6 +218,7 @@ spec 대체 폐기 상태다(각 행 참고 — `03`은 통과로 들어와 있�
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 **당시의** Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인. **[2026-08-24]** 그 대비의 한쪽(Ref 콜백)은 6라운드 `H-7`로 **해시맵 셋**이 되어 사라졌지만, 이 스파이크가 실제로 확인한 것(**일반 Lua 테이블에서 `nil` 구멍과 `None` 채움의 거동 차이**)은 그대로 유효하다 — `sourceList`/`flattened`처럼 순서가 중요한 배열이 여전히 그 결론 위에 선다 |
 | `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료. **[2026-09-01 폐기 확정 — round13 §0 Q4 (a) 사용자 확정]** M4의 `quad-base/test/spec.storebind.luau`가 같은 질문(재귀 종료·`None→nil` 핸드오프·우선순위 스캔)을 **실제 `StoreBind` 구현**에 대고 상시 회귀로 실측한다(5절 — 배열 자리에서 부기 반응형 이동까지) — `01`/`04`/`05`와 같은 폐기 근거 구조. 파일은 역사로만 남김. 폐기 전 상태: ✅ 통과(격리 근사 — 2026-08-31 메모가 "M4 구현 시점에 판정"으로 예약해뒀던 것) |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | ✅ **[2026-09-01 A 섹션 현행 모델 재작성 + Studio MCP 완주 — 전 항목 PASS]** `audit/gcconn-trick-verification.md`의 "아직 확인 안 된 것" 전량 해소: `canBound` 게이트 3케이스(살아있으면 error / unbind 후 통과 / **Destroy 후 다른 inst 재바인드 통과**), BindData 복사 gcconn 단독 판정, Destroy+GC 후 weak 릴레이션 자기 정리·value 수거, **userdata 동일성**(claim은 고정·재조회 rawequal, **무claim은 트리에 살아있어도 1사이클에 수거 — `nativeClaim` 전제 실증**), Instance weak key 동작, B) Attribute Instance 참조는 **`InstanceHandle` 언랩 경유**(⭐ 발견 — 미문서화 Studio Beta, `:Get()`/`:Wait()`/`.new`, Destroy 후에도 핸들 잔존), C) CollectionService 왕복 + Destroy 시 태그 엔진 정리. 결과 전문은 `audit/spike10-full-run-2026-09-01.md` |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |

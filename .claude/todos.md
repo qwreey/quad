@@ -15,9 +15,13 @@
    `-round13.md`(`H-287`~, §4 열린 문항 0). 스파이크 `03` 폐기 확정(Q4 (a),
    `luau-test/STATUS.md`가 소스). 감사 3라운드가 round12 §6(`H-286`) 실질
    후보 ①·③을 **기각으로 닫아** 이제 ②(unbind-relate)만 M6 몫으로 남는다
-   (소스는 round12 §6). **다음 액션: M5(quad-roblox 최소 프로바이더) 규약
-   문항지 신설 — 단 M5는 Roblox 실기기 축이라 `HUMAN_TODO.md`(Studio 별도
-   계정 등) 선행 확인 필요.** 아래는 M3 종결 기록:
+   (소스는 round12 §6). **[2026-09-01 후속 — 다음 액션 이행됨]** M5 선행
+   확인 완료: Studio MCP 연결(`HUMAN_TODO.md` 1번 해소) + 스파이크 `10`
+   현행 모델 재작성·MCP 완주(전 항목 PASS — `nativeClaim` 전제 실증,
+   Attribute Instance 참조는 `InstanceHandle` 언랩 발견; 소스는
+   `audit/spike10-full-run-2026-09-01.md`). **M5 규약 문항지
+   `qa-request/m5-implementation-round14-brief.md` 신설(발견 번호 `H-290`부터)
+   — §0 여섯 문항 회신 대기가 지금의 다음 액션.** 아래는 M3 종결 기록:
 
    **[구 00번 — M3] ⭐⭐⭐ [2026-08-31 착수 → 2026-09-01 종결] M3 자율 구현 구간 — 완료,
    M2와 같은 방식으로 종결.** 단위 넷(코어/부기/None·Nil/Leaf·가드·종합)

@@ -187,7 +187,10 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 `isState`와 같은 자리에 놓이는 것이고, 파일 `LifetimeHandle.luau` 자신이 이
 넷을 return하는 게 아니다(파일은 `InitLifetimeHandle(module)`을 return하고, 그
 팩토리가 `module.bindLifetime = …` 에러 스텁 4종을 심는다 — 백엔드가 같은 필드를
-덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절).
+덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절.
+**[2026-09-01 명시]** 실코드 `LifetimeHandle.luau`는 생명주기 넷에 더해
+엔진 op **`onDestroying` 스텁도 같이** 심는다 — 같은 백엔드가 채우는
+주입이라서(그 파일 주석이 소스). 백엔드가 덮어쓸 필드는 총 다섯).
 아래 시그니처의 이름은 그 필드 이름이다. **⭐ [2026-08-28 `H-174`, 사용자 확정]
 반응형 모듈(`Source`/`State`/`Observer`/`Effect`…)은 이 넷을 `module.canExecute(self)`처럼
 모듈 인스턴스에서 발화 시점에 늦게 읽는다** — 조립은 `InitXxx(module)` 팩토리가

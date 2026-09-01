@@ -198,9 +198,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **기각**했다(`m2-implementation-round11.md` `H-176`: strict에서 콜백
       dep 추론이 깨짐 → deps 자리 `...any` 확정). 물으려던 답이 나와 폐기,
       `done/`으로 이동
-- [ ] **`10`(Roblox Studio 확인)** — `bindLifetime`/`canExecute`/
-      `unbindLifetime` 재정정으로 무효화. **Studio 작업이라
-      `HUMAN_TODO.md` 1번(계정 분리)이 선행**
+- [x] **`10`(Roblox Studio 확인)** — `bindLifetime`/`canExecute`/
+      `unbindLifetime` 재정정으로 무효화됐던 것. **[2026-09-01 닫힘]** A
+      섹션을 현행 모델로 재작성해 Studio MCP로 완주(전 항목 PASS,
+      `done/` 이동) — 결과 전문은 `audit/spike10-full-run-2026-09-01.md`
 - [ ] **`11`(modifier 불법 값 error) / `16`·`21`(Store 타입)** —
       **[2026-08-31 소급 등재]** 셋 다 이 절 신설(08-22) **이후** 합류
       (`11`은 8라운드 `H-122`/`H-123`으로 08-26에, `16`/`21`은 Store 재설계로
@@ -1092,8 +1093,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       구현한다 — `New` ②단계와 `Claim`(이미 있는 트리, 위 체크박스)이 같은
       op를 부르고, 이미 셋업된 inst면 error(이중 claim 판정). 사용자 확정
       *"gchold/gcconn 경로를 여기에 전부"*.
-- [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — **Studio 작업이라
-      `HUMAN_TODO.md` 1번(계정 분리) 먼저 되어야 진행 가능, `SAFETY.md` 준수**
+- [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — Studio 작업, `SAFETY.md`
+      준수. **[2026-09-01 게이트 해소]** 여기 걸려 있던 선행 조건
+      (`HUMAN_TODO.md` 1번 계정 분리)은 충족됐고, MCP `execute_luau`로
+      에이전트가 직접 확인할 수 있다(스파이크 `10` 완주가 선례 —
+      `audit/spike10-full-run-2026-09-01.md`. gcconn/`nativeClaim` 실기기
+      전제도 그 완주가 미리 닫아둠)
 
 ## M6 — Slot
 

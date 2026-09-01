@@ -54,6 +54,18 @@ Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Att
 "Value 오브젝트(StringValue/ObjectValue 등)는 기각" 결정과 같은 방향
 — Instance 타입 지원까지 감안하면 그 결정의 근거가 한층 더 탄탄해짐).
 
+> **⭐ [2026-09-01 실측 조건화 — 스파이크 `10` 완주]** 위 "그대로 쓸 수
+> 있다"는 **쓰기 쪽만** 그대로다 — `SetAttribute(name, inst)`는 Instance를
+> 받아 자동 랩하지만, **읽기(`GetAttribute`)가 돌려주는 것은 Instance가
+> 아니라 `InstanceHandle`**(미문서화 Studio Beta — 복제/스트리밍 미실체화를
+> 푸는 간접 참조)이다. 원본과 `==` 비교는 false고 `handle:Get()`으로
+> 언랩해야 원본(rawequal) — 단 `:Get()`은 nil일 수 있고(`:Wait()`이 실체화
+> 대기), 대상이 Destroy돼도 Attribute는 nil로 안 풀리며 `:Get()`이 죽은
+> Instance를 그대로 준다. quad의 Attribute **쓰기 경로(디스패치)는
+> 무영향**이고, 읽는 소비자(quad-debug, `InstanceAttribute`의 읽기 타입)가
+> 이 사실 위에서 설계돼야 한다. 실측 전문과 사용자 설명(devforum 4753441)은
+> `audit/spike10-full-run-2026-09-01.md`가 소스.
+
 **확정(2026-08-09 열한 번째 세션) — 둘 다 채택**:
 - `[AttributeKey<<boolean>> "name"] = true` (리터럴 또는 store-bind 값) —
   제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일. 기본/범용 경로.

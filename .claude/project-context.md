@@ -12,7 +12,9 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 
 **⭐ [2026-09-01 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
 Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)
-완료 — 다음은 M5(quad-roblox 최소 프로바이더, 규약 문항지 신설 대기)** —
+완료 — 다음은 M5(quad-roblox 최소 프로바이더, 규약 문항지
+`qa-request/m5-implementation-round14-brief.md` §0 회신 대기 — 선행이던
+Studio 실기기 전제는 2026-09-01 스파이크 `10` 완주로 닫힘)** —
 **M4도 같은 방식의 자율 구간으로 2026-09-01 착수·종결**(사용자 조건부
 승인으로 규약 `qa-request/m4-implementation-round13-brief.md` §0 전량 (a)
 확정, 발견 `-round13.md`(`H-287`~; §4 열린 문항 0) — 단위 하나:

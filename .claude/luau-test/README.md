@@ -12,7 +12,7 @@
 |---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요**(**[2026-08-13 13차 세션] 현재 비어 있음** — 마지막 한 건이던 `08`이 해소돼 `done/`으로 감) | ⭐ 사용자 |
 | `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff / `10`, **[2026-08-14 5차 세션]** `canExecute` 1-인자 재정정 / `05`, **[2026-08-14 8차 세션]** "emit은 항상 전파" 정정 → 재작성 통과했다가 **[2026-08-21]** 소스 에포크 채택으로 다시 합류) — `16`은 [2026-08-15] 통과로 `done/`에 갔다가 **[2026-08-25] Store 재설계로 `rewrite-required/`에 재합류**(`STATUS.md`); **[2026-08-29] `13`·`15`·`05`는 지금 `done/`에 있다**(`15`는 `H-176`으로 폐기, `05`는 `spec.state`/`spec.effect`가 대체 — 여기 나열은 폴더가 왜 생겼는지의 예시일 뿐, 현황은 `STATUS.md`) | 에이전트 |
-| `not-run/` | 이 환경에서 못 돌림 — **[2026-08-14 5차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음 | 사용자 or MCP 연결 후 |
+| `not-run/` | CLI로 못 돌림(Studio 필요) — **[2026-08-14 5차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음. **[2026-09-01]** Studio 몫도 MCP로 실행 가능해져 "못 돌림"은 CLI 한정 서술이 됐다 | 사용자 or 에이전트(MCP 직접 실행) |
 | `done/` | 통과 or 판정 끝, 더 할 일 없음 | — |
 
 **스파이크를 고치거나 돌렸으면 파일을 해당 폴더로 `git mv`하고 STATUS.md의
@@ -34,8 +34,10 @@
 "M0/M2 스파이크 검증 목록에 추가됨"으로 흩어져 있던 항목들을 모아 각각
 독립 실행 가능한 스크립트로 만들었음. **[2026-08-13 갱신]** 처음엔 이
 환경에 `luau`/`luau-analyze` 바이너리가 없어 에이전트가 못 돌렸으나,
-여섯 번째 세션에 바이너리가 생겨 **첫 실측이 끝남** — 지금은 에이전트가
-직접 돌릴 수 있고, 사용자 손이 필요한 건 Studio 전용(`not-run/`)뿐.
+여섯 번째 세션에 바이너리가 생겨 **첫 실측이 끝남**. **[2026-09-01 갱신]**
+Studio 전용마저 MCP `execute_luau`로 에이전트가 직접 돌릴 수 있게 됐다
+(`10` 완주가 선례) — 이제 순수하게 "사람 손이 필요한" 실행 환경은 남지
+않았다(한때 여기 "사용자 손이 필요한 건 Studio 전용뿐"이라 적혀 있었다).
 
 각 파일 맨 위 주석에 다음이 전부 적혀있음: 뭘 검증하는지, 어느 base 문서/
 ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해야 하는지.
@@ -46,7 +48,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 |---|---|---|
 | **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22 |
 | **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23 |
-| **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
+| **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수). **[2026-09-01]** MCP 연결이 열려 사용자 수동 실행뿐 아니라 **에이전트가 `execute_luau`로 직접** 돌릴 수도 있음(`10` 완주가 첫 사례) | 10 |
 
 **[2026-08-21 정정]** 이 표가 `21`/`22`/`23`을 빠뜨린 채 `13`을 "런타임 부분/
 타입 부분"으로 쪼개 적고 있었다 — `13`의 런타임 절반은 2026-08-19에 `22`로
@@ -82,7 +84,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `base/source-state-plan.md` "Source가 State를 만족함", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | **[⚠️ 2026-08-14 다섯 번째 세션: A 섹션이 폐기된 모델을 검증 중 → `rewrite-required/`, 열한 번째 세션에 `canBound` 재도입으로 재작성 사유 하나 더 추가]** (A) `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복. **A는 재작성 대상** — 파일 속 옛 `canBound`(9차 세션 정의)와 `bindLifetime`의 `value.Subscribed = true` 세팅, 2-인자 `canExecute(inst, value)`는 전부 낡음(현재 게이트는 이중 바인딩 확인은 `canBound(v)`, emit 게이팅은 `canExecute(v)` — 둘 다 `value` 단독 1-인자로 비공개 헬퍼를 공유, gcconn/gchold는 **Instance 생성 시점**에 생성). **[2026-08-13]** A 섹션 앞부분(ClassName 신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됐고 **새 모델에서도 그대로 유효**(오히려 더 중요 — `canBound`/`canExecute`가 `.Connected`를 직접 읽는 게 leaf 경로 판정의 전부), `audit/gcconn-trick-verification.md` 참고. 이중 바인딩 게이트/재바인딩 허용/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md` "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `source-state-plan.md` "이중 바인딩 금지", `.claude/session-summary.md` 2026-08-06 세션, `debug-tooling-plan.md` |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | **[✅ 2026-09-01 A 섹션 현행 모델 재작성 + Studio MCP 완주 — 전 항목 PASS, `done/`]** (A) `nativeClaim`(gcconn이 gchold+**inst** 캡처, Instance 생성 시점) 위의 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` — 게이트 3케이스, BindData 복사 gcconn 단독 판정, weak 릴레이션 자기 정리, **userdata 동일성**(무claim inst는 트리에 살아있어도 1 GC 사이클에 userdata 수거 — claim의 존재 이유 실증), Instance weak key. (B) Attribute의 Instance 참조 — 지원하되 읽기는 **`InstanceHandle` 언랩**(`:Get()`, 미문서화 Studio Beta) 경유라는 발견. (C) CollectionService 태그/GetTagged 왕복 + Destroy 시 엔진 정리. 결과 전문은 `audit/spike10-full-run-2026-09-01.md` | `lifecycle-pattern.md` "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `source-state-plan.md` "이중 바인딩 금지", `.claude/session-summary.md` 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)이 들어오면 즉시 error" 절 + 7번 절 **⚠️ [2026-08-26 이동 → `rewrite-required/`, 8라운드 `H-122`/`H-123`]** 검증 코드의 Store 생성자가 **eager `Source(v)`** 모델을 박제하고 있다 — 명시적 초기화 확정(2026-08-25) 이후 **`defaults` 경로에선** Store가 `Source`를 만들지 않는다(동적 키 창구 `store:Of(name)`은 여전히 만든다 — 그래서 가드가 `Source` 생성자로 갔다). 재작성 지침은 `STATUS.md`의 `rewrite-required/` 표. |
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 특수 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` (타입체크 전용) | **[2026-08-19 재작성]** `PreRef<T>`/`PostRef<T>`가 `Ref<T>`를 구조적으로 만족하는지 — 원래 이 파일에 있던 런타임(B) 부분은 A의 더미 스텁이 실행을 막아 도달 불가였던 문제라 `22`로 분리, PostRef까지 확장 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정), `ref-plan.md`의 "`PostRef`" 절 |

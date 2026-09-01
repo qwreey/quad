@@ -2148,3 +2148,25 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `q.Source` 브랜드 예시를 가로채 스위트가 깨졌는데 구현 세션이 grep 계수만
   보고 "ALL PASS"로 오기록 — 예시를 `q.Blocker()`로 교체, 이후 판정은 exit
   code로) + `H-288`(ImportUnused 둘 제거). 교정 후 25/25 exit 0.
+
+- `session/2026-09-01-02-spike10-studio-mcp-full-run.md` **[스파이크 `10`
+  재작성+Studio MCP 첫 완주]** 사용자 승인(*"권고대로 하고싶어"*)으로 A
+  섹션을 현행 모델(`nativeClaim`/`isBoundAlive`/`canBound`·`canExecute`)로
+  재작성 후 MCP `execute_luau` 4청크로 전 구간 실측 — 전 항목 PASS,
+  `rewrite-required/` → `done/`, gcconn 문서의 "아직 확인 안 된 것" 전량
+  해소(전문은 `audit/spike10-full-run-2026-09-01.md`). 굵은 발견 둘:
+  무claim inst의 userdata가 트리에 살아있어도 1 GC 사이클에 수거됨
+  (`nativeClaim` 전제 실증) / Attribute Instance 참조는 **`InstanceHandle`
+  언랩 경유**(미문서화 Studio Beta — 사용자가 정체 설명: 복제/스트리밍
+  미실체화를 푸는 간접 참조, `:Get()` nilable·`:Wait()` 대기,
+  `attribute-plan.md`의 "Ref 용도로 그대로" 서술을 쓰기 전용으로 조건화).
+  Studio 전용 스파이크를 에이전트가 직접 완주한 첫 사례 — `not-run/`
+  전제가 좁아짐. 후반부: 사용자 운용 지침 신설(가벼운 일은 opus
+  서브에이전트로 — conventions 명문화) / 감사 4라운드로 종결(각도: diff
+  정합성 → 교정분+인덱스 → 신선 산문 → 교정 좁은 검증 — 라운드별 발견·
+  교정의 소스는 세션 파일 "후반부" 절, 여기 개수 안 적음; conventions
+  모델 위임 기준 모호 1건은 사용자 회신 대기) / **M5 규약 문항지
+  `m5-implementation-round14-brief.md` 신설**
+  (§0 여섯 문항 회신 대기 — opus 스코프 보고가 낸 `quad_base` 의존 문서
+  모순·`EngineOps` 분할·typed Modifier 생성자 방치가 문항이 됨, `H-290`부터
+  예약).
