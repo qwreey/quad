@@ -2121,3 +2121,16 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **`H-256` 🔴**(희소·비정수 배열 키가 부기 오염+영구 동결, 재현 — 권고 (a)
   부기 진입점 정수 검증)·`H-258`(nil 값 자리 retractor 신호 — 권고 (a) 계약
   문서화). **§4 대기 다섯**(`H-240`/`H-241`/`H-250`/`H-256`/`H-258`).
+
+- `session/2026-08-31-02-m3-kickoff-unit1-dispatch-core.md` **[2026-09-01 증보 — M3 종결]**
+  §4 배치 회신 두 라운드로 M3 종결: 다섯 확정(`H-241`/`H-275` UB — "drive는
+  형상 불문 1회" / `H-250` 스파이크 27 — -O2가 로컬 직접 호출 태그를 인라인,
+  "태그는 테이블 경유 호출에만" 규칙 / `H-256` checkPosition / `H-258` 사용자
+  설계 retractor 2번째 인자 `retracting`) + `H-240` 재질문 답변 후 확정(쓰기
+  직전 검사 셋 + getOffsetAt 자가 치유, 뮤테이션 실측). 사용자 제기 구조 셋:
+  `H-277` `src/Bookkeeping.luau` 분리({Slot,Dispatch}→Bookkeeping, 표면은
+  Dispatch 유지) / `H-278` `Dispatch/Leaf.luau` 해체(각 값 선언 모듈이 자기
+  Init에서 등록 — 2026-08-08 배치 확정 역전) / `H-279` drive pre-hook 리서치.
+  `/code-review` 운용 규약 신설(conventions — 문서 추론형 비분할, 감사·리뷰는
+  유한 절차; fable 포크 비용 실측이 계기). 리뷰는 유한 절차로 종결 — 생존
+  8건 반영·기각(`H-280`~`H-285`), 미검증 13건 §6(`H-286`).

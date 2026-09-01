@@ -11,13 +11,15 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 길게 잡음.
 
 **⭐ [2026-08-31 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store) 완료, M3(디스패치 엔진) 진행 중** — M2는 자율 구현
+Source/State/Store)/M3(디스패치 엔진) 완료 — 다음은 M4(규약 문항지 신설
+대기)** — M2는 자율 구현
 구간(규약 `qa-request/m2-implementation-round11-brief.md`, 발견 `-round11.md`)
 으로 2026-08-28 착수~08-31 종결(단위 넷 구현·감사·리뷰·탐사 완료, §4 문항·
-코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수** — 규약은
-`qa-request/m3-implementation-round12-brief.md`(같은 날 §0 세 문항·§6 첫 단위
-계획 사용자 확정), 발견은 `-round12.md`(`H-212`부터). 진행 상태는
-`.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
+코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수, 2026-09-01 종결** —
+규약은 `qa-request/m3-implementation-round12-brief.md`, 발견·회신은
+`-round12.md`(`H-212`~; §4 열린 문항 0 — 회신 라운드에서 구조 셋도 확정:
+Bookkeeping 분리(`H-277`)/Leaf 소유권 이동(`H-278`)/drive pre-hook 리서치
+(`H-279`)). 진행 상태는 `.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
 같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음). **⚠️ [2026-08-24] M2와
 M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 문제가 (a) 순서
 교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"
