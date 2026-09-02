@@ -310,6 +310,7 @@ quad/
 │       ├── PreRef.luau            # Ref 런타임 재사용 + children 배열 전용, Modifier/Store 타입 차단, 호이스팅되는 pre-pass 특수화(별도 파일, `ref-plan.md` "PreRef 신설" 절, 2026-08-07 여섯 번째 세션에서 분리)
 │       ├── PostRef.luau           # PreRef의 거울상 — 같은 Ref 런타임/제약, 같은 pre-pass가 수집만 하고 두 패스가 전부 끝난 뒤 fire(`ref-plan.md` "`PostRef`" 절, 2026-08-14 아홉 번째 세션 확정)
 │       ├── LifecycleHooks.luau    # OnCreated/OnRendered/OnDestroyed — PreRef/PostRef/Effect를 반환하는 순수 팩토리 슈가(`base/lifecycle-hooks-plan.md`), 새 타입/Dispatch 개념 없음
+│       ├── Claim.luau             # **[2026-09-02 M5 단위 ④]** `Claim(inst, desc)` + `newMapperClass`/`MapperRoot`(본체는 quad-base — 순회·부기 전반, 프로바이더는 `nativeClaim`/`nativeFindChild` 핸들만; `base/claim-plan.md` §9의 "위치 반영은 M5 착수 때" 이행)
 │       └── init.luau          # 패키지 최상위 export — `Quad` 값 테이블(`New`/`Source`/…/`None`/**`Void`**(재export — 정의는 위 `Void.luau`, `H-162`))
 └── quad-roblox/
     ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존(런타임). **[2026-09-02 M5 Q3 (a)]** `[dev_dependencies]`에만 quad_base — spec 전용, 소비자 비전파(`base/project-setup-plan.md` 정정 참고)

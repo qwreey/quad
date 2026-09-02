@@ -88,13 +88,17 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   매핑된 하위 전부가 **quad 소유**가 된다 — `New`가 만든 것과 같은 gcconn/gchold·부기
   (그 (0) 셋업은 아래 `nativeClaim` — §7-9).
 - **디스크립터는 1회용** — `PreRef`의 `_fired`처럼 **디스크립터 객체에 소진
-  플래그**를 세우고 재사용이면 `error(…, 2)`. **[2026-08-28 `/code-review` 정정]**
+  플래그**를 세우고 재사용이면 error(**[2026-09-02 정정, 단위 ④]** 여기
+  `error(…, 2)`라 적혀 있었으나 실 구현은 §7-9/-10 정정과 같은 이유로
+  `errorBefore(SURFACE)`다 — 재사용 검사가 DFS 재귀 안이라 더더욱). **[2026-08-28 `/code-review` 정정]**
   `PreRef` 관용구의 다른 절반(배열 슬롯을 `ProcessedPreRef` 센티널로 교체)은
   **가져오지 않는다** — 매핑 자식의 배열 슬롯은 §4대로 **해석된 Instance로 교체**돼야
   `InstanceChildHandler`에 닿고, 루트 디스크립터는 배열에 있지도 않다. 사용자
   테이블을 in-place로 바꿀지 새 테이블을 만들지(그러면 `ProcessedModifier` 자리와
   인덱스가 `New`와 달라진다)와 Modifier 필드 안에 숨은 디스크립터를 DFS가 보는지는
-  **구현 시 정할 것**(§9). **같은 `inst`를 두 번 `Claim`하는 것도 error**(§7-7) —
+  ~~구현 시 정할 것~~ **[2026-09-02 `H-303` 재량 확정 — 뒤집기 가능]**
+  in-place 교체 / DFS는 Modifier 필드를 안 봄(M7 flatten 통합의 몫) —
+  전체 재량 목록은 round14 `H-303` 행과 `quad-base/src/Claim.luau` 헤더가 소스. **같은 `inst`를 두 번 `Claim`하는 것도 error**(§7-7) —
   판정은 위 `nativeClaim` 항목(§7-10).
 - **⭐ [2026-08-28 후속, §7-9] 소유는 프로바이더 주입 op `nativeClaim(inst)`** —
   `lifecycle-pattern.md` (0)의 gcconn/gchold 셋업(클로저가 `gchold`와 `inst`를 캡처해
@@ -333,7 +337,7 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   아님).
 - `Claim(inst, desc) -> inst` — DFS 해석 → 해석한 inst마다 `nativeClaim` → bottom-up
   `drive`, 소진 플래그(§2), 이중 claim은 `nativeClaim` 앞의 `InstData` 검사(§7-10).
-  **구현 시 정할 것**: 사용자 테이블 in-place 교체 vs 새 테이블, Modifier 안의
+  ~~구현 시 정할 것~~ **[2026-09-02 `H-303` 재량 확정 — 뒤집기 가능, round14가 소스]**: 사용자 테이블 in-place 교체 vs 새 테이블(→ in-place), Modifier 안의
   디스크립터 처리, 패키지 안 정의 파일 위치(`quad-base/src/Claim.luau` 가칭 —
   `base/architecture.md` 소스 트리에 반영은 M5 착수 때).
 - 프로바이더 op **`nativeClaim(inst)`**(§7-9) — `lifecycle-pattern.md` (0)의 코드가 본체,

@@ -465,8 +465,26 @@ local function assertBlamesUser(err: any, wantFile: string, label: string?)
 	assert(string.find(msg, "/src/", 1, true) == nil, `{label or "blame"}: must not blame quad internals: {msg}`)
 end
 
+-- (M5 단위 ④ 리뷰) Reflection 심 공장 — spec.handlers/spec.claim이 같은
+-- 심을 손 복사하고 있었다(`H-261` 선례: 공유 헬퍼는 mock이 집). 디스크립터
+-- 모양은 Studio 실측(.Name + Permits.Write 키 유무 = 쓰기 가능성)과 동형 —
+-- 모양이 또 바뀌면 여기 한 곳만 고친다. REFLECTED 내용은 spec별 파라미터.
+local function gameShim(reflected: { [string]: { any } })
+	return {
+		GetService = function(_self: any, name: string): any
+			assert(name == "ReflectionService", "only ReflectionService is shimmed")
+			return {
+				GetPropertiesOfClass = function(_s: any, className: string): { any }
+					return reflected[className] or {}
+				end,
+			}
+		end,
+	}
+end
+
 return {
 	Instance = Instance,
+	gameShim = gameShim,
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
 	installLifetime = installLifetime,

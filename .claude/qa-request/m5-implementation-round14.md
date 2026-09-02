@@ -65,6 +65,8 @@ quad-types/quad-base를 고치면 **`pesde install` 재실행이 필요**하다
 (relink는 심볼릭→실복사만 담당 — `H-300` 반영 중 실측).
 
 | `H-302` | ① | 🟡 | (단위 ③ 리뷰) **읽기 전용 프로퍼티가 Property 핸들러에 매치**돼 `inst[k]=v`가 h.process 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착될 수 있었다(예: `AbsoluteSize`). 처방 실측: 디스크립터의 **`Permits.Write` 키가 쓰기 가능 프로퍼티에만 존재**(Studio — Size/Visible엔 있고 AbsoluteSize엔 없음) | ✅ 반영 — 멤버십 캐시가 `Permits.Write ~= nil`만 싣는다. `H-297` (a)("쓰기 표면만 — 대입 불가 프로퍼티는 거짓 표면")의 **런타임판**이라 승인된 논거의 확장으로 ① 처리(`H-290` 선례) — 틀렸다면 사용자가 뒤집을 것. spec에 읽기 전용 대조군 추가 |
+| `H-303` | ① | 🟢 | (단위 ④) **claim-plan §9의 "구현 시 정할 것"·가칭 전량을 재량 확정** — ⑴ 사용자 테이블 **in-place 교체** 채택(새 테이블이면 `ProcessedModifier` 자리·인덱스가 `New`와 달라진다는 §2 우려가 근거) ⑵ Modifier 필드 안 디스크립터는 DFS가 안 봄(M7 flatten 통합의 몫) ⑶ Claim 경로는 `drive` 직접 호출(flatten은 D 내부 — M5 항등이라 무차이, M7에서 공유 자리 결정) ⑷ 제네릭 생성자 `newMapperClass`·센티널 값 `MapperRoot`는 base(Claim.luau) 정의 + `D.Mapper`가 별칭 노출 ⑸ 디스크립터 타입 마커 `_mapper`(H-300 (a) 이중 구조 선례 — 판별은 `MapperBrand`) ⑹ 이름 부재·중복은 가드 없음(§3 UB 확정 그대로 — nil 자연 크래시) | ✅ 반영 — 전부 뒤집기 가능(§9가 재량으로 남긴 자리), 파일 헤더에 동일 목록 |
+| `H-304` | ① | 🟡 | (단위 ④ 감사) **`Claim.resolve`의 `ipairs` 스캔이 `drive`의 일반화 순회와 어긋났다** — nil 구멍 뒤의 매퍼 디스크립터가 미해석으로 drive에 새서 "no matching handler" — §3/§7-3("한 배열에 섞여도 된다")과 충돌 | ✅ 반영 — drive와 같은 일반화 순회(숫자 키 필터)로 정렬. 구멍 자체는 기존 `or None` 관용구의 몫(스파이크 `06`) — 새 규칙이 아니라 순회 동형화라 ①. spec.claim에 None 채움 뒤 디스크립터 케이스 추가 |
 **[2026-09-02 단위 ③ 시점] 확인만 하고 문제 없던 것**:
 
 - **ReflectionService 반환 모양 실측**(Property 매치의 전제) — 디스크립터
@@ -77,6 +79,27 @@ quad-types/quad-base를 고치면 **`pesde install` 재실행이 필요**하다
 - **getfenv 주입면 셋**(Instance/game/isInst)이 전부 기설계 주입 경계와
   일치 — isInst는 `H-40`이 "주입 술어"로 만든 그 자리라 spec의 교체가
   계약 위반이 아니라 계약 사용.
+
+**[2026-09-02 단위 ③ 신선 탐사자(커밋 `5191d8e` 뒤)]** 🔴 0 / 🟡 2(전부
+spec 커버리지 갭 — 코드 결함 0). 정본 줄 대조·체크리스트 9항목 전 항목
+준수, 적대 스파이크 셋 전부 통과(타입 교대 child↔None↔nil 형제 오프셋
+추적 / Reflection 클래스당 1회·멤버십 분리 / StoreBind 경유 반응형
+프로퍼티·stale observer 사망 / 사본 혼입 없음 — `None`은 패키지 사본
+단위 싱글턴이 맞다는 전제 정정 포함). 🟡 반영: 스파이크 단언을
+`spec.handlers` 6~8절로 승격(반응형 프로퍼티 — StoreBind>Property
+우선순위가 load-bearing / Reflection 캐시 핀 / 타입 교대·StoreBind 경유
+dedup). 🟢 기록: 해시 키 None→nil→Property의 원시 에러 가능성은 정본의
+명시 유예(M9/M10) 그대로.
+
+**[2026-09-02 단위 ④ 끝 절차 기록]** 감사 1라운드(확실 5 — 실코드 결함
+`H-304` 포함, 전부 반영) → `/code-review medium` 1회 — 후보 8 중 REFUTED 6
+(Permits.Write 키-유무 검사·retractor 순서 등 전부 실측/확정 인용으로 반박),
+**생존 3 전부 반영·판정**: ① Reflection 심 손 복사 2벌 → `mock.gameShim`
+공장으로 추출(`H-261` 선례 — spec.handlers는 카운터 래핑 유지) ②
+`Claim.luau`의 `isMapperDescriptor` 이중 대입 제거(init.luau 리터럴이 단일
+소유) ③ 센티널 관용구 공장화는 PLAUSIBLE — **방치**(현 2곳뿐, "관측된
+문제에만 구조" 원칙; 세 번째 마커 센티널이 생기면 그때). 반영 후 전 스위트
+exit 0.
 
 **[2026-09-02 단위 ③ 끝 절차 기록]** 감사 1라운드(정본 전 대조 클린, 확실
 1 — todos stale)로 수렴(유한 종결, M4 선례) → `/code-review medium` 1회 —

@@ -263,6 +263,10 @@ export type Quad = {
 	isRef: (x: any) -> boolean,
 	isPreRef: (x: any) -> boolean,
 	isPostRef: (x: any) -> boolean,
+	isMapperDescriptor: (x: any) -> boolean, -- M5 단위 ④(Claim)
+	-- `Claim(inst, desc) -> inst` — 이미 있는 트리를 quad 소유로(claim-plan §2;
+	-- 타입 인자 없음·반환은 넣은 inst 그대로가 사용자 확정)
+	Claim: <T>(inst: T, desc: MapperDescriptor) -> T,
 }
 
 --[[
@@ -296,6 +300,12 @@ export type Quad = {
 -- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
 -- 이벤트·children)이 None을 실을 수 있게 한다.
 export type None = { read __quadNone: true }
+
+-- `Claim`의 매퍼 디스크립터/루트 센티널(M5 단위 ④, `claim-plan.md` §2·§7-1).
+-- None과 같은 이중 구조 — 타입은 마커 필드(조언층), 런타임 판별은 브랜드
+-- (`isMapperDescriptor`)·신원(`MapperRoot`).
+export type MapperDescriptor = { read _mapper: true }
+export type MapperRoot = { read __quadMapperRoot: true }
 
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 

@@ -219,6 +219,8 @@ def emit():
     L.append("type Tween<T> = Types.Tween<T>")
     L.append("type NewChild = Types.NewChild")
     L.append("type None = QuadTypes.None")
+    L.append("type MapperDescriptor = QuadTypes.MapperDescriptor")
+    L.append("type MapperRoot = QuadTypes.MapperRoot")
     L.append("")
     names = sorted(classes.keys())
     for name in names:
@@ -255,9 +257,16 @@ def emit():
     L.append("\t\tquad.errorNamespace.setFuncLevel(stage, QuadTypes.ERROR_LEVEL_SURFACE)")
     L.append("\t\treturn stage")
     L.append("\tend")
-    L.append("\tlocal D: { [string]: any } = { New = New }")
+    L.append("\t-- D.Mapper — Claim용 디스크립터 생성기(claim-plan §2; 본체는 quad-base")
+    L.append("\t-- Claim.luau의 newMapperClass — 여기선 클래스별 캐스트 별칭만, D.<Class> 동형)")
+    L.append("\tlocal Mapper: { [string]: any } = { Root = quad.MapperRoot }")
+    L.append("\tlocal D: { [string]: any } = { New = New, Mapper = Mapper }")
     for name in names:
         L.append(f'\tD.{name} = (New("{name}") :: any) :: ({name}Param<NewChild>) -> {name}')
+    for name in names:
+        L.append(
+            f'\tMapper.{name} = (quad.newMapperClass("{name}") :: any) :: (key: string | MapperRoot) -> ({name}Param<NewChild | MapperDescriptor>) -> MapperDescriptor'
+        )
     L.append("\tquad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨")
     L.append("\treturn D")
     L.append("end")

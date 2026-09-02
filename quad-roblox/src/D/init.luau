@@ -17,6 +17,8 @@ type State<T> = QuadTypes.State<T>
 type Tween<T> = Types.Tween<T>
 type NewChild = Types.NewChild
 type None = QuadTypes.None
+type MapperDescriptor = QuadTypes.MapperDescriptor
+type MapperRoot = QuadTypes.MapperRoot
 
 export type BillboardGuiParam<E> = {
 	[number]: E,
@@ -1410,7 +1412,10 @@ return function(quad: any)
 		quad.errorNamespace.setFuncLevel(stage, QuadTypes.ERROR_LEVEL_SURFACE)
 		return stage
 	end
-	local D: { [string]: any } = { New = New }
+	-- D.Mapper — Claim용 디스크립터 생성기(claim-plan §2; 본체는 quad-base
+	-- Claim.luau의 newMapperClass — 여기선 클래스별 캐스트 별칭만, D.<Class> 동형)
+	local Mapper: { [string]: any } = { Root = quad.MapperRoot }
+	local D: { [string]: any } = { New = New, Mapper = Mapper }
 	D.BillboardGui = (New("BillboardGui") :: any) :: (BillboardGuiParam<NewChild>) -> BillboardGui
 	D.Camera = (New("Camera") :: any) :: (CameraParam<NewChild>) -> Camera
 	D.CanvasGroup = (New("CanvasGroup") :: any) :: (CanvasGroupParam<NewChild>) -> CanvasGroup
@@ -1442,6 +1447,37 @@ return function(quad: any)
 	D.VideoFrame = (New("VideoFrame") :: any) :: (VideoFrameParam<NewChild>) -> VideoFrame
 	D.ViewportFrame = (New("ViewportFrame") :: any) :: (ViewportFrameParam<NewChild>) -> ViewportFrame
 	D.WorldModel = (New("WorldModel") :: any) :: (WorldModelParam<NewChild>) -> WorldModel
+	Mapper.BillboardGui = (quad.newMapperClass("BillboardGui") :: any) :: (key: string | MapperRoot) -> (BillboardGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.Camera = (quad.newMapperClass("Camera") :: any) :: (key: string | MapperRoot) -> (CameraParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.CanvasGroup = (quad.newMapperClass("CanvasGroup") :: any) :: (key: string | MapperRoot) -> (CanvasGroupParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.Folder = (quad.newMapperClass("Folder") :: any) :: (key: string | MapperRoot) -> (FolderParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.Frame = (quad.newMapperClass("Frame") :: any) :: (key: string | MapperRoot) -> (FrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.ImageButton = (quad.newMapperClass("ImageButton") :: any) :: (key: string | MapperRoot) -> (ImageButtonParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.ImageLabel = (quad.newMapperClass("ImageLabel") :: any) :: (key: string | MapperRoot) -> (ImageLabelParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.ScreenGui = (quad.newMapperClass("ScreenGui") :: any) :: (key: string | MapperRoot) -> (ScreenGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.ScrollingFrame = (quad.newMapperClass("ScrollingFrame") :: any) :: (key: string | MapperRoot) -> (ScrollingFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.SurfaceGui = (quad.newMapperClass("SurfaceGui") :: any) :: (key: string | MapperRoot) -> (SurfaceGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.TextBox = (quad.newMapperClass("TextBox") :: any) :: (key: string | MapperRoot) -> (TextBoxParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.TextButton = (quad.newMapperClass("TextButton") :: any) :: (key: string | MapperRoot) -> (TextButtonParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.TextLabel = (quad.newMapperClass("TextLabel") :: any) :: (key: string | MapperRoot) -> (TextLabelParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIAspectRatioConstraint = (quad.newMapperClass("UIAspectRatioConstraint") :: any) :: (key: string | MapperRoot) -> (UIAspectRatioConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UICorner = (quad.newMapperClass("UICorner") :: any) :: (key: string | MapperRoot) -> (UICornerParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIDragDetector = (quad.newMapperClass("UIDragDetector") :: any) :: (key: string | MapperRoot) -> (UIDragDetectorParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIFlexItem = (quad.newMapperClass("UIFlexItem") :: any) :: (key: string | MapperRoot) -> (UIFlexItemParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIGradient = (quad.newMapperClass("UIGradient") :: any) :: (key: string | MapperRoot) -> (UIGradientParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIGridLayout = (quad.newMapperClass("UIGridLayout") :: any) :: (key: string | MapperRoot) -> (UIGridLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIListLayout = (quad.newMapperClass("UIListLayout") :: any) :: (key: string | MapperRoot) -> (UIListLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIPadding = (quad.newMapperClass("UIPadding") :: any) :: (key: string | MapperRoot) -> (UIPaddingParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIPageLayout = (quad.newMapperClass("UIPageLayout") :: any) :: (key: string | MapperRoot) -> (UIPageLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIScale = (quad.newMapperClass("UIScale") :: any) :: (key: string | MapperRoot) -> (UIScaleParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIShadow = (quad.newMapperClass("UIShadow") :: any) :: (key: string | MapperRoot) -> (UIShadowParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UISizeConstraint = (quad.newMapperClass("UISizeConstraint") :: any) :: (key: string | MapperRoot) -> (UISizeConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UIStroke = (quad.newMapperClass("UIStroke") :: any) :: (key: string | MapperRoot) -> (UIStrokeParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UITableLayout = (quad.newMapperClass("UITableLayout") :: any) :: (key: string | MapperRoot) -> (UITableLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.UITextSizeConstraint = (quad.newMapperClass("UITextSizeConstraint") :: any) :: (key: string | MapperRoot) -> (UITextSizeConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.VideoFrame = (quad.newMapperClass("VideoFrame") :: any) :: (key: string | MapperRoot) -> (VideoFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.ViewportFrame = (quad.newMapperClass("ViewportFrame") :: any) :: (key: string | MapperRoot) -> (ViewportFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
+	Mapper.WorldModel = (quad.newMapperClass("WorldModel") :: any) :: (key: string | MapperRoot) -> (WorldModelParam<NewChild | MapperDescriptor>) -> MapperDescriptor
 	quad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨
 	return D
 end

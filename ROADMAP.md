@@ -1100,7 +1100,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `H-154` dedup·내림 철거 1:1 전사. `spec.handlers.luau` 5절 —
       **반응형 자식 교체(StoreBind→InstanceChild)가 CLI에서 첫 e2e**
       (getfenv 심 — Reflection/Instance/isInst 주입면). 전 스위트 exit 0.
-- [ ] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **[같은 날 후속]** `/code-review`가 낸 문항 넷도 확정(`base/claim-plan.md` §7-9~12): gcconn/gchold 셋업은 주입 op **`nativeClaim(inst)`**에만(`New` ②단계도 호출) / 이중 claim은 그 셋업 유무로 error(레지스트리 없음) / **`PlayerGui`류 공동 소유 컨테이너는 claim 대상 아님**(루트는 `ScreenGui`·`SurfaceGui`) / `D/init.luau` 생성기는 `type <Class>Param<E>`(원소 타입 파라미터)를 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다 — `luau-analyze` 스파이크 필요.
+- [x] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **[같은 날 후속]** `/code-review`가 낸 문항 넷도 확정(`base/claim-plan.md` §7-9~12): gcconn/gchold 셋업은 주입 op **`nativeClaim(inst)`**에만(`New` ②단계도 호출) / 이중 claim은 그 셋업 유무로 error(레지스트리 없음) / **`PlayerGui`류 공동 소유 컨테이너는 claim 대상 아님**(루트는 `ScreenGui`·`SurfaceGui`) / `D/init.luau` 생성기는 `type <Class>Param<E>`(원소 타입 파라미터)를 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다 — `luau-analyze` 스파이크 필요.
+      **[2026-09-02 완료, M5 단위 ④ round14]** `quad-base/src/Claim.luau`
+      (`InitClaim` — DFS 해석·bottom-up drive·배열 슬롯 교체·1회용 소진·
+      `nativeClaim` 선행; 본체가 quad-base인 것은 §2 사용자 인용 그대로) +
+      생성기의 `D.Mapper.<Class>`/`D.Mapper.Root` 별칭 + `MapperBrand`/
+      `QuadTypes.MapperDescriptor`. 에이전트 재량은 round14 `H-303`이 소스.
+      `spec.claim.luau` 6절(중첩 DFS·New 혼입·claim 트리 반응형까지 CLI e2e).
 - [x] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
       lifecycle-pattern.md`의 "(0) gcconn/gchold는 Instance 생성 시점에

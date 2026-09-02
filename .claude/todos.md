@@ -33,8 +33,9 @@
    마커 필드도 같은 날 사용자 확정·반영). **§4 열린 문항 0, 진행 상태의
    소스는 `ROADMAP.md` M5 체크박스** — **[같은 날 단위 ③ 완료]**
    Property(Reflection 멤버십 매치)+InstanceChild(`H-134`/`H-154` 전사),
-   `spec.handlers` 5절로 반응형 자식 교체 CLI 첫 e2e. 다음 액션: 단위 ④
-   (`Claim`+`D.Mapper`) 착수. **[2026-09-02 병렬 트랙]**
+   `spec.handlers` 5절로 반응형 자식 교체 CLI 첫 e2e. **[같은 날 단위 ④ 완료]** `Claim`+`D.Mapper`
+   (quad-base `Claim.luau` — DFS·bottom-up drive·1회용, 재량은 `H-303`).
+   다음 액션: 단위 ⑤(첫 렌더 실측+종합, `H-25` quad-types 갱신 확인) 착수. **[2026-09-02 병렬 트랙]**
    사용자 승인으로 fork 둘이 각자 worktree에서 M6(Slot)/M10(Tag·Attribute)
    탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
    멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두

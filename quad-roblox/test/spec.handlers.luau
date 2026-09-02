@@ -41,16 +41,15 @@ local REFLECTED: { [string]: { any } } = {
 		{ Name = "Visible", Permits = W },
 	},
 }
-local gameShim = {
-	GetService = function(_self: any, name: string): any
-		assert(name == "ReflectionService", "only ReflectionService is shimmed")
-		return {
-			GetPropertiesOfClass = function(_s: any, className: string): { any }
-				return REFLECTED[className] or {}
-			end,
-		}
+local reflectionCalls: { [string]: number } = {}
+-- 공유 심(mock.gameShim — 리뷰 반영) + 이 spec만의 호출 카운터 래핑(7절)
+local counted = setmetatable({}, {
+	__index = function(_, className)
+		reflectionCalls[className] = (reflectionCalls[className] or 0) + 1
+		return REFLECTED[className]
 	end,
-}
+}) :: any
+local gameShim = mock.gameShim(counted)
 
 local q: any = QuadRoblox(Quad.New())
 ;(getfenv(installProperty) :: any).game = gameShim -- Property 모듈 env에 주입
@@ -142,6 +141,68 @@ do
 	assert(c1.Parent == f, "reactive child mounted through StoreBind unwrap")
 	src:Set(c2)
 	assert(c1.Parent == nil and c2.Parent == f, "re-emission demotes old, mounts new")
+	print("PASS")
+end
+
+print()
+print("=== 6. 반응형 프로퍼티(탐사자 🟡-1 승격) — StoreBind(HIGH)>Property(NORMAL)가 load-bearing ===")
+do
+	-- 이 우선순위가 회귀하면 mock에선 `inst.Size = <State 테이블>`이 조용히
+	-- 성공한다(property bag) — 그래서 실값 단언으로 핀한다
+	local src = q.Source(10)
+	local f = q.D.Frame({ Size = src }) :: any
+	assert(f.Size == 10, "reactive property drove the unwrapped value, not the State table")
+	src:Set(20)
+	assert(f.Size == 20, "re-emission reaches the property")
+	-- 평문 전환 — 옛 observer는 죽어서 stale 쓰기가 없어야 한다
+	q.Dispatch.process(f, "Size", 5, 1)
+	assert(f.Size == 5, "plain value replaces the reactive binding")
+	src:Set(30)
+	assert(f.Size == 5, "dead store cannot overwrite (old observer retracted)")
+	print("PASS")
+end
+
+print()
+print("=== 7. Reflection 캐시(탐사자 🟡-2a·b 승격) — 클래스당 정확히 1회 + 멤버십 분리 ===")
+do
+	local before = reflectionCalls.Frame or 0
+	q.D.Frame({ Visible = true })
+	q.D.Frame({ Visible = false })
+	assert((reflectionCalls.Frame or 0) - before <= 1, "GetPropertiesOfClass is cached per class (at most one new call)")
+	-- 클래스별 분리 — TextLabel의 Text는 Frame에선 프로퍼티가 아니다
+	local ok = pcall(function()
+		q.D.Frame({ Text = "nope" })
+	end)
+	assert(not ok, "membership is per-class (Text is not a Frame property)")
+	print("PASS")
+end
+
+print()
+print("=== 8. 타입 교대(탐사자 🟡-2c·d 승격) — child↔None↔nil에서 형제 오프셋 추적 + StoreBind 경유 dedup ===")
+do
+	local c1, c2, sib = Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("TextLabel")
+	local src = q.Source(c1 :: any)
+	local f = q.D.Frame({ src, sib }) :: any
+	assert(c1.Parent == f and q.Dispatch.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
+
+	src:Set(q.None) -- NoneHandler → nil 재귀 → NilHandler(길이 0)
+	assert(c1.Parent == nil and q.Dispatch.getOffsetAt(f, 2) == 0, "None hands off to NilHandler — sibling offset follows")
+
+	src:Set(c2 :: any)
+	assert(c2.Parent == f and q.Dispatch.getOffsetAt(f, 2) == 1, "back to a child — offset restored")
+
+	-- StoreBind 경유 같은 값 재발행 — dedup이 재발행 경로에서도 detach를 접는다
+	local nilTransitions = 0
+	c2:GetPropertyChangedSignal("Parent"):Connect(function()
+		if c2.Parent == nil then
+			nilTransitions += 1
+		end
+	end)
+	src:Set(c2 :: any)
+	assert(c2.Parent == f and nilTransitions == 0, "H-154 dedup holds through the StoreBind re-emission path")
+
+	src:Set(nil :: any) -- 진짜 nil — NilHandler 직행
+	assert(c2.Parent == nil and q.Dispatch.getOffsetAt(f, 2) == 0, "reactive nil unmounts and zeroes the length")
 	print("PASS")
 end
 

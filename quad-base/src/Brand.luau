@@ -60,6 +60,7 @@ local PreRefBrand = Brand()
 local PostRefBrand = Brand()
 local ModifierBrand = Brand()
 local EpochBrand = Brand()
+local MapperBrand = Brand() -- M5 단위 ④ — Claim의 MapperDescriptor(claim-plan §2)
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
@@ -83,6 +84,9 @@ end
 local function isModifier(x: any): boolean
 	return ModifierBrand:is(x)
 end
+local function isMapperDescriptor(x: any): boolean
+	return MapperBrand:is(x)
+end
 
 -- Subtype relations: the more specific predicate is defined first and the
 -- wider one is composed on top of it, so the direction of inclusion is
@@ -105,6 +109,8 @@ end
 
 return {
 	Brand = Brand,
+	MapperBrand = MapperBrand,
+	isMapperDescriptor = isMapperDescriptor,
 
 	ObserverBrand = ObserverBrand,
 	EffectBrand = EffectBrand,

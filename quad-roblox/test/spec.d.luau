@@ -19,11 +19,21 @@ do
 	assert(type(D.New) == "function", "generic New is exposed for out-of-scope classes")
 	local n = 0
 	for name, v in D :: { [string]: any } do
-		assert(type(v) == "function", name .. " must be a function (alias or New)")
+		if name == "Mapper" then
+			-- 단위 ④ — 디스크립터 생성기 테이블(Root 센티널 + 클래스별 별칭)
+			assert(type(v) == "table" and v.Root ~= nil, "D.Mapper carries Root + aliases")
+			for mname, mv in v :: { [string]: any } do
+				if mname ~= "Root" then
+					assert(type(mv) == "function", "Mapper." .. mname .. " must be an alias")
+				end
+			end
+		else
+			assert(type(v) == "function", name .. " must be a function (alias or New)")
+		end
 		n += 1
 	end
-	assert(n >= 2, "aliases exist")
-	print(`PASS ({n - 1} aliases + New)`)
+	assert(n >= 3, "aliases + New + Mapper exist")
+	print(`PASS ({n - 2} aliases + New + Mapper)`)
 end
 
 print()
