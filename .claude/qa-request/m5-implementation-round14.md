@@ -64,6 +64,27 @@ dev-dep 사본(`quad-roblox/luau_packages`)은 설치 시점 스냅샷이라
 quad-types/quad-base를 고치면 **`pesde install` 재실행이 필요**하다
 (relink는 심볼릭→실복사만 담당 — `H-300` 반영 중 실측).
 
+| `H-302` | ① | 🟡 | (단위 ③ 리뷰) **읽기 전용 프로퍼티가 Property 핸들러에 매치**돼 `inst[k]=v`가 h.process 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착될 수 있었다(예: `AbsoluteSize`). 처방 실측: 디스크립터의 **`Permits.Write` 키가 쓰기 가능 프로퍼티에만 존재**(Studio — Size/Visible엔 있고 AbsoluteSize엔 없음) | ✅ 반영 — 멤버십 캐시가 `Permits.Write ~= nil`만 싣는다. `H-297` (a)("쓰기 표면만 — 대입 불가 프로퍼티는 거짓 표면")의 **런타임판**이라 승인된 논거의 확장으로 ① 처리(`H-290` 선례) — 틀렸다면 사용자가 뒤집을 것. spec에 읽기 전용 대조군 추가 |
+**[2026-09-02 단위 ③ 시점] 확인만 하고 문제 없던 것**:
+
+- **ReflectionService 반환 모양 실측**(Property 매치의 전제) — 디스크립터
+  배열(`.Name`/`Owner`/`Permits`…) + 상속 포함(Frame 60개에 GuiObject 소유
+  `Size` 포함), 이벤트는 별도 API(`GetEventsOfClass`)라 프로퍼티 목록과
+  안 섞임 — 이벤트 키는 M10 전까지 자연스럽게 매치 실패 error.
+- **`v == nil` 방어·`isTween` 분기 부재는 발견이 아니라 정본의 명시 유예**
+  (dispatch-core "M9/M10로 미룸" / tween 런타임 M11) — 두 파일 헤더에
+  포인터.
+- **getfenv 주입면 셋**(Instance/game/isInst)이 전부 기설계 주입 경계와
+  일치 — isInst는 `H-40`이 "주입 술어"로 만든 그 자리라 spec의 교체가
+  계약 위반이 아니라 계약 사용.
+
+**[2026-09-02 단위 ③ 끝 절차 기록]** 감사 1라운드(정본 전 대조 클린, 확실
+1 — todos stale)로 수렴(유한 종결, M4 선례) → `/code-review medium` 1회 —
+생존 3건 전부 반영: ① spec 심이 "Parent"를 빼둬 `H-142` 가드 한 줄이
+미검증이던 것(실증 — 가드를 지워도 통과했음; 심에 Parent 포함 + 읽기 전용
+대조군) ② `H-302` 쓰기 필터(위 행) ③ `getOffsetAt(f,1)==0` 공허 단언(위치
+2 오프셋으로 교체 — 철거 후 0까지 핀). 반영 후 전 스위트 exit 0.
+
 **[2026-09-02 단위 ② 끝 절차 기록]** 감사 3라운드 수렴(3+1 → 1+1 → 확실 0
 — 각도: diff 정합성 / 교정분+`H-300` 반영 / 병렬 규약·수렴) 후
 `/code-review medium` 1회 — **생존 4건 전부 반영**: ① `D.New(name)`의

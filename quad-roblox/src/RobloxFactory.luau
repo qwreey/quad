@@ -14,6 +14,8 @@ local QuadTypes = require("../luau_packages/quad_types")
 local installLifetime = require("./LifetimeHandle")
 local installEngineOps = require("./EngineOps")
 local InitD = require("./D")
+local installPropertyHandler = require("./Handlers/Property")
+local installInstanceChildHandler = require("./Handlers/InstanceChild")
 
 local function RobloxFactory(module: any): any
 	-- tag before any raise below — without the surface tag the error walker
@@ -34,6 +36,10 @@ local function RobloxFactory(module: any): any
 
 	installLifetime(module)
 	installEngineOps(module)
+	-- backend-owned handlers (M5 단위 ③ — Property/InstanceChild;
+	-- Event/OnChange/Slot은 각 마일스톤에서 합류)
+	installPropertyHandler(module)
+	installInstanceChildHandler(module)
 	-- `H-299` (①, 뒤집기 가능): `D`의 획득 경로는 코퍼스에 미지정이었다 —
 	-- 백엔드가 모듈 필드를 설치하는 기존 채널(op들과 같은 자리) 그대로
 	-- `module.D`로 노출한다. 사용법: `local D = quad.D`.

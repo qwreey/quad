@@ -1081,7 +1081,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (`H-298`; `None`도 합류 — `H-300` (a) 확정·반영, 센티널 마커 필드 → `QuadTypes.None`). `Parent`는
       덤프 층 제외 + `test.sh` grep 게이트. `spec.d.luau` + Studio 실생성
       전량 확인. `D`는 `RobloxFactory`가 `module.D`로 설치(`H-299`)
-- [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로). 루트 부착 경로가 무엇인지는 아래 `Claim` 체크박스가 소스), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
+- [x] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로). 루트 부착 경로가 무엇인지는 아래 `Claim` 체크박스가 소스), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
       부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →
       `v.Parent = inst` → `setLength(inst, k, 1, inst)`(정적 단일 자식은 상수
@@ -1092,6 +1092,14 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       문단. 빠뜨리면
       `Frame { Frame{}, Slot() }`이 첫 마운트에서 죽는다 —
       `base/dispatch-core-plan.md`의 `H-39` 블록(그 다섯째 항목)이 소스.
+      **[2026-09-02 완료, M5 단위 ③ round14]** 두 핸들러 구현 —
+      Property는 `ReflectionService:GetPropertiesOfClass` 멤버십 매치
+      (디스크립터 `.Name` 배열·상속 포함, Studio 실측 2026-09-02; `Parent`
+      비매치가 곧 `H-142` 런타임 가드, `v==nil` 방어·`isTween` 분기는
+      정본이 미룬 대로 M9/M10·M11 몫), InstanceChild는 `H-134` 순서·
+      `H-154` dedup·내림 철거 1:1 전사. `spec.handlers.luau` 5절 —
+      **반응형 자식 교체(StoreBind→InstanceChild)가 CLI에서 첫 e2e**
+      (getfenv 심 — Reflection/Instance/isInst 주입면). 전 스위트 exit 0.
 - [ ] **[2026-08-28 M5 스코프, `H-161`; 같은 날 갈래 전량 확정]** `Claim(inst, D.Mapper.<Class>(key) {…}) -> inst` — 이미 있는 트리(PlayerGui·`Clone()` 사본·Studio GUI)를 quad가 소유(`base/claim-plan.md`가 소스, 구현 체크리스트는 그 §9). 요지: `drive` 위의 한 겹(DFS 이름 해석 → bottom-up `drive`), 매핑된 자식은 `InstanceChildHandler` 그대로(별도 핸들러 없음), 루트 키 센티널 `D.Mapper.Root`, `type <Class>Param`을 `D.<Class>`와 공유, `Claim`은 타입 인자 없음, 같은 `inst` 이중 claim error, `Processed` 소진. 프로바이더 op **`nativeFindChild(inst, key)`**(조회라 조합 폴백 예외 — 미주입이면 error). **루트 부착의 흔한 경로는 이게 아니라 밖에서 `.Parent =`** — 루트의 `Parent`는 부기 밖이라 허용(`base/claim-plan.md` §5가 소스; 10라운드 `H-148`에서 한때 "루트도 `Claim`으로만"으로 폐기됐다가 같은 날 복원). **[같은 날 후속]** `/code-review`가 낸 문항 넷도 확정(`base/claim-plan.md` §7-9~12): gcconn/gchold 셋업은 주입 op **`nativeClaim(inst)`**에만(`New` ②단계도 호출) / 이중 claim은 그 셋업 유무로 error(레지스트리 없음) / **`PlayerGui`류 공동 소유 컨테이너는 claim 대상 아님**(루트는 `ScreenGui`·`SurfaceGui`) / `D/init.luau` 생성기는 `type <Class>Param<E>`(원소 타입 파라미터)를 `D.<Class>`·`D.Mapper.<Class>`가 공유하도록 찍는다 — `luau-analyze` 스파이크 필요.
 - [x] **Instance 생성 시점의 gcconn/gchold 셋업**(2026-08-14 다섯 번째 세션
       확정, 옛 "`bindLifetime` 첫 호출에서 lazy 생성"에서 전환 — `base/
