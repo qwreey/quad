@@ -237,9 +237,11 @@ export type Quad = {
 	errorNamespace: ErrorNamespace,
 
 	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
-	-- 여기선 재export. `isNone`은 `v == None` 신원 비교).
-	None: any,
-	-- ⚠️ 값 필드의 타입 계약은 아래 최상위 `export type None` 참고(`H-300`)
+	-- 여기선 재export. `isNone`은 `v == None` 신원 비교 — 이 구조 타입은
+	-- 조언층일 뿐 판정이 아니다, 최상위 `export type None` 참고(`H-300`).
+	-- [2026-09-02] `H-300` 마커 필드가 생기며 `any`일 이유가 소멸해 좁힘
+	-- (사용자 지적 — 옛 `any`는 마커 이전 "신원이라 표현 불가" 시절의 잔재).
+	None: None,
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
