@@ -5,7 +5,31 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐⭐ [2026-09-01 착수·종결] M4 자율 구현 구간 — 완료, M2·M3와 같은
+00. **⭐⭐⭐ [2026-09-02 종결] M5(quad-roblox 최소 프로바이더) 자율 구현
+   구간 — 완료.** 단위 ①~⑤ 전부 구현·실측·끝 절차(감사 3라운드 6→5→2 /
+   `/code-review medium` / 신선한 탐사자) 완주 — **진행 소스는 `ROADMAP.md`
+   M5 체크박스(전부 `[x]`), 발견 원장은 round14(`H-290`~`H-308`, §4 열린
+   문항 0)**. 단위 ⑤에서 확정 셋(전부 사용자):
+   - **`H-305` (d′) `UseProvider`** — 프로바이더 설치 표면
+     `quad:UseProvider(QuadRoblox)`(1슬롯 fn identity 락, 옛
+     `_initializedBy` 문자열 대체 — 사본·버전 묵인 해소) +
+     `RobloxExtension = { D }` 교집합으로 `q.D` 캐스트 0 풀 타이핑(생성
+     `export type D`, test.sh `LuauTarjanChildLimit=40000` —
+     typing-limits 8.5절). `AddPlugin`(다수 확장)과 이원화 — spring류
+     확장 계획의 전제로 등재됨.
+   - **`H-306` (a) 런타임 버전 게이트** — 컴파일 타임 `CheckedQuad`
+     배선이 UseProvider 간접 흐름에서 물리적으로 불활성(함정 2 실측
+     보강) → `matchesPattern` 런타임 검사로 전환, `type_version_check`
+     실의존 추가.
+   - **첫 실물 렌더 3/3 PASS** — rojo 라이브 싱크 반입 경로 확립(사용자
+     1회 Connect + autoReconnect; Studio 재기동만 사람 몫 —
+     `HUMAN_TODO.md` 12번), `audit/m5-unit5-first-render-2026-09-02.md`.
+   다음 액션: **fork 통합 배치** — M6(Slot) 머지 → M10(Tag·Attribute)
+   머지(각 통합에 감사+리뷰, fork spec의 (d′) 이전 계약 갱신 — 아래 병렬
+   트랙 주의가 소스; H10-3 (d) setmetatable 채택 반영도 M10 몫). 아래는
+   M4 종결 기록:
+
+   **[구 00번 — M4] ⭐⭐⭐ [2026-09-01 착수·종결] M4 자율 구현 구간 — 완료, M2·M3와 같은
    방식으로 종결.** 사용자 조건부 승인(*"막는게 없다면 M4 구현 시작해보자"*)
    으로 규약 문항지 `qa-request/m4-implementation-round13-brief.md` §0 넷
    전량 권고 (a) 채택(회신 기록은 그 파일 §0 아래 블록), 단위 하나
@@ -35,13 +59,8 @@
    Property(Reflection 멤버십 매치)+InstanceChild(`H-134`/`H-154` 전사),
    `spec.handlers` 5절로 반응형 자식 교체 CLI 첫 e2e. **[같은 날 단위 ④ 완료]** `Claim`+`D.Mapper`
    (quad-base `Claim.luau` — DFS·bottom-up drive·1회용, 재량은 `H-303`).
-   **[같은 날 단위 ⑤ 구현·실측 완료]** 첫 실물 렌더 3/3 PASS(rojo 라이브
-   싱크 — 이날 확립, `audit/m5-unit5-first-render-2026-09-02.md`) + `H-25`
-   quad-types 갱신 + **`H-305` (d′) 사용자 확정 — `UseProvider` 신설**
-   (프로바이더 1슬롯 fn identity 락, 표면 `quad:UseProvider(QuadRoblox)`로
-   교체, `q.D` 캐스트 0 풀 타이핑; 소스는 round14 §4 `H-305` 행과
-   `session/2026-09-02-04-h305-useprovider.md`). 단위 끝 절차(감사·리뷰·
-   탐사) 마치는 대로 M5 종결·머리말 3층 갱신. **[2026-09-02 병렬 트랙]**
+   **[같은 날 단위 ⑤까지 완주 — M5 종결, 위 새 00번이 소스]**
+   **[2026-09-02 병렬 트랙]**
    사용자 승인으로 fork 둘이 각자 worktree에서 M6(Slot)/M10(Tag·Attribute)
    탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
    멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두

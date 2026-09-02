@@ -39,6 +39,9 @@ path = "quad-types"
 quad_error = [{ workspace = "qwreey/quad_error", version = "^" }, "standard"]
 type_version_check = [{ workspace = "qwreey/type_version_check", version = "^" }, "standard"]
 
+[graph."qwreey/type_version_check@0.0.0 luau"]
+direct = ["type_version_check", { workspace = "qwreey/type_version_check", version = "^", target = "luau" }, "standard"]
+
 [graph."qwreey/type_version_check@0.0.0 luau".pkg_ref]
 ref_ty = "workspace"
 path = "type-version-check"

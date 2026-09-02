@@ -2,13 +2,16 @@
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
 **⭐ [2026-09-02 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)까지
-완료 — **M5(quad-roblox 최소 프로바이더) 자율 구현 구간 진행 중**: 규약
-`.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정
-(2026-09-02), 단위 ①~④(팩토리+주입 op+생명주기 / `D` 생성기 /
-Property·InstanceChild / `Claim`+`D.Mapper`) 완료 — 발견
-`-round14.md`(`H-290`~; §4 열린 문항 0), 진행 소스는 `ROADMAP.md` M5
-체크박스. **같은 날 병렬 탐사 승인** — fork 에이전트 둘이 각자 worktree에서
+Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
+**M5(quad-roblox 최소 프로바이더)**까지 완료** — M5는 자율 구현 구간으로
+2026-09-02 착수·종결: 규약
+`.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정,
+단위 ①~⑤(팩토리+주입 op+생명주기 / `D` 생성기 / Property·InstanceChild /
+`Claim`+`D.Mapper` / 첫 실물 렌더 실측+종합) 완주, 발견
+`-round14.md`(`H-290`~`H-308`; §4 열린 문항 0), 진행 소스는 `ROADMAP.md`
+M5 체크박스(전부 `[x]`). 단위 ⑤ 확정 요지(프로바이더 설치
+`quad:UseProvider(QuadRoblox)` — `H-305` (d′)·런타임 버전 게이트 `H-306`
+(a)·rojo 라이브 싱크 반입)는 `.claude/todos.md` 00번이 소스. **같은 날 병렬 탐사 승인** — fork 에이전트 둘이 각자 worktree에서
 M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현(규약
 `.claude/qa-request/m6-implementation-round15-brief.md`·
 `m10-implementation-round16-brief.md`, 발견 접두 `H6-`/`H10-`)** —

@@ -73,6 +73,23 @@ do
 	assert(not okThrow, "the throwing provider propagates its error")
 	local recovered = (fresh :: any):UseProvider(QuadRoblox)
 	assert(type(recovered.D) == "table", "H-307: a failed install must not poison the slot — retry installs fully")
+
+	-- `H-306` (a): 런타임 버전 게이트 — 컴파일 타임 배선은 UseProvider
+	-- 간접 흐름에서 불활성임이 실측돼(탐사자) 런타임 검사로 전환됐다.
+	-- 이 음성 대조군이 spike 29의 커버리지 구멍(버전 음성 부재)을 메운다.
+	local wrongVersion = Quad.New()
+	;(wrongVersion :: any).Version = "9.9.9"
+	local okVer, errVer = pcall(function()
+		(wrongVersion :: any):UseProvider(QuadRoblox)
+	end)
+	assert(not okVer, "a version-mismatched quad must be rejected at install")
+	assert(string.find(tostring(errVer), "version pattern '0.0.0'", 1, true) ~= nil, "message names the pattern: " .. tostring(errVer))
+	assert(string.find(tostring(errVer), "got '9.9.9'", 1, true) ~= nil, "message names the actual version")
+	mock.assertBlamesUser(errVer, SPEC_FILE, "version mismatch")
+	-- H-307과의 합류 확인 — 실패한 설치가 슬롯을 안 잡았으니 정정 후 재시도 완주
+	;(wrongVersion :: any).Version = "0.0.0"
+	local fixed = (wrongVersion :: any):UseProvider(QuadRoblox)
+	assert(type(fixed.D) == "table", "corrected version installs fully on retry")
 	print("PASS")
 end
 

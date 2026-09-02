@@ -2224,3 +2224,14 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `export type D`(LuauTarjanChildLimit 40000 — typing-limits 8.5절) +
   2026-08-19 확정 부분 역전 처리 + 스파이크 29 승격. 전 스위트 exit 0 +
   Studio 재실측 PASS.
+
+- (세션 파일 없음 — 결정 기록은 round14 §4 행들이 소스) **[M5 단위 ⑤ 끝
+  절차 + `H-306`~`H-308` + M5 종결]** 끝 절차(감사 3라운드 6→5→2 /
+  `/code-review medium` 생존 3 / 탐사자 🔴1·🟡1) 발견 전량 처리: `H-306`
+  (a) — 컴파일 타임 `CheckedQuad` 배선이 UseProvider 간접 흐름에서
+  불활성(배선 후보 매트릭스 전 기각, quad-types-plan 함정 2 실측 보강)
+  → **런타임 `matchesPattern` 게이트로 사용자 확정 전환**(*"그냥
+  런타임으로 검사하는게 엄청 싸게 먹히는 부분이라"*), `type_version_check`
+  실의존 추가·spec 음성·Studio 게이트 실측. `H-307` 마킹 성공 후(부분
+  실패 좀비 교정)·`H-308` mergeExtension 공용화. HUMAN_TODO 12번(Studio
+  재기동 사람 몫 — 사용자 확정) 신설. **M5 종결 — 머리말 3층 갱신.**
