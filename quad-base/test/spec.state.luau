@@ -8,7 +8,7 @@
 
 local Quad = require("../src")
 local Brand = require("../src/Brand")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 
 type State<T> = QuadTypes.State<T>
 type StateData<T> = QuadTypes.StateData<T>

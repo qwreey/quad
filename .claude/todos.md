@@ -5,7 +5,89 @@
 (`.claude/question.md`, `luau-test/STATUS.md` 등).
 
 
-00. **⭐⭐⭐ [2026-08-28 착수 → 2026-08-31 종결] M2 자율 구현 구간 — 완료.** 규약은
+00. **⭐⭐⭐ [2026-09-02 종결] M5(quad-roblox 최소 프로바이더) 자율 구현
+   구간 — 완료.** 단위 ①~⑤ 전부 구현·실측·끝 절차(감사 3라운드 6→5→2 /
+   `/code-review medium` / 신선한 탐사자) 완주 — **진행 소스는 `ROADMAP.md`
+   M5 체크박스(전부 `[x]`), 발견 원장은 round14(`H-290`~`H-308`, §4 열린
+   문항 0)**. 단위 ⑤에서 확정 셋(전부 사용자):
+   - **`H-305` (d′) `UseProvider`** — 프로바이더 설치 표면
+     `quad:UseProvider(QuadRoblox)`(1슬롯 fn identity 락, 옛
+     `_initializedBy` 문자열 대체 — 사본·버전 묵인 해소) +
+     `RobloxExtension = { D }` 교집합으로 `q.D` 캐스트 0 풀 타이핑(생성
+     `export type D`, test.sh `LuauTarjanChildLimit=40000` —
+     typing-limits 8.5절). `AddPlugin`(다수 확장)과 이원화 — spring류
+     확장 계획의 전제로 등재됨.
+   - **`H-306` (a) 런타임 버전 게이트** — 컴파일 타임 `CheckedQuad`
+     배선이 UseProvider 간접 흐름에서 물리적으로 불활성(함정 2 실측
+     보강) → `matchesPattern` 런타임 검사로 전환, `type_version_check`
+     실의존 추가.
+   - **첫 실물 렌더 3/3 PASS** — rojo 라이브 싱크 반입 경로 확립(사용자
+     1회 Connect + autoReconnect; Studio 재기동만 사람 몫 —
+     `HUMAN_TODO.md` 12번), `audit/m5-unit5-first-render-2026-09-02.md`.
+   **[2026-09-03 이행 — fork 통합 완료]** M6(Slot)·M10(Tag·Attribute)
+   탐사 구현이 메인에 머지됐다(밤샘 자율 구간, 사용자 승인). 통합 판정:
+   H10-3 (d) setmetatable 타입 반영·H10-5 spec 재작성 승인·H10-1 파일
+   재편(H-278 형) 승인 — ROADMAP M6/M10 배너·체크박스가 진행 소스, 잔여
+   목록은 round15 "이 fork 슬라이스 밖" 절과 M10 배너가 소스. **다음
+   액션: 사용자 아침 검토** — 후행 작업·문제점 정리는
+   `session/2026-09-03-01-fork-integration.md`(아침 검토용 절)가 소스.
+   아래는 M4 종결 기록:
+
+   **[구 00번 — M4] ⭐⭐⭐ [2026-09-01 착수·종결] M4 자율 구현 구간 — 완료, M2·M3와 같은
+   방식으로 종결.** 사용자 조건부 승인(*"막는게 없다면 M4 구현 시작해보자"*)
+   으로 규약 문항지 `qa-request/m4-implementation-round13-brief.md` §0 넷
+   전량 권고 (a) 채택(회신 기록은 그 파일 §0 아래 블록), 단위 하나
+   (`Dispatch/StoreBind.luau` + `spec.storebind.luau`) 구현·끝 절차(감사
+   3라운드 수렴 2→1→0 / `/code-review medium` 1회 / 탐사자) 완주 — **진행
+   상태의 소스는 `ROADMAP.md` M4 체크박스**(둘 다 `[x]`), 발견 원장은
+   `-round13.md`(`H-287`~, §4 열린 문항 0). 스파이크 `03` 폐기 확정(Q4 (a),
+   `luau-test/STATUS.md`가 소스). 감사 3라운드가 round12 §6(`H-286`) 실질
+   후보 ①·③을 **기각으로 닫아** 이제 ②(unbind-relate)만 M6 몫으로 남는다
+   (소스는 round12 §6). **[2026-09-01 후속 — 다음 액션 이행됨]** M5 선행
+   확인 완료: Studio MCP 연결(`HUMAN_TODO.md` 1번 해소) + 스파이크 `10`
+   현행 모델 재작성·MCP 완주(전 항목 PASS — `nativeClaim` 전제 실증,
+   Attribute Instance 참조는 `InstanceHandle` 언랩 발견; 소스는
+   `audit/spike10-full-run-2026-09-01.md`). **[2026-09-02] M5 규약 문항지
+   §0 여섯 문항 전부 권고 (a)로 사용자 확정**(*"다른것도 전부 확인했고
+   권고에 동의해"* — Q3는 사용자가 직접 dev deps 갈래 제안, 회신 기록은
+   brief §0 아래 블록) — **M5 자율 구현 구간 착수. 단위 ①
+   (`RobloxFactory`+`EngineOps`+`LifetimeHandle`) 구현·CLI spec(전 스위트
+   exit 0 — 파일 수는 `scripts/test.sh` glob이 소스)·Studio 스모크(14/14, `audit/m5-unit1-studio-smoke-2026-09-02.md`)
+   완료**, 발견 원장은 `-round14.md`(`H-290`~). **[2026-09-02 후속]** §4
+   배치 회신 두 차례로 `H-292`~`H-298` 전량 확정(H-293만 기각·UB 문서화 —
+   claim-plan §7-13), **단위 ②(`D` 생성기) 완료** — `scripts/gen-d.py` →
+   `quad-roblox/dump/api-surface.json` + 생성 `D/init.luau`, 값 유니언
+   정본(bind-system-plan 신설 절), `H-299`~`H-301` 처리(`H-300` None
+   마커 필드도 같은 날 사용자 확정·반영). **§4 열린 문항 0, 진행 상태의
+   소스는 `ROADMAP.md` M5 체크박스** — **[같은 날 단위 ③ 완료]**
+   Property(Reflection 멤버십 매치)+InstanceChild(`H-134`/`H-154` 전사),
+   `spec.handlers` 5절로 반응형 자식 교체 CLI 첫 e2e. **[같은 날 단위 ④ 완료]** `Claim`+`D.Mapper`
+   (quad-base `Claim.luau` — DFS·bottom-up drive·1회용, 재량은 `H-303`).
+   **[같은 날 단위 ⑤까지 완주 — M5 종결, 위 새 00번이 소스]**
+   **[2026-09-02 병렬 트랙]**
+   사용자 승인으로 fork 둘이 각자 worktree에서 M6(Slot)/M10(Tag·Attribute)
+   탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
+   멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두
+   `H6-`/`H10-`(메인 `H-nnn`과 구분, ID 영구). fork가 멈추면 사용자가 그
+   채팅에 직접 회신, 통합·문서 반영은 메인 몫. **[2026-09-02 통합 주의 —
+   리뷰 발견]** fork 워크트리의 spec들은 (d′) 이전 계약
+   (`QuadRoblox(Quad.New())` 직접 호출·`_initializedBy` 단언)으로 짜여
+   있다 — 머지 때 `UseProvider` 계약으로 갱신할 것(안 하면
+   attempt-to-call-nil류로 깨짐).** 아래는 M3 종결 기록:
+
+   **[구 00번 — M3] ⭐⭐⭐ [2026-08-31 착수 → 2026-09-01 종결] M3 자율 구현 구간 — 완료,
+   M2와 같은 방식으로 종결.** 단위 넷(코어/부기/None·Nil/Leaf·가드·종합)
+   구현·끝 절차 완주, §4 배치 회신 두 라운드로 열린 문항 0(소스는
+   `qa-request/m3-implementation-round12.md` §4 — 회신 블록·행 ✅), 회신
+   라운드에서 구조 확정 셋(`H-277` `src/Bookkeeping.luau` 분리 / `H-278`
+   leaf 등록 소유권 각 모듈로 / `H-279` drive pre-hook 리서치 등재)과
+   `/code-review` 운용 규약(conventions 2026-09-01 — 문서 추론형 비분할·
+   유한 절차)도 확정. 미검증 리뷰 주장 13건은 round12 §6(`H-286`)이 소스 —
+   **[2026-09-01 갱신]** 실질 후보 중 ①·③은 M4 감사 3라운드가 기각, ②만
+   M6 몫. 다음 액션(M4 규약 문항지 신설·§0 회신·착수)은 전부 이행됨 — 위
+   새 00번이 소스. 아래는 M2 종결 기록:
+
+   **[구 00번 — M2] ⭐⭐⭐ [2026-08-28 착수 → 2026-08-31 종결] M2 자율 구현 구간 — 완료.** 규약은
    `qa-request/m2-implementation-round11-brief.md`(세 갈래 분류 /
    단위 넷 / 관여 시점), 발견과 배치 문항은 `-round11.md`(§4 표가 사용자가
    읽을 유일한 자리). **진행 상태의 소스는 `ROADMAP.md` M2 체크박스**, 여기서
@@ -32,6 +114,12 @@
    `ROADMAP.md` M3 체크박스** — 여기서 세지 않는다. 단위 넷: ① Handler
    계약+디스패치 코어 → ② Length/Offset 부기 → ③ `None`+`NoneHandler`/
    `NilHandler` → ④ Leaf+가드 등록+종합 테스트(brief §1이 소스).
+   **[2026-08-31 저녁] 단위 1~4 전부 구현·끝 절차(감사 루프·리뷰·탐사자)
+   완료.** **[2026-09-01] §4 배치 회신 두 라운드로 전량 종결 — 열린 문항 0**
+   (다섯 확정 + `H-240` 재질문 후 확정 + 사용자 제기 구조 셋: `H-277`
+   Bookkeeping 분리 / `H-278` Leaf 소유권 이동 — 둘 다 반영 완료, `H-279`
+   drive pre-hook은 `research/` 등재. 소스는 `-round12.md` §4 회신 블록).
+   남은 것은 M3 마감(머리말 3층 갱신)뿐.
    아래는 착수 전(2026-08-26) 서술:
 
    **[2026-08-26] 8라운드까지 전부 처리 완료 — M2 착수 게이트가 0이다.**

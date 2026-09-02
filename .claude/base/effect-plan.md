@@ -88,7 +88,8 @@ leaf당 실제 Destroying 바인딩 하나(공유 weak table로 되는 Observer�
 `base/lifecycle-pattern.md`는 *"인스턴스 라이프사이클 훅 지점은 `Destroying`
 하나로 통일"*이라 못박고 `LP-2`가 **`Effect`가 그 훅을 쓰는 유일한 소비자**라
 확정했으며, 위 문단은 비용까지 적어뒀다. 그런데 leaf가 실제로 붙는 유일한
-경로는 `ObserverEffectLeafHandler.process`의 `bindLifetime(inst, v)` 한 줄이고,
+경로는 leaf 핸들러 `process`(당시 결합 `ObserverEffectLeafHandler` — 현
+`EffectLeafHandler`, `H-278`)의 `bindLifetime(inst, v)` 한 줄이고,
 `bindLifetime`의 실 구현 스케치는 `gchold[value] = true` + `BindData`에
 gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그걸 부를
 주체도 없었다.** 그래서 leaf가 죽으면 `canExecute`가 거짓이 되어 *"앞으로
@@ -106,8 +107,8 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    **[2026-08-24 재결정, `/code-review high` 지적]** 여기 한때 *"`EffectHandle`
    쪽이 자기 `bindLifetime` 직후에 건다"*고 적었는데 **그 호출부가 실재하지
    않는다** — 핸들은 남이 자기를 `bindLifetime`하는 걸 관측할 수 없다. 게다가
-   `Effect`가 바인드되는 경로는 **둘**이고(`ObserverEffectLeafHandler.process`의
-   children 배열 leaf, 그리고 `activateList`가 `_detachCleanup`을 직접 바인드하는
+   `Effect`가 바인드되는 경로는 **둘**이고(leaf 핸들러(`H-278` 후
+   `EffectLeafHandler`)의 children 배열 leaf, 그리고 `activateList`가 `_detachCleanup`을 직접 바인드하는
    내부 경로 — `base/slot-plan.md`) **`Destroying`이 가장 절실한 쪽이 후자**라,
    핸들러 층에 분기를 둬도 안 덮인다.
    **사용자 판단(2026-08-24)**: *"`Destroying` 자체가 엔진이 아는 요소이기
@@ -325,10 +326,17 @@ function EffectHandle:_bindDestroying(inst)
 
     -- (1) leaf가 죽는 순간 cleanup을 정확히 1회. `LP-2`가 확정한 유일한 훅 지점.
     self._destroyConn = onDestroying(inst, function()
-        -- ⭐ [2026-08-31 `H-182`, 사용자 확정] 이 콜백 뒤에도 같은 Destroy 파동
-        --   안에선 `canExecute`가 참(gcconn은 마지막에 끊김) — `_dying`이 그 창을
-        --   닫아 파동 후반의 dep 변경이 죽는 leaf 위에서 `fn`을 다시 돌리는 대신
-        --   **홀드**된다(`rawRerun`이 `canExecute`와 같이 본다). 이름이 Slot의
+        -- ⭐ [2026-08-31 `H-182`, 사용자 확정] `_dying`이 죽는 leaf 위의 재실행
+        --   창을 닫는다 — 파동 후반의 dep 변경이 `fn`을 다시 돌리는 대신
+        --   **홀드**된다(`rawRerun`이 `canExecute`와 같이 본다).
+        --   ⚠️ [2026-09-02 근거 정정, M5 `H-291` 실측] 괄호 근거로 적혀 있던
+        --   *"이 콜백 뒤에도 같은 파동 안에선 canExecute가 참(gcconn은 마지막에
+        --   끊김)"*은 **Immediate 한정**이다 — Deferred(신형 기본)에선 순서가
+        --   정반대로, `gcconn.Connected`는 Destroy 즉시 동기로 꺼지고 이 콜백이
+        --   다음 리줌에 늦게 온다(`lifecycle-pattern.md` "2." 절 배너). 어느
+        --   순서든 `rawRerun` 게이트가 `_dying`과 `canExecute`를 OR로 보므로
+        --   동작은 같다 — `_dying`의 존재 이유(Immediate에서 콜백~절단 사이 창)만
+        --   Immediate 쪽 사정이다. 이름이 Slot의
         --   `_destroyed`와 다른 건 의도다 — Slot은 죽으면 재바인딩 못 하지만 Effect
         --   핸들은 다시 bind될 수 있어 "죽는 도중"만 뜻한다(사용자: *"네이밍의 다른
         --   이유가 확실함"*). 재무장 자리는 위 bind와 `Subscribe`/`WeakSubscribe`.
@@ -591,13 +599,19 @@ M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **
 준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+**[2026-08-31 M3 단위 4] 그 등록은 완료됐다**(`spec.leaf.luau` 6이 메시지·
+blame 실측, 해당 체크박스는 `[x]`) — **[2026-09-01 `H-278`]** 등록 소유는
+`Effect.luau` 자신의 `registerDispatchHandlers`다(`Dispatch/Leaf.luau` 해체).
  `EffectHandle`도
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =
-function(inst,k,v) error(`Effect binding should be array index item, but
-got {typeof(k)}`) end }`(**[2026-08-18]** 에러 메시지에 실제 `k` 타입을
-실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절).
+function(inst,k,v) Err.errorBefore(`Effect binding should be array index
+item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-18]** 에러 메시지에
+실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드"
+절; **[2026-08-31 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
+같은 절의 논증 참고, `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의
+"error 계약" 절).
 `FALLBACK`인 이유도 동일 — 하드 블록이 아니라 나중에
 named 자리 바인드 같은 실제 기능이 확정되면 평범한 우선순위의 Handler로
 값싸게 override 가능한 자리로 열어둠.

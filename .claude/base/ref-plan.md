@@ -552,8 +552,20 @@ function RefLeafHandler.process(inst, k, v, index)
     end
     -- ⭐ [2026-08-25, 7라운드 `H-71`] `SetStrong` 아님 — `v:Set(inst)`로 값이
     -- 자기 바깥 키를 되참조하므로 `SetStrong`이면 **100% 샌다**(실측 50/50).
-    -- dedup은 순수 성능 최적화라 weak로 낮춰도 최대 손해가 "한 번 놓침"이고,
-    -- `v`는 gchold가 이미 강하게 잡는다(`base/relate-plan.md`의 슬롯 표).
+    -- [2026-08-31 `H-266` 정정] dedup은 이제 load-bearing — 위 bindLifetime의
+    -- canBound 가드가 묶인 v의 재바인드를 즉시 error로 거부하므로 dedup 미스는
+    -- "한 번 놓침"이 아니라 크래시다. 다만 미스 창 자체가 없다: v는 bound 동안
+    -- gchold가 강하게 잡아 weak 엔트리가 조기 소실될 수 없다(`base/relate-plan.md`의
+    -- 슬롯 표 — SetWeak 선택 자체는 유지, 상세는 `base/source-state-plan.md`의
+    -- "Observer/Effect Leaf dedup" 절 배너). 단, 이 논증은 GC 조기소실만
+    -- 다룬다 — Ref는 Observer/Effect와 달리 위 v:Set(inst)가 임의 사용자
+    -- 콜백을 SetWeak 기록 *전에* 동기 실행하므로, 그 콜백이 같은 (inst,k)를
+    -- 같은 v로 재귀 재-dispatch하면 기록 순서 미스로 canBound 크래시가
+    -- 가능하다(감사 2라운드 지적). 실사용 패턴인지 불명 — 기존 확정
+    -- "일반적인 재진입/무한루프는 방어 안 함(사용자 코드 버그로 간주)"
+    -- 원칙(2026-08-04, dispatch-core-plan 등이 인용)이 이 사례를 커버해
+    -- UB로 닫을 수 있는지까지 포함해 M8에서 RefLeafHandler를 짤 때
+    -- 판단할 것(round12 §6).
     relate:SetWeak(inst, k, v)
     return function(nextValue)
         -- nextValue는 nil이거나 같은 핸들러가 곧 처리할 새 Ref(타입 보장됨) — v는
@@ -924,8 +936,13 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
     전용 `Handler`를 하나 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
     isHandlable = function(inst,k,v) return isPreRef(v) end, process =
-    function(inst,k,v) error(`PreRef binding should be array index item,
-    but got {typeof(k)}`) end }`(**[2026-08-18, `/code-review high`로
+    function(inst,k,v) Err.errorBefore(`PreRef binding should be array
+    index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 M3
+    단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 — 같은 부류인
+    Observer/Effect 가드가 실제로 이 모양으로(각자 `Observer.luau`/
+    `Effect.luau`에서 — `H-278`) 구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절;
+    `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 "error 계약" 절)
+    (**[2026-08-18, `/code-review high`로
     누락 발견 — `PostRef`의 "동적 경로 가드 Handler도 거울상으로 하나 더" 절/
     `effect-plan.md`의 "동적 경로 가드" 절과 짝을 맞춤]** 에러 메시지에
     실제 `k` 타입을 실을 것) — `k` 타입은 안 가림(숫자든 문자열이든
@@ -975,8 +992,9 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     - **구현**: pre-pass가 첫 fire 때 해당 `PreRef` 객체에 내부 플래그
       (`_fired = true`)를 세팅. pre-pass가 배열을 훑다 `isPreRef(v)`인
       슬롯을 만났는데 그 객체가 이미 `_fired`면, fire하지 않고 그 자리에서
-      즉시 `error("PreRef는 1회용 — 이미 다른 construction에 쓰인
-      PreRef를 재사용할 수 없음, 매번 새로 만들 것")`. 위 "동적 경로 가드"
+      즉시 `error("PreRef instance reused", 2)`(문구는
+      `bind-system-plan.md`의 파이프라인 의사코드와 같은 리터럴 — 1회용이라
+      매번 새로 만들라는 뜻). 위 "동적 경로 가드"
       Handler(정상 본체 루프에서 매치)와는 별개 코드 경로 — 이 가드는
       pre-pass 자신 안에, `_fired`가 아닌 정상 fire는 그대로 통과.
     - **관용구**: `Slot:List`의 `updateFn`처럼 반복 호출되는 자리에서
@@ -1135,8 +1153,10 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
 정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
 레지스트리에 `{ priority = HANDLER_PRIORITY_FALLBACK, isHandlable =
-isPostRef(v), process = error(`PostRef binding should be array index item,
-but got {typeof(k)}`) }` Handler를 등록(**[2026-08-18]** 에러 메시지에
+isPostRef(v), process = Err.errorBefore(`PostRef binding should be array
+index item, but got {typeof(k)}`, SURFACE) }` Handler를 등록
+(**[2026-08-31 M3 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
+`PreRef`의 "동적 경로 가드" 절과 같은 논증)(**[2026-08-18]** 에러 메시지에
 실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절)(`k` 타입 안 가림 — `PreRef`의 "동적 경로
 가드" 절과 완전히 같은 이유로 `HANDLER_PRIORITY_FALLBACK`, 2026-08-14
 열한 번째 세션) — pre-pass가 이미 소진시키므로 이게 매치되면 곧 타입
@@ -1149,8 +1169,8 @@ but got {typeof(k)}`) }` Handler를 등록(**[2026-08-18]** 에러 메시지에
 no-op이라 되돌릴 상태가 없음.
 
 **타입/판별**: `isPostRef`는 `isPreRef`와 같은 층위의 가장 구체적인 항등
-체크이고, `isRef`가 그 위에 얹히는 상위 개념 — `Dispatch/Leaf.luau`의
-일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
+체크이고, `isRef`가 그 위에 얹히는 상위 개념 — Ref leaf 핸들러(M8,
+`H-278`로 `Ref.luau` 소유)의 일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
 상세는 `base/brand-plan.md`.
 
 **대표 유스케이스(사용자 제시)** — `ChildAdded` 같은 이벤트에서 **나중에

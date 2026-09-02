@@ -1,6 +1,24 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: **2026-08-29** — M2 구현이 스파이크 셋을 닫음: `05`(다이아몬드,
+> 마지막 갱신: **2026-09-02** — 신규 `28`(`<Class>Param<E>` 공유 제네릭이
+> `D.<Class>`/`D.Mapper.<Class>` 두 소비자를 통과 — claim-plan §7-12·§9가
+> 요구한 스파이크) `done/` 직행: 기대 음성 3건(디스크립터 children 거부·
+> `Parent` 거부·디스크립터≠Frame)만 정확히 발생, 필드 유니언 자체는
+> round14 `H-298` 대기라 자리표시자. 직전 갱신 **2026-09-01(2건)** — ① Studio MCP 연결(HUMAN_TODO 1번 해소)
+> 직후 **`10`을 A 섹션 현행 모델 재작성 후 완주** — 전 항목 PASS,
+> `rewrite-required/` → `done/`. 결과 전문·발견 둘(무claim inst userdata
+> 1사이클 수거 = `nativeClaim` 전제 실증 / Attribute Instance 참조는
+> `InstanceHandle` 언랩 경유)은 `audit/spike10-full-run-2026-09-01.md`가
+> 소스. ② M4(round13 §0 Q4 (a) 사용자 확정)가 `03`을
+> 닫음: `quad-base/test/spec.storebind.luau`가 같은 질문(재귀 종료·
+> `None`→`nil` 핸드오프·우선순위 스캔)을 실제 `StoreBind` 구현에서 상시
+> 회귀로 실측하므로 **통과 → 폐기**(파일은 `done/`에 그대로, 그 행 참고).
+> 직전 갱신 **2026-08-31** — M3 단위 1이 `01`을 닫음: 재작성이 물어야 했던
+> 언어 동작(일반화 `for`의 배열→해시 순서)을 `quad-base/test/spec.drive.luau`
+> 1번이 상시 회귀로 실측하므로 **폐기 → `done/`**, 재작성 안 함(round12 brief
+> §6 사용자 승인). **같은 날 `04`도 폐기 → `done/`**(`H-215` (a) 사용자 확정 —
+> `spec.dispatch.luau`가 체인 계약을 실측, 잔여인 실제 `StoreBind` 경유
+> 재귀 재발행은 `ROADMAP.md` M4 mock 테스트 항목이 짐). 직전 갱신 **2026-08-29** — M2 구현이 스파이크 셋을 닫음: `05`(다이아몬드,
 > `spec.state`/`spec.effect` 3번이 대체)·`15`(타입팩, `H-176` 기각 실측) **폐기 →
 > `done/`**, 신규 `26`(`:Apply` 교집합 오버로드, `H-179`) `done/` 직행, "만들어야 할
 > 스파이크"의 중간 State GC(`spec.state` 11번)·`CheckedQuad` 재실행(`23`) 닫힘 —
@@ -51,9 +69,9 @@
 | 폴더 | 뜻 | 개수 | 누가 처리 |
 |---|---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요** | **0** | ⭐ 사용자 |
-| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 8 | 에이전트 |
+| `rewrite-required/` | 스파이크가 낡음(코드가 깨졌거나, 설계가 바뀌어 옛 모델을 검증 중) | 5 | 에이전트 |
 | `not-run/` | 이 환경에서 못 돌림(Studio 전용) | 0(+헬퍼 1) | 사용자 or MCP 연결 후 에이전트 |
-| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 16 | — |
+| `done/` | 통과 or 판정 끝, 더 할 일 없음 | 20 | — |
 
 **⚠️ [2026-08-25 신설] 타입 스파이크는 `./scripts/test.sh`가 하는 리링크를
 먼저 거쳐야 한다.** `luau` CLI가 심볼릭 링크를 못 타는데(디렉토리·파일 둘
@@ -98,15 +116,18 @@
 "검증됨"으로 오독하게 되므로** 옮김. 새 정본은
 `base/dispatch-core-plan.md`/`base/attribute-plan.md`.
 
-**[2026-08-14 다섯 번째 세션] `10`도 같은 이유로 합류** — `bindLifetime`/
-`canExecute`/`unbindLifetime` 재정정으로 A 섹션이 폐기된 모델(`canBound`,
-`bindLifetime`의 `.Subscribed` 세팅, 2-인자 `canExecute`)을 검증 중.
-`10`은 **Studio 전용이라 재작성해도 이 환경에서는 못 돌린다** — 재작성
-후 다시 `not-run/`으로 내려가 사용자/MCP를 기다리는 자리다.
+**[2026-08-14 다섯 번째 세션 합류 → 2026-09-01 해소] `10`** — A 섹션이
+폐기된 모델을 검증 중이라 여기 있었는데, Studio MCP 연결이 열리면서
+"재작성해도 이 환경에서는 못 돌린다"는 전제가 사라졌다 — 현행 모델로
+재작성 후 **같은 날 MCP로 완주(전 항목 PASS), `done/`로 이동**(상단 배너·
+`done/` 표의 그 행, 결과는 `audit/spike10-full-run-2026-09-01.md`).
 
-**[2026-08-21] `01`과 `05`가 합류** — 둘 다 같은 "설계가 바뀐" 유형이다.
-통과 상태로 `done/`에 두면 `01`은 구현이 안 하는 두 루프 순회를, `05`는
-**이제 접히는 중복 통지가 안 접힌다는 것**을 "검증됨"으로 오독하게 된다.
+**[2026-08-21 신설 — 2026-08-29·2026-08-31에 해소됨]** `01`과 `05`가 이때
+합류했었다 — 둘 다 같은 "설계가 바뀐" 유형(통과 상태로 `done/`에 두면 `01`은
+구현이 안 하는 두 루프 순회를, `05`는 이제 접히는 중복 통지가 안 접힌다는
+것을 "검증됨"으로 오독). **지금은 둘 다 여기 없다** — `05`는 2026-08-29에,
+`01`은 2026-08-31에 각각 spec이 대체하며 폐기·`done/` 이동(아래 `done/` 표의
+각 행이 소스).
 
 **⭐ [2026-08-26, 8라운드 `H-122`/`H-123`] `11-modifier-illegal-value-error`가
 합류했다** — 그 파일의 Store 생성자가 **eager `Source(v)` 모델**을 코드로
@@ -149,30 +170,36 @@
 
 | 파일 | 상태 | 무엇을 고쳐야 하나 |
 |---|---|---|
-| `01-two-pass-array-hash-order.luau` | 옛 형태 기준으로는 ✅ 통과였음 | 숫자 `for` + 일반화 `for` **두 루프**로 짜여 있는데, 구현은 **단일 일반화 `for`**로 정정됨(`base/dispatch-core-plan.md`의 "props 순회 순서" 절, QA 4라운드 `F-4-1`) — Luau의 일반화 `for`가 배열 파트를 먼저 다 돌고 해시 파트로 넘어간다는 것 자체를 **한 루프로** 검증하도록 다시 쓸 것. **검증 대상(순서 계약)은 그대로**라 결론이 바뀌는 건 아님 |
-| `04-dispatch-chain-retractFrom.luau` | 옛 모델 기준으로는 ✅ 통과였음 | (1) `chains` 슬롯이 `{handler, retractor}`가 되고 `Dispatch.process`가 핸들러를 먼저 비교하는 **하강 diff**로 재작성, (2) `retractFrom`은 **3-인자**(힌트 인자 없음), (3) "힌트가 target 인덱스에만 간다"를 검증하던 부분은 **정반대**로 뒤집힘 — 이제 각 레벨이 자기 값을 받는지를 검증해야 함. **살릴 것**: `chains:SetStrong` 순서 음성 대조군(그 버그는 새 모델에서도 그대로 유효) |
 | `19-ownership-refcount-relate-patterns.luau` | A/C ✅ 유효, **B 섹션이 낡음** | B가 검증하던 "공개 `AttributeKey(name)` + 인덱스 1 점유 체크"가 폐기됨 — **그룹 전용 키 + `AttributeKeyHandler`의 이름 claim**으로 재작성하고, 음성 대조군도 "두 그룹이 같은 이름 → 즉시 error", "그룹↔직접 쓰기 → 즉시 error"로 바꿀 것(0-Z 확정 내용). A/C는 손댈 것 없음 |
 | `22-runtime-ref-preref-postref-brand.luau` | 옛 `Brand` API 기준으로는 ✅ 통과였음 | **[2026-08-21] `Brand`가 인스턴스 브랜드로 재작성됨** — 파일 안의 `Brand.set(x, tag)`/`Brand.get(x)`/`XxxTag` 변수를 `Brand()` + `SomeBrand:register(x)`/`SomeBrand:is(x)`로 바꿔 쓸 것(`base/brand-plan.md`). **검증 대상(`isPreRef`/`isPostRef` 배타 + 둘 다 `isRef`엔 `true`, Leaf 핸들러 흉내)은 그대로**라 assert는 손댈 게 없다. **새로 넣을 것**: 다중 태깅이 실제로 되는지 — 한 값을 두 브랜드에 등록하고 양쪽 `:is`가 다 `true`인지(`Source`가 `SourceBrand`+`EpochBrand`인 자리, `base/state-epoch-plan.md` §2) |
 | `16-type-store-key-typefunction.luau` | 옛 접근 기준으로는 ✅ 통과였음 | **[2026-08-25] 검증 대상이 폐기됨** — `WrapStore`/`ProcessStoreType` 합성 자체가 사라졌다. **재작성 지침**: 타입 함수 없는 평범한 레코드 모양(`base/store-plan.md`의 "`store.key` 레코드 필드 타이핑" 절)을 검증하고, 음성 대조군에 **예약 키 충돌**(`CheckReservedKeys<keyof<T>>`가 `types.never`로 무너뜨리는지 — **[2026-08-26 `H-112`]** 인자가 `T`가 아니라 `keyof<T>`다)과 **없는 키 접근**을 포함할 것 |
 | `11-modifier-illegal-value-error.luau` | 옛 형태 기준으로는 ✅ 통과였음(16개 케이스 전원) | **[2026-08-26, 8라운드 `H-122`/`H-123`] 검증 코드가 폐기된 모델을 박제하고 있다** — 그 파일의 Store 생성자가 **eager `Source(v)`** 모델이다. 명시적 초기화 확정(2026-08-25) 이후 **`defaults` 경로에선** Store가 `Source`를 만들지 않는다(동적 키 창구 `store:Of(name)`은 여전히 만든다 — 그래서 가드가 `Source` 생성자로 갔다). **재작성 지침**: `isModifier` 가드의 새 자리는 **`Source` 생성자**(+`Source:Set`, `:Compute` 결과 캐싱)이고, Store 생성자가 하는 건 `defaults`의 **`isSource` 화이트리스트 검증**(error level 2)이다 — 둘을 각각 양성/음성으로 볼 것. **검증 대상(핸들러 계층 값 즉시 error)은 그대로**라 결론이 바뀌는 건 아님 |
 | `21-type-store-undeclared-key-rejected.luau` | 옛 접근 기준으로는 ✅ 통과였음 | `16`의 `ProcessStoreType`을 재사용하므로 같이 낡음. **검증 대상(미선언 키가 타입 에러)은 그대로 유효**하다 — 새 `Store<T>` 선언으로 바꿔 쓰기만 하면 된다(`store:Of("nope")`이 거부되는 것도 같이 넣을 것) |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | 미실행 + **A 섹션이 옛 모델** | A가 옛 2-인자 `canExecute(inst,value)`와 `bindLifetime`의 `.Subscribed` 세팅을 검증 중 — **`bindLifetime`이 gcconn을 `value` 쪽 릴레이션에 복사하는 모델**로 재작성할 것(`base/lifecycle-pattern.md`). **[2026-08-14 열한 번째 세션 재정정, 2026-08-18 방향 정정]** 이중 바인딩 게이트는 `canBound(value)`(`if not canBound(v) then error(...) end` — `canBound` 참 = "지금 묶어도 됨") — `canExecute`는 State emit 전파 게이팅 전용으로 분리됨, 둘 다 비공개 헬퍼 `isBoundAlive`를 공유하는 1-인자 진입점이지만 **서로의 부정**(`base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절). **살릴 것**: "ClassName 신호 미발화 / Destroy 시 `Connected` 즉시 전환" 검증(새 모델에서 더 중요해짐), gcconn/gchold를 **Instance 생성 시점**에 만드는 것으로 바꿀 것(옛 lazy 생성 폐기). B/C 섹션은 손댈 것 없음 |
 
 ## ⚪ `not-run/` — 이 환경에서 못 돌림
 
 **[2026-08-14 다섯 번째 세션] 스파이크는 0건** — 유일했던 `10`이
-`rewrite-required/`로 갔음(위 표). 남은 건 헬퍼 하나뿐.
+`rewrite-required/`로 갔음(**[2026-09-01]** 이후 재작성·완주돼 지금은
+`done/`). 남은 건 헬퍼 하나뿐. **[2026-09-01] Studio MCP 연결이 열려서
+"이 환경에서 못 돌림"이라는 이 폴더의 전제 자체가 약해졌다** — Studio
+전용 스파이크도 이제 `execute_luau`로 에이전트가 직접 돌릴 수 있다
+(`10` 완주가 첫 사례, GC 대기는 청크 분할로).
 
 | 파일 | 이유 |
 |---|---|
-| `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀 |
+| `gc-trigger-helper.server.luau` | 스파이크가 아니라 **헬퍼** — Studio에 `collectgarbage()`가 없어서 GC를 강제 트리거하는 기법. `10`을 돌릴 때 같이 씀(2026-09-01 완주 실측에서 실사용 — 매 대기 2~3 epoch에 끝남) |
 
 ## ✅ `done/` — 통과 or 판정 끝
 
 (개수는 위 표와 폴더가 소스 — 여기서 다시 세지 않는다.)
 
-**지금 `done/`에 있는 런타임 스파이크는 `02`/`03`/`06`/`07`/`11`/`17`/`18`/`20`,
-전원 통과**(crash 0 / FAIL 0). 나머지는 타입 스파이크다.
+**[2026-09-01 기준] 지금 `done/`에 있는 런타임(비타입) 스파이크는
+`01`/`02`/`03`/`04`/`05`/`06`/`07`/`10`/`17`/`18`/`20`**(`10`은 Studio
+전용 — 같은 날 MCP 완주로 합류) — `11`은 2026-08-26에
+`rewrite-required/`로 나갔고(위 표), `01`/`03`/`04`/`05`는 "통과"가 아니라
+spec 대체 폐기 상태다(각 행 참고 — `03`은 통과로 들어와 있다가 2026-09-01에
+폐기로 판정), 나머지는 전원 통과(crash 0 / FAIL 0). 나머지는 타입
+스파이크다.
 **[2026-08-21] `22`는 여기서 빠졌다** — `Brand` 인스턴스 브랜드 재작성으로
 파일이 쓰는 `Brand.set`/`Brand.get`이 옛 API가 되어 `rewrite-required/`로
 이동(검증 대상 자체는 유효, 위 표의 재작성 지침 참고).
@@ -186,12 +213,16 @@
 
 | 파일 | 확인된 것 |
 |---|---|
+| `27-error-walker-o2-codegen-coroutine.luau` | ✅ **[2026-09-01 신설, `H-250` (a) — 루트에서 4플래그 조합(기본/`-O2`/`--codegen`/둘 다) 전부 실측 ALL PASS]** quad-error 워커의 미실측 전제 둘을 닫음. **발견 하나**: `-O2`는 **로컬 직접 호출** 태그 함수를 인라인해 태그가 안 보이고 raise 자리 폴백이 발화한다(섹션 1이 양쪽 결과를 관측·출력). 단 quad의 태그 함수는 전부 **테이블 경유 호출**(`q.Dispatch.*`/`h.process`/`quad.bindLifetime`/ns.error* 자신)이라 인라이너가 callee를 못 풀고 — 섹션 2·3이 그 모양은 전 플래그에서 태그가 보임을 단언. **⇒ 부하 지지 규칙: 태그는 테이블 경유로 호출되는 함수에만**(`quad-error` 헤더·`architecture.md` error 계약 절에 명문화). 코루틴은 문서 예상 그대로 — 안쪽 스택 태그는 정상, 리주머 쪽 태그는 안 보여 raise 자리 폴백(섹션 4). 스파이크는 실물 `quad-error`를 require(무의존이라 가능), 기대 라인은 `debug.info` 동적 캡처(하드코딩 없음 — 처음 하드코딩 버전이 편집마다 깨졌다). **주의: 계측이 대상을 교란한다** — 관측 함수 몸통에 `debug.info`를 넣거나 함수를 pcall에 값으로 넘기면 인라이닝이 사라져 관측 불능(파일 주석에 박제) |
 | `26-type-apply-object-factory-overload.luau` (타입체크 전용) | ✅ **[2026-08-29 M2 단위 4]** `state:Apply(factory)`의 파라미터 타입은 **교집합 오버로드**(함수 팩토리 제네릭 `U` / `__apply` 객체 `any` 반환) — 유니온 하나는 필드가 더 있는 객체(`Blocker`)를 못 받는다. 기대 진단 2건(음성 대조군)만 — 근거: `qa-request/m2-implementation-round11.md` `H-179`, `quad-types/src/init.luau` `State<T>.Apply` |
+| `04-dispatch-chain-retractFrom.luau` | **[2026-08-31 폐기 → `done/`로 이동, 재작성 안 함 — `H-215` (a) 사용자 확정]** M3 단위 1의 `quad-base/test/spec.dispatch.luau`(12절)가 재작성 지침의 검증 대상 — 하강 diff (A)/(B), 3-인자 `retractFrom`, 각 레벨이 자기 값을 받는 것, `SetStrong` 순서 음성 대조군 — 을 실제 구현에 대고 실측한다. **잔여 몫 하나**(실제 `StoreBind` 경유 재귀 재발행 경로 — spec은 로컬 wrapping 핸들러 근사)는 `ROADMAP.md` M4의 mock 테스트 항목이 명시적으로 진다. 파일은 역사로만 남김. 아래는 폐기 전 상태: 옛 모델(핸들러 identity 추적) 기준 ✅ 통과였고 하강 diff 확정으로 재작성 대기였음 |
+| `01-two-pass-array-hash-order.luau` | **[2026-08-31 폐기 → `done/`로 이동, 재작성 안 함]** M3 단위 1의 `quad-base/test/spec.drive.luau` 1번이 재작성이 물어야 했던 그 질문 — **일반화 `for` 한 번**이 배열 파트 전체를 해시보다 먼저, 배열 안은 index 순서로 주는가(`F-4-1`) — 를 실제 `Dispatch.drive`에 대고 상시 회귀로 실측한다(round12 brief §6, 사용자 승인). 파일은 역사로만 남긴다. 아래는 폐기 전 상태: 숫자 `for` + 일반화 `for` **두 루프** 버전이라 옛 형태 기준으로는 ✅ 통과였으나, 구현이 단일 일반화 `for`로 정정되며(`base/dispatch-core-plan.md` "props 순회 순서" 절) 언어 동작 자체를 묻도록 재작성 대기였음 |
 | `05-store-state-diamond-propagation.luau` | **[2026-08-29 폐기 → `done/`로 이동, 재작성 안 함]** M2 단위 2·3의 `quad-base/test/spec.state.luau` 3번(다이아몬드에서 두 번째 도착이 규칙 3으로 접힘, 조인 1회 계산)·`spec.effect.luau` 3번(Effect도 1회)이 실제 구현에서 같은 것을 고정한다 — 이 스파이크가 물으려던 "변경당 1회"의 답. 아래는 폐기 전 상태: 2026-08-19 재작성분은 그 시점 모델 기준 ✅ 통과였음 — 근거: **[2026-08-21] 모델이 또 바뀌었다** — 소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드에서 **두 번째 통지가 접힌다**. 그래서 이 스파이크의 핵심 assert("`:Get()`을 안 부르는 Observer가 변경당 경로 수(2)만큼 운다")가 **정반대**가 됐다 — 이제 **변경당 1회**여야 한다. **살릴 것**: `invalid` 기반 dedup이면 두 번째 변경부터 침묵하는 것을 잡는 음성 대조군(그 금지는 지금도 유효). **새로 넣을 것**: DFS 도중 `Get()`이 섞인 값을 캐시하던 glitch가 에포크로 사라지는지(그 문서 §1의 시나리오) |
 | `15-type-compute-trailing-deps-typepack.luau` | **[2026-08-28 폐기 → `done/`로 이동, 재작성 안 함]** M2 단위 2가 실제 `quad-types` 선언에서 타입팩 형태를 실측해 기각했다(`qa-request/m2-implementation-round11.md` `H-176`: strict에서 콜백 dep 추론이 깨져 정상 호출까지 막힘 → deps 자리 `...any`). 이 스파이크가 물으려던 (B)의 답이 나왔으므로 파일은 역사로만 `done/`에 남긴다. 아래는 폐기 전 상태: **파싱 실패**(SyntaxError) — 근거: 음성 대조군의 타입 표기가 `TypeError`가 아니라 `SyntaxError`로 걸려 **파일 전체가 아무것도 검증 못 함** — 대조군을 별도 파일/블록으로 격리 |
 | `02-none-sentinel-vs-nil-holes` | `nil` 소진 시 `#t` 50→49로 무너짐 / `None`은 항상 50. 반대로 **당시의** Ref 콜백 배열은 `None` 쓰면 죽은 슬롯 1000개 잔존 — **두 배열의 규칙이 서로 반대여야 함**이 정량 확인. **[2026-08-24]** 그 대비의 한쪽(Ref 콜백)은 6라운드 `H-7`로 **해시맵 셋**이 되어 사라졌지만, 이 스파이크가 실제로 확인한 것(**일반 Lua 테이블에서 `nil` 구멍과 `None` 채움의 거동 차이**)은 그대로 유효하다 — `sourceList`/`flattened`처럼 순서가 중요한 배열이 여전히 그 결론 위에 선다 |
-| `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료 |
+| `03-recursive-store-bind-dispatch` | StoreBind 재귀 재-dispatch, `None`→`nil` 흐름, 무한재귀 없이 종료. **[2026-09-01 폐기 확정 — round13 §0 Q4 (a) 사용자 확정]** M4의 `quad-base/test/spec.storebind.luau`가 같은 질문(재귀 종료·`None→nil` 핸드오프·우선순위 스캔)을 **실제 `StoreBind` 구현**에 대고 상시 회귀로 실측한다(5절 — 배열 자리에서 부기 반응형 이동까지) — `01`/`04`/`05`와 같은 폐기 근거 구조. 파일은 역사로만 남김. 폐기 전 상태: ✅ 통과(격리 근사 — 2026-08-31 메모가 "M4 구현 시점에 판정"으로 예약해뒀던 것) |
 | `06-component-boundary-nil-hole-props` | `or None` 없으면 앞쪽 nil-hole로 슬롯 소실, 관용구 쓰면 항상 보존 |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | ✅ **[2026-09-01 A 섹션 현행 모델 재작성 + Studio MCP 완주 — 전 항목 PASS]** `audit/gcconn-trick-verification.md`의 "아직 확인 안 된 것" 전량 해소: `canBound` 게이트 3케이스(살아있으면 error / unbind 후 통과 / **Destroy 후 다른 inst 재바인드 통과**), BindData 복사 gcconn 단독 판정, Destroy+GC 후 weak 릴레이션 자기 정리·value 수거, **userdata 동일성**(claim은 고정·재조회 rawequal, **무claim은 트리에 살아있어도 1사이클에 수거 — `nativeClaim` 전제 실증**), Instance weak key 동작, B) Attribute Instance 참조는 **`InstanceHandle` 언랩 경유**(⭐ 발견 — 미문서화 Studio Beta, `:Get()`/`:Wait()`/`.new`, Destroy 후에도 핸들 잔존), C) CollectionService 왕복 + Destroy 시 태그 엔진 정리. 결과 전문은 `audit/spike10-full-run-2026-09-01.md` |
 | `07-relate-weak-table-gc` | **연쇄 GC 확정**(아래 별도 절) — GC-native 아키텍처의 핵심 전제 |
 | `17-modifier-index-tableclone-chaining` | 제네릭 `__index` + `table.clone` 체이닝, 메타테이블 참조 공유, 형제 분기 무오염 |
 | `18-relate-mutual-cycle-gc` | **두 `Relate` 상호 순환은 실제로 GC 안 됨**(아래 별도 절) |
@@ -206,12 +237,15 @@
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로). **[2026-08-24 `H-54`] 단 스파이크 자신의 주석이 실제 결과와 어긋난다** — *"이건 당연히 통과해야 함"*이라 적어둔 동질 대조군(line 41-43)이 실제로는 에러를 낸다(`AttributeKey<T>(name)`이 문맥에서 `T`를 못 추론해 `unknown`으로 남음). 오히려 "왜 진짜 테스트 대상이 조용히 통과하는지(= narrowing이 아예 안 일어남)"를 설명해주는 정합적 결과라 **이 총론은 그대로 유효**하고, 근거 라인만 다르다 — 재작성 시 참고 |
 | `13-type-ref-preref-subtype` | **[2026-08-19 재작성]** ✅ 통과 — `PreRef<T>`/`PostRef<T>` 둘 다 `Ref<T>`를 구조적으로 만족(음성 대조군도 정확히 에러). 런타임 B섹션은 `22`로 분리(A의 더미 스텁이 B 실행을 막던 문제 해결) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
+| `28-type-class-param-shared-generic` (타입체크 전용) | ✅ **[2026-09-02 신설, M5 단위 ② 착수 전 — claim-plan §9 요구]** `<Class>Param<E>` 공유 제네릭 메커니즘 통과 — 같은 Param을 `D.Frame`(E=NewChild)/`D.Mapper.Frame`(E=NewChild\|MapperDescriptor)이 공유하고 리턴만 다름, 기대 음성 3건만 정확히 발생(`Parent` 부재가 H-142의 타입판임을 겸증). 필드 유니언 구성은 자리표시자(round14 `H-298`이 정본화 대기) |
+| `29-type-useprovider-extension-d` (타입체크 전용) | ✅ **[2026-09-02 신설, `H-305` (d′) 확정 실측의 승격판]** 백엔드 표면(`D`)을 `UseProvider` 확장 `Self & P`로 실으면 소비자까지 캐스트 0 풀 타입 — 프로바이더→플러그인 체이닝 2겹 뒤에도 D 커링·Mapper·base 메소드·CheckedQuad 본문 배선 전부 생존, **호출 인자 타입 위반까지 잡힘**(기대 음성 정확히 2건). 테이블∩테이블(거주)이라 H10-3 함수∩테이블(무거주)과 계열이 다름이 요지. 실물 31클래스 규모 축은 test.sh `LuauTarjanChildLimit`(typing-limits 8.5절) |
 | `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규, 같은 날 후속으로 재작성]** ✅ 통과 — 실제 `quad-types`/`quad-base`/`type-version-check`로 `CheckedQuad<T, Pattern>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격), `export type function`/이중 꺾쇠 제네릭 인스턴스화 요구도 같이 실측 — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
 
 ### 특별히 중요한 통과 3건
 
-**`04` — 직전 감사가 찾은 버그가 음성 대조군으로 재현됨**(파일은 지금
-`rewrite-required/`에 있음 — 아래 관측 자체는 새 모델에서도 유효)
+**`04` — 직전 감사가 찾은 버그가 음성 대조군으로 재현됨**(**[2026-08-31]**
+파일은 폐기돼 `done/`에 있음(`H-215` (a)) — 아래 관측 자체는 새 모델에서도
+유효하고, 같은 음성 대조가 `spec.dispatch.luau` 6번에 상시 회귀로 산다)
 
 | 관측 지점 | 정상(수정본) | 대조군(버그) |
 |---|---|---|

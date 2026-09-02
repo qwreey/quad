@@ -69,6 +69,18 @@ rbvm에서 실제로 재사용하는 부분은 아래 "(0)"/"(1)" 절의 gcconn/
 
 ### 2. Instance 파괴는 `Instance.Destroying` 훅 하나로만 관측
 
+> **⚠️ [2026-09-02 실측, M5 단위 ① `H-291`] `Destroying` 콜백은 동기가
+> 아닐 수 있다** — Deferred 시그널 동작(신형 플레이스 기본값)에서
+> `Destroying`·`GetPropertyChangedSignal` 콜백은 Destroy와 같은 줄기가
+> 아니라 **다음 재개 지점에 지연 배달**된다(Destroy가 연결을 끊어도 큐잉된
+> 발화는 정확히 1회 돎 — Studio 실측). **`gcconn.Connected` 전환은
+> 동기**라 `canBound`/`canExecute` 판정은 무영향이고, 영향 범위는 시그널
+> 배달에 기대는 소비자뿐 — `onDestroying` → `Effect` cleanup은 "죽음과
+> 같은 줄기"가 아니라 "죽음 직후 지연"일 수 있으니 동기 실행에 기대는
+> 설계를 하지 말 것. 설정은 플레이스별(Immediate/Deferred)이라 quad는
+> 양쪽 모두에서 정확해야 한다. 소스는
+> `qa-request/m5-implementation-round14.md` `H-291` 행.
+
 rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로 좁혀둠 —
 `inst.Destroying:Connect(...)` (`proxy/base.luau:150-156`), `Destroyed` 같은
 플래그를 그 콜백에서만 true로 뒤집음. `AncestryChanged`나 폴링 방식은 안 씀.
@@ -187,7 +199,10 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 `isState`와 같은 자리에 놓이는 것이고, 파일 `LifetimeHandle.luau` 자신이 이
 넷을 return하는 게 아니다(파일은 `InitLifetimeHandle(module)`을 return하고, 그
 팩토리가 `module.bindLifetime = …` 에러 스텁 4종을 심는다 — 백엔드가 같은 필드를
-덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절).
+덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절.
+**[2026-09-01 명시]** 실코드 `LifetimeHandle.luau`는 생명주기 넷에 더해
+엔진 op **`onDestroying` 스텁도 같이** 심는다 — 같은 백엔드가 채우는
+주입이라서(그 파일 주석이 소스). 백엔드가 덮어쓸 필드는 총 다섯).
 아래 시그니처의 이름은 그 필드 이름이다. **⭐ [2026-08-28 `H-174`, 사용자 확정]
 반응형 모듈(`Source`/`State`/`Observer`/`Effect`…)은 이 넷을 `module.canExecute(self)`처럼
 모듈 인스턴스에서 발화 시점에 늦게 읽는다** — 조립은 `InitXxx(module)` 팩토리가
@@ -298,6 +313,19 @@ InstData:SetWeak(inst, "gcconn", gcconn)
   생기므로(예: `dispatch-core-plan.md`의 `StoreBind.process`), 이번
   변경은 "아무것도 안 걸린 Instance"까지 같은 규칙으로 통일한 것뿐.
 
+#### (0.5) `bindLifetime`의 확장 계약 — 모르는 타입이면 순수 GC 릴레이션 (2026-08-31, `H-229` 사용자 확정)
+
+**`bindLifetime(inst, value)`는 `value`가 어떤 알려진 타입과도 일치하지
+않으면(평범한 테이블/클로저) 단순히 GC 릴레이션만 한다** — gchold 강참조 +
+gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestroying`)
+없음. 사용자 원문: *"bindLifetime이 할 일 같은데, 아무 타입과도 일치하지
+않으면 단순히 GC 릴레이션만 해주는 건 어때?"* — 새 동작이 아니라 기존
+구현(mock·(1)의 스케치)이 이미 그렇게 돌던 것을 **공개 계약으로 승격**한
+것이다. 첫 소비자는 `Dispatch`의 체인 리스트 앵커(`H-229` —
+`dispatch-core-plan.md`의 "Dispatch 체인" 절): "이 값의 수명을 inst의 바인드
+수명에 묶는다"는 원래 일과 같은 일이라 별도 앵커 표면을 만들지 않는다
+(표면이 커지는 대안을 사용자가 명시적으로 피함).
+
 #### (1) `bindLifetime` / `unbindLifetime` / `canBound` / `canExecute`
 
 ```lua
@@ -342,16 +370,24 @@ function bindLifetime(inst, value)
         -- 클로저일 수도 있음(그 경우 필드 접근 자체가 에러).
         local isGlobal = isObserver(value) or isEffect(value)
         if isGlobal then isGlobal = value.Subscribed == true end
-        error(if isGlobal
-            then "이미 구독된 값"   -- [2026-08-26 H-111] 강/약 어느 쪽이든
-            else "이미 다른 Instance에 바인딩된 값")
+        -- [2026-08-31 M3 단위 4 `H-272`] 리터럴 error(level 2)가 아니라 워커의
+        -- 최외곽 스캔 — 단위 4 이후 bindLifetime의 주 호출부가 디스패치 깊이
+        -- (Leaf.process)라 level 2는 quad 내부를 blame한다. errorBefore면 직접
+        -- 호출(최외곽 태그 = bindLifetime 자신)과 디스패치 경유(최외곽 = drive)
+        -- 양쪽에서 사용자 줄에 닿는다. 메시지도 error 계약대로 영어
+        -- (`H-216` 부류의 잔존이 이 스케치에 남아 있었다).
+        Err.errorBefore(if isGlobal
+            then "bindLifetime: value is already subscribed"   -- [2026-08-26 H-111] 강/약 어느 쪽이든
+            else "bindLifetime: value is already bound to another Instance", SURFACE)
     end
 
     -- ⭐ [2026-08-31 `H-184`, 사용자 확정] 값이 자기 훅 가드를 가지면(`Effect`/`Observer`의
     -- `_assertBindable` — `H-147`/`H-183`의 "fn 안에서 bind 금지") 부기를 커밋하기
     -- **전에** 먼저 묻는다 — 안 그러면 가드가 던질 때 이미 묶인 채(canExecute 참)
     -- `Destroying` 연결 없는 반쯤 묶인 핸들이 남는다(실측). 평범한 클로저처럼 훅이
-    -- 없는 값은 물을 것이 없다. mock(installLifetime)과 M8 실 구현 둘 다 이 순서.
+    -- 없는 값은 물을 것이 없다. mock(installLifetime)과 실 구현
+    -- (`quad-roblox/src/LifetimeHandle.luau` — [2026-09-02] M5 단위 ①로
+    -- 구현됨) 둘 다 이 순서.
     if type(value) == "table" and value._assertBindable ~= nil then
         value:_assertBindable()
     end

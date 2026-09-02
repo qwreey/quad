@@ -10,14 +10,33 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**⭐ [2026-08-31 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store) 완료, M3(디스패치 엔진) 진행 중** — M2는 자율 구현
+**⭐ [2026-09-03 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
+**M5(quad-roblox 최소 프로바이더)** 완료** — M5는 자율 구현 구간으로
+2026-09-02 착수·종결: 규약 `qa-request/m5-implementation-round14-brief.md`
+§0 전량 (a) 확정(Q3는 사용자 제안 dev deps 분리), 단위 ①~⑤(팩토리+주입
+op+생명주기 / `D` 생성기 / Property·InstanceChild 핸들러 /
+`Claim`+`D.Mapper` / 첫 실물 렌더 실측+종합) 완주, 발견
+`H-290`~`H-308` 전량 처리(§4 열린 문항 0) — 진행 소스는
+`ROADMAP.md` M5 체크박스(전부 `[x]`), 단위 ⑤ 확정 요지(설치 표면
+`quad:UseProvider(QuadRoblox)` `H-305` (d′) / 런타임 버전 게이트 `H-306`
+(a) / rojo 라이브 싱크 반입 — Studio 재기동만 사람 몫, `HUMAN_TODO.md`
+12번)는 `.claude/todos.md` 00번이 소스. **같은 날 사용자 승인으로 병렬 탐사, 2026-09-03 통합 완료** —
+fork 둘이 worktree에서 M6/M10을 mock 축으로 선행 구현했고 **메인에
+머지됨**(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16`; 통합 판정(H10-3
+(d)·H10-5·H10-1)과 잔여 목록은 `ROADMAP.md` M6/M10 배너가 소스)** —
+**M4도 같은 방식의 자율 구간으로 2026-09-01 착수·종결**(사용자 조건부
+승인으로 규약 `qa-request/m4-implementation-round13-brief.md` §0 전량 (a)
+확정, 발견 `-round13.md`(`H-287`~; §4 열린 문항 0) — 단위 하나:
+`Dispatch/StoreBind.luau` + `spec.storebind.luau`, 스파이크 `03` 폐기).
+M2는 자율 구현
 구간(규약 `qa-request/m2-implementation-round11-brief.md`, 발견 `-round11.md`)
 으로 2026-08-28 착수~08-31 종결(단위 넷 구현·감사·리뷰·탐사 완료, §4 문항·
-코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수** — 규약은
-`qa-request/m3-implementation-round12-brief.md`(같은 날 §0 세 문항·§6 첫 단위
-계획 사용자 확정), 발견은 `-round12.md`(`H-212`부터). 진행 상태는
-`.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
+코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수, 2026-09-01 종결** —
+규약은 `qa-request/m3-implementation-round12-brief.md`, 발견·회신은
+`-round12.md`(`H-212`~; §4 열린 문항 0 — 회신 라운드에서 구조 셋도 확정:
+Bookkeeping 분리(`H-277`)/Leaf 소유권 이동(`H-278`)/drive pre-hook 리서치
+(`H-279`)). 진행 상태는 `.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
 같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음). **⚠️ [2026-08-24] M2와
 M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 문제가 (a) 순서
 교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"
@@ -36,8 +55,10 @@ M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 �
 반영됐고**, 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량 반영** — 소스는 `-round9-followup.md`. 그 반영분에 `/code-review high`가 낸 새 메커니즘 넷(`H-143`~`H-146`)도 **같은 날 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 전부 권고 (a)로 확정·반영**돼 **[2026-08-28] 10라운드**(`-round10.md`, 광범위 탐사 `H-150`~`H-157` 포함)도 같은 날 전량 결정·반영(소스 `-round10-followup.md`) — 둘이 뒤집혔다(`fn`은 자기 구독을 못 바꿈 / 루트는 `Claim`으로 quad 소유, `base/claim-plan.md` — 다만 루트의 `.Parent =`는 같은 날 밖에서 허용으로 복원). 같은 날 후속 `H-158`~`H-164`(`EmitReceive`·`_catchUp` 포함)까지 반영. 같은 날 `Claim` 갈래까지 전량 확정돼 `base/claim-plan.md`로 승격 — `question.md` 최우선 절은 다시 비어 있다. 저장소 루트에
 `quad-base/src/`(M1의 `New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`에 M2의 반응형 코어 전부가 더해짐 — 실제 구성은 `base/architecture.md` 소스 트리가 소스)/
 `quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
-아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
-소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —
+**[2026-09-02]** M5 완주로 전부 채워짐 — 팩토리·주입 op·생명주기·생성
+`D`·핸들러 2종; **[2026-09-03]** quad-base엔 fork 편입으로
+`Slot.luau`·`Tag.luau`·`AttributeKey.luau`·`Attribute.luau`도 합류),
+자세한 진행 상황은 루트 `ROADMAP.md`가 소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —
 `luau` CLI가 **심볼릭 링크를 못 타는데**(디렉토리·파일 둘 다) pesde의
 워크스페이스 링크가 전부 심볼릭이라, 그냥 `luau`로 돌리면 스모크 2개가
 죽고 `luau-analyze`는 **조용히 통과**한다(모듈을 `any`로 떨어뜨림 —

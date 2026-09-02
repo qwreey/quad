@@ -162,7 +162,7 @@ end
 - **`isPreRef(x)`가 가장 구체적인 항등 체크**(`PreRefBrand:is(x)`),
   **`isRef(x)`는 그 위에 `RefBrand:is(x)`를 OR로 얹은 상위 개념** — 즉
   **`isRef(preRefInstance)`는 `true`.**
-- **`(v=Ref)` children 배열 leaf 매치 핸들러(`Dispatch/Leaf.luau`)는
+- **`(v=Ref)` children 배열 leaf 매치 핸들러(M8 — `H-278`로 `Ref.luau` 소유)는
   이제 `isHandlable`을 `isRef(v) and not isPreRef(v) and not isPostRef(v)`로
   명시적으로 좁혀야 함**(**[2026-08-14 아홉 번째 세션]** `PostRef` 확정으로
   제외 항이 하나 늘어남) — 예전처럼 `isRef` 자체가 배타적이라 저절로

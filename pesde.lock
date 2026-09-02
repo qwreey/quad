@@ -6,13 +6,16 @@ version = "0.0.0"
 target = "roblox"
 
 [workspace."qwreey/quad_base"]
-roblox = "quad-base"
+luau = "quad-base"
+
+[workspace."qwreey/quad_error"]
+luau = "quad-error"
 
 [workspace."qwreey/quad_roblox"]
 roblox = "quad-roblox"
 
 [workspace."qwreey/quad_types"]
-roblox = "quad-types"
+luau = "quad-types"
 
 [workspace."qwreey/type_version_check"]
 luau = "type-version-check"

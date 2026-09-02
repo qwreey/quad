@@ -53,7 +53,7 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   `key`는 자식이면 이름(`string`), 루트면 센티널 `D.Mapper.Root`(§7-1).
 - **props 타입은 `D.<Class>`와 공유한다.** 생성기가 클래스마다 `type FrameParam
   = { … }`를 찍고 `D.Frame`과 `D.Mapper.Frame`이 그 하나를 쓴다 — 리턴만 다르다
-  (`Frame` vs `MapperDescriptor<Frame>`). 사용자: *"D.Frame 의 함수의 부분들을
+  (`Frame` vs `MapperDescriptor` — 산문의 옛 제네릭 표기는 정정: 타입은 비제네릭, §7-12 코드 블록이 정본). 사용자: *"D.Frame 의 함수의 부분들을
   type FrameParam = {} 형태로 빼서 공유되는 타입 부분으로 D.Mapper.Frame 도
   구성되고, 리턴부분만 다르게"*. `base/bind-system-plan.md`의 `D.Frame =
   New<<Frame>> "Frame" :: ((…) -> Frame)` 캐스트가 인라인 타입 대신 이 이름을
@@ -88,13 +88,17 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   매핑된 하위 전부가 **quad 소유**가 된다 — `New`가 만든 것과 같은 gcconn/gchold·부기
   (그 (0) 셋업은 아래 `nativeClaim` — §7-9).
 - **디스크립터는 1회용** — `PreRef`의 `_fired`처럼 **디스크립터 객체에 소진
-  플래그**를 세우고 재사용이면 `error(…, 2)`. **[2026-08-28 `/code-review` 정정]**
+  플래그**를 세우고 재사용이면 error(**[2026-09-02 정정, 단위 ④]** 여기
+  `error(…, 2)`라 적혀 있었으나 실 구현은 §7-9/-10 정정과 같은 이유로
+  `errorBefore(SURFACE)`다 — 재사용 검사가 DFS 재귀 안이라 더더욱). **[2026-08-28 `/code-review` 정정]**
   `PreRef` 관용구의 다른 절반(배열 슬롯을 `ProcessedPreRef` 센티널로 교체)은
   **가져오지 않는다** — 매핑 자식의 배열 슬롯은 §4대로 **해석된 Instance로 교체**돼야
   `InstanceChildHandler`에 닿고, 루트 디스크립터는 배열에 있지도 않다. 사용자
   테이블을 in-place로 바꿀지 새 테이블을 만들지(그러면 `ProcessedModifier` 자리와
   인덱스가 `New`와 달라진다)와 Modifier 필드 안에 숨은 디스크립터를 DFS가 보는지는
-  **구현 시 정할 것**(§9). **같은 `inst`를 두 번 `Claim`하는 것도 error**(§7-7) —
+  ~~구현 시 정할 것~~ **[2026-09-02 `H-303` 재량 확정 — 뒤집기 가능]**
+  in-place 교체 / DFS는 Modifier 필드를 안 봄(M7 flatten 통합의 몫) —
+  전체 재량 목록은 round14 `H-303` 행과 `quad-base/src/Claim.luau` 헤더가 소스. **같은 `inst`를 두 번 `Claim`하는 것도 error**(§7-7) —
   판정은 위 `nativeClaim` 항목(§7-10).
 - **⭐ [2026-08-28 후속, §7-9] 소유는 프로바이더 주입 op `nativeClaim(inst)`** —
   `lifecycle-pattern.md` (0)의 gcconn/gchold 셋업(클로저가 `gchold`와 `inst`를 캡처해
@@ -103,8 +107,13 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   DFS로 해석한 inst마다(루트 포함) `drive` **앞에** `nativeClaim`을 부른다 — ②가
   ③④보다 앞인 것과 같은 이유(그 뒤부터 `inst`를 키로 쓰는 `Relate`가 생긴다).
   **이미 quad 데이터가 있는 inst**(`InstData:GetWeak(inst, "gchold") ~= nil` — 앞서
-  claim됐거나 `New`가 만든 것)면 `error(…, 2)` — 이것이 "같은 `inst` 이중 claim
-  error"의 전부이고 별도 레지스트리는 없다(§7-10).
+  claim됐거나 `New`가 만든 것)면 error — 이것이 "같은 `inst` 이중 claim
+  error"의 전부이고 별도 레지스트리는 없다(§7-10). **[2026-09-02 정정, M5
+  단위 ① 탐사자]** 여기 `error(…, 2)`라 적혀 있었으나 실 구현은
+  **`errorBefore(SURFACE)`**다(`quad-roblox/src/LifetimeHandle.luau`) —
+  `H-272` 관례의 확장: 리터럴 level 2는 `Claim`의 DFS 경유 호출에서 quad
+  내부를 blame하고, 최외곽 표면 걷기면 직접 호출·`Claim` 경유 양쪽에서
+  사용자 줄에 닿는다.
 - **매칭은 프로바이더 주입 op** `nativeFindChild(inst, key)`(가칭) — Roblox는
   `Name`, web은 id/selector. **quad-base가 순회·부기 전반을 구현하고
   프로바이더는 이 핸들만 낸다**(사용자: *"quad-base 에서 전반을 구현해주고
@@ -229,7 +238,9 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
    Mapper.Frame (MapperRoot) {}` 그대로이고, **놓는 자리 `D.Mapper.Root`는
    에이전트 제안**(매퍼 옆에 두면 `M.Frame(M.Root)`로 읽힌다) — 이름만 바뀔 수
    있는 항목. 자식 디스크립터에 센티널을 주는 것(`M.Frame(M.Root)`가 루트가
-   아닌 자리에)은 debug 검사 후보.
+   아닌 자리에)은 debug 검사 후보 — **[2026-09-02 단위 ④ 탐사자, 대칭 등재]**
+   역방향(루트 자리에 문자열 키 — 키를 읽지 않아 조용히 통과, 행동상 기각된
+   (c)와 같아짐)도 같은 debug 검사 후보다. 런타임 가드는 안 둔다(§3 원칙).
 2. **물리 순서 — (a) 디스크립터 순서가 정본, 일치는 사용자 책임.** 사용자:
    *"나는 처음에 A 를 생각했어. 권고 그대로 가줘."* (b)(`nativeMove`로 quad가
    맞춤)는 기각.
@@ -286,7 +297,23 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
     생각한게 원소를 파라미터로 받는거였어. 거기에 Instance 또는 Instance|MapperDescriptor
     가 오는거지"*. `FrameParam<E>` — `D.Frame`은 `E` = 기존 children 원소 유니언,
     `D.Mapper.Frame`은 `E` = 그것 `| MapperDescriptor`(§2). 실제 Luau에서 도는지는
-    `luau-analyze` 스파이크로(§9).
+    `luau-analyze` 스파이크로(§9). **[2026-09-02]** 그 스파이크는
+    `luau-test/done/28-type-class-param-shared-generic.luau`로 통과했다
+    (기대 음성 3건만 — 상태는 `STATUS.md`).
+13. **[2026-09-02, round14 `H-293` — 사용자 기각·UB 확정] 이미 Destroy된
+    inst를 claim(직접 `nativeClaim` 포함)하는 것은 UB다 — 가드를 만들지
+    않는다.** 실기기 실측으로 증상은 확정돼 있다(Destroy된 inst에 새
+    Connect가 성공하고 `Connected`가 영원히 true — 영구 발화 가능 판정 +
+    절단면 없는 캡처 누수). 그래도 가드가 없는 이유(사용자): (1) *"​:Clone()
+    을 하게 된다면 기본적으로 Parent 가 없는 상태인데, 이것을 Claim 할 수
+    없다면, 처음부터 어딘가 Parent 를 넣어 실체화 해야하게 된다"* — 트리
+    소속 검사류는 정당한 parentless claim을 막는 부작용이 더 크고, (2)
+    *"인스턴스의 생성과 죽음 까지 quad 는 관리하고 소유하게 된다는 개념"*
+    상 Destroy된 객체 투입 자체가 의도된 입력이 아니며, (3) *"방어하지
+    못할 부분을 방어하려고 애매한 방법을 택할 이유가 없다"*(실물 Roblox엔
+    깨끗한 destroyed 술어가 없다 — 후보 검출식은 실측으로 기각됨). 즉시
+    error 주 방어선 원칙의 경계 사례 — **방어는 방어할 수 있을 때 제공**.
+    문서화 대상 등재는 `research/documentation-content-map.md` §4.
 
 ## 8. 검토 후 안 만들기로 한 것
 
@@ -312,7 +339,7 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   아님).
 - `Claim(inst, desc) -> inst` — DFS 해석 → 해석한 inst마다 `nativeClaim` → bottom-up
   `drive`, 소진 플래그(§2), 이중 claim은 `nativeClaim` 앞의 `InstData` 검사(§7-10).
-  **구현 시 정할 것**: 사용자 테이블 in-place 교체 vs 새 테이블, Modifier 안의
+  ~~구현 시 정할 것~~ **[2026-09-02 `H-303` 재량 확정 — 뒤집기 가능, round14가 소스]**: 사용자 테이블 in-place 교체 vs 새 테이블(→ in-place), Modifier 안의
   디스크립터 처리, 패키지 안 정의 파일 위치(`quad-base/src/Claim.luau` 가칭 —
   `base/architecture.md` 소스 트리에 반영은 M5 착수 때).
 - 프로바이더 op **`nativeClaim(inst)`**(§7-9) — `lifecycle-pattern.md` (0)의 코드가 본체,

@@ -17,7 +17,8 @@
 	quad-base knows nothing about Instances, so these slots default to stubs
 	that error loudly (never a silent no-op — base cannot guess an arbitrary
 	engine's "right" default). quad-roblox overwrites them on the module
-	instance (M8); tests overwrite them with the mock backend
+	instance (implemented in M5 unit 1 — `quad-roblox/src/LifetimeHandle.luau`);
+	tests overwrite them with the mock backend
 	(`quad-base/test/mock.luau` `installLifetime`, ROADMAP `H-97`).
 
 	They are flat top-level functions, not `LifetimeHandle.bind(...)` —
@@ -26,14 +27,22 @@
 	3) — it belongs to the same backend injection and `Effect` needs it.
 ]]
 
+local Err = require("./ErrorNamespace")
+local QuadTypes = require("../luau_packages/quad_types")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+
 local function notInstalled(name: string): (...any) -> ...any
-	return function(...: any)
-		error(
+	local stub = function(...: any)
+		Err.errorBeforeNearest(
 			`quad: {name} is not available — no backend has installed the lifetime primitives `
 				.. "(quad-roblox does this when it wraps the module; tests use mock.installLifetime)",
-			2
+			SURFACE
 		)
 	end
+	-- `H-231`: the stubs sit on the public surface until a backend overwrites
+	-- them (the backend tags its own replacements via `Quad.errorNamespace`)
+	Err.setFuncLevel(stub, SURFACE)
+	return stub
 end
 
 local function Init(module: any)

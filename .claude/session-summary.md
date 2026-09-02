@@ -2061,3 +2061,186 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `mN-implementation-roundNN`, 라운드 번호는 마일스톤 가로질러 단순 증가 —
   `README.md` `qa-request/` 행이 소스), 툴링 픽스 둘(`H-210` rojo 트리 /
   `H-211` Relate 타입)도 이 세션. 다음 액션은 M3 착수 규약 문항.
+
+- **`session/2026-08-31-02-m3-kickoff-unit1-dispatch-core.md`** — M3 착수. round12
+  규약 확정(§0 Q1~Q3 전부 권고 (a), §6 첫 단위 계획 승인 — 대화형 선택지 한 번),
+  단위 1(디스패치 코어) 구현: `Handler` 타입(quad-types 소유)+`Quad.Dispatch`(`H-25`),
+  `InitDispatch(module)`(하강 diff process/3-인자 retractFrom/addHandler/
+  listHandlers/drive (b) 루프만 — ⓪⓪'는 단위 2, (a)(c)는 M8), `spec.dispatch` 12절
+  +`spec.drive` 3절 ALL PASS. 발견: `H-212`(① base 의사코드 error 영어+level 정정)/
+  `H-213`(① 우선순위 밴드 리터럴)/`H-214`(② 핸들러 이름 필드 — §4 문항). 스파이크
+  `01` 폐기(`spec.drive`가 상시 회귀로 대체). `H-165` 재현 — pesde install로 해소.
+  **같은 날 단위 끝 절차** — 감사 루프 5라운드(1: 기계적 누락 4 / 2: STATUS 부채 2+`H-215` 등재 /
+  3: error 영어화 확장+`H-214` 근거 정정 / 4: `H-216` slot-plan 11곳 / 5: 계수 정정+`H-217`
+  4곳 — base 코드 리터럴 한국어 error 0), §4 배치 회신 도착(*"전부 권고안에 동의해"*) —
+  `H-214` (a) Handler 선택 필드 `name: string?` / `H-215` (a) 스파이크 `04` 폐기(잔여
+  `StoreBind` 경유 경로는 ROADMAP M4 mock 항목). 감사 6라운드 수렴(확실 0) 뒤
+  `/code-review high` 10건(`H-218`~`H-227`): ① 여섯 반영(`BRAND_PROBES` 순서 /
+  retractor 생략 error에 핸들러 특정 / 타입 주석 조립 등), ② 셋 §4 합류(`H-218`
+  chains 캡처 누수 — 거짓 GC 주장 정정 선반영 / `H-219` error 도착지 / `H-222`
+  제공자 level 분류), 기각 하나(`H-226`). 탐사자 1건(`H-228`) 반영. **회신 2**로
+  `H-218`(a — retractFrom 의무화, `UI-11` 부분 역전)/`H-219`(a)/`H-222`(a — error
+  계약 표 제3 행) 반영. 사용자 되물음 검증 결과 **Destroy 경로 전체가 같은 누수
+  패턴**(`H-229` 🔴, chains가 두 번째 강한 루트 — gchold 앵커 통일안 권고)과
+  상수 배치 제안(`H-230` — HANDLER_PRIORITY_*는 quad-types 승격 권고, level
+  Enum화는 비권고)이 §4 대기. **회신 4**로 둘 다 진전 — `H-229` 확정·반영:
+  `bindLifetime` 확장 계약(모르는 타입 = 순수 GC 릴레이션, `lifecycle-pattern.md`
+  (0.5)) + Dispatch 체인 리스트를 `SetWeak`+`bindLifetime(inst, list)` 앵커로
+  (spec 전부 mock Instance 전환, Destroy 후 통째 회수 실측 13번). `H-231`은
+  사용자가 `error-util-ignoreme.luau` 실험으로 설계를 직접 확정(최상단 하강
+  워커, `setFuncLevel`/`errorAt`/`errorBefore`) → **`quad-error` 워크스페이스
+  패키지**(다섯째 멤버)로 구현, `spec.errorutil` 5절 통과. **회신 5·6**으로 전부 종결 —
+  `H-230` (a): `HANDLER_PRIORITY_*`+`ERROR_LEVEL_SURFACE`가 quad-types 상수로 /
+  `H-231` 완성: 사용자 발견 둘(중첩 진입 blame → `errorAtNearest`/`errorBeforeNearest`
+  쌍 추가 / 사본 네임스페이스 분리 → 상태 없는 `new()` + `Quad.errorNamespace` 공유)
+  반영, M2·단위 1 error 자리 전량 이관 + 전 표면 태깅 + error 계약 절 재서술
+  (`H-219` M5 재평가 조기 해소). **단위 1 몫 §4 열린 문항 0.** **같은 날 단위
+  2(Length/Offset 부기) 구현** — `getBookkeeping`/`getBlocker`/`getOffsetAt`
+  (접두합 캐시)/`recompute`(재진입 차단·되감기)/`setLength`(두 커서 무효화·
+  anchor·element)/`setOffsetSource`(즉시 계산) + drive ⓪⓪' 배선,
+  `spec.lengthoffset` 8절 실측. 발견: `H-232`(② Slot owner의 bk 앵커 — M6 전
+  결정, 권고 (a) slot 사적 필드)/`H-233`(① None 값 선행 생성 — 핸들러는 단위
+  3). bk에도 `H-229` 패턴 적용(H-71 동형). **회신 7(툴체인)**: `H-234` — quad-base·quad-types pesde target
+  `roblox`→`luau` 전환(엔진 무관 코어·타입이라 처음부터 luau가 맞았음, luau
+  의존이 rojo 트리에서 빠지던 문제의 근본 해법) + require 전환 + rojo 트리
+  `luau_packages` 매핑 + `relink.sh` 꼬리 sourcemap 재생성. 단위 2 감사
+  루프 5라운드 수렴(`H-235`~`H-237`, 3라운드 자기회귀 1 포함) + `H-232` (a)
+  `slot._bk` 확정 반영. `/code-review high`(범위 전체) 10건: ① 여덟 반영
+  (`H-238` mock 태깅 / `H-239` spec4 실단언 / `H-242` 태그 테이블 순회 /
+  `H-244` contribution 단일화 / `H-245` 주석 / `H-243` 소비자 갭 문서화 /
+  `H-246` 세션 원문 증보 / `H-247` 게이트 위반 기록), ② 둘 §4 대기 —
+  **`H-240` 🔴**(recompute Get-창 커서 스톰프, CONFIRMED — 권고 (a) 읽기 뒤
+  재검사로 의사코드 보강)·`H-241`(drive 재진입 Blocker — 권고 (a) UB 문서화).
+  탐사자 5건(`H-248`~`H-252` — ① 넷 반영: 주석 둘·spec.drive 헤더·test.sh
+  analyze에 quad-types/quad-error 추가, ② `H-250` debug.info 스파이크 §4).
+  **단위 3(None/NilHandler) 구현** — `Dispatch/None.luau`에 핸들러 둘(재귀
+  전용/0 등록 말단, 인스턴스별 register), `spec.nonenil` 5절, ROADMAP `[x]`,
+  `H-253`(① 배치). 단위 3 끝 절차: 감사 3라운드 수렴(`H-254` + 2라운드 교정),
+  `/code-review high` 10건(`H-255`~`H-263`) — ① 여덟 반영(nil 힌트/타입
+  register/spec 검출력·팩토리/`mock.newQuad` 추출/소급 원장), ② 둘 §4:
+  **`H-256` 🔴**(희소·비정수 배열 키가 부기 오염+영구 동결, 재현 — 권고 (a)
+  부기 진입점 정수 검증)·`H-258`(nil 값 자리 retractor 신호 — 권고 (a) 계약
+  문서화). **§4 대기 다섯**(`H-240`/`H-241`/`H-250`/`H-256`/`H-258`).
+
+- `session/2026-08-31-02-m3-kickoff-unit1-dispatch-core.md` **[2026-09-01 증보 — M3 종결]**
+  §4 배치 회신 두 라운드로 M3 종결: 다섯 확정(`H-241`/`H-275` UB — "drive는
+  형상 불문 1회" / `H-250` 스파이크 27 — -O2가 로컬 직접 호출 태그를 인라인,
+  "태그는 테이블 경유 호출에만" 규칙 / `H-256` checkPosition / `H-258` 사용자
+  설계 retractor 2번째 인자 `retracting`) + `H-240` 재질문 답변 후 확정(쓰기
+  직전 검사 셋 + getOffsetAt 자가 치유, 뮤테이션 실측). 사용자 제기 구조 셋:
+  `H-277` `src/Bookkeeping.luau` 분리({Slot,Dispatch}→Bookkeeping, 표면은
+  Dispatch 유지) / `H-278` `Dispatch/Leaf.luau` 해체(각 값 선언 모듈이 자기
+  Init에서 등록 — 2026-08-08 배치 확정 역전) / `H-279` drive pre-hook 리서치.
+  `/code-review` 운용 규약 신설(conventions — 문서 추론형 비분할, 감사·리뷰는
+  유한 절차; fable 포크 비용 실측이 계기). 리뷰는 유한 절차로 종결 — 생존
+  8건 반영·기각(`H-280`~`H-285`), 미검증 13건 §6(`H-286`).
+
+- `session/2026-09-01-01-m4-storebind-implementation.md` **[M4 착수·구현 완료]**
+  사용자 조건부 승인(*"막는게 없다면 M4 구현 시작해보자"*)으로 round13 §0
+  권고 (a) 넷 채택 — 착수 전 정본 절 의사코드가 실코드 부품((B) 점유 마커
+  선행·Observer 등록 즉시 발화·mock 생명주기·`isState` 합성)과 전부 맞물림을
+  검증 후 착수. `Dispatch/StoreBind.luau`(정본 1:1, HIGH 밴드, `InitDispatch`
+  꼬리 등록) + `spec.storebind.luau` 6절(첫 end-to-end 반응형 업데이트 —
+  인덱스 2 retractor 실호출/타입 교대/`State<State<T>>`/깊은 인덱스 우선+효과
+  수준(옛 구독 0)/스파이크 `03` 몫(None→nil·부기 반응형 이동)/Destroy 후
+  발화 무시). 스파이크 `03` 폐기 확정(Q4 (a)). 문서-코드 어긋남 0건이었으나
+  감사 1라운드가 실회귀를 잡음 — `H-287`(StoreBind가 `spec.dispatch` 2번의
+  `q.Source` 브랜드 예시를 가로채 스위트가 깨졌는데 구현 세션이 grep 계수만
+  보고 "ALL PASS"로 오기록 — 예시를 `q.Blocker()`로 교체, 이후 판정은 exit
+  code로) + `H-288`(ImportUnused 둘 제거). 교정 후 25/25 exit 0.
+
+- `session/2026-09-01-02-spike10-studio-mcp-full-run.md` **[스파이크 `10`
+  재작성+Studio MCP 첫 완주]** 사용자 승인(*"권고대로 하고싶어"*)으로 A
+  섹션을 현행 모델(`nativeClaim`/`isBoundAlive`/`canBound`·`canExecute`)로
+  재작성 후 MCP `execute_luau` 4청크로 전 구간 실측 — 전 항목 PASS,
+  `rewrite-required/` → `done/`, gcconn 문서의 "아직 확인 안 된 것" 전량
+  해소(전문은 `audit/spike10-full-run-2026-09-01.md`). 굵은 발견 둘:
+  무claim inst의 userdata가 트리에 살아있어도 1 GC 사이클에 수거됨
+  (`nativeClaim` 전제 실증) / Attribute Instance 참조는 **`InstanceHandle`
+  언랩 경유**(미문서화 Studio Beta — 사용자가 정체 설명: 복제/스트리밍
+  미실체화를 푸는 간접 참조, `:Get()` nilable·`:Wait()` 대기,
+  `attribute-plan.md`의 "Ref 용도로 그대로" 서술을 쓰기 전용으로 조건화).
+  Studio 전용 스파이크를 에이전트가 직접 완주한 첫 사례 — `not-run/`
+  전제가 좁아짐. 후반부: 사용자 운용 지침 신설(가벼운 일은 opus
+  서브에이전트로 — conventions 명문화) / 감사 4라운드로 종결(각도: diff
+  정합성 → 교정분+인덱스 → 신선 산문 → 교정 좁은 검증 — 라운드별 발견·
+  교정의 소스는 세션 파일 "후반부" 절, 여기 개수 안 적음; conventions
+  모델 위임 기준 모호 1건은 사용자 회신 대기) / **M5 규약 문항지
+  `m5-implementation-round14-brief.md` 신설**
+  (§0 여섯 문항 회신 대기 — opus 스코프 보고가 낸 `quad_base` 의존 문서
+  모순·`EngineOps` 분할·typed Modifier 생성자 방치가 문항이 됨, `H-290`부터
+  예약).
+
+- `session/2026-09-02-01-m5-kickoff-unit1.md` **[M5 착수 + 단위 ① 완료]**
+  §0 여섯 문항 전량 (a) 확정(사용자: *"다른것도 전부 확인했고 권고에
+  동의해"* — Q3는 사용자 제안으로 dev deps 분리로 갱신된 권고, pesde 전환
+  사유의 첫 실사용). 단위 ①: `quad-roblox/src` 4파일(QuadRoblox+CheckedQuad /
+  `_initializedBy` / LifetimeHandle+nativeClaim / EngineOps M5 몫) + spec
+  7절 + test.sh 확장 — 26파일 exit 0, Studio 스모크 14/14. 발견:
+  `H-290`(미claim bind fail-fast) / `H-291`(**Deferred 시그널 실측** —
+  콜백 지연 배달·`Connected` 전환은 동기, effect-plan `H-182` 근거 정정) /
+  `H-292`(analyze UnknownType 처리, §4 대기). 시행착오 다섯(@self·파이프
+  exit·클로저 pcall blame·진입점 태그·사본 혼입)은 세션 파일이 소스.
+  **[같은 날 후속]** §4 배치 회신 전량 확정(H-293만 기각·UB — claim-plan
+  §7-13) 후 **단위 ②(D 생성기) 완료**: gen-d.py → api-surface.json + 생성
+  D(31클래스), 값 유니언 정본(bind-system-plan 신설 절), luau-lsp defs
+  2그룹 analyze, H-299(module.D)/H-300(None 타입 — 같은 날 (a) 확정·반영: 센티널 마커 필드 → 유니언 합류)/H-301
+  (RelativeGui capability 실측 → 클래스 제외 규칙). 스위트 exit 0 +
+  Studio 실생성 전량 확인. **[같은 파일 후반 — 감사 2라운드가 요약 누락을
+  잡아 보충]** 단위 ③(Property/InstanceChild — Reflection 멤버십·H-134/
+  H-154 전사, `spec.handlers` 반응형 자식 교체 CLI 첫 e2e)과 단위 ④
+  (`Claim`+`D.Mapper` — quad-base `Claim.luau`, 재량은 `H-303`, 감사
+  발견 `H-304`)의 구현·끝 절차까지 같은 세션 파일 안에서 "단위 ④ 종결."
+  로 마무리된다.
+
+- `session/2026-09-02-02-parallel-fork-spikes.md` **[M6/M10 병렬 탐사 fork
+  결정]** 사용자 발의·승인(원문 전문은 세션 파일): fork 에이전트 둘이 각자
+  worktree에서 M6(Slot)/M10(Tag·Attribute)을 mock 축으로 선행 탐사 구현 —
+  "실질 개발을 오래 해봐야 하는" 최고 위험 영역의 관측을 앞당김. 규약은
+  두 브리프(round15/16). 설계 반전 둘: ② 비차단 잠정 구현 → **멈춰서
+  부른다**(나비효과 우려, 사용자 정정) / 메인 중계 → **사용자가 fork
+  채팅에 직접 회신**. 발견 번호는 접두형 `H6-`/`H10-`(블록 예약안을
+  사용자 제안으로 대체 — ID 영구, 병렬 스파이크 전용).
+
+- `session/2026-09-02-03-h10-3-setmetatable-decision.md` **[`H10-3`/`H10-4`
+  처방 확정 — `setmetatable<A,B>` 타입 채택]** 사용자 지시 실험(서브에이전트,
+  워크트리 4패키지 자립화 오버레이 A/B)으로 새 갈래 (d) 성립: 교집합
+  콜러블 대신 내장 타입 함수 표기 `setmetatable<{Merged…}, {__call…}>`이면
+  제네릭 오염(H10-3)·값 캐스트 붕괴(H10-4)가 둘 다 해소, 잔여 구멍은
+  `__call` 인자 타입 무검사 하나(반환·필드는 검사됨 — `any` 잠정안보다
+  엄격히 우월). 사용자 채택("우선 권고대로 채택하고자 해") — 반영은 M10
+  통합 커밋에서(quad-types 교체 + any 캐스트 제거 + typing-limits 등재 +
+  원장 행 ✅), 계획은 세션 파일 §반영 계획이 소스.
+
+- `session/2026-09-02-04-h305-useprovider.md` **[`H-305` (d′) — D 타입
+  표면·프로바이더 설치 규약 확정]** 단위 ⑤ `H-25` 확인에서 발단: `q.D`
+  타입 공백 → 사용자 주도 3단 발전 — ⑴ `None: any`는 H-300 마커 이전
+  잔재(사용자 지적, `None: None`으로 좁힘) ⑵ D를 플러그인 확장으로
+  (스파이크 실측: `Self & P` 테이블∩테이블은 H10-3 무거주 계열과 다름 +
+  인자 검사까지 됨; `done/23`이 이미 예정했던 모양) ⑶ **`UseProvider`
+  신설** — 프로바이더 1슬롯 fn identity 락(옛 `_initializedBy` 문자열은
+  사본·버전 묵인 — 사용자 진단), AddPlugin(다수 확장)과 이원화. 반영:
+  quad-base UseProvider + RobloxExtension={D} + mockProvider + 생성
+  `export type D`(LuauTarjanChildLimit 40000 — typing-limits 8.5절) +
+  2026-08-19 확정 부분 역전 처리 + 스파이크 29 승격. 전 스위트 exit 0 +
+  Studio 재실측 PASS.
+
+- (세션 파일 없음 — 결정 기록은 round14 §4 행들이 소스) **[M5 단위 ⑤ 끝
+  절차 + `H-306`~`H-308` + M5 종결]** 끝 절차(감사 3라운드 6→5→2 /
+  `/code-review medium` 생존 3 / 탐사자 🔴1·🟡1) 발견 전량 처리: `H-306`
+  (a) — 컴파일 타임 `CheckedQuad` 배선이 UseProvider 간접 흐름에서
+  불활성(배선 후보 매트릭스 전 기각, quad-types-plan 함정 2 실측 보강)
+  → **런타임 `matchesPattern` 게이트로 사용자 확정 전환**(*"그냥
+  런타임으로 검사하는게 엄청 싸게 먹히는 부분이라"*), `type_version_check`
+  실의존 추가·spec 음성·Studio 게이트 실측. `H-307` 마킹 성공 후(부분
+  실패 좀비 교정)·`H-308` mergeExtension 공용화. HUMAN_TODO 12번(Studio
+  재기동 사람 몫 — 사용자 확정) 신설. **M5 종결 — 머리말 3층 갱신.**
+
+- `session/2026-09-03-01-fork-integration.md` **[M6/M10 fork 통합 — 밤샘
+  자율 구간]** 두 fork 머지 완료(충돌 6곳 해소, (d′) 적응 — mock native*를
+  mockProvider로 편입 / H10-3·H10-4 (d) setmetatable 타입 반영·any 캐스트
+  제거 / H10-5·H10-1 메인 판정 승인). 문서: ROADMAP M6/M10 배너·체크박스
+  재편(H10-1 파일 재편 반영), typing-limits 8.6절(교집합 무거주 →
+  setmetatable + __call 인자 무검사), attribute-plan error 계약 이관,
+  question.md 두 항목 현황(Slot foreign — 확인 시점 도래 / AttributeGroup
+  롤백 이월). 아침 검토용 문제점·후행 목록은 세션 파일이 소스.

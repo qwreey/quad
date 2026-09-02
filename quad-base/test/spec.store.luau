@@ -5,7 +5,7 @@
 ]]
 
 local Quad = require("../src")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 
 type Source<T> = QuadTypes.Source<T>
 type State<T> = QuadTypes.State<T>

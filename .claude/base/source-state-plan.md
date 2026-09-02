@@ -184,7 +184,7 @@ vs 원천에 대한 메소드)을 결정하는 기준으로 쓸 수 있음.
 "quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
 없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
 `Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은
-`PropertyHandler`/`TagHandler`/`Dispatch/StoreBind.luau`의 `NoneHandler`처럼
+`PropertyHandler`/`TagHandler`/`Dispatch/None.luau`의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 `StoreBind.luau` 소속이라 잘못)
 **구현하는 쪽**이 리터럴 테이블로 직접 채워 넣는 것), State/Observer처럼
 어떤 원천에 종속된 파생물도 아님(애초에 "원천"이라는 개념 자체가 안 맞음).
 Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우는 확장
@@ -1290,13 +1290,22 @@ M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **
 준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
+**[2026-08-31 M3 단위 4] 그 등록은 완료됐다**(`spec.leaf.luau` 6·7이 메시지·
+override 의미론 실측, 해당 체크박스는 `[x]`) — **[2026-09-01 `H-278` 사용자
+확정]** 등록 소유는 각 값의 선언 모듈이다: `Observer.luau`/`Effect.luau`의
+`registerDispatchHandlers`가 자기 `Init`에서 등록한다(한때 살았던
+`Dispatch/Leaf.luau`는 해체 — `architecture.md` 소스 트리).
 
 `Observer`도 children 배열 리터럴 전용이라, 해시 파트 named 자리
 등으로 동적으로 흘러들어오면(타입 우회 버그) 명확히 에러내야 함 —
 전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isObserver(v) end, process =
-function(inst,k,v) error(`Ref/Observer binding should be array index item,
-but got {typeof(k)}`) end }`.
+function(inst,k,v) Err.errorBefore(`Ref/Observer binding should be array
+index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 단위 4]**
+error 발화는 `H-231` 워커의 최외곽 스캔 — 매치 실패와 같은 논증으로
+`drive`를 뚫고 사용자 진입점을 blame한다, `Observer.luau`의
+`registerDispatchHandlers` 주석.
+`Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 "error 계약" 절).
 **[요구 추가, 2026-08-18 구현 전 QA] 에러 메시지에 실제 `k`의 타입을
 실을 것.** 사용자 요구: *"Priority Fallback 이 type(k) == "string" 인
 상황에서는 가장 위에 Ref/Observer binding should be array index item, but
@@ -1558,8 +1567,8 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
 
 **[정정, 2026-08-09 여섯 번째 세션] "leaf 부착"은 세 번째 독립 경로가
 아니라 `bindLifetime`을 호출하는 것 그 자체다.** `Frame { observer }`처럼
-children 배열에 Observer를 직접 놓으면, `Dispatch/Leaf.luau`가 이걸
-매치해 내부적으로 `bindLifetime(inst, observer)`를 호출 — "children
+children 배열에 Observer를 직접 놓으면, Observer leaf 핸들러(`H-278` —
+`Observer.luau` 소유)가 이걸 매치해 내부적으로 `bindLifetime(inst, observer)`를 호출 — "children
 배열에 놓여 leaf에 자동 부착"과 "`bindLifetime`으로 특정 `inst`에
 종속"은 **같은 동작**이라 서로 배타적일 수 없음(둘 다 하는 게 아니라
 leaf 부착이 곧 `bindLifetime` 호출 방식 중 하나일 뿐). 그래서 실제
@@ -1677,7 +1686,8 @@ Observer가 **안 묶인 것으로 오판**됨"은 실제로는 안 일어남 �
 `canBound` 게이트를 확인** — 진입 전 `canBound(value)`를 확인하고,
 참이면(=아직 안 묶여 있으면) gchold 등록 + gcconn 참조 복사를 수행.
 **children 배열 leaf 부착도 바로 이 `bindLifetime` 호출** —
-`Dispatch/Leaf.luau`가 `(i:number, v=Observer/Effect)`를 매치하면
+leaf 핸들러(`H-278` — `Observer.luau`/`Effect.luau` 각자 소유)가
+`(i:number, v=Observer/Effect)`를 매치하면
 그 자리에서 `bindLifetime(inst, v)`를 호출하는 것뿐, 별도 "leaf 전용"
 바인딩 로직이 따로 있는 게 아님. 그래서 **실제 상호 배타는 `:Subscribe()`
 (전역 강참조 레지스트리)와 `bindLifetime`(inst별 gchold, 직접 호출이든
@@ -1691,7 +1701,7 @@ function bindLifetime(inst, value)
                               -- bindLifetime의 게이트는 canBound, canExecute 아님
                               -- [정정, 2026-08-18 구현 전 QA] 방향이 뒤집혀 있었음 —
                               -- canBound 참 = 묶어도 됨이라 에러는 not 쪽
-        error("이미 바인딩된 값")   -- 메시지 분기는 위 게이트 스케치 참고
+        error("bindLifetime: value is already bound", 2) -- 실제 메시지 분기는 위 게이트 스케치 참고
     end
     ... -- gchold 등록 + gcconn 참조 복사(base/lifecycle-pattern.md)
 end
@@ -1712,9 +1722,26 @@ end
   뒤에 같은 값을 leaf로 놓거나 `:Subscribe()`하면 기존 두 진입점의 기존
   체크가 그대로 걸러줌 — 이 방향은 별도 코드 추가 없이 이미 성립.
 
-### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴, 순수 성능 최적화(2026-08-14 세션)
+### Observer/Effect Leaf dedup — `RefLeafHandler`와 같은 패턴(2026-08-14 채택, 2026-08-31 `H-266`로 load-bearing 승격)
 
-**correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.** `State<Observer>`/
+**correctness 문제는 아님 — `old ~= v`를 안 넣어도 안 깨짐.**
+**⚠️ [2026-08-31 정정, M3 단위 4 `H-266`] 이 주장은 이제 사실이 아니다 —
+dedup은 load-bearing이다.** 이 문장이 쓰인 2026-08-14 이후 두 계약이 그
+전제를 무너뜨렸다: (1) `bindLifetime`은 `canBound` 가드로 **이미 묶인 값의
+재바인드를 즉시 error로 거부**한다(이중 배치 방지 — `base/ref-plan.md`,
+`base/lifecycle-pattern.md`). 아래 의사코드의 retractor는 `nextValue ~= v`일
+때만 unbind하므로, `old ~= v`를 빼면 (A) 분기의 spurious 재발행에서
+`bindLifetime(inst, v)`가 아직 묶인 `v`를 받아 **크래시**한다. (2)
+`bindLifetime`은 더 이상 weak 쓰기 몇 개가 아니다 — Observer는 `_catchUp`
+1회, Effect는 `_bindDestroying`(실제 `Destroying` 연결 + 캐치업)을 수행한다.
+결론은 그대로(dedup 유지)이고 근거만 "공짜 최적화"에서 "계약상 필수"로
+승격됐다. **[2026-09-01 `H-278`]** 물리 배치도 바뀌었다 — 결합
+`ObserverEffectLeafHandler` 하나가 **모듈별 둘**(`ObserverLeafHandler` —
+`Observer.luau` / `EffectLeafHandler` — `Effect.luau`, 각자
+`registerDispatchHandlers`에서 등록)로 갈라졌다. 값 공간이 배타라 계약은
+동일하고, dedup relate도 각자 하나씩(동등). 아래 의사코드는 결합형 기준
+원문이다 — `H-57` cleanup 소진 분기만 Effect 쪽에만 산다.
+아래 원문은 그 시점 서술로 남긴다: `State<Observer>`/
 `State<Effect>`가 재-dispatch될 때 안쪽 값이 그대로여도(같은 객체가 다시 옴)
 Dispatch의 (A) 분기(`base/dispatch-core-plan.md` "Dispatch 체인" 절)는 무조건
 `retractor(v)`→`process(inst,k,v,index)`를 다시 부름 — 이걸 그냥 둬도
@@ -1730,8 +1757,8 @@ ref-plan.md` "`Ref`의 retract" 절)와 완전히 같은 모양을 그대로 재
 
 ```lua
 local relate = Relate()  -- Observer/Effect-leaf 전용, (inst,k)별 마지막으로 바인딩한 값 기억 —
-                          -- process 재실행 시 identical-value dedup(순수 성능 최적화,
-                          -- Ref처럼 재통지 부작용이 있어서가 아님)
+                          -- process 재실행 시 identical-value dedup([2026-08-31 `H-266`]
+                          -- load-bearing — 없으면 canBound 가드가 already-bound error)
 
 ObserverEffectLeafHandler.isHandlable(inst, k, v) =
     type(k) == "number" and (isObserver(v) or isEffect(v))
@@ -1775,11 +1802,16 @@ end
 **⭐ [2026-08-25 신설, 7라운드 `H-71`] dedup 기록은 `SetWeak`이다.**
 `SetStrong`으로 두면 **값이 `inst`를 되참조할 때 100% 샌다** — 커밋된
 `Relate.luau`로 50/50 누수가 실측됐다(`base/relate-plan.md`의 슬롯별 강약
-표). dedup은 이 절이 스스로 밝히듯 **순수 성능 최적화**라, weak로 낮춰
-엔트리가 조기 소실돼도 "dedup을 한 번 놓친다"까지가 최대 손해다. `v`는
-`gchold`가 이미 강하게 잡고 있고, `relate-plan.md`의 **"다른 곳에서
-안전하게 유지되는 것은 항상 `SetWeak`"** 규칙에도 그대로 맞는다.
-`RefLeafHandler`도 같은 정정을 받는다(`base/ref-plan.md`).
+표). **[2026-08-31 `H-266` 정정]** 이 문단은 원래 *"dedup은 순수 성능
+최적화라 weak로 낮춰도 최대 손해가 한 번 놓침"*을 안전성 근거로 썼는데,
+dedup이 load-bearing이 된 지금(위 배너) 미스는 놓침이 아니라 크래시다 —
+SetWeak이 여전히 안전한 실제 이유는 **미스 창 자체가 없다**는 것: `v`는
+bound인 동안 `gchold`가 강하게 잡고 있어(inst도 호출자가 쥐고 있어야
+process가 가능) weak 엔트리가 dedup이 필요한 창 안에서 조기 소실될 수
+없다(`Observer.luau`/`Effect.luau`의 relate 주석이 같은 논증).
+`relate-plan.md`의 **"다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`"**
+규칙에도 그대로 맞는다. `RefLeafHandler`도 같은 정정을 받는다
+(`base/ref-plan.md`).
 
 **⭐ [2026-08-25 신설, 7라운드 `H-57`] 값 교체 retract는 cleanup을 부른다.**
 `base/effect-plan.md`가 확정한 *"`unbindLifetime`은 cleanup을 부르지

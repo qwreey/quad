@@ -1,10 +1,11 @@
 --!strict
 --[[
-	`Quad` 공개 타입 계약 — 구현 없음, 런타임 값은 없다시피 함(빈 테이블).
+	`Quad` 공개 타입 계약 — 구현 없음. 런타임 값은 공유 **상수**뿐
+	(`H-230` — 파일 끝의 반환 테이블, 로직은 여전히 0).
 	`quad-base`가 이 타입을 구현하고, `quad-roblox`/향후 백엔드·플러그인
 	패키지는 무거운 `quad-base` 전체 대신 이 패키지만 의존한다.
 
-	**왜 별도 패키지인가**: `QuadRoblox(Quad): QuadRoblox`처럼 quad-base
+	**왜 별도 패키지인가**: `quad:UseProvider(QuadRoblox)`처럼 quad-base
 	인스턴스를 **런타임에 주입받는** 패키지는, quad-base를 pesde
 	`[dependencies]`로 선언할 필요가 없다 — 실제 값은 호출자가 넘겨준다.
 	그런데 `dev_dependencies`로만 선언하면, quad-roblox가 게시된 뒤 다른
@@ -16,6 +17,13 @@
 ]]
 
 local TypeVersionCheck = require("./luau_packages/type_version_check")
+local QuadError = require("./luau_packages/quad_error")
+
+-- 에러 네임스페이스(`H-231` — quad-error는 상태 없는 생성자, 태그 맵은
+-- quad-base가 만든 단일 네임스페이스에 산다. 사본 분리 문제의 해법 — 사용자
+-- 설계 "quad-base에 errorNamespace 같은 무언가가 있어야 하고 error util이
+-- 그걸 받는 구조").
+export type ErrorNamespace = QuadError.Namespace
 
 -- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
 -- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
@@ -102,6 +110,34 @@ export type Blocker = {
 	__apply: (self: any, state: any) -> any,
 }
 
+-- ── Tag / Attribute (M10, round16 spike) ─────────────────────────────
+-- 값 모양은 `base/tag-plan.md` "값 모양" / `base/attribute-plan.md` "채택안"
+-- 절이 정본. 생성자들은 콜러블 네임스페이스(호출 = 생성, 필드 = 합성)라
+-- `setmetatable<A, B>` 표기로 선언한다(`H10-3`/`H10-4` (d) — 교집합은
+-- 무거주라 값 캐스트·제네릭 흐름이 깨진다, typing-limits 8.6절). `AttributeKey<<T>>`의 제네릭 파라미터는
+-- 런타임 무영향인 순수 정적 트릭이고 값 좁힘 성립 여부가 미실측이라([실측
+-- 필요, M0/M10] — attribute-plan) 여기선 비제네릭 키 객체 타입만 둔다.
+export type Tag = {
+	Added: (self: Tag, nameOrList: string | { string }) -> Tag,
+	Removed: (self: Tag, nameOrList: string | { string }) -> Tag,
+	Contains: (self: Tag, name: string) -> boolean,
+	Names: (self: Tag) -> () -> string?,
+	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
+}
+-- `H10-3`/`H10-4` (d): 교집합(함수∩테이블 — 무거주라 값 캐스트 붕괴 +
+-- 제네릭 오염)이 아니라 솔버의 콜러블-테이블 표기로 선언한다. 실측
+-- A/B·잔여 구멍은 typing-limits 8.6절.
+export type TagConstructor = setmetatable<{ Merged: (...Tag) -> Tag }, { __call: (self: any, ...string) -> Tag }>
+
+export type Attribute = { NameMap: (self: Attribute) -> { [string]: any } }
+export type AttributeConstructor = setmetatable<{
+	Merged: (...Attribute) -> Attribute,
+	Overridden: (...Attribute) -> Attribute,
+}, { __call: (self: any, ...any) -> Attribute }>
+
+export type AttributeKeyObject = { Name: string }
+export type AttributeKeyConstructor = (name: string) -> AttributeKeyObject
+
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
@@ -124,6 +160,53 @@ export type Source<T> = State<T> & {
 	Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
+}
+
+-- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
+-- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`**(`.claude/base/
+-- dispatch-core-plan.md` "핸들러 계약"): `isHandlable`은 부작용 없는 순수
+-- 판별(inst도 받음), `process`는 자기 자신을 무르는 retractor를
+-- 반환(생략 불가 — 정리할 게 없어도 `Void`). 1번째 인자는 `nil`(단순
+-- 철거)이거나 같은 핸들러가 처리할 새 값, 2번째는 `retracting`(`H-258` —
+-- 아래 필드 주석). `name`은 진단 전용
+-- (`H-214` (a) 사용자 확정, 2026-08-31) — 동률 경고·`listHandlers`·
+-- `quad-debug` 체인 덤프가 있으면 쓰고 없으면 priority만 보인다,
+-- 스캔·매치엔 아무 영향 없음.
+export type Handler = {
+	name: string?,
+	isHandlable: (inst: any, key: any, value: any) -> boolean,
+	priority: number,
+	-- retractor 계약(`H-258`, 사용자 설계): 두 번째 인자 `retracting`이 참이면
+	-- 단순 철거(retractFrom 경유 — 이 자리는 다시 처리되지 않는다), 거짓이면
+	-- 같은 핸들러의 재처리가 곧 따라온다((A) 분기). nil을 값으로 받는
+	-- 핸들러가 "철거의 nil"과 "값인 nil"을 이 플래그로 구별한다.
+	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?, retracting: boolean) -> (),
+}
+
+-- `Dispatch` — 스캔/실행 엔진(`dispatch-core-plan.md` "Dispatch 체인" /
+-- "우선순위 동률/매치 실패 처리"). 프리미티브가 아니라 모듈 인스턴스별
+-- 네임스페이스(`InitDispatch(module)`가 설치, 멤버는 lowercase 네임스페이스
+-- 규칙 — `architecture.md` "코드 스타일"). `HANDLER_PRIORITY_*`는 열린 숫자
+-- 공간 위의 밴드 상수(`+ 1` 미세 조정 가능).
+export type Dispatch = {
+	getHandler: (inst: any, key: any, value: any) -> Handler?,
+	process: (inst: any, key: any, value: any, index: number) -> (),
+	retractFrom: (inst: any, key: any, index: number) -> (),
+	addHandler: (handler: Handler) -> (),
+	listHandlers: () -> { Handler },
+	drive: (inst: any, flattened: { [any]: any }) -> (),
+	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
+	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
+	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
+	setLength: (ownerKey: any, i: number, len: number | State<number>, anchor: any?, element: any?) -> (),
+	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
+	getOffsetAt: (ownerKey: any, at: number) -> number,
+	getBlocker: (ownerKey: any) -> Blocker,
+	getBookkeeping: (ownerKey: any) -> any,
+	HANDLER_PRIORITY_HIGH: number,
+	HANDLER_PRIORITY_NORMAL: number,
+	HANDLER_PRIORITY_LOW: number,
+	HANDLER_PRIORITY_FALLBACK: number,
 }
 
 -- 예약 키 진단 — `keyof<T>`(키 싱글톤 유니온)만 받는다(`H-112`). `error()`는 못 쓴다
@@ -157,6 +240,12 @@ export type Quad = {
 	New: () -> Quad,
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
 	AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P,
+	-- 백엔드(프로바이더) 설치 전용(`H-305` (d′), 2026-09-02 사용자 확정) —
+	-- AddPlugin과 타입 모양은 같지만 계약이 다르다: 모듈당 1슬롯 fn
+	-- identity 락(같은 fn 재호출 no-op / 다른 identity — 다른 프로바이더든
+	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`D` 등)은
+	-- 이 반환 교집합 `Self & P`로 타입이 실린다 — quad-types엔 안 실림.
+	UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P,
 
 	-- M2 공통 기반이 얹는 탑레벨 값(`ROADMAP.md` M2 `H-80`). `Source`/`Store`/
 	-- `Effect`/`Blocker`는 각 단위에서 추가된다.
@@ -171,6 +260,23 @@ export type Quad = {
 	-- 단위 4.
 	Blocker: () -> Blocker,
 
+	-- 디스패치 엔진(M3 단위 1, `H-25` — 마일스톤마다 서브시스템 필드를 여기
+	-- 같이 갱신하는 규칙의 M3 몫). 닫힌 레코드라 이 필드가 없으면
+	-- `quad.Dispatch` 접근이 런타임엔 되는데 `luau-analyze`에선 타입에러다.
+	Dispatch: Dispatch,
+
+	-- 공유 에러 네임스페이스(`H-231`) — quad-base의 모든 표면·백엔드가 같은
+	-- 태그 맵을 써야 워커가 경계를 본다. 백엔드는 자기 quad-error 사본의
+	-- 네임스페이스를 만들지 말고 이걸 받을 것.
+	errorNamespace: ErrorNamespace,
+
+	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
+	-- 여기선 재export. `isNone`은 `v == None` 신원 비교 — 이 구조 타입은
+	-- 조언층일 뿐 판정이 아니다, 최상위 `export type None` 참고(`H-300`).
+	-- [2026-09-02] `H-300` 마커 필드가 생기며 `any`일 이유가 소멸해 좁힘
+	-- (사용자 지적 — 옛 `any`는 마커 이전 "신원이라 표현 불가" 시절의 잔재).
+	None: None,
+
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
 	bindLifetime: (inst: any, value: any) -> (),
@@ -180,8 +286,10 @@ export type Quad = {
 	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
 	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
 
-	-- 브랜드 술어(`.claude/base/brand-plan.md`). 나머지(`isTag`/`isAttribute*`/
-	-- `isTween`/`isSlot`)는 그 타입의 마일스톤에서.
+	-- 브랜드 술어(`.claude/base/brand-plan.md`). `isTag`/`isAttribute*`는
+	-- M10 편입(2026-09-03)으로 아래 합류 — 나머지(`isTween`/`isSlot`)는
+	-- 그 타입의 마일스톤에서(`isSlot` 값은 이미 M6 편입으로 module에 산다 —
+	-- `Quad` 타입 등재는 M6 잔여 `H-25` 몫과 함께).
 	isEpoch: (x: any) -> boolean,
 	isSource: (x: any) -> boolean,
 	isState: (x: any) -> boolean,
@@ -193,6 +301,49 @@ export type Quad = {
 	isRef: (x: any) -> boolean,
 	isPreRef: (x: any) -> boolean,
 	isPostRef: (x: any) -> boolean,
+	isMapperDescriptor: (x: any) -> boolean, -- M5 단위 ④(Claim)
+	-- `Claim(inst, desc) -> inst` — 이미 있는 트리를 quad 소유로(claim-plan §2;
+	-- 타입 인자 없음·반환은 넣은 inst 그대로가 사용자 확정)
+	Claim: <T>(inst: T, desc: MapperDescriptor) -> T,
+	-- `Claim`의 매퍼 부속(M5 단위 ④, `H-25` 단위 ⑤ 확인분) — 루트 키
+	-- 센티널 값(재노출은 `D.Mapper.Root`)과 제네릭 디스크립터 팩토리
+	-- (백엔드 `D.Mapper.<Class>` 별칭의 원천, claim-plan §7-1).
+	MapperRoot: MapperRoot,
+	newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
+
+	-- 주입 물리 op(`architecture.md` EngineOps, M5 몫 — `H-25` 단위 ⑤
+	-- 확인분). quad-base엔 값이 없고(스텁도 없음 — 미설치 접근은 nil 호출
+	-- 크래시) 백엔드 팩토리가 설치한다. 시그니처 정본은
+	-- `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
+	nativeInsert: (target: any, offset: number, elements: { any }) -> (),
+	nativeExtract: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeRemove: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeMove: (target: any, fromOffset: number, elements: { any }, toOffset: number) -> (),
+	nativeSwap: (target: any, offsetA: number, elementsA: { any }, offsetB: number, elementsB: { any }) -> (),
+	nativeDispose: (element: any) -> (),
+	-- 요소 타입 화이트리스트 술어(`H-40` 주입 술어) — 백엔드가 자기 실물
+	-- 판정으로 설치, 테스트는 mock 판정으로 교체.
+	isInst: (value: any) -> boolean,
+	-- gcconn/gchold 셋업 op(claim-plan §7-9 — `New` ②단계와 `Claim`이 같은
+	-- op를 부른다. 이중 claim은 셋업 유무로 error).
+	nativeClaim: (inst: any) -> (),
+	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+	nativeFindChild: (inst: any, key: any) -> any,
+
+	-- M10 (round16 spike) — Tag/Attribute 표면(`H-25`의 "마일스톤마다 갱신" 몫)
+	isTag: (x: any) -> boolean,
+	isAttribute: (x: any) -> boolean,
+	isAttributeKey: (x: any) -> boolean,
+	-- 콜러블 네임스페이스 둘은 `setmetatable<A,B>` 표기(`H10-3`/`H10-4`
+	-- (d), 2026-09-02 사용자 확정 — fork의 잠정 `any`는 교집합 표기가
+	-- 제네릭 추론을 오염시키던 시절의 것. 실측·잔여 구멍(__call 인자
+	-- 무검사)은 typing-limits 8.6절이 소스)
+	Tag: TagConstructor,
+	Attribute: AttributeConstructor,
+	AttributeKey: AttributeKeyConstructor,
+	StringAttribute: AttributeKeyConstructor,
+	NumberAttribute: AttributeKeyConstructor,
+	BooleanAttribute: AttributeKeyConstructor,
 }
 
 --[[
@@ -220,6 +371,32 @@ export type Quad = {
 	-- AddPlugin 체이닝 등 뒤이은 제네릭 연산이 전부 안전하게 동작함
 	```
 ]]
+-- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
+-- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
+-- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
+-- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
+-- 이벤트·children)이 None을 실을 수 있게 한다.
+export type None = { read __quadNone: true }
+
+-- `Claim`의 매퍼 디스크립터/루트 센티널(M5 단위 ④, `claim-plan.md` §2·§7-1).
+-- None과 같은 이중 구조 — 타입은 마커 필드(조언층), 런타임 판별은 브랜드
+-- (`isMapperDescriptor`)·신원(`MapperRoot`).
+export type MapperDescriptor = { read _mapper: true }
+export type MapperRoot = { read __quadMapperRoot: true }
+
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 
-return {}
+-- ── 공유 상수(`H-230` (a) 사용자 확정, 2026-08-31) ──────────────────────
+-- 타입 계약과 같은 이유로 여기 산다 — 백엔드가 무거운 quad-base 없이 닿아야
+-- 하는 값들. `HANDLER_PRIORITY_*`는 밴드 상수(이름·순서·± 오프셋 공간이
+-- 계약, 리터럴은 `H-213` — quad-base `Dispatch`가 재노출). `ERROR_LEVEL_SURFACE`는
+-- quad-error 태그 레이어(`H-231` — 우선 "공개 표면" 하나만, 필요해지면 늘림):
+-- 모든 공개 표면 함수와 `addHandler`가 수령하는 핸들러 함수가 이 레이어로
+-- 태그되고, 사용자 입력·제공자 계약 위반 에러가 이 레이어를 겨냥한다.
+return {
+	HANDLER_PRIORITY_HIGH = 1000,
+	HANDLER_PRIORITY_NORMAL = 0,
+	HANDLER_PRIORITY_LOW = -1000,
+	HANDLER_PRIORITY_FALLBACK = -1000000,
+	ERROR_LEVEL_SURFACE = 1,
+}

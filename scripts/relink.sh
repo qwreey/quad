@@ -4,7 +4,7 @@
 # 왜 필요한가: **`luau` CLI가 심볼릭 링크를 못 탄다.** 디렉토리 링크도 파일
 # 링크도 안 되고, `luau-analyze`는 더 나쁘게 **조용히 통과**한다(모듈을 `any`로
 # 떨어뜨리고 진단 0건 — "거짓 클린"). pesde의 워크스페이스 링크는 전부 디렉토리
-# 심볼릭이라, `quad-base/src/init.luau`의 `require("./roblox_packages/quad_types")`가
+# 심볼릭이라, `quad-base/src/init.luau`의 `require("./luau_packages/quad_types")`가
 # 그 링크에 닿는 순간 죽는다. 근거와 최소 재현은
 # `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`의 🅛 절.
 #
@@ -88,4 +88,11 @@ if [ -n "$leftover" ]; then
 	echo "relink: 심볼릭이 남았다 (luau가 못 탄다):" >&2
 	echo "$leftover" >&2
 	exit 1
+fi
+
+# 4) IDE 타입 링킹용 sourcemap 재생성(사용자 결정, 2026-08-31 — round12 `H-234`).
+#    luau-lsp가 rojo 트리를 알아야 크로스 패키지 require의 타입이 IDE에서 안
+#    깨진다. rojo가 없으면(비-mise 환경) 조용히 건너뛴다 — 테스트 자체는 무관.
+if command -v rojo >/dev/null 2>&1; then
+	rojo sourcemap default.project.json --output sourcemap.json
 fi

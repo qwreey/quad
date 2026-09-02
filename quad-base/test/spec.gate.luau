@@ -6,7 +6,7 @@
 
 local Quad = require("../src")
 local Brand = require("../src/Brand")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 
 type State<T> = QuadTypes.State<T>
 type Probe = { count: number, last: any, _receive: (self: Probe, from: any) -> () }

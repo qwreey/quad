@@ -1,14 +1,30 @@
 # CLAUDE.md
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
-**⭐ [2026-08-31 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)까지 완료, **M3(디스패치 엔진) 진행 중**** — M2는 자율 구현
+**⭐ [2026-09-03 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
+**M5(quad-roblox 최소 프로바이더)**까지 완료** — M5는 자율 구현 구간으로
+2026-09-02 착수·종결: 규약
+`.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정,
+단위 ①~⑤(팩토리+주입 op+생명주기 / `D` 생성기 / Property·InstanceChild /
+`Claim`+`D.Mapper` / 첫 실물 렌더 실측+종합) 완주, 발견
+`-round14.md`(`H-290`~`H-308`; §4 열린 문항 0), 진행 소스는 `ROADMAP.md`
+M5 체크박스(전부 `[x]`). 단위 ⑤ 확정 요지(프로바이더 설치
+`quad:UseProvider(QuadRoblox)` — `H-305` (d′)·런타임 버전 게이트 `H-306`
+(a)·rojo 라이브 싱크 반입)는 `.claude/todos.md` 00번이 소스. **같은 날 병렬 탐사 승인, 2026-09-03 통합 완료** — fork 둘이 worktree에서
+M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현 후 **메인에 머지됨**
+(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16` — 잔여·후행은
+`ROADMAP.md` M6/M10 배너가 소스)** —
+**M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
+`.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
+`-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +
+`spec.storebind.luau`, 스파이크 `03` 폐기). M2는 자율 구현
 구간(규약 `.claude/qa-request/m2-implementation-round11-brief.md`, 발견·배치
 문항 `-round11.md`)으로 돌아 2026-08-28 착수~08-31 종결: 단위 넷 구현·감사·
 리뷰·탐사 완료, `ROADMAP.md` M2 체크박스 전부 `[x]`, §4 문항·코드 마커 0.
-**M3도 같은 방식의 자율 구간** — 규약은
-`.claude/qa-request/m3-implementation-round12-brief.md`(2026-08-31 §0·§6
-사용자 확정, 단위 넷·발견 `H-212`부터 `-round12.md`), 진행 상태는
+**M3도 같은 방식의 자율 구간으로 2026-08-31 착수~09-01 종결** — 규약
+`.claude/qa-request/m3-implementation-round12-brief.md`, 발견·회신
+`-round12.md`(`H-212`~; §4 열린 문항 0). 진행 상태는
 `.claude/todos.md` 00번이 소스. **⚠️ [2026-08-24] M2와 M3의
 번호·순서가 맞바뀌었다** — 예전엔 M2=디스패치, M3=반응형이었는데 의존이
 한 방향(디스패치 → 반응형)이라 반응형을 먼저 짓기로 확정했다. 그래서

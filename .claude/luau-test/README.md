@@ -12,7 +12,7 @@
 |---|---|---|
 | `review-required/` | **설계가 걸림 — 사람 결정 필요**(**[2026-08-13 13차 세션] 현재 비어 있음** — 마지막 한 건이던 `08`이 해소돼 `done/`으로 감) | ⭐ 사용자 |
 | `rewrite-required/` | 스파이크가 낡음 — 코드가 깨졌거나(`13`/`15`), **설계가 바뀌어 옛 모델을 검증 중**(`04`/`19`, 2026-08-13 14차 세션 하강 diff / `10`, **[2026-08-14 5차 세션]** `canExecute` 1-인자 재정정 / `05`, **[2026-08-14 8차 세션]** "emit은 항상 전파" 정정 → 재작성 통과했다가 **[2026-08-21]** 소스 에포크 채택으로 다시 합류) — `16`은 [2026-08-15] 통과로 `done/`에 갔다가 **[2026-08-25] Store 재설계로 `rewrite-required/`에 재합류**(`STATUS.md`); **[2026-08-29] `13`·`15`·`05`는 지금 `done/`에 있다**(`15`는 `H-176`으로 폐기, `05`는 `spec.state`/`spec.effect`가 대체 — 여기 나열은 폴더가 왜 생겼는지의 예시일 뿐, 현황은 `STATUS.md`) | 에이전트 |
-| `not-run/` | 이 환경에서 못 돌림 — **[2026-08-14 5차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음 | 사용자 or MCP 연결 후 |
+| `not-run/` | CLI로 못 돌림(Studio 필요) — **[2026-08-14 5차 세션] 스파이크는 0건**(`10`이 `rewrite-required/`로 감), GC 헬퍼만 남음. **[2026-09-01]** Studio 몫도 MCP로 실행 가능해져 "못 돌림"은 CLI 한정 서술이 됐다 | 사용자 or 에이전트(MCP 직접 실행) |
 | `done/` | 통과 or 판정 끝, 더 할 일 없음 | — |
 
 **스파이크를 고치거나 돌렸으면 파일을 해당 폴더로 `git mv`하고 STATUS.md의
@@ -34,8 +34,10 @@
 "M0/M2 스파이크 검증 목록에 추가됨"으로 흩어져 있던 항목들을 모아 각각
 독립 실행 가능한 스크립트로 만들었음. **[2026-08-13 갱신]** 처음엔 이
 환경에 `luau`/`luau-analyze` 바이너리가 없어 에이전트가 못 돌렸으나,
-여섯 번째 세션에 바이너리가 생겨 **첫 실측이 끝남** — 지금은 에이전트가
-직접 돌릴 수 있고, 사용자 손이 필요한 건 Studio 전용(`not-run/`)뿐.
+여섯 번째 세션에 바이너리가 생겨 **첫 실측이 끝남**. **[2026-09-01 갱신]**
+Studio 전용마저 MCP `execute_luau`로 에이전트가 직접 돌릴 수 있게 됐다
+(`10` 완주가 선례) — 이제 순수하게 "사람 손이 필요한" 실행 환경은 남지
+않았다(한때 여기 "사용자 손이 필요한 건 Studio 전용뿐"이라 적혀 있었다).
 
 각 파일 맨 위 주석에 다음이 전부 적혀있음: 뭘 검증하는지, 어느 base 문서/
 ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해야 하는지.
@@ -44,9 +46,9 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
-| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22 |
-| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23 |
-| **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수) | 10 |
+| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22, 27(-O2/--codegen 플래그 조합) |
+| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23, 26, 28 |
+| **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수). **[2026-09-01]** MCP 연결이 열려 사용자 수동 실행뿐 아니라 **에이전트가 `execute_luau`로 직접** 돌릴 수도 있음(`10` 완주가 첫 사례) | 10 |
 
 **[2026-08-21 정정]** 이 표가 `21`/`22`/`23`을 빠뜨린 채 `13`을 "런타임 부분/
 타입 부분"으로 쪼개 적고 있었다 — `13`의 런타임 절반은 2026-08-19에 `22`로
@@ -73,16 +75,16 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 파일 | 검증 대상 | 근거 문서 |
 |---|---|---|
-| `01-two-pass-array-hash-order.luau` | 배열 파트(children/Ref) 먼저, 해시 파트(프로퍼티/이벤트) 나중이라는 두 패스 순회 계약 | `dispatch-core-plan.md` "props 순회 순서", ROADMAP M0-4 |
+| `01-two-pass-array-hash-order.luau` | **[2026-08-31 폐기 — `done/`로 이동, `spec.drive.luau` 1번이 대체(상시 회귀)]** 배열 파트(children/Ref) 먼저, 해시 파트(프로퍼티/이벤트) 나중이라는 순회 계약 — 파일 자체는 폐기된 두 패스 구현(`F-4-1` 이전) 기준이라 역사로만 남음. 상태의 소스는 `STATUS.md` | `dispatch-core-plan.md` "props 순회 순서", ROADMAP M0-4 |
 | `02-none-sentinel-vs-nil-holes.luau` | **[2026-08-09 커밋 f198fd9 반영해 전면 재작성]** 순서가 중요한 배열(PreRef pre-pass, sourceList)은 `None` 소진이 맞고, 순서가 안 중요하고 재사용이 필요한 배열(Ref 콜백/대기자)은 `nil`+슬롯 재사용이 맞다는 최종 구분 + `None`을 잘못 쓰면 배열이 무한정 자라는 버그의 정량적 재현 | `ref-plan.md` "왜 None이 아니라 nil인가"(2026-08-09 열한 번째 세션 최종 정정), ROADMAP M0-4 |
-| `03-recursive-store-bind-dispatch.luau` | `process`/`retract` 재귀 재-dispatch 기본 모델, 우선순위 스캔 | `dispatch-core-plan.md` "확정된 디스패치 모델", ROADMAP M0-3 |
-| `04-dispatch-chain-retractFrom.luau` | **[⚠️ 2026-08-13 열네 번째 세션: 하강 diff 확정으로 낡음 → `rewrite-required/`]** 아래는 옛 모델 기준 설명 — **[2026-08-13 감사에서 전면 재작성 + 파일명 변경]** 인덱스 기반 `chains`/`Dispatch.retractFrom`이 다단 재귀 위임에서 정확한지 — 3단 체인이 인덱스 1/2/3으로 안 겹치고 쌓이는지(= `State<State<T>>` **정상 동작**, UB 아님), 안/바깥 store 재발행 시 깊은 인덱스부터 정리되는지, hint가 target 인덱스에만 가는지 + **음성 대조군**: `chains:SetStrong`을 `handler.process` 뒤에 두면 최초 마운트에서 하위 retractor가 유실되는 버그 재현. 옛 버전은 핸들러 identity 기반 추적과 "중복 push 즉시 error" 가드를 검증했는데 그 가드는 다섯 번째 세션 재설계로 **없어져서** 설계와 정반대를 테스트하고 있었음 | `dispatch-core-plan.md` "Dispatch 체인"(2026-08-13 다섯 번째 세션 재설계) + 2026-08-13 감사 |
+| `03-recursive-store-bind-dispatch.luau` | **[2026-09-01 폐기 — round13 §0 Q4 (a), `spec.storebind.luau`가 실제 `StoreBind` 구현에서 대체(상시 회귀). 상태의 소스는 `STATUS.md`]** `process`/`retract` 재귀 재-dispatch 기본 모델, 우선순위 스캔 — 격리 근사라 역사로만 남음 | `dispatch-core-plan.md` "확정된 디스패치 모델", ROADMAP M0-3 |
+| `04-dispatch-chain-retractFrom.luau` | **[2026-08-31 폐기 — `done/`로 이동, `spec.dispatch.luau`가 대체(`H-215` (a)), 잔여 `StoreBind` 경유 경로는 ROADMAP M4 mock 항목. 상태의 소스는 `STATUS.md`]** **[⚠️ 2026-08-13 열네 번째 세션: 하강 diff 확정으로 낡음 → `rewrite-required/`]** 아래는 옛 모델 기준 설명 — **[2026-08-13 감사에서 전면 재작성 + 파일명 변경]** 인덱스 기반 `chains`/`Dispatch.retractFrom`이 다단 재귀 위임에서 정확한지 — 3단 체인이 인덱스 1/2/3으로 안 겹치고 쌓이는지(= `State<State<T>>` **정상 동작**, UB 아님), 안/바깥 store 재발행 시 깊은 인덱스부터 정리되는지, hint가 target 인덱스에만 가는지 + **음성 대조군**: `chains:SetStrong`을 `handler.process` 뒤에 두면 최초 마운트에서 하위 retractor가 유실되는 버그 재현. 옛 버전은 핸들러 identity 기반 추적과 "중복 push 즉시 error" 가드를 검증했는데 그 가드는 다섯 번째 세션 재설계로 **없어져서** 설계와 정반대를 테스트하고 있었음 | `dispatch-core-plan.md` "Dispatch 체인"(2026-08-13 다섯 번째 세션 재설계) + 2026-08-13 감사 |
 | `05-store-state-diamond-propagation.luau` | **[2026-08-29 폐기 — `done/`로 이동, `spec.state`/`spec.effect` 3번이 대체]** push-invalidate/pull-recompute가 다이아몬드 의존성에서 중복 재계산 없이 동작하는지. **[2026-08-19 재작성 → 2026-08-21 다시 `rewrite-required/`]** 2026-08-19엔 당시 모델("emit은 항상 전파, 중복 재계산은 `:Get()` 시점 캐시로만 막힘")로 짜서 통과했으나, **소스 에포크 비교 채택(`base/state-epoch-plan.md`)으로 다이아몬드 두 번째 통지가 접히게 되어** 핵심 assert가 정반대가 됨 — 이제 Observer는 변경당 **1회**만 울어야 한다. 상태의 소스는 `STATUS.md` | ROADMAP M0-1 |
 | `06-component-boundary-nil-hole-props.luau` | `props.Modifier or None` 관용구가 컴포넌트 경계 nil-hole을 막는지 + `Params` 타입 체크 | `component-composition-plan.md` "필수 관용구", ROADMAP M0-5 |
 | `07-relate-weak-table-gc.luau` | `Relate`의 lazy 서브테이블 생성 + weak-key GC가 실제로 동작하는지 | `relate-plan.md` "M2 착수 시 실측 확인"  **[2026-08-13 보강]** 4번 섹션 신설 — `_countEntries()`(테스트 전용) + weak-value canary로 **"inst가 죽으면 중첩 StrongMap 안의 payload까지 연쇄 GC되는가"를 직접 검증**(원래는 sanity check만 하고 헤더의 핵심 주장은 미검증이었음). 파일이 스스로 적어둔 "weak table 엔트리를 셀 표준 API가 없다"는 전제도 틀렸음 — outer가 `__mode="k"`라 GC 후 `pairs`에서 사라짐 |
 | `08-type-source-satisfies-state.luau` (타입체크 전용) | `Source<T>`가 `State<T>`를 구조적으로 만족하는 제네릭 타입이 솔버에서 안전한지 | `base/source-state-plan.md` "Source가 State를 만족함", ROADMAP M0-2 |
 | `09-type-modifier-overridden-subtype.luau` (타입체크 전용) | `FrameModifier <: GuiObjectModifier`처럼 서브타입 관계인 Modifier를 `Overridden`으로 섞을 때 타입이 통과하는지 | `modifier-plan.md` 9-2번, ROADMAP M7 |
-| `10-roblox-studio-checks.server.luau` (Studio 전용) | **[⚠️ 2026-08-14 다섯 번째 세션: A 섹션이 폐기된 모델을 검증 중 → `rewrite-required/`, 열한 번째 세션에 `canBound` 재도입으로 재작성 사유 하나 더 추가]** (A) `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 gcconn 트릭 + 이중 바인딩 게이트(Destroy 시 Connected 전환 포함), (B) Attribute의 Instance 참조 타입 지원, (C) CollectionService 태그/GetTagged 왕복. **A는 재작성 대상** — 파일 속 옛 `canBound`(9차 세션 정의)와 `bindLifetime`의 `value.Subscribed = true` 세팅, 2-인자 `canExecute(inst, value)`는 전부 낡음(현재 게이트는 이중 바인딩 확인은 `canBound(v)`, emit 게이팅은 `canExecute(v)` — 둘 다 `value` 단독 1-인자로 비공개 헬퍼를 공유, gcconn/gchold는 **Instance 생성 시점**에 생성). **[2026-08-13]** A 섹션 앞부분(ClassName 신호 미발화, Destroy 시 Connected 즉시 전환)은 사용자 자작 스크립트로 부분 확인됐고 **새 모델에서도 그대로 유효**(오히려 더 중요 — `canBound`/`canExecute`가 `.Connected`를 직접 읽는 게 leaf 경로 판정의 전부), `audit/gcconn-trick-verification.md` 참고. 이중 바인딩 게이트/재바인딩 허용/B/C는 이 공식 파일로 아직 확인 안 됨 | `lifecycle-pattern.md` "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `source-state-plan.md` "이중 바인딩 금지", `.claude/session-summary.md` 2026-08-06 세션, `debug-tooling-plan.md` |
+| `10-roblox-studio-checks.server.luau` (Studio 전용) | **[✅ 2026-09-01 A 섹션 현행 모델 재작성 + Studio MCP 완주 — 전 항목 PASS, `done/`]** (A) `nativeClaim`(gcconn이 gchold+**inst** 캡처, Instance 생성 시점) 위의 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` — 게이트 3케이스, BindData 복사 gcconn 단독 판정, weak 릴레이션 자기 정리, **userdata 동일성**(무claim inst는 트리에 살아있어도 1 GC 사이클에 userdata 수거 — claim의 존재 이유 실증), Instance weak key. (B) Attribute의 Instance 참조 — 지원하되 읽기는 **`InstanceHandle` 언랩**(`:Get()`, 미문서화 Studio Beta) 경유라는 발견. (C) CollectionService 태그/GetTagged 왕복 + Destroy 시 엔진 정리. 결과 전문은 `audit/spike10-full-run-2026-09-01.md` | `lifecycle-pattern.md` "`bindLifetime`/`canBound`/`canExecute`/`unbindLifetime` — 확정", `archive/canexecute-inst-arg-reversed.md`, `source-state-plan.md` "이중 바인딩 금지", `.claude/session-summary.md` 2026-08-06 세션, `debug-tooling-plan.md` |
 | `11-modifier-illegal-value-error.luau` | Modifier 필드에 Ref/PreRef/Observer/Effect/Slot/Modifier가 들어오면 즉시 error, State/Source가 확정하는 값이 Modifier면 즉시 error(2026-08-09 세션에 "UB"에서 전환된 규칙) | `modifier-plan.md` "Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)이 들어오면 즉시 error" 절 + 7번 절 **⚠️ [2026-08-26 이동 → `rewrite-required/`, 8라운드 `H-122`/`H-123`]** 검증 코드의 Store 생성자가 **eager `Source(v)`** 모델을 박제하고 있다 — 명시적 초기화 확정(2026-08-25) 이후 **`defaults` 경로에선** Store가 `Source`를 만들지 않는다(동적 키 창구 `store:Of(name)`은 여전히 만든다 — 그래서 가드가 `Source` 생성자로 갔다). 재작성 지침은 `STATUS.md`의 `rewrite-required/` 표. |
 | `12-type-attribute-generic-key-narrowing.luau` (타입체크 전용) | `[AttributeKey<<T>> "name"] = value`(구 `Attribute<<T>>`)처럼 제네릭 특수 키를 쓸 때 `value`의 타입이 실제로 `T`로 좁혀지는지 — base 문서 자신이 "미검증"이라 명시한 항목 | `attribute-plan.md` "[실측 필요, M0/M10]" (2026-08-09 열한 번째 세션 신설) |
 | `13-type-ref-preref-subtype.luau` (타입체크 전용) | **[2026-08-19 재작성]** `PreRef<T>`/`PostRef<T>`가 `Ref<T>`를 구조적으로 만족하는지 — 원래 이 파일에 있던 런타임(B) 부분은 A의 더미 스텁이 실행을 막아 도달 불가였던 문제라 `22`로 분리, PostRef까지 확장 | `brand-plan.md`의 `Brand` 절(2026-08-09 열한 번째 세션 재정정), `ref-plan.md`의 "`PostRef`" 절 |
@@ -97,6 +99,8 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `22-runtime-ref-preref-postref-brand.luau` | **[2026-08-19 신규]** 구 `13`의 런타임(B) 절반을 분리한 것 — `isPreRef`/`isPostRef`가 같은 층위의 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)인지, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라내는지. **[2026-08-21] `rewrite-required/`로 이동** — 파일이 직접 구현해 쓰는 `Brand.set`/`Brand.get`이 인스턴스 브랜드 재작성으로 역전된 옛 API가 됐다(검증 대상 자체는 그대로 유효, 상태와 재작성 지침은 `STATUS.md`가 소스) | `ref-plan.md`의 "`PostRef`" 절, `brand-plan.md`의 "⭐ 구현 — 인스턴스 브랜드" 절 |
 | `23-type-quadtypes-checkversion-addplugin.luau` (타입체크 전용) | **[2026-08-19 신규, 같은 날 후속으로 재작성]** 실제 `quad-types`/`quad-base`/`type-version-check`를 `require`해서 `CheckedQuad<T, Pattern>`(글롭/캐럿 버전 패턴 체크, `type-version-check` 위에 얹힘)이 `AddPlugin<Self,P>` 체이닝과 맞물려 동작하는지 — 양성(버전 일치 + 2단 체이닝 + 이전 확장 필드 보존), 음성(버전 불일치 → 강제 참조 시점에 정확히 `TypeError`). `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 깨진다는 걸 이 스파이크가 재작성 과정에서 직접 발견. 재작성 과정에서 `export type function`(cross-package 필수)과 2개 이상 명시 제네릭 인스턴스화의 이중 꺾쇠(`Foo<<A,B>>`) 요구도 추가로 실측 확인 | `quad-types-plan.md`, `typing-limits.md` §6 |
 | `26-type-apply-object-factory-overload.luau` (타입체크 전용) | `state:Apply(factory)`의 파라미터 타입 — 함수 팩토리와 `__apply` 객체 팩토리를 한 시그니처로 받을 때 유니온/오버로드/인덱서 중 어느 표기가 strict에서 `state:Apply(blocker)`(필드가 더 있는 객체)를 통과시키는지 | `qa-request/m2-implementation-round11.md` `H-179`(M2 단위 4 실측) |
+| `28-type-class-param-shared-generic.luau` (타입체크 전용) | **[2026-09-02 신설, M5 단위 ② 착수 전]** `<Class>Param<E>` 공유 제네릭 — 같은 Param 타입을 `D.<Class>`(E=NewChild)와 `D.Mapper.<Class>`(E=NewChild\|MapperDescriptor)가 공유하고 리턴만 다른 구조가 실제 Luau에서 도는지(claim-plan §7-12가 luau-analyze 스파이크로 요구). 기대 음성 3건만 정확히 발생 — 디스크립터 children 거부/`Parent` 거부(`H-142` 타입판)/디스크립터≠Frame. 필드 유니언 구성은 자리표시자(round14 `H-298` 대기) | `claim-plan.md` §7-12·§9, `bind-system-plan.md` 인스턴스 생성 절 |
+| `29-type-useprovider-extension-d.luau` (타입체크 전용) | **[2026-09-02 신설]** `H-305` (d′) — `UseProvider(RobloxProvider)` 뒤 `AddPlugin(SpringPlugin)` 체이닝을 거친 교집합에서 `q.D`(커링 `New`·별칭·중첩 Mapper)가 캐스트 없이 풀 타입인지 + 인자 타입 위반이 실제로 잡히는지(기대 음성 2건). `done/23`의 실전-P 확장판 | `module-lifecycle-plan.md`의 UseProvider 서술, round14 `H-305`, `typing-limits.md` 8.5절 |
 
 ## 공통 유틸리티
 
@@ -283,7 +287,8 @@ Connected 즉시 전환"은 새 모델에서도 유효**(재작성 시 살릴 �
   메시지(어느 줄, 어떤 문구)를 그대로 붙여서 알려주면 다음 문서 갱신이
   빠름.
 - `13`은 A(타입)/B(런타임) 둘 다 확인해줄 것 — B의 assert가 실패하면
-  `Dispatch/Leaf.luau` 설계(`isRef(v) and not isPreRef(v)`) 자체가
+  Ref leaf 핸들러 설계(`isRef(v) and not isPreRef(v)` — [2026-09-01
+  `H-278`] 소속은 M8의 `Ref.luau`) 자체가
   잘못 짜인 것이니 우선순위 높게 알려줄 것.
 - `16`은 **어느 쪽으로 나와도 유용** — 통과하면 `store.key` 타이핑을 이
   type function 방식으로 그대로 채택, API 이름이 틀려서 막히면(`type

@@ -9,4 +9,14 @@ build_files = ["src"]
 lib = "src/init.luau"
 
 [dependencies]
-quad_types = { workspace = "qwreey/quad_types", version = "^" }
+quad_types = { workspace = "qwreey/quad_types", version = "^", target = "luau" }
+# H-306 (a) — 버전 검사가 런타임(matchesPattern)으로 전환되며 생긴 실의존
+# (작고 엔진 무관). 컴파일 타임 CheckedQuad는 UseProvider 간접 흐름에서
+# 물리적으로 발화 불가라 물러남(round14 §4 H-306이 소스).
+type_version_check = { workspace = "qwreey/type_version_check", version = "^", target = "luau" }
+
+# round14 Q3 (a) — 런타임은 직접 주입이라 quad_base가 필요 없고(타입만),
+# spec/테스트만 quad_base를 쓴다. dev deps는 소비자에게 전파되지 않는다 —
+# 루트 pesde.toml이 wally→pesde 전환 사유로 적어둔 바로 그 기능.
+[dev_dependencies]
+quad_base = { workspace = "qwreey/quad_base", version = "^", target = "luau" }

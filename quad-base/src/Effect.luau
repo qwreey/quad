@@ -34,8 +34,14 @@
 
 local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
+local Err = require("./ErrorNamespace")
+local QuadTypes = require("../luau_packages/quad_types")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
+local Relate = require("./Relate")
+local Void = require("./Void")
+local InitDispatch = require("./Dispatch")
 
 local EffectBrand = Brand.EffectBrand
 local isState = Brand.isState
@@ -56,7 +62,7 @@ local function createImpl(module: any)
 	Impl.__index = Impl
 
 	-- ── local helpers, declared before their callers ─────────────────
-	local function isRunning(self: any): boolean -- predicate only; `error` stays in each body (level 2)
+	local function isRunning(self: any): boolean -- predicate only; the raise stays in each body (nearest-SURFACE walker)
 		return self._running == true or self._cleanupRunning == true
 	end
 
@@ -95,10 +101,11 @@ local function createImpl(module: any)
 
 	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding, so a refusal
 	-- cannot leave a half-bound handle (bound, `canExecute` true, no Destroying
-	-- connection). Level 3: past this method and `bindLifetime` to the user's call.
+	-- connection). Blame: nearest SURFACE frame past this and `bindLifetime`
+	-- (`H-231` walker — the old hand-counted 3 is gone).
 	function Impl._assertBindable(self: any)
 		if isRunning(self) then
-			error("Effect: cannot bind an Effect from inside its own fn or cleanup", 3) -- `H-147` (A)
+			Err.errorBeforeNearest("Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)
 		end
 	end
 
@@ -153,10 +160,10 @@ local function createImpl(module: any)
 	-- ── four entry points — EffectHandle's OWN bodies (`H-144` (b)) ────
 	function Impl.WeakSubscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.canBound(self) then
-			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
+			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`: every path that re-arms executability lowers it
@@ -167,10 +174,10 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.canBound(self) then
-			error(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", 2)
+			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`
@@ -182,10 +189,10 @@ local function createImpl(module: any)
 
 	function Impl.WeakUnsubscribe(self: any): any -- lenient (`H-133`) — does not touch the cleanup
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if Subscribed[self] ~= nil then
-			error("Effect: subscribed strongly; use :Unsubscribe()", 2)
+			Err.errorBeforeNearest("Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		WeakSubscribed[self] = nil
 		self.Subscribed = false
@@ -194,10 +201,10 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any
 		if isRunning(self) then
-			error("Effect: cannot change subscription from inside fn or cleanup", 2) -- `H-147`
+			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if Subscribed[self] == nil then -- gate FIRST: never strongly subscribed → error, cleanup untouched
-			error("Effect: not subscribed strongly; use :WeakUnsubscribe()", 2)
+			Err.errorBeforeNearest("Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil
@@ -209,7 +216,7 @@ local function createImpl(module: any)
 	-- ── constructor ──────────────────────────────────────────────────
 	local function Effect(fn: any, ...: any): any
 		if type(fn) ~= "function" then
-			error("Effect: fn must be a function", 2)
+			Err.errorBeforeNearest("Effect: fn must be a function", SURFACE)
 		end
 		local self = setmetatable({
 			fn = fn,
@@ -235,10 +242,10 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))
 			if d == nil then
-				error(`Effect: dep #{i} is nil`, 2)
+				Err.errorBeforeNearest(`Effect: dep #{i} is nil`, SURFACE)
 			end
 			if not (isState(d) or isSource(d) or isRef(d)) then
-				error(`Effect: dep #{i} is not a State/Source/Ref`, 2)
+				Err.errorBeforeNearest(`Effect: dep #{i} is not a State/Source/Ref`, SURFACE)
 			end
 			seen[d] = true -- duplicates are silently ignored (dedup lives in `_deps`/`_epochs`)
 		end
@@ -283,11 +290,67 @@ local function createImpl(module: any)
 	end
 
 	module.Effect = Effect
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.Rerun, Impl.WeakSubscribe, Impl.Subscribe, Impl.WeakUnsubscribe, Impl.Unsubscribe, Effect } do
+		Err.setFuncLevel(fn, SURFACE)
+	end
+
 	return Impl
+end
+
+-- Dispatch-side registrations for the Effect VALUE (`H-278` — mirror of
+-- Observer.luau's `registerDispatchHandlers`, see the rationale there; the
+-- only body difference is the `H-57` cleanup consumption on swap/teardown).
+local function registerDispatchHandlers(module: any)
+	module:RunInit(InitDispatch)
+	local dispatch: QuadTypes.Dispatch = module.Dispatch
+	local None = module.None
+	local relate = Relate() -- (inst, k) -> last bound handle; weak value (`H-71`)
+
+	dispatch.addHandler({
+		name = "EffectLeafHandler",
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			return type(k) == "number" and Brand.isEffect(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_HIGH,
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
+			dispatch.setOffsetSource(inst, k, None) -- `H-39`
+			dispatch.setLength(inst, k, 0)
+
+			local old = relate:GetWeak(inst, k) -- `H-71`; load-bearing dedup (`H-266`)
+			if old ~= v then
+				module.bindLifetime(inst, v)
+			end
+			relate:SetWeak(inst, k, v)
+			return function(nextValue: any?, _retracting: boolean)
+				if nextValue ~= v then
+					module.unbindLifetime(v)
+					-- `H-57`: value-swap retract is destruction-equivalent for
+					-- an Effect (it never comes back) — consume its cleanup.
+					v:_consumeCleanup()
+					if relate:GetWeak(inst, k) == v then
+						relate:SetWeak(inst, k, nil)
+					end
+				end
+			end
+		end,
+	})
+	dispatch.addHandler({
+		name = "EffectDynamicPathGuard",
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return Brand.isEffect(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			Err.errorBefore(`Effect binding should be array index item, but got {typeof(k)}`, SURFACE)
+			return Void -- unreachable; keeps the contract type
+		end,
+	})
 end
 
 local function Init(module: any)
 	implsOf(module).Effect = createImpl(module)
+	registerDispatchHandlers(module)
 end
 
 local function implFor(module: any)

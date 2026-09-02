@@ -147,41 +147,58 @@ return Init
   같이 사라진다(별도 정리 로직 불필요, `value`는 `SetStrong` — boolean
   리터럴이라 GC 결과엔 무관하지만 "다른 곳에서 안전하게 유지되는 것만
   `SetWeak`" 일반 규칙에 맞음).
-- **`_initializedBy` 가드(아래 "Bind는 누가, 어떻게 구현하는가" 절, 실제
-  정의는 `base/bind-system-plan.md`)와는 여전히 다른 층위** — 그건
+- **백엔드 설치 가드(`UseProvider`)와는 여전히 다른 층위** — 그건
   backend 팩토리가 유일 슬롯을 채웠는지 **누가** 채웠는지까지 구분해야
-  하는 공개 계약(같은 팩토리 재호출=no-op, 다른 팩토리=에러)이고, `RunInit`은
-  quad-base 내부 서브시스템이 **한 번만** 도는지만 보면 되는 사적 구현
-  디테일이라 "다른 호출자면 에러" 분기 자체가 없다.
+  하는 공개 계약(같은 프로바이더 재호출=no-op, 다른 identity=에러)이고,
+  `RunInit`은 quad-base 내부 서브시스템이 **한 번만** 도는지만 보면 되는
+  사적 구현 디테일이라 "다른 호출자면 에러" 분기 자체가 없다.
   **[2026-08-19 해소, 사용자 결정] `RunInit`은 backend 설치에 재사용
-  안 함 — `_initializedBy` 마커를 그대로 별도로 둔다.** 근거는 위에서
-  이미 짚은 그대로: `RunInit`은 "이 함수가 이미 돌았는가"만 답하는
-  함수-identity 추적이라 "이 *슬롯*을 다른 함수가 이미 채웠는가"(다른
-  팩토리 재호출 = 에러)를 표현 못 함 — 억지로 슬롯 키를 얹어 확장하면
-  "멱등 실행"과 "유일 슬롯 점유"라는 서로 다른 두 의미가 API 하나에
-  섞여 `RunInit`의 단순함이 깨짐. `_initializedBy`는 `bind-system-plan.md`
-  3차 라운드가 이미 확정해둔 그대로 문자열 마커 하나로 남김:
+  안 함** — `RunInit`은 "이 함수가 이미 돌았는가"만 답하고, 슬롯 점유
+  판정을 억지로 얹으면 "멱등 실행"과 "유일 슬롯 점유"라는 다른 두 의미가
+  API 하나에 섞여 단순함이 깨진다. 이 절반은 그대로 유효하다 —
+  `UseProvider`는 `RunInit`의 재사용이 아니라 **별도 진입점**이다.
+  **⚠️ [2026-09-02 부분 역전 — `H-305` (d′), 사용자 확정] 슬롯 마커의
+  구현은 문자열(`_initializedBy = "roblox"`)에서 `UseProvider`의
+  **fn identity 락**으로 교체됐다.** 사용자 진단: 문자열 마커는 **다른
+  곳에서 로드된 quad-roblox의 다른 사본**(특히 버전이 다른)을 구분 못 해
+  두 번째 설치가 조용히 no-op으로 묵인된다 — *"다른 곳에서 로드된 두
+  quad-roblox(특히 버전이 다르다던가 등) 은 실패 없이 묵인 처리 돼"*.
+  identity 락은 require 캐싱 덕에 일반 케이스(같은 모듈 재-require)는
+  같은 fn identity로 자연 통과하고(사용자 근거), 사본·버전이 갈리면
+  identity가 갈려 시끄럽게 error난다. 락은 개별 팩토리가 아니라
+  **quad-base의 `UseProvider` 본문**에 산다(프로바이더 작성자가 가드를
+  빠뜨리는 `H-294`류 실수를 구조적으로 차단) — `providerRelate`
+  (module 당 1슬롯, `runInitRelate`와 같은 weak-키잉). 이름도 사용자
+  확정(*"UseProvider 쓰자"*) — `AddPlugin`(다수 허용·확장 누적)과 계약이
+  달라 이름을 가른다. 경위 원문은
+  `session/2026-09-02-04-h305-useprovider.md`.
 
   ```lua
-  -- 예시(quad-roblox, M5 실제 구현 시)
-  local function InitRoblox(module)
-      if module._initializedBy == "roblox" then
-          return module -- 같은 팩토리 재호출 = no-op
+  -- 실구현 스케치(quad-base/src/init.luau — 정본은 코드)
+  function module.UseProvider(self, providerFn)
+      local current = providerRelate:GetStrong(self, "provider")
+      if current == providerFn then return self end -- 멱등 no-op
+      if current ~= nil then
+          Err.errorBefore("Quad module already has a provider; ...", SURFACE)
       end
-      if module._initializedBy ~= nil then
-          error(`Quad module already initialized by '{module._initializedBy}'`)
-      end
-      module._initializedBy = "roblox"
-      -- ... 실제 백엔드 설치(bindLifetime/canBound/addTag/removeTag/setAttribute 등 주입)
-      return module
+      local extension = providerFn(self) -- 팩토리는 뮤테이션 + 타입드 확장 반환
+      mergeExtension(self, extension) -- AddPlugin과 공용 병합 → Self & P
+      providerRelate:SetStrong(self, "provider", providerFn) -- 마킹은 성공 후
+      return self
   end
   ```
 
-  `RunInit`(quad-base 내부 서브시스템, 함수 identity 추적)과
-  `_initializedBy`(backend 유일 슬롯, 문자열 마커 + 다른 값이면 에러)는
-  계속 **서로 다른 메커니즘**으로 남는다 — 이름이 겹치지 않게 쓸 것.
-  실제 `RobloxFactory`/`InitRoblox` 구현은 M5(`architecture.md` 소스
-  트리의 `quad-roblox/src/RobloxFactory.luau`)에서.
+  마킹이 RunInit(실행 전 표시)과 달리 **성공 후**인 이유(리뷰 `H-307`,
+  2026-09-02): RunInit의 선표시는 순환 의존 대비인데 프로바이더 설치엔 그
+  계약이 없고, 선표시는 providerFn이 도중 던졌을 때 슬롯만 점유된 채
+  재시도가 멱등 no-op로 삼켜지는 좀비를 만든다.
+
+  `RunInit`(quad-base 내부 서브시스템)·`UseProvider`(backend 유일 슬롯)·
+  `AddPlugin`(다수 확장)은 **서로 다른 메커니즘**으로 남는다. 백엔드
+  팩토리(`RobloxFactory`)는 자기 가드 없이 ops를 뮤테이션하고 타입드
+  확장(`RobloxExtension = { D: D }`)만 반환한다 — `q.D`가 `Self & P`
+  교집합으로 캐스트 0에 풀 타입이 실리는 게 이 모양의 핵심 이득
+  (round14 `H-305` (d) 실측 + `luau-test` 스파이크 23 선례).
 - **플래그를 실제 작업 전에 먼저 세우는 이유**: 나중에 `InitA`↔`InitB`처럼
   상호 의존이 생기면([2026-08-19 기준] 지금은 없음, 대비만), 먼저
   표시해두지 않으면 무한 재귀에 빠진다 — `require`가 순환 참조 시
@@ -296,7 +313,8 @@ print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
   인터페이스"가 곧 Handler 계약: `isHandlable(inst,key,value)`/
   `priority`/`process(inst,key,value,index)` **3종**(**[정정, 2026-08-13
   다섯 번째 세션]** 원래 별도 `retract(inst,key,value)` 필드가 있던 4종
-  계약이었으나, `process`가 자기 retract 클로저 `(nextValue: any?) -> ()`를
+  계약이었으나, `process`가 자기 retract 클로저(현행 시그니처는
+  `(nextValue: any?, retracting: boolean) -> ()` — [2026-09-01 `H-258`])를
   반환하는 1-메소드로 합쳐짐), 정리할 게 없어도 `Void`(**[2026-08-28 `H-162`]** 단일 no-op)
   반환 생략 불가까지 확정. `base/dispatch-core-plan.md` "핸들러 계약" 절.
 - ~~**네이밍 미정(2026-08-04 보강)**: "프로바이더"라고 불러온 개념을 정확히

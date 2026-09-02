@@ -909,7 +909,7 @@ end
 
 local function makeGate(reset: boolean, opts)
     if opts.Leading == false and opts.Trailing == false then
-        error("Leading/Trailing 둘 다 false면 아무것도 통과하지 않음")
+        error("Debounce/Throttle: Leading and Trailing both false would pass nothing through", 2)
     end
     local leading  = if reset then opts.Leading == true else opts.Leading ~= false
     local trailing = opts.Trailing ~= false

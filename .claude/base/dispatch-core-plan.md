@@ -56,9 +56,11 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   이 한 줄로만 기록.
 - `priority: number` — 우선순위. 등록 순서(Fusion의 4단계 고정 stage, Vide의
   action() 우선순위)보다 일반화된 **열린 숫자 공간**으로.
-- `process(inst, key, value, index): (nextValue: any?) -> ()` — 실제 처리
-  수행(아래 "확정된 디스패치 모델"/"Dispatch 체인" 절 참고) 하고,
-  **자기 자신이 방금 벌인 일을 무르는 1-인자 클로저를 반환**.
+- `process(inst, key, value, index): (nextValue: any?, retracting: boolean) -> ()`
+  — 실제 처리 수행(아래 "확정된 디스패치 모델"/"Dispatch 체인" 절 참고)
+  하고, **자기 자신이 방금 벌인 일을 무르는 클로저를 반환**
+  (**[2026-09-01 `H-258`]** 2번째 인자 `retracting` — "Dispatch 체인" 절의
+  계약 문단이 소스; 한때 1-인자였다).
   v1/기존 논의에서 "bind"라 부르던 것과 동일한 역할 + 예전의 `retract`
   필드가 여기로 합쳐짐(**[전면 재정정, 2026-08-13 다섯 번째 세션]**,
   계기·근거는 아래 "Dispatch 체인" 절). 그 인자는 **`nil`(단순 철거)
@@ -129,6 +131,19 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   >   이야기**다 — (A) 분기에서 클로저가 불릴 땐 아래가 그대로 살아 있고,
   >   그게 바로 "깜빡임 없이 갈아끼우기"가 성립하는 이유다.
 
+- **⭐ [2026-08-31 신설, `H-214` (a) 사용자 확정] 선택 필드 `name: string?` —
+  진단 전용.** 위 필수 3종에 더해, 핸들러는 자기 이름을 선택적으로 실을 수
+  있다. 쓰는 곳은 진단뿐 — 동률 경고 print, `Dispatch.listHandlers()`가
+  돌려주는 목록(아래 "우선순위 동률/매치 실패 처리" 절의 "이름/priority"가
+  이 필드), 나중의 `quad-debug` 체인 슬롯 덤프(아래 "부수 효과 — quad-debug에
+  유리" 항목). **스캔·매치·체인 부기엔 아무 영향 없고, 없으면 priority만
+  보인다.** 배경: `listHandlers`와 체인 덤프 서술이 "이름"을 전제하는데 계약
+  3종엔 이름이 없다는 게 M3 단위 1 구현에서 드러났고
+  (`qa-request/m3-implementation-round12.md` `H-214`), 사용자가 선택 필드
+  안을 채택했다(2026-08-31, *"전부 권고안에 동의해"*). 별도 등록 인자
+  (`addHandler(h, name)`) 안은 이름이 레지스트리에 살게 돼 체인 슬롯
+  덤프(슬롯엔 handler 객체만 저장)가 역조회를 요구해서 기각.
+
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
 열린 레지스트리). tbox의 `TUnion` 런타임 체커가 이미 이 "순서대로 스캔, 첫 매치
@@ -170,6 +185,24 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   `typeof(v)`를 함께 출력하고, "quad-roblox 등 필요한 provider가
   초기화됐는지 확인하라"는 안내만 덧붙임 — 그 이상의 특수 분기는 두지
   않음(다른 라이브러리에서도 흔한 "매치 실패=에러" 패턴 그대로).
+  **[2026-08-31 `H-257` 예외 하나]** `v == nil`일 때만 힌트 한 줄을 더
+  싣는다 — *"이 깊이의 nil은 벗겨진 `None`이거나 반응형 nil일 수 있다"* —
+  `NoneHandler` 재귀가 센티널 출처를 지우므로(사용자는 nil을 쓴 적이
+  없는데 nil이라고 보고됨) 진단 문구만 보강한 것, 분기 로직이 아니다.
+  - **[2026-08-31 `H-219` (a) 사용자 확정] `level 2`의 도착지 한계를
+    명시하고 현행 유지한다.** `process`는 핸들러 재귀도 받는 공개
+    진입점이라 level 하나로 모든 경로의 "사용자 호출부"를 맞출 수 없고,
+    `drive` 경유(리터럴 props의 미지원 값 — 가장 흔한 사용자 실수)에선
+    `error(…, 2)`가 quad 내부 프레임(`drive`의 루프)을 가리킨다. 대안이던
+    "drive가 잡아 재상승"은 전 자리 `pcall` 금지 계약(`architecture.md`의
+    "예외 안전성 계약" 절)과 정면 충돌해 기각 — 메시지가 key·typeof·
+    브랜드·provider 안내로 자기설명적이라 위치 접두 없이도 진단이 된다.
+    ~~**M5에서 `New` 파이프라인이 완성돼 drive까지의 프레임 수가 고정되면
+    재평가**~~(round12 `H-219`) — **[2026-08-31 같은 날 조기 해소, `H-231`]**
+    quad-error 스택 워커 도입으로 이 한계 자체가 사라졌다: 매치 실패는
+    `errorBefore(msg, SURFACE)`(최상단 표면 일치)로 **어떤 프레임 수의
+    래퍼를 지나든 사용자 진입점을 가리킨다.** 위 "한계 명시 + 현행 유지"
+    서술은 워커 도입 전 반나절 동안의 상태다.
   **이걸로 `module-lifecycle-plan.md`의 "열린 질문이었던 것 — 전부
   해소됨" 절에 있는 "provider가 아직 주입 안 된 상태에서 dispatch가
   호출되면?" 케이스(`pre-implementation-audit.md`
@@ -251,7 +284,11 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   1. 지금 이 처리가 실행되어도 되는지 라이프타임(`Connected`)을 확인 —
      확인 안 하면 이미 Destroy된 대상에 대해 처리가 실행되는 문제가 생김. GC가
      결국 정리하긴 하지만, GC 되기 전에도 store 값이 업데이트될 수 있으므로
-     그 시점엔 그냥 `Connected`를 보고 무시(no-op).
+     그 시점엔 그냥 `Connected`를 보고 무시(no-op). **[2026-09-01 주체 명시,
+     round13 `H-289`]** 이 확인을 **핸들러가 직접 짜는 게 아니다** — Observer
+     `_receive`의 `canExecute` 게이팅이 그 자리다(아래 "Store 바인드는 특수
+     경우인가" 절의 "핸들러가 직접 `canExecute`/liveness를 재구현할 필요
+     없음" 항목이 정본). 이 항목만 읽고 핸들러 안에 중복 검사를 넣지 말 것.
   2. 처리해도 되면, 사용자가 넘긴 함수들을 거쳐 실제 값(`realv`)을 계산.
   3. **`realv`를 들고 `Dispatch.process(inst, k, realv, index + 1)`를 재귀
      호출 — 선행 철거는 하지 않음**(**[정정, 2026-08-13 열네 번째 세션]**
@@ -733,7 +770,8 @@ end
   Handler도 여기 속함(`inst`를 `any`로 취급, 엔진 특정 API 불필요 —
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
-  `Dispatch/Leaf.luau`, `Dispatch.addHandler`로 등록). quad-roblox의
+  **[2026-09-01 `H-278`]** 등록 주체는 각 값의 선언 모듈(`Observer.luau`/`Effect.luau`,
+  M8은 `Ref.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
   Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
@@ -750,7 +788,9 @@ end
   기각됨). 대신 이미 확정된 "base 유틸은 인터페이스, 실제 구현은 팩토리가
   `BaseModule`을 뮤테이션해서 주입"(`RobloxFactory(BaseModule)`) 패턴을
   그대로 따름 — Dispatch의 handler 레지스트리도 `BaseModule` 테이블에
-  딸린 state 중 하나일 뿐이라, `_initializedBy` 마커에 대해 이미 확정된
+  딸린 state 중 하나일 뿐이라, 백엔드 슬롯 가드(당시 `_initializedBy`
+  마커 — **[2026-09-02]** `UseProvider` identity 락으로 교체,
+  `module-lifecycle-plan.md`)에 대해 이미 확정된
   것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`New()`가
   실제로 호출되면 그 호출이 만드는 인스턴스가 별도 테이블이 되므로 이
   마커도 테이블별로 독립적으로 스코핑됨" — 단 아래 "[한정]" 문단대로 코드
@@ -877,9 +917,13 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 
 - **아직 아무 팩토리도 채우지 않은 슬롯의 기본값은 quad-base가 준다 —
   단 "동작하는 구현을 추측"하지 않고 명시적으로 에러내는 스텁으로.**
-  `BaseModule.addTag = function() error("addTag가 구현되지 않음 —
-  provider가 초기화됐는지, 이 백엔드가 Tag를 지원하는지 확인하라") end`
-  류. base가 "그럴듯한 기본 동작"(예: 조용한 no-op)을 대신 만들어주는
+  `BaseModule.addTag = function() error("quad: addTag is not available —
+  check that the provider is initialized and that this backend supports
+  Tag") end` 류(**[2026-08-31 `H-212` 확장]** 예시 메시지를 영어로 —
+  M2가 커밋한 `LifetimeHandle.luau`의 미주입 스텁과 같은 어조. `level`
+  숫자는 이 스텁이 quad 내부 프레임(`TagHandler.process`)을 거쳐 불려
+  "사용자 호출부"까지의 프레임 수를 문서 시점엔 못 세므로 여기 안 박는다 —
+  M5/M10 구현 시점에 도착지 계약(`architecture.md`)대로 정할 것). base가 "그럴듯한 기본 동작"(예: 조용한 no-op)을 대신 만들어주는
   건 기각 — 임의의 엔진에 뭐가 맞는 기본값인지 base는 알 수 없고,
   조용한 no-op은 실수(provider 초기화를 잊음)를 가려버림. 명시적 에러가
   유일하게 안전한 기본값.
@@ -893,7 +937,7 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
   ```lua
   { priority = HANDLER_PRIORITY_FALLBACK + 1,
     isHandlable = function(inst,k,v) return isTag(v) end,
-    process = function(inst,k,v) error("이 백엔드는 Tag를 지원하지 않음") end }
+    process = function(inst,k,v) error("this backend does not support Tag") end }
   ```
   실제로 `FALLBACK`에 등록돼 있는 `TagFallbackHandler`보다 한 단계
   높아 스캔에서 먼저 매치되고(2026-08-14 열두 번째 세션 정정 — `TagHandler`
@@ -937,6 +981,36 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 핸들러를 먼저 비교하는 "하강 diff"** 모델 — 뒤집힌 옛 모델의 원문·재현
 사례·역전 근거는 `archive/dispatch-hintvalue-model-reversed.md`.
 
+**⭐ [2026-08-31 신설, `H-229` 사용자 확정] 체인 리스트의 GC 앵커는 chains가
+아니라 inst의 gchold다 — Destroy가 체인 그래프 전체를 회수 가능하게 만든다.**
+리스트가 chains에 강하게 걸리면 retractor 클로저가 (Observer 콜백을 거쳐)
+`inst`를 캡처하는 순간 버킷 값이 자기 weak 키를 되참조해 `H-71`의 "100%
+새는" 패턴이 되고, Destroy는 계약상 retract를 안 부르므로 **반응형 바인딩이
+있던 모든 파괴 인스턴스가 영구 잔존**했다(경위와 실측 논증은
+`qa-request/m3-implementation-round12.md`의 `H-229` 절 — 사용자가 Destroy
+경로를 되물어 드러났다). 해법은 사용자 제안 그대로 — *"bindLifetime이 할 일
+같은데, 아무 타입과도 일치하지 않으면 단순히 GC 릴레이션만 해주는 건
+어때?"*: `Dispatch.process`가 (inst,k) 리스트를 처음 만들 때
+`bindLifetime(inst, list)`로 gchold에 앵커하고 chains엔 `SetWeak`으로만
+건다. Destroy → gchold 섬 붕괴 → 리스트·retractor·Observer·`inst` userdata
+전부 수거(retractor는 **호출되지 않는다** — 파괴 시 무-retract 계약 유지,
+이건 철거가 아니라 메모리 해제다). `slot-plan.md` 13차 세션의 두-`Relate`
+순환 해법(전부 weak + 앵커는 `bindLifetime` 하나)과 같은 약. **따름 계약**:
+Dispatch에 들어오는 `inst`는 설치된 생명주기 백엔드가 claim할 수 있어야
+한다(실 Instance는 `nativeClaim`, 테스트는 mock — spec들이 mock Instance로
+전환된 이유). 별해로 검토된 "retractor가 `inst`를 인자로 받기"는 Observer
+콜백의 캡처 경로가 남아 불충분했다(round12 `H-229` 절).
+**[2026-08-31 `H-232` (a) 사용자 확정] Slot owner의 앵커는 gchold가 아니라
+Slot 자신이다** — Slot은 claim 불가라 `bindLifetime`을 못 타고, `bk`는
+언마운트를 넘어 살아야 한다(재마운트 캐시 계약). 그래서 **Slot 생성자가
+`slot._bk` 사적 필드로 자기 `bk`를 강하게 소유**하고(수명 = Slot 수명),
+`getBookkeeping(ownerKey)`은 owner가 Slot이면 그 필드를 쓰고(없으면 만들어
+채움) 아니면 지금의 weak+gchold 앵커를 쓴다. **원칙의 적용 조건은 "값이
+owner를 되참조하는가"다** — 배치 Blocker는 ownerKey를 되참조하지 않아 강한
+Relate 값으로도 안 새므로(코드 주석이 소스) **이 분기 대상이 아니다**;
+사용자가 확정한 범위도 `bk` 하나다. 소스는 round12 `H-232`와
+`base/slot-plan.md`의 생성자 절.
+
 **문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StoreBind`처럼 자기
 `process` 안에서 `Dispatch.process(inst,k,realv,...)`를 다시 부르는 래핑
 핸들러가 있으면, 같은 `(inst,k)`에 대해 "지금 누가 담당 중인가"를 슬롯
@@ -952,7 +1026,9 @@ Observer 구독)와, A가 재귀로 위임한 핸들러 B의 생명주기가 **�
 
 ```lua
 -- Dispatch/init.luau
-local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(strong)}}
+-- [2026-08-31 `H-229` (사용자 확정)] 리스트는 chains엔 **weak 값**으로만 걸리고,
+-- 강한 앵커는 inst의 gchold 하나다(생성 시 bindLifetime(inst, list)) — 아래 확정 문단.
+local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(weak value)}}
 local NOOP = Void          -- [2026-08-28 `H-162`] 새 클로저가 아니라 export된 단일 no-op
 
 function Dispatch.process(inst, k, v, index)
@@ -961,10 +1037,13 @@ function Dispatch.process(inst, k, v, index)
     -- 정상 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 안 들어가
     -- 있으면 재귀 호출이 `or {}`로 자기만의 새 테이블을 만들어 저장해버린 뒤 바깥이
     -- 그걸 덮어써서 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
-    local list = chains:GetStrong(inst, k)
+    local list = chains:GetWeak(inst, k)
     if not list then
         list = {}
-        chains:SetStrong(inst, k, list)
+        -- [`H-229`] 앵커 먼저 — 리스트 수명 = inst의 바인드 수명(gchold). bindLifetime은
+        -- 아는 타입이 아닌 값이면 순수 GC 릴레이션만 한다(`lifecycle-pattern.md`의 확장 계약)
+        bindLifetime(inst, list)
+        chains:SetWeak(inst, k, list)
     end
 
     local slot = list[index]
@@ -974,12 +1053,17 @@ function Dispatch.process(inst, k, v, index)
         -- (A) 같은 핸들러 — 아래를 안 건드리고, 이 자리 클로저에 새 값을 넘겨
         -- 스스로 전이를 처리하게 한 뒤 같은 자리를 새 클로저로 교체.
         -- v는 getHandler가 h를 골랐다는 사실만으로 h.isHandlable(inst,k,v)를 만족함이 보장됨.
-        slot.retractor(v)
+        -- [2026-09-01 `H-258`, 사용자 설계] 2번째 인자 retracting=false —
+        -- 같은 핸들러의 재처리가 곧 따라온다(nil이어도 그건 "값"이다).
+        slot.retractor(v, false)
         slot.retractor = NOOP   -- 이미 소비된 클로저가 두 번 불릴 여지를 없앰
                                 -- (h.process가 재귀하는 동안 잠깐 열려 있는 구간)
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("Dispatch: 핸들러가 retractor 반환을 생략했음 — 생략 불가")
+            -- 메시지는 핸들러 특정 정보(name/priority)와 k·index를 싣는다(`H-223` —
+            -- h.process 프레임은 이미 반환돼 어떤 level로도 도달 불가하므로 메시지가 유일한 단서).
+            -- [2026-08-31 `H-231`] 제공자 계약 위반 — 가장 가까운 표면의 호출부(`H-222`)
+            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
         end
         slot.retractor = retractor
     else
@@ -990,7 +1074,7 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = NOOP }
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            error("Dispatch: 핸들러가 retractor 반환을 생략했음 — 생략 불가")
+            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
         end
         list[index] = { handler = h, retractor = retractor }
     end
@@ -1010,19 +1094,43 @@ end
 
 function Dispatch.retractFrom(inst, k, index)
     -- index부터(포함) 끝까지, 꼬리(가장 깊은 인덱스)부터 역순으로 정리.
-    -- 힌트는 항상 nil — "뒤따르는 process가 없는 단순 철거"가 이 함수의 유일한 용도.
-    local list = chains:GetStrong(inst, k)
+    -- 인자는 항상 (nil, true) — "뒤따르는 process가 없는 단순 철거"가 이
+    -- 함수의 유일한 용도고, retracting=true가 그 사실의 신호다(`H-258`).
+    local list = chains:GetWeak(inst, k)
     if not list then return end
     for i = #list, index, -1 do
         local slot = list[i]
         if slot == nil then
-            error("Dispatch: 인덱스 " .. i .. "에 슬롯이 없음 — 배열에 구멍이 뚫렸음")
+            error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
         end
-        slot.retractor(nil)
+        slot.retractor(nil, true)
         list[i] = nil
     end
 end
 ```
+
+**⭐ [2026-09-01 `H-258`, 사용자 설계] retractor는 2번째 인자
+`retracting: boolean`을 받는다.** `retractFrom` 경유(단순 철거 — 이 자리는
+다시 처리되지 않는다)면 `true`, (A) 분기(같은 핸들러의 재처리가 곧
+따라온다)면 `false`. **nil을 값으로 받는 핸들러**(반응형 nil — `NilHandler`
+아래 자리 등)에서 "철거의 nil"과 "값인 nil"이 구별 불능이던 신호 충돌을
+닫는다. 사용자 원문: *"retract 인자에 retractUnder 로 불렸으면 true, 아니면
+false 인 한 인자를 넣어줘도 되지 않을까 … 나중에 비슷한 문제가 또 열리기
+보다 그냥 미리 준비해두는게 나쁠 게 없음 - 인자 하나 추가되는게 다라서"*
+(인자 이름 `retracting`은 구현 제안 — 계약 타입은 `quad-types`의 `Handler`가
+소스). 기존 retractor는 인자를 무시해도 그대로 정확하다(Lua가 초과 인자를
+버리는 게 아니라 **부족한 파라미터**로 받는 쪽이라 하위 호환).
+
+**[2026-08-31 `H-212`]** 위 의사코드의 error 세 자리가 한국어·`level` 없음으로
+남아 있었다 — 이 절이 쓰인 뒤(2026-08-13) 확정된 `base/architecture.md`의
+"error 계약 — `level` 이분과 메시지 언어" 절(*"`base/`의 예시 메시지도 영어로
+쓴다"*)이 반영 안 된 것. M3 단위 1 구현과 같은 커밋에서 영어 + `level`로
+정정했다 — 배열 구멍은 내부 부기 파손이라 그 자리를 가리키는 `1`.
+retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
+`architecture.md`의 계약 표에 세 번째 행("제공자(핸들러 작성자) 계약 위반 =
+2, 그 계약을 어긴 호출 구조에 가장 가까운 프레임")이 신설되며 확정됐다
+(한때 표에 없는 분류를 확정처럼 적었다가 리뷰 지적으로 잠정 표시를 거친
+자리).
 
 - **래핑 핸들러는 재-dispatch 전에 아무것도 철거하지 않는다 — 그냥 아래로
   내려보낸다.** `StoreBind`/`NoneHandler`가 하는 일은 이제 한 줄:
@@ -1082,7 +1190,7 @@ end
   | `AttributeGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
   | `SlotHandler` | 말단 | 마운트/언마운트 |
   | `RefLeafHandler` | 말단 | `Ref:Set` (+ 부기 — `H-39`) |
-  | `ObserverEffectLeafHandler` | 말단 | `bindLifetime` (+ 부기 — `H-39`) |
+  | `ObserverLeafHandler` / `EffectLeafHandler`(**[2026-09-01 `H-278`]** 옛 결합 `ObserverEffectLeafHandler`가 소유 모듈별 둘로) | 말단 | `bindLifetime` (+ 부기 — `H-39`) |
   | `ProcessedPreRefHandler` / `ProcessedPostRefHandler` | 말단 | 없음(부기만) |
   | `ProcessedModifierHandler` | 말단 | 없음(부기만 — `H-35`) |
   | `UICornerHandler` | 말단 | 자식 Instance 생성/제거 |
@@ -1158,9 +1266,21 @@ end
   `base/tween-plan.md`). 단 **그 자식의 수명은 위임한 핸들러가 책임진다**
   — Dispatch는 `(child,prop)` 체인이 누구 소유인지 모르므로, 자식을
   없앨 때 `retractFrom(child, prop, 1)`까지 부르는 건 위임한 쪽 몫
-  (자식 Instance 자체를 버리면 `chains`가 `inst`로 weak-keyed라 결국
-  GC되지만, 실행 중인 Tween/구독처럼 즉시 끊어야 하는 게 있으면 명시적
-  정리가 필요).
+  (**[2026-08-31 정정, `H-218` — 같은 날 (a) 사용자 확정으로 의무화]**
+  여기 한때 *"자식 Instance 자체를 버리면 `chains`가 `inst`로 weak-keyed라
+  결국 GC되지만"*이라 적혀 있었으나 **틀렸다** — 체인 리스트의 retractor
+  클로저가 `inst`를 캡처하므로 버킷 값이 weak 키를 되참조해 GC가 안 되고
+  (`relate-plan.md`의 `H-71` 실측 패턴 그대로), quad 제작 인스턴스는
+  gcconn 때문에 애초에 `Destroy`로만 회수된다(위 `H-26` 정정과 같은 사실).
+  그래서 **계약이다: 위임 핸들러는 자식을 버릴 때 — 파괴하든 그냥 놓든 —
+  반드시 `retractFrom(child, prop, 1)`을 부른다**(사용자 확정 *"a 로 가면
+  될것 같아"* — 정적 값이면 retractor가 no-op이라 비용 ~0이고, 호출 뒤엔
+  리스트가 비워져 버킷 값이 `inst`를 더 안 잡으므로 weak 항목이 정상
+  회수된다). `ui-shorthand-plan.md` `UI-11`의 "요구하지 않는다"는 이
+  결정으로 **부분 역전**됐다 — 그 문서의 같은 절 참고. 이 의무화는
+  **위임 경로**의 누수를 닫고, retract 없이 `Destroy`로만 죽는 일반 경로는
+  같은 날 `H-229`(리스트의 gchold 앵커 — 위 "Dispatch 체인" 절의 확정 문단)가
+  닫았다.)
 - **`handler.process(inst,k,v,index)`를 `Dispatch.process`를 거치지 않고
   직접 호출하는 것은 UB — 반드시 `Dispatch.process`를 통해서만 진입할
   것.** 이유: 핸들러 비교·`chains` 저장 bookkeeping이 `Dispatch.process`
@@ -1271,6 +1391,9 @@ end
 - 다만 **`nil`이라고 가정하는 것은 여전히 금지**(단순 철거일 때만 `nil`).
   `assert(v == nil)`류를 쓰면 안 됨 — 이미 한 번 전면 정정된 이력이 있음
   (`archive/retract-always-fires-reversed.md`).
+- **[2026-09-01 `H-258`] "단순 철거인가"는 값이 아니라 2번째 인자
+  `retracting`으로 판별한다** — nil을 값으로 받는 핸들러는 `nextValue`만으로
+  두 경우를 가를 수 없다. 계약 본문은 "Dispatch 체인" 절의 `H-258` 문단.
 
 **4. "이전 값"을 알고 싶으면 클로저 캡처, "여러 위치/사이클을 가로지르는
 누적 상태"만 `Relate`.** 이 경계를 헷갈리면 양방향으로 틀림:
@@ -1282,21 +1405,17 @@ end
 - 그리고 `Relate`에 쓴 걸 클로저에서 지울 땐 **"내가 실제로 물러날
   때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
   (`RefLeafHandler`가 정확히 이 버그였음).
-- **`Observer`/`Effect`의 Leaf 바인딩(`Dispatch/Leaf.luau`)도 `RefLeafHandler`와
-  같은 `old ~= v` dedup을 둠 — correctness 문제는 아니지만 순수 성능
-  최적화로 채택(2026-08-14 세션, 사용자 판단).** `State<Observer>`/
-  `State<Effect>`가 재-dispatch될 때 안쪽 값이 실제로 안 바뀌어도(같은
-  객체가 다시 옴) (A) 분기는 무조건 `retractor(v)`→`h.process(inst,k,v,index)`를
-  다시 부름 — `Ref`와 달리 이걸 그냥 둬도 **깨지진 않음**: `bindLifetime`/
-  `unbindLifetime`은 `Relate` weak 테이블 쓰기 몇 개뿐이라(`base/
-  lifecycle-pattern.md`) 같은 값에 unbind 직후 바로 rebind해도 실제 Roblox
-  커넥션을 만들거나 끊지 않고, 사용자에게 보이는 재통지도 없음(`Observer`/
-  `Effect`의 `fn`은 이 leaf 바인딩이 아니라 자기 내부 구독이 따로 발화시킴 —
-  `base/effect-plan.md`). 하지만 **`==` 비교(바이트코드 1개+분기)가 매번 여러
-  weak 테이블 쓰기(해싱 비용)를 도는 것보다 항상 더 쌈** — 이득이 공짜에
-  가까운데 안 넣을 이유가 없다는 판단으로 `RefLeafHandler`와 동일한 패턴을
-  그대로 적용. 상세 pseudocode는 `base/source-state-plan.md`의
-  "Observer/Effect Leaf dedup" 절.
+- **`Observer`/`Effect`의 Leaf 바인딩(`H-278`로 각자 `Observer.luau`/`Effect.luau` 소유)도 `RefLeafHandler`와
+  같은 `old ~= v` dedup을 둠 — 채택 당시(2026-08-14, 사용자 판단)엔 순수
+  성능 최적화였으나 **[2026-08-31 정정, M3 단위 4 `H-266`] 지금은
+  load-bearing**이다.** `bindLifetime`이 `canBound` 가드로 이미 묶인 값의
+  재바인드를 즉시 error로 거부하므로(이중 배치 방지), retractor의
+  `nextValue ~= v` 체크가 unbind를 건너뛴 spurious 재발행에서 `old ~= v`가
+  없으면 (A) 분기가 크래시한다 — 그리고 `bindLifetime`은 이제 weak 쓰기
+  몇 개가 아니라 Observer `_catchUp`/Effect `_bindDestroying`(실제
+  `Destroying` 연결)을 수행한다. 정정 상세와 그 시점 원문은
+  `base/source-state-plan.md`의 "Observer/Effect Leaf dedup" 절(상세
+  pseudocode도 거기).
 
 **5. `Dispatch`를 통해서만 진입한다.**
 `handler.process(...)`를 직접 부르면 핸들러 비교와 `chains` 기록이 통째로
@@ -1335,6 +1454,20 @@ end
 
 ### Length/Offset — 여러 Slot이 형제로 섞일 때 순서 보장 (2026-08-09 여섯 번째 세션)
 
+> **⭐ [2026-09-01 `H-277` 사용자 확정 — 이 절의 구현 소속이 옮겨졌다.**
+> 사용자 진단: *"Dispatch 가 너무 많은 일을 하는듯한 느낌 … setLength,
+> setOffsetSource, getOffsetAt, getBookkeeping 는 drive/process 와 밀접한
+> 영향을 가지지만 핸들러의 영역은 아닌편"* — 이 절 전체(부기·접두합 캐시·
+> 두 커서·배치 Blocker)는 이제 **`quad-base/src/Bookkeeping.luau`**
+> (`InitBookkeeping(module)` → 사적 `module._bookkeeping`)가 구현 소유자다.
+> 의존 방향은 사용자 제안 그대로 **{Slot, Dispatch} → Bookkeeping**(부기는
+> 둘 다 모름 — `SlotBrand` 프로브는 브랜드 잎 판별이지 Slot 의존이 아니다).
+> **공개 호출 표면은 그대로 `quad.Dispatch.setLength` 등**이다 — 말단 핸들러
+> 계약(`H-39`/`H-25`)이 그 이름으로 확정돼 있어 InitDispatch가 같은 함수
+> 객체를 래퍼 없이 재노출한다. M6에서 Slot은 `module._bookkeeping`을 직접
+> 쓴다(표면 개명 여부는 그때 재론). 아래 서술의 `Dispatch.setLength`류
+> 표기는 호출 표면 기준이라 그대로 유효하다.
+
 **문제(`base/slot-plan.md`의 "여러 Slot이 섞일 때 순서 보장" 열린 질문,
 2026-08-04 신설)**: `Frame { Slot1, Element, Slot2 }`처럼 Slot과 정적
 자식이 형제로 섞일 때, Slot1의 동적 개수가 바뀌어도 "Slot1 전체는 항상
@@ -1366,7 +1499,10 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 재사용해 **Slot 자신을 owner 키로 써서 같은 두 함수를 한 번 더
 부르면, 최상위(Dispatch.drive의 리터럴 배열)와 중첩(Slot이 자기
 자신의 요소들에 대해)이 완전히 같은 메커니즘으로 재귀됨** — 새 함수를
-만들 필요 없음. 상세 재귀 흐름(Slot-in-Slot)은 `base/slot-plan.md`의
+만들 필요 없음(**[2026-08-31 `H-232` 각주]** 단 `getBookkeeping`의 **GC
+앵커는 owner 타입으로 분기**한다 — inst owner는 weak 값+gchold 앵커
+(`H-229`), Slot owner는 claim 불가·언마운트 생존 요구 때문에 Slot이
+`slot._bk`로 강하게 소유. "Dispatch 체인" 절의 `H-232` 문단이 소스). 상세 재귀 흐름(Slot-in-Slot)은 `base/slot-plan.md`의
 "Slot-in-Slot 중첩" 절 참고, 이 문서는 그 절이 재사용하는 `recompute`
 자체만 다룸(아래).
 
@@ -1582,8 +1718,10 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
     약하게 바꾸면 이 맵의 키가 마운트 중 빠져 `bk.indexOfElement[element]`가
     `nil`이 된다 — 그 둘은 이 맵의 불변식을 지탱하는 자리로 표시할 것.
     Instance를 `__mode = "k"` 키로 쓰는 경로 자체는
-    `audit/gcconn-trick-verification.md`가 **미확인**으로 남겨둔 항목이라 M3
-    구현 시 실측 대상. 해제에 요소를 넘겨 `setLength`가 지우게 하는 안(시그니처 의미 확장)과
+    **[2026-09-01 실측 확인]** 스파이크 `10` 완주의 A-7이 닫았다 —
+    Destroy+GC 후 항목이 plain table과 동일하게 치워진다
+    (`audit/spike10-full-run-2026-09-01.md`; 한때 여기 "미확인이라 M3 구현
+    시 실측 대상"이라 적혀 있었다). 해제에 요소를 넘겨 `setLength`가 지우게 하는 안(시그니처 의미 확장)과
     inst 층 명시 삭제 API는 기각.
   (**[2026-08-26]** `offsetCacheValidUpTo`은 같은 날 `offsetSetUpTo`에서 갈라져 나온
   필드다 — 아래 "두 필드" 절.) (`bk.N`만 `nil` 시작을
@@ -1754,6 +1892,7 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 -- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — nativeInsert의 삽입 위치,
 -- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
 function Dispatch.getOffsetAt(ownerKey, at)
+    checkPosition("getOffsetAt", at) -- [2026-09-01 H-280] 게이트 셋째 — 0이면 cache[0](nil)이 number로 반환됐다
     local bk = getBookkeeping(ownerKey)
     -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**
     -- `bk.offsetCache[i]` = i 자리의 절대 offset, `bk.offsetCacheValidUpTo` = **여기까지는
@@ -1771,20 +1910,46 @@ function Dispatch.getOffsetAt(ownerKey, at)
     if at <= bk.offsetCacheValidUpTo then
         return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
-    local cur = bk.offsetCache[bk.offsetCacheValidUpTo]
-    for i = bk.offsetCacheValidUpTo, at - 1 do
+    -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 채우기 루프가 **자가 치유**한다.
+    -- 캐시 커서를 한 칸 쓸 때마다 **바로 그만큼만** 올리고(불변식: 각 스텝
+    -- 머리에서 커서 == i), 길이 State의 `:Get()` 안 사용자 코드가 커서를
+    -- 낮췄으면 그 지점부터 채우기를 **재시작**한다 — 옛 꼬리 일괄 쓰기
+    -- (`= at`)는 그 하강 신호를 덮어 낡은 캐시를 "유효"로 표시했다. 순수
+    -- 캐시 채우기(Set 없음)라 재시작이 자유롭다.
+    local i = bk.offsetCacheValidUpTo
+    local cur = bk.offsetCache[i]
+    while i < at do
         -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
         -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
         if bk.lengthList[i] == nil then
-            error("Dispatch.getOffsetAt: lengthList[" .. i .. "]가 nil — bookkeeping is broken", 1)
+            error("Dispatch.getOffsetAt: lengthList[" .. i .. "] is nil — bookkeeping is broken", 1)
         end
-        cur += contribution(bk, i)             -- lengthList[i](State면 :Get())
+        cur += contribution(bk, i)             -- lengthList[i](State면 :Get()) ← 사용자 코드 창
+        if bk.offsetCacheValidUpTo < i then
+            -- 그 사용자 코드가 아래를 무효화했다 — 하강점 너머에 이미 쓴
+            -- 엔트리는 낡은 길이로 만든 것, 거기서부터 다시.
+            -- (max 1: M3의 하강은 1 밑으로 안 내려간다 — splice의 `j-1 = 0`
+            -- 케이스는 M6에서 오고, 그땐 베이스 재독까지 필요)
+            i = math.max(bk.offsetCacheValidUpTo, 1)
+            cur = bk.offsetCache[i]
+            continue
+        end
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
+        bk.offsetCacheValidUpTo = i + 1        -- 한 칸씩 — 방금 쓴 것 너머로 절대 안 올림
+        i += 1
     end
-    bk.offsetCacheValidUpTo = at                          -- 캐시가 여기까지 유효해짐
     return cur
 end
 ```
+
+**[2026-09-01 `H-240` 인지된 UB 경계 — 방어하지 않고 문서화만.**
+자리 `i`의 길이 `:Get()` **안에서** 바로 그 자리 `i`를
+`setLength(owner, i, …)`로 **교체**하는 것(자기 자신을 읽는 도중 자기
+재정의): 정확히 커서 위치로의 하강은 무하강 기준선과 값으로 구분이 안 돼
+어느 검사로도 안 걸린다 — 기존 "일반적인 재진입/무한루프는 방어 안 함"
+가족의 한 사례로 명명한다. 참고로 발행 경로(offset Source)는 어차피
+`getOffsetAt`을 다시 지나므로, 이 사각이 닿는 건 `sum`(→ Slot `Length`,
+M6)과 prefix 복원값뿐이다 — M6 손 트레이싱에서 splice와 함께 재점검.
 
 ### ⭐⭐ [2026-08-26 신설] 두 필드 — `offsetCacheValidUpTo`와 `offsetSetUpTo`
 
@@ -1944,6 +2109,11 @@ local function recompute(ownerKey, bk)
     local prefix, i = {}, 1
     while i <= (bk.N or 0) do
         prefix[i] = sum
+        -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 진입 스냅샷 — 아래
+        -- `getOffsetAt`의 `:Get()` 읽기 창에서도 사용자 코드가 커서를 낮출
+        -- 수 있는데, 기준선이 경로마다 다르다(평시 `i-1`, 되감기 복귀 직후
+        -- `i`) — 실제 진입값과 비교해야 양쪽 다 정확하다.
+        local entryCursor = bk.offsetSetUpTo
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(발행 채널 없음) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
@@ -1953,9 +2123,16 @@ local function recompute(ownerKey, bk)
         -- 부기가 깨진 것 — 조용히 건너뛰면 위치 하나가 순서 계산에서 빠지는
         -- 추적 어려운 오작동이 된다. 상세는 base/slot-plan.md의 "추가 방어 조치".
         if offset == nil then
-            error("Dispatch.recompute: sourceList[" .. i .. "]가 nil — 부기가 깨졌음(계약상 None이어야 함)")
+            error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
         end
-        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유)
+        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유) ← 사용자 코드 창
+        -- `H-240` 검사 ① — 아래 커서 쓰기가 신호를 덮기 **전에**. 옛 코드는
+        -- 이 쓰기가 무조건이라 읽기 창의 하강이 여기서 지워졌다(재현 확인).
+        if bk.offsetSetUpTo < entryCursor then
+            i = math.max(bk.offsetSetUpTo, 1)
+            sum = prefix[i]
+            continue
+        end
         bk.offsetSetUpTo = i                                    -- 여기까지 Set 완료
         if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
             offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
@@ -1992,10 +2169,24 @@ local function recompute(ownerKey, bk)
         end
         -- 되감지 않을 때만 — 읽기는 여전히 `Set` **뒤**라 `H-113`의 *"`sum`은
         -- 안 낡는다"* 논증이 그대로 성립한다(재방문 때도 마찬가지).
-        local v = bk.lengthList[i]
-        sum += (if isState(v) then v:Get() else v)
+        -- [2026-08-31 `H-244`] 강제(coercion)는 `getOffsetAt`과 같은 단일
+        -- `contribution(bk, i)` 하나다 — 인라인 사본 둘이면 강제에 케이스가
+        -- 늘 때(M6) 한쪽만 고쳐져 Length와 offset이 갈라진다.
+        sum += contribution(bk, i)             -- ← 사용자 코드 창(길이 State의 :Get)
+        -- `H-240` 검사 ② — contribution의 자기 창. 오염됐을 수 있는 위 `+=`는
+        -- 되감기의 prefix 복원이 버린다. (뮤테이션 실측: 이 검사를 빼면
+        -- `spec.lengthoffset` 10이 실제로 실패한다 — 검사 ①은 이 케이스를
+        -- 다음 반복 진입에서 못 본다, 스냅샷이 이미 낮은 값이라.)
+        if bk.offsetSetUpTo < i then
+            i = math.max(bk.offsetSetUpTo, 1)
+            sum = prefix[i]
+            continue
+        end
         i += 1
     end
+    -- [2026-09-01 `H-240`] 두 꼬리 쓰기가 안전한 이유 — 루프 탈출은 항상
+    -- "마지막 검사 통과 직후, 사용자 코드 창 없음"을 지나므로 덮을 신호가
+    -- 없다(구조적 보장, 별도 검사 불요).
     -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.
     --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
     --   낮춰진 `offsetSetUpTo`를 뒤에서 무조건 덮으면 **아직 Set 안 한 자리가
@@ -2134,9 +2325,20 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- target을 명시적으로 넘기면 된다(그 경우에만 둘이 갈린다).
 -- ⭐⭐ [2026-08-27, 9라운드 Q3] 5번째 인자 `element` — **그 자리에 등록되는 요소
 -- (`inst|slot`)**. `gatedRecompute`가 인덱스 대신 이걸 캡처하고 `bk.indexOfElement`를
--- 조회한다(아래). 길이가 상수인 자리(`NilHandler`/`NoneHandler`의 `0`)는 지속
+-- 조회한다(아래). 길이가 상수인 자리(`NilHandler`의 `0` — **[2026-08-31 `H-265` 정정]** `NoneHandler`는 재귀만 하고 등록 자체를 안 한다)는 지속
 -- 클로저가 안 생기므로 생략해도 된다 — 그땐 캡처한 `i`가 그대로 유효하다.
+-- ⭐ [2026-09-01 `H-256` (a) 사용자 확정] 부기 진입점의 위치 검증 게이트 —
+-- setLength/setOffsetSource(**[같은 날 `H-280`]** getOffsetAt까지 — 공개
+-- 표면 셋 전부) 머리에서 `i`가 양의 정수인지 한 번 확인한다
+-- (`type(i) ~= "number" or i % 1 ~= 0 or i <= 0` → errorBeforeNearest, 사용자
+-- 입력). 소수·음수·0·NaN이 그대로 들어오면 깨끗한 에러 대신 **부기 오염 +
+-- `recomputeBlocker` 영구 잠김**(조용한 최악 UB — 실측 재현)이 되기 때문.
+-- 사용자: *">0 %1==0 확인은 비싸지 않아"*. 한 자리 게이트라 전 말단 핸들러가
+-- 커버된다((b) 핸들러 술어 좁히기는 다른 핸들러 경로에서 재발 — 기각 근거).
+-- **희소 양의 정수는 여기서 안 막는다** — 연속성(1..N)은 recompute의 기존
+-- `sourceList[i] is nil` error 몫. 부기를 하나라도 만지기 전에 검사한다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
+    checkPosition("setLength", i) -- 위 게이트
     anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
@@ -2245,8 +2447,9 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
   owner 종류가 아니라 **그 자리에 지속 등록(길이 State → Observer)이 생기는가**로
   갈린다. 중첩 Slot의 `.Length`를 넘기는 자리(`materializeSlotTree` 꼬리,
   최상위 `SlotHandler` 경로 포함)는 그 Slot 자신을 넘기고, plain 요소(`rawAdd`/
-  `rawReplace`)는 그 요소를 넘긴다. `NilHandler`/`NoneHandler`처럼 상수 `0`인
-  자리는 생략.
+  `rawReplace`)는 그 요소를 넘긴다. `NilHandler`처럼 상수 `0`인
+  자리는 생략(**[2026-08-31 `H-265` 정정]** 여기 `NoneHandler`도 나열돼
+  있었으나 그 핸들러는 등록을 안 한다 — 재귀 전용).
 
 `:Subscribe()`/`:Unsubscribe()`(독립 경로)를 안 쓰는 이유: 이 Observer는
 본질적으로 `ownerKey` 하나에 종속된 내부 배관이라, `ownerKey`(물리 inst
@@ -2314,6 +2517,29 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
      `Dispatch.drive` 경로에선 (a)가 없어 사실상 검증 패스에 가깝지만,
      O(N) 순회에 `Set`이 거의 없으므로 분기해서 빼지 않고 그냥 항상 부른다.
 
+**⭐ [2026-09-01 `H-241`/`H-275` 사용자 확정 — `drive`의 두 UB.**
+탐사자·리뷰 실측(round12)으로 드러난 두 경로 다 "지원하지 않음"으로 닫는다:
+
+- **재진입 `drive`(`H-241`)** — 핸들러의 `process`(또는 그 아래 동기 경로)가
+  **같은 inst**에 `drive`를 다시 부르는 것. owner당 배치 Blocker가 하나라
+  안쪽 `OffWithoutEmit()`이 바깥 배치를 조기 개방한다(등록마다 recompute —
+  O(N²), 크래시는 아니고 성능·순서 열화). 사용자 확정: *"그런건 지원할
+  생각이 없었고, UB로 두는게 맞다고 봐"* — 기확정 "일반적인 재진입/무한루프는
+  방어 안 함" 원칙 그대로. Blocker 재사용이 네스팅 미지원 서술과 긴장하는
+  자리라는 각주는 `base/blocker-plan.md`에.
+- **재`drive` 일반(`H-275`)** — **`drive`는 `New` 파이프라인의 1회 진입이고,
+  같은 inst에 다시 부르는 것은 형상 불문 계약 밖이다.** 사용자 확정:
+  *"무엇이 되었든 drive 는 한번 뿐임. 안 그러면 애초에 modifier 로 인한
+  부분을 처리하기도 어렵고, preref 가 다시 수행되는 등 사고가 나서, 재drive
+  라는것 자체가 우리 프로젝트에서 허용되는 범주가 아님"* — 재바인딩 불가
+  결정(`archive/existing-instance-bind-rejected.md`)과 같은 축이니 그 기각과
+  혼동하지 말 것(그건 "남이 만든 inst를 바인드"였고 이건 "내가 만든 inst에
+  두 번째 drive"). 실측된 증상(형상 축소 시 옛 자리 **조용한 잔존** —
+  crash보다 나쁜 형태 / 교환 시 이중 배치 계약의 already-bound 크래시)은
+  UB의 모양 기록일 뿐 방어 대상이 아니다. 배열의 시간 변화는 M6
+  `:List`/Slot이 정본 소유자다. **개별 키 재발행은 이것과 무관하게 정상
+  경로다** — 반응형 재발행은 `Dispatch.process(inst, k, v, 1)`로 온다.
+
 **`setOffsetSource`의 즉시 계산(2026-08-18 신설, 2026-08-21 G절에 정리)** —
 등록되는 그 자리에서 **`Dispatch.getOffsetAt(ownerKey, i)`**(= 베이스 +
 `bk.lengthList[1..i-1]` 합)를 구해 곧바로 `:Set`한다. `source == None`이면
@@ -2324,6 +2550,7 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 -- [정리, 2026-08-21 G절] 합산 루프가 `Dispatch.getOffsetAt`으로 빠지면서
 -- 이 함수는 "등록 + (채널이 있으면) 즉시 1회 발행"만 남는다.
 function Dispatch.setOffsetSource(ownerKey, i, source)
+    checkPosition("setOffsetSource", i) -- [2026-09-01 H-256 (a)] 아래 검증 게이트 문단
     local bk = getBookkeeping(ownerKey)
     bk.sourceList[i] = source
     if source == None then

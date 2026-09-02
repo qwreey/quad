@@ -187,7 +187,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   `error`** — `Modifier` 필드가 이 값들을 담으면 즉시 `error`로 확정했던
   것(`modifier-plan.md` 7번)과 같은 판별 메커니즘(`isRef`/`isPreRef`/`isPostRef`/
   `isObserver`/`isEffect`/`isModifier` Brand predicate)을 그대로 재사용.
-  근거: `Dispatch/Leaf.luau`가 처리하는 "children 배열에 `Ref`/`Observer`/
+  근거: leaf 핸들러들(`H-278` — 각 값의 선언 모듈 소유)이 처리하는 "children 배열에 `Ref`/`Observer`/
   `PreRef`가 직접 놓이는" 케이스는 **그 컴포넌트가 지금 만들고 있는
   Instance 자기 자신을 가리키는 self-ref 캡처**(`Frame { PreRef():Callback(fn) }`가
   그 Frame 자신을 잡는 것)라 `inst`가 "지금 생성 중인 바로 그 하나의
@@ -430,7 +430,7 @@ local function claimOwner(element, ownerKey, fromDetached)
         -- `fromDetached` 없이 같은 owner라는 것만으로 통과시키면
         -- `Slot{a, a}`가 다시 조용히 새어나간다(2026-08-13 감사가 막은 것).
         if not (fromDetached and cur == ownerKey) then
-            error("이 요소는 이미 마운트돼 있음 — 다중 마운트 금지")
+            error("Slot: this element is already mounted — multiple mounts are not allowed", 2)
         end
         return   -- 이미 내 것이므로 SetWeak도 불필요
     end
@@ -445,7 +445,7 @@ local function claimOwnerAt(element, inst, k)
         return false  -- 정확히 이 자리가 이미 들고 있음 — 재확인만, no-op
     end
     if current ~= nil then
-        error("이 요소는 이미 다른 곳에 마운트돼 있음 — 다중 마운트 금지")
+        error("Slot: this element is already mounted elsewhere — multiple mounts are not allowed", 2)
     end
     elementOwner:SetWeak(element, OWNER, inst)
     elementOwner:SetWeak(element, OWNER_POS, k)
@@ -460,7 +460,7 @@ local function releaseOwner(element, ownerKey)
     -- 무시 없이 즉시 error" 원칙과 같은 결로 즉시 error.
     local current = elementOwner:GetWeak(element, OWNER)
     if current ~= ownerKey then
-        error("releaseOwner: 이 element는 이 ownerKey가 소유하고 있지 않음 — 호출측 소유권 추적이 깨졌음")
+        error("releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", 1)
     end
     elementOwner:SetWeak(element, OWNER, nil)
     elementOwner:SetWeak(element, OWNER_POS, nil)
@@ -841,12 +841,6 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   필요해짐 — element 레퍼런스만 갖고 있는 호출부가 인덱스 기반 CRUD를
   쓰려면 `IndexOf`가 유일한 다리. `Get`은 대칭성/일반적인 컬렉션 API
   완결성을 위해 같이 열어둠(필수까진 아니지만 비용이 거의 없어 열어둠).
-- **`raw*` 내부 호출 규약은 공개 API와 다를 수 있음(구현 세부, M6에서
-  확정)** — `:List`의 reconcile은 이미 자기 `key→element` 맵을 들고
-  있어서 `rawRemove`/`rawMove` 등을 element 기준으로 계속 부를 수도
-  있음. 공개 CRUD가 인덱스를 받아 내부적으로 element를 찾아 `raw*`에
-  넘기는 얇은 변환 계층이 될지, `raw*` 자체를 인덱스 기준으로 통일할지는
-  base 설계가 못박을 필요 없는 구현 디테일.
 - **에러 조건 — 전부 즉시 `error()`, no-op 없음**(기존 "재마운트 시 throw"와
   같은 fail-fast 톤):
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
@@ -920,8 +914,19 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
       -- `bk`를 eager 생성하지 않도록).
       -- **[2026-08-27, Q3] 옛 `_elemIndex`는 여기 없다** — 그 맵은
       -- `bk.indexOfElement`로 Dispatch 부기에 산다(`indexOfRaw`가 조회).
+      -- ⭐ [2026-08-31 `H-232` (a) 사용자 확정] **`_bk`도 여기서 난다** —
+      -- Slot을 ownerKey로 쓰는 Dispatch 부기(`getBookkeeping`)의 **강한
+      -- 앵커**. inst owner는 gchold 앵커(`H-229`)를 쓰지만 Slot은 claim
+      -- 불가라 `bindLifetime`을 못 타고, `bk`는 언마운트를 넘어 살아야
+      -- 한다(재마운트 캐시 계약) — 소유 주체가 Slot 자신이면 수명이 정확히
+      -- 맞다(언마운트 생존 ✓, Slot이 버려지면 같이 ✓). Dispatch의
+      -- `getBookkeeping`은 owner가 Slot이면 이 필드를 쓴다(사용자:
+      -- *"slot._bk 로써 bk 순환 문제를 해결"*). 값은 lazy — 첫
+      -- `getBookkeeping(slot)`이 채운다(`bk` 초기값 규칙은
+      -- `dispatch-core-plan.md`가 소스).
       local self = setmetatable({
           _elements = {},
+          _bk = nil,             -- [H-232] 첫 getBookkeeping(slot)이 채우는 강한 앵커
           Length = Source(0),
           Offset = Source(0),
           ...
@@ -1554,7 +1559,7 @@ function activateList(self, physicalTarget)
         for i, item in ipairs(items) do
             local key = keyFn(item, i)   -- keyFn은 raw i를 받음(:List 파라미터 설명 참고)
             if seen[key] then
-                error("Slot:List — duplicate key: " .. tostring(key))
+                error("Slot:List — duplicate key: " .. tostring(key), 2)
             end
             seen[key] = true
             keys[i] = key
@@ -1632,8 +1637,8 @@ function activateList(self, physicalTarget)
                 -- KeyGone을 받은 자리는 "데이터가 다시 나타날 때를 위한 캐싱"
                 -- (= Detach) 아니면 파괴뿐이고, **새 마운트/생성은 거부**한다.
                 if result ~= nil then
-                    error("Slot:List — KeyGone에는 nil/None(파괴) 또는 Detach(홀드)만 반환할 수 있음 "
-                        .. "(자리가 없어진 키에 새 요소를 마운트할 수 없고, prev 유지도 모순)")
+                    error("Slot:List — KeyGone accepts only nil/None (destroy) or Detach (hold) "
+                        .. "(cannot mount a new element at a key whose slot is gone; keeping prev is contradictory)", 2)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
@@ -1960,8 +1965,12 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot.luau` 또는
   `Dispatch/Slot.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
   지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
-  시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. 정확한 파일
-  배치는 M6 구현 시점에 확정.
+  시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. **[2026-09-03
+  M6 편입으로 확정]** `Detach`/`KeyGone`은 `quad-base/src/Slot.luau`에
+  정의되고 `SlotInit(module)`(RunInit 경유)이 `module.Detach`/`module.KeyGone`
+  으로 부착한다 — `init.luau` 정적 require 재노출("None처럼")이 아니라
+  Init 부착이라는 점만 이 문장의 상정과 다르고, "최상위 재노출"의 실질
+  (`quad.Detach`로 접근)은 그대로다.
 ### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
 
 위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데
@@ -2884,9 +2893,10 @@ end
 --      `setLength`를 다시 태워 게이트를 통과시킨다.
 --   5. **물리 op에 넘길 `elements`는 `collectLeaves`로 만든다**(중첩 Slot 요소).
 --   6. **물리 op은 `_mounted`로 가른다**(`H-12`) — 부기는 항상.
--- 참고: 이 문서에 남아 있던 *"`raw*` 내부 호출 규약은 공개 API와 다를 수
--- 있음(구현 세부, M6에서 확정)"*은 5라운드의 index 통일로 이미 닫힌
--- **stale**이라 근거로 인용하지 말 것.
+-- 참고: 이 문서에 한때 남아 있던 *"`raw*` 내부 호출 규약은 공개 API와
+-- 다를 수 있음(구현 세부, M6에서 확정)"*은 5라운드의 index 통일로 닫힌
+-- stale이었고 **[2026-09-03] M6 편입(raw* 전부 index 기준 실측)으로 본문에서
+-- 삭제됨** — 옛 인용을 만나면 이 각주가 그 흔적이다.
 
 -- **raw 3형제 — 갈리는 축이 둘(파괴하는가 / 소유권을 놓는가)**:
 --   rawRemove : 소유권 반납 + **파괴**
@@ -3271,7 +3281,7 @@ function Slot:Add(element, index)
     assert(not self._listed, "Slot: :List가 설치된 Slot엔 수동 CRUD를 쓸 수 없음")
     -- (2) index 범위 검증 — **clamp 안 함**, 범위 밖이면 error
     if index ~= nil and (index < 1 or index > #self._elements + 1) then
-        error("Slot:Add — index가 범위 밖(1.." .. (#self._elements + 1) .. "): " .. tostring(index))
+        error("Slot:Add — index out of range (1.." .. (#self._elements + 1) .. "): " .. tostring(index), 2)
     end
     -- (3) 요소 타입 검증은 `wrapElement`가 한다(위 그 함수 — `isSlot`/`isState`/`isInst`)
     local wrapped = wrapElement(element)
@@ -3316,13 +3326,13 @@ local function wrapElement(v)
     if not isState(v) then
         -- 진단을 위해 핸들러 계층 값은 따로 잡는다(왜 안 되는지 근거가 다르다)
         if isRef(v) or isPreRef(v) or isPostRef(v) or isObserver(v) or isEffect(v) or isModifier(v) then
-            error("Slot: 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Modifier)은 요소가 될 수 없음")
+            error("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", 2)
         end
         if v == nil or v == None then
-            error("Slot: nil/None은 요소가 될 수 없음 — 실제로 마운트 가능한 값만")
+            error("Slot: nil/None cannot be an element — only actually mountable values", 2)
         end
         if not isInst(v) then     -- 백엔드 주입 술어(위 `native*` 절)
-            error("Slot: 이 백엔드가 마운트할 수 없는 값")
+            error("Slot: this backend cannot mount this value", 2)
         end
         return v
     end
@@ -3608,7 +3618,7 @@ function dispose(value)
     --   안 들어간다(`Relate`는 항상 3-인자 `SetWeak`/2-인자 `GetWeak`, 409행).
     --   `H-71`로 dedup 기록까지 `SetWeak`이 되며 강/약 짝맞춤이 더 중요해졌다.
     if elementOwner:GetWeak(value, OWNER) ~= nil then
-        error("dispose: 이 값은 아직 트리가 살아있길 요구 중임 — 먼저 Remove/Extract 할 것")
+        error("dispose: this value still requires its tree to be alive — Remove/Extract it first", 2)
     end
     -- (2) [`H-43`] Slot도 Instance도 아닌 값이 백엔드로 그냥 흘러가지 않게
     if isSlot(value) then
@@ -3616,13 +3626,13 @@ function dispose(value)
     elseif isInst(value) then
         nativeDispose(value)     -- 아래 주입 op
     else
-        error("dispose: 이 백엔드가 파괴할 수 없는 값")
+        error("dispose: this backend cannot dispose this value", 2)
     end
 end
 ```
 
 - **왜 `Observer`/`Effect`는 dispose 대상이 아닌가**: 이 둘은 children
-  배열 leaf 위치에 놓이면 `Dispatch/Leaf.luau`가 매치해 내부적으로
+  배열 leaf 위치에 놓이면 leaf 핸들러(`H-278` — 각 선언 모듈 소유)가 매치해 내부적으로
   `bindLifetime(inst, value)`를 호출하고(`base/source-state-plan.md`
   "이중 바인딩 금지" 절), 생존은 그 GC 앵커(gcconn)만으로 판정됨 —
   Slot처럼 "죽는 순간 `elementOwner`/`lengthList`/`sourceList`가

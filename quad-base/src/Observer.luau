@@ -35,6 +35,12 @@
 
 local Brand = require("./Brand")
 local ImplRegistry = require("./ImplRegistry")
+local Err = require("./ErrorNamespace")
+local Relate = require("./Relate")
+local Void = require("./Void")
+local InitDispatch = require("./Dispatch")
+local QuadTypes = require("../luau_packages/quad_types")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ObserverBrand = Brand.ObserverBrand
 
@@ -78,22 +84,23 @@ local function createImpl(module: any)
 	end
 
 	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding — a refusal
-	-- must not leave a half-bound handle. Level 3: past this and `bindLifetime`.
+	-- must not leave a half-bound handle. Blame: nearest SURFACE frame past this
+	-- and `bindLifetime` (`H-231` walker — the old hand-counted 3 is gone).
 	function Impl._assertBindable(self: any)
 		if self._running then
-			error("Observer: cannot bind an Observer from inside its own fn", 3) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
 		end
 	end
 
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
 	function Impl.WeakSubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183` (`H-147` symmetric)
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
 		end
 		if not module.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
-			error(
+			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
-				2
+				SURFACE
 			)
 		end
 		self.Subscribed = true -- `H-111`: the weak path raises the flag too
@@ -104,11 +111,11 @@ local function createImpl(module: any)
 
 	function Impl.WeakUnsubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- A strong keep left behind would make a half-released, never-GC'd handle: fail fast.
 		if Subscribed[self] ~= nil then
-			error("Observer: subscribed strongly; use :Unsubscribe()", 2)
+			Err.errorBeforeNearest("Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		-- `H-133`: that is the whole guard — never subscribed / already weakly released pass silently.
 		WeakSubscribed[self] = nil
@@ -118,14 +125,14 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.
 		if not module.canBound(self) then
-			error(
+			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
-				2
+				SURFACE
 			)
 		end
 		self.Subscribed = true
@@ -137,11 +144,11 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any
 		if self._running then
-			error("Observer: cannot change subscription from inside its own fn", 2) -- `H-183`
+			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
-			error("Observer: not subscribed strongly; use :WeakUnsubscribe()", 2)
+			Err.errorBeforeNearest("Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil -- both tables, directly (`H-149`: no delegation)
@@ -171,11 +178,85 @@ local function createImpl(module: any)
 		return o --     State would land in this Observer's `_receive` and raise the flag
 	end
 
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.WeakSubscribe, Impl.WeakUnsubscribe, Impl.Subscribe, Impl.Unsubscribe } do
+		Err.setFuncLevel(fn, SURFACE)
+	end
+
 	return Impl
+end
+
+-- Dispatch-side registrations for the Observer VALUE (`H-278`, user-directed:
+-- "각 객체를 아는 곳은 각 객체가 선언된 곳" — moved out of the dissolved
+-- Dispatch/Leaf.luau; the None pair stays in Dispatch because None is
+-- Dispatch's own concept). Two handlers:
+--   - ObserverLeafHandler (HIGH — dispatch skeleton band): children-array
+--     leaf binding. Body 1:1 with `source-state-plan.md` "Observer/Effect
+--     Leaf dedup" (H-39 registration, `old ~= v` dedup via a weak Relate
+--     (`H-71`, load-bearing per `H-266`)). The combined handler split into
+--     one per owning module — the two value spaces are disjoint, so the
+--     per-module dedup relate is equivalent.
+--   - ObserverDynamicPathGuard (FALLBACK — override-able): a named-slot
+--     Observer is a type-bypass mistake; message text is the 2026-08-18
+--     user-confirmed wording, raised via the outermost scan (`errorBefore` —
+--     same reasoning as match failure, `H-219`).
+local function registerDispatchHandlers(module: any)
+	module:RunInit(InitDispatch) -- idempotent pull (the `H-174` idiom)
+	local dispatch: QuadTypes.Dispatch = module.Dispatch
+	local None = module.None
+	-- (inst, k) -> last bound observer. Weak value (`H-71`): the observer's fn
+	-- may capture inst; v is strongly held by gchold while bound, so the entry
+	-- cannot fall out early during the window dedup matters in.
+	local relate = Relate()
+
+	dispatch.addHandler({
+		name = "ObserverLeafHandler",
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			-- k type check is mandatory — without it this handler outmatches
+			-- the named-slot guard below and it becomes dead code
+			return type(k) == "number" and Brand.isObserver(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_HIGH,
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
+			-- `H-39`: terminal handlers register their array position — this
+			-- leaf contributes no physical element, so the pair is None/0.
+			dispatch.setOffsetSource(inst, k, None)
+			dispatch.setLength(inst, k, 0)
+
+			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
+			if old ~= v then
+				module.bindLifetime(inst, v)
+			end
+			relate:SetWeak(inst, k, v)
+			return function(nextValue: any?, _retracting: boolean)
+				if nextValue ~= v then
+					module.unbindLifetime(v)
+					-- Clear only when we actually stand down — unconditional
+					-- clearing would kill the dedup on spurious re-emits
+					-- (nextValue == v), the exact RefLeafHandler bug.
+					if relate:GetWeak(inst, k) == v then
+						relate:SetWeak(inst, k, nil)
+					end
+				end
+			end
+		end,
+	})
+	dispatch.addHandler({
+		name = "ObserverDynamicPathGuard",
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return Brand.isObserver(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			Err.errorBefore(`Ref/Observer binding should be array index item, but got {typeof(k)}`, SURFACE)
+			return Void -- unreachable; keeps the contract type
+		end,
+	})
 end
 
 local function Init(module: any)
 	implsOf(module).Observer = createImpl(module)
+	registerDispatchHandlers(module)
 end
 
 local function implFor(module: any)

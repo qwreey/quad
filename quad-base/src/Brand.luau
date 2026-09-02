@@ -60,6 +60,12 @@ local PreRefBrand = Brand()
 local PostRefBrand = Brand()
 local ModifierBrand = Brand()
 local EpochBrand = Brand()
+local MapperBrand = Brand() -- M5 단위 ④ — Claim의 MapperDescriptor(claim-plan §2)
+-- M10 (round16): the attribute single-key objects get their own brand — the
+-- group brand (AttributeBrand) marks the array-part group VALUE, while this
+-- one marks the hash-part KEY objects (`AttributeKey "name"` and the group's
+-- private per-name keys — both must reach the same AttributeKeyFallbackHandler)
+local AttributeKeyBrand = Brand()
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
@@ -83,6 +89,18 @@ end
 local function isModifier(x: any): boolean
 	return ModifierBrand:is(x)
 end
+local function isMapperDescriptor(x: any): boolean
+	return MapperBrand:is(x)
+end
+local function isTag(x: any): boolean
+	return TagBrand:is(x)
+end
+local function isAttribute(x: any): boolean
+	return AttributeBrand:is(x)
+end
+local function isAttributeKey(x: any): boolean
+	return AttributeKeyBrand:is(x)
+end
 
 -- Subtype relations: the more specific predicate is defined first and the
 -- wider one is composed on top of it, so the direction of inclusion is
@@ -105,6 +123,8 @@ end
 
 return {
 	Brand = Brand,
+	MapperBrand = MapperBrand,
+	isMapperDescriptor = isMapperDescriptor,
 
 	ObserverBrand = ObserverBrand,
 	EffectBrand = EffectBrand,
@@ -121,6 +141,7 @@ return {
 	PostRefBrand = PostRefBrand,
 	ModifierBrand = ModifierBrand,
 	EpochBrand = EpochBrand,
+	AttributeKeyBrand = AttributeKeyBrand,
 
 	isEpoch = isEpoch,
 	isSource = isSource,
@@ -133,4 +154,7 @@ return {
 	isRef = isRef,
 	isPreRef = isPreRef,
 	isPostRef = isPostRef,
+	isTag = isTag,
+	isAttribute = isAttribute,
+	isAttributeKey = isAttributeKey,
 }

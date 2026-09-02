@@ -10,10 +10,14 @@
 
 ## 왜 필요한가 — dev-dependency로는 못 푸는 문제
 
-`quad-roblox`는 `QuadRoblox(Quad): QuadRoblox`처럼 quad-base 인스턴스를
+`quad-roblox`는 quad-base 인스턴스를
 **런타임에 함수 인자로 주입**받는다(`base/module-lifecycle-plan.md`
 "Bind는 누가, 어떻게 구현하는가" 절이 확정해둔 팩토리 패턴 — quad-roblox
-자신은 quad-base를 `require`할 필요가 없어 보인다).
+자신은 quad-base를 `require`할 필요가 없어 보인다. **[2026-09-02 `H-305`
+(d′)]** 표면은 `quad:UseProvider(QuadRoblox)` — 프로바이더 fn
+`QuadRoblox<T>(quad: T): RobloxExtension`; 옛 `QuadRoblox(Quad):
+QuadRoblox` 직접 호출형 서술에서 교체됐지만 "런타임 인자 주입"이라는 이
+절의 논지는 그대로다).
 
 **그런데 타입 주석 하나 때문에 얘기가 달라진다.** `QuadRoblox`의 시그니처가
 `Quad` 타입을 참조하려면 그 타입이 정의된 모듈을 `require`해야 하고,
@@ -24,12 +28,12 @@
 
 - `quad_base`를 **일반 의존성**으로 두면: 소비자가 `quad-roblox`를 설치할
   때마다 무거운 quad-base 전체가 통째로 딸려온다(quad-base를 이미 따로
-  설치해서 `QuadRoblox(Quad)`에 넘기는 상황이면 완전히 중복).
+  설치해서 `UseProvider`로 넘기는 상황이면 완전히 중복).
 - `quad_base`를 **dev-dependency**로 두면: 로컬 개발 중엔 문제없지만,
   `quad-roblox`가 게시된 뒤 **소비자 환경엔 dev-dependency가 전파되지
   않아** 그 타입-전용 require가 못 찾고 그 자리에서 런타임 크래시난다.
 
-**해법**: `Quad`의 타입 계약만 담은, 런타임 구현이 사실상 없는 세 번째
+**해법**: `Quad`의 타입 계약만 담은, 런타임 로직이 없는(**[2026-08-31 `H-230`]** 공유 상수 테이블은 실림 — `HANDLER_PRIORITY_*`/`ERROR_LEVEL_SURFACE`) 세 번째
 워크스페이스 패키지 `quad-types`를 두고, `quad-roblox`는 이것만 **일반
 의존성**으로 둔다 — 항상 안전하게 실 의존성으로 넣을 수 있을 만큼
 작고, quad-base 전체를 안 끌고 온다.
@@ -107,6 +111,8 @@ quad-roblox는 `quad-types`의 좁은 `Quad`만 본다.
 - 규칙이 쓰인 계기는 `Dispatch`이고, **M3**가 `Dispatch: Dispatch` 필드와
   그 타입 재수출을 여기 추가한다 — `ROADMAP.md` M3 체크리스트에 **항목으로
   명시**한다(지금까지 아무도 이 필요성을 항목화해두지 않았다).
+  **[2026-08-31] M3 단위 1로 완료** — `Handler`/`Dispatch` export type과
+  `Quad.Dispatch` 필드가 실제로 추가됐다(그 체크박스는 `[x]`).
 - **[2026-08-24 정정] 다만 규칙이 *처음 적용된* 마일스톤은 M2다** —
   마일스톤 순서 교체로 반응형 코어가 앞에 오면서, `Source`/`State`/`Store`
   필드 추가가 `Dispatch`보다 먼저 왔다(`ROADMAP.md` M2의 `H-25` 파생 항목 —
@@ -250,6 +256,17 @@ end
 타입 표현식 안에 직접 나타나야 하는 이유고, `__versionCheck` 필드도 **실제로
 참조해야만** 평가된다(lazy) — 위 사용법 예제의 `local _ =
 checked.__versionCheck` 줄이 빠지면 검사가 조용히 스킵된다.
+**[2026-09-02 실측 보강 — `H-306`]** 이 함정의 사거리는 로컬 타입
+별칭보다 넓다: **제네릭 본문 안 로컬 *어노테이션*+강제 참조 조합도
+불활성이다**(`local checked: CheckedQuad<T,…> = quad :: any` + 참조 —
+제네릭 `T`에 1회 검사될 뿐 호출부 인스턴스화마다 재평가 안 됨. 타입
+인자가 구체 타입이면 그 자리에서도 발화하므로 범인은 자리+제네릭 `T`
+조합). 그리고 **호출이 제네릭 함수(`UseProvider<Self,P>`류)를 한 겹
+경유하면 어떤 타입 자리도 평가를 강제하지 못한다** — 파라미터 자리
+(정상 인자까지 구조적 거부), 반환 레코드 필드 자리(직접 호출만 eager),
+소비 필드 팬텀(침묵) 전부 실측 기각. 그런 자리엔 타입 검사가 물리적으로
+불가능하다 — `QuadRoblox`가 런타임 검사로 전환된 이유(round14 §4
+`H-306`, 위 "남은 것" 절의 역전 배너).
 
 **함정 3 — [가장 중요, 가장 늦게 발견] 값이 한 번이라도 `type
 function`을 거치면 이후 제네릭 self 메소드 체이닝이 조용히 깨진다.**
@@ -291,12 +308,29 @@ function`을 거치면 이후 제네릭 self 메소드 체이닝이 조용히 �
 ## 남은 것
 
 - `quad-roblox`가 실제로 `CheckedQuad<T, Pattern>`을 쓰는 진입점
-  (`QuadRoblox` 등) 구현은 M5 — 지금은 quad-roblox/src가 비어 있어 이
-  문서의 사용법 예제가 실제 위치는 아직 없음.
-- `_initializedBy`(별도 문자열 마커, backend 유일 슬롯 가드)와의 관계는
-  `base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절 참고 — `CheckedQuad`는
-  **버전** 호환성만 보고, **누가 이미 backend를 설치했는지**는 별개
-  문제로 계속 `_initializedBy`가 담당한다.
+  (`QuadRoblox` 등) — **[2026-09-02 구현됨, M5 단위 ①]**
+  `quad-roblox/src/init.luau`(`QuadRoblox` — 가상 필드 강제 참조 패턴
+  그대로)와 `RobloxFactory.luau`가 그 실제 위치다. 나머지(`D`/`Handlers`/
+  `Claim`)는 단위 ②~⑤.
+  **⚠️ [2026-09-02 단위 ⑤ 역전 — `H-306` (a), 사용자 확정]** 그 배선은
+  **조용히 불활성이었다** — 제네릭 본문 로컬 어노테이션은 호출부마다
+  재평가되지 않고(아래 함정 2의 실측 보강 참고), `UseProvider` 간접
+  흐름에선 **어떤 타입 자리도 검사를 강제하지 못한다**(파라미터 자리는
+  정상 인자까지 구조적 거부 / 반환 필드 자리는 직접 호출만 eager / D 필드
+  팬텀은 침묵 — 배선 후보 매트릭스 실측, round14 §4 `H-306`이 소스).
+  그래서 `QuadRoblox`의 버전 검사는 **런타임**(`type-version-check`의
+  `matchesPattern` + `errorBefore`, 설치 1회 문자열 비교)으로 전환됐고
+  quad-roblox가 `type_version_check`를 실의존으로 갖게 됐다. 사용자:
+  *"처음부터 타입으로 검사되도록 엄청 노력했는데, 그냥 런타임으로
+  검사하는게 엄청 싸게 먹히는 부분이라. 런타임으로 해도 디버깅에 큰
+  문제는 안 생기는지라(바로 죽고, 잘 알려줘서)"*. `CheckedQuad` 기계
+  자체는 이 패키지에 존치한다 — **직접 호출형 자리**(리턴 타입 위치에
+  박는 spike 23 정본형)에선 여전히 유효하고 실측돼 있다.
+- backend 유일 슬롯 가드와의 관계는 `base/module-lifecycle-plan.md`의
+  "New()의 내부 구성" 절 참고 — `CheckedQuad`는 **버전** 호환성만 보고,
+  **누가 이미 backend를 설치했는지**는 별개 문제로 `UseProvider`의 fn
+  identity 락이 담당한다(**[2026-09-02 `H-305` (d′)]** 옛 `_initializedBy`
+  문자열 마커 대체 — 문자열은 다른 사본·버전을 구분 못 해 묵인했다).
 - **[백로그, 2026-08-19 신설]** `quad-roblox-types`(가칭) — `quad-types`와
   같은 패턴으로, `quad-roblox` 전체 대신 그 타입만 필요한 모듈을 위한
   패키지. **사용자가 지금 만들 필요는 없다고 명시적으로 후순위 지정** —

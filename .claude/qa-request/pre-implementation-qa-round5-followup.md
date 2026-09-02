@@ -424,9 +424,11 @@ Observe/Callback하고, 최초 발화는 `Blocker`의 다른 사용법으로 억
    넘기는** 것도 같이 확정된 셈인데(형제 순서는 `Offset` 부기가 담당), 이건
    맞다고 보고 그렇게 적었다.
 2. **`rawReplace`가 `indexOfRaw(self, oldElement)`로 자리를 찾는다** — 지금
-   `raw*`가 index 기준과 element 기준으로 섞여 있는 알려진 불일치
-   (`slot-plan.md`의 "raw* 내부 호출 규약" 캐비엇)를 그대로 따랐다. M6 구현 때
-   둘 중 하나로 통일할 것.
+   `raw*`가 index 기준과 element 기준으로 섞여 있는 알려진 불일치(당시
+   `slot-plan.md`의 raw* 내부 호출 규약 캐비엇 — **[2026-09-03]** 그 캐비엇은
+   5라운드 index 통일로 닫힌 stale로 판정돼 본문에서 삭제됨, M6 편입 실코드가
+   전부 index 기준임을 재확증)를 그대로 따랐다. M6 구현 때
+   둘 중 하나로 통일할 것 — **[2026-09-03 이행됨]** index 기준으로 통일.
 3. **공개 `Replace`는 항상 파괴, `:List` 경로만 `_owned`를 본다** —
    `rawReplace(self, old, new, destroyOld)`의 4번째 인자로 갈린다. `_listed`
    Slot은 공개 CRUD가 막혀 있어 두 경로가 섞이지 않는다.

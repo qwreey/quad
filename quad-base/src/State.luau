@@ -48,7 +48,9 @@ local EpochMap = require("./EpochMap")
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
 local Void = require("./Void")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
+local Err = require("./ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type StateData<T> = QuadTypes.StateData<T>
 export type State<T> = QuadTypes.State<T>
@@ -90,7 +92,7 @@ local function createImpl(module: any)
 	local function newNode(deps: { any }, fn: any, mt: any?): any
 		for i, dep in deps do
 			if not isState(dep) then
-				error(`State: dep #{i} is not a State/Source`, 3) -- 3: past Compute/With/Gate to the user's call
+				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/With/Gate the user called
 			end
 		end
 		local self = setmetatable({
@@ -153,10 +155,10 @@ local function createImpl(module: any)
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
-			-- `H-205`: level 3 — `_recompute`'s only callers are Get's own lines, so 2
-			-- always blamed quad internals; 3 reaches the user on a direct `Get` and is
-			-- never worse through a pass-through chain (no fixed level reaches user code there).
-			error("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", 3)
+			-- `H-205` history: this used to be a hand-counted level 3; the walker
+			-- (`H-231`) now finds the nearest SURFACE frame (the user's Get/entry),
+			-- which is what that 3 was approximating — no counting left to maintain.
+			Err.errorBeforeNearest("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
 		end
 		self._cache = result
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
@@ -195,7 +197,7 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local dep = (select(i, ...))
 			if dep == nil then
-				error(`State: dep #{i + 1} is nil`, 3) -- 3: past With/Compute to the user's call
+				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the With/Compute the user called
 			end
 			deps[i + 1] = dep
 		end
@@ -210,7 +212,7 @@ local function createImpl(module: any)
 		if type(fn) ~= "function" then
 			-- `H-202`: without this the crash lands at the first `Get` deep inside
 			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
-			error("State: Compute fn must be a function", 2)
+			Err.errorBeforeNearest("State: Compute fn must be a function", SURFACE)
 		end
 		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
 	end
@@ -265,7 +267,7 @@ local function createImpl(module: any)
 	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
 	function Impl.Gate(self: any, setup: any): any
 		if type(setup) ~= "function" then
-			error("State: Gate setup must be a function (emit) -> onUpstreamEmit", 2)
+			Err.errorBeforeNearest("State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
 		end
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
@@ -278,7 +280,7 @@ local function createImpl(module: any)
 			return node:_flush(commit)
 		end)
 		if type(onUpstreamEmit) ~= "function" then
-			error("State: Gate setup must return the onUpstreamEmit function", 2)
+			Err.errorBeforeNearest("State: Gate setup must return the onUpstreamEmit function", SURFACE)
 		end
 		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
 		self._subs[node] = true -- re-attach: the gate starts hearing emits only now
@@ -289,7 +291,7 @@ local function createImpl(module: any)
 	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
 	function Impl.Observer(self: any, fn: any?): any
 		if fn ~= nil and type(fn) ~= "function" then
-			error("State: Observer fn must be a function (or nil for the always-observe utility)", 2)
+			Err.errorBeforeNearest("State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
 		end
 		return ObserverImpl.new(self, fn)
 	end
@@ -299,9 +301,14 @@ local function createImpl(module: any)
 			return (factory :: any)(self)
 		end
 		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
-			error("State: Apply factory must be a function or an object with an __apply method", 2)
+			Err.errorBeforeNearest("State: Apply factory must be a function or an object with an __apply method", SURFACE)
 		end
 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
+	end
+
+	-- `H-231`: public surface joins the shared error-namespace tag layer
+	for _, fn in { Impl.Get, Impl.With, Impl.Compute, Impl.Gate, Impl.Observer, Impl.Apply } do
+		Err.setFuncLevel(fn, SURFACE)
 	end
 
 	return Impl

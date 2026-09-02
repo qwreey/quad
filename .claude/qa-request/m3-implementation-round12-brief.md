@@ -58,8 +58,11 @@ op(`addTag`/`setAttribute`/`native*`)는 M5/M10 몫이라 지금 mock(생명주�
    실전**(Observer·Blocker·Source).
 3. **`None` 센티널 + `NoneHandler`/`NilHandler`** — 첫 실핸들러 둘.
    `H-39`(말단 핸들러의 `setOffsetSource(None)`→`setLength(0)` 등록 계약)의
-   첫 적용이자 Handler 작성 체크리스트 게이트의 첫 실행. `architecture.md`
-   소스 트리에 탑레벨 `None.luau` 줄도 이때 추가(ROADMAP가 예고).
+   첫 적용이자 Handler 작성 체크리스트 게이트의 첫 실행. **[2026-08-31
+   `H-253` 정정]** 탑레벨 `None.luau`는 만들지 않았다 — 정의·핸들러·`register`
+   전부 `Dispatch/None.luau`에 있고 `init.luau`가 값만 재export
+   (`slot-plan.md`의 선례 — 정의는 관련 로직 옆에, 공개 표면은 최상위 재노출 — 그대로.
+   이 항목의 원래 예고 "트리에 탑레벨 줄 추가"가 그 선례와 어긋났던 것).
 4. **`Dispatch/Leaf.luau`(`ObserverEffectLeafHandler`) + Observer/Effect 동적
    경로 가드 등록 + mock 대상 종합 테스트**(ROADMAP M3 마지막 항목) —
    M2 값(Observer/Effect/bindLifetime)을 디스패치가 실제로 물어 올리는 자리.

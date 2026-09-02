@@ -604,6 +604,53 @@ local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T �
 
 ---
 
+## 8.5. 대형 생성 타입은 체커의 `LuauTarjanChildLimit`(기본 10000)을 넘는다
+
+**[2026-09-02 실측, `H-305` (d′) 반영 중]** 생성된 `export type D`/
+`DMapper`(31클래스 × `<Class>Param<E>` 인스턴스화, 클래스당 필드 40~60개 ×
+4-유니언)는 **별칭 선언이 존재하는 것만으로**(참조 안 해도) luau-lsp/새
+솔버가 `Internal error: Code is too complex to typecheck!`를 낸다. 이분
+실측: 별칭을 클래스별 소형 별칭으로 쪼개 합성해도 **무효**(총 정규화
+작업량 동일), 한도 플래그 중 **`LuauTarjanChildLimit`만이 유효 레버**
+(`LuauTypeInferRecursionLimit`/`IterationLimit`/`NormalizeCacheLimit`은
+무효). `scripts/test.sh`가 quad-roblox 그룹에 `40000`을 실어 전 그룹
+클린·1.2s대(성능 무해). 부수 관측 하나: 그 교집합 결과 타입
+(`Quad & RobloxExtension`)을 `any` 파라미터로 흘리는 클로저 추론은
+한도를 더 올려도(200000) 안 풀린다 — 경계에서 `:: any` 캐스트 한 번이
+정답(`spec.robloxfactory.luau`의 주석 달린 자리). 에디터(luau-lsp) 쪽도
+같은 한도를 쓰므로 증상이 나면 `.vscode/settings.json`의 fflags에 같은
+키를 얹을 것(9번의 솔버 설정 항목과 같은 자리 — **[2026-09-02 기준]
+아직 안 얹음**, 에디터에서 실제로 아픈지 확인 후).
+
+---
+
+## 8.6. 콜러블 테이블은 함수∩테이블 교집합이 아니라 `setmetatable<A, B>`로 선언한다
+
+**[2026-09-02 실측·사용자 확정(`H10-3`/`H10-4` (d)), 2026-09-03 통합 반영]**
+`__call` 메타테이블 기반 콜러블 네임스페이스(`Tag(...)` + `Tag.Merged`)를
+`((...string) -> Tag) & { Merged: … }` **교집합**으로 선언하면 두 가지가
+깨진다 — Luau 값 모델에서 함수∩테이블은 **무거주**(값의 원시 타입은
+하나뿐이고 콜러블 테이블은 어디까지나 테이블)라서다:
+
+1. **값 캐스트 붕괴**(`H10-4`) — 실값의 `:: Quad` 리터럴 캐스트가
+   `"because the types are unrelated"`로 실패.
+2. **제네릭 추론 오염**(`H10-3`) — 그 필드를 실은 `T`가 제네릭 이중
+   통과(`QuadRoblox(QuadRoblox(...))`류)를 거치면 `q` 전체가
+   `Type 'nil' does not have key`로 무너짐(재현 조건이 좁아 워크트리
+   4패키지 오버레이 A/B로만 격리됨 — 내부 인과는 미규명, 격리만 완료).
+
+**처방**: 솔버의 자기 표기 **`setmetatable<{Merged: …}, {__call: …}>`**
+(또는 판정 동일한 `typeof(setmetatable(...))`) — 참인 주장(메타테이블
+달린 테이블)이라 값이 거주하고, 캐스트·제네릭 통과 전부 클린(오버레이
+A/B 실측). 실사용은 `quad-types`의 `TagConstructor`/`AttributeConstructor`.
+**잔여 구멍 하나**: `__call` 경유 **호출의 인자 타입만 무검사**
+(`q.Tag(123)` 조용히 통과 — 반환 타입·필드 오타는 검사됨, luau-lsp
+1.69.0·luau-analyze 판정 일치). 옛 `@metatable` 표기는 소스 문법이
+아니다(SyntaxError — 프린터 전용). 결정 경위·사용자 인용은
+`session/2026-09-02-03-h10-3-setmetatable-decision.md`.
+
+---
+
 ## 9. 미해결 / 추적 중
 
 - **[2026-08-19 설정 완료]** 에디터(`luau-lsp`)의 솔버 설정 — `luau-analyze`

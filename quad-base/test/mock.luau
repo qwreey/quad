@@ -268,16 +268,83 @@ end
 	같은 경로). 반환값은 없고, 같은 quad에 두 번 부르면 두 번째는 무시된다.
 ]]
 local Relate = require("../src/Relate")
+local QuadTypes = require("../luau_packages/quad_types")
 
-local installed = setmetatable({}, { __mode = "k" }) :: { [any]: true }
+--[[
+	installNative(quad) — [M6 fork → (d′) 편입: mockProvider 본문이 부른다,
+	단독 export 아님] the mock backend's `native*` layer +
+	`isInst`, mirroring `quad-roblox/src/EngineOps.luau`'s M5 share (Roblox
+	shape: `offset` is ignored — child order is LayoutOrder-based, not physical,
+	so the mock keeps that faithfully). Slot needs a physical target to mount
+	onto in CLI, and these are the only Slot→engine seam. `nativeMove`/
+	`nativeSwap` are deliberate no-op overrides (same reason as Roblox: order
+	is bookkeeping, not physical). `isInst` = "is this a mountable element" =
+	a mock instance.
+]]
+local function installNative(quad: any)
+	local Err = quad.errorNamespace
 
-local function installLifetime(quad: any)
-	if installed[quad] then
-		return
+	local function nativeInsert(target: any, _offset: number, elements: { any })
+		for _, element in elements do
+			element.Parent = target
+		end
 	end
-	installed[quad] = true
+	local function nativeExtract(target: any, _offset: number, elements: { any }, newElements: { any }?)
+		for _, element in elements do
+			element.Parent = nil -- keep alive, out of the tree
+		end
+		if newElements ~= nil then
+			for _, element in newElements do
+				element.Parent = target
+			end
+		end
+	end
+	local function nativeRemove(target: any, _offset: number, elements: { any }, newElements: { any }?)
+		for _, element in elements do
+			element:Destroy()
+		end
+		if newElements ~= nil then
+			for _, element in newElements do
+				element.Parent = target
+			end
+		end
+	end
+	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+	local function nativeDispose(element: any)
+		element:Destroy()
+	end
+	local function isInst(value: any): boolean
+		return isMockInstance(value)
+	end
 
+	quad.nativeInsert = nativeInsert
+	quad.nativeExtract = nativeExtract
+	quad.nativeRemove = nativeRemove
+	quad.nativeMove = nativeMove
+	quad.nativeSwap = nativeSwap
+	quad.nativeDispose = nativeDispose
+	quad.isInst = isInst
+
+	for _, fn in { nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst } :: { any } do
+		Err.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
+end
+
+-- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+-- 백엔드와 같은 설치 계약을 지킨다. **[H-305 (d′)]** 옛 `_initializedBy`
+-- 3분기(그 전엔 `installed` weak 테이블)는 `UseProvider`의 fn identity
+-- 락으로 대체 — 이 `mockProvider`가 락 키가 되는 안정 identity다. 아래
+-- `installLifetime`은 `quad:UseProvider(mockProvider)` 위임 래퍼(기존 spec
+-- 호출부 호환).
+local function mockProvider(quad: any): { [any]: any }
 	local isObserver, isEffect = quad.isObserver, quad.isEffect
+	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
+	-- bindLifetime의 주 호출부가 디스패치 깊이(Leaf.process)라 리터럴 level 2는
+	-- quad 내부를 blame했다. errorBefore(최외곽)면 직접 호출·디스패치 경유
+	-- 양쪽에서 사용자 줄에 닿는다(`lifecycle-pattern.md` 스케치도 같이 정정).
+	local Err = quad.errorNamespace
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	local InstData = Relate() -- inst  -> gchold/gcconn ((0)에서 채움)
 	local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
@@ -330,7 +397,7 @@ local function installLifetime(quad: any)
 
 	local function bindLifetime(inst: any, value: any)
 		if not isMockInstance(inst) then
-			error("bindLifetime: inst is not a mock instance", 2)
+			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE)
 		end
 		if not canBound(value) then
 			-- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
@@ -339,11 +406,11 @@ local function installLifetime(quad: any)
 			if isGlobal then
 				isGlobal = value.Subscribed == true
 			end
-			error(
+			Err.errorBefore(
 				if isGlobal
 					then "bindLifetime: value is already subscribed"
 					else "bindLifetime: value is already bound to another Instance",
-				2
+				SURFACE
 			)
 		end
 		-- [H-184] 훅 가드를 커밋 **전에** 묻는다 — 가드가 거부해도 반쯤 묶인 핸들
@@ -385,7 +452,7 @@ local function installLifetime(quad: any)
 	-- 한 줄(`architecture.md` EngineOps). mock은 그 시그널을 그대로 쓴다.
 	local function onDestroying(inst: any, fn: () -> ()): any
 		if not isMockInstance(inst) then
-			error("onDestroying: inst is not a mock instance", 2)
+			Err.errorBefore("onDestroying: inst is not a mock instance", SURFACE)
 		end
 		return inst.Destroying:Connect(fn)
 	end
@@ -395,11 +462,168 @@ local function installLifetime(quad: any)
 	quad.canBound = canBound
 	quad.canExecute = canExecute
 	quad.onDestroying = onDestroying
+
+	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
+	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
+	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
+	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying } :: { any } do
+		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
+	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
+	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
+end
+
+local function installLifetime(quad: any)
+	quad:UseProvider(mockProvider)
+end
+
+
+-- `H-261`: 세 spec이 같은 헬퍼를 그대로 복사하고 있었다(`H-206` 선례 —
+-- 3벌 복사가 추출 트리거). mock이 install 표면의 소유자라 여기가 집이다.
+local Quad = require("../src")
+local function newQuad(): any
+	local q = Quad.New()
+	installLifetime(q) -- mockProvider가 생명주기+native*+isInst 전부 설치
+	return q
+end
+
+-- `H-271`: spec-로컬 문자열 leaf 핸들러(자리 기여 1, 재사용 Source memo,
+-- 등록 순서 setOffsetSource → setLength)도 두 spec이 복사하고 있었다 —
+-- H-263이 spec.nonenil 안에서 접은 걸 spec.integration이 한 파일 건너 다시
+-- 벌렸다. 같은 근거(공유 헬퍼는 mock 소유)로 여기로. log가 있으면 retractor가
+-- 기록한다.
+local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
+	q.Dispatch.addHandler({
+		name = "SpecLeaf",
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			return type(k) == "number" and type(v) == "string"
+		end,
+		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			local src = sources[k] or q.Source(-1)
+			sources[k] = src
+			q.Dispatch.setOffsetSource(inst, k, src)
+			q.Dispatch.setLength(inst, k, 1)
+			if log ~= nil then
+				local logList: { string } = log
+				return function(hint: any?, retracting: boolean)
+					-- `H-258` 플래그까지 기록 — 공유 헬퍼가 관측을 막으면
+					-- 어떤 spec도 이 계약을 검증할 수 없다 (`H-281`)
+					table.insert(logList, `leaf:retract:{k}:{tostring(hint)}:{tostring(retracting)}`)
+				end
+			end
+			return Quad.Void
+		end,
+	} :: QuadTypes.Handler)
+end
+
+-- `H-282`: blame 단언 관용구(사용자 파일을 찍고 quad 내부는 안 찍는다)가
+-- spec들에 여러 벌 복사되며 내부-제외 검사가 한 곳에서 드리프트했다 — 한
+-- 헬퍼로. `/src/`는 quad-base/src·quad-error/src 둘 다 걸린다(테스트 경로엔 없음).
+local function assertBlamesUser(err: any, wantFile: string, label: string?)
+	local msg = tostring(err)
+	assert(string.find(msg, wantFile, 1, true) ~= nil, `{label or "blame"}: expected {wantFile} in: {msg}`)
+	assert(string.find(msg, "/src/", 1, true) == nil, `{label or "blame"}: must not blame quad internals: {msg}`)
+end
+
+-- (M5 단위 ④ 리뷰) Reflection 심 공장 — spec.handlers/spec.claim이 같은
+-- 심을 손 복사하고 있었다(`H-261` 선례: 공유 헬퍼는 mock이 집). 디스크립터
+-- 모양은 Studio 실측(.Name + Permits.Write 키 유무 = 쓰기 가능성)과 동형 —
+-- 모양이 또 바뀌면 여기 한 곳만 고친다. REFLECTED 내용은 spec별 파라미터.
+local function gameShim(reflected: { [string]: { any } })
+	return {
+		GetService = function(_self: any, name: string): any
+			assert(name == "ReflectionService", "only ReflectionService is shimmed")
+			return {
+				GetPropertiesOfClass = function(_s: any, className: string): { any }
+					return reflected[className] or {}
+				end,
+			}
+		end,
+	}
+end
+
+-- M10 (round16 spike): mock tag/attribute ops — the backend share quad-roblox
+-- fills in M10, mirrored here so the base-owned handlers can run under CLI.
+-- Observation helpers expose applied state; the optional `log` records every
+-- engine call (names sorted — set iteration order is not deterministic) so
+-- specs can assert the batching / "only truly changed names" contracts.
+local instTags = setmetatable({}, { __mode = "k" }) :: { [any]: { [string]: true } }
+local instAttributes = setmetatable({}, { __mode = "k" }) :: { [any]: { [string]: any } }
+
+local function installTagAttributeOps(quad: any, log: { string }?)
+	local function record(op: string, names: { string })
+		if log == nil then
+			return
+		end
+		local sorted = table.clone(names)
+		table.sort(sorted)
+		table.insert(log, op .. ":" .. table.concat(sorted, ","))
+	end
+	local function addTag(inst: any, names: { string })
+		local set = instTags[inst]
+		if set == nil then
+			set = {}
+			instTags[inst] = set
+		end
+		for _, n in names do
+			set[n] = true
+		end
+		record("addTag", names)
+	end
+	local function removeTag(inst: any, names: { string })
+		local set = instTags[inst]
+		if set ~= nil then
+			for _, n in names do
+				set[n] = nil
+			end
+		end
+		record("removeTag", names)
+	end
+	local function setAttribute(inst: any, name: string, v: any)
+		local map = instAttributes[inst]
+		if map == nil then
+			map = {}
+			instAttributes[inst] = map
+		end
+		map[name] = v -- v == nil deletes (the injected-op contract)
+		if log ~= nil then
+			table.insert(log, `setAttribute:{name}={tostring(v)}`)
+		end
+	end
+	quad.addTag = addTag
+	quad.removeTag = removeTag
+	quad.setAttribute = setAttribute
+	-- `H-238`: the backend tags everything it installs
+	for _, fn in { addTag, removeTag, setAttribute } :: { any } do
+		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
+end
+
+local function getTags(inst: any): { string }
+	local out: { string } = {}
+	for n in pairs(instTags[inst] or {}) do
+		table.insert(out, n)
+	end
+	table.sort(out)
+	return out
+end
+
+local function getAttributes(inst: any): { [string]: any }
+	return table.clone(instAttributes[inst] or {})
 end
 
 return {
 	Instance = Instance,
+	gameShim = gameShim,
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
 	installLifetime = installLifetime,
+	mockProvider = mockProvider, -- UseProvider 락 identity(교차 백엔드 spec용)
+	newQuad = newQuad,
+	addSpecLeaf = addSpecLeaf,
+	assertBlamesUser = assertBlamesUser,
+	installTagAttributeOps = installTagAttributeOps,
+	getTags = getTags,
+	getAttributes = getAttributes,
 }

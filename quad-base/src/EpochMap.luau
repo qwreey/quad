@@ -24,7 +24,7 @@
 ]]
 
 local Brand = require("./Brand")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 
 type Epoch = QuadTypes.Epoch
 export type EpochSet = QuadTypes.EpochSet

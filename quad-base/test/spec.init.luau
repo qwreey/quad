@@ -7,7 +7,7 @@
 
 local Quad = require("../src")
 local mock = require("./mock")
-local QuadTypes = require("../roblox_packages/quad_types")
+local QuadTypes = require("../luau_packages/quad_types")
 
 type Quad = QuadTypes.Quad
 

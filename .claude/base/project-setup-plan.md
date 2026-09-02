@@ -50,9 +50,17 @@ quad/
   세션엔 `roblox` 하나만 있어 실제로 검증 안 됨, 필요 여부/의미는 M5 이후
   재확인 후보).
 - **서브패키지 `pesde.toml`**: `[target] environment = "roblox"` +
-  `build_files = ["src"]` + `lib = "src/init.luau"`. `quad-roblox`는
-  `[dependencies] quad_base = { workspace = "qwreey/quad_base", version =
-  "^" }`.
+  `build_files = ["src"]` + `lib = "src/init.luau"`.
+  **⚠️ [2026-09-02 정정, M5 round14 Q3 (a) 사용자 확정]** 여기 한때
+  *"`quad-roblox`는 `[dependencies] quad_base = …`"*라고 적혀 있었는데
+  그건 `architecture.md` 소스 트리의 확정("quad-base가 아니라 quad-types에만
+  workspace 의존")과 정면 충돌하던 서술이다. 실제 모양은 **런타임
+  `[dependencies]`엔 `quad_types`만, `[dev_dependencies]`에 `quad_base`** —
+  런타임은 팩토리 주입이라 require가 없고(모듈 인스턴스를 인자로 받아
+  뮤테이션) 타입만 필요하며, spec/테스트만 quad_base를 쓴다(사용자:
+  *"실제 런타임에는 직접 주입이라 타입만 필요한건 맞긴 하거든"*). dev deps는
+  소비자에게 전파되지 않고, 루트 `pesde.toml`이 wally→pesde 전환 사유로
+  적어둔 바로 그 기능이다 — 2026-09-02 `pesde install` 실동 확인.
 - **⚠️ 패키지 이름은 `a-z`/`0-9`/`_`만 허용 — 하이픈 금지**(`pesde
   install` 실측: `qwreey/quad-base`는 파싱 단계에서 바로 거부됨, 에러
   메시지가 "did not match any variant of untagged enum
@@ -171,6 +179,13 @@ require-by-string 의미론(`@self` 등)을 그대로 지원하므로, darklua�
 
 ## 워크스페이스 의존성은 심볼릭 링크로 연결된다 — CLI 테스트의 함정
 
+> **⚠️ [2026-08-31 `H-234` 경로 갱신]** 이 절의 실측(2026-08-19)은 전부
+> quad-base·quad-types가 roblox target이던 시절이라 예시 경로가
+> `roblox_packages/`로 적혀 있다 — **지금 워크스페이스 내부 링크는 전부
+> `luau_packages/`다**(target 전환, 아래 `H-234` 문단이 소스). 심볼릭
+> 링크라는 사실과 함정 자체는 디렉토리 이름과 무관하게 그대로 유효하다.
+> 아래 히스토리 경로는 당시 사실이라 안 고친다 — 현재형 지침만 갱신해뒀다.
+
 **[2026-08-19 실측]** `pesde install`이 워크스페이스 멤버 간 의존성을
 해소하는 방식은 **심볼릭 링크**다 — `quad-roblox/roblox_packages/`
 안에 실제로 이렇게 생긴다:
@@ -199,6 +214,10 @@ local v = require("./linked")
 **실무 영향**: `quad-roblox`가 실제로 `quad_base`를 쓰게 되면(M5+),
 표준 경로(`require(".../roblox_packages/quad_base")`)는 **`luau` CLI로
 직접 못 돌린다** — `could not resolve child component`로 즉시 깨짐.
+**[2026-09-02 해소 확인]** M5가 실제로 quad_base를 쓰는 자리는 **dev-dep
+테스트뿐**이고(위 정정 — 런타임 require 없음), 그 경로(`quad-roblox/
+luau_packages/quad_base`)는 기존 `relink.sh`가 중첩까지 실복사로 바꿔
+스위트가 `luau` CLI에서 정상으로 돈다(2026-09-02 전 스위트 exit 0 실측 — 파일 수는 `scripts/test.sh` glob이 소스).
 
 **[2026-08-19 후속 세션, 확인 완료] Rojo/Studio는 이 문제와 무관함 —
 `rojo`를 같은 방식으로 `/code/.local/bin`에 설치해 직접 검증.** `quad-roblox/`
@@ -223,10 +242,11 @@ local v = require("./linked")
 Studio도 같은 파일시스템 계층을 쓰는 이상 다르게 동작할 이유가 없다.
 
 **우회가 필요한 범위는 M0/M1식 CLI 스파이크/mock 테스트로 좁혀짐**:
-`roblox_packages/`를 거치지 말고 실제 형제 패키지 경로를 직접 가리킬
+패키지 링크 디렉토리(**[2026-08-31 이후]** `luau_packages/`)를 거치지 말고
+실제 형제 패키지 경로를 직접 가리킬
 것 — 예: `quad-roblox/src`에서 검증용 스크립트를 짤 때
 `require("../../quad-base/src")`처럼. **프로덕션 `quad-roblox` 소스
-자체는 그대로 표준 pesde 경로(`roblox_packages/quad_base`)를 쓸 것** —
+자체는 그대로 표준 pesde 경로(**[2026-08-31 이후]** `luau_packages/quad_base`)를 쓸 것** —
 Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했듯 문제없이
 동작한다.
 
@@ -250,7 +270,7 @@ Rojo/Studio가 실제로 소비하는 게 그 경로이고 위에서 확인했�
 그냥 `luau`로 돌리면 스모크가 죽고 `luau-analyze`는 모듈을 `any`로 떨어뜨려
 **조용히 통과**한다("거짓 클린"). **[2026-08-28 M2 첫 단위, `H-165`] 둘째
 함정 — `quad-types`에 `export type`을 추가하면 `pesde install`을 다시 돌려야
-한다.** pesde가 만드는 링크 파일(`quad-base/roblox_packages/quad_types.luau`)은
+한다.** pesde가 만드는 링크 파일(`quad-base/luau_packages/quad_types.luau` — **[2026-08-31 `H-234`]** 옛 경로는 `roblox_packages/`였다)은
 `return module` 위에 **그 시점에 존재하던 export 타입만** `export type X =
 module.X`로 손으로 나열한 shim이라, `quad-types/src/init.luau`에 타입을 새로
 export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Unknown type"으로
@@ -258,20 +278,46 @@ export해도 shim을 재생성하기 전엔 `QuadTypes.Ref` 같은 참조가 "Un
 **[2026-08-28]** `luau-analyze`도 같이 돌리므로 이 실패는 조용하지 않다. Luau의
 `.luaurc` symlink opt-in 토글이 미래에 생기면 이 절 전체가 불필요해짐 —
 그때 다시 볼 것. **[2026-08-31, `H-210`] 셋째 함정 — 루트
-`default.project.json`의 트리에 각 패키지의 `roblox_packages`가 같이
+`default.project.json`의 트리에 각 패키지의 **패키지 링크 디렉토리**가 같이
 올라가야 한다**(사용자 발견: rojo 통합 luau-lsp가 *"Unknown require:
 game/ReplicatedStorage/roblox_packages/quad_types"*). 코드의
-`require("../roblox_packages/…")`가 인스턴스 공간에서도 같은 상대 위치로
+`require("../…_packages/…")`가 인스턴스 공간에서도 같은 상대 위치로
 풀리려면, pesde 가이드(`https://docs.pesde.dev/guides/roblox/`)대로 패키지마다
-`src`와 `roblox_packages`를 **형제로** 매핑해야 한다 — 이 레포는 멀티 패키지라
-`ReplicatedStorage.quad-base`(Folder) 아래 `src` + `roblox_packages`,
-`quad-roblox`도 같은 모양(한 `ReplicatedStorage.roblox_packages`를 공유하면
+`src`와 링크 디렉토리를 **형제로** 매핑해야 한다 — 이 레포는 멀티 패키지라
+`ReplicatedStorage.quad-base`(Folder) 아래 `src` + 링크 디렉토리,
+`quad-roblox`도 같은 모양(하나를 공유하면
 quad-roblox가 자기 의존성을 갖는 순간 충돌 — 사용자 지적). 검증은
 `rojo sourcemap` + `luau-lsp analyze --sourcemap`으로 unknown-require 0 실측.
 빈 `src`(quad-roblox, M5 전)는 rojo가 조용히 생략하므로 무해.
+**[2026-08-31 같은 날, `H-234` 사용자 결정] 그 링크 디렉토리는 이제
+`luau_packages`다 — quad-base·quad-types의 pesde target을 `roblox` →
+`luau`로 전환했다.** 사용자 발견·논거: `luau_packages`(quad-error 등 luau
+의존이 실제로 설치되는 곳)가 rojo 트리·sourcemap에 안 들어가 IDE 타입에러와
+rojo 빌드 오류가 났고, *"처음부터 quad-base 자체가 roblox package는 아니라서
+luau로 바꿔야 하지 않아? (어떤 백엔드이더라도 무관히 돌아가니까)"* —
+`architecture.md`의 패키지 경계 원칙(quad-base는 엔진 무관) 그대로다.
+quad-base가 luau target이 되려면 자기 의존 `quad-types`도 luau여야 해서
+같이 전환(둘 다 `build_files` 제거, 의존 선언의 `target = "luau"` 오버라이드는
+동일 target이 되어 불필요해짐 — quad-roblox의 `quad_types` 의존에만 남는다).
+결과: 모든 내부 링크가 `luau_packages/` 하나로 통일되고(코드 require 전부
+`roblox_packages/quad_types` → `luau_packages/quad_types`),
+`default.project.json`도 그 디렉토리를 매핑한다. `rojo build`·전체 테스트
+클린 실측. **⚠️ [같은 날, 리뷰 지적 `H-243`] 외부 소비자 갭 — 게시 시점
+숙제**: 표준 pesde-Roblox 가이드를 따르는 외부 소비자는 `roblox_packages`만
+rojo 트리에 매핑하므로, luau target인 quad-base/quad-types가 설치되는
+`luau_packages`가 트리에서 빠져 Studio 런타임에서 내부 require가 깨질 수
+있다 — 지금은 이 레포의 `default.project.json`이 손 매핑해서 문제없지만,
+**quad를 밖에서 처음 소비하는 시점(M5 이후 게시/가이드 작성)에 소비자용
+매핑 안내(또는 pesde의 luau-in-roblox 링킹 확인)가 필요하다.** **같은 결정의 짝**: `relink.sh` 꼬리에 `rojo sourcemap
+default.project.json --output sourcemap.json` 재생성 추가(사용자: *"rojo
+sourcemap … --output 도 relink에서 실행되도록 … 안 그럼 ide에서
+타입에러남"*) — rojo가 없으면 조용히 건너뛴다.
 
-**[2026-08-19 같은 날 넷째 후속 세션] 의존 대상의 `target`에 따라 링크
-디렉토리 이름이 달라진다** — `quad-types`(target `roblox`)가
+**[2026-08-19 같은 날 넷째 후속 세션, ⚠️ 2026-08-31 정정] 의존 대상의
+`target`에 따라 링크 디렉토리 이름이 달라진다** — (**`H-234`로 예시의
+target 배치는 옛 것이 됐다** — 지금은 quad-base·quad-types도 `luau`라 내부
+링크가 전부 `luau_packages/` 하나다, 위 `H-234` 문단이 소스. 아래는 당시
+사실.) `quad-types`(당시 target `roblox`)가
 `type-version-check`(target `luau`)에 의존하면, `quad-base`/`quad-roblox`가
 쓰는 `roblox_packages/`와 달리 `quad-types/src/init.luau`는
 `require("./luau_packages/type_version_check")`로 **`luau_packages/`**
