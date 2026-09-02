@@ -10,8 +10,9 @@
 
 	The PUBLIC calling surface stays `quad.Dispatch.setLength` etc. — the
 	terminal-handler contract (H-39/H-25) is written against those names, so
-	InitDispatch re-exports these same function objects (no wrappers). M6 may
-	revisit surface naming when Slot wiring lands.
+	InitDispatch re-exports these same function objects (no wrappers). Slot
+	wiring landed (M6 편입, 2026-09-03) without renaming — Slot captures
+	`module._bookkeeping` directly (`H6-2`), the public names are untouched.
 
 	Sources, as-is: `dispatch-core-plan.md` "Length/Offset" / "두 필드" /
 	"배치 등록을 안전하게 만드는 Blocker 게이팅" — plus the `H-240` (a)

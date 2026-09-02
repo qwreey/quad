@@ -65,30 +65,30 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 	if isStore(arg) then
 		for _, name in ipairs(arg:Names()) do
 			if not overwrite and map[name] ~= nil then
-				Err.errorBefore(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = arg[name] -- the declared Source slot (H-79)
 		end
 	elseif isAttribute(arg) then
 		for name, v in pairs(arg:NameMap()) do
 			if not overwrite and map[name] ~= nil then
-				Err.errorBefore(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = v
 		end
 	elseif type(arg) == "table" then
 		for rawName, v in pairs(arg :: { [any]: any }) do
 			if type(rawName) ~= "string" then
-				Err.errorBefore(`{ctx}: plain-table keys must be strings`, SURFACE)
+				Err.errorBeforeNearest(`{ctx}: plain-table keys must be strings`, SURFACE)
 			end
 			local name = rawName :: string
 			if not overwrite and map[name] ~= nil then
-				Err.errorBefore(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = v
 		end
 	else
-		Err.errorBefore(`{ctx}: arguments must be Stores, Attributes or plain tables`, SURFACE)
+		Err.errorBeforeNearest(`{ctx}: arguments must be Stores, Attributes or plain tables`, SURFACE)
 	end
 end
 
@@ -109,7 +109,7 @@ function Attribute.Merged(...: any): any
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
 		if not isAttribute(arg) then
-			Err.errorBefore("Attribute.Merged: arguments must be Attribute values", SURFACE)
+			Err.errorBeforeNearest("Attribute.Merged: arguments must be Attribute values", SURFACE)
 		end
 		flattenArg(map, arg, false, "Attribute.Merged")
 	end
@@ -121,7 +121,7 @@ function Attribute.Overridden(...: any): any
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
 		if not isAttribute(arg) then
-			Err.errorBefore("Attribute.Overridden: arguments must be Attribute values", SURFACE)
+			Err.errorBeforeNearest("Attribute.Overridden: arguments must be Attribute values", SURFACE)
 		end
 		flattenArg(map, arg, true, "Attribute.Overridden")
 	end
@@ -129,6 +129,12 @@ function Attribute.Overridden(...: any): any
 end
 
 table.freeze(Attribute)
+
+-- `H-238`: tag the public surface (see Tag.luau — same reasoning; the
+-- handler-process raises below stay errorBefore, dispatch depth `H10-2`)
+for _, fn in { getmetatable(Attribute).__call, Attribute.Merged, Attribute.Overridden } :: { any } do
+	Err.setFuncLevel(fn, SURFACE)
+end
 
 local InitDispatch = require("./Dispatch")
 

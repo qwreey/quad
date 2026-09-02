@@ -48,14 +48,14 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 	if type(nameOrList) == "table" then
 		for _, name in ipairs(nameOrList :: { any }) do
 			if type(name) ~= "string" then
-				Err.errorBefore("Tag: names must be strings", SURFACE)
+				Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
 			end
 			target[name :: string] = true
 		end
 	elseif type(nameOrList) == "string" then
 		target[nameOrList] = true
 	else
-		Err.errorBefore("Tag: names must be strings", SURFACE)
+		Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
 	end
 end
 
@@ -109,7 +109,7 @@ function Tag.Merged(...: any): any
 	for i = 1, select("#", ...) do
 		local tag = select(i, ...)
 		if not isTag(tag) then
-			Err.errorBefore("Tag.Merged: arguments must be Tag values", SURFACE)
+			Err.errorBeforeNearest("Tag.Merged: arguments must be Tag values", SURFACE)
 		end
 		for name in tag:Names() do
 			names[name] = true
@@ -119,6 +119,17 @@ function Tag.Merged(...: any): any
 end
 
 table.freeze(Tag)
+
+-- `H-238`: public constructors/methods are tagged so argument-validation
+-- raises (Nearest — quad-error header: validation blames the caller even
+-- when nested in a callback) land on the user's line, not this file. Tagged
+-- once at file scope — the tag map lives in the shared namespace (`H-231`).
+-- (통합 감사 2라운드 발견 — fork 산출물엔 스텁만 태그돼 있었다.)
+for _, fn in
+	{ getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, TagImpl.Removed, TagImpl.Contains, TagImpl.Names, TagImpl.Apply } :: { any }
+do
+	Err.setFuncLevel(fn, SURFACE)
+end
 
 --[[
 	InitTag(module) — installs the value namespace, the op stubs (when no

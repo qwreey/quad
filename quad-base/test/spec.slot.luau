@@ -1,8 +1,10 @@
 --!nocheck
 --[[
-	Slot spec — M6 fork, built per slice. Slice 2: plain-element end-to-end
-	(`Frame { slot }` mounts children, Add/Remove reflect physically, ordering
-	via Length/Offset, unmount on State<Slot> swap, dispose guard).
+	Slot spec — M6 fork, built per slice and accumulated (slices 2~4, `H6-1`~
+	`H6-6`): plain-element end-to-end (`Frame { slot }` mounts children,
+	Add/Remove reflect physically, ordering via Length/Offset, unmount on
+	State<Slot> swap, dispose guard), Slot-in-Slot nesting, `:List`/`:Single`
+	reconcile (Detach reuse, remount catch-up), wrapper-Slot reorder (`H6-6`).
 
 	`--!nocheck`: this spec pokes internal fields (`_elements`, `_mounted`,
 	`bk`) that the public `Quad` type does not expose — the M5 specs use the

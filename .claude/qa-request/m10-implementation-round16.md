@@ -18,6 +18,7 @@
 | `H10-4` | ① | 🟡 | `__call` 콜러블 테이블 **값**도 함수∩테이블 교집합 타입을 구조적으로 불만족 — quad-base `init.luau` 리터럴의 `:: Quad` 캐스트가 "unrelated"로 붕괴(H10-3과 같은 뿌리의 값-측 증상) | ✅ 반영 — 리터럴에서 두 네임스페이스만 `:: any`(사유 주석). **[2026-09-03 통합]** H10-3 (d) 채택으로 그 캐스트도 제거 — 리터럴 `:: Quad`가 그대로 통과(오버레이 실측) |
 | `H10-5` | ② | 🟡 | **M5 `spec.robloxfactory.luau` 6절과의 통합 지점** — 그 절은 "M5 스코프 밖 op == nil"을 단언했는데, M10 확정 설계(재역전 2026-08-18: quad-base가 안내 스텁+Fallback을 **항상** 자기 등록)가 들어오면 실질이 "nil"→"미채움 스텁"으로 바뀐다. fork가 그 절을 스텁 단언(호출 시 "not available" + setTimeout/clearTimeout은 여전히 nil)으로 재작성했다 — **M5 산출물 수정이라 통합 시 메인이 M5 원장과 대조해 판정할 것**(Q4 (a)의 본뜻 "quad-roblox가 M5에서 안 채움"은 그대로 검증됨) | ✅ **[2026-09-03 통합 — 메인 판정 승인]** 재작성이 Q4 (a) 본뜻 + 2026-08-18 재역전(quad-base 상시 자기 등록) 둘 다 보존 — 그대로 편입, 전 스위트 exit 0 |
 | `H10-6` | ① | 🟢 | mock 확장(브리프 몫) — `installTagAttributeOps(quad, log?)`(addTag/removeTag/setAttribute + `H-238` 태그) + 관측 헬퍼 `getTags`/`getAttributes`. 로그는 이름 정렬(집합 순회 비결정) — "배치 호출"·"진짜 바뀐 이름에만" 계약을 spec이 직접 관측 | ✅ 반영 |
+| `H10-7` | ① | 🟡 | **[2026-09-03 통합 감사 2라운드 — 메인 발견]** fork 산출물의 **공개 생성자·메소드가 `H-238` 태깅에서 빠져 있었다** — `Tag(...)`(`__call`)·`Tag.Merged`·`TagImpl` 메소드·`AttributeKey(...)`·`Attribute(...)`·`Merged`/`Overridden`에 `setFuncLevel`이 없어(스텁만 태그) 사용자 인자 오류가 raise-site 폴백으로 quad 내부 줄을 blame. spec은 메시지만 확인해 못 잡았다 | ✅ 반영 — 전부 SURFACE 태깅(파일 스코프 1회 — 공유 네임스페이스) + 인자 검증은 quad-error 헤더 규약대로 `errorBeforeNearest`(콜백 안 호출도 그 줄을 blame; 핸들러 process·op 스텁의 `errorBefore`는 `H10-2` 그대로), `spec.tag`/`spec.attribute`에 blame 음성 대조군 추가. 전 스위트 exit 0 |
 
 **확인만 하고 문제 없던 것**:
 

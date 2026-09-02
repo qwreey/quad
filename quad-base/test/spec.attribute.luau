@@ -27,6 +27,17 @@ do
 	assert(not pcall(function()
 		(a :: any).x = 1
 	end), "frozen")
+	-- 통합 감사 2라운드: 생성자·합성 검증의 blame(H-238 태깅)
+	local okK, errK = pcall(function()
+		q.AttributeKey(123)
+	end)
+	assert(not okK, "AttributeKey validates")
+	mock.assertBlamesUser(errK, "spec.attribute.luau", "AttributeKey blame")
+	local okM, errM = pcall(function()
+		q.Attribute.Merged(7)
+	end)
+	assert(not okM, "Merged validates")
+	mock.assertBlamesUser(errM, "spec.attribute.luau", "Merged blame")
 	print("PASS")
 end
 

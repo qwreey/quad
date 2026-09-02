@@ -1167,13 +1167,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > `:List`/`:Single` reconcile·`Detach`/`KeyGone`/`dispose`/`isSlot` +
 > `Dispatch/Slot.luau` SlotHandler(H-278 자기 등록) + `spec.slot.luau`
 > 14절; 발견 원장은 `qa-request/m6-implementation-round15.md`,
-> `H6-1`~`H6-6` — 🔴 둘은 fork가 자체 수정). **잔여**(그 원장의 "이 fork
-> 슬라이스 밖" 절이 소스 — 여기 다시 세지 않음): 공개 CRUD 래퍼
-> (`Move`/`Swap`/`Extract`/`Splice`/`Replace`+`collectLeaves`), `KeyGone`
-> 파괴 분기 spec, quad-roblox `Handlers/Slot.luau` 백엔드 절반,
-> `nativeMove`/`nativeSwap` 백엔드 계약 확인, round12 §6 `H-286` ②
-> (unbind-relate), quad-types `Quad`의 `Slot` 필드(`H-25` — fork 미반영),
-> 실기기 검증(Deferred 시그널 축).
+> `H6-1`~`H6-6` — 🔴 둘은 fork가 자체 수정). **M6 잔여 목록의 유일한
+> 소스는 그 원장의 "이 fork 슬라이스 밖" 절이다** — 여기 재나열하지 않는다
+> (감사 2라운드가 이중 소스를 잡음). 그 절에 없는 것 하나만 여기 적는다:
+> quad-types `Quad`의 `Slot` 필드(`H-25` — fork 미반영, 아래 체크박스).
 
 ### 확정된 것 — 코드 아님, 구현 전 필독
 

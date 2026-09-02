@@ -50,7 +50,7 @@ local cache = setmetatable({} :: { [string]: any }, { __mode = "v" })
 
 local function AttributeKey(name: string): any
 	if type(name) ~= "string" then
-		Err.errorBefore("AttributeKey: name must be a string", SURFACE)
+		Err.errorBeforeNearest("AttributeKey: name must be a string", SURFACE)
 	end
 	local cached = cache[name]
 	if cached ~= nil then
@@ -60,6 +60,8 @@ local function AttributeKey(name: string): any
 	cache[name] = key
 	return key
 end
+-- `H-238`: public constructor tagged (aliases share the same function object)
+Err.setFuncLevel(AttributeKey, SURFACE)
 
 local module = {
 	AttributeKey = AttributeKey,

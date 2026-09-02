@@ -52,6 +52,17 @@ do
 	assert(not ok, "must error without a backend")
 	assert(string.find(tostring(err), "addTag is not available", 1, true) ~= nil, "guidance message: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.tag.luau", "stub blame")
+	-- 통합 감사 2라운드: 생성자·합성 검증도 사용자 줄을 blame(H-238 태깅)
+	local okC, errC = pcall(function()
+		q.Tag(123)
+	end)
+	assert(not okC and string.find(tostring(errC), "names must be strings", 1, true) ~= nil, "constructor validates: " .. tostring(errC))
+	mock.assertBlamesUser(errC, "spec.tag.luau", "constructor blame")
+	local okM, errM = pcall(function()
+		q.Tag.Merged(q.Tag("a"), 42 :: any) -- :: any — 타입이 잡는 걸 런타임 경로로 밀어 blame 검증
+	end)
+	assert(not okM, "Merged validates")
+	mock.assertBlamesUser(errM, "spec.tag.luau", "Merged blame")
 	print("PASS")
 end
 
