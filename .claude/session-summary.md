@@ -2186,7 +2186,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   D(31클래스), 값 유니언 정본(bind-system-plan 신설 절), luau-lsp defs
   2그룹 analyze, H-299(module.D)/H-300(None 타입 — 같은 날 (a) 확정·반영: 센티널 마커 필드 → 유니언 합류)/H-301
   (RelativeGui capability 실측 → 클래스 제외 규칙). 스위트 exit 0 +
-  Studio 실생성 전량 확인.
+  Studio 실생성 전량 확인. **[같은 파일 후반 — 감사 2라운드가 요약 누락을
+  잡아 보충]** 단위 ③(Property/InstanceChild — Reflection 멤버십·H-134/
+  H-154 전사, `spec.handlers` 반응형 자식 교체 CLI 첫 e2e)과 단위 ④
+  (`Claim`+`D.Mapper` — quad-base `Claim.luau`, 재량은 `H-303`, 감사
+  발견 `H-304`)의 구현·끝 절차까지 같은 세션 파일 안에서 "단위 ④ 종결."
+  로 마무리된다.
 
 - `session/2026-09-02-02-parallel-fork-spikes.md` **[M6/M10 병렬 탐사 fork
   결정]** 사용자 발의·승인(원문 전문은 세션 파일): fork 에이전트 둘이 각자
