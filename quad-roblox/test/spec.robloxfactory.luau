@@ -39,6 +39,20 @@ do
 	assert(not ok, "a module another backend owns must be rejected")
 	assert(string.find(tostring(err), "already initialized by 'web'", 1, true) ~= nil, "message names the occupier: " .. tostring(err))
 	mock.assertBlamesUser(err, SPEC_FILE, "foreign backend")
+
+	-- `H-294` (a): mock도 백엔드다 — 양방향 점유가 전부 시끄럽게 거부된다
+	local okMockOver = pcall(function()
+		mock.installLifetime(q)
+	end)
+	assert(not okMockOver, "mock must not silently overwrite the roblox backend")
+	local mocked = Quad.New()
+	mock.installLifetime(mocked)
+	assert((mocked :: any)._initializedBy == "mock", "mock sets its own marker")
+	local okRobloxOver, err2 = pcall(function()
+		QuadRoblox(mocked)
+	end)
+	assert(not okRobloxOver, "roblox must not silently take over mock-bound handles")
+	assert(string.find(tostring(err2), "already initialized by 'mock'", 1, true) ~= nil, "message names mock: " .. tostring(err2))
 	print("PASS")
 end
 

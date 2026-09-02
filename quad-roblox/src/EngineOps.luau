@@ -74,10 +74,10 @@ local function install(quad: any)
 	end
 
 	local function isInst(value: any): boolean
-		-- TODO(H-292): this line leaves a harmless `UnknownType: Instance`
-		-- analyze diagnostic under the CLI (no Roblox type defs) — disposition
-		-- pending in round14 §4
-		return typeof(value) == "Instance"
+		-- `H-292` (b, 사용자 확정): the cast defeats typeof-narrowing's lookup
+		-- of the (CLI-unknown) `Instance` type so analyze output stays clean —
+		-- identical behavior at runtime
+		return (typeof(value) :: string) == "Instance"
 	end
 
 	local function onDestroying(inst: any, fn: () -> ()): any

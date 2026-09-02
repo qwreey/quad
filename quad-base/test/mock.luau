@@ -270,17 +270,19 @@ end
 local Relate = require("../src/Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 
-local installed = setmetatable({}, { __mode = "k" }) :: { [any]: true }
-
 local function installLifetime(quad: any)
-	-- TODO(H-294): this installer neither sets nor checks `_initializedBy`,
-	-- so it silently overwrites a real backend (and a later real backend
-	-- silently takes over mock-bound handles) — disposition pending in
-	-- round14 §4.
-	if installed[quad] then
-		return
+	-- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+	-- 백엔드와 같은 `_initializedBy` 3분기 계약을 지킨다. 이게 없으면 실
+	-- 백엔드 위에 mock이 조용히 덮이거나(혼합 백엔드) 그 반대가 조용히
+	-- 성공해, 기존 바인딩 전량이 소리 없이 침묵한다(탐사자 스파이크 실측).
+	-- 옛 `installed` weak 테이블 가드는 이 마커가 대체.
+	if quad._initializedBy == "mock" then
+		return -- 같은 백엔드 재설치 = no-op
 	end
-	installed[quad] = true
+	if quad._initializedBy ~= nil then
+		error(`Quad module already initialized by '{quad._initializedBy}'`, 2)
+	end
+	quad._initializedBy = "mock"
 
 	local isObserver, isEffect = quad.isObserver, quad.isEffect
 	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후

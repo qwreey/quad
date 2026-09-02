@@ -47,11 +47,14 @@ local function install(quad: any)
 	-- The closure must capture BOTH gchold and inst: the engine keeps the
 	-- connected callback alive, which pins the userdata (identity fix).
 	local function nativeClaim(inst: any)
-		-- TODO(H-293): no guard against claiming an ALREADY-DESTROYED inst —
-		-- measured on-device: Connect on a destroyed Instance succeeds and its
-		-- Connected stays true forever (zombie binding + unbreakable capture).
-		-- Symptom confirmed, remedy pending in round14 §4 (no clean "destroyed"
-		-- predicate exists on Roblox).
+		-- `H-293` (기각·UB 확정, 사용자): claiming an ALREADY-DESTROYED inst is
+		-- UB — no guard on purpose. Measured on-device: Connect on a destroyed
+		-- Instance succeeds and stays Connected forever (zombie binding +
+		-- unbreakable capture). Any guard would break legitimate parentless
+		-- claims (`:Clone()` results have no Parent) and quad's ownership
+		-- concept starts at *creation* — feeding a destroyed object is not an
+		-- intended input, and "방어하지 못할 부분을 방어하려고 애매한 방법을
+		-- 택할 이유가 없다". Documented in claim-plan §7-13.
 		if InstData:GetWeak(inst, "gchold") ~= nil then
 			-- double claim: same inst passed to `Claim` twice, or claiming an
 			-- inst `New` made — judged by setup presence alone (claim-plan §7-10).

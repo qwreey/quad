@@ -291,7 +291,23 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
     생각한게 원소를 파라미터로 받는거였어. 거기에 Instance 또는 Instance|MapperDescriptor
     가 오는거지"*. `FrameParam<E>` — `D.Frame`은 `E` = 기존 children 원소 유니언,
     `D.Mapper.Frame`은 `E` = 그것 `| MapperDescriptor`(§2). 실제 Luau에서 도는지는
-    `luau-analyze` 스파이크로(§9).
+    `luau-analyze` 스파이크로(§9). **[2026-09-02]** 그 스파이크는
+    `luau-test/done/28-type-class-param-shared-generic.luau`로 통과했다
+    (기대 음성 3건만 — 상태는 `STATUS.md`).
+13. **[2026-09-02, round14 `H-293` — 사용자 기각·UB 확정] 이미 Destroy된
+    inst를 claim(직접 `nativeClaim` 포함)하는 것은 UB다 — 가드를 만들지
+    않는다.** 실기기 실측으로 증상은 확정돼 있다(Destroy된 inst에 새
+    Connect가 성공하고 `Connected`가 영원히 true — 영구 발화 가능 판정 +
+    절단면 없는 캡처 누수). 그래도 가드가 없는 이유(사용자): (1) *"​:Clone()
+    을 하게 된다면 기본적으로 Parent 가 없는 상태인데, 이것을 Claim 할 수
+    없다면, 처음부터 어딘가 Parent 를 넣어 실체화 해야하게 된다"* — 트리
+    소속 검사류는 정당한 parentless claim을 막는 부작용이 더 크고, (2)
+    *"인스턴스의 생성과 죽음 까지 quad 는 관리하고 소유하게 된다는 개념"*
+    상 Destroy된 객체 투입 자체가 의도된 입력이 아니며, (3) *"방어하지
+    못할 부분을 방어하려고 애매한 방법을 택할 이유가 없다"*(실물 Roblox엔
+    깨끗한 destroyed 술어가 없다 — 후보 검출식은 실측으로 기각됨). 즉시
+    error 주 방어선 원칙의 경계 사례 — **방어는 방어할 수 있을 때 제공**.
+    문서화 대상 등재는 `research/documentation-content-map.md` §4.
 
 ## 8. 검토 후 안 만들기로 한 것
 

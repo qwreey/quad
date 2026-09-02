@@ -143,6 +143,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 7. 왜 컴포넌트 경계는 named parameter인가(Compose/Fusion/Vide/v1 수렴) — `component-composition-plan.md`
 8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
 9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
+10. **[2026-09-02 등재, round14 `H-293`]** Destroy된 Instance를 `Claim`/`nativeClaim`에 넣는 것은 UB — 가드가 *없는 이유*까지 문서화할 것(Clone 워크플로 보호, "생성부터 소유" 개념, 방어 불가 영역 — 실측 증상 포함 근거는 `claim-plan.md` §7-13) — `claim-plan.md`, `audit/m5-unit1-studio-smoke-2026-09-02.md`
 10. ~~왜 Tween은 반응 그래프 밖에 있는가~~ **[2026-08-13 정정] 위 §2 심화 항목과 같은 stale 표현 — 실제로는 Property 값 타입 치환(`T|Tween<T>`)으로 그래프 안에 자연스럽게 있음** — `base/tween-plan.md`
 11. 왜 `:Emit()`은 Source 전용이고 파생 State엔 없는가(호출부는 `source:Emit()`, 2026-08-06 후속 세션에서 `Store:Emit(key)`→이 형태로 정리) — `base/source-state-plan.md`
 12. 독립 프리미티브 vs 파생 데이터 — 생성자 모양을 결정하는 원칙 — `base/source-state-plan.md`
