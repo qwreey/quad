@@ -270,6 +270,67 @@ end
 local Relate = require("../src/Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 
+--[[
+	installNative(quad) — [M6 fork → (d′) 편입: mockProvider 본문이 부른다,
+	단독 export 아님] the mock backend's `native*` layer +
+	`isInst`, mirroring `quad-roblox/src/EngineOps.luau`'s M5 share (Roblox
+	shape: `offset` is ignored — child order is LayoutOrder-based, not physical,
+	so the mock keeps that faithfully). Slot needs a physical target to mount
+	onto in CLI, and these are the only Slot→engine seam. `nativeMove`/
+	`nativeSwap` are deliberate no-op overrides (same reason as Roblox: order
+	is bookkeeping, not physical). `isInst` = "is this a mountable element" =
+	a mock instance.
+]]
+local function installNative(quad: any)
+	local Err = quad.errorNamespace
+
+	local function nativeInsert(target: any, _offset: number, elements: { any })
+		for _, element in elements do
+			element.Parent = target
+		end
+	end
+	local function nativeExtract(target: any, _offset: number, elements: { any }, newElements: { any }?)
+		for _, element in elements do
+			element.Parent = nil -- keep alive, out of the tree
+		end
+		if newElements ~= nil then
+			for _, element in newElements do
+				element.Parent = target
+			end
+		end
+	end
+	local function nativeRemove(target: any, _offset: number, elements: { any }, newElements: { any }?)
+		for _, element in elements do
+			element:Destroy()
+		end
+		if newElements ~= nil then
+			for _, element in newElements do
+				element.Parent = target
+			end
+		end
+	end
+	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+	local function nativeDispose(element: any)
+		element:Destroy()
+	end
+	local function isInst(value: any): boolean
+		return isMockInstance(value)
+	end
+
+	quad.nativeInsert = nativeInsert
+	quad.nativeExtract = nativeExtract
+	quad.nativeRemove = nativeRemove
+	quad.nativeMove = nativeMove
+	quad.nativeSwap = nativeSwap
+	quad.nativeDispose = nativeDispose
+	quad.isInst = isInst
+
+	for _, fn in { nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst } :: { any } do
+		Err.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
+end
+
 -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
 -- 백엔드와 같은 설치 계약을 지킨다. **[H-305 (d′)]** 옛 `_initializedBy`
 -- 3분기(그 전엔 `installed` weak 테이블)는 `UseProvider`의 fn identity
@@ -408,6 +469,7 @@ local function mockProvider(quad: any): { [any]: any }
 	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying } :: { any } do
 		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
+	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
 end
 
@@ -415,12 +477,13 @@ local function installLifetime(quad: any)
 	quad:UseProvider(mockProvider)
 end
 
+
 -- `H-261`: 세 spec이 같은 헬퍼를 그대로 복사하고 있었다(`H-206` 선례 —
 -- 3벌 복사가 추출 트리거). mock이 install 표면의 소유자라 여기가 집이다.
 local Quad = require("../src")
 local function newQuad(): any
 	local q = Quad.New()
-	installLifetime(q)
+	installLifetime(q) -- mockProvider가 생명주기+native*+isInst 전부 설치
 	return q
 end
 

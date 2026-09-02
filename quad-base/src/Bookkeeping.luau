@@ -70,29 +70,48 @@ local function Init(module: any)
 	-- `nil`을 돌려주지 않는다"; callers must not re-guard). Initial values are
 	-- contract (`H-4`): the two cursors start at 0, only `N` stays nil ("아직
 	-- 아무 자리도 등록 안 됨"과 "0번까지 유효"는 다른 뜻).
+	local function newBk(): any
+		return {
+			lengthList = {},
+			sourceList = {},
+			observers = {},
+			N = nil,
+			offsetCache = {},
+			offsetCacheValidUpTo = 0,
+			offsetSetUpTo = 0,
+			recomputeBlocker = Blocker(),
+			-- element(inst|slot) -> position. Weak keys (`H-145`): the
+			-- top-level release setLength(…, 0) carries no element arg, so
+			-- stale keys must fall out on their own. Alive-while-mounted is
+			-- guaranteed elsewhere (slot._elements / gatedRecompute capture).
+			indexOfElement = setmetatable({}, { __mode = "k" }),
+		}
+	end
+
+	-- `H6-1` (M6 fork, `H-232` (a)): a Slot ownerKey cannot be bindLifetime'd
+	-- (not claimable — mock's isMockInstance / the roblox H-290 fail-fast both
+	-- reject it) and its bk must survive unmounts, so the Slot owns its bk
+	-- STRONGLY as `slot._bk` (Slot constructor seeds it nil; this fills it
+	-- lazily). Physical-inst owners keep the weak Relate + gchold anchor path.
+	-- The header predicted this branch "when M6 lands" — this is that.
 	local function getBookkeeping(ownerKey: any): any
+		if Brand.SlotBrand:is(ownerKey) then
+			local bk = ownerKey._bk
+			if bk == nil then
+				bk = newBk()
+				ownerKey._bk = bk -- strong; lives exactly as long as the Slot
+			end
+			return bk
+		end
 		local bk = bookkeeping:GetWeak(ownerKey, "bk")
 		if bk == nil then
-			bk = {
-				lengthList = {},
-				sourceList = {},
-				observers = {},
-				N = nil,
-				offsetCache = {},
-				offsetCacheValidUpTo = 0,
-				offsetSetUpTo = 0,
-				recomputeBlocker = Blocker(),
-				-- element(inst|slot) -> position. Weak keys (`H-145`): the
-				-- top-level release setLength(…, 0) carries no element arg, so
-				-- stale keys must fall out on their own. Alive-while-mounted is
-				-- guaranteed elsewhere (slot._elements / gatedRecompute capture).
-				indexOfElement = setmetatable({}, { __mode = "k" }),
-			}
+			bk = newBk()
 			module.bindLifetime(ownerKey, bk)
 			bookkeeping:SetWeak(ownerKey, "bk", bk)
 		end
 		return bk
 	end
+
 
 	local function contribution(bk: any, i: number): number
 		local v = bk.lengthList[i]
