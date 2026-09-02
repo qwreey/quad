@@ -11,10 +11,10 @@ Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데�
 `-round14.md`(`H-290`~`H-308`; §4 열린 문항 0), 진행 소스는 `ROADMAP.md`
 M5 체크박스(전부 `[x]`). 단위 ⑤ 확정 요지(프로바이더 설치
 `quad:UseProvider(QuadRoblox)` — `H-305` (d′)·런타임 버전 게이트 `H-306`
-(a)·rojo 라이브 싱크 반입)는 `.claude/todos.md` 00번이 소스. **같은 날 병렬 탐사 승인** — fork 에이전트 둘이 각자 worktree에서
-M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현(규약
-`.claude/qa-request/m6-implementation-round15-brief.md`·
-`m10-implementation-round16-brief.md`, 발견 접두 `H6-`/`H10-`)** —
+(a)·rojo 라이브 싱크 반입)는 `.claude/todos.md` 00번이 소스. **같은 날 병렬 탐사 승인, 2026-09-03 통합 완료** — fork 둘이 worktree에서
+M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현 후 **메인에 머지됨**
+(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16` — 잔여·후행은
+`ROADMAP.md` M6/M10 배너가 소스)** —
 **M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
 `.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
 `-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +

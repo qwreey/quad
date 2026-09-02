@@ -1161,6 +1161,20 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > "Handler 작성 체크리스트" 1번). 클로저가 받는 값이 항상 `Slot`이거나
 > `nil`임이 계약으로 보장된다는 점만 새로 추가됨.
 
+> **⭐ [2026-09-03 병렬 fork 편입 — Slot 코어(mock 축) 완료]** M6의
+> quad-base 몫이 `spike/m6-slot` fork로 구현돼 메인에 머지됐다
+> (`quad-base/src/Slot.luau` — 값 타입·CRUD raw* 절반·attach 3형제·
+> `:List`/`:Single` reconcile·`Detach`/`KeyGone`/`dispose`/`isSlot` +
+> `Dispatch/Slot.luau` SlotHandler(H-278 자기 등록) + `spec.slot.luau`
+> 14절; 발견 원장은 `qa-request/m6-implementation-round15.md`,
+> `H6-1`~`H6-6` — 🔴 둘은 fork가 자체 수정). **잔여**(그 원장의 "이 fork
+> 슬라이스 밖" 절이 소스 — 여기 다시 세지 않음): 공개 CRUD 래퍼
+> (`Move`/`Swap`/`Extract`/`Splice`/`Replace`+`collectLeaves`), `KeyGone`
+> 파괴 분기 spec, quad-roblox `Handlers/Slot.luau` 백엔드 절반,
+> `nativeMove`/`nativeSwap` 백엔드 계약 확인, round12 §6 `H-286` ②
+> (unbind-relate), quad-types `Quad`의 `Slot` 필드(`H-25` — fork 미반영),
+> 실기기 검증(Deferred 시그널 축).
+
 ### 확정된 것 — 코드 아님, 구현 전 필독
 
 아래는 **설계가 확정됐다**는 사실이지 짠 코드가 아니다 — 체크박스로
@@ -1312,7 +1326,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 
 ### 짜야 할 것
 
-- [ ] **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-46`] top-level
+- [x] **[2026-09-03 편입]** **⭐ [2026-08-24 신설, 6라운드 손 트레이싱 `H-46`] top-level
       `quad-base/Slot.luau` — 값 타입 본체가 들어가는 파일.** 생성자(**[2026-08-31
       `H-232` (a)]** `slot._bk`도 여기서 — Slot-owner 부기의 강한 앵커,
       `base/slot-plan.md` 생성자 절), 공개
@@ -1388,7 +1402,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
         클로저가 early-return해도 체인에서 항상 소비하므로).
       - 전부 `base/slot-plan.md`에 반영돼 있고, `luau-test/19` C 섹션이
         소유권 분기를 음성 대조군까지 포함해 실측 검증함.
-- [ ] **`dispose(value: Slot | Instance)`** — 대상이 아직 어느 트리에 의해
+- [x] **[2026-09-03 편입]** **`dispose(value: Slot | Instance)`** — 대상이 아직 어느 트리에 의해
       살아있길 요구되면 **파괴를 거부하고 즉시 error**(떼어내주지 않음 —
       떼는 건 `Set`=언마운트의 몫). 엔진은 `Destroy`/`Clear`에 에러를 안
       내지만 quad 자료구조가 깨지므로, quad가 관리 중인 값을 안전하게
@@ -1403,7 +1417,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       세션에 `question.md` 0-B 해소, 정본은 `base/slot-plan.md`
       "`dispose(value)`" 절
 
-- [ ] `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
+- [x] **[2026-09-03 편입 — `KeyGone` 파괴 분기 spec만 잔여]** `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정,
       `keyFn(item, index) -> key` 생략 시 원본 `data` 배열 위치(raw index)를
       그대로 key로 사용(중간 삽입/삭제 시 identity 보존 안 됨, 캐스케이드
       갱신 — 흔한 업계 관행과 같은 트레이드오프).
@@ -1489,7 +1503,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       별개" 절. **[2026-08-27 정정, 9라운드 `H-125`/Q2]** 여기 한때 *"마운트
       시점에 `setOffsetSource`가 등록하는 바로 그 Source를 `self.Offset`으로도
       저장"*이었다 — 그러면 첫 마운트와 재마운트가 갈려 재마운트 캐시가 낡는다)
-- [ ] base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
+- [x] **[2026-09-03 base 절반만 편입 — quad-roblox `Handlers/Slot.luau`는 잔여]** base `Dispatch/Slot.luau`(추상 재조정, mount/unmount/reposition 3훅) +
       quad-roblox `Handlers/Slot.luau`(실제 Parent 조작 + reposition —
       `SetSiblingIndex` 또는 `LayoutOrder` 기반이면 no-op, 구현 선택)
 ## M7 — Modifier
@@ -1726,19 +1740,35 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 옛 모델은
 > `archive/tag-attribute-load-time-registration-reversed.md`.
 
+> **⭐ [2026-09-03 병렬 fork 편입 — quad-base 절반 완료]** M10의
+> quad-base 몫(Tag/AttributeKey/Attribute 값·핸들러·안내 스텁·spec 2벌)이
+> `spike/m10-tag-attribute` fork로 구현돼 메인에 머지됐다(발견 원장
+> `qa-request/m10-implementation-round16.md` — `H10-1`~`H10-6`).
+> **⚠️ 파일 분할이 `H10-1`로 재편됐다**: 아래 체크박스의 6파일 구성
+> (`Dispatch/Tag.luau`+`TagFallback.luau`류의 알고리즘/등록 분리 파일)은
+> `H-278`(각 값 선언 모듈이 자기 Init에서 등록 — M3 회신 라운드 확정)
+> **이전** 서술이라, 실물은 **값+핸들러+등록이 한 파일**
+> (`quad-base/src/Tag.luau`/`AttributeKey.luau`/`Attribute.luau`)이고
+> "FallbackHandler"는 별도 파일이 아니라 **등록 엔티티 이름**으로
+> 산다(`TagFallbackHandler` 등 — 문서의 별도-엔티티 요구의 실질은
+> 이름·priority 분리). 아래 `[x]` 항목의 파일 경로 서술은 이 재편 기준으로
+> 읽을 것. **잔여는 quad-roblox 엔진 축**(EngineOps 실구현 —
+> addTag/removeTag/setAttribute, Event/OnChange, InstanceShorthand)과
+> `AttributeGroupHandler` 부분 실패 롤백 판단(`question.md`).
 
-- [ ] **[2026-08-24 `H-39`]** `TagHandler`/`AttributeGroupHandler`가 자기 배열
+
+- [x] **[2026-09-03 편입]** **[2026-08-24 `H-39`]** `TagHandler`/`AttributeGroupHandler`가 자기 배열
       자리의 `setOffsetSource(inst,k,None)`/`setLength(inst,k,0)`을 등록 —
       **둘 다 0건이었다**(위 M3의 그 항목). 같이 **`type(k) == "number"` 가드**도
       추가(`H-52` — `RefLeafHandler`가 2026-08-18에 받은 수정을 이 둘은 못 받았다)
-- [ ] **[2026-08-24 `H-41`]** `AttributeGroupHandler.process`에 `groupClaimKeys`
+- [x] **[2026-09-03 편입]** **[2026-08-24 `H-41`]** `AttributeGroupHandler.process`에 `groupClaimKeys`
       위치 claim 배선 — 5라운드 `AT-1`에서 `(inst, groupValue) → k`로 확정해놓고
       의사코드에 안 들어가 있었다. **`nameClaims`보다 먼저** 해야 절반만 기록되는
       중간 상태가 안 생긴다
 - [ ] **[2026-08-24 `H-27`]** `OnChangeHandler.process`에 `v == nil` 얼리리턴 —
       없으면 `None`으로 콜백을 끄는 게 실제로는 **나중에 터질 Connection을 새로
       심는** 동작이 된다
-- [ ] **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Tag`/`Attribute`
+- [x] **[2026-09-03 편입 — 타입은 `H10-3` (d) `setmetatable<A,B>` 표기]** **[2026-08-24 `H-25` 파생]** `quad-types`의 `Quad`에 `Tag`/`Attribute`
       필드 추가(위 M3 항목의 "마일스톤마다" 규칙)
 - [ ] `Handlers/Event.luau`(`ReflectionService` 기반 자동 판별)
 - [ ] `Handlers/OnChange.luau`(`OnChange(name)` 특수 키 팩토리+Handler,
@@ -1758,30 +1788,30 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `clearTimeout`도 예정돼 있다. **주입 op 전체 목록의 소스는
       `base/architecture.md`의 소스 트리 안 `EngineOps.luau` 줄** — 여기서
       세지 않는다.
-- [ ] `quad-base/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)` +
+- [x] **[2026-09-03 편입]** `quad-base/AttributeKey.luau`(단일 키 `AttributeKey<<T>>(name)` +
       이름별 weak 캐시로 동등성 보장 + 스칼라 편의 패밀리
       `String`/`Number`/`BooleanAttribute` — 엔진 고유 타입 패밀리
       (`Color3Attribute`류)만 quad-roblox의 `D`(Declarative) 층에서 각자 추가.
       타입 파라미터화 이름만 착수 전 확인, `base/attribute-plan.md`)
-- [ ] `quad-base/Dispatch/AttributeKey.luau`(`AttributeKeyHandler` —
+- [x] **[2026-09-03 편입 — `H10-1`: `AttributeKey.luau`에 흡수]** `quad-base/Dispatch/AttributeKey.luau`(`AttributeKeyHandler` —
       `setAttribute(inst,name,v)`를 `v`가 뭐든 무조건 호출 + **이름
       claim**(`nameClaims` Relate, 다른 키 객체가 같은 이름에 들어오면
       즉시 error, 반환 클로저는 자기 claim만 반납하고 엔진 부작용 없음).
       알고리즘 구현일 뿐 스스로 등록되진 않음(아래
       `AttributeKeyFallbackHandler` 항목 참고). `question.md` 0-Z 결정 —
       `base/attribute-plan.md` "이름 소유권" 절)
-- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+- [x] **[2026-09-03 편입 — `H10-1`: 등록 엔티티 이름으로만]** **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
       AttributeKeyFallback.luau`(`AttributeKeyFallbackHandler` — 위
       `AttributeKeyHandler`를 그대로 감싸 `HANDLER_PRIORITY_FALLBACK`으로
       등록되는 별도 이름의 엔티티. **[재역전, 2026-08-18] 등록 주체는
       `RobloxFactory`가 아니라 quad-base 자신** —
       `base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는
       엔진 op" 절)
-- [ ] `Attribute.luau`(quad-base — 그룹 값 타입+API: `Attribute(store1,
+- [x] **[2026-09-03 편입]** `Attribute.luau`(quad-base — 그룹 값 타입+API: `Attribute(store1,
       store2, ...)`/`Merged`/**`Overridden`**/`:NameMap`, `Tag`와 동형
       array-part 값 객체, `base/attribute-plan.md`. **[2026-08-18]**
       `Merged`는 이름이 겹치면 error, `Overridden`은 뒤가 이김 — 둘 다 제공)
-- [ ] `quad-base/Dispatch/Attribute.luau`(`AttributeGroupHandler` — 이름마다
+- [x] **[2026-09-03 편입 — `H10-1`: `Attribute.luau`에 흡수]** `quad-base/Dispatch/Attribute.luau`(`AttributeGroupHandler` — 이름마다
       **그룹 전용 키**(비공개 `GetKey`, 그룹 값 객체별·이름별 메모이즈)로
       `Dispatch.process(inst,key,source,1)`만 부르고, 반환 클로저가 자기가
       등록한 키 전부에 `Dispatch.retractFrom(inst,key,1)`.
@@ -1790,16 +1820,16 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       키 경로 재사용 — `base/attribute-plan.md` "메커니즘" 절. 알고리즘
       구현일 뿐 스스로 등록되진 않음, 아래 `AttributeGroupFallbackHandler`
       항목 참고)
-- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+- [x] **[2026-09-03 편입 — `H10-1`: 등록 엔티티 이름으로만]** **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
       AttributeGroupFallback.luau`(`AttributeGroupFallbackHandler` — 위
       `AttributeGroupHandler`를 그대로 감싸 `HANDLER_PRIORITY_FALLBACK`으로
       등록되는 별도 이름의 엔티티, 등록 주체는 `AttributeKeyFallbackHandler`와
       동일하게 **quad-base 자신** — [재역전, 2026-08-18])
-- [ ] `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
+- [x] **[2026-09-03 편입]** `Tag.luau`(quad-base — 값 타입+immutable clone 체이닝: `Tag(...)`/
       `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`/`:Names`,
       `base/tag-plan.md` — 2026-08-08 세 번째 세션 array-part 값 객체로
       재설계, 구 해시 파트 모델은 `archive/tag-hash-key-model-reversed.md`)
-- [ ] `quad-base/Dispatch/Tag.luau`(`TagHandler` — `isHandlable`은 `isTag(v)`.
+- [x] **[2026-09-03 편입 — `H10-1`: `Tag.luau`에 흡수]** `quad-base/Dispatch/Tag.luau`(`TagHandler` — `isHandlable`은 `isTag(v)`.
       **`addTag`는 온전히 `process`, `removeTag`는 온전히 반환 클로저** —
       이름별 홀더 집합(`tagNameMap`, 위치 `k` 기준 참조 카운트)이 비었을
       때만 실제 `removeTag`, 그마저도 클로저가 받은 새 값이 그 이름을
@@ -1808,7 +1838,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       불필요(클로저가 `v`를 직접 캡처) — 2026-08-12 열한 번째 /
       2026-08-13 네·다섯·열네 번째 세션, `base/tag-plan.md`. 알고리즘
       구현일 뿐 스스로 등록되진 않음, 아래 `TagFallbackHandler` 항목 참고)
-- [ ] **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
+- [x] **[2026-09-03 편입 — `H10-1`: 등록 엔티티 이름으로만]** **[2026-08-14 열두 번째 세션 신설]** `quad-base/Dispatch/
       TagFallback.luau`(`TagFallbackHandler` — 위 `TagHandler`를 그대로
       감싸 `HANDLER_PRIORITY_FALLBACK`으로 등록되는 별도 이름의 엔티티,
       등록 주체는 `AttributeKeyFallbackHandler`와 동일하게 **quad-base

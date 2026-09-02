@@ -2235,3 +2235,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   실의존 추가·spec 음성·Studio 게이트 실측. `H-307` 마킹 성공 후(부분
   실패 좀비 교정)·`H-308` mergeExtension 공용화. HUMAN_TODO 12번(Studio
   재기동 사람 몫 — 사용자 확정) 신설. **M5 종결 — 머리말 3층 갱신.**
+
+- `session/2026-09-03-01-fork-integration.md` **[M6/M10 fork 통합 — 밤샘
+  자율 구간]** 두 fork 머지 완료(충돌 6곳 해소, (d′) 적응 — mock native*를
+  mockProvider로 편입 / H10-3·H10-4 (d) setmetatable 타입 반영·any 캐스트
+  제거 / H10-5·H10-1 메인 판정 승인). 문서: ROADMAP M6/M10 배너·체크박스
+  재편(H10-1 파일 재편 반영), typing-limits 8.6절(교집합 무거주 →
+  setmetatable + __call 인자 무검사), attribute-plan error 계약 이관,
+  question.md 두 항목 현황(Slot foreign — 확인 시점 도래 / AttributeGroup
+  롤백 이월). 아침 검토용 문제점·후행 목록은 세션 파일이 소스.

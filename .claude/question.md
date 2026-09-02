@@ -191,6 +191,10 @@
   문서화만** 했는데(`base/attribute-plan.md` "메커니즘" 절), 원자적
   롤백(그룹 `process`에만 국소적인 unwind)을 넣을지는 열어둠. 지금 결정
   불필요 — M10 구현 시점에 판단.
+  **[2026-09-03 현황]** M10 quad-base 절반이 fork 편입으로 구현됐는데
+  (`quad-base/src/Attribute.luau`) **fork도 롤백 없이 문서화 노선을
+  유지**했다(round16 원장에 별도 발견 없음 — 충돌 error 자체는 spec이
+  검증). 판단 시점은 M10 잔여(quad-roblox 엔진 축) 마감 때로 이월.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은
@@ -220,6 +224,14 @@
   (2026-08-06 추가, 아직 안 풀림) — v1 compat 등에서 넘어온 foreign
   Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
   **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
+  **[2026-09-03 현황 — 확인 시점 도래]** Slot 코어가 fork 편입으로
+  존재한다(`quad-base/src/Slot.luau`). 현 구현의 사실: 요소 판정은
+  주입 술어 `isInst`뿐이라 **foreign Instance도 요소로 받아들여지고**
+  물리 op(`nativeInsert` 등)·`elementOwner` Relate 키잉까지는 돌지만,
+  실물 Roblox에선 **claim 안 된 userdata의 동일성 구멍**(`H-293`/
+  lifecycle-pattern (0))이 그대로 적용된다 — "받아진다"와 "안전하다"가
+  갈리는 자리. v1-compat 착수 전 사용자 결정 필요(fork 통합 보고서의
+  후행 목록에 등재).
 
 > **⚠️ 번호는 재사용된다 — 옛 문서가 가리키는 번호를 그대로 믿지 말 것.**
 > 예전 "0번(추가 프리미티브)"과 "2번(구현 착수 직전 감사 결과)"은 전원
