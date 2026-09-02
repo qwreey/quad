@@ -181,12 +181,17 @@ return Init
       if current ~= nil then
           Err.errorBefore("Quad module already has a provider; ...", SURFACE)
       end
-      providerRelate:SetStrong(self, "provider", providerFn) -- 실행 전 표시(RunInit 동형)
       local extension = providerFn(self) -- 팩토리는 뮤테이션 + 타입드 확장 반환
-      for k, v in extension do self[k] = v end -- AddPlugin 동형 병합 → Self & P
+      mergeExtension(self, extension) -- AddPlugin과 공용 병합 → Self & P
+      providerRelate:SetStrong(self, "provider", providerFn) -- 마킹은 성공 후
       return self
   end
   ```
+
+  마킹이 RunInit(실행 전 표시)과 달리 **성공 후**인 이유(리뷰 `H-307`,
+  2026-09-02): RunInit의 선표시는 순환 의존 대비인데 프로바이더 설치엔 그
+  계약이 없고, 선표시는 providerFn이 도중 던졌을 때 슬롯만 점유된 채
+  재시도가 멱등 no-op로 삼켜지는 좀비를 만든다.
 
   `RunInit`(quad-base 내부 서브시스템)·`UseProvider`(backend 유일 슬롯)·
   `AddPlugin`(다수 확장)은 **서로 다른 메커니즘**으로 남는다. 백엔드

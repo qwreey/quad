@@ -34,7 +34,12 @@ ROADMAP M5 마지막 체크박스("실제 Roblox에서 첫 `Frame{...}` 렌더 �
 
 `ReplicatedStorage`의 quad-base(모듈 39)/quad-roblox(모듈 76 — `.pesde`
 사본 포함)를 `ServerStorage.QuadTestRun`으로 클론 →
-`QuadRoblox(require(qb.src).New())` → 세 시나리오:
+`QuadRoblox(require(qb.src).New())` → 세 시나리오(**⚠️ [같은 날 후속 —
+탐사자 지적] 이 직접 호출형은 이 실측 시점의 표면이고, 같은 날 `H-305`
+(d′)로 `Quad.New():UseProvider(QuadRoblox)`로 재성형됐다 — 지금 재현은
+그 표면으로 할 것(직접 호출은 identity 락·확장 병합을 우회, unsupported).
+재성형 후 재실측(멱등/외부 프로바이더 거부/아래 3종 전부 PASS)은
+`session/2026-09-02-04-h305-useprovider.md`가 기록**):
 
 | 시나리오 | 단언 | 결과 |
 |---|---|---|

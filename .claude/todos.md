@@ -46,7 +46,11 @@
    탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
    멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두
    `H6-`/`H10-`(메인 `H-nnn`과 구분, ID 영구). fork가 멈추면 사용자가 그
-   채팅에 직접 회신, 통합·문서 반영은 메인 몫.** 아래는 M3 종결 기록:
+   채팅에 직접 회신, 통합·문서 반영은 메인 몫. **[2026-09-02 통합 주의 —
+   리뷰 발견]** fork 워크트리의 spec들은 (d′) 이전 계약
+   (`QuadRoblox(Quad.New())` 직접 호출·`_initializedBy` 단언)으로 짜여
+   있다 — 머지 때 `UseProvider` 계약으로 갱신할 것(안 하면
+   attempt-to-call-nil류로 깨짐).** 아래는 M3 종결 기록:
 
    **[구 00번 — M3] ⭐⭐⭐ [2026-08-31 착수 → 2026-09-01 종결] M3 자율 구현 구간 — 완료,
    M2와 같은 방식으로 종결.** 단위 넷(코어/부기/None·Nil/Leaf·가드·종합)

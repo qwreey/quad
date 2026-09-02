@@ -78,11 +78,17 @@ local function New(): Quad
 		initFn(self)
 	end
 
-	function module.AddPlugin(self, pluginFn)
-		local extension = pluginFn(self)
-		for k, v in extension :: any do
-			(self :: any)[k] = v
+	-- AddPlugin/UseProvider 공용 병합(리뷰 `H-308` — 복사 2벌은 `H-261`
+	-- 선례의 드리프트 자리; 순수 데이터 병합이라 본문 공유 금지 원칙의
+	-- "데이터·순수 술어" 예외에 해당)
+	local function mergeExtension(self: any, extension: any)
+		for k, v in extension do
+			self[k] = v
 		end
+	end
+
+	function module.AddPlugin(self, pluginFn)
+		mergeExtension(self, pluginFn(self))
 		return self :: any
 	end
 
@@ -109,12 +115,14 @@ local function New(): Quad
 				QuadTypes.ERROR_LEVEL_SURFACE
 			)
 		end
-		-- 실제 실행 전에 먼저 표시(RunInit과 같은 재진입 대비)
-		providerRelate:SetStrong(self, "provider", providerFn)
+		-- 마킹은 성공 후(리뷰 `H-307`) — RunInit의 실행-전 표시는 순환
+		-- 의존 대비인데 프로바이더 설치엔 그 계약이 없고(설치 중 자기
+		-- UseProvider 재호출은 계약 밖), 실행-전 표시는 providerFn이 도중
+		-- 던졌을 때 슬롯만 점유된 채 확장이 영영 병합되지 않는 좀비를
+		-- 만든다(재시도가 멱등 no-op로 삼켜짐).
 		local extension = providerFn(self)
-		for k, v in extension :: any do
-			(self :: any)[k] = v
-		end
+		mergeExtension(self, extension)
+		providerRelate:SetStrong(self, "provider", providerFn)
 		return self :: any
 	end
 

@@ -60,6 +60,19 @@ do
 	end)
 	assert(not okRobloxOver, "roblox must not silently take over mock-bound handles")
 	assert(string.find(tostring(err2), "already has a provider", 1, true) ~= nil, "one-slot contract both ways: " .. tostring(err2))
+
+	-- `H-307`: 도중 던지는 프로바이더가 슬롯을 점유하면 안 된다 — 마킹은
+	-- 성공 후라서, 실패한 설치 뒤 정상 재시도가 no-op로 삼켜지지 않는다
+	local fresh = Quad.New()
+	local function throwingProvider(_quad: any): any
+		error("install exploded midway", 0)
+	end
+	local okThrow = pcall(function()
+		(fresh :: any):UseProvider(throwingProvider)
+	end)
+	assert(not okThrow, "the throwing provider propagates its error")
+	local recovered = (fresh :: any):UseProvider(QuadRoblox)
+	assert(type(recovered.D) == "table", "H-307: a failed install must not poison the slot — retry installs fully")
 	print("PASS")
 end
 
