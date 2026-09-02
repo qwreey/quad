@@ -1130,12 +1130,18 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `architecture.md` 그 줄). **[같은 날 단위 ②로 잔여까지 완료 — 체크]**
       `New` ②단계 배선이 생성 `D`에 들어갔고 탐사자 CLI e2e가
       실증(`D.Frame({})` 직후 재claim이 "already claimed" error).
-- [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — Studio 작업, `SAFETY.md`
+- [x] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — Studio 작업, `SAFETY.md`
       준수. **[2026-09-01 게이트 해소]** 여기 걸려 있던 선행 조건
       (`HUMAN_TODO.md` 1번 계정 분리)은 충족됐고, MCP `execute_luau`로
       에이전트가 직접 확인할 수 있다(스파이크 `10` 완주가 선례 —
       `audit/spike10-full-run-2026-09-01.md`. gcconn/`nativeClaim` 실기기
       전제도 그 완주가 미리 닫아둠)
+      **[2026-09-02 완료, M5 단위 ⑤]** rojo 라이브 싱크(사용자 1회
+      Connect + autoReconnect — 반입 경로도 이날 확립) 경유, 정적/반응형
+      프로퍼티/반응형 자식 교체 3/3 PASS + 뷰포트 시각 확인 —
+      `audit/m5-unit5-first-render-2026-09-02.md`가 소스. `H-25` 확인분
+      (quad-types `Quad`에 M5 탑레벨 전량 추가)은 같은 날 반영, `D` 타입
+      표면만 §4 `H-305` 회신 대기
 
 ## M6 — Slot
 

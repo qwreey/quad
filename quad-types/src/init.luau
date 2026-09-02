@@ -267,6 +267,30 @@ export type Quad = {
 	-- `Claim(inst, desc) -> inst` — 이미 있는 트리를 quad 소유로(claim-plan §2;
 	-- 타입 인자 없음·반환은 넣은 inst 그대로가 사용자 확정)
 	Claim: <T>(inst: T, desc: MapperDescriptor) -> T,
+	-- `Claim`의 매퍼 부속(M5 단위 ④, `H-25` 단위 ⑤ 확인분) — 루트 키
+	-- 센티널 값(재노출은 `D.Mapper.Root`)과 제네릭 디스크립터 팩토리
+	-- (백엔드 `D.Mapper.<Class>` 별칭의 원천, claim-plan §7-1).
+	MapperRoot: MapperRoot,
+	newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
+
+	-- 주입 물리 op(`architecture.md` EngineOps, M5 몫 — `H-25` 단위 ⑤
+	-- 확인분). quad-base엔 값이 없고(스텁도 없음 — 미설치 접근은 nil 호출
+	-- 크래시) 백엔드 팩토리가 설치한다. 시그니처 정본은
+	-- `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
+	nativeInsert: (target: any, offset: number, elements: { any }) -> (),
+	nativeExtract: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeRemove: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeMove: (target: any, fromOffset: number, elements: { any }, toOffset: number) -> (),
+	nativeSwap: (target: any, offsetA: number, elementsA: { any }, offsetB: number, elementsB: { any }) -> (),
+	nativeDispose: (element: any) -> (),
+	-- 요소 타입 화이트리스트 술어(`H-40` 주입 술어) — 백엔드가 자기 실물
+	-- 판정으로 설치, 테스트는 mock 판정으로 교체.
+	isInst: (value: any) -> boolean,
+	-- gcconn/gchold 셋업 op(claim-plan §7-9 — `New` ②단계와 `Claim`이 같은
+	-- op를 부른다. 이중 claim은 셋업 유무로 error).
+	nativeClaim: (inst: any) -> (),
+	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+	nativeFindChild: (inst: any, key: any) -> any,
 }
 
 --[[

@@ -50,6 +50,7 @@
 | `H-297` | (단위 ② 착수 조사) **프로퍼티 필터 정책 미확정** — 코퍼스에 언급 자체가 없다. ReadOnly/`Deprecated`/`NotScriptable`/`Hidden` 태그와 `Security ≠ None` 프로퍼티를 D props 타입에 실을지 | (a) **전부 제외**(쓰기 표면만 생성 — ReadOnly·NotScriptable은 대입 불가라 타입에 있으면 거짓 표면, Deprecated는 새 코드 표면에 안 실음, Security는 일반 스크립트가 못 씀) / (b) Deprecated는 포함 / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | D는 **쓰기**(대입) 표면이라 대입 불가능한 프로퍼티가 타입에 있으면 통과되는 오용을 만든다. Deprecated 포함(b)은 구계약 이식 편의가 있지만 "새로 짜는 라이브러리" 방향과 어긋남 | 
 | `H-298` | (단위 ② 착수 조사) **props 값 유니언과 `NewChild`의 정본 정의 부재** — 이벤트 필드는 확정(`콜백 \| None \| nil \| State<...>`, event-plan)인데, **스칼라 프로퍼티** 유니언과 **children 원소**(`NewChild` — claim-plan이 이름만 씀) 정의가 어디에도 없다. 스파이크 `28`은 자리표시자로 메커니즘만 통과시킴 | (a) **M5 최소 정본**: 스칼라 = `T \| State<T> \| Tween<T> \| None`(Tween은 PropertyHandler 소비 값 — tween-plan의 `T'` 치환과 정합), children 원소 `NewChild` = `Instance \| State<...> \| Ref류` **M5 시점 유니언**으로 정의하고 이후 마일스톤(M6 Slot 등)이 유니언을 **확장**한다는 규칙을 같이 명문화(정의 자리는 `bind-system-plan.md` 인스턴스 생성 절) / (b) 지금 전 마일스톤 표면을 미리 다 싣기 / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | (b)는 아직 안 만든 표면(Slot 팩토리 등)의 타입을 선제 발명하게 돼 "발견은 결정이 아니다" 규약과 충돌. (a)의 "확장 규칙 명문화"가 각 마일스톤이 자기 몫을 더할 자리를 만든다 |
 | `H-300` | (단위 ②) `None`을 D 값 유니언에 어떻게 실을지 — 신원 센티널이라 구조 타입 표현 불가(요약 표 `H-300` 참조). 현재 생성 유니언은 None 없이 좁게 나감(넓히기는 호환) | (a) **`None` 값에 브랜드 필드를 부여**(`__quadNone: true` — frozen 테이블에 필드 하나, `v == None` 신원 판정은 그대로) + 그 구조 타입을 유니언에 실음 — M3 산출물(`Dispatch/None.luau`)의 경미 수정 / (b) 유니언에서 영구 제외 — None을 쓰는 자리는 `:: any` 캐스트(사용자 문서에 명시) / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | (b)는 정당한 None 사용(명시적 nil 세팅)마다 캐스트를 강제해 표면이 거칠어진다. (a)의 비용은 센티널 테이블 필드 하나 — 신원 판정·frozen·기존 spec 전부 무영향(타입은 조언층이고 런타임은 여전히 `v == None`) — 반영 상태는 요약 표 행이 소스 |
+| `H-305` | **[2026-09-02 단위 ⑤ 신설 — 위 배치 회신 이후 추가된 문항]** (단위 ⑤, `H-25` 확인) **`q.D`의 타입 표면이 미정** — `Quad`(quad-types)는 엔진 무관 패키지라 Roblox 전용 `D` 내용(31클래스 `<Class>Param<E>`·별칭·`Mapper`)을 실을 수 없고, `QuadRoblox<T>(quad: T): T`는 정본상 `T`를 그대로 통과(typing-limits §6 — 타입 함수·교집합 이력 금지, `H10-3` 동일 교훈)라 백엔드가 타입을 못 얹는다. 지금 strict 소비자 코드에서 `q.D` 접근은 타입에러(`H-25`가 실측한 그 벽의 M5판). `H-299`가 유보한 `<Class>Param` 재익스포트 표면과 한 몸 | (a) **`Quad`에 `D: any` 필드**(`None: any` 선례 — "백엔드가 채우는 네임스페이스" 주석) + **quad-roblox 루트가 생성 재익스포트 노출**: `gen-d.py`가 D 네임스페이스 타입(`export type D`)과 `<Class>Param` 재익스포트 블록을 같이 생성(손 나열 금지 — "전량 생성" 계약 유지), 풀 타이핑이 필요한 소비자는 `local D = q.D :: QR.D` 1회 캐스트 / (b) `Quad`에 D 안 실음 — 접근 자체를 캐스트로(`(q :: any).D`) / (c) 다른 방식 | **(a)** ⏳ 회신 대기 | (b)는 가장 흔한 표면(`D`) 접근마다 any 캐스트를 강제해 표면이 거칠다. (a)의 `D: any`는 필드 존재만 조언하고(오타 잡힘), 풀 타이핑은 명시 1회 캐스트로 — H10-3 (d) 채택처럼 제네릭 흐름을 오염시키지 않는 유일한 자리다. `Tween`/`NewChild` 재익스포트(수동 둘)는 이미 같은 모양 |
 
 **⭐ [2026-09-02 배치 회신 — 전량 종결, 열린 문항 0]** 사용자 원문:
 *"H293: 이건 무조건 UB 영역이다. … 권고는 기각하며 해당 부분은 고치지
@@ -67,6 +68,20 @@ quad-types/quad-base를 고치면 **`pesde install` 재실행이 필요**하다
 | `H-302` | ① | 🟡 | (단위 ③ 리뷰) **읽기 전용 프로퍼티가 Property 핸들러에 매치**돼 `inst[k]=v`가 h.process 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착될 수 있었다(예: `AbsoluteSize`). 처방 실측: 디스크립터의 **`Permits.Write` 키가 쓰기 가능 프로퍼티에만 존재**(Studio — Size/Visible엔 있고 AbsoluteSize엔 없음) | ✅ 반영 — 멤버십 캐시가 `Permits.Write ~= nil`만 싣는다. `H-297` (a)("쓰기 표면만 — 대입 불가 프로퍼티는 거짓 표면")의 **런타임판**이라 승인된 논거의 확장으로 ① 처리(`H-290` 선례) — 틀렸다면 사용자가 뒤집을 것. spec에 읽기 전용 대조군 추가 |
 | `H-303` | ① | 🟢 | (단위 ④) **claim-plan §9의 "구현 시 정할 것"·가칭 전량을 재량 확정** — ⑴ 사용자 테이블 **in-place 교체** 채택(새 테이블이면 `ProcessedModifier` 자리·인덱스가 `New`와 달라진다는 §2 우려가 근거) ⑵ Modifier 필드 안 디스크립터는 DFS가 안 봄(M7 flatten 통합의 몫) ⑶ Claim 경로는 `drive` 직접 호출(flatten은 D 내부 — M5 항등이라 무차이, M7에서 공유 자리 결정) ⑷ 제네릭 생성자 `newMapperClass`·센티널 값 `MapperRoot`는 base(Claim.luau) 정의 + `D.Mapper`가 별칭 노출 ⑸ 디스크립터 타입 마커 `_mapper`(H-300 (a) 이중 구조 선례 — 판별은 `MapperBrand`) ⑹ 이름 부재·중복은 가드 없음(§3 UB 확정 그대로 — nil 자연 크래시) | ✅ 반영 — 전부 뒤집기 가능(§9가 재량으로 남긴 자리), 파일 헤더에 동일 목록 |
 | `H-304` | ① | 🟡 | (단위 ④ 감사) **`Claim.resolve`의 `ipairs` 스캔이 `drive`의 일반화 순회와 어긋났다** — nil 구멍 뒤의 매퍼 디스크립터가 미해석으로 drive에 새서 "no matching handler" — §3/§7-3("한 배열에 섞여도 된다")과 충돌 | ✅ 반영 — drive와 같은 일반화 순회(숫자 키 필터)로 정렬. 구멍 자체는 기존 `or None` 관용구의 몫(스파이크 `06`) — 새 규칙이 아니라 순회 동형화라 ①. spec.claim에 None 채움 뒤 디스크립터 케이스 추가 |
+| `H-305` | ② | 🟡 | (단위 ⑤, `H-25` 확인) **`q.D`의 타입 표면 미정** — `Quad`는 엔진 무관이라 D 내용을 못 싣고 `QuadRoblox<T>(quad: T): T`는 타입을 못 얹는다(typing-limits §6). `H-299` 유보분(`<Class>Param` 재익스포트)과 한 몸 — 문항 원문은 §4 | ⏳ §4 회신 대기 — 권고 (a): `Quad`에 `D: any` + gen-d.py가 `export type D`·재익스포트 블록 생성 |
+
+**[2026-09-02 단위 ⑤ 시점 — `H-25` 확인의 ① 몫(문서가 답을 가진 자율
+반영)]**: `H-80` 규약("마일스톤이 얹는 탑레벨 값 전부 `Quad`에")대로
+M5가 얹은 값 전부를 `quad-types` `Quad`에 추가 — 단위 ④ 몫
+`MapperRoot`/`newMapperClass`, EngineOps 몫 `nativeInsert`/`nativeExtract`/
+`nativeRemove`/`nativeMove`/`nativeSwap`/`nativeDispose`/`isInst`/
+`nativeFindChild`(시그니처는 `base/slot-plan.md` "물리 조작은 주입 op다"
+절 그대로), LifetimeHandle 몫 `nativeClaim`. `pesde install` 재실행 후
+전 스위트 exit 0. `QuadRoblox` 진입점·`CheckedQuad` 배선은 단위 ①에서
+이미 구현·검증됨(추가 갱신 없음 확인). **첫 실물 렌더 실측도 완료** —
+rojo 라이브 싱크 경유, 정적(프로퍼티+자식)/반응형 프로퍼티(`Source`
+재발행)/반응형 자식 교체(옛 자식 강등·생존) 전부 PASS + 뷰포트 시각
+확인. 절차·결과 상세는 `audit/m5-unit5-first-render-2026-09-02.md`.
 **[2026-09-02 단위 ③ 시점] 확인만 하고 문제 없던 것**:
 
 - **ReflectionService 반환 모양 실측**(Property 매치의 전제) — 디스크립터
