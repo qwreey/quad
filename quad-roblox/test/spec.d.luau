@@ -8,6 +8,8 @@
 
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
+-- mock에선 quad를 만들지 않는 헬퍼만 빌린다(사본 혼입 주의 — spec.robloxfactory 헤더)
+local mock = require("../../quad-base/test/mock")
 local q: any = QuadRoblox(Quad.New())
 
 print("=== 1. D 설치(H-299) — module.D, 별칭 전부 함수, New 포함 ===")
@@ -73,6 +75,27 @@ do
 	-- 범위 밖 클래스의 폴백 경로(H-238의 원 발견 지점) — New(name)이 갓 만든
 	-- 스테이지도 태그돼 나와야 blame이 사용자 줄에 닿는다
 	assert(q.errorNamespace.getFuncLevel(D.New("SomeOutOfScopeClass")) == SURFACE, "fresh stage from New(name) must be tagged")
+	print("PASS")
+end
+
+print()
+print("=== 5. 파이프라인 CLI e2e(탐사자 관측 반영) — getfenv 주입으로 ①~④ 실주행 ===")
+do
+	-- 생성 D는 전역 `Instance`를 스테이지 안에서 lazy 참조한다 — CLI엔 그
+	-- 전역이 없지만 D 모듈 env에 mock을 주입하면 파이프라인이 실주행된다
+	-- (getfenv는 env를 비최적화하지만 테스트 전용이라 무방). 단언은 단위
+	-- ③ 이후에도 안정한 것만: ① 생성 + ② nativeClaim까지.
+	local D = q.D
+	getfenv(D.New :: any).Instance = { new = mock.Instance.new }
+	local frame = D.Frame({}) :: any
+	assert(mock.isMockInstance(frame) and frame.ClassName == "Frame", "① 물리 생성 완주(mock)")
+	local ok, err = pcall(function()
+		q.nativeClaim(frame)
+	end)
+	assert(not ok and string.find(tostring(err), "already claimed", 1, true) ~= nil, "② New가 nativeClaim을 이미 걸었다: " .. tostring(err))
+	-- 범위 밖 폴백도 같은 파이프라인
+	local part = D.New("Part")({}) :: any
+	assert(mock.isMockInstance(part) and part.ClassName == "Part", "범위 밖 New(name)(props)도 완주")
 	print("PASS")
 end
 

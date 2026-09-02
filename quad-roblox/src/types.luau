@@ -7,10 +7,10 @@
 	`scripts/roblox-defs/globalTypes.d.luau` — quad-base stays defs-free.
 
 	`Tween<T>` — the value-level wrapper `tween-plan.md`'s "확정: `Tween{...}`
-	최종 모양" section pins down. M9 implements the runtime (constructor,
+	최종 모양" section pins down. M11 implements the runtime (constructor,
 	PropertyHandler consumption, `Tween.Cancel`/`Tween.Finish` sentinels);
 	M5 needs the TYPE first because the generated `D` prop unions include it
-	(round14 `H-298` (a)). `Override` stays `any` until M9 gives the sentinel
+	(round14 `H-298` (a)). `Override` stays `any` until M11 gives the sentinel
 	values a type.
 
 	`NewChild` — the children-array element union `D.<Class>Param<E>`
@@ -39,7 +39,7 @@ export type Tween<T> = {
 	RepeatCount: number?,
 	Reverses: boolean?,
 	DelayTime: number?,
-	Override: any?, -- Tween.Cancel (default) | Tween.Finish — sentinels arrive in M9
+	Override: any?, -- Tween.Cancel (default) | Tween.Finish — sentinels arrive in M11
 }
 
 export type NewChild = Instance | QuadTypes.State<Instance> | QuadTypes.None

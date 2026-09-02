@@ -211,7 +211,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
 
 - **스칼라 프로퍼티**: `(T | State<T> | Tween<T> | None)?` — `Tween<T>`은
   PropertyHandler가 소비하는 값-레벨 래퍼(`tween-plan.md`; 타입은
-  `quad-roblox/src/types.luau`, 런타임은 M9). 모든 프로퍼티에 균일하게
+  `quad-roblox/src/types.luau`, 런타임은 M11 — 탐사자가 M9 오기를 잡음). 모든 프로퍼티에 균일하게
   허용한다(트윈 가능 여부는 엔진 몫 — 타입으로 안 가른다).
 - **이벤트 필드**: `((<엔진 시그널 파라미터>) -> ()) | State<...> | None`에
   optional(`?`) — `nil` disconnect는 optional이 표현한다(`event-plan.md`).

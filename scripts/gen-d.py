@@ -208,7 +208,7 @@ def emit():
     L.append("\tD는 캐스트 별칭·Parent 제외 H-142), claim-plan §7-12(<Class>Param<E> 공유),")
     L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | State<T> | Tween<T> | None,")
     L.append("\t이벤트 콜백 | State<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).")
-    L.append("\t이벤트 필드의 런타임 핸들러는 M7(Handlers/Event) — 타입이 먼저 오는 것은")
+    L.append("\t이벤트 필드의 런타임 핸들러는 M10(Handlers/Event) — 타입이 먼저 오는 것은")
     L.append("\tROADMAP M5 체크박스가 명시한 계약이다.")
     L.append("]]")
     L.append("")
