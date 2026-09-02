@@ -46,8 +46,8 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 
 | 환경 | 필요한 것 | 해당 파일 |
 |---|---|---|
-| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22 |
-| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23 |
+| **순수 Luau CLI** (`luau`) | [luau-lang/luau 릴리즈](https://github.com/luau-lang/luau/releases)의 `luau` 인터프리터, 또는 `lune` | 01, 02, 03, 04, 05, 06(런타임 부분), 07, 11, 17, 18, 19, 20, 22, 27(-O2/--codegen 플래그 조합) |
+| **Luau 타입체커** (`luau-analyze` 또는 `luau-lsp`) | 같은 릴리즈에 포함된 `luau-analyze`, 또는 `luau-lsp analyze`/에디터 인라인 진단 | 06(타입 부분), 08, 09, 12, 13, 14, 15, 16, 21, 23, 26, 28 |
 | **Roblox Studio** | 별도 계정으로 로그인(`HUMAN_TODO.md` 1번, `SAFETY.md` 준수). **[2026-09-01]** MCP 연결이 열려 사용자 수동 실행뿐 아니라 **에이전트가 `execute_luau`로 직접** 돌릴 수도 있음(`10` 완주가 첫 사례) | 10 |
 
 **[2026-08-21 정정]** 이 표가 `21`/`22`/`23`을 빠뜨린 채 `13`을 "런타임 부분/
@@ -99,6 +99,7 @@ ROADMAP 항목 근거인지, 어떻게 실행하는지, 실행 후 뭘 확인해
 | `22-runtime-ref-preref-postref-brand.luau` | **[2026-08-19 신규]** 구 `13`의 런타임(B) 절반을 분리한 것 — `isPreRef`/`isPostRef`가 같은 층위의 배타적 형제(둘 다 `isRef`엔 `true`, 서로에겐 `false`)인지, Leaf 핸들러 흉내(`isRef(v) and not isPreRef(v) and not isPostRef(v)`)가 Ref/PreRef/PostRef 셋을 정확히 갈라내는지. **[2026-08-21] `rewrite-required/`로 이동** — 파일이 직접 구현해 쓰는 `Brand.set`/`Brand.get`이 인스턴스 브랜드 재작성으로 역전된 옛 API가 됐다(검증 대상 자체는 그대로 유효, 상태와 재작성 지침은 `STATUS.md`가 소스) | `ref-plan.md`의 "`PostRef`" 절, `brand-plan.md`의 "⭐ 구현 — 인스턴스 브랜드" 절 |
 | `23-type-quadtypes-checkversion-addplugin.luau` (타입체크 전용) | **[2026-08-19 신규, 같은 날 후속으로 재작성]** 실제 `quad-types`/`quad-base`/`type-version-check`를 `require`해서 `CheckedQuad<T, Pattern>`(글롭/캐럿 버전 패턴 체크, `type-version-check` 위에 얹힘)이 `AddPlugin<Self,P>` 체이닝과 맞물려 동작하는지 — 양성(버전 일치 + 2단 체이닝 + 이전 확장 필드 보존), 음성(버전 불일치 → 강제 참조 시점에 정확히 `TypeError`). `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 깨진다는 걸 이 스파이크가 재작성 과정에서 직접 발견. 재작성 과정에서 `export type function`(cross-package 필수)과 2개 이상 명시 제네릭 인스턴스화의 이중 꺾쇠(`Foo<<A,B>>`) 요구도 추가로 실측 확인 | `quad-types-plan.md`, `typing-limits.md` §6 |
 | `26-type-apply-object-factory-overload.luau` (타입체크 전용) | `state:Apply(factory)`의 파라미터 타입 — 함수 팩토리와 `__apply` 객체 팩토리를 한 시그니처로 받을 때 유니온/오버로드/인덱서 중 어느 표기가 strict에서 `state:Apply(blocker)`(필드가 더 있는 객체)를 통과시키는지 | `qa-request/m2-implementation-round11.md` `H-179`(M2 단위 4 실측) |
+| `28-type-class-param-shared-generic.luau` (타입체크 전용) | **[2026-09-02 신설, M5 단위 ② 착수 전]** `<Class>Param<E>` 공유 제네릭 — 같은 Param 타입을 `D.<Class>`(E=NewChild)와 `D.Mapper.<Class>`(E=NewChild\|MapperDescriptor)가 공유하고 리턴만 다른 구조가 실제 Luau에서 도는지(claim-plan §7-12가 luau-analyze 스파이크로 요구). 기대 음성 3건만 정확히 발생 — 디스크립터 children 거부/`Parent` 거부(`H-142` 타입판)/디스크립터≠Frame. 필드 유니언 구성은 자리표시자(round14 `H-298` 대기) | `claim-plan.md` §7-12·§9, `bind-system-plan.md` 인스턴스 생성 절 |
 
 ## 공통 유틸리티
 

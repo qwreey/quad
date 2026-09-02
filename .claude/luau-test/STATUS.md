@@ -1,6 +1,10 @@
 # 스파이크 상태판 — **폴더가 곧 상태**
 
-> 마지막 갱신: **2026-09-01(2건)** — ① Studio MCP 연결(HUMAN_TODO 1번 해소)
+> 마지막 갱신: **2026-09-02** — 신규 `28`(`<Class>Param<E>` 공유 제네릭이
+> `D.<Class>`/`D.Mapper.<Class>` 두 소비자를 통과 — claim-plan §7-12·§9가
+> 요구한 스파이크) `done/` 직행: 기대 음성 3건(디스크립터 children 거부·
+> `Parent` 거부·디스크립터≠Frame)만 정확히 발생, 필드 유니언 자체는
+> round14 `H-298` 대기라 자리표시자. 직전 갱신 **2026-09-01(2건)** — ① Studio MCP 연결(HUMAN_TODO 1번 해소)
 > 직후 **`10`을 A 섹션 현행 모델 재작성 후 완주** — 전 항목 PASS,
 > `rewrite-required/` → `done/`. 결과 전문·발견 둘(무claim inst userdata
 > 1사이클 수거 = `nativeClaim` 전제 실증 / Attribute Instance 참조는
@@ -233,6 +237,7 @@ spec 대체 폐기 상태다(각 행 참고 — `03`은 통과로 들어와 있�
 | `12-type-attribute-generic-key-narrowing` | ❌지만 **설계 영향 없음** — 제네릭 키 narrowing이 안 되는 건 `attribute-plan.md`가 이미 fallback으로 예비해둔 결과(타입 패밀리가 유일하게 믿을 경로). **[2026-08-24 `H-54`] 단 스파이크 자신의 주석이 실제 결과와 어긋난다** — *"이건 당연히 통과해야 함"*이라 적어둔 동질 대조군(line 41-43)이 실제로는 에러를 낸다(`AttributeKey<T>(name)`이 문맥에서 `T`를 못 추론해 `unknown`으로 남음). 오히려 "왜 진짜 테스트 대상이 조용히 통과하는지(= narrowing이 아예 안 일어남)"를 설명해주는 정합적 결과라 **이 총론은 그대로 유효**하고, 근거 라인만 다르다 — 재작성 시 참고 |
 | `13-type-ref-preref-subtype` | **[2026-08-19 재작성]** ✅ 통과 — `PreRef<T>`/`PostRef<T>` 둘 다 `Ref<T>`를 구조적으로 만족(음성 대조군도 정확히 에러). 런타임 B섹션은 `22`로 분리(A의 더미 스텁이 B 실행을 막던 문제 해결) |
 | `14-type-nilable-default-overload` | ⚠️ 부분 — 의도한 오용은 막지만 정상 nilable 사용례까지 막아 현 스케치로는 채택 불가. **설계 결정은 아직 필요 없음**(대안이 이미 UB 경고로 존재)이라 `review-required`가 아님 |
+| `28-type-class-param-shared-generic` (타입체크 전용) | ✅ **[2026-09-02 신설, M5 단위 ② 착수 전 — claim-plan §9 요구]** `<Class>Param<E>` 공유 제네릭 메커니즘 통과 — 같은 Param을 `D.Frame`(E=NewChild)/`D.Mapper.Frame`(E=NewChild\|MapperDescriptor)이 공유하고 리턴만 다름, 기대 음성 3건만 정확히 발생(`Parent` 부재가 H-142의 타입판임을 겸증). 필드 유니언 구성은 자리표시자(round14 `H-298`이 정본화 대기) |
 | `23-type-quadtypes-checkversion-addplugin` | **[2026-08-19 신규, 같은 날 후속으로 재작성]** ✅ 통과 — 실제 `quad-types`/`quad-base`/`type-version-check`로 `CheckedQuad<T, Pattern>`+`AddPlugin<Self,P>` 통합 검증. 재작성 과정에서 `type function`을 거친 값은 패스스루라도 이후 제네릭 self 체이닝이 조용히 깨진다는 새 Luau 함정 발견(`typing-limits.md` §6으로 승격), `export type function`/이중 꺾쇠 제네릭 인스턴스화 요구도 같이 실측 — 최종 설계(별도 가상 필드로 격리)는 양성/음성 경로 모두 클린 |
 
 ### 특별히 중요한 통과 3건
