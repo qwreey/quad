@@ -788,7 +788,9 @@ end
   기각됨). 대신 이미 확정된 "base 유틸은 인터페이스, 실제 구현은 팩토리가
   `BaseModule`을 뮤테이션해서 주입"(`RobloxFactory(BaseModule)`) 패턴을
   그대로 따름 — Dispatch의 handler 레지스트리도 `BaseModule` 테이블에
-  딸린 state 중 하나일 뿐이라, `_initializedBy` 마커에 대해 이미 확정된
+  딸린 state 중 하나일 뿐이라, 백엔드 슬롯 가드(당시 `_initializedBy`
+  마커 — **[2026-09-02]** `UseProvider` identity 락으로 교체,
+  `module-lifecycle-plan.md`)에 대해 이미 확정된
   것과 완전히 같은 논리가 적용됨(위 "base 유틸은 인터페이스" 절, "`New()`가
   실제로 호출되면 그 호출이 만드는 인스턴스가 별도 테이블이 되므로 이
   마커도 테이블별로 독립적으로 스코핑됨" — 단 아래 "[한정]" 문단대로 코드

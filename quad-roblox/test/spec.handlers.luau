@@ -51,7 +51,7 @@ local counted = setmetatable({}, {
 }) :: any
 local gameShim = mock.gameShim(counted)
 
-local q: any = QuadRoblox(Quad.New())
+local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim -- Property 모듈 env에 주입
 ;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)

@@ -1,16 +1,21 @@
 --[[
 	RobloxFactory(module) — mutates a quad-base module instance into the
 	Roblox backend: installs the lifetime primitives + `nativeClaim`
-	(LifetimeHandle.luau) and the M5 engine ops (EngineOps.luau).
+	(LifetimeHandle.luau) and the M5 engine ops (EngineOps.luau), then
+	returns the typed extension (`RobloxExtension` — `D`) for the
+	`UseProvider` merge.
 
-	Guard is the `_initializedBy` string marker — a PUBLIC one-slot contract
-	distinct from quad-base's internal `RunInit` idempotence
-	(`base/module-lifecycle-plan.md`): calling the same factory again is a
-	no-op, a different factory having filled the slot is an error (a module
-	cannot serve two backends).
+	No guard here (`H-305` (d′), 2026-09-02): the old `_initializedBy`
+	string marker could not tell two COPIES of quad-roblox apart (a second
+	copy — even a different version — read "roblox" and silently no-op'd;
+	user diagnosis). The one-slot contract now lives in quad-base's
+	`UseProvider` as an fn-identity lock — same fn re-install is an
+	idempotent no-op (require caching gives the same identity in the normal
+	case), any different identity errors loudly. Install ONLY through
+	`quad:UseProvider(QuadRoblox)`; a direct `RobloxFactory(module)` call
+	bypasses the lock and the extension merge (unsupported).
 ]]
 
-local QuadTypes = require("../luau_packages/quad_types")
 local installLifetime = require("./LifetimeHandle")
 local installEngineOps = require("./EngineOps")
 local InitD = require("./D")
@@ -18,33 +23,17 @@ local installPropertyHandler = require("./Handlers/Property")
 local installInstanceChildHandler = require("./Handlers/InstanceChild")
 
 local function RobloxFactory(module: any): any
-	-- tag before any raise below — without the surface tag the error walker
-	-- falls back to the raise site and blames this file (`H-238`)
-	module.errorNamespace.setFuncLevel(RobloxFactory, QuadTypes.ERROR_LEVEL_SURFACE)
-	if module._initializedBy == "roblox" then
-		return module -- same factory called again = no-op
-	end
-	if module._initializedBy ~= nil then
-		-- errorBefore (outermost surface) so both direct calls and the
-		-- QuadRoblox entry blame the user's line (`H-272` precedent)
-		module.errorNamespace.errorBefore(
-			`Quad module already initialized by '{module._initializedBy}'`,
-			QuadTypes.ERROR_LEVEL_SURFACE
-		)
-	end
-	module._initializedBy = "roblox"
-
 	installLifetime(module)
 	installEngineOps(module)
 	-- backend-owned handlers (M5 단위 ③ — Property/InstanceChild;
 	-- Event/OnChange/Slot은 각 마일스톤에서 합류)
 	installPropertyHandler(module)
 	installInstanceChildHandler(module)
-	-- `H-299` (①, 뒤집기 가능): `D`의 획득 경로는 코퍼스에 미지정이었다 —
-	-- 백엔드가 모듈 필드를 설치하는 기존 채널(op들과 같은 자리) 그대로
-	-- `module.D`로 노출한다. 사용법: `local D = quad.D`.
-	module.D = InitD(module)
-	return module
+	-- `H-299` → `H-305` (d′): `D`는 module.D 직접 대입이 아니라
+	-- `UseProvider`의 확장 병합으로 실린다 — 반환 테이블이 그 확장이고,
+	-- `RobloxExtension` 타입(init.luau)이 이 모양의 정본. 사용법은 동일:
+	-- `local D = quad.D`(병합 후) 또는 반환 교집합에서 바로 `q.D`.
+	return { D = InitD(module) }
 end
 
 return RobloxFactory

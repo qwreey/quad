@@ -1390,9 +1390,83 @@ export type WorldModelParam<E> = {
 	StyledPropertiesChanged: ((() -> ()) | State<() -> ()> | None)?,
 }
 
---[[ InitD(quad) — RobloxFactory가 module.D로 설치한다(round14 H-299).
+-- D 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이
+-- 싣는 풀 타입 표면. 아래 런타임 별칭 캐스트와 1:1 — 손 나열 금지 계약대로
+-- 생성기가 같이 찍는다.
+export type DMapper = {
+	Root: MapperRoot,
+	BillboardGui: (key: string | MapperRoot) -> (BillboardGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	Camera: (key: string | MapperRoot) -> (CameraParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	CanvasGroup: (key: string | MapperRoot) -> (CanvasGroupParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	Folder: (key: string | MapperRoot) -> (FolderParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	Frame: (key: string | MapperRoot) -> (FrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	ImageButton: (key: string | MapperRoot) -> (ImageButtonParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	ImageLabel: (key: string | MapperRoot) -> (ImageLabelParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	ScreenGui: (key: string | MapperRoot) -> (ScreenGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	ScrollingFrame: (key: string | MapperRoot) -> (ScrollingFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	SurfaceGui: (key: string | MapperRoot) -> (SurfaceGuiParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	TextBox: (key: string | MapperRoot) -> (TextBoxParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	TextButton: (key: string | MapperRoot) -> (TextButtonParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	TextLabel: (key: string | MapperRoot) -> (TextLabelParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIAspectRatioConstraint: (key: string | MapperRoot) -> (UIAspectRatioConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UICorner: (key: string | MapperRoot) -> (UICornerParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIDragDetector: (key: string | MapperRoot) -> (UIDragDetectorParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIFlexItem: (key: string | MapperRoot) -> (UIFlexItemParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIGradient: (key: string | MapperRoot) -> (UIGradientParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIGridLayout: (key: string | MapperRoot) -> (UIGridLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIListLayout: (key: string | MapperRoot) -> (UIListLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIPadding: (key: string | MapperRoot) -> (UIPaddingParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIPageLayout: (key: string | MapperRoot) -> (UIPageLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIScale: (key: string | MapperRoot) -> (UIScaleParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIShadow: (key: string | MapperRoot) -> (UIShadowParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UISizeConstraint: (key: string | MapperRoot) -> (UISizeConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UIStroke: (key: string | MapperRoot) -> (UIStrokeParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UITableLayout: (key: string | MapperRoot) -> (UITableLayoutParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	UITextSizeConstraint: (key: string | MapperRoot) -> (UITextSizeConstraintParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	VideoFrame: (key: string | MapperRoot) -> (VideoFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	ViewportFrame: (key: string | MapperRoot) -> (ViewportFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+	WorldModel: (key: string | MapperRoot) -> (WorldModelParam<NewChild | MapperDescriptor>) -> MapperDescriptor,
+}
+export type D = {
+	New: <T>(className: string) -> (props: any) -> T,
+	Mapper: DMapper,
+	BillboardGui: (BillboardGuiParam<NewChild>) -> BillboardGui,
+	Camera: (CameraParam<NewChild>) -> Camera,
+	CanvasGroup: (CanvasGroupParam<NewChild>) -> CanvasGroup,
+	Folder: (FolderParam<NewChild>) -> Folder,
+	Frame: (FrameParam<NewChild>) -> Frame,
+	ImageButton: (ImageButtonParam<NewChild>) -> ImageButton,
+	ImageLabel: (ImageLabelParam<NewChild>) -> ImageLabel,
+	ScreenGui: (ScreenGuiParam<NewChild>) -> ScreenGui,
+	ScrollingFrame: (ScrollingFrameParam<NewChild>) -> ScrollingFrame,
+	SurfaceGui: (SurfaceGuiParam<NewChild>) -> SurfaceGui,
+	TextBox: (TextBoxParam<NewChild>) -> TextBox,
+	TextButton: (TextButtonParam<NewChild>) -> TextButton,
+	TextLabel: (TextLabelParam<NewChild>) -> TextLabel,
+	UIAspectRatioConstraint: (UIAspectRatioConstraintParam<NewChild>) -> UIAspectRatioConstraint,
+	UICorner: (UICornerParam<NewChild>) -> UICorner,
+	UIDragDetector: (UIDragDetectorParam<NewChild>) -> UIDragDetector,
+	UIFlexItem: (UIFlexItemParam<NewChild>) -> UIFlexItem,
+	UIGradient: (UIGradientParam<NewChild>) -> UIGradient,
+	UIGridLayout: (UIGridLayoutParam<NewChild>) -> UIGridLayout,
+	UIListLayout: (UIListLayoutParam<NewChild>) -> UIListLayout,
+	UIPadding: (UIPaddingParam<NewChild>) -> UIPadding,
+	UIPageLayout: (UIPageLayoutParam<NewChild>) -> UIPageLayout,
+	UIScale: (UIScaleParam<NewChild>) -> UIScale,
+	UIShadow: (UIShadowParam<NewChild>) -> UIShadow,
+	UISizeConstraint: (UISizeConstraintParam<NewChild>) -> UISizeConstraint,
+	UIStroke: (UIStrokeParam<NewChild>) -> UIStroke,
+	UITableLayout: (UITableLayoutParam<NewChild>) -> UITableLayout,
+	UITextSizeConstraint: (UITextSizeConstraintParam<NewChild>) -> UITextSizeConstraint,
+	VideoFrame: (VideoFrameParam<NewChild>) -> VideoFrame,
+	ViewportFrame: (ViewportFrameParam<NewChild>) -> ViewportFrame,
+	WorldModel: (WorldModelParam<NewChild>) -> WorldModel,
+}
+
+--[[ InitD(quad) — `UseProvider` 확장(`RobloxExtension.D`)으로 실린다
+	(round14 H-299의 module.D 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).
 	New의 ①~④ 순서는 bind-system-plan 파이프라인 의사코드가 계약. ]]
-return function(quad: any)
+return function(quad: any): D
 	local function flatten(props: any): any
 		-- ③ 자리 — M7 Modifier 소진이 여기 온다(modifier-plan "flatten의
 		-- 정확한 형태" 정본). M5엔 Modifier 표면이 없어 항등.
@@ -1479,5 +1553,5 @@ return function(quad: any)
 	Mapper.ViewportFrame = (quad.newMapperClass("ViewportFrame") :: any) :: (key: string | MapperRoot) -> (ViewportFrameParam<NewChild | MapperDescriptor>) -> MapperDescriptor
 	Mapper.WorldModel = (quad.newMapperClass("WorldModel") :: any) :: (key: string | MapperRoot) -> (WorldModelParam<NewChild | MapperDescriptor>) -> MapperDescriptor
 	quad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨
-	return D
+	return (D :: any) :: D
 end

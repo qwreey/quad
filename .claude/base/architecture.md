@@ -144,7 +144,9 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
     `BaseModule` 테이블을 만들어 팩토리로 채우는 것뿐. 상세 근거는
     `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절.
     **[정정, 2026-08-18 구현 전 QA]** 옛 서술은 그렇게만 하면 지금
-    module-level state로 사는 모든 것(`_initializedBy` 마커, Dispatch
+    module-level state로 사는 모든 것(백엔드 슬롯 가드 — 당시
+    `_initializedBy` 마커, **[2026-09-02]** `UseProvider` identity 락으로
+    교체(`module-lifecycle-plan.md`) — 나 Dispatch
     레지스트리 등)이 **"자동으로" 테이블별 스코핑된다**고 했는데, 사용자
     판정은 다르다 — *"모듈이 하나의 인스턴스(dispatch 레지스트리 하나,
     canExecute 등 계약 필드 하나) 만 가지고 있다면 예. 단, 나중에 …

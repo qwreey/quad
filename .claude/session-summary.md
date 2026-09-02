@@ -2206,3 +2206,16 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   엄격히 우월). 사용자 채택("우선 권고대로 채택하고자 해") — 반영은 M10
   통합 커밋에서(quad-types 교체 + any 캐스트 제거 + typing-limits 등재 +
   원장 행 ✅), 계획은 세션 파일 §반영 계획이 소스.
+
+- `session/2026-09-02-04-h305-useprovider.md` **[`H-305` (d′) — D 타입
+  표면·프로바이더 설치 규약 확정]** 단위 ⑤ `H-25` 확인에서 발단: `q.D`
+  타입 공백 → 사용자 주도 3단 발전 — ⑴ `None: any`는 H-300 마커 이전
+  잔재(사용자 지적, `None: None`으로 좁힘) ⑵ D를 플러그인 확장으로
+  (스파이크 실측: `Self & P` 테이블∩테이블은 H10-3 무거주 계열과 다름 +
+  인자 검사까지 됨; `done/23`이 이미 예정했던 모양) ⑶ **`UseProvider`
+  신설** — 프로바이더 1슬롯 fn identity 락(옛 `_initializedBy` 문자열은
+  사본·버전 묵인 — 사용자 진단), AddPlugin(다수 확장)과 이원화. 반영:
+  quad-base UseProvider + RobloxExtension={D} + mockProvider + 생성
+  `export type D`(LuauTarjanChildLimit 40000 — typing-limits 8.5절) +
+  2026-08-19 확정 부분 역전 처리 + 스파이크 29 승격. 전 스위트 exit 0 +
+  Studio 재실측 PASS.

@@ -297,10 +297,11 @@ function`을 거치면 이후 제네릭 self 메소드 체이닝이 조용히 �
   `quad-roblox/src/init.luau`(`QuadRoblox` — 가상 필드 강제 참조 패턴
   그대로)와 `RobloxFactory.luau`가 그 실제 위치다. 나머지(`D`/`Handlers`/
   `Claim`)는 단위 ②~⑤.
-- `_initializedBy`(별도 문자열 마커, backend 유일 슬롯 가드)와의 관계는
-  `base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절 참고 — `CheckedQuad`는
-  **버전** 호환성만 보고, **누가 이미 backend를 설치했는지**는 별개
-  문제로 계속 `_initializedBy`가 담당한다.
+- backend 유일 슬롯 가드와의 관계는 `base/module-lifecycle-plan.md`의
+  "New()의 내부 구성" 절 참고 — `CheckedQuad`는 **버전** 호환성만 보고,
+  **누가 이미 backend를 설치했는지**는 별개 문제로 `UseProvider`의 fn
+  identity 락이 담당한다(**[2026-09-02 `H-305` (d′)]** 옛 `_initializedBy`
+  문자열 마커 대체 — 문자열은 다른 사본·버전을 구분 못 해 묵인했다).
 - **[백로그, 2026-08-19 신설]** `quad-roblox-types`(가칭) — `quad-types`와
   같은 패턴으로, `quad-roblox` 전체 대신 그 타입만 필요한 모듈을 위한
   패키지. **사용자가 지금 만들 필요는 없다고 명시적으로 후순위 지정** —

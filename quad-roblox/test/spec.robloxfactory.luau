@@ -1,10 +1,12 @@
 --[[
-	quad-roblox M5 단위 ① 계약 — `QuadRoblox` 진입점(`_initializedBy` 가드) +
-	LifetimeHandle 실구현(nativeClaim eager·미claim bind 거부 `H-290`) +
-	EngineOps M5 몫(native* 여섯, isInst/onDestroying/nativeFindChild).
-	정본: `.claude/base/module-lifecycle-plan.md` `_initializedBy` 절,
+	quad-roblox M5 단위 ① 계약 — `QuadRoblox` 프로바이더 진입점
+	(`quad:UseProvider(QuadRoblox)`, 1슬롯 fn identity 락 — `H-305` (d′)로
+	옛 `_initializedBy` 문자열 가드 대체) + LifetimeHandle 실구현
+	(nativeClaim eager·미claim bind 거부 `H-290`) + EngineOps M5 몫
+	(native* 여섯, isInst/onDestroying/nativeFindChild).
+	정본: `.claude/base/module-lifecycle-plan.md`의 UseProvider 서술,
 	`lifecycle-pattern.md` (0)/(1), `architecture.md` EngineOps 줄,
-	round14 brief §1 단위 ①.
+	round14 brief §1 단위 ① + `H-305` 회신.
 
 	⚠️ quad 사본 혼입 주의: 이 spec의 quad-base는 **dev-dep 사본**
 	(`../luau_packages/quad_base`, round14 Q3 (a)) 하나뿐이다. mock에서는
@@ -23,42 +25,47 @@ local Instance = mock.Instance
 
 local SPEC_FILE = "spec.robloxfactory.luau"
 
-print("=== 1. 진입점 — 팩토리 마커·재호출 no-op·다른 백엔드 점유는 error ===")
+print("=== 1. 진입점 — UseProvider identity 락: 같은 fn no-op·다른 identity error (H-305 d′) ===")
 do
-	local q = QuadRoblox(Quad.New())
-	assert((q :: any)._initializedBy == "roblox", "factory sets the marker")
-	local before = q.bindLifetime
-	local again = QuadRoblox(q)
-	assert(again == q and q.bindLifetime == before, "same factory again is a no-op (functions untouched)")
+	local q = Quad.New():UseProvider(QuadRoblox)
+	assert(type((q :: any).D) == "table", "extension merge lands D on the module")
+	local before = (q :: any).bindLifetime
+	local again = (q :: any):UseProvider(QuadRoblox)
+	assert(again == q and (q :: any).bindLifetime == before, "same provider fn again is a no-op (functions untouched)")
 
-	local foreign = Quad.New()
-	;(foreign :: any)._initializedBy = "web"
+	-- 다른 identity의 프로바이더(다른 백엔드든, 같은 백엔드의 다른 사본이든 —
+	-- 옛 `_initializedBy` 문자열은 후자를 묵인했다, 사용자 진단)는 error
+	local foreignProvider = function(_quad: any)
+		return {}
+	end
 	local ok, err = pcall(function()
-		QuadRoblox(foreign)
+		(q :: any):UseProvider(foreignProvider)
 	end)
-	assert(not ok, "a module another backend owns must be rejected")
-	assert(string.find(tostring(err), "already initialized by 'web'", 1, true) ~= nil, "message names the occupier: " .. tostring(err))
-	mock.assertBlamesUser(err, SPEC_FILE, "foreign backend")
+	assert(not ok, "a second, different-identity provider must be rejected")
+	assert(string.find(tostring(err), "already has a provider", 1, true) ~= nil, "message states the one-slot contract: " .. tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "foreign provider")
 
 	-- `H-294` (a): mock도 백엔드다 — 양방향 점유가 전부 시끄럽게 거부된다
+	-- (q :: any — 교집합 타입을 mock의 any 파라미터로 흘리면 새 솔버가
+	-- 클로저 추론 중 전개 한도를 넘는다: "too complex", 실측)
 	local okMockOver = pcall(function()
-		mock.installLifetime(q)
+		mock.installLifetime(q :: any)
 	end)
 	assert(not okMockOver, "mock must not silently overwrite the roblox backend")
 	local mocked = Quad.New()
 	mock.installLifetime(mocked)
-	assert((mocked :: any)._initializedBy == "mock", "mock sets its own marker")
+	mock.installLifetime(mocked) -- 같은 identity 재설치 — no-op이어야 함
 	local okRobloxOver, err2 = pcall(function()
-		QuadRoblox(mocked)
+		(mocked :: any):UseProvider(QuadRoblox)
 	end)
 	assert(not okRobloxOver, "roblox must not silently take over mock-bound handles")
-	assert(string.find(tostring(err2), "already initialized by 'mock'", 1, true) ~= nil, "message names mock: " .. tostring(err2))
+	assert(string.find(tostring(err2), "already has a provider", 1, true) ~= nil, "one-slot contract both ways: " .. tostring(err2))
 	print("PASS")
 end
 
--- native*/isInst 등 op 필드는 `Quad` 공개 타입에 없다(백엔드 내부 표면 —
--- 타입 등재 여부는 단위 ⑤의 `H-25` 갱신 몫에서 판정) — any로 다룬다
-local q: any = QuadRoblox(Quad.New())
+-- [단위 ⑤ `H-25` 반영] native*/isInst 등 op 필드는 이제 `Quad` 공개 타입에
+-- 있다(H-80 규약) — 여기 any는 mock instance를 넘기는 단언들 편의.
+local q: any = Quad.New():UseProvider(QuadRoblox)
 
 print()
 print("=== 2. nativeClaim — 1회 셋업, 이중 claim은 셋업 유무만으로 error ===")

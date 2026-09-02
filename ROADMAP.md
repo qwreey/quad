@@ -1066,7 +1066,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
       **[2026-09-02 완료, M5 단위 ① round14]** `_initializedBy` 가드(같은
-      팩토리 no-op/다른 팩토리 error) + LifetimeHandle·EngineOps 설치 +
+      팩토리 no-op/다른 팩토리 error — **[같은 날 단위 ⑤ `H-305` (d′)로
+      교체]** 문자열 마커는 다른 사본·버전을 묵인해 `UseProvider` fn
+      identity 락으로 대체, 설치 표면도 `quad:UseProvider(QuadRoblox)`로;
+      소스는 `module-lifecycle-plan.md`) + LifetimeHandle·EngineOps 설치 +
       `H-238` SURFACE 태그. M5 몫 EngineOps(native* 여섯 — Roblox는
       `nativeMove`/`nativeSwap` no-op 덮어쓰기, `isInst`/`onDestroying`/
       `nativeFindChild`; Q4 (a)로 Tag/Attribute/setTimeout은 M10·백로그

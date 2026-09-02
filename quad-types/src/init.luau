@@ -212,6 +212,12 @@ export type Quad = {
 	New: () -> Quad,
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
 	AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P,
+	-- 백엔드(프로바이더) 설치 전용(`H-305` (d′), 2026-09-02 사용자 확정) —
+	-- AddPlugin과 타입 모양은 같지만 계약이 다르다: 모듈당 1슬롯 fn
+	-- identity 락(같은 fn 재호출 no-op / 다른 identity — 다른 프로바이더든
+	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`D` 등)은
+	-- 이 반환 교집합 `Self & P`로 타입이 실린다 — quad-types엔 안 실림.
+	UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P,
 
 	-- M2 공통 기반이 얹는 탑레벨 값(`ROADMAP.md` M2 `H-80`). `Source`/`Store`/
 	-- `Effect`/`Blocker`는 각 단위에서 추가된다.

@@ -10,7 +10,7 @@ local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 -- mock에선 quad를 만들지 않는 헬퍼만 빌린다(사본 혼입 주의 — spec.robloxfactory 헤더)
 local mock = require("../../quad-base/test/mock")
-local q: any = QuadRoblox(Quad.New())
+local q: any = Quad.New():UseProvider(QuadRoblox)
 
 print("=== 1. D 설치(H-299) — module.D, 별칭 전부 함수, New 포함 ===")
 do

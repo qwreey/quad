@@ -270,20 +270,13 @@ end
 local Relate = require("../src/Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 
-local function installLifetime(quad: any)
-	-- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
-	-- 백엔드와 같은 `_initializedBy` 3분기 계약을 지킨다. 이게 없으면 실
-	-- 백엔드 위에 mock이 조용히 덮이거나(혼합 백엔드) 그 반대가 조용히
-	-- 성공해, 기존 바인딩 전량이 소리 없이 침묵한다(탐사자 스파이크 실측).
-	-- 옛 `installed` weak 테이블 가드는 이 마커가 대체.
-	if quad._initializedBy == "mock" then
-		return -- 같은 백엔드 재설치 = no-op
-	end
-	if quad._initializedBy ~= nil then
-		error(`Quad module already initialized by '{quad._initializedBy}'`, 2)
-	end
-	quad._initializedBy = "mock"
-
+-- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+-- 백엔드와 같은 설치 계약을 지킨다. **[H-305 (d′)]** 옛 `_initializedBy`
+-- 3분기(그 전엔 `installed` weak 테이블)는 `UseProvider`의 fn identity
+-- 락으로 대체 — 이 `mockProvider`가 락 키가 되는 안정 identity다. 아래
+-- `installLifetime`은 `quad:UseProvider(mockProvider)` 위임 래퍼(기존 spec
+-- 호출부 호환).
+local function mockProvider(quad: any): { [any]: any }
 	local isObserver, isEffect = quad.isObserver, quad.isEffect
 	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
 	-- bindLifetime의 주 호출부가 디스패치 깊이(Leaf.process)라 리터럴 level 2는
@@ -415,6 +408,11 @@ local function installLifetime(quad: any)
 	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying } :: { any } do
 		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
+	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
+end
+
+local function installLifetime(quad: any)
+	quad:UseProvider(mockProvider)
 end
 
 -- `H-261`: 세 spec이 같은 헬퍼를 그대로 복사하고 있었다(`H-206` 선례 —
@@ -488,6 +486,7 @@ return {
 	newSignal = newSignal,
 	isMockInstance = isMockInstance,
 	installLifetime = installLifetime,
+	mockProvider = mockProvider, -- UseProvider 락 identity(교차 백엔드 spec용)
 	newQuad = newQuad,
 	addSpecLeaf = addSpecLeaf,
 	assertBlamesUser = assertBlamesUser,

@@ -19,7 +19,7 @@ local REFLECTED: { [string]: { any } } = {
 }
 local gameShim = mock.gameShim(REFLECTED)
 
-local q: any = QuadRoblox(Quad.New())
+local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance

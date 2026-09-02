@@ -604,6 +604,26 @@ local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T �
 
 ---
 
+## 8.5. 대형 생성 타입은 체커의 `LuauTarjanChildLimit`(기본 10000)을 넘는다
+
+**[2026-09-02 실측, `H-305` (d′) 반영 중]** 생성된 `export type D`/
+`DMapper`(31클래스 × `<Class>Param<E>` 인스턴스화, 클래스당 필드 40~60개 ×
+4-유니언)는 **별칭 선언이 존재하는 것만으로**(참조 안 해도) luau-lsp/새
+솔버가 `Internal error: Code is too complex to typecheck!`를 낸다. 이분
+실측: 별칭을 클래스별 소형 별칭으로 쪼개 합성해도 **무효**(총 정규화
+작업량 동일), 한도 플래그 중 **`LuauTarjanChildLimit`만이 유효 레버**
+(`LuauTypeInferRecursionLimit`/`IterationLimit`/`NormalizeCacheLimit`은
+무효). `scripts/test.sh`가 quad-roblox 그룹에 `40000`을 실어 전 그룹
+클린·1.2s대(성능 무해). 부수 관측 하나: 그 교집합 결과 타입
+(`Quad & RobloxExtension`)을 `any` 파라미터로 흘리는 클로저 추론은
+한도를 더 올려도(200000) 안 풀린다 — 경계에서 `:: any` 캐스트 한 번이
+정답(`spec.robloxfactory.luau`의 주석 달린 자리). 에디터(luau-lsp) 쪽도
+같은 한도를 쓰므로 증상이 나면 `.vscode/settings.json`의 fflags에 같은
+키를 얹을 것(9번의 솔버 설정 항목과 같은 자리 — **[2026-09-02 기준]
+아직 안 얹음**, 에디터에서 실제로 아픈지 확인 후).
+
+---
+
 ## 9. 미해결 / 추적 중
 
 - **[2026-08-19 설정 완료]** 에디터(`luau-lsp`)의 솔버 설정 — `luau-analyze`

@@ -235,9 +235,27 @@ def emit():
             L.append(f"\t{ev['name']}: (({sig}) | State<{sig}> | None)?,")
         L.append("}")
         L.append("")
-    L.append("--[[ InitD(quad) — RobloxFactory가 module.D로 설치한다(round14 H-299).")
+    L.append("-- D 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")
+    L.append("-- 싣는 풀 타입 표면. 아래 런타임 별칭 캐스트와 1:1 — 손 나열 금지 계약대로")
+    L.append("-- 생성기가 같이 찍는다.")
+    L.append("export type DMapper = {")
+    L.append("\tRoot: MapperRoot,")
+    for name in names:
+        L.append(
+            f"\t{name}: (key: string | MapperRoot) -> ({name}Param<NewChild | MapperDescriptor>) -> MapperDescriptor,"
+        )
+    L.append("}")
+    L.append("export type D = {")
+    L.append("\tNew: <T>(className: string) -> (props: any) -> T,")
+    L.append("\tMapper: DMapper,")
+    for name in names:
+        L.append(f"\t{name}: ({name}Param<NewChild>) -> {name},")
+    L.append("}")
+    L.append("")
+    L.append("--[[ InitD(quad) — `UseProvider` 확장(`RobloxExtension.D`)으로 실린다")
+    L.append("\t(round14 H-299의 module.D 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).")
     L.append("\tNew의 ①~④ 순서는 bind-system-plan 파이프라인 의사코드가 계약. ]]")
-    L.append("return function(quad: any)")
+    L.append("return function(quad: any): D")
     L.append("\tlocal function flatten(props: any): any")
     L.append("\t\t-- ③ 자리 — M7 Modifier 소진이 여기 온다(modifier-plan \"flatten의")
     L.append("\t\t-- 정확한 형태\" 정본). M5엔 Modifier 표면이 없어 항등.")
@@ -268,7 +286,7 @@ def emit():
             f'\tMapper.{name} = (quad.newMapperClass("{name}") :: any) :: (key: string | MapperRoot) -> ({name}Param<NewChild | MapperDescriptor>) -> MapperDescriptor'
         )
     L.append("\tquad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨")
-    L.append("\treturn D")
+    L.append("\treturn (D :: any) :: D")
     L.append("end")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text("\n".join(L) + "\n")

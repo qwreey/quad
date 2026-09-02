@@ -37,6 +37,11 @@ type Quad = QuadTypes.Quad
 -- weak-키잉되므로 별도 정리 불필요(module이 GC되면 이 기록도 같이 사라짐).
 local runInitRelate = Relate()
 
+-- (module, "provider") -> 설치된 프로바이더 fn. `UseProvider`의 1슬롯
+-- identity 락(`H-305` (d′), 사용자 확정 2026-09-02) — RunInit 멱등 가드의
+-- 공개판. runInitRelate와 같은 이유로 weak-키잉.
+local providerRelate = Relate()
+
 local function New(): Quad
 	local module = {
 		New = New,
@@ -81,6 +86,38 @@ local function New(): Quad
 		return self :: any
 	end
 
+	-- `UseProvider` — 백엔드(프로바이더) 설치 전용, AddPlugin과 병합
+	-- 동작은 같지만 계약이 다르다: **모듈당 1슬롯, fn identity 락**
+	-- (`H-305` (d′)). 같은 fn 재호출은 no-op(멱등 — require 캐시가 같은
+	-- 모듈이면 같은 identity를 주므로 일반 케이스는 자연 통과, 사용자
+	-- 확정), 다른 identity(다른 프로바이더든 같은 백엔드의 **다른
+	-- 사본/버전**이든)는 error — 옛 `_initializedBy` 문자열 마커는 사본을
+	-- 구분 못 해 조용히 묵인했던 것(사용자 진단)을 이 락이 대체한다.
+	-- 락이 base에 사는 이유: 프로바이더 작성자가 가드를 빠뜨리는
+	-- `H-294`류 실수를 구조적으로 차단.
+	function module.UseProvider(self, providerFn)
+		local current = providerRelate:GetStrong(self, "provider")
+		if current == providerFn then
+			return self :: any -- same provider again — idempotent no-op
+		end
+		if current ~= nil then
+			-- 점유자를 이름으로 못 짚는다(identity 락엔 문자열 이름이 없고,
+			-- 소스 경로를 메시지에 실으면 "내부 경로 blame 금지" spec 규약에
+			-- 걸린다) — 메시지는 계약만 말한다
+			Err.errorBefore(
+				"Quad module already has a provider; a module cannot serve two backends",
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		-- 실제 실행 전에 먼저 표시(RunInit과 같은 재진입 대비)
+		providerRelate:SetStrong(self, "provider", providerFn)
+		local extension = providerFn(self)
+		for k, v in extension :: any do
+			(self :: any)[k] = v
+		end
+		return self :: any
+	end
+
 	module:RunInit(InitDebug)
 	module:RunInit(InitLifetimeHandle) -- 생명주기 4종 에러 스텁 — 백엔드가 덮어씀
 	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. 각 Init이 자기 의존성을
@@ -97,6 +134,7 @@ local function New(): Quad
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
 	Err.setFuncLevel(module.RunInit, QuadTypes.ERROR_LEVEL_SURFACE)
 	Err.setFuncLevel(module.AddPlugin, QuadTypes.ERROR_LEVEL_SURFACE)
+	Err.setFuncLevel(module.UseProvider, QuadTypes.ERROR_LEVEL_SURFACE)
 
 	return module
 end

@@ -33,7 +33,11 @@ luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.l
 # (없으면 quad-types의 type function이 "syntax not supported"로 죽음),
 # --ignore로 의존 패키지 사본의 진단은 숨긴다(그쪽은 위 그룹이 원본을 봄).
 echo "=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau quad-roblox/src quad-roblox/test/spec.*.luau"
+# LuauTarjanChildLimit: 생성 `export type D`/`DMapper`(31클래스 Param 인스턴스화,
+# H-305 d′)가 기본 한도(10000)를 넘어 "Code is too complex"를 낸다 — 실측상
+# 40000이면 전 그룹 클린, 1.2s대(성능 무해). 한도 자체의 등재는 typing-limits.
 lsp_out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
+	--flag:LuauTarjanChildLimit=40000 \
 	--definitions=scripts/roblox-defs/globalTypes.d.luau \
 	--ignore "**/luau_packages/**" \
 	quad-roblox/src quad-roblox/test/spec.*.luau 2>&1) || fail=1
