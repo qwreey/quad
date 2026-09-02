@@ -58,6 +58,12 @@ do
 	end)
 	assert(not okC and string.find(tostring(errC), "names must be strings", 1, true) ~= nil, "constructor validates: " .. tostring(errC))
 	mock.assertBlamesUser(errC, "spec.tag.luau", "constructor blame")
+	-- 통합 리뷰: nil 구멍 뒤 이름이 조용히 버려지면 안 된다(Attribute와 대칭 — 검증 에러)
+	local okH = pcall(function()
+		q.Tag("a", nil, "c")
+	end)
+	assert(not okH, "a nil vararg slot is a validation error, not a silent drop")
+	assert(q.Tag("a", "c"):Contains("c"), "sanity — two real names still work")
 	local okM, errM = pcall(function()
 		q.Tag.Merged(q.Tag("a"), 42 :: any) -- :: any — 타입이 잡는 걸 런타임 경로로 밀어 blame 검증
 	end)

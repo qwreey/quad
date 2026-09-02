@@ -620,8 +620,16 @@ local function Init(module: any)
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
 				local key = keyFn(item, i)
+				if key == nil then
+					-- fail-fast domain error instead of Luau's raw "table index is nil"
+					-- at seen[key] (통합 리뷰 발견). errorBefore (outermost), not
+					-- Nearest: reconcile runs at dispatch/emission depth (mount or
+					-- data:Set), never as a direct user call — `H10-2` reasoning,
+					-- same for the duplicate-key raise below
+					Err.errorBefore("Slot:List — keyFn returned nil for item #" .. tostring(i), SURFACE)
+				end
 				if seen[key] then
-					Err.errorBeforeNearest("Slot:List — duplicate key: " .. tostring(key), SURFACE)
+					Err.errorBefore("Slot:List — duplicate key: " .. tostring(key), SURFACE)
 				end
 				seen[key] = true
 				keys[i] = key

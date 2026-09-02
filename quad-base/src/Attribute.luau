@@ -181,20 +181,32 @@ local function Init(quad: any)
 			if claimed ~= nil and claimed ~= k then
 				Err.errorBefore("Attribute: the same group value is placed at two positions of this instance", SURFACE)
 			end
+			-- `H-154` dedup (통합 리뷰, `H10-8`): the retractor below skips
+			-- teardown when the SAME immutable group is re-emitted, and it also
+			-- leaves our position claim in place — so "already claimed by this
+			-- very position" at entry means exactly that re-emission. Skip the
+			-- delegation loop then: the per-name chains are still live, and
+			-- re-delegating would re-run K unconditional setAttribute calls
+			-- (TagFallbackHandler's holder check is the same idea).
+			local reemit = claimed == k
 			groupClaimKeys:SetStrong(inst, v, k)
 
-			local keys: { [any]: true } = {}
-			for name, source in pairs(v:NameMap()) do
-				local key = groupKey(v, name)
-				dispatch.process(inst, key, source, 1) -- delegate: fresh chain, index 1
-				keys[key] = true
+			if not reemit then
+				for name, source in pairs(v:NameMap()) do
+					dispatch.process(inst, groupKey(v, name), source, 1) -- delegate: fresh chain, index 1
+				end
 			end
-			return function(_nextValue: any?, _retracting: boolean)
+			return function(nextValue: any?, _retracting: boolean)
+				if v == nextValue then
+					return -- immutable: same object = same name map, pure skip
+				end
 				-- uniform teardown — survivors are re-registered by the next
 				-- process (Dispatch guarantees retractor -> process order);
-				-- never calls setAttribute, never calls Dispatch.process
-				for key in pairs(keys) do
-					dispatch.retractFrom(inst, key, 1)
+				-- never calls setAttribute, never calls Dispatch.process.
+				-- Keys are recomputed from the memoized groupKey (no captured
+				-- table — the re-emit path returns an equivalent retractor).
+				for name in pairs(v:NameMap()) do
+					dispatch.retractFrom(inst, groupKey(v, name), 1)
 				end
 				-- position claim return — only while it is still ours
 				if groupClaimKeys:GetStrong(inst, v) == k then

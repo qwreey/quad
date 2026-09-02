@@ -99,7 +99,12 @@ local Tag = setmetatable({}, {
 		-- vararg stays (static literal call sites — tag-plan "값 모양"); pack
 		-- once and reuse the table path of Added via an empty tag
 		local names: { [string]: true } = {}
-		flattenInto(names, { ... })
+		-- visit every vararg slot (select, not `{...}`+ipairs — a nil hole would
+		-- silently drop everything after it; Attribute's __call does the same,
+		-- 통합 리뷰 발견). A nil slot is a validation error like any non-string.
+		for i = 1, select("#", ...) do
+			flattenInto(names, (select(i, ...)))
+		end
 		return newTag(names)
 	end,
 })

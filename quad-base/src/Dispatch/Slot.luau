@@ -15,8 +15,12 @@ local function register(dispatch: any, module: any)
 	local S = module._slotInternal
 	dispatch.addHandler({
 		name = "SlotHandler",
-		isHandlable = function(_inst: any, _k: any, v: any): boolean
-			return S.isSlot(v)
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			-- `H-52` array-position guard (Tag/Attribute handlers do the same):
+			-- a Slot at a NAME key must not match — otherwise claim/bindLifetime
+			-- commit before Bookkeeping.checkPosition throws an internal error
+			-- and the ownership/lifetime bind is orphaned (통합 리뷰 발견)
+			return type(k) == "number" and S.isSlot(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, slotValue: any, _index: number): (any?, boolean) -> ()

@@ -172,4 +172,31 @@ do
 end
 
 print()
+print("=== 9. 통합 리뷰(H10-8) — 같은 그룹 객체 재발행은 엔진 호출 0·claim 유지 ===")
+do
+	local log: { string } = {}
+	local q = newAttrQuad(log)
+	local inst = Instance.new("Frame")
+	local group = q.Attribute({ Hp = 5, Name = "hero" })
+	q.Dispatch.drive(inst, { group })
+	local before = #log
+	q.Dispatch.process(inst, 1, group, 1) -- same immutable object re-emitted
+	assert(#log == before, "no retract/reclaim/setAttribute churn on same-object re-emission: " .. table.concat(log, " | ", before + 1))
+	assert(mock.getAttributes(inst).Hp == 5, "values intact")
+	-- 그리고 진짜 교체는 여전히 작동(재발행 스킵이 후속 교체를 막지 않는다)
+	q.Dispatch.process(inst, 1, q.Attribute({ Hp = 7 }), 1)
+	-- 키 retractor는 claim만 반납하고 엔진 부작용이 없다(attribute-plan "이름
+	-- 소유권" — 삭제는 None 경로) — 그래서 Name은 엔진에 남고 Hp만 갱신된다
+	assert(mock.getAttributes(inst).Hp == 7 and mock.getAttributes(inst).Name == "hero", "replacement re-applies (retract has no engine side effect by contract)")
+	-- State로 감싼 그룹의 같은 값 재발행도 StoreBind 경유로 같은 dedup
+	local src = q.Source(group)
+	local inst2 = Instance.new("Frame")
+	q.Dispatch.drive(inst2, { src })
+	local before2 = #log
+	src:Set(group)
+	assert(#log == before2, "StoreBind path: same-object re-emission is silent too")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

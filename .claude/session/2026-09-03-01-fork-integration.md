@@ -59,6 +59,11 @@
    체크리스트나 밤샘 자율 구간 절에 한 줄 등재할지 결정 — 지금 워크트리
    둘(`agent-a7882c53ea8f0d292`=M6, `agent-a4faf5545e4b78e0c`=M10)은 머지
    완료 상태로 남겨뒀고 확인 주시면 제거한다.
+6. **Slot `raw*` 꼬리 공용화 여부**(`/code-review` 정리 후보) — `rawUnmount`/
+   `rawDetach`/`rawRemove`가 같은 7줄 꼬리를, recompute 게이트가 4곳을
+   복붙하고 있다. slot-plan이 "raw 삼형제"로 의도적 분리를 명시한 자리라
+   공용 꼬리 헬퍼(`maybeRecompute`류)를 넣는 건 정본 갱신을 동반하는
+   결정 — 넣을지, 분리를 유지할지.
 
 **메인이 이어서 할 후행 작업** (승인 불요) — **목록의 유일한 소스는
 `ROADMAP.md` M6/M10 배너다**(감사 B가 이 파일의 자체 목록이 배너와
@@ -78,4 +83,14 @@
   slot-plan stale 삭제, question.md 시제 등 — 커밋 `368caba`/`07d33d4`/이
   커밋). 세션 재시작(Fable 5.1 전환) 중 2라운드가 한 번 중단돼 새로
   띄웠다.
-- **`/code-review medium`** — 통합 흐름당 1회, 결과는 아래 후기.
+- **`/code-review medium`** — 8앵글·후보 24·검증 11·**생존 6**(정확성 4
+  CONFIRMED / 정리 2). 정확성 4는 전부 기존 규약의 누락이라 ①로 반영:
+  `H6-7`(SlotHandler `H-52` 키 가드 — 이름 키 Slot이 소유권·생명주기 고아
+  남김), `H6-8`(:List keyFn nil 원시 에러 → 도메인 에러, 깊이 규칙으로
+  `errorBefore`), `H10-8`(AttributeGroup `H-154` dedup 부재 → 재발행마다 K회
+  엔진 호출), `H10-9`(`Tag(...)` vararg nil 구멍 조용히 누락). 정리 2는
+  기록만(`notInstalled` 2벌 — H-261 3벌 트리거 미달 / raw* 꼬리 — 판단
+  6번). 기각 후보 7(사유는 리뷰 원문 — 소유권 키잉·prevKeys·EngineOps 미설치
+  의도·Bookkeeping 브랜드 분기·claim 관용구 3중 등). 반영 뒤 전 스위트
+  exit 0. 세션 재시작으로 리뷰 포크가 한 번 중간 조각으로 끝나 재개해
+  완결 보고를 받았다.

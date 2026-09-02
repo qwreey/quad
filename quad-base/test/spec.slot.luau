@@ -325,4 +325,30 @@ do
 end
 
 print()
+print("=== 16. 통합 리뷰 — 이름 키의 Slot은 매치 안 됨(H-52, 소유권·생명주기 고아 없음) + :List keyFn nil은 도메인 에러 ===")
+do
+	local parent = Instance.new("Folder")
+	local s = Slot()
+	local ok, err = pcall(function()
+		dispatch.drive(parent, { Text = s })
+	end)
+	assert(not ok, "a Slot at a NAME key must not be handled")
+	assert(string.find(tostring(err), "position must be a positive integer", 1, true) == nil, "must fail as a dispatch match error, not an internal bookkeeping error: " .. tostring(err))
+	assert(q.canBound(s) == true, "no orphaned lifetime bind (claim/bind must not have committed)")
+
+	local data = q.Source({ { id = "a" }, { n = 2 } })
+	local s2 = Slot()
+	local ok2, err2 = pcall(function()
+		s2:List(data, function(item, _i, _o, prev)
+			if item == q.KeyGone then return nil end
+			return prev or Instance.new("Frame")
+		end, function(item) return item.id end)
+		dispatch.drive(Instance.new("Folder"), { s2 }) -- reconcile runs on mount
+	end)
+	assert(not ok2 and string.find(tostring(err2), "keyFn returned nil", 1, true) ~= nil, "domain error instead of raw 'table index is nil': " .. tostring(err2))
+	mock.assertBlamesUser(err2, "spec.slot.luau", "keyFn nil blame")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
