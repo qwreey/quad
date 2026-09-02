@@ -239,6 +239,7 @@ export type Quad = {
 	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
 	-- 여기선 재export. `isNone`은 `v == None` 신원 비교).
 	None: any,
+	-- ⚠️ 값 필드의 타입 계약은 아래 최상위 `export type None` 참고(`H-300`)
 
 	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
 	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
@@ -289,6 +290,13 @@ export type Quad = {
 	-- AddPlugin 체이닝 등 뒤이은 제네릭 연산이 전부 안전하게 동작함
 	```
 ]]
+-- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
+-- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
+-- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
+-- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
+-- 이벤트·children)이 None을 실을 수 있게 한다.
+export type None = { read __quadNone: true }
+
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 
 -- ── 공유 상수(`H-230` (a) 사용자 확정, 2026-08-31) ──────────────────────

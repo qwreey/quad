@@ -14,6 +14,14 @@
 
 local QuadTypes = require("./luau_packages/quad_types")
 local RobloxFactory = require("@self/RobloxFactory")
+local Types = require("@self/types")
+
+-- 공개 타입 재익스포트(ROADMAP M5 배너 — 몰아두는 단일 파일은 types.luau).
+-- 생성된 <Class>Param<E> 37종의 재익스포트 표면은 단위 ⑤의 `H-25`(quad-types
+-- 갱신 몫) 확인 때 같이 정한다 — 지금 손으로 나열하면 "전량 생성" 계약과
+-- 어긋난 채 유지보수 부채가 된다.
+export type Tween<T> = Types.Tween<T>
+export type NewChild = Types.NewChild
 
 local function QuadRoblox<T>(quad: T): T
 	-- virtual-field version check — referencing the field is what evaluates it

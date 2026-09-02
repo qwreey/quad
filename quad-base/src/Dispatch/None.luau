@@ -32,7 +32,13 @@
 local Void = require("../Void")
 local QuadTypes = require("../../luau_packages/quad_types")
 
-local None = table.freeze(setmetatable({}, {
+-- `H-300` (a, 사용자 확정 2026-09-02): the sentinel carries one MARKER field so
+-- its TYPE becomes structurally expressible (`QuadTypes.None` — the generated
+-- `D` prop/children unions need it; an empty table type would match every
+-- table; "marker" on purpose — NOT a `Brand.luau` Brand, which this value
+-- deliberately has none of). Runtime judgement is STILL identity (`v == None`) — the field is
+-- advisory typing only, and freezing keeps it untouchable.
+local None = table.freeze(setmetatable({ __quadNone = true :: true }, {
 	__tostring = function()
 		return "None"
 	end,

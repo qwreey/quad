@@ -5,8 +5,12 @@ Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프
 Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)까지
 완료 — **M5(quad-roblox 최소 프로바이더) 자율 구현 구간 진행 중**: 규약
 `.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정
-(2026-09-02), 단위 ①(팩토리+주입 op+생명주기 실구현) 완료 — 발견
-`-round14.md`(`H-290`~), 진행 소스는 `ROADMAP.md` M5 체크박스** —
+(2026-09-02), 단위 ①(팩토리+주입 op+생명주기)·②(`D` 생성기) 완료 — 발견
+`-round14.md`(`H-290`~; §4 열린 문항 0), 진행 소스는 `ROADMAP.md` M5
+체크박스. **같은 날 병렬 탐사 승인** — fork 에이전트 둘이 각자 worktree에서
+M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현(규약
+`.claude/qa-request/m6-implementation-round15-brief.md`·
+`m10-implementation-round16-brief.md`, 발견 접두 `H6-`/`H10-`)** —
 **M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
 `.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
 `-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +

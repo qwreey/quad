@@ -2181,3 +2181,18 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   콜백 지연 배달·`Connected` 전환은 동기, effect-plan `H-182` 근거 정정) /
   `H-292`(analyze UnknownType 처리, §4 대기). 시행착오 다섯(@self·파이프
   exit·클로저 pcall blame·진입점 태그·사본 혼입)은 세션 파일이 소스.
+  **[같은 날 후속]** §4 배치 회신 전량 확정(H-293만 기각·UB — claim-plan
+  §7-13) 후 **단위 ②(D 생성기) 완료**: gen-d.py → api-surface.json + 생성
+  D(31클래스), 값 유니언 정본(bind-system-plan 신설 절), luau-lsp defs
+  2그룹 analyze, H-299(module.D)/H-300(None 타입 — 같은 날 (a) 확정·반영: 센티널 마커 필드 → 유니언 합류)/H-301
+  (RelativeGui capability 실측 → 클래스 제외 규칙). 스위트 exit 0 +
+  Studio 실생성 전량 확인.
+
+- `session/2026-09-02-02-parallel-fork-spikes.md` **[M6/M10 병렬 탐사 fork
+  결정]** 사용자 발의·승인(원문 전문은 세션 파일): fork 에이전트 둘이 각자
+  worktree에서 M6(Slot)/M10(Tag·Attribute)을 mock 축으로 선행 탐사 구현 —
+  "실질 개발을 오래 해봐야 하는" 최고 위험 영역의 관측을 앞당김. 규약은
+  두 브리프(round15/16). 설계 반전 둘: ② 비차단 잠정 구현 → **멈춰서
+  부른다**(나비효과 우려, 사용자 정정) / 메인 중계 → **사용자가 fork
+  채팅에 직접 회신**. 발견 번호는 접두형 `H6-`/`H10-`(블록 예약안을
+  사용자 제안으로 대체 — ID 영구, 병렬 스파이크 전용).

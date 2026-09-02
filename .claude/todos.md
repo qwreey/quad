@@ -25,10 +25,19 @@
    brief §0 아래 블록) — **M5 자율 구현 구간 착수. 단위 ①
    (`RobloxFactory`+`EngineOps`+`LifetimeHandle`) 구현·CLI spec(전 스위트
    exit 0 — 파일 수는 `scripts/test.sh` glob이 소스)·Studio 스모크(14/14, `audit/m5-unit1-studio-smoke-2026-09-02.md`)
-   완료**, 발견 원장은 `-round14.md`(`H-290`~; §4 열린 문항은 그 파일이
-   소스 — `H-292` 회신 대기). **진행 상태의 소스는 `ROADMAP.md` M5
-   체크박스** — 다음 액션: 단위 ②(`D/init.luau` 생성기) 착수.** 아래는
-   M3 종결 기록:
+   완료**, 발견 원장은 `-round14.md`(`H-290`~). **[2026-09-02 후속]** §4
+   배치 회신 두 차례로 `H-292`~`H-298` 전량 확정(H-293만 기각·UB 문서화 —
+   claim-plan §7-13), **단위 ②(`D` 생성기) 완료** — `scripts/gen-d.py` →
+   `quad-roblox/dump/api-surface.json` + 생성 `D/init.luau`, 값 유니언
+   정본(bind-system-plan 신설 절), `H-299`~`H-301` 처리(`H-300` None
+   마커 필드도 같은 날 사용자 확정·반영). **§4 열린 문항 0, 진행 상태의
+   소스는 `ROADMAP.md` M5 체크박스** — 다음 액션: 단위 ③
+   (`Handlers/Property`+`InstanceChild`) 착수. **[2026-09-02 병렬 트랙]**
+   사용자 승인으로 fork 둘이 각자 worktree에서 M6(Slot)/M10(Tag·Attribute)
+   탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
+   멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두
+   `H6-`/`H10-`(메인 `H-nnn`과 구분, ID 영구). fork가 멈추면 사용자가 그
+   채팅에 직접 회신, 통합·문서 반영은 메인 몫.** 아래는 M3 종결 기록:
 
    **[구 00번 — M3] ⭐⭐⭐ [2026-08-31 착수 → 2026-09-01 종결] M3 자율 구현 구간 — 완료,
    M2와 같은 방식으로 종결.** 단위 넷(코어/부기/None·Nil/Leaf·가드·종합)

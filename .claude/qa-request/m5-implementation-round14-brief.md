@@ -106,3 +106,19 @@ M4 규약(`m4-implementation-round13-brief.md` §2~§5 = M3 준용본) 준용. �
 **커밋 단위**: 단위당 커밋 하나 + 단위 끝 절차(M2~M4 관례). 단위 ②~⑤의
 상세 표는 각 단위 착수 시점에 §6에 이어 쓴다(M3 관례 — 첫 단위만 승인
 대상으로 먼저).
+
+**[2026-09-02 단위 ② 상세 — 착수 시 기록]** 에이전트 재량 확정 셋(§4
+결정과 별개인 구현 세부): 생성기 호스트는 **python**(`scripts/gen-d.py` —
+`doc-check.py` 선례), 산출 규격은 **정규화 중간 산출물 커밋**
+(`quad-roblox/dump/api-surface.json` — M7 Modifier 생성기 재사용 자리,
+드롭 사유 전량 동봉) + 최종 `src/D/init.luau` 커밋, 재생성 정책은 **수동**
+(네트워크는 재생성 때만 — 방법은 생성기 헤더, 테스트 경로 무의존).
+
+| 파일 | 내용 | 옮겨 적는 절 |
+|---|---|---|
+| `scripts/gen-d.py` | normalize(범위 `H-296`+`H-301`·필터 `H-297`·타입 매핑 `H-295`·defs 게이트) + emit(Param 타입·`New` 커링·별칭·`H-238` 태그) | bind-system-plan 인스턴스 생성 절 + 유니언 정본(`H-298`) |
+| `quad-roblox/dump/api-surface.json` | 정규화 산출물(버전 헤더·dropped 전량) | Q5 (a) |
+| `quad-roblox/src/D/init.luau` | 생성 산출물(31클래스) — `New` ①~④ 파이프라인(flatten은 M7까지 항등) | 파이프라인 의사코드 절 |
+| `quad-roblox/src/types.luau` | `Tween<T>`(tween-plan 확정 모양의 타입 선행)·`NewChild` | ROADMAP M5 배너(단일 파일) |
+| `scripts/roblox-defs/globalTypes.d.luau` + `test.sh` 2그룹 analyze | quad-base는 defs 없이(엔진 무관 보장)/quad-roblox는 luau-lsp+defs — **luau-analyze엔 defs 옵션이 없다**(실측) | — |
+| `quad-roblox/test/spec.d.luau` + Studio 스모크 | 설치·범위·커링·태그 계약 + 31클래스 실생성(31/31) | — |

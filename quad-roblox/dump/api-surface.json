@@ -1,0 +1,8068 @@
+{
+ "apiVersion": 1,
+ "classes": {
+  "BillboardGui": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "Adornee",
+     "type": "Instance"
+    },
+    {
+     "name": "AlwaysOnTop",
+     "type": "boolean"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "Brightness",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "DistanceStep",
+     "type": "number"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "ExtentsOffset",
+     "type": "Vector3"
+    },
+    {
+     "name": "ExtentsOffsetWorldSpace",
+     "type": "Vector3"
+    },
+    {
+     "name": "LightInfluence",
+     "type": "number"
+    },
+    {
+     "name": "MaxDistance",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "PlayerToHideFrom",
+     "type": "Instance"
+    },
+    {
+     "name": "ResetOnSpawn",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeOffset",
+     "type": "Vector2"
+    },
+    {
+     "name": "StudsOffset",
+     "type": "Vector3"
+    },
+    {
+     "name": "StudsOffsetWorldSpace",
+     "type": "Vector3"
+    },
+    {
+     "name": "ZIndexBehavior",
+     "type": "Enum.ZIndexBehavior"
+    }
+   ]
+  },
+  "Camera": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InterpolationFinished",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "CFrame",
+     "type": "CFrame"
+    },
+    {
+     "name": "CameraSubject",
+     "type": "Instance"
+    },
+    {
+     "name": "CameraType",
+     "type": "Enum.CameraType"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "DiagonalFieldOfView",
+     "type": "number"
+    },
+    {
+     "name": "FieldOfView",
+     "type": "number"
+    },
+    {
+     "name": "FieldOfViewMode",
+     "type": "Enum.FieldOfViewMode"
+    },
+    {
+     "name": "Focus",
+     "type": "CFrame"
+    },
+    {
+     "name": "HeadLocked",
+     "type": "boolean"
+    },
+    {
+     "name": "HeadScale",
+     "type": "number"
+    },
+    {
+     "name": "MaxAxisFieldOfView",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "VRTiltAndRollEnabled",
+     "type": "boolean"
+    }
+   ]
+  },
+  "CanvasGroup": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "GroupColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "GroupTransparency",
+     "type": "number"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "Folder": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    }
+   ]
+  },
+  "Frame": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Style",
+     "type": "Enum.FrameStyle"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "ImageButton": {
+   "events": [
+    {
+     "name": "Activated",
+     "params": [
+      {
+       "name": "inputObject",
+       "type": "InputObject"
+      },
+      {
+       "name": "clickCount",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton1Click",
+     "params": []
+    },
+    {
+     "name": "MouseButton1Down",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton1Up",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton2Click",
+     "params": []
+    },
+    {
+     "name": "MouseButton2Down",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton2Up",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SecondaryActivated",
+     "params": [
+      {
+       "name": "inputObject",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoButtonColor",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "HoverHapticEffect",
+     "type": "HapticEffect"
+    },
+    {
+     "name": "HoverImage",
+     "type": "Content"
+    },
+    {
+     "name": "HoverImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "Image",
+     "type": "Content"
+    },
+    {
+     "name": "ImageColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "ImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "ImageRectOffset",
+     "type": "Vector2"
+    },
+    {
+     "name": "ImageRectSize",
+     "type": "Vector2"
+    },
+    {
+     "name": "ImageTransparency",
+     "type": "number"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "Modal",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "PressHapticEffect",
+     "type": "HapticEffect"
+    },
+    {
+     "name": "PressedImage",
+     "type": "Content"
+    },
+    {
+     "name": "PressedImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "ResampleMode",
+     "type": "Enum.ResamplerMode"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ScaleType",
+     "type": "Enum.ScaleType"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "Selected",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "SliceCenter",
+     "type": "Rect"
+    },
+    {
+     "name": "SliceScale",
+     "type": "number"
+    },
+    {
+     "name": "Style",
+     "type": "Enum.ButtonStyle"
+    },
+    {
+     "name": "TileSize",
+     "type": "UDim2"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "ImageLabel": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "Image",
+     "type": "Content"
+    },
+    {
+     "name": "ImageColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "ImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "ImageRectOffset",
+     "type": "Vector2"
+    },
+    {
+     "name": "ImageRectSize",
+     "type": "Vector2"
+    },
+    {
+     "name": "ImageTransparency",
+     "type": "number"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "ResampleMode",
+     "type": "Enum.ResamplerMode"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ScaleType",
+     "type": "Enum.ScaleType"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "SliceCenter",
+     "type": "Rect"
+    },
+    {
+     "name": "SliceScale",
+     "type": "number"
+    },
+    {
+     "name": "TileSize",
+     "type": "UDim2"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "ScreenGui": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipToDeviceSafeArea",
+     "type": "boolean"
+    },
+    {
+     "name": "DisplayOrder",
+     "type": "number"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "IgnoreGuiInset",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "ResetOnSpawn",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "SafeAreaCompatibility",
+     "type": "Enum.SafeAreaCompatibility"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ScreenInsets",
+     "type": "Enum.ScreenInsets"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndexBehavior",
+     "type": "Enum.ZIndexBehavior"
+    }
+   ]
+  },
+  "ScrollingFrame": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticCanvasSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "BottomImage",
+     "type": "Content"
+    },
+    {
+     "name": "BottomImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "CanvasPosition",
+     "type": "Vector2"
+    },
+    {
+     "name": "CanvasSize",
+     "type": "UDim2"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "ElasticBehavior",
+     "type": "Enum.ElasticBehavior"
+    },
+    {
+     "name": "HorizontalScrollBarInset",
+     "type": "Enum.ScrollBarInset"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "MidImage",
+     "type": "Content"
+    },
+    {
+     "name": "MidImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ScrollBarImageColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "ScrollBarImageTransparency",
+     "type": "number"
+    },
+    {
+     "name": "ScrollBarThickness",
+     "type": "number"
+    },
+    {
+     "name": "ScrollingDirection",
+     "type": "Enum.ScrollingDirection"
+    },
+    {
+     "name": "ScrollingEnabled",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "TopImage",
+     "type": "Content"
+    },
+    {
+     "name": "TopImageContent",
+     "type": "Content"
+    },
+    {
+     "name": "VerticalScrollBarInset",
+     "type": "Enum.ScrollBarInset"
+    },
+    {
+     "name": "VerticalScrollBarPosition",
+     "type": "Enum.VerticalScrollBarPosition"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "SurfaceGui": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "Adornee",
+     "type": "Instance"
+    },
+    {
+     "name": "AlwaysOnTop",
+     "type": "boolean"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "Brightness",
+     "type": "number"
+    },
+    {
+     "name": "CanvasSize",
+     "type": "Vector2"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "Face",
+     "type": "Enum.NormalId"
+    },
+    {
+     "name": "LightInfluence",
+     "type": "number"
+    },
+    {
+     "name": "MaxDistance",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "PixelsPerStud",
+     "type": "number"
+    },
+    {
+     "name": "ResetOnSpawn",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SizingMode",
+     "type": "Enum.SurfaceGuiSizingMode"
+    },
+    {
+     "name": "ToolPunchThroughDistance",
+     "type": "number"
+    },
+    {
+     "name": "ZIndexBehavior",
+     "type": "Enum.ZIndexBehavior"
+    },
+    {
+     "name": "ZOffset",
+     "type": "number"
+    }
+   ]
+  },
+  "TextBox": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "FocusLost",
+     "params": [
+      {
+       "name": "enterPressed",
+       "type": "boolean"
+      },
+      {
+       "name": "inputThatCausedFocusLoss",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "Focused",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "ReturnPressedFromOnScreenKeyboard",
+     "params": []
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClearTextOnFocus",
+     "type": "boolean"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "CursorPosition",
+     "type": "number"
+    },
+    {
+     "name": "FontFace",
+     "type": "Font"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "LineHeight",
+     "type": "number"
+    },
+    {
+     "name": "MaxVisibleGraphemes",
+     "type": "number"
+    },
+    {
+     "name": "MultiLine",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "OpenTypeFeatures",
+     "type": "string"
+    },
+    {
+     "name": "PlaceholderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "PlaceholderText",
+     "type": "string"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RichText",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "SelectionStart",
+     "type": "number"
+    },
+    {
+     "name": "ShowNativeInput",
+     "type": "boolean"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Text",
+     "type": "string"
+    },
+    {
+     "name": "TextColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextDirection",
+     "type": "Enum.TextDirection"
+    },
+    {
+     "name": "TextEditable",
+     "type": "boolean"
+    },
+    {
+     "name": "TextScaled",
+     "type": "boolean"
+    },
+    {
+     "name": "TextSize",
+     "type": "number"
+    },
+    {
+     "name": "TextStrokeColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextStrokeTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTruncate",
+     "type": "Enum.TextTruncate"
+    },
+    {
+     "name": "TextWrapped",
+     "type": "boolean"
+    },
+    {
+     "name": "TextXAlignment",
+     "type": "Enum.TextXAlignment"
+    },
+    {
+     "name": "TextYAlignment",
+     "type": "Enum.TextYAlignment"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "TextButton": {
+   "events": [
+    {
+     "name": "Activated",
+     "params": [
+      {
+       "name": "inputObject",
+       "type": "InputObject"
+      },
+      {
+       "name": "clickCount",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton1Click",
+     "params": []
+    },
+    {
+     "name": "MouseButton1Down",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton1Up",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton2Click",
+     "params": []
+    },
+    {
+     "name": "MouseButton2Down",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseButton2Up",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SecondaryActivated",
+     "params": [
+      {
+       "name": "inputObject",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoButtonColor",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "FontFace",
+     "type": "Font"
+    },
+    {
+     "name": "HoverHapticEffect",
+     "type": "HapticEffect"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "LineHeight",
+     "type": "number"
+    },
+    {
+     "name": "MaxVisibleGraphemes",
+     "type": "number"
+    },
+    {
+     "name": "Modal",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "OpenTypeFeatures",
+     "type": "string"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "PressHapticEffect",
+     "type": "HapticEffect"
+    },
+    {
+     "name": "RichText",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "Selected",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Style",
+     "type": "Enum.ButtonStyle"
+    },
+    {
+     "name": "Text",
+     "type": "string"
+    },
+    {
+     "name": "TextColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextDirection",
+     "type": "Enum.TextDirection"
+    },
+    {
+     "name": "TextScaled",
+     "type": "boolean"
+    },
+    {
+     "name": "TextSize",
+     "type": "number"
+    },
+    {
+     "name": "TextStrokeColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextStrokeTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTruncate",
+     "type": "Enum.TextTruncate"
+    },
+    {
+     "name": "TextWrapped",
+     "type": "boolean"
+    },
+    {
+     "name": "TextXAlignment",
+     "type": "Enum.TextXAlignment"
+    },
+    {
+     "name": "TextYAlignment",
+     "type": "Enum.TextYAlignment"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "TextLabel": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "FontFace",
+     "type": "Font"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "LineHeight",
+     "type": "number"
+    },
+    {
+     "name": "MaxVisibleGraphemes",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "OpenTypeFeatures",
+     "type": "string"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RichText",
+     "type": "boolean"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Text",
+     "type": "string"
+    },
+    {
+     "name": "TextColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextDirection",
+     "type": "Enum.TextDirection"
+    },
+    {
+     "name": "TextScaled",
+     "type": "boolean"
+    },
+    {
+     "name": "TextSize",
+     "type": "number"
+    },
+    {
+     "name": "TextStrokeColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "TextStrokeTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTransparency",
+     "type": "number"
+    },
+    {
+     "name": "TextTruncate",
+     "type": "Enum.TextTruncate"
+    },
+    {
+     "name": "TextWrapped",
+     "type": "boolean"
+    },
+    {
+     "name": "TextXAlignment",
+     "type": "Enum.TextXAlignment"
+    },
+    {
+     "name": "TextYAlignment",
+     "type": "Enum.TextYAlignment"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "UIAspectRatioConstraint": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AspectRatio",
+     "type": "number"
+    },
+    {
+     "name": "AspectType",
+     "type": "Enum.AspectType"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "DominantAxis",
+     "type": "Enum.DominantAxis"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    }
+   ]
+  },
+  "UICorner": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "BottomLeftRadius",
+     "type": "UDim"
+    },
+    {
+     "name": "BottomRightRadius",
+     "type": "UDim"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "CornerRadius",
+     "type": "UDim"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "TopLeftRadius",
+     "type": "UDim"
+    },
+    {
+     "name": "TopRightRadius",
+     "type": "UDim"
+    }
+   ]
+  },
+  "UIDragDetector": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "DragContinue",
+     "params": [
+      {
+       "name": "inputPosition",
+       "type": "Vector2"
+      }
+     ]
+    },
+    {
+     "name": "DragEnd",
+     "params": [
+      {
+       "name": "inputPosition",
+       "type": "Vector2"
+      }
+     ]
+    },
+    {
+     "name": "DragStart",
+     "params": [
+      {
+       "name": "inputPosition",
+       "type": "Vector2"
+      }
+     ]
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "ActivatedCursorIcon",
+     "type": "Content"
+    },
+    {
+     "name": "ActivatedCursorIconContent",
+     "type": "Content"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "BoundingBehavior",
+     "type": "Enum.UIDragDetectorBoundingBehavior"
+    },
+    {
+     "name": "BoundingUI",
+     "type": "GuiBase2d"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "CursorIcon",
+     "type": "Content"
+    },
+    {
+     "name": "CursorIconContent",
+     "type": "Content"
+    },
+    {
+     "name": "DragAxis",
+     "type": "Vector2"
+    },
+    {
+     "name": "DragRelativity",
+     "type": "Enum.UIDragDetectorDragRelativity"
+    },
+    {
+     "name": "DragRotation",
+     "type": "number"
+    },
+    {
+     "name": "DragSpace",
+     "type": "Enum.UIDragDetectorDragSpace"
+    },
+    {
+     "name": "DragStyle",
+     "type": "Enum.UIDragDetectorDragStyle"
+    },
+    {
+     "name": "DragUDim2",
+     "type": "UDim2"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "MaxDragAngle",
+     "type": "number"
+    },
+    {
+     "name": "MaxDragTranslation",
+     "type": "UDim2"
+    },
+    {
+     "name": "MinDragAngle",
+     "type": "number"
+    },
+    {
+     "name": "MinDragTranslation",
+     "type": "UDim2"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "ReferenceUIInstance",
+     "type": "GuiObject"
+    },
+    {
+     "name": "ResponseStyle",
+     "type": "Enum.UIDragDetectorResponseStyle"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionModeDragSpeed",
+     "type": "UDim2"
+    },
+    {
+     "name": "SelectionModeRotateSpeed",
+     "type": "number"
+    },
+    {
+     "name": "UIDragSpeedAxisMapping",
+     "type": "Enum.UIDragSpeedAxisMapping"
+    }
+   ]
+  },
+  "UIFlexItem": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "FlexMode",
+     "type": "Enum.UIFlexMode"
+    },
+    {
+     "name": "GrowRatio",
+     "type": "number"
+    },
+    {
+     "name": "ItemLineAlignment",
+     "type": "Enum.ItemLineAlignment"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ShrinkRatio",
+     "type": "number"
+    }
+   ]
+  },
+  "UIGradient": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Color",
+     "type": "ColorSequence"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Offset",
+     "type": "Vector2"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Scale",
+     "type": "number"
+    },
+    {
+     "name": "TileMode",
+     "type": "Enum.GradientTileMode"
+    },
+    {
+     "name": "Transparency",
+     "type": "NumberSequence"
+    },
+    {
+     "name": "Type",
+     "type": "Enum.GradientType"
+    }
+   ]
+  },
+  "UIGridLayout": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "CellPadding",
+     "type": "UDim2"
+    },
+    {
+     "name": "CellSize",
+     "type": "UDim2"
+    },
+    {
+     "name": "FillDirection",
+     "type": "Enum.FillDirection"
+    },
+    {
+     "name": "FillDirectionMaxCells",
+     "type": "number"
+    },
+    {
+     "name": "HorizontalAlignment",
+     "type": "Enum.HorizontalAlignment"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SortOrder",
+     "type": "Enum.SortOrder"
+    },
+    {
+     "name": "StartCorner",
+     "type": "Enum.StartCorner"
+    },
+    {
+     "name": "VerticalAlignment",
+     "type": "Enum.VerticalAlignment"
+    }
+   ]
+  },
+  "UIListLayout": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "FillDirection",
+     "type": "Enum.FillDirection"
+    },
+    {
+     "name": "HorizontalAlignment",
+     "type": "Enum.HorizontalAlignment"
+    },
+    {
+     "name": "HorizontalFlex",
+     "type": "Enum.UIFlexAlignment"
+    },
+    {
+     "name": "ItemLineAlignment",
+     "type": "Enum.ItemLineAlignment"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Padding",
+     "type": "UDim"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SortOrder",
+     "type": "Enum.SortOrder"
+    },
+    {
+     "name": "VerticalAlignment",
+     "type": "Enum.VerticalAlignment"
+    },
+    {
+     "name": "VerticalFlex",
+     "type": "Enum.UIFlexAlignment"
+    },
+    {
+     "name": "Wraps",
+     "type": "boolean"
+    }
+   ]
+  },
+  "UIPadding": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "PaddingBottom",
+     "type": "UDim"
+    },
+    {
+     "name": "PaddingLeft",
+     "type": "UDim"
+    },
+    {
+     "name": "PaddingRight",
+     "type": "UDim"
+    },
+    {
+     "name": "PaddingTop",
+     "type": "UDim"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    }
+   ]
+  },
+  "UIPageLayout": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "PageEnter",
+     "params": [
+      {
+       "name": "page",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "PageLeave",
+     "params": [
+      {
+       "name": "page",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Stopped",
+     "params": [
+      {
+       "name": "currentPage",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Animated",
+     "type": "boolean"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Circular",
+     "type": "boolean"
+    },
+    {
+     "name": "EasingDirection",
+     "type": "Enum.EasingDirection"
+    },
+    {
+     "name": "EasingStyle",
+     "type": "Enum.EasingStyle"
+    },
+    {
+     "name": "FillDirection",
+     "type": "Enum.FillDirection"
+    },
+    {
+     "name": "GamepadInputEnabled",
+     "type": "boolean"
+    },
+    {
+     "name": "HorizontalAlignment",
+     "type": "Enum.HorizontalAlignment"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Padding",
+     "type": "UDim"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ScrollWheelInputEnabled",
+     "type": "boolean"
+    },
+    {
+     "name": "SortOrder",
+     "type": "Enum.SortOrder"
+    },
+    {
+     "name": "TouchInputEnabled",
+     "type": "boolean"
+    },
+    {
+     "name": "TweenTime",
+     "type": "number"
+    },
+    {
+     "name": "VerticalAlignment",
+     "type": "Enum.VerticalAlignment"
+    }
+   ]
+  },
+  "UIScale": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Scale",
+     "type": "number"
+    }
+   ]
+  },
+  "UIShadow": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "BlurRadius",
+     "type": "UDim"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Color",
+     "type": "Color3"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "Inset",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Offset",
+     "type": "UDim2"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "ShowBehindParent",
+     "type": "boolean"
+    },
+    {
+     "name": "Spread",
+     "type": "UDim2"
+    },
+    {
+     "name": "Transparency",
+     "type": "number"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "UISizeConstraint": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "MaxSize",
+     "type": "Vector2"
+    },
+    {
+     "name": "MinSize",
+     "type": "Vector2"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    }
+   ]
+  },
+  "UIStroke": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "ApplyStrokeMode",
+     "type": "Enum.ApplyStrokeMode"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "BorderOffset",
+     "type": "UDim"
+    },
+    {
+     "name": "BorderStrokePosition",
+     "type": "Enum.BorderStrokePosition"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "Color",
+     "type": "Color3"
+    },
+    {
+     "name": "Enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "LineJoinMode",
+     "type": "Enum.LineJoinMode"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "StrokeSizingMode",
+     "type": "Enum.StrokeSizingMode"
+    },
+    {
+     "name": "Thickness",
+     "type": "number"
+    },
+    {
+     "name": "Transparency",
+     "type": "number"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "UITableLayout": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "FillDirection",
+     "type": "Enum.FillDirection"
+    },
+    {
+     "name": "FillEmptySpaceColumns",
+     "type": "boolean"
+    },
+    {
+     "name": "FillEmptySpaceRows",
+     "type": "boolean"
+    },
+    {
+     "name": "HorizontalAlignment",
+     "type": "Enum.HorizontalAlignment"
+    },
+    {
+     "name": "MajorAxis",
+     "type": "Enum.TableMajorAxis"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Padding",
+     "type": "UDim2"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "SortOrder",
+     "type": "Enum.SortOrder"
+    },
+    {
+     "name": "VerticalAlignment",
+     "type": "Enum.VerticalAlignment"
+    }
+   ]
+  },
+  "UITextSizeConstraint": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "MaxTextSize",
+     "type": "number"
+    },
+    {
+     "name": "MinTextSize",
+     "type": "number"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    }
+   ]
+  },
+  "VideoFrame": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "DidLoop",
+     "params": [
+      {
+       "name": "video",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Ended",
+     "params": [
+      {
+       "name": "video",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "Loaded",
+     "params": [
+      {
+       "name": "video",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "Paused",
+     "params": [
+      {
+       "name": "video",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Played",
+     "params": [
+      {
+       "name": "video",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "Looped",
+     "type": "boolean"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Playing",
+     "type": "boolean"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RollOffMaxDistance",
+     "type": "number"
+    },
+    {
+     "name": "RollOffMinDistance",
+     "type": "number"
+    },
+    {
+     "name": "RollOffMode",
+     "type": "Enum.RollOffMode"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "TimePosition",
+     "type": "number"
+    },
+    {
+     "name": "Video",
+     "type": "Content"
+    },
+    {
+     "name": "VideoContent",
+     "type": "Content"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "Volume",
+     "type": "number"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "ViewportFrame": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "InputBegan",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputChanged",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "InputEnded",
+     "params": [
+      {
+       "name": "input",
+       "type": "InputObject"
+      }
+     ]
+    },
+    {
+     "name": "MouseEnter",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseLeave",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseMoved",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelBackward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "MouseWheelForward",
+     "params": [
+      {
+       "name": "x",
+       "type": "number"
+      },
+      {
+       "name": "y",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "SelectionChanged",
+     "params": [
+      {
+       "name": "amISelected",
+       "type": "boolean"
+      },
+      {
+       "name": "previousSelection",
+       "type": "GuiObject"
+      },
+      {
+       "name": "newSelection",
+       "type": "GuiObject"
+      }
+     ]
+    },
+    {
+     "name": "SelectionGained",
+     "params": []
+    },
+    {
+     "name": "SelectionLost",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    },
+    {
+     "name": "TouchLongPress",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPan",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "totalTranslation",
+       "type": "Vector2"
+      },
+      {
+       "name": "velocity",
+       "type": "Vector2"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchPinch",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "scale",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchRotate",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      },
+      {
+       "name": "rotation",
+       "type": "number"
+      },
+      {
+       "name": "velocity",
+       "type": "number"
+      },
+      {
+       "name": "state",
+       "type": "Enum.UserInputState"
+      }
+     ]
+    },
+    {
+     "name": "TouchSwipe",
+     "params": [
+      {
+       "name": "swipeDirection",
+       "type": "Enum.SwipeDirection"
+      },
+      {
+       "name": "numberOfTouches",
+       "type": "number"
+      }
+     ]
+    },
+    {
+     "name": "TouchTap",
+     "params": [
+      {
+       "name": "touchPositions",
+       "type": "{ any }"
+      }
+     ]
+    }
+   ],
+   "props": [
+    {
+     "name": "Active",
+     "type": "boolean"
+    },
+    {
+     "name": "Ambient",
+     "type": "Color3"
+    },
+    {
+     "name": "AnchorPoint",
+     "type": "Vector2"
+    },
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "AutoLocalize",
+     "type": "boolean"
+    },
+    {
+     "name": "AutomaticSize",
+     "type": "Enum.AutomaticSize"
+    },
+    {
+     "name": "BackgroundColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BackgroundTransparency",
+     "type": "number"
+    },
+    {
+     "name": "BorderColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "BorderMode",
+     "type": "Enum.BorderMode"
+    },
+    {
+     "name": "BorderSizePixel",
+     "type": "number"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ClipsDescendants",
+     "type": "boolean"
+    },
+    {
+     "name": "CurrentCamera",
+     "type": "Camera"
+    },
+    {
+     "name": "ImageColor3",
+     "type": "Color3"
+    },
+    {
+     "name": "ImageTransparency",
+     "type": "number"
+    },
+    {
+     "name": "InputSink",
+     "type": "Enum.InputSink"
+    },
+    {
+     "name": "Interactable",
+     "type": "boolean"
+    },
+    {
+     "name": "LayoutOrder",
+     "type": "number"
+    },
+    {
+     "name": "LightColor",
+     "type": "Color3"
+    },
+    {
+     "name": "LightDirection",
+     "type": "Vector3"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "NextSelectionDown",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionLeft",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionRight",
+     "type": "GuiObject"
+    },
+    {
+     "name": "NextSelectionUp",
+     "type": "GuiObject"
+    },
+    {
+     "name": "Position",
+     "type": "UDim2"
+    },
+    {
+     "name": "RootLocalizationTable",
+     "type": "LocalizationTable"
+    },
+    {
+     "name": "Rotation",
+     "type": "number"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "Selectable",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionBehaviorDown",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorLeft",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorRight",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionBehaviorUp",
+     "type": "Enum.SelectionBehavior"
+    },
+    {
+     "name": "SelectionGroup",
+     "type": "boolean"
+    },
+    {
+     "name": "SelectionImageObject",
+     "type": "GuiObject"
+    },
+    {
+     "name": "SelectionOrder",
+     "type": "number"
+    },
+    {
+     "name": "Size",
+     "type": "UDim2"
+    },
+    {
+     "name": "SizeConstraint",
+     "type": "Enum.SizeConstraint"
+    },
+    {
+     "name": "Visible",
+     "type": "boolean"
+    },
+    {
+     "name": "ZIndex",
+     "type": "number"
+    }
+   ]
+  },
+  "WorldModel": {
+   "events": [
+    {
+     "name": "AncestryChanged",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      },
+      {
+       "name": "parent",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "AttributeChanged",
+     "params": [
+      {
+       "name": "attribute",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "Changed",
+     "params": [
+      {
+       "name": "property",
+       "type": "string"
+      }
+     ]
+    },
+    {
+     "name": "ChildAdded",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "ChildRemoved",
+     "params": [
+      {
+       "name": "child",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantAdded",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "DescendantRemoving",
+     "params": [
+      {
+       "name": "descendant",
+       "type": "Instance"
+      }
+     ]
+    },
+    {
+     "name": "Destroying",
+     "params": []
+    },
+    {
+     "name": "StyledPropertiesChanged",
+     "params": []
+    }
+   ],
+   "props": [
+    {
+     "name": "Archivable",
+     "type": "boolean"
+    },
+    {
+     "name": "Capabilities",
+     "type": "SecurityCapabilities"
+    },
+    {
+     "name": "ModelStreamingMode",
+     "type": "Enum.ModelStreamingMode"
+    },
+    {
+     "name": "Name",
+     "type": "string"
+    },
+    {
+     "name": "PrimaryPart",
+     "type": "BasePart"
+    },
+    {
+     "name": "Sandboxed",
+     "type": "boolean"
+    },
+    {
+     "name": "UseWorkspaceCollisionGroups",
+     "type": "boolean"
+    },
+    {
+     "name": "WorldPivot",
+     "type": "CFrame"
+    }
+   ]
+  }
+ },
+ "dropped": [
+  "AdGui: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
+  "GuiMain: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
+  "InputActionLabel: class newer than pinned defs (whole class dropped)",
+  "RelativeGui: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
+  "TextChannelWindow: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
+  "UIShadow.Mode: type Enum.ApplyShadowMode newer than pinned defs",
+  "VideoDisplay: class excluded (H-301 \u2014 deprecated/internal/capability-gated)"
+ ],
+ "dumpVersion": "version-268c7d941ba34c1a",
+ "scopeRule": "creatable AND (GuiObject|UIComponent|LayerCollector descendant) OR {Folder,Camera,WorldModel} (H-296 a)"
+}

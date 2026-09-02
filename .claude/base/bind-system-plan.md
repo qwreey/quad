@@ -205,6 +205,40 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   커버"라는 옛 서술은 런타임에 대해서만 맞다** — 타입은 `D` 범위 안만
   정확하고 밖은 `any`다.
 
+**⭐ [2026-09-02 신설, M5 단위 ② — round14 `H-298` (a) 사용자 확정] `D`가
+찍는 값 유니언의 정본.** 생성기(`scripts/gen-d.py`)가 이 정의로 찍고, 여기가
+소스다:
+
+- **스칼라 프로퍼티**: `(T | State<T> | Tween<T> | None)?` — `Tween<T>`은
+  PropertyHandler가 소비하는 값-레벨 래퍼(`tween-plan.md`; 타입은
+  `quad-roblox/src/types.luau`, 런타임은 M9). 모든 프로퍼티에 균일하게
+  허용한다(트윈 가능 여부는 엔진 몫 — 타입으로 안 가른다).
+- **이벤트 필드**: `((<엔진 시그널 파라미터>) -> ()) | State<...> | None`에
+  optional(`?`) — `nil` disconnect는 optional이 표현한다(`event-plan.md`).
+- **children 원소(`NewChild`)**: `Instance | State<Instance> | None` — **M5 시점
+  유니언**이고, **이후 마일스톤이 자기 핸들러가 도착할 때 유니언을
+  확장한다**(확장 규칙 — M6 Slot, M8 `Ref`/`PreRef`/`PostRef`). `H-298` (a)
+  회신문의 "Ref류"는 그 예고로 해석해 M5 유니언에서 뺐다 — `Ref` leaf
+  핸들러가 M8이라 지금 실으면 런타임이 없는 거짓 표면이 된다(`H-297`과
+  같은 논리; 이 해석이 틀렸다면 사용자가 뒤집을 것). 정의 실물은
+  `quad-roblox/src/types.luau`.
+- **`None`의 타입 표현**(위 세 식의 `None` — round14 `H-300` (a), 2026-09-02 사용자
+  확정 — *"300 a 확인 완료, 권고대로"*). 원래는 `None`이 신원 센티널
+  (frozen **빈** 테이블)이라 구조 타입 표현이 불가능했는데(빈 테이블
+  타입은 모든 테이블에 매치, 사본별 신원이라 typeof도 불가), 센티널에
+  마커 필드 하나(`__quadNone = true` — `Brand.luau`의 Brand가 아님)를 부여해 `QuadTypes.None`
+  (`{ read __quadNone: true }`)으로 표현한다 — **런타임 판정은 여전히
+  신원(`v == None`)뿐**이고 필드는 조언층 타입 전용, frozen 유지
+  (`Dispatch/None.luau`).
+- **범위 판정식(round14 `H-296` (a) + `H-301` 실측 보강)**: creatable ∧
+  (`GuiObject`∪`UIComponent`∪`LayerCollector` 하위) + 명시 화이트리스트
+  `{Folder, Camera, WorldModel}`, **클래스 수준 제외** — `Deprecated`
+  (GuiMain)·`NotBrowsable`(내부 UI)·`MemoryCategory: Internal`(AdGui)·실측
+  denylist(`RelativeGui` — 태그론 안 드러나는 RobloxScript capability
+  게이트, Studio 실측). 산출 클래스 목록의 소스는
+  `quad-roblox/dump/api-surface.json`(개수는 여기서 안 센다), 전 클래스
+  실생성 가능성은 Studio 실측으로 확인.
+
 **⭐ [2026-08-27 신설, 9라운드 `H-139`] `New(name)(props)` 파이프라인 의사코드 —
 네 문서에 흩어져 있던 순서를 한 자리에.** 사용자 지시: *"실 구현 전에
 의사코드를 써보자. 그걸로 인해서 감추어졌던 설계 결함이나 폭탄이 발견된 경우가

@@ -18,6 +18,9 @@
 |---|---|---|---|---|
 | `H-290` | ① | 🟡 | (단위 ①) **미claim inst에 대한 `bindLifetime`은 실 구현에서 error다** — 정본 (1) 스케치는 `InstData:GetWeak(inst,"gchold")`를 nil 검사 없이 인덱싱해, claim 안 된 inst를 건네면 원인 불명 nil-index로 죽는다. mock은 lazy claim으로 이 경로를 가렸지만 실물은 (0) 불변식("생성 시 1회")상 lazy가 금지(스파이크 `10` A-6이 실증한 userdata 구멍) | ✅ 반영 — `quad-roblox/src/LifetimeHandle.luau`가 명확한 가드로 fail-fast(`"Instance is not claimed by quad"`, `errorBefore`). 새 메커니즘이 아니라 (0) 불변식의 따름 가드라 ①로 처리 — 메시지·판정은 에이전트 재량, 틀렸다면 사용자가 뒤집을 것. mock과의 의도적 발산 목록에 등재(파일 헤더) |
 | `H-291` | ① | 🟡 | (Studio 스모크) **Deferred 시그널 동작 실측** — 이 플레이스(신형 기본값)에서 `Destroying`·`GetPropertyChangedSignal` 콜백은 동기 발화하지 않고 다음 재개 지점에 지연 배달된다(Destroy가 연결을 끊어도 큐잉분은 돎, 정확히 1회). **`gcconn.Connected` 전환은 동기**라 `canBound`/`canExecute` 판정은 무영향 — 영향 범위는 시그널 *배달*에 기대는 소비자(`onDestroying` → `Effect` cleanup 타이밍, 이후 `OnChange`/`Event` 핸들러)뿐 | ✅ 반영 — `lifecycle-pattern.md` "2." 절에 실측 배너(cleanup은 "죽음과 같은 줄기"가 아니라 "죽음 이후 지연"일 수 있음 — 동기 실행에 기대는 설계 금지), 스모크 단언도 지연 기대로 고정. 설정(Immediate/Deferred)은 플레이스별이라 quad는 양쪽 다 견뎌야 한다 |
+| `H-299` | ① | 🟡 | (단위 ②) **`D`의 획득 경로가 코퍼스에 미지정** — 사용법 예시는 전부 bare `D`인데 어디서 오는지 안 정해져 있었다(claim-plan은 "정의는 D 안에 산다"까지만) | ✅ 반영 — 백엔드가 모듈 필드를 설치하는 기존 채널 그대로 **`RobloxFactory`가 `module.D = InitD(module)`**(op 필드들과 같은 자리 — 새 채널이 아니라 같은 뮤테이션 경로라 ①). 사용법 `local D = quad.D`. 이 배치가 틀렸다면 사용자가 뒤집을 것. `<Class>Param` 재익스포트 표면은 단위 ⑤ `H-25` 몫으로 유보(손 나열은 "전량 생성" 계약과 충돌) |
+| `H-300` | ② | 🟡 | (단위 ②) **`None`을 D 값 유니언에 타입으로 실을 수 없다** — `None`은 frozen 빈 테이블의 **신원** 센티널이라 구조 타입 표현 불가(빈 테이블 타입은 모든 테이블에 매치), quad-base 사본별 신원이라 quad-roblox가 typeof로 집지도 못함. `H-298` (a)의 "None 포함"을 문자 그대로는 이행 불가한 기술 사실 — 유니언은 일단 None 없이 좁게 냄(넓히기는 호환) | ✅ **(a) [2026-09-02 사용자 확정 — "300 a 확인 완료, 권고대로 진행해도 될것 같아"]** 센티널에 `__quadNone = true` 마커 필드(`Brand.luau`의 Brand 아님 — 타입 조언층 전용; `Dispatch/None.luau` — 신원 판정·frozen 그대로) + `QuadTypes.None` 타입 신설, 생성 유니언 전부(스칼라·이벤트·`NewChild`)에 None 합류, 재생성·전 스위트 exit 0 |
+| `H-301` | ① | 🟢 | (Studio 실측) **클래스 수준 제외 규칙 보강** — 1차 스모크에서 `RelativeGui`가 태그론 안 드러나는 RobloxScript capability 게이트로 생성 불가. 함께 정리: `Deprecated`(GuiMain)/`NotBrowsable`(TextChannelWindow·VideoDisplay)/`MemoryCategory: Internal`(AdGui)은 사용자 표면 아님 | ✅ 반영 — 생성기 클래스 제외 규칙 + 실측 denylist, 재스모크 **31/31 전량 생성 성공**. `H-296` (a) "creatable" 취지의 실측 구체화(①) — 정본은 bind-system-plan 유니언 절 |
 
 **[2026-09-02 단위 ① 시점] 확인만 하고 문제 없던 것**:
 
@@ -46,6 +49,7 @@
 | `H-296` | (단위 ② 착수 조사) **"GUI에 쓰이는 모든 인스턴스"의 판정식 미확정** — base 후보(`GuiObject` 하위+`UIComponent` 하위+`LayerCollector`류)는 *예시*로만 적혔고("생성기 구현 시점에 정한다"), **vide의 손 목록이 반례를 준다**: `Folder`(GUI 트리 그룹핑)·`Camera`·`WorldModel`(`ViewportFrame` 안 필수)은 그 계층 밖인데 실사용 GUI 트리에 온다 | (a) **계층식 + 명시 화이트리스트** — `NotCreatable` 제외 ∧ (`GuiObject`∪`UIBase`(UIComponent/Layout/Constraint)∪`LayerCollector` 하위) + 명시 추가 `{Folder, Camera, WorldModel}`(ViewportFrame·그룹핑 실수요; 목록은 실사용 요구 시 추가 — 범위 밖은 어차피 `New<<X>>` 폴백) / (b) 계층식만(셋 제외) / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | 사용자 확정("GUI에 쓰이는")의 실질을 계층식만으로는 못 담는다는 게 vide 반례로 실증 — 화이트리스트는 짧고, 빠진 클래스는 `any` 폴백이 있어 실수 비용이 낮다 |
 | `H-297` | (단위 ② 착수 조사) **프로퍼티 필터 정책 미확정** — 코퍼스에 언급 자체가 없다. ReadOnly/`Deprecated`/`NotScriptable`/`Hidden` 태그와 `Security ≠ None` 프로퍼티를 D props 타입에 실을지 | (a) **전부 제외**(쓰기 표면만 생성 — ReadOnly·NotScriptable은 대입 불가라 타입에 있으면 거짓 표면, Deprecated는 새 코드 표면에 안 실음, Security는 일반 스크립트가 못 씀) / (b) Deprecated는 포함 / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | D는 **쓰기**(대입) 표면이라 대입 불가능한 프로퍼티가 타입에 있으면 통과되는 오용을 만든다. Deprecated 포함(b)은 구계약 이식 편의가 있지만 "새로 짜는 라이브러리" 방향과 어긋남 | 
 | `H-298` | (단위 ② 착수 조사) **props 값 유니언과 `NewChild`의 정본 정의 부재** — 이벤트 필드는 확정(`콜백 \| None \| nil \| State<...>`, event-plan)인데, **스칼라 프로퍼티** 유니언과 **children 원소**(`NewChild` — claim-plan이 이름만 씀) 정의가 어디에도 없다. 스파이크 `28`은 자리표시자로 메커니즘만 통과시킴 | (a) **M5 최소 정본**: 스칼라 = `T \| State<T> \| Tween<T> \| None`(Tween은 PropertyHandler 소비 값 — tween-plan의 `T'` 치환과 정합), children 원소 `NewChild` = `Instance \| State<...> \| Ref류` **M5 시점 유니언**으로 정의하고 이후 마일스톤(M6 Slot 등)이 유니언을 **확장**한다는 규칙을 같이 명문화(정의 자리는 `bind-system-plan.md` 인스턴스 생성 절) / (b) 지금 전 마일스톤 표면을 미리 다 싣기 / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | (b)는 아직 안 만든 표면(Slot 팩토리 등)의 타입을 선제 발명하게 돼 "발견은 결정이 아니다" 규약과 충돌. (a)의 "확장 규칙 명문화"가 각 마일스톤이 자기 몫을 더할 자리를 만든다 |
+| `H-300` | (단위 ②) `None`을 D 값 유니언에 어떻게 실을지 — 신원 센티널이라 구조 타입 표현 불가(요약 표 `H-300` 참조). 현재 생성 유니언은 None 없이 좁게 나감(넓히기는 호환) | (a) **`None` 값에 브랜드 필드를 부여**(`__quadNone: true` — frozen 테이블에 필드 하나, `v == None` 신원 판정은 그대로) + 그 구조 타입을 유니언에 실음 — M3 산출물(`Dispatch/None.luau`)의 경미 수정 / (b) 유니언에서 영구 제외 — None을 쓰는 자리는 `:: any` 캐스트(사용자 문서에 명시) / (c) 다른 방식 | **✅ (a) [2026-09-02 사용자 확정]** | (b)는 정당한 None 사용(명시적 nil 세팅)마다 캐스트를 강제해 표면이 거칠어진다. (a)의 비용은 센티널 테이블 필드 하나 — 신원 판정·frozen·기존 spec 전부 무영향(타입은 조언층이고 런타임은 여전히 `v == None`) — 반영 상태는 요약 표 행이 소스 |
 
 **⭐ [2026-09-02 배치 회신 — 전량 종결, 열린 문항 0]** 사용자 원문:
 *"H293: 이건 무조건 UB 영역이다. … 권고는 기각하며 해당 부분은 고치지
@@ -53,6 +57,22 @@
 H292: 권고대로. / 열린 문항은 295, 296, 297, 298 권고대로."* — 일곱 전부
 확정(H-293만 권고 기각·UB 문서화, 나머지 여섯 권고 (a)/(b) 그대로).
 반영 상태는 각 행 ✅가 소스. **단위 ② 착수 게이트 해제.**
+
+**[2026-09-02 단위 ② 종결 시점]** ~~열린 문항 1 — `H-300`~~ → **같은 날
+사용자 확정·반영 완료로 열린 문항 0.** 부수 확인 하나: 워크스페이스
+dev-dep 사본(`quad-roblox/luau_packages`)은 설치 시점 스냅샷이라
+quad-types/quad-base를 고치면 **`pesde install` 재실행이 필요**하다
+(relink는 심볼릭→실복사만 담당 — `H-300` 반영 중 실측).
+
+**[2026-09-02 단위 ② 끝 절차 기록]** 감사 3라운드 수렴(3+1 → 1+1 → 확실 0
+— 각도: diff 정합성 / 교정분+`H-300` 반영 / 병렬 규약·수렴) 후
+`/code-review medium` 1회 — **생존 4건 전부 반영**: ① `D.New(name)`의
+스테이지 클로저 미태그(범위 밖 클래스 폴백 경로의 blame 열화 — 스테이지
+생성 시 태그로 이동, 별칭 루프는 `New` 단일 태그로 대체) ② spec.d 4절이
+계약 이름만 달고 실검증 없던 것(`getFuncLevel` 직접 단언 4개로 교체 —
+①을 잡을 수 있는 형태) ③ `test.sh`의 luau-lsp 이중 실행(1회 캡처로) ④
+원장 요약 행의 "브랜드 필드" 어휘(마커로 명시 — §4 문항 원문·사용자 인용은
+불변). 반영 후 전 스위트 exit 0 재확인.
 
 **[2026-09-02 탐사자 라운드 — 위 §4 둘 외 확인·기각 기록]**:
 
