@@ -208,10 +208,23 @@ do
 end
 
 print()
-print("=== 6. M5 스코프 밖 op은 설치되지 않음(Q4 (a)) — M10·백로그 몫 그대로 ===")
+print("=== 6. M5 스코프 밖 op — 백엔드는 안 채움(Q4 (a)), quad-base 안내 스텁만 ===")
 do
-	for _, name in { "addTag", "removeTag", "setAttribute", "setTimeout", "clearTimeout" } do
-		assert((q :: any)[name] == nil, name .. " must stay uninstalled in M5")
+	-- [round16 스파이크 정정] 원래 "== nil" 단언이었으나 M10(quad-base가
+	-- Tag/Attribute 안내 스텁을 자기 등록과 함께 설치 — 재역전 2026-08-18의
+	-- 취지)이 들어오며 실질이 "nil"에서 "미채움 스텁"으로 바뀜. Q4 (a)의
+	-- 본뜻(quad-roblox가 M5에서 안 채움)은 그대로 검증한다. 통합 시 메인
+	-- 판정 대상(H10-5).
+	for _, name in { "addTag", "removeTag", "setAttribute" } do
+		local fn: any = (q :: any)[name]
+		assert(type(fn) == "function", name .. " has a quad-base guidance stub")
+		-- 클로저 캡처 + any 좁힘 조합이 새 솔버에서 *error-type*을 만들어
+		-- 직접 pcall로 부른다(blame 검증이 아니라 메시지 검증이라 무방)
+		local ok, err = pcall(fn :: (...any) -> (), {}, {})
+		assert(not ok and string.find(tostring(err), "not available", 1, true) ~= nil, name .. " must still be the uninstalled stub in M5: " .. tostring(err))
+	end
+	for _, name in { "setTimeout", "clearTimeout" } do
+		assert((q :: any)[name] == nil, name .. " must stay uninstalled (backlog)")
 	end
 	print("PASS")
 end

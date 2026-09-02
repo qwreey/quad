@@ -31,6 +31,9 @@ local InitDispatch = require("@self/Dispatch")
 local InitClaim = require("@self/Claim")
 local SlotInit = require("@self/Slot") -- M6(탐사 구현 편입)
 local None = require("@self/Dispatch/None").None
+local TagModule = require("@self/Tag")
+local AttributeKeyModule = require("@self/AttributeKey")
+local AttributeModule = require("@self/Attribute")
 
 type Quad = QuadTypes.Quad
 
@@ -69,6 +72,20 @@ local function New(): Quad
 		isPreRef = Brand.isPreRef,
 		isPostRef = Brand.isPostRef,
 		isMapperDescriptor = Brand.isMapperDescriptor, -- M5 단위 ④(Claim)
+		isTag = Brand.isTag, -- M10 (round16)
+		isAttribute = Brand.isAttribute,
+		isAttributeKey = Brand.isAttributeKey,
+		-- M10 값 네임스페이스 — 리터럴 모양이 곧 `Quad` 타입이라 여기 직접
+		-- 싣는다(핸들러·스텁 설치는 아래 RunInit들이 함).
+		-- [H10-3/H10-4 (d), 2026-09-02 사용자 확정] 콜러블 테이블은
+		-- setmetatable<A,B> 타입 표기로 리터럴 `:: Quad`를 그대로 통과한다 —
+		-- fork의 잠정 `:: any` 캐스트는 통합에서 제거(typing-limits 8.6절)
+		Tag = TagModule.Tag,
+		Attribute = AttributeModule.Attribute,
+		AttributeKey = AttributeKeyModule.AttributeKey,
+		StringAttribute = AttributeKeyModule.StringAttribute,
+		NumberAttribute = AttributeKeyModule.NumberAttribute,
+		BooleanAttribute = AttributeKeyModule.BooleanAttribute,
 	} :: Quad
 
 	function module.RunInit(self, initFn)
@@ -139,6 +156,10 @@ local function New(): Quad
 	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
 	module:RunInit(InitClaim) -- M5 단위 ④ — Claim + 매퍼 디스크립터(claim-plan)
 	module:RunInit(SlotInit) -- M6 — top-level Slot 값 타입 + SlotHandler(자기 등록)
+	-- M10 (round16 spike) — Tag/Attribute 값 + 핸들러(자기 등록, `H-278` 관례)
+	module:RunInit(TagModule.Init)
+	module:RunInit(AttributeKeyModule.Init)
+	module:RunInit(AttributeModule.Init)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
