@@ -177,4 +177,90 @@ do
 end
 
 print()
+print("=== 10. :List — 키 기반 재조정(추가/갱신/제거/필터) ===")
+do
+	local data = q.Source({ { id = "a", n = 1 }, { id = "b", n = 2 } })
+	local s = Slot()
+	local built = {}
+	s:List(data, function(item, _index, _off, prev, _ud)
+		if item == q.KeyGone then return nil end
+		if prev then return prev end -- reuse
+		local f = Instance.new("Frame"); f.Name = item.id
+		built[item.id] = (built[item.id] or 0) + 1
+		return f
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(childCount(parent) == 2, "2 items mounted: " .. childCount(parent))
+	assert(built.a == 1 and built.b == 1, "each built once")
+	-- add c, remove a
+	data:Set({ { id = "b", n = 2 }, { id = "c", n = 3 } })
+	assert(childCount(parent) == 2, "still 2 after add c / remove a")
+	assert(built.b == 1, "b reused (not rebuilt)")
+	assert(built.c == 1, "c built")
+	print("PASS")
+end
+
+print()
+print("=== 11. :Single(state) + Slot:Add(state) — State 요소 래핑 ===")
+do
+	local src = q.Source(Instance.new("Frame"))
+	local s = Slot()
+	s:Single(src)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(childCount(parent) == 1, ":Single mounts current state value")
+	local newFrame = Instance.new("Frame")
+	src:Set(newFrame)
+	assert(childCount(parent) == 1 and newFrame.Parent == parent, "coarse swap to new value")
+	src:Set(nil)
+	assert(childCount(parent) == 0, "nil state → empty")
+	-- Slot:Add(state) sugar (wrapElement path)
+	local s2 = Slot()
+	local st = q.Source(Instance.new("Frame"))
+	s2:Add(st)
+	local p2 = Instance.new("Folder")
+	dispatch.drive(p2, { s2 })
+	assert(childCount(p2) == 1, "Add(state) wraps + mounts")
+	print("PASS")
+end
+
+print()
+print("=== 12. Detach — 파괴 없이 뗐다 되붙임(재사용) ===")
+do
+	local show = q.Source(true)
+	local data = q.Source({ { id = "x" } })
+	local s = Slot()
+	local theFrame
+	local builds = 0
+	s:List(data, function(item, _i, _o, prev, _ud)
+		if item == q.KeyGone then return q.Detach end
+		if not show:Get() then return q.Detach end
+		if prev then return prev end
+		builds += 1
+		theFrame = Instance.new("Frame"); theFrame.Name = item.id
+		return theFrame
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(childCount(parent) == 1 and builds == 1, "built once, mounted")
+	show:Set(false); data:Set({ { id = "x" } }) -- re-eval → Detach
+	assert(childCount(parent) == 0, "detached from tree")
+	assert(theFrame.Parent == nil and not theFrame._destroyed, "detached, not destroyed")
+	show:Set(true); data:Set({ { id = "x" } }) -- re-eval → prev returned → remount
+	assert(childCount(parent) == 1 and builds == 1, "remounted same frame, no rebuild")
+	print("PASS")
+end
+
+print()
+print("=== 13. :List 상호배타 가드 — CRUD 후 :List, :List 후 CRUD 금지 ===")
+do
+	local s1 = Slot(); s1:Add(Instance.new("Frame"))
+	assert(not pcall(function() s1:List(q.Source({}), function() end) end), "no :List after manual CRUD")
+	local s2 = Slot(); s2:List(q.Source({}), function() end)
+	assert(not pcall(function() s2:Add(Instance.new("Frame")) end), "no manual CRUD after :List")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
