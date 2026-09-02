@@ -219,7 +219,8 @@ function AttributeKeyHandler.process(inst, k, v, index)
     local cur = nameClaims:GetStrong(inst, k.Name)
     if cur ~= nil and cur ~= k then
         -- [2026-09-03 M10 편입 정정] 현행 error 계약(H-231/H-272)으로 이관 —
-        -- 실코드(AttributeKey.luau)는 Err.errorBefore(SURFACE)를 쓴다
+        -- 실코드(AttributeKey.luau)는 Err.errorBefore(SURFACE)를 쓴다.
+        -- `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 error 계약 절
         Err.errorBefore(`attribute "{k.Name}" is already bound by another owner`, SURFACE)
     end
     nameClaims:SetStrong(inst, k.Name, k)
@@ -473,7 +474,8 @@ function AttributeGroupHandler.process(inst, k, v, index)
     -- 기록되는 중간 상태가 안 생긴다 — 위 그 항목이 소스).
     local claimed = groupClaimKeys:GetStrong(inst, v)
     if claimed ~= nil and claimed ~= k then
-        -- [2026-09-03 M10 편입 정정] 위와 같은 이관 — 리터럴 level 2 폐기
+        -- [2026-09-03 M10 편입 정정] 위와 같은 이관 — 리터럴 level 2 폐기.
+        -- `Err`/`SURFACE` 정의는 `base/architecture.md`의 error 계약 절
         Err.errorBefore("Attribute: the same group value is placed at two positions of this instance", SURFACE)
     end
     groupClaimKeys:SetStrong(inst, v, k)

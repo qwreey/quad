@@ -286,8 +286,10 @@ export type Quad = {
 	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
 	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
 
-	-- 브랜드 술어(`.claude/base/brand-plan.md`). 나머지(`isTag`/`isAttribute*`/
-	-- `isTween`/`isSlot`)는 그 타입의 마일스톤에서.
+	-- 브랜드 술어(`.claude/base/brand-plan.md`). `isTag`/`isAttribute*`는
+	-- M10 편입(2026-09-03)으로 아래 합류 — 나머지(`isTween`/`isSlot`)는
+	-- 그 타입의 마일스톤에서(`isSlot` 값은 이미 M6 편입으로 module에 산다 —
+	-- `Quad` 타입 등재는 M6 잔여 `H-25` 몫과 함께).
 	isEpoch: (x: any) -> boolean,
 	isSource: (x: any) -> boolean,
 	isState: (x: any) -> boolean,

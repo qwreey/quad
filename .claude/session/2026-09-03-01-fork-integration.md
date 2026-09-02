@@ -46,17 +46,19 @@
 3. **M6/M10의 "완료" 경계 승인** — 두 마일스톤 다 부분 완료 상태로
    편입됐다(잔여는 ROADMAP 배너가 소스). 다음 마일스톤 순서(M6 잔여
    마감 → M7? 또는 M10 엔진 축 먼저?)는 사용자 방향 결정 몫.
+4. **Tag/Attribute 엔진 op의 설치 형태**(감사 A 제기) — mock의
+   `installTagAttributeOps(quad, log?)`는 프로바이더 밖 opt-in 별도
+   함수로 남아 있는데, (d′) "모든 프로바이더가 같은 형태" 원칙을 이 세
+   op에도 적용해 `mockProvider`/`RobloxFactory`에 흡수시킬지, Tag/Attribute를
+   의도적 opt-in 서브시스템으로 둘지 미정(실 백엔드 쪽 배치도 M10 잔여라
+   아직 실사용례 없음 — 지금은 설계 공백이지 버그 아님). M10 엔진 축
+   착수 때 정하면 됨.
 
-**메인이 이어서 할 후행 작업** (승인 불요, 큐):
-
-- M6 잔여: 공개 CRUD 래퍼(`Move`/`Swap`/`Extract`/`Splice`/`Replace`+
-  `collectLeaves`), `KeyGone` 파괴 분기 spec, quad-types `Quad`에 `Slot`
-  필드(H-25), quad-roblox `Handlers/Slot.luau`, round12 §6 `H-286` ②,
-  실기기 검증(Deferred 축).
-- M10 잔여: quad-roblox EngineOps 실구현(addTag/removeTag/setAttribute —
-  M5 Q4 (a)로 유예된 몫), `Handlers/Event`/`OnChange`, InstanceShorthand,
-  Q6 각주(InstanceHandle 언랩 읽기 소비자).
-- fork 워크트리·브랜치 정리(머지 확인 후 remove — 사용자 확인 관례).
+**메인이 이어서 할 후행 작업** (승인 불요) — **목록의 유일한 소스는
+`ROADMAP.md` M6/M10 배너다**(감사 B가 이 파일의 자체 목록이 배너와
+갈리는 걸 잡아 포인터로 축소 — "개수·목록 소스 하나" 규약). 여기만 있는
+항목 하나: fork 워크트리·브랜치 정리(머지 확인 후 remove — 사용자 확인
+관례).
 
 ## 끝 절차 기록
 

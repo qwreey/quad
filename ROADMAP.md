@@ -1338,7 +1338,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       다른 값 타입(`Modifier`/`Tag`/`Tween`/`Ref`/`Effect`)이 전부 top-level
       파일을 갖는 것과 같은 대칭이고, `base/slot-plan.md`의 `attachSlot`
       블록이 이미 머리에 이 파일명을 적어뒀다
-- [ ] **⭐ [2026-08-24, 6라운드] 이 마일스톤에서 새로 생긴 필드·헬퍼**
+- [ ] **[2026-09-03 편입 — 7개 중 6개 구현됨, `collectLeaves`만 잔여**(공개 CRUD와 같이 온다 — `Slot.luau` 주석)**]** **⭐ [2026-08-24, 6라운드] 이 마일스톤에서 새로 생긴 필드·헬퍼**
       (구현 항목으로 드러나야 놓치지 않는다):
       **`bk.indexOfElement`**(물리 요소→`_elements` 인덱스 역방향 맵,
       `indexOfRaw`가 이걸 O(1)로 조회하는 **기본 경로**. **[2026-08-27, 9라운드
@@ -1754,7 +1754,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 이름·priority 분리). 아래 `[x]` 항목의 파일 경로 서술은 이 재편 기준으로
 > 읽을 것. **잔여는 quad-roblox 엔진 축**(EngineOps 실구현 —
 > addTag/removeTag/setAttribute, Event/OnChange, InstanceShorthand)과
-> `AttributeGroupHandler` 부분 실패 롤백 판단(`question.md`).
+> `AttributeGroupHandler` 부분 실패 롤백 판단(`question.md`) — **M10
+> 잔여 목록의 유일한 소스는 이 배너다**(다른 문서는 여기를 가리킬 것).
 
 
 - [x] **[2026-09-03 편입]** **[2026-08-24 `H-39`]** `TagHandler`/`AttributeGroupHandler`가 자기 배열
@@ -1776,7 +1777,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       명시, 이름별 weak 캐시로 `OnChange(a) == OnChange(a)` 동등성 보장
       (`AttributeKey`와 동일 기법), `base/onchange-plan.md`, 2026-08-10
       세션 확정·2026-08-11 아홉 번째 세션 후속(캐시))
-- [ ] **[2026-08-13 열네 번째 세션 재배치] `quad-roblox/EngineOps.luau`의
+- [ ] **[2026-09-03 Q6 (a) 각주 — M5 round14 브리프 확정 이행]** Attribute
+      op의 **읽기 소비자**(`InstanceAttribute` 읽기 타입, quad-debug)는
+      Instance 참조 Attribute가 `InstanceHandle`(미문서화 Studio Beta)로
+      돌아오므로 **`:Get()` 언랩·nil·죽은 참조 위에서 설계할 것** —
+      실측은 `audit/spike10-full-run-2026-09-01.md` B절(attribute-plan
+      배너는 이미 있음). 쓰기 경로는 무영향(엔진이 자동 랩).
+      **[2026-08-13 열네 번째 세션 재배치] `quad-roblox/EngineOps.luau`의
       Tag/Attribute 몫** — `addTag(inst,{string})`/`removeTag(inst,{string})`
       (`CollectionService`), `setAttribute(inst,name,v)`(`v==nil`이면 삭제).
       `RobloxFactory`가 `BaseModule`에 주입(`bindLifetime`/`canExecute`와

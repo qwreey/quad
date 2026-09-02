@@ -841,12 +841,6 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   필요해짐 — element 레퍼런스만 갖고 있는 호출부가 인덱스 기반 CRUD를
   쓰려면 `IndexOf`가 유일한 다리. `Get`은 대칭성/일반적인 컬렉션 API
   완결성을 위해 같이 열어둠(필수까진 아니지만 비용이 거의 없어 열어둠).
-- **`raw*` 내부 호출 규약은 공개 API와 다를 수 있음(구현 세부, M6에서
-  확정)** — `:List`의 reconcile은 이미 자기 `key→element` 맵을 들고
-  있어서 `rawRemove`/`rawMove` 등을 element 기준으로 계속 부를 수도
-  있음. 공개 CRUD가 인덱스를 받아 내부적으로 element를 찾아 `raw*`에
-  넘기는 얇은 변환 계층이 될지, `raw*` 자체를 인덱스 기준으로 통일할지는
-  base 설계가 못박을 필요 없는 구현 디테일.
 - **에러 조건 — 전부 즉시 `error()`, no-op 없음**(기존 "재마운트 시 throw"와
   같은 fail-fast 톤):
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
@@ -1971,8 +1965,12 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot.luau` 또는
   `Dispatch/Slot.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
   지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
-  시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. 정확한 파일
-  배치는 M6 구현 시점에 확정.
+  시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. **[2026-09-03
+  M6 편입으로 확정]** `Detach`/`KeyGone`은 `quad-base/src/Slot.luau`에
+  정의되고 `SlotInit(module)`(RunInit 경유)이 `module.Detach`/`module.KeyGone`
+  으로 부착한다 — `init.luau` 정적 require 재노출("None처럼")이 아니라
+  Init 부착이라는 점만 이 문장의 상정과 다르고, "최상위 재노출"의 실질
+  (`quad.Detach`로 접근)은 그대로다.
 ### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
 
 위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데

@@ -10,7 +10,7 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**⭐ [2026-09-02 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+**⭐ [2026-09-03 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
 Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
 **M5(quad-roblox 최소 프로바이더)** 완료** — M5는 자율 구현 구간으로
 2026-09-02 착수·종결: 규약 `qa-request/m5-implementation-round14-brief.md`
@@ -23,8 +23,8 @@ op+생명주기 / `D` 생성기 / Property·InstanceChild 핸들러 /
 (a) / rojo 라이브 싱크 반입 — Studio 재기동만 사람 몫, `HUMAN_TODO.md`
 12번)는 `.claude/todos.md` 00번이 소스. **같은 날 사용자 승인으로 병렬 탐사, 2026-09-03 통합 완료** —
 fork 둘이 worktree에서 M6/M10을 mock 축으로 선행 구현했고 **메인에
-머지됨**(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16`; 통합 판정 —
-H10-3 (d)·H10-5·H10-1 — 과 잔여 목록은 `ROADMAP.md` M6/M10 배너가 소스)** —
+머지됨**(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16`; 통합 판정(H10-3
+(d)·H10-5·H10-1)과 잔여 목록은 `ROADMAP.md` M6/M10 배너가 소스)** —
 **M4도 같은 방식의 자율 구간으로 2026-09-01 착수·종결**(사용자 조건부
 승인으로 규약 `qa-request/m4-implementation-round13-brief.md` §0 전량 (a)
 확정, 발견 `-round13.md`(`H-287`~; §4 열린 문항 0) — 단위 하나:
