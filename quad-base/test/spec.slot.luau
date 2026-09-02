@@ -135,4 +135,46 @@ do
 end
 
 print()
+print("=== 8. Slot-in-Slot 중첩 — 재귀 마운트, Length = 기여도 합 ===")
+do
+	local outer, inner = Slot(), Slot()
+	local h = Instance.new("Frame"); h.Name = "header"
+	local i1 = Instance.new("Frame"); i1.Name = "i1"
+	local i2 = Instance.new("Frame"); i2.Name = "i2"
+	outer:Add(h)
+	inner:Add(i1); inner:Add(i2)
+	outer:Add(inner) -- outer = { header, inner{ i1, i2 } }
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { outer })
+	-- all leaves flatten to the same physical parent (no wrapper)
+	assert(childCount(parent) == 3, "3 physical leaves (header + i1 + i2): " .. childCount(parent))
+	assert(h.Parent == parent and i1.Parent == parent and i2.Parent == parent, "all leaves under parent")
+	-- outer.Length = header(1) + inner.Length(2) = 3
+	assert(outer.Length:Get() == 3, "outer Length = contribution sum (3): " .. outer.Length:Get())
+	assert(inner.Length:Get() == 2, "inner Length 2")
+	-- growing inner bumps outer's contribution sum
+	inner:Add(Instance.new("Frame"))
+	assert(inner.Length:Get() == 3 and outer.Length:Get() == 4, "inner grow → outer sum 4: " .. outer.Length:Get())
+	print("PASS")
+end
+
+print()
+print("=== 9. 중첩 언마운트 — outer 언마운트가 inner까지 재귀로 뗀다 ===")
+do
+	local outer, inner = Slot(), Slot()
+	inner:Add(Instance.new("Frame"))
+	outer:Add(inner)
+	local src = q.Source(outer)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { src })
+	assert(childCount(parent) == 1, "inner leaf mounted through outer")
+	src:Set(nil)
+	assert(childCount(parent) == 0, "outer unmount recurses into inner")
+	assert(not outer._destroyed and not inner._destroyed, "unmount, not destroy")
+	src:Set(outer)
+	assert(childCount(parent) == 1, "nested remount (portal)")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
