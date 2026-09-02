@@ -336,7 +336,8 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       대체(2026-08-08 세션 신설).
 - [x] **[2026-08-28 완료 — `InitLifetimeHandle(module)`이 모듈 인스턴스에 영어 `level 2` 에러 스텁 4종 설치, `test/spec.lifetime.luau`]** `LifetimeHandle.luau` **인터페이스만**(`bindLifetime(inst,value)`/
       `unbindLifetime(value)`/`canBound(value)`/`canExecute(value)` 탑레벨
-      함수 타입 계약, 실 구현 없음 — quad-roblox 실 구현은 M8) — 원래
+      함수 타입 계약, 실 구현 없음 — quad-roblox 실 구현은 ~~M8~~
+      **[2026-09-02]** M5 단위 ①로 앞당겨 완료, 아래 M8 항목 참고) — 원래
       M8에만 있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의
       `canExecute`)이 이미 이 인터페이스를 전제로 서술돼 있어 로드맵
       순서가 역전돼 있었음(`pre-implementation-audit.md` 우선순위1-9 —
@@ -1626,10 +1627,13 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `_deps`이며(`_refCallbacks`는 폐기된 필드), 바인드/언바인드는 `Ref`를
       아예 안 건드린다. `:Uncallback`은 **사용자가 직접 건 콜백을 떼는**
       공개 표면으로 남는다
-- [ ] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
+- [x] `LifetimeHandle` quad-roblox 실제 구현 — `bindLifetime`/
       `unbindLifetime`/`canBound`/`canExecute` 본체(인터페이스 자체는
       M2로 이동됨, `Relate` 자체는 quad-base라 quad-roblox 쪽 재구현
-      없음).
+      없음). **[2026-09-02 M5 단위 ①로 앞당겨 완료 — round14 brief §1
+      (사용자 §0 (a) 승인), 진행 기록은 M5 체크박스 1이 소스.** 탐사자가
+      이 이중 등재를 잡기 전까지 여기 미체크로 남아 진행 소스가 둘이었다
+      — 컨벤션 체크리스트 4번의 그 실패 모드.]
       **[2026-08-14 다섯 번째 세션 정정] gcconn/gchold를 여기서 lazy 생성하지
       않는다** — 생성은 M5의 Instance 생성 경로가 이미 끝내둔 것이고, 이
       함수들은 `InstData`에서 찾아 쓰기만 함. `bindLifetime`은

@@ -273,6 +273,10 @@ local QuadTypes = require("../luau_packages/quad_types")
 local installed = setmetatable({}, { __mode = "k" }) :: { [any]: true }
 
 local function installLifetime(quad: any)
+	-- TODO(H-294): this installer neither sets nor checks `_initializedBy`,
+	-- so it silently overwrites a real backend (and a later real backend
+	-- silently takes over mock-bound handles) — disposition pending in
+	-- round14 §4.
 	if installed[quad] then
 		return
 	end

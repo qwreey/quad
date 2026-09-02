@@ -17,7 +17,8 @@
 	quad-base knows nothing about Instances, so these slots default to stubs
 	that error loudly (never a silent no-op — base cannot guess an arbitrary
 	engine's "right" default). quad-roblox overwrites them on the module
-	instance (M8); tests overwrite them with the mock backend
+	instance (implemented in M5 unit 1 — `quad-roblox/src/LifetimeHandle.luau`);
+	tests overwrite them with the mock backend
 	(`quad-base/test/mock.luau` `installLifetime`, ROADMAP `H-97`).
 
 	They are flat top-level functions, not `LifetimeHandle.bind(...)` —

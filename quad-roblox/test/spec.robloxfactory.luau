@@ -185,4 +185,61 @@ do
 end
 
 print()
+print("=== 8. 탐사자 보강(🟡-5) — Effect 배선·훅 가드·재바인드 캐치업이 roblox 전사본 경유로 ===")
+do
+	-- (a) isEffect 분기: _bindDestroying이 EngineOps.onDestroying과 실배선돼
+	--     leaf 사망 시 cleanup이 정확히 1회 소진되는가
+	local inst = Instance.new("Folder")
+	q.nativeClaim(inst)
+	local src = q.Source(1)
+	local cleanups = 0
+	local eff = q.Effect(function(_self: any)
+		local _ = src:Get()
+		return function()
+			cleanups += 1
+		end
+	end, src)
+	q.bindLifetime(inst, eff)
+	inst:Destroy() -- mock Destroying은 동기 발화 — 실기기는 지연 배달(`H-291`)
+	assert(cleanups == 1, "leaf death consumes the cleanup exactly once (onDestroying wiring)")
+
+	-- (b) _assertBindable 훅 경로: fn 실행 중(_running) bind 시도는 커밋 전에 거부되고
+	--     반쯤 묶인 핸들이 남지 않는다(`H-183`/`H-184`)
+	local inst2 = Instance.new("Folder")
+	q.nativeClaim(inst2)
+	local src2 = q.Source(1)
+	local sawGuard = false
+	local obs2 = src2:Observer(function(_state: any, self: any)
+		local ok = pcall(function()
+			q.bindLifetime(inst2, self)
+		end)
+		if not ok then
+			sawGuard = true
+		end
+	end)
+	assert(sawGuard, "binding from inside fn is rejected by the pre-commit hook guard")
+	assert(q.canExecute(obs2) == false, "the rejected bind left no half-bound state")
+	q.bindLifetime(inst2, obs2) -- 정상 문맥에서는 그대로 묶인다
+	assert(q.canExecute(obs2) == true, "clean bind after the rejected attempt")
+
+	-- (c) 재바인드 캐치업: 묶이기 전 홀드된 emit이 bind 시 1회만 따라잡힌다(`H-159`)
+	local inst3 = Instance.new("Folder")
+	q.nativeClaim(inst3)
+	local src3 = q.Source(1)
+	local seen = 0
+	local obs3 = src3:Observer(function()
+		seen += 1
+	end)
+	assert(seen == 1, "install fire at creation")
+	src3:Set(2)
+	assert(seen == 1, "unbound emit is held, not delivered")
+	q.bindLifetime(inst3, obs3)
+	assert(seen == 2, "bind catches up the held change exactly once")
+	src3:Set(3)
+	assert(seen == 3, "bound emits flow normally")
+	inst3:Destroy()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

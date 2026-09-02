@@ -103,8 +103,13 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   DFS로 해석한 inst마다(루트 포함) `drive` **앞에** `nativeClaim`을 부른다 — ②가
   ③④보다 앞인 것과 같은 이유(그 뒤부터 `inst`를 키로 쓰는 `Relate`가 생긴다).
   **이미 quad 데이터가 있는 inst**(`InstData:GetWeak(inst, "gchold") ~= nil` — 앞서
-  claim됐거나 `New`가 만든 것)면 `error(…, 2)` — 이것이 "같은 `inst` 이중 claim
-  error"의 전부이고 별도 레지스트리는 없다(§7-10).
+  claim됐거나 `New`가 만든 것)면 error — 이것이 "같은 `inst` 이중 claim
+  error"의 전부이고 별도 레지스트리는 없다(§7-10). **[2026-09-02 정정, M5
+  단위 ① 탐사자]** 여기 `error(…, 2)`라 적혀 있었으나 실 구현은
+  **`errorBefore(SURFACE)`**다(`quad-roblox/src/LifetimeHandle.luau`) —
+  `H-272` 관례의 확장: 리터럴 level 2는 `Claim`의 DFS 경유 호출에서 quad
+  내부를 blame하고, 최외곽 표면 걷기면 직접 호출·`Claim` 경유 양쪽에서
+  사용자 줄에 닿는다.
 - **매칭은 프로바이더 주입 op** `nativeFindChild(inst, key)`(가칭) — Roblox는
   `Name`, web은 id/selector. **quad-base가 순회·부기 전반을 구현하고
   프로바이더는 이 핸들만 낸다**(사용자: *"quad-base 에서 전반을 구현해주고

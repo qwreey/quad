@@ -39,6 +39,32 @@
 
 | 번호 | 문항 | 갈래 | 권고 | 근거 |
 |---|---|---|---|---|
+| `H-293` | (탐사자 🟡-1, **실기기 실측**) **파괴된 Instance에 `nativeClaim`하면 영구 좀비가 된다** — Destroy된 inst의 `GetPropertyChangedSignal("ClassName"):Connect()`가 성공하고 `Connected`가 영원히 true(Studio 실측). 죽은 inst에 묶인 값이 영구 발화 가능 판정 + 절단면 없는 캡처 누수. mock은 `H-171` 가드(`destroyed`면 Disconnect)로 막았지만 그 근거("생성 시 1회라 경로 없음")는 `New` 경로만 참 — 공개 `quad.nativeClaim` 직접 호출과 단위 ④ `Claim`(사용자 제공 트리)에는 거짓. **실물 Roblox엔 깨끗한 destroyed 술어가 없다** — 증상 확정, 처방 미정 | (a) `Claim`이 DFS 시점에 트리 소속(예: `inst:IsDescendantOf(game)` 또는 사용자 제공 루트) 검사 — 직접 `nativeClaim` 호출은 UB 문서화 / (b) claim 직후 `gcconn.Connected`를 되읽어 false면 즉시 error(파괴된 inst의 신규 커넥션이 정말 Connected true로 남는지의 역 — **실측상 true로 남아 이 검출은 안 됨**, 후보 기각 근거로 기재) / (c) UB로만 문서화(가드 없음) / (d) 다른 방식 | **(a)** | (b)는 실측이 이미 기각. (c)는 `Claim`이 사용자 입력 표면이라 "즉시 error가 주 방어선" 원칙과 어긋남. (a)는 `Claim` 경로(사용자 트리)만 지키고 내부 `New` 경로엔 검사 비용을 안 얹는다 — 단 판정식(`IsDescendantOf(game)`은 트리 밖 정상 claim까지 막을 수 있음)이 새 메커니즘이라 사용자 결정 필요 |
+| `H-294` | (탐사자 🟡-3, 스파이크 실측) **mock `installLifetime`이 `_initializedBy`를 세우지도 검사하지도 않는다** — `QuadRoblox(q)` 후 mock 설치가 조용히 성공(혼합 백엔드), mock 선설치 후 `QuadRoblox(q)`도 무사통과하며 기존 바인딩이 조용히 전량 침묵. 테스트 인프라 한정이지만 실패 모드가 "조용한 침묵"이라 최악 유형 | (a) mock도 `_initializedBy = "mock"`을 세우고 같은 3분기 가드(다른 백엔드 점유면 error) / (b) 현상 유지 + 헤더 경고만 / (c) 다른 방식 | **(a)** | 실 계약("a module cannot serve two backends")을 테스트 대역도 지켜야 spec이 그 계약 자체를 검증할 수 있다 — 비용은 mock 몇 줄. 단 mock은 quad-base 소유 파일이라 M2 산출물 수정 = 사용자 확인 대상 | 
 | `H-292` | (감사 1라운드) `EngineOps.luau`의 `isInst`(`typeof(value) == "Instance"`)가 `luau-analyze`에 `UnknownType: Unknown type 'Instance'` 진단을 남긴다 — CLI엔 Roblox 타입 정의가 없어 typeof-narrowing이 이름을 못 푸는 것. **`UnknownType`은 strict에서도 exit 0**이라(감사자 실측) 스위트는 안 깨지지만, "analyze가 조용히 통과" 패턴을 반복 경계해온 레포에서 상시 진단 1줄이 섞인 채 도는 게 맞는가 | (a) 문서화만(무해 — Roblox 글로벌은 CLI에서 원래 못 푸는 게 정상) / (b) 판정식을 바꿔 진단 자체를 제거(예: `(typeof(value) :: string) == "Instance"` — 동작 동일, narrowing 경로만 우회) / (c) `test.sh`가 analyze **출력**까지 fail 조건으로 강화 | **(b)** | 한 줄 캐스트로 "출력 클린 = 이상 없음" 관측 관례가 유지된다 — (a)는 다음 진단이 이 1줄에 섞여 묻히는 자리를 만들고, (c)는 UnknownType류 환경 한계 전부를 화이트리스트해야 해서 비쌈. 단 (b)의 캐스트가 코드를 살짝 흐리는 건 사실이라 취향 판단 — 코드엔 `-- TODO(H-292)` 마커만 두고 대기 |
 
-(위 1건 외 없음 — **[2026-09-02 기준]** 열린 문항 1)
+(위 셋 외 없음 — **[2026-09-02 단위 ① 종결 시점]** 열린 문항 3:
+`H-292`/`H-293`/`H-294`. 전부 단위 ② 진행을 막지 않는다 — `H-293`은 단위 ④
+`Claim` 착수 전까지만 답이 필요.)
+
+**[2026-09-02 탐사자 라운드 — 위 §4 둘 외 확인·기각 기록]**:
+
+- **🟡-4 → 반영**: `claim-plan.md` §7-10의 이중 claim `error(…, 2)` 문구가
+  실코드(`errorBefore(SURFACE)`, `H-272` 관례 확장)와 어긋난 채 방치돼
+  있었다 — 정본 쪽에 정정 배너. 커밋 시점에 이 편차가 어디에도 기록되지
+  않았던 것 자체가 체크리스트 2번 누락(탐사자 발견).
+- **🟡-2 → 반영**: `ROADMAP.md` M8의 `LifetimeHandle` 실구현 체크박스가
+  미체크로 남아 진행 소스가 이중화 — M5 단위 ①로 앞당겨 완료 표기(`[x]`),
+  같은 계열 stale 세 문장(`lifecycle-pattern.md` `H-184` 주석 /
+  `quad-base/src/LifetimeHandle.luau` 헤더 / ROADMAP M2 각주)도 정정.
+- **🟡-5 → 반영**: roblox 전사본 경유로 안 돌던 경로 셋(Effect
+  `_bindDestroying`↔`onDestroying` 실배선 / `_assertBindable` 커밋 전 거부 /
+  재바인드 `_catchUp` 1회)을 `spec.robloxfactory.luau` 8절로 보강 — 전
+  스위트 exit 0.
+- **🟢-6 기각(방치)**: `bindLifetime(inst, 1)`이 `gchold[1]`(gcconn 자리)을
+  덮는 극단 오용 — 정본 스케치·mock과 공유하는 결함이라 구현 발산이 아니고,
+  "실제로 관측된 문제에만 구조" 원칙상 가드 안 얹음(기록만).
+- **🟢-7 → 반영**: brief Q4의 "스텁 유지" 문구에 실상태(nil — 설치 없음,
+  spec 6절 단언) 주석.
+- **🟢-8 기각(무해)**: `RobloxFactory`가 로컬 직접 호출인데 SURFACE 태그 —
+  require 경계라 `-O2` 인라인 불가, blame 실동은 spec 1절이 확인.

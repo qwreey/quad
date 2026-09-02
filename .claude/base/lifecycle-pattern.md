@@ -385,7 +385,9 @@ function bindLifetime(inst, value)
     -- `_assertBindable` — `H-147`/`H-183`의 "fn 안에서 bind 금지") 부기를 커밋하기
     -- **전에** 먼저 묻는다 — 안 그러면 가드가 던질 때 이미 묶인 채(canExecute 참)
     -- `Destroying` 연결 없는 반쯤 묶인 핸들이 남는다(실측). 평범한 클로저처럼 훅이
-    -- 없는 값은 물을 것이 없다. mock(installLifetime)과 M8 실 구현 둘 다 이 순서.
+    -- 없는 값은 물을 것이 없다. mock(installLifetime)과 실 구현
+    -- (`quad-roblox/src/LifetimeHandle.luau` — [2026-09-02] M5 단위 ①로
+    -- 구현됨) 둘 다 이 순서.
     if type(value) == "table" and value._assertBindable ~= nil then
         value:_assertBindable()
     end
