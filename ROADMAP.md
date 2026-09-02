@@ -1062,8 +1062,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 분리할 수 있게 하기 위함. `base/quad-types-plan.md`의 "남은 것" 절이
 > 소스.
 
-- [x] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드) — 진입점
-      `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
+- [x] `RobloxFactory.luau`(BaseModule 뮤테이션 — 재호출 가드는 **[2026-09-02
+      `H-305` (d′)]** quad-base `UseProvider`의 identity 락 몫으로 이동) —
+      프로바이더 fn `QuadRoblox<T>(quad: T): RobloxExtension`이
+      `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
       **[2026-09-02 완료, M5 단위 ① round14]** `_initializedBy` 가드(같은
       팩토리 no-op/다른 팩토리 error — **[같은 날 단위 ⑤ `H-305` (d′)로

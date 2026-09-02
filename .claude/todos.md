@@ -35,7 +35,13 @@
    Property(Reflection 멤버십 매치)+InstanceChild(`H-134`/`H-154` 전사),
    `spec.handlers` 5절로 반응형 자식 교체 CLI 첫 e2e. **[같은 날 단위 ④ 완료]** `Claim`+`D.Mapper`
    (quad-base `Claim.luau` — DFS·bottom-up drive·1회용, 재량은 `H-303`).
-   다음 액션: 단위 ⑤(첫 렌더 실측+종합, `H-25` quad-types 갱신 확인) 착수. **[2026-09-02 병렬 트랙]**
+   **[같은 날 단위 ⑤ 구현·실측 완료]** 첫 실물 렌더 3/3 PASS(rojo 라이브
+   싱크 — 이날 확립, `audit/m5-unit5-first-render-2026-09-02.md`) + `H-25`
+   quad-types 갱신 + **`H-305` (d′) 사용자 확정 — `UseProvider` 신설**
+   (프로바이더 1슬롯 fn identity 락, 표면 `quad:UseProvider(QuadRoblox)`로
+   교체, `q.D` 캐스트 0 풀 타이핑; 소스는 round14 §4 `H-305` 행과
+   `session/2026-09-02-04-h305-useprovider.md`). 단위 끝 절차(감사·리뷰·
+   탐사) 마치는 대로 M5 종결·머리말 3층 갱신. **[2026-09-02 병렬 트랙]**
    사용자 승인으로 fork 둘이 각자 worktree에서 M6(Slot)/M10(Tag·Attribute)
    탐사 구현 중 — 규약은 `qa-request/m6-implementation-round15-brief.md`(§2
    멈춤 규칙 포함)·`m10-implementation-round16-brief.md`, 발견 접두

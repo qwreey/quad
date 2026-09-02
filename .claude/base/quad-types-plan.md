@@ -10,10 +10,14 @@
 
 ## 왜 필요한가 — dev-dependency로는 못 푸는 문제
 
-`quad-roblox`는 `QuadRoblox(Quad): QuadRoblox`처럼 quad-base 인스턴스를
+`quad-roblox`는 quad-base 인스턴스를
 **런타임에 함수 인자로 주입**받는다(`base/module-lifecycle-plan.md`
 "Bind는 누가, 어떻게 구현하는가" 절이 확정해둔 팩토리 패턴 — quad-roblox
-자신은 quad-base를 `require`할 필요가 없어 보인다).
+자신은 quad-base를 `require`할 필요가 없어 보인다. **[2026-09-02 `H-305`
+(d′)]** 표면은 `quad:UseProvider(QuadRoblox)` — 프로바이더 fn
+`QuadRoblox<T>(quad: T): RobloxExtension`; 옛 `QuadRoblox(Quad):
+QuadRoblox` 직접 호출형 서술에서 교체됐지만 "런타임 인자 주입"이라는 이
+절의 논지는 그대로다).
 
 **그런데 타입 주석 하나 때문에 얘기가 달라진다.** `QuadRoblox`의 시그니처가
 `Quad` 타입을 참조하려면 그 타입이 정의된 모듈을 `require`해야 하고,
@@ -24,7 +28,7 @@
 
 - `quad_base`를 **일반 의존성**으로 두면: 소비자가 `quad-roblox`를 설치할
   때마다 무거운 quad-base 전체가 통째로 딸려온다(quad-base를 이미 따로
-  설치해서 `QuadRoblox(Quad)`에 넘기는 상황이면 완전히 중복).
+  설치해서 `UseProvider`로 넘기는 상황이면 완전히 중복).
 - `quad_base`를 **dev-dependency**로 두면: 로컬 개발 중엔 문제없지만,
   `quad-roblox`가 게시된 뒤 **소비자 환경엔 dev-dependency가 전파되지
   않아** 그 타입-전용 require가 못 찾고 그 자리에서 런타임 크래시난다.
