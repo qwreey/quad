@@ -110,6 +110,30 @@ export type Blocker = {
 	__apply: (self: any, state: any) -> any,
 }
 
+-- ── Tag / Attribute (M10, round16 spike) ─────────────────────────────
+-- 값 모양은 `base/tag-plan.md` "값 모양" / `base/attribute-plan.md` "채택안"
+-- 절이 정본. 생성자들은 콜러블 네임스페이스(호출 = 생성, 필드 = 합성)라
+-- 함수∩테이블 교집합으로 선언한다. `AttributeKey<<T>>`의 제네릭 파라미터는
+-- 런타임 무영향인 순수 정적 트릭이고 값 좁힘 성립 여부가 미실측이라([실측
+-- 필요, M0/M10] — attribute-plan) 여기선 비제네릭 키 객체 타입만 둔다.
+export type Tag = {
+	Added: (self: Tag, nameOrList: string | { string }) -> Tag,
+	Removed: (self: Tag, nameOrList: string | { string }) -> Tag,
+	Contains: (self: Tag, name: string) -> boolean,
+	Names: (self: Tag) -> () -> string?,
+	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
+}
+export type TagConstructor = ((...string) -> Tag) & { Merged: (...Tag) -> Tag }
+
+export type Attribute = { NameMap: (self: Attribute) -> { [string]: any } }
+export type AttributeConstructor = ((...any) -> Attribute) & {
+	Merged: (...Attribute) -> Attribute,
+	Overridden: (...Attribute) -> Attribute,
+}
+
+export type AttributeKeyObject = { Name: string }
+export type AttributeKeyConstructor = (name: string) -> AttributeKeyObject
+
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
@@ -263,6 +287,19 @@ export type Quad = {
 	isRef: (x: any) -> boolean,
 	isPreRef: (x: any) -> boolean,
 	isPostRef: (x: any) -> boolean,
+	-- M10 (round16 spike) — Tag/Attribute 표면(`H-25`의 "마일스톤마다 갱신" 몫)
+	isTag: (x: any) -> boolean,
+	isAttribute: (x: any) -> boolean,
+	isAttributeKey: (x: any) -> boolean,
+	-- 콜러블 네임스페이스 둘은 잠정 any — 아래 교집합 표기를 Quad 필드로
+	-- 실으면 소비자 쪽 제네릭 추론(QuadRoblox<T>)이 오염되는 게 실측됨
+	-- (round16 원장 참고; 교집합 타입 자체는 export로 남겨 소비자가 직접 쓸 수 있게)
+	Tag: any,
+	Attribute: any,
+	AttributeKey: AttributeKeyConstructor,
+	StringAttribute: AttributeKeyConstructor,
+	NumberAttribute: AttributeKeyConstructor,
+	BooleanAttribute: AttributeKeyConstructor,
 }
 
 --[[

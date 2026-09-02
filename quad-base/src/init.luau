@@ -29,6 +29,9 @@ local Effect = require("@self/Effect")
 local Blocker = require("@self/Blocker")
 local InitDispatch = require("@self/Dispatch")
 local None = require("@self/Dispatch/None").None
+local TagModule = require("@self/Tag")
+local AttributeKeyModule = require("@self/AttributeKey")
+local AttributeModule = require("@self/Attribute")
 
 type Quad = QuadTypes.Quad
 
@@ -61,6 +64,19 @@ local function New(): Quad
 		isRef = Brand.isRef,
 		isPreRef = Brand.isPreRef,
 		isPostRef = Brand.isPostRef,
+		isTag = Brand.isTag, -- M10 (round16)
+		isAttribute = Brand.isAttribute,
+		isAttributeKey = Brand.isAttributeKey,
+		-- M10 값 네임스페이스 — 리터럴 모양이 곧 `Quad` 타입이라 여기 직접
+		-- 싣는다(핸들러·스텁 설치는 아래 RunInit들이 함)
+		-- 콜러블 테이블(__call)은 함수∩테이블 교집합 타입을 구조적으로 만족
+		-- 못 한다(솔버) — 값은 맞고 표기만 any로 잇는다
+		Tag = TagModule.Tag :: any,
+		Attribute = AttributeModule.Attribute :: any,
+		AttributeKey = AttributeKeyModule.AttributeKey,
+		StringAttribute = AttributeKeyModule.StringAttribute,
+		NumberAttribute = AttributeKeyModule.NumberAttribute,
+		BooleanAttribute = AttributeKeyModule.BooleanAttribute,
 	} :: Quad
 
 	function module.RunInit(self, initFn)
@@ -89,6 +105,10 @@ local function New(): Quad
 	module:RunInit(Observer.Init) -- 단위 3 — 레지스트리 둘의 소유 모듈(`H-99`)
 	module:RunInit(Effect.Init)
 	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
+	-- M10 (round16 spike) — Tag/Attribute 값 + 핸들러(자기 등록, `H-278` 관례)
+	module:RunInit(TagModule.Init)
+	module:RunInit(AttributeKeyModule.Init)
+	module:RunInit(AttributeModule.Init)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서

@@ -465,6 +465,76 @@ local function assertBlamesUser(err: any, wantFile: string, label: string?)
 	assert(string.find(msg, "/src/", 1, true) == nil, `{label or "blame"}: must not blame quad internals: {msg}`)
 end
 
+-- M10 (round16 spike): mock tag/attribute ops — the backend share quad-roblox
+-- fills in M10, mirrored here so the base-owned handlers can run under CLI.
+-- Observation helpers expose applied state; the optional `log` records every
+-- engine call (names sorted — set iteration order is not deterministic) so
+-- specs can assert the batching / "only truly changed names" contracts.
+local instTags = setmetatable({}, { __mode = "k" }) :: { [any]: { [string]: true } }
+local instAttributes = setmetatable({}, { __mode = "k" }) :: { [any]: { [string]: any } }
+
+local function installTagAttributeOps(quad: any, log: { string }?)
+	local function record(op: string, names: { string })
+		if log == nil then
+			return
+		end
+		local sorted = table.clone(names)
+		table.sort(sorted)
+		table.insert(log, op .. ":" .. table.concat(sorted, ","))
+	end
+	local function addTag(inst: any, names: { string })
+		local set = instTags[inst]
+		if set == nil then
+			set = {}
+			instTags[inst] = set
+		end
+		for _, n in names do
+			set[n] = true
+		end
+		record("addTag", names)
+	end
+	local function removeTag(inst: any, names: { string })
+		local set = instTags[inst]
+		if set ~= nil then
+			for _, n in names do
+				set[n] = nil
+			end
+		end
+		record("removeTag", names)
+	end
+	local function setAttribute(inst: any, name: string, v: any)
+		local map = instAttributes[inst]
+		if map == nil then
+			map = {}
+			instAttributes[inst] = map
+		end
+		map[name] = v -- v == nil deletes (the injected-op contract)
+		if log ~= nil then
+			table.insert(log, `setAttribute:{name}={tostring(v)}`)
+		end
+	end
+	quad.addTag = addTag
+	quad.removeTag = removeTag
+	quad.setAttribute = setAttribute
+	-- `H-238`: the backend tags everything it installs
+	for _, fn in { addTag, removeTag, setAttribute } :: { any } do
+		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
+end
+
+local function getTags(inst: any): { string }
+	local out: { string } = {}
+	for n in pairs(instTags[inst] or {}) do
+		table.insert(out, n)
+	end
+	table.sort(out)
+	return out
+end
+
+local function getAttributes(inst: any): { [string]: any }
+	return table.clone(instAttributes[inst] or {})
+end
+
 return {
 	Instance = Instance,
 	newSignal = newSignal,
@@ -473,4 +543,7 @@ return {
 	newQuad = newQuad,
 	addSpecLeaf = addSpecLeaf,
 	assertBlamesUser = assertBlamesUser,
+	installTagAttributeOps = installTagAttributeOps,
+	getTags = getTags,
+	getAttributes = getAttributes,
 }
