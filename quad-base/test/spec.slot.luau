@@ -263,4 +263,64 @@ do
 end
 
 print()
+print("=== 14. :List 리오더 — State 요소(래퍼 Slot)의 Offset이 자기 자리를 따라간다 ===")
+do
+	-- advisor §1: rawMove must permute sourceList too. State elements produce
+	-- wrapper Slots (non-None sourceList entries) — plain-element test 10 can't
+	-- see a missing permutation. Stable keys, reversed data order.
+	local sx = q.Source(Instance.new("Frame"))
+	local sy = q.Source(Instance.new("Frame"))
+	local data = q.Source({ { id = "x", s = sx }, { id = "y", s = sy } })
+	local s = Slot()
+	s:List(data, function(item, _i, _o, prev, _ud)
+		if item == q.KeyGone then return nil end
+		if prev then return prev end
+		return item.s -- a State element → wrapElement makes a wrapper Slot
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	-- x at slotPos 1 (Offset 0), y at slotPos 2 (Offset 1)
+	local wx = s._elements[1]
+	local wy = s._elements[2]
+	assert(q.isSlot(wx) and q.isSlot(wy), "both wrapped")
+	assert(wx.Offset:Get() == 0 and wy.Offset:Get() == 1, "initial offsets 0,1: " .. wx.Offset:Get() .. "," .. wy.Offset:Get())
+	-- reverse order → y should move to pos 1 (Offset 0), x to pos 2 (Offset 1)
+	data:Set({ { id = "y", s = sy }, { id = "x", s = sx } })
+	-- the SAME wrapper Slots must be reused (reorder, not rebuild)
+	assert(s._elements[1] == wy and s._elements[2] == wx, "reordered same wrappers")
+	assert(wy.Offset:Get() == 0, "y moved to Offset 0: " .. wy.Offset:Get())
+	assert(wx.Offset:Get() == 1, "x moved to Offset 1: " .. wx.Offset:Get())
+	print("PASS")
+end
+
+print()
+print("=== 15. :List Slot의 언마운트→재마운트(H-163) — 상태 보존 + 캐치업 1회 ===")
+do
+	local builds = 0
+	local data = q.Source({ { id = "a" }, { id = "b" } })
+	local list = Slot()
+	list:List(data, function(item, _i, _o, prev, _ud)
+		if item == q.KeyGone then return nil end
+		if prev then return prev end
+		builds += 1
+		local f = Instance.new("Frame"); f.Name = item.id
+		return f
+	end, function(item) return item.id end)
+	local src = q.Source(list)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { src })
+	assert(childCount(parent) == 2 and builds == 2, "initial mount, 2 built")
+	-- (a) unmount
+	src:Set(nil)
+	assert(childCount(parent) == 0 and not list._destroyed, "unmounted, not destroyed")
+	-- (c) data changes WHILE unmounted
+	data:Set({ { id = "a" }, { id = "b" }, { id = "c" } })
+	-- (a) remount — no error, (b) state preserved (a,b not rebuilt), (c) caught up
+	src:Set(list)
+	assert(childCount(parent) == 3, "remounted + caught up to 3: " .. childCount(parent))
+	assert(builds == 3, "only c built on catch-up (a,b preserved): builds=" .. builds)
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

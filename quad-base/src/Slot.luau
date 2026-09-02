@@ -377,22 +377,39 @@ local function Init(module: any)
 	-- rawMove: reorder within _elements (no Parent op on Roblox — LayoutOrder-
 	-- based). Bookkeeping arrays move with the permutation; recompute re-runs
 	-- the affected positions' setLength so offsets follow (H-19).
+	-- rotate one array's [from..to] span exactly as table.remove(from)+insert(to)
+	-- does — but by index assignment so nil holes (bk.observers is sparse)
+	-- survive. `#`-based table.remove/insert would corrupt a hole-laden array.
+	local function rotateInPlace(arr: any, from: number, to: number)
+		local v = arr[from]
+		if from < to then
+			for i = from, to - 1 do arr[i] = arr[i + 1] end
+		else
+			for i = from, to + 1, -1 do arr[i] = arr[i - 1] end
+		end
+		arr[to] = v
+	end
+
 	local function rawMove(self: any, fromIndex: number, toIndex: number)
 		if fromIndex == toIndex then return end
-		local element = table.remove(self._elements, fromIndex)
-		table.insert(self._elements, toIndex, element)
-		local lo, hi = math.min(fromIndex, toIndex), math.max(fromIndex, toIndex)
+		rotateInPlace(self._elements, fromIndex, toIndex)
+		local lo = math.min(fromIndex, toIndex)
 		reindexFrom(self, lo)
 		if self._physicalTarget == nil then return end
-		-- re-register the moved span so offsets recompute (Roblox native move is
-		-- a no-op; correctness is carried entirely by the bookkeeping re-run)
-		for i = lo, hi do
-			local el = self._elements[i]
-			if isSlot(el) then
-				BK.setLength(self, i, el.Length, self._physicalTarget, el)
-			else
-				BK.setLength(self, i, 1, self._physicalTarget, el)
-			end
+		-- H6-6: raw* regulation 1 — lengthList/sourceList/observers move with the
+		-- SAME permutation as _elements. sourceList especially is ELEMENT-bound
+		-- (a nested Slot's own .Offset), not position-bound; permuting only
+		-- _elements + indexOfElement leaves recompute writing offsets to the old
+		-- occupant's Source. (Roblox nativeMove is a no-op — correctness is
+		-- entirely this bookkeeping permutation + recompute.)
+		local bk = BK.getBookkeeping(self)
+		rotateInPlace(bk.lengthList, fromIndex, toIndex)
+		rotateInPlace(bk.sourceList, fromIndex, toIndex)
+		rotateInPlace(bk.observers, fromIndex, toIndex)
+		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, lo - 1)
+		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, lo - 1)
+		if not (BK.getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn()) then
+			BK.recompute(self, bk)
 		end
 	end
 
