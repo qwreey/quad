@@ -28,6 +28,7 @@ local Observer = require("@self/Observer")
 local Effect = require("@self/Effect")
 local Blocker = require("@self/Blocker")
 local InitDispatch = require("@self/Dispatch")
+local SlotInit = require("@self/Slot") -- M6 fork
 local None = require("@self/Dispatch/None").None
 
 type Quad = QuadTypes.Quad
@@ -89,6 +90,7 @@ local function New(): Quad
 	module:RunInit(Observer.Init) -- 단위 3 — 레지스트리 둘의 소유 모듈(`H-99`)
 	module:RunInit(Effect.Init)
 	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
+	module:RunInit(SlotInit) -- M6 fork — top-level Slot 값 타입 + SlotHandler(자기 등록)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
