@@ -1085,7 +1085,10 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       개수는 그 json이 소스), 값 유니언 정본은 bind-system-plan 신설 절
       (`H-298`; `None`도 합류 — `H-300` (a) 확정·반영, 센티널 마커 필드 → `QuadTypes.None`). `Parent`는
       덤프 층 제외 + `test.sh` grep 게이트. `spec.d.luau` + Studio 실생성
-      전량 확인. `D`는 `RobloxFactory`가 `module.D`로 설치(`H-299`)
+      전량 확인. `D`의 획득 경로는 `H-299`(module.D 직접 대입)로 정했다가
+      **[2026-09-02 단위 ⑤ `H-305` (d′)]** `UseProvider` 확장 병합
+      (`RobloxExtension = { D }`)으로 이동 — 위 `RobloxFactory.luau` 불릿
+      참고, 사용법(`local D = quad.D`)은 동일
 - [x] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로). 루트 부착 경로가 무엇인지는 아래 `Claim` 체크박스가 소스), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
       부기를 등록한다**: `process`에서 `setOffsetSource(inst, k, None)` →

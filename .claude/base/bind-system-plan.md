@@ -117,7 +117,7 @@ RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들
 초기화했는지" 마커(`_initializedBy = "roblox"`류, 정확한 이름은 구현 단계)만
 두면 됨(**[2026-09-02 구현 교체 — `H-305` (d′)]** 그 문자열 마커는 사본을
 구분 못 해 `UseProvider`의 fn identity 락으로 대체됐다 — 두-케이스 의미론
-자체는 그대로, 소스는 `module-lifecycle-plan.md`의 UseProvider 서술). 모듈 스코핑(`New()`, `base/architecture.md` 13번)과의 관계도
+자체는 그대로, 소스는 `module-lifecycle-plan.md` "New()의 내부 구성" 절의 UseProvider 항목). 모듈 스코핑(`New()`, `base/architecture.md` 13번)과의 관계도
 실은 열려있던 게 아니라 자연히 풀림 — `New()`가 실제로 호출되면 그
 호출이 만드는 인스턴스가 별도 테이블이 되므로 이 마커도 테이블별로
 독립적으로 스코핑됨(**[재정정, 2026-08-19 — `architecture.md` 13번의

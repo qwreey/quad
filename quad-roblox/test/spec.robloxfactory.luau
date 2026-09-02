@@ -4,7 +4,7 @@
 	옛 `_initializedBy` 문자열 가드 대체) + LifetimeHandle 실구현
 	(nativeClaim eager·미claim bind 거부 `H-290`) + EngineOps M5 몫
 	(native* 여섯, isInst/onDestroying/nativeFindChild).
-	정본: `.claude/base/module-lifecycle-plan.md`의 UseProvider 서술,
+	정본: `.claude/base/module-lifecycle-plan.md` "New()의 내부 구성" 절의 UseProvider 항목,
 	`lifecycle-pattern.md` (0)/(1), `architecture.md` EngineOps 줄,
 	round14 brief §1 단위 ① + `H-305` 회신.
 

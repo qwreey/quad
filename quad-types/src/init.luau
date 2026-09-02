@@ -5,7 +5,7 @@
 	`quad-base`가 이 타입을 구현하고, `quad-roblox`/향후 백엔드·플러그인
 	패키지는 무거운 `quad-base` 전체 대신 이 패키지만 의존한다.
 
-	**왜 별도 패키지인가**: `QuadRoblox(Quad): QuadRoblox`처럼 quad-base
+	**왜 별도 패키지인가**: `quad:UseProvider(QuadRoblox)`처럼 quad-base
 	인스턴스를 **런타임에 주입받는** 패키지는, quad-base를 pesde
 	`[dependencies]`로 선언할 필요가 없다 — 실제 값은 호출자가 넘겨준다.
 	그런데 `dev_dependencies`로만 선언하면, quad-roblox가 게시된 뒤 다른
