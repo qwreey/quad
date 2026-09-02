@@ -1,9 +1,10 @@
 # M5 자율 구현 규약 — 14라운드 지시서 + 착수 문항지
 
-> **이 파일이 무엇인가**: **[2026-09-01 신설 — §0 회신 대기]** M5(quad-roblox
-> 최소 프로바이더) 구현 구간의 규약이자 착수 문항지다. M4의
-> `m4-implementation-round13-brief.md`와 같은 지위 — §0이 확정되면 이 파일이
-> M5 규약 소스다. 산출물(발견 문서)은 `m5-implementation-round14.md`.
+> **이 파일이 무엇인가**: **[2026-09-01 신설, 2026-09-02 §0 확정 — 규약
+> 확정]** M5(quad-roblox 최소 프로바이더) 구현 구간의 규약이자 착수
+> 문항지다. M4의 `m4-implementation-round13-brief.md`와 같은 지위 — §0
+> 확정으로 이 파일이 M5 규약 소스다. 산출물(발견 문서)은
+> `m5-implementation-round14.md`.
 >
 > **명명**: `mN-implementation-roundNN` 규약 그대로 — M5의 첫 라운드가
 > **round14**, 발견 번호는 round13이 `H-289`까지 썼으므로 **`H-290`부터**.
@@ -23,13 +24,20 @@
 | 문항 | 무엇 | 선택지 | 권고 | 권고 근거 |
 |---|---|---|---|---|
 | **Q1** | 규약 재사용 범위 + 실기기 절차 확장 | (a) M3·M4 골격 그대로(세 갈래 / 커밋 게이트 두 층 / 단위 끝 절차 / 새 핸들러 전 "Handler 작성 체크리스트" 필독 게이트 / 운용 규약 — 유한 절차·리뷰 흐름당 1회·강도는 diff 규모) + **[M5 확장] 단위 끝 절차에 Studio MCP 실측 추가** — CLI spec이 못 닿는 실기기 검증(userdata·복제·렌더)은 `execute_luau`로 에이전트가 직접, 판정은 스파이크 `10` 관례(PASS/FAIL 계수 + 최종 마커 — grep 계수 단독 금지, `H-287` 교훈)와 Studio 운용 주의(죽으면 위험 명령 반복 금지·대기) 준수 / (b) 실기기 검증은 사용자 수동으로 분리 / (c) 다른 방식 | **(a)** | 골격은 세 구간 실측으로 검증됐고, 실기기 축은 스파이크 `10` 완주로 에이전트 단독 실행이 실증됐다(GC 대기까지 청크 분할로 완주). 사용자 수동 분리는 이제 병목만 만든다 |
-| **Q2** | 단위 절단 — M5는 체크박스 6개·새 패키지 전체·코드 생성기 포함으로 M2~M4보다 크다 | (a) **다섯 단위**: ① `RobloxFactory`+`EngineOps`+`LifetimeHandle` 실구현(주입 op 전량 — `nativeClaim`/`nativeFindChild` 포함, `_initializedBy`, `H-238` 태그 의무) + Studio 스모크 → ② `D/init.luau` 생성기(+`<Class>Param<E>` 타입 스파이크) → ③ `Handlers/Property`+`InstanceChild` → ④ `Claim`+`D.Mapper` → ⑤ 첫 `Frame{...}` 렌더 실측+종합 / (b) 셋으로 굵게(팩토리+op / D+Handlers / Claim+렌더) / (c) 다른 절단 | **(a)** | 각 단위가 서로 다른 정본 절에 대응하고(모듈 주입 / 생성기 / 핸들러 / Claim), 단위 끝 절차가 "직전 수정이 새 결함을 만든다"를 반복 잡아온 실측상 절단면이 많은 쪽이 안전하다. ⑤를 따로 두는 건 ROADMAP 마지막 체크박스가 통합 검증 성격이라서다 |
+| **Q2** | 단위 절단 — M5는 체크박스 6개·새 패키지 전체·코드 생성기 포함으로 M2~M4보다 크다 | (a) **다섯 단위**: ① `RobloxFactory`+`EngineOps`+`LifetimeHandle` 실구현(주입 op **M5 몫** 전량 — 범위는 Q4가 가른다; `nativeClaim`/`nativeFindChild` 포함, `_initializedBy`, `H-238` 태그 의무) + Studio 스모크 → ② `D/init.luau` 생성기(+`<Class>Param<E>` 타입 스파이크) → ③ `Handlers/Property`+`InstanceChild` → ④ `Claim`+`D.Mapper` → ⑤ 첫 `Frame{...}` 렌더 실측+종합 / (b) 셋으로 굵게(팩토리+op / D+Handlers / Claim+렌더) / (c) 다른 절단 | **(a)** | 각 단위가 서로 다른 정본 절에 대응하고(모듈 주입 / 생성기 / 핸들러 / Claim), 단위 끝 절차가 "직전 수정이 새 결함을 만든다"를 반복 잡아온 실측상 절단면이 많은 쪽이 안전하다. ⑤를 따로 두는 건 ROADMAP 마지막 체크박스가 통합 검증 성격이라서다 |
 | **Q3** | `quad-roblox`의 `quad_base` 의존 — **base 두 문서가 어긋나 있다**: `architecture.md` 소스 트리는 *"quad-base가 아니라 quad-types에만 workspace 의존"*, `project-setup-plan.md`는 `[dependencies] quad_base = { workspace = … }`라 적고 "M5+에서 `quad_base`를 쓰면 `luau` CLI로 직접 못 돈다"는 실무 영향까지 예고 | (a) **dev deps 분리(사용자 제안, 2026-09-02)** — `[dependencies]`는 `quad_types`만 유지(architecture 정본 — `RobloxFactory(module)`는 모듈 인스턴스를 **인자로 받아 뮤테이션**하므로 런타임 require 불필요), **`[dev_dependencies]`에 `quad_base`**(workspace, `target = "luau"` — 같은 파일의 `quad_types` 의존에 선례)를 넣어 spec은 `quad-roblox/test/`에 둔다. `relink.sh` 글롭이 전 멤버의 `*_packages`를 커버해 CLI 심볼릭 문제는 기존 장치로 해소, `project-setup-plan.md` 서술은 이 모양으로 정정 / (b) 런타임 의존 없음 + spec을 quad-base 쪽 test 트리에(구 권고 — 패키지 응집이 깨지는 차선) / (c) 런타임 `quad_base` 의존 추가 | **(a)** | 사용자 제안(*"dev deps 로 처리 못하니? 실제 런타임에는 직접 주입이라 타입만 필요한건 맞긴 하거든"*)이 두 문서의 참인 절반을 다 살린다 — architecture의 런타임 무의존과 project-setup-plan의 "테스트는 quad_base를 쓴다"는 실무. pesde는 dev_dependencies를 지원하나 워크스페이스+`target` 조합의 실동은 M5 첫 install에서 검증(어긋나면 발견으로) |
 | **Q4** | `EngineOps.luau`의 M5/M10 분할 — 한 파일을 두 마일스톤이 나눠 채우는데(M5 `native*`/M10 Tag·Attribute) M5에서 어디까지 쓸지 미지정 | (a) **M5는 자기 몫만** — `native*` 전량 + `isInst`/`onDestroying`/`nativeClaim`/`nativeFindChild` + 생명주기 4종. `addTag`/`removeTag`/`setAttribute`/`setTimeout`은 스텁 유지(M10·백로그 몫 그대로 — 미주입 에러가 명확해 혼란 없음) / (b) 파일 여는 김에 Tag/Attribute 셋도(각 한 줄 구현) / (c) 다른 방식 | **(a)** | "최소 프로바이더"라는 마일스톤 정의 그대로 — 첫 렌더(Frame+프로퍼티+자식)에 Tag/Attribute가 필요 없고, M10 체크박스가 소유한 몫을 앞당기면 진행 소스가 둘이 된다. 구현 한 줄짜리라 (b)의 이득도 작다 |
 | **Q5** | 클래스별 typed Modifier 생성자(`FrameModifier` 등)의 마일스톤 — `research/pre-implementation-audit.md` 2-8이 "M5 또는 M7에 명시적으로 추가하라"고 제안한 채 방치돼 있고, `bind-system-plan.md`는 두 목록(props의 `Parent` 제외 / Modifier 메소드의 `Parent` 제외)이 **같은 API 덤프에서 따로 생성**된다고 적음 | (a) **M7로 명시 이관** — M7 체크박스에 항목 추가, M5의 `D` 생성기는 산출 구조만 대비(API 덤프를 재사용 가능한 형태로 두고 `Parent` 제외를 덤프 층에서) / (b) M5 `D` 생성기에 포함 / (c) 다른 방식 | **(a)** | Modifier 프리미티브 자체가 M7이라 생성자만 앞당기면 검증 대상 없이 코드만 생긴다. 2-8의 요구는 "어느 쪽인지 명시"이므로 (a)로 닫힌다 — 단 덤프 층 `Parent` 제외를 M5가 해두면 M7이 한쪽만 빼먹는 사고(`bind-system-plan.md` 경고)가 구조적으로 막힌다 |
 | **Q6** | 스파이크 `10` B 발견(Attribute Instance 참조는 `InstanceHandle` 언랩 경유 — 미문서화 Studio Beta)의 등록 위치 — 감사가 "실행 가능한 곳에 등록 안 됨"을 지적 | (a) **ROADMAP M10(Attribute op 몫) 체크박스에 각주 등록** — "읽기 소비자(`InstanceAttribute` 읽기 타입, quad-debug)는 `:Get()` 언랩·nil·죽은 참조 위에서 설계" + `audit/spike10-full-run-2026-09-01.md` 포인터(attribute-plan 배너는 이미 있음) / (b) `question.md`에 올려 지금 설계 결정 / (c) audit 산문 유지 | **(a)** | quad의 Attribute **쓰기 경로는 무영향**(엔진이 자동 랩)이라 지금 정할 설계가 없고, 읽기 소비자가 생기는 마일스톤(M10·quad-debug)의 체크리스트에 걸어두는 게 발견이 잊히지 않는 유일한 실행 가능 자리다. Beta라 그 시점 재실측도 어차피 필요 |
 
-**(§0 회신 대기 — 확정되면 이 자리에 회신 기록)**
+**⭐ [2026-09-02 회신 — 확정]** 사용자 원문: *"다른것도 전부 확인했고
+권고에 동의해. 진행할 수 있을것 같아?"* — 그 전날 Q3는 사용자가 직접
+dev deps 갈래를 제안해 권고가 갱신됐고(*"dev deps 로 처리 못하니? 실제
+런타임에는 직접 주입이라 타입만 필요한건 맞긴 하거든"*), 이 회신으로
+**Q1~Q6 전부 권고 (a) 채택**(Q3는 갱신본 (a) — dev_dependencies 분리).
+착수 세션이 M4 관례대로 착수 조건(정본 절 ↔ 실코드 부품 맞물림, pesde
+dev_dependencies 실동)을 검증 후 단위 ①에 착수한다 — 검증에서 막히는 게
+나오면 발견 문서에 기록하고 보고.
 
 ## §1 범위 — 다섯 단위 (제안, Q2)
 

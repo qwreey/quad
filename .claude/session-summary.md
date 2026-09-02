@@ -2170,3 +2170,14 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   (§0 여섯 문항 회신 대기 — opus 스코프 보고가 낸 `quad_base` 의존 문서
   모순·`EngineOps` 분할·typed Modifier 생성자 방치가 문항이 됨, `H-290`부터
   예약).
+
+- `session/2026-09-02-01-m5-kickoff-unit1.md` **[M5 착수 + 단위 ① 완료]**
+  §0 여섯 문항 전량 (a) 확정(사용자: *"다른것도 전부 확인했고 권고에
+  동의해"* — Q3는 사용자 제안으로 dev deps 분리로 갱신된 권고, pesde 전환
+  사유의 첫 실사용). 단위 ①: `quad-roblox/src` 4파일(QuadRoblox+CheckedQuad /
+  `_initializedBy` / LifetimeHandle+nativeClaim / EngineOps M5 몫) + spec
+  7절 + test.sh 확장 — 26파일 exit 0, Studio 스모크 14/14. 발견:
+  `H-290`(미claim bind fail-fast) / `H-291`(**Deferred 시그널 실측** —
+  콜백 지연 배달·`Connected` 전환은 동기, effect-plan `H-182` 근거 정정) /
+  `H-292`(analyze UnknownType 처리, §4 대기). 시행착오 다섯(@self·파이프
+  exit·클로저 pcall blame·진입점 태그·사본 혼입)은 세션 파일이 소스.

@@ -19,9 +19,16 @@
    확인 완료: Studio MCP 연결(`HUMAN_TODO.md` 1번 해소) + 스파이크 `10`
    현행 모델 재작성·MCP 완주(전 항목 PASS — `nativeClaim` 전제 실증,
    Attribute Instance 참조는 `InstanceHandle` 언랩 발견; 소스는
-   `audit/spike10-full-run-2026-09-01.md`). **M5 규약 문항지
-   `qa-request/m5-implementation-round14-brief.md` 신설(발견 번호 `H-290`부터)
-   — §0 여섯 문항 회신 대기가 지금의 다음 액션.** 아래는 M3 종결 기록:
+   `audit/spike10-full-run-2026-09-01.md`). **[2026-09-02] M5 규약 문항지
+   §0 여섯 문항 전부 권고 (a)로 사용자 확정**(*"다른것도 전부 확인했고
+   권고에 동의해"* — Q3는 사용자가 직접 dev deps 갈래 제안, 회신 기록은
+   brief §0 아래 블록) — **M5 자율 구현 구간 착수. 단위 ①
+   (`RobloxFactory`+`EngineOps`+`LifetimeHandle`) 구현·CLI spec(전 스위트
+   exit 0 — 파일 수는 `scripts/test.sh` glob이 소스)·Studio 스모크(14/14, `audit/m5-unit1-studio-smoke-2026-09-02.md`)
+   완료**, 발견 원장은 `-round14.md`(`H-290`~; §4 열린 문항은 그 파일이
+   소스 — `H-292` 회신 대기). **진행 상태의 소스는 `ROADMAP.md` M5
+   체크박스** — 다음 액션: 단위 ②(`D/init.luau` 생성기) 착수.** 아래는
+   M3 종결 기록:
 
    **[구 00번 — M3] ⭐⭐⭐ [2026-08-31 착수 → 2026-09-01 종결] M3 자율 구현 구간 — 완료,
    M2와 같은 방식으로 종결.** 단위 넷(코어/부기/None·Nil/Leaf·가드·종합)

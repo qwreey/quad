@@ -326,10 +326,17 @@ function EffectHandle:_bindDestroying(inst)
 
     -- (1) leaf가 죽는 순간 cleanup을 정확히 1회. `LP-2`가 확정한 유일한 훅 지점.
     self._destroyConn = onDestroying(inst, function()
-        -- ⭐ [2026-08-31 `H-182`, 사용자 확정] 이 콜백 뒤에도 같은 Destroy 파동
-        --   안에선 `canExecute`가 참(gcconn은 마지막에 끊김) — `_dying`이 그 창을
-        --   닫아 파동 후반의 dep 변경이 죽는 leaf 위에서 `fn`을 다시 돌리는 대신
-        --   **홀드**된다(`rawRerun`이 `canExecute`와 같이 본다). 이름이 Slot의
+        -- ⭐ [2026-08-31 `H-182`, 사용자 확정] `_dying`이 죽는 leaf 위의 재실행
+        --   창을 닫는다 — 파동 후반의 dep 변경이 `fn`을 다시 돌리는 대신
+        --   **홀드**된다(`rawRerun`이 `canExecute`와 같이 본다).
+        --   ⚠️ [2026-09-02 근거 정정, M5 `H-291` 실측] 괄호 근거로 적혀 있던
+        --   *"이 콜백 뒤에도 같은 파동 안에선 canExecute가 참(gcconn은 마지막에
+        --   끊김)"*은 **Immediate 한정**이다 — Deferred(신형 기본)에선 순서가
+        --   정반대로, `gcconn.Connected`는 Destroy 즉시 동기로 꺼지고 이 콜백이
+        --   다음 리줌에 늦게 온다(`lifecycle-pattern.md` "2." 절 배너). 어느
+        --   순서든 `rawRerun` 게이트가 `_dying`과 `canExecute`를 OR로 보므로
+        --   동작은 같다 — `_dying`의 존재 이유(Immediate에서 콜백~절단 사이 창)만
+        --   Immediate 쪽 사정이다. 이름이 Slot의
         --   `_destroyed`와 다른 건 의도다 — Slot은 죽으면 재바인딩 못 하지만 Effect
         --   핸들은 다시 bind될 수 있어 "죽는 도중"만 뜻한다(사용자: *"네이밍의 다른
         --   이유가 확실함"*). 재무장 자리는 위 bind와 `Subscribe`/`WeakSubscribe`.

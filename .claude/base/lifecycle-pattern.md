@@ -69,6 +69,18 @@ rbvm에서 실제로 재사용하는 부분은 아래 "(0)"/"(1)" 절의 gcconn/
 
 ### 2. Instance 파괴는 `Instance.Destroying` 훅 하나로만 관측
 
+> **⚠️ [2026-09-02 실측, M5 단위 ① `H-291`] `Destroying` 콜백은 동기가
+> 아닐 수 있다** — Deferred 시그널 동작(신형 플레이스 기본값)에서
+> `Destroying`·`GetPropertyChangedSignal` 콜백은 Destroy와 같은 줄기가
+> 아니라 **다음 재개 지점에 지연 배달**된다(Destroy가 연결을 끊어도 큐잉된
+> 발화는 정확히 1회 돎 — Studio 실측). **`gcconn.Connected` 전환은
+> 동기**라 `canBound`/`canExecute` 판정은 무영향이고, 영향 범위는 시그널
+> 배달에 기대는 소비자뿐 — `onDestroying` → `Effect` cleanup은 "죽음과
+> 같은 줄기"가 아니라 "죽음 직후 지연"일 수 있으니 동기 실행에 기대는
+> 설계를 하지 말 것. 설정은 플레이스별(Immediate/Deferred)이라 quad는
+> 양쪽 모두에서 정확해야 한다. 소스는
+> `qa-request/m5-implementation-round14.md` `H-291` 행.
+
 rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로 좁혀둠 —
 `inst.Destroying:Connect(...)` (`proxy/base.luau:150-156`), `Destroyed` 같은
 플래그를 그 콜백에서만 true로 뒤집음. `AncestryChanged`나 폴링 방식은 안 씀.

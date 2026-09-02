@@ -50,9 +50,17 @@ quad/
   세션엔 `roblox` 하나만 있어 실제로 검증 안 됨, 필요 여부/의미는 M5 이후
   재확인 후보).
 - **서브패키지 `pesde.toml`**: `[target] environment = "roblox"` +
-  `build_files = ["src"]` + `lib = "src/init.luau"`. `quad-roblox`는
-  `[dependencies] quad_base = { workspace = "qwreey/quad_base", version =
-  "^" }`.
+  `build_files = ["src"]` + `lib = "src/init.luau"`.
+  **⚠️ [2026-09-02 정정, M5 round14 Q3 (a) 사용자 확정]** 여기 한때
+  *"`quad-roblox`는 `[dependencies] quad_base = …`"*라고 적혀 있었는데
+  그건 `architecture.md` 소스 트리의 확정("quad-base가 아니라 quad-types에만
+  workspace 의존")과 정면 충돌하던 서술이다. 실제 모양은 **런타임
+  `[dependencies]`엔 `quad_types`만, `[dev_dependencies]`에 `quad_base`** —
+  런타임은 팩토리 주입이라 require가 없고(모듈 인스턴스를 인자로 받아
+  뮤테이션) 타입만 필요하며, spec/테스트만 quad_base를 쓴다(사용자:
+  *"실제 런타임에는 직접 주입이라 타입만 필요한건 맞긴 하거든"*). dev deps는
+  소비자에게 전파되지 않고, 루트 `pesde.toml`이 wally→pesde 전환 사유로
+  적어둔 바로 그 기능이다 — 2026-09-02 `pesde install` 실동 확인.
 - **⚠️ 패키지 이름은 `a-z`/`0-9`/`_`만 허용 — 하이픈 금지**(`pesde
   install` 실측: `qwreey/quad-base`는 파싱 단계에서 바로 거부됨, 에러
   메시지가 "did not match any variant of untagged enum
@@ -206,6 +214,10 @@ local v = require("./linked")
 **실무 영향**: `quad-roblox`가 실제로 `quad_base`를 쓰게 되면(M5+),
 표준 경로(`require(".../roblox_packages/quad_base")`)는 **`luau` CLI로
 직접 못 돌린다** — `could not resolve child component`로 즉시 깨짐.
+**[2026-09-02 해소 확인]** M5가 실제로 quad_base를 쓰는 자리는 **dev-dep
+테스트뿐**이고(위 정정 — 런타임 require 없음), 그 경로(`quad-roblox/
+luau_packages/quad_base`)는 기존 `relink.sh`가 중첩까지 실복사로 바꿔
+스위트가 `luau` CLI에서 정상으로 돈다(2026-09-02 전 스위트 exit 0 실측 — 파일 수는 `scripts/test.sh` glob이 소스).
 
 **[2026-08-19 후속 세션, 확인 완료] Rojo/Studio는 이 문제와 무관함 —
 `rojo`를 같은 방식으로 `/code/.local/bin`에 설치해 직접 검증.** `quad-roblox/`

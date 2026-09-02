@@ -227,8 +227,9 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 - [x] `quad-base/`, `quad-roblox/` 폴더 + 각 `pesde.toml`(**[2026-08-19
       정정]** 이 체크박스는 원래 `wally.toml`이라 적혀 있었으나 같은 날
       wally→pesde 전환이 확정돼 `pesde.toml`로 정정 —
-      `base/project-setup-plan.md` 참고. `quad-roblox/src`는 아직 빈
-      폴더 — 실제 소스는 M5)
+      `base/project-setup-plan.md` 참고. `quad-roblox/src`는
+      **[2026-09-02]** M5 단위 ①부터 채워지는 중 — 아래 M5 체크박스가
+      진행 소스)
 - [x] 루트 `default.project.json`, `.luaurc`(`architecture.md` "구현 착수:
       소스 트리 구조 확정" 절 그대로)
 - [x] **[2026-08-24 소급 등재, 6라운드 `H-47`/`H-48`] `quad-base/src/Debug/init.luau`**
@@ -1060,9 +1061,17 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
 > 분리할 수 있게 하기 위함. `base/quad-types-plan.md`의 "남은 것" 절이
 > 소스.
 
-- [ ] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드) — 진입점
+- [x] `RobloxFactory.luau`(BaseModule 뮤테이션, 재호출 가드) — 진입점
       `QuadRoblox(Quad): QuadRoblox`가 `QuadTypes.CheckedQuad<T, Pattern>`으로
       주입받은 quad-base 버전을 확인(`base/quad-types-plan.md` 참고)
+      **[2026-09-02 완료, M5 단위 ① round14]** `_initializedBy` 가드(같은
+      팩토리 no-op/다른 팩토리 error) + LifetimeHandle·EngineOps 설치 +
+      `H-238` SURFACE 태그. M5 몫 EngineOps(native* 여섯 — Roblox는
+      `nativeMove`/`nativeSwap` no-op 덮어쓰기, `isInst`/`onDestroying`/
+      `nativeFindChild`; Q4 (a)로 Tag/Attribute/setTimeout은 M10·백로그
+      몫 그대로 미설치)와 생명주기 4종 실구현까지 이 단위 —
+      `quad-roblox/test/spec.robloxfactory.luau` + Studio 스모크 14/14
+      (발견 `H-290`/`H-291`은 round14가 소스)
 - [ ] `D/init.luau`(제네릭 생성자 `New` + 생성기가 찍는 정적 별칭 필드 — **[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입까지 생성, `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절). **[2026-08-27 9라운드 `H-142`] 생성되는 props 타입에서 `Parent`를 제외할 것** — props에 `Parent`는 올 수 없다(부모가 하는 일, 같은 문서의 파이프라인 절). `New` ①~④ 순서는 그 절의 의사코드가 소스
 - [ ] `Handlers/Property.luau`(**[2026-08-27 9라운드 `H-142`]** `isHandlable`이 `"Parent"` 키를 **거부**한다 — 매치 핸들러가 없어지면 `Dispatch.process`의 "매치 핸들러 없음 → 즉시 error"에 걸리는 것으로 런타임 가드가 공짜로 생긴다, 새 메커니즘 없음. **사용자 확정은 "props에 `Parent` 금지"라는 규칙이고, 이 거부 배선은 에이전트 선택** — `base/bind-system-plan.md`의 `H-142` 항목이 그렇게 갈라 적음. **[2026-08-28 10라운드 `H-148`]** 전용 문구는 **철회**(일반 매치 실패 그대로). 루트 부착 경로가 무엇인지는 아래 `Claim` 체크박스가 소스), `Handlers/InstanceChild.luau`(**[2026-08-28 `H-154`]** retractor 첫 줄 `if nextValue == v then return end` — 같은 값 재발행 dedup, `SlotHandler` 동형) —
       **⭐ [2026-08-27 9라운드 `H-134`] `InstanceChildHandler`도 말단이라
@@ -1093,6 +1102,12 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       구현한다 — `New` ②단계와 `Claim`(이미 있는 트리, 위 체크박스)이 같은
       op를 부르고, 이미 셋업된 inst면 error(이중 claim 판정). 사용자 확정
       *"gchold/gcconn 경로를 여기에 전부"*.
+      **[2026-09-02 op 자체는 완료 — 단위 ①]** `nativeClaim` 구현·이중
+      claim error·미claim `bindLifetime` fail-fast(`H-290`)까지
+      `quad-roblox/src/LifetimeHandle.luau`(본체 배치 사유는
+      `architecture.md` 그 줄). **이 체크박스의 잔여는 "`New` ②단계가 이
+      op를 부르는 배선"**(단위 ②의 `D` 생성기 몫)이라 체크는 그때 —
+      스모크로 실물 검증까지 끝난 상태.
 - [ ] 실제 Roblox에서 첫 `Frame{...}` 렌더 확인 — Studio 작업, `SAFETY.md`
       준수. **[2026-09-01 게이트 해소]** 여기 걸려 있던 선행 조건
       (`HUMAN_TODO.md` 1번 계정 분리)은 충족됐고, MCP `execute_luau`로

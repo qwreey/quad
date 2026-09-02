@@ -10,11 +10,13 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**⭐ [2026-09-01 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+**⭐ [2026-09-02 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
 Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)
-완료 — 다음은 M5(quad-roblox 최소 프로바이더, 규약 문항지
-`qa-request/m5-implementation-round14-brief.md` §0 회신 대기 — 선행이던
-Studio 실기기 전제는 2026-09-01 스파이크 `10` 완주로 닫힘)** —
+완료 — **M5(quad-roblox 최소 프로바이더) 자율 구현 구간 진행 중**: 규약
+`qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정
+(2026-09-02, Q3는 사용자 제안 dev deps 분리), 단위 ①(팩토리+주입 op+
+생명주기 실구현, `H-290`~`H-292`) 완료 — 진행 소스는 `ROADMAP.md` M5
+체크박스** —
 **M4도 같은 방식의 자율 구간으로 2026-09-01 착수·종결**(사용자 조건부
 승인으로 규약 `qa-request/m4-implementation-round13-brief.md` §0 전량 (a)
 확정, 발견 `-round13.md`(`H-287`~; §4 열린 문항 0) — 단위 하나:
@@ -44,8 +46,9 @@ M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 �
 `9dd8213`의 델타 재트레이싱, 발견 `H-124`~`H-141`)는 **Q1~Q3가 `base/`에
 반영됐고**, 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량 반영** — 소스는 `-round9-followup.md`. 그 반영분에 `/code-review high`가 낸 새 메커니즘 넷(`H-143`~`H-146`)도 **같은 날 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 전부 권고 (a)로 확정·반영**돼 **[2026-08-28] 10라운드**(`-round10.md`, 광범위 탐사 `H-150`~`H-157` 포함)도 같은 날 전량 결정·반영(소스 `-round10-followup.md`) — 둘이 뒤집혔다(`fn`은 자기 구독을 못 바꿈 / 루트는 `Claim`으로 quad 소유, `base/claim-plan.md` — 다만 루트의 `.Parent =`는 같은 날 밖에서 허용으로 복원). 같은 날 후속 `H-158`~`H-164`(`EmitReceive`·`_catchUp` 포함)까지 반영. 같은 날 `Claim` 갈래까지 전량 확정돼 `base/claim-plan.md`로 승격 — `question.md` 최우선 절은 다시 비어 있다. 저장소 루트에
 `quad-base/src/`(M1의 `New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`에 M2의 반응형 코어 전부가 더해짐 — 실제 구성은 `base/architecture.md` 소스 트리가 소스)/
-`quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
-아직 빈 폴더 — M5에서 채워짐), 자세한 진행 상황은 루트 `ROADMAP.md`가
+`quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`도
+**[2026-09-02]** M5 단위 ①로 채워지기 시작 — 팩토리·주입 op·생명주기 4파일,
+잔여는 단위 ②~⑤), 자세한 진행 상황은 루트 `ROADMAP.md`가
 소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —
 `luau` CLI가 **심볼릭 링크를 못 타는데**(디렉토리·파일 둘 다) pesde의
 워크스페이스 링크가 전부 심볼릭이라, 그냥 `luau`로 돌리면 스모크 2개가

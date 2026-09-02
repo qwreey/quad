@@ -172,7 +172,8 @@ return Init
           error(`Quad module already initialized by '{module._initializedBy}'`)
       end
       module._initializedBy = "roblox"
-      -- ... 실제 백엔드 설치(bindLifetime/canBound/addTag/removeTag/setAttribute 등 주입)
+      -- ... 실제 백엔드 설치(bindLifetime/canBound 등 생명주기 + native* 층 주입.
+      --     addTag/removeTag/setAttribute는 M10 몫 — round14 Q4 (a), M5는 안 심음)
       return module
   end
   ```

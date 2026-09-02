@@ -5,6 +5,21 @@ name = "qwreey/quad_roblox"
 version = "0.0.0"
 target = "roblox"
 
+[graph."qwreey/quad_base@0.0.0 luau"]
+direct = ["quad_base", { workspace = "qwreey/quad_base", version = "^", target = "luau" }, "dev"]
+
+[graph."qwreey/quad_base@0.0.0 luau".dependencies]
+quad_error = ["qwreey/quad_error@0.0.0 luau", "standard"]
+quad_types = ["qwreey/quad_types@0.0.0 luau", "standard"]
+
+[graph."qwreey/quad_base@0.0.0 luau".pkg_ref]
+ref_ty = "workspace"
+path = "quad-base"
+
+[graph."qwreey/quad_base@0.0.0 luau".pkg_ref.dependencies]
+quad_error = [{ workspace = "qwreey/quad_error", version = "^" }, "standard"]
+quad_types = [{ workspace = "qwreey/quad_types", version = "^" }, "standard"]
+
 [graph."qwreey/quad_error@0.0.0 luau".pkg_ref]
 ref_ty = "workspace"
 path = "quad-error"

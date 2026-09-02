@@ -293,8 +293,10 @@ function`을 거치면 이후 제네릭 self 메소드 체이닝이 조용히 �
 ## 남은 것
 
 - `quad-roblox`가 실제로 `CheckedQuad<T, Pattern>`을 쓰는 진입점
-  (`QuadRoblox` 등) 구현은 M5 — 지금은 quad-roblox/src가 비어 있어 이
-  문서의 사용법 예제가 실제 위치는 아직 없음.
+  (`QuadRoblox` 등) — **[2026-09-02 구현됨, M5 단위 ①]**
+  `quad-roblox/src/init.luau`(`QuadRoblox` — 가상 필드 강제 참조 패턴
+  그대로)와 `RobloxFactory.luau`가 그 실제 위치다. 나머지(`D`/`Handlers`/
+  `Claim`)는 단위 ②~⑤.
 - `_initializedBy`(별도 문자열 마커, backend 유일 슬롯 가드)와의 관계는
   `base/module-lifecycle-plan.md`의 "New()의 내부 구성" 절 참고 — `CheckedQuad`는
   **버전** 호환성만 보고, **누가 이미 backend를 설치했는지**는 별개

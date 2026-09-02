@@ -1,11 +1,12 @@
 # CLAUDE.md
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
-**⭐ [2026-09-01 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
+**⭐ [2026-09-02 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
 Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)까지
-완료 — 다음은 M5(quad-roblox 최소 프로바이더, 규약 문항지
-`.claude/qa-request/m5-implementation-round14-brief.md` §0 회신 대기 —
-선행이던 Studio 실기기 전제는 2026-09-01 스파이크 `10` 완주로 닫힘)** —
+완료 — **M5(quad-roblox 최소 프로바이더) 자율 구현 구간 진행 중**: 규약
+`.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정
+(2026-09-02), 단위 ①(팩토리+주입 op+생명주기 실구현) 완료 — 발견
+`-round14.md`(`H-290`~), 진행 소스는 `ROADMAP.md` M5 체크박스** —
 **M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
 `.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
 `-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +
