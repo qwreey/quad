@@ -53,7 +53,7 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   `key`는 자식이면 이름(`string`), 루트면 센티널 `D.Mapper.Root`(§7-1).
 - **props 타입은 `D.<Class>`와 공유한다.** 생성기가 클래스마다 `type FrameParam
   = { … }`를 찍고 `D.Frame`과 `D.Mapper.Frame`이 그 하나를 쓴다 — 리턴만 다르다
-  (`Frame` vs `MapperDescriptor<Frame>`). 사용자: *"D.Frame 의 함수의 부분들을
+  (`Frame` vs `MapperDescriptor` — 산문의 옛 제네릭 표기는 정정: 타입은 비제네릭, §7-12 코드 블록이 정본). 사용자: *"D.Frame 의 함수의 부분들을
   type FrameParam = {} 형태로 빼서 공유되는 타입 부분으로 D.Mapper.Frame 도
   구성되고, 리턴부분만 다르게"*. `base/bind-system-plan.md`의 `D.Frame =
   New<<Frame>> "Frame" :: ((…) -> Frame)` 캐스트가 인라인 타입 대신 이 이름을
@@ -238,7 +238,9 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
    Mapper.Frame (MapperRoot) {}` 그대로이고, **놓는 자리 `D.Mapper.Root`는
    에이전트 제안**(매퍼 옆에 두면 `M.Frame(M.Root)`로 읽힌다) — 이름만 바뀔 수
    있는 항목. 자식 디스크립터에 센티널을 주는 것(`M.Frame(M.Root)`가 루트가
-   아닌 자리에)은 debug 검사 후보.
+   아닌 자리에)은 debug 검사 후보 — **[2026-09-02 단위 ④ 탐사자, 대칭 등재]**
+   역방향(루트 자리에 문자열 키 — 키를 읽지 않아 조용히 통과, 행동상 기각된
+   (c)와 같아짐)도 같은 debug 검사 후보다. 런타임 가드는 안 둔다(§3 원칙).
 2. **물리 순서 — (a) 디스크립터 순서가 정본, 일치는 사용자 책임.** 사용자:
    *"나는 처음에 A 를 생각했어. 권고 그대로 가줘."* (b)(`nativeMove`로 quad가
    맞춤)는 기각.

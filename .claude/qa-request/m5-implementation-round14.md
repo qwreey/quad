@@ -91,6 +91,16 @@ spec 커버리지 갭 — 코드 결함 0). 정본 줄 대조·체크리스트 9
 dedup). 🟢 기록: 해시 키 None→nil→Property의 원시 에러 가능성은 정본의
 명시 유예(M9/M10) 그대로.
 
+**[2026-09-02 단위 ④ 신선 탐사자(커밋 `e9d795e` 뒤)]** 🔴 0 / 🟡 3 / 🟢 4 —
+정본 대조 전 항목 일치(배치 Blocker inst별 독립·H-303 삼자 일치 포함),
+적대 스파이크 8절 전부 기대대로(§2의 "New 배열 디스크립터 = no-match"
+실증, UB 자연 크래시 확인, 에러 경로 원자성 비약속 관측). 🟡 반영 셋:
+claim-plan §7-1에 "루트 자리 문자열 키" debug 검사 후보 대칭 등재 /
+spec.claim 7절 승격(no-match·Claim 표면 이중 claim·깊이 2 반응형+혼입) /
+§2 산문의 옛 `MapperDescriptor<Frame>` 표기 정정. 🟢 기록: 부분 실패
+비원자성(§3 UB + 무-pcall 원칙 그대로), `newMapperClass`/`MapperRoot`
+비공개 유지(의도).
+
 **[2026-09-02 단위 ④ 끝 절차 기록]** 감사 1라운드(확실 5 — 실코드 결함
 `H-304` 포함, 전부 반영) → `/code-review medium` 1회 — 후보 8 중 REFUTED 6
 (Permits.Write 키-유무 검사·retractor 순서 등 전부 실측/확정 인용으로 반박),

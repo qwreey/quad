@@ -146,4 +146,38 @@ do
 end
 
 print()
+print("=== 7. 탐사자 승격 — New 배열의 디스크립터 no-match / Claim 표면 이중 claim / 깊이 2 반응형+혼입 ===")
+do
+	-- §2 load-bearing: New children엔 MapperDescriptor가 오면 안 되고, 오면 no-match
+	local ok, err = pcall(function()
+		q.D.Frame({ M.TextLabel("X")({}) })
+	end)
+	assert(not ok and string.find(tostring(err), "no handler matched", 1, true) ~= nil, "descriptor in New children must hit no-match: " .. tostring(err))
+
+	-- Claim 표면 경유의 이중 claim(New-made inst)
+	local made = q.D.Frame({})
+	local ok2, err2 = pcall(function()
+		q.Claim(made, M.Frame(M.Root)({}))
+	end)
+	assert(not ok2 and string.find(tostring(err2), "already claimed", 1, true) ~= nil, "claiming a New-made inst errors through the Claim surface")
+	mock.assertBlamesUser(err2, "spec.claim.luau", "double claim via Claim")
+
+	-- 깊이 2 매핑 자식의 반응형 + New 혼입 동시(탐사 스파이크 A 승격)
+	local root, _, list, inner = makeTemplate()
+	local src = q.Source("d2")
+	local made2 = q.D.TextLabel({ Text = "mixed" })
+	q.Claim(root, M.Frame(M.Root)({
+		M.Frame("List")({
+			M.TextLabel("Inner")({ Text = src }),
+			made2,
+		}),
+	}))
+	assert(inner.Text == "d2" and made2.Parent == list, "depth-2 reactive + New mix drove")
+	src:Set("d2b")
+	assert(inner.Text == "d2b", "depth-2 re-emission reaches the claimed subtree")
+	assert(q.Dispatch.getOffsetAt(list, 3) == 2, "mapped(1) + made(1) bookkept at depth 2")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
