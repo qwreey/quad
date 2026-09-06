@@ -9,10 +9,10 @@ local mock = require("./mock")
 
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
-print("=== 1. 미주입 스텁 — 네 슬롯 전부 영어 메시지로 error, 호출부(level 2)를 가리킴 ===")
+print("=== 1. 미주입 스텁 — 생명주기 넷 + 조합 불가 엔진 op 넷(onDestroying/isInst/nativeClaim/nativeFindChild, 2순회 H-373) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
 do
 	local fresh = Quad.New()
-	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute" } do
+	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "nativeFindChild" } do
 		local ok, err = pcall(function()
 			return (fresh :: any)[name]({}, {})
 		end)
@@ -41,12 +41,12 @@ do
 		lineUser = (debug.info(1, "l") :: number) + 1
 		return viaHandler(name)
 	end
-	for _, name in { "canBound", "canExecute" } do
+	for _, name in { "canBound", "canExecute", "isInst" } do
 		local ok, err = pcall(user, name)
 		assert(not ok, name .. " stub errors")
 		assert(string.find(tostring(err), `spec.lifetime.luau:{lineHandler}:`, 1, true) ~= nil, name .. ": nearest — blames the handler author's own line: " .. tostring(err))
 	end
-	for _, name in { "bindLifetime", "unbindLifetime", "onDestroying" } do
+	for _, name in { "bindLifetime", "unbindLifetime", "onDestroying", "nativeClaim", "nativeFindChild" } do
 		local ok, err = pcall(user, name)
 		assert(not ok, name .. " stub errors")
 		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the handler frame: " .. tostring(err))
@@ -198,6 +198,38 @@ do
 	local before = quad.bindLifetime
 	mock.installLifetime(quad)
 	assert(quad.bindLifetime == before, "second install is ignored")
+	print("PASS")
+end
+
+print()
+print("=== 9. mock 프로바이더도 nativeClaim/nativeFindChild를 심는다 — 실 프로바이더와 같은 형태 (2순회 H-374, H-305 (d′)) ===")
+do
+	local root = Instance.new("Frame")
+	local child = Instance.new("TextLabel")
+	child.Name = "Title"
+	child.Parent = root
+	assert(quad.nativeFindChild(root, "Title") == child and quad.nativeFindChild(root, "Nope") == nil, "nativeFindChild = FindFirstChild")
+	quad.nativeClaim(root)
+	local ok, err = pcall(function()
+		quad.nativeClaim(root)
+	end)
+	assert(not ok and string.find(tostring(err), "already claimed", 1, true) ~= nil, "double claim is the real provider's contract (§7-10): " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.lifetime.luau", "nativeClaim blame")
+	-- Claim itself runs under the mock backend — resolve → nativeClaim → nativeFindChild → drive
+	-- (a fresh tree: `root` above is already claimed, and Claim claims first)
+	local root2 = Instance.new("Frame")
+	local child2 = Instance.new("TextLabel")
+	child2.Name = "Title"
+	child2.Parent = root2
+	-- (mock has no Property/InstanceChild handlers, so a root-only descriptor:
+	-- the claim itself is the observation — child resolution is `spec.claim`'s)
+	local M = quad.newMapperClass
+	local out = quad.Claim(root2, M("Frame")(quad.MapperRoot)({}))
+	assert(out == root2, "Claim returns the root")
+	local okC = pcall(function()
+		quad.nativeClaim(root2)
+	end)
+	assert(not okC, "Claim claimed the root through the mock's nativeClaim")
 	print("PASS")
 end
 

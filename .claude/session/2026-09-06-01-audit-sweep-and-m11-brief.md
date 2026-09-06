@@ -211,4 +211,10 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   MEDIUM `H-369` gen-d 게이트 정규식 `re.M` 누락(`State`의 `Compute`/`Observer`/`Gate`/`Apply` 미수확 — 잠복),
   `H-370` LifetimeHandle 스텁 깊이를 슬롯별로(`canBound`/`canExecute`는 nearest), 정본 동형화 셋
   (`H-371`/`H-372`/spec 헤더)·인덱스 둘. 원장 §7, 네 번째 커밋. 새 문항 0.
+- **2순회**(opus general-purpose 전체 트리, 축 A~D): 4건 — ① `H-373` 조합 불가 엔진 op 셋(`isInst`/
+  `nativeClaim`/`nativeFindChild`)의 미설치 스텁 부재(맨 `Quad.New()`에서 nil-call이 quad 내부를 blame),
+  `H-374` mock 프로바이더가 `nativeClaim`/`nativeFindChild`를 안 심어 자기 인용 계약(`H-305` (d′)) 위반,
+  `H-375` `wrapElement` 게이트 깊이를 호출부별로(콜백 안 직접 CRUD가 `:Set` 줄을 blame하던 것); ②
+  `H-376` native* 조합 폴백 약속이 코드에 없음 → §4 **Q6**(권고 (a) 약속 철회). GC 축은 실재현으로 섬
+  계약 성립 확인. 원장 §8, 다섯 번째 커밋.
 

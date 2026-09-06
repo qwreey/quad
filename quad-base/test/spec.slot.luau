@@ -687,6 +687,23 @@ do
 	-- (d) `Slot{bad}` blames the user's line, not the constructor's Add call
 	local _, err = pcall(function() return Slot({ 123 }) end)
 	mock.assertBlamesUser(err, "spec.slot.luau", "constructor element error blames the caller (H-238)")
+	-- (e) 2순회 `H-375`: the element-type gate raised by a direct CRUD call made
+	-- INSIDE a reactive callback blames the CRUD line, not the `:Set` that ran
+	-- the callback (nearest, like the sibling "appears twice" check) — the
+	-- reconcile-depth path (`settle`) keeps outermost blame (1절 위 drive 단언)
+	local src = q.Source(0)
+	local s2 = Slot({})
+	local lineAdd = 0
+	local okN, errN = pcall(function()
+		-- the Observer's initial run happens under THIS call, not under a `:Set`
+		local o = src:Observer(function()
+			lineAdd = (debug.info(1, "l") :: number) + 1
+			s2:Add(nil)
+		end)
+		o:Subscribe()
+	end)
+	assert(not okN and string.find(tostring(errN), "nil/None cannot be an element", 1, true) ~= nil, "gate fired: " .. tostring(errN))
+	assert(string.find(tostring(errN), `spec.slot.luau:{lineAdd}:`, 1, true) ~= nil, "nested direct CRUD blames its own line, not the Subscribe/Set that ran the callback: " .. tostring(errN))
 	print("PASS")
 end
 

@@ -424,6 +424,11 @@ local function installNative(quad: any)
 			end
 		end
 	end
+	-- 2순회 `H-374`: the real provider's `nativeFindChild(inst, key)` is
+	-- `inst:FindFirstChild(key)` (quad-roblox EngineOps) — same here
+	local function nativeFindChild(inst: any, key: any): any?
+		return inst:FindFirstChild(key)
+	end
 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
 	local function nativeDispose(element: any)
@@ -437,11 +442,12 @@ local function installNative(quad: any)
 	quad.nativeExtract = nativeExtract
 	quad.nativeRemove = nativeRemove
 	quad.nativeMove = nativeMove
+	quad.nativeFindChild = nativeFindChild
 	quad.nativeSwap = nativeSwap
 	quad.nativeDispose = nativeDispose
 	quad.isInst = isInst
 
-	for _, fn in { nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst } :: { any } do
+	for _, fn in { nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst } :: { any } do
 		Err.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
 end
@@ -612,16 +618,31 @@ local function mockProvider(quad: any): { [any]: any }
 		return inst.Destroying:Connect(fn)
 	end
 
+	-- 2순회 `H-374`: the explicit `nativeClaim` op the real provider installs
+	-- (`H-305` (d′) "전부 같은 형태" — mock is a backend too, `H-294`). The
+	-- lazy internal `claim` stays idempotent (bindLifetime claims on demand);
+	-- the explicit op mirrors the real one's double-claim contract (§7-10).
+	local function nativeClaim(inst: any)
+		if not isMockInstance(inst) then
+			Err.errorBefore("nativeClaim: inst is not a mock instance", SURFACE)
+		end
+		if InstData:GetWeak(inst, "gchold") ~= nil then
+			Err.errorBefore("nativeClaim: Instance is already claimed by quad", SURFACE)
+		end
+		claim(inst)
+	end
+
 	quad.bindLifetime = bindLifetime
 	quad.unbindLifetime = unbindLifetime
 	quad.canBound = canBound
 	quad.canExecute = canExecute
 	quad.onDestroying = onDestroying
+	quad.nativeClaim = nativeClaim
 
 	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
-	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying } :: { any } do
+	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim } :: { any } do
 		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")

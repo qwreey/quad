@@ -25,6 +25,11 @@
 	first-class primitives handler authors call directly, like `isState`.
 	The `onDestroying(inst, fn)` engine op stub is installed here too (M2 unit
 	3) — it belongs to the same backend injection and `Effect` needs it.
+	2순회 `H-373`: so are `isInst`/`nativeClaim`/`nativeFindChild` — the three
+	ops `architecture.md` (EngineOps line) and `slot-plan.md` ("기본 구현(조합
+	폴백) — 미주입이 에러가 아니다") classify with `onDestroying` as "cannot be
+	composed, so missing = a clear error"; without stubs a bare `Quad.New()`
+	raised a nil-call from `Slot.luau`/`Claim.luau` and blamed quad internals.
 ]]
 
 local Err = require("./ErrorNamespace")
@@ -42,7 +47,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local function notInstalled(name: string, raise: (string, any) -> ()): (...any) -> ...any
 	local stub = function(...: any)
 		raise(
-			`quad: {name} is not available — no backend has installed the lifetime primitives `
+			`quad: {name} is not available — no backend has installed the lifetime primitives / engine ops `
 				.. "(quad-roblox does this when it wraps the module; tests use mock.installLifetime)",
 			SURFACE
 		)
@@ -63,6 +68,18 @@ local function Init(module: any)
 	-- composition fallback — missing means a clear error). The same backend that
 	-- fills the four above fills this one; until then, the same loud stub.
 	module.onDestroying = notInstalled("onDestroying", Err.errorBefore)
+	-- `H-373`: the three non-composable engine ops (see header). `isInst` is a
+	-- predicate handler authors call directly (nearest); the other two run inside
+	-- `Claim`'s resolve (outermost). `if nil` — a provider may already be there.
+	if module.isInst == nil then
+		module.isInst = notInstalled("isInst", Err.errorBeforeNearest)
+	end
+	if module.nativeClaim == nil then
+		module.nativeClaim = notInstalled("nativeClaim", Err.errorBefore)
+	end
+	if module.nativeFindChild == nil then
+		module.nativeFindChild = notInstalled("nativeFindChild", Err.errorBefore)
+	end
 end
 
 return Init

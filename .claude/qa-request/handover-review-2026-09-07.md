@@ -85,6 +85,7 @@
 | **Q4** (`H-361`) | 실프로퍼티 키에 Observer/Effect/Ref 핸들을 넣은 오용의 진단 | (a) 그대로 — 타입이 1차 방어, 엔진 에러는 시끄럽다(정본 배너만) / (b) `PropertyHandler.isHandlable`이 핸들 브랜드를 거부해 FALLBACK 가드가 발화(핫패스에 브랜드 검사 셋) / (c) 가드 우선순위를 NORMAL 위로(정본 "FALLBACK" 설계 역전) | **(a)** — "드문 오용 방어에 구조를 쓰지 않는다"; `Ref`에 가드가 없는 것도 같은 결 |
 | **Q5** (process 재진입) | 같은 `(inst, k)`의 간접 재디스패치(`h.process` 도중 그 키의 State `:Set`) | (a) UB family에 명시(문서) / (b) `process`에 재진입 게이트(새 메커니즘) | **(a)** |
 | **Q3 ⑨** | `Slot:Clear`/`ExtractAll` 게이트 묶음 + `ExtractAll` 역순 insert | (a) 반영 / (b) 보류 | **(b)**, 단 `ExtractAll`의 `out[i] = …` 정순 채움은 한 줄이라 ①급 — 사용자 판단 |
+| **Q6** (2순회 `H-376`) | 정본이 약속한 **native* 조합 폴백이 코드에 없다** — `slot-plan.md` "기본 구현(조합 폴백) — 미주입이 에러가 아니다" 절(`nativeRemove` = `nativeExtract` + `nativeDispose` 반복, `nativeMove` = `nativeExtract` + `nativeInsert`, `nativeSwap` = `nativeMove` 2회, "백엔드는 이득 있는 것만 덮어쓴다")과 `architecture.md` EngineOps 줄이 그렇게 서술하는데 `Slot.luau`는 `module.nativeMove`/`nativeSwap`/`nativeRemove`를 직접 부를 뿐 합성이 없다(`Quad.New()` 실측 `nativeDispose: nil`). 잠복 — in-tree 백엔드 둘(roblox·mock)이 여섯 전부를 심는다. `nativeDispose`는 정본 어느 문장도 폴백/명확 에러 어느 쪽으로도 분류 안 함 | (a) 문장이 stale — 폴백 약속을 `slot-plan.md`/`architecture.md`에서 지우고 여섯 전부 "미주입이면 명확한 에러"로 통일(`H-373`이 심은 세 스텁과 한 몸 — `LifetimeHandle.luau` 스텁 여섯 추가) / (b) 약속 유효 — `Init`에서 미주입 op를 정본 공식대로 합성(디스패치 깊이의 새 합성 코드) | **(a)** — 관측된 필요 없음("관측된 문제에만 구조"), 셋째 백엔드가 실제로 나올 때 (b)를 열면 됨. 정본 문장이 걸려 있어 자율로 안 지움 |
 
 ## §6 0순회 — `/code-review high`, 반영분(`ba222e9..fb9435a`) diff 중심 (2026-09-07 01시대, 사용자 지시 "하나 더")
 
@@ -128,4 +129,22 @@ SHF 원시 팔 중복 — 순수 스타일, `ensureBase` 호출·`Tag:Removed` �
 | — | `todos.md` 00번 | "§1·§5의 ① 갈래(`H-344`~`H-360`)"가 `fb9435a` 시점에 멈춤 — `32345eb`의 §6 미반영 | §1·§5·§6·§7(`H-344`~`H-372`)로 |
 
 다음 순회(2순회 — opus general-purpose 전체 리뷰, 다른 축)는 §8부터, `H-373`부터.
+
+## §8 2순회 — opus general-purpose 전체 트리, 다른 축(spec 커버리지·에러 계약·GC·mock↔실 프로바이더) (2026-09-07 03시대 KST)
+
+4건(MED 3·LOW 1), 미완 0 — ① 셋 반영, ② 하나는 §4 **Q6**. 축 C(GC)는 실재현(`Destroy` → 참조 폐기 → `collect` 2회 →
+weak 관측)으로 `H-229` 섬 계약·Bookkeeping "Blocker는 ownerKey를 안 잡는다" 둘 다 성립 확인, 잔존은 테스트 청크 레지스터·
+스펙 로컬 클로저 업밸류라 누수 아님. 축 B 전수(`Err.*` 100여 곳)는 `H-348`/`H-349`/`H-370` 뒤라 아래 `H-375` 하나. 축 A
+지정 타깃(OnChange 초기값·`Override` 두 값·Claim/Mapper)은 `spec.events` 4·5절·`spec.tweenproperty` 3·4절·`spec.claim`이
+이미 단언 — 공백 아님. 리뷰어 자체 기각 6(Modifier.flatten 해시 스캔·Property 3-상태 retract·mock SetAttribute 관용·
+InstanceShorthand State 언랩 순서·`Tag:Added` 해시 테이블·`H-229`).
+
+| ID | 자리 | 무엇 | 처리 |
+|---|---|---|---|
+| **`H-373`** (MED) | `LifetimeHandle.luau` 스텁 | 정본이 "조합 불가 → 미주입이면 명확한 에러"로 분류한 넷(`architecture.md` EngineOps 줄, `slot-plan.md` "기본 구현(조합 폴백) — 미주입이 에러가 아니다" 절: `isInst`/`onDestroying`/`nativeFindChild`/`nativeClaim`) 중 **`onDestroying`만 스텁이 있었다** — 프로바이더 없는 `Quad.New()`에서 `Slot:Add` → `Slot.luau:52 attempt to call a nil value`(quad 내부 blame), `Claim` → `Claim.luau:80` 같은 꼴. `addTag`/`setAttribute`는 같은 계약을 스텁으로 지키는 중 | 셋을 `notInstalled(name, raise)`로 — `isInst`는 직접 호출 술어라 `errorBeforeNearest`(`H-370` 기준), `nativeClaim`/`nativeFindChild`는 `Claim.resolve` 깊이라 `errorBefore`. `if nil` 가드(프로바이더가 먼저 심었을 수 있음). `spec.lifetime` 1절 목록 여덟·1b 깊이 구분에 합류 |
+| **`H-374`** (MED) | `mock.luau` `mockProvider` | 자기 주석이 인용한 계약(`H-305` (d′) "전부 같은 형태", `H-294` "mock 또한 하나의 백엔드")을 어김 — 실 프로바이더가 심는 `nativeClaim`/`nativeFindChild` 둘을 안 심어 mock 백엔드에선 `q.Claim`이 불가(위 nil-call). 커버리지는 `spec.claim`(실 프로바이더)이 채우고 있어 결함은 mock↔실 불일치 자체 | `installNative`에 `nativeFindChild = inst:FindFirstChild(key)`(EngineOps와 동형), `mockProvider`에 명시 `nativeClaim`(mock 인스턴스 검사 + **이중 claim 에러** — 실 프로바이더 §7-10 계약과 동형; 내부 lazy `claim`은 멱등 그대로). `setFuncLevel` 합류. `spec.lifetime` 9절 — FindFirstChild 동형·이중 claim blame·mock 아래 `Claim` 해석(자식 키 → claim) |
+| **`H-375`** (MED) | `Slot.luau` `wrapElement` | 요소 타입 게이트 넷이 전부 `errorBefore`(최외곽)인데 호출부 둘의 깊이가 다르다 — `prepareElements`(직접 공개 CRUD·`Slot{}`)와 `settle`(reconcile 깊이). 반응형 콜백 안에서 직접 CRUD를 부르면 `Slot_mt.Add`를 타넘어 **에러 없는 `:Set`/`:Subscribe` 줄을 blame**(실재현: 실수 33행, blame 40행). 두 줄 아래 형제 검증("appears twice"/"already mounted")은 `errorBeforeNearest`라 같은 상황에서 정확 — 같은 함수, 같은 입력 클래스, 다른 blame. spec은 최상위 직접 호출(`spec.slot` 427·689)과 dispatch 깊이(151)만 봐서 두 층이 같은 파일에 떨어져 안 보였다 | `wrapElement(v, raise)` — `H-370`과 같은 모양: `prepareElements` → `errorBeforeNearest`, `settle` → `errorBefore` 유지(둘 다 바꾸면 `spec.slot` 151의 reconcile 깊이 단언이 깨진다). `spec.slot` 22절 (e) — Observer 콜백 안 `Add(nil)`이 자기 줄을 blame |
+| **`H-376`** (LOW, ②) | `Slot.luau` native* 호출부 / `slot-plan.md`·`architecture.md` | 정본이 약속한 native* 조합 폴백 부재(잠복) | **§4 Q6** — 권고 (a) 정본 문장 철회 + 스텁 여섯. 코드 변경 없음 |
+
+다음 순회(3순회 — `/code-review high` 전체 트리)는 §9부터, `H-377`부터.
 

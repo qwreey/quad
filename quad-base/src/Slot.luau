@@ -98,27 +98,31 @@ local function Init(module: any)
 	local Slot, materializeSlotTree, mountSlotTree, markMountedTree, attachSlot, destroySlotTree, unmountSlotTree, teardownTree
 
 	-- wrap: element-type whitelist gate (H-40) + State→wrapper-Slot. raw* only
-	-- ever see already-wrapped physical elements.
-	local function wrapElement(v: any): any
+	-- ever see already-wrapped physical elements. `raise` is the error depth
+	-- the CALLER picks (2순회 `H-375`, checklist 0): `prepareElements` (direct
+	-- public CRUD / `Slot{}`) passes `errorBeforeNearest` so a CRUD call made
+	-- inside a reactive callback blames its own line, not the `:Set` that ran
+	-- the callback; `settle` (reconcile depth) passes `errorBefore`.
+	local function wrapElement(v: any, raise: (string, any) -> ()): any
 		if isSlot(v) then
 			-- round15 `H6-19`: a destroyed Slot must fail HERE (pre-pass), not
 			-- inside attachSlot after the array/ownership mutation — otherwise
 			-- Splice's batch gate is left On by the raise (통합 리뷰 재현).
 			if v._destroyed then
-				Err.errorBefore("Slot: destroyed Slot cannot be an element", SURFACE)
+				raise("Slot: destroyed Slot cannot be an element", SURFACE)
 			end
 			return v
 		end
 		if not isState(v) then
 			if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
 				or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
-				Err.errorBefore("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", SURFACE)
+				raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", SURFACE)
 			end
 			if v == nil or v == None then
-				Err.errorBefore("Slot: nil/None cannot be an element — only actually mountable values", SURFACE)
+				raise("Slot: nil/None cannot be an element — only actually mountable values", SURFACE)
 			end
 			if not isInst(v) then
-				Err.errorBefore("Slot: this backend cannot mount this value", SURFACE)
+				raise("Slot: this backend cannot mount this value", SURFACE)
 			end
 			return v
 		end
@@ -732,7 +736,7 @@ local function Init(module: any)
 		end
 		for i = 1, count do
 			local raw = (select(i, ...))
-			local element = wrapElement(raw) -- type gate (nil/None/handler-layer/isInst)
+			local element = wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			if occupant ~= nil then
 				if seen[occupant] then
@@ -904,7 +908,7 @@ local function Init(module: any)
 					if idx ~= slotPos then rawMove(self, idx, slotPos) end
 				end
 			else
-				local element = wrapElement(result)
+				local element = wrapElement(result, Err.errorBefore) -- reconcile depth → outermost
 				if wasDetached ~= nil then
 					releaseElement(self, nil, prev, true)
 					detached[key] = nil
