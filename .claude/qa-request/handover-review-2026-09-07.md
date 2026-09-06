@@ -23,12 +23,12 @@
 | **`H-345`** | R2-1 | `quad-base/src/Attribute.luau` `flattenArg` 셋째 분기 | `type(arg) == "table"`만 보고 "plain"을 강제하지 않아 `Attribute(source)`가 `_value`/`Revision`/`_subs`를 속성 이름으로 펼친다 — Modifier가 `H-310`으로 이미 닫은 사고(`isPlainFieldTable`) | `getmetatable(arg) == nil` 조건 추가 → 나머지는 기존 else 메시지("plain tables"). `spec.attribute` 1b절 |
 | **`H-346`** | R1-2 / R2-2 | `quad-base/src/Dispatch/init.luau` `BRAND_PROBES` | 모듈 표면 술어 중 `isMapperDescriptor`만 누락 — 체크리스트 0-b(`H-338`/`H-342`의 마지막 잔여) | 목록 머리에 추가. `spec.claim` 7절이 `brand: MapperDescriptor`를 단언 |
 | **`H-347`** | R1-3 | `quad-base/src/Store.luau` 생성자 | `Of`는 `H-201`로 키 타입을 검사하는데 생성자 문은 열려 `Store({ Source(1) })`가 통과, `Names()`가 `{ 1 }` | `type(name) ~= "string"` → `errorBeforeNearest`. `spec.store` 음성 |
-| **`H-348`** | R1-4 | `quad-base/src/LifetimeHandle.luau` 미설치 스텁 | 지배적 발화 지점이 디스패치 깊이(`process` → `bindLifetime`)인데 `errorBeforeNearest` — 체크리스트 0의 실패 모드. 실 백엔드(`quad-roblox/src/LifetimeHandle.luau`)는 `errorBefore` | `errorBefore`로 통일 |
+| **`H-348`** | R1-4 | `quad-base/src/LifetimeHandle.luau` 미설치 스텁 | 지배적 발화 지점이 디스패치 깊이(`process` → `bindLifetime`)인데 `errorBeforeNearest` — 체크리스트 0의 실패 모드. 실 백엔드(`quad-roblox/src/LifetimeHandle.luau`)는 `errorBefore` | `errorBefore`로 통일 → **§7 `H-370`으로 정정**(`canBound`/`canExecute`는 직접 호출 프리미티브라 `errorBeforeNearest`, 나머지 셋만 `errorBefore`) |
 | **`H-349`** | 구Conventions-1 | `quad-base/src/init.luau` `UseProvider` 중복 설치 에러 | 직접 호출 표면인데 `errorBefore` — 체크리스트 0의 판별대로면 `errorBeforeNearest`(단일 태그 프레임이라 관측상 동일, 일관성) | 교체. `spec.robloxfactory` `assertBlamesUser` 그대로 통과 |
 | **`H-350`** | R1-1 | `quad-base/src/Bookkeeping.luau` `getOffsetAt` | 루프 중 재시작이 `math.max(cursor, 1)`로 클램프해 커서가 0으로 내려간 경우(M6 splice `j-1 = 0`·owner base 이동)에 **옛 `offsetCache[1]` 위에** 캐시를 다시 쌓는다 — 그 자리 주석의 전제("M3에선 1 밑으로 안 내려간다, M6가 base를 다시 읽어야")가 M6 착지 후 미이행 | 부트스트랩을 `ensureBase()`로 빼서 재시작 직전에도 호출. **in-tree 재현 경로 없음**(`setLength` 호출부 전수가 상수/`slot.Length`) — spec 없이 정본 의사코드만 갱신(`dispatch-core-plan.md`) |
 | **`H-351`** | R3-1 | `quad-roblox/src/types.luau` `NewChild` | children 값 유니언에 `Slot`이 없다 — `bind-system-plan.md`가 M5에 예고한 "M6 Slot" 확장 팔이 fork 슬라이스에서 실행되지 않았다(M7/M8/M10은 마커 있음). 런타임 `SlotHandler`는 받는다. strict spec 7개 중 children에 Slot을 넣는 것이 없어 살아남음 | `\| QuadTypes.Slot<Instance>` 합류(생성 `<Class>Elem` 전량 — "too complex" 없음, CLI 49/49). `spec.componenttypes` `_slotChild`. **`State<Slot<…>>` 팔은 §4 Q1** |
 | **`H-352`** | R3-4 / 구A3(실측: 활성 트윈에 `None` → 취소 0, 끝까지 재생) | `quad-roblox/src/Handlers/Property.luau` 헤더 | 헤더의 "마지막 쓰인 값이 남는다"가 활성 트윈 분기에선 참이 아니다 — 동작은 **의도된 것**(`spec.tweenproperty` 5절 "None → nil: skip-defense, active tween untouched") | 헤더에 예외 한 줄. 코드 변경 없음 — 버그로 재개봉 방지 |
-| **`H-353`** | R3-2(추정) → **메인 실측 확정** | `scripts/gen-d.py` `PVn`·Modifier setter | 유일한 유니언 프로퍼티 타입 `UICorner: number \| UDim`의 `PV73 = … \| State<number \| UDim> \| …`가 `Source(8)`/`Source(UDim)`을 **둘 다 거부**(`State<X>` 불변, `H-326`/`H-327`) — 인라인 리터럴·로컬 바인딩·Modifier `:UICorner(radius)` 전부 실측 거부. `spec.shorthandtypes`는 `UICorner`에 State를 한 번도 안 넣어 우회 | 유니언 타입은 **멤버마다** `State<m>`/`TweenData<m>`/`State<Tween<m>>` 팔을 나열(`PV73` 9팔), setter는 `Field<number> \| Field<UDim>`. `LuauSolverConstraintLimit=1000000` 그대로 통과. `spec.shorthandtypes` 양성 넷. `typing-limits.md` 8.9절 |
+| **`H-353`** | R3-2(추정) → **메인 실측 확정** | `scripts/gen-d.py` `PVn`·Modifier setter | 유일한 유니언 프로퍼티 타입 `UICorner: number \| UDim`의 `PV73 = … \| State<number \| UDim> \| …`가 `Source(8)`/`Source(UDim)`을 **둘 다 거부**(`State<X>` 불변, `H-326`/`H-327`) — 인라인 리터럴·로컬 바인딩·Modifier `:UICorner(radius)` 전부 실측 거부. `spec.shorthandtypes`는 `UICorner`에 State를 한 번도 안 넣어 우회 | 유니언 타입은 **멤버마다** `State<m>`/`TweenData<m>`/`State<Tween<m>>` 팔을 나열(`PV73` 9팔), setter는 `Field<number> \| Field<UDim>`. `LuauSolverConstraintLimit=1000000` 그대로 통과. `spec.shorthandtypes` 양성 넷. `typing-limits.md` 8.9절 → **§6 `H-362`/`H-363`으로 정정**(setter는 `SHF0`, `PV73`은 전체 팔 유지 + 멤버별 팔 = 11팔) |
 | — | R3-5 | `spec.tweentypes` 헤더 | `H-324` 교집합 서술이 `H-343` 이후 stale | 문장 정정 |
 
 ## §2 기각·확인만 한 것 (재발견 금지)
@@ -108,3 +108,24 @@
 강제되지 않아 통과; 정본 관용구 `Slot<Instance>` 단일), `State<number \| UDim>` 팔 소실(실측 반박 — 통과).
 확인: gen-d Enum 정확 형은 596 Enum·생성 D의 53 Enum 전부 통과, `Slot.luau` `require("./Dispatch")` 순환 없음,
 `Tag:Removed` 유효 입력 전부 옛 동작 동일, Attribute plain 가드는 브랜드 분기 뒤라 정당 입력 무영향.
+
+## §7 1순회 — `/code-review high`, 오늘 커밋 셋(`ba222e9..32345eb`) diff 중심 (2026-09-07 02:30 KST 타이머 기상)
+
+사용자 지시(*"KST 기준 2시 30분에 다시 코드리뷰 해줄래 … 세번 정도 순회"*)의 첫 순회. 8앵글 후보 21건 → 병합·기각 후
+8건(HIGH 1·MEDIUM 1·LOW 6), 미완 0. **전부 ① — 새 문항 없음**(HIGH의 "완전한 교차 패키지 브랜드 술어"는 필요 없어졌다,
+아래 `H-368`). 리뷰어 자체 기각 7(전체 유니언 `State<number | UDim>` 팔 죽은 팔 설 — §6가 실측 반박, `checkKey` `what` 인자·
+SHF 원시 팔 중복 — 순수 스타일, `ensureBase` 호출·`Tag:Removed` 임시 테이블 — 콜드 경로, 날짜 마커 둘, C3 흡수).
+
+| ID | 자리 | 무엇 | 처리 |
+|---|---|---|---|
+| **`H-368`** (HIGH) | `Attribute.luau` `flattenArg` plain 분기 | `H-345` 가드가 `getmetatable == nil`만 봐서 **브랜드는 메타테이블이 아니라** 메타테이블 없는 quad 값이 여전히 필드 단위로 펼쳐졌다 — 메인 실측: `Attribute(AttributeKey("Selected"))` → `{ Name = "Selected" }`, `Attribute({ Foo = function })` 통과(엔진 `setAttribute` 안 디스패치 깊이에서 에러). 주석이 닫았다고 주장한 사고의 절반 | quad-base가 이름 아는 메타테이블 없는 브랜드 둘(`isAttributeKey`/`isMapperDescriptor`)을 분기 조건에서 제외 + 값이 함수면 `errorBeforeNearest`(attribute-plan: 값은 raw T \| State). 리뷰어가 ②로 본 "quad-roblox 브랜드(OnChange 디스크립터)까지 아는 교차 패키지 술어"는 **불필요** — 그 디스크립터는 `{ Name, Callback }`이라 함수 값 검사에 걸린다; 새 술어를 만들지 않는다(메타테이블 없는 quad-roblox 값이 늘면 그때 재개봉). `spec.attribute` 1b 음성 둘 + 양성. `attribute-plan.md` 주석 |
+| **`H-369`** (MEDIUM) | `gen-d.py` setter 충돌 게이트 | `H-364` 정규식이 `re.M` 없이 돌아 `^`가 본문 시작만 매칭 — 주석 줄 뒤 필드는 수확 안 됨. 메인 재현: `State<T>`에서 `With`만 수확(+ 파라미터 오탐 `factory`/`fn`/`__apply`), `Compute`/`Observer`/`Gate`/`Apply` 누락 — 8.9가 말하는 재귀 함수 필드 그 자체. 옛 정규식부터 같은 앵커였던 잠복 결함 | `re.M` 추가(`(?:^\|[{,])` 앵커는 유지 — 한 줄에 둘 이상도 수확). 재수확: +`Compute`/`Gate`/`Observer`, −오탐 셋. 재생성 diff 0, 충돌 0. `typing-limits.md` 8.9 처방 2를 생성기와 동형으로(`H-372`) |
+| **`H-370`** (LOW) | `LifetimeHandle.luau` 스텁 다섯 | `H-348`이 일괄 `errorBefore`로 바꿨는데 근거(디스패치 깊이)는 `bindLifetime`류에만 성립 — `canBound`/`canExecute`는 이 파일 헤더가 "handler authors call directly, like isState"로 규정한 직접 호출 프리미티브고 실 백엔드는 raise 자체가 없다. 스텁은 스스로 SURFACE 태그라 `errorBefore`면 최외곽 태그 프레임(핸들러) 바깥의 `drive` 호출 줄을 blame | `notInstalled(name, raise)` — `canBound`/`canExecute`는 `errorBeforeNearest`(핸들러 작성자 자기 줄), `bindLifetime`/`unbindLifetime`/`onDestroying`은 `errorBefore`. 정본은 `ErrorNamespace.luau` 헤더(직접 호출·계약 에러 = nearest / 래퍼를 타넘어야 하는 에러 = outermost). `spec.lifetime` 1b — SURFACE 태그 래퍼로 둘을 구분 단언. 원장 `H-348` 행에 포인터 |
+| **`H-371`** (LOW) | `dispatch-core-plan.md` `getOffsetAt` 의사코드 | 재시작 분기가 정의 없는 `ensureBase()`를 부르고 진입부는 인라인 — `H-350`(클로저)·`H-365`(Init 스코프 두 자리) 어느 쪽과도 불일치. `H-350`이 "spec 없이 의사코드만"이라 이게 유일한 검증 산출물 | `local function ensureBase(bk, ownerKey)`를 함수 위에 두고 진입부·재시작 둘 다 그 호출로 — `Bookkeeping.luau`와 동형 |
+| **`H-372`** (LOW) | `typing-limits.md` 8.9 처방 2 | 게이트 정의가 `H-364` 이후 생성기와 갈라짐 — `Slot` 없음, "키"라 적혀 함수 필드로 좁힌 것(데이터 필드 `Offset` 제외가 UIGradient setter를 살리는 핵심)이 정본에 없음, "충돌 0"은 날짜 없는 시한부 | `Slot` + 함수 필드 + 날짜 + `H-364`/`H-369` 경위 한 문단, 소스는 생성기 게이트 블록으로 |
+| — | `spec.shorthandtypes` 헤더 | `PVn` 5팔 서술이 `H-353`/`H-363` 이후 stale(같은 커밋이 본문만 강화) | 11팔·`SHF0`·8.9 (3) 포인터 |
+| — | 이 원장 §1 `H-353` 행 | 처리란이 "9팔·`Field<number> \| Field<UDim>`" 현재형 — §6가 뒤집었는데 포인터 없음(라이브 코퍼스에 9팔 vs 11팔 공존) | "→ §6 `H-362`/`H-363`으로 정정" 구절 |
+| — | `todos.md` 00번 | "§1·§5의 ① 갈래(`H-344`~`H-360`)"가 `fb9435a` 시점에 멈춤 — `32345eb`의 §6 미반영 | §1·§5·§6·§7(`H-344`~`H-372`)로 |
+
+다음 순회(2순회 — opus general-purpose 전체 리뷰, 다른 축)는 §8부터, `H-373`부터.
+

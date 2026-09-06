@@ -25,6 +25,35 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 1b. 스텁의 에러 깊이 — canBound/canExecute는 직접 호출 프리미티브(nearest), bind/unbind/onDestroying은 디스패치 깊이(outermost) (1순회 H-370) ===")
+do
+	local fresh = Quad.New()
+	local QuadTypes = require("../luau_packages/quad_types")
+	-- a SURFACE-tagged wrapper stands in for a handler function (addHandler tags them)
+	local lineHandler, lineUser = 0, 0
+	local function viaHandler(name: string)
+		lineHandler = (debug.info(1, "l") :: number) + 1
+		return (fresh :: any)[name]({}, {})
+	end
+	fresh.errorNamespace.setFuncLevel(viaHandler, QuadTypes.ERROR_LEVEL_SURFACE)
+	local function user(name: string)
+		lineUser = (debug.info(1, "l") :: number) + 1
+		return viaHandler(name)
+	end
+	for _, name in { "canBound", "canExecute" } do
+		local ok, err = pcall(user, name)
+		assert(not ok, name .. " stub errors")
+		assert(string.find(tostring(err), `spec.lifetime.luau:{lineHandler}:`, 1, true) ~= nil, name .. ": nearest — blames the handler author's own line: " .. tostring(err))
+	end
+	for _, name in { "bindLifetime", "unbindLifetime", "onDestroying" } do
+		local ok, err = pcall(user, name)
+		assert(not ok, name .. " stub errors")
+		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the handler frame: " .. tostring(err))
+	end
+	print("PASS")
+end
+
 local quad = Quad.New()
 mock.installLifetime(quad)
 local Instance = mock.Instance

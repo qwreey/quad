@@ -31,12 +31,17 @@ local Err = require("./ErrorNamespace")
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
-local function notInstalled(name: string): (...any) -> ...any
+-- `raise` picks the error depth per slot (checklist 0, `H-348` → `H-370`):
+--   - `bindLifetime`/`unbindLifetime`/`onDestroying` fire at dispatch depth
+--     (`process` → handler → `bindLifetime`), so `errorBefore` (outermost) —
+--     the real backend's `quad-roblox/src/LifetimeHandle.luau` does the same;
+--   - `canBound`/`canExecute` are the direct-call primitives the header above
+--     describes ("like `isState`") and the real backend never raises from them,
+--     so `errorBeforeNearest` — blame lands on the handler author's own line,
+--     not on whoever called `drive`.
+local function notInstalled(name: string, raise: (string, any) -> ()): (...any) -> ...any
 	local stub = function(...: any)
-		-- `H-348`: the dominant raise site is dispatch depth (`process` →
-		-- `bindLifetime`), so outermost blame (checklist 0) — the real backend's
-		-- `quad-roblox/src/LifetimeHandle.luau` does the same
-		Err.errorBefore(
+		raise(
 			`quad: {name} is not available — no backend has installed the lifetime primitives `
 				.. "(quad-roblox does this when it wraps the module; tests use mock.installLifetime)",
 			SURFACE
@@ -49,15 +54,15 @@ local function notInstalled(name: string): (...any) -> ...any
 end
 
 local function Init(module: any)
-	module.bindLifetime = notInstalled("bindLifetime")
-	module.unbindLifetime = notInstalled("unbindLifetime")
-	module.canBound = notInstalled("canBound")
-	module.canExecute = notInstalled("canExecute")
+	module.bindLifetime = notInstalled("bindLifetime", Err.errorBefore)
+	module.unbindLifetime = notInstalled("unbindLifetime", Err.errorBefore)
+	module.canBound = notInstalled("canBound", Err.errorBeforeNearest)
+	module.canExecute = notInstalled("canExecute", Err.errorBeforeNearest)
 	-- `onDestroying(inst, fn): Connection` — the injected engine op `Effect._bindDestroying`
 	-- calls (`architecture.md` EngineOps line: a hook, not a manipulation, so no
 	-- composition fallback — missing means a clear error). The same backend that
 	-- fills the four above fills this one; until then, the same loud stub.
-	module.onDestroying = notInstalled("onDestroying")
+	module.onDestroying = notInstalled("onDestroying", Err.errorBefore)
 end
 
 return Init

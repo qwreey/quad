@@ -1908,6 +1908,17 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 -- [신설, 2026-08-21 G절] 그 자리의 **절대 offset(0-based)** 을 그때그때 계산해 반환.
 -- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — nativeInsert의 삽입 위치,
 -- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
+-- [2026-09-07 `H-350`/`H-365`, 1순회 `H-371`로 의사코드 동형화] 베이스 부트스트랩 —
+-- 진입부와 루프 안 재시작(커서가 0으로 내려간 경우) 두 자리가 같은 함수를 부른다.
+-- Init 스코프(`contribution`과 같은 자리) — 호출별 클로저로 두면 recompute마다 할당.
+local function ensureBase(bk, ownerKey)
+    if bk.offsetCacheValidUpTo == 0 then
+        -- 시작점 — 1번 자리의 offset은 이 owner의 베이스 그 자체.
+        bk.offsetCache[1] = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
+        bk.offsetCacheValidUpTo = 1
+    end
+end
+
 function Dispatch.getOffsetAt(ownerKey, at)
     checkPosition("getOffsetAt", at) -- [2026-09-01 H-280] 게이트 셋째 — 0이면 cache[0](nil)이 number로 반환됐다
     local bk = getBookkeeping(ownerKey)
@@ -1919,11 +1930,7 @@ function Dispatch.getOffsetAt(ownerKey, at)
     -- 처리됨"*).
     -- ⭐⭐ [2026-08-26 재작성, `/code-review high` 4차] 이 함수는 **`offsetCacheValidUpTo`만
     --   만진다 — `bk.offsetSetUpTo`는 건드리지 않는다.** 아래 "두 필드" 절이 소스.
-    if bk.offsetCacheValidUpTo == 0 then
-        -- 시작점 — 1번 자리의 offset은 이 owner의 베이스 그 자체.
-        bk.offsetCache[1] = if isSlot(ownerKey) then ownerKey.Offset:Get() else 0
-        bk.offsetCacheValidUpTo = 1
-    end
+    ensureBase(bk, ownerKey)
     if at <= bk.offsetCacheValidUpTo then
         return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
@@ -1950,7 +1957,7 @@ function Dispatch.getOffsetAt(ownerKey, at)
             -- 진입부와 같은 ensureBase — 옛 offsetCache[1] 위에 재구축하면 그
             -- owner의 형제 offset이 base 차이만큼 영구히 어긋난다(옛 주석의
             -- "max 1 — M6가 베이스 재독을 넣어야"가 미이행이었던 자리)
-            ensureBase()
+            ensureBase(bk, ownerKey)
             i = bk.offsetCacheValidUpTo
             cur = bk.offsetCache[i]
             continue

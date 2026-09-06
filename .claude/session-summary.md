@@ -2370,4 +2370,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `Slot<Instance>`·유니언 PV 멤버별 팔), 기각(Effect 비함수 cleanup·Splice 물리 순서·Attribute "누수"는
   Luau GC 페이싱), 사용자 문항 Q1~Q3; `/code-review high` 재실행분 `H-357`~`H-361`(Effect UB 확장·
   `Slot.Init` `RunInit`·gen-d Enum 게이트·무효화 표 교체 행)과 문항 Q4·Q5. CLI 49/49 — **핸드오버 완료.**
-  이어 사용자 지시로 야간 순회(02:30 KST 타이머, ① 자율·② 원장 누적) — 0순회 `H-362`~`H-367`(`H-353` 회귀 둘 정정 등, §6).
+  이어 사용자 지시로 야간 순회(02:30 KST 타이머, ① 자율·② 원장 누적) — 0순회 `H-362`~`H-367`(`H-353` 회귀 둘 정정 등, §6), 1순회 `H-368`~`H-372`(Attribute 가드의
+  브랜드 사각·gen-d 게이트 `re.M`·LifetimeHandle 스텁 깊이 슬롯별, §7 — 전부 ①, 새 문항 0).

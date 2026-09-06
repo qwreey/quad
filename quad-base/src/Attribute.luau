@@ -53,6 +53,8 @@ local AttributeBrand = Brand.AttributeBrand
 local isAttribute = Brand.isAttribute
 local isStore = Brand.isStore
 local isState = Brand.isState
+local isAttributeKey = Brand.isAttributeKey
+local isMapperDescriptor = Brand.isMapperDescriptor
 local None = require("./Dispatch/None").None -- `isNone` is `v == None` (None.luau header)
 local newUncachedKey = AttributeKeyModule._newUncachedKey
 
@@ -87,15 +89,25 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			end
 			map[name] = v
 		end
-	elseif type(arg) == "table" and getmetatable(arg) == nil then
+	elseif type(arg) == "table" and getmetatable(arg) == nil and not isAttributeKey(arg) and not isMapperDescriptor(arg) then
 		-- `H-345`: "plain" is enforced — a Source/Ref/Tag/... (any quad value
 		-- carrying a metatable) would otherwise be flattened field by field
-		-- (`_value`, `Revision`, ...), the `H-310` accident Modifier already closed
+		-- (`_value`, `Revision`, ...), the `H-310` accident Modifier already closed.
+		-- `H-368` (1순회): brands are weak-key registries, not metatables, so the
+		-- metatable-LESS quad values base can name (AttributeKey, MapperDescriptor —
+		-- frozen plain tables) are excluded by brand; quad-roblox's metatable-less
+		-- descriptors (OnChange `{ Name, Callback }`) fall to the function-value
+		-- check below — an attribute value is raw T or State<T>, never a function
+		-- (attribute-plan "그룹 `Attribute(...)`"; the engine cannot store one, and
+		-- letting it through raised inside `setAttribute` at dispatch depth).
 		for rawName, v in pairs(arg :: { [any]: any }) do
 			if type(rawName) ~= "string" then
 				Err.errorBeforeNearest(`{ctx}: plain-table keys must be strings`, SURFACE)
 			end
 			local name = rawName :: string
+			if type(v) == "function" then
+				Err.errorBeforeNearest(`{ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State`, SURFACE)
+			end
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end

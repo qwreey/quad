@@ -205,3 +205,10 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   될것 같아"* → **0순회**(`/code-review high`, 반영분 diff 중심): 10건 전부 ① — 그중 `H-362`/`H-363`은
   새벽의 `H-353` 생성기 변경이 만든 회귀(변환 람다 문맥 타이핑·`TweenData` 전체 유니언 팔 소실)라
   "수정분이 새 결함을 만든다"의 실례. 원장 §6, 세 번째 커밋.
+- **1순회**(02:30 KST 타이머 기상, `/code-review high` 오늘 커밋 셋 diff 중심): 8건 전부 ① — HIGH `H-368`
+  Attribute plain 가드가 브랜드(메타테이블 아님)를 못 봐 `AttributeKey`·함수 값이 펼쳐짐(브랜드 둘 제외 +
+  함수 값 거부 — 리뷰어의 "교차 패키지 술어" ②는 함수 검사가 OnChange 디스크립터까지 잡아 불필요),
+  MEDIUM `H-369` gen-d 게이트 정규식 `re.M` 누락(`State`의 `Compute`/`Observer`/`Gate`/`Apply` 미수확 — 잠복),
+  `H-370` LifetimeHandle 스텁 깊이를 슬롯별로(`canBound`/`canExecute`는 nearest), 정본 동형화 셋
+  (`H-371`/`H-372`/spec 헤더)·인덱스 둘. 원장 §7, 네 번째 커밋. 새 문항 0.
+

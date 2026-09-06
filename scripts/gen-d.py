@@ -441,8 +441,11 @@ def emit():
     # [0순회 H-364] `Slot<T>` joined NewChild (H-351) — its function fields must be gated too. The
     # regex is narrowed to FUNCTION fields (`name: (` / `name: <`): Slot's data fields (`Length`/
     # `Offset: Source<number>`) are not the 8.9 hazard and `Offset` is a real setter (UIGradient).
+    # [1순회 H-369] `re.M` — without it `^` only matched the body start, so every field that
+    # follows a comment line (no `{`/`,` before it — `State<T>`'s `Compute`/`Observer`/`Gate`/
+    # `Apply`, the recursive function fields 8.9 is about) was silently not harvested.
     for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>"):
-        union_member_functions |= set(re.findall(r"(?:^|[{,])\s*(?:read )?([A-Za-z_]+):\s*[(<]", type_body(tname)))
+        union_member_functions |= set(re.findall(r"(?:^|[{,])\s*(?:read )?([A-Za-z_]+):\s*[(<]", type_body(tname), re.M))
     reserved = {"Apply", "Peek", "Overridden", "As"}
     for node in mod_classes:
         for p in mod_props(node):

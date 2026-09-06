@@ -828,9 +828,14 @@ factory 인자의 재귀만으로 샌다).
 1. `Apply: <U>(self: any, factory: (any) -> U) -> U` — 재귀 포기. 주석 붙인
    팩토리는 그대로 타입드, 무주석은 `any`(현행에서도 무주석은 에러였다).
 2. **생성기 게이트**: setter 이름이 children 유니언 멤버의 함수 필드(defs의
-   `Instance`/`Object` 메소드, quad-types의 `State`/`StateData`/`Tag`/`Attribute`
-   키, `Callback`)와 겹치면 `SystemExit` — 구멍이 조용히 다시 열리지 않게.
-   지금 스코프에선 충돌 0.
+   `Instance`/`Object` 메소드, quad-types의 `State`/`StateData`/`Tag`/`Attribute`/
+   **`Slot`**의 **함수 필드**(`name: (`/`name: <` — 데이터 필드 `Offset`/`Length`는
+   제외, `Offset`은 UIGradient의 실제 setter), `Callback`)와 겹치면 `SystemExit` —
+   구멍이 조용히 다시 열리지 않게. **[2026-09-07 기준]** 충돌 0. **[2026-09-07 0순회
+   `H-364`·1순회 `H-369`]** `Slot`은 `NewChild` 합류(`H-351`)로 뒤늦게 게이트에 들어갔고,
+   수확 정규식은 `re.M` 없이 돌아 주석 줄 뒤 필드(`State`의 `Compute`/`Observer`/`Gate`/
+   `Apply` — 이 절이 말하는 재귀 함수 필드 그 자체)를 조용히 놓치고 있었다 — 소스는
+   `scripts/gen-d.py`의 게이트 블록(여기 열거는 요약).
 3. 스파이크 `31`의 "결함" 줄에 진단이 생기면 결함이 고쳐진 것 — 그때 1을
    되돌릴 수 있다.
 

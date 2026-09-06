@@ -402,6 +402,9 @@ Store 필드 여러 개를 각각 `[AttributeKey<<T>> "name"] = store.name`으�
 Attribute(store1, store2, ..., {plain = "table도 됨"})  -- 생성자, 여러 개 받음
 -- [2026-09-07 H-345] "plain"은 메타테이블 없는 테이블 — Source/Ref/Tag 등 quad 값은
 -- 거부(Modifier의 isPlainFieldTable·H-310과 같은 가드). 안 그러면 내부 필드가 펼쳐진다
+-- [2026-09-07 1순회 H-368] 브랜드는 메타테이블이 아니라 약참조 레지스트리 — 메타테이블
+-- 없는 quad 값(AttributeKey·MapperDescriptor)은 브랜드로 따로 거부, 값이 함수면 생성
+-- 시점에 거부(엔진이 못 담는다 — quad-roblox OnChange 디스크립터 `{ Name, Callback }`도 여기서 잡힘)
 -- [명시 추가, 2026-08-20 구현 전 QA 4라운드] plain 테이블의 값은 raw T뿐 아니라
 -- State<T>/Source<T>도 그대로 됨 — {count = 3, label = someSource, live = state}
 -- 새 배선이 아니라, 이 값들이 결국 단일 키 경로로 위임돼 StoreBind가 언랩하기 때문

@@ -3,7 +3,10 @@
 	InstanceShorthand 타입 표면 — strict 양성(round20 단위 ②, `H-336`). 생성 D의
 	GuiObject 계열 `<Class>Param`·`<Class>Modifier`에 `UICorner`(number | UDim)/
 	`UIPadding`(UDim)/`UIPaddingOffset`(number)/`UIScale`(number)가 실프로퍼티와
-	같은 값 유니언(`PVn` — T | State<T> | TweenData<T> | State<Tween<T>> | None)으로
+	같은 값 유니언(`PVn` — T | State<T> | TweenData<T> | State<Tween<T>> | None; T가
+	유니언이면 전체 팔을 유지한 채 멤버별 State/TweenData/State<Tween> 팔이 추가돼
+	`PV73`은 11팔, Modifier setter는 `SHF0 = FieldV<number> | FieldV<UDim> |
+	Field<number | UDim>` — `H-353`/`H-362`/`H-363`, `typing-limits.md` 8.9 (3))으로
 	들어가고, GuiObject가 아닌 클래스(ScreenGui 등)엔 없다. 음성은 스크래치 실측.
 ]]
 
