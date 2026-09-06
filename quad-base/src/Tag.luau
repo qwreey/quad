@@ -47,11 +47,25 @@ end
 
 local function flattenInto(target: { [string]: true }, nameOrList: any)
 	if type(nameOrList) == "table" then
-		for _, name in ipairs(nameOrList :: { any }) do
-			if type(name) ~= "string" then
-				Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
+		-- 3순회 `H-380`: a `{string}` LIST only (tag-plan "값 모양" — `string | {string}`).
+		-- The old `ipairs` walk saw a Tag value / Source / AttributeKey / hash table
+		-- as an EMPTY list — `a:Added(Tag("x"))` and `a:Removed(Tag("x"))` were silent
+		-- no-ops. Quad values are rejected by metatable or brand; a hash key, a
+		-- non-string element, or a nil hole is a validation error like any non-string.
+		if getmetatable(nameOrList) ~= nil or Brand.isPlainBranded(nameOrList) then
+			Err.errorBeforeNearest("Tag: names must be strings or a {string} list — a quad value is not a name list (combine Tags with Tag.Merged)", SURFACE)
+		end
+		local count, maxIndex = 0, 0
+		for k, name in pairs(nameOrList :: { [any]: any }) do
+			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 or type(name) ~= "string" then
+				Err.errorBeforeNearest("Tag: names must be strings — a name list is a {string} array", SURFACE)
 			end
+			count += 1
+			if k > maxIndex then maxIndex = k end
 			target[name :: string] = true
+		end
+		if count ~= maxIndex then
+			Err.errorBeforeNearest("Tag: names must be strings — a name list cannot have nil holes", SURFACE)
 		end
 	elseif type(nameOrList) == "string" then
 		target[nameOrList] = true

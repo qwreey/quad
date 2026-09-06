@@ -10,11 +10,11 @@
    각 마일스톤의 규약·발견 원장은 `qa-request/mN-implementation-roundNN(-brief).md`
    (round11~21). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
    **지금 사용자 몫**(답을 주면 반영한다):
-   - **[2026-09-07]** `qa-request/handover-review-2026-09-07.md` §4 Q1~Q6(핸드오버 전체
+   - **[2026-09-07]** `qa-request/handover-review-2026-09-07.md` §4 Q1~Q8(핸드오버 전체
      코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
-     재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회 여부(2순회)). §1·§5·§6·§7·§8의 ① 갈래
-     (`H-344`~`H-375`; 야간 순회 0~2 포함)는 반영·커밋됨(CLI 49/49) — 순회가 남았으면 §9
-     이후가 이어진다.
+     재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
+     `Animate` nil/None 통과 팔). §1·§5~§9의 ① 갈래(`H-344`~`H-381`; 야간 순회 0~3 전부)는
+     반영·커밋됨(CLI 49/49) — **야간 순회 종료**, 다음 리뷰는 §9 커밋 diff부터.
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/

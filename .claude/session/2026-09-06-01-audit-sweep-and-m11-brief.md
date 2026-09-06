@@ -217,4 +217,11 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   `H-375` `wrapElement` 게이트 깊이를 호출부별로(콜백 안 직접 CRUD가 `:Set` 줄을 blame하던 것); ②
   `H-376` native* 조합 폴백 약속이 코드에 없음 → §4 **Q6**(권고 (a) 약속 철회). GC 축은 실재현으로 섬
   계약 성립 확인. 원장 §8, 다섯 번째 커밋.
+- **3순회**(`/code-review high` 전체 트리, 마지막): 마지막 메시지가 중간 상태(검증자 1 잔여)여서 같은
+  에이전트를 재개해 최종 목록을 받음(새 리뷰 아님 — 규약). 8건: ① HIGH `H-377` Modifier `isPlainFieldTable`의
+  브랜드 구멍(`Modifier(AttributeKey)`가 `Name` 필드로 병합돼 조용히 rename — 술어를 `Brand.isPlainBranded`로
+  공유), MED `H-378` 스텁 nearest 회귀(자기 태그 스텁이라 nearest = quad 내부 — `errorBefore` 복원), MED `H-380`
+  Tag 이름 리스트가 `ipairs` 전용이라 Tag/Source/해시가 빈 목록으로 통과(`{string}` 배열 검증), LOW `H-381`
+  gen-d 수확을 depth-0 스캐너로(파라미터 이름 오탐 제거), 정정 셋; ② `H-379` `Animate` nil/None 팔 없음(Q8)·
+  Q7 스텁 무태그 여부. 원장 §9, 여섯 번째 커밋. **야간 순회 종료** — 매 순회가 직전 수정분의 회귀를 잡았다.
 

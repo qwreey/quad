@@ -270,7 +270,9 @@ mutable하게 구현하면 같은 modifier 레퍼런스를 공유하는 형제 �
 작동"*. **사용자 인용이 승인한 것은 모양과 병합 순서까지다.** 아래 검증 규칙은
 **에이전트 추가**(round17 `H-310` 행, 뒤집기 가능): 필드 테이블은 메타테이블 없는
 plain 테이블만(Source/State/Ref/None 등 quad 객체를 넘기면 내부 필드가 merge되는
-사고를 막는다 — 리뷰 발견), 키는 문자열만, 값은 setter와 같은 핸들러 계층 검사,
+사고를 막는다 — 리뷰 발견; **[2026-09-07 3순회 `H-377`]** 브랜드는 메타테이블이 아니라
+메타테이블 없는 quad 값 — `AttributeKey`(`Name`이 필드로 병합돼 조용히 rename)·
+`MapperDescriptor` — 은 `Brand.isPlainBranded`로 따로 거부, Attribute·Tag와 공유), 키는 문자열만, 값은 setter와 같은 핸들러 계층 검사,
 **함수 값은 거부**(setter는 함수를 변환으로 읽으므로 raw 저장하면 두 생성
 경로가 조용히 갈린다 — 변환은 `mod:Field(fn)`으로), 비테이블 인자는 error.
 타입은 `(...(Modifier | { [string]: any })) -> Modifier`(클래스별 필드 테이블

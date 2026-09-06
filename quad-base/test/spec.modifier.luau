@@ -342,4 +342,23 @@ do
 end
 
 print()
+print()
+print("=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttributeKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===")
+do
+	local okK, errK = pcall(function()
+		q.Modifier(q.AttributeKey("Selected"))
+	end)
+	assert(not okK and string.find(tostring(errK), "must be a Modifier or a plain field table", 1, true) ~= nil, "AttributeKey is not a field table: " .. tostring(errK))
+	mock.assertBlamesUser(errK, "spec.modifier.luau", "AttributeKey-arg blame")
+	local desc = q.newMapperClass("Frame")("k")({})
+	local okD, errD = pcall(function()
+		q.Modifier(desc)
+	end)
+	assert(not okD and string.find(tostring(errD), "must be a Modifier or a plain field table", 1, true) ~= nil, "MapperDescriptor is not a field table: " .. tostring(errD))
+	-- positive control — a real plain table still merges
+	assert(q.Modifier({ Name = "x" }):Peek("Name") == "x", "plain field table untouched")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -36,17 +36,18 @@ local Err = require("./ErrorNamespace")
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
--- `raise` picks the error depth per slot (checklist 0, `H-348` → `H-370`):
---   - `bindLifetime`/`unbindLifetime`/`onDestroying` fire at dispatch depth
---     (`process` → handler → `bindLifetime`), so `errorBefore` (outermost) —
---     the real backend's `quad-roblox/src/LifetimeHandle.luau` does the same;
---   - `canBound`/`canExecute` are the direct-call primitives the header above
---     describes ("like `isState`") and the real backend never raises from them,
---     so `errorBeforeNearest` — blame lands on the handler author's own line,
---     not on whoever called `drive`.
-local function notInstalled(name: string, raise: (string, any) -> ()): (...any) -> ...any
+-- Error depth (checklist 0): `errorBefore` (outermost) for EVERY stub — `H-348`,
+-- restored by 3순회 `H-378` after `H-370`/`H-373` gave `canBound`/`canExecute`/
+-- `isInst` `errorBeforeNearest`: the stub tags ITSELF (`H-231` below), so
+-- "nearest" is always the stub's direct caller — and in-tree that caller is
+-- quad internals (`Observer.luau` `Subscribe` → `canBound`, `Slot.luau` →
+-- `isInst`), which blamed `Observer.luau:139`/`Slot.luau:52`. Outermost
+-- reaches the user's line from both direct and dispatch-depth calls; the one
+-- case it does not serve (a handler author's own `canBound(v)` line inside a
+-- handler) is §4 Q7 (untagged stubs).
+local function notInstalled(name: string): (...any) -> ...any
 	local stub = function(...: any)
-		raise(
+		Err.errorBefore(
 			`quad: {name} is not available — no backend has installed the lifetime primitives / engine ops `
 				.. "(quad-roblox does this when it wraps the module; tests use mock.installLifetime)",
 			SURFACE
@@ -59,26 +60,25 @@ local function notInstalled(name: string, raise: (string, any) -> ()): (...any) 
 end
 
 local function Init(module: any)
-	module.bindLifetime = notInstalled("bindLifetime", Err.errorBefore)
-	module.unbindLifetime = notInstalled("unbindLifetime", Err.errorBefore)
-	module.canBound = notInstalled("canBound", Err.errorBeforeNearest)
-	module.canExecute = notInstalled("canExecute", Err.errorBeforeNearest)
+	module.bindLifetime = notInstalled("bindLifetime")
+	module.unbindLifetime = notInstalled("unbindLifetime")
+	module.canBound = notInstalled("canBound")
+	module.canExecute = notInstalled("canExecute")
 	-- `onDestroying(inst, fn): Connection` — the injected engine op `Effect._bindDestroying`
 	-- calls (`architecture.md` EngineOps line: a hook, not a manipulation, so no
 	-- composition fallback — missing means a clear error). The same backend that
 	-- fills the four above fills this one; until then, the same loud stub.
-	module.onDestroying = notInstalled("onDestroying", Err.errorBefore)
-	-- `H-373`: the three non-composable engine ops (see header). `isInst` is a
-	-- predicate handler authors call directly (nearest); the other two run inside
-	-- `Claim`'s resolve (outermost). `if nil` — a provider may already be there.
+	module.onDestroying = notInstalled("onDestroying")
+	-- `H-373`: the three non-composable engine ops (see header). `if nil` — a
+	-- provider may already be there (same idiom as `Tag.luau`/`AttributeKey.luau`).
 	if module.isInst == nil then
-		module.isInst = notInstalled("isInst", Err.errorBeforeNearest)
+		module.isInst = notInstalled("isInst")
 	end
 	if module.nativeClaim == nil then
-		module.nativeClaim = notInstalled("nativeClaim", Err.errorBefore)
+		module.nativeClaim = notInstalled("nativeClaim")
 	end
 	if module.nativeFindChild == nil then
-		module.nativeFindChild = notInstalled("nativeFindChild", Err.errorBefore)
+		module.nativeFindChild = notInstalled("nativeFindChild")
 	end
 end
 

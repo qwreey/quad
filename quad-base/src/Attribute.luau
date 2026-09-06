@@ -53,8 +53,7 @@ local AttributeBrand = Brand.AttributeBrand
 local isAttribute = Brand.isAttribute
 local isStore = Brand.isStore
 local isState = Brand.isState
-local isAttributeKey = Brand.isAttributeKey
-local isMapperDescriptor = Brand.isMapperDescriptor
+local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescriptor — plain tables branded, no metatable
 local None = require("./Dispatch/None").None -- `isNone` is `v == None` (None.luau header)
 local newUncachedKey = AttributeKeyModule._newUncachedKey
 
@@ -89,17 +88,19 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			end
 			map[name] = v
 		end
-	elseif type(arg) == "table" and getmetatable(arg) == nil and not isAttributeKey(arg) and not isMapperDescriptor(arg) then
+	elseif type(arg) == "table" and getmetatable(arg) == nil and not isPlainBranded(arg) then
 		-- `H-345`: "plain" is enforced — a Source/Ref/Tag/... (any quad value
 		-- carrying a metatable) would otherwise be flattened field by field
 		-- (`_value`, `Revision`, ...), the `H-310` accident Modifier already closed.
 		-- `H-368` (1순회): brands are weak-key registries, not metatables, so the
-		-- metatable-LESS quad values base can name (AttributeKey, MapperDescriptor —
-		-- frozen plain tables) are excluded by brand; quad-roblox's metatable-less
-		-- descriptors (OnChange `{ Name, Callback }`) fall to the function-value
-		-- check below — an attribute value is raw T or State<T>, never a function
-		-- (attribute-plan "그룹 `Attribute(...)`"; the engine cannot store one, and
-		-- letting it through raised inside `setAttribute` at dispatch depth).
+		-- metatable-LESS quad values (`Brand.isPlainBranded` — `H-377`) are
+		-- excluded by brand; quad-roblox's metatable-less descriptors (OnChange
+		-- `{ Name, Callback }`) fall to the function-value check below — an
+		-- attribute value is raw T or State<T>, never a function (attribute-plan
+		-- "그룹 `Attribute(...)`"; the engine cannot store one, and through THIS
+		-- group path it used to raise inside `setAttribute` at dispatch depth).
+		-- Scope: the group constructor only — the raw `[AttributeKey] = v` key
+		-- path stays untyped by design (`AttributeKey.luau` header, §4 Q4's family).
 		for rawName, v in pairs(arg :: { [any]: any }) do
 			if type(rawName) ~= "string" then
 				Err.errorBeforeNearest(`{ctx}: plain-table keys must be strings`, SURFACE)

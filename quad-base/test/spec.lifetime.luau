@@ -26,31 +26,38 @@ do
 end
 
 print()
-print("=== 1b. 스텁의 에러 깊이 — canBound/canExecute는 직접 호출 프리미티브(nearest), bind/unbind/onDestroying은 디스패치 깊이(outermost) (1순회 H-370) ===")
+print("=== 1b. 스텁의 에러 깊이 — 여덟 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===")
 do
 	local fresh = Quad.New()
 	local QuadTypes = require("../luau_packages/quad_types")
-	-- a SURFACE-tagged wrapper stands in for a handler function (addHandler tags them)
-	local lineHandler, lineUser = 0, 0
-	local function viaHandler(name: string)
-		lineHandler = (debug.info(1, "l") :: number) + 1
+	-- a SURFACE-tagged wrapper stands in for a public method / handler frame
+	local lineUser = 0
+	local function viaSurface(name: string)
 		return (fresh :: any)[name]({}, {})
 	end
-	fresh.errorNamespace.setFuncLevel(viaHandler, QuadTypes.ERROR_LEVEL_SURFACE)
+	fresh.errorNamespace.setFuncLevel(viaSurface, QuadTypes.ERROR_LEVEL_SURFACE)
 	local function user(name: string)
 		lineUser = (debug.info(1, "l") :: number) + 1
-		return viaHandler(name)
+		return viaSurface(name)
 	end
-	for _, name in { "canBound", "canExecute", "isInst" } do
+	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "nativeFindChild" } do
 		local ok, err = pcall(user, name)
 		assert(not ok, name .. " stub errors")
-		assert(string.find(tostring(err), `spec.lifetime.luau:{lineHandler}:`, 1, true) ~= nil, name .. ": nearest — blames the handler author's own line: " .. tostring(err))
+		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the surface frame: " .. tostring(err))
 	end
-	for _, name in { "bindLifetime", "unbindLifetime", "onDestroying", "nativeClaim", "nativeFindChild" } do
-		local ok, err = pcall(user, name)
-		assert(not ok, name .. " stub errors")
-		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the handler frame: " .. tostring(err))
-	end
+	-- the in-tree pattern `H-378` fixed: quad internals call `canBound`/`isInst`
+	-- from inside public methods — the blame must be the user's line, not
+	-- Observer.luau / Slot.luau (a stub tagged SURFACE made "nearest" = that internal line)
+	local okO, errO = pcall(function()
+		fresh.Source(1):Observer(function() end):Subscribe()
+	end)
+	assert(not okO and string.find(tostring(errO), "canBound is not available", 1, true) ~= nil, "Subscribe reaches the canBound stub: " .. tostring(errO))
+	mock.assertBlamesUser(errO, "spec.lifetime.luau", "canBound via Observer:Subscribe blames the user")
+	local okS, errS = pcall(function()
+		fresh.Slot():Add(mock.Instance.new("Frame"))
+	end)
+	assert(not okS and string.find(tostring(errS), "isInst is not available", 1, true) ~= nil, "Slot:Add reaches the isInst stub: " .. tostring(errS))
+	mock.assertBlamesUser(errS, "spec.lifetime.luau", "isInst via Slot:Add blames the user")
 	print("PASS")
 end
 

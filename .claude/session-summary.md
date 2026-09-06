@@ -2373,4 +2373,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   이어 사용자 지시로 야간 순회(02:30 KST 타이머, ① 자율·② 원장 누적) — 0순회 `H-362`~`H-367`(`H-353` 회귀 둘 정정 등, §6), 1순회 `H-368`~`H-372`(Attribute 가드의
   브랜드 사각·gen-d 게이트 `re.M`·LifetimeHandle 스텁 깊이 슬롯별, §7 — 전부 ①, 새 문항 0), 2순회
   `H-373`~`H-376`(엔진 op 스텁 셋·mock `nativeClaim`/`nativeFindChild`·`wrapElement` 깊이, §8; native*
-  조합 폴백 약속은 §4 Q6).
+  조합 폴백 약속은 §4 Q6), 3순회 `H-377`~`H-381`(Modifier 브랜드 구멍·스텁 nearest 회귀 복원·Tag 리스트 검증·
+  gen-d depth-0 스캐너, §9; `Animate` None 팔은 Q8, 스텁 무태그는 Q7) — **야간 순회 종료**.

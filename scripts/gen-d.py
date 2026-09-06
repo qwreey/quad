@@ -441,11 +441,44 @@ def emit():
     # [0순회 H-364] `Slot<T>` joined NewChild (H-351) — its function fields must be gated too. The
     # regex is narrowed to FUNCTION fields (`name: (` / `name: <`): Slot's data fields (`Length`/
     # `Offset: Source<number>`) are not the 8.9 hazard and `Offset` is a real setter (UIGradient).
-    # [1순회 H-369] `re.M` — without it `^` only matched the body start, so every field that
-    # follows a comment line (no `{`/`,` before it — `State<T>`'s `Compute`/`Observer`/`Gate`/
-    # `Apply`, the recursive function fields 8.9 is about) was silently not harvested.
+    # [1순회 H-369] the old regex without `re.M` only matched the body start — every field after a
+    # comment line (`State<T>`'s `Compute`/`Observer`/`Gate`/`Apply`, the recursive function fields
+    # 8.9 is about) was silently not harvested. [3순회 H-381] a regex cannot tell a depth-0 field
+    # from a parameter on its own line inside a multi-line signature (`fn`/`factory`/`keyFn` were
+    # harvested; a PascalCase parameter would have been a phantom collision → SystemExit), so the
+    # harvest is a depth-0 scan of the type body instead.
+    def function_fields(body):
+        body = re.sub(r"--\[\[.*?\]\]", "", body, flags=re.S)
+        body = re.sub(r"--[^\n]*", "", body)
+        names, depth, i, n = set(), 0, 0, len(body)
+        while i < n:
+            c = body[i]
+            if body.startswith("->", i):
+                i += 2
+                continue
+            if c in "(<{[":
+                depth += 1
+            elif c in ")>}]":
+                depth -= 1
+            elif depth == 0 and (c.isalpha() or c == "_"):
+                j = i
+                while j < n and (body[j].isalnum() or body[j] == "_"):
+                    j += 1
+                k = j
+                while k < n and body[k] in " \t":
+                    k += 1
+                if k < n and body[k] == ":":
+                    k += 1
+                    while k < n and body[k] in " \t\n":
+                        k += 1
+                    if k < n and body[k] in "(<":
+                        names.add(body[i:j])
+                i = j
+                continue
+            i += 1
+        return names
     for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>"):
-        union_member_functions |= set(re.findall(r"(?:^|[{,])\s*(?:read )?([A-Za-z_]+):\s*[(<]", type_body(tname), re.M))
+        union_member_functions |= function_fields(type_body(tname))
     reserved = {"Apply", "Peek", "Overridden", "As"}
     for node in mod_classes:
         for p in mod_props(node):

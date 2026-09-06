@@ -87,6 +87,20 @@ do
 	end)
 	assert(not okM, "Merged validates")
 	mock.assertBlamesUser(errM, "spec.tag.luau", "Merged blame")
+	-- 3순회 `H-380`: a name LIST is a `{string}` array — a Tag value / Source /
+	-- AttributeKey / hash table used to pass `ipairs` as an EMPTY list, so
+	-- `Added(Tag)`/`Removed(Tag)` were silent no-ops
+	local a = q.Tag("alpha")
+	for label, bad in { tagValue = q.Tag("gamma"), source = q.Source(1), attrKey = q.AttributeKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" } } :: { [string]: any } do
+		local okL, errL = pcall(function()
+			a:Added(bad)
+		end)
+		assert(not okL and string.find(tostring(errL), "names must be strings", 1, true) ~= nil, label .. " is not a name list: " .. tostring(errL))
+		mock.assertBlamesUser(errL, "spec.tag.luau", label .. " blame")
+		assert(not pcall(function() a:Removed(bad) end), label .. ": Removed validates too")
+		assert(not pcall(function() q.Tag(bad) end), label .. ": constructor validates too")
+	end
+	assert(a:Added({ "b", "c" }):Contains("c") and not a:Added({}):Contains("b"), "a real {string} list (and an empty one) still works")
 	print("PASS")
 end
 

@@ -622,6 +622,11 @@ local function mockProvider(quad: any): { [any]: any }
 	-- (`H-305` (d′) "전부 같은 형태" — mock is a backend too, `H-294`). The
 	-- lazy internal `claim` stays idempotent (bindLifetime claims on demand);
 	-- the explicit op mirrors the real one's double-claim contract (§7-10).
+	-- 3순회 note: the "already claimed" marker (`gchold`) is SHARED with the
+	-- lazy claim, so `bindLifetime(inst, v)` then `Claim(inst, …)` reads as
+	-- "already claimed" here while the real provider rejects that order one
+	-- step earlier ("not claimed") — valid programs are unaffected, only the
+	-- error trajectory differs (the header's intended lazy divergence).
 	local function nativeClaim(inst: any)
 		if not isMockInstance(inst) then
 			Err.errorBefore("nativeClaim: inst is not a mock instance", SURFACE)

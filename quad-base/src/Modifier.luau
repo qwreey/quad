@@ -93,6 +93,7 @@ local isRef = Brand.isRef -- covers PreRef/PostRef (Brand.luau predicate)
 local isObserver = Brand.isObserver
 local isEffect = Brand.isEffect
 local SlotBrand = Brand.SlotBrand
+local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescriptor carry no metatable
 
 -- private field store key — a unique table identity, can never collide with a
 -- user field name (spike 17 / spike 11 idiom)
@@ -277,14 +278,17 @@ end
 -- rules below are AGENT additions (round17 `H-310` row, vetoable):
 --   - a "field table" is a metatable-less plain table — any other quad
 --     object (Source/State/Ref/None …) is rejected instead of having its
---     internals merged as fields (review finding);
+--     internals merged as fields (review finding); 3순회 `H-377`: brands are
+--     not metatables, so the plain-branded values (AttributeKey — its `Name`
+--     merged as a field and silently RENAMED the instance; MapperDescriptor)
+--     are excluded by `Brand.isPlainBranded` (shared with Attribute/Tag);
 --   - keys must be field names (strings);
 --   - values take the setter's handler-layer check, and a FUNCTION value is
 --     rejected: the setter reads a function as a transform (4절), and
 --     storing it raw here would make the two construction paths diverge
 --     silently — use `mod:Field(fn)` for transforms.
 local function isPlainFieldTable(arg: any): boolean
-	return type(arg) == "table" and getmetatable(arg) == nil and not isState(arg) and not isHandlerLayerValue(arg)
+	return type(arg) == "table" and getmetatable(arg) == nil and not isPlainBranded(arg) and not isState(arg) and not isHandlerLayerValue(arg)
 end
 
 -- shared by `Modifier(...)` (tag true) and every TypedFactory constructor (tag =

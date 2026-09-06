@@ -104,6 +104,13 @@ end
 local function isAttributeKey(x: any): boolean
 	return AttributeKeyBrand:is(x)
 end
+-- 3순회 `H-377`: the quad values that are frozen PLAIN tables — no metatable,
+-- branded only here. Every `getmetatable(x) == nil` "plain table" gate
+-- (Attribute/Modifier/Tag) must exclude them by brand, so the list lives once
+-- (a shared pure predicate — conventions "하나가 두 일" allows exactly that).
+local function isPlainBranded(x: any): boolean
+	return isAttributeKey(x) or isMapperDescriptor(x)
+end
 
 -- Subtype relations: the more specific predicate is defined first and the
 -- wider one is composed on top of it, so the direction of inclusion is
@@ -161,4 +168,5 @@ return {
 	isTween = isTween,
 	isAttribute = isAttribute,
 	isAttributeKey = isAttributeKey,
+	isPlainBranded = isPlainBranded,
 }
