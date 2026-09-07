@@ -96,7 +96,7 @@ local function Init(module: any)
 	-- lazily). Physical-inst owners keep the weak Relate + gchold anchor path.
 	-- The header predicted this branch "when M6 lands" — this is that.
 	local function getBookkeeping(ownerKey: any): any
-		if Brand.SlotBrand:is(ownerKey) then
+		if Brand.isSlot(ownerKey) then
 			local bk = ownerKey._bk
 			if bk == nil then
 				bk = newBk()
@@ -139,7 +139,7 @@ local function Init(module: any)
 	-- (0순회 `H-365`: a per-call closure was allocated N times per recompute).
 	local function ensureBase(bk: any, ownerKey: any)
 		if bk.offsetCacheValidUpTo == 0 then
-			bk.offsetCache[1] = if Brand.SlotBrand:is(ownerKey) then ownerKey.Offset:Get() else 0
+			bk.offsetCache[1] = if Brand.isSlot(ownerKey) then ownerKey.Offset:Get() else 0
 			bk.offsetCacheValidUpTo = 1
 		end
 	end
@@ -251,7 +251,7 @@ local function Init(module: any)
 		-- with no user-code window in between (`H-240`).
 		bk.offsetSetUpTo = bk.N or 0
 		bk.recomputeBlocker:OffWithoutEmit()
-		if Brand.SlotBrand:is(ownerKey) and ownerKey.Length:Get() ~= sum then
+		if Brand.isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
 			ownerKey.Length:Set(sum) -- Length carries no base — length is position-free
 		end
 	end

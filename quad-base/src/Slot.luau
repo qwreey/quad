@@ -90,9 +90,7 @@ local function Init(module: any)
 		elementOwner:SetWeak(element, OWNER_POS, nil)
 	end
 
-	local function isSlot(v: any): boolean
-		return Brand.SlotBrand:is(v)
-	end
+	local isSlot = Brand.isSlot -- `H-403`: the predicate lives in Brand.luau with its siblings
 
 	-- forward decls (mutual recursion)
 	local Slot, materializeSlotTree, mountSlotTree, markMountedTree, attachSlot, destroySlotTree, unmountSlotTree, teardownTree

@@ -248,3 +248,9 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 
 다음 순회는 §12부터, `H-404`부터.
 
+## §12 — 사용자 지시 반영 + 6순회 (2026-09-07 오후)
+
+| ID | 자리 | 무엇 | 처리 |
+|---|---|---|---|
+| **`H-403`** (①, 사용자 지시) | `Slot.luau` `isSlot` | 형제 술어는 전부 `Brand.luau`에 사는데 `isSlot`만 `Slot.luau`의 로컬 함수 + `module.isSlot` 설치였다(`slot-plan.md`: "`isSlot`은 `Brand`의") | `Brand.isSlot`으로 이동·export, `Slot.luau`는 그걸 재노출(`module.isSlot`·`_slotInternal.isSlot` 동일 함수), `init.luau` 리터럴에 합류, `Modifier`/`Bookkeeping`의 `SlotBrand:is` 직접 호출 셋도 `Brand.isSlot`로 |
+

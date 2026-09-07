@@ -92,7 +92,6 @@ local isState = Brand.isState
 local isRef = Brand.isRef -- covers PreRef/PostRef (Brand.luau predicate)
 local isObserver = Brand.isObserver
 local isEffect = Brand.isEffect
-local SlotBrand = Brand.SlotBrand
 local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescriptor carry no metatable
 
 -- private field store key — a unique table identity, can never collide with a
@@ -100,7 +99,7 @@ local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescr
 local FieldsKey = table.freeze({})
 
 local function isHandlerLayerValue(v: any): boolean
-	return isRef(v) or isObserver(v) or isEffect(v) or SlotBrand:is(v) or isModifier(v)
+	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)
 end
 
 local ModifierMT = {}

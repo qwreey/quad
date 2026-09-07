@@ -106,6 +106,12 @@ end
 local function isAttributeKey(x: any): boolean
 	return AttributeKeyBrand:is(x)
 end
+-- `H-403` (사용자 지시 2026-09-07): lived in `Slot.luau` alone while every sibling
+-- predicate lives here — moved so the set has one home (`slot-plan.md`: "`isSlot`은
+-- `Brand`의"). `Slot.luau` re-exposes it on the module like before.
+local function isSlot(x: any): boolean
+	return SlotBrand:is(x)
+end
 -- 3순회 `H-377`: the quad values that are frozen PLAIN tables — no metatable,
 -- branded only here. Every `getmetatable(x) == nil` "plain table" gate
 -- (Attribute/Modifier/Tag/Store — grep `isPlainBranded` for the current set)
@@ -171,5 +177,6 @@ return {
 	isTween = isTween,
 	isAttribute = isAttribute,
 	isAttributeKey = isAttributeKey,
+	isSlot = isSlot,
 	isPlainBranded = isPlainBranded,
 }

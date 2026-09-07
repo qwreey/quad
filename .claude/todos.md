@@ -18,8 +18,8 @@
      `AddPlugin` 락 우회·**Q11** Modifier setter 키·**Q12** Tween 동일값 재발행·**Q13~Q17**(5순회 —
      `setOffsetSource` 게이트·`destroySlotTree` `releaseOwner`·`setLength` 도메인·`Tween.validate` State·
      `numberOnly`)·**Q7 둘째** `_assertBindable` 방향). §1·§5~§11의 ① 갈래(`H-344`~`H-402`; 야간 0~3 +
-     주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중), 다음은 §12부터 — 첫 항목은 사용자 지시
-     `H-403`(`isSlot`을 `Brand.luau`로, 형제 술어와 일치).
+     주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중), 다음은 §12(사용자 지시 `H-403` `isSlot` → `Brand.luau` 반영 완료)에
+     이어진다.
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/

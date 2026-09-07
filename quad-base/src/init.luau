@@ -79,6 +79,7 @@ local function New(): Quad
 		isPreRef = Brand.isPreRef,
 		isPostRef = Brand.isPostRef,
 		isMapperDescriptor = Brand.isMapperDescriptor, -- M5 단위 ④(Claim)
+		isSlot = Brand.isSlot, -- `H-403` (was installed by Slot.Init — still is, same function)
 		isTag = Brand.isTag, -- M10 (round16)
 		isTween = Brand.isTween, -- M11 단위 ①
 		isAttribute = Brand.isAttribute,
