@@ -209,16 +209,17 @@ do
 end
 
 print()
-print("=== 9. Property nil 방어(M10 — dispatch-core None 캐비엇) — None/nil 재발행은 쓰기를 건너뛰고 마지막 값이 남는다 ===")
+print("=== 9. Property nil 쓰기(Q33 (a), 2026-09-08 — M10 skip-defense 역전) — None/nil 재발행은 nil을 쓴다(오브젝트 참조 해제 경로; 못 받는 타입은 엔진이 에러) ===")
 do
 	local src = q.Source(true)
 	local f = q.D.Frame({ Visible = src }) :: any
 	assert(f.Visible == true, "initial reactive write")
 	-- mock의 프로퍼티 백은 nil 대입을 받아주므로 회귀는 "값이 nil이 됐는가"로 핀한다
 	src:Set(q.None) -- NoneHandler → nil 재귀 → Property(키 매치, v == nil)
-	assert(f.Visible == true, "None re-dispatch skipped the write — last value stays (no `inst[k] = nil`)")
+	assert(f.Visible == nil, "None re-dispatch WRITES nil (release path)")
+	src:Set(true)
 	src:Set(nil :: any)
-	assert(f.Visible == true, "plain nil skipped too")
+	assert(f.Visible == nil, "plain nil writes nil too")
 	src:Set(false)
 	assert(f.Visible == false, "a real value writes again")
 	print("PASS")

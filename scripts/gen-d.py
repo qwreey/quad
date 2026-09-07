@@ -21,7 +21,7 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
   H-296 (a) 범위 = creatable ∧ (GuiObject∪UIComponent∪LayerCollector 하위)
             + 명시 화이트리스트 {Folder, Camera, WorldModel}
   H-297 (a) ReadOnly/Deprecated/NotScriptable/Hidden/보안≠None 프로퍼티 제외
-  H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커),
+  H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커; Tween 팔은 보간 가능 타입만 — Q34, 2026-09-08),
             이벤트 = 콜백 | StateMarker<콜백> | None, children = NewChild(types.luau) — None 표현은
             H-300 (a)로 확정(센티널 마커 필드 → QuadTypes.None)
   H-142     Parent는 덤프 층에서 제외(Q5 (a) — M7 목록과 공유되는 자리)
@@ -46,6 +46,16 @@ CLASS_TAG_EXCLUDE = {"Deprecated", "NotBrowsable"}
 CLASS_DENY = {"RelativeGui"}  # 실측: lacking capability RobloxScript
 PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
 EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
+# [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
+TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
+
+
+def tweenable(t):
+    return all(m.strip() in TWEENABLE for m in t.split("|"))
+
+
+def field_alias(t):
+    return "Field" if tweenable(t) else "FieldP"
 PRIMITIVES = {
     "int": "number", "int64": "number", "float": "number", "double": "number",
     "bool": "boolean", "string": "string",
@@ -178,7 +188,10 @@ def normalize(raw_path, version):
                 # [7순회] 멤버 단위 제외도 dropped에 남긴다(파일 머리 "조용한 절단 금지") —
                 # `D.TextLabel { Font = … }`가 왜 없는지 추적 가능해야 한다
                 if m["Name"] == "Parent":
-                    dropped.append(f"{name}.Parent: excluded by design (H-142, Q5 (a))")
+                    # [Q35 (a), 사용자 결정 2026-09-08 — round3 §11] WRITE surface still excludes Parent (H-142);
+                    # the READ surface (OnChange) keeps it — `OnChange("Parent", fn)` was a TypeError
+                    dropped.append(f"{name}.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)")
+                    read_props.append({"name": "Parent", "type": "Instance", "owner": owner})
                     continue
                 # [round1 Q19 (a), 2026-09-07] ReadOnly props (AbsoluteSize/AbsolutePosition/TextBounds…)
                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
@@ -256,7 +269,7 @@ def emit():
     L.append(f"\tdump: {data['dumpVersion']} (API {data['apiVersion']}); 재생성 방법은 생성기 헤더.")
     L.append("\t표면 계약: bind-system-plan.md 인스턴스 생성 절(New 커링·①~④ 파이프라인·")
     L.append("\tD는 캐스트 별칭·Parent 제외 H-142), claim-plan §7-12(<Class>Param<E> 공유),")
-    L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None")
+    L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None(Tween 팔은 보간 가능 타입만 — Q34; 그 밖은 T | StateMarker<T> | None)")
     L.append("\t(H-326 → 2026-09-07 마커: State 팔은 공변 StateMarker 하나, typing-limits 8.11),")
     L.append("\t이벤트 콜백 | StateMarker<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).")
     L.append("\t이벤트 필드의 런타임 핸들러는 Handlers/Event.luau(M10, 2026-09-03 구현됨 —")
@@ -320,6 +333,11 @@ def emit():
     # type D`가 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
     L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
     L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
+    # [Q34 (a)] non-interpolable property types get the Tween-less shape — same three roles
+    # (value / transform input / transform old), no Tween arm anywhere
+    L.append("export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)")
+    L.append("export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)")
+    L.append("export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
     L.append("")
     names = sorted(classes.keys())
     # [2026-09-06 M11 단위 ① H-326] + State<Tween<T>> — tween-plan "타입 대수"의
@@ -381,8 +399,14 @@ def emit():
     # `State<T | Tween<T>>`(H-334가 "too complex"로 포기한 팔)를 전부 한 팔로 받는다(스파이크 35).
     # 바깥 값 팔은 데이터부 TweenData(8.8), 마커 안은 전체형 Tween(State<Tween<T>>의 필드형 그대로).
     # H-362의 SHF(숏핸드 setter 멤버별 값 팔) 별칭도 같이 사라진다 — Field<number | UDim> 하나로 충분.
+    # [Q34 (a), 사용자 결정 2026-09-08 — round3 §11] the Tween arm exists only where TweenService can
+    # interpolate (engine docs: number/boolean/CFrame/Rect/Color3/UDim/UDim2/Vector2/Vector2int16/Vector3).
+    # string/Instance/Enum/Content/Font/…Sequence used to accept `Tween{…}` in strict and die in
+    # `TweenService:Create` at runtime (H-103 NOOP marker); the plain arms are also far lighter.
     def pv_arms(t):
-        return [t, f"TweenData<{t}>", f"StateMarker<{t} | Tween<{t}>>", "None"]
+        if tweenable(t):
+            return [t, f"TweenData<{t}>", f"StateMarker<{t} | Tween<{t}>>", "None"]
+        return [t, f"StateMarker<{t}>", "None"]
     pv_name = {}
     for i, t in enumerate(prop_types):
         pv_name[t] = f"PV{i}"
@@ -576,10 +600,10 @@ def emit():
             L.append(f"\tAs{d}: (self: {node}Modifier) -> {d}Modifier,")
         for p in props:
             t = p["type"]
-            L.append(f"\t{p['name']}: (self: {node}Modifier, value: Field<{t}>) -> {node}Modifier,")
+            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,")
         if is_gui_object(node):
             for sname, t in SHORTHAND:
-                L.append(f"\t{sname}: (self: {node}Modifier, value: Field<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
+                L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
         L.append("}")
         # Into<Class> — "이 클래스로 갈 수 있는 모든 것"(상위·자기·커스텀 구현체).
         # self는 any여야 한다: self를 인터페이스 타입으로 두면 반공변 때문에

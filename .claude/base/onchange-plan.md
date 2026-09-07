@@ -85,7 +85,7 @@
    덤프 기준). 클래스 간 타입이 다른 이름(`Style`/`CanvasSize`/`Color`/
    `Offset`/`Transparency`/`Padding`)은 **`any`** — `index<>`가 유니언을 주면
    주석 콜백이 반공변으로 거부되기 때문(실측).
-   **[2026-09-07 회신 3차 Q19 (a) 사용자 확정]** OnChange는 **읽기 표면 `PropTypesRead`**(쓰기 프로퍼티 + ReadOnly 프로퍼티 — AbsoluteSize/AbsolutePosition/TextBounds 등 — 개수의 소스는 `quad-roblox/dump/api-surface.json`의 `readProps`, 여기 세지 않는다)를 쓴다 — 쓰기 표면 `PropTypes`로는 관측의 주 대상이 strict에서 거부됐다(`H-414`). `<Class>OnChange` 유니언도 같은 표면.
+   **[2026-09-07 회신 3차 Q19 (a) 사용자 확정]** OnChange는 **읽기 표면 `PropTypesRead`**(쓰기 프로퍼티 + ReadOnly 프로퍼티 — AbsoluteSize/AbsolutePosition/TextBounds 등 — 개수의 소스는 `quad-roblox/dump/api-surface.json`의 `readProps`, 여기 세지 않는다)를 쓴다 — 쓰기 표면 `PropTypes`로는 관측의 주 대상이 strict에서 거부됐다(`H-414`). `<Class>OnChange` 유니언도 같은 표면. **[2026-09-08 Q35 (a)]** `Parent`는 쓰기 표면에선 빠지지만(`H-142`) 읽기 표면엔 **있다** — 생성기가 제외를 분기 앞에 두어 `OnChange("Parent")`가 TypeError였다(탐사 B-4), 사용자: *"없을 필요가 없는 부분"*.
 2. **`OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>`**
    — `RobloxExtension.OnChange`가 이 타입(런타임 팩토리는 무타입). 이름
    오타(`keyof`)와 콜백 파라미터 타입 불일치(`index<>`)를 **호출 자리**에서

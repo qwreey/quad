@@ -1326,3 +1326,11 @@ L2 디스패치    Handler · Dispatch 코어 · chains · None ·          ┐
 한다는걸 적어두는거라면, 동의"* — 별도 장치 없음, fail-fast 톤 그대로,
 `base/attribute-plan.md` 말미에 확정 서술. 원문은
 `session/2026-09-03-01-fork-integration.md`의 회신 절.
+
+## [2026-09-08 해소] 탐사 순회 문항 Q33~Q36 (round3 §4·§10, 결정은 §11)
+
+- **Q33** `None`으로 오브젝트 참조 프로퍼티를 해제할 수 없다 → **(a) skip-defense 제거, nil을 쓴다** — 사용자 실측 `Motor6D.Part0`가 nil, nil을 못 받는 타입은 엔진이 에러(M10 캐비엇·`H-352` 역전).
+- **Q34** 모든 타입에 Tween 팔 → **(a) 보간 가능 타입만**(생성기 `TWEENABLE`, `FieldP<T>`).
+- **Q35** `OnChange("Parent")` 타입 거부 → **(a) 읽기 표면에 `Parent`**.
+- **Q36** KeyGone `ud` 잔존 → **열지 않음, 사용자 재량**(캐싱 용도 허용; `userdata`는 수동 제거가 필요한 데이터를 담지 않는 게 계약).
+- 부수: round5 §4 Q30~Q32는 사용자 본인 회신임을 확인.

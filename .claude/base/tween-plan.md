@@ -181,6 +181,13 @@ no-op이라 실질적 동작이 없음, 일반 프로퍼티는 애초에 "unset"
 
 ### 타입 대수: `T' = T | Tween<T>` — Modifier/State/Source에 새 타입 기계 불필요
 
+**[2026-09-08 사용자 결정 Q34 (a) — round3 §11]** `Tween` 팔은 **TweenService가 보간할 수 있는 타입에만** 붙는다
+(number/boolean/CFrame/Rect/Color3/UDim/UDim2/Vector2/Vector2int16/Vector3 — 생성기 `TWEENABLE`). string·Instance·
+Enum·Content·Font·Sequence류는 `T | StateMarker<T> | None`(Modifier setter는 `FieldP<T>`)이라 `Tween{...}`이 strict에서
+막힌다(전엔 통과한 뒤 `TweenService:Create`가 던져 NOOP 마커가 남았다 — 탐사 B-3). 사용자: *"처음부터 트윈
+불가능한건 타입 상 안 되어 오류가 나야하는게 맞아서"*, 타입 무게도 준다. 아래 서술의 `T' = T | Tween<T>`는 보간 가능
+타입에 한한 것으로 읽을 것.
+
 **[2026-09-06 실측 정정 — M11 단위 ① `H-326`/`H-327`]** **[2026-09-07 마커 — 사용자 결정]** 이 절의 한 멤버 모양은 **마커로 되살아났다** — 실물 `PVn = T | TweenData<T> | StateMarker<T | Tween<T>> | None`, setter `FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None`(`typing-limits.md` 8.11; 정직한 `State<T | Tween<T>>`도 든다). 아래 "각각 나열"은 그 사이의 우회. 이 절의
 `State<T | Tween<T>>` 한 멤버 모양은 새 솔버에서 성립하지 않는다 — `State<X>`가
 불변이라 plain `State<T>`가 그 자리에 못 들어간다. 실물(생성 `D` 슬롯 유니언·
@@ -218,7 +225,7 @@ State<T | Tween<T>>`가 나옴~~ **[2026-09-06 정정]** 실물은 위 배너대
 `types.luau` 주석·원장). `CanAnimate = false`의 plain 반환은 그대로다.
 
 **[2026-09-07 회신 3차 — 사용자 확정 셋]** (Q8 (a)) `Animate`의 Compute는 `nil`/`None`을 **그대로 통과**시킨다 —
-Property 핸들러의 skip-defense / NoneHandler가 해제를 맡는다(옛 코드는 `Tween{ Value = None }`으로 엔진에
+Property 핸들러가 nil을 써서 해제한다(**[2026-09-08 Q33]** 옛 skip-defense는 역전 — 아래 `dispatch-core-plan.md` 캐비엇 참조; 옛 코드는 `Tween{ Value = None }`으로 엔진에
 닿았다, `H-379`). (Q12) **`Dedup` 옵션**(`boolean | State<boolean>`, 기본 `true`): 목표 값과 옵션 전부가 이전
 Tween과 같으면 **이전 Tween 객체를 그대로** 돌려주고, Property 핸들러는 같은 Tween 객체의 재발행을 신원
 비교로 접어 활성 트윈을 건드리지 않는다(`H-391`의 취소+재시작 소멸). 완료된 트윈도 같은 목표로는 재트리거되지
@@ -262,7 +269,7 @@ local function Animate(info)
   return function(self)
     return self:Compute(function(selfH, previous)
       local v = selfH:Get()
-      if v == nil or v == None then return v end   -- Q8 (a): 해제는 하류(skip-defense/NoneHandler) 몫
+      if v == nil or v == None then return v end   -- Q8 (a): 해제는 하류(Property 핸들러의 nil 쓰기) 몫
 
       local canAnimate = resolve(info.CanAnimate)
       if canAnimate == nil then

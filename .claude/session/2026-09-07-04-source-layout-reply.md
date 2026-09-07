@@ -92,3 +92,11 @@ Gemini가 `README.md` 색인 행까지 직접 고쳐 놓았다(round5 항목) �
 감사자 1패스(sonnet)가 Q31 미반영·`G-22` 미배정·slot-plan 정본 코드 블록 잔존·dispatch-core "경로가 없다" 문장 충돌을
 잡았다 → `H-473`·`H-474` + 문서 정정. 감사자 발견 넷 중 둘이 "원문에 나중에 붙은 절을 못 봤다"는 것 — 외부 리뷰 파일은
 종료 보고를 받은 뒤 다시 읽을 것. test.sh exit 0(스펙 49).
+
+## 6. 회신 5차 — Q33~Q36 (2026-09-08 새벽, 대화형)
+
+사용자가 round5 Q30~Q32가 본인 회신임을 확인. Q33은 내 권고(Reflection으로 nillable 판별)보다 단순한 답 — *"nil로 셋
+되는건 정상적 경로 … 안 받으면 엔진이 에러를 내줘"* → skip-defense 자체를 제거(M10 캐비엇·`H-352` 역전). Q34 (a)
+생성기 `TWEENABLE`·`FieldP<T>`(D 31 클래스 재생성, `FieldOutP = QuadTypes.FieldOut<T>` 재별칭은 8.12 한도 무해 —
+타입 검사 통과). Q35 (a) `Parent` 읽기 표면. Q36은 열지 않음(사용자 재량 — `userdata` 계약). 시행착오: spec에서 mock
+트윈 로그 모양(`log[i].tween.cancels`)을 잘못 읽어 한 번 실패. test.sh exit 0(스펙 49), doc-check ERROR 0.

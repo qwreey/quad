@@ -260,10 +260,10 @@ do
 	local root4 = Instance.new("Frame")
 	quad.bindLifetime(root4, {}) -- claims it first
 	local desc4 = M("Frame")(quad.MapperRoot)({})
-	local okC, errC = pcall(function() quad.Claim(root4, desc4) end)
-	assert(not okC and string.find(tostring(errC), "already claimed", 1, true) ~= nil, "first: real cause: " .. tostring(errC))
-	local okC2, errC2 = pcall(function() quad.Claim(root4, desc4) end)
-	assert(not okC2 and string.find(tostring(errC2), "already claimed", 1, true) ~= nil and string.find(tostring(errC2), "already used", 1, true) == nil, "retry: same real cause, not 'already used': " .. tostring(errC2))
+	local okR, errR = pcall(function() quad.Claim(root4, desc4) end)
+	assert(not okR and string.find(tostring(errR), "already claimed", 1, true) ~= nil, "first: real cause: " .. tostring(errR))
+	local okR2, errR2 = pcall(function() quad.Claim(root4, desc4) end)
+	assert(not okR2 and string.find(tostring(errR2), "already claimed", 1, true) ~= nil and string.find(tostring(errR2), "already used", 1, true) == nil, "retry: same real cause, not 'already used': " .. tostring(errR2))
 	print("PASS")
 end
 

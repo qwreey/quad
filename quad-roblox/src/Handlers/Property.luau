@@ -18,15 +18,12 @@
 	bookkeeping (`H-39` is about ARRAY positions only). The retractor is
 	`Void`: a property cannot be "unset", and a descending-diff replacement
 	simply writes the next value. `v == nil` (a `None` re-dispatch, or a
-	State that computed nil) SKIPS the write — `dispatch-core-plan.md`
-	"`None` 센티널" 절의 구현 디테일 캐비엇 (M10에서 채움, 2026-09-03):
-	`inst[k] = nil` on a non-nillable engine property (Color3/number …) is a
-	raw engine error inside `process`, which would leave the `H-103` NOOP
-	marker stuck on that key. The last written value stays (a property
-	cannot be unset) — except while an engine tween is active on that key:
-	`nil` returns before the slot is read, so the tween keeps writing until
-	it finishes or the next real value cancels it (spec.tweenproperty 6절
-	"None → nil: skip-defense, active tween untouched" — intended, `H-352`).
+	State that computed nil) WRITES nil — [Q33 (a), 2026-09-08] object
+	references (Adornee/Part0/NextSelection*) are released only this way; a
+	property that cannot take nil raises in the engine, and that raise is the
+	user's error to see (the old M10 skip-defense, `H-352`, swallowed None
+	silently — reversed). An active tween on that key is cancelled first
+	(plain-value path), spec.tweenproperty 6절.
 
 	M11 unit ② (round19, `tween-plan.md` "3-상태 저장" / "override 정책" /
 	"옵션 값 모양"): `isTween(realv)` is a branch INSIDE process, not a
@@ -114,9 +111,11 @@ local function install(quad: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
-			if v == nil then
-				return Void -- skip-defense (header) — never write nil into an engine property
-			end
+			-- [Q33 (a), 사용자 결정 2026-09-08 — round3 §11] NO nil skip: nil is a legitimate write
+			-- (object references — Adornee/Part0/NextSelection* — release only this way; the
+			-- engine itself raises on a property that cannot take nil, and that is the user's
+			-- error to see). The old skip-defense (M10, `H-352`) silently swallowed None here.
+			-- A nil takes the plain-value path below: it cancels an active tween and writes nil.
 			local prev = tweenSlots:GetStrong(inst, k)
 			local tweenIn = isTween(v)
 			if tweenIn and type(prev) == "table" and prev.Source == v then

@@ -284,6 +284,11 @@
      "name": "CurrentDistance",
      "owner": "BillboardGui",
      "type": "number"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -470,6 +475,11 @@
      "name": "NearPlaneZ",
      "owner": "Camera",
      "type": "number"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     },
     {
      "name": "ViewportSize",
@@ -1020,6 +1030,11 @@
      "name": "GuiState",
      "owner": "GuiObject",
      "type": "Enum.GuiState"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -1140,6 +1155,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -1680,6 +1700,11 @@
      "name": "GuiState",
      "owner": "GuiObject",
      "type": "Enum.GuiState"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -2416,6 +2441,11 @@
      "name": "IsLoaded",
      "owner": "ImageButton",
      "type": "boolean"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -3012,6 +3042,11 @@
      "name": "IsLoaded",
      "owner": "ImageLabel",
      "type": "boolean"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -3243,6 +3278,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -3878,6 +3918,11 @@
      "name": "GuiState",
      "owner": "GuiObject",
      "type": "Enum.GuiState"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -4150,6 +4195,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -4844,6 +4894,11 @@
      "name": "OpenTypeFeaturesError",
      "owner": "TextBox",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     },
     {
      "name": "TextBounds",
@@ -5607,6 +5662,11 @@
      "type": "string"
     },
     {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
+    },
+    {
      "name": "TextBounds",
      "owner": "TextButton",
      "type": "Vector2"
@@ -6248,6 +6308,11 @@
      "type": "string"
     },
     {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
+    },
+    {
      "name": "TextBounds",
      "owner": "TextLabel",
      "type": "Vector2"
@@ -6394,6 +6459,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -6541,6 +6611,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -6803,6 +6878,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -6945,6 +7025,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7107,6 +7192,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7286,6 +7376,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7460,6 +7555,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7602,6 +7702,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7831,6 +7936,11 @@
      "name": "CurrentPage",
      "owner": "UIPageLayout",
      "type": "GuiObject"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -7958,6 +8068,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -8125,6 +8240,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -8258,6 +8378,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -8430,6 +8555,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -8599,6 +8729,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -8732,6 +8867,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -9369,6 +9509,11 @@
      "type": "boolean"
     },
     {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
+    },
+    {
      "name": "Resolution",
      "owner": "VideoFrame",
      "type": "Vector2"
@@ -9942,6 +10087,11 @@
      "name": "GuiState",
      "owner": "GuiObject",
      "type": "Enum.GuiState"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   },
@@ -10085,6 +10235,11 @@
      "name": "ClassName",
      "owner": "Object",
      "type": "string"
+    },
+    {
+     "name": "Parent",
+     "owner": "Instance",
+     "type": "Instance"
     }
    ]
   }
@@ -10098,7 +10253,7 @@
   "BillboardGui.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "BillboardGui.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "BillboardGui.Localize: tags ['Deprecated', 'Hidden']",
-  "BillboardGui.Parent: excluded by design (H-142, Q5 (a))",
+  "BillboardGui.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "BillboardGui.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "BillboardGui.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "BillboardGui.RobloxLocked: tags ['Hidden']",
@@ -10114,7 +10269,7 @@
   "Camera.FirstPersonTransition (event): security LocalUserSecurity",
   "Camera.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "Camera.Origin: tags ['NotScriptable']",
-  "Camera.Parent: excluded by design (H-142, Q5 (a))",
+  "Camera.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "Camera.Pivot Offset: tags ['NotScriptable']",
   "Camera.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "Camera.RobloxLocked: tags ['Hidden']",
@@ -10134,7 +10289,7 @@
   "CanvasGroup.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "CanvasGroup.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "CanvasGroup.Localize: tags ['Deprecated', 'Hidden']",
-  "CanvasGroup.Parent: excluded by design (H-142, Q5 (a))",
+  "CanvasGroup.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "CanvasGroup.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "CanvasGroup.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "CanvasGroup.ResolutionScale: tags ['Hidden']",
@@ -10149,7 +10304,7 @@
   "CanvasGroup.className: tags ['Deprecated', 'ReadOnly']",
   "Folder.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "Folder.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "Folder.Parent: excluded by design (H-142, Q5 (a))",
+  "Folder.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "Folder.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "Folder.RobloxLocked: tags ['Hidden']",
   "Folder.SourceAssetId: tags ['Hidden']",
@@ -10167,7 +10322,7 @@
   "Frame.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "Frame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "Frame.Localize: tags ['Deprecated', 'Hidden']",
-  "Frame.Parent: excluded by design (H-142, Q5 (a))",
+  "Frame.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "Frame.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "Frame.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "Frame.RobloxLocked: tags ['Hidden']",
@@ -10192,7 +10347,7 @@
   "ImageButton.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ImageButton.Localize: tags ['Deprecated', 'Hidden']",
   "ImageButton.LocalizedImageContent: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxScriptSecurity'}",
-  "ImageButton.Parent: excluded by design (H-142, Q5 (a))",
+  "ImageButton.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "ImageButton.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "ImageButton.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "ImageButton.RobloxLocked: tags ['Hidden']",
@@ -10216,7 +10371,7 @@
   "ImageLabel.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ImageLabel.Localize: tags ['Deprecated', 'Hidden']",
   "ImageLabel.LocalizedImageContent: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxScriptSecurity'}",
-  "ImageLabel.Parent: excluded by design (H-142, Q5 (a))",
+  "ImageLabel.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "ImageLabel.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "ImageLabel.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "ImageLabel.RobloxLocked: tags ['Hidden']",
@@ -10237,7 +10392,7 @@
   "ScreenGui.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ScreenGui.Localize: tags ['Deprecated', 'Hidden']",
   "ScreenGui.OnTopOfCoreBlur: tags ['Hidden']",
-  "ScreenGui.Parent: excluded by design (H-142, Q5 (a))",
+  "ScreenGui.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "ScreenGui.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "ScreenGui.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "ScreenGui.RobloxLocked: tags ['Hidden']",
@@ -10261,7 +10416,7 @@
   "ScrollingFrame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.Localize: tags ['Deprecated', 'Hidden']",
   "ScrollingFrame.MaxCanvasPosition: tags ['Hidden', 'ReadOnly']",
-  "ScrollingFrame.Parent: excluded by design (H-142, Q5 (a))",
+  "ScrollingFrame.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "ScrollingFrame.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "ScrollingFrame.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.RobloxLocked: tags ['Hidden']",
@@ -10283,7 +10438,7 @@
   "SurfaceGui.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "SurfaceGui.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "SurfaceGui.Localize: tags ['Deprecated', 'Hidden']",
-  "SurfaceGui.Parent: excluded by design (H-142, Q5 (a))",
+  "SurfaceGui.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "SurfaceGui.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "SurfaceGui.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "SurfaceGui.RobloxLocked: tags ['Hidden']",
@@ -10311,7 +10466,7 @@
   "TextBox.Localize: tags ['Deprecated', 'Hidden']",
   "TextBox.ManualFocusRelease: tags ['Hidden']",
   "TextBox.OverlayNativeInput: tags ['Hidden']",
-  "TextBox.Parent: excluded by design (H-142, Q5 (a))",
+  "TextBox.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "TextBox.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "TextBox.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "TextBox.ReturnKeyType: tags ['Hidden']",
@@ -10345,7 +10500,7 @@
   "TextButton.LocalizationMatchedSourceText: tags ['Hidden']",
   "TextButton.Localize: tags ['Deprecated', 'Hidden']",
   "TextButton.LocalizedText: tags ['Hidden', 'ReadOnly']",
-  "TextButton.Parent: excluded by design (H-142, Q5 (a))",
+  "TextButton.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "TextButton.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "TextButton.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "TextButton.RobloxLocked: tags ['Hidden']",
@@ -10375,7 +10530,7 @@
   "TextLabel.LocalizationMatchedSourceText: tags ['Hidden']",
   "TextLabel.Localize: tags ['Deprecated', 'Hidden']",
   "TextLabel.LocalizedText: tags ['Hidden', 'ReadOnly']",
-  "TextLabel.Parent: excluded by design (H-142, Q5 (a))",
+  "TextLabel.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "TextLabel.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "TextLabel.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "TextLabel.RobloxLocked: tags ['Hidden']",
@@ -10391,7 +10546,7 @@
   "TextLabel.className: tags ['Deprecated', 'ReadOnly']",
   "UIAspectRatioConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIAspectRatioConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIAspectRatioConstraint.Parent: excluded by design (H-142, Q5 (a))",
+  "UIAspectRatioConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIAspectRatioConstraint.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIAspectRatioConstraint.RobloxLocked: tags ['Hidden']",
   "UIAspectRatioConstraint.SourceAssetId: tags ['Hidden']",
@@ -10401,7 +10556,7 @@
   "UIAspectRatioConstraint.className: tags ['Deprecated', 'ReadOnly']",
   "UICorner.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UICorner.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UICorner.Parent: excluded by design (H-142, Q5 (a))",
+  "UICorner.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UICorner.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UICorner.RobloxLocked: tags ['Hidden']",
   "UICorner.SourceAssetId: tags ['Hidden']",
@@ -10411,7 +10566,7 @@
   "UICorner.className: tags ['Deprecated', 'ReadOnly']",
   "UIDragDetector.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIDragDetector.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIDragDetector.Parent: excluded by design (H-142, Q5 (a))",
+  "UIDragDetector.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIDragDetector.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIDragDetector.RobloxLocked: tags ['Hidden']",
   "UIDragDetector.SourceAssetId: tags ['Hidden']",
@@ -10421,7 +10576,7 @@
   "UIDragDetector.className: tags ['Deprecated', 'ReadOnly']",
   "UIFlexItem.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIFlexItem.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIFlexItem.Parent: excluded by design (H-142, Q5 (a))",
+  "UIFlexItem.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIFlexItem.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIFlexItem.RobloxLocked: tags ['Hidden']",
   "UIFlexItem.SourceAssetId: tags ['Hidden']",
@@ -10431,7 +10586,7 @@
   "UIFlexItem.className: tags ['Deprecated', 'ReadOnly']",
   "UIGradient.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIGradient.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIGradient.Parent: excluded by design (H-142, Q5 (a))",
+  "UIGradient.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIGradient.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIGradient.RobloxLocked: tags ['Hidden']",
   "UIGradient.SourceAssetId: tags ['Hidden']",
@@ -10441,7 +10596,7 @@
   "UIGradient.className: tags ['Deprecated', 'ReadOnly']",
   "UIGridLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIGridLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIGridLayout.Parent: excluded by design (H-142, Q5 (a))",
+  "UIGridLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIGridLayout.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIGridLayout.RobloxLocked: tags ['Hidden']",
   "UIGridLayout.SourceAssetId: tags ['Hidden']",
@@ -10451,7 +10606,7 @@
   "UIGridLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIListLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIListLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIListLayout.Parent: excluded by design (H-142, Q5 (a))",
+  "UIListLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIListLayout.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIListLayout.RobloxLocked: tags ['Hidden']",
   "UIListLayout.SourceAssetId: tags ['Hidden']",
@@ -10461,7 +10616,7 @@
   "UIListLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIPadding.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIPadding.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIPadding.Parent: excluded by design (H-142, Q5 (a))",
+  "UIPadding.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIPadding.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIPadding.RobloxLocked: tags ['Hidden']",
   "UIPadding.SourceAssetId: tags ['Hidden']",
@@ -10471,7 +10626,7 @@
   "UIPadding.className: tags ['Deprecated', 'ReadOnly']",
   "UIPageLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIPageLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIPageLayout.Parent: excluded by design (H-142, Q5 (a))",
+  "UIPageLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIPageLayout.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIPageLayout.RobloxLocked: tags ['Hidden']",
   "UIPageLayout.SourceAssetId: tags ['Hidden']",
@@ -10481,7 +10636,7 @@
   "UIPageLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIScale.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIScale.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIScale.Parent: excluded by design (H-142, Q5 (a))",
+  "UIScale.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIScale.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIScale.RobloxLocked: tags ['Hidden']",
   "UIScale.SourceAssetId: tags ['Hidden']",
@@ -10492,7 +10647,7 @@
   "UIShadow.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIShadow.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIShadow.Mode: type Enum.ApplyShadowMode newer than pinned defs",
-  "UIShadow.Parent: excluded by design (H-142, Q5 (a))",
+  "UIShadow.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIShadow.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIShadow.RobloxLocked: tags ['Hidden']",
   "UIShadow.SourceAssetId: tags ['Hidden']",
@@ -10502,7 +10657,7 @@
   "UIShadow.className: tags ['Deprecated', 'ReadOnly']",
   "UISizeConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UISizeConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UISizeConstraint.Parent: excluded by design (H-142, Q5 (a))",
+  "UISizeConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UISizeConstraint.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UISizeConstraint.RobloxLocked: tags ['Hidden']",
   "UISizeConstraint.SourceAssetId: tags ['Hidden']",
@@ -10512,7 +10667,7 @@
   "UISizeConstraint.className: tags ['Deprecated', 'ReadOnly']",
   "UIStroke.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIStroke.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UIStroke.Parent: excluded by design (H-142, Q5 (a))",
+  "UIStroke.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UIStroke.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UIStroke.RobloxLocked: tags ['Hidden']",
   "UIStroke.SourceAssetId: tags ['Hidden']",
@@ -10522,7 +10677,7 @@
   "UIStroke.className: tags ['Deprecated', 'ReadOnly']",
   "UITableLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UITableLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UITableLayout.Parent: excluded by design (H-142, Q5 (a))",
+  "UITableLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UITableLayout.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UITableLayout.RobloxLocked: tags ['Hidden']",
   "UITableLayout.SourceAssetId: tags ['Hidden']",
@@ -10532,7 +10687,7 @@
   "UITableLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UITextSizeConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UITextSizeConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
-  "UITextSizeConstraint.Parent: excluded by design (H-142, Q5 (a))",
+  "UITextSizeConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "UITextSizeConstraint.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "UITextSizeConstraint.RobloxLocked: tags ['Hidden']",
   "UITextSizeConstraint.SourceAssetId: tags ['Hidden']",
@@ -10553,7 +10708,7 @@
   "VideoFrame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "VideoFrame.Localize: tags ['Deprecated', 'Hidden']",
   "VideoFrame.MaximumResolution: tags ['Hidden']",
-  "VideoFrame.Parent: excluded by design (H-142, Q5 (a))",
+  "VideoFrame.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "VideoFrame.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "VideoFrame.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "VideoFrame.RobloxLocked: tags ['Hidden']",
@@ -10576,7 +10731,7 @@
   "ViewportFrame.IsMirrored: tags ['Hidden']",
   "ViewportFrame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ViewportFrame.Localize: tags ['Deprecated', 'Hidden']",
-  "ViewportFrame.Parent: excluded by design (H-142, Q5 (a))",
+  "ViewportFrame.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "ViewportFrame.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "ViewportFrame.RawRect2D: tags ['Hidden', 'ReadOnly']",
   "ViewportFrame.RobloxLocked: tags ['Hidden']",
@@ -10594,7 +10749,7 @@
   "WorldModel.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "WorldModel.LevelOfDetail: security {'Read': 'PluginSecurity', 'Write': 'PluginSecurity'}",
   "WorldModel.Origin: tags ['NotScriptable']",
-  "WorldModel.Parent: excluded by design (H-142, Q5 (a))",
+  "WorldModel.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
   "WorldModel.PhysicsStepTime: tags ['Hidden']",
   "WorldModel.Pivot Offset: tags ['NotScriptable']",
   "WorldModel.PredictionMode: tags ['NotScriptable', 'ReadOnly']",

@@ -677,12 +677,17 @@ end
   shorthand 핸들러의 `process` 시그니처는 안 바뀜 — 이들은 원래도 `v`가
   State 계산 결과로 `nil`이 되는 경우를 처리할 수 있어야 했으므로(일반
   반응형 케이스), `None`은 그 기존 경로에 도달하는 방법 하나가 늘어난 것뿐.
-  **구현 디테일 캐비엇**: `None→nil`이 Roblox의 nil을 허용 안 하는 타입
+  ~~**구현 디테일 캐비엇**: `None→nil`이 Roblox의 nil을 허용 안 하는 타입
   프로퍼티(Color3/number 등)에 도달하면 `inst[k] = nil`은 런타임 에러 —
   PropertyHandler 자신이 `v == nil`이면 셋을 건너뛰는 방어를 갖고 있어야
-  함(None 자체의 문제가 아니라 PropertyHandler 구현 디테일, M9/M10로 미룸
-  — **[2026-09-03 M10 구현됨]** `quad-roblox/src/Handlers/Property.luau`의
-  `v == nil → Void` 얼리리턴, `spec.handlers` 9절; 마지막 쓴 값이 남는다).
+  함~~ — **[2026-09-08 역전, 사용자 결정 Q33 (a) — round3 §11]** PropertyHandler는
+  nil을 **쓴다**. 오브젝트 참조 프로퍼티(`Adornee`/`Part0`/`NextSelection*`)는 nil
+  대입이 정상 해제 경로이고(사용자 실측: `typeof(workspace.Baseplate.Motor6D.Part0)`
+  → nil), nil을 못 받는 타입은 **엔진이 에러를 내 준다** — 그게 사용자가 봐야 할
+  오류다(사용자: *"무시되면 안되는것으로, nil을 안 받으면 엔진이 에러를 내줘"*). 옛
+  M10 skip-defense(`v == nil → Void`, `H-352`)는 `None`을 조용히 삼켜 75개 참조
+  프로퍼티를 해제할 수 없게 했다(탐사 B-1). 활성 트윈이 있으면 먼저 취소하고 쓴다.
+  `spec.handlers` 9절·`spec.tweenproperty` 6절.
   **[2026-09-06 M11 단위 ②, brief Q5 (a)]** 같은 부류가 하나 더 — `Tween{...}`의
   엔진 타입 옵션(`Info`/`Style`/`Direction`)은 quad가 검사할 수 없어, 틀린 값은
   `Property.luau`의 `buildInfo`(`TweenInfo.new`)/`TweenService:Create` 자리에서

@@ -88,7 +88,7 @@ local function install(quad: any, validateFields: (any) -> ()): any
 				local v = selfH:Get()
 				if v == nil or v == None then
 					-- Q8 (a) (사용자 결정 2026-09-07): nil/None pass through untouched — the
-					-- Property handler's skip-defense / NoneHandler release the property;
+					-- the Property handler writes nil (Q33 — object references release this way);
 					-- wrapping them in a Tween used to reach the engine (`H-379`)
 					return v
 				end

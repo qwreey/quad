@@ -121,7 +121,7 @@ do
 end
 
 print()
-print("=== 6. Mapped 값·None 재디스패치(v == nil skip)·다른 프로퍼티는 독립 슬롯 ===")
+print("=== 6. Mapped 값·None 재디스패치(nil 쓰기 + 활성 트윈 취소 — Q33, H-352 역전)·다른 프로퍼티는 독립 슬롯 ===")
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
@@ -133,7 +133,9 @@ do
 	pos:Set(Tween({ Value = 2 }))
 	assert(#log == 2 and log[2].props.Position == 2, "independent slot per property")
 	src:Set(q.None)
-	assert(f.Size == 0 and lastTween().cancels == 0, "None → nil: skip-defense, active tween untouched")
+	assert(f.Size == nil and log[1].tween.cancels == 1, "None → nil is WRITTEN and the active tween is cancelled (Q33)")
+	src:Set(7)
+	assert(f.Size == 7 and #log == 2, "a plain value after the release writes without a new engine tween")
 	print("PASS")
 end
 
@@ -147,9 +149,9 @@ do
 	src:Set(10) -- H-391 재현 경로 — 같은 값 재발행
 	assert(#log == 1 and lastTween().cancels == 0, "Q12: the same target re-emitted hands back the previous Tween — no cancel, no new engine tween")
 	src:Set(q.None)
-	assert(#log == 1 and f.Size == 0 and lastTween().cancels == 0, "Q8: None passes Animate untouched → NoneHandler releases, active tween untouched")
+	assert(#log == 1 and f.Size == nil and lastTween().cancels == 1, "Q8: None passes Animate untouched → Property writes nil, active tween cancelled (Q33)")
 	src:Set(nil)
-	assert(#log == 1, "Q8: nil passes Animate untouched → skip-defense")
+	assert(#log == 1 and f.Size == nil, "Q8: nil passes Animate untouched → nil written (Q33)")
 	local src2 = q.Source(0 :: any)
 	q.D.Frame({ Size = src2:Apply(q.Animate({ Time = 0.2, Dedup = false })) })
 	src2:Set(10)

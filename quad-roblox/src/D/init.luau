@@ -4,7 +4,7 @@
 	dump: version-268c7d941ba34c1a (API 1); 재생성 방법은 생성기 헤더.
 	표면 계약: bind-system-plan.md 인스턴스 생성 절(New 커링·①~④ 파이프라인·
 	D는 캐스트 별칭·Parent 제외 H-142), claim-plan §7-12(<Class>Param<E> 공유),
-	round14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None
+	round14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None(Tween 팔은 보간 가능 타입만 — Q34; 그 밖은 T | StateMarker<T> | None)
 	(H-326 → 2026-09-07 마커: State 팔은 공변 StateMarker 하나, typing-limits 8.11),
 	이벤트 콜백 | StateMarker<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).
 	이벤트 필드의 런타임 핸들러는 Handlers/Event.luau(M10, 2026-09-03 구현됨 —
@@ -52,80 +52,83 @@ type MapperRoot = QuadTypes.MapperRoot
 export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None
 export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)
 export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
+export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)
+export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)
+export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)
 
 type PV0 = boolean | TweenData<boolean> | StateMarker<boolean | Tween<boolean>> | None -- boolean
-type PV1 = Instance | TweenData<Instance> | StateMarker<Instance | Tween<Instance>> | None -- Instance
+type PV1 = Instance | StateMarker<Instance> | None -- Instance
 type PV2 = number | TweenData<number> | StateMarker<number | Tween<number>> | None -- number
-type PV3 = SecurityCapabilities | TweenData<SecurityCapabilities> | StateMarker<SecurityCapabilities | Tween<SecurityCapabilities>> | None -- SecurityCapabilities
+type PV3 = SecurityCapabilities | StateMarker<SecurityCapabilities> | None -- SecurityCapabilities
 type PV4 = Vector3 | TweenData<Vector3> | StateMarker<Vector3 | Tween<Vector3>> | None -- Vector3
-type PV5 = string | TweenData<string> | StateMarker<string | Tween<string>> | None -- string
-type PV6 = LocalizationTable | TweenData<LocalizationTable> | StateMarker<LocalizationTable | Tween<LocalizationTable>> | None -- LocalizationTable
-type PV7 = Enum.SelectionBehavior | TweenData<Enum.SelectionBehavior> | StateMarker<Enum.SelectionBehavior | Tween<Enum.SelectionBehavior>> | None -- Enum.SelectionBehavior
+type PV5 = string | StateMarker<string> | None -- string
+type PV6 = LocalizationTable | StateMarker<LocalizationTable> | None -- LocalizationTable
+type PV7 = Enum.SelectionBehavior | StateMarker<Enum.SelectionBehavior> | None -- Enum.SelectionBehavior
 type PV8 = UDim2 | TweenData<UDim2> | StateMarker<UDim2 | Tween<UDim2>> | None -- UDim2
 type PV9 = Vector2 | TweenData<Vector2> | StateMarker<Vector2 | Tween<Vector2>> | None -- Vector2
-type PV10 = Enum.ZIndexBehavior | TweenData<Enum.ZIndexBehavior> | StateMarker<Enum.ZIndexBehavior | Tween<Enum.ZIndexBehavior>> | None -- Enum.ZIndexBehavior
+type PV10 = Enum.ZIndexBehavior | StateMarker<Enum.ZIndexBehavior> | None -- Enum.ZIndexBehavior
 type PV11 = CFrame | TweenData<CFrame> | StateMarker<CFrame | Tween<CFrame>> | None -- CFrame
-type PV12 = Enum.CameraType | TweenData<Enum.CameraType> | StateMarker<Enum.CameraType | Tween<Enum.CameraType>> | None -- Enum.CameraType
-type PV13 = Enum.FieldOfViewMode | TweenData<Enum.FieldOfViewMode> | StateMarker<Enum.FieldOfViewMode | Tween<Enum.FieldOfViewMode>> | None -- Enum.FieldOfViewMode
-type PV14 = Enum.AutomaticSize | TweenData<Enum.AutomaticSize> | StateMarker<Enum.AutomaticSize | Tween<Enum.AutomaticSize>> | None -- Enum.AutomaticSize
+type PV12 = Enum.CameraType | StateMarker<Enum.CameraType> | None -- Enum.CameraType
+type PV13 = Enum.FieldOfViewMode | StateMarker<Enum.FieldOfViewMode> | None -- Enum.FieldOfViewMode
+type PV14 = Enum.AutomaticSize | StateMarker<Enum.AutomaticSize> | None -- Enum.AutomaticSize
 type PV15 = Color3 | TweenData<Color3> | StateMarker<Color3 | Tween<Color3>> | None -- Color3
-type PV16 = Enum.BorderMode | TweenData<Enum.BorderMode> | StateMarker<Enum.BorderMode | Tween<Enum.BorderMode>> | None -- Enum.BorderMode
-type PV17 = Enum.InputSink | TweenData<Enum.InputSink> | StateMarker<Enum.InputSink | Tween<Enum.InputSink>> | None -- Enum.InputSink
-type PV18 = GuiObject | TweenData<GuiObject> | StateMarker<GuiObject | Tween<GuiObject>> | None -- GuiObject
-type PV19 = Enum.SizeConstraint | TweenData<Enum.SizeConstraint> | StateMarker<Enum.SizeConstraint | Tween<Enum.SizeConstraint>> | None -- Enum.SizeConstraint
-type PV20 = Enum.FrameStyle | TweenData<Enum.FrameStyle> | StateMarker<Enum.FrameStyle | Tween<Enum.FrameStyle>> | None -- Enum.FrameStyle
-type PV21 = HapticEffect | TweenData<HapticEffect> | StateMarker<HapticEffect | Tween<HapticEffect>> | None -- HapticEffect
-type PV22 = Content | TweenData<Content> | StateMarker<Content | Tween<Content>> | None -- Content
-type PV23 = Enum.ResamplerMode | TweenData<Enum.ResamplerMode> | StateMarker<Enum.ResamplerMode | Tween<Enum.ResamplerMode>> | None -- Enum.ResamplerMode
-type PV24 = Enum.ScaleType | TweenData<Enum.ScaleType> | StateMarker<Enum.ScaleType | Tween<Enum.ScaleType>> | None -- Enum.ScaleType
+type PV16 = Enum.BorderMode | StateMarker<Enum.BorderMode> | None -- Enum.BorderMode
+type PV17 = Enum.InputSink | StateMarker<Enum.InputSink> | None -- Enum.InputSink
+type PV18 = GuiObject | StateMarker<GuiObject> | None -- GuiObject
+type PV19 = Enum.SizeConstraint | StateMarker<Enum.SizeConstraint> | None -- Enum.SizeConstraint
+type PV20 = Enum.FrameStyle | StateMarker<Enum.FrameStyle> | None -- Enum.FrameStyle
+type PV21 = HapticEffect | StateMarker<HapticEffect> | None -- HapticEffect
+type PV22 = Content | StateMarker<Content> | None -- Content
+type PV23 = Enum.ResamplerMode | StateMarker<Enum.ResamplerMode> | None -- Enum.ResamplerMode
+type PV24 = Enum.ScaleType | StateMarker<Enum.ScaleType> | None -- Enum.ScaleType
 type PV25 = Rect | TweenData<Rect> | StateMarker<Rect | Tween<Rect>> | None -- Rect
-type PV26 = Enum.ButtonStyle | TweenData<Enum.ButtonStyle> | StateMarker<Enum.ButtonStyle | Tween<Enum.ButtonStyle>> | None -- Enum.ButtonStyle
-type PV27 = Enum.SafeAreaCompatibility | TweenData<Enum.SafeAreaCompatibility> | StateMarker<Enum.SafeAreaCompatibility | Tween<Enum.SafeAreaCompatibility>> | None -- Enum.SafeAreaCompatibility
-type PV28 = Enum.ScreenInsets | TweenData<Enum.ScreenInsets> | StateMarker<Enum.ScreenInsets | Tween<Enum.ScreenInsets>> | None -- Enum.ScreenInsets
-type PV29 = Enum.ElasticBehavior | TweenData<Enum.ElasticBehavior> | StateMarker<Enum.ElasticBehavior | Tween<Enum.ElasticBehavior>> | None -- Enum.ElasticBehavior
-type PV30 = Enum.ScrollBarInset | TweenData<Enum.ScrollBarInset> | StateMarker<Enum.ScrollBarInset | Tween<Enum.ScrollBarInset>> | None -- Enum.ScrollBarInset
-type PV31 = Enum.ScrollingDirection | TweenData<Enum.ScrollingDirection> | StateMarker<Enum.ScrollingDirection | Tween<Enum.ScrollingDirection>> | None -- Enum.ScrollingDirection
-type PV32 = Enum.VerticalScrollBarPosition | TweenData<Enum.VerticalScrollBarPosition> | StateMarker<Enum.VerticalScrollBarPosition | Tween<Enum.VerticalScrollBarPosition>> | None -- Enum.VerticalScrollBarPosition
-type PV33 = Enum.NormalId | TweenData<Enum.NormalId> | StateMarker<Enum.NormalId | Tween<Enum.NormalId>> | None -- Enum.NormalId
-type PV34 = Enum.SurfaceGuiSizingMode | TweenData<Enum.SurfaceGuiSizingMode> | StateMarker<Enum.SurfaceGuiSizingMode | Tween<Enum.SurfaceGuiSizingMode>> | None -- Enum.SurfaceGuiSizingMode
-type PV35 = Font | TweenData<Font> | StateMarker<Font | Tween<Font>> | None -- Font
-type PV36 = Enum.TextDirection | TweenData<Enum.TextDirection> | StateMarker<Enum.TextDirection | Tween<Enum.TextDirection>> | None -- Enum.TextDirection
-type PV37 = Enum.TextTruncate | TweenData<Enum.TextTruncate> | StateMarker<Enum.TextTruncate | Tween<Enum.TextTruncate>> | None -- Enum.TextTruncate
-type PV38 = Enum.TextXAlignment | TweenData<Enum.TextXAlignment> | StateMarker<Enum.TextXAlignment | Tween<Enum.TextXAlignment>> | None -- Enum.TextXAlignment
-type PV39 = Enum.TextYAlignment | TweenData<Enum.TextYAlignment> | StateMarker<Enum.TextYAlignment | Tween<Enum.TextYAlignment>> | None -- Enum.TextYAlignment
-type PV40 = Enum.AspectType | TweenData<Enum.AspectType> | StateMarker<Enum.AspectType | Tween<Enum.AspectType>> | None -- Enum.AspectType
-type PV41 = Enum.DominantAxis | TweenData<Enum.DominantAxis> | StateMarker<Enum.DominantAxis | Tween<Enum.DominantAxis>> | None -- Enum.DominantAxis
+type PV26 = Enum.ButtonStyle | StateMarker<Enum.ButtonStyle> | None -- Enum.ButtonStyle
+type PV27 = Enum.SafeAreaCompatibility | StateMarker<Enum.SafeAreaCompatibility> | None -- Enum.SafeAreaCompatibility
+type PV28 = Enum.ScreenInsets | StateMarker<Enum.ScreenInsets> | None -- Enum.ScreenInsets
+type PV29 = Enum.ElasticBehavior | StateMarker<Enum.ElasticBehavior> | None -- Enum.ElasticBehavior
+type PV30 = Enum.ScrollBarInset | StateMarker<Enum.ScrollBarInset> | None -- Enum.ScrollBarInset
+type PV31 = Enum.ScrollingDirection | StateMarker<Enum.ScrollingDirection> | None -- Enum.ScrollingDirection
+type PV32 = Enum.VerticalScrollBarPosition | StateMarker<Enum.VerticalScrollBarPosition> | None -- Enum.VerticalScrollBarPosition
+type PV33 = Enum.NormalId | StateMarker<Enum.NormalId> | None -- Enum.NormalId
+type PV34 = Enum.SurfaceGuiSizingMode | StateMarker<Enum.SurfaceGuiSizingMode> | None -- Enum.SurfaceGuiSizingMode
+type PV35 = Font | StateMarker<Font> | None -- Font
+type PV36 = Enum.TextDirection | StateMarker<Enum.TextDirection> | None -- Enum.TextDirection
+type PV37 = Enum.TextTruncate | StateMarker<Enum.TextTruncate> | None -- Enum.TextTruncate
+type PV38 = Enum.TextXAlignment | StateMarker<Enum.TextXAlignment> | None -- Enum.TextXAlignment
+type PV39 = Enum.TextYAlignment | StateMarker<Enum.TextYAlignment> | None -- Enum.TextYAlignment
+type PV40 = Enum.AspectType | StateMarker<Enum.AspectType> | None -- Enum.AspectType
+type PV41 = Enum.DominantAxis | StateMarker<Enum.DominantAxis> | None -- Enum.DominantAxis
 type PV42 = UDim | TweenData<UDim> | StateMarker<UDim | Tween<UDim>> | None -- UDim
-type PV43 = Enum.UIDragDetectorBoundingBehavior | TweenData<Enum.UIDragDetectorBoundingBehavior> | StateMarker<Enum.UIDragDetectorBoundingBehavior | Tween<Enum.UIDragDetectorBoundingBehavior>> | None -- Enum.UIDragDetectorBoundingBehavior
-type PV44 = GuiBase2d | TweenData<GuiBase2d> | StateMarker<GuiBase2d | Tween<GuiBase2d>> | None -- GuiBase2d
-type PV45 = Enum.UIDragDetectorDragRelativity | TweenData<Enum.UIDragDetectorDragRelativity> | StateMarker<Enum.UIDragDetectorDragRelativity | Tween<Enum.UIDragDetectorDragRelativity>> | None -- Enum.UIDragDetectorDragRelativity
-type PV46 = Enum.UIDragDetectorDragSpace | TweenData<Enum.UIDragDetectorDragSpace> | StateMarker<Enum.UIDragDetectorDragSpace | Tween<Enum.UIDragDetectorDragSpace>> | None -- Enum.UIDragDetectorDragSpace
-type PV47 = Enum.UIDragDetectorDragStyle | TweenData<Enum.UIDragDetectorDragStyle> | StateMarker<Enum.UIDragDetectorDragStyle | Tween<Enum.UIDragDetectorDragStyle>> | None -- Enum.UIDragDetectorDragStyle
-type PV48 = Enum.UIDragDetectorResponseStyle | TweenData<Enum.UIDragDetectorResponseStyle> | StateMarker<Enum.UIDragDetectorResponseStyle | Tween<Enum.UIDragDetectorResponseStyle>> | None -- Enum.UIDragDetectorResponseStyle
-type PV49 = Enum.UIDragSpeedAxisMapping | TweenData<Enum.UIDragSpeedAxisMapping> | StateMarker<Enum.UIDragSpeedAxisMapping | Tween<Enum.UIDragSpeedAxisMapping>> | None -- Enum.UIDragSpeedAxisMapping
-type PV50 = Enum.UIFlexMode | TweenData<Enum.UIFlexMode> | StateMarker<Enum.UIFlexMode | Tween<Enum.UIFlexMode>> | None -- Enum.UIFlexMode
-type PV51 = Enum.ItemLineAlignment | TweenData<Enum.ItemLineAlignment> | StateMarker<Enum.ItemLineAlignment | Tween<Enum.ItemLineAlignment>> | None -- Enum.ItemLineAlignment
-type PV52 = ColorSequence | TweenData<ColorSequence> | StateMarker<ColorSequence | Tween<ColorSequence>> | None -- ColorSequence
-type PV53 = Enum.GradientTileMode | TweenData<Enum.GradientTileMode> | StateMarker<Enum.GradientTileMode | Tween<Enum.GradientTileMode>> | None -- Enum.GradientTileMode
-type PV54 = NumberSequence | TweenData<NumberSequence> | StateMarker<NumberSequence | Tween<NumberSequence>> | None -- NumberSequence
-type PV55 = Enum.GradientType | TweenData<Enum.GradientType> | StateMarker<Enum.GradientType | Tween<Enum.GradientType>> | None -- Enum.GradientType
-type PV56 = Enum.FillDirection | TweenData<Enum.FillDirection> | StateMarker<Enum.FillDirection | Tween<Enum.FillDirection>> | None -- Enum.FillDirection
-type PV57 = Enum.HorizontalAlignment | TweenData<Enum.HorizontalAlignment> | StateMarker<Enum.HorizontalAlignment | Tween<Enum.HorizontalAlignment>> | None -- Enum.HorizontalAlignment
-type PV58 = Enum.SortOrder | TweenData<Enum.SortOrder> | StateMarker<Enum.SortOrder | Tween<Enum.SortOrder>> | None -- Enum.SortOrder
-type PV59 = Enum.StartCorner | TweenData<Enum.StartCorner> | StateMarker<Enum.StartCorner | Tween<Enum.StartCorner>> | None -- Enum.StartCorner
-type PV60 = Enum.VerticalAlignment | TweenData<Enum.VerticalAlignment> | StateMarker<Enum.VerticalAlignment | Tween<Enum.VerticalAlignment>> | None -- Enum.VerticalAlignment
-type PV61 = Enum.UIFlexAlignment | TweenData<Enum.UIFlexAlignment> | StateMarker<Enum.UIFlexAlignment | Tween<Enum.UIFlexAlignment>> | None -- Enum.UIFlexAlignment
-type PV62 = Enum.EasingDirection | TweenData<Enum.EasingDirection> | StateMarker<Enum.EasingDirection | Tween<Enum.EasingDirection>> | None -- Enum.EasingDirection
-type PV63 = Enum.EasingStyle | TweenData<Enum.EasingStyle> | StateMarker<Enum.EasingStyle | Tween<Enum.EasingStyle>> | None -- Enum.EasingStyle
-type PV64 = Enum.ApplyStrokeMode | TweenData<Enum.ApplyStrokeMode> | StateMarker<Enum.ApplyStrokeMode | Tween<Enum.ApplyStrokeMode>> | None -- Enum.ApplyStrokeMode
-type PV65 = Enum.BorderStrokePosition | TweenData<Enum.BorderStrokePosition> | StateMarker<Enum.BorderStrokePosition | Tween<Enum.BorderStrokePosition>> | None -- Enum.BorderStrokePosition
-type PV66 = Enum.LineJoinMode | TweenData<Enum.LineJoinMode> | StateMarker<Enum.LineJoinMode | Tween<Enum.LineJoinMode>> | None -- Enum.LineJoinMode
-type PV67 = Enum.StrokeSizingMode | TweenData<Enum.StrokeSizingMode> | StateMarker<Enum.StrokeSizingMode | Tween<Enum.StrokeSizingMode>> | None -- Enum.StrokeSizingMode
-type PV68 = Enum.TableMajorAxis | TweenData<Enum.TableMajorAxis> | StateMarker<Enum.TableMajorAxis | Tween<Enum.TableMajorAxis>> | None -- Enum.TableMajorAxis
-type PV69 = Enum.RollOffMode | TweenData<Enum.RollOffMode> | StateMarker<Enum.RollOffMode | Tween<Enum.RollOffMode>> | None -- Enum.RollOffMode
-type PV70 = Camera | TweenData<Camera> | StateMarker<Camera | Tween<Camera>> | None -- Camera
-type PV71 = Enum.ModelStreamingMode | TweenData<Enum.ModelStreamingMode> | StateMarker<Enum.ModelStreamingMode | Tween<Enum.ModelStreamingMode>> | None -- Enum.ModelStreamingMode
-type PV72 = BasePart | TweenData<BasePart> | StateMarker<BasePart | Tween<BasePart>> | None -- BasePart
+type PV43 = Enum.UIDragDetectorBoundingBehavior | StateMarker<Enum.UIDragDetectorBoundingBehavior> | None -- Enum.UIDragDetectorBoundingBehavior
+type PV44 = GuiBase2d | StateMarker<GuiBase2d> | None -- GuiBase2d
+type PV45 = Enum.UIDragDetectorDragRelativity | StateMarker<Enum.UIDragDetectorDragRelativity> | None -- Enum.UIDragDetectorDragRelativity
+type PV46 = Enum.UIDragDetectorDragSpace | StateMarker<Enum.UIDragDetectorDragSpace> | None -- Enum.UIDragDetectorDragSpace
+type PV47 = Enum.UIDragDetectorDragStyle | StateMarker<Enum.UIDragDetectorDragStyle> | None -- Enum.UIDragDetectorDragStyle
+type PV48 = Enum.UIDragDetectorResponseStyle | StateMarker<Enum.UIDragDetectorResponseStyle> | None -- Enum.UIDragDetectorResponseStyle
+type PV49 = Enum.UIDragSpeedAxisMapping | StateMarker<Enum.UIDragSpeedAxisMapping> | None -- Enum.UIDragSpeedAxisMapping
+type PV50 = Enum.UIFlexMode | StateMarker<Enum.UIFlexMode> | None -- Enum.UIFlexMode
+type PV51 = Enum.ItemLineAlignment | StateMarker<Enum.ItemLineAlignment> | None -- Enum.ItemLineAlignment
+type PV52 = ColorSequence | StateMarker<ColorSequence> | None -- ColorSequence
+type PV53 = Enum.GradientTileMode | StateMarker<Enum.GradientTileMode> | None -- Enum.GradientTileMode
+type PV54 = NumberSequence | StateMarker<NumberSequence> | None -- NumberSequence
+type PV55 = Enum.GradientType | StateMarker<Enum.GradientType> | None -- Enum.GradientType
+type PV56 = Enum.FillDirection | StateMarker<Enum.FillDirection> | None -- Enum.FillDirection
+type PV57 = Enum.HorizontalAlignment | StateMarker<Enum.HorizontalAlignment> | None -- Enum.HorizontalAlignment
+type PV58 = Enum.SortOrder | StateMarker<Enum.SortOrder> | None -- Enum.SortOrder
+type PV59 = Enum.StartCorner | StateMarker<Enum.StartCorner> | None -- Enum.StartCorner
+type PV60 = Enum.VerticalAlignment | StateMarker<Enum.VerticalAlignment> | None -- Enum.VerticalAlignment
+type PV61 = Enum.UIFlexAlignment | StateMarker<Enum.UIFlexAlignment> | None -- Enum.UIFlexAlignment
+type PV62 = Enum.EasingDirection | StateMarker<Enum.EasingDirection> | None -- Enum.EasingDirection
+type PV63 = Enum.EasingStyle | StateMarker<Enum.EasingStyle> | None -- Enum.EasingStyle
+type PV64 = Enum.ApplyStrokeMode | StateMarker<Enum.ApplyStrokeMode> | None -- Enum.ApplyStrokeMode
+type PV65 = Enum.BorderStrokePosition | StateMarker<Enum.BorderStrokePosition> | None -- Enum.BorderStrokePosition
+type PV66 = Enum.LineJoinMode | StateMarker<Enum.LineJoinMode> | None -- Enum.LineJoinMode
+type PV67 = Enum.StrokeSizingMode | StateMarker<Enum.StrokeSizingMode> | None -- Enum.StrokeSizingMode
+type PV68 = Enum.TableMajorAxis | StateMarker<Enum.TableMajorAxis> | None -- Enum.TableMajorAxis
+type PV69 = Enum.RollOffMode | StateMarker<Enum.RollOffMode> | None -- Enum.RollOffMode
+type PV70 = Camera | StateMarker<Camera> | None -- Camera
+type PV71 = Enum.ModelStreamingMode | StateMarker<Enum.ModelStreamingMode> | None -- Enum.ModelStreamingMode
+type PV72 = BasePart | StateMarker<BasePart> | None -- BasePart
 type PV73 = number | UDim | TweenData<number | UDim> | StateMarker<number | UDim | Tween<number | UDim>> | None -- number | UDim
 
 export type BillboardGuiParam<E> = {
@@ -1928,6 +1931,7 @@ export type PropTypesRead = {
 	PaddingLeft: UDim,
 	PaddingRight: UDim,
 	PaddingTop: UDim,
+	Parent: Instance,
 	PixelsPerStud: number,
 	PlaceholderColor3: Color3,
 	PlaceholderText: string,
@@ -2073,6 +2077,7 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentDistance", Callback: (number) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type BillboardGuiModifier = {
 	read __quadModifier: "BillboardGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: BillboardGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2081,12 +2086,12 @@ export type BillboardGuiModifier = {
 	As: <T>(self: BillboardGuiModifier, name: string?) -> T, -- 무검사(11절)
 	AsBillboardGui: (self: BillboardGuiModifier) -> BillboardGuiModifier, -- 항등(Into<BillboardGui> 구현)
 	Active: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
-	Adornee: (self: BillboardGuiModifier, value: Field<Instance>) -> BillboardGuiModifier,
+	Adornee: (self: BillboardGuiModifier, value: FieldP<Instance>) -> BillboardGuiModifier,
 	AlwaysOnTop: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	Archivable: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	AutoLocalize: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	Brightness: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
-	Capabilities: (self: BillboardGuiModifier, value: Field<SecurityCapabilities>) -> BillboardGuiModifier,
+	Capabilities: (self: BillboardGuiModifier, value: FieldP<SecurityCapabilities>) -> BillboardGuiModifier,
 	ClipsDescendants: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	DistanceStep: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
 	Enabled: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
@@ -2094,21 +2099,21 @@ export type BillboardGuiModifier = {
 	ExtentsOffsetWorldSpace: (self: BillboardGuiModifier, value: Field<Vector3>) -> BillboardGuiModifier,
 	LightInfluence: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
 	MaxDistance: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
-	Name: (self: BillboardGuiModifier, value: Field<string>) -> BillboardGuiModifier,
-	PlayerToHideFrom: (self: BillboardGuiModifier, value: Field<Instance>) -> BillboardGuiModifier,
+	Name: (self: BillboardGuiModifier, value: FieldP<string>) -> BillboardGuiModifier,
+	PlayerToHideFrom: (self: BillboardGuiModifier, value: FieldP<Instance>) -> BillboardGuiModifier,
 	ResetOnSpawn: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
-	RootLocalizationTable: (self: BillboardGuiModifier, value: Field<LocalizationTable>) -> BillboardGuiModifier,
+	RootLocalizationTable: (self: BillboardGuiModifier, value: FieldP<LocalizationTable>) -> BillboardGuiModifier,
 	Sandboxed: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
-	SelectionBehaviorDown: (self: BillboardGuiModifier, value: Field<Enum.SelectionBehavior>) -> BillboardGuiModifier,
-	SelectionBehaviorLeft: (self: BillboardGuiModifier, value: Field<Enum.SelectionBehavior>) -> BillboardGuiModifier,
-	SelectionBehaviorRight: (self: BillboardGuiModifier, value: Field<Enum.SelectionBehavior>) -> BillboardGuiModifier,
-	SelectionBehaviorUp: (self: BillboardGuiModifier, value: Field<Enum.SelectionBehavior>) -> BillboardGuiModifier,
+	SelectionBehaviorDown: (self: BillboardGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> BillboardGuiModifier,
+	SelectionBehaviorLeft: (self: BillboardGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> BillboardGuiModifier,
+	SelectionBehaviorRight: (self: BillboardGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> BillboardGuiModifier,
+	SelectionBehaviorUp: (self: BillboardGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> BillboardGuiModifier,
 	SelectionGroup: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	Size: (self: BillboardGuiModifier, value: Field<UDim2>) -> BillboardGuiModifier,
 	SizeOffset: (self: BillboardGuiModifier, value: Field<Vector2>) -> BillboardGuiModifier,
 	StudsOffset: (self: BillboardGuiModifier, value: Field<Vector3>) -> BillboardGuiModifier,
 	StudsOffsetWorldSpace: (self: BillboardGuiModifier, value: Field<Vector3>) -> BillboardGuiModifier,
-	ZIndexBehavior: (self: BillboardGuiModifier, value: Field<Enum.ZIndexBehavior>) -> BillboardGuiModifier,
+	ZIndexBehavior: (self: BillboardGuiModifier, value: FieldP<Enum.ZIndexBehavior>) -> BillboardGuiModifier,
 }
 export type IntoBillboardGui = { AsBillboardGui: (self: any) -> BillboardGuiModifier }
 export type BillboardGuiRefMarker = { read __quadRefAccepts: (BillboardGui) -> () }
@@ -2133,6 +2138,7 @@ export type CameraOnChange =
 	| 	{ Name: "VRTiltAndRollEnabled", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "NearPlaneZ", Callback: (number) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "ViewportSize", Callback: (Vector2) -> () }
 export type CameraModifier = {
 	read __quadModifier: "Camera", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2143,17 +2149,17 @@ export type CameraModifier = {
 	AsCamera: (self: CameraModifier) -> CameraModifier, -- 항등(Into<Camera> 구현)
 	Archivable: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
 	CFrame: (self: CameraModifier, value: Field<CFrame>) -> CameraModifier,
-	CameraSubject: (self: CameraModifier, value: Field<Instance>) -> CameraModifier,
-	CameraType: (self: CameraModifier, value: Field<Enum.CameraType>) -> CameraModifier,
-	Capabilities: (self: CameraModifier, value: Field<SecurityCapabilities>) -> CameraModifier,
+	CameraSubject: (self: CameraModifier, value: FieldP<Instance>) -> CameraModifier,
+	CameraType: (self: CameraModifier, value: FieldP<Enum.CameraType>) -> CameraModifier,
+	Capabilities: (self: CameraModifier, value: FieldP<SecurityCapabilities>) -> CameraModifier,
 	DiagonalFieldOfView: (self: CameraModifier, value: Field<number>) -> CameraModifier,
 	FieldOfView: (self: CameraModifier, value: Field<number>) -> CameraModifier,
-	FieldOfViewMode: (self: CameraModifier, value: Field<Enum.FieldOfViewMode>) -> CameraModifier,
+	FieldOfViewMode: (self: CameraModifier, value: FieldP<Enum.FieldOfViewMode>) -> CameraModifier,
 	Focus: (self: CameraModifier, value: Field<CFrame>) -> CameraModifier,
 	HeadLocked: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
 	HeadScale: (self: CameraModifier, value: Field<number>) -> CameraModifier,
 	MaxAxisFieldOfView: (self: CameraModifier, value: Field<number>) -> CameraModifier,
-	Name: (self: CameraModifier, value: Field<string>) -> CameraModifier,
+	Name: (self: CameraModifier, value: FieldP<string>) -> CameraModifier,
 	Sandboxed: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
 	VRTiltAndRollEnabled: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
 }
@@ -2206,6 +2212,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type CanvasGroupModifier = {
 	read __quadModifier: "CanvasGroup", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: CanvasGroupModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2217,38 +2224,38 @@ export type CanvasGroupModifier = {
 	AnchorPoint: (self: CanvasGroupModifier, value: Field<Vector2>) -> CanvasGroupModifier,
 	Archivable: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	AutoLocalize: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
-	AutomaticSize: (self: CanvasGroupModifier, value: Field<Enum.AutomaticSize>) -> CanvasGroupModifier,
+	AutomaticSize: (self: CanvasGroupModifier, value: FieldP<Enum.AutomaticSize>) -> CanvasGroupModifier,
 	BackgroundColor3: (self: CanvasGroupModifier, value: Field<Color3>) -> CanvasGroupModifier,
 	BackgroundTransparency: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	BorderColor3: (self: CanvasGroupModifier, value: Field<Color3>) -> CanvasGroupModifier,
-	BorderMode: (self: CanvasGroupModifier, value: Field<Enum.BorderMode>) -> CanvasGroupModifier,
+	BorderMode: (self: CanvasGroupModifier, value: FieldP<Enum.BorderMode>) -> CanvasGroupModifier,
 	BorderSizePixel: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
-	Capabilities: (self: CanvasGroupModifier, value: Field<SecurityCapabilities>) -> CanvasGroupModifier,
+	Capabilities: (self: CanvasGroupModifier, value: FieldP<SecurityCapabilities>) -> CanvasGroupModifier,
 	ClipsDescendants: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	GroupColor3: (self: CanvasGroupModifier, value: Field<Color3>) -> CanvasGroupModifier,
 	GroupTransparency: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
-	InputSink: (self: CanvasGroupModifier, value: Field<Enum.InputSink>) -> CanvasGroupModifier,
+	InputSink: (self: CanvasGroupModifier, value: FieldP<Enum.InputSink>) -> CanvasGroupModifier,
 	Interactable: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	LayoutOrder: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
-	Name: (self: CanvasGroupModifier, value: Field<string>) -> CanvasGroupModifier,
-	NextSelectionDown: (self: CanvasGroupModifier, value: Field<GuiObject>) -> CanvasGroupModifier,
-	NextSelectionLeft: (self: CanvasGroupModifier, value: Field<GuiObject>) -> CanvasGroupModifier,
-	NextSelectionRight: (self: CanvasGroupModifier, value: Field<GuiObject>) -> CanvasGroupModifier,
-	NextSelectionUp: (self: CanvasGroupModifier, value: Field<GuiObject>) -> CanvasGroupModifier,
+	Name: (self: CanvasGroupModifier, value: FieldP<string>) -> CanvasGroupModifier,
+	NextSelectionDown: (self: CanvasGroupModifier, value: FieldP<GuiObject>) -> CanvasGroupModifier,
+	NextSelectionLeft: (self: CanvasGroupModifier, value: FieldP<GuiObject>) -> CanvasGroupModifier,
+	NextSelectionRight: (self: CanvasGroupModifier, value: FieldP<GuiObject>) -> CanvasGroupModifier,
+	NextSelectionUp: (self: CanvasGroupModifier, value: FieldP<GuiObject>) -> CanvasGroupModifier,
 	Position: (self: CanvasGroupModifier, value: Field<UDim2>) -> CanvasGroupModifier,
-	RootLocalizationTable: (self: CanvasGroupModifier, value: Field<LocalizationTable>) -> CanvasGroupModifier,
+	RootLocalizationTable: (self: CanvasGroupModifier, value: FieldP<LocalizationTable>) -> CanvasGroupModifier,
 	Rotation: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	Sandboxed: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	Selectable: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
-	SelectionBehaviorDown: (self: CanvasGroupModifier, value: Field<Enum.SelectionBehavior>) -> CanvasGroupModifier,
-	SelectionBehaviorLeft: (self: CanvasGroupModifier, value: Field<Enum.SelectionBehavior>) -> CanvasGroupModifier,
-	SelectionBehaviorRight: (self: CanvasGroupModifier, value: Field<Enum.SelectionBehavior>) -> CanvasGroupModifier,
-	SelectionBehaviorUp: (self: CanvasGroupModifier, value: Field<Enum.SelectionBehavior>) -> CanvasGroupModifier,
+	SelectionBehaviorDown: (self: CanvasGroupModifier, value: FieldP<Enum.SelectionBehavior>) -> CanvasGroupModifier,
+	SelectionBehaviorLeft: (self: CanvasGroupModifier, value: FieldP<Enum.SelectionBehavior>) -> CanvasGroupModifier,
+	SelectionBehaviorRight: (self: CanvasGroupModifier, value: FieldP<Enum.SelectionBehavior>) -> CanvasGroupModifier,
+	SelectionBehaviorUp: (self: CanvasGroupModifier, value: FieldP<Enum.SelectionBehavior>) -> CanvasGroupModifier,
 	SelectionGroup: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
-	SelectionImageObject: (self: CanvasGroupModifier, value: Field<GuiObject>) -> CanvasGroupModifier,
+	SelectionImageObject: (self: CanvasGroupModifier, value: FieldP<GuiObject>) -> CanvasGroupModifier,
 	SelectionOrder: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	Size: (self: CanvasGroupModifier, value: Field<UDim2>) -> CanvasGroupModifier,
-	SizeConstraint: (self: CanvasGroupModifier, value: Field<Enum.SizeConstraint>) -> CanvasGroupModifier,
+	SizeConstraint: (self: CanvasGroupModifier, value: FieldP<Enum.SizeConstraint>) -> CanvasGroupModifier,
 	Visible: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	ZIndex: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	UICorner: (self: CanvasGroupModifier, value: Field<number | UDim>) -> CanvasGroupModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2267,6 +2274,7 @@ export type FolderOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type FolderModifier = {
 	read __quadModifier: "Folder", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FolderModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2275,8 +2283,8 @@ export type FolderModifier = {
 	As: <T>(self: FolderModifier, name: string?) -> T, -- 무검사(11절)
 	AsFolder: (self: FolderModifier) -> FolderModifier, -- 항등(Into<Folder> 구현)
 	Archivable: (self: FolderModifier, value: Field<boolean>) -> FolderModifier,
-	Capabilities: (self: FolderModifier, value: Field<SecurityCapabilities>) -> FolderModifier,
-	Name: (self: FolderModifier, value: Field<string>) -> FolderModifier,
+	Capabilities: (self: FolderModifier, value: FieldP<SecurityCapabilities>) -> FolderModifier,
+	Name: (self: FolderModifier, value: FieldP<string>) -> FolderModifier,
 	Sandboxed: (self: FolderModifier, value: Field<boolean>) -> FolderModifier,
 }
 export type IntoFolder = { AsFolder: (self: any) -> FolderModifier }
@@ -2327,6 +2335,7 @@ export type FrameOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type FrameModifier = {
 	read __quadModifier: "Frame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2338,37 +2347,37 @@ export type FrameModifier = {
 	AnchorPoint: (self: FrameModifier, value: Field<Vector2>) -> FrameModifier,
 	Archivable: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	AutoLocalize: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
-	AutomaticSize: (self: FrameModifier, value: Field<Enum.AutomaticSize>) -> FrameModifier,
+	AutomaticSize: (self: FrameModifier, value: FieldP<Enum.AutomaticSize>) -> FrameModifier,
 	BackgroundColor3: (self: FrameModifier, value: Field<Color3>) -> FrameModifier,
 	BackgroundTransparency: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	BorderColor3: (self: FrameModifier, value: Field<Color3>) -> FrameModifier,
-	BorderMode: (self: FrameModifier, value: Field<Enum.BorderMode>) -> FrameModifier,
+	BorderMode: (self: FrameModifier, value: FieldP<Enum.BorderMode>) -> FrameModifier,
 	BorderSizePixel: (self: FrameModifier, value: Field<number>) -> FrameModifier,
-	Capabilities: (self: FrameModifier, value: Field<SecurityCapabilities>) -> FrameModifier,
+	Capabilities: (self: FrameModifier, value: FieldP<SecurityCapabilities>) -> FrameModifier,
 	ClipsDescendants: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
-	InputSink: (self: FrameModifier, value: Field<Enum.InputSink>) -> FrameModifier,
+	InputSink: (self: FrameModifier, value: FieldP<Enum.InputSink>) -> FrameModifier,
 	Interactable: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	LayoutOrder: (self: FrameModifier, value: Field<number>) -> FrameModifier,
-	Name: (self: FrameModifier, value: Field<string>) -> FrameModifier,
-	NextSelectionDown: (self: FrameModifier, value: Field<GuiObject>) -> FrameModifier,
-	NextSelectionLeft: (self: FrameModifier, value: Field<GuiObject>) -> FrameModifier,
-	NextSelectionRight: (self: FrameModifier, value: Field<GuiObject>) -> FrameModifier,
-	NextSelectionUp: (self: FrameModifier, value: Field<GuiObject>) -> FrameModifier,
+	Name: (self: FrameModifier, value: FieldP<string>) -> FrameModifier,
+	NextSelectionDown: (self: FrameModifier, value: FieldP<GuiObject>) -> FrameModifier,
+	NextSelectionLeft: (self: FrameModifier, value: FieldP<GuiObject>) -> FrameModifier,
+	NextSelectionRight: (self: FrameModifier, value: FieldP<GuiObject>) -> FrameModifier,
+	NextSelectionUp: (self: FrameModifier, value: FieldP<GuiObject>) -> FrameModifier,
 	Position: (self: FrameModifier, value: Field<UDim2>) -> FrameModifier,
-	RootLocalizationTable: (self: FrameModifier, value: Field<LocalizationTable>) -> FrameModifier,
+	RootLocalizationTable: (self: FrameModifier, value: FieldP<LocalizationTable>) -> FrameModifier,
 	Rotation: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	Sandboxed: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	Selectable: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
-	SelectionBehaviorDown: (self: FrameModifier, value: Field<Enum.SelectionBehavior>) -> FrameModifier,
-	SelectionBehaviorLeft: (self: FrameModifier, value: Field<Enum.SelectionBehavior>) -> FrameModifier,
-	SelectionBehaviorRight: (self: FrameModifier, value: Field<Enum.SelectionBehavior>) -> FrameModifier,
-	SelectionBehaviorUp: (self: FrameModifier, value: Field<Enum.SelectionBehavior>) -> FrameModifier,
+	SelectionBehaviorDown: (self: FrameModifier, value: FieldP<Enum.SelectionBehavior>) -> FrameModifier,
+	SelectionBehaviorLeft: (self: FrameModifier, value: FieldP<Enum.SelectionBehavior>) -> FrameModifier,
+	SelectionBehaviorRight: (self: FrameModifier, value: FieldP<Enum.SelectionBehavior>) -> FrameModifier,
+	SelectionBehaviorUp: (self: FrameModifier, value: FieldP<Enum.SelectionBehavior>) -> FrameModifier,
 	SelectionGroup: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
-	SelectionImageObject: (self: FrameModifier, value: Field<GuiObject>) -> FrameModifier,
+	SelectionImageObject: (self: FrameModifier, value: FieldP<GuiObject>) -> FrameModifier,
 	SelectionOrder: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	Size: (self: FrameModifier, value: Field<UDim2>) -> FrameModifier,
-	SizeConstraint: (self: FrameModifier, value: Field<Enum.SizeConstraint>) -> FrameModifier,
-	Style: (self: FrameModifier, value: Field<Enum.FrameStyle>) -> FrameModifier,
+	SizeConstraint: (self: FrameModifier, value: FieldP<Enum.SizeConstraint>) -> FrameModifier,
+	Style: (self: FrameModifier, value: FieldP<Enum.FrameStyle>) -> FrameModifier,
 	Visible: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	ZIndex: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	UICorner: (self: FrameModifier, value: Field<number | UDim>) -> FrameModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2408,8 +2417,8 @@ export type GuiBaseModifier = {
 	AsVideoFrame: (self: GuiBaseModifier) -> VideoFrameModifier,
 	AsViewportFrame: (self: GuiBaseModifier) -> ViewportFrameModifier,
 	Archivable: (self: GuiBaseModifier, value: Field<boolean>) -> GuiBaseModifier,
-	Capabilities: (self: GuiBaseModifier, value: Field<SecurityCapabilities>) -> GuiBaseModifier,
-	Name: (self: GuiBaseModifier, value: Field<string>) -> GuiBaseModifier,
+	Capabilities: (self: GuiBaseModifier, value: FieldP<SecurityCapabilities>) -> GuiBaseModifier,
+	Name: (self: GuiBaseModifier, value: FieldP<string>) -> GuiBaseModifier,
 	Sandboxed: (self: GuiBaseModifier, value: Field<boolean>) -> GuiBaseModifier,
 }
 export type IntoGuiBase = { AsGuiBase: (self: any) -> GuiBaseModifier }
@@ -2441,14 +2450,14 @@ export type GuiBase2dModifier = {
 	AsViewportFrame: (self: GuiBase2dModifier) -> ViewportFrameModifier,
 	Archivable: (self: GuiBase2dModifier, value: Field<boolean>) -> GuiBase2dModifier,
 	AutoLocalize: (self: GuiBase2dModifier, value: Field<boolean>) -> GuiBase2dModifier,
-	Capabilities: (self: GuiBase2dModifier, value: Field<SecurityCapabilities>) -> GuiBase2dModifier,
-	Name: (self: GuiBase2dModifier, value: Field<string>) -> GuiBase2dModifier,
-	RootLocalizationTable: (self: GuiBase2dModifier, value: Field<LocalizationTable>) -> GuiBase2dModifier,
+	Capabilities: (self: GuiBase2dModifier, value: FieldP<SecurityCapabilities>) -> GuiBase2dModifier,
+	Name: (self: GuiBase2dModifier, value: FieldP<string>) -> GuiBase2dModifier,
+	RootLocalizationTable: (self: GuiBase2dModifier, value: FieldP<LocalizationTable>) -> GuiBase2dModifier,
 	Sandboxed: (self: GuiBase2dModifier, value: Field<boolean>) -> GuiBase2dModifier,
-	SelectionBehaviorDown: (self: GuiBase2dModifier, value: Field<Enum.SelectionBehavior>) -> GuiBase2dModifier,
-	SelectionBehaviorLeft: (self: GuiBase2dModifier, value: Field<Enum.SelectionBehavior>) -> GuiBase2dModifier,
-	SelectionBehaviorRight: (self: GuiBase2dModifier, value: Field<Enum.SelectionBehavior>) -> GuiBase2dModifier,
-	SelectionBehaviorUp: (self: GuiBase2dModifier, value: Field<Enum.SelectionBehavior>) -> GuiBase2dModifier,
+	SelectionBehaviorDown: (self: GuiBase2dModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiBase2dModifier,
+	SelectionBehaviorLeft: (self: GuiBase2dModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiBase2dModifier,
+	SelectionBehaviorRight: (self: GuiBase2dModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiBase2dModifier,
+	SelectionBehaviorUp: (self: GuiBase2dModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiBase2dModifier,
 	SelectionGroup: (self: GuiBase2dModifier, value: Field<boolean>) -> GuiBase2dModifier,
 }
 export type IntoGuiBase2d = { AsGuiBase2d: (self: any) -> GuiBase2dModifier }
@@ -2467,41 +2476,41 @@ export type GuiButtonModifier = {
 	Archivable: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	AutoButtonColor: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	AutoLocalize: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
-	AutomaticSize: (self: GuiButtonModifier, value: Field<Enum.AutomaticSize>) -> GuiButtonModifier,
+	AutomaticSize: (self: GuiButtonModifier, value: FieldP<Enum.AutomaticSize>) -> GuiButtonModifier,
 	BackgroundColor3: (self: GuiButtonModifier, value: Field<Color3>) -> GuiButtonModifier,
 	BackgroundTransparency: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	BorderColor3: (self: GuiButtonModifier, value: Field<Color3>) -> GuiButtonModifier,
-	BorderMode: (self: GuiButtonModifier, value: Field<Enum.BorderMode>) -> GuiButtonModifier,
+	BorderMode: (self: GuiButtonModifier, value: FieldP<Enum.BorderMode>) -> GuiButtonModifier,
 	BorderSizePixel: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
-	Capabilities: (self: GuiButtonModifier, value: Field<SecurityCapabilities>) -> GuiButtonModifier,
+	Capabilities: (self: GuiButtonModifier, value: FieldP<SecurityCapabilities>) -> GuiButtonModifier,
 	ClipsDescendants: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
-	HoverHapticEffect: (self: GuiButtonModifier, value: Field<HapticEffect>) -> GuiButtonModifier,
-	InputSink: (self: GuiButtonModifier, value: Field<Enum.InputSink>) -> GuiButtonModifier,
+	HoverHapticEffect: (self: GuiButtonModifier, value: FieldP<HapticEffect>) -> GuiButtonModifier,
+	InputSink: (self: GuiButtonModifier, value: FieldP<Enum.InputSink>) -> GuiButtonModifier,
 	Interactable: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	LayoutOrder: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	Modal: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
-	Name: (self: GuiButtonModifier, value: Field<string>) -> GuiButtonModifier,
-	NextSelectionDown: (self: GuiButtonModifier, value: Field<GuiObject>) -> GuiButtonModifier,
-	NextSelectionLeft: (self: GuiButtonModifier, value: Field<GuiObject>) -> GuiButtonModifier,
-	NextSelectionRight: (self: GuiButtonModifier, value: Field<GuiObject>) -> GuiButtonModifier,
-	NextSelectionUp: (self: GuiButtonModifier, value: Field<GuiObject>) -> GuiButtonModifier,
+	Name: (self: GuiButtonModifier, value: FieldP<string>) -> GuiButtonModifier,
+	NextSelectionDown: (self: GuiButtonModifier, value: FieldP<GuiObject>) -> GuiButtonModifier,
+	NextSelectionLeft: (self: GuiButtonModifier, value: FieldP<GuiObject>) -> GuiButtonModifier,
+	NextSelectionRight: (self: GuiButtonModifier, value: FieldP<GuiObject>) -> GuiButtonModifier,
+	NextSelectionUp: (self: GuiButtonModifier, value: FieldP<GuiObject>) -> GuiButtonModifier,
 	Position: (self: GuiButtonModifier, value: Field<UDim2>) -> GuiButtonModifier,
-	PressHapticEffect: (self: GuiButtonModifier, value: Field<HapticEffect>) -> GuiButtonModifier,
-	RootLocalizationTable: (self: GuiButtonModifier, value: Field<LocalizationTable>) -> GuiButtonModifier,
+	PressHapticEffect: (self: GuiButtonModifier, value: FieldP<HapticEffect>) -> GuiButtonModifier,
+	RootLocalizationTable: (self: GuiButtonModifier, value: FieldP<LocalizationTable>) -> GuiButtonModifier,
 	Rotation: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	Sandboxed: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	Selectable: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	Selected: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
-	SelectionBehaviorDown: (self: GuiButtonModifier, value: Field<Enum.SelectionBehavior>) -> GuiButtonModifier,
-	SelectionBehaviorLeft: (self: GuiButtonModifier, value: Field<Enum.SelectionBehavior>) -> GuiButtonModifier,
-	SelectionBehaviorRight: (self: GuiButtonModifier, value: Field<Enum.SelectionBehavior>) -> GuiButtonModifier,
-	SelectionBehaviorUp: (self: GuiButtonModifier, value: Field<Enum.SelectionBehavior>) -> GuiButtonModifier,
+	SelectionBehaviorDown: (self: GuiButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiButtonModifier,
+	SelectionBehaviorLeft: (self: GuiButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiButtonModifier,
+	SelectionBehaviorRight: (self: GuiButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiButtonModifier,
+	SelectionBehaviorUp: (self: GuiButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiButtonModifier,
 	SelectionGroup: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
-	SelectionImageObject: (self: GuiButtonModifier, value: Field<GuiObject>) -> GuiButtonModifier,
+	SelectionImageObject: (self: GuiButtonModifier, value: FieldP<GuiObject>) -> GuiButtonModifier,
 	SelectionOrder: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	Size: (self: GuiButtonModifier, value: Field<UDim2>) -> GuiButtonModifier,
-	SizeConstraint: (self: GuiButtonModifier, value: Field<Enum.SizeConstraint>) -> GuiButtonModifier,
-	Style: (self: GuiButtonModifier, value: Field<Enum.ButtonStyle>) -> GuiButtonModifier,
+	SizeConstraint: (self: GuiButtonModifier, value: FieldP<Enum.SizeConstraint>) -> GuiButtonModifier,
+	Style: (self: GuiButtonModifier, value: FieldP<Enum.ButtonStyle>) -> GuiButtonModifier,
 	Visible: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	ZIndex: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	UICorner: (self: GuiButtonModifier, value: Field<number | UDim>) -> GuiButtonModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2524,36 +2533,36 @@ export type GuiLabelModifier = {
 	AnchorPoint: (self: GuiLabelModifier, value: Field<Vector2>) -> GuiLabelModifier,
 	Archivable: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	AutoLocalize: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
-	AutomaticSize: (self: GuiLabelModifier, value: Field<Enum.AutomaticSize>) -> GuiLabelModifier,
+	AutomaticSize: (self: GuiLabelModifier, value: FieldP<Enum.AutomaticSize>) -> GuiLabelModifier,
 	BackgroundColor3: (self: GuiLabelModifier, value: Field<Color3>) -> GuiLabelModifier,
 	BackgroundTransparency: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	BorderColor3: (self: GuiLabelModifier, value: Field<Color3>) -> GuiLabelModifier,
-	BorderMode: (self: GuiLabelModifier, value: Field<Enum.BorderMode>) -> GuiLabelModifier,
+	BorderMode: (self: GuiLabelModifier, value: FieldP<Enum.BorderMode>) -> GuiLabelModifier,
 	BorderSizePixel: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
-	Capabilities: (self: GuiLabelModifier, value: Field<SecurityCapabilities>) -> GuiLabelModifier,
+	Capabilities: (self: GuiLabelModifier, value: FieldP<SecurityCapabilities>) -> GuiLabelModifier,
 	ClipsDescendants: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
-	InputSink: (self: GuiLabelModifier, value: Field<Enum.InputSink>) -> GuiLabelModifier,
+	InputSink: (self: GuiLabelModifier, value: FieldP<Enum.InputSink>) -> GuiLabelModifier,
 	Interactable: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	LayoutOrder: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
-	Name: (self: GuiLabelModifier, value: Field<string>) -> GuiLabelModifier,
-	NextSelectionDown: (self: GuiLabelModifier, value: Field<GuiObject>) -> GuiLabelModifier,
-	NextSelectionLeft: (self: GuiLabelModifier, value: Field<GuiObject>) -> GuiLabelModifier,
-	NextSelectionRight: (self: GuiLabelModifier, value: Field<GuiObject>) -> GuiLabelModifier,
-	NextSelectionUp: (self: GuiLabelModifier, value: Field<GuiObject>) -> GuiLabelModifier,
+	Name: (self: GuiLabelModifier, value: FieldP<string>) -> GuiLabelModifier,
+	NextSelectionDown: (self: GuiLabelModifier, value: FieldP<GuiObject>) -> GuiLabelModifier,
+	NextSelectionLeft: (self: GuiLabelModifier, value: FieldP<GuiObject>) -> GuiLabelModifier,
+	NextSelectionRight: (self: GuiLabelModifier, value: FieldP<GuiObject>) -> GuiLabelModifier,
+	NextSelectionUp: (self: GuiLabelModifier, value: FieldP<GuiObject>) -> GuiLabelModifier,
 	Position: (self: GuiLabelModifier, value: Field<UDim2>) -> GuiLabelModifier,
-	RootLocalizationTable: (self: GuiLabelModifier, value: Field<LocalizationTable>) -> GuiLabelModifier,
+	RootLocalizationTable: (self: GuiLabelModifier, value: FieldP<LocalizationTable>) -> GuiLabelModifier,
 	Rotation: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	Sandboxed: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	Selectable: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
-	SelectionBehaviorDown: (self: GuiLabelModifier, value: Field<Enum.SelectionBehavior>) -> GuiLabelModifier,
-	SelectionBehaviorLeft: (self: GuiLabelModifier, value: Field<Enum.SelectionBehavior>) -> GuiLabelModifier,
-	SelectionBehaviorRight: (self: GuiLabelModifier, value: Field<Enum.SelectionBehavior>) -> GuiLabelModifier,
-	SelectionBehaviorUp: (self: GuiLabelModifier, value: Field<Enum.SelectionBehavior>) -> GuiLabelModifier,
+	SelectionBehaviorDown: (self: GuiLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiLabelModifier,
+	SelectionBehaviorLeft: (self: GuiLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiLabelModifier,
+	SelectionBehaviorRight: (self: GuiLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiLabelModifier,
+	SelectionBehaviorUp: (self: GuiLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiLabelModifier,
 	SelectionGroup: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
-	SelectionImageObject: (self: GuiLabelModifier, value: Field<GuiObject>) -> GuiLabelModifier,
+	SelectionImageObject: (self: GuiLabelModifier, value: FieldP<GuiObject>) -> GuiLabelModifier,
 	SelectionOrder: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	Size: (self: GuiLabelModifier, value: Field<UDim2>) -> GuiLabelModifier,
-	SizeConstraint: (self: GuiLabelModifier, value: Field<Enum.SizeConstraint>) -> GuiLabelModifier,
+	SizeConstraint: (self: GuiLabelModifier, value: FieldP<Enum.SizeConstraint>) -> GuiLabelModifier,
 	Visible: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	ZIndex: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	UICorner: (self: GuiLabelModifier, value: Field<number | UDim>) -> GuiLabelModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2586,36 +2595,36 @@ export type GuiObjectModifier = {
 	AnchorPoint: (self: GuiObjectModifier, value: Field<Vector2>) -> GuiObjectModifier,
 	Archivable: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	AutoLocalize: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
-	AutomaticSize: (self: GuiObjectModifier, value: Field<Enum.AutomaticSize>) -> GuiObjectModifier,
+	AutomaticSize: (self: GuiObjectModifier, value: FieldP<Enum.AutomaticSize>) -> GuiObjectModifier,
 	BackgroundColor3: (self: GuiObjectModifier, value: Field<Color3>) -> GuiObjectModifier,
 	BackgroundTransparency: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	BorderColor3: (self: GuiObjectModifier, value: Field<Color3>) -> GuiObjectModifier,
-	BorderMode: (self: GuiObjectModifier, value: Field<Enum.BorderMode>) -> GuiObjectModifier,
+	BorderMode: (self: GuiObjectModifier, value: FieldP<Enum.BorderMode>) -> GuiObjectModifier,
 	BorderSizePixel: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
-	Capabilities: (self: GuiObjectModifier, value: Field<SecurityCapabilities>) -> GuiObjectModifier,
+	Capabilities: (self: GuiObjectModifier, value: FieldP<SecurityCapabilities>) -> GuiObjectModifier,
 	ClipsDescendants: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
-	InputSink: (self: GuiObjectModifier, value: Field<Enum.InputSink>) -> GuiObjectModifier,
+	InputSink: (self: GuiObjectModifier, value: FieldP<Enum.InputSink>) -> GuiObjectModifier,
 	Interactable: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	LayoutOrder: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
-	Name: (self: GuiObjectModifier, value: Field<string>) -> GuiObjectModifier,
-	NextSelectionDown: (self: GuiObjectModifier, value: Field<GuiObject>) -> GuiObjectModifier,
-	NextSelectionLeft: (self: GuiObjectModifier, value: Field<GuiObject>) -> GuiObjectModifier,
-	NextSelectionRight: (self: GuiObjectModifier, value: Field<GuiObject>) -> GuiObjectModifier,
-	NextSelectionUp: (self: GuiObjectModifier, value: Field<GuiObject>) -> GuiObjectModifier,
+	Name: (self: GuiObjectModifier, value: FieldP<string>) -> GuiObjectModifier,
+	NextSelectionDown: (self: GuiObjectModifier, value: FieldP<GuiObject>) -> GuiObjectModifier,
+	NextSelectionLeft: (self: GuiObjectModifier, value: FieldP<GuiObject>) -> GuiObjectModifier,
+	NextSelectionRight: (self: GuiObjectModifier, value: FieldP<GuiObject>) -> GuiObjectModifier,
+	NextSelectionUp: (self: GuiObjectModifier, value: FieldP<GuiObject>) -> GuiObjectModifier,
 	Position: (self: GuiObjectModifier, value: Field<UDim2>) -> GuiObjectModifier,
-	RootLocalizationTable: (self: GuiObjectModifier, value: Field<LocalizationTable>) -> GuiObjectModifier,
+	RootLocalizationTable: (self: GuiObjectModifier, value: FieldP<LocalizationTable>) -> GuiObjectModifier,
 	Rotation: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	Sandboxed: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	Selectable: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
-	SelectionBehaviorDown: (self: GuiObjectModifier, value: Field<Enum.SelectionBehavior>) -> GuiObjectModifier,
-	SelectionBehaviorLeft: (self: GuiObjectModifier, value: Field<Enum.SelectionBehavior>) -> GuiObjectModifier,
-	SelectionBehaviorRight: (self: GuiObjectModifier, value: Field<Enum.SelectionBehavior>) -> GuiObjectModifier,
-	SelectionBehaviorUp: (self: GuiObjectModifier, value: Field<Enum.SelectionBehavior>) -> GuiObjectModifier,
+	SelectionBehaviorDown: (self: GuiObjectModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiObjectModifier,
+	SelectionBehaviorLeft: (self: GuiObjectModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiObjectModifier,
+	SelectionBehaviorRight: (self: GuiObjectModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiObjectModifier,
+	SelectionBehaviorUp: (self: GuiObjectModifier, value: FieldP<Enum.SelectionBehavior>) -> GuiObjectModifier,
 	SelectionGroup: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
-	SelectionImageObject: (self: GuiObjectModifier, value: Field<GuiObject>) -> GuiObjectModifier,
+	SelectionImageObject: (self: GuiObjectModifier, value: FieldP<GuiObject>) -> GuiObjectModifier,
 	SelectionOrder: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	Size: (self: GuiObjectModifier, value: Field<UDim2>) -> GuiObjectModifier,
-	SizeConstraint: (self: GuiObjectModifier, value: Field<Enum.SizeConstraint>) -> GuiObjectModifier,
+	SizeConstraint: (self: GuiObjectModifier, value: FieldP<Enum.SizeConstraint>) -> GuiObjectModifier,
 	Visible: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	ZIndex: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	UICorner: (self: GuiObjectModifier, value: Field<number | UDim>) -> GuiObjectModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2689,6 +2698,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type ImageButtonModifier = {
 	read __quadModifier: "ImageButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2701,55 +2711,55 @@ export type ImageButtonModifier = {
 	Archivable: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	AutoButtonColor: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	AutoLocalize: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	AutomaticSize: (self: ImageButtonModifier, value: Field<Enum.AutomaticSize>) -> ImageButtonModifier,
+	AutomaticSize: (self: ImageButtonModifier, value: FieldP<Enum.AutomaticSize>) -> ImageButtonModifier,
 	BackgroundColor3: (self: ImageButtonModifier, value: Field<Color3>) -> ImageButtonModifier,
 	BackgroundTransparency: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	BorderColor3: (self: ImageButtonModifier, value: Field<Color3>) -> ImageButtonModifier,
-	BorderMode: (self: ImageButtonModifier, value: Field<Enum.BorderMode>) -> ImageButtonModifier,
+	BorderMode: (self: ImageButtonModifier, value: FieldP<Enum.BorderMode>) -> ImageButtonModifier,
 	BorderSizePixel: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
-	Capabilities: (self: ImageButtonModifier, value: Field<SecurityCapabilities>) -> ImageButtonModifier,
+	Capabilities: (self: ImageButtonModifier, value: FieldP<SecurityCapabilities>) -> ImageButtonModifier,
 	ClipsDescendants: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	HoverHapticEffect: (self: ImageButtonModifier, value: Field<HapticEffect>) -> ImageButtonModifier,
-	HoverImage: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
-	HoverImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
-	Image: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
+	HoverHapticEffect: (self: ImageButtonModifier, value: FieldP<HapticEffect>) -> ImageButtonModifier,
+	HoverImage: (self: ImageButtonModifier, value: FieldP<string>) -> ImageButtonModifier,
+	HoverImageContent: (self: ImageButtonModifier, value: FieldP<Content>) -> ImageButtonModifier,
+	Image: (self: ImageButtonModifier, value: FieldP<string>) -> ImageButtonModifier,
 	ImageColor3: (self: ImageButtonModifier, value: Field<Color3>) -> ImageButtonModifier,
-	ImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
+	ImageContent: (self: ImageButtonModifier, value: FieldP<Content>) -> ImageButtonModifier,
 	ImageRectOffset: (self: ImageButtonModifier, value: Field<Vector2>) -> ImageButtonModifier,
 	ImageRectSize: (self: ImageButtonModifier, value: Field<Vector2>) -> ImageButtonModifier,
 	ImageTransparency: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
-	InputSink: (self: ImageButtonModifier, value: Field<Enum.InputSink>) -> ImageButtonModifier,
+	InputSink: (self: ImageButtonModifier, value: FieldP<Enum.InputSink>) -> ImageButtonModifier,
 	Interactable: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	LayoutOrder: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	Modal: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	Name: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
-	NextSelectionDown: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
-	NextSelectionLeft: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
-	NextSelectionRight: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
-	NextSelectionUp: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
+	Name: (self: ImageButtonModifier, value: FieldP<string>) -> ImageButtonModifier,
+	NextSelectionDown: (self: ImageButtonModifier, value: FieldP<GuiObject>) -> ImageButtonModifier,
+	NextSelectionLeft: (self: ImageButtonModifier, value: FieldP<GuiObject>) -> ImageButtonModifier,
+	NextSelectionRight: (self: ImageButtonModifier, value: FieldP<GuiObject>) -> ImageButtonModifier,
+	NextSelectionUp: (self: ImageButtonModifier, value: FieldP<GuiObject>) -> ImageButtonModifier,
 	Position: (self: ImageButtonModifier, value: Field<UDim2>) -> ImageButtonModifier,
-	PressHapticEffect: (self: ImageButtonModifier, value: Field<HapticEffect>) -> ImageButtonModifier,
-	PressedImage: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
-	PressedImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
-	ResampleMode: (self: ImageButtonModifier, value: Field<Enum.ResamplerMode>) -> ImageButtonModifier,
-	RootLocalizationTable: (self: ImageButtonModifier, value: Field<LocalizationTable>) -> ImageButtonModifier,
+	PressHapticEffect: (self: ImageButtonModifier, value: FieldP<HapticEffect>) -> ImageButtonModifier,
+	PressedImage: (self: ImageButtonModifier, value: FieldP<string>) -> ImageButtonModifier,
+	PressedImageContent: (self: ImageButtonModifier, value: FieldP<Content>) -> ImageButtonModifier,
+	ResampleMode: (self: ImageButtonModifier, value: FieldP<Enum.ResamplerMode>) -> ImageButtonModifier,
+	RootLocalizationTable: (self: ImageButtonModifier, value: FieldP<LocalizationTable>) -> ImageButtonModifier,
 	Rotation: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	Sandboxed: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	ScaleType: (self: ImageButtonModifier, value: Field<Enum.ScaleType>) -> ImageButtonModifier,
+	ScaleType: (self: ImageButtonModifier, value: FieldP<Enum.ScaleType>) -> ImageButtonModifier,
 	Selectable: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	Selected: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	SelectionBehaviorDown: (self: ImageButtonModifier, value: Field<Enum.SelectionBehavior>) -> ImageButtonModifier,
-	SelectionBehaviorLeft: (self: ImageButtonModifier, value: Field<Enum.SelectionBehavior>) -> ImageButtonModifier,
-	SelectionBehaviorRight: (self: ImageButtonModifier, value: Field<Enum.SelectionBehavior>) -> ImageButtonModifier,
-	SelectionBehaviorUp: (self: ImageButtonModifier, value: Field<Enum.SelectionBehavior>) -> ImageButtonModifier,
+	SelectionBehaviorDown: (self: ImageButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageButtonModifier,
+	SelectionBehaviorLeft: (self: ImageButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageButtonModifier,
+	SelectionBehaviorRight: (self: ImageButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageButtonModifier,
+	SelectionBehaviorUp: (self: ImageButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageButtonModifier,
 	SelectionGroup: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
-	SelectionImageObject: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
+	SelectionImageObject: (self: ImageButtonModifier, value: FieldP<GuiObject>) -> ImageButtonModifier,
 	SelectionOrder: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	Size: (self: ImageButtonModifier, value: Field<UDim2>) -> ImageButtonModifier,
-	SizeConstraint: (self: ImageButtonModifier, value: Field<Enum.SizeConstraint>) -> ImageButtonModifier,
+	SizeConstraint: (self: ImageButtonModifier, value: FieldP<Enum.SizeConstraint>) -> ImageButtonModifier,
 	SliceCenter: (self: ImageButtonModifier, value: Field<Rect>) -> ImageButtonModifier,
 	SliceScale: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
-	Style: (self: ImageButtonModifier, value: Field<Enum.ButtonStyle>) -> ImageButtonModifier,
+	Style: (self: ImageButtonModifier, value: FieldP<Enum.ButtonStyle>) -> ImageButtonModifier,
 	TileSize: (self: ImageButtonModifier, value: Field<UDim2>) -> ImageButtonModifier,
 	Visible: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	ZIndex: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
@@ -2817,6 +2827,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type ImageLabelModifier = {
 	read __quadModifier: "ImageLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2828,44 +2839,44 @@ export type ImageLabelModifier = {
 	AnchorPoint: (self: ImageLabelModifier, value: Field<Vector2>) -> ImageLabelModifier,
 	Archivable: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
 	AutoLocalize: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	AutomaticSize: (self: ImageLabelModifier, value: Field<Enum.AutomaticSize>) -> ImageLabelModifier,
+	AutomaticSize: (self: ImageLabelModifier, value: FieldP<Enum.AutomaticSize>) -> ImageLabelModifier,
 	BackgroundColor3: (self: ImageLabelModifier, value: Field<Color3>) -> ImageLabelModifier,
 	BackgroundTransparency: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	BorderColor3: (self: ImageLabelModifier, value: Field<Color3>) -> ImageLabelModifier,
-	BorderMode: (self: ImageLabelModifier, value: Field<Enum.BorderMode>) -> ImageLabelModifier,
+	BorderMode: (self: ImageLabelModifier, value: FieldP<Enum.BorderMode>) -> ImageLabelModifier,
 	BorderSizePixel: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
-	Capabilities: (self: ImageLabelModifier, value: Field<SecurityCapabilities>) -> ImageLabelModifier,
+	Capabilities: (self: ImageLabelModifier, value: FieldP<SecurityCapabilities>) -> ImageLabelModifier,
 	ClipsDescendants: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	Image: (self: ImageLabelModifier, value: Field<string>) -> ImageLabelModifier,
+	Image: (self: ImageLabelModifier, value: FieldP<string>) -> ImageLabelModifier,
 	ImageColor3: (self: ImageLabelModifier, value: Field<Color3>) -> ImageLabelModifier,
-	ImageContent: (self: ImageLabelModifier, value: Field<Content>) -> ImageLabelModifier,
+	ImageContent: (self: ImageLabelModifier, value: FieldP<Content>) -> ImageLabelModifier,
 	ImageRectOffset: (self: ImageLabelModifier, value: Field<Vector2>) -> ImageLabelModifier,
 	ImageRectSize: (self: ImageLabelModifier, value: Field<Vector2>) -> ImageLabelModifier,
 	ImageTransparency: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
-	InputSink: (self: ImageLabelModifier, value: Field<Enum.InputSink>) -> ImageLabelModifier,
+	InputSink: (self: ImageLabelModifier, value: FieldP<Enum.InputSink>) -> ImageLabelModifier,
 	Interactable: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
 	LayoutOrder: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
-	Name: (self: ImageLabelModifier, value: Field<string>) -> ImageLabelModifier,
-	NextSelectionDown: (self: ImageLabelModifier, value: Field<GuiObject>) -> ImageLabelModifier,
-	NextSelectionLeft: (self: ImageLabelModifier, value: Field<GuiObject>) -> ImageLabelModifier,
-	NextSelectionRight: (self: ImageLabelModifier, value: Field<GuiObject>) -> ImageLabelModifier,
-	NextSelectionUp: (self: ImageLabelModifier, value: Field<GuiObject>) -> ImageLabelModifier,
+	Name: (self: ImageLabelModifier, value: FieldP<string>) -> ImageLabelModifier,
+	NextSelectionDown: (self: ImageLabelModifier, value: FieldP<GuiObject>) -> ImageLabelModifier,
+	NextSelectionLeft: (self: ImageLabelModifier, value: FieldP<GuiObject>) -> ImageLabelModifier,
+	NextSelectionRight: (self: ImageLabelModifier, value: FieldP<GuiObject>) -> ImageLabelModifier,
+	NextSelectionUp: (self: ImageLabelModifier, value: FieldP<GuiObject>) -> ImageLabelModifier,
 	Position: (self: ImageLabelModifier, value: Field<UDim2>) -> ImageLabelModifier,
-	ResampleMode: (self: ImageLabelModifier, value: Field<Enum.ResamplerMode>) -> ImageLabelModifier,
-	RootLocalizationTable: (self: ImageLabelModifier, value: Field<LocalizationTable>) -> ImageLabelModifier,
+	ResampleMode: (self: ImageLabelModifier, value: FieldP<Enum.ResamplerMode>) -> ImageLabelModifier,
+	RootLocalizationTable: (self: ImageLabelModifier, value: FieldP<LocalizationTable>) -> ImageLabelModifier,
 	Rotation: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	Sandboxed: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	ScaleType: (self: ImageLabelModifier, value: Field<Enum.ScaleType>) -> ImageLabelModifier,
+	ScaleType: (self: ImageLabelModifier, value: FieldP<Enum.ScaleType>) -> ImageLabelModifier,
 	Selectable: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	SelectionBehaviorDown: (self: ImageLabelModifier, value: Field<Enum.SelectionBehavior>) -> ImageLabelModifier,
-	SelectionBehaviorLeft: (self: ImageLabelModifier, value: Field<Enum.SelectionBehavior>) -> ImageLabelModifier,
-	SelectionBehaviorRight: (self: ImageLabelModifier, value: Field<Enum.SelectionBehavior>) -> ImageLabelModifier,
-	SelectionBehaviorUp: (self: ImageLabelModifier, value: Field<Enum.SelectionBehavior>) -> ImageLabelModifier,
+	SelectionBehaviorDown: (self: ImageLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageLabelModifier,
+	SelectionBehaviorLeft: (self: ImageLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageLabelModifier,
+	SelectionBehaviorRight: (self: ImageLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageLabelModifier,
+	SelectionBehaviorUp: (self: ImageLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> ImageLabelModifier,
 	SelectionGroup: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	SelectionImageObject: (self: ImageLabelModifier, value: Field<GuiObject>) -> ImageLabelModifier,
+	SelectionImageObject: (self: ImageLabelModifier, value: FieldP<GuiObject>) -> ImageLabelModifier,
 	SelectionOrder: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	Size: (self: ImageLabelModifier, value: Field<UDim2>) -> ImageLabelModifier,
-	SizeConstraint: (self: ImageLabelModifier, value: Field<Enum.SizeConstraint>) -> ImageLabelModifier,
+	SizeConstraint: (self: ImageLabelModifier, value: FieldP<Enum.SizeConstraint>) -> ImageLabelModifier,
 	SliceCenter: (self: ImageLabelModifier, value: Field<Rect>) -> ImageLabelModifier,
 	SliceScale: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	TileSize: (self: ImageLabelModifier, value: Field<UDim2>) -> ImageLabelModifier,
@@ -2935,8 +2946,8 @@ export type InstanceModifier = {
 	AsWorldModel: (self: InstanceModifier) -> WorldModelModifier,
 	AsWorldRoot: (self: InstanceModifier) -> WorldRootModifier,
 	Archivable: (self: InstanceModifier, value: Field<boolean>) -> InstanceModifier,
-	Capabilities: (self: InstanceModifier, value: Field<SecurityCapabilities>) -> InstanceModifier,
-	Name: (self: InstanceModifier, value: Field<string>) -> InstanceModifier,
+	Capabilities: (self: InstanceModifier, value: FieldP<SecurityCapabilities>) -> InstanceModifier,
+	Name: (self: InstanceModifier, value: FieldP<string>) -> InstanceModifier,
 	Sandboxed: (self: InstanceModifier, value: Field<boolean>) -> InstanceModifier,
 }
 export type IntoInstance = { AsInstance: (self: any) -> InstanceModifier }
@@ -2954,18 +2965,18 @@ export type LayerCollectorModifier = {
 	AsSurfaceGuiBase: (self: LayerCollectorModifier) -> SurfaceGuiBaseModifier,
 	Archivable: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
 	AutoLocalize: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
-	Capabilities: (self: LayerCollectorModifier, value: Field<SecurityCapabilities>) -> LayerCollectorModifier,
+	Capabilities: (self: LayerCollectorModifier, value: FieldP<SecurityCapabilities>) -> LayerCollectorModifier,
 	Enabled: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
-	Name: (self: LayerCollectorModifier, value: Field<string>) -> LayerCollectorModifier,
+	Name: (self: LayerCollectorModifier, value: FieldP<string>) -> LayerCollectorModifier,
 	ResetOnSpawn: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
-	RootLocalizationTable: (self: LayerCollectorModifier, value: Field<LocalizationTable>) -> LayerCollectorModifier,
+	RootLocalizationTable: (self: LayerCollectorModifier, value: FieldP<LocalizationTable>) -> LayerCollectorModifier,
 	Sandboxed: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
-	SelectionBehaviorDown: (self: LayerCollectorModifier, value: Field<Enum.SelectionBehavior>) -> LayerCollectorModifier,
-	SelectionBehaviorLeft: (self: LayerCollectorModifier, value: Field<Enum.SelectionBehavior>) -> LayerCollectorModifier,
-	SelectionBehaviorRight: (self: LayerCollectorModifier, value: Field<Enum.SelectionBehavior>) -> LayerCollectorModifier,
-	SelectionBehaviorUp: (self: LayerCollectorModifier, value: Field<Enum.SelectionBehavior>) -> LayerCollectorModifier,
+	SelectionBehaviorDown: (self: LayerCollectorModifier, value: FieldP<Enum.SelectionBehavior>) -> LayerCollectorModifier,
+	SelectionBehaviorLeft: (self: LayerCollectorModifier, value: FieldP<Enum.SelectionBehavior>) -> LayerCollectorModifier,
+	SelectionBehaviorRight: (self: LayerCollectorModifier, value: FieldP<Enum.SelectionBehavior>) -> LayerCollectorModifier,
+	SelectionBehaviorUp: (self: LayerCollectorModifier, value: FieldP<Enum.SelectionBehavior>) -> LayerCollectorModifier,
 	SelectionGroup: (self: LayerCollectorModifier, value: Field<boolean>) -> LayerCollectorModifier,
-	ZIndexBehavior: (self: LayerCollectorModifier, value: Field<Enum.ZIndexBehavior>) -> LayerCollectorModifier,
+	ZIndexBehavior: (self: LayerCollectorModifier, value: FieldP<Enum.ZIndexBehavior>) -> LayerCollectorModifier,
 }
 export type IntoLayerCollector = { AsLayerCollector: (self: any) -> LayerCollectorModifier }
 
@@ -2979,10 +2990,10 @@ export type ModelModifier = {
 	AsWorldModel: (self: ModelModifier) -> WorldModelModifier,
 	AsWorldRoot: (self: ModelModifier) -> WorldRootModifier,
 	Archivable: (self: ModelModifier, value: Field<boolean>) -> ModelModifier,
-	Capabilities: (self: ModelModifier, value: Field<SecurityCapabilities>) -> ModelModifier,
-	ModelStreamingMode: (self: ModelModifier, value: Field<Enum.ModelStreamingMode>) -> ModelModifier,
-	Name: (self: ModelModifier, value: Field<string>) -> ModelModifier,
-	PrimaryPart: (self: ModelModifier, value: Field<BasePart>) -> ModelModifier,
+	Capabilities: (self: ModelModifier, value: FieldP<SecurityCapabilities>) -> ModelModifier,
+	ModelStreamingMode: (self: ModelModifier, value: FieldP<Enum.ModelStreamingMode>) -> ModelModifier,
+	Name: (self: ModelModifier, value: FieldP<string>) -> ModelModifier,
+	PrimaryPart: (self: ModelModifier, value: FieldP<BasePart>) -> ModelModifier,
 	Sandboxed: (self: ModelModifier, value: Field<boolean>) -> ModelModifier,
 	WorldPivot: (self: ModelModifier, value: Field<CFrame>) -> ModelModifier,
 }
@@ -3000,8 +3011,8 @@ export type PVInstanceModifier = {
 	AsWorldModel: (self: PVInstanceModifier) -> WorldModelModifier,
 	AsWorldRoot: (self: PVInstanceModifier) -> WorldRootModifier,
 	Archivable: (self: PVInstanceModifier, value: Field<boolean>) -> PVInstanceModifier,
-	Capabilities: (self: PVInstanceModifier, value: Field<SecurityCapabilities>) -> PVInstanceModifier,
-	Name: (self: PVInstanceModifier, value: Field<string>) -> PVInstanceModifier,
+	Capabilities: (self: PVInstanceModifier, value: FieldP<SecurityCapabilities>) -> PVInstanceModifier,
+	Name: (self: PVInstanceModifier, value: FieldP<string>) -> PVInstanceModifier,
 	Sandboxed: (self: PVInstanceModifier, value: Field<boolean>) -> PVInstanceModifier,
 }
 export type IntoPVInstance = { AsPVInstance: (self: any) -> PVInstanceModifier }
@@ -3030,6 +3041,7 @@ export type ScreenGuiOnChange =
 	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type ScreenGuiModifier = {
 	read __quadModifier: "ScreenGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScreenGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3039,23 +3051,23 @@ export type ScreenGuiModifier = {
 	AsScreenGui: (self: ScreenGuiModifier) -> ScreenGuiModifier, -- 항등(Into<ScreenGui> 구현)
 	Archivable: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
 	AutoLocalize: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
-	Capabilities: (self: ScreenGuiModifier, value: Field<SecurityCapabilities>) -> ScreenGuiModifier,
+	Capabilities: (self: ScreenGuiModifier, value: FieldP<SecurityCapabilities>) -> ScreenGuiModifier,
 	ClipToDeviceSafeArea: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
 	DisplayOrder: (self: ScreenGuiModifier, value: Field<number>) -> ScreenGuiModifier,
 	Enabled: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
 	IgnoreGuiInset: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
-	Name: (self: ScreenGuiModifier, value: Field<string>) -> ScreenGuiModifier,
+	Name: (self: ScreenGuiModifier, value: FieldP<string>) -> ScreenGuiModifier,
 	ResetOnSpawn: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
-	RootLocalizationTable: (self: ScreenGuiModifier, value: Field<LocalizationTable>) -> ScreenGuiModifier,
-	SafeAreaCompatibility: (self: ScreenGuiModifier, value: Field<Enum.SafeAreaCompatibility>) -> ScreenGuiModifier,
+	RootLocalizationTable: (self: ScreenGuiModifier, value: FieldP<LocalizationTable>) -> ScreenGuiModifier,
+	SafeAreaCompatibility: (self: ScreenGuiModifier, value: FieldP<Enum.SafeAreaCompatibility>) -> ScreenGuiModifier,
 	Sandboxed: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
-	ScreenInsets: (self: ScreenGuiModifier, value: Field<Enum.ScreenInsets>) -> ScreenGuiModifier,
-	SelectionBehaviorDown: (self: ScreenGuiModifier, value: Field<Enum.SelectionBehavior>) -> ScreenGuiModifier,
-	SelectionBehaviorLeft: (self: ScreenGuiModifier, value: Field<Enum.SelectionBehavior>) -> ScreenGuiModifier,
-	SelectionBehaviorRight: (self: ScreenGuiModifier, value: Field<Enum.SelectionBehavior>) -> ScreenGuiModifier,
-	SelectionBehaviorUp: (self: ScreenGuiModifier, value: Field<Enum.SelectionBehavior>) -> ScreenGuiModifier,
+	ScreenInsets: (self: ScreenGuiModifier, value: FieldP<Enum.ScreenInsets>) -> ScreenGuiModifier,
+	SelectionBehaviorDown: (self: ScreenGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> ScreenGuiModifier,
+	SelectionBehaviorLeft: (self: ScreenGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> ScreenGuiModifier,
+	SelectionBehaviorRight: (self: ScreenGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> ScreenGuiModifier,
+	SelectionBehaviorUp: (self: ScreenGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> ScreenGuiModifier,
 	SelectionGroup: (self: ScreenGuiModifier, value: Field<boolean>) -> ScreenGuiModifier,
-	ZIndexBehavior: (self: ScreenGuiModifier, value: Field<Enum.ZIndexBehavior>) -> ScreenGuiModifier,
+	ZIndexBehavior: (self: ScreenGuiModifier, value: FieldP<Enum.ZIndexBehavior>) -> ScreenGuiModifier,
 }
 export type IntoScreenGui = { AsScreenGui: (self: any) -> ScreenGuiModifier }
 export type ScreenGuiRefMarker = { read __quadRefAccepts: (ScreenGui) -> () }
@@ -3124,6 +3136,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "AbsoluteWindowSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type ScrollingFrameModifier = {
 	read __quadModifier: "ScrollingFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScrollingFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3135,54 +3148,54 @@ export type ScrollingFrameModifier = {
 	AnchorPoint: (self: ScrollingFrameModifier, value: Field<Vector2>) -> ScrollingFrameModifier,
 	Archivable: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	AutoLocalize: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
-	AutomaticCanvasSize: (self: ScrollingFrameModifier, value: Field<Enum.AutomaticSize>) -> ScrollingFrameModifier,
-	AutomaticSize: (self: ScrollingFrameModifier, value: Field<Enum.AutomaticSize>) -> ScrollingFrameModifier,
+	AutomaticCanvasSize: (self: ScrollingFrameModifier, value: FieldP<Enum.AutomaticSize>) -> ScrollingFrameModifier,
+	AutomaticSize: (self: ScrollingFrameModifier, value: FieldP<Enum.AutomaticSize>) -> ScrollingFrameModifier,
 	BackgroundColor3: (self: ScrollingFrameModifier, value: Field<Color3>) -> ScrollingFrameModifier,
 	BackgroundTransparency: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	BorderColor3: (self: ScrollingFrameModifier, value: Field<Color3>) -> ScrollingFrameModifier,
-	BorderMode: (self: ScrollingFrameModifier, value: Field<Enum.BorderMode>) -> ScrollingFrameModifier,
+	BorderMode: (self: ScrollingFrameModifier, value: FieldP<Enum.BorderMode>) -> ScrollingFrameModifier,
 	BorderSizePixel: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
-	BottomImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
-	BottomImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
+	BottomImage: (self: ScrollingFrameModifier, value: FieldP<string>) -> ScrollingFrameModifier,
+	BottomImageContent: (self: ScrollingFrameModifier, value: FieldP<Content>) -> ScrollingFrameModifier,
 	CanvasPosition: (self: ScrollingFrameModifier, value: Field<Vector2>) -> ScrollingFrameModifier,
 	CanvasSize: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
-	Capabilities: (self: ScrollingFrameModifier, value: Field<SecurityCapabilities>) -> ScrollingFrameModifier,
+	Capabilities: (self: ScrollingFrameModifier, value: FieldP<SecurityCapabilities>) -> ScrollingFrameModifier,
 	ClipsDescendants: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
-	ElasticBehavior: (self: ScrollingFrameModifier, value: Field<Enum.ElasticBehavior>) -> ScrollingFrameModifier,
-	HorizontalScrollBarInset: (self: ScrollingFrameModifier, value: Field<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
-	InputSink: (self: ScrollingFrameModifier, value: Field<Enum.InputSink>) -> ScrollingFrameModifier,
+	ElasticBehavior: (self: ScrollingFrameModifier, value: FieldP<Enum.ElasticBehavior>) -> ScrollingFrameModifier,
+	HorizontalScrollBarInset: (self: ScrollingFrameModifier, value: FieldP<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
+	InputSink: (self: ScrollingFrameModifier, value: FieldP<Enum.InputSink>) -> ScrollingFrameModifier,
 	Interactable: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	LayoutOrder: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
-	MidImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
-	MidImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
-	Name: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
-	NextSelectionDown: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
-	NextSelectionLeft: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
-	NextSelectionRight: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
-	NextSelectionUp: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
+	MidImage: (self: ScrollingFrameModifier, value: FieldP<string>) -> ScrollingFrameModifier,
+	MidImageContent: (self: ScrollingFrameModifier, value: FieldP<Content>) -> ScrollingFrameModifier,
+	Name: (self: ScrollingFrameModifier, value: FieldP<string>) -> ScrollingFrameModifier,
+	NextSelectionDown: (self: ScrollingFrameModifier, value: FieldP<GuiObject>) -> ScrollingFrameModifier,
+	NextSelectionLeft: (self: ScrollingFrameModifier, value: FieldP<GuiObject>) -> ScrollingFrameModifier,
+	NextSelectionRight: (self: ScrollingFrameModifier, value: FieldP<GuiObject>) -> ScrollingFrameModifier,
+	NextSelectionUp: (self: ScrollingFrameModifier, value: FieldP<GuiObject>) -> ScrollingFrameModifier,
 	Position: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
-	RootLocalizationTable: (self: ScrollingFrameModifier, value: Field<LocalizationTable>) -> ScrollingFrameModifier,
+	RootLocalizationTable: (self: ScrollingFrameModifier, value: FieldP<LocalizationTable>) -> ScrollingFrameModifier,
 	Rotation: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	Sandboxed: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	ScrollBarImageColor3: (self: ScrollingFrameModifier, value: Field<Color3>) -> ScrollingFrameModifier,
 	ScrollBarImageTransparency: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	ScrollBarThickness: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
-	ScrollingDirection: (self: ScrollingFrameModifier, value: Field<Enum.ScrollingDirection>) -> ScrollingFrameModifier,
+	ScrollingDirection: (self: ScrollingFrameModifier, value: FieldP<Enum.ScrollingDirection>) -> ScrollingFrameModifier,
 	ScrollingEnabled: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	Selectable: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
-	SelectionBehaviorDown: (self: ScrollingFrameModifier, value: Field<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
-	SelectionBehaviorLeft: (self: ScrollingFrameModifier, value: Field<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
-	SelectionBehaviorRight: (self: ScrollingFrameModifier, value: Field<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
-	SelectionBehaviorUp: (self: ScrollingFrameModifier, value: Field<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
+	SelectionBehaviorDown: (self: ScrollingFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
+	SelectionBehaviorLeft: (self: ScrollingFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
+	SelectionBehaviorRight: (self: ScrollingFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
+	SelectionBehaviorUp: (self: ScrollingFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ScrollingFrameModifier,
 	SelectionGroup: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
-	SelectionImageObject: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
+	SelectionImageObject: (self: ScrollingFrameModifier, value: FieldP<GuiObject>) -> ScrollingFrameModifier,
 	SelectionOrder: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	Size: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
-	SizeConstraint: (self: ScrollingFrameModifier, value: Field<Enum.SizeConstraint>) -> ScrollingFrameModifier,
-	TopImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
-	TopImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
-	VerticalScrollBarInset: (self: ScrollingFrameModifier, value: Field<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
-	VerticalScrollBarPosition: (self: ScrollingFrameModifier, value: Field<Enum.VerticalScrollBarPosition>) -> ScrollingFrameModifier,
+	SizeConstraint: (self: ScrollingFrameModifier, value: FieldP<Enum.SizeConstraint>) -> ScrollingFrameModifier,
+	TopImage: (self: ScrollingFrameModifier, value: FieldP<string>) -> ScrollingFrameModifier,
+	TopImageContent: (self: ScrollingFrameModifier, value: FieldP<Content>) -> ScrollingFrameModifier,
+	VerticalScrollBarInset: (self: ScrollingFrameModifier, value: FieldP<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
+	VerticalScrollBarPosition: (self: ScrollingFrameModifier, value: FieldP<Enum.VerticalScrollBarPosition>) -> ScrollingFrameModifier,
 	Visible: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	ZIndex: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	UICorner: (self: ScrollingFrameModifier, value: Field<number | UDim>) -> ScrollingFrameModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3227,6 +3240,7 @@ export type SurfaceGuiOnChange =
 	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type SurfaceGuiModifier = {
 	read __quadModifier: "SurfaceGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: SurfaceGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3235,31 +3249,31 @@ export type SurfaceGuiModifier = {
 	As: <T>(self: SurfaceGuiModifier, name: string?) -> T, -- 무검사(11절)
 	AsSurfaceGui: (self: SurfaceGuiModifier) -> SurfaceGuiModifier, -- 항등(Into<SurfaceGui> 구현)
 	Active: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
-	Adornee: (self: SurfaceGuiModifier, value: Field<Instance>) -> SurfaceGuiModifier,
+	Adornee: (self: SurfaceGuiModifier, value: FieldP<Instance>) -> SurfaceGuiModifier,
 	AlwaysOnTop: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
 	Archivable: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
 	AutoLocalize: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
 	Brightness: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
 	CanvasSize: (self: SurfaceGuiModifier, value: Field<Vector2>) -> SurfaceGuiModifier,
-	Capabilities: (self: SurfaceGuiModifier, value: Field<SecurityCapabilities>) -> SurfaceGuiModifier,
+	Capabilities: (self: SurfaceGuiModifier, value: FieldP<SecurityCapabilities>) -> SurfaceGuiModifier,
 	ClipsDescendants: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
 	Enabled: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
-	Face: (self: SurfaceGuiModifier, value: Field<Enum.NormalId>) -> SurfaceGuiModifier,
+	Face: (self: SurfaceGuiModifier, value: FieldP<Enum.NormalId>) -> SurfaceGuiModifier,
 	LightInfluence: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
 	MaxDistance: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
-	Name: (self: SurfaceGuiModifier, value: Field<string>) -> SurfaceGuiModifier,
+	Name: (self: SurfaceGuiModifier, value: FieldP<string>) -> SurfaceGuiModifier,
 	PixelsPerStud: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
 	ResetOnSpawn: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
-	RootLocalizationTable: (self: SurfaceGuiModifier, value: Field<LocalizationTable>) -> SurfaceGuiModifier,
+	RootLocalizationTable: (self: SurfaceGuiModifier, value: FieldP<LocalizationTable>) -> SurfaceGuiModifier,
 	Sandboxed: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
-	SelectionBehaviorDown: (self: SurfaceGuiModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
-	SelectionBehaviorLeft: (self: SurfaceGuiModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
-	SelectionBehaviorRight: (self: SurfaceGuiModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
-	SelectionBehaviorUp: (self: SurfaceGuiModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
+	SelectionBehaviorDown: (self: SurfaceGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
+	SelectionBehaviorLeft: (self: SurfaceGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
+	SelectionBehaviorRight: (self: SurfaceGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
+	SelectionBehaviorUp: (self: SurfaceGuiModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiModifier,
 	SelectionGroup: (self: SurfaceGuiModifier, value: Field<boolean>) -> SurfaceGuiModifier,
-	SizingMode: (self: SurfaceGuiModifier, value: Field<Enum.SurfaceGuiSizingMode>) -> SurfaceGuiModifier,
+	SizingMode: (self: SurfaceGuiModifier, value: FieldP<Enum.SurfaceGuiSizingMode>) -> SurfaceGuiModifier,
 	ToolPunchThroughDistance: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
-	ZIndexBehavior: (self: SurfaceGuiModifier, value: Field<Enum.ZIndexBehavior>) -> SurfaceGuiModifier,
+	ZIndexBehavior: (self: SurfaceGuiModifier, value: FieldP<Enum.ZIndexBehavior>) -> SurfaceGuiModifier,
 	ZOffset: (self: SurfaceGuiModifier, value: Field<number>) -> SurfaceGuiModifier,
 }
 export type IntoSurfaceGui = { AsSurfaceGui: (self: any) -> SurfaceGuiModifier }
@@ -3276,22 +3290,22 @@ export type SurfaceGuiBaseModifier = {
 	AsSurfaceGuiBase: (self: SurfaceGuiBaseModifier) -> SurfaceGuiBaseModifier, -- 항등(Into<SurfaceGuiBase> 구현)
 	AsSurfaceGui: (self: SurfaceGuiBaseModifier) -> SurfaceGuiModifier,
 	Active: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	Adornee: (self: SurfaceGuiBaseModifier, value: Field<Instance>) -> SurfaceGuiBaseModifier,
+	Adornee: (self: SurfaceGuiBaseModifier, value: FieldP<Instance>) -> SurfaceGuiBaseModifier,
 	Archivable: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
 	AutoLocalize: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	Capabilities: (self: SurfaceGuiBaseModifier, value: Field<SecurityCapabilities>) -> SurfaceGuiBaseModifier,
+	Capabilities: (self: SurfaceGuiBaseModifier, value: FieldP<SecurityCapabilities>) -> SurfaceGuiBaseModifier,
 	Enabled: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	Face: (self: SurfaceGuiBaseModifier, value: Field<Enum.NormalId>) -> SurfaceGuiBaseModifier,
-	Name: (self: SurfaceGuiBaseModifier, value: Field<string>) -> SurfaceGuiBaseModifier,
+	Face: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.NormalId>) -> SurfaceGuiBaseModifier,
+	Name: (self: SurfaceGuiBaseModifier, value: FieldP<string>) -> SurfaceGuiBaseModifier,
 	ResetOnSpawn: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	RootLocalizationTable: (self: SurfaceGuiBaseModifier, value: Field<LocalizationTable>) -> SurfaceGuiBaseModifier,
+	RootLocalizationTable: (self: SurfaceGuiBaseModifier, value: FieldP<LocalizationTable>) -> SurfaceGuiBaseModifier,
 	Sandboxed: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	SelectionBehaviorDown: (self: SurfaceGuiBaseModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
-	SelectionBehaviorLeft: (self: SurfaceGuiBaseModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
-	SelectionBehaviorRight: (self: SurfaceGuiBaseModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
-	SelectionBehaviorUp: (self: SurfaceGuiBaseModifier, value: Field<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
+	SelectionBehaviorDown: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
+	SelectionBehaviorLeft: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
+	SelectionBehaviorRight: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
+	SelectionBehaviorUp: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.SelectionBehavior>) -> SurfaceGuiBaseModifier,
 	SelectionGroup: (self: SurfaceGuiBaseModifier, value: Field<boolean>) -> SurfaceGuiBaseModifier,
-	ZIndexBehavior: (self: SurfaceGuiBaseModifier, value: Field<Enum.ZIndexBehavior>) -> SurfaceGuiBaseModifier,
+	ZIndexBehavior: (self: SurfaceGuiBaseModifier, value: FieldP<Enum.ZIndexBehavior>) -> SurfaceGuiBaseModifier,
 }
 export type IntoSurfaceGuiBase = { AsSurfaceGuiBase: (self: any) -> SurfaceGuiBaseModifier }
 
@@ -3364,6 +3378,7 @@ export type TextBoxOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextBoxModifier = {
@@ -3377,61 +3392,61 @@ export type TextBoxModifier = {
 	AnchorPoint: (self: TextBoxModifier, value: Field<Vector2>) -> TextBoxModifier,
 	Archivable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	AutoLocalize: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	AutomaticSize: (self: TextBoxModifier, value: Field<Enum.AutomaticSize>) -> TextBoxModifier,
+	AutomaticSize: (self: TextBoxModifier, value: FieldP<Enum.AutomaticSize>) -> TextBoxModifier,
 	BackgroundColor3: (self: TextBoxModifier, value: Field<Color3>) -> TextBoxModifier,
 	BackgroundTransparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	BorderColor3: (self: TextBoxModifier, value: Field<Color3>) -> TextBoxModifier,
-	BorderMode: (self: TextBoxModifier, value: Field<Enum.BorderMode>) -> TextBoxModifier,
+	BorderMode: (self: TextBoxModifier, value: FieldP<Enum.BorderMode>) -> TextBoxModifier,
 	BorderSizePixel: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
-	Capabilities: (self: TextBoxModifier, value: Field<SecurityCapabilities>) -> TextBoxModifier,
+	Capabilities: (self: TextBoxModifier, value: FieldP<SecurityCapabilities>) -> TextBoxModifier,
 	ClearTextOnFocus: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	ClipsDescendants: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	CursorPosition: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
-	FontFace: (self: TextBoxModifier, value: Field<Font>) -> TextBoxModifier,
-	InputSink: (self: TextBoxModifier, value: Field<Enum.InputSink>) -> TextBoxModifier,
+	FontFace: (self: TextBoxModifier, value: FieldP<Font>) -> TextBoxModifier,
+	InputSink: (self: TextBoxModifier, value: FieldP<Enum.InputSink>) -> TextBoxModifier,
 	Interactable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	LayoutOrder: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	LineHeight: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	MaxVisibleGraphemes: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	MultiLine: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	Name: (self: TextBoxModifier, value: Field<string>) -> TextBoxModifier,
-	NextSelectionDown: (self: TextBoxModifier, value: Field<GuiObject>) -> TextBoxModifier,
-	NextSelectionLeft: (self: TextBoxModifier, value: Field<GuiObject>) -> TextBoxModifier,
-	NextSelectionRight: (self: TextBoxModifier, value: Field<GuiObject>) -> TextBoxModifier,
-	NextSelectionUp: (self: TextBoxModifier, value: Field<GuiObject>) -> TextBoxModifier,
-	OpenTypeFeatures: (self: TextBoxModifier, value: Field<string>) -> TextBoxModifier,
+	Name: (self: TextBoxModifier, value: FieldP<string>) -> TextBoxModifier,
+	NextSelectionDown: (self: TextBoxModifier, value: FieldP<GuiObject>) -> TextBoxModifier,
+	NextSelectionLeft: (self: TextBoxModifier, value: FieldP<GuiObject>) -> TextBoxModifier,
+	NextSelectionRight: (self: TextBoxModifier, value: FieldP<GuiObject>) -> TextBoxModifier,
+	NextSelectionUp: (self: TextBoxModifier, value: FieldP<GuiObject>) -> TextBoxModifier,
+	OpenTypeFeatures: (self: TextBoxModifier, value: FieldP<string>) -> TextBoxModifier,
 	PlaceholderColor3: (self: TextBoxModifier, value: Field<Color3>) -> TextBoxModifier,
-	PlaceholderText: (self: TextBoxModifier, value: Field<string>) -> TextBoxModifier,
+	PlaceholderText: (self: TextBoxModifier, value: FieldP<string>) -> TextBoxModifier,
 	Position: (self: TextBoxModifier, value: Field<UDim2>) -> TextBoxModifier,
 	RichText: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	RootLocalizationTable: (self: TextBoxModifier, value: Field<LocalizationTable>) -> TextBoxModifier,
+	RootLocalizationTable: (self: TextBoxModifier, value: FieldP<LocalizationTable>) -> TextBoxModifier,
 	Rotation: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	Sandboxed: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	Selectable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	SelectionBehaviorDown: (self: TextBoxModifier, value: Field<Enum.SelectionBehavior>) -> TextBoxModifier,
-	SelectionBehaviorLeft: (self: TextBoxModifier, value: Field<Enum.SelectionBehavior>) -> TextBoxModifier,
-	SelectionBehaviorRight: (self: TextBoxModifier, value: Field<Enum.SelectionBehavior>) -> TextBoxModifier,
-	SelectionBehaviorUp: (self: TextBoxModifier, value: Field<Enum.SelectionBehavior>) -> TextBoxModifier,
+	SelectionBehaviorDown: (self: TextBoxModifier, value: FieldP<Enum.SelectionBehavior>) -> TextBoxModifier,
+	SelectionBehaviorLeft: (self: TextBoxModifier, value: FieldP<Enum.SelectionBehavior>) -> TextBoxModifier,
+	SelectionBehaviorRight: (self: TextBoxModifier, value: FieldP<Enum.SelectionBehavior>) -> TextBoxModifier,
+	SelectionBehaviorUp: (self: TextBoxModifier, value: FieldP<Enum.SelectionBehavior>) -> TextBoxModifier,
 	SelectionGroup: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	SelectionImageObject: (self: TextBoxModifier, value: Field<GuiObject>) -> TextBoxModifier,
+	SelectionImageObject: (self: TextBoxModifier, value: FieldP<GuiObject>) -> TextBoxModifier,
 	SelectionOrder: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	SelectionStart: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	ShowNativeInput: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	Size: (self: TextBoxModifier, value: Field<UDim2>) -> TextBoxModifier,
-	SizeConstraint: (self: TextBoxModifier, value: Field<Enum.SizeConstraint>) -> TextBoxModifier,
-	Text: (self: TextBoxModifier, value: Field<string>) -> TextBoxModifier,
+	SizeConstraint: (self: TextBoxModifier, value: FieldP<Enum.SizeConstraint>) -> TextBoxModifier,
+	Text: (self: TextBoxModifier, value: FieldP<string>) -> TextBoxModifier,
 	TextColor3: (self: TextBoxModifier, value: Field<Color3>) -> TextBoxModifier,
-	TextDirection: (self: TextBoxModifier, value: Field<Enum.TextDirection>) -> TextBoxModifier,
+	TextDirection: (self: TextBoxModifier, value: FieldP<Enum.TextDirection>) -> TextBoxModifier,
 	TextEditable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	TextScaled: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	TextSize: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	TextStrokeColor3: (self: TextBoxModifier, value: Field<Color3>) -> TextBoxModifier,
 	TextStrokeTransparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	TextTransparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
-	TextTruncate: (self: TextBoxModifier, value: Field<Enum.TextTruncate>) -> TextBoxModifier,
+	TextTruncate: (self: TextBoxModifier, value: FieldP<Enum.TextTruncate>) -> TextBoxModifier,
 	TextWrapped: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
-	TextXAlignment: (self: TextBoxModifier, value: Field<Enum.TextXAlignment>) -> TextBoxModifier,
-	TextYAlignment: (self: TextBoxModifier, value: Field<Enum.TextYAlignment>) -> TextBoxModifier,
+	TextXAlignment: (self: TextBoxModifier, value: FieldP<Enum.TextXAlignment>) -> TextBoxModifier,
+	TextYAlignment: (self: TextBoxModifier, value: FieldP<Enum.TextYAlignment>) -> TextBoxModifier,
 	Visible: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	ZIndex: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	UICorner: (self: TextBoxModifier, value: Field<number | UDim>) -> TextBoxModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3511,6 +3526,7 @@ export type TextButtonOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextButtonModifier = {
@@ -3525,58 +3541,58 @@ export type TextButtonModifier = {
 	Archivable: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	AutoButtonColor: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	AutoLocalize: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	AutomaticSize: (self: TextButtonModifier, value: Field<Enum.AutomaticSize>) -> TextButtonModifier,
+	AutomaticSize: (self: TextButtonModifier, value: FieldP<Enum.AutomaticSize>) -> TextButtonModifier,
 	BackgroundColor3: (self: TextButtonModifier, value: Field<Color3>) -> TextButtonModifier,
 	BackgroundTransparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	BorderColor3: (self: TextButtonModifier, value: Field<Color3>) -> TextButtonModifier,
-	BorderMode: (self: TextButtonModifier, value: Field<Enum.BorderMode>) -> TextButtonModifier,
+	BorderMode: (self: TextButtonModifier, value: FieldP<Enum.BorderMode>) -> TextButtonModifier,
 	BorderSizePixel: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
-	Capabilities: (self: TextButtonModifier, value: Field<SecurityCapabilities>) -> TextButtonModifier,
+	Capabilities: (self: TextButtonModifier, value: FieldP<SecurityCapabilities>) -> TextButtonModifier,
 	ClipsDescendants: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	FontFace: (self: TextButtonModifier, value: Field<Font>) -> TextButtonModifier,
-	HoverHapticEffect: (self: TextButtonModifier, value: Field<HapticEffect>) -> TextButtonModifier,
-	InputSink: (self: TextButtonModifier, value: Field<Enum.InputSink>) -> TextButtonModifier,
+	FontFace: (self: TextButtonModifier, value: FieldP<Font>) -> TextButtonModifier,
+	HoverHapticEffect: (self: TextButtonModifier, value: FieldP<HapticEffect>) -> TextButtonModifier,
+	InputSink: (self: TextButtonModifier, value: FieldP<Enum.InputSink>) -> TextButtonModifier,
 	Interactable: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	LayoutOrder: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	LineHeight: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	MaxVisibleGraphemes: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	Modal: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	Name: (self: TextButtonModifier, value: Field<string>) -> TextButtonModifier,
-	NextSelectionDown: (self: TextButtonModifier, value: Field<GuiObject>) -> TextButtonModifier,
-	NextSelectionLeft: (self: TextButtonModifier, value: Field<GuiObject>) -> TextButtonModifier,
-	NextSelectionRight: (self: TextButtonModifier, value: Field<GuiObject>) -> TextButtonModifier,
-	NextSelectionUp: (self: TextButtonModifier, value: Field<GuiObject>) -> TextButtonModifier,
-	OpenTypeFeatures: (self: TextButtonModifier, value: Field<string>) -> TextButtonModifier,
+	Name: (self: TextButtonModifier, value: FieldP<string>) -> TextButtonModifier,
+	NextSelectionDown: (self: TextButtonModifier, value: FieldP<GuiObject>) -> TextButtonModifier,
+	NextSelectionLeft: (self: TextButtonModifier, value: FieldP<GuiObject>) -> TextButtonModifier,
+	NextSelectionRight: (self: TextButtonModifier, value: FieldP<GuiObject>) -> TextButtonModifier,
+	NextSelectionUp: (self: TextButtonModifier, value: FieldP<GuiObject>) -> TextButtonModifier,
+	OpenTypeFeatures: (self: TextButtonModifier, value: FieldP<string>) -> TextButtonModifier,
 	Position: (self: TextButtonModifier, value: Field<UDim2>) -> TextButtonModifier,
-	PressHapticEffect: (self: TextButtonModifier, value: Field<HapticEffect>) -> TextButtonModifier,
+	PressHapticEffect: (self: TextButtonModifier, value: FieldP<HapticEffect>) -> TextButtonModifier,
 	RichText: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	RootLocalizationTable: (self: TextButtonModifier, value: Field<LocalizationTable>) -> TextButtonModifier,
+	RootLocalizationTable: (self: TextButtonModifier, value: FieldP<LocalizationTable>) -> TextButtonModifier,
 	Rotation: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	Sandboxed: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	Selectable: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	Selected: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	SelectionBehaviorDown: (self: TextButtonModifier, value: Field<Enum.SelectionBehavior>) -> TextButtonModifier,
-	SelectionBehaviorLeft: (self: TextButtonModifier, value: Field<Enum.SelectionBehavior>) -> TextButtonModifier,
-	SelectionBehaviorRight: (self: TextButtonModifier, value: Field<Enum.SelectionBehavior>) -> TextButtonModifier,
-	SelectionBehaviorUp: (self: TextButtonModifier, value: Field<Enum.SelectionBehavior>) -> TextButtonModifier,
+	SelectionBehaviorDown: (self: TextButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> TextButtonModifier,
+	SelectionBehaviorLeft: (self: TextButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> TextButtonModifier,
+	SelectionBehaviorRight: (self: TextButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> TextButtonModifier,
+	SelectionBehaviorUp: (self: TextButtonModifier, value: FieldP<Enum.SelectionBehavior>) -> TextButtonModifier,
 	SelectionGroup: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	SelectionImageObject: (self: TextButtonModifier, value: Field<GuiObject>) -> TextButtonModifier,
+	SelectionImageObject: (self: TextButtonModifier, value: FieldP<GuiObject>) -> TextButtonModifier,
 	SelectionOrder: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	Size: (self: TextButtonModifier, value: Field<UDim2>) -> TextButtonModifier,
-	SizeConstraint: (self: TextButtonModifier, value: Field<Enum.SizeConstraint>) -> TextButtonModifier,
-	Style: (self: TextButtonModifier, value: Field<Enum.ButtonStyle>) -> TextButtonModifier,
-	Text: (self: TextButtonModifier, value: Field<string>) -> TextButtonModifier,
+	SizeConstraint: (self: TextButtonModifier, value: FieldP<Enum.SizeConstraint>) -> TextButtonModifier,
+	Style: (self: TextButtonModifier, value: FieldP<Enum.ButtonStyle>) -> TextButtonModifier,
+	Text: (self: TextButtonModifier, value: FieldP<string>) -> TextButtonModifier,
 	TextColor3: (self: TextButtonModifier, value: Field<Color3>) -> TextButtonModifier,
-	TextDirection: (self: TextButtonModifier, value: Field<Enum.TextDirection>) -> TextButtonModifier,
+	TextDirection: (self: TextButtonModifier, value: FieldP<Enum.TextDirection>) -> TextButtonModifier,
 	TextScaled: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	TextSize: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	TextStrokeColor3: (self: TextButtonModifier, value: Field<Color3>) -> TextButtonModifier,
 	TextStrokeTransparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	TextTransparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
-	TextTruncate: (self: TextButtonModifier, value: Field<Enum.TextTruncate>) -> TextButtonModifier,
+	TextTruncate: (self: TextButtonModifier, value: FieldP<Enum.TextTruncate>) -> TextButtonModifier,
 	TextWrapped: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
-	TextXAlignment: (self: TextButtonModifier, value: Field<Enum.TextXAlignment>) -> TextButtonModifier,
-	TextYAlignment: (self: TextButtonModifier, value: Field<Enum.TextYAlignment>) -> TextButtonModifier,
+	TextXAlignment: (self: TextButtonModifier, value: FieldP<Enum.TextXAlignment>) -> TextButtonModifier,
+	TextYAlignment: (self: TextButtonModifier, value: FieldP<Enum.TextYAlignment>) -> TextButtonModifier,
 	Visible: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	ZIndex: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	UICorner: (self: TextButtonModifier, value: Field<number | UDim>) -> TextButtonModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3650,6 +3666,7 @@ export type TextLabelOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextLabelModifier = {
@@ -3663,53 +3680,53 @@ export type TextLabelModifier = {
 	AnchorPoint: (self: TextLabelModifier, value: Field<Vector2>) -> TextLabelModifier,
 	Archivable: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	AutoLocalize: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	AutomaticSize: (self: TextLabelModifier, value: Field<Enum.AutomaticSize>) -> TextLabelModifier,
+	AutomaticSize: (self: TextLabelModifier, value: FieldP<Enum.AutomaticSize>) -> TextLabelModifier,
 	BackgroundColor3: (self: TextLabelModifier, value: Field<Color3>) -> TextLabelModifier,
 	BackgroundTransparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	BorderColor3: (self: TextLabelModifier, value: Field<Color3>) -> TextLabelModifier,
-	BorderMode: (self: TextLabelModifier, value: Field<Enum.BorderMode>) -> TextLabelModifier,
+	BorderMode: (self: TextLabelModifier, value: FieldP<Enum.BorderMode>) -> TextLabelModifier,
 	BorderSizePixel: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
-	Capabilities: (self: TextLabelModifier, value: Field<SecurityCapabilities>) -> TextLabelModifier,
+	Capabilities: (self: TextLabelModifier, value: FieldP<SecurityCapabilities>) -> TextLabelModifier,
 	ClipsDescendants: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	FontFace: (self: TextLabelModifier, value: Field<Font>) -> TextLabelModifier,
-	InputSink: (self: TextLabelModifier, value: Field<Enum.InputSink>) -> TextLabelModifier,
+	FontFace: (self: TextLabelModifier, value: FieldP<Font>) -> TextLabelModifier,
+	InputSink: (self: TextLabelModifier, value: FieldP<Enum.InputSink>) -> TextLabelModifier,
 	Interactable: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	LayoutOrder: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	LineHeight: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	MaxVisibleGraphemes: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
-	Name: (self: TextLabelModifier, value: Field<string>) -> TextLabelModifier,
-	NextSelectionDown: (self: TextLabelModifier, value: Field<GuiObject>) -> TextLabelModifier,
-	NextSelectionLeft: (self: TextLabelModifier, value: Field<GuiObject>) -> TextLabelModifier,
-	NextSelectionRight: (self: TextLabelModifier, value: Field<GuiObject>) -> TextLabelModifier,
-	NextSelectionUp: (self: TextLabelModifier, value: Field<GuiObject>) -> TextLabelModifier,
-	OpenTypeFeatures: (self: TextLabelModifier, value: Field<string>) -> TextLabelModifier,
+	Name: (self: TextLabelModifier, value: FieldP<string>) -> TextLabelModifier,
+	NextSelectionDown: (self: TextLabelModifier, value: FieldP<GuiObject>) -> TextLabelModifier,
+	NextSelectionLeft: (self: TextLabelModifier, value: FieldP<GuiObject>) -> TextLabelModifier,
+	NextSelectionRight: (self: TextLabelModifier, value: FieldP<GuiObject>) -> TextLabelModifier,
+	NextSelectionUp: (self: TextLabelModifier, value: FieldP<GuiObject>) -> TextLabelModifier,
+	OpenTypeFeatures: (self: TextLabelModifier, value: FieldP<string>) -> TextLabelModifier,
 	Position: (self: TextLabelModifier, value: Field<UDim2>) -> TextLabelModifier,
 	RichText: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	RootLocalizationTable: (self: TextLabelModifier, value: Field<LocalizationTable>) -> TextLabelModifier,
+	RootLocalizationTable: (self: TextLabelModifier, value: FieldP<LocalizationTable>) -> TextLabelModifier,
 	Rotation: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	Sandboxed: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	Selectable: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	SelectionBehaviorDown: (self: TextLabelModifier, value: Field<Enum.SelectionBehavior>) -> TextLabelModifier,
-	SelectionBehaviorLeft: (self: TextLabelModifier, value: Field<Enum.SelectionBehavior>) -> TextLabelModifier,
-	SelectionBehaviorRight: (self: TextLabelModifier, value: Field<Enum.SelectionBehavior>) -> TextLabelModifier,
-	SelectionBehaviorUp: (self: TextLabelModifier, value: Field<Enum.SelectionBehavior>) -> TextLabelModifier,
+	SelectionBehaviorDown: (self: TextLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> TextLabelModifier,
+	SelectionBehaviorLeft: (self: TextLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> TextLabelModifier,
+	SelectionBehaviorRight: (self: TextLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> TextLabelModifier,
+	SelectionBehaviorUp: (self: TextLabelModifier, value: FieldP<Enum.SelectionBehavior>) -> TextLabelModifier,
 	SelectionGroup: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	SelectionImageObject: (self: TextLabelModifier, value: Field<GuiObject>) -> TextLabelModifier,
+	SelectionImageObject: (self: TextLabelModifier, value: FieldP<GuiObject>) -> TextLabelModifier,
 	SelectionOrder: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	Size: (self: TextLabelModifier, value: Field<UDim2>) -> TextLabelModifier,
-	SizeConstraint: (self: TextLabelModifier, value: Field<Enum.SizeConstraint>) -> TextLabelModifier,
-	Text: (self: TextLabelModifier, value: Field<string>) -> TextLabelModifier,
+	SizeConstraint: (self: TextLabelModifier, value: FieldP<Enum.SizeConstraint>) -> TextLabelModifier,
+	Text: (self: TextLabelModifier, value: FieldP<string>) -> TextLabelModifier,
 	TextColor3: (self: TextLabelModifier, value: Field<Color3>) -> TextLabelModifier,
-	TextDirection: (self: TextLabelModifier, value: Field<Enum.TextDirection>) -> TextLabelModifier,
+	TextDirection: (self: TextLabelModifier, value: FieldP<Enum.TextDirection>) -> TextLabelModifier,
 	TextScaled: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	TextSize: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	TextStrokeColor3: (self: TextLabelModifier, value: Field<Color3>) -> TextLabelModifier,
 	TextStrokeTransparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	TextTransparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
-	TextTruncate: (self: TextLabelModifier, value: Field<Enum.TextTruncate>) -> TextLabelModifier,
+	TextTruncate: (self: TextLabelModifier, value: FieldP<Enum.TextTruncate>) -> TextLabelModifier,
 	TextWrapped: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
-	TextXAlignment: (self: TextLabelModifier, value: Field<Enum.TextXAlignment>) -> TextLabelModifier,
-	TextYAlignment: (self: TextLabelModifier, value: Field<Enum.TextYAlignment>) -> TextLabelModifier,
+	TextXAlignment: (self: TextLabelModifier, value: FieldP<Enum.TextXAlignment>) -> TextLabelModifier,
+	TextYAlignment: (self: TextLabelModifier, value: FieldP<Enum.TextYAlignment>) -> TextLabelModifier,
 	Visible: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	ZIndex: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	UICorner: (self: TextLabelModifier, value: Field<number | UDim>) -> TextLabelModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3731,6 +3748,7 @@ export type UIAspectRatioConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIAspectRatioConstraintModifier = {
 	read __quadModifier: "UIAspectRatioConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIAspectRatioConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3740,10 +3758,10 @@ export type UIAspectRatioConstraintModifier = {
 	AsUIAspectRatioConstraint: (self: UIAspectRatioConstraintModifier) -> UIAspectRatioConstraintModifier, -- 항등(Into<UIAspectRatioConstraint> 구현)
 	Archivable: (self: UIAspectRatioConstraintModifier, value: Field<boolean>) -> UIAspectRatioConstraintModifier,
 	AspectRatio: (self: UIAspectRatioConstraintModifier, value: Field<number>) -> UIAspectRatioConstraintModifier,
-	AspectType: (self: UIAspectRatioConstraintModifier, value: Field<Enum.AspectType>) -> UIAspectRatioConstraintModifier,
-	Capabilities: (self: UIAspectRatioConstraintModifier, value: Field<SecurityCapabilities>) -> UIAspectRatioConstraintModifier,
-	DominantAxis: (self: UIAspectRatioConstraintModifier, value: Field<Enum.DominantAxis>) -> UIAspectRatioConstraintModifier,
-	Name: (self: UIAspectRatioConstraintModifier, value: Field<string>) -> UIAspectRatioConstraintModifier,
+	AspectType: (self: UIAspectRatioConstraintModifier, value: FieldP<Enum.AspectType>) -> UIAspectRatioConstraintModifier,
+	Capabilities: (self: UIAspectRatioConstraintModifier, value: FieldP<SecurityCapabilities>) -> UIAspectRatioConstraintModifier,
+	DominantAxis: (self: UIAspectRatioConstraintModifier, value: FieldP<Enum.DominantAxis>) -> UIAspectRatioConstraintModifier,
+	Name: (self: UIAspectRatioConstraintModifier, value: FieldP<string>) -> UIAspectRatioConstraintModifier,
 	Sandboxed: (self: UIAspectRatioConstraintModifier, value: Field<boolean>) -> UIAspectRatioConstraintModifier,
 }
 export type IntoUIAspectRatioConstraint = { AsUIAspectRatioConstraint: (self: any) -> UIAspectRatioConstraintModifier }
@@ -3778,8 +3796,8 @@ export type UIBaseModifier = {
 	AsUITableLayout: (self: UIBaseModifier) -> UITableLayoutModifier,
 	AsUITextSizeConstraint: (self: UIBaseModifier) -> UITextSizeConstraintModifier,
 	Archivable: (self: UIBaseModifier, value: Field<boolean>) -> UIBaseModifier,
-	Capabilities: (self: UIBaseModifier, value: Field<SecurityCapabilities>) -> UIBaseModifier,
-	Name: (self: UIBaseModifier, value: Field<string>) -> UIBaseModifier,
+	Capabilities: (self: UIBaseModifier, value: FieldP<SecurityCapabilities>) -> UIBaseModifier,
+	Name: (self: UIBaseModifier, value: FieldP<string>) -> UIBaseModifier,
 	Sandboxed: (self: UIBaseModifier, value: Field<boolean>) -> UIBaseModifier,
 }
 export type IntoUIBase = { AsUIBase: (self: any) -> UIBaseModifier }
@@ -3810,8 +3828,8 @@ export type UIComponentModifier = {
 	AsUITableLayout: (self: UIComponentModifier) -> UITableLayoutModifier,
 	AsUITextSizeConstraint: (self: UIComponentModifier) -> UITextSizeConstraintModifier,
 	Archivable: (self: UIComponentModifier, value: Field<boolean>) -> UIComponentModifier,
-	Capabilities: (self: UIComponentModifier, value: Field<SecurityCapabilities>) -> UIComponentModifier,
-	Name: (self: UIComponentModifier, value: Field<string>) -> UIComponentModifier,
+	Capabilities: (self: UIComponentModifier, value: FieldP<SecurityCapabilities>) -> UIComponentModifier,
+	Name: (self: UIComponentModifier, value: FieldP<string>) -> UIComponentModifier,
 	Sandboxed: (self: UIComponentModifier, value: Field<boolean>) -> UIComponentModifier,
 }
 export type IntoUIComponent = { AsUIComponent: (self: any) -> UIComponentModifier }
@@ -3827,8 +3845,8 @@ export type UIConstraintModifier = {
 	AsUISizeConstraint: (self: UIConstraintModifier) -> UISizeConstraintModifier,
 	AsUITextSizeConstraint: (self: UIConstraintModifier) -> UITextSizeConstraintModifier,
 	Archivable: (self: UIConstraintModifier, value: Field<boolean>) -> UIConstraintModifier,
-	Capabilities: (self: UIConstraintModifier, value: Field<SecurityCapabilities>) -> UIConstraintModifier,
-	Name: (self: UIConstraintModifier, value: Field<string>) -> UIConstraintModifier,
+	Capabilities: (self: UIConstraintModifier, value: FieldP<SecurityCapabilities>) -> UIConstraintModifier,
+	Name: (self: UIConstraintModifier, value: FieldP<string>) -> UIConstraintModifier,
 	Sandboxed: (self: UIConstraintModifier, value: Field<boolean>) -> UIConstraintModifier,
 }
 export type IntoUIConstraint = { AsUIConstraint: (self: any) -> UIConstraintModifier }
@@ -3844,6 +3862,7 @@ export type UICornerOnChange =
 	| 	{ Name: "TopLeftRadius", Callback: (UDim) -> () }
 	| 	{ Name: "TopRightRadius", Callback: (UDim) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UICornerModifier = {
 	read __quadModifier: "UICorner", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UICornerModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3854,9 +3873,9 @@ export type UICornerModifier = {
 	Archivable: (self: UICornerModifier, value: Field<boolean>) -> UICornerModifier,
 	BottomLeftRadius: (self: UICornerModifier, value: Field<UDim>) -> UICornerModifier,
 	BottomRightRadius: (self: UICornerModifier, value: Field<UDim>) -> UICornerModifier,
-	Capabilities: (self: UICornerModifier, value: Field<SecurityCapabilities>) -> UICornerModifier,
+	Capabilities: (self: UICornerModifier, value: FieldP<SecurityCapabilities>) -> UICornerModifier,
 	CornerRadius: (self: UICornerModifier, value: Field<UDim>) -> UICornerModifier,
-	Name: (self: UICornerModifier, value: Field<string>) -> UICornerModifier,
+	Name: (self: UICornerModifier, value: FieldP<string>) -> UICornerModifier,
 	Sandboxed: (self: UICornerModifier, value: Field<boolean>) -> UICornerModifier,
 	TopLeftRadius: (self: UICornerModifier, value: Field<UDim>) -> UICornerModifier,
 	TopRightRadius: (self: UICornerModifier, value: Field<UDim>) -> UICornerModifier,
@@ -3894,6 +3913,7 @@ export type UIDragDetectorOnChange =
 	| 	{ Name: "SelectionModeRotateSpeed", Callback: (number) -> () }
 	| 	{ Name: "UIDragSpeedAxisMapping", Callback: (Enum.UIDragSpeedAxisMapping) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIDragDetectorModifier = {
 	read __quadModifier: "UIDragDetector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIDragDetectorModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3901,32 +3921,32 @@ export type UIDragDetectorModifier = {
 	Overridden: (self: UIDragDetectorModifier, ...any) -> any,
 	As: <T>(self: UIDragDetectorModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIDragDetector: (self: UIDragDetectorModifier) -> UIDragDetectorModifier, -- 항등(Into<UIDragDetector> 구현)
-	ActivatedCursorIcon: (self: UIDragDetectorModifier, value: Field<string>) -> UIDragDetectorModifier,
-	ActivatedCursorIconContent: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
+	ActivatedCursorIcon: (self: UIDragDetectorModifier, value: FieldP<string>) -> UIDragDetectorModifier,
+	ActivatedCursorIconContent: (self: UIDragDetectorModifier, value: FieldP<Content>) -> UIDragDetectorModifier,
 	Archivable: (self: UIDragDetectorModifier, value: Field<boolean>) -> UIDragDetectorModifier,
-	BoundingBehavior: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorBoundingBehavior>) -> UIDragDetectorModifier,
-	BoundingUI: (self: UIDragDetectorModifier, value: Field<GuiBase2d>) -> UIDragDetectorModifier,
-	Capabilities: (self: UIDragDetectorModifier, value: Field<SecurityCapabilities>) -> UIDragDetectorModifier,
-	CursorIcon: (self: UIDragDetectorModifier, value: Field<string>) -> UIDragDetectorModifier,
-	CursorIconContent: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
+	BoundingBehavior: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragDetectorBoundingBehavior>) -> UIDragDetectorModifier,
+	BoundingUI: (self: UIDragDetectorModifier, value: FieldP<GuiBase2d>) -> UIDragDetectorModifier,
+	Capabilities: (self: UIDragDetectorModifier, value: FieldP<SecurityCapabilities>) -> UIDragDetectorModifier,
+	CursorIcon: (self: UIDragDetectorModifier, value: FieldP<string>) -> UIDragDetectorModifier,
+	CursorIconContent: (self: UIDragDetectorModifier, value: FieldP<Content>) -> UIDragDetectorModifier,
 	DragAxis: (self: UIDragDetectorModifier, value: Field<Vector2>) -> UIDragDetectorModifier,
-	DragRelativity: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorDragRelativity>) -> UIDragDetectorModifier,
+	DragRelativity: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragDetectorDragRelativity>) -> UIDragDetectorModifier,
 	DragRotation: (self: UIDragDetectorModifier, value: Field<number>) -> UIDragDetectorModifier,
-	DragSpace: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorDragSpace>) -> UIDragDetectorModifier,
-	DragStyle: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorDragStyle>) -> UIDragDetectorModifier,
+	DragSpace: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragDetectorDragSpace>) -> UIDragDetectorModifier,
+	DragStyle: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragDetectorDragStyle>) -> UIDragDetectorModifier,
 	DragUDim2: (self: UIDragDetectorModifier, value: Field<UDim2>) -> UIDragDetectorModifier,
 	Enabled: (self: UIDragDetectorModifier, value: Field<boolean>) -> UIDragDetectorModifier,
 	MaxDragAngle: (self: UIDragDetectorModifier, value: Field<number>) -> UIDragDetectorModifier,
 	MaxDragTranslation: (self: UIDragDetectorModifier, value: Field<UDim2>) -> UIDragDetectorModifier,
 	MinDragAngle: (self: UIDragDetectorModifier, value: Field<number>) -> UIDragDetectorModifier,
 	MinDragTranslation: (self: UIDragDetectorModifier, value: Field<UDim2>) -> UIDragDetectorModifier,
-	Name: (self: UIDragDetectorModifier, value: Field<string>) -> UIDragDetectorModifier,
-	ReferenceUIInstance: (self: UIDragDetectorModifier, value: Field<GuiObject>) -> UIDragDetectorModifier,
-	ResponseStyle: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorResponseStyle>) -> UIDragDetectorModifier,
+	Name: (self: UIDragDetectorModifier, value: FieldP<string>) -> UIDragDetectorModifier,
+	ReferenceUIInstance: (self: UIDragDetectorModifier, value: FieldP<GuiObject>) -> UIDragDetectorModifier,
+	ResponseStyle: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragDetectorResponseStyle>) -> UIDragDetectorModifier,
 	Sandboxed: (self: UIDragDetectorModifier, value: Field<boolean>) -> UIDragDetectorModifier,
 	SelectionModeDragSpeed: (self: UIDragDetectorModifier, value: Field<UDim2>) -> UIDragDetectorModifier,
 	SelectionModeRotateSpeed: (self: UIDragDetectorModifier, value: Field<number>) -> UIDragDetectorModifier,
-	UIDragSpeedAxisMapping: (self: UIDragDetectorModifier, value: Field<Enum.UIDragSpeedAxisMapping>) -> UIDragDetectorModifier,
+	UIDragSpeedAxisMapping: (self: UIDragDetectorModifier, value: FieldP<Enum.UIDragSpeedAxisMapping>) -> UIDragDetectorModifier,
 }
 export type IntoUIDragDetector = { AsUIDragDetector: (self: any) -> UIDragDetectorModifier }
 export type UIDragDetectorRefMarker = { read __quadRefAccepts: (UIDragDetector) -> () }
@@ -3943,6 +3963,7 @@ export type UIFlexItemOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ShrinkRatio", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIFlexItemModifier = {
 	read __quadModifier: "UIFlexItem", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIFlexItemModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3951,11 +3972,11 @@ export type UIFlexItemModifier = {
 	As: <T>(self: UIFlexItemModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIFlexItem: (self: UIFlexItemModifier) -> UIFlexItemModifier, -- 항등(Into<UIFlexItem> 구현)
 	Archivable: (self: UIFlexItemModifier, value: Field<boolean>) -> UIFlexItemModifier,
-	Capabilities: (self: UIFlexItemModifier, value: Field<SecurityCapabilities>) -> UIFlexItemModifier,
-	FlexMode: (self: UIFlexItemModifier, value: Field<Enum.UIFlexMode>) -> UIFlexItemModifier,
+	Capabilities: (self: UIFlexItemModifier, value: FieldP<SecurityCapabilities>) -> UIFlexItemModifier,
+	FlexMode: (self: UIFlexItemModifier, value: FieldP<Enum.UIFlexMode>) -> UIFlexItemModifier,
 	GrowRatio: (self: UIFlexItemModifier, value: Field<number>) -> UIFlexItemModifier,
-	ItemLineAlignment: (self: UIFlexItemModifier, value: Field<Enum.ItemLineAlignment>) -> UIFlexItemModifier,
-	Name: (self: UIFlexItemModifier, value: Field<string>) -> UIFlexItemModifier,
+	ItemLineAlignment: (self: UIFlexItemModifier, value: FieldP<Enum.ItemLineAlignment>) -> UIFlexItemModifier,
+	Name: (self: UIFlexItemModifier, value: FieldP<string>) -> UIFlexItemModifier,
 	Sandboxed: (self: UIFlexItemModifier, value: Field<boolean>) -> UIFlexItemModifier,
 	ShrinkRatio: (self: UIFlexItemModifier, value: Field<number>) -> UIFlexItemModifier,
 }
@@ -3978,6 +3999,7 @@ export type UIGradientOnChange =
 	| 	{ Name: "Transparency", Callback: (NumberSequence) -> () }
 	| 	{ Name: "Type", Callback: (Enum.GradientType) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIGradientModifier = {
 	read __quadModifier: "UIGradient", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGradientModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3986,17 +4008,17 @@ export type UIGradientModifier = {
 	As: <T>(self: UIGradientModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIGradient: (self: UIGradientModifier) -> UIGradientModifier, -- 항등(Into<UIGradient> 구현)
 	Archivable: (self: UIGradientModifier, value: Field<boolean>) -> UIGradientModifier,
-	Capabilities: (self: UIGradientModifier, value: Field<SecurityCapabilities>) -> UIGradientModifier,
-	Color: (self: UIGradientModifier, value: Field<ColorSequence>) -> UIGradientModifier,
+	Capabilities: (self: UIGradientModifier, value: FieldP<SecurityCapabilities>) -> UIGradientModifier,
+	Color: (self: UIGradientModifier, value: FieldP<ColorSequence>) -> UIGradientModifier,
 	Enabled: (self: UIGradientModifier, value: Field<boolean>) -> UIGradientModifier,
-	Name: (self: UIGradientModifier, value: Field<string>) -> UIGradientModifier,
+	Name: (self: UIGradientModifier, value: FieldP<string>) -> UIGradientModifier,
 	Offset: (self: UIGradientModifier, value: Field<Vector2>) -> UIGradientModifier,
 	Rotation: (self: UIGradientModifier, value: Field<number>) -> UIGradientModifier,
 	Sandboxed: (self: UIGradientModifier, value: Field<boolean>) -> UIGradientModifier,
 	Scale: (self: UIGradientModifier, value: Field<number>) -> UIGradientModifier,
-	TileMode: (self: UIGradientModifier, value: Field<Enum.GradientTileMode>) -> UIGradientModifier,
-	Transparency: (self: UIGradientModifier, value: Field<NumberSequence>) -> UIGradientModifier,
-	Type: (self: UIGradientModifier, value: Field<Enum.GradientType>) -> UIGradientModifier,
+	TileMode: (self: UIGradientModifier, value: FieldP<Enum.GradientTileMode>) -> UIGradientModifier,
+	Transparency: (self: UIGradientModifier, value: FieldP<NumberSequence>) -> UIGradientModifier,
+	Type: (self: UIGradientModifier, value: FieldP<Enum.GradientType>) -> UIGradientModifier,
 }
 export type IntoUIGradient = { AsUIGradient: (self: any) -> UIGradientModifier }
 export type UIGradientRefMarker = { read __quadRefAccepts: (UIGradient) -> () }
@@ -4020,6 +4042,7 @@ export type UIGridLayoutOnChange =
 	| 	{ Name: "AbsoluteCellSize", Callback: (Vector2) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIGridLayoutModifier = {
 	read __quadModifier: "UIGridLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGridLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4028,17 +4051,17 @@ export type UIGridLayoutModifier = {
 	As: <T>(self: UIGridLayoutModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIGridLayout: (self: UIGridLayoutModifier) -> UIGridLayoutModifier, -- 항등(Into<UIGridLayout> 구현)
 	Archivable: (self: UIGridLayoutModifier, value: Field<boolean>) -> UIGridLayoutModifier,
-	Capabilities: (self: UIGridLayoutModifier, value: Field<SecurityCapabilities>) -> UIGridLayoutModifier,
+	Capabilities: (self: UIGridLayoutModifier, value: FieldP<SecurityCapabilities>) -> UIGridLayoutModifier,
 	CellPadding: (self: UIGridLayoutModifier, value: Field<UDim2>) -> UIGridLayoutModifier,
 	CellSize: (self: UIGridLayoutModifier, value: Field<UDim2>) -> UIGridLayoutModifier,
-	FillDirection: (self: UIGridLayoutModifier, value: Field<Enum.FillDirection>) -> UIGridLayoutModifier,
+	FillDirection: (self: UIGridLayoutModifier, value: FieldP<Enum.FillDirection>) -> UIGridLayoutModifier,
 	FillDirectionMaxCells: (self: UIGridLayoutModifier, value: Field<number>) -> UIGridLayoutModifier,
-	HorizontalAlignment: (self: UIGridLayoutModifier, value: Field<Enum.HorizontalAlignment>) -> UIGridLayoutModifier,
-	Name: (self: UIGridLayoutModifier, value: Field<string>) -> UIGridLayoutModifier,
+	HorizontalAlignment: (self: UIGridLayoutModifier, value: FieldP<Enum.HorizontalAlignment>) -> UIGridLayoutModifier,
+	Name: (self: UIGridLayoutModifier, value: FieldP<string>) -> UIGridLayoutModifier,
 	Sandboxed: (self: UIGridLayoutModifier, value: Field<boolean>) -> UIGridLayoutModifier,
-	SortOrder: (self: UIGridLayoutModifier, value: Field<Enum.SortOrder>) -> UIGridLayoutModifier,
-	StartCorner: (self: UIGridLayoutModifier, value: Field<Enum.StartCorner>) -> UIGridLayoutModifier,
-	VerticalAlignment: (self: UIGridLayoutModifier, value: Field<Enum.VerticalAlignment>) -> UIGridLayoutModifier,
+	SortOrder: (self: UIGridLayoutModifier, value: FieldP<Enum.SortOrder>) -> UIGridLayoutModifier,
+	StartCorner: (self: UIGridLayoutModifier, value: FieldP<Enum.StartCorner>) -> UIGridLayoutModifier,
+	VerticalAlignment: (self: UIGridLayoutModifier, value: FieldP<Enum.VerticalAlignment>) -> UIGridLayoutModifier,
 }
 export type IntoUIGridLayout = { AsUIGridLayout: (self: any) -> UIGridLayoutModifier }
 export type UIGridLayoutRefMarker = { read __quadRefAccepts: (UIGridLayout) -> () }
@@ -4057,13 +4080,13 @@ export type UIGridStyleLayoutModifier = {
 	AsUIPageLayout: (self: UIGridStyleLayoutModifier) -> UIPageLayoutModifier,
 	AsUITableLayout: (self: UIGridStyleLayoutModifier) -> UITableLayoutModifier,
 	Archivable: (self: UIGridStyleLayoutModifier, value: Field<boolean>) -> UIGridStyleLayoutModifier,
-	Capabilities: (self: UIGridStyleLayoutModifier, value: Field<SecurityCapabilities>) -> UIGridStyleLayoutModifier,
-	FillDirection: (self: UIGridStyleLayoutModifier, value: Field<Enum.FillDirection>) -> UIGridStyleLayoutModifier,
-	HorizontalAlignment: (self: UIGridStyleLayoutModifier, value: Field<Enum.HorizontalAlignment>) -> UIGridStyleLayoutModifier,
-	Name: (self: UIGridStyleLayoutModifier, value: Field<string>) -> UIGridStyleLayoutModifier,
+	Capabilities: (self: UIGridStyleLayoutModifier, value: FieldP<SecurityCapabilities>) -> UIGridStyleLayoutModifier,
+	FillDirection: (self: UIGridStyleLayoutModifier, value: FieldP<Enum.FillDirection>) -> UIGridStyleLayoutModifier,
+	HorizontalAlignment: (self: UIGridStyleLayoutModifier, value: FieldP<Enum.HorizontalAlignment>) -> UIGridStyleLayoutModifier,
+	Name: (self: UIGridStyleLayoutModifier, value: FieldP<string>) -> UIGridStyleLayoutModifier,
 	Sandboxed: (self: UIGridStyleLayoutModifier, value: Field<boolean>) -> UIGridStyleLayoutModifier,
-	SortOrder: (self: UIGridStyleLayoutModifier, value: Field<Enum.SortOrder>) -> UIGridStyleLayoutModifier,
-	VerticalAlignment: (self: UIGridStyleLayoutModifier, value: Field<Enum.VerticalAlignment>) -> UIGridStyleLayoutModifier,
+	SortOrder: (self: UIGridStyleLayoutModifier, value: FieldP<Enum.SortOrder>) -> UIGridStyleLayoutModifier,
+	VerticalAlignment: (self: UIGridStyleLayoutModifier, value: FieldP<Enum.VerticalAlignment>) -> UIGridStyleLayoutModifier,
 }
 export type IntoUIGridStyleLayout = { AsUIGridStyleLayout: (self: any) -> UIGridStyleLayoutModifier }
 
@@ -4080,8 +4103,8 @@ export type UILayoutModifier = {
 	AsUIPageLayout: (self: UILayoutModifier) -> UIPageLayoutModifier,
 	AsUITableLayout: (self: UILayoutModifier) -> UITableLayoutModifier,
 	Archivable: (self: UILayoutModifier, value: Field<boolean>) -> UILayoutModifier,
-	Capabilities: (self: UILayoutModifier, value: Field<SecurityCapabilities>) -> UILayoutModifier,
-	Name: (self: UILayoutModifier, value: Field<string>) -> UILayoutModifier,
+	Capabilities: (self: UILayoutModifier, value: FieldP<SecurityCapabilities>) -> UILayoutModifier,
+	Name: (self: UILayoutModifier, value: FieldP<string>) -> UILayoutModifier,
 	Sandboxed: (self: UILayoutModifier, value: Field<boolean>) -> UILayoutModifier,
 }
 export type IntoUILayout = { AsUILayout: (self: any) -> UILayoutModifier }
@@ -4102,6 +4125,7 @@ export type UIListLayoutOnChange =
 	| 	{ Name: "Wraps", Callback: (boolean) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIListLayoutModifier = {
 	read __quadModifier: "UIListLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIListLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4110,17 +4134,17 @@ export type UIListLayoutModifier = {
 	As: <T>(self: UIListLayoutModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIListLayout: (self: UIListLayoutModifier) -> UIListLayoutModifier, -- 항등(Into<UIListLayout> 구현)
 	Archivable: (self: UIListLayoutModifier, value: Field<boolean>) -> UIListLayoutModifier,
-	Capabilities: (self: UIListLayoutModifier, value: Field<SecurityCapabilities>) -> UIListLayoutModifier,
-	FillDirection: (self: UIListLayoutModifier, value: Field<Enum.FillDirection>) -> UIListLayoutModifier,
-	HorizontalAlignment: (self: UIListLayoutModifier, value: Field<Enum.HorizontalAlignment>) -> UIListLayoutModifier,
-	HorizontalFlex: (self: UIListLayoutModifier, value: Field<Enum.UIFlexAlignment>) -> UIListLayoutModifier,
-	ItemLineAlignment: (self: UIListLayoutModifier, value: Field<Enum.ItemLineAlignment>) -> UIListLayoutModifier,
-	Name: (self: UIListLayoutModifier, value: Field<string>) -> UIListLayoutModifier,
+	Capabilities: (self: UIListLayoutModifier, value: FieldP<SecurityCapabilities>) -> UIListLayoutModifier,
+	FillDirection: (self: UIListLayoutModifier, value: FieldP<Enum.FillDirection>) -> UIListLayoutModifier,
+	HorizontalAlignment: (self: UIListLayoutModifier, value: FieldP<Enum.HorizontalAlignment>) -> UIListLayoutModifier,
+	HorizontalFlex: (self: UIListLayoutModifier, value: FieldP<Enum.UIFlexAlignment>) -> UIListLayoutModifier,
+	ItemLineAlignment: (self: UIListLayoutModifier, value: FieldP<Enum.ItemLineAlignment>) -> UIListLayoutModifier,
+	Name: (self: UIListLayoutModifier, value: FieldP<string>) -> UIListLayoutModifier,
 	Padding: (self: UIListLayoutModifier, value: Field<UDim>) -> UIListLayoutModifier,
 	Sandboxed: (self: UIListLayoutModifier, value: Field<boolean>) -> UIListLayoutModifier,
-	SortOrder: (self: UIListLayoutModifier, value: Field<Enum.SortOrder>) -> UIListLayoutModifier,
-	VerticalAlignment: (self: UIListLayoutModifier, value: Field<Enum.VerticalAlignment>) -> UIListLayoutModifier,
-	VerticalFlex: (self: UIListLayoutModifier, value: Field<Enum.UIFlexAlignment>) -> UIListLayoutModifier,
+	SortOrder: (self: UIListLayoutModifier, value: FieldP<Enum.SortOrder>) -> UIListLayoutModifier,
+	VerticalAlignment: (self: UIListLayoutModifier, value: FieldP<Enum.VerticalAlignment>) -> UIListLayoutModifier,
+	VerticalFlex: (self: UIListLayoutModifier, value: FieldP<Enum.UIFlexAlignment>) -> UIListLayoutModifier,
 	Wraps: (self: UIListLayoutModifier, value: Field<boolean>) -> UIListLayoutModifier,
 }
 export type IntoUIListLayout = { AsUIListLayout: (self: any) -> UIListLayoutModifier }
@@ -4138,6 +4162,7 @@ export type UIPaddingOnChange =
 	| 	{ Name: "PaddingTop", Callback: (UDim) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIPaddingModifier = {
 	read __quadModifier: "UIPadding", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPaddingModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4146,8 +4171,8 @@ export type UIPaddingModifier = {
 	As: <T>(self: UIPaddingModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIPadding: (self: UIPaddingModifier) -> UIPaddingModifier, -- 항등(Into<UIPadding> 구현)
 	Archivable: (self: UIPaddingModifier, value: Field<boolean>) -> UIPaddingModifier,
-	Capabilities: (self: UIPaddingModifier, value: Field<SecurityCapabilities>) -> UIPaddingModifier,
-	Name: (self: UIPaddingModifier, value: Field<string>) -> UIPaddingModifier,
+	Capabilities: (self: UIPaddingModifier, value: FieldP<SecurityCapabilities>) -> UIPaddingModifier,
+	Name: (self: UIPaddingModifier, value: FieldP<string>) -> UIPaddingModifier,
 	PaddingBottom: (self: UIPaddingModifier, value: Field<UDim>) -> UIPaddingModifier,
 	PaddingLeft: (self: UIPaddingModifier, value: Field<UDim>) -> UIPaddingModifier,
 	PaddingRight: (self: UIPaddingModifier, value: Field<UDim>) -> UIPaddingModifier,
@@ -4180,6 +4205,7 @@ export type UIPageLayoutOnChange =
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentPage", Callback: (GuiObject) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIPageLayoutModifier = {
 	read __quadModifier: "UIPageLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPageLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4189,21 +4215,21 @@ export type UIPageLayoutModifier = {
 	AsUIPageLayout: (self: UIPageLayoutModifier) -> UIPageLayoutModifier, -- 항등(Into<UIPageLayout> 구현)
 	Animated: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
 	Archivable: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
-	Capabilities: (self: UIPageLayoutModifier, value: Field<SecurityCapabilities>) -> UIPageLayoutModifier,
+	Capabilities: (self: UIPageLayoutModifier, value: FieldP<SecurityCapabilities>) -> UIPageLayoutModifier,
 	Circular: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
-	EasingDirection: (self: UIPageLayoutModifier, value: Field<Enum.EasingDirection>) -> UIPageLayoutModifier,
-	EasingStyle: (self: UIPageLayoutModifier, value: Field<Enum.EasingStyle>) -> UIPageLayoutModifier,
-	FillDirection: (self: UIPageLayoutModifier, value: Field<Enum.FillDirection>) -> UIPageLayoutModifier,
+	EasingDirection: (self: UIPageLayoutModifier, value: FieldP<Enum.EasingDirection>) -> UIPageLayoutModifier,
+	EasingStyle: (self: UIPageLayoutModifier, value: FieldP<Enum.EasingStyle>) -> UIPageLayoutModifier,
+	FillDirection: (self: UIPageLayoutModifier, value: FieldP<Enum.FillDirection>) -> UIPageLayoutModifier,
 	GamepadInputEnabled: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
-	HorizontalAlignment: (self: UIPageLayoutModifier, value: Field<Enum.HorizontalAlignment>) -> UIPageLayoutModifier,
-	Name: (self: UIPageLayoutModifier, value: Field<string>) -> UIPageLayoutModifier,
+	HorizontalAlignment: (self: UIPageLayoutModifier, value: FieldP<Enum.HorizontalAlignment>) -> UIPageLayoutModifier,
+	Name: (self: UIPageLayoutModifier, value: FieldP<string>) -> UIPageLayoutModifier,
 	Padding: (self: UIPageLayoutModifier, value: Field<UDim>) -> UIPageLayoutModifier,
 	Sandboxed: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
 	ScrollWheelInputEnabled: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
-	SortOrder: (self: UIPageLayoutModifier, value: Field<Enum.SortOrder>) -> UIPageLayoutModifier,
+	SortOrder: (self: UIPageLayoutModifier, value: FieldP<Enum.SortOrder>) -> UIPageLayoutModifier,
 	TouchInputEnabled: (self: UIPageLayoutModifier, value: Field<boolean>) -> UIPageLayoutModifier,
 	TweenTime: (self: UIPageLayoutModifier, value: Field<number>) -> UIPageLayoutModifier,
-	VerticalAlignment: (self: UIPageLayoutModifier, value: Field<Enum.VerticalAlignment>) -> UIPageLayoutModifier,
+	VerticalAlignment: (self: UIPageLayoutModifier, value: FieldP<Enum.VerticalAlignment>) -> UIPageLayoutModifier,
 }
 export type IntoUIPageLayout = { AsUIPageLayout: (self: any) -> UIPageLayoutModifier }
 export type UIPageLayoutRefMarker = { read __quadRefAccepts: (UIPageLayout) -> () }
@@ -4217,6 +4243,7 @@ export type UIScaleOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "Scale", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIScaleModifier = {
 	read __quadModifier: "UIScale", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIScaleModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4225,8 +4252,8 @@ export type UIScaleModifier = {
 	As: <T>(self: UIScaleModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIScale: (self: UIScaleModifier) -> UIScaleModifier, -- 항등(Into<UIScale> 구현)
 	Archivable: (self: UIScaleModifier, value: Field<boolean>) -> UIScaleModifier,
-	Capabilities: (self: UIScaleModifier, value: Field<SecurityCapabilities>) -> UIScaleModifier,
-	Name: (self: UIScaleModifier, value: Field<string>) -> UIScaleModifier,
+	Capabilities: (self: UIScaleModifier, value: FieldP<SecurityCapabilities>) -> UIScaleModifier,
+	Name: (self: UIScaleModifier, value: FieldP<string>) -> UIScaleModifier,
 	Sandboxed: (self: UIScaleModifier, value: Field<boolean>) -> UIScaleModifier,
 	Scale: (self: UIScaleModifier, value: Field<number>) -> UIScaleModifier,
 }
@@ -4250,6 +4277,7 @@ export type UIShadowOnChange =
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIShadowModifier = {
 	read __quadModifier: "UIShadow", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIShadowModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4259,11 +4287,11 @@ export type UIShadowModifier = {
 	AsUIShadow: (self: UIShadowModifier) -> UIShadowModifier, -- 항등(Into<UIShadow> 구현)
 	Archivable: (self: UIShadowModifier, value: Field<boolean>) -> UIShadowModifier,
 	BlurRadius: (self: UIShadowModifier, value: Field<UDim>) -> UIShadowModifier,
-	Capabilities: (self: UIShadowModifier, value: Field<SecurityCapabilities>) -> UIShadowModifier,
+	Capabilities: (self: UIShadowModifier, value: FieldP<SecurityCapabilities>) -> UIShadowModifier,
 	Color: (self: UIShadowModifier, value: Field<Color3>) -> UIShadowModifier,
 	Enabled: (self: UIShadowModifier, value: Field<boolean>) -> UIShadowModifier,
 	Inset: (self: UIShadowModifier, value: Field<boolean>) -> UIShadowModifier,
-	Name: (self: UIShadowModifier, value: Field<string>) -> UIShadowModifier,
+	Name: (self: UIShadowModifier, value: FieldP<string>) -> UIShadowModifier,
 	Offset: (self: UIShadowModifier, value: Field<UDim2>) -> UIShadowModifier,
 	Sandboxed: (self: UIShadowModifier, value: Field<boolean>) -> UIShadowModifier,
 	ShowBehindParent: (self: UIShadowModifier, value: Field<boolean>) -> UIShadowModifier,
@@ -4284,6 +4312,7 @@ export type UISizeConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UISizeConstraintModifier = {
 	read __quadModifier: "UISizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UISizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4292,10 +4321,10 @@ export type UISizeConstraintModifier = {
 	As: <T>(self: UISizeConstraintModifier, name: string?) -> T, -- 무검사(11절)
 	AsUISizeConstraint: (self: UISizeConstraintModifier) -> UISizeConstraintModifier, -- 항등(Into<UISizeConstraint> 구현)
 	Archivable: (self: UISizeConstraintModifier, value: Field<boolean>) -> UISizeConstraintModifier,
-	Capabilities: (self: UISizeConstraintModifier, value: Field<SecurityCapabilities>) -> UISizeConstraintModifier,
+	Capabilities: (self: UISizeConstraintModifier, value: FieldP<SecurityCapabilities>) -> UISizeConstraintModifier,
 	MaxSize: (self: UISizeConstraintModifier, value: Field<Vector2>) -> UISizeConstraintModifier,
 	MinSize: (self: UISizeConstraintModifier, value: Field<Vector2>) -> UISizeConstraintModifier,
-	Name: (self: UISizeConstraintModifier, value: Field<string>) -> UISizeConstraintModifier,
+	Name: (self: UISizeConstraintModifier, value: FieldP<string>) -> UISizeConstraintModifier,
 	Sandboxed: (self: UISizeConstraintModifier, value: Field<boolean>) -> UISizeConstraintModifier,
 }
 export type IntoUISizeConstraint = { AsUISizeConstraint: (self: any) -> UISizeConstraintModifier }
@@ -4319,6 +4348,7 @@ export type UIStrokeOnChange =
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UIStrokeModifier = {
 	read __quadModifier: "UIStroke", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIStrokeModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4326,17 +4356,17 @@ export type UIStrokeModifier = {
 	Overridden: (self: UIStrokeModifier, ...any) -> any,
 	As: <T>(self: UIStrokeModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIStroke: (self: UIStrokeModifier) -> UIStrokeModifier, -- 항등(Into<UIStroke> 구현)
-	ApplyStrokeMode: (self: UIStrokeModifier, value: Field<Enum.ApplyStrokeMode>) -> UIStrokeModifier,
+	ApplyStrokeMode: (self: UIStrokeModifier, value: FieldP<Enum.ApplyStrokeMode>) -> UIStrokeModifier,
 	Archivable: (self: UIStrokeModifier, value: Field<boolean>) -> UIStrokeModifier,
 	BorderOffset: (self: UIStrokeModifier, value: Field<UDim>) -> UIStrokeModifier,
-	BorderStrokePosition: (self: UIStrokeModifier, value: Field<Enum.BorderStrokePosition>) -> UIStrokeModifier,
-	Capabilities: (self: UIStrokeModifier, value: Field<SecurityCapabilities>) -> UIStrokeModifier,
+	BorderStrokePosition: (self: UIStrokeModifier, value: FieldP<Enum.BorderStrokePosition>) -> UIStrokeModifier,
+	Capabilities: (self: UIStrokeModifier, value: FieldP<SecurityCapabilities>) -> UIStrokeModifier,
 	Color: (self: UIStrokeModifier, value: Field<Color3>) -> UIStrokeModifier,
 	Enabled: (self: UIStrokeModifier, value: Field<boolean>) -> UIStrokeModifier,
-	LineJoinMode: (self: UIStrokeModifier, value: Field<Enum.LineJoinMode>) -> UIStrokeModifier,
-	Name: (self: UIStrokeModifier, value: Field<string>) -> UIStrokeModifier,
+	LineJoinMode: (self: UIStrokeModifier, value: FieldP<Enum.LineJoinMode>) -> UIStrokeModifier,
+	Name: (self: UIStrokeModifier, value: FieldP<string>) -> UIStrokeModifier,
 	Sandboxed: (self: UIStrokeModifier, value: Field<boolean>) -> UIStrokeModifier,
-	StrokeSizingMode: (self: UIStrokeModifier, value: Field<Enum.StrokeSizingMode>) -> UIStrokeModifier,
+	StrokeSizingMode: (self: UIStrokeModifier, value: FieldP<Enum.StrokeSizingMode>) -> UIStrokeModifier,
 	Thickness: (self: UIStrokeModifier, value: Field<number>) -> UIStrokeModifier,
 	Transparency: (self: UIStrokeModifier, value: Field<number>) -> UIStrokeModifier,
 	ZIndex: (self: UIStrokeModifier, value: Field<number>) -> UIStrokeModifier,
@@ -4361,6 +4391,7 @@ export type UITableLayoutOnChange =
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UITableLayoutModifier = {
 	read __quadModifier: "UITableLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITableLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4369,17 +4400,17 @@ export type UITableLayoutModifier = {
 	As: <T>(self: UITableLayoutModifier, name: string?) -> T, -- 무검사(11절)
 	AsUITableLayout: (self: UITableLayoutModifier) -> UITableLayoutModifier, -- 항등(Into<UITableLayout> 구현)
 	Archivable: (self: UITableLayoutModifier, value: Field<boolean>) -> UITableLayoutModifier,
-	Capabilities: (self: UITableLayoutModifier, value: Field<SecurityCapabilities>) -> UITableLayoutModifier,
-	FillDirection: (self: UITableLayoutModifier, value: Field<Enum.FillDirection>) -> UITableLayoutModifier,
+	Capabilities: (self: UITableLayoutModifier, value: FieldP<SecurityCapabilities>) -> UITableLayoutModifier,
+	FillDirection: (self: UITableLayoutModifier, value: FieldP<Enum.FillDirection>) -> UITableLayoutModifier,
 	FillEmptySpaceColumns: (self: UITableLayoutModifier, value: Field<boolean>) -> UITableLayoutModifier,
 	FillEmptySpaceRows: (self: UITableLayoutModifier, value: Field<boolean>) -> UITableLayoutModifier,
-	HorizontalAlignment: (self: UITableLayoutModifier, value: Field<Enum.HorizontalAlignment>) -> UITableLayoutModifier,
-	MajorAxis: (self: UITableLayoutModifier, value: Field<Enum.TableMajorAxis>) -> UITableLayoutModifier,
-	Name: (self: UITableLayoutModifier, value: Field<string>) -> UITableLayoutModifier,
+	HorizontalAlignment: (self: UITableLayoutModifier, value: FieldP<Enum.HorizontalAlignment>) -> UITableLayoutModifier,
+	MajorAxis: (self: UITableLayoutModifier, value: FieldP<Enum.TableMajorAxis>) -> UITableLayoutModifier,
+	Name: (self: UITableLayoutModifier, value: FieldP<string>) -> UITableLayoutModifier,
 	Padding: (self: UITableLayoutModifier, value: Field<UDim2>) -> UITableLayoutModifier,
 	Sandboxed: (self: UITableLayoutModifier, value: Field<boolean>) -> UITableLayoutModifier,
-	SortOrder: (self: UITableLayoutModifier, value: Field<Enum.SortOrder>) -> UITableLayoutModifier,
-	VerticalAlignment: (self: UITableLayoutModifier, value: Field<Enum.VerticalAlignment>) -> UITableLayoutModifier,
+	SortOrder: (self: UITableLayoutModifier, value: FieldP<Enum.SortOrder>) -> UITableLayoutModifier,
+	VerticalAlignment: (self: UITableLayoutModifier, value: FieldP<Enum.VerticalAlignment>) -> UITableLayoutModifier,
 }
 export type IntoUITableLayout = { AsUITableLayout: (self: any) -> UITableLayoutModifier }
 export type UITableLayoutRefMarker = { read __quadRefAccepts: (UITableLayout) -> () }
@@ -4394,6 +4425,7 @@ export type UITextSizeConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type UITextSizeConstraintModifier = {
 	read __quadModifier: "UITextSizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITextSizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4402,10 +4434,10 @@ export type UITextSizeConstraintModifier = {
 	As: <T>(self: UITextSizeConstraintModifier, name: string?) -> T, -- 무검사(11절)
 	AsUITextSizeConstraint: (self: UITextSizeConstraintModifier) -> UITextSizeConstraintModifier, -- 항등(Into<UITextSizeConstraint> 구현)
 	Archivable: (self: UITextSizeConstraintModifier, value: Field<boolean>) -> UITextSizeConstraintModifier,
-	Capabilities: (self: UITextSizeConstraintModifier, value: Field<SecurityCapabilities>) -> UITextSizeConstraintModifier,
+	Capabilities: (self: UITextSizeConstraintModifier, value: FieldP<SecurityCapabilities>) -> UITextSizeConstraintModifier,
 	MaxTextSize: (self: UITextSizeConstraintModifier, value: Field<number>) -> UITextSizeConstraintModifier,
 	MinTextSize: (self: UITextSizeConstraintModifier, value: Field<number>) -> UITextSizeConstraintModifier,
-	Name: (self: UITextSizeConstraintModifier, value: Field<string>) -> UITextSizeConstraintModifier,
+	Name: (self: UITextSizeConstraintModifier, value: FieldP<string>) -> UITextSizeConstraintModifier,
 	Sandboxed: (self: UITextSizeConstraintModifier, value: Field<boolean>) -> UITextSizeConstraintModifier,
 }
 export type IntoUITextSizeConstraint = { AsUITextSizeConstraint: (self: any) -> UITextSizeConstraintModifier }
@@ -4465,6 +4497,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "Resolution", Callback: (Vector2) -> () }
 	| 	{ Name: "TimeLength", Callback: (number) -> () }
 export type VideoFrameModifier = {
@@ -4478,44 +4511,44 @@ export type VideoFrameModifier = {
 	AnchorPoint: (self: VideoFrameModifier, value: Field<Vector2>) -> VideoFrameModifier,
 	Archivable: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	AutoLocalize: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
-	AutomaticSize: (self: VideoFrameModifier, value: Field<Enum.AutomaticSize>) -> VideoFrameModifier,
+	AutomaticSize: (self: VideoFrameModifier, value: FieldP<Enum.AutomaticSize>) -> VideoFrameModifier,
 	BackgroundColor3: (self: VideoFrameModifier, value: Field<Color3>) -> VideoFrameModifier,
 	BackgroundTransparency: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	BorderColor3: (self: VideoFrameModifier, value: Field<Color3>) -> VideoFrameModifier,
-	BorderMode: (self: VideoFrameModifier, value: Field<Enum.BorderMode>) -> VideoFrameModifier,
+	BorderMode: (self: VideoFrameModifier, value: FieldP<Enum.BorderMode>) -> VideoFrameModifier,
 	BorderSizePixel: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
-	Capabilities: (self: VideoFrameModifier, value: Field<SecurityCapabilities>) -> VideoFrameModifier,
+	Capabilities: (self: VideoFrameModifier, value: FieldP<SecurityCapabilities>) -> VideoFrameModifier,
 	ClipsDescendants: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
-	InputSink: (self: VideoFrameModifier, value: Field<Enum.InputSink>) -> VideoFrameModifier,
+	InputSink: (self: VideoFrameModifier, value: FieldP<Enum.InputSink>) -> VideoFrameModifier,
 	Interactable: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	LayoutOrder: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	Looped: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
-	Name: (self: VideoFrameModifier, value: Field<string>) -> VideoFrameModifier,
-	NextSelectionDown: (self: VideoFrameModifier, value: Field<GuiObject>) -> VideoFrameModifier,
-	NextSelectionLeft: (self: VideoFrameModifier, value: Field<GuiObject>) -> VideoFrameModifier,
-	NextSelectionRight: (self: VideoFrameModifier, value: Field<GuiObject>) -> VideoFrameModifier,
-	NextSelectionUp: (self: VideoFrameModifier, value: Field<GuiObject>) -> VideoFrameModifier,
+	Name: (self: VideoFrameModifier, value: FieldP<string>) -> VideoFrameModifier,
+	NextSelectionDown: (self: VideoFrameModifier, value: FieldP<GuiObject>) -> VideoFrameModifier,
+	NextSelectionLeft: (self: VideoFrameModifier, value: FieldP<GuiObject>) -> VideoFrameModifier,
+	NextSelectionRight: (self: VideoFrameModifier, value: FieldP<GuiObject>) -> VideoFrameModifier,
+	NextSelectionUp: (self: VideoFrameModifier, value: FieldP<GuiObject>) -> VideoFrameModifier,
 	Playing: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	Position: (self: VideoFrameModifier, value: Field<UDim2>) -> VideoFrameModifier,
 	RollOffMaxDistance: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	RollOffMinDistance: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
-	RollOffMode: (self: VideoFrameModifier, value: Field<Enum.RollOffMode>) -> VideoFrameModifier,
-	RootLocalizationTable: (self: VideoFrameModifier, value: Field<LocalizationTable>) -> VideoFrameModifier,
+	RollOffMode: (self: VideoFrameModifier, value: FieldP<Enum.RollOffMode>) -> VideoFrameModifier,
+	RootLocalizationTable: (self: VideoFrameModifier, value: FieldP<LocalizationTable>) -> VideoFrameModifier,
 	Rotation: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	Sandboxed: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	Selectable: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
-	SelectionBehaviorDown: (self: VideoFrameModifier, value: Field<Enum.SelectionBehavior>) -> VideoFrameModifier,
-	SelectionBehaviorLeft: (self: VideoFrameModifier, value: Field<Enum.SelectionBehavior>) -> VideoFrameModifier,
-	SelectionBehaviorRight: (self: VideoFrameModifier, value: Field<Enum.SelectionBehavior>) -> VideoFrameModifier,
-	SelectionBehaviorUp: (self: VideoFrameModifier, value: Field<Enum.SelectionBehavior>) -> VideoFrameModifier,
+	SelectionBehaviorDown: (self: VideoFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> VideoFrameModifier,
+	SelectionBehaviorLeft: (self: VideoFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> VideoFrameModifier,
+	SelectionBehaviorRight: (self: VideoFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> VideoFrameModifier,
+	SelectionBehaviorUp: (self: VideoFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> VideoFrameModifier,
 	SelectionGroup: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
-	SelectionImageObject: (self: VideoFrameModifier, value: Field<GuiObject>) -> VideoFrameModifier,
+	SelectionImageObject: (self: VideoFrameModifier, value: FieldP<GuiObject>) -> VideoFrameModifier,
 	SelectionOrder: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	Size: (self: VideoFrameModifier, value: Field<UDim2>) -> VideoFrameModifier,
-	SizeConstraint: (self: VideoFrameModifier, value: Field<Enum.SizeConstraint>) -> VideoFrameModifier,
+	SizeConstraint: (self: VideoFrameModifier, value: FieldP<Enum.SizeConstraint>) -> VideoFrameModifier,
 	TimePosition: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
-	Video: (self: VideoFrameModifier, value: Field<string>) -> VideoFrameModifier,
-	VideoContent: (self: VideoFrameModifier, value: Field<Content>) -> VideoFrameModifier,
+	Video: (self: VideoFrameModifier, value: FieldP<string>) -> VideoFrameModifier,
+	VideoContent: (self: VideoFrameModifier, value: FieldP<Content>) -> VideoFrameModifier,
 	Visible: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	Volume: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	ZIndex: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
@@ -4577,6 +4610,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type ViewportFrameModifier = {
 	read __quadModifier: "ViewportFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ViewportFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4589,41 +4623,41 @@ export type ViewportFrameModifier = {
 	AnchorPoint: (self: ViewportFrameModifier, value: Field<Vector2>) -> ViewportFrameModifier,
 	Archivable: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	AutoLocalize: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
-	AutomaticSize: (self: ViewportFrameModifier, value: Field<Enum.AutomaticSize>) -> ViewportFrameModifier,
+	AutomaticSize: (self: ViewportFrameModifier, value: FieldP<Enum.AutomaticSize>) -> ViewportFrameModifier,
 	BackgroundColor3: (self: ViewportFrameModifier, value: Field<Color3>) -> ViewportFrameModifier,
 	BackgroundTransparency: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	BorderColor3: (self: ViewportFrameModifier, value: Field<Color3>) -> ViewportFrameModifier,
-	BorderMode: (self: ViewportFrameModifier, value: Field<Enum.BorderMode>) -> ViewportFrameModifier,
+	BorderMode: (self: ViewportFrameModifier, value: FieldP<Enum.BorderMode>) -> ViewportFrameModifier,
 	BorderSizePixel: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
-	Capabilities: (self: ViewportFrameModifier, value: Field<SecurityCapabilities>) -> ViewportFrameModifier,
+	Capabilities: (self: ViewportFrameModifier, value: FieldP<SecurityCapabilities>) -> ViewportFrameModifier,
 	ClipsDescendants: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
-	CurrentCamera: (self: ViewportFrameModifier, value: Field<Camera>) -> ViewportFrameModifier,
+	CurrentCamera: (self: ViewportFrameModifier, value: FieldP<Camera>) -> ViewportFrameModifier,
 	ImageColor3: (self: ViewportFrameModifier, value: Field<Color3>) -> ViewportFrameModifier,
 	ImageTransparency: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
-	InputSink: (self: ViewportFrameModifier, value: Field<Enum.InputSink>) -> ViewportFrameModifier,
+	InputSink: (self: ViewportFrameModifier, value: FieldP<Enum.InputSink>) -> ViewportFrameModifier,
 	Interactable: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	LayoutOrder: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	LightColor: (self: ViewportFrameModifier, value: Field<Color3>) -> ViewportFrameModifier,
 	LightDirection: (self: ViewportFrameModifier, value: Field<Vector3>) -> ViewportFrameModifier,
-	Name: (self: ViewportFrameModifier, value: Field<string>) -> ViewportFrameModifier,
-	NextSelectionDown: (self: ViewportFrameModifier, value: Field<GuiObject>) -> ViewportFrameModifier,
-	NextSelectionLeft: (self: ViewportFrameModifier, value: Field<GuiObject>) -> ViewportFrameModifier,
-	NextSelectionRight: (self: ViewportFrameModifier, value: Field<GuiObject>) -> ViewportFrameModifier,
-	NextSelectionUp: (self: ViewportFrameModifier, value: Field<GuiObject>) -> ViewportFrameModifier,
+	Name: (self: ViewportFrameModifier, value: FieldP<string>) -> ViewportFrameModifier,
+	NextSelectionDown: (self: ViewportFrameModifier, value: FieldP<GuiObject>) -> ViewportFrameModifier,
+	NextSelectionLeft: (self: ViewportFrameModifier, value: FieldP<GuiObject>) -> ViewportFrameModifier,
+	NextSelectionRight: (self: ViewportFrameModifier, value: FieldP<GuiObject>) -> ViewportFrameModifier,
+	NextSelectionUp: (self: ViewportFrameModifier, value: FieldP<GuiObject>) -> ViewportFrameModifier,
 	Position: (self: ViewportFrameModifier, value: Field<UDim2>) -> ViewportFrameModifier,
-	RootLocalizationTable: (self: ViewportFrameModifier, value: Field<LocalizationTable>) -> ViewportFrameModifier,
+	RootLocalizationTable: (self: ViewportFrameModifier, value: FieldP<LocalizationTable>) -> ViewportFrameModifier,
 	Rotation: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	Sandboxed: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	Selectable: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
-	SelectionBehaviorDown: (self: ViewportFrameModifier, value: Field<Enum.SelectionBehavior>) -> ViewportFrameModifier,
-	SelectionBehaviorLeft: (self: ViewportFrameModifier, value: Field<Enum.SelectionBehavior>) -> ViewportFrameModifier,
-	SelectionBehaviorRight: (self: ViewportFrameModifier, value: Field<Enum.SelectionBehavior>) -> ViewportFrameModifier,
-	SelectionBehaviorUp: (self: ViewportFrameModifier, value: Field<Enum.SelectionBehavior>) -> ViewportFrameModifier,
+	SelectionBehaviorDown: (self: ViewportFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ViewportFrameModifier,
+	SelectionBehaviorLeft: (self: ViewportFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ViewportFrameModifier,
+	SelectionBehaviorRight: (self: ViewportFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ViewportFrameModifier,
+	SelectionBehaviorUp: (self: ViewportFrameModifier, value: FieldP<Enum.SelectionBehavior>) -> ViewportFrameModifier,
 	SelectionGroup: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
-	SelectionImageObject: (self: ViewportFrameModifier, value: Field<GuiObject>) -> ViewportFrameModifier,
+	SelectionImageObject: (self: ViewportFrameModifier, value: FieldP<GuiObject>) -> ViewportFrameModifier,
 	SelectionOrder: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	Size: (self: ViewportFrameModifier, value: Field<UDim2>) -> ViewportFrameModifier,
-	SizeConstraint: (self: ViewportFrameModifier, value: Field<Enum.SizeConstraint>) -> ViewportFrameModifier,
+	SizeConstraint: (self: ViewportFrameModifier, value: FieldP<Enum.SizeConstraint>) -> ViewportFrameModifier,
 	Visible: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	ZIndex: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	UICorner: (self: ViewportFrameModifier, value: Field<number | UDim>) -> ViewportFrameModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -4646,6 +4680,7 @@ export type WorldModelOnChange =
 	| 	{ Name: "UseWorkspaceCollisionGroups", Callback: (boolean) -> () }
 	| 	{ Name: "WorldPivot", Callback: (CFrame) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "Parent", Callback: (Instance) -> () }
 export type WorldModelModifier = {
 	read __quadModifier: "WorldModel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: WorldModelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4654,10 +4689,10 @@ export type WorldModelModifier = {
 	As: <T>(self: WorldModelModifier, name: string?) -> T, -- 무검사(11절)
 	AsWorldModel: (self: WorldModelModifier) -> WorldModelModifier, -- 항등(Into<WorldModel> 구현)
 	Archivable: (self: WorldModelModifier, value: Field<boolean>) -> WorldModelModifier,
-	Capabilities: (self: WorldModelModifier, value: Field<SecurityCapabilities>) -> WorldModelModifier,
-	ModelStreamingMode: (self: WorldModelModifier, value: Field<Enum.ModelStreamingMode>) -> WorldModelModifier,
-	Name: (self: WorldModelModifier, value: Field<string>) -> WorldModelModifier,
-	PrimaryPart: (self: WorldModelModifier, value: Field<BasePart>) -> WorldModelModifier,
+	Capabilities: (self: WorldModelModifier, value: FieldP<SecurityCapabilities>) -> WorldModelModifier,
+	ModelStreamingMode: (self: WorldModelModifier, value: FieldP<Enum.ModelStreamingMode>) -> WorldModelModifier,
+	Name: (self: WorldModelModifier, value: FieldP<string>) -> WorldModelModifier,
+	PrimaryPart: (self: WorldModelModifier, value: FieldP<BasePart>) -> WorldModelModifier,
 	Sandboxed: (self: WorldModelModifier, value: Field<boolean>) -> WorldModelModifier,
 	UseWorkspaceCollisionGroups: (self: WorldModelModifier, value: Field<boolean>) -> WorldModelModifier,
 	WorldPivot: (self: WorldModelModifier, value: Field<CFrame>) -> WorldModelModifier,
@@ -4676,10 +4711,10 @@ export type WorldRootModifier = {
 	AsWorldRoot: (self: WorldRootModifier) -> WorldRootModifier, -- 항등(Into<WorldRoot> 구현)
 	AsWorldModel: (self: WorldRootModifier) -> WorldModelModifier,
 	Archivable: (self: WorldRootModifier, value: Field<boolean>) -> WorldRootModifier,
-	Capabilities: (self: WorldRootModifier, value: Field<SecurityCapabilities>) -> WorldRootModifier,
-	ModelStreamingMode: (self: WorldRootModifier, value: Field<Enum.ModelStreamingMode>) -> WorldRootModifier,
-	Name: (self: WorldRootModifier, value: Field<string>) -> WorldRootModifier,
-	PrimaryPart: (self: WorldRootModifier, value: Field<BasePart>) -> WorldRootModifier,
+	Capabilities: (self: WorldRootModifier, value: FieldP<SecurityCapabilities>) -> WorldRootModifier,
+	ModelStreamingMode: (self: WorldRootModifier, value: FieldP<Enum.ModelStreamingMode>) -> WorldRootModifier,
+	Name: (self: WorldRootModifier, value: FieldP<string>) -> WorldRootModifier,
+	PrimaryPart: (self: WorldRootModifier, value: FieldP<BasePart>) -> WorldRootModifier,
 	Sandboxed: (self: WorldRootModifier, value: Field<boolean>) -> WorldRootModifier,
 	WorldPivot: (self: WorldRootModifier, value: Field<CFrame>) -> WorldRootModifier,
 }
