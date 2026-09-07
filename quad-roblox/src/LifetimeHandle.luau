@@ -97,7 +97,13 @@ local function install(quad: any)
 	end
 
 	local function bindLifetime(inst: any, value: any)
-		local gchold = if inst == nil then nil else InstData:GetWeak(inst, "gchold") -- `H-444`: nil inst takes the same message
+		if inst == nil then
+			Err.errorBefore("bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`: its own message, not "Claim it first"
+		end
+		if value == nil then
+			Err.errorBefore("bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
+		end
+		local gchold = InstData:GetWeak(inst, "gchold")
 		if gchold == nil then
 			-- `H-290`: consequence of (0) — every quad-owned Instance is claimed
 			-- at creation, so an unclaimed inst here means the caller handed us

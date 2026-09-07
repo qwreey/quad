@@ -88,9 +88,9 @@
 ## `research/` — 아직 착수 전, 상의 필요
 
 | 문서 | 내용 | 우선순위 |
-|---|---|-| `deferred-hardening-plan.md` | **[2026-09-07 신설 — 회신 3차]** 급하지 않아 UB/현행 유지로 닫은 것 위에 나중에 얹을 후보 셋(Compute 순수성 가드·에러 컨텍스트 래핑·`setLength` 사전 검사) — 각 항목에 "재는 법". 사용자 지시 *"급하지 않은건 쌓아두어도"* | 채택 시 `base/`로 |
+|---|---|---|
+| `deferred-hardening-plan.md` | **[2026-09-07 신설 — 회신 3차]** 급하지 않아 UB/현행 유지로 닫은 것 위에 나중에 얹을 후보 셋(Compute 순수성 가드·에러 컨텍스트 래핑·`setLength` 사전 검사) — 각 항목에 "재는 법". 사용자 지시 *"급하지 않은건 쌓아두어도"* | 채택 시 `base/`로 |
 | `source-layout-plan.md` | **[2026-09-07 신설]** 사용자 의견 여덟(Slot 분할·Tween 위치·Tag 생성자·src 배치·`Dispatch/` 핸들러 파일·`Ref/`·`Attribute/`·`Attr` 축약)을 opus 사실 조사 위에 항목별 확인·이득·비용·권고로 정리. 재편 전체에 걸리는 제약 여덟(`init.luau` require 해석·값 모듈→Dispatch 단방향·`_slotInternal` 관용구·전방 선언 게이트·`doc-check.py`가 `.luau` 경로를 안 봄 등)과 실행 순서. 사용자 결정 대기 |
---|
 | `debug-tooling-plan.md` | 실물 Instance→코드 위치 역추적 Studio 플러그인(`quad-debug`) — 채널 실현 가능성(BindableEvent/Function 크로스 컨텍스트)까지 실측 검증 완료, 세부 API 이름·구현만 남음 | 하 — 사용자가 "quad 개발 완료 전엔 착수 못 함"으로 직접 후순위 지정, base 설계 시 훅 확장 지점만 고려 |
 | `documentation-plan.md` | 문서 사이트 구조(초심자/api/심화/`quadnomicon` 4축, 백엔드별 트랙 분리) + UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링 3개 세부 문서 뼈대 | 하 — 착수 시점 미정, 구조/스코프만 합의된 상태 |
 | `documentation-content-map.md` | 위 4축에 실제로 뭘 채울지 `base/` 전체를 초심자/api/심화/skip으로 서베이한 콘텐츠 맵 — 초심자 core loop 목차 초안 포함 | 하 — 문서화 착수 시점의 목차/우선순위표로 쓸 것 |

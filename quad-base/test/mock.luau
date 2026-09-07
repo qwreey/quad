@@ -560,6 +560,12 @@ local function mockProvider(quad: any): { [any]: any }
 	end
 
 	local function bindLifetime(inst: any, value: any)
+		if inst == nil then
+			Err.errorBefore("bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`
+		end
+		if value == nil then
+			Err.errorBefore("bindLifetime: value must not be nil", SURFACE) -- round3 `H-447`
+		end
 		if not isMockInstance(inst) then
 			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE)
 		end

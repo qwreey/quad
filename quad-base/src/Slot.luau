@@ -61,7 +61,7 @@ local function Init(module: any)
 	-- Q9 (b) (사용자 결정 2026-09-07): a Slot whose mount target was destroyed outside quad
 	-- (`inst:Destroy()`) is dead for good — same as an Instance whose owner disposed it. No
 	-- liveness bookkeeping; the two "mounted" messages just say so (slot-plan "부수 효과" 절 UB).
-	local ZOMBIE_NOTE = " (if its previous owner was destroyed outside quad — `inst:Destroy()` — it went with it: a Slot cannot be reused after its parent is destroyed; extract it first, as with an Instance)"
+	local ZOMBIE_NOTE = " (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)"
 
 	local function claimOwner(element: any, ownerKey: any, fromDetached: boolean?)
 		local cur = elementOwner:GetWeak(element, OWNER)
@@ -105,6 +105,13 @@ local function Init(module: any)
 	-- 실측 2026-09-07, `H-404`). `scripts/test.sh` fails on luau-analyze's
 	-- GlobalUsedAsLocal lint so a missing name here cannot slip through.
 	local Slot, materializeSlotTree, mountSlotTree, markMountedTree, attachSlot, destroySlotTree, unmountSlotTree, teardownTree
+
+	-- One body for "this element dies": a nested Slot goes through destroySlotTree (recursion),
+	-- anything else through the backend's dispose — round3 `H-451` folded the hand copies that
+	-- `H-393`/Q14 kept catching one at a time (destroySlotTree loops, releaseElement, detach cleanup).
+	local function destroyElement(element: any)
+		if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
+	end
 
 	-- wrap: element-type whitelist gate (H-40) + State→wrapper-Slot. raw* only
 	-- ever see already-wrapped physical elements. `raise` is the error depth
@@ -416,7 +423,7 @@ local function Init(module: any)
 
 		if not self._mounted then
 			if destroyOld then
-				if isSlot(oldElement) then destroySlotTree(oldElement) else module.nativeDispose(oldElement) end
+				destroyElement(oldElement)
 			elseif isSlot(oldElement) then
 				-- materialized but unmounted: the old subtree still has its
 				-- observers bound to the target — logical teardown (`H6-23`).
@@ -609,7 +616,7 @@ local function Init(module: any)
 			-- 공통으로". The two `destroySlotTree` loops got the same line — Q14 (a).
 			releaseOwner(element, self)
 			if self._owned ~= false then
-				if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
+				destroyElement(element)
 			end
 			return
 		end
@@ -683,13 +690,12 @@ local function Init(module: any)
 		-- elements do not care (weak registry). The C-4 exemption assumed every element dies.
 		for _, element in ipairs(slot._elements) do
 			releaseOwner(element, slot)
-			if isSlot(element) then destroySlotTree(element)
-			else module.nativeDispose(element) end
+			destroyElement(element)
 		end
 		if slot._detached then
 			for key, element in pairs(slot._detached) do
 				releaseOwner(element, slot)
-				if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
+				destroyElement(element)
 				slot._detached[key] = nil
 			end
 		end
@@ -958,10 +964,10 @@ local function Init(module: any)
 		end
 
 		local function reconcile(items: any)
-			if type(items) ~= "table" then
-				-- round3 `H-441` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
-				-- reached from State emit depth too, so outermost
-				Err.errorBefore(`Slot:List: data must be an array (got {typeof(items)}) — a data State must hold one too`, SURFACE)
+			if type(items) ~= "table" or getmetatable(items) ~= nil then
+				-- round3 `H-441`/`H-446` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
+				-- reached from State emit depth too, so outermost; branded tables are not arrays either
+				Err.errorBefore(`Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, SURFACE)
 			end
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
@@ -1028,7 +1034,7 @@ local function Init(module: any)
 				if not self._detached then return end
 				for key, element in pairs(self._detached) do
 					releaseOwner(element, self)
-					if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
+					destroyElement(element)
 					self._detached[key] = nil
 				end
 			end
@@ -1059,8 +1065,13 @@ local function Init(module: any)
 		if type(updateFn) ~= "function" then
 			Err.errorBeforeNearest(`Slot:List: updateFn must be a function (got {typeof(updateFn)})`, SURFACE) -- round3 `H-441`
 		end
-		if type(data) ~= "table" and not isState(data) then
-			Err.errorBeforeNearest(`Slot:List: data must be an array or a State of one (got {typeof(data)})`, SURFACE) -- round3 `H-441`
+		if not ((type(data) == "table" and getmetatable(data) == nil) or isState(data)) then
+			-- round3 `H-441`/`H-446`: a plain array or a State of one — branded tables (None/Store/Tween/Modifier)
+			-- have metatables and used to pass as an empty list
+			Err.errorBeforeNearest(`Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, SURFACE)
+		end
+		if keyFn ~= nil and type(keyFn) ~= "function" then
+			Err.errorBeforeNearest(`Slot:List: keyFn must be a function (got {typeof(keyFn)})`, SURFACE) -- round3 `H-446`
 		end
 		self._listed = true
 		self._listData = data
@@ -1077,6 +1088,9 @@ local function Init(module: any)
 
 	function Slot_mt.Single(self: any, state: any, updateFn: any?, opts: any?): any
 		checkListInstall(self) -- `H-385`: gate here so the blame is this call, not the delegation below
+		if updateFn ~= nil and type(updateFn) ~= "function" then
+			Err.errorBeforeNearest(`Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
+		end
 		local uf = updateFn or identityUpdateFn
 		local data = if isState(state)
 			then state:Compute(function(v: any) local g = v:Get(); return (if g == nil then {} else { g }) end)
@@ -1130,7 +1144,8 @@ local function Init(module: any)
 		if elementOwner:GetWeak(value, OWNER) ~= nil then
 			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
 			-- detached element cannot be Remove/Extract-ed — it goes with its owner)
-			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner). If the owner was destroyed outside quad (`inst:Destroy()`), the value went with it and cannot be reused — extract it before destroying, as with an Instance (Q9)", SURFACE)
+			-- Q9: same note as the "already mounted" sites (one constant — round3 `H-451`)
+			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)" .. ZOMBIE_NOTE, SURFACE)
 		end
 		if isSlot(value) then destroySlotTree(value)
 		elseif isInst(value) then module.nativeDispose(value)

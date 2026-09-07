@@ -36,7 +36,9 @@
      메시지+UB, `releaseOwner`, setter 키·`setOffsetSource`·`setLength` 게이트, `numberOnly` 제거, `PropTypesRead`, Compute 순수성
      원칙); Gemini 4차 → round4 파일·`H-440`~`H-444` 반영; `research/deferred-hardening-plan.md` 신설. **회신 4차**: Q6(약속 철회+백로그)·Q20(메시지 확장)·Q21(luau 핀·selene 폐기)·Q22(그대로)·Q23(FieldOut 한 팔) 닫힘(round3 §7).
      Q24도 설명 뒤 (a) 확정(+`Peek` 반환을 `FieldOut<T>?`로 통일).
-     **남은 사용자 몫: 구조 재편 여덟(회신은 루트 `layout-usernote-ignoreme.md` — compact 뒤 읽는다), flatten 슈거 일곱.** 리뷰 문항 Q1~Q24 전부 닫힘. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     회신 3차 묶음 리뷰(round3 §8, `H-445`~`H-452` 반영 — `H-445`는 Q15 검사가 차단기 창 안에서 던져 owner를 동결시키던 회귀).
+     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅) — round3 §4, 구조 재편 여덟(회신은 루트
+     `layout-usernote-ignoreme.md` — compact 뒤 읽는다), flatten 슈거 일곱.** 다음 순회는 round3 §9·`H-453`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
      다음 순회는 round3 §7·`H-445`부터.
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음

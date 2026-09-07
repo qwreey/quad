@@ -266,7 +266,14 @@ do
 	local ok, err = pcall(function()
 		q.bindLifetime(nil, q.Source(1))
 	end)
-	assert(not ok and string.find(tostring(err), "bindLifetime", 1, true) ~= nil and string.find(tostring(err), "index is nil", 1, true) == nil, "surface error, not a VM one: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "inst must not be nil", 1, true) ~= nil, "surface error, not a VM one: " .. tostring(err))
+	-- round3 `H-447`: the fourth nil door — bindLifetime(inst, nil) died at `gchold[nil]`
+	local frame = mock.Instance.new("Frame")
+	q.Dispatch.drive(frame, {})
+	local okV, errV = pcall(function()
+		q.bindLifetime(frame, nil)
+	end)
+	assert(not okV and string.find(tostring(errV), "value must not be nil", 1, true) ~= nil, "nil value: " .. tostring(errV))
 	print("PASS")
 end
 

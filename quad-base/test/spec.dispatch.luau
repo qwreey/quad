@@ -481,5 +481,21 @@ do
 	print("PASS")
 end
 
+print("=== 18. round3 H-452 (Q7 셋째 (a), H-416 재현) — 디스패치가 lazy Compute를 처음 강제해 Modifier가 나오면 blame은 사용자 drive 줄(outermost), StoreBind 내부가 아니다 ===")
+do
+	local q = newQuad()
+	local inst = mock.Instance.new("Frame")
+	local s = q.Source(1)
+	local d = s:Compute(function()
+		return q.Modifier({})
+	end)
+	local ok, err = pcall(function()
+		q.Dispatch.drive(inst, { Name = d })
+	end)
+	assert(not ok and string.find(tostring(err), "cannot hold Modifiers", 1, true) ~= nil, "Compute-returned Modifier rejected via dispatch: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.dispatch.luau", "outermost — the drive line, not StoreBind.luau")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

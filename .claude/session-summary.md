@@ -2407,3 +2407,4 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `H-440`~`H-444`·round4 파일. `research/deferred-hardening-plan.md` 신설. 문항은 앞으로 평문 한 문단.
   **회신 4차**(같은 세션 파일 6절): Q6 약속 철회+백로그, Q20 메시지 확장(파괴/외부 구분 불가 — 사용자 전제 정정), Q21 `luau` 핀·selene 폐기, Q22 캐비엇, Q23 `FieldOut` State 팔 하나. Q24는 설명 뒤 답 대기.
   **Q24**: 설명 뒤 (a) 승인; 후속 질문으로 `Peek` 반환이 Tween 팔 없는 옛 유니언임이 드러나 `FieldOut<T>?`로 통일(정의는 quad-types). **리뷰 문항 Q1~Q24 전부 닫힘.**
+  **회신 3차 묶음 리뷰**(round3 §8): `H-445` Q15 검사의 차단기 창 안 throw(메인 회귀 — Observer로 이동)·`H-446`~`H-452` 게이트 구멍·정리; Q25 숏핸드 dedup·Q26 트윈 슬롯 첫 스냅은 문항.

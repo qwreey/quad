@@ -184,8 +184,9 @@ def normalize(raw_path, version):
                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
                 # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
                 # `<Class>OnChange`). Other excluded tags (Deprecated/NotScriptable/Hidden) still drop.
-                read_only = "ReadOnly" in mtags and not (mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"}))
-                if mtags & PROP_TAG_EXCLUDE and not read_only:
+                other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"})
+                read_only = "ReadOnly" in mtags and not other_excluded
+                if other_excluded:
                     dropped.append(f"{name}.{m['Name']}: tags {sorted(mtags & PROP_TAG_EXCLUDE)}")
                     continue
                 sec = m.get("Security") or {}
@@ -403,24 +404,21 @@ def emit():
     for name in names:
         for p in classes[name]["props"]:
             prop_types.setdefault(p["name"], set()).add(p["type"])
-    L.append("-- PropTypes(D 스코프 전체 쓰기 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)")
-    L.append("export type PropTypes = {")
-    for pname in sorted(prop_types):
-        ts = sorted(prop_types[pname])
-        L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
-    L.append("}")
+    def emit_prop_map(tname, mapping, comment):
+        L.append(f"-- {comment}")
+        L.append(f"export type {tname} = {{")
+        for pname in sorted(mapping):
+            ts = sorted(mapping[pname])
+            L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
+        L.append("}")
+    emit_prop_map("PropTypes", prop_types, "PropTypes(D 스코프 전체 쓰기 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)")
     # [round1 Q19 (a), 2026-09-07] the READ surface (write props + ReadOnly props) — OnChange's
     # name/callback typing only; `OnChange("AbsoluteSize", fn)` used to be a strict TypeError (H-414)
     read_types = {k: set(v) for k, v in prop_types.items()}
     for name in names:
         for p in classes[name].get("readProps", []):
             read_types.setdefault(p["name"], set()).add(p["type"])
-    L.append("-- OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)")
-    L.append("export type PropTypesRead = {")
-    for pname in sorted(read_types):
-        ts = sorted(read_types[pname])
-        L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
-    L.append("}")
+    emit_prop_map("PropTypesRead", read_types, "OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)")
     L.append("export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }")
     L.append("export type OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>")
     L.append("")

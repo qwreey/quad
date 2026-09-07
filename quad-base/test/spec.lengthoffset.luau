@@ -392,9 +392,13 @@ do
 	q.Dispatch.setLength(inst, 2, len)
 	assert(q.Dispatch.getOffsetAt(inst, 3) == 2, "State length contributes")
 	local okR, errR = pcall(function()
-		len:Set(-4) -- the length observer recomputes on Set — the read-time check fires right here
+		len:Set(-4) -- the length observer validates BEFORE recomputing (round3 `H-445`)
 	end)
-	assert(not okR and string.find(tostring(errR), "length State must hold a non-negative integer", 1, true) ~= nil, "State length checked at read: " .. tostring(errR))
+	assert(not okR and string.find(tostring(errR), "length must be a non-negative integer", 1, true) ~= nil, "State length checked in its observer: " .. tostring(errR))
+	mock.assertBlamesUser(errR, "spec.lengthoffset.luau", "State length blame is the :Set line")
+	-- `H-445`: the throw happened outside the recomputeBlocker window — the owner is NOT frozen
+	len:Set(3)
+	assert(q.Dispatch.getOffsetAt(inst, 3) == 3, "offsets keep flowing after the rejected value")
 	print("PASS")
 end
 

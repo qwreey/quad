@@ -369,6 +369,12 @@ do
 	assert(not okK and string.find(tostring(errK), "setter keys must be strings", 1, true) ~= nil, "non-string setter key: " .. tostring(errK))
 	mock.assertBlamesUser(errK, "spec.modifier.luau", "setter key blame")
 	assert(q.Modifier({}):Name("x"):Peek("Name") == "x", "string setters untouched")
+	-- round3 `H-448`: construct refuses the keys the setter path can never produce
+	for _, bad in { { AsTextLabl = 1 }, { Apply = 1 }, { [""] = 1 } } :: { any } do
+		local okB, errB = pcall(function() return q.Modifier(bad) end)
+		assert(not okB and (string.find(tostring(errB), "reserved", 1, true) ~= nil or string.find(tostring(errB), "non-empty", 1, true) ~= nil), "construct rejects: " .. tostring(errB))
+		mock.assertBlamesUser(errB, "spec.modifier.luau", "construct key blame")
+	end
 	print("PASS")
 end
 

@@ -114,18 +114,22 @@ local function Init(module: any)
 	end
 
 
+	-- Q15 (a) (사용자 결정 2026-09-07): the length domain is the non-negative integers — a
+	-- negative/fractional length used to flow into `nativeInsert(target, 음수)` silently and a
+	-- non-number State value died in recompute's arithmetic with the blocker locked (`H-394`).
+	-- Constants are checked at registration; a State's value is checked in ITS OBSERVER, which
+	-- runs before gatedRecompute — round3 `H-445`: checking inside `contribution` threw inside
+	-- the recomputeBlocker On/Off window and left the owner frozen for good (the very failure
+	-- `checkPosition`'s header says to keep out of the window).
+	local function checkLengthValue(fnName: string, n: any)
+		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
+			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+		end
+	end
+
 	local function contribution(bk: any, i: number): number
 		local v = bk.lengthList[i]
-		if Brand.isState(v) then
-			local n = v:Get()
-			if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
-				-- Q15 (a): the State arm is checked at read time (one compare on the hot path);
-				-- reached from recompute depth, so outermost
-				Err.errorBefore(`quad.Dispatch.setLength: a length State must hold a non-negative integer (got {tostring(n)})`, SURFACE)
-			end
-			return n
-		end
-		return v
+		return if Brand.isState(v) then v:Get() else v -- validated by the observer (`H-445`), never here
 	end
 
 	-- Absolute offset (0-based count) of position `at` — single function with
@@ -299,15 +303,6 @@ local function Init(module: any)
 		recompute(ownerKey, bk)
 	end
 
-	-- Q15 (a) (사용자 결정 2026-09-07): the length domain is the non-negative integers — a
-	-- negative/fractional length used to flow into `nativeInsert(target, 음수)` silently and a
-	-- non-number State value died in recompute's arithmetic with the blocker locked (`H-394`).
-	local function checkLengthValue(fnName: string, n: any)
-		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
-			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
-		end
-	end
-
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
 		checkPosition("setLength", i)
 		if not Brand.isState(len) then
@@ -335,6 +330,7 @@ local function Init(module: any)
 
 		if Brand.isState(len) then
 			local observer = len:Observer(function()
+				checkLengthValue("setLength", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line
 				gatedRecompute(bk, blocker, ownerKey, element, i)
 			end) -- immediate first run is gated too
 			module.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()

@@ -52,3 +52,11 @@ Studio 실측 없이 메시지 하나가 둘을 말하게. Q21은 selene 폐기 
 그럼 Peek 에도 사용되는걸까?"*가 구멍을 하나 드러냈다: `Peek`은 옛 `T | State<T> | None | nil`이라 저장된 Tween이 T로
 보였다. 같은 "저장된 그대로" 값이므로 `FieldOut<T>?`로 통일하고, 별칭 정의를 quad-types로 올렸다(base `Modifier`와 생성
 `<Class>Modifier` 둘 다 같은 타입을 쓰게). 이로써 리뷰 문항 Q1~Q24가 전부 닫혔다.
+
+## 8. 회신 3차 묶음의 `/code-review` (같은 날 밤, round3 §8)
+
+열 건. **`H-445`가 내 회귀**: Q15의 State 값 검사를 `contribution`(recompute 안 — 차단기 창)에 넣어, 사용자가 pcall로 잡으면
+차단기가 영원히 켜진 채 남았다 — `checkPosition` 헤더가 "창에 들어가기 전에 거른다"고 적어 둔 규칙을 내가 어겼다. 검사를
+Observer로 올렸다(nearest = `:Set` 줄). 둘은 문항(Q25 숏핸드 `Mapped`가 새 객체를 만들어 Q12 dedup이 두 키에서 불성립,
+Q26 첫 스냅 뒤 슬롯에 dedup 정보 없음). 나머지 여섯은 게이트 구멍·주석·사본 정리. 리뷰가 평문으로 보고해 읽기 쉬웠다 —
+인자에 "평문으로"를 넣은 효과.

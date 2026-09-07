@@ -833,11 +833,19 @@ do
 	q.Slot():Add(child) -- used to raise "already mounted elsewhere" (dead elementOwner)
 	-- G-11: List argument gates blame the caller, not Slot.luau
 	local okL, errL = pcall(function() q.Slot():List(nil :: any, function() end) end)
-	assert(not okL and string.find(tostring(errL), "data must be an array", 1, true) ~= nil, "nil data: " .. tostring(errL))
+	assert(not okL and string.find(tostring(errL), "data must be a plain array", 1, true) ~= nil, "nil data: " .. tostring(errL))
 	mock.assertBlamesUser(errL, "spec.slot.luau", "List nil data blame")
 	local okF, errF = pcall(function() q.Slot():List({}, "x" :: any) end)
 	assert(not okF and string.find(tostring(errF), "updateFn must be a function", 1, true) ~= nil, "non-function updateFn: " .. tostring(errF))
 	mock.assertBlamesUser(errF, "spec.slot.luau", "List updateFn blame")
+	-- round3 `H-446`: the same gates on Single's updateFn, List's keyFn, and branded "data"
+	local okS, errS = pcall(function() q.Slot():Single(nil, 42 :: any) end)
+	assert(not okS and string.find(tostring(errS), "Slot:Single: updateFn must be a function", 1, true) ~= nil, "Single updateFn: " .. tostring(errS))
+	mock.assertBlamesUser(errS, "spec.slot.luau", "Single updateFn blame")
+	local okK, errK = pcall(function() q.Slot():List({}, function() end, "id" :: any) end)
+	assert(not okK and string.find(tostring(errK), "keyFn must be a function", 1, true) ~= nil, "keyFn: " .. tostring(errK))
+	local okN, errN = pcall(function() q.Slot():List(q.None :: any, function() end) end)
+	assert(not okN and string.find(tostring(errN), "plain array", 1, true) ~= nil, "None is not an array: " .. tostring(errN))
 	print("PASS")
 end
 

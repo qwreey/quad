@@ -248,7 +248,8 @@ function ModifierMT.__index(_self: any, key: any): any
 	end
 	if type(key) ~= "string" then
 		-- Q11 (a) (사용자 결정 2026-09-07): the generic setter mirrors `construct`'s key rule
-		-- (`H-310` — the two creation paths must not drift): only string keys become setters.
+		-- (`H-310` — the two creation paths must not drift): only string keys become setters;
+		-- `construct` in turn refuses the keys this path can never make into setters (`H-448`).
 		-- Non-string keys (AttributeKey/MapperDescriptor) go in the props table directly.
 		Err.errorBeforeNearest("Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
 	end
@@ -311,8 +312,17 @@ local function construct(tag: any, ...: any): any
 			end
 		elseif isPlainFieldTable(arg) then
 			for k, v in arg :: { [any]: any } do
-				if type(k) ~= "string" then
-					Err.errorBeforeNearest(`Modifier: initial-field table keys must be field names (got {typeof(k)} at argument #{i})`, SURFACE)
+				if type(k) ~= "string" or k == "" then
+					Err.errorBeforeNearest(`Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`, SURFACE)
+				end
+				-- round3 `H-448`: the same keys the setter path can never produce — a cast-prefix
+				-- name (`AsTextLabl` — the header's typo case) or a reserved method name would land
+				-- as a field here and be unreachable through `mod:X(...)`
+				if methods[k] ~= nil then
+					Err.errorBeforeNearest(`Modifier: field "{k}" collides with a reserved Modifier method`, SURFACE)
+				end
+				if string.match(k, "^As%u") ~= nil then
+					Err.errorBeforeNearest(`Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
 				end
 				if type(v) == "function" then
 					Err.errorBeforeNearest(`Modifier: field "{k}" in an initial-field table cannot be a function — use mod:{k}(fn) for a transform`, SURFACE)

@@ -319,8 +319,9 @@ do
 		d:Get()
 	end)
 	assert(not ok and string.find(tostring(err), "Modifier", 1, true) ~= nil, "rejected: " .. tostring(err))
-	-- [H-205, 사용자 확정 2026-08-31] level 3 — 직접 Get이면 사용자 호출부를 가리킨다
-	-- (체인 경유면 상류 Get의 내부 프레임 — 어떤 고정 level도 거기선 유저 코드에 못 닿음)
+	-- [H-205, 사용자 확정 2026-08-31] 직접 Get이면 사용자 호출부를 가리킨다. [2026-09-07 Q7 셋째 (a)]
+	-- 방향은 outermost — 디스패치가 lazy recompute를 처음 강제하는 경로(`H-416`)에선 nearest가
+	-- StoreBind의 내부 프레임에 걸리므로; 그 경로의 검사는 `spec.dispatch` 18절
 	assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil, "direct Get: blames the caller, not quad internals")
 	assert((d :: any)._cache == nil, "nothing was cached")
 	local ok2, err2 = pcall(function()
