@@ -35,7 +35,6 @@
 ]]
 
 local Brand = require("../Brand")
-local Void = require("../Void")
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
 local NoneModule = require("./None")

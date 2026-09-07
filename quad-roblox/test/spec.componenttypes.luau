@@ -50,6 +50,24 @@ local function _observerChild()
 	return q.D.Frame({ o, e }), q.D.TextLabel({ q.None, o, q.D.Frame({}), e })
 end
 
+-- [2026-09-07 마커, 사용자 결정 — 공변/불변] 옛 전체형 `State<Instance>`·`Slot<Instance>` 팔이 거부하던
+-- 것들이 마커 팔(`StateMarker`/`SlotMarker`, typing-limits 8.11)에 든다. 음성(State<number> 자식·형제 Ref의
+-- State·State<Modifier>·`Slot<Frame>`에 State<TextLabel> 요소 등 아홉)은 2026-09-07 tmp 프로브로 전부 거부 확인
+-- (원장 round1 §16). `q.Slot()` 캐스트 없는 생성(`H-354`)은 그대로 안 된다 — 생성자 `T` 추론 문제라 별개.
+local function _markerChildren()
+	local frameState = q.Source(q.D.Frame({})) -- Source<Frame> — 옛 State<Instance> 불변 팔은 거부했다
+	local maybe = q.Source(nil :: Frame?) -- State<Instance?> — NilHandler 팔(`State<Slot|nil>` 계약)
+	local slot = q.Slot() :: QuadTypes.Slot<Frame> -- Slot<Frame>이 SlotMarker<Instance>에(공변)
+	local slotState = q.Source(slot) -- State<Slot<Frame>> — Q1의 원래 팔, 팔 추가 없이 든다
+	local ref = q.Ref(nil :: Frame?)
+	local refState = q.Source(ref) -- State<Ref<Frame?>> — 8.7 캐비엇 5의 `:: FrameRefMarker` 캐스트 불필요
+	local outer = q.Slot() :: QuadTypes.Slot<Instance>
+	outer:Add(slot) -- Slot 요소 자리도 마커: Slot<Frame> → Slot<Instance>
+	outer:Add(frameState)
+	local got: QuadTypes.SlotItem<Instance>? = outer:Get(1) -- 출력은 전체형(SlotItem)
+	return q.D.Frame({ frameState, maybe, slot, slotState, refState, got :: any }), q.D.ScrollingFrame({ outer })
+end
+
 local function _neverCalled()
 	local ref = q.Ref(nil :: TextButton?)
 	local a: TextButton = MaterialButton({ Text = "a", Modifier = q.D.Modifier.TextButton():BackgroundTransparency(0.5), Ref = ref, Content = q.D.TextLabel({}) })

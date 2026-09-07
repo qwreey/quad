@@ -123,7 +123,7 @@ local wrong: number = s:Get()   -- ❌이어야 하는데 에러 안 남
 
 **[2026-09-03 실측 각주, M6 `Slot<T>` 타입(round15 `H6-18`)]** 위 표의 첫 행
 "같은 인자로만 재귀"에는 **상호 재귀 alias 그룹**도 포함된다 —
-`Slot<T>` ↔ `SlotElement<T> = T | State<T> | Slot<T>`는 정상이다. 단 그
+`Slot<T>` ↔ `SlotElement<T> = T | State<T> | Slot<T>`(**[2026-09-07 마커 — 사용자 결정]** 지금은 입력 `SlotElement<T> = T | StateMarker<T> | SlotMarker<T>` / 출력 `SlotItem<T> = T | State<T> | Slot<T>` 둘, 8.11)는 정상이다. 단 그
 그룹 안에서 **메소드 제네릭을 인자로 받는 alias**(`SlotUpdateFn<Item, T, UD>`를
 `List: <Item, UD>(…)` 안에서 쓰는 형태)는 "Recursive type being used with
 different parameters"로 **거부**된다(에러 — 조용한 손실은 아님). 처방은 그
@@ -752,7 +752,7 @@ enum은 문자열 싱글톤 `"a" | "b"`로 — Fusion 관례와 같다).
    (**[2026-09-03 기준] 아직 안 얹음**).
 5. **`State<T>`는 `Set` 파라미터 때문에 불변** — `Source<{Name: "Visible",
    …}>`는 `State<FrameOnChange>`에 안 맞는다. 클래스 유니언으로 캐스트해
-   만든다(`q.Source(OnChange(...) :: FrameOnChange)`). 반응형 자식
+   만든다(`q.Source(OnChange(...) :: FrameOnChange)`). **[2026-09-07 마커 — 사용자 결정]** `<Class>Elem`의 팔이 `StateMarker<FrameOnChange>`가 되면서(8.11) 캐스트 없이도 공변으로 든다 — `State<Ref>`의 `:: FrameRefMarker` 캐스트도 같이 불필요(`spec.componenttypes`). 반응형 자식
    `q.Source(frame)` vs `State<Instance>`도 같은 규칙이다(선행 한계 —
    `q.Source(frame :: Instance)`).
 
@@ -783,7 +783,7 @@ base는 `{ read __quadModifier: true }`(`QuadTypes.ModifierMarker`, `NewChild`),
 
 ## 8.9. 재귀 함수 필드 + 유니언 멤버의 같은 이름 메소드 = 유니언 검사가 조용히 통과한다 — `Apply`는 `any`, setter 이름은 게이트
 
-**[2026-09-06 8.8·8.5 보강 — M11 단위 ① `H-326`/`H-327`]** (1) 새 솔버 `State<X>`는
+**[2026-09-06 8.8·8.5 보강 — M11 단위 ① `H-326`/`H-327`]** **[2026-09-07 마커 — 사용자 결정]** 아래 (1)~(3)의 "State 멤버 둘을 각각 나열"·"멤버별 팔"은 **8.11의 마커로 대체됐다**(입력 자리는 `StateMarker<T | Tween<T>>` 한 팔) — 불변성 자체는 사실이고 전체형이 서는 자리(출력·`self`)엔 그대로 적용된다. (1) 새 솔버 `State<X>`는
 **불변**이다 — `State<T | Tween<T>>` 하나로 `State<T>`를 받을 수 없고, 슬롯의
 `State<X>` 멤버는 `:Compute`/`Animate`가 돌려주는 타입과 X가 글자 그대로 같아야
 한다(정밀판 별칭·데이터부 전부 거부). 그래서 생성 `D`와 `Field<T>`는 State 멤버
@@ -922,9 +922,25 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 연산자가 없어 이걸 못 잡았다.
 
 
-## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 전체형 `State<T>`/`Slot<T>` 불변의 우회 후보 (2026-09-07, 스파이크 `34`, 결정은 열림)
+## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
-**실측만 기록한다 — 적용 여부는 `qa-request/post-implementation-review-round1.md` §4 Q1(사용자 사고 중).**
+**⭐ [2026-09-07 적용 — 사용자 결정 *"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*, 원장
+`qa-request/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **규칙**: 값을 *받는*
+자리(children 유니언 `NewChild`·`<Class>Elem`, 생성 D 슬롯 `PVn`·이벤트 슬롯, Modifier setter `FieldV<T>`,
+Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `AttributeSugar`, `Animate` 옵션,
+`Dispatch.setLength`)는 마커 `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }` /
+`SlotMarker<T>`를 요구하고, 값을 *돌려주는* 자리·`self`·`Peek` 반환·변환 함수의 `old`(`FieldOut<T>`)·
+Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`Slot<T>` 자신에도 들어 있어(런타임
+`Impl.__quadState = true`/`Slot_mt.__quadSlot = true`, `__quad*Value`는 **순수 팬텀**) 실제 값이 폭
+서브타이핑으로 든다. **결과(실측)**: `PVn`이 `T | TweenData<T> | StateMarker<T | Tween<T>> | None` 네 팔로
+통일(`PV73` 11팔·`SHF0` 소멸), `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<number | UDim>`·
+정직한 `State<T | Tween<T>>`(8.9 (1)의 `H-334`가 포기한 팔)·캐스트 없는 `State<Ref<Frame?>>`(8.7 캐비엇 5)가
+전부 들어가고, 음성 아홉(State<number> 자식·형제 Ref의 State·`State<Modifier>`·`State<UDim2?>`를 `Size`에·
+`Slot<Frame>`에 State<TextLabel> 요소 등)은 그대로 거부. quad-roblox 타입 검사 4.96s → 3.41s,
+`LuauSolverConstraintLimit` 플래그 불필요(test.sh에서 제거). **바뀌지 않은 것**: `q.Slot()` 캐스트 없는 생성
+(`H-354`)은 생성자 `T` 추론 문제라 그대로; 8.9의 setter 이름 게이트는 State가 유니언 멤버에서 빠졌어도
+그대로 둔다(넓은 쪽이 안전). 아래는 결정 전 실측 원문.
+
 사용자 사고(2026-09-07 회신): *"'입력받는 곳'에 대해서는 마커 필드와 내부 구조 T 하나만 보존하는 마커 타입을
 써도 되지 않나 … 구조적으로 확장된 타입은 잘 받기 때문에 … 진짜 State<T>의 method 같은건 유저가 쓰는 부분에
 있어서 들어갈 뿐"*. 전체형 `State<T>`는 `Set(T)`/`Get(): T`가 양쪽 위치라 불변(8.9·`H-326`/`H-327`/`H-353` —

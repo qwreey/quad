@@ -810,7 +810,7 @@ Source도 같이 잡아줌 — **[2026-08-07 여덟 번째 세션 정정] `isSou
 
 ### 10. `Tween<T>`와의 타입 합성 — `T' = T | Tween<T>` 치환만으로 해결 (2026-08-10 세션)
 
-**[2026-09-06 실측 정정 — M11 단위 ① `H-327`]** 아래 "자동으로 `T | Tween<T> |
+**[2026-09-06 실측 정정 — M11 단위 ① `H-327`]** **[2026-09-07 마커 — 사용자 결정]** 실물은 다시 한 팔이다 — `FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None`(입력, 공변 마커), 변환 함수의 `old`만 전체형 `FieldOut<T>`; `typing-limits.md` 8.11. 아래 정정문의 "각각 나열"은 그 사이의 우회였다. 아래 "자동으로 `T | Tween<T> |
 State<T | Tween<T>>`가 나옴"은 새 솔버에서 성립하지 않는다 — `State<X>`가
 불변이라 그 모양의 setter는 plain `State<T>`를 거부했다(strict 실측, M7 spec은
 캐스트로 우회해 못 봤음). 실물 `Field<T> = T | Tween<T> | State<T> | State<Tween<T>>

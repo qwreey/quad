@@ -46,6 +46,8 @@ local QuadTypes = require("../luau_packages/quad_types")
 -- M11 단위 ①(2026-09-06, round19 Q3): 값 타입의 정본은 quad-types(엔진 무관 —
 -- Roblox 타입 자리는 `any`)이고 여기서는 **그대로 별칭**한다. Q3 (a)가 예정한
 -- `read Info: TweenInfo?` 정밀화는 실측에서 포기했다(`H-326`): `State<X>`는 불변이라
+-- [2026-09-07 마커] 슬롯의 State 팔이 공변 `StateMarker<T | Tween<T>>`가 되면서 이 논거는
+-- 약해졌다(정밀판 `Tween`이 `Tween<T>`의 서브타입이면 든다) — 재검토 가능, 아직 안 함.
 -- 생성 D 슬롯의 `State<Tween<T>>` 멤버는 `Animate`/`:Compute`가 돌려주는
 -- `State<QuadTypes.Tween<T>>`와 X가 글자 그대로 같아야 한다 — 정밀판 별칭이든
 -- 데이터부든 다른 타입이면 거부된다. 엔진 타입 오용(`Style = 3`)은 `Enum` 자체가
@@ -60,7 +62,8 @@ export type TweenData<T> = QuadTypes.TweenData<T>
 -- 한 번 풀어 plain으로 `Tween{...}`에 넘긴다). 반환 factory는 `:Apply` 전용이고
 -- 타입은 **`(self: any) -> State<Tween<any>>`**(`H-334`, §4 확인 항목 — 실측 넷):
 -- (1) 정직한 `State<T | Tween<T>>`(CanAnimate=false 분기가 plain)는 어느 슬롯
--- 유니언에 넣어도 "too complex"; (2) `<T>(self: State<T>) -> …` 제네릭 factory는
+-- 유니언에 넣어도 "too complex"([2026-09-07 마커] 이 제약은 사라졌다 — 슬롯이 그 타입을
+-- 받는다, `spec.shorthandtypes` `_markerUnion`; (2)~(4)는 그대로라 반환 타입은 유지); (2) `<T>(self: State<T>) -> …` 제네릭 factory는
 -- `:Apply`의 `factory: (State<T>) -> U` 자리에 못 들어간다(제네릭 함수 값 불일치);
 -- (3) `Animate` 자체를 `<T>`로 올리면 호출 자리에서 T를 못 잡는다; (4) `self:
 -- State<any>`도 State 불변성으로 거부 — `self: any`만 통과(8.9절 `Apply`가 `any`인
@@ -68,15 +71,15 @@ export type TweenData<T> = QuadTypes.TweenData<T>
 -- (number Source의 Animate를 UDim2 슬롯에)" 하나. 런타임 소비자는 어차피 plain/Tween
 -- 둘 다 받고, `anim:Get()`을 직접 읽는 드문 자리만 `isTween`으로 갈라 볼 것.
 export type AnimateInfo = {
-	read Info: (TweenInfo | QuadTypes.State<TweenInfo>)?,
-	read Time: (number | QuadTypes.State<number>)?,
-	read Style: (Enum.EasingStyle | QuadTypes.State<Enum.EasingStyle>)?,
-	read Direction: (Enum.EasingDirection | QuadTypes.State<Enum.EasingDirection>)?,
-	read RepeatCount: (number | QuadTypes.State<number>)?,
-	read Reverses: (boolean | QuadTypes.State<boolean>)?,
-	read DelayTime: (number | QuadTypes.State<number>)?,
+	read Info: (TweenInfo | QuadTypes.StateMarker<TweenInfo>)?,
+	read Time: (number | QuadTypes.StateMarker<number>)?,
+	read Style: (Enum.EasingStyle | QuadTypes.StateMarker<Enum.EasingStyle>)?,
+	read Direction: (Enum.EasingDirection | QuadTypes.StateMarker<Enum.EasingDirection>)?,
+	read RepeatCount: (number | QuadTypes.StateMarker<number>)?,
+	read Reverses: (boolean | QuadTypes.StateMarker<boolean>)?,
+	read DelayTime: (number | QuadTypes.StateMarker<number>)?,
 	read Override: (QuadTypes.TweenOverride | QuadTypes.State<QuadTypes.TweenOverride>)?,
-	read CanAnimate: (boolean | QuadTypes.State<boolean>)?,
+	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
 }
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<QuadTypes.Tween<any>>
 
@@ -87,17 +90,18 @@ export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Qu
 -- are per-class (`<Class>Elem` in the generated D, `base/onchange-plan.md`).
 export type NewChild =
 	Instance
-	| QuadTypes.State<Instance>
+	-- ⭐ [2026-09-07 사용자 결정 — 공변/불변] State·Slot 팔은 **마커**(`StateMarker`/`SlotMarker`,
+	-- quad-types 주석·typing-limits 8.11): 전체형 `State<Instance>`는 불변이라 `Source(frame)`
+	-- (`State<Frame>`)·`State<Instance?>`·`State<Slot<…>>`를 전부 거부했고 팔마다 예산을 먹었다.
+	-- 마커는 T에 공변이라 값 유니언 하나로 끝난다 — `State<Frame>`, `State<Instance?>`(NilHandler
+	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StoreBind 언랩 → SlotHandler),
+	-- `State<Tag>`/`State<Attribute>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
+	-- 여기 없고, Observer/EffectHandle의 State 형은 정본에 없어 넣지 않는다.
+	| QuadTypes.SlotMarker<Instance>
+	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.Tag | QuadTypes.Attribute | QuadTypes.None)?>
 	| QuadTypes.None
 	| QuadTypes.Tag
-	| QuadTypes.State<QuadTypes.Tag>
 	| QuadTypes.Attribute
-	| QuadTypes.State<QuadTypes.Attribute>
-	-- [2026-09-07 M6 widening, `H-351`] a Slot in the children array (SlotHandler,
-	-- `Dispatch/Slot.luau`) — the arm bind-system-plan predicted at M5 and the
-	-- fork slice never executed. `State<Slot<…>>` is NOT here (open §4 item —
-	-- `State<X>` is invariant, so the arm shape is a user decision).
-	| QuadTypes.Slot<Instance>
 	-- [2026-09-07 post-implementation review Q2 (a), 사용자 확정 "권고대로 둘 다 넣는거 동의"]
 	-- `state:Observer(fn)` / `Effect(fn)` handles in the children array — the leaf idiom
 	-- `source-state-plan.md` "`state:Observer(fn)`" 절·`effect-plan.md` canonised (leaf

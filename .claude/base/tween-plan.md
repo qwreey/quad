@@ -181,7 +181,7 @@ no-op이라 실질적 동작이 없음, 일반 프로퍼티는 애초에 "unset"
 
 ### 타입 대수: `T' = T | Tween<T>` — Modifier/State/Source에 새 타입 기계 불필요
 
-**[2026-09-06 실측 정정 — M11 단위 ① `H-326`/`H-327`]** 이 절의
+**[2026-09-06 실측 정정 — M11 단위 ① `H-326`/`H-327`]** **[2026-09-07 마커 — 사용자 결정]** 이 절의 한 멤버 모양은 **마커로 되살아났다** — 실물 `PVn = T | TweenData<T> | StateMarker<T | Tween<T>> | None`, setter `FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None`(`typing-limits.md` 8.11; 정직한 `State<T | Tween<T>>`도 든다). 아래 "각각 나열"은 그 사이의 우회. 이 절의
 `State<T | Tween<T>>` 한 멤버 모양은 새 솔버에서 성립하지 않는다 — `State<X>`가
 불변이라 plain `State<T>`가 그 자리에 못 들어간다. 실물(생성 `D` 슬롯 유니언·
 Modifier setter `Field<T>`)은 **`State<T>`와 `State<Tween<T>>`를 각각 나열**한다

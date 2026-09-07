@@ -21,8 +21,8 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
   H-296 (a) 범위 = creatable ∧ (GuiObject∪UIComponent∪LayerCollector 하위)
             + 명시 화이트리스트 {Folder, Camera, WorldModel}
   H-297 (a) ReadOnly/Deprecated/NotScriptable/Hidden/보안≠None 프로퍼티 제외
-  H-298 (a)+H-326 스칼라 = T | State<T> | Tween<T> | State<Tween<T>> | None, 이벤트 = 콜백 |
-            State<콜백> | None, children = NewChild(types.luau) — None 표현은
+  H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커),
+            이벤트 = 콜백 | StateMarker<콜백> | None, children = NewChild(types.luau) — None 표현은
             H-300 (a)로 확정(센티널 마커 필드 → QuadTypes.None)
   H-142     Parent는 덤프 층에서 제외(Q5 (a) — M7 목록과 공유되는 자리)
 드롭된 항목은 전부 normalized의 dropped에 남긴다 — 조용한 절단 금지.
@@ -245,8 +245,9 @@ def emit():
     L.append(f"\tdump: {data['dumpVersion']} (API {data['apiVersion']}); 재생성 방법은 생성기 헤더.")
     L.append("\t표면 계약: bind-system-plan.md 인스턴스 생성 절(New 커링·①~④ 파이프라인·")
     L.append("\tD는 캐스트 별칭·Parent 제외 H-142), claim-plan §7-12(<Class>Param<E> 공유),")
-    L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | State<T> | Tween<T> | State<Tween<T>> | None (H-326),")
-    L.append("\t이벤트 콜백 | State<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).")
+    L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None")
+    L.append("\t(H-326 → 2026-09-07 마커: State 팔은 공변 StateMarker 하나, typing-limits 8.11),")
+    L.append("\t이벤트 콜백 | StateMarker<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).")
     L.append("\t이벤트 필드의 런타임 핸들러는 Handlers/Event.luau(M10, 2026-09-03 구현됨 —")
     L.append("\t`base/event-plan.md`); M5엔 타입이 먼저 왔다(ROADMAP M5 체크박스의 계약).")
     L.append("\tOnChange(M10, 2026-09-03 역전 — base/onchange-plan.md): 배열부 디스크립터.")
@@ -255,7 +256,7 @@ def emit():
     L.append("\t타입·무주석 추론까지, luau-test 30) + 클래스별 <Class>OnChange 유니언이 E에")
     L.append("\t합류(클래스 밖 이름은 생성자 자리에서 거부).")
     L.append("\tModifier(M7 단위 ③, round17): 클래스별 <Class>Modifier(필드 setter — 값은")
-    L.append("\tField<T> = T | Tween<T> | State<T> | State<Tween<T>> | None | 변환 함수(H-327), 자기 타입 반환; 예약 메소드")
+    L.append("\tField<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드")
     L.append("\tApply/Peek/Overridden; 이벤트는 제외 — 함수 인자는 변환 함수라 콜백과 겹친다)")
     L.append("\t+ D.Modifier.<Class>() 타입드 생성자(round17 Q3 (a) — 단위 ③엔 quad.Modifier 캐스트 별칭,")
     L.append("\t단위 ④부터 아래 TypedFactory 태그 생성자)")
@@ -278,6 +279,7 @@ def emit():
     L.append('local Types = require("./types")')
     L.append("")
     L.append("type State<T> = QuadTypes.State<T>")
+    L.append("type StateMarker<T> = QuadTypes.StateMarker<T> -- 입력 자리의 State 팔(2026-09-07 마커, typing-limits 8.11)")
     L.append("type Tween<T> = Types.Tween<T>")
     L.append("type TweenData<T> = Types.TweenData<T> -- 유니언 멤버용 데이터부(H-326, 8.8절)")
     L.append("type NewChild = Types.NewChild")
@@ -285,8 +287,9 @@ def emit():
     L.append("type MapperDescriptor = QuadTypes.MapperDescriptor")
     L.append("type MapperRoot = QuadTypes.MapperRoot")
     L.append("-- Modifier 필드 setter의 값 타입(modifier-plan 4·4-1·10절): 리터럴 T | Tween<T> |")
-    L.append("-- State<T> | State<Tween<T>> | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로')")
-    L.append("-- — State 형 둘을 각각 나열하는 이유는 H-327(새 솔버 State 불변성, 2026-09-06)")
+    L.append("-- State(마커, T | Tween<T>를 품음) | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로').")
+    L.append("-- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커")
+    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(Peek 반환과 같은 층).")
     # [2026-09-06 M11 단위 ① H-327] 옛 Field<V>에 V = T | Tween<T>를 넣던 모양은 새 솔버의
     # State 불변성 때문에 State<T>를 거부했다(M7 하자 — m:Position(state)가 strict에서
     # 막힘, 실측). 프로퍼티 setter의 값 타입은 T와 Tween<T>의 State 형을 각각 나열한다.
@@ -294,8 +297,12 @@ def emit():
     # TweenData<T>는 교집합 Tween 값을 받지 못했다(2026-09-06 실측 — Param 슬롯의 리터럴
     # 자리와 달리 호출 인자 자리). Modifier 타입은 클래스별이라 복잡도 문제도 없다.
     # 값/함수 인자/함수 반환 셋이 같은 유니언 — 별칭 하나로(리뷰: 부분 수정 시 세 팔이 어긋남)
-    L.append("export type FieldV<T> = T | Tween<T> | State<T> | State<Tween<T>> | None")
-    L.append("export type Field<T> = FieldV<T> | ((old: FieldV<T>?) -> FieldV<T>?)")
+    # [2026-09-07 마커] 입력 팔은 StateMarker 하나(공변 — State<T>·State<Tween<T>>·정직한
+    # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
+    # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
+    L.append("export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None")
+    L.append("export type FieldOut<T> = T | Tween<T> | State<T> | State<Tween<T>> | None -- 변환 함수 old(출력, 전체형)")
+    L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
     L.append("")
     names = sorted(classes.keys())
     # [2026-09-06 M11 단위 ① H-326] + State<Tween<T>> — tween-plan "타입 대수"의
@@ -351,34 +358,17 @@ def emit():
             prop_types.append(t)
     def union_members(t):
         return [m.strip() for m in t.split("|")]
+    # [2026-09-07 마커 — 사용자 결정] 슬롯 값 유니언은 `T | TweenData<T> | StateMarker<T | Tween<T>> | None`
+    # 한 벌. 옛 모양(`State<T> | State<Tween<T>>` + 유니언 T의 멤버별 팔 — H-353/H-362/H-363, PV73이
+    # 11팔)은 State 불변성(H-326/H-327)의 우회였고, 공변 마커는 `State<m>`·`State<Tween<m>>`·정직한
+    # `State<T | Tween<T>>`(H-334가 "too complex"로 포기한 팔)를 전부 한 팔로 받는다(스파이크 35).
+    # 바깥 값 팔은 데이터부 TweenData(8.8), 마커 안은 전체형 Tween(State<Tween<T>>의 필드형 그대로).
+    # H-362의 SHF(숏핸드 setter 멤버별 값 팔) 별칭도 같이 사라진다 — Field<number | UDim> 하나로 충분.
     def pv_arms(t):
-        arms = [t, f"State<{t}>", f"TweenData<{t}>", f"State<Tween<{t}>>"]
-        for m in union_members(t):
-            if m != t:
-                arms += [f"State<{m}>", f"TweenData<{m}>", f"State<Tween<{m}>>"]
-        return arms + ["None"]
-    # [0순회 H-362] shorthand setter for a union type: value arms per member + ONE transform arm
-    # over the whole union — splitting `Field<number> | Field<UDim>` broke the modifier-plan 4절
-    # `old` idiom (a lambda returning UDim got context-typed to the number arm). One alias per
-    # union type (inlining the union 13× is the 8.5 budget pattern to avoid).
-    shf_name = {}
-    for sname, t in SHORTHAND:
-        ms = union_members(t)
-        if len(ms) > 1 and t not in shf_name:
-            shf_name[t] = f"SHF{len(shf_name)}"
-            L.append(f"type {shf_name[t]} = {' | '.join(f'FieldV<{m}>' for m in ms)} | Field<{t}> -- 숏핸드 setter(H-362): 값 팔 멤버별 + 변환 팔 하나")
+        return [t, f"TweenData<{t}>", f"StateMarker<{t} | Tween<{t}>>", "None"]
     pv_name = {}
     for i, t in enumerate(prop_types):
         pv_name[t] = f"PV{i}"
-        # [H-334] State<T | Tween<T>>(Animate의 CanAnimate=false 분기가 plain을 돌려줄 때의
-        # 정직한 타입)는 추가로 넣든 State<Tween<T>> 대신 넣든 D/DMapper가 "too complex"
-        # (2026-09-06 실측 — 유니언을 품은 State 멤버가 비싸다). 그래서 Animate는
-        # State<Tween<T>>로 선언한다(§4 확인 항목).
-        # [2026-09-07 H-353] a union type (only the shorthand `UICorner: number | UDim` today)
-        # must list the State/Tween arms PER MEMBER — State<X> is invariant (H-326/H-327), so
-        # `State<number | UDim>` rejects a `Source(8)`; one alias, arms per member.
-        # [0순회 H-363] the whole-union arms stay (TweenData<number | UDim> from `Tween({ Value = v })`,
-        # v: number | UDim, was lost) — per-member arms are ADDED, not substituted.
         L.append(f"type PV{i} = {' | '.join(pv_arms(t))} -- {t}")
     L.append("")
     for name in names:
@@ -393,7 +383,7 @@ def emit():
                 L.append(f"\t{sname}: {pv_name[t]}?, -- 숏핸드(H-336)")
         for ev in c["events"]:
             sig = luau_event_sig(ev)
-            L.append(f"\t{ev['name']}: (({sig}) | State<{sig}> | None)?,")
+            L.append(f"\t{ev['name']}: (({sig}) | StateMarker<{sig}> | None)?,")
         L.append("}")
         L.append("")
     # OnChange 타이핑(onchange-plan 2026-09-03 역전, luau-test 30 실측):
@@ -564,8 +554,7 @@ def emit():
             L.append(f"\t{p['name']}: (self: {node}Modifier, value: Field<{t}>) -> {node}Modifier,")
         if is_gui_object(node):
             for sname, t in SHORTHAND:
-                field = shf_name.get(t, f"Field<{t}>")  # H-353/H-362
-                L.append(f"\t{sname}: (self: {node}Modifier, value: {field}) -> {node}Modifier, -- 숏핸드(H-336)")
+                L.append(f"\t{sname}: (self: {node}Modifier, value: Field<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
         L.append("}")
         # Into<Class> — "이 클래스로 갈 수 있는 모든 것"(상위·자기·커스텀 구현체).
         # self는 any여야 한다: self를 인터페이스 타입으로 두면 반공변 때문에
@@ -600,7 +589,9 @@ def emit():
         # 캐비엇 5대로 마커로 캐스트해 만든다(`q.Source(ref :: FrameRefMarker)`);
         # `State<PreRef>`는 타입이 못 가르고 런타임 가드(Ref.luau)가 잡는다.
         L.append(f"export type {name}RefMarker = {{ read __quadRefAccepts: ({name}) -> () }}")
-        L.append(f"export type {name}Elem = NewChild | {name}OnChange | State<{name}OnChange> | {{ read __quadModifier: {marker} }} | {name}RefMarker | State<{name}RefMarker>")
+        # [2026-09-07 마커] State 팔은 StateMarker — `State<Ref<Frame?>>`가 캐스트 없이 `StateMarker<FrameRefMarker>`에
+        # 든다(공변 + Ref의 반공변 팬텀이 폭 서브타이핑으로 대조됨), 8.7 캐비엇 5의 캐스트 관용구는 불필요
+        L.append(f"export type {name}Elem = NewChild | {name}OnChange | StateMarker<{name}OnChange> | {{ read __quadModifier: {marker} }} | {name}RefMarker | StateMarker<{name}RefMarker>")
         L.append(f"export type {name}MapperElem = {name}Elem | MapperDescriptor")
         L.append("")
     L.append("-- D 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")

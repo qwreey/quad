@@ -12,6 +12,7 @@
 
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
+local QuadTypes = require("../luau_packages/quad_types")
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
@@ -54,4 +55,18 @@ end
 print("=== 1. 런타임 대응 — 생성 D의 숏핸드 키가 실제 핸들러에 닿는다(mock 없이 타입만 — 본문은 실행하지 않음) ===")
 print("PASS")
 print()
+-- [2026-09-07 마커, 사용자 결정] 유니언 T 자리에 `State<number | UDim>` 하나가 든다(옛 멤버별 11팔 `PV73`·
+-- 숏핸드 setter `SHF0` 불필요), 정직한 `State<T | Tween<T>>`(`H-334`가 "too complex"로 포기한 팔)도 든다.
+local function _markerUnion()
+	local radius = q.Source(8)
+	local either = q.Source((8 :: any) :: number | UDim)
+	local f8 = q.D.Frame({ UICorner = either })
+	local m5 = q.D.Modifier.Frame():UICorner(either):UIScale(q.Source((nil :: any) :: number | QuadTypes.Tween<number>))
+	local honest: QuadTypes.State<number | QuadTypes.Tween<number>> = radius:Compute(function(h: QuadTypes.StateData<number>): number | QuadTypes.Tween<number>
+		return h:Get()
+	end)
+	local f9 = q.D.Frame({ UICorner = honest, ZIndex = honest })
+	return f8, m5, f9
+end
+
 print("=== ALL PASS ===")

@@ -793,7 +793,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 자리)는 실제로 **요소 유니온 `T | State<T> | Slot<T>`**다 — 반응형 raw 요소는
 언래핑된 원래 `State`가, 중첩은 `Slot` 자신이 돌아온다(아래 "래핑/언래핑은 Slot
 전체에 걸린 연산이다" 절). quad-types의 `SlotElement<T>`가 그 표기이고 표는
-축약이다 — 타입 표면을 표에 맞춰 `T?`로 되돌리지 말 것.
+축약이다 — 타입 표면을 표에 맞춰 `T?`로 되돌리지 말 것. **[2026-09-07 마커 — 사용자 결정]** 그 유니언은 역할별로 둘이다 — 입력(`Add`/`Replace`/`Splice`/`IndexOf`/생성자)은 `SlotElement<T> = T | StateMarker<T> | SlotMarker<T>`(공변 — `Slot<Frame>`·`State<Frame>`이 `Slot<Instance>`에 든다), 출력(`Get`/`Extract`/`ExtractAll`/`Splice` 반환·`prev`)은 전체형 `SlotItem<T> = T | State<T> | Slot<T>`(`typing-limits.md` 8.11).
 | `IndexOf` | `Slot:IndexOf(element): number?` | O(n) | element의 현재 인덱스 역조회(멤버 아니면 `nil`) — 레퍼런스만 있고 인덱스가 없을 때 다른 CRUD와 연결하는 다리 |
 
 - **`Add`가 삽입된 인덱스를 반환하는 이유(2026-08-10 세션 확정)** —

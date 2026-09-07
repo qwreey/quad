@@ -319,7 +319,9 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
 
 **[2026-09-07 `H-353`]** `UICorner: number | UDim`은 생성 D에서 유일한 유니언 타입이라
 `State<number | UDim>` 한 팔로는 store-bind가 strict에서 거부됐다(`State<X>` 불변) —
-멤버별 팔로 정정, 근거는 `typing-limits.md` 8.9절 (3).
+멤버별 팔로 정정, 근거는 `typing-limits.md` 8.9절 (3). **[2026-09-07 마커 — 사용자 결정]** 그 멤버별 팔은
+같은 날 8.11의 공변 마커로 대체됐다 — 실물 `PV`는 `number | UDim | TweenData<…> | StateMarker<number | UDim |
+Tween<…>> | None` 네 팔 하나이고 setter도 `Field<number | UDim>` 하나(`SHF0` 소멸); 위 문장은 그 사이의 우회.
 
 v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했음
 (`myStore "key"` 체이닝으로 다른 프로퍼티와 동일하게 취급됨) — quad-v2도

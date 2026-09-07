@@ -216,7 +216,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
 찍는 값 유니언의 정본.** 생성기(`scripts/gen-d.py`)가 이 정의로 찍고, 여기가
 소스다:
 
-- **스칼라 프로퍼티**: `(T | State<T> | TweenData<T> | State<Tween<T>> | None)?` — **[2026-09-06 M11 단위 ① `H-326` 정정]** 옛 `(T | State<T> | Tween<T> | None)?`엔 `State<Tween<T>>`(`Animate`/`:Compute`의 반환)가 빠져 있었고, 새 솔버 `State` 불변성 때문에 State 멤버 둘을 각각 나열한다(생성기는 타입별 별칭 `PVn`, 바깥 Tween은 데이터부 — `tween-plan.md` "타입 대수" 절). `Tween<T>`은
+- **스칼라 프로퍼티**: `(T | TweenData<T> | StateMarker<T | Tween<T>> | None)?` — **[2026-09-07 마커 — 사용자 결정]** State 팔은 공변 마커 하나(`typing-limits.md` 8.11; 옛 `State<T> | State<Tween<T>>` 둘·유니언 T의 멤버별 팔 `H-353`은 소멸). 이벤트 슬롯도 `콜백 | StateMarker<콜백> | None`. **[2026-09-06 M11 단위 ① `H-326` 정정]** 옛 `(T | State<T> | Tween<T> | None)?`엔 `State<Tween<T>>`(`Animate`/`:Compute`의 반환)가 빠져 있었고, 새 솔버 `State` 불변성 때문에 State 멤버 둘을 각각 나열한다(생성기는 타입별 별칭 `PVn`, 바깥 Tween은 데이터부 — `tween-plan.md` "타입 대수" 절). `Tween<T>`은
   PropertyHandler가 소비하는 값-레벨 래퍼(`tween-plan.md`; 타입은
   `quad-roblox/src/types.luau`, 런타임은 M11 — 탐사자가 M9 오기를 잡음). 모든 프로퍼티에 균일하게
   허용한다(트윈 가능 여부는 엔진 몫 — 타입으로 안 가른다).
@@ -227,7 +227,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   확장한다**(확장 규칙 — M6 Slot, M8 `Ref`/`PreRef`/`PostRef`; **[2026-09-07 M6 확장
   실행 — `H-351`, 핸드오버 리뷰]** `Slot<Instance>` 합류(fork 슬라이스가 이 팔을
   실행하지 않아 strict에서 children Slot이 막혀 있었다 — `qa-request/post-implementation-review-round1.md`;
-  `State<Slot<…>>` 팔은 그 원장 §4 Q1 — 열림, 사용자 사고 중; **[2026-09-07 Q2 (a) 사용자 확정]** `Observer`/`EffectHandle` 팔 합류, `H-355`); **[2026-09-03
+  `State<Slot<…>>` 팔은 **[2026-09-07 마커 — 사용자 결정]** 마커로 닫힘 — `StateMarker<(Instance | SlotMarker<Instance> | Tag | Attribute | None)?>` 한 팔이 `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<Tag>`·`State<Attribute>`를 전부 받는다(`typing-limits.md` 8.11, 원장 §16); **[2026-09-07 Q2 (a) 사용자 확정]** `Observer`/`EffectHandle` 팔 합류, `H-355`); **[2026-09-03
   M10 확장 실행]** `Tag | State<Tag> | Attribute | State<Attribute>` 합류 —
   타입드 스칼라 슈가는 `Attribute`를 돌려주므로 같은 멤버, `H10-15`. `OnChange`
   디스크립터는 여기가 아니라 클래스별 생성 별칭 `<Class>Elem`에 들어간다 —

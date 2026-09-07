@@ -84,7 +84,20 @@ export type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 -- 알려진 한계라 **파생 State를 만드는 자리는 결과 타입을 명시 주석**할 것.
 -- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
-export type StateData<T> = { Get: (self: StateData<T>) -> T }
+-- ⭐ [2026-09-07 사용자 결정 — 공변/불변 문제] **마커 타입** `StateMarker<T>`: '입력받는
+-- 자리'(children 유니언, 생성 D 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
+-- 전체형 `State<T>` 대신 이 마커를 요구한다. 전체형은 `Set(T)`/`Get(): T`가 양쪽 위치라
+-- **불변**이어서 `State<number>`가 `State<number | UDim>` 자리에 못 들어갔고(`H-326`/`H-327`/
+-- `H-353` — 멤버별 팔 나열로 우회), 읽기 전용 팬텀 필드만 든 마커는 **T에 공변**이라 한 팔로
+-- 끝난다(`typing-limits.md` 8.11, `luau-test/done/34`·`35`). 실제 State 값은 폭 서브타이핑으로
+-- 들어가고 다른 T는 여전히 거부된다. 사용자 원문: *"'입력받는 곳'에 대해서는 마커 필드와 내부
+-- 구조 T하나만 보존하는 마커 타입을 써도 되지 않나 … 진짜 State<T>의 method 같은건 유저가 쓰는
+-- 부분에 있어서 들어갈 뿐"*. 메소드가 필요한 자리(출력·`self`·`Peek` 반환·변환 함수의 `old`)는
+-- 전체형 그대로. 런타임: `__quadState`는 `Impl.__quadState = true`(H-300 "타입이 약속하면
+-- 값에도"), `__quadStateValue`는 **순수 팬텀**(런타임엔 없다 — T 값을 들고 있을 수 없어서;
+-- `__quadRefAccepts`의 `Void`와 같은 층의 조언 필드, 읽는 코드가 없어야 한다).
+export type StateMarker<T> = { read __quadState: true, read __quadStateValue: T }
+export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
 
 -- 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 구현이 붙였고
 -- `H-187` (a)로 사용자 승인(2026-08-31, "이름 그대로 사용해도 좋음").
@@ -208,8 +221,8 @@ export type AttributeKeyObject = { Name: string }
 -- 패밀리가 못 덮는 엔진 고유 타입은 이걸로, 검증은 백엔드 setAttribute 몫)
 export type AttributeKeyConstructor = (name: string) -> AttributeKeyObject
 -- 타입드 스칼라 슈가 — 배열부 값(단일 항목 그룹 `Attribute({ [name] = value })`).
--- 값은 T | State<T> | None(삭제); nil은 거부(런타임 검증)
-export type AttributeSugar<T> = (name: string, value: T | State<T> | None) -> Attribute
+-- 값은 T | State<T> | None(삭제); nil은 거부(런타임 검증). State 자리는 마커(입력 자리 규칙, `StateMarker`)
+export type AttributeSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attribute
 
 -- ── Modifier (M7 단위 ①·④) — `base/modifier-plan.md` ───────────────────
 -- 런타임 표면만(예약 메소드 넷). 클래스별 필드 setter 타입(`<Class>Modifier`)은
@@ -309,7 +322,7 @@ export type Dispatch = {
 	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
 	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
 	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
-	setLength: (ownerKey: any, i: number, len: number | State<number>, anchor: any?, element: any?) -> (),
+	setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor: any?, element: any?) -> (),
 	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
 	-- 그 해제 쌍을 한 본문으로(setOffsetSource(None) → setLength(0, anchor)) — 말단
 	-- nop/leaf 핸들러의 "빈 자리 등록"(post-implementation review Q3 ③, 2026-09-07)
@@ -355,7 +368,13 @@ export type Store<T> = T & {
 -- (`typing-limits.md` §1 "정확한 경계" 표: 한계는 **다른** 인자로 자기를
 -- 돌려줄 때다).
 -- 조회(`Get`/`IndexOf`/`Extract`류 반환)는 언래핑된 원래 값이 온다.
-export type SlotElement<T> = T | State<T> | Slot<T>
+-- [2026-09-07 마커] 입력 자리(`Add`/`Replace`/`Extract`의 새 요소/`Splice`/`IndexOf`/생성자
+-- `initial`)는 마커 — `Slot<Frame>`·`State<Frame>`이 `Slot<Instance>` 요소 자리에 공변으로
+-- 들어간다. 출력(`Get`/`Extract`/`ExtractAll`/`Splice` 반환, `updateFn`의 `prev`)은 "언래핑된
+-- 원래 값"이라 전체형 `SlotItem<T>` — 같은 값의 두 역할이라 별칭이 둘이다.
+export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
+export type SlotItem<T> = T | State<T> | Slot<T>
+export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 export type SlotListOpts = { Owned: boolean? }
 -- `updateFn(item, index, offset, prev, userdata) -> (result, userdata)`: `result`는
 -- 요소 | nil/None(파괴) | Detach(홀드). `item`엔 `KeyGone` 센티널도 온다.
@@ -363,30 +382,32 @@ export type SlotListOpts = { Owned: boolean? }
 -- 메소드 제네릭 `<Item, UD>`를 인자로 받는 alias는 "다른 파라미터의 재귀"로
 -- 거부된다 — 2026-09-03 실측, typing-limits §1①과 같은 제약.)
 export type Slot<T> = {
+	read __quadSlot: true, -- 런타임 `Slot_mt.__quadSlot = true`
+	read __quadSlotValue: T, -- 순수 팬텀(StateMarker와 같은 층)
 	Length: Source<number>,
 	Offset: Source<number>,
 	Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number,
 	Remove: (self: Slot<T>, index: number) -> (),
 	Replace: (self: Slot<T>, index: number, newElement: SlotElement<T>) -> (),
-	Extract: (self: Slot<T>, index: number, newElement: SlotElement<T>?) -> SlotElement<T>,
-	ExtractAll: (self: Slot<T>) -> { SlotElement<T> },
-	Splice: (self: Slot<T>, index: number, removeCount: number, ...SlotElement<T>) -> { SlotElement<T> },
+	Extract: (self: Slot<T>, index: number, newElement: SlotElement<T>?) -> SlotItem<T>,
+	ExtractAll: (self: Slot<T>) -> { SlotItem<T> },
+	Splice: (self: Slot<T>, index: number, removeCount: number, ...SlotElement<T>) -> { SlotItem<T> },
 	Clear: (self: Slot<T>) -> (),
 	Move: (self: Slot<T>, oldIndex: number, newIndex: number) -> (),
 	Swap: (self: Slot<T>, indexA: number, indexB: number) -> (),
-	Get: (self: Slot<T>, index: number) -> SlotElement<T>?,
+	Get: (self: Slot<T>, index: number) -> SlotItem<T>?,
 	IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?,
 	List: <Item, UD>(
 		self: Slot<T>,
-		data: { Item } | State<{ Item }>,
-		updateFn: (item: Item | KeyGone, index: number, offset: Source<number>, prev: SlotElement<T>?, userdata: UD?) -> (any, UD?),
+		data: { Item } | StateMarker<{ Item }>,
+		updateFn: (item: Item | KeyGone, index: number, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
 		keyFn: ((item: Item, index: number) -> any)?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
 	Single: <UD>(
 		self: Slot<T>,
-		state: T? | State<T?>,
-		updateFn: ((item: T | KeyGone, offset: Source<number>, prev: SlotElement<T>?, userdata: UD?) -> (any, UD?))?,
+		state: T? | StateMarker<T?>,
+		updateFn: ((item: T | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
 }

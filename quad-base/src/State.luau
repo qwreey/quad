@@ -72,6 +72,9 @@ local function createImpl(module: any)
 
 	local Impl = {}
 	Impl.__index = Impl
+	-- `StateMarker<T>` 브랜드 필드(H-300 "타입이 약속하면 값에도") — 판정은 여전히 Brand 레지스트리,
+	-- 이 필드는 타입 좁힘·진단용 조언층. `__quadStateValue`는 순수 팬텀(quad-types 주석).
+	Impl.__quadState = true
 
 	-- ── propagation loop ──────────────────────────────────────────────
 	-- Shared by every node type that has `_subs` (Source nodes too).

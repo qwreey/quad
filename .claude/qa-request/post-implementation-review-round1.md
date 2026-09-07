@@ -62,7 +62,7 @@
 
 | 문항 | 무엇 | 선택지 | 권고 |
 |---|---|---|---|
-| **Q1** (`H-351` 후속) | `NewChild`에 `State<Slot<Instance>>` 팔도 넣을지 — 런타임은 StoreBind 언랩으로 도착하고 `isHandlable`이 `isSlot`만 보므로 동작은 이미 된다. 타입만의 문제 | (a) 넣는다(`State<Slot<Instance>>` 한 팔 — `State<X>` 불변이라 그 글자 그대로만) / (b) 안 넣는다(`State<Slot>`은 slot-plan의 "교체는 언마운트" 의미론이 있는 드문 관용구 — 필요가 관측되면) | **(b)** — 관측된 필요 없음, 팔 하나가 "too complex" 예산을 먹는다. **[2026-09-07 회신] 열림 — 사용자 사고 중**(`State<Instance \| Slot<Instance>>` 하나로 끝나지 않나 / 입력 자리엔 마커 타입) → 스파이크 `luau-test/done/34`·메인 의견 **§15** |
+| **Q1** (`H-351` 후속) | `NewChild`에 `State<Slot<Instance>>` 팔도 넣을지 — 런타임은 StoreBind 언랩으로 도착하고 `isHandlable`이 `isSlot`만 보므로 동작은 이미 된다. 타입만의 문제 | (a) 넣는다(`State<Slot<Instance>>` 한 팔 — `State<X>` 불변이라 그 글자 그대로만) / (b) 안 넣는다(`State<Slot>`은 slot-plan의 "교체는 언마운트" 의미론이 있는 드문 관용구 — 필요가 관측되면) | **(b)** — 관측된 필요 없음, 팔 하나가 "too complex" 예산을 먹는다. **[2026-09-07 회신] 열림 — 사용자 사고 중**(`State<Instance \| Slot<Instance>>` 하나로 끝나지 않나 / 입력 자리엔 마커 타입) → 스파이크 `luau-test/done/34`·메인 의견 **§15**. **[2026-09-07 회신 2차] 닫힘 — 마커 적용**(*"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*): `NewChild`의 State 팔이 `StateMarker<(Instance \| SlotMarker<Instance> \| Tag \| Attribute \| None)?>` 하나가 돼 `State<Slot<Frame>>`까지 든다, **§16** |
 | **Q2** (R3-3, **`H-355`**) | children 유니언에 `Observer`/`EffectHandle`도 없다 — `state:Observer(fn)`을 children에 놓는 관용구는 `source-state-plan.md`가 정본화했고 leaf 핸들러가 받는데 strict는 거부 | (a) 둘 다 넣는다 / (b) `Observer`만 / (c) 안 넣는다 | **(a)** — 정본화된 관용구가 strict에서 막히는 건 `H-351`과 같은 모양. 다만 M5 확장 목록에 이름이 없었으니 사용자 확인. **[2026-09-07 회신] (a) 확정**(*"권고대로 둘 다 넣는거 동의"*) — 반영 §15 |
 | **Q3** (구 앵글 Efficiency/Simplification/Reuse/Altitude, **`H-356`**) | 코드 품질 제안 묶음 — 결함이 아니라 판단 대상이라 반영 안 함: ① `Slot:List` 재정렬 O(N²)(N=1000에 19.6ms 실측)·reconcile마다 `table.clone(prevKeys)`·`prepareElements` 전체 재스캔 / ② `notInstalled` 스텁 팩토리가 `Tag.luau`·`AttributeKey.luau`에 바이트 동일 / ③ `registerEmptySlot` 관용구를 quad-roblox `OnChange`·`InstanceChild`가 패키지 경계 때문에 인라인 복제(`None.luau` 주석은 `OnChange`만 승인) / ④ `Property.luau`·`Event.luau`의 Reflection 캐시 손코딩 중복 / ⑤ `Dispatch/Modifier.luau`가 `Ref.luau`의 `addProcessed` 팩토리를 안 쓰고 세 번째 사본 / ⑥ Slot CRUD 9곳 `assertLive; assertManual` 복붙 / ⑦ `gen-d.py`의 `reserved`·`union_member_functions`·`SHORTHAND` 목록이 런타임 소스(`Modifier.luau`·`types.luau`·`InstanceShorthand.luau`)를 안 읽고 손 복제 / ⑧ `drive`의 배치 Blocker 검사(§2 마지막 행) | 항목별 (a) 반영 / (b) 보류 | ①은 **(b)**("관측된 병목에만" — 실측이 벤치지 실사용이 아님), ②③⑤⑥은 **(a)** 후보(본문 공유가 아니라 데이터·순수 헬퍼 공유라 "하나가 두 일" 위반 아님)지만 리뷰 제안이라 사용자 결정, ④는 `H-302`가 갈라 둔 자리라 **(b)**, ⑦은 **(a)**(조용히 어긋나는 손 복제 — `SHORTHAND`는 `InstanceShorthand.luau` `TABLE`에서 읽게), ⑧ **(b)**. **[2026-09-07 회신] 항목별 확정 — ②③④⑤⑥⑦ 반영, ①⑧⑨ 보류(최적화 후보 목록으로)**, §15 |
 
@@ -360,4 +360,36 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 | 라운드 이름 | *"post 리뷰들도 라운드 분리 … round1 부터 다시 시작 … gemini 쪽은 round2"* | 이 파일 → `post-implementation-review-round1.md`, Gemini → `post-implementation-review-round2.md`(참조 16파일 치환, 머리 배너) |
 
 **검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과 — `spec.componenttypes` 양성 추가), doc-check ERROR 0.
+
+## §16 사용자 회신 2차 — Q1 결정: 입력 자리의 State/Slot 팔을 공변 마커로 (2026-09-07 오후)
+
+사용자: *"그럼 공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래? … 이해한건 맞아보여"* — §15 Q1의 메인 해석(두 생각은
+같은 문제, 마커가 그 해법)을 승인하고 착수를 지시. 설계 판단이 드는 단위라 메인이 직접 했다. 진행: 스파이크 **`35`**(생성 D
+슬롯 모양 — `PV`·`FieldV`·변환 함수·교집합 Tween 값·음성 넷) → quad-types → 런타임 브랜드 필드 → `NewChild` → gen-d → 재생성
+→ spec 양성·tmp 음성 프로브 → 정본 배너.
+
+| 자리 | 전 | 후 |
+|---|---|---|
+| quad-types | `StateData<T> = { Get }` / `Slot<T>` | `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }`, `SlotMarker<T>`(같은 모양); `StateData<T>`·`Slot<T>`가 그 필드를 가짐. `SlotElement<T>`(입력) = `T \| StateMarker<T> \| SlotMarker<T>`, 새 `SlotItem<T>`(출력) = 옛 유니언. `AttributeSugar`·`Slot:List/Single`·`setLength`의 State 인자 → 마커 |
+| 런타임 | — | `State.luau` `Impl.__quadState = true`, `Slot.luau` `Slot_mt.__quadSlot = true`(H-300 "타입이 약속하면 값에도"). `__quad*Value`는 **순수 팬텀** — 첫 사례, 읽는 코드 없음(메인 판단, 사용자 사후 확인 대상: `__quadRefAccepts = Void`처럼 값을 둘 수 없어서) |
+| `NewChild` | `State<Instance> \| State<Tag> \| State<Attribute> \| Slot<Instance>` | `SlotMarker<Instance> \| StateMarker<(Instance \| SlotMarker<Instance> \| Tag \| Attribute \| None)?>` — `State<Frame>`(옛 팔은 거부)·`State<Instance?>`(NilHandler 계약)·`State<Slot<Frame>>`(Q1 원래 팔)이 든다 |
+| gen-d `PVn` | `T \| State<T> \| TweenData<T> \| State<Tween<T>> \| None` + 유니언 T 멤버별 팔(`PV73` 11팔) | `T \| TweenData<T> \| StateMarker<T \| Tween<T>> \| None` 넷 — `H-353`/`H-362`/`H-363`의 멤버별 팔과 `SHF0` 소멸 |
+| gen-d `Field` | `FieldV<T> = T \| Tween<T> \| State<T> \| State<Tween<T>> \| None`, `old: FieldV<T>?` | `FieldV<T> = T \| Tween<T> \| StateMarker<T \| Tween<T>> \| None`(입력), `FieldOut<T>`(옛 유니언, `old`·전체형 — `Peek` 반환과 같은 층), `Field<T> = FieldV \| ((old: FieldOut?) -> FieldV?)` |
+| gen-d `<Class>Elem`·이벤트 | `State<XOnChange>`·`State<XRefMarker>`·`State<sig>` | 전부 `StateMarker<…>` — `q.Source(ref)`가 캐스트(8.7 캐비엇 5) 없이, `q.Source(OnChange(...))`도 캐스트 없이 든다 |
+| `Animate` 옵션 | `T \| State<T>` | `T \| StateMarker<T>` |
+| test.sh | `LuauSolverConstraintLimit=1000000` | 제거 — 없이 클린. quad-roblox 타입 검사 **4.96s → 3.41s** |
+
+**실측**: `spec.shorthandtypes` `_markerUnion`(`State<number \| UDim>` 한 팔, 정직한 `State<T \| Tween<T>>`) ·
+`spec.componenttypes` `_markerChildren`(`Source<Frame>`·`State<Frame?>`·`Slot<Frame>`·`State<Slot<Frame>>`·캐스트 없는
+`State<Ref<Frame?>>`·`Slot<Frame>`을 `Slot<Instance>` 요소로·출력 `SlotItem`) 양성 통과. tmp 음성 프로브(삭제) 아홉 전부 거부:
+children에 `State<number>`/`State<string>`, `UICorner`에 `State<string>`, `Size`에 `State<UDim2?>`·`State<Tween<string>>`, Frame
+Elem에 형제 `Ref<TextLabel?>`의 State, setter에 `State<string>`, `State<Modifier>`, `Slot<Frame>`에 `State<TextLabel>` 요소.
+**그대로인 것**: `q.Slot()` 캐스트 없는 생성(`H-354` — 생성자 `T` 추론, 프로브 P1/P2 실패 확인), 8.9 setter 이름 게이트(넓게
+유지), `Animate` 반환 `State<Tween<any>>`(`H-334` (2)~(4)는 그대로; (1)만 소멸). **재검토 후보(안 함)**: `read Info: TweenInfo?`
+정밀화(`H-326` 논거가 약해짐 — `types.luau` 주석).
+정본: `typing-limits.md` **8.11**(규칙 표·결과), `source-state-plan.md` 새 절 `StateMarker<T>`, `bind-system-plan.md`
+children/스칼라 행, `tween-plan.md` "타입 대수" 배너, `modifier-plan.md` `H-327` 배너, `onchange-plan.md` 캐비엇 (a) 닫힘,
+`ref-plan.md` 캐스트 관용구 불필요, `slot-plan.md` 요소 유니언 둘, `typing-limits.md` 8.7 캐비엇 5·8.9 (1)~(3)·§1 각주.
+**검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과), doc-check ERROR 0. 단위 끝 절차: 감사자 1패스(diff 범위) →
+`/code-review`(opus 서브에이전트 지정) — 그 결과는 **round3 새 파일**부터.
 

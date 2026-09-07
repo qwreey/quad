@@ -2392,3 +2392,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   목록 신설). **Q1은 열림** — 사용자 "입력 자리엔 마커 타입" 사고를 스파이크 `34`로 실측(읽기 전용 마커는 T 공변,
   전체형 값이 폭 서브타이핑으로 들어감; `typing-limits.md` 8.11), 결정은 생성 D에 대고 잰 뒤. 라운드 번호를 1부터
   새로(`post-implementation-review-round1.md`, Gemini = round2). 품질 제안은 앞으로 항목마다 문항 하나.
+
+- **`session/2026-09-07-02-state-marker-covariance.md`** — **Q1 결정 실행: 입력 자리의 State/Slot 팔을 공변
+  마커로.** 스파이크 `35`(생성 D 슬롯 모양) → quad-types `StateMarker`/`SlotMarker`(+`StateData`/`Slot`에 필드,
+  런타임 `__quadState`/`__quadSlot = true`, `__quad*Value`는 순수 팬텀) → `NewChild` 한 팔 → gen-d `PV`/`Field`/`Elem`
+  마커화(`PV73` 11팔 → 4팔, `SHF0` 소멸) → spec 양성·tmp 음성 아홉. 타입 검사 4.96s → 3.41s,
+  `LuauSolverConstraintLimit` 제거. 정본 `typing-limits.md` 8.11 규칙 표 + 배너 아홉. 원장 §16.

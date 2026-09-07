@@ -12,7 +12,6 @@
 	(quad-base fills its own registry — "base가 소유하는 핸들러").
 ]]
 
-local Void = require("../Void")
 local QuadTypes = require("../../luau_packages/quad_types")
 local ModifierModule = require("../Modifier")
 local NoneModule = require("./None")

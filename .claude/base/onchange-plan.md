@@ -98,8 +98,9 @@
 3. **클래스별 `<Class>OnChange` 유니언**(`{ Name: "Position", Callback:
    (UDim2) -> () } | …`)이 `D.<Class>`/`D.Mapper.<Class>`의 `E`에 합류
    (클래스당 별칭 `<Class>Elem = NewChild | <Class>OnChange |
-   State<<Class>OnChange> | { read __quadModifier: "<Class>" | … } |
-   <Class>RefMarker | State<<Class>RefMarker>` — 넷째 멤버는 **[2026-09-04 M7
+   StateMarker<<Class>OnChange> | { read __quadModifier: "<Class>" | … } |
+   <Class>RefMarker | StateMarker<<Class>RefMarker>` — State 팔 둘은 **[2026-09-07 마커]**
+   공변 `StateMarker`(옛 `State<…>` 전체형, `typing-limits.md` 8.11; 아래 캐비엇 (a)), 넷째 멤버는 **[2026-09-04 M7
    단위 ④]** 클래스 태그 마커(자기 + 조상 체인, `modifier-plan.md` 11절), 마지막
    둘은 **[2026-09-04 M8 단위 ③]** 반공변 팬텀 마커 `{ read __quadRefAccepts:
    (<Class>) -> () }`(`ref-plan.md` "children 자리의 타입" 절, round18 `H-321`),
@@ -107,7 +108,7 @@
    밖 이름**은 생성자 자리에서 거부된다(진단에 "too complex" 잡음이 함께 붙지만
    에러 자체는 난다).
 
-캐비엇 둘: (a) `State<T>`는 `Set` 파라미터 때문에 **불변**이라
+캐비엇 둘: (a) **[2026-09-07 마커 — 사용자 결정]** **닫힘** — `<Class>Elem`의 State 팔이 공변 마커 `StateMarker<FrameOnChange>`가 돼(`typing-limits.md` 8.11) 캐스트 없이 든다; 아래는 옛 서술. `State<T>`는 `Set` 파라미터 때문에 **불변**이라
 `q.Source(OnChange(...))`는 `State<FrameOnChange>`에 안 맞는다 — 클래스
 유니언으로 캐스트해 만든다(`q.Source(OnChange(...) :: FrameOnChange)`;
 반응형 자식 `q.Source(frame)` vs `State<Instance>`도 같은 규칙, 선행 한계).

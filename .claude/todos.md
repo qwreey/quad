@@ -25,9 +25,11 @@
      거부하던 것 — 재정규화·재생성; gen-d `check`·모듈 스코프 전역 게이트가 test.sh에; **Q21** 툴체인 핀·selene).
      **§15 사용자 회신 1차(2026-09-07 오후)** — Q2 (a) 반영(`NewChild`에 `Observer`/`EffectHandle`), Q3 ②③④⑤⑥⑦
      반영(`NotInstalled.luau`·`Dispatch.setEmpty`·`Reflection.luau`·`addProcessedHandler`·`assertMutable`·gen-d
-     소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보 목록), **Q1은 열림 — 사용자 사고 중**(마커 타입 방향, 스파이크
-     `luau-test/done/34` + `typing-limits.md` 8.11 실측; 다음 단계는 생성 D에 대고 재기). 라운드 번호 1부터(round2 = Gemini).
-     **남은 사용자 몫: Q1(사고), Q4~Q21, Q7 둘째·셋째.** 다음 순회는 §16·`H-431`부터, 품질 제안은 항목마다 문항 하나로.
+     소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보 목록). 라운드 번호 1부터(round2 = Gemini). **§16 회신 2차 — Q1
+     닫힘: 입력 자리의 State/Slot 팔을 공변 마커로**(`StateMarker`/`SlotMarker`, quad-types·gen-d·`NewChild`·spec; `PV73`
+     11팔 → 4팔, 타입 검사 4.96s → 3.41s, `LuauSolverConstraintLimit` 제거; `typing-limits.md` 8.11). **순수 팬텀 필드
+     `__quadStateValue`/`__quadSlotValue`(런타임 값 없음)는 메인 판단 — 사용자 사후 확인 대상.**
+     **남은 사용자 몫: Q4~Q21, Q7 둘째·셋째.** 다음 순회는 round3 새 파일·`H-431`부터, 품질 제안은 항목마다 문항 하나로.
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).

@@ -34,6 +34,7 @@ local function Init(module: any)
 	-- contract (`H-181`, spec.init test 2).
 	local Slot_mt = {}
 	Slot_mt.__index = Slot_mt
+	Slot_mt.__quadSlot = true -- `SlotMarker<T>` 브랜드 필드(H-300; 판정은 `Brand.isSlot`)
 
 	module:RunInit(InitDispatch) -- idempotent pull (`H-174` idiom; `H-358` — was the only Init relying on init.luau's order)
 	local Dispatch = module.Dispatch

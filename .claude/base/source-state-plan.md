@@ -1892,3 +1892,17 @@ Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실�
 - **이형 다중 trailing deps를 제네릭 팩 하나로 좁힐 수 있는지** — 위
   "trailing deps를 `fn`에 lazy positional 인자로도 노출" 절의 실측 항목
   (`luau-test`의 `15-...`, 현재 스파이크 재작성 필요 상태).
+
+## `StateMarker<T>` — 입력 자리의 State 타입 (2026-09-07, 사용자 결정)
+
+**결정**: `State<T>`는 `Set(T)`/`Get(): T` 때문에 새 솔버에서 **불변**이라 `State<Frame>`이
+`State<Instance>` 자리에, `State<number>`가 `State<number | UDim>` 자리에 못 들어갔다. 값을 *받는*
+자리(children·생성 D 슬롯·Modifier setter·Slot 요소·`AttributeSugar`·`Animate` 옵션)는 이제 읽기 전용
+팬텀 필드만 든 마커 `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }`를 요구하고,
+`StateData<T>` 자신이 그 두 필드를 가져 실제 State가 폭 서브타이핑으로 든다(공변). 메소드가 필요한
+자리(출력·`self`·`Peek` 반환·변환 함수 `old`)는 전체형 그대로. 사용자 논거(2026-09-07): *"'입력받는
+곳'에 대해서는 마커 필드와 내부 구조 T하나만 보존하는 마커 타입을 써도 되지 않나 … 구조적으로
+확장된 타입은 잘 받기 때문에 … 진짜 State<T>의 method 같은건 유저가 쓰는 부분에 있어서 들어갈 뿐"*.
+런타임은 `Impl.__quadState = true`(H-300 "타입이 약속하면 값에도"), `__quadStateValue`는 순수 팬텀 —
+**어떤 코드도 읽지 않는다**(판정은 `Brand.isState`). 실측·결과·규칙 표는 `typing-limits.md` 8.11,
+결정 경위는 `qa-request/post-implementation-review-round1.md` §16·`session/2026-09-07-02-state-marker-covariance.md`.
