@@ -106,6 +106,19 @@ do
 	end)
 	assert(not ok2, "branded value with no handler -> error")
 	assert(string.find(tostring(err2), "brand: Blocker", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
+	-- Q27 (2026-09-08): a PROVIDER brand is found by contract — the module-level `is<Brand>`
+	-- field is the registration (no Dispatch op); it is tried before the base list
+	local spring = setmetatable({}, {})
+	q.isSpring = function(v: any): boolean
+		return v == spring
+	end
+	q.isBroken = function(_v: any): boolean -- a helper that raises must not mask the diagnostic
+		error("not a brand predicate")
+	end
+	local ok3, err3 = pcall(function()
+		q.Dispatch.process(inst, "Size", spring, 1)
+	end)
+	assert(not ok3 and string.find(tostring(err3), "brand: Spring", 1, true) ~= nil, `provider brand named by contract: {tostring(err3)}`)
 	print("PASS")
 end
 

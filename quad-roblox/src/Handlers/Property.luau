@@ -31,7 +31,11 @@
 	  nil                            never processed here → first set SNAPS
 	                                 (even a Tween writes `Value` directly —
 	                                 no engine tween, no entry animation)
-	  true                           set before, no active engine tween
+	  true                           set before (plain value), no active engine tween
+	  { Value, Source }              [Q26 (a), 2026-09-08] a Tween SNAPPED here (first set) —
+	                                 no engine tween, but the Source is kept so the same
+	                                 Tween re-emitted (Animate Dedup) folds instead of
+	                                 starting a same→same engine tween
 	  { Tween = TweenBase, Value, Source }   an engine tween is running toward Value
 	                                (`Source` = the Tween object that produced it — Q12 identity
 	                                dedup; the field NAME is the implementer's, round3 §6)
@@ -126,9 +130,11 @@ local function install(quad: any)
 				return Void
 			end
 			if prev == nil then
-				-- branch 1: first set — snap, no animation even for a Tween value
+				-- branch 1: first set — snap, no animation even for a Tween value.
+				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value, Source }` (no
+				-- engine tween) so the identity dedup above already holds after the snap.
 				inst[k] = if tweenIn then v.Value else v
-				tweenSlots:SetStrong(inst, k, true)
+				tweenSlots:SetStrong(inst, k, if tweenIn then { Value = v.Value, Source = v } else true)
 				return Void
 			end
 			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
@@ -138,8 +144,10 @@ local function install(quad: any)
 			-- to. The slot is written before `Play` so a raise there leaves at most
 			-- an unplayed tween the slot knows about.
 			local engineTween = if tweenIn then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
-			if type(prev) == "table" then
+			if type(prev) == "table" and prev.Tween ~= nil then
 				-- branch 3: an engine tween is active — clean it up before the new value lands
+				-- (a snapped `{ Value, Source }` record has nothing to cancel and nothing to
+				-- Finish-snap to: the property already holds that value)
 				prev.Tween:Cancel()
 				if tweenIn and v.Override == "Finish" then
 					inst[k] = prev.Value -- Finish: snap to the previous target before continuing

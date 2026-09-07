@@ -104,6 +104,14 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이
 
 ### 3-상태 저장 — `{Tween, Value, Source} | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
 
+**[2026-09-08 Q26 (a), 사용자 결정 — 넷째 상태]** Tween 값의 **첫 스냅**은 `true`가 아니라
+`{ Value, Source }`(엔진 트윈 없음)를 남긴다 — `Animate`의 Dedup이 같은 Tween 객체를 되돌려 줄 때
+Q12의 신원 비교(`prev.Source == v`)가 첫 스냅 뒤에도 서서, "같은 값에서 같은 값으로" 가는 무의미한
+엔진 트윈 한 번이 사라진다. 분기 3의 취소·Finish 스냅은 `prev.Tween`이 있을 때만(스냅 기록엔 취소할
+것도 되돌릴 목표도 없다 — 프로퍼티가 이미 그 값). Q26이 함께 들었던 둘째 증상("None으로 껐다 같은
+Tween으로 켜면 아무것도 안 쓴다")은 Q33 (a)로 None이 nil 쓰기 경로를 타며 슬롯이 `true`로 내려가
+이미 사라졌다(round3 §12). plain 값의 첫 세팅은 그대로 `true`. spec은 `spec.tweenproperty` 8절.
+
 **[2026-09-06 구현됨 — M11 단위 ②, round19]** `Handlers/Property.luau`의 `process`가
 아래 분기 1~3 그대로다(슬롯은 install 스코프의 `quad.Relate()`, 키는 프로퍼티 이름).
 override 정책의 **주체는 들어오는 값의 `Override`**(`H-328` — 슬롯엔 정책이 없다;
@@ -441,9 +449,11 @@ roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Twe
 - **quad-types**: Tween이라는 이름이 없다. `FieldOut<X> = X | State<X> | None`만 두고 백엔드가
   `X = T | Tween<T>`를 넣는다(quad-roblox `types.luau` `FieldOut<T>`, 생성 D가 재별칭 — 전개형은
   이동 전과 같다).
-- **quad-base**: Tween을 모른다. 유일한 흔적은 `Dispatch/init.luau` `BRAND_PROBES`의 문자열
-  `"isTween"` — 진단 시점에 모듈에서 이름으로 찾는 목록이라 require 없이 프로바이더 설치분을
-  본다. 프로바이더가 자기 프로브를 등록하는 길은 round3 §4 **Q27**(열림).
+- **quad-base**: Tween을 모른다. **[2026-09-08 Q27 사용자 결정]** `BRAND_PROBES`의 `"isTween"`
+  문자열도 지웠다 — 프로바이더 브랜드의 계약은 **모듈 최상위 `is<Brand>` 필드**이고(`quad.isTween`),
+  무매치 진단은 모듈에서 그런 필드를 스캔해 base 목록보다 먼저 시도한다(등록 op 없음 — 사용자:
+  *"isXXX를 최상위에 넣는게 관행인데, 각 프로바이더/플러그인 상 그냥 필드로 넣는게 맞는 계약같아서,
+  Dispatch.addBrandProbe 같은게 필요한지는 의문임"*). `base/brand-plan.md` 구현 절.
 
 ~~- **quad-base**: `Tween.luau` — 값 타입(`Tween(opts)` 팩토리)만. 엔진 무관.
   **[2026-08-28]** `TweenBrand` 인스턴스와 `isTween` 술어는 다른 브랜드와 같이

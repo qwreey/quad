@@ -65,8 +65,13 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- Probed (cold path only) to name a value's brand in the match-failure
 -- message — there is deliberately no reverse lookup on Brand
 -- (`archive/brand-shared-registry-reversed.md`), so we ask the module's own
--- public predicates. Base predicates only; backend-added brands just fall
--- back to typeof.
+-- public predicates. Base predicates here, in order; provider brands are found
+-- by CONTRACT (round3 §4 Q27, user decision 2026-09-08): a provider installs its
+-- brand predicate as a top-level module field named `is<Brand>` (`isTween`,
+-- a future `isSpring`) — the `isX` convention IS the registration, no op on
+-- Dispatch (user: *"각 프로바이더/플러그인 상 그냥 필드로 넣는게 맞는 계약같아서"*).
+-- `brandNameOf` scans the module for such fields and tries them BEFORE this
+-- list (a provider value may also carry a base brand, never the reverse).
 -- Order is most-specific-first (`H-220`): `isRef` is a superset of
 -- `isPreRef`/`isPostRef` (`brand-plan.md` predicate composition) and
 -- `isState` of `isSource`, so subtypes must come before their union
@@ -77,12 +82,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- to typeof (the `type(predicate) == "function"` guard hides omissions).
 local BRAND_PROBES = {
 	"isMapperDescriptor", -- M5 Claim (핸드오버 리뷰 `H-346` — 체크리스트 0-b의 마지막 누락)
-	-- [2026-09-07] `Tween` moved to quad-roblox (with `isTween`); the probe is a NAME looked
-	-- up on the module at diagnostic time, so the provider-installed predicate is found
-	-- without base requiring anything. Base still spelling a backend name here is the
-	-- last trace of the old placement — provider-registered probes are round3 §4 Q27
-	-- (TODO(Q27); a future quad-spring brand would report `value: table` until then).
-	"isTween", -- M11 (round19 리뷰 — 빠지면 Tween이 `value: table`로 보고된다)
+	-- (`isTween` left this list 2026-09-08 — quad-roblox's brand, found by the contract above)
 	"isTag", -- M10 (2차 리뷰 `H-342` — 같은 결함 클래스 넷)
 	"isAttrKey", -- most-specific-first: 키 객체가 그룹보다 먼저
 	"isAttr",
@@ -126,7 +126,23 @@ local function Init(module: any)
 	local handlers: { Handler } = {} -- kept sorted, higher priority first
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
 
+	local BASE_PROBE = {} :: { [string]: true }
+	for _, probeName in BRAND_PROBES do
+		BASE_PROBE[probeName] = true
+	end
+
+	-- Diagnostics only (cold path): provider `is<Brand>` fields first, then the
+	-- ordered base list. A provider predicate is `pcall`ed — a non-brand `isX` helper
+	-- must not turn a match-failure diagnostic into its own raise.
 	local function brandNameOf(v: any): string?
+		for name, predicate in module do
+			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" then
+				local ok, hit = pcall(predicate, v)
+				if ok and hit == true then
+					return string.sub(name, 3) -- "isTween" -> "Tween"
+				end
+			end
+		end
 		for _, probeName in BRAND_PROBES do
 			local predicate = module[probeName]
 			if type(predicate) == "function" and (predicate :: (any) -> boolean)(v) then

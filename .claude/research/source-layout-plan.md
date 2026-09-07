@@ -285,8 +285,8 @@ Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attr = 엔진 개념"으
 하는거지. 이건 중요한게 quad-spring 같은 곳에서도 SpringBrand 를 만들려면 선재로 미리 처놔야하는
 것으로 보여"*. 반영: `QuadTypes.Brand`(런타임 값 + 타입), quad-base `Brand.luau`는 인스턴스·술어만,
 quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-plan.md` 구현 절 배너.
-남은 한 조각: base `BRAND_PROBES`가 여전히 `"isTween"` 문자열을 적어 둔다(진단 이름 조회) —
-프로바이더 등록 메커니즘은 새 표면이라 round3 §4 Q27.
+**[2026-09-08 닫힘]** 마지막 조각(base `BRAND_PROBES`의 `"isTween"`)도 지워졌다 — Q27 사용자 결정:
+등록 op 없이 모듈 최상위 `is<Brand>` 필드가 계약, 진단은 스캔(`base/dispatch-core-plan.md` 0-b).
 
 ### 10-2. `None`·`Tag`·`Attr`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 완료(2026-09-07 밤)**
 

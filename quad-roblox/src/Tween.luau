@@ -15,7 +15,8 @@
 	The pair is returned so RobloxFactory can carry it in the typed extension
 	(`RobloxExtension` — `q.Tween`/`q.isTween` through `UseProvider`'s `Self & P`);
 	the direct set is what the sibling installers and quad-base's diagnostic
-	brand probe (`Dispatch/init.luau` `BRAND_PROBES`, looked up by name) see.
+	brand probe see — `Dispatch/init.luau` scans the module for `is<Brand>`
+	fields (the provider-brand CONTRACT, round3 §4 Q27, 2026-09-08).
 	The constructor is per module instance because raises go through the
 	module's shared error namespace (`H-231`).
 

@@ -161,4 +161,25 @@ do
 end
 
 print()
+print("=== 8. Q26 (a) (2026-09-08) — 첫 스냅도 {Value, Source}: 같은 Tween 재발행은 엔진 트윈 0, 다른 Tween은 Create 1, plain은 여전히 true ===")
+do
+	mock.resetTweenLog()
+	local t1 = Tween({ Value = 10, Time = 0.3 })
+	local src = q.Source(t1 :: any)
+	local f = q.D.Frame({ Size = src }) :: any
+	assert(f.Size == 10 and #log == 0, "first set: snap, no engine tween")
+	src:Set(t1) -- Animate Dedup hands the same object back — before Q26 this made a same→same engine tween
+	assert(#log == 0, "same Tween re-emitted after the snap: folded (no Create)")
+	local t2 = Tween({ Value = 20, Time = 0.3 })
+	src:Set(t2)
+	assert(#log == 1 and lastTween().cancels == 0, "a different Tween after a snapped record: Create 1, nothing to cancel")
+	-- Finish against a snapped record has nothing to snap to (the property already holds Value)
+	mock.resetTweenLog()
+	local g = q.D.Frame({ Size = Tween({ Value = 1, Time = 0.1 }) }) :: any
+	g.Size = 5 -- external write
+	q.Dispatch.process(g, "Size", Tween({ Value = 9, Time = 0.1, Override = "Finish" }), 1)
+	assert(g.Size == 5 and #log == 1, "Finish over a snapped record: no re-snap of the old value, just the new Create")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
