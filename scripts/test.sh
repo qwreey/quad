@@ -12,8 +12,10 @@ fi
 fail=0
 # 생성 산출물 게이트(M5 단위 ②) — Parent 필드는 덤프 층에서 제외돼야 한다
 # (H-142/Q5 (a); CLI Luau엔 io가 없어 spec이 못 보므로 여기서 커밋 산출물을 직접 봄)
-if grep -q "	Parent:" quad-roblox/src/D/init.luau; then
-	echo "gen-d gate: Parent field leaked into generated D" >&2
+# [Q35 (a), 2026-09-08] the READ surface (`PropTypesRead`, OnChange only) carries Parent on purpose —
+# the gate looks at every other block (write surface: PropTypes / <Class>Param / Modifier setters)
+if awk '/^export type PropTypesRead = \{/{skip=1} skip && /^\}/{skip=0; next} !skip && /^\tParent:/{found=1} END{exit !found}' quad-roblox/src/D/init.luau; then
+	echo "gen-d gate: Parent field leaked into the generated WRITE surface" >&2
 	fail=1
 fi
 # [7순회 H-423] 커밋된 D == 새 emit(생성기의 SystemExit 게이트 전부 포함) — 손 편집·재생성 누락 차단

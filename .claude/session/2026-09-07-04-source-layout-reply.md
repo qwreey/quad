@@ -100,3 +100,7 @@ Gemini가 `README.md` 색인 행까지 직접 고쳐 놓았다(round5 항목) �
 생성기 `TWEENABLE`·`FieldP<T>`(D 31 클래스 재생성, `FieldOutP = QuadTypes.FieldOut<T>` 재별칭은 8.12 한도 무해 —
 타입 검사 통과). Q35 (a) `Parent` 읽기 표면. Q36은 열지 않음(사용자 재량 — `userdata` 계약). 시행착오: spec에서 mock
 트윈 로그 모양(`log[i].tween.cancels`)을 잘못 읽어 한 번 실패. test.sh exit 0(스펙 49), doc-check ERROR 0.
+
+**절차 오류.** 회신 5차 커밋을 `test.sh; …; git commit`으로 한 명령에 묶어 exit 1을 못 보고 커밋했다(원인은 `H-142`
+Parent 게이트가 Q35의 읽기 표면 `Parent`에 걸린 것 — 스펙은 49/49). 규약(exit code 판정)을 내가 적고 내가 어겼다 —
+커밋은 exit 확인 **다음 명령**으로. 후속 커밋에서 게이트를 `PropTypesRead` 블록 밖으로 좁히고 음성 프로브로 확인.
