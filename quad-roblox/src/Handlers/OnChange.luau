@@ -38,8 +38,9 @@
 	catches it statically first, D/init.luau).
 
 	Typing lives in the GENERATED file: `PropTypes` (property name → type
-	across the D scope), `OnChangeFn = <K>(name: K & keyof<PropTypes>,
-	fn: (index<PropTypes, K>) -> ()) -> …` — `RobloxExtension.OnChange`
+	across the D scope — the READ surface `PropTypesRead` since Q19, 2026-09-07),
+	`OnChangeFn = <K>(name: K & keyof<PropTypesRead>,
+	fn: (index<PropTypesRead, K>) -> ()) -> …` — `RobloxExtension.OnChange`
 	carries that type over this untyped runtime (luau-test `30`).
 ]]
 

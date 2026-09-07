@@ -70,7 +70,7 @@ Q3은 회신 1차에서 이미 닫힌 것을 다시 짚음(항목별 결과 §15
 | **Q9** | (b) — *"해당 좀비는 진짜 죽은게 맞음 … Instance 와 같은 동형으로 두어도 되는 부분. 메시지를 잘 정리하고 UB부분을 문서화만 하면"* | `Slot.luau` "already mounted" 셋·`dispose` 메시지에 "quad 밖에서 파괴됐으면 함께 죽은 것 — 미리 뽑아라" 문구; `slot-plan.md` "부수 효과" 문단 철회 + UB. `spec.slot` 24절 |
 | **Q10** | (c) — *"오용 표면을 막을 이유를 모르겠음. UB로 두어도 되는 부분"* | `module-lifecycle-plan.md`·`RobloxFactory.luau` 헤더 UB 문장 |
 | **Q11** | (a)+(c) — *"런타임 에러 추가가 무료급이고 … 문서도 같이"* | `Modifier.luau` `__index`에 문자열 키 게이트(+ `__index` SURFACE 태그 — 메타메소드 자체가 raise); `modifier-plan.md`; `spec.modifier` 14절 |
-| **Q12** | 사용자 설계 — *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로 리턴하여 dedup … Dedup: boolean 형태 하나"* | `Animate.luau` `sameTween` + `Dedup` 옵션(기본 true), `Property.luau` 슬롯에 `Source = v` + 같은 객체 재발행 skip, `types.luau` `AnimateInfo.Dedup`; `tween-plan.md`; `spec.tweenproperty` 7절(Dedup=false 재트리거 포함) |
+| **Q12** | 사용자 설계 — *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로 리턴하여 dedup … Dedup: boolean 형태 하나"* | `Animate.luau` `sameTween` + `Dedup` 옵션(기본 true), `Property.luau` 슬롯에 `Source = v`(필드 이름 `Source`는 메인이 붙인 것 — 사용자 사후 확인) + 같은 객체 재발행 skip, `types.luau` `AnimateInfo.Dedup`; `tween-plan.md`; `spec.tweenproperty` 7절(Dedup=false 재트리거 포함) |
 | **Q13** | (b) | `Bookkeeping.luau` `setOffsetSource` 게이트(Source \| None, nearest); `spec.lengthoffset` 12절 |
 | **Q14** | (a) — *"동의. a로 가도 돼"* | `destroySlotTree` 두 루프 `releaseOwner`; `slot-plan.md` C-4 면제 철회; `spec.slot` 24절 |
 | **Q15** | (a) | `setLength` 상수 도메인(비음수 정수, 등록 시) + State 값은 `contribution`에서(outermost); `dispatch-core-plan.md` 계약 줄; `spec.lengthoffset` 12절 |

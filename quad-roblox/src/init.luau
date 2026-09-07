@@ -42,7 +42,7 @@ export type PropTypes = DModule.PropTypes
 export type OnChangeFn = DModule.OnChangeFn
 -- M10: `OnChange(name, fn)` rides the same extension merge as `D` — the
 -- runtime (Handlers/OnChange.luau) is untyped, the GENERATED `OnChangeFn`
--- (name → callback parameter type via `index<PropTypes, K>`, luau-test `30`)
+-- (name → callback parameter type via `index<PropTypesRead, K>` — 읽기 표면, Q19; luau-test `30`)
 -- is what `q.OnChange` carries through `Self & P`
 export type AnimateInfo = Types.AnimateInfo
 export type AnimateFn = Types.AnimateFn

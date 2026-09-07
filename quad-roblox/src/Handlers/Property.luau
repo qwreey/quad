@@ -35,7 +35,9 @@
 	                                 (even a Tween writes `Value` directly —
 	                                 no engine tween, no entry animation)
 	  true                           set before, no active engine tween
-	  { Tween = TweenBase, Value }   an engine tween is running toward Value
+	  { Tween = TweenBase, Value, Source }   an engine tween is running toward Value
+	                                (`Source` = the Tween object that produced it — Q12 identity
+	                                dedup; the field NAME is the implementer's, round3 §6)
 	Order invariant: an active tween is cancelled BEFORE the new value is
 	written (the engine keeps writing the property asynchronously). The
 	override policy consulted is the INCOMING Tween's `Override` (`H-328`):

@@ -2394,6 +2394,7 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- `sourceList[i] is nil` error 몫. 부기를 하나라도 만지기 전에 검사한다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
     checkPosition("setLength", i) -- 위 게이트
+    if not isState(len) then checkLengthValue("setLength", len) end -- [2026-09-07 Q15 (a)] 비음수 정수; State 값은 contribution에서 읽을 때 검사
     anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)
@@ -2606,6 +2607,7 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 -- 이 함수는 "등록 + (채널이 있으면) 즉시 1회 발행"만 남는다.
 function Dispatch.setOffsetSource(ownerKey, i, source)
     checkPosition("setOffsetSource", i) -- [2026-09-01 H-256 (a)] 아래 검증 게이트 문단
+    if source ~= None and not isSource(source) then error(nearest) end -- [2026-09-07 Q13 (b)] Source | None만
     local bk = getBookkeeping(ownerKey)
     bk.sourceList[i] = source
     if source == None then

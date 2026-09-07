@@ -118,7 +118,7 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
   (첫 세팅).
 - **`true`** — 최소 한 번 세팅된 적 있음(직전 값이 plain이었든 `Tween<T>`
   였든 무관), 지금은 활성 엔진 Tween 없음.
-- **`{Tween: TweenBase, Value: T}` 테이블** — 지금 애니메이션이 진행 중, 새
+- **`{Tween: TweenBase, Value: T, Source: Tween<T>}` 테이블**(**[2026-09-07 Q12]** 셋째 필드 `Source`는 그 트윈을 만든 Tween 객체 — 같은 객체가 재발행되면 신원으로 접는다; 필드 이름은 메인이 붙임, round3 §6) — 지금 애니메이션이 진행 중, 새
   값을 처리하기 전에 먼저 정리해야 함. **2026-08-12 세션에서 정정**: 처음엔
   엔진 `TweenBase` 인스턴스 하나만 저장하면 된다고 봤으나, 아래 "확정:
   `Tween{...}` 최종 모양" 절의 `Tween.Finish` override 옵션(트윈을 목표값으로

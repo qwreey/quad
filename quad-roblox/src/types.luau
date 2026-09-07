@@ -123,7 +123,7 @@ export type NewChild =
 -- `OnChange(name, fn)` descriptor (M10, `base/onchange-plan.md` — array-part
 -- value since the 2026-09-03 reversal): frozen `{ Name, Callback }`,
 -- Handlers/OnChange.luau. This is the RUNTIME shape; the checked factory
--- type (`OnChangeFn`, name → callback parameter via `index<PropTypes, K>`)
+-- type (`OnChangeFn`, name → callback parameter via `index<PropTypesRead, K>` — 읽기 표면, Q19 2026-09-07)
 -- and the per-class descriptor unions are generated (src/D).
 export type OnChangeDescriptor = { read Name: string, read Callback: (any) -> () }
 

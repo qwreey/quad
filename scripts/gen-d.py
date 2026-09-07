@@ -258,7 +258,7 @@ def emit():
     L.append("\t`base/event-plan.md`); M5엔 타입이 먼저 왔다(ROADMAP M5 체크박스의 계약).")
     L.append("\tOnChange(M10, 2026-09-03 역전 — base/onchange-plan.md): 배열부 디스크립터.")
     L.append("\tPropTypes(스코프 전체 프로퍼티 이름 → 타입, 클래스 간 충돌 이름은 any) +")
-    L.append("\tOnChangeFn(`K & keyof<PropTypes>` / `index<PropTypes, K>` — 이름 오타·콜백")
+    L.append("\tOnChangeFn(`K & keyof<PropTypesRead>` / `index<PropTypesRead, K>` — 읽기 표면(Q19); 이름 오타·콜백")
     L.append("\t타입·무주석 추론까지, luau-test 30) + 클래스별 <Class>OnChange 유니언이 E에")
     L.append("\t합류(클래스 밖 이름은 생성자 자리에서 거부).")
     L.append("\tModifier(M7 단위 ③, round17): 클래스별 <Class>Modifier(필드 setter — 값은")

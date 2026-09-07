@@ -2729,9 +2729,10 @@ local function destroySlotTree(slot)
         return
     end
     for i, element in ipairs(slot._elements) do
-        -- [재정정, 2026-08-20 구현 전 QA 4라운드 `C-4`] 여기서 releaseOwner를
-        -- 명시적으로 부르지 **않는다** — 2026-08-13 감사가 넣었던 것을 되돌림.
-        -- 근거는 아래 "소유권 반납은 GC에 맡기면 안 됨" 절의 재정정 참고.
+        -- [2026-09-07 회신 3차 Q14 (a)] releaseOwner를 부른다 — C-4 면제(2026-08-20, "요소가
+        -- 어차피 죽는다")는 Owned=false 자식 Slot(언마운트만 하고 살아남는 위 분기)엔
+        -- 불성립이라 철회. `_detached` 루프도 같다. 파괴되는 요소엔 영향 없음(약참조 장부).
+        releaseOwner(element, slot)
         if isSlot(element) then
             destroySlotTree(element)   -- 재귀는 "파괴"에만, choreography 없음
         else
