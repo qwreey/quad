@@ -50,7 +50,7 @@ type MapperRoot = QuadTypes.MapperRoot
 -- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커
 -- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(State 팔 하나 — Q23 (a) 사용자 확정).
 export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None
-export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None -- 변환 함수 old(출력, 전체형 — State 팔 하나: 저장된 것의 상한, round3 Q23 (a))
+export type FieldOut<T> = QuadTypes.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 quad-types, Q23 (a)/Q24 후속)
 export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 
 type PV0 = boolean | TweenData<boolean> | StateMarker<boolean | Tween<boolean>> | None -- boolean
@@ -2075,7 +2075,7 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "CurrentDistance", Callback: (number) -> () }
 export type BillboardGuiModifier = {
 	read __quadModifier: "BillboardGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: BillboardGuiModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: BillboardGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: BillboardGuiModifier, ...any) -> any,
 	As: <T>(self: BillboardGuiModifier, name: string?) -> T, -- 무검사(11절)
@@ -2136,7 +2136,7 @@ export type CameraOnChange =
 	| 	{ Name: "ViewportSize", Callback: (Vector2) -> () }
 export type CameraModifier = {
 	read __quadModifier: "Camera", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: CameraModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: CameraModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: CameraModifier, ...any) -> any,
 	As: <T>(self: CameraModifier, name: string?) -> T, -- 무검사(11절)
@@ -2208,7 +2208,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type CanvasGroupModifier = {
 	read __quadModifier: "CanvasGroup", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: CanvasGroupModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: CanvasGroupModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: CanvasGroupModifier, ...any) -> any,
 	As: <T>(self: CanvasGroupModifier, name: string?) -> T, -- 무검사(11절)
@@ -2269,7 +2269,7 @@ export type FolderOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type FolderModifier = {
 	read __quadModifier: "Folder", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: FolderModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: FolderModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: FolderModifier, ...any) -> any,
 	As: <T>(self: FolderModifier, name: string?) -> T, -- 무검사(11절)
@@ -2329,7 +2329,7 @@ export type FrameOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type FrameModifier = {
 	read __quadModifier: "Frame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: FrameModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: FrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: FrameModifier, ...any) -> any,
 	As: <T>(self: FrameModifier, name: string?) -> T, -- 무검사(11절)
@@ -2383,7 +2383,7 @@ export type FrameMapperElem = FrameElem | MapperDescriptor
 
 export type GuiBaseModifier = {
 	read __quadModifier: "GuiBase", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: GuiBaseModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: GuiBaseModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: GuiBaseModifier, ...any) -> any,
 	As: <T>(self: GuiBaseModifier, name: string?) -> T, -- 무검사(11절)
@@ -2416,7 +2416,7 @@ export type IntoGuiBase = { AsGuiBase: (self: any) -> GuiBaseModifier }
 
 export type GuiBase2dModifier = {
 	read __quadModifier: "GuiBase2d", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: GuiBase2dModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: GuiBase2dModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: GuiBase2dModifier, ...any) -> any,
 	As: <T>(self: GuiBase2dModifier, name: string?) -> T, -- 무검사(11절)
@@ -2455,7 +2455,7 @@ export type IntoGuiBase2d = { AsGuiBase2d: (self: any) -> GuiBase2dModifier }
 
 export type GuiButtonModifier = {
 	read __quadModifier: "GuiButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: GuiButtonModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: GuiButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: GuiButtonModifier, ...any) -> any,
 	As: <T>(self: GuiButtonModifier, name: string?) -> T, -- 무검사(11절)
@@ -2513,7 +2513,7 @@ export type IntoGuiButton = { AsGuiButton: (self: any) -> GuiButtonModifier }
 
 export type GuiLabelModifier = {
 	read __quadModifier: "GuiLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: GuiLabelModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: GuiLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: GuiLabelModifier, ...any) -> any,
 	As: <T>(self: GuiLabelModifier, name: string?) -> T, -- 무검사(11절)
@@ -2565,7 +2565,7 @@ export type IntoGuiLabel = { AsGuiLabel: (self: any) -> GuiLabelModifier }
 
 export type GuiObjectModifier = {
 	read __quadModifier: "GuiObject", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: GuiObjectModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: GuiObjectModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: GuiObjectModifier, ...any) -> any,
 	As: <T>(self: GuiObjectModifier, name: string?) -> T, -- 무검사(11절)
@@ -2691,7 +2691,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 export type ImageButtonModifier = {
 	read __quadModifier: "ImageButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ImageButtonModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ImageButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ImageButtonModifier, ...any) -> any,
 	As: <T>(self: ImageButtonModifier, name: string?) -> T, -- 무검사(11절)
@@ -2819,7 +2819,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 export type ImageLabelModifier = {
 	read __quadModifier: "ImageLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ImageLabelModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ImageLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ImageLabelModifier, ...any) -> any,
 	As: <T>(self: ImageLabelModifier, name: string?) -> T, -- 무검사(11절)
@@ -2883,7 +2883,7 @@ export type ImageLabelMapperElem = ImageLabelElem | MapperDescriptor
 
 export type InstanceModifier = {
 	read __quadModifier: "Instance", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: InstanceModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: InstanceModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: InstanceModifier, ...any) -> any,
 	As: <T>(self: InstanceModifier, name: string?) -> T, -- 무검사(11절)
@@ -2943,7 +2943,7 @@ export type IntoInstance = { AsInstance: (self: any) -> InstanceModifier }
 
 export type LayerCollectorModifier = {
 	read __quadModifier: "LayerCollector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: LayerCollectorModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: LayerCollectorModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: LayerCollectorModifier, ...any) -> any,
 	As: <T>(self: LayerCollectorModifier, name: string?) -> T, -- 무검사(11절)
@@ -2971,7 +2971,7 @@ export type IntoLayerCollector = { AsLayerCollector: (self: any) -> LayerCollect
 
 export type ModelModifier = {
 	read __quadModifier: "Model", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ModelModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ModelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ModelModifier, ...any) -> any,
 	As: <T>(self: ModelModifier, name: string?) -> T, -- 무검사(11절)
@@ -2990,7 +2990,7 @@ export type IntoModel = { AsModel: (self: any) -> ModelModifier }
 
 export type PVInstanceModifier = {
 	read __quadModifier: "PVInstance", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: PVInstanceModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: PVInstanceModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: PVInstanceModifier, ...any) -> any,
 	As: <T>(self: PVInstanceModifier, name: string?) -> T, -- 무검사(11절)
@@ -3032,7 +3032,7 @@ export type ScreenGuiOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type ScreenGuiModifier = {
 	read __quadModifier: "ScreenGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ScreenGuiModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ScreenGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ScreenGuiModifier, ...any) -> any,
 	As: <T>(self: ScreenGuiModifier, name: string?) -> T, -- 무검사(11절)
@@ -3126,7 +3126,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type ScrollingFrameModifier = {
 	read __quadModifier: "ScrollingFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ScrollingFrameModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ScrollingFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ScrollingFrameModifier, ...any) -> any,
 	As: <T>(self: ScrollingFrameModifier, name: string?) -> T, -- 무검사(11절)
@@ -3229,7 +3229,7 @@ export type SurfaceGuiOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type SurfaceGuiModifier = {
 	read __quadModifier: "SurfaceGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: SurfaceGuiModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: SurfaceGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: SurfaceGuiModifier, ...any) -> any,
 	As: <T>(self: SurfaceGuiModifier, name: string?) -> T, -- 무검사(11절)
@@ -3269,7 +3269,7 @@ export type SurfaceGuiMapperElem = SurfaceGuiElem | MapperDescriptor
 
 export type SurfaceGuiBaseModifier = {
 	read __quadModifier: "SurfaceGuiBase", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: SurfaceGuiBaseModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: SurfaceGuiBaseModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: SurfaceGuiBaseModifier, ...any) -> any,
 	As: <T>(self: SurfaceGuiBaseModifier, name: string?) -> T, -- 무검사(11절)
@@ -3368,7 +3368,7 @@ export type TextBoxOnChange =
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextBoxModifier = {
 	read __quadModifier: "TextBox", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: TextBoxModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: TextBoxModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: TextBoxModifier, ...any) -> any,
 	As: <T>(self: TextBoxModifier, name: string?) -> T, -- 무검사(11절)
@@ -3515,7 +3515,7 @@ export type TextButtonOnChange =
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextButtonModifier = {
 	read __quadModifier: "TextButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: TextButtonModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: TextButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: TextButtonModifier, ...any) -> any,
 	As: <T>(self: TextButtonModifier, name: string?) -> T, -- 무검사(11절)
@@ -3654,7 +3654,7 @@ export type TextLabelOnChange =
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextLabelModifier = {
 	read __quadModifier: "TextLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: TextLabelModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: TextLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: TextLabelModifier, ...any) -> any,
 	As: <T>(self: TextLabelModifier, name: string?) -> T, -- 무검사(11절)
@@ -3733,7 +3733,7 @@ export type UIAspectRatioConstraintOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIAspectRatioConstraintModifier = {
 	read __quadModifier: "UIAspectRatioConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIAspectRatioConstraintModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIAspectRatioConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIAspectRatioConstraintModifier, ...any) -> any,
 	As: <T>(self: UIAspectRatioConstraintModifier, name: string?) -> T, -- 무검사(11절)
@@ -3753,7 +3753,7 @@ export type UIAspectRatioConstraintMapperElem = UIAspectRatioConstraintElem | Ma
 
 export type UIBaseModifier = {
 	read __quadModifier: "UIBase", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIBaseModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIBaseModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIBaseModifier, ...any) -> any,
 	As: <T>(self: UIBaseModifier, name: string?) -> T, -- 무검사(11절)
@@ -3786,7 +3786,7 @@ export type IntoUIBase = { AsUIBase: (self: any) -> UIBaseModifier }
 
 export type UIComponentModifier = {
 	read __quadModifier: "UIComponent", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIComponentModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIComponentModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIComponentModifier, ...any) -> any,
 	As: <T>(self: UIComponentModifier, name: string?) -> T, -- 무검사(11절)
@@ -3818,7 +3818,7 @@ export type IntoUIComponent = { AsUIComponent: (self: any) -> UIComponentModifie
 
 export type UIConstraintModifier = {
 	read __quadModifier: "UIConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIConstraintModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIConstraintModifier, ...any) -> any,
 	As: <T>(self: UIConstraintModifier, name: string?) -> T, -- 무검사(11절)
@@ -3846,7 +3846,7 @@ export type UICornerOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UICornerModifier = {
 	read __quadModifier: "UICorner", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UICornerModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UICornerModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UICornerModifier, ...any) -> any,
 	As: <T>(self: UICornerModifier, name: string?) -> T, -- 무검사(11절)
@@ -3896,7 +3896,7 @@ export type UIDragDetectorOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIDragDetectorModifier = {
 	read __quadModifier: "UIDragDetector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIDragDetectorModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIDragDetectorModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIDragDetectorModifier, ...any) -> any,
 	As: <T>(self: UIDragDetectorModifier, name: string?) -> T, -- 무검사(11절)
@@ -3945,7 +3945,7 @@ export type UIFlexItemOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIFlexItemModifier = {
 	read __quadModifier: "UIFlexItem", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIFlexItemModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIFlexItemModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIFlexItemModifier, ...any) -> any,
 	As: <T>(self: UIFlexItemModifier, name: string?) -> T, -- 무검사(11절)
@@ -3980,7 +3980,7 @@ export type UIGradientOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIGradientModifier = {
 	read __quadModifier: "UIGradient", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIGradientModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIGradientModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIGradientModifier, ...any) -> any,
 	As: <T>(self: UIGradientModifier, name: string?) -> T, -- 무검사(11절)
@@ -4022,7 +4022,7 @@ export type UIGridLayoutOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIGridLayoutModifier = {
 	read __quadModifier: "UIGridLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIGridLayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIGridLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIGridLayoutModifier, ...any) -> any,
 	As: <T>(self: UIGridLayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4047,7 +4047,7 @@ export type UIGridLayoutMapperElem = UIGridLayoutElem | MapperDescriptor
 
 export type UIGridStyleLayoutModifier = {
 	read __quadModifier: "UIGridStyleLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIGridStyleLayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIGridStyleLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIGridStyleLayoutModifier, ...any) -> any,
 	As: <T>(self: UIGridStyleLayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4069,7 +4069,7 @@ export type IntoUIGridStyleLayout = { AsUIGridStyleLayout: (self: any) -> UIGrid
 
 export type UILayoutModifier = {
 	read __quadModifier: "UILayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UILayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UILayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UILayoutModifier, ...any) -> any,
 	As: <T>(self: UILayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4104,7 +4104,7 @@ export type UIListLayoutOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIListLayoutModifier = {
 	read __quadModifier: "UIListLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIListLayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIListLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIListLayoutModifier, ...any) -> any,
 	As: <T>(self: UIListLayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4140,7 +4140,7 @@ export type UIPaddingOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIPaddingModifier = {
 	read __quadModifier: "UIPadding", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIPaddingModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIPaddingModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIPaddingModifier, ...any) -> any,
 	As: <T>(self: UIPaddingModifier, name: string?) -> T, -- 무검사(11절)
@@ -4182,7 +4182,7 @@ export type UIPageLayoutOnChange =
 	| 	{ Name: "CurrentPage", Callback: (GuiObject) -> () }
 export type UIPageLayoutModifier = {
 	read __quadModifier: "UIPageLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIPageLayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIPageLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIPageLayoutModifier, ...any) -> any,
 	As: <T>(self: UIPageLayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4219,7 +4219,7 @@ export type UIScaleOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIScaleModifier = {
 	read __quadModifier: "UIScale", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIScaleModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIScaleModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIScaleModifier, ...any) -> any,
 	As: <T>(self: UIScaleModifier, name: string?) -> T, -- 무검사(11절)
@@ -4252,7 +4252,7 @@ export type UIShadowOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIShadowModifier = {
 	read __quadModifier: "UIShadow", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIShadowModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIShadowModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIShadowModifier, ...any) -> any,
 	As: <T>(self: UIShadowModifier, name: string?) -> T, -- 무검사(11절)
@@ -4286,7 +4286,7 @@ export type UISizeConstraintOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UISizeConstraintModifier = {
 	read __quadModifier: "UISizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UISizeConstraintModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UISizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UISizeConstraintModifier, ...any) -> any,
 	As: <T>(self: UISizeConstraintModifier, name: string?) -> T, -- 무검사(11절)
@@ -4321,7 +4321,7 @@ export type UIStrokeOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIStrokeModifier = {
 	read __quadModifier: "UIStroke", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UIStrokeModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UIStrokeModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UIStrokeModifier, ...any) -> any,
 	As: <T>(self: UIStrokeModifier, name: string?) -> T, -- 무검사(11절)
@@ -4363,7 +4363,7 @@ export type UITableLayoutOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UITableLayoutModifier = {
 	read __quadModifier: "UITableLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UITableLayoutModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UITableLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UITableLayoutModifier, ...any) -> any,
 	As: <T>(self: UITableLayoutModifier, name: string?) -> T, -- 무검사(11절)
@@ -4396,7 +4396,7 @@ export type UITextSizeConstraintOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UITextSizeConstraintModifier = {
 	read __quadModifier: "UITextSizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: UITextSizeConstraintModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: UITextSizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: UITextSizeConstraintModifier, ...any) -> any,
 	As: <T>(self: UITextSizeConstraintModifier, name: string?) -> T, -- 무검사(11절)
@@ -4469,7 +4469,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "TimeLength", Callback: (number) -> () }
 export type VideoFrameModifier = {
 	read __quadModifier: "VideoFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: VideoFrameModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: VideoFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: VideoFrameModifier, ...any) -> any,
 	As: <T>(self: VideoFrameModifier, name: string?) -> T, -- 무검사(11절)
@@ -4579,7 +4579,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type ViewportFrameModifier = {
 	read __quadModifier: "ViewportFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: ViewportFrameModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: ViewportFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: ViewportFrameModifier, ...any) -> any,
 	As: <T>(self: ViewportFrameModifier, name: string?) -> T, -- 무검사(11절)
@@ -4648,7 +4648,7 @@ export type WorldModelOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type WorldModelModifier = {
 	read __quadModifier: "WorldModel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: WorldModelModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: WorldModelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: WorldModelModifier, ...any) -> any,
 	As: <T>(self: WorldModelModifier, name: string?) -> T, -- 무검사(11절)
@@ -4669,7 +4669,7 @@ export type WorldModelMapperElem = WorldModelElem | MapperDescriptor
 
 export type WorldRootModifier = {
 	read __quadModifier: "WorldRoot", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
-	Peek: <T>(self: WorldRootModifier, key: string) -> T | State<T> | None | nil,
+	Peek: <T>(self: WorldRootModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
 	Apply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)
 	Overridden: (self: WorldRootModifier, ...any) -> any,
 	As: <T>(self: WorldRootModifier, name: string?) -> T, -- 무검사(11절)

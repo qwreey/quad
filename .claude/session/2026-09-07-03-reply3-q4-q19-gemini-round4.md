@@ -45,3 +45,10 @@ Instance와 외부 Instance는 가를 수 없다(생성·Clone 직후 Parent nil
 Studio 실측 없이 메시지 하나가 둘을 말하게. Q21은 selene 폐기 + `luau` 0.734 핀(`mise install`이 이미 설치된 것을
 그대로 씀). Q22는 Java `Object`의 비유로 "타입을 아는 유저가 캐스트" — 캐비엇만. Q23은 State 팔 하나. Q24는
 `SlotItem`/`FieldOut`이 무엇을 하는지 먼저 설명해 달라 — 채팅에서 평문으로.
+
+## 7. Q24 (같은 날 밤)
+
+`SlotItem`/`FieldOut`이 무엇인지 평문으로 설명한 뒤 *"괜찮네. 확인했어"* — 넷 그대로 승인. 이어진 질문 *"FieldOut<T> 는
+그럼 Peek 에도 사용되는걸까?"*가 구멍을 하나 드러냈다: `Peek`은 옛 `T | State<T> | None | nil`이라 저장된 Tween이 T로
+보였다. 같은 "저장된 그대로" 값이므로 `FieldOut<T>?`로 통일하고, 별칭 정의를 quad-types로 올렸다(base `Modifier`와 생성
+`<Class>Modifier` 둘 다 같은 타입을 쓰게). 이로써 리뷰 문항 Q1~Q24가 전부 닫혔다.

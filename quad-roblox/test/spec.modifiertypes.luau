@@ -51,7 +51,7 @@ local function _neverCalled(custom: MaterialButtonModifier)
 	end)
 	local m2 = m:Size(size):Size(sizeTween) -- State 필드(4-1: 리터럴 State는 통째 교체) — 둘 다
 	-- Peek<<T>>: 호출부가 T를 명시(정본 9절), 반환은 raw 유니언 그대로
-	local peeked: UDim2 | State<UDim2> | None | nil = m2:Peek<<UDim2>>("Size")
+	local peeked: DModule.FieldOut<UDim2>? = m2:Peek<<UDim2>>("Size") -- Q24 후속: old와 같은 FieldOut(Tween 팔 포함)
 	-- Apply: 팩토리에 주석을 달면 그대로 타입드(any 인자 — 8.9절); 상위 클래스
 	-- 팩토리도 그냥 들어간다(Q5의 Boldify 요구)
 	local Boldify = function(mod: DModule.TextButtonModifier): DModule.TextButtonModifier

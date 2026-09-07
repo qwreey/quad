@@ -308,7 +308,7 @@ def emit():
     # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
     # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
     L.append("export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None")
-    L.append("export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None -- 변환 함수 old(출력, 전체형 — State 팔 하나: 저장된 것의 상한, round3 Q23 (a))")
+    L.append("export type FieldOut<T> = QuadTypes.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 quad-types, Q23 (a)/Q24 후속)")
     L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
     L.append("")
     names = sorted(classes.keys())
@@ -560,7 +560,7 @@ def emit():
         desc = descendants(node)
         L.append(f"export type {node}Modifier = {{")
         L.append(f'\tread __quadModifier: "{node}", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴')
-        L.append(f"\tPeek: <T>(self: {node}Modifier, key: string) -> T | State<T> | None | nil,")
+        L.append(f"\tPeek: <T>(self: {node}Modifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)")
         L.append("\tApply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)")
         L.append(f"\tOverridden: (self: {node}Modifier, ...any) -> any,")
         L.append(f"\tAs: <T>(self: {node}Modifier, name: string?) -> T, -- 무검사(11절)")

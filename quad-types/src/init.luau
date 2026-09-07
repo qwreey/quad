@@ -233,8 +233,10 @@ export type Modifier = {
 	-- 클래스명 문자열 — 그 리터럴은 생성/사용자 정의 `<Class>Modifier` 타입이
 	-- 각자 선언한다(단위 ④, 11절). 런타임 값에도 실제로 있다(Modifier.luau)
 	read __quadModifier: true,
-	-- 정본 9절 `:Peek<<T>>(key)` — `store:Of<<T>>`와 같은 명시 인스턴스화 관례
-	Peek: <T>(self: Modifier, key: string) -> T | State<T> | None | nil,
+	-- 정본 9절 `:Peek<<T>>(key)` — `store:Of<<T>>`와 같은 명시 인스턴스화 관례.
+	-- [2026-09-07 회신 4차 Q24 후속] 반환은 `FieldOut<T>?` — 변환 함수의 `old`와 같은 "저장된 그대로"
+	-- 값(옛 `T | State<T> | None | nil`엔 Tween 팔이 없어 저장된 Tween이 T로 보였다)
+	Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?,
 	-- ⚠️ self·factory 둘 다 `any`(typing-limits 8.9절): 자기 타입을 참조하는
 	-- 함수 필드가 유니언 멤버(`Tag`/`State`)의 같은 이름 메소드와 만나면 새
 	-- 솔버의 유니언 검사가 조용히 통과한다 — children 자리의 클래스 소속
@@ -262,6 +264,10 @@ export type ModifierConstructor = setmetatable<{
 -- 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`는 생성기가 클래스별
 -- `<Class>Elem`에 찍는다(조상 체인 — 상위 클래스 Modifier가 하위 자식 자리에 감)
 export type ModifierMarker = { read __quadModifier: true }
+-- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 D의 `Field<T>`)가
+-- 공유하는 출력 타입: 리터럴 | Tween | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
+-- State 팔 하나(`State<T | Tween<T>>` — 저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11).
+export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None
 
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep

@@ -166,12 +166,7 @@
 
 - **[2026-09-07] 핸드오버 전체 코드 리뷰 문항(round1 §4)** — Q1~Q21 **전부 닫힘**(회신 1~4차; 상태는 그 표의 각 행). 여기 남은 것 없음.
 
-- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항 — 남은 하나** — `qa-request/post-implementation-review-round3.md` §4가 소스.
-  Q22·Q23은 회신 4차로 닫힘. **Q24**(`H-437`) 회신 2차(마커) 승인 범위: 제가 정한 넷 — 별칭 이름 `SlotItem<T>`(Slot에서
-  꺼낸 값의 타입: 그대로의 요소 | 전체형 State | 전체형 Slot)와 `FieldOut<T>`(Modifier 변환 함수가 받는 `old`의 타입: 리터럴
-  | Tween | 전체형 State | None), children 유니언의 State 팔을 nil 포함 한 팔로 만든 모양, `LuauSolverConstraintLimit`
-  플래그 제거 — 그대로 승인할지(권고 (a)), 이름을 바꿀지. 사용자: *"SlotItem 과 FieldOut 이 하는 동작을 먼저 알려주길"* →
-  채팅 설명 뒤 답 대기.
+- **[2026-09-07] 구현 뒤 리뷰 round3 문항(Q22~Q24)** — **전부 닫힘**(회신 4차, round3 §7). 여기 남은 것 없음.
 
 - **[2026-09-07 신설] 소스 구조 재편 — 사용자 의견 여덟의 확인 결과** — `research/source-layout-plan.md`가
   소스(항목별 사실·이득·비용·권고). 답할 것: 1절 Slot 분할(권고 한다, Q9/Q14 뒤 별도 단위) / 2절 Tween(권고
