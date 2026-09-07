@@ -28,6 +28,7 @@ do
 	end)
 	assert(#calls == 1 and calls[1].target == s and calls[1].self == o and calls[1].from == nil, "install fire: (state, observer, nil)")
 	assert(quad.isObserver(o) and not quad.isState(o) and not quad.isEpoch(o), "brand")
+	assert((o :: any).__quadObserver == true, "ObserverMarker field readable (H-300, 2026-09-07 마커 전면화)")
 	assert((o :: any)._state == s, "observer holds its State strongly")
 	assert((s :: any)._subs[o] == true, "joined the subscriber set after the install fire")
 	assert((o :: any)._rerunRequired == false, "install fire lowered the hold flag")

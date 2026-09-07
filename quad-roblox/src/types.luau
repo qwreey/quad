@@ -145,16 +145,20 @@ export type NewChild =
 	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StoreBind 언랩 →
 	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
-	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.Tag | QuadTypes.Attribute | QuadTypes.Observer | QuadTypes.EffectHandle | QuadTypes.None)?>
+	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attribute/Observer/EffectHandle도 입력 자리는 마커
+	-- (`research/source-layout-plan.md` 10-2): 메소드가 든 전체형이 유니언에 앉을 이유가 없고(8.8·8.9의
+	-- 함수 필드 게이트가 그 때문), 타입 검사 예산도 준다(사용자: *"타입 체크 비용을 아끼기 위해 마커만
+	-- 두는것도 괜찮아보임"*). 실제 값은 폭 서브타이핑으로 든다(8.11).
+	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttributeMarker | QuadTypes.ObserverMarker | QuadTypes.EffectHandleMarker | QuadTypes.None)?>
 	| QuadTypes.None
-	| QuadTypes.Tag
-	| QuadTypes.Attribute
+	| QuadTypes.TagMarker
+	| QuadTypes.AttributeMarker
 	-- [2026-09-07 post-implementation review Q2 (a), 사용자 확정 "권고대로 둘 다 넣는거 동의"]
 	-- `state:Observer(fn)` / `Effect(fn)` handles in the children array — the leaf idiom
 	-- `source-state-plan.md` "`state:Observer(fn)`" 절·`effect-plan.md` canonised (leaf
 	-- handlers in `Observer.luau`/`Effect.luau`), missing from the M5 widening list (`H-355`).
-	| QuadTypes.Observer
-	| QuadTypes.EffectHandle
+	| QuadTypes.ObserverMarker
+	| QuadTypes.EffectHandleMarker
 	-- M7 단위 ③·④: Modifier는 MARKER로만 — 클래스별 `<Class>Modifier`를 유니언에
 	-- 직접 넣으면 큰 클래스의 캐스트 자리에서 "too complex"(2026-09-04 실측,
 	-- typing-limits 8.8절). 여기(`true`)는 무타입 base `Modifier()`의 명시 허용이고,

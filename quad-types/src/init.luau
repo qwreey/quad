@@ -24,6 +24,84 @@
 local TypeVersionCheck = require("./luau_packages/type_version_check")
 local QuadError = require("./luau_packages/quad_error")
 
+-- ── 마커·센티널 타입 ────────────────────────────────────────────────
+-- [2026-09-07 밤 사용자 결정 — 파일 재배치] 위쪽에 마커·센티널, 가운데 값·핸들 타입, 맨 아래 `Quad`
+-- 표면·`CheckedQuad`·런타임 값(`Brand` 팩토리·상수). 사용자: *"모든 마커 타입을 위쪽에 올려서 표현하고,
+-- 중간엔 구현타입만 넣고, 맨 아래 실제 Quad 익스포팅 타입을 넣는 구조로 단일 파일로 유지 … 단일 파일로
+-- 두는게 배포 상 ModuleScript 가 덜 들고, lsp 가 덜 힘들어 하기 때문"*. 마커는 "입력 자리"의 타입
+-- (typing-limits 8.11 — 값은 폭 서브타이핑으로 들어가고 T가 있으면 공변), 센티널은 신원 값의 조언층
+-- (`H-300` — 판정은 언제나 신원·브랜드). 각 마커의 런타임 대응(`Impl.__quadX = true`)은 그 타입 모듈이 진다.
+-- 순수 재배치(2026-09-07) — 아래 블록과 주석은 옮겨졌을 뿐 내용은 그대로다.
+
+-- 선언 스타일은 `.claude/base/typing-limits.md` §1②의 "데이터부/메소드부" 쪼개기 —
+-- 콜백 파라미터 무주석 추론이 사는 유일한 스타일(`audit/handtrace-round10-reference-impl/
+-- spikes/ty11_store_final.luau`가 최종형 실측). `Compute`의 `-> State<U>` 반환은 §1①의
+-- 알려진 한계라 **파생 State를 만드는 자리는 결과 타입을 명시 주석**할 것.
+-- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
+-- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
+-- ⭐ [2026-09-07 사용자 결정 — 공변/불변 문제] **마커 타입** `StateMarker<T>`: '입력받는
+-- 자리'(children 유니언, 생성 D 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
+-- 전체형 `State<T>` 대신 이 마커를 요구한다. 전체형은 `Set(T)`/`Get(): T`가 양쪽 위치라
+-- **불변**이어서 `State<number>`가 `State<number | UDim>` 자리에 못 들어갔고(`H-326`/`H-327`/
+-- `H-353` — 멤버별 팔 나열로 우회), 읽기 전용 팬텀 필드만 든 마커는 **T에 공변**이라 한 팔로
+-- 끝난다(`typing-limits.md` 8.11, `luau-test/done/34`·`35`). 실제 State 값은 폭 서브타이핑으로
+-- 들어가고 다른 T는 여전히 거부된다. 사용자 원문: *"'입력받는 곳'에 대해서는 마커 필드와 내부
+-- 구조 T하나만 보존하는 마커 타입을 써도 되지 않나 … 진짜 State<T>의 method 같은건 유저가 쓰는
+-- 부분에 있어서 들어갈 뿐"*. 메소드가 필요한 자리(출력·`self`·`Peek` 반환·변환 함수의 `old`)는
+-- 전체형 그대로. 런타임: `__quadState`는 `Impl.__quadState = true`(H-300 "타입이 약속하면
+-- 값에도"), `__quadStateValue`는 **순수 팬텀**(런타임엔 없다 — T 값을 들고 있을 수 없어서;
+-- `__quadRefAccepts`의 `Void`와 같은 층의 조언 필드, 읽는 코드가 없어야 한다). 사용자 확정(2026-09-07):
+-- 순수 팬텀 허용, 값을 둘 수 있고 싸면 두는 것도 좋다.
+export type StateMarker<T> = { read __quadState: true, read __quadStateValue: T }
+
+export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
+
+-- 값 모양은 `base/tag-plan.md` "값 모양" / `base/attribute-plan.md` "채택안"
+-- 절이 정본. 생성자들은 콜러블 네임스페이스(호출 = 생성, 필드 = 합성)라
+-- `setmetatable<A, B>` 표기로 선언한다(`H10-3`/`H10-4` (d) — 교집합은
+-- 무거주라 값 캐스트·제네릭 흐름이 깨진다, typing-limits 8.6절). `AttributeKey`는
+-- [2026-09-03 사용자 확정] 제네릭 자체가 폐기된 무타입 프리미티브다(값 타입은
+-- 배열부 슈가 `AttributeSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
+-- 파라미터 값 좁힘 미실측" 항목은 닫혔다(typing-limits §3).
+-- [2026-09-07 사용자 결정 — `research/source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
+-- `TagNames` = 문자열 | 다른 Tag(마커 — 입력 자리, 8.11) | 그것들의 plain 리스트(중첩 허용).
+-- 리스트 인덱서가 `read`인 이유: 가변 `{T}`는 T에 불변이라 `{ tag, "x" }` 리터럴(`{Tag | string}`)을
+-- 거부한다(스파이크 2026-09-07). 해시 테이블은 인덱서 타입을 통과하므로(인덱서 없는 테이블은
+-- 인덱서 타입의 서브타입) 런타임 `flattenInto`가 잡는다. `H-389`의 `...string` 생성자를 되돌림.
+export type TagMarker = { read __quadTag: true }
+export type TagNames = string | { read [number]: TagNames } | TagMarker
+
+export type AttributeMarker = { read __quadAttribute: true }
+
+export type ObserverMarker = { read __quadObserver: true }
+
+export type EffectHandleMarker = { read __quadEffect: true }
+
+-- children 유니언용 마커 타입 — 무타입 base Modifier의 것(`true`). 클래스 태그
+-- 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`는 생성기가 클래스별
+-- `<Class>Elem`에 찍는다(조상 체인 — 상위 클래스 Modifier가 하위 자식 자리에 감)
+export type ModifierMarker = { read __quadModifier: true }
+
+-- 센티널 둘 — `None`과 같은 신원 값(재export). 판정은 `v == Detach` 신원
+-- 비교이고 마커 필드는 타입 좁힘용 조언층일 뿐(`H6-16` (a), 2026-09-03 사용자
+-- 확정 — `None`의 `__quadNone`과 같은 모양, `H-300`). 신원 비교로는 좁혀지지
+-- 않는다(truthiness 좁힘만) — 사용자 `Item` 쪽엔 캐스트가 남을 수 있음.
+export type Detach = { read __quadDetach: true }
+export type KeyGone = { read __quadKeyGone: true }
+
+-- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
+-- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
+-- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
+-- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
+-- 이벤트·children)이 None을 실을 수 있게 한다.
+export type None = { read __quadNone: true }
+
+-- `Claim`의 매퍼 디스크립터/루트 센티널(M5 단위 ④, `claim-plan.md` §2·§7-1).
+-- None과 같은 이중 구조 — 타입은 마커 필드(조언층), 런타임 판별은 브랜드
+-- (`isMapperDescriptor`)·신원(`MapperRoot`).
+export type MapperDescriptor = { read _mapper: true }
+export type MapperRoot = { read __quadMapperRoot: true }
+
 -- 에러 네임스페이스(`H-231` — quad-error는 상태 없는 생성자, 태그 맵은
 -- quad-base가 만든 단일 네임스페이스에 산다. 사본 분리 문제의 해법 — 사용자
 -- 설계 "quad-base에 errorNamespace 같은 무언가가 있어야 하고 error util이
@@ -83,26 +161,6 @@ export type PreRef<T> = Ref<T> & { read __quadPreRef: true }
 export type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 -- ── 반응형 코어(M2 단위 2) ────────────────────────────────────────────
--- 선언 스타일은 `.claude/base/typing-limits.md` §1②의 "데이터부/메소드부" 쪼개기 —
--- 콜백 파라미터 무주석 추론이 사는 유일한 스타일(`audit/handtrace-round10-reference-impl/
--- spikes/ty11_store_final.luau`가 최종형 실측). `Compute`의 `-> State<U>` 반환은 §1①의
--- 알려진 한계라 **파생 State를 만드는 자리는 결과 타입을 명시 주석**할 것.
--- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
--- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
--- ⭐ [2026-09-07 사용자 결정 — 공변/불변 문제] **마커 타입** `StateMarker<T>`: '입력받는
--- 자리'(children 유니언, 생성 D 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
--- 전체형 `State<T>` 대신 이 마커를 요구한다. 전체형은 `Set(T)`/`Get(): T`가 양쪽 위치라
--- **불변**이어서 `State<number>`가 `State<number | UDim>` 자리에 못 들어갔고(`H-326`/`H-327`/
--- `H-353` — 멤버별 팔 나열로 우회), 읽기 전용 팬텀 필드만 든 마커는 **T에 공변**이라 한 팔로
--- 끝난다(`typing-limits.md` 8.11, `luau-test/done/34`·`35`). 실제 State 값은 폭 서브타이핑으로
--- 들어가고 다른 T는 여전히 거부된다. 사용자 원문: *"'입력받는 곳'에 대해서는 마커 필드와 내부
--- 구조 T하나만 보존하는 마커 타입을 써도 되지 않나 … 진짜 State<T>의 method 같은건 유저가 쓰는
--- 부분에 있어서 들어갈 뿐"*. 메소드가 필요한 자리(출력·`self`·`Peek` 반환·변환 함수의 `old`)는
--- 전체형 그대로. 런타임: `__quadState`는 `Impl.__quadState = true`(H-300 "타입이 약속하면
--- 값에도"), `__quadStateValue`는 **순수 팬텀**(런타임엔 없다 — T 값을 들고 있을 수 없어서;
--- `__quadRefAccepts`의 `Void`와 같은 층의 조언 필드, 읽는 코드가 없어야 한다). 사용자 확정(2026-09-07):
--- 순수 팬텀 허용, 값을 둘 수 있고 싸면 두는 것도 좋다.
-export type StateMarker<T> = { read __quadState: true, read __quadStateValue: T }
 export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
 
 -- 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 구현이 붙였고
@@ -111,6 +169,7 @@ export type StateData<T> = { read __quadState: true, read __quadStateValue: T, G
 -- `fn(targetState, self, emitFrom?)`: 3번째가 출처(`Epoch` | 집합), 설치·캐치업 발화는 `nil`.
 -- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.
 export type Observer = {
+	read __quadObserver: true, -- 런타임 `Impl.__quadObserver = true`(H-300; 입력 자리는 `ObserverMarker`)
 	Subscribed: boolean,
 	Subscribe: (self: Observer) -> Observer,
 	WeakSubscribe: (self: Observer) -> Observer,
@@ -122,6 +181,7 @@ export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom
 -- `EffectHandle` — `Effect(fn, ...deps)`의 핸들(`effect-plan.md`). `fn(self) -> ...cleanup`.
 -- 네 진입점은 Observer와 같은 이름·같은 게이트이되 **본문은 자기 것**(`H-144`).
 export type EffectHandle = {
+	read __quadEffect: true, -- 런타임 `Impl.__quadEffect = true`(H-300; 입력 자리는 `EffectHandleMarker`)
 	Subscribed: boolean,
 	Rerun: (self: EffectHandle) -> EffectHandle,
 	Subscribe: (self: EffectHandle) -> EffectHandle,
@@ -152,20 +212,6 @@ export type Blocker = {
 }
 
 -- ── Tag / Attribute (M10, round16 spike) ─────────────────────────────
--- 값 모양은 `base/tag-plan.md` "값 모양" / `base/attribute-plan.md` "채택안"
--- 절이 정본. 생성자들은 콜러블 네임스페이스(호출 = 생성, 필드 = 합성)라
--- `setmetatable<A, B>` 표기로 선언한다(`H10-3`/`H10-4` (d) — 교집합은
--- 무거주라 값 캐스트·제네릭 흐름이 깨진다, typing-limits 8.6절). `AttributeKey`는
--- [2026-09-03 사용자 확정] 제네릭 자체가 폐기된 무타입 프리미티브다(값 타입은
--- 배열부 슈가 `AttributeSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
--- 파라미터 값 좁힘 미실측" 항목은 닫혔다(typing-limits §3).
--- [2026-09-07 사용자 결정 — `research/source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
--- `TagNames` = 문자열 | 다른 Tag(마커 — 입력 자리, 8.11) | 그것들의 plain 리스트(중첩 허용).
--- 리스트 인덱서가 `read`인 이유: 가변 `{T}`는 T에 불변이라 `{ tag, "x" }` 리터럴(`{Tag | string}`)을
--- 거부한다(스파이크 2026-09-07). 해시 테이블은 인덱서 타입을 통과하므로(인덱서 없는 테이블은
--- 인덱서 타입의 서브타입) 런타임 `flattenInto`가 잡는다. `H-389`의 `...string` 생성자를 되돌림.
-export type TagMarker = { read __quadTag: true }
-export type TagNames = string | { read [number]: TagNames } | TagMarker
 export type Tag = {
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
 	Added: (self: Tag, names: TagNames) -> Tag,
@@ -184,7 +230,10 @@ export type TagConstructor = setmetatable<{ Merged: (...TagMarker) -> Tag }, { _
 -- 것이고 웹 백엔드는 다른 이름·모양(`Transition`)을 가질 것이라 공개 표면을 공유할 이득이
 -- 없다(`base/tween-plan.md` "패키지 경계" 절). quad-types엔 Tween이라는 이름이 없다.
 
-export type Attribute = { NameMap: (self: Attribute) -> { [string]: any } }
+export type Attribute = {
+	read __quadAttribute: true, -- 런타임 `AttrImpl.__quadAttribute = true`(H-300; 입력 자리는 `AttributeMarker`)
+	NameMap: (self: Attribute) -> { [string]: any },
+}
 export type AttributeConstructor = setmetatable<{
 	Merged: (...Attribute) -> Attribute,
 	Overridden: (...Attribute) -> Attribute,
@@ -234,10 +283,6 @@ export type ModifierConstructor = setmetatable<{
 	TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T,
 	DefineSubtype: (parent: string, subtype: string) -> (),
 }, { __call: (self: any, ...(Modifier | { [string]: any })) -> Modifier }>
--- children 유니언용 마커 타입 — 무타입 base Modifier의 것(`true`). 클래스 태그
--- 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`는 생성기가 클래스별
--- `<Class>Elem`에 찍는다(조상 체인 — 상위 클래스 Modifier가 하위 자식 자리에 감)
-export type ModifierMarker = { read __quadModifier: true }
 -- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 D의 `Field<T>`)가
 -- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
 -- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
@@ -358,7 +403,6 @@ export type Store<T> = T & {
 -- 원래 값"이라 전체형 `SlotItem<T>` — 같은 값의 두 역할이라 별칭이 둘이다.
 export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
 export type SlotItem<T> = T | State<T> | Slot<T>
-export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 export type SlotListOpts = { Owned: boolean? }
 -- `updateFn(item, index, offset, prev, userdata) -> (result, userdata)`: `result`는
 -- 요소 | nil/None(파괴) | Detach(홀드). `item`엔 `KeyGone` 센티널도 온다.
@@ -395,12 +439,8 @@ export type Slot<T> = {
 		opts: SlotListOpts?
 	) -> Slot<T>,
 }
--- 센티널 둘 — `None`과 같은 신원 값(재export). 판정은 `v == Detach` 신원
--- 비교이고 마커 필드는 타입 좁힘용 조언층일 뿐(`H6-16` (a), 2026-09-03 사용자
--- 확정 — `None`의 `__quadNone`과 같은 모양, `H-300`). 신원 비교로는 좁혀지지
--- 않는다(truthiness 좁힘만) — 사용자 `Item` 쪽엔 캐스트가 남을 수 있음.
-export type Detach = { read __quadDetach: true }
-export type KeyGone = { read __quadKeyGone: true }
+
+-- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────
 
 export type Quad = {
 	Version: "0.0.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
@@ -557,20 +597,9 @@ export type Quad = {
 	-- AddPlugin 체이닝 등 뒤이은 제네릭 연산이 전부 안전하게 동작함
 	```
 ]]
--- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
--- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
--- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
--- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
--- 이벤트·children)이 None을 실을 수 있게 한다.
-export type None = { read __quadNone: true }
-
--- `Claim`의 매퍼 디스크립터/루트 센티널(M5 단위 ④, `claim-plan.md` §2·§7-1).
--- None과 같은 이중 구조 — 타입은 마커 필드(조언층), 런타임 판별은 브랜드
--- (`isMapperDescriptor`)·신원(`MapperRoot`).
-export type MapperDescriptor = { read _mapper: true }
-export type MapperRoot = { read __quadMapperRoot: true }
-
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
+
+
 
 -- ── `Brand` — 인스턴스 브랜드 팩토리(`base/brand-plan.md` "구현 — 인스턴스 브랜드" 절, as-is) ──
 -- [2026-09-07 사용자 결정] quad-base `Brand.luau`에서 여기로 — 팩토리만이다. 브랜드 인스턴스와

@@ -924,6 +924,16 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 
 ## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
+**⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker
+구조로 가도 될것 같아"*, `research/source-layout-plan.md` 10-2]** 마커 가족이 T 없는 값 타입으로도 넓어졌다 —
+`TagMarker`/`AttributeMarker`/`ObserverMarker`/`EffectHandleMarker`(`None`은 처음부터 마커, `H-300`). 규칙은
+같다: 입력 자리(`NewChild`의 직접 팔과 `StateMarker<…>` 안의 팔, Tag `names` 자리의 `TagNames`, `Tag.Merged`)는
+마커, 출력·`self`는 전체형, 런타임 값은 `Impl.__quadX = true`로 필드를 실제로 갖는다(`__index`, 무비용). 이득:
+메소드가 든 전체형이 유니언에 앉지 않으니 8.8/8.9의 함수 필드 게이트가 닿을 멤버가 줄고 검사 예산도 준다
+(사용자: *"타입 체크 비용을 아끼기 위해 마커만 두는것도 괜찮아보임"*). 필드·별칭 이름은 기존 `__quad<Type>`/
+`<Type>Marker` 패턴을 따른 메인 작명(사후 확인). quad-types 파일은 같은 날 "마커·센티널 위 / 값·핸들 타입 가운데 /
+`Quad` 표면 아래"로 순수 재배치됐다(10-3).
+
 **⭐ [2026-09-07 적용 — 사용자 결정 *"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*, 원장
 `qa-request/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **승인의 범위(round3 Q24)**: 사용자가
 승인한 것은 **방향**(입력 자리 = 마커 + T)과 **순수 팬텀 허용**이고, 별칭 이름(`SlotItem`·`FieldOut`)·`NewChild` 팔 모양·

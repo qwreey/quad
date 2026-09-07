@@ -28,6 +28,7 @@ do
 		assert(quad.isEffect(self), "fn receives the handle")
 	end, s, r, s) -- duplicate dep is ignored
 	assert(runs == 1, "installed once on creation, before any binding (force)")
+	assert((e :: any).__quadEffect == true, "EffectHandleMarker field readable (H-300, 2026-09-07 마커 전면화)")
 	assert(quad.isEffect(e) and not quad.isObserver(e), "brand")
 	local depCount = 0
 	for _ in pairs((e :: any)._deps) do

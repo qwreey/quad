@@ -60,6 +60,11 @@ local function createImpl(module: any)
 
 	local Impl = {}
 	Impl.__index = Impl
+	-- `EffectHandleMarker` (quad-types) — the type promises the marker, so the value carries it
+	-- (`H-300`); read through `__index`, zero per-instance slots. Identity stays the brand —
+	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
+	-- Attribute/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
+	Impl.__quadEffect = true
 
 	-- ── local helpers, declared before their callers ─────────────────
 	local function isRunning(self: any): boolean -- predicate only; the raise stays in each body (nearest-SURFACE walker)

@@ -253,7 +253,7 @@ Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attribute = 엔진 개�
    `README`. **상태는 이 줄을 갱신할 것.**
 5. 이동 뒤 순회 1회(직전 수정분 회귀 관측이 규칙이므로).
 6. **[추가]** 10절의 후속 제안 — Brand→quad-types(완료, 3번과 같은 커밋), 마커 전면화 +
-   quad-types 재배치(단위 하나), D 정적 굽기(리서치 — 사용자 문항).
+   quad-types 재배치(**완료**, 한 커밋), D 정적 굽기(리서치 — 사용자 문항).
 
 ## 10. 후속 제안 넷 — 사용자 회신(2026-09-07 밤)의 "+" 항목
 
@@ -269,7 +269,7 @@ quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-p
 남은 한 조각: base `BRAND_PROBES`가 여전히 `"isTween"` 문자열을 적어 둔다(진단 이름 조회) —
 프로바이더 등록 메커니즘은 새 표면이라 round3 §4 Q27.
 
-### 10-2. `None`·`Tag`·`Attribute`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 예정**
+### 10-2. `None`·`Tag`·`Attribute`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 완료(2026-09-07 밤)**
 
 사용자: *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
 사실: `None`은 이미 마커(`__quadNone`, `H-300`), `Tag`는 3절 반영에서 `__quadTag`를 얻었다. 남은 셋은
@@ -278,7 +278,7 @@ quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-p
 그리고 입력 자리(`NewChild`와 그 안의 `StateMarker<…>` 팔, gen-d의 8.9 게이트 수확 목록)를 마커로
 바꾸는 것. 필드·별칭 이름은 기존 `__quad<Type>`/`<Type>Marker` 패턴을 따른 메인 작명 — 사후 확인.
 
-### 10-3. quad-types 단일 파일 재배치 — **채택, 반영 예정(10-2와 같은 단위)**
+### 10-3. quad-types 단일 파일 재배치 — **채택, 반영 완료(10-2와 같은 커밋 — 순수 재배치, 줄 다중집합 diff 0 + 절 머리 주석 9줄)**
 
 사용자: *"quad-types 도 다듬을 필요가 있어보임 — 사람이 보기에 복잡하고, 부분 부분 검토해보기 어려운
 구조임 … 모든 마커 타입을 위쪽에 올려서 표현하고, 중간엔 구현타입만 넣고, 맨 아래 실제 Quad 익스포팅

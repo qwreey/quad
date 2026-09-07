@@ -74,6 +74,7 @@ do
 	assert(not pcall(function() q.NumberAttribute("", 5) end), "sugar: empty attribute name rejected")
 	-- positive control — raw + State + None still flow
 	local ok = q.Attribute({ A = 1, B = q.Source("x"), C = q.None })
+	assert((ok :: any).__quadAttribute == true, "AttributeMarker field readable (H-300, 2026-09-07 마커 전면화)")
 	assert(ok:NameMap().A == 1, "raw/State/None values are untouched")
 end
 
