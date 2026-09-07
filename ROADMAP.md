@@ -8,7 +8,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 신설 이후의 히스토리 blockquote 전부)은 **2026-09-07 사용자 결정으로 원문 그대로
 > `.claude/archive/v2-initial-implementation/roadmap.md`로 이동**했다 — 마일스톤별 규약·발견
 > 원장(`mN-implementation-roundNN(-brief).md`, pre-implementation 라운드 1~10)도 같은 폴더.
-> 구현 뒤 코드 리뷰(순회) 원장은 `.claude/qa-request/post-implementation-review.md`.
+> 구현 뒤 코드 리뷰(순회) 원장은 `.claude/qa-request/post-implementation-review-round1.md`.
 > 남은 것은 아래 "특정 마일스톤에 안 묶이고 병행 가능"·"백로그" 절뿐(착수 순서는 사용자와).
 
 ## 완료된 마일스톤 (요약 표 — 본문은 archive)
@@ -39,6 +39,16 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       — 2026-08-11 재구조화 세션 참고)
 
 ## 백로그 (스코프 밖 — 필요성이 실제로 드러나면 그때 설계)
+
+- [ ] **[2026-09-07 신설, 사용자 결정] 최적화 후보 목록 — 관측된 병목이 없어 보류한 것을 쌓아두는 자리**(사용자:
+      *"당장은 더 치명적인 문제들이 있는지 확인해보자. 물론 보는 김에 최적화 할 대상을 쌓아둬도 좋아"*, 원장
+      `qa-request/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
+      - `Slot:List` 재정렬 O(N²)(N=1000에 19.6ms 벤치)·reconcile마다 `table.clone(prevKeys)`·`prepareElements` 전체
+        재스캔(Q3 ①). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런
+        상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해"* — 리서치 목록에만.
+      - `Slot:Clear`/`ExtractAll` 요소마다 recompute·native op(게이트 없음), `ExtractAll`의 역순 `table.insert` O(n²)
+        (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
+      - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,

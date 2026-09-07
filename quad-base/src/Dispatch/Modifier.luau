@@ -22,17 +22,8 @@ local ProcessedModifier = ModifierModule.ProcessedModifier
 local module = {}
 
 function module.register(dispatch: QuadTypes.Dispatch)
-	dispatch.addHandler({
-		name = "ProcessedModifierHandler",
-		isHandlable = function(_inst: any, _k: any, v: any): boolean
-			return v == ProcessedModifier
-		end,
-		priority = dispatch.HANDLER_PRIORITY_HIGH, -- "매우 높음, ProcessedPreRefHandler와 동급"
-		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			NoneModule.registerEmptySlot(dispatch, inst, k, inst) -- offsetSource → length 0 (`H-35`)
-			return Void
-		end,
-	})
+	-- the shared nop-terminal factory (`None.luau`, Q3 ⑤) — same body as the Processed*Ref pair
+	NoneModule.addProcessedHandler(dispatch, "ProcessedModifierHandler", ProcessedModifier)
 end
 
 return module

@@ -37,27 +37,18 @@
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
+local Reflection = require("../Reflection")
 
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	local Void = quad.Void
 
 	-- className -> { [eventName]: true } (inherited included — one Reflection
-	-- call per class, cached for the module's lifetime)
-	local eventsOf: { [string]: { [string]: boolean } } = {}
-
-	local function isEventOf(className: string, key: string): boolean
-		local set = eventsOf[className]
-		if set == nil then
-			set = {}
-			local descriptors = game:GetService("ReflectionService"):GetEventsOfClass(className)
-			for _, d in descriptors :: { any } do
-				set[d.Name] = true
-			end
-			eventsOf[className] = set
-		end
-		return set[key] == true
-	end
+	-- call per class, cached for the module's lifetime; `Reflection.luau`
+	-- memoizer, Q3 ④). `game` is read HERE (the getfenv shim seam, header).
+	local isEventOf = Reflection.memberSet(function(className: string): { any }
+		return game:GetService("ReflectionService"):GetEventsOfClass(className)
+	end)
 
 	dispatch.addHandler({
 		name = "Event",

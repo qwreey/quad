@@ -704,6 +704,11 @@ local function Init(module: any)
 		if self._listed then Err.errorBeforeNearest("Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
 		self._crudUsed = true
 	end
+	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded)
+	local function assertMutable(self: any)
+		assertLive(self)
+		assertManual(self)
+	end
 
 	-- checkIndex: fail-fast, no clamping (CRUD table "에러 조건"). `allowEnd`
 	-- admits n+1 (an insertion position — Add/Splice); otherwise 1..n.
@@ -769,13 +774,13 @@ local function Init(module: any)
 	end
 
 	function Slot_mt.Add(self: any, element: any, index: number?): number
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
 		return rawAdd(self, prepareElements(self, "Slot:Add", 1, element)[1], index)
 	end
 
 	function Slot_mt.Remove(self: any, index: number)
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, index, "Slot:Remove")
 		rawRemove(self, index)
 	end
@@ -783,7 +788,7 @@ local function Init(module: any)
 	-- Replace: same position, new occupant, old one DESTROYED — Extract's
 	-- destroy twin (`B-5`). Public Replace always destroys (`destroyOld = true`).
 	function Slot_mt.Replace(self: any, index: number, newElement: any)
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, index, "Slot:Replace")
 		local prepared = prepareElements(self, "Slot:Replace", 1, newElement)
 		rawReplace(self, index, prepared[1], true)
@@ -793,7 +798,7 @@ local function Init(module: any)
 	-- tail is pulled in (O(n)); with it the position is swapped in place
 	-- (O(1)). Returns the previous element, unwrapped.
 	function Slot_mt.Extract(self: any, index: number, newElement: any?): any
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, index, "Slot:Extract")
 		local old = self._elements[index]
 		if newElement ~= nil then
@@ -809,7 +814,7 @@ local function Init(module: any)
 	-- insertion in its place, one recompute. `index` ranges like Add (1..n+1);
 	-- `removeCount` must fit what is actually there — no clamping.
 	function Slot_mt.Splice(self: any, index: number, removeCount: number, ...: any): { any }
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, index, "Slot:Splice", true)
 		if type(removeCount) ~= "number" or removeCount < 0 or removeCount % 1 ~= 0
 			or index + removeCount - 1 > #self._elements then
@@ -827,14 +832,14 @@ local function Init(module: any)
 	-- Roblox (`nativeMove`/`nativeSwap` are no-ops there). void by design:
 	-- the caller already knows the positions.
 	function Slot_mt.Move(self: any, oldIndex: number, newIndex: number)
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, oldIndex, "Slot:Move")
 		checkIndex(self, newIndex, "Slot:Move")
 		rawMove(self, oldIndex, newIndex)
 	end
 
 	function Slot_mt.Swap(self: any, indexA: number, indexB: number)
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		checkIndex(self, indexA, "Slot:Swap")
 		checkIndex(self, indexB, "Slot:Swap")
 		rawSwap(self, indexA, indexB) -- Swap(i, i) is a no-op inside
@@ -852,14 +857,14 @@ local function Init(module: any)
 	end
 
 	function Slot_mt.Clear(self: any)
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		for i = #self._elements, 1, -1 do
 			rawRemove(self, i)
 		end
 	end
 
 	function Slot_mt.ExtractAll(self: any): { any }
-		assertLive(self); assertManual(self)
+		assertMutable(self)
 		local out = {}
 		for i = #self._elements, 1, -1 do
 			table.insert(out, 1, unwrapElement(self._elements[i]))

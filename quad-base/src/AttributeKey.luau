@@ -34,6 +34,7 @@ local Brand = require("./Brand")
 local Relate = require("./Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local NotInstalled = require("./NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local AttributeKeyBrand = Brand.AttributeKeyBrand
@@ -71,19 +72,9 @@ local module = {
 	_newUncachedKey = newKeyObject, -- group delegation only (private)
 }
 
+-- the loud stub factory (`NotInstalled.luau` — one body for the three modules, Q3 ②)
 local function notInstalled(name: string): (...any) -> ...any
-	local stub = function(...: any)
-		-- errorBefore (outermost), not Nearest: these stubs are reached from
-		-- dispatch depth (handler process), so the nearest tagged frame is the
-		-- stub itself and Nearest would blame quad internals (`H-272` reasoning)
-		Err.errorBefore(
-			`quad: {name} is not available — no backend has installed the attribute op `
-				.. "(install a provider with quad:UseProvider — a bare Quad.New() has none)",
-			SURFACE
-		)
-	end
-	Err.setFuncLevel(stub, SURFACE)
-	return stub
+	return NotInstalled(name, "the attribute op")
 end
 
 local InitDispatch = require("./Dispatch")

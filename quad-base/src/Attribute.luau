@@ -42,7 +42,6 @@
 ]]
 
 local Brand = require("./Brand")
-local NoneModule = require("./Dispatch/None")
 local Relate = require("./Relate")
 local AttributeKeyModule = require("./AttributeKey")
 local QuadTypes = require("../luau_packages/quad_types")
@@ -226,7 +225,7 @@ local function Init(quad: any)
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal bookkeeping — the group contributes no element
-			NoneModule.registerEmptySlot(dispatch, inst, k, inst) -- `H-39` (리뷰 — 한 본문, `None.luau`)
+			dispatch.setEmpty(inst, k, inst) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			-- `H-41`: position claim FIRST — the same group's second position
 			-- must be rejected before any name claim is half-recorded

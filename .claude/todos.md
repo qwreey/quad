@@ -11,7 +11,7 @@
    (`mN-implementation-roundNN(-brief).md`, round11~21 + pre-implementation 1~10 + 옛 ROADMAP
    본문 `roadmap.md`). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
    **지금 사용자 몫**(답을 주면 반영한다):
-   - **[2026-09-07]** `qa-request/post-implementation-review.md` §4 Q1~Q17(핸드오버 전체
+   - **[2026-09-07]** `qa-request/post-implementation-review-round1.md` §4 Q1~Q17(핸드오버 전체
      코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
      재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
      `Animate` nil/None 통과 팔·**Q9** 부모 Destroy 뒤 Slot 좀비(유일한 동작 결함 문항)·**Q10**
@@ -23,8 +23,12 @@
      pre-pass·`getOffsetAt` 범위 에러 복원 등; **Q18~Q20·Q7 셋째** 추가), §13 Gemini 검증(`H-417`~`H-419`),
      §14 7순회 `H-420`~`H-430`(**HIGH** 생성기 `ContentId`→`Content` 오매핑으로 `Image` 등 10슬롯이 문자열을
      거부하던 것 — 재정규화·재생성; gen-d `check`·모듈 스코프 전역 게이트가 test.sh에; **Q21** 툴체인 핀·selene).
-     다음은 §15부터.
-   - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-gemini-review.md`, G-01~G-09·S-01~S-06)는
+     **§15 사용자 회신 1차(2026-09-07 오후)** — Q2 (a) 반영(`NewChild`에 `Observer`/`EffectHandle`), Q3 ②③④⑤⑥⑦
+     반영(`NotInstalled.luau`·`Dispatch.setEmpty`·`Reflection.luau`·`addProcessedHandler`·`assertMutable`·gen-d
+     소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보 목록), **Q1은 열림 — 사용자 사고 중**(마커 타입 방향, 스파이크
+     `luau-test/done/34` + `typing-limits.md` 8.11 실측; 다음 단계는 생성 D에 대고 재기). 라운드 번호 1부터(round2 = Gemini).
+     **남은 사용자 몫: Q1(사고), Q4~Q21, Q7 둘째·셋째.** 다음 순회는 §16·`H-431`부터, 품질 제안은 항목마다 문항 하나로.
+   - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).
    - **[2026-09-07]** 소스 구조 재편 문항 여덟 — `research/source-layout-plan.md`(`question.md` 2절). 답이

@@ -311,6 +311,9 @@ export type Dispatch = {
 	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
 	setLength: (ownerKey: any, i: number, len: number | State<number>, anchor: any?, element: any?) -> (),
 	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
+	-- 그 해제 쌍을 한 본문으로(setOffsetSource(None) → setLength(0, anchor)) — 말단
+	-- nop/leaf 핸들러의 "빈 자리 등록"(post-implementation review Q3 ③, 2026-09-07)
+	setEmpty: (ownerKey: any, i: number, anchor: any?) -> (),
 	getOffsetAt: (ownerKey: any, at: number) -> number,
 	getBlocker: (ownerKey: any) -> Blocker,
 	getBookkeeping: (ownerKey: any) -> any,

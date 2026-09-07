@@ -370,6 +370,7 @@ local function Init(module: any)
 		drive = drive,
 		setLength = bookkeeping.setLength,
 		setOffsetSource = bookkeeping.setOffsetSource,
+		setEmpty = bookkeeping.setEmpty,
 		getOffsetAt = bookkeeping.getOffsetAt,
 		getBlocker = bookkeeping.getBlocker,
 		getBookkeeping = bookkeeping.getBookkeeping,

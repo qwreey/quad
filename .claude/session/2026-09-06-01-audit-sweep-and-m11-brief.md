@@ -185,7 +185,7 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
 - **재실행 결과**: R3 5건 → R2 3건 → R1 4건(핵심 불변식 정본 일치, 전부 LOW). 메인이 직접
   실측으로 가른 것: `H-353`(유니언 PV가 State를 거부 — luau-lsp 재현 후 생성기 정정),
   Attribute "누수"(순수 Luau 약참조 키 테이블도 동일 32 B/cycle, 주기 GC면 0 — 기각),
-  `H-354`(strict Slot 생성 관용구는 캐스트뿐). 원장 `qa-request/post-implementation-review.md`
+  `H-354`(strict Slot 생성 관용구는 캐스트뿐). 원장 `qa-request/post-implementation-review-round1.md`
   `H-344`~`H-356`, CLI 49/49.
 - 교훈(규약 후보는 아님 — 한 번 관측): 백그라운드 리뷰가 많이 떠 있을 때 `/compact`는 위험하다.
   결과가 필요한 리뷰는 끝난 뒤 compact하거나, 최소한 트랜스크립트가 남는다는 걸 알고 추출로
@@ -238,11 +238,11 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   `H-395` 같은-inst 이중 바인드 메시지, `H-396`/메시지 둘/`H-397`(diff 회귀 넷 포함), 문서 여섯; ② Q13~Q17 +
   Q7 둘째(`_assertBindable` 방향 — 4순회 `H-384`가 재진입 가드 규약과 충돌, 정본에 보류 배너). 원장 §11, 여덟 번째
   커밋. 이어서 문서 재편(사용자 결정: 끝난 라운드 44개 + ROADMAP M0~M11 → `archive/v2-initial-implementation/`,
-  원장 → `qa-request/post-implementation-review.md`).
+  원장 → `qa-request/post-implementation-review-round1.md`).
 - **사용자 지시·실측 셋**: `H-403` `isSlot`을 Brand로(*"다른것과 일치하게"*), `H-404` 전역 `function` 슈거 실측 →
   test.sh에 `GlobalUsedAsLocal` 게이트(전수 대조 0건), 그 검증 중 `H-405` — 4순회부터 다섯 커밋 동안 test.sh exit 1을
   "ALL PASS" 개수로 가린 메인 절차 오류(conventions 명문화). **문서 재편**(사용자 결정: 44개 + ROADMAP 본문 →
-  `archive/v2-initial-implementation/`, 원장 → `post-implementation-review.md`, 커밋 `707af80`).
+  `archive/v2-initial-implementation/`, 원장 → `post-implementation-review-round1.md`, 커밋 `707af80`).
 - **6순회**(파인더 6·검증자 2 opus, 포크가 F6 대기로 두 번 중간 종료 → 재개): ① `H-406` Property 트윈 분기의
   Cancel-뒤-Create raise(Create 선행·슬롯 선기록), `H-407` SlotHandler 파괴 값 pre-pass, `H-408` `H-397` 회귀(nearest가
   형제 표면 경유로 내부 blame + C-6 진단 가로챔 → outermost·두 원인 문구·`bk.N`), `H-409`~`H-412`, 메시지 셋, 재편

@@ -34,7 +34,6 @@
 ]]
 
 local Brand = require("./Brand")
-local NoneModule = require("./Dispatch/None")
 local ImplRegistry = require("./ImplRegistry")
 local Err = require("./ErrorNamespace")
 local Relate = require("./Relate")
@@ -229,7 +228,7 @@ local function registerDispatchHandlers(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — this
 			-- leaf contributes no physical element, so the pair is None/0.
-			NoneModule.registerEmptySlot(dispatch, inst, k) -- `H-39` (리뷰 — 한 본문, `None.luau`)
+			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
 			if old ~= v then

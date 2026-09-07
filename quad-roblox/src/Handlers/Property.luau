@@ -54,6 +54,7 @@
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
+local Reflection = require("../Reflection")
 
 local function install(quad: any)
 	local dispatch = quad.Dispatch
@@ -92,27 +93,17 @@ local function install(quad: any)
 	end
 
 	-- className -> { [propName]: true } (inherited included — one Reflection
-	-- call per class, cached for the module's lifetime)
-	local propsOf: { [string]: { [string]: boolean } } = {}
-
-	local function isPropertyOf(className: string, key: string): boolean
-		local set = propsOf[className]
-		if set == nil then
-			set = {}
-			local descriptors = game:GetService("ReflectionService"):GetPropertiesOfClass(className)
-			for _, d in descriptors :: { any } do
-				-- `H-302`(리뷰 발견, `H-297` (a)의 런타임판): 쓰기 표면만 매치 —
-				-- 읽기 전용(AbsoluteSize 등)은 `Permits.Write` 키 자체가 없다
-				-- (Studio 실측 2026-09-02). 걸러두지 않으면 대입이 h.process
-				-- 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착된다.
-				if d.Permits ~= nil and d.Permits.Write ~= nil then
-					set[d.Name] = true
-				end
-			end
-			propsOf[className] = set
-		end
-		return set[key] == true
-	end
+	-- call per class, cached for the module's lifetime; `Reflection.luau`
+	-- memoizer, Q3 ④). `game` is read HERE (the getfenv shim seam, header).
+	local isPropertyOf = Reflection.memberSet(function(className: string): { any }
+		return game:GetService("ReflectionService"):GetPropertiesOfClass(className)
+	end, function(d: any): boolean
+		-- `H-302`(리뷰 발견, `H-297` (a)의 런타임판): 쓰기 표면만 매치 —
+		-- 읽기 전용(AbsoluteSize 등)은 `Permits.Write` 키 자체가 없다
+		-- (Studio 실측 2026-09-02). 걸러두지 않으면 대입이 h.process
+		-- 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착된다.
+		return d.Permits ~= nil and d.Permits.Write ~= nil
+	end)
 
 	dispatch.addHandler({
 		name = "Property",

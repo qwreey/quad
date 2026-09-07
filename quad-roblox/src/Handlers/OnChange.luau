@@ -73,7 +73,6 @@ end
 
 local function install(quad: any)
 	local dispatch = quad.Dispatch
-	local None = quad.None
 	if errNS == nil then
 		errNS = quad.errorNamespace
 		errNS.setFuncLevel(OnChange, SURFACE) -- `H-238`: public factory tagged
@@ -87,8 +86,7 @@ local function install(quad: any)
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal — no physical element, so the pair is None/0
-			dispatch.setOffsetSource(inst, k, None)
-			dispatch.setLength(inst, k, 0, inst)
+			dispatch.setEmpty(inst, k, inst)
 
 			local name = v.Name
 			local callback = v.Callback :: (any) -> ()

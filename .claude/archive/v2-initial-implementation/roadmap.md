@@ -4,7 +4,7 @@
 원문 그대로 옮겨온 것(체크박스·배너·`H-nnn` 표시 전부 그때 상태). 진행 상태의 소스는 더 이상
 이 파일이 아니다 — 남은 작업(병행 항목·백로그)은 루트 `ROADMAP.md`, 각 마일스톤의 규약·원장은
 같은 폴더의 `mN-implementation-roundNN(-brief).md`, 구현 뒤 리뷰 원장은
-`qa-request/post-implementation-review.md`. 히스토리 문서라 절 인용·시한부 검사 면제(`doc-check.py`).
+`qa-request/post-implementation-review-round1.md`. 히스토리 문서라 절 인용·시한부 검사 면제(`doc-check.py`).
 
 ## M0 — 스켈레톤 + 기술검증 (스파이크, "진짜" 마일스톤 아님)
 

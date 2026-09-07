@@ -1,4 +1,4 @@
-# 핸드오버 전체 코드 리뷰 원장 — 2026-09-07 (`H-344`~`H-356`)
+# 구현 뒤 코드 리뷰 원장 round1 — 2026-09-07 (`H-344`~`H-430`, 순회 0~7 + 사용자 회신)
 
 > **이 파일이 무엇인가**: 마일스톤 M0~M11 완료 뒤 핸드오버 시점에 돌린 **전체 코드
 > 리뷰**(마일스톤 단위 원장이 아니라 코퍼스 전체 — 그래서 `mN-implementation-roundNN`
@@ -14,6 +14,13 @@
 > R1~R3·`/code-review high`를 **다시** 띄웠다. 아래 표는 둘을 합친 것 — "출처" 열의
 > `구R*`/`구A*`는 중단분 추출, `R*`는 재실행분. 중단분의 실측 로그(`tmp.*`/`zz_probe*`
 > 스크래치)는 판정 근거로만 쓰고 삭제했다(측정치는 표에 전사).
+>
+> **[2026-09-07 사용자 결정 — 라운드 번호]** 구현 뒤 리뷰는 **round1부터 새로 센다**(사용자: *"post 리뷰들도
+> 라운드 분리하고 싶은데, round1 부터 다시 시작해서 라운드좀 붙여줄래? gemini 쪽은 round2 로 하면 될듯"*).
+> 이 파일이 **round1**(옛 이름 post-implementation-review.md — 순회 0~7 §5~§14 + 사용자 회신 §15), Gemini 외부
+> 리뷰 원문·판정이 **round2**(`post-implementation-review-round2.md`, 옛 post-implementation-gemini-review.md;
+> 메인 판정 표는 이 파일 §13), 다음 리뷰 묶음부터 post-implementation-review-round3.md 새 파일(문항 표 §4는
+> 이 파일이 소스로 남고 새 파일은 가리킨다).
 
 ## §1 반영한 것 (갈래 ① — 이 커밋)
 
@@ -55,9 +62,9 @@
 
 | 문항 | 무엇 | 선택지 | 권고 |
 |---|---|---|---|
-| **Q1** (`H-351` 후속) | `NewChild`에 `State<Slot<Instance>>` 팔도 넣을지 — 런타임은 StoreBind 언랩으로 도착하고 `isHandlable`이 `isSlot`만 보므로 동작은 이미 된다. 타입만의 문제 | (a) 넣는다(`State<Slot<Instance>>` 한 팔 — `State<X>` 불변이라 그 글자 그대로만) / (b) 안 넣는다(`State<Slot>`은 slot-plan의 "교체는 언마운트" 의미론이 있는 드문 관용구 — 필요가 관측되면) | **(b)** — 관측된 필요 없음, 팔 하나가 "too complex" 예산을 먹는다 |
-| **Q2** (R3-3, **`H-355`**) | children 유니언에 `Observer`/`EffectHandle`도 없다 — `state:Observer(fn)`을 children에 놓는 관용구는 `source-state-plan.md`가 정본화했고 leaf 핸들러가 받는데 strict는 거부 | (a) 둘 다 넣는다 / (b) `Observer`만 / (c) 안 넣는다 | **(a)** — 정본화된 관용구가 strict에서 막히는 건 `H-351`과 같은 모양. 다만 M5 확장 목록에 이름이 없었으니 사용자 확인 |
-| **Q3** (구 앵글 Efficiency/Simplification/Reuse/Altitude, **`H-356`**) | 코드 품질 제안 묶음 — 결함이 아니라 판단 대상이라 반영 안 함: ① `Slot:List` 재정렬 O(N²)(N=1000에 19.6ms 실측)·reconcile마다 `table.clone(prevKeys)`·`prepareElements` 전체 재스캔 / ② `notInstalled` 스텁 팩토리가 `Tag.luau`·`AttributeKey.luau`에 바이트 동일 / ③ `registerEmptySlot` 관용구를 quad-roblox `OnChange`·`InstanceChild`가 패키지 경계 때문에 인라인 복제(`None.luau` 주석은 `OnChange`만 승인) / ④ `Property.luau`·`Event.luau`의 Reflection 캐시 손코딩 중복 / ⑤ `Dispatch/Modifier.luau`가 `Ref.luau`의 `addProcessed` 팩토리를 안 쓰고 세 번째 사본 / ⑥ Slot CRUD 9곳 `assertLive; assertManual` 복붙 / ⑦ `gen-d.py`의 `reserved`·`union_member_functions`·`SHORTHAND` 목록이 런타임 소스(`Modifier.luau`·`types.luau`·`InstanceShorthand.luau`)를 안 읽고 손 복제 / ⑧ `drive`의 배치 Blocker 검사(§2 마지막 행) | 항목별 (a) 반영 / (b) 보류 | ①은 **(b)**("관측된 병목에만" — 실측이 벤치지 실사용이 아님), ②③⑤⑥은 **(a)** 후보(본문 공유가 아니라 데이터·순수 헬퍼 공유라 "하나가 두 일" 위반 아님)지만 리뷰 제안이라 사용자 결정, ④는 `H-302`가 갈라 둔 자리라 **(b)**, ⑦은 **(a)**(조용히 어긋나는 손 복제 — `SHORTHAND`는 `InstanceShorthand.luau` `TABLE`에서 읽게), ⑧ **(b)** |
+| **Q1** (`H-351` 후속) | `NewChild`에 `State<Slot<Instance>>` 팔도 넣을지 — 런타임은 StoreBind 언랩으로 도착하고 `isHandlable`이 `isSlot`만 보므로 동작은 이미 된다. 타입만의 문제 | (a) 넣는다(`State<Slot<Instance>>` 한 팔 — `State<X>` 불변이라 그 글자 그대로만) / (b) 안 넣는다(`State<Slot>`은 slot-plan의 "교체는 언마운트" 의미론이 있는 드문 관용구 — 필요가 관측되면) | **(b)** — 관측된 필요 없음, 팔 하나가 "too complex" 예산을 먹는다. **[2026-09-07 회신] 열림 — 사용자 사고 중**(`State<Instance \| Slot<Instance>>` 하나로 끝나지 않나 / 입력 자리엔 마커 타입) → 스파이크 `luau-test/done/34`·메인 의견 **§15** |
+| **Q2** (R3-3, **`H-355`**) | children 유니언에 `Observer`/`EffectHandle`도 없다 — `state:Observer(fn)`을 children에 놓는 관용구는 `source-state-plan.md`가 정본화했고 leaf 핸들러가 받는데 strict는 거부 | (a) 둘 다 넣는다 / (b) `Observer`만 / (c) 안 넣는다 | **(a)** — 정본화된 관용구가 strict에서 막히는 건 `H-351`과 같은 모양. 다만 M5 확장 목록에 이름이 없었으니 사용자 확인. **[2026-09-07 회신] (a) 확정**(*"권고대로 둘 다 넣는거 동의"*) — 반영 §15 |
+| **Q3** (구 앵글 Efficiency/Simplification/Reuse/Altitude, **`H-356`**) | 코드 품질 제안 묶음 — 결함이 아니라 판단 대상이라 반영 안 함: ① `Slot:List` 재정렬 O(N²)(N=1000에 19.6ms 실측)·reconcile마다 `table.clone(prevKeys)`·`prepareElements` 전체 재스캔 / ② `notInstalled` 스텁 팩토리가 `Tag.luau`·`AttributeKey.luau`에 바이트 동일 / ③ `registerEmptySlot` 관용구를 quad-roblox `OnChange`·`InstanceChild`가 패키지 경계 때문에 인라인 복제(`None.luau` 주석은 `OnChange`만 승인) / ④ `Property.luau`·`Event.luau`의 Reflection 캐시 손코딩 중복 / ⑤ `Dispatch/Modifier.luau`가 `Ref.luau`의 `addProcessed` 팩토리를 안 쓰고 세 번째 사본 / ⑥ Slot CRUD 9곳 `assertLive; assertManual` 복붙 / ⑦ `gen-d.py`의 `reserved`·`union_member_functions`·`SHORTHAND` 목록이 런타임 소스(`Modifier.luau`·`types.luau`·`InstanceShorthand.luau`)를 안 읽고 손 복제 / ⑧ `drive`의 배치 Blocker 검사(§2 마지막 행) | 항목별 (a) 반영 / (b) 보류 | ①은 **(b)**("관측된 병목에만" — 실측이 벤치지 실사용이 아님), ②③⑤⑥은 **(a)** 후보(본문 공유가 아니라 데이터·순수 헬퍼 공유라 "하나가 두 일" 위반 아님)지만 리뷰 제안이라 사용자 결정, ④는 `H-302`가 갈라 둔 자리라 **(b)**, ⑦은 **(a)**(조용히 어긋나는 손 복제 — `SHORTHAND`는 `InstanceShorthand.luau` `TABLE`에서 읽게), ⑧ **(b)**. **[2026-09-07 회신] 항목별 확정 — ②③④⑤⑥⑦ 반영, ①⑧⑨ 보류(최적화 후보 목록으로)**, §15 |
 
 ## §5 `/code-review high` 재실행분 (2026-09-07 새벽 도착 — 앵글 10 + 검증자, 최종 10건)
 
@@ -84,7 +91,7 @@
 |---|---|---|---|
 | **Q4** (`H-361`) | 실프로퍼티 키에 Observer/Effect/Ref 핸들을 넣은 오용의 진단 | (a) 그대로 — 타입이 1차 방어, 엔진 에러는 시끄럽다(정본 배너만) / (b) `PropertyHandler.isHandlable`이 핸들 브랜드를 거부해 FALLBACK 가드가 발화(핫패스에 브랜드 검사 셋) / (c) 가드 우선순위를 NORMAL 위로(정본 "FALLBACK" 설계 역전) | **(a)** — "드문 오용 방어에 구조를 쓰지 않는다"; `Ref`에 가드가 없는 것도 같은 결 |
 | **Q5** (process 재진입) | 같은 `(inst, k)`의 간접 재디스패치(`h.process` 도중 그 키의 State `:Set`) | (a) UB family에 명시(문서) / (b) `process`에 재진입 게이트(새 메커니즘) | **(a)** |
-| **Q3 ⑨** | `Slot:Clear`/`ExtractAll` 게이트 묶음 + `ExtractAll` 역순 insert(**§13 G-09**: 배치로 접으면 중간 길이 파동 노출도 사라진다 — 원자성 논거 추가) | (a) 반영 / (b) 보류 | **(b)**, 단 `ExtractAll`의 `out[i] = …` 정순 채움은 한 줄이라 ①급 — 사용자 판단 |
+| **Q3 ⑨** | `Slot:Clear`/`ExtractAll` 게이트 묶음 + `ExtractAll` 역순 insert(**§13 G-09**: 배치로 접으면 중간 길이 파동 노출도 사라진다 — 원자성 논거 추가) | (a) 반영 / (b) 보류 | **(b)**, 단 `ExtractAll`의 `out[i] = …` 정순 채움은 한 줄이라 ①급 — 사용자 판단. **[2026-09-07 회신] (b)** — *"보류하고 추후 최적화 요소로 백로깅"*, ROADMAP 백로그 최적화 후보 목록 |
 | **Q7** (3순회 `H-378`) | 미설치 스텁의 blame — 스텁이 자기를 SURFACE로 태그(`H-231`)해 `errorBeforeNearest`면 항상 스텁의 직접 호출자(in-tree = quad 내부)를 찍는다. 지금은 전부 `errorBefore`(최외곽)로 복원 — 핸들러 작성자가 자기 핸들러 안에서 `canBound(v)`를 부른 경우만 `drive` 호출 줄을 blame | (a) 그대로(`errorBefore`, 관측된 in-tree 경로 전부 사용자 줄) / (b) 스텁을 **무태그**로 두고 nearest — 공개 메소드 안이면 그 메소드의 호출자, 핸들러 안이면 핸들러 자기 줄(이상적) — 단 태그 프레임이 하나도 없는 직접 호출에서 quad-error의 폴백 동작 확인 필요·`H-231` "스텁은 표면" 규약 수정 | **(a)** — 셋업 1회성 에러, "드문 오용에 구조 안 씀" |
 | **Q8** (3순회 `H-379`) | `quad-roblox/src/Animate.luau` Compute에 nil/None 팔이 없어 **애니메이트된 프로퍼티를 해제할 수 없다**: `:Set(None)` → `Tween{ Value = None }`(validate는 `== nil`만) → `NoneHandler` 불발 → 활성 트윈 취소 뒤 `TweenService:Create(inst, info, { [k] = None })` 엔진 에러(`H-103` NOOP 잔존) 또는 첫 분기면 `inst[k] = None` 센티널 직접 기록; `:Set(nil)` → `Animate.luau:73 "Tween: Value is required"`(recompute 깊이). 실재현 셋(spec.tweenproperty 심). `tween-plan.md` "`Animate` 콤비네이터 — 확정" 의사코드에 None 팔 없음(침묵) — Property 헤더 계약 "`v == nil` … SKIPS the write"와 어긋남 | (a) Compute에 통과 팔 `if v == nil or v == None then return v end`(`CanAnimate = false` 평문 반환 선례 — 정본 의사코드에 한 줄 추가) / (b) 문서화 UB(Animate 아래 값은 해제 불가) | **(a)** — 정본 의사코드 변경이라 사용자 확인; 코드 변경 없음 |
 | **Q9** (4순회 `H-382`) | 물리 마운트 대상이 `Destroy`된 Slot의 **좀비**: `s._mounted = true`·`_mountedInst`가 시체를 강참조한 채 `dispose(s)` → "still requires its tree to be alive — Remove/Extract it first", 다른 곳에 `Add(s)` → "already mounted elsewhere"(둘 다 사실과 반대인 메시지). 반대 방향: 부모 Destroy 뒤 nested `Extract`/`retractFrom`으로 풀려난 시체 요소가 산 부모에 조용히 마운트(mock), 실물은 `nativeInsert`의 `Parent =`가 `claimOwnerAt`·`bindLifetime`·`materializeSlotTree` 커밋 뒤 raise → 반쯤 마운트 + `H-103` NOOP 잔존. `slot-plan.md` "부수 효과 — 이미 파괴된 대상에 재마운트하려는 시도가 자연히 막힘" 절이 현재형으로 단언한 요소 단위 `bindLifetime`+`canExecute` 게이트가 구현된 적 없음(`Slot.luau`의 `canExecute` 호출 0) — 검증자 mock 재현 3경로. 실물 `nativeExtract`가 파괴 요소에 raise하는지는 Studio 미실측 | (a) 정본대로 요소까지 `bindLifetime` + 물리 op 직전 `canExecute`(새 부기, `elementOwner`와 이원화) / (b) 정본 두 문장 철회 + "막히는 게 정상이다" UB를 부모 Destroy 방향으로 확장 + 반사실 메시지 둘 정정 / (c) 최상위 Slot에 이미 걸린 `canExecute`만 `dispose`·재마운트 게이트가 소비(새 부기 0, 좀비 탈출만 닫음) + (b)의 문서·메시지 정정 | **(c)+(b)** — 리뷰어 권고 그대로; (a)는 "관측된 문제에만 구조" 위반 |
@@ -287,7 +294,7 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 **사용자 의견 여덟(2026-09-07 낮)** → `research/source-layout-plan.md`(항목별 확인·이득·비용·권고) + `question.md` 2절.
 다음 순회는 §13부터, `H-417`부터.
 
-## §13 외부 리뷰 검증 — Gemini 사후 구현 종합 코드 리뷰 (`qa-request/post-implementation-gemini-review.md`, 사용자 반입 2026-09-07)
+## §13 외부 리뷰 검증 — Gemini 사후 구현 종합 코드 리뷰 (`qa-request/post-implementation-review-round2.md`, 사용자 반입 2026-09-07)
 
 사용자: *"gemini 에이전트가 확인한 검사가 추가되었어. 진짜 실존 문제인지 확인하고 가져올래?"* — G-01~G-09 아홉과 건전성
 증명 S-01~S-06을 메인이 mock 실재현·코드 대조로 판정. **결함 셋 실존(①, 반영)**, 분석·확인 여섯은 기록만.
@@ -329,5 +336,28 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 
 기각(리뷰어, 근거 인용): InstanceChild 파괴 자식 retractor(slot-plan "덮어쓰기 전에 Destroy는 UB"), mock Signal LIFO(순서 계약 없음),
 `assertBlamesUser` 파일 단위(`H-282`), 등록 누락 도달 경로(`H-134`), nullglob(가상), `Slot({})` 잠금(slot-plan 의도).
-다음 순회는 §15부터, `H-431`부터.
+다음 순회는 §16부터, `H-431`부터.
+
+## §15 사용자 회신 1차 — Q1~Q3 + 라운드 이름 (2026-09-07 오후, 루트 `usernote-ignoreme.md` — 커밋 안 함)
+
+회신은 §4의 Q1~Q3(Q3는 ①~⑨ 항목별)과 라운드 번호 지시. 처리 규약은 그대로 — 답이 결정인 것은 코드·정본·spec에 반영, 사고 중인
+것은 실측을 붙여 열어 둔다. 발견 번호는 안 쓴다(사용자 결정의 반영이지 리뷰 발견이 아님; 번호 `H-431`은 다음 순회 몫).
+
+| 문항 | 사용자 원문(요지) | 처리 |
+|---|---|---|
+| **Q1** `State<Slot<Instance>>` 팔 | *"처음부터 Slot 안에 타입을 넣어 Slot<T>로 만들 생각은 없기는 했음 … Insert 할 때 any 일 순 없으니까 Instance를 넣은건 이해 됨 … 바인드에 있어서는 단순한 Slot<any>가 들어가도 될것 같기도 … 아마 그냥 State<Instance \| Slot<Instance>> 하나로 끝나지 않나 … '입력받는 곳'에 대해서는 마커 필드와 내부 구조 T 하나만 보존하는 마커 타입을 써도 되지 않나 … 구조적으로 확장된 타입은 잘 받기 때문에 … 진짜 State<T>의 method 같은건 유저가 쓰는 부분에 있어서 들어갈 뿐 … 어떻게 봐? 생각 더 필요한듯"* | **열림(사고 중) — 실측을 붙임.** 두 생각은 같은 문제 하나다: 전체형 `State<T>`는 `Set(T)`/`Get(): T`가 양쪽 위치라 **불변**이어서 `State<Instance>`가 `State<Instance \| Slot<Instance>>` 자리에 못 들어간다(`H-353`이 `PV73`을 11팔로 늘린 그 이유, `H-326`/`H-327`). 스파이크 **`luau-test/done/34-type-state-marker-covariance.luau`**(새·옛 솔버 동일): (1) 읽기 전용 마커 `{ read __quadState: true, read __quadValue: T }`는 **T에 공변**(`Marker<number>` → `Marker<number \| string>` 통과), 읽기·쓰기 필드면 불변(대조군 에러); (2) 메소드가 잔뜩 붙은 실제 State 모양 값이 그 마커 자리에 **폭 서브타이핑으로 들어간다**; (3) 다른 T는 여전히 거부(검사력 유지); (4) 제네릭 소비자 `take<T>(m: Marker<T>): T`가 T를 복원한다. 즉 사용자 방향(입력 자리 = 마커 + T, 메소드는 유저 손의 전체형에만)은 **타입 이론상 성립**하고 `Slot<T>` 불변(`H-354` 캐스트 관용구의 원인)도 같은 방식으로 풀린다. **메인 의견**: 채택 가치 있음 — 다음 단계는 최소 스파이크가 아니라 **생성 D에 대고 재는 것**(gen-d에서 `PVn`/`NewChild`의 `State<X>`·`Slot<X>` 팔을 마커로 바꿔 팔 수·`LuauSolverConstraintLimit`/Tarjan 한도·`spec.shorthandtypes` 양성·음성이 그대로인지). 그건 quad-types 표면 변경(State/Slot 값 타입에 마커 필드 둘, 런타임은 브랜드 그대로)이라 **결정 뒤 별도 단위**(source-layout 재편과 겹치지 않게). `typing-limits.md` **8.11**에 실측만 기록, 결정은 Q1에 그대로 열어 둠 |
+| **Q2** `Observer`/`EffectHandle` 팔 | *"이건 그냥 하면 될것같음. 권고대로 둘 다 넣는거 동의"* | **(a) 반영** — `quad-roblox/src/types.luau` `NewChild`에 `QuadTypes.Observer \| QuadTypes.EffectHandle` 합류(주석에 확정 인용), `spec.componenttypes` `_observerChild`(strict 양성 — Frame·TextLabel children에 Observer/EffectHandle). gen-d `union_member_functions` 수확 대상에 `Observer`/`EffectHandle` 추가(8.9 게이트 — 팔이 늘면 그 멤버 메소드 이름도 setter 충돌 검사에 들어가야 한다). `bind-system-plan.md` "children 원소" 확장 이력 갱신 |
+| **Q3** 묶음 | *"너무 많은게 묶여있어서 다른 에이전트로 explain 걸어야 보기 편했어 … 실제로 나뉘어지는 요소라 생각함"* | 항목별로 아래. 다음부터 품질 제안은 **항목마다 문항 하나**로 올린다(묶음 금지 — 사용자 지적) |
+| Q3 ① Slot 재정렬 | *"당장 문제는 없음. 다만 rawOrder(newOrder) 식으로 뭔가 한번에 재정렬 하는게 있으면 좋아보이긴 해. 다만 reconcile 자체가 재정렬 된건지 그런 상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해. 리서치 목록에만 두고"* | **(b) 보류** — ROADMAP 백로그 "최적화 후보 목록"에 `rawOrder(newOrder)` 아이디어와 함께 기록(코드·정본 무변경) |
+| Q3 ② `notInstalled` 스텁 | *"동의. 핼퍼로 추출하는건 raw*에서도 했던 행위라 괜찮아보임"* | **반영** — `quad-base/src/NotInstalled.luau` `notInstalled(name, what, hint?)` 하나; `Tag.luau`(the tag ops)·`AttributeKey.luau`(the attribute op)·`LifetimeHandle.luau`(lifetime primitives / engine ops + mock 힌트) 세 사본이 한 줄 위임. 메시지 형태(`"<name> is not available"`) 그대로 — spec 매치 유지. `LifetimeHandle.luau`의 `Err`/`SURFACE` 지역은 쓸 데가 없어져 제거 |
+| Q3 ③ 빈 자리 등록 복제 | *"setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다 싶긴함. 아주 작은 부분이라서"* | **반영 — `Dispatch.setEmpty(ownerKey, i, anchor?)`**(Bookkeeping; `setOffsetSource(None)` → `setLength(0, anchor)` 한 본문, quad-types `Dispatch`에 필드 추가). `None.luau`의 `registerEmptySlot`은 제거하고 quad-base 호출 10곳 + quad-roblox `OnChange`/`InstanceChild` 인라인 사본 둘이 전부 `dispatch.setEmpty`로 — 패키지 경계 때문에 남아 있던 복제가 사라졌다. 정본 `dispatch-core-plan.md` `NilHandler` 의사코드 아래 한 문단 |
+| Q3 ④ Reflection 캐시 | *"공통으로 두는건 아주 싸긴 해서 보류 안 해도 간단 패치일것 같기도 해. 딱히 부작용도 없을듯"* | **반영** — `quad-roblox/src/Reflection.luau` `memberSet(fetch, accept?)`(className → 멤버 집합 메모이저). `game` 읽기는 **호출자 클로저에 남긴다** — CLI spec의 `getfenv(installProperty).game` 심 seam이 그대로 살아야 해서(`H-302` 쓰기 필터는 Property 쪽 `accept`) |
+| Q3 ⑤ `addProcessed` 사본 | *"핼퍼 함수 만들기 동의"* | **반영** — `None.luau` `addProcessedHandler(dispatch, name, sentinel)`; `Dispatch/Ref.luau`(PreRef/PostRef)·`Dispatch/Modifier.luau`가 호출(세 사본 → 하나) |
+| Q3 ⑥ `assertLive; assertManual` | *"동의. 순수 코드관리임"* | **반영** — `Slot.luau` `assertMutable(self)`(둘을 한 함수로), 공개 CRUD 9곳 |
+| Q3 ⑦ gen-d 손 복제 | *"반영 권고 동의"* | **반영** — `reserved`는 `Modifier.luau`의 `methods` 테이블(`function methods.X(`·`methods.X =`)에서, `Callback`은 `types.luau` `OnChangeDescriptor` 본문에서(`type_body`에 텍스트 인자), `SHORTHAND`는 **키 집합을 `InstanceShorthand.luau` `TABLE`과 대조하는 게이트**(타입 문자열은 런타임에 없어 gen-d에 남긴다 — `wrap` 함수라 읽을 수 없음). 어느 쪽이든 어긋나면 SystemExit → `gen-d check`가 test.sh에서 잡는다 |
+| Q3 ⑧ `drive` 배치 Blocker | *"보류 동의. 처음부터 그렇게 생각했었음"* | **(b)** — 최적화 후보 목록에 한 줄 |
+| Q3 ⑨ `Clear`/`ExtractAll` | *"반영은 쉬울것 같긴 함 … 말한대로 보류하고 추후 최적화 요소로 백로깅 … 보는 김에 최적화 할 대상을 쌓아둬도 좋아"* | **(b)** — 최적화 후보 목록 신설(ROADMAP 백로그): ①·⑧·⑨ + 앞으로 순회가 "효율" 축에서 내는 것은 거기 쌓는다 |
+| 라운드 이름 | *"post 리뷰들도 라운드 분리 … round1 부터 다시 시작 … gemini 쪽은 round2"* | 이 파일 → `post-implementation-review-round1.md`, Gemini → `post-implementation-review-round2.md`(참조 16파일 치환, 머리 배너) |
+
+**검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과 — `spec.componenttypes` 양성 추가), doc-check ERROR 0.
 

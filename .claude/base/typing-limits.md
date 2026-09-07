@@ -889,7 +889,7 @@ Field<UDim>`로 쪼개면 무주석 람다가 number 팔로 문맥 타이핑돼 
 — 생성자 `<T>(initial: { SlotElement<T> }?)`는 `T`가 `T | State<T> | Slot<T>` 안쪽이라
 인자에서 추론되지 않고, `nil :: { SlotElement<Instance> }?`·`{} :: {…}`·`local s:
 Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타입 불변). 근거·
-측정은 `qa-request/post-implementation-review.md`.
+측정은 `qa-request/post-implementation-review-round1.md`.
 
 ## 9. 미해결 / 추적 중
 
@@ -921,3 +921,25 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 **규칙**: `index<>` 파라미터에 연산자를 쓰려면 주석을 단다. `luau-test/done/30`의 음성 대조군은
 연산자가 없어 이걸 못 잡았다.
 
+
+## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 전체형 `State<T>`/`Slot<T>` 불변의 우회 후보 (2026-09-07, 스파이크 `34`, 결정은 열림)
+
+**실측만 기록한다 — 적용 여부는 `qa-request/post-implementation-review-round1.md` §4 Q1(사용자 사고 중).**
+사용자 사고(2026-09-07 회신): *"'입력받는 곳'에 대해서는 마커 필드와 내부 구조 T 하나만 보존하는 마커 타입을
+써도 되지 않나 … 구조적으로 확장된 타입은 잘 받기 때문에 … 진짜 State<T>의 method 같은건 유저가 쓰는 부분에
+있어서 들어갈 뿐"*. 전체형 `State<T>`는 `Set(T)`/`Get(): T`가 양쪽 위치라 불변(8.9·`H-326`/`H-327`/`H-353` —
+`State<number>`가 `State<number | UDim>` 자리에 못 들어가 `PV73`이 11팔), `Slot<T>`도 같아 strict 생성은
+캐스트 관용구(`H-354`)다.
+
+`luau-test/done/34-type-state-marker-covariance.luau`(새 솔버·옛 솔버 결과 동일):
+1. `{ read __quadState: true, read __quadValue: T }`는 **T에 공변** — `Marker<number>` → `Marker<number | string>` 통과.
+   읽기·쓰기 필드(`__quadValue: T`)면 불변(대조군 에러) — `read`가 핵심.
+2. 메소드가 붙은 실제 State 모양(`Get`/`Set`/`Compute` + 마커 필드 둘)의 값이 그 마커 자리에 **폭 서브타이핑으로
+   들어간다** — 입력 자리는 마커만 요구해도 전체형 값을 받는다.
+3. 다른 T는 여전히 거부(`Marker<number>` ← `StateReal<string>` 에러) — 마커가 검사력을 잃지 않는다.
+4. 제네릭 소비자 `take<T>(m: Marker<T>): T`가 T를 복원한다(`number` 추론).
+
+함의(결정 아님): `NewChild`·`PVn`의 `State<X>`/`Slot<X>` 팔을 마커로 바꾸면 유니언 타입 자리의 멤버별 팔 나열
+(`H-353`/`H-362`)이 필요 없어지고 8.5/8.9의 예산이 줄 가능성 — 단 **생성 D 규모에서 재야 한다**(한도 플래그·
+`spec.shorthandtypes` 양·음성 유지). 값 타입에 마커 필드 둘이 들어가는 quad-types 표면 변경이라 결정 뒤 별도 단위.
+8.8의 `ModifierMarker`·스파이크 `32`의 반공변 팬텀 `__quadRefAccepts`와 같은 계열(팬텀 필드로 변성을 고르는 것).

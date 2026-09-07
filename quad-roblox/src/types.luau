@@ -98,6 +98,12 @@ export type NewChild =
 	-- fork slice never executed. `State<Slot<…>>` is NOT here (open §4 item —
 	-- `State<X>` is invariant, so the arm shape is a user decision).
 	| QuadTypes.Slot<Instance>
+	-- [2026-09-07 post-implementation review Q2 (a), 사용자 확정 "권고대로 둘 다 넣는거 동의"]
+	-- `state:Observer(fn)` / `Effect(fn)` handles in the children array — the leaf idiom
+	-- `source-state-plan.md` "`state:Observer(fn)`" 절·`effect-plan.md` canonised (leaf
+	-- handlers in `Observer.luau`/`Effect.luau`), missing from the M5 widening list (`H-355`).
+	| QuadTypes.Observer
+	| QuadTypes.EffectHandle
 	-- M7 단위 ③·④: Modifier는 MARKER로만 — 클래스별 `<Class>Modifier`를 유니언에
 	-- 직접 넣으면 큰 클래스의 캐스트 자리에서 "too complex"(2026-09-04 실측,
 	-- typing-limits 8.8절). 여기(`true`)는 무타입 base `Modifier()`의 명시 허용이고,

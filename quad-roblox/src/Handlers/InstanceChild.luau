@@ -12,8 +12,8 @@
 	  setOffsetSource(inst, k, None) → v.Parent = inst → setLength(inst, k, 1, inst)
 	retractor (release-order contract — offsetSource first so the recompute
 	setLength's tail triggers cannot reach a dying source):
-	  dedup guard (`H-154`) → v.Parent = nil → setOffsetSource(inst, k, None)
-	  → setLength(inst, k, 0)
+	  dedup guard (`H-154`) → v.Parent = nil → setEmpty(inst, k)
+	  (= setOffsetSource(inst, k, None) → setLength(inst, k, 0), one body)
 	The dedup guard (`if nextValue == v then return end`) folds
 	`store.child:Set(store.child:Get())` from two physical detach/attach
 	rounds into one engine no-op write — same shape as SlotHandler's
@@ -46,8 +46,7 @@ local function install(quad: any)
 					return -- `H-154` 같은 값 재발행 dedup — 물리 detach/attach와 recompute 1회를 접는다
 				end
 				v.Parent = nil -- 내림(파괴 아님)
-				dispatch.setOffsetSource(inst, k, None)
-				dispatch.setLength(inst, k, 0)
+				dispatch.setEmpty(inst, k)
 			end
 		end,
 	} :: QuadTypes.Handler)

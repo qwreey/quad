@@ -54,19 +54,30 @@ local None = sentinel("None")
 
 local module = { None = None, sentinel = sentinel }
 
--- The terminal "empty slot" registration every nop handler does (NilHandler,
--- ProcessedModifier/PreRef/PostRef): offsetSource FIRST, then length 0 —
--- the release-order contract (`H-39`, setLength ends in gatedRecompute).
--- One body so the order cannot drift between the terminal sites (review, M8 ②·③,
--- widened after the M11 review: NilHandler, Processed*, RefLeafHandler, and the
--- Attribute/Tag/Effect/Observer/Slot leaf handlers route through here; the only
--- inline copy left is quad-roblox `Handlers/OnChange.luau` — that package never
--- requires quad-base).
--- `anchor` is the `setLength` 4th argument the `Processed*` canon blocks pass
--- (`inst`, `H-35`); NilHandler passes none.
-function module.registerEmptySlot(dispatch: QuadTypes.Dispatch, inst: any, k: any, anchor: any?)
-	dispatch.setOffsetSource(inst, k, None)
-	dispatch.setLength(inst, k, 0, anchor)
+-- The terminal "empty slot" registration (offsetSource FIRST, then length 0)
+-- used to live here as `registerEmptySlot`; since the post-implementation
+-- review Q3 ③ (2026-09-07) it is `dispatch.setEmpty` (Bookkeeping) — on the
+-- Dispatch surface so quad-roblox handlers share the one body too.
+
+-- The `Processed*` nop terminal (ProcessedModifier / ProcessedPreRef /
+-- ProcessedPostRef — `modifier-plan.md` `H-35` block, `ref-plan.md` canon):
+-- matches the sentinel by identity anywhere (it only ever sits at array
+-- positions), registers the position out of the order math and retracts
+-- with `Void` — flatten / the pre-pass fire already happened, nothing to
+-- undo. One factory for the three (Q3 ⑤ — `Dispatch/Modifier.luau` was a
+-- third hand copy of `Dispatch/Ref.luau`'s local `addProcessed`).
+function module.addProcessedHandler(dispatch: QuadTypes.Dispatch, name: string, sent: any)
+	dispatch.addHandler({
+		name = name,
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return v == sent
+		end,
+		priority = dispatch.HANDLER_PRIORITY_HIGH, -- "매우 높음, NoneHandler와 동급"
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			dispatch.setEmpty(inst, k, inst) -- canon block: offsetSource → length 0 (`H-35`)
+			return Void
+		end,
+	})
 end
 
 -- Called by InitDispatch once per module instance, after the Dispatch table
@@ -100,7 +111,7 @@ function module.register(dispatch: QuadTypes.Dispatch)
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			-- no recursion — already nil, nothing further to hand down
-			module.registerEmptySlot(dispatch, inst, k)
+			dispatch.setEmpty(inst, k)
 			return Void
 		end,
 	})

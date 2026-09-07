@@ -33,7 +33,6 @@
 ]]
 
 local Brand = require("./Brand")
-local NoneModule = require("./Dispatch/None")
 local EpochMap = require("./EpochMap")
 local Err = require("./ErrorNamespace")
 local QuadTypes = require("../luau_packages/quad_types")
@@ -315,7 +314,7 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
-			NoneModule.registerEmptySlot(dispatch, inst, k) -- `H-39` (리뷰 — 한 본문, `None.luau`)
+			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			local old = relate:GetWeak(inst, k) -- `H-71`; load-bearing dedup (`H-266`)
 			if old ~= v then

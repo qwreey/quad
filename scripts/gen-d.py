@@ -311,6 +311,17 @@ def emit():
     # Handlers/InstanceShorthand.luau(우선순위 NORMAL+1). PropTypes/OnChange엔 넣지 않는다
     # (실프로퍼티가 아니라 GetPropertyChangedSignal 대상이 아님).
     SHORTHAND = [("UICorner", "number | UDim"), ("UIPadding", "UDim"), ("UIPaddingOffset", "number"), ("UIScale", "number")]
+    # [post-implementation review Q3 ⑦, 2026-09-07] the KEY set is gated against the runtime
+    # table (`Handlers/InstanceShorthand.luau` `TABLE`) — the types stay here (the runtime keeps
+    # `wrap` functions, not type strings), but a key added/renamed on one side only fails generation
+    # instead of drifting silently (file-head rule: no silent truncation).
+    sh_src = (ROOT / "quad-roblox" / "src" / "Handlers" / "InstanceShorthand.luau").read_text()
+    sh_blk = re.search(r"^local TABLE\b[^\n]*=\s*\{\n(.*?)^\}", sh_src, re.S | re.M)
+    if not sh_blk:
+        raise SystemExit("gate: could not find `local TABLE = {` in Handlers/InstanceShorthand.luau")
+    sh_keys = set(re.findall(r"^\t([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\{", sh_blk.group(1), re.M))
+    if sh_keys != {s for s, _ in SHORTHAND}:
+        raise SystemExit(f"gate: SHORTHAND keys {sorted(s for s, _ in SHORTHAND)} != InstanceShorthand.luau TABLE keys {sorted(sh_keys)}")
     # [7순회 H-424] `parent_of` itself is a free variable of `ancestors` — it was assembled
     # ~90 lines later, so H-412's move only shifted the same latent NameError one step
     parent_of = {}
@@ -432,7 +443,9 @@ def emit():
     #     생성 실패. 이름 집합은 defs(Instance/Object의 function 멤버)와 quad-types
     #     소스(State/StateData/Tag/Attribute 블록의 키)에서 읽는다.
     defs_text = DEFS.read_text()
-    union_member_functions = {"Callback"}  # OnChangeDescriptor
+    # OnChangeDescriptor's function fields (`Callback`) — read from quad-roblox `types.luau`, not
+    # hand-copied (Q3 ⑦); `type_body`/`function_fields` are defined below, so this is resolved there
+    union_member_functions = set()
     # defs: `declare extern type Instance extends Object with` / `declare extern type Object with`
     # — 못 찾으면 게이트가 조용히 비는 대신 생성을 실패시킨다(리뷰 반영)
     for cls in ("Instance", "Object"):
@@ -446,21 +459,25 @@ def emit():
     # starts, a line comment swallows a `--[[` that follows it on the same line.
     qt = re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", (ROOT / "quad-types" / "src" / "init.luau").read_text(), flags=re.S)
 
-    def type_body(tname):
+    def strip_comments(text):
+        return re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", text, flags=re.S)
+    rt = strip_comments((ROOT / "quad-roblox" / "src" / "types.luau").read_text())
+
+    def type_body(tname, text=qt, where="quad-types"):
         # `export type X = ... {` 뒤 중괄호 균형으로 본문을 끊는다 — 한 줄 선언
         # (`Attribute = { NameMap: … }`)도 다음 선언으로 넘치지 않게(리뷰 반영)
-        m = re.search(rf"^export type {re.escape(tname)} = ", qt, re.M)
+        m = re.search(rf"^export type {re.escape(tname)} = ", text, re.M)
         if not m:
-            raise SystemExit(f"gate: could not find `export type {tname}` in quad-types")
-        i = qt.index("{", m.end())
+            raise SystemExit(f"gate: could not find `export type {tname}` in {where}")
+        i = text.index("{", m.end())
         depth, j = 0, i
-        while j < len(qt):
-            if qt[j] == "{":
+        while j < len(text):
+            if text[j] == "{":
                 depth += 1
-            elif qt[j] == "}":
+            elif text[j] == "}":
                 depth -= 1
                 if depth == 0:
-                    return qt[i + 1:j]
+                    return text[i + 1:j]
             j += 1
         raise SystemExit(f"gate: unbalanced braces in `export type {tname}`")
 
@@ -505,9 +522,20 @@ def emit():
             # shrink of the gate (file-head rule: no silent truncation)
             raise SystemExit(f"gate: depth-0 scan ended at depth {depth} — cannot harvest function fields")
         return names
-    for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>"):
+    for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>", "Observer", "EffectHandle"):
         union_member_functions |= function_fields(type_body(tname))
-    reserved = {"Apply", "Peek", "Overridden", "As"}
+    # `<Class>Elem` = NewChild | <Class>OnChange | … — the descriptor's function fields join too
+    union_member_functions |= function_fields(type_body("OnChangeDescriptor", rt, "quad-roblox types.luau"))
+    if "Callback" not in union_member_functions:
+        raise SystemExit("gate: OnChangeDescriptor.Callback not harvested from quad-roblox types.luau")
+    # reserved Modifier methods — read from the runtime `methods` table in `Modifier.luau`
+    # (`function methods.X(` / `methods.X = `), not hand-copied (Q3 ⑦); the cast prefix `As` is
+    # a method there too, so it lands in the set as well as in the prefix check below
+    mod_src = strip_comments((ROOT / "quad-base" / "src" / "Modifier.luau").read_text())
+    reserved = set(re.findall(r"^function methods\.([A-Za-z_][A-Za-z0-9_]*)\s*\(", mod_src, re.M))
+    reserved |= set(re.findall(r"^methods\.([A-Za-z_][A-Za-z0-9_]*)\s*=", mod_src, re.M))
+    if not {"Apply", "Peek", "Overridden", "As"} <= reserved:
+        raise SystemExit(f"gate: reserved Modifier methods harvested from Modifier.luau look wrong: {sorted(reserved)}")
     for node in mod_classes:
         for p in mod_props(node):
             if p["name"] in reserved:

@@ -2365,7 +2365,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   §4 문항 둘(경계 필드 이름 Q2, `H-340` 커스텀 필드 제거 연산 `Without` 권고). **열린 마일스톤 없음.** **[12절]** 아침 회신 — `H-329` (a) 구현, Q2·`H-340` 보류(flatten 슈거), `H-343` `Override`
   문자열 싱글톤(사용자 결정 — `Tween` 순수 함수, `H-323`/`H-324` 소멸), 스파이크 `11` 폐기, Studio 재연결. **[13절, 2026-09-07]** 핸드오버 — 감사 A·B 반영(`ba222e9`), 전체 코드 리뷰
   여섯 동시(R1~R3 opus + `/code-review high`) → `/compact` 중 전부 중단 → 트랜스크립트 추출(sonnet) +
-  재실행. 원장 `qa-request/post-implementation-review.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
+  재실행. 원장 `qa-request/post-implementation-review-round1.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
   검증·Attribute plain 가드·`BRAND_PROBES`·Store 키·에러 깊이 둘·`getOffsetAt` 베이스 재독·`NewChild`
   `Slot<Instance>`·유니언 PV 멤버별 팔), 기각(Effect 비함수 cleanup·Splice 물리 순서·Attribute "누수"는
   Luau GC 페이싱), 사용자 문항 Q1~Q3; `/code-review high` 재실행분 `H-357`~`H-361`(Effect UB 확장·
@@ -2385,3 +2385,10 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   실존 셋 `H-417`~`H-419`(빈 태그/속성 이름·`Claim` inst 게이트·`drive` props 게이트). 7순회 `H-420`~`H-430`(§14 —
   **HIGH** 생성기 `ContentId` 오매핑 재정규화, gen-d `check`·모듈 스코프 전역 게이트, Claim props·Ref normal·
   Bookkeeping 구멍 메시지; Q21 툴체인).
+
+- **`session/2026-09-07-01-post-review-reply1-q1-q3.md`** — 구현 뒤 리뷰 **사용자 회신 1차**(Q1~Q3).
+  Q2 (a) 반영(`NewChild`에 `Observer`/`EffectHandle`), Q3 ②③④⑤⑥⑦ 반영(`NotInstalled.luau`·`Dispatch.setEmpty`·
+  `Reflection.luau`·`addProcessedHandler`·`assertMutable`·gen-d 소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보
+  목록 신설). **Q1은 열림** — 사용자 "입력 자리엔 마커 타입" 사고를 스파이크 `34`로 실측(읽기 전용 마커는 T 공변,
+  전체형 값이 폭 서브타이핑으로 들어감; `typing-limits.md` 8.11), 결정은 생성 D에 대고 잰 뒤. 라운드 번호를 1부터
+  새로(`post-implementation-review-round1.md`, Gemini = round2). 품질 제안은 앞으로 항목마다 문항 하나.

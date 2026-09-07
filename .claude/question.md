@@ -164,9 +164,12 @@
 
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/post-implementation-review.md`
-  §4가 소스: Q1 `NewChild`에 `State<Slot<Instance>>` 팔(권고 (b) 안 넣음) / Q2 `Observer`/`EffectHandle`
-  팔(권고 (a)) / Q3 코드 품질 제안 묶음 `H-356`(항목별 반영·보류 권고 그 표에) / **Q4** 실프로퍼티
+- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/post-implementation-review-round1.md`
+  §4가 소스: Q1 `NewChild`에 `State<Slot<Instance>>` 팔(권고 (b) 안 넣음 — **[2026-09-07 회신] 열림, 사용자
+  사고 중**: 입력 자리에 마커 타입(`{ read __quadState: true, read __quadValue: T }`)을 쓰면 전체형 `State<T>`
+  불변이 풀린다는 것까지 스파이크 `luau-test/done/34`로 실측(`typing-limits.md` 8.11) — 채택하려면 생성 D에 대고
+  재는 단위가 필요, 답은 "그 방향으로 간다/안 간다") / ~~Q2 `Observer`/`EffectHandle` 팔~~(**[2026-09-07 회신]
+  (a) 반영**) / ~~Q3 코드 품질 제안 묶음 `H-356`~~(**[2026-09-07 회신] 항목별 확정 — 반영·보류 처리 완료**, round1 §15) / **Q4** 실프로퍼티
   키의 핸들 오용 진단(`H-361`, 권고 그대로) / **Q5** 같은 키 간접 재디스패치를 UB로 명시(권고 문서) /
   **Q6**(야간 2순회, `H-376`) 정본이 약속한 native* 조합 폴백이 코드에 없다 — 약속 철회(권고 (a), 스텁
   여섯) 또는 합성 구현 / **Q7**(3순회, `H-378`) 미설치 스텁의 blame — 자기 태그 스텁이라 nearest가 안 서서

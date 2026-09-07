@@ -33,7 +33,6 @@ local Err = require("./ErrorNamespace")
 local Relate = require("./Relate")
 local Void = require("./Void")
 local InitDispatch = require("./Dispatch")
-local NoneModule = require("./Dispatch/None")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Ref<T> = QuadTypes.Ref<T>
@@ -204,7 +203,7 @@ local function registerDispatchHandlers(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — no
 			-- physical element, so None/0 (shared body: offsetSource → length)
-			NoneModule.registerEmptySlot(dispatch, inst, k, inst)
+			dispatch.setEmpty(inst, k, inst)
 
 			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
 			if old ~= v then -- same Ref already here → spurious re-emit, skip both

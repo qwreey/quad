@@ -348,6 +348,19 @@ local function Init(module: any)
 		end
 	end
 
+	-- The terminal "empty slot" registration every nop/leaf handler does:
+	-- offsetSource FIRST, then length 0 — the release-order contract (`H-39`,
+	-- setLength ends in gatedRecompute). One body so the order cannot drift
+	-- between the terminal sites; on the Dispatch surface (not a quad-base
+	-- module helper) so quad-roblox handlers (`OnChange`, `InstanceChild`)
+	-- reach it too — post-implementation review Q3 ③, user-approved name
+	-- (2026-09-07: "setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다"). `anchor`
+	-- is setLength's 4th argument (`inst`, `H-35`); NilHandler passes none.
+	local function setEmpty(ownerKey: any, i: number, anchor: any?)
+		setOffsetSource(ownerKey, i, None)
+		setLength(ownerKey, i, 0, anchor)
+	end
+
 	module._bookkeeping = {
 		getBlocker = getBlocker,
 		getBookkeeping = getBookkeeping,
@@ -355,6 +368,7 @@ local function Init(module: any)
 		recompute = recompute,
 		setLength = setLength,
 		setOffsetSource = setOffsetSource,
+		setEmpty = setEmpty,
 	}
 end
 

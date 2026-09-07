@@ -91,22 +91,9 @@ local module = {
 }
 
 function module.register(dispatch: QuadTypes.Dispatch)
-	local function addProcessed(name: string, sent: any)
-		dispatch.addHandler({
-			name = name,
-			isHandlable = function(_inst: any, _k: any, v: any): boolean
-				return v == sent
-			end,
-			priority = dispatch.HANDLER_PRIORITY_HIGH, -- "매우 높음, NoneHandler와 동급"
-			process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-				-- canon `ProcessedPreRefHandler` block: offsetSource → length 0 (shared body)
-				NoneModule.registerEmptySlot(dispatch, inst, k, inst)
-				return Void -- fire already happened; nothing to undo
-			end,
-		})
-	end
-	addProcessed("ProcessedPreRefHandler", ProcessedPreRef)
-	addProcessed("ProcessedPostRefHandler", ProcessedPostRef)
+	-- canon `ProcessedPreRefHandler` block — the shared nop-terminal factory (Q3 ⑤)
+	NoneModule.addProcessedHandler(dispatch, "ProcessedPreRefHandler", ProcessedPreRef)
+	NoneModule.addProcessedHandler(dispatch, "ProcessedPostRefHandler", ProcessedPostRef)
 end
 
 return module

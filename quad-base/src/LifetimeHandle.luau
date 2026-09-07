@@ -32,9 +32,7 @@
 	raised a nil-call from `Slot.luau`/`Claim.luau` and blamed quad internals.
 ]]
 
-local Err = require("./ErrorNamespace")
-local QuadTypes = require("../luau_packages/quad_types")
-local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+local NotInstalled = require("./NotInstalled")
 
 -- Error depth (checklist 0): `errorBefore` (outermost) for EVERY stub — `H-348`,
 -- restored by 3순회 `H-378` after `H-370`/`H-373` gave `canBound`/`canExecute`/
@@ -46,18 +44,10 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- does not serve is any USER CALLBACK running inside a tagged public method
 -- (an Observer/Effect fn, `Tag:Apply`, a handler author's `canBound(v)` line) —
 -- those blame the public call that ran the callback; §4 Q7 (untagged stubs).
+-- the loud stub factory (`NotInstalled.luau` — one body for the three modules, Q3 ②;
+-- the blame reasoning above is repeated in that file's header)
 local function notInstalled(name: string): (...any) -> ...any
-	local stub = function(...: any)
-		Err.errorBefore(
-			`quad: {name} is not available — no backend has installed the lifetime primitives / engine ops `
-				.. "(install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)",
-			SURFACE
-		)
-	end
-	-- `H-231`: the stubs sit on the public surface until a backend overwrites
-	-- them (the backend tags its own replacements via `Quad.errorNamespace`)
-	Err.setFuncLevel(stub, SURFACE)
-	return stub
+	return NotInstalled(name, "the lifetime primitives / engine ops", "; tests use mock.installLifetime")
 end
 
 local function Init(module: any)

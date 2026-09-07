@@ -10,7 +10,6 @@
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
-local NoneModule = require("./None")
 local Err = require("../ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
@@ -41,7 +40,7 @@ local function register(dispatch: any, module: any)
 				-- nextValue is nil or a Slot the same handler will process (typed)
 				if slotValue == nextValue then return end
 				S.unmountSlotTree(slotValue)
-				NoneModule.registerEmptySlot(dispatch, inst, k) -- `H-39` (리뷰 — 한 본문, `None.luau`)
+				dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 				module.unbindLifetime(slotValue)
 				S.releaseOwner(slotValue, inst)
 			end

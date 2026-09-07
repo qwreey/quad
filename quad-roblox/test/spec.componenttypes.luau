@@ -42,6 +42,14 @@ local function _slotChild()
 	return q.D.Frame({ slot }), q.D.ScrollingFrame({ q.D.Frame({}), slot, q.None })
 end
 
+-- `H-355` / Q2 (a): children 자리의 Observer·EffectHandle(정본 leaf 관용구 — strict 유니언 팔)
+local function _observerChild()
+	local s = q.Source(1)
+	local o = s:Observer(function() end)
+	local e = q.Effect(function() end)
+	return q.D.Frame({ o, e }), q.D.TextLabel({ q.None, o, q.D.Frame({}), e })
+end
+
 local function _neverCalled()
 	local ref = q.Ref(nil :: TextButton?)
 	local a: TextButton = MaterialButton({ Text = "a", Modifier = q.D.Modifier.TextButton():BackgroundTransparency(0.5), Ref = ref, Content = q.D.TextLabel({}) })

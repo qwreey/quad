@@ -25,10 +25,10 @@
 ]]
 
 local Brand = require("./Brand")
-local NoneModule = require("./Dispatch/None")
 local Relate = require("./Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local NotInstalled = require("./NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local TagBrand = Brand.TagBrand
@@ -180,19 +180,9 @@ end
 	backend filled them yet) and registers TagFallbackHandler on this module
 	instance's dispatch. Registries are per module instance (`H-174`/`H-194`).
 ]]
+-- the loud stub factory (`NotInstalled.luau` — one body for the three modules, Q3 ②)
 local function notInstalled(name: string): (...any) -> ...any
-	local stub = function(...: any)
-		-- errorBefore (outermost), not Nearest: these stubs are reached from
-		-- dispatch depth (handler process), so the nearest tagged frame is the
-		-- stub itself and Nearest would blame quad internals (`H-272` reasoning)
-		Err.errorBefore(
-			`quad: {name} is not available — no backend has installed the tag ops `
-				.. "(install a provider with quad:UseProvider — a bare Quad.New() has none)",
-			SURFACE
-		)
-	end
-	Err.setFuncLevel(stub, SURFACE)
-	return stub
+	return NotInstalled(name, "the tag ops")
 end
 
 local InitDispatch = require("./Dispatch")
@@ -225,7 +215,7 @@ local function Init(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — a Tag
 			-- contributes no physical element, so the pair is None/0
-			NoneModule.registerEmptySlot(dispatch, inst, k, inst) -- `H-39` (리뷰 — 한 본문, `None.luau`)
+			dispatch.setEmpty(inst, k, inst) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			local added: { string } = {}
 			for name in v:Names() do
