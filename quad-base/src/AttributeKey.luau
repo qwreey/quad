@@ -51,8 +51,8 @@ end
 local cache = setmetatable({} :: { [string]: any }, { __mode = "v" })
 
 local function AttributeKey(name: string): any
-	if type(name) ~= "string" then
-		Err.errorBeforeNearest("AttributeKey: name must be a string", SURFACE)
+	if type(name) ~= "string" or name == "" then -- `H-417`: an empty name is not an attribute name either
+		Err.errorBeforeNearest("AttributeKey: name must be a non-empty string", SURFACE)
 	end
 	local cached = cache[name]
 	if cached ~= nil then

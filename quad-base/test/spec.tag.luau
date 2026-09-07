@@ -103,6 +103,12 @@ do
 	assert(a:Added({ "b", "c" }):Contains("c") and not a:Added({}):Contains("b"), "a real {string} list (and an empty one) still works")
 	-- 4순회 `H-389`: the constructor takes names only (type `...string`) — lists go
 	-- through Added; the metatable message names the shape unless it IS a Tag
+	-- `H-417` (외부 리뷰 G-01): an empty name is rejected at the surface, not inside the engine op
+	for label, f in { ctor = function() q.Tag("") end, added = function() a:Added("") end, list = function() a:Added({ "b", "" }) end } :: { [string]: () -> () } do
+		local okE, errE = pcall(f)
+		assert(not okE and string.find(tostring(errE), "empty string", 1, true) ~= nil, label .. ": empty tag name rejected: " .. tostring(errE))
+		mock.assertBlamesUser(errE, "spec.tag.luau", label .. " empty-name blame")
+	end
 	local okCL, errCL = pcall(function() q.Tag({ "a", "b" }) end)
 	assert(not okCL and string.find(tostring(errCL), "not lists", 1, true) ~= nil, "constructor rejects a list: " .. tostring(errCL))
 	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {}) :: any) end)

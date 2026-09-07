@@ -32,6 +32,7 @@ do
 	end)
 	assert(not okK, "AttributeKey validates")
 	mock.assertBlamesUser(errK, "spec.attribute.luau", "AttributeKey blame")
+	assert(not pcall(function() q.AttributeKey("") end), "an empty attribute name is rejected (`H-417`)")
 	local okM, errM = pcall(function()
 		q.Attribute.Merged(7)
 	end)

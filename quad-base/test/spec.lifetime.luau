@@ -242,6 +242,12 @@ do
 		quad.nativeClaim(root2)
 	end)
 	assert(not okC, "Claim claimed the root through the mock's nativeClaim")
+	-- `H-418` (외부 리뷰 G-06): a non-Instance first argument is refused at the surface
+	local okN, errN = pcall(function()
+		quad.Claim(nil, M("Frame")(quad.MapperRoot)({}))
+	end)
+	assert(not okN and string.find(tostring(errN), "first argument must be an Instance", 1, true) ~= nil, "Claim(nil) is a surface error: " .. tostring(errN))
+	mock.assertBlamesUser(errN, "spec.lifetime.luau", "Claim(nil) blame")
 	print("PASS")
 end
 

@@ -304,6 +304,12 @@ local function Init(module: any)
 	local bookkeeping = module._bookkeeping
 
 	local function drive(inst: any, flattened: { [any]: any })
+		-- `H-419` (외부 리뷰 G-07): a non-table props value used to die inside
+		-- `flatten` (`#input` / `next` — VM error blaming Modifier.luau); strict
+		-- typing is the first defense, this is the untyped-caller one
+		if type(flattened) ~= "table" then
+			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
+		end
 		-- Pipeline stages ⓪ + (b) + ⓪' (M3 unit 2 wired the batch gating; the
 		-- (a) PreRef/PostRef pre-pass and (c) postRefList join in M8 — between
 		-- the gate opening and this loop / after it, respectively).

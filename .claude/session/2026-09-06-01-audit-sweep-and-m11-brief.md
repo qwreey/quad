@@ -249,4 +249,7 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   잔여 스윕(무인용 ROADMAP 포인터 등); ② Q18 `setLength` mutate-then-throw, Q19 `PropTypes` 읽기 표면, Q20 destroyed
   inst 바인드 메시지, Q7 셋째. 원장 §12. **사용자 의견 여덟**(Slot 분할·Tween 위치·Tag 생성자·배치·Dispatch 폴더·
   Ref/·Attribute/·Attr) → opus 사실 조사 → `research/source-layout-plan.md` + `question.md`.
+- **Gemini 외부 리뷰 검증**(사용자 반입, *"진짜 실존 문제인지 확인하고 가져올래?"*): G-01 빈 태그 이름(+`AttributeKey("")`)·
+  G-06 `Claim`의 `inst` 무검사(실 백엔드 raw VM 에러)·G-07 `drive` 비테이블 props 셋 실존 → `H-417`~`H-419` 게이트;
+  분석·건전성 증명 열둘은 원장 §13에 기록. 원문 파일은 qa-request에 보존.
 

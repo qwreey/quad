@@ -96,6 +96,13 @@ local function Init(module: any)
 	end
 
 	local function Claim(inst: any, desc: any): any
+		-- `H-418` (외부 리뷰 G-06): the first argument was never checked — a nil or
+		-- non-Instance reached the backend's `nativeClaim`, whose first line indexes
+		-- it (raw VM error blaming `LifetimeHandle.luau`). `isInst` is the backend's
+		-- own predicate (the base stub raises a clear "not installed" error).
+		if not module.isInst(inst) then
+			Err.errorBefore(`Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
+		end
 		if not Brand.isMapperDescriptor(desc) then
 			Err.errorBefore("Claim: second argument must be a D.Mapper descriptor", SURFACE)
 		end

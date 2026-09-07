@@ -69,6 +69,9 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 or type(name) ~= "string" then
 				Err.errorBeforeNearest("Tag: names must be strings — a name list is a {string} array", SURFACE)
 			end
+			if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
+				Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
+			end
 			count += 1
 			if k > maxIndex then maxIndex = k end
 			target[name :: string] = true
@@ -77,6 +80,9 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 			Err.errorBeforeNearest("Tag: names must be strings — a name list cannot have nil holes", SURFACE)
 		end
 	elseif type(nameOrList) == "string" then
+		if nameOrList == "" then -- `H-417`
+			Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
+		end
 		target[nameOrList] = true
 	else
 		Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
