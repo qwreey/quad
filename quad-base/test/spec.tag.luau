@@ -101,6 +101,14 @@ do
 		assert(not pcall(function() q.Tag(bad) end), label .. ": constructor validates too")
 	end
 	assert(a:Added({ "b", "c" }):Contains("c") and not a:Added({}):Contains("b"), "a real {string} list (and an empty one) still works")
+	-- 4순회 `H-389`: the constructor takes names only (type `...string`) — lists go
+	-- through Added; the metatable message names the shape unless it IS a Tag
+	local okCL, errCL = pcall(function() q.Tag({ "a", "b" }) end)
+	assert(not okCL and string.find(tostring(errCL), "not lists", 1, true) ~= nil, "constructor rejects a list: " .. tostring(errCL))
+	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {})) end)
+	assert(string.find(tostring(errMT), "plain {string} array", 1, true) ~= nil and string.find(tostring(errMT), "Tag.Merged", 1, true) == nil, "non-Tag metatable table: shape message, no Merged hint: " .. tostring(errMT))
+	local _, errTG = pcall(function() a:Added(q.Tag("b")) end)
+	assert(string.find(tostring(errTG), "Tag.Merged", 1, true) ~= nil, "Tag value: Merged hint: " .. tostring(errTG))
 	print("PASS")
 end
 

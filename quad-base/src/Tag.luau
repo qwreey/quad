@@ -53,7 +53,14 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 		-- no-ops. Quad values are rejected by metatable or brand; a hash key, a
 		-- non-string element, or a nil hole is a validation error like any non-string.
 		if getmetatable(nameOrList) ~= nil or Brand.isPlainBranded(nameOrList) then
-			Err.errorBeforeNearest("Tag: names must be strings or a {string} list — a quad value is not a name list (combine Tags with Tag.Merged)", SURFACE)
+			-- 4순회 `H-389`: the `Tag.Merged` hint only when it IS a Tag — any other
+			-- metatable table (a user's OOP wrapper, an Instance) gets the shape message
+			Err.errorBeforeNearest(
+				if isTag(nameOrList)
+					then "Tag: names must be strings — a Tag value is not a name list (combine Tags with Tag.Merged)"
+					else "Tag: names must be strings — a name list is a plain {string} array (got a table with a metatable)",
+				SURFACE
+			)
 		end
 		local count, maxIndex = 0, 0
 		for k, name in pairs(nameOrList :: { [any]: any }) do
@@ -118,7 +125,14 @@ local Tag = setmetatable({}, {
 		-- silently drop everything after it; Attribute's __call does the same,
 		-- 통합 리뷰 발견). A nil slot is a validation error like any non-string.
 		for i = 1, select("#", ...) do
-			flattenInto(names, (select(i, ...)))
+			local name = (select(i, ...))
+			-- 4순회 `H-389`: the constructor takes NAMES (tag-plan "값 모양": `Tag(name1,
+			-- name2, ...)`, quad-types `...string`) — a `{string}` list here was a runtime-
+			-- only leniency the type never admitted; lists go through `tag:Added(list)`
+			if type(name) ~= "string" then
+				Err.errorBeforeNearest(`Tag: names must be strings — the constructor takes names, not lists (got {typeof(name)} at argument #{i}; use Tag():Added(list) for a \{string\} list)`, SURFACE)
+			end
+			flattenInto(names, name)
 		end
 		return newTag(names)
 	end,

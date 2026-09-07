@@ -300,4 +300,19 @@ do
 end
 
 print()
+print()
+print("=== 4순회 H-384 — fn 안에서 자기 자신을 drive로 바인드하려는 오용(H-147 (A)) — blame은 사용자의 Observer 생성 줄 (process → bindLifetime → _assertBindable, 최외곽) ===")
+do
+	local inst = mock.Instance.new("Frame")
+	local ok, err = pcall(function()
+		quad.Source(1):Observer(function(_, self)
+			quad.Dispatch.drive(inst, { self })
+		end)
+	end)
+	assert(not ok and string.find(tostring(err), "cannot bind an Observer from inside its own fn", 1, true) ~= nil, "guard fires: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.observer.luau", "drive-depth _assertBindable blames the user, not Observer.luau")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -1007,10 +1007,17 @@ local function Init(module: any)
 		end
 	end
 
-	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
+	-- 4순회 `H-385`: the install gates run at the PUBLIC entry — `Single` is tagged
+	-- and delegates to `List`, so a gate raised inside `List` was nearest to
+	-- `Single`'s own delegation line (`Slot.luau`), not the user's `:Single(...)`.
+	local function checkListInstall(self: any)
 		assertLive(self)
 		if self._listed then Err.errorBeforeNearest("Slot: already has :List installed", SURFACE) end
 		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List after manual CRUD was used", SURFACE) end
+	end
+
+	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
+		checkListInstall(self)
 		self._listed = true
 		self._listData = data
 		self._updateFn = updateFn
@@ -1025,6 +1032,7 @@ local function Init(module: any)
 	end
 
 	function Slot_mt.Single(self: any, state: any, updateFn: any?, opts: any?): any
+		checkListInstall(self) -- `H-385`: gate here so the blame is this call, not the delegation below
 		local uf = updateFn or identityUpdateFn
 		local data = if isState(state)
 			then state:Compute(function(v: any) local g = v:Get(); return (if g == nil then {} else { g }) end)
@@ -1046,6 +1054,20 @@ local function Init(module: any)
 		Brand.SlotBrand:register(self)
 		self._baseObserver = makeBaseObserver(self)
 		if initial ~= nil then
+			-- 4순회 `H-386` (the `H-380` container gate, sibling entry): `Slot(frame)` /
+			-- `Slot(tag)` / `Slot(source)` / `Slot({ k = v })` — a forgotten `{}` or a
+			-- quad value — passed `ipairs` as ZERO elements, then `_crudUsed` locked
+			-- the Slot so the first symptom was a later "cannot install :List after
+			-- manual CRUD was used" naming a feature never used. Container shape
+			-- only — a nil hole stays UB per slot-plan (`ipairs` stops, rest ignored).
+			if type(initial) ~= "table" or getmetatable(initial) ~= nil or Brand.isPlainBranded(initial) then
+				Err.errorBeforeNearest(`Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value needs the braces)`, SURFACE)
+			end
+			for k in pairs(initial :: { [any]: any }) do
+				if type(k) ~= "number" then
+					Err.errorBeforeNearest(`Slot: initial elements must be an array — hash key "{tostring(k)}" is not an element`, SURFACE)
+				end
+			end
 			self._crudUsed = true
 			-- Not `self:Add(v)` — the tagged Add would then be the nearest tagged
 			-- frame and blame THIS line instead of the user's `Slot{…}` (round15

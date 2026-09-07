@@ -42,14 +42,15 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- "nearest" is always the stub's direct caller — and in-tree that caller is
 -- quad internals (`Observer.luau` `Subscribe` → `canBound`, `Slot.luau` →
 -- `isInst`), which blamed `Observer.luau:139`/`Slot.luau:52`. Outermost
--- reaches the user's line from both direct and dispatch-depth calls; the one
--- case it does not serve (a handler author's own `canBound(v)` line inside a
--- handler) is §4 Q7 (untagged stubs).
+-- reaches the user's line from both direct and dispatch-depth calls; what it
+-- does not serve is any USER CALLBACK running inside a tagged public method
+-- (an Observer/Effect fn, `Tag:Apply`, a handler author's `canBound(v)` line) —
+-- those blame the public call that ran the callback; §4 Q7 (untagged stubs).
 local function notInstalled(name: string): (...any) -> ...any
 	local stub = function(...: any)
 		Err.errorBefore(
 			`quad: {name} is not available — no backend has installed the lifetime primitives / engine ops `
-				.. "(quad-roblox does this when it wraps the module; tests use mock.installLifetime)",
+				.. "(install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)",
 			SURFACE
 		)
 	end

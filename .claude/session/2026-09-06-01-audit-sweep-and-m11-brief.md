@@ -224,4 +224,13 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   Tag 이름 리스트가 `ipairs` 전용이라 Tag/Source/해시가 빈 목록으로 통과(`{string}` 배열 검증), LOW `H-381`
   gen-d 수확을 depth-0 스캐너로(파라미터 이름 오탐 제거), 정정 셋; ② `H-379` `Animate` nil/None 팔 없음(Q8)·
   Q7 스텁 무태그 여부. 원장 §9, 여섯 번째 커밋. **야간 순회 종료** — 매 순회가 직전 수정분의 회귀를 잡았다.
+- **4순회**(주간, 사용자 *"세션 한도 비어서 다시 순회 해도 돼. batch 아직 작아서 더 쌓고 있어볼래?"*): 사용자가
+  `/tasks`의 fable 팬아웃을 규약 위반으로 지적 → 메인이 **묻지 않고 `TaskStop`**(파인더 10·14만 토큰 소실 —
+  사용자: *"멈추는것도 유저 물어보고 해야하는데"*, 메모리+규약에 교훈) → 사용자 선택으로 같은 포크 재개 →
+  인자로 검증자·후속 서브에이전트를 `model: "opus"`로 지정하니 실제로 opus로 뜸(규약의 "지정 못 한다"
+  정정, 커밋 `dd830e3`). 사용자 판정: 문제는 `high`가 아니라 fable 팬아웃, 근거는 맥락 분리 불가. 결과 10건 —
+  ① `H-384` `_assertBindable` 최외곽(태그된 `bindLifetime` 뒤 nearest), `H-385` `Single` 게이트 blame, `H-386`
+  `Slot(initial)` 컨테이너 게이트, `H-388` gen-d 주석 제거 공유·depth 검사, `H-389` Tag 잔여(생성자 문자열만),
+  `H-390` 묶음(Store 게이트·`gatedRecompute` 호이스팅 등); ② Q9 Slot 좀비(정본 단언 미구현), Q10 `AddPlugin`
+  락 우회, Q11 setter 키, Q12 Tween 동일값. 원장 §10, 일곱 번째 커밋.
 

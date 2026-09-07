@@ -90,7 +90,7 @@ local function Init(module: any)
 			if type(defaults) ~= "table" then
 				Err.errorBeforeNearest(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
 			end
-			if getmetatable(defaults) ~= nil then
+			if getmetatable(defaults) ~= nil or Brand.isPlainBranded(defaults) then -- `H-377` gate, fourth door (4순회 `H-390`)
 				Err.errorBeforeNearest("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
 			end
 		end

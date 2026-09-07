@@ -277,6 +277,15 @@ do
 	assert(not pcall(function() s1:List(q.Source({}), function() end) end), "no :List after manual CRUD")
 	local s2 = Slot(); s2:List(q.Source({}), function() end)
 	assert(not pcall(function() s2:Add(Instance.new("Frame")) end), "no manual CRUD after :List")
+	-- 4순회 `H-385`: the same gates through the `:Single` sugar blame the user's
+	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot.luau
+	local _, errS1 = pcall(function() s1:Single(q.Source(nil)) end)
+	assert(string.find(tostring(errS1), "after manual CRUD", 1, true) ~= nil, "Single after CRUD is the same gate: " .. tostring(errS1))
+	mock.assertBlamesUser(errS1, "spec.slot.luau", "Single-after-CRUD blame")
+	local s3 = Slot(); s3:Single(q.Source(nil))
+	local _, errS2 = pcall(function() s3:Single(q.Source(nil)) end)
+	assert(string.find(tostring(errS2), "already has :List installed", 1, true) ~= nil, "Single twice is the same gate: " .. tostring(errS2))
+	mock.assertBlamesUser(errS2, "spec.slot.luau", "Single-twice blame")
 	print("PASS")
 end
 
@@ -704,6 +713,22 @@ do
 	end)
 	assert(not okN and string.find(tostring(errN), "nil/None cannot be an element", 1, true) ~= nil, "gate fired: " .. tostring(errN))
 	assert(string.find(tostring(errN), `spec.slot.luau:{lineAdd}:`, 1, true) ~= nil, "nested direct CRUD blames its own line, not the Subscribe/Set that ran the callback: " .. tostring(errN))
+	print("PASS")
+end
+
+print()
+print("=== 23. 4순회 H-386 — Slot(initial)의 컨테이너 모양 게이트: 잊은 {}·quad 값·해시 테이블이 요소 0개로 통과해 :List를 잠그던 것 ===")
+do
+	local frame = Instance.new("Frame")
+	for label, bad in { bareElement = frame, slotValue = Slot(), tagValue = q.Tag("x"), source = q.Source(1), hash = { gamma = frame }, str = "s" } :: { [string]: any } do
+		local ok, err = pcall(function() return Slot(bad) end)
+		assert(not ok and string.find(tostring(err), "initial elements must be", 1, true) ~= nil, label .. " rejected at construction: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.slot.luau", label .. " blame")
+	end
+	-- positive: a real array (and an empty one) — and a nil hole stays UB (ipairs stops), not an error
+	assert(Slot({}):Get(1) == nil and Slot({ frame }):Get(1) == frame, "arrays still construct")
+	local holed = Slot({ Instance.new("Frame"), nil, Instance.new("Frame") })
+	assert(holed:Get(1) ~= nil and holed:Get(2) == nil, "nil hole: ipairs stops (slot-plan UB), no gate")
 	print("PASS")
 end
 

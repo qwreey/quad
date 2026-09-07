@@ -13,8 +13,10 @@
    - **[2026-09-07]** `qa-request/handover-review-2026-09-07.md` §4 Q1~Q8(핸드오버 전체
      코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
      재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
-     `Animate` nil/None 통과 팔). §1·§5~§9의 ① 갈래(`H-344`~`H-381`; 야간 순회 0~3 전부)는
-     반영·커밋됨(CLI 49/49) — **야간 순회 종료**, 다음 리뷰는 §9 커밋 diff부터.
+     `Animate` nil/None 통과 팔·**Q9** 부모 Destroy 뒤 Slot 좀비(유일한 동작 결함 문항)·**Q10**
+     `AddPlugin` 락 우회·**Q11** Modifier setter 키·**Q12** Tween 동일값 재발행). §1·§5~§10의 ①
+     갈래(`H-344`~`H-391`; 야간 0~3 + 주간 4순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자
+     지시로 계속(batch 쌓는 중), 다음은 §11부터.
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/

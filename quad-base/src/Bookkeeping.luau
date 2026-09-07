@@ -253,6 +253,22 @@ local function Init(module: any)
 	-- for the position (`H-141`/Q3): the persistent closure captures it and
 	-- looks the current index up in bk.indexOfElement instead of freezing `i`;
 	-- constant-length slots omit it.
+	-- Init-scope (4순회 `H-390`, the `H-365` family): a per-call closure was built
+	-- for every constant-length element too (N per mount) and thrown away after one
+	-- call. Current position by element lookup, not captured index (`H-102`).
+	local function gatedRecompute(bk: any, blocker: any, ownerKey: any, element: any, i: number)
+		local cur = if element ~= nil then bk.indexOfElement[element] else i
+		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)
+		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, cur)
+		if blocker:IsOn() then
+			return -- batch registration in progress
+		end
+		if bk.recomputeBlocker:IsOn() then
+			return -- recompute reentry — the outer pass's rewind picks it up
+		end
+		recompute(ownerKey, bk)
+	end
+
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
 		checkPosition("setLength", i)
 		anchor = anchor or ownerKey
@@ -275,26 +291,14 @@ local function Init(module: any)
 		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)
 		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, i)
 
-		local function gatedRecompute()
-			-- current position by element lookup, not captured index (`H-102`)
-			local cur = if element ~= nil then bk.indexOfElement[element] else i
-			bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)
-			bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, cur)
-			if blocker:IsOn() then
-				return -- batch registration in progress
-			end
-			if bk.recomputeBlocker:IsOn() then
-				return -- recompute reentry — the outer pass's rewind picks it up
-			end
-			recompute(ownerKey, bk)
-		end
-
 		if Brand.isState(len) then
-			local observer = len:Observer(gatedRecompute) -- immediate first run is gated too
+			local observer = len:Observer(function()
+				gatedRecompute(bk, blocker, ownerKey, element, i)
+			end) -- immediate first run is gated too
 			module.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
 			bk.observers[i] = observer
 		else
-			gatedRecompute() -- constants go through the same gate
+			gatedRecompute(bk, blocker, ownerKey, element, i) -- constants go through the same gate, no closure (4순회 `H-390`)
 		end
 	end
 

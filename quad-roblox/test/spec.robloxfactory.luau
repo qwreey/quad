@@ -63,6 +63,8 @@ do
 
 	-- `H-307`: 도중 던지는 프로바이더가 슬롯을 점유하면 안 된다 — 마킹은
 	-- 성공 후라서, 실패한 설치 뒤 정상 재시도가 no-op로 삼켜지지 않는다
+	-- (4순회 `H-383`: 이건 슬롯 얘기다 — 부분 변경 뒤 던지는 팩토리의 재시도는
+	-- 그 위에 다시 돌아 핸들러가 중복된다, mutate-then-throw는 UB — module-lifecycle-plan)
 	local fresh = Quad.New()
 	local function throwingProvider(_quad: any): any
 		error("install exploded midway", 0)

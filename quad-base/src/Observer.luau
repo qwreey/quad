@@ -91,11 +91,14 @@ local function createImpl(module: any)
 	end
 
 	-- `H-184`: `bindLifetime` asks this BEFORE committing the binding — a refusal
-	-- must not leave a half-bound handle. Blame: nearest SURFACE frame past this
-	-- and `bindLifetime` (`H-231` walker — the old hand-counted 3 is gone).
+	-- must not leave a half-bound handle. Blame: OUTERMOST (4순회 `H-384`) — the
+	-- only in-tree chain is leaf `process` (tagged) → `bindLifetime` (tagged by the
+	-- backend) → here, so "nearest" stopped at `bindLifetime` and blamed
+	-- `Observer.luau`; outermost reaches the user's entry (`effect-plan.md` 의사코드:
+	-- "사용자 호출부"), the `H-378` lesson for a tagged intermediate frame.
 	function Impl._assertBindable(self: any)
 		if self._running then
-			Err.errorBeforeNearest("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
+			Err.errorBefore("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
 		end
 	end
 

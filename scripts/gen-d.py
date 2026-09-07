@@ -418,7 +418,11 @@ def emit():
         if not blk:
             raise SystemExit(f"gate: could not find `declare extern type {cls}` in {DEFS}")
         union_member_functions |= set(re.findall(r"^\s+function ([A-Za-z_]+)", blk.group(1), re.M))
-    qt = (ROOT / "quad-types" / "src" / "init.luau").read_text()
+    # [4순회 H-388] comments are stripped ONCE, before both scanners: `type_body`'s brace balance
+    # and `function_fields`' depth-0 scan must see the same text (a brace or paren inside a
+    # comment silently shifted the harvest). One alternation — a block comment wins where it
+    # starts, a line comment swallows a `--[[` that follows it on the same line.
+    qt = re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", (ROOT / "quad-types" / "src" / "init.luau").read_text(), flags=re.S)
 
     def type_body(tname):
         # `export type X = ... {` 뒤 중괄호 균형으로 본문을 끊는다 — 한 줄 선언
@@ -448,8 +452,6 @@ def emit():
     # harvested; a PascalCase parameter would have been a phantom collision → SystemExit), so the
     # harvest is a depth-0 scan of the type body instead.
     def function_fields(body):
-        body = re.sub(r"--\[\[.*?\]\]", "", body, flags=re.S)
-        body = re.sub(r"--[^\n]*", "", body)
         names, depth, i, n = set(), 0, 0, len(body)
         while i < n:
             c = body[i]
@@ -476,6 +478,10 @@ def emit():
                 i = j
                 continue
             i += 1
+        if depth != 0:
+            # a string literal type with a bracket, or an unbalanced body — never a silent
+            # shrink of the gate (file-head rule: no silent truncation)
+            raise SystemExit(f"gate: depth-0 scan ended at depth {depth} — cannot harvest function fields")
         return names
     for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>"):
         union_member_functions |= function_fields(type_body(tname))

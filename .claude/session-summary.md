@@ -2374,4 +2374,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   브랜드 사각·gen-d 게이트 `re.M`·LifetimeHandle 스텁 깊이 슬롯별, §7 — 전부 ①, 새 문항 0), 2순회
   `H-373`~`H-376`(엔진 op 스텁 셋·mock `nativeClaim`/`nativeFindChild`·`wrapElement` 깊이, §8; native*
   조합 폴백 약속은 §4 Q6), 3순회 `H-377`~`H-381`(Modifier 브랜드 구멍·스텁 nearest 회귀 복원·Tag 리스트 검증·
-  gen-d depth-0 스캐너, §9; `Animate` None 팔은 Q8, 스텁 무태그는 Q7) — **야간 순회 종료**.
+  gen-d depth-0 스캐너, §9; `Animate` None 팔은 Q8, 스텁 무태그는 Q7) — 야간 순회 종료. 주간 4순회
+  `H-382`~`H-391`(§10 — `_assertBindable` 최외곽·`Single`/`Slot(initial)` 게이트·Tag 생성자·`gatedRecompute`
+  호이스팅; Q9 Slot 좀비·Q10 `AddPlugin` 락·Q11 setter 키·Q12 Tween 동일값). 같은 날 메인이 도는 리뷰를
+  묻지 않고 죽인 실수 → 규약 정정(`/code-review` 인자로 서브에이전트 opus 지정 가능, `TaskStop` 금지).

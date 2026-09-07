@@ -106,8 +106,9 @@ local function isAttributeKey(x: any): boolean
 end
 -- 3순회 `H-377`: the quad values that are frozen PLAIN tables — no metatable,
 -- branded only here. Every `getmetatable(x) == nil` "plain table" gate
--- (Attribute/Modifier/Tag) must exclude them by brand, so the list lives once
--- (a shared pure predicate — conventions "하나가 두 일" allows exactly that).
+-- (Attribute/Modifier/Tag/Store — grep `isPlainBranded` for the current set)
+-- must exclude them by brand, so the list lives once (a shared pure predicate —
+-- conventions "하나의 무언가가 두 일을 하고 있지 않은지 유의한다" allows exactly that).
 local function isPlainBranded(x: any): boolean
 	return isAttributeKey(x) or isMapperDescriptor(x)
 end

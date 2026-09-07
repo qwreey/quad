@@ -338,4 +338,19 @@ do
 end
 
 print()
+print()
+print("=== 4순회 H-384 — fn 안에서 자기 자신을 drive로 바인드하려는 오용(H-147 (A)) — blame은 사용자의 Effect 생성 줄 (fn은 생성 시 즉시 돈다; drive → process → bindLifetime → _assertBindable, 최외곽) ===")
+do
+	local inner = mock.Instance.new("Frame")
+	local ok, err = pcall(function()
+		Effect(function(self)
+			quad.Dispatch.drive(inner, { self })
+		end)
+	end)
+	assert(not ok and string.find(tostring(err), "cannot bind an Effect from inside its own fn", 1, true) ~= nil, "guard fires: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.effect.luau", "drive-depth _assertBindable blames the user, not Effect.luau")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

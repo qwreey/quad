@@ -155,4 +155,15 @@ do
 end
 
 print()
+print()
+print("=== 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttributeKey)이면 plain 테이블 문에서 거부 ===")
+do
+	local ok, err = pcall(function()
+		Store(Quad.AttributeKey("k") :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "plain table", 1, true) ~= nil, "AttributeKey is not a defaults table: " .. tostring(err))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -288,7 +288,10 @@ end
 --     storing it raw here would make the two construction paths diverge
 --     silently — use `mod:Field(fn)` for transforms.
 local function isPlainFieldTable(arg: any): boolean
-	return type(arg) == "table" and getmetatable(arg) == nil and not isPlainBranded(arg) and not isState(arg) and not isHandlerLayerValue(arg)
+	-- 4순회 `H-390`: `not isState / not isHandlerLayerValue` were dead after the
+	-- metatable check (every one of those values carries a metatable) — the same
+	-- shape as Attribute's gate now
+	return type(arg) == "table" and getmetatable(arg) == nil and not isPlainBranded(arg)
 end
 
 -- shared by `Modifier(...)` (tag true) and every TypedFactory constructor (tag =
