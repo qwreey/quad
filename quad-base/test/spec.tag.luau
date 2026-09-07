@@ -87,11 +87,12 @@ do
 	end)
 	assert(not okM, "Merged validates")
 	mock.assertBlamesUser(errM, "spec.tag.luau", "Merged blame")
-	-- 3순회 `H-380`: a name LIST is a `{string}` array — a Tag value / Source /
-	-- AttributeKey / hash table used to pass `ipairs` as an EMPTY list, so
-	-- `Added(Tag)`/`Removed(Tag)` were silent no-ops
+	-- 3순회 `H-380`: a Source / AttributeKey / hash table / nil-hole list used to pass
+	-- `ipairs` as an EMPTY list (silent no-op) — still validation errors. A Tag VALUE
+	-- left this set on 2026-09-07 (user decision, `research/source-layout-plan.md` 3절
+	-- (b)): `names` is `string | Tag | { names }` everywhere, see the positives below.
 	local a = q.Tag("alpha")
-	for label, bad in { tagValue = q.Tag("gamma"), source = q.Source(1), attrKey = q.AttributeKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" } } :: { [string]: any } do
+	for label, bad in { source = q.Source(1), attrKey = q.AttributeKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" }, nested = { "b", { 42 } } } :: { [string]: any } do
 		local okL, errL = pcall(function()
 			a:Added(bad)
 		end)
@@ -101,22 +102,30 @@ do
 		assert(not pcall(function() q.Tag(bad) end), label .. ": constructor validates too")
 	end
 	assert(a:Added({ "b", "c" }):Contains("c") and not a:Added({}):Contains("b"), "a real {string} list (and an empty one) still works")
-	-- 4순회 `H-389`: the constructor takes names only (type `...string`) — lists go
-	-- through Added; the metatable message names the shape unless it IS a Tag
+	-- 2026-09-07 (3절 (b)): the three shapes through every door — constructor, Added, Removed —
+	-- and nested to any depth; Tag.Merged stays the Tags-only strict spelling
+	local g = q.Tag("gamma", "delta")
+	local mixed = q.Tag(a, "x", { "y", g, { "w" } }, { "list", "only" })
+	for _, name in { "alpha", "x", "y", "gamma", "delta", "w", "list", "only" } do
+		assert(mixed:Contains(name), "constructor flattens strings, Tags and nested lists: " .. name)
+	end
+	assert(q.Tag({ "a", "b" }):Contains("b"), "constructor takes a list directly (H-389 reversed)")
+	assert(a:Added(g):Contains("delta") and a:Added({ g, "z" }):Contains("z"), "Added takes a Tag / a list holding a Tag")
+	assert(not mixed:Removed(g):Contains("gamma") and mixed:Removed({ "x", g }):Contains("alpha"), "Removed takes the same union")
+	assert(not pcall(function() q.Tag.Merged(g, "x" :: any) end), "Merged stays Tags-only")
 	-- `H-417` (외부 리뷰 G-01): an empty name is rejected at the surface, not inside the engine op
 	for label, f in { ctor = function() q.Tag("") end, added = function() a:Added("") end, list = function() a:Added({ "b", "" }) end } :: { [string]: () -> () } do
 		local okE, errE = pcall(f)
 		assert(not okE and string.find(tostring(errE), "empty string", 1, true) ~= nil, label .. ": empty tag name rejected: " .. tostring(errE))
 		mock.assertBlamesUser(errE, "spec.tag.luau", label .. " empty-name blame")
 	end
-	local okCL, errCL = pcall(function() q.Tag({ "a", "b" }) end)
-	assert(not okCL and string.find(tostring(errCL), "not lists", 1, true) ~= nil, "constructor rejects a list: " .. tostring(errCL))
+	-- 4순회 `H-389` (ii)/(iii) kept: the metatable message names the shape, the plain-branded
+	-- message names its kind — neither mentions a metatable it has not got
 	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {}) :: any) end)
-	assert(string.find(tostring(errMT), "plain {string} array", 1, true) ~= nil and string.find(tostring(errMT), "Tag.Merged", 1, true) == nil, "non-Tag metatable table: shape message, no Merged hint: " .. tostring(errMT))
-	local _, errTG = pcall(function() a:Added(q.Tag("b") :: any) end)
-	assert(string.find(tostring(errTG), "Tag.Merged", 1, true) ~= nil, "Tag value: Merged hint: " .. tostring(errTG))
+	assert(string.find(tostring(errMT), "table with a metatable", 1, true) ~= nil, "non-Tag metatable table: shape message: " .. tostring(errMT))
 	local _, errAK = pcall(function() a:Added(q.AttributeKey("k") :: any) end)
 	assert(string.find(tostring(errAK), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(errAK), "metatable", 1, true) == nil, "plain-branded value: names its kind, not a metatable it has not got (5순회): " .. tostring(errAK))
+	assert((a :: any).__quadTag == true, "TagMarker field readable (H-300)")
 	print("PASS")
 end
 

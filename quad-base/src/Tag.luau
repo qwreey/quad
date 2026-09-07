@@ -3,14 +3,22 @@
 	round16). Canonical: `.claude/base/tag-plan.md` (value shape "값 모양",
 	mechanism "메커니즘 — `TagHandler`", placement "패키지 배치"), as-is.
 
-	Value API (immutable clone chaining — every operation returns a clone):
-	  Tag(name1, name2, ...) -> tag        -- vararg constructor; Tag() is valid
-	  tag:Added(string | {string}) -> Tag  -- clone + add name(s)
-	  tag:Removed(string | {string}) -> Tag
+	Value API (immutable clone chaining — every operation returns a clone).
+	`names` everywhere below is `string | Tag | { names }` — a name, another
+	Tag (its whole set), or a plain list of those, nested to any depth
+	(user decision 2026-09-07, `research/source-layout-plan.md` 3절 (b) —
+	*"Tag() 로 초기 부터 잡는게 유리"*; this reverses `H-389`'s strings-only
+	constructor and `H-380`'s "a Tag is not a list" rejection — the same
+	`flattenInto` door now takes all three, like `Attribute(store, attr,
+	{ plain })` always did):
+	  Tag(...names) -> tag                 -- vararg constructor; Tag() is valid
+	  tag:Added(names) -> Tag              -- clone + add name(s)
+	  tag:Removed(names) -> Tag
 	  tag:Contains(name) -> boolean
 	  tag:Names() -> iterator<string>
 	  tag:Apply(factory) -> U              -- factory(self) sugar (Modifier pattern)
-	  Tag.Merged(tag1, tag2, ...) -> Tag   -- lossless set union
+	  Tag.Merged(tag1, tag2, ...) -> Tag   -- lossless set union (Tags only — the
+	                                          strict spelling of Tag(tag1, tag2, ...))
 
 	Handler (registered by InitTag on each module instance — the `H-278` idiom:
 	the module that declares the value owns its handler registration; the
@@ -36,6 +44,12 @@ local isTag = Brand.isTag
 
 local TagImpl = {}
 TagImpl.__index = TagImpl
+-- `TagMarker` (quad-types) — the type promises the marker, so the value carries
+-- it (`H-300`); read through `__index`, zero per-instance slots. Identity is
+-- still the brand (`isTag`) — this field is the input-position type's evidence
+-- (user decision 2026-09-07: Tag/Attribute/Observer/EffectHandle go marker
+-- like State/Slot, typing-limits 8.11).
+TagImpl.__quadTag = true
 
 -- names are stored as a set ({[name]: true}) plus nothing else — order is
 -- irrelevant to the union semantics and the engine batch call takes a list
@@ -53,41 +67,50 @@ local function addName(target: { [string]: true }, name: string)
 	target[name] = true
 end
 
-local function flattenInto(target: { [string]: true }, nameOrList: any)
-	if type(nameOrList) == "table" then
-		-- 3순회 `H-380`: a `{string}` LIST only (tag-plan "값 모양" — `string | {string}`).
-		-- The old `ipairs` walk saw a Tag value / Source / AttributeKey / hash table
-		-- as an EMPTY list — `a:Added(Tag("x"))` and `a:Removed(Tag("x"))` were silent
-		-- no-ops. Quad values are rejected by metatable or brand; a hash key, a
-		-- non-string element, or a nil hole is a validation error like any non-string.
-		if getmetatable(nameOrList) ~= nil or Brand.isPlainBranded(nameOrList) then
-			-- 4순회 `H-389`: the `Tag.Merged` hint only when it IS a Tag — any other
-			-- metatable table (a user's OOP wrapper, an Instance) gets the shape message
+-- One door for every name-bearing argument (3절 (b), user decision 2026-09-07):
+-- a string, a Tag value (its whole name set — `Tag.Merged` is the Tags-only
+-- spelling of the same union), or a plain array whose elements are again any
+-- of the three (nested lists flatten). Everything else is a validation error
+-- with the shape named — a hash key, a nil hole (`H-380`), a non-Tag metatable
+-- table, a plain-branded quad value (`H-389`'s messages, minus the "a Tag is
+-- not a list" rejection those two rounds added and this decision reverses).
+-- The type side is `TagNames = string | { read [number]: TagNames } | TagMarker`
+-- (quad-types; `read` indexer because a mutable `{T}` is invariant and would
+-- reject a `{Tag | string}` literal — spike 2026-09-07). Hash tables slip past
+-- the type (a table without an indexer satisfies an indexer type), so this
+-- runtime gate is the one that names them.
+local function flattenInto(target: { [string]: true }, v: any)
+	if type(v) == "string" then
+		addName(target, v)
+	elseif isTag(v) then
+		for name in pairs((v :: any)._names :: { [string]: true }) do
+			target[name] = true
+		end
+	elseif type(v) == "table" then
+		if getmetatable(v) ~= nil or Brand.isPlainBranded(v) then
 			Err.errorBeforeNearest(
-				if isTag(nameOrList)
-					then "Tag: names must be strings — a Tag value is not a name list (combine Tags with Tag.Merged)"
-					elseif Brand.isPlainBranded(nameOrList)
-					then "Tag: names must be strings — a name list is a plain {string} array (got an AttributeKey/Mapper descriptor)"
-					else "Tag: names must be strings — a name list is a plain {string} array (got a table with a metatable)",
+				if Brand.isPlainBranded(v)
+					then "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttributeKey/Mapper descriptor)"
+					else "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
 				SURFACE
 			)
 		end
 		local count, maxIndex = 0, 0
-		for k, name in pairs(nameOrList :: { [any]: any }) do
-			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 or type(name) ~= "string" then
-				Err.errorBeforeNearest("Tag: names must be strings — a name list is a {string} array", SURFACE)
+		for k, item in pairs(v :: { [any]: any }) do
+			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
+				Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table", SURFACE)
 			end
 			count += 1
-			if k > maxIndex then maxIndex = k end
-			addName(target, name :: string)
+			if k > maxIndex then
+				maxIndex = k
+			end
+			flattenInto(target, item)
 		end
 		if count ~= maxIndex then
-			Err.errorBeforeNearest("Tag: names must be strings — a name list cannot have nil holes", SURFACE)
+			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
 		end
-	elseif type(nameOrList) == "string" then
-		addName(target, nameOrList)
 	else
-		Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
+		Err.errorBeforeNearest(`Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)
 	end
 end
 
@@ -125,24 +148,17 @@ function TagImpl.Apply(self: any, factory: any): any
 	return factory(self)
 end
 
--- Callable namespace: Tag(...) constructs, Tag.Merged composes.
+-- Callable namespace: Tag(...names) constructs, Tag.Merged composes Tags.
 local Tag = setmetatable({}, {
-	__call = function(_self, ...: string)
-		-- vararg stays (static literal call sites — tag-plan "값 모양"); pack
-		-- once and reuse the table path of Added via an empty tag
+	__call = function(_self, ...: any)
+		-- vararg stays (static literal call sites — tag-plan "값 모양"); every slot
+		-- goes through the one door, so `Tag(otherTag, "x", { "y", "z" })` works
 		local names: { [string]: true } = {}
 		-- visit every vararg slot (select, not `{...}`+ipairs — a nil hole would
 		-- silently drop everything after it; Attribute's __call does the same,
-		-- 통합 리뷰 발견). A nil slot is a validation error like any non-string.
+		-- 통합 리뷰 발견). A nil slot is a validation error like any non-name.
 		for i = 1, select("#", ...) do
-			local name = (select(i, ...))
-			-- 4순회 `H-389`: the constructor takes NAMES (tag-plan "값 모양": `Tag(name1,
-			-- name2, ...)`, quad-types `...string`) — a `{string}` list here was a runtime-
-			-- only leniency the type never admitted; lists go through `tag:Added(list)`
-			if type(name) ~= "string" then
-				Err.errorBeforeNearest(`Tag: names must be strings — the constructor takes names, not lists (got {typeof(name)} at argument #{i}; use Tag():Added(list) for a \{string\} list)`, SURFACE)
-			end
-			flattenInto(names, name)
+			flattenInto(names, (select(i, ...)))
 		end
 		return newTag(names)
 	end,

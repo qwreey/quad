@@ -154,17 +154,25 @@ export type Blocker = {
 -- [2026-09-03 사용자 확정] 제네릭 자체가 폐기된 무타입 프리미티브다(값 타입은
 -- 배열부 슈가 `AttributeSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
 -- 파라미터 값 좁힘 미실측" 항목은 닫혔다(typing-limits §3).
+-- [2026-09-07 사용자 결정 — `research/source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
+-- `TagNames` = 문자열 | 다른 Tag(마커 — 입력 자리, 8.11) | 그것들의 plain 리스트(중첩 허용).
+-- 리스트 인덱서가 `read`인 이유: 가변 `{T}`는 T에 불변이라 `{ tag, "x" }` 리터럴(`{Tag | string}`)을
+-- 거부한다(스파이크 2026-09-07). 해시 테이블은 인덱서 타입을 통과하므로(인덱서 없는 테이블은
+-- 인덱서 타입의 서브타입) 런타임 `flattenInto`가 잡는다. `H-389`의 `...string` 생성자를 되돌림.
+export type TagMarker = { read __quadTag: true }
+export type TagNames = string | { read [number]: TagNames } | TagMarker
 export type Tag = {
-	Added: (self: Tag, nameOrList: string | { string }) -> Tag,
-	Removed: (self: Tag, nameOrList: string | { string }) -> Tag,
+	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
+	Added: (self: Tag, names: TagNames) -> Tag,
+	Removed: (self: Tag, names: TagNames) -> Tag,
 	Contains: (self: Tag, name: string) -> boolean,
 	Names: (self: Tag) -> () -> string?,
 	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
 }
 -- `H10-3`/`H10-4` (d): 교집합(함수∩테이블 — 무거주라 값 캐스트 붕괴 +
 -- 제네릭 오염)이 아니라 솔버의 콜러블-테이블 표기로 선언한다. 실측
--- A/B·잔여 구멍은 typing-limits 8.6절.
-export type TagConstructor = setmetatable<{ Merged: (...Tag) -> Tag }, { __call: (self: any, ...string) -> Tag }>
+-- A/B·잔여 구멍은 typing-limits 8.6절. `Merged`는 Tag만 받는 엄격형(`Tag(a, b)`와 결과 같음).
+export type TagConstructor = setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...TagNames) -> Tag }>
 
 -- `Tween<T>` — 값-레벨 트윈 래퍼(M11 단위 ①, `base/tween-plan.md` "확정: `Tween{...}`
 -- 최종 모양" 절). quad-types는 엔진 무관이라 Roblox 타입 자리(`Info`/`Style`/

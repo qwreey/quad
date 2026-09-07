@@ -29,10 +29,22 @@
 
 ## 값 모양 — `Modifier`와 같은 immutable clone 체이닝
 
+**⭐ [2026-09-07 사용자 결정 — 이름 자리 통일] 생성자·`Added`·`Removed`의 이름 자리는 전부
+`names = string | Tag | { names }`다** — 문자열, 다른 Tag(그 집합 전부), 그 둘의 plain 리스트(중첩
+허용). `Tag(a, "x", { "y", b })`처럼 처음부터 다른 Tag에서 가져와 잡을 수 있다. 사용자 원문(회신,
+`research/source-layout-plan.md` 3절 (b) 권고 채택): *"권고대로, flattenInto 와 타입을 고치면
+되므로, 비용도 크지 않은편"*, 발단은 *"Tag() 로 초기 부터 잡는게 유리한데 … flattenInto 를 약간
+건들고 타입이 변경되어야하는것 아닌지?"*. 이로써 `H-389`(생성자는 `...string`)와 `H-380`의 "Tag는
+리스트가 아니다" 거부는 **되돌려졌고**, 나머지(`Source`/`AttributeKey`/해시 테이블/nil 구멍 거부,
+모양을 이름 짓는 메시지)는 그대로다. `Tag.Merged`는 Tag만 받는 엄격형으로 남는다(`Tag(a, b)`와
+결과 같음 — 공개 이름 제거는 결정 대상이라 두지 않았다). 타입은 quad-types `TagNames = string |
+{ read [number]: TagNames } | TagMarker`(리스트 인덱서가 `read`인 이유와 해시 테이블이 타입을
+통과하는 한계는 그 선언의 주석). 아래 블록의 `string | {string}`은 옛 표기다.
+
 ```
-Tag(name1, name2, ...)                  -- 생성자, 가변인자. Tag() 빈 값도 유효
-tag:Added(name: string | {string}): Tag   -- clone 후 이름(들) 추가, 원본 안 건드림
-tag:Removed(name: string | {string}): Tag -- clone 후 이름(들) 제거 — 검증은 Added와 동일(H-344)
+Tag(...names)                           -- 생성자, 가변인자. Tag() 빈 값도 유효
+tag:Added(names): Tag                   -- clone 후 이름(들) 추가, 원본 안 건드림
+tag:Removed(names): Tag                 -- clone 후 이름(들) 제거 — 검증은 Added와 동일(H-344)
 tag:Contains(name): boolean -- 멤버십 확인
 tag:Names(): iterator<string> -- 담고 있는 이름 순회(아래 "메커니즘" 절이 쓰는 것)
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
@@ -69,9 +81,11 @@ API처럼 보이기 때문** — 실제로는 항상 `table.clone` 후 반환(Mo
 plain string이라(핸들러 계층 값처럼 identity/생명주기가 얽힌 값이
 아님) 테이블로 감싸 넘기든 아니든 의미가 완전히 동일, 오버로드가
 모호해질 여지가 없음. `Tag(name1, name2, ...)` 생성자는 그대로 vararg
-유지(정적 리터럴 호출 자리라 동적 조립 문제가 없음) — 내부적으로
+유지(정적 리터럴 호출 자리라 동적 조립 문제가 없음) — ~~내부적으로
 `{...}`로 한 번 패킹해 `self:Added(packed)`(단일 clone, 테이블 인자
-경로 재사용)를 호출하는 것으로 구현.
+경로 재사용)를 호출하는 것으로 구현~~ **[2026-09-07 실물 정정]** 구현은 vararg 슬롯을
+`select`로 하나씩 같은 `flattenInto` 문에 넣는다(`{...}` 패킹은 nil 구멍 뒤를 조용히
+버려서 — 통합 리뷰 발견). 이 절 머리 배너대로 각 슬롯은 `names` 유니언 전부를 받는다.
 
 **children 배열 슬롯(array-part)에 직접 놓임** — `Frame { Tag("selected") }`.
 정적으로 여러 개 놓아도(`Frame { Tag("a"), Tag("b") }`) 각자 독립적으로
