@@ -27,7 +27,12 @@ fi
 # Roblox 타입(TweenInfo/Enum/Instance…)을 쓰므로 핀 고정된 globalTypes defs로 본다
 # (scripts/roblox-defs/ — luau-lsp 버전은 mise.toml 핀과 맞출 것).
 echo "=== luau-analyze (engine-agnostic) quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau"
-luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau || fail=1
+# [2026-09-07 H-404, 사용자 실측] `function name()` without a prior `local name` is a
+# GLOBAL assignment (sugar for `name = function`); luau-analyze only lints it
+# (GlobalUsedAsLocal, exit 0), so the gate is here — any such lint fails the run.
+analyze_out=$(luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau 2>&1) || fail=1
+printf '%s\n' "$analyze_out"
+if printf '%s' "$analyze_out" | grep -q "GlobalUsedAsLocal"; then echo "FAIL: implicit global function definition (add a forward \`local\` declaration)"; fail=1; fi
 # ⚠️ defs 로드는 luau-analyze가 아니라 luau-lsp의 기능이다(이 빌드의
 # luau-analyze엔 --defs 옵션 자체가 없음 — 실측). 새 솔버 플래그 필수
 # (없으면 quad-types의 type function이 "syntax not supported"로 죽음),
@@ -59,6 +64,7 @@ lsp_out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
 	--ignore "**/luau_packages/**" \
 	quad-roblox/src quad-roblox/test/spec.*.luau 2>&1) || fail=1
 printf '%s\n' "$lsp_out" | grep -v "^\[INFO\]" || true
+if printf '%s' "$lsp_out" | grep -q "GlobalUsedAsLocal"; then echo "FAIL: implicit global function definition (quad-roblox)"; fail=1; fi
 for f in "${files[@]}"; do
 	echo "=== $f"
 	luau "$f" || fail=1

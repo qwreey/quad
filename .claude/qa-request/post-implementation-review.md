@@ -252,5 +252,5 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 
 | ID | 자리 | 무엇 | 처리 |
 |---|---|---|---|
-| **`H-403`** (①, 사용자 지시) | `Slot.luau` `isSlot` | 형제 술어는 전부 `Brand.luau`에 사는데 `isSlot`만 `Slot.luau`의 로컬 함수 + `module.isSlot` 설치였다(`slot-plan.md`: "`isSlot`은 `Brand`의") | `Brand.isSlot`으로 이동·export, `Slot.luau`는 그걸 재노출(`module.isSlot`·`_slotInternal.isSlot` 동일 함수), `init.luau` 리터럴에 합류, `Modifier`/`Bookkeeping`의 `SlotBrand:is` 직접 호출 셋도 `Brand.isSlot`로 |
+| **`H-403`** (①, 사용자 지시) | `Slot.luau` `isSlot` | 형제 술어는 전부 `Brand.luau`에 사는데 `isSlot`만 `Slot.luau`의 로컬 함수 + `module.isSlot` 설치였다(`slot-plan.md`: "`isSlot`은 `Brand`의") | `Brand.isSlot`으로 이동·export, `Slot.luau`는 그걸 재노출(`module.isSlot`·`_slotInternal.isSlot` 동일 함수), `init.luau` 리터럴에 합류, `Modifier`/`Bookkeeping`의 `SlotBrand:is` 직접 호출 셋도 `Brand.isSlot`로 || **`H-404`** (①, 사용자 실측) | `Slot.luau` 전방 선언 + `scripts/test.sh` | 사용자: *"function 을 그냥 쓰는 곳이 있던데, 이거 실제로는 name = function 형태의 슈거라서 위쪽에서 선언 없으면 글로벌로 오염됨"*(REPL 실측 넷). 전수 대조: `src`·`test` 97파일에서 앞선 `local` 없는 `function name(`은 **0건** — `Slot.luau`의 여덟(`materializeSlotTree`…`Slot`)은 96행 `local …` 전방 선언에 전부 들어 있다(상호 재귀라 필요한 패턴). 다만 선언과 정의가 150~950행 떨어져 있고 luau-analyze는 이걸 lint(`GlobalUsedAsLocal`, exit 0)로만 내 `test.sh`가 통과시킨다 — 이름 하나 빠지면 조용히 전역 | 전방 선언에 규칙 주석; `test.sh`가 luau-analyze·luau-lsp 출력에서 `GlobalUsedAsLocal`을 잡으면 실패(게이트). 코드 변경 0 |
 

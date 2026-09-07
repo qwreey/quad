@@ -93,6 +93,11 @@ local function Init(module: any)
 	local isSlot = Brand.isSlot -- `H-403`: the predicate lives in Brand.luau with its siblings
 
 	-- forward decls (mutual recursion)
+	-- ⚠️ Forward declarations for the mutually recursive tree functions below —
+	-- every bare `function name(...)` further down MUST be listed here: without a
+	-- prior `local`, `function name()` is sugar for a GLOBAL assignment (사용자
+	-- 실측 2026-09-07, `H-404`). `scripts/test.sh` fails on luau-analyze's
+	-- GlobalUsedAsLocal lint so a missing name here cannot slip through.
 	local Slot, materializeSlotTree, mountSlotTree, markMountedTree, attachSlot, destroySlotTree, unmountSlotTree, teardownTree
 
 	-- wrap: element-type whitelist gate (H-40) + State→wrapper-Slot. raw* only
