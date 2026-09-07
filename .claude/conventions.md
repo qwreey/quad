@@ -297,6 +297,14 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
      커밋 절차(git status/diff 검토, 메시지 작성)로 넘어갈 것.
   **`git commit`은 항상 메인 세션이 직접 함** — 커밋 전 diff 재검토는
   대화형 맥락이 필요해서 위임하지 않는다.
+- **⭐ [2026-09-07 신설 — 메인 자체 사고] `./scripts/test.sh`의 판정은 exit code다 —
+  "ALL PASS" 줄을 세지 말 것.** 스크립트는 luau-analyze/luau-lsp 진단이 있으면
+  `fail=1`로 끝나지만 spec 실행은 계속돼 "ALL PASS"가 49번 찍힌다. 2026-09-07 4순회
+  커밋에 spec 타입 에러가 들어간 뒤 다섯 커밋 동안 exit 1이었는데 메인이 개수만
+  세어 "CLI 49/49"로 보고했다(원장 `H-405`). 판정은 `./scripts/test.sh; echo $?`의 0,
+  보고 문구는 "test.sh exit 0(스펙 N)". 같은 날 게이트 하나 추가: `function name()`이
+  앞선 `local` 없이 쓰이면(전역 대입 슈거 — 사용자 REPL 실측) luau-analyze의
+  `GlobalUsedAsLocal` lint를 잡아 실패시킨다(`H-404`).
 - **⭐ [2026-09-06 신설 — 사용자 지적] 백그라운드 에이전트의 "끝났는가"는 하네스
   알림이 정하지, 에이전트 본문이 정하지 않는다.** 밤샘 구간에 `/code-review`
   포크 둘이 최종 메시지에 *"검증자 N건이 아직 도는 중 — 끝나면 보내겠다"*고

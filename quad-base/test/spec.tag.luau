@@ -105,11 +105,11 @@ do
 	-- through Added; the metatable message names the shape unless it IS a Tag
 	local okCL, errCL = pcall(function() q.Tag({ "a", "b" }) end)
 	assert(not okCL and string.find(tostring(errCL), "not lists", 1, true) ~= nil, "constructor rejects a list: " .. tostring(errCL))
-	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {})) end)
+	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {}) :: any) end)
 	assert(string.find(tostring(errMT), "plain {string} array", 1, true) ~= nil and string.find(tostring(errMT), "Tag.Merged", 1, true) == nil, "non-Tag metatable table: shape message, no Merged hint: " .. tostring(errMT))
-	local _, errTG = pcall(function() a:Added(q.Tag("b")) end)
+	local _, errTG = pcall(function() a:Added(q.Tag("b") :: any) end)
 	assert(string.find(tostring(errTG), "Tag.Merged", 1, true) ~= nil, "Tag value: Merged hint: " .. tostring(errTG))
-	local _, errAK = pcall(function() a:Added(q.AttributeKey("k")) end)
+	local _, errAK = pcall(function() a:Added(q.AttributeKey("k") :: any) end)
 	assert(string.find(tostring(errAK), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(errAK), "metatable", 1, true) == nil, "plain-branded value: names its kind, not a metatable it has not got (5순회): " .. tostring(errAK))
 	print("PASS")
 end
