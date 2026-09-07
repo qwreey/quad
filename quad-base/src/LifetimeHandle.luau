@@ -8,7 +8,7 @@
 
 	Contract (types in `quad-types`):
 	  bindLifetime(inst, value)   -- inst is needed here and only here
-	  unbindLifetime(value)       -- early release of one value; no-op if unbound
+	  unbindLifetime(value)       -- early release of one value; no-op if unbound, nil is an error (`H-474`)
 	  canBound(value)  -> boolean -- "may I bind this now?"  true = not bound anywhere
 	  canExecute(value)-> boolean -- "may this fire now?"    emit-propagation gate
 	`canBound(v) == not canExecute(v)` — both wrap one private predicate

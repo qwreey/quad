@@ -2020,6 +2020,9 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
 ### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
 
 위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데
+**[2026-09-07 밤 `H-467`, 사용자 Q30 *"의미론적으로 None == nil이 맞다"*]** `:Single`은 `None`을 `nil`과 같게 본다 —
+빈 배열로 변환돼 KeyGone 언마운트를 탄다(`{ None }`이 `updateFn`의 item으로 가던 것은 Gemini 5차 `G-16`).
+
 `Slot:Add(state)` 라 sugar(`:Single` + 기본 identity `updateFn`, 아래 "반응형
 raw 요소" 절)로 들어온 요소는 **사용자가 `state`에 담아 넘긴 것**이라 Slot이
 죽이면 안 된다 — `state<Frame>` 교체가 이전 값을 파괴하지 않는다는 확정
@@ -2263,8 +2266,8 @@ function Slot:Single(state, updateFn, opts)
     updateFn = updateFn or identityUpdateFn   -- [2026-08-11 일곱 번째 세션] 기본값 추가
 
     local data = if isState(state)
-        then state:Compute(function(v) return (if v:Get() == nil then {} else { v:Get() }) end)
-        else (if state == nil then {} else { state })
+        then state:Compute(function(v) local g = v:Get(); return (if g == nil or g == None then {} else { g }) end)  -- None == nil (H-467)
+        else (if state == nil or state == None then {} else { state })
 
     return self:List(data, function(item, index, offset, prev, ud)
         return updateFn(item, offset, prev, ud)   -- index는 항상 상수라 안 넘김

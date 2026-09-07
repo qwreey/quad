@@ -14,7 +14,7 @@
 	  Tag(...names) -> tag                 -- vararg constructor; Tag() is valid
 	  tag:Added(names) -> Tag              -- clone + add name(s)
 	  tag:Removed(names) -> Tag
-	  tag:Contains(name) -> boolean
+	  tag:Contains(...names) -> boolean     -- all present (vararg; nil is an error)
 	  tag:Names() -> iterator<string>
 	  tag:Apply(factory) -> U              -- factory(self) sugar (Modifier pattern)
 	  Tag.Merged(tag1, tag2, ...) -> Tag   -- lossless set union (Tags only — the
@@ -133,8 +133,21 @@ function TagImpl.Removed(self: any, nameOrList: any): any
 	return newTag(names)
 end
 
-function TagImpl.Contains(self: any, name: string): boolean
-	return self._names[name] == true
+-- `H-468` (Gemini 5차 G-20, 사용자 Q32): variadic — every name must be present; a nil
+-- (or non-string) argument is an error, never a silent false. Zero names (a dynamic
+-- unpack) is allowed and vacuously true.
+function TagImpl.Contains(self: any, ...: string): boolean
+	local n = select("#", ...)
+	for i = 1, n do
+		local name = select(i, ...)
+		if type(name) ~= "string" then
+			Err.errorBeforeNearest(`Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)
+		end
+		if self._names[name] ~= true then
+			return false
+		end
+	end
+	return true
 end
 
 function TagImpl.Names(self: any): () -> string?

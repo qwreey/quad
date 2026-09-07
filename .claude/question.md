@@ -184,6 +184,16 @@
   등록 op)(Q28·Q29는 2026-09-07 밤 회신으로 닫힘 — round3 §9 회신 문단). (10-2의 필드·별칭 이름 `__quadAttribute`/`__quadObserver`/`__quadEffect`·`<Type>Marker`는 2026-09-07 밤
   사용자 확인 완료 — 더 이상 문항 아님.)
 
+- **[2026-09-07 밤 신설] 탐사 순회 문항 Q33~Q36** — `qa-request/post-implementation-review-round3.md` §4 표(평문)와 §10이
+  소스. **Q33** Property 핸들러가 `None`(→nil)을 무조건 건너뛰어 `Adornee`·`NextSelectionUp`류 오브젝트 참조 프로퍼티
+  75개를 해제할 길이 없다(타입은 `None` 팔을 열어 둠) — 권고 (a) Reflection이 클래스 참조 타입을 표시하면 그 자리만
+  nil 쓰기(Studio 실측 선행). **Q34** 생성 D가 string·Instance·Content·Font 프로퍼티에도 Tween 팔을 붙여 엔진이 보간
+  못 하는 트윈이 런타임 에러+NOOP 마커로 끝난다 — 권고 (a) 생성기에 보간 가능 타입 집합. **Q35** `OnChange("Parent")`가
+  읽기 표면에서 빠져 정적 거부 — 권고 (a) 읽기 표면에만 `Parent`. **Q36** `:List` KeyGone에서 non-nil `ud`를 돌려주면
+  `userdata[key]`가 영구 잔존(round4-followup 열린 문항 2번의 재부상) — 권고 (a) 버린다. Gemini 5차 Q30~Q32는 그 파일
+  §4의 사용자 회신을 결정으로 읽어 반영했다(Q30 `H-467`, Q31 `H-474` — `unbindLifetime(nil)`·`dispose(nil)` 에러, Q32
+  `H-468`·`H-469`) — 다르게 읽혔다면 정정 요망.
+
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,
   같은 날 후속으로 외부 리서치 완료)** — `Sum`/`Product`/`Not`/비트연산 등

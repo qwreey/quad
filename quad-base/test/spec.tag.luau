@@ -211,5 +211,18 @@ do
 	print("PASS")
 end
 
+print("=== Gemini 5차 G-20 — Contains는 가변인자(전부 있으면 true, 0개는 true), nil/비문자열은 에러(Q32, H-468) ===")
+do
+	local q = newQuad()
+	local t = q.Tag("a", "b")
+	assert(t:Contains("a") and t:Contains("a", "b") and not t:Contains("a", "c") and t:Contains(), "vararg membership")
+	local ok, err = pcall(function() return t:Contains(nil) end)
+	assert(not ok and string.find(tostring(err), "Tag:Contains: names must be strings (got nil at argument 1)", 1, true) ~= nil, "Contains(nil) errors: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.tag.luau", "Contains(nil) blame")
+	local ok2, err2 = pcall(function() return t:Contains("a", 5) end)
+	assert(not ok2 and string.find(tostring(err2), "got number at argument 2", 1, true) ~= nil, "Contains non-string errors: " .. tostring(err2))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

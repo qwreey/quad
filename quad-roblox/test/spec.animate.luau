@@ -73,11 +73,26 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "expected an options table", 1, true) ~= nil, "non-table info: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.animate.luau", "Animate blame")
-	local src = q.Source(1)
+	-- `H-464`: literal options are validated at `Animate(info)` (the user's line is on the stack) —
+	-- lazily, inside Compute, the raise blamed `Animate.luau`
 	local ok2, err2 = pcall(function()
-		return src:Apply(Animate({ Time = "x" })):Get() -- lazy: the Tween is built at the first Get
+		return Animate({ Time = "x" })
 	end)
-	assert(not ok2 and string.find(tostring(err2), "Time must be a number", 1, true) ~= nil, "Tween validation inside the factory: " .. tostring(err2))
+	assert(not ok2 and string.find(tostring(err2), "Time must be a number", 1, true) ~= nil, "literal option validated eagerly: " .. tostring(err2))
+	mock.assertBlamesUser(err2, "spec.animate.luau", "Animate literal option blame")
+	local ok3, err3 = pcall(function()
+		return Animate({ Override = "Nope" })
+	end)
+	assert(not ok3 and string.find(tostring(err3), "Override must be", 1, true) ~= nil, "Override validated eagerly: " .. tostring(err3))
+	-- a State-valued option is NOT checked at construction (resolved per run) — the lazy
+	-- `Tween(opts)` still catches it at the first Get
+	local bad = q.Source("x")
+	local combinator = Animate({ Time = bad }) -- no raise here
+	local src = q.Source(1)
+	local ok4, err4 = pcall(function()
+		return src:Apply(combinator):Get()
+	end)
+	assert(not ok4 and string.find(tostring(err4), "Time must be a number", 1, true) ~= nil, "State option validated at run: " .. tostring(err4))
 	print("PASS")
 end
 

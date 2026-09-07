@@ -2420,4 +2420,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   외부 모델 감사 진입점 `qa-request/external-review-entry.md` 신설(사용자 요청). 이동 뒤 순회: 감사자 3라운드·`/code-review` 10건 → round3 §9
   `H-453`~`H-462`(doc-check 폴백 구멍·성능, `S` 과잉 공개, `Merged` 중복, 스파이크 36) + Q28·Q29. Q28 UB·Q29 `Slot/types.luau`(사용자 원안 — 내부 타입은
   quad-base) + 래퍼 제거 규칙(architecture 코드 스타일). 남은 몫: 8절 `Attr`, 10-4 D 정적 굽기(§0 예외), Q27, Q25·Q26,
-  사후 확인(마커 이름·`Source`).
+  사후 확인(마커 이름·`Source`) → **[같은 밤 후속]** 사후 확인 닫힘; 탐사 순회(opus 탐사자 둘 + Gemini 5차 판정, 전부 메인 실측)
+  → round3 §10 `H-463`~`H-472`(Tween None/중첩 게이트·Animate 즉시 검증·이벤트 드롭 기록·`:Single` None·`Get`/`Contains`/`Peek`
+  nil 가드·`drive` quad-값 게이트·Claim `_fired` 순서·Ref 콜백 게이트·`unbindLifetime(nil)` 에러) + Q33~Q36; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림(읽기는 nil).

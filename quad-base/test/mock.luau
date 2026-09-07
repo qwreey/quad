@@ -612,7 +612,7 @@ local function mockProvider(quad: any): { [any]: any }
 
 	local function unbindLifetime(value: any)
 		if value == nil then
-			return -- no-op if unbound (round3 `H-444`)
+			Err.errorBeforeNearest("unbindLifetime: value must not be nil", SURFACE) -- `H-474` (Q31) — mirrors roblox
 		end
 		-- bind의 대칭 — cleanup은 부르지 않고, Ref 콜백/내부 Observer도 안 뗀다.
 		if isEffect(value) then

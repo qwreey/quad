@@ -148,6 +148,17 @@ do
 	assert(not ok and string.find(tostring(err), "Value must be a plain value, not a State", 1, true) ~= nil, "State value rejected: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.tween.luau", "Tween State value blame")
 	assert(Quad.isTween(Tween({ Value = 1 })), "plain value untouched")
+	-- `H-463`: the other two non-plain quad values — None and a nested Tween — same gate, same blame
+	local okN, errN = pcall(function()
+		return Tween({ Value = Quad.None })
+	end)
+	assert(not okN and string.find(tostring(errN), "not None or another Tween", 1, true) ~= nil, "None value rejected: " .. tostring(errN))
+	mock.assertBlamesUser(errN, "spec.tween.luau", "Tween None value blame")
+	local okT, errT = pcall(function()
+		return Tween({ Value = Tween({ Value = 5 }) })
+	end)
+	assert(not okT and string.find(tostring(errT), "not None or another Tween", 1, true) ~= nil, "nested Tween rejected: " .. tostring(errT))
+	mock.assertBlamesUser(errT, "spec.tween.luau", "Tween nested value blame")
 	print("PASS")
 end
 

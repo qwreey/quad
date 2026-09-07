@@ -225,6 +225,9 @@ Tween과 같으면 **이전 Tween 객체를 그대로** 돌려주고, Property �
 않으므로 "펄스"가 필요하면 `Dedup = false`. 사용자: *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로
 리턴하여 dedup 될 수 있다고 봄. Dedup: boolean 형태 하나를 놓고"*. (Q16 (b)) `Tween.validate`가 `Value`에
 State를 거부한다 — 아래 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절의 불변식을 생성 시점에 집행.
+**[2026-09-07 밤 `H-463`·`H-464`]** 같은 게이트가 `None`과 중첩 `Tween`도 거부한다(해제는 `None` 자체를 발행). `Animate(info)`는
+리터럴(비-State) 옵션을 그 자리에서 검증한다 — Compute 안의 lazy `Tween(opts)`가 검증하면 사용자 줄이 스택에 없어
+`Animate.luau`를 blame했다; State 옵션은 실행마다 `Tween(opts)`가 검증한다. 검증 본문은 `Tween.luau`의 `validateFields` 하나.
 
 **동기**: `Tween{Value=..., Style=..., ...}`을 매번 손으로 `:Compute` 안에서
 조립하는 건, 값(`Value`)만 바뀔 뿐 옵션(`Style`/`Time`/`Override`...)은

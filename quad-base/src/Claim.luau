@@ -82,8 +82,11 @@ local function Init(module: any)
 		if type(desc._props) ~= "table" then
 			Err.errorBefore(`Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
 		end
-		desc._fired = true
 		module.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
+		-- `H-471` (탐사 A, `H-425`의 잔여): consume the descriptor only once the claim is ours —
+		-- a nativeClaim raise (already claimed / child not found) used to burn it first, so
+		-- the retry reported "already used" instead of the real cause
+		desc._fired = true
 		local props = desc._props
 		-- `drive`와 같은 일반화 순회(H-304) — `ipairs`는 nil 구멍에서 멈춰
 		-- 구멍 뒤의 디스크립터가 미해석으로 drive에 새는 순회 불일치를 만든다

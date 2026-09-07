@@ -255,13 +255,26 @@ do
 	end)
 	assert(not okP and string.find(tostring(errP), "props must be a table", 1, true) ~= nil, "string props refused: " .. tostring(errP))
 	assert(quad.Claim(root3, M("Frame")(quad.MapperRoot)({})) == root3, "the root was not claimed by the failed call — retry succeeds")
+	-- `H-471` (탐사 A): the descriptor is consumed AFTER nativeClaim — a nativeClaim raise
+	-- (already claimed) leaves the same descriptor reusable, so the retry shows the real cause
+	local root4 = Instance.new("Frame")
+	quad.bindLifetime(root4, {}) -- claims it first
+	local desc4 = M("Frame")(quad.MapperRoot)({})
+	local okC, errC = pcall(function() quad.Claim(root4, desc4) end)
+	assert(not okC and string.find(tostring(errC), "already claimed", 1, true) ~= nil, "first: real cause: " .. tostring(errC))
+	local okC2, errC2 = pcall(function() quad.Claim(root4, desc4) end)
+	assert(not okC2 and string.find(tostring(errC2), "already claimed", 1, true) ~= nil and string.find(tostring(errC2), "already used", 1, true) == nil, "retry: same real cause, not 'already used': " .. tostring(errC2))
 	print("PASS")
 end
 
-print("=== 10. round3 H-444 (외부 리뷰 G-14) — nil 인자: unbindLifetime(nil)은 no-op(헤더 계약), canExecute(nil) false, canBound(nil) true, bindLifetime(nil, v)는 표면 에러 ===")
+print("=== 10. round3 H-444 (외부 리뷰 G-14) — nil 인자: unbindLifetime(nil)은 표면 에러(H-474, Q31 — H-444의 no-op 역전), canExecute(nil) false, canBound(nil) true, bindLifetime(nil, v)는 표면 에러 ===")
 do
 	local q = mock.newQuad()
-	q.unbindLifetime(nil)
+	local okU, errU = pcall(function() q.unbindLifetime(nil) end)
+	assert(not okU and string.find(tostring(errU), "unbindLifetime: value must not be nil", 1, true) ~= nil, "unbind(nil) errors: " .. tostring(errU))
+	mock.assertBlamesUser(errU, "spec.lifetime.luau", "unbind(nil) blame")
+	local okD, errD = pcall(function() q.dispose(nil) end)
+	assert(not okD and string.find(tostring(errD), "dispose: value must not be nil", 1, true) ~= nil, "dispose(nil) errors: " .. tostring(errD))
 	assert(q.canExecute(nil) == false and q.canBound(nil) == true, "nil is simply unbound")
 	local ok, err = pcall(function()
 		q.bindLifetime(nil, q.Source(1))

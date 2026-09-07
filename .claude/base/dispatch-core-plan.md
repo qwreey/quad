@@ -437,10 +437,15 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   일반화 for 로써 얻어지는게 맞는 상태라면, 맞는 구현이다 … `__pairs`/
   `__ipairs` 직접 구현체를 담은 ud 등을 받는 `flattened` 는 없고, luau
   테이블만 사용하는게 맞음."*
+  - **[2026-09-07 밤 `H-470`] `drive`가 바로 아래 불변식을 게이트로 집행한다** — props 자리에 메타테이블 값이나
+    plain-branded 값(`AttributeKey`/Mapper 디스크립터)이 오면 브랜드 이름을 붙여 표면 에러(중괄호를 빠뜨린
+    `D.Frame(q.Source(1))`; `AttributeKey("x")`는 frozen `{ Name = "x" }`라 quad-roblox에서 조용한 개명이었다).
+    형제 생성자 게이트(`H-204`/`H-377`/`H-386`/`H-389`)와 같은 팔, 부기를 만지기 전.
   - **`flattened`는 항상 평범한 Luau 테이블이다** — props는 사용자가 쓴
     Lua 테이블 리터럴에서 오고, `flatten`도 그걸 제자리에서 뮤테이션할 뿐
     (`base/modifier-plan.md`의 "flatten의 정확한 형태" 절). 메타테이블로
-    순회를 갈아끼운 userdata 같은 게 들어올 경로가 **없다.**
+    순회를 갈아끼운 userdata 같은 게 들어올 경로가 **없다**(정상 조립 기준 — 오용으로 quad 값
+    자체가 props 자리에 오는 경로는 바로 위 `H-470` 게이트가 순회 전에 잡는다).
   - **그래서 일반화 `for k, v in flattened do`가 배열 → 해시 순서를 그대로
     준다** — 두 층위는 `type(k) == "number"`로 가르면 된다. 순회 1회 절약.
   - **옛 근거 (1)은 과했다** — "다른 백엔드가 props를 Lua 테이블이 아닌

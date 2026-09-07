@@ -229,7 +229,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Dispatch.recompute: sourceList[{i}] is nil — bookkeeping is broken (the contract says None)`, 1)
+				error(`Dispatch.recompute: sourceList[{i}] is nil — bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			local abs = getOffsetAt(ownerKey, i)
 			-- `H-240` check ① — BEFORE the write below stomps the signal

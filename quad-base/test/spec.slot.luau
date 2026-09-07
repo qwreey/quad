@@ -849,5 +849,37 @@ do
 	print("PASS")
 end
 
+print("=== 25. Gemini 5차 G-16/G-20 — :Single의 None은 nil과 같다(Q30, H-467): KeyGone 언마운트; Slot:Get(nil)은 에러(Q32, H-468), 범위 밖은 여전히 nil ===")
+do
+	local src = q.Source(Instance.new("Frame"))
+	local s = Slot()
+	local gone = 0
+	s:Single(src, function(item, off, prev, ud)
+		if item == q.KeyGone then gone += 1; return nil end
+		assert(item ~= q.None, "None must never reach updateFn as an item")
+		return item
+	end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(childCount(parent) == 1, ":Single mounts")
+	src:Set(q.None)
+	assert(childCount(parent) == 0 and gone == 1, "None → empty + KeyGone once: " .. childCount(parent) .. "/" .. gone)
+	src:Set(Instance.new("Frame"))
+	assert(childCount(parent) == 1, "re-set after None mounts again")
+	-- plain None at install
+	local s2 = Slot()
+	s2:Single(q.None)
+	local p2 = Instance.new("Folder")
+	dispatch.drive(p2, { s2 })
+	assert(childCount(p2) == 0, "plain None installs empty")
+	-- Get(nil) is an error, out-of-range still nil
+	local s3 = Slot({ Instance.new("Frame") })
+	local ok, err = pcall(function() return s3:Get(nil) end)
+	assert(not ok and string.find(tostring(err), "Slot:Get: index must be a number (got nil)", 1, true) ~= nil, "Get(nil) errors: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "Get(nil) blame")
+	assert(s3:Get(2) == nil, "out-of-range stays nil (SlotItem<T>?)")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

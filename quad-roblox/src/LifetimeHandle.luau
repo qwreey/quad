@@ -154,7 +154,10 @@ local function install(quad: any)
 
 	local function unbindLifetime(value: any)
 		if value == nil then
-			return -- header contract: no-op if unbound (round3 `H-444`)
+			-- `H-474` (Gemini 5차 Q31, 사용자: "특별한 이유가 없다면 에러"): `H-444` had made nil a
+			-- silent no-op under "no-op if unbound" — nil is not an unbound value, it is a missing
+			-- argument, and a silent success there hides the bug (same door as bindLifetime, `H-447`)
+			Err.errorBeforeNearest("unbindLifetime: value must not be nil", SURFACE)
 		end
 		-- symmetric teardown — never calls cleanup, never detaches Ref
 		-- callbacks or inner Observers (lifecycle-pattern (1))

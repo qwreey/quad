@@ -402,5 +402,19 @@ do
 	print("PASS")
 end
 
+print("=== 13. 탐사 A H-472 — recompute의 sourceList nil 메시지가 빠뜨린 등록 절반(setOffsetSource)을 짚는다(H-427 lengthList 형제와 대칭) ===")
+do
+	local q = newQuad()
+	q.Dispatch.addHandler({ -- an `H-39` leaf that registers only half
+		name = "BadLeaf",
+		isHandlable = function(_i: any, k: any, v: any): boolean return type(k) == "number" and v == "bad-leaf" end,
+		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(inst: any, k: any): any q.Dispatch.setLength(inst, k, 1); return q.Void end,
+	})
+	local ok, err = pcall(function() q.Dispatch.drive(Instance.new("Frame"), { "bad-leaf" }) end)
+	assert(not ok and string.find(tostring(err), "setLength without setOffsetSource?", 1, true) ~= nil, "mirror named: " .. tostring(err))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

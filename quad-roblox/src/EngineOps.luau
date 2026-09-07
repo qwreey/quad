@@ -98,15 +98,26 @@ local function install(quad: any)
 	-- Tag/Attribute ops (M10 engine axis). Batched `{string}` is the contract
 	-- (a web backend rewrites className once); Roblox has no batch API, so
 	-- the loop is here rather than in the base handler.
+	-- `H-465`: fetched lazily at first use and memoized — the same seam as
+	-- `Property.luau`'s `getTweenService` (call-time read keeps the getfenv shim
+	-- usable; one GetService per module instance, not per tag diff batch)
+	local collectionService: any = nil
+	local function getCollectionService(): any
+		if collectionService == nil then
+			collectionService = game:GetService("CollectionService")
+		end
+		return collectionService
+	end
+
 	local function addTag(inst: any, names: { string })
-		local cs = game:GetService("CollectionService")
+		local cs = getCollectionService()
 		for _, name in names do
 			cs:AddTag(inst, name)
 		end
 	end
 
 	local function removeTag(inst: any, names: { string })
-		local cs = game:GetService("CollectionService")
+		local cs = getCollectionService()
 		for _, name in names do
 			cs:RemoveTag(inst, name)
 		end

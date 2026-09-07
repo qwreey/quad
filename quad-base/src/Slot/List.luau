@@ -215,9 +215,12 @@ return function(S: Types.SlotInternal, module: any)
 			S.Err.errorBeforeNearest(`Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
 		end
 		local uf = updateFn or identityUpdateFn
+		-- `H-467` (Gemini 5차 G-16, 사용자 Q30 "의미론적으로 None == nil"): None is the
+		-- absent element too — `{ None }` used to reach updateFn as an item and never KeyGone
+		local None = S.None
 		local data = if S.isState(state)
-			then state:Compute(function(v: any) local g = v:Get(); return (if g == nil then {} else { g }) end)
-			else (if state == nil then {} else { state })
+			then state:Compute(function(v: any) local g = v:Get(); return (if g == nil or g == None then {} else { g }) end)
+			else (if state == nil or state == None then {} else { state })
 		return self:List(data, function(item: any, _index: number, off: any, prev: any, ud: any)
 			return (uf :: any)(item, off, prev, ud)
 		end, function() return true end, opts)

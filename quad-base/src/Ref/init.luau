@@ -108,13 +108,23 @@ end
 -- removed. Registration calls the callback once right away with whatever
 -- is there — nil/unset included (`H-120`; the nil guard is the caller's,
 -- `base/lifecycle-hooks-plan.md`).
+-- `H-473` (Gemini 5차 G-22): nil died at `WeakCallbacks[nil]`, a non-function at the call —
+-- both VM lines inside this file. One gate, three doors.
+local function checkCallback(fn: any, surface: string)
+	if type(fn) ~= "function" then
+		Err.errorBeforeNearest(`{surface}: callback must be a function (got {typeof(fn)})`, SURFACE)
+	end
+end
+
 function RefImpl.WeakCallback<T>(self: Ref<T>, fn: Callback<T>): Ref<T>
+	checkCallback(fn, "Ref:WeakCallback")
 	self.WeakCallbacks[fn] = true
 	fn(self.Value, self)
 	return self
 end
 
 function RefImpl.Callback<T>(self: Ref<T>, fn: Callback<T>): Ref<T>
+	checkCallback(fn, "Ref:Callback")
 	self.Callbacks[fn] = true -- the strong keep, on top of the weak primitive
 	fn(self.Value, self)
 	return self
@@ -154,6 +164,7 @@ end
 -- callback is otherwise impossible to remove and keeps firing.
 -- Dedup on registration means there is never a "how many times" question.
 function RefImpl.Uncallback<T>(self: Ref<T>, fn: Callback<T>): Ref<T>
+	checkCallback(fn, "Ref:Uncallback")
 	self.Callbacks[fn] = nil
 	self.WeakCallbacks[fn] = nil
 	return self

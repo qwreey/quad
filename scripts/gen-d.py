@@ -200,9 +200,13 @@ def normalize(raw_path, version):
                 if t is not None:
                     (read_props if read_only else props).append({"name": m["Name"], "type": t, "owner": owner})
             elif m["MemberType"] == "Event":
+                # `H-466`: event drops are noted like property drops (파일 머리 "조용한 절단 금지") —
+                # `D.Frame { DragBegin = … }`가 왜 없는지도 추적 가능해야 한다
                 if mtags & EVENT_TAG_EXCLUDE:
+                    dropped.append(f"{name}.{m['Name']} (event): tags {sorted(mtags & EVENT_TAG_EXCLUDE)}")
                     continue
                 if m.get("Security") != "None":
+                    dropped.append(f"{name}.{m['Name']} (event): security {m.get('Security')}")
                     continue
                 params, ok = [], True
                 for p in m.get("Parameters") or []:

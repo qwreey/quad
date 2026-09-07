@@ -61,6 +61,7 @@ local function install(quad: any): any
 	local Err = quad.errorNamespace
 	-- `isState` from the module instance (Q16 (b) gate below)
 	local isState = quad.isState
+	local None = quad.None
 
 	local TweenImpl = {}
 	TweenImpl.__index = TweenImpl
@@ -68,18 +69,12 @@ local function install(quad: any): any
 	-- through `__index` (zero per-instance slots, like `RefImpl.__quadRefAccepts`)
 	TweenImpl.__quadTween = true
 
-	local function validate(opts: any)
-		if type(opts) ~= "table" then
-			Err.errorBeforeNearest("Tween: expected an options table (Tween{ Value = ... })", SURFACE)
-		end
-		if opts.Value == nil then
-			Err.errorBeforeNearest("Tween: Value is required", SURFACE)
-		end
-		if isState(opts.Value) then
-			-- Q16 (b) (사용자 결정 2026-09-07): every Tween field is a plain value (tween-plan 불변식) —
-			-- a State here reached the engine as a table (`H-398`). Put the Tween in the State instead.
-			Err.errorBeforeNearest("Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
-		end
+	-- Option fields only (everything but Value). Shared with `Animate.luau`, which runs it
+	-- EAGERLY on the literal (non-State) options at `Animate(info)` time — the lazy Compute
+	-- builds the Tween far from the user's line, so a raise there blamed `Animate.luau`
+	-- (`H-464`). Raises `errorBeforeNearest(SURFACE)`: the nearest tagged frame is whichever
+	-- public factory (Tween or Animate) the user called.
+	local function validateFields(opts: any)
 		for _, name in NUMBER_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "number" then
@@ -93,6 +88,28 @@ local function install(quad: any): any
 		if override ~= nil and override ~= "Cancel" and override ~= "Finish" then
 			Err.errorBeforeNearest('Tween: Override must be "Cancel" or "Finish"', SURFACE)
 		end
+	end
+
+	local function validate(opts: any)
+		if type(opts) ~= "table" then
+			Err.errorBeforeNearest("Tween: expected an options table (Tween{ Value = ... })", SURFACE)
+		end
+		if opts.Value == nil then
+			Err.errorBeforeNearest("Tween: Value is required", SURFACE)
+		end
+		if isState(opts.Value) then
+			-- Q16 (b) (사용자 결정 2026-09-07): every Tween field is a plain value (tween-plan 불변식) —
+			-- a State here reached the engine as a table (`H-398`). Put the Tween in the State instead.
+			Err.errorBeforeNearest("Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
+		end
+		if opts.Value == None or isTween(opts.Value) then
+			-- `H-463`: the same invariant, the other two non-plain quad values — None (the frozen
+			-- sentinel) and a nested Tween both reached the engine as a table through
+			-- `Property.process`'s Tween branch. To release a property, emit None ITSELF
+			-- (`Animate` passes nil/None through untouched — Q8 (a)).
+			Err.errorBeforeNearest("Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)
+		end
+		validateFields(opts)
 	end
 
 	-- clone → brand → freeze. `table.clone` keeps the caller's table untouched
@@ -127,7 +144,9 @@ local function install(quad: any): any
 
 	quad.Tween = Tween
 	quad.isTween = isTween
-	return { Tween = Tween, isTween = isTween }
+	-- `validateFields` is quad-roblox-internal wiring for `Animate.luau` (via RobloxFactory),
+	-- not a module surface
+	return { Tween = Tween, isTween = isTween, validateFields = validateFields }
 end
 
 return install

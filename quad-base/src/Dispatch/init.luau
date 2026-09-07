@@ -126,15 +126,18 @@ local function Init(module: any)
 	local handlers: { Handler } = {} -- kept sorted, higher priority first
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
 
-	local function noMatchMessage(k: any, v: any): string
-		local brand: string? = nil
+	local function brandNameOf(v: any): string?
 		for _, probeName in BRAND_PROBES do
 			local predicate = module[probeName]
 			if type(predicate) == "function" and (predicate :: (any) -> boolean)(v) then
-				brand = string.sub(probeName, 3) -- "isSource" -> "Source"
-				break
+				return string.sub(probeName, 3) -- "isSource" -> "Source"
 			end
 		end
+		return nil
+	end
+
+	local function noMatchMessage(k: any, v: any): string
+		local brand = brandNameOf(v)
 		return `quad.Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
 			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
@@ -314,6 +317,15 @@ local function Init(module: any)
 		-- typing is the first defense, this is the untyped-caller one
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
+		end
+		if getmetatable(flattened) ~= nil or brandNameOf(flattened) ~= nil then
+			-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
+			-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
+			-- `H-386`/`H-389`), and canon says `flattened` is always a plain table
+			-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
+			-- value's own fields were dispatched: a frozen `AttributeKey("x")` is `{ Name = "x" }`,
+			-- which quad-roblox's Property handler wrote — a silent rename.
+			Err.errorBefore(`Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
 		end
 		if inst == nil then
 			Err.errorBefore("Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`

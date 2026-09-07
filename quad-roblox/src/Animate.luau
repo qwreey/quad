@@ -51,7 +51,7 @@ local function sameTween(previous: any, v: any, opts: { [string]: any }): boolea
 	return true
 end
 
-local function install(quad: any): any
+local function install(quad: any, validateFields: (any) -> ()): any
 	local isState = quad.isState
 	local isTween = quad.isTween
 	local None = quad.None
@@ -72,6 +72,17 @@ local function install(quad: any): any
 		if type(info) ~= "table" then
 			Err.errorBeforeNearest("Animate: expected an options table (Animate{ Time = ... })", SURFACE)
 		end
+		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
+		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.
+		-- State-valued options are resolved per run and validated by `Tween(opts)` then.
+		local literal: { [string]: any } = {}
+		for _, name in FIELDS do
+			local v = info[name]
+			if v ~= nil and not isState(v) then
+				literal[name] = v
+			end
+		end
+		validateFields(literal)
 		return function(self: any): any
 			return self:Compute(function(selfH: any, previous: any): any
 				local v = selfH:Get()

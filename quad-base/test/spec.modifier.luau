@@ -378,5 +378,17 @@ do
 	print("PASS")
 end
 
+print("=== 15. Gemini 5차 G-21 — Peek(nil)/Peek(\"\")는 에러(Q32, H-469): 없는 필드의 nil과 구분되게 ===")
+do
+	local m = Modifier({ Name = "x" })
+	for _, bad in { nil, "", 5 } :: { any } do
+		local ok, err = pcall(function() return m:Peek(bad) end)
+		assert(not ok and string.find(tostring(err), "Modifier:Peek: key must be a non-empty string", 1, true) ~= nil, "Peek bad key errors: " .. tostring(err))
+		mock.assertBlamesUser(err, SPEC_FILE, "Peek blame")
+	end
+	assert(m:Peek("Name") == "x" and m:Peek("Never") == nil, "valid keys unchanged")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

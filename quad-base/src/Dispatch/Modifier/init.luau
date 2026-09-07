@@ -161,6 +161,11 @@ end
 local methods = {}
 
 function methods.Peek(self: any, key: any): any
+	if type(key) ~= "string" or key == "" then
+		-- `H-469` (Gemini 5차 G-21, 사용자 Q32): the setter path refuses these keys (`H-448`) —
+		-- Peek used to answer nil for them as if the field were absent
+		Err.errorBeforeNearest(`Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`, SURFACE)
+	end
 	return self[FieldsKey][key] -- raw: State handle stays a handle, None stays None
 end
 

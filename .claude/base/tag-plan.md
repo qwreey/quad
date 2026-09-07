@@ -48,7 +48,7 @@
 Tag(...names)                           -- 생성자, 가변인자. Tag() 빈 값도 유효
 tag:Added(names): Tag                   -- clone 후 이름(들) 추가, 원본 안 건드림
 tag:Removed(names): Tag                 -- clone 후 이름(들) 제거 — 검증은 Added와 동일(H-344)
-tag:Contains(name): boolean -- 멤버십 확인
+tag:Contains(...names): boolean -- 멤버십 확인 — 전부 있으면 true(가변인자, nil은 에러; 0개는 true — `H-468`, 사용자 Q32)
 tag:Names(): iterator<string> -- 담고 있는 이름 순회(아래 "메커니즘" 절이 쓰는 것)
 tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의

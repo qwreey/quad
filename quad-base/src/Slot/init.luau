@@ -269,6 +269,12 @@ local function Init(module: any)
 	end
 
 	function Slot_mt.Get(self: any, index: number): any
+		if type(index) ~= "number" then
+			-- `H-468` (Gemini 5차 G-20, 사용자 Q32 "nil 허용 불가"): a nil/non-number index used to
+			-- read `_elements[nil]` and answer nil as if the slot were empty. Out-of-range stays nil
+			-- (`SlotItem<T>?` — spec.slot "arrays still construct" relies on it).
+			Err.errorBeforeNearest(`Slot:Get: index must be a number (got {typeof(index)})`, SURFACE)
+		end
 		return S.unwrapElement(self._elements[index])
 	end
 
@@ -344,6 +350,9 @@ local function Init(module: any)
 
 	-- dispose(value) — the one safe path to destroy a quad-managed value.
 	local function dispose(value: any)
+		if value == nil then
+			Err.errorBeforeNearest("dispose: value must not be nil", SURFACE) -- `H-474` (Q31): say nil, not "cannot dispose this value"
+		end
 		if elementOwner:GetWeak(value, OWNER) ~= nil then
 			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
 			-- detached element cannot be Remove/Extract-ed — it goes with its owner)

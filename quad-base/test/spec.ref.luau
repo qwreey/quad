@@ -340,5 +340,22 @@ do
 	print("PASS")
 end
 
+print("=== 16. Gemini 5차 G-22 (H-473) — Callback/WeakCallback/Uncallback은 함수만: nil은 VM 에러, 숫자는 call 에러였다 ===")
+do
+	local mock = require("./mock")
+	local r = Ref(nil :: any)
+	for _, name in { "Callback", "WeakCallback", "Uncallback" } do
+		for _, bad in { nil, 123, "f" } :: { any } do
+			local ok, err = pcall(function() return (r :: any)[name](r, bad) end)
+			assert(not ok and string.find(tostring(err), `Ref:{name}: callback must be a function`, 1, true) ~= nil, name .. " rejects non-function: " .. tostring(err))
+			mock.assertBlamesUser(err, "spec.ref.luau", name .. " blame")
+		end
+	end
+	local calls = 0
+	r:Callback(function() calls += 1 end)
+	assert(calls == 1, "a real function still registers and fires once")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

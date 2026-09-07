@@ -216,7 +216,7 @@ export type Tag = {
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
 	Added: (self: Tag, names: TagNames) -> Tag,
 	Removed: (self: Tag, names: TagNames) -> Tag,
-	Contains: (self: Tag, name: string) -> boolean,
+	Contains: (self: Tag, ...string) -> boolean, -- all present; vararg (`H-468`)
 	Names: (self: Tag) -> () -> string?,
 	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
 }
