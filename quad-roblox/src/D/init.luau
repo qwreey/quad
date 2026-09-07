@@ -373,9 +373,9 @@ export type ImageButtonParam<E> = {
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
 	HoverHapticEffect: PV21?,
-	HoverImage: PV22?,
+	HoverImage: PV5?,
 	HoverImageContent: PV22?,
-	Image: PV22?,
+	Image: PV5?,
 	ImageColor3: PV15?,
 	ImageContent: PV22?,
 	ImageRectOffset: PV9?,
@@ -392,7 +392,7 @@ export type ImageButtonParam<E> = {
 	NextSelectionUp: PV18?,
 	Position: PV8?,
 	PressHapticEffect: PV21?,
-	PressedImage: PV22?,
+	PressedImage: PV5?,
 	PressedImageContent: PV22?,
 	ResampleMode: PV23?,
 	RootLocalizationTable: PV6?,
@@ -470,7 +470,7 @@ export type ImageLabelParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
-	Image: PV22?,
+	Image: PV5?,
 	ImageColor3: PV15?,
 	ImageContent: PV22?,
 	ImageRectOffset: PV9?,
@@ -583,7 +583,7 @@ export type ScrollingFrameParam<E> = {
 	BorderColor3: PV15?,
 	BorderMode: PV16?,
 	BorderSizePixel: PV2?,
-	BottomImage: PV22?,
+	BottomImage: PV5?,
 	BottomImageContent: PV22?,
 	CanvasPosition: PV9?,
 	CanvasSize: PV8?,
@@ -594,7 +594,7 @@ export type ScrollingFrameParam<E> = {
 	InputSink: PV17?,
 	Interactable: PV0?,
 	LayoutOrder: PV2?,
-	MidImage: PV22?,
+	MidImage: PV5?,
 	MidImageContent: PV22?,
 	Name: PV5?,
 	NextSelectionDown: PV18?,
@@ -620,7 +620,7 @@ export type ScrollingFrameParam<E> = {
 	SelectionOrder: PV2?,
 	Size: PV8?,
 	SizeConstraint: PV19?,
-	TopImage: PV22?,
+	TopImage: PV5?,
 	TopImageContent: PV22?,
 	VerticalScrollBarInset: PV30?,
 	VerticalScrollBarPosition: PV32?,
@@ -1029,13 +1029,13 @@ export type UICornerParam<E> = {
 
 export type UIDragDetectorParam<E> = {
 	[number]: E,
-	ActivatedCursorIcon: PV22?,
+	ActivatedCursorIcon: PV5?,
 	ActivatedCursorIconContent: PV22?,
 	Archivable: PV0?,
 	BoundingBehavior: PV43?,
 	BoundingUI: PV44?,
 	Capabilities: PV3?,
-	CursorIcon: PV22?,
+	CursorIcon: PV5?,
 	CursorIconContent: PV22?,
 	DragAxis: PV9?,
 	DragRelativity: PV45?,
@@ -1396,7 +1396,7 @@ export type VideoFrameParam<E> = {
 	Size: PV8?,
 	SizeConstraint: PV19?,
 	TimePosition: PV2?,
-	Video: PV22?,
+	Video: PV5?,
 	VideoContent: PV22?,
 	Visible: PV0?,
 	Volume: PV2?,
@@ -1537,7 +1537,7 @@ export type WorldModelParam<E> = {
 
 -- OnChange — PropTypes(D 스코프 전체 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)
 export type PropTypes = {
-	ActivatedCursorIcon: Content,
+	ActivatedCursorIcon: string,
 	ActivatedCursorIconContent: Content,
 	Active: boolean,
 	Adornee: Instance,
@@ -1561,7 +1561,7 @@ export type PropTypes = {
 	BorderOffset: UDim,
 	BorderSizePixel: number,
 	BorderStrokePosition: Enum.BorderStrokePosition,
-	BottomImage: Content,
+	BottomImage: string,
 	BottomImageContent: Content,
 	BottomLeftRadius: UDim,
 	BottomRightRadius: UDim,
@@ -1583,7 +1583,7 @@ export type PropTypes = {
 	Color: any,
 	CornerRadius: UDim,
 	CurrentCamera: Camera,
-	CursorIcon: Content,
+	CursorIcon: string,
 	CursorIconContent: Content,
 	CursorPosition: number,
 	DiagonalFieldOfView: number,
@@ -1622,10 +1622,10 @@ export type PropTypes = {
 	HorizontalFlex: Enum.UIFlexAlignment,
 	HorizontalScrollBarInset: Enum.ScrollBarInset,
 	HoverHapticEffect: HapticEffect,
-	HoverImage: Content,
+	HoverImage: string,
 	HoverImageContent: Content,
 	IgnoreGuiInset: boolean,
-	Image: Content,
+	Image: string,
 	ImageColor3: Color3,
 	ImageContent: Content,
 	ImageRectOffset: Vector2,
@@ -1650,7 +1650,7 @@ export type PropTypes = {
 	MaxSize: Vector2,
 	MaxTextSize: number,
 	MaxVisibleGraphemes: number,
-	MidImage: Content,
+	MidImage: string,
 	MidImageContent: Content,
 	MinDragAngle: number,
 	MinDragTranslation: UDim2,
@@ -1678,7 +1678,7 @@ export type PropTypes = {
 	Playing: boolean,
 	Position: UDim2,
 	PressHapticEffect: HapticEffect,
-	PressedImage: Content,
+	PressedImage: string,
 	PressedImageContent: Content,
 	PrimaryPart: BasePart,
 	ReferenceUIInstance: GuiObject,
@@ -1748,7 +1748,7 @@ export type PropTypes = {
 	TileSize: UDim2,
 	TimePosition: number,
 	ToolPunchThroughDistance: number,
-	TopImage: Content,
+	TopImage: string,
 	TopImageContent: Content,
 	TopLeftRadius: UDim,
 	TopRightRadius: UDim,
@@ -1763,7 +1763,7 @@ export type PropTypes = {
 	VerticalFlex: Enum.UIFlexAlignment,
 	VerticalScrollBarInset: Enum.ScrollBarInset,
 	VerticalScrollBarPosition: Enum.VerticalScrollBarPosition,
-	Video: Content,
+	Video: string,
 	VideoContent: Content,
 	Visible: boolean,
 	Volume: number,
@@ -2359,9 +2359,9 @@ export type ImageButtonOnChange =
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
 	| 	{ Name: "HoverHapticEffect", Callback: (HapticEffect) -> () }
-	| 	{ Name: "HoverImage", Callback: (Content) -> () }
+	| 	{ Name: "HoverImage", Callback: (string) -> () }
 	| 	{ Name: "HoverImageContent", Callback: (Content) -> () }
-	| 	{ Name: "Image", Callback: (Content) -> () }
+	| 	{ Name: "Image", Callback: (string) -> () }
 	| 	{ Name: "ImageColor3", Callback: (Color3) -> () }
 	| 	{ Name: "ImageContent", Callback: (Content) -> () }
 	| 	{ Name: "ImageRectOffset", Callback: (Vector2) -> () }
@@ -2378,7 +2378,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "NextSelectionUp", Callback: (GuiObject) -> () }
 	| 	{ Name: "Position", Callback: (UDim2) -> () }
 	| 	{ Name: "PressHapticEffect", Callback: (HapticEffect) -> () }
-	| 	{ Name: "PressedImage", Callback: (Content) -> () }
+	| 	{ Name: "PressedImage", Callback: (string) -> () }
 	| 	{ Name: "PressedImageContent", Callback: (Content) -> () }
 	| 	{ Name: "ResampleMode", Callback: (Enum.ResamplerMode) -> () }
 	| 	{ Name: "RootLocalizationTable", Callback: (LocalizationTable) -> () }
@@ -2423,9 +2423,9 @@ export type ImageButtonModifier = {
 	Capabilities: (self: ImageButtonModifier, value: Field<SecurityCapabilities>) -> ImageButtonModifier,
 	ClipsDescendants: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	HoverHapticEffect: (self: ImageButtonModifier, value: Field<HapticEffect>) -> ImageButtonModifier,
-	HoverImage: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
+	HoverImage: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
 	HoverImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
-	Image: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
+	Image: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
 	ImageColor3: (self: ImageButtonModifier, value: Field<Color3>) -> ImageButtonModifier,
 	ImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
 	ImageRectOffset: (self: ImageButtonModifier, value: Field<Vector2>) -> ImageButtonModifier,
@@ -2442,7 +2442,7 @@ export type ImageButtonModifier = {
 	NextSelectionUp: (self: ImageButtonModifier, value: Field<GuiObject>) -> ImageButtonModifier,
 	Position: (self: ImageButtonModifier, value: Field<UDim2>) -> ImageButtonModifier,
 	PressHapticEffect: (self: ImageButtonModifier, value: Field<HapticEffect>) -> ImageButtonModifier,
-	PressedImage: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
+	PressedImage: (self: ImageButtonModifier, value: Field<string>) -> ImageButtonModifier,
 	PressedImageContent: (self: ImageButtonModifier, value: Field<Content>) -> ImageButtonModifier,
 	ResampleMode: (self: ImageButtonModifier, value: Field<Enum.ResamplerMode>) -> ImageButtonModifier,
 	RootLocalizationTable: (self: ImageButtonModifier, value: Field<LocalizationTable>) -> ImageButtonModifier,
@@ -2489,7 +2489,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
-	| 	{ Name: "Image", Callback: (Content) -> () }
+	| 	{ Name: "Image", Callback: (string) -> () }
 	| 	{ Name: "ImageColor3", Callback: (Color3) -> () }
 	| 	{ Name: "ImageContent", Callback: (Content) -> () }
 	| 	{ Name: "ImageRectOffset", Callback: (Vector2) -> () }
@@ -2543,7 +2543,7 @@ export type ImageLabelModifier = {
 	BorderSizePixel: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	Capabilities: (self: ImageLabelModifier, value: Field<SecurityCapabilities>) -> ImageLabelModifier,
 	ClipsDescendants: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
-	Image: (self: ImageLabelModifier, value: Field<Content>) -> ImageLabelModifier,
+	Image: (self: ImageLabelModifier, value: Field<string>) -> ImageLabelModifier,
 	ImageColor3: (self: ImageLabelModifier, value: Field<Color3>) -> ImageLabelModifier,
 	ImageContent: (self: ImageLabelModifier, value: Field<Content>) -> ImageLabelModifier,
 	ImageRectOffset: (self: ImageLabelModifier, value: Field<Vector2>) -> ImageLabelModifier,
@@ -2777,7 +2777,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "BorderColor3", Callback: (Color3) -> () }
 	| 	{ Name: "BorderMode", Callback: (Enum.BorderMode) -> () }
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
-	| 	{ Name: "BottomImage", Callback: (Content) -> () }
+	| 	{ Name: "BottomImage", Callback: (string) -> () }
 	| 	{ Name: "BottomImageContent", Callback: (Content) -> () }
 	| 	{ Name: "CanvasPosition", Callback: (Vector2) -> () }
 	| 	{ Name: "CanvasSize", Callback: (UDim2) -> () }
@@ -2788,7 +2788,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
 	| 	{ Name: "LayoutOrder", Callback: (number) -> () }
-	| 	{ Name: "MidImage", Callback: (Content) -> () }
+	| 	{ Name: "MidImage", Callback: (string) -> () }
 	| 	{ Name: "MidImageContent", Callback: (Content) -> () }
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "NextSelectionDown", Callback: (GuiObject) -> () }
@@ -2814,7 +2814,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "SelectionOrder", Callback: (number) -> () }
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
-	| 	{ Name: "TopImage", Callback: (Content) -> () }
+	| 	{ Name: "TopImage", Callback: (string) -> () }
 	| 	{ Name: "TopImageContent", Callback: (Content) -> () }
 	| 	{ Name: "VerticalScrollBarInset", Callback: (Enum.ScrollBarInset) -> () }
 	| 	{ Name: "VerticalScrollBarPosition", Callback: (Enum.VerticalScrollBarPosition) -> () }
@@ -2838,7 +2838,7 @@ export type ScrollingFrameModifier = {
 	BorderColor3: (self: ScrollingFrameModifier, value: Field<Color3>) -> ScrollingFrameModifier,
 	BorderMode: (self: ScrollingFrameModifier, value: Field<Enum.BorderMode>) -> ScrollingFrameModifier,
 	BorderSizePixel: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
-	BottomImage: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
+	BottomImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
 	BottomImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
 	CanvasPosition: (self: ScrollingFrameModifier, value: Field<Vector2>) -> ScrollingFrameModifier,
 	CanvasSize: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
@@ -2849,7 +2849,7 @@ export type ScrollingFrameModifier = {
 	InputSink: (self: ScrollingFrameModifier, value: Field<Enum.InputSink>) -> ScrollingFrameModifier,
 	Interactable: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
 	LayoutOrder: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
-	MidImage: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
+	MidImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
 	MidImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
 	Name: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
 	NextSelectionDown: (self: ScrollingFrameModifier, value: Field<GuiObject>) -> ScrollingFrameModifier,
@@ -2875,7 +2875,7 @@ export type ScrollingFrameModifier = {
 	SelectionOrder: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier,
 	Size: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
 	SizeConstraint: (self: ScrollingFrameModifier, value: Field<Enum.SizeConstraint>) -> ScrollingFrameModifier,
-	TopImage: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
+	TopImage: (self: ScrollingFrameModifier, value: Field<string>) -> ScrollingFrameModifier,
 	TopImageContent: (self: ScrollingFrameModifier, value: Field<Content>) -> ScrollingFrameModifier,
 	VerticalScrollBarInset: (self: ScrollingFrameModifier, value: Field<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
 	VerticalScrollBarPosition: (self: ScrollingFrameModifier, value: Field<Enum.VerticalScrollBarPosition>) -> ScrollingFrameModifier,
@@ -3530,13 +3530,13 @@ export type UICornerElem = NewChild | UICornerOnChange | State<UICornerOnChange>
 export type UICornerMapperElem = UICornerElem | MapperDescriptor
 
 export type UIDragDetectorOnChange =
-	{ Name: "ActivatedCursorIcon", Callback: (Content) -> () }
+	{ Name: "ActivatedCursorIcon", Callback: (string) -> () }
 	| 	{ Name: "ActivatedCursorIconContent", Callback: (Content) -> () }
 	| 	{ Name: "Archivable", Callback: (boolean) -> () }
 	| 	{ Name: "BoundingBehavior", Callback: (Enum.UIDragDetectorBoundingBehavior) -> () }
 	| 	{ Name: "BoundingUI", Callback: (GuiBase2d) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
-	| 	{ Name: "CursorIcon", Callback: (Content) -> () }
+	| 	{ Name: "CursorIcon", Callback: (string) -> () }
 	| 	{ Name: "CursorIconContent", Callback: (Content) -> () }
 	| 	{ Name: "DragAxis", Callback: (Vector2) -> () }
 	| 	{ Name: "DragRelativity", Callback: (Enum.UIDragDetectorDragRelativity) -> () }
@@ -3563,13 +3563,13 @@ export type UIDragDetectorModifier = {
 	Overridden: (self: UIDragDetectorModifier, ...any) -> any,
 	As: <T>(self: UIDragDetectorModifier, name: string?) -> T, -- 무검사(11절)
 	AsUIDragDetector: (self: UIDragDetectorModifier) -> UIDragDetectorModifier, -- 항등(Into<UIDragDetector> 구현)
-	ActivatedCursorIcon: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
+	ActivatedCursorIcon: (self: UIDragDetectorModifier, value: Field<string>) -> UIDragDetectorModifier,
 	ActivatedCursorIconContent: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
 	Archivable: (self: UIDragDetectorModifier, value: Field<boolean>) -> UIDragDetectorModifier,
 	BoundingBehavior: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorBoundingBehavior>) -> UIDragDetectorModifier,
 	BoundingUI: (self: UIDragDetectorModifier, value: Field<GuiBase2d>) -> UIDragDetectorModifier,
 	Capabilities: (self: UIDragDetectorModifier, value: Field<SecurityCapabilities>) -> UIDragDetectorModifier,
-	CursorIcon: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
+	CursorIcon: (self: UIDragDetectorModifier, value: Field<string>) -> UIDragDetectorModifier,
 	CursorIconContent: (self: UIDragDetectorModifier, value: Field<Content>) -> UIDragDetectorModifier,
 	DragAxis: (self: UIDragDetectorModifier, value: Field<Vector2>) -> UIDragDetectorModifier,
 	DragRelativity: (self: UIDragDetectorModifier, value: Field<Enum.UIDragDetectorDragRelativity>) -> UIDragDetectorModifier,
@@ -4097,7 +4097,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "TimePosition", Callback: (number) -> () }
-	| 	{ Name: "Video", Callback: (Content) -> () }
+	| 	{ Name: "Video", Callback: (string) -> () }
 	| 	{ Name: "VideoContent", Callback: (Content) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "Volume", Callback: (number) -> () }
@@ -4149,7 +4149,7 @@ export type VideoFrameModifier = {
 	Size: (self: VideoFrameModifier, value: Field<UDim2>) -> VideoFrameModifier,
 	SizeConstraint: (self: VideoFrameModifier, value: Field<Enum.SizeConstraint>) -> VideoFrameModifier,
 	TimePosition: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
-	Video: (self: VideoFrameModifier, value: Field<Content>) -> VideoFrameModifier,
+	Video: (self: VideoFrameModifier, value: Field<string>) -> VideoFrameModifier,
 	VideoContent: (self: VideoFrameModifier, value: Field<Content>) -> VideoFrameModifier,
 	Visible: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	Volume: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,

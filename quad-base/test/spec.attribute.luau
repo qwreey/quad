@@ -69,6 +69,9 @@ do
 	end)
 	assert(not okF and string.find(tostring(errF), 'attribute "Foo" cannot be a function', 1, true) ~= nil, "function value rejected: " .. tostring(errF))
 	mock.assertBlamesUser(errF, "spec.attribute.luau", "function-value blame")
+	-- 7순회 `H-421`: the empty-name gate covers the group constructor and the scalar sugar too
+	assert(not pcall(function() q.Attribute({ [""] = 5 }) end), "group: empty attribute name rejected")
+	assert(not pcall(function() q.NumberAttribute("", 5) end), "sugar: empty attribute name rejected")
 	-- positive control — raw + State + None still flow
 	local ok = q.Attribute({ A = 1, B = q.Source("x"), C = q.None })
 	assert(ok:NameMap().A == 1, "raw/State/None values are untouched")

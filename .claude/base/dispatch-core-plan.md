@@ -2153,6 +2153,9 @@ local function recompute(ownerKey, bk)
         -- Blocker 게이팅, 해제는 None, spliceArraysDown은 압축), nil이 보이면
         -- 부기가 깨진 것 — 조용히 건너뛰면 위치 하나가 순서 계산에서 빠지는
         -- 추적 어려운 오작동이 된다. 상세는 base/slot-plan.md의 "추가 방어 조치".
+        -- [2026-09-07 7순회 `H-427`] 같은 불변식을 `lengthList[i]`에도 건다 — `setOffsetSource`만
+        -- 부르고 `setLength`를 안 부른 제공자의 구멍이 아래 `contribution`에서 익명 산술 에러로
+        -- 죽어 recomputeBlocker가 켜진 채 남았다(코드 `Bookkeeping.recompute`).
         if offset == nil then
             error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
         end

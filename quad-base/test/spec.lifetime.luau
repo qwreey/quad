@@ -248,6 +248,13 @@ do
 	end)
 	assert(not okN and string.find(tostring(errN), "first argument must be an Instance", 1, true) ~= nil, "Claim(nil) is a surface error: " .. tostring(errN))
 	mock.assertBlamesUser(errN, "spec.lifetime.luau", "Claim(nil) blame")
+	-- 7순회 `H-425`: non-table props are refused BEFORE nativeClaim — a fixed retry still works
+	local root3 = Instance.new("Frame")
+	local okP, errP = pcall(function()
+		quad.Claim(root3, M("Frame")(quad.MapperRoot)("oops" :: any))
+	end)
+	assert(not okP and string.find(tostring(errP), "props must be a table", 1, true) ~= nil, "string props refused: " .. tostring(errP))
+	assert(quad.Claim(root3, M("Frame")(quad.MapperRoot)({})) == root3, "the root was not claimed by the failed call — retry succeeds")
 	print("PASS")
 end
 

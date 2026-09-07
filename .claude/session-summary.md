@@ -2382,4 +2382,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   Q7 둘째). 이어 `H-403`(isSlot→Brand)·`H-404`(전역 슈거 게이트)·`H-405`(exit code 절차 오류)·문서 재편
   (`archive/v2-initial-implementation/`, 원장 개명)·6순회 `H-406`~`H-416`(Property 트윈 Create 선행·SlotHandler
   pre-pass·`H-397` 회귀 복원; Q18~Q20·Q7 셋째)·사용자 구조 의견 여덟 → `research/source-layout-plan.md`. Gemini 외부 리뷰 검증(§13) —
-  실존 셋 `H-417`~`H-419`(빈 태그/속성 이름·`Claim` inst 게이트·`drive` props 게이트).
+  실존 셋 `H-417`~`H-419`(빈 태그/속성 이름·`Claim` inst 게이트·`drive` props 게이트). 7순회 `H-420`~`H-430`(§14 —
+  **HIGH** 생성기 `ContentId` 오매핑 재정규화, gen-d `check`·모듈 스코프 전역 게이트, Claim props·Ref normal·
+  Bookkeeping 구멍 메시지; Q21 툴체인).

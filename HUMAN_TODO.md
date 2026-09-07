@@ -275,3 +275,11 @@ GUI 작업이라 에이전트가 못 한다. 사용자 확정(2026-09-02): *"결
 
 ---
 Sources (MCP 리서치): [Roblox/studio-rust-mcp-server](https://github.com/Roblox/studio-rust-mcp-server), [How to Connect Claude Code to Roblox Studio — Clauder Navi](https://www.clauder-navi.com/en/claude-roblox-studio)
+
+## 13. [2026-09-07 7순회 `H-429`] Studio 1줄 프로브 — 기본값과 같은 props의 OnChange 초기 발화
+
+`Frame { Visible = true, OnChange("Visible", fn) }`(Frame 기본 `Visible = true`)에서 `fn`이 몇 번
+도는지. mock은 같은 값 대입에도 `Changed`를 쏘지만 실 엔진은 동일값 대입에 시그널을 안 쏘는
+것으로 알려져 있어 CLI 1회 / 엔진 0회로 갈릴 수 있다 — `onchange-plan.md` "초기값 발화 계약"
+따름정리에 셋째 헤지(기본값과 같은 값)를 넣어 두었고, 실측 결과로 그 문장을 확정/삭제할 것.
+

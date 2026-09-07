@@ -325,4 +325,20 @@ do
 end
 
 print()
+print()
+print("=== 15. 7순회 H-426 — Wait(thread)로 등록된 스레드가 resume한 코루틴 안의 :Set은 위치 있는 에러 (running/normal 둘 다) ===")
+do
+	local r = Ref(0)
+	r:Wait(coroutine.running()) -- the main thread registers itself as a waiter
+	local ok, err = pcall(function()
+		coroutine.wrap(function()
+			r:Set(1) -- from here the waiter is "normal" (it resumed us)
+		end)()
+	end)
+	assert(not ok and string.find(tostring(err), "normal coroutine", 1, true) ~= nil, "a normal-state waiter is named, not a raw VM error: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.ref.luau", 1, true) ~= nil, "blames the :Set line: " .. tostring(err))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

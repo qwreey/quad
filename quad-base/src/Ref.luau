@@ -88,8 +88,9 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			-- 6순회 `H-411`: `Wait(thread)` may have registered the CURRENT coroutine,
 			-- and resuming a running coroutine is a raw VM error with no position —
 			-- say what happened instead (a dead thread stays UB, `H-170`/`H-339`)
-			if coroutine.status(k) == "running" then
-				Err.errorBeforeNearest("Ref: cannot :Set from the coroutine that is waiting on this Ref (Wait(thread) registered the current coroutine)", SURFACE)
+			local status = coroutine.status(k)
+			if status == "running" or status == "normal" then -- 7순회 `H-426`: "normal" = the waiter resumed us
+				Err.errorBeforeNearest(`Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`, SURFACE)
 			end
 			local ok, err = coroutine.resume(k, self)
 			if not ok then

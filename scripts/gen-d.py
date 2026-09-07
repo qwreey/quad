@@ -51,10 +51,21 @@ PRIMITIVES = {
     "bool": "boolean", "string": "string",
 }
 # DataType 중 이름 그대로가 아닌 것/버리는 것만 여기 — 나머지는 defs의 같은 이름
-# ContentId는 핀 고정된 globalTypes(luau-lsp 1.69.0)가 옛 이름 `Content`로만
-# 알고 있다 — defs를 올릴 때 이 매핑을 재검토할 것
-DATATYPE_RENAME = {"OptionalCoordinateFrame": "CFrame", "ContentId": "Content"}
-DATATYPE_SKIP = {"QDir", "QFont", "BinaryString", "ProtectedString", "SystemAddress"}
+# [2026-09-07 7순회 H-420] `ContentId` → `Content`는 틀렸다: 핀 defs 4행은 `type ContentId = string`
+# (문자열 별칭)이고 `Content`는 ImageContent용 별개 userdata 클래스라, 생성 D의 Image/Video/
+# CursorIcon 슬롯 10개가 엔진이 받는 유일한 값(asset id 문자열)을 거부했다. 문자열 별칭은
+# defs에서 읽어 `string`으로 — QDir/QFont/BinaryString/ProtectedString도 같은 규칙(SKIP 해제).
+DATATYPE_RENAME = {"OptionalCoordinateFrame": "CFrame"}
+DATATYPE_SKIP = {"SystemAddress"}
+_STRING_ALIASES = None
+
+
+def string_aliases():
+    """defs의 `type X = string` 별칭 집합 — DataType 이름이 여기 있으면 Luau 타입은 `string`."""
+    global _STRING_ALIASES
+    if _STRING_ALIASES is None:
+        _STRING_ALIASES = set(re.findall(r"^type (\w+) = string$", DEFS.read_text(), re.M))
+    return _STRING_ALIASES
 
 RESERVED = {
     "and", "break", "do", "else", "elseif", "end", "false", "for", "function",
@@ -84,6 +95,8 @@ def map_type(vt, dropped, ctx):
         if name in DATATYPE_SKIP:
             dropped.append(f"{ctx}: DataType {name} (skip-listed)")
             return None
+        if name in string_aliases():
+            return "string"  # H-420
         return DATATYPE_RENAME.get(name, name)
     elif cat == "Enum":
         return f"Enum.{name}"
@@ -162,12 +175,17 @@ def normalize(raw_path, version):
         for owner, m in chain_members(classes, name):
             mtags = set(m.get("Tags") or [])
             if m["MemberType"] == "Property":
+                # [7순회] 멤버 단위 제외도 dropped에 남긴다(파일 머리 "조용한 절단 금지") —
+                # `D.TextLabel { Font = … }`가 왜 없는지 추적 가능해야 한다
                 if m["Name"] == "Parent":
-                    continue  # H-142 — 덤프 층 제외(Q5 (a))
+                    dropped.append(f"{name}.Parent: excluded by design (H-142, Q5 (a))")
+                    continue
                 if mtags & PROP_TAG_EXCLUDE:
+                    dropped.append(f"{name}.{m['Name']}: tags {sorted(mtags & PROP_TAG_EXCLUDE)}")
                     continue
                 sec = m.get("Security") or {}
                 if sec.get("Write") != "None" or sec.get("Read") != "None":
+                    dropped.append(f"{name}.{m['Name']}: security {sec}")
                     continue
                 t = map_type(m["ValueType"], dropped, f"{name}.{m['Name']}")
                 if t is not None and not defs_knows(defs_text, t):
@@ -293,6 +311,13 @@ def emit():
     # Handlers/InstanceShorthand.luau(우선순위 NORMAL+1). PropTypes/OnChange엔 넣지 않는다
     # (실프로퍼티가 아니라 GetPropertyChangedSignal 대상이 아님).
     SHORTHAND = [("UICorner", "number | UDim"), ("UIPadding", "UDim"), ("UIPaddingOffset", "number"), ("UIScale", "number")]
+    # [7순회 H-424] `parent_of` itself is a free variable of `ancestors` — it was assembled
+    # ~90 lines later, so H-412's move only shifted the same latent NameError one step
+    parent_of = {}
+    for name in names:
+        chain = [name] + classes[name]["chain"]
+        for i, node in enumerate(chain):
+            parent_of[node] = chain[i + 1] if i + 1 < len(chain) else None
     # [6순회 H-412] bound BEFORE is_gui_object (which closes over it) — it used to be defined
     # ~90 lines later and the earlier call only survived because `node in classes` was always true
     def ancestors(node):
@@ -382,12 +407,7 @@ def emit():
     # ── 클래스 계층(M7 단위 ④) ──────────────────────────────────────────
     # 조상(비생성 추상 클래스)도 Modifier 타입을 갖는다 — 프로퍼티는 스코프 하위
     # 클래스들의 owner 필드로 되짚는다(surface `chain`/`owner`, normalize가 기록).
-    parent_of = {}
-    for name in names:
-        chain = [name] + classes[name]["chain"]
-        for i, node in enumerate(chain):
-            parent_of[node] = chain[i + 1] if i + 1 < len(chain) else None
-    mod_classes = sorted(parent_of)  # 스코프 + 조상
+    mod_classes = sorted(parent_of)  # 스코프 + 조상 (parent_of는 위 H-412 자리에서 조립)
 
     def descendants(node):
         return sorted(m for m in mod_classes if m != node and node in ancestors(m))
@@ -619,15 +639,32 @@ def emit():
     L.append("\tquad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨")
     L.append("\treturn (D :: any) :: D")
     L.append("end")
+    text = "\n".join(L) + "\n"
+    if CHECK_ONLY:
+        # [7순회 H-423] `check` — test.sh gate: the committed D must equal a fresh emit
+        # (deterministic: every output walk is sorted, every input is tracked). Also runs
+        # every SystemExit gate above without touching the tree.
+        current = OUT.read_text() if OUT.exists() else ""
+        if current != text:
+            raise SystemExit(f"gen-d check: {OUT} differs from a fresh emit — run `python3 scripts/gen-d.py emit` and commit")
+        print(f"check: {len(names)} classes, generated D is up to date")
+        return
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("\n".join(L) + "\n")
+    OUT.write_text(text)
     print(f"emit: {len(names)} classes -> {OUT}")
 
 
+CHECK_ONLY = False
+
+
 def main():
+    global CHECK_ONLY
     if len(sys.argv) >= 2 and sys.argv[1] == "normalize":
         normalize(sys.argv[2], sys.argv[3])
     elif len(sys.argv) >= 2 and sys.argv[1] == "emit":
+        emit()
+    elif len(sys.argv) >= 2 and sys.argv[1] == "check":
+        CHECK_ONLY = True
         emit()
     else:
         print(__doc__)

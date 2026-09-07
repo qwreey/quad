@@ -76,6 +76,12 @@ local function Init(module: any)
 		if desc._fired then
 			Err.errorBefore("Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
 		end
+		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
+		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
+		-- hit "already claimed". `drive`'s own gate (`H-419`) comes too late for Claim.
+		if type(desc._props) ~= "table" then
+			Err.errorBefore(`Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
+		end
 		desc._fired = true
 		module.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
 		local props = desc._props

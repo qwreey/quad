@@ -312,7 +312,7 @@ do
 	-- 4순회 `H-385`: the same gates through the `:Single` sugar blame the user's
 	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot.luau
 	local _, errS1 = pcall(function() s1:Single(q.Source(nil)) end)
-	assert(string.find(tostring(errS1), ":List/:Single after elements were added", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
+	assert(string.find(tostring(errS1), ":List/:Single on a manual Slot", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
 	mock.assertBlamesUser(errS1, "spec.slot.luau", "Single-after-CRUD blame")
 	local s3 = Slot(); s3:Single(q.Source(nil))
 	local _, errS2 = pcall(function() s3:Single(q.Source(nil)) end)

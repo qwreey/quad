@@ -45,6 +45,14 @@ local function newTag(names: { [string]: true }): any
 	return table.freeze(self)
 end
 
+-- one door for a single name (7순회: the two empty-name gates were copies)
+local function addName(target: { [string]: true }, name: string)
+	if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
+		Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
+	end
+	target[name] = true
+end
+
 local function flattenInto(target: { [string]: true }, nameOrList: any)
 	if type(nameOrList) == "table" then
 		-- 3순회 `H-380`: a `{string}` LIST only (tag-plan "값 모양" — `string | {string}`).
@@ -69,21 +77,15 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 or type(name) ~= "string" then
 				Err.errorBeforeNearest("Tag: names must be strings — a name list is a {string} array", SURFACE)
 			end
-			if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
-				Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
-			end
 			count += 1
 			if k > maxIndex then maxIndex = k end
-			target[name :: string] = true
+			addName(target, name :: string)
 		end
 		if count ~= maxIndex then
 			Err.errorBeforeNearest("Tag: names must be strings — a name list cannot have nil holes", SURFACE)
 		end
 	elseif type(nameOrList) == "string" then
-		if nameOrList == "" then -- `H-417`
-			Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
-		end
-		target[nameOrList] = true
+		addName(target, nameOrList)
 	else
 		Err.errorBeforeNearest("Tag: names must be strings", SURFACE)
 	end

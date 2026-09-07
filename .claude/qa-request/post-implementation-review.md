@@ -101,6 +101,7 @@
 | **Q19** (6순회 `H-414`) | 생성 `PropTypes`(따라서 `OnChangeFn`의 `keyof<PropTypes>`·`<Class>OnChange`)가 `PROP_TAG_EXCLUDE`(ReadOnly 등)를 뺀 **쓰기** 표면에서 생성돼 `OnChange("AbsoluteSize"/"AbsolutePosition"/"TextBounds", fn)`이 strict TypeError — 런타임은 유효하고 `onchange-plan.md`는 AbsolutePosition 관측을 전제(luau-lsp 실측 ×4) | (a) `PropTypes`를 읽기 표면(ReadOnly 포함)으로 따로 생성해 OnChange에만 사용(타입 표면 확대) / (b) `:: any` 캐스트 관용구 문서화(정적 게이트 포기) | **(a)** — OnChange의 주 용도가 레이아웃 관측 |
 | **Q20** (6순회 `H-415`, PLAUSIBLE — Studio 미실측) | quad-roblox `bindLifetime`이 claim 마커를 약참조로 읽어, Destroy된 채 Lua 쪽(`Ref<Frame?>`)에 붙들린 Instance에 바인드하면 GC 전엔 죽은 섬에 조용히 성공(영영 안 도는 핸들), GC 뒤엔 "Instance is not claimed by quad (… Claim it first)" — claim됐던 인스턴스에 재claim(`H-293` UB)을 권하는 반사실 메시지 | (a) `gcconn.Connected`로 destroyed 팔 분리 메시지 / (b) UB 문서화(`ref-plan.md` "Destroy와는 무관" 결) | **(a)** 메시지만 — 단 Studio 실측 뒤 |
 | **Q7 셋째**(6순회 `H-416`) | `State.luau` "a Compute function returned a Modifier"가 `errorBeforeNearest`인데 `_recompute`가 lazy라 디스패치가 처음 강제하면 nearest = `Impl.Get`의 호출자 = `Dispatch/StoreBind.luau:64`(quad 내부) — 태그된 중간 프레임 뒤의 nearest, `H-399`와 같은 족 | (a) outermost(사용자 `drive`/생성 줄) / (b) 유지 + 주석 정정 / (c) Compute 생성 시 즉시 검증(lazy 계약 변경 — 새 메커니즘) | **(a)** — Q7 둘째와 한 결정 |
+| **Q21** (7순회 `H-430`) | 툴체인 핀·린터 — (b) `mise.toml`은 pesde/rojo/luau-lsp/selene만 핀하고 `luau` CLI는 사용자 전역(0.734)이라 엔진 무관 analyze 그룹과 스펙 49개가 무핀(`architecture.md`의 툴체인 핀 서술과 어긋남, typing-limits는 빌드별 실측); (c) selene은 핀 + 4패키지 `deny` 설정인데 어떤 스크립트도 안 돌리고 `quad-roblox/selene.toml`이 `std = "luau"`라 `selene src` 754 errors, quad-base 68, quad-error엔 설정 없음 — 정본(project-setup-plan "selene 린터")은 채택으로 서술 | (b) `luau = "0.734"` 핀(오늘 무동작) / 범프는 별도 / (c) selene 폐기 · 게이트화(roblox std 생성·전역 선언·quad-error 설정·68곳 정리) · 설정만 정정 | **(b) 핀, (c) 폐기 또는 게이트화 중 사용자 선택** — (a) gen-d `check` 모드는 ①로 반영(`H-423`) |
 | **Q6** (2순회 `H-376`) | 정본이 약속한 **native* 조합 폴백이 코드에 없다** — `slot-plan.md` "기본 구현(조합 폴백) — 미주입이 에러가 아니다" 절(`nativeRemove` = `nativeExtract` + `nativeDispose` 반복, `nativeMove` = `nativeExtract` + `nativeInsert`, `nativeSwap` = `nativeMove` 2회, "백엔드는 이득 있는 것만 덮어쓴다")과 `architecture.md` EngineOps 줄이 그렇게 서술하는데 `Slot.luau`는 `module.nativeMove`/`nativeSwap`/`nativeRemove`를 직접 부를 뿐 합성이 없다(`Quad.New()` 실측 `nativeDispose: nil`). 잠복 — in-tree 백엔드 둘(roblox·mock)이 여섯 전부를 심는다. `nativeDispose`는 정본 어느 문장도 폴백/명확 에러 어느 쪽으로도 분류 안 함 | (a) 문장이 stale — 폴백 약속을 `slot-plan.md`/`architecture.md`에서 지우고 여섯 전부 "미주입이면 명확한 에러"로 통일(`H-373`이 심은 세 스텁과 한 몸 — `LifetimeHandle.luau` 스텁 여섯 추가) / (b) 약속 유효 — `Init`에서 미주입 op를 정본 공식대로 합성(디스패치 깊이의 새 합성 코드) | **(a)** — 관측된 필요 없음("관측된 문제에만 구조"), 셋째 백엔드가 실제로 나올 때 (b)를 열면 됨. 정본 문장이 걸려 있어 자율로 안 지움 |
 
 ## §6 0순회 — `/code-review high`, 반영분(`ba222e9..fb9435a`) diff 중심 (2026-09-07 01시대, 사용자 지시 "하나 더")
@@ -305,4 +306,28 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 | — | S-01~S-06 건전성 증명(AttributeKey 약참조 캐시 vs `nameClaims` 강참조, Ref 재바인드 대칭, `flatten` 2단계 순회, State lazy `Get` 수렴, Claim in-place 치환, Blocker `_handles` 약키) | 코드 대조로 전부 성립 — 재의혹 방지용 기록으로 유용 | 그 문서가 소스, 여기선 포인터 |
 
 다음 순회는 §14부터, `H-420`부터.
+
+## §14 7순회 — `/code-review high`, 파인더 6·검증자 4 opus, 미완 0 (2026-09-07 오후)
+
+첫 순회에서 포크가 자식 대기 없이 한 메시지로 마감(지시문에 "기다리지 말고 미완 표시"를 넣은 효과). 본문 10 + LOW 7. ① 열둘,
+② 하나(Q21), ③ 하나(mock 기본값 표). **HIGH 하나** — 생성기 타입 매핑 오류가 M5부터 살아 있었다.
+
+| ID | 자리 | 무엇 | 처리 |
+|---|---|---|---|
+| **`H-420`** (HIGH) | `gen-d.py` `DATATYPE_RENAME` | 덤프의 `ContentId`(핀 defs 4행 `type ContentId = string`)를 무관한 userdata 클래스 `Content`(ImageContent용)로 매핑해 생성 D의 `Image`×2·`BottomImage`·`MidImage`·`TopImage`·`HoverImage`·`PressedImage`·`CursorIcon`·`ActivatedCursorIcon`·`Video` 10슬롯이 엔진이 받는 유일한 값(asset id 문자열)을 strict에서 거부(luau-lsp 실측). `PropTypes`도 `Image: Content`라 `OnChange("Image", fn: (string))` 실패. rename만 지우면 `defs_knows`가 `type X = string` 별칭을 못 봐 조용히 탈락 — SKIP의 QDir/QFont/BinaryString/ProtectedString이 같은 결함의 우회 | defs의 `type X = string` 별칭 집합을 읽어 `string`으로(`string_aliases()`), `ContentId` rename·별칭 넷 SKIP 삭제. 원본 덤프로 **재정규화**(scratch `API-Dump.json`, 같은 dumpVersion) → 표면 diff: 타입 변경 10(`Content` → `string`), 프로퍼티 추가·삭제 0 → 재생성 D 39줄(`PV22` → `PV5`). `spec.shorthandtypes` `ImageLabel { Image = "rbxassetid://…" }` 양성 |
+| **`H-421`** (MED) | `Attribute.luau` 그룹 생성자·스칼라 슈거 | `H-417`이 공개 `AttributeKey`만 막아 `Attribute({ [""] = 5 })`·`NumberAttribute("", 5)`는 사설 `_newUncachedKey`로 `""`가 `setAttribute`에 디스패치 깊이로 도달(mock 실측) | 두 자리에 `name == ""` 거부. `spec.attribute` 음성 둘 |
+| **`H-422`** (MED) | `scripts/test.sh` | `H-404` 게이트(`GlobalUsedAsLocal`)는 함수 안 중첩 `function`만 잡고 **모듈 스코프** `function name()`엔 lint 자체가 안 나온다(luau-analyze rc 0 실측) — src의 모듈 스코프 `local function` 101곳 중 하나가 `local`을 잃어도 통과. `H-405`와 같은 모양(살아 있다고 믿은 게이트) | `grep -rnE '^function [A-Za-z_]'` 게이트(src·test 여섯 트리) 추가; `H-404` 행 범위 정정은 이 행이 |
+| **`H-423`** (MED→①) | `scripts/test.sh`·`gen-d.py` | 생성물 게이트가 `Parent:`·배너 grep뿐이라 gen-d의 SystemExit 게이트들은 사람이 재생성할 때만 돌았고 "재생성 diff 0"을 7커밋이 손으로 기록 | `gen-d.py check`(메모리 emit → 커밋본 비교, 게이트 전부 실행, 트리 무수정)를 test.sh에. 핀·selene은 **§4 Q21** |
+| **`H-424`** (LOW) | `gen-d.py` `parent_of` | `H-412`는 `ancestors` 정의만 옮겼고 그 자유변수 `parent_of`는 90줄 뒤 바인딩 — 같은 잠복 `NameError`가 한 칸 옮겨졌을 뿐(죽은 else 팔 덕에 생존) | `parent_of` 조립을 `ancestors` 위로 |
+| **`H-425`** (MED) | `Claim.luau` `resolve` | `H-419`의 props 게이트는 `drive` 머리인데 `resolve`가 그 전에 `for i, v in props`를 돌아 문자열 props가 `Claim.luau:86` VM 에러 — 그 시점엔 `nativeClaim`·`_fired`가 이미 커밋돼 고친 재시도가 "already claimed"(`H-256` (a) 셋째 자리) | `_fired`/`nativeClaim` 앞에 `type(desc._props) ~= "table"` → `errorBefore`. `spec.lifetime` 9절(실패 뒤 재시도 성공) |
+| **`H-426`** (LOW) | `Ref.luau` `:Set` resume | `H-411` 가드는 `"running"`만 — 대기 스레드가 `:Set`을 부르는 코루틴을 resume한 `"normal"` 상태는 여전히 raw VM 에러 + 대기자 등록 소비 | `running`/`normal` 둘 다 nearest 메시지(dead는 UB 유지). `spec.ref` 15절 |
+| **`H-427`** (LOW) | `Bookkeeping.luau` | `H-408` 병합 메시지가 범위 절을 무조건 찍어 N 아래 구멍에서 합법 질의를 불법이라 말함; 같은 구멍에서 `recompute`는 `lengthList` nil을 :238 산술로 죽어 `recomputeBlocker` 잠김(`setOffsetSource`만 부른 제공자) | 범위 절은 `at > N+1`일 때만; `recompute`에 C-6 형제 `lengthList[i] == nil` 내부 불변식 + 정본 의사코드 한 줄 |
+| **`H-428`** (LOW) | `onchange-plan.md`·`typing-limits.md` | "무주석 콜백 파라미터 추론"은 검사·멤버 접근 방향에만 — 연산자(`v + 1`)는 `index<>`가 줄기 전에 `unknown`(실측) | 정본 정정 + typing-limits **8.10** 신설. 부수: gen-d 멤버 단위 제외(Parent·태그·Security)를 `dropped`에 기록(7 → 575 — "조용한 절단 금지") |
+| **`H-429`** (MED, PLAUSIBLE) | `mock.luau` `fireChanged`·`onchange-plan.md` | mock은 같은 값 대입에도 `Changed`를 쏘고 기본값이 없어 첫 대입이 항상 변경 — 실 엔진은 동일값 대입에 시그널을 안 쏘므로 `Frame { Visible = true, OnChange("Visible") }`가 CLI 1회/엔진 0회로 갈릴 수 있음. 정본 따름정리에 이 헤지 없음 | 따름정리 셋째 헤지 + `HUMAN_TODO.md` 13번 Studio 프로브. mock 기본값 표(리플렉션 DB)는 **③ 보고만** |
+| **`H-430`** (②) | 툴체인 핀·selene | 위 §4 **Q21** | 코드 변경 없음 |
+| — (LOW) | 잔여 여섯 | `Slot.luau` `H-410` 주석 "checkIndex raises" 허위 / `spec.dispatch` `{ nil, … }` 순회가 nil 건너뜀(G-07 주증상 미검증) / `spec.lengthoffset` 경유 단언 메시지 미검사 / `Tag` 빈 이름 게이트 두 벌 / `ErrorNamespace` 헤더 "내부 불변식은 plain error"가 `H-408`과 어긋남 / `Slot({})`에도 "elements were added" | 전부 정정(주석·thunk 셋·메시지 단언·`addName`·헤더 한 절·"manual Slot" 문구). SURFACE 손 목록 `H-242` 순회 관용구는 재편 단위 후보로 기록만 |
+
+기각(리뷰어, 근거 인용): InstanceChild 파괴 자식 retractor(slot-plan "덮어쓰기 전에 Destroy는 UB"), mock Signal LIFO(순서 계약 없음),
+`assertBlamesUser` 파일 단위(`H-282`), 등록 누락 도달 경로(`H-134`), nullglob(가상), `Slot({})` 잠금(slot-plan 의도).
+다음 순회는 §15부터, `H-431`부터.
 

@@ -165,7 +165,14 @@ local function Init(module: any)
 				-- `bk.N` is the max registered position by contract (grows in
 				-- setLength, shifts in splice, reset with the list).
 				local last = bk.N or 0
-				Err.errorBefore(`Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a query past N+1 (N = {last}, at most {last + 1} may be queried) or a leaf handler that skipped its position registration (H-39)`, SURFACE)
+				-- 7순회 `H-427`: name the range cause only when the query IS past N+1 —
+				-- with a hole below N the range clause called a legal query illegal
+				Err.errorBefore(
+					if at > last + 1
+						then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration (H-39): position {i} is not registered`
+						else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration (H-39)`,
+					SURFACE
+				)
 			end
 			cur += contribution(bk, i) -- ← a State length's Get can run user code
 			if bk.offsetCacheValidUpTo < i then
@@ -235,6 +242,12 @@ local function Init(module: any)
 			end
 			-- `H-244`: same single coercion as getOffsetAt's cache fill — two
 			-- inline copies would drift when the coercion gains a case (M6).
+			-- 7순회 `H-427`: C-6's sibling — a `lengthList` hole (a provider that called
+			-- setOffsetSource without setLength) died as an anonymous arithmetic error
+			-- inside recomputeBlocker:On, freezing the owner. Internal invariant.
+			if bk.lengthList[i] == nil then
+				error(`Dispatch.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+			end
 			sum += contribution(bk, i)
 			-- `H-240` check ② — contribution's own Get window; the possibly
 			-- stale += above is discarded by the rewind's prefix restore.

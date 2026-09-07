@@ -1029,7 +1029,7 @@ local function Init(module: any)
 	local function checkListInstall(self: any)
 		assertLive(self)
 		if self._listed then Err.errorBeforeNearest("Slot: already has :List/:Single installed", SURFACE) end
-		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List/:Single after elements were added manually (CRUD or Slot{ ... } initial elements)", SURFACE) end
+		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", SURFACE) end
 	end
 
 	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
@@ -1141,7 +1141,7 @@ local function Init(module: any)
 			Slot_mt.Add, Slot_mt.Remove, Slot_mt.Replace, Slot_mt.Extract, Slot_mt.ExtractAll,
 			Slot_mt.Splice, Slot_mt.Clear, Slot_mt.Move, Slot_mt.Swap,
 			Slot_mt.List, Slot_mt.Single,
-			Slot_mt.Get, Slot_mt.IndexOf, -- 6순회 `H-410`: read methods too (checkIndex raises)
+			Slot_mt.Get, Slot_mt.IndexOf, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
 		} :: { any }
 	do
 		Err.setFuncLevel(fn, SURFACE)

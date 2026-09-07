@@ -461,10 +461,9 @@ print()
 print("=== 16. H-419 (외부 리뷰 G-07) — drive의 props가 테이블이 아니면 표면 에러(flatten 안 VM 에러가 Modifier.luau를 blame하던 것) ===")
 do
 	local q = newQuad()
-	for _, bad in { nil, "x", 5 } :: { any } do
-		local ok, err = pcall(function()
-			q.Dispatch.drive(mock.Instance.new("Frame"), bad)
-		end)
+	-- 7순회: `{ nil, … }` skipped the nil case under ipairs — spell the three cases out
+	for _, thunk in { function() q.Dispatch.drive(mock.Instance.new("Frame"), nil :: any) end, function() q.Dispatch.drive(mock.Instance.new("Frame"), "x" :: any) end, function() q.Dispatch.drive(mock.Instance.new("Frame"), 5 :: any) end } do
+		local ok, err = pcall(thunk :: any)
 		assert(not ok and string.find(tostring(err), "props must be a table", 1, true) ~= nil, "non-table props rejected: " .. tostring(err))
 		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive props blame")
 	end

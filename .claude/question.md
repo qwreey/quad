@@ -183,7 +183,9 @@
   타입 표면·정리·문서 항목. **6순회 추가**: **Q18**(`H-413`) `setLength` State 팔의 mutate-then-throw(권고 (a)
   사전 검사, 정본 의사코드 동시 수정) / **Q19**(`H-414`) `PropTypes`가 쓰기 표면이라 `OnChange("AbsoluteSize")`가
   strict 거부(권고 (a) 읽기 표면 별도 생성) / **Q20**(`H-415`) Destroy된 Instance에 `bindLifetime` 시 반사실 메시지
-  (권고 (a), Studio 실측 뒤) / **Q7 셋째**(`H-416`) Compute가 Modifier를 반환한 에러의 blame 방향(Q7 둘째와 한 결정).
+  (권고 (a), Studio 실측 뒤) / **Q7 셋째**(`H-416`) Compute가 Modifier를 반환한 에러의 blame 방향(Q7 둘째와 한 결정) /
+  **Q21**(7순회, `H-430`) 툴체인 — `luau` CLI 무핀(권고 `0.734` 핀)과 selene(안 돌리는 린터, 설정도 stale — 폐기 vs
+  게이트화).
 
 - **[2026-09-07 신설] 소스 구조 재편 — 사용자 의견 여덟의 확인 결과** — `research/source-layout-plan.md`가
   소스(항목별 사실·이득·비용·권고). 답할 것: 1절 Slot 분할(권고 한다, Q9/Q14 뒤 별도 단위) / 2절 Tween(권고

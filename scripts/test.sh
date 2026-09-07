@@ -16,6 +16,14 @@ if grep -q "	Parent:" quad-roblox/src/D/init.luau; then
 	echo "gen-d gate: Parent field leaked into generated D" >&2
 	fail=1
 fi
+# [7순회 H-423] 커밋된 D == 새 emit(생성기의 SystemExit 게이트 전부 포함) — 손 편집·재생성 누락 차단
+python3 scripts/gen-d.py check || fail=1
+# [7순회 H-422] 모듈 스코프 `function name()`(앞선 local 없음)은 luau-analyze가 lint조차 안 낸다 —
+# H-404 게이트(GlobalUsedAsLocal)는 함수 안 중첩 정의만 잡으므로 여기서 정규식으로 본다
+if grep -rnE '^function [A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(' --include='*.luau' quad-base/src quad-roblox/src quad-types/src quad-error/src quad-base/test quad-roblox/test; then
+	echo "FAIL: module-scope global function definition (prefix with local)" >&2
+	fail=1
+fi
 if ! grep -q "GENERATED FILE" quad-roblox/src/D/init.luau; then
 	echo "gen-d gate: generated banner missing" >&2
 	fail=1

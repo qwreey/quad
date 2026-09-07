@@ -24,6 +24,11 @@ local function _types()
 		UIScale = radius:Apply(q.Animate({ Time = 0.2 })),
 	})
 	local f2 = q.D.TextLabel({ UICorner = UDim.new(0.5, 0), UIScale = q.Source(1.5) })
+	-- 7순회 `H-420`: `ContentId` props are strings (asset ids) — the generator used to map them
+	-- to the unrelated `Content` userdata class and rejected the only value the engine takes
+	local il = q.D.ImageLabel({ Image = "rbxassetid://123" })
+	local ib = q.D.ImageButton({ Image = q.Source("rbxassetid://1"), HoverImage = "rbxassetid://2" })
+	local _, _ = il, ib
 	local f3 = q.D.ImageButton({ UICorner = q.Tween({ Value = 12, Time = 0.3 }) })
 	local m = q.D.Modifier.Frame():UICorner(8):UIPadding(UDim.new(0, 2)):UIPaddingOffset(radius):UIScale(q.Tween({ Value = 1 }))
 	local mAbove = q.D.Modifier.GuiObject():UICorner(4) -- 상위 클래스 Modifier에도

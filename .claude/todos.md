@@ -20,7 +20,10 @@
      `numberOnly`)·**Q7 둘째** `_assertBindable` 방향). §1·§5~§11의 ① 갈래(`H-344`~`H-402`; 야간 0~3 +
      주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중). §12에 `H-403`(`isSlot` → Brand)·`H-404`(전역
      게이트)·`H-405`(exit code)·6순회 `H-406`~`H-416`(Property 트윈 Create 선행·SlotHandler 파괴 값
-     pre-pass·`getOffsetAt` 범위 에러 복원 등; **Q18~Q20·Q7 셋째** 추가). 다음은 §13부터.
+     pre-pass·`getOffsetAt` 범위 에러 복원 등; **Q18~Q20·Q7 셋째** 추가), §13 Gemini 검증(`H-417`~`H-419`),
+     §14 7순회 `H-420`~`H-430`(**HIGH** 생성기 `ContentId`→`Content` 오매핑으로 `Image` 등 10슬롯이 문자열을
+     거부하던 것 — 재정규화·재생성; gen-d `check`·모듈 스코프 전역 게이트가 test.sh에; **Q21** 툴체인 핀·selene).
+     다음은 §15부터.
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-gemini-review.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).

@@ -252,4 +252,12 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
 - **Gemini 외부 리뷰 검증**(사용자 반입, *"진짜 실존 문제인지 확인하고 가져올래?"*): G-01 빈 태그 이름(+`AttributeKey("")`)·
   G-06 `Claim`의 `inst` 무검사(실 백엔드 raw VM 에러)·G-07 `drive` 비테이블 props 셋 실존 → `H-417`~`H-419` 게이트;
   분석·건전성 증명 열둘은 원장 §13에 기록. 원문 파일은 qa-request에 보존.
+- **7순회**(파인더 6·검증자 4 opus, "기다리지 말고 미완 표시" 지시로 포크가 한 메시지 마감): HIGH `H-420` 생성기가
+  `ContentId`(defs에선 `string` 별칭)를 `Content` 클래스로 매핑해 `Image` 등 10슬롯이 asset id 문자열을 strict에서
+  거부 — defs의 문자열 별칭 집합으로 매핑, 원본 덤프 재정규화(타입 변경 10, 프로퍼티 증감 0); `H-421` Attribute
+  그룹/슈거 빈 이름, `H-422` 모듈 스코프 전역 함수는 lint조차 없음 → 정규식 게이트(`H-404` 범위 정정), `H-423`
+  gen-d `check` 모드를 test.sh에, `H-424` `parent_of` 호이스팅(`H-412`가 한 칸 옮긴 것), `H-425` Claim props 게이트를
+  `nativeClaim` 앞에, `H-426` Ref `normal` 대기자, `H-427` 범위 메시지 조건화 + recompute `lengthList` 불변식,
+  `H-428` `index<>` 연산자 한계(typing-limits 8.10), `H-429` mock 동일값 발화 헤지 + HUMAN_TODO 13; ② Q21 툴체인.
+  원장 §14. 매 순회의 회귀 관측은 이번에도(`H-424`·`H-427`·`H-421`·`H-425` — 직전 두 커밋의 후속).
 

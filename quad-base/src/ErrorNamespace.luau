@@ -13,7 +13,8 @@
 	nearest enclosing surface's caller — a depth-proof level 2); errors that
 	must climb wrappers to the user's entry (dispatch match failure) use
 	`errorBefore(msg, SURFACE)` (outermost). Internal invariants stay plain
-	`error(msg, 1)`.
+	`error(msg, 1)`; a fault this code cannot attribute (user query past N+1 vs
+	a provider's skipped registration — `H-408`) raises errorBefore naming both.
 
 	Like `Brand`, two coexisting quad-base copies get separate namespaces —
 	the documented copy-split caveat applies as-is.

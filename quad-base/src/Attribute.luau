@@ -102,8 +102,8 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 		-- Scope: the group constructor only — the raw `[AttributeKey] = v` key
 		-- path stays untyped by design (`AttributeKey.luau` header, §4 Q4's family).
 		for rawName, v in pairs(arg :: { [any]: any }) do
-			if type(rawName) ~= "string" then
-				Err.errorBeforeNearest(`{ctx}: plain-table keys must be strings`, SURFACE)
+			if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttribute at dispatch depth
+				Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)
 			end
 			local name = rawName :: string
 			if type(v) == "function" then
@@ -163,8 +163,8 @@ table.freeze(Attribute)
 -- the entry would silently vanish — the user must say `None`.
 local function scalarSugar(fnName: string, luaType: string): (string, any) -> any
 	local function sugar(name: string, value: any): any
-		if type(name) ~= "string" then
-			Err.errorBeforeNearest(`{fnName}: name must be a string`, SURFACE)
+		if type(name) ~= "string" or name == "" then -- `H-421`
+			Err.errorBeforeNearest(`{fnName}: name must be a non-empty string`, SURFACE)
 		end
 		if value == nil then
 			Err.errorBeforeNearest(`{fnName}("{name}"): value must not be nil — use None to delete`, SURFACE)
