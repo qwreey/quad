@@ -63,6 +63,12 @@ local function Init(module: any)
 	module:RunInit(InitSource) -- `Of` needs `module.Source`; pull it in ourselves (idempotent)
 	local Impl = {}
 	Impl.__index = Impl
+	-- `__tostring` (2026-09-08, advisory 권고 1): the declared key set, sorted for determinism
+	function Impl.__tostring(self: any): string
+		local names = Impl.Names(self)
+		table.sort(names)
+		return `Store\{{table.concat(names, ", ")}}`
+	end
 
 	-- Dynamic keys only: the type cannot stop a computed name, so the runtime does.
 	function Impl.Of(self: any, name: string): any

@@ -443,6 +443,15 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   spec의 메시지 단언은 부분 문자열(`string.find(…, 1, true)`)이라 주어를 붙이거나 꼬리를 괄호로
   바꿔도 대부분 그대로 통과한다 — 모양 자체를 단언한 넷(`spec.leaf`·`spec.refhandlers`·
   `spec.tween`)만 같이 고쳤다.
+- **[2026-09-08 사용자 결정, Gemini 자문 권고 1] 값 프리미티브에 `__tostring`.** `print(v)`가
+  `table: 0x…` 대신 상태를 보인다 — `Source(42)`·`State(84)`/`State(?)`(캐시 무효·미계산 —
+  **print는 절대 compute를 돌리지 않는다**)·`Gate(…)`·`Store{Health, Name}`·`Slot(len=3, mounted)`·
+  `Tag("a", "b")`·`Attr{Hp}`·`Ref(7)`/`PreRef(nil)`/`PostRef(nil)`·`Modifier<Frame>(3 fields)`·
+  `Observer(subscribed|weak|unsubscribed)`·`Effect(…)`·`Blocker(on|off)`·quad-roblox `Tween(5, 0.5s)`.
+  **규칙은 "브랜드가 있으면 `__tostring`"이 아니다** — 사용자: *"Epoch 도 Brand 라서요 … Brand 가
+  있는 함수일 수도 있고, metatable 자체가 없는 뭔가일 수도 있고"* — 위 열다섯이 목록이고, `AttrKey`는
+  메타테이블 없는 plain 브랜드 값(`Brand.isPlainBranded`)이라 의도적으로 제외. 메타메서드는 `__index`로
+  상속되지 않아 `GateImpl`처럼 파생 메타테이블은 각자 단다. 계약 spec은 `quad-base/test/spec.tostring.luau`.
 - **[2026-08-31 M3 단위 4, 탐사자 실측 — 워커의 알려진 한계 둘**
   (`H-273`/`H-274`, 확정 방향의 내재 한계라 메커니즘을 안 만든다)**.**
   (1) 태그 표면을 C 프레임이 직접 부르면(`pcall(drive, …)` 직전달)

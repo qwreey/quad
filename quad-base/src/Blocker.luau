@@ -41,6 +41,10 @@ local WEAK_KEY_MT = { __mode = "k" }
 
 local BlockerImpl = {}
 BlockerImpl.__index = BlockerImpl
+-- `__tostring` (2026-09-08, advisory 권고 1)
+function BlockerImpl.__tostring(self: any): string
+	return `Blocker({if self.IsBlocked then "on" else "off"})`
+end
 
 function BlockerImpl.IsOn(self: any): boolean
 	return self.IsBlocked

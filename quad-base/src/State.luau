@@ -75,6 +75,17 @@ local function createImpl(module: any)
 	-- `StateMarker<T>` 브랜드 필드(H-300 "타입이 약속하면 값에도") — 판정은 여전히 Brand 레지스트리,
 	-- 이 필드는 타입 좁힘·진단용 조언층. `__quadStateValue`는 순수 팬텀(quad-types 주석).
 	Impl.__quadState = true
+	-- `__tostring` (2026-09-08, advisory 권고 1): the cached value only while the cache is valid —
+	-- NEVER recompute here (a print must not run user code); stale/uncomputed shows as `?`.
+	local function describe(self: any, kind: string): string
+		if self._cacheCurrCount ~= nil and self._cacheCurrCount == self._cacheTargetCount then
+			return `{kind}({tostring(self._cache)})`
+		end
+		return `{kind}(?)`
+	end
+	function Impl.__tostring(self: any): string
+		return describe(self, "State")
+	end
 
 	-- ── propagation loop ──────────────────────────────────────────────
 	-- Shared by every node type that has `_subs` (Source nodes too).
@@ -225,6 +236,9 @@ local function createImpl(module: any)
 	-- ── GateNode (`gate-plan.md` "`GateNode` 조립") — same layer as a ComputeNode ──
 	local GateImpl = setmetatable({}, { __index = Impl })
 	GateImpl.__index = GateImpl
+	function GateImpl.__tostring(self: any): string -- metamethods do not inherit through `__index`
+		return describe(self, "Gate")
+	end
 
 	local function newWithheld()
 		return setmetatable({}, WEAK_KEY_MT) -- `H-9`: every withheld table is weak-keyed, the swapped-in one too

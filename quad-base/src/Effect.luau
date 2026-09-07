@@ -65,6 +65,10 @@ local function createImpl(module: any)
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
 	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadEffect = true
+	-- `__tostring` (2026-09-08, advisory 권고 1)
+	function Impl.__tostring(self: any): string
+		return `Effect({ObserverImpl._subscriptionOf(self)})`
+	end
 
 	-- ── local helpers, declared before their callers ─────────────────
 	local function isRunning(self: any): boolean -- predicate only; the raise stays in each body (nearest-SURFACE walker)

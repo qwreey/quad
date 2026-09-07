@@ -104,6 +104,16 @@ local function isHandlerLayerValue(v: any): boolean
 end
 
 local ModifierMT = {}
+-- `__tostring` (2026-09-08, advisory 권고 1): class tag + field count. `rawget` — ModifierMT.__index
+-- is the setter/gate metamethod, and a print must not go through it.
+function ModifierMT.__tostring(self: any): string
+	local tag = rawget(self, "__quadModifier")
+	local n = 0
+	for _ in rawget(self, FieldsKey) do
+		n += 1
+	end
+	return `Modifier{if tag == true then "" else `<{tostring(tag)}>`}({n} fields)`
+end
 
 -- `tag`: `true` (untyped) or a Defined class name. Fields may arrive already
 -- frozen (retag path) — `table.freeze` raises on a frozen table.

@@ -50,6 +50,15 @@ TagImpl.__index = TagImpl
 -- (user decision 2026-09-07: Tag/Attr/Observer/EffectHandle go marker
 -- like State/Slot, typing-limits 8.11).
 TagImpl.__quadTag = true
+-- `__tostring` (2026-09-08, advisory 권고 1): the name set, sorted (it is a hash set)
+function TagImpl.__tostring(self: any): string
+	local names = {}
+	for name in self._names do
+		names[#names + 1] = `"{name}"`
+	end
+	table.sort(names)
+	return `Tag({table.concat(names, ", ")})`
+end
 
 -- names are stored as a set ({[name]: true}) plus nothing else — order is
 -- irrelevant to the union semantics and the engine batch call takes a list

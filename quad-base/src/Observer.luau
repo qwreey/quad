@@ -65,6 +65,14 @@ local function createImpl(module: any)
 	local WeakSubscribed = setmetatable({}, WEAK_KEY_MT) :: { [any]: true } -- membership only
 	Impl._Subscribed = Subscribed
 	Impl._WeakSubscribed = WeakSubscribed
+	-- `__tostring` (2026-09-08, advisory 권고 1): strong / weak / none, from the registries
+	local function subscriptionOf(self: any): string
+		return if Subscribed[self] then "subscribed" elseif WeakSubscribed[self] then "weak" else "unsubscribed"
+	end
+	Impl._subscriptionOf = subscriptionOf
+	function Impl.__tostring(self: any): string
+		return `Observer({subscriptionOf(self)})`
+	end
 
 	-- ── EmitReceive ──────────────────────────────────────────────────
 	function Impl._receive(self: any, from: any)

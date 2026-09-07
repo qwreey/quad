@@ -67,6 +67,16 @@ AttrImpl.__index = AttrImpl
 -- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
 -- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
 AttrImpl.__quadAttr = true
+-- `__tostring` (2026-09-08, advisory 권고 1): the attribute names, sorted. (`AttrKey` stays without
+-- one on purpose — it is a metatable-less plain branded table, `Brand.isPlainBranded`.)
+function AttrImpl.__tostring(self: any): string
+	local names = {}
+	for name in self._nameMap do
+		names[#names + 1] = name
+	end
+	table.sort(names)
+	return `Attr\{{table.concat(names, ", ")}}`
+end
 
 local function newAttribute(nameMap: { [string]: any }): any
 	local self = setmetatable({ _nameMap = table.freeze(nameMap) }, AttrImpl)

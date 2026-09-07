@@ -51,6 +51,12 @@ RefImpl.__index = RefImpl
 -- value is identical for every Ref and H-300 only asks that `ref.__quadRefAccepts`
 -- reads as the type promises (review, M8 ③).
 RefImpl.__quadRefAccepts = Void
+-- `__tostring` (2026-09-08, advisory 권고 1): the nominal kind (PreRef/PostRef carry their H-300
+-- marker on the instance) + the current value
+function RefImpl.__tostring(self: any): string
+	local kind = if rawget(self, "__quadPreRef") then "PreRef" elseif rawget(self, "__quadPostRef") then "PostRef" else "Ref"
+	return `{kind}({tostring(self.Value)})`
+end
 
 function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 	self.Value = value -- (1) settle the value first

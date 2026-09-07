@@ -58,6 +58,13 @@ local function Init(module: any)
 	local Slot_mt = {}
 	Slot_mt.__index = Slot_mt
 	Slot_mt.__quadSlot = true -- `SlotMarker<T>` 브랜드 필드(H-300; 판정은 `Brand.isSlot`)
+	-- `__tostring` (2026-09-08, advisory 권고 1): element count + mount/destroy state, read-only
+	function Slot_mt.__tostring(self: any): string
+		if self._destroyed then
+			return "Slot(destroyed)"
+		end
+		return `Slot(len={#self._elements}{if self._mounted then ", mounted" else ""})`
+	end
 
 	module:RunInit(InitDispatch) -- idempotent pull (`H-174` idiom; `H-358` — was the only Init relying on init.luau's order)
 	local Dispatch = module.Dispatch

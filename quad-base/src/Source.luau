@@ -47,6 +47,12 @@ local function Init(module: any)
 
 	local Impl = setmetatable({}, { __index = StateImpl })
 	Impl.__index = Impl
+	-- `__tostring` (2026-09-08 user decision, Gemini advisory 권고 1 — `print(v)` in Studio shows
+	-- state, not `table: 0x…`; read-only, never triggers a compute). Metamethods are NOT inherited
+	-- through `__index`, so every metatable spells its own.
+	function Impl.__tostring(self: any): string
+		return `Source({tostring(self._value)})`
+	end
 
 	function Impl.Get(self: any): any
 		return self._value

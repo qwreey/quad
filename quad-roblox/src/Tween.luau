@@ -68,6 +68,11 @@ local function install(quad: any): any
 	-- `H-300`: the type promises the marker, so the value carries it — read
 	-- through `__index` (zero per-instance slots, like `RefImpl.__quadRefAccepts`)
 	TweenImpl.__quadTween = true
+	-- `__tostring` (2026-09-08, advisory 권고 1): target value + Time when given as the convenience field
+	function TweenImpl.__tostring(self: any): string
+		local t = rawget(self, "Time")
+		return `Tween({tostring(rawget(self, "Value"))}{if type(t) == "number" then `, {t}s` else ""})`
+	end
 
 	-- Option fields only (everything but Value). Shared with `Animate.luau`, which runs it
 	-- EAGERLY on the literal (non-State) options at `Animate(info)` time — the lazy Compute

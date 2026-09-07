@@ -113,6 +113,12 @@ do
 end
 
 print()
+print("=== 4b. __tostring (2026-09-08 권고 1) — 목표 값 + Time ===")
+do
+	assert(tostring(Tween({ Value = 5, Time = 0.5 })) == "Tween(5, 0.5s)", tostring(Tween({ Value = 5, Time = 0.5 })))
+	assert(tostring(Tween({ Value = 5 })) == "Tween(5)", tostring(Tween({ Value = 5 })))
+end
+
 print("=== 5. 경계 — StoreBind는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===")
 do
 	local q = mock.newQuad()
