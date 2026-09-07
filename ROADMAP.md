@@ -25,7 +25,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 | M7 | Modifier(클래스 태그·`TypedFactory`·`As`/`Into`) | 2026-09-04 | `m7-implementation-round17(-brief).md` |
 | M8 | Ref/PreRef/PostRef(`:Wait`, drive pre-pass, 반공변 마커) | 2026-09-04~06 | `m8-implementation-round18(-brief).md` |
 | M9 | 컴포넌트 합성 레이어 — 관례 검증(`spec.component`) | 2026-09-06 | `m9-implementation-round21(-brief).md` |
-| M10 | Event/OnChange/Attribute/Tag + InstanceShorthand | 2026-09-03~06 | `m10-implementation-round16(-brief).md`, `m10-shorthand-implementation-round20(-brief).md` |
+| M10 | Event/OnChange/Attr/Tag + InstanceShorthand | 2026-09-03~06 | `m10-implementation-round16(-brief).md`, `m10-shorthand-implementation-round20(-brief).md` |
 | M11 | Tween(값·타입, Property 소비, `Animate`, `Override` 문자열 싱글톤) | 2026-09-06 | `m11-implementation-round19(-brief).md` |
 
 ## 특정 마일스톤에 안 묶이고 병행 가능

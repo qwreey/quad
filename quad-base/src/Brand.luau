@@ -42,7 +42,7 @@ local Brand = QuadTypes.Brand
 local ObserverBrand = Brand()
 local EffectBrand = Brand()
 local TagBrand = Brand()
-local AttributeBrand = Brand()
+local AttrBrand = Brand()
 local BlockerBrand = Brand()
 local StateBrand = Brand()
 local SourceBrand = Brand()
@@ -55,10 +55,10 @@ local ModifierBrand = Brand()
 local EpochBrand = Brand()
 local MapperBrand = Brand() -- M5 단위 ④ — Claim의 MapperDescriptor(claim-plan §2)
 -- M10 (round16): the attribute single-key objects get their own brand — the
--- group brand (AttributeBrand) marks the array-part group VALUE, while this
--- one marks the hash-part KEY objects (`AttributeKey "name"` and the group's
--- private per-name keys — both must reach the same AttributeKeyFallbackHandler)
-local AttributeKeyBrand = Brand()
+-- group brand (AttrBrand) marks the array-part group VALUE, while this
+-- one marks the hash-part KEY objects (`AttrKey "name"` and the group's
+-- private per-name keys — both must reach the same AttrKeyFallbackHandler)
+local AttrKeyBrand = Brand()
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
@@ -88,11 +88,11 @@ end
 local function isTag(x: any): boolean
 	return TagBrand:is(x)
 end
-local function isAttribute(x: any): boolean
-	return AttributeBrand:is(x)
+local function isAttr(x: any): boolean
+	return AttrBrand:is(x)
 end
-local function isAttributeKey(x: any): boolean
-	return AttributeKeyBrand:is(x)
+local function isAttrKey(x: any): boolean
+	return AttrKeyBrand:is(x)
 end
 -- `H-403` (사용자 지시 2026-09-07): lived in 옛 `Slot.luau` (now `Slot/init.luau`) alone while every sibling
 -- predicate lives here — moved so the set has one home (`slot-plan.md`: "`isSlot`은
@@ -102,11 +102,11 @@ local function isSlot(x: any): boolean
 end
 -- 3순회 `H-377`: the quad values that are frozen PLAIN tables — no metatable,
 -- branded only here. Every `getmetatable(x) == nil` "plain table" gate
--- (Attribute/Modifier/Tag/Store — grep `isPlainBranded` for the current set)
+-- (Attr/Modifier/Tag/Store — grep `isPlainBranded` for the current set)
 -- must exclude them by brand, so the list lives once (a shared pure predicate —
 -- conventions "하나의 무언가가 두 일을 하고 있지 않은지 유의한다" allows exactly that).
 local function isPlainBranded(x: any): boolean
-	return isAttributeKey(x) or isMapperDescriptor(x)
+	return isAttrKey(x) or isMapperDescriptor(x)
 end
 
 -- Subtype relations: the more specific predicate is defined first and the
@@ -136,7 +136,7 @@ return {
 	ObserverBrand = ObserverBrand,
 	EffectBrand = EffectBrand,
 	TagBrand = TagBrand,
-	AttributeBrand = AttributeBrand,
+	AttrBrand = AttrBrand,
 	BlockerBrand = BlockerBrand,
 	StateBrand = StateBrand,
 	SourceBrand = SourceBrand,
@@ -147,7 +147,7 @@ return {
 	PostRefBrand = PostRefBrand,
 	ModifierBrand = ModifierBrand,
 	EpochBrand = EpochBrand,
-	AttributeKeyBrand = AttributeKeyBrand,
+	AttrKeyBrand = AttrKeyBrand,
 
 	isEpoch = isEpoch,
 	isSource = isSource,
@@ -161,8 +161,8 @@ return {
 	isPreRef = isPreRef,
 	isPostRef = isPostRef,
 	isTag = isTag,
-	isAttribute = isAttribute,
-	isAttributeKey = isAttributeKey,
+	isAttr = isAttr,
+	isAttrKey = isAttrKey,
 	isSlot = isSlot,
 	isPlainBranded = isPlainBranded,
 }

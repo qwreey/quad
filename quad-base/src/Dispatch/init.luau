@@ -84,8 +84,8 @@ local BRAND_PROBES = {
 	-- (TODO(Q27); a future quad-spring brand would report `value: table` until then).
 	"isTween", -- M11 (round19 리뷰 — 빠지면 Tween이 `value: table`로 보고된다)
 	"isTag", -- M10 (2차 리뷰 `H-342` — 같은 결함 클래스 넷)
-	"isAttributeKey", -- most-specific-first: 키 객체가 그룹보다 먼저
-	"isAttribute",
+	"isAttrKey", -- most-specific-first: 키 객체가 그룹보다 먼저
+	"isAttr",
 	"isSlot",
 	"isPreRef",
 	"isPostRef",
@@ -166,7 +166,7 @@ local function Init(module: any)
 
 	-- `release` (`H-329`, 사용자 확정 (a) 2026-09-06): a PURE retract that empties
 	-- the chain also drops the list from `chains` and from the inst's gchold —
-	-- otherwise every fresh key (the per-object group keys `State<Attribute>`
+	-- otherwise every fresh key (the per-object group keys `State<Attr>`
 	-- emits) leaves an empty list + its key alive for the instance's lifetime
 	-- (fable 탐사 X-1: ~500 B per emit). The (B) branch of `process` passes
 	-- false: it reinstalls into the SAME list right after, so releasing there
@@ -323,7 +323,7 @@ local function Init(module: any)
 			-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
 			-- `H-386`/`H-389`), and canon says `flattened` is always a plain table
 			-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
-			-- value's own fields were dispatched: a frozen `AttributeKey("x")` is `{ Name = "x" }`,
+			-- value's own fields were dispatched: a frozen `AttrKey("x")` is `{ Name = "x" }`,
 			-- which quad-roblox's Property handler wrote — a silent rename.
 			Err.errorBefore(`Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
 		end

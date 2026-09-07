@@ -14,7 +14,7 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
 > - dispatch 가 각 계층의 slot/storebind.luau 같은게 있는게 이상함. Slot/... 같은걸 만들어야하지 않나
 > - Modifier 는 예외적으로 dispatch 안에서 정의되는 객체일 필요가 있는듯
 > - PreRef/PostRef 같은건 사실상 Ref/... 안에 들어가게 되는게 어떤지?
-> - Attribute 도 마찬가지. AttributeKey 를 합칠 수 있고 … Attr 로 줄이는것도 괜찮을지도
+> - Attr 도 마찬가지. AttrKey 를 합칠 수 있고 … Attr 로 줄이는것도 괜찮을지도
 
 ## 0. 재편 전체에 걸리는 제약(조사 결과 — 어느 항목이든 이걸 밟는다)
 
@@ -23,7 +23,7 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
    `:42` `require("@self/None")`). 그래서 파일을 폴더로 접으면 그 안의 `require("./Brand")`도
    바깥의 `require("./X")`도 그대로 유효하고, 새 형제 파일만 `@self/`로 부르면 된다. **`X.luau`와
    `X/`를 동시에 두지 말 것**(해석 우선순위 미검증).
-2. **값 모듈 → `Dispatch/init` 단방향.** `H-278`(자기 등록) 때문에 Tag/AttributeKey/Attribute/Ref/
+2. **값 모듈 → `Dispatch/init` 단방향.** `H-278`(자기 등록) 때문에 Tag/AttrKey/Attr/Ref/
    Slot/Observer/Effect가 `Dispatch/init`을 require한다 → **`Dispatch/init`은 값 모듈을 절대
    require하면 안 된다.** drive가 필요로 하는 조각은 `Dispatch/` 아래 잎으로(`Dispatch/Ref.luau`
    pre-pass, `Dispatch/Modifier/Handler.luau`), 또는 값 모듈 자체가 `Init` 없는 잎(`Dispatch/Modifier/init.luau` — flatten을
@@ -144,7 +144,7 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 `table.clone`은 `Added`/`Removed` 두 곳뿐이고 **라이브러리 내부 호출자는 0** — "복사 떠서 추가"의
 비용은 사용자 표면에만 있고 핫패스가 아니다. 정본 tag-plan "값 모양" 절은 생성자를 *"`{...}`로
 패킹해 `self:Added(packed)`"*로 서술 — 실물(select 루프)과 이미 어긋나 있다.
-비교: **`Attribute(store, attr, { plain })` 생성자는 Store·Attribute·plain 테이블을 섞어 받고
+비교: **`Attr(store, attr, { plain })` 생성자는 Store·Attr·plain 테이블을 섞어 받고
 평탄화한다**(`flattenArg`) — 같은 "이름 집합 값"인데 Tag만 생성자가 좁다.
 
 **선택지**:
@@ -152,13 +152,13 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 - (b) **`flattenInto`에 Tag 팔 추가** — `Tag(...)`/`Added`/`Removed` 전부 `string | {string} | Tag`
   (리스트 원소도 같은 유니언 재귀), 타입 `__call: (self, ...(string | {string} | Tag))`,
   `Added/Removed: (self, string | {string} | Tag)`. `Merged`는 `Tag(a, b)`와 같아져 별칭으로 남기거나
-  제거. Attribute 생성자와 모양이 같아진다(사용자 원문 *"Tag() 로 초기 부터 잡는게 유리"*).
+  제거. Attr 생성자와 모양이 같아진다(사용자 원문 *"Tag() 로 초기 부터 잡는게 유리"*).
   비용: `Tag.luau` 20줄, quad-types 2줄, tag-plan 값 모양 절, `spec.tag` 2절의 `H-389` 단언 역전,
   `H-380`/`H-389` 원장 행 포인터.
 **권고 (b)** — 어제의 좁힘은 "정본이 문자열만"이라는 근거였는데, 정본 자체가 실물과 어긋나 있고
-형제(Attribute)와 비대칭이다. "다른 Tag에서 가져오기"는 사용자가 실제로 원하는 모양.
+형제(Attr)와 비대칭이다. "다른 Tag에서 가져오기"는 사용자가 실제로 원하는 모양.
 
-## 4. src 전체 배치 — **권고: 패밀리 폴더 셋(Slot/·Ref/·Attribute/) + Modifier 이동까지만, 대분류 폴더는 보류**
+## 4. src 전체 배치 — **권고: 패밀리 폴더 셋(Slot/·Ref/·Attr/) + Modifier 이동까지만, 대분류 폴더는 보류**
 
 **[결정 2026-09-07 밤 — (a) 채택]** 사용자: *"동의. 다른 부분은 보기 힘들어져 아플 때 처리하는게
 나아보임. 최종 export 표면은 달라짐이 없고 관리 편의성 부분이라, 급하지도 않음. — 각각 필요가 나올
@@ -168,11 +168,11 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 **사실**: quad-base/src 33파일 6057줄. require 그래프 순환 0. 잎: Brand/Void/Relate/ErrorNamespace/
 ImplRegistry/Debug/Dispatch/Handler. 중간: EpochMap/Blocker/Claim/LifetimeHandle/Tween/Modifier/
 Bookkeeping/State/Source/Store/Dispatch/*. 상위(Dispatch/init 소비): Observer/Effect/Ref/PreRef/
-PostRef/Slot/Tag/AttributeKey/Attribute. `init.luau`는 24개를 전부 require하고 RunInit 순서는
+PostRef/Slot/Tag/AttrKey/Attr. `init.luau`는 24개를 전부 require하고 RunInit 순서는
 무관(`H-174` 멱등 당김, `H-358`).
 
 **선택지**:
-- (a) **패밀리 접기만** — `Slot/`(1절), `Ref/{init,PreRef,PostRef}`(6절), `Attribute/{init,Key}`
+- (a) **패밀리 접기만** — `Slot/`(1절), `Ref/{init,PreRef,PostRef}`(6절), `Attr/{init,Key}`
   (7절), `Dispatch/Modifier/`(5절). 나머지 20여 파일은 평면 유지. 제약 (1)로 바깥 require 무변경,
   md 인용 치환은 옮긴 파일만.
 - (b) 대분류 — `Util/`(Brand·Relate·Void·ErrorNamespace·ImplRegistry·LifetimeHandle), `Reactive/`
@@ -181,7 +181,7 @@ PostRef/Slot/Tag/AttributeKey/Attribute. `init.luau`는 24개를 전부 require�
   있다), md 인용 42파일 전수, `architecture.md` 트리 전면 재작성, 그리고 `Observer`/`Effect`가
   `Reactive/`에 있으면서 `Dispatch/init`을 require하는 층위가 폴더명과 어긋남(제약 2).
 **권고 (a)** — "너무 많다"의 실체는 파일 수(33)보다 **한 파일의 크기(Slot)와 패밀리가 흩어진 것**
-(Ref 셋, Attribute 둘, Dispatch/Slot)이다. (a)로 최상위가 33 → 25개 전후. (b)는 관측된 필요가
+(Ref 셋, Attr 둘, Dispatch/Slot)이다. (a)로 최상위가 33 → 25개 전후. (b)는 관측된 필요가
 없고 재배선 비용이 크다 — 패밀리 접기 뒤에도 트리가 안 읽히면 그때.
 
 ## 5. `Dispatch/`의 핸들러 파일 — **권고: 규칙을 명문화하고 `Dispatch/Slot.luau`만 `Slot/Handler.luau`로**
@@ -193,8 +193,8 @@ PostRef/Slot/Tag/AttributeKey/Attribute. `init.luau`는 24개를 전부 require�
 
 **사실**: `Dispatch/`엔 코어(`init`·`Handler` 타입)와 **drive 자신의 단계**(`None`·`StoreBind`
 언랩·`Modifier`의 ProcessedModifier·`Ref` pre-pass)가 있고, 이들은 `Dispatch/init`이 직접 등록한다.
-반면 `H-278`(사용자 지시) 이후 값 모듈은 자기 핸들러를 자기 파일에서 등록한다(Tag/AttributeKey/
-Attribute/Observer/Effect/Ref). **유일한 혼종이 `Slot/Handler.luau`** — 파일은 Dispatch 아래,
+반면 `H-278`(사용자 지시) 이후 값 모듈은 자기 핸들러를 자기 파일에서 등록한다(Tag/AttrKey/
+Attr/Observer/Effect/Ref). **유일한 혼종이 `Slot/Handler.luau`** — 파일은 Dispatch 아래,
 등록자는 `Slot/init.luau:1123`, 소비는 `_slotInternal`. 사용자 원문 *"dispatch 가 각 계층의
 slot/storebind.luau 같은게 있는게 이상함"* 중 `StoreBind`는 값 모듈이 아니라 **디스패치 자체의
 언랩 단계**(Brand만 require, `Dispatch/init:396`이 등록)라 Dispatch 아래가 맞다.
@@ -227,31 +227,31 @@ between the two files"*가 오히려 한 파일을 가리킨다). **권고 (a)**
 보기 좋게"; 흡수는 `PreRef`/`PostRef`가 공개 이름이라 찾기 어려워진다. 비용 최소(md 인용 `Ref` 6·
 `PreRef` 1).
 
-## 7. Attribute 패밀리 — **권고: `Attribute/{init,Key}.luau`, 핸들러는 각자 안에**
+## 7. Attr 패밀리 — **권고: `Attr/{init,Key}.luau`, 핸들러는 각자 안에**
 
-**[결정 2026-09-07 밤 — 4절 (a)의 구성 요소로 채택, 반영 완료]** `Attribute/{init,Key}.luau`로 이동됐다(9절 4번);
-`Attribute/Handler.luau` 분리는 하지 않았다(급하지 않음). 아래는 결정 전 서술(보존용).
+**[결정 2026-09-07 밤 — 4절 (a)의 구성 요소로 채택, 반영 완료]** `Attr/{init,Key}.luau`로 이동됐다(9절 4번);
+`Attr/Handler.luau` 분리는 하지 않았다(급하지 않음). 아래는 결정 전 서술(보존용).
 
-**사실**: `Attribute/init.luau`(279) → `Attribute/Key.luau`(136) 단방향(`_newUncachedKey` 사적 경로 —
+**사실**: `Attr/init.luau`(279) → `Attr/Key.luau`(136) 단방향(`_newUncachedKey` 사적 경로 —
 그룹 개인 키가 공개 캐시 키와 **반드시 다른 객체**여야 교차 retraction이 구조적으로 불가). 핸들러
-둘(`AttributeKeyFallbackHandler` 키 매칭 / `AttributeGroupFallbackHandler` 배열부 값 매칭, 둘 다
+둘(`AttrKeyFallbackHandler` 키 매칭 / `AttrGroupFallbackHandler` 배열부 값 매칭, 둘 다
 FALLBACK) + Relate 셋. 합치면 415줄 한 파일에 브랜드 둘·핸들러 둘 — 나누는 편이 "하나가 두 일"
-규칙에 맞다. **폴더**: `Attribute/init.luau`(그룹 값·그룹 핸들러·스칼라 슈가) +
-`Attribute/Key.luau`(단일 키·키 핸들러·`_newUncachedKey`). 사용자의 "핸들러 계약 단위도 쪼갤 수
-있을지도"는 `Attribute/Handler.luau`로 그룹 핸들러 60줄을 빼는 것 — 279줄이라 급하지 않음, 1절
+규칙에 맞다. **폴더**: `Attr/init.luau`(그룹 값·그룹 핸들러·스칼라 슈가) +
+`Attr/Key.luau`(단일 키·키 핸들러·`_newUncachedKey`). 사용자의 "핸들러 계약 단위도 쪼갤 수
+있을지도"는 `Attr/Handler.luau`로 그룹 핸들러 60줄을 빼는 것 — 279줄이라 급하지 않음, 1절
 Slot처럼 커지면.
 
-## 8. `Attribute` → `Attr` 축약 — **권고: 사용자 판단, 하려면 재편 단위에 같이(지금이 가장 쌈)**
+## 8. `Attr` → `Attr` 축약 — **권고: 사용자 판단, 하려면 재편 단위에 같이(지금이 가장 쌈)**
 
-**사실**: 공개 이름 — `Attribute`(콜러블 + `.Merged`/`.Overridden`), `AttributeKey`,
-`StringAttribute`/`NumberAttribute`/`BooleanAttribute`, `isAttribute`/`isAttributeKey`, 메소드
-`NameMap`, quad-types `Attribute`/`AttributeConstructor`/`AttributeSugar<T>`, 생성 D `NewChild` 팔,
-quad-roblox `EngineOps.setAttribute`(엔진 op 이름은 Roblox API 어휘라 그대로). 등장: `.claude/base`
+**사실**: 공개 이름 — `Attr`(콜러블 + `.Merged`/`.Overridden`), `AttrKey`,
+`StringAttr`/`NumberAttr`/`BooleanAttr`, `isAttr`/`isAttrKey`, 메소드
+`NameMap`, quad-types `Attr`/`AttrConstructor`/`AttrSugar<T>`, 생성 D `NewChild` 팔,
+quad-roblox `EngineOps.setAttr`(엔진 op 이름은 Roblox API 어휘라 그대로). 등장: `.claude/base`
 **18파일**, quad-types 9줄, quad-roblox 2파일, spec 5파일. 선례: `Reference` → `Ref`.
 **이득**: `D.Frame { Attr { … } }`·`AttrKey "Hp"` — 실사용 타이핑(사용자: *"실제 개발에서 많이 쓰는
 줄임"*). 사용자 0명인 지금이 이름 바꾸기의 최저 비용 시점. **비용**: 코드·타입·D·spec 기계 치환 +
-base 18파일 문서 스윕(이름은 doc-check가 못 잡는다 — 감사자 한 라운드). 엔진 op `setAttribute`와
-Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attribute = 엔진 개념"으로 읽히는 부수 효과 있음.
+base 18파일 문서 스윕(이름은 doc-check가 못 잡는다 — 감사자 한 라운드). 엔진 op `setAttr`와
+Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attr = 엔진 개념"으로 읽히는 부수 효과 있음.
 **권고 없음(취향 결정)** — 하면 `Attr`/`AttrKey`/`StringAttr`/`NumberAttr`/`BooleanAttr`/`isAttr`/
 `isAttrKey`, 7절 폴더는 `Attr/`.
 
@@ -262,7 +262,7 @@ Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attribute = 엔진 개�
 3. 2절 Tween — 결정은 (b) 통째 이동. **완료**(Brand→quad-types와 같은 커밋).
 4. 순수 이동 단위 하나: 1·5·6·7절(8절 이름은 미답이라 제외) — 동작 diff 0, `spec.*` 전량 +
    `doc-check.py` `.luau` 경로 검사 확장 + md 인용 치환 + `architecture.md` 트리·5절 규칙 명문화 +
-   `README`. **완료(2026-09-07 밤)** — `Ref/{init,PreRef,PostRef}`·`Attribute/{init,Key}`·`Dispatch/Modifier/
+   `README`. **완료(2026-09-07 밤)** — `Ref/{init,PreRef,PostRef}`·`Attr/{init,Key}`·`Dispatch/Modifier/
    {init,Handler}`는 메인이(비-init 파일만 `./`→`../`; `Dispatch/Modifier/init.luau`는 `./`가 `Dispatch/`라
    `./None`), `Slot/{init,Owner,Elements,Raw,Tree,List,Handler}`는 opus 서브에이전트가 내부 표 `S`(늦은 조회
    `S.fn(...)` — 전방 선언의 파일 판, 프렐류드 값 18개는 설치 전 `S`에)로 분할 — 함수 목록 동일·본문 다중집합
@@ -288,12 +288,12 @@ quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-p
 남은 한 조각: base `BRAND_PROBES`가 여전히 `"isTween"` 문자열을 적어 둔다(진단 이름 조회) —
 프로바이더 등록 메커니즘은 새 표면이라 round3 §4 Q27.
 
-### 10-2. `None`·`Tag`·`Attribute`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 완료(2026-09-07 밤)**
+### 10-2. `None`·`Tag`·`Attr`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 완료(2026-09-07 밤)**
 
-사용자: *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
+사용자: *"None, Tag, Attr, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
 사실: `None`은 이미 마커(`__quadNone`, `H-300`), `Tag`는 3절 반영에서 `__quadTag`를 얻었다. 남은 셋은
-`AttrImpl.__quadAttribute`/`Observer Impl.__quadObserver`/`Effect Impl.__quadEffect`(H-300 관례 —
-`__index`로 읽히는 무비용 필드)와 quad-types `AttributeMarker`/`ObserverMarker`/`EffectHandleMarker`,
+`AttrImpl.__quadAttr`/`Observer Impl.__quadObserver`/`Effect Impl.__quadEffect`(H-300 관례 —
+`__index`로 읽히는 무비용 필드)와 quad-types `AttrMarker`/`ObserverMarker`/`EffectHandleMarker`,
 그리고 입력 자리(`NewChild`와 그 안의 `StateMarker<…>` 팔, gen-d의 8.9 게이트 수확 목록)를 마커로
 바꾸는 것. 필드·별칭 이름은 기존 `__quad<Type>`/`<Type>Marker` 패턴을 따른 메인 작명 — 사후 확인.
 
@@ -303,9 +303,9 @@ quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-p
 구조임 … 모든 마커 타입을 위쪽에 올려서 표현하고, 중간엔 구현타입만 넣고, 맨 아래 실제 Quad 익스포팅
 타입을 넣는 구조로 단일 파일로 유지해도 좋을듯. — 단일 파일로 두는게 배포 상 ModuleScript 가 덜 들고,
 lsp 가 덜 힘들어 하기 때문임."* 반영 모양: (1) 마커·센티널(`None`/`Detach`/`KeyGone`/`MapperRoot`/
-`MapperDescriptor`/`StateMarker`/`SlotMarker`/`TagMarker`/`AttributeMarker`/`ObserverMarker`/
+`MapperDescriptor`/`StateMarker`/`SlotMarker`/`TagMarker`/`AttrMarker`/`ObserverMarker`/
 `EffectHandleMarker`/`ModifierMarker`) → (2) 값·핸들 타입(Epoch/Relate/Ref/State/Source/Store/Observer/
-Effect/Blocker/Tag/Attribute/Modifier/Slot/Dispatch/Handler) → (3) `Quad`·`CheckedQuad`·`Brand`·상수.
+Effect/Blocker/Tag/Attr/Modifier/Slot/Dispatch/Handler) → (3) `Quad`·`CheckedQuad`·`Brand`·상수.
 주석·결정 이력은 옮기되 지우지 않는다(순수 재배치, diff는 이동뿐).
 
 ### 10-4. `...Param`을 prop 모음에서 조립하는 타입 함수 / 정적으로 더 굽기 — **리서치(사용자 문항)**

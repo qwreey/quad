@@ -188,7 +188,7 @@ Store/Dispatch 어디에도 안 걸림, 엔진 지식이 전혀 필요 없음. `
 
 ## 이름
 
-`Fallback`/`Traceback` 확정 — 낱개 함수 둘뿐이라 `Tag`/`Attribute`류
+`Fallback`/`Traceback` 확정 — 낱개 함수 둘뿐이라 `Tag`/`Attr`류
 네임스페이스가 필요했던 것과 달리 충돌 표면이 작다고 판단, 용어 정리
 대기열에 안 올리고 바로 점유(사용자 확정).
 

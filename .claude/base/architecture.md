@@ -1,10 +1,10 @@
 # quad-v2 전체 아키텍처 (현재 상태 요약)
 
-> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델(0-A)/Attribute 이름
+> **✅ [2026-08-13 열네 번째 세션] 재디스패치 모델(0-A)/Attr 이름
 > 소유권(0-Z) 확정·반영 완료 — 아래 소스 트리도 갱신됨.** 이전 ⚠️ 배너가
 > 경고하던 "옛 모델로 짜게 됨" 위험은 해소. 디스패치 코어는
 > `base/bind-system-plan.md`에서 **`base/dispatch-core-plan.md`로
-> 분리**됐고, `Tag`/`Attribute`는 알고리즘까지 quad-base로 재배치됐음
+> 분리**됐고, `Tag`/`Attr`는 알고리즘까지 quad-base로 재배치됐음
 > (엔진 op만 주입). 뒤집힌 옛 모델은
 > `archive/dispatch-hintvalue-model-reversed.md`.
 
@@ -34,14 +34,14 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
-4. **PA님 스타일 특수 키 계속 지원**: `[AttributeKey "Name"]`(구 `Attribute`,
-   2026-08-11 아홉 번째 세션에 그룹 `Attribute(...)`와 이름 충돌 방지로
+4. **PA님 스타일 특수 키 계속 지원**: `[AttrKey "Name"]`(구 `Attr`,
+   2026-08-11 아홉 번째 세션에 그룹 `Attr(...)`와 이름 충돌 방지로
    리네임) 같은 특수 바인드 키, store 컴퓨티드 바인드도 가능해야 함
    (`retract`, 구 cleanup, `base/lifecycle-pattern.md` 참고). **[정정,
    2026-08-08 세 번째 세션]** `Tag`는 더 이상 `[Tag ""] = true` 해시 파트
    특수 키가 아님 — array-part 값 객체(`Tag(...)`)로 재설계됨,
    `base/tag-plan.md` 참고(`archive/tag-hash-key-model-reversed.md`에 구
-   모델 보존). **[2026-08-11 아홉 번째 세션]** `Attribute(...)`도 여러
+   모델 보존). **[2026-08-11 아홉 번째 세션]** `Attr(...)`도 여러
    Store를 한 번에 attribute로 묶는 array-part 값 객체로 신설(`Tag`와
    동형), `base/attribute-plan.md` 참고.
 5. **id 기반 전역 조회 폐지, Tag 시스템으로 대체.** v1의 `Store.GetObject(id)`/
@@ -253,9 +253,9 @@ Rojo `project.json`의 트리 매핑 규칙만 유지하면 되고, require는 �
 큰 구현을 중복하지 않기 위함 — rbvm이 relation을 하나로 통합하려 했던 것과
 같은 동기). `quad-roblox`는 그 인터페이스의 **실제 구현체**만 제공.
 **[2026-08-13 열네 번째 세션 확장] 이 원칙은 "값 타입"이 아니라 "부기가
-엔진 지식을 요구하는가"로 가른다** — `Tag`의 참조 카운트와 `Attribute`의
+엔진 지식을 요구하는가"로 가른다** — `Tag`의 참조 카운트와 `Attr`의
 이름 claim/그룹 위임은 엔진과 무관한 순수 부기라 **핸들러째로 quad-base**,
-백엔드는 `addTag`/`removeTag`/`setAttribute` 세 op만 주입한다(웹에도
+백엔드는 `addTag`/`removeTag`/`setAttr` 세 op만 주입한다(웹에도
 `className`/`data-*`라는 대응물이 있어서, 그러지 않으면 같은 알고리즘이
 백엔드마다 복제됨). 반대로 Property/Event/OnChange는 Reflection·시그널
 자체가 로직이라 그대로 백엔드 소속 — 상세 기준과 op 시그니처는
@@ -302,9 +302,9 @@ quad/
 │       │   ├── List.luau          # `:List`/`:Single`/`_activateList`(`settle`·`reconcile` 로컬 클로저)·`checkListInstall`
 │       │   ├── types.luau         # **[2026-09-07 Q29 사용자 결정]** 내부 표 `S`의 타입 `SlotInternal` — 내부 구현 타입은 quad-base(여기), 외부 계약만 quad-types. 형제는 `S.x`를 직접 읽는다(재캡처·래퍼 없음)
 │       │   └── Handler.luau       # (옛 `Dispatch/Slot.luau`) SlotHandler — 마운트/언마운트 + 그 자리 Length/Offset 부기(값 타입 본체는 위 top-level `Slot/init.luau`)
-│       ├── Attribute/            # **[2026-09-07 패밀리 접기 — 사용자 결정 `research/source-layout-plan.md` 4절 (a)]** 옛 `Attribute.luau`+`AttributeKey.luau`
-│       │   ├── init.luau          # **[`H10-1` 재편]** 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`/`Overridden`/`:NameMap`, `Tag`와 동형) **+ `AttributeGroupHandler`+FALLBACK 자기 등록까지 이 한 파일** + **[2026-09-03]** 타입드 스칼라 슈가 `StringAttribute(name, value)`/`Number…`/`Boolean…`(= 단일 항목 그룹, raw 값 타입 검사·nil 거부) (`base/attribute-plan.md`)
-│       │   └── Key.luau           # (옛 `AttributeKey.luau`) **[`H10-1` 재편]** 단일 키 `AttributeKey(name)`(**[2026-09-03]** 무타입 프리미티브 — 제네릭 폐기, 스칼라 패밀리는 `Attribute/init.luau`의 배열부 슈가로 이동) + 이름별 weak 캐시 **+ `AttributeKeyHandler`(이름 claim)+FALLBACK 자기 등록까지 이 한 파일** — 엔진 고유 타입 패밀리(Color3Attribute류)만 백엔드 소속(`base/attribute-plan.md` "패키지 배치" 절)
+│       ├── Attr/            # **[2026-09-07 패밀리 접기 — 사용자 결정 `research/source-layout-plan.md` 4절 (a)]** 옛 `Attribute.luau`+`AttributeKey.luau`
+│       │   ├── init.luau          # **[`H10-1` 재편]** 그룹 값 타입+API(`Attr(store1, store2, ...)`/`Merged`/`Overridden`/`:NameMap`, `Tag`와 동형) **+ `AttrGroupHandler`+FALLBACK 자기 등록까지 이 한 파일** + **[2026-09-03]** 타입드 스칼라 슈가 `StringAttr(name, value)`/`Number…`/`Boolean…`(= 단일 항목 그룹, raw 값 타입 검사·nil 거부) (`base/attribute-plan.md`)
+│       │   └── Key.luau           # (옛 `AttributeKey.luau`) **[`H10-1` 재편]** 단일 키 `AttrKey(name)`(**[2026-09-03]** 무타입 프리미티브 — 제네릭 폐기, 스칼라 패밀리는 `Attr/init.luau`의 배열부 슈가로 이동) + 이름별 weak 캐시 **+ `AttrKeyHandler`(이름 claim)+FALLBACK 자기 등록까지 이 한 파일** — 엔진 고유 타입 패밀리(Color3Attr류)만 백엔드 소속(`base/attribute-plan.md` "패키지 배치" 절)
 │       ├── Dispatch/
 │       │   ├── init.luau          # process 엔진 — `chains`(inst,k별 인덱스 배열, 슬롯마다 {handler, retractor}) + 하강 diff(핸들러가 같으면 그 자리 클로저에 새 값을 넘기고 재process, 다르면 그 자리부터 retractFrom) + 3-인자 `retractFrom(inst,k,index)` (`dispatch-core-plan.md` "Dispatch 체인" 절, 2026-08-08 신설 → 2026-08-13 다섯 번째 세션 인덱스화 → 같은 날 열네 번째 세션 하강 diff)
 │       │   ├── Handler.luau        # 핸들러 계약 타입(isHandlable/priority/process — process가 자기 retract 클로저를 반환)
@@ -314,11 +314,11 @@ quad/
 │       │   ├── StoreBind.luau      # store 값 재귀 재실행 로직(범용, 엔진 무관)
 │       │   ├── None.luau           # (**[2026-08-28 `H-162`]** 센티널 `None`과 같은 급으로 quad-base가 export하는 단일 no-op 함수 **`Void`**는 의존 없는 잎 모듈 `Void.luau`(아래)에 정의하고 최상위 `init.luau`가 재export한다 — `Dispatch/init.luau`가 파일 스코프 `local NOOP = Void`로 쓰므로 최상위에 두면 순환 require(`/code-review` 지적); 핸들러 retractor·cleanup 자리의 `function() end`를 전부 대체) NoneHandler(`v==None`을 `nil`로 바꿔 재귀만 — 배열/해시 구분 없음) + NilHandler(`k=number and v==nil` 전용 말단, `setLength(0)`/`setOffsetSource(None)` 등록) (`base/dispatch-core-plan.md`의 "`None` 센티널"/"`NilHandler`" 절, 2026-08-18 재설계 — `drive`의 `None` 스킵 분기 폐기)
 │       │   ├── (Leaf.luau 없음)    # ⚠️ [2026-09-01 `H-278` 사용자 확정 — 2026-08-08 배치 확정 역전] leaf 매칭 Handler와 동적 경로 가드는 **값을 선언한 모듈이 자기 Init에서 등록**한다("각 객체를 아는 곳은 각 객체가 선언된 곳"): Observer/Effect 몫은 `Observer.luau`/`Effect.luau`의 `registerDispatchHandlers`(결합 핸들러가 `ObserverLeafHandler`/`EffectLeafHandler` 둘로 갈라짐 — 값 공간 배타라 동등), M8의 Ref/PreRef/PostRef 몫은 `Ref/init.luau`로 감. None 쌍만 `None.luau`에 남는 이유는 None이 Dispatch 자신의 개념이라서
-│       │   ├── (Tag/AttributeKey/Attribute 없음) # **[2026-09-03 `H10-1` 재편]** 이 세 핸들러 파일 분할은 `H-278` 이전 서술 — 실물은 위 top-level `Tag.luau`/`Attribute/Key.luau`/`Attribute/init.luau`가 값+핸들러+FALLBACK 자기 등록을 전부 가진다(알고리즘 서술은 각 base 문서 그대로 유효)
+│       │   ├── (Tag/AttrKey/Attr 없음) # **[2026-09-03 `H10-1` 재편]** 이 세 핸들러 파일 분할은 `H-278` 이전 서술 — 실물은 위 top-level `Tag.luau`/`Attr/Key.luau`/`Attr/init.luau`가 값+핸들러+FALLBACK 자기 등록을 전부 가진다(알고리즘 서술은 각 base 문서 그대로 유효)
 │       │   └── Ref.luau            # **[2026-09-04 M8 단위 ②, round18 `H-319`]** PreRef/PostRef pre-pass(`drive`의 (a): 호이스팅 fire·수집·`Processed*Ref` 소진) + `firePostRefs`((c): 본체 루프·배치 종료 뒤) + `ProcessedPreRefHandler`/`ProcessedPostRefHandler`(위 `Dispatch/Modifier/Handler.luau`와 같은 nop 핸들러 모양). Dispatch 소유인 이유는 `Dispatch/Modifier/Handler.luau`와 같다(센티널은 Dispatch의 개념 + `Ref/init.luau`가 Dispatch를 require하므로 순환 회피). leaf 핸들러·가드 둘은 `Ref/init.luau`(`H-278`)
 │       ├── Bookkeeping.luau       # ⭐ [2026-09-01 `H-277` 사용자 확정 — Dispatch에서 분리] Length/Offset 부기 서브시스템 — `InitBookkeeping(module)`이 사적 `module._bookkeeping`(getBookkeeping/getBlocker/getOffsetAt/recompute/setLength/setOffsetSource/**[2026-09-07 Q3 ③]** setEmpty(None/0 쌍 한 본문, round3 `H-434`로 자체 checkPosition) + `H-256` checkPosition)을 설치. 의존 방향 {Slot, Dispatch} → Bookkeeping(부기는 둘 다 모름 — SlotBrand 프로브는 브랜드 잎 판별). 공개 호출 표면은 `quad.Dispatch.*` 그대로(같은 함수 객체 재노출, 래퍼 없음 — `H-39`/`H-25` 계약 유지), M6의 Slot은 `_bookkeeping`을 직접 씀
 │       ├── ErrorNamespace.luau    # **[2026-08-31 M3 `H-231`]** 공유 에러 네임스페이스 인스턴스(`quad-error` 위의 `QuadError.new()` 한 벌 — 태그 맵·`errorBefore`/`errorBeforeNearest`/`setFuncLevel`; 최상위 `init.luau`가 `errorNamespace`로 재export, 백엔드·플러그인은 이걸 받아 태깅)
-│       ├── NotInstalled.luau      # **[2026-09-07 post-implementation round1 Q3 ②]** `notInstalled(name, what, hint?)` — 백엔드가 설치해야 하는 op의 안내 스텁 팩토리 한 본문(`Tag.luau`/`Attribute/Key.luau`/`LifetimeHandle.luau`가 위임; 메시지 `"<name> is not available"`, `errorBefore` 최외곽 — `H-378`)
+│       ├── NotInstalled.luau      # **[2026-09-07 post-implementation round1 Q3 ②]** `notInstalled(name, what, hint?)` — 백엔드가 설치해야 하는 op의 안내 스텁 팩토리 한 본문(`Tag.luau`/`Attr/Key.luau`/`LifetimeHandle.luau`가 위임; 메시지 `"<name> is not available"`, `errorBefore` 최외곽 — `H-378`)
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
 │       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** **[2026-09-07 사용자 결정]** `Brand()` 팩토리는 quad-types로(`QuadTypes.Brand` — 패키지마다 자기 브랜드를 만들 수 있게), 여긴 **quad-base 브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export; `TweenBrand`/`isTween`은 Tween과 함께 quad-roblox `Brand.luau`로). 의존 없는 잎(`base/brand-plan.md`)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
@@ -330,10 +330,10 @@ quad/
 └── quad-roblox/
     ├── pesde.toml                 # quad-base가 아니라 quad-types에만 workspace 의존(런타임). **[2026-09-02 M5 Q3 (a)]** `[dev_dependencies]`에만 quad_base — spec 전용, 소비자 비전파(`base/project-setup-plan.md` 정정 참고)
     └── src/
-        ├── RobloxFactory.luau     # BaseModule 뮤테이션 + 타입드 확장(`RobloxExtension = { D, OnChange, Animate, Tween, isTween }` — **[2026-09-03 M10]** `OnChange` 합류, 타입은 생성 `OnChangeFn`; **[2026-09-07]** `Tween`/`isTween` 합류 — 백엔드 값은 백엔드 표면) 반환 — 재호출·점유 가드는 **[2026-09-02 `H-305` (d′)]** quad-base `UseProvider`의 fn identity 락 몫(같은 fn=무시/다른 identity=에러, `module-lifecycle-plan.md`), 여긴 가드 없음. 주입 대상 목록은 아래 EngineOps.luau 줄이 소스 — 여기서 다시 나열하지 않는다(**[2026-08-22]** 예전엔 addTag/removeTag/setAttribute까지만 적혀 있어 native*/setTimeout이 빠져 있었음). bindLifetime/canBound/canExecute도 같은 경로로 주입됨
+        ├── RobloxFactory.luau     # BaseModule 뮤테이션 + 타입드 확장(`RobloxExtension = { D, OnChange, Animate, Tween, isTween }` — **[2026-09-03 M10]** `OnChange` 합류, 타입은 생성 `OnChangeFn`; **[2026-09-07]** `Tween`/`isTween` 합류 — 백엔드 값은 백엔드 표면) 반환 — 재호출·점유 가드는 **[2026-09-02 `H-305` (d′)]** quad-base `UseProvider`의 fn identity 락 몫(같은 fn=무시/다른 identity=에러, `module-lifecycle-plan.md`), 여긴 가드 없음. 주입 대상 목록은 아래 EngineOps.luau 줄이 소스 — 여기서 다시 나열하지 않는다(**[2026-08-22]** 예전엔 addTag/removeTag/setAttr까지만 적혀 있어 native*/setTimeout이 빠져 있었음). bindLifetime/canBound/canExecute도 같은 경로로 주입됨
         ├── Brand.luau             # **[2026-09-07 사용자 결정]** quad-roblox의 브랜드 인스턴스·술어(`TweenBrand`/`isTween`) — 팩토리는 `QuadTypes.Brand`(quad-base `Brand.luau`와 같은 꼴, `base/brand-plan.md`)
         ├── Tween.luau             # **[2026-09-07 사용자 결정 — quad-base에서 이동]** `install(module)` — 값 팩토리 `Tween(opts)`·검증·`:Mapped`; `q.Tween`/`q.isTween`은 `RobloxExtension`으로 실리고 모듈에도 직접(형제 설치자·base 진단 프로브가 봄). 어휘가 엔진 것이라 백엔드 값(`base/tween-plan.md` "패키지 경계" 절), 독립 Dispatch 핸들러 아님 — 애니메이션은 `Handlers/Property.luau` 분기
-        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttribute(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), nativeDispose(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`), **[2026-08-21 5라운드 신설, 이름 확정] `native*` 물리 트리 조작 계층** — nativeInsert/nativeExtract/nativeRemove/nativeMove/nativeSwap(0-based 절대 offset + 대상 요소 배열을 받음; Roblox는 offset을 무시하고 배열을 쓰고 DOM은 둘 다 씀). 미주입이면 에러가 아니라 **조합 폴백** — **[2026-09-07 Q6 사용자 확정]** 약속 철회: 지금은 여섯 전부 필수·미주입이면 안내 스텁 에러(조합 기본 구현은 ROADMAP 백로그). **[2026-08-22 추가] 시간 op 둘** — setTimeout(func, delay) -> Timeout / clearTimeout(t), Roblox는 task.delay/task.cancel로 배선(**인자 순서가 반대라 주의**); `Debounce`/`Throttle`이 얹힐 때 필요하고 그 전엔 미주입이어도 무방(`base/debounce-throttle-plan.md`). **이 줄이 주입 op 전체 목록의 단일 소스다** — 다른 문서는 개수를 세지 말고 여기를 가리킬 것 (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절). **[2026-09-02 M5/M10 분할 — round14 Q4 (a), 2026-09-03 M10 엔진 축으로 닫힘]** M5(단위 ①)가 심은 것은 native* 여섯 + `isInst`/`onDestroying`/`nativeClaim`/`nativeFindChild` + 생명주기 4종이고, `addTag`/`removeTag`/`setAttribute`는 **2026-09-03 M10 엔진 축에서 같은 파일에 설치됨**(CollectionService / `inst:SetAttribute`; quad-base의 안내 스텁을 프로바이더가 덮어쓰는 형태 — mock도 `mockProvider`가 같은 셋을 심는다, round16 `H10-10`). 이제 미설치는 `setTimeout`/`clearTimeout`(백로그)뿐 — 분할의 소스도 이 문장 하나다(ROADMAP·spec은 여길 가리킬 것). **[2026-08-24 6라운드 신설] `isInst(value): boolean`**(`H-40` — 요소 타입 검증을 화이트리스트로 뒤집으면서 생긴 판정 술어, quad-roblox는 `typeof(value) == "Instance"`)**와 `onDestroying(inst, fn): Connection`**(`H-11` — `Effect`의 leaf 사망 cleanup을 발화시키는 훅, `bindLifetime`이 `isEffect`일 때 부른다, quad-roblox는 `inst.Destroying:Connect(fn)`). **⚠️ 이 둘은 `native*`의 "미주입이면 조합 폴백" 규칙의 예외다 — 조작이 아니라 판정/훅이라 조합으로 만들 수 없어 미주입이면 명확한 에러**(`addTag`/`setAttribute`와 같은 취급) **[2026-08-28 `Claim`, M5 — `base/claim-plan.md` §7-9] `nativeClaim(inst)`** — `lifecycle-pattern.md` (0)의 gcconn/gchold 셋업(userdata 동일성 고정 + `InstData:SetWeak`)의 **유일한 자리**. `New`의 ②단계와 `Claim`(해석한 inst마다) 둘 다 이걸 부른다. 사용자 확정은 op 신설과 "경로를 여기에 전부"까지(*"nativeClaim 을 만들고 gchold/gcconn 경로를 여기에 전부"*); "셋업이라 조합 불가 → 조합 폴백의 예외"는 `nativeFindChild`와 같이 에이전트 분류. **`nativeFindChild(inst, key): inst?`** — 매퍼 디스크립터의 키(Roblox는 `Name`, web은 id/selector)로 직계 자식을 찾는 조회 op, quad-roblox는 `inst:FindFirstChild(key)`. 조회라 조합으로 만들 수 없어 `isInst`/`onDestroying`처럼 **조합 폴백의 예외**(미주입이면 명확한 에러 — 이 분류는 에이전트 판단, 사용자 확정은 "필요 핸들을 프로바이더에 남긴다"까지)
+        ├── EngineOps.luau         # 주입되는 엔진 op 구현: addTag(inst,{string})/removeTag(inst,{string})=CollectionService, setAttr(inst,name,v)=inst:SetAttribute(v==nil이면 삭제), nativeDispose(inst)=inst:Destroy()(`dispose(value)`가 `isSlot`이 아닐 때 위임, `base/slot-plan.md`), **[2026-08-21 5라운드 신설, 이름 확정] `native*` 물리 트리 조작 계층** — nativeInsert/nativeExtract/nativeRemove/nativeMove/nativeSwap(0-based 절대 offset + 대상 요소 배열을 받음; Roblox는 offset을 무시하고 배열을 쓰고 DOM은 둘 다 씀). 미주입이면 에러가 아니라 **조합 폴백** — **[2026-09-07 Q6 사용자 확정]** 약속 철회: 지금은 여섯 전부 필수·미주입이면 안내 스텁 에러(조합 기본 구현은 ROADMAP 백로그). **[2026-08-22 추가] 시간 op 둘** — setTimeout(func, delay) -> Timeout / clearTimeout(t), Roblox는 task.delay/task.cancel로 배선(**인자 순서가 반대라 주의**); `Debounce`/`Throttle`이 얹힐 때 필요하고 그 전엔 미주입이어도 무방(`base/debounce-throttle-plan.md`). **이 줄이 주입 op 전체 목록의 단일 소스다** — 다른 문서는 개수를 세지 말고 여기를 가리킬 것 (`base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절). **[2026-09-02 M5/M10 분할 — round14 Q4 (a), 2026-09-03 M10 엔진 축으로 닫힘]** M5(단위 ①)가 심은 것은 native* 여섯 + `isInst`/`onDestroying`/`nativeClaim`/`nativeFindChild` + 생명주기 4종이고, `addTag`/`removeTag`/`setAttr`는 **2026-09-03 M10 엔진 축에서 같은 파일에 설치됨**(CollectionService / `inst:SetAttribute`; quad-base의 안내 스텁을 프로바이더가 덮어쓰는 형태 — mock도 `mockProvider`가 같은 셋을 심는다, round16 `H10-10`). 이제 미설치는 `setTimeout`/`clearTimeout`(백로그)뿐 — 분할의 소스도 이 문장 하나다(ROADMAP·spec은 여길 가리킬 것). **[2026-08-24 6라운드 신설] `isInst(value): boolean`**(`H-40` — 요소 타입 검증을 화이트리스트로 뒤집으면서 생긴 판정 술어, quad-roblox는 `typeof(value) == "Instance"`)**와 `onDestroying(inst, fn): Connection`**(`H-11` — `Effect`의 leaf 사망 cleanup을 발화시키는 훅, `bindLifetime`이 `isEffect`일 때 부른다, quad-roblox는 `inst.Destroying:Connect(fn)`). **⚠️ 이 둘은 `native*`의 "미주입이면 조합 폴백" 규칙의 예외다 — 조작이 아니라 판정/훅이라 조합으로 만들 수 없어 미주입이면 명확한 에러**(`addTag`/`setAttr`와 같은 취급) **[2026-08-28 `Claim`, M5 — `base/claim-plan.md` §7-9] `nativeClaim(inst)`** — `lifecycle-pattern.md` (0)의 gcconn/gchold 셋업(userdata 동일성 고정 + `InstData:SetWeak`)의 **유일한 자리**. `New`의 ②단계와 `Claim`(해석한 inst마다) 둘 다 이걸 부른다. 사용자 확정은 op 신설과 "경로를 여기에 전부"까지(*"nativeClaim 을 만들고 gchold/gcconn 경로를 여기에 전부"*); "셋업이라 조합 불가 → 조합 폴백의 예외"는 `nativeFindChild`와 같이 에이전트 분류. **`nativeFindChild(inst, key): inst?`** — 매퍼 디스크립터의 키(Roblox는 `Name`, web은 id/selector)로 직계 자식을 찾는 조회 op, quad-roblox는 `inst:FindFirstChild(key)`. 조회라 조합으로 만들 수 없어 `isInst`/`onDestroying`처럼 **조합 폴백의 예외**(미주입이면 명확한 에러 — 이 분류는 에이전트 판단, 사용자 확정은 "필요 핸들을 프로바이더에 남긴다"까지)
         ├── Reflection.luau        # **[2026-09-07 post-implementation round1 Q3 ④]** `memberSet(fetch, accept?)` — className → 멤버 집합 메모이저(Property/Event 핸들러의 Reflection 캐시 한 본문). `game` 읽기는 호출자 클로저에 남긴다(CLI spec의 `getfenv(install*).game` 심 seam 유지)
         ├── LifetimeHandle.luau    # bindLifetime/canBound/canExecute 실제 구현 — GetPropertyChangedSignal("ClassName") 연결 트릭으로 gcconn 확보, Relate:SetWeak으로 gcconn/gchold 저장. **[2026-09-02 M5 단위 ①]** `nativeClaim` 본체도 이 파일(op 목록의 소스는 위 EngineOps 줄 그대로 — 본체만 `InstData`를 공유하는 여기, §7-9 "경로를 여기에 전부")(**[정정, 2026-08-18] `SetStrong`이 아님 — 생존은 클로저 upvalue와 `gchold[1]`이 이미 보장, strong으로 잡으면 상호 강참조 누수**, `base/lifecycle-pattern.md`). `canBound`/`canExecute`는 비공개 헬퍼 하나를 공유하는 얇은 진입점(2026-08-14 열한 번째 세션). Relate 자체는 순수 Lua라 quad-roblox 쪽 재구현 없음(quad-base 그대로 재사용)
         ├── Handlers/
@@ -350,7 +350,7 @@ quad/
         └── init.luau
 ```
 
-**⭐ [2026-09-07 명문화 — `research/source-layout-plan.md` 5절, 사용자 4절 (a) 채택] `Dispatch/` 폴더의 규칙: 핸들러는 그 값 타입을 소유하는 모듈 안에 산다(`H-278`). `Dispatch/` 아래엔 코어(`init`·`Handler` 타입)와 `drive`의 자기 단계(`None`/`StoreBind` 언랩/`Modifier` — flatten과 ProcessedModifier/`Ref` pre-pass)만 둔다** — 값 모듈이 `Dispatch/init`을 require하므로(`H-278` 자기 등록) 그 반대 방향은 구조적으로 불가하고, `Dispatch/init`은 값 모듈(자기 핸들러를 등록하는 Tag/Attribute/Ref/Slot/Observer/Effect)을 절대 require하지 않는다 — `Dispatch/Modifier`는 drive의 단계(flatten)라 이 규칙의 대상이 아니고 `Dispatch/init`이 require한다. 사용자가 이상하다고 본 옛 `Dispatch/Slot.luau`가 유일한 혼종(파일은 Dispatch 아래, 등록자는 Slot)이었고 `Slot/Handler.luau`로 갔다; `StoreBind`는 값 모듈이 아니라 디스패치 자체의 언랩 단계라 남는다. 폴더 접기는 공짜다 — `init.luau` 안에서 `./`는 부모 폴더, `@self/`는 자기 폴더라 바깥 require가 안 바뀐다(`X.luau`와 `X/`를 동시에 두지 말 것). 대분류 폴더(`Util/`·`Reactive/`)는 보류 — 사용자: *"다른 부분은 보기 힘들어져 아플 때 처리하는게 나아보임"*.
+**⭐ [2026-09-07 명문화 — `research/source-layout-plan.md` 5절, 사용자 4절 (a) 채택] `Dispatch/` 폴더의 규칙: 핸들러는 그 값 타입을 소유하는 모듈 안에 산다(`H-278`). `Dispatch/` 아래엔 코어(`init`·`Handler` 타입)와 `drive`의 자기 단계(`None`/`StoreBind` 언랩/`Modifier` — flatten과 ProcessedModifier/`Ref` pre-pass)만 둔다** — 값 모듈이 `Dispatch/init`을 require하므로(`H-278` 자기 등록) 그 반대 방향은 구조적으로 불가하고, `Dispatch/init`은 값 모듈(자기 핸들러를 등록하는 Tag/Attr/Ref/Slot/Observer/Effect)을 절대 require하지 않는다 — `Dispatch/Modifier`는 drive의 단계(flatten)라 이 규칙의 대상이 아니고 `Dispatch/init`이 require한다. 사용자가 이상하다고 본 옛 `Dispatch/Slot.luau`가 유일한 혼종(파일은 Dispatch 아래, 등록자는 Slot)이었고 `Slot/Handler.luau`로 갔다; `StoreBind`는 값 모듈이 아니라 디스패치 자체의 언랩 단계라 남는다. 폴더 접기는 공짜다 — `init.luau` 안에서 `./`는 부모 폴더, `@self/`는 자기 폴더라 바깥 require가 안 바뀐다(`X.luau`와 `X/`를 동시에 두지 말 것). 대분류 폴더(`Util/`·`Reactive/`)는 보류 — 사용자: *"다른 부분은 보기 힘들어져 아플 때 처리하는게 나아보임"*.
 
 **남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
 `slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
@@ -476,9 +476,9 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
      `:Unsubscribe()`, `relate:SetWeak(...)`/`:GetWeak(...)`/`:SetStrong(...)`/
      `:GetStrong(...)`, `mod:FontSize(...)`(필드 setter 체이닝).
   3. 프리미티브 타입 자신의 네임스페이스에 달린 정적 결합 함수 —
-     `Modifier.Overridden(mod1, mod2, ...)`, `Attribute.Merged(...)`/
-     `Attribute.Overridden(...)`. **그 프리미티브 타입 고유의 공개 연산**
-     이라는 점에서 1/2과 같은 부류 — `Modifier()`/`Attribute()` 생성자와
+     `Modifier.Overridden(mod1, mod2, ...)`, `Attr.Merged(...)`/
+     `Attr.Overridden(...)`. **그 프리미티브 타입 고유의 공개 연산**
+     이라는 점에서 1/2과 같은 부류 — `Modifier()`/`Attr()` 생성자와
      같은 이유로 대문자.
      **[정정, 2026-08-18 구현 전 QA]** 옛 서술은 이 분류를 만든 근거로
      *"콜론 메서드는 아니지만 (여러 Modifier를 동등한 인자로 받아야 해서

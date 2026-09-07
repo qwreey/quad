@@ -63,7 +63,7 @@ tween-plan.md`라는 별개 리서치 문서와 별도 로드맵 마일스톤(M1
 명백히 더 좁고 아직 미확정인 기능이다. `Frame { BackgroundColor3 =
 store.color }`처럼 애니메이션 없이 그냥 반응형으로 값만 바뀌길 원하는
 가장 흔한 케이스가 (a) 결국 이름은 "Tween"인 파일을 거쳐가며 "애니메이션
-없음"으로 처리되는 건지, (b) Property/Tag/Attribute 등 각 핸들러가 각자
+없음"으로 처리되는 건지, (b) Property/Tag/Attr 등 각 핸들러가 각자
 `Dispatch/StoreBind.luau`(quad-base, 범용) 유틸을 직접 써서 독립적으로
 구현해야 하는 건지 문서가 정하지 않았다. `archive/v2-initial-implementation/roadmap.md` M4("첫 end-to-end
 반응형 업데이트")는 Tween 없이(M11보다 훨씬 전에) `Dispatch/StoreBind.luau`
@@ -337,12 +337,12 @@ Source<number>}` 같은 **레코드 필드로서의 dot-access 타이핑**(읽�
 단위로 얕은 복사, 메타테이블은 복사가 아니라 `getmetatable`/`setmetatable`로
 같은 참조를 공유)을 사용자가 직접 확인 — 제네릭 `__index` 함수가 원본과
 clone 사이에서 물리적으로 동일 객체로 유지되므로 체이닝이 끊기지 않는다는
-M7의 전제가 Luau 공식 동작대로 성립함. 별도로, 프로퍼티에 Attribute식
+M7의 전제가 Luau 공식 동작대로 성립함. 별도로, 프로퍼티에 Attr식
 소유권 레지스트리를 적용하는 대안도 검토했으나 기각(엔진이 정한 유한
 프로퍼티 이름 집합은 호출자가 전용 키를 못 만들어 소유권 판정이 원천적으로
 불가능 — Property가 소유권 추적 대신 Modifier의 override 우선순위를 쓰는
 이유). 상세는 `base/modifier-plan.md` "`table.clone`의 정확한 동작" 절과
-"Property에 Attribute식 소유권 레지스트리 기각" 절, 실제 실행 확인은
+"Property에 Attr식 소유권 레지스트리 기각" 절, 실제 실행 확인은
 `luau-test`의 `17-modifier-index-tableclone-chaining.luau`(신규).
 아래는 원래 발견 당시 기록.
 
@@ -737,7 +737,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   스파이크(named-parameter 전달)를 정식 Modifier/Ref로 검증"하는 단계라고
   명시돼 있어 뒤늦은 검증이 아니라 의도된 정식화.
 - `Relate`(구 `PerInstanceState`) 실제 구현 시점(M8) — 이걸 필요로 하는
-  핸들러(Tag/Attribute/Tween)가 전부 M10/M11이라 순서상 문제없음.
+  핸들러(Tag/Attr/Tween)가 전부 M10/M11이라 순서상 문제없음.
 - Slot의 store-bind 의존(M6→M4) 순서.
 
 ---

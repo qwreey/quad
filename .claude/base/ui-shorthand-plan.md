@@ -80,7 +80,7 @@ UDim`(number → offset), `UIPadding: UDim`, `UIPaddingOffset: number`, `UIScale
 이미 예시로 든 `mod:UICorner(8)`은 이 특수 키를 flatten해서 props에
 꽂아넣는 사탕 문법일 뿐, 실제 처리는 이 Handler가 함 — Modifier를 안 거치고
 `Frame { UICorner = 8 }`처럼 순수 인라인 키로 직접 써도(v1처럼) 동일하게
-작동함, `architecture.md`의 `[AttributeKey "Name"]`류 특수 키와 같은 층위.
+작동함, `architecture.md`의 `[AttrKey "Name"]`류 특수 키와 같은 층위.
 자동 생성된 자식은 기존 관례대로 `_`/`QUAD_` 접두어 네이밍
 (`research/debug-tooling-plan.md` 9번, v1의 `_quad_round`류 그대로 재사용).
 
@@ -223,7 +223,7 @@ end
 - **`process` 도중에 대상 `inst`를 바꾸는 것은 UB가 아님(사용자 확정)** —
   키가 바뀔 수 있는 것과 정확히 같음. `chains`가 `(inst,k)` 쌍으로
   인덱싱되므로 `(inst, "UICorner")` → `(child, "CornerRadius")` 위임은
-  Dispatch 입장에서 `Attribute` 그룹이 다른 키로 위임하는 것과 구조적으로
+  Dispatch 입장에서 `Attr` 그룹이 다른 키로 위임하는 것과 구조적으로
   동일한 일이고, 새 체인이라 인덱스는 `1`부터. 일반 규칙은
   `base/dispatch-core-plan.md`의 "인덱스의 의미" 절에 같이 명문화해뒀음.
 - **Tween 해석 코드를 여기 복제하지 않는 게 핵심 이득** — `Tween<T>`를
@@ -352,7 +352,7 @@ Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘
 `quad-roblox-util` 같은 걸 새로 만들지 않고 이 선례를 따르면 됨.
 
 **중요도**: 낮음("이건 나중에도 쉽게 구현됨" — 사용자) — 지금 M0 우선순위를
-바꿀 이유는 없음, M10(Handlers/Attribute 등) 전후로 다른 세부 Handler와
+바꿀 이유는 없음, M10(Handlers/Attr 등) 전후로 다른 세부 Handler와
 함께 구현하면 충분.
 
 ## 남은 열린 질문 (단순화 후보, 사소함) — [해소됨, 2026-09-06 round20 Q2 (a)]

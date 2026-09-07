@@ -95,14 +95,14 @@ git.qwreey.moe에 제한된 계정 생성). 로컬 git 저장소는 이미 초�
 ## 4. ~~`question.md` 0-Z 결정~~ **[해소됨, 2026-08-13 열네 번째 세션]**
 
 **더 이상 사람이 막고 있는 결정이 아님.** 사용자가 같은 세션에 직접
-`Attribute:GetKey(name)` 방향을 제시했고, 트레이싱으로 검증한 뒤
-**그룹 전용 키(비공개 `GetKey`) + `AttributeKeyHandler`의 이름 claim**으로
+`Attr:GetKey(name)` 방향을 제시했고, 트레이싱으로 검증한 뒤
+**그룹 전용 키(비공개 `GetKey`) + `AttrKeyHandler`의 이름 claim**으로
 확정 → `base/attribute-plan.md` "이름 소유권" 절에 반영. 같이 묶여 있던
 재디스패치 모델(0-A)도 같은 패스에서 `base/dispatch-core-plan.md`(신설)로
 전면 반영됐고, ⚠️ 배너를 달고 있던 7개 문서 전부 갱신 완료.
 
-**같은 세션에 사용자가 추가로 결정한 것** — `Tag`/`Attribute`의 알고리즘을
-통째로 quad-base로 옮기고 백엔드는 `addTag`/`removeTag`/`setAttribute` 세
+**같은 세션에 사용자가 추가로 결정한 것** — `Tag`/`Attr`의 알고리즘을
+통째로 quad-base로 옮기고 백엔드는 `addTag`/`removeTag`/`setAttr` 세
 op만 주입(웹의 `className`/`data-*` 대응 때문). 상세는
 `base/dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op" 절.
 
@@ -139,7 +139,7 @@ op만 주입(웹의 `className`/`data-*` 대응 때문). 상세는
 "`canBound` vs `canExecute`" 절). **남은 확인거리**는 이중 바인딩
 게이트(`canBound`)와 unbind/Destroy 후 재바인딩 허용, `value` 쪽에
 복사된 gcconn만으로의 생존 판정, Instance userdata 동일성, 그리고
-B(Attribute의 Instance 참조 타입)/C(CollectionService 태그 왕복) —
+B(Attr의 Instance 참조 타입)/C(CollectionService 태그 왕복) —
 목록은 `.claude/audit/gcconn-trick-verification.md`의 "아직 확인 안
 된 것"이 소스. GC 강제 트리거가 필요하면
 `.claude/luau-test/not-run/gc-trigger-helper.server.luau` 참고. 위

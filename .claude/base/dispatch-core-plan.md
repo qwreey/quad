@@ -23,7 +23,7 @@
 v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 숫자 키(children/style) vs 문자열 키(prop/event) vs `__type` 태그 테이블
 (register/linker/style)을 하드코딩된 if/elseif 체인으로 구분한다. 새 특수 키
-(`[Attribute "X"]`, `[Tag ""]`, `PropertyChangedEvent ""` 등)를 추가하려면 이
+(`[Attr "X"]`, `[Tag ""]`, `PropertyChangedEvent ""` 등)를 추가하려면 이
 중앙 함수 자체를 고쳐야 한다 — 라이브러리로서 확장 불가능한 구조.
 
 ## 핸들러 계약 (확정 — 아래 "확정된 디스패치 모델" 절과 통합해서 읽을 것)
@@ -171,7 +171,7 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   `StoreBind`/`NoneHandler`/`Leaf`처럼 디스패치 골격 자체인 것들은 여전히
   높은 우선순위여야 함(`StoreBind`가 프로퍼티 세터보다 먼저 매치돼야
   반응형 값이 언랩됨). `Tag`/
-  `Attribute`처럼 **알고리즘은 엔진 무관이라 base가 소유하고 실제 효과만
+  `Attr`처럼 **알고리즘은 엔진 무관이라 base가 소유하고 실제 효과만
   주입받는** 핸들러(아래 "base가 소유하는 핸들러와 주입되는 엔진 op" 절)는
   이 밴드에 등록한다. 그러면 특정 백엔드가 그 키/값을 자기 방식으로
   통째로 다르게 처리하고 싶을 때 **그냥 평범한 우선순위로 자기 핸들러를
@@ -210,7 +210,7 @@ src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들
   핸들러(`Property`/`Event`/`Slot`류)에 한해** provider 미주입 상태는
   결국 그 클래스를 다루는 핸들러가 레지스트리에 하나도 없는 상태이므로
   "매치 실패"와 정확히 같은 경로로 수렴함. **[한정, 2026-08-18 `/code-review
-  high` — `D-7` 재역전과의 정합성]** `Tag`/`Attribute`처럼 **base가
+  high` — `D-7` 재역전과의 정합성]** `Tag`/`Attr`처럼 **base가
   Fallback Handler를 자기 로드 시점에 스스로 등록하는 것**(위 문단,
   "base가 소유하는 핸들러와 주입되는 엔진 op" 절)은 이 일반화의 예외다 —
   백엔드가 하나도 없어도 그 Fallback Handler는 이미 레지스트리에 있으므로
@@ -338,7 +338,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   - **정정된 원칙 — 대부분의 핸들러는 이 반복 호출에서 실제로 할 일이
     없어(일반 프로퍼티처럼 값을 그냥 덮어쓰면 끝이라 "unset" 개념 자체가
     없음) 반환하는 클로저가 사실상 no-op일 뿐, "타입이 안 바뀌면 아예
-    안 불린다"는 뜻이 아님.** `Tag`/`Ref`/`Slot`/`Attribute`처럼 **여러
+    안 불린다"는 뜻이 아님.** `Tag`/`Ref`/`Slot`/`Attr`처럼 **여러
     위치가 하나의 실제 리소스(엔진 attribute/tag/mounted 서브트리 등)를
     공유하거나, 값 자체가 정리가 필요한 상태를 들고 있는** 핸들러는,
     이 클로저가 매번 불려도 **"이전 값이 지금 들어오는 새 값과 사실상
@@ -353,7 +353,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
     "반환한 클로저가 이전 기여를 걷어내고(실제 해제는 힌트로 skip
     가능), `process`가 새 기여를 등록한다"는 모양으로 깔끔히 갈림 —
     `process` 쪽에 별도 old-vs-new diff가 필요 없어짐(그 diff를 클로저가
-    이미 통째로, 매번 정확하게 해주므로). `Tag(...)`↔`nil`, `Attribute`의
+    이미 통째로, 매번 정확하게 해주므로). `Tag(...)`↔`nil`, `Attr`의
     그룹이 이름을 놓는 경우도 이 분업의 자연스러운 특수 케이스일 뿐, 별도
     패턴이 아님 — 상세 구현은 `base/tag-plan.md`/`base/attribute-plan.md`
     "이름 소유권" 절, `Ref`는 아래 "`Ref`의 retract" 절, `Slot`은
@@ -371,7 +371,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
     등록을 트리거하면 안 됨 — 새 등록은 항상 바깥의 StoreBind/그룹
     로직이 클로저 호출이 다 끝난 *뒤에* 별도로 `process`를 부르는
     순서로만 일어나야 함. **`Dispatch.retractFrom`은 "다른 키에 대해서만"
-    허용** — `Attribute` 그룹이 자기가 위임했던 `AttributeKey(name)`들을
+    허용** — `Attr` 그룹이 자기가 위임했던 `AttrKey(name)`들을
     걷어내는 게 정확히 이 경우. **같은 `(inst,k)`에 대해 이 클로저 안에서
     `retractFrom`을 부르는 것도 `process`와 똑같이 금지(UB)** — 지금
     돌고 있는 바깥 `retractFrom`의 루프가 `#list`를 이미 캡처한 채
@@ -397,7 +397,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   저장했다가 나중에 다시 조회할 필요가 없어짐(**[2026-08-13 다섯 번째
   세션, 이 문단 재작성]**). `Relate`가 여전히 필요한 경우는 **여러 번의
   독립적인 `process`/클로저 호출을 가로질러 누적되는 상태**뿐 —
-  `Tag`의 `tagNameMap`(여러 위치가 같은 이름을 공유), `Attribute`의
+  `Tag`의 `tagNameMap`(여러 위치가 같은 이름을 공유), `Attr`의
   이름 소유권처럼 "이 `(inst,k)` 하나의 클로저 수명을 넘어서는" 정보만
   `local relate = Relate()`(모듈 톱레벨, `relate:SetStrong(inst,k,v)`/
   `:GetStrong(inst,k)`)로 저장. `base/lifecycle-pattern.md`의
@@ -438,8 +438,8 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   `__ipairs` 직접 구현체를 담은 ud 등을 받는 `flattened` 는 없고, luau
   테이블만 사용하는게 맞음."*
   - **[2026-09-07 밤 `H-470`] `drive`가 바로 아래 불변식을 게이트로 집행한다** — props 자리에 메타테이블 값이나
-    plain-branded 값(`AttributeKey`/Mapper 디스크립터)이 오면 브랜드 이름을 붙여 표면 에러(중괄호를 빠뜨린
-    `D.Frame(q.Source(1))`; `AttributeKey("x")`는 frozen `{ Name = "x" }`라 quad-roblox에서 조용한 개명이었다).
+    plain-branded 값(`AttrKey`/Mapper 디스크립터)이 오면 브랜드 이름을 붙여 표면 에러(중괄호를 빠뜨린
+    `D.Frame(q.Source(1))`; `AttrKey("x")`는 frozen `{ Name = "x" }`라 quad-roblox에서 조용한 개명이었다).
     형제 생성자 게이트(`H-204`/`H-377`/`H-386`/`H-389`)와 같은 팔, 부기를 만지기 전.
   - **`flattened`는 항상 평범한 Luau 테이블이다** — props는 사용자가 쓴
     Lua 테이블 리터럴에서 오고, `flatten`도 그걸 제자리에서 뮤테이션할 뿐
@@ -599,7 +599,7 @@ end
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
     OnChangeHandler/UICornerHandler 등)은 팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
-    같은 패턴, 새 메커니즘 아님). **`Tag`/`Attribute`의 base 소유
+    같은 패턴, 새 메커니즘 아님). **`Tag`/`Attr`의 base 소유
     Fallback Handler들(`TagFallbackHandler` 등)은 이와 달리 quad-base
     자신이 등록함**(**[재역전, 2026-08-18 구현 전 QA]** — 백엔드가 하나도
     안 붙은 상태에서도 안내 에러 경로가 돌아야 하기 때문), 상세는 아래
@@ -663,9 +663,9 @@ end
     처음 여는 자리이므로 "다른 키로 위임할 때는 그 키의 재귀 깊이와
     무관하게 항상 1부터"(아래 "Dispatch 체인" 절)라는 규칙의 가장 기본
     사례. 같은 키가 두 번 나올 수 없는 테이블 순회라 이 루프 자신이
-    한 키를 두 번 여는 일은 없음(다만 그룹 `Attribute`가 배열 파트에서
+    한 키를 두 번 여는 일은 없음(다만 그룹 `Attr`가 배열 파트에서
     이미 관리 중인 *이름*을 해시 파트 직접 쓰기가 다시 건드리는 건
-    별개 문제이고, 그건 Attribute 자신의 이름 claim이 즉시 error로
+    별개 문제이고, 그건 Attr 자신의 이름 claim이 즉시 error로
     잡음 — `base/attribute-plan.md` "이름 소유권" 절).
 - **`v=nil`이 구체적으로 뭘 뜻하는지는 핸들러마다 다름, `None` 자신은
   "리셋"이 아님** — 일반 프로퍼티는 "`nil`로 셋하는 것도 그냥 셋 동작"이라
@@ -733,7 +733,7 @@ end
 **[2026-09-07 post-implementation round1 Q3 ③, 사용자 확정 *"setEmpty 같은걸 넣어도 큰 문제는
 없어보이겠다"*] 이 쌍은 `Dispatch.setEmpty(ownerKey, i, anchor?)` 한 본문으로 제공된다** —
 `setOffsetSource(…, None)` → `setLength(…, 0, anchor)` 순서를 Bookkeeping이 쥐고, 말단
-nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/Slot leaf, quad-roblox
+nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot leaf, quad-roblox
 `OnChange`·`InstanceChild` 해제 팔)는 전부 그걸 부른다. 위 의사코드의 두 줄은 그 본문이고
 계약(순서·`anchor` 인자)은 그대로 — 손 복제가 패키지 경계 너머에도 남아 있던 것을 접은
 것뿐이다(원장 `qa-request/post-implementation-review-round1.md` §15).
@@ -841,7 +841,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
 요구하는가"**로 가른다. 부기가 순수하면 **알고리즘은 base가 소유하고,
 엔진에 실제로 손대는 마지막 한 줄만 함수로 주입**받는다.
 
-- **base 소유 + op 주입**: `Tag`(위치별 참조 카운트), `Attribute` 단일
+- **base 소유 + op 주입**: `Tag`(위치별 참조 카운트), `Attr` 단일
   키/그룹(이름 claim, 그룹→단일 키 위임, `None` 처리). 둘 다 웹에도
   대응물이 있고(`className`, `data-*`) 부기 로직이 엔진과 무관해서,
   백엔드마다 재구현하면 **같은 참조 카운트/소유권 알고리즘이 통째로
@@ -867,8 +867,8 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
   (재조정 알고리즘은 base `Slot/Handler.luau`, 물리 마운트만 backend) —
   이들은 "한 줄 op"으로 줄어들지 않으므로 그대로 backend.
 
-**Tag/Attribute가 쓰는 주입 op**(**⚠️ [2026-08-22] 이건 주입 op *전체
-목록*이 아니다** — 이 절이 다루는 Tag/Attribute 경로에 필요한 셋일 뿐이고,
+**Tag/Attr가 쓰는 주입 op**(**⚠️ [2026-08-22] 이건 주입 op *전체
+목록*이 아니다** — 이 절이 다루는 Tag/Attr 경로에 필요한 셋일 뿐이고,
 `native*` 물리 조작 계층과 `setTimeout`/`clearTimeout`은 여기 없다. 전체
 목록의 소스는 위에서 지정한 `base/architecture.md`의 `EngineOps.luau` 줄
 하나다 — 여기에 다시 쌓지 말 것):
@@ -876,7 +876,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
 ```lua
 addTag(inst: any, names: {string}): ()       -- 웹은 className을 한 번에 갱신
 removeTag(inst: any, names: {string}): ()
-setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름을 지움
+setAttr(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름을 지움
 ```
 
 - **왜 vararg가 아니라 `{string}`인가**: 호출자는 항상 quad 자신이고
@@ -886,17 +886,17 @@ setAttribute(inst: any, name: string, v: any?): ()  -- v == nil이면 그 이름
   한계도 있음), 이건 이미 `Tag:Added`가 vararg → `string | {string}`로
   되돌아갔던 것과 **같은 이유**(`base/tag-plan.md`). 배치 호출 자체는
   테이블로도 그대로 되므로 웹의 className 일괄 갱신 요구도 충족됨.
-- **`setAttribute(inst, name, nil)`이 "지운다"는 의미**인 건 Roblox
+- **`setAttr(inst, name, nil)`이 "지운다"는 의미**인 건 Roblox
   `SetAttribute`의 네이티브 동작과 일치하고, 다른 백엔드는 자기 방식으로
-  매핑하면 됨(웹이면 `removeAttribute`). base 쪽 규칙 — "Attribute는 오직
+  매핑하면 됨(웹이면 `removeAttribute`). base 쪽 규칙 — "Attr는 오직
   명시적 `None`/`nil`로만 지워진다"(`base/attribute-plan.md`) — 은 그대로.
 
-**[재정정, 2026-08-14 열두 번째 세션] `TagHandler`/`AttributeKeyHandler`/
-`AttributeGroupHandler`는 참조 카운트/이름 claim **알고리즘 구현**일
+**[재정정, 2026-08-14 열두 번째 세션] `TagHandler`/`AttrKeyHandler`/
+`AttrGroupHandler`는 참조 카운트/이름 claim **알고리즘 구현**일
 뿐이고, 스스로 등록되는 주체가 아니다.** `HANDLER_PRIORITY_FALLBACK`에
 실제로 꽂히는 건 그 알고리즘을 그대로 감싸는 **별도 이름의 엔티티**
-(`TagFallbackHandler`/`AttributeKeyFallbackHandler`/
-`AttributeGroupFallbackHandler`) — "이게 기본 안전망으로 자동 설치되는
+(`TagFallbackHandler`/`AttrKeyFallbackHandler`/
+`AttrGroupFallbackHandler`) — "이게 기본 안전망으로 자동 설치되는
 대상"임을 이름 자체로 구분한다.
 
 **[재역전, 2026-08-18 구현 전 QA — 사용자 확정] 등록 주체는 다시
@@ -930,11 +930,11 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 "아무도 이 자리를 안 가져갔을 때의 안전한 기본 동작"을 base가 값싸게
 제공하는 것. 엔진 저자 입장에서 "자동/공짜"인 이유는 직접 알고리즘을
 안 짜도 되기 때문이고, **백엔드를 아직 안 붙였어도 이 밴드는 이미 채워져
-있다**(위 재역전) — 그래서 모든 백엔드가 `Tag`/`Attribute` 부기를 공짜로
+있다**(위 재역전) — 그래서 모든 백엔드가 `Tag`/`Attr` 부기를 공짜로
 얻고, 백엔드가 하나도 없을 때조차 "이 값이 어떤 자리에 놓이든 최소한
 매치는 되고, 엔진 op이 없으면 그 자리에서 명확한 에러가 난다"가 성립한다.
 
-`addTag`/`removeTag`/`setAttribute`는 base가 시그니처만 소유하고
+`addTag`/`removeTag`/`setAttr`는 base가 시그니처만 소유하고
 실제 구현은 팩토리가 뮤테이션으로 주입하는 **타입 계약**(`bindLifetime`/
 `canExecute`와 같은 패턴, 엔진이 실제로 손대는 부분은 백엔드가 채우기로
 "계약"한 것) — 이건 그대로 유지:
@@ -971,7 +971,7 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
   안 불림 — op 에러보다 이르고 정확한, 진짜 원자적 실패. 단 이건
   **선택적 업그레이드**일 뿐
   기본 요구사항은 아님 — base 기본 스텁 하나로도 이미 충분히 안전하게
-  실패함(`AttributeGroupHandler`의 "부분 실패 경로" 절이 이미 정리한
+  실패함(`AttrGroupHandler`의 "부분 실패 경로" 절이 이미 정리한
   "에러=패닉 상태, 그 이후 정합성은 관리 대상 아님" 원칙), 더 깔끔한 실패를
   원하는 백엔드만 추가로 얹으면 됨.
   - **⚠️ [정정, 2026-08-24 6라운드 손 트레이싱 `H-26`] 여기 원래 근거로 적혀
@@ -986,19 +986,19 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
     (부분 생성 후 예외로 생긴 Instance 자체의 회수 문제는 **백로그** —
     `Fallback`/`Traceback`이 그 경로를 계속 살려두는 걸 존재 이유로 삼는
     대표 사용처라 그 둘을 구현할 때 같이 다룬다.)
-- **타입 패밀리는 백엔드 몫**: `AttributeKey(name)` 생성자(**[2026-09-03]** 무타입
-  프리미티브 — 제네릭 폐기)와 스칼라 슈가(`StringAttribute(name, value)`/
-  `NumberAttribute`/`BooleanAttribute` — 배열부 단일 항목 그룹, `attribute-plan.md`
-  머리 배너)까지가 base이고, `Color3Attribute`류처럼 **엔진 고유 타입**에 묶인
+- **타입 패밀리는 백엔드 몫**: `AttrKey(name)` 생성자(**[2026-09-03]** 무타입
+  프리미티브 — 제네릭 폐기)와 스칼라 슈가(`StringAttr(name, value)`/
+  `NumberAttr`/`BooleanAttr` — 배열부 단일 항목 그룹, `attribute-plan.md`
+  머리 배너)까지가 base이고, `Color3Attr`류처럼 **엔진 고유 타입**에 묶인
   패밀리는 그 백엔드(quad-roblox의 `D` 층)가 자기 것으로 추가함 —
   "이 값이 이 백엔드에서 표현 가능한가"라는 검증도 base가 아니라 주입된
-  `setAttribute`의 몫(`base/attribute-plan.md` "패키지 배치" 절).
+  `setAttr`의 몫(`base/attribute-plan.md` "패키지 배치" 절).
 
 ### Dispatch 체인 — 인덱스 기반 추적, 재디스패치는 하강 diff (2026-08-08 세 번째 세션 신설, 2026-08-13 다섯 번째 세션 인덱스화, 같은 날 열네 번째 세션 하강 diff로 전면 교체)
 
 **[2026-09-06 `H-329` (a), 사용자 확정]** 공개 `retractFrom(inst, k, index)`가 체인을 **비우면**(순수
 철거) 그 리스트를 `chains`와 inst의 gchold(`H-229` 앵커, `unbindLifetime`)에서 놓는다 —
-안 그러면 새 키마다(`State<Attribute>`의 객체별 그룹 키) 빈 리스트+키가 인스턴스 수명
+안 그러면 새 키마다(`State<Attr>`의 객체별 그룹 키) 빈 리스트+키가 인스턴스 수명
 동안 누적된다(fable 탐사 X-1). `process`의 (B) 분기는 같은 리스트에 곧바로 재설치하므로
 해제 없이 내부 `retractRange(…, false)`를 쓴다. spec.dispatch 15절.
 
@@ -1114,7 +1114,7 @@ end
 ⚠️ [2026-08-25 신설, 7라운드 `H-103`] `h.process`가 던지면 그 자리에 `NOOP`
 마커가 **영구히 남는다** — 그 자리의 정리가 통째로 사라지고, 명시적 철거로도
 회수되지 않는다(`retractFrom`이 `NOOP`을 부르면 아무 일도 안 한다). 예컨대
-`AttributeKeyHandler.process`는 `nameClaims:SetStrong` **뒤에** `setAttribute`를
+`AttrKeyHandler.process`는 `nameClaims:SetStrong` **뒤에** `setAttr`를
 부르므로, 주입 op가 미주입 에러 스텁이면 **이름 claim만 남고 해제 경로가
 없는** 상태가 된다.
 
@@ -1217,8 +1217,8 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   | `PropertyHandler` | 말단 | 프로퍼티 세팅 |
   | `InstanceChildHandler` | 말단 | `Parent` 대입 (+ 부기 — `H-134`) |
   | `TagHandler` | 말단 | `addTag`/`removeTag` (+ 부기 — `H-39`) |
-  | `AttributeKeyHandler` | 말단 | `setAttribute` |
-  | `AttributeGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
+  | `AttrKeyHandler` | 말단 | `setAttr` |
+  | `AttrGroupHandler` | 자기 체인에선 말단 | 다른 키로 위임 (+ 부기 — `H-39`) |
   | `SlotHandler` | 말단 | 마운트/언마운트 |
   | `RefLeafHandler` | 말단 | `Ref:Set` (+ 부기 — `H-39`) |
   | `EventHandler` **[2026-09-07 5순회 추가 — 2026-09-03 M10 둘째 단위부터 있던 행]** | 말단 | `Connect`/`Disconnect` |
@@ -1280,8 +1280,8 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   다시 `Dispatch.process`를 부르는 경우) `index+1`을 넘김. **다른
   키로 위임할 때는 그 키의 재귀 깊이와 무관하게 항상 `1`부터 시작** —
   `chains[inst][key2]`는 `chains[inst][key1]`과 완전히 별개의 배열이라
-  연속성이 필요 없음(예: `Attribute` 그룹이 `(inst,배열위치)`에서
-  `(inst,그룹전용 AttributeKey)`로 위임할 때). **시작 인덱스는 0이 아니라
+  연속성이 필요 없음(예: `Attr` 그룹이 `(inst,배열위치)`에서
+  `(inst,그룹전용 AttrKey)`로 위임할 때). **시작 인덱스는 0이 아니라
   1** — Luau `ipairs`/`#`(배열 part 순회)는 1부터 연속된 정수 키를
   전제하므로(quad 자신이 "props 순회 순서" 절에서 이 관례에 의존), 0을
   쓰면 그 항목이 `ipairs` 순회에서 조용히 빠지고 `quad-debug`가 나중에
@@ -1331,10 +1331,10 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   하나가 됨, `archive/checkpoint-handler-pattern-reversed.md` 참고).
 - **소유권 충돌 감지는 이제 Dispatch의 일이 아님 — 필요한 도메인이 직접
   한다.** 옛 모델의 `Dispatch.process`는 "이 인덱스가 이미 점유돼 있으면
-  즉시 error"를 냈고 `Attribute` 이름 소유권이 그 부수 효과에 얹혀
+  즉시 error"를 냈고 `Attr` 이름 소유권이 그 부수 효과에 얹혀
   있었으나, 하강 diff에선 **점유는 정상 상태**(재프로세스가 늘 그 자리를
   다시 씀)라 그 체크 자체가 성립하지 않음. 실제로 두 소유자가 한 자원을
-  다투는 유일한 사례였던 Attribute 이름은 **자기 도메인 안에서 이름별
+  다투는 유일한 사례였던 Attr 이름은 **자기 도메인 안에서 이름별
   claim으로 해결**함(`base/attribute-plan.md` "이름 소유권" 절, `question.md`
   0-Z 결정) — Dispatch에 claimant 개념을 일반화하는 안은 명시적으로 기각.
 - **순환은 UB, 방어 로직 없음** — Handler 간 순환 참조(A가 B를 부르고
@@ -1387,7 +1387,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 ### Handler 작성 체크리스트 — 실제로 반복된 실수들 (2026-08-13 여섯 번째 세션 신설, 열네 번째 세션 하강 diff 기준으로 갱신)
 
 **왜 이 절이 있는가**: 인덱스 기반 재설계 직후 작성된 의사코드
-(`Dispatch` 자신, `Ref`, `Tag`, `Slot`, `Attribute`)에서 **같은 세션
+(`Dispatch` 자신, `Ref`, `Tag`, `Slot`, `Attr`)에서 **같은 세션
 안에 버그 4건**이 나왔고, 그중 셋이 서로 다른 문서에 있으면서도
 **같은 종류의 착각**에서 나왔음. 새 Handler를 짜거나 기존 걸 고칠 때
 이 목록을 먼저 훑을 것 — 전부 "그럴듯해 보이는데 틀린" 것들이라
@@ -1447,7 +1447,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 - 불필요한 `Relate`: `process`가 만든 걸 그 클로저가 정리하는 단발성
   handoff는 upvalue 캡처로 끝(옛 `kSlotMap`/`kTagMap`이 이걸로 삭제됨).
 - 부족한 `Relate`: `Tag`의 `tagNameMap`(여러 위치가 한 이름을 공유),
-  `Attribute`의 이름 claim(`nameClaims`), `Ref`의 spurious 재바인딩
+  `Attr`의 이름 claim(`nameClaims`), `Ref`의 spurious 재바인딩
   dedup처럼 **자기 클로저 수명 밖의 정보**는 캡처로 대체 불가.
 - 그리고 `Relate`에 쓴 걸 클로저에서 지울 땐 **"내가 실제로 물러날
   때만"** 지울 것 — 조건 밖에서 무조건 지우면 dedup이 무력화됨
@@ -1473,7 +1473,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 **6. 인덱스는 "같은 키 안의 재귀 깊이"다.**
 같은 키로 재귀하면 `index + 1`, **다른 키로 위임하면 그 키에서 다시
 `1`부터**, `Dispatch.drive`의 최초 진입도 `1`. 배열 파트의 위치(`k`)와
-이 `index`는 완전히 다른 것 — `AttributeGroupHandler`가 배열 위치를
+이 `index`는 완전히 다른 것 — `AttrGroupHandler`가 배열 위치를
 `index`라고 이름 붙였다가 시그니처 자체가 계약과 어긋난 전례가 있음.
 
 **7. 반환 생략 금지.** 정리할 게 없어도 `Void`(**[2026-08-28 `H-162`]** 단일 no-op export). `nil`을
@@ -1646,7 +1646,7 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   명시적으로 지목해뒀는데, 전수 grep 결과 아래 넷은 `setLength`/`setOffsetSource`를
   **한 번도 부르지 않았다**:
   - `TagHandler`(`base/tag-plan.md`) — 0건
-  - `AttributeGroupHandler`(`base/attribute-plan.md`) — 0건
+  - `AttrGroupHandler`(`base/attribute-plan.md`) — 0건
   - `RefLeafHandler`(`base/ref-plan.md`) — `Processed*` 둘에만 있고 이쪽엔 없음
   - `ObserverEffectLeafHandler`(`base/source-state-plan.md`) — 0건
 
@@ -1656,14 +1656,14 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   승격된 그 자리). `Frame { Tag("card"), TextLabel { … } }`처럼 말단이 앞에
   오는 아주 흔한 배치가 첫 마운트에 죽고, 같은 게
   `Frame { Ref(myRef), Frame{} }` / `Frame { someObserver, Frame{} }` /
-  `Frame { Attribute(store), Slot() }`에서 그대로 재현된다. **해당 항목이 배열
+  `Frame { Attr(store), Slot() }`에서 그대로 재현된다. **해당 항목이 배열
   맨 끝이면 `bk.N`이 거기까지 안 커져서 안 터지므로 "가끔 되고 가끔 터지는"
   형태로 드러난다.**
 
   확정: **넷 다 `process` 맨 앞에서 `setOffsetSource(inst, k, None)` →
   `setLength(inst, k, 0)`을 등록한다**(순서는 계약대로 offsetSource 먼저).
-  `AttributeGroupHandler`도 예외로 두지 않는다 — "그룹 핸들러는 다른 키로
-  위임하는 성격이라 층위가 다르지 않나"라는 갈래가 있었지만, Tag/Attribute를
+  `AttrGroupHandler`도 예외로 두지 않는다 — "그룹 핸들러는 다른 키로
+  위임하는 성격이라 층위가 다르지 않나"라는 갈래가 있었지만, Tag/Attr를
   "Length/Offset에 참여하지 않는 별도 카테고리"로 재정의하면 `bk.N`의 의미가
   바뀌어 파급이 크다(사용자 확정, 2026-08-24).
 

@@ -1,7 +1,7 @@
 --[[
 	`notInstalled(name, what, hint?)` — the loud stub a quad-base module puts on
 	its public surface for an op a backend has to install (`Tag.luau` tag ops,
-	`Attribute/Key.luau` attribute op, `LifetimeHandle.luau` lifetime primitives
+	`Attr/Key.luau` attribute op, `LifetimeHandle.luau` lifetime primitives
 	/ engine ops). One factory for the three byte-identical copies
 	(post-implementation review Q3 ②, user-approved 2026-09-07 — "raw*에서도
 	했던 행위"). Message shape is the one the specs match on

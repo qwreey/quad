@@ -32,7 +32,7 @@
 	   그러면 다른 파일에서 `Unknown type 'Module.CheckVersion'`으로
 	   막힘. 그리고 명시적 제네릭 인스턴스화가 **2개 이상**이면 단일
 	   꺾쇠(`Foo<A, B>`)가 비교 연산자로 오파싱돼 반드시 이중 꺾쇠
-	   (`Foo<<A, B>>`)를 써야 한다(코퍼스에 이미 있던 `AttributeKey<<T>>`
+	   (`Foo<<A, B>>`)를 써야 한다(코퍼스에 이미 있던 `AttrKey<<T>>`
 	   관례와 같은 이유).
 
 	실행: `luau-analyze 23-type-quadtypes-checkversion-addplugin.luau`

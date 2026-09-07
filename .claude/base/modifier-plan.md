@@ -148,12 +148,12 @@ end
 절이 당시 서술) — 어차피 여기서 다루는 건 컴포지션 타임의 modifier 값 자체
 flatten이라 층위가 달랐음.
 
-**참고 — Property(일반 프로퍼티)에 Attribute식 "이름 소유권 레지스트리"를
-적용하는 안은 검토 후 기각(2026-08-12 열일곱 번째 세션).** `Attribute`
+**참고 — Property(일반 프로퍼티)에 Attr식 "이름 소유권 레지스트리"를
+적용하는 안은 검토 후 기각(2026-08-12 열일곱 번째 세션).** `Attr`
 (`base/attribute-plan.md`)의 그룹 위임은 이름별 전용 키 객체가 "지금 이
 이름을 누가 쓰고 있는가"를 스스로 추적해 충돌을 `error`로 잡아주는데, 이
 패턴을 일반 Instance 프로퍼티(`BackgroundColor3` 등)에도 그대로 적용할 수
-있을지 검토했으나 기각됨 — **Attribute 이름은 호출자가 자유롭게 짓는
+있을지 검토했으나 기각됨 — **Attr 이름은 호출자가 자유롭게 짓는
 네임스페이스라 자기 전용 키 객체를 새로 만들 수 있지만, Instance 프로퍼티
 이름은 엔진이 이미 정해둔 유한 집합이라 호출자가 자기만의 전용 키를 새로
 못 만든다.** 그래서 "이 프로퍼티를 지금 누가 소유하고 있는가"라는 질문
@@ -269,12 +269,12 @@ mutable하게 구현하면 같은 modifier 레퍼런스를 공유하는 형제 �
 `Modifier({})`와 같다.
 원문: *"(default1 = {}, Modifier, { k=v }) 형태로 받게 … 뒤로 갈 수록 높은
 우선순위의 override 처럼 … 초기 붙이는건 비용이 싸지고, 약간 슈거처럼
-작동"*. **사용자 인용이 승인한 것은 모양과 병합 순서까지다.** **[2026-09-07 회신 3차 Q11 (a) 사용자 확정]** 제네릭 setter(`m.X(...)`의 `__index`)도 같은 키 규칙 — **문자열 키만** setter가 되고 비문자열 키(`m[AttributeKey]`)는 즉시 에러(`__index`가 SURFACE 태그를 받아 사용자 줄 blame); 거꾸로 생성자도 setter 경로가 만들 수 없는 키(`As%u` 캐스트 접두·예약 메소드명·빈 문자열)를 거부한다(round3 `H-448`). AttributeKey/디스크립터는 props 테이블에 직접(`Frame { [key] = value }`) — 두 생성 경로가 조용히 갈리지 않게(`H-387`). 아래 검증 규칙은
+작동"*. **사용자 인용이 승인한 것은 모양과 병합 순서까지다.** **[2026-09-07 회신 3차 Q11 (a) 사용자 확정]** 제네릭 setter(`m.X(...)`의 `__index`)도 같은 키 규칙 — **문자열 키만** setter가 되고 비문자열 키(`m[AttrKey]`)는 즉시 에러(`__index`가 SURFACE 태그를 받아 사용자 줄 blame); 거꾸로 생성자도 setter 경로가 만들 수 없는 키(`As%u` 캐스트 접두·예약 메소드명·빈 문자열)를 거부한다(round3 `H-448`). AttrKey/디스크립터는 props 테이블에 직접(`Frame { [key] = value }`) — 두 생성 경로가 조용히 갈리지 않게(`H-387`). 아래 검증 규칙은
 **에이전트 추가**(round17 `H-310` 행, 뒤집기 가능): 필드 테이블은 메타테이블 없는
 plain 테이블만(Source/State/Ref/None 등 quad 객체를 넘기면 내부 필드가 merge되는
 사고를 막는다 — 리뷰 발견; **[2026-09-07 3순회 `H-377`]** 브랜드는 메타테이블이 아니라
-메타테이블 없는 quad 값 — `AttributeKey`(`Name`이 필드로 병합돼 조용히 rename)·
-`MapperDescriptor` — 은 `Brand.isPlainBranded`로 따로 거부, Attribute·Tag와 공유), 키는 문자열만, 값은 setter와 같은 핸들러 계층 검사,
+메타테이블 없는 quad 값 — `AttrKey`(`Name`이 필드로 병합돼 조용히 rename)·
+`MapperDescriptor` — 은 `Brand.isPlainBranded`로 따로 거부, Attr·Tag와 공유), 키는 문자열만, 값은 setter와 같은 핸들러 계층 검사,
 **함수 값은 거부**(setter는 함수를 변환으로 읽으므로 raw 저장하면 두 생성
 경로가 조용히 갈린다 — 변환은 `mod:Field(fn)`으로), 비테이블 인자는 error.
 타입은 `(...(Modifier | { [string]: any })) -> Modifier`(클래스별 필드 테이블
@@ -533,7 +533,7 @@ predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
   `isSource` 화이트리스트 검증이다(`base/store-plan.md`). 새 체크 지점을 여러 곳에 흩는 게
   아니라, "값이 State/Source의 값으로 확정되는" 이미 존재하는 몇 안
   되는 지점에 `isModifier` 검사 한 줄씩 얹는 것뿐.
-- **Slot/Tag/Attribute 등 다른 핸들러 계층 값은 여전히 아무
+- **Slot/Tag/Attr 등 다른 핸들러 계층 값은 여전히 아무
   문제 없이 State/Source에 담길 수 있음 — Modifier만의 예외임을
   명확히.** (사용자 확인: "slot은 당연히 가능함, retract도 되는 애고
   런타임 값이라") 이 값들은 전부 정상적으로 `process`/`retract`
@@ -835,7 +835,7 @@ PropertyHandler가 판단).
 `Tween<T>`가 Modifier 필드로 담기는 것도, `State<Tween<T>>`처럼 State/Source
 값으로 담기는 것도 둘 다 아무 문제 없음 — 7번 절의 "핸들러 계층 값 →
 error" 규칙에 안 걸림(`Tween<T>`는 `process`/`retract`를 가진 dispatch
-참가자가 아니라 `None`처럼 순수 raw 데이터 값, 위 7번 절 "Slot/Tag/Attribute
+참가자가 아니라 `None`처럼 순수 raw 데이터 값, 위 7번 절 "Slot/Tag/Attr
 등" 목록에서 Tween을 뺀 정정 참고).
 
 ### 11. 클래스 태그·`TypedFactory`/`DefineSubtype`·`As`·`Into` — 상위 클래스 Modifier와 검사형/무검사 캐스트 (2026-09-04 단위 ④, 사용자 설계)

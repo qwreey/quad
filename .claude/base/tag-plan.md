@@ -35,7 +35,7 @@
 `research/source-layout-plan.md` 3절 (b) 권고 채택): *"권고대로, flattenInto 와 타입을 고치면
 되므로, 비용도 크지 않은편"*, 발단은 *"Tag() 로 초기 부터 잡는게 유리한데 … flattenInto 를 약간
 건들고 타입이 변경되어야하는것 아닌지?"*. 이로써 `H-389`(생성자는 `...string`)와 `H-380`의 "Tag는
-리스트가 아니다" 거부는 **되돌려졌고**, 나머지(`Source`/`AttributeKey`/해시 테이블/nil 구멍 거부,
+리스트가 아니다" 거부는 **되돌려졌고**, 나머지(`Source`/`AttrKey`/해시 테이블/nil 구멍 거부,
 모양을 이름 짓는 메시지)는 그대로다. `Tag.Merged`는 Tag만 받는 엄격형으로 남는다(`Tag(a, b)`와
 결과 같음 — 공개 이름 제거는 결정 대상이라 두지 않았다). **UB(round3 §9 Q28, 사용자 결정 2026-09-07 (a)):** 이름
 리스트가 자기 자신을 품으면(`t[1] = t`) 재귀가 스택을 넘칠 때까지 내려가 VM 에러가 나고 blame은 quad 내부다 —
@@ -184,7 +184,7 @@ function TagHandler.process(inst, k, v, index)
     -- `Tag`는 물리 리프를 하나도 기여하지 않으므로 짝을 맞춰 `0`. 없으면
     -- `Frame { Tag("card"), TextLabel { … } }`처럼 Tag를 자식보다 앞에 두는
     -- **아주 흔한 배치**가 첫 `recompute`에서 `sourceList[k]가 nil`로 죽는다
-    -- (`base/dispatch-core-plan.md`의 등록 책임 절). 그룹 `Attribute`와 함께
+    -- (`base/dispatch-core-plan.md`의 등록 책임 절). 그룹 `Attr`와 함께
     -- "Length/Offset 비참여 카테고리"로 재정의하는 갈래도 있었으나 `bk.N`의
     -- 의미가 바뀌어 파급이 커서 기각(사용자 확정 2026-08-24).
     Dispatch.setOffsetSource(inst, k, None)
@@ -324,7 +324,7 @@ removeTag(inst: any, names: {string}): ()
   `HANDLER_PRIORITY_FALLBACK`보다 확실히 높은 우선순위로 자기 Handler를
   등록하면 base `TagFallbackHandler`를 완전히 대체함(같은 override 원리).
   상세는 `base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와
-  주입되는 엔진 op" 절 — `Attribute`도 정확히 같은 구조
+  주입되는 엔진 op" 절 — `Attr`도 정확히 같은 구조
   (`base/attribute-plan.md`). 래퍼는 필드 셋뿐인 얇은 재노출:
 
   ```lua

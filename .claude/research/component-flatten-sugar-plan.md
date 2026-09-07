@@ -22,7 +22,7 @@
 - **modifier를 데이터로 순회**하기 — `Peek`는 키 하나씩이라 "모든 필드"를 볼 수 없고,
   값이 State인지 리터럴인지 `None`인지를 저작자가 직접 갈라 봐야 한다.
 - **배열부 값 분리** — `Frame{ props.Modifier or None, props.Ref or None, … }`처럼
-  되꽂는 자리에서 PreRef/Ref/PostRef·Tag·Attribute·자식 Instance를 종류별로 다루고
+  되꽂는 자리에서 PreRef/Ref/PostRef·Tag·Attr·자식 Instance를 종류별로 다루고
   싶을 때 도구가 없다.
 
 사용자 원문(2026-09-06): *"처음부터 커스텀 modifier는 peek를 통해서 하나하나 확인하는게
@@ -46,7 +46,7 @@ local parts = Component.Split(props)   -- props = 컴포넌트가 받은 테이�
 -- parts.preRefs  : { PreRef }          -- 배열부에서 종류별로 뽑아낸 것들(순서 보존)
 -- parts.refs     : { Ref }
 -- parts.postRefs : { PostRef }
--- parts.children : { any }             -- 나머지 배열부(Instance/State/Slot/Tag/Attribute/OnChange 디스크립터 …)
+-- parts.children : { any }             -- 나머지 배열부(Instance/State/Slot/Tag/Attr/OnChange 디스크립터 …)
 -- parts.rest(keys) -> Modifier         -- 소비하지 않은 필드만으로 새 Modifier(부모 클래스 태그로) — H-340의 자리
 ```
 
@@ -73,7 +73,7 @@ end
    `:Get()`으로 풀어 주는가(반응성 상실 — 아마 아님), 둘 다(`fields`/`resolved`)인가.
 3. **`rest`의 형태**: 남는 필드로 새 Modifier를 만드는 것(위) vs 소비 키만 빼는
    `Without`(round21 `H-340` (a) — 사용자는 `Without` 단독 제공엔 회의적).
-4. **배열부 분리의 범위**: Ref 셋만 뽑을지, Tag/Attribute/OnChange까지 종류별로
+4. **배열부 분리의 범위**: Ref 셋만 뽑을지, Tag/Attr/OnChange까지 종류별로
    나눌지, 아니면 `children`으로 뭉쳐 둘지.
 5. **되꽂기 표기**: 배열을 배열 자리에 넣는 것(`{ p.refs, … }`)은 지금 디스패치가
    지원하지 않는다(배열 안 배열) — Slot을 쓰거나, `table.unpack` 관용구를 정하거나,

@@ -120,13 +120,13 @@ store.hp:Compute(function(s) ... end)
   `isModifier` 쪽 가드는 여기가 아니라 **`Source` 생성자**가 맡는다
   (`base/modifier-plan.md` 7번).
 - **`store:Names()`** — 그 시점의 키 집합을 준다(그림자 테이블의 키). 그룹
-  `Attribute(...)`/`attr:NameMap()`이 이걸 요구한다
+  `Attr(...)`/`attr:NameMap()`이 이걸 요구한다
   (`base/attribute-plan.md`, 7라운드 `H-79`).
   **⚠️ "선언된 키"와 정확히 같지는 않다** — `defaults`의 키에 **동적 키
   창구 `store:Of(name)`이 만든 것**이 더해진다(아래 "타입 추론 문제" 절).
   둘의 차이는 `Of`를 쓴 Store에서만 생기고, `Of`는 "타입 보장을 포기했다"가
-  호출부에 드러나는 명시적 자리다. **그룹 `Attribute`에 미치는 영향**:
-  이미 배치된 `Attribute(store)` 바인딩은 그 시점의 `NameMap()` 스냅샷으로
+  호출부에 드러나는 명시적 자리다. **그룹 `Attr`에 미치는 영향**:
+  이미 배치된 `Attr(store)` 바인딩은 그 시점의 `NameMap()` 스냅샷으로
   구성되므로, 나중에 `Of`로 늘어난 키는 **다음 재디스패치 때** 반영된다
   (`base/attribute-plan.md`의 그룹 절).
 

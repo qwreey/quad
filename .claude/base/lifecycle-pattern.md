@@ -91,7 +91,7 @@ quad-v2도 동일: 인스턴스 라이프사이클 훅 지점은 `Destroying` �
 내용" 절이 "이 훅을 쓰는 지점이 예상보다 적을 수 있다"고만 열어뒀던 걸 사용자가
 확정해줌(*"당장은 Effect 뿐임"*). `Effect`의 leaf-death cleanup(`base/effect-plan.md`)이
 이 훅을 쓰는 유일한 소비자이고, 그 위의 슈가 `OnDestroyed`(`base/lifecycle-hooks-plan.md`)도
-결국 같은 경로다. 나머지(Observer 게이팅, Tag/Attribute 정리, Tween 취소)는 전부
+결국 같은 경로다. 나머지(Observer 게이팅, Tag/Attr 정리, Tween 취소)는 전부
 gcconn `Connected` 판정이나 엔진 자체 정리로 커버되어 이 훅을 안 씀.
 
 ### 3. 정리(`retract`)는 기본적으로 GC에 위임, 예외적으로만 즉시(eager)
@@ -865,7 +865,7 @@ quad는 자신이 만든 instance를 항상 끝까지 들고 있어서 이런 �
 추가.
 
 **retract는 Destroy 시점에 필요 없는 이유가 엔진 레벨에서 한 번 더 보강됨.**
-Roblox 엔진 자체가 Destroy 시 Tag/Attribute/실행 중인 Tween을 전부 알아서
+Roblox 엔진 자체가 Destroy 시 Tag/Attr/실행 중인 Tween을 전부 알아서
 정리해준다 — 라이브러리가 따로 처리할 필요가 없음. Roblox 이외의 엔진에서
 이런 정리가 필요하다면 그건 그 엔진의 `quad-X` 서브패키지가 책임질 문제(base
 관심사 아님). 사용자가 커스텀 Destroy-time 처리가 필요하면 **`Effect`(그리고 그 슈가

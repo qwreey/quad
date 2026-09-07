@@ -28,7 +28,7 @@
 	`drive` by the end of this milestone — a static child Instance
 	(InstanceChildHandler, unit ③) or a reactive one (StoreBind → unwrap).
 	Later milestones WIDEN this union as their handlers land (M10 did on
-	2026-09-03 — Tag/Attribute, see the declaration comment; M6 Slot). M8
+	2026-09-03 — Tag/Attr, see the declaration comment; M6 Slot). M8
 	Ref/PreRef/PostRef landed on 2026-09-04 NOT here but on the per-class
 	alias — `<Class>RefMarker = { read __quadRefAccepts: (<Class>) -> () }`
 	(+ `State<…>`) joins `<Class>Elem`, so a Frame slot admits `Ref<Frame?>`
@@ -129,8 +129,8 @@ export type AnimateInfo = {
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tween<any>>
 
 -- [2026-09-03 M10 widening] the quad-base array-part VALUES join here: `Tag(...)`
--- and `Attribute(...)` (the typed scalar sugar `StringAttribute(name, v)` etc.
--- returns an `Attribute`, so it rides the same member) + their State forms
+-- and `Attr(...)` (the typed scalar sugar `StringAttr(name, v)` etc.
+-- returns an `Attr`, so it rides the same member) + their State forms
 -- (StoreBind unwraps array elements). OnChange descriptors are NOT here — they
 -- are per-class (`<Class>Elem` in the generated D, `base/onchange-plan.md`).
 export type NewChild =
@@ -140,19 +140,19 @@ export type NewChild =
 	-- (`State<Frame>`)·`State<Instance?>`·`State<Slot<…>>`를 전부 거부했고 팔마다 예산을 먹었다.
 	-- 마커는 T에 공변이라 값 유니언 하나로 끝난다 — `State<Frame>`, `State<Instance?>`(NilHandler
 	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StoreBind 언랩 → SlotHandler),
-	-- `State<Tag>`/`State<Attribute>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
+	-- `State<Tag>`/`State<Attr>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
 	-- 여기 없다. [round3 `H-431`] `State<Observer?>`/`State<EffectHandle?>`는 정본이 지시하는 leaf 종료
 	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StoreBind 언랩 →
 	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
-	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attribute/Observer/EffectHandle도 입력 자리는 마커
+	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attr/Observer/EffectHandle도 입력 자리는 마커
 	-- (`research/source-layout-plan.md` 10-2): 메소드가 든 전체형이 유니언에 앉을 이유가 없고(8.8·8.9의
 	-- 함수 필드 게이트가 그 때문), 타입 검사 예산도 준다(사용자: *"타입 체크 비용을 아끼기 위해 마커만
 	-- 두는것도 괜찮아보임"*). 실제 값은 폭 서브타이핑으로 든다(8.11).
-	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttributeMarker | QuadTypes.ObserverMarker | QuadTypes.EffectHandleMarker | QuadTypes.None)?>
+	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttrMarker | QuadTypes.ObserverMarker | QuadTypes.EffectHandleMarker | QuadTypes.None)?>
 	| QuadTypes.None
 	| QuadTypes.TagMarker
-	| QuadTypes.AttributeMarker
+	| QuadTypes.AttrMarker
 	-- [2026-09-07 post-implementation review Q2 (a), 사용자 확정 "권고대로 둘 다 넣는거 동의"]
 	-- `state:Observer(fn)` / `Effect(fn)` handles in the children array — the leaf idiom
 	-- `source-state-plan.md` "`state:Observer(fn)`" 절·`effect-plan.md` canonised (leaf

@@ -18,7 +18,7 @@
 	  [M10 engine axis, 2026-09-03] base-owned handlers' injected ops
 	  (`dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op"):
 	    addTag(inst, {string}) / removeTag(inst, {string})  -- CollectionService
-	    setAttribute(inst, name, v)                           -- v == nil deletes
+	    setAttr(inst, name, v)                           -- v == nil deletes
 	  `game` is read at CALL time (not install time) so CLI specs can shim it
 	  through this installer's environment (the Property-handler idiom).
 
@@ -95,7 +95,7 @@ local function install(quad: any)
 		return inst:FindFirstChild(key)
 	end
 
-	-- Tag/Attribute ops (M10 engine axis). Batched `{string}` is the contract
+	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract
 	-- (a web backend rewrites className once); Roblox has no batch API, so
 	-- the loop is here rather than in the base handler.
 	-- `H-465`: fetched lazily at first use and memoized — the same seam as
@@ -123,7 +123,7 @@ local function install(quad: any)
 		end
 	end
 
-	local function setAttribute(inst: any, name: string, v: any)
+	local function setAttr(inst: any, name: string, v: any)
 		inst:SetAttribute(name, v) -- nil deletes natively
 	end
 
@@ -138,13 +138,13 @@ local function install(quad: any)
 	quad.nativeFindChild = nativeFindChild
 	quad.addTag = addTag
 	quad.removeTag = removeTag
-	quad.setAttribute = setAttribute
+	quad.setAttr = setAttr
 
 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
 	for _, fn in
 		{
 			nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose,
-			isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttribute,
+			isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr,
 		} :: { any }
 	do
 		Err.setFuncLevel(fn, SURFACE)

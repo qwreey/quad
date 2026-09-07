@@ -37,7 +37,7 @@
 
 1. **초기화** — `RobloxFactory(QuadBase)`로 base+backend 조립 (`module-lifecycle-plan.md`, `bind-system-plan.md`)
 2. **Instance 만들기** — DOMless 즉시 생성 모델, 제네릭 생성자 `New` + 클래스별 정적 필드(**[2026-08-18]** 범위는 "GUI에 쓰이는 모든 인스턴스", 전량 코드 생성)(`Frame`, `TextButton` 등) (`architecture.md`, `bind-system-plan.md`)
-3. **속성 채우기** — `[Attribute "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
+3. **속성 채우기** — `[Attr "Name"]`, ~~`[Tag ""] = true`~~ **[2026-08-13 정정] 구모델(폐기, `archive/tag-hash-key-model-reversed.md`) — 실제로는 `Tag(...)` array-part 값 객체** 특수 바인드 키 (`architecture.md`)
 4. **반응형 기초** — `Source`/`Store` 생성, `store.key`(dot-access)로 Source 읽기(Source는 State를 만족), `store.key:Set(value)`로 쓰기, State는 항상 읽기 전용 (`base/source-state-plan.md`, `base/store-plan.md`; 2026-08-06 후속 세션에서 dot-access가 Source를 직접 반환하고 쓰기가 `:Set()`으로 확정. **[2026-08-25]** 같은 모델이 유지되고, **생성이 명시적 초기화로** 바뀌었다 — 타입 인자에 `Source<T>`를 직접 쓰고 `defaults`에도 `Source(v)`를 직접. **초심자 트랙이 짚을 것**: 부모가 값을 다 안 넘겨도 되게 하려면 컴포넌트가 자기 `DEFAULTS`로 채워 넘긴다)
 5. **스타일링** — Modifier 기본 체이닝(`:FontSize(14)`), 배열/인라인 merge 우선순위 규칙 (`modifier-plan.md`)
 6. **자식 전달** — Slot 기본 개념(children 배열, add/remove/clear), 마운트된 slot 재마운트 시 throw (`slot-plan.md`)
@@ -79,7 +79,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 
 ### bind-system-plan.md
 - 초심자: Source/Store/State 기본 정의+생성자, State 읽기 전용 규칙 / dot-access가 값 읽기 1급 경로 / `:With`+`:Compute` 최소 사용법 / Ref 기본 개념(children 배열에 직접 놓기, 별도 `CreatedRef` 없음) / 이벤트 self 미채택 기본 규칙+문자열 키 / 인스턴스 생성(제네릭+정적 필드) / 라이브러리 초기화 3줄(`RobloxFactory(QuadBase)`)
-- api: `state:Observer(fn)` 사용법(→심화: weak-table 내부 인덱싱) / `:Subscribe()`/`:Unsubscribe()` 시그니처(→심화: 강참조 레지스트리 구조) / Ref 일반화 표면 API(→심화: "왜 값이 아니라 콜백인가") / 이벤트 store-bind 존재+권장 안 함 가이드(→심화: 엔지니어링 비용 근거) / 핸들러 3종 계약(`isHandlable`/`priority`/`process` — `process`가 자기 retract 클로저를 반환, 2026-08-13 다섯 번째 세션에 4종에서 축소) / `AttributeKey<T>` 특수 키(2026-08-11 아홉 번째 세션에 `Attribute<T>`에서 개명, 그룹 값 `Attribute(...)`와 구분 — 확정됨)
+- api: `state:Observer(fn)` 사용법(→심화: weak-table 내부 인덱싱) / `:Subscribe()`/`:Unsubscribe()` 시그니처(→심화: 강참조 레지스트리 구조) / Ref 일반화 표면 API(→심화: "왜 값이 아니라 콜백인가") / 이벤트 store-bind 존재+권장 안 함 가이드(→심화: 엔지니어링 비용 근거) / 핸들러 3종 계약(`isHandlable`/`priority`/`process` — `process`가 자기 retract 클로저를 반환, 2026-08-13 다섯 번째 세션에 4종에서 축소) / `AttrKey<T>` 특수 키(2026-08-11 아홉 번째 세션에 `Attr<T>`에서 개명, 그룹 값 `Attr(...)`와 구분 — 확정됨)
 - 심화: push-invalidate/pull-recompute 전파 모델+"관측해야 실체화된다" 원칙+`previous` 캐비엇 / **왜 State를 Modifier처럼 플래튼하지 않는가**(이미 문서화 완료, 아래 3번 참고) / Store가 Store를 못 담는 이유 / 이벤트 self 미채택 4가지 근거 / store-bind 재귀 래핑 내부 메커니즘, retract가 Destroy 시 호출 안 되는 이유 / 같은 팩토리 재호출 no-op·다른 팩토리 충돌 에러 내부 안전장치
 - skip: quad2-try 리서치 결과 섹션 전체(OOP 상속/커스텀 파서/Slot 스텁/`Pipe` 폐기 이력) / PA님 코드 교차검증 절(역사적 검증 기록) / "남은 열린 질문"/"확정된 것" 메타 요약
 
@@ -331,7 +331,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   (`archive/tween-special-bind-key-reversed.md`) 서술 — 이 문서를
   실제로 쓸 때 `Tween(opts) -> Tween<T>` 값-레벨 래퍼 모델로 다시
   써야 함.**
-- **[해소됨]** `Attribute<T>` 제네릭 vs 타입별 정적 생성자 — 2026-08-09
+- **[해소됨]** `Attr<T>` 제네릭 vs 타입별 정적 생성자 — 2026-08-09
   열한 번째 세션에 "둘 다 채택"으로 확정, `base/attribute-plan.md` 참고.
 - provider/processor 네이밍 — **[해소됨]** `Handler`로 이미 오래전 확정
   (`base/module-lifecycle-plan.md`), 이 줄이 그 갱신을 놓치고 있었음.

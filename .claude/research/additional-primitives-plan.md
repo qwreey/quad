@@ -10,7 +10,7 @@ context-rejected.md`. **[2026-08-09 세 번째 세션]** 마지막으로 남아�
 참고) — **[2026-08-09 세 번째 세션 기준] 이 문서에 새로 열려있는 설계
 질문은 없었음**, 아래 표/"빈 자리 아닌 것"/"문서화 백로그"/"참고 소스"
 절은 배경 리서치 기록으로만 유지. **단 이후 세션에 열린 질문 2개가
-새로 추가됨** — "Attribute 그룹 명시적 unset 유틸"(2026-08-12),
+새로 추가됨** — "Attr 그룹 명시적 unset 유틸"(2026-08-12),
 "중첩 State 평탄화 `State<State<T>>`"(2026-08-13 여섯 번째 세션, 이후
 `question.md` 백로그로 근거 축소) — 아래 해당 절 참고.
 
@@ -85,8 +85,8 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
 - **Readonly wrapper**: `component-composition-plan.md`가 이미 "Source
   직접 전달은 좁은 케이스에 한정, 일반적으론 State + callback이 기본"으로
   못박아둬서 캡슐화 깨짐 문제 자체가 대부분 상황에서 안 생김.
-- **Fusion `Observer`/`Attribute`**: quad `state:Observer(fn)` +
-  `base/attribute-plan.md`의 Attribute 논의로 이미 커버 중, 신규 아님.
+- **Fusion `Observer`/`Attr`**: quad `state:Observer(fn)` +
+  `base/attribute-plan.md`의 Attr 논의로 이미 커버 중, 신규 아님.
 - **디바운스/스로틀**: ~~Fusion/Vide/v1 어디에도 공개 프리미티브로 없음 —
   세 레포 모두 없다는 것 자체가 "quad도 굳이 안 만들어도 된다"는 정황.~~
   **[2026-08-14 뒤집힘]** 사용자가 직접 "`Blocker`와 유사하게 만들어야
@@ -125,7 +125,7 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
 ## 참고: 조사에 사용한 소스 근거
 
 - Fusion: `State/ForPairs.luau`, `State/ForKeys.luau`,
-  `Utility/Contextual.luau`, `Graph/Observer.luau`, `Instances/Attribute.luau`,
+  `Utility/Contextual.luau`, `Graph/Observer.luau`, `Instances/Attr.luau`,
   `Memory/doCleanup.luau`
 - Vide: `indexes.luau`, `values.luau`, `context.luau`, `batch.luau`,
   `action.luau`, `untrack.luau`, `cleanup.luau`

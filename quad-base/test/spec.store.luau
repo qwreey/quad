@@ -156,16 +156,16 @@ end
 
 print()
 print()
-print("=== 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttributeKey)이면 plain 테이블 문에서 거부 ===")
+print("=== 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttrKey)이면 plain 테이블 문에서 거부 ===")
 do
 	local ok, err = pcall(function()
-		Store(Quad.AttributeKey("k") :: any)
+		Store(Quad.AttrKey("k") :: any)
 	end)
-	assert(not ok and string.find(tostring(err), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(err), "metatable", 1, true) == nil, "AttributeKey is not a defaults table — message names its kind (5순회): " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "AttrKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(err), "metatable", 1, true) == nil, "AttrKey is not a defaults table — message names its kind (5순회): " .. tostring(err))
 	print("PASS")
 end
 
-print("=== 9. round3 H-443 (외부 리뷰 G-13, H-421 자매) — 빈 문자열 키는 생성자·Of 둘 다 거부(Attribute(store)로 setAttribute(\"\")에 닿던 경로) ===")
+print("=== 9. round3 H-443 (외부 리뷰 G-13, H-421 자매) — 빈 문자열 키는 생성자·Of 둘 다 거부(Attr(store)로 setAttr(\"\")에 닿던 경로) ===")
 do
 	local okC, errC = pcall(function()
 		return (Store :: any)({ [""] = Source(1) })

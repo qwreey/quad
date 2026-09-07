@@ -440,7 +440,7 @@ do
 	gc("collect"); gc("collect")
 	local before = gc("count")
 	for i = 1, 5000 do
-		local key = { i } -- fresh key per cycle — the State<Attribute> group-key shape (fable 탐사 X-1)
+		local key = { i } -- fresh key per cycle — the State<Attr> group-key shape (fable 탐사 X-1)
 		q.Dispatch.process(inst, key, "v", 1)
 		q.Dispatch.retractFrom(inst, key, 1)
 	end
@@ -468,16 +468,16 @@ do
 		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive props blame")
 	end
 	-- `H-470` (탐사 A): a quad VALUE where the props table is due (braces forgotten) — metatable
-	-- brands and the frozen plain-branded ones (AttributeKey — `{ Name = "x" }`, a silent rename
+	-- brands and the frozen plain-branded ones (AttrKey — `{ Name = "x" }`, a silent rename
 	-- under quad-roblox) both refused, brand named, nothing dispatched
-	for _, bad in { q.Source(1), q.Tag("a"), q.AttributeKey("x"), setmetatable({}, {}) } :: { any } do
+	for _, bad in { q.Source(1), q.Tag("a"), q.AttrKey("x"), setmetatable({}, {}) } :: { any } do
 		local inst = mock.Instance.new("Frame")
 		local ok, err = pcall(function() q.Dispatch.drive(inst, bad) end)
 		assert(not ok and string.find(tostring(err), "a quad value needs the braces", 1, true) ~= nil, "quad value props rejected: " .. tostring(err))
 		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive quad-value props blame")
 		assert(inst.Name == "Frame", "nothing was dispatched before the gate")
 	end
-	assert(string.find(select(2, pcall(function() q.Dispatch.drive(mock.Instance.new("Frame"), q.AttributeKey("x")) end)) :: any, "got AttributeKey", 1, true) ~= nil, "brand named")
+	assert(string.find(select(2, pcall(function() q.Dispatch.drive(mock.Instance.new("Frame"), q.AttrKey("x")) end)) :: any, "got AttrKey", 1, true) ~= nil, "brand named")
 	print("PASS")
 end
 

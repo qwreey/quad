@@ -28,7 +28,7 @@
    - `init.luau`, `StoreBind.luau`, `None.luau`, `Dispatch/Modifier/init.luau`, `Ref/init.luau`, `Slot/init.luau`
    - 하강 diff 재디스패치(descending-diff), 우선순위 밴드 스캔, 체인 관리, retractor 수명주기
 4. **값 객체 및 프리미티브**:
-   - `Store.luau`, `Tag.luau`, `Attribute/init.luau`, `Attribute/Key.luau`, `Ref/init.luau`, `Dispatch/Modifier/init.luau`, `Tween.luau`, `Claim.luau`
+   - `Store.luau`, `Tag.luau`, `Attr/init.luau`, `Attr/Key.luau`, `Ref/init.luau`, `Dispatch/Modifier/init.luau`, `Tween.luau`, `Claim.luau`
 5. **Roblox 백엔드 (`quad-roblox/src/`)**:
    - `RobloxFactory.luau`, `EngineOps.luau`, `LifetimeHandle.luau`, `Animate.luau`, `D/init.luau`
    - `Handlers/` (`Property.luau`, `Event.luau`, `OnChange.luau`, `InstanceChild.luau`, `InstanceShorthand.luau`)
@@ -236,18 +236,18 @@
 
 코드 분석 과정에서 잠재적 결함으로 의심되었으나, 면밀한 검증을 통해 **설계상 완전히 건전함(Sound)**이 입증된 핵심 불변식들을 기록합니다.
 
-### [S-01] `AttributeKey` 약참조 캐시(`cache`)와 `nameClaims:SetStrong`의 생명주기 공존성 증명
+### [S-01] `AttrKey` 약참조 캐시(`cache`)와 `nameClaims:SetStrong`의 생명주기 공존성 증명
 
 - **의혹**:
-  - `Attribute/Key.luau`의 `cache`는 `{ __mode = "v" }` (약한 값 테이블)로 선언되어 있습니다.
-  - 어떤 인스턴스 `inst`에 `AttributeKey("X")`로 속성을 바인딩한 후, 호출자의 Lua 로컬 변수에서 해당 키 객체 참조가 사라지면 GC에 의해 `cache["X"]`가 수거될 수 있는가?
-  - 수거된 후 다시 `AttributeKey("X")`를 호출하면 새 객체 `k'`가 생성되어, `nameClaims`에 남아있는 이전 객체 `k`와 달라 충돌(`"already bound by another owner"`)을 일으키지 않는가?
+  - `Attr/Key.luau`의 `cache`는 `{ __mode = "v" }` (약한 값 테이블)로 선언되어 있습니다.
+  - 어떤 인스턴스 `inst`에 `AttrKey("X")`로 속성을 바인딩한 후, 호출자의 Lua 로컬 변수에서 해당 키 객체 참조가 사라지면 GC에 의해 `cache["X"]`가 수거될 수 있는가?
+  - 수거된 후 다시 `AttrKey("X")`를 호출하면 새 객체 `k'`가 생성되어, `nameClaims`에 남아있는 이전 객체 `k`와 달라 충돌(`"already bound by another owner"`)을 일으키지 않는가?
 - **건전성 증명**:
-  1. `Attribute/Key.luau` 121행에서 바인딩이 일어날 때 `nameClaims:SetStrong(inst, k.Name, k)`가 호출됩니다.
+  1. `Attr/Key.luau` 121행에서 바인딩이 일어날 때 `nameClaims:SetStrong(inst, k.Name, k)`가 호출됩니다.
   2. `nameClaims`는 `Relate()` 인스턴스로, `buckets[inst].StrongMap[k.Name] = k`에 `k` 객체를 **강하게(Strong)** 보관합니다.
   3. 인스턴스 `inst`가 살아있고 속성이 바인딩되어 있는 동안, Lua VM 힙 내에는 `k`에 대한 확실한 강한 도달 경로(Strong reachability)가 존재합니다.
   4. Lua/Luau GC 규칙상, 어떤 객체에 대한 도달 가능한 강한 참조가 하나라도 존재하는 한, 그 객체는 약한 값 테이블(`cache`)에서도 수거되지 않고 보존됩니다.
-  5. 따라서 `inst`에 속성이 바인딩되어 있는 동안에는 다른 어떤 코드에서 `AttributeKey("X")`를 호출하더라도 항상 동일한 `k` 객체가 캐시에서 반환됩니다.
+  5. 따라서 `inst`에 속성이 바인딩되어 있는 동안에는 다른 어떤 코드에서 `AttrKey("X")`를 호출하더라도 항상 동일한 `k` 객체가 캐시에서 반환됩니다.
   6. 반대로 속성이 완전히 retract되고 외부 참조도 모두 사라진 경우에만 `cache`에서 정상적으로 GC 수거되므로, 메모리 누수도 없고 허위 충돌도 발생하지 않습니다.
 
 ### [S-02] `Ref/init.luau` 동적 재바인딩 시 `old`와 `new`의 대칭적 수명주기 무결성

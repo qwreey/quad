@@ -134,13 +134,13 @@ Destroy 전까지 userdata 동일성을 고정해주므로, 모든 `inst`-키 `R
 >      `initFn(self)`로 module을 **인자로** 받고, 멱등 가드가 성립하려면
 >      애초에 **하나의 고정 함수**여야 하므로(인라인 클로저면 매번 새
 >      identity라 dedup 자체가 무의미) 바깥 변수를 캡처할 이유가 없다.
->    - **⚠️ `groupClaimKeys`**(내부 키 = 그룹 `Attribute`의 값 객체 `v`,
+>    - **⚠️ `groupClaimKeys`**(내부 키 = 그룹 `Attr`의 값 객체 `v`,
 >      `base/attribute-plan.md`) — **자동으로 안전하지 않다.** 그 값은
 >      사용자가 만든 Store/Source이고, 거기 담긴 값이 `inst`로 되돌아갈 수
 >      있다(예: 같은 트리의 `Ref`가 그 `inst`로 채워진 뒤 Store에 담기는
 >      경우). **[2026-08-25 `/code-review high` 지적]** 여기 한때 *"둘 다
 >      안전하다"*고 단정했는데 `runInitRelate` 쪽 논거만 있었다.
->      **그래서 이건 증명이 아니라 계약이다** — 그룹 `Attribute`의 값
+>      **그래서 이건 증명이 아니라 계약이다** — 그룹 `Attr`의 값
 >      객체는 `inst`를 되참조하면 안 되고, 그 제약을 `attribute-plan.md`가
 >      같이 적는다. 되참조가 필요해지면 내부 키를 값 객체가 아니라
 >      **이름/토큰**으로 바꿔야 한다(값 객체는 그때 값 슬롯으로 내려가고,
@@ -212,7 +212,7 @@ Handler 계약이 "`process`가 자기 retract 클로저를 반환"으로 바뀌
 클로저가 upvalue로 캡처하면 끝 — `relate:SetStrong(inst,k,x)` 후
 `relate:GetStrong(inst,k)`로 되찾아오는 왕복이 통째로 불필요.
 2026-08-13 다섯 번째 세션에 `kSlotMap`(위치별 마지막 Slot),
-`kTagMap`(위치별 마지막 Tag), Attribute의 `groupState`가 전부 이 이유로
+`kTagMap`(위치별 마지막 Tag), Attr의 `groupState`가 전부 이 이유로
 삭제됨. 새로 `Relate`를 하나 만들고 싶어지면 **먼저 "이거 그냥 클로저가
 캡처하면 되는 것 아닌가?"를 물어볼 것.**
 

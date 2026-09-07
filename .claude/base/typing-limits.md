@@ -245,7 +245,7 @@ type State<T> = {
   작동해 0번 대전제로 채택 안 함.
   **[2026-08-15 후속 조사, 같은 폴더 REPORT 11번 절]** `/code-review`
   지적으로 이중 꺾쇠 명시 인스턴스화(`state:Compute<<T,U>>(fn)`, 코퍼스에
-  `store:Of<<T>>`류로 존재하는 문법 — 당시 예시였던 `AttributeKey<<T>>`는
+  `store:Of<<T>>`류로 존재하는 문법 — 당시 예시였던 `AttrKey<<T>>`는
   2026-09-03에 제네릭을 벗었다)도 재검토 — **leaf(비-중첩)
   호출에 한해 콜백 파라미터 무주석 추론이 실제로 성립하고 sound함을
   확인**(②쪼개기 + `Get` 필드의 명시 `read` modifier + 매 호출 T·U 전부
@@ -369,19 +369,19 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
 
 ---
 
-## 3. `AttributeKey<<T>>` 제네릭 키의 값 타입 narrowing은 안 됨
+## 3. `AttrKey<<T>>` 제네릭 키의 값 타입 narrowing은 안 됨
 
 **근거: `luau-test/done/12-type-attribute-generic-key-narrowing.luau`**
 
-`[AttributeKey<<T>> "name"] = value`에서 `T`가 이름별로 고정되지 않고
+`[AttrKey<<T>> "name"] = value`에서 `T`가 이름별로 고정되지 않고
 호출마다 독립 추론돼 narrowing이 전혀 강제되지 않음 — 실측으로 "안 됨"
 확정.
 
 **우리가 하는 것**: `base/attribute-plan.md`가 이미 예비해둔 fallback을
-채택 — 정적 체크가 필요하면 `BooleanAttribute` 같은 **타입 패밀리**가
+채택 — 정적 체크가 필요하면 `BooleanAttr` 같은 **타입 패밀리**가
 유일하게 믿을 수 있는 경로. **[2026-09-03 종결]** 그 결론이 표면으로 굳었다:
-`AttributeKey`는 제네릭을 벗고 무타입 프리미티브가 됐고, 패밀리는 배열부
-슈가 `BooleanAttribute(name, value: boolean | State<boolean> | None)`로
+`AttrKey`는 제네릭을 벗고 무타입 프리미티브가 됐고, 패밀리는 배열부
+슈가 `BooleanAttr(name, value: boolean | State<boolean> | None)`로
 타입을 시그니처에서 진다(`attribute-plan.md` 머리 배너, round16 `H10-15`).
 
 ---
@@ -697,7 +697,7 @@ Tarjan·TypeInfer 상향은 무효, **`LuauSolverConstraintLimit`**(기본값 �
 **처방**: 솔버의 자기 표기 **`setmetatable<{Merged: …}, {__call: …}>`**
 (또는 판정 동일한 `typeof(setmetatable(...))`) — 참인 주장(메타테이블
 달린 테이블)이라 값이 거주하고, 캐스트·제네릭 통과 전부 클린(오버레이
-A/B 실측). 실사용은 `quad-types`의 `TagConstructor`/`AttributeConstructor`.
+A/B 실측). 실사용은 `quad-types`의 `TagConstructor`/`AttrConstructor`.
 **잔여 구멍 하나**: `__call` 경유 **호출의 인자 타입만 무검사**
 (`q.Tag(123)` 조용히 통과 — 반환 타입·필드 오타는 검사됨, luau-lsp
 1.69.0·luau-analyze 판정 일치). 옛 `@metatable` 표기는 소스 문법이
@@ -710,7 +710,7 @@ A/B 실측). 실사용은 `quad-types`의 `TagConstructor`/`AttributeConstructor
 전부 놓친다(위 "잔여 구멍"이 인자만이 아니라 제네릭 결과까지 번진다). 함수∩테이블 교집합 +
 모듈 쪽 이중 캐스트로 한때 우회했으나, **`Override`를 문자열 싱글톤으로 바꾸자 `Tween`에
 필드가 없어져 순수 제네릭 함수가 됐다**(`H-343`) — 규칙: **콜러블 테이블의 `__call`은
-비제네릭으로만 두고(Tag/Attribute/Modifier), 제네릭 생성자엔 필드를 얹지 말 것**(옵션
+비제네릭으로만 두고(Tag/Attr/Modifier), 제네릭 생성자엔 필드를 얹지 말 것**(옵션
 enum은 문자열 싱글톤 `"a" | "b"`로 — Fusion 관례와 같다).
 
 ---
@@ -821,7 +821,7 @@ local v: Xn | MarkA = r3   -- 에러가 나야 하는데 조용히 통과
 
 **quad에 걸린 자리**: (**[2026-09-07 5순회 `H-400`]** 하나 더 — 생성 `D.Modifier.<Class>(...)`의
 인자 유니언 `(<Class>Modifier | { [string]: any })`: 각 팔 단독으론 거부하는 값(형제 클래스
-Modifier·Source·Ref·AttributeKey·Attribute)이 유니언에선 무진단 통과. 런타임 `construct`가
+Modifier·Source·Ref·AttrKey·Attr)이 유니언에선 무진단 통과. 런타임 `construct`가
 태그를 안 보고 병합하므로 형제 Modifier는 drive 시점 리플렉션 에러, 나머지는 construct SURFACE
 에러 — 전부 시끄럽다. `{ [string]: any }` 팔 제거는 원장 §11 갈래) children 유니언엔 `Tag.Apply`·`State.Apply`가 있고, 생성
 `<Class>Modifier.Apply`가 `(self: X, factory: (X) -> U)`로 재귀였다 — 그래서 8.8절의
@@ -832,7 +832,7 @@ factory 인자의 재귀만으로 샌다).
 1. `Apply: <U>(self: any, factory: (any) -> U) -> U` — 재귀 포기. 주석 붙인
    팩토리는 그대로 타입드, 무주석은 `any`(현행에서도 무주석은 에러였다).
 2. **생성기 게이트**: setter 이름이 children 유니언 멤버의 함수 필드(defs의
-   `Instance`/`Object` 메소드, quad-types의 `State`/`StateData`/`Tag`/`Attribute`/
+   `Instance`/`Object` 메소드, quad-types의 `State`/`StateData`/`Tag`/`Attr`/
    **`Slot`**의 **함수 필드**(`name: (`/`name: <` — 데이터 필드 `Offset`/`Length`는
    제외, `Offset`은 UIGradient의 실제 setter), `Callback`)와 겹치면 `SystemExit` —
    구멍이 조용히 다시 열리지 않게. **[2026-09-07 기준]** 충돌 0. **[2026-09-07 0순회
@@ -924,9 +924,9 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 
 ## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
-**⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker
+**⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attr, Observer, EffectHandle 들도 전부 사실 marker
 구조로 가도 될것 같아"*, `research/source-layout-plan.md` 10-2]** 마커 가족이 T 없는 값 타입으로도 넓어졌다 —
-`TagMarker`/`AttributeMarker`/`ObserverMarker`/`EffectHandleMarker`(`None`은 처음부터 마커, `H-300`). 규칙은
+`TagMarker`/`AttrMarker`/`ObserverMarker`/`EffectHandleMarker`(`None`은 처음부터 마커, `H-300`). 규칙은
 같다: 입력 자리(`NewChild`의 직접 팔과 `StateMarker<…>` 안의 팔, Tag `names` 자리의 `TagNames`, `Tag.Merged`)는
 마커, 출력·`self`는 전체형, 런타임 값은 `Impl.__quadX = true`로 필드를 실제로 갖는다(`__index`, 무비용). 이득:
 메소드가 든 전체형이 유니언에 앉지 않으니 8.8/8.9의 함수 필드 게이트가 닿을 멤버가 줄고 검사 예산도 준다
@@ -939,7 +939,7 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 승인한 것은 **방향**(입력 자리 = 마커 + T)과 **순수 팬텀 허용**이고, 별칭 이름(`SlotItem`·`FieldOut`)·`NewChild` 팔 모양·
 `LuauSolverConstraintLimit` 제거는 **메인 제안**이다 — 아래 "[2026-09-07 마커 — 사용자 결정]" 배너들도 같은 구분으로 읽을 것. **규칙**: 값을 *받는*
 자리(children 유니언 `NewChild`·`<Class>Elem`, 생성 D 슬롯 `PVn`·이벤트 슬롯, Modifier setter `FieldV<T>`,
-Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `AttributeSugar`, `Animate` 옵션,
+Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `AttrSugar`, `Animate` 옵션,
 `Dispatch.setLength`)는 마커 `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }` /
 `SlotMarker<T>`를 요구하고, 값을 *돌려주는* 자리·`self`·`Peek` 반환·변환 함수의 `old`(`FieldOut<T>`)·
 Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`Slot<T>` 자신에도 들어 있어(런타임

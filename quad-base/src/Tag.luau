@@ -9,7 +9,7 @@
 	(user decision 2026-09-07, `research/source-layout-plan.md` 3절 (b) —
 	*"Tag() 로 초기 부터 잡는게 유리"*; this reverses `H-389`'s strings-only
 	constructor and `H-380`'s "a Tag is not a list" rejection — the same
-	`flattenInto` door now takes all three, like `Attribute(store, attr,
+	`flattenInto` door now takes all three, like `Attr(store, attr,
 	{ plain })` always did):
 	  Tag(...names) -> tag                 -- vararg constructor; Tag() is valid
 	  tag:Added(names) -> Tag              -- clone + add name(s)
@@ -47,7 +47,7 @@ TagImpl.__index = TagImpl
 -- `TagMarker` (quad-types) — the type promises the marker, so the value carries
 -- it (`H-300`); read through `__index`, zero per-instance slots. Identity is
 -- still the brand (`isTag`) — this field is the input-position type's evidence
--- (user decision 2026-09-07: Tag/Attribute/Observer/EffectHandle go marker
+-- (user decision 2026-09-07: Tag/Attr/Observer/EffectHandle go marker
 -- like State/Slot, typing-limits 8.11).
 TagImpl.__quadTag = true
 
@@ -91,7 +91,7 @@ local function flattenInto(target: { [string]: true }, v: any)
 		if getmetatable(v) ~= nil or Brand.isPlainBranded(v) then
 			Err.errorBeforeNearest(
 				if Brand.isPlainBranded(v)
-					then "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttributeKey/Mapper descriptor)"
+					then "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)"
 					else "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
 				SURFACE
 			)
@@ -169,7 +169,7 @@ local Tag = setmetatable({}, {
 		-- goes through the one door, so `Tag(otherTag, "x", { "y", "z" })` works
 		local names: { [string]: true } = {}
 		-- visit every vararg slot (select, not `{...}`+ipairs — a nil hole would
-		-- silently drop everything after it; Attribute's __call does the same,
+		-- silently drop everything after it; Attr's __call does the same,
 		-- 통합 리뷰 발견). A nil slot is a validation error like any non-name.
 		for i = 1, select("#", ...) do
 			flattenInto(names, (select(i, ...)))

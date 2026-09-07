@@ -1,27 +1,28 @@
 --[[
-	AttributeKey — the single-key attribute primitive + its name-claim handler
-	(M10, spike round16). Canonical: `.claude/base/attribute-plan.md` ("단일
+	AttrKey — the single-key attribute primitive + its name-claim handler
+	(M10, spike round16; 옛 `Attribute/Key.luau` — the 2026-09-08 `Attr` rename,
+	see init.luau's header). Canonical: `.claude/base/attribute-plan.md` ("단일
 	키", "동등성", "메커니즘, `None`, 반환 클로저", "이름 소유권"), as-is.
 
-	  AttributeKey(name) -> key            -- per-name weak cache: same name =
+	  AttrKey(name) -> key            -- per-name weak cache: same name =
 	                                       -- same object while anything holds it
 
-	[2026-09-03 사용자 확정] AttributeKey is the UNTYPED primitive (`[AttributeKey
+	[2026-09-03 사용자 확정] AttrKey is the UNTYPED primitive (`[AttrKey
 	"x"] = v` — the value's type is not checked, "타입이 몰라도 되는 존재");
-	the typed scalar family `StringAttribute(name, value)` etc. is array-part
-	SUGAR over the group (`Attribute({ [name] = value })`) and lives in
-	Attribute/init.luau — the old aliases (`StringAttribute = AttributeKey`) are
-	gone. Use AttributeKey directly for value types the family does not cover
-	(engine-specific: Color3, UDim2, Instance …); the backend's setAttribute is
+	the typed scalar family `StringAttr(name, value)` etc. is array-part
+	SUGAR over the group (`Attr({ [name] = value })`) and lives in
+	Attr/init.luau — the old aliases (`StringAttr = AttrKey`) are
+	gone. Use AttrKey directly for value types the family does not cover
+	(engine-specific: Color3, UDim2, Instance …); the backend's setAttr is
 	what validates the value then.
 
-	Handler ("AttributeKeyFallbackHandler", FALLBACK priority, registered by
-	InitAttributeKey — `H-278` idiom, see Tag.luau header): matches on the KEY
-	being an AttributeKey object (hash part; v may be anything including nil).
-	process = unconditional `setAttribute(inst, key.Name, v)` + the name claim
+	Handler ("AttrKeyFallbackHandler", FALLBACK priority, registered by
+	InitAttrKey — `H-278` idiom, see Tag.luau header): matches on the KEY
+	being an AttrKey object (hash part; v may be anything including nil).
+	process = unconditional `setAttr(inst, key.Name, v)` + the name claim
 	(`nameClaims`: (inst, name) -> owning key object; a different key claiming
 	the same name is an immediate error). The retractor NEVER calls
-	setAttribute — it only returns the claim, and only when this key still
+	setAttr — it only returns the claim, and only when this key still
 	owns it ("내가 실제로 물러날 때만").
 
 	`_newUncachedKey(name)` is the group delegation's private key factory
@@ -37,12 +38,12 @@ local Err = require("../ErrorNamespace")
 local NotInstalled = require("../NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
-local AttributeKeyBrand = Brand.AttributeKeyBrand
-local isAttributeKey = Brand.isAttributeKey
+local AttrKeyBrand = Brand.AttrKeyBrand
+local isAttrKey = Brand.isAttrKey
 
 local function newKeyObject(name: string): any
 	local key = table.freeze({ Name = name })
-	AttributeKeyBrand:register(key)
+	AttrKeyBrand:register(key)
 	return key
 end
 
@@ -51,9 +52,9 @@ end
 -- object nobody can compare against, which is fine — attribute-plan "동등성").
 local cache = setmetatable({} :: { [string]: any }, { __mode = "v" })
 
-local function AttributeKey(name: string): any
+local function AttrKey(name: string): any
 	if type(name) ~= "string" or name == "" then -- `H-417`: an empty name is not an attribute name either
-		Err.errorBeforeNearest("AttributeKey: name must be a non-empty string", SURFACE)
+		Err.errorBeforeNearest("AttrKey: name must be a non-empty string", SURFACE)
 	end
 	local cached = cache[name]
 	if cached ~= nil then
@@ -64,11 +65,11 @@ local function AttributeKey(name: string): any
 	return key
 end
 -- `H-238`: public constructor tagged (the scalar sugar family lives in
--- Attribute/init.luau and tags itself there)
-Err.setFuncLevel(AttributeKey, SURFACE)
+-- Attr/init.luau and tags itself there)
+Err.setFuncLevel(AttrKey, SURFACE)
 
 local module = {
-	AttributeKey = AttributeKey,
+	AttrKey = AttrKey,
 	_newUncachedKey = newKeyObject, -- group delegation only (private)
 }
 
@@ -80,9 +81,9 @@ end
 local InitDispatch = require("../Dispatch")
 
 function module.Init(quad: any)
-	quad.AttributeKey = AttributeKey
-	if quad.setAttribute == nil then
-		quad.setAttribute = notInstalled("setAttribute")
+	quad.AttrKey = AttrKey
+	if quad.setAttr == nil then
+		quad.setAttr = notInstalled("setAttr")
 	end
 
 	quad:RunInit(InitDispatch)
@@ -94,11 +95,11 @@ function module.Init(quad: any)
 	local nameClaims = Relate()
 
 	dispatch.addHandler({
-		name = "AttributeKeyFallbackHandler",
+		name = "AttrKeyFallbackHandler",
 		isHandlable = function(_inst: any, k: any, _v: any): boolean
 			-- KEY-matched: hash-part nil belongs to the key's own handler
 			-- (None.luau header) — v is deliberately not inspected
-			return isAttributeKey(k)
+			return isAttrKey(k)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
@@ -111,7 +112,7 @@ function module.Init(quad: any)
 			end
 			nameClaims:SetStrong(inst, k.Name, k)
 
-			quad.setAttribute(inst, k.Name, v) -- unconditional, nil included (late read `H-174`)
+			quad.setAttr(inst, k.Name, v) -- unconditional, nil included (late read `H-174`)
 
 			return function(_nextValue: any?, _retracting: boolean)
 				-- no engine side effect — claim return only, and only while we

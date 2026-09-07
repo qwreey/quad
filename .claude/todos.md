@@ -39,7 +39,7 @@
      회신 3차 묶음 리뷰(round3 §8, `H-445`~`H-452` 반영 — `H-445`는 Q15 검사가 차단기 창 안에서 던져 owner를 동결시키던 회귀).
      **[2026-09-07 밤] 구조 재편 회신 반영 완료**(`session/2026-09-07-04-source-layout-reply.md`, 결정은
      `research/source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
-     통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attribute/`·
+     통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attr/`·
      `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
      **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅)·Q27(프로바이더 브랜드 프로브 등록) — round3 §4(Q28·Q29는 닫힘 — Q28 UB, Q29 `Slot/types.luau`); 구조
      재편 8절 `Attr` 축약(미답)·10-4 D 정적 굽기(§0 타입 함수 예외 여부); flatten 슈거 일곱.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).

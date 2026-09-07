@@ -196,7 +196,7 @@ export type function CheckVersion(actual: type, pattern: type): type
   'Module.CheckVersion'`으로 막힌다. 그리고 명시적 제네릭 인스턴스화가
   **2개 이상**이면 단일 꺾쇠(`Foo<A, B>`)가 비교 연산자로 오파싱되니
   반드시 이중 꺾쇠(`Foo<<A, B>>`)를 써야 한다(`store:Of<<T>>(name)`과
-  같은 관례 — 옛 예시였던 `AttributeKey<<T>>`는 2026-09-03에 제네릭을 벗었다).
+  같은 관례 — 옛 예시였던 `AttrKey<<T>>`는 2026-09-03에 제네릭을 벗었다).
   **⭐ [2026-08-25 확장, 7라운드 `H-73`] 이 관례는 타입 자리 전용이
   아니다** — Luau의 generic type instantiation은 **값 호출부**에서도,
   **콜론 메소드**에서도 동작해 `T`를 실제로 묶는다

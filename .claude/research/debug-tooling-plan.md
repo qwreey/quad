@@ -176,7 +176,7 @@ Store/파이프라인/handler에서 왔는지, 코드 몇 번째 줄에서 유�
 자체는 채택하더라도 어디까지나 보조 기능으로만 남음(백로그, 아래 "열린
 질문" 참고).
 
-### 5. 데이터 채널 — Attribute(스냅샷) + BindableEvent(스트림), **BindableEvent 크로스 컨텍스트 확인 완료**
+### 5. 데이터 채널 — Attr(스냅샷) + BindableEvent(스트림), **BindableEvent 크로스 컨텍스트 확인 완료**
 
 **상태(2026-08-06): 사용자가 Studio에서 실측 검증 완료 — BindableEvent가
 Plugin↔Play 중인 클라이언트(LocalScript) 경계를 실제로 넘는다.**
@@ -222,7 +222,7 @@ trace 이벤트 페이로드는 처음부터 함수/클로저 없이 **순수 �
 단, 1차 스코프(클라이언트 한정, 원시 값 위주 trace 이벤트)에서는 이번
 검증만으로 채널 자체의 실현 가능성은 확정됐다고 봐도 됨.
 
-- **Attribute**: 인스턴스 생성 시점 1회성 정보(생성 위치, "quad가 관리하는
+- **Attr**: 인스턴스 생성 시점 1회성 정보(생성 위치, "quad가 관리하는
   인스턴스인가" 마커)에 적합 — DataModel 자체의 일부라 플러그인과 게임이
   별도 Luau VM이어도 문제없이 공유됨(Selection 서비스로 바로 읽힘). 단점:
   문자열 크기 제약, 그리고 배포된 게임에 실수로 남으면 유저가 F9 콘솔이나
@@ -230,11 +230,11 @@ trace 이벤트 페이로드는 처음부터 함수/클로저 없이 **순수 �
   가드가 필수(quad-debug require 자체가 옵트인이라는 1차 방어선 + IsStudio가
   2차 방어선, 이중 게이팅).
 - **Value 오브젝트(StringValue/ObjectValue 등)는 기각 — 사용자 확정**:
-  Attribute의 대안으로 자식 Instance로 값을 담는 Value 오브젝트도 검토했으나,
+  Attr의 대안으로 자식 Instance로 값을 담는 Value 오브젝트도 검토했으나,
   `:GetChildren()`을 호출하면 그대로 드러나 트리를 오염시킴(quad가 실제로
   마운트한 자식과 섞여버려 `base/slot-plan.md`의 자식 재조정 로직이나
-  사용자 코드의 children 순회를 방해할 위험) — Attribute는 자식이 아니라
-  메타데이터라 이 문제 자체가 없음. **스냅샷성 데이터는 Attribute로 확정,
+  사용자 코드의 children 순회를 방해할 위험) — Attr는 자식이 아니라
+  메타데이터라 이 문제 자체가 없음. **스냅샷성 데이터는 Attr로 확정,
   Value 오브젝트는 후보에서 제외.**
 - **BindableEvent+BindableFunction(크로스 컨텍스트 확인 완료, 위치는
   재검토)**: "지금 이 순간 일어난 일" 스트림은 BindableEvent, 특정
@@ -508,7 +508,7 @@ Tween mock 등 동적 동작 포함")와 목적이 다름:
 **세부 API 이름 (후순위, 구현 착수 시점에 자연히 정리)**
 
 - `describe`(가칭) 5번째 핸들러 훅의 정확한 시그니처/이름.
-- Attribute 이름 네임스페이싱(`__quadSource`류)과 노출 정보 범위(스크립트
+- Attr 이름 네임스페이싱(`__quadSource`류)과 노출 정보 범위(스크립트
   전체 경로를 노출해도 되는지, 파일명만 남길지 등 보안/정보노출 고려).
 
 **`Claim` debug 검사의 범위 — [2026-08-28 `base/claim-plan.md` §7-4에서 이관]**

@@ -59,9 +59,9 @@ export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 -- 값 모양은 `base/tag-plan.md` "값 모양" / `base/attribute-plan.md` "채택안"
 -- 절이 정본. 생성자들은 콜러블 네임스페이스(호출 = 생성, 필드 = 합성)라
 -- `setmetatable<A, B>` 표기로 선언한다(`H10-3`/`H10-4` (d) — 교집합은
--- 무거주라 값 캐스트·제네릭 흐름이 깨진다, typing-limits 8.6절). `AttributeKey`는
+-- 무거주라 값 캐스트·제네릭 흐름이 깨진다, typing-limits 8.6절). `AttrKey`는
 -- [2026-09-03 사용자 확정] 제네릭 자체가 폐기된 무타입 프리미티브다(값 타입은
--- 배열부 슈가 `AttributeSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
+-- 배열부 슈가 `AttrSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
 -- 파라미터 값 좁힘 미실측" 항목은 닫혔다(typing-limits §3).
 -- [2026-09-07 사용자 결정 — `research/source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
 -- `TagNames` = 문자열 | 다른 Tag(마커 — 입력 자리, 8.11) | 그것들의 plain 리스트(중첩 허용).
@@ -71,7 +71,7 @@ export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 export type TagMarker = { read __quadTag: true }
 export type TagNames = string | { read [number]: TagNames } | TagMarker
 
-export type AttributeMarker = { read __quadAttribute: true }
+export type AttrMarker = { read __quadAttr: true }
 
 export type ObserverMarker = { read __quadObserver: true }
 
@@ -211,7 +211,7 @@ export type Blocker = {
 	__apply: (self: any, state: any) -> any,
 }
 
--- ── Tag / Attribute (M10, round16 spike) ─────────────────────────────
+-- ── Tag / Attr (M10, round16 spike) ─────────────────────────────
 export type Tag = {
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
 	Added: (self: Tag, names: TagNames) -> Tag,
@@ -230,22 +230,22 @@ export type TagConstructor = setmetatable<{ Merged: (...TagMarker) -> Tag }, { _
 -- 것이고 웹 백엔드는 다른 이름·모양(`Transition`)을 가질 것이라 공개 표면을 공유할 이득이
 -- 없다(`base/tween-plan.md` "패키지 경계" 절). quad-types엔 Tween이라는 이름이 없다.
 
-export type Attribute = {
-	read __quadAttribute: true, -- 런타임 `AttrImpl.__quadAttribute = true`(H-300; 입력 자리는 `AttributeMarker`)
-	NameMap: (self: Attribute) -> { [string]: any },
+export type Attr = {
+	read __quadAttr: true, -- 런타임 `AttrImpl.__quadAttr = true`(H-300; 입력 자리는 `AttrMarker`)
+	NameMap: (self: Attr) -> { [string]: any },
 }
-export type AttributeConstructor = setmetatable<{
-	Merged: (...Attribute) -> Attribute,
-	Overridden: (...Attribute) -> Attribute,
-}, { __call: (self: any, ...any) -> Attribute }>
+export type AttrConstructor = setmetatable<{
+	Merged: (...Attr) -> Attr,
+	Overridden: (...Attr) -> Attr,
+}, { __call: (self: any, ...any) -> Attr }>
 
-export type AttributeKeyObject = { Name: string }
--- [2026-09-03 사용자 확정] AttributeKey는 무타입 프리미티브(값 타입을 모른다 —
--- 패밀리가 못 덮는 엔진 고유 타입은 이걸로, 검증은 백엔드 setAttribute 몫)
-export type AttributeKeyConstructor = (name: string) -> AttributeKeyObject
--- 타입드 스칼라 슈가 — 배열부 값(단일 항목 그룹 `Attribute({ [name] = value })`).
+export type AttrKeyObject = { Name: string }
+-- [2026-09-03 사용자 확정] AttrKey는 무타입 프리미티브(값 타입을 모른다 —
+-- 패밀리가 못 덮는 엔진 고유 타입은 이걸로, 검증은 백엔드 setAttr 몫)
+export type AttrKeyConstructor = (name: string) -> AttrKeyObject
+-- 타입드 스칼라 슈가 — 배열부 값(단일 항목 그룹 `Attr({ [name] = value })`).
 -- 값은 T | State<T> | None(삭제); nil은 거부(런타임 검증). State 자리는 마커(입력 자리 규칙, `StateMarker`)
-export type AttributeSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attribute
+export type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 
 -- ── Modifier (M7 단위 ①·④) — `base/modifier-plan.md` ───────────────────
 -- 런타임 표면만(예약 메소드 넷). 클래스별 필드 setter 타입(`<Class>Modifier`)은
@@ -506,7 +506,7 @@ export type Quad = {
 	dispose: (value: any) -> (),
 	isSlot: (x: any) -> boolean,
 
-	-- 브랜드 술어(`.claude/base/brand-plan.md`). `isTag`/`isAttribute*`는
+	-- 브랜드 술어(`.claude/base/brand-plan.md`). `isTag`/`isAttr*`는
 	-- M10 편입(2026-09-03)으로 아래 합류, `isSlot`은 위 Slot 표면과 함께 — quad-base
 	-- 브랜드 전원 등재. `isTween`은 **[2026-09-07]** Tween과 함께 quad-roblox로(프로바이더
 	-- 확장 `RobloxExtension`이 싣는다 — 백엔드 브랜드는 백엔드 표면).
@@ -549,29 +549,29 @@ export type Quad = {
 	nativeClaim: (inst: any) -> (),
 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
 	nativeFindChild: (inst: any, key: any) -> any,
-	-- base 소유 핸들러(Tag/Attribute)가 부르는 주입 op(`dispatch-core-plan.md`
+	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
 	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
 	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox
 	-- `EngineOps`가 CollectionService/`SetAttribute`로 채움.
 	addTag: (inst: any, names: { string }) -> (),
 	removeTag: (inst: any, names: { string }) -> (),
-	setAttribute: (inst: any, name: string, v: any) -> (),
+	setAttr: (inst: any, name: string, v: any) -> (),
 
-	-- M10 (round16 spike) — Tag/Attribute 표면(`H-25`의 "마일스톤마다 갱신" 몫)
+	-- M10 (round16 spike) — Tag/Attr 표면(`H-25`의 "마일스톤마다 갱신" 몫)
 	isTag: (x: any) -> boolean,
-	isAttribute: (x: any) -> boolean,
-	isAttributeKey: (x: any) -> boolean,
+	isAttr: (x: any) -> boolean,
+	isAttrKey: (x: any) -> boolean,
 	-- 콜러블 네임스페이스 둘은 `setmetatable<A,B>` 표기(`H10-3`/`H10-4`
 	-- (d), 2026-09-02 사용자 확정 — fork의 잠정 `any`는 교집합 표기가
 	-- 제네릭 추론을 오염시키던 시절의 것. 실측·잔여 구멍(__call 인자
 	-- 무검사)은 typing-limits 8.6절이 소스)
 	Tag: TagConstructor,
 	Modifier: ModifierConstructor, -- M7 단위 ①
-	Attribute: AttributeConstructor,
-	AttributeKey: AttributeKeyConstructor,
-	StringAttribute: AttributeSugar<string>,
-	NumberAttribute: AttributeSugar<number>,
-	BooleanAttribute: AttributeSugar<boolean>,
+	Attr: AttrConstructor,
+	AttrKey: AttrKeyConstructor,
+	StringAttr: AttrSugar<string>,
+	NumberAttr: AttrSugar<number>,
+	BooleanAttr: AttrSugar<boolean>,
 }
 
 --[[

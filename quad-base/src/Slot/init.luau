@@ -389,7 +389,7 @@ local function Init(module: any)
 	-- blame the user's line, not this file. All are table-stored (module field
 	-- / metatable methods) — the spike-27 inlining rule holds. (round15
 	-- `H6-10`: the fork tagged only `dispose`; the same gap `H10-7` closed
-	-- for Tag/Attribute.)
+	-- for Tag/Attr.)
 	for _, fn in
 		{
 			Slot, dispose,

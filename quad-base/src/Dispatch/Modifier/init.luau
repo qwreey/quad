@@ -93,7 +93,7 @@ local isState = Brand.isState
 local isRef = Brand.isRef -- covers PreRef/PostRef (Brand.luau predicate)
 local isObserver = Brand.isObserver
 local isEffect = Brand.isEffect
-local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescriptor carry no metatable
+local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor carry no metatable
 
 -- private field store key — a unique table identity, can never collide with a
 -- user field name (spike 17 / spike 11 idiom)
@@ -256,7 +256,7 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- Q11 (a) (사용자 결정 2026-09-07): the generic setter mirrors `construct`'s key rule
 		-- (`H-310` — the two creation paths must not drift): only string keys become setters;
 		-- `construct` in turn refuses the keys this path can never make into setters (`H-448`).
-		-- Non-string keys (AttributeKey/MapperDescriptor) go in the props table directly.
+		-- Non-string keys (AttrKey/MapperDescriptor) go in the props table directly.
 		Err.errorBeforeNearest("Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
 	end
 	return function(selfArg: any, arg: any): any
@@ -291,9 +291,9 @@ end
 --   - a "field table" is a metatable-less plain table — any other quad
 --     object (Source/State/Ref/None …) is rejected instead of having its
 --     internals merged as fields (review finding); 3순회 `H-377`: brands are
---     not metatables, so the plain-branded values (AttributeKey — its `Name`
+--     not metatables, so the plain-branded values (AttrKey — its `Name`
 --     merged as a field and silently RENAMED the instance; MapperDescriptor)
---     are excluded by `Brand.isPlainBranded` (shared with Attribute/Tag);
+--     are excluded by `Brand.isPlainBranded` (shared with Attr/Tag);
 --   - keys must be field names (strings);
 --   - values take the setter's handler-layer check, and a FUNCTION value is
 --     rejected: the setter reads a function as a transform (4절), and
@@ -302,7 +302,7 @@ end
 local function isPlainFieldTable(arg: any): boolean
 	-- 4순회 `H-390`: `not isState / not isHandlerLayerValue` were dead after the
 	-- metatable check (every one of those values carries a metatable) — the same
-	-- shape as Attribute's gate now
+	-- shape as Attr's gate now
 	return type(arg) == "table" and getmetatable(arg) == nil and not isPlainBranded(arg)
 end
 

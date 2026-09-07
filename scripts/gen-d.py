@@ -477,11 +477,11 @@ def emit():
 
     # ── 생성기 게이트(단위 ④) — 조용한 구멍 금지 ────────────────────────
     # (1) `As` + 대문자 프로퍼티는 런타임 캐스트 접두와 충돌 → 생성 실패.
-    # (2) children 유니언 멤버(Instance·State·Tag·Attribute·OnChange 디스크립터)의
+    # (2) children 유니언 멤버(Instance·State·Tag·Attr·OnChange 디스크립터)의
     #     함수 필드와 같은 이름의 setter는 typing-limits 8.9절의 솔버 결함(재귀
     #     필드 + 같은 이름 함수 필드 → 유니언 검사가 조용히 통과)을 다시 연다 →
     #     생성 실패. 이름 집합은 defs(Instance/Object의 function 멤버)와 quad-types
-    #     소스(State/StateData/Tag/Attribute 블록의 키)에서 읽는다.
+    #     소스(State/StateData/Tag/Attr 블록의 키)에서 읽는다.
     defs_text = DEFS.read_text()
     # OnChangeDescriptor's function fields (`Callback`) — read from quad-roblox `types.luau`, not
     # hand-copied (Q3 ⑦); `type_body`/`function_fields` are defined below, so this is resolved there
@@ -504,7 +504,7 @@ def emit():
 
     def type_body(tname, text=qt, where="quad-types"):
         # `export type X = ... {` 뒤 중괄호 균형으로 본문을 끊는다 — 한 줄 선언
-        # (`Attribute = { NameMap: … }`)도 다음 선언으로 넘치지 않게(리뷰 반영)
+        # (`Attr = { NameMap: … }`)도 다음 선언으로 넘치지 않게(리뷰 반영)
         m = re.search(rf"^export type {re.escape(tname)} = ", text, re.M)
         if not m:
             raise SystemExit(f"gate: could not find `export type {tname}` in {where}")
@@ -561,7 +561,7 @@ def emit():
             # shrink of the gate (file-head rule: no silent truncation)
             raise SystemExit(f"gate: depth-0 scan ended at depth {depth} — cannot harvest function fields")
         return names
-    for tname in ("StateData<T>", "State<T>", "Tag", "Attribute", "Slot<T>", "Observer", "EffectHandle"):
+    for tname in ("StateData<T>", "State<T>", "Tag", "Attr", "Slot<T>", "Observer", "EffectHandle"):
         union_member_functions |= function_fields(type_body(tname))
     # `<Class>Elem` = NewChild | <Class>OnChange | … — the descriptor's function fields join too
     union_member_functions |= function_fields(type_body("OnChangeDescriptor", rt, "quad-roblox types.luau"))

@@ -1328,7 +1328,7 @@ got typeof k 처럼 알려줄 필요는 있는듯"*. 근거는 **메시지에 `k
 것인지. 같은 규칙이 `base/ref-plan.md`의 `PreRef`/`PostRef` 동적 경로
 가드와 `base/effect-plan.md`의 `Effect` 가드에도 그대로 적용된다.
 `HANDLER_PRIORITY_FALLBACK`인 이유는 이게 무조건 막는
-하드 블록이 아니라 `Tag`/`Attribute`/`PreRef`와 같은 "base가 소유하되
+하드 블록이 아니라 `Tag`/`Attr`/`PreRef`와 같은 "base가 소유하되
 평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
 때문(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는
 엔진 op" 절) —
@@ -1897,7 +1897,7 @@ Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실�
 
 **결정**: `State<T>`는 `Set(T)`/`Get(): T` 때문에 새 솔버에서 **불변**이라 `State<Frame>`이
 `State<Instance>` 자리에, `State<number>`가 `State<number | UDim>` 자리에 못 들어갔다. 값을 *받는*
-자리(children·생성 D 슬롯·Modifier setter·Slot 요소·`AttributeSugar`·`Animate` 옵션)는 이제 읽기 전용
+자리(children·생성 D 슬롯·Modifier setter·Slot 요소·`AttrSugar`·`Animate` 옵션)는 이제 읽기 전용
 팬텀 필드만 든 마커 `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }`를 요구하고,
 `StateData<T>` 자신이 그 두 필드를 가져 실제 State가 폭 서브타이핑으로 든다(공변). 메소드가 필요한
 자리(출력·`self`·`Peek` 반환·변환 함수 `old`)는 전체형 그대로. 사용자 논거(2026-09-07): *"'입력받는

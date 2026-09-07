@@ -61,7 +61,7 @@ local function Init(module: any)
 	-- fills the four above fills this one; until then, the same loud stub.
 	module.onDestroying = notInstalled("onDestroying")
 	-- `H-373`: the three non-composable engine ops (see header). `if nil` — a
-	-- provider may already be there (same idiom as `Tag.luau`/`Attribute/Key.luau`).
+	-- provider may already be there (same idiom as `Tag.luau`/`Attr/Key.luau`).
 	if module.isInst == nil then
 		module.isInst = notInstalled("isInst")
 	end

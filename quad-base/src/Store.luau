@@ -51,7 +51,7 @@ local function checkKey(name: any, what: string)
 	if type(name) ~= "string" or name == "" then
 		-- `H-201`: nil died at `self[name] =` with an internal frame after already
 		-- allocating a Source; a number silently broke `Names(): { string }`.
-		-- round3 `H-443` (외부 리뷰 G-13): "" rode `Attribute(store)` to `setAttribute("")`
+		-- round3 `H-443` (외부 리뷰 G-13): "" rode `Attr(store)` to `setAttr("")`
 		Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
 	end
 	if RESERVED[name] then
@@ -95,7 +95,7 @@ local function Init(module: any)
 				Err.errorBeforeNearest("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
 			end
 			if Brand.isPlainBranded(defaults) then -- `H-377` gate, fourth door (4순회 `H-390`; own message — 5순회)
-				Err.errorBeforeNearest("Store: defaults must be a plain { name = Source } table (got an AttributeKey/Mapper descriptor)", SURFACE)
+				Err.errorBeforeNearest("Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)", SURFACE)
 			end
 		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)

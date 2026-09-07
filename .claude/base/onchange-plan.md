@@ -125,9 +125,9 @@
 | | 소스 | 값 타입 | 자리 | 패키지 경계 |
 |---|---|---|---|---|
 | 이벤트(`MouseButton1Click = fn`) | `inst[key]`가 이미 Signal | 콜백 — 타입 검증됨(props 필드라 `D` 생성기가 시그니처를 찍음) | 해시부 | 판별은 quad-roblox(`Handlers/Event.luau`), 타입은 `D` 생성기 |
-| `[AttributeKey(name)] = v` | 주입된 `setAttribute` op | 값(제네릭 또는 정적 타입 패밀리) | 해시부 키 | **quad-base**(키+Handler) / 엔진 op만 백엔드 |
+| `[AttrKey(name)] = v` | 주입된 `setAttr` op | 값(제네릭 또는 정적 타입 패밀리) | 해시부 키 | **quad-base**(키+Handler) / 엔진 op만 백엔드 |
 | `Tag(...)` | 주입된 `addTag`/`removeTag` op | 값 객체 | 배열부 | quad-base / 엔진 op만 백엔드 |
 | `OnChange(name, fn)` | `GetPropertyChangedSignal(name)` | 디스크립터 값 — 콜백 타입 검증·추론(생성 `OnChangeFn`) | 배열부 | quad-roblox(`Handlers/OnChange.luau`) |
 
-`AttributeKey`만 해시부 키로 남는다(값 세팅이라 `key = value`가 자연스럽다) —
-그 키의 strict 타이핑 사각은 **[2026-09-03 확정]** `H10-12`/`H10-15`로 닫혔다 — `AttributeKey(name)`는 무타입 프리미티브로 두고 타입은 배열부 슈가(`StringAttribute(name, value)`류)가 진다(`attribute-plan.md` 머리 배너).
+`AttrKey`만 해시부 키로 남는다(값 세팅이라 `key = value`가 자연스럽다) —
+그 키의 strict 타이핑 사각은 **[2026-09-03 확정]** `H10-12`/`H10-15`로 닫혔다 — `AttrKey(name)`는 무타입 프리미티브로 두고 타입은 배열부 슈가(`StringAttr(name, value)`류)가 진다(`attribute-plan.md` 머리 배너).

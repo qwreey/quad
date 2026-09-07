@@ -212,7 +212,7 @@ State<T | Tween<T>>`가 나옴~~ **[2026-09-06 정정]** 실물은 위 배너대
 `Slot`류처럼 dispatch 참가자(`process`를 가진 Handler에 매칭되는 값)가 아니라 `None`/
 `Tag`처럼 순수 raw 데이터 값(별도 `TweenBrand`)이라, Modifier 필드/
 `State<Modifier>`가 막는 "핸들러 계층 값" 규칙(`base/modifier-plan.md`)에
-안 걸림 — 그 문서가 원래 Tween을 Slot/Tag/Attribute와 같은 "dispatch
+안 걸림 — 그 문서가 원래 Tween을 Slot/Tag/Attr와 같은 "dispatch
 참가자" 그룹으로 분류해뒀던 건 부정확했던 것으로 이번에 정정(아래
 "패키지 경계" 절 참고).
 

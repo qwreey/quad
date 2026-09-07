@@ -84,7 +84,7 @@
    게이트는 중간에 뭐가 끼든 매 변경마다 신호를 받음. 대신 그 과정에서
    **`base/source-state-plan.md`의 무효화 dedup 문장이 확정된 `Observer`
    계약과 모순된다는 게 드러나** base 정정 항목이 생김(Q10).
-3. **타이머는 엔진 종속이지만 부기 알고리즘은 아님** — `Tag`/`Attribute`가
+3. **타이머는 엔진 종속이지만 부기 알고리즘은 아님** — `Tag`/`Attr`가
    14차 세션에 밟은 길(알고리즘은 quad-base, 엔진에 손대는 마지막 한 줄만
    주입)을 그대로 따라 **주입 op 2개**(`setTimeout`/`clearTimeout`)만
    추가. `Tween`처럼 통째로 quad-roblox에 두는 건 근거가 다름.
@@ -585,7 +585,7 @@ h.Value:Flush()
 > 일부가 아님** — 순수 `luau` CLI엔 `task.delay`/`task.wait`가 아예 없고,
 > 애초에 이벤트 루프 자체가 없음. 즉 **quad-base는 "동작하는 기본 스케줄러"를
 > 제공할 수가 없음**(제공할 원시 재료가 없음). 그래서 base가 갖는 건
-> 알고리즘 + 인터페이스이고, 미배선 상태에선 `addTag`/`setAttribute` 계열
+> 알고리즘 + 인터페이스이고, 미배선 상태에선 `addTag`/`setAttr` 계열
 > 엔진 op과 같은 관례대로
 > **명확한 에러를 내는 스텁**이어야 함. `Throttle` 역시 trailing 때문에
 > "나중에 처리해준다"가 반드시 필요하므로 **디바운스와 똑같이 이 배선에
@@ -599,7 +599,7 @@ per-instance Tween 객체)에 의존하기 때문. Debounce/Throttle이 엔진�
 필요로 하는 건 **시계 하나**뿐이고, 나머지(pending 플래그, 타이머 리셋,
 leading/trailing 판정, MaxTime 부기)는 전부 순수 로직임.
 
-이건 2026-08-13 열네 번째 세션이 `Tag`/`Attribute`에서 내린 판단과 정확히
+이건 2026-08-13 열네 번째 세션이 `Tag`/`Attr`에서 내린 판단과 정확히
 같은 상황 — 부기 알고리즘을 백엔드마다 복제하지 않기 위해 알고리즘은
 quad-base로 옮기고 엔진에 실제로 손대는 한 줄만 주입받게 했음
 (`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op"
@@ -609,7 +609,7 @@ quad-base로 옮기고 엔진에 실제로 손대는 한 줄만 주입받게 했
 
 `base/bind-system-plan.md`의 "base 유틸은 인터페이스, 실제 구현은 백엔드
 팩토리가 주입" 절이 정한 경로에 2개 추가. **핸들러 op 3개
-(`addTag`/`removeTag`/`setAttribute`)가 아니라 `bindLifetime`/`canExecute`와
+(`addTag`/`removeTag`/`setAttr`)가 아니라 `bindLifetime`/`canExecute`와
 같은 "base 범용 유틸" 그룹**임 — 특정 핸들러가 아니라 아무나 쓰는 배관.
 
 ```lua
@@ -626,7 +626,7 @@ clearTimeout(handle: Timeout): ()
   특정 백엔드의 어휘를 그 층에 새기면 그 엔진만 특별대우하는 셈이 됨.
   그래서 **가장 대중적이고 엔진 중립적인 JS 어휘**를 가져옴 — 어느
   백엔드 작성자가 봐도 즉시 알아보는 이름. (14차 세션이 엔진 op를
-  `addTag`/`setAttribute`로 정할 때 Roblox `CollectionService`와 웹
+  `addTag`/`setAttr`로 정할 때 Roblox `CollectionService`와 웹
   `className`/`data-*` 양쪽에 걸치는 이름을 고른 것과 같은 결.)
 - ⚠️ **그 대가로 생기는 구현 함정**: Roblox `task.delay(duration, fn, ...)`는
   **반대로 시간이 먼저**라, 배선할 때 인자가 뒤집힘. 래퍼에서 한 번
@@ -636,7 +636,7 @@ clearTimeout(handle: Timeout): ()
   인자를 받지만, 게이트의 콜백은 게이트당 하나씩 만들어져 재사용되는
   안정된 클로저(`onWindowEnd`)라 호출마다 새로 만들 필요가 없음. 즉
   varargs로 아낄 할당이 애초에 없어서 표면만 넓히는 셈.
-- **미주입 백엔드에서는 base 스텁이 명확한 에러** — `addTag`/`setAttribute`
+- **미주입 백엔드에서는 base 스텁이 명확한 에러** — `addTag`/`setAttr`
   계열 엔진 op과 동일한 관례(**[2026-08-22]** 여기 "엔진 op 3개"라고 세어
   놨었는데, 정작 이 문서가 추가하는 `setTimeout`/`clearTimeout` 자신이 그
   개수를 늘리는 쪽이라 자기모순이었다. 주입 op 전체 목록의 소스는

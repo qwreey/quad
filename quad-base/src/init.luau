@@ -35,8 +35,8 @@ local InitClaim = require("@self/Claim")
 local SlotInit = require("@self/Slot") -- M6(탐사 구현 편입)
 local None = require("@self/Dispatch/None").None
 local TagModule = require("@self/Tag")
-local AttributeKeyModule = require("@self/Attribute/Key")
-local AttributeModule = require("@self/Attribute")
+local AttrKeyModule = require("@self/Attr/Key")
+local AttrModule = require("@self/Attr")
 local ModifierModule = require("@self/Dispatch/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
 
 type Quad = QuadTypes.Quad
@@ -80,8 +80,8 @@ local function New(): Quad
 		isMapperDescriptor = Brand.isMapperDescriptor, -- M5 단위 ④(Claim)
 		isSlot = Brand.isSlot, -- `H-403` (was installed by Slot.Init — still is, same function)
 		isTag = Brand.isTag, -- M10 (round16)
-		isAttribute = Brand.isAttribute,
-		isAttributeKey = Brand.isAttributeKey,
+		isAttr = Brand.isAttr,
+		isAttrKey = Brand.isAttrKey,
 		-- M10 값 네임스페이스 — 리터럴 모양이 곧 `Quad` 타입이라 여기 직접
 		-- 싣는다(핸들러·스텁 설치는 아래 RunInit들이 함).
 		-- [H10-3/H10-4 (d), 2026-09-02 사용자 확정] 콜러블 테이블은
@@ -89,13 +89,13 @@ local function New(): Quad
 		-- fork의 잠정 `:: any` 캐스트는 통합에서 제거(typing-limits 8.6절)
 		Tag = TagModule.Tag,
 		Modifier = ModifierModule.Modifier,
-		Attribute = AttributeModule.Attribute,
-		AttributeKey = AttributeKeyModule.AttributeKey,
+		Attr = AttrModule.Attr,
+		AttrKey = AttrKeyModule.AttrKey,
 		-- [2026-09-03 사용자 확정] 스칼라 패밀리는 그룹 위의 타입드 슈가
-		-- (`Attribute({ [name] = value })`) — AttributeKey는 무타입 프리미티브
-		StringAttribute = AttributeModule.StringAttribute,
-		NumberAttribute = AttributeModule.NumberAttribute,
-		BooleanAttribute = AttributeModule.BooleanAttribute,
+		-- (`Attr({ [name] = value })`) — AttrKey는 무타입 프리미티브
+		StringAttr = AttrModule.StringAttr,
+		NumberAttr = AttrModule.NumberAttr,
+		BooleanAttr = AttrModule.BooleanAttr,
 	} :: Quad
 
 	function module.RunInit(self, initFn)
@@ -167,10 +167,10 @@ local function New(): Quad
 	module:RunInit(RefModule.Init) -- M8 단위 ② — RefLeafHandler + PreRef/PostRef 가드(자기 등록)
 	module:RunInit(InitClaim) -- M5 단위 ④ — Claim + 매퍼 디스크립터(claim-plan)
 	module:RunInit(SlotInit) -- M6 — top-level Slot 값 타입 + SlotHandler(자기 등록)
-	-- M10 (round16 spike) — Tag/Attribute 값 + 핸들러(자기 등록, `H-278` 관례)
+	-- M10 (round16 spike) — Tag/Attr 값 + 핸들러(자기 등록, `H-278` 관례)
 	module:RunInit(TagModule.Init)
-	module:RunInit(AttributeKeyModule.Init)
-	module:RunInit(AttributeModule.Init)
+	module:RunInit(AttrKeyModule.Init)
+	module:RunInit(AttrModule.Init)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서

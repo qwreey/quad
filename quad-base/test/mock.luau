@@ -483,17 +483,17 @@ local function installTagAttributeOps(quad: any, log: { string }?)
 		removeNames(inst, names)
 		record("removeTag", names)
 	end
-	local function setAttribute(inst: any, name: string, v: any)
+	local function setAttr(inst: any, name: string, v: any)
 		attrMapOf(inst)[name] = v -- v == nil deletes (the injected-op contract)
 		if log ~= nil then
-			table.insert(log, `setAttribute:{name}={tostring(v)}`)
+			table.insert(log, `setAttr:{name}={tostring(v)}`)
 		end
 	end
 	quad.addTag = addTag
 	quad.removeTag = removeTag
-	quad.setAttribute = setAttribute
+	quad.setAttr = setAttr
 	-- `H-238`: the backend tags everything it installs
-	for _, fn in { addTag, removeTag, setAttribute } :: { any } do
+	for _, fn in { addTag, removeTag, setAttr } :: { any } do
 		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
 end
@@ -668,7 +668,7 @@ local function mockProvider(quad: any): { [any]: any }
 		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
 	end
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
-	installTagAttributeOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttribute도 같은 프로바이더가(로그는 재설치 opt-in)
+	installTagAttributeOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
 end
 

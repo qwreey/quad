@@ -131,7 +131,7 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
 - **`nativeInsert`를 흡수하지 않은 이유**: `nativeExtract(target, offset, {}, elements)`로
   표현은 되지만, **최빈 경로**(리스트 최초 채우기·단건 `Add`)가 "0개를 빼는 extract"라는
   모양이 되고 `DocumentFragment`류 일괄 삽입 최적화도 그 안에 숨는다.
-- **기본 구현(조합 폴백) — 미주입이 에러가 아니다.** **[2026-09-07 회신 4차 — 사용자 확정]** **이 약속은 철회 — 지금 코드의 사실은 "여섯 전부 필수, 미주입이면 안내 스텁 에러"**(`LifetimeHandle.luau` 스텁, `H-373`/`H-376`; in-tree 백엔드 둘은 여섯을 전부 심는다). 조합 기본 구현 자체는 **백로그**(ROADMAP) — 사용자: *"잠정적으로 볼 땐, 있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐임"*. 아래 조합 공식은 그때의 설계 재료로 남긴다. `addTag`/`setAttribute`가
+- **기본 구현(조합 폴백) — 미주입이 에러가 아니다.** **[2026-09-07 회신 4차 — 사용자 확정]** **이 약속은 철회 — 지금 코드의 사실은 "여섯 전부 필수, 미주입이면 안내 스텁 에러"**(`LifetimeHandle.luau` 스텁, `H-373`/`H-376`; in-tree 백엔드 둘은 여섯을 전부 심는다). 조합 기본 구현 자체는 **백로그**(ROADMAP) — 사용자: *"잠정적으로 볼 땐, 있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐임"*. 아래 조합 공식은 그때의 설계 재료로 남긴다. `addTag`/`setAttr`가
   "미주입이면 명확한 에러"인 것과 갈린다: 이쪽은 조합으로 항상 정의되기 때문이다.
   `nativeRemove` = `nativeExtract` + `nativeDispose` 반복, `nativeMove` =
   `nativeExtract` + `nativeInsert`, `nativeSwap` = `nativeMove` 2회. 백엔드는
@@ -2009,7 +2009,7 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   새로 필요한데, sentinel 상수 하나 때문에 그 구조를 들이는 건 과함
   (`conventions.md`의 "드문 오용이나 가상의 미래 요구까지 방어/최적화하려고
   구조를 복잡하게 만들지 않는다" 원칙). 대신 `None`과 같은 선례를 따른다 —
-  `None`도 여러 곳(Slot 요소, Attribute, offsetSource)에서 쓰이는
+  `None`도 여러 곳(Slot 요소, Attr, offsetSource)에서 쓰이는
   sentinel이지만 공개 표면은 패키지 최상위(`quad-base/src/init.luau`
   재노출)이고 실제 정의는 관련 로직 옆(`Dispatch/None.luau`)에 있다.
   `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot/init.luau` 또는
@@ -3637,7 +3637,7 @@ return Slot {
    해도 이전 `Frame`을 quad가 `Destroy()`해주지 않음, 그냥 트리에서
    내려올 뿐. `State<Slot>`만 다르게(파괴로) 동작할 이유가 없음. **"이전
    값을 지울지는 그 값을 만든 쪽이 정한다"**는 이미 `Ref`("Destroy와 무관")/
-   `Attribute`("명시적 `None`으로만 지움")에서 확정된 quad 전역 철학과도
+   `Attr`("명시적 `None`으로만 지움")에서 확정된 quad 전역 철학과도
    같은 결.
 2. **비파괴 추출은 이미 지원되는 개념** — `Extract`/`ExtractAll`/`Splice`가
    전부 비파괴로 확정돼 있음(위 "CRUD API 확정" 절). "제거 = 파괴"만
@@ -3794,7 +3794,7 @@ end
 
 **base/backend 분리 — `nativeDispose`는 주입 op**(`base/dispatch-core-plan.md`
 "base가 소유하는 핸들러와 주입되는 엔진 op" 절과 같은 패턴, `addTag`/
-`removeTag`/`setAttribute`가 선례): `dispose`가 `isSlot`이 아닌 값을
+`removeTag`/`setAttr`가 선례): `dispose`가 `isSlot`이 아닌 값을
 받으면 base가 시그니처만 소유하는 `nativeDispose(inst: any): ()`로 위임 —
 quad-roblox는 `inst:Destroy()`로 구현. 웹 등 다른 백엔드는 자기 방식으로
 매핑.

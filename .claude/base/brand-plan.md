@@ -18,7 +18,7 @@
 **배경**: `isState`(2026-08-07 다섯 번째 세션 확정, `:Peek<<T>>(key):
 T|State<T>|nil`가 돌려주는 raw union을 사용자 코드가 분기하려면 판별
 수단이 필요했음)와 똑같은 필요가 quad의 다른 branded 타입에도 전부
-적용됨 — `Observer`/`Effect`/`Tag`/`Attribute`/`Tween`/`Blocker`/`Store`/
+적용됨 — `Observer`/`Effect`/`Tag`/`Attr`/`Tween`/`Blocker`/`Store`/
 `Source`/`Slot`/`None`까지, Handler 구현(`isHandlable`에서 "이 값이
 Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
 "이 값이 Tween인가" 판별 — 2026-08-10 세션부터 `isTween`은 `isHandlable`이
@@ -59,7 +59,7 @@ local function Brand()
 end
 
 -- 각 타입이 자기 브랜드를 하나씩 소유
-local ObserverBrand, EffectBrand, TagBrand, AttributeBrand, TweenBrand,
+local ObserverBrand, EffectBrand, TagBrand, AttrBrand, TweenBrand,
       BlockerBrand, StateBrand, SourceBrand, StoreBrand, SlotBrand,
       RefBrand, PreRefBrand, PostRefBrand, ModifierBrand, EpochBrand =
       Brand(), Brand(), Brand(), Brand(), Brand(), Brand(), Brand(), Brand(),

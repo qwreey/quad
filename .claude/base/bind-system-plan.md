@@ -61,16 +61,16 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
 - **`Brand`** — 런타임 nominal 타입 판별 통합 메커니즘(**[2026-08-21 재작성]**
   인스턴스 브랜드 `Brand()` + `:register`/`:is`, 다중 태깅 허용,
   `isState`를 branded 타입 전부로 일반화) → **`base/brand-plan.md`**.
-- **`Tag` / `Attribute` 특수 키** → **`base/tag-plan.md`** /
+- **`Tag` / `Attr` 특수 키** → **`base/tag-plan.md`** /
   **`base/attribute-plan.md`**. 이 문서가 예전에 다루던 타입 파라미터화 문제
-  (`[AttributeKey<<boolean>> "name"]`(구 `Attribute<<boolean>>`) vs
-  `[BooleanAttribute "name"]`)뿐 아니라 `None`/`process`/retract 동작까지
+  (`[AttrKey<<boolean>> "name"]`(구 `Attr<<boolean>>`) vs
+  `[BooleanAttr "name"]`)뿐 아니라 `None`/`process`/retract 동작까지
   전부 그쪽에 확정 반영돼 있음. **[2026-08-11 아홉 번째 세션]**
   `attribute-plan.md`에 여러 Store를 한 번에 attribute로 묶는 그룹
-  `Attribute(...)` 프리미티브(`Tag`와 동형)가 추가되며, 단일 키 생성자는
-  이름 충돌 방지로 `AttributeKey<<T>>`로 리네임됨(**[2026-09-03]** 그 뒤
-  제네릭을 벗고 무타입 `AttributeKey(name)`가 됐고, 타입은 배열부 슈가
-  `BooleanAttribute(name, value)`류가 진다 — `attribute-plan.md` 머리 배너).
+  `Attr(...)` 프리미티브(`Tag`와 동형)가 추가되며, 단일 키 생성자는
+  이름 충돌 방지로 `AttrKey<<T>>`로 리네임됨(**[2026-09-03]** 그 뒤
+  제네릭을 벗고 무타입 `AttrKey(name)`가 됐고, 타입은 배열부 슈가
+  `BooleanAttr(name, value)`류가 진다 — `attribute-plan.md` 머리 배너).
 
 ## 확정된 것 (더 이상 열린 질문 아님)
 
@@ -227,9 +227,9 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   확장한다**(확장 규칙 — M6 Slot, M8 `Ref`/`PreRef`/`PostRef`; **[2026-09-07 M6 확장
   실행 — `H-351`, 핸드오버 리뷰]** `Slot<Instance>` 합류(fork 슬라이스가 이 팔을
   실행하지 않아 strict에서 children Slot이 막혀 있었다 — `qa-request/post-implementation-review-round1.md`;
-  `State<Slot<…>>` 팔은 **[2026-09-07 마커 — 사용자 결정]** 마커로 닫힘 — `StateMarker<(Instance | SlotMarker<Instance> | Tag | Attribute | None)?>` 한 팔이 `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<Tag>`·`State<Attribute>`를 전부 받는다(`typing-limits.md` 8.11, 원장 §16); **[2026-09-07 Q2 (a) 사용자 확정]** `Observer`/`EffectHandle` 팔 합류, `H-355`); **[2026-09-03
-  M10 확장 실행]** `Tag | State<Tag> | Attribute | State<Attribute>` 합류 —
-  타입드 스칼라 슈가는 `Attribute`를 돌려주므로 같은 멤버, `H10-15`. `OnChange`
+  `State<Slot<…>>` 팔은 **[2026-09-07 마커 — 사용자 결정]** 마커로 닫힘 — `StateMarker<(Instance | SlotMarker<Instance> | Tag | Attr | None)?>` 한 팔이 `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<Tag>`·`State<Attr>`를 전부 받는다(`typing-limits.md` 8.11, 원장 §16); **[2026-09-07 Q2 (a) 사용자 확정]** `Observer`/`EffectHandle` 팔 합류, `H-355`); **[2026-09-03
+  M10 확장 실행]** `Tag | State<Tag> | Attr | State<Attr>` 합류 —
+  타입드 스칼라 슈가는 `Attr`를 돌려주므로 같은 멤버, `H10-15`. `OnChange`
   디스크립터는 여기가 아니라 클래스별 생성 별칭 `<Class>Elem`에 들어간다 —
   `onchange-plan.md`; **[2026-09-04 M7 확장 실행]** `ModifierMarker`
   (`{ read __quadModifier: true }` — 무타입 base Modifier) 합류 — 클래스별

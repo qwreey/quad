@@ -659,7 +659,7 @@ Frame의 children 배열에 각각 리터럴로 놓으면 — `Ref`는 항상 ch
 인덱스(숫자) — `r:Set(inst1)` 다음 `r:Set(inst2)`가 에러 없이 덮어씀,
 `inst1` 자리가 나중에 retract되면 `r:Set(nil)`이 `inst2`의 정당한 값까지 지움)를
 **즉시 error로 막기로 확정** — `Slot`의 `claimOwner`, `PreRef`/`PostRef`의
-`_fired`, `Attribute`의 이름 claim과 같은 급의 방어를 `Ref`에도 채택.
+`_fired`, `Attr`의 이름 claim과 같은 급의 방어를 `Ref`에도 채택.
 
 **메커니즘 — 새 `Relate`를 안 만들고 `bindLifetime`/`unbindLifetime`을
 그대로 재사용.** `bindLifetime(inst, value)`은 이미 자기 내부에 "이 value가
@@ -983,7 +983,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     전담하는 Handler"
     패턴 재사용, 새 메커니즘 아님. **[2026-08-14 열한 번째 세션] 우선순위는
     `HANDLER_PRIORITY_FALLBACK`**(무조건 매치하는 하드 블록이 아니라
-    `Tag`/`Attribute`와 같은 "base가 소유하지만 백엔드/특정 자리에서
+    `Tag`/`Attr`와 같은 "base가 소유하지만 백엔드/특정 자리에서
     평범한 우선순위로 자기 핸들러를 등록하면 덮어쓸 수 있는" 자리 —
     지금은 그 자리를 아무도 안 가져가서 항상 이 가드가 매치돼 에러가
     나지만, 나중에 named 자리 바인드 같은 실제 기능이 확정되면 base

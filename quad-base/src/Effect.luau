@@ -63,7 +63,7 @@ local function createImpl(module: any)
 	-- `EffectHandleMarker` (quad-types) — the type promises the marker, so the value carries it
 	-- (`H-300`); read through `__index`, zero per-instance slots. Identity stays the brand —
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
-	-- Attribute/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
+	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadEffect = true
 
 	-- ── local helpers, declared before their callers ─────────────────

@@ -343,13 +343,13 @@ end
 
 print()
 print()
-print("=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttributeKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===")
+print("=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttrKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===")
 do
 	local okK, errK = pcall(function()
-		q.Modifier(q.AttributeKey("Selected"))
+		q.Modifier(q.AttrKey("Selected"))
 	end)
-	assert(not okK and string.find(tostring(errK), "must be a Modifier or a plain field table", 1, true) ~= nil, "AttributeKey is not a field table: " .. tostring(errK))
-	mock.assertBlamesUser(errK, "spec.modifier.luau", "AttributeKey-arg blame")
+	assert(not okK and string.find(tostring(errK), "must be a Modifier or a plain field table", 1, true) ~= nil, "AttrKey is not a field table: " .. tostring(errK))
+	mock.assertBlamesUser(errK, "spec.modifier.luau", "AttrKey-arg blame")
 	local desc = q.newMapperClass("Frame")("k")({})
 	local okD, errD = pcall(function()
 		q.Modifier(desc)
@@ -360,11 +360,11 @@ do
 	print("PASS")
 end
 
-print("=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttributeKey]는 즉시 error, 사용자 줄 blame ===")
+print("=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttrKey]는 즉시 error, 사용자 줄 blame ===")
 do
 	local m = q.Modifier({})
 	local okK, errK = pcall(function()
-		return (m :: any)[q.AttributeKey("Hp")]
+		return (m :: any)[q.AttrKey("Hp")]
 	end)
 	assert(not okK and string.find(tostring(errK), "setter keys must be strings", 1, true) ~= nil, "non-string setter key: " .. tostring(errK))
 	mock.assertBlamesUser(errK, "spec.modifier.luau", "setter key blame")

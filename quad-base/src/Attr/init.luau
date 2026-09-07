@@ -1,23 +1,27 @@
 --[[
-	Attribute — the GROUP value object + its delegating handler (M10, spike
-	round16). Canonical: `.claude/base/attribute-plan.md` ("그룹
-	`Attribute(...)`", "메커니즘 — 그룹 전용 키로 단일 키 경로에 위임",
+	Attr — the GROUP value object + its delegating handler (M10, spike
+	round16). [2026-09-08 user decision] `Attribute` → `Attr` across the
+	surface (옛 `Attribute/init.luau`; `AttrKey`, `StringAttr`…, engine op
+	`setAttr`): quad's Attr is engine-agnostic on its face, and the fact that it
+	binds to a Roblox Attribute is the backend's implementation detail
+	(`research/source-layout-plan.md` 8절). Canonical: `.claude/base/attribute-plan.md` ("그룹
+	`Attr(...)`", "메커니즘 — 그룹 전용 키로 단일 키 경로에 위임",
 	"이름 소유권"), as-is.
 
-	  Attribute(store1, store2, ..., {plain = tbl})  -- flatten to one name map;
+	  Attr(store1, store2, ..., {plain = tbl})  -- flatten to one name map;
 	                                                 -- overlapping names: LAST
 	                                                 -- argument wins (constructor
 	                                                 -- policy == Overridden)
-	  Attribute.Merged(a, b, ...)     -- compose Attribute values; overlap = error
-	  Attribute.Overridden(a, b, ...) -- compose; overlap = last silently wins
+	  Attr.Merged(a, b, ...)     -- compose Attr values; overlap = error
+	  Attr.Overridden(a, b, ...) -- compose; overlap = last silently wins
 	  attr:NameMap() -> {[string]: any}  -- flattened name -> Source/State/raw
-	  StringAttribute(name, value) / NumberAttribute / BooleanAttribute
+	  StringAttr(name, value) / NumberAttr / BooleanAttr
 	                                  -- [2026-09-03 사용자 확정] typed scalar
 	                                  -- SUGAR: a single-entry group
-	                                  -- (`Attribute({ [name] = value })`) —
+	                                  -- (`Attr({ [name] = value })`) —
 	                                  -- no handler of its own; raw values are
 	                                  -- type-checked here (the family knows
-	                                  -- its type — AttributeKey does not),
+	                                  -- its type — AttrKey does not),
 	                                  -- State/None pass through untouched
 
 	plain-table values may be raw T or State<T>/Source<T> — they all flow down
@@ -25,15 +29,15 @@
 	flattened via `store:Names()` (`H-79` — explicit initialization made the
 	declared key set knowable).
 
-	Handler ("AttributeGroupFallbackHandler", FALLBACK, registered by
-	InitAttribute — `H-278` idiom): per-name PRIVATE keys (`groupKey(v, name)`,
-	memoized per group value object x name, minted through AttributeKey's
+	Handler ("AttrGroupFallbackHandler", FALLBACK, registered by
+	InitAttr — `H-278` idiom): per-name PRIVATE keys (`groupKey(v, name)`,
+	memoized per group value object x name, minted through AttrKey's
 	`_newUncachedKey` so they are distinct from the public cached key —
 	cross-owner retraction structurally impossible), `groupClaimKeys` position
 	claim BEFORE any name claim (`H-41`), delegation via
 	`Dispatch.process(inst, key, source, 1)`, retractor = retractFrom on every
 	delegated key + position claim return. The retractor never calls
-	setAttribute (values persist until an explicit None/nil — user-confirmed).
+	setAttr (values persist until an explicit None/nil — user-confirmed).
 
 	GC contract (2026-08-25 `/code-review`): the group value object is an
 	INTERNAL KEY of `groupClaimKeys` and of the `groupKeys` memo — internal
@@ -43,30 +47,30 @@
 
 local Brand = require("./Brand")
 local Relate = require("./Relate")
-local AttributeKeyModule = require("@self/Key")
+local AttrKeyModule = require("@self/Key")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
-local AttributeBrand = Brand.AttributeBrand
-local isAttribute = Brand.isAttribute
+local AttrBrand = Brand.AttrBrand
+local isAttr = Brand.isAttr
 local isStore = Brand.isStore
 local isState = Brand.isState
-local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttributeKey/MapperDescriptor — plain tables branded, no metatable
+local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor — plain tables branded, no metatable
 local None = require("./Dispatch/None").None -- `isNone` is `v == None` (None.luau header)
-local newUncachedKey = AttributeKeyModule._newUncachedKey
+local newUncachedKey = AttrKeyModule._newUncachedKey
 
 local AttrImpl = {}
 AttrImpl.__index = AttrImpl
--- `AttributeMarker` (quad-types) — the type promises the marker, so the value carries it
+-- `AttrMarker` (quad-types) — the type promises the marker, so the value carries it
 -- (`H-300`); read through `__index`, zero per-instance slots. Identity stays the brand —
 -- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
--- Attribute/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
-AttrImpl.__quadAttribute = true
+-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
+AttrImpl.__quadAttr = true
 
 local function newAttribute(nameMap: { [string]: any }): any
 	local self = setmetatable({ _nameMap = table.freeze(nameMap) }, AttrImpl)
-	AttributeBrand:register(self)
+	AttrBrand:register(self)
 	return table.freeze(self)
 end
 
@@ -88,7 +92,7 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			end
 			map[name] = arg[name] -- the declared Source slot (H-79)
 		end
-	elseif isAttribute(arg) then
+	elseif isAttr(arg) then
 		for name, v in pairs(arg:NameMap()) do
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
@@ -104,12 +108,12 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 		-- excluded by brand; quad-roblox's metatable-less descriptors (OnChange
 		-- `{ Name, Callback }`) fall to the function-value check below — an
 		-- attribute value is raw T or State<T>, never a function (attribute-plan
-		-- "그룹 `Attribute(...)`"; the engine cannot store one, and through THIS
-		-- group path it used to raise inside `setAttribute` at dispatch depth).
-		-- Scope: the group constructor only — the raw `[AttributeKey] = v` key
-		-- path stays untyped by design (`Attribute/Key.luau` header, §4 Q4's family).
+		-- "그룹 `Attr(...)`"; the engine cannot store one, and through THIS
+		-- group path it used to raise inside `setAttr` at dispatch depth).
+		-- Scope: the group constructor only — the raw `[AttrKey] = v` key
+		-- path stays untyped by design (`Attr/Key.luau` header, §4 Q4's family).
 		for rawName, v in pairs(arg :: { [any]: any }) do
-			if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttribute at dispatch depth
+			if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttr at dispatch depth
 				Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)
 			end
 			local name = rawName :: string
@@ -122,47 +126,47 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			map[name] = v
 		end
 	else
-		Err.errorBeforeNearest(`{ctx}: arguments must be Stores, Attributes or plain tables`, SURFACE)
+		Err.errorBeforeNearest(`{ctx}: arguments must be Stores, Attr values or plain tables`, SURFACE)
 	end
 end
 
-local Attribute = setmetatable({}, {
+local Attr = setmetatable({}, {
 	__call = function(_self, ...: any)
 		local map: { [string]: any } = {}
 		for i = 1, select("#", ...) do
 			-- constructor overlap policy: last argument wins (== Overridden;
-			-- 4라운드 명시 — use Attribute.Merged to make overlap an error)
-			flattenArg(map, select(i, ...), true, "Attribute")
+			-- 4라운드 명시 — use Attr.Merged to make overlap an error)
+			flattenArg(map, select(i, ...), true, "Attr")
 		end
 		return newAttribute(map)
 	end,
 })
 
-function Attribute.Merged(...: any): any
+function Attr.Merged(...: any): any
 	local map: { [string]: any } = {}
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
-		if not isAttribute(arg) then
-			Err.errorBeforeNearest("Attribute.Merged: arguments must be Attribute values", SURFACE)
+		if not isAttr(arg) then
+			Err.errorBeforeNearest("Attr.Merged: arguments must be Attr values", SURFACE)
 		end
-		flattenArg(map, arg, false, "Attribute.Merged")
+		flattenArg(map, arg, false, "Attr.Merged")
 	end
 	return newAttribute(map)
 end
 
-function Attribute.Overridden(...: any): any
+function Attr.Overridden(...: any): any
 	local map: { [string]: any } = {}
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
-		if not isAttribute(arg) then
-			Err.errorBeforeNearest("Attribute.Overridden: arguments must be Attribute values", SURFACE)
+		if not isAttr(arg) then
+			Err.errorBeforeNearest("Attr.Overridden: arguments must be Attr values", SURFACE)
 		end
-		flattenArg(map, arg, true, "Attribute.Overridden")
+		flattenArg(map, arg, true, "Attr.Overridden")
 	end
 	return newAttribute(map)
 end
 
-table.freeze(Attribute)
+table.freeze(Attr)
 
 -- Typed scalar sugar family — one-entry groups. `luaType` is the raw-value
 -- check; a State/Source (StoreBind unwraps it downstream) or `None` (delete)
@@ -185,26 +189,26 @@ local function scalarSugar(fnName: string, luaType: string): (string, any) -> an
 	return sugar
 end
 
-local StringAttribute = scalarSugar("StringAttribute", "string")
-local NumberAttribute = scalarSugar("NumberAttribute", "number")
-local BooleanAttribute = scalarSugar("BooleanAttribute", "boolean")
+local StringAttr = scalarSugar("StringAttr", "string")
+local NumberAttr = scalarSugar("NumberAttr", "number")
+local BooleanAttr = scalarSugar("BooleanAttr", "boolean")
 
 -- `H-238`: tag the public surface (see Tag.luau — same reasoning; the
 -- handler-process raises below stay errorBefore, dispatch depth `H10-2`)
-for _, fn in { getmetatable(Attribute).__call, Attribute.Merged, Attribute.Overridden, AttrImpl.NameMap } :: { any } do -- `H-410`
+for _, fn in { getmetatable(Attr).__call, Attr.Merged, Attr.Overridden, AttrImpl.NameMap } :: { any } do -- `H-410`
 	Err.setFuncLevel(fn, SURFACE)
 end
 
 local InitDispatch = require("./Dispatch")
 
 local function Init(quad: any)
-	quad.Attribute = Attribute
-	quad.StringAttribute = StringAttribute
-	quad.NumberAttribute = NumberAttribute
-	quad.BooleanAttribute = BooleanAttribute
+	quad.Attr = Attr
+	quad.StringAttr = StringAttr
+	quad.NumberAttr = NumberAttr
+	quad.BooleanAttr = BooleanAttr
 
 	quad:RunInit(InitDispatch)
-	quad:RunInit(AttributeKeyModule.Init) -- delegation target must exist (idempotent)
+	quad:RunInit(AttrKeyModule.Init) -- delegation target must exist (idempotent)
 	local dispatch: QuadTypes.Dispatch = quad.Dispatch
 
 	-- group value object(weak) -> {[name] = private key} — memoized so a
@@ -225,10 +229,10 @@ local function Init(quad: any)
 	end
 
 	dispatch.addHandler({
-		name = "AttributeGroupFallbackHandler",
+		name = "AttrGroupFallbackHandler",
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- `H-52`: k type check mandatory (array-part only)
-			return type(k) == "number" and isAttribute(v)
+			return type(k) == "number" and isAttr(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
@@ -239,14 +243,14 @@ local function Init(quad: any)
 			-- must be rejected before any name claim is half-recorded
 			local claimed = groupClaimKeys:GetStrong(inst, v)
 			if claimed ~= nil and claimed ~= k then
-				Err.errorBefore("Attribute: the same group value is placed at two positions of this instance", SURFACE)
+				Err.errorBefore("Attr: the same group value is placed at two positions of this instance", SURFACE)
 			end
 			-- `H-154` dedup (통합 리뷰, `H10-8`): the retractor below skips
 			-- teardown when the SAME immutable group is re-emitted, and it also
 			-- leaves our position claim in place — so "already claimed by this
 			-- very position" at entry means exactly that re-emission. Skip the
 			-- delegation loop then: the per-name chains are still live, and
-			-- re-delegating would re-run K unconditional setAttribute calls
+			-- re-delegating would re-run K unconditional setAttr calls
 			-- (TagFallbackHandler's holder check is the same idea).
 			local reemit = claimed == k
 			groupClaimKeys:SetStrong(inst, v, k)
@@ -262,7 +266,7 @@ local function Init(quad: any)
 				end
 				-- uniform teardown — survivors are re-registered by the next
 				-- process (Dispatch guarantees retractor -> process order);
-				-- never calls setAttribute, never calls Dispatch.process.
+				-- never calls setAttr, never calls Dispatch.process.
 				-- Keys are recomputed from the memoized groupKey (no captured
 				-- table — the re-emit path returns an equivalent retractor).
 				for name in pairs(v:NameMap()) do
@@ -278,9 +282,9 @@ local function Init(quad: any)
 end
 
 return {
-	Attribute = Attribute,
-	StringAttribute = StringAttribute,
-	NumberAttribute = NumberAttribute,
-	BooleanAttribute = BooleanAttribute,
+	Attr = Attr,
+	StringAttr = StringAttr,
+	NumberAttr = NumberAttr,
+	BooleanAttr = BooleanAttr,
 	Init = Init,
 }

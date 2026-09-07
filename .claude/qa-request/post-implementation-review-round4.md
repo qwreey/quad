@@ -17,11 +17,11 @@
 
 | 항목 | 기존 식별 번호 / 위치 | 기각 / 확정 사유 |
 |---|---|---|
-| `Tag("")` 빈 문자열 가드 누락 | `G-01`, `H-417` | 기반영 (`flattenInto` 및 `AttributeKey`에 빈 문자열 가드 추가) |
+| `Tag("")` 빈 문자열 가드 누락 | `G-01`, `H-417` | 기반영 (`flattenInto` 및 `AttrKey`에 빈 문자열 가드 추가) |
 | `Claim(inst, desc)`의 `inst` 미검증 | `G-06`, `H-418` | 기반영 (`Claim` 머리에 `isInst` 게이트 추가) |
 | `Dispatch.drive(inst, props)`의 `props` 비테이블 | `G-07`, `H-419` | 기반영 (`drive` 머리에 `type(props) ~= "table"` 게이트 추가) |
 | `ContentId` 덤프 타입 매핑 오류 | `H-420` | 기반영 (`gen-d.py` 정규화 및 재생성) |
-| `AttributeKey` 빈 문자열 및 스칼라 슈거 | `H-421` | 기반영 (`Attribute/init.luau` 사설 키 생성부 가드 추가) |
+| `AttrKey` 빈 문자열 및 스칼라 슈거 | `H-421` | 기반영 (`Attr/init.luau` 사설 키 생성부 가드 추가) |
 | `scripts/test.sh` 게이트 누락 | `H-422`, `H-423` | 기반영 (모듈 스코프 function 정규식 검사 및 `gen-d check` 추가) |
 | `gen-d.py` 자유변수 `parent_of` 스코프 | `H-424` | 기반영 (`ancestors` 상위로 이동) |
 | `Claim.luau` props 게이트 선행 | `H-425` | 기반영 (`_fired`/`nativeClaim` 이전 검증으로 이동) |
@@ -59,8 +59,8 @@
     3. 이 예외는 `quad-error`의 스택 워커를 거치지 않으므로 **quad 내부 파일 라인(`quad-roblox/src/Handlers/OnChange.luau:93`)이 그대로 에러 blame에 노출**됩니다.
     4. 또한 `h.process` 중간에서 throw가 발생함에 따라 부기 슬롯과 NOOP 마커 정리가 비정상적인 상태로 남게 됩니다.
 - **원인 분석 및 연관성**:
-  - 7순회 `H-417`(`Tag("")`) 및 `H-421`(`AttributeKey("")`, `Attribute({ [""] = 5 })`)과 **완벽히 동일한 구조의 구멍**입니다.
-  - Tag와 Attribute는 엔진 op 도달 전 빈 문자열 가드가 추가되었으나, 동일하게 `GetPropertyChangedSignal` 엔진 op에 도달하는 `OnChange`는 누락되었습니다.
+  - 7순회 `H-417`(`Tag("")`) 및 `H-421`(`AttrKey("")`, `Attr({ [""] = 5 })`)과 **완벽히 동일한 구조의 구멍**입니다.
+  - Tag와 Attr는 엔진 op 도달 전 빈 문자열 가드가 추가되었으나, 동일하게 `GetPropertyChangedSignal` 엔진 op에 도달하는 `OnChange`는 누락되었습니다.
 - **권고안**:
   - `OnChange` 생성자 머리에 빈 문자열 차단 가드 추가:
     ```lua
@@ -116,12 +116,12 @@
 
 ---
 
-### [G-13] `Store` 빈 문자열 키 `""` 허용 및 `Attribute(store)`를 통한 `H-421` 우회 엔진 크래시
+### [G-13] `Store` 빈 문자열 키 `""` 허용 및 `Attr(store)`를 통한 `H-421` 우회 엔진 크래시
 
 - **위치**: 
   - `quad-base/src/Store.luau:50-59` (`checkKey`)
-  - `quad-base/src/Attribute/init.luau:76-82` (`flattenArg` - `isStore` 분기)
-- **심각도**: High / `H-421` (`AttributeKey("")`)의 자매 결함
+  - `quad-base/src/Attr/init.luau:76-82` (`flattenArg` - `isStore` 분기)
+- **심각도**: High / `H-421` (`AttrKey("")`)의 자매 결함
 - **현상**:
   1. `Store.luau:50`의 `checkKey(name, what)`는 `type(name) ~= "string"` 및 `RESERVED[name]`만 검사하고, **빈 문자열(`name == ""`) 검증이 누락**되어 있습니다:
      ```lua
@@ -135,13 +135,13 @@
      end
      ```
      이에 따라 `Store({ [""] = Source(1) })` 및 `store:Of("")`가 검증을 통과하여 생성됩니다.
-  2. `Attribute/init.luau:104`에서는 7순회 `H-421`을 반영하여 일반 테이블 키에 대해 `rawName == ""`를 명시적으로 차단하였습니다:
+  2. `Attr/init.luau:104`에서는 7순회 `H-421`을 반영하여 일반 테이블 키에 대해 `rawName == ""`를 명시적으로 차단하였습니다:
      ```lua
-     if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttribute at dispatch depth
+     if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttr at dispatch depth
          Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)
      end
      ```
-  3. **그러나 바로 위의 `if isStore(arg) then` 분기(`Attribute/init.luau:76`)에는 `name == ""` 검사가 없습니다**:
+  3. **그러나 바로 위의 `if isStore(arg) then` 분기(`Attr/init.luau:76`)에는 `name == ""` 검사가 없습니다**:
      ```lua
      if isStore(arg) then
          for _, name in ipairs(arg:Names()) do
@@ -151,13 +151,13 @@
              map[name] = arg[name]
          end
      ```
-  4. 사용자가 `Attribute(store)`를 인스턴스에 마운트(`drive(inst, { Attribute(store) })`)하면:
-     - `AttributeGroupFallbackHandler`가 `groupKey(v, "")` -> `newUncachedKey("")`를 생성합니다.
-     - `AttributeKeyFallbackHandler.process`에서 `nameClaims:SetStrong(inst, "", k)`를 커밋한 직후, `EngineOps.luau:116`의 `inst:SetAttribute("", realv)`를 호출합니다.
+  4. 사용자가 `Attr(store)`를 인스턴스에 마운트(`drive(inst, { Attr(store) })`)하면:
+     - `AttrGroupFallbackHandler`가 `groupKey(v, "")` -> `newUncachedKey("")`를 생성합니다.
+     - `AttrKeyFallbackHandler.process`에서 `nameClaims:SetStrong(inst, "", k)`를 커밋한 직후, `EngineOps.luau:116`의 `inst:SetAttribute("", realv)`를 호출합니다.
      - Roblox 엔진이 `ArgumentException: attribute name cannot be empty` 원시 예외를 발생시키며 **디스패치 심도에서 즉시 크래시**합니다.
      - 그 결과 `h.process` 중간 예외로 인해 `Dispatch`의 `NOOP` 마커가 영구 고착되고 `nameClaims`에 빈 문자열 키 점유가 해제되지 않은 채 누수됩니다.
 - **원인 분석 및 연관성**:
-  - `Attribute/init.luau`에서 `H-421`을 처리할 때 일반 테이블 리터럴만 방어하고 `Store` 언랩 경로를 간과한 비대칭입니다.
+  - `Attr/init.luau`에서 `H-421`을 처리할 때 일반 테이블 리터럴만 방어하고 `Store` 언랩 경로를 간과한 비대칭입니다.
   - 또한 `Store` 자체에서도 빈 문자열 식별자를 허용할 이유가 없으므로 두 계층 모두에 방어가 필요합니다.
 - **권고안**:
   1. `Store.luau:50`의 `checkKey`에 `name == ""` 차단 추가:
@@ -166,7 +166,7 @@
          Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {typeof(name)})`, SURFACE)
      end
      ```
-  2. `Attribute/init.luau:77`의 `isStore` 순회 내에 방어 가드 추가:
+  2. `Attr/init.luau:77`의 `isStore` 순회 내에 방어 가드 추가:
      ```lua
      for _, name in ipairs(arg:Names()) do
          if name == "" then
@@ -215,8 +215,8 @@
   2. 또한 `spec.slot.luau:297`의 테스트에서도 부모 슬롯에서 제거된 `Owned = false` 자식 슬롯이 파괴되지 않고 살아남아 다른 슬롯에 정상적으로 재마운트되는 동작을 핵심 계약으로 검증하고 있습니다.
   3. 따라서 `_destroyed = true`가 세워지지 않는 것은 결함이 아니라, 해당 슬롯의 생존 및 재사용을 보장하기 위한 의도된 설계입니다.
 
-### [S-08] `Modifier.Overridden()` 0인자 호출 에러 vs `Attribute.Overridden()` 빈 컨테이너 반환 비대칭
-- **의혹**: `Attribute.Overridden()`은 0인자 호출 시 빈 `Attribute({})`를 반환하는 반면, `Modifier.Overridden()`은 0인자 호출 시 `"expects at least one Modifier"` 에러를 던집니다.
+### [S-08] `Modifier.Overridden()` 0인자 호출 에러 vs `Attr.Overridden()` 빈 컨테이너 반환 비대칭
+- **의혹**: `Attr.Overridden()`은 0인자 호출 시 빈 `Attr({})`를 반환하는 반면, `Modifier.Overridden()`은 0인자 호출 시 `"expects at least one Modifier"` 에러를 던집니다.
 - **건전성 증명**:
   1. 설계 정본 `.claude/base/modifier-plan.md` 265-266행:
      > *"단 0인자 Modifier()는 빈 값이고 Overridden()은 error라 동치는 인자가 하나 이상일 때만."*
@@ -249,6 +249,6 @@
 | **[G-10]** | High | `OnChange("", fn)` 빈 문자열 프로퍼티 인자 가드 누락 및 엔진 `ArgumentException` 누출 | `quad-roblox/src/Handlers/OnChange.luau` |
 | **[G-11]** | Medium | `Slot:List` / `reconcile`의 `nil`/비테이블 `#items` VM 크래시 | `quad-base/src/Slot/List.luau` |
 | **[G-12]** | Low | `Dispatch.drive(nil, props)`의 `Relate.luau:23` `self.buckets[nil]` VM 크래시 | `quad-base/src/Dispatch/init.luau` |
-| **[G-13]** | High | `Store` 빈 문자열 키 `""` 허용 및 `Attribute(store)`의 `H-421` 우회 엔진 크래시 | `quad-base/src/Store.luau`, `quad-base/src/Attribute/init.luau` |
+| **[G-13]** | High | `Store` 빈 문자열 키 `""` 허용 및 `Attr(store)`의 `H-421` 우회 엔진 크래시 | `quad-base/src/Store.luau`, `quad-base/src/Attr/init.luau` |
 | **[G-14]** | Medium | `LifetimeHandle`의 `unbindLifetime(nil)` / `canExecute(nil)` 등 호출 시 `table index is nil` 크래시 | `quad-roblox/src/LifetimeHandle.luau`, `quad-base/test/mock.luau`, `quad-base/src/Relate.luau` |
 | **[S-07]~[S-10]** | Sound | `Owned=false` 슬롯 수명, `Overridden` 0인자 비대칭, 중첩 Slot 소유권, `UIPadding` 숏핸드 공유 자식 동작의 정본 부합성 확인 (False Positive 방지) | 수정 불요 (현행 유지) |

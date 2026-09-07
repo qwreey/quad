@@ -76,7 +76,7 @@ do
 	end)
 	assert(not okN and string.find(tostring(errN), "names must be strings", 1, true) ~= nil, "Removed(nil) is a validation error, not a VM 'table index is nil': " .. tostring(errN))
 	mock.assertBlamesUser(errN, "spec.tag.luau", "Removed(nil) blame")
-	-- 통합 리뷰: nil 구멍 뒤 이름이 조용히 버려지면 안 된다(Attribute와 대칭 — 검증 에러)
+	-- 통합 리뷰: nil 구멍 뒤 이름이 조용히 버려지면 안 된다(Attr와 대칭 — 검증 에러)
 	local okH = pcall(function()
 		q.Tag("a", nil, "c")
 	end)
@@ -87,12 +87,12 @@ do
 	end)
 	assert(not okM, "Merged validates")
 	mock.assertBlamesUser(errM, "spec.tag.luau", "Merged blame")
-	-- 3순회 `H-380`: a Source / AttributeKey / hash table / nil-hole list used to pass
+	-- 3순회 `H-380`: a Source / AttrKey / hash table / nil-hole list used to pass
 	-- `ipairs` as an EMPTY list (silent no-op) — still validation errors. A Tag VALUE
 	-- left this set on 2026-09-07 (user decision, `research/source-layout-plan.md` 3절
 	-- (b)): `names` is `string | Tag | { names }` everywhere, see the positives below.
 	local a = q.Tag("alpha")
-	for label, bad in { source = q.Source(1), attrKey = q.AttributeKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" }, nested = { "b", { 42 } } } :: { [string]: any } do
+	for label, bad in { source = q.Source(1), attrKey = q.AttrKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" }, nested = { "b", { 42 } } } :: { [string]: any } do
 		local okL, errL = pcall(function()
 			a:Added(bad)
 		end)
@@ -123,8 +123,8 @@ do
 	-- message names its kind — neither mentions a metatable it has not got
 	local _, errMT = pcall(function() a:Added(setmetatable({ "b" }, {}) :: any) end)
 	assert(string.find(tostring(errMT), "table with a metatable", 1, true) ~= nil, "non-Tag metatable table: shape message: " .. tostring(errMT))
-	local _, errAK = pcall(function() a:Added(q.AttributeKey("k") :: any) end)
-	assert(string.find(tostring(errAK), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(errAK), "metatable", 1, true) == nil, "plain-branded value: names its kind, not a metatable it has not got (5순회): " .. tostring(errAK))
+	local _, errAK = pcall(function() a:Added(q.AttrKey("k") :: any) end)
+	assert(string.find(tostring(errAK), "AttrKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(errAK), "metatable", 1, true) == nil, "plain-branded value: names its kind, not a metatable it has not got (5순회): " .. tostring(errAK))
 	assert((a :: any).__quadTag == true, "TagMarker field readable (H-300)")
 	print("PASS")
 end
