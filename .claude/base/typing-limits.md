@@ -640,7 +640,7 @@ local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T �
 **[2026-09-06 보강 — round20 `H-337`]** 한도 플래그는 증상별로 다르다: GuiObject 계열
 10클래스의 Param/Modifier에 숏핸드 키 넷을 얹자 `export type D`가 "too complex"였고,
 Tarjan·TypeInfer 상향은 무효, **`LuauSolverConstraintLimit`**(기본값 작음)을 100만으로
-올리면 클린(1.9s, 음성 5/5 유지) — `scripts/test.sh` 넷째 플래그. 8.8절의 "올리면
+올리면 클린(1.9s, 음성 5/5 유지) — `scripts/test.sh` 넷째 플래그였다(**[2026-09-07 마커, round3 `H-435`]** 8.11로 슬롯 유니언이 줄자 이 플래그 없이 클린이라 test.sh에서 제거 — 다시 나면 되살린다). 8.8절의 "올리면
 지점만 옮겨감"은 재귀 메소드 테이블을 유니언에 넣었을 때(M7 ③)의 관측이고, `State<T
 | Tween<T>>` 멤버(M11 `H-334`)는 이 플래그로도 안 풀렸다 — 증상마다 한 번씩 재봐야 한다.
 
@@ -884,7 +884,7 @@ factory 인자의 재귀만으로 샌다).
 — 값 팔은 멤버별, **변환 함수 팔은 전체 유니언 하나**(**[0순회 `H-362`]** `Field<number> |
 Field<UDim>`로 쪼개면 무주석 람다가 number 팔로 문맥 타이핑돼 `modifier-plan.md` 4절의
 `old` 관용구(UDim 반환·`typeof(old) == "UDim"` 분기)가 strict에서 깨진다). 별칭 `SHFn`
-하나로 13자리에 실린다. `LuauSolverConstraintLimit=1000000` 아래서 "too complex" 없음(실측). (4) strict에서
+하나로 13자리에 실린다. `LuauSolverConstraintLimit=1000000` 아래서 "too complex" 없음(실측 — 그 플래그는 2026-09-07 마커 뒤 제거됨, 8.11). (4) strict에서
 타입드 `Slot`을 만드는 관용구는 **`q.Slot() :: QuadTypes.Slot<Instance>` 캐스트뿐**
 — 생성자 `<T>(initial: { SlotElement<T> }?)`는 `T`가 `T | State<T> | Slot<T>` 안쪽이라
 인자에서 추론되지 않고, `nil :: { SlotElement<Instance> }?`·`{} :: {…}`·`local s:
@@ -925,7 +925,9 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 ## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
 **⭐ [2026-09-07 적용 — 사용자 결정 *"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*, 원장
-`qa-request/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **규칙**: 값을 *받는*
+`qa-request/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **승인의 범위(round3 Q24)**: 사용자가
+승인한 것은 **방향**(입력 자리 = 마커 + T)과 **순수 팬텀 허용**이고, 별칭 이름(`SlotItem`·`FieldOut`)·`NewChild` 팔 모양·
+`LuauSolverConstraintLimit` 제거는 **메인 제안**이다 — 아래 "[2026-09-07 마커 — 사용자 결정]" 배너들도 같은 구분으로 읽을 것. **규칙**: 값을 *받는*
 자리(children 유니언 `NewChild`·`<Class>Elem`, 생성 D 슬롯 `PVn`·이벤트 슬롯, Modifier setter `FieldV<T>`,
 Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `AttributeSugar`, `Animate` 옵션,
 `Dispatch.setLength`)는 마커 `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }` /

@@ -266,6 +266,16 @@ do
 			not ok2 and string.find(tostring(err2), "positive integer", 1, true) ~= nil,
 			`setOffsetSource rejects {tostring(bad)}: {tostring(err2)}`
 		)
+		-- round3 `H-434`: setEmpty는 Dispatch 표면(H-242 태그)이라 자기 앞에서 검증한다 — 안쪽 setOffsetSource가
+		-- 던지면 nearest+1이 setEmpty 본문(quad 내부)을 blame했다
+		local ok4, err4 = pcall(function()
+			q.Dispatch.setEmpty(owner, bad :: any)
+		end)
+		assert(
+			not ok4 and string.find(tostring(err4), "setEmpty: position must be a positive integer", 1, true) ~= nil,
+			`setEmpty rejects {tostring(bad)}: {tostring(err4)}`
+		)
+		mock.assertBlamesUser(err4, "spec.lengthoffset.luau", "setEmpty gate blame")
 	end
 	-- 오염이 전혀 안 남았는지 — 검증이 부기 변형 전에 있다
 	local bk = q.Dispatch.getBookkeeping(owner)

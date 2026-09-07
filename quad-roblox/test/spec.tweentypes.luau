@@ -3,7 +3,7 @@
 	Tween 타입 표면 — strict 양성(M11 단위 ①, round19 Q3·`H-326`). quad-types의
 	엔진 무관 `Tween<T>` 값이 quad-roblox `Types.Tween<T>`(quad-types 별칭 그대로 —
 	정밀화는 포기) 자리 — 생성 `D`의 스칼라 유니언
-	`T | State<T> | TweenData<T> | State<Tween<T>> | None`(타입별 별칭 PVn) — 에 들어가고,
+	`T | TweenData<T> | StateMarker<T | Tween<T>> | None`(타입별 별칭 PVn; [2026-09-07 마커] State 팔은 공변 마커 하나) — 에 들어가고,
 	`Mapped`의 U 전환·`State<Tween<T>>`·센티널 필드가 UseProvider 교집합을
 	거쳐도 정확히 타이핑되는지. 음성(다른 T의 Tween·옵션 타입·문자열 Override·
 	Mapped 결과 오타입·State<Tween<number>>)은 `luau-test/done/33`이 실측 —

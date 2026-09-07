@@ -188,6 +188,12 @@
   **Q21**(7순회, `H-430`) 툴체인 — `luau` CLI 무핀(권고 `0.734` 핀)과 selene(안 돌리는 린터, 설정도 stale — 폐기 vs
   게이트화).
 
+- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항 셋** — `qa-request/post-implementation-review-round3.md` §4가 소스(마커
+  커밋 `8b4748a`의 리뷰): **Q22**(`H-432`) Slot 요소 자리의 공변 마커 + 가변 출력 `SlotItem<T>`의 건전성(중첩 `Slot<Frame>`을
+  `Slot<Instance>` 핸들로 꺼내 `Add(folder)`가 strict 통과 — 권고 (a) 유지 + 캐비엇) / **Q23** 변환 함수 `old`의 `FieldOut<T>`
+  모양(권고 (a) `State<T | Tween<T>>` 한 팔) / **Q24**(`H-437`) 회신 2차 승인 범위 — 이름 `SlotItem`/`FieldOut`·`NewChild` 팔
+  모양·플래그 제거는 메인 제안(권고 (a) 그대로 승인).
+
 - **[2026-09-07 신설] 소스 구조 재편 — 사용자 의견 여덟의 확인 결과** — `research/source-layout-plan.md`가
   소스(항목별 사실·이득·비용·권고). 답할 것: 1절 Slot 분할(권고 한다, Q9/Q14 뒤 별도 단위) / 2절 Tween(권고
   (c) 엔진 어휘 검증만 quad-roblox로) / 3절 Tag 생성자·`Added`에 `string | {string} | Tag` 유니언(권고 (b), 어제

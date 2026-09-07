@@ -2397,4 +2397,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   마커로.** 스파이크 `35`(생성 D 슬롯 모양) → quad-types `StateMarker`/`SlotMarker`(+`StateData`/`Slot`에 필드,
   런타임 `__quadState`/`__quadSlot = true`, `__quad*Value`는 순수 팬텀) → `NewChild` 한 팔 → gen-d `PV`/`Field`/`Elem`
   마커화(`PV73` 11팔 → 4팔, `SHF0` 소멸) → spec 양성·tmp 음성 아홉. 타입 검사 4.96s → 3.41s,
-  `LuauSolverConstraintLimit` 제거. 정본 `typing-limits.md` 8.11 규칙 표 + 배너 아홉. 원장 §16.
+  `LuauSolverConstraintLimit` 제거. 정본 `typing-limits.md` 8.11 규칙 표 + 배너 아홉. 원장 §16. 단위 끝 절차 → **round3**
+  신설(`H-431` NewChild에 `State<Observer?>` 팔 누락 HIGH·`H-433`~`H-439`; Q22 Slot 공변+가변 출력·Q23 `FieldOut`·Q24 승인 범위).

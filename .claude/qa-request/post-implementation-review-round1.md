@@ -60,6 +60,8 @@
 
 ## §4 사용자 문항 (갈래 ②)
 
+**[2026-09-07]** Q1~Q21은 이 표가 소스, **Q22부터는 `post-implementation-review-round3.md` §4**(라운드 파일마다 자기 §4 — 번호는 이어 센다).
+
 | 문항 | 무엇 | 선택지 | 권고 |
 |---|---|---|---|
 | **Q1** (`H-351` 후속) | `NewChild`에 `State<Slot<Instance>>` 팔도 넣을지 — 런타임은 StoreBind 언랩으로 도착하고 `isHandlable`이 `isSlot`만 보므로 동작은 이미 된다. 타입만의 문제 | (a) 넣는다(`State<Slot<Instance>>` 한 팔 — `State<X>` 불변이라 그 글자 그대로만) / (b) 안 넣는다(`State<Slot>`은 slot-plan의 "교체는 언마운트" 의미론이 있는 드문 관용구 — 필요가 관측되면) | **(b)** — 관측된 필요 없음, 팔 하나가 "too complex" 예산을 먹는다. **[2026-09-07 회신] 열림 — 사용자 사고 중**(`State<Instance \| Slot<Instance>>` 하나로 끝나지 않나 / 입력 자리엔 마커 타입) → 스파이크 `luau-test/done/34`·메인 의견 **§15**. **[2026-09-07 회신 2차] 닫힘 — 마커 적용**(*"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*): `NewChild`의 State 팔이 `StateMarker<(Instance \| SlotMarker<Instance> \| Tag \| Attribute \| None)?>` 하나가 돼 `State<Slot<Frame>>`까지 든다, **§16** |
@@ -350,7 +352,7 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 | **Q3** 묶음 | *"너무 많은게 묶여있어서 다른 에이전트로 explain 걸어야 보기 편했어 … 실제로 나뉘어지는 요소라 생각함"* | 항목별로 아래. 다음부터 품질 제안은 **항목마다 문항 하나**로 올린다(묶음 금지 — 사용자 지적) |
 | Q3 ① Slot 재정렬 | *"당장 문제는 없음. 다만 rawOrder(newOrder) 식으로 뭔가 한번에 재정렬 하는게 있으면 좋아보이긴 해. 다만 reconcile 자체가 재정렬 된건지 그런 상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해. 리서치 목록에만 두고"* | **(b) 보류** — ROADMAP 백로그 "최적화 후보 목록"에 `rawOrder(newOrder)` 아이디어와 함께 기록(코드·정본 무변경) |
 | Q3 ② `notInstalled` 스텁 | *"동의. 핼퍼로 추출하는건 raw*에서도 했던 행위라 괜찮아보임"* | **반영** — `quad-base/src/NotInstalled.luau` `notInstalled(name, what, hint?)` 하나; `Tag.luau`(the tag ops)·`AttributeKey.luau`(the attribute op)·`LifetimeHandle.luau`(lifetime primitives / engine ops + mock 힌트) 세 사본이 한 줄 위임. 메시지 형태(`"<name> is not available"`) 그대로 — spec 매치 유지. `LifetimeHandle.luau`의 `Err`/`SURFACE` 지역은 쓸 데가 없어져 제거 |
-| Q3 ③ 빈 자리 등록 복제 | *"setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다 싶긴함. 아주 작은 부분이라서"* | **반영 — `Dispatch.setEmpty(ownerKey, i, anchor?)`**(Bookkeeping; `setOffsetSource(None)` → `setLength(0, anchor)` 한 본문, quad-types `Dispatch`에 필드 추가). `None.luau`의 `registerEmptySlot`은 제거하고 quad-base 호출 10곳 + quad-roblox `OnChange`/`InstanceChild` 인라인 사본 둘이 전부 `dispatch.setEmpty`로 — 패키지 경계 때문에 남아 있던 복제가 사라졌다. 정본 `dispatch-core-plan.md` `NilHandler` 의사코드 아래 한 문단 |
+| Q3 ③ 빈 자리 등록 복제 | *"setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다 싶긴함. 아주 작은 부분이라서"* | **반영 — `Dispatch.setEmpty(ownerKey, i, anchor?)`**(Bookkeeping; `setOffsetSource(None)` → `setLength(0, anchor)` 한 본문, quad-types `Dispatch`에 필드 추가). `None.luau`의 `registerEmptySlot`은 제거하고 quad-base 호출 9곳(⑤로 Ref/Modifier 사본이 접혀 반영 뒤 8곳 — round3 `H-439` 정정) + quad-roblox `OnChange`/`InstanceChild` 인라인 사본 둘이 전부 `dispatch.setEmpty`로 — 패키지 경계 때문에 남아 있던 복제가 사라졌다. 정본 `dispatch-core-plan.md` `NilHandler` 의사코드 아래 한 문단 |
 | Q3 ④ Reflection 캐시 | *"공통으로 두는건 아주 싸긴 해서 보류 안 해도 간단 패치일것 같기도 해. 딱히 부작용도 없을듯"* | **반영** — `quad-roblox/src/Reflection.luau` `memberSet(fetch, accept?)`(className → 멤버 집합 메모이저). `game` 읽기는 **호출자 클로저에 남긴다** — CLI spec의 `getfenv(installProperty).game` 심 seam이 그대로 살아야 해서(`H-302` 쓰기 필터는 Property 쪽 `accept`) |
 | Q3 ⑤ `addProcessed` 사본 | *"핼퍼 함수 만들기 동의"* | **반영** — `None.luau` `addProcessedHandler(dispatch, name, sentinel)`; `Dispatch/Ref.luau`(PreRef/PostRef)·`Dispatch/Modifier.luau`가 호출(세 사본 → 하나) |
 | Q3 ⑥ `assertLive; assertManual` | *"동의. 순수 코드관리임"* | **반영** — `Slot.luau` `assertMutable(self)`(둘을 한 함수로), 공개 CRUD 9곳 |

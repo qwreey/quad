@@ -357,6 +357,10 @@ local function Init(module: any)
 	-- (2026-09-07: "setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다"). `anchor`
 	-- is setLength's 4th argument (`inst`, `H-35`); NilHandler passes none.
 	local function setEmpty(ownerKey: any, i: number, anchor: any?)
+		-- [round3 `H-434`] validate HERE: this function sits on the Dispatch table, so the
+		-- `H-242` loop tags it SURFACE — if the inner (also tagged) setOffsetSource raised,
+		-- nearest+1 would be this body, not the handler that called setEmpty.
+		checkPosition("setEmpty", i)
 		setOffsetSource(ownerKey, i, None)
 		setLength(ownerKey, i, 0, anchor)
 	end

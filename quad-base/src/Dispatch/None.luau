@@ -54,10 +54,7 @@ local None = sentinel("None")
 
 local module = { None = None, sentinel = sentinel }
 
--- The terminal "empty slot" registration (offsetSource FIRST, then length 0)
--- used to live here as `registerEmptySlot`; since the post-implementation
--- review Q3 ③ (2026-09-07) it is `dispatch.setEmpty` (Bookkeeping) — on the
--- Dispatch surface so quad-roblox handlers share the one body too.
+-- The terminal "empty slot" registration is `dispatch.setEmpty` (Bookkeeping, 2026-09-07 Q3 ③).
 
 -- The `Processed*` nop terminal (ProcessedModifier / ProcessedPreRef /
 -- ProcessedPostRef — `modifier-plan.md` `H-35` block, `ref-plan.md` canon):

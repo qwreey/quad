@@ -289,14 +289,15 @@ def emit():
     L.append("-- Modifier 필드 setter의 값 타입(modifier-plan 4·4-1·10절): 리터럴 T | Tween<T> |")
     L.append("-- State(마커, T | Tween<T>를 품음) | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로').")
     L.append("-- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커")
-    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(Peek 반환과 같은 층).")
+    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(모양은 round3 §4 Q23 — 사용자 문항).")
     # [2026-09-06 M11 단위 ① H-327] 옛 Field<V>에 V = T | Tween<T>를 넣던 모양은 새 솔버의
     # State 불변성 때문에 State<T>를 거부했다(M7 하자 — m:Position(state)가 strict에서
     # 막힘, 실측). 프로퍼티 setter의 값 타입은 T와 Tween<T>의 State 형을 각각 나열한다.
     # setter 쪽은 전체형 Tween<T>(Mapped 포함): 함수 멤버가 든 이 유니언에서 데이터부
     # TweenData<T>는 교집합 Tween 값을 받지 못했다(2026-09-06 실측 — Param 슬롯의 리터럴
     # 자리와 달리 호출 인자 자리). Modifier 타입은 클래스별이라 복잡도 문제도 없다.
-    # 값/함수 인자/함수 반환 셋이 같은 유니언 — 별칭 하나로(리뷰: 부분 수정 시 세 팔이 어긋남)
+    # (옛 규칙 "값/함수 인자/함수 반환 셋이 같은 유니언 — 별칭 하나로"는 마커로 깨졌다: 입력 둘은
+    # FieldV, 출력 old는 FieldOut — round3 H-432/Q23)
     # [2026-09-07 마커] 입력 팔은 StateMarker 하나(공변 — State<T>·State<Tween<T>>·정직한
     # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
     # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
@@ -447,10 +448,9 @@ def emit():
     # and `function_fields`' depth-0 scan must see the same text (a brace or paren inside a
     # comment silently shifted the harvest). One alternation — a block comment wins where it
     # starts, a line comment swallows a `--[[` that follows it on the same line.
-    qt = re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", (ROOT / "quad-types" / "src" / "init.luau").read_text(), flags=re.S)
-
     def strip_comments(text):
         return re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", text, flags=re.S)
+    qt = strip_comments((ROOT / "quad-types" / "src" / "init.luau").read_text())  # one regex for every scanner (round3 H-438)
     rt = strip_comments((ROOT / "quad-roblox" / "src" / "types.luau").read_text())
 
     def type_body(tname, text=qt, where="quad-types"):

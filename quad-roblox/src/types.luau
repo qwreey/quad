@@ -58,7 +58,8 @@ export type Tween<T> = QuadTypes.Tween<T>
 export type TweenData<T> = QuadTypes.TweenData<T>
 
 -- `Animate(info)` options (M11 단위 ③, tween-plan "`Animate` 콤비네이터" 절): `Tween`
--- 옵션(`Value` 제외) + `CanAnimate`, 각 필드는 `T | State<T>`(factory 안에서 `:Get()`
+-- 옵션(`Value` 제외) + `CanAnimate`, 각 필드는 `T | State<T>`([2026-09-07 마커] State 자리는
+-- 입력이라 `StateMarker<T>` — typing-limits 8.11; factory 안에서 `:Get()`
 -- 한 번 풀어 plain으로 `Tween{...}`에 넘긴다). 반환 factory는 `:Apply` 전용이고
 -- 타입은 **`(self: any) -> State<Tween<any>>`**(`H-334`, §4 확인 항목 — 실측 넷):
 -- (1) 정직한 `State<T | Tween<T>>`(CanAnimate=false 분기가 plain)는 어느 슬롯
@@ -78,7 +79,7 @@ export type AnimateInfo = {
 	read RepeatCount: (number | QuadTypes.StateMarker<number>)?,
 	read Reverses: (boolean | QuadTypes.StateMarker<boolean>)?,
 	read DelayTime: (number | QuadTypes.StateMarker<number>)?,
-	read Override: (QuadTypes.TweenOverride | QuadTypes.State<QuadTypes.TweenOverride>)?,
+	read Override: (QuadTypes.TweenOverride | QuadTypes.StateMarker<QuadTypes.TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
 }
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<QuadTypes.Tween<any>>
@@ -96,9 +97,11 @@ export type NewChild =
 	-- 마커는 T에 공변이라 값 유니언 하나로 끝난다 — `State<Frame>`, `State<Instance?>`(NilHandler
 	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StoreBind 언랩 → SlotHandler),
 	-- `State<Tag>`/`State<Attribute>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
-	-- 여기 없고, Observer/EffectHandle의 State 형은 정본에 없어 넣지 않는다.
+	-- 여기 없다. [round3 `H-431`] `State<Observer?>`/`State<EffectHandle?>`는 정본이 지시하는 leaf 종료
+	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StoreBind 언랩 →
+	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
-	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.Tag | QuadTypes.Attribute | QuadTypes.None)?>
+	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.Tag | QuadTypes.Attribute | QuadTypes.Observer | QuadTypes.EffectHandle | QuadTypes.None)?>
 	| QuadTypes.None
 	| QuadTypes.Tag
 	| QuadTypes.Attribute

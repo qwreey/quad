@@ -61,11 +61,13 @@ local function _markerChildren()
 	local slotState = q.Source(slot) -- State<Slot<Frame>> — Q1의 원래 팔, 팔 추가 없이 든다
 	local ref = q.Ref(nil :: Frame?)
 	local refState = q.Source(ref) -- State<Ref<Frame?>> — 8.7 캐비엇 5의 `:: FrameRefMarker` 캐스트 불필요
+	local obsState = q.Source(nil :: QuadTypes.Observer?) -- round3 `H-431`: leaf 종료 관용구 `State<Observer?>`(slot-plan)
+	local effState = q.Source(nil :: QuadTypes.EffectHandle?)
 	local outer = q.Slot() :: QuadTypes.Slot<Instance>
 	outer:Add(slot) -- Slot 요소 자리도 마커: Slot<Frame> → Slot<Instance>
 	outer:Add(frameState)
 	local got: QuadTypes.SlotItem<Instance>? = outer:Get(1) -- 출력은 전체형(SlotItem)
-	return q.D.Frame({ frameState, maybe, slot, slotState, refState, got :: any }), q.D.ScrollingFrame({ outer })
+	return q.D.Frame({ frameState, maybe, slot, slotState, refState, obsState, effState, got :: any }), q.D.ScrollingFrame({ outer })
 end
 
 local function _neverCalled()

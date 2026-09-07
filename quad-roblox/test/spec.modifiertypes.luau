@@ -38,9 +38,9 @@ local function _neverCalled(custom: MaterialButtonModifier)
 	q.Modifier.DefineSubtype("TextButton", "MaterialButton")
 	local made = MaterialButton({ Text = "m" }):Elevation(1):AsMaterialButton()
 	-- 클래스별 setter: 리터럴 / State / None / 변환 함수(old는 저장된 그대로)
-	-- State 필드: [2026-09-06 M11 `H-327`] `Field<T>`가 `State<T>`와 `State<Tween<T>>`를
-	-- 각각 나열하므로 plain `Source(T)`가 그대로 들어간다 — 옛 `UDim2 | Tween<UDim2>`
-	-- 캐스트(8.7 캐비엇 5 우회)는 오히려 거부된다(State 불변성).
+	-- State 필드: [2026-09-06 M11 `H-327`] plain `Source(T)`가 그대로 들어간다 — [2026-09-07 마커]
+	-- `Field<T>`의 State 팔은 공변 `StateMarker<T | Tween<T>>` 하나(옛 "각각 나열"은 소멸), 옛
+	-- `UDim2 | Tween<UDim2>` 캐스트(8.7 캐비엇 5 우회)는 이제 그냥 들어간다.
 	local size = q.Source(UDim2.new())
 	local sizeTween: State<Tween<UDim2>> = size:Compute(function(h: QuadTypes.StateData<UDim2>): Tween<UDim2>
 		return q.Tween({ Value = h:Get(), Time = 0.2 })

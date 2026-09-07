@@ -35,3 +35,12 @@ gen-d(`PV`/`Field`/`Elem`/이벤트) → 재생성 → test.sh.
 `H-334` (1)의 "정직한 Animate 타입은 too complex" 소멸. 음성 아홉(tmp 프로브) 전부 거부. test.sh
 exit 0(스펙 49), doc-check ERROR 0. 정본 배너 아홉 자리(원장 §16 목록). 단위 끝 절차(감사자 1패스 →
 `/code-review` opus 지정)는 원장 round3 새 파일의 첫 항목.
+
+## 4. 단위 끝 절차 결과 (같은 날 저녁)
+
+감사자 1패스 4건(ui-shorthand 배너 누락·onchange Elem 정의·README §범위·팬텀 문항) 반영 뒤 커밋 `8b4748a`;
+사용자가 팬텀을 확정(`d07aab0`). `/code-review high`(파인더·검증자 opus, 미완 0)가 10건 — 원장 **round3**
+신설(`H-431`~`H-439`, Q22~Q24). HIGH 하나는 첫 마커 팔이 `State<Observer?>` 종료 관용구(slot-plan)를 빠뜨린
+것으로 내 주석 "정본에 없다"가 틀렸다 — 정본을 grep하지 않고 단정한 실수. Slot의 입력 공변 + 가변 출력(Q22)과
+`FieldOut` 모양(Q23)은 승인 범위 밖의 새 결과·새 모양이라 문항으로, 이름·팔 모양·플래그 제거(Q24)는 승인과
+제안을 갈라 적었다(8.11 배너). 타입 검사 2.95s.
