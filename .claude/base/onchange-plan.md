@@ -85,7 +85,8 @@
    덤프 기준). 클래스 간 타입이 다른 이름(`Style`/`CanvasSize`/`Color`/
    `Offset`/`Transparency`/`Padding`)은 **`any`** — `index<>`가 유니언을 주면
    주석 콜백이 반공변으로 거부되기 때문(실측).
-2. **`OnChangeFn = <K>(name: K & keyof<PropTypes>, fn: (index<PropTypes, K>) -> ()) -> OnChangeDescriptor<K>`**
+   **[2026-09-07 회신 3차 Q19 (a) 사용자 확정]** OnChange는 **읽기 표면 `PropTypesRead`**(쓰기 프로퍼티 + ReadOnly 프로퍼티 — AbsoluteSize/AbsolutePosition/TextBounds 등 109개, 정규화가 `readProps`로 따로 싣는다)를 쓴다 — 쓰기 표면 `PropTypes`로는 관측의 주 대상이 strict에서 거부됐다(`H-414`). `<Class>OnChange` 유니언도 같은 표면.
+2. **`OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>`**
    — `RobloxExtension.OnChange`가 이 타입(런타임 팩토리는 무타입). 이름
    오타(`keyof`)와 콜백 파라미터 타입 불일치(`index<>`)를 **호출 자리**에서
    잡고, **무주석 콜백의 파라미터를 추론**한다(`function(v) … end`의 `v`가

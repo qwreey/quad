@@ -75,6 +75,9 @@ end
 local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, ctx: string)
 	if isStore(arg) then
 		for _, name in ipairs(arg:Names()) do
+			if name == "" then
+				Err.errorBeforeNearest(`{ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)
+			end
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end

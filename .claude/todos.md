@@ -31,8 +31,12 @@
      `__quadStateValue`/`__quadSlotValue`는 사용자 확정(*"런타임 값에 없는 팬텀 괜찮아 … 값이 싸다면 그래도 좋아"*).
      **round3**(`qa-request/post-implementation-review-round3.md`, 마커 커밋 리뷰): ① `H-431`(NewChild State 팔에
      Observer/EffectHandle — `State<Observer?>` 종료 관용구)·`H-433`~`H-439` 반영, ② **Q22**(Slot 공변 + 가변 출력)·**Q23**
-     (`FieldOut` 모양)·**Q24**(승인 범위 — 이름·팔 모양·플래그). **남은 사용자 몫: Q4~Q21, Q7 둘째·셋째, Q22~Q24.** 다음 순회는
-     round3 §5·`H-440`부터, 품질 제안은 항목마다 문항 하나로.
+     (`FieldOut` 모양)·**Q24**(승인 범위 — 이름·팔 모양·플래그).
+     **회신 3차(2026-09-07 저녁, 대화형)**: Q4~Q19·Q7 둘째·셋째 전부 닫힘(round3 §6 — Animate `Dedup`·nil/None 통과, Slot 좀비
+     메시지+UB, `releaseOwner`, setter 키·`setOffsetSource`·`setLength` 게이트, `numberOnly` 제거, `PropTypesRead`, Compute 순수성
+     원칙); Gemini 4차 → round4 파일·`H-440`~`H-444` 반영; `research/deferred-hardening-plan.md` 신설. **남은 사용자 몫: Q6·Q20·Q21,
+     Q22~Q24, 구조 재편 여덟, flatten 슈거 일곱.** 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     다음 순회는 round3 §7·`H-445`부터.
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).

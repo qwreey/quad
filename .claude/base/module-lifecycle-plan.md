@@ -196,8 +196,9 @@ return Init
   재시도가 그 위에 다시 돌아 핸들러가 중복된다(실재현 17→18→19). 프로바이더
   팩토리는 **변경 전에 실패하거나(버전 게이트가 그 예) 멱등이어야** 하고,
   mutate-then-throw는 UB다. 같은 뿌리의 다른 증상(`AddPlugin(providerFn)`이
-  락을 건너뛰어 두 번째 적용을 허용)은 `qa-request/post-implementation-review-round1.md`
-  §4 Q10.
+  락을 건너뛰어 두 번째 적용을 허용)은 **[2026-09-07 회신 3차 Q10 (c) 사용자 확정] UB** —
+  프로바이더 팩토리를 `AddPlugin`에 넘기는 것은 오용이고 quad는 막지 않는다(사용자: *"오용 표면을 막을
+  이유를 모르겠음. UB로 두어도 되는 부분"*; 원장 round1 §4 Q10).
 
   `RunInit`(quad-base 내부 서브시스템)·`UseProvider`(backend 유일 슬롯)·
   `AddPlugin`(다수 확장)은 **서로 다른 메커니즘**으로 남는다. 백엔드

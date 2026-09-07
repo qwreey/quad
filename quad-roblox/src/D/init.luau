@@ -1538,7 +1538,7 @@ export type WorldModelParam<E> = {
 	StyledPropertiesChanged: ((() -> ()) | StateMarker<() -> ()> | None)?,
 }
 
--- OnChange — PropTypes(D 스코프 전체 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)
+-- PropTypes(D 스코프 전체 쓰기 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)
 export type PropTypes = {
 	ActivatedCursorIcon: string,
 	ActivatedCursorIconContent: Content,
@@ -1776,8 +1776,267 @@ export type PropTypes = {
 	ZIndexBehavior: Enum.ZIndexBehavior,
 	ZOffset: number,
 }
-export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypes, K>) -> () }
-export type OnChangeFn = <K>(name: K & keyof<PropTypes>, fn: (index<PropTypes, K>) -> ()) -> OnChangeDescriptor<K>
+-- OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)
+export type PropTypesRead = {
+	AbsoluteCanvasSize: Vector2,
+	AbsoluteCellCount: Vector2,
+	AbsoluteCellSize: Vector2,
+	AbsoluteContentSize: Vector2,
+	AbsolutePosition: Vector2,
+	AbsoluteRotation: number,
+	AbsoluteSize: Vector2,
+	AbsoluteWindowSize: Vector2,
+	ActivatedCursorIcon: string,
+	ActivatedCursorIconContent: Content,
+	Active: boolean,
+	Adornee: Instance,
+	AlwaysOnTop: boolean,
+	Ambient: Color3,
+	AnchorPoint: Vector2,
+	Animated: boolean,
+	ApplyStrokeMode: Enum.ApplyStrokeMode,
+	Archivable: boolean,
+	AspectRatio: number,
+	AspectType: Enum.AspectType,
+	AutoButtonColor: boolean,
+	AutoLocalize: boolean,
+	AutomaticCanvasSize: Enum.AutomaticSize,
+	AutomaticSize: Enum.AutomaticSize,
+	BackgroundColor3: Color3,
+	BackgroundTransparency: number,
+	BlurRadius: UDim,
+	BorderColor3: Color3,
+	BorderMode: Enum.BorderMode,
+	BorderOffset: UDim,
+	BorderSizePixel: number,
+	BorderStrokePosition: Enum.BorderStrokePosition,
+	BottomImage: string,
+	BottomImageContent: Content,
+	BottomLeftRadius: UDim,
+	BottomRightRadius: UDim,
+	BoundingBehavior: Enum.UIDragDetectorBoundingBehavior,
+	BoundingUI: GuiBase2d,
+	Brightness: number,
+	CFrame: CFrame,
+	CameraSubject: Instance,
+	CameraType: Enum.CameraType,
+	CanvasPosition: Vector2,
+	CanvasSize: any,
+	Capabilities: SecurityCapabilities,
+	CellPadding: UDim2,
+	CellSize: UDim2,
+	Circular: boolean,
+	ClassName: string,
+	ClearTextOnFocus: boolean,
+	ClipToDeviceSafeArea: boolean,
+	ClipsDescendants: boolean,
+	Color: any,
+	ContentText: string,
+	CornerRadius: UDim,
+	CurrentCamera: Camera,
+	CurrentDistance: number,
+	CurrentPage: GuiObject,
+	CursorIcon: string,
+	CursorIconContent: Content,
+	CursorPosition: number,
+	DiagonalFieldOfView: number,
+	DisplayOrder: number,
+	DistanceStep: number,
+	DominantAxis: Enum.DominantAxis,
+	DragAxis: Vector2,
+	DragRelativity: Enum.UIDragDetectorDragRelativity,
+	DragRotation: number,
+	DragSpace: Enum.UIDragDetectorDragSpace,
+	DragStyle: Enum.UIDragDetectorDragStyle,
+	DragUDim2: UDim2,
+	EasingDirection: Enum.EasingDirection,
+	EasingStyle: Enum.EasingStyle,
+	ElasticBehavior: Enum.ElasticBehavior,
+	Enabled: boolean,
+	ExtentsOffset: Vector3,
+	ExtentsOffsetWorldSpace: Vector3,
+	Face: Enum.NormalId,
+	FieldOfView: number,
+	FieldOfViewMode: Enum.FieldOfViewMode,
+	FillDirection: Enum.FillDirection,
+	FillDirectionMaxCells: number,
+	FillEmptySpaceColumns: boolean,
+	FillEmptySpaceRows: boolean,
+	FlexMode: Enum.UIFlexMode,
+	Focus: CFrame,
+	FontFace: Font,
+	GamepadInputEnabled: boolean,
+	GroupColor3: Color3,
+	GroupTransparency: number,
+	GrowRatio: number,
+	GuiState: Enum.GuiState,
+	HeadLocked: boolean,
+	HeadScale: number,
+	HorizontalAlignment: Enum.HorizontalAlignment,
+	HorizontalFlex: Enum.UIFlexAlignment,
+	HorizontalScrollBarInset: Enum.ScrollBarInset,
+	HoverHapticEffect: HapticEffect,
+	HoverImage: string,
+	HoverImageContent: Content,
+	IgnoreGuiInset: boolean,
+	Image: string,
+	ImageColor3: Color3,
+	ImageContent: Content,
+	ImageRectOffset: Vector2,
+	ImageRectSize: Vector2,
+	ImageTransparency: number,
+	InputSink: Enum.InputSink,
+	Inset: boolean,
+	Interactable: boolean,
+	IsLoaded: boolean,
+	ItemLineAlignment: Enum.ItemLineAlignment,
+	LayoutOrder: number,
+	LightColor: Color3,
+	LightDirection: Vector3,
+	LightInfluence: number,
+	LineHeight: number,
+	LineJoinMode: Enum.LineJoinMode,
+	Looped: boolean,
+	MajorAxis: Enum.TableMajorAxis,
+	MaxAxisFieldOfView: number,
+	MaxDistance: number,
+	MaxDragAngle: number,
+	MaxDragTranslation: UDim2,
+	MaxSize: Vector2,
+	MaxTextSize: number,
+	MaxVisibleGraphemes: number,
+	MidImage: string,
+	MidImageContent: Content,
+	MinDragAngle: number,
+	MinDragTranslation: UDim2,
+	MinSize: Vector2,
+	MinTextSize: number,
+	Modal: boolean,
+	ModelStreamingMode: Enum.ModelStreamingMode,
+	MultiLine: boolean,
+	Name: string,
+	NearPlaneZ: number,
+	NextSelectionDown: GuiObject,
+	NextSelectionLeft: GuiObject,
+	NextSelectionRight: GuiObject,
+	NextSelectionUp: GuiObject,
+	Offset: any,
+	OpenTypeFeatures: string,
+	OpenTypeFeaturesError: string,
+	Padding: any,
+	PaddingBottom: UDim,
+	PaddingLeft: UDim,
+	PaddingRight: UDim,
+	PaddingTop: UDim,
+	PixelsPerStud: number,
+	PlaceholderColor3: Color3,
+	PlaceholderText: string,
+	PlayerToHideFrom: Instance,
+	Playing: boolean,
+	Position: UDim2,
+	PressHapticEffect: HapticEffect,
+	PressedImage: string,
+	PressedImageContent: Content,
+	PrimaryPart: BasePart,
+	ReferenceUIInstance: GuiObject,
+	ResampleMode: Enum.ResamplerMode,
+	ResetOnSpawn: boolean,
+	Resolution: Vector2,
+	ResponseStyle: Enum.UIDragDetectorResponseStyle,
+	RichText: boolean,
+	RollOffMaxDistance: number,
+	RollOffMinDistance: number,
+	RollOffMode: Enum.RollOffMode,
+	RootLocalizationTable: LocalizationTable,
+	Rotation: number,
+	SafeAreaCompatibility: Enum.SafeAreaCompatibility,
+	Sandboxed: boolean,
+	Scale: number,
+	ScaleType: Enum.ScaleType,
+	ScreenInsets: Enum.ScreenInsets,
+	ScrollBarImageColor3: Color3,
+	ScrollBarImageTransparency: number,
+	ScrollBarThickness: number,
+	ScrollWheelInputEnabled: boolean,
+	ScrollingDirection: Enum.ScrollingDirection,
+	ScrollingEnabled: boolean,
+	Selectable: boolean,
+	Selected: boolean,
+	SelectionBehaviorDown: Enum.SelectionBehavior,
+	SelectionBehaviorLeft: Enum.SelectionBehavior,
+	SelectionBehaviorRight: Enum.SelectionBehavior,
+	SelectionBehaviorUp: Enum.SelectionBehavior,
+	SelectionGroup: boolean,
+	SelectionImageObject: GuiObject,
+	SelectionModeDragSpeed: UDim2,
+	SelectionModeRotateSpeed: number,
+	SelectionOrder: number,
+	SelectionStart: number,
+	ShowBehindParent: boolean,
+	ShowNativeInput: boolean,
+	ShrinkRatio: number,
+	Size: UDim2,
+	SizeConstraint: Enum.SizeConstraint,
+	SizeOffset: Vector2,
+	SizingMode: Enum.SurfaceGuiSizingMode,
+	SliceCenter: Rect,
+	SliceScale: number,
+	SortOrder: Enum.SortOrder,
+	Spread: UDim2,
+	StartCorner: Enum.StartCorner,
+	StrokeSizingMode: Enum.StrokeSizingMode,
+	StudsOffset: Vector3,
+	StudsOffsetWorldSpace: Vector3,
+	Style: any,
+	Text: string,
+	TextBounds: Vector2,
+	TextColor3: Color3,
+	TextDirection: Enum.TextDirection,
+	TextEditable: boolean,
+	TextFits: boolean,
+	TextScaled: boolean,
+	TextSize: number,
+	TextStrokeColor3: Color3,
+	TextStrokeTransparency: number,
+	TextTransparency: number,
+	TextTruncate: Enum.TextTruncate,
+	TextWrapped: boolean,
+	TextXAlignment: Enum.TextXAlignment,
+	TextYAlignment: Enum.TextYAlignment,
+	Thickness: number,
+	TileMode: Enum.GradientTileMode,
+	TileSize: UDim2,
+	TimeLength: number,
+	TimePosition: number,
+	ToolPunchThroughDistance: number,
+	TopImage: string,
+	TopImageContent: Content,
+	TopLeftRadius: UDim,
+	TopRightRadius: UDim,
+	TouchInputEnabled: boolean,
+	Transparency: any,
+	TweenTime: number,
+	Type: Enum.GradientType,
+	UIDragSpeedAxisMapping: Enum.UIDragSpeedAxisMapping,
+	UseWorkspaceCollisionGroups: boolean,
+	VRTiltAndRollEnabled: boolean,
+	VerticalAlignment: Enum.VerticalAlignment,
+	VerticalFlex: Enum.UIFlexAlignment,
+	VerticalScrollBarInset: Enum.ScrollBarInset,
+	VerticalScrollBarPosition: Enum.VerticalScrollBarPosition,
+	Video: string,
+	VideoContent: Content,
+	ViewportSize: Vector2,
+	Visible: boolean,
+	Volume: number,
+	WorldPivot: CFrame,
+	Wraps: boolean,
+	ZIndex: number,
+	ZIndexBehavior: Enum.ZIndexBehavior,
+	ZOffset: number,
+}
+export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }
+export type OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>
 
 export type BillboardGuiOnChange =
 	{ Name: "Active", Callback: (boolean) -> () }
@@ -1809,6 +2068,11 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "StudsOffset", Callback: (Vector3) -> () }
 	| 	{ Name: "StudsOffsetWorldSpace", Callback: (Vector3) -> () }
 	| 	{ Name: "ZIndexBehavior", Callback: (Enum.ZIndexBehavior) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "CurrentDistance", Callback: (number) -> () }
 export type BillboardGuiModifier = {
 	read __quadModifier: "BillboardGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: BillboardGuiModifier, key: string) -> T | State<T> | None | nil,
@@ -1867,6 +2131,9 @@ export type CameraOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "VRTiltAndRollEnabled", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "NearPlaneZ", Callback: (number) -> () }
+	| 	{ Name: "ViewportSize", Callback: (Vector2) -> () }
 export type CameraModifier = {
 	read __quadModifier: "Camera", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: CameraModifier, key: string) -> T | State<T> | None | nil,
@@ -1934,6 +2201,11 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type CanvasGroupModifier = {
 	read __quadModifier: "CanvasGroup", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: CanvasGroupModifier, key: string) -> T | State<T> | None | nil,
@@ -1994,6 +2266,7 @@ export type FolderOnChange =
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type FolderModifier = {
 	read __quadModifier: "Folder", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FolderModifier, key: string) -> T | State<T> | None | nil,
@@ -2049,6 +2322,11 @@ export type FrameOnChange =
 	| 	{ Name: "Style", Callback: (Enum.FrameStyle) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type FrameModifier = {
 	read __quadModifier: "Frame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FrameModifier, key: string) -> T | State<T> | None | nil,
@@ -2405,6 +2683,12 @@ export type ImageButtonOnChange =
 	| 	{ Name: "TileSize", Callback: (UDim2) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 export type ImageButtonModifier = {
 	read __quadModifier: "ImageButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageButtonModifier, key: string) -> T | State<T> | None | nil,
@@ -2527,6 +2811,12 @@ export type ImageLabelOnChange =
 	| 	{ Name: "TileSize", Callback: (UDim2) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 export type ImageLabelModifier = {
 	read __quadModifier: "ImageLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageLabelModifier, key: string) -> T | State<T> | None | nil,
@@ -2736,6 +3026,10 @@ export type ScreenGuiOnChange =
 	| 	{ Name: "SelectionBehaviorUp", Callback: (Enum.SelectionBehavior) -> () }
 	| 	{ Name: "SelectionGroup", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndexBehavior", Callback: (Enum.ZIndexBehavior) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type ScreenGuiModifier = {
 	read __quadModifier: "ScreenGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScreenGuiModifier, key: string) -> T | State<T> | None | nil,
@@ -2823,6 +3117,13 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "VerticalScrollBarPosition", Callback: (Enum.VerticalScrollBarPosition) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteCanvasSize", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteWindowSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type ScrollingFrameModifier = {
 	read __quadModifier: "ScrollingFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScrollingFrameModifier, key: string) -> T | State<T> | None | nil,
@@ -2922,6 +3223,10 @@ export type SurfaceGuiOnChange =
 	| 	{ Name: "ToolPunchThroughDistance", Callback: (number) -> () }
 	| 	{ Name: "ZIndexBehavior", Callback: (Enum.ZIndexBehavior) -> () }
 	| 	{ Name: "ZOffset", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type SurfaceGuiModifier = {
 	read __quadModifier: "SurfaceGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: SurfaceGuiModifier, key: string) -> T | State<T> | None | nil,
@@ -3052,6 +3357,15 @@ export type TextBoxOnChange =
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "ContentText", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
+	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextBoxModifier = {
 	read __quadModifier: "TextBox", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextBoxModifier, key: string) -> T | State<T> | None | nil,
@@ -3190,6 +3504,15 @@ export type TextButtonOnChange =
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "ContentText", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
+	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextButtonModifier = {
 	read __quadModifier: "TextButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextButtonModifier, key: string) -> T | State<T> | None | nil,
@@ -3320,6 +3643,15 @@ export type TextLabelOnChange =
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "ContentText", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
+	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
+	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 export type TextLabelModifier = {
 	read __quadModifier: "TextLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextLabelModifier, key: string) -> T | State<T> | None | nil,
@@ -3398,6 +3730,7 @@ export type UIAspectRatioConstraintOnChange =
 	| 	{ Name: "DominantAxis", Callback: (Enum.DominantAxis) -> () }
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIAspectRatioConstraintModifier = {
 	read __quadModifier: "UIAspectRatioConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIAspectRatioConstraintModifier, key: string) -> T | State<T> | None | nil,
@@ -3510,6 +3843,7 @@ export type UICornerOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "TopLeftRadius", Callback: (UDim) -> () }
 	| 	{ Name: "TopRightRadius", Callback: (UDim) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UICornerModifier = {
 	read __quadModifier: "UICorner", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UICornerModifier, key: string) -> T | State<T> | None | nil,
@@ -3559,6 +3893,7 @@ export type UIDragDetectorOnChange =
 	| 	{ Name: "SelectionModeDragSpeed", Callback: (UDim2) -> () }
 	| 	{ Name: "SelectionModeRotateSpeed", Callback: (number) -> () }
 	| 	{ Name: "UIDragSpeedAxisMapping", Callback: (Enum.UIDragSpeedAxisMapping) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIDragDetectorModifier = {
 	read __quadModifier: "UIDragDetector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIDragDetectorModifier, key: string) -> T | State<T> | None | nil,
@@ -3607,6 +3942,7 @@ export type UIFlexItemOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ShrinkRatio", Callback: (number) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIFlexItemModifier = {
 	read __quadModifier: "UIFlexItem", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIFlexItemModifier, key: string) -> T | State<T> | None | nil,
@@ -3641,6 +3977,7 @@ export type UIGradientOnChange =
 	| 	{ Name: "TileMode", Callback: (Enum.GradientTileMode) -> () }
 	| 	{ Name: "Transparency", Callback: (NumberSequence) -> () }
 	| 	{ Name: "Type", Callback: (Enum.GradientType) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIGradientModifier = {
 	read __quadModifier: "UIGradient", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGradientModifier, key: string) -> T | State<T> | None | nil,
@@ -3679,6 +4016,10 @@ export type UIGridLayoutOnChange =
 	| 	{ Name: "SortOrder", Callback: (Enum.SortOrder) -> () }
 	| 	{ Name: "StartCorner", Callback: (Enum.StartCorner) -> () }
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
+	| 	{ Name: "AbsoluteCellCount", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteCellSize", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIGridLayoutModifier = {
 	read __quadModifier: "UIGridLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGridLayoutModifier, key: string) -> T | State<T> | None | nil,
@@ -3759,6 +4100,8 @@ export type UIListLayoutOnChange =
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
 	| 	{ Name: "VerticalFlex", Callback: (Enum.UIFlexAlignment) -> () }
 	| 	{ Name: "Wraps", Callback: (boolean) -> () }
+	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIListLayoutModifier = {
 	read __quadModifier: "UIListLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIListLayoutModifier, key: string) -> T | State<T> | None | nil,
@@ -3794,6 +4137,7 @@ export type UIPaddingOnChange =
 	| 	{ Name: "PaddingRight", Callback: (UDim) -> () }
 	| 	{ Name: "PaddingTop", Callback: (UDim) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIPaddingModifier = {
 	read __quadModifier: "UIPadding", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPaddingModifier, key: string) -> T | State<T> | None | nil,
@@ -3833,6 +4177,9 @@ export type UIPageLayoutOnChange =
 	| 	{ Name: "TouchInputEnabled", Callback: (boolean) -> () }
 	| 	{ Name: "TweenTime", Callback: (number) -> () }
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
+	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "CurrentPage", Callback: (GuiObject) -> () }
 export type UIPageLayoutModifier = {
 	read __quadModifier: "UIPageLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPageLayoutModifier, key: string) -> T | State<T> | None | nil,
@@ -3869,6 +4216,7 @@ export type UIScaleOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "Scale", Callback: (number) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIScaleModifier = {
 	read __quadModifier: "UIScale", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIScaleModifier, key: string) -> T | State<T> | None | nil,
@@ -3901,6 +4249,7 @@ export type UIShadowOnChange =
 	| 	{ Name: "Spread", Callback: (UDim2) -> () }
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIShadowModifier = {
 	read __quadModifier: "UIShadow", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIShadowModifier, key: string) -> T | State<T> | None | nil,
@@ -3934,6 +4283,7 @@ export type UISizeConstraintOnChange =
 	| 	{ Name: "MinSize", Callback: (Vector2) -> () }
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UISizeConstraintModifier = {
 	read __quadModifier: "UISizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UISizeConstraintModifier, key: string) -> T | State<T> | None | nil,
@@ -3968,6 +4318,7 @@ export type UIStrokeOnChange =
 	| 	{ Name: "Thickness", Callback: (number) -> () }
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UIStrokeModifier = {
 	read __quadModifier: "UIStroke", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIStrokeModifier, key: string) -> T | State<T> | None | nil,
@@ -4008,6 +4359,8 @@ export type UITableLayoutOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "SortOrder", Callback: (Enum.SortOrder) -> () }
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
+	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UITableLayoutModifier = {
 	read __quadModifier: "UITableLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITableLayoutModifier, key: string) -> T | State<T> | None | nil,
@@ -4040,6 +4393,7 @@ export type UITextSizeConstraintOnChange =
 	| 	{ Name: "MinTextSize", Callback: (number) -> () }
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type UITextSizeConstraintModifier = {
 	read __quadModifier: "UITextSizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITextSizeConstraintModifier, key: string) -> T | State<T> | None | nil,
@@ -4105,6 +4459,14 @@ export type VideoFrameOnChange =
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "Volume", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
+	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
+	| 	{ Name: "Resolution", Callback: (Vector2) -> () }
+	| 	{ Name: "TimeLength", Callback: (number) -> () }
 export type VideoFrameModifier = {
 	read __quadModifier: "VideoFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: VideoFrameModifier, key: string) -> T | State<T> | None | nil,
@@ -4210,6 +4572,11 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
+	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
+	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
+	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
+	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 export type ViewportFrameModifier = {
 	read __quadModifier: "ViewportFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ViewportFrameModifier, key: string) -> T | State<T> | None | nil,
@@ -4278,6 +4645,7 @@ export type WorldModelOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "UseWorkspaceCollisionGroups", Callback: (boolean) -> () }
 	| 	{ Name: "WorldPivot", Callback: (CFrame) -> () }
+	| 	{ Name: "ClassName", Callback: (string) -> () }
 export type WorldModelModifier = {
 	read __quadModifier: "WorldModel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: WorldModelModifier, key: string) -> T | State<T> | None | nil,

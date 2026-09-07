@@ -360,5 +360,17 @@ do
 	print("PASS")
 end
 
+print("=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttributeKey]는 즉시 error, 사용자 줄 blame ===")
+do
+	local m = q.Modifier({})
+	local okK, errK = pcall(function()
+		return (m :: any)[q.AttributeKey("Hp")]
+	end)
+	assert(not okK and string.find(tostring(errK), "setter keys must be strings", 1, true) ~= nil, "non-string setter key: " .. tostring(errK))
+	mock.assertBlamesUser(errK, "spec.modifier.luau", "setter key blame")
+	assert(q.Modifier({}):Name("x"):Peek("Name") == "x", "string setters untouched")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

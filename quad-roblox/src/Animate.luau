@@ -35,8 +35,26 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override" }
 
+-- Q12 (사용자 결정 2026-09-07): the previous Tween is handed back unchanged when the target
+-- value AND every option are the same — the Property handler's identity check then leaves the
+-- active engine tween alone (no cancel + restart from the interpolated position, `H-391`).
+-- `Dedup = false` (or a State of it) opts out — re-emitting the same target then re-triggers.
+local function sameTween(previous: any, v: any, opts: { [string]: any }): boolean
+	if previous.Value ~= v then
+		return false
+	end
+	for _, name in FIELDS do
+		if previous[name] ~= opts[name] then
+			return false
+		end
+	end
+	return true
+end
+
 local function install(quad: any): any
 	local isState = quad.isState
+	local isTween = quad.isTween
+	local None = quad.None
 	local Tween = quad.Tween
 	local Err = quad.errorNamespace -- shared namespace (`H-231`)
 
@@ -55,8 +73,14 @@ local function install(quad: any): any
 			Err.errorBeforeNearest("Animate: expected an options table (Animate{ Time = ... })", SURFACE)
 		end
 		return function(self: any): any
-			return self:Compute(function(selfH: any): any
+			return self:Compute(function(selfH: any, previous: any): any
 				local v = selfH:Get()
+				if v == nil or v == None then
+					-- Q8 (a) (사용자 결정 2026-09-07): nil/None pass through untouched — the
+					-- Property handler's skip-defense / NoneHandler release the property;
+					-- wrapping them in a Tween used to reach the engine (`H-379`)
+					return v
+				end
 
 				local canAnimate = resolve(info.CanAnimate)
 				if canAnimate == nil then
@@ -69,6 +93,13 @@ local function install(quad: any): any
 				local opts: { [string]: any } = { Value = v }
 				for _, name in FIELDS do
 					opts[name] = resolve(info[name])
+				end
+				local dedup = resolve(info.Dedup)
+				if dedup == nil then
+					dedup = true -- omitted ⇒ dedup (Q12)
+				end
+				if dedup and isTween(previous) and sameTween(previous, v, opts) then
+					return previous
 				end
 				return Tween(opts)
 			end)

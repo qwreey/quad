@@ -1332,7 +1332,7 @@ got typeof k 처럼 알려줄 필요는 있는듯"*. 근거는 **메시지에 `k
 평범한 우선순위로 등록된 다른 Handler가 있으면 그쪽이 이기는" 자리이기
 때문(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는
 엔진 op" 절) —
-**[2026-09-07 정정 — 핸드오버 리뷰 `H-361`, 문항]** quad-roblox의 `PropertyHandler`(NORMAL, 키만
+**[2026-09-07 정정 — 핸드오버 리뷰 `H-361`, 문항 → 회신 3차 Q4 (a) 사용자 확정: 그대로, 타입이 1차 방어]** quad-roblox의 `PropertyHandler`(NORMAL, 키만
 검사)가 **실프로퍼티 키**를 먼저 가져가므로 `Frame { BackgroundTransparency = state:Observer(fn) }`은
 이 가드가 아니라 엔진의 "number expected, got table"로 죽는다(`H-103` NOOP 마커 잔존) — 비프로퍼티
 키에서만 이 가드가 발화한다. 타입이 1차 방어(strict는 `PVn`이 거부). 처리는
@@ -1906,3 +1906,17 @@ Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실�
 런타임은 `Impl.__quadState = true`(H-300 "타입이 약속하면 값에도"), `__quadStateValue`는 순수 팬텀 —
 **어떤 코드도 읽지 않는다**(판정은 `Brand.isState`). **[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다). 실측·결과·규칙 표는 `typing-limits.md` 8.11,
 결정 경위는 `qa-request/post-implementation-review-round1.md` §16·`session/2026-09-07-02-state-marker-covariance.md`.
+
+## Compute 순수성 — 부작용은 읽기 전용, 값은 하류로만 (2026-09-07 회신 3차, 사용자 제안·메인 동의)
+
+**원칙**: `:Compute`/`:With`에 넘기는 함수는 **순수 계산 함수**다 — deps를 읽고 값을 돌려줄 뿐,
+어떤 Source도 `:Set`하지 않는다(상류든 형제든 같은 키든). 그 안에서의 `:Set`은 **UB**이고 quad는
+재진입 게이트를 두지 않는다. Observer/Effect 콜백은 반대로 부작용이 본업이라 이 규칙 밖이다(다른
+Source를 `:Set`하는 것이 정상 패턴). 사용자 원문: *"compute 안에서 상위를 set 하는 그런 경우를 다
+막는편이 맞을지도 … compute 의 부작용은 readonly 이고 하류로 내리기만 한다를 크게 잡아두면, 많은양의
+에러/버그 가능성을 선재 방어 할 수 있다고 보는데"*, *"재진입 게이트는 허용 안한다가 내 생각이긴 해"*.
+메인 동의(같은 날): 이 코퍼스의 반응형 모델은 pull(lazy `_recompute` + epoch)이라 Compute 안의 `:Set`은
+같은 recompute 안에서 epoch를 앞당겨 "갱신인데 stale"·이중 발화·`invalidAfter`류 꼬임을 만들고 원인 추적이
+어렵다 — 원칙으로 잡아두는 것이 맞다. `dispatch-core-plan.md`의 같은 키 재진입 UB(Q5)는 이 원칙의 디스패치
+쪽 특수 사례. **싸게 붙일 수 있는 가드**(모듈 스코프 "recomputing" 깊이 카운터 + `Source:Set`의 한 비교
+등)는 `research/deferred-hardening-plan.md`에 후보로 두고 실측 뒤 결정한다 — 지금은 문서 규칙만.

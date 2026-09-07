@@ -470,5 +470,16 @@ do
 	print("PASS")
 end
 
+print("=== 17. round3 H-442 (외부 리뷰 G-12) — drive(nil, props)는 표면 에러(Relate의 `table index is nil` 대신), 사용자 줄 blame ===")
+do
+	local q = newQuad()
+	local ok, err = pcall(function()
+		q.Dispatch.drive(nil, { mock.Instance.new("Frame") })
+	end)
+	assert(not ok and string.find(tostring(err), "inst must not be nil", 1, true) ~= nil, "nil inst rejected: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.dispatch.luau", "drive nil inst blame")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

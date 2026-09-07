@@ -171,7 +171,7 @@ def normalize(raw_path, version):
         if f"declare extern type {name} " not in defs_text:
             dropped.append(f"{name}: class newer than pinned defs (whole class dropped)")
             continue
-        props, events = [], []
+        props, events, read_props = [], [], []
         for owner, m in chain_members(classes, name):
             mtags = set(m.get("Tags") or [])
             if m["MemberType"] == "Property":
@@ -180,11 +180,16 @@ def normalize(raw_path, version):
                 if m["Name"] == "Parent":
                     dropped.append(f"{name}.Parent: excluded by design (H-142, Q5 (a))")
                     continue
-                if mtags & PROP_TAG_EXCLUDE:
+                # [round1 Q19 (a), 2026-09-07] ReadOnly props (AbsoluteSize/AbsolutePosition/TextBounds…)
+                # are not in the WRITE surface but ARE the main OnChange targets — they go to a
+                # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
+                # `<Class>OnChange`). Other excluded tags (Deprecated/NotScriptable/Hidden) still drop.
+                read_only = "ReadOnly" in mtags and not (mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"}))
+                if mtags & PROP_TAG_EXCLUDE and not read_only:
                     dropped.append(f"{name}.{m['Name']}: tags {sorted(mtags & PROP_TAG_EXCLUDE)}")
                     continue
                 sec = m.get("Security") or {}
-                if sec.get("Write") != "None" or sec.get("Read") != "None":
+                if sec.get("Read") != "None" or (not read_only and sec.get("Write") != "None"):
                     dropped.append(f"{name}.{m['Name']}: security {sec}")
                     continue
                 t = map_type(m["ValueType"], dropped, f"{name}.{m['Name']}")
@@ -192,7 +197,7 @@ def normalize(raw_path, version):
                     dropped.append(f"{name}.{m['Name']}: type {t} newer than pinned defs")
                     t = None
                 if t is not None:
-                    props.append({"name": m["Name"], "type": t, "owner": owner})
+                    (read_props if read_only else props).append({"name": m["Name"], "type": t, "owner": owner})
             elif m["MemberType"] == "Event":
                 if mtags & EVENT_TAG_EXCLUDE:
                     continue
@@ -214,10 +219,11 @@ def normalize(raw_path, version):
                 if ok:
                     events.append({"name": m["Name"], "params": params, "owner": owner})
         props.sort(key=lambda p: p["name"])
+        read_props.sort(key=lambda p: p["name"])
         events.sort(key=lambda e: e["name"])
         # chain: 상위 클래스 Modifier 타입(M7 단위 ④)의 재료 — 조상 자체는 스코프
         # 밖(비생성)이라 별도 항목이 없고, 프로퍼티는 하위의 owner로 되짚는다
-        surface[name] = {"props": props, "events": events, "chain": class_chain(classes, name)[1:]}
+        surface[name] = {"props": props, "readProps": read_props, "events": events, "chain": class_chain(classes, name)[1:]}
     out = {
         "dumpVersion": version,
         "apiVersion": raw.get("Version"),
@@ -397,14 +403,26 @@ def emit():
     for name in names:
         for p in classes[name]["props"]:
             prop_types.setdefault(p["name"], set()).add(p["type"])
-    L.append("-- OnChange — PropTypes(D 스코프 전체 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)")
+    L.append("-- PropTypes(D 스코프 전체 쓰기 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)")
     L.append("export type PropTypes = {")
     for pname in sorted(prop_types):
         ts = sorted(prop_types[pname])
         L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
     L.append("}")
-    L.append("export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypes, K>) -> () }")
-    L.append("export type OnChangeFn = <K>(name: K & keyof<PropTypes>, fn: (index<PropTypes, K>) -> ()) -> OnChangeDescriptor<K>")
+    # [round1 Q19 (a), 2026-09-07] the READ surface (write props + ReadOnly props) — OnChange's
+    # name/callback typing only; `OnChange("AbsoluteSize", fn)` used to be a strict TypeError (H-414)
+    read_types = {k: set(v) for k, v in prop_types.items()}
+    for name in names:
+        for p in classes[name].get("readProps", []):
+            read_types.setdefault(p["name"], set()).add(p["type"])
+    L.append("-- OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)")
+    L.append("export type PropTypesRead = {")
+    for pname in sorted(read_types):
+        ts = sorted(read_types[pname])
+        L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
+    L.append("}")
+    L.append("export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }")
+    L.append("export type OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>")
     L.append("")
     # ── 클래스 계층(M7 단위 ④) ──────────────────────────────────────────
     # 조상(비생성 추상 클래스)도 Modifier 타입을 갖는다 — 프로퍼티는 스코프 하위
@@ -568,7 +586,8 @@ def emit():
             continue
         c = classes[name]
         L.append(f"export type {name}OnChange =")
-        members = [f'\t{{ Name: "{p["name"]}", Callback: ({p["type"]}) -> () }}' for p in c["props"]]
+        # Q19: the per-class OnChange union takes the READ surface too (ReadOnly props)
+        members = [f'\t{{ Name: "{p["name"]}", Callback: ({p["type"]}) -> () }}' for p in c["props"] + c.get("readProps", [])]
         # 리뷰 반영: 프로퍼티가 0개인 클래스(지금은 없음 — 최소 Folder 4개)가
         # 생기면 우변 없는 별칭이 찍혀 파일 전체가 깨진다 → never
         L.append("\n\t| ".join(members) if members else "\tnever")

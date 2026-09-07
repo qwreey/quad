@@ -47,7 +47,7 @@ do
 	local okN, errN = pcall(function()
 		Store({ Source(1) } :: any)
 	end)
-	assert(not okN and string.find(tostring(errN), "key must be a string", 1, true) ~= nil, "array-shaped defaults rejected: " .. tostring(errN))
+	assert(not okN and string.find(tostring(errN), "key must be a non-empty string", 1, true) ~= nil, "array-shaped defaults rejected: " .. tostring(errN))
 	assert(string.find(tostring(errN), "spec.store.luau", 1, true) ~= nil, "key error blames the caller")
 	-- H-204: the bag itself is validated before clone — a non-table used to die
 	-- inside table.clone, a bare Source got an error naming a Source-internal field.
@@ -89,12 +89,12 @@ do
 	local okNil, errNil = pcall(function()
 		s:Of(nil :: any)
 	end)
-	assert(not okNil and string.find(tostring(errNil), "Of name must be a string", 1, true) ~= nil, "nil Of name: " .. tostring(errNil))
+	assert(not okNil and string.find(tostring(errNil), "Of name must be a non-empty string", 1, true) ~= nil, "nil Of name: " .. tostring(errNil))
 	assert(string.find(tostring(errNil), "spec.store.luau", 1, true) ~= nil, "level 2 points at the caller")
 	local okNum, errNum = pcall(function()
 		s:Of(123 :: any)
 	end)
-	assert(not okNum and string.find(tostring(errNum), "Of name must be a string", 1, true) ~= nil, "number Of name: " .. tostring(errNum))
+	assert(not okNum and string.find(tostring(errNum), "Of name must be a non-empty string", 1, true) ~= nil, "number Of name: " .. tostring(errNum))
 	assert(#s:Names() == 0, "nothing was allocated by the rejected names")
 	print("PASS")
 end
@@ -162,6 +162,19 @@ do
 		Store(Quad.AttributeKey("k") :: any)
 	end)
 	assert(not ok and string.find(tostring(err), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(err), "metatable", 1, true) == nil, "AttributeKey is not a defaults table — message names its kind (5순회): " .. tostring(err))
+	print("PASS")
+end
+
+print("=== 9. round3 H-443 (외부 리뷰 G-13, H-421 자매) — 빈 문자열 키는 생성자·Of 둘 다 거부(Attribute(store)로 setAttribute(\"\")에 닿던 경로) ===")
+do
+	local okC, errC = pcall(function()
+		return (Store :: any)({ [""] = Source(1) })
+	end)
+	assert(not okC and string.find(tostring(errC), "must be a non-empty string", 1, true) ~= nil, "constructor rejects \"\": " .. tostring(errC))
+	local okO, errO = pcall(function()
+		return (Store({ Hp = Source(1) }) :: any):Of("")
+	end)
+	assert(not okO and string.find(tostring(errO), "must be a non-empty string", 1, true) ~= nil, "Of rejects \"\": " .. tostring(errO))
 	print("PASS")
 end
 

@@ -38,7 +38,6 @@
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
-local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local PADDING_PROPS = { "PaddingLeft", "PaddingRight", "PaddingTop", "PaddingBottom" }
 
@@ -58,18 +57,17 @@ local function numberOrUDim(v: any): any
 	return v
 end
 
-local TABLE: { [string]: { class: string, childName: string, props: { string }, wrap: (any) -> any, numberOnly: boolean } } = {
-	UICorner = { class = "UICorner", childName = "_quad_round", props = { "CornerRadius" }, wrap = numberOrUDim, numberOnly = false },
-	UIPadding = { class = "UIPadding", childName = "_quad_padding", props = PADDING_PROPS, wrap = identity, numberOnly = false },
-	UIPaddingOffset = { class = "UIPadding", childName = "_quad_padding", props = PADDING_PROPS, wrap = offsetUDim, numberOnly = true },
-	UIScale = { class = "UIScale", childName = "_quad_scale", props = { "Scale" }, wrap = identity, numberOnly = true },
+local TABLE: { [string]: { class: string, childName: string, props: { string }, wrap: (any) -> any } } = {
+	UICorner = { class = "UICorner", childName = "_quad_round", props = { "CornerRadius" }, wrap = numberOrUDim },
+	UIPadding = { class = "UIPadding", childName = "_quad_padding", props = PADDING_PROPS, wrap = identity },
+	UIPaddingOffset = { class = "UIPadding", childName = "_quad_padding", props = PADDING_PROPS, wrap = offsetUDim },
+	UIScale = { class = "UIScale", childName = "_quad_scale", props = { "Scale" }, wrap = identity },
 }
 
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	local Void = quad.Void
 	local isTween = quad.isTween
-	local Err = quad.errorNamespace
 
 	-- (inst, childName) -> managed child (weak-keyed by inst)
 	local managed = quad.Relate()
@@ -113,10 +111,9 @@ local function install(quad: any)
 				return Void
 			end
 			local tweenIn = isTween(v)
-			local raw = if tweenIn then v.Value else v
-			if entry.numberOnly and type(raw) ~= "number" then
-				Err.errorBefore(`{k}: expected a number, got {typeof(raw)}`, SURFACE)
-			end
+			-- Q17 (a) (사용자 결정 2026-09-07): no value gate here — the type surface is the first
+			-- defense and the final property write raises like any other property (`numberOnly`
+			-- was an unapproved fifth field, `H-402`)
 			local child = ensureManagedChild(inst, entry)
 			-- Tween stays a Tween — only `.Value` is wrapped (`UI-8`, `Tween:Mapped`)
 			-- identity wrap (UIPadding/UIScale): pass the Tween through — `Mapped`

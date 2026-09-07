@@ -60,8 +60,9 @@ local function isOnChange(x: any): boolean
 end
 
 local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
-	if type(name) ~= "string" then
-		errNS.errorBeforeNearest("OnChange: property name must be a string", SURFACE)
+	if type(name) ~= "string" or name == "" then
+		-- round3 `H-440` (외부 리뷰 G-10, `H-417` 짝): "" reached `GetPropertyChangedSignal` at dispatch depth
+		errNS.errorBeforeNearest("OnChange: property name must be a non-empty string", SURFACE)
 	end
 	if type(fn) ~= "function" then
 		errNS.errorBeforeNearest(`OnChange("{name}"): callback must be a function`, SURFACE)

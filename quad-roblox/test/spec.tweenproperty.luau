@@ -137,5 +137,26 @@ do
 	print("PASS")
 end
 
+print("=== 7. 회신 3차(2026-09-07) — Q8 (a) Animate 아래 nil/None 통과(해제 가능), Q12 Animate Dedup: 같은 목표 재발행은 이전 Tween 그대로(취소·재시작 0), Dedup=false면 재시작 ===")
+do
+	mock.resetTweenLog()
+	local src = q.Source(0 :: any)
+	local f = q.D.Frame({ Size = src:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	src:Set(10)
+	assert(#log == 1 and log[1].props.Size == 10, "first animated set")
+	src:Set(10) -- H-391 재현 경로 — 같은 값 재발행
+	assert(#log == 1 and lastTween().cancels == 0, "Q12: the same target re-emitted hands back the previous Tween — no cancel, no new engine tween")
+	src:Set(q.None)
+	assert(#log == 1 and f.Size == 0 and lastTween().cancels == 0, "Q8: None passes Animate untouched → NoneHandler releases, active tween untouched")
+	src:Set(nil)
+	assert(#log == 1, "Q8: nil passes Animate untouched → skip-defense")
+	local src2 = q.Source(0 :: any)
+	q.D.Frame({ Size = src2:Apply(q.Animate({ Time = 0.2, Dedup = false })) })
+	src2:Set(10)
+	src2:Set(10)
+	assert(#log == 3 and log[3].props.Size == 10, "Dedup = false: the same target re-triggers (cancel + new tween)")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

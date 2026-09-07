@@ -5,6 +5,9 @@
 	returns the typed extension (`RobloxExtension` — `D`) for the
 	`UseProvider` merge.
 
+	Passing this factory to `AddPlugin` (instead of `UseProvider`) is UB — the
+	lock lives in `UseProvider` only (round1 Q10 (c), user decision 2026-09-07).
+
 	No guard here (`H-305` (d′), 2026-09-02): the old `_initializedBy`
 	string marker could not tell two COPIES of quad-roblox apart (a second
 	copy — even a different version — read "roblox" and silently no-op'd;

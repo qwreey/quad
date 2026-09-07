@@ -2399,3 +2399,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   마커화(`PV73` 11팔 → 4팔, `SHF0` 소멸) → spec 양성·tmp 음성 아홉. 타입 검사 4.96s → 3.41s,
   `LuauSolverConstraintLimit` 제거. 정본 `typing-limits.md` 8.11 규칙 표 + 배너 아홉. 원장 §16. 단위 끝 절차 → **round3**
   신설(`H-431` NewChild에 `State<Observer?>` 팔 누락 HIGH·`H-433`~`H-439`; Q22 Slot 공변+가변 출력·Q23 `FieldOut`·Q24 승인 범위).
+
+- **`session/2026-09-07-03-reply3-q4-q19-gemini-round4.md`** — **회신 3차(대화형)**: Q4~Q19·Q7 둘째·셋째 닫힘 —
+  Animate `Dedup`(사용자 설계)·nil/None 통과, Slot 좀비는 Instance 동형(메시지+UB), `destroySlotTree` `releaseOwner`, Modifier
+  setter 키·`setOffsetSource`·`setLength` 게이트, `Tween.validate` State 거부, `numberOnly` 제거, OnChange 읽기 표면
+  `PropTypesRead`, Compute 순수성 원칙(`source-state-plan.md`), 같은 키 재진입·`setLength` 설치 throw UB. Gemini 4차 →
+  `H-440`~`H-444`·round4 파일. `research/deferred-hardening-plan.md` 신설. 문항은 앞으로 평문 한 문단.

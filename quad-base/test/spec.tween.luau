@@ -132,5 +132,17 @@ do
 	print("PASS")
 end
 
+print("=== 6. 회신 3차 Q16 (b) — Tween{ Value = State }는 생성 시점에 거부(모든 필드는 plain — tween-plan 불변식), 사용자 줄 blame ===")
+do
+	local q = mock.newQuad()
+	local ok, err = pcall(function()
+		return Tween({ Value = q.Source(1) })
+	end)
+	assert(not ok and string.find(tostring(err), "Value must be a plain value, not a State", 1, true) ~= nil, "State value rejected: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.tween.luau", "Tween State value blame")
+	assert(Quad.isTween(Tween({ Value = 1 })), "plain value untouched")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

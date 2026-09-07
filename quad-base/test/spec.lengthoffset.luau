@@ -369,5 +369,34 @@ do
 	print("PASS")
 end
 
+print("=== 12. 회신 3차(2026-09-07) — Q13 (b) setOffsetSource의 source 게이트(Source | None), Q15 (a) setLength 길이 도메인: 상수는 등록 시, State는 읽을 때(비음수 정수) ===")
+do
+	local q = newQuad()
+	local inst = mock.Instance.new("Frame")
+	local okS, errS = pcall(function()
+		q.Dispatch.setOffsetSource(inst, 1, { Get = function() return 0 end } :: any)
+	end)
+	assert(not okS and string.find(tostring(errS), "source must be a Source<number> or None", 1, true) ~= nil, "plain table rejected: " .. tostring(errS))
+	mock.assertBlamesUser(errS, "spec.lengthoffset.luau", "setOffsetSource gate blame")
+	for _, bad in { -1, 1.5, "3" } :: { any } do
+		local ok, err = pcall(function()
+			q.Dispatch.setLength(inst, 1, bad)
+		end)
+		assert(not ok and string.find(tostring(err), "length must be a non-negative integer", 1, true) ~= nil, `setLength rejects {tostring(bad)}: {tostring(err)}`)
+		mock.assertBlamesUser(err, "spec.lengthoffset.luau", "setLength domain blame")
+	end
+	q.Dispatch.setOffsetSource(inst, 1, q.None)
+	q.Dispatch.setLength(inst, 1, 0) -- zero is legal
+	local len = q.Source(2)
+	q.Dispatch.setOffsetSource(inst, 2, q.None)
+	q.Dispatch.setLength(inst, 2, len)
+	assert(q.Dispatch.getOffsetAt(inst, 3) == 2, "State length contributes")
+	local okR, errR = pcall(function()
+		len:Set(-4) -- the length observer recomputes on Set — the read-time check fires right here
+	end)
+	assert(not okR and string.find(tostring(errR), "length State must hold a non-negative integer", 1, true) ~= nil, "State length checked at read: " .. tostring(errR))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

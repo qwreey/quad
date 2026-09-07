@@ -693,7 +693,7 @@ top-level만 `claimOwnerAt`으로 spurious 재발행을 구분함.
 반환한 클로저가 담당(층위 분리는 `unbindLifetime`과 동일한 원칙).
 
 **[재정정, 2026-08-20 구현 전 QA 4라운드 `C-4`] 단, `destroySlotTree`는 이
-규칙의 대상이 아니다 — 명시적 `releaseOwner`를 도로 뺀다.** 2026-08-13
+규칙의 대상이 아니다 — 명시적 `releaseOwner`를 도로 뺀다.** **[2026-09-07 회신 3차 Q14 (a) — 사용자 확정, 이 면제 철회]** 두 루프에 `releaseOwner`를 다시 넣었다 — 면제의 전제("요소가 어차피 죽는다")가 `Owned = false` 자식 Slot(언마운트만 하고 살아남는 분기)엔 성립하지 않아 죽은 `elementOwner`가 영구히 남았다(`H-393`; 파괴되는 요소엔 영향 없음 — 약참조 장부). 2026-08-13
 감사가 같은 근거로 `destroySlotTree`에도 넣었었는데, 사용자 판정으로
 되돌림: *"Destroy 된 요소는 다른곳에 원래 마운트 못하는게 보통 엔진
 정상이고, 또, 릴리즈 안 되어 다른곳에 마운트 막혀도 상관 없고, 그게 정상
@@ -3677,6 +3677,13 @@ Frame {
   해당 없음(그쪽 정리는 `_detachCleanup`이 담당).
 
 **부수 효과 — 이미 파괴된 대상에 재마운트하려는 시도가 자연히 막힘.**
+**[2026-09-07 회신 3차 Q9 (b) — 사용자 확정, 아래 문단 철회]** 요소 단위 `bindLifetime` + `canExecute` 게이트는
+구현된 적이 없고 만들지도 않는다(`H-382`). **UB로 확정**: 마운트 대상 Instance를 quad 밖에서(`inst:Destroy()`)
+파괴하면 그 Slot(과 요소)은 그 Instance와 함께 죽은 것이다 — Instance와 동형(사용자: *"이미 Instance 같은
+경우에도 dispose 를 상위 소유자가 했으면 하위가 할 수 없음. 상위가 dispose 하기 전에 뽑아야지 다른곳에 쓸 수
+있는건 당연하고, Instance 와 같은 동형으로 두어도 되는 부분"*). `dispose`·`Add`의 "아직 마운트됨" 메시지가
+이 경우를 함께 말한다(*"… If the owner was destroyed outside quad, the value went with it — extract it before
+destroying"*). 시체 요소를 다른 Slot에 다시 넣는 반대 방향도 같은 UB.
 Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 물리 target에
 묶고, 실제 동작 전에 `canExecute`를 확인**하도록 하면(`base/lifecycle-pattern.md`),
 "nested로 마운트해둔 뒤 물리 Instance를 Destroy하고, 그 다음 Slot을 뽑아

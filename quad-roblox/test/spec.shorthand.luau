@@ -116,13 +116,8 @@ do
 end
 
 print()
-print("=== 6. 검증 — UIPaddingOffset/UIScale은 number만(errorBefore, 사용자 줄 blame); 우선순위가 Property보다 높다 ===")
+print("=== 6. 우선순위가 Property보다 높다 (Q17 (a), 2026-09-07: 옛 `numberOnly` 값 게이트는 제거 — 타입이 1차 방어, 최종 프로퍼티 대입이 다른 프로퍼티처럼 raise) ===")
 do
-	local ok, err = pcall(function()
-		return q.D.Frame({ UIScale = "big" })
-	end)
-	assert(not ok and string.find(tostring(err), "UIScale: expected a number", 1, true) ~= nil, "message: " .. tostring(err))
-	mock.assertBlamesUser(err, "spec.shorthand.luau", "shorthand validation blame")
 	local h = q.Dispatch.getHandler(mock.Instance.new("Frame"), "UICorner", 8)
 	assert(h ~= nil and h.name == "InstanceShorthand", "shorthand wins the key")
 	print("PASS")

@@ -217,6 +217,15 @@ State<T | Tween<T>>`가 나옴~~ **[2026-09-06 정정]** 실물은 위 배너대
 "too complex"고, 제네릭 factory는 `:Apply`의 인자 자리에 못 들어간다(실측 넷은
 `types.luau` 주석·원장). `CanAnimate = false`의 plain 반환은 그대로다.
 
+**[2026-09-07 회신 3차 — 사용자 확정 셋]** (Q8 (a)) `Animate`의 Compute는 `nil`/`None`을 **그대로 통과**시킨다 —
+Property 핸들러의 skip-defense / NoneHandler가 해제를 맡는다(옛 코드는 `Tween{ Value = None }`으로 엔진에
+닿았다, `H-379`). (Q12) **`Dedup` 옵션**(`boolean | State<boolean>`, 기본 `true`): 목표 값과 옵션 전부가 이전
+Tween과 같으면 **이전 Tween 객체를 그대로** 돌려주고, Property 핸들러는 같은 Tween 객체의 재발행을 신원
+비교로 접어 활성 트윈을 건드리지 않는다(`H-391`의 취소+재시작 소멸). 완료된 트윈도 같은 목표로는 재트리거되지
+않으므로 "펄스"가 필요하면 `Dedup = false`. 사용자: *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로
+리턴하여 dedup 될 수 있다고 봄. Dedup: boolean 형태 하나를 놓고"*. (Q16 (b)) `Tween.validate`가 `Value`에
+State를 거부한다 — 아래 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절의 불변식을 생성 시점에 집행.
+
 **동기**: `Tween{Value=..., Style=..., ...}`을 매번 손으로 `:Compute` 안에서
 조립하는 건, 값(`Value`)만 바뀔 뿐 옵션(`Style`/`Time`/`Override`...)은
 거의 고정인 흔한 케이스에서 번거로움. `Animate`는 이 흔한 케이스만 감싸는
@@ -248,8 +257,9 @@ end
 -- — 이 구현 그대로 유효. base/typing-limits.md 참고.
 local function Animate(info)
   return function(self)
-    return self:Compute(function(selfH)
+    return self:Compute(function(selfH, previous)
       local v = selfH:Get()
+      if v == nil or v == None then return v end   -- Q8 (a): 해제는 하류(skip-defense/NoneHandler) 몫
 
       local canAnimate = resolve(info.CanAnimate)
       if canAnimate == nil then
@@ -270,6 +280,8 @@ local function Animate(info)
         DelayTime = resolve(info.DelayTime),
         Override = resolve(info.Override),
       }
+      -- Q12: 같은 목표·옵션이면 이전 Tween 객체 그대로(Property 핸들러가 신원으로 접는다)
+      -- 실물은 opts 테이블을 먼저 만들고 previous와 대조한다(Animate.luau `sameTween`)
     end)
   end
 end

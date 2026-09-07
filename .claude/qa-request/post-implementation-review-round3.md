@@ -39,4 +39,45 @@ State/Slot을 제외, `State.luau`·`Slot.luau`의 태그 루프는 명시 목�
 | **Q24** (`H-437`, 규약) | **회신 2차 승인의 범위를 갈라 적기.** 사용자가 승인한 것은 방향(*"공변성/불변성 문제를 해결하기 위한 작업"*)과 순수 팬텀(*"런타임 값에 없는 팬텀 괜찮아"*)이고, 메인이 정한 것은 **이름 둘**(`SlotItem<T>`, `FieldOut<T>` — 입력/출력 별칭 분리), `NewChild` 팔 모양(`StateMarker<(… \| None)?>` 하나, nil 포함), `LuauSolverConstraintLimit` 제거다. `base/` 배너 "[2026-09-07 마커 — 사용자 결정]"이 넷을 승인된 것처럼 읽히게 한다(규약: 새 이름·메커니즘은 문항, 인용 옆엔 갈라 적을 것) | (a) 넷 그대로 승인 / (b) 이름을 바꾼다(제안: `SlotElement`/`SlotItem` → `SlotInput`/`SlotOutput`, `FieldV`/`FieldOut` → `FieldIn`/`FieldOld` 등) / (c) 팔 모양·플래그만 승인, 이름은 보류 | **(a)** — 이름은 기존 `FieldV`·`SlotElement`와 짝이 맞고 8.11이 역할별 별칭을 규칙으로 적었다. 8.11 배너에 "승인 = 방향·팬텀, 제안 = 이름·팔 모양·플래그"를 갈라 적어 둠(이 커밋) |
 
 **검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과), doc-check ERROR 0, quad-roblox 타입 검사 2.95s.
-다음 순회는 이 파일 §5부터, `H-440`부터.
+
+## §5 외부 리뷰 round4 검증 — Gemini 4차 (`post-implementation-review-round4.md`, 사용자 반입 2026-09-07)
+
+round2와 같은 절차(실재현 뒤 판정). 다섯 전부 실존 — `H-417`/`H-421` 계열(빈 문자열)과 `H-418`/`H-419` 계열(nil·비테이블
+인자가 내부 VM 에러로 죽어 quad 줄을 blame)의 남은 구멍이었다.
+
+| ID | 출처 | 자리 | 무엇 | 처리 |
+|---|---|---|---|---|
+| **`H-440`** | G-10 (HIGH) | `Handlers/OnChange.luau` 생성자 | `OnChange("", fn)`이 통과해 `GetPropertyChangedSignal("")` 엔진 예외가 디스패치 깊이에서(부기 등록 뒤) | `name == ""` 거부(nearest). `spec.events` 7절 |
+| **`H-441`** | G-11 (MED) | `Slot.luau` `List`/`reconcile` | `updateFn` 타입 무검사, `items`가 nil/비테이블이면 `#items` VM 에러가 `Slot.luau:950`을 blame | `List` 머리에 둘 다 게이트(nearest) + `reconcile` 머리(State 값 경로, outermost). `spec.slot` 24절 |
+| **`H-442`** | G-12 (LOW) | `Dispatch/init.luau` `drive` | `drive(nil, props)`가 Relate `table index is nil` | `inst == nil` 게이트(`H-419` 옆). `spec.dispatch` 17절 |
+| **`H-443`** | G-13 (HIGH) | `Store.luau` `checkKey`·`Attribute.luau` `isStore` 분기 | `Store({ [""] = … })`/`Of("")` 통과 → `Attribute(store)`가 `setAttribute("")`에 디스패치 깊이로 | 두 자리 모두 `""` 거부(`H-421` 자매). `spec.store` 9절(기존 단언 문구 둘 정정) |
+| **`H-444`** | G-14 (MED) | `LifetimeHandle.luau`(roblox·mock) | `unbindLifetime(nil)`이 헤더 계약("no-op if unbound")과 달리 Relate VM 에러, `canExecute(nil)`/`canBound(nil)`/`bindLifetime(nil, v)`도 | `isBoundAlive`/`unbindLifetime` nil 조기 반환, `bindLifetime` nil inst는 미claim 메시지. Relate 자체는 안 건드림(관측된 문제에만). `spec.lifetime` 10절 |
+| — | S-07~S-10 | `destroySlotTree` Owned=false 생존 / `Overridden()` 0인자 비대칭 / 중첩 Slot `occupantOf` / `UIPadding` 공유 자식 | 건전 판정 — 정본 인용이 정확 | 확인 기록 |
+
+## §6 사용자 회신 3차 — Q4~Q19 + Q7 둘째·셋째 (2026-09-07 저녁, 대화형)
+
+사용자 지적: 원장의 문항이 *"기호가 많고, 압축서술이 너무 많아서 맥락을 모르겠음"* — Q3/Q5/Q7/Q9/Q14/Q18/Q19는 채팅에서
+평문으로 다시 설명한 뒤 결정을 받았다. **앞으로 문항은 평문 한 문단(상황 → 무엇이 막히나 → 갈래의 뜻)으로 쓴다.**
+Q3은 회신 1차에서 이미 닫힌 것을 다시 짚음(항목별 결과 §15). 열린 것: **Q6·Q20·Q21**(미답), Q22~Q24(round3 §4).
+
+| 문항 | 결정(사용자 원문) | 처리 |
+|---|---|---|
+| **Q4** | 권고대로 (a) | 코드 0. `source-state-plan.md` `H-361` 배너에 확정 표기 |
+| **Q5** | (a) UB + *"처음부터 그런 Set이 나는게 UB가 되는게 맞아보여 … compute 의 부작용은 readonly 이고 하류로 내리기만 한다를 크게 잡아두면 … 재진입 게이트는 허용 안한다"* | `dispatch-core-plan.md` UB 목록에 같은 키 간접 재진입; **`source-state-plan.md` 새 절 "Compute 순수성"**(원칙 — 사용자 제안 + 메인 동의); 값싼 가드 후보는 `research/deferred-hardening-plan.md` 1절 |
+| **Q7** | (a) 유지 + *"error util 안에 … 살을 더 붙여가며 위로 올리면"*은 추후 | 코드 0. 에러 컨텍스트 래핑 아이디어 → `research/deferred-hardening-plan.md` 2절 |
+| **Q7 둘째·셋째** | (a) | 둘째 코드 0(`effect-plan.md` 주석 확정 표기); 셋째 `State.luau` Compute-Modifier 에러 `errorBefore`; `quad-error` 헤더에 예외 문장 |
+| **Q8** | (a) | `Animate.luau` Compute 머리 `if v == nil or v == None then return v end`; `tween-plan.md` 의사코드 한 줄; `spec.tweenproperty` 7절 |
+| **Q9** | (b) — *"해당 좀비는 진짜 죽은게 맞음 … Instance 와 같은 동형으로 두어도 되는 부분. 메시지를 잘 정리하고 UB부분을 문서화만 하면"* | `Slot.luau` "already mounted" 셋·`dispose` 메시지에 "quad 밖에서 파괴됐으면 함께 죽은 것 — 미리 뽑아라" 문구; `slot-plan.md` "부수 효과" 문단 철회 + UB. `spec.slot` 24절 |
+| **Q10** | (c) — *"오용 표면을 막을 이유를 모르겠음. UB로 두어도 되는 부분"* | `module-lifecycle-plan.md`·`RobloxFactory.luau` 헤더 UB 문장 |
+| **Q11** | (a)+(c) — *"런타임 에러 추가가 무료급이고 … 문서도 같이"* | `Modifier.luau` `__index`에 문자열 키 게이트(+ `__index` SURFACE 태그 — 메타메소드 자체가 raise); `modifier-plan.md`; `spec.modifier` 14절 |
+| **Q12** | 사용자 설계 — *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로 리턴하여 dedup … Dedup: boolean 형태 하나"* | `Animate.luau` `sameTween` + `Dedup` 옵션(기본 true), `Property.luau` 슬롯에 `Source = v` + 같은 객체 재발행 skip, `types.luau` `AnimateInfo.Dedup`; `tween-plan.md`; `spec.tweenproperty` 7절(Dedup=false 재트리거 포함) |
+| **Q13** | (b) | `Bookkeeping.luau` `setOffsetSource` 게이트(Source \| None, nearest); `spec.lengthoffset` 12절 |
+| **Q14** | (a) — *"동의. a로 가도 돼"* | `destroySlotTree` 두 루프 `releaseOwner`; `slot-plan.md` C-4 면제 철회; `spec.slot` 24절 |
+| **Q15** | (a) | `setLength` 상수 도메인(비음수 정수, 등록 시) + State 값은 `contribution`에서(outermost); `dispatch-core-plan.md` 계약 줄; `spec.lengthoffset` 12절 |
+| **Q16** | (b) | `Tween.validate`가 `isState(Value)` 거부; `spec.tween` 6절 |
+| **Q17** | (a) — *"필요 없는듯 … 다른 프로퍼티와 같게 되어도 좋음"* | `InstanceShorthand.luau` `numberOnly` 필드·게이트 제거; `spec.shorthand` 6절 정정; `ui-shorthand-plan.md` |
+| **Q18** | (c) — *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이 없고 … 당장은 c로 닫고, 리서치 안에서"* | `dispatch-core-plan.md` UB 목록; (a)는 `research/deferred-hardening-plan.md` 3절 |
+| **Q19** | (a) — *"읽기 표면을 만드는걸 동의함"* | gen-d 정규화가 ReadOnly 프로퍼티를 `readProps`로 따로 싣고(109개, dropped 575 → 466), `PropTypesRead`·`<Class>OnChange`가 그 표면을 쓴다(`PropTypes`는 쓰기 그대로); 재정규화·재생성; `onchange-plan.md`·typing-limits 8.10; `spec.onchangetypes` 양성(AbsoluteSize/AbsolutePosition/TextBounds) |
+
+**검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과), doc-check ERROR 0, 타입 검사 3.06s.
+다음 순회는 이 파일 §7부터, `H-445`부터.

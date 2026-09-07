@@ -536,6 +536,9 @@ local function mockProvider(quad: any): { [any]: any }
 
 	-- 비공개 — canBound/canExecute가 공유하는 실제 판정.
 	local function isBoundAlive(value: any): boolean
+		if value == nil then
+			return false -- round3 `H-444`: same contract as the real backend
+		end
 		-- (a) inst-scoped 경로: bindLifetime이 복사해둔 gcconn을 value 자신에게서 찾음
 		local gcconn = BindData:GetWeak(value, "gcconn")
 		if gcconn ~= nil and gcconn.Connected then
@@ -602,6 +605,9 @@ local function mockProvider(quad: any): { [any]: any }
 	end
 
 	local function unbindLifetime(value: any)
+		if value == nil then
+			return -- no-op if unbound (round3 `H-444`)
+		end
 		-- bind의 대칭 — cleanup은 부르지 않고, Ref 콜백/내부 Observer도 안 뗀다.
 		if isEffect(value) then
 			value:_unbindDestroying() -- Destroying 연결만 끊는다 (단위 3)

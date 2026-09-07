@@ -116,7 +116,16 @@ local function Init(module: any)
 
 	local function contribution(bk: any, i: number): number
 		local v = bk.lengthList[i]
-		return if Brand.isState(v) then v:Get() else v
+		if Brand.isState(v) then
+			local n = v:Get()
+			if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
+				-- Q15 (a): the State arm is checked at read time (one compare on the hot path);
+				-- reached from recompute depth, so outermost
+				Err.errorBefore(`quad.Dispatch.setLength: a length State must hold a non-negative integer (got {tostring(n)})`, SURFACE)
+			end
+			return n
+		end
+		return v
 	end
 
 	-- Absolute offset (0-based count) of position `at` — single function with
@@ -290,8 +299,20 @@ local function Init(module: any)
 		recompute(ownerKey, bk)
 	end
 
+	-- Q15 (a) (사용자 결정 2026-09-07): the length domain is the non-negative integers — a
+	-- negative/fractional length used to flow into `nativeInsert(target, 음수)` silently and a
+	-- non-number State value died in recompute's arithmetic with the blocker locked (`H-394`).
+	local function checkLengthValue(fnName: string, n: any)
+		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
+			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+		end
+	end
+
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
 		checkPosition("setLength", i)
+		if not Brand.isState(len) then
+			checkLengthValue("setLength", len) -- a State's value is checked where it is read (contribution)
+		end
 		anchor = anchor or ownerKey
 		local bk = getBookkeeping(ownerKey)
 		local blocker = getBlocker(ownerKey)
@@ -329,6 +350,11 @@ local function Init(module: any)
 	-- lengthList's answer); pull the number via getOffsetAt when needed.
 	local function setOffsetSource(ownerKey: any, i: number, source: any)
 		checkPosition("setOffsetSource", i)
+		if source ~= None and not Brand.isSource(source) then
+			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
+			-- die at `:Get()` with a Bookkeeping.luau line
+			Err.errorBeforeNearest(`quad.Dispatch.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+		end
 		local bk = getBookkeeping(ownerKey)
 		if source == None then
 			bk.sourceList[i] = None

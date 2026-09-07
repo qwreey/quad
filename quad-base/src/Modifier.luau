@@ -246,6 +246,12 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- generator refuses to emit a property that matches the prefix.
 		return castClosure(string.sub(key, 3))
 	end
+	if type(key) ~= "string" then
+		-- Q11 (a) (사용자 결정 2026-09-07): the generic setter mirrors `construct`'s key rule
+		-- (`H-310` — the two creation paths must not drift): only string keys become setters.
+		-- Non-string keys (AttributeKey/MapperDescriptor) go in the props table directly.
+		Err.errorBeforeNearest("Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
+	end
 	return function(selfArg: any, arg: any): any
 		local oldFields = selfArg[FieldsKey]
 		local old = oldFields[key]
@@ -387,6 +393,7 @@ Err.setFuncLevel(DefineSubtype, SURFACE)
 Err.setFuncLevel(methods.As, SURFACE)
 Err.setFuncLevel(methods.Apply, SURFACE) -- 6순회 `H-410`: list drift — every public method
 Err.setFuncLevel(methods.Peek, SURFACE)
+Err.setFuncLevel(ModifierMT.__index, SURFACE) -- Q11: the non-string-key error is raised from the metamethod itself
 
 -- internal sentinel that fills a consumed array slot (never user-facing —
 -- `Processed*` idiom, same frozen+named shape as `None`)

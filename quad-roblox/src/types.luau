@@ -81,6 +81,7 @@ export type AnimateInfo = {
 	read DelayTime: (number | QuadTypes.StateMarker<number>)?,
 	read Override: (QuadTypes.TweenOverride | QuadTypes.StateMarker<QuadTypes.TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
+	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- Q12 (2026-09-07): 같은 목표·옵션이면 이전 Tween을 그대로(기본 true)
 }
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<QuadTypes.Tween<any>>
 

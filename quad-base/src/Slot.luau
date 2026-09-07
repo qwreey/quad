@@ -58,11 +58,16 @@ local function Init(module: any)
 	local elementOwner = module.Relate()
 	local OWNER, OWNER_POS = "__owner", "__ownerPos"
 
+	-- Q9 (b) (사용자 결정 2026-09-07): a Slot whose mount target was destroyed outside quad
+	-- (`inst:Destroy()`) is dead for good — same as an Instance whose owner disposed it. No
+	-- liveness bookkeeping; the two "mounted" messages just say so (slot-plan "부수 효과" 절 UB).
+	local ZOMBIE_NOTE = " (if its previous owner was destroyed outside quad — `inst:Destroy()` — it went with it: a Slot cannot be reused after its parent is destroyed; extract it first, as with an Instance)"
+
 	local function claimOwner(element: any, ownerKey: any, fromDetached: boolean?)
 		local cur = elementOwner:GetWeak(element, OWNER)
 		if cur ~= nil then
 			if not (fromDetached and cur == ownerKey) then
-				Err.errorBefore("Slot: this element is already mounted — multiple mounts are not allowed", SURFACE)
+				Err.errorBefore("Slot: this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 			end
 			return
 		end
@@ -75,7 +80,7 @@ local function Init(module: any)
 			return false -- exactly this position already holds it — re-confirm, no-op
 		end
 		if current ~= nil then
-			Err.errorBefore("Slot: this element is already mounted elsewhere — multiple mounts are not allowed", SURFACE)
+			Err.errorBefore("Slot: this element is already mounted elsewhere — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 		end
 		elementOwner:SetWeak(element, OWNER, inst)
 		elementOwner:SetWeak(element, OWNER_POS, k)
@@ -601,7 +606,7 @@ local function Init(module: any)
 			-- `elementOwner` forever ("already mounted elsewhere" on the next
 			-- Add, "still requires its tree" on dispose — both counterfactual).
 			-- `slot-plan.md` `_detachCleanup` 의사코드 "`releaseOwner`를 먼저, 두 분기
-			-- 공통으로". The two `destroySlotTree` loops are §4 Q14 (C-4 exemption).
+			-- 공통으로". The two `destroySlotTree` loops got the same line — Q14 (a).
 			releaseOwner(element, self)
 			if self._owned ~= false then
 				if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
@@ -672,12 +677,18 @@ local function Init(module: any)
 			if slot._wrapped ~= nil then releaseSugarWrapper(slot) end
 			return
 		end
+		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `Owned = false`
+		-- element Slot survives `destroySlotTree` (unmount-only branch above) and kept a dead
+		-- `elementOwner` forever ("already mounted elsewhere" on its next Add). Destroyed
+		-- elements do not care (weak registry). The C-4 exemption assumed every element dies.
 		for _, element in ipairs(slot._elements) do
+			releaseOwner(element, slot)
 			if isSlot(element) then destroySlotTree(element)
 			else module.nativeDispose(element) end
 		end
 		if slot._detached then
 			for key, element in pairs(slot._detached) do
+				releaseOwner(element, slot)
 				if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
 				slot._detached[key] = nil
 			end
@@ -765,7 +776,7 @@ local function Init(module: any)
 					Err.errorBeforeNearest(surface .. ": the same element appears twice", SURFACE)
 				end
 				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
-					Err.errorBeforeNearest(surface .. ": this element is already mounted — multiple mounts are not allowed", SURFACE)
+					Err.errorBeforeNearest(surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 				end
 				seen[occupant] = true
 			end
@@ -947,6 +958,11 @@ local function Init(module: any)
 		end
 
 		local function reconcile(items: any)
+			if type(items) ~= "table" then
+				-- round3 `H-441` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
+				-- reached from State emit depth too, so outermost
+				Err.errorBefore(`Slot:List: data must be an array (got {typeof(items)}) — a data State must hold one too`, SURFACE)
+			end
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
 				local key = keyFn(item, i)
@@ -1040,6 +1056,12 @@ local function Init(module: any)
 
 	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
 		checkListInstall(self)
+		if type(updateFn) ~= "function" then
+			Err.errorBeforeNearest(`Slot:List: updateFn must be a function (got {typeof(updateFn)})`, SURFACE) -- round3 `H-441`
+		end
+		if type(data) ~= "table" and not isState(data) then
+			Err.errorBeforeNearest(`Slot:List: data must be an array or a State of one (got {typeof(data)})`, SURFACE) -- round3 `H-441`
+		end
 		self._listed = true
 		self._listData = data
 		self._updateFn = updateFn
@@ -1108,7 +1130,7 @@ local function Init(module: any)
 		if elementOwner:GetWeak(value, OWNER) ~= nil then
 			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
 			-- detached element cannot be Remove/Extract-ed — it goes with its owner)
-			Err.errorBeforeNearest("dispose: this value is still held by a Slot — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)", SURFACE)
+			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner). If the owner was destroyed outside quad (`inst:Destroy()`), the value went with it and cannot be reused — extract it before destroying, as with an Instance (Q9)", SURFACE)
 		end
 		if isSlot(value) then destroySlotTree(value)
 		elseif isInst(value) then module.nativeDispose(value)

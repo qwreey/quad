@@ -914,7 +914,7 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 
 ## 8.10. `index<>`로 만든 파라미터 타입은 연산자 앞에서 `unknown`이다 (2026-09-07 7순회 `H-428`)
 
-`OnChange("BackgroundTransparency", function(v) print(v + 1) end)` — `v`는 `index<PropTypes, K>`로
+`OnChange("BackgroundTransparency", function(v) print(v + 1) end)` — `v`는 `index<PropTypesRead, K>`(2026-09-07 Q19 — 읽기 표면)로
 `number`가 되지만, 무주석 람다 안에서 **연산자**를 만나면 타입 함수가 줄어들기 전에 연산자 제약이
 풀려 `Operator '+' could not be applied to operands of types unknown and number`(test.sh 플래그 셋
 실측). 검사 방향(`local s: string = v` → `Expected 'number', got 'string'`)과 멤버 접근은 흐른다.

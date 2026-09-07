@@ -1336,6 +1336,16 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   같은 결로 UB 취급. 핸들러가 **같은 인덱스로** 자기 자신을 재진입시키는
   버그도 같은 경로로 수렴함(자기 자신과 핸들러가 같으니 (A) 분기를 무한히
   반복 → 스택오버플로).
+- **[2026-09-07 회신 3차, Q5 (a) 사용자 확정] 같은 `(inst, k)`의 간접 재진입도 UB** — 어떤 핸들러의
+  `process`가 돌던 중 그 자리에 묶인 State를 `:Set`하게 만들어(직접이든 Compute/Observer 콜백을 거쳐서든)
+  디스패치가 같은 키를 처리 중인 채로 다시 들어오는 것. 재진입 게이트는 두지 않는다(사용자: *"재진입
+  게이트는 허용 안한다가 내 생각"*). 더 큰 원칙은 `source-state-plan.md` "Compute 순수성" 절 — Compute
+  함수는 그래프를 읽기만 하고 하류로만 내린다.
+- **[2026-09-07 회신 3차, Q18 (c) 사용자 확정] `setLength`의 State 팔 설치 발화 중 throw는 UB** —
+  부기(`lengthList`/`N`/커서)를 쓴 뒤 `len:Observer` 설치·`bindLifetime(anchor, …)`에서 raise하면(잘못된
+  anchor, 설치 발화 recompute 안 사용자 Observer의 throw) 그 자리의 길이 State는 고아로 남는다. 에러로
+  죽은 뒤의 무결성은 보장하지 않는다(사용자: *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이
+  없고"*). 사전 검사(옛 (a))는 `research/deferred-hardening-plan.md`에 후보로.
 - **`State<State<T>>`는 정상 지원 대상** (2026-08-13 다섯 번째 세션
   재정정, 열네 번째 세션에 힌트까지 보강). 원래(같은 날 두 번째 세션)
   `store.key = a`(State), `a:Get() = b`(State)일 때 같은 `StoreBind`
@@ -1515,6 +1525,9 @@ Slot1이 바뀔 때마다 Slot2에 다시 알려줘야 하는 캐스케이드 �
 ```lua
 Dispatch.setLength(ownerKey, i, len: number | State<number>, anchor?, element?)   -- [2026-08-27 9라운드 Q3] 5번째 = 그 자리의 inst|slot
 Dispatch.setOffsetSource(ownerKey, i, offset: Source<number> | None)
+-- [2026-09-07 회신 3차] 도메인·게이트(Q13 (b)·Q15 (a), 사용자 확정): `len`은 **비음수 정수**(상수는 등록 시,
+--   State는 읽을 때 `contribution`에서 한 비교 — 위반은 표면 에러), `offset`은 `Brand.isSource` 또는 `None`
+--   (`checkPosition`의 형제 게이트). `setEmpty(ownerKey, i, anchor?)`는 None/0 쌍 한 본문(Q3 ③).
 Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 자리의 절대 offset
 ```
 **[2026-08-21 5라운드]** `anchor`는 생명주기 앵커(생략 시 `ownerKey`, 자세한

@@ -322,6 +322,8 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
 멤버별 팔로 정정, 근거는 `typing-limits.md` 8.9절 (3). **[2026-09-07 마커 — 사용자 결정]** 그 멤버별 팔은
 같은 날 8.11의 공변 마커로 대체됐다 — 실물 `PV`는 `number | UDim | TweenData<…> | StateMarker<number | UDim |
 Tween<…>> | None` 네 팔 하나이고 setter도 `Field<number | UDim>` 하나(`SHF0` 소멸); 위 문장은 그 사이의 우회.
+**[2026-09-07 회신 3차 Q17 (a) 사용자 확정]** 핸들러의 값 게이트(`numberOnly` — 승인 없이 들어온 다섯째 필드, `H-402`)는
+제거. 타입이 1차 방어이고 최종 프로퍼티 대입이 다른 프로퍼티처럼 raise한다(*"다른 프로퍼티와 같게 되어도 좋음"*).
 
 v1에서도 `Corner`/`PaddingAll`/`Scale`은 store 값으로 바인드 가능했음
 (`myStore "key"` 체이닝으로 다른 프로퍼티와 동일하게 취급됨) — quad-v2도

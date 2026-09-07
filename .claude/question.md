@@ -164,29 +164,15 @@
 
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/post-implementation-review-round1.md`
-  §4가 소스: ~~Q1 `NewChild`에 `State<Slot<Instance>>` 팔~~(**[2026-09-07 회신 2차] 닫힘 — 마커 적용**: 입력 자리의
-  State/Slot 팔을 공변 `StateMarker`/`SlotMarker`로, `typing-limits.md` 8.11·원장 §16. 팬텀 값 필드 `__quadStateValue`/`__quadSlotValue`는 **[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다)) / ~~Q2 `Observer`/`EffectHandle` 팔~~(**[2026-09-07 회신]
-  (a) 반영**) / ~~Q3 코드 품질 제안 묶음 `H-356`~~(**[2026-09-07 회신] 항목별 확정 — 반영·보류 처리 완료**, round1 §15) / **Q4** 실프로퍼티
-  키의 핸들 오용 진단(`H-361`, 권고 그대로) / **Q5** 같은 키 간접 재디스패치를 UB로 명시(권고 문서) /
-  **Q6**(야간 2순회, `H-376`) 정본이 약속한 native* 조합 폴백이 코드에 없다 — 약속 철회(권고 (a), 스텁
-  여섯) 또는 합성 구현 / **Q7**(3순회, `H-378`) 미설치 스텁의 blame — 자기 태그 스텁이라 nearest가 안 서서
-  `errorBefore`로 복원했는데, 무태그 스텁으로 "핸들러 작성자 자기 줄"까지 갈지(권고 (a) 그대로) / **Q8**(3순회,
-  `H-379`) `Animate` Compute에 nil/None 통과 팔 — 지금은 애니메이트된 프로퍼티를 해제할 수 없다(권고 (a) 팔
-  추가, 정본 의사코드 한 줄) / **Q9**(4순회, `H-382`) 부모 Destroy 뒤 Slot 좀비·시체 요소 재마운트 — 정본이 단언한
-  요소 단위 게이트 미구현(권고 (c)+(b): 최상위 `canExecute` 소비 + 정본 문장 정정) / **Q10**(`H-383`) `AddPlugin`이
-  프로바이더 락을 우회(권고 (c) UB 명시) / **Q11**(`H-387`) Modifier setter의 비문자열 키(권고 (a)+(c)) / **Q12**
-  (`H-391`) Tween 동일값 재발행의 취소·재시작(권고 (a) 정본 한 줄) / **Q13**(5순회, `H-392`) `setOffsetSource`의
-  `source` 타입 게이트(권고 (b)) / **Q14**(`H-393`) `destroySlotTree` 두 루프의 `releaseOwner` — C-4 면제와 충돌(권고
-  (a)) / **Q15**(`H-394`) `setLength`의 `len` 도메인 검사(권고 (a)) / **Q16**(`H-398`) `Tween.validate`가 State 값을
-  거부(권고 (b)) / **Q17**(`H-402`) `InstanceShorthand`의 미승인 `numberOnly` 필드(권고 (a) 제거) / **Q7 둘째**
-  (`H-399`) `_assertBindable` 방향(권고 (a) 유지). 결정이 코드를 막지 않는다 — Q9·Q14가 동작 결함이고 나머지는
-  타입 표면·정리·문서 항목. **6순회 추가**: **Q18**(`H-413`) `setLength` State 팔의 mutate-then-throw(권고 (a)
-  사전 검사, 정본 의사코드 동시 수정) / **Q19**(`H-414`) `PropTypes`가 쓰기 표면이라 `OnChange("AbsoluteSize")`가
-  strict 거부(권고 (a) 읽기 표면 별도 생성) / **Q20**(`H-415`) Destroy된 Instance에 `bindLifetime` 시 반사실 메시지
-  (권고 (a), Studio 실측 뒤) / **Q7 셋째**(`H-416`) Compute가 Modifier를 반환한 에러의 blame 방향(Q7 둘째와 한 결정) /
-  **Q21**(7순회, `H-430`) 툴체인 — `luau` CLI 무핀(권고 `0.734` 핀)과 selene(안 돌리는 린터, 설정도 stale — 폐기 vs
-  게이트화).
+- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 — 남은 셋** — `qa-request/post-implementation-review-round1.md`
+  §4가 소스. Q1~Q3은 회신 1·2차, Q4~Q19와 Q7 둘째·셋째는 회신 3차로 닫혔다(round3 §6). 남은 것:
+  **Q6**(2순회 `H-376`) 정본이 약속한 native* 조합 폴백이 코드에 없다 — 프로바이더가 여섯 op를 전부 심지 않으면
+  지금은 조합되는 게 아니라 안내 스텁 에러가 난다. 권고 (a) 약속 문장을 정본에서 지우고 "미주입이면 명확한 에러"로
+  통일(셋째 백엔드가 실제로 나올 때 합성을 연다) / (b) 정본대로 합성 구현.
+  **Q20**(6순회 `H-415`) Destroy된 Instance에 `bindLifetime`하면 GC 전엔 죽은 섬에 조용히 성공하고 GC 뒤엔 "Claim
+  it first"라는 반사실 메시지 — 권고 (a) destroyed 팔 메시지 분리, 단 Studio 실측 뒤(HUMAN_TODO).
+  **Q21**(7순회 `H-430`) 툴체인 — `luau` CLI가 무핀(전역 0.734)이라 (b) `mise.toml`에 핀 권고; selene은 설정만 있고
+  아무도 안 돌린다 — (c) 폐기 vs 게이트화 중 선택.
 
 - **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항 셋** — `qa-request/post-implementation-review-round3.md` §4가 소스(마커
   커밋 `8b4748a`의 리뷰): **Q22**(`H-432`) Slot 요소 자리의 공변 마커 + 가변 출력 `SlotItem<T>`의 건전성(중첩 `Slot<Frame>`을

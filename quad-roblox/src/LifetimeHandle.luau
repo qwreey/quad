@@ -73,6 +73,9 @@ local function install(quad: any)
 
 	-- (1) private predicate shared by both public entry points ((3))
 	local function isBoundAlive(value: any): boolean
+		if value == nil then
+			return false -- round3 `H-444` (G-14): `canExecute(nil)`/`canBound(nil)` died in Relate
+		end
 		-- (a) inst-scoped path: the gcconn copy bindLifetime left on the value
 		local gcconn = BindData:GetWeak(value, "gcconn")
 		if gcconn ~= nil and gcconn.Connected then
@@ -94,7 +97,7 @@ local function install(quad: any)
 	end
 
 	local function bindLifetime(inst: any, value: any)
-		local gchold = InstData:GetWeak(inst, "gchold")
+		local gchold = if inst == nil then nil else InstData:GetWeak(inst, "gchold") -- `H-444`: nil inst takes the same message
 		if gchold == nil then
 			-- `H-290`: consequence of (0) — every quad-owned Instance is claimed
 			-- at creation, so an unclaimed inst here means the caller handed us
@@ -141,6 +144,9 @@ local function install(quad: any)
 	end
 
 	local function unbindLifetime(value: any)
+		if value == nil then
+			return -- header contract: no-op if unbound (round3 `H-444`)
+		end
 		-- symmetric teardown — never calls cleanup, never detaches Ref
 		-- callbacks or inner Observers (lifecycle-pattern (1))
 		if isEffect(value) then

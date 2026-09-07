@@ -199,5 +199,15 @@ do
 	print("PASS")
 end
 
+print("=== 7. round3 H-440 (외부 리뷰 G-10, H-417 짝) — OnChange(\"\", fn)은 생성자에서 거부(엔진 GetPropertyChangedSignal에 디스패치 깊이로 닿던 것) ===")
+do
+	local ok, err = pcall(function()
+		return q.OnChange("", function() end)
+	end)
+	assert(not ok and string.find(tostring(err), "must be a non-empty string", 1, true) ~= nil, "empty name rejected: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.events.luau", "OnChange empty-name blame")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

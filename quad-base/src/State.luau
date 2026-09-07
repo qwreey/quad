@@ -159,9 +159,11 @@ local function createImpl(module: any)
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		if isModifier(result) then
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
-			-- (`H-231`) now finds the nearest SURFACE frame (the user's Get/entry),
-			-- which is what that 3 was approximating — no counting left to maintain.
-			Err.errorBeforeNearest("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
+			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
+			-- `_recompute` is lazy, so when dispatch forces it first the nearest tagged
+			-- frame is `StoreBind.luau` (quad internals, `H-416`); the user's entry line
+			-- (their `drive`/creation) is the useful one.
+			Err.errorBefore("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
 		end
 		self._cache = result
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid

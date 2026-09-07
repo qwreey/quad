@@ -117,6 +117,13 @@ local function install(quad: any)
 			end
 			local prev = tweenSlots:GetStrong(inst, k)
 			local tweenIn = isTween(v)
+			if tweenIn and type(prev) == "table" and prev.Source == v then
+				-- Q12 (사용자 결정 2026-09-07): the SAME Tween object re-emitted (Animate's
+				-- Dedup hands the previous Tween back) — the active tween keeps running,
+				-- no cancel + restart (`H-391`). A completed tween is not re-triggered
+				-- either; `Animate{ Dedup = false }` is the re-trigger switch.
+				return Void
+			end
 			if prev == nil then
 				-- branch 1: first set — snap, no animation even for a Tween value
 				inst[k] = if tweenIn then v.Value else v
@@ -139,7 +146,7 @@ local function install(quad: any)
 			end
 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
 			if tweenIn then
-				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value })
+				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value, Source = v })
 				engineTween:Play()
 			else
 				inst[k] = v

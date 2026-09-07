@@ -310,6 +310,9 @@ local function Init(module: any)
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
+		if inst == nil then
+			Err.errorBefore("Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
+		end
 		-- Pipeline stages ⓪ + (b) + ⓪' (M3 unit 2 wired the batch gating; the
 		-- (a) PreRef/PostRef pre-pass and (c) postRefList join in M8 — between
 		-- the gate opening and this loop / after it, respectively).

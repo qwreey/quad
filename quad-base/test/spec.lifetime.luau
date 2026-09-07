@@ -258,5 +258,17 @@ do
 	print("PASS")
 end
 
+print("=== 10. round3 H-444 (외부 리뷰 G-14) — nil 인자: unbindLifetime(nil)은 no-op(헤더 계약), canExecute(nil) false, canBound(nil) true, bindLifetime(nil, v)는 표면 에러 ===")
+do
+	local q = mock.newQuad()
+	q.unbindLifetime(nil)
+	assert(q.canExecute(nil) == false and q.canBound(nil) == true, "nil is simply unbound")
+	local ok, err = pcall(function()
+		q.bindLifetime(nil, q.Source(1))
+	end)
+	assert(not ok and string.find(tostring(err), "bindLifetime", 1, true) ~= nil and string.find(tostring(err), "index is nil", 1, true) == nil, "surface error, not a VM one: " .. tostring(err))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

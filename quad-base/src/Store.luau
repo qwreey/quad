@@ -48,10 +48,11 @@ local RESERVED = { Of = true, Names = true, __reservedCheck = true }
 -- One predicate for both doors (`Of` `H-201`, constructor `H-347`) — 0순회 `H-367`:
 -- they had drifted apart once already (the constructor let `Store({ Source(1) })` in).
 local function checkKey(name: any, what: string)
-	if type(name) ~= "string" then
+	if type(name) ~= "string" or name == "" then
 		-- `H-201`: nil died at `self[name] =` with an internal frame after already
-		-- allocating a Source; a number silently broke `Names(): { string }`
-		Err.errorBeforeNearest(`Store: {what} must be a string (got {typeof(name)})`, SURFACE)
+		-- allocating a Source; a number silently broke `Names(): { string }`.
+		-- round3 `H-443` (외부 리뷰 G-13): "" rode `Attribute(store)` to `setAttribute("")`
+		Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
 	end
 	if RESERVED[name] then
 		Err.errorBeforeNearest(`Store: "{name}" is a reserved store key`, SURFACE)

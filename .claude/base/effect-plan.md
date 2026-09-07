@@ -311,10 +311,11 @@ end
 --   이 훅을 먼저 묻는다 — 가드가 거부해도 반쯤 묶인 핸들(묶였는데 `Destroying`
 --   연결 없음)이 남지 않는다. `H-147` (A)의 가드는 `_bindDestroying` 첫 줄에서
 --   여기로 이동했다(그쪽의 유일한 호출자인 `bindLifetime`이 이미 물었으므로).
---   level 3: 이 메소드와 `bindLifetime`을 지나 사용자 호출부(**[2026-09-07 5순회
---   `H-394`]** 코드는 지금 `errorBefore`(최외곽, 4순회 `H-384`) — 태그된
---   `bindLifetime` 뒤에선 nearest도 outermost도 정확하지 않아 방향은 원장 §4 Q7
---   둘째 불릿에서 결정 대기; 이 줄의 "level 3"은 nearest 의미였다). Observer도 같은
+--   level 3: 이 메소드와 `bindLifetime`을 지나 사용자 호출부(**[2026-09-07 회신 3차
+--   Q7 둘째 (a) 사용자 확정]** `errorBefore`(최외곽) 유지 — 태그된 `bindLifetime` 뒤에선
+--   어느 방향도 완전하지 않지만 outermost가 오용 콜백을 돌린 사용자 호출을 찍는다;
+--   이 줄의 옛 "level 3"은 nearest 의미였다. Compute가 Modifier를 돌려준 에러도 같은
+--   방향(Q7 셋째)). Observer도 같은
 --   이름의 훅을 가진다(`H-183` — 자기 `_running`을 본다). 값이 훅을 안 가지면
 --   (평범한 클로저 등) `bindLifetime`은 물을 것이 없다.
 function EffectHandle:_assertBindable()

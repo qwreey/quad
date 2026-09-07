@@ -49,4 +49,13 @@ local function _neverCalled()
 	return f, s, g, m, a
 end
 
+-- [2026-09-07 Q19 (a)] 읽기 전용 프로퍼티(AbsoluteSize/AbsolutePosition/TextBounds)가 OnChange의 읽기 표면
+-- `PropTypesRead`에 든다 — 옛 쓰기 표면 `PropTypes`에선 strict TypeError였다(`H-414`)
+local function _readSurface()
+	local a = q.OnChange("AbsoluteSize", function(v: Vector2) end)
+	local b = q.OnChange("AbsolutePosition", function(v: Vector2) end)
+	local c = q.OnChange("TextBounds", function(v: Vector2) end)
+	return q.D.Frame({ a, b }), q.D.TextLabel({ c })
+end
+
 print("=== ALL PASS ===")
