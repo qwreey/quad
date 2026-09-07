@@ -293,6 +293,16 @@ def emit():
     # Handlers/InstanceShorthand.luau(우선순위 NORMAL+1). PropTypes/OnChange엔 넣지 않는다
     # (실프로퍼티가 아니라 GetPropertyChangedSignal 대상이 아님).
     SHORTHAND = [("UICorner", "number | UDim"), ("UIPadding", "UDim"), ("UIPaddingOffset", "number"), ("UIScale", "number")]
+    # [6순회 H-412] bound BEFORE is_gui_object (which closes over it) — it used to be defined
+    # ~90 lines later and the earlier call only survived because `node in classes` was always true
+    def ancestors(node):
+        out = []
+        node = parent_of.get(node)
+        while node:
+            out.append(node)
+            node = parent_of.get(node)
+        return out
+
     def is_gui_object(node):
         return node == "GuiObject" or "GuiObject" in ((classes[node]["chain"] if node in classes else ancestors(node)))
     prop_types = []
@@ -378,14 +388,6 @@ def emit():
         for i, node in enumerate(chain):
             parent_of[node] = chain[i + 1] if i + 1 < len(chain) else None
     mod_classes = sorted(parent_of)  # 스코프 + 조상
-
-    def ancestors(node):
-        out = []
-        node = parent_of.get(node)
-        while node:
-            out.append(node)
-            node = parent_of.get(node)
-        return out
 
     def descendants(node):
         return sorted(m for m in mod_classes if m != node and node in ancestors(m))

@@ -10,7 +10,7 @@
 	`archive/brand-shared-registry-reversed.md`).
 
 	Every brand instance lives in this leaf file (M2 first-unit plan,
-	`qa-request/m2-implementation-round11-brief.md` §6): `EpochBrand`
+	`archive/v2-initial-implementation/m2-implementation-round11-brief.md` §6): `EpochBrand`
 	is shared by `Source`/`Ref` (NOT `GateNode` — a GateNode is a State, no
 	`Revision`; registering it here would make `EpochMap:Update` never fire —
 	`State.luau` header; 5순회 correction), so keeping the instances per type

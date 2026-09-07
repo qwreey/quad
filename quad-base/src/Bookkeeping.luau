@@ -155,19 +155,17 @@ local function Init(module: any)
 		local cur = bk.offsetCache[i]
 		while i < at do
 			if bk.lengthList[i] == nil then
-				-- 5순회 `H-397`: past the last registered position it is USER input
-				-- (`at` may be at most N+1 — the slot after the last element),
-				-- not a broken bookkeeping — nearest, like `checkPosition`.
-				local last = 0
-				for k in pairs(bk.lengthList) do
-					if k > last then last = k end
-				end
-				if i > last then
-					Err.errorBeforeNearest(`Dispatch.getOffsetAt: position {at} is past the last registered position ({last}) — at most {last + 1} may be queried`, SURFACE)
-				end
-				-- `H-106`: without this the C-6 diagnosis is bypassed and an
-				-- anonymous arithmetic error fires first. Internal invariant.
-				error(`Dispatch.getOffsetAt: lengthList[{i}] is nil — bookkeeping is broken`, 1)
+				-- 5순회 `H-397` / 6순회 `H-408`: a missing position has TWO causes and
+				-- this line cannot tell them apart — a query past N+1 (user input) or
+				-- a leaf handler that skipped its `H-39` registration (a hole that,
+				-- because registration is ascending, also looks like a tail). Say
+				-- both. Outermost blame: this runs under the sibling surface
+				-- `setOffsetSource` and at dispatch depth (materialize), where
+				-- nearest landed on `Bookkeeping.luau` itself (`H-378` lesson).
+				-- `bk.N` is the max registered position by contract (grows in
+				-- setLength, shifts in splice, reset with the list).
+				local last = bk.N or 0
+				Err.errorBefore(`Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a query past N+1 (N = {last}, at most {last + 1} may be queried) or a leaf handler that skipped its position registration (H-39)`, SURFACE)
 			end
 			cur += contribution(bk, i) -- ← a State length's Get can run user code
 			if bk.offsetCacheValidUpTo < i then

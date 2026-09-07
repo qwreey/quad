@@ -1,7 +1,7 @@
 --[[
 	Dispatch core contract — `.claude/base/dispatch-core-plan.md` "Dispatch 체인" /
 	"핸들러 계약" / "우선순위 동률/매치 실패 처리", scoped by
-	`.claude/qa-request/m3-implementation-round12-brief.md` §6 (unit 1).
+	`.claude/archive/v2-initial-implementation/m3-implementation-round12-brief.md` §6 (unit 1).
 	Test handlers are spec-local (no real handlers exist yet); `inst` is a mock
 	Instance — `H-229` anchors every chain via bindLifetime, so dispatch needs a
 	claimable inst.

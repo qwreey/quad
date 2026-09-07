@@ -358,7 +358,7 @@ quad의 전파 모델은 `base/source-state-plan.md`의 "전파 모델 확정" �
 푸는가" 절 신설 + `Observer` 절 상호 참조), `base/architecture.md`,
 `base/blocker-plan.md`("전파를 지연시키는 유일한 요소"로 위치 명문화),
 `reference/comparison-fusion-vide.md`,
-`research/framework-comparison-findings.md`, `ROADMAP.md` M0 체크리스트,
+`research/framework-comparison-findings.md`, `archive/v2-initial-implementation/roadmap.md` M0 체크리스트,
 스파이크 `05-store-state-diamond-propagation.luau`(옛 모델을 통과 상태로
 검증 중이었음 → `rewrite-required/`), `audit/luau-test-first-run-2026-08-13.md`.
 
@@ -1242,7 +1242,7 @@ additional-primitives-plan.md`가 원래 "안 만들어도 된다"고 판단했�
 맨 뒤로 미뤄도 됨(다른 기능이 이걸 의존하지 않고, 없어도 다른 기능이 안
 막힘).
 
-**의존성**: State 코어(`ROADMAP.md` M2) + 백엔드 주입 표면(`setTimeout`/
+**의존성**: State 코어(`archive/v2-initial-implementation/roadmap.md` M2) + 백엔드 주입 표면(`setTimeout`/
 `clearTimeout`) + `Blocker`(gated state) + `Ref`. **[2026-08-22 정정]**
 **[2026-08-24 재정리]** 각각 **M2**(State 코어 · 게이트 · `Blocker`) /
 **M8**(`Ref`)에서 확정되는 것들이라 그 이후 언제든 얹을 수 있다. 2026-08-22엔

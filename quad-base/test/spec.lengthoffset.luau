@@ -347,7 +347,14 @@ do
 	local okFar, errFar = pcall(function()
 		q.Dispatch.getOffsetAt(inst, 3)
 	end)
-	assert(not okFar and string.find(tostring(errFar), "past the last registered position", 1, true) ~= nil, "past N+1 is a user-input error: " .. tostring(errFar))
+	assert(not okFar and string.find(tostring(errFar), "a query past N+1", 1, true) ~= nil, "past N+1 names both causes (query past N+1 / missing registration): " .. tostring(errFar))
+	-- 6순회 `H-408`: the same range fault through the sibling surface `setOffsetSource`
+	-- blames the caller too (nearest used to land on Bookkeeping.luau itself)
+	local okVia, errVia = pcall(function()
+		q.Dispatch.setOffsetSource(inst, 5, q.Source(0))
+	end)
+	assert(not okVia, "setOffsetSource past N+1 errors")
+	mock.assertBlamesUser(errVia, "spec.lengthoffset.luau", "range error via setOffsetSource blames the caller")
 	mock.assertBlamesUser(errFar, "spec.lengthoffset.luau", "getOffsetAt range blame")
 	print("PASS")
 end

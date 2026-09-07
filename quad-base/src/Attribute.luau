@@ -184,7 +184,7 @@ local BooleanAttribute = scalarSugar("BooleanAttribute", "boolean")
 
 -- `H-238`: tag the public surface (see Tag.luau — same reasoning; the
 -- handler-process raises below stay errorBefore, dispatch depth `H10-2`)
-for _, fn in { getmetatable(Attribute).__call, Attribute.Merged, Attribute.Overridden } :: { any } do
+for _, fn in { getmetatable(Attribute).__call, Attribute.Merged, Attribute.Overridden, AttrImpl.NameMap } :: { any } do -- `H-410`
 	Err.setFuncLevel(fn, SURFACE)
 end
 

@@ -22,7 +22,7 @@
 ## §1 범위와 순서
 
 - **단위(unit)** 넷. 단위 하나가 끝날 때마다 §4 "관여 시점"으로 온다.
-  1. **공통 기반** — `ROADMAP.md`의 "공통 기반 — 반응형보다 먼저" 절 전부:
+  1. **공통 기반** — `roadmap.md`의 "공통 기반 — 반응형보다 먼저" 절 전부:
      `Brand.luau` / `Relate.luau`(M1에 이미 커밋됨 — 남은 건
      `base/relate-plan.md` 대조 + 테스트) / `LifetimeHandle.luau` 인터페이스 /
      `Ref.luau` 최소형(`H-128`) / `Void`(`H-162`). **여기에 `H-97`의 mock 생명주기

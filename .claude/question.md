@@ -59,7 +59,7 @@
 > **[2026-08-24] M2/M3 마일스톤 경계 문제도 닫혀 있습니다** — 사용자가
 > **(a) 순서 교체**(반응형이 M2, 디스패치가 M3)를 선택해 전량 반영됐습니다.
 > 결정과 근거는 `archive/question-resolved.md`의 "마일스톤 경계" 절, 새
-> 마일스톤 구성은 `ROADMAP.md`의 M2 배너.
+> 마일스톤 구성은 `archive/v2-initial-implementation/roadmap.md`의 M2 배너.
 
 > **M0 착수를 막던 항목이 전부 해소됐습니다.** `0-Y`(`:Compute(fn)`의
 > lazy 핸들 계약)는 열세 번째 세션에, `0-Z`(Attribute 이름 소유권)와
@@ -180,7 +180,17 @@
   (a)) / **Q15**(`H-394`) `setLength`의 `len` 도메인 검사(권고 (a)) / **Q16**(`H-398`) `Tween.validate`가 State 값을
   거부(권고 (b)) / **Q17**(`H-402`) `InstanceShorthand`의 미승인 `numberOnly` 필드(권고 (a) 제거) / **Q7 둘째**
   (`H-399`) `_assertBindable` 방향(권고 (a) 유지). 결정이 코드를 막지 않는다 — Q9·Q14가 동작 결함이고 나머지는
-  타입 표면·정리·문서 항목.
+  타입 표면·정리·문서 항목. **6순회 추가**: **Q18**(`H-413`) `setLength` State 팔의 mutate-then-throw(권고 (a)
+  사전 검사, 정본 의사코드 동시 수정) / **Q19**(`H-414`) `PropTypes`가 쓰기 표면이라 `OnChange("AbsoluteSize")`가
+  strict 거부(권고 (a) 읽기 표면 별도 생성) / **Q20**(`H-415`) Destroy된 Instance에 `bindLifetime` 시 반사실 메시지
+  (권고 (a), Studio 실측 뒤) / **Q7 셋째**(`H-416`) Compute가 Modifier를 반환한 에러의 blame 방향(Q7 둘째와 한 결정).
+
+- **[2026-09-07 신설] 소스 구조 재편 — 사용자 의견 여덟의 확인 결과** — `research/source-layout-plan.md`가
+  소스(항목별 사실·이득·비용·권고). 답할 것: 1절 Slot 분할(권고 한다, Q9/Q14 뒤 별도 단위) / 2절 Tween(권고
+  (c) 엔진 어휘 검증만 quad-roblox로) / 3절 Tag 생성자·`Added`에 `string | {string} | Tag` 유니언(권고 (b), 어제
+  `H-389` 역전) / 4절 배치(권고 패밀리 폴더 셋 + Modifier를 `Dispatch/`로, 대분류 보류) / 5절 `Dispatch/` 규칙
+  명문화 + `Dispatch/Slot.luau` → `Slot/Handler.luau` / 6절 `Ref/` 폴더 / 7절 `Attribute/` 폴더 / 8절 `Attr` 축약
+  (권고 없음 — 취향, 하려면 지금).
 
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위(2026-08-12 신설,

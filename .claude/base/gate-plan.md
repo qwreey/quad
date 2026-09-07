@@ -538,4 +538,4 @@ end
   `Gate` 일반화를 처음 권고한 자리, 그리고 정책 쪽 설계 전량.
 - `base/dispatch-core-plan.md` — "배치 등록을 안전하게 만드는 Blocker 게이팅"
   절이 M3가 실제로 요구하는 표면.
-- `ROADMAP.md` M2/M3.
+- `archive/v2-initial-implementation/roadmap.md` M2/M3.

@@ -2379,4 +2379,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   호이스팅; Q9 Slot 좀비·Q10 `AddPlugin` 락·Q11 setter 키·Q12 Tween 동일값). 같은 날 메인이 도는 리뷰를
   묻지 않고 죽인 실수 → 규약 정정(`/code-review` 인자로 서브에이전트 opus 지정 가능, `TaskStop` 금지). 5순회
   `H-392`~`H-402`(§11 — `setOffsetSource` 쓰기 순서 HIGH·Detach `releaseOwner`·이중 바인드 메시지; Q13~Q17,
-  Q7 둘째).
+  Q7 둘째). 이어 `H-403`(isSlot→Brand)·`H-404`(전역 슈거 게이트)·`H-405`(exit code 절차 오류)·문서 재편
+  (`archive/v2-initial-implementation/`, 원장 개명)·6순회 `H-406`~`H-416`(Property 트윈 Create 선행·SlotHandler
+  pre-pass·`H-397` 회귀 복원; Q18~Q20·Q7 셋째)·사용자 구조 의견 여덟 → `research/source-layout-plan.md`.

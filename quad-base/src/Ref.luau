@@ -85,6 +85,12 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			-- the Ref itself, not the value. [`H-170`, user-confirmed] `resume` never
 			-- raises; the immediately returned failure is re-raised here (a later
 			-- yield's fate is out of our hands), per the "no pcall" contract.
+			-- 6순회 `H-411`: `Wait(thread)` may have registered the CURRENT coroutine,
+			-- and resuming a running coroutine is a raw VM error with no position —
+			-- say what happened instead (a dead thread stays UB, `H-170`/`H-339`)
+			if coroutine.status(k) == "running" then
+				Err.errorBeforeNearest("Ref: cannot :Set from the coroutine that is waiting on this Ref (Wait(thread) registered the current coroutine)", SURFACE)
+			end
 			local ok, err = coroutine.resume(k, self)
 			if not ok then
 				error(err, 0)

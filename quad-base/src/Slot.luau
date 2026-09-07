@@ -711,7 +711,13 @@ local function Init(module: any)
 		local n = #self._elements
 		local limit = if allowEnd then n + 1 else n
 		if type(index) ~= "number" or index < 1 or index > limit or index % 1 ~= 0 then
-			Err.errorBeforeNearest(surface .. ": index out of range", SURFACE)
+			-- 6순회: two faults, two messages (a fractional index is not "out of range")
+			Err.errorBeforeNearest(
+				if type(index) ~= "number" or index % 1 ~= 0 or index < 1
+					then `{surface}: index must be a positive integer (got {tostring(index)})`
+					else `{surface}: index out of range (got {index}, limit {limit})`,
+				SURFACE
+			)
 		end
 	end
 
@@ -1023,7 +1029,7 @@ local function Init(module: any)
 	local function checkListInstall(self: any)
 		assertLive(self)
 		if self._listed then Err.errorBeforeNearest("Slot: already has :List/:Single installed", SURFACE) end
-		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List/:Single after manual CRUD was used", SURFACE) end
+		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List/:Single after elements were added manually (CRUD or Slot{ ... } initial elements)", SURFACE) end
 	end
 
 	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
@@ -1094,7 +1100,9 @@ local function Init(module: any)
 	-- dispose(value) — the one safe path to destroy a quad-managed value.
 	local function dispose(value: any)
 		if elementOwner:GetWeak(value, OWNER) ~= nil then
-			Err.errorBeforeNearest("dispose: this value still requires its tree to be alive — Remove/Extract it first", SURFACE)
+			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
+			-- detached element cannot be Remove/Extract-ed — it goes with its owner)
+			Err.errorBeforeNearest("dispose: this value is still held by a Slot — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)", SURFACE)
 		end
 		if isSlot(value) then destroySlotTree(value)
 		elseif isInst(value) then module.nativeDispose(value)
@@ -1133,6 +1141,7 @@ local function Init(module: any)
 			Slot_mt.Add, Slot_mt.Remove, Slot_mt.Replace, Slot_mt.Extract, Slot_mt.ExtractAll,
 			Slot_mt.Splice, Slot_mt.Clear, Slot_mt.Move, Slot_mt.Swap,
 			Slot_mt.List, Slot_mt.Single,
+			Slot_mt.Get, Slot_mt.IndexOf, -- 6순회 `H-410`: read methods too (checkIndex raises)
 		} :: { any }
 	do
 		Err.setFuncLevel(fn, SURFACE)

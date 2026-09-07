@@ -380,15 +380,15 @@ end
   자식을 받는 쪽 — `InstanceChildHandler`(정적 자식, `H-134`)와 Slot의
   `native*` 주입 op — 만 한다.
   - **타입**: `D` 생성기가 각 클래스의 props 타입에서 `Parent`를 **제외**한다
-    (`ROADMAP.md` M5 `D/init.luau` 체크박스) — **그리고 `FrameModifier`류
-    메소드 목록에서도**(`ROADMAP.md` M7; **[2026-08-27 `/code-review`]** 두
+    (`archive/v2-initial-implementation/roadmap.md` M5 `D/init.luau` 체크박스) — **그리고 `FrameModifier`류
+    메소드 목록에서도**(`archive/v2-initial-implementation/roadmap.md` M7; **[2026-08-27 `/code-review`]** 두
     목록이 같은 API 덤프에서 따로 생성되는데 한쪽만 빼면
     `Modifier():Parent(x)`가 타입을 통과하고 `flatten`이 해시 파트로 merge한다 —
     `PreRef`/`PostRef`를 Modifier 타입으로 차단하는 것과 같은 자리). 범위 밖 클래스의 `New<<X>> "X"`는
     `any`라 타입으로 못 막고 아래 런타임 가드가 잡는다.
   - **런타임**: 새 메커니즘 없이 기존 계약으로 — `PropertyHandler.isHandlable`이
     `"Parent"`를 거부하면 그 키에 매치되는 핸들러가 없어 `Dispatch.process`의
-    *"매치 핸들러 없음 → 즉시 error"* 계약(`ROADMAP.md` M3)에 걸린다. (이
+    *"매치 핸들러 없음 → 즉시 error"* 계약(`archive/v2-initial-implementation/roadmap.md` M3)에 걸린다. (이
     배선은 사용자 확정이 아니라 **규칙을 기존 계약에 얹은 제 선택**이다 —
     `H-142` 처방 후보 (a)/(b)/(c)가 전부 새 메커니즘이라 정하지 않았던 것을
     "키 금지"로 바꾸니 필요한 코드가 이 거부 한 줄뿐이다. 다른 모양이 낫다면

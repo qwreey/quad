@@ -10,7 +10,7 @@
 
 사용자가 **(a) 순서 교체**를 선택해 닫혔다 — 반응형이 M2, 디스패치가 M3다.
 결정과 근거는 `.claude/archive/question-resolved.md`의 "마일스톤 경계" 절,
-새 마일스톤 구성은 `ROADMAP.md`의 M2 배너가 소스.
+새 마일스톤 구성은 `archive/v2-initial-implementation/roadmap.md`의 M2 배너가 소스.
 
 **✅ [2026-08-25 해소] 그 교체로 한때 `question.md` 최우선 절에 항목 둘이
 올라왔었다** — 중간 State GC 실측과 동적 키 표면(옛 `store:GetDynamic`) 위치.

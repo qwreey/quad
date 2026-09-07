@@ -239,4 +239,14 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   Q7 둘째(`_assertBindable` 방향 — 4순회 `H-384`가 재진입 가드 규약과 충돌, 정본에 보류 배너). 원장 §11, 여덟 번째
   커밋. 이어서 문서 재편(사용자 결정: 끝난 라운드 44개 + ROADMAP M0~M11 → `archive/v2-initial-implementation/`,
   원장 → `qa-request/post-implementation-review.md`).
+- **사용자 지시·실측 셋**: `H-403` `isSlot`을 Brand로(*"다른것과 일치하게"*), `H-404` 전역 `function` 슈거 실측 →
+  test.sh에 `GlobalUsedAsLocal` 게이트(전수 대조 0건), 그 검증 중 `H-405` — 4순회부터 다섯 커밋 동안 test.sh exit 1을
+  "ALL PASS" 개수로 가린 메인 절차 오류(conventions 명문화). **문서 재편**(사용자 결정: 44개 + ROADMAP 본문 →
+  `archive/v2-initial-implementation/`, 원장 → `post-implementation-review.md`, 커밋 `707af80`).
+- **6순회**(파인더 6·검증자 2 opus, 포크가 F6 대기로 두 번 중간 종료 → 재개): ① `H-406` Property 트윈 분기의
+  Cancel-뒤-Create raise(Create 선행·슬롯 선기록), `H-407` SlotHandler 파괴 값 pre-pass, `H-408` `H-397` 회귀(nearest가
+  형제 표면 경유로 내부 blame + C-6 진단 가로챔 → outermost·두 원인 문구·`bk.N`), `H-409`~`H-412`, 메시지 셋, 재편
+  잔여 스윕(무인용 ROADMAP 포인터 등); ② Q18 `setLength` mutate-then-throw, Q19 `PropTypes` 읽기 표면, Q20 destroyed
+  inst 바인드 메시지, Q7 셋째. 원장 §12. **사용자 의견 여덟**(Slot 분할·Tween 위치·Tag 생성자·배치·Dispatch 폴더·
+  Ref/·Attribute/·Attr) → opus 사실 조사 → `research/source-layout-plan.md` + `question.md`.
 

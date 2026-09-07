@@ -15,7 +15,7 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 2026-09-07 사용자 결정으로 `.claude/archive/v2-initial-implementation/`에 이름 그대로
 이동했다(히스토리 문서 — 절 인용·시한부 검사 면제). 구현 뒤 코드 리뷰 원장은
 `.claude/qa-request/post-implementation-review.md` 하나(옛 이름
-`handover-review-2026-09-07.md`)이고, 진행 상태는 `.claude/todos.md` 00번 + 루트
+handover-review-2026-09-07)이고, 진행 상태는 `.claude/todos.md` 00번 + 루트
 `ROADMAP.md`(완료 표·병행·백로그)가 소스. **⚠️ [2026-08-24] M2와 M3의 번호·순서가
 맞바뀌었다**(M2=반응형, M3=디스패치로 확정 — 경위는 `archive/question-resolved.md`의
 "마일스톤 경계" 절) — **2026-08-24 이전에 쓰인 `session/`·`archive/`의 `M2`/`M3`는 옛 의미**.

@@ -11,6 +11,8 @@
 
 local QuadTypes = require("../../luau_packages/quad_types")
 local NoneModule = require("./None")
+local Err = require("../ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function register(dispatch: any, module: any)
 	local S = module._slotInternal
@@ -25,6 +27,12 @@ local function register(dispatch: any, module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, slotValue: any, _index: number): (any?, boolean) -> ()
+			-- 6순회 `H-407`: the `H6-19` pre-pass, top-level twin — a destroyed Slot
+			-- must fail BEFORE `claimOwnerAt`/`bindLifetime` commit, or the corpse is
+			-- owned by `inst` for good (the `H-103` NOOP retractor never releases it)
+			if slotValue._destroyed then
+				Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE)
+			end
 			if S.claimOwnerAt(slotValue, inst, k) then
 				module.bindLifetime(inst, slotValue)
 				S.attachSlot(slotValue, inst, inst, k)

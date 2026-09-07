@@ -385,6 +385,8 @@ Err.setFuncLevel(Overridden, SURFACE)
 Err.setFuncLevel(TypedFactory, SURFACE)
 Err.setFuncLevel(DefineSubtype, SURFACE)
 Err.setFuncLevel(methods.As, SURFACE)
+Err.setFuncLevel(methods.Apply, SURFACE) -- 6순회 `H-410`: list drift — every public method
+Err.setFuncLevel(methods.Peek, SURFACE)
 
 -- internal sentinel that fills a consumed array slot (never user-facing —
 -- `Processed*` idiom, same frozen+named shape as `None`)

@@ -230,8 +230,10 @@ local function Init(module: any)
 			slot.retractor = NOOP -- consumed; no double call while h.process recurses
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				-- provider-contract violation — nearest surface's caller (`H-222`)
-				Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
+				-- provider-contract violation (`H-222`) — OUTERMOST: this fires at
+				-- dispatch depth so nearest blamed `init.luau` itself (6순회 `H-409`,
+				-- the sibling `noMatchMessage` already uses errorBefore)
+				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE)
 			end
 			slot.retractor = retractor
 		else
@@ -244,7 +246,7 @@ local function Init(module: any)
 			list[index] = { handler = h, retractor = NOOP }
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
+				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- `H-409`
 			end
 			list[index] = { handler = h, retractor = retractor }
 		end

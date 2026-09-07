@@ -91,12 +91,6 @@ local function install(quad: any)
 		)
 	end
 
-	local function startTween(inst: any, k: string, v: any)
-		local engineTween = getTweenService():Create(inst, buildInfo(v), { [k] = v.Value })
-		engineTween:Play()
-		tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value })
-	end
-
 	-- className -> { [propName]: true } (inherited included — one Reflection
 	-- call per class, cached for the module's lifetime)
 	local propsOf: { [string]: { [string]: boolean } } = {}
@@ -138,16 +132,24 @@ local function install(quad: any)
 				tweenSlots:SetStrong(inst, k, true)
 				return Void
 			end
+			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
+			-- engine tween before touching the old one — `TweenService:Create` may
+			-- raise on engine-typed options (header), and cancelling first left a
+			-- slot naming a dead tween whose stale target a later `Finish` snapped
+			-- to. The slot is written before `Play` so a raise there leaves at most
+			-- an unplayed tween the slot knows about.
+			local engineTween = if tweenIn then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
 			if type(prev) == "table" then
-				-- branch 3: an engine tween is active — clean it up FIRST
+				-- branch 3: an engine tween is active — clean it up before the new value lands
 				prev.Tween:Cancel()
 				if tweenIn and v.Override == "Finish" then
 					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
 				end
 			end
-			-- branches 2/3 tail: plain → write + `true`; Tween → new engine tween
+			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
 			if tweenIn then
-				startTween(inst, k, v)
+				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value })
+				engineTween:Play()
 			else
 				inst[k] = v
 				tweenSlots:SetStrong(inst, k, true)

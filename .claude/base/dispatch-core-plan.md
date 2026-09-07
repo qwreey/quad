@@ -1674,7 +1674,7 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   강참조로 쌓인다"도 근거였으나 그 맵이 weak-key가 되며 그 근거는 사라졌다 —
   남는 근거는 "지속 클로저가 없어 조회할 일이 없다" 하나). 대안 — `Dispatch.drive`가 `type(k) == "number"` 분기에서 일괄 등록 —
   은 아래 *"모든 핸들러가 `k=number`일 때 처리하도록 두는"*에서 **이미 기각된
-  안**이라 다시 열지 않는다. `ROADMAP.md` M5 체크박스에 같은 두 줄을 적었다.
+  안**이라 다시 열지 않는다. `archive/v2-initial-implementation/roadmap.md` M5 체크박스에 같은 두 줄을 적었다.
 
 **해제(그 자리가 더 이상 기여하지 않게 될 때)는 `setOffsetSource(...,None)`
 → `setLength(...,0)` 순서로 (2026-08-13 여섯 번째 세션, 사용자 지적).**

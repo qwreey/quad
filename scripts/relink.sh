@@ -6,7 +6,7 @@
 # 떨어뜨리고 진단 0건 — "거짓 클린"). pesde의 워크스페이스 링크는 전부 디렉토리
 # 심볼릭이라, `quad-base/src/init.luau`의 `require("./luau_packages/quad_types")`가
 # 그 링크에 닿는 순간 죽는다. 근거와 최소 재현은
-# `.claude/qa-request/pre-implementation-handtrace-round7-followup.md`의 🅛 절.
+# `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`의 🅛 절.
 #
 # ⚠️ 이 스크립트가 지켜야 하는 것 셋(전부 `/code-review high`가 실제로 잡은 것):
 #   1. **`cp -rL`** — 평범한 `cp -r`는 심볼릭을 **심볼릭 그대로** 복사한다.

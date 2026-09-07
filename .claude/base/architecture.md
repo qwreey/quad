@@ -168,7 +168,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
       (`research/documentation-content-map.md` §4 — `H-116` 두 벌 공존
       항목의 이웃), M5에서 실 백엔드가 둘이 되면 재검토("추후 생각해볼 점").
     - **M0 스캐폴딩에 주는 함의 — [2026-08-19] 정해짐, 실제로는 M0가 아니라
-      `ROADMAP.md` M1(실제 스캐폴딩)에 적용됨.** 레지스트리를 module-level
+      `archive/v2-initial-implementation/roadmap.md` M1(실제 스캐폴딩)에 적용됨.** 레지스트리를 module-level
       upvalue로 직접 잡아두면 나중에 다중 인스턴스화할 때 전면 수정이
       된다는 우려가 있었는데, 바로 위에서 가리키는 InitXxx 패턴(각
       `InitXxx(module)`가 `module`을 upvalue가 아니라 **파라미터로 받아**

@@ -45,6 +45,10 @@
 	    message survives, the file:line prefix is dropped. Wrap the call in a
 	    closure when the prefix matters; messages are self-describing by
 	    contract (the `H-219` (a) rationale) so nothing is lost silently.
+	  - Same shape when the tagged frame IS the stack root (`task.spawn(drive,
+	    …)`, `coroutine.create(surface)`): `at + 1` is past the top, so the
+	    prefix is dropped there too (2026-09-07 6순회 measured; `errorAt` is
+	    unaffected). No clamp — a clamp would blame the surface itself.
 	  - Reentrant entries (dispatch invoked from inside an observer fn) make
 	    the OUTERMOST scan blame the outer entry's line, not the inner call —
 	    inherent to the approved direction. The Nearest pair exists for sites

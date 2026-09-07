@@ -37,7 +37,7 @@
 > 1번이 상시 회귀로 실측하므로 **폐기 → `done/`**, 재작성 안 함(round12 brief
 > §6 사용자 승인). **같은 날 `04`도 폐기 → `done/`**(`H-215` (a) 사용자 확정 —
 > `spec.dispatch.luau`가 체인 계약을 실측, 잔여인 실제 `StoreBind` 경유
-> 재귀 재발행은 `ROADMAP.md` M4 mock 테스트 항목이 짐). 직전 갱신 **2026-08-29** — M2 구현이 스파이크 셋을 닫음: `05`(다이아몬드,
+> 재귀 재발행은 `archive/v2-initial-implementation/roadmap.md` M4 mock 테스트 항목이 짐). 직전 갱신 **2026-08-29** — M2 구현이 스파이크 셋을 닫음: `05`(다이아몬드,
 > `spec.state`/`spec.effect` 3번이 대체)·`15`(타입팩, `H-176` 기각 실측) **폐기 →
 > `done/`**, 신규 `26`(`:Apply` 교집합 오버로드, `H-179`) `done/` 직행, "만들어야 할
 > 스파이크"의 중간 State GC(`spec.state` 11번)·`CheckedQuad` 재실행(`23`) 닫힘 —

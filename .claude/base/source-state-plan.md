@@ -568,11 +568,11 @@ lazy State 핸들로 통일, 아래 "`:With`/`:Compute` — self 인자도 lazy 
 Set하면 결합된 파생값이 두 번 재계산/재대입된다"는 문제(즉시 pull하는
 store-bind 소비자 기준)는 안 풀림 — 이건 별도 확정 프리미티브
 `base/blocker-plan.md`가 다룸(**[2026-08-24 재확정]** "State 개발과 같은
-마일스톤, `ROADMAP.md` M2에서 함께 구현"이 맞다 — 2026-08-22엔 `Blocker.luau`가
+마일스톤, `archive/v2-initial-implementation/roadmap.md` M2에서 함께 구현"이 맞다 — 2026-08-22엔 `Blocker.luau`가
 디스패치 쪽으로 앞당겨져 갈라져 있었으나 마일스톤 순서 교체로 되돌아왔다.
 다만 바닥부터 짜는 게 아니라 공용 `GateNode`(`base/gate-plan.md`) 위의
 정책이라는 점은 그대로 — 마일스톤 소속의 소스는 `blocker-plan.md`의 정정
-배너와 `ROADMAP.md` M2). lexical `Batch(fn)`으로 풀려던
+배너와 `archive/v2-initial-implementation/roadmap.md` M2). lexical `Batch(fn)`으로 풀려던
 초기 시도는 코루틴 yield 위에서 구조적으로 위험해 기각됨 —
 `archive/batch-rejected.md` 참고.
 
@@ -1300,7 +1300,7 @@ retract/Destroy되면 자동으로 정리됨.
 **⚠️ [2026-08-24] 이 가드를 실제로 `Dispatch.addHandler`로 등록하는 것은
 M3(디스패치)다.** `HANDLER_PRIORITY_FALLBACK` 상수도 `Dispatch.addHandler`도
 M3에서 처음 생기므로, M2(반응형 코어)에서 본체를 짤 때는 **핸들러 정의만
-준비해두고 등록 호출은 미룬다** — `ROADMAP.md` M3의 "Observer/Effect 동적
+준비해두고 등록 호출은 미룬다** — `archive/v2-initial-implementation/roadmap.md` M3의 "Observer/Effect 동적
 경로 가드 등록" 체크박스가 그 자리다(2026-08-24 마일스톤 순서 교체의 산물,
 M2가 M3에 개념상 지던 유일한 의존이라 이쪽으로 미뤄졌다).
 **[2026-08-31 M3 단위 4] 그 등록은 완료됐다**(`spec.leaf.luau` 6·7이 메시지·

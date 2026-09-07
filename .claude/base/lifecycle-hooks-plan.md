@@ -18,7 +18,7 @@
 **구현 우선순위는 여전히 맨 뒤** — 설계가 확정됐다는 것과 지금 만든다는
 건 다름. 형제 백로그들(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과
 동급으로 "quad 개발 상당 부분 끝난 뒤". 단 **`PostRef` 자신은 슈가가
-아니라 디스패치 코어의 일부**라 `ROADMAP.md` M8(Ref)에서 `PreRef`와 같이
+아니라 디스패치 코어의 일부**라 `archive/v2-initial-implementation/roadmap.md` M8(Ref)에서 `PreRef`와 같이
 구현됨 — 이 문서의 슈가 셋만 뒤로 미뤄지는 것.
 
 ## 동기 (사용자 원 메모)
@@ -443,7 +443,7 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 ## 우선순위
 
 **두 층위를 구분할 것**:
-- **`PostRef` 프리미티브 자신** — 디스패치 코어의 일부라 `ROADMAP.md`
+- **`PostRef` 프리미티브 자신** — 디스패치 코어의 일부라 `archive/v2-initial-implementation/roadmap.md`
   M8(Ref)에서 `PreRef`와 **같이** 구현됨. 뒤로 미루는 대상이 아님.
 - **이 문서의 훅 슈가 셋(`OnCreated`/`OnRendered`/`OnDestroyed`)** —
   형제 백로그 항목들과 동급, 맨 뒤(`quad-mock`/`quad-debug`/`Operator`/

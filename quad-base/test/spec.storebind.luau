@@ -2,7 +2,7 @@
 	StoreBind end-to-end contract — the first reactive update through the real
 	pipeline. Sources: `ROADMAP.md` M4 checkboxes (both), `.claude/base/
 	dispatch-core-plan.md` "Store 바인드는 특수 경우인가" section, scoped by
-	`.claude/qa-request/m4-implementation-round13-brief.md` §1.
+	`.claude/archive/v2-initial-implementation/m4-implementation-round13-brief.md` §1.
 
 	Carries the leftover shares of two retired spikes: `04` (deep-index-first
 	teardown through the REAL StoreBind + effect-level assertions — old store

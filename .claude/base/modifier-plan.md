@@ -765,13 +765,13 @@ Modifier 인자를 받으면 `Overridden`과 같은 병합을 한다(사용자: 
 `Overridden(...: any): any`류로 느슨하게 열어 정적 체크를 포기 — 이건 임시
 처치로 명시하고, M7 실제 구현
 시점에 실 테스트 결과에 따라 다시 좁히는 걸 목표로 로드맵에 남김
-(`ROADMAP.md` M7). **[2026-09-04 M7 착수 회신, round17 §0 Q5 — 같은 날 단위 ④로
+(`archive/v2-initial-implementation/roadmap.md` M7). **[2026-09-04 M7 착수 회신, round17 §0 Q5 — 같은 날 단위 ④로
 번복됨: 조상 클래스 Modifier 타입이 M7 안에서 생성됐다, 11절]** 당시엔 상위 클래스
 Modifier 타입 자체의 **생성**을 M7 밖 후순위로 확정했었다 — 사용자: *"상위 클래스에
 대해서 생성하는건 있을 필요가 있긴한 부분 … 다만 지금 당장 할 필요가 있냐
 하면 그건 아닐 수 있어"*(`TextButton`/`TextLabel`이 공유하는 `Boldify`류
 프리셋의 타입 자리). 그때 이 절의 한계를 넘는 메커니즘도 같이 결정한다
-(`ROADMAP.md` M7 후순위 항목).
+(`archive/v2-initial-implementation/roadmap.md` M7 후순위 항목).
 
 **`:Peek<<T>>(key): T | State<T> | None | nil`** — Modifier 필드를 확정하지
 않고 그대로 읽는 접근자. 이름을 `Get`이 아니라 `Peek`로 정한 이유: 이
