@@ -271,6 +271,38 @@ do
 end
 
 print()
+print("=== 12b. 5순회 H-393 — Detach된 Owned=false 요소 Slot을 settle이 nil로 버릴 때 소유권을 먼저 놓는다(죽은 owner가 영구히 남던 것) ===")
+do
+	local show, drop = q.Source(true), q.Source(false)
+	local data = q.Source({ { id = "x" } })
+	local sub = Slot()
+	sub:List(q.Source({ { id = "a" } }), function(item, _i, _o, prev)
+		if item == q.KeyGone then return nil end
+		if prev then return prev end
+		local f = Instance.new("Frame"); f.Name = item.id; return f
+	end, function(item) return item.id end, { Owned = false })
+	local outer = Slot()
+	outer:List(data, function(item, _i, _o, prev)
+		if item == q.KeyGone then return q.Detach end
+		if not show:Get() then return q.Detach end
+		if drop:Get() then return nil end -- settle drops the detached prev → releaseElement(wasDetached)
+		return prev or sub
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { outer })
+	assert(childCount(parent) == 1, "sub mounted through outer")
+	show:Set(false); data:Set({ { id = "x" } }) -- Detach
+	drop:Set(true); show:Set(true); data:Set({ { id = "x" } }) -- key back, updateFn returns nil → dropped
+	assert(childCount(parent) == 0, "dropped")
+	-- sub is Owned=false: it survives its parent — and must be mountable again
+	local other = Slot()
+	other:Add(sub)
+	dispatch.drive(Instance.new("Folder"), { other })
+	assert(other:Get(1) == sub, "the surviving Owned=false Slot remounts elsewhere (owner released)")
+	print("PASS")
+end
+
+print()
 print("=== 13. :List 상호배타 가드 — CRUD 후 :List, :List 후 CRUD 금지 ===")
 do
 	local s1 = Slot(); s1:Add(Instance.new("Frame"))
@@ -280,11 +312,11 @@ do
 	-- 4순회 `H-385`: the same gates through the `:Single` sugar blame the user's
 	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot.luau
 	local _, errS1 = pcall(function() s1:Single(q.Source(nil)) end)
-	assert(string.find(tostring(errS1), "after manual CRUD", 1, true) ~= nil, "Single after CRUD is the same gate: " .. tostring(errS1))
+	assert(string.find(tostring(errS1), ":List/:Single after manual CRUD", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
 	mock.assertBlamesUser(errS1, "spec.slot.luau", "Single-after-CRUD blame")
 	local s3 = Slot(); s3:Single(q.Source(nil))
 	local _, errS2 = pcall(function() s3:Single(q.Source(nil)) end)
-	assert(string.find(tostring(errS2), "already has :List installed", 1, true) ~= nil, "Single twice is the same gate: " .. tostring(errS2))
+	assert(string.find(tostring(errS2), "already has :List/:Single installed", 1, true) ~= nil, "Single twice is the same gate: " .. tostring(errS2))
 	mock.assertBlamesUser(errS2, "spec.slot.luau", "Single-twice blame")
 	print("PASS")
 end
@@ -717,10 +749,10 @@ do
 end
 
 print()
-print("=== 23. 4순회 H-386 — Slot(initial)의 컨테이너 모양 게이트: 잊은 {}·quad 값·해시 테이블이 요소 0개로 통과해 :List를 잠그던 것 ===")
+print("=== 22b. 4순회 H-386 — Slot(initial)의 컨테이너 모양 게이트: 잊은 {}·quad 값·해시 테이블이 요소 0개로 통과해 :List를 잠그던 것 ===")
 do
 	local frame = Instance.new("Frame")
-	for label, bad in { bareElement = frame, slotValue = Slot(), tagValue = q.Tag("x"), source = q.Source(1), hash = { gamma = frame }, str = "s" } :: { [string]: any } do
+	for label, bad in { bareElement = frame, slotValue = Slot(), tagValue = q.Tag("x"), source = q.Source(1), hash = { gamma = frame }, str = "s", zeroKey = { [0] = frame }, fracKey = { [1.5] = frame } } :: { [string]: any } do
 		local ok, err = pcall(function() return Slot(bad) end)
 		assert(not ok and string.find(tostring(err), "initial elements must be", 1, true) ~= nil, label .. " rejected at construction: " .. tostring(err))
 		mock.assertBlamesUser(err, "spec.slot.luau", label .. " blame")

@@ -819,7 +819,11 @@ local v: Xn | MarkA = r3   -- 에러가 나야 하는데 조용히 통과
 둘이 **동시에** 있어야 샌다. 한도 플래그가 아니라 판정 결함이라 플래그로 못
 고친다.
 
-**quad에 걸린 자리**: children 유니언엔 `Tag.Apply`·`State.Apply`가 있고, 생성
+**quad에 걸린 자리**: (**[2026-09-07 5순회 `H-400`]** 하나 더 — 생성 `D.Modifier.<Class>(...)`의
+인자 유니언 `(<Class>Modifier | { [string]: any })`: 각 팔 단독으론 거부하는 값(형제 클래스
+Modifier·Source·Ref·AttributeKey·Attribute)이 유니언에선 무진단 통과. 런타임 `construct`가
+태그를 안 보고 병합하므로 형제 Modifier는 drive 시점 리플렉션 에러, 나머지는 construct SURFACE
+에러 — 전부 시끄럽다. `{ [string]: any }` 팔 제거는 원장 §11 갈래) children 유니언엔 `Tag.Apply`·`State.Apply`가 있고, 생성
 `<Class>Modifier.Apply`가 `(self: X, factory: (X) -> U)`로 재귀였다 — 그래서 8.8절의
 클래스 태그 마커를 넣어도 형제 클래스 Modifier가 통과했다(`self: any`만 바꿔도
 factory 인자의 재귀만으로 샌다).

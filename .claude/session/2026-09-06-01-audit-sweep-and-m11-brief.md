@@ -233,4 +233,10 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
   `Slot(initial)` 컨테이너 게이트, `H-388` gen-d 주석 제거 공유·depth 검사, `H-389` Tag 잔여(생성자 문자열만),
   `H-390` 묶음(Store 게이트·`gatedRecompute` 호이스팅 등); ② Q9 Slot 좀비(정본 단언 미구현), Q10 `AddPlugin`
   락 우회, Q11 setter 키, Q12 Tween 동일값. 원장 §10, 일곱 번째 커밋.
+- **5순회**(인자로 파인더 6·검증자 5 전부 opus — 규약 첫 적용): 10 + 표 8. ① HIGH `H-392` `setOffsetSource`가
+  쓰기 뒤 읽어 잘못된 인자가 owner의 오프셋 산술을 영구 동결(읽기 → 쓰기), `H-393` Detach 분기 `releaseOwner`,
+  `H-395` 같은-inst 이중 바인드 메시지, `H-396`/메시지 둘/`H-397`(diff 회귀 넷 포함), 문서 여섯; ② Q13~Q17 +
+  Q7 둘째(`_assertBindable` 방향 — 4순회 `H-384`가 재진입 가드 규약과 충돌, 정본에 보류 배너). 원장 §11, 여덟 번째
+  커밋. 이어서 문서 재편(사용자 결정: 끝난 라운드 44개 + ROADMAP M0~M11 → `archive/v2-initial-implementation/`,
+  원장 → `qa-request/post-implementation-review.md`).
 

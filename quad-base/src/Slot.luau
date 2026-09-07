@@ -592,6 +592,13 @@ local function Init(module: any)
 	-- releaseElement: disposition of a pushed-out/removed element — Owned decides.
 	local function releaseElement(self: any, index: number?, element: any, wasDetached: boolean)
 		if wasDetached then
+			-- 5순회 `H-393`: release ownership FIRST, both arms — an `Owned = false`
+			-- element Slot outlives its parent, and without this it kept a dead
+			-- `elementOwner` forever ("already mounted elsewhere" on the next
+			-- Add, "still requires its tree" on dispose — both counterfactual).
+			-- `slot-plan.md` `_detachCleanup` 의사코드 "`releaseOwner`를 먼저, 두 분기
+			-- 공통으로". The two `destroySlotTree` loops are §4 Q14 (C-4 exemption).
+			releaseOwner(element, self)
 			if self._owned ~= false then
 				if isSlot(element) then destroySlotTree(element) else module.nativeDispose(element) end
 			end
@@ -1012,8 +1019,8 @@ local function Init(module: any)
 	-- `Single`'s own delegation line (`Slot.luau`), not the user's `:Single(...)`.
 	local function checkListInstall(self: any)
 		assertLive(self)
-		if self._listed then Err.errorBeforeNearest("Slot: already has :List installed", SURFACE) end
-		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List after manual CRUD was used", SURFACE) end
+		if self._listed then Err.errorBeforeNearest("Slot: already has :List/:Single installed", SURFACE) end
+		if self._crudUsed then Err.errorBeforeNearest("Slot: cannot install :List/:Single after manual CRUD was used", SURFACE) end
 	end
 
 	function Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
@@ -1064,8 +1071,10 @@ local function Init(module: any)
 				Err.errorBeforeNearest(`Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value needs the braces)`, SURFACE)
 			end
 			for k in pairs(initial :: { [any]: any }) do
-				if type(k) ~= "number" then
-					Err.errorBeforeNearest(`Slot: initial elements must be an array — hash key "{tostring(k)}" is not an element`, SURFACE)
+				-- 5순회 `H-396`: `[0]`/`[-1]`/`[1.5]` live in the hash part too (Tag's
+				-- `flattenInto` mirror); a nil hole stays UB (no count check)
+				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
+					Err.errorBeforeNearest(`Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`, SURFACE)
 				end
 			end
 			self._crudUsed = true

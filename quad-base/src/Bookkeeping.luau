@@ -155,6 +155,16 @@ local function Init(module: any)
 		local cur = bk.offsetCache[i]
 		while i < at do
 			if bk.lengthList[i] == nil then
+				-- 5순회 `H-397`: past the last registered position it is USER input
+				-- (`at` may be at most N+1 — the slot after the last element),
+				-- not a broken bookkeeping — nearest, like `checkPosition`.
+				local last = 0
+				for k in pairs(bk.lengthList) do
+					if k > last then last = k end
+				end
+				if i > last then
+					Err.errorBeforeNearest(`Dispatch.getOffsetAt: position {at} is past the last registered position ({last}) — at most {last + 1} may be queried`, SURFACE)
+				end
 				-- `H-106`: without this the C-6 diagnosis is bypassed and an
 				-- anonymous arithmetic error fires first. Internal invariant.
 				error(`Dispatch.getOffsetAt: lengthList[{i}] is nil — bookkeeping is broken`, 1)
@@ -309,12 +319,20 @@ local function Init(module: any)
 	local function setOffsetSource(ownerKey: any, i: number, source: any)
 		checkPosition("setOffsetSource", i)
 		local bk = getBookkeeping(ownerKey)
-		bk.sourceList[i] = source
 		if source == None then
+			bk.sourceList[i] = None
 			return
 		end
+		-- 5순회 `H-392`: read the source BEFORE writing bookkeeping — a wrong
+		-- `source` (a plain table, say) used to raise on `:Get()` with
+		-- `sourceList[i]` already written, and the next unrelated `setLength`
+		-- then died inside `recomputeBlocker:On()`, freezing this owner's offset
+		-- arithmetic for good (`dispatch-core-plan.md` `H-256` (a): "부기를 하나라도
+		-- 만지기 전에 검사한다"). A type gate on `source` itself is §4 Q13.
 		local offset = getOffsetAt(ownerKey, i)
-		if source:Get() ~= offset then
+		local current = source:Get()
+		bk.sourceList[i] = source
+		if current ~= offset then
 			source:Set(offset)
 		end
 	end

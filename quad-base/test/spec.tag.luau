@@ -109,6 +109,8 @@ do
 	assert(string.find(tostring(errMT), "plain {string} array", 1, true) ~= nil and string.find(tostring(errMT), "Tag.Merged", 1, true) == nil, "non-Tag metatable table: shape message, no Merged hint: " .. tostring(errMT))
 	local _, errTG = pcall(function() a:Added(q.Tag("b")) end)
 	assert(string.find(tostring(errTG), "Tag.Merged", 1, true) ~= nil, "Tag value: Merged hint: " .. tostring(errTG))
+	local _, errAK = pcall(function() a:Added(q.AttributeKey("k")) end)
+	assert(string.find(tostring(errAK), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(errAK), "metatable", 1, true) == nil, "plain-branded value: names its kind, not a metatable it has not got (5순회): " .. tostring(errAK))
 	print("PASS")
 end
 

@@ -546,7 +546,7 @@ end
 -- ⭐ [2026-08-31 `H-183`, 사용자 확정] Observer도 `fn`이 자기 생명주기를 못 바꾼다
 -- (`H-147` 대칭) — `_running` 플래그를 모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`)
 -- 둘레에 세우고, 네 진입점 첫 줄이 이를 거부하며, `bindLifetime`은 커밋 전
--- `_assertBindable`(같은 판정, level 3)로 묻는다(`H-184`). `fn`이 error로 죽으면
+-- `_assertBindable`(같은 판정, level 3 — **[2026-09-07]** 코드는 `errorBefore`, 방향은 원장 §4 Q7 둘째 불릿)로 묻는다(`H-184`). `fn`이 error로 죽으면
 -- 플래그가 선 채 남는 건 인정된 설계다(사용자: *"오류가 날 때 구조가 깨짐은 설계 상
 -- 인정한 부분"*). 아래 블록들의 첫 줄 가드는 지면상 생략 — 실물은 `Observer.luau`.
 local Subscribed     = {}                                 -- 강한 레지스트리(살려두는 게 목적)

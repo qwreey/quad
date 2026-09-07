@@ -324,4 +324,33 @@ do
 end
 
 print()
+print()
+print("=== 11. 5순회 H-392/H-397 — setOffsetSource는 부기를 만지기 전에 source를 읽는다(H-256 (a)); getOffsetAt은 N+1 너머를 사용자 입력 에러로 ===")
+do
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local okBad = pcall(function()
+		q.Dispatch.setOffsetSource(inst, 1, {} :: any) -- not a Source and not None
+	end)
+	assert(not okBad, "a non-Source offset target errors")
+	-- bookkeeping untouched — before H-392 `sourceList[1]` held the bad table and
+	-- the next setLength died inside recomputeBlocker:On(), freezing the owner
+	assert((q :: any)._bookkeeping.getBookkeeping(inst).sourceList[1] == nil, "nothing was written before the read raised")
+	q.Dispatch.setOffsetSource(inst, 1, q.None)
+	q.Dispatch.setLength(inst, 1, 5)
+	assert(q.Dispatch.getOffsetAt(inst, 2) == 5, "offset arithmetic works after the rejected call")
+	local s = q.Source(-1)
+	q.Dispatch.setOffsetSource(inst, 1, s)
+	assert(s:Get() == 0, "a real Source still gets its offset")
+	-- N+1 is the last legal query; past it is user input, blamed here — not "bookkeeping is broken"
+	assert(q.Dispatch.getOffsetAt(inst, 2) == 5, "N+1 legal")
+	local okFar, errFar = pcall(function()
+		q.Dispatch.getOffsetAt(inst, 3)
+	end)
+	assert(not okFar and string.find(tostring(errFar), "past the last registered position", 1, true) ~= nil, "past N+1 is a user-input error: " .. tostring(errFar))
+	mock.assertBlamesUser(errFar, "spec.lengthoffset.luau", "getOffsetAt range blame")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

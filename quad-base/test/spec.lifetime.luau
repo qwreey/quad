@@ -100,7 +100,12 @@ do
 	assert(not ok, "binding an already-bound value must error")
 	assert(string.find(tostring(err), "already bound", 1, true) ~= nil, "message: " .. tostring(err))
 	assert(string.find(tostring(err), "spec.lifetime.luau", 1, true) ~= nil, "blames the caller (errorBefore, H-272): " .. tostring(err))
-	-- 같은 inst에 다시 묶는 것도 이중 바인딩
+	assert(string.find(tostring(err), "another Instance", 1, true) ~= nil, "bound to a: b is another Instance: " .. tostring(err))
+	-- 같은 inst에 다시 묶는 것도 이중 바인딩 — 5순회 `H-395`: 메시지는 "this Instance"
+	local okSame, errSame = pcall(function()
+		quad.bindLifetime(a, value)
+	end)
+	assert(not okSame and string.find(tostring(errSame), "this Instance", 1, true) ~= nil, "same inst twice names THIS Instance, not another: " .. tostring(errSame))
 	local ok2 = pcall(function()
 		quad.bindLifetime(a, value)
 	end)

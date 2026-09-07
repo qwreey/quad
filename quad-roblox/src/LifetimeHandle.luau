@@ -109,9 +109,13 @@ local function install(quad: any)
 			if isGlobal then
 				isGlobal = value.Subscribed == true
 			end
+			-- 5순회 `H-395`: say WHICH Instance holds it — the same handle at two
+			-- positions of one Instance (`D.Frame { eff, eff }`) is not "another"
+			local sameInst = BindData:GetWeak(value, "gchold") == gchold
 			Err.errorBefore(
 				if isGlobal
 					then "bindLifetime: value is already subscribed"
+					elseif sameInst then "bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
 					else "bindLifetime: value is already bound to another Instance",
 				SURFACE
 			)

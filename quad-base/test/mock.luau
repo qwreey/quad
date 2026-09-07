@@ -567,9 +567,14 @@ local function mockProvider(quad: any): { [any]: any }
 			if isGlobal then
 				isGlobal = value.Subscribed == true
 			end
+			-- 5순회 `H-395`: same-Instance arm, mirrored from quad-roblox (the
+			-- lazy claim may not have run yet — then the inst holds nothing)
+			local held = BindData:GetWeak(value, "gchold")
+			local sameInst = held ~= nil and held == InstData:GetWeak(inst, "gchold")
 			Err.errorBefore(
 				if isGlobal
 					then "bindLifetime: value is already subscribed"
+					elseif sameInst then "bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
 					else "bindLifetime: value is already bound to another Instance",
 				SURFACE
 			)

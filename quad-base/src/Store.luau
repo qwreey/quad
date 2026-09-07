@@ -90,8 +90,11 @@ local function Init(module: any)
 			if type(defaults) ~= "table" then
 				Err.errorBeforeNearest(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
 			end
-			if getmetatable(defaults) ~= nil or Brand.isPlainBranded(defaults) then -- `H-377` gate, fourth door (4순회 `H-390`)
+			if getmetatable(defaults) ~= nil then
 				Err.errorBeforeNearest("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
+			end
+			if Brand.isPlainBranded(defaults) then -- `H-377` gate, fourth door (4순회 `H-390`; own message — 5순회)
+				Err.errorBeforeNearest("Store: defaults must be a plain { name = Source } table (got an AttributeKey/Mapper descriptor)", SURFACE)
 			end
 		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)

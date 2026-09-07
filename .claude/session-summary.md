@@ -2377,4 +2377,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   gen-d depth-0 스캐너, §9; `Animate` None 팔은 Q8, 스텁 무태그는 Q7) — 야간 순회 종료. 주간 4순회
   `H-382`~`H-391`(§10 — `_assertBindable` 최외곽·`Single`/`Slot(initial)` 게이트·Tag 생성자·`gatedRecompute`
   호이스팅; Q9 Slot 좀비·Q10 `AddPlugin` 락·Q11 setter 키·Q12 Tween 동일값). 같은 날 메인이 도는 리뷰를
-  묻지 않고 죽인 실수 → 규약 정정(`/code-review` 인자로 서브에이전트 opus 지정 가능, `TaskStop` 금지).
+  묻지 않고 죽인 실수 → 규약 정정(`/code-review` 인자로 서브에이전트 opus 지정 가능, `TaskStop` 금지). 5순회
+  `H-392`~`H-402`(§11 — `setOffsetSource` 쓰기 순서 HIGH·Detach `releaseOwner`·이중 바인드 메시지; Q13~Q17,
+  Q7 둘째).

@@ -120,8 +120,10 @@ Modifier 타입의 메소드 목록에 끼워 넣도록 챙기면 됨, 새로 �
 ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 릴레이션으로
 저장하는것도 좋은 생각."*
 
-- **조회 경로**: `(inst, 숏핸드키) → child`를 `Relate`에 저장해두고 그걸로
-  되찾는다. `Relate`는 `inst`를 weak 키로 쓰므로 부모가 죽으면 항목도
+- **조회 경로**: `(inst, 자식 이름) → child`를 `Relate`에 저장해두고 그걸로
+  되찾는다(**[2026-09-07 5순회 정정]** 키는 숏핸드 키가 아니라 `entry.childName` —
+  `H-335`의 공유 `_quad_padding` 자식이 두 숏핸드 키에서 같은 항목을 요구한다;
+  코드 `managed:GetStrong(inst, entry.childName)`). `Relate`는 `inst`를 weak 키로 쓰므로 부모가 죽으면 항목도
   자연히 빠진다(`base/relate-plan.md`).
 - **고정 이름 규약을 없애자는 뜻은 아님** — 이름(`_quad_corner`류)은
   디버깅 가시성(`research/debug-tooling-plan.md`)과 "사용자가 만든
@@ -262,7 +264,8 @@ end
 ```
 
 - `UIScale`처럼 `wrap`이 항등(스칼라를 그대로 `Scale`에 씀)인 키는 이
-  헬퍼를 거쳐도 결과가 같으므로 분기 없이 일관되게 씀.
+  헬퍼를 거쳐도 결과가 같으므로 분기 없이 일관되게 씀 — **[2026-09-07 정정]**
+  구현은 round19 `H-342` ③(항등 단락 승인)대로 분기한다(관측 불가한 순수 최적화).
 - `UIPadding`처럼 **자식의 프로퍼티 여러 개**(`PaddingTop`/`Bottom`/
   `Left`/`Right`)에 같은 값을 쓰는 키는 각 프로퍼티마다 `Dispatch.process`를
   따로 부름 — 각자 독립된 `(child, prop)` 체인이 되고, PropertyHandler의

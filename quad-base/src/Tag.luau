@@ -58,6 +58,8 @@ local function flattenInto(target: { [string]: true }, nameOrList: any)
 			Err.errorBeforeNearest(
 				if isTag(nameOrList)
 					then "Tag: names must be strings — a Tag value is not a name list (combine Tags with Tag.Merged)"
+					elseif Brand.isPlainBranded(nameOrList)
+					then "Tag: names must be strings — a name list is a plain {string} array (got an AttributeKey/Mapper descriptor)"
 					else "Tag: names must be strings — a name list is a plain {string} array (got a table with a metatable)",
 				SURFACE
 			)

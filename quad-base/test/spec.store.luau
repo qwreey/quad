@@ -161,7 +161,7 @@ do
 	local ok, err = pcall(function()
 		Store(Quad.AttributeKey("k") :: any)
 	end)
-	assert(not ok and string.find(tostring(err), "plain table", 1, true) ~= nil, "AttributeKey is not a defaults table: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "AttributeKey/Mapper descriptor", 1, true) ~= nil and string.find(tostring(err), "metatable", 1, true) == nil, "AttributeKey is not a defaults table — message names its kind (5순회): " .. tostring(err))
 	print("PASS")
 end
 
