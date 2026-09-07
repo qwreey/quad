@@ -2,7 +2,7 @@
 
 **무엇을 했나**: 앞 세션(`session/2026-08-27-01-handtrace-round9-q1-q3.md`)이
 Q1~Q3까지 반영하고 남긴 Q4~Q10을 사용자와 두 턴으로 처리해 `base/`·`ROADMAP.md`에
-반영했다. 결정의 소스는 `qa-request/pre-implementation-handtrace-round9-followup.md`
+반영했다. 결정의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`
 (사용자 회신 원문 두 개도 거기 인용). 여기는 흐름과, 문서에 안 들어간 시행착오.
 
 ## 흐름

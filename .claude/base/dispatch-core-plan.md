@@ -139,7 +139,7 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   유리" 항목). **스캔·매치·체인 부기엔 아무 영향 없고, 없으면 priority만
   보인다.** 배경: `listHandlers`와 체인 덤프 서술이 "이름"을 전제하는데 계약
   3종엔 이름이 없다는 게 M3 단위 1 구현에서 드러났고
-  (`qa-request/m3-implementation-round12.md` `H-214`), 사용자가 선택 필드
+  (`archive/v2-initial-implementation/m3-implementation-round12.md` `H-214`), 사용자가 선택 필드
   안을 채택했다(2026-08-31, *"전부 권고안에 동의해"*). 별도 등록 인자
   (`addHandler(h, name)`) 안은 이름이 레지스트리에 살게 돼 체인 슬롯
   덤프(슬롯엔 handler 객체만 저장)가 역조회를 요구해서 기각.
@@ -1000,7 +1000,7 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
 `inst`를 캡처하는 순간 버킷 값이 자기 weak 키를 되참조해 `H-71`의 "100%
 새는" 패턴이 되고, Destroy는 계약상 retract를 안 부르므로 **반응형 바인딩이
 있던 모든 파괴 인스턴스가 영구 잔존**했다(경위와 실측 논증은
-`qa-request/m3-implementation-round12.md`의 `H-229` 절 — 사용자가 Destroy
+`archive/v2-initial-implementation/m3-implementation-round12.md`의 `H-229` 절 — 사용자가 Destroy
 경로를 되물어 드러났다). 해법은 사용자 제안 그대로 — *"bindLifetime이 할 일
 같은데, 아무 타입과도 일치하지 않으면 단순히 GC 릴레이션만 해주는 건
 어때?"*: `Dispatch.process`가 (inst,k) 리스트를 처음 만들 때
@@ -1793,7 +1793,7 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
 아니라 **비용**이다(등록마다 `recompute`가 한 번씩 도는 O(N²) 대신
 배치 끝에 O(1)번만) — `RC-1` 해결 논의에서 사용자가 직접 지적한 "이러면
 첫 실행에서 계속 recompute 비용이 쌓임" 문제 그대로. 상세 트레이싱은
-`qa-request/pre-implementation-qa-round3.md`의 "`bk.N`의 수명주기가
+`archive/v2-initial-implementation/pre-implementation-qa-round3.md`의 "`bk.N`의 수명주기가
 명세에 없음" 절.
 
 **`sourceList`에도 `nil`이 아니라 `None`을 쓰는 이유는 기존 배열 파트
@@ -1823,7 +1823,7 @@ Slot의 자식 개수는 생애주기 내내 바뀐다(그게 Slot의 존재 이
 등록을 안전하게 만드는 Blocker 게이팅" 절(바로 아래)이 소스, 여기
 `recompute` 자체의 코드는 안 바뀜(off-by-one 수정 버전 그대로). 바뀐
 건 **언제 호출되는가**뿐 — `setLength`/`setOffsetSource`가 새로 개입한다.
-트레이싱 경위·논의 원문은 `qa-request/pre-implementation-qa-round2.md`의
+트레이싱 경위·논의 원문은 `archive/v2-initial-implementation/pre-implementation-qa-round2.md`의
 "RC-1" 절.
 
 **[정정, 2026-08-11 세션] `sum` 누적과 `offset:Set` 순서가 뒤바뀌어
@@ -2496,7 +2496,7 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 때마다 하나씩 채워진다 — 순차 처리 도중에 `recompute`가 돌면 아직 안
 채워진 뒤쪽 position을 `nil`로 읽어 산술 에러가 난다(`Frame{A,B}`처럼
 정적 자식 2개짜리도 재현됨, 트레이싱 상세는
-`qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절).
+`archive/v2-initial-implementation/pre-implementation-qa-round2.md`의 "RC-1" 절).
 
 **[정정, 2026-08-18 구현 전 QA 3라운드] 위 크래시는 `bk.N`이 "배치 시작
 전에 이미 최종 크기로 고정"이라는, 그때 당시의 전제 위에서만 성립한다 —

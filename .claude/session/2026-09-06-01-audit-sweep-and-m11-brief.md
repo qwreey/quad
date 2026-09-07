@@ -56,7 +56,7 @@
 
 ## 4. M11 규약 문항지
 
-`qa-request/m11-implementation-round19-brief.md` 신설(round19, `H-323`부터).
+`archive/v2-initial-implementation/m11-implementation-round19-brief.md` 신설(round19, `H-323`부터).
 §0 일곱 문항 전부 권고 (a)로 착수(위 2번 결정). 새 표면이 걸리는 자리는
 Q3(quad-types `Tween<T>`의 자리)·Q4(센티널 형태)인데, 둘 다 정본이 이미
 "둘 중 하나"로 열어 둔 것을 코퍼스 관례(엔진 무관 quad-types / frozen
@@ -185,7 +185,7 @@ tween-plan 본문 문장·dispatch-core `None` 캐비엇 M11 줄·머리말 3층
 - **재실행 결과**: R3 5건 → R2 3건 → R1 4건(핵심 불변식 정본 일치, 전부 LOW). 메인이 직접
   실측으로 가른 것: `H-353`(유니언 PV가 State를 거부 — luau-lsp 재현 후 생성기 정정),
   Attribute "누수"(순수 Luau 약참조 키 테이블도 동일 32 B/cycle, 주기 GC면 0 — 기각),
-  `H-354`(strict Slot 생성 관용구는 캐스트뿐). 원장 `qa-request/handover-review-2026-09-07.md`
+  `H-354`(strict Slot 생성 관용구는 캐스트뿐). 원장 `qa-request/post-implementation-review.md`
   `H-344`~`H-356`, CLI 49/49.
 - 교훈(규약 후보는 아님 — 한 번 관측): 백그라운드 리뷰가 많이 떠 있을 때 `/compact`는 위험하다.
   결과가 필요한 리뷰는 끝난 뒤 compact하거나, 최소한 트랜스크립트가 남는다는 걸 알고 추출로

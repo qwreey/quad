@@ -4,7 +4,7 @@
 세션에 회신을 받아 **1차 처리까지** 끝냈다. 즉시 반영 14건, 되물은 것 7건,
 그리고 **새 research 문서 둘**(`gate-primitive.md`,
 `state-epoch-validation.md`)이 나왔다. 처리 결과의 소스는
-`qa-request/pre-implementation-qa-round5-followup.md`.
+`archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`.
 
 ## 1. 5라운드가 왜 생겼나 — 4라운드 처리 때의 판단을 뒤집음
 
@@ -201,9 +201,9 @@
 
 ## 7. 남긴 파일
 
-- `qa-request/pre-implementation-qa-round5.md` — 문항지(205문항)
-- `qa-request/pre-implementation-qa-round5-response.md` — 회신 원문
-- `qa-request/pre-implementation-qa-round5-followup.md` — **처리 결과의 소스**
+- `archive/v2-initial-implementation/pre-implementation-qa-round5.md` — 문항지(205문항)
+- `archive/v2-initial-implementation/pre-implementation-qa-round5-response.md` — 회신 원문
+- `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md` — **처리 결과의 소스**
   (절이 라운드마다 쌓임 — **마지막 절이 최신**)
 - `archive/bindlifetime-slot-owner-reversed.md` — 역전된 `D-56` 원문
 - `research/gate-primitive.md`, `research/state-epoch-validation.md`
@@ -219,7 +219,7 @@
 열렸는데, 다이아몬드 쪽은 사용자가 스스로 안전으로 정정했고 게이트 쪽만
 **해제 emit이 `source = nil`을 싣는 규약**으로 남았다(게이트는 보통 최종단에
 쓰므로 채택을 막지 않는다는 판단). 상세는 그 문서의 §2·§5와
-`qa-request/pre-implementation-qa-round5-followup.md`의 M절.
+`archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 M절.
 
 ## 9. 후속 — 순회의 count 갱신 문제 + `Gate`는 `:Apply`가 아니다 (같은 날)
 
@@ -278,7 +278,7 @@ State 에포크도 **채택**했다(*"gate 와 epoch 가 제가 만족할만한 
 부수로 스파이크 `05-store-state-diamond-propagation`이 다시
 `rewrite-required/`로 갔다(다이아몬드 Observer가 이제 변경당 1회만 울어야
 해서 핵심 assert가 정반대). 처리 전량은
-`qa-request/pre-implementation-qa-round5-followup.md`의 O절.
+`archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 O절.
 
 ## 12. `/code-review high` — 12건 전부 유효, 그중 3건은 실제 설계 구멍
 
@@ -293,7 +293,7 @@ O절 커밋 직후 사용자가 돌린 리뷰에서 12건이 나왔고 전부 �
 것**이 다수였다(개수 하드코딩, 배너 vs 본문, 같은 파일 안의 모순 문장,
 방금 옮긴 파일을 가리키는 새 텍스트). `conventions.md`의 "`/code-review`는
 감사자를 대체하지 않는다" 항목이 다시 확인된 셈. 전량은
-`qa-request/pre-implementation-qa-round5-followup.md`의 P절.
+`archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 P절.
 
 ## 13. `/code-review` 3건에 대한 사용자 회신 — 2건 확정, 1건은 근거가 반증됨
 

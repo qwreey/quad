@@ -4,7 +4,7 @@
 (2026-09-06): *"flatten 슈거 그거는 사실 추후에 개발되어도 되는 부분이고, 지금
 개발하는데 결정이 막을 만한 요소도 아님. 그냥 백로깅 대상으로 두는게 맞아보여."*
 이 문서는 그 "전반적 구조를 스캐폴딩할 계획"이다 — 사용자가 나중에 보고 답한다.
-발단은 M9 round21 §4의 둘(`qa-request/m9-implementation-round21.md`): 경계 필드
+발단은 M9 round21 §4의 둘(`archive/v2-initial-implementation/m9-implementation-round21.md`): 경계 필드
 이름 Q2와 `H-340`(커스텀 클래스 Modifier의 커스텀 필드를 벗겨 부모 클래스로 넘길
 길이 없다). 둘 다 이 슈거가 있으면 자연히 풀리거나 무관해진다.
 
@@ -88,5 +88,5 @@ end
 
 - `base/component-composition-plan.md` "최종 결론" 절(관례 정본), `base/modifier-plan.md`
   11절(`Into`·`As` — 커스텀 서브타입의 런타임 틈이 `H-340`), `base/dispatch-core-plan.md`
-  flatten 규칙, `qa-request/m9-implementation-round21.md` §4.
+  flatten 규칙, `archive/v2-initial-implementation/m9-implementation-round21.md` §4.
 - `research/operator-sugar-plan.md` — 같은 "순수 슈거는 나중에, 코어는 건드리지 않는다" 결.

@@ -1,12 +1,12 @@
 # 2026-08-26/27 — 9라운드 손 트레이싱 실행 + Q1~Q3 결정·반영 + 감사 6라운드
 
-**무엇을 했나**: `qa-request/pre-implementation-handtrace-round9-brief.md`(8라운드가
+**무엇을 했나**: `archive/v2-initial-implementation/pre-implementation-handtrace-round9-brief.md`(8라운드가
 써둔 지시서)대로 커밋 `9dd8213`의 델타를 재트레이싱해 발견 보고
-`qa-request/pre-implementation-handtrace-round9.md`(`H-124`~`H-141`)를 냈고, 그
+`archive/v2-initial-implementation/pre-implementation-handtrace-round9.md`(`H-124`~`H-141`)를 냈고, 그
 §4 문항 중 Q1~Q3를 사용자와 대화형으로 확정해 `base/`·`ROADMAP.md`에 반영, 감사
 루프 6라운드(확실 0으로 수렴)까지 돌린 뒤 체크포인트 커밋. **Q4~Q10은 다음
 세션**(사용자 판단: *"clear 이후 핸드오버 세션에서 후행 결정을 하는게 맞다"*).
-결정의 소스는 `qa-request/pre-implementation-handtrace-round9-followup.md`.
+결정의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`.
 
 세션 도중 모델이 두 번 바뀌었다 — Opus(사용자: *"sonnet 실수가 너무 많아서
 감사 루프가 길어져서 오히려 비용이 높아지더라"*) → Fable(아래 "실수" 절).
@@ -78,7 +78,7 @@ Q3 대화에서 내가 새 개념을 세 번 제안했다가 전부 철회했다
 
 ## 다음 세션이 할 것
 
-`qa-request/pre-implementation-handtrace-round9-followup.md`의 진행 표가 소스 —
+`archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`의 진행 표가 소스 —
 **Q4~Q10**(`H-127`~`H-133`)과 레인 B 몫(`H-134`~`H-136` 🟡, `H-137` 소멸,
 `H-138`~`H-140` 🟢)을 발견 문서 §4 표대로 결정 → 반영 → 감사 루프 →
 `/code-review high` → 커밋. 이번 세션의 규칙(새 개념은 문항으로)을 지킬 것.

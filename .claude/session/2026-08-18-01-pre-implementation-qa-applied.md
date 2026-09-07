@@ -2,7 +2,7 @@
 
 **요청**: "pre-implementation-qa 의 적용을 수행하자."
 
-`.claude/qa-request/pre-implementation-qa-round1.md`(같은 날 앞선 세션이
+`.claude/archive/v2-initial-implementation/pre-implementation-qa-round1.md`(같은 날 앞선 세션이
 만든, `base/` 확정
 문서를 사용자에게 문항으로 재심사한 결과)의 항목을 실제 문서에 반영한 세션.
 그 문서는 "여기서 정정하지 않는다, 사용자 정정 회신이 오면 반영한다"고

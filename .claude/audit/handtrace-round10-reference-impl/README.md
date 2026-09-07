@@ -3,7 +3,7 @@
 **[2026-08-28 신설]** `audit/handtrace-round7-reference-impl/`(7라운드)와 9라운드
 스크래치(`core9.luau`/`dispatch9.luau`, 지금은 여기 같이 둠)를 **커밋 `0ec22fb`
 시점의 `base/`**(8·9라운드 반영 + `H-143`~`H-146`)로 옮긴 것.
-발견 보고는 `qa-request/pre-implementation-handtrace-round10.md`(§5/§7이 이 폴더를
+발견 보고는 `archive/v2-initial-implementation/pre-implementation-handtrace-round10.md`(§5/§7이 이 폴더를
 가리킨다). 이 README는 **무엇을 갱신했고 어디서 결과가 나왔는지**만 적는다 —
 결정의 소스가 아니다.
 

@@ -104,7 +104,7 @@ M5 규약 문항지")에 사용자: *"권고대로 하고싶어"* — compact �
   종결 판단**: 4라운드째 발견이 코퍼스가 아니라 감사 기록 자신의 메타로
   좁혀졌으므로 유한 절차 규약(각도 소진 시 잔여 보고 후 종결)대로 여기서
   닫는다 — 잔여 없음(마지막 교정은 doc-check ERROR 0으로 게이트).
-- **M5 규약 문항지 신설** — `qa-request/m5-implementation-round14-brief.md`
+- **M5 규약 문항지 신설** — `archive/v2-initial-implementation/m5-implementation-round14-brief.md`
   (§0 회신 대기). opus 스코프 보고가 낸 불일치들이 §0 문항이 됐다:
   `quad_base` 의존의 base 두 문서 모순(Q3 — architecture "quad-types에만"
   vs project-setup-plan `quad_base = workspace`), `EngineOps` M5/M10 분할

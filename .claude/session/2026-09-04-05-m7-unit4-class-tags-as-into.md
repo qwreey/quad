@@ -2,7 +2,7 @@
 
 > 원문 로그. 정본은 `base/modifier-plan.md` 11절(구성), `base/typing-limits.md`
 > 8.8·8.9절(솔버 규칙), `audit/m7-unit4-as-modifier-2026-09-04.md`(실측),
-> `qa-request/m7-implementation-round17.md` `H-314`(발견 원장). 이 파일은 대화의
+> `archive/v2-initial-implementation/m7-implementation-round17.md` `H-314`(발견 원장). 이 파일은 대화의
 > 흐름과 사용자 발언 원문만 남긴다.
 
 ## 1. 출발 — 사용자 제안 스파이크 둘

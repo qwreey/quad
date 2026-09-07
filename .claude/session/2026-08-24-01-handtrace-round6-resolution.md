@@ -4,7 +4,7 @@
 `base/` 24개 문서에 반영했다. 그 뒤 `/code-review high`가 7건(그중 셋은 이번
 반영이 만든 회귀), 감사 1라운드가 5건, 2라운드가 7건을 더 잡았다.
 
-**결정과 근거의 소스는 `qa-request/pre-implementation-handtrace-round6-followup.md`**
+**결정과 근거의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round6-followup.md`**
 — 여기서 반복하지 않는다. 이 문서는 **어떻게 진행됐고 무엇이 잘못됐는가**의 기록이다.
 
 ## 진행 방식 — 사용자 요청

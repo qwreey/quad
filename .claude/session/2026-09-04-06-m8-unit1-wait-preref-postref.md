@@ -2,7 +2,7 @@
 
 > 원문 로그. 정본은 `base/ref-plan.md`("API 모양" 절의 `:Wait` 항목, "`Ref`의
 > retract" 절 의사코드 순서, "`PostRef`" 절 보장 범위), 규약은
-> `qa-request/m8-implementation-round18-brief.md`(§0 회신 블록), 발견은
+> `archive/v2-initial-implementation/m8-implementation-round18-brief.md`(§0 회신 블록), 발견은
 > `-round18.md`.
 
 ## 1. §0 회신

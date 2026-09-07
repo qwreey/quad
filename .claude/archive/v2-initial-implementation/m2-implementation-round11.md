@@ -305,7 +305,7 @@
   `_epochs`도 안 움직이는데, 코드는 홀드했다가 바인드 때 1회 재생한다(`spec.effect` 2가 이걸
   고정 — `r:Set(2)` 뒤 `bindLifetime` → `runs == 2`). 같은 문서의 생성자 의사코드는 이미
   `H-159` 모양이라 **문서 안에서 두 절이 서로 다른 계약**을 말한다.
-- **문서가 답을 갖고 있나**: 있다 — `H-159`(`qa-request/pre-implementation-handtrace-round10-followup.md`)와 같은 문서의 생성자 블록.
+- **문서가 답을 갖고 있나**: 있다 — `H-159`(`archive/v2-initial-implementation/pre-implementation-handtrace-round10-followup.md`)와 같은 문서의 생성자 블록.
 - **처리**: ✅ 반영. 그 문단을 "`fire`는 판정하지 않고 `rawRerun`이 홀드한다(생성자 블록이
   소스)"로, 배너의 "뒤쪽 절반"도 같은 뜻으로 좁히면 된다.
 

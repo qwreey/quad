@@ -1,58 +1,17 @@
 # CLAUDE.md
 
 Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프로젝트.
-**⭐ [2026-09-03 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
-**M5(quad-roblox 최소 프로바이더)**까지 완료** — M5는 자율 구현 구간으로
-2026-09-02 착수·종결: 규약
-`.claude/qa-request/m5-implementation-round14-brief.md` §0 전량 (a) 확정,
-단위 ①~⑤(팩토리+주입 op+생명주기 / `D` 생성기 / Property·InstanceChild /
-`Claim`+`D.Mapper` / 첫 실물 렌더 실측+종합) 완주, 발견
-`-round14.md`(`H-290`~`H-308`; §4 열린 문항 0), 진행 소스는 `ROADMAP.md`
-M5 체크박스(전부 `[x]`). 단위 ⑤ 확정 요지(프로바이더 설치
-`quad:UseProvider(QuadRoblox)` — `H-305` (d′)·런타임 버전 게이트 `H-306`
-(a)·rojo 라이브 싱크 반입)는 `.claude/todos.md` 00번이 소스. **같은 날 병렬 탐사 승인, 2026-09-03 통합 완료** — fork 둘이 worktree에서
-M6(Slot)/M10(Tag·Attribute)을 mock 축으로 탐사 구현 후 **메인에 머지됨**
-(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16` — 잔여·후행은
-`ROADMAP.md` M6/M10 배너가 소스). **같은 날 M6 잔여 마감 단위 완료**(공개
-CRUD 다섯·`collectLeaves`·quad-types `Slot<T>`·실기기 Deferred 축 실측까지 —
-M6 잔여 전부 닫힘, `H6-9`~`H6-24`, §4 회신 반영 완료) + **M10 엔진 축 첫 단위**(Tag/Attribute
-엔진 op 셋 실설치, `H10-10`) + **둘째 단위**(Event/OnChange 핸들러,
-`H10-13`; 같은 날 사용자 제안으로 `OnChange`는 배열부 값 `OnChange(name, fn)`
-으로 역전·재구현 `H10-14` — 초기값 발화 계약·생성기 타이핑; 이어서
-`AttributeKey` 무타입화 + 타입드 스칼라 슈가 `StringAttribute(name, value)`
-`H10-15`로 round16 열린 문항 0) — **[2026-09-04] M7(Modifier) 자율 구현
-구간 — 같은 날 완료**: 규약 `.claude/qa-request/m7-implementation-round17-brief.md`
-§0 확정, 단위 ①~④ + §4 회신(`H-310`/`H-312`) 반영 완료 — **M7 완료**(단위 ④는 사용자 설계 — 클래스 태그·`TypedFactory`/`DefineSubtype`·`As`·`Into`·상위 클래스 Modifier, `H-314`; `H-313` 소멸), round17 §4 열린 문항 0; **[2026-09-04] M8(Ref) 자율 구현 구간 — 2026-09-06 새벽 완료(단위 ①·②는 2026-09-04, 단위 ③·`H-317`은 2026-09-06 00시대 KST 커밋)** — 규약 `qa-request/m8-implementation-round18-brief.md` §0 확정, 단위 ①~③ 완료(`H-315`/`H-319`/`H-322` — ③은 `H-321` 사용자 확정 반공변 팬텀 마커) — **M8 완료**, 원장 `-round18.md`, 진행 소스는 ROADMAP M8 체크박스; **[2026-09-06] 다음 순서 사용자 확정 M11 → InstanceShorthand → M9, M11 자율 구간 착수 — 같은 날 단위 ①·②·③ 완료**(규약 `qa-request/m11-implementation-round19-brief.md`, 원장 `-round19.md` `H-323`~`H-343`, §4 상태는 그 원장이 소스(2026-09-06 아침 회신으로 전부 닫힘); 단위 ② Studio 6/6); **[같은 날 M10 잔여 InstanceShorthand 완료 — round20 `H-335`~`H-337`, Studio 6/6 — M10 잔여 없음]**; **[같은 날 M9 관례 검증 완료 — round21, `spec.component`; Q2·`H-340`은 백로그 `research/component-flatten-sugar-plan.md`로 — 열린 마일스톤 없음]**; M7 진행 소스는 그 brief §1과
-`ROADMAP.md` M7 체크박스, 발견 원장은 `-round17.md`** —
-**M4는 같은 날 자율 구간으로 착수·종결**(사용자 조건부 승인 — 규약
-`.claude/qa-request/m4-implementation-round13-brief.md` §0 전량 (a), 발견
-`-round13.md`(`H-287`~; §4 열린 문항 0): `Dispatch/StoreBind.luau` +
-`spec.storebind.luau`, 스파이크 `03` 폐기). M2는 자율 구현
-구간(규약 `.claude/qa-request/m2-implementation-round11-brief.md`, 발견·배치
-문항 `-round11.md`)으로 돌아 2026-08-28 착수~08-31 종결: 단위 넷 구현·감사·
-리뷰·탐사 완료, `ROADMAP.md` M2 체크박스 전부 `[x]`, §4 문항·코드 마커 0.
-**M3도 같은 방식의 자율 구간으로 2026-08-31 착수~09-01 종결** — 규약
-`.claude/qa-request/m3-implementation-round12-brief.md`, 발견·회신
-`-round12.md`(`H-212`~; §4 열린 문항 0). 진행 상태는
-`.claude/todos.md` 00번이 소스. **⚠️ [2026-08-24] M2와 M3의
-번호·순서가 맞바뀌었다** — 예전엔 M2=디스패치, M3=반응형이었는데 의존이
-한 방향(디스패치 → 반응형)이라 반응형을 먼저 짓기로 확정했다. 그래서
-**2026-08-24 이전에 쓰인 `session/`·`archive/`·`qa-request/` 문서의
-`M2`/`M3`는 옛 의미로 읽을 것**(라이브 문서는 전부 새 번호로 맞춰뒀음).
-경위는 `.claude/archive/question-resolved.md`의 "마일스톤 경계" 절,
-새 구성은 `ROADMAP.md`의 M2 배너. **⭐ [2026-08-26] 8라운드 손 트레이싱까지
-처리 완료 — M2 착수를 막는 항목이 하나도 없다.**
-결정의 소스는
-`.claude/qa-request/pre-implementation-handtrace-round8-followup.md`
-(7라운드 몫은 `-round7-followup.md`; **[2026-08-27] 9라운드 몫은
-`-round9-followup.md` — Q1~Q10·`H-138`·`H-139`·`H-142`, 그리고 `/code-review`가
-낸 `H-143`~`H-146`까지 전량 반영 완료**; **[2026-08-28] 10라운드 몫은
-`-round10-followup.md`** — 광범위 탐사 `H-150`~`H-157`까지 전량 결정·반영, 그중
-`H-143`과 `H-146` 루트 예외는 하루 만에 뒤집힘 — 후자는 같은 날 다시 좁혀 복원)이고, **같은 날 `Claim` 갈래까지 전량 확정돼 `research/`에서
-`base/claim-plan.md`로 승격** — `.claude/question.md` 최우선 절은 **비어 있다**. 같은 상태를 `.claude/project-context.md`도
-서술하니 마일스톤이 넘어갈 때 두 곳을 같이 고칠 것. 진행 상황의 소스는
-항상 루트 `ROADMAP.md`.
+**⭐ [2026-09-07 기준] v2 초기 구현 구간(M0~M11) 전부 완료 — 열린 마일스톤 없음.**
+그 구간의 규약·발견 원장(pre-implementation QA 1~5·손 트레이싱 6~10·M2~M11 brief/원장)과
+옛 ROADMAP 본문은 `.claude/archive/v2-initial-implementation/`에 원문 그대로 보존됐고
+(2026-09-07 사용자 결정으로 이동), 구현 뒤 코드 리뷰 원장은
+`.claude/qa-request/post-implementation-review.md`(살아 있는 유일한 라운드 — §4가
+사용자 문항, `H-nnn`이 발견 번호)다. 남은 작업(병행 항목·백로그)은 루트 `ROADMAP.md`,
+지금 할 일은 `.claude/todos.md` 00번, 결정 이력은 `.claude/session-summary.md`.
+**⚠️ 2026-08-24 이전에 쓰인 `session/`·`archive/`의 `M2`/`M3`는 옛 의미**(M2=디스패치,
+M3=반응형 — 그날 번호·순서가 맞바뀜, 경위는 `.claude/archive/question-resolved.md`의
+"마일스톤 경계" 절). 같은 상태를 `.claude/project-context.md`도 서술하니 상태가 바뀔 때
+두 곳을 같이 고칠 것. 진행 상황의 소스는 항상 루트 `ROADMAP.md`.
 
 <!-- [2026-08-16 재구조화] 이 파일은 1537줄까지 불어나 (a) 사람이 검토 불가,
      (b) 공식 권장치(파일당 200줄) 7.7배 초과로 지침 준수도 저하, (c) 에이전트가

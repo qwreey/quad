@@ -504,7 +504,7 @@ gc되긴 하지만.)"*
 - **⭐ [2026-08-26 보강, 8라운드 `H-110`] 말단 핸들도 마찬가지다.**
   파생 노드만 적어두면 **Observer가 우연에 남는다** — 이 절이 바로 위에서
   금지한 그 우연이다. 확정 결정의 소스인
-  `qa-request/pre-implementation-handtrace-round7-followup.md` 🅚 절도
+  `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md` 🅚 절도
   *"핸들이 `_hold`로 상류를 잡는다"*라고 핸들까지 포함해 적었는데 반영이
   파생 노드로 좁혀졌었다. 실제 자리:
   - **Observer** → `observer._state`(생성 시 강참조). 전파 루프가 이 필드를
@@ -1336,7 +1336,7 @@ got typeof k 처럼 알려줄 필요는 있는듯"*. 근거는 **메시지에 `k
 검사)가 **실프로퍼티 키**를 먼저 가져가므로 `Frame { BackgroundTransparency = state:Observer(fn) }`은
 이 가드가 아니라 엔진의 "number expected, got table"로 죽는다(`H-103` NOOP 마커 잔존) — 비프로퍼티
 키에서만 이 가드가 발화한다. 타입이 1차 방어(strict는 `PVn`이 거부). 처리는
-`qa-request/handover-review-2026-09-07.md` §4 Q4. 아래 원문은 M2 시점 서술: 지금은 아무도 그 자리를 안 가져가서 항상 이 가드가 에러를 내지만, 이
+`qa-request/post-implementation-review.md` §4 Q4. 아래 원문은 M2 시점 서술: 지금은 아무도 그 자리를 안 가져가서 항상 이 가드가 에러를 내지만, 이
 Handler를 만드는 게 목적이 아니라 "지금은 확정된 기능이 없다"는 default를
 base가 값싸게 제공하는 것뿐. (**이 가드가 없던 이전엔** 확정된 "매치
 실패는 즉시 error" 규칙에 의해 결과적으로 똑같이 에러가 났었음 — 이

@@ -6,18 +6,20 @@
 
 
 00. **⭐⭐⭐ [2026-09-06 기준] 마일스톤 M0~M11 전부 완료 — 열린 마일스톤 없음.**
-   진행의 소스는 루트 `ROADMAP.md`(상단 배너), 결정 이력은 `session-summary.md`,
-   각 마일스톤의 규약·발견 원장은 `qa-request/mN-implementation-roundNN(-brief).md`
-   (round11~21). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
+   진행의 소스는 루트 `ROADMAP.md`(상단 배너·완료 표), 결정 이력은 `session-summary.md`,
+   각 마일스톤의 규약·발견 원장은 **[2026-09-07 재편]** `archive/v2-initial-implementation/`
+   (`mN-implementation-roundNN(-brief).md`, round11~21 + pre-implementation 1~10 + 옛 ROADMAP
+   본문 `roadmap.md`). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
    **지금 사용자 몫**(답을 주면 반영한다):
-   - **[2026-09-07]** `qa-request/handover-review-2026-09-07.md` §4 Q1~Q17(핸드오버 전체
+   - **[2026-09-07]** `qa-request/post-implementation-review.md` §4 Q1~Q17(핸드오버 전체
      코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
      재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
      `Animate` nil/None 통과 팔·**Q9** 부모 Destroy 뒤 Slot 좀비(유일한 동작 결함 문항)·**Q10**
      `AddPlugin` 락 우회·**Q11** Modifier setter 키·**Q12** Tween 동일값 재발행·**Q13~Q17**(5순회 —
      `setOffsetSource` 게이트·`destroySlotTree` `releaseOwner`·`setLength` 도메인·`Tween.validate` State·
      `numberOnly`)·**Q7 둘째** `_assertBindable` 방향). §1·§5~§11의 ① 갈래(`H-344`~`H-402`; 야간 0~3 +
-     주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중), 다음은 §12부터.
+     주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중), 다음은 §12부터 — 첫 항목은 사용자 지시
+     `H-403`(`isSlot`을 `Brand.luau`로, 형제 술어와 일치).
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/
@@ -25,7 +27,7 @@
      `fastscroll`/`spring`/`quad-roblox-types`).
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06 항목(백그라운드 에이전트
    종료 판정 — 알림 `status: completed`가 종료, 본문 "대기 중" 무시), `HUMAN_TODO.md`
-   12번(Studio 재시작 뒤 rojo 플러그인 Connect), `qa-request/m11-implementation-round19.md`
+   12번(Studio 재시작 뒤 rojo 플러그인 Connect), `archive/v2-initial-implementation/m11-implementation-round19.md`
    §4(열린 문항 0·확인 항목 0 — `H-343`으로 전부 닫힘).
    **직전 구간 요약**(원문 `session/2026-09-06-01-audit-sweep-and-m11-brief.md` 1~13절):
    감사 스윕 6라운드 → fable 탐사(치명 0) → M11(Tween 세 단위) → M10 잔여

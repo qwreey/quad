@@ -217,7 +217,7 @@ Length/Offset·`recompute`·`setLength` 절, `ROADMAP.md` M2 절 전체,
 - **어디**: `base/source-state-plan.md`의 `_hold` 불변식 절 — *"**모든 파생
   노드**(`:With`/`:Compute`/`:Gate`/`:Block`)가 자기 상류를 `_hold`에
   강하게 담는다"*. **Observer가 이 목록에 없다.** 반면 결정의 소스인
-  `qa-request/pre-implementation-handtrace-round7-followup.md` 🅚 절은
+  `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md` 🅚 절은
   *"`:Subscribe()`가 전역 강 레지스트리에 핸들을 넣고, **핸들이 `_hold`로
   상류를 잡는다**"*라고 적었다 — **핸들(Observer/Effect)까지 포함한
   서술이 base 반영에서 파생 노드로만 좁혀졌다.**

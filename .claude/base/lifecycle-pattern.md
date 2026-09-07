@@ -79,7 +79,7 @@ rbvm에서 실제로 재사용하는 부분은 아래 "(0)"/"(1)" 절의 gcconn/
 > 같은 줄기"가 아니라 "죽음 직후 지연"일 수 있으니 동기 실행에 기대는
 > 설계를 하지 말 것. 설정은 플레이스별(Immediate/Deferred)이라 quad는
 > 양쪽 모두에서 정확해야 한다. 소스는
-> `qa-request/m5-implementation-round14.md` `H-291` 행.
+> `archive/v2-initial-implementation/m5-implementation-round14.md` `H-291` 행.
 
 rbvm은 실제 Roblox Instance의 파괴를 감지하는 지점을 단 하나로 좁혀둠 —
 `inst.Destroying:Connect(...)` (`proxy/base.luau:150-156`), `Destroyed` 같은
@@ -187,7 +187,7 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 > 아래 (1)~(3) 절은 전부 정정된 방향(`canBound(v) == not isBoundAlive(v)`,
 > 게이트는 `if not canBound(v) then error(...)`)으로 다시 쓰여 있다.
 > 사용자 판정 원문과 파급 목록은
-> `.claude/qa-request/pre-implementation-qa-round1.md`의 `S-1`.
+> `.claude/archive/v2-initial-implementation/pre-implementation-qa-round1.md`의 `S-1`.
 
 **탑레벨 평범한 함수로 확정, 네임스페이스에 안 숨김.** `Dispatch.process`/
 `Handler.xxx`는 "시스템 내부 배관"이라 네임스페이스가 맞지만, `bindLifetime`/

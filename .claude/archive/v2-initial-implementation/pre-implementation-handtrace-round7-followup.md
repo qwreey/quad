@@ -1,8 +1,8 @@
 # 7라운드 손 트레이싱 발견 — **사용자 결정과 반영 결과**
 
-**무엇인가**: `.claude/qa-request/pre-implementation-handtrace-round7.md`의
+**무엇인가**: `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round7.md`의
 발견 52건(`H-55`~`H-106`)과 그 검증 패스
-(`qa-request/pre-implementation-handtrace-round7-verification.md`)를 사용자와 대화형으로 처리한 결과. **결정의 소스는
+(`archive/v2-initial-implementation/pre-implementation-handtrace-round7-verification.md`)를 사용자와 대화형으로 처리한 결과. **결정의 소스는
 이 문서**이고, 발견 원문은 위 두 파일이 소스다(여기서 다시 서술하지 않음).
 
 **진행 방식**: 검증 패스가 재편성한 **결정 단위 12묶음(🅐~🅜)** 순서를

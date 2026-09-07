@@ -2,7 +2,7 @@
 
 **무엇을 했나**: 어제 밤 탐사자가 만든 10라운드 문항지(`-round10.md` §4, 7건)를
 사용자가 *"하나하나 같이 보자"*라 해 대화형으로 처리하고 `base/`·`ROADMAP.md`에
-반영했다. 결정의 소스는 `qa-request/pre-implementation-handtrace-round10-followup.md`
+반영했다. 결정의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round10-followup.md`
 (사용자 발언 원문 전부 거기). 여기는 흐름과 문서에 안 들어간 것.
 
 ## 흐름

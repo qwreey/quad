@@ -181,7 +181,7 @@ export type State<T> = StateData<T> & {
   유니온 하나(`((State<T>) -> U) | { __apply: … -> U }`)로 두면 `Blocker`처럼 필드가
   더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못 받아 `state:Apply(blocker)`가
   strict에서 막힌다(인덱서 `[string]: any`로 열어도 같다 — `luau-test/done/26-*`).
-  객체 쪽 반환이 `any`라 결과는 명시 주석(①과 같은 관례). `qa-request/m2-implementation-round11.md` `H-179`.
+  객체 쪽 반환이 `any`라 결과는 명시 주석(①과 같은 관례). `archive/v2-initial-implementation/m2-implementation-round11.md` `H-179`.
 - **캐비엇**: 콜백이 받는 `s`는 `StateData<T>`라 `Compute`/`With`가
   없습니다. 콜백 안에서 다시 `s:Compute(...)`를 부르는 자리
   (`:Apply`의 factory가 대표적)는 이 방식으로 못 풀고
@@ -889,7 +889,7 @@ Field<UDim>`로 쪼개면 무주석 람다가 number 팔로 문맥 타이핑돼 
 — 생성자 `<T>(initial: { SlotElement<T> }?)`는 `T`가 `T | State<T> | Slot<T>` 안쪽이라
 인자에서 추론되지 않고, `nil :: { SlotElement<Instance> }?`·`{} :: {…}`·`local s:
 Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타입 불변). 근거·
-측정은 `qa-request/handover-review-2026-09-07.md`.
+측정은 `qa-request/post-implementation-review.md`.
 
 ## 9. 미해결 / 추적 중
 

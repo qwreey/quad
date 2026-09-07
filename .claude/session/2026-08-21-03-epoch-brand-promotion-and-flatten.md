@@ -54,7 +54,7 @@
   "source"가 더 이상 정확하지 않아서다.
 - **문서 구조를 §1~§8로 다시 짰다.** 옛 §3(에이전트 분석)과 §5(열린 질문)에
   결론과 정정 경위가 섞여 있었는데, 결론은 규칙 본문(§2~§5)으로 올리고
-  경위는 걷어냈다(원문은 `qa-request/pre-implementation-qa-round5-followup.md`
+  경위는 걷어냈다(원문은 `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`
   M·N절과 `reference/epoch-brand-composition.md`에 있다).
 
 ### `base/brand-plan.md` (전면 재작성)

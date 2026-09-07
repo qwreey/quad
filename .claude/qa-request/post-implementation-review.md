@@ -241,5 +241,10 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 | — | `dispatch-core-plan.md` 말단 핸들러 표 | `EventHandler`·`OnChangeHandler` 행 없음(2026-09-03부터) | 행 둘 |
 | — | `ui-shorthand-plan.md` | "조회 경로 `(inst, 숏핸드키)`" stale(코드는 `childName` 키, `H-335`); "wrap 항등 분기 없이"가 `H-342` ③과 어긋남 | 두 문장 정정 |
 
-다음 순회는 §12부터, `H-403`부터.
+**사용자 지시(2026-09-07 낮, 5순회 커밋 직후)** — *"isSlot 은 slot.luau 에 있더라. 이거 다른것과 일치하게 둬야하지
+않을까? 나중에 천천히 처리해줘"* → **`H-403`**(①, 다음 순회에서 반영): `isSlot`만 `Slot.luau`(`local function isSlot`
++ `module.isSlot = isSlot`)에 살고 형제 술어 전부는 `Brand.luau`에 산다 — `Brand.isSlot`(`SlotBrand:is`)으로 옮기고
+`Slot.luau`·`Dispatch/init.luau`·`Dispatch/Slot.luau`가 그걸 쓰게(`init.luau` 노출 목록 합류).
+
+다음 순회는 §12부터, `H-404`부터.
 

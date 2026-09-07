@@ -18,10 +18,10 @@
 
 1. `CLAUDE.md` → `.claude/conventions.md` / `.claude/project-context.md` /
    `.claude/todos.md` — 프로젝트 관례와 현재 상태.
-2. `.claude/qa-request/pre-implementation-handtrace-round8.md` — 8라운드
+2. `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round8.md` — 8라운드
    발견 원문(`H-107`~`H-123`). 특히 **§5(이상 없다고 확인한 것)** 와
    **§6(남은 의심 / 못 본 것)**.
-3. `.claude/qa-request/pre-implementation-handtrace-round8-followup.md` —
+3. `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round8-followup.md` —
    **이 라운드의 출발점.** 8라운드 결정 Q1~Q10과, 그 반영 뒤 돌린
    `quad-doc-auditor` 11라운드 + `/code-review high` **7패스**의 기록.
    `/code-review high`의 차수별 절(1차부터 7차까지)을 반드시 정독할 것 —
@@ -220,7 +220,7 @@ followup의 code-review 절이 명시적으로 남긴 것들이다. 델타를 �
 
 ## §6 산출물
 
-`.claude/qa-request/pre-implementation-handtrace-round9.md` 하나. 구성:
+`.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round9.md` 하나. 구성:
 
 - **머리말** — 무엇인가 / 쓴 각도 / 실제로 본 범위 / 읽는 순서
 - **요약 표** — `| 번호 | 심각도 | 한 줄 | 주 대상 | 성격 | 실측 |`

@@ -10,84 +10,24 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 지속 가능성 — 빠른 이터레이션보다 정확성/설계 정합성이 우선. 작업 기간은
 길게 잡음.
 
-**⭐ [2026-09-03 기준] M0(스파이크 검증)/M1(스캐폴딩)/M2(반응형 코어 —
-Source/State/Store)/M3(디스패치 엔진)/M4(첫 end-to-end 반응형 업데이트)/
-**M5(quad-roblox 최소 프로바이더)** 완료** — M5는 자율 구현 구간으로
-2026-09-02 착수·종결: 규약 `qa-request/m5-implementation-round14-brief.md`
-§0 전량 (a) 확정(Q3는 사용자 제안 dev deps 분리), 단위 ①~⑤(팩토리+주입
-op+생명주기 / `D` 생성기 / Property·InstanceChild 핸들러 /
-`Claim`+`D.Mapper` / 첫 실물 렌더 실측+종합) 완주, 발견
-`H-290`~`H-308` 전량 처리(§4 열린 문항 0) — 진행 소스는
-`ROADMAP.md` M5 체크박스(전부 `[x]`), 단위 ⑤ 확정 요지(설치 표면
-`quad:UseProvider(QuadRoblox)` `H-305` (d′) / 런타임 버전 게이트 `H-306`
-(a) / rojo 라이브 싱크 반입 — Studio 재기동만 사람 몫, `HUMAN_TODO.md`
-12번)는 `.claude/todos.md` 00번이 소스. **같은 날 사용자 승인으로 병렬 탐사, 2026-09-03 통합 완료** —
-fork 둘이 worktree에서 M6/M10을 mock 축으로 선행 구현했고 **메인에
-머지됨**(발견 접두 `H6-`/`H10-`, 원장 `round15`/`round16`; 통합 판정(H10-3
-(d)·H10-5·H10-1)과 잔여 목록은 `ROADMAP.md` M6/M10 배너가 소스). **[2026-09-03
-후속] M6 잔여 마감 단위 완료** — 공개 CRUD 다섯·`collectLeaves`·raw 꼬리
-공용화·quad-types `Slot<T>`(`H-25`)·`KeyGone` spec·실기기 Deferred 축 실측
-(`audit/m6-remainder-studio-2026-09-03.md`), 정정 `H6-14`/`H6-15`; M6 잔여
-목록 전부 닫힘(소스는 round15 "이 fork 슬라이스 밖" 절). **같은 날 M10 엔진
-축 첫 단위**(Tag/Attribute 엔진 op — quad-roblox `EngineOps` + mockProvider,
-`H10-10`)와 **둘째 단위**(Event/OnChange 핸들러 — `Handlers/Event.luau`·
-`Handlers/OnChange.luau`, 확장 `{ D, OnChange }`, `H10-13`; **같은 날
-`OnChange`는 사용자 제안으로 배열부 값 `OnChange(name, fn)`으로 역전·재구현
-`H10-14`** — 초기값 발화 계약, 생성 `OnChangeFn` 타이핑, 옛 키 형태는
-`archive/onchange-hash-key-reversed.md`; 이어서 **`AttributeKey` 무타입화 +
-타입드 스칼라 슈가 `StringAttribute(name, value)`**(= 단일 항목 그룹,
-`H10-15`, `attribute-plan.md` 머리 배너)로 round16 열린 문항 0)까지 — M10
-잔여 목록은 ROADMAP M10 배너가 소스(남은 건 InstanceShorthand, M11 이후
-권고); **[2026-09-04] M7(Modifier) 자율 구현 구간 — 같은 날 완료** — 규약
-`qa-request/m7-implementation-round17-brief.md` §0 확정(Q5는 후순위), 단위
-①~④ + §4 회신(`H-310`/`H-312`) 반영 완료 — **M7 완료**(단위 ④ `H-314`: 사용자 설계로 클래스 태그·`TypedFactory`/`DefineSubtype` 공개 레지스트리·검사형 `As<Desc>()`·무검사 `As<<T>>()`·`Into<Class>`·상위 클래스 Modifier(조상 전부) — `H-313` 소멸, Q5 닫힘, `modifier-plan.md` 11절), round17 §4 열린 문항 0; **[2026-09-04] M8(Ref/PreRef/PostRef) 자율 구현 구간 — 2026-09-06 새벽 완료(단위 ①·②는 2026-09-04, 단위 ③·`H-317`은 2026-09-06 00시대 KST 커밋)** — 규약 `qa-request/m8-implementation-round18-brief.md` §0 확정(Q6는 전제 정정), 단위 ①·② 완료(`H-315` `:Wait`·`PreRef`/`PostRef` 런타임 / `H-319` 핸들러 넷+drive pre-pass, Studio 8/8), 단위 ③도 완료(`H-321` 사용자 확정 (a) → `H-322` 반공변 팬텀 마커 `<Class>RefMarker`) — **M8 완료**, round18 열린 문항 0, 원장 `-round18.md`, 진행 소스는 ROADMAP M8 체크박스; **[2026-09-06] 다음 순서 사용자 확정 M11(Tween) → M10 잔여 InstanceShorthand → M9, M11 자율 구간 착수 — 같은 날 단위 ①(Tween 값·타입 `H-323`~`H-327`)·②(Property 소비 `H-328`/`H-333`, Studio 6/6)·③(`Animate` `H-334`) 완료**(규약 `qa-request/m11-implementation-round19-brief.md` §0 권고 (a)로 착수·새 표면 문항만 멈춤, 원장 `-round19.md`(§4 상태는 그 원장이 소스 — 2026-09-06 아침 회신으로 전부 닫힘, `H-343` 문자열 싱글톤 `Override` 포함), fable 탐사 `audit/fable-exploration-2026-09-06.md`, 원문 `session/2026-09-06-01-audit-sweep-and-m11-brief.md`); **[같은 날 M10 잔여 InstanceShorthand 완료 — round20 `H-335`~`H-337`(룩업 표 핸들러·생성기 GuiObject 계열 키 넷·`LuauSolverConstraintLimit`), Studio 6/6 `audit/m10-shorthand-studio-2026-09-06.md` — M10 잔여 없음]**; **[같은 날 M9 관례 검증 완료 — round21 `H-340`/`H-341`, `spec.component`·`spec.componenttypes`(플레인 함수·`or None`·`Overridden`·Slot 반환·커스텀 클래스 `As(name)`), 정본 "최종 결론" 절 배너; Q2·`H-340`은 백로그 `research/component-flatten-sugar-plan.md`(사용자 결정) — 열린 마일스톤 없음, 다음은 사용자와]**; 단위 구성은 brief §1, 진행 소스는 ROADMAP M7 체크박스, 발견
-원장은 `-round17.md`(`H-309`~) —
-**M4도 같은 방식의 자율 구간으로 2026-09-01 착수·종결**(사용자 조건부
-승인으로 규약 `qa-request/m4-implementation-round13-brief.md` §0 전량 (a)
-확정, 발견 `-round13.md`(`H-287`~; §4 열린 문항 0) — 단위 하나:
-`Dispatch/StoreBind.luau` + `spec.storebind.luau`, 스파이크 `03` 폐기).
-M2는 자율 구현
-구간(규약 `qa-request/m2-implementation-round11-brief.md`, 발견 `-round11.md`)
-으로 2026-08-28 착수~08-31 종결(단위 넷 구현·감사·리뷰·탐사 완료, §4 문항·
-코드 마커 0). **M3도 같은 방식의 자율 구간으로 2026-08-31 착수, 2026-09-01 종결** —
-규약은 `qa-request/m3-implementation-round12-brief.md`, 발견·회신은
-`-round12.md`(`H-212`~; §4 열린 문항 0 — 회신 라운드에서 구조 셋도 확정:
-Bookkeeping 분리(`H-277`)/Leaf 소유권 이동(`H-278`)/drive pre-hook 리서치
-(`H-279`)). 진행 상태는 `.claude/todos.md` 00번이 소스(마일스톤이 넘어갈 때 루트 `CLAUDE.md` 머리말도
-같이 고칠 것 — 같은 상태를 두 곳이 서술하고 있음). **⚠️ [2026-08-24] M2와
-M3의 번호·순서가 맞바뀌었다** — 열려 있던 마일스톤 순서 문제가 (a) 순서
-교체로 닫힌 결과다(경위는 `archive/question-resolved.md`의 "마일스톤 경계"
-절, 새 구성은 `ROADMAP.md`의 M2 배너). **2026-08-24 이전에 쓰인
-`session/`·`archive/`·`qa-request/`의 `M2`/`M3`는 옛 의미**(M2=디스패치,
-M3=반응형)다. 그 교체의 부작용으로 한때 `question.md` 최우선 절에 항목
-둘이 올라와 있었으나, **⭐ [2026-08-25] 둘 다 닫혔다**
-(중간 State GC는 `_hold` 불변식으로, `store:GetDynamic` 위치는 콜론 유지 +
-예약 키 진단 타입 함수로 — 7라운드 손 트레이싱 후속, 결정 전량의 소스는
-`qa-request/pre-implementation-handtrace-round7-followup.md`). **⭐
-[2026-08-26] 8라운드 손 트레이싱까지 처리 완료** — 7라운드 반영분을 겹쳐
-재트레이싱한 발견 17건(`H-107`~`H-123`)의 결정을 전부 `base/`에 반영했고
-(소스는 `qa-request/pre-implementation-handtrace-round8-followup.md`),
-`question.md` 최우선 절은 다시 비어 있다. **[2026-08-27] 9라운드**(그 커밋
-`9dd8213`의 델타 재트레이싱, 발견 `H-124`~`H-141`)는 **Q1~Q3가 `base/`에
-반영됐고**, 같은 날 Q4~Q10·`H-138`·`H-139`·`H-142`까지 **전량 반영** — 소스는 `-round9-followup.md`. 그 반영분에 `/code-review high`가 낸 새 메커니즘 넷(`H-143`~`H-146`)도 **같은 날 `session/2026-08-27-03-handtrace-round9-h143-h146.md`에서 전부 권고 (a)로 확정·반영**돼 **[2026-08-28] 10라운드**(`-round10.md`, 광범위 탐사 `H-150`~`H-157` 포함)도 같은 날 전량 결정·반영(소스 `-round10-followup.md`) — 둘이 뒤집혔다(`fn`은 자기 구독을 못 바꿈 / 루트는 `Claim`으로 quad 소유, `base/claim-plan.md` — 다만 루트의 `.Parent =`는 같은 날 밖에서 허용으로 복원). 같은 날 후속 `H-158`~`H-164`(`EmitReceive`·`_catchUp` 포함)까지 반영. 같은 날 `Claim` 갈래까지 전량 확정돼 `base/claim-plan.md`로 승격 — `question.md` 최우선 절은 다시 비어 있다. 저장소 루트에
-`quad-base/src/`(M1의 `New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`에 M2의 반응형 코어 전부가 더해짐 — 실제 구성은 `base/architecture.md` 소스 트리가 소스)/
-`quad-types/src/`/`type-version-check/src/`가 실제로 존재(`quad-roblox/src`는
-**[2026-09-02]** M5 완주로 전부 채워짐 — 팩토리·주입 op·생명주기·생성
-`D`·핸들러 2종; **[2026-09-03]** quad-base엔 fork 편입으로
-`Slot.luau`·`Tag.luau`·`AttributeKey.luau`·`Attribute.luau`도 합류),
-자세한 진행 상황은 루트 `ROADMAP.md`가 소스. **⚠️ [2026-08-25] 테스트는 `./scripts/test.sh`로 돌릴 것** —
-`luau` CLI가 **심볼릭 링크를 못 타는데**(디렉토리·파일 둘 다) pesde의
-워크스페이스 링크가 전부 심볼릭이라, 그냥 `luau`로 돌리면 스모크 2개가
-죽고 `luau-analyze`는 **조용히 통과**한다(모듈을 `any`로 떨어뜨림 —
-"거짓 클린"). 그 스크립트가 `scripts/relink.sh`를 먼저 돌려 심볼릭을 실제
-복사로 바꾼다. 핵심 아키텍처(Store 책임 분리, `process`/`retract`
-디스패치 모델, Store/State/Source 온톨로지, 소스 트리 구조, Modifier 메커니즘,
-컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에
-문서로 확정돼 있음 — 먼저 `.claude/base/architecture.md`를 읽을 것. 사용자가
-직접 "지금 quad에서 가장 문제되는 부분"으로 지목했던 컴포넌트화(특히
-modifier/Ref의 컴포넌트 경계 통과 방식) 논의도 2026-08-04 세션에서 수렴
-완료(`base/component-composition-plan.md`) — 남은 핵심 설계 질문은 없고,
-용어 정리(진행 중)와 실제 스캐폴딩만 남음, `.claude/todos.md` 참고.
+**⭐ [2026-09-07 기준] v2 초기 구현 구간(M0~M11) 전부 완료 — 열린 마일스톤 없음.**
+마일스톤별 규약·발견 원장(round1~21)과 옛 `ROADMAP.md` 본문(M0~M11 체크박스·배너 원문)은
+2026-09-07 사용자 결정으로 `.claude/archive/v2-initial-implementation/`에 이름 그대로
+이동했다(히스토리 문서 — 절 인용·시한부 검사 면제). 구현 뒤 코드 리뷰 원장은
+`.claude/qa-request/post-implementation-review.md` 하나(옛 이름
+`handover-review-2026-09-07.md`)이고, 진행 상태는 `.claude/todos.md` 00번 + 루트
+`ROADMAP.md`(완료 표·병행·백로그)가 소스. **⚠️ [2026-08-24] M2와 M3의 번호·순서가
+맞바뀌었다**(M2=반응형, M3=디스패치로 확정 — 경위는 `archive/question-resolved.md`의
+"마일스톤 경계" 절) — **2026-08-24 이전에 쓰인 `session/`·`archive/`의 `M2`/`M3`는 옛 의미**.
+저장소 루트에 `quad-base/src/`·`quad-roblox/src/`·`quad-types/src/`·`quad-error/src/`·
+`type-version-check/src/`가 실제로 존재하고 구성은 `base/architecture.md` 소스 트리가 소스.
+**⚠️ 테스트는 `./scripts/test.sh`로 돌릴 것** — `luau` CLI가 심볼릭 링크를 못 타서
+(pesde 워크스페이스 링크가 전부 심볼릭) 그냥 `luau`로 돌리면 스모크가 죽고
+`luau-analyze`는 조용히 통과한다(모듈을 `any`로 — "거짓 클린"); 그 스크립트가
+`scripts/relink.sh`를 먼저 돌려 실제 복사로 바꾼다. 핵심 아키텍처(Store 책임 분리,
+`process`/`retract` 디스패치 모델, Store/State/Source 온톨로지, Modifier 메커니즘,
+컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에 확정돼
+있음 — 먼저 `.claude/base/architecture.md`를 읽을 것.
 
 이전에 시도했다 폐기한 v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치
 완료 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` copy-on-write 절충안은 확인된

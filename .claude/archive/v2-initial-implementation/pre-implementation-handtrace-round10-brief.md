@@ -28,15 +28,15 @@
    `.claude/todos.md`. **특히 `conventions.md`의 두 규칙**: (1) "리뷰·감사가
    내놓는 새 필드·인자·이름·메커니즘은 발견이지 결정이 아니다"(2026-08-27),
    (2) "하나의 무언가가 두 일을 하고 있지 않은지 유의한다"(2026-08-27).
-2. `.claude/qa-request/pre-implementation-handtrace-round9.md` — 9라운드 발견
+2. `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round9.md` — 9라운드 발견
    원문(`H-124`~`H-146`). §5(이상 없음)·§6(남은 의심)은 다시 파지 않아도 되는
    자리와 파야 할 자리다.
-3. `.claude/qa-request/pre-implementation-handtrace-round9-followup.md` —
+3. `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md` —
    **이 라운드의 출발점.** 9라운드 결정 전량과, `H-143`~`H-146` 반영 뒤의 감사
    8라운드 표·`/code-review high` 기록. 거기 적힌 **실패 모드**(반영분 자체가
    결함을 만든다 / 판정식을 단순화하다 생성자 케이스를 죽인다 / 함수 본문
    공유 + 콜론 위임)가 당신의 사냥 목록이다(§3).
-4. `.claude/qa-request/pre-implementation-handtrace-round10.md` — **이미 `H-147`
+4. `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round10.md` — **이미 `H-147`
    ~`H-149`가 들어 있다.** 당신의 발견은 `H-150`부터 이어 매긴다. 그 셋을
    재검토해도 좋다(전제가 틀렸으면 그렇게 적을 것).
 5. `ROADMAP.md`(M2/M3 체크리스트), `.claude/question.md`,

@@ -1,6 +1,6 @@
 # 구현 전 손 트레이싱 **9라운드** — 발견 보고
 
-**무엇인가**: `qa-request/pre-implementation-handtrace-round9-brief.md`(지시서)대로
+**무엇인가**: `archive/v2-initial-implementation/pre-implementation-handtrace-round9-brief.md`(지시서)대로
 **커밋 `9dd8213` 하나의 델타**(8라운드 결정 Q1~Q10 반영 + 그 뒤 `/code-review
 high` 7패스의 수정)를 처음부터 다시 트레이싱한 결과. 발견 번호는 `H-124`부터.
 **저장소는 이 파일 말고 아무것도 수정하지 않았다**(스파이크·참조 구현 갱신본은

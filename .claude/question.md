@@ -16,7 +16,7 @@
 
 **[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-164` — `EmitReceive`·
 `Observer:_catchUp` 포함)까지 사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
-`qa-request/pre-implementation-handtrace-round10-followup.md`). 같은 날 마지막으로
+`archive/v2-initial-implementation/pre-implementation-handtrace-round10-followup.md`). 같은 날 마지막으로
 남아 있던 **`Claim` 갈래 여덟도 전량 확정**돼 `research/`에서 `base/claim-plan.md`로
 승격됐습니다(결정 기록은 그 §7, 원문은 `session/2026-08-28-02-claim-promotion.md`,
 해소 요지는 `archive/question-resolved.md`의 "`Claim` 갈래" 절). **M2 착수를 막는
@@ -29,7 +29,7 @@
 착수를 막는 항목이 하나도 없습니다.** 발견 17건(`H-107`~`H-123`)의 결정
 문항 Q1~Q10을 사용자와 대화형으로 전부 처리하고 `base/`에 반영했습니다 —
 **결정의 소스는
-`qa-request/pre-implementation-handtrace-round8-followup.md`**(발견 원문은
+`archive/v2-initial-implementation/pre-implementation-handtrace-round8-followup.md`**(발견 원문은
 `-round8.md`, 개수·개별 항목은 여기서 세지 않음). 7라운드 확정 중 뒤집힌
 것은 없고, 고쳐진 건 전부 **7라운드가 `base/`에 내려앉을 때 생긴
 누락·충돌**입니다. 아래 blockquote는 8라운드 이전(2026-08-25) 시점
@@ -38,7 +38,7 @@
 > **[2026-08-25] M2(반응형 코어) 착수를 막는 항목이 하나도 없습니다.**
 > 2026-08-24에 이 절로 올라왔던 둘이 7라운드 손 트레이싱 후속에서 같이
 > 닫혔습니다 — 결정과 근거는
-> `qa-request/pre-implementation-handtrace-round7-followup.md`가 소스.
+> `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`가 소스.
 >
 > - **중간 State GC 미검증** → **닫힘.** 사용자 확정: *"단순히, 각 state
 >   들이 상위 State|Source 를 홀드하는 `_hold` 를 놓는것으로 바로
@@ -164,7 +164,7 @@
 
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/handover-review-2026-09-07.md`
+- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/post-implementation-review.md`
   §4가 소스: Q1 `NewChild`에 `State<Slot<Instance>>` 팔(권고 (b) 안 넣음) / Q2 `Observer`/`EffectHandle`
   팔(권고 (a)) / Q3 코드 품질 제안 묶음 `H-356`(항목별 반영·보류 권고 그 표에) / **Q4** 실프로퍼티
   키의 핸들 오용 진단(`H-361`, 권고 그대로) / **Q5** 같은 키 간접 재디스패치를 UB로 명시(권고 문서) /

@@ -21,8 +21,8 @@
 §8은 구현 시 확인할 것.
 
 **히스토리**: 구현 전 QA 5라운드(`SS-2`/`SS-3`)에서 나왔고, 회신 원문은
-`qa-request/pre-implementation-qa-round5-response.md`, 여러 라운드의 정정
-경위는 `qa-request/pre-implementation-qa-round5-followup.md`의 M·N절이 소스.
+`archive/v2-initial-implementation/pre-implementation-qa-round5-response.md`, 여러 라운드의 정정
+경위는 `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 M·N절이 소스.
 `Epoch`/`EpochMap`으로 일반화한 마지막 라운드의 근거 기록은
 `reference/epoch-brand-composition.md`.
 

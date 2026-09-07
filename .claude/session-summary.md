@@ -1441,7 +1441,7 @@ blob과 바이트 단위로 동일, 메인이 `git rev-parse`로 독립 확인).
 
 원문: `session/2026-08-18-01-pre-implementation-qa-applied.md`
 
-`.claude/qa-request/pre-implementation-qa-round1.md`(사용자가 `base/` 확정 문서를 문항으로
+`.claude/archive/v2-initial-implementation/pre-implementation-qa-round1.md`(사용자가 `base/` 확정 문서를 문항으로
 재심사해 "아니오"가 나온 것만 모아둔 문서)를 실제 문서에 반영. **그대로
 구현하면 반대로 돌던 두 건**이 닫혔다 — `canBound`가 이름과 반대 방향으로
 쓰이고 있어 정상 첫 바인드가 전부 에러날 뻔한 것(정정 결과 `canBound`와
@@ -1617,7 +1617,7 @@ function` + 이중 꺾쇠 제네릭 인스턴스화 필요). 핸드오버 감사
 사용자 요청("모든 확정 부분에 있어서 예가 되어야하는 질문들을 계속 …
 서브에이전트는 쓰지 말아줘")으로 `base/` 확정 주장 전체를 한 맥락에서 읽으며
 "예가 나와야 정상인 문항"으로 전수 문항화. **설계 결정도 정정도 하나도 안
-내리고** 문항지(`qa-request/pre-implementation-qa-round4.md`)만 남긴 채 회신
+내리고** 문항지(`archive/v2-initial-implementation/pre-implementation-qa-round4.md`)만 남긴 채 회신
 대기로 끝난 세션.
 
 ## 2026-08-19 — 핸드오버 준비, `session-summary.md`/`ROADMAP.md` stale 대청소
@@ -1793,7 +1793,7 @@ Luau에선 **배열**인데 실제 게이트 배치는 `{[Epoch]: true}` **집�
 ## 2026-08-24 — 6라운드 손 트레이싱 전량 처리·반영, 그리고 세 번의 재검토
 
 원문: `session/2026-08-24-01-handtrace-round6-resolution.md`.
-결정과 근거의 소스는 `qa-request/pre-implementation-handtrace-round6-followup.md`.
+결정과 근거의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round6-followup.md`.
 
 발견 `H-1`~`H-54`를 문항지로 만들지 않고 **갈래 선택이 필요한 것만 급한 순서로**
 사용자에게 물어(사용자 요청: *"같이 하나하나 처리해나가보자. 질문 모드로 계속
@@ -1890,8 +1890,8 @@ M3로 넘겼다 — 그래서 빌드 순서상 역방향 간선이 없다.
 따른다 — 그 시점 대화 원문에 접근할 수 없는 채로 "원문"을 지어내면 그
 자체가 허위 기록이 된다. 대신 공백을 여기 명시해 다음 세션이 "찾다가 없어서
 헤매는" 일만 막는다. **그날의 결정 내용 자체는 유실되지 않았다** — 결정과
-근거는 `qa-request/pre-implementation-handtrace-round7-followup.md`가,
-발견 원문은 `qa-request/pre-implementation-handtrace-round7.md`와 그 검증 패스가, 재현 코드는
+근거는 `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`가,
+발견 원문은 `archive/v2-initial-implementation/pre-implementation-handtrace-round7.md`와 그 검증 패스가, 재현 코드는
 `audit/handtrace-round7-reference-impl/`이 들고 있다. 없는 건 **논의 과정과
 시행착오**(`quadnomicon` 개발로그 소재로 쓰였을 부분)뿐이다.
 
@@ -1910,7 +1910,7 @@ M3로 넘겼다 — 그래서 빌드 순서상 역방향 간선이 없다.
 콜백은 애초에 통합 대상이 아니고(*"observer 에는 epoch 란게 존재하지 않음 …
 ref 는 그 자체로 epoch임"*), `H-118`은 소유권 문제가 아니라 `gate-plan` 5번의
 문장이 틀린 것(🟡→🟢). 결정의 소스는
-`qa-request/pre-implementation-handtrace-round8-followup.md`, 진행 경위와
+`archive/v2-initial-implementation/pre-implementation-handtrace-round8-followup.md`, 진행 경위와
 교훈은 `session/2026-08-26-01-handtrace-round8-resolution.md`.
 **커밋 전 검증: 감사 11라운드(44건, 0건으로 수렴) + `/code-review high`
 7라운드(42건) = 86건.** ⚠️ **감사가 0으로 수렴한 직후 code-review가 42건을
@@ -1941,7 +1941,7 @@ ref 는 그 자체로 epoch임"*), `H-118`은 소유권 문제가 아니라 `gat
 제안했다 철회했고, `conventions.md`에 *"새 필드·인자·이름·메커니즘은 발견이지
 결정이 아니다"* 규칙을 신설했다. 감사 6라운드(1→1→3→1→1→0)로 수렴, `/code-review
 high`는 Q4~Q10 반영 뒤로. 결정의 소스는
-`qa-request/pre-implementation-handtrace-round9-followup.md`, 경위는
+`archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`, 경위는
 `session/2026-08-27-01-handtrace-round9-q1-q3.md`. **Q4~Q10은 다음 세션.**
 
 ## 2026-08-27-02 — 9라운드 Q4~Q10 결정·반영 + `H-138`/`H-139`/`H-142` (전량 처리)
@@ -1959,7 +1959,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 소멸. 감사 8라운드 뒤 `/code-review high` 10건 — 여섯 반영(그중 셋이 이 세션의
 `H-134` 반영분이 만든 것), **넷은 새 메커니즘이라 문항으로**(`H-143`~`H-146`,
 `question.md` 최우선 절). 결정의 소스는
-`qa-request/pre-implementation-handtrace-round9-followup.md`, 경위는
+`archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`, 경위는
 `session/2026-08-27-02-handtrace-round9-q4-q10.md`.
 
 - **`session/2026-08-27-03-handtrace-round9-h143-h146.md`** — 9라운드 후속:
@@ -1975,7 +1975,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `conventions.md` 설계 원칙) / `H-145` `bk.indexOfElement` weak-key / `H-146`
   루트 부착은 금지 범위 밖 — `Mount` 표면 없이 사용자 몫(*"각 엔진을 사용하는
   최종 사용자의 몫"*), `Parent` 거부는 전용 문구. `question.md` 최우선 절 비움.
-  결정의 소스는 `qa-request/pre-implementation-handtrace-round9-followup.md`.
+  결정의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`.
   **[2026-08-28]** 감사 8라운드 수렴 → `/code-review high` 10건(일곱 반영, 셋은
   판단 필요) → 사용자 판단으로 **10라운드 문항지**(`-round10.md`, `H-147`~`H-149`
   씨앗 + 광범위 탐사)로 이관.
@@ -1994,7 +1994,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `Claim` 갈래(특히 다중 스크립트)뿐. **후속 2**: `H-163`/`H-164` → **`EmitReceive`**
   (전파 루프는 `sub:_receive(from)`만, 사용자 지시) · Slot 재마운트 캐치업 (a′) ·
   `emitFrom == nil` = 출처 없음 · `Observer:_catchUp()`. 소스는
-  `qa-request/pre-implementation-handtrace-round10-followup.md`.
+  `archive/v2-initial-implementation/pre-implementation-handtrace-round10-followup.md`.
 - **`session/2026-08-28-02-claim-promotion.md`** — 10라운드가 남긴 `Claim` 갈래 여덟을
   사용자가 한 메시지로 답하고(1~5) 에이전트가 §5-7을 "한 quad·여러 스크립트" 문제로
   다시 세워 되물은 뒤 전량 확정 → `research/existing-mount-plan`을 **`base/claim-plan.md`로
@@ -2017,7 +2017,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `FrameParam<E>` 원소 타입 파라미터.
 - **`session/2026-08-28-03-m2-unit1-common-base.md`** — **M2 착수.** 다른 에이전트가
   초안한 자율 구현 규약을 검토해 순서 오류 하나(`EpochMap`이 `Effect` 뒤 → State 본체
-  앞)와 소스 단일화를 고쳐 채택(`qa-request/m2-implementation-round11-brief.md`,
+  앞)와 소스 단일화를 고쳐 채택(`archive/v2-initial-implementation/m2-implementation-round11-brief.md`,
   세 갈래 분류 / 단위 넷 / 두 층 커밋 게이트, `HUMAN_TODO.md` 2번 닫힘). 첫 단위(공통
   기반)를 사용자 확인(*"진행하면 될것 같아"*) 뒤 구현 — `Void`/`Brand`(인스턴스 15 +
   `is*` 11 한 잎 파일)/`LifetimeHandle`(`InitLifetimeHandle` 에러 스텁)/`Ref` 최소형/
@@ -2299,7 +2299,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   quad-types `AttributeSugar<T>`, quad-roblox `NewChild`에 `Tag`/`Attribute`
   합류(strict `D` children). spec.attribute 10절, Studio 실측, round16
   `H10-15`. 에디터 fflags는 문서화만(typing-limits 8.5 스니펫). 같은 세션
-  말미에 M7 규약 문항지 `qa-request/m7-implementation-round17-brief.md` 신설
+  말미에 M7 규약 문항지 `archive/v2-initial-implementation/m7-implementation-round17-brief.md` 신설
   (§0 Q1~Q5, 회신 대기 — Q3 타입드 생성자 표면·Q4 flatten 호출 주체가
   사용자 결정 자리).
 
@@ -2335,7 +2335,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   제안은 사용자가 되돌림 — 커스텀 Modifier 허용; `Define` 하나 → 사용자 결정으로
   `TypedFactory`/`DefineSubtype` 분리, 부모 여럿 허용)/예약 접두 `^As%u`. 상위 클래스 16종 생성(Q5 닫힘), `H-313` 소멸, Studio 8/8. `H-314`.
   **[같은 세션 후속]** 사용자 지시로 M8 규약 문항지
-  `qa-request/m8-implementation-round18-brief.md` 신설(§0 Q1~Q6 회신 대기 —
+  `archive/v2-initial-implementation/m8-implementation-round18-brief.md` 신설(§0 Q1~Q6 회신 대기 —
   Q3 children `Ref` 타입은 8.9절 결함 때문에 스파이크 선행, Q4 재진입은
   `SetWeak` 순서 정정 권고).
 
@@ -2365,7 +2365,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   §4 문항 둘(경계 필드 이름 Q2, `H-340` 커스텀 필드 제거 연산 `Without` 권고). **열린 마일스톤 없음.** **[12절]** 아침 회신 — `H-329` (a) 구현, Q2·`H-340` 보류(flatten 슈거), `H-343` `Override`
   문자열 싱글톤(사용자 결정 — `Tween` 순수 함수, `H-323`/`H-324` 소멸), 스파이크 `11` 폐기, Studio 재연결. **[13절, 2026-09-07]** 핸드오버 — 감사 A·B 반영(`ba222e9`), 전체 코드 리뷰
   여섯 동시(R1~R3 opus + `/code-review high`) → `/compact` 중 전부 중단 → 트랜스크립트 추출(sonnet) +
-  재실행. 원장 `qa-request/handover-review-2026-09-07.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
+  재실행. 원장 `qa-request/post-implementation-review.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
   검증·Attribute plain 가드·`BRAND_PROBES`·Store 키·에러 깊이 둘·`getOffsetAt` 베이스 재독·`NewChild`
   `Slot<Instance>`·유니언 PV 멤버별 팔), 기각(Effect 비함수 cleanup·Splice 물리 순서·Attribute "누수"는
   Luau GC 페이싱), 사용자 문항 Q1~Q3; `/code-review high` 재실행분 `H-357`~`H-361`(Effect UB 확장·

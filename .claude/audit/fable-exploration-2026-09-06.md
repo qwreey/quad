@@ -16,7 +16,7 @@
 8개, 3~4천 op)에서 모델과 전부 일치** — 정본 의사코드 손 트레이싱에서도 어긋난
 자리 없음. 발견은 전부 누수·blame 계열이고 값·순서·크래시류는 없다.
 
-## 발견 (원장 `qa-request/m11-implementation-round19.md` §5에 `H-329`~`H-332`로 등재)
+## 발견 (원장 `archive/v2-initial-implementation/m11-implementation-round19.md` §5에 `H-329`~`H-332`로 등재)
 
 | 탐사 ID | 원장 | 심각도 | 요지 | 처리 |
 |---|---|---|---|---|

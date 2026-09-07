@@ -612,7 +612,7 @@ error가 맞음**.
 예외를 뒀다(위 그 함수의 정의). **플래그 없이 "같은 owner면 통과"로
 완화하면 안 된다** — 이 절이 애초에 막으려던 `Slot { a, a }`가 다시
 새어나간다. 나머지 논증(top-level은 `claimOwnerAt`으로 구분)은 그대로
-유효하다. 경위는 `qa-request/pre-implementation-qa-round4-followup.md`의
+유효하다. 경위는 `archive/v2-initial-implementation/pre-implementation-qa-round4-followup.md`의
 `I-1`.
 
 반대로 top-level은 store 재발행마다 같은 Slot으로
@@ -2371,7 +2371,7 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 무해하다(부모는 객체를 구독해뒀다가 나중에 값이 바뀌면 정상 반응).
 `setOffsetSource → setLength` 순서 자체(왜 `setOffsetSource`가 먼저여야
 하는지)는 안 바뀜 — 상세 트레이싱은
-`qa-request/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
+`archive/v2-initial-implementation/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
 
 ```lua
 -- quad-base, Slot.luau
@@ -2610,7 +2610,7 @@ end
 여기 있던 ⚠️ 항목(배치 밖 단독 재마운트 시 부모 `recompute`가 아직 안 굳은
 `slot.Length`로 한 번 헛도는 것)은 `setLength`가 `materializeSlotTree` 끝으로
 가면서 **처음부터 최종값**이 되어 발생 경로가 없어졌다. 트레이싱 원문은
-`qa-request/pre-implementation-qa-round3.md`의 "확인만 하고 새 결함 없음" 절.
+`archive/v2-initial-implementation/pre-implementation-qa-round3.md`의 "확인만 하고 새 결함 없음" 절.
 
 **최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
 ```lua

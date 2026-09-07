@@ -24,7 +24,7 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 
 정확성 8건 전부 실제 코드에 재현 스크립트로 확인. 효율 배치는 리뷰 스스로 "관측된
 병목에만 구조" 원칙 위반으로 기각, 약한 정리 항목들은 심각도 미달 기각. 발견 상세와
-처리의 소스는 `qa-request/m2-implementation-round11.md`(요약 표
+처리의 소스는 `archive/v2-initial-implementation/m2-implementation-round11.md`(요약 표
 `H-198`~`H-207`, 상세 절 "단위 2 — `/code-review high`") — 여기선 갈래만:
 
 - **① 여섯**(같은 커밋에서 반영): `H-199`(nil dep 조용한 탈락 — `collectDeps` + error),
@@ -130,7 +130,7 @@ notification 시점에 파인더 4개가 미완인 채 멈춤. 이번엔 opus �
 ## 같은 날 후속 5 — M3 규약 문항지 신설
 
 사용자 요청(*"m3 규약 문항지 만들어줘. M2 와 같은 방식으로 개발되어도 괜찮을것
-같아?"*)으로 `qa-request/m3-implementation-round12-brief.md` 신설 — M2 규약 준용
+같아?"*)으로 `archive/v2-initial-implementation/m3-implementation-round12-brief.md` 신설 — M2 규약 준용
 초안 + §0 문항 셋(Q1 규약 재사용(+Handler 체크리스트 게이트 추가) / Q2 단위 넷:
 코어 → Length/Offset 부기 → None·Nil 핸들러 → Leaf·가드·종합 / Q3 M2 하자 혼입
 규칙 — 경미는 M3 라운드에 ①, 결정 규모면 m2-implementation-round13 신설). 메인

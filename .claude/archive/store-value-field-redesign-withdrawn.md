@@ -62,8 +62,8 @@
 *"타입 함수는 타입이 못 잡는 문제를 **에러로 띄우는** 정도 이상으로 가지
 않는다."* 이 시도가 정확히 그 선을 넘은 사례다.
 
-경위 원문은 `qa-request/pre-implementation-handtrace-round7-followup.md`의
-🅖🅗 절, 발견 원문은 `qa-request/pre-implementation-handtrace-round7.md`의
+경위 원문은 `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`의
+🅖🅗 절, 발견 원문은 `archive/v2-initial-implementation/pre-implementation-handtrace-round7.md`의
 `H-73`~`H-76`.
 
 ---
@@ -84,7 +84,7 @@
 > (`store.key`가 `Source<T>`를 직접 반환하는 레코드 필드 + eager/lazy
 > 이중 생성 + `WrapStore` 타입 함수)은 **역전**됐고 원문은
 > 이 파일(당시 이름은 store-source-record-model-reversed.md였다)에 있다. 경위는
-> `qa-request/pre-implementation-handtrace-round7-followup.md`.
+> `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`.
 
 **Store는 키를 타입 인자로 명시해서 만든다.** 타입 인자에 담는 것은
 `Source<T>`가 아니라 **평범한 값 타입**이다.

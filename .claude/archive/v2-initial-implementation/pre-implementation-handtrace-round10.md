@@ -126,7 +126,7 @@ dot 호출 로컬 헬퍼로 빼도 됨(가상 디스패치 없음) / (b) 내부 
 방어하지 않는다). (c)는 순서만 바꿀 뿐 `canExecute`가 거짓인 구간과 `_blocker`가
 켜진 구간이 완전히 겹쳐 여전히 판정 차이가 0이다. 단 **이 부품은 7라운드 `H-58`에서
 사용자가 `Blocker`를 쓰라고 직접 지시해 들어온 것**이라(그 인용은
-`qa-request/pre-implementation-handtrace-round7-followup.md`의 `H-58`) 탐사자가
+`archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`의 `H-58`) 탐사자가
 임의로 빼지 않고 문항으로 올린다 — 그 지시의 전제("등록 즉시 1회가 `Rerun`에
 닿는다")가 `canExecute` 첫 줄 때문에 성립하지 않는다는 게 이 발견의 요지다.
 

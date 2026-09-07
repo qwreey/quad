@@ -1,6 +1,6 @@
 # M6 잔여 마감 — Studio 실기기 실측 (2026-09-03)
 
-**무엇을**: `qa-request/m6-implementation-round15.md` "이 fork 슬라이스 밖" 절의
+**무엇을**: `archive/v2-initial-implementation/m6-implementation-round15.md` "이 fork 슬라이스 밖" 절의
 마지막 항목 — *"실기기 검증: Deferred 시그널 배달(`H-291`)이 `_detachCleanup`/
 leaf 사망 타이밍에 주는 영향, userdata 동일성. mock은 동기라 이 축을 못 본다"*
 — 와 같은 날 구현한 공개 CRUD 다섯의 실물 Instance 회귀.

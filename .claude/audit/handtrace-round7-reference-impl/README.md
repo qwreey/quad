@@ -1,6 +1,6 @@
 # 7라운드 손 트레이싱 — 참조 구현과 스파이크 (2026-08-25 실측)
 
-**무엇인가**: `.claude/qa-request/pre-implementation-handtrace-round7.md`의
+**무엇인가**: `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round7.md`의
 **4·5·6차 패스**가 발견을 재현하는 데 쓴 코드 전량. `audit/`의 다른 폴더와
 같은 성격이고(계획이 아니라 **실측 결과 기록**), `type-recursion-issue/`처럼
 **스크립트를 같이 두는 구성**이다 — 판정이 "문서대로 짠 것을 돌려본 결과"라
@@ -25,9 +25,9 @@
 
 ## ⚠️⚠️ [2026-08-26] 이 전사물은 **8라운드 이전 계약**이다
 
-8라운드(`qa-request/pre-implementation-handtrace-round8.md`)가 바로 이
+8라운드(`archive/v2-initial-implementation/pre-implementation-handtrace-round8.md`)가 바로 이
 전사물이 돌지 **않은** 경로들에서 결함을 찾아냈고, 그 결과 **여기 옮겨진
-계약 몇 개가 바뀌었다**(결정의 소스는 `qa-request/pre-implementation-handtrace-round8-followup.md`). 이 폴더는
+계약 몇 개가 바뀌었다**(결정의 소스는 `archive/v2-initial-implementation/pre-implementation-handtrace-round8-followup.md`). 이 폴더는
 2026-08-25 실측의 기록이라 **본문을 소급 수정하지 않는다** — 대신 재실행할 때
 아래를 알고 볼 것. **바뀐 계약을 이 코드로 "재확인"하지 말 것.**
 
@@ -48,7 +48,7 @@
 (**[2026-08-27 정정]** 여기 한때 *"토큰 역참조로 닫힌다"*였는데, 토큰은 9라운드
 `H-141`/Q3로 폐기됐다 — 지금은 **요소 캡처 + `bk.indexOfElement` 조회**다. 결론
 ("캡처 말고 조회")은 그대로다. 9라운드 전사물(요소 키)은 세션 스크래치패드
-`ref9/`에 있고 근거는 `qa-request/pre-implementation-handtrace-round9.md`에
+`ref9/`에 있고 근거는 `archive/v2-initial-implementation/pre-implementation-handtrace-round9.md`에
 인라인 전사돼 있다.)
 
 ---

@@ -1,6 +1,6 @@
 # 7라운드 손 트레이싱 발견 **검증 패스** — `H-55`~`H-106` 판정 (2026-08-25)
 
-**무엇인가**: `.claude/qa-request/pre-implementation-handtrace-round7.md`의
+**무엇인가**: `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round7.md`의
 발견 52건이 **정말 유효한지만** 판정한 결과. 새 발견을 찾는 패스가 아니다 —
 원문에 없는 새 항목은 이 문서에 없다.
 

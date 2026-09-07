@@ -248,7 +248,7 @@ blocker:Off()  -- onunblock 핸들 실행 → HasBlockedEmit 확인 → 딱 한 
   자신의 새 최상위 플래그)는 **신설하지 않는다** — `OffWithoutEmit()`이
   각 gated state의 기존 `HasBlockedEmit`을 그대로 리셋해주는 것으로
   충분하다고 판단됐기 때문(처음 제안됐던 "`HasBlocked`"는 이 논의
-  과정에서 자연스럽게 불필요해짐 — `qa-request/pre-implementation-qa-round2.md`
+  과정에서 자연스럽게 불필요해짐 — `archive/v2-initial-implementation/pre-implementation-qa-round2.md`
   "RC-1" 절에 논의 경위 기록).
   **[보강, 2026-08-20 구현 전 QA 4라운드 `BK-9`] "영원히 안 만든다"로 못박은
   건 아니다 — 지금 사용 케이스가 없을 뿐인 백로그다.** 사용자 판정: *"있는게

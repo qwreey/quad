@@ -226,7 +226,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   유니언**이고, **이후 마일스톤이 자기 핸들러가 도착할 때 유니언을
   확장한다**(확장 규칙 — M6 Slot, M8 `Ref`/`PreRef`/`PostRef`; **[2026-09-07 M6 확장
   실행 — `H-351`, 핸드오버 리뷰]** `Slot<Instance>` 합류(fork 슬라이스가 이 팔을
-  실행하지 않아 strict에서 children Slot이 막혀 있었다 — `qa-request/handover-review-2026-09-07.md`;
+  실행하지 않아 strict에서 children Slot이 막혀 있었다 — `qa-request/post-implementation-review.md`;
   `State<Slot<…>>` 팔·`Observer`/`EffectHandle` 팔은 그 원장 §4 Q1·Q2); **[2026-09-03
   M10 확장 실행]** `Tag | State<Tag> | Attribute | State<Attribute>` 합류 —
   타입드 스칼라 슈가는 `Attribute`를 돌려주므로 같은 멤버, `H10-15`. `OnChange`
@@ -356,7 +356,7 @@ function Dispatch.drive(inst, flattened)   -- [2026-09-04] 첫 줄이 `flatten(f
 end
 ```
 
-**이 의사코드를 쓰면서 드러난 것**(결정은 `qa-request/pre-implementation-handtrace-round9-followup.md`의
+**이 의사코드를 쓰면서 드러난 것**(결정은 `archive/v2-initial-implementation/pre-implementation-handtrace-round9-followup.md`의
 `H-139` 절 — 여기선 목록만):
 - **배치를 닫는 자리** — 처음엔 *"어디에도 안 적혀 있다"*고 보고 해시 파트
   앞에서 닫는 모양으로 썼는데, **틀렸다**(감사 1라운드가 잡음):

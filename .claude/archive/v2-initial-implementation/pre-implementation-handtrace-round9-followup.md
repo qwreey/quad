@@ -1,6 +1,6 @@
 # 9라운드 손 트레이싱 발견 — **사용자 결정과 반영 결과**
 
-**무엇인가**: `.claude/qa-request/pre-implementation-handtrace-round9.md`의 발견
+**무엇인가**: `.claude/archive/v2-initial-implementation/pre-implementation-handtrace-round9.md`의 발견
 (`H-124`~)을 사용자와 대화형으로 처리한 결과. **결정의 소스는 이 문서**이고,
 발견 원문·값 트레이스·실측 전사·"이상 없다고 확인한 것" 목록은 그 파일이
 소스다(여기서 다시 서술하지 않음).

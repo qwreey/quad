@@ -1,7 +1,7 @@
 # 2026-09-02-02 — M6/M10 병렬 탐사 fork 결정 (원문 기록)
 
 M5 단위 ② 마감 중 사용자가 병렬 탐사를 발의·승인한 대화의 원문 기록 —
-두 브리프(`qa-request/m6-implementation-round15-brief.md`/
+두 브리프(`archive/v2-initial-implementation/m6-implementation-round15-brief.md`/
 `m10-implementation-round16-brief.md`)가 인용하는 발언의 대조 소스.
 
 ## 발의 (사용자 원문 전문)

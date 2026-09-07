@@ -6,7 +6,7 @@
 확정돼 `base/slot-plan.md`에 반영됐다.
 
 **소스 관계**: 지금 유효한 설계는 항상 `base/slot-plan.md`가 소스이고,
-처리 경과 요약은 `qa-request/pre-implementation-qa-round4-followup.md`의
+처리 경과 요약은 `archive/v2-initial-implementation/pre-implementation-qa-round4-followup.md`의
 H절, 분해 근거는 `reference/slot-attach-decomposition.md`. 이 파일은 그
 결정들이 **어떤 논의를 거쳐 나왔는지**의 원문 기록이다.
 

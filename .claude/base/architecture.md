@@ -174,8 +174,9 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
       `InitXxx(module)`가 `module`을 upvalue가 아니라 **파라미터로 받아**
       뮤테이션)이 처음부터 그 형태다 — 나중에 바꿀 일 자체가 없게 M1
       스캐폴딩부터 이 모양으로 짠다. M0는 독립 스파이크 파일로 개별
-      가설만 검증하는 단계라 이 구조 자체를 아직 안 씀(`ROADMAP.md`의
-      "M0 — 스켈레톤 + 기술검증" 절 참고).
+      가설만 검증하는 단계라 이 구조 자체를 아직 안 씀(옛 ROADMAP 본문
+      `archive/v2-initial-implementation/roadmap.md`의 "M0 — 스켈레톤 + 기술검증" 절 참고 —
+      2026-09-07 재편으로 이동).
 14. **pluggable 초기화는 팩토리 함수로.** rbvm처럼 네임스페이스 하나하나 수동
     init 하는 방식(`base/lifecycle-pattern.md` 5번 항목 참고)은 피하고,
     `InitRoblox(Module)` 같은 팩토리 함수가 생성된 모듈을 뮤테이션하는 도구를
@@ -397,7 +398,7 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     워커 불필요.
   기존 자리 전량이 이 형태로 일괄 이관됐다(사용자 확정: *"이관 할 부분을
   이관하고 다음 단위 착수하자"*). 워커 설계·스캔 방향의 경위는
-  `qa-request/m3-implementation-round12.md`의 `H-231` 절이 소스.
+  `archive/v2-initial-implementation/m3-implementation-round12.md`의 `H-231` 절이 소스.
 - **⭐ 메시지는 영어로 통일한다**(**사용자 확정**, 2026-08-25). 지금
   코퍼스는 영어 6 / 한국어 약 23으로 이미 갈려 있고, 공개 표면인데
   정해진 적이 없었다. `.claude/conventions.md`의 *"사용자가 보게 될 것은

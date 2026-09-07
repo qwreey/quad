@@ -1,6 +1,6 @@
 # 2026-08-26 — 8라운드 손 트레이싱 처리 (Q1~Q10)
 
-**무엇을 했나**: `qa-request/pre-implementation-handtrace-round8.md`의 발견
+**무엇을 했나**: `archive/v2-initial-implementation/pre-implementation-handtrace-round8.md`의 발견
 17건(`H-107`~`H-123`)을 사용자와 대화형으로 처리하고 `base/`에 전량 반영,
 `-round8-followup.md`를 신설했다. **결정과 근거의 소스는 그 followup 파일**
 이고 여기선 진행 방식과 그 과정에서 드러난 것만 남긴다.

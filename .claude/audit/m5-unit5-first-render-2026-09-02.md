@@ -57,4 +57,4 @@ ROADMAP M5 마지막 체크박스("실제 Roblox에서 첫 `Frame{...}` 렌더 �
 
 - 옛 청크 업로드 잔여물 `ServerStorage.QuadPkg`는 이 실측 전에 정리함.
 - `H-25` 확인분(quad-types `Quad` 갱신·`H-305` 문항)은 발견 원장
-  `qa-request/m5-implementation-round14.md`가 소스 — 여기 반복하지 않음.
+  `archive/v2-initial-implementation/m5-implementation-round14.md`가 소스 — 여기 반복하지 않음.

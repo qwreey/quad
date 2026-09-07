@@ -1,7 +1,7 @@
 # 2026-08-19-04 — 구현 전 QA 4라운드 문항지 작성 (회신 대기)
 
 **한 줄**: 사용자 요청으로 `base/` 확정 전체를 "예가 나와야 정상인 문항"으로
-전수 문항화해 `qa-request/pre-implementation-qa-round4.md`를 만들었다.
+전수 문항화해 `archive/v2-initial-implementation/pre-implementation-qa-round4.md`를 만들었다.
 **설계 결정은 하나도 안 내렸고, 정정도 하나도 안 했다** — 회신 대기 상태.
 
 ## 사용자 요청 원문
@@ -35,7 +35,7 @@
 
 ## 산출물
 
-`.claude/qa-request/pre-implementation-qa-round4.md` — 문서 코드 26개
+`.claude/archive/v2-initial-implementation/pre-implementation-qa-round4.md` — 문서 코드 26개
 (`A`/`S`/`ST`/`BS`/`D`/`LP`/`RE`/`BR`/`M`/`SL`/`BK`/`E`/`EV`/`OC`/`R`/`T`/`AT`/
 `TW`/`CC`/`UI`/`ML`/`DT`/`LH`/`FB`/`PE`/`TL`)로 나눈 전수 문항지. 문항 수와
 문서별 분포는 그 파일 자신이 소스(여기서 반복 안 함 — `conventions.md`의

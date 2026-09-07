@@ -45,7 +45,7 @@
 
 `base/dispatch-core-plan.md`의 `recompute`가 배열 위치를 순차 등록하는
 동안(`Frame{A,B}`처럼 정적 자식 2개짜리도) 아직 등록 안 된 자리를 `nil`로
-읽어 산술 에러를 내던 크래시(`qa-request/pre-implementation-qa-round2.md`의
+읽어 산술 에러를 내던 크래시(`archive/v2-initial-implementation/pre-implementation-qa-round2.md`의
 "RC-1" 절에서 손 트레이싱으로 발견) — 같은 날 후속 세션에서 사용자가
 Blocker 재사용 설계를 직접 제시해 해결됨.
 
@@ -78,7 +78,7 @@ Blocker 재사용 설계를 직접 제시해 해결됨.
   만드는 Blocker 게이팅" 절, `base/slot-plan.md`의 "재귀 메커니즘" 절,
   `base/blocker-plan.md`의 "`state:Block()` 없이 직접 쓰는 두 번째 용례"
   절이 소스. 논의 원문(설계 제안 전문, 확인 질문 3개와 답변)은
-  `qa-request/pre-implementation-qa-round2.md`의 "RC-1" 절.
+  `archive/v2-initial-implementation/pre-implementation-qa-round2.md`의 "RC-1" 절.
 
 ## [해소됨, 2026-08-18 구현 전 QA 3라운드] `bk.N`의 수명주기 + `RC-3`/`RC-4`(`attachSlot`의 `:List` 초기 population 중복 처리)
 
@@ -126,7 +126,7 @@ pre-implementation-qa-round3.md`가 원본) — 트레이싱 중 `attachSlot`이
   등록을 안전하게 만드는 Blocker 게이팅" 절, `base/slot-plan.md`의
   "재귀 메커니즘"/"파괴" 절, `base/blocker-plan.md`의 "두 번째 용례"
   절이 소스. 논의 원문(최초 분석·사용자 정정·확인 질문과 답변 전문)은
-  `qa-request/pre-implementation-qa-round3.md`.
+  `archive/v2-initial-implementation/pre-implementation-qa-round3.md`.
 
 ## [해소됨, 2026-08-19] `PopOnly` → `Detach` 리네임 + 공개 표면 위치 확정
 
@@ -976,7 +976,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `Blocker.luau` 자체는 M3 체크박스에 있다 — 로드맵 순서대로면 M2가 아직
   없는 걸 참조하게 된다. 지금은 M2 체크박스에 이 사실만 각주로 남겨둔
   임시 조치(가장 보수적인 선택, 마일스톤 재편은 안 함) — **M2 착수 전
-  필요**. 상세는 `qa-request/pre-implementation-qa-round3.md`의
+  필요**. 상세는 `archive/v2-initial-implementation/pre-implementation-qa-round3.md`의
   "ROADMAP.md 마일스톤 정합성" 절.
 
 - **[해소, 2026-08-21 구현 전 QA 5라운드 H절] `mountInst`의 삽입 위치 + 중첩
@@ -987,7 +987,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   Slot의 `.Offset`을 그대로 읽는다 — 최상위 물리 inst는 항상 0), 중첩 Slot은
   자기 `Offset`을 관측해 깊은 전파를 한다. 반영하다 **재마운트가 `Offset` Source를 새로 만들던 결함**도
   같이 잡았다(identity 재사용). 상세는
-  `qa-request/pre-implementation-qa-round5-followup.md`의 H절.
+  `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 H절.
   아래는 열려 있던 시점의 서술: 둘이 한 덩어리다:
   (a) `setOffsetSource`의 `None`이 "아무것도 안 차지함"과 "발행 채널 없음"
   두 뜻을 겸하고 있어 **plain 요소의 offset 숫자가 계산조차 안 된다**(그래서
@@ -997,7 +997,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   써서 안 드러났음). 제안은 `bk.offsetList` 신설(항상 숫자 계산) +
   `mountInst(target, element, index)` + `recompute`의 `base` 시드 + 중첩 Slot이
   자기 `Offset`을 관측해 재계산하는 구독 하나 —
-  `qa-request/pre-implementation-qa-round5-followup.md`의 G절이 소스.
+  `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`의 G절이 소스.
 
 - **[해소, 2026-08-21] offset이 바뀌면 이미 배치된 물리 노드를 옮겨야 하는가 —
   아니오.** **사용자 확정**: *"애초에 offset 바뀌여도 상관 없는게 위에서 넣고
@@ -1128,7 +1128,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   부분."* 대안은 **부기 키(`ownerKey`)와 생명주기 앵커(물리 `physicalTarget`)를
   분리**하는 것 — 그러면 `bindLifetime`은 항상 Instance만 받고,
   `isBoundAlive`의 세 번째 분기(지금 ⚠️ 미정)도 통째로 불필요해진다. 상세와
-  트레이싱은 `qa-request/pre-implementation-qa-round5-followup.md`.
+  트레이싱은 `archive/v2-initial-implementation/pre-implementation-qa-round5-followup.md`.
 
 - **[해소, 2026-08-21] `Detach` 홀드 중 키가 사라졌을 때의 처분** —
   선택지 (c)로 확정: `updateFn`을 **`KeyGone`으로 한 번 더 불러 처분을
