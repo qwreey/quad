@@ -67,7 +67,7 @@ export type RobloxExtension = {
 local function QuadRoblox<T>(quad: T): RobloxExtension
 	local q = quad :: any
 	-- surface tag so raises below blame the caller's line (`H-238`)
-	q.errorNamespace.setFuncLevel(QuadRoblox, QuadTypes.ERROR_LEVEL_SURFACE)
+	q.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, QuadRoblox)
 	-- `H-306` (a): runtime version gate — errors climb to the consumer's
 	-- UseProvider line (UseProvider is the outermost tagged frame)
 	if type(q.Version) ~= "string" or not TypeVersionCheck.matchesPattern(q.Version, VERSION_PATTERN) then

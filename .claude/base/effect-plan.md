@@ -618,8 +618,8 @@ blame 실측, 해당 체크박스는 `[x]`) — **[2026-09-01 `H-278`]** 등록 
 children 배열 리터럴 전용이라, 해시 파트 named 자리 등으로 동적으로
 흘러들어오면 명확히 에러내야 함 — `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isEffect(v) end, process =
-function(inst,k,v) Err.errorBefore(`Effect binding should be array index
-item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-18]** 에러 메시지에
+function(inst,k,v) Err.errorBefore(`Effect: must be an array item, not the
+value of a {typeof(k)} key`, SURFACE) end }`(**[2026-09-08]** 문구는 `architecture.md`의 "메시지 모양" 규약으로 정규화됨)(**[2026-08-18]** 에러 메시지에
 실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드"
 절; **[2026-08-31 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
 같은 절의 논증 참고, `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의

@@ -201,7 +201,7 @@ do
 		local ok, err = pcall(function()
 			q.Dispatch.drive(Instance.new("Frame"), { Hook = mk(nil :: any) })
 		end)
-		assert(not ok and string.find(tostring(err), "should be array index item, but got string", 1, true) ~= nil, "guard message: " .. tostring(err))
+		assert(not ok and string.find(tostring(err), "must be an array item, not the value of a string key", 1, true) ~= nil, "guard message: " .. tostring(err))
 		assertBlamesUser(err, SPEC, "guard blame")
 	end
 	-- State<PreRef>(Store 경로)도 같은 가드에 닿는다 — 배열 자리라도 pre-pass가 못 보므로

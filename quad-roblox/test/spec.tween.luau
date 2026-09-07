@@ -103,7 +103,7 @@ do
 	local ok2, err2 = pcall(function()
 		return (base :: any):Mapped(5)
 	end)
-	assert(not ok2 and string.find(tostring(err2), "expects a function", 1, true) ~= nil, "non-function rejected")
+	assert(not ok2 and string.find(tostring(err2), "Tween:Mapped: fn must be a function (got number)", 1, true) ~= nil, "non-function rejected")
 	mock.assertBlamesUser(err2, "spec.tween.luau", "Mapped blame")
 	-- 상수 Tween 재사용 패턴(정본 "부수 효과")
 	local FAST = Tween({ Value = 0, Time = 0.15 })

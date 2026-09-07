@@ -255,7 +255,7 @@ function AttrKeyHandler.process(inst, k, v, index)
         -- [2026-09-03 M10 편입 정정] 현행 error 계약(H-231/H-272)으로 이관 —
         -- 실코드(Attr/Key.luau)는 Err.errorBefore(SURFACE)를 쓴다.
         -- `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 error 계약 절
-        Err.errorBefore(`attribute "{k.Name}" is already bound by another owner`, SURFACE)
+        Err.errorBefore(`AttrKey: attribute "{k.Name}" is already bound by another owner`, SURFACE)
     end
     nameClaims:SetStrong(inst, k.Name, k)
 

@@ -32,7 +32,7 @@
 	fork's style, not a need — a hashed field read is cheap, user 2026-09-07). This init keeps the public Slot_mt CRUD,
 	the gates (assertLive/assertManual/assertMutable/checkIndex/occupantOf/
 	prepareElements), the `Slot(initial)` constructor, `dispose`, the module exposure
-	+ `_slotInternal`, the handler registration and the setFuncLevel tagging loop.
+	+ `_slotInternal`, the handler registration and the setFuncLevel tagging call.
 	`Handler.luau` is the former `Dispatch/Slot.luau` (the top-level SlotHandler).
 ]]
 
@@ -390,17 +390,24 @@ local function Init(module: any)
 	-- / metatable methods) — the spike-27 inlining rule holds. (round15
 	-- `H6-10`: the fork tagged only `dispose`; the same gap `H10-7` closed
 	-- for Tag/Attr.)
-	for _, fn in
-		{
-			Slot, dispose,
-			Slot_mt.Add, Slot_mt.Remove, Slot_mt.Replace, Slot_mt.Extract, Slot_mt.ExtractAll,
-			Slot_mt.Splice, Slot_mt.Clear, Slot_mt.Move, Slot_mt.Swap,
-			S.List, S.Single, -- [split] Slot_mt fields defined in Slot/List.luau, taken via S
-			Slot_mt.Get, Slot_mt.IndexOf, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
-		} :: { any }
-	do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(
+		SURFACE,
+		Slot,
+		dispose,
+		Slot_mt.Add,
+		Slot_mt.Remove,
+		Slot_mt.Replace,
+		Slot_mt.Extract,
+		Slot_mt.ExtractAll,
+		Slot_mt.Splice,
+		Slot_mt.Clear,
+		Slot_mt.Move,
+		Slot_mt.Swap,
+		S.List, -- [split] Slot_mt fields defined in Slot/List.luau, taken via S
+		S.Single,
+		Slot_mt.Get, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
+		Slot_mt.IndexOf
+	)
 end
 
 return Init

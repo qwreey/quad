@@ -1607,7 +1607,7 @@ function activateList(self, physicalTarget)
         for i, item in ipairs(items) do
             local key = keyFn(item, i)   -- keyFn은 raw i를 받음(:List 파라미터 설명 참고)
             if seen[key] then
-                error("Slot:List — duplicate key: " .. tostring(key), 2)
+                error(`Slot:List: duplicate key {tostring(key)}`, 2)
             end
             seen[key] = true
             keys[i] = key
@@ -1685,7 +1685,7 @@ function activateList(self, physicalTarget)
                 -- KeyGone을 받은 자리는 "데이터가 다시 나타날 때를 위한 캐싱"
                 -- (= Detach) 아니면 파괴뿐이고, **새 마운트/생성은 거부**한다.
                 if result ~= nil then
-                    error("Slot:List — KeyGone accepts only nil/None (destroy) or Detach (hold) "
+                    error("Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold) "
                         .. "(cannot mount a new element at a key whose slot is gone; keeping prev is contradictory)", 2)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)

@@ -174,9 +174,7 @@ local function New(): Quad
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
-	Err.setFuncLevel(module.RunInit, QuadTypes.ERROR_LEVEL_SURFACE)
-	Err.setFuncLevel(module.AddPlugin, QuadTypes.ERROR_LEVEL_SURFACE)
-	Err.setFuncLevel(module.UseProvider, QuadTypes.ERROR_LEVEL_SURFACE)
+	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, module.RunInit, module.AddPlugin, module.UseProvider)
 
 	return module
 end

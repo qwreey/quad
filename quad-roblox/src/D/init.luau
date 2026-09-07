@@ -4859,7 +4859,7 @@ return function(quad: any): D
 		-- H-238: 범위 밖 클래스의 D.New(name)(props) 경로도 blame이 사용자
 		-- 줄에 닿아야 한다 — 스테이지를 만들 때 태그(별칭도 이 경로로 만들어져
 		-- 전부 태그됨; 리뷰 발견 반영)
-		quad.errorNamespace.setFuncLevel(stage, QuadTypes.ERROR_LEVEL_SURFACE)
+		quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, stage)
 		return stage
 	end
 	-- D.Mapper — Claim용 디스크립터 생성기(claim-plan §2; 본체는 quad-base
@@ -5025,6 +5025,6 @@ return function(quad: any): D
 	quad.Modifier.DefineSubtype("GuiObject", "ViewportFrame")
 	quad.Modifier.DefineSubtype("WorldRoot", "WorldModel")
 	quad.Modifier.DefineSubtype("Model", "WorldRoot")
-	quad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨
+	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, New) -- 별칭·스테이지는 New 안에서 태그됨
 	return (D :: any) :: D
 end

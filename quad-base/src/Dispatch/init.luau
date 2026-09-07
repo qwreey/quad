@@ -184,7 +184,7 @@ local function Init(module: any)
 		for i = #list, index, -1 do
 			local slot = list[i]
 			if slot == nil then
-				error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+				error(`Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
 			end
 			slot.retractor(nil, true)
 			list[i] = nil
@@ -291,8 +291,8 @@ local function Init(module: any)
 		-- `H-231`: received closures join the surface layer at receipt time
 		-- (user's rule — "입력 받은 측에서 level을 설정") so the walker sees
 		-- provider frames as quad machinery, not as user code.
-		Err.setFuncLevel(handler.isHandlable, SURFACE)
-		Err.setFuncLevel(handler.process, SURFACE)
+		Err.setFuncLevel(SURFACE, handler.isHandlable)
+		Err.setFuncLevel(SURFACE, handler.process)
 	end
 
 	local function listHandlers(): { Handler }
@@ -406,7 +406,7 @@ local function Init(module: any)
 	-- (a missed entry degrades blame with nothing failing).
 	for _, v in Dispatch :: { [string]: any } do
 		if type(v) == "function" then
-			Err.setFuncLevel(v, SURFACE)
+			Err.setFuncLevel(SURFACE, v)
 		end
 	end
 

@@ -66,7 +66,7 @@ local function AttrKey(name: string): any
 end
 -- `H-238`: public constructor tagged (the scalar sugar family lives in
 -- Attr/init.luau and tags itself there)
-Err.setFuncLevel(AttrKey, SURFACE)
+Err.setFuncLevel(SURFACE, AttrKey)
 
 local module = {
 	AttrKey = AttrKey,
@@ -108,7 +108,7 @@ function module.Init(quad: any)
 				-- domain-language error (attribute-plan "에러 메시지는 도메인
 				-- 언어로"); outermost blame so the user's line is charged even
 				-- through group delegation (`H-272` reasoning)
-				Err.errorBefore(`attribute "{k.Name}" is already bound by another owner`, SURFACE)
+				Err.errorBefore(`AttrKey: attribute "{k.Name}" is already bound by another owner`, SURFACE)
 			end
 			nameClaims:SetStrong(inst, k.Name, k)
 

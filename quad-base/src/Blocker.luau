@@ -118,8 +118,6 @@ local function Blocker(): Blocker
 end
 
 -- `H-231`: public surface joins the shared error-namespace tag layer
-for _, fn in { BlockerImpl.IsOn, BlockerImpl.On, BlockerImpl.Off, BlockerImpl.OffWithoutEmit, BlockerImpl.Policy, BlockerImpl.__apply, Blocker } do
-	Err.setFuncLevel(fn, SURFACE)
-end
+Err.setFuncLevel(SURFACE, BlockerImpl.IsOn, BlockerImpl.On, BlockerImpl.Off, BlockerImpl.OffWithoutEmit, BlockerImpl.Policy, BlockerImpl.__apply, Blocker)
 
 return Blocker

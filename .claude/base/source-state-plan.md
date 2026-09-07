@@ -1322,7 +1322,7 @@ error 발화는 `H-231` 워커의 최외곽 스캔 — 매치 실패와 같은 �
 **[요구 추가, 2026-08-18 구현 전 QA] 에러 메시지에 실제 `k`의 타입을
 실을 것.** 사용자 요구: *"Priority Fallback 이 type(k) == "string" 인
 상황에서는 가장 위에 Ref/Observer binding should be array index item, but
-got typeof k 처럼 알려줄 필요는 있는듯"*. 근거는 **메시지에 `k` 타입이
+got typeof k 처럼 알려줄 필요는 있는듯"*(**[2026-09-08]** 실제 문구는 `Observer: must be an array item, not the value of a string key` — `architecture.md` "메시지 모양" 규약). 근거는 **메시지에 `k` 타입이
 없으면 최종 사용자가 두 원인을 구분할 수 없다는 것** — (a) 핸들러가
 등록이 안 된 것인지, (b) `MyRef = Ref(...)`처럼 named 자리에 잘못 쓴
 것인지. 같은 규칙이 `base/ref-plan.md`의 `PreRef`/`PostRef` 동적 경로

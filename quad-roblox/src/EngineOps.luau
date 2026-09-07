@@ -141,14 +141,7 @@ local function install(quad: any)
 	quad.setAttr = setAttr
 
 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
-	for _, fn in
-		{
-			nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose,
-			isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr,
-		} :: { any }
-	do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr)
 end
 
 return install

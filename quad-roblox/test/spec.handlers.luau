@@ -57,7 +57,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installEvent) :: any).game = gameShim -- Event 모듈도 같은 심(이벤트 미선언 → 매치 없음)
 ;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)
-q.errorNamespace.setFuncLevel(q.isInst, (require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE)
+q.errorNamespace.setFuncLevel((require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE, q.isInst)
 
 print("=== 1. Property — Reflection 멤버십 매치로 실프로퍼티만 세팅 ===")
 do

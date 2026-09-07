@@ -39,11 +39,11 @@ do
 		raiseLine = curline() + 1
 		Err.errorAt("boom-inner", 4)
 	end
-	Err.setFuncLevel(inner, 4)
+	Err.setFuncLevel(4, inner)
 	local function outer()
 		inner()
 	end
-	Err.setFuncLevel(outer, 3)
+	Err.setFuncLevel(3, outer)
 
 	local ok, err = pcall(outer)
 	assert(not ok, "errorAt raises")
@@ -53,12 +53,12 @@ do
 	local function inner3()
 		Err.errorAt("boom-outer", 3)
 	end
-	Err.setFuncLevel(inner3, 4)
+	Err.setFuncLevel(4, inner3)
 	local function outer3()
 		callLine = curline() + 1
 		inner3()
 	end
-	Err.setFuncLevel(outer3, 3)
+	Err.setFuncLevel(3, outer3)
 	local ok3, err3 = pcall(outer3)
 	assert(not ok3, "outer-layer target raises")
 	assertBlames(err3, callLine, "boom-outer")
@@ -71,11 +71,11 @@ do
 	local function inner()
 		Err.errorBefore("boom-before", 3)
 	end
-	Err.setFuncLevel(inner, 4)
+	Err.setFuncLevel(4, inner)
 	local function outer()
 		inner()
 	end
-	Err.setFuncLevel(outer, 3)
+	Err.setFuncLevel(3, outer)
 
 	local callSite = 0
 	local ok, err = pcall(function()
@@ -102,8 +102,8 @@ do
 		outerCall = curline() + 1
 		mid()
 	end
-	Err.setFuncLevel(deep, 7)
-	Err.setFuncLevel(entry, 7) -- 같은 레이어 태그가 안팎에 둘 — 바깥(entry)이 매치
+	Err.setFuncLevel(7, deep)
+	Err.setFuncLevel(7, entry) -- 같은 레이어 태그가 안팎에 둘 — 바깥(entry)이 매치
 	local ok, err = pcall(entry)
 	assert(not ok, "sandwiched raise still errors")
 	assertBlames(err, outerCall, "boom-outermost") -- entry 안의 줄(= 바깥 매치)
@@ -159,7 +159,7 @@ do
 		local fn = function()
 			return upvalue
 		end
-		Err.setFuncLevel(fn, 5)
+		Err.setFuncLevel(5, fn)
 		assert(Err.getFuncLevel(fn) == 5, "tag readable while alive")
 		return fn
 	end
@@ -171,4 +171,25 @@ do
 end
 
 print()
+print("=== V. setFuncLevel(level, ...fns) — 가변인자 계약(2026-09-08 사용자 결정) ===")
+do
+	local function a() end
+	local function b() end
+	Err.setFuncLevel(6, a, b)
+	assert(Err.getFuncLevel(a) == 6 and Err.getFuncLevel(b) == 6, "both tagged in one call")
+	-- 배열 리터럴의 nil 구멍은 루프가 조용히 건너뛰었다(`H-410` list drift) — 가변인자는 로드 시점에 터진다
+	local okNil, errNil = pcall(function()
+		Err.setFuncLevel(6, a, (nil :: any), b)
+	end)
+	assert(not okNil and string.find(tostring(errNil), "argument #3 must be a function (got nil)", 1, true) ~= nil, "nil hole rejected: " .. tostring(errNil))
+	assert(Err.getFuncLevel(b) == 6, "the raise leaves earlier tags in place (b was tagged before)")
+	-- 옛 (func, level) 순서는 level 자리에 함수가 와서 즉시 에러 — 조용한 오태깅 없음
+	local okOld, errOld = pcall(function()
+		Err.setFuncLevel((a :: any), 7)
+	end)
+	assert(not okOld and string.find(tostring(errOld), "level must be a number (got function)", 1, true) ~= nil, "old signature rejected: " .. tostring(errOld))
+	assert(Err.getFuncLevel(a) == 6, "a keeps its tag")
+	Err.setFuncLevel(6) -- zero functions: a no-op, not an error
+end
+
 print("=== ALL PASS ===")

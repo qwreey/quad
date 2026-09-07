@@ -297,9 +297,7 @@ local function createImpl(module: any)
 
 	module.Effect = Effect
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	for _, fn in { Impl.Rerun, Impl.WeakSubscribe, Impl.Subscribe, Impl.WeakUnsubscribe, Impl.Unsubscribe, Effect } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Impl.Rerun, Impl.WeakSubscribe, Impl.Subscribe, Impl.WeakUnsubscribe, Impl.Unsubscribe, Effect)
 
 	return Impl
 end
@@ -346,7 +344,7 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Effect binding should be array index item, but got {typeof(k)}`, SURFACE)
+			Err.errorBefore(`Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})

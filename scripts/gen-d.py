@@ -682,7 +682,7 @@ def emit():
     L.append("\t\t-- H-238: 범위 밖 클래스의 D.New(name)(props) 경로도 blame이 사용자")
     L.append("\t\t-- 줄에 닿아야 한다 — 스테이지를 만들 때 태그(별칭도 이 경로로 만들어져")
     L.append("\t\t-- 전부 태그됨; 리뷰 발견 반영)")
-    L.append("\t\tquad.errorNamespace.setFuncLevel(stage, QuadTypes.ERROR_LEVEL_SURFACE)")
+    L.append("\t\tquad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, stage)")
     L.append("\t\treturn stage")
     L.append("\tend")
     L.append("\t-- D.Mapper — Claim용 디스크립터 생성기(claim-plan §2; 본체는 quad-base")
@@ -705,7 +705,7 @@ def emit():
         parent = parent_of[name]
         if parent:
             L.append(f'\tquad.Modifier.DefineSubtype("{parent}", "{name}")')
-    L.append("\tquad.errorNamespace.setFuncLevel(New, QuadTypes.ERROR_LEVEL_SURFACE) -- 별칭·스테이지는 New 안에서 태그됨")
+    L.append("\tquad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, New) -- 별칭·스테이지는 New 안에서 태그됨")
     L.append("\treturn (D :: any) :: D")
     L.append("end")
     text = "\n".join(L) + "\n"

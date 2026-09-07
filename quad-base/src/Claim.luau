@@ -64,10 +64,10 @@ local function Init(module: any)
 				Brand.MapperBrand:register(desc)
 				return desc
 			end
-			Err.setFuncLevel(staged, SURFACE)
+			Err.setFuncLevel(SURFACE, staged)
 			return staged
 		end
-		Err.setFuncLevel(keyed, SURFACE)
+		Err.setFuncLevel(SURFACE, keyed)
 		return keyed
 	end
 
@@ -123,9 +123,7 @@ local function Init(module: any)
 	module.MapperRoot = MapperRoot
 	module.newMapperClass = newMapperClass
 	-- isMapperDescriptor는 init.luau 리터럴이 단일 소유(리뷰 — 이중 대입 제거)
-	for _, fn in { Claim, newMapperClass } :: { any } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Claim, newMapperClass)
 end
 
 return Init

@@ -312,9 +312,7 @@ local function createImpl(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	for _, fn in { Impl.Get, Impl.With, Impl.Compute, Impl.Gate, Impl.Observer, Impl.Apply } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Impl.Get, Impl.With, Impl.Compute, Impl.Gate, Impl.Observer, Impl.Apply)
 
 	return Impl
 end

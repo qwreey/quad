@@ -6,7 +6,7 @@
 	wrappers sit between the raise site and the frame you mean — hand-counting
 	(2 vs 3) breaks whenever a helper frame is added, and cannot reach through
 	a variable-depth pipeline at all. Instead, tag functions with a *layer
-	number* once (`setFuncLevel`); at raise time the walker inspects the live
+	number* once (`setFuncLevel(level, fn, ...)`); at raise time the walker inspects the live
 	stack with `debug.info(i, "f")` and finds a frame whose function carries
 	the requested layer tag. Two scan directions, both needed (user decision,
 	same round):
@@ -83,7 +83,7 @@ function module.getToplevel(): number
 end
 
 export type Namespace = {
-	setFuncLevel: (func: any, level: number) -> (),
+	setFuncLevel: (level: number, ...any) -> (),
 	getFuncLevel: (func: any) -> number,
 	getFirstMatch: (level: number) -> number,
 	getNearestMatch: (level: number) -> number,
@@ -98,8 +98,23 @@ function module.new(): Namespace
 
 	local ns = {} :: any
 
-	function ns.setFuncLevel(func: any, level: number)
-		funcLevels[func] = level
+	-- `setFuncLevel(level, fn1, fn2, ...)` — variadic since 2026-09-08 (user decision, Gemini
+	-- advisory 권고 2; the old `(func, level)` form is gone — no other project used it).
+	-- Beyond dropping the per-file `for _, fn in { ... }` loop, the vararg form closes a
+	-- silent hole: a renamed/missing method left a nil in that array literal, and the loop
+	-- skipped it — the tag quietly vanished (6순회 `H-410` list drift). `select("#")` counts
+	-- nils, so the hole is a load-time error here.
+	function ns.setFuncLevel(level: number, ...: any)
+		if type(level) ~= "number" then
+			error(`setFuncLevel: level must be a number (got {typeof(level)}) — the signature is setFuncLevel(level, ...fns)`, 2)
+		end
+		for i = 1, select("#", ...) do
+			local func = select(i, ...)
+			if type(func) ~= "function" then
+				error(`setFuncLevel: argument #{i + 1} must be a function (got {typeof(func)}) — a renamed or missing method?`, 2)
+			end
+			funcLevels[func] = level
+		end
 	end
 
 	function ns.getFuncLevel(func: any): number

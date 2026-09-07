@@ -54,7 +54,7 @@ local function Init(module: any)
 	-- contiguity. User-input class -> nearest blame (the handler that called).
 	local function checkPosition(fnName: string, i: any)
 		if type(i) ~= "number" or i % 1 ~= 0 or i <= 0 then
-			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: position must be a positive integer, got {tostring(i)}`, SURFACE)
+			Err.errorBeforeNearest(`Dispatch.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
 		end
 	end
 
@@ -123,7 +123,7 @@ local function Init(module: any)
 	-- `checkPosition`'s header says to keep out of the window).
 	local function checkLengthValue(fnName: string, n: any)
 		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
-			Err.errorBeforeNearest(`quad.Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+			Err.errorBeforeNearest(`Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
 		end
 	end
 
@@ -349,7 +349,7 @@ local function Init(module: any)
 		if source ~= None and not Brand.isSource(source) then
 			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
 			-- die at `:Get()` with a Bookkeeping.luau line
-			Err.errorBeforeNearest(`quad.Dispatch.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+			Err.errorBeforeNearest(`Dispatch.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
 		end
 		local bk = getBookkeeping(ownerKey)
 		if source == None then

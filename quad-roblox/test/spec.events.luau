@@ -42,7 +42,7 @@ local q = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installEvent)).game = gameShim
 ;(getfenv(q.D.New)).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
-q.errorNamespace.setFuncLevel(q.isInst, require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE)
+q.errorNamespace.setFuncLevel(require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE, q.isInst)
 
 -- 살아있는 연결 수(mock Signal 내부 — 관측 전용). mock의 Disconnect/
 -- DisconnectAll이 끊긴 항목을 배열에서 바로 빼므로 길이가 곧 생존 수다.

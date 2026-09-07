@@ -31,7 +31,7 @@ local function notInstalled(name: string, what: string, hint: string?): (...any)
 			SURFACE
 		)
 	end
-	Err.setFuncLevel(stub, SURFACE)
+	Err.setFuncLevel(SURFACE, stub)
 	return stub
 end
 

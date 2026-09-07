@@ -29,6 +29,6 @@ local function PreRef<T>(default: T): PreRef<T>
 	return tagged(default, Brand.PreRefBrand, "__quadPreRef") :: PreRef<T>
 end
 
-Err.setFuncLevel(PreRef, SURFACE) -- `H-231`
+Err.setFuncLevel(SURFACE, PreRef) -- `H-231`
 
 return PreRef

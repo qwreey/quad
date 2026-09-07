@@ -197,11 +197,7 @@ table.freeze(Tag)
 -- when nested in a callback) land on the user's line, not this file. Tagged
 -- once at file scope — the tag map lives in the shared namespace (`H-231`).
 -- (통합 감사 2라운드 발견 — fork 산출물엔 스텁만 태그돼 있었다.)
-for _, fn in
-	{ getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, TagImpl.Removed, TagImpl.Contains, TagImpl.Names, TagImpl.Apply } :: { any }
-do
-	Err.setFuncLevel(fn, SURFACE)
-end
+Err.setFuncLevel(SURFACE, getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, TagImpl.Removed, TagImpl.Contains, TagImpl.Names, TagImpl.Apply)
 
 --[[
 	InitTag(module) — installs the value namespace, the op stubs (when no

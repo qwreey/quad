@@ -30,6 +30,6 @@ local function PostRef<T>(default: T): PostRef<T>
 	return tagged(default, Brand.PostRefBrand, "__quadPostRef") :: PostRef<T>
 end
 
-Err.setFuncLevel(PostRef, SURFACE) -- `H-231`
+Err.setFuncLevel(SURFACE, PostRef) -- `H-231`
 
 return PostRef

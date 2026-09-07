@@ -6,7 +6,7 @@
 
 	Installed by `Slot/init.luau` with `(S, module)` (see its header for the split
 	and the `S` protocol); the two public methods land on the shared `Slot_mt` and
-	are tagged by init's setFuncLevel loop. Behaviour and comments are the moved
+	are tagged by init's setFuncLevel call. Behaviour and comments are the moved
 	originals.
 ]]
 
@@ -101,10 +101,10 @@ return function(S: Types.SlotInternal, module: any)
 					-- Nearest: reconcile runs at dispatch/emission depth (mount or
 					-- data:Set), never as a direct user call — `H10-2` reasoning,
 					-- same for the duplicate-key raise below
-					S.Err.errorBefore("Slot:List — keyFn returned nil for item #" .. tostring(i), S.SURFACE)
+					S.Err.errorBefore(`Slot:List: keyFn returned nil for item #{i}`, S.SURFACE)
 				end
 				if seen[key] then
-					S.Err.errorBefore("Slot:List — duplicate key: " .. tostring(key), S.SURFACE)
+					S.Err.errorBefore(`Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
 				end
 				seen[key] = true
 				keys[i] = key
@@ -138,7 +138,7 @@ return function(S: Types.SlotInternal, module: any)
 					local detach = (result == S.Detach)
 					if detach then result = nil end
 					if result ~= nil then
-						S.Err.errorBefore("Slot:List — KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+						S.Err.errorBefore("Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
 					end
 					settle(key, result, detach, 0)
 					userdata[key] = ud
@@ -226,6 +226,6 @@ return function(S: Types.SlotInternal, module: any)
 		end, function() return true end, opts)
 	end
 
-	S.List = S.Slot_mt.List -- for init's setFuncLevel tagging loop
+	S.List = S.Slot_mt.List -- for init's setFuncLevel tagging call
 	S.Single = S.Slot_mt.Single
 end

@@ -35,7 +35,7 @@ do
 	local function viaSurface(name: string)
 		return (fresh :: any)[name]({}, {})
 	end
-	fresh.errorNamespace.setFuncLevel(viaSurface, QuadTypes.ERROR_LEVEL_SURFACE)
+	fresh.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, viaSurface)
 	local function user(name: string)
 		lineUser = (debug.info(1, "l") :: number) + 1
 		return viaSurface(name)

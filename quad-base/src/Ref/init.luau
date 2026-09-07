@@ -183,9 +183,7 @@ local function Ref<T>(default: T): Ref<T>
 end
 
 -- `H-231`: public surface joins the shared error-namespace tag layer
-for _, fn in { RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, RefImpl.Uncallback, RefImpl.Wait, Ref } do
-	Err.setFuncLevel(fn, SURFACE)
-end
+Err.setFuncLevel(SURFACE, RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, RefImpl.Uncallback, RefImpl.Wait, Ref)
 
 -- ── dispatch handlers (M8 단위 ②, `H-278`: the module that declares the value
 -- registers its leaf handler + guards) ─────────────────────────────────────
@@ -250,7 +248,7 @@ local function registerDispatchHandlers(module: any)
 					-- blaming the key type (review finding, M8 ②)
 					Err.errorBefore(`{kind} must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
 				end
-				Err.errorBefore(`{kind} binding should be array index item, but got {typeof(k)}`, SURFACE)
+				Err.errorBefore(`{kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 				return Void -- unreachable; keeps the contract type
 			end,
 		})

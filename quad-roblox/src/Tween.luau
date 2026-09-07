@@ -123,7 +123,7 @@ local function install(quad: any): any
 
 	function TweenImpl.Mapped(self: any, fn: any): any
 		if type(fn) ~= "function" then
-			Err.errorBeforeNearest("Tween:Mapped expects a function", SURFACE)
+			Err.errorBeforeNearest(`Tween:Mapped: fn must be a function (got {typeof(fn)})`, SURFACE)
 		end
 		-- `table.clone` copies the metatable too; the clone is not frozen, so
 		-- swapping Value is fine before newTween re-brands and re-freezes it
@@ -138,9 +138,7 @@ local function install(quad: any): any
 		return newTween(opts)
 	end
 
-	for _, fn in { Tween, TweenImpl.Mapped } :: { any } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Tween, TweenImpl.Mapped)
 
 	quad.Tween = Tween
 	quad.isTween = isTween

@@ -447,9 +447,7 @@ local function installNative(quad: any)
 	quad.nativeDispose = nativeDispose
 	quad.isInst = isInst
 
-	for _, fn in { nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst } :: { any } do
-		Err.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
-	end
+	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst)
 end
 
 -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
@@ -493,9 +491,7 @@ local function installTagAttributeOps(quad: any, log: { string }?)
 	quad.removeTag = removeTag
 	quad.setAttr = setAttr
 	-- `H-238`: the backend tags everything it installs
-	for _, fn in { addTag, removeTag, setAttr } :: { any } do
-		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
-	end
+	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, addTag, removeTag, setAttr)
 end
 
 local function mockProvider(quad: any): { [any]: any }
@@ -664,9 +660,7 @@ local function mockProvider(quad: any): { [any]: any }
 	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
-	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim } :: { any } do
-		quad.errorNamespace.setFuncLevel(fn, QuadTypes.ERROR_LEVEL_SURFACE)
-	end
+	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim)
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	installTagAttributeOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장

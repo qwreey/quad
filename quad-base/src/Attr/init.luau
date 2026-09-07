@@ -178,14 +178,14 @@ local function scalarSugar(fnName: string, luaType: string): (string, any) -> an
 			Err.errorBeforeNearest(`{fnName}: name must be a non-empty string`, SURFACE)
 		end
 		if value == nil then
-			Err.errorBeforeNearest(`{fnName}("{name}"): value must not be nil — use None to delete`, SURFACE)
+			Err.errorBeforeNearest(`{fnName}: value of "{name}" must not be nil — use None to delete`, SURFACE)
 		end
 		if not isState(value) and value ~= None and type(value) ~= luaType then
-			Err.errorBeforeNearest(`{fnName}("{name}"): value must be a {luaType} (or State/None), got {typeof(value)}`, SURFACE)
+			Err.errorBeforeNearest(`{fnName}: value of "{name}" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)
 		end
 		return newAttribute({ [name] = value })
 	end
-	Err.setFuncLevel(sugar, SURFACE)
+	Err.setFuncLevel(SURFACE, sugar)
 	return sugar
 end
 
@@ -195,9 +195,7 @@ local BooleanAttr = scalarSugar("BooleanAttr", "boolean")
 
 -- `H-238`: tag the public surface (see Tag.luau — same reasoning; the
 -- handler-process raises below stay errorBefore, dispatch depth `H10-2`)
-for _, fn in { getmetatable(Attr).__call, Attr.Merged, Attr.Overridden, AttrImpl.NameMap } :: { any } do -- `H-410`
-	Err.setFuncLevel(fn, SURFACE)
-end
+Err.setFuncLevel(SURFACE, getmetatable(Attr).__call, Attr.Merged, Attr.Overridden, AttrImpl.NameMap) -- `H-410`
 
 local InitDispatch = require("./Dispatch")
 

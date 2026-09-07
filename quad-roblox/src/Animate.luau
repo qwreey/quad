@@ -117,7 +117,7 @@ local function install(quad: any, validateFields: (any) -> ()): any
 		end
 	end
 
-	Err.setFuncLevel(Animate, SURFACE) -- `H-238`: public factory tagged
+	Err.setFuncLevel(SURFACE, Animate) -- `H-238`: public factory tagged
 	return Animate
 end
 

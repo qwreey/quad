@@ -193,9 +193,7 @@ local function createImpl(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	for _, fn in { Impl.WeakSubscribe, Impl.WeakUnsubscribe, Impl.Subscribe, Impl.Unsubscribe } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Impl.WeakSubscribe, Impl.WeakUnsubscribe, Impl.Subscribe, Impl.Unsubscribe)
 
 	return Impl
 end
@@ -260,7 +258,7 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Observer binding should be array index item, but got {typeof(k)}`, SURFACE)
+			Err.errorBefore(`Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})

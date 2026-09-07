@@ -181,9 +181,7 @@ local function install(quad: any)
 	-- `H-238`: the backend must tag every function it installs in the shared
 	-- error namespace, or errorBeforeNearest below these frames cannot find
 	-- the surface and blames the wrong line.
-	for _, fn in { bindLifetime, unbindLifetime, canBound, canExecute, nativeClaim } :: { any } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, nativeClaim)
 end
 
 return install

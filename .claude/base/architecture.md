@@ -274,7 +274,7 @@ quad/
 ├── type-version-check/           # quad에 종속되지 않은 범용 버전 패턴 매칭(`base/quad-types-plan.md` "`type-version-check`" 절) — 사용자가 나중에 독립 저장소로 분리 예정(HUMAN_TODO 9번)
 │   ├── pesde.toml                 # [target] environment = "luau"
 │   └── src/init.luau              # matchesPattern(런타임) + export type function CheckVersion
-├── quad-error/                   # [2026-08-31 `H-231`, 사용자 설계] 레벨 태그 에러 유틸 — setFuncLevel(fn, layer) 맵 + debug.info 스택 워크(최상단 하강)로 errorAt/errorBefore가 프레임 수 손 세기 없이 원하는 계층에 blame. type-version-check와 같은 지위(quad 비종속 범용, [target] environment = "luau"), quad-base가 workspace 의존(target="luau"). 태그 체계·기존 error 자리 이관은 round12 `H-231` §4가 소스
+├── quad-error/                   # [2026-08-31 `H-231`, 사용자 설계] 레벨 태그 에러 유틸 — setFuncLevel(layer, ...fns) 맵(**[2026-09-08]** 가변인자 — 옛 `(fn, layer)` 폐기, nil 인자는 로드 시점 에러) + debug.info 스택 워크(최상단 하강)로 errorAt/errorBefore가 프레임 수 손 세기 없이 원하는 계층에 blame. type-version-check와 같은 지위(quad 비종속 범용, [target] environment = "luau"), quad-base가 workspace 의존(target="luau"). 태그 체계·기존 error 자리 이관은 round12 `H-231` §4가 소스
 │   ├── pesde.toml                 # [target] environment = "luau"
 │   └── src/init.luau              # 상태 없는 new(): Namespace(사본 분리 해법) + getToplevel. Namespace: setFuncLevel/getFuncLevel/getFirstMatch/getNearestMatch/errorAt/errorBefore/errorAtNearest/errorBeforeNearest(안쪽 스캔 쌍은 사용자 확정 이름)
 ├── quad-base/
@@ -421,6 +421,28 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   사용자**에게까지 적용된다고 정해진 적이 없다 — 여기서 정한다. 이미
   영어인 6곳(동적 경로 가드 4형제, 모듈 초기화, attribute 이름 충돌)이
   핵심 경로라는 것도 같은 방향이다. `base/`의 예시 메시지도 영어로 쓴다.
+- **⭐ [2026-09-08 사용자 결정] 메시지 모양 — `주어: 이유 (got X)` 한 가지로 맞추고, 포맷
+  헬퍼는 두지 않는다.** Gemini 자문(권고 3)이 `Err.format(subject, reason, got)` 류 헬퍼를
+  제안했고 메인이 (a) "꼬리 20곳만 헬퍼" 안을 냈으나 사용자가 헬퍼 자체를 기각: *"grep 해보기에
+  헬퍼 자체가 나빠보임. 난 에러에 대해 정적으로 stacktrace 없이도 문제를 볼 수 있어야하는데
+  (특히 Fallback 같은게 들어오면 더 그럼) 헬퍼가 있으면 에러 포멧 부분이 전부 쪼개짐. 그냥
+  프로젝트 컨벤션 상 어느정도 일정한 에러 형식을 정해두고 각자 포멧하는게 나을지도"*. 그래서
+  **메시지 리터럴은 raise 줄에 통째로 남긴다**(소스 grep으로 메시지 → 자리를 찾을 수 있어야
+  한다). 규약(2026-09-08 실측 159곳 중 약 90%가 이미 이 모양 — 나머지 열 곳을 손질):
+  - **주어**는 사용자가 부른 표면 이름 — 메소드는 `Slot:Get`·`Tween:Mapped`, 네임스페이스
+    함수는 `Modifier.Overridden`·`Dispatch.drive`(`quad.` 접두 없음 — 옛
+    `quad.Dispatch.setOffsetSource` 셋을 고쳤다), 생성자·불변식은 타입 이름만(`Tween:`·`State:`).
+    주어는 이름만이고 인자 값은 이유 쪽에 싣는다(옛 `OnChange("Text"): …` → `OnChange: callback
+    for "Text" …`).
+  - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` — `(em-dash) 뒤에.
+  - **받은 값**은 문장 끝 `(got {typeof(x)})` — 괄호형만 쓴다(쉼표형 `, got X`·`but got X`
+    폐기: Bookkeeping `position` 게이트, Effect/Observer/Ref 배열 자리 가드가 그 잔재였다).
+    숫자·정해진 값은 `tostring`으로 그 값을 실어도 된다.
+  - 구분자는 콜론 하나 — `Slot:List — …`(em-dash 주어)·`Tween:Mapped expects …`(콜론 없음)
+    형태는 폐기.
+  spec의 메시지 단언은 부분 문자열(`string.find(…, 1, true)`)이라 주어를 붙이거나 꼬리를 괄호로
+  바꿔도 대부분 그대로 통과한다 — 모양 자체를 단언한 넷(`spec.leaf`·`spec.refhandlers`·
+  `spec.tween`)만 같이 고쳤다.
 - **[2026-08-31 M3 단위 4, 탐사자 실측 — 워커의 알려진 한계 둘**
   (`H-273`/`H-274`, 확정 방향의 내재 한계라 메커니즘을 안 만든다)**.**
   (1) 태그 표면을 C 프레임이 직접 부르면(`pcall(drive, …)` 직전달)

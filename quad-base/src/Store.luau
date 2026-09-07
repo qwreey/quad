@@ -111,9 +111,7 @@ local function Init(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	for _, fn in { Impl.Of, Impl.Names, Store } do
-		Err.setFuncLevel(fn, SURFACE)
-	end
+	Err.setFuncLevel(SURFACE, Impl.Of, Impl.Names, Store)
 
 	module.Store = Store
 end

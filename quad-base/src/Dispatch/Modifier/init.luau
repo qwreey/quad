@@ -182,7 +182,7 @@ function methods.As(self: any, name: any): any
 		return self
 	end
 	if type(name) ~= "string" then
-		Err.errorBeforeNearest(`Modifier: As(name) expects a class name string (got {typeof(name)})`, SURFACE)
+		Err.errorBeforeNearest(`Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)
 	end
 	if not known[name] then
 		Err.errorBeforeNearest(`Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
@@ -235,7 +235,7 @@ local function castClosure(target: string): (any) -> any
 		end
 		return retag(selfArg, target)
 	end
-	Err.setFuncLevel(closure, SURFACE)
+	Err.setFuncLevel(SURFACE, closure)
 	castClosures[target] = closure
 	return closure
 end
@@ -367,7 +367,7 @@ local function TypedFactory(name: any): any
 	local ctor = function(...: any): any
 		return construct(name, ...)
 	end
-	Err.setFuncLevel(ctor, SURFACE) -- `H-238`: the user's `D.Modifier.Frame(...)` line is blamed
+	Err.setFuncLevel(SURFACE, ctor) -- `H-238`: the user's `D.Modifier.Frame(...)` line is blamed
 	constructors[name] = ctor
 	return ctor
 end
@@ -402,14 +402,17 @@ table.freeze(Modifier)
 
 -- `H-238`: public surface tagged (Overridden is reached both as
 -- Modifier.Overridden and as the colon method — same function object)
-Err.setFuncLevel(getmetatable(Modifier).__call, SURFACE)
-Err.setFuncLevel(Overridden, SURFACE)
-Err.setFuncLevel(TypedFactory, SURFACE)
-Err.setFuncLevel(DefineSubtype, SURFACE)
-Err.setFuncLevel(methods.As, SURFACE)
-Err.setFuncLevel(methods.Apply, SURFACE) -- 6순회 `H-410`: list drift — every public method
-Err.setFuncLevel(methods.Peek, SURFACE)
-Err.setFuncLevel(ModifierMT.__index, SURFACE) -- Q11: the non-string-key error is raised from the metamethod itself
+Err.setFuncLevel(
+	SURFACE,
+	getmetatable(Modifier).__call,
+	Overridden,
+	TypedFactory,
+	DefineSubtype,
+	methods.As,
+	methods.Apply, -- 6순회 `H-410`: list drift — every public method
+	methods.Peek,
+	ModifierMT.__index -- Q11: the non-string-key error is raised from the metamethod itself
+)
 
 -- internal sentinel that fills a consumed array slot (never user-facing —
 -- `Processed*` idiom, same frozen+named shape as `None`)

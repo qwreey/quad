@@ -66,7 +66,7 @@ local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 		errNS.errorBeforeNearest("OnChange: property name must be a non-empty string", SURFACE)
 	end
 	if type(fn) ~= "function" then
-		errNS.errorBeforeNearest(`OnChange("{name}"): callback must be a function`, SURFACE)
+		errNS.errorBeforeNearest(`OnChange: callback for "{name}" must be a function (got {typeof(fn)})`, SURFACE)
 	end
 	local d = table.freeze({ Name = name, Callback = fn })
 	descriptors[d] = true
@@ -77,7 +77,7 @@ local function install(quad: any)
 	local dispatch = quad.Dispatch
 	if errNS == nil then
 		errNS = quad.errorNamespace
-		errNS.setFuncLevel(OnChange, SURFACE) -- `H-238`: public factory tagged
+		errNS.setFuncLevel(SURFACE, OnChange) -- `H-238`: public factory tagged
 	end
 
 	dispatch.addHandler({
