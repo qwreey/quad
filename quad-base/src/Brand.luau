@@ -1,15 +1,19 @@
 --[[
-	Brand — instance brands, one weak-key set per brand.
+	Brand — quad-base's brand INSTANCES and `isX` predicates.
 	`.claude/base/brand-plan.md` "구현 — 인스턴스 브랜드" / "`isX` wrapper" sections,
 	as-is.
 
-	`Brand()` makes one brand object holding a weak-key member set; a value
-	registers itself into the brand(s) it belongs to (multi-tagging is the
-	point — `Source` is both `SourceBrand` and `EpochBrand`). There is no
-	reverse lookup (`Brand.get(x) -> tag` was reversed, see
-	`archive/brand-shared-registry-reversed.md`).
+	The factory `Brand()` itself lives in quad-types since 2026-09-07 (user
+	decision — a nominal-typing helper with no other behaviour, like an enum;
+	`QuadTypes.Brand`): every package makes its own instances from it, so a
+	backend (quad-roblox's `TweenBrand`, a future quad-spring's `SpringBrand`)
+	needs no quad-base to brand its values. Semantics unchanged: one weak-key
+	member set per brand, a value registers itself into the brand(s) it
+	belongs to (multi-tagging is the point — `Source` is both `SourceBrand`
+	and `EpochBrand`), no reverse lookup (`Brand.get(x) -> tag` was reversed,
+	see `archive/brand-shared-registry-reversed.md`).
 
-	Every brand instance lives in this leaf file (M2 first-unit plan,
+	Every quad-base brand instance lives in this leaf file (M2 first-unit plan,
 	`archive/v2-initial-implementation/m2-implementation-round11-brief.md` §6): `EpochBrand`
 	is shared by `Source`/`Ref` (NOT `GateNode` — a GateNode is a State, no
 	`Revision`; registering it here would make `EpochMap:Update` never fire —
@@ -26,32 +30,19 @@
 	case here — `isNone` is `v == None` and lives with `None.luau` (M3).
 ]]
 
-export type Brand = {
-	register: (self: Brand, x: any) -> (),
-	is: (self: Brand, x: any) -> boolean,
-}
+local QuadTypes = require("../luau_packages/quad_types")
 
-local function Brand(): Brand
-	local members = setmetatable({}, { __mode = "k" }) :: { [any]: true }
-	return {
-		register = function(_self: Brand, x: any)
-			members[x] = true
-		end,
-		is = function(_self: Brand, x: any): boolean
-			return members[x] == true
-		end,
-	}
-end
+export type Brand = QuadTypes.Brand
+local Brand = QuadTypes.Brand
 
--- Each type owns exactly one brand. The full list is declared here even for
--- types that arrive in later milestones (`Tag`/`Attribute`/`Tween`/`Slot`)
--- so that the set of brands has one source; their `is*` predicates are added
--- with the type.
+-- Each type owns exactly one brand. The full quad-base list is declared here
+-- so that the set of base brands has one source; their `is*` predicates are
+-- added with the type. Backend value types brand themselves in their own
+-- package (`Tween` → quad-roblox `Brand.luau`, 2026-09-07).
 local ObserverBrand = Brand()
 local EffectBrand = Brand()
 local TagBrand = Brand()
 local AttributeBrand = Brand()
-local TweenBrand = Brand()
 local BlockerBrand = Brand()
 local StateBrand = Brand()
 local SourceBrand = Brand()
@@ -93,9 +84,6 @@ local function isModifier(x: any): boolean
 end
 local function isMapperDescriptor(x: any): boolean
 	return MapperBrand:is(x)
-end
-local function isTween(x: any): boolean -- M11 단위 ① (round19)
-	return TweenBrand:is(x)
 end
 local function isTag(x: any): boolean
 	return TagBrand:is(x)
@@ -149,7 +137,6 @@ return {
 	EffectBrand = EffectBrand,
 	TagBrand = TagBrand,
 	AttributeBrand = AttributeBrand,
-	TweenBrand = TweenBrand,
 	BlockerBrand = BlockerBrand,
 	StateBrand = StateBrand,
 	SourceBrand = SourceBrand,
@@ -174,7 +161,6 @@ return {
 	isPreRef = isPreRef,
 	isPostRef = isPostRef,
 	isTag = isTag,
-	isTween = isTween,
 	isAttribute = isAttribute,
 	isAttributeKey = isAttributeKey,
 	isSlot = isSlot,

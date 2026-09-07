@@ -77,6 +77,11 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- to typeof (the `type(predicate) == "function"` guard hides omissions).
 local BRAND_PROBES = {
 	"isMapperDescriptor", -- M5 Claim (핸드오버 리뷰 `H-346` — 체크리스트 0-b의 마지막 누락)
+	-- [2026-09-07] `Tween` moved to quad-roblox (with `isTween`); the probe is a NAME looked
+	-- up on the module at diagnostic time, so the provider-installed predicate is found
+	-- without base requiring anything. Base still spelling a backend name here is the
+	-- last trace of the old placement — provider-registered probes are round3 §4 Q27
+	-- (TODO(Q27); a future quad-spring brand would report `value: table` until then).
 	"isTween", -- M11 (round19 리뷰 — 빠지면 Tween이 `value: table`로 보고된다)
 	"isTag", -- M10 (2차 리뷰 `H-342` — 같은 결함 클래스 넷)
 	"isAttributeKey", -- most-specific-first: 키 객체가 그룹보다 먼저

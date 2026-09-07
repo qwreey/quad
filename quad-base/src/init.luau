@@ -38,7 +38,6 @@ local TagModule = require("@self/Tag")
 local AttributeKeyModule = require("@self/AttributeKey")
 local AttributeModule = require("@self/Attribute")
 local ModifierModule = require("@self/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
-local TweenModule = require("@self/Tween") -- M11 단위 ①(값 타입만 — 소비는 quad-roblox Property 핸들러)
 
 type Quad = QuadTypes.Quad
 
@@ -81,7 +80,6 @@ local function New(): Quad
 		isMapperDescriptor = Brand.isMapperDescriptor, -- M5 단위 ④(Claim)
 		isSlot = Brand.isSlot, -- `H-403` (was installed by Slot.Init — still is, same function)
 		isTag = Brand.isTag, -- M10 (round16)
-		isTween = Brand.isTween, -- M11 단위 ①
 		isAttribute = Brand.isAttribute,
 		isAttributeKey = Brand.isAttributeKey,
 		-- M10 값 네임스페이스 — 리터럴 모양이 곧 `Quad` 타입이라 여기 직접
@@ -90,7 +88,6 @@ local function New(): Quad
 		-- setmetatable<A,B> 타입 표기로 리터럴 `:: Quad`를 그대로 통과한다 —
 		-- fork의 잠정 `:: any` 캐스트는 통합에서 제거(typing-limits 8.6절)
 		Tag = TagModule.Tag,
-		Tween = TweenModule.Tween, -- M11 단위 ① — 핸들러 없음(dispatch 참가자 아님)
 		Modifier = ModifierModule.Modifier,
 		Attribute = AttributeModule.Attribute,
 		AttributeKey = AttributeKeyModule.AttributeKey,

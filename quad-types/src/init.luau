@@ -1,7 +1,12 @@
 --!strict
 --[[
-	`Quad` 공개 타입 계약 — 구현 없음. 런타임 값은 공유 **상수**뿐
-	(`H-230` — 파일 끝의 반환 테이블, 로직은 여전히 0).
+	`Quad` 공개 타입 계약 — 구현 없음. 런타임 값은 공유 **상수**(`H-230` —
+	파일 끝의 반환 테이블)와 **[2026-09-07 사용자 결정]** 브랜드 팩토리 `Brand()`
+	하나(enum처럼 "타이핑을 돕는 특수 런타임 객체" — 사용자: *"노미널타이핑을 돕는다
+	이외의 동작이 없어서 enum 과 비슷하게 특수 런타임 객체로 types 안에 실어두는게
+	좋아보여. 실제로 20줄도 되지 않거든"*). 브랜드 **인스턴스**는 각 패키지가
+	자기 `Brand.luau`에 만든다(quad-base·quad-roblox·장래 quad-spring의 `SpringBrand`) —
+	팩토리가 여기 있어야 quad-base 없이도 브랜드를 만들 수 있다.
 	`quad-base`가 이 타입을 구현하고, `quad-roblox`/향후 백엔드·플러그인
 	패키지는 무거운 `quad-base` 전체 대신 이 패키지만 의존한다.
 
@@ -174,50 +179,10 @@ export type Tag = {
 -- A/B·잔여 구멍은 typing-limits 8.6절. `Merged`는 Tag만 받는 엄격형(`Tag(a, b)`와 결과 같음).
 export type TagConstructor = setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...TagNames) -> Tag }>
 
--- `Tween<T>` — 값-레벨 트윈 래퍼(M11 단위 ①, `base/tween-plan.md` "확정: `Tween{...}`
--- 최종 모양" 절). quad-types는 엔진 무관이라 Roblox 타입 자리(`Info`/`Style`/
--- `Direction`)는 `any` — quad-roblox `types.luau`는 이 타입을 **그대로 별칭**한다
--- (round19 Q3 (a)의 정밀판은 `State<X>` 불변성 때문에 포기, `H-326`). `Override`는 문자열
--- 싱글톤 유니언(`H-343`, 사용자 결정 — 옵션 enum은 마커 값이 아니라 리터럴 타입으로).
--- `Mapped`는 재귀 제네릭(`Tween<U>` 반환)이라 데이터부/메소드부 쪼개기(typing-limits
--- §1②) — 파생 자리는 결과 타입을 명시 바인딩할 것(§1①).
-export type TweenOverride = "Cancel" | "Finish"
--- 옵션 필드는 전부 `read` — 생성자는 읽기만 하고, 미리 만든 테이블 변수를 넘길 때
--- 가변 필드면 새 솔버가 `Time: number`를 `number?`에 불변으로 대조해 거부한다(실측).
-export type TweenOptions<T> = {
-	read Value: T,
-	read Info: any?, -- TweenInfo (엔진 타입 — 있으면 편의 필드 무시)
-	read Time: number?,
-	read Style: any?, -- Enum.EasingStyle
-	read Direction: any?, -- Enum.EasingDirection
-	read RepeatCount: number?,
-	read Reverses: boolean?,
-	read DelayTime: number?,
-	read Override: TweenOverride?, -- 기본 "Cancel"
-}
-export type TweenData<T> = {
-	read __quadTween: true,
-	read Value: T,
-	read Info: any?,
-	read Time: number?,
-	read Style: any?,
-	read Direction: any?,
-	read RepeatCount: number?,
-	read Reverses: boolean?,
-	read DelayTime: number?,
-	read Override: TweenOverride?,
-}
--- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
--- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).
-local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U): Tween<U>
-	return nil :: any
-end
-export type Tween<T> = TweenData<T> & {
-	Mapped: typeof(tweenMapped),
-}
--- 순수 제네릭 함수(`H-343`): 문자열 `Override` 덕에 `Tween`엔 필드가 없어 콜러블 테이블이
--- 필요 없다 — 제네릭 `__call`의 `T` 오염(`H-324`, `luau-test/33` A 블록)이 함께 소멸.
-export type TweenConstructor = <T>(opts: TweenOptions<T>) -> Tween<T>
+-- `Tween<T>`는 **[2026-09-07 사용자 결정] quad-roblox `types.luau`로 이동**했다 — 옵션
+-- 어휘(`Time`/`Style`/`Direction`/`RepeatCount`/`Reverses`/`DelayTime`)가 Roblox `TweenInfo`의
+-- 것이고 웹 백엔드는 다른 이름·모양(`Transition`)을 가질 것이라 공개 표면을 공유할 이득이
+-- 없다(`base/tween-plan.md` "패키지 경계" 절). quad-types엔 Tween이라는 이름이 없다.
 
 export type Attribute = { NameMap: (self: Attribute) -> { [string]: any } }
 export type AttributeConstructor = setmetatable<{
@@ -243,7 +208,8 @@ export type Modifier = {
 	read __quadModifier: true,
 	-- 정본 9절 `:Peek<<T>>(key)` — `store:Of<<T>>`와 같은 명시 인스턴스화 관례.
 	-- [2026-09-07 회신 4차 Q24 후속] 반환은 `FieldOut<T>?` — 변환 함수의 `old`와 같은 "저장된 그대로"
-	-- 값(옛 `T | State<T> | None | nil`엔 Tween 팔이 없어 저장된 Tween이 T로 보였다)
+	-- 값. `T`는 그 필드의 값 대수 전부(백엔드 값 어휘 포함 — quad-roblox라면 `X | Tween<X>`); 생성
+	-- `<Class>Modifier`의 `Peek`가 그 별칭으로 덮는다
 	Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?,
 	-- ⚠️ self·factory 둘 다 `any`(typing-limits 8.9절): 자기 타입을 참조하는
 	-- 함수 필드가 유니언 멤버(`Tag`/`State`)의 같은 이름 메소드와 만나면 새
@@ -273,9 +239,12 @@ export type ModifierConstructor = setmetatable<{
 -- `<Class>Elem`에 찍는다(조상 체인 — 상위 클래스 Modifier가 하위 자식 자리에 감)
 export type ModifierMarker = { read __quadModifier: true }
 -- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 D의 `Field<T>`)가
--- 공유하는 출력 타입: 리터럴 | Tween | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
--- State 팔 하나(`State<T | Tween<T>>` — 저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11).
-export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None
+-- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
+-- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
+-- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
+-- 생성 D의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
+-- 2026-09-07 Tween 이동 전과 같은 전개형).
+export type FieldOut<T> = T | State<T> | None
 
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
@@ -496,8 +465,9 @@ export type Quad = {
 	isSlot: (x: any) -> boolean,
 
 	-- 브랜드 술어(`.claude/base/brand-plan.md`). `isTag`/`isAttribute*`는
-	-- M10 편입(2026-09-03)으로 아래 합류, `isSlot`은 위 Slot 표면과 함께,
-	-- `isTween`은 M11 단위 ①(2026-09-06)로 합류 — 술어 전원 등재.
+	-- M10 편입(2026-09-03)으로 아래 합류, `isSlot`은 위 Slot 표면과 함께 — quad-base
+	-- 브랜드 전원 등재. `isTween`은 **[2026-09-07]** Tween과 함께 quad-roblox로(프로바이더
+	-- 확장 `RobloxExtension`이 싣는다 — 백엔드 브랜드는 백엔드 표면).
 	isEpoch: (x: any) -> boolean,
 	isSource: (x: any) -> boolean,
 	isState: (x: any) -> boolean,
@@ -547,7 +517,6 @@ export type Quad = {
 
 	-- M10 (round16 spike) — Tag/Attribute 표면(`H-25`의 "마일스톤마다 갱신" 몫)
 	isTag: (x: any) -> boolean,
-	isTween: (x: any) -> boolean, -- M11 단위 ①
 	isAttribute: (x: any) -> boolean,
 	isAttributeKey: (x: any) -> boolean,
 	-- 콜러블 네임스페이스 둘은 `setmetatable<A,B>` 표기(`H10-3`/`H10-4`
@@ -555,7 +524,6 @@ export type Quad = {
 	-- 제네릭 추론을 오염시키던 시절의 것. 실측·잔여 구멍(__call 인자
 	-- 무검사)은 typing-limits 8.6절이 소스)
 	Tag: TagConstructor,
-	Tween: TweenConstructor, -- M11 단위 ① — 값 타입만(엔진 무관), 소비는 quad-roblox PropertyHandler
 	Modifier: ModifierConstructor, -- M7 단위 ①
 	Attribute: AttributeConstructor,
 	AttributeKey: AttributeKeyConstructor,
@@ -604,6 +572,31 @@ export type MapperRoot = { read __quadMapperRoot: true }
 
 export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.CheckVersion<index<T, "Version">, Pattern> }
 
+-- ── `Brand` — 인스턴스 브랜드 팩토리(`base/brand-plan.md` "구현 — 인스턴스 브랜드" 절, as-is) ──
+-- [2026-09-07 사용자 결정] quad-base `Brand.luau`에서 여기로 — 팩토리만이다. 브랜드 인스턴스와
+-- `isX` 술어는 각 패키지의 자기 `Brand.luau`가 만든다(quad-base: State/Slot/Tag/…, quad-roblox:
+-- Tween, 장래 quad-spring: Spring). `Brand()`는 weak-key 집합 하나를 쥔 객체 하나를 만들고, 값은
+-- 자기가 속한 브랜드(들)에 스스로 등록한다(다중 태깅이 설계의 존재 이유 — `Source`는
+-- `SourceBrand`이자 `EpochBrand`). 역조회는 없다(`archive/brand-shared-registry-reversed.md`).
+-- 메소드 이름이 소문자인 건 공개 quad 표면이 아니라 패키지 내부 유틸이기 때문(brand-plan).
+-- 아무것에도 의존하지 않는다(특히 `None` 분기 없음 — `isNone`은 `v == None`).
+export type Brand = {
+	register: (self: Brand, x: any) -> (),
+	is: (self: Brand, x: any) -> boolean,
+}
+
+local function Brand(): Brand
+	local members = setmetatable({}, { __mode = "k" }) :: { [any]: true }
+	return {
+		register = function(_self: Brand, x: any)
+			members[x] = true
+		end,
+		is = function(_self: Brand, x: any): boolean
+			return members[x] == true
+		end,
+	}
+end
+
 -- ── 공유 상수(`H-230` (a) 사용자 확정, 2026-08-31) ──────────────────────
 -- 타입 계약과 같은 이유로 여기 산다 — 백엔드가 무거운 quad-base 없이 닿아야
 -- 하는 값들. `HANDLER_PRIORITY_*`는 밴드 상수(이름·순서·± 오프셋 공간이
@@ -612,6 +605,7 @@ export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.Che
 -- 모든 공개 표면 함수와 `addHandler`가 수령하는 핸들러 함수가 이 레이어로
 -- 태그되고, 사용자 입력·제공자 계약 위반 에러가 이 레이어를 겨냥한다.
 return {
+	Brand = Brand,
 	HANDLER_PRIORITY_HIGH = 1000,
 	HANDLER_PRIORITY_NORMAL = 0,
 	HANDLER_PRIORITY_LOW = -1000,

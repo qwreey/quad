@@ -9,13 +9,13 @@
 	`Tween<T>` — the value-level wrapper `tween-plan.md`'s "확정: `Tween{...}`
 	최종 모양" section pins down. M5 needed the TYPE first because the
 	generated `D` prop unions include it (round14 `H-298` (a)); M11 unit ①
-	(2026-09-06) moved the value type into quad-types (engine-free — Roblox
-	types as `any`) and this file re-exports it AS-IS — the planned `read`
-	refinement of the engine-typed fields was dropped (`H-326`: `State<X>` is
-	invariant, so the generated slot member `State<Tween<T>>` must name the
-	exact type `Animate`/`:Compute` return). The runtime (quad-base
-	`Tween.luau`, sentinels) is M11 unit ①; the PropertyHandler consumption
-	is unit ②.
+	(2026-09-06) put the value type into quad-types (engine-free — Roblox
+	types as `any`) with this file re-exporting it AS-IS; **2026-09-07 (user
+	decision, tween-plan "패키지 경계")** the whole value — type here, runtime
+	`Tween.luau`, brand `Brand.luau` — is quad-roblox's, and the engine-typed
+	fields are precise again (one definition, so the `H-326` invariance
+	mismatch between an alias and its source cannot arise). The
+	PropertyHandler consumption is unit ②.
 
 	`NewChild` — the backend-agnostic core of the children-array element
 	union. Since 2026-09-03 the generated `D.<Class>Param<E>` is instantiated
@@ -43,19 +43,62 @@
 
 local QuadTypes = require("../luau_packages/quad_types")
 
--- M11 단위 ①(2026-09-06, round19 Q3): 값 타입의 정본은 quad-types(엔진 무관 —
--- Roblox 타입 자리는 `any`)이고 여기서는 **그대로 별칭**한다. Q3 (a)가 예정한
--- `read Info: TweenInfo?` 정밀화는 실측에서 포기했다(`H-326`): `State<X>`는 불변이라
--- [2026-09-07 마커] 슬롯의 State 팔이 공변 `StateMarker<T | Tween<T>>`가 되면서 이 논거는
--- 약해졌다(정밀판 `Tween`이 `Tween<T>`의 서브타입이면 든다) — 재검토 가능, 아직 안 함.
--- 생성 D 슬롯의 `State<Tween<T>>` 멤버는 `Animate`/`:Compute`가 돌려주는
--- `State<QuadTypes.Tween<T>>`와 X가 글자 그대로 같아야 한다 — 정밀판 별칭이든
--- 데이터부든 다른 타입이면 거부된다. 엔진 타입 오용(`Style = 3`)은 `Enum` 자체가
--- 대부분 잡고, 나머지는 엔진 원시 에러(Q5 (a)).
-export type Tween<T> = QuadTypes.Tween<T>
+-- ── `Tween<T>` — 값-레벨 트윈 래퍼, **quad-roblox의 값 타입**(2026-09-07 사용자 결정 —
+-- `base/tween-plan.md` "패키지 경계" 절: 옵션 어휘가 Roblox `TweenInfo`의 것이고 웹은
+-- `Transition`으로 이름·모양이 다르며 `Animate`가 이미 여기 있다). 런타임은 `Tween.luau`
+-- (install — `q.Tween`/`q.isTween`은 `RobloxExtension`으로 실린다), 소비는 `Handlers/Property.luau`.
+-- 정본 모양은 tween-plan "확정: `Tween{...}` 최종 모양" 절. 엔진 타입 자리(`Info`/`Style`/
+-- `Direction`)는 이제 **정밀**하다 — quad-types에 있던 시절엔 엔진 무관이라 `any`였고 round19
+-- Q3 (a)의 정밀 별칭은 `State<X>` 불변성(`H-326`)에 막혔는데, 정의가 하나뿐이면 그 문제가 없다.
+-- `Override`는 문자열 싱글톤 유니언(`H-343`, 사용자 결정 — 옵션 enum은 마커 값이 아니라 리터럴
+-- 타입으로). `Mapped`는 재귀 제네릭(`Tween<U>` 반환)이라 데이터부/메소드부 쪼개기(typing-limits
+-- §1②) — 파생 자리는 결과 타입을 명시 바인딩할 것(§1①).
+export type TweenOverride = "Cancel" | "Finish"
+-- 옵션 필드는 전부 `read` — 생성자는 읽기만 하고, 미리 만든 테이블 변수를 넘길 때
+-- 가변 필드면 새 솔버가 `Time: number`를 `number?`에 불변으로 대조해 거부한다(실측).
+export type TweenOptions<T> = {
+	read Value: T,
+	read Info: TweenInfo?, -- 있으면 편의 필드 무시
+	read Time: number?,
+	read Style: Enum.EasingStyle?,
+	read Direction: Enum.EasingDirection?,
+	read RepeatCount: number?,
+	read Reverses: boolean?,
+	read DelayTime: number?,
+	read Override: TweenOverride?, -- 기본 "Cancel"
+}
 -- 유니언 멤버용 데이터부(`Mapped` 없음) — 재귀 메소드 테이블을 수백 유니언에 직접
 -- 넣지 않는다(typing-limits 8.8). 실 Tween 값은 구조적으로 만족한다.
-export type TweenData<T> = QuadTypes.TweenData<T>
+export type TweenData<T> = {
+	read __quadTween: true,
+	read Value: T,
+	read Info: TweenInfo?,
+	read Time: number?,
+	read Style: Enum.EasingStyle?,
+	read Direction: Enum.EasingDirection?,
+	read RepeatCount: number?,
+	read Reverses: boolean?,
+	read DelayTime: number?,
+	read Override: TweenOverride?,
+}
+-- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
+-- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).
+local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U): Tween<U>
+	return nil :: any
+end
+export type Tween<T> = TweenData<T> & {
+	Mapped: typeof(tweenMapped),
+}
+-- 순수 제네릭 함수(`H-343`): 문자열 `Override` 덕에 `Tween`엔 필드가 없어 콜러블 테이블이
+-- 필요 없다 — 제네릭 `__call`의 `T` 오염(`H-324`, `luau-test/33` A 블록)이 함께 소멸.
+export type TweenConstructor = <T>(opts: TweenOptions<T>) -> Tween<T>
+-- Modifier 필드에 "저장된 그대로"의 값(`Peek` 반환·setter 변환 함수의 `old`) — quad-types의
+-- `FieldOut<X> = X | State<X> | None`에 이 백엔드의 값 대수 `X = T | Tween<T>`를 넣은 것(전개형
+-- `T | Tween<T> | State<T | Tween<T>> | None`, round3 Q23 (a)/Q24 후속). **여기서 별칭하고 생성 D는
+-- `Types.FieldOut<T>`로 다시 별칭한다** — 같은 전개를 D 안에서 하면(인라인 유니언이든
+-- `QuadTypes.FieldOut<T | Tween<T>>` 인스턴스화든) `export type D`가 솔버 제약 한도를 넘어
+-- "too complex"(2026-09-07 실측, typing-limits 8.12).
+export type FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>
 
 -- `Animate(info)` options (M11 단위 ③, tween-plan "`Animate` 콤비네이터" 절): `Tween`
 -- 옵션(`Value` 제외) + `CanAnimate`, 각 필드는 `T | State<T>`([2026-09-07 마커] State 자리는
@@ -79,11 +122,11 @@ export type AnimateInfo = {
 	read RepeatCount: (number | QuadTypes.StateMarker<number>)?,
 	read Reverses: (boolean | QuadTypes.StateMarker<boolean>)?,
 	read DelayTime: (number | QuadTypes.StateMarker<number>)?,
-	read Override: (QuadTypes.TweenOverride | QuadTypes.StateMarker<QuadTypes.TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
+	read Override: (TweenOverride | QuadTypes.StateMarker<TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
 	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- Q12 (2026-09-07): 같은 목표·옵션이면 이전 Tween을 그대로(기본 true)
 }
-export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<QuadTypes.Tween<any>>
+export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tween<any>>
 
 -- [2026-09-03 M10 widening] the quad-base array-part VALUES join here: `Tag(...)`
 -- and `Attribute(...)` (the typed scalar sugar `StringAttribute(name, v)` etc.

@@ -1,27 +1,31 @@
 --!strict
 --[[
-	Tween 값 계약 (M11 단위 ①, round19) — `base/tween-plan.md` "확정: `Tween{...}`
+	Tween 값 계약 (M11 단위 ①, round19; [2026-09-07] quad-base/test에서 이곳으로 — Tween은
+	quad-roblox의 값, `base/tween-plan.md` "패키지 경계" 절) — "확정: `Tween{...}`
 	최종 모양"(옵션 모양·`Override` 두 값)·"`Tween<T>:Mapped(fn)`"(clone + Value
-	교체)·"패키지 경계"(quad-base는 값만 — 핸들러 없음). 검증 범위는 brief §0
-	Q5 (a): 테이블·`Value` 필수·엔진 무관 스칼라 타입·`Override` 센티널.
+	교체). 검증 범위는 brief §0 Q5 (a): 테이블·`Value` 필수·스칼라 타입·`Override` 센티널.
 	엔진 타입(`Info`/`Style`/`Direction`)은 무검사(단위 ② PropertyHandler가 엔진에
-	넘긴다). 소비(3-상태 슬롯·override 정책)는 단위 ② `quad-roblox/test/spec.tweenproperty`.
+	넘긴다). 소비(3-상태 슬롯·override 정책)는 단위 ② `spec.tweenproperty`.
+	`q.Tween`/`q.isTween`은 프로바이더 확장(`RobloxExtension`)으로 실린다.
 ]]
 
-local Quad = require("../src")
+local QuadBase = require("../luau_packages/quad_base")
+local QuadRoblox = require("../src").QuadRoblox
+local Types = require("../src/types")
 local QuadTypes = require("../luau_packages/quad_types")
-local mock = require("./mock")
+local mock = require("../../quad-base/test/mock")
+local Quad = QuadBase.New():UseProvider(QuadRoblox)
 local Tween = Quad.Tween
 
 -- 타입 양성(strict — 본문 실행 없음): 생성자 제네릭 추론, `Mapped`의 U 전환,
 -- 센티널 타입, `TweenData<T>` 자리(D 유니언 멤버)에 Tween 값이 들어간다
 local function _types()
-	local a: QuadTypes.Tween<number> = Tween({ Value = 1, Time = 0.3, Override = "Finish" })
-	local b: QuadTypes.Tween<string> = a:Mapped(function(v: number): string
+	local a: Types.Tween<number> = Tween({ Value = 1, Time = 0.3, Override = "Finish" })
+	local b: Types.Tween<string> = a:Mapped(function(v: number): string
 		return tostring(v)
 	end)
-	local c: QuadTypes.TweenData<string> = b
-	local d: QuadTypes.TweenOverride = "Cancel"
+	local c: Types.TweenData<string> = b
+	local d: Types.TweenOverride = "Cancel"
 	local e: number = a.Value
 	return c, d, e
 end
@@ -75,8 +79,8 @@ do
 		mock.assertBlamesUser(err, "spec.tween.luau", "validation blame")
 	end
 	-- 엔진 타입 자리는 무검사(Q5 (a)) — 엔진이 없는 CLI에선 아무 값이나 통과
-	local t = Tween({ Value = 1, Info = "not a TweenInfo", Style = 3 })
-	assert(t.Info == "not a TweenInfo" and t.Style == 3, "engine-typed fields pass through unchecked")
+	local t = Tween(({ Value = 1, Info = "not a TweenInfo", Style = 3 } :: any))
+	assert((t :: any).Info == "not a TweenInfo" and (t :: any).Style == 3, "engine-typed fields pass through unchecked")
 	print("PASS")
 end
 
@@ -134,9 +138,12 @@ end
 
 print("=== 6. 회신 3차 Q16 (b) — Tween{ Value = State }는 생성 시점에 거부(모든 필드는 plain — tween-plan 불변식), 사용자 줄 blame ===")
 do
-	local q = mock.newQuad()
+	-- the Source must come from the SAME quad-base copy the provider was installed on:
+	-- `mock.newQuad()` builds on `quad-base/src`, `Quad` on the relinked `luau_packages`
+	-- copy — two module files, two brand sets, so a Source from the other copy is not
+	-- `isState` here (harness artifact of the relink, not a quad behaviour)
 	local ok, err = pcall(function()
-		return Tween({ Value = q.Source(1) })
+		return Tween({ Value = Quad.Source(1) })
 	end)
 	assert(not ok and string.find(tostring(err), "Value must be a plain value, not a State", 1, true) ~= nil, "State value rejected: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.tween.luau", "Tween State value blame")

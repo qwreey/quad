@@ -269,9 +269,9 @@ end
   `Left`/`Right`)에 같은 값을 쓰는 키는 각 프로퍼티마다 `Dispatch.process`를
   따로 부름 — 각자 독립된 `(child, prop)` 체인이 되고, PropertyHandler의
   트윈 슬롯도 프로퍼티별로 따로 잡혀서 자연스럽게 4개가 같이 애니메이션됨.
-- **`Tween` 값 자체는 `quad-base`, 이 숏핸드 Handler는 `quad-roblox`** —
-  `isTween`/`Tween()`을 base에서 가져다 쓰는 것뿐이라 패키지 경계
-  (`tween-plan.md` "패키지 경계" 절)와 안 부딪힘.
+- **`Tween` 값과 이 숏핸드 Handler는 둘 다 `quad-roblox`**(**[2026-09-07]** Tween이
+  quad-base에서 이동 — `tween-plan.md` "패키지 경계" 절) — 핸들러는 설치 시점에
+  모듈의 `isTween`을 읽는다(Tween 설치가 먼저, `RobloxFactory.luau`).
 
 **캐비엇 — 자식이 새로 만들어진 사이클에서는 트윈이 안 걸린다(의도된 동작).**
 PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 규칙이

@@ -309,7 +309,12 @@ def emit():
     # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
     # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
     L.append("export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None")
-    L.append("export type FieldOut<T> = QuadTypes.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 quad-types, Q23 (a)/Q24 후속)")
+    # [2026-09-07 Tween 이동] quad-types의 `FieldOut<X> = X | State<X> | None`은 엔진 값 어휘를 모른다 —
+    # 이 백엔드의 필드 값 대수 `T | Tween<T>`를 X에 넣은 별칭은 types.luau가 만들고 여기선 그걸
+    # 다시 별칭만 한다(전개형은 이동 전과 같다: `T | Tween<T> | State<T | Tween<T>> | None`, Q23 (a)/
+    # Q24 후속). ⚠️ 이 파일 안에서 전개하면(인라인이든 `QuadTypes.FieldOut<T | Tween<T>>`든) `export
+    # type D`가 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
+    L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
     L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
     L.append("")
     names = sorted(classes.keys())

@@ -19,6 +19,7 @@
 	bypasses the lock and the extension merge (unsupported).
 ]]
 
+local installTween = require("./Tween") -- 2026-09-07: Tween is a quad-roblox value (tween-plan "패키지 경계")
 local installLifetime = require("./LifetimeHandle")
 local installEngineOps = require("./EngineOps")
 local InitD = require("./D")
@@ -30,6 +31,9 @@ local OnChangeModule = require("./Handlers/OnChange")
 local installAnimate = require("./Animate") -- M11 단위 ③ — :Apply 콤비네이터(모듈 인스턴스의 Tween/isState 위)
 
 local function RobloxFactory(module: any): any
+	-- FIRST: Property/InstanceShorthand/Animate read `quad.Tween`/`quad.isTween` off the
+	-- module at their own install (Tween.luau sets both directly and returns the pair)
+	local tween = installTween(module)
 	installLifetime(module)
 	installEngineOps(module)
 	-- backend-owned handlers (M5 단위 ③ — Property/InstanceChild; M10 —
@@ -45,7 +49,13 @@ local function RobloxFactory(module: any): any
 	-- `local D = quad.D`(병합 후) 또는 반환 교집합에서 바로 `q.D`.
 	-- `OnChange`(M10)도 같은 병합으로 실린다 — 디스크립터 팩토리는 모듈
 	-- 레벨, 타입은 생성 `OnChangeFn`(init.luau `RobloxExtension`)이 입힌다.
-	return { D = InitD(module), OnChange = OnChangeModule.OnChange, Animate = installAnimate(module) }
+	return {
+		D = InitD(module),
+		OnChange = OnChangeModule.OnChange,
+		Animate = installAnimate(module),
+		Tween = tween.Tween, -- already on the module (install) — listed so the typed extension is honest
+		isTween = tween.isTween,
+	}
 end
 
 return RobloxFactory

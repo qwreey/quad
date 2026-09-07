@@ -408,9 +408,35 @@ quad-roblox 레벨 편의 함수라 base 계약에 영향 없음.
 
 ## 패키지 경계 — `Tag`가 이미 밟은 것과 같은 분리 (2026-08-10 세션 확정)
 
-- **quad-base**: `Tween.luau` — 값 타입(`Tween(opts)` 팩토리)만. 엔진 무관.
+**⭐ [2026-09-07 사용자 결정 — 역전] `Tween`은 통째로 quad-roblox의 값이다.** 옛 서술(아래
+취소선)은 "값 타입은 엔진 무관이라 base"였는데, 옵션 어휘(`Time`/`Style`/`Direction`/
+`RepeatCount`/`Reverses`/`DelayTime`)는 Roblox `TweenInfo.new`의 인자를 이름으로 푼 것이라
+어휘 자체가 엔진 지식이고(`research/source-layout-plan.md` 2절 사실 확인), 사용자 논거는 셋 —
+*"Tween 자체가 워낙 엔진의 지식인지라, 엔진 자체로 옮기고 싶어"*, *"이미 Animate 가 온전히
+roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Tween 도 quad-roblox 에 있지 말아야할
+이유가 없어"*, *"웹은 Transition 으로 이름도 다른데다가 … 한 css 프롭에 다른 프롭의 애니메이션을
+담는거라 완전 다름. 공개 표면을 같이 두는 이점이 적어보여 — 웹은 Value 의 필요 부터 없거든"*.
+그 계획의 절충안 (c)(엔진 어휘 검증만 이동)는 채택되지 않았다 — 사용자: *"전부 엔진 어휘가
+되어야한다는 생각"*. 지금 배치:
+
+- **quad-roblox**: `Tween.luau`(`install(module)` — 값 팩토리·검증·`Mapped`, `q.Tween`/`q.isTween`은
+  `RobloxExtension`으로 실리고 모듈에도 직접 놓인다 — 형제 설치자와 base 진단 프로브가 본다),
+  `Brand.luau`(`TweenBrand`·`isTween` — 브랜드 팩토리는 quad-types, `base/brand-plan.md`),
+  `types.luau`(`Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor` 정본 —
+  엔진 타입 필드가 **정밀**하다: `Info: TweenInfo?`, `Style: Enum.EasingStyle?`, `Direction:
+  Enum.EasingDirection?`; quad-types 시절 `any`였고 round19 Q3 (a)의 정밀 별칭은 `State<X>` 불변성
+  `H-326`에 막혔었는데 정의가 하나뿐이면 그 불일치가 없다), `Handlers/Property.luau`(`isTween`
+  분기 + 3-상태 슬롯 + override 정책), `Animate.luau`. 테스트도 `quad-roblox/test/spec.tween.luau`.
+- **quad-types**: Tween이라는 이름이 없다. `FieldOut<X> = X | State<X> | None`만 두고 백엔드가
+  `X = T | Tween<T>`를 넣는다(quad-roblox `types.luau` `FieldOut<T>`, 생성 D가 재별칭 — 전개형은
+  이동 전과 같다).
+- **quad-base**: Tween을 모른다. 유일한 흔적은 `Dispatch/init.luau` `BRAND_PROBES`의 문자열
+  `"isTween"` — 진단 시점에 모듈에서 이름으로 찾는 목록이라 require 없이 프로바이더 설치분을
+  본다. 프로바이더가 자기 프로브를 등록하는 길은 round3 §4 **Q27**(열림).
+
+~~- **quad-base**: `Tween.luau` — 값 타입(`Tween(opts)` 팩토리)만. 엔진 무관.
   **[2026-08-28]** `TweenBrand` 인스턴스와 `isTween` 술어는 다른 브랜드와 같이
-  `Brand.luau`에 산다(`base/architecture.md` 소스 트리) — 이 파일은 거기 등록만.
+  `Brand.luau`에 산다 — 이 파일은 거기 등록만.~~
 - **quad-roblox**: `Handlers/Property.luau`(기존 프로퍼티 세팅 로직에
   `isTween` 분기 + 3-상태 릴레이션 저장 + override 정책 추가) +
   `Animate.luau`(편의 콤비네이터, 신규).

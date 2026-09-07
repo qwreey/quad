@@ -961,3 +961,23 @@ Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`
 (`H-353`/`H-362`)이 필요 없어지고 8.5/8.9의 예산이 줄 가능성 — 단 **생성 D 규모에서 재야 한다**(한도 플래그·
 `spec.shorthandtypes` 양·음성 유지). 값 타입에 마커 필드 둘이 들어가는 quad-types 표면 변경이라 결정 뒤 별도 단위.
 8.8의 `ModifierMarker`·스파이크 `32`의 반공변 팬텀 `__quadRefAccepts`와 같은 계열(팬텀 필드로 변성을 고르는 것).
+
+## 8.12. 큰 생성 파일 안에서의 제네릭 별칭 전개는 솔버 제약 한도를 넘긴다 — `FieldOut<T>`는 `types.luau`에서 별칭하고 D는 재별칭만 (2026-09-07 실측)
+
+**증상**: Tween을 quad-roblox로 옮기며(`tween-plan.md` "패키지 경계" 절) 생성 D의
+`FieldOut<T>`를 `QuadTypes.FieldOut<T | Tween<T>>`로 바꾸자 `export type D`(31클래스 Param
+인스턴스화 자리, `D/init.luau` 끝의 `return function(quad): D`)가 **"Code is too complex to
+typecheck"** — `LuauSolverConstraintLimit`를 크게 올리면 통과하므로 제약 *수*의 문제다(그 플래그는
+2026-09-07 마커 작업이 뺐고 "다시 나면 그때 되살릴 것"이었으나, 원인을 찾아 플래그 없이 닫았다).
+인라인 유니언(`T | Tween<T> | QuadTypes.State<T | Tween<T>> | QuadTypes.None`)도 같다. 정밀 엔진 타입
+(`TweenInfo`/`Enum.*`)이나 quad-types 쪽 정의 위치는 무관(각각 되돌려도 실패 — 이분 탐색).
+
+**통과하는 모양**: 같은 전개를 **quad-roblox `types.luau`가 `export type FieldOut<T> =
+QuadTypes.FieldOut<T | Tween<T>>`로 만들고 D는 `type FieldOut<T> = Types.FieldOut<T>`로 재별칭만**
+한다(생성기 `emit`이 그렇게 찍는다). 옛 모양(`QuadTypes.FieldOut<T>` — 외부 모듈 별칭을 T 하나로
+인스턴스화)도 같은 이유로 통과했던 것. 즉 **외부 모듈의 별칭을 단순 인자로 인스턴스화하는 건 싸고,
+D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인스턴스화하는 건 Field/Peek가 쓰이는 수백
+자리마다 제약을 만든다.** 8.5(Tarjan)·8.9(iteration)와 같은 계열의 예산 문제이며, 생성 파일에 새
+별칭을 넣을 땐 "전개는 D 밖(types.luau)에서, D는 재별칭"을 기본으로 할 것. 실측 명령:
+`luau-lsp analyze`(test.sh 플래그 그대로) — 실패는 1.2s 만에 나고, 통과 전체는 3s대.
+

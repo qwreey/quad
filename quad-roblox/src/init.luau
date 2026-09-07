@@ -33,7 +33,12 @@ local VERSION_PATTERN = "0.0.0"
 -- `D`/`DMapper`/`<Class>Param<E>` 전량은 생성 파일(src/D)이 소스라 여기선
 -- 네임스페이스 타입 둘만 재익스포트 — 개별 Param이 필요한 소비자는
 -- 생성 모듈에서 직접 가져간다(손 나열은 "전량 생성" 계약과 충돌, `H-305`).
+-- `Tween` 값 타입 일가(2026-09-07 — quad-types에서 이곳으로, `types.luau` 주석)
 export type Tween<T> = Types.Tween<T>
+export type TweenData<T> = Types.TweenData<T>
+export type TweenOptions<T> = Types.TweenOptions<T>
+export type TweenOverride = Types.TweenOverride
+export type TweenConstructor = Types.TweenConstructor
 export type NewChild = Types.NewChild
 export type D = DModule.D
 export type DMapper = DModule.DMapper
@@ -49,7 +54,15 @@ export type AnimateFn = Types.AnimateFn
 -- M11 단위 ③: `Animate`(tween-plan "`Animate` 콤비네이터" 절)도 같은 병합 —
 -- `q.Source(v):Apply(q.Animate{ Time = 0.3 })` → 선언 타입 `State<Tween<any>>`(`H-334` — 정직한
 -- `State<T | Tween<T>>`는 슬롯 유니언에서 too complex, `types.luau` 주석)
-export type RobloxExtension = { D: DModule.D, OnChange: OnChangeFn, Animate: AnimateFn }
+-- `Tween`/`isTween`(2026-09-07): 백엔드 값 타입은 백엔드 표면 — 같은 병합으로 실린다
+-- (런타임은 `Tween.luau` install이 모듈에 직접도 놓는다 — 형제 설치자와 base 진단 프로브가 본다).
+export type RobloxExtension = {
+	D: DModule.D,
+	OnChange: OnChangeFn,
+	Animate: AnimateFn,
+	Tween: Types.TweenConstructor,
+	isTween: (x: any) -> boolean,
+}
 
 local function QuadRoblox<T>(quad: T): RobloxExtension
 	local q = quad :: any

@@ -1,8 +1,8 @@
 --!strict
 --[[
-	Tween 타입 표면 — strict 양성(M11 단위 ①, round19 Q3·`H-326`). quad-types의
-	엔진 무관 `Tween<T>` 값이 quad-roblox `Types.Tween<T>`(quad-types 별칭 그대로 —
-	정밀화는 포기) 자리 — 생성 `D`의 스칼라 유니언
+	Tween 타입 표면 — strict 양성(M11 단위 ①, round19 Q3·`H-326`; [2026-09-07] Tween은
+	quad-roblox의 값 타입 — `types.luau`가 정본, 엔진 타입 필드 정밀). `Types.Tween<T>` 값이
+	생성 `D`의 스칼라 유니언
 	`T | TweenData<T> | StateMarker<T | Tween<T>> | None`(타입별 별칭 PVn; [2026-09-07 마커] State 팔은 공변 마커 하나) — 에 들어가고,
 	`Mapped`의 U 전환·`State<Tween<T>>`·센티널 필드가 UseProvider 교집합을
 	거쳐도 정확히 타이핑되는지. 음성(다른 T의 Tween·옵션 타입·문자열 Override·
@@ -19,8 +19,9 @@ local q = Quad.New():UseProvider(QuadRoblox)
 
 local function _types()
 	-- 생성자 제네릭 추론(리터럴·엔진 타입 필드 포함)
-	local t: QuadTypes.Tween<UDim2> = q.Tween({ Value = UDim2.new(0, 10, 0, 10), Time = 0.3, Style = Enum.EasingStyle.Bounce })
-	local refined: Types.Tween<UDim2> = t -- quad-roblox 별칭은 quad-types 그대로(정밀판 포기 — H-326) — 항등 대입
+	local t: Types.Tween<UDim2> = q.Tween({ Value = UDim2.new(0, 10, 0, 10), Time = 0.3, Style = Enum.EasingStyle.Bounce })
+	local refined: Types.TweenData<UDim2> = t -- 데이터부 자리(D 유니언 멤버)에 전체형이 든다
+	local info: TweenInfo? = t.Info -- 엔진 타입 필드가 정밀하다(2026-09-07 — quad-types 시절엔 any)
 	-- D 슬롯: Tween 직접 / Info 우선 + Override 센티널 / State<Tween<T>> / Mapped 결과
 	local f1 = q.D.Frame({
 		Position = t,
@@ -30,19 +31,19 @@ local function _types()
 		end),
 	})
 	local src = q.Source(UDim2.new())
-	local anim: QuadTypes.State<QuadTypes.Tween<UDim2>> = src:Compute(function(h: QuadTypes.StateData<UDim2>): QuadTypes.Tween<UDim2>
+	local anim: QuadTypes.State<Types.Tween<UDim2>> = src:Compute(function(h: QuadTypes.StateData<UDim2>): Types.Tween<UDim2>
 		return q.Tween({ Value = h:Get(), Time = 0.3 })
 	end)
 	local f2 = q.D.Frame({ Position = anim })
 	-- Animate(단위 ③, H-334): factory 결과는 State<Tween<T>>로 선언 — D 슬롯·setter에 들어간다
-	local animated: QuadTypes.State<QuadTypes.Tween<UDim2>> = src:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Bounce, CanAnimate = q.Source(true) }))
+	local animated: QuadTypes.State<Types.Tween<UDim2>> = src:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Bounce, CanAnimate = q.Source(true) }))
 	local f3 = q.D.Frame({ Position = animated })
 	local m3 = q.D.Modifier.Frame():Position(animated)
 	-- 센티널·옵션 타입
-	local o: QuadTypes.TweenOverride = "Cancel"
-	local opts: QuadTypes.TweenOptions<number> = { Value = 1, Reverses = true }
-	local t2: QuadTypes.Tween<number> = q.Tween(opts)
-	return refined, f1, f2, f3, m3, o, t2
+	local o: Types.TweenOverride = "Cancel"
+	local opts: Types.TweenOptions<number> = { Value = 1, Reverses = true }
+	local t2: Types.Tween<number> = q.Tween(opts)
+	return refined, info, f1, f2, f3, m3, o, t2
 end
 
 print("=== 1. 런타임 대응 — 타입이 약속한 값이 실제로 있다(H-300) ===")

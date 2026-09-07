@@ -12,6 +12,7 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
+local Types = require("../src/types")
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
@@ -60,15 +61,15 @@ local function _markerUnion()
 	local radius = q.Source(8)
 	local either = q.Source((8 :: any) :: number | UDim)
 	local f8 = q.D.Frame({ UICorner = either })
-	local m5 = q.D.Modifier.Frame():UICorner(either):UIScale(q.Source((nil :: any) :: number | QuadTypes.Tween<number>))
-	local honest: QuadTypes.State<number | QuadTypes.Tween<number>> = radius:Compute(function(h: QuadTypes.StateData<number>): number | QuadTypes.Tween<number>
+	local m5 = q.D.Modifier.Frame():UICorner(either):UIScale(q.Source((nil :: any) :: number | Types.Tween<number>))
+	local honest: QuadTypes.State<number | Types.Tween<number>> = radius:Compute(function(h: QuadTypes.StateData<number>): number | Types.Tween<number>
 		return h:Get()
 	end)
 	local f9 = q.D.Frame({ UICorner = honest, ZIndex = honest })
 	-- round3 Q23 (a): 변환 함수의 old는 State 팔 하나(`State<T | Tween<T>>`) — 캐스트 뒤 :Get()이 선다
 	local m6 = q.D.Modifier.Frame():UICorner(function(old)
 		if q.isState(old) then
-			return (old :: QuadTypes.State<number | UDim | QuadTypes.Tween<number | UDim>>):Get()
+			return (old :: QuadTypes.State<number | UDim | Types.Tween<number | UDim>>):Get()
 		end
 		return old
 	end)

@@ -1385,7 +1385,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 
 **0. [2026-09-06 신설 — 세 번 반복: `H-272`·`H10-2`·`H-330`] 디스패치·발행 깊이에서 raise할 땐 `errorBefore`, 직접 호출 표면에서만 `errorBeforeNearest`.** `process`/retractor/reconcile 안(또는 `Source:Set`의 파동 안)에서 `errorBeforeNearest`를 쓰면 최근접 태그 프레임이 핸들러 자신이라 `Dispatch/init.luau`나 `Source.luau`가 blame된다. 판별: 그 raise가 사용자의 `drive`/`:Set` 줄에서 시작한 스택 안이면 `errorBefore`.
 
-**0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다.
+**0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다. **[2026-09-07]** 목록은 진단 시점에 모듈에서 *이름으로* 찾으므로 프로바이더가 설치한 술어(`isTween` — Tween이 quad-roblox로 이동)도 이름만 있으면 보인다; base가 백엔드 이름을 적어 두는 대신 프로바이더가 자기 프로브를 등록하는 길은 round3 §4 Q27.
 
 **1. 클로저는 early-return해도 체인에서 *소비*된다.**
 `Dispatch.retractFrom`은 저장된 retractor를 호출하고 **항상**

@@ -1,9 +1,11 @@
 # 소스 구조 재편 계획 — 사용자 의견 여덟의 확인·이득·비용 (2026-09-07)
 
-**상태**: research — 사용자 결정 대기. 사용자 원문(2026-09-07 낮): *"내 말을 전부 정답이다
+**상태 [2026-09-07 밤 갱신]**: 사용자 회신 도착(루트 `layout-usernote-ignoreme.md`, 커밋 제외) —
+**결정·반영 상태는 각 절 머리의 `[결정]` 줄이 소스**, 후속 제안 넷(Brand→quad-types·마커 전면화·
+quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮): *"내 말을 전부 정답이다
 생각하진 말고, 확인하고 이득을 따져볼것"*. 사실 조사는 opus 단일 에이전트(읽기 전용)가 했고
-판단은 메인이 붙였다. 결정되면 항목별로 `base/architecture.md` 소스 트리 절을 고치고 코드를
-옮긴다. **의견 원문 여덟**:
+판단은 메인이 붙였다. 반영은 `base/architecture.md` 소스 트리 절과 코드를 항목별로 고친다.
+**의견 원문 여덟**:
 
 > - 슬롯 파일 너무 길어서 유지보수성 조금 복잡해짐. Slot_mt 구현과 간단 유틸, 마운트나, raw 들을 적절히 유지관리 가능한 정도로 Slot/... 로 쪼갤 수 없는지
 > - Tween 은 roblox 에만 있어야할텐데, tween 자체가 가지는 인자(repeat 나 등등) 같은게 엔진마다 다 다를 수 있어, 근데 베이스에 있네
@@ -46,6 +48,9 @@
 
 ## 1. Slot 분할 — **권고: 한다, 다만 Q9/Q14 결정·반영 뒤 별도 단위로**
 
+**[결정 2026-09-07 밤]** 채택 — 사용자: *"권고대로 가도 될것 같아."* Q9/Q14는 회신 3차로 이미
+반영됐으므로 순수 이동 단위(9절 4번)로 간다. 반영 상태는 9절.
+
 **사실**: `Slot.luau` 1142줄 전부가 하나의 `Init(module)` 본문. 여섯 묶음 — (a) 소유권 레지스트리
 (`claimOwner`/`claimOwnerAt`/`releaseOwner`/`occupantOf`, ~40줄) / (b) 요소 게이트(`wrapElement`/
 `unwrapElement`/`prepareElements`, ~60) / (c) 트리 마운트·해체(`materializeSlotTree`…`destroySlotTree`,
@@ -84,6 +89,18 @@ Slot/Handler.luau   ← 5절 (a)를 택하면 Dispatch/Slot.luau가 여기로
 
 ## 2. Tween의 위치 — **권고: 엔진 어휘 검증만 quad-roblox로 (절충 (c))**
 
+**[결정 2026-09-07 밤 — (b) 통째 이동, 권고 (c) 기각]** 사용자: *"Tween 자체가 워낙 엔진의
+지식인지라, 엔진 자체로 옮기고 싶어. 처음 생각했던 부분 자체가 그거였음 … 이미 Animate 가 온전히
+roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Tween 도 quad-roblox 에 있지 말아야할
+이유가 없어 … 웹은 Transition 으로 이름도 다른데다가 … 한 css 프롭에 다른 프롭의 애니메이션을
+담는거라 완전 다름. 공개 표면을 같이 두는 이점이 적어보여 — 웹은 Value 의 필요 부터 없거든. 전부
+엔진 어휘가 되어야한다는 생각인데, 어떻게 보는지?"* 메인 판단: 동의 — (c)를 권한 근거였던 "타입
+표면 재배선이 크다"는 실측에서 작았다(생성 D는 이미 quad-roblox `types.luau`의 `Tween<T>`를
+별칭하고 있어 D 재생성 없이 정의만 옮겨졌고, quad-types에 남는 건 `FieldOut<X>` 하나). **반영
+완료**(같은 날): `quad-roblox/src/Tween.luau`(install)·`Brand.luau`·`types.luau` 정본(엔진 타입
+필드 정밀)·`test/spec.tween.luau`, quad-base엔 `BRAND_PROBES`의 문자열 `"isTween"`만(round3 §4
+Q27). 부수 발견: D 안에서 `FieldOut` 전개는 제약 한도 초과 → `typing-limits.md` 8.12.
+
 **사실**: `Tween.luau`(105줄)는 `Value`·`Override`(엔진 무관)와 `Time`/`RepeatCount`/`DelayTime`
 (number)·`Reverses`(boolean)를 검증하고 `Info`/`Style`/`Direction`은 엔진 타입으로 통과시킨다.
 tween-plan "패키지 경계 — `Tag`가 이미 밟은 것과 같은 분리" 절은 *"quad-base: `Tween.luau` —
@@ -114,6 +131,12 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 
 ## 3. Tag 생성자·합성 — **권고: `string | {string} | Tag` 유니언으로 통일(어제의 `H-389` 역전)**
 
+**[결정 2026-09-07 밤 — (b) 채택, 반영 완료]** 사용자: *"권고대로, flattenInto 와 타입을 고치면
+되므로, 비용도 크지 않은편. 특히 이런 곳에서는 타입 체크 비용을 아끼기 위해 마커만 두는것도
+괜찮아보임."* 반영: `Tag.luau` `flattenInto` 한 문(재귀 — `string | Tag | { names }`), quad-types
+`TagNames`/`TagMarker`(입력 자리는 마커 — 사용자 지적대로), `TagImpl.__quadTag`, `spec.tag` 2절,
+`base/tag-plan.md` "값 모양" 배너. `Merged`는 Tag만 받는 엄격형으로 남김(제거는 결정 대상).
+
 **사실**: 생성자 `__call`은 문자열만(`H-389`가 어제 런타임을 타입 `...string`에 맞춰 좁힘),
 `Added`/`Removed`는 `string | {string}`(`flattenInto`), 다른 Tag는 `Tag.Merged(...)`로만 합치고
 `__call`/`Added`/`Removed`에 Tag를 주면 **명시 거부**(`H-380`·`H-389` 메시지가 Merged를 안내).
@@ -135,6 +158,11 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 형제(Attribute)와 비대칭이다. "다른 Tag에서 가져오기"는 사용자가 실제로 원하는 모양.
 
 ## 4. src 전체 배치 — **권고: 패밀리 폴더 셋(Slot/·Ref/·Attribute/) + Modifier 이동까지만, 대분류 폴더는 보류**
+
+**[결정 2026-09-07 밤 — (a) 채택]** 사용자: *"동의. 다른 부분은 보기 힘들어져 아플 때 처리하는게
+나아보임. 최종 export 표면은 달라짐이 없고 관리 편의성 부분이라, 급하지도 않음. — 각각 필요가 나올
+때 마다."* 5·6·7절은 (a)의 구성 요소라 함께 채택으로 읽는다(사용자가 따로 언급하지 않음 — 반영 뒤
+확인 요청). 8절 `Attr` 축약은 **미답**(열림). 반영 상태는 9절.
 
 **사실**: quad-base/src 33파일 6057줄. require 그래프 순환 0. 잎: Brand/Void/Relate/ErrorNamespace/
 ImplRegistry/Debug/Dispatch/Handler. 중간: EpochMap/Blocker/Claim/LifetimeHandle/Tween/Modifier/
@@ -215,11 +243,74 @@ Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attribute = 엔진 개�
 **권고 없음(취향 결정)** — 하면 `Attr`/`AttrKey`/`StringAttr`/`NumberAttr`/`BooleanAttr`/`isAttr`/
 `isAttrKey`, 7절 폴더는 `Attr/`.
 
-## 9. 실행 순서(결정 뒤)
+## 9. 실행 순서(결정 뒤) — 상태 [2026-09-07 밤]
 
-1. §4 Q9·Q14 답 → 동작 수정 커밋(작음).
-2. 3절 Tag 유니언(코드 20줄 + 타입 + 정본) — 독립, 먼저 해도 됨.
-3. 2절 Tween (c) — 타입 스파이크 → 이동.
-4. 순수 이동 단위 하나: 1·5·6·7절(+8절 이름) — 동작 diff 0, `spec.*` 전량 + `doc-check.py`
-   `.luau` 경로 검사 확장 + md 인용 치환 + `architecture.md` 트리·5절 규칙 명문화 + `README`.
+1. §4 Q9·Q14 답 → 동작 수정 커밋(작음). **완료**(회신 3차).
+2. 3절 Tag 유니언(코드 20줄 + 타입 + 정본) — 독립, 먼저 해도 됨. **완료**(`02adb01`).
+3. 2절 Tween — 결정은 (b) 통째 이동. **완료**(Brand→quad-types와 같은 커밋).
+4. 순수 이동 단위 하나: 1·5·6·7절(8절 이름은 미답이라 제외) — 동작 diff 0, `spec.*` 전량 +
+   `doc-check.py` `.luau` 경로 검사 확장 + md 인용 치환 + `architecture.md` 트리·5절 규칙 명문화 +
+   `README`. **상태는 이 줄을 갱신할 것.**
 5. 이동 뒤 순회 1회(직전 수정분 회귀 관측이 규칙이므로).
+6. **[추가]** 10절의 후속 제안 — Brand→quad-types(완료, 3번과 같은 커밋), 마커 전면화 +
+   quad-types 재배치(단위 하나), D 정적 굽기(리서치 — 사용자 문항).
+
+## 10. 후속 제안 넷 — 사용자 회신(2026-09-07 밤)의 "+" 항목
+
+### 10-1. `Brand` 팩토리를 quad-types로 — **채택·반영 완료**
+
+사용자: *"Brand 에 대한 구현은 types 로 빼고싶어. 실제로 타이핑을 하는데 있어서 필요한 요소이고,
+노미널타이핑을 돕는다 이외의 동작이 없어서 enum 과 비슷하게 특수 런타임 객체로 types 안에 실어두는게
+좋아보여. 실제로 20줄도 되지 않거든. isTween 가 base 안에 있어서 tween 을 못 옮긴것 같은데, Brand 들은
+각각 quad-base 안에 Brand 들을 정의하는게 따로 있으면 될것 같아. 같은 방식으로 quad-roblox 에서도
+하는거지. 이건 중요한게 quad-spring 같은 곳에서도 SpringBrand 를 만들려면 선재로 미리 처놔야하는
+것으로 보여"*. 반영: `QuadTypes.Brand`(런타임 값 + 타입), quad-base `Brand.luau`는 인스턴스·술어만,
+quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-plan.md` 구현 절 배너.
+남은 한 조각: base `BRAND_PROBES`가 여전히 `"isTween"` 문자열을 적어 둔다(진단 이름 조회) —
+프로바이더 등록 메커니즘은 새 표면이라 round3 §4 Q27.
+
+### 10-2. `None`·`Tag`·`Attribute`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 예정**
+
+사용자: *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
+사실: `None`은 이미 마커(`__quadNone`, `H-300`), `Tag`는 3절 반영에서 `__quadTag`를 얻었다. 남은 셋은
+`AttrImpl.__quadAttribute`/`Observer Impl.__quadObserver`/`Effect Impl.__quadEffect`(H-300 관례 —
+`__index`로 읽히는 무비용 필드)와 quad-types `AttributeMarker`/`ObserverMarker`/`EffectHandleMarker`,
+그리고 입력 자리(`NewChild`와 그 안의 `StateMarker<…>` 팔, gen-d의 8.9 게이트 수확 목록)를 마커로
+바꾸는 것. 필드·별칭 이름은 기존 `__quad<Type>`/`<Type>Marker` 패턴을 따른 메인 작명 — 사후 확인.
+
+### 10-3. quad-types 단일 파일 재배치 — **채택, 반영 예정(10-2와 같은 단위)**
+
+사용자: *"quad-types 도 다듬을 필요가 있어보임 — 사람이 보기에 복잡하고, 부분 부분 검토해보기 어려운
+구조임 … 모든 마커 타입을 위쪽에 올려서 표현하고, 중간엔 구현타입만 넣고, 맨 아래 실제 Quad 익스포팅
+타입을 넣는 구조로 단일 파일로 유지해도 좋을듯. — 단일 파일로 두는게 배포 상 ModuleScript 가 덜 들고,
+lsp 가 덜 힘들어 하기 때문임."* 반영 모양: (1) 마커·센티널(`None`/`Detach`/`KeyGone`/`MapperRoot`/
+`MapperDescriptor`/`StateMarker`/`SlotMarker`/`TagMarker`/`AttributeMarker`/`ObserverMarker`/
+`EffectHandleMarker`/`ModifierMarker`) → (2) 값·핸들 타입(Epoch/Relate/Ref/State/Source/Store/Observer/
+Effect/Blocker/Tag/Attribute/Modifier/Slot/Dispatch/Handler) → (3) `Quad`·`CheckedQuad`·`Brand`·상수.
+주석·결정 이력은 옮기되 지우지 않는다(순수 재배치, diff는 이동뿐).
+
+### 10-4. `...Param`을 prop 모음에서 조립하는 타입 함수 / 정적으로 더 굽기 — **리서치(사용자 문항)**
+
+사용자: *"우리의 거대한 ...Param 파일들을 각 prop를 모아두고 필요한 부분을 뽑아 조립하는 타입함수의
+가능성이 열릴것으로 보임. D 파일의 크기를 크게 줄일 수 있을듯 해보이는데 어떻게 보는지? 정적으로
+구워낼 수 있는 부분을 크게 늘려서 처리하는것에 대해서 생각해볼래? 사실 이미 마우스를 올리면 [호버가
+마커 유니언 전개형으로 나오므로] 프롭들이 저런식으로 나와서 잃을것은 크게 없다고 보여."*
+
+메인 판단(결정 아님): 두 갈래를 갈라 봐야 한다.
+- **(가) 타입 함수로 Param 조립** — `typing-limits.md` §0의 사용자 확정 *"타입 함수는 진단을 띄우는
+  데까지만"*(2026-08-25)과 정면으로 충돌한다. 그 결정의 근거는 §6(타입 함수를 거친 값은 이후 제네릭
+  self 체이닝이 조용히 깨짐)과 §5(바깥 별칭 참조 불가, `Self` 제네릭 경유 시 콜백 파라미터 추론이
+  깨짐 — `WrapStore` 철회)의 실측이다. Param 자리는 `D.Frame({...})`의 인자 — 콜백(이벤트 핸들러)
+  파라미터 추론이 정확히 §5가 깨진 그 자리라, 다시 하려면 **스파이크로 그 두 함정을 먼저 재야 한다**
+  (호버 표시가 아니라 이벤트 콜백 인자 추론·`Modifier` setter 체이닝·`UseProvider` 교집합 통과).
+  또 하나: 타입 함수는 매 인스턴스화마다 *실행*되므로(캐시는 솔버 몫) 31클래스 × 수백 prop을
+  조립하면 8.5/8.9/8.12의 예산 문제가 다른 모양으로 돌아올 수 있다 — 지금 D는 4800줄이지만 전부
+  "미리 구워진" 리터럴 타입이라 솔버가 하는 일이 적다.
+- **(나) 정적으로 더 굽기** — 지금도 D는 전량 생성물이다. 줄일 수 있는 건 *중복 텍스트*(클래스별
+  Param이 조상 prop을 다시 나열하는 것 — `GuiObject` 계열 10클래스가 같은 수십 줄을 반복)이고, 이건
+  타입 함수 없이 **교집합 별칭**(`FrameParam<E> = GuiObjectProps & FrameOwnProps<E>`)으로도 줄어든다 —
+  단 교집합은 8.6/8.8이 실측한 "무거주·캐스트 붕괴" 계열이라 이것도 스파이크가 필요하다(호버·자동완성·
+  `too complex` 예산). 마커 전면화(10-2)로 유니언 팔이 줄어드는 건 이것과 독립적으로 이득.
+- 정리하면: **10-2·10-3을 먼저 반영하고 그 크기에서 (나)의 교집합 별칭 스파이크 → 그래도 부족하면
+  (가)를 §0 재검토 문항으로.** 사용자 결정 필요: (가)를 열어 볼 것인가(§0 확정의 예외), 아니면
+  (나)까지만인가. `question.md` 2절에 올려 둔다.
