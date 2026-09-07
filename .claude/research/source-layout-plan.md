@@ -163,7 +163,7 @@ quad-base가 Tween을 아는 자리: `Brand.luau`(브랜드·`isTween`), `Dispat
 **[결정 2026-09-07 밤 — (a) 채택]** 사용자: *"동의. 다른 부분은 보기 힘들어져 아플 때 처리하는게
 나아보임. 최종 export 표면은 달라짐이 없고 관리 편의성 부분이라, 급하지도 않음. — 각각 필요가 나올
 때 마다."* 5·6·7절은 (a)의 구성 요소라 함께 채택으로 읽는다(사용자가 따로 언급하지 않음 — 반영 뒤
-확인 요청). 8절 `Attr` 축약은 **미답**(열림). 반영 상태는 9절.
+확인 요청). 8절 `Attr` 축약은 당시 **미답**이었다(**[2026-09-08 결정·반영]** — 8절·9절). 반영 상태는 9절.
 
 **사실**: quad-base/src 33파일 6057줄. require 그래프 순환 0. 잎: Brand/Void/Relate/ErrorNamespace/
 ImplRegistry/Debug/Dispatch/Handler. 중간: EpochMap/Blocker/Claim/LifetimeHandle/Tween/Modifier/
@@ -241,26 +241,28 @@ FALLBACK) + Relate 셋. 합치면 415줄 한 파일에 브랜드 둘·핸들러 
 있을지도"는 `Attr/Handler.luau`로 그룹 핸들러 60줄을 빼는 것 — 279줄이라 급하지 않음, 1절
 Slot처럼 커지면.
 
-## 8. `Attr` → `Attr` 축약 — **권고: 사용자 판단, 하려면 재편 단위에 같이(지금이 가장 쌈)**
+## 8. 옛 `Attribute` → `Attr` 축약 — **[결정 2026-09-08] 한다(사용자), 반영 완료 `66281ab`**
 
-**사실**: 공개 이름 — `Attr`(콜러블 + `.Merged`/`.Overridden`), `AttrKey`,
-`StringAttr`/`NumberAttr`/`BooleanAttr`, `isAttr`/`isAttrKey`, 메소드
-`NameMap`, quad-types `Attr`/`AttrConstructor`/`AttrSugar<T>`, 생성 D `NewChild` 팔,
-quad-roblox `EngineOps.setAttr`(엔진 op 이름은 Roblox API 어휘라 그대로). 등장: `.claude/base`
-**18파일**, quad-types 9줄, quad-roblox 2파일, spec 5파일. 선례: `Reference` → `Ref`.
-**이득**: `D.Frame { Attr { … } }`·`AttrKey "Hp"` — 실사용 타이핑(사용자: *"실제 개발에서 많이 쓰는
-줄임"*). 사용자 0명인 지금이 이름 바꾸기의 최저 비용 시점. **비용**: 코드·타입·D·spec 기계 치환 +
-base 18파일 문서 스윕(이름은 doc-check가 못 잡는다 — 감사자 한 라운드). 엔진 op `setAttr`와
-Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attr = 엔진 개념"으로 읽히는 부수 효과 있음.
-**권고 없음(취향 결정)** — 하면 `Attr`/`AttrKey`/`StringAttr`/`NumberAttr`/`BooleanAttr`/`isAttr`/
-`isAttrKey`, 7절 폴더는 `Attr/`.
+**사용자 회신(2026-09-08)**: *"Attr 로 두는건 동의. 다만 동일하게 AttrKey 와 setAttr getAttr 로 두는게
+맞아보임. 이로써 quad 의 Attr 은 기본적으로 엔진과 무관하다는게 표면적으로 드러나고, 그 구현이 실제로
+Attribute 로 바인드 된다는게 명확해져서 괜찮은 것 같음."* 메인이 원안에서 "엔진 op `setAttribute`는
+Roblox API 어휘라 그대로"라 했던 부분을 사용자가 뒤집었다 — 엔진 op도 `setAttr`(`getAttribute` op는
+애초에 없다 — 읽기는 OnChange/`PropTypesRead` 경로). **반영**: 공개 이름 `Attr`(콜러블 +
+`.Merged`/`.Overridden`)·`AttrKey`·`StringAttr`/`NumberAttr`/`BooleanAttr`·`isAttr`/`isAttrKey`, quad-types
+`Attr`/`AttrConstructor`/`AttrSugar<T>`/`AttrKeyObject`/`AttrKeyConstructor`/`AttrMarker`(마커 필드
+`__quadAttr`), 핸들러 이름 `AttrKeyFallbackHandler`/`AttrGroupFallbackHandler`, 브랜드 `AttrBrand`/
+`AttrKeyBrand`, 엔진 op `setAttr`, 소스 폴더 `quad-base/src/Attr/`(옛 `Attribute/`), gen-d·D·spec·라이브
+문서 일괄 치환(2026-09-07의 자기모순 사고를 피하려고 "옛 `…`" 인용 구간은 치환에서 보호). **그대로 둔 것**:
+Roblox 어휘(`SetAttribute`/`GetAttribute`)·소문자 "attribute"(엔진 개념)·파일명(`base/attribute-plan.md`,
+`spec.attribute`/`spec.tagattribute`). 원안의 논거(사용자 0명인 지금이 최저 비용, `Reference` → `Ref` 선례,
+`D.Frame { Attr { … } }` 실사용 타이핑)는 그대로 유효했다. 정본은 `base/attribute-plan.md` 머리 배너.
 
 ## 9. 실행 순서(결정 뒤) — 상태 [2026-09-07 밤]
 
 1. §4 Q9·Q14 답 → 동작 수정 커밋(작음). **완료**(회신 3차).
 2. 3절 Tag 유니언(코드 20줄 + 타입 + 정본) — 독립, 먼저 해도 됨. **완료**(`02adb01`).
 3. 2절 Tween — 결정은 (b) 통째 이동. **완료**(Brand→quad-types와 같은 커밋).
-4. 순수 이동 단위 하나: 1·5·6·7절(8절 이름은 미답이라 제외) — 동작 diff 0, `spec.*` 전량 +
+4. 순수 이동 단위 하나: 1·5·6·7절(8절 이름은 당시 미답이라 제외 — **2026-09-08 결정·반영**, 8절) — 동작 diff 0, `spec.*` 전량 +
    `doc-check.py` `.luau` 경로 검사 확장 + md 인용 치환 + `architecture.md` 트리·5절 규칙 명문화 +
    `README`. **완료(2026-09-07 밤)** — `Ref/{init,PreRef,PostRef}`·`Attr/{init,Key}`·`Dispatch/Modifier/
    {init,Handler}`는 메인이(비-init 파일만 `./`→`../`; `Dispatch/Modifier/init.luau`는 `./`가 `Dispatch/`라
@@ -308,7 +310,7 @@ lsp 가 덜 힘들어 하기 때문임."* 반영 모양: (1) 마커·센티널(`
 Effect/Blocker/Tag/Attr/Modifier/Slot/Dispatch/Handler) → (3) `Quad`·`CheckedQuad`·`Brand`·상수.
 주석·결정 이력은 옮기되 지우지 않는다(순수 재배치, diff는 이동뿐).
 
-### 10-4. `...Param`을 prop 모음에서 조립하는 타입 함수 / 정적으로 더 굽기 — **리서치(사용자 문항)**
+### 10-4. `...Param`을 prop 모음에서 조립하는 타입 함수 / 정적으로 더 굽기 — **[2026-09-08 결정] 지금 안 함, 리서치 대상(백로그 아님)**
 
 사용자: *"우리의 거대한 ...Param 파일들을 각 prop를 모아두고 필요한 부분을 뽑아 조립하는 타입함수의
 가능성이 열릴것으로 보임. D 파일의 크기를 크게 줄일 수 있을듯 해보이는데 어떻게 보는지? 정적으로
@@ -331,5 +333,13 @@ Effect/Blocker/Tag/Attr/Modifier/Slot/Dispatch/Handler) → (3) `Quad`·`Checked
   단 교집합은 8.6/8.8이 실측한 "무거주·캐스트 붕괴" 계열이라 이것도 스파이크가 필요하다(호버·자동완성·
   `too complex` 예산). 마커 전면화(10-2)로 유니언 팔이 줄어드는 건 이것과 독립적으로 이득.
 - 정리하면: **10-2·10-3을 먼저 반영하고 그 크기에서 (나)의 교집합 별칭 스파이크 → 그래도 부족하면
-  (가)를 §0 재검토 문항으로.** 사용자 결정 필요: (가)를 열어 볼 것인가(§0 확정의 예외), 아니면
-  (나)까지만인가. `question.md` 2절에 올려 둔다.
+  (가)를 §0 재검토 문항으로.** ~~사용자 결정 필요: (가)를 열어 볼 것인가(§0 확정의 예외), 아니면
+  (나)까지만인가. `question.md` 2절에 올려 둔다.~~
+- **[2026-09-08 사용자 결정] 지금 안 한다 — 그리고 백로그가 아니라 리서치 항목이다.** 사용자: *"정적
+  굽기는 지금 안 한다 동의. 이건 해야할 일이 아닌듯 하고, 백로깅이 아닌 리서치 대상으로 둬야할듯.
+  정보 추합부터 되어야하는 부분이라서 바로 작업하지도 못하고, 결정할 것도 많은지라 리서치가 되어야함.
+  그런데 이게 실제 런타임에 큰 영향을 미치진 않고, 유저가 보게 되는 export 표면에는 달라지지 않고
+  코드의 줄 수가 줄어들어 가벼워지는 효과 이외에는 없을 예정이라 당장 필요한 것 또한 아니기도 함."*
+  메인 논거도 같았다(D 타입 검사 3.41초로 실측상 문제 없음 — "가상의 미래 요구에 구조를 쓰지 않는다").
+  `question.md`에서 내렸다(사용자 몫 아님) — 착수 트리거는 D 타입 검사 시간이나 `too complex`가
+  실제로 문제 될 때이고, 그때도 (가)·(나) 스파이크 정보를 먼저 모으는 리서치가 선행한다.

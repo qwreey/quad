@@ -41,13 +41,17 @@
      `research/source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
      통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attr/`·
      `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
-     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅)·Q27(프로바이더 브랜드 프로브 등록) — round3 §4(Q28·Q29는 닫힘 — Q28 UB, Q29 `Slot/types.luau`); 구조
-     재편 8절 `Attr` 축약(미답)·10-4 D 정적 굽기(§0 타입 함수 예외 여부); flatten 슈거 일곱.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     **[2026-09-08 아침 회신 반영 — round3 §12]** Gemini 코드 품질 자문(무시 파일 `qa-request/code-quality-and-architecture-advisory-ignoreme.md`,
+     커밋 안 됨) 권고 셋 — `__tostring`(목록 고정, `spec.tostring` 스펙 50)·`setFuncLevel(level, ...fns)`(옛 시그니처 폐기, `H-475`)·
+     메시지 헬퍼 기각 → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`); 옛 `Attribute` → **`Attr`**(+`AttrKey`·`setAttr`, 폴더
+     `Attr/`); 10-4는 리서치 대상으로; Q26 (a) 축소판(`H-476`), Q27 등록 op 기각(모듈 `is<Brand>` 필드가 계약, 진단 스캔).
+     **남은 사용자 몫: Q25(숏핸드 dedup — 사용자가 "Dedup인가 재실행인가·Animate 레이어가 맞나" 큰 그림 검토 중, 메인 분석 §12)·
+     flatten 슈거 일곱(+named 자리 축, 사용자 "내일") — `question.md` 2절.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).
-   - **[2026-09-07 밤 반영]** 소스 구조 재편 — `research/source-layout-plan.md`(`question.md` 2절). 여덟 중 일곱 +
-     후속 셋 반영, 남은 건 8절 `Attr` 축약과 10-4(사용자 문항).
+   - **[2026-09-07 밤 반영, 2026-09-08 닫힘]** 소스 구조 재편 — `research/source-layout-plan.md`. 여덟 중 일곱 +
+     후속 셋은 07 밤에, 8절 `Attr` 축약은 08 아침에 반영(`66281ab`), 10-4는 리서치 대상으로 — 남은 사용자 몫 없음.
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/

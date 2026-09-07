@@ -2423,3 +2423,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   사후 확인(마커 이름·`Source`) → **[같은 밤 후속]** 사후 확인 닫힘; 탐사 순회(opus 탐사자 둘 + Gemini 5차 판정, 전부 메인 실측)
   → round3 §10 `H-463`~`H-472`(Tween None/중첩 게이트·Animate 즉시 검증·이벤트 드롭 기록·`:Single` None·`Get`/`Contains`/`Peek`
   nil 가드·`drive` quad-값 게이트·Claim `_fired` 순서·Ref 콜백 게이트·`unbindLifetime(nil)` 에러) + Q33~Q36 → **회신 5차(09-08 새벽)** 전부 닫힘(Property nil 쓰기 — M10 skip-defense 역전, 보간 가능 타입만 Tween 팔, `Parent` 읽기 표면, KeyGone `ud` 재량); Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림(읽기는 nil).
+
+- **[2026-09-08-01] Gemini 코드 품질 자문 처리 + 남은 사용자 몫 일괄 회신**(`session/2026-09-08-01-advisory-and-user-items.md`,
+  원장 round3 §12): 권고 1 `__tostring` 채택(목록 고정 — "브랜드가 있으면"은 사용자 거부, `AttrKey` 제외; `spec.tostring`, 스펙 50) ·
+  권고 2 `setFuncLevel(level, ...fns)` 채택·옛 시그니처 폐기(`H-475` nil 구멍 로드 시점 에러) · 권고 3 메시지 헬퍼 **기각**(정적 grep —
+  *"헬퍼가 있으면 에러 포맷 부분이 전부 쪼개짐"*) → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`) · 옛 `Attribute` → **`Attr`**
+  (+`AttrKey`·엔진 op `setAttr`·폴더 `Attr/`, 라이브 문서 일괄 — "옛" 인용 보호, 8절은 재작성) · 10-4 정적 굽기는 백로그 아닌 리서치로 ·
+  Q26 (a) 축소판(둘째 증상은 Q33으로 소멸 — `H-476`) · Q27 등록 op 기각(모듈 최상위 `is<Brand>` 필드가 계약, 진단 스캔) ·
+  Q25는 사용자가 "Dedup인가 재실행인가·Animate 레이어가 맞나" 큰 그림 검토 중(메인 분석 §12) · flatten 일곱은 내일(+named 자리 축).
+  커밋 `66281ab`·`55ca091`·`24320db`·`7e80ace`, test.sh exit 0(스펙 50), doc-check ERROR 0.

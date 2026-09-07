@@ -120,7 +120,9 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
 
 처음엔 "첫 세팅 여부(`hasBeenSet: boolean`)"와 "실행 중인 엔진 Tween
 객체"를 별도 필드로 저장하려 했으나, **하나의 릴레이션 슬롯으로 통합** —
-`relate:GetStrong(inst,k)`가 돌려주는 값의 3가지 상태:
+`relate:GetStrong(inst,k)`가 돌려주는 값의 3가지 상태(**[2026-09-08 Q26 (a)]** 넷째 상태가 하나 더 —
+**`{Value: T, Source: Tween<T>}`(엔진 트윈 없음)**: Tween 값이 첫 세팅에서 스냅된 기록. `Tween` 필드가
+없다는 것으로 진행 중 테이블과 구분하고, 분기 3의 취소·Finish 스냅은 `Tween`이 있을 때만 — 절 머리 참고):
 
 - **`nil`** — 이 `(inst,k)`가 이번 `inst`에서 한 번도 process된 적 없음
   (첫 세팅).
@@ -140,10 +142,11 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
 **분기**:
 
 1. **`prev == nil`(첫 세팅)** — `realv`가 `Tween<T>`든 plain이든 무관하게
-   **애니메이션 없이 즉시 `Value`(또는 plain 값)로 세팅**, 슬롯엔 `true`
-   저장. 엔진 기본값(예: Frame 기본 `Position`)에서 목표값으로 날아오는
+   **애니메이션 없이 즉시 `Value`(또는 plain 값)로 세팅**, 슬롯엔 plain이면 `true`,
+   Tween이면 **[2026-09-08 Q26 (a)]** `{ Value, Source }`(엔진 트윈 없음 — 같은 Tween
+   재발행이 신원으로 접히도록) 저장. 엔진 기본값(예: Frame 기본 `Position`)에서 목표값으로 날아오는
    "첫 마운트 진입 애니메이션" 버그를 이걸로 방지.
-2. **`prev == true`(세팅된 적 있음, 활성 트윈 없음)**:
+2. **`prev == true`(세팅된 적 있음, 활성 트윈 없음) 또는 `{ Value, Source }`(첫 스냅 기록 — 취소할 트윈 없음, **[2026-09-08 Q26 (a)]** 같은 분기)**:
    - `realv`가 plain 값 → 즉시 세팅, 슬롯은 `true` 유지.
    - `realv`가 `Tween<T>` → 이제 정상적으로 애니메이션 시작(현재 인스턴스
      프로퍼티 값에서 자연스럽게 출발), 슬롯에 새

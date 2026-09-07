@@ -969,8 +969,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     Store 값으로 실제로 흘러들어오는 경우), 런타임에도 방어가 필요함.
     전용 `Handler`를 하나 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
     isHandlable = function(inst,k,v) return isPreRef(v) end, process =
-    function(inst,k,v) Err.errorBefore(`PreRef binding should be array
-    index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-08-31 M3
+    function(inst,k,v) Err.errorBefore(`PreRef: must be an array item, not
+    the value of a {typeof(k)} key`, SURFACE) end }`(**[2026-09-08]** 문구는 `architecture.md` "메시지 모양" 규약)(**[2026-08-31 M3
     단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 — 같은 부류인
     Observer/Effect 가드가 실제로 이 모양으로(각자 `Observer.luau`/
     `Effect.luau`에서 — `H-278`) 구현됐다, `base/source-state-plan.md`의 "동적 경로 가드" 절;
@@ -1190,15 +1190,15 @@ dispatch-core-plan.md` "Length/Offset" 절의 계약을 특수 취급 없이 그
 `PreRef`와 똑같이, `PostRef`도 **children 배열의 리터럴 아이템으로만** 놓을
 수 있음 — Modifier 필드/Source/Store 값으로는 **타입으로 차단**(**[2026-09-04
 M8 단위 ② 리뷰 반영]** 가드는 `k`를 안 보므로 `Source(PreRef)`처럼 **숫자 키**로
-도달한 경우 아래 문구("but got number")가 자기모순이 된다 — 그 경우만 "State/Store
+도달한 경우 아래 문구("not the value of a number key" — 2026-09-08 메시지 모양)가 자기모순이 된다 — 그 경우만 "State/Store
 값을 거쳐 배열 index {k}에 도달했다, pre-pass는 그걸 못 본다"로 원인을 지목하고,
 named 키면 아래 문구 그대로. `PreRef` 가드도 동일)(이유도
 동일: flatten되면 해시 파트로 존재하게 돼 "배열 파트" 전제를 벗어나고,
 Store 경로로 뒤늦게 도착한 값은 "이 인스턴스의 construction 훅"이라는
 정의 자체를 만족시킬 수 없음). 타입은 런타임에 지워지므로 정상 우선순위
 레지스트리에 `{ priority = HANDLER_PRIORITY_FALLBACK, isHandlable =
-isPostRef(v), process = Err.errorBefore(`PostRef binding should be array
-index item, but got {typeof(k)}`, SURFACE) }` Handler를 등록
+isPostRef(v), process = Err.errorBefore(`PostRef: must be an array item, not
+the value of a {typeof(k)} key`, SURFACE) }` Handler를 등록
 (**[2026-08-31 M3 단위 4]** error 발화는 `H-231` 워커의 최외곽 스캔 —
 `PreRef`의 "동적 경로 가드" 절과 같은 논증)(**[2026-08-18]** 에러 메시지에
 실제 `k` 타입을 실을 것 — `base/source-state-plan.md`의 "동적 경로 가드" 절)(`k` 타입 안 가림 — `PreRef`의 "동적 경로

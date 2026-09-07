@@ -340,7 +340,7 @@ end
 
   두 자리는 **완전히 별개의 체인**이고 각자 자기 `StoreBind`의 Observer가
   독립적으로 깨어난다. `groupB` 쪽 emit이 먼저 처리되면 `nameClaims`가 아직
-  `groupA`의 키를 가리키므로 **`attribute "Hp" is already bound by another
+  `groupA`의 키를 가리키므로 **`AttrKey: attribute "Hp" is already bound by another
   owner` error**가 난다. `groupA` 쪽이 먼저면 정상 동작한다 — **같은 코드가
   emit 순서에 따라 성공하거나 크래시한다.** 단건 `AttrKey` ↔ 그룹
   사이의 이전(`H-45`)도 정확히 같은 모양이다.
