@@ -51,6 +51,14 @@ Attribute/Observer/EffectHandle 마커화, quad-types 단일 파일 재배치(�
 감사자 3라운드: 코드 주석의 옛 경로 11건(7건은 리뷰 반영 때 이미 고침)·의심 2 → 잔여 grep 0으로 닫음. **감사 루프는
 3라운드(16→2→4)에서 각도 소진으로 종료** — 4라운드 대신 src/test 전체 grep으로 옛 경로 0 확인.
 
+## 2-2. Q28·Q29 회신(대화형)
+
+Q28 (a) UB. Q29는 내 권고 (a)가 아니라 사용자의 원래 생각 — `S`를 풀어내지 않고 `S.x`를 그대로 쓰되 타입을 `Slot/`
+안 `types.luau`에 두는 것(내부 구현 타입은 quad-base, 외부 계약만 quad-types). 같이 받은 질문 "S.bindLifetime은 왜?
+다른 곳에도 그런 패턴이 있나?" — 조사 결과 그 래퍼 셋은 M6 fork가 남긴 것이고 코퍼스에 그것뿐, 다른 모듈은 인라인
+`module.x(...)`(스무 곳). 래퍼 제거·인라인, `SlotInternal` 타입, 재캡처 제거(`function S.Slot_mt.List` 포함),
+`architecture.md` 코드 스타일 절 신설. test.sh exit 0.
+
 ## 3. 사용자 추가 요청(세션 중)
 
 외부 모델(Gemini 등) 감사용 클린 컨텍스트 진입점 — `qa-request/external-review-entry.md` 신설

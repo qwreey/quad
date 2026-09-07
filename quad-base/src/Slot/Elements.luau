@@ -8,18 +8,15 @@
 	and the `S` protocol). Behaviour and comments are the moved originals.
 ]]
 
-return function(S: any, module: any)
-	local isSlot = S.isSlot
-	local isState = S.isState
-	local isInst = S.isInst
-	local None = S.None
-	local SURFACE = S.SURFACE
+local Types = require("./types")
+
+return function(S: Types.SlotInternal, module: any)
 
 	-- One body for "this element dies": a nested Slot goes through destroySlotTree (recursion),
 	-- anything else through the backend's dispose — round3 `H-451` folded the hand copies that
 	-- `H-393`/Q14 kept catching one at a time (destroySlotTree loops, releaseElement, detach cleanup).
 	local function destroyElement(element: any)
-		if isSlot(element) then S.destroySlotTree(element) else module.nativeDispose(element) end
+		if S.isSlot(element) then S.destroySlotTree(element) else module.nativeDispose(element) end
 	end
 
 	-- wrap: element-type whitelist gate (H-40) + State→wrapper-Slot. raw* only
@@ -29,25 +26,25 @@ return function(S: any, module: any)
 	-- inside a reactive callback blames its own line, not the `:Set` that ran
 	-- the callback; `settle` (reconcile depth) passes `errorBefore`.
 	local function wrapElement(v: any, raise: (string, any) -> ()): any
-		if isSlot(v) then
+		if S.isSlot(v) then
 			-- round15 `H6-19`: a destroyed Slot must fail HERE (pre-pass), not
 			-- inside attachSlot after the array/ownership mutation — otherwise
 			-- Splice's batch gate is left On by the raise (통합 리뷰 재현).
 			if v._destroyed then
-				raise("Slot: destroyed Slot cannot be an element", SURFACE)
+				raise("Slot: destroyed Slot cannot be an element", S.SURFACE)
 			end
 			return v
 		end
-		if not isState(v) then
+		if not S.isState(v) then
 			if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
 				or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
-				raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", SURFACE)
+				raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
 			end
-			if v == nil or v == None then
-				raise("Slot: nil/None cannot be an element — only actually mountable values", SURFACE)
+			if v == nil or v == S.None then
+				raise("Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
 			end
-			if not isInst(v) then
-				raise("Slot: this backend cannot mount this value", SURFACE)
+			if not module.isInst(v) then
+				raise("Slot: this backend cannot mount this value", S.SURFACE)
 			end
 			return v
 		end
@@ -59,7 +56,7 @@ return function(S: any, module: any)
 
 	local function unwrapElement(el: any): any
 		if el == nil then return nil end
-		if isSlot(el) then return el._wrapped or el end
+		if S.isSlot(el) then return el._wrapped or el end
 		return el
 	end
 
@@ -70,7 +67,7 @@ return function(S: any, module: any)
 	local function collectLeaves(slot: any, out: { any }?): { any }
 		local acc: { any } = out or {}
 		for _, element in ipairs(slot._elements) do
-			if isSlot(element) then collectLeaves(element, acc)
+			if S.isSlot(element) then collectLeaves(element, acc)
 			else table.insert(acc, element) end
 		end
 		return acc
@@ -79,7 +76,7 @@ return function(S: any, module: any)
 	-- leavesOf(element): the array a native* op receives for ONE _elements
 	-- entry — the element itself, or its flattened leaves if it is a Slot.
 	local function leavesOf(element: any): { any }
-		return if isSlot(element) then collectLeaves(element) else { element }
+		return if S.isSlot(element) then collectLeaves(element) else { element }
 	end
 
 	S.destroyElement = destroyElement

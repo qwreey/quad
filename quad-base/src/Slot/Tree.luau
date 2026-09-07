@@ -10,14 +10,9 @@
 	in-file order is the original one (releaseSugarWrapper before teardownTree).
 ]]
 
-return function(S: any, module: any)
-	local BK = S.BK
-	local None = S.None
-	local isSlot = S.isSlot
-	local bindLifetime = S.bindLifetime
-	local unbindLifetime = S.unbindLifetime
-	local Err = S.Err
-	local SURFACE = S.SURFACE
+local Types = require("./types")
+
+return function(S: Types.SlotInternal, module: any)
 
 	-- No forward declarations here (round3 §9 `H-461`): after the split every tree
 	-- function is defined before its first same-file use (cross-file calls go through
@@ -29,21 +24,21 @@ return function(S: any, module: any)
 	local function makeBaseObserver(slot: any): any
 		return slot.Offset:Observer(function()
 			if slot._physicalTarget == nil then return end -- unmaterialized: swallow the install fire
-			local bk = BK.getBookkeeping(slot)
+			local bk = S.BK.getBookkeeping(slot)
 			bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0 -- base changed → all
 			S.maybeRecompute(slot, bk)
 		end)
 	end
 
 	local function materializeSlotTree(slot: any, physicalTarget: any, ownerKey: any, position: number)
-		if slot._destroyed then Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE) end
+		if slot._destroyed then S.Err.errorBefore("Slot: destroyed Slot cannot be mounted", S.SURFACE) end
 		slot._physicalTarget = physicalTarget
 
-		local blocker = BK.getBlocker(slot)
+		local blocker = S.BK.getBlocker(slot)
 		blocker:On()
 		slot._baseObserver._rerunRequired = false
-		bindLifetime(physicalTarget, slot._baseObserver)
-		BK.setOffsetSource(ownerKey, position, slot.Offset)
+		module.bindLifetime(physicalTarget, slot._baseObserver)
+		S.BK.setOffsetSource(ownerKey, position, slot.Offset)
 
 		local remountingList = slot._listed and slot._listActivated
 		if slot._listed and not slot._listActivated then
@@ -53,20 +48,20 @@ return function(S: any, module: any)
 				slot:_activateList(physicalTarget) -- remount: anchor only
 			end
 			for i, element in ipairs(slot._elements) do
-				if isSlot(element) then
+				if S.isSlot(element) then
 					materializeSlotTree(element, physicalTarget, slot, i)
 				else
-					BK.setOffsetSource(slot, i, None)
-					BK.setLength(slot, i, 1, physicalTarget, element)
+					S.BK.setOffsetSource(slot, i, S.None)
+					S.BK.setLength(slot, i, 1, physicalTarget, element)
 				end
 			end
 		end
 		blocker:OffWithoutEmit()
-		S.maybeRecompute(slot, BK.getBookkeeping(slot)) -- the batch gate just opened; only the reentry gate can still hold
+		S.maybeRecompute(slot, S.BK.getBookkeeping(slot)) -- the batch gate just opened; only the reentry gate can still hold
 		if remountingList and slot._listObserver then
-			bindLifetime(physicalTarget, slot._listObserver)
+			module.bindLifetime(physicalTarget, slot._listObserver)
 		end
-		BK.setLength(ownerKey, position, slot.Length, physicalTarget, slot)
+		S.BK.setLength(ownerKey, position, slot.Length, physicalTarget, slot)
 	end
 
 	-- Mounting is two halves (`H6-9` (b), user decision 2026-09-03): the FLAG
@@ -77,7 +72,7 @@ return function(S: any, module: any)
 		slot._mounted = true
 		slot._mountedInst = physicalTarget
 		for _, element in ipairs(slot._elements) do
-			if isSlot(element) then markMountedTree(element, physicalTarget) end
+			if S.isSlot(element) then markMountedTree(element, physicalTarget) end
 		end
 	end
 
@@ -116,15 +111,15 @@ return function(S: any, module: any)
 	-- logical half only and folds the leaves into its single op.
 	local function teardownTree(slot: any)
 		for _, element in ipairs(slot._elements) do
-			if isSlot(element) then teardownTree(element) end
+			if S.isSlot(element) then teardownTree(element) end
 		end
-		local bk = BK.getBookkeeping(slot)
+		local bk = S.BK.getBookkeeping(slot)
 		for _, observer in pairs(bk.observers) do
-			unbindLifetime(observer)
+			module.unbindLifetime(observer)
 		end
-		if slot._listObserver then unbindLifetime(slot._listObserver) end
-		if slot._detachCleanup then unbindLifetime(slot._detachCleanup) end
-		unbindLifetime(slot._baseObserver)
+		if slot._listObserver then module.unbindLifetime(slot._listObserver) end
+		if slot._detachCleanup then module.unbindLifetime(slot._detachCleanup) end
+		module.unbindLifetime(slot._baseObserver)
 		slot._mounted, slot._mountedInst = false, nil
 		slot._physicalTarget = nil
 		-- round15 `H6-19` (통합 리뷰 재현): restore the UNMATERIALIZED invariant.
@@ -171,14 +166,14 @@ return function(S: any, module: any)
 			end
 		end
 		if slot._detachCleanup then
-			unbindLifetime(slot._detachCleanup)
+			module.unbindLifetime(slot._detachCleanup)
 			slot._detachCleanup = nil
 		end
-		if slot._listObserver then unbindLifetime(slot._listObserver) end
-		unbindLifetime(slot._baseObserver)
-		local bk = BK.getBookkeeping(slot)
+		if slot._listObserver then module.unbindLifetime(slot._listObserver) end
+		module.unbindLifetime(slot._baseObserver)
+		local bk = S.BK.getBookkeeping(slot)
 		for _, observer in pairs(bk.observers) do
-			unbindLifetime(observer)
+			module.unbindLifetime(observer)
 		end
 		slot._mounted, slot._mountedInst = false, nil
 		slot._physicalTarget = nil

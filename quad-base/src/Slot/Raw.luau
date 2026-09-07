@@ -10,23 +10,21 @@
 	and the `S` protocol). Behaviour and comments are the moved originals.
 ]]
 
-return function(S: any, module: any)
-	local BK = S.BK
-	local None = S.None
-	local isSlot = S.isSlot
-	local unbindLifetime = S.unbindLifetime
+local Types = require("./types")
+
+return function(S: Types.SlotInternal, module: any)
 
 	-- reindexFrom: rewrite bk.indexOfElement from `from` to end. Every place
 	-- that shifts _elements calls this — regardless of materialization.
 	local function reindexFrom(self: any, from: number)
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		for i = from, #self._elements do
 			bk.indexOfElement[self._elements[i]] = i
 		end
 	end
 
 	local function spliceArraysUp(self: any, index: number)
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		local n = bk.N or 0
 		for i = n, index, -1 do
 			bk.lengthList[i + 1] = bk.lengthList[i]
@@ -34,7 +32,7 @@ return function(S: any, module: any)
 			bk.observers[i + 1] = bk.observers[i]
 		end
 		bk.lengthList[index] = 0 -- placeholder (H-5) — filled by setLength
-		bk.sourceList[index] = None
+		bk.sourceList[index] = S.None
 		bk.observers[index] = nil
 		bk.N = n + 1
 		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, index - 1)
@@ -42,7 +40,7 @@ return function(S: any, module: any)
 	end
 
 	local function spliceArraysDown(self: any, index: number)
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		local n = bk.N or 0
 		for i = index, n - 1 do
 			bk.lengthList[i] = bk.lengthList[i + 1]
@@ -64,15 +62,15 @@ return function(S: any, module: any)
 	-- Extracted 2026-09-03 (user-approved) — it was copy-pasted at every
 	-- raw* tail and the reconcile/List tails.
 	local function maybeRecompute(self: any, bk: any)
-		if BK.getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn() then return end
-		BK.recompute(self, bk)
+		if S.BK.getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn() then return end
+		S.BK.recompute(self, bk)
 	end
 
 	-- unbindObserverAt — a position's length observer (State-length slots
 	-- only; constants have none) goes with the position.
 	local function unbindObserverAt(bk: any, index: number)
 		local observer = bk.observers[index]
-		if observer then unbindLifetime(observer) end
+		if observer then module.unbindLifetime(observer) end
 	end
 
 	-- vacate — the shared tail of the raw 3-family (rawRemove/rawUnmount/
@@ -107,14 +105,14 @@ return function(S: any, module: any)
 
 		spliceArraysUp(self, index)
 		local physical = self._mounted and not deferPhysical
-		if isSlot(element) then
+		if S.isSlot(element) then
 			S.attachSlot(element, self._physicalTarget, self, index, physical)
 		else
-			BK.setOffsetSource(self, index, None)
+			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
-				module.nativeInsert(self._mountedInst, BK.getOffsetAt(self, index), { element })
+				module.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 			end
-			BK.setLength(self, index, 1, self._physicalTarget, element)
+			S.BK.setLength(self, index, 1, self._physicalTarget, element)
 		end
 		return index
 	end
@@ -134,12 +132,12 @@ return function(S: any, module: any)
 	--   rawDetach : KEEP ownership + alive ← this Slot still holds it (_detached)
 	local function rawRemove(self: any, index: number)
 		local element = self._elements[index]
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
-		if isSlot(element) then S.destroySlotTree(element)
+		if S.isSlot(element) then S.destroySlotTree(element)
 		elseif self._mounted then
-			module.nativeRemove(self._mountedInst, BK.getOffsetAt(self, index), { element })
+			module.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		else
 			module.nativeDispose(element)
 		end
@@ -148,25 +146,25 @@ return function(S: any, module: any)
 
 	local function rawUnmount(self: any, index: number, deferPhysical: boolean?)
 		local element = self._elements[index]
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
-		if isSlot(element) then leaveAsElement(element, deferPhysical)
+		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
 		elseif self._mounted and not deferPhysical then
-			module.nativeExtract(self._mountedInst, BK.getOffsetAt(self, index), { element })
+			module.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
 		vacate(self, index, element, bk)
 	end
 
 	local function rawDetach(self: any, index: number)
 		local element = self._elements[index]
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		-- releaseOwner NOT called — the one difference from rawUnmount: releasing
 		-- would let someone else claim what slot._detached still holds.
-		if isSlot(element) then S.unmountSlotTree(element)
+		if S.isSlot(element) then S.unmountSlotTree(element)
 		elseif self._mounted then
-			module.nativeExtract(self._mountedInst, BK.getOffsetAt(self, index), { element })
+			module.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
 		vacate(self, index, element, bk)
 	end
@@ -177,14 +175,14 @@ return function(S: any, module: any)
 		S.claimOwner(newElement, self)
 		S.releaseOwner(oldElement, self)
 		self._elements[index] = newElement
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		bk.indexOfElement[oldElement] = nil
 		bk.indexOfElement[newElement] = index
 
 		if not self._mounted then
 			if destroyOld then
 				S.destroyElement(oldElement)
-			elseif isSlot(oldElement) then
+			elseif S.isSlot(oldElement) then
 				-- materialized but unmounted: the old subtree still has its
 				-- observers bound to the target — logical teardown (`H6-23`).
 				-- Unmaterialized: nothing to tear down, but a sugar wrapper that
@@ -193,35 +191,35 @@ return function(S: any, module: any)
 				if oldElement._wrapped ~= nil then S.releaseSugarWrapper(oldElement) end
 			end
 			if self._physicalTarget ~= nil then
-				if isSlot(newElement) then
+				if S.isSlot(newElement) then
 					S.attachSlot(newElement, self._physicalTarget, self, index, false)
 				else
-					BK.setOffsetSource(self, index, None)
-					BK.setLength(self, index, 1, self._physicalTarget, newElement)
+					S.BK.setOffsetSource(self, index, S.None)
+					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
 				end
 			end
 			return
 		end
 
-		local offset = BK.getOffsetAt(self, index)
-		if isSlot(oldElement) or isSlot(newElement) then
-			if isSlot(oldElement) then
+		local offset = S.BK.getOffsetAt(self, index)
+		if S.isSlot(oldElement) or S.isSlot(newElement) then
+			if S.isSlot(oldElement) then
 				if destroyOld then S.destroySlotTree(oldElement) else leaveAsElement(oldElement) end
 			else
 				local op = if destroyOld then module.nativeRemove else module.nativeExtract
 				op(self._mountedInst, offset, { oldElement })
 			end
-			if isSlot(newElement) then
+			if S.isSlot(newElement) then
 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
 				return
 			end
-			BK.setOffsetSource(self, index, None)
+			S.BK.setOffsetSource(self, index, S.None)
 			module.nativeInsert(self._mountedInst, offset, { newElement })
 		else
 			local op = if destroyOld then module.nativeRemove else module.nativeExtract
 			op(self._mountedInst, offset, { oldElement }, { newElement })
 		end
-		BK.setLength(self, index, 1, self._physicalTarget, newElement)
+		S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
 	end
 
 	-- rawMove: reorder within _elements (no Parent op on Roblox — LayoutOrder-
@@ -259,8 +257,8 @@ return function(S: any, module: any)
 			-- is spliced like `_elements` is (remove at from, insert at to), so
 			-- moving down past `to` lands after `to`'s leaves minus our own.
 			local moving = S.leavesOf(els[fromIndex])
-			local fromOffset = BK.getOffsetAt(self, fromIndex)
-			local toOffset = BK.getOffsetAt(self, toIndex)
+			local fromOffset = S.BK.getOffsetAt(self, fromIndex)
+			local toOffset = S.BK.getOffsetAt(self, toIndex)
 			if fromIndex < toIndex then
 				toOffset += #S.leavesOf(els[toIndex]) - #moving
 			end
@@ -276,7 +274,7 @@ return function(S: any, module: any)
 		-- _elements + indexOfElement leaves recompute writing offsets to the old
 		-- occupant's Source. (Roblox nativeMove is a no-op — correctness is
 		-- entirely this bookkeeping permutation + recompute.)
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		rotateInPlace(bk.lengthList, fromIndex, toIndex)
 		rotateInPlace(bk.sourceList, fromIndex, toIndex)
 		rotateInPlace(bk.observers, fromIndex, toIndex)
@@ -293,12 +291,12 @@ return function(S: any, module: any)
 		if self._mounted then
 			module.nativeSwap(
 				self._mountedInst,
-				BK.getOffsetAt(self, lo), S.leavesOf(els[lo]),
-				BK.getOffsetAt(self, hi), S.leavesOf(els[hi])
+				S.BK.getOffsetAt(self, lo), S.leavesOf(els[lo]),
+				S.BK.getOffsetAt(self, hi), S.leavesOf(els[hi])
 			)
 		end
 		els[lo], els[hi] = els[hi], els[lo]
-		local bk = BK.getBookkeeping(self)
+		local bk = S.BK.getBookkeeping(self)
 		bk.indexOfElement[els[lo]], bk.indexOfElement[els[hi]] = lo, hi
 		if self._physicalTarget == nil then return end
 		for _, arr in { bk.lengthList, bk.sourceList, bk.observers } :: { any } do
@@ -324,15 +322,15 @@ return function(S: any, module: any)
 			removed[i - index + 1] = self._elements[i]
 		end
 		local mounted = self._mounted
-		local gate = if self._physicalTarget ~= nil then BK.getBlocker(self) else nil
+		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
 		local ownsGate = gate ~= nil and not gate:IsOn()
 		if ownsGate then gate:On() end
 
 		local base, removedLeaves: { any } = 0, {}
 		if mounted then
-			base = BK.getOffsetAt(self, index) -- before the mutation — the cache describes the current layout
+			base = S.BK.getOffsetAt(self, index) -- before the mutation — the cache describes the current layout
 			for _, element in ipairs(removed) do
-				if isSlot(element) then S.collectLeaves(element, removedLeaves)
+				if S.isSlot(element) then S.collectLeaves(element, removedLeaves)
 				else table.insert(removedLeaves, element) end
 			end
 		end
@@ -345,7 +343,7 @@ return function(S: any, module: any)
 		if mounted then
 			local newLeaves = {}
 			for k, element in ipairs(newElements) do
-				if isSlot(element) then S.collectLeaves(element, newLeaves)
+				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
 				else table.insert(newLeaves, element) end
 			end
 			if #removedLeaves > 0 then
@@ -354,13 +352,13 @@ return function(S: any, module: any)
 				module.nativeInsert(self._mountedInst, base, newLeaves)
 			end
 			for _, element in ipairs(newElements) do
-				if isSlot(element) then S.markMountedTree(element, self._mountedInst) end
+				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
 			end
 		end
 
 		if ownsGate then
 			gate:OffWithoutEmit()
-			maybeRecompute(self, BK.getBookkeeping(self))
+			maybeRecompute(self, S.BK.getBookkeeping(self))
 		end
 		return removed
 	end
@@ -385,7 +383,7 @@ return function(S: any, module: any)
 	end
 
 	local function indexOfRaw(self: any, element: any): number?
-		return BK.getBookkeeping(self).indexOfElement[element]
+		return S.BK.getBookkeeping(self).indexOfElement[element]
 	end
 
 	local function getDetached(self: any): any

@@ -300,6 +300,7 @@ quad/
 │       │   ├── Tree.luau          # 트리 마운트·해체 — `materializeSlotTree`/`mountSlotTree`/`markMountedTree`/`attachSlot`/`teardownTree`/`unmountSlotTree`/`destroySlotTree`·`makeBaseObserver`·`releaseSugarWrapper`
 │       │   ├── Raw.luau           # 물리 조작 + 부기 — `raw*` 세트·`spliceArrays*`·`vacate`·`maybeRecompute`·`releaseElement`·`indexOfRaw`/`getDetached`(raw*는 이미 래핑된 요소만 본다)
 │       │   ├── List.luau          # `:List`/`:Single`/`_activateList`(`settle`·`reconcile` 로컬 클로저)·`checkListInstall`
+│       │   ├── types.luau         # **[2026-09-07 Q29 사용자 결정]** 내부 표 `S`의 타입 `SlotInternal` — 내부 구현 타입은 quad-base(여기), 외부 계약만 quad-types. 형제는 `S.x`를 직접 읽는다(재캡처·래퍼 없음)
 │       │   └── Handler.luau       # (옛 `Dispatch/Slot.luau`) SlotHandler — 마운트/언마운트 + 그 자리 Length/Offset 부기(값 타입 본체는 위 top-level `Slot/init.luau`)
 │       ├── Attribute/            # **[2026-09-07 패밀리 접기 — 사용자 결정 `research/source-layout-plan.md` 4절 (a)]** 옛 `Attribute.luau`+`AttributeKey.luau`
 │       │   ├── init.luau          # **[`H10-1` 재편]** 그룹 값 타입+API(`Attribute(store1, store2, ...)`/`Merged`/`Overridden`/`:NameMap`, `Tag`와 동형) **+ `AttributeGroupHandler`+FALLBACK 자기 등록까지 이 한 파일** + **[2026-09-03]** 타입드 스칼라 슈가 `StringAttribute(name, value)`/`Number…`/`Boolean…`(= 단일 항목 그룹, raw 값 타입 검사·nil 거부) (`base/attribute-plan.md`)
@@ -515,6 +516,17 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   소속) 소문자. `Dispatch`/`Brand`가 프리미티브가 아닌 이유는
   `base/dispatch-core-plan.md`의 "Dispatch는 프리미티브가 아니다" 절/
   `base/source-state-plan.md`의 "일반 원칙 — 독립 존재 가능한 프리미티브 vs 원천에 종속된 파생 데이터" 절(세 번째 카테고리 문단) 참고.
+
+## 코드 스타일 — 모듈 필드는 매번 `module.x`로 읽는다, 래퍼·로컬 캡처를 만들지 않는다 (2026-09-07 신설, 사용자)
+
+백엔드가 주입하는 값(`bindLifetime`/`unbindLifetime`/`isInst`/`native*`/`onDestroying`…)은 `H-174`대로
+**호출 시점에 `module.x(...)`로 읽는다** — Init 시점 로컬 캡처는 설치 전 스텁을 영원히 잡아 금지이고,
+`local function bindLifetime(...) module.bindLifetime(...) end` 같은 **래퍼도 만들지 않는다**. 사용자
+원문(2026-09-07, Q29 회신): *"그냥 받은 module 그대로 사용할 수 있는건데, 다른곳과 똑같이 module.bindLifetime
+을 계속 읽어도 좋음. 정적 해시가 된 필드 읽기는 luau 에서 충분히 빠른 부분이라 미리 local 로 빼두는게 이득이
+없음."* 실태: 그런 래퍼는 M6 fork가 남긴 `Slot.luau`의 셋뿐이었고(분할 뒤 제거) 다른 모듈은 전부 인라인
+읽기다(`Effect.luau`·`Claim.luau`·`Tag.luau` 등 스무 곳). `module.Dispatch`/`isState`/`None`/`errorNamespace`처럼
+`New()`가 채우고 덮이지 않는 값을 Init 로컬에 두는 건 무방(29곳) — 다만 새로 쓸 땐 굳이 캡처하지 말 것.
 
 ## 코드 스타일 — Luau 문법 관례: `if-then-else`/`const` (2026-08-12 세션 신설)
 

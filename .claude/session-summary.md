@@ -2418,5 +2418,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   마커 전면화(Tag/Attribute/Observer/EffectHandle) + quad-types 순수 재배치 · 패밀리 폴더(`Ref/`·`Attribute/`·
   `Dispatch/Modifier/`·`Slot/` 여섯+Handler — opus 위임, 내부 표 `S`) · `doc-check.py` `.luau` 경로 검사 · 인용 143줄 치환.
   외부 모델 감사 진입점 `qa-request/external-review-entry.md` 신설(사용자 요청). 이동 뒤 순회: 감사자 3라운드·`/code-review` 10건 → round3 §9
-  `H-453`~`H-462`(doc-check 폴백 구멍·성능, `S` 과잉 공개, `Merged` 중복, 스파이크 36) + Q28·Q29. 남은 몫: 8절 `Attr`,
-  10-4 D 정적 굽기(§0 예외), Q27~Q29, Q25·Q26, 사후 확인(마커 이름·`Source`).
+  `H-453`~`H-462`(doc-check 폴백 구멍·성능, `S` 과잉 공개, `Merged` 중복, 스파이크 36) + Q28·Q29. Q28 UB·Q29 `Slot/types.luau`(사용자 원안 — 내부 타입은
+  quad-base) + 래퍼 제거 규칙(architecture 코드 스타일). 남은 몫: 8절 `Attr`, 10-4 D 정적 굽기(§0 예외), Q27, Q25·Q26,
+  사후 확인(마커 이름·`Source`).

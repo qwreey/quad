@@ -20,10 +20,16 @@
 	  Raw.luau      — the raw* mutation layer + its bookkeeping helpers (vacate 등)
 	  Tree.luau     — materialize/mount/attach + teardown/unmount/destroy tree walks
 	  List.luau     — identityUpdateFn / _activateList / checkListInstall / :List / :Single
-	`S` is the internal table every sibling receives: init puts the prelude values on
-	it BEFORE installing anything, each sibling publishes its own functions back onto
-	it (`S.name = name`), and cross-file calls are late `S.name(...)` lookups — Luau
-	forward declarations cannot cross files. This init keeps the public Slot_mt CRUD,
+	`S` is the internal table every sibling receives — typed `Types.SlotInternal`
+	(`Slot/types.luau`, round3 §9 Q29, user decision 2026-09-07: internal types stay in
+	quad-base, quad-types carries only the public contract): init puts the prelude
+	values on it BEFORE installing anything, each sibling publishes its own functions
+	back onto it (`S.name = name`), cross-file calls are late `S.name(...)` lookups —
+	Luau forward declarations cannot cross files — and siblings read `S.x` directly
+	everywhere (no per-file re-captures, no wrapper functions). Backend-injected
+	primitives are not on `S`: every use is an inline `module.bindLifetime(...)`/
+	`module.isInst(...)` read (`H-174`; the old wrapper trio was a leftover of the M6
+	fork's style, not a need — a hashed field read is cheap, user 2026-09-07). This init keeps the public Slot_mt CRUD,
 	the gates (assertLive/assertManual/assertMutable/checkIndex/occupantOf/
 	prepareElements), the `Slot(initial)` constructor, `dispose`, the module exposure
 	+ `_slotInternal`, the handler registration and the setFuncLevel tagging loop.
@@ -33,6 +39,7 @@
 local Brand = require("./Brand")
 local Err = require("./ErrorNamespace")
 local InitDispatch = require("./Dispatch")
+local Types = require("@self/types")
 local QuadTypes = require("../luau_packages/quad_types")
 
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
@@ -64,9 +71,6 @@ local function Init(module: any)
 	-- ⚠️ H-174: lifetime primitives + native ops + isInst are backend-injected
 	-- AFTER New(), so they must be read LATE off module — capturing them as
 	-- Init-time locals would freeze the base error stubs forever.
-	local function bindLifetime(inst: any, v: any) module.bindLifetime(inst, v) end
-	local function unbindLifetime(v: any) module.unbindLifetime(v) end
-	local function isInst(v: any): boolean return module.isInst(v) end
 
 	-- element(Slot | mountable value) -> ownerKey(inst | Slot). All weak — the
 	-- real strong ref is slot._elements / SlotHandler's bindLifetime. Shared by
@@ -91,9 +95,6 @@ local function Init(module: any)
 		BK = BK,
 		None = None,
 		isState = isState,
-		bindLifetime = bindLifetime,
-		unbindLifetime = unbindLifetime,
-		isInst = isInst,
 		elementOwner = elementOwner,
 		OWNER = OWNER,
 		OWNER_POS = OWNER_POS,
@@ -103,7 +104,7 @@ local function Init(module: any)
 		SURFACE = SURFACE,
 		Detach = Detach,
 		KeyGone = KeyGone,
-	} :: any
+	} :: Types.SlotInternal
 
 	-- Published names are exactly the ones another file reads (round3 §9 `H-461` — the
 	-- first split copied every local; `S` is `any`, so a dead publish or a typo'd read is
@@ -350,7 +351,7 @@ local function Init(module: any)
 			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)" .. ZOMBIE_NOTE, SURFACE)
 		end
 		if isSlot(value) then S.destroySlotTree(value)
-		elseif isInst(value) then module.nativeDispose(value)
+		elseif module.isInst(value) then module.nativeDispose(value)
 		else Err.errorBeforeNearest("dispose: this backend cannot dispose this value", SURFACE) end
 	end
 
