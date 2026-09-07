@@ -102,7 +102,7 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이
 **`Tween<T>`의 정확한 필드 목록은 아래 "확정: `Tween{...}` 최종 모양" 절
 참고.**
 
-### 3-상태 저장 — `{Tween, Value} | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
+### 3-상태 저장 — `{Tween, Value, Source} | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
 
 **[2026-09-06 구현됨 — M11 단위 ②, round19]** `Handlers/Property.luau`의 `process`가
 아래 분기 1~3 그대로다(슬롯은 install 스코프의 `quad.Relate()`, 키는 프로퍼티 이름).
@@ -139,8 +139,8 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
    - `realv`가 plain 값 → 즉시 세팅, 슬롯은 `true` 유지.
    - `realv`가 `Tween<T>` → 이제 정상적으로 애니메이션 시작(현재 인스턴스
      프로퍼티 값에서 자연스럽게 출발), 슬롯에 새
-     `{Tween=<새 엔진 객체>, Value=realv.Value}` 저장.
-3. **`prev`가 `{Tween, Value}` 테이블(활성 트윈 있음)**:
+     `{Tween=<새 엔진 객체>, Value=realv.Value, Source=realv}` 저장.
+3. **`prev`가 `{Tween, Value, Source}` 테이블(활성 트윈 있음)**:
    - **먼저 override 정책(기본 `Tween.Cancel`, 아래 절)에 따라 이전 트윈을
      정리 — 반드시 그 정리가 끝난 뒤에 새 값을 세팅한다.** 순서가 뒤바뀌면
      이전 트윈의 다음 인터폴레이션 프레임이 방금 세팅한 값을 덮어쓸
@@ -152,7 +152,7 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
      들고 있던 값 사용) — 이후 아래는 이 스냅된 값 위에서 이어감.
    - 정리 후: `realv`가 plain 값이면 즉시 덮어쓰기 + 슬롯 `true`. `realv`가
      `Tween<T>`면 (정리 결과 값에서) 새 트윈 시작 + 슬롯을 새
-     `{Tween=<새 엔진 객체>, Value=realv.Value}`로 갱신.
+     `{Tween=<새 엔진 객체>, Value=realv.Value, Source=realv}`로 갱신.
    - Tween→plain 전환은 두 옵션 모두 "정리 후 즉시 덮어쓰기"로 수렴 —
      별도 5번째 옵션 불필요로 확정(2026-08-12 세션).
 
@@ -466,7 +466,7 @@ DelayTime: number?        -- default 0
 값을 사용자 데이터와 구분해야 하는 자리(`None`/`Detach`/`KeyGone`/`Processed*`)에만 남는다.
 
 **[2026-09-06 `H-328`]** 정책의 **주체는 활성 트윈 위에 새로 들어오는 값의
-`Override`**다 — 슬롯(`{ Tween, Value }`)엔 정책이 없다. plain 값이 들어오면
+`Override`**다 — 슬롯(`{ Tween, Value, Source }`)엔 정책이 없다. plain 값이 들어오면
 정책이 없어 `Cancel`과 같다(아래 "Tween→plain 전환" 수렴). 구현 배너는 "3-상태
 저장" 절.
 
@@ -483,7 +483,7 @@ API가 없음(`:Play`/`:Pause`/`:Cancel`뿐, 인스턴스 재사용 불가) — 
   동작과 일치.
 - **`Tween.Finish`** — 이전 트윈을 **목표값(`Value`)으로 스냅**시킨 뒤 그
   자리에서 새 트윈을 시작(기존 "끝점 이동 후 재시작"에 해당). 목표값은
-  로블록스 API로 역산 불가능하므로 릴레이션 슬롯에 `{Tween, Value}`로
+  로블록스 API로 역산 불가능하므로 릴레이션 슬롯에 `{Tween, Value, Source}`로
   같이 저장해뒀던 `Value`를 사용(위 "3-상태 저장" 절 참고).
 
 필드 이름은 `Override`(기존 문서에서 계속 써온 "override 정책" 용어와
@@ -590,8 +590,8 @@ Completed 이벤트를 구독해 3-상태 릴레이션 슬롯을 `true`로 되�
 **유저가 원한 목표값에 정확히 도달한 상태**(**[2026-09-07 4순회 캐비엇]**
 `TweenInfo`의 `Reverses = true`면 정지값은 *시작값*이다 — 그래서 `Finish`가
 `prev.Value`(목표값)로 스냅하는 것이고, 코드는 이 절의 축자 구현)이므로, 그 상태를 나타내는
-북키핑(`{Tween, Value}`)을 안 지우고 남겨둬도 다음에 이 `(inst,k)`가 다시
-process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분기를
+북키핑(`{Tween, Value, Source}`)을 안 지우고 남겨둬도 다음에 이 `(inst,k)`가 다시
+process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value, Source}` 테이블 분기를
 타는 것뿐 — override 정책(`Cancel`/`Finish`)이 정확히 이 케이스를 위해
 이미 정의돼 있어 별다른 부작용이 없다. 게다가 `Value`는 항상 lerp 가능한
 프리미티브(number/UDim/Vector 등, 테이블 aliasing 걱정이 있는 타입이
