@@ -19,6 +19,8 @@ gen-d(`PV`/`Field`/`Elem`/이벤트) → 재생성 → test.sh.
 - **순수 팬텀 필드** `__quadStateValue: T` / `__quadSlotValue: T` — 런타임에 T 값을 둘 수 없어
   값이 없다. H-300 "타입이 약속하면 값에도"의 첫 예외(`__quadRefAccepts`는 `Void`를 뒀다). 브랜드
   쪽 `__quadState`/`__quadSlot`은 `true`를 둔다. 읽는 코드가 없어야 한다는 규칙을 주석에 박았다.
+  → **사용자 확정(같은 날)**: *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면
+  그래도 좋아"* — 팬텀 허용, 값이 싸면 두는 것도 좋다. 지금 값 필드는 T라 둘 수 없어 팬텀 그대로.
 - **입력/출력 별칭 분리** — Slot의 `SlotElement<T>`(입력 마커)와 새 `SlotItem<T>`(출력 전체형),
   Modifier의 `FieldV<T>`(입력)와 새 `FieldOut<T>`(변환 함수 `old`). 같은 값의 두 역할이라 두 이름.
 - **`NewChild`의 State 팔 하나** `StateMarker<(Instance | SlotMarker<Instance> | Tag | Attribute |

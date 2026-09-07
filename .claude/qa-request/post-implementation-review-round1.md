@@ -371,7 +371,7 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 | 자리 | 전 | 후 |
 |---|---|---|
 | quad-types | `StateData<T> = { Get }` / `Slot<T>` | `StateMarker<T> = { read __quadState: true, read __quadStateValue: T }`, `SlotMarker<T>`(같은 모양); `StateData<T>`·`Slot<T>`가 그 필드를 가짐. `SlotElement<T>`(입력) = `T \| StateMarker<T> \| SlotMarker<T>`, 새 `SlotItem<T>`(출력) = 옛 유니언. `AttributeSugar`·`Slot:List/Single`·`setLength`의 State 인자 → 마커 |
-| 런타임 | — | `State.luau` `Impl.__quadState = true`, `Slot.luau` `Slot_mt.__quadSlot = true`(H-300 "타입이 약속하면 값에도"). `__quad*Value`는 **순수 팬텀** — 첫 사례, 읽는 코드 없음(메인 판단, 사용자 사후 확인 대상: `__quadRefAccepts = Void`처럼 값을 둘 수 없어서) |
+| 런타임 | — | `State.luau` `Impl.__quadState = true`, `Slot.luau` `Slot_mt.__quadSlot = true`(H-300 "타입이 약속하면 값에도"). `__quad*Value`는 **순수 팬텀** — 첫 사례, 읽는 코드 없음. **[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다) |
 | `NewChild` | `State<Instance> \| State<Tag> \| State<Attribute> \| Slot<Instance>` | `SlotMarker<Instance> \| StateMarker<(Instance \| SlotMarker<Instance> \| Tag \| Attribute \| None)?>` — `State<Frame>`(옛 팔은 거부)·`State<Instance?>`(NilHandler 계약)·`State<Slot<Frame>>`(Q1 원래 팔)이 든다 |
 | gen-d `PVn` | `T \| State<T> \| TweenData<T> \| State<Tween<T>> \| None` + 유니언 T 멤버별 팔(`PV73` 11팔) | `T \| TweenData<T> \| StateMarker<T \| Tween<T>> \| None` 넷 — `H-353`/`H-362`/`H-363`의 멤버별 팔과 `SHF0` 소멸 |
 | gen-d `Field` | `FieldV<T> = T \| Tween<T> \| State<T> \| State<Tween<T>> \| None`, `old: FieldV<T>?` | `FieldV<T> = T \| Tween<T> \| StateMarker<T \| Tween<T>> \| None`(입력), `FieldOut<T>`(옛 유니언, `old`·전체형 — `Peek` 반환과 같은 층), `Field<T> = FieldV \| ((old: FieldOut?) -> FieldV?)` |

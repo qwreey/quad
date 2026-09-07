@@ -1904,5 +1904,5 @@ Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실�
 곳'에 대해서는 마커 필드와 내부 구조 T하나만 보존하는 마커 타입을 써도 되지 않나 … 구조적으로
 확장된 타입은 잘 받기 때문에 … 진짜 State<T>의 method 같은건 유저가 쓰는 부분에 있어서 들어갈 뿐"*.
 런타임은 `Impl.__quadState = true`(H-300 "타입이 약속하면 값에도"), `__quadStateValue`는 순수 팬텀 —
-**어떤 코드도 읽지 않는다**(판정은 `Brand.isState`). 실측·결과·규칙 표는 `typing-limits.md` 8.11,
+**어떤 코드도 읽지 않는다**(판정은 `Brand.isState`). **[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다). 실측·결과·규칙 표는 `typing-limits.md` 8.11,
 결정 경위는 `qa-request/post-implementation-review-round1.md` §16·`session/2026-09-07-02-state-marker-covariance.md`.

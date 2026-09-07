@@ -27,8 +27,8 @@
      반영(`NotInstalled.luau`·`Dispatch.setEmpty`·`Reflection.luau`·`addProcessedHandler`·`assertMutable`·gen-d
      소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보 목록). 라운드 번호 1부터(round2 = Gemini). **§16 회신 2차 — Q1
      닫힘: 입력 자리의 State/Slot 팔을 공변 마커로**(`StateMarker`/`SlotMarker`, quad-types·gen-d·`NewChild`·spec; `PV73`
-     11팔 → 4팔, 타입 검사 4.96s → 3.41s, `LuauSolverConstraintLimit` 제거; `typing-limits.md` 8.11). **순수 팬텀 필드
-     `__quadStateValue`/`__quadSlotValue`(런타임 값 없음)는 메인 판단 — 사용자 사후 확인 대상.**
+     11팔 → 4팔, 타입 검사 4.96s → 3.41s, `LuauSolverConstraintLimit` 제거; `typing-limits.md` 8.11). 순수 팬텀 필드
+     `__quadStateValue`/`__quadSlotValue`는 사용자 확정(*"런타임 값에 없는 팬텀 괜찮아 … 값이 싸다면 그래도 좋아"*).
      **남은 사용자 몫: Q4~Q21, Q7 둘째·셋째.** 다음 순회는 round3 새 파일·`H-431`부터, 품질 제안은 항목마다 문항 하나로.
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음

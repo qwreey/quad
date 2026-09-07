@@ -95,7 +95,8 @@ export type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 -- 부분에 있어서 들어갈 뿐"*. 메소드가 필요한 자리(출력·`self`·`Peek` 반환·변환 함수의 `old`)는
 -- 전체형 그대로. 런타임: `__quadState`는 `Impl.__quadState = true`(H-300 "타입이 약속하면
 -- 값에도"), `__quadStateValue`는 **순수 팬텀**(런타임엔 없다 — T 값을 들고 있을 수 없어서;
--- `__quadRefAccepts`의 `Void`와 같은 층의 조언 필드, 읽는 코드가 없어야 한다).
+-- `__quadRefAccepts`의 `Void`와 같은 층의 조언 필드, 읽는 코드가 없어야 한다). 사용자 확정(2026-09-07):
+-- 순수 팬텀 허용, 값을 둘 수 있고 싸면 두는 것도 좋다.
 export type StateMarker<T> = { read __quadState: true, read __quadStateValue: T }
 export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
 

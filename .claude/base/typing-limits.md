@@ -932,7 +932,7 @@ Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `Attribu
 `SlotMarker<T>`를 요구하고, 값을 *돌려주는* 자리·`self`·`Peek` 반환·변환 함수의 `old`(`FieldOut<T>`)·
 Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`Slot<T>` 자신에도 들어 있어(런타임
 `Impl.__quadState = true`/`Slot_mt.__quadSlot = true`, `__quad*Value`는 **순수 팬텀**) 실제 값이 폭
-서브타이핑으로 든다. **결과(실측)**: `PVn`이 `T | TweenData<T> | StateMarker<T | Tween<T>> | None` 네 팔로
+서브타이핑으로 든다. **팬텀 규칙(**[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다))**. **결과(실측)**: `PVn`이 `T | TweenData<T> | StateMarker<T | Tween<T>> | None` 네 팔로
 통일(`PV73` 11팔·`SHF0` 소멸), `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<number | UDim>`·
 정직한 `State<T | Tween<T>>`(8.9 (1)의 `H-334`가 포기한 팔)·캐스트 없는 `State<Ref<Frame?>>`(8.7 캐비엇 5)가
 전부 들어가고, 음성 아홉(State<number> 자식·형제 Ref의 State·`State<Modifier>`·`State<UDim2?>`를 `Size`에·

@@ -166,9 +166,7 @@
 
 - **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 셋** — `qa-request/post-implementation-review-round1.md`
   §4가 소스: ~~Q1 `NewChild`에 `State<Slot<Instance>>` 팔~~(**[2026-09-07 회신 2차] 닫힘 — 마커 적용**: 입력 자리의
-  State/Slot 팔을 공변 `StateMarker`/`SlotMarker`로, `typing-limits.md` 8.11·원장 §16. **사후 확인 하나**: 마커의
-  값 필드 `__quadStateValue`/`__quadSlotValue`는 런타임 값이 없는 **순수 팬텀**(H-300 "타입이 약속하면 값에도"의
-  첫 예외 — T 값을 둘 수 없어서; 메인 판단) — 그대로 둘지) / ~~Q2 `Observer`/`EffectHandle` 팔~~(**[2026-09-07 회신]
+  State/Slot 팔을 공변 `StateMarker`/`SlotMarker`로, `typing-limits.md` 8.11·원장 §16. 팬텀 값 필드 `__quadStateValue`/`__quadSlotValue`는 **[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다)) / ~~Q2 `Observer`/`EffectHandle` 팔~~(**[2026-09-07 회신]
   (a) 반영**) / ~~Q3 코드 품질 제안 묶음 `H-356`~~(**[2026-09-07 회신] 항목별 확정 — 반영·보류 처리 완료**, round1 §15) / **Q4** 실프로퍼티
   키의 핸들 오용 진단(`H-361`, 권고 그대로) / **Q5** 같은 키 간접 재디스패치를 UB로 명시(권고 문서) /
   **Q6**(야간 2순회, `H-376`) 정본이 약속한 native* 조합 폴백이 코드에 없다 — 약속 철회(권고 (a), 스텁
