@@ -46,7 +46,7 @@ local function _neverCalled(custom: MaterialButtonModifier)
 		return q.Tween({ Value = h:Get(), Time = 0.2 })
 	end)
 	local m = D.Modifier.Frame():Size(UDim2.new()):Visible(true):BackgroundColor3(q.None):ZIndex(function(old)
-		local _: number | Tween<number> | State<number> | State<Tween<number>> | None | nil = old
+		local _: number | Tween<number> | State<number | Tween<number>> | None | nil = old -- round3 Q23 (a): State 팔 하나
 		return 3
 	end)
 	local m2 = m:Size(size):Size(sizeTween) -- State 필드(4-1: 리터럴 State는 통째 교체) — 둘 다

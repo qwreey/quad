@@ -131,7 +131,7 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
 - **`nativeInsert`를 흡수하지 않은 이유**: `nativeExtract(target, offset, {}, elements)`로
   표현은 되지만, **최빈 경로**(리스트 최초 채우기·단건 `Add`)가 "0개를 빼는 extract"라는
   모양이 되고 `DocumentFragment`류 일괄 삽입 최적화도 그 안에 숨는다.
-- **기본 구현(조합 폴백) — 미주입이 에러가 아니다.** `addTag`/`setAttribute`가
+- **기본 구현(조합 폴백) — 미주입이 에러가 아니다.** **[2026-09-07 회신 4차 — 사용자 확정]** **이 약속은 철회 — 지금 코드의 사실은 "여섯 전부 필수, 미주입이면 안내 스텁 에러"**(`LifetimeHandle.luau` 스텁, `H-373`/`H-376`; in-tree 백엔드 둘은 여섯을 전부 심는다). 조합 기본 구현 자체는 **백로그**(ROADMAP) — 사용자: *"잠정적으로 볼 땐, 있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐임"*. 아래 조합 공식은 그때의 설계 재료로 남긴다. `addTag`/`setAttribute`가
   "미주입이면 명확한 에러"인 것과 갈린다: 이쪽은 조합으로 항상 정의되기 때문이다.
   `nativeRemove` = `nativeExtract` + `nativeDispose` 반복, `nativeMove` =
   `nativeExtract` + `nativeInsert`, `nativeSwap` = `nativeMove` 2회. 백엔드는

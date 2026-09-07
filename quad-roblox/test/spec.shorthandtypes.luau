@@ -65,7 +65,14 @@ local function _markerUnion()
 		return h:Get()
 	end)
 	local f9 = q.D.Frame({ UICorner = honest, ZIndex = honest })
-	return f8, m5, f9
+	-- round3 Q23 (a): 변환 함수의 old는 State 팔 하나(`State<T | Tween<T>>`) — 캐스트 뒤 :Get()이 선다
+	local m6 = q.D.Modifier.Frame():UICorner(function(old)
+		if q.isState(old) then
+			return (old :: QuadTypes.State<number | UDim | QuadTypes.Tween<number | UDim>>):Get()
+		end
+		return old
+	end)
+	return f8, m5, f9, m6
 end
 
 print("=== ALL PASS ===")

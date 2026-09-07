@@ -295,7 +295,7 @@ def emit():
     L.append("-- Modifier 필드 setter의 값 타입(modifier-plan 4·4-1·10절): 리터럴 T | Tween<T> |")
     L.append("-- State(마커, T | Tween<T>를 품음) | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로').")
     L.append("-- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커")
-    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(모양은 round3 §4 Q23 — 사용자 문항).")
+    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(State 팔 하나 — Q23 (a) 사용자 확정).")
     # [2026-09-06 M11 단위 ① H-327] 옛 Field<V>에 V = T | Tween<T>를 넣던 모양은 새 솔버의
     # State 불변성 때문에 State<T>를 거부했다(M7 하자 — m:Position(state)가 strict에서
     # 막힘, 실측). 프로퍼티 setter의 값 타입은 T와 Tween<T>의 State 형을 각각 나열한다.
@@ -308,7 +308,7 @@ def emit():
     # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
     # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
     L.append("export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None")
-    L.append("export type FieldOut<T> = T | Tween<T> | State<T> | State<Tween<T>> | None -- 변환 함수 old(출력, 전체형)")
+    L.append("export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None -- 변환 함수 old(출력, 전체형 — State 팔 하나: 저장된 것의 상한, round3 Q23 (a))")
     L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
     L.append("")
     names = sorted(classes.keys())

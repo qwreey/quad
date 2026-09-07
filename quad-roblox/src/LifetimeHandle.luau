@@ -103,7 +103,10 @@ local function install(quad: any)
 			-- at creation, so an unclaimed inst here means the caller handed us
 			-- an Instance quad does not own. Lazy-claiming would reopen the
 			-- userdata-identity hole, so fail fast instead.
-			Err.errorBefore("bindLifetime: Instance is not claimed by quad (create it via quad, or Claim it first)", SURFACE)
+			-- round1 Q20 (사용자 확정 2026-09-07): a destroyed quad Instance and a foreign one look the
+			-- same here (Parent is nil at creation and right after Clone, so no ancestry test can tell
+			-- them apart — tried and retracted earlier); one message names both
+			Err.errorBefore("bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)", SURFACE)
 		end
 		if not canBound(value) then
 			-- Only report which path holds the value. Never index `.Subscribed`

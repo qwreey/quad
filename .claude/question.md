@@ -164,21 +164,14 @@
 
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[2026-09-07 신설] 핸드오버 전체 코드 리뷰 문항 — 남은 셋** — `qa-request/post-implementation-review-round1.md`
-  §4가 소스. Q1~Q3은 회신 1·2차, Q4~Q19와 Q7 둘째·셋째는 회신 3차로 닫혔다(round3 §6). 남은 것:
-  **Q6**(2순회 `H-376`) 정본이 약속한 native* 조합 폴백이 코드에 없다 — 프로바이더가 여섯 op를 전부 심지 않으면
-  지금은 조합되는 게 아니라 안내 스텁 에러가 난다. 권고 (a) 약속 문장을 정본에서 지우고 "미주입이면 명확한 에러"로
-  통일(셋째 백엔드가 실제로 나올 때 합성을 연다) / (b) 정본대로 합성 구현.
-  **Q20**(6순회 `H-415`) Destroy된 Instance에 `bindLifetime`하면 GC 전엔 죽은 섬에 조용히 성공하고 GC 뒤엔 "Claim
-  it first"라는 반사실 메시지 — 권고 (a) destroyed 팔 메시지 분리, 단 Studio 실측 뒤(HUMAN_TODO).
-  **Q21**(7순회 `H-430`) 툴체인 — `luau` CLI가 무핀(전역 0.734)이라 (b) `mise.toml`에 핀 권고; selene은 설정만 있고
-  아무도 안 돌린다 — (c) 폐기 vs 게이트화 중 선택.
+- **[2026-09-07] 핸드오버 전체 코드 리뷰 문항(round1 §4)** — Q1~Q21 **전부 닫힘**(회신 1~4차; 상태는 그 표의 각 행). 여기 남은 것 없음.
 
-- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항 셋** — `qa-request/post-implementation-review-round3.md` §4가 소스(마커
-  커밋 `8b4748a`의 리뷰): **Q22**(`H-432`) Slot 요소 자리의 공변 마커 + 가변 출력 `SlotItem<T>`의 건전성(중첩 `Slot<Frame>`을
-  `Slot<Instance>` 핸들로 꺼내 `Add(folder)`가 strict 통과 — 권고 (a) 유지 + 캐비엇) / **Q23** 변환 함수 `old`의 `FieldOut<T>`
-  모양(권고 (a) `State<T | Tween<T>>` 한 팔) / **Q24**(`H-437`) 회신 2차 승인 범위 — 이름 `SlotItem`/`FieldOut`·`NewChild` 팔
-  모양·플래그 제거는 메인 제안(권고 (a) 그대로 승인).
+- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항 — 남은 하나** — `qa-request/post-implementation-review-round3.md` §4가 소스.
+  Q22·Q23은 회신 4차로 닫힘. **Q24**(`H-437`) 회신 2차(마커) 승인 범위: 제가 정한 넷 — 별칭 이름 `SlotItem<T>`(Slot에서
+  꺼낸 값의 타입: 그대로의 요소 | 전체형 State | 전체형 Slot)와 `FieldOut<T>`(Modifier 변환 함수가 받는 `old`의 타입: 리터럴
+  | Tween | 전체형 State | None), children 유니언의 State 팔을 nil 포함 한 팔로 만든 모양, `LuauSolverConstraintLimit`
+  플래그 제거 — 그대로 승인할지(권고 (a)), 이름을 바꿀지. 사용자: *"SlotItem 과 FieldOut 이 하는 동작을 먼저 알려주길"* →
+  채팅 설명 뒤 답 대기.
 
 - **[2026-09-07 신설] 소스 구조 재편 — 사용자 의견 여덟의 확인 결과** — `research/source-layout-plan.md`가
   소스(항목별 사실·이득·비용·권고). 답할 것: 1절 Slot 분할(권고 한다, Q9/Q14 뒤 별도 단위) / 2절 Tween(권고

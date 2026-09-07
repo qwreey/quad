@@ -36,3 +36,12 @@ G-10~G-14 전부 실존(빈 문자열·nil 인자가 내부 VM 에러/엔진 예
 ## 5. 검증
 
 `./scripts/test.sh` exit 0(스펙 49), doc-check ERROR 0.
+
+## 6. 회신 4차 (같은 날 밤)
+
+Q6·Q20·Q21(round1)과 Q22·Q23(round3)을 닫았다(round3 §7). Q6은 "코드의 사실에 문서를 맞추고, 조합 기본 구현은
+있는 게 맞으니 백로그" — 약속 철회와 백로그 등재를 같이. Q20은 사용자가 전제 자체를 바로잡았다: 파괴된 quad
+Instance와 외부 Instance는 가를 수 없다(생성·Clone 직후 Parent nil — 전에 game 조상 검사를 도입했다 철회) →
+Studio 실측 없이 메시지 하나가 둘을 말하게. Q21은 selene 폐기 + `luau` 0.734 핀(`mise install`이 이미 설치된 것을
+그대로 씀). Q22는 Java `Object`의 비유로 "타입을 아는 유저가 캐스트" — 캐비엇만. Q23은 State 팔 하나. Q24는
+`SlotItem`/`FieldOut`이 무엇을 하는지 먼저 설명해 달라 — 채팅에서 평문으로.

@@ -308,7 +308,7 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
     `luau-analyze` 스파이크로(§9). **[2026-09-02]** 그 스파이크는
     `luau-test/done/28-type-class-param-shared-generic.luau`로 통과했다
     (기대 음성 3건만 — 상태는 `STATUS.md`).
-13. **[2026-09-02, round14 `H-293` — 사용자 기각·UB 확정] 이미 Destroy된
+13. **[2026-09-07 회신 4차 Q20 — 사용자 확정]** 파괴된 quad Instance와 외부 Instance는 **가를 수 없다**(생성 직후·Clone 직후엔 Parent가 nil이라 game 조상 검사가 안 선다 — 전에 도입했다 철회). 그래서 `bindLifetime`의 미claim 메시지 하나가 둘을 함께 말한다(*"죽은것에 시도하거나 quad가 만진게 아니다"*), 파괴 요소 claim도 막지 않는다(아래 `H-293` UB 그대로). **[2026-09-02, round14 `H-293` — 사용자 기각·UB 확정] 이미 Destroy된
     inst를 claim(직접 `nativeClaim` 포함)하는 것은 UB다 — 가드를 만들지
     않는다.** 실기기 실측으로 증상은 확정돼 있다(Destroy된 inst에 새
     Connect가 성공하고 `Connected`가 영원히 true — 영구 발화 가능 판정 +

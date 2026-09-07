@@ -847,7 +847,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
   index)`/`unmountInst(element)`로 적히고 "이름은 아직 가칭이라 정식 등재는
   확정 시점에 한다"고 미뤄져 있었으나, 이름은 같은 날 `native*`로
   확정됐다** — `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/
-  `nativeSwap`/`nativeDispose`. 시그니처와 조합 폴백 규칙의 소스는
+  `nativeSwap`/`nativeDispose`. 시그니처(와 옛 조합 폴백 규칙 — **[2026-09-07 Q6]** 철회, 백로그)의 소스는
   `base/slot-plan.md`의 "물리 조작은 주입 op다" 절이고, 주입 op 전체
   목록의 소스는 `base/architecture.md`의 소스 트리 안 `EngineOps.luau`
   줄이다 — 여기서 다시 나열하지 않는다.

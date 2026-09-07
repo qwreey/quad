@@ -35,13 +35,11 @@ M2 이후 실제 구현이 아님 — `quad-base/src`는 아직 `Relate.luau`/�
 ```
 quad/
 ├── pesde.toml          # 워크스페이스 루트, private = true, workspace_members
-├── mise.toml            # pesde/rojo/luau-lsp/selene 버전 핀
+├── mise.toml            # pesde/rojo/luau-lsp/luau 버전 핀 ([2026-09-07 Q21] selene 제거, luau 0.734 핀)
 ├── quad-base/
-│   ├── pesde.toml       # name = "qwreey/quad_base"
-│   └── selene.toml
+│   └── pesde.toml       # name = "qwreey/quad_base"
 └── quad-roblox/
-    ├── pesde.toml       # name = "qwreey/quad_roblox", quad_base에 workspace 의존
-    └── selene.toml
+    └── pesde.toml       # name = "qwreey/quad_roblox", quad_base에 workspace 의존
 ```
 
 - **루트 `pesde.toml`**: `private = true`(게시 안 됨) + `workspace_members`
@@ -350,6 +348,8 @@ require에서 여전히 안 먹는다** — `architecture.md`가 이미 이렇�
 용도로만 남기고, 실제 require는 위 규칙대로 상대경로 + `@self`.
 
 ## `selene` 린터 — 패키지별 설정, CWD 상대 config 탐색 함정
+
+**[2026-09-07 회신 4차 — 사용자 확정]** **폐기.** 어떤 스크립트도 selene을 돌리지 않았고 설정은 stale(`std = "luau"`라 754 errors — 원장 round1 `H-430`), luau-analyze의 lint(`.luaurc` `lint: *`)와 축이 겹친다. 사용자: *"selene 가 의미가 크게 없어보여 … core 바탕 구현이라, 필요성이 없어보임"*. `mise.toml`의 selene 핀과 패키지 넷의 `selene.toml`을 지웠다. 아래는 도입 당시 기록. 같은 결정으로 `luau` CLI를 `mise.toml`에 `0.734`로 핀(*"루아우 버전을 고정하는것도 동의"*).
 
 **[2026-08-19 신설]** 사용자 결정으로 `selene`(참고 레포
 `initreq/roblox-project-example`의 `scripts/selene.toml` 그대로 채택)을

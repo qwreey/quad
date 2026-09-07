@@ -10,4 +10,6 @@
 "github:pesde-pkg/pesde" = "0.7.3+registry.0.2.3"
 "github:rojo-rbx/rojo" = "7.7.0"
 "github:JohnnyMorganz/luau-lsp" = "1.69.0"
-"aqua:Kampfkarren/selene" = "0.31.0"
+# [2026-09-07 회신 4차 Q21] `luau` CLI도 핀 — 엔진 무관 analyze 그룹과 스펙 49개가 이 버전으로 돈다
+# (typing-limits의 실측은 전부 빌드별). selene은 같은 날 폐기(아무도 안 돌렸고 luau-analyze lint와 겹침).
+luau = "0.734"

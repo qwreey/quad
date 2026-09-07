@@ -641,7 +641,7 @@ clearTimeout(handle: Timeout): ()
   놨었는데, 정작 이 문서가 추가하는 `setTimeout`/`clearTimeout` 자신이 그
   개수를 늘리는 쪽이라 자기모순이었다. 주입 op 전체 목록의 소스는
   `base/architecture.md`의 `EngineOps.luau` 줄. **주의**: `native*` 계층은
-  이 관례의 예외로, 미주입이 에러가 아니라 **조합 폴백**이다). 순수 Luau엔 `task`도 이벤트 루프도 없어 base가 "적당한 기본값"을
+  이 관례의 예외로, 미주입이 에러가 아니라 **조합 폴백**이다 — **[2026-09-07 Q6]** 그 폴백 약속은 철회됐고 지금은 여섯도 미주입이면 에러, `slot-plan.md`). 순수 Luau엔 `task`도 이벤트 루프도 없어 base가 "적당한 기본값"을
   만들어낼 수 없음.
 - **`Debounce`/`Throttle` 둘 다 이 배선이 있어야 동작함** — 스로틀도
   trailing 발화가 "창 끝에 다시 처리"라 태스크가 필수. 배선 안 된

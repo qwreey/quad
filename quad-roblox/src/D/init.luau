@@ -48,9 +48,9 @@ type MapperRoot = QuadTypes.MapperRoot
 -- Modifier 필드 setter의 값 타입(modifier-plan 4·4-1·10절): 리터럴 T | Tween<T> |
 -- State(마커, T | Tween<T>를 품음) | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로').
 -- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커
--- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(모양은 round3 §4 Q23 — 사용자 문항).
+-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(State 팔 하나 — Q23 (a) 사용자 확정).
 export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None
-export type FieldOut<T> = T | Tween<T> | State<T> | State<Tween<T>> | None -- 변환 함수 old(출력, 전체형)
+export type FieldOut<T> = T | Tween<T> | State<T | Tween<T>> | None -- 변환 함수 old(출력, 전체형 — State 팔 하나: 저장된 것의 상한, round3 Q23 (a))
 export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 
 type PV0 = boolean | TweenData<boolean> | StateMarker<boolean | Tween<boolean>> | None -- boolean

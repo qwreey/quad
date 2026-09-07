@@ -939,7 +939,7 @@ Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`
 정직한 `State<T | Tween<T>>`(8.9 (1)의 `H-334`가 포기한 팔)·캐스트 없는 `State<Ref<Frame?>>`(8.7 캐비엇 5)가
 전부 들어가고, 음성 아홉(State<number> 자식·형제 Ref의 State·`State<Modifier>`·`State<UDim2?>`를 `Size`에·
 `Slot<Frame>`에 State<TextLabel> 요소 등)은 그대로 거부. quad-roblox 타입 검사 4.96s → 3.41s,
-`LuauSolverConstraintLimit` 플래그 불필요(test.sh에서 제거). **바뀌지 않은 것**: `q.Slot()` 캐스트 없는 생성
+`LuauSolverConstraintLimit` 플래그 불필요(test.sh에서 제거). **캐비엇(round3 Q22, 사용자 확정 2026-09-07 — 그대로)**: 중첩 Slot을 `Get`/`Extract`로 꺼낸 값의 타입 `Slot<T>`는 **상한**이다 — `Slot<Frame>`을 `Slot<Instance>`에 넣었다 꺼내면 `Slot<Instance>`로 보이고 그 핸들로 `Add(folder)`가 통과한다(런타임은 요소 클래스를 안 가린다). 실제 요소 타입을 아는 사용자가 캐스트로 지킨다 — Java의 `Object`처럼(*"진짜 데이터 넣는 방법을 아는 유저가 cast 한다가 일반적"*). **바뀌지 않은 것**: `q.Slot()` 캐스트 없는 생성
 (`H-354`)은 생성자 `T` 추론 문제라 그대로; 8.9의 setter 이름 게이트는 State가 유니언 멤버에서 빠졌어도
 그대로 둔다(넓은 쪽이 안전). 아래는 결정 전 실측 원문.
 

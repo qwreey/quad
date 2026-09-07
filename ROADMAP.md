@@ -62,6 +62,10 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       테스트는 2026-08-13 세 번째 세션에 불필요로 해소됨 —
       `archive/question-resolved.md` 참고, v2엔 대응 개념 자체가 없음)
 - [ ] Slot 형제 순서 보장(다중 백엔드 관점) — Roblox만이면 급하지 않음
+- [ ] **[2026-09-07 신설, 회신 4차 Q6 사용자 확정]** `native*` 조합 기본 구현 — 백엔드가 여섯 op 중 이득 있는 것만 심고
+      나머지(`nativeRemove` = extract+dispose 반복, `nativeMove` = extract+insert, `nativeSwap` = move 2회)는 base가
+      조합해 주는 것. 정본의 약속은 코드 사실에 맞춰 철회했고(`slot-plan.md` "기본 구현(조합 폴백)" 절 배너), 셋째 백엔드가
+      실제로 나올 때 착수. 사용자: *"있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐"*.
 - [ ] **[2026-08-14 신설, 2026-08-19 설계 전부 해소 후 `base/`로 승격]**
       시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
       — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을
