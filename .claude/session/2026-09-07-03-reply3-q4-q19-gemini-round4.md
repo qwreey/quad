@@ -60,3 +60,13 @@ Studio 실측 없이 메시지 하나가 둘을 말하게. Q21은 selene 폐기 
 Observer로 올렸다(nearest = `:Set` 줄). 둘은 문항(Q25 숏핸드 `Mapped`가 새 객체를 만들어 Q12 dedup이 두 키에서 불성립,
 Q26 첫 스냅 뒤 슬롯에 dedup 정보 없음). 나머지 여섯은 게이트 구멍·주석·사본 정리. 리뷰가 평문으로 보고해 읽기 쉬웠다 —
 인자에 "평문으로"를 넣은 효과.
+
+## 9. 핸드오버 감사 루프 (같은 날 밤, 체크포인트)
+
+사용자 지시 *"처리 끝나면 체크포인트 찍고, 핸드오버 준비하고 compact 인자 짜줘"*. 오늘 커밋 전체(`cc591aa..`)를 범위로
+감사자 세 라운드(각도: base 정합성+인덱스 → 코드·spec 헤더+archive/luau-test 포인터+규약 → 인덱스 레이어 수렴 확인):
+**8 → 2 → 1**. 셋째의 1건은 1라운드 수정이 `tween-plan.md` 자신을 빠뜨린 같은 원인의 잔여(트윈 슬롯 셋째 필드
+표기 일곱 자리). 넷째 라운드 대신 같은 원인 잔여를 grep으로 전수 확인(옛 2필드 표기·옛 파일 포인터·`contribution에서`/
+`numberOnly`/`SHF0`/`registerEmptySlot` 현재형) — 0. 2라운드에서 "문항·발견은 평문 한 문단" 규약을 `conventions.md`로
+승격. test.sh exit 0(스펙 49), doc-check ERROR 0. 남은 사용자 몫: Q25·Q26(round3 §4), 구조 재편 여덟(루트
+`layout-usernote-ignoreme.md`, 미반영), flatten 슈거 일곱. 다음 순회는 round3 §9·`H-453`부터.
