@@ -1526,7 +1526,7 @@ Slot1이 바뀔 때마다 Slot2에 다시 알려줘야 하는 캐스케이드 �
 Dispatch.setLength(ownerKey, i, len: number | State<number>, anchor?, element?)   -- [2026-08-27 9라운드 Q3] 5번째 = 그 자리의 inst|slot
 Dispatch.setOffsetSource(ownerKey, i, offset: Source<number> | None)
 -- [2026-09-07 회신 3차] 도메인·게이트(Q13 (b)·Q15 (a), 사용자 확정): `len`은 **비음수 정수**(상수는 등록 시,
---   State는 읽을 때 `contribution`에서 한 비교 — 위반은 표면 에러), `offset`은 `Brand.isSource` 또는 `None`
+--   State는 그 길이 State의 Observer 콜백 안(recompute 진입 전 — round3 `H-445`; `contribution`은 읽기만) — 위반은 표면 에러), `offset`은 `Brand.isSource` 또는 `None`
 --   (`checkPosition`의 형제 게이트). `setEmpty(ownerKey, i, anchor?)`는 None/0 쌍 한 본문(Q3 ③).
 Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 자리의 절대 offset
 ```
@@ -2394,7 +2394,7 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- `sourceList[i] is nil` error 몫. 부기를 하나라도 만지기 전에 검사한다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
     checkPosition("setLength", i) -- 위 게이트
-    if not isState(len) then checkLengthValue("setLength", len) end -- [2026-09-07 Q15 (a)] 비음수 정수; State 값은 contribution에서 읽을 때 검사
+    if not isState(len) then checkLengthValue("setLength", len) end -- [2026-09-07 Q15 (a)] 비음수 정수; State 값은 아래 Observer 콜백 머리에서(H-445 — 차단기 창 밖)
     anchor = anchor or ownerKey
     local bk = getBookkeeping(ownerKey)   -- Relate(ownerKey) 기반, lazy 생성
     local blocker = getBlocker(ownerKey)  -- Relate(ownerKey) 기반, lazy 생성(아래 절 참고)

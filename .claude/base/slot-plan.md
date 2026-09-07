@@ -3666,8 +3666,8 @@ Frame {
   일어난 요소만 살아남는다.
 - **그래서 `state<Frame>`에서 값을 빼내 재사용하려면 조상이 살아있는 동안
   꺼내야 한다** — 조상이 이미 죽은 뒤에 `state:Get()`으로 얻은 값은 **이미
-  죽은 Instance**다. 그 값에 다시 마운트를 시도하면 `bindLifetime`/`canExecute`
-  게이트에 걸린다(바로 아래 "부수 효과" 문단이 서술하는 그 경로).
+  죽은 Instance**다. 그 값에 다시 마운트를 시도하는 것은 UB다(**[2026-09-07 Q9 (b)]** 요소 단위
+  게이트는 없다 — 바로 아래 "부수 효과" 문단의 배너).
 - 같은 이유로 `_detached`가 들고 있던 요소도 조상이 죽으면 같이 죽는다 —
   detach는 `Parent = nil`이므로 **조상 트리에서 이미 빠져 있어** 이 경우엔
   해당 없음(그쪽 정리는 `_detachCleanup`이 담당).
@@ -3680,12 +3680,10 @@ Frame {
 있는건 당연하고, Instance 와 같은 동형으로 두어도 되는 부분"*). `dispose`·`Add`의 "아직 마운트됨" 메시지가
 이 경우를 함께 말한다(*"… If the owner was destroyed outside quad, the value went with it — extract it before
 destroying"*). 시체 요소를 다른 Slot에 다시 넣는 반대 방향도 같은 UB.
-Slot이 마운트될 때 **자기 하위 요소들까지 `bindLifetime`으로 물리 target에
-묶고, 실제 동작 전에 `canExecute`를 확인**하도록 하면(`base/lifecycle-pattern.md`),
-"nested로 마운트해둔 뒤 물리 Instance를 Destroy하고, 그 다음 Slot을 뽑아
-다른 데 쓰려는" 경로가 별도 방어 로직 없이 걸러짐 — 이미 있는
-`bindLifetime`/`canExecute` 게이트를 한 층 더 촘촘히 적용하는 것뿐,
-새 메커니즘이 아님.
+~~Slot이 마운트될 때 자기 하위 요소들까지 `bindLifetime`으로 물리 target에 묶고, 실제 동작 전에
+`canExecute`를 확인하도록 하면 "nested로 마운트해둔 뒤 물리 Instance를 Destroy하고, 그 다음 Slot을 뽑아
+다른 데 쓰려는" 경로가 별도 방어 로직 없이 걸러진다 — 새 메커니즘이 아니다.~~ (철회된 설계 — 구현된 적
+없음, 위 배너.)
 
 **`Set`으로 덮어쓰기 *전에* 이전 값을 직접 `Destroy()`하는 건 UB.**
 `state<Frame>`에서 `frame:Destroy()`를 먼저 하고 `Set(other)`을 부르는

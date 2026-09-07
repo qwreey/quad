@@ -198,7 +198,7 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
     Modifier. 같은 `Overridden`에서 `other`의 값을 **이긴 뒤**, 디스패치 단계의
     `NoneHandler`가 실제로 지운다.
   - `:Peek(key)`도 이 둘을 구별해서 돌려준다(`nil` vs `None`) — 위
-    "`:Peek`의 반환 타입" 항목이 `T | State<T> | None | nil`인 이유가 정확히
+    "`:Peek<<T>>(key)`" 항목의 반환이 `None`과 `nil`을 따로 갖는 이유가 정확히
     이것. 구현은 이미 이렇게 되겠지만 **문서화에서 이 구분을 반드시 짚을 것**.
 - **`{ TextColor3 = None, mod }`도, `mod:TextColor3(None)`도 둘 다 지원.**
   Modifier setter/Overridden/인라인 props 테이블은 `None`을 그냥 평범한 raw
@@ -773,7 +773,7 @@ Modifier 타입 자체의 **생성**을 M7 밖 후순위로 확정했었다 — 
 프리셋의 타입 자리). 그때 이 절의 한계를 넘는 메커니즘도 같이 결정한다
 (`archive/v2-initial-implementation/roadmap.md` M7 후순위 항목).
 
-**`:Peek<<T>>(key): T | State<T> | None | nil`** — Modifier 필드를 확정하지
+**`:Peek<<T>>(key): FieldOut<T>?`**(**[2026-09-07 Q24 후속]** 옛 `T | State<T> | None | nil` — Tween 팔이 빠져 있었다) — Modifier 필드를 확정하지
 않고 그대로 읽는 접근자. 이름을 `Get`이 아니라 `Peek`로 정한 이유: 이
 프로젝트 전역에서 `State:Get()`은 "확정한다"(pull + recompute + 최종값
 반환)는 의미로 이미 자리잡았는데, Modifier의 읽기는 정반대(들고 있는

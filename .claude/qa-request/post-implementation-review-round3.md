@@ -75,7 +75,7 @@ Q3은 회신 1차에서 이미 닫힌 것을 다시 짚음(항목별 결과 §15
 | **Q12** | 사용자 설계 — *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로 리턴하여 dedup … Dedup: boolean 형태 하나"* | `Animate.luau` `sameTween` + `Dedup` 옵션(기본 true), `Property.luau` 슬롯에 `Source = v`(필드 이름 `Source`는 메인이 붙인 것 — 사용자 사후 확인) + 같은 객체 재발행 skip, `types.luau` `AnimateInfo.Dedup`; `tween-plan.md`; `spec.tweenproperty` 7절(Dedup=false 재트리거 포함) |
 | **Q13** | (b) | `Bookkeeping.luau` `setOffsetSource` 게이트(Source \| None, nearest); `spec.lengthoffset` 12절 |
 | **Q14** | (a) — *"동의. a로 가도 돼"* | `destroySlotTree` 두 루프 `releaseOwner`; `slot-plan.md` C-4 면제 철회; `spec.slot` 24절 |
-| **Q15** | (a) | `setLength` 상수 도메인(비음수 정수, 등록 시) + State 값은 `contribution`에서(outermost); `dispatch-core-plan.md` 계약 줄; `spec.lengthoffset` 12절 |
+| **Q15** | (a) | `setLength` 상수 도메인(비음수 정수, 등록 시) + State 값은 ~~`contribution`에서~~ → **§8 `H-445`로 Observer 콜백 안**(차단기 창 밖, nearest); `dispatch-core-plan.md` 계약 줄; `spec.lengthoffset` 12절 |
 | **Q16** | (b) | `Tween.validate`가 `isState(Value)` 거부; `spec.tween` 6절 |
 | **Q17** | (a) — *"필요 없는듯 … 다른 프로퍼티와 같게 되어도 좋음"* | `InstanceShorthand.luau` `numberOnly` 필드·게이트 제거; `spec.shorthand` 6절 정정; `ui-shorthand-plan.md` |
 | **Q18** | (c) — *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이 없고 … 당장은 c로 닫고, 리서치 안에서"* | `dispatch-core-plan.md` UB 목록; (a)는 `research/deferred-hardening-plan.md` 3절 |
