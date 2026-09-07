@@ -82,19 +82,20 @@ Slot/Elements.luau  (b) wrapElement/unwrapElement/prepareElements
 Slot/Tree.luau      (c) materialize/mount/attach/destroy/unmount/teardown/collectLeaves/sugar wrapper
 Slot/Raw.luau       (d) raw* + spliceArrays + vacate + releaseElement + indexOfRaw/getDetached
 Slot/List.luau      (e) _activateList(settle/reconcile)·List/Single·checkListInstall
-Slot/Handler.luau   ← 5절 (a)를 택하면 Slot/Handler.luau가 여기로
+Slot/Handler.luau   ← 5절 (a)를 택하면 Dispatch/Slot.luau가 여기로
 ```
 **순서**: Q9·Q14 답 → 그 반영(작은 diff) → 순수 이동 단위(리뷰 1회, `spec.slot` 전량) → 이동
 뒤 한 순회.
 
-## 2. Tween의 위치 — **권고: 엔진 어휘 검증만 quad-roblox로 (절충 (c))**
+## 2. Tween의 위치 — **결정: (b) 통째 이동(사용자) — 원 권고 (c) 엔진 어휘 검증만 이동은 기각**
 
 **[결정 2026-09-07 밤 — (b) 통째 이동, 권고 (c) 기각]** 사용자: *"Tween 자체가 워낙 엔진의
 지식인지라, 엔진 자체로 옮기고 싶어. 처음 생각했던 부분 자체가 그거였음 … 이미 Animate 가 온전히
 roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Tween 도 quad-roblox 에 있지 말아야할
 이유가 없어 … 웹은 Transition 으로 이름도 다른데다가 … 한 css 프롭에 다른 프롭의 애니메이션을
 담는거라 완전 다름. 공개 표면을 같이 두는 이점이 적어보여 — 웹은 Value 의 필요 부터 없거든. 전부
-엔진 어휘가 되어야한다는 생각인데, 어떻게 보는지?"* 메인 판단: 동의 — (c)를 권한 근거였던 "타입
+엔진 어휘가 되어야한다는 생각인데, 어떻게 보는지?"* **아래 "사실"·"선택지"·"권고 (c)" 블록은 결정 전 분석(보존용) — 지금 배치는
+`base/tween-plan.md` "패키지 경계" 절이 소스.** 메인 판단: 동의 — (c)를 권한 근거였던 "타입
 표면 재배선이 크다"는 실측에서 작았다(생성 D는 이미 quad-roblox `types.luau`의 `Tween<T>`를
 별칭하고 있어 D 재생성 없이 정의만 옮겨졌고, quad-types에 남는 건 `FieldOut<X>` 하나). **반영
 완료**(같은 날): `quad-roblox/src/Tween.luau`(install)·`Brand.luau`·`types.luau` 정본(엔진 타입
@@ -183,7 +184,12 @@ PostRef/Slot/Tag/AttributeKey/Attribute. `init.luau`는 24개를 전부 require�
 (Ref 셋, Attribute 둘, Dispatch/Slot)이다. (a)로 최상위가 33 → 25개 전후. (b)는 관측된 필요가
 없고 재배선 비용이 크다 — 패밀리 접기 뒤에도 트리가 안 읽히면 그때.
 
-## 5. `Dispatch/`의 핸들러 파일 — **권고: 규칙을 명문화하고 `Slot/Handler.luau`만 `Slot/Handler.luau`로**
+## 5. `Dispatch/`의 핸들러 파일 — **권고: 규칙을 명문화하고 `Dispatch/Slot.luau`만 `Slot/Handler.luau`로**
+
+**[결정 2026-09-07 밤 — 4절 (a)의 구성 요소로 채택, 반영 완료]** 규칙은 `base/architecture.md` 소스 트리 아래
+문단에 명문화됐고, 옛 `Dispatch/Slot.luau` → `Slot/Handler.luau`, 옛 `Modifier.luau`+`Dispatch/Modifier.luau` →
+`Dispatch/Modifier/{init,Handler}.luau` 이동도 끝났다(9절 4번). 아래 "규칙(제안)"·"이동"·"권고: 한다"는 결정 전
+서술(보존용).
 
 **사실**: `Dispatch/`엔 코어(`init`·`Handler` 타입)와 **drive 자신의 단계**(`None`·`StoreBind`
 언랩·`Modifier`의 ProcessedModifier·`Ref` pre-pass)가 있고, 이들은 `Dispatch/init`이 직접 등록한다.
@@ -196,18 +202,21 @@ slot/storebind.luau 같은게 있는게 이상함"* 중 `StoreBind`는 값 모�
 **규칙(제안, `architecture.md`에 명문화)**: *"핸들러는 그 값 타입을 소유하는 모듈 안에 산다
 (`H-278`). `Dispatch/` 아래엔 코어와 `drive`의 자기 단계(None/StoreBind/Modifier/Ref pre-pass)만
 — 값 모듈이 `Dispatch/init`을 require하므로 그 반대 방향은 구조적으로 불가."*
-**이동**: `Slot/Handler.luau` → `Slot/Handler.luau`(1절 폴더 안). 그러면 혼종 0.
+**이동**: `Dispatch/Slot.luau` → `Slot/Handler.luau`(1절 폴더 안). 그러면 혼종 0.
 
 **Modifier(사용자: "예외적으로 dispatch 안에서 정의되는 객체")**: 사실 — `Dispatch/Modifier/init.luau`는 src
 루트의 잎(Init 없음)이고 flatten은 `drive`의 첫 단계(round17 Q4 (a) "flatten은 drive 소유"),
 `Dispatch/Modifier/Handler.luau`는 ProcessedModifier 핸들러 38줄. 사용자 판단은 근거가 있다 — Modifier는
-값이라기보다 **drive의 입력 형식**이다. 이동: `Dispatch/Modifier/init.luau` → `Dispatch/Modifier/init.luau`,
-`Dispatch/Modifier/Handler.luau` → `Dispatch/Modifier/Handler.luau`(또는 init에 흡수 — 38줄). 순환 없음
+값이라기보다 **drive의 입력 형식**이다. 이동: `Modifier.luau` → `Dispatch/Modifier/init.luau`,
+`Dispatch/Modifier.luau` → `Dispatch/Modifier/Handler.luau`(또는 init에 흡수 — 38줄). 순환 없음
 (Modifier는 Brand/ErrorNamespace/Dispatch/None만 require). 비용: `init.luau` require 경로 하나,
 md 인용 10곳(`Dispatch/Modifier/init.luau`가 두 번째로 많이 인용됨), `modifier-plan.md` 트리 서술.
 **권고: 한다** — 규칙(위)이 "Dispatch/ = drive의 자기 단계"인데 flatten이 정확히 그것.
 
 ## 6. Ref 패밀리 — **권고: `Ref/{init,PreRef,PostRef}.luau`, `Dispatch/Ref.luau`는 그대로**
+
+**[결정 2026-09-07 밤 — 4절 (a)의 구성 요소로 채택, 반영 완료]** (a) 폴더 그대로 이동됐다(9절 4번). 아래는 결정 전
+서술(보존용).
 
 **사실**: `Ref/PreRef.luau`(34)·`Ref/PostRef.luau`(35)는 각각 **한 줄 함수** — `Ref._tagged(default, Brand,
 marker)`. 의존은 PreRef/PostRef → Ref 단방향, Ref는 `Brand.isPreRef`만 본다. `Dispatch/Ref.luau`
@@ -219,6 +228,9 @@ between the two files"*가 오히려 한 파일을 가리킨다). **권고 (a)**
 `PreRef` 1).
 
 ## 7. Attribute 패밀리 — **권고: `Attribute/{init,Key}.luau`, 핸들러는 각자 안에**
+
+**[결정 2026-09-07 밤 — 4절 (a)의 구성 요소로 채택, 반영 완료]** `Attribute/{init,Key}.luau`로 이동됐다(9절 4번);
+`Attribute/Handler.luau` 분리는 하지 않았다(급하지 않음). 아래는 결정 전 서술(보존용).
 
 **사실**: `Attribute/init.luau`(279) → `Attribute/Key.luau`(136) 단방향(`_newUncachedKey` 사적 경로 —
 그룹 개인 키가 공개 캐시 키와 **반드시 다른 객체**여야 교차 retraction이 구조적으로 불가). 핸들러

@@ -458,7 +458,7 @@ end
 
 print()
 print()
-print("=== 16. H-419 (외부 리뷰 G-07) — drive의 props가 테이블이 아니면 표면 에러(flatten 안 VM 에러가 Modifier.luau를 blame하던 것) ===")
+print("=== 16. H-419 (외부 리뷰 G-07) — drive의 props가 테이블이 아니면 표면 에러(flatten 안 VM 에러가 Dispatch/Modifier/init.luau를 blame하던 것) ===")
 do
 	local q = newQuad()
 	-- 7순회: `{ nil, … }` skipped the nil case under ipairs — spell the three cases out

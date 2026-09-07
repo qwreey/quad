@@ -29,7 +29,7 @@
 	ops `architecture.md` (EngineOps line) and `slot-plan.md` ("기본 구현(조합
 	폴백) — 미주입이 에러가 아니다") classify with `onDestroying` as "cannot be
 	composed, so missing = a clear error"; without stubs a bare `Quad.New()`
-	raised a nil-call from `Slot.luau`/`Claim.luau` and blamed quad internals.
+	raised a nil-call from `Slot/Elements.luau`/`Claim.luau` and blamed quad internals.
 ]]
 
 local NotInstalled = require("./NotInstalled")
@@ -38,8 +38,8 @@ local NotInstalled = require("./NotInstalled")
 -- restored by 3순회 `H-378` after `H-370`/`H-373` gave `canBound`/`canExecute`/
 -- `isInst` `errorBeforeNearest`: the stub tags ITSELF (`H-231` below), so
 -- "nearest" is always the stub's direct caller — and in-tree that caller is
--- quad internals (`Observer.luau` `Subscribe` → `canBound`, `Slot.luau` →
--- `isInst`), which blamed `Observer.luau:139`/`Slot.luau:52`. Outermost
+-- quad internals (`Observer.luau` `Subscribe` → `canBound`, `Slot/Elements.luau` →
+-- `isInst`), which blamed `Observer.luau:139`/옛 `Slot.luau:52`(now `Slot/init.luau`). Outermost
 -- reaches the user's line from both direct and dispatch-depth calls; what it
 -- does not serve is any USER CALLBACK running inside a tagged public method
 -- (an Observer/Effect fn, `Tag:Apply`, a handler author's `canBound(v)` line) —
@@ -61,7 +61,7 @@ local function Init(module: any)
 	-- fills the four above fills this one; until then, the same loud stub.
 	module.onDestroying = notInstalled("onDestroying")
 	-- `H-373`: the three non-composable engine ops (see header). `if nil` — a
-	-- provider may already be there (same idiom as `Tag.luau`/`AttributeKey.luau`).
+	-- provider may already be there (same idiom as `Tag.luau`/`Attribute/Key.luau`).
 	if module.isInst == nil then
 		module.isInst = notInstalled("isInst")
 	end

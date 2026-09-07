@@ -14,7 +14,7 @@ local Err = require("../ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function register(dispatch: any, module: any)
-	local S = module._slotInternal
+	local internal = module._slotInternal -- the five-key surface init exposes (not the split's `S`)
 	dispatch.addHandler({
 		name = "SlotHandler",
 		isHandlable = function(_inst: any, k: any, v: any): boolean
@@ -22,7 +22,7 @@ local function register(dispatch: any, module: any)
 			-- a Slot at a NAME key must not match — otherwise claim/bindLifetime
 			-- commit before Bookkeeping.checkPosition throws an internal error
 			-- and the ownership/lifetime bind is orphaned (통합 리뷰 발견)
-			return type(k) == "number" and S.isSlot(v)
+			return type(k) == "number" and internal.isSlot(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, slotValue: any, _index: number): (any?, boolean) -> ()
@@ -32,17 +32,17 @@ local function register(dispatch: any, module: any)
 			if slotValue._destroyed then
 				Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE)
 			end
-			if S.claimOwnerAt(slotValue, inst, k) then
+			if internal.claimOwnerAt(slotValue, inst, k) then
 				module.bindLifetime(inst, slotValue)
-				S.attachSlot(slotValue, inst, inst, k)
+				internal.attachSlot(slotValue, inst, inst, k)
 			end
 			return function(nextValue: any, _retracting: boolean)
 				-- nextValue is nil or a Slot the same handler will process (typed)
 				if slotValue == nextValue then return end
-				S.unmountSlotTree(slotValue)
+				internal.unmountSlotTree(slotValue)
 				dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 				module.unbindLifetime(slotValue)
-				S.releaseOwner(slotValue, inst)
+				internal.releaseOwner(slotValue, inst)
 			end
 		end,
 	} :: QuadTypes.Handler)

@@ -118,3 +118,27 @@ Q3은 회신 1차에서 이미 닫힌 것을 다시 짚음(항목별 결과 §15
 
 **검증**: `./scripts/test.sh` exit 0(스펙 49, gen-d check 통과), doc-check ERROR 0.
 다음 순회는 이 파일 §9부터, `H-453`부터.
+
+## §9 이동 뒤 순회 — 구조 재편 다섯 커밋 `e9c7ffd..4ddb9c5`의 `/code-review high`(파인더 8·검증자 4 opus, 미완 1 — 줄 단위 파인더 A, 영역은 B·C가 덮음) + 감사자 3라운드
+
+세 갈래 판정. 반영 ①은 이 절과 같은 커밋.
+
+| 번호 | 갈래 | 내용 |
+|---|---|---|
+| **`H-453`** | ① | `doc-check.py`의 새 `.luau` 검사가 폴백에 뚫렸다. 상황: 접미 일치가 실패하면 옛 이름 폴백이 `.claude/` 전체(`initreq/` 클론 포함)를 이름으로 뒤져, 지워진 `quad-base/src/Tween.luau`가 Fusion의 `Tween.luau`로, 없는 `Dispatch/Ref/init.luau`가 charm 테스트의 `init.luau`로 통과했다(라이브 문서 927건 중 58건이 이 폴백으로만 통과, 이 범위가 만든 stale 둘 포함). 반영: 패키지 루트부터 적은 경로는 폴백 없이 판정, 패키지 목록은 `pesde.toml` `workspace_members`에서 읽음(`_SRC_ROOTS` 되풀이 제거), `luau_packages/` 최상위 shim은 실존으로 색인. 이름만 적은 인용이 같은 이름의 다른 파일(`Ref.luau` → `Dispatch/Ref.luau`)에 걸리는 것은 접미 일치의 본질이라 남긴다(이름 인용은 WARN 층). |
+| **`H-454`** | ① | `architecture.md` 트리의 옛 이름 문구·중첩 노드 이름이 기계 치환에 덮인 것 — 감사자 1라운드가 같은 것을 먼저 잡아 수정됐고, 리뷰가 추가로 잡은 5절 문단의 동어반복(`Slot/Handler.luau`가 … `Slot/Handler.luau`로)과 "`Dispatch/init`은 값 모듈을 절대 require하지 않는다"의 어구(`@self/Modifier`를 require하므로 문자 그대로는 거짓 — 값 모듈의 정의를 "자기 핸들러를 등록하는 Tag/Attribute/Ref/Slot/Observer/Effect"로 명시, Modifier는 drive 단계라 예외임을 같은 문장에)를 반영. |
+| **`H-455`** | ① | `tween-plan.md` "`Animate` 콤비네이터" 절 아래 문단이 배너 없이 "`Tween<T>` 값 타입만 base(옛 `quad-base/Tween.luau`…)"라 적혀 있었다 — 배너만 달고 본문을 안 고친 실패 모드(`H-453`의 폴백 구멍이 그 인용을 통과시켜 ERROR 0이었다). 취소선+정정. 코드 헤더의 옛 경로 인용 열 곳(`LifetimeHandle`·`NotInstalled`·`Brand`·`Dispatch/None`·`Dispatch/init`·`Dispatch/Modifier/init`의 Peek 유니언·quad-types의 `FieldOut` 귀속·spec 넷)도 같이 — doc-check는 `.luau` 헤더를 안 보므로 grep 전수. |
+| **`H-456`** | ① | `Slot/init.luau`의 내부 표 `S`가 모놀리스의 로컬을 통째로 복사해 과잉 공개됐다 — 다른 파일이 읽지 않는 이름 열둘(`reindexFrom`·`spliceArrays*`·`vacate`·`identityUpdateFn`·`materializeSlotTree` 등)과 프렐류드 키 둘(`Dispatch`·`Brand`). `S`는 `any`라 죽은 공개도 오타 읽기도 분석이 못 잡고 nil 호출로만 드러난다. 반영: 다른 파일이 읽는 이름만 공개, 설치 뒤에 공개되는 둘(`S.assertLive`·`S.Slot`)은 파일 머리에서 캡처하지 말라고 헤더에 명시, `Slot/Handler.luau`의 로컬 `S`(다섯 키 `_slotInternal`)를 `internal`로 개명(같은 폴더의 `S`와 이름 충돌). `_slotInternal` 자체는 핸들러의 공개 계약이라 유지. 타입 있는 내부 표 모양은 새 메커니즘 — **Q29**. |
+| **`H-457`** | ② | `Tag.luau` `flattenInto`의 재귀에 순환 가드가 없어 자기 참조 리스트(`t[1] = t`)가 VM 스택 오버플로로 죽고 blame이 `Brand.luau:95`(내부)다 — `Tag(t)`·`Added(t)`·`Removed(t)` 셋, `Merged`는 `isTag` 게이트가 먼저라 안전. 3절 (b) 전엔 문자열만 받아 도달 불가였다. 깊이 500~10000의 정직한 중첩은 전부 생성된다 — 순환(또는 10만 깊이)만 터진다. 처방(방문 집합·깊이 상한·UB 선언)이 새 메커니즘 또는 정본 결정이라 **Q28**. 코드는 그대로. |
+| **`H-458`** | ① | 정밀해진 엔진 타입 필드의 음성이 어디에도 없었다 — `spec.tween.luau` 3절의 잘못된 엔진 값은 `:: any`로 캐스트돼 아무것도 단언하지 않고, `spec.tweentypes.luau`의 양성 `local info: TweenInfo? = t.Info`는 `any`여도 통과한다. 스펙 그룹은 분석이 클린해야 해 음성을 둘 수 없으므로 스파이크 `luau-test/done/36`(defs 필수, 음성 셋 실측)으로. 같은 김에 STATUS.md에 빠져 있던 34·35 행도 추가. |
+| **`H-459`** | ① | quad-types `FieldOut<T> = T \| State<T> \| None`으로 일반화하면서 프로바이더 아래의 base `Modifier()` `Peek<<UDim2>>`엔 Tween 팔이 없어졌다(생성 `<Class>Modifier`의 `Peek`는 D의 `FieldOut`이라 그대로). 정의상 결함이 아니라(T는 값 대수 전부 — `Peek<<UDim2 \| Tween<UDim2>>>`가 옛 타입과 같음, 실측) 캐비엇: quad-types `FieldOut` 주석과 `modifier-plan.md` `Peek` 절에 그 관용구를 적음. |
+| **`H-460`** | ① | `doc-check.py`가 못 찾은 참조마다 `.claude/` 전체(2110파일)를 다시 걸었다 — 한 실행에 2529번, 게이트 시간의 40%. 이름→경로 색인을 한 번만 만든다. 실측 2.94s → 0.39s. |
+| **`H-461`** | ① | `Tag.Merged`가 `flattenInto`의 Tag 팔과 같은 합집합을 `:Names()` 이터레이터로 두 번째 철자하고 있었다(한쪽은 사적 `_names`, 한쪽은 공개 이터레이터 — 표현이 바뀌면 한 문만 조용히 깨진다). `Merged`는 `isTag` 게이트 뒤 `flattenInto`를 부른다. 같은 파일 `addName` 주석 갱신. `Slot/Tree.luau`의 일곱 이름 전방 선언은 분할 뒤 아무것도 앞서 참조하지 않아(모두 정의 뒤 사용) `local function`으로 — `H-404` 규칙 주석은 남김. |
+| **`H-462`** | ① | `external-review-entry.md`의 인라인 카운터(`G-14`·`S-10`)와 패키지 목록 사본 — 감사자 2라운드와 겹쳐 먼저 수정됨(포인터만). |
+
+**Q28**(`H-457`) — **자기 참조 이름 리스트의 처분.** 상황: Tag의 이름 자리가 리스트를 재귀로 펼치므로 리스트가 자기 자신을 품으면(`t[1] = t`) 스택이 넘칠 때까지 내려가 VM 에러가 나고, 그 에러는 사용자 줄이 아니라 quad 내부(`Brand.luau`)를 가리킵니다. 무엇이 막히나: 이건 실수로 만들기 어려운 모양(정직한 중첩은 1만 깊이까지 멀쩡)이라 "관측된 문제에만 구조" 원칙상 가드를 넣을 근거가 약하지만, `H-441`/`H-446`처럼 "VM 에러가 내부를 blame하는" 부류를 형제 도어들이 전부 표면 에러로 바꿔 온 흐름과는 어긋납니다. 갈래: (a) `base/tag-plan.md`에 UB로 선언하고 코드는 그대로 (b) 방문 집합 하나로 순환을 잡아 표면 에러(할당 하나가 `flattenInto` 호출마다 늘어난다 — 리스트 인자일 때만 만들면 문자열 경로는 무비용) (c) 깊이 상한(예: 64) — 순환과 비정상 깊이를 한 번에, 정직한 깊은 중첩은 거부. 권고 (a) — 실사용에서 이름 리스트는 손으로 적거나 `table.move`로 합친 평평한 배열이고 순환은 만들 이유가 없다; 원칙대로 관측되면 (b).
+
+**Q29**(`H-456`) — **Slot 내부 표 `S`의 타입.** 상황: `Slot/` 여섯 파일이 서로를 `S.fn(...)`으로 늦게 부르는데 `S`가 `any`라 죽은 공개·오타 읽기·설치 전 캡처를 분석기가 못 잡고 실행 때 nil 호출로만 드러납니다(이번에 죽은 공개 열넷을 손으로 걷어냈습니다). 무엇이 막히나: 고치려면 `S`의 모양을 타입으로 적어야 하는데(`Slot/init.luau`에 `SlotInternal` 같은 export type — 함수 마흔 개의 시그니처 나열, 또는 각 파일이 자기 몫만 `& { … }`로 더하는 교집합), 그건 새 이름·구조입니다. 갈래: (a) 지금처럼 `any` + 헤더 규칙(설치 뒤 공개 둘은 파일 머리에서 캡처 금지) + 스펙 커버(`spec.slot`이 raw*/List 경로 대부분을 지난다) (b) `S`의 타입을 한 곳에 적는다(비용: 시그니처 나열, 이후 함수 추가마다 두 곳) (c) 파일별 교집합 조립(8.6/8.12의 교집합 함정을 재야 함). 권고 (a) — 관측된 문제가 아니고, 오타는 `spec.slot`(가장 큰 스펙)이 잡는다.
+
+**검증**: `./scripts/test.sh` exit 0(스펙 49), doc-check ERROR 0(0.39s), 스파이크 36 실측.
+

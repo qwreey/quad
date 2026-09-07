@@ -41,9 +41,9 @@
      `research/source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
      통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attribute/`·
      `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
-     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅)·Q27(프로바이더 브랜드 프로브 등록) — round3 §4; 구조
+     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅)·Q27(프로바이더 브랜드 프로브 등록) — round3 §4; Q28(Tag 자기 참조 리스트)·Q29(Slot 내부 표 `S` 타입) — round3 §9; 구조
      재편 8절 `Attr` 축약(미답)·10-4 D 정적 굽기(§0 타입 함수 예외 여부); 사후 확인(마커 필드·별칭 이름, Property 슬롯
-     `Source`); flatten 슈거 일곱.** 다음 순회는 round3 §9·`H-453`부터(이동 뒤 순회 1회 — 9절 5번). 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     `Source`); flatten 슈거 일곱.** 다음 순회는 round3 §10·`H-463`부터(이동 뒤 순회는 §9로 끝). 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).

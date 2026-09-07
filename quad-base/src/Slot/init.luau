@@ -88,7 +88,6 @@ local function Init(module: any)
 	-- themselves, so passing the WRAPPER preserves `H-174`).
 	local S = {
 		Slot_mt = Slot_mt,
-		Dispatch = Dispatch,
 		BK = BK,
 		None = None,
 		isState = isState,
@@ -100,13 +99,17 @@ local function Init(module: any)
 		OWNER_POS = OWNER_POS,
 		ZOMBIE_NOTE = ZOMBIE_NOTE,
 		isSlot = isSlot,
-		Brand = Brand,
 		Err = Err,
 		SURFACE = SURFACE,
 		Detach = Detach,
 		KeyGone = KeyGone,
 	} :: any
 
+	-- Published names are exactly the ones another file reads (round3 §9 `H-461` — the
+	-- first split copied every local; `S` is `any`, so a dead publish or a typo'd read is
+	-- not analyzable and only surfaces as a nil call). Two entries are published AFTER the
+	-- installs below — `S.assertLive` and `S.Slot` — so siblings must read those inside a
+	-- function body, never at their file top (`Slot/List.luau`·`Slot/Elements.luau` do).
 	require("@self/Owner")(S, module)
 	require("@self/Elements")(S, module)
 	require("@self/Raw")(S, module)

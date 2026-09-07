@@ -210,7 +210,7 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
   없음(2026-08-07 여덟 번째 세션 확정) — setter로 받으면 "특정 필드만 지우는
   재사용 가능한 modifier 조각"(9-1번의 스타일 프리셋 opt-out 시나리오)도
   공짜로 됨.
-- **`:Peek<<T>>(key)`의 반환 타입이 `T | State<T> | None | nil`로 확장됨** — **[2026-09-07 회신 4차 Q24 후속, 사용자 질문 *"FieldOut<T> 는 그럼 Peek 에도 사용되는걸까?"*]** 지금은 `FieldOut<T>?`(quad-types 정의 `FieldOut<X> = X | State<X> | None`에 백엔드가 자기 값 대수를 넣는다 — quad-roblox `types.luau`가 `X = T | Tween<T>`로 별칭, 전개형 `T | Tween<T> | State<T | Tween<T>> | None`; **[2026-09-07 Tween 이동]** base는 Tween을 모르므로 이 분해가 됐다) — 변환 함수의 `old`와 같은 "저장된 그대로" 값이라 한 타입을 쓴다(옛 유니언엔 Tween 팔이 없어 저장된 Tween이 T로 보였다). `nil` = 필드 없음, `None` = 명시 해제 구분은 그대로 —
+- **`:Peek<<T>>(key)`의 반환 타입이 `T | State<T> | None | nil`로 확장됨** — **[2026-09-07 회신 4차 Q24 후속, 사용자 질문 *"FieldOut<T> 는 그럼 Peek 에도 사용되는걸까?"*]** 지금은 `FieldOut<T>?`(quad-types 정의 `FieldOut<X> = X | State<X> | None`에 백엔드가 자기 값 대수를 넣는다 — 캐비엇 `H-459`: 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 quad-types 정의라 `Peek<<UDim2>>`엔 Tween 팔이 없다, 그 필드가 Tween을 품으면 `Peek<<UDim2 | Tween<UDim2>>>`(T = 값 대수 전부); 생성 `<Class>Modifier`의 `Peek`는 D의 `FieldOut`을 쓴다 — quad-roblox `types.luau`가 `X = T | Tween<T>`로 별칭, 전개형 `T | Tween<T> | State<T | Tween<T>> | None`; **[2026-09-07 Tween 이동]** base는 Tween을 모르므로 이 분해가 됐다) — 변환 함수의 `old`와 같은 "저장된 그대로" 값이라 한 타입을 쓴다(옛 유니언엔 Tween 팔이 없어 저장된 Tween이 T로 보였다). `nil` = 필드 없음, `None` = 명시 해제 구분은 그대로 —
   `Peek`은 raw 저장값을 그대로 읽으므로(9번 절 "현재 저장된 그대로 넘김"
   원칙) `None`을 다른 값처럼 있는 그대로 돌려줌. "필드가 아예 안 채워짐"
   (`nil`)과 "명시적으로 지워짐"(`None`)은 raw 계층에서 계속 구별됨.

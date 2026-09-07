@@ -253,7 +253,7 @@ export type AttributeSugar<T> = (name: string, value: T | StateMarker<T> | None)
 export type Modifier = {
 	-- 마커(H-300 관례): `true` = 무타입(base `Modifier()`), 클래스 태그 값은
 	-- 클래스명 문자열 — 그 리터럴은 생성/사용자 정의 `<Class>Modifier` 타입이
-	-- 각자 선언한다(단위 ④, 11절). 런타임 값에도 실제로 있다(Modifier.luau)
+	-- 각자 선언한다(단위 ④, 11절). 런타임 값에도 실제로 있다(Dispatch/Modifier/init.luau)
 	read __quadModifier: true,
 	-- 정본 9절 `:Peek<<T>>(key)` — `store:Of<<T>>`와 같은 명시 인스턴스화 관례.
 	-- [2026-09-07 회신 4차 Q24 후속] 반환은 `FieldOut<T>?` — 변환 함수의 `old`와 같은 "저장된 그대로"
@@ -287,8 +287,10 @@ export type ModifierConstructor = setmetatable<{
 -- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
 -- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
 -- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
--- 생성 D의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
--- 2026-09-07 Tween 이동 전과 같은 전개형).
+-- `types.luau`의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
+-- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 D는 그걸 재별칭 — D 안 전개는 typing-limits 8.12).
+-- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
+-- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
 export type FieldOut<T> = T | State<T> | None
 
 export type State<T> = StateData<T> & {

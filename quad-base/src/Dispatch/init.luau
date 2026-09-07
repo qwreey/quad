@@ -310,7 +310,7 @@ local function Init(module: any)
 
 	local function drive(inst: any, flattened: { [any]: any })
 		-- `H-419` (외부 리뷰 G-07): a non-table props value used to die inside
-		-- `flatten` (`#input` / `next` — VM error blaming Modifier.luau); strict
+		-- `flatten` (`#input` / `next` — VM error blaming Dispatch/Modifier/init.luau); strict
 		-- typing is the first defense, this is the untyped-caller one
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)

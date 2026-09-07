@@ -47,7 +47,7 @@ do
 	end
 	-- the in-tree pattern `H-378` fixed: quad internals call `canBound`/`isInst`
 	-- from inside public methods — the blame must be the user's line, not
-	-- Observer.luau / Slot.luau (a stub tagged SURFACE made "nearest" = that internal line)
+	-- Observer.luau / Slot/Elements.luau (a stub tagged SURFACE made "nearest" = that internal line)
 	local okO, errO = pcall(function()
 		fresh.Source(1):Observer(function() end):Subscribe()
 	end)

@@ -94,9 +94,9 @@ end
 local function isAttributeKey(x: any): boolean
 	return AttributeKeyBrand:is(x)
 end
--- `H-403` (사용자 지시 2026-09-07): lived in `Slot.luau` alone while every sibling
+-- `H-403` (사용자 지시 2026-09-07): lived in 옛 `Slot.luau` (now `Slot/init.luau`) alone while every sibling
 -- predicate lives here — moved so the set has one home (`slot-plan.md`: "`isSlot`은
--- `Brand`의"). `Slot.luau` re-exposes it on the module like before.
+-- `Brand`의"). `Slot/init.luau` re-exposes it on the module like before.
 local function isSlot(x: any): boolean
 	return SlotBrand:is(x)
 end

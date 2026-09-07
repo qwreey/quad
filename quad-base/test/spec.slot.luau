@@ -310,7 +310,7 @@ do
 	local s2 = Slot(); s2:List(q.Source({}), function() end)
 	assert(not pcall(function() s2:Add(Instance.new("Frame")) end), "no manual CRUD after :List")
 	-- 4순회 `H-385`: the same gates through the `:Single` sugar blame the user's
-	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot.luau
+	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot/List.luau
 	local _, errS1 = pcall(function() s1:Single(q.Source(nil)) end)
 	assert(string.find(tostring(errS1), ":List/:Single on a manual Slot", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
 	mock.assertBlamesUser(errS1, "spec.slot.luau", "Single-after-CRUD blame")
@@ -831,7 +831,7 @@ do
 	q.dispose(parent) -- destroySlotTree(parent): child is Owned=false → unmount-only, must be released
 	assert(not child._destroyed, "Owned=false child survives (S-07 / slot-plan)")
 	q.Slot():Add(child) -- used to raise "already mounted elsewhere" (dead elementOwner)
-	-- G-11: List argument gates blame the caller, not Slot.luau
+	-- G-11: List argument gates blame the caller, not Slot/List.luau
 	local okL, errL = pcall(function() q.Slot():List(nil :: any, function() end) end)
 	assert(not okL and string.find(tostring(errL), "data must be a plain array", 1, true) ~= nil, "nil data: " .. tostring(errL))
 	mock.assertBlamesUser(errL, "spec.slot.luau", "List nil data blame")

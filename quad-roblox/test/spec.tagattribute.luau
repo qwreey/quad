@@ -2,7 +2,7 @@
 --[[
 	M10 엔진 축(2026-09-03) — quad-roblox `EngineOps.luau`의 Tag/Attribute op
 	셋(`addTag`/`removeTag`/`setAttribute`)이 base 핸들러(`Tag.luau`/
-	`AttributeKey.luau`/`Attribute.luau`)의 호출 계약대로 엔진에 닿는가.
+	`Attribute/Key.luau`/`Attribute/init.luau`)의 호출 계약대로 엔진에 닿는가.
 	정본: `dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op",
 	`tag-plan.md`(배치 `{string}`·깜빡임 방지), `attribute-plan.md`(nil = 삭제,
 	클로저는 setAttribute를 안 부른다).

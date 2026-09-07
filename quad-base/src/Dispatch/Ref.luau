@@ -4,11 +4,11 @@
 	신설" 절 (pre-pass, hoisting, `ProcessedPreRef`), "`PostRef`" 절 (one sweep
 	collects both, `postRefList` drained after the body loop) — as-is.
 
-	Lives under Dispatch/ for the same reason as Dispatch/Modifier.luau: the
+	Lives under Dispatch/ for the same reason as Dispatch/Modifier/Handler.luau: the
 	pre-pass is `drive`'s own stage (a)/(c) and the sentinels are Dispatch's
 	concept (a consumed slot), so Dispatch can require this file without a
-	cycle (`Ref.luau` requires Dispatch for its `H-278` handler registration).
-	The leaf handler and the two dynamic-path guards stay in `Ref.luau`.
+	cycle (`Ref/init.luau` requires Dispatch for its `H-278` handler registration).
+	The leaf handler and the two dynamic-path guards stay in `Ref/init.luau`.
 
 	  prePass(inst, flattened) -> postRefList?
 	      one index-order walk of the array part:
@@ -16,7 +16,7 @@
 	        isPostRef(v) → one-shot guard, push, slot := ProcessedPostRef
 	      (`flatten` has already run — Modifier fields are hash keys by now,
 	       so a PreRef hidden in a Modifier field never reaches here: the
-	       FALLBACK guard in Ref.luau catches it as a named-key misuse)
+	       FALLBACK guard in Ref/init.luau catches it as a named-key misuse)
 	  firePostRefs(inst, list)
 	      `v:Set(inst)` in push (= array index) order — called by `drive` after
 	      the body loop and BEFORE the batch closes (`H-17`: the gate is still

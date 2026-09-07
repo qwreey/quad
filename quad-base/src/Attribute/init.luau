@@ -107,7 +107,7 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 		-- "그룹 `Attribute(...)`"; the engine cannot store one, and through THIS
 		-- group path it used to raise inside `setAttribute` at dispatch depth).
 		-- Scope: the group constructor only — the raw `[AttributeKey] = v` key
-		-- path stays untyped by design (`AttributeKey.luau` header, §4 Q4's family).
+		-- path stays untyped by design (`Attribute/Key.luau` header, §4 Q4's family).
 		for rawName, v in pairs(arg :: { [any]: any }) do
 			if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttribute at dispatch depth
 				Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)

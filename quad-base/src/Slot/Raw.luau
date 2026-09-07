@@ -397,20 +397,12 @@ return function(S: any, module: any)
 		return d
 	end
 
-	S.reindexFrom = reindexFrom
-	S.spliceArraysUp = spliceArraysUp
-	S.spliceArraysDown = spliceArraysDown
 	S.maybeRecompute = maybeRecompute
-	S.unbindObserverAt = unbindObserverAt
-	S.vacate = vacate
 	S.rawAdd = rawAdd
-	S.leaveAsElement = leaveAsElement
 	S.rawRemove = rawRemove
 	S.rawUnmount = rawUnmount
 	S.rawDetach = rawDetach
 	S.rawReplace = rawReplace
-	S.rotateInPlace = rotateInPlace
-	S.invalidateFrom = invalidateFrom
 	S.rawMove = rawMove
 	S.rawSwap = rawSwap
 	S.rawSplice = rawSplice

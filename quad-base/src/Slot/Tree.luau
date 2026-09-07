@@ -19,13 +19,11 @@ return function(S: any, module: any)
 	local Err = S.Err
 	local SURFACE = S.SURFACE
 
-	-- forward decls (mutual recursion)
-	-- ⚠️ Forward declarations for the mutually recursive tree functions below —
-	-- every bare `function name(...)` further down MUST be listed here: without a
-	-- prior `local`, `function name()` is sugar for a GLOBAL assignment (사용자
-	-- 실측 2026-09-07, `H-404`). `scripts/test.sh` fails on luau-analyze's
-	-- GlobalUsedAsLocal lint so a missing name here cannot slip through.
-	local materializeSlotTree, mountSlotTree, markMountedTree, attachSlot, destroySlotTree, unmountSlotTree, teardownTree
+	-- No forward declarations here (round3 §9 `H-461`): after the split every tree
+	-- function is defined before its first same-file use (cross-file calls go through
+	-- `S.`), so each is a plain `local function`. The `H-404` rule still applies —
+	-- a bare `function name()` without a prior `local` is a GLOBAL assignment and
+	-- `scripts/test.sh` fails on the GlobalUsedAsLocal lint (see `Slot/init.luau`).
 
 	-- ── attach 3-family ────────────────────────────────────────────────
 	local function makeBaseObserver(slot: any): any
@@ -37,7 +35,7 @@ return function(S: any, module: any)
 		end)
 	end
 
-	function materializeSlotTree(slot: any, physicalTarget: any, ownerKey: any, position: number)
+	local function materializeSlotTree(slot: any, physicalTarget: any, ownerKey: any, position: number)
 		if slot._destroyed then Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE) end
 		slot._physicalTarget = physicalTarget
 
@@ -75,7 +73,7 @@ return function(S: any, module: any)
 	-- walk (recursive `_mounted`/`_mountedInst`) and ONE physical op for the
 	-- whole subtree's flattened leaves — never one op per leaf. rawSplice uses
 	-- the halves separately to fold several new subtrees into its single op.
-	function markMountedTree(slot: any, physicalTarget: any)
+	local function markMountedTree(slot: any, physicalTarget: any)
 		slot._mounted = true
 		slot._mountedInst = physicalTarget
 		for _, element in ipairs(slot._elements) do
@@ -83,12 +81,12 @@ return function(S: any, module: any)
 		end
 	end
 
-	function mountSlotTree(slot: any, physicalTarget: any)
+	local function mountSlotTree(slot: any, physicalTarget: any)
 		module.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
 		markMountedTree(slot, physicalTarget)
 	end
 
-	function attachSlot(slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?)
+	local function attachSlot(slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?)
 		materializeSlotTree(slot, physicalTarget, ownerKey, position)
 		if mount ~= false then
 			mountSlotTree(slot, physicalTarget)
@@ -116,7 +114,7 @@ return function(S: any, module: any)
 	-- reset, recursively, no physical op); unmountSlotTree adds ONE
 	-- nativeExtract of the subtree's flattened leaves. rawSplice calls the
 	-- logical half only and folds the leaves into its single op.
-	function teardownTree(slot: any)
+	local function teardownTree(slot: any)
 		for _, element in ipairs(slot._elements) do
 			if isSlot(element) then teardownTree(element) end
 		end
@@ -141,14 +139,14 @@ return function(S: any, module: any)
 		bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0
 	end
 
-	function unmountSlotTree(slot: any)
+	local function unmountSlotTree(slot: any)
 		if slot._mounted then
 			module.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
 		end
 		teardownTree(slot)
 	end
 
-	function destroySlotTree(slot: any)
+	local function destroySlotTree(slot: any)
 		if slot._destroyed then return end
 		if slot._owned == false then
 			unmountSlotTree(slot)
@@ -188,9 +186,7 @@ return function(S: any, module: any)
 	end
 
 	S.makeBaseObserver = makeBaseObserver
-	S.materializeSlotTree = materializeSlotTree
 	S.markMountedTree = markMountedTree
-	S.mountSlotTree = mountSlotTree
 	S.attachSlot = attachSlot
 	S.releaseSugarWrapper = releaseSugarWrapper
 	S.teardownTree = teardownTree

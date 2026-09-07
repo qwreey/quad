@@ -85,7 +85,17 @@ REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?
 
 # 소스 파일 색인(접미 일치용) — 워크스페이스 패키지의 src/test + scripts + luau-test.
 # 설치 사본(`luau_packages`/`.pesde`)은 제외: 원본만 존재 판정에 쓴다.
-_SRC_ROOTS = ('quad-base', 'quad-roblox', 'quad-types', 'quad-error', 'type-version-check', 'scripts')
+# 패키지 목록은 루트 pesde.toml의 workspace_members가 소스(round3 §9 `H-453` — 여기 되풀이하지 않는다).
+def _workspace_members():
+    try:
+        text = open(os.path.join(ROOT, 'pesde.toml'), encoding='utf-8').read()
+        m = re.search(r'workspace_members\s*=\s*\[([^\]]*)\]', text)
+        if m:
+            return tuple(re.findall(r'"([^"]+)"', m.group(1)))
+    except OSError:
+        pass
+    return ('quad-base', 'quad-roblox', 'quad-types', 'quad-error', 'type-version-check')
+_SRC_ROOTS = _workspace_members() + ('scripts',)
 _src_index = None
 def src_files():
     global _src_index
@@ -94,9 +104,11 @@ def src_files():
         for root in _SRC_ROOTS:
             for dp, dn, fn in os.walk(os.path.join(ROOT, root)):
                 parts = os.path.relpath(dp, ROOT).split(os.sep)
-                if 'luau_packages' in parts or '.pesde' in parts or 'node_modules' in parts:
+                if '.pesde' in parts or 'node_modules' in parts:
                     dn[:] = []
                     continue
+                if 'luau_packages' in parts:  # 설치 사본은 제외, 최상위 링크 shim(`luau_packages/quad_types.luau`)만 실존으로
+                    dn[:] = []
                 for f in fn:
                     if f.endswith('.luau') or f.endswith('.py') or f.endswith('.sh'):
                         acc.append(os.path.relpath(os.path.join(dp, f), ROOT))
@@ -122,8 +134,12 @@ def resolve(target, src):
         hits = resolve_luau(target)
         if hits:
             return os.path.join(ROOT, hits[0])
-        # 못 찾으면 아래 이름-기반 탐색으로 폴백(`initreq/` 클론의 외부 소스 — Fusion/Vide
-        # 리서치가 인용하는 `signal.luau`류 — 는 거기서 찾힌다)
+        # 패키지 루트부터 적은 경로는 존재를 단언한 것 — 이름 폴백으로 initreq 클론의 동명 파일에
+        # 걸려 통과하면 검사가 무력화된다(`H-453`: `quad-base/src/Tween.luau`가 Fusion의 Tween.luau로 통과했었다)
+        if target.startswith(_SRC_ROOTS):
+            return None
+        # 그 외(이름·부분 경로)는 아래 이름-기반 탐색으로 폴백(`initreq/` 클론의 외부 소스 —
+        # Fusion/Vide 리서치가 인용하는 `signal.luau`류 — 는 거기서 찾힌다)
     cands = [
         os.path.join(ROOT, target),
         os.path.join(CLAUDE, target),
@@ -132,15 +148,23 @@ def resolve(target, src):
     for c in cands:
         if os.path.exists(c):
             return c
-    # 파일명만으로 찾히면 인정(initreq 포함 — 읽기 전용 클론이지만 실재함)
-    name = os.path.basename(target)
-    for dp, dn, fn in os.walk(CLAUDE):
-        if 'worktrees' in os.path.relpath(dp, ROOT).split(os.sep):
-            dn[:] = []
-            continue
-        if name in fn:
-            return os.path.join(dp, name)
-    return None
+    # 파일명만으로 찾히면 인정(initreq 포함 — 읽기 전용 클론이지만 실재함).
+    # 색인은 한 번만 걷는다(`H-460` — 참조마다 `.claude/` 전체를 걷던 것이 게이트 시간의 40%).
+    return _claude_by_name().get(os.path.basename(target))
+
+_claude_index = None
+def _claude_by_name():
+    global _claude_index
+    if _claude_index is None:
+        idx = {}
+        for dp, dn, fn in os.walk(CLAUDE):
+            if 'worktrees' in os.path.relpath(dp, ROOT).split(os.sep):
+                dn[:] = []
+                continue
+            for f in fn:
+                idx.setdefault(f, os.path.join(dp, f))
+        _claude_index = idx
+    return _claude_index
 
 
 # 이 레포의 문서 명명 관례 — 여기 걸리면 "우리 문서"이므로 못 찾으면 ERROR.
@@ -271,9 +295,11 @@ def check_refs(docs):
                 if target.endswith('.luau'):
                     # [2026-09-07] 소스 파일 참조: 패키지 루트부터 적은 전체 경로(`quad-base/src/…`)는
                     # 존재를 단언한 것이라 ERROR, 이름·부분 경로(`Slot.luau`, `Dispatch/Slot.luau`)는
-                    # 옛 이름 서술일 수 있어 WARN(히스토리 문서는 위에서 이미 제외).
+                    # 옛 이름 서술일 수 있어 WARN(히스토리 문서는 위에서 이미 제외). "옛 `X.luau`"처럼
+                    # 인용 앞 120자 안에 "옛"이 있으면 의도된 옛 이름 서술로 보고 건너뛴다
+                    # (conventions "문서 표기 규약" — 옮겨진 파일의 옛 이름은 `옛 \`…\``로 쓴다).
                     msg = f"{rel(d)}:{ln}  소스 파일 없음 → `{target}`"
-                    if is_archive:
+                    if is_archive or '옛' in text[max(0, m.start() - 120):m.start()]:  # 창 120자 — "옛 A + B" 결합절의 B까지
                         continue
                     (errors if target.startswith(_SRC_ROOTS) else warns).append(
                         msg if target.startswith(_SRC_ROOTS) else msg + " (옮겨졌거나 옛 이름 — 지금 경로로 고칠 것)")

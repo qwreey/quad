@@ -61,7 +61,7 @@ local module = { None = None, sentinel = sentinel }
 -- matches the sentinel by identity anywhere (it only ever sits at array
 -- positions), registers the position out of the order math and retracts
 -- with `Void` — flatten / the pre-pass fire already happened, nothing to
--- undo. One factory for the three (Q3 ⑤ — `Dispatch/Modifier.luau` was a
+-- undo. One factory for the three (Q3 ⑤ — `Dispatch/Modifier/Handler.luau`, 옛 `Dispatch/Modifier.luau`, was a
 -- third hand copy of `Dispatch/Ref.luau`'s local `addProcessed`).
 function module.addProcessedHandler(dispatch: QuadTypes.Dispatch, name: string, sent: any)
 	dispatch.addHandler({

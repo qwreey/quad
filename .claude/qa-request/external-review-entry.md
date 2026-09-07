@@ -15,10 +15,8 @@
 
 Roblox 엔진용 DOMless 반응형 UI 렌더러 `quad`의 v2 재작성. 루트 `CLAUDE.md`가 진입 문서이고, 코드보다 문서가
 먼저인 프로젝트다 — 설계 결정은 전부 `.claude/base/`에 산문으로 확정돼 있고 코드는 그 정본을 구현한다.
-워크스페이스 패키지는 다섯: `quad-base/src`(엔진 무관 코어 — 반응형 State/Source/Store, 디스패치, Slot, Tag/
-Attribute, Ref, Modifier), `quad-roblox/src`(Roblox 백엔드 — 핸들러, 생성 타입 `D/`, Tween/Animate),
-`quad-types/src`(공개 타입 계약 + 마커, 런타임 값은 브랜드 팩토리와 상수뿐), `quad-error/src`(에러 blame 유틸),
-`type-version-check/src`. 생성기는 `scripts/gen-d.py`, 테스트는 `./scripts/test.sh`.
+워크스페이스 패키지 구성과 각 파일의 몫은 **`base/architecture.md`의 소스 트리가 유일한 소스**다(여기 다시 나열하지
+않는다 — 나열은 갈라진다). 생성기는 `scripts/gen-d.py`, 테스트는 `./scripts/test.sh`.
 
 ## 2. 읽는 순서 — 지식이 어디 있나
 
@@ -64,8 +62,8 @@ Attribute, Ref, Modifier), `quad-roblox/src`(Roblox 백엔드 — 핸들러, 생
 - **파일명**: `.claude/qa-request/post-implementation-review-round<N>.md`, N은 `.claude/README.md` `qa-request/`
   행에 있는 최신 라운드 + 1(사용자가 다른 이름을 주면 그 이름). 첫 줄에 검토 시점(날짜·HEAD 커밋 해시)과
   검토 범위를 적는다.
-- **번호**: 발견은 `G-nn`, 건전성 확인은 `S-nn` — 직전 외부 리뷰 라운드의 마지막 번호 다음부터 이어 센다(지금
-  기준 마지막은 `G-14`·`S-10`, 최신은 README 행의 마지막 외부 라운드 파일 끝에서 확인). `H-nnn`은 메인 세션이
+- **번호**: 발견은 `G-nn`, 건전성 확인은 `S-nn` — 직전 외부 리뷰 라운드의 마지막 번호 다음부터 이어 센다(마지막 번호는
+  README 행의 마지막 외부 라운드 파일 끝에서 확인 — 여기 숫자를 적어 두지 않는다). `H-nnn`은 메인 세션이
   판정 뒤 붙이므로 **쓰지 말 것**.
 - **항목마다 평문 한 문단**(사용자 규약, `conventions.md` 2026-09-07 항목): 상황 → 무엇이 막히나(재현 경로) →
   제안 갈래의 뜻. 기호·약호·번호 나열로 압축하지 말 것. 위치는 `파일:줄`, 심각도는 High/Medium/Low 하나, 근거는

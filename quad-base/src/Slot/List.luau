@@ -183,7 +183,7 @@ return function(S: any, module: any)
 
 	-- 4순회 `H-385`: the install gates run at the PUBLIC entry — `Single` is tagged
 	-- and delegates to `List`, so a gate raised inside `List` was nearest to
-	-- `Single`'s own delegation line (`Slot.luau`), not the user's `:Single(...)`.
+	-- `Single`'s own delegation line (`Slot/List.luau`), not the user's `:Single(...)`.
 	local function checkListInstall(self: any)
 		S.assertLive(self)
 		if self._listed then Err.errorBeforeNearest("Slot: already has :List/:Single installed", SURFACE) end
@@ -230,8 +230,6 @@ return function(S: any, module: any)
 		end, function() return true end, opts)
 	end
 
-	S.identityUpdateFn = identityUpdateFn
-	S.checkListInstall = checkListInstall
 	S.List = Slot_mt.List -- for init's setFuncLevel tagging loop
 	S.Single = Slot_mt.Single
 end

@@ -15,7 +15,8 @@
 	                                          --   State → old:Compute(fn) (4-1)
 	  mod:AnyField(nil)                       -- field ABSENT in mod' (2-1 M-5)
 	  mod:AnyField(None)                      -- field = None (the only unsetter)
-	  mod:Peek(key) -> FieldOut<T>?                -- raw, never :Get() (T | Tween<T> | State<T | Tween<T>> | None | nil)
+	  mod:Peek(key) -> FieldOut<T>?                -- raw, never :Get() (quad-types: T | State<T> | None | nil — T is the
+	                                          --   field's whole value algebra; quad-roblox puts X | Tween<X> there)
 	  mod:Apply(factory) -> factory(mod)      -- pure call sugar, no contract
 	  Modifier.Overridden(a, b, …) / a:Overridden(b, …)
 	                                          -- field-wise, later wins, no
@@ -76,7 +77,7 @@
 	always win, each consumed slot becomes the `ProcessedModifier` sentinel
 	(no holes → array order kept). `Dispatch.drive` owns the call as its
 	first pre-pass (round17 §0 Q4 (a)) — `New` ③ and `Claim` both get it
-	through drive. `ProcessedModifierHandler` (Dispatch/Modifier.luau)
+	through drive. `ProcessedModifierHandler` (Dispatch/Modifier/Handler.luau)
 	catches the sentinel and registers None/0 bookkeeping. flatten never
 	looks at tags — a tag only ever gates `As<Name>()`.
 ]]

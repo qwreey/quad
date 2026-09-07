@@ -59,7 +59,8 @@ local function newTag(names: { [string]: true }): any
 	return table.freeze(self)
 end
 
--- one door for a single name (7순회: the two empty-name gates were copies)
+-- the one gate a name passes on its way into a set (7순회: the two empty-name
+-- gates were copies; since the 3절 (b) union every door reaches it through `flattenInto`)
 local function addName(target: { [string]: true }, name: string)
 	if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
 		Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
@@ -171,9 +172,7 @@ function Tag.Merged(...: any): any
 		if not isTag(tag) then
 			Err.errorBeforeNearest("Tag.Merged: arguments must be Tag values", SURFACE)
 		end
-		for name in tag:Names() do
-			names[name] = true
-		end
+		flattenInto(names, tag) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
 	end
 	return newTag(names)
 end

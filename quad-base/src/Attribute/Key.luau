@@ -10,7 +10,7 @@
 	"x"] = v` — the value's type is not checked, "타입이 몰라도 되는 존재");
 	the typed scalar family `StringAttribute(name, value)` etc. is array-part
 	SUGAR over the group (`Attribute({ [name] = value })`) and lives in
-	Attribute.luau — the old aliases (`StringAttribute = AttributeKey`) are
+	Attribute/init.luau — the old aliases (`StringAttribute = AttributeKey`) are
 	gone. Use AttributeKey directly for value types the family does not cover
 	(engine-specific: Color3, UDim2, Instance …); the backend's setAttribute is
 	what validates the value then.
@@ -64,7 +64,7 @@ local function AttributeKey(name: string): any
 	return key
 end
 -- `H-238`: public constructor tagged (the scalar sugar family lives in
--- Attribute.luau and tags itself there)
+-- Attribute/init.luau and tags itself there)
 Err.setFuncLevel(AttributeKey, SURFACE)
 
 local module = {

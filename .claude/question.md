@@ -181,7 +181,7 @@
   함수 조립은 `typing-limits.md` §0의 "타입 함수는 진단까지만" 확정과 충돌하므로 §5·§6 함정을 스파이크로
   먼저 재야 하고, 그 전에 교집합 별칭으로 중복 텍스트를 줄이는 쪽이 싸다 — §0 예외를 열 것인지 결정 필요.
   (3) round3 §4 **Q27** 프로바이더 브랜드 진단 프로브 등록(`BRAND_PROBES`의 `"isTween"` 문자열 잔재 — 권고 (a)
-  등록 op). (4) 사후 확인: 10-2의 필드·별칭 이름(`__quadAttribute`/`__quadObserver`/`__quadEffect`,
+  등록 op); round3 §9 **Q28** Tag 자기 참조 리스트의 처분(권고 (a) UB 선언)·**Q29** Slot 내부 표 `S`의 타입(권고 (a) any 유지). (4) 사후 확인: 10-2의 필드·별칭 이름(`__quadAttribute`/`__quadObserver`/`__quadEffect`,
   `<Type>Marker`)은 기존 패턴을 따른 메인 작명.
 
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
