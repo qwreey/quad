@@ -19,8 +19,8 @@
 > 라운드 분리하고 싶은데, round1 부터 다시 시작해서 라운드좀 붙여줄래? gemini 쪽은 round2 로 하면 될듯"*).
 > 이 파일이 **round1**(옛 이름 post-implementation-review.md — 순회 0~7 §5~§14 + 사용자 회신 §15), Gemini 외부
 > 리뷰 원문·판정이 **round2**(`post-implementation-review-round2.md`, 옛 post-implementation-gemini-review.md;
-> 메인 판정 표는 이 파일 §13), 다음 리뷰 묶음부터 post-implementation-review-round3.md 새 파일(문항 표 §4는
-> 이 파일이 소스로 남고 새 파일은 가리킨다).
+> 메인 판정 표는 이 파일 §13), 그 뒤 리뷰 묶음은 round3부터 새 파일(**라운드 파일마다 자기 §4, 문항 번호는
+> 이어 센다** — 이 파일 §4는 Q1~Q21의 소스; 최신 목록은 `.claude/README.md`).
 
 ## §1 반영한 것 (갈래 ① — 이 커밋)
 
