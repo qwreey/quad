@@ -21,14 +21,14 @@
 1. **반응형 코어 (`quad-base/src/`)**:
    - `State.luau`, `Source.luau`, `EpochMap.luau`, `Observer.luau`, `Effect.luau`, `Blocker.luau`
    - 반응형 파동 전파, 에포크 기반 동등성 판정, lazy `Get` 루프 최신성, 생명주기 바인딩
-2. **슬롯 및 부기 (`quad-base/src/Slot.luau`, `Bookkeeping.luau`)**:
+2. **슬롯 및 부기 (`quad-base/src/Slot/init.luau`, `Bookkeeping.luau`)**:
    - 동적 자식 리스트 CRUD (`Add`, `Remove`, `Replace`, `Extract`, `Splice`, `Move`, `Swap`)
    - 접두사 합(Prefix sum) 오프셋 캐시, 커서 되감기(rewind) 및 무효화, 배치 블로커, 소유권 관리
 3. **디스패치 엔진 (`quad-base/src/Dispatch/`)**:
-   - `init.luau`, `StoreBind.luau`, `None.luau`, `Modifier.luau`, `Ref.luau`, `Slot.luau`
+   - `init.luau`, `StoreBind.luau`, `None.luau`, `Dispatch/Modifier/init.luau`, `Ref/init.luau`, `Slot/init.luau`
    - 하강 diff 재디스패치(descending-diff), 우선순위 밴드 스캔, 체인 관리, retractor 수명주기
 4. **값 객체 및 프리미티브**:
-   - `Store.luau`, `Tag.luau`, `Attribute.luau`, `AttributeKey.luau`, `Ref.luau`, `Modifier.luau`, `Tween.luau`, `Claim.luau`
+   - `Store.luau`, `Tag.luau`, `Attribute/init.luau`, `Attribute/Key.luau`, `Ref/init.luau`, `Dispatch/Modifier/init.luau`, `Tween.luau`, `Claim.luau`
 5. **Roblox 백엔드 (`quad-roblox/src/`)**:
    - `RobloxFactory.luau`, `EngineOps.luau`, `LifetimeHandle.luau`, `Animate.luau`, `D/init.luau`
    - `Handlers/` (`Property.luau`, `Event.luau`, `OnChange.luau`, `InstanceChild.luau`, `InstanceShorthand.luau`)
@@ -87,9 +87,9 @@
 
 ---
 
-### [G-02] `Slot.luau` `prepareElements`와 `occupantOf`의 검증 경계 분석
+### [G-02] `Slot/init.luau` `prepareElements`와 `occupantOf`의 검증 경계 분석
 
-- **위치**: `quad-base/src/Slot.luau:740-768` (`occupantOf`, `prepareElements`)
+- **위치**: `quad-base/src/Slot/init.luau:740-768` (`occupantOf`, `prepareElements`)
 - **심각도**: Informational / Architecture Analysis
 - **현상 및 분석**:
   - `occupantOf(element)`는 오직 State 래퍼 슬롯(`element._wrapped ~= nil`)에 대해서만 내부의 현재 값(`element._wrapped:Get()`)을 꺼내어 검사하고, 일반 사용자 생성 Slot(`isSlot(element)`이고 `_wrapped == nil`)에 대해서는 Slot 객체 자신(`element`)만을 occupant로 반환합니다.
@@ -167,7 +167,7 @@
   - 이로 인해 `attempt to index nil with 'GetPropertyChangedSignal'`이라는 원시 Luau VM 런타임 에러가 발생합니다.
   - **계약 위반**: 이 에러는 `errorBefore`를 거치지 않은 C/VM 에러이므로, `quad-error`의 스택 워커가 동작하지 않고 **quad 내부 파일(`quad-roblox/src/LifetimeHandle.luau:66`)이 그대로 blame에 노출**됩니다.
 - **원인 분석**:
-  - `Slot.luau`의 `wrapElement`는 `if not isInst(v) then raise(...) end`로 주입된 판정 술어를 통해 검증하는 반면, `Claim.luau`는 `inst` 인자에 대한 기본 검증을 생략했습니다.
+  - `Slot/Elements.luau`의 `wrapElement`는 `if not isInst(v) then raise(...) end`로 주입된 판정 술어를 통해 검증하는 반면, `Claim.luau`는 `inst` 인자에 대한 기본 검증을 생략했습니다.
 - **권고안**:
   - `Claim.luau`의 `Claim` 함수 머리에 첫째 인자 검증을 추가:
     ```lua
@@ -187,11 +187,11 @@
 
 ### [G-07] `Dispatch.drive(inst, props)` 및 `D.New(className)(props)`에서 `props` 비테이블 입력 시의 blame 위치
 
-- **위치**: `quad-base/src/Dispatch/init.luau:306-319` (`drive`), `quad-base/src/Modifier.luau:408` (`flatten`)
+- **위치**: `quad-base/src/Dispatch/init.luau:306-319` (`drive`), `quad-base/src/Dispatch/Modifier/init.luau:408` (`flatten`)
 - **심각도**: Low / Blame hygiene
 - **현상**:
   - `D.New(className)(props)` 또는 `Dispatch.drive(inst, props)`에 잘못된 타입(예: `nil`이나 문자열)이 전달될 때:
-  - `drive` 진입부의 319행 `flatten(flattened)`가 즉시 호출되고, `Modifier.luau` 408행의 `local n = #input`에서 `attempt to get length of a nil value` (VM 런타임 에러)가 발생합니다.
+  - `drive` 진입부의 319행 `flatten(flattened)`가 즉시 호출되고, `Dispatch/Modifier/init.luau` 408행의 `local n = #input`에서 `attempt to get length of a nil value` (VM 런타임 에러)가 발생합니다.
   - 대조군인 `Store(defaults)`, `Tween(opts)`, `Animate(info)` 등은 모두 생성자 첫머리에서 `type(x) ~= "table"`을 `Err.errorBeforeNearest`로 검증하여 사용자 코드 줄을 명확히 지목합니다.
 - **분석 및 권고**:
   - strict Luau에서는 정적 타입이 `Props` 테이블을 강제하므로 타입 체커가 1차 방어합니다.
@@ -219,9 +219,9 @@
 
 ---
 
-### [G-09] `Slot.luau` `Clear` 및 `ExtractAll`의 개별 언마운트와 중간 상태 관측 가능성
+### [G-09] `Slot/init.luau` `Clear` 및 `ExtractAll`의 개별 언마운트와 중간 상태 관측 가능성
 
-- **위치**: `quad-base/src/Slot.luau:854-869` (`Clear`, `ExtractAll`)
+- **위치**: `quad-base/src/Slot/init.luau:854-869` (`Clear`, `ExtractAll`)
 - **심각도**: Informational / Architecture note (Q3 ⑨ 연계)
 - **현상 및 분석**:
   - `Slot_mt.Clear`는 `#self._elements`부터 1까지 역순으로 `rawRemove(self, i)`를 반복 호출합니다.
@@ -239,18 +239,18 @@
 ### [S-01] `AttributeKey` 약참조 캐시(`cache`)와 `nameClaims:SetStrong`의 생명주기 공존성 증명
 
 - **의혹**:
-  - `AttributeKey.luau`의 `cache`는 `{ __mode = "v" }` (약한 값 테이블)로 선언되어 있습니다.
+  - `Attribute/Key.luau`의 `cache`는 `{ __mode = "v" }` (약한 값 테이블)로 선언되어 있습니다.
   - 어떤 인스턴스 `inst`에 `AttributeKey("X")`로 속성을 바인딩한 후, 호출자의 Lua 로컬 변수에서 해당 키 객체 참조가 사라지면 GC에 의해 `cache["X"]`가 수거될 수 있는가?
   - 수거된 후 다시 `AttributeKey("X")`를 호출하면 새 객체 `k'`가 생성되어, `nameClaims`에 남아있는 이전 객체 `k`와 달라 충돌(`"already bound by another owner"`)을 일으키지 않는가?
 - **건전성 증명**:
-  1. `AttributeKey.luau` 121행에서 바인딩이 일어날 때 `nameClaims:SetStrong(inst, k.Name, k)`가 호출됩니다.
+  1. `Attribute/Key.luau` 121행에서 바인딩이 일어날 때 `nameClaims:SetStrong(inst, k.Name, k)`가 호출됩니다.
   2. `nameClaims`는 `Relate()` 인스턴스로, `buckets[inst].StrongMap[k.Name] = k`에 `k` 객체를 **강하게(Strong)** 보관합니다.
   3. 인스턴스 `inst`가 살아있고 속성이 바인딩되어 있는 동안, Lua VM 힙 내에는 `k`에 대한 확실한 강한 도달 경로(Strong reachability)가 존재합니다.
   4. Lua/Luau GC 규칙상, 어떤 객체에 대한 도달 가능한 강한 참조가 하나라도 존재하는 한, 그 객체는 약한 값 테이블(`cache`)에서도 수거되지 않고 보존됩니다.
   5. 따라서 `inst`에 속성이 바인딩되어 있는 동안에는 다른 어떤 코드에서 `AttributeKey("X")`를 호출하더라도 항상 동일한 `k` 객체가 캐시에서 반환됩니다.
   6. 반대로 속성이 완전히 retract되고 외부 참조도 모두 사라진 경우에만 `cache`에서 정상적으로 GC 수거되므로, 메모리 누수도 없고 허위 충돌도 발생하지 않습니다.
 
-### [S-02] `Ref.luau` 동적 재바인딩 시 `old`와 `new`의 대칭적 수명주기 무결성
+### [S-02] `Ref/init.luau` 동적 재바인딩 시 `old`와 `new`의 대칭적 수명주기 무결성
 
 - **검증 내용**:
   - `RefLeafHandler.process`는 `relate:GetWeak(inst, k)`를 통해 이전 Ref를 추적합니다.
@@ -260,7 +260,7 @@
     3. 직후 새 `process`가 호출되어 새 `v`에 대해 `bindLifetime(inst, v)` -> `relate:SetWeak(inst, k, v)` -> `v:Set(inst)`를 수행합니다.
   - 결과적으로 이전 Ref의 완벽한 해제와 새 Ref의 안전한 설치가 단일 디스패치 파동 내에서 대칭적으로 완결됩니다.
 
-### [S-03] `Modifier.luau` `flatten`의 해시/배열 분리 순회 알고리즘
+### [S-03] `Dispatch/Modifier/init.luau` `flatten`의 해시/배열 분리 순회 알고리즘
 
 - **검증 내용**:
   - `flatten`은 `n = #input`을 기준으로 해시부와 배열부를 명확히 분리합니다:

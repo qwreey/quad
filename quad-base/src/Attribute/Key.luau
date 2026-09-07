@@ -30,11 +30,11 @@
 	impossible). Internal only — never exposed on the module surface.
 ]]
 
-local Brand = require("./Brand")
-local Relate = require("./Relate")
-local QuadTypes = require("../luau_packages/quad_types")
-local Err = require("./ErrorNamespace")
-local NotInstalled = require("./NotInstalled")
+local Brand = require("../Brand")
+local Relate = require("../Relate")
+local QuadTypes = require("../../luau_packages/quad_types")
+local Err = require("../ErrorNamespace")
+local NotInstalled = require("../NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local AttributeKeyBrand = Brand.AttributeKeyBrand
@@ -77,7 +77,7 @@ local function notInstalled(name: string): (...any) -> ...any
 	return NotInstalled(name, "the attribute op")
 end
 
-local InitDispatch = require("./Dispatch")
+local InitDispatch = require("../Dispatch")
 
 function module.Init(quad: any)
 	quad.AttributeKey = AttributeKey

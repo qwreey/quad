@@ -785,7 +785,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
   **[2026-09-01 `H-278`]** 등록 주체는 각 값의 선언 모듈(`Observer.luau`/`Effect.luau`,
-  M8은 `Ref.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
+  M8은 `Ref/init.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
   Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
@@ -854,7 +854,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attribute/Effect/Observer/Ref/S
   같은 "base 소유 + op 주입" 원칙은 2026-08-14 열 번째 세션에 확정.
 - **backend 소유**: `Property`/`Event`/`OnChange`(Reflection·시그널 같은
   엔진 개념 자체가 로직), `InstanceChild`, `Slot`의 실제 부모 조작
-  (재조정 알고리즘은 base `Dispatch/Slot.luau`, 물리 마운트만 backend) —
+  (재조정 알고리즘은 base `Slot/Handler.luau`, 물리 마운트만 backend) —
   이들은 "한 줄 op"으로 줄어들지 않으므로 그대로 backend.
 
 **Tag/Attribute가 쓰는 주입 op**(**⚠️ [2026-08-22] 이건 주입 op *전체
@@ -1552,13 +1552,13 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   아래 참고), `state<Frame>`처럼 store-bind로 오가는 단일 위치는 그
   store-bind 핸들러가 값이 바뀔 때마다 다시 호출. **호출 책임은 `Slot`
   자신의 `:List`/CRUD가 아니라 그 위치의 체인을 실제로 끝내는 말단
-  Handler(`Dispatch/Slot.luau`)** — **[정정, 2026-08-18 구현 전 QA]**
+  Handler(`Slot/Handler.luau`)** — **[정정, 2026-08-18 구현 전 QA]**
   옛 서술은 "그 위치를 **처음** 매치한 Handler"였는데 부정확했다: 배열
   위치에 `State<Slot>`이 오면 처음 매치하는 건 `StoreBind`(중간 노드)이고,
   중간 노드는 `inst`에 부작용을 가하지 않는다는 계약(아래 "Dispatch 체인"
   절)과 정면으로 어긋난다. 사용자 판정은 *"최종 말단 요소가 이를
   처리하는게 더 올바른것으로 보이는데"* — 재귀가 끝나 실제 값을 받은
-  말단 Handler가 등록한다(`State<Slot>`이면 재귀 끝의 `Dispatch/Slot.luau`,
+  말단 Handler가 등록한다(`State<Slot>`이면 재귀 끝의 `Slot/Handler.luau`,
   빈 자리면 `NilHandler`, `PreRef`/`PostRef` 소진 자리면 각 nop Handler).
   같이 검토 대상이던 *"단순히 모든 핸들러가 `k=number`일 때 처리하도록
   두는"* 안은 채택 안 함 — 그 안이 메우려던 갭(`State<Slot|None>`에서
@@ -1580,13 +1580,13 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   전체를 다시 계산하는 역할로 남는다. Slot이 매치되는 경우
   이 Source는 그 자리에서 `Slot.Offset` 필드로도 그대로 저장됨(아래
   참고) — 순수 숫자 누적합 계산이라 엔진 지식이 전혀 필요 없어서, 이
-  등록 자체는 `quad-base`(`Dispatch/Slot.luau`)가 함. **[정정,
+  등록 자체는 `quad-base`(`Slot/Handler.luau`)가 함. **[정정,
   2026-08-11 세션] 예전엔 이 Source를 "Handler가 자기 원소(들)의
   `LayoutOrder` 바인딩에 그대로 쓴다"고 서술했었는데 — 폐기.** Slot이
   마운트한 원소에 `LayoutOrder`를 자동으로 덮어쓰면 (a) 사용자가 그
   원소 자신의 프로퍼티로 `LayoutOrder`를 이미 지정해도 조용히 씹히는
   매직이 되고, (b) `LayoutOrder`는 애초에 Roblox 전용 프로퍼티라 그
-  지식이 `Dispatch/Slot.luau`(엔진 무관) 층위로 새는 레이어링 위반이기도
+  지식이 `Slot/Handler.luau`(엔진 무관) 층위로 새는 레이어링 위반이기도
   함. 이제 `Offset`은 `Slot.Offset`으로 공개 노출만 되고, 각 원소의
   `LayoutOrder`(또는 웹의 CSS `order`)를 실제로 계산해 세팅하는 건
   `updateFn`(또는 수동 Slot 사용자)의 몫 — `updateFn`은 `index`를 raw
@@ -2803,7 +2803,7 @@ quad-web의 해당 Handler는 offset 변경 관측 시 아무것도 안 하는 n
 
 **동적 자식 추가/제거의 유일한 정당 경로는 `Slot` 또는 `state<Frame>`류
 store-bind — 그 외 방식은 UB로 확정(2026-08-10 세션).** `Length`/`Offset`
-카운팅은 그 위치를 담당하는 Handler(`Dispatch/Slot.luau`, store-bind
+카운팅은 그 위치를 담당하는 Handler(`Slot/Handler.luau`, store-bind
 프로퍼티 핸들러)가 `Dispatch.setLength`/`Dispatch.setOffsetSource`를
 호출해줘야만 정합적으로 유지됨 — 이 두 API를 부르지 않고 quad가 관리하는
 부모 Instance에 자식을 끼워 넣는 경로(예: **사용자 코드**가 `newInst.Parent =

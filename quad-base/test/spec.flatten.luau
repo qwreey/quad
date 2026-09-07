@@ -11,7 +11,7 @@
 local Quad = require("../src")
 local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("./mock")
-local ModifierModule = require("../src/Modifier")
+local ModifierModule = require("../src/Dispatch/Modifier")
 local flatten = ModifierModule.flatten
 local ProcessedModifier = ModifierModule.ProcessedModifier
 

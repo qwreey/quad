@@ -9,7 +9,7 @@
 ]]
 
 local mock = require("./mock")
-local ModifierModule = require("../src/Modifier")
+local ModifierModule = require("../src/Dispatch/Modifier")
 local FieldsKey = ModifierModule._FieldsKey
 
 local SPEC_FILE = "spec.modifier.luau"

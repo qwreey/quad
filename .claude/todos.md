@@ -37,13 +37,18 @@
      원칙); Gemini 4차 → round4 파일·`H-440`~`H-444` 반영; `research/deferred-hardening-plan.md` 신설. **회신 4차**: Q6(약속 철회+백로그)·Q20(메시지 확장)·Q21(luau 핀·selene 폐기)·Q22(그대로)·Q23(FieldOut 한 팔) 닫힘(round3 §7).
      Q24도 설명 뒤 (a) 확정(+`Peek` 반환을 `FieldOut<T>?`로 통일).
      회신 3차 묶음 리뷰(round3 §8, `H-445`~`H-452` 반영 — `H-445`는 Q15 검사가 차단기 창 안에서 던져 owner를 동결시키던 회귀).
-     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅) — round3 §4, 구조 재편 여덟(회신은 루트
-     `layout-usernote-ignoreme.md` — compact 뒤 읽는다), flatten 슈거 일곱.** 다음 순회는 round3 §9·`H-453`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     **[2026-09-07 밤] 구조 재편 회신 반영 완료**(`session/2026-09-07-04-source-layout-reply.md`, 결정은
+     `research/source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
+     통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attribute/`·
+     `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
+     **남은 사용자 몫: Q25(숏핸드 dedup)·Q26(트윈 슬롯 첫 스냅)·Q27(프로바이더 브랜드 프로브 등록) — round3 §4; 구조
+     재편 8절 `Attr` 축약(미답)·10-4 D 정적 굽기(§0 타입 함수 예외 여부); 사후 확인(마커 필드·별칭 이름, Property 슬롯
+     `Source`); flatten 슈거 일곱.** 다음 순회는 round3 §9·`H-453`부터(이동 뒤 순회 1회 — 9절 5번). 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).
-   - **[2026-09-07]** 소스 구조 재편 문항 여덟 — `research/source-layout-plan.md`(`question.md` 2절). 답이
-     오면 실행 순서는 그 문서 9절.
+   - **[2026-09-07 밤 반영]** 소스 구조 재편 — `research/source-layout-plan.md`(`question.md` 2절). 여덟 중 일곱 +
+     후속 셋 반영, 남은 건 8절 `Attr` 축약과 10-4(사용자 문항).
    - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
      flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/

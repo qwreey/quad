@@ -81,9 +81,9 @@
 	looks at tags — a tag only ever gates `As<Name>()`.
 ]]
 
-local Brand = require("./Brand")
-local QuadTypes = require("../luau_packages/quad_types")
-local Err = require("./ErrorNamespace")
+local Brand = require("../Brand")
+local QuadTypes = require("../../luau_packages/quad_types")
+local Err = require("../ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ModifierBrand = Brand.ModifierBrand
@@ -407,7 +407,7 @@ Err.setFuncLevel(ModifierMT.__index, SURFACE) -- Q11: the non-string-key error i
 
 -- internal sentinel that fills a consumed array slot (never user-facing —
 -- `Processed*` idiom, same frozen+named shape as `None`)
-local ProcessedModifier = require("./Dispatch/None").sentinel("ProcessedModifier")
+local ProcessedModifier = require("./None").sentinel("ProcessedModifier")
 
 -- flatten(input) -> input — canon pseudocode 1:1 (modifier-plan "flatten의
 -- 정확한 형태"). Mutates and returns the same table.

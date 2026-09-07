@@ -26,11 +26,11 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
 2. **값 모듈 → `Dispatch/init` 단방향.** `H-278`(자기 등록) 때문에 Tag/AttributeKey/Attribute/Ref/
    Slot/Observer/Effect가 `Dispatch/init`을 require한다 → **`Dispatch/init`은 값 모듈을 절대
    require하면 안 된다.** drive가 필요로 하는 조각은 `Dispatch/` 아래 잎으로(`Dispatch/Ref.luau`
-   pre-pass, `Dispatch/Modifier.luau`), 또는 값 모듈 자체가 `Init` 없는 잎(`Modifier.luau` — flatten을
+   pre-pass, `Dispatch/Modifier/Handler.luau`), 또는 값 모듈 자체가 `Init` 없는 잎(`Dispatch/Modifier/init.luau` — flatten을
    `Dispatch/init:45`가 역방향으로 당김, `Tween.luau`).
 3. **사적 내부 표면 관용구가 이미 셋** — `module._slotInternal`(Slot → Dispatch/Slot),
    `module._bookkeeping`(Bookkeeping → Dispatch/Slot 소비), `module._impl`. 파일을 쪼개 상호 재귀를
-   끊을 때 쓸 도구가 이것이다. `_slotInternal` 조립(`Slot.luau:1112`) → `register`(`:1123`) 순서가
+   끊을 때 쓸 도구가 이것이다. `_slotInternal` 조립(`Slot/init.luau:1112`) → `register`(`:1123`) 순서가
    load-bearing.
 4. **전방 선언 여덟 + `GlobalUsedAsLocal` 게이트**(`H-404`). 전방 선언은 파일 경계를 못 넘는다 —
    Slot을 쪼개면 상호 재귀를 (3)의 내부 표면(늦은 조회)이나 명시 인자로 바꿔야 한다.
@@ -51,7 +51,7 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
 **[결정 2026-09-07 밤]** 채택 — 사용자: *"권고대로 가도 될것 같아."* Q9/Q14는 회신 3차로 이미
 반영됐으므로 순수 이동 단위(9절 4번)로 간다. 반영 상태는 9절.
 
-**사실**: `Slot.luau` 1142줄 전부가 하나의 `Init(module)` 본문. 여섯 묶음 — (a) 소유권 레지스트리
+**사실**: `Slot/init.luau` 1142줄 전부가 하나의 `Init(module)` 본문. 여섯 묶음 — (a) 소유권 레지스트리
 (`claimOwner`/`claimOwnerAt`/`releaseOwner`/`occupantOf`, ~40줄) / (b) 요소 게이트(`wrapElement`/
 `unwrapElement`/`prepareElements`, ~60) / (c) 트리 마운트·해체(`materializeSlotTree`…`destroySlotTree`,
 `collectLeaves`, `releaseSugarWrapper`, ~250) / (d) raw* 물리 조작 + 부기(`rawAdd`…`rawSplice`,
@@ -72,7 +72,7 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
 지배적이라 관측 불가. (2) 이동 자체의 회귀 위험 — 0~6순회 모두 "직전 수정분이 새 결함을 만든다"를
 실증했다. 순수 이동(동작 diff 0)은 `spec.slot`(가장 큰 spec)이 게이트이고, **동작 수정(Q9·Q14·
 `H-382`/`H-393` 후속)과 같은 커밋에 섞지 않는다.** (3) `.claude/base/slot-plan.md`(3400줄)의
-`Slot.luau` 인용 3곳·`architecture.md` 트리.
+`Slot/init.luau` 인용 3곳·`architecture.md` 트리.
 
 **제안 구조**:
 ```
@@ -82,7 +82,7 @@ Slot/Elements.luau  (b) wrapElement/unwrapElement/prepareElements
 Slot/Tree.luau      (c) materialize/mount/attach/destroy/unmount/teardown/collectLeaves/sugar wrapper
 Slot/Raw.luau       (d) raw* + spliceArrays + vacate + releaseElement + indexOfRaw/getDetached
 Slot/List.luau      (e) _activateList(settle/reconcile)·List/Single·checkListInstall
-Slot/Handler.luau   ← 5절 (a)를 택하면 Dispatch/Slot.luau가 여기로
+Slot/Handler.luau   ← 5절 (a)를 택하면 Slot/Handler.luau가 여기로
 ```
 **순서**: Q9·Q14 답 → 그 반영(작은 diff) → 순수 이동 단위(리뷰 1회, `spec.slot` 전량) → 이동
 뒤 한 순회.
@@ -183,36 +183,36 @@ PostRef/Slot/Tag/AttributeKey/Attribute. `init.luau`는 24개를 전부 require�
 (Ref 셋, Attribute 둘, Dispatch/Slot)이다. (a)로 최상위가 33 → 25개 전후. (b)는 관측된 필요가
 없고 재배선 비용이 크다 — 패밀리 접기 뒤에도 트리가 안 읽히면 그때.
 
-## 5. `Dispatch/`의 핸들러 파일 — **권고: 규칙을 명문화하고 `Dispatch/Slot.luau`만 `Slot/Handler.luau`로**
+## 5. `Dispatch/`의 핸들러 파일 — **권고: 규칙을 명문화하고 `Slot/Handler.luau`만 `Slot/Handler.luau`로**
 
 **사실**: `Dispatch/`엔 코어(`init`·`Handler` 타입)와 **drive 자신의 단계**(`None`·`StoreBind`
 언랩·`Modifier`의 ProcessedModifier·`Ref` pre-pass)가 있고, 이들은 `Dispatch/init`이 직접 등록한다.
 반면 `H-278`(사용자 지시) 이후 값 모듈은 자기 핸들러를 자기 파일에서 등록한다(Tag/AttributeKey/
-Attribute/Observer/Effect/Ref). **유일한 혼종이 `Dispatch/Slot.luau`** — 파일은 Dispatch 아래,
-등록자는 `Slot.luau:1123`, 소비는 `_slotInternal`. 사용자 원문 *"dispatch 가 각 계층의
+Attribute/Observer/Effect/Ref). **유일한 혼종이 `Slot/Handler.luau`** — 파일은 Dispatch 아래,
+등록자는 `Slot/init.luau:1123`, 소비는 `_slotInternal`. 사용자 원문 *"dispatch 가 각 계층의
 slot/storebind.luau 같은게 있는게 이상함"* 중 `StoreBind`는 값 모듈이 아니라 **디스패치 자체의
 언랩 단계**(Brand만 require, `Dispatch/init:396`이 등록)라 Dispatch 아래가 맞다.
 
 **규칙(제안, `architecture.md`에 명문화)**: *"핸들러는 그 값 타입을 소유하는 모듈 안에 산다
 (`H-278`). `Dispatch/` 아래엔 코어와 `drive`의 자기 단계(None/StoreBind/Modifier/Ref pre-pass)만
 — 값 모듈이 `Dispatch/init`을 require하므로 그 반대 방향은 구조적으로 불가."*
-**이동**: `Dispatch/Slot.luau` → `Slot/Handler.luau`(1절 폴더 안). 그러면 혼종 0.
+**이동**: `Slot/Handler.luau` → `Slot/Handler.luau`(1절 폴더 안). 그러면 혼종 0.
 
-**Modifier(사용자: "예외적으로 dispatch 안에서 정의되는 객체")**: 사실 — `Modifier.luau`는 src
+**Modifier(사용자: "예외적으로 dispatch 안에서 정의되는 객체")**: 사실 — `Dispatch/Modifier/init.luau`는 src
 루트의 잎(Init 없음)이고 flatten은 `drive`의 첫 단계(round17 Q4 (a) "flatten은 drive 소유"),
-`Dispatch/Modifier.luau`는 ProcessedModifier 핸들러 38줄. 사용자 판단은 근거가 있다 — Modifier는
-값이라기보다 **drive의 입력 형식**이다. 이동: `Modifier.luau` → `Dispatch/Modifier/init.luau`,
-`Dispatch/Modifier.luau` → `Dispatch/Modifier/Handler.luau`(또는 init에 흡수 — 38줄). 순환 없음
+`Dispatch/Modifier/Handler.luau`는 ProcessedModifier 핸들러 38줄. 사용자 판단은 근거가 있다 — Modifier는
+값이라기보다 **drive의 입력 형식**이다. 이동: `Dispatch/Modifier/init.luau` → `Dispatch/Modifier/init.luau`,
+`Dispatch/Modifier/Handler.luau` → `Dispatch/Modifier/Handler.luau`(또는 init에 흡수 — 38줄). 순환 없음
 (Modifier는 Brand/ErrorNamespace/Dispatch/None만 require). 비용: `init.luau` require 경로 하나,
-md 인용 10곳(`Modifier.luau`가 두 번째로 많이 인용됨), `modifier-plan.md` 트리 서술.
+md 인용 10곳(`Dispatch/Modifier/init.luau`가 두 번째로 많이 인용됨), `modifier-plan.md` 트리 서술.
 **권고: 한다** — 규칙(위)이 "Dispatch/ = drive의 자기 단계"인데 flatten이 정확히 그것.
 
 ## 6. Ref 패밀리 — **권고: `Ref/{init,PreRef,PostRef}.luau`, `Dispatch/Ref.luau`는 그대로**
 
-**사실**: `PreRef.luau`(34)·`PostRef.luau`(35)는 각각 **한 줄 함수** — `Ref._tagged(default, Brand,
+**사실**: `Ref/PreRef.luau`(34)·`Ref/PostRef.luau`(35)는 각각 **한 줄 함수** — `Ref._tagged(default, Brand,
 marker)`. 의존은 PreRef/PostRef → Ref 단방향, Ref는 `Brand.isPreRef`만 본다. `Dispatch/Ref.luau`
 (pre-pass + Processed 센티널 둘)는 헤더가 밝히듯 drive의 단계라 Dispatch 아래가 맞다(5절 규칙).
-**선택지**: (a) 폴더 `Ref/`(init 256 + PreRef 34 + PostRef 35) / (b) 둘을 `Ref.luau`에 흡수(한
+**선택지**: (a) 폴더 `Ref/`(init 256 + PreRef 34 + PostRef 35) / (b) 둘을 `Ref/init.luau`에 흡수(한
 파일 ~300줄, `_tagged` 사유 주석 *"one factory so the marker/_fired conventions cannot drift
 between the two files"*가 오히려 한 파일을 가리킨다). **권고 (a)** — 사용자 원문대로 폴더가 "각자로
 보기 좋게"; 흡수는 `PreRef`/`PostRef`가 공개 이름이라 찾기 어려워진다. 비용 최소(md 인용 `Ref` 6·
@@ -220,7 +220,7 @@ between the two files"*가 오히려 한 파일을 가리킨다). **권고 (a)**
 
 ## 7. Attribute 패밀리 — **권고: `Attribute/{init,Key}.luau`, 핸들러는 각자 안에**
 
-**사실**: `Attribute.luau`(279) → `AttributeKey.luau`(136) 단방향(`_newUncachedKey` 사적 경로 —
+**사실**: `Attribute/init.luau`(279) → `Attribute/Key.luau`(136) 단방향(`_newUncachedKey` 사적 경로 —
 그룹 개인 키가 공개 캐시 키와 **반드시 다른 객체**여야 교차 retraction이 구조적으로 불가). 핸들러
 둘(`AttributeKeyFallbackHandler` 키 매칭 / `AttributeGroupFallbackHandler` 배열부 값 매칭, 둘 다
 FALLBACK) + Relate 셋. 합치면 415줄 한 파일에 브랜드 둘·핸들러 둘 — 나누는 편이 "하나가 두 일"
@@ -250,7 +250,14 @@ Roblox `GetAttribute`는 그대로라 "Attr = quad 값, Attribute = 엔진 개�
 3. 2절 Tween — 결정은 (b) 통째 이동. **완료**(Brand→quad-types와 같은 커밋).
 4. 순수 이동 단위 하나: 1·5·6·7절(8절 이름은 미답이라 제외) — 동작 diff 0, `spec.*` 전량 +
    `doc-check.py` `.luau` 경로 검사 확장 + md 인용 치환 + `architecture.md` 트리·5절 규칙 명문화 +
-   `README`. **상태는 이 줄을 갱신할 것.**
+   `README`. **완료(2026-09-07 밤)** — `Ref/{init,PreRef,PostRef}`·`Attribute/{init,Key}`·`Dispatch/Modifier/
+   {init,Handler}`는 메인이(비-init 파일만 `./`→`../`; `Dispatch/Modifier/init.luau`는 `./`가 `Dispatch/`라
+   `./None`), `Slot/{init,Owner,Elements,Raw,Tree,List,Handler}`는 opus 서브에이전트가 내부 표 `S`(늦은 조회
+   `S.fn(...)` — 전방 선언의 파일 판, 프렐류드 값 18개는 설치 전 `S`에)로 분할 — 함수 목록 동일·본문 다중집합
+   diff는 의도한 네 줄(`ExtractAll`의 `(S.unwrapElement(…))` 괄호, 태깅 루프의 `S.List/S.Single`, `Slot` 전방
+   선언, `Handler` require)뿐. `doc-check.py`는 `.luau` 참조를 소스 색인 접미 일치로 검사(패키지 루트부터 적은
+   경로는 ERROR, 이름·부분 경로는 WARN, `initreq` 외부 소스는 이름 폴백); 옛 경로 인용 143줄+4줄 치환. 잔여
+   WARN 17건은 애초에 없던 파일 이름을 "없다"고 서술한 자리(`Handlers/Tween.luau`·`Dispatch/Leaf.luau` 등).
 5. 이동 뒤 순회 1회(직전 수정분 회귀 관측이 규칙이므로).
 6. **[추가]** 10절의 후속 제안 — Brand→quad-types(완료, 3번과 같은 커밋), 마커 전면화 +
    quad-types 재배치(**완료**, 한 커밋), D 정적 굽기(리서치 — 사용자 문항).

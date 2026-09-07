@@ -178,7 +178,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
     (버전 정책의 타입 레벨 축은 `type-version-check`가 이미 다룬다 —
     이건 그 런타임 판별 판). 코퍼스 어디에도 언급이 없어서 여기 등록한다.
     **[2026-09-04 추가, M7 단위 ④]** `Modifier.TypedFactory`/`DefineSubtype`의
-    클래스 레지스트리(`known`/`parents`/`constructors`, `Modifier.luau` 모듈
+    클래스 레지스트리(`known`/`parents`/`constructors`, `Dispatch/Modifier/init.luau` 모듈
     수준)도 같은 목록에 든다 — 한 사본에서 등록한 클래스는 다른 사본의 `As<Class>()`가 "unknown
     modifier class"로 거부한다(`modifier-plan.md` 11절)
 21. **[2026-08-28 신설] 이미 있는 트리 — `Claim`과 루트 `.Parent`** —

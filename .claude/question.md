@@ -243,7 +243,7 @@
   Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
   **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
   **[2026-09-03 현황 — 확인 시점 도래]** Slot 코어가 fork 편입으로
-  존재한다(`quad-base/src/Slot.luau`). 현 구현의 사실: 요소 판정은
+  존재한다(`quad-base/src/Slot/init.luau`). 현 구현의 사실: 요소 판정은
   주입 술어 `isInst`뿐이라 **foreign Instance도 요소로 받아들여지고**
   물리 op(`nativeInsert` 등)·`elementOwner` Relate 키잉까지는 돌지만,
   실물 Roblox에선 **claim 안 된 userdata의 동일성 구멍**(`H-293`/

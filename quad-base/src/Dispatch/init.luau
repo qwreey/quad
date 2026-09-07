@@ -41,8 +41,8 @@ local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
 local NoneModule = require("@self/None")
 local StoreBindModule = require("@self/StoreBind")
-local ProcessedModifierModule = require("@self/Modifier") -- M7 단위 ②
-local flatten = require("./Modifier").flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
+local ProcessedModifierModule = require("@self/Modifier/Handler") -- M7 단위 ②
+local flatten = require("@self/Modifier").flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
 local RefPrePass = require("@self/Ref") -- M8 단위 ② — (a) PreRef/PostRef pre-pass + (c) postRefList
 
 local QuadTypes = require("../luau_packages/quad_types")

@@ -21,7 +21,7 @@
 이미 `.claude/question.md`에 취합된 항목(용어 재검토, M0 스파이크 항목
 자체, Slot 형제 순서 보장 등)은 여기서 제외했다 — 아래는 **전부 새로 발견된
 것**. 부수적으로 이 감사 과정에서 `architecture.md`의 stale한 부분 두 곳
-(온톨로지 요약 절, 소스트리 `Store.luau`/`Ref.luau` 주석)을 발견해 같은
+(온톨로지 요약 절, 소스트리 `Store.luau`/`Ref/init.luau` 주석)을 발견해 같은
 세션에서 바로 고쳤다 — 판단이 필요 없는 순수 문서 동기화라 여기 남기지
 않고 해당 문서에서 직접 정정함.
 
@@ -501,7 +501,7 @@ Modifier를 합친다"는 시나리오가 `Overridden`의 가장 그럴듯한 �
 
 ### 2-6. Modifier 필드에 State/Source를 인자로 넘기는 케이스가 세터 표에서 빠짐 — [해소됨, 2026-09-04 M7 단위 ①]
 
-**[2026-09-06 감사 기록]** 구현이 답했다 — `quad-base/src/Modifier.luau`의 setter는 인자가 함수가 아니면(State든 리터럴이든) "리터럴" 분기로 필드를 통째로 교체한다(코드 주석 *"a State literal replaces the whole field"*, round17 `H-309`). 아래는 당시 지적 원문.
+**[2026-09-06 감사 기록]** 구현이 답했다 — `quad-base/src/Dispatch/Modifier/init.luau`의 setter는 인자가 함수가 아니면(State든 리터럴이든) "리터럴" 분기로 필드를 통째로 교체한다(코드 주석 *"a State literal replaces the whole field"*, round17 `H-309`). 아래는 당시 지적 원문.
 
 **위치**: `base/modifier-plan.md` "4-1. 필드가 State일 수도 있음" 표.
 
@@ -688,7 +688,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
   잡았다). 이 감사
   세션 도중 발견해 직접 정정(커밋 `4b839b0`에서 별도로 이미 반영됨을 뒤늦게
   확인 — 같은 문제를 두 세션이 독립적으로 발견한 셈).
-- `architecture.md` 소스트리의 `Store.luau`/`Ref.luau` 주석이 각각 옛
+- `architecture.md` 소스트리의 `Store.luau`/`Ref/init.luau` 주석이 각각 옛
   `__newindex` 모델, 옛 "Ref=CreatedRef 자체" 정의를 그대로 담고 있던 것 —
   이번 세션에서 직접 정정.
 

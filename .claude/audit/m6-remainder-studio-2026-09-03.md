@@ -52,7 +52,7 @@ Deferred 일반론의 한 사례 — 새 발견 아님. userdata 동일성은 `H
 
 ## 2. 회신 반영 재실측 (같은 날 — `H6-9` (b)·`H6-12` (b))
 
-같은 관용구로 새 `Slot.luau`(싱크 확인: `markMountedTree` 존재) 재실행.
+같은 관용구로 새 `Slot/Tree.luau`(싱크 확인: `markMountedTree` 존재) 재실행.
 
 | 시나리오 | 단언 | 결과 |
 |---|---|---|

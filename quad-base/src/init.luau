@@ -18,8 +18,8 @@ local Err = require("@self/ErrorNamespace")
 local Brand = require("@self/Brand")
 local RefModule = require("@self/Ref") -- M8 단위 ②부터 { Ref, Init } — Init이 leaf 핸들러·가드 등록(H-278)
 local Ref = RefModule.Ref
-local PreRef = require("@self/PreRef") -- M8 단위 ①
-local PostRef = require("@self/PostRef")
+local PreRef = require("@self/Ref/PreRef") -- M8 단위 ①
+local PostRef = require("@self/Ref/PostRef")
 local Void = require("@self/Void")
 local QuadTypes = require("./luau_packages/quad_types")
 local InitDebug = require("@self/Debug")
@@ -35,9 +35,9 @@ local InitClaim = require("@self/Claim")
 local SlotInit = require("@self/Slot") -- M6(탐사 구현 편입)
 local None = require("@self/Dispatch/None").None
 local TagModule = require("@self/Tag")
-local AttributeKeyModule = require("@self/AttributeKey")
+local AttributeKeyModule = require("@self/Attribute/Key")
 local AttributeModule = require("@self/Attribute")
-local ModifierModule = require("@self/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
+local ModifierModule = require("@self/Dispatch/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
 
 type Quad = QuadTypes.Quad
 

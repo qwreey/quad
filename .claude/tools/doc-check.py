@@ -83,8 +83,47 @@ def rel(p):
 # 자체가 안 걸려 **검사에서 조용히 빠져나갔다** — 위양성보다 나쁜 종류의 구멍.
 REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,160})")?')
 
+# 소스 파일 색인(접미 일치용) — 워크스페이스 패키지의 src/test + scripts + luau-test.
+# 설치 사본(`luau_packages`/`.pesde`)은 제외: 원본만 존재 판정에 쓴다.
+_SRC_ROOTS = ('quad-base', 'quad-roblox', 'quad-types', 'quad-error', 'type-version-check', 'scripts')
+_src_index = None
+def src_files():
+    global _src_index
+    if _src_index is None:
+        acc = []
+        for root in _SRC_ROOTS:
+            for dp, dn, fn in os.walk(os.path.join(ROOT, root)):
+                parts = os.path.relpath(dp, ROOT).split(os.sep)
+                if 'luau_packages' in parts or '.pesde' in parts or 'node_modules' in parts:
+                    dn[:] = []
+                    continue
+                for f in fn:
+                    if f.endswith('.luau') or f.endswith('.py') or f.endswith('.sh'):
+                        acc.append(os.path.relpath(os.path.join(dp, f), ROOT))
+        for sub in ('luau-test', 'audit'):  # 스파이크 원본(`luau-test/`)과 실측 스파이크(`audit/*/spikes/`)
+            for dp, dn, fn in os.walk(os.path.join(CLAUDE, sub)):
+                for f in fn:
+                    if f.endswith('.luau'):
+                        acc.append(os.path.relpath(os.path.join(dp, f), ROOT))
+        _src_index = acc
+    return _src_index
+
+def resolve_luau(target):
+    """`.luau` 참조 — 소스 색인에서 경로 접미 일치(`Slot/init.luau`, `quad-base/src/Brand.luau`,
+    `Brand.luau`). 여러 개에 걸리면(예: 두 패키지의 `Brand.luau`, 수많은 `init.luau`) 존재는
+    인정하되 어느 것인지는 묻지 않는다 — 존재 판정만이 목적."""
+    t = target.lstrip('./')
+    hits = [f for f in src_files() if f == t or f.endswith('/' + t)]
+    return hits
+
 def resolve(target, src):
     """참조 문자열을 실제 경로로 해석 — 상대/부분 경로를 관대하게 매칭."""
+    if target.endswith('.luau'):
+        hits = resolve_luau(target)
+        if hits:
+            return os.path.join(ROOT, hits[0])
+        # 못 찾으면 아래 이름-기반 탐색으로 폴백(`initreq/` 클론의 외부 소스 — Fusion/Vide
+        # 리서치가 인용하는 `signal.luau`류 — 는 거기서 찾힌다)
     cands = [
         os.path.join(ROOT, target),
         os.path.join(CLAUDE, target),
@@ -188,10 +227,12 @@ def interesting(target):
     설계로서 적어둔 것), (c) `YYYY-MM-DD-NN-slug.md` 같은 템플릿 자리표시자.
     실제로 지금 존재해야 하는 건 `.md` 문서와 `luau-test/`의 스파이크뿐.
     """
-    if 'YYYY' in target:
+    if 'YYYY' in target or target in ('X.luau', '<파일>.luau'):  # 자리표시자
         return False
-    if target.endswith('.luau'):
-        return 'luau-test' in target or re.match(r'^\d\d-', os.path.basename(target))
+    # [2026-09-07 소스 재편] `.luau`도 전부 검사한다 — 옛 규칙("미래 소스 트리라 없는 게
+    # 당연")은 구현이 끝난 지금 반대로 rot의 사각지대였다(라이브 md 42개가 src 경로를 인용,
+    # 파일을 옮기면 조용히 stale — `research/source-layout-plan.md` 0절 6번). 해석은 아래
+    # `resolve`가 소스 루트 전체에서 접미 일치로 한다.
     return True
 
 
@@ -227,6 +268,16 @@ def check_refs(docs):
             p = resolve(target, d)
             if p is None:
                 name = os.path.basename(target)
+                if target.endswith('.luau'):
+                    # [2026-09-07] 소스 파일 참조: 패키지 루트부터 적은 전체 경로(`quad-base/src/…`)는
+                    # 존재를 단언한 것이라 ERROR, 이름·부분 경로(`Slot.luau`, `Dispatch/Slot.luau`)는
+                    # 옛 이름 서술일 수 있어 WARN(히스토리 문서는 위에서 이미 제외).
+                    msg = f"{rel(d)}:{ln}  소스 파일 없음 → `{target}`"
+                    if is_archive:
+                        continue
+                    (errors if target.startswith(_SRC_ROOTS) else warns).append(
+                        msg if target.startswith(_SRC_ROOTS) else msg + " (옮겨졌거나 옛 이름 — 지금 경로로 고칠 것)")
+                    continue
                 msg = f"{rel(d)}:{ln}  깨진 파일 참조 → `{target}`"
                 (errors if OURS.search(name) else warns).append(
                     msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")

@@ -748,8 +748,8 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   호이스팅"이라는 특이한 제약을 가진 별개 프리미티브라, 기존 프리미티브당
   1파일 컨벤션(`modifier-plan.md`/`slot-plan.md`류, Blocker/Effect를
   같은 이유로 분리한 2026-08-07 네 번째 세션과 같은 판단)을 따라
-  `Ref.luau`/`PreRef.luau` 두 파일로 쪼갬 — 런타임 로직은 여전히 공유
-  (`PreRef.luau`가 `Ref.luau`를 그대로 불러다 브랜드 태그만 얹음), 파일
+  `Ref/init.luau`/`Ref/PreRef.luau` 두 파일로 쪼갬 — 런타임 로직은 여전히 공유
+  (`Ref/PreRef.luau`가 `Ref/init.luau`를 그대로 불러다 브랜드 태그만 얹음), 파일
   분리는 순수 조직 문제라 위 재사용 결정과 상충 없음. `base/architecture.md`
   소스트리에 반영 완료.
 - **오직 children 배열의 리터럴 아이템으로만 놓을 수 있다** — **Modifier
@@ -1228,7 +1228,7 @@ Ref가 조용히 통과했다(`typing-limits.md` 8.9절 — `Set`/`Callback` 이
 
 **타입/판별**: `isPostRef`는 `isPreRef`와 같은 층위의 가장 구체적인 항등
 체크이고, `isRef`가 그 위에 얹히는 상위 개념 — Ref leaf 핸들러(M8,
-`H-278`로 `Ref.luau` 소유)의 일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
+`H-278`로 `Ref/init.luau` 소유)의 일반 Ref 매치는 이제 `isRef(v) and not isPreRef(v) and not isPostRef(v)`.
 상세는 `base/brand-plan.md`.
 
 **대표 유스케이스(사용자 제시)** — `ChildAdded` 같은 이벤트에서 **나중에

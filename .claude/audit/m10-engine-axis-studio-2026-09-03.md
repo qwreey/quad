@@ -2,7 +2,7 @@
 
 **무엇을**: quad-roblox `EngineOps.luau`에 심은 `addTag`/`removeTag`
 (CollectionService)/`setAttribute`(`inst:SetAttribute`, nil = 삭제)가 base
-핸들러(`Tag.luau`/`AttributeKey.luau`/`Attribute.luau`)의 호출 계약대로 실물
+핸들러(`Tag.luau`/`Attribute/Key.luau`/`Attribute/init.luau`)의 호출 계약대로 실물
 Instance에 닿는가. CLI 쪽은 `quad-roblox/test/spec.tagattribute.luau`(mock
 CollectionService 심)가 같은 단언을 한다.
 

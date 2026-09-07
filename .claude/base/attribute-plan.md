@@ -63,7 +63,7 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attri
 > 못 덮는 엔진 고유 타입(Color3/UDim2/Instance…)용으로 공개 유지 — 값 검증은
 > 백엔드 `setAttribute` 몫. `Color3Attribute`류 백엔드 패밀리는 같은 슈가 모양으로
 > quad-roblox가 얹으면 된다(아직 없음, 백로그). 같은 이름을 두 슈가 값이 노리면
-> 그룹과 같은 "already bound by another owner". 구현 `quad-base/src/Attribute.luau`,
+> 그룹과 같은 "already bound by another owner". 구현 `quad-base/src/Attribute/init.luau`,
 > spec.attribute 10절, Studio 실측 `audit/m10-engine-axis-studio-2026-09-03.md`.
 
 ### 문제 — 타입 있는 값이라 Luau가 좁혀줄 방법이 필요
@@ -245,7 +245,7 @@ function AttributeKeyHandler.process(inst, k, v, index)
     local cur = nameClaims:GetStrong(inst, k.Name)
     if cur ~= nil and cur ~= k then
         -- [2026-09-03 M10 편입 정정] 현행 error 계약(H-231/H-272)으로 이관 —
-        -- 실코드(AttributeKey.luau)는 Err.errorBefore(SURFACE)를 쓴다.
+        -- 실코드(Attribute/Key.luau)는 Err.errorBefore(SURFACE)를 쓴다.
         -- `Err`/`SURFACE` 표기의 정의는 `base/architecture.md`의 error 계약 절
         Err.errorBefore(`attribute "{k.Name}" is already bound by another owner`, SURFACE)
     end
@@ -569,7 +569,7 @@ end
   API로 노출하지 않음**(위 "이름 소유권" 절). 그룹 값 객체 자체가 바뀌면
   (`State<Attribute>`가 새 객체를 emit) 새 키가 나오는데, 그때는 옛
   클로저가 먼저 전부 철거하므로 claim 충돌이 없음.
-- **생존 이름도 매 사이클 철거→재등록됨(의도된 트레이드오프)** — **[2026-09-03 `H10-8` 한정]** 단, **같은 그룹 객체의 재발행**(`State<Attribute>`가 같은 객체를 다시 emit)은 철거·재등록 없이 통째로 스킵된다(retractor `v == nextValue` / process `reemit`) — 이건 아래 `AT-20`이 논한 "다른 객체 사이의 생존 이름 diff"가 아니라 객체 identity 재사용이라 `Tag`와 같은 안전한 스킵이다(round16 `H10-8`, `Attribute.luau`). 다른 객체로 바뀔 때의 비용은
+- **생존 이름도 매 사이클 철거→재등록됨(의도된 트레이드오프)** — **[2026-09-03 `H10-8` 한정]** 단, **같은 그룹 객체의 재발행**(`State<Attribute>`가 같은 객체를 다시 emit)은 철거·재등록 없이 통째로 스킵된다(retractor `v == nextValue` / process `reemit`) — 이건 아래 `AT-20`이 논한 "다른 객체 사이의 생존 이름 diff"가 아니라 객체 identity 재사용이라 `Tag`와 같은 안전한 스킵이다(round16 `H10-8`, `Attribute/init.luau`). 다른 객체로 바뀔 때의 비용은
   그 이름의 `StoreBind` 구독 해제+재구독, 그리고 재구독의 "등록 즉시 1회
   실행"이 같은 값으로 `setAttribute`를 한 번 더 쏘는 것뿐. 이 문서가 이미
   "값 비교(`:Get()`으로 old/new 비교)는 안 함"을 확정해뒀으므로(아래 항목)
@@ -676,7 +676,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 |---|---|
 | 그룹 값 타입+API(`Attribute(...)`/`Merged`/`:NameMap`) | quad-base |
 | 단일 키 `AttributeKey(name)`(무타입, 2026-09-03) + 이름별 weak 캐시 | quad-base |
-| 타입드 스칼라 슈가(`StringAttribute(name, value)`/`NumberAttribute`/`BooleanAttribute` — 단일 항목 그룹, 2026-09-03) | quad-base(`Attribute.luau`) |
+| 타입드 스칼라 슈가(`StringAttribute(name, value)`/`NumberAttribute`/`BooleanAttribute` — 단일 항목 그룹, 2026-09-03) | quad-base(`Attribute/init.luau`) |
 | `AttributeKeyHandler`(이름 claim 포함) / `AttributeGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로는 이걸 감싸는 `AttributeKeyFallbackHandler`/`AttributeGroupFallbackHandler`가 등록됨 — **[재역전, 2026-08-18] 등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op" 절) |
 | 엔진 고유 타입 패밀리(`Color3Attribute`/`UDim2Attribute`/`InstanceAttribute`류) | 백엔드(quad-roblox의 `D` 층) |
 | **`setAttribute(inst, name, v)`** — `v == nil`이면 그 이름을 지움 | 백엔드가 주입 |

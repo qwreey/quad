@@ -18,10 +18,10 @@
 	are rejected by the types and by the FALLBACK guard handler (unit ②).
 ]]
 
-local Brand = require("./Brand")
-local QuadTypes = require("../luau_packages/quad_types")
-local Err = require("./ErrorNamespace")
-local tagged = require("./Ref")._tagged
+local Brand = require("../Brand")
+local QuadTypes = require("../../luau_packages/quad_types")
+local Err = require("../ErrorNamespace")
+local tagged = require("../Ref")._tagged
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type PostRef<T> = QuadTypes.PostRef<T>

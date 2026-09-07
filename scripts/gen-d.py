@@ -542,11 +542,11 @@ def emit():
     # reserved Modifier methods — read from the runtime `methods` table in `Modifier.luau`
     # (`function methods.X(` / `methods.X = `), not hand-copied (Q3 ⑦); the cast prefix `As` is
     # a method there too, so it lands in the set as well as in the prefix check below
-    mod_src = strip_comments((ROOT / "quad-base" / "src" / "Modifier.luau").read_text())
+    mod_src = strip_comments((ROOT / "quad-base" / "src" / "Dispatch" / "Modifier" / "init.luau").read_text())
     reserved = set(re.findall(r"^function methods\.([A-Za-z_][A-Za-z0-9_]*)\s*\(", mod_src, re.M))
     reserved |= set(re.findall(r"^methods\.([A-Za-z_][A-Za-z0-9_]*)\s*=", mod_src, re.M))
     if not {"Apply", "Peek", "Overridden", "As"} <= reserved:
-        raise SystemExit(f"gate: reserved Modifier methods harvested from Modifier.luau look wrong: {sorted(reserved)}")
+        raise SystemExit(f"gate: reserved Modifier methods harvested from Dispatch/Modifier/init.luau look wrong: {sorted(reserved)}")
     for node in mod_classes:
         for p in mod_props(node):
             if p["name"] in reserved:

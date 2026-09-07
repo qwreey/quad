@@ -41,12 +41,12 @@ cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 
 
 ### flatten의 정확한 형태 — in-place 뮤테이션 + `ProcessedModifier` 소진 (2026-08-20 구현 전 QA 4라운드 `M-2` 확정)
 
-> **[2026-09-04 구현됨 — M7 단위 ②, round17 `H-311`]** `quad-base/src/Modifier.luau`의
-> `flatten`(아래 의사코드 1:1) + `Dispatch/Modifier.luau`의 `ProcessedModifierHandler`
+> **[2026-09-04 구현됨 — M7 단위 ②, round17 `H-311`]** `quad-base/src/Dispatch/Modifier/init.luau`의
+> `flatten`(아래 의사코드 1:1) + `Dispatch/Modifier/Handler.luau`의 `ProcessedModifierHandler`
 > (`H-35` 의사코드 1:1, HIGH 우선순위 — None 쌍과 같이 InitDispatch가 등록).
 > **호출 주체는 `Dispatch.drive`의 첫 pre-pass**(round17 §0 Q4 (a), 사용자 확정) —
 > `New`의 ③은 사라졌고 `Claim`은 같은 경로로 자동 봉합됐다(`bind-system-plan.md`
-> 파이프라인 의사코드 정정). `ProcessedModifier`는 `Modifier.luau` export(내부 —
+> 파이프라인 의사코드 정정). `ProcessedModifier`는 `Dispatch/Modifier/init.luau` export(내부 —
 > 최상위 재노출 없음, 아래 "공개 표면 위치" 항목대로). spec은
 > `quad-base/test/spec.flatten.luau`, Studio 실측 `audit/m7-unit2-studio-2026-09-04.md`.
 
@@ -119,7 +119,7 @@ end
   있는 반면 이쪽엔 없었다. 게다가 **색인 두 곳에서도 빠져 있었다** —
   `base/dispatch-core-plan.md`의 Length/Offset 등록 책임 열거와 말단 핸들러
   부작용 표, 그리고 `base/architecture.md`의 `Dispatch/` 파일트리
-  (`Modifier.luau` 항목이 flatten/체이닝만 적고 자기가 만드는 센티널의
+  (`Dispatch/Modifier/init.luau` 항목이 flatten/체이닝만 적고 자기가 만드는 센티널의
   핸들러를 언급 안 함). `Modifier`가 하나라도 든 `Frame{...}` 호출은 **전부**
   이 핸들러를 거치므로, 이 문서를 안 읽고 색인만 보고 구현하면 존재 자체를
   놓친다. 셋 다 반영했다.

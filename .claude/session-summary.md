@@ -2409,3 +2409,13 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **Q24**: 설명 뒤 (a) 승인; 후속 질문으로 `Peek` 반환이 Tween 팔 없는 옛 유니언임이 드러나 `FieldOut<T>?`로 통일(정의는 quad-types). **리뷰 문항 Q1~Q24 전부 닫힘.**
   **회신 3차 묶음 리뷰**(round3 §8): `H-445` Q15 검사의 차단기 창 안 throw(메인 회귀 — Observer로 이동)·`H-446`~`H-452` 게이트 구멍·정리; Q25 숏핸드 dedup·Q26 트윈 슬롯 첫 스냅은 문항.
   **핸드오버 감사 루프**: 3라운드 8→2→1 + 같은 원인 잔여 grep 0 — 체크포인트. "문항·발견은 평문 한 문단" 규약을 conventions로 승격. 남은 몫: Q25·Q26, 구조 재편 여덟(레이아웃 회신 파일 미반영), flatten 일곱.
+
+- **`session/2026-09-07-04-source-layout-reply.md`** — **구조 재편 회신 반영**(사용자 회신 `layout-usernote-ignoreme.md`,
+  `research/source-layout-plan.md` 각 절 `[결정]`·10절): Tag 이름 자리 `string | Tag | { names }`(`TagNames` read 인덱서 —
+  가변 `{T}` 불변 실측, `H-380`/`H-389` 부분 역전) · **Brand 팩토리 → quad-types**(`QuadTypes.Brand`, 패키지마다 자기
+  `Brand.luau`) · **Tween 통째 quad-roblox**(권고 (c) 기각 — *"전부 엔진 어휘"*; `install`·`RobloxExtension`·types 정본
+  정밀·spec 이동; 부수 발견 `typing-limits.md` 8.12 — D 안 `FieldOut` 전개는 제약 한도 초과, `types.luau` 별칭·D 재별칭) ·
+  마커 전면화(Tag/Attribute/Observer/EffectHandle) + quad-types 순수 재배치 · 패밀리 폴더(`Ref/`·`Attribute/`·
+  `Dispatch/Modifier/`·`Slot/` 여섯+Handler — opus 위임, 내부 표 `S`) · `doc-check.py` `.luau` 경로 검사 · 인용 143줄 치환.
+  외부 모델 감사 진입점 `qa-request/external-review-entry.md` 신설(사용자 요청). 남은 몫: 8절 `Attr`, 10-4 D 정적
+  굽기(§0 예외), Q27 프로브 등록, Q25·Q26, 사후 확인(마커 이름·`Source`).

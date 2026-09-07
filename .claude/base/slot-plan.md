@@ -27,11 +27,11 @@ additional-primitives-plan.md`가 다루던 키 기반 동적 컬렉션 재조�
 ## base/roblox 패키지 경계 (2026-08-04, 5차 라운드 확정)
 
 Slot의 add/remove/clear 재조정 로직(추상 자식 참조 기준 — "이 자리에 뭐가
-있어야 하는가"를 결정하는 순수 로직)은 `quad-base/src/Dispatch/Slot.luau`가
+있어야 하는가"를 결정하는 순수 로직)은 `quad-base/src/Slot/Handler.luau`가
 소유. 실제 트리 조작(Instance `Parent` 설정/`Destroy`)은 백엔드 몫 — 다른 모든
 인터페이스/구현 분리와 동일한 패턴(`base/architecture.md`의 소스 트리 참고).
-**⚠️ [2026-09-03 정정, round15 `H6-14`]** 여기 한때 그 몫이 *"`quad-roblox/src/
-Handlers/Slot.luau`가 그 위에서 적용/해제"*라 적혀 있었다 — 그건 2026-08-21의
+**⚠️ [2026-09-03 정정, round15 `H6-14`]** 여기 한때 그 몫이 *"quad-roblox의
+`Handlers/Slot.luau`가 그 위에서 적용/해제"*라 적혀 있었다(그런 파일은 없다 — 옛 표기 인용) — 그건 2026-08-21의
 `native*` 주입 op 계층(아래 그 절) **이전** 표기다. 지금 백엔드 절반은
 **`quad-roblox/src/EngineOps.luau`의 `native*` 여섯 그 자체**이고(SlotHandler는
 base, 물리 조작은 주입 op), 별도 `Handlers/Slot.luau` 파일은 **없다**(M5 단위
@@ -43,7 +43,7 @@ unmount(`Remove`) 둘이 아니라 **reposition(`Move`/`Swap`)까지 셋** —
 계약만 base가 강제**하고, quad-roblox가 이걸 `SetSiblingIndex`로 구현할지
 (`LayoutOrder` 기반 정렬이라) 사실상 no-op으로 둘지는 구현 선택.
 
-**[2026-08-09 일곱 번째 세션 보강]** `Dispatch/Slot.luau`의 mount 훅
+**[2026-08-09 일곱 번째 세션 보강]** `Slot/Handler.luau`의 mount 훅
 (`process(inst,k,self,index)`)은 `Dispatch.setLength(inst,i,self.Length)` 호출과
 같은 자리에서 `self._listed`면 `activateList(self,inst)`도 트리거해야 함 —
 `:List`의 `data:Observer(fn)` 구독을 Slot 마운트 시점까지 lazy하게 미루는
@@ -89,7 +89,7 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
     **후** 블록 첫 리프의 절대 offset"이다** — 리프 배열을 `_elements`처럼
     splice(뺀 뒤 넣기)한 결과 좌표. `fromOffset`은 이동 전 값. 그래서 아래로
     옮길 땐(`from < to`) `getOffsetAt(to) + #leaves(to) - #moving`, 위로는
-    `getOffsetAt(to)`다(`Slot.luau` `rawMove`가 계산). `nativeSwap`의 두 offset은
+    `getOffsetAt(to)`다(`Slot/Raw.luau` `rawMove`가 계산). `nativeSwap`의 두 offset은
     둘 다 교환 **전** 값이다 — **[2026-09-03 `H6-20` (a), 사용자 확정]** 두
     블록의 리프 수가 다르면 사이 요소가 그 차만큼 밀리므로 "사이 고정"이
     아니다(아래 그 항목). Roblox/mock은 무시하므로
@@ -1392,7 +1392,7 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 **구독 시점은 `:List()` 호출이 아니라 Slot 마운트 시점 — lazy `bindLifetime`
 (2026-08-09 일곱 번째 세션, 아래 "구독 시점" 절 참고).** `:List()`는 설정만
 저장하고 반환, 실제 `data:Observer(fn)` 구독과 최초 `reconcile`은 Slot
-자신이 마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self,index)`)에
+자신이 마운트되는 순간(`Slot/Handler.luau`의 `process(inst,k,self,index)`)에
 `activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
 
@@ -1444,7 +1444,7 @@ function Slot:List(data, updateFn, keyFn, opts)
     return self
 end
 
--- Dispatch/Slot.luau의 process(inst,k,self,index)가 마운트 시점에 1회 호출
+-- Slot/Handler.luau의 process(inst,k,self,index)가 마운트 시점에 1회 호출
 -- (self._mounted=true/self._mountedInst=inst, self.Offset 세팅과 같은 자리)
 -- [리네이밍, 2026-08-21] 2번째 인자는 `inst`였으나 `physicalTarget`으로 통일 —
 -- 옆 함수들(materializeSlotTree/mountSlotTree/attachSlot)이 쓰는 이름과 같은
@@ -2008,11 +2008,11 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   `None`도 여러 곳(Slot 요소, Attribute, offsetSource)에서 쓰이는
   sentinel이지만 공개 표면은 패키지 최상위(`quad-base/src/init.luau`
   재노출)이고 실제 정의는 관련 로직 옆(`Dispatch/None.luau`)에 있다.
-  `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot.luau` 또는
-  `Dispatch/Slot.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
+  `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot/init.luau` 또는
+  `Slot/Handler.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
   지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
   시작해 이후 재사용됐으므로 최상위에 두는 게 자연스럽다. **[2026-09-03
-  M6 편입으로 확정]** `Detach`/`KeyGone`은 `quad-base/src/Slot.luau`에
+  M6 편입으로 확정]** `Detach`/`KeyGone`은 `quad-base/src/Slot/init.luau`에
   정의되고 `SlotInit(module)`(RunInit 경유)이 `module.Detach`/`module.KeyGone`
   으로 부착한다 — `init.luau` 정적 require 재노출("None처럼")이 아니라
   Init 부착이라는 점만 이 문장의 상정과 다르고, "최상위 재노출"의 실질
@@ -2102,7 +2102,7 @@ Slot:Single(state, updateFn?, opts?)
 **해법 — `Dispatch.setLength`가 이미 쓰고 있는 패턴 그대로 재사용**: 새
 메커니즘 발명 아님. `:List()`는 `data`/`updateFn`/`keyFn`만 저장하고 반환,
 실제 `data:Observer(fn)` 구독 + 최초 `reconcile`은 Slot 컨테이너 자신이
-마운트되는 순간(`Dispatch/Slot.luau`의 `process(inst,k,self,index)` — 위
+마운트되는 순간(`Slot/Handler.luau`의 `process(inst,k,self,index)` — 위
 "`isMounted` 이중 추적 분리" 절이 이미 `self._mounted`를 세팅하는 바로 그
 지점)에 `activateList(self, physicalTarget)`가 수행(**[리네이밍,
 2026-08-21]** 2번째 인자 이름은 `inst`였으나 owner 키가 Slot일 수도 있는
@@ -2369,7 +2369,7 @@ weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 
 `archive/v2-initial-implementation/pre-implementation-qa-round3.md`의 `RC-3`/`RC-4` 절.
 
 ```lua
--- quad-base, Slot.luau
+-- quad-base, Slot/init.luau
 -- [전면 재작성, 2026-08-21 구현 전 QA 4라운드 확정] 옛 단일 `attachSlot`을
 -- **비공개 재귀 둘 + 얇은 공개 진입점**으로 분해. 공개 표면(이름/시그니처/
 -- 호출부 셋)은 하나도 안 바뀐다 — 쪼갠 건 함수가 아니라 **재귀**다.
@@ -2607,7 +2607,7 @@ end
 가면서 **처음부터 최종값**이 되어 발생 경로가 없어졌다. 트레이싱 원문은
 `archive/v2-initial-implementation/pre-implementation-qa-round3.md`의 "확인만 하고 새 결함 없음" 절.
 
-**최상위 마운트(`Dispatch/Slot.luau`)는 이제 이 함수 호출 한 줄:**
+**최상위 마운트(`Slot/Handler.luau`)는 이제 이 함수 호출 한 줄:**
 ```lua
 -- process(inst, k, slotValue, index)
 attachSlot(slotValue, inst, inst, k)   -- ownerKey = 물리 inst 자신
@@ -3008,7 +3008,7 @@ end
 -- 위 의사코드 셋의 꼬리 7줄과 4곳의 게이트 복붙이 그 함수들이다. 분리가
 -- "의도적"이었던 건 **축(머리)**이지 꼬리가 아니었고, 사용자 조건(*"개발 문서와
 -- 주석만 충분하고 흐름을 인간이 읽기 좋다면"*)대로 코드 주석이 축을 먼저
--- 말한다. `Slot.luau`가 소스.
+-- 말한다. `Slot/init.luau`가 소스.
 
 -- [신설, 2026-08-21 5라운드 `C-1`] rawAdd — 이 문서에서 가장 많이 참조되는데
 -- 정의가 없어서 `_mounted` 분기가 다른 함수 주석에만 흩어져 있었다. 새 결정은

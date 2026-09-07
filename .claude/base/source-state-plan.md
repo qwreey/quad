@@ -1314,7 +1314,7 @@ override 의미론 실측, 해당 체크박스는 `[x]`) — **[2026-09-01 `H-27
 전용 `Handler` 등록: `{ priority = HANDLER_PRIORITY_FALLBACK,
 isHandlable = function(inst,k,v) return isObserver(v) end, process =
 function(inst,k,v) Err.errorBefore(`Observer binding should be array
-index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-09-06 리뷰]** 옛 `Ref/Observer` 접두 제거 — Ref 가드는 `Ref.luau`가 따로)(**[2026-08-31 단위 4]**
+index item, but got {typeof(k)}`, SURFACE) end }`(**[2026-09-06 리뷰]** 옛 `Ref/Observer` 접두 제거 — Ref 가드는 `Ref/init.luau`가 따로)(**[2026-08-31 단위 4]**
 error 발화는 `H-231` 워커의 최외곽 스캔 — 매치 실패와 같은 논증으로
 `drive`를 뚫고 사용자 진입점을 blame한다, `Observer.luau`의
 `registerDispatchHandlers` 주석.

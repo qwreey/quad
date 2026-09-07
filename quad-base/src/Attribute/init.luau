@@ -43,7 +43,7 @@
 
 local Brand = require("./Brand")
 local Relate = require("./Relate")
-local AttributeKeyModule = require("./AttributeKey")
+local AttributeKeyModule = require("@self/Key")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE

@@ -12,9 +12,9 @@
 	(quad-base fills its own registry — "base가 소유하는 핸들러").
 ]]
 
-local QuadTypes = require("../../luau_packages/quad_types")
+local QuadTypes = require("../../../luau_packages/quad_types")
 local ModifierModule = require("../Modifier")
-local NoneModule = require("./None")
+local NoneModule = require("../None")
 
 local ProcessedModifier = ModifierModule.ProcessedModifier
 

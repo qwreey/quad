@@ -21,11 +21,11 @@
 | `Claim(inst, desc)`의 `inst` 미검증 | `G-06`, `H-418` | 기반영 (`Claim` 머리에 `isInst` 게이트 추가) |
 | `Dispatch.drive(inst, props)`의 `props` 비테이블 | `G-07`, `H-419` | 기반영 (`drive` 머리에 `type(props) ~= "table"` 게이트 추가) |
 | `ContentId` 덤프 타입 매핑 오류 | `H-420` | 기반영 (`gen-d.py` 정규화 및 재생성) |
-| `AttributeKey` 빈 문자열 및 스칼라 슈거 | `H-421` | 기반영 (`Attribute.luau` 사설 키 생성부 가드 추가) |
+| `AttributeKey` 빈 문자열 및 스칼라 슈거 | `H-421` | 기반영 (`Attribute/init.luau` 사설 키 생성부 가드 추가) |
 | `scripts/test.sh` 게이트 누락 | `H-422`, `H-423` | 기반영 (모듈 스코프 function 정규식 검사 및 `gen-d check` 추가) |
 | `gen-d.py` 자유변수 `parent_of` 스코프 | `H-424` | 기반영 (`ancestors` 상위로 이동) |
 | `Claim.luau` props 게이트 선행 | `H-425` | 기반영 (`_fired`/`nativeClaim` 이전 검증으로 이동) |
-| `Ref.luau` `:Set` "normal" 코루틴 가드 | `H-426` | 기반영 (`running` 외에 `normal` 상태 nearest 처리) |
+| `Ref/init.luau` `:Set` "normal" 코루틴 가드 | `H-426` | 기반영 (`running` 외에 `normal` 상태 nearest 처리) |
 | `Bookkeeping.luau` 범위 절 허위 진단 | `H-427` | 기반영 (`at > N+1` 조건부 범위 절 및 C-6 불변식 추가) |
 | `Animate` Compute의 nil/None 팔 누락 | `H-379`, §4 Q8 | 기보고 사용자 질의 대기 항목 |
 | `Bookkeeping.setLength` mutate-then-throw | `H-413`, §4 Q18 | 기보고 사용자 질의 대기 항목 |
@@ -78,7 +78,7 @@
 
 ### [G-11] `Slot:List` / `reconcile` 비-테이블 및 `nil` 입력 시 Luau VM 런타임 크래시 (`#items`)
 
-- **위치**: `quad-base/src/Slot.luau:949-966` (`reconcile`), `quad-base/src/Slot.luau:1041-1054` (`Slot_mt.List`)
+- **위치**: `quad-base/src/Slot/List.luau:949-966` (`reconcile`), `quad-base/src/Slot/List.luau:1041-1054` (`Slot_mt.List`)
 - **심각도**: Medium / Blame hygiene & Defensive robustness
 - **현상**:
   - `Slot:List(data, updateFn, keyFn?, opts?)`에서 `updateFn`의 함수 타입 검증(`type(updateFn) ~= "function"`)이 없습니다.
@@ -91,7 +91,7 @@
     에서 `items`가 `nil`이거나 테이블이 아닌 경우(예: 반응형 `State`의 초기값이 `nil`이거나 `:Set(nil)`로 방출된 경우, 또는 무타입 환경에서 `Slot():List(nil, fn)` 호출 시), Luau VM이 `attempt to get length of a nil value` 원시 런타임 에러를 직접 발생시킵니다.
   - **계약 불일치**:
     - `keyFn`이 `nil`을 반환하거나 중복 키를 반환하는 경우는 959행에서 `Err.errorBefore("Slot:List — keyFn returned nil...")`로 안전하게 프레임워크 에러로 감싸서 사용자 줄을 blame합니다.
-    - 반면 `items` 자체에 대한 타입 가드가 없어 `#items`의 VM 런타임 에러가 발생하고, 내부 파일 `quad-base/src/Slot.luau:950`이 사용자에게 노출됩니다.
+    - 반면 `items` 자체에 대한 타입 가드가 없어 `#items`의 VM 런타임 에러가 발생하고, 내부 파일 `quad-base/src/Slot/init.luau:950`이 사용자에게 노출됩니다.
 - **권고안**:
   - `Slot_mt.List` 머리에서 진입점 인자 검증(`type(updateFn) ~= "function"`) 추가.
   - `reconcile(items)` 머리에서 `type(items) ~= "table"`인 경우 `Err.errorBefore`를 던지거나, `items == nil`인 경우 빈 테이블 `{}`로 간주하여 기존 마운트된 요소들을 정상적으로 소멸/언마운트(`settle`)하도록 처리.
@@ -120,7 +120,7 @@
 
 - **위치**: 
   - `quad-base/src/Store.luau:50-59` (`checkKey`)
-  - `quad-base/src/Attribute.luau:76-82` (`flattenArg` - `isStore` 분기)
+  - `quad-base/src/Attribute/init.luau:76-82` (`flattenArg` - `isStore` 분기)
 - **심각도**: High / `H-421` (`AttributeKey("")`)의 자매 결함
 - **현상**:
   1. `Store.luau:50`의 `checkKey(name, what)`는 `type(name) ~= "string"` 및 `RESERVED[name]`만 검사하고, **빈 문자열(`name == ""`) 검증이 누락**되어 있습니다:
@@ -135,13 +135,13 @@
      end
      ```
      이에 따라 `Store({ [""] = Source(1) })` 및 `store:Of("")`가 검증을 통과하여 생성됩니다.
-  2. `Attribute.luau:104`에서는 7순회 `H-421`을 반영하여 일반 테이블 키에 대해 `rawName == ""`를 명시적으로 차단하였습니다:
+  2. `Attribute/init.luau:104`에서는 7순회 `H-421`을 반영하여 일반 테이블 키에 대해 `rawName == ""`를 명시적으로 차단하였습니다:
      ```lua
      if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttribute at dispatch depth
          Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)
      end
      ```
-  3. **그러나 바로 위의 `if isStore(arg) then` 분기(`Attribute.luau:76`)에는 `name == ""` 검사가 없습니다**:
+  3. **그러나 바로 위의 `if isStore(arg) then` 분기(`Attribute/init.luau:76`)에는 `name == ""` 검사가 없습니다**:
      ```lua
      if isStore(arg) then
          for _, name in ipairs(arg:Names()) do
@@ -157,7 +157,7 @@
      - Roblox 엔진이 `ArgumentException: attribute name cannot be empty` 원시 예외를 발생시키며 **디스패치 심도에서 즉시 크래시**합니다.
      - 그 결과 `h.process` 중간 예외로 인해 `Dispatch`의 `NOOP` 마커가 영구 고착되고 `nameClaims`에 빈 문자열 키 점유가 해제되지 않은 채 누수됩니다.
 - **원인 분석 및 연관성**:
-  - `Attribute.luau`에서 `H-421`을 처리할 때 일반 테이블 리터럴만 방어하고 `Store` 언랩 경로를 간과한 비대칭입니다.
+  - `Attribute/init.luau`에서 `H-421`을 처리할 때 일반 테이블 리터럴만 방어하고 `Store` 언랩 경로를 간과한 비대칭입니다.
   - 또한 `Store` 자체에서도 빈 문자열 식별자를 허용할 이유가 없으므로 두 계층 모두에 방어가 필요합니다.
 - **권고안**:
   1. `Store.luau:50`의 `checkKey`에 `name == ""` 차단 추가:
@@ -166,7 +166,7 @@
          Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {typeof(name)})`, SURFACE)
      end
      ```
-  2. `Attribute.luau:77`의 `isStore` 순회 내에 방어 가드 추가:
+  2. `Attribute/init.luau:77`의 `isStore` 순회 내에 방어 가드 추가:
      ```lua
      for _, name in ipairs(arg:Names()) do
          if name == "" then
@@ -207,7 +207,7 @@
 
 코드 분석 과정에서 잠재적 결함 또는 비대칭으로 의심되었으나, 정본(`.claude/base/*-plan.md`) 및 아키텍처 대조를 통해 **의도된 설계이며 완전히 건전함(Sound)**이 확인된 항목들입니다:
 
-### [S-07] `Slot.luau`의 `destroySlotTree`에서 `Owned = false` 슬롯의 `_destroyed = true` 미설정과 생존 불변식
+### [S-07] `Slot/Tree.luau`의 `destroySlotTree`에서 `Owned = false` 슬롯의 `_destroyed = true` 미설정과 생존 불변식
 - **의혹**: `slot._owned == false`인 Slot에 대해 `destroySlotTree`가 호출될 때, `unmountSlotTree(slot)` 후 조기 리턴하여 `slot._destroyed = true`가 설정되지 않는다. 이것이 누락된 버그인가?
 - **건전성 증명**:
   1. 설계 정본 `.claude/base/slot-plan.md` 560-564행에 명확히 규정되어 있습니다:
@@ -247,8 +247,8 @@
 | 항목 번호 | 심각도 | 핵심 내용 | 권고 조치 파일 |
 |---|---|---|---|
 | **[G-10]** | High | `OnChange("", fn)` 빈 문자열 프로퍼티 인자 가드 누락 및 엔진 `ArgumentException` 누출 | `quad-roblox/src/Handlers/OnChange.luau` |
-| **[G-11]** | Medium | `Slot:List` / `reconcile`의 `nil`/비테이블 `#items` VM 크래시 | `quad-base/src/Slot.luau` |
+| **[G-11]** | Medium | `Slot:List` / `reconcile`의 `nil`/비테이블 `#items` VM 크래시 | `quad-base/src/Slot/List.luau` |
 | **[G-12]** | Low | `Dispatch.drive(nil, props)`의 `Relate.luau:23` `self.buckets[nil]` VM 크래시 | `quad-base/src/Dispatch/init.luau` |
-| **[G-13]** | High | `Store` 빈 문자열 키 `""` 허용 및 `Attribute(store)`의 `H-421` 우회 엔진 크래시 | `quad-base/src/Store.luau`, `quad-base/src/Attribute.luau` |
+| **[G-13]** | High | `Store` 빈 문자열 키 `""` 허용 및 `Attribute(store)`의 `H-421` 우회 엔진 크래시 | `quad-base/src/Store.luau`, `quad-base/src/Attribute/init.luau` |
 | **[G-14]** | Medium | `LifetimeHandle`의 `unbindLifetime(nil)` / `canExecute(nil)` 등 호출 시 `table index is nil` 크래시 | `quad-roblox/src/LifetimeHandle.luau`, `quad-base/test/mock.luau`, `quad-base/src/Relate.luau` |
 | **[S-07]~[S-10]** | Sound | `Owned=false` 슬롯 수명, `Overridden` 0인자 비대칭, 중첩 Slot 소유권, `UIPadding` 숏핸드 공유 자식 동작의 정본 부합성 확인 (False Positive 방지) | 수정 불요 (현행 유지) |
