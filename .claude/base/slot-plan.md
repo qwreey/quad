@@ -782,7 +782,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
 | `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환. **[2026-09-08 `H-479`]** `rawSplice(1, n, {})` 한 번 — 물리 op 1회·recompute 1회(옛 요소별 `rawUnmount` 반복은 제거마다 recompute가 돌아 O(n²), 실측 1000개 130ms → 1ms대) |
 | `Splice` | `Slot:Splice(index, removeCount, ...newElements): {T}` | O(n) | 한 위치에서 `removeCount`개를 비파괴 추출(반환)하고 그 자리에 `newElements`를 삽입 — shift+recompute 1회로 통합 |
-| `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op. **[2026-09-08 `H-479`]** `rawRemove` 역순 반복을 **이 Slot의 배치 Blocker로 감싼다**(`rawSplice`와 같은 꼬리) — recompute 1회, `Length` emit 1회 |
+| `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op. **[2026-09-08 `H-479`]** `rawRemove` 역순 반복을 **이 Slot의 배치 Blocker로 감싼다**(`rawSplice`와 같은 꼬리) — recompute 1회, `Length` emit 1회. **[2026-09-08 Q40 (a) — 사용자 확정]** 파괴가 창 **안**에서 돌므로 파괴 도중 raise(요소 cleanup 던짐·quad 밖에서 `Destroy`된 타깃의 `nativeRemove`·소유권 불변식 에러)면 게이트가 On인 채 남아 **그 Slot의 레이아웃은 동결된다 — UB**, `:List`의 KeyGone 패스(창 안 파괴, 던지면 그 List는 죽음)와 같은 톤. 사용자: *"외부 버그라서 어떻게든 어딘가 죽는게 맞고, 마찬가지로 UB가 되는거 맞아보임"*(round8 §6). 파괴를 창 밖으로 빼는 (b)는 안 한다 |
 | `Move` | `Slot:Move(oldIndex, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
 | `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 인덱스의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
 | `Get` | `Slot:Get(index): T?` | O(1) | 그 인덱스의 element 조회(범위 밖이면 `nil`) |

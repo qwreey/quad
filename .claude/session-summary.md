@@ -2457,4 +2457,4 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   역전 0. 반영 `H-486`~`H-491` — `H-480` 원장 논거 정정(clone은 순회 중 **삽입** UB를 막고 있었다, 재진입은 `slot-plan` UB 범주라
   복원 안 함), Q6 폴백 철회의 `claim-plan.md` 누락, Q14 `releaseOwner`를 부정하던 `slot-plan` 의사코드 둘, README 분리 뒤 옛
   표 포인터 일곱(외부 모델 진입점 포함), 주석 잔재 넷, `spec.lengthoffset` 14절(None 분기 되감기 — 커버리지 0이었음).
-  **Q40**(Clear 창 안 파괴 → 던지면 동결 — List KeyGone과 같은 톤으로 둘지) 사용자 몫. test.sh exit 0(스펙 50), doc-check ERROR 0.
+  **Q40**(Clear 창 안 파괴 → 던지면 동결)은 같은 날 회신으로 (a) 닫힘 — UB 명시(*"외부 버그라서 어떻게든 어딘가 죽는게 맞고"*). test.sh exit 0(스펙 50), doc-check ERROR 0.

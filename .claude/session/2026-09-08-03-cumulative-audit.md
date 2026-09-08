@@ -55,4 +55,4 @@ E(5분) → B(9분) → A(12분) → C(12분) → D(13분). 토큰은 17만~26�
 
 ## 4. 남은 것
 
-Q40(round8 §4) 사용자 답. flatten 슈거 일곱(`question.md` 2절)은 그대로.
+Q40은 같은 날 회신으로 (a) 닫힘(round8 §6) — `slot-plan.md` Clear 행에 UB 명시. flatten 슈거 일곱(`question.md` 2절)은 그대로.

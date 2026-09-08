@@ -67,8 +67,7 @@
    축약 → Q26·Q27 → Q25 값 비교 dedup(`H-478`) → 신원 잔재 탐사 → 2026-09-08 감사 스윕(sonnet
    넷 병렬, 사용자 지시). test.sh exit 0(스펙 50), doc-check ERROR 0.
    **[2026-09-08 오후 누적 감사 — round8]** 감사자 다섯 병렬(사용자 지시) → 동작 회귀 0·옛 결정 역전 0, 반영 `H-486`~`H-491`;
-   **사용자 몫 Q40**(`qa-request/post-implementation-review-round8.md` §4 — `Slot:Clear`가 게이트 창 안에서 요소를 파괴하므로
-   창 안 raise면 그 Slot 동결: (a) List KeyGone과 같은 톤으로 명시(권고) / (b) 파괴를 창 밖으로). 원문 `session/2026-09-08-03-cumulative-audit.md`.
+   Q40(`Slot:Clear` 창 안 파괴 → 던지면 그 Slot 동결)은 **같은 날 회신으로 (a) 닫힘**(round8 §6 — UB 명시, `slot-plan.md` CRUD 표). 남은 사용자 몫 없음. 원문 `session/2026-09-08-03-cumulative-audit.md`.
 
 
 2. **[백로그] 용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
