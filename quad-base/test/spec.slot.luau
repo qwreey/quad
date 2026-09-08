@@ -988,4 +988,33 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 28. 2026-09-08 round8 H-505/H-506 — Move 뒤 역맵은 회전 구간만 다시 쓰고도 정확, 생성자는 배치 선행 패스 한 번(Slot{ a, a } 거부 유지) ===")
+do
+	local q = mock.newQuad()
+	local s = q.Slot()
+	local f = {}
+	for i = 1, 8 do f[i] = mock.Instance.new("Frame"); s:Add(f[i]) end
+	local function check(label: string)
+		for i = 1, 8 do
+			local e = s:Get(i)
+			assert(s:IndexOf(e) == i, `{label}: IndexOf(e{i}) == {i} (got {tostring(s:IndexOf(e))})`)
+		end
+	end
+	s:Move(2, 6); check("move up")
+	s:Move(7, 1); check("move down")
+	s:Move(4, 4); check("no-op move")
+	s:Move(1, 8); check("front to back")
+	s:Swap(3, 5); check("swap")
+	local a = mock.Instance.new("Frame")
+	local ok, err = pcall(function() return q.Slot({ a, a }) end)
+	assert(not ok and string.find(tostring(err), "Slot: the same element appears twice", 1, true) ~= nil, "constructor duplicate still caught: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "constructor pre-pass blame")
+	local big = {}
+	for i = 1, 300 do big[i] = mock.Instance.new("Frame") end
+	local s2 = q.Slot(big)
+	assert(s2:IndexOf(big[300]) == 300 and s2:IndexOf(big[1]) == 1, "batch constructor: all 300 in, indexed")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

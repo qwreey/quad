@@ -780,7 +780,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 
 | 연산 | 시그니처 | 복잡도 | 의미 |
 |---|---|---|---|
-| `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환** |
+| `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환**. 선행 패스가 현재 요소를 전수 훑으므로(중복 검사) `Add` N회 반복은 O(N²) — 대량은 `Splice`/생성자(**[2026-09-08 `H-506`]** 생성자는 배치 한 번 선행 패스, 1000개 38ms → 1ms대) |
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
 | `Replace` | `Slot:Replace(index, newElement)` | **O(1)** | 그 자리 요소를 교체하고 **이전 것을 파괴** — `Extract(index, newElement)`의 파괴 짝(`Remove` ↔ `Extract` 관계와 동형). **[2026-08-21 5라운드 `B-5` 신설]** |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
@@ -3223,7 +3223,9 @@ end
   **[2026-08-24 분리, 2026-08-27 맵 이동]**). 이 맵은 `_elements`의 역방향이라
   **실체화 여부와 무관하게 항상** 정확해야 한다. `reindexFrom`은 `from`부터
   끝까지 `bk.indexOfElement[self._elements[i]] = i`를 다시 쓰고, 제거 경로에선
-  빠지는 요소를 맵에서 **뺀 뒤** 부른다. `_elements`를 시프트하는 자리는
+  빠지는 요소를 맵에서 **뺀 뒤** 부른다. **[2026-09-08 `H-505`]** 회전(`rawMove`)은 `[lo, hi]`
+  밖을 건드리지 않으므로 형제 `reindexRange(self, lo, hi)`가 그 구간만 다시 쓴다 — 끝까지 쓰던
+  옛 호출이 `:List`의 "가운데 한 개 삭제"(뒤 키 전부 한 칸 `rawMove`)를 O(N²)로 만들었다(round8 L-4). `_elements`를 시프트하는 자리는
   **전부** 이걸 부른다(`rawAdd`의 미실체화 얼리리턴 포함).
   `spliceArraysUp`/`Down`은 자기 몫으로 이걸 같이 부르되, 하는 일은 아래 부기
   항목들이다. (**[2026-08-27 Q3]** 분리의 옛 근거 *"`spliceArrays*`는 `bk`를

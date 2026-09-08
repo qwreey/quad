@@ -293,3 +293,35 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 **Q46 — `store:Of(name)` 무주석의 `any`.** 상황: `Of<U>`의 `U`가 제약 없이 `any`로 떨어져 그 뒤 값 타입 검사가 사라진다. 갈래: (a) 그대로 두고 `store-plan.md`
 실측 표에 "무주석은 `Source<any>` — 주석 필수"를 적는다(권고 — 동적 이름은 정의상 타입이 없다) / (b) `Of`를 `Of<U>(self, name, sample: U?)`류로 바꿔 추론
 근거를 준다(새 인자, 비권장).
+
+## §12 3차 — 성능·메모리 실측 (L, opus; CLI mock, 3회 최소값, `-O2` 대조 동일) (2026-09-08 밤)
+
+반응형 코어(체인 5000·팬아웃 5000·다이아몬드·Gate·Observer/Effect)와 quad-roblox(`D.Frame` 5000·Property·Tween·Event·Destroy)는 **전부 선형**, 장기 루프
+메모리(생성+Destroy 30,000회, List Set 10,000회, Compute 100,000회, Observer/Effect 10,000회, Slot 마운트 사이클 10,000회)는 **전부 정체**. 초선형은 Slot 층에
+몰려 있었고 둘을 닫았다:
+
+- **`H-505` `rawMove`의 역맵 재작성이 끝까지 갔다** (L-4 절반). `reindexFrom(lo)`가 배열 끝까지 쓰는데 회전은 `[lo, hi]` 밖을 안 건드린다 — `:List`의 "가운데
+  한 개 삭제"가 뒤 키마다 한 칸 `rawMove` → 키당 O(N) → 사이클 O(N²)(4000행에서 한 줄 삭제 39ms). `reindexRange(lo, hi)` 신설. `spec.slot` 28절.
+- **`H-506` `Slot{ …N개 }` 생성자가 요소마다 선행 패스를 돌렸다** (L-2). `prepareElements`가 호출마다 현재 요소 전수를 훑어 `seen`을 만드는데 생성자가
+  요소마다 불러 O(N²)(1000개 38ms vs `Splice(1, 0, …)` 1ms). 배열 인자로 바꿔 생성자는 한 번(nil 구멍 UB는 `ipairs`로 그대로), `Add` 단발은 설계대로
+  O(현재 길이)(CRUD 표에 명시). `spec.slot` 28절(중복 검출 유지·300개 배치).
+- **백로그로**(ROADMAP 최적화 후보): L-3 마운트된 단발 CRUD의 꼬리 `recompute`가 `i = 1`부터 전 자리(호출당 O(N)) — 커서 재개는 되감기 계약과 대조할
+  설계 판단; L-4 나머지(전체 키 교체 O(N²) — `rawPermute`/"KeyGone 먼저" 계열); L-5 `addHandler` O(N²)(실사용 22개); L-6 Modifier 필드 수천 체이닝.
+- **L-1 (mock에서 HIGH — 실기기 판정 필요)**: 엔진 Tween이 붙은 채 `Destroy`된 Instance가 회수되지 않는다(10,000회에 30MB 단조 증가, 인스턴스당 3KB).
+  기제(L-7 실측): **Luau의 weak-key 테이블은 에페메론이 아니다** — `Relate` 버킷(weak 키 / strong 값)의 값이 자기 키를 되참조하면 항목과 키가 불멸.
+  `Handlers/Property.luau`의 `tweenSlots:SetStrong(inst, k, { Tween = engineTween, … })`에서 **mock** Tween이 `.Instance` 필드로 inst를 Lua 참조한다.
+  실물 `Tween` userdata의 `.Instance`는 엔진 프로퍼티라 Lua 객체 그래프에 없을 가능성이 크다(H 각도도 같은 메모) — 그러면 실기기에선 회수된다. → **Q47**.
+  `SetStrong` 호출부 아홉 중 값이 키를 되참조하는 것으로 확인된 건 이 하나(`InstanceShorthand` 관리 자식은 mock `Parent`가 프록시가 아니라 미확인).
+- **L-8 (설계된 핀, 가격만)**: `drive`로 프로퍼티를 받았거나 `bindLifetime`이 걸린 Instance는 `Destroy` 없이는 회수 안 됨(`LifetimeHandle.luau` gcconn 캡처
+  계약) — Frame당 ~4.5KB, 요소 1개 Slot 마운트 Folder ~11KB. `Destroy`하면 회수(30,000회 +2KB 평탄).
+- **사고 기록**: 메인의 `git add -A`가 L의 프로브 파일을 `649d998`에 휩쓸어 넣었다(L이 삭제, 이 커밋에서 제거). 규약: 프로브가 도는 동안 커밋은
+  `git add` 경로를 명시하거나 `':!*probe.*'`를 제외할 것.
+
+## §13 사용자 문항 (3차 — 성능)
+
+**Q47 — 엔진 Tween 슬롯이 Instance 회수를 막는가(실기기 필요).** 상황: `Property` 핸들러가 활성 트윈을 `Relate`에 strong 값 `{ Tween = engineTween, Value }`로
+쥔다. Luau weak-key 테이블은 에페메론이 아니라, 값이 키(Instance)를 Lua 참조하면 그 Instance는 `Destroy` 뒤에도 영원히 남는다 — CLI mock에선 mock Tween이
+`.Instance` 필드를 갖고 있어 10,000회에 30MB가 샜다(L-1). 실물 `Tween` userdata의 `.Instance`는 엔진 쪽 참조라 Lua GC엔 안 보일 가능성이 크다(그러면 실기기
+무해). 무엇이 막히나: Studio 없이 판정 불가하고, 방어를 넣는다면 `onDestroying`에서 그 inst의 트윈 슬롯을 비우는 새 경로(또는 슬롯의 Tween을 weak로)가 된다.
+갈래: (a) Studio 실측 뒤 판단 — Q41·Q42와 한 묶음으로 `HUMAN_TODO`(권고; 실측 스크립트는 L-1 재현 코드 그대로) / (b) 지금 `onDestroying` 훅으로 슬롯 비우기
+(새 경로, 실기기 무해면 낭비) / (c) mock의 Tween에서 `Instance` 역참조만 빼 mock 충실도 문제로 닫기.

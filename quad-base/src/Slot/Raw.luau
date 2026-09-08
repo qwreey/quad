@@ -22,6 +22,17 @@ return function(S: Types.SlotInternal, module: any)
 			bk.indexOfElement[self._elements[i]] = i
 		end
 	end
+	-- reindexRange: a rotation only disturbs [lo, hi] — `H-505` (2026-09-08 round8 L-4):
+	-- rawMove used reindexFrom(lo) to the END, so List's "delete one in the middle"
+	-- (settle → rawMove of every following key by one slot) was O(N) per key, O(N²)
+	-- per cycle (4000 rows: 39 ms for one deletion).
+	local function reindexRange(self: any, lo: number, hi: number)
+		local bk = S.BK.getBookkeeping(self)
+		local els = self._elements
+		for i = lo, hi do
+			bk.indexOfElement[els[i]] = i
+		end
+	end
 
 	local function spliceArraysUp(self: any, index: number)
 		local bk = S.BK.getBookkeeping(self)
@@ -266,7 +277,7 @@ return function(S: Types.SlotInternal, module: any)
 		end
 		rotateInPlace(els, fromIndex, toIndex)
 		local lo = math.min(fromIndex, toIndex)
-		reindexFrom(self, lo)
+		reindexRange(self, lo, math.max(fromIndex, toIndex)) -- `H-505`
 		if self._physicalTarget == nil then return end
 		-- H6-6: raw* regulation 1 — lengthList/sourceList/observers move with the
 		-- SAME permutation as _elements. sourceList especially is ELEMENT-bound

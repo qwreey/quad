@@ -179,14 +179,20 @@ local function Init(module: any)
 		return element
 	end
 
-	local function prepareElements(self: any, surface: string, count: number, ...: any): { any }
+	-- `H-506` (2026-09-08 round8 L-2): takes the candidates as an ARRAY (`count` keeps nil
+	-- holes visible — `table.pack`'s `.n` at the Splice call site) so the constructor can
+	-- pre-pass its whole initial list ONCE. It used to call this per element, and the
+	-- `_elements` scan below made `Slot{ …N개 }` O(N²) (1000 → 38 ms; `Splice(1, 0, …)` of
+	-- the same 1000 took 1 ms). Single `Add` stays O(current length) by design — batches
+	-- go through Splice (CRUD 표).
+	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
 		local prepared, seen = table.create(count), {}
 		for _, existing in ipairs(self._elements) do
 			local occ = occupantOf(existing)
 			if occ ~= nil then seen[occ] = true end
 		end
 		for i = 1, count do
-			local raw = (select(i, ...))
+			local raw = items[i]
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			if occupant ~= nil then
@@ -220,7 +226,7 @@ local function Init(module: any)
 	function Slot_mt.Add(self: any, element: any, index: number?): number
 		assertMutable(self)
 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
-		return S.rawAdd(self, prepareElements(self, "Slot:Add", 1, element)[1], index)
+		return S.rawAdd(self, prepareElements(self, "Slot:Add", 1, { element })[1], index)
 	end
 
 	function Slot_mt.Remove(self: any, index: number)
@@ -234,7 +240,7 @@ local function Init(module: any)
 	function Slot_mt.Replace(self: any, index: number, newElement: any)
 		assertMutable(self)
 		checkIndex(self, index, "Slot:Replace")
-		local prepared = prepareElements(self, "Slot:Replace", 1, newElement)
+		local prepared = prepareElements(self, "Slot:Replace", 1, { newElement })
 		S.rawReplace(self, index, prepared[1], true)
 	end
 
@@ -246,7 +252,7 @@ local function Init(module: any)
 		checkIndex(self, index, "Slot:Extract")
 		local old = self._elements[index]
 		if newElement ~= nil then
-			local prepared = prepareElements(self, "Slot:Extract", 1, newElement)
+			local prepared = prepareElements(self, "Slot:Extract", 1, { newElement })
 			S.rawReplace(self, index, prepared[1], false)
 		else
 			S.rawUnmount(self, index)
@@ -264,7 +270,8 @@ local function Init(module: any)
 			or index + removeCount - 1 > #self._elements then
 			Err.errorBeforeNearest("Slot:Splice: removeCount out of range", SURFACE)
 		end
-		local prepared = prepareElements(self, "Slot:Splice", select("#", ...), ...)
+		local items = table.pack(...)
+		local prepared = prepareElements(self, "Slot:Splice", items.n, items)
 		local removed = S.rawSplice(self, index, removeCount, prepared)
 		for i, element in ipairs(removed) do
 			removed[i] = S.unwrapElement(element)
@@ -381,8 +388,13 @@ local function Init(module: any)
 			-- Not `self:Add(v)` — the tagged Add would then be the nearest tagged
 			-- frame and blame THIS line instead of the user's `Slot{…}` (round15
 			-- `H6-19`). Same pre-pass + raw* as Add, called directly.
-			for _, v in ipairs(initial) do
-				S.rawAdd(self, prepareElements(self, "Slot", 1, v)[1])
+			-- `H-506`: ONE pre-pass over the whole list (it also catches `Slot{ a, a }` —
+			-- `seen` spans the batch), then raw adds. `ipairs` first, so a nil hole
+			-- still just stops the list (documented UB, spec 22b) instead of raising.
+			local list = {}
+			for _, v in ipairs(initial) do table.insert(list, v) end
+			for _, element in ipairs(prepareElements(self, "Slot", #list, list)) do
+				S.rawAdd(self, element)
 			end
 		end
 		return self

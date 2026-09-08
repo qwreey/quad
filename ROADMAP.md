@@ -49,6 +49,14 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         **[2026-09-08 round7 Q38 사용자 결정 — 백로그 확정]** 2-pass 순열(`rawPermute`: 사이클 끝에 순열 하나로 `_elements`·부기 세 배열을
         한 번에 재배치, 새 raw op + 백엔드 `nativeMove` 의미 결정 필요)은 *"순수 최적화이고 외부 표면은 나오지 않고 … 정식 릴리즈
         전"*이라 사용자가 큰 틀을 본 뒤에. 재정렬 분석 문서의 옵저버 잔류·stale 인덱스 난제는 현재 코드엔 없다(round7 §3).
+        **[2026-09-08 round8 L 실측 추가]** `:List` **전체 키 교체**도 O(N²)(1000개 87ms, 8000개 5.5s — 옛 요소 N개가 남은 2N 배열 중간에
+        `rawAdd`(`table.insert`+역맵+`spliceArraysUp` 각 O(N)) 뒤 KeyGone 패스가 하나씩 `vacate`) — 같은 `rawPermute`/"KeyGone 먼저" 계열.
+        가운데 한 개 삭제의 O(N²)는 `H-505`(`reindexRange`)로 닫음.
+      - **[2026-09-08 round8 L-3]** 마운트된 Slot의 **단발 CRUD**(Add/Remove/Swap/Move/Replace/Extract)는 꼬리 `recompute`가 `i = 1`부터
+        전 자리를 훑어 호출당 O(N)(5000자리 `Swap(1,2)` 한 번 0.63ms; N회 반복 O(N²)) — `Splice`/`Clear`/reconcile은 배치 Blocker로
+        1회라 선형. 후보: recompute를 `offsetSetUpTo` 커서부터 재개(캐시된 접두합 신뢰 — `H-240`/`H-124` 되감기 계약과 대조 필요, 설계 판단).
+      - **[2026-09-08 round8 L-5/L-6]** `addHandler` N개 등록 O(N²)(등록마다 정렬 + `H-484` 버킷 재구축; 실사용 22개라 무해),
+        Modifier 필드 수천 개 체이닝 초선형(immutable clone 설계 그대로; 실사용에 없음).
       - **[2026-09-08 `H-479` 대부분 닫힘]** `Slot:Clear`/`ExtractAll`의 요소마다 recompute와 `ExtractAll`의 역순 `table.insert` O(n²)는 배치화됨(recompute 1회, ExtractAll은 `rawSplice` 한 번) — 남은 잔여는 `Clear`의 요소별 `nativeRemove`뿐(파괴가 요소 단위라 의도)
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
