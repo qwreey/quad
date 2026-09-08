@@ -656,8 +656,8 @@ Completed 이벤트를 구독해 3-상태 릴레이션 슬롯을 `true`로 되�
 **유저가 원한 목표값에 정확히 도달한 상태**(**[2026-09-07 4순회 캐비엇]**
 `TweenInfo`의 `Reverses = true`면 정지값은 *시작값*이다 — 그래서 `Finish`가
 `prev.Value`(목표값)로 스냅하는 것이고, 코드는 이 절의 축자 구현)이므로, 그 상태를 나타내는
-북키핑(`{Tween, Value, Source}`)을 안 지우고 남겨둬도 다음에 이 `(inst,k)`가 다시
-process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value, Source}` 테이블 분기를
+북키핑(`{Tween, Value}`)을 안 지우고 남겨둬도 다음에 이 `(inst,k)`가 다시
+process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분기를
 타는 것뿐 — override 정책(`Cancel`/`Finish`)이 정확히 이 케이스를 위해
 이미 정의돼 있어 별다른 부작용이 없다. 게다가 `Value`는 항상 lerp 가능한
 프리미티브(number/UDim/Vector 등, 테이블 aliasing 걱정이 있는 타입이
