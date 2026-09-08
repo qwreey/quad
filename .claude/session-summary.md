@@ -2467,4 +2467,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   인덱서 불변·Q45 컴포넌트 경계 타입 재노출·Q46 `Of` `any` + 8.13; Q42 Instance 매개 순환(실기기). L(성능·메모리): 반응형·quad-roblox
   전부 선형·장기 루프 정체; Slot 층 둘 닫음 — `H-505` `rawMove` 역맵 구간 재작성(List 가운데 삭제 O(N²) → O(N))·`H-506` 생성자 배치 선행
   패스(1000개 38ms → 1ms대); 백로그 L-3(마운트 단발 CRUD의 recompute 전 자리)·전체 키 교체·addHandler·Modifier 체이닝; **Q47** Tween 슬롯
-  Instance 회수(mock 30MB 누출 — 실물은 다를 가능성, 실기기). 사고: `git add -A`가 프로브를 커밋에 휩쓸음 → 경로 명시 규약. test.sh exit 0(스펙 50), doc-check ERROR 0.
+  Instance 회수(mock 30MB 누출 — 실물은 다를 가능성, 실기기). 사고: `git add -A`가 프로브를 커밋에 휩쓸음 → 경로 명시 규약.
+  **수렴 확인(O 리뷰·P 감사)**: 코드 정확(실측), 메시지 주어 `Dispatch:`·spec 28절 마운트 팔·정본 의사코드 `checkOwner`/생성자 배치 — **소진 판정, 종료**.
+  test.sh exit 0(스펙 50), doc-check ERROR 0.
