@@ -125,16 +125,20 @@ return function(S: Types.SlotInternal, module: any)
 				local detach = (result == S.Detach)
 				if detach then result = nil end
 				if result ~= nil then slotPos = candidateSlot end
+				-- `H-38`: record BEFORE settle — if settle (or a later updateFn) throws,
+				-- this key is already in the set and the next cycle's KeyGone pass can
+				-- still ask about it ("중단된 지점까지는 정합"). A tail swap
+				-- `prevKeys = seen` would skip that on a throw (code-review of `H-480`,
+				-- `H-485`) — so the set stays incremental.
+				prevKeys[key] = true
 				settle(key, result, detach, slotPos)
 				userdata[key] = ud
 			end
 
-			-- KeyGone pass over LAST cycle's key set, read-only — `seen` already holds
-			-- every key of this cycle (the pre-pass fills it before any settle, the
-			-- `H-38` reason), so `prevKeys` is neither written in the loop above nor
-			-- cleared here: it is simply replaced by `seen` at the tail (2026-09-08
-			-- advisory RFC, `H-480` — the old per-cycle `table.clone` snapshot existed
-			-- only to survive those two writes).
+			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
+			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
+			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
+			-- during traversal — only inserting new keys is undefined.
 			for key in pairs(prevKeys) do
 				if not seen[key] then
 					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
@@ -147,9 +151,9 @@ return function(S: Types.SlotInternal, module: any)
 					end
 					settle(key, result, detach, 0)
 					userdata[key] = ud
+					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
 				end
 			end
-			prevKeys = seen -- this cycle's key set becomes the next cycle's "previous"
 
 			if ownsGate then
 				blocker:OffWithoutEmit()

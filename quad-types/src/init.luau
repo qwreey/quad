@@ -332,7 +332,9 @@ export type Source<T> = State<T> & {
 -- 버킷(number / string / 그 밖)만 스캔하도록 하는 힌트이고, 없으면 모든
 -- 버킷에 든다(서드파티·키 무관 핸들러는 지금처럼 전수 스캔 대상).
 -- `isHandlable`은 그대로 최종 판별자 — 선언은 그 술어가 이미 거부하는 키를
--- 아예 안 묻게 할 뿐이다(어긋나게 선언하면 매치 실패 에러로 드러난다).
+-- 아예 안 묻게 할 뿐이다. 어긋나게 선언하면 그 핸들러는 그 버킷에서 조용히
+-- 빠지고 더 낮은 priority의 미선언 핸들러가 대신 매치할 수 있다 — 선언은
+-- `isHandlable`의 `type(k)` 가드와 같은 값이어야 한다.
 export type Handler = {
 	name: string?,
 	keyType: ("number" | "string")?,

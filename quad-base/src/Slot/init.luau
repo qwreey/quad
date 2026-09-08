@@ -299,7 +299,7 @@ local function Init(module: any)
 
 	-- Clear/ExtractAll — the whole-Slot forms of Remove/Extract, ONE recompute
 	-- (`H-479`, 2026-09-08 advisory RFC, measured: a per-element `rawRemove` tail
-	-- ran `recompute` N times, O(N²) — 1000 elements took ~120 ms in the CLI mock
+	-- ran `recompute` N times, O(N²) — 1000 elements took ~130 ms in the CLI mock
 	-- against ~1 ms for `Splice(1, N)`). Same batch-gate idiom as `rawSplice`.
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)

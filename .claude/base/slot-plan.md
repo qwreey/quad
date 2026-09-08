@@ -1665,18 +1665,19 @@ function activateList(self, physicalTarget)
             -- 집합에 안 들어가, 다음 사이클 소멸 루프가 못 물어 영구 고아가
             -- 된다 — `H-38`이 고치려던 바로 그 모양이다. 선행 패스가 `seen`을
             -- 미리 채우는 것과 같은 이유.
-            -- [2026-09-08 `H-480`] `prevKeys[key] = true`는 더 이상 여기서 안 한다 —
-            -- 위 선행 패스가 `seen`을 이미 그 집합으로 채웠고(같은 `H-38` 이유), 사이클
-            -- 꼬리에서 `prevKeys = seen`으로 통째 교체한다(아래).
+            prevKeys[key] = true
+            -- [2026-09-08 `H-485`] 한때(`H-480` 첫 안) 이 기록을 지우고 꼬리에서 `prevKeys = seen`으로
+            -- 통째 교체했다가 `/code-review`가 잡았다 — 그건 위 `H-38`이 없앤 "마지막 일괄 교체"
+            -- 그 자체라, 던지면 교체가 안 일어나 새 키가 영구 고아가 된다. 증분 기록 유지.
             settle(key, result, detach, slotPos)
             userdata[key] = ud       -- result와 무관, 그대로 기록
         end
 
         -- [재설계, 2026-08-21] 소멸 루프 — 조용히 파괴하지 않고 **처분을 묻는다**.
         -- 아래 "`KeyGone`" 절이 소스.
-        -- [`H-38`, 2026-09-08 `H-480` 정정] 옛 코드는 루프 1의 `prevKeys[key] = true`와
-        -- 이 루프의 `prevKeys[key] = nil` 때문에 `table.clone(prevKeys)` 스냅샷을 돌았다 —
-        -- 둘 다 없어져 **읽기 전용 순회**이고 clone도 없다(사이클당 해시 테이블 복제 1회 제거).
+        -- [`H-38`, 2026-09-08 `H-480`] 옛 코드는 아래 `prevKeys[key] = nil` 때문에
+        -- `table.clone(prevKeys)` 스냅샷을 돌았는데, Lua/Luau `pairs`는 순회 중 **기존 키를
+        -- nil로 지우는 것**을 명시적으로 허용한다(정의되지 않은 건 새 키 삽입뿐) — clone 제거.
         for key in pairs(prevKeys) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = unwrapElement(mounted[key] or (self._detached and self._detached[key]))
@@ -1693,11 +1694,10 @@ function activateList(self, physicalTarget)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
-                -- (`H-38`의 "다음 사이클엔 다시 안 묻는다"는 아래 교체가 보장한다 —
-                -- 이 키는 `seen`에 없으므로 새 `prevKeys`에도 없다)
+                prevKeys[key] = nil              -- [`H-38`] 이 키는 이제 없다 —
+                                                 -- **다음 사이클엔 다시 안 묻는다**
             end
         end
-        prevKeys = seen   -- [2026-09-08 `H-480`] 이번 사이클의 키 집합이 다음 사이클의 "직전"
 
         -- ⭐ [2026-08-27, `H-136`] 배치 닫기 — `Slot:List`의 `_physicalTarget` 분기와
         -- 같은 꼬리. `recomputeBlocker`는 따로 본다(사용자 코드가 바깥 `recompute`

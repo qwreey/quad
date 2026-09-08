@@ -883,7 +883,7 @@ end
 
 
 print()
-print("=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 prevKeys 스왑(H-480) ===")
+print("=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 KeyGone 사이클(H-480 clone 제거, H-485 증분 집합 유지) ===")
 do
 	local s = Slot()
 	local a, b, c = Instance.new("Frame"), Instance.new("Frame"), Instance.new("Frame")
@@ -892,7 +892,9 @@ do
 	local parent = Instance.new("Folder")
 	dispatch.drive(parent, { s })
 	assert(childCount(parent) == 4, "4 leaves mounted: " .. childCount(parent))
-	assert(s:IndexOf(inner) == 2 and s:IndexOf(b) == 3, "IndexOf answers through the reverse map")
+	assert(s:IndexOf(inner) == 2 and s:IndexOf(b) == 3, "IndexOf answers the current positions")
+	local map = dispatch.getBookkeeping(s).indexOfElement
+	assert(map[inner] == 2 and map[b] == 3, "the reverse map itself holds them (the O(1) path is real, not the scan fallback)")
 	local st = q.Source(c)
 	s:Add(st)
 	assert(s:IndexOf(st) == 4, "a State element is found by unwrapping its sugar wrapper")

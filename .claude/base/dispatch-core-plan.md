@@ -153,8 +153,8 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   핸들러**를 `handlers`와 같은 priority 순으로 담는다(`addHandler`마다 재구축 —
   콜드 패스). 선언은 "이 핸들러는 이 타입의 키에서만 매치할 수 있다"이고
   **`isHandlable`이 여전히 최종 판별자**다 — 선언은 그 술어가 이미 `type(k)`로
-  거부하는 키를 아예 안 묻게 할 뿐이라 매치 결과는 바뀌지 않는다(quad의 열셋
-  — `H-52` 배열 자리 가드를 가진 리프 전부 + Property/Event/InstanceShorthand
+  거부하는 키를 아예 안 묻게 할 뿐이라 매치 결과는 바뀌지 않는다(quad의 열둘
+  — `H-52` 배열 자리 가드를 가진 리프 아홉 + Property/Event/InstanceShorthand
   — 이 선언했고, 센티널·StoreBind·None·AttrKey·폴백 가드는 키 무관이라 미선언).
   잘못된 값(`"table"` 등)은 등록 시 표면 에러 — 조용히 모든 버킷에서 빠지면
   매치 실패로만 드러나서. 근거 실측(CLI, quad-roblox 핸들러 22개): 문자열

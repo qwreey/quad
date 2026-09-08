@@ -2444,8 +2444,11 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   spec이 없었음). 기각·확인: 일괄 태깅(`H-434` 전면화), 명명·누수 이디엄·마커 규칙은 기존 문서가 소스, "200줄 규약"은 부재,
   재정렬 분석의 난제 2·5는 현재 코드에 없음. 문항 Q37(getHandler 버킷 필드 — 실측 절감 5µs/`D.Frame`)·Q38(`rawPermute`, 1000개 역순
   82ms)·Q39(문서 거버넌스 넷). test.sh exit 0(스펙 50), doc-check ERROR 0.
-  **[같은 날 오후 회신]** Q37 (a) → `keyType` 버킷 반영(`H-484`, 열셋 선언, `spec.dispatch` 19절, `D.Frame` 46.5 → 37.1µs) ·
+  **[같은 날 오후 회신]** Q37 (a) → `keyType` 버킷 반영(`H-484`, 열둘 선언, `spec.dispatch` 19절, `D.Frame` 46.5 → 37.1µs) ·
   Q38 백로그(ROADMAP 최적화 후보 — 사용자 `rawOrder` 아이디어 줄) · Q39 폴더별 README 분리만(루트 README 백로그, base 계약서화·
   summary 분할은 안 함) · `/code-review` 단일 맥락(opus 이하) 1회.
   **[같은 날 오후 후속]** Q39 (1) 반영 — 루트 `.claude/README.md`를 폴더별 `README.md` 일곱으로 분리(151줄/163KB → 51줄/8KB, 원문 무손실
   이동), `doc-check.py` 색인 검사가 루트 + 폴더 README를 합쳐 봄, 포인터 넷 갱신.
+  **[같은 날 오후 `/code-review` 반영]** 발견 6(미완 0) — **`H-485`** `prevKeys = seen` 꼬리 교체가 `H-38`("마지막 일괄 교체를
+  없앴다 — 던지면 새 키 영구 고아") 계약과 충돌 → 증분 기록 되돌리고 clone만 제거; 열셋→열둘, quad-types 과장 주석, 동률 경고
+  버킷 인지 + 게이트 순서, spec 26절 역맵 직접 단언, Clear 주석 수치. 교훈: RFC의 등가 증명은 에러 경로까지.

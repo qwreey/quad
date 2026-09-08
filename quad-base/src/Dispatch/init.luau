@@ -305,9 +305,20 @@ local function Init(module: any)
 		-- Tie detection is free at registration time (the registry is sorted
 		-- here, statically). No tiebreak rule is enforced — ties are usually a
 		-- handler-design mistake, surfaced via debug visibility only.
+		local kt = handler.keyType
+		if kt ~= nil and kt ~= "number" and kt ~= "string" then
+			-- registration gate (`H-484`): a typo here would silently drop the handler
+			-- from every bucket — say so where the provider registered it (and before
+			-- the tie print below, so a rejected handler leaves no misleading line)
+			Err.errorBeforeNearest(`Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
+		end
 		if module.debug then
 			for _, existing in handlers do
-				if existing.priority == handler.priority then
+				-- two handlers declaring DIFFERENT key types never share a bucket, so
+				-- their equal priority is not a tie (`H-484` follow-up, code-review)
+				local ekt = existing.keyType
+				local canCompete = kt == nil or ekt == nil or kt == ekt
+				if canCompete and existing.priority == handler.priority then
 					print(
 						`quad.Dispatch: handler priority tie between {describeHandler(existing)}`
 							.. ` and {describeHandler(handler)}`
@@ -316,12 +327,6 @@ local function Init(module: any)
 					break
 				end
 			end
-		end
-		local kt = handler.keyType
-		if kt ~= nil and kt ~= "number" and kt ~= "string" then
-			-- registration gate (`H-484`): a typo here would silently drop the handler
-			-- from every bucket — say so where the provider registered it
-			Err.errorBeforeNearest(`Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
 		end
 		table.insert(handlers, handler)
 		table.sort(handlers, function(a: Handler, b: Handler)
