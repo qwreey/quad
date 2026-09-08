@@ -339,3 +339,21 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 - **판정: 소진.** 네 라운드(감사 5 → 탐사 5 → 리뷰/타입/성능/감사 4 → 수렴 2)에서 동작 결함은 2차의 Slot 순환(`H-500`) 하나였고, 이후 라운드의 발견은
   게이트·blame·메시지·정본 정합·성능·타입 표면으로 옮겨갔으며 마지막 라운드는 직전 반영분의 정합만 남겼다. 남은 것은 전부 사용자 결정(Q41~Q47)이거나
   실기기 실측이 필요한 것.
+
+## §15 실기기 실측 — Q41·Q42·Q47 + 부수 발견 (2026-09-08 밤, `audit/round8-studio-2026-09-08.md`)
+
+사용자가 rojo 플러그인을 연결해 줘서(*"rojo serve 띄우면 연결해줄게. 실측 필요한 부분 실측해보자"*) 세 문항을 실물로 돌렸다. 표는 audit 파일.
+
+- **Q47 닫힘 — (c) mock 충실도 문제.** 실물에서 트윈을 돌린 뒤 `Destroy`한 Frame은 GC에 회수된다(plain·관리 자식도). L-1의 30MB 누출은 mock Tween이
+  `Instance`를 Lua 필드로 강하게 쥐어 `Relate`의 weak-key/strong-value 항목이 자기 키에 도달한 것. **반영**: mock의 `Instance`를 weak 홀더로(`quad-base/test/mock.luau`
+  `newMockTween`). L-7의 일반 위험(`SetStrong` 값이 키를 되참조하면 불멸)은 실물 Tween엔 해당 없으나 Lua 테이블 값에는 여전히 참 — `relate-plan.md`에 그대로 둔다.
+- **`H-507` Event 핸들러 값 게이트** (부수 발견). 실물 `signal:Connect(5)`는 던지지 않고 `RBXScriptConnection`을 돌려주며 콘솔에만 "Attempt to connect failed:
+  Passed value is not a function"을 남긴다(스택 `Handlers/Event.luau:65`) — 헤더의 "엔진이 raise한다"(정본 무게이트의 근거)가 현재 엔진에서 거짓. `process`가
+  `type(v) ~= "function"`이면 최외곽 표면 에러(State 경유 값은 StoreBind가 풀어 주므로 같은 자리). `spec.events` 8절(mock Connect도 아무거나 받으므로 게이트가
+  유일한 방어). `OnChange`는 생성자 게이트가 이미 있음(실물 확인).
+- **Q41 데이터**: 엔진 문구 `Unable to create an Instance of type "Frmae"`(위치 접두 없음, 스택은 `D/init.luau`). 문구가 클래스 이름을 말하므로 (c)로도 충분해
+  보이나 결정은 그대로 사용자 몫.
+- **Q42 데이터**: 엔진 `Attempt to set Frame as its own parent` / `… would result in circular reference`. raise 뒤 Slot에 요소는 들어가고(`IndexOf == 1`) 부기·물리는
+  안 된 반쪽 상태(`Length == 0`)가 남지만 다음 `Add`는 정상이고 `Remove(1)`로 복구된다. (b) 게이트는 `self._mountedInst`의 조상 사슬 확인이 필요해 새 백엔드
+  op(`isAncestorOf`류)가 되므로 사용자 결정 그대로.
+- 엔진 문구 표(Attr/Property 테이블·문자열 값)는 audit 파일 — `H-498`이 실물에서도 사용자 줄로 먼저 막는 것 확인.

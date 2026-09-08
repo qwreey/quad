@@ -210,4 +210,21 @@ do
 end
 
 print()
+print()
+print("=== 8. round8 H-507 (Studio 실측 2026-09-08) — 비함수 핸들러는 quad가 거부(엔진은 던지지 않고 콘솔에만 남긴다) ===")
+do
+	for label, v in { number = 5, str = "str", tbl = {} } :: { [string]: any } do
+		local ok, err = pcall(function() return q.D.TextButton({ MouseButton1Click = v }) end)
+		assert(not ok and string.find(tostring(err), 'Event: handler for "MouseButton1Click" must be a function (got', 1, true) ~= nil, label .. ": " .. tostring(err))
+		mock.assertBlamesUser(err, SPEC_FILE, "Event value gate (" .. label .. ")")
+	end
+	-- a State that later carries a non-function: the gate fires at that Set (StoreBind re-dispatch)
+	local st = q.Source(function() end)
+	local b = q.D.TextButton({ MouseButton1Click = st })
+	assert(liveConnections(b.MouseButton1Click) == 1, "function via State connects")
+	local ok2, err2 = pcall(function() st:Set(5) end)
+	assert(not ok2 and string.find(tostring(err2), "must be a function (got number)", 1, true) ~= nil, "State-carried non-function rejected: " .. tostring(err2))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -28,9 +28,14 @@
 	engine events; `Connect` is not idempotent, so a one-sided retractor skip
 	would double-connect). Re-emitting the same function costs one
 	Disconnect+Connect — the churn caveat event-plan documents as accepted.
-	No value-type guard either: a non-function reaches `Connect` and the
-	engine raises (same posture as PropertyHandler's bare assignment); the
-	generated `D` types already pin the callback signature.
+	Value-type guard (`H-507`, 2026-09-08 Studio 실측): the old posture "a
+	non-function reaches `Connect` and the engine raises" is FALSE on the
+	current engine — `signal:Connect(5)` returns an RBXScriptConnection and only
+	prints "Attempt to connect failed: Passed value is not a function" to the
+	output (pcall sees no error), blaming `Handlers/Event.luau`. So `process`
+	gates it: outermost (dispatch depth). The generated `D` types still pin
+	the callback signature statically; this is the runtime seam for `:: any`
+	and State-carried values (StoreBind unwraps before we see them).
 
 	`game` is read lazily inside the cache-miss path so the CLI spec can
 	substitute a Reflection shim via `getfenv` (Property.luau seam).
@@ -42,6 +47,8 @@ local Reflection = require("../Reflection")
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	local Void = quad.Void
+	local Err = quad.errorNamespace
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	-- className -> { [eventName]: true } (inherited included — one Reflection
 	-- call per class, cached for the module's lifetime; `Reflection.luau`
@@ -61,6 +68,9 @@ local function install(quad: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			if v == nil then
 				return Void -- `None`/`nil`: disconnect-only (event-plan) — nothing to connect
+			end
+			if type(v) ~= "function" then
+				Err.errorBefore(`Event: handler for "{k}" must be a function (got {typeof(v)})`, SURFACE) -- `H-507`
 			end
 			local connection = inst[k]:Connect(v)
 			return function(_nextValue: any?, _retracting: boolean)

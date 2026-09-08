@@ -176,7 +176,7 @@
   반영 `66281ab`. (2) 10-4 D 정적 굽기 — **지금 안 함, 백로그 아닌 리서치 대상**(그 절 `[결정]`). (3) round3 §4 **Q27** — 등록
   op 기각, 모듈 최상위 `is<Brand>` 필드가 계약(round3 §12). 이 항목에 남은 사용자 몫 없음(마커 이름 10-2도 2026-09-07 밤 확인 완료).
 
-- **[2026-09-08 밤 신설 — round8 §13] Q47 엔진 Tween 슬롯의 Instance 회수(실기기 필요).** `Property` 핸들러의 strong 트윈 슬롯이
+- **[2026-09-08 밤 신설, 같은 밤 실기기 실측으로 닫힘 — (c) mock 충실도, round8 §15] Q47 엔진 Tween 슬롯의 Instance 회수.** `Property` 핸들러의 strong 트윈 슬롯이
   mock에선 Instance를 되참조해(Luau weak-key는 에페메론이 아님) `Destroy` 뒤에도 안 회수됨(10,000회 30MB). 실물 Tween userdata는
   Lua 참조가 아닐 가능성이 커 (a) Q41·Q42와 함께 Studio 실측 권고 / (b) `onDestroying`에서 슬롯 비우기 / (c) mock 충실도 문제로 닫기.
 - **[2026-09-08 저녁 신설 — round8 §11, 타입 표면 실측 M] Q43~Q46.** Q43 무인자 `Store()`가 strict TypeError(스펙도 `any` 우회 중 —
@@ -185,10 +185,10 @@
   (`Into<Class>`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)을 재노출하지 않음((a) 선별 재노출 + 8.12 실측 권고 / (b)
   `quad-roblox-types` 지금 / (c) 백로그); Q46 `store:Of(name)` 무주석 `Source<any>`((a) 문서화 권고 / (b) 새 인자). 평문 전문은
   `qa-request/post-implementation-review-round8.md` §11; 한계 기록은 `typing-limits.md` 8.13.
-- **[2026-09-08 저녁 신설 — round8 §8] Q42 Instance를 매개로 한 Slot 순환.** `drive(F, { s })` 뒤 `s:Add(F)`는 `H-500`의
+- **[2026-09-08 저녁 신설, 같은 밤 실측 데이터 추가 — round8 §15] Q42 Instance를 매개로 한 Slot 순환.** 실물: 엔진이 "own parent / circular reference"로 raise, 요소는 들어가고 부기는 안 된 반쪽 상태(`Remove(1)`로 복구 가능). `drive(F, { s })` 뒤 `s:Add(F)`는 `H-500`의
   Slot–Slot 체인 검사가 안 돌아 mock에선 통과한다(K-7 실측). 실엔진은 `F.Parent = F`의 "circular reference"를 `EngineOps.luau`
   줄에서 낼 것. 갈래: (a) Q41과 함께 Studio 실측 뒤 판단(권고) / (b) 지금 마운트 타깃 조상 체인 게이트(엔진 순회, 새 경로) / (c) UB.
-- **[2026-09-08 저녁 신설 — round8 §8] Q41 `D.New(className)`의 클래스 이름 오타.** `D.New`는 생성기 범위 밖 클래스의 탈출구라
+- **[2026-09-08 저녁 신설, 같은 밤 실측 데이터 추가 — round8 §15] Q41 `D.New(className)`의 클래스 이름 오타.** 실물 문구 `Unable to create an Instance of type "Frmae"`(클래스 이름을 말함, 스택은 생성물). `D.New`는 생성기 범위 밖 클래스의 탈출구라
   타입 방어가 없는 유일한 생성 경로다. `D.New("Frmae")` 같은 문자열 오타는 생성된 `D/init.luau`의 `Instance.new`가 엔진 에러를 내며
   생성물 내부 줄을 blame할 것으로 보이는데, CLI mock은 아무 이름이나 받아 실측하지 못했다. 갈래: (a) Studio 실측 뒤 판단(권고 —
   HUMAN_TODO 실측 항목) / (b) 지금 생성기 템플릿에서 `pcall` 재던지기 / (c) 안 함(엔진 메시지가 이름을 말해줌). 평문 전문은

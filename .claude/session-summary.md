@@ -2469,4 +2469,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   패스(1000개 38ms → 1ms대); 백로그 L-3(마운트 단발 CRUD의 recompute 전 자리)·전체 키 교체·addHandler·Modifier 체이닝; **Q47** Tween 슬롯
   Instance 회수(mock 30MB 누출 — 실물은 다를 가능성, 실기기). 사고: `git add -A`가 프로브를 커밋에 휩쓸음 → 경로 명시 규약.
   **수렴 확인(O 리뷰·P 감사)**: 코드 정확(실측), 메시지 주어 `Dispatch:`·spec 28절 마운트 팔·정본 의사코드 `checkOwner`/생성자 배치 — **소진 판정, 종료**.
+  **[같은 밤 실기기 실측 — 사용자 rojo Connect, `audit/round8-studio-2026-09-08.md`]** Q47 닫힘(실물은 회수 — mock Tween `Instance` 강참조가 원인, weak화),
+  Q41/Q42 엔진 문구·반쪽 상태 데이터(결정은 사용자), 부수 `H-507` Event 비함수 값 게이트(실물 `Connect(5)`는 던지지 않고 콘솔에만).
   test.sh exit 0(스펙 50), doc-check ERROR 0.

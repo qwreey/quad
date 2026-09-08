@@ -751,8 +751,13 @@ local collectionServiceShim = {
 local tweenLog: { any } = {}
 
 local function newMockTween(inst: any, info: any, props: { [string]: any }): any
+	-- `Instance` is held WEAKLY (round8 Q47, Studio 실측 2026-09-08): a real Tween userdata does
+	-- not keep the target in the Lua object graph, so the strong field here made the
+	-- Property handler's tween slot (`Relate` weak-key/strong-value — not an ephemeron in
+	-- Luau) pin every tweened-then-destroyed Instance forever in the CLI (30 MB / 10k) while
+	-- the engine collects it. Specs never read `tween.Instance`; keep it readable anyway.
+	local holder = setmetatable({ inst }, { __mode = "v" })
 	local tween = {
-		Instance = inst,
 		TweenInfo = info,
 		PropertyTable = props,
 		PlaybackState = "Begin",
@@ -767,7 +772,10 @@ local function newMockTween(inst: any, info: any, props: { [string]: any }): any
 		self.cancels += 1
 		self.PlaybackState = "Cancelled"
 	end
-	return tween
+	return setmetatable(tween, { __index = function(_self: any, key: any): any
+		if key == "Instance" then return holder[1] end
+		return nil
+	end })
 end
 
 local tweenServiceShim = {

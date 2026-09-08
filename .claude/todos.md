@@ -67,7 +67,7 @@
    축약 → Q26·Q27 → Q25 값 비교 dedup(`H-478`) → 신원 잔재 탐사 → 2026-09-08 감사 스윕(sonnet
    넷 병렬, 사용자 지시). test.sh exit 0(스펙 50), doc-check ERROR 0.
    **[2026-09-08 오후 누적 감사 — round8]** 감사자 다섯 병렬(사용자 지시) → 동작 회귀 0·옛 결정 역전 0, 반영 `H-486`~`H-491`;
-   Q40(`Slot:Clear` 창 안 파괴 → 던지면 그 Slot 동결)은 **같은 날 회신으로 (a) 닫힘**(round8 §6). **2차(실행 기반 탐사 다섯, round8 §7)**: 동작 결함은 Slot 순환 하나(`H-500`), 나머지는 게이트·blame·메시지·의사코드(`H-492`~`H-503`). **사용자 몫 Q41·Q42**(round8 §8) **+ Q47**(round8 §13 — Tween 슬롯 Instance 회수, 실기기) **+ Q43~Q46**(round8 §11 — 타입 표면: 무인자 `Store()` strict 에러·`{ Instance }` 변수 인덱서 불변·컴포넌트 경계 타입 재노출·`Of` 무주석 `any`; 8.13) (round8 §8 — `D.New` 클래스 이름 오타의 blame·Instance 매개 Slot 순환, 둘 다 실기기 실측 필요; 권고 (a) HUMAN_TODO 실측 항목). 3차(K 커밋 리뷰·N 문서 감사) 반영 `H-504`(nil owner 게이트 전수) + 정본 정정(K-1 J-4 오독 되돌림 등)은 round8 §9. 원문 `session/2026-09-08-03-cumulative-audit.md`.
+   Q40(`Slot:Clear` 창 안 파괴 → 던지면 그 Slot 동결)은 **같은 날 회신으로 (a) 닫힘**(round8 §6). **2차(실행 기반 탐사 다섯, round8 §7)**: 동작 결함은 Slot 순환 하나(`H-500`), 나머지는 게이트·blame·메시지·의사코드(`H-492`~`H-503`). **사용자 몫 Q41·Q42**(round8 §8·§15 실측 데이터 있음; Q47은 실측으로 닫힘 — mock 전용, `H-507` Event 값 게이트 부수 발견) **+ Q43~Q46**(round8 §11 — 타입 표면: 무인자 `Store()` strict 에러·`{ Instance }` 변수 인덱서 불변·컴포넌트 경계 타입 재노출·`Of` 무주석 `any`; 8.13) (round8 §8 — `D.New` 클래스 이름 오타의 blame·Instance 매개 Slot 순환, 둘 다 실기기 실측 필요; 권고 (a) HUMAN_TODO 실측 항목). 3차(K 커밋 리뷰·N 문서 감사) 반영 `H-504`(nil owner 게이트 전수) + 정본 정정(K-1 J-4 오독 되돌림 등)은 round8 §9. 원문 `session/2026-09-08-03-cumulative-audit.md`.
 
 
 2. **[백로그] 용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는

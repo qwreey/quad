@@ -79,7 +79,9 @@ SyntheticEvent만 주는 것과 같은 모양).
 바인드를 재실행하는 래핑"(위 절, 핸들러의 `process`가 값이 바뀔 때마다
 `Dispatch.process(inst,k,realv)`를 재귀 호출) + "재실행 래핑이 `retract`도
 같이 호출한다"(Slot이 이미 이 조합을 씀, 같은 절)는 두 메커니즘이 이미 있음.
-이벤트 핸들러가 할 일은 딱 하나: `process`에서 `:Connect()`한 Connection을
+**[2026-09-08 `H-507`, Studio 실측]** 값이 함수가 아니면 `process`가 최외곽 표면 에러로 거부한다 — 실물 `Connect(5)`는 던지지 않고
+`RBXScriptConnection`을 돌려주며 콘솔에만 "Passed value is not a function"을 남겨(스택은 핸들러 줄) "엔진이 raise한다"는 옛 전제가 거짓이었다.
+그 외에 이벤트 핸들러가 할 일은 딱 하나: `process`에서 `:Connect()`한 Connection을
 `process`의 로컬 변수로 들고, 반환하는 retract 클로저가 그걸 upvalue로
 캡처해 `:Disconnect()`하는 것 — 새 디스패치 메커니즘 발명 필요 없이 기존
 계약(`isHandlable`/`priority`/`process`)만 제대로 구현하면 됨(**[2026-08-13

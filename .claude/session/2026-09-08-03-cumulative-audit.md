@@ -97,3 +97,17 @@ O(3차 커밋 리뷰)·P(문서 감사자)로 닫았다. O는 코드 정확성�
 마운트 팔, 정본 문장 둘. P는 정본 의사코드가 `checkOwner`/`checkInst`를 안 따라온 것과 생성자 의사코드가 round15부터 stale이던 것을 잡았다.
 발견의 성격이 "직전 반영분의 정합"으로 수렴했으므로 여기서 멈춘다(사용자: "문제가 소진된다면 멈춰보자"). 사용자 몫은 Q41~Q47.
 마지막 커밋에서 파이썬 치환 하나가 실패해 원장 §14·세션 §7이 코드 커밋(`08d2477`)에 빠졌다 — 바로 다음 커밋으로 보강.
+
+## 8. 실기기 실측 (사용자가 rojo 플러그인 Connect)
+
+rojo serve를 `0.0.0.0:34872`로 띄우고(172.17.7.3) Studio MCP(`Place1.rbxl`, Edit)로 `execute_luau` 다섯 번. 첫 프로브가 `H-500` 게이트 메시지를
+돌려줘 오늘 코드가 싱크됐음을 확인. 결과는 `audit/round8-studio-2026-09-08.md` 표와 round8 §15. 프로브 요지:
+- Q41: `q.D.New("Frmae")({})` → `Unable to create an Instance of type "Frmae"`.
+- Q42: 처음엔 `Instance.new("Frame")`를 마운트 타깃으로 써서 `bindLifetime: Instance is not claimed by quad`에 먼저 걸렸다(실측 설계 실수) →
+  `q.D.Frame({ s })`로 다시: `Attempt to set Frame as its own parent`; 뒤 상태 `IndexOf(F)==1, Length==0, F.Parent==nil`, `Remove(1)`로 복구.
+- Q47: weak-value 테이블에 Frame 셋(tween/plain/UICorner)을 넣고 `Destroy` 뒤 가비지 20×20000 테이블 생성 + `task.wait(0.1)` 8회 → 셋 다 `alive=false`.
+- 엔진 문구: `SetAttribute(name, {})` → "Array is not a supported attribute type", `Size = {}` → "UDim2 expected, got table".
+- 부수: `be.Event:Connect(5)`가 ok=true·`RBXScriptConnection` — 콘솔에만 "Attempt to connect failed: Passed value is not a function". quad 경유
+  `D.TextButton{ MouseButton1Click = 5 }`도 조용히 통과(콘솔 스택은 `Handlers/Event.luau:65`) → `H-507`.
+반영: `H-507` Event 값 게이트 + `spec.events` 8절, mock Tween `Instance` weak화, event-plan·Event 헤더 정정, Q47 닫힘(c), Q41/Q42에 데이터 추가.
+rojo serve는 사용자가 더 실측할 수 있게 그대로 둔다.
