@@ -176,6 +176,11 @@
   반영 `66281ab`. (2) 10-4 D 정적 굽기 — **지금 안 함, 백로그 아닌 리서치 대상**(그 절 `[결정]`). (3) round3 §4 **Q27** — 등록
   op 기각, 모듈 최상위 `is<Brand>` 필드가 계약(round3 §12). 이 항목에 남은 사용자 몫 없음(마커 이름 10-2도 2026-09-07 밤 확인 완료).
 
+- **[2026-09-08 저녁 신설 — round8 §8] Q41 `D.New(className)`의 클래스 이름 오타.** `D.New`는 생성기 범위 밖 클래스의 탈출구라
+  타입 방어가 없는 유일한 생성 경로다. `D.New("Frmae")` 같은 문자열 오타는 생성된 `D/init.luau`의 `Instance.new`가 엔진 에러를 내며
+  생성물 내부 줄을 blame할 것으로 보이는데, CLI mock은 아무 이름이나 받아 실측하지 못했다. 갈래: (a) Studio 실측 뒤 판단(권고 —
+  HUMAN_TODO 실측 항목) / (b) 지금 생성기 템플릿에서 `pcall` 재던지기 / (c) 안 함(엔진 메시지가 이름을 말해줌). 평문 전문은
+  `qa-request/post-implementation-review-round8.md` §8.
 - **[2026-09-08 오후 신설, 같은 날 회신으로 닫힘 — round8 §6, (a)] Q40 `Slot:Clear`의 창 안 파괴.** `H-479`로 `Clear`가 Blocker 창 하나 안에서
   요소를 파괴하게 돼, 파괴 도중 raise(요소 cleanup 던짐·quad 밖 `Destroy`된 타깃의 `nativeRemove`·소유권 불변식 에러 —
   셋 다 UB·내부 버그 범주)면 게이트가 남아 그 Slot의 레이아웃이 동결된다. List의 KeyGone 패스가 이미 같은 모양을 수용하고

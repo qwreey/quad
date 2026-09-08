@@ -305,4 +305,18 @@ do
 end
 
 print()
+print()
+print("=== 11. 2026-09-08 2차 감사 H-498 — 그룹 값이 테이블(Slot/Ref/메타테이블 테이블)이면 거부, None/State/raw는 통과 ===")
+do
+	local q = newQuad()
+	for label, v in { slot = q.Slot(), ref = q.Ref(), mt = setmetatable({}, {}), plain = {} } :: { [string]: any } do
+		local ok, err = pcall(function() return q.Attr({ X = v }) end)
+		assert(not ok and string.find(tostring(err), 'attribute "X" cannot be a table', 1, true) ~= nil, label .. ": " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.attribute.luau", "Attr table value gate (" .. label .. ")")
+	end
+	local ok = q.Attr({ A = 1, B = q.Source("x"), C = q.None, D = true })
+	assert(ok:NameMap().C == q.None and ok:NameMap().D == true, "None/State/raw untouched")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

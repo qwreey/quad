@@ -2457,4 +2457,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   역전 0. 반영 `H-486`~`H-491` — `H-480` 원장 논거 정정(clone은 순회 중 **삽입** UB를 막고 있었다, 재진입은 `slot-plan` UB 범주라
   복원 안 함), Q6 폴백 철회의 `claim-plan.md` 누락, Q14 `releaseOwner`를 부정하던 `slot-plan` 의사코드 둘, README 분리 뒤 옛
   표 포인터 일곱(외부 모델 진입점 포함), 주석 잔재 넷, `spec.lengthoffset` 14절(None 분기 되감기 — 커버리지 0이었음).
-  **Q40**(Clear 창 안 파괴 → 던지면 동결)은 같은 날 회신으로 (a) 닫힘 — UB 명시(*"외부 버그라서 어떻게든 어딘가 죽는게 맞고"*). test.sh exit 0(스펙 50), doc-check ERROR 0.
+  **Q40**(Clear 창 안 파괴 → 던지면 동결)은 같은 날 회신으로 (a) 닫힘 — UB 명시(*"외부 버그라서 어떻게든 어딘가 죽는게 맞고"*).
+  **[같은 날 2차 — 실행 기반 탐사 다섯(opus 병렬, 프로브 실행)]** 값·순서·GC 결함 0(퍼즈 2만 스텝·랜덤 DAG 3,600라운드);
+  게이트·blame·메시지·의사코드 열둘 닫음 `H-492`~`H-503` — Blocker Policy 인자·addHandler 모양·drive 배열 키 도메인·Tag:Apply·
+  Attr 테이블 값·Relate nil·**Slot 순환(`s:Add(s)` — 유일한 동작 발견)**·native* 스텁 여섯·Animate State 옵션 blame·메시지 주어 다섯·
+  정본 의사코드 아홉(`setOffsetSource` H-392 이전 순서 등). **Q41**(`D.New` 오타 — 실기기 필요) 사용자 몫. test.sh exit 0(스펙 50). test.sh exit 0(스펙 50), doc-check ERROR 0.

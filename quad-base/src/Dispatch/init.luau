@@ -169,7 +169,7 @@ local function Init(module: any)
 
 	local function noMatchMessage(k: any, v: any): string
 		local brand = brandNameOf(v)
-		return `quad.Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
+		return `Dispatch.drive: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
 			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
@@ -178,7 +178,7 @@ local function Init(module: any)
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string
-		return `quad.Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
+		return `Dispatch.drive: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
 			.. " — return Void when there is nothing to undo"
 	end
 
@@ -302,6 +302,14 @@ local function Init(module: any)
 	-- the confirmed shape costs more than it saves).
 
 	local function addHandler(handler: Handler)
+		-- `H-493` (2026-09-08 2차 감사 I-3): shape gate BEFORE anything reads the table —
+		-- a non-table died indexing `keyType` with a VM error, and a missing `process`
+		-- reached the setFuncLevel tagging below, whose "renamed or missing method?"
+		-- diagnostic is about quad's own tables, not a provider's input.
+		if type(handler) ~= "table" or type(handler.isHandlable) ~= "function"
+			or type(handler.process) ~= "function" or type(handler.priority) ~= "number" then
+			Err.errorBeforeNearest(`Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})`, SURFACE)
+		end
 		-- Tie detection is free at registration time (the registry is sorted
 		-- here, statically). No tiebreak rule is enforced — ties are usually a
 		-- handler-design mistake, surfaced via debug visibility only.
@@ -320,7 +328,7 @@ local function Init(module: any)
 				local canCompete = kt == nil or ekt == nil or kt == ekt
 				if canCompete and existing.priority == handler.priority then
 					print(
-						`quad.Dispatch: handler priority tie between {describeHandler(existing)}`
+						`Dispatch.addHandler: handler priority tie between {describeHandler(existing)}`
 							.. ` and {describeHandler(handler)}`
 							.. " — ties have no defined order; offset from a HANDLER_PRIORITY_* band"
 					)
@@ -389,6 +397,16 @@ local function Init(module: any)
 		-- fields merged into the hash part. Owned HERE, not by `New` (round17
 		-- §0 Q4 (a), 2026-09-04): one call site serves `New` and `Claim` alike.
 		-- Runs before the batching test — it never changes the array length.
+		-- `H-495` (2026-09-08 2차 감사 H-1): array-position domain, BEFORE any handler
+		-- touches bookkeeping (`H-256` (a)) — `{ [0] = child }`/`[1.5]`/`[-1]` used to
+		-- die in the leaf handler's `setOffsetSource`/`setEmpty` with an internal line,
+		-- while the same key with an unmatched value blamed the user. Siblings: the Slot
+		-- constructor (`H-396`) and Tag's list gate. Sparse holes (`{ nil, x }`) stay UB.
+		for k in pairs(flattened) do
+			if type(k) == "number" and (k < 1 or k % 1 ~= 0) then
+				Err.errorBefore(`Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
+			end
+		end
 		flatten(flattened)
 		local batching = flattened[1] ~= nil
 		local blocker = if batching then bookkeeping.getBlocker(inst) else nil

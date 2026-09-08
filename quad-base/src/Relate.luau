@@ -19,6 +19,15 @@ local WEAK_VALUE_MT = { __mode = "v" }
 local RelateImpl = {}
 RelateImpl.__index = RelateImpl
 
+-- `H-499` (2026-09-08 2차 감사 I-6): the one public surface without tags — a nil inst/key
+-- died as `table index is nil` on a Relate.luau line. Relate is a dependency-free leaf
+-- (architecture "잎 모듈"), so no quad-error tag: a plain level-2 error blames the caller,
+-- which is the user's line for direct use and an already-gated quad frame otherwise.
+local function checkArgs(method: string, inst: any, key: any)
+	if inst == nil then error(`Relate:{method}: inst must not be nil`, 3) end
+	error(`Relate:{method}: key must not be nil`, 3)
+end
+
 local function getBucket(self, inst: any): Bucket?
 	return self.buckets[inst]
 end
@@ -33,6 +42,7 @@ local function getOrCreateBucket(self, inst: any): Bucket
 end
 
 function RelateImpl:SetStrong(inst: any, key: any, value: any)
+	if inst == nil or key == nil then checkArgs("SetStrong", inst, key) end
 	local bucket = getOrCreateBucket(self, inst)
 	local strongMap = bucket.StrongMap
 	if strongMap == nil then
@@ -45,6 +55,7 @@ function RelateImpl:SetStrong(inst: any, key: any, value: any)
 end
 
 function RelateImpl:GetStrong(inst: any, key: any): any?
+	if inst == nil or key == nil then checkArgs("GetStrong", inst, key) end
 	local bucket = getBucket(self, inst)
 	if bucket == nil then
 		return nil
@@ -57,6 +68,7 @@ function RelateImpl:GetStrong(inst: any, key: any): any?
 end
 
 function RelateImpl:SetWeak(inst: any, key: any, value: any)
+	if inst == nil or key == nil then checkArgs("SetWeak", inst, key) end
 	local bucket = getOrCreateBucket(self, inst)
 	local weakMap = bucket.WeakMap
 	if weakMap == nil then
@@ -71,6 +83,7 @@ function RelateImpl:SetWeak(inst: any, key: any, value: any)
 end
 
 function RelateImpl:GetWeak(inst: any, key: any): any?
+	if inst == nil or key == nil then checkArgs("GetWeak", inst, key) end
 	local bucket = getBucket(self, inst)
 	if bucket == nil then
 		return nil

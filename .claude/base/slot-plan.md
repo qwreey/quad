@@ -499,6 +499,10 @@ local function releaseOwner(element, ownerKey)
 end
 
 function SlotHandler.process(inst, k, slotValue, index)
+    -- [2026-09-07 6순회 `H-407`] 파괴 사전 검사는 **claim/bind 전에** — materializeSlotTree의
+    -- 검사(아래)는 claim·bindLifetime이 커밋된 뒤라 시체가 inst에 영구 소유됐다(`H-103` NOOP
+    -- retractor는 놓지 않는다). 디스패치 깊이라 outermost.
+    if slotValue._destroyed then errorBefore("Slot: destroyed Slot cannot be mounted") end
     if claimOwnerAt(slotValue, inst, k) then
         -- [정정, 2026-08-13 세션] bindLifetime을 attachSlot 밖, 여기(top-level Handler)로
         -- 이동 — 반환하는 클로저 쪽 unbindLifetime과 같은 층위(Handler)로 대칭. 중첩
@@ -879,6 +883,10 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   완결성을 위해 같이 열어둠(필수까진 아니지만 비용이 거의 없어 열어둠).
 - **에러 조건 — 전부 즉시 `error()`, no-op 없음**(기존 "재마운트 시 throw"와
   같은 fail-fast 톤):
+  - **[2026-09-08 `H-500`]** element가 **이 Slot 자신이거나 이 Slot의 조상**이면 에러(`s:Add(s)`,
+    `a:Add(b); b:Add(a)`) — 선행 패스가 이 Slot의 owner 체인을 걸어 올라가며 후보와 대조한다.
+    옛 게이트는 조상이 루트라 "마운트 안 됨"으로 통과시켰고 다음 CRUD가 `teardownTree`에서
+    무한 재귀하거나 `releaseOwner` 불변식으로 죽었다(2차 감사 G-1). `Splice`/`Insert`도 같은 패스.
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
     CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
@@ -2415,7 +2423,9 @@ end
 
 local function materializeSlotTree(slot, physicalTarget, ownerKey, position)
     -- [2026-08-27, 9라운드 Q2] 파괴된 Slot은 마운트 불가(위 "파괴된 Slot은 재사용
-    -- 불가" 절). `attachSlot`이 이 함수를 거치므로 여기 한 번이면 된다.
+    -- 불가" 절). ~~`attachSlot`이 이 함수를 거치므로 여기 한 번이면 된다.~~ **[2026-09-07 `H-407`
+    -- 반증]** 여기는 claim/bind가 커밋된 **뒤**라 한 번으로 부족했다 — `SlotHandler.process` 머리에
+    -- 같은 검사가 하나 더 있다(위 의사코드). 여기 것은 CRUD 경로(attachSlot 직접)의 몫.
     if slot._destroyed then error("Slot: destroyed Slot cannot be mounted", 2) end
     -- [2026-08-24 6라운드 `H-2`] **앵커를 먼저 저장한다.** `setLength`의 4번째
     -- 인자(그리고 length가 State일 때 `bk.observers`의 앵커)가 실체화 시점부터
@@ -2753,6 +2763,7 @@ local function destroySlotTree(slot)
     -- 잘 죽이는가**의 답이 정확히 이 줄이다(아래 "`dispose`" 절).
     if slot._detached then                 -- [2026-08-21 5라운드 `DE-7`] lazy — 없으면 통째로 스킵
         for key, element in pairs(slot._detached) do
+            releaseOwner(element, slot)        -- [2026-09-07 Q14 (a), `H-450`] `_elements` 루프와 같다
             if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
             slot._detached[key] = nil
         end
@@ -2916,6 +2927,11 @@ end
 -- [시그니처 정리, 2026-08-21] index 우선 — detach 중이던 요소만 index가 없다
 -- (트리 밖이라 자리 자체가 없음), 그 경우 `index = nil`로 부른다.
 function releaseElement(self, index, element, wasDetached)
+    -- [2026-09-07 5순회 `H-393`] 소유권 반납을 **먼저, 두 팔 공통으로** — Owned=false 요소 Slot은
+    -- 부모보다 오래 살고, 반납이 없으면 죽은 elementOwner를 영구히 달았다(다음 Add에서 반사실
+    -- "already mounted elsewhere", dispose에서 "still requires its tree"). 아래 `_detachCleanup`
+    -- 의사코드가 이미 약속한 문장.
+    releaseOwner(element, self)
     if wasDetached then
         if self._owned ~= false then
             if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
@@ -3113,6 +3129,12 @@ function rawReplace(self, index, newElement, destroyOld)
     if not self._mounted then
         if destroyOld then                     -- 물리 트리 밖이라 native* 교체가 필요 없다
             if isSlot(oldElement) then destroySlotTree(oldElement) else nativeDispose(oldElement) end
+        elseif isSlot(oldElement) then
+            -- [M6 `H6-23`/`H6-24` — archive `m6-implementation-round15.md`; round8 2차 감사 J-5로 여기 반영]
+            -- 실체화됐지만 미마운트: 옛 서브트리의 observer가 target에 묶인 채라 논리 teardown;
+            -- 미실체화라도 먼저 마운트됐던 슈가 래퍼는 claim을 쥐고 있어 놓는다.
+            if self._physicalTarget ~= nil then teardownTree(oldElement) end
+            if oldElement._wrapped ~= nil then releaseSugarWrapper(oldElement) end
         end
         -- [2026-08-24 `H-12`, 같은 날 `/code-review high`로 가드 보강]
         -- 부기는 **실체화된 뒤라야** 한다 — `rawAdd`와 같은 이유(앵커/베이스가
@@ -3135,7 +3157,7 @@ function rawReplace(self, index, newElement, destroyOld)
     if isSlot(oldElement) or isSlot(newElement) then
         -- 어느 한쪽이 Slot이면 구간 길이가 1이 아니라 각자의 경로로 간다
         if isSlot(oldElement) then
-            if destroyOld then destroySlotTree(oldElement) else unmountSlotTree(oldElement) end
+            if destroyOld then destroySlotTree(oldElement) else leaveAsElement(oldElement) end -- [`H6-24`] 언마운트 + releaseSugarWrapper
         else
             local op = if destroyOld then nativeRemove else nativeExtract
             op(self._mountedInst, offset, { oldElement })

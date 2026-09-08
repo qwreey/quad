@@ -569,4 +569,32 @@ do
 end
 
 print()
+print()
+print("=== 20. 2026-09-08 2차 감사 H-493/H-495 — addHandler 모양 게이트, drive 배열 키 도메인([0]/[1.5]/[-1]) ===")
+do
+	local q = newQuad()
+	local never = function(_k: any, _v: any): boolean return false end
+	local shapes: { { string | any } } = {
+		{ "number", 5 },
+		{ "noProcess", { name = "Y", priority = 0, isHandlable = never } },
+		{ "noPriority", { isHandlable = never, process = function() end } },
+	}
+	for _, pair in shapes do
+		local label, h = pair[1], pair[2]
+		local ok, err = pcall(function() q.Dispatch.addHandler(h) end)
+		assert(not ok and string.find(tostring(err), "Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority", 1, true) ~= nil, label .. ": " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.dispatch.luau", "addHandler shape (" .. label .. ")")
+	end
+	local inst = Instance.new("Frame")
+	for _, k in { 0, -1, 1.5 } do
+		local ok, err = pcall(function() q.Dispatch.drive(inst, { [k] = q.Slot() }) end)
+		assert(not ok and string.find(tostring(err), "Dispatch.drive: array keys must be positive integers (got " .. tostring(k) .. ")", 1, true) ~= nil, "key " .. tostring(k) .. ": " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive key domain " .. tostring(k))
+	end
+	local s = q.Slot()
+	q.Dispatch.drive(inst, { s }) -- positive integer keys unaffected
+	assert(s.Length:Get() == 0 and #inst:GetChildren() == 0, "normal drive still works")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

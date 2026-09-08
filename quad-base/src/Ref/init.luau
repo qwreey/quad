@@ -253,7 +253,7 @@ local function registerDispatchHandlers(module: any)
 					-- an array slot the pre-pass could not see: the value arrived
 					-- through a State/Store (StoreBind unwrap) — say so instead of
 					-- blaming the key type (review finding, M8 ②)
-					Err.errorBefore(`{kind} must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
+					Err.errorBefore(`{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
 				end
 				Err.errorBefore(`{kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 				return Void -- unreachable; keeps the contract type

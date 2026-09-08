@@ -187,4 +187,17 @@ do
 end
 
 print()
+print()
+print("=== 9. 2026-09-08 2차 감사 H-492 — Policy(emit)의 emit 게이트: 비함수는 등록 줄에서 표면 에러(옛: Off()에서 Blocker.luau VM 에러) ===")
+do
+	local b = Blocker()
+	local ok, err = pcall(function() return b:Policy(5 :: any) end)
+	assert(not ok and string.find(tostring(err), "Blocker: Policy emit must be a function (got number)", 1, true) ~= nil, "gate message: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.blocker.luau", 1, true) ~= nil and string.find(tostring(err), "/src/", 1, true) == nil, "blames this file: " .. tostring(err))
+	local ok2, err2 = pcall(function() return b:Policy(nil :: any) end)
+	assert(not ok2 and string.find(tostring(err2), "(got nil)", 1, true) ~= nil, "nil too: " .. tostring(err2))
+	b:Off() -- nothing registered — still a no-op
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

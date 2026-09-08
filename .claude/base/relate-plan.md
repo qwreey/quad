@@ -183,6 +183,8 @@ Destroy 전까지 userdata 동일성을 고정해주므로, 모든 `inst`-키 `R
 ```lua
 Relate() -> relate                                  -- 생성자, 싱글톤 아님
 
+-- [2026-09-08 `H-499`] 네 메소드 모두 inst/key가 nil이면 `Relate:<메소드>: … must not be nil`을
+-- level-2 `error`로(잎 모듈이라 quad-error 태그 없음 — 호출 줄 blame; 옛: "table index is nil").
 relate:SetStrong(inst: any, key: any, value: any)   -- value를 강하게 보관
 relate:GetStrong(inst: any, key: any): any?
 

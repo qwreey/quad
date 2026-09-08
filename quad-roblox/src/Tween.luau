@@ -86,22 +86,26 @@ local function install(quad: any): any
 	-- builds the Tween far from the user's line, so a raise there blamed `Animate.luau`
 	-- (`H-464`). Raises `errorBeforeNearest(SURFACE)`: the nearest tagged frame is whichever
 	-- public factory (Tween or Animate) the user called.
-	local function validateFields(opts: any)
+	-- `raise` (`H-502`, 2026-09-08 2차 감사 I-1): `Animate`'s lazy Compute re-validates the
+	-- State-resolved options per run at EMIT depth, where nearest is `Animate.luau` itself —
+	-- it passes `errorBefore` (outermost = the user's Get/Set line); everyone else takes the default.
+	local function validateFields(opts: any, raise: ((string, number) -> ())?)
+		local fail = raise or Err.errorBeforeNearest
 		for _, name in NUMBER_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "number" then
-				Err.errorBeforeNearest(`Tween: {name} must be a number`, SURFACE)
+				fail(`Tween: {name} must be a number`, SURFACE)
 			end
 		end
 		if opts.Reverses ~= nil and type(opts.Reverses) ~= "boolean" then
-			Err.errorBeforeNearest("Tween: Reverses must be a boolean", SURFACE)
+			fail("Tween: Reverses must be a boolean", SURFACE)
 		end
 		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
-			Err.errorBeforeNearest("Tween: Dedup must be a boolean", SURFACE)
+			fail("Tween: Dedup must be a boolean", SURFACE)
 		end
 		local override = opts.Override
 		if override ~= nil and override ~= "Cancel" and override ~= "Finish" then
-			Err.errorBeforeNearest('Tween: Override must be "Cancel" or "Finish"', SURFACE)
+			fail('Tween: Override must be "Cancel" or "Finish"', SURFACE)
 		end
 	end
 

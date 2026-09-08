@@ -71,6 +71,14 @@ local function Init(module: any)
 	if module.nativeFindChild == nil then
 		module.nativeFindChild = notInstalled("nativeFindChild")
 	end
+	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
+	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
+	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
+	for _, name in { "nativeInsert", "nativeExtract", "nativeRemove", "nativeMove", "nativeSwap", "nativeDispose" } do
+		if module[name] == nil then
+			module[name] = notInstalled(name)
+		end
+	end
 end
 
 return Init

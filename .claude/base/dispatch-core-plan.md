@@ -613,7 +613,13 @@ end
     핸들러가 재-dispatch 전에 스스로 `retractFrom`을 부르는 책임을 졌고,
     그게 힌트 오염의 원인이었음 — 아래 "Dispatch 체인" 절).
   - `Dispatch.addHandler(handler: Handler)` — 핸들러를 우선순위 레지스트리에
-    등록. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
+    등록. **[2026-09-08 `H-493`]** 모양 게이트 — 테이블이 아니거나 `isHandlable`/`process`가
+    함수가 아니거나 `priority`가 숫자가 아니면 등록 줄에서 표면 에러(옛: `keyType` 인덱싱 VM
+    에러 / `setFuncLevel`의 "renamed or missing method?" 자기 진단이 남의 입력에 새어 나옴).
+    **[같은 날 `H-495`]** `drive`는 props의 숫자 키가 양의 정수가 아니면(`[0]`/`[-1]`/`[1.5]`)
+    말단 핸들러가 부기를 만지기 전에 표면 에러(`H-256` (a); 옛: 값이 매치되면 `setOffsetSource`/
+    `setEmpty`의 내부 줄, 매치 안 되면 사용자 줄 — 같은 키인데 blame이 값에 따라 갈렸다).
+    희소 구멍(`{ nil, x }`)은 그대로 UB(`H-396`). `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
     OnChangeHandler/UICornerHandler 등)은 팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
@@ -1117,7 +1123,9 @@ function Dispatch.process(inst, k, v, index)
         slot.retractor = retractor
     else
         -- (B) 다른 핸들러(또는 빈 자리) — 이 자리부터 아래를 전부 철거하고 새로 설치.
-        Dispatch.retractFrom(inst, k, index)
+        -- [2026-09-06 `H-329` (a)] release=false — 같은 리스트에 곧 재설치하므로 chains·gchold에서
+        -- 놓지 않는다(공개 retractFrom만 release=true). 이 절 머리의 산문과 같은 내용.
+        retractRange(inst, k, index, false)
         -- 점유 마커를 먼저 박는 이유: h.process가 재귀하는 동안 list가 구멍 없는
         -- 시퀀스로 유지돼야 `#list`가 정의됨(hole 있는 테이블의 `#`는 Lua가 보장 안 함).
         list[index] = { handler = h, retractor = NOOP }
@@ -1141,7 +1149,9 @@ end
 않는다는 일반 계약을 여기에도 그대로 적용한다. **실제로 물리면 그때 넣는다.**
 ]]
 
-function Dispatch.retractFrom(inst, k, index)
+-- [2026-09-06 `H-329` (a)] 본체는 `retractRange(inst, k, index, release)`; 공개
+-- `Dispatch.retractFrom(inst, k, index)`는 `retractRange(inst, k, index, true)`다.
+function retractRange(inst, k, index, release)
     -- index부터(포함) 끝까지, 꼬리(가장 깊은 인덱스)부터 역순으로 정리.
     -- 인자는 항상 (nil, true) — "뒤따르는 process가 없는 단순 철거"가 이
     -- 함수의 유일한 용도고, retracting=true가 그 사실의 신호다(`H-258`).
@@ -1150,7 +1160,7 @@ function Dispatch.retractFrom(inst, k, index)
     for i = #list, index, -1 do
         local slot = list[i]
         if slot == nil then
-            error(`quad.Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+            error(`Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1) -- 접두는 `H-477` 규약(`quad.` 없음)
         end
         slot.retractor(nil, true)
         list[i] = nil
@@ -1997,7 +2007,13 @@ function Dispatch.getOffsetAt(ownerKey, at)
         -- ⭐ [2026-08-25, 7라운드 `H-106`] `nil` 가드 — `recompute`만 갖고 있던
         -- `C-6` 진단이 이 경로에선 우회돼 익명 산술 에러로 먼저 터졌다.
         if bk.lengthList[i] == nil then
-            error("Dispatch.getOffsetAt: lengthList[" .. i .. "] is nil — bookkeeping is broken", 1)
+            -- [2026-09-07 `H-397`→`H-408`→`H-427`] 내부 불변식이 아니라 두 원인을 갈라 말하는
+            -- 표면 에러 — outermost(setOffsetSource·디스패치 깊이에서 오면 nearest가 이 파일을 찍었다).
+            -- 범위 절은 조회가 실제로 N+1 너머일 때만(`H-427`: N 아래 구멍을 불법 조회라 부르던 오류).
+            local last = bk.N or 0
+            errorBefore(if at > last + 1
+                then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration (H-39): position {i} is not registered`
+                else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration (H-39)`)
         end
         cur += contribution(bk, i)             -- lengthList[i](State면 :Get()) ← 사용자 코드 창
         if bk.offsetCacheValidUpTo < i then
@@ -2457,6 +2473,9 @@ function Dispatch.setLength(ownerKey, i, len, anchor, element)
     bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)   -- 무효화는 둘 다
     bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        i)
 
+    -- [2026-09-07 4순회 `H-390`, `H-365` 계열] 구현은 이 클로저를 호출별로 만들지 않고 Init 스코프
+    -- `gatedRecompute(bk, blocker, ownerKey, element, i)` 하나로 둔다(상수 길이 요소마다 클로저를
+    -- 만들어 버리던 것; `ensureBase`와 같은 패턴). 아래는 뜻을 보이는 의사코드.
     local function gatedRecompute()
         -- ⭐ [2026-08-25, 7라운드 `H-102`] `i`를 **캡처하지 않는다** — splice가
         -- 자리를 당기면 박힌 인덱스가 낡는다. **요소를 캡처**하고 `bk`가 소유한
@@ -2481,7 +2500,10 @@ function Dispatch.setLength(ownerKey, i, len, anchor, element)
     end
 
     if isState(len) then
-        local observer = len:Observer(gatedRecompute)   -- 등록 즉시 1회 실행도 게이팅됨
+        local observer = len:Observer(function()
+            checkLengthValue("setLength", len:Get())   -- [Q15 (a)·`H-445`] 차단기 창 **밖** — 여기서 던지면 nearest = 그 :Set 줄
+            gatedRecompute()                            -- 등록 즉시 1회 실행도 게이팅됨
+        end)
         bindLifetime(anchor, observer)     -- **물리 target**의 생명주기에 귀속, Subscribe 아님
                                            -- (ownerKey는 부기 키일 뿐 — 아래 절)
         bk.observers[i] = observer
@@ -2650,13 +2672,19 @@ function Dispatch.setOffsetSource(ownerKey, i, source)
     checkPosition("setOffsetSource", i) -- [2026-09-01 H-256 (a)] 아래 검증 게이트 문단
     if source ~= None and not isSource(source) then error(nearest) end -- [2026-09-07 Q13 (b)] Source | None만
     local bk = getBookkeeping(ownerKey)
-    bk.sourceList[i] = source
     if source == None then
+        bk.sourceList[i] = None
         return   -- 발행 채널이 없는 자리 — 계산할 이유가 없다. 숫자가 필요하면
                  -- 그때 `Dispatch.getOffsetAt(ownerKey, i)`을 직접 부른다.
     end
+    -- [2026-09-07 5순회 `H-392` (HIGH), `H-256` (a) "부기를 하나라도 만지기 전에 검사"]
+    -- 읽기가 쓰기 **앞**이다 — 옛 순서(먼저 `sourceList[i] = source`)는 source의 `:Get()`이
+    -- 던지면 부기가 쓰인 채 남아 다음 무관한 setLength가 recomputeBlocker 창 안에서 죽어
+    -- 이 owner의 오프셋 산술을 영구 동결시켰다. (round8 2차 감사 J-1이 이 블록의 stale을 잡음)
     local offset = Dispatch.getOffsetAt(ownerKey, i)   -- 배치가 순서대로 처리되므로
-    if source:Get() ~= offset then                     -- 1..i-1은 항상 이미 등록돼 있음
+    local current = source:Get()                       -- 1..i-1은 항상 이미 등록돼 있음
+    bk.sourceList[i] = source
+    if current ~= offset then
         source:Set(offset)
     end
 end

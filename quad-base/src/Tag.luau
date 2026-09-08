@@ -168,6 +168,11 @@ function TagImpl.Names(self: any): () -> string?
 end
 
 function TagImpl.Apply(self: any, factory: any): any
+	if type(factory) ~= "function" then
+		-- `H-497` (2026-09-08 2차 감사 I-4): sibling `State:Apply` gates; here a non-function
+		-- died at the call with `Tag.luau` on the blame line
+		Err.errorBeforeNearest(`Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)
+	end
 	return factory(self)
 end
 

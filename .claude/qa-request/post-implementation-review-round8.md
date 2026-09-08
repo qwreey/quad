@@ -125,3 +125,87 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 구현" 규칙을 코드가 한 번도 가진 적이 없어 회신 4차에서 약속을 빼고 조합 기본 구현은 백로그로 — 지금은 여섯 전부 필수·미주입
 스텁 에러; Q14: 사용자 기억대로 `Owned = false` 요소 Slot이 `destroySlotTree`에서 파괴되지 않고 살아남는 경우를 위해
 `releaseOwner`를 두 루프에 되살린 것 — C-4 면제의 전제 "요소는 어차피 죽는다"가 그 요소엔 불성립).
+
+## §7 2차 감사 — 실행 기반 탐사 다섯 (2026-09-08 오후~저녁, 사용자 "조금 더 파볼래? 문제가 소진된다면 멈춰보자")
+
+각도를 바꿨다 — 문서 대조가 아니라 **프로브를 실제로 돌리는** 탐사(전부 opus, 병렬, 프로브는 `probe.<X>.tmp.luau` 하나씩 만들어
+돌리고 삭제): **F** 반응형 코어(랜덤 DAG 60개×60라운드 차등 검증, 다이아몬드, 깊이 5000/팬아웃 2000, Observer/Effect 순열, GC 1000개),
+**G** Slot/Dispatch/Modifier(수동 CRUD 9,600스텝·포털 4,800·List 1,800×4·중첩 List·부기 퍼즈 3,600 — 독립 오라클 대조, 음성 대조 통과),
+**H** quad-roblox(Property 3-상태·Event/OnChange·Shorthand·Factory·Animate), **I** 에러 blame 전수(공개 표면 60·오용 191케이스 자동
+판정 — blame 정확 166, quad 내부 9, 규약 위반 5자리, 옛 발견 회귀 0), **J** 정본 의사코드 vs 코드(읽기 전용). 값·순서·오프셋·GC
+결함은 **0**이었다 — 남은 건 전부 **게이트 부재·blame 누출·메시지 모양·정본 의사코드 stale**이고, 아래에서 닫았다. test.sh exit 0(스펙 50).
+
+### §7.1 반영 — 코드 (`H-492`~`H-502`, 전부 spec 동반)
+
+- **`H-492` `Blocker:Policy(emit)` 인자 게이트** (F-1·I-2 동시 발견). emit이 함수가 아니어도 `_handles`에 들어가 나중 `Off()`에서
+  `Blocker.luau:94: attempt to call a nil value`로 죽었다 — 게이트 정책 표면 셋(`State:Gate`/`State:Apply`/`Blocker:Policy`) 중 유일하게
+  비어 있었다. 등록 줄에서 `Blocker: Policy emit must be a function (got X)`. `spec.blocker` 9절.
+- **`H-493` `Dispatch.addHandler` 모양 게이트** (I-3). 테이블이 아니면 `keyType` 인덱싱 VM 에러, `process`가 없으면 `setFuncLevel`의
+  "renamed or missing method?" **자기 진단**이 제공자 입력에 새어 나왔다. `spec.dispatch` 20절.
+- **`H-494` 메시지 주어 잔재** (F-2·I-7). `quad.Dispatch:` 셋(no handler matched·no retractor·priority tie → `Dispatch.drive:`/`Dispatch.addHandler:`),
+  `UseProvider` 중복 메시지에 주어 없음, `Ref` 동적 경로 메시지의 콜론 누락(형제와 갈림), quad-roblox 버전 게이트의 주어 없음 +
+  폐기형 `, got X`. `H-477` "열 곳 손질"이 놓친 다섯 자리. `spec.refhandlers` 단언 갱신.
+- **`H-495` `drive` 배열 키 도메인** (H-1). `D.Frame({ [0] = child })`가 값이 매치되면 말단 핸들러의 `setOffsetSource`/`setEmpty`에서
+  `Handlers/InstanceChild.luau:42` 같은 내부 줄을 blame하고, 매치 안 되면 사용자 줄을 blame했다 — 같은 키인데 값에 따라 갈렸다.
+  `drive`가 flatten 전에 양의 정수 검사(`H-256` (a) "부기 만지기 전에"; 형제 `H-396` Slot 생성자·Tag 리스트). 희소 구멍은 UB 그대로. `spec.dispatch` 20절.
+- **`H-497` `Tag:Apply(비함수)` 게이트** (I-4). 형제 `State:Apply`는 막고 `Modifier:Apply`는 정본이 무게이트를 명시("nothing more,
+  nothing less")인데 Tag만 근거 없이 비어 `Tag.luau:171`을 blame했다. `spec.tag` 7절.
+- **`H-498` `Attr` 그룹 값의 테이블 게이트** (I-5·H-3 동시). 값 게이트가 함수만 막아 Slot/Ref/Tween/Modifier·메타테이블 테이블이
+  `setAttr`까지 갔다(mock은 저장, 실엔진은 디스패치 깊이에서 raise → 내부 blame — `H-368` 패밀리). 테이블은 None·State만 허용.
+  `spec.attribute` 11절.
+- **`H-499` `Relate` nil 게이트 + `Dispatch.getBlocker(nil)`** (I-6). 191케이스 인구조사에서 raise 가능한 공개 표면 중 태그 없는 것은
+  `Relate` 넷뿐이었다 — nil inst/key가 `Relate.luau: table index is nil`. 잎 모듈이라 quad-error 태그 없이 level-2 `error`(호출 줄).
+  `getBlocker(nil)`은 `H-447`이 형제 셋에 준 게이트가 빠져 같은 자리에서 죽었다 — round3가 "내부 표면"이라 판정했지만 `q.Dispatch.getBlocker`로
+  공개·태그돼 있었다. `spec.relate` 7절.
+- **`H-500` Slot 순환 게이트** (G-1 — 2차 감사의 유일한 **동작** 발견). `s:Add(s)`·`a:Add(b); b:Add(a)`·3-순환이 선행 패스를 전부
+  통과했다(조상은 루트라 "마운트 안 됨"). 다음 CRUD에서 `teardownTree` 무한 재귀(`Brand.luau:101: stack overflow`) 또는 `releaseOwner`
+  불변식 에러. 선행 패스가 이 Slot의 owner 체인을 걸어 후보와 대조. `dispatch-core-plan.md`의 "순환은 UB"는 핸들러 사이의 순환이지
+  요소 그래프가 아니라고 판정(기존 게이트가 한 케이스를 빠뜨린 것). `spec.slot` 27절.
+- **`H-501` `native*` 여섯의 안내 스텁** (H-2). Q6가 폴백을 철회하며 "미주입이면 안내 스텁 에러"를 약속했는데 여섯은 스텁 없이 `nil`이라
+  `attempt to call a nil value`(Raw.luau 113행)였다. 형제 일곱과 같은 `notInstalled`. `spec.lifetime` 1절.
+- **`H-502` `Animate` State 옵션의 blame** (I-1 — `H-464` 잔여). 리터럴은 `Animate(info)` 때 끌어올렸지만 State 옵션은 Compute 안에서
+  `Tween(opts)`가 nearest로 검증해 `Animate.luau:96`을 blame했다(`spec.animate` 4절이 그 케이스만 blame 단언을 비워둔 채였다).
+  `validateFields(opts, raise?)`에 raise 인자를 더해 `Animate`가 최외곽으로 먼저 검증. `spec.animate` 4절에 `assertBlamesUser`.
+
+### §7.2 반영 — 정본 의사코드 (J 아홉, 코드가 사실)
+
+`H-503`으로 묶는다: `dispatch-core-plan.md` `setOffsetSource` 의사코드가 `H-392`(HIGH) 이전의 쓰기→읽기 순서(J-1 — 그대로 짜면 HIGH 재생산),
+`getOffsetAt` nil 가드가 `H-397`/`H-408`/`H-427` 이전판(J-7), `setLength`의 `gatedRecompute` 호출별 클로저·State 검사 누락(J-8), 체인
+의사코드에 `H-329` `retractRange`/release 분기 없음 + `quad.` 접두(J-9); `slot-plan.md` `SlotHandler.process`에 `H-407` 파괴 사전 검사
+없음 + "여기 한 번이면 된다" 현재형(J-2), `releaseElement` `wasDetached` 팔에 `H-393` `releaseOwner` 없음(J-4), `rawReplace` 미마운트
+분기의 `H6-23`/`H6-24`(archive M6에만 있던 것) 없음(J-5), `destroySlotTree` `_detached` 루프의 `releaseOwner` — **`H-488`의 반쪽 미이행**
+(J-6, 메인 실수); `architecture.md` 에러 계약 표 3행 "제공자 계약 위반 = nearest"가 `H-409`(outermost) 이전판이고 같은 코퍼스의
+체크리스트 0번과도 충돌(J-3 — 표 축을 건드리므로 아래 §8에 보고). 전부 코드 기준으로 정정.
+
+### §7.3 확인만 한 것 (재발견 금지)
+
+- F: 랜덤 DAG 값·발화 횟수 불일치 0, 다이아몬드 양 순서 Observer 1회, Effect×게이트 seam(닫힌 채 3회 Set → flush 1회 최신값), Destroy 파동+게이트,
+  카운터 랩(`bit32.bnot(-x)`), Observer 진입점 11순열, fn 던짐 뒤 `_running` 잔류(인정된 설계 — `lifecycle-pattern.md`), Compute 안 `:Set` 발산(UB 명시),
+  자기참조 Source 스택오버플로(UB 명시), GC 1000개 회수, 교차 quad 인스턴스(`H-186` UB, 조용히 통과).
+- G: 위 퍼즈 전부 발견 0; mock은 `nativeInsert` offset을 무시하므로 물리 순서 대신 멤버십+오프셋 산술로 검증; `Owned=false` List Slot 홀더 파괴 뒤 재마운트 OK.
+- H: `H-406`·`H-449`·Q25/Q26/Q33/Q8 전부 정본대로; `Tween{ Override = "Finish" }`가 같은 목표로 오면 dedup이 먼저 걸려 Finish 스냅이 무시됨(Q25 "옵션은
+  비교 대상 아님" 범위); `D.Frame({ nil, child })` 희소 구멍 UB; Luau weak-key는 ephemeron이 아님(실측, `H-229` 근거); **mock 충실도 메모** — `Handlers/Property.luau`
+  헤더의 "weak-keyed by inst … dying instance drops its slots"가 CLI mock에선 성립하지 않는다(mock Tween이 `Instance` 필드로 역참조; 실물 Tween userdata는 다를
+  것 — 실기기 미완); 서로 다른 quad 모듈 둘의 같은 Instance `nativeClaim`은 안 막힘(모듈 단위 InstData — 정본 범위 밖).
+- I: 옛 blame 발견 전부 회귀 없음(`H-344`·`H-385`·`H-446`·`H-408`·`H-434`·`H-409`·`H-473`·`H-375`·`H-447`·`H-441`/`H-442`/`H-419`/`H-470`·`H-378`),
+  디스패치 깊이 outermost 규칙, `-O2`/`--codegen`에서 출력 바이트 동일(스파이크 27 규칙 유지), Event/OnChange 무게이트는 정본 명시.
+- J: architecture 소스 트리 표 57파일 1:1, 주입 op 12+1, 메시지 60건 표본 규약 준수, blocker-plan·state-epoch·source-state·tween·onchange·lifecycle·effect 블록 일치.
+
+### §7.4 미완 (실기기 필요 — Studio 없음)
+
+`D.New("Frmae")`류 오타는 엔진의 `Instance.new` 에러가 `D/init.luau`(생성물) 줄을 blame할 것으로 보이나 mock은 아무 이름이나 받아 확인 불가(I-8 — §8 Q41).
+`inst[k] = 테이블`·`SetAttribute(name, 테이블)`의 실엔진 문구, Tween userdata의 GC 거동(위 H 메모). J가 문장 단위 대조를 못 한 정본:
+`modifier-plan`(`H-448`·`H-469`)·`ref-plan`(`H-473`)·`tag/attribute/claim/relate/module-lifecycle` — 셋 다 `H-nnn`이 `base/`에 0건.
+
+## §8 사용자 문항 (2차)
+
+**Q41 — `D.New(className)`의 클래스 이름 오타.** 상황: `D.New`는 생성기 범위 밖 클래스의 탈출구라 타입 방어가 없는 유일한 생성 경로다.
+`D.New(5)`는 타입이 잡지만 `D.New("Frmae")` 같은 문자열 오타는 타입이 못 잡고, 생성된 `D/init.luau`의 `Instance.new(className)`이 엔진
+에러를 내며 그 줄(생성물 내부)이 blame될 것으로 보인다 — CLI mock은 아무 이름이나 받아 실측하지 못했다(2차 감사 I-8). 무엇이 막히나:
+고치려면 생성기 템플릿(`gen-d.py`)에서 `Instance.new`를 `pcall`로 감싸 사용자 줄로 다시 던지는 모양이 되는데, 이건 새 코드 경로이고
+엔진 문구도 아직 못 봤다. 갈래: (a) Studio 실측 뒤 판단(권고 — `HUMAN_TODO`에 실측 항목으로) / (b) 지금 pcall 재던지기 / (c) 안 함(엔진
+메시지가 클래스 이름을 이미 말해주므로).
+
+**J-3 보고(결정 아님, 정정 완료).** `architecture.md` 에러 계약 표 3행 "제공자(핸들러 작성자) 계약 위반 → 2(가장 가까운 프레임)"이
+`H-409`(디스패치 깊이라 outermost)와 같은 문서의 체크리스트 0번("디스패치·발행 깊이에서 raise할 땐 `errorBefore`")과 어긋나 있었다.
+코드(`H-409`)와 규칙에 맞춰 행을 "최외곽"으로 고쳤다 — 표의 축(입력/불변식/제공자/스텁)은 그대로다. 되돌리길 원하면 말해달라.

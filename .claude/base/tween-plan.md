@@ -260,7 +260,7 @@ Tween과 같으면 **이전 Tween 객체를 그대로** 돌려주고, Property �
 State를 거부한다 — 아래 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절의 불변식을 생성 시점에 집행.
 **[2026-09-07 밤 `H-463`·`H-464`]** 같은 게이트가 `None`과 중첩 `Tween`도 거부한다(해제는 `None` 자체를 발행). `Animate(info)`는
 리터럴(비-State) 옵션을 그 자리에서 검증한다 — Compute 안의 lazy `Tween(opts)`가 검증하면 사용자 줄이 스택에 없어
-`Animate.luau`를 blame했다; State 옵션은 실행마다 `Tween(opts)`가 검증한다. 검증 본문은 `Tween.luau`의 `validateFields` 하나.
+`Animate.luau`를 blame했다; State 옵션은 실행마다 검증한다. 검증 본문은 `Tween.luau`의 `validateFields` 하나 — **[2026-09-08 `H-502`]** State 옵션 쪽은 Compute 안에서 nearest가 `Animate.luau` 자신이라(`H-464` 잔여, 2차 감사 I-1) `Animate`가 `validateFields(opts, errorBefore)`로 최외곽(사용자의 Get/Set 줄) blame으로 먼저 검증하고, 뒤의 `Tween(opts)`는 통과한다.
 
 **동기**: `Tween{Value=..., Style=..., ...}`을 매번 손으로 `:Compute` 안에서
 조립하는 건, 값(`Value`)만 바뀔 뿐 옵션(`Style`/`Time`/`Override`...)은

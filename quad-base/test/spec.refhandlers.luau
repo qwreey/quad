@@ -212,7 +212,7 @@ do
 	local ok2b, err2b = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { q.Source(q.PostRef(nil :: any)) })
 	end)
-	assert(not ok2b and string.find(tostring(err2b), "PostRef must be a literal array item", 1, true) ~= nil, "PostRef through Store hits the mirror guard: " .. tostring(err2b))
+	assert(not ok2b and string.find(tostring(err2b), "PostRef: must be a literal array item", 1, true) ~= nil, "PostRef through Store hits the mirror guard: " .. tostring(err2b))
 	local ok3, err3 = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Hook = q.Ref(nil :: any) })
 	end)

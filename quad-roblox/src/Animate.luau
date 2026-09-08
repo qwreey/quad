@@ -40,7 +40,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- any value transform, e.g. the shorthand handler's `Mapped`).
 local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup" }
 
-local function install(quad: any, validateFields: (any) -> ()): any
+local function install(quad: any, validateFields: (any, any?) -> ()): any
 	local isState = quad.isState
 	local None = quad.None
 	local Tween = quad.Tween
@@ -93,6 +93,10 @@ local function install(quad: any, validateFields: (any) -> ()): any
 				for _, name in FIELDS do
 					opts[name] = resolve(info[name])
 				end
+				-- `H-502`: State-resolved options are validated HERE with outermost blame — the
+				-- `Tween(opts)` below re-checks with nearest, which from this closure is
+				-- `Animate.luau` (the `H-464` residue: literals were hoisted, States were not)
+				validateFields(opts, Err.errorBefore)
 				return Tween(opts) -- a fresh value every run; the Property handler folds equal targets
 			end)
 		end

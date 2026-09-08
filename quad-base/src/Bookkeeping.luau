@@ -59,6 +59,11 @@ local function Init(module: any)
 	end
 
 	local function getBlocker(ownerKey: any): any
+		if ownerKey == nil then
+			-- `H-499` (2026-09-08 2차 감사 I-6): public via `Dispatch.getBlocker` — siblings got
+			-- their nil gate in `H-447`; this one still died in Relate with `table index is nil`
+			Err.errorBeforeNearest("Dispatch.getBlocker: ownerKey must not be nil", SURFACE)
+		end
 		local blocker = blockers:GetStrong(ownerKey, "blocker")
 		if blocker == nil then
 			blocker = Blocker()

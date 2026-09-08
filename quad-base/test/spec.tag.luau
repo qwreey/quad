@@ -225,4 +225,15 @@ do
 end
 
 print()
+print()
+print("=== 7. 2026-09-08 2차 감사 H-497 — Tag:Apply(비함수)는 표면 에러(옛: Tag.luau VM 에러) ===")
+do
+	local q = newQuad()
+	local ok, err = pcall(function() return q.Tag("a"):Apply(5) end)
+	assert(not ok and string.find(tostring(err), "Tag: Apply factory must be a function (got number)", 1, true) ~= nil, "gate: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.tag.luau", "Tag:Apply gate")
+	assert(q.Tag("a"):Apply(function(t) return t end) ~= nil, "function factory still works")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

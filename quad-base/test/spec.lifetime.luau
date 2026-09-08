@@ -57,6 +57,11 @@ do
 		fresh.Slot():Add(mock.Instance.new("Frame"))
 	end)
 	assert(not okS and string.find(tostring(errS), "isInst is not available", 1, true) ~= nil, "Slot:Add reaches the isInst stub: " .. tostring(errS))
+	-- `H-501` (2026-09-08): the six native* ops carry the same loud stub (Q6 promised it; they were plain nil)
+	for _, name in { "nativeInsert", "nativeExtract", "nativeRemove", "nativeMove", "nativeSwap", "nativeDispose" } do
+		local okN, errN = pcall(function() (fresh :: any)[name](nil, 0, {}) end)
+		assert(not okN and string.find(tostring(errN), name .. " is not available", 1, true) ~= nil, name .. " stub: " .. tostring(errN))
+	end
 	mock.assertBlamesUser(errS, "spec.lifetime.luau", "isInst via Slot:Add blames the user")
 	print("PASS")
 end

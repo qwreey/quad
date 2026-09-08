@@ -89,6 +89,12 @@ end
 -- the withheld batch, `emit(false)` discards it, both no-ops on an empty batch
 -- (so the handle is idempotent for free — gate-plan 8번).
 function BlockerImpl.Policy(self: any, emit: (boolean?) -> boolean): () -> ()
+	if type(emit) ~= "function" then
+		-- `H-492` (2026-09-08 2차 감사 F-1/I-2): the only gate-policy surface without an
+		-- argument gate — a non-function sat in `_handles` until `Off()` called it,
+		-- blaming `Blocker.luau` with a raw VM error. Siblings `State:Gate`/`State:Apply` gate here.
+		Err.errorBeforeNearest(`Blocker: Policy emit must be a function (got {typeof(emit)})`, SURFACE)
+	end
 	local function handle(doEmit: boolean)
 		if doEmit then
 			emit()

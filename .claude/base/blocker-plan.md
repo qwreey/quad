@@ -75,6 +75,8 @@ state:Apply(blocker) -> state       -- [2026-08-28 `H-158`] `Blocker.__apply`를
                                      -- 처음 블록될 때가 아니라) onunblock 핸들을
                                      -- blocker의 weak-키 셋에 등록(아래 "onunblock 핸들 보관").
 blocker:Policy(emit) -> onUpstreamEmit
+                                    -- [2026-09-08 `H-492`] emit이 함수가 아니면 이 줄에서 표면
+                                    -- 에러(옛: Off()에서 Blocker.luau VM 에러 — 2차 감사 F-1/I-2)
                                     -- [2026-08-24 신설] 이 blocker의 게이트 정책을
                                      -- **값으로** 돌려준다. `state:Apply(b)`가
                                      -- 내부에서 쓰는 바로 그것:

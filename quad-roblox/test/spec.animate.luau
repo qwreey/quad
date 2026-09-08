@@ -93,6 +93,7 @@ do
 		return src:Apply(combinator):Get()
 	end)
 	assert(not ok4 and string.find(tostring(err4), "Time must be a number", 1, true) ~= nil, "State option validated at run: " .. tostring(err4))
+	mock.assertBlamesUser(err4, "spec.animate.luau", "State option blame (H-502 — was Animate.luau:96)")
 	print("PASS")
 end
 

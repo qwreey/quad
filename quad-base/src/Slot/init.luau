@@ -196,6 +196,20 @@ local function Init(module: any)
 				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
 					Err.errorBeforeNearest(surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 				end
+				if isSlot(occupant) then
+					-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its
+					-- own descendants — `s:Add(s)`, `a:Add(b); b:Add(a)` — passed every gate above
+					-- (the ancestor is a root, so it is "not mounted") and the next CRUD recursed
+					-- forever in teardownTree / tripped releaseOwner's invariant. Walk this Slot's
+					-- owner chain: the candidate must not be on it.
+					local cursor = self
+					while isSlot(cursor) do
+						if cursor == occupant then
+							Err.errorBeforeNearest(surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
+						end
+						cursor = elementOwner:GetWeak(cursor, OWNER)
+					end
+				end
 				seen[occupant] = true
 			end
 			prepared[i] = element

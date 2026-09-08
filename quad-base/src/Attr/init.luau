@@ -130,6 +130,12 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			if type(v) == "function" then
 				Err.errorBeforeNearest(`{ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State`, SURFACE)
 			end
+			if type(v) == "table" and v ~= None and not Brand.isState(v) then
+				-- `H-498` (2026-09-08 2차 감사 I-5/H-3): the engine stores no table at all — a
+				-- Slot/Ref/Tween/Modifier or any metatable'd table reached `setAttr` at dispatch
+				-- depth (the `H-368` family: brands are not metatables, so nothing caught them)
+				Err.errorBeforeNearest(`{ctx}: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)
+			end
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end

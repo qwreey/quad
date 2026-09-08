@@ -413,6 +413,9 @@ Attr(store1, store2, ..., {plain = "table도 됨"})  -- 생성자, 여러 개 �
 -- [2026-09-07 1순회 H-368] 브랜드는 메타테이블이 아니라 약참조 레지스트리 — 메타테이블
 -- 없는 quad 값(AttrKey·MapperDescriptor)은 브랜드로 따로 거부, 값이 함수면 생성
 -- 시점에 거부(엔진이 못 담는다 — quad-roblox OnChange 디스크립터 `{ Name, Callback }`도 여기서 잡힘)
+-- [2026-09-08 `H-498`] 값이 **테이블**이면(None·State 제외) 같은 자리에서 거부 — 엔진은 테이블을
+-- 속성으로 못 담는데 Slot/Ref/Tween/Modifier·메타테이블 테이블이 브랜드가 메타테이블이 아니라
+-- setAttr까지 흘렀다(`H-368` 패밀리, 2차 감사 I-5/H-3)
 -- [명시 추가, 2026-08-20 구현 전 QA 4라운드] plain 테이블의 값은 raw T뿐 아니라
 -- State<T>/Source<T>도 그대로 됨 — {count = 3, label = someSource, live = state}
 -- 새 배선이 아니라, 이 값들이 결국 단일 키 경로로 위임돼 StoreBind가 언랩하기 때문

@@ -92,4 +92,23 @@ do
 end
 
 print()
+print()
+print("=== 7. 2026-09-08 2차 감사 H-499 — nil inst/key는 호출 줄을 blame하는 표면 에러(옛: Relate.luau 'table index is nil') ===")
+do
+	local r = Relate()
+	for _, m in { "SetStrong", "SetWeak", "GetStrong", "GetWeak" } do
+		local ok, err = pcall(function() return (r :: any)[m](r, nil, "k", 1) end)
+		assert(not ok and string.find(tostring(err), `Relate:{m}: inst must not be nil`, 1, true) ~= nil, m .. " inst: " .. tostring(err))
+		assert(string.find(tostring(err), "spec.relate.luau", 1, true) ~= nil and string.find(tostring(err), "/src/", 1, true) == nil, m .. " blames this file: " .. tostring(err))
+		local ok2, err2 = pcall(function() return (r :: any)[m](r, {}, nil, 1) end)
+		assert(not ok2 and string.find(tostring(err2), `Relate:{m}: key must not be nil`, 1, true) ~= nil, m .. " key: " .. tostring(err2))
+	end
+	-- Dispatch.getBlocker(nil) sibling gate (H-447 family)
+	local q = Quad.New()
+	local ok3, err3 = pcall(function() return q.Dispatch.getBlocker(nil) end)
+	assert(not ok3 and string.find(tostring(err3), "Dispatch.getBlocker: ownerKey must not be nil", 1, true) ~= nil, "getBlocker nil: " .. tostring(err3))
+	assert(string.find(tostring(err3), "/src/", 1, true) == nil, "getBlocker blames user: " .. tostring(err3))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

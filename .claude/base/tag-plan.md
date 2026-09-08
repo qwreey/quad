@@ -50,7 +50,7 @@ tag:Added(names): Tag                   -- clone 후 이름(들) 추가, 원본 
 tag:Removed(names): Tag                 -- clone 후 이름(들) 제거 — 검증은 Added와 동일(H-344)
 tag:Contains(...names): boolean -- 멤버십 확인 — 전부 있으면 true(가변인자, nil은 에러; 0개는 true — `H-468`, 사용자 Q32)
 tag:Names(): iterator<string> -- 담고 있는 이름 순회(아래 "메커니즘" 절이 쓰는 것)
-tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴)
+tag:Apply(factory): U        -- factory(self) 체이닝 설탕(Modifier와 동일 패턴). [2026-09-08 `H-497`] factory가 함수가 아니면 표면 에러(State:Apply와 대칭)
 Tag.Merged(tag1, tag2, ...): Tag  -- 여러 Tag의 합집합(무손실). Modifier의
                                      Overridden(필드 단위 덮어쓰기, 손실 있음)와
                                      다른 연산이라 이름도 다름 — Overridden은

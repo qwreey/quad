@@ -963,4 +963,29 @@ do
 end
 
 print()
+print()
+print("=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 선행 검증이 거부(옛: 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===")
+do
+	local q = mock.newQuad()
+	local s = q.Slot()
+	local ok, err = pcall(function() return s:Add(s) end)
+	assert(not ok and string.find(tostring(err), "Slot:Add: cannot add a Slot to itself or to one of its own descendants", 1, true) ~= nil, "self: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "cycle gate")
+	assert(s.Length:Get() == 0 and s:IndexOf(s) == nil, "nothing was added")
+	local a, b, c = q.Slot(), q.Slot(), q.Slot()
+	a:Add(b); b:Add(c)
+	local ok2, err2 = pcall(function() return c:Add(a) end) -- a is c's grandparent
+	assert(not ok2 and string.find(tostring(err2), "cycle", 1, true) ~= nil, "ancestor: " .. tostring(err2))
+	local ok3, err3 = pcall(function() return b:Splice(1, 0, a) end) -- Splice path shares the pre-pass
+	assert(not ok3 and string.find(tostring(err3), "Slot:Splice: cannot add a Slot", 1, true) ~= nil, "splice: " .. tostring(err3))
+	-- a sibling (not on the owner chain) is still fine, and so is a fresh Slot
+	local d = q.Slot()
+	c:Add(d)
+	assert(a.Length:Get() == 0 and c:IndexOf(d) == 1, "legal nesting untouched")
+	-- the gate does not disturb the pre-pass's other checks: a mounted element is still "already mounted"
+	local ok4 = pcall(function() return d:Add(c) end) -- c is d's parent AND already owned by b: the older "already mounted" gate fires first
+	assert(not ok4, "parent rejected (by the mounted gate, which runs before the cycle walk)")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
