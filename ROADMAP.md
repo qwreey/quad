@@ -44,7 +44,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       *"당장은 더 치명적인 문제들이 있는지 확인해보자. 물론 보는 김에 최적화 할 대상을 쌓아둬도 좋아"*, 원장
       `qa-request/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
       - `Slot:List` 재정렬 O(N²)(N=1000 역순 실측 82ms, 100은 1ms — round7 Q38)·~~reconcile마다 `table.clone(prevKeys)`~~(**[2026-09-08 `H-480`]** 제거됨)·`prepareElements` 전체
-        재스캔(Q3 ①). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런
+        재스캔(Q3 ①; **[2026-09-08 `H-506`]** 생성자 배치는 닫음 — 단일 `Add` N회 반복만 잔존). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런
         상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해"* — 리서치 목록에만.
         **[2026-09-08 round7 Q38 사용자 결정 — 백로그 확정]** 2-pass 순열(`rawPermute`: 사이클 끝에 순열 하나로 `_elements`·부기 세 배열을
         한 번에 재배치, 새 raw op + 백엔드 `nativeMove` 의미 결정 필요)은 *"순수 최적화이고 외부 표면은 나오지 않고 … 정식 릴리즈

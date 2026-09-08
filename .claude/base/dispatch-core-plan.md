@@ -1087,6 +1087,7 @@ local chains = Relate()  -- {[inst(weak)] = {[k] = {[index] = {handler, retracto
 local NOOP = Void          -- [2026-08-28 `H-162`] 새 클로저가 아니라 export된 단일 no-op
 
 function Dispatch.process(inst, k, v, index)
+    checkInst("process", inst) -- [2026-09-08 `H-504`] nil inst는 여기서 표면 에러(옛: Relate에서 잎 모듈 이름으로)
     -- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* 끝나야 함 —
     -- h.process가 내부에서 재귀 Dispatch.process(inst,k,...,index+1)를 부르는 게
     -- 정상 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 안 들어가
@@ -1985,6 +1986,7 @@ local function ensureBase(bk, ownerKey)
 end
 
 function Dispatch.getOffsetAt(ownerKey, at)
+    checkOwner("getOffsetAt", ownerKey) -- [2026-09-08 `H-504`] nil owner 게이트 — 공개 부기 표면 전부(getBookkeeping/getBlocker/setEmpty 포함)
     checkPosition("getOffsetAt", at) -- [2026-09-01 H-280] 게이트 셋째 — 0이면 cache[0](nil)이 number로 반환됐다
     local bk = getBookkeeping(ownerKey)
     -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**
@@ -2454,6 +2456,7 @@ Blocker를 `getBlocker(ownerKey)`로 조회만 한다(만들거나 켜고 끄지
 -- **희소 양의 정수는 여기서 안 막는다** — 연속성(1..N)은 recompute의 기존
 -- `sourceList[i] is nil` error 몫. 부기를 하나라도 만지기 전에 검사한다.
 function Dispatch.setLength(ownerKey, i, len, anchor, element)
+    checkOwner("setLength", ownerKey) -- [2026-09-08 `H-504`]
     checkPosition("setLength", i) -- 위 게이트
     if not isState(len) then checkLengthValue("setLength", len) end -- [2026-09-07 Q15 (a)] 비음수 정수; State 값은 아래 Observer 콜백 머리에서(H-445 — 차단기 창 밖)
     anchor = anchor or ownerKey
@@ -2673,6 +2676,7 @@ Slot 이 effect 나 다른 요소들을 소유할 수가 없다 … 실제 obser
 -- [정리, 2026-08-21 G절] 합산 루프가 `Dispatch.getOffsetAt`으로 빠지면서
 -- 이 함수는 "등록 + (채널이 있으면) 즉시 1회 발행"만 남는다.
 function Dispatch.setOffsetSource(ownerKey, i, source)
+    checkOwner("setOffsetSource", ownerKey) -- [2026-09-08 `H-504`]
     checkPosition("setOffsetSource", i) -- [2026-09-01 H-256 (a)] 아래 검증 게이트 문단
     if source ~= None and not isSource(source) then error(nearest) end -- [2026-09-07 Q13 (b)] Source | None만
     local bk = getBookkeeping(ownerKey)

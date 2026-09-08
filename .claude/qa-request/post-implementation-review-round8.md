@@ -144,7 +144,7 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
   "renamed or missing method?" **자기 진단**이 제공자 입력에 새어 나왔다. `spec.dispatch` 20절.
 - **`H-494` 메시지 주어 잔재** (F-2·I-7). `quad.Dispatch:` 셋(no handler matched·no retractor·priority tie → `Dispatch.drive:`/`Dispatch.addHandler:`),
   `UseProvider` 중복 메시지에 주어 없음, `Ref` 동적 경로 메시지의 콜론 누락(형제와 갈림), quad-roblox 버전 게이트의 주어 없음 +
-  폐기형 `, got X`. `H-477` "열 곳 손질"이 놓친 여섯 자리(`UseProvider` 것은 코드 주석에 `H-494`로 통일 — 처음 `H-496`으로 적었던 번호는 폐기). **[같은 날 round8 K-3 정정]** `no handler matched`/`no retractor`의 주어는 `Dispatch.drive:`가 아니라 raise하는 표면 **`Dispatch.process:`**다 — `process`는 공개 표면이자 위임 핸들러의 재귀 자리라 직접 호출에서 `drive`라는 이름이 틀렸다. `spec.refhandlers` 단언 갱신.
+  폐기형 `, got X`. `H-477` "열 곳 손질"이 놓친 여섯 자리(`UseProvider` 것은 코드 주석에 `H-494`로 통일 — 처음 `H-496`으로 적었던 번호는 폐기). **[같은 날 round8 K-3 정정]** `no handler matched`/`no retractor`의 주어를 `Dispatch.process:`로 바꿨다가 **[같은 날 round8 O-1]** 두 raise가 최외곽이라 어느 진입(`D.Frame{}`·`drive`·직접 `process`·위임 핸들러)에서도 오므로 함수 하나를 못 박는 것 자체가 틀렸다는 지적을 받아 네임스페이스 주어 **`Dispatch:`**로(blame 줄이 진입점을 말한다). 메인 판단 — 사용자가 원하면 되돌림. `spec.refhandlers` 단언 갱신.
 - **`H-495` `drive` 배열 키 도메인** (H-1). `D.Frame({ [0] = child })`가 값이 매치되면 말단 핸들러의 `setOffsetSource`/`setEmpty`에서
   `Handlers/InstanceChild.luau:42` 같은 내부 줄을 blame하고, 매치 안 되면 사용자 줄을 blame했다 — 같은 키인데 값에 따라 갈렸다.
   `drive`가 flatten 전에 양의 정수 검사(`H-256` (a) "부기 만지기 전에"; 형제 `H-396` Slot 생성자·Tag 리스트). 희소 구멍은 UB 그대로. `spec.dispatch` 20절.
@@ -156,7 +156,7 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 - **`H-499` `Relate` nil 게이트 + `Dispatch.getBlocker(nil)`** (I-6). 191케이스 인구조사에서 raise 가능한 공개 표면 중 태그 없는 것은
   `Relate` 넷뿐이었다 — nil inst/key가 `Relate.luau: table index is nil`. 잎 모듈이라 quad-error 태그 없이 level-2 `error`(호출 줄).
   `getBlocker(nil)`은 `H-447`이 형제 셋에 준 게이트가 빠져 같은 자리에서 죽었다 — round3가 "내부 표면"이라 판정했지만 `q.Dispatch.getBlocker`로
-  공개·태그돼 있었다. `spec.relate` 7절.
+  공개·태그돼 있었다. `spec.relate` 7절. **[같은 날 §9 `H-504`에서 정정]** "`H-447`이 형제 셋에 게이트를 줬다"는 틀렸다(`H-447`은 `bindLifetime`만) — 공개 부기 표면 전부에 `checkOwner`.
 - **`H-500` Slot 순환 게이트** (G-1 — 2차 감사의 유일한 **동작** 발견). `s:Add(s)`·`a:Add(b); b:Add(a)`·3-순환이 선행 패스를 전부
   통과했다(조상은 루트라 "마운트 안 됨"). 다음 CRUD에서 `teardownTree` 무한 재귀(`Brand.luau:101: stack overflow`) 또는 `releaseOwner`
   불변식 에러. 선행 패스가 이 Slot의 owner 체인을 걸어 후보와 대조. `dispatch-core-plan.md`의 "순환은 UB"는 핸들러 사이의 순환이지

@@ -167,9 +167,14 @@ local function Init(module: any)
 		return nil
 	end
 
+	-- Subject `Dispatch:` (namespace, no function — round8 O-1): both raises are OUTERMOST
+	-- and reach the user through any entry (`D.Frame{…}`, `Dispatch.drive`, a direct
+	-- `Dispatch.process`, a delegating handler), so naming one function (`drive:` in
+	-- `H-494`, `process:` in K-3) was wrong for the others. The blame line already says
+	-- where the user entered.
 	local function noMatchMessage(k: any, v: any): string
 		local brand = brandNameOf(v)
-		return `Dispatch.process: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
+		return `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
 			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
@@ -178,7 +183,7 @@ local function Init(module: any)
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string
-		return `Dispatch.process: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
+		return `Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
 			.. " — return Void when there is nothing to undo"
 	end
 

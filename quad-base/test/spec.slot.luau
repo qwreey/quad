@@ -1006,6 +1006,35 @@ do
 	s:Move(4, 4); check("no-op move")
 	s:Move(1, 8); check("front to back")
 	s:Swap(3, 5); check("swap")
+	-- mounted + nested (round8 O-7): the consumer that could go wrong is gatedRecompute's
+	-- `indexOfElement[element]` — a one-off there silently miscomputes offsets. Six child
+	-- Slots of lengths 1..6 under a mounted root; permute and check every child's Offset
+	-- against a prefix sum, plus the root Length.
+	local root = q.Slot()
+	local kids = {}
+	for i = 1, 6 do
+		local c = q.Slot()
+		for _ = 1, i do c:Add(mock.Instance.new("Frame")) end
+		kids[i] = c; root:Add(c)
+	end
+	local parent = mock.Instance.new("Folder")
+	q.Dispatch.drive(parent, { root })
+	local function checkLayout(label: string)
+		local sum = 0
+		for i = 1, 6 do
+			local c = root:Get(i)
+			assert(root:IndexOf(c) == i, `{label}: IndexOf child {i}`)
+			assert(c.Offset:Get() == sum, `{label}: child {i} offset {c.Offset:Get()} ~= {sum}`)
+			sum += c.Length:Get()
+		end
+		assert(root.Length:Get() == sum, `{label}: root Length {root.Length:Get()} ~= {sum}`)
+		assert(#parent:GetChildren() == sum, `{label}: physical children`)
+	end
+	checkLayout("mounted steady")
+	root:Move(1, 6); checkLayout("mounted move down")
+	root:Move(5, 2); checkLayout("mounted move up")
+	root:Swap(1, 6); checkLayout("mounted swap")
+	root:Get(3):Add(mock.Instance.new("Frame")); checkLayout("nested add after permutation") -- gatedRecompute via indexOfElement
 	local a = mock.Instance.new("Frame")
 	local ok, err = pcall(function() return q.Slot({ a, a }) end)
 	assert(not ok and string.find(tostring(err), "Slot: the same element appears twice", 1, true) ~= nil, "constructor duplicate still caught: " .. tostring(err))

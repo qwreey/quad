@@ -171,7 +171,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
 뮤터블 자식 배열. `Slot<T>(initial?)`(다른 독립 프리미티브의 `Type(args)`
 관습과 동일 — `initial` 생략 시 빈 인스턴스, `T`를 추론할 수 없어 tbox
 명시적 제네릭 적용 `Slot<<Instance>>()`로 지정. `initial`을 주면
-`:Add`를 반복 호출하는 sugar일 뿐, 상세는 아래 "CRUD API 확정" 절의
+`:Add`와 같은 검증·타입 계약의 sugar일 뿐(**[2026-09-08 `H-506`]** 구현은 배치 선행 패스 한 번 + `rawAdd` 반복), 상세는 아래 "CRUD API 확정" 절의
 생성자 항목 참고)로 만들고, `Add`/`Remove`/`Extract`/`Clear`/`Move`/
 `Swap` CRUD로 조작하면 실제 바인드된 children이 그에 맞춰 갱신됨 —
 정확한 시그니처는 아래 "CRUD API 확정" 절 참고(`get`/`set`은 드롭).
@@ -989,8 +989,13 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
       self._baseObserver = makeBaseObserver(self)   -- 등록 즉시 1회는 가드가 삼킨다
       if initial ~= nil then
           self._crudUsed = true   -- 빈 테이블이어도 즉시 잠금(아래 참고)
-          for _, v in ipairs(initial) do   -- ipairs가 첫 nil에서 멈춤
-              self:Add(v)                  -- → "중간 nil은 UB, 그 뒤 무시"가 공짜로 성립
+          -- [round15 `H6-19`] `self:Add(v)`를 직접 부르지 않는다 — 태그된 Add가 nearest가 돼 사용자의
+          -- `Slot{…}` 줄 대신 이 줄을 blame했다. [2026-09-08 `H-506`] 선행 패스는 리스트 전체에 **한 번**
+          -- (요소마다 부르면 현재 요소 전수 스캔 때문에 O(N²), 1000개 38ms). 중복은 배치 안 `seen`이 잡는다.
+          local list = {}
+          for _, v in ipairs(initial) do table.insert(list, v) end -- ipairs가 첫 nil에서 멈춤
+          for _, element in ipairs(prepareElements(self, "Slot", #list, list)) do
+              rawAdd(self, element)      -- → "중간 nil은 UB, 그 뒤 무시"가 공짜로 성립
           end
       end
       return self
@@ -3223,10 +3228,10 @@ end
   **[2026-08-24 분리, 2026-08-27 맵 이동]**). 이 맵은 `_elements`의 역방향이라
   **실체화 여부와 무관하게 항상** 정확해야 한다. `reindexFrom`은 `from`부터
   끝까지 `bk.indexOfElement[self._elements[i]] = i`를 다시 쓰고, 제거 경로에선
-  빠지는 요소를 맵에서 **뺀 뒤** 부른다. **[2026-09-08 `H-505`]** 회전(`rawMove`)은 `[lo, hi]`
-  밖을 건드리지 않으므로 형제 `reindexRange(self, lo, hi)`가 그 구간만 다시 쓴다 — 끝까지 쓰던
-  옛 호출이 `:List`의 "가운데 한 개 삭제"(뒤 키 전부 한 칸 `rawMove`)를 O(N²)로 만들었다(round8 L-4). `_elements`를 시프트하는 자리는
-  **전부** 이걸 부른다(`rawAdd`의 미실체화 얼리리턴 포함).
+  빠지는 요소를 맵에서 **뺀 뒤** 부른다. `_elements`를 시프트하는 자리는
+  **전부** `reindexFrom`을 부른다(`rawAdd`의 미실체화 얼리리턴 포함). **[2026-09-08 `H-505`]** 회전(`rawMove`)만은
+  `[lo, hi]` 밖을 건드리지 않으므로 형제 `reindexRange(self, lo, hi)`가 그 구간만 다시 쓴다 — 끝까지 쓰던
+  옛 호출이 `:List`의 "가운데 한 개 삭제"(뒤 키 전부 한 칸 `rawMove`)를 O(N²)로 만들었다(round8 L-4).
   `spliceArraysUp`/`Down`은 자기 몫으로 이걸 같이 부르되, 하는 일은 아래 부기
   항목들이다. (**[2026-08-27 Q3]** 분리의 옛 근거 *"`spliceArrays*`는 `bk`를
   만지므로 실체화된 뒤에만 부를 수 있다"*는 맵이 `bk`로 가며 **소멸**했다 —
@@ -3448,6 +3453,9 @@ end
 - `Splice`/`Replace`/`Extract(index, new)`는 `raw*`를 부르기 **전에**
   `newElements` 전량에 대해 (a) `wrapElement`(타입 검증 포함)와
   (b) `elementOwner` 조회(이미 누가 갖고 있으면 error)를 **먼저 다 돌린다.**
+  **[2026-09-08 `H-506`]** 생성자 `Slot{ … }`도 같다 — 옛 구현은 요소마다 패스→`rawAdd`를 밟아 `Slot{ 새것,
+  이미마운트된것 }`이 둘째에서 던지면 첫 요소가 버려질 Slot에 소유권이 묶인 채 남았다(반쪽 상태). 지금은 리스트
+  전체가 선행 패스를 통과한 뒤에야 `rawAdd`가 돌아, 실패하면 어떤 요소도 소유권을 얻지 않는다(round8 O-8 실측).
 - 통과한 래핑 결과를 그대로 `raw*`에 넘긴다(두 번 래핑하지 않는다).
 - **[2026-09-03 명시, round15 `H6-21`(탐사자)] 이 선행 패스는 `:List`의
   `updateFn` **반환값**엔 적용되지 않는다** — `settle`은 사이클 안에서 항목마다
