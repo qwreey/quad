@@ -942,6 +942,12 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   `:List` 호출)이 설치 시 `assert(not self._crudUsed, ...)`를 추가로
   확인 — 한 Slot은 평생 "수동 CRUD" 아니면 "`:List`/`:Single`" 둘 중
   하나로만 고정됨.
+- **[2026-09-08 Q42 사용자 확정] Instance를 매개로 한 순환은 UB** — `F = D.Frame{ s }; s:Add(F)`처럼 이 Slot의 마운트
+  타깃(또는 그 조상)을 요소로 넣는 것. `H-500`의 Slot–Slot 순환 게이트는 후보가 Slot일 때만 owner 체인을 걷고, Instance
+  후보의 조상 사슬은 엔진 조회(새 백엔드 op)라 만들지 않는다. 실물(`audit/round8-studio-2026-09-08.md`)은 엔진이 "Attempt to
+  set Frame as its own parent"/"circular reference"로 raise하고, 그 뒤 요소는 들어갔는데 부기·물리는 안 된 반쪽 상태가 남는다
+  (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
+  그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로

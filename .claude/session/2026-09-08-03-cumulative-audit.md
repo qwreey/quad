@@ -111,3 +111,6 @@ rojo serve를 `0.0.0.0:34872`로 띄우고(172.17.7.3) Studio MCP(`Place1.rbxl`,
   `D.TextButton{ MouseButton1Click = 5 }`도 조용히 통과(콘솔 스택은 `Handlers/Event.luau:65`) → `H-507`.
 반영: `H-507` Event 값 게이트 + `spec.events` 8절, mock Tween `Instance` weak화, event-plan·Event 헤더 정정, Q47 닫힘(c), Q41/Q42에 데이터 추가.
 rojo serve는 사용자가 더 실측할 수 있게 그대로 둔다.
+
+회신(실측 직후): Q41 (c) 그대로 — "무슨 class가 있는지 없는지 확인하기 힘들다", 문구·트레이스로 충분, 재개봉 금지로 기록. Q42 UB — 엔진도
+UB이고 반쪽 상태는 quad가 늘 허용해 온 "UB 뒤 깨짐" 범주. `H-507`은 사용자가 "state도 풀어져서 최종자엔 함수라 확인 가능"으로 게이트 유지.

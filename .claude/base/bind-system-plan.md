@@ -379,6 +379,11 @@ end
   형제 순서가 조용히 어긋난다)의 **정적 리터럴 판**이다. `.Parent` 대입은
   자식을 받는 쪽 — `InstanceChildHandler`(정적 자식, `H-134`)와 Slot의
   `native*` 주입 op — 만 한다.
+  - **[2026-09-08 Q41 사용자 확정 — 재개봉 금지]** `D.New(className)`의 클래스 이름 오타(`D.New("Frmae")`)는 quad가 검사하지
+    않는다 — 생성물의 `Instance.new(className)`이 엔진 문구 `Unable to create an Instance of type "Frmae"`를 내고 스택이
+    생성물 `D/init.luau`를 가리키는 것으로 충분(사용자: *"우리가 무슨 class가 있는지 없는지 확인하기 힘들거든. 문구 자체로
+    괜찮고, 트레이스도 나와서 괜찮아보여"*). `pcall` 재던지기류 게이트를 다시 제안하지 말 것(round8 §16, 실측은
+    `audit/round8-studio-2026-09-08.md`).
   - **타입**: `D` 생성기가 각 클래스의 props 타입에서 `Parent`를 **제외**한다(쓰기
     표면만 — 읽기 표면 `PropTypesRead`엔 **[2026-09-08 Q35 (a)]** `Parent`가 있다, `onchange-plan.md`)
     (`archive/v2-initial-implementation/roadmap.md` M5 `D/init.luau` 체크박스) — **그리고 `FrameModifier`류
