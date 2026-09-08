@@ -2471,5 +2471,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **수렴 확인(O 리뷰·P 감사)**: 코드 정확(실측), 메시지 주어 `Dispatch:`·spec 28절 마운트 팔·정본 의사코드 `checkOwner`/생성자 배치 — **소진 판정, 종료**.
   **[같은 밤 실기기 실측 — 사용자 rojo Connect, `audit/round8-studio-2026-09-08.md`]** Q47 닫힘(실물은 회수 — mock Tween `Instance` 강참조가 원인, weak화),
   Q41/Q42 엔진 문구·반쪽 상태 데이터, 부수 `H-507` Event 비함수 값 게이트(실물 `Connect(5)`는 던지지 않고 콘솔에만).
-  **회신**: Q41 (c) 그대로·재개봉 금지(`bind-system-plan`), Q42 UB(`slot-plan` 에러 조건 절), `H-507` 유지 — 남은 문항은 타입 표면 Q43~Q46.
+  **회신**: Q41 (c) 그대로·재개봉 금지(`bind-system-plan`), Q42 UB(`slot-plan` 에러 조건 절), `H-507` 유지.
+  **타입 표면 회신**: Q43 스파이크 → **`H-508`** `Store` 생성자 오버로드 교집합(무인자 strict 클린, spec 캐스트 제거), Q44 (a)·Q46 (a) 문서화,
+  Q45 (c) 재노출 안 함(직접 `require(D)`). **round8 열린 문항 없음** — 다음 구간은 문서화·타입 정형화.
   test.sh exit 0(스펙 50), doc-check ERROR 0.

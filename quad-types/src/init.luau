@@ -475,7 +475,11 @@ export type Quad = {
 	PostRef: <T>(default: T) -> PostRef<T>,
 	-- 단위 2. `State`는 런타임 생성자가 없다(파생 전용) — 타입만 위에서 export.
 	Source: <T>(v: T) -> Source<T>,
-	Store: <T>(defaults: T?) -> Store<T>,
+	-- `H-508` (2026-09-08 round8 Q43, 스파이크): overload intersection — the single generic
+	-- `<T>(defaults: T?)` left `T` as `unknown` on the no-arg call, and `keyof<unknown>` in
+	-- `__reservedCheck` raised at the first use (strict). The no-arg arm pins `Store<{}>`;
+	-- the runtime is unchanged (`Store.luau` `or {}`, `H-83`).
+	Store: (() -> Store<{}>) & (<T>(defaults: T) -> Store<T>),
 	-- 단위 3. deps는 State/Source/Ref(`H-70`), `fn`엔 안 넘어간다.
 	Effect: (fn: EffectFn, ...any) -> EffectHandle,
 	-- 단위 4.

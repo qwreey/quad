@@ -104,9 +104,11 @@ store.hp:Compute(function(s) ... end)
   `Source`이므로 **슬롯 교체 순회가 없다**. **`or {}`가 필수다** — 무인자
   `Store<<{}>>()`도 유효한데 `table.clone(nil)`은
   `table expected, got nil`로 죽는다(**[2026-08-25]** 7라운드 `H-83` 실측).
-  **[2026-09-08 round8 M-1]** 런타임은 유효하지만 제네릭을 안 적은 진짜 무인자 `Store()`는
-  strict에서 TypeError(`T`가 `unknown` → `keyof<unknown>`; `spec.store`도 `any` 캐스트로 우회 중)
-  — `typing-limits.md` 8.13, 결정은 Q43.
+  **[2026-09-08 round8 M-1 → `H-508`]** 제네릭을 안 적은 진짜 무인자 `Store()`는 strict에서
+  TypeError였다(`T`가 `unknown` → `keyof<unknown>`; `spec.store`가 `any` 캐스트로 우회 중이었다) —
+  같은 날 생성자 타입을 오버로드 교집합 `(() -> Store<{}>) & (<T>(T) -> Store<T>)`로 바꿔 닫음
+  (`quad-types`, 스파이크는 round8 §17; `spec.store`의 캐스트 제거). **`Of`는 주석 필수** — 무주석
+  `st:Of("x")`는 `Source<any>`(Q46 (a), `typing-limits.md` 8.13).
 - **⭐ [2026-08-26 신설, 8라운드 `H-122`] 생성자가 `defaults` 값 전량을
   런타임 검증한다 — `isSource` 화이트리스트.** 타입은 `Source<T>` 필드를
   요구하지만 `--!nocheck`/동적 코드가 `{hp = 100}`(raw 값)을 넘기면 지금

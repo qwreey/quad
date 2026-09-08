@@ -1003,5 +1003,9 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
   `[number]: E`와 불변 관계라 TypeError(유니언 56팔을 나열하는 50줄 메시지). 통하는 형태: `q.D.Frame({ table.unpack(kids) })`, 개별 나열, 변수를 처음부터
   `FrameParam<FrameElem>`으로 선언. 미리 만든 props 변수(`{ Name = "a" }`)도 같은 뿌리로 막히나 `local p: FrameParam<FrameElem> = {...}` 선언으로 통과.
   관용구 확정은 round8 §11 Q44.
-- 같은 실측의 나머지: 무인자 `Store()`가 strict TypeError(`T` unknown → `keyof<unknown>`; Q43), `store:Of(name)` 무주석은 `Source<any>`(Q46), 컴포넌트
-  경계 별칭(`Into<Class>`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)이 `quad-roblox/src/init.luau`에 재노출되지 않음(Q45).
+- 같은 실측의 나머지와 결정(**[2026-09-08 회신, round8 §17]**): 무인자 `Store()`의 strict TypeError(`T` unknown → `keyof<unknown>`)는
+  **`H-508`** 오버로드 교집합 `(() -> Store<{}>) & (<T>(T) -> Store<T>)`로 닫음(스파이크: 두 솔버에서 무인자·`{}`·필드·예약 키 진단 전부 정상,
+  런타임 무변경; 생성자 함수엔 기본 타입 파라미터 문법이 없어 `<T = {}>`는 불가). `store:Of(name)` **무주석은 `Source<any>`** — 설계대로
+  주석 필수(`Of<<T>>("x")` 또는 `local x: Source<T> = st:Of("x")`), Q46 (a) 문서화. 컴포넌트 경계 별칭은 **재노출하지 않는다** — 사용자 확정
+  Q45 (c): *"직접 require D해서 타입 필요하면 직접 꺼내는 걸로 … 재노출 상태로 인해 모듈 자체가 너무 더렵혀짐"*, 사용자 문서는
+  `require("…/D")` 경로를 안내한다. Q44는 (a) 관용구 문서화(위 인덱서 불변 항목).

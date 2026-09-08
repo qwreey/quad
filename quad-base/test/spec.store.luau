@@ -138,7 +138,7 @@ do
 	assert(#e:Names() == 0, "no names")
 	local d: Source<number> = e:Of("x")
 	assert(Quad.isSource(d), "Of works on an empty store")
-	local e2 = (Quad.Store :: any)()
+	local e2 = Quad.Store() -- `H-508`: no `:: any` — the no-arg arm types as Store<{}> under strict (luau-analyze runs on this file)
 	assert(Quad.isStore(e2) and #e2:Names() == 0, "no-arg form (or {} guard)")
 	print("PASS")
 end

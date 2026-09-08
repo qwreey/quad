@@ -179,7 +179,7 @@
 - **[2026-09-08 밤 신설, 같은 밤 실기기 실측으로 닫힘 — (c) mock 충실도, round8 §15] Q47 엔진 Tween 슬롯의 Instance 회수.** `Property` 핸들러의 strong 트윈 슬롯이
   mock에선 Instance를 되참조해(Luau weak-key는 에페메론이 아님) `Destroy` 뒤에도 안 회수됨(10,000회 30MB). 실물 Tween userdata는
   Lua 참조가 아닐 가능성이 커 (a) Q41·Q42와 함께 Studio 실측 권고 / (b) `onDestroying`에서 슬롯 비우기 / (c) mock 충실도 문제로 닫기.
-- **[2026-09-08 저녁 신설 — round8 §11, 타입 표면 실측 M] Q43~Q46.** Q43 무인자 `Store()`가 strict TypeError(스펙도 `any` 우회 중 —
+- **[2026-09-08 저녁 신설, 같은 밤 회신으로 전부 닫힘 — round8 §17] Q43~Q46.** Q43 스파이크 → `H-508` 오버로드 교집합, Q44 (a) 문서화, Q45 (c) 재노출 안 함(직접 `require(D)`), Q46 (a) `Of` 주석 필수 문서화. Q43 무인자 `Store()`가 strict TypeError(스펙도 `any` 우회 중 —
   (a) 생성자 오버로드 교차 스파이크 권고 / (b) 무인자 폐기 / (c) 그대로); Q44 `{ Instance }` 변수를 `D.Frame(kids)`에 통째로 못 넘김(인덱서
   불변 — (a) 관용구 셋 문서화 권고 / (b) `| { E }` 팔 추가+솔버 비용 재측정); Q45 릴리즈 사용자용 타입 표면 — quad-roblox가 컴포넌트 경계 별칭
   (`Into<Class>`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)을 재노출하지 않음((a) 선별 재노출 + 8.12 실측 권고 / (b)

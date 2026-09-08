@@ -367,3 +367,20 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 | **`H-507`** | 게이트 유지 — *"raise가 안 된다면 UI가 안 죽어, fallback 같은 것에서 유저가 보고하기 어렵다는 게 문제 … 단순 type만 보고, state도 풀어져서 바운딩되므로 최종자엔 함수라 확인 가능해보이는데, 에러게이트 넣을래?"* | 이미 `a83ae62`에 들어간 그 모양 그대로(`type(v) ~= "function"` — StoreBind가 State를 푼 뒤의 최종값만 본다). 추가 없음 |
 
 이로써 round8의 열린 문항은 **타입 표면 Q43~Q46**만 남는다.
+
+## §17 사용자 회신 — 타입 표면 Q43~Q46 (2026-09-08 밤)
+
+| 문항 | 결정 | 반영 |
+|---|---|---|
+| **Q43** | *"스파이크 보고 판정하자"* → 스파이크 결과로 (a) | **`H-508`** `quad-types`의 `Store: (() -> Store<{}>) & (<T>(defaults: T) -> Store<T>)`. 스파이크(`probe.q43.tmp.luau`, 삭제): 옛 모양 A는 무인자에서 `keyof<unknown>` 재현, 교집합 B는 `luau-analyze`·`luau-lsp V2` 둘 다 무인자·`{}`·필드·`Of` 주석형 클린 + `{ Of = 1 }`에 예약 키 진단 유지, 생성자 기본 타입 파라미터(`<T = {}>`)는 문법 없음. 런타임 무변경(`or {}`, `H-83`). `spec.store` 140행의 `:: any` 캐스트 제거(luau-analyze가 그 파일을 검사하므로 그게 곧 타입 회귀 가드). `mise exec -- pesde install` + test.sh exit 0 |
+| **Q44** | 사용자가 뜻을 되물음 → 아래 설명, (a) 관용구 문서화 | `typing-limits.md` 8.13(이미 있음)에 결정 표시. 코드 0 |
+| **Q45** | (c) — *"직접 require D해서 타입 필요하면 직접 꺼내는 걸로 두고싶어. 실제 생각이 그랬었음. 그 이외 뭘 하기엔 재노출 상태로 인해 모듈 자체가 너무 더렵혀짐"* | `typing-limits.md` 8.13에 확정 기록; 사용자 문서가 `require("…/D")` 경로를 안내. `quad-roblox-types` 백로그(별도 패키지)는 그대로 |
+| **Q46** | (a) 문서화 — *"`Of<<T>>(): Source<T>` 되는 거 아녔음? 직접 타입 박아야 되도록 두기로 했던 거 같은데"* | 맞다 — `Of<<T>>`와 주석 대입은 정상(`store-plan` 실측 + 이번 스파이크 b5), 무주석만 `any`. `store-plan.md`·8.13에 "주석 필수" 명시 |
+
+**Q44 설명(채팅에서 답한 것).** "테이블을 만들어 두고 `Frame(...)` 한 다음 바꾸는 변수"가 아니다. 순수 타입 문제다: `local kids: { Instance } = {...}` 처럼 **타입이 이미
+`{ Instance }`로 굳은 변수**를 `D.Frame(kids)`에 넘기면, Luau 테이블 타입이 불변이라 `{ Instance }`가 `FrameParam<FrameElem>`(`[number]: Instance | StateMarker | Slot…`)의
+서브타입이 아니어서 strict 타입 에러가 난다(런타임은 정상). 리터럴 `D.Frame({ a, b })`는 컨텍스트 타이핑을 받아 통과한다. 마찬가지로 `local props = { Name = "a" }`도
+필드가 `string`으로 굳어 `string | StateMarker<string> …` 자리에 못 들어간다. 우회는 변수를 처음부터 `FrameParam<FrameElem>`으로 선언하거나 `{ table.unpack(kids) }`.
+사용자 말대로 "당연한" 언어 규칙이라 명시 대상(8.13 + 사용자 문서)으로만 둔다.
+
+이로써 round8의 열린 문항은 **없다.**
