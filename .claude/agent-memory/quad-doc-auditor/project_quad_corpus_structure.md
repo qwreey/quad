@@ -21,7 +21,7 @@ quad는 Roblox DOMless UI 렌더러를 처음부터 재작성하는 프로젝트
   인용할 때만.
 - `.claude/luau-test/` 상태는 항상 `STATUS.md`가 소스(폴더 구조 자체가
   상태: done/rewrite-required/review-required/not-run), `.claude/audit/`
-  개수는 `.claude/README.md`의 `audit/` 행이 소스. 둘 다 "직접 나열하다
+  개수는 `.claude/audit/README.md`가 소스. 둘 다 "직접 나열하다
   stale해지는 패턴"이 실제로 반복돼서 다른 문서에선 개수를 안 세기로
   확정된 관례.
 

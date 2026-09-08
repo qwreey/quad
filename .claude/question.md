@@ -176,6 +176,11 @@
   반영 `66281ab`. (2) 10-4 D 정적 굽기 — **지금 안 함, 백로그 아닌 리서치 대상**(그 절 `[결정]`). (3) round3 §4 **Q27** — 등록
   op 기각, 모듈 최상위 `is<Brand>` 필드가 계약(round3 §12). 이 항목에 남은 사용자 몫 없음(마커 이름 10-2도 2026-09-07 밤 확인 완료).
 
+- **[2026-09-08 오후 신설 — round8 §4] Q40 `Slot:Clear`의 창 안 파괴.** `H-479`로 `Clear`가 Blocker 창 하나 안에서
+  요소를 파괴하게 돼, 파괴 도중 raise(요소 cleanup 던짐·quad 밖 `Destroy`된 타깃의 `nativeRemove`·소유권 불변식 에러 —
+  셋 다 UB·내부 버그 범주)면 게이트가 남아 그 Slot의 레이아웃이 동결된다. List의 KeyGone 패스가 이미 같은 모양을 수용하고
+  있어 메인 권고는 (a) 그대로 + `slot-plan.md`에 한 줄 명시; (b) 파괴만 창 밖으로(열 줄 패치); (c) 옛 요소별 recompute
+  복귀(비권장). 평문 전문은 `qa-request/post-implementation-review-round8.md` §4.
 - **[2026-09-08 오전 신설, 같은 날 오후 회신으로 전부 닫힘 — round7 §6]** 사용자 반입 RFC 다섯의 판정 문항(`qa-request/post-implementation-review-round7.md` §4): Q37 (a) `keyType` 반영(`H-484`), Q38 백로그(ROADMAP), Q39는 폴더별 README 분리만 하고 루트 README는 백로그·나머지 둘은 안 함. 여기 남은 것 없음. 원문: **Q37** `getHandler` 키 타입 버킷을 핸들러 계약의 어떤 필드로 선언하나(권고 (a) `keyType: "number" | "string"?`, 없으면 모든 버킷 — 방향은 사용자가 이미 승인, 이름·모양만 남음; 실측 절감은 `D.Frame` 한 번에 5µs 안팎). **Q38** `Slot:List` 대량 재정렬 O(N²)(1000개 역순 82ms, 100개 1ms) — `rawPermute` 설계를 지금 열 것인가 백로그인가(권고 (a) 백로그). **Q39** 문서 거버넌스 넷 — README `qa-request/`·`audit/` 행 비대(한 셀 16,636자, 권고: 한다), `base/` 계약서화(권고: 반대), `session-summary.md` 분할(권고: 안 함), 루트 `README.md` 신설(권고: 지금 안 함). 적용된 다섯(`H-479`~`H-483`)엔 사용자 몫 없음.
 
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
@@ -271,5 +276,5 @@
 
 ---
 전체 순서/우선순위는 `.claude/todos.md`가 최종 소스. 확정된 것들의 문서
-색인은 `.claude/README.md`의 `base/` 표(예전에 이 문서 맨 아래에 있던
+색인은 `.claude/base/README.md`(예전에 이 문서 맨 아래에 있던
 요약표는 그것과 중복이라 archive로 옮김).

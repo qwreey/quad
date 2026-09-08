@@ -379,7 +379,8 @@ end
   형제 순서가 조용히 어긋난다)의 **정적 리터럴 판**이다. `.Parent` 대입은
   자식을 받는 쪽 — `InstanceChildHandler`(정적 자식, `H-134`)와 Slot의
   `native*` 주입 op — 만 한다.
-  - **타입**: `D` 생성기가 각 클래스의 props 타입에서 `Parent`를 **제외**한다
+  - **타입**: `D` 생성기가 각 클래스의 props 타입에서 `Parent`를 **제외**한다(쓰기
+    표면만 — 읽기 표면 `PropTypesRead`엔 **[2026-09-08 Q35 (a)]** `Parent`가 있다, `onchange-plan.md`)
     (`archive/v2-initial-implementation/roadmap.md` M5 `D/init.luau` 체크박스) — **그리고 `FrameModifier`류
     메소드 목록에서도**(`archive/v2-initial-implementation/roadmap.md` M7; **[2026-08-27 `/code-review`]** 두
     목록이 같은 API 덤프에서 따로 생성되는데 한쪽만 빼면

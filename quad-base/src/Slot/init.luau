@@ -300,7 +300,11 @@ local function Init(module: any)
 	-- Clear/ExtractAll — the whole-Slot forms of Remove/Extract, ONE recompute
 	-- (`H-479`, 2026-09-08 advisory RFC, measured: a per-element `rawRemove` tail
 	-- ran `recompute` N times, O(N²) — 1000 elements took ~130 ms in the CLI mock
-	-- against ~1 ms for `Splice(1, N)`). Same batch-gate idiom as `rawSplice`.
+	-- against ~1 ms for `Splice(1, N)`). Same batch-gate idiom as `rawSplice`;
+	-- the closer analogue is List's KeyGone pass, which also DESTROYS elements
+	-- (user cleanup code) inside the gate — a raise in there leaves the gate On
+	-- and this Slot's layout frozen, the same accepted outcome as a throwing
+	-- `updateFn` (`H-38` note in round7 `H-485`; 2026-09-08 감사 A-2).
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)
 		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil

@@ -138,7 +138,13 @@ return function(S: Types.SlotInternal, module: any)
 			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
 			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
 			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
-			-- during traversal — only inserting new keys is undefined.
+			-- during traversal — only inserting new keys is undefined. The one way
+			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
+			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
+			-- State; State emits synchronously): its first loop writes new keys here.
+			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
+			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
+			-- note "the clone was never needed" was wrong about insertion).
 			for key in pairs(prevKeys) do
 				if not seen[key] then
 					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))

@@ -419,4 +419,40 @@ do
 end
 
 print()
+print()
+print("=== 14. 2026-09-08 감사 A-3 — H-483 None 분기 + 되감기: 커서가 None 자리로 내려가도 그 자리부터 다시 돈다 ===")
+do
+	-- 5절·10절은 모든 자리가 Source라 `H-483`이 가른 None 분기(검사 ① 생략, 커서만 전진)를
+	-- 되감기 경로에서 한 번도 밟지 않았다. 여기선 None과 Source를 섞고, 재진입 setLength가
+	-- 커서를 정확히 None 자리(2)로 내린다 — 검사 ②가 잡아 i=2에서 재개하고, None 분기는
+	-- 진입 스냅샷 뒤 사용자 코드 창 없이 커서만 올린 뒤 뒤 Source들이 새 베이스로 Set된다.
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local src1, src3, src5 = q.Source(-1), q.Source(-1), q.Source(-1)
+	q.Dispatch.setOffsetSource(inst, 1, src1); q.Dispatch.setLength(inst, 1, 1)
+	q.Dispatch.setOffsetSource(inst, 2, q.None); q.Dispatch.setLength(inst, 2, 1)
+	q.Dispatch.setOffsetSource(inst, 3, src3); q.Dispatch.setLength(inst, 3, 1)
+	q.Dispatch.setOffsetSource(inst, 4, q.None); q.Dispatch.setLength(inst, 4, 1)
+	q.Dispatch.setOffsetSource(inst, 5, src5); q.Dispatch.setLength(inst, 5, 1)
+	assert(src1:Get() == 0 and src3:Get() == 2 and src5:Get() == 4, "steady state (mixed None/Source)")
+
+	local once = false
+	local obs = (src3 :: any):Observer(function()
+		if not once and src3:Get() == 3 then
+			once = true
+			q.Dispatch.setLength(inst, 2, 5) -- 커서를 None 자리 2로 내림 (재진입 → 게이트 + 되감기)
+		end
+	end):Subscribe()
+	local _ = obs
+
+	q.Dispatch.setLength(inst, 1, 2) -- 트리거: src3이 3으로 Set되는 recompute
+	assert(once, "the reentrant callback actually ran")
+	assert(src3:Get() == 7, `position 3 rewound through the None slot: 2 + 5 (got {src3:Get()})`)
+	assert(src5:Get() == 9, `position 5 followed: 7 + 1 + 1 (got {src5:Get()})`)
+	assert(q.Dispatch.getOffsetAt(inst, 4) == 8, "on-demand read of a None position after the rewind")
+	local bk = q.Dispatch.getBookkeeping(inst)
+	assert(bk.offsetSetUpTo == 5 and not bk.recomputeBlocker:IsOn(), "the pass completed cleanly (no frozen blocker)")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -663,9 +663,12 @@ claimOwner(element, self, fromDetached)  -- self = 담는 Slot. 이미 누가(�
 -- rawRemove(self, index)/rawExtract 안, 요소를 내보내는 자리
 releaseOwner(element, self)
 
--- [삭제됨, 2026-08-20 `C-4`] destroySlotTree에는 명시적 releaseOwner가 없다 —
--- 2026-08-13 감사가 넣었던 걸 되돌렸다(자식이 어차피 죽으므로 불필요).
--- 아래 "소유권 반납은 GC에 맡기면 안 됨" 절의 재정정이 소스.
+-- destroySlotTree(slot) 안, _elements/_detached 두 루프의 요소마다
+-- [2026-09-07 회신 3차 Q14 (a), `H-450` — 옛 2026-08-20 `C-4` 면제("자식이 어차피
+-- 죽으므로 불필요")를 재역전] Owned=false 요소 Slot은 파괴가 아니라 언마운트만 돼
+-- 살아남고, 반납이 없으면 죽은 elementOwner가 영구히 남았다(다음 Add에서
+-- "already mounted elsewhere").
+releaseOwner(element, slot)
 ```
 
 **[2026-08-13 감사] `claimOwner`는 반환값이 없음 — 성공 아니면 error다.**
@@ -3503,7 +3506,8 @@ end
   `prev`. 사용자는 자기가 넣은 State를 그대로 돌려받지, quad가 만든 래퍼 Slot을
   보지 않는다.
 - **`IndexOf(element)`는 언래핑 기준으로 비교**한다 — 사용자가 넣은 State를
-  그대로 넘겨도 그 자리를 찾아준다(비교가 O(n)인 건 원래 계약 그대로).
+  그대로 넘겨도 그 자리를 찾아준다(**[2026-09-08 `H-481`]** raw 요소는 `indexOfElement`
+  역맵으로 O(1), 사용자가 넘긴 State는 언랩 선형 O(n) — CRUD 표의 `IndexOf` 행).
 - **⭐ 이 한 쌍이 있으면 "반환값 맵"과 "물리 요소 맵"을 따로 둘 필요가 없다.**
   `:List`의 `mounted[key]`는 **물리 요소 하나만** 들고, 사용자 관점의 값이
   필요할 때(=`prev` 전달, 멱등 비교) `unwrapElement`를 부르면 된다 — 사용자가
@@ -3624,7 +3628,8 @@ return Slot {
 빠지면 이 표의 중간 단계가 어긋남.
 **[정정, 2026-08-20 `C-4`]** 원래 여기 셋째로 "(3) `destroySlotTree`가 자식
 소유권을 명시적으로 반납"이 있었으나 그 수정 자체가 되돌려졌다(같은 절의
-재정정 참고) — **이 표와는 무관**하다. 이 표가 다루는 건 `reconcile`의
+재정정 참고; **[2026-09-07 Q14 (a), `H-450`]** 그 되돌림이 다시 뒤집혀 지금은
+`destroySlotTree`가 요소마다 `releaseOwner`를 부른다) — 어느 쪽이든 **이 표와는 무관**하다. 이 표가 다루는 건 `reconcile`의
 `rawUnmount`→`rawAdd` 왕복이고 파괴 경로가 아니기 때문.
 
 ### [전면 정정, 2026-08-13 여섯 번째 세션 후속, 사용자 결정] `State<Slot>` 교체는 **파괴가 아니라 언마운트** — `state<Frame>`와 완전히 동일

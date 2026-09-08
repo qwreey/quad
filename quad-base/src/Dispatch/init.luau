@@ -341,9 +341,11 @@ local function Init(module: any)
 	end
 
 	local function listHandlers(): { Handler }
-		-- Pure query — returns the registered handlers in scan order, prints
-		-- nothing (`D-8`); whether to display them is the caller's business.
-		-- A copy, so callers can't disturb the scan order. Each handler carries
+		-- Pure query — returns every registered handler in priority order (the
+		-- union of the three per-key-type scan lists, `H-484` — a given key only
+		-- ever asks the list for its `type(k)`), prints nothing (`D-8`); whether to
+		-- display them is the caller's business.
+		-- A copy, so callers can't disturb the registry. Each handler carries
 		-- the doc'd name/priority via the optional `name` contract field
 		-- (`H-214` (a) — absent name just shows as nil).
 		return table.clone(handlers)

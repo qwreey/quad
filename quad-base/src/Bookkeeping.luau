@@ -316,7 +316,7 @@ local function Init(module: any)
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
 		checkPosition("setLength", i)
 		if not Brand.isState(len) then
-			checkLengthValue("setLength", len) -- a State's value is checked where it is read (contribution)
+			checkLengthValue("setLength", len) -- a State's value is checked in its Observer callback below, outside the blocker window (`H-445`) — never in `contribution`
 		end
 		anchor = anchor or ownerKey
 		local bk = getBookkeeping(ownerKey)

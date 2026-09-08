@@ -2452,3 +2452,9 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **[같은 날 오후 `/code-review` 반영]** 발견 6(미완 0) — **`H-485`** `prevKeys = seen` 꼬리 교체가 `H-38`("마지막 일괄 교체를
   없앴다 — 던지면 새 키 영구 고아") 계약과 충돌 → 증분 기록 되돌리고 clone만 제거; 열셋→열둘, quad-types 과장 주석, 동률 경고
   버킷 인지 + 게이트 순서, spec 26절 역맵 직접 단언, Clear 주석 수치. 교훈: RFC의 등가 증명은 에러 경로까지.
+- **[2026-09-08-03] 누적 변경 감사 — 감사자 다섯 병렬(opus 넷 + sonnet 감사자), 메인 검증**(`session/2026-09-08-03-cumulative-audit.md`,
+  원장 `qa-request/post-implementation-review-round8.md`): 동작 회귀 0(53커밋 `.luau` 추가 2160줄 대조), archive 옛 사용자 결정
+  역전 0. 반영 `H-486`~`H-491` — `H-480` 원장 논거 정정(clone은 순회 중 **삽입** UB를 막고 있었다, 재진입은 `slot-plan` UB 범주라
+  복원 안 함), Q6 폴백 철회의 `claim-plan.md` 누락, Q14 `releaseOwner`를 부정하던 `slot-plan` 의사코드 둘, README 분리 뒤 옛
+  표 포인터 일곱(외부 모델 진입점 포함), 주석 잔재 넷, `spec.lengthoffset` 14절(None 분기 되감기 — 커버리지 0이었음).
+  **Q40**(Clear 창 안 파괴 → 던지면 동결 — List KeyGone과 같은 톤으로 둘지) 사용자 몫. test.sh exit 0(스펙 50), doc-check ERROR 0.

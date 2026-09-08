@@ -354,11 +354,12 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   `base/architecture.md` 소스 트리에 반영은 M5 착수 때).
 - 프로바이더 op **`nativeClaim(inst)`**(§7-9) — `lifecycle-pattern.md` (0)의 코드가 본체,
   `New` ②단계가 같은 op를 부르도록 `base/bind-system-plan.md` 의사코드 주석 갱신됨.
-  `base/architecture.md` 주입 op 목록에 추가됨(조합 폴백 예외 — 셋업이라 조합 불가).
+  `base/architecture.md` 주입 op 목록에 추가됨. **[2026-09-08 정정]** 옛 "조합 폴백 예외" 분류는 소멸 — 2026-09-07 회신 4차(Q6)로 폴백 규칙 자체가 철회돼 `native*` 여섯 전부 필수·미주입이면 안내 스텁 에러다(`slot-plan.md`의 "기본 구현(조합 폴백)" 절 배너).
 - 프로바이더 op `nativeFindChild(inst, key)`(이름 가칭) — `base/architecture.md` 주입 op
-  목록에 추가됨(quad-roblox는 `inst:FindFirstChild(key)`). "`native*` 조합 폴백의
+  목록에 추가됨(quad-roblox는 `inst:FindFirstChild(key)`). 옛 "`native*` 조합 폴백의
   예외 — 조회라 조합으로 만들 수 없어 `isInst`처럼 미주입이면 명확한 error"는
-  **에이전트 분류**(사용자 발언은 "필요 핸들을 구현하라고 남기는 건 괜찮다"까지).
+  **에이전트 분류**였고(사용자 발언은 "필요 핸들을 구현하라고 남기는 건 괜찮다"까지),
+  **[2026-09-08 정정]** 폴백 규칙 철회(위 항목) 뒤엔 "예외"가 아니라 여섯과 같은 기본 규칙이다.
 - debug 모드 `seen` 맵(범위는 `research/debug-tooling-plan.md`가 소스).
 - `archive/v2-initial-implementation/roadmap.md` M5 체크박스가 진행의 소스.
 - **문서화 대상**(`research/documentation-content-map.md` §4): "전부 매핑" 계약과

@@ -6,7 +6,7 @@ Roblox 엔진용 DOMless UI 렌더러 **quad**를 처음부터 다시 짜는 프
 옛 ROADMAP 본문은 `.claude/archive/v2-initial-implementation/`에 원문 그대로 보존됐고
 (2026-09-07 사용자 결정으로 이동), 구현 뒤 코드 리뷰 원장은
 `.claude/qa-request/post-implementation-review-round1.md`(§4가 사용자 문항, `H-nnn`이 발견
-번호; 라운드는 1부터 새로 세고 계속 늘어난다 — round2·round4·round5는 Gemini 외부 리뷰, round6은 Gemini 코드 품질 자문(처리 완료), round3는 2026-09-07 마커 커밋 리뷰 + 이후 회신 절(§6~§12, 2026-09-08까지 누적), 최신 목록은 `.claude/README.md`)다. 남은 작업(병행 항목·백로그)은 루트 `ROADMAP.md`,
+번호; 라운드는 1부터 새로 세고 계속 늘어난다 — round2·round4·round5는 Gemini 외부 리뷰, round6은 Gemini 코드 품질 자문(처리 완료), round7은 사용자 반입 RFC 판정, round8은 누적 변경 감사(2026-09-08 오후), round3는 2026-09-07 마커 커밋 리뷰 + 이후 회신 절(§6~§12, 2026-09-08까지 누적), 최신 목록은 `.claude/qa-request/README.md`)다. 남은 작업(병행 항목·백로그)은 루트 `ROADMAP.md`,
 지금 할 일은 `.claude/todos.md` 00번, 결정 이력은 `.claude/session-summary.md`.
 **⚠️ 2026-08-24 이전에 쓰인 `session/`·`archive/`의 `M2`/`M3`는 옛 의미**(M2=디스패치,
 M3=반응형 — 그날 번호·순서가 맞바뀜, 경위는 `.claude/archive/question-resolved.md`의

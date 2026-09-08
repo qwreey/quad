@@ -156,7 +156,7 @@ end
 
 print()
 print()
-print("=== 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttrKey)이면 plain 테이블 문에서 거부 ===")
+print("=== 8. 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttrKey)이면 plain 테이블 문에서 거부 ===")
 do
 	local ok, err = pcall(function()
 		Store(Quad.AttrKey("k") :: any)

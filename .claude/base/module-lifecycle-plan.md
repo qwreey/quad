@@ -167,7 +167,8 @@ return Init
   같은 fn identity로 자연 통과하고(사용자 근거), 사본·버전이 갈리면
   identity가 갈려 시끄럽게 error난다. 락은 개별 팩토리가 아니라
   **quad-base의 `UseProvider` 본문**에 산다(프로바이더 작성자가 가드를
-  빠뜨리는 `H-294`류 실수를 구조적으로 차단) — `providerRelate`
+  빠뜨리는 `H-294`류 실수를 구조적으로 차단 — 단 `AddPlugin(providerFn)`으로
+  락을 우회하는 오용은 **[2026-09-07 Q10 (c)]** UB로 남는다, 아래 문단) — `providerRelate`
   (module 당 1슬롯, `runInitRelate`와 같은 weak-키잉). 이름도 사용자
   확정(*"UseProvider 쓰자"*) — `AddPlugin`(다수 허용·확장 누적)과 계약이
   달라 이름을 가른다. 경위 원문은

@@ -66,6 +66,9 @@
    권고 셋 판정(`__tostring` 목록 고정·`setFuncLevel(level, ...fns)`·메시지 헬퍼 기각) → `Attr`
    축약 → Q26·Q27 → Q25 값 비교 dedup(`H-478`) → 신원 잔재 탐사 → 2026-09-08 감사 스윕(sonnet
    넷 병렬, 사용자 지시). test.sh exit 0(스펙 50), doc-check ERROR 0.
+   **[2026-09-08 오후 누적 감사 — round8]** 감사자 다섯 병렬(사용자 지시) → 동작 회귀 0·옛 결정 역전 0, 반영 `H-486`~`H-491`;
+   **사용자 몫 Q40**(`qa-request/post-implementation-review-round8.md` §4 — `Slot:Clear`가 게이트 창 안에서 요소를 파괴하므로
+   창 안 raise면 그 Slot 동결: (a) List KeyGone과 같은 톤으로 명시(권고) / (b) 파괴를 창 밖으로). 원문 `session/2026-09-08-03-cumulative-audit.md`.
 
 
 2. **[백로그] 용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
@@ -98,8 +101,8 @@
    (백로그가 아님, `base/ref-plan.md`의 "`PostRef`" 절). 훅 슈가 셋만
    후순위) — 전부
    "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
-   `.claude/README.md`의 `base/` 표(`fallback-plan.md`/
-   `lifecycle-hooks-plan.md`)와 `research/` 표
+   `.claude/base/README.md` 표(`fallback-plan.md`/
+   `lifecycle-hooks-plan.md`)와 `.claude/research/README.md` 표
    (`debug-tooling-plan.md`/`documentation-plan.md`/
    `documentation-content-map.md`/`framework-comparison-findings.md`/
    `operator-sugar-plan.md`).
