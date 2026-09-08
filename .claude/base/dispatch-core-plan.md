@@ -144,6 +144,24 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
   (`addHandler(h, name)`) 안은 이름이 레지스트리에 살게 돼 체인 슬롯
   덤프(슬롯엔 handler 객체만 저장)가 역조회를 요구해서 기각.
 
+- **⭐ [2026-09-08 신설, round7 Q37 (a) 사용자 확정, `H-484`] 선택 필드
+  `keyType: ("number" | "string")?` — 스캔 버킷 힌트.** 사용자: *"확장성 때문에
+  다 찔러보는 게 맞을 수 있음 … 단, number용 핸들러와 string용 핸들러 배열을
+  둘로 나누는 건 좋아 보임. isHandlable은 그대로 둠"* → 권고 (a) 그대로.
+  `getHandler`는 이제 키 타입별 스캔 목록(number / string / 그 밖 — AttrKey
+  같은 테이블 키) 하나만 돌고, 각 목록은 **그 타입을 선언한 핸들러 ∪ 미선언
+  핸들러**를 `handlers`와 같은 priority 순으로 담는다(`addHandler`마다 재구축 —
+  콜드 패스). 선언은 "이 핸들러는 이 타입의 키에서만 매치할 수 있다"이고
+  **`isHandlable`이 여전히 최종 판별자**다 — 선언은 그 술어가 이미 `type(k)`로
+  거부하는 키를 아예 안 묻게 할 뿐이라 매치 결과는 바뀌지 않는다(quad의 열셋
+  — `H-52` 배열 자리 가드를 가진 리프 전부 + Property/Event/InstanceShorthand
+  — 이 선언했고, 센티널·StoreBind·None·AttrKey·폴백 가드는 키 무관이라 미선언).
+  잘못된 값(`"table"` 등)은 등록 시 표면 에러 — 조용히 모든 버킷에서 빠지면
+  매치 실패로만 드러나서. 근거 실측(CLI, quad-roblox 핸들러 22개): 문자열
+  프로퍼티 10개짜리 `D.Frame` 한 번에 `isHandlable` 150회(프로퍼티당 15회),
+  `getHandler`가 46.5µs 중 9.2µs — 관측된 병목이 아니라 사용자가 방향을 먼저
+  승인한 항목이다(round1 Q3 ④ 논의 → round7 Q37).
+
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
 열린 레지스트리). tbox의 `TUnion` 런타임 체커가 이미 이 "순서대로 스캔, 첫 매치

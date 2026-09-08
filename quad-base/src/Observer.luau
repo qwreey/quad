@@ -230,6 +230,7 @@ local function registerDispatchHandlers(module: any)
 
 	dispatch.addHandler({
 		name = "ObserverLeafHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- k type check is mandatory — without it this handler outmatches
 			-- the named-slot guard below and it becomes dead code

@@ -124,6 +124,21 @@ local function Init(module: any)
 	-- installed lifetime backend (nativeClaim'd real Instance, or the mock).
 	local chains = Relate()
 	local handlers: { Handler } = {} -- kept sorted, higher priority first
+	-- `H-484` (round7 Q37 (a), user decision 2026-09-08): per-key-type scan lists,
+	-- each = the handlers DECLARING that `keyType` ∪ the undeclared ones, in the
+	-- same priority order as `handlers`. Rebuilt on every addHandler (cold path).
+	-- Measured before: a 10-string-prop `D.Frame` asked 22 handlers 150 times;
+	-- 12 of them can only ever match number keys.
+	local buckets: { number: { Handler }, string: { Handler }, other: { Handler } } = { number = {}, string = {}, other = {} }
+	local function rebuildBuckets()
+		buckets = { number = {}, string = {}, other = {} }
+		for _, h in handlers do
+			local kt = h.keyType
+			if kt == nil or kt == "number" then table.insert(buckets.number, h) end
+			if kt == nil or kt == "string" then table.insert(buckets.string, h) end
+			if kt == nil then table.insert(buckets.other, h) end
+		end
+	end
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
 
 	local BASE_PROBE = {} :: { [string]: true }
@@ -172,7 +187,9 @@ local function Init(module: any)
 	-- failure message is only ever built there ("에러 메시지는 매치 실패
 	-- 시에만" — 핸들러 계약 절의 지연 생성 규칙).
 	local function getHandler(inst: any, k: any, v: any): Handler?
-		for _, h in handlers do
+		local kt = type(k)
+		local list = if kt == "number" then buckets.number elseif kt == "string" then buckets.string else buckets.other
+		for _, h in list do
 			if h.isHandlable(inst, k, v) then
 				return h
 			end
@@ -300,10 +317,17 @@ local function Init(module: any)
 				end
 			end
 		end
+		local kt = handler.keyType
+		if kt ~= nil and kt ~= "number" and kt ~= "string" then
+			-- registration gate (`H-484`): a typo here would silently drop the handler
+			-- from every bucket — say so where the provider registered it
+			Err.errorBeforeNearest(`Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
+		end
 		table.insert(handlers, handler)
 		table.sort(handlers, function(a: Handler, b: Handler)
 			return a.priority > b.priority
 		end)
+		rebuildBuckets()
 		-- `H-231`: received closures join the surface layer at receipt time
 		-- (user's rule — "입력 받은 측에서 level을 설정") so the walker sees
 		-- provider frames as quad machinery, not as user code.

@@ -102,6 +102,7 @@ function module.register(dispatch: QuadTypes.Dispatch)
 	})
 	dispatch.addHandler({
 		name = "NilHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			return type(k) == "number" and v == nil
 		end,

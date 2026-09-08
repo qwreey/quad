@@ -544,7 +544,7 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   `Brand`는 생성자가 있지만 사용자 표면이 아닌 base 내부 유틸 — 사용자에게
   노출되는 건 `isX` wrapper들이다)의
   구성원이라 PascalCase 대상이 아님. Handler 계약 필드(`isHandlable`/
-  `priority`/`process` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
+  `priority`/`process`, 선택 `name`·`keyType` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
   반환값으로 합쳐지기 전엔 4종이었음)도 여기 속함 — 이건 애초에 "함수"라기보다
   구현체가 채워 넣는 구조체 필드.
 - **경계 판단 기준**: 새 이름을 지을 때 "이게 특정 프리미티브 타입 하나의

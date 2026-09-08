@@ -8,6 +8,11 @@
 	  priority: number                          -- open numeric space; use the
 	                                            -- HANDLER_PRIORITY_* band constants
 	                                            -- (`Dispatch/init.luau`) ± offsets
+	  keyType: ("number" | "string")?           -- optional (`H-484`, round7 Q37 (a)):
+	                                            -- the only key type this handler can
+	                                            -- match — getHandler scans per-type
+	                                            -- buckets; absent = every bucket.
+	                                            -- isHandlable stays the decider.
 	  process(inst, key, value, index) -> retractor
 	     -- does the work and returns the closure `(nextValue, retracting)` that
 	     -- undoes exactly what this call did. Returning nil is a contract

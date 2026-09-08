@@ -31,6 +31,8 @@
 - **`H-482` Modifier setter 클로저의 필드 이름별 캐시** (rfc-minor-optimizations 2번). 클로저가 잡는 건 `key`뿐이라 같은 파일의 `castClosures`와 같은 모양으로 캐시(`setterClosures[key]`). `H-250`(테이블 경유가 아닌 함수는 태그 안 함)과 `error(..., 2)` blame은 그대로 — 캐시돼도 `__index`가 돌려주는 값이지 테이블에 저장되는 게 아니다. 관측 가능한 차이는 `mod.Size == mod.Size`가 참이 되는 것뿐. 선례: `H-365`/`H-390`이 호출당 클로저 할당을 같은 이유로 걷어냈다.
 - **`H-483` `recompute`의 abs 온디맨드** (bookkeeping-abs-ondemand). **메인은 처음 기각 쪽이었다** — 이득 상한이 `getOffsetAt` 채우기 0.18ms/1000자리이고 그 채움은 숫자를 실제로 뽑는 곳(`nativeInsert` offset, List의 physIndex)이 어차피 다시 하므로 "제거"가 아니라 "이동"이며, `spec.lengthoffset` 6절이 "recompute가 캐시를 재구축한다"를 단언하고 있었다. **사용자 판정**: *"abs 온디맨드는 큰 부작용이 없고, 바로 적용 가능하고 20줄 이내 패치라 기각할 이유는 없어보이는데?"* → 적용. 정확성은 RFC 3절 그대로 확인 — None 자리는 진입 스냅샷 뒤 사용자 코드 창이 없어 검사 ①을 건너뛰고 커서를 바로 올려도 `H-240` 되감기 신호를 못 덮는다; `contribution` 뒤의 검사 ②는 그대로. 실측 0.42 → 0.11ms. 6절 단언은 "당겨진 채 남고 값 읽기가 온디맨드로 채운다"로 바꿨다. `dispatch-core-plan.md` recompute 의사코드 동기화.
 
+- **`H-484` `getHandler` 키 타입 버킷 — Q37 (a) 사용자 확정 후 반영(같은 날 오후, 둘째 커밋).** `Handler` 계약에 선택 필드 `keyType: ("number" | "string")?`; `Dispatch.addHandler`가 등록마다 number/string/그 밖 세 목록(각 = 선언 ∪ 미선언, priority 순)을 재구축하고 `getHandler`는 `type(k)`에 맞는 목록 하나만 돈다. 잘못된 값은 등록 시 표면 에러. 선언한 핸들러 열셋(`H-52` 가드를 가진 리프 전부 + Property/Event/InstanceShorthand), 미선언은 키 무관인 것들(센티널 셋·StoreBind·None·AttrKey·폴백 가드 — `addProcessedHandler`의 셋도 `v == sent`뿐이라 미선언, 동작 불변). `spec.dispatch` 19절(버킷 라우팅·미선언 전 버킷·버킷 안 priority·등록 게이트). 실측: `D.Frame`(문자열 프로퍼티 10개) 46.5 → 37.1µs, `getHandler` 9.2 → 6.2µs.
+
 ## §3 판정만 한 것 — 사실 확인·기각 (반영 없음)
 
 - **code-quality-and-doc-structure 2.1 (모듈 최상위 함수 일괄 `setFuncLevel`)** — 기각. 근거 셋: (1) 각 서브시스템이 자기 Init에서 자기 표면을 태그한다(quad-base 28곳) — `quad-base/src/init.luau`의 셋은 모듈 조립 층의 것뿐이고 "일부만 수동 열거"가 아니다. (2) 일괄 태깅은 `H-434`가 보여준 함정을 전면화한다 — 태그된 함수가 태그된 함수를 부르면 nearest가 안쪽 본문으로 밀린다(`setEmpty` 사례). 술어(`isState`류)나 프로바이더가 얹은 함수까지 태그되면 그 조합이 늘어난다. (3) 사용자가 round6 기각 3에서 자동 탐색 태깅을 이미 거부했고, list drift의 실제 구멍(`H-410`)은 `H-475`가 닫았다.
@@ -53,3 +55,10 @@
 ## §5 검증
 
 코드 다섯 + spec 둘(`spec.lengthoffset` 6절 단언 교체, `spec.slot` 26절 신설) + base 문서 셋(`slot-plan.md` CRUD 표·reconcile 의사코드·raw 절, `dispatch-core-plan.md` recompute 의사코드, `modifier-plan.md` `H-482` 문단): `./scripts/test.sh` exit 0(스펙 50, gen-d check), doc-check ERROR 0, 감사자 1패스(sonnet, diff 범위) 확실 5·판단 1·의심 1 — 전부 반영(세션 파일 §6).
+
+## §6 사용자 회신 (2026-09-08 오후)
+
+- **Q37 → (a)** *"Q37 권고대로 괜찮은듯."* — `keyType` 필드, 반영 `H-484`(§2).
+- **Q38 → (a) 백로그** *"아직 더 봐야할 부분이 많고, 내가 전부 이해하고 큰 틀에서 보고 나서 작업을 수행하는게 맞아서, 순수 최적화이고 외부 표면은 나오지 않고, 또 아직 정식 릴리즈를 할 생각은 없어서 (폴리싱, 문서화 기간 끝에 정식 릴리즈 예정) 권고대로 백로그 대상."* — `ROADMAP.md` 백로그 최적화 후보 목록에 실측과 함께.
+- **Q39** *"문서 거버넌스는 나도 보고 애매했어. 루트 readme 는 그냥 백로깅에 두고싶음. 다만, README.md 를 분리해 각 폴더 내에 두어 폴더가 뭐하는지 설명하는건 괜찮은것 같아."* — (1) `.claude/README.md` 분리: **한다**, 폴더마다 자기 `README.md`(그 폴더가 뭐하는지 + 파일 색인), 루트 색인은 폴더 행만; (2) `base/` 계약서화·(3) `session-summary.md` 분할: 결정 없음 → 메인 권고대로 **안 함**(사용자 "애매"); (4) 루트 `README.md`: **백로그**(문서 사이트 항목과 함께).
+- 추가 지시: 코어를 건드린 만큼 `/code-review`를 한 번 — *"쪼개기 금지로 opus초과 모델 사용 금지로"*(단일 맥락, 팬아웃 없이, opus 이하).

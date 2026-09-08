@@ -100,6 +100,7 @@ local function install(quad: any)
 
 	dispatch.addHandler({
 		name = "InstanceShorthand",
+		keyType = "string", -- `H-484`: only string keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, _v: any): boolean
 			return type(k) == "string" and TABLE[k] ~= nil
 		end,

@@ -33,6 +33,7 @@ local function install(quad: any)
 
 	dispatch.addHandler({
 		name = "InstanceChild",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			return type(k) == "number" and quad.isInst(v) -- 늦은 읽기(H-174) — 술어는 갈아끼울 수 있는 주입면
 		end,

@@ -318,7 +318,7 @@ export type Source<T> = State<T> & {
 }
 
 -- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
--- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`**(`.claude/base/
+-- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`·`keyType`**(`.claude/base/
 -- dispatch-core-plan.md` "핸들러 계약"): `isHandlable`은 부작용 없는 순수
 -- 판별(inst도 받음), `process`는 자기 자신을 무르는 retractor를
 -- 반환(생략 불가 — 정리할 게 없어도 `Void`). 1번째 인자는 `nil`(단순
@@ -327,8 +327,15 @@ export type Source<T> = State<T> & {
 -- (`H-214` (a) 사용자 확정, 2026-08-31) — 동률 경고·`listHandlers`·
 -- `quad-debug` 체인 덤프가 있으면 쓰고 없으면 priority만 보인다,
 -- 스캔·매치엔 아무 영향 없음.
+-- `keyType`(round7 Q37 (a), 사용자 확정 2026-09-08 — `H-484`)은 선택 선언:
+-- "이 핸들러는 이 타입의 키에서만 매치할 수 있다". `getHandler`가 키 타입별
+-- 버킷(number / string / 그 밖)만 스캔하도록 하는 힌트이고, 없으면 모든
+-- 버킷에 든다(서드파티·키 무관 핸들러는 지금처럼 전수 스캔 대상).
+-- `isHandlable`은 그대로 최종 판별자 — 선언은 그 술어가 이미 거부하는 키를
+-- 아예 안 묻게 할 뿐이다(어긋나게 선언하면 매치 실패 에러로 드러난다).
 export type Handler = {
 	name: string?,
+	keyType: ("number" | "string")?,
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
 	-- retractor 계약(`H-258`, 사용자 설계): 두 번째 인자 `retracting`이 참이면

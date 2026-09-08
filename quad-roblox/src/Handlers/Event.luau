@@ -52,6 +52,7 @@ local function install(quad: any)
 
 	dispatch.addHandler({
 		name = "Event",
+		keyType = "string", -- `H-484`: only string keys can match (isHandlable checks it too)
 		isHandlable = function(inst: any, k: any, _v: any): boolean
 			-- v deliberately not inspected — nil must match too (header)
 			return type(k) == "string" and isEventOf(inst.ClassName, k)

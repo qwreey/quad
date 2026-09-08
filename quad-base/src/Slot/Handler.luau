@@ -17,6 +17,7 @@ local function register(dispatch: any, module: any)
 	local internal = module._slotInternal -- the five-key surface init exposes (not the split's `S`)
 	dispatch.addHandler({
 		name = "SlotHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- `H-52` array-position guard (Tag/Attr handlers do the same):
 			-- a Slot at a NAME key must not match — otherwise claim/bindLifetime

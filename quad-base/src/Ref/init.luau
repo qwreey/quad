@@ -208,6 +208,7 @@ local function registerDispatchHandlers(module: any)
 
 	dispatch.addHandler({
 		name = "RefLeafHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- array-only leaf; the most specific brands win the other two kinds.
 			-- `RefBrand:is` (not `isRef`, which is the union of all three) — the

@@ -522,4 +522,51 @@ do
 end
 
 print()
+print("=== 19. round7 Q37 (a) H-484 — keyType 버킷: 선언한 타입의 키에서만 물어보고, 미선언은 모든 버킷, 버킷 안 순서는 priority, 잘못된 선언은 등록 시 표면 에러 ===")
+do
+	local q = newQuad()
+	local asked: { [string]: number } = {}
+	local function counting(tag: string, keyType: any, priority: number): Handler
+		local h = makeLeaf({}, tag, function(_v: any) return false end, priority) :: any -- never matches — we count the asks
+		local inner = h.isHandlable
+		h.isHandlable = function(inst: any, k: any, v: any): boolean
+			asked[tag] = (asked[tag] or 0) + 1
+			return inner(inst, k, v)
+		end
+		h.keyType = keyType
+		return h
+	end
+	q.Dispatch.addHandler(counting("num", "number", q.Dispatch.HANDLER_PRIORITY_NORMAL))
+	q.Dispatch.addHandler(counting("str", "string", q.Dispatch.HANDLER_PRIORITY_NORMAL))
+	q.Dispatch.addHandler(counting("any", nil, q.Dispatch.HANDLER_PRIORITY_LOW))
+	local inst = Instance.new("Frame")
+	local before = { num = asked.num or 0, str = asked.str or 0, any = asked.any or 0 }
+	assert(q.Dispatch.getHandler(inst, 1, "x") == nil, "no match on purpose")
+	assert((asked.num or 0) - before.num == 1 and (asked.str or 0) - before.str == 0, "a number key asks the number-declared handler, never the string-declared one")
+	assert(q.Dispatch.getHandler(inst, "Size", "x") == nil, "no match on purpose")
+	assert((asked.str or 0) - before.str == 1 and (asked.num or 0) - before.num == 1, "a string key asks only the string-declared one")
+	assert(q.Dispatch.getHandler(inst, {}, "x") == nil, "no match on purpose")
+	assert((asked.num or 0) - before.num == 1 and (asked.str or 0) - before.str == 1 and (asked.any or 0) - before.any == 3, "a table key asks neither declared handler; the undeclared one is asked in every bucket")
+
+	-- priority order survives inside a bucket: a HIGH string handler that matches beats a NORMAL one
+	local log: { string } = {}
+	local normal = makeLeaf(log, "normal", isString, q.Dispatch.HANDLER_PRIORITY_NORMAL) :: any
+	normal.keyType = "string"
+	local high = makeLeaf(log, "high", isString, q.Dispatch.HANDLER_PRIORITY_HIGH) :: any
+	high.keyType = "string"
+	q.Dispatch.addHandler(normal)
+	q.Dispatch.addHandler(high)
+	assert(q.Dispatch.getHandler(inst, "k", "s") == high, "priority order inside the string bucket")
+	assert(q.Dispatch.getHandler(inst, 1, "s") == nil, "string-declared handlers are invisible to number keys even when isHandlable would accept")
+
+	-- registration gate
+	local bad = makeLeaf(log, "bad", isString, q.Dispatch.HANDLER_PRIORITY_LOW) :: any
+	bad.keyType = "table"
+	local ok, err = pcall(function() q.Dispatch.addHandler(bad) end)
+	assert(not ok and string.find(tostring(err), 'keyType must be "number", "string" or nil', 1, true), "bad keyType is a registration error: " .. tostring(err))
+	assert(q.Dispatch.getHandler(inst, "k", "s") == high, "the rejected handler was not registered")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

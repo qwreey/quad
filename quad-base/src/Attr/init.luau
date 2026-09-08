@@ -238,6 +238,7 @@ local function Init(quad: any)
 
 	dispatch.addHandler({
 		name = "AttrGroupFallbackHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- `H-52`: k type check mandatory (array-part only)
 			return type(k) == "number" and isAttr(v)

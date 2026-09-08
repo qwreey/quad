@@ -316,6 +316,7 @@ local function registerDispatchHandlers(module: any)
 
 	dispatch.addHandler({
 		name = "EffectLeafHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			return type(k) == "number" and Brand.isEffect(v)
 		end,

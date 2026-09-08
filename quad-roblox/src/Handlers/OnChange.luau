@@ -82,6 +82,7 @@ local function install(quad: any)
 
 	dispatch.addHandler({
 		name = "OnChange",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			return type(k) == "number" and isOnChange(v)
 		end,

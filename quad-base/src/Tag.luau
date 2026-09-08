@@ -239,6 +239,7 @@ local function Init(module: any)
 
 	dispatch.addHandler({
 		name = "TagFallbackHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- `H-52`: the k type check is mandatory, or this FALLBACK guard
 			-- against named-slot leakage becomes dead code

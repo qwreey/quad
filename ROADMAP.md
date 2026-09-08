@@ -46,10 +46,14 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - `Slot:List` 재정렬 O(N²)(N=1000 역순 실측 82ms, 100은 1ms — round7 Q38)·~~reconcile마다 `table.clone(prevKeys)`~~(**[2026-09-08 `H-480`]** 제거됨)·`prepareElements` 전체
         재스캔(Q3 ①). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런
         상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해"* — 리서치 목록에만.
+        **[2026-09-08 round7 Q38 사용자 결정 — 백로그 확정]** 2-pass 순열(`rawPermute`: 사이클 끝에 순열 하나로 `_elements`·부기 세 배열을
+        한 번에 재배치, 새 raw op + 백엔드 `nativeMove` 의미 결정 필요)은 *"순수 최적화이고 외부 표면은 나오지 않고 … 정식 릴리즈
+        전"*이라 사용자가 큰 틀을 본 뒤에. 재정렬 분석 문서의 옵저버 잔류·stale 인덱스 난제는 현재 코드엔 없다(round7 §3).
       - **[2026-09-08 `H-479` 대부분 닫힘]** `Slot:Clear`/`ExtractAll`의 요소마다 recompute와 `ExtractAll`의 역순 `table.insert` O(n²)는 배치화됨(recompute 1회, ExtractAll은 `rawSplice` 한 번) — 남은 잔여는 `Clear`의 요소별 `nativeRemove`뿐(파괴가 요소 단위라 의도)
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
+- [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
       M1의 quad-base 테스트용 mock과는 별개)
