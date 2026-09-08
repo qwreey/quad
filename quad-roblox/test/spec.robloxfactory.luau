@@ -215,15 +215,13 @@ do
 	-- [round16 스파이크 정정 → 2026-09-03 M10 엔진 축] M5 시점엔 이 셋이
 	-- quad-base 안내 스텁이었다(Q4 (a) — quad-roblox가 M5에서 안 채움). 이제
 	-- EngineOps가 실물 op을 심으므로 "스텁이 아님"을 단언한다(동작은
-	-- spec.tagattribute가 본다). 시간 op 둘은 여전히 백로그.
+	-- spec.tagattribute가 본다). [2026-09-08] 시간 op 둘도 EngineOps가 심는다
+	-- (`task.delay`/`task.cancel` — 동작은 spec.timers가 본다); 맨 quad-base는 안내 스텁.
 	local bare = Quad.New()
-	for _, name in { "addTag", "removeTag", "setAttr" } do
+	for _, name in { "addTag", "removeTag", "setAttr", "setTimeout", "clearTimeout" } do
 		local fn: any = (q :: any)[name]
 		assert(type(fn) == "function", name .. " installed")
 		assert(fn ~= (bare :: any)[name], name .. " is the backend op, not the quad-base stub")
-	end
-	for _, name in { "setTimeout", "clearTimeout" } do
-		assert((q :: any)[name] == nil, name .. " must stay uninstalled (backlog)")
 	end
 	print("PASS")
 end

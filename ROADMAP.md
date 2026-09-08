@@ -61,6 +61,8 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
+- [ ] **[2026-09-08 밤 신설 — 사용자 제기, 결정 대기 `question.md` 0절]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
+- [ ] **[2026-08-12 신설 — `research/operator-sugar-plan.md`]** `Operator` 콤비네이터 슈가 — 네임스페이스 이름·포함 범위가 미정이라 2026-09-08 슈거 구간에서 **의도적으로 뺐다**(`question.md` 0절 (f)).
 - [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
@@ -78,7 +80,8 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       나머지(`nativeRemove` = extract+dispose 반복, `nativeMove` = extract+insert, `nativeSwap` = move 2회)는 base가
       조합해 주는 것. 정본의 약속은 코드 사실에 맞춰 철회했고(`slot-plan.md` "기본 구현(조합 폴백)" 절 배너), 셋째 백엔드가
       실제로 나올 때 착수. 사용자: *"있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐"*.
-- [ ] **[2026-08-14 신설, 2026-08-19 설계 전부 해소 후 `base/`로 승격]**
+- [x] **[2026-09-08 구현 완료 — 사용자 결정 "슈거를 먼저 간단히 만들어 놓고 다듬기", 문서화는 뒤로]** `Debounce.luau` + 시간 op 둘(base 스텁·Roblox `task` 배선·mock 가상 시계), Studio 실측 일치. 구현 중 정한 것 다섯은 그 문서 머리 배너 + `question.md` 0절(사용자 확인 대기). 아래는 착수 전 서술.
+      **[2026-08-14 신설, 2026-08-19 설계 전부 해소 후 `base/`로 승격]**
       시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
       — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을
       추가하지 않는 **순수 슈가**로 확인됨(`Blocker`의 gated state + `Ref` +
@@ -95,7 +98,8 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       주의**)가 `bindLifetime`/`canExecute`와 같은 base 범용 유틸 그룹에
       추가될 예정이라는 것만 M1 설계 시 인지. `os.clock()`은 Luau 표준
       라이브러리라 주입 대상 아님(단 절대 시각이 아니라 diff 전용)
-- [ ] **[2026-08-14 아홉 번째 세션 신설]** 생명주기 훅 슈가
+- [x] **[2026-09-08 구현 완료]** `LifecycleHooks.luau`(훅 셋) + `Fallback.luau`(`Fallback`/`Traceback`, `base/fallback-plan.md` — 부분 트리 미회수 갈래만 `question.md` 0절에 열림). 아래는 착수 전 서술.
+      **[2026-08-14 아홉 번째 세션 신설]** 생명주기 훅 슈가
       `OnCreated`/`OnRendered`/`OnDestroyed`(`base/lifecycle-hooks-plan.md`)
       — 각각 `PreRef():Callback(guard(fn))`/`PostRef():Callback(guard(fn))`/
       `Effect(function() return fn end)`를 반환하는 순수 팩토리 함수

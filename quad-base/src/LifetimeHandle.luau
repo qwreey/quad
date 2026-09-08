@@ -79,6 +79,15 @@ local function Init(module: any)
 			module[name] = notInstalled(name)
 		end
 	end
+	-- 2026-09-08: the two time ops (`architecture.md` EngineOps line — the last
+	-- "absent" pair, `debounce-throttle-plan.md` 6절). Same "base 범용 유틸" group as
+	-- `bindLifetime`/`canExecute`: pure Luau has no scheduler at all, so base cannot
+	-- default them — `Debounce`/`Throttle` need a backend (or the mock's virtual clock).
+	for _, name in { "setTimeout", "clearTimeout" } do
+		if module[name] == nil then
+			module[name] = notInstalled(name)
+		end
+	end
 end
 
 return Init

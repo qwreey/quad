@@ -22,8 +22,10 @@
 	  `game` is read at CALL time (not install time) so CLI specs can shim it
 	  through this installer's environment (the Property-handler idiom).
 
-	NOT here (absent stays, owned by the backlog): setTimeout/clearTimeout
-	(Debounce/Throttle).
+	  [2026-09-08] the two time ops (`debounce-throttle-plan.md` 6절):
+	    setTimeout(func, delay) -> Timeout   -- task.delay(delay, func) — ARGUMENT ORDER FLIPS
+	    clearTimeout(timeout)                -- task.cancel(timeout._native)
+	  `task` is read at CALL time (same seam as `game`) so CLI specs can shim it.
 
 	Roblox ignores `offset` — child order is not a physical property here, so
 	positional args exist only to satisfy the injected-op contract shared with
@@ -127,6 +129,28 @@ local function install(quad: any)
 		inst:SetAttribute(name, v) -- nil deletes natively
 	end
 
+	-- Time ops. `Timeout` = `{ __quadTimeout = true, _native = <thread> }` — the
+	-- marker makes the handle nominal for `clearTimeout` (plan 6절); base never
+	-- reads `_native`. Gates here: these are the backend's public surface too.
+	local function setTimeout(func: () -> (), delay: number): QuadTypes.Timeout
+		if type(func) ~= "function" then
+			Err.errorBefore(`setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
+		end
+		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
+			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+		end
+		return { __quadTimeout = true :: true, _native = task.delay(delay, func) } -- ⚠️ order flipped vs the op
+	end
+
+	local function clearTimeout(timeout: any)
+		if type(timeout) ~= "table" or timeout.__quadTimeout ~= true then
+			Err.errorBefore(`clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+		end
+		-- Studio 2026-09-08 실측: `task.cancel` on an already-fired (dead) thread is a
+		-- silent no-op — a late cancel by a user holding the handle needs no guard.
+		task.cancel(timeout._native)
+	end
+
 	quad.nativeInsert = nativeInsert
 	quad.nativeExtract = nativeExtract
 	quad.nativeRemove = nativeRemove
@@ -139,9 +163,11 @@ local function install(quad: any)
 	quad.addTag = addTag
 	quad.removeTag = removeTag
 	quad.setAttr = setAttr
+	quad.setTimeout = setTimeout
+	quad.clearTimeout = clearTimeout
 
 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
-	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr)
+	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr, setTimeout, clearTimeout)
 end
 
 return install

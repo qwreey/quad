@@ -1,0 +1,68 @@
+# 2026-09-08-04 — 순수 슈거 셋 구현(Debounce/Throttle · 생명주기 훅 · Fallback/Traceback), 시간 op 배선
+
+**배경**: round8 누적 감사가 열린 문항 0으로 닫힌 뒤(`session/2026-09-08-03-cumulative-audit.md`), 다음 구간을 "문서화·타입
+정형화"로 잡자는 메인의 제안에 사용자가 이렇게 답했다 — *"솔찍히, 문서화는 이동하기 뭐함. Debounce 나 Throttle 이랑 슈거 몇몇은
+진짜 base 에 올릴건데, 나중에 또 문서를 다시 생각해야함. 이거 전반에 대해서 처리 가능하게 간단한 슈거라 만들어 놓고 다듬기 하는게
+맞아보이는데 어떻게 봐? 타입 정형화는 앞당길 수 있다 쳐도, 문서화는 진짜 뒤야."* 메인 동의(문서는 릴리즈 표면을 서술하므로 표면이
+먼저). 같은 메시지에서 시간·스텝 op의 자리를 물었다 — 순수 슈거이므로 플러그인으로 빼도 되지만 그러면 `quad-roblox-…`식 프로바이더가
+하나 더 늘어 spring처럼 두 짝을 들고 다녀야 하고, 수요는 spring과 달리 아주 일반적이며, *"quad-base 안에서 엔진이 step 을 제공하는
+경로를 넣어도 된다고 봐. 만일 타이머 구현인 setTimeout 같은걸 base 상 두고, 심을 수 있는 구조로 둔다면 렌더 스탭/애니메이션 리퀘스트는
+같은 경로로 두는게 맞아. 아니면 엔진 경로를 심히 타므로 … 분리해야한다면 spring 처럼 분리되어야할듯."* 메인 의견(채팅으로 회신): 시간·
+스텝 op는 base 주입 op 경로가 맞다 — 이미 `architecture.md`가 시간 op 둘을 그 목록에 올려 두었고 미주입 스텁 계약도 `native*`와
+같다; 분리 프로바이더는 패키지만 늘리고 얻는 게 없다; 렌더 스텝은 같은 경로가 맞되 지금 쓰는 곳이 없으니 이름·계약만 예약 슬롯으로
+정본에 두고 spring이 그 위에 얹히게 하자. 사용자: *"다음 작업을 수행해보자. 필요한 실측을 수행하고, 결정이 필요한 부분이 있다면
+나에게 물어도 좋음."* 그래서 이 세션.
+
+## 1. 무엇을 만들었나
+
+정본이 이미 닫혀 있는 셋만 — `Operator`는 네임스페이스 이름·포함 범위가 미정(`research/operator-sugar-plan.md`)이라 뺐다(문항 (f)).
+
+- **`quad-base/src/Debounce.luau`** — `Debounce{}`/`Throttle{}` 애플리커티브 팩토리(`__apply` 메소드형, `H-158`). 구현은 하나,
+  `reset` 한 비트(정본 1-1절). `state:Gate(setup)` 안에서 게이트당 사적 `Blocker`를 만들어 `pass = b:Policy(emit)`로 상류 emit
+  경로를 위임하고, 타이머·핸들 경로는 `emit()`/`emit(false)`를 직접 불러 반환값("보류분이 있었나")으로 창 재개방을 판정한다
+  (gate-plan 5번 두 경로 표). 창 상태(`_window`/`_cap` 타이머 핸들)는 업밸류가 아니라 핸들 테이블 `h`의 필드 — `onUpstreamEmit`
+  클로저가 `h`를 강하게 쥐어 게이트 노드만큼 살고, 팩토리의 weak 레지스트리(`_instances`)는 그 `h`를 키로 브로드캐스트한다
+  (`H-63` 소유권 관용구 그대로). `opts.Handle`(Ref)엔 Apply 시점에 `h`를 `:Set`.
+- **시간 op 둘** — quad-base `LifetimeHandle.luau`에 `notInstalled` 스텁(`bindLifetime` 그룹), quad-roblox `EngineOps.luau`에
+  `task.delay(delay, func)`/`task.cancel`(인자 순서 뒤집음, `task`는 호출 시점 읽기라 spec이 `getfenv`로 심는다), mock에
+  **가상 시계**(`advanceTime(dt)`가 (at, seq) 순으로 due 타이머를 발화 — 콜백이 같은 advance 안에 예약한 타이머도 그 호출에서
+  돈다; `now`/`pendingTimers`/`resetTimers`/`timerLog`).
+- **`quad-base/src/LifecycleHooks.luau`** — 정본 스케치 그대로(`guard` nil 가드, 2-인자 흘림, `Effect(function() return fn end)`).
+  인스턴스별 `Init`(`Effect`가 인스턴스별).
+- **`quad-base/src/Fallback.luau`** — 정본 스케치 그대로, 의존 없는 잎, `init.luau` 리터럴 재export.
+- quad-types: `Timeout`·`GateHandle`·`DebounceOptions`·`ThrottleOptions`·`TimedGate` + `Quad` 필드 아홉(시간 op 둘, 슈거 일곱).
+- 스펙 넷 신설(`spec.debounce` 11절·`spec.hooks`·`spec.fallback`·quad-roblox `spec.timers`), `spec.robloxfactory`의 "시간 op는
+  미설치" 단언을 뒤집음. test.sh exit 0(스펙 54).
+
+## 2. 구현하면서 밟은 것
+
+- **`Blocker:OffWithoutEmit()`은 플래그 뒤집기가 아니다.** 첫 구현은 창 끝에 "idle로 먼저 가고(`b:OffWithoutEmit()`) 그 다음
+  `emit()`"이라는 `Blocker.Off`의 순서를 흉내 냈는데, `OffWithoutEmit`은 등록된 핸들로 `emit(false)`를 돌려 보류분을 **버린다**
+  (`Blocker.luau` 헤더 그대로) — spec 2절이 첫 실행에서 잡았다(0.3초 뒤 발화 0회). 고친 순서: 타이머 경로는 `emit()`으로 먼저
+  flush하고, 재진입 emit이 이미 다음 창을 열었으면 그대로 두고, 아니면 통과분이 있었을 때만 창을 다시 열고, 없으면 그때 Off(빈
+  집합에서의 `OffWithoutEmit`은 no-op이라 플래그만 남는다). `Flush` 핸들은 `emit()` 뒤 통과분이 있을 때만 창을 지금부터 다시
+  연다 — 보류분이 없으면 진행 중인 창을 건드리지 않는 진짜 no-op(첫 구현은 이 경우에도 창을 죽였다, spec 7절).
+- **`os.clock()`을 base에서 안 읽기로.** 정본 6-1절은 `MaxTime`을 `min(Time, 남은 MaxTime)` 한 타이머로 접는 걸 권했지만 그러면
+  base가 실제 시계를 읽어 mock 가상 시간과 어긋난다 — 스펙이 결정론을 잃는다. 7절 (b) 형태(타이머 둘) 채택, 문항 (c).
+- **스펙의 부동소수 누적** — `advance(0.2)` 열 번은 1.9999999999999998이라 2.0의 cap이 안 돈다. 절대 시각으로 전진하는 `advanceTo`.
+- **Studio require 캐시** — rojo 싱크된 새 파일이 `require(quad-base.src)`엔 안 보인다(옛 본문 캐시). 폴더 `:Clone()` 뒤 사본을
+  `require`하면 된다(`audit/sugar-studio-2026-09-08.md`).
+- **`task.cancel`은 dead thread에 무해** — 처음엔 "Studio가 에러 낸다"고 가정하고 `coroutine.status` 가드를 넣었는데 실측은 에러
+  없음. 가드·주석 제거.
+
+## 3. 실측(Studio)
+
+`audit/sugar-studio-2026-09-08.md`: Throttle 0.00/0.51/1.01/1.79, Debounce 0.42 — 정본 1-1절 표와 일치.
+
+## 4. 사용자 몫 — `question.md` 0절 (a)~(g)
+
+마커 이름(`__quadTimeout` vs 옛 `__type_timeout`), `GateHandle` 메소드형, `MaxTime` 타이머 둘, `Flush`가 `Trailing`과 무관,
+`Fallback` 부분 트리 미회수 갈래(권고 (3) UB), `Operator` 이름·범위, 렌더 스텝 op 예약 슬롯. 코드는 어느 갈래도 선점하지 않았다.
+
+## 5. 절차
+
+opus 단일 맥락 리뷰 1회(발견은 평문, 마지막 메시지 하나) → 반영 → sonnet 감사자 1패스(diff 범위) → doc-check ERROR 0 → 커밋.
+결과는 `qa-request/post-implementation-review-round9.md` — opus 리뷰 HIGH 0·MED 3·LOW 여럿(`H-509` `openWindow` 상태 변경 순서
+— `H-392`/`H-445` 선례 세 번째, `H-510` `held` 판정, `H-511` `Timeout` 반환 타입, `H-512` gate-plan 5번 옛 문장, `H-513` GC 상한
+`2 × Time`·Handle 고정, `H-514` mock 주석, `H-515` 스펙 7b·10b, `H-516` 옛 표기), 감사자 다섯 건(배너가 부정하는 "맨 뒤" 문장).
+새 규칙이 드는 셋은 문항 (h)~(j). 반영 뒤 test.sh exit 0(스펙 54), doc-check ERROR 0.

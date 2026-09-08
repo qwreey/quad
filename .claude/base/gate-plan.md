@@ -433,9 +433,15 @@ end
    - **Blocker는 설정당 하나가 아니라 적용 핸들당 하나**다(사용자 지적) —
      `Debounce{...}` 커링 결과는 여러 곳에 적용될 수 있으므로 `Apply` 시점에
      생성된다.
-   - **`pending` 같은 정책 상태는 `HasBlockedEmit`으로 흡수한다** — "보류된 게
+   - ~~**`pending` 같은 정책 상태는 `HasBlockedEmit`으로 흡수한다** — "보류된 게
      있는가"를 Blocker가 이미 들고 있으므로 중복 상태를 안 만든다.
-     `Trailing = false`는 `OffWithoutEmit()`, `Flush`는 `Off()`로 매핑된다.
+     `Trailing = false`는 `OffWithoutEmit()`, `Flush`는 `Off()`로 매핑된다.~~
+     **[2026-09-08 정정, round9 `H-512`]** 두 문장 다 낡았다 — (1) 읽는 통로는 `HasBlockedEmit`이 아니라
+     **`emit()`의 반환값**(위 2번 `H-86`; 이 항목의 `H-118` 배너가 형제 문장만 고치고 이 줄은 남겼다),
+     (2) 구현(`quad-base/src/Debounce.luau`)은 `Trailing = false`를 **`emit(false)` 뒤 idle**로(`OffWithoutEmit()`만으로는
+     집합이 안 빈다 — `H-55`; 게다가 `OffWithoutEmit`은 핸들로 `emit(false)`를 돌리므로 보류분이 있는 채 부르면 버린다),
+     `Flush`를 **`emit()` 직접 호출**로 한다(`Off()`는 핸들을 눈감고 돌려 반환값을 못 준다). Blocker의 `On`/`OffWithoutEmit`은
+     "창이 열려 있는가"의 플래그로만 쓰이고, Off는 집합이 빈 뒤에만.
    - **정책 합성은 손으로 중첩한다** — `setup`이 곧 `(emit) -> onUpstreamEmit`
      이라 그 자체가 합성 가능한 타입이다. `state:Gate(p1, p2, ...)` 같은
      가변인자 슈가는 **두지 않는다**(누가 상류인지가 코드에 그대로 드러나는

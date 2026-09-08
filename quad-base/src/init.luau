@@ -38,6 +38,10 @@ local TagModule = require("@self/Tag")
 local AttrKeyModule = require("@self/Attr/Key")
 local AttrModule = require("@self/Attr")
 local ModifierModule = require("@self/Dispatch/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
+-- 2026-09-08 순수 슈거 셋(사용자 결정 "간단히 만들어 놓고 다듬기" — 문서화 전에 표면부터)
+local DebounceModule = require("@self/Debounce") -- `Debounce`/`Throttle`(base/debounce-throttle-plan) — 인스턴스별(주입 시간 op를 읽는다)
+local LifecycleHooks = require("@self/LifecycleHooks") -- `OnCreated`/`OnRendered`/`OnDestroyed`(base/lifecycle-hooks-plan) — 인스턴스별(`Effect`)
+local FallbackModule = require("@self/Fallback") -- `Fallback`/`Traceback`(base/fallback-plan) — 의존 없는 잎
 
 type Quad = QuadTypes.Quad
 
@@ -96,6 +100,9 @@ local function New(): Quad
 		StringAttr = AttrModule.StringAttr,
 		NumberAttr = AttrModule.NumberAttr,
 		BooleanAttr = AttrModule.BooleanAttr,
+		-- 컴포넌트 에러 격리 슈거(잎 모듈 재export, `base/fallback-plan.md`)
+		Fallback = FallbackModule.Fallback,
+		Traceback = FallbackModule.Traceback,
 	} :: Quad
 
 	function module.RunInit(self, initFn)
@@ -171,6 +178,9 @@ local function New(): Quad
 	module:RunInit(TagModule.Init)
 	module:RunInit(AttrKeyModule.Init)
 	module:RunInit(AttrModule.Init)
+	-- 2026-09-08 슈거 — 시간 게이트(주입 `setTimeout`/`clearTimeout` 위)와 생명주기 훅(`Effect` 위)
+	module:RunInit(DebounceModule.Init)
+	module:RunInit(LifecycleHooks.Init)
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서

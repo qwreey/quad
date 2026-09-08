@@ -494,6 +494,100 @@ local function installTagAttrOps(quad: any, log: { string }?)
 	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, addTag, removeTag, setAttr)
 end
 
+--[[
+	Virtual clock + timers (2026-09-08) — the mock's `setTimeout`/`clearTimeout`
+	(`debounce-throttle-plan.md` 6절 injected ops, 11절 "가상 시계로 결정론적
+	테스트"). No engine scheduler in CLI Luau: time only moves when a spec calls
+	`advanceTime(dt)`, which fires every due timer in (at, seq) order — a timer
+	scheduled by a firing callback that falls inside the same advance fires in
+	that same call. `clearTimeout` on a fired/cancelled handle is a no-op — the
+	same as Roblox `task.cancel` on a dead thread (Studio 2026-09-08 실측,
+	`audit/sugar-studio-2026-09-08.md`).
+]]
+type Timer = { at: number, seq: number, fn: () -> (), live: boolean }
+local clock = 0
+local timers: { Timer } = {}
+local timerSeq = 0
+local timerLog: { string } = {}
+
+local function now(): number
+	return clock
+end
+
+local function pendingTimers(): number
+	local n = 0
+	for _, t in timers do
+		if t.live then
+			n += 1
+		end
+	end
+	return n
+end
+
+local function advanceTime(dt: number)
+	local target = clock + dt
+	while true do
+		local best: Timer? = nil
+		local bi = 0
+		for i, t in timers do
+			if t.live and t.at <= target and (best == nil or t.at < best.at or (t.at == best.at and t.seq < best.seq)) then
+				best, bi = t, i
+			end
+		end
+		if best == nil then
+			break
+		end
+		table.remove(timers, bi)
+		best.live = false
+		clock = best.at
+		timerLog[#timerLog + 1] = `fire@{clock}`
+		best.fn()
+	end
+	clock = target
+end
+
+local function resetTimers()
+	clock = 0
+	timers = {}
+	timerSeq = 0
+	timerLog = {}
+end
+
+local function installTimers(quad: any)
+	local Err = quad.errorNamespace
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+	local function setTimeout(fn: any, delay: any): QuadTypes.Timeout
+		if type(fn) ~= "function" then
+			Err.errorBefore(`setTimeout: func must be a function (got {typeof(fn)})`, SURFACE)
+		end
+		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
+			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+		end
+		timerSeq += 1
+		local t: Timer = { at = clock + delay, seq = timerSeq, fn = fn, live = true }
+		timers[#timers + 1] = t
+		timerLog[#timerLog + 1] = `set({delay})@{clock}`
+		return { __quadTimeout = true :: true, _native = t }
+	end
+	local function clearTimeout(timeout: any)
+		if type(timeout) ~= "table" or timeout.__quadTimeout ~= true then
+			Err.errorBefore(`clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+		end
+		local t = timeout._native
+		if t.live then
+			t.live = false
+			timerLog[#timerLog + 1] = `clear@{clock}`
+			local idx = table.find(timers, t)
+			if idx then
+				table.remove(timers, idx)
+			end
+		end
+	end
+	quad.setTimeout = setTimeout
+	quad.clearTimeout = clearTimeout
+	Err.setFuncLevel(SURFACE, setTimeout, clearTimeout)
+end
+
 local function mockProvider(quad: any): { [any]: any }
 	local isObserver, isEffect = quad.isObserver, quad.isEffect
 	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
@@ -663,6 +757,7 @@ local function mockProvider(quad: any): { [any]: any }
 	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim)
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	installTagAttrOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
+	installTimers(quad) -- 2026-09-08: 시간 op 둘도 같은 프로바이더가(가상 시계 — 위 `advanceTime`)
 	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
 end
 
@@ -856,4 +951,12 @@ return {
 	installTagAttrOps = installTagAttrOps,
 	getTags = getTags,
 	getAttributes = getAttributes,
+	-- virtual clock (2026-09-08) — Debounce/Throttle specs
+	advanceTime = advanceTime,
+	now = now,
+	pendingTimers = pendingTimers,
+	resetTimers = resetTimers,
+	timerLog = function(): { string }
+		return timerLog
+	end,
 }

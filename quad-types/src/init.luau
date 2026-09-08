@@ -211,6 +211,39 @@ export type Blocker = {
 	__apply: (self: any, state: any) -> any,
 }
 
+-- ── 시간 op + `Debounce`/`Throttle` (2026-09-08, `base/debounce-throttle-plan.md`) ────
+-- `setTimeout(func, delay) -> Timeout` / `clearTimeout(timeout)` — 백엔드가 심는 주입 op(6절, 사용자 지정
+-- 시그니처: 함수가 먼저, Roblox `task.delay`는 반대). 닫힌 루프라 `any`가 아니라 마커로 사실상 nominal
+-- (6절 "`Timeout` 핸들의 타입"; 마커 이름만 코퍼스 관례 `__quad*`(H-300)로 — 옛 표기 `__type_timeout`).
+-- `_native`는 백엔드 페이로드 — base는 읽지도 쓰지도 않는다.
+export type Timeout = { read __quadTimeout: true, _native: any }
+-- 제어 핸들(5-4절): `Handle = Ref<<GateHandle?>>(nil)`로 받는다. 메소드형(`h.Value:Flush()`).
+export type GateHandle = {
+	Flush: (self: GateHandle) -> (), -- 보류분이 있으면 지금 통과(+창 재개방), 없으면 no-op
+	Cancel: (self: GateHandle) -> (), -- 보류분을 버리고 idle로(전파 없음)
+}
+export type DebounceOptions = {
+	Time: number | State<number>, -- 창 길이(초) — 신호마다 리셋. State면 스케줄 시점에만 `:Get()`(구독 없음)
+	Leading: boolean?, -- 기본 false
+	Trailing: boolean?, -- 기본 true
+	MaxTime: (number | State<number>)?, -- 신호가 안 끊겨도 최대 이 간격마다 통과(Debounce 전용)
+	Handle: Ref<GateHandle?>?,
+}
+export type ThrottleOptions = {
+	Time: number | State<number>, -- 창 길이(초) — 신호가 리셋하지 못함
+	Leading: boolean?, -- 기본 true
+	Trailing: boolean?, -- 기본 true
+	Handle: Ref<GateHandle?>?,
+}
+-- `Debounce{...}`/`Throttle{...}`가 돌려주는 애플리커티브 팩토리(`__apply` 메소드형, `H-158`) — 자기가 만든
+-- 게이트 전부에 `:Flush()`/`:Cancel()` 브로드캐스트(weak 레지스트리, 5-4절). 결과 State는 호출부가 명시
+-- (`local g: State<T> = s:Apply(Debounce{ Time = 0.3 })`, `Blocker`와 같다).
+export type TimedGate = {
+	Flush: (self: TimedGate) -> (),
+	Cancel: (self: TimedGate) -> (),
+	__apply: (self: any, state: any) -> any,
+}
+
 -- ── Tag / Attr (M10, round16 spike) ─────────────────────────────
 export type Tag = {
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
@@ -484,6 +517,19 @@ export type Quad = {
 	Effect: (fn: EffectFn, ...any) -> EffectHandle,
 	-- 단위 4.
 	Blocker: () -> Blocker,
+	-- 시간 게이트 슈거(`base/debounce-throttle-plan.md`) — `Blocker`+`state:Gate`+아래 시간 op 위의 순수 슈거.
+	Debounce: (opts: DebounceOptions) -> TimedGate,
+	Throttle: (opts: ThrottleOptions) -> TimedGate,
+	-- 생명주기 훅 슈거(`base/lifecycle-hooks-plan.md`) — `PreRef`/`PostRef`/`Effect` 인스턴스를 돌려주는 순수
+	-- 팩토리. nil 가드 래퍼(`H-120`) 때문에 `fn`은 non-nil `inst`를 받는다. quad-base는 백엔드 요소 타입을
+	-- 모르므로 제네릭 자리(`I`) — `q.OnCreated(function(inst: Frame) … end)`처럼 콜백 쪽에 적으면 된다.
+	OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>,
+	OnRendered: <I>(fn: (inst: I, ref: PostRef<I?>) -> ()) -> PostRef<I?>,
+	OnDestroyed: (fn: () -> ()) -> EffectHandle,
+	-- 컴포넌트 에러 격리 슈거(`base/fallback-plan.md`) — `pcall`/`xpcall`+`debug.traceback` 위의 순수 함수.
+	-- `err`는 `any`(문자열 가정 금지 — 그 문서 "`err: any`임을 반드시 문서화" 절).
+	Fallback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any) -> Err) -> (A...) -> Ok | Err,
+	Traceback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any, trace: string) -> Err) -> (A...) -> Ok | Err,
 
 	-- 디스패치 엔진(M3 단위 1, `H-25` — 마일스톤마다 서브시스템 필드를 여기
 	-- 같이 갱신하는 규칙의 M3 몫). 닫힌 레코드라 이 필드가 없으면
@@ -510,6 +556,9 @@ export type Quad = {
 	canExecute: (value: any) -> boolean,
 	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
 	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
+	-- 시간 op 둘(`architecture.md` EngineOps 줄, `debounce-throttle-plan.md` 6절) — 미주입이면 에러 스텁.
+	setTimeout: (func: () -> (), delay: number) -> Timeout,
+	clearTimeout: (timeout: Timeout) -> (),
 
 	-- Slot 표면(M6 — `H-25` 몫, 2026-09-03). `Slot(initial?)`은 `:Add` 반복 sugar.
 	-- `dispose`는 quad 관리 값을 지우는 유일한 안전 경로(마운트 중이면 error).

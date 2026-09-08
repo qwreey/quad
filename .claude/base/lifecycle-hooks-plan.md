@@ -1,5 +1,11 @@
 # 생명주기 훅 슈가 — `OnCreated` / `OnRendered` / `OnDestroyed`
 
+> **⭐ [2026-09-08 구현 완료]** `quad-base/src/LifecycleHooks.luau`(인스턴스별 `Init` — `Effect`가 인스턴스별이라),
+> 스펙 `spec.hooks`(nil 가드·2-인자·drive pre-pass 순서·`OnDestroyed` leaf 사망 1회). 아래 "핵심 논지" 스케치를 그대로
+> 옮겼다. 타입은 quad-base가 요소 타입을 모르므로 제네릭 — `OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>`
+> (콜백 인자에 `inst: Frame`처럼 적으면 `Frame` 슬롯의 `<Class>RefMarker`에 맞는 `PreRef<Frame?>`가 된다; 무주석이면 솔버가
+> `I`를 못 잡는다 — spec에서 확인). 문서화는 뒤로(사용자 결정 2026-09-08).
+
 > **[2026-08-14 아홉 번째 세션] `research/` → `base/` 승격.** 마지막 열린
 > 항목이던 `OnRendered`의 채택 여부/메커니즘을 사용자가 확정 — **채택**,
 > 메커니즘은 아래 ② 절의 `PostRef`(착수 선택지 (a)). `PostRef` 자체는
@@ -15,9 +21,9 @@
 `additional-primitives-plan.md`의 기존 결론 위에 얹혔던 것과 같은 관계,
 이 문서도 그 프리미티브들의 확정 사항을 하나도 안 뒤집음.
 
-**구현 우선순위는 여전히 맨 뒤** — 설계가 확정됐다는 것과 지금 만든다는
-건 다름. 형제 백로그들(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과
-동급으로 "quad 개발 상당 부분 끝난 뒤". 단 **`PostRef` 자신은 슈가가
+~~구현 우선순위는 여전히 맨 뒤~~ **[2026-09-08]** 구현됨(위 배너; 옛 서술 — 형제 백로그들
+(`quad-mock`/`quad-debug`/`Operator`/`Fallback`)과 동급으로 "quad 개발 상당 부분 끝난 뒤" — 는
+2026-09-08 사용자 결정으로 뒤집혔다). 단 **`PostRef` 자신은 슈가가
 아니라 디스패치 코어의 일부**라 `archive/v2-initial-implementation/roadmap.md` M8(Ref)에서 `PreRef`와 같이
 구현됨 — 이 문서의 슈가 셋만 뒤로 미뤄지는 것.
 
@@ -442,11 +448,11 @@ construction에 재사용**하는 것("이미 한 번 fire된 PreRef 객체를 �
 
 ## 우선순위
 
-**두 층위를 구분할 것**:
+**[2026-09-08 구현 완료 — 아래는 착수 전 서술(역사 기록)]** 두 층위를 구분할 것:
 - **`PostRef` 프리미티브 자신** — 디스패치 코어의 일부라 `archive/v2-initial-implementation/roadmap.md`
   M8(Ref)에서 `PreRef`와 **같이** 구현됨. 뒤로 미루는 대상이 아님.
 - **이 문서의 훅 슈가 셋(`OnCreated`/`OnRendered`/`OnDestroyed`)** —
-  형제 백로그 항목들과 동급, 맨 뒤(`quad-mock`/`quad-debug`/`Operator`/
+  ~~형제 백로그 항목들과 동급, 맨 뒤~~ **[2026-09-08 구현됨]**(`quad-mock`/`quad-debug`/`Operator`/
   `Fallback`과 같이 "quad 개발 상당 부분 끝난 뒤"). 착수 시점에 위 코드
   스케치를 그대로 옮기면 될 만큼 단순하고, 순수 슈가라 없어도
   `PreRef()/PostRef():Callback(guard(fn))`·`Effect(fn)`를 직접 쓰면 되므로

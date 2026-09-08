@@ -2475,3 +2475,14 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **타입 표면 회신**: Q43 스파이크 → **`H-508`** `Store` 생성자 오버로드 교집합(무인자 strict 클린, spec 캐스트 제거), Q44 (a)·Q46 (a) 문서화,
   Q45 (c) 재노출 안 함(직접 `require(D)`). **round8 열린 문항 없음** — 다음 구간은 문서화·타입 정형화.
   test.sh exit 0(스펙 50), doc-check ERROR 0.
+- **[2026-09-08-04] 순수 슈거 셋 구현 + 시간 op 배선**(`session/2026-09-08-04-sugar-implementation.md`, 사용자 결정 *"문서화는 진짜 뒤야 …
+  간단한 슈거라 만들어 놓고 다듬기"*): `Debounce.luau`(`Debounce`/`Throttle` — `state:Gate` + 게이트당 사적 `Blocker` + 주입
+  `setTimeout`/`clearTimeout`, 구현 하나·`reset` 한 비트, 핸들 테이블 `h`가 창 상태·Flush/Cancel·weak 레지스트리 키), 시간 op 스텁
+  (`LifetimeHandle.luau`)·Roblox `task` 배선(`EngineOps.luau`)·mock 가상 시계(`advanceTime`), `LifecycleHooks.luau`, `Fallback.luau`,
+  quad-types 타입, 스펙 넷(54). 밟은 것: `Blocker:OffWithoutEmit()`은 `emit(false)`라 보류분을 버림 → 타이머 경로는 flush 먼저·Off는
+  빈 집합에서만; `MaxTime`은 타이머 둘(base가 `os.clock`을 읽으면 mock 결정론이 깨짐); Studio require 캐시는 폴더 `:Clone()`로 우회;
+  `task.cancel`은 dead thread에 무해. 실측 `audit/sugar-studio-2026-09-08.md`(Throttle 0.00/0.51/1.01/1.79 — 정본 1-1절 일치).
+  `Operator`는 이름·범위 미정이라 뺌. 사용자 몫 `question.md` 0절 (a)~(g)(마커 이름·핸들 메소드형·타이머 둘·Flush 무조건·Fallback
+  부분 트리 갈래·Operator·스텝 op 예약). 시간·스텝 op 자리에 대한 메인 의견(base 주입 경로, spring은 별도 패키지)은 세션 파일 배경.
+  **round9**(`qa-request/post-implementation-review-round9.md`): opus 리뷰 HIGH 0 — `H-509` `openWindow` 읽기→상태 순서(`H-392`
+  선례 셋째)·`H-510`~`H-516` 반영, 감사자 다섯(배너가 부정하는 "맨 뒤" 문장), 문항 (h)~(j). test.sh exit 0(스펙 54), doc-check ERROR 0.

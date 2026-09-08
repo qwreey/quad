@@ -1,5 +1,22 @@
 # Debounce / Throttle — 시간 기반 전파 게이트
 
+> **⭐ [2026-09-08 구현 완료 — 사용자 결정 "간단히 만들어 놓고 다듬기"(문서화보다 먼저)]** 코드는
+> `quad-base/src/Debounce.luau`(`Debounce`/`Throttle` 둘 다 — 구현은 하나, `reset` 한 비트), 주입 op 스텁은
+> `quad-base/src/LifetimeHandle.luau`, Roblox 배선은 `quad-roblox/src/EngineOps.luau`(`task.delay`/`task.cancel`,
+> 인자 순서 뒤집음), mock은 가상 시계(`quad-base/test/mock.luau`의 `advanceTime`). 스펙은 `spec.debounce`(quad-base, 11절)·
+> `spec.timers`(quad-roblox). Studio 실측(`audit/sugar-studio-2026-09-08.md`)에서 1-1절의 사용자 시나리오가 실물 타이머 위에서
+> 그대로 나왔다(Throttle 0.00/0.51/1.01/1.79, Debounce 0.42). **구현하면서 정한 것(사용자 확인 대기 — `question.md` 0절)**:
+> (1) `Timeout` 마커 이름은 6절의 `__type_timeout`이 아니라 코퍼스 마커 관례(`H-300`)대로 **`__quadTimeout`**(`quad-types`
+> `Timeout`). (2) `GateHandle`은 5-4절 예시 `h.Value:Flush()`대로 **메소드형**(`Flush: (self) -> ()`), 팩토리의 `:Flush()`/`:Cancel()`과 같은 모양.
+> (3) `MaxTime`은 6-1절이 권한 `min(Time, deadline - os.clock())` 한 타이머가 아니라 **7절 (b)의 타이머 둘** — base가 시계를 안 읽어야
+> mock 가상 시간이 결정론적이다(11절의 "가상 시계" 근거 그대로; 6-1 최적화는 표면 불변이라 나중에 가능). (4) **`Flush`는 `Trailing`과
+> 무관하게 보류분을 즉시 통과**시킨다(5-4절 문장 그대로; 7절 옛 코드의 `pending and trailing` 가드는 안 옮김), 보류분이 없으면
+> 진행 중인 창을 건드리지 않는 진짜 no-op. (5) `Blocker:OffWithoutEmit()`은 플래그 뒤집기가 아니라 등록 핸들로 `emit(false)`를
+> 돌려 **보류분을 버린다** — 그래서 타이머 경로는 `emit()`으로 먼저 flush하고 그 다음에 창을 정리한다(빈 집합에서만 Off). 이 순서가
+> gate-plan 5번의 "두 경로" 표 그대로다. 아래 7절 의사코드는 **참고용으로만 남긴다(코드가 정본)**. 리뷰·감사(round9,
+> `qa-request/post-implementation-review-round9.md`) 반영 `H-509`~`H-516`; 열린 문항 (h)~(j)(커밋 중 `Cancel`·재진입 leading
+> 이중 통과·`Handle` 덮어쓰기)는 `question.md` 0절.
+
 **상태**: base — **[2026-08-19 세션, 전부 해소되어 `research/`에서 승격]**
 12절 "사용자 판단 대기"에 남아있던 마지막 항목(이름/의미론/제어 핸들/
 `Time = 0`)까지 전부 결론이 나서 열린 결정이 없음 — 논의 원문은
@@ -545,7 +562,7 @@ export type GateHandle = {
 
 local h = Ref()   -- [2026-08-28 `H-168`] 실제 코드는 `Ref<<DebounceHandle?>>()`(`base/ref-plan.md` "제네릭 시그니처")
 local debounced = state:Apply(Debounce{Time = 0.3, Handle = h})
--- 게이트가 실제로 만들어지는 시점(팩토리 호출 시)에 h가 채워짐:
+-- 게이트가 실제로 만들어지는 시점(:Apply 시점 — [2026-09-08 `H-516`] 옛 괄호 "팩토리 호출 시"는 틀렸다)에 h가 채워짐:
 -- h.Value == { Flush = fn, Cancel = fn }  -- 이 게이트 인스턴스 하나만 제어
 h.Value:Flush()
 
@@ -554,7 +571,9 @@ h.Value:Flush()
 ```
 
 - **개별 제어**: 위처럼 `Handle = Ref()`로 특정 `:Apply()` 호출 하나만
-  겨냥.
+  겨냥. **[2026-09-08 `H-513`]** 사용자가 쥔 이 Ref는 게이트를 **강하게 고정**한다(Ref → 핸들 테이블 → `emit` →
+  게이트 노드 → 상류 체인) — 게이트된 State를 직접 쥔 것과 같은 keep이라 아래 팩토리 weak 레지스트리의 논거와
+  충돌하진 않지만, 아는 채로 써야 한다. 같은 Ref로 같은 팩토리를 두 번 `:Apply`하면 둘째가 덮어쓴다 — 처방은 `question.md` 0절 (j).
 - **전체 브로드캐스트**: 팩토리 자신(`Debounce{...}`가 돌려주는 객체)에도
   `:Flush()`/`:Cancel()`을 붙임 — 그 팩토리로 만들어진 **모든** 게이트
   인스턴스에 한 번에 적용(저장 버튼 하나로 여러 debounce된 입력을 동시
@@ -1072,7 +1091,8 @@ function Throttle(opts: ThrottleOptions) return makeGate(false, opts) end
 
 - **대기 중인 타이머는 게이트 노드를 강하게 붙잡음.** Roblox `task.delay`가
   콜백을 들고 있고, 콜백이 게이트를 업밸류로 캡처하므로. 즉 **다운스트림이
-  전부 죽어도 최대 `Time`(또는 `MaxTime`)초 동안은 노드와 그 상류 체인,
+  전부 죽어도 ~~최대 `Time`(또는 `MaxTime`)초~~ [2026-09-08 `H-513`] 마지막 신호 뒤 최대 `2 × Time`(통과가 창을
+  다시 열고, 그 창이 빈 집합을 보고서야 idle) 동안은 노드와 그 상류 체인,
   그리고 (B)에서는 캐시된 값까지 살아 있음.**
   - **유계이고 자가 치유됨** — 누수가 아니라 "지연된 GC". 문서화 대상.
   - 위험해지는 조합은 **긴 `Time` + 빠른 생성/파괴**(예: `Slot:List` 항목
@@ -1220,6 +1240,9 @@ Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름�
 ---
 
 ## 13. 우선순위 / 마일스톤 — **[2026-08-19 재평가] 결국 순수 슈가로 귀결**
+
+> **[2026-09-08 구현 완료 — 이 절은 착수 전 서술(역사 기록)]** "맨 뒤로 미뤄도 됨"·"나중에 얹으면 된다"는 2026-09-08
+> 사용자 결정(문서화보다 슈거 먼저)으로 끝났다. 순수 슈거라는 판정 자체는 그대로 맞다(코어 변경 0).
 
 **M0 착수를 막지 않음** — 이 문서의 어떤 결정도 디스패치/State 코어 계약을
 바꾸지 않음(11절에서 확인).
