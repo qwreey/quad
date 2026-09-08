@@ -2430,5 +2430,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   *"헬퍼가 있으면 에러 포맷 부분이 전부 쪼개짐"*) → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`) · 옛 `Attribute` → **`Attr`**
   (+`AttrKey`·엔진 op `setAttr`·폴더 `Attr/`, 라이브 문서 일괄 — "옛" 인용 보호, 8절은 재작성) · 10-4 정적 굽기는 백로그 아닌 리서치로 ·
   Q26 (a) 축소판(둘째 증상은 Q33으로 소멸 — `H-476`) · Q27 등록 op 기각(모듈 최상위 `is<Brand>` 필드가 계약, 진단 스캔) ·
-  Q25는 사용자가 "Dedup인가 재실행인가·Animate 레이어가 맞나" 큰 그림 검토 중(메인 분석 §12) · flatten 일곱은 내일(+named 자리 축).
+  Q25는 같은 날 아침 **값 비교 모델**로 닫힘(`H-478` — 사용자의 뜻은 처음부터 소비자 층의 `Value` 비교; `Tween.Dedup` 필드, 옛 Q12 신원 모델·슬롯 `Source` 폐기, 숏핸드 무변경) · flatten 일곱은 내일(+named 자리 축).
   커밋 `66281ab`·`55ca091`·`24320db`·`7e80ace`, test.sh exit 0(스펙 50), doc-check ERROR 0.

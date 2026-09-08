@@ -104,9 +104,23 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이
 
 ### 3-상태 저장 — `{Tween, Value, Source} | true | nil` (릴레이션 슬롯 하나로 `hasBeenSet` 통합)
 
+**[2026-09-08 Q25 사용자 결정 — dedup은 값 비교, 슬롯의 `Source`는 폐기]** 절 제목의 `Source`는 옛 표기다(제목은
+인용 안정성 때문에 그대로). 2026-09-07 Q12의 **객체 신원** 모델(Animate가 값·옵션이 같으면 이전 Tween 객체를
+돌려주고, Property 핸들러가 `prev.Source == v`로 접는다)은 값 변환을 거치는 순간 깨졌다 — 숏핸드의 `Mapped`가
+매번 새 객체를 만들어 `UICorner`/`UIPaddingOffset`에서 취소+재시작이 남았다(round3 §8 Q25). 사용자: *"정확히
+내가 말 한 부분은 Animate 보다 위 계층인, 처리자인 프로퍼티 핸들러(소비자) 계층이긴 했음 … 신원 가지고는 한계가
+보여서, Value 만 보는게 맞다고 봄 — Time/Style 등은 Animate 가 변경되어도 무시하던것 처럼, 비교 대상이 아니라
+봄 … Dedup 필드가 Tween 에 있는것 맞고, dedup 메커니즘을 tween 하나에만 두는것도 동의함"*. 확정: (1) **비교는
+소비자(Property 핸들러)가 목표 `Value`만** — 슬롯에 기록된 목표(`{ Value }`/`{ Tween, Value }`)와 들어온 Tween의
+`Value`가 같으면 무동작(활성 트윈은 계속, 완료된 트윈은 재트리거 안 함); 옵션은 비교 대상이 아니다. (2) **`Dedup`은
+Tween 값의 필드**(`Tween{ Value, Dedup = false }`, 기본 true) — `Animate`는 자기 `Dedup` 옵션을 다른 옵션처럼
+그대로 실어 보낼 뿐이고 이전 객체 반환(`sameTween`)은 지웠다. 메커니즘은 하나. (3) 슬롯 필드 `Source`는 지웠다.
+plain 슬롯(`true`)은 값을 기억하지 않으므로 거기 오는 Tween은 항상 재생된다(핫패스 할당 회피 — 의도). 값 동등은
+엔진의 것(`UDim.new(0, 8)`끼리 같다)이라 숏핸드의 `Mapped` 사본도 접힌다. spec: `spec.tweenproperty` 7·8절,
+`spec.shorthand` 7절, `spec.animate` 5절, `spec.tween` 7절.
+
 **[2026-09-08 Q26 (a), 사용자 결정 — 넷째 상태]** Tween 값의 **첫 스냅**은 `true`가 아니라
-`{ Value, Source }`(엔진 트윈 없음)를 남긴다 — `Animate`의 Dedup이 같은 Tween 객체를 되돌려 줄 때
-Q12의 신원 비교(`prev.Source == v`)가 첫 스냅 뒤에도 서서, "같은 값에서 같은 값으로" 가는 무의미한
+`{ Value }`(엔진 트윈 없음)를 남긴다 — 위 값 비교가 첫 스냅 뒤에도 서서, "같은 값에서 같은 값으로" 가는 무의미한
 엔진 트윈 한 번이 사라진다. 분기 3의 취소·Finish 스냅은 `prev.Tween`이 있을 때만(스냅 기록엔 취소할
 것도 되돌릴 목표도 없다 — 프로퍼티가 이미 그 값). Q26이 함께 들었던 둘째 증상("None으로 껐다 같은
 Tween으로 켜면 아무것도 안 쓴다")은 Q33 (a)로 None이 nil 쓰기 경로를 타며 슬롯이 `true`로 내려가
@@ -121,14 +135,14 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
 처음엔 "첫 세팅 여부(`hasBeenSet: boolean`)"와 "실행 중인 엔진 Tween
 객체"를 별도 필드로 저장하려 했으나, **하나의 릴레이션 슬롯으로 통합** —
 `relate:GetStrong(inst,k)`가 돌려주는 값의 3가지 상태(**[2026-09-08 Q26 (a)]** 넷째 상태가 하나 더 —
-**`{Value: T, Source: Tween<T>}`(엔진 트윈 없음)**: Tween 값이 첫 세팅에서 스냅된 기록. `Tween` 필드가
+**`{Value: T}`(엔진 트윈 없음)**: Tween 값이 첫 세팅에서 스냅된 기록. `Tween` 필드가
 없다는 것으로 진행 중 테이블과 구분하고, 분기 3의 취소·Finish 스냅은 `Tween`이 있을 때만 — 절 머리 참고):
 
 - **`nil`** — 이 `(inst,k)`가 이번 `inst`에서 한 번도 process된 적 없음
   (첫 세팅).
 - **`true`** — 최소 한 번 세팅된 적 있음(직전 값이 plain이었든 `Tween<T>`
   였든 무관), 지금은 활성 엔진 Tween 없음.
-- **`{Tween: TweenBase, Value: T, Source: Tween<T>}` 테이블**(**[2026-09-07 Q12]** 셋째 필드 `Source`는 그 트윈을 만든 Tween 객체 — 같은 객체가 재발행되면 신원으로 접는다; 필드 이름은 메인이 붙임, round3 §6) — 지금 애니메이션이 진행 중, 새
+- **`{Tween: TweenBase, Value: T}` 테이블**(~~**[2026-09-07 Q12]** 셋째 필드 `Source`~~ — **[2026-09-08 Q25]** 신원 모델과 함께 폐기, 위 배너) — 지금 애니메이션이 진행 중, 새
   값을 처리하기 전에 먼저 정리해야 함. **2026-08-12 세션에서 정정**: 처음엔
   엔진 `TweenBase` 인스턴스 하나만 저장하면 된다고 봤으나, 아래 "확정:
   `Tween{...}` 최종 모양" 절의 `Tween.Finish` override 옵션(트윈을 목표값으로
@@ -143,10 +157,10 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
 
 1. **`prev == nil`(첫 세팅)** — `realv`가 `Tween<T>`든 plain이든 무관하게
    **애니메이션 없이 즉시 `Value`(또는 plain 값)로 세팅**, 슬롯엔 plain이면 `true`,
-   Tween이면 **[2026-09-08 Q26 (a)]** `{ Value, Source }`(엔진 트윈 없음 — 같은 Tween
-   재발행이 신원으로 접히도록) 저장. 엔진 기본값(예: Frame 기본 `Position`)에서 목표값으로 날아오는
+   Tween이면 **[2026-09-08 Q26 (a)]** `{ Value }`(엔진 트윈 없음 — 같은 목표
+   재발행이 값으로 접히도록) 저장. 엔진 기본값(예: Frame 기본 `Position`)에서 목표값으로 날아오는
    "첫 마운트 진입 애니메이션" 버그를 이걸로 방지.
-2. **`prev == true`(세팅된 적 있음, 활성 트윈 없음) 또는 `{ Value, Source }`(첫 스냅 기록 — 취소할 트윈 없음, **[2026-09-08 Q26 (a)]** 같은 분기)**:
+2. **`prev == true`(세팅된 적 있음, 활성 트윈 없음) 또는 `{ Value }`(첫 스냅 기록 — 취소할 트윈 없음, **[2026-09-08 Q26 (a)]** 같은 분기; 단 Tween이 오면 그 전에 위 값 비교가 먼저 선다 — Q25)**:
    - `realv`가 plain 값 → 즉시 세팅, 슬롯은 `true` 유지.
    - `realv`가 `Tween<T>` → 이제 정상적으로 애니메이션 시작(현재 인스턴스
      프로퍼티 값에서 자연스럽게 출발), 슬롯에 새
@@ -240,7 +254,8 @@ Property 핸들러가 nil을 써서 해제한다(**[2026-09-08 Q33]** 옛 skip-d
 닿았다, `H-379`). (Q12) **`Dedup` 옵션**(`boolean | State<boolean>`, 기본 `true`): 목표 값과 옵션 전부가 이전
 Tween과 같으면 **이전 Tween 객체를 그대로** 돌려주고, Property 핸들러는 같은 Tween 객체의 재발행을 신원
 비교로 접어 활성 트윈을 건드리지 않는다(`H-391`의 취소+재시작 소멸). 완료된 트윈도 같은 목표로는 재트리거되지
-않으므로 "펄스"가 필요하면 `Dedup = false`. 사용자: *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로
+않으므로 "펄스"가 필요하면 `Dedup = false`. **[2026-09-08 Q25로 대체]** 신원 모델은 폐기 — `Dedup`은 Tween
+필드가 됐고 비교는 Property 핸들러가 `Value`만 본다("3-상태 저장" 절 머리 배너). 아래 인용은 Q12 당시 결정의 원문. 사용자: *"Animate 자체가 이전 Tween 값 비교와 이전 Tween 을 그대로
 리턴하여 dedup 될 수 있다고 봄. Dedup: boolean 형태 하나를 놓고"*. (Q16 (b)) `Tween.validate`가 `Value`에
 State를 거부한다 — 아래 "`Tween{...}`의 모든 필드는 plain 값만 받음" 절의 불변식을 생성 시점에 집행.
 **[2026-09-07 밤 `H-463`·`H-464`]** 같은 게이트가 `None`과 중첩 `Tween`도 거부한다(해제는 `None` 자체를 발행). `Animate(info)`는
@@ -301,8 +316,8 @@ local function Animate(info)
         DelayTime = resolve(info.DelayTime),
         Override = resolve(info.Override),
       }
-      -- Q12: 같은 목표·옵션이면 이전 Tween 객체 그대로(Property 핸들러가 신원으로 접는다)
-      -- 실물은 opts 테이블을 먼저 만들고 previous와 대조한다(Animate.luau `sameTween`)
+      -- [2026-09-08 Q25] Dedup은 다른 옵션처럼 opts에 실릴 뿐(Dedup = resolve(info.Dedup)) —
+      -- 이전 Tween 객체 반환(옛 Q12 `sameTween`)은 폐기, 값 비교는 Property 핸들러 몫
     end)
   end
 end
@@ -516,7 +531,7 @@ DelayTime: number?        -- default 0
 값을 사용자 데이터와 구분해야 하는 자리(`None`/`Detach`/`KeyGone`/`Processed*`)에만 남는다.
 
 **[2026-09-06 `H-328`]** 정책의 **주체는 활성 트윈 위에 새로 들어오는 값의
-`Override`**다 — 슬롯(`{ Tween, Value, Source }`)엔 정책이 없다. plain 값이 들어오면
+`Override`**다 — 슬롯(`{ Tween, Value }`)엔 정책이 없다. plain 값이 들어오면
 정책이 없어 `Cancel`과 같다(아래 "Tween→plain 전환" 수렴). 구현 배너는 "3-상태
 저장" 절.
 
@@ -564,6 +579,7 @@ Tween(opts: {
   Reverses: boolean?,
   DelayTime: number?,
   Override: ("Cancel" | "Finish")?,  -- default "Cancel" ([2026-09-06 H-343] 옛 표기 typeof(Tween.Cancel) | typeof(Tween.Finish))
+  Dedup: boolean?,                   -- default true ([2026-09-08 Q25] 소비자가 목표 Value만 비교해 같으면 무동작; false = 항상 재생)
 }) -> Tween<T>
 ```
 

@@ -116,7 +116,9 @@ local function install(quad: any)
 			-- for UIPaddingOffset, or the delegated property write for the others — `numberOnly`
 			-- was an unapproved fifth field, `H-402`). round3 `H-449`: the wrap runs BEFORE the
 			-- managed child is created, so such a raise leaves no half-made child behind.
-			-- Tween stays a Tween — only `.Value` is wrapped (`UI-8`, `Tween:Mapped`)
+			-- Tween stays a Tween — only `.Value` is wrapped (`UI-8`, `Tween:Mapped`). The
+			-- fresh object per emit is harmless: the Property handler dedups by target VALUE
+			-- (round3 Q25, 2026-09-08 — the old object-identity check broke exactly here)
 			-- identity wrap (UIPadding/UIScale): pass the Tween through — `Mapped`
 			-- would clone+re-validate+re-freeze an identical value per emit (2차 리뷰)
 			local mapped = if entry.wrap == identity then v elseif tweenIn then v:Mapped(entry.wrap) else entry.wrap(v)

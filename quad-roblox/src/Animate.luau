@@ -33,27 +33,15 @@
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
-local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override" }
-
--- Q12 (사용자 결정 2026-09-07): the previous Tween is handed back unchanged when the target
--- value AND every option are the same — the Property handler's identity check then leaves the
--- active engine tween alone (no cancel + restart from the interpolated position, `H-391`).
--- `Dedup = false` (or a State of it) opts out — re-emitting the same target then re-triggers.
-local function sameTween(previous: any, v: any, opts: { [string]: any }): boolean
-	if previous.Value ~= v then
-		return false
-	end
-	for _, name in FIELDS do
-		if previous[name] ~= opts[name] then
-			return false
-		end
-	end
-	return true
-end
+-- `Dedup` rides along as a plain Tween field ([2026-09-08 user decision, round3 Q25] — the
+-- dedup MECHANISM lives in the consumer, the Property handler, which compares the incoming
+-- target `Value` with the slot's recorded target; Animate no longer hands back the previous
+-- Tween object — the 2026-09-07 Q12 identity model was replaced because identity broke under
+-- any value transform, e.g. the shorthand handler's `Mapped`).
+local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup" }
 
 local function install(quad: any, validateFields: (any) -> ()): any
 	local isState = quad.isState
-	local isTween = quad.isTween
 	local None = quad.None
 	local Tween = quad.Tween
 	local Err = quad.errorNamespace -- shared namespace (`H-231`)
@@ -84,7 +72,7 @@ local function install(quad: any, validateFields: (any) -> ()): any
 		end
 		validateFields(literal)
 		return function(self: any): any
-			return self:Compute(function(selfH: any, previous: any): any
+			return self:Compute(function(selfH: any): any
 				local v = selfH:Get()
 				if v == nil or v == None then
 					-- Q8 (a) (사용자 결정 2026-09-07): nil/None pass through untouched — the
@@ -105,14 +93,7 @@ local function install(quad: any, validateFields: (any) -> ()): any
 				for _, name in FIELDS do
 					opts[name] = resolve(info[name])
 				end
-				local dedup = resolve(info.Dedup)
-				if dedup == nil then
-					dedup = true -- omitted ⇒ dedup (Q12)
-				end
-				if dedup and isTween(previous) and sameTween(previous, v, opts) then
-					return previous
-				end
-				return Tween(opts)
+				return Tween(opts) -- a fresh value every run; the Property handler folds equal targets
 			end)
 		end
 	end

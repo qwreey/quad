@@ -22,9 +22,15 @@
 
 	Value API (immutable — frozen, every operation returns a new value):
 	  Tween{ Value = v, Info = ?, Time = ?, Style = ?, Direction = ?,
-	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ? } -> Tween<T>
+	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ?, Dedup = ? } -> Tween<T>
 	  tween:Mapped(fn) -> Tween<U>     -- opts cloned, Value replaced by fn(Value)
 	  Override = "Cancel" | "Finish"   -- override policy as a string singleton (default "Cancel")
+	  Dedup = true | false             -- [2026-09-08 user decision, round3 Q25] default true: the
+	                                   -- CONSUMER (Property handler) compares the incoming
+	                                   -- `Value` with the slot's recorded target and does nothing
+	                                   -- when equal — options (Time/Style/…) are not compared.
+	                                   -- false = always (re)start. The one dedup mechanism;
+	                                   -- `Animate` just forwards its option here.
 
 	Not a dispatch participant: no handler, no Length/Offset bookkeeping —
 	`StoreBind` unwraps State layers and the branded table arrives at
@@ -89,6 +95,9 @@ local function install(quad: any): any
 		end
 		if opts.Reverses ~= nil and type(opts.Reverses) ~= "boolean" then
 			Err.errorBeforeNearest("Tween: Reverses must be a boolean", SURFACE)
+		end
+		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
+			Err.errorBeforeNearest("Tween: Dedup must be a boolean", SURFACE)
 		end
 		local override = opts.Override
 		if override ~= nil and override ~= "Cancel" and override ~= "Finish" then

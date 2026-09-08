@@ -228,7 +228,7 @@ end
   `base/dispatch-core-plan.md`의 "인덱스의 의미" 절에 같이 명문화해뒀음.
 - **Tween 해석 코드를 여기 복제하지 않는 게 핵심 이득** — `Tween<T>`를
   실제로 읽는 코드는 여전히 `PropertyHandler` 하나뿐이라는
-  `base/tween-plan.md`의 불변식이 유지됨. 3-상태 릴레이션 슬롯(`{Tween, Value, Source} | true | nil` — **[2026-09-07 Q12]** 셋째 필드), `"Cancel"`/`"Finish"`(옛 표기 `Tween.Cancel`/`Tween.Finish` — `H-343`) override
+  `base/tween-plan.md`의 불변식이 유지됨. 릴레이션 슬롯(`{Tween, Value} | {Value} | true | nil` — **[2026-09-08 Q25]** 목표 `Value` 비교 dedup이라 `Mapped`의 새 객체도 접힌다), `"Cancel"`/`"Finish"`(옛 표기 `Tween.Cancel`/`Tween.Finish` — `H-343`) override
   정책, "첫 세팅은 애니메이션 없이 즉시" 규칙까지 전부 `(child, prop)`
   자리에서 그대로 재사용됨 — 이 문서가 따로 정할 게 없음.
 - **타입 대수도 그대로** — 숏핸드 키의 값 타입이 `number`였다면 이제

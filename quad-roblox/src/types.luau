@@ -66,6 +66,7 @@ export type TweenOptions<T> = {
 	read Reverses: boolean?,
 	read DelayTime: number?,
 	read Override: TweenOverride?, -- 기본 "Cancel"
+	read Dedup: boolean?, -- [2026-09-08 Q25] 기본 true — 소비자(Property 핸들러)가 목표 `Value`만 비교해 같으면 무동작
 }
 -- 유니언 멤버용 데이터부(`Mapped` 없음) — 재귀 메소드 테이블을 수백 유니언에 직접
 -- 넣지 않는다(typing-limits 8.8). 실 Tween 값은 구조적으로 만족한다.
@@ -80,6 +81,7 @@ export type TweenData<T> = {
 	read Reverses: boolean?,
 	read DelayTime: number?,
 	read Override: TweenOverride?,
+	read Dedup: boolean?,
 }
 -- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
 -- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).
@@ -124,7 +126,7 @@ export type AnimateInfo = {
 	read DelayTime: (number | QuadTypes.StateMarker<number>)?,
 	read Override: (TweenOverride | QuadTypes.StateMarker<TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
-	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- Q12 (2026-09-07): 같은 목표·옵션이면 이전 Tween을 그대로(기본 true)
+	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- [2026-09-08 Q25] Tween의 `Dedup` 필드로 그대로 전달(기본 true — 값 비교는 Property 핸들러)
 }
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tween<any>>
 

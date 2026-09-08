@@ -168,5 +168,17 @@ do
 	print("PASS")
 end
 
+print("=== 7. Q25 (2026-09-08) — `Dedup` 필드: boolean만, 값에 그대로 실림(기본은 nil = true 취급, 비교는 Property 핸들러) ===")
+do
+	local okD, errD = pcall(function()
+		return Tween({ Value = 1, Dedup = ("yes" :: any) })
+	end)
+	assert(not okD and string.find(tostring(errD), "Dedup must be a boolean", 1, true) ~= nil, "non-boolean Dedup rejected: " .. tostring(errD))
+	mock.assertBlamesUser(errD, "spec.tween.luau", "Tween Dedup blame")
+	assert(Tween({ Value = 1, Dedup = false }).Dedup == false and Tween({ Value = 1 }).Dedup == nil, "field carried as given")
+	assert(Tween({ Value = 1, Dedup = false }):Mapped(function(v: number): number return v + 1 end).Dedup == false, "Mapped keeps Dedup")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

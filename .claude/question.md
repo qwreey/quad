@@ -166,15 +166,8 @@
 
 - **[2026-09-07] 핸드오버 전체 코드 리뷰 문항(round1 §4)** — Q1~Q21 **전부 닫힘**(회신 1~4차; 상태는 그 표의 각 행). 여기 남은 것 없음.
 
-- **[2026-09-07 신설, 2026-09-08 재구성] 구현 뒤 리뷰 round3 문항 — 남은 하나 Q25** — `qa-request/post-implementation-review-round3.md`
-  §4가 소스(Q22~Q24는 회신 4차, **Q26·Q27은 2026-09-08 회신으로 닫힘** — §12). **Q25**: 숏핸드 키(`UICorner`/`UIPaddingOffset`)에서는
-  핸들러가 Tween을 `Mapped`로 바꿔 매번 새 객체가 되므로 Property 핸들러의 신원 dedup(Q12)이 안 선다. 원 권고는 (a) 핸들러 안
-  (inst, 키)별 "원본 → 변환" 캐시였는데, 사용자가 **문항의 틀 자체**를 다시 보는 중 — *"크게 보면 숏핸드 핸들러 문제는 아닌거
-  같기도 … 이걸 Dedup 으로 봐야할지, 재 실행으로 봐야할지 애매해보임. Animate 에 슈거로 간단히 들어갈 레이어가 어쩜 아니였을지도?
-  더 큰 그림으로 봐야하나 고민중."* 메인의 분석(quad엔 값 dedup이 어디에도 없다 — `Source:Set`도 StoreBind도 재처리; Tween은
-  불변 값이라 같은 값 재도착은 plain처럼 멱등이 자연스럽고 "재실행"은 새 값(`Tween{}`·`Dedup=false`)으로 표현된다; 그래서 신원
-  dedup은 Tween 값의 멱등성이고 소비 자리(Property 핸들러)가 맞으며, 위로 올리려면 State에 distinct-until-changed가 새로
-  필요하고 StoreBind 범용 dedup은 제자리 수정 뒤 재`Set` 관용구를 깨뜨린다)은 round3 §12 — 권고는 여전히 (a), 결정은 사용자.
+- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항** — `qa-request/post-implementation-review-round3.md` §4가 소스. Q22~Q24는 회신 4차,
+  **Q25·Q26·Q27은 2026-09-08 회신으로 전부 닫힘**(§12 — Q25는 값 비교 모델·`Tween.Dedup` 필드, `H-478`). 여기 남은 것 없음.
 
 - **[2026-09-07 신설, 같은 날 밤 회신 반영] 소스 구조 재편** — `research/source-layout-plan.md`가 소스(각 절
   머리 `[결정]` 줄 + 9절 상태). 회신으로 닫힌 것: 1절 Slot 분할·3절 Tag 유니언·4절 패밀리 접기(5·6·7절 포함)·

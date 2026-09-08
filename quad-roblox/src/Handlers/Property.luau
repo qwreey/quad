@@ -32,13 +32,16 @@
 	                                 (even a Tween writes `Value` directly —
 	                                 no engine tween, no entry animation)
 	  true                           set before (plain value), no active engine tween
-	  { Value, Source }              [Q26 (a), 2026-09-08] a Tween SNAPPED here (first set) —
-	                                 no engine tween, but the Source is kept so the same
-	                                 Tween re-emitted (Animate Dedup) folds instead of
-	                                 starting a same→same engine tween
-	  { Tween = TweenBase, Value, Source }   an engine tween is running toward Value
-	                                (`Source` = the Tween object that produced it — Q12 identity
-	                                dedup; the field NAME is the implementer's, round3 §6)
+	  { Value }                      [Q26 (a), 2026-09-08] a Tween SNAPPED here (first set) —
+	                                 no engine tween, the target is kept for the dedup below
+	  { Tween = TweenBase, Value }   an engine tween is running toward Value
+	Dedup ([2026-09-08 user decision, round3 Q25] — replaces the 2026-09-07 Q12 object-identity
+	check): an incoming Tween whose `Value` EQUALS the recorded target does nothing — the
+	active tween keeps running, a finished one is not re-triggered. Only `Value` is compared
+	(user: Time/Style/… are not comparison targets, as option changes never re-animated);
+	`Tween{ Dedup = false }` opts out. Value equality is the engine's (`UDim.new(0, 8)` twice
+	is equal), which is why the shorthand handler's `Mapped` copies fold too. A plain-value
+	slot (`true`) records no value, so a Tween arriving there always plays.
 	Order invariant: an active tween is cancelled BEFORE the new value is
 	written (the engine keeps writing the property asynchronously). The
 	override policy consulted is the INCOMING Tween's `Override` (`H-328`):
@@ -122,19 +125,18 @@ local function install(quad: any)
 			-- A nil takes the plain-value path below: it cancels an active tween and writes nil.
 			local prev = tweenSlots:GetStrong(inst, k)
 			local tweenIn = isTween(v)
-			if tweenIn and type(prev) == "table" and prev.Source == v then
-				-- Q12 (사용자 결정 2026-09-07): the SAME Tween object re-emitted (Animate's
-				-- Dedup hands the previous Tween back) — the active tween keeps running,
-				-- no cancel + restart (`H-391`). A completed tween is not re-triggered
-				-- either; `Animate{ Dedup = false }` is the re-trigger switch.
+			if tweenIn and type(prev) == "table" and v.Dedup ~= false and prev.Value == v.Value then
+				-- Q25 (사용자 결정 2026-09-08): same target VALUE — the active tween keeps
+				-- running, no cancel + restart (`H-391`); a completed tween is not
+				-- re-triggered either. `Tween{ Dedup = false }` is the re-trigger switch.
 				return Void
 			end
 			if prev == nil then
 				-- branch 1: first set — snap, no animation even for a Tween value.
-				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value, Source }` (no
-				-- engine tween) so the identity dedup above already holds after the snap.
+				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value }` (no engine
+				-- tween) so the value dedup above already holds after the snap.
 				inst[k] = if tweenIn then v.Value else v
-				tweenSlots:SetStrong(inst, k, if tweenIn then { Value = v.Value, Source = v } else true)
+				tweenSlots:SetStrong(inst, k, if tweenIn then { Value = v.Value } else true)
 				return Void
 			end
 			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
@@ -155,7 +157,7 @@ local function install(quad: any)
 			end
 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
 			if tweenIn then
-				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value, Source = v })
+				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value })
 				engineTween:Play()
 			else
 				inst[k] = v

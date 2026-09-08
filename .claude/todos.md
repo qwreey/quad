@@ -45,8 +45,9 @@
      커밋 안 됨) 권고 셋 — `__tostring`(목록 고정, `spec.tostring` 스펙 50)·`setFuncLevel(level, ...fns)`(옛 시그니처 폐기, `H-475`)·
      메시지 헬퍼 기각 → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`); 옛 `Attribute` → **`Attr`**(+`AttrKey`·`setAttr`, 폴더
      `Attr/`); 10-4는 리서치 대상으로; Q26 (a) 축소판(`H-476`), Q27 등록 op 기각(모듈 `is<Brand>` 필드가 계약, 진단 스캔).
-     **남은 사용자 몫: Q25(숏핸드 dedup — 사용자가 "Dedup인가 재실행인가·Animate 레이어가 맞나" 큰 그림 검토 중, 메인 분석 §12)·
-     flatten 슈거 일곱(+named 자리 축, 사용자 "내일") — `question.md` 2절.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
+     같은 날 아침 후속: **Q25 닫힘 — 값 비교 모델**(`H-478`: Property 핸들러가 목표 `Value`만 비교, `Dedup`은 Tween 필드,
+     옛 Q12 신원 모델·슬롯 `Source` 폐기, `InstanceShorthand` 무변경). **남은 사용자 몫: flatten 슈거 일곱(+named 자리 축,
+     사용자 "내일") — `question.md` 2절.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
    - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
      메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
      (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).

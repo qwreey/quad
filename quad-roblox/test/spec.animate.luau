@@ -96,5 +96,31 @@ do
 	print("PASS")
 end
 
+print("=== 5. Q25 (2026-09-08) — Dedup은 Tween 필드로 전달될 뿐(값 비교는 Property 핸들러): 리터럴은 즉시 검증, State는 실행마다 resolve ===")
+do
+	local src = q.Source(1)
+	local a = src:Apply(Animate({ Time = 0.1, Dedup = false })):Get()
+	assert(q.isTween(a) and a.Dedup == false, "literal Dedup forwarded")
+	assert(src:Apply(Animate({ Time = 0.1 })):Get().Dedup == nil, "omitted stays nil (consumer treats nil as true)")
+	local flag = q.Source(false)
+	local s2 = q.Source(1)
+	local st = s2:Apply(Animate({ Dedup = flag }))
+	assert(st:Get().Dedup == false, "State Dedup resolved at run")
+	flag:Set(true)
+	s2:Set(2) -- option States are not deps — the next Value change picks the latest
+	assert(st:Get().Dedup == true, "latest option value on the next run")
+	local okD, errD = pcall(function()
+		return Animate({ Dedup = "x" })
+	end)
+	assert(not okD and string.find(tostring(errD), "Dedup must be a boolean", 1, true) ~= nil, "literal Dedup validated eagerly: " .. tostring(errD))
+	-- Animate no longer hands back the previous object — every run is a fresh Tween value
+	local s3 = q.Source(5)
+	local st3 = s3:Apply(Animate({ Time = 0.1 }))
+	local first = st3:Get()
+	s3:Set(5)
+	assert(st3:Get() ~= first and st3:Get().Value == 5, "fresh value per run; folding is the consumer's job")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

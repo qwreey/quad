@@ -139,15 +139,15 @@ do
 	print("PASS")
 end
 
-print("=== 7. 회신 3차(2026-09-07) — Q8 (a) Animate 아래 nil/None 통과(해제 가능), Q12 Animate Dedup: 같은 목표 재발행은 이전 Tween 그대로(취소·재시작 0), Dedup=false면 재시작 ===")
+print("=== 7. Q8 (a) Animate 아래 nil/None 통과(해제 가능); Q25 (2026-09-08, 옛 Q12 신원 모델 대체) 값 dedup: 같은 목표 Value면 무동작(취소·재시작 0 — 새 객체여도), Dedup=false면 재시작 ===")
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
 	local f = q.D.Frame({ Size = src:Apply(q.Animate({ Time = 0.2 })) }) :: any
 	src:Set(10)
 	assert(#log == 1 and log[1].props.Size == 10, "first animated set")
-	src:Set(10) -- H-391 재현 경로 — 같은 값 재발행
-	assert(#log == 1 and lastTween().cancels == 0, "Q12: the same target re-emitted hands back the previous Tween — no cancel, no new engine tween")
+	src:Set(10) -- H-391 재현 경로 — 같은 값 재발행(Animate는 매번 새 Tween 객체를 만든다)
+	assert(#log == 1 and lastTween().cancels == 0, "Q25: same target VALUE — no cancel, no new engine tween")
 	src:Set(q.None)
 	assert(#log == 1 and f.Size == nil and lastTween().cancels == 1, "Q8: None passes Animate untouched → Property writes nil, active tween cancelled (Q33)")
 	src:Set(nil)
@@ -156,20 +156,31 @@ do
 	q.D.Frame({ Size = src2:Apply(q.Animate({ Time = 0.2, Dedup = false })) })
 	src2:Set(10)
 	src2:Set(10)
-	assert(#log == 3 and log[3].props.Size == 10, "Dedup = false: the same target re-triggers (cancel + new tween)")
+	assert(#log == 3 and log[3].props.Size == 10 and log[2].tween.cancels == 1, "Animate{ Dedup = false } → Tween.Dedup = false: the same target re-triggers (cancel + new tween)")
+	-- hand-built Tweens, no Animate: equal Value folds regardless of object/options; Dedup=false restarts
+	mock.resetTweenLog()
+	local g = q.D.Frame({ Size = Tween({ Value = 0, Time = 0.1 }) }) :: any -- snapped record { Value = 0 }
+	q.Dispatch.process(g, "Size", Tween({ Value = 10, Time = 0.9 }), 1)
+	assert(#log == 1, "new target: Create")
+	q.Dispatch.process(g, "Size", Tween({ Value = 10, Time = 0.2 }), 1)
+	assert(#log == 1 and log[1].tween.cancels == 0, "options differ (Time) but Value is equal — not a comparison target, folded")
+	q.Dispatch.process(g, "Size", Tween({ Value = 10, Time = 0.2, Dedup = false }), 1)
+	assert(#log == 2 and log[1].tween.cancels == 1, "Tween{ Dedup = false }: restart even with the same Value")
 	print("PASS")
 end
 
 print()
-print("=== 8. Q26 (a) (2026-09-08) — 첫 스냅도 {Value, Source}: 같은 Tween 재발행은 엔진 트윈 0, 다른 Tween은 Create 1, plain은 여전히 true ===")
+print("=== 8. Q26 (a) (2026-09-08) — 첫 스냅도 { Value }: 같은 목표 재발행은 엔진 트윈 0, 다른 목표는 Create 1, plain은 여전히 true ===")
 do
 	mock.resetTweenLog()
 	local t1 = Tween({ Value = 10, Time = 0.3 })
 	local src = q.Source(t1 :: any)
 	local f = q.D.Frame({ Size = src }) :: any
 	assert(f.Size == 10 and #log == 0, "first set: snap, no engine tween")
-	src:Set(t1) -- Animate Dedup hands the same object back — before Q26 this made a same→same engine tween
-	assert(#log == 0, "same Tween re-emitted after the snap: folded (no Create)")
+	src:Set(t1) -- before Q26 this made a same→same engine tween
+	assert(#log == 0, "same target re-emitted after the snap: folded (no Create)")
+	src:Set(Tween({ Value = 10, Time = 0.3 })) -- a different object, equal Value — Q25 value dedup
+	assert(#log == 0, "equal Value in a fresh object: still folded")
 	local t2 = Tween({ Value = 20, Time = 0.3 })
 	src:Set(t2)
 	assert(#log == 1 and lastTween().cancels == 0, "a different Tween after a snapped record: Create 1, nothing to cancel")

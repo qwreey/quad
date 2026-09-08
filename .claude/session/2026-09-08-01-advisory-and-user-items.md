@@ -34,3 +34,8 @@
 - 기계 치환은 "옛 이름을 서술하는 절" 자체를 망가뜨린다 — 인용 보호만으로는 부족하고, 이름 변경을 다루는 절(8절)은 치환 뒤 반드시 다시 읽을 것.
 - 문항을 닫기 전에 그 문항이 든 증상이 **다른 결정으로 이미 사라졌는지** 코드로 대조할 것(Q26 둘째 증상은 Q33이 지웠다).
 - 외부 자문의 "채택 권고"도 발견≠결정 — 권고 3은 사용자가 근거(정적 가독성)로 뒤집었고, 권고 1의 적용 범위도 메인이 넓힌 만큼 사용자가 좁혔다.
+
+## 5. 후속(같은 날 아침) — Q25는 값 비교 모델로 닫힘
+
+메인이 §2의 Q25 분석(신원 dedup은 Tween 값의 멱등성, 소비 자리가 맞다 / 위로 올리는 건 새 메커니즘)을 보고한 뒤, 사용자가 자기 뜻을 정확히 짚었다: *"정확히 내가 말 한 부분은 Animate 보다 위 계층인, 처리자인 프로퍼티 핸들러(소비자) 계층이긴 했음. 슈거보다 위 계층. Source/State 아니고. 신원 가지고는 한계가 보여서, Value 만 보는게 맞다고 봄 — Time/Style 등은 Animate 가 변경되어도 무시하던것 처럼, 비교 대상이 아니라 봄. 2. Dedup 필드가 Tween 에 있는것 맞고, dedup 메커니즘을 tween 하나에만 두는것도 동의함."* 즉 메인이 Q12 인용(*"이전 Tween 을 그대로 리턴"*)을 **객체 신원**으로 읽고 구현했던 것이 어긋남의 뿌리였다 — 사용자의 모델은 처음부터 소비자 층의 **값 비교**였고, 그러면 숏핸드의 `Mapped` 새 객체 문제는 캐시 없이 사라진다. 메인이 짚은 부수 조건 하나: `Animate{ Dedup = false }`가 "새 객체를 만든다"로 구현돼 있어 값 비교 아래선 접혀 버리므로 스위치가 Tween 값에 실려야 한다 → 사용자 동의(`Tween.Dedup` 필드, 메커니즘 하나). 반영(`H-478`): `Tween.validateFields`에 `Dedup` boolean, types `TweenOptions`/`TweenData`에 `Dedup: boolean?`, `Animate`는 `FIELDS`에 `Dedup`을 넣어 전달만(`sameTween`·`previous` 삭제), Property 핸들러 `v.Dedup ~= false and prev.Value == v.Value`, 슬롯 `{ Value }`/`{ Tween, Value }`(`Source` 삭제). plain 슬롯 `true`는 값을 기억하지 않아 거기 오는 Tween은 항상 재생(핫패스 할당 회피 — 메인 판단, 문서에 명시). spec: `spec.tweenproperty` 7·8절 재작성(직접 `Dispatch.process`를 StoreBind와 같은 인덱스에 넣으면 StoreBind가 밀려나는 것을 밟아 별도 인스턴스로), `spec.shorthand` 7절(UDim 심에 `__eq` — 엔진의 값 동등을 흉내), `spec.animate` 5절, `spec.tween` 7절. test.sh exit 0(스펙 50).
+

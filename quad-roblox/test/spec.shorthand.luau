@@ -29,8 +29,14 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 -- UDim 심 — 엔진 전역이 없는 CLI에서 `UDim.new(0, n)`을 테이블로
+-- 엔진처럼 값 동등(`UDim.new(0, 8) == UDim.new(0, 8)`) — Q25 값 dedup이 그 위에 선다
+local UDIM_MT = {
+	__eq = function(a: any, b: any): boolean
+		return a.Scale == b.Scale and a.Offset == b.Offset
+	end,
+}
 local function UDimNew(scale: number, offset: number): any
-	return { Scale = scale, Offset = offset, __udim = true }
+	return setmetatable({ Scale = scale, Offset = offset, __udim = true }, UDIM_MT)
 end
 ;(getfenv(installShorthand) :: any).UDim = { new = UDimNew }
 
@@ -124,4 +130,20 @@ do
 end
 
 print()
+print("=== 7. Q25 (2026-09-08) — Animate 아래 같은 값 재발행: Mapped가 매번 새 Tween을 만들어도 Property 핸들러가 목표 Value로 접는다(취소·재시작 0) ===")
+do
+	mock.resetTweenLog()
+	local s = q.Source(4 :: any)
+	local f = q.D.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local c = childNamed(f, "_quad_round")
+	local log = mock.tweenLog
+	s:Set(10)
+	assert(#log == 1 and log[1].inst == c, "second value animates on the managed child")
+	s:Set(10) -- the H-391 path through the shorthand — before Q25 the fresh Mapped object restarted the tween
+	assert(#log == 1 and log[1].tween.cancels == 0, "same target through Mapped: folded by value")
+	s:Set(12)
+	assert(#log == 2 and log[1].tween.cancels == 1, "a new target still cancels + restarts")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
