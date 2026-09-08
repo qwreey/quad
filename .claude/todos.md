@@ -65,7 +65,9 @@
    round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
    `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
    원문 `session/2026-09-08-04-sugar-implementation.md`.
-   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07 항목(백그라운드 에이전트
+   **[2026-09-08 밤 이월, 사용자 미답]** test.sh에 quad-base용 신 솔버(luau-lsp `LuauSolverV2`) 패스를 게이트로 붙일지 — 지금은
+   구 솔버만이라 에디터에서만 나는 타입 에러를 못 잡는다(`conventions.md` 2026-09-08 항목 (2)). 사용자가 "그렇게 하자"면 붙인다.
+   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트
    종료 판정 — 알림 `status: completed`가 종료 / test.sh 판정은 exit code / 문항·발견은 평문),
    `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 둘(`-ignoreme`
    접미, 커밋 제외 — Bookkeeping abs 온디맨드 RFC·Vide/Fusion 전환 가이드 초안, 착수는 사용자 지시 뒤).

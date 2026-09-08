@@ -315,6 +315,13 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
   보고 문구는 "test.sh exit 0(스펙 N)". 같은 날 게이트 하나 추가: `function name()`이
   앞선 `local` 없이 쓰이면(전역 대입 슈거 — 사용자 REPL 실측) luau-analyze의
   `GlobalUsedAsLocal` lint를 잡아 실패시킨다(`H-404`).
+- **⭐ [2026-09-08 신설 — 슈거 구간 실측 셋] 검사·실측 절차의 구멍.** (1) **quad-types를 고치면 `mise exec -- pesde install`을
+  먼저** — spec은 `luau_packages/` 사본을 보므로 안 돌리면 새 타입이 "Unknown type"으로 나온다(2026-09-08 두 번 밟음). (2) **test.sh의
+  quad-base 검사는 구 솔버 `luau-analyze`다** — 사용자 에디터(luau-lsp 신 솔버)에서만 나는 타입 에러가 있다(`Debounce.luau`의
+  `setup(emit)` 무주석 파라미터가 첫 사용에서 `() -> boolean`으로 굳어 `emit(false)`가 인자 수 불일치, 사용자 실측). 큰 변경 뒤엔
+  `mise exec -- luau-lsp analyze --flag:LuauSolverV2=true --ignore "**/luau_packages/**" quad-base/src <spec들>`을 한 번 돌릴 것(게이트로
+  올릴지는 미정 — `todos.md`). (3) **Studio 실측에서 rojo가 싱크한 새 파일은 이미 `require`된 모듈에 안 보인다**(require 캐시) —
+  `quad-base`·`quad-roblox` 폴더를 `:Clone()`해 사본을 `require`(`audit/sugar-studio-2026-09-08.md`).
 - **⭐ [2026-09-06 신설 — 사용자 지적] 백그라운드 에이전트의 "끝났는가"는 하네스
   알림이 정하지, 에이전트 본문이 정하지 않는다.** 밤샘 구간에 `/code-review`
   포크 둘이 최종 메시지에 *"검증자 N건이 아직 도는 중 — 끝나면 보내겠다"*고
