@@ -128,6 +128,15 @@ function FactoryImpl.__apply(self: any, state: any): any
 	local module, opts, name = self._module, self._opts, self._name
 	local reset, leading, trailing = self._reset, self._leading, self._trailing
 	local maxTime = opts.MaxTime
+	if opts.Handle ~= nil and opts.Handle.Value ~= nil then
+		-- round9 (j), user 2026-09-08: one Ref targets ONE :Apply — a shared factory
+		-- reused with the same Handle would silently overwrite the first gate's handle.
+		-- BEFORE `state:Gate` (`H-517`: a gate raised after the node exists leaves an
+		-- orphan subscriber on the upstream — the `H-509` ordering rule again) and
+		-- OUTERMOST (`H-517`: this frame is tagged, so Nearest would blame State.luau —
+		-- the quad-error "guard reached only through tagged frames" rule, Q7).
+		Err.errorBefore(`{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)`, SURFACE)
+	end
 
 	-- the per-gate handle: Flush/Cancel + the timer state (fields, not
 	-- upvalues, so the ONE table is what every closure — and the registry — sees)
@@ -252,7 +261,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 
 	self._instances[h] = true -- weak-key (plan 5-4): the gate's closure owns `h`, not the factory
 	if opts.Handle ~= nil then
-		opts.Handle:Set(h)
+		opts.Handle:Set(h) -- the "already filled" gate ran first, above
 	end
 	return gated
 end

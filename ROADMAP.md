@@ -62,7 +62,12 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
 - [ ] **[2026-09-08 밤 신설 — 사용자 제기, 결정 대기 `question.md` 0절]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
-- [ ] **[2026-08-12 신설 — `research/operator-sugar-plan.md`]** `Operator` 콤비네이터 슈가 — 네임스페이스 이름·포함 범위가 미정이라 2026-09-08 슈거 구간에서 **의도적으로 뺐다**(`question.md` 0절 (f)).
+- [x] **[2026-09-08 밤 구현 — 사용자 범위 확정]** `Operator` 콤비네이터(`Operator.luau`, `research/operator-sugar-plan.md` 머리 배너), `Context`/`Provider`(`Context.luau`, `base/context-plan.md` — 불변 확장은 사용자 결정으로 안 만듦), `ref:Unwrap()`(`ref-plan.md`).
+- [ ] **[2026-09-08 밤 신설 — 사용자 결정으로 `operator-sugar-plan.md`에서 분리한 백로그 넷]** 릴리즈를 막지 않고, 문서 재개편 없이 이미 있는 슈거 그룹 절에 더해지는 것들(사용자: *"이미 구현된 슈거를 통해 먼저 문서화를 어느정도 다듬어 두면, 나중에 추가는 쉬워"*):
+      - 분기 콤비네이터 `IfElse`(+ 그때 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`)와 컬렉션 계열 `Concat`/`Sorted`/`Filtered` — 순수 슈거지만 **타입 표면 결정이 필요**해 미구현(`operator-sugar-plan.md` "컬렉션 계열 후보" 절).
+      - Attr 그룹 명시적 unset 유틸 — 오퍼레이터가 아니라 별도(`operator-sugar-plan.md` "Attr 그룹 명시적 unset 유틸" 절).
+      - 중첩 평탄화 `State<State<T>>` → `State<T>` — 코어 로직 재검증이 필요(`operator-sugar-plan.md` "중첩 State 평탄화" 절).
+      - 타입드 `Index` 콤비네이터(`Apply(Index<<Theme>>("key"))`) — 사용자 제안, 지금 솔버로는 불가(`typing-limits.md` 8.15 실측); 무타입판은 조건 미달이라 안 넣음.
 - [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
@@ -98,7 +103,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       주의**)가 `bindLifetime`/`canExecute`와 같은 base 범용 유틸 그룹에
       추가될 예정이라는 것만 M1 설계 시 인지. `os.clock()`은 Luau 표준
       라이브러리라 주입 대상 아님(단 절대 시각이 아니라 diff 전용)
-- [x] **[2026-09-08 구현 완료]** `LifecycleHooks.luau`(훅 셋) + `Fallback.luau`(`Fallback`/`Traceback`, `base/fallback-plan.md` — 부분 트리 미회수 갈래만 `question.md` 0절에 열림). 아래는 착수 전 서술.
+- [x] **[2026-09-08 구현 완료]** `LifecycleHooks.luau`(훅 셋) + `Fallback.luau`(`Fallback`/`Traceback`, `base/fallback-plan.md` — 부분 트리 미회수는 같은 밤 UB로 닫힘). 아래는 착수 전 서술.
       **[2026-08-14 아홉 번째 세션 신설]** 생명주기 훅 슈가
       `OnCreated`/`OnRendered`/`OnDestroyed`(`base/lifecycle-hooks-plan.md`)
       — 각각 `PreRef():Callback(guard(fn))`/`PostRef():Callback(guard(fn))`/

@@ -5,7 +5,7 @@
 > `quad-base/src/LifetimeHandle.luau`, Roblox 배선은 `quad-roblox/src/EngineOps.luau`(`task.delay`/`task.cancel`,
 > 인자 순서 뒤집음), mock은 가상 시계(`quad-base/test/mock.luau`의 `advanceTime`). 스펙은 `spec.debounce`(quad-base, 11절)·
 > `spec.timers`(quad-roblox). Studio 실측(`audit/sugar-studio-2026-09-08.md`)에서 1-1절의 사용자 시나리오가 실물 타이머 위에서
-> 그대로 나왔다(Throttle 0.00/0.51/1.01/1.79, Debounce 0.42). **구현하면서 정한 것(사용자 확인 대기 — `question.md` 0절)**:
+> 그대로 나왔다(Throttle 0.00/0.51/1.01/1.79, Debounce 0.42). **구현하면서 정한 것(2026-09-08 사용자 확인 완료 — (a) 마커 OK, (b) 메소드형 OK, (c) 확인, (d) 동의 *"사용자가 진짜 내보내 달라 하는데, 안 내보내는건 의도상 안 맞기도 해서"*)**:
 > (1) `Timeout` 마커 이름은 6절의 `__type_timeout`이 아니라 코퍼스 마커 관례(`H-300`)대로 **`__quadTimeout`**(`quad-types`
 > `Timeout`). (2) `GateHandle`은 5-4절 예시 `h.Value:Flush()`대로 **메소드형**(`Flush: (self) -> ()`), 팩토리의 `:Flush()`/`:Cancel()`과 같은 모양.
 > (3) `MaxTime`은 6-1절이 권한 `min(Time, deadline - os.clock())` 한 타이머가 아니라 **7절 (b)의 타이머 둘** — base가 시계를 안 읽어야
@@ -14,8 +14,9 @@
 > 진행 중인 창을 건드리지 않는 진짜 no-op. (5) `Blocker:OffWithoutEmit()`은 플래그 뒤집기가 아니라 등록 핸들로 `emit(false)`를
 > 돌려 **보류분을 버린다** — 그래서 타이머 경로는 `emit()`으로 먼저 flush하고 그 다음에 창을 정리한다(빈 집합에서만 Off). 이 순서가
 > gate-plan 5번의 "두 경로" 표 그대로다. 아래 7절 의사코드는 **참고용으로만 남긴다(코드가 정본)**. 리뷰·감사(round9,
-> `qa-request/post-implementation-review-round9.md`) 반영 `H-509`~`H-516`; 열린 문항 (h)~(j)(커밋 중 `Cancel`·재진입 leading
-> 이중 통과·`Handle` 덮어쓰기)는 `question.md` 0절.
+> `qa-request/post-implementation-review-round9.md`) 반영 `H-509`~`H-516`; (h)~(j)는 같은 날 사용자 회신으로 닫힘 — (h) flush 중
+> `Cancel`은 UB(*"flush 중 cancel 자체가 의미가 안 맞아서"*), (i) 재진입 leading 이중 통과는 그대로(스펙 10절이 계약), (j) 같은
+> `Handle` Ref로 두 번 `:Apply`는 **에러**(`Debounce.luau` `__apply`, 스펙 7c).
 
 **상태**: base — **[2026-08-19 세션, 전부 해소되어 `research/`에서 승격]**
 12절 "사용자 판단 대기"에 남아있던 마지막 항목(이름/의미론/제어 핸들/

@@ -44,6 +44,8 @@ local EffectBrand = Brand()
 local TagBrand = Brand()
 local AttrBrand = Brand()
 local BlockerBrand = Brand()
+local ContextBrand = Brand() -- 2026-09-08 `Context`/`Provider` (base/context-plan)
+local ProviderBrand = Brand()
 local StateBrand = Brand()
 local SourceBrand = Brand()
 local StoreBrand = Brand()
@@ -75,6 +77,12 @@ local function isObserver(x: any): boolean
 end
 local function isEffect(x: any): boolean
 	return EffectBrand:is(x)
+end
+local function isContext(x: any): boolean
+	return ContextBrand:is(x)
+end
+local function isProvider(x: any): boolean
+	return ProviderBrand:is(x)
 end
 local function isBlocker(x: any): boolean
 	return BlockerBrand:is(x)
@@ -138,6 +146,8 @@ return {
 	TagBrand = TagBrand,
 	AttrBrand = AttrBrand,
 	BlockerBrand = BlockerBrand,
+	ContextBrand = ContextBrand,
+	ProviderBrand = ProviderBrand,
 	StateBrand = StateBrand,
 	SourceBrand = SourceBrand,
 	StoreBrand = StoreBrand,
@@ -156,6 +166,8 @@ return {
 	isObserver = isObserver,
 	isEffect = isEffect,
 	isBlocker = isBlocker,
+	isContext = isContext,
+	isProvider = isProvider,
 	isModifier = isModifier,
 	isRef = isRef,
 	isPreRef = isPreRef,

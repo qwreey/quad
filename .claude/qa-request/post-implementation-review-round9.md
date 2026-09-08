@@ -67,7 +67,40 @@ idle이 되지만 5-4절의 "Cancel은 타이머를 정리한다"와 어긋난�
 덮어쓴다(리뷰 실측 — 첫 게이트는 브로드캐스트로만 닿는다). 증상 확정, 처방 미정: (1) 두 번째 `:Apply`에서 `Handle.Value ~= nil`이면
 에러(`ref-plan.md`의 이중 배치 가드와 같은 결) / (2) 문서로만 / (3) 그대로. 권고는 (1).
 
-## §5 교훈
+## §5 사용자 회신 (2026-09-08 밤, 대화형)
+
+(a)~(d)·(h)~(j) 전부 닫힘: (a) 새 마커 OK, (b) 메소드형 OK(*"다른것과 비교해서 볼때 일반적이라"*), (c) 확인, (d) 동의, (h) UB
+(*"flush 중 cancel 자체가 의미가 안 맞아서"*), (i) 그대로, (j) 에러 — 반영: `Debounce.luau` `__apply`의 Handle 기충전 게이트 + 스펙
+7c. 같은 회신으로 (e) UB·(f) `Operator` 범위·(g) 보류, 그리고 새 슈거 둘(`Context`·`Unwrap`) 채택 — 세션 파일 §6.
+
+## §7 둘째 단위(Context · Operator · Unwrap · (j) 게이트) 리뷰·감사 (같은 밤)
+
+같은 절차(opus 단일 맥락 리뷰 + sonnet 감사자 diff 범위). HIGH 0. 반영 `H-517`~`H-520`:
+
+- **`H-517` (MED 둘) (j) Handle 게이트의 자리와 blame.** 게이트가 `state:Gate(...)`로 노드를 만든 **뒤**에 던져 상류 `_subs`에 주인 없는
+  게이트가 남았고(다음 `:Set`에 타이머가 둘 잡힘 — 같은 원장 §6 교훈 `H-509`를 그 자리에서 다시 밟음), 태그된 `__apply` 프레임 **안**에서
+  `errorBeforeNearest`로 던져 `State.luau:325`를 blame했다(quad-error의 "태그 프레임만 거쳐 닿는 가드는 outermost" 규칙, Q7). 검사를
+  `__apply` 맨 앞으로 올리고 `errorBefore`로. 스펙 7c가 같은 Source에 두 번 붙여 `_subs` 수·타이머 수·blame을 본다. 부수: 기본값이 있는
+  Ref를 Handle로 주면 같은 게이트에 걸린다 — 메시지에 명시.
+- **`H-518` (LOW) `Operator` 팩토리의 nil 인자가 조용히 사라졌다.** `{...}`+`#`로 세어 `Sum(tax, nil, ship)`이 nil을 건너뛰고 계산했다 —
+  `collectDeps`의 `H-199`("nil dep는 사라지지 않고 에러")와 같은 결로 `select("#")`로 세고 nil이면 팩토리 호출에서 에러. 스펙 5절.
+- **`H-519` (LOW) `Context` 소유권·사본 서술 부재 + 태그 규칙.** 값 맵이 강참조라는 것, Provider 신원이 quad-base 사본마다 갈린다는
+  것(브랜드와 같은 이유)이 어디에도 없었다 — 헤더·`context-plan.md`에 추가. 리뷰가 MED로 올린 "옮겨 담기 회피책은 열거 표면이 없어
+  불가능"은 같은 밤 사용자 결정(불변 확장·분기 없음, 진실 원천 하나)으로 그 회피책 문장 자체가 사라져 해소 — 대신 "열거 표면도 의도적으로
+  없다"를 명시. 지역 직접 호출인 `Context` 생성자에 태그를 달았던 것(quad-error 사용 규칙 위반, 무해)은 제거.
+- **`H-520` (LOW) 주석·문서 자리.** `Operator.luau` 꼬리 주석이 단항 항목의 태그 구조를 잘못 그림(정정), quad-types에서 새 필드/타입 함수가
+  기존 주석 블록과 대상 사이에 끼어든 것 둘(자리 이동), `todos.md`의 "지금 사용자 몫 (a)~(g)"가 닫힘 문장 옆에 그대로(취소선),
+  `spec.operator` 5절 제목의 blame 주장 범위(좁힘), `spec.context`에 `false` 값 케이스 추가.
+
+확인만(코드 변경 없음): Operator dep 배선·`previous` 자리·`Clamp` 인자 순서 정본대로; `bit32`의 음수 모듈로·소수 절삭과 `Alternative`의
+default State 상시 구독은 사용자 문서용 관측으로 operator 플랜 배너에; `Apply(Operator.*)` 결과 타입이 대입에서 단언되지 않는 것은
+`:Compute` 결과 억제라는 기존 한계(`typing-limits.md` 8.15 꼬리); `Not: (self: any)`가 아무 State나 받는 것은 8.14의 실측 근거대로.
+감사자(문서): fallback 배너·README·ROADMAP의 "미회수 갈래 열림" 잔재, operator 플랜 상태 문단·research README·todos 4번의
+"미정·맨 마지막" 잔재, architecture `Ref/init.luau` 행의 `:Unwrap()` 누락, "왜 Context가 없는가" 두 곳의 경계 한 줄 — 전부 반영.
+감사자가 판단으로 넘긴 "operator 플랜을 `base/`로 옮길지"는 열린 절(컬렉션·평탄화 등)이 백로그로 분리돼 카탈로그 기록으로 남으므로
+`research/`에 둔다.
+
+## §6 교훈
 
 - 상태 변경과 "던질 수 있는 읽기"의 순서는 새 코드에서도 반복된다(`H-392`·`H-445`·`H-509` 세 번째) — 정책 코드를 쓸 때 첫 체크.
 - 헤더의 불변식 문장은 리뷰어가 코드로 반증한다 — "정확히 ~일 때만" 같은 양방향 주장은 한 방향만 참인지 먼저 볼 것.

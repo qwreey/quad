@@ -176,6 +176,19 @@ function RefImpl.Uncallback<T>(self: Ref<T>, fn: Callback<T>): Ref<T>
 	return self
 end
 
+-- `:Unwrap()` (2026-09-08, `ref-plan.md` "`:Unwrap()`" 절): the runtime guarantee a `PreRef`
+-- placed in a children array is filled before any event callback can run has no
+-- type-level counterpart (`Ref<Frame?>`), so every callback needed an `if v then`.
+-- Returns the value or raises at the caller's line; the TYPE strips nil
+-- (`QuadTypes.StripNil<T>` type function — spike 2026-09-08, both solvers).
+function RefImpl.Unwrap<T>(self: Ref<T>): any
+	local value = self.Value
+	if value == nil then
+		Err.errorBeforeNearest("Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed", SURFACE)
+	end
+	return value
+end
+
 local function Ref<T>(default: T): Ref<T>
 	local self = setmetatable({
 		Value = default,
@@ -189,7 +202,7 @@ local function Ref<T>(default: T): Ref<T>
 end
 
 -- `H-231`: public surface joins the shared error-namespace tag layer
-Err.setFuncLevel(SURFACE, RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, RefImpl.Uncallback, RefImpl.Wait, Ref)
+Err.setFuncLevel(SURFACE, RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, RefImpl.Uncallback, RefImpl.Wait, RefImpl.Unwrap, Ref)
 
 -- ── dispatch handlers (M8 단위 ②, `H-278`: the module that declares the value
 -- registers its leaf handler + guards) ─────────────────────────────────────

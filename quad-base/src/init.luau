@@ -42,6 +42,8 @@ local ModifierModule = require("@self/Dispatch/Modifier") -- M7 단위 ①(값 �
 local DebounceModule = require("@self/Debounce") -- `Debounce`/`Throttle`(base/debounce-throttle-plan) — 인스턴스별(주입 시간 op를 읽는다)
 local LifecycleHooks = require("@self/LifecycleHooks") -- `OnCreated`/`OnRendered`/`OnDestroyed`(base/lifecycle-hooks-plan) — 인스턴스별(`Effect`)
 local FallbackModule = require("@self/Fallback") -- `Fallback`/`Traceback`(base/fallback-plan) — 의존 없는 잎
+local ContextModule = require("@self/Context") -- 2026-09-08 `Context`/`Provider`(base/context-plan) — 의존 없는 잎
+local OperatorModule = require("@self/Operator") -- 2026-09-08 `Operator.*`(research/operator-sugar-plan) — 의존 없는 잎
 
 type Quad = QuadTypes.Quad
 
@@ -77,6 +79,8 @@ local function New(): Quad
 		isObserver = Brand.isObserver,
 		isEffect = Brand.isEffect,
 		isBlocker = Brand.isBlocker,
+		isContext = Brand.isContext,
+		isProvider = Brand.isProvider,
 		isModifier = Brand.isModifier,
 		isRef = Brand.isRef,
 		isPreRef = Brand.isPreRef,
@@ -103,6 +107,9 @@ local function New(): Quad
 		-- 컴포넌트 에러 격리 슈거(잎 모듈 재export, `base/fallback-plan.md`)
 		Fallback = FallbackModule.Fallback,
 		Traceback = FallbackModule.Traceback,
+		-- 2026-09-08: 명시적 값 컨테이너(`Context()`/`Context.Provider()`)와 연산자 콤비네이터 네임스페이스
+		Context = ContextModule.Context,
+		Operator = OperatorModule.Operator,
 	} :: Quad
 
 	function module.RunInit(self, initFn)

@@ -122,6 +122,25 @@ export type Relate = {
 	GetWeak: (self: Relate, inst: any, key: any) -> any?,
 }
 
+-- `StripNil<T>` — `T`에서 `nil`만 벗긴다(`Ref:Unwrap()`의 반환 타입, 2026-09-08 스파이크: 구·신 솔버 모두
+-- `number?` → `number`, `(number | string)?` → `number | string`, nil 없는 T는 그대로). 타입 함수라 신 솔버 전용
+-- 문법이지만 quad-types는 이미 `CheckReservedKeys`로 같은 계약 위에 있다.
+export type function StripNil(t: type): type
+	if t:is("union") then
+		local comps: { type } = {}
+		for _, c in t:components() do
+			if not c:is("nil") then
+				table.insert(comps, c)
+			end
+		end
+		if #comps == 1 then
+			return comps[1]
+		end
+		return types.unionof(table.unpack(comps))
+	end
+	return t
+end
+
 -- `Ref<T>` 최소형(`.claude/base/ref-plan.md`, M2 `H-128`). 콜백은 `fn(value, ref)` —
 -- 두 번째 인자가 Ref 자신(= `Epoch`). `:Wait`는 M8. **단일 타입 파라미터
 -- `Ref<T>(T)`** — nil이 들어올 수 있는 자리는 호출자가 `Ref<<T?>>(nil)`로 넓힌다
@@ -152,6 +171,9 @@ export type Ref<T> = {
 	-- M8 단위 ①: 항상 다음 `:Set`까지 기다린다(brief §0 Q5 (a)); thread를 주면
 	-- 등록만 하고 즉시 self. 대기자는 `.Callbacks`의 thread 키(`:Set`이 소진·resume)
 	Wait: <Self>(self: Self, thread: thread?) -> Self,
+	-- 2026-09-08 (`ref-plan.md` "`:Unwrap()`" 절): 비어 있으면 호출 줄에서 에러, 아니면 값 — 타입은 nil을 벗긴다
+	-- (`PreRef<Frame?>`를 이벤트 콜백 안에서 `ref:Unwrap():CaptureFocus()`처럼; 런타임 보장이 있는 자리 전용).
+	Unwrap: (self: Ref<T>) -> StripNil<T>,
 }
 -- M8 단위 ①: `PreRef`/`PostRef` — 런타임은 `Ref` 그대로, 마커 필드로 nominal
 -- (H-300 관례 — 런타임 값에도 실제 필드). fire 시점만 다르다(`ref-plan.md`
@@ -242,6 +264,38 @@ export type TimedGate = {
 	Flush: (self: TimedGate) -> (),
 	Cancel: (self: TimedGate) -> (),
 	__apply: (self: any, state: any) -> any,
+}
+
+-- ── Context / Provider (2026-09-08, `base/context-plan.md`) ─────────────────────
+-- 명시적 값 컨테이너 — 트리 탐색이 아니라 props로 건네는 타입드 다중 Store 가방(암묵 Context는 `archive/context-rejected.md`).
+-- `Provider<T>`는 테이블 신원 키; `T`는 팬텀(`__quadProviderValue`)이라 `ctx:Get(p)`가 `T`로 추론된다.
+export type Provider<T> = { read __quadProvider: true, read __quadProviderValue: T, read Name: string? }
+export type Context = {
+	read __quadContext: true,
+	Set: <T>(self: Context, provider: Provider<T>, value: T) -> Context, -- 이 가방을 변경, self 반환
+	Get: <T>(self: Context, provider: Provider<T>) -> T, -- 없으면 에러(사용자 결정)
+	Peek: <T>(self: Context, provider: Provider<T>) -> T?, -- 없으면 nil — 있는지 확인용
+}
+export type ContextConstructor = setmetatable<{ Provider: <T>(name: string?) -> Provider<T> }, { __call: (self: any) -> Context }>
+
+-- ── Operator (2026-09-08, `research/operator-sugar-plan.md` — 범위는 사용자 확정) ────────
+-- 전부 `factory(self) -> State<U>` 모양, `state:Apply`로 붙인다. 숫자 인자는 plain이거나 State<number>.
+export type NumArg = number | StateData<number>
+export type NumOp = (self: StateData<number>) -> State<number>
+export type Operator = {
+	Not: (self: any) -> State<boolean>, -- 비제네릭·`self: any`: 제네릭 함수 값도 `StateData<any>`도 `Apply`의 함수 오버로드 자리에 안 들어간다(실측)
+	Sum: (...NumArg) -> NumOp,
+	Product: (...NumArg) -> NumOp,
+	Min: (...NumArg) -> NumOp,
+	Max: (...NumArg) -> NumOp,
+	Band: (...NumArg) -> NumOp,
+	Bor: (...NumArg) -> NumOp,
+	Bxor: (...NumArg) -> NumOp,
+	Bnot: NumOp,
+	Shl: (n: NumArg) -> NumOp,
+	Shr: (n: NumArg) -> NumOp,
+	Clamp: (lo: NumArg, hi: NumArg) -> NumOp,
+	Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>,
 }
 
 -- ── Tag / Attr (M10, round16 spike) ─────────────────────────────
@@ -530,6 +584,9 @@ export type Quad = {
 	-- `err`는 `any`(문자열 가정 금지 — 그 문서 "`err: any`임을 반드시 문서화" 절).
 	Fallback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any) -> Err) -> (A...) -> Ok | Err,
 	Traceback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any, trace: string) -> Err) -> (A...) -> Ok | Err,
+	-- 명시적 값 컨테이너(`base/context-plan.md`)와 연산자 콤비네이터(`research/operator-sugar-plan.md`), 2026-09-08
+	Context: ContextConstructor,
+	Operator: Operator,
 
 	-- 디스패치 엔진(M3 단위 1, `H-25` — 마일스톤마다 서브시스템 필드를 여기
 	-- 같이 갱신하는 규칙의 M3 몫). 닫힌 레코드라 이 필드가 없으면
@@ -579,6 +636,8 @@ export type Quad = {
 	isObserver: (x: any) -> boolean,
 	isEffect: (x: any) -> boolean,
 	isBlocker: (x: any) -> boolean,
+	isContext: (x: any) -> boolean, -- 2026-09-08
+	isProvider: (x: any) -> boolean,
 	isModifier: (x: any) -> boolean,
 	isRef: (x: any) -> boolean,
 	isPreRef: (x: any) -> boolean,

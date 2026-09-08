@@ -358,4 +358,23 @@ do
 end
 
 print()
+print("=== U. :Unwrap() (2026-09-08, ref-plan) — 비어 있으면 호출 줄 에러, 아니면 값; 타입은 StripNil<T>로 nil이 벗겨진다 ===")
+do
+	local r = Quad.Ref(nil :: number?)
+	local ok, err = pcall(function()
+		return r:Unwrap()
+	end)
+	assert(not ok and string.find(tostring(err), "Ref:Unwrap: the Ref is empty", 1, true), tostring(err))
+	assert(string.find(tostring(err), "spec.ref.luau", 1, true) and not string.find(tostring(err), "/src/", 1, true), "blames the caller")
+	r:Set(5)
+	local n: number = r:Unwrap() -- `number?` → `number` (strict: this line IS the type assertion)
+	assert(n == 5, "value")
+	local pre = Quad.PreRef(nil :: string?)
+	pre:Set("x")
+	local s: string = pre:Unwrap()
+	assert(s == "x", "PreRef too (same runtime)")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -16,7 +16,7 @@
 | `preref-order-unguaranteed-withdrawn.md` | **[철회됨, 2026-08-14 아홉 번째 세션 신설]** 복수 `PreRef`/`PostRef` 간 fire 순서를 "배열 index 순서 보장"에서 **미보장으로 바꾸려던 안** — 같은 세션에 제안·철회, 현재 계약은 **보장**(2026-08-07 결정 그대로). 반례는 `FastQuery(...) -> PreRef`류 조합(앞자리 항목이 뒤 항목의 전제를 만들어주는 정당한 합성), 보장 비용 0 + 배열 파트 index 순서 계약의 자동 귀결이라 새로 내주는 자유도 없음. 양쪽 논거 보존 |
 | `ui-shorthand-roundsize-dropped.md` | **[기각됨, 2026-08-07 신설]** v1 `RoundSize`(이미지 9-slice 라운드 트릭) — 네이티브 `UICorner`로 대체되어 포팅 불필요. 이 판단이 한 차례 "Corner/PaddingAll/Scale 숏핸드 전체가 불필요하다"로 과잉일반화됐다가 정정된 이력 포함 |
 | `batch-rejected.md` | **[기각됨, 2026-08-07 신설]** lexical `Batch(fn)` — 코루틴 yield 위에서 구조적으로 위험해 기각, 값 기반 `Blocker`(`base/blocker-plan.md`)로 대체 |
-| `context-rejected.md` | **[기각됨, 2026-08-07 신설]** `Context`(트리 하위 암묵 전파) + 대안이던 레이어드 Store 둘 다 기각 — 명시적 타입 강제 Store 전달로 충분하다는 판단 |
+| `context-rejected.md` | **[2026-09-08 경계 배너 — 새 명시적 `quad.Context`(`base/context-plan.md`)는 별개]** **[기각됨, 2026-08-07 신설]** `Context`(트리 하위 암묵 전파) + 대안이던 레이어드 Store 둘 다 기각 — 명시적 타입 강제 Store 전달로 충분하다는 판단 |
 | `modifier-apply-mutable-rejected.md` | **[기각됨, 2026-08-08 신설]** `Modifier.Apply`/setter를 mutable로 바꾸는 방안(및 "Apply 경계에서만 clone" 절충안) — 둘 다 형제 서브트리 오염 방지가 clone 비용 절감보다 우선이라 기각 |
 | `onchange-hash-key-reversed.md` | **[역전됨, 2026-09-03 신설]** 구 `OnChange(name)` 해시부 특수 키 모델(이름별 weak 캐시 동등성·`H-27` 얼리리턴) — 구현·커밋된 지 몇 시간 만에 사용자 제안으로 배열부 값 `OnChange(name, fn)`으로 대체. 뒤집힌 이유(해시 순서 비결정·strict 타이핑 사각·같은 이름 중복 소실)와 사용자 원문 보존, `Tag`의 같은 역전과 짝 |
 | `tag-hash-key-model-reversed.md` | [역전됨] 구 `Tag` 모델(해시 파트 boolean 키, 태그 개수만큼 키 갱신) — 2026-08-08 세 번째 세션에서 array-part 값 객체(`Tag(...)`, `:Added`/`:Removed`/`:Contains`/`:Apply`/`Merged`) 모델로 완전히 대체됨 |

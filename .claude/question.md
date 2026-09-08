@@ -74,7 +74,14 @@
 > `base/dispatch-core-plan.md`(0-A/0-Z가 반영된 디스패치 코어 — 열네 번째
 > 세션에 `bind-system-plan.md`에서 분리 신설).
 
-## 0. [2026-09-08 밤 신설] 슈거 구현 뒤 확인 문항 — 메인이 구현하면서 정한 것과 남긴 갈래
+## 0. [2026-09-08 밤 신설, 같은 밤 회신으로 (a)~(j) 전부 닫힘] 슈거 구현 뒤 확인 문항
+
+**회신(2026-09-08 밤)**: (a) 새 마커 OK(다른 것과 맞춤) · (b) 메소드형 OK · (c) 확인 · (d) 동의 · (e) UB(블래스트 범위 억제가
+목적, 고아는 처리 안 함 — `fallback-plan.md` "미해결" 절에 원문) · (f) `Operator` 이름·범위 확정 → **구현됨**(`research/
+operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 함 · (h) UB · (i) 그대로 · (j) 에러(구현됨). 같은 회신으로
+새 슈거 둘 채택 — `Context`(`base/context-plan.md`)·`ref:Unwrap()`(`ref-plan.md`). **(k)·(l)도 같은 밤 후속 회신으로 닫힘** —
+(k) 불변 확장 안 함(진실 원천 하나, `context-plan.md`), (l) `IfElse`는 컬렉션 계열과 함께 별도 백로그(ROADMAP). 같은 회신의
+타입드 `Index` 제안은 실측 결과 지금 솔버로 불가(`typing-limits.md` 8.15) — 백로그. **이 절에 남은 문항 없음.**
 
 사용자 결정("문서화는 뒤로, base에 올릴 순수 슈거를 먼저 간단히 만들어 놓고 다듬기")으로 `Debounce`/`Throttle`·생명주기 훅 셋·
 `Fallback`/`Traceback`을 구현해 커밋했다(원문 `session/2026-09-08-04-sugar-implementation.md`). 정본이 이미 답을 가진 건 그대로

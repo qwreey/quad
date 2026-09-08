@@ -1238,3 +1238,12 @@ Ref가 조용히 통과했다(`typing-limits.md` 8.9절 — `Set`/`Callback` 이
 사용자 코드가 스스로 구분할 수 있게 해주는, `PreRef`만으론 표현이 안 되던
 자리임.
 
+## `:Unwrap()` — 런타임 보장 언랩 (2026-09-08 신설·구현)
+
+발단은 문서화 스캐폴딩 에이전트가 제기한 `docs-ignoreme/research/preref-unwrap-sugar-plan.md`(무시 파일)를 사용자가 *"아주
+간단한거"*라며 채택한 것. children 배열에 놓인 `PreRef`는 pre-pass에서 채워지고 이벤트 콜백은 마운트 뒤에만 불리므로 그
+안에서 `.Value`가 nil일 수 없는데, 타입은 `Ref<Frame?>`라 매번 `if v then` 가드를 써야 했다. **`ref:Unwrap()`**은 비어
+있으면 호출 줄에서 에러(`errorBeforeNearest`), 아니면 값을 돌려주고, **타입은 nil을 벗긴다** — `quad-types`의
+`StripNil<T>` 타입 함수(유니언에서 `nil` 성분만 제거; 2026-09-08 스파이크로 구·신 솔버 모두 `number?` → `number`,
+`(number | string)?` → `number | string` 확인, `typing-limits.md` 8.14). 런타임은 `Ref` 공통(`PreRef`/`PostRef` 포함)이라
+"보장이 있는 자리 전용"은 규약이지 강제가 아니다 — 빈 Ref에 부르면 그 줄에서 죽는다. 스펙 `spec.ref` U절.

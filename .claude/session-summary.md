@@ -2486,3 +2486,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   부분 트리 갈래·Operator·스텝 op 예약). 시간·스텝 op 자리에 대한 메인 의견(base 주입 경로, spring은 별도 패키지)은 세션 파일 배경.
   **round9**(`qa-request/post-implementation-review-round9.md`): opus 리뷰 HIGH 0 — `H-509` `openWindow` 읽기→상태 순서(`H-392`
   선례 셋째)·`H-510`~`H-516` 반영, 감사자 다섯(배너가 부정하는 "맨 뒤" 문장), 문항 (h)~(j). test.sh exit 0(스펙 54), doc-check ERROR 0.
+  **같은 밤 회신**: (a)~(j) 전부 닫힘((e) UB — 블래스트 범위 억제 목적·고아 미처리, (h) UB, (j) 에러 반영). 둘째 단위: `Operator`(이름·범위
+  확정 — And/Or·비교 제외, `IfElse`는 문항), `Context`/`Provider`(`base/context-plan.md` — 암묵 맥락 기각과의 경계는 사용자 원문),
+  `ref:Unwrap()`(`StripNil<T>` 타입 함수, typing-limits 8.14). 스펙 56. **후속 회신**: (k) 불변 확장 안 함(진실 원천 하나), (l)
+  `IfElse`·컬렉션·Attr unset·평탄화는 백로그 넷으로 분리, 타입드 `Index` 제안은 실측 불가(typing-limits 8.15). 남은 문항 없음.

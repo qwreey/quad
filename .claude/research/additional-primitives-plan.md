@@ -103,7 +103,7 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
   - "왜 lexical Batch를 기각하고 대신 값 기반 Blocker를 택했는가" —
     `archive/batch-rejected.md`와 `base/blocker-plan.md`의
     Blocker 절을 나란히 비교.
-  - "왜 Context가 없는가" — `archive/context-rejected.md` 참고.
+  - "왜 Context가 없는가" — `archive/context-rejected.md` 참고(**[2026-09-08]** 암묵 맥락만 — 명시적 `quad.Context`(`base/context-plan.md`)는 별개).
   - "왜 push-invalidate/pull-recompute 설계가 laziness와 재계산 방지를
     최우선 목표로 뒀는가" — Blocker 같은 파생 프리미티브가 이 목표 위에서
     자연스럽게 나온 이유까지 포함해 기존 심화 콘텐츠 후보 3번(`왜

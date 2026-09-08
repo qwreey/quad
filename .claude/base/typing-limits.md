@@ -1009,3 +1009,31 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
   주석 필수(`Of<<T>>("x")` 또는 `local x: Source<T> = st:Of("x")`), Q46 (a) 문서화. 컴포넌트 경계 별칭은 **재노출하지 않는다** — 사용자 확정
   Q45 (c): *"직접 require D해서 타입 필요하면 직접 꺼내는 걸로 … 재노출 상태로 인해 모듈 자체가 너무 더렵혀짐"*, 사용자 문서는
   `require("…/D")` 경로를 안내한다. Q44는 (a) 관용구 문서화(위 인덱서 불변 항목).
+
+## 8.14. `StripNil<T>` 타입 함수로 nil을 벗길 수 있다; 제네릭 함수 값·`StateData<any>` self는 `Apply`의 함수 오버로드 자리에 안 들어간다 (2026-09-08 실측)
+
+- **`Ref:Unwrap()`의 반환 타입.** `<U>(self: Ref<U?>) -> U`로 nil을 벗기려 하면 구·신 솔버 모두 `unknown`이 된다(스파이크). 대신
+  `type function StripNil(t)`(유니언 성분에서 `nil`을 빼고 `types.unionof`로 재조립, 성분 하나면 그것)을 `quad-types`에 두고
+  `Unwrap: (self: Ref<T>) -> StripNil<T>`로 선언하면 양쪽 솔버가 `number?` → `number`, `(number | string)?` → `number | string`,
+  nil 없는 `T`는 그대로 준다. 신 솔버는 타입 함수 본문도 검사하므로 `local comps: { type } = {}`처럼 지역 테이블에 주석이 필요하다.
+- **`Operator.Not`의 타입.** `state:Apply(Operator.Not)`에서 `Not`을 `<T>(self: StateData<T>) -> State<boolean>`(제네릭 함수 값)로
+  두면 `Apply`의 함수 오버로드(`<U>(self, factory: (State<T>) -> U) -> U`)에 안 들어가고, `(self: StateData<any>) -> …`도 안
+  들어간다(구 솔버 "None of the overloads … compatible"). `(self: any) -> State<boolean>`만 통과 — 인자 `T`를 쓰지 않는 단항
+  콤비네이터는 self를 `any`로. 숫자 콤비네이터(`NumOp = (self: StateData<number>) -> State<number>`)는 그대로 들어간다.
+
+## 8.15. 타입드 `Index` 콤비네이터(`state:Apply(Operator.Index<<Theme>>("Primary"))` → `State<string>`)는 지금 솔버로 못 만든다 (2026-09-08 실측, 사용자 제안)
+
+사용자 제안: 테마처럼 키로 값을 꺼내는 파생이 흔하니 `Apply(Index<<Type>>("key"))`가 타입드로 되면 좋겠다. 스파이크 여섯(구·신 솔버 동일):
+- 네임스페이스 **필드** 타입 `Index: <T, K>(key: K) -> (self: StateData<T>) -> State<index<T, K>>` — 리터럴 인자의 `K`가 `string`으로 넓혀져
+  `index<Theme, string>` 실패. `key: K & (string | "")`·`key: K | ""`·`key: K & keyof<T>`(사용자 힌트 둘 + OnChange 실측 관용구)로 `K`는 싱글턴으로
+  살아나지만(`"Primary" <: 'a`, 오타 "Nope"도 keyof가 잡음) **반환 자리**의 `index<T, K>`는 그 경계 제네릭을 못 풀어 "Property
+  ("Primary" <: 'a) does not exist". 별칭 반환·`typeof(로컬 함수)`·로컬 별칭 호출 전부 같다. OnChange가 통과한 건 `index<PropTypes, K>`가
+  같은 호출의 **파라미터** 자리였기 때문 — 반환 자리엔 안 통한다.
+- **State 메소드** 형태 `Index: <K>(self: StateData<T>, key: K & keyof<T>) -> State<index<T, K>>` — 호출 자리는 정확(`theme:Index("Size")`
+  → `State<number>`, 오타 잡힘)하지만 `State<T>` 자체에 `keyof<T>`가 들어가 **테이블이 아닌 모든 `T`**(`State<string>`·`State<number>`)가
+  "Type 'string' does not have keys"로 죽는다 — 결과 타입이 재귀적으로 그 메소드를 갖기 때문. 조건부 타입이 없어 못 가린다.
+- 로컬 **함수 선언** `local function Index<T, K>(key: K)`는 직접 호출에선 통과하지만 `Quad` 표면은 필드라 쓸 수 없다.
+결론: 백로그(ROADMAP). 무타입 `Operator.Index(key)`(`State<any>`)는 만들 수 있으나 제안의 조건("타입드로 된다면")을 못 채워 안 넣었다.
+부수(round9 둘째 리뷰): `state:Apply(Operator.*)`의 **결과**를 엉뚱한 타입에 대입해도 에러가 안 난다 — `:Compute` 결과 타입이 `State<T>`
+순환 타입 안에서 억제되는 기존 한계라(손으로 반환 타입을 적은 인라인 팩토리는 잡힌다), 인자 쪽 검사만 실질이다. `spec.operator`의
+`local x: State<number> = …` 주석은 문서 가치이지 단언이 아니다(`spec.context`의 `Get`/`Unwrap`은 실제로 단언한다).

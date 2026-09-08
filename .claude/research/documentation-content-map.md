@@ -237,7 +237,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
    잘 맞음. (2026-08-06 세션엔 "왜 Batch가 없는가"로만 다뤘다가, Blocker
    채택 후 2026-08-07 세션에서 비교 에세이로 재구성됨 — Batch(lexical)
    기각과 Blocker 채택은 별개 결정이니 혼동하지 말 것.)
-4. 왜 Context가 없는가 — 얕은 버전(코루틴 키 weak table push-pop)조차
+4. 왜 (암묵) Context가 없는가(**[2026-09-08]** 명시적 `quad.Context`는 별개 — `base/context-plan.md`) — 얕은 버전(코루틴 키 weak table push-pop)조차
    quad가 정상 패턴으로 확정한 Slot 비동기 추가에서 조용히 깨지는 이유,
    완전 자동 버전이 Roblox Luau의 플랫폼 한계(thread-local 없음)로 불가한
    이유, 명시적 타입 강제 Store 전달이 Context보다 안전한 이유(레이어드

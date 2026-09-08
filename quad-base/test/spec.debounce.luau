@@ -244,6 +244,35 @@ do
 end
 
 print()
+print("=== 7c. (j) 같은 Handle Ref로 두 번 :Apply — 둘째가 조용히 덮어쓰지 않고 에러(사용자 결정, round9) ===")
+do
+	fresh()
+	local h = Ref(nil :: GateHandle?)
+	local f = Debounce({ Time = 1, Handle = h })
+	local s = Source(0)
+	local _a: State<number> = s:Apply(f)
+	local first = h.Value
+	local subs = 0
+	for _ in (s :: any)._subs do
+		subs += 1
+	end
+	local ok, err = pcall(function()
+		local _b: State<number> = s:Apply(f)
+	end)
+	assert(not ok and string.find(tostring(err), "Handle is already filled", 1, true), tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "Handle gate blame") -- `H-517`: outermost, not State.luau
+	assert(h.Value == first, "first gate's handle untouched")
+	local subs2 = 0
+	for _ in (s :: any)._subs do
+		subs2 += 1
+	end
+	assert(subs2 == subs, "`H-517`: the gate ran before state:Gate — no orphan subscriber left on the upstream")
+	s:Set(1)
+	assert(mock.pendingTimers() == 1, "one gate, one window")
+	print("PASS")
+end
+
+print()
 print("=== 8. 팩토리 브로드캐스트 — factory:Flush()/Cancel()은 그 팩토리로 만든 게이트 전부에; 레지스트리는 weak ===")
 do
 	fresh()

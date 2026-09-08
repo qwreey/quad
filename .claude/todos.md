@@ -61,9 +61,10 @@
    **[2026-09-08 밤 — 슈거 구간, 사용자 결정 "문서화는 뒤로, base에 올릴 순수 슈거를 먼저 간단히 만들어 놓고 다듬기"]**
    구현·커밋: `Debounce`/`Throttle`(`Debounce.luau` + 시간 op 둘 — base 스텁·Roblox `task` 배선·mock 가상 시계·Studio 실측 일치
    `audit/sugar-studio-2026-09-08.md`), 훅 셋(`LifecycleHooks.luau`), `Fallback`/`Traceback`(`Fallback.luau`); 스펙 넷(54). `Operator`는
-   이름·범위 미정이라 뺐다. **지금 사용자 몫: `question.md` 0절 (a)~(g)** — 마커 이름·핸들 메소드형·MaxTime 타이머 둘·Flush 무조건·
-   Fallback 부분 트리 갈래·Operator 이름/범위·스텝 op 예약, **(h)~(j)** round9 리뷰 셋(커밋 중 Cancel·재진입 leading·Handle 덮어쓰기).
-   round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. 원문 `session/2026-09-08-04-sugar-implementation.md`.
+   이름·범위 미정이라 뺐다. ~~지금 사용자 몫: `question.md` 0절 (a)~(g)·(h)~(j)~~(같은 밤 전부 닫힘 — 아래).
+   round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
+   `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
+   원문 `session/2026-09-08-04-sugar-implementation.md`.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07 항목(백그라운드 에이전트
    종료 판정 — 알림 `status: completed`가 종료 / test.sh 판정은 exit code / 문항·발견은 평문),
    `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 둘(`-ignoreme`
@@ -87,14 +88,14 @@
    그 전부터 있던 `hintValue`가 둘 다 빠져 있었음 — 감사가 발견).
    **열린 항목이 뭔지는 `question.md` 1번을 열어볼 것.**
 4. **[백로그 — ⚠️ 2026-09-08 정정: 아래 나열 중 `Fallback`/`Traceback`·생명주기 훅 셋·`Debounce`/`Throttle`은 그날 밤 구현됐다
-   (00번·각 `base/` 문서 머리 배너가 소스; 아래 "맨 뒤"·"후순위" 서술은 그 셋에 한해 착수 전 기록). `Operator`는 여전히 미정·미구현.]**
+   (00번·각 `base/` 문서 머리 배너가 소스; 아래 "맨 뒤"·"후순위" 서술은 그 넷에 한해 착수 전 기록). `Operator`도 같은 밤 이름·범위 확정 뒤 구현됨(`research/operator-sugar-plan.md` 머리 배너).]**
    범용 렌더 디버깅 도구 `quad-mock`(Tween mock 등 동적 동작
    지원, M0 mock 테스트 하네스와는 별개), 런타임 디버깅 플러그인
    `quad-debug`(Studio 플러그인, 실물 Instance→코드 위치 역추적 — 채널
    실현 가능성은 실측 검증 완료, 세부 API 이름만 남음), 문서 사이트 전체
    구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵), `Operator` 콤비네이터
-   슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — 메커니즘은
-   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막), 컴포넌트
+   슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — ~~메커니즘은
+   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막~~ **[2026-09-08 구현됨]**), 컴포넌트
    에러 격리 유틸 `Fallback`/`Traceback`(**[2026-08-14 세션, 설계 확정 —
    `research/`에서 `base/fallback-plan.md`로 승격]** `pcall` 기반
    `Fallback`과 `xpcall`+`debug.traceback` 기반 `Traceback`으로 분리,
