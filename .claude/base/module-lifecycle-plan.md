@@ -180,7 +180,7 @@ return Init
       local current = providerRelate:GetStrong(self, "provider")
       if current == providerFn then return self end -- 멱등 no-op
       if current ~= nil then
-          Err.errorBefore("UseProvider: this Quad module already has a provider — ...", SURFACE) -- 접두는 `H-477` 규약(2026-09-08 `H-496`)
+          Err.errorBeforeNearest("UseProvider: this Quad module already has a provider — ...", SURFACE) -- 직접 호출 표면 = nearest(`H-349`); 접두는 `H-477` 규약(2026-09-08 `H-494`)
       end
       local extension = providerFn(self) -- 팩토리는 뮤테이션 + 타입드 확장 반환
       mergeExtension(self, extension) -- AddPlugin과 공용 병합 → Self & P

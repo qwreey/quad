@@ -169,7 +169,7 @@ local function Init(module: any)
 
 	local function noMatchMessage(k: any, v: any): string
 		local brand = brandNameOf(v)
-		return `Dispatch.drive: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
+		return `Dispatch.process: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
 			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
@@ -178,7 +178,7 @@ local function Init(module: any)
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string
-		return `Dispatch.drive: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
+		return `Dispatch.process: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
 			.. " — return Void when there is nothing to undo"
 	end
 
@@ -228,11 +228,22 @@ local function Init(module: any)
 		end
 	end
 
+	-- `H-504` (2026-09-08 round8 K-2): public `process`/`retractFrom` with a nil inst died
+	-- in Relate (`table index is nil`, now `Relate:GetWeak: inst must not be nil`) — a leaf
+	-- module's name in a user message. Same gate as `drive` (`H-442`), nearest (direct call).
+	local function checkInst(fnName: string, inst: any)
+		if inst == nil then
+			Err.errorBeforeNearest(`Dispatch.{fnName}: inst must not be nil`, SURFACE)
+		end
+	end
+
 	local function retractFrom(inst: any, k: any, index: number)
+		checkInst("retractFrom", inst)
 		retractRange(inst, k, index, true)
 	end
 
 	local function process(inst: any, k: any, v: any, index: number)
+		checkInst("process", inst)
 		-- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* —
 		-- h.process가 재귀 Dispatch.process(inst,k,…,index+1)를 부르는 게 정상
 		-- 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 없으면

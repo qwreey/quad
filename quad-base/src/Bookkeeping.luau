@@ -57,13 +57,18 @@ local function Init(module: any)
 			Err.errorBeforeNearest(`Dispatch.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
 		end
 	end
+	-- `H-504` (2026-09-08 round8 K-2): every public bookkeeping entry with a nil owner died in
+	-- Relate (`Relate:GetWeak: inst must not be nil` on a Bookkeeping.luau line) — the leaf
+	-- module's name, not the surface the user called. `H-447`'s gate had reached `bindLifetime`
+	-- only. Nearest: these are direct-call surfaces.
+	local function checkOwner(fnName: string, ownerKey: any)
+		if ownerKey == nil then
+			Err.errorBeforeNearest(`Dispatch.{fnName}: ownerKey must not be nil`, SURFACE)
+		end
+	end
 
 	local function getBlocker(ownerKey: any): any
-		if ownerKey == nil then
-			-- `H-499` (2026-09-08 2차 감사 I-6): public via `Dispatch.getBlocker` — siblings got
-			-- their nil gate in `H-447`; this one still died in Relate with `table index is nil`
-			Err.errorBeforeNearest("Dispatch.getBlocker: ownerKey must not be nil", SURFACE)
-		end
+		checkOwner("getBlocker", ownerKey) -- `H-499`/`H-504`
 		local blocker = blockers:GetStrong(ownerKey, "blocker")
 		if blocker == nil then
 			blocker = Blocker()
@@ -101,6 +106,7 @@ local function Init(module: any)
 	-- lazily). Physical-inst owners keep the weak Relate + gchold anchor path.
 	-- The header predicted this branch "when M6 lands" — this is that.
 	local function getBookkeeping(ownerKey: any): any
+		checkOwner("getBookkeeping", ownerKey)
 		if Brand.isSlot(ownerKey) then
 			local bk = ownerKey._bk
 			if bk == nil then
@@ -163,6 +169,7 @@ local function Init(module: any)
 	end
 
 	local function getOffsetAt(ownerKey: any, at: number): number
+		checkOwner("getOffsetAt", ownerKey)
 		checkPosition("getOffsetAt", at) -- 공개 표면 셋 중 하나 (`H-256`/`H-280`)
 		local bk = getBookkeeping(ownerKey)
 		ensureBase(bk, ownerKey)
@@ -319,6 +326,7 @@ local function Init(module: any)
 	end
 
 	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
+		checkOwner("setLength", ownerKey)
 		checkPosition("setLength", i)
 		if not Brand.isState(len) then
 			checkLengthValue("setLength", len) -- a State's value is checked in its Observer callback below, outside the blocker window (`H-445`) — never in `contribution`
@@ -360,6 +368,7 @@ local function Init(module: any)
 	-- None means "no publish channel", NOT "not participating" (that is
 	-- lengthList's answer); pull the number via getOffsetAt when needed.
 	local function setOffsetSource(ownerKey: any, i: number, source: any)
+		checkOwner("setOffsetSource", ownerKey)
 		checkPosition("setOffsetSource", i)
 		if source ~= None and not Brand.isSource(source) then
 			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
@@ -394,6 +403,7 @@ local function Init(module: any)
 	-- (2026-09-07: "setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다"). `anchor`
 	-- is setLength's 4th argument (`inst`, `H-35`); NilHandler passes none.
 	local function setEmpty(ownerKey: any, i: number, anchor: any?)
+		checkOwner("setEmpty", ownerKey)
 		-- [round3 `H-434`] validate HERE: this function sits on the Dispatch table, so the
 		-- `H-242` loop tags it SURFACE — if the inner (also tagged) setOffsetSource raised,
 		-- nearest+1 would be this body, not the handler that called setEmpty.

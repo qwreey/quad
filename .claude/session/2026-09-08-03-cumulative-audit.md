@@ -74,3 +74,15 @@ Q40은 같은 날 회신으로 (a) 닫힘(round8 §6) — `slot-plan.md` Clear �
 - spec 작성에서 세 번 틀렸다: quad-base mock엔 Property 핸들러가 없어 `Name = "ok"`가 매치 안 됨, `Slot:Get()`은 인덱스 필수,
   Luau가 `{ label = { isHandlable = function() ... } }` 리터럴 배열의 함수 반환 타입을 합치지 못해 `:: any`/로컬로 분리. test.sh
   exit 0(스펙 50).
+
+## 6. 3차 — 2차 커밋 리뷰(K)·문서 감사자(N)·타입 표면(M)·성능(L)
+
+K(단일 맥락 opus, `c06f94c` diff)가 내 정정 하나를 HIGH로 잡았다 — J-4의 `releaseElement` 의사코드에서 `releaseOwner`를 두 팔 공통으로 올린 게
+코드와 반대(비-detached 팔은 `rawRemove`/`rawUnmount`가 반납). "정본을 코드에 맞춘다"는 패스가 코드의 호출자를 안 읽고 정본을 틀리게 만든 것.
+되돌리고 교훈에 추가. K-2로 `H-499`의 근거("`H-447`이 형제 셋에 게이트")가 틀렸음도 드러남 — `H-447`은 `bindLifetime`뿐이었고, 새 Relate 게이트가
+잎 모듈 이름을 사용자 메시지로 새게 했다 → `checkOwner`/`checkInst`로 공개 표면 일곱 전부 게이트(`H-504`). K-3 메시지 주어는 `Dispatch.process:`.
+N은 architecture 405행(표 3행과 같은 파일 안 모순)·dispatch-core 체인 의사코드의 retractor raise 둘(J가 아홉에 못 넣은 J-3 형제)을 잡았다.
+M(타입 표면, 사용자 코드 관점): 무인자 `Store()` strict 에러(스펙조차 `any` 우회 — 기록 안 된 채였다), `{ Instance }` 변수 인덱서 불변, 인라인
+`:Compute` 신 솔버 한정 에러(test.sh는 구 솔버라 못 본다), 컴포넌트 경계 타입이 quad-roblox에서 재노출 안 됨, `Of` 무주석 `any` — 전부 타입 모양·
+패키지 표면 결정이라 Q43~Q46. 릴리즈 관점에선 Q45(타입 표면)가 가장 먼저다.
+L(성능·메모리)은 별도 항목(round8 §12).

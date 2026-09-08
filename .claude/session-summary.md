@@ -2460,5 +2460,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **Q40**(Clear 창 안 파괴 → 던지면 동결)은 같은 날 회신으로 (a) 닫힘 — UB 명시(*"외부 버그라서 어떻게든 어딘가 죽는게 맞고"*).
   **[같은 날 2차 — 실행 기반 탐사 다섯(opus 병렬, 프로브 실행)]** 값·순서·GC 결함 0(퍼즈 2만 스텝·랜덤 DAG 3,600라운드);
   게이트·blame·메시지·의사코드 열둘 닫음 `H-492`~`H-503` — Blocker Policy 인자·addHandler 모양·drive 배열 키 도메인·Tag:Apply·
-  Attr 테이블 값·Relate nil·**Slot 순환(`s:Add(s)` — 유일한 동작 발견)**·native* 스텁 여섯·Animate State 옵션 blame·메시지 주어 다섯·
-  정본 의사코드 아홉(`setOffsetSource` H-392 이전 순서 등). **Q41**(`D.New` 오타 — 실기기 필요) 사용자 몫. test.sh exit 0(스펙 50). test.sh exit 0(스펙 50), doc-check ERROR 0.
+  Attr 테이블 값·Relate nil·**Slot 순환(`s:Add(s)` — 유일한 동작 발견)**·native* 스텁 여섯·Animate State 옵션 blame·메시지 주어 여섯·
+  정본 의사코드 아홉(`setOffsetSource` H-392 이전 순서 등). **Q41**(`D.New` 오타 — 실기기 필요) 사용자 몫.
+  **[같은 날 3차]** K(2차 커밋 리뷰): 내 J-4 의사코드 정정이 오독(HIGH, 되돌림)·`H-504` nil owner/inst 게이트 공개 표면 일곱(`Relate:` 이름 누출)·
+  `Dispatch.process:` 주어; N: architecture 405행·체인 의사코드 retractor raise(J-3 형제); M(타입 표면): Q43 무인자 `Store()`·Q44 `{ Instance }`
+  인덱서 불변·Q45 컴포넌트 경계 타입 재노출·Q46 `Of` `any` + 8.13; Q42 Instance 매개 순환(실기기). test.sh exit 0(스펙 50), doc-check ERROR 0.

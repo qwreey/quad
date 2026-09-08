@@ -1117,8 +1117,9 @@ function Dispatch.process(inst, k, v, index)
         if retractor == nil then
             -- 메시지는 핸들러 특정 정보(name/priority)와 k·index를 싣는다(`H-223` —
             -- h.process 프레임은 이미 반환돼 어떤 level로도 도달 불가하므로 메시지가 유일한 단서).
-            -- [2026-08-31 `H-231`] 제공자 계약 위반 — 가장 가까운 표면의 호출부(`H-222`)
-            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
+            -- [2026-08-31 `H-231`] 제공자 계약 위반 — ~~가장 가까운 표면의 호출부(`H-222`)~~
+            -- [2026-09-07 6순회 `H-409`] 최외곽: 디스패치 깊이라 nearest는 이 파일 자신을 찍었다
+            Err.errorBefore(noRetractorMessage(h, k, index), SURFACE)
         end
         slot.retractor = retractor
     else
@@ -1131,7 +1132,7 @@ function Dispatch.process(inst, k, v, index)
         list[index] = { handler = h, retractor = NOOP }
         local retractor = h.process(inst, k, v, index)
         if retractor == nil then
-            Err.errorBeforeNearest(noRetractorMessage(h, k, index), SURFACE)
+            Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- `H-409`
         end
         list[index] = { handler = h, retractor = retractor }
     end
@@ -1188,6 +1189,9 @@ false 인 한 인자를 넣어줘도 되지 않을까 … 나중에 비슷한 �
 retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 `architecture.md`의 계약 표에 세 번째 행("제공자(핸들러 작성자) 계약 위반 =
 2, 그 계약을 어긴 호출 구조에 가장 가까운 프레임")이 신설되며 확정됐다
+(**[2026-09-07 6순회 `H-409`, 2026-09-08 round8 J-3에서 표까지 정정]** 그 `2`는 실제로는
+디스패치 깊이라 `Dispatch/init.luau` 자신을 찍었고, 사용자가 원한 "계약을 어긴 구조"의
+프레임(`h.process`)은 이미 반환돼 어떤 level로도 못 닿는다 — 그래서 최외곽으로. 분류 자체는 그대로)
 (한때 표에 없는 분류를 확정처럼 적었다가 리뷰 지적으로 잠정 표시를 거친
 자리).
 

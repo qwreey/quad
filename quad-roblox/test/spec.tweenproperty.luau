@@ -193,4 +193,17 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 9. 2026-09-08 round8 H-502/K-9 — Animate의 State 옵션 오류는 drive 깊이에서도 사용자 줄(D.Frame)을 blame ===")
+do
+	local src = q.Source(1)
+	local badTime = q.Source("x")
+	local ok, err = pcall(function()
+		return q.D.Frame({ Size = src:Apply(q.Animate({ Time = badTime })) })
+	end)
+	assert(not ok and string.find(tostring(err), "Time must be a number", 1, true) ~= nil, "State option validated at drive: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.tweenproperty.luau", "drive-path blame")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

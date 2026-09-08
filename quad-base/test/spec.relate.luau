@@ -108,6 +108,19 @@ do
 	local ok3, err3 = pcall(function() return q.Dispatch.getBlocker(nil) end)
 	assert(not ok3 and string.find(tostring(err3), "Dispatch.getBlocker: ownerKey must not be nil", 1, true) ~= nil, "getBlocker nil: " .. tostring(err3))
 	assert(string.find(tostring(err3), "/src/", 1, true) == nil, "getBlocker blames user: " .. tostring(err3))
+	-- `H-504` (round8 K-2): the sibling public surfaces too — no leaf-module name (`Relate:`) in the message
+	local cases: { { any } } = { { "getBookkeeping", 1 }, { "getOffsetAt", 1 }, { "setLength", 1, 1 }, { "setOffsetSource", 1, q.None }, { "setEmpty", 1 } }
+	for _, c in cases do
+		local name = c[1] :: string
+		local okN, errN = pcall(function() return (q.Dispatch :: any)[name](nil, c[2], c[3]) end)
+		assert(not okN and string.find(tostring(errN), `Dispatch.{name}: ownerKey must not be nil`, 1, true) ~= nil, name .. ": " .. tostring(errN))
+		assert(string.find(tostring(errN), "/src/", 1, true) == nil and string.find(tostring(errN), "Relate:", 1, true) == nil, name .. " blames user: " .. tostring(errN))
+	end
+	for _, name in { "process", "retractFrom" } do
+		local okP, errP = pcall(function() return (q.Dispatch :: any)[name](nil, "k", 1, 1) end)
+		assert(not okP and string.find(tostring(errP), `Dispatch.{name}: inst must not be nil`, 1, true) ~= nil, name .. ": " .. tostring(errP))
+		assert(string.find(tostring(errP), "/src/", 1, true) == nil, name .. " blames user: " .. tostring(errP))
+	end
 	print("PASS")
 end
 

@@ -144,7 +144,7 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
   "renamed or missing method?" **자기 진단**이 제공자 입력에 새어 나왔다. `spec.dispatch` 20절.
 - **`H-494` 메시지 주어 잔재** (F-2·I-7). `quad.Dispatch:` 셋(no handler matched·no retractor·priority tie → `Dispatch.drive:`/`Dispatch.addHandler:`),
   `UseProvider` 중복 메시지에 주어 없음, `Ref` 동적 경로 메시지의 콜론 누락(형제와 갈림), quad-roblox 버전 게이트의 주어 없음 +
-  폐기형 `, got X`. `H-477` "열 곳 손질"이 놓친 다섯 자리. `spec.refhandlers` 단언 갱신.
+  폐기형 `, got X`. `H-477` "열 곳 손질"이 놓친 여섯 자리(`UseProvider` 것은 코드 주석에 `H-494`로 통일 — 처음 `H-496`으로 적었던 번호는 폐기). **[같은 날 round8 K-3 정정]** `no handler matched`/`no retractor`의 주어는 `Dispatch.drive:`가 아니라 raise하는 표면 **`Dispatch.process:`**다 — `process`는 공개 표면이자 위임 핸들러의 재귀 자리라 직접 호출에서 `drive`라는 이름이 틀렸다. `spec.refhandlers` 단언 갱신.
 - **`H-495` `drive` 배열 키 도메인** (H-1). `D.Frame({ [0] = child })`가 값이 매치되면 말단 핸들러의 `setOffsetSource`/`setEmpty`에서
   `Handlers/InstanceChild.luau:42` 같은 내부 줄을 blame하고, 매치 안 되면 사용자 줄을 blame했다 — 같은 키인데 값에 따라 갈렸다.
   `drive`가 flatten 전에 양의 정수 검사(`H-256` (a) "부기 만지기 전에"; 형제 `H-396` Slot 생성자·Tag 리스트). 희소 구멍은 UB 그대로. `spec.dispatch` 20절.
@@ -206,6 +206,90 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 엔진 문구도 아직 못 봤다. 갈래: (a) Studio 실측 뒤 판단(권고 — `HUMAN_TODO`에 실측 항목으로) / (b) 지금 pcall 재던지기 / (c) 안 함(엔진
 메시지가 클래스 이름을 이미 말해주므로).
 
+**Q42 — Instance를 매개로 한 Slot 순환(round8 K-7, 실기기 필요).** 상황: `H-500`은 Slot–Slot 순환만 닫는다. `drive(F, { s })`로 `s`를 `F`에
+마운트한 뒤 `s:Add(F)`를 하면 후보가 Instance라 owner 체인 검사가 안 돌고, `F`는 quad 소유 기록이 없어 "already mounted"도 안 걸린다(mock 통과 실측).
+실엔진에선 `F.Parent = F`가 되어 엔진의 "circular reference" 에러가 `EngineOps.luau` 줄에서 날 것으로 보인다 — mock은 부모만 갈아끼워 확인 불가.
+갈래: (a) Q41과 함께 Studio 실측 뒤 판단(권고) / (b) 지금 게이트 — 후보가 Instance면 이 Slot의 마운트 타깃 조상 체인(`_mountedInst`와 그 `Parent` 사슬)에
+있는지 확인(엔진 순회, 새 코드 경로) / (c) 엔진 에러에 맡김(UB).
+
 **J-3 보고(결정 아님, 정정 완료).** `architecture.md` 에러 계약 표 3행 "제공자(핸들러 작성자) 계약 위반 → 2(가장 가까운 프레임)"이
 `H-409`(디스패치 깊이라 outermost)와 같은 문서의 체크리스트 0번("디스패치·발행 깊이에서 raise할 땐 `errorBefore`")과 어긋나 있었다.
 코드(`H-409`)와 규칙에 맞춰 행을 "최외곽"으로 고쳤다 — 표의 축(입력/불변식/제공자/스텁)은 그대로다. 되돌리길 원하면 말해달라.
+
+## §9 3차 — 2차 반영 커밋 `c06f94c`의 리뷰(K, 단일 맥락 opus) + 문서 감사자(N) (2026-09-08 저녁)
+
+- **`H-504` K-2 — `Relate` nil 게이트가 잎 모듈 이름을 사용자 메시지로 새게 했다.** `H-499`가 `getBlocker` 하나만 고른 근거("`H-447`이 형제 셋에 게이트를
+  줬다")가 틀렸다 — `H-447`은 `bindLifetime`만 닿았고, `Dispatch.getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`/`setEmpty`에 nil owner를
+  주면 `Bookkeeping.luau:112: Relate:GetWeak: inst must not be nil`, `process`/`retractFrom`은 `Dispatch/init.luau` 줄 — 주어가 사용자가 부른 적 없는
+  `Relate:`가 됐다("메시지 모양" 규약 위반, 전엔 `table index is nil`이라 회귀는 아님). 반영: `checkOwner(fnName, ownerKey)`를 `checkPosition` 옆에
+  두고 다섯 + `getBlocker`에, `checkInst`를 `process`/`retractFrom`에(`drive`의 `H-442`와 같은 게이트). `spec.relate` 7절 확장.
+- **K-1 (HIGH — 정본, 코드 무관)** — 2차 §7.2 J-4 정정이 **오독**이었다: `releaseElement`의 `releaseOwner`를 `if wasDetached` **위**(두 팔 공통)로 올렸는데
+  코드(`Slot/Raw.luau`)는 detached 팔 **안**에서만 부르고, 비-detached 팔은 `rawRemove`/`rawUnmount`가 각자 반납한다 — 정본대로 짜면 `:List` KeyGone의
+  상시 경로에서 `releaseOwner` 불변식 에러. 인용한 `_detachCleanup`의 "두 분기 공통"은 `isSlot`/`else` 두 분기였다. 정본을 코드에 맞춰 되돌림(1차 J-1이
+  경계한 "그대로 짜면 HIGH 재생산"을 정정 패스 자신이 냈다 — 교훈 §7.5에 추가).
+- **K-3** 위 `H-494` 정정 문단. **K-5** `module-lifecycle-plan.md` 의사코드의 raise가 `errorBefore`로 남아 있었다(코드는 직접 호출 표면 = `errorBeforeNearest`,
+  `H-349`) — 정정. **K-4/K-6** `H-496` 번호 폐기(코드 주석 `H-494`로 통일, N도 같은 지적), "다섯 자리" → 여섯, 커밋 메시지의 "spec 8절 신설"은 실제 여섯
+  신설 + 셋 보강(커밋 메시지는 못 고침 — 여기 기록). **K-9** `spec.animate` 4절의 blame 단언은 직접 `:Get()` 팔뿐이라 `spec.tweenproperty` 9절에 `D.Frame`
+  경유(drive 깊이) blame 단언 추가.
+- **N(문서 감사자)** — `architecture.md` 405행 "사용자 입력 검증·제공자 계약 위반(2행·3행)은 `errorBeforeNearest`"가 오늘 고친 표 3행과 같은 파일 안에서
+  모순(배너만 갱신·본문 방치의 전형) → 정정; `dispatch-core-plan.md` 체인 의사코드의 retractor 생략 raise 둘이 아직 `errorBeforeNearest`(J-3의 형제 — J가 아홉에
+  못 넣은 것) → `errorBefore` + `H-409` 마커, 그 절의 `H-222` (a) 사용자 확정 문단에 "그 `2`는 실제로 `Dispatch/init.luau` 자신을 찍었다" 경위 추가;
+  session-summary 중복 문장; "메시지 모양" 규약의 "열 곳" 뒤에 `H-494` 포인터.
+- **확인만(K)**: `H-500` 게이트 정확성(Instance owner에서 멈춤, `_wrapped` 래퍼가 마디로 들어감, `:List` 우회 없음 — 마운트 뒤라 "already mounted"가 먼저),
+  `H-495`가 flatten·prePass·getBlocker 전부보다 앞이라 `H-445`류 재발 없음·`Claim` 경로 무해·Modifier가 숫자 키를 못 만듦, `H-493` in-tree 16 핸들러 priority
+  전부 숫자, `H-501` 스텁이 실제 op를 못 가림(`UseProvider`가 뒤에 덮음), `H-498` Roblox 속성 합법 타입은 전부 userdata, `H-502` 타입 정합, 정본 아홉 중
+  여덟 일치. **관측(반영 없음)**: K-8 `H-495`의 `pairs` 전수 순회는 `flatten`이 리뷰 근거로 피했던 배열 파트 재방문이고 대상 키는 정의상 해시 파트에만 산다
+  (Frame당 한 번, 비용 미미 — 다음 최적화 순회 후보); `Frame { [AttrKey("X")] = 테이블 }` 직접 경로는 `H-498` 범위 밖(정본이 "raw AttrKey 경로는 untyped by
+  design"으로 명시).
+- **미완(실기기)**: **K-7** Instance를 매개로 한 순환 — `drive(F, { s })` 뒤 `s:Add(F)`는 occupant가 Instance라 `H-500`의 체인 검사가 안 돌고 F는 OWNER
+  기록이 없어 "already mounted"도 안 걸린다(mock 통과 실측). 실엔진에선 `F.Parent = F`로 "circular reference" 엔진 에러가 `EngineOps.luau` 줄에서 날 것
+  — Q41과 같은 "실기기 실측 뒤 판단" 묶음(**Q42**로 §8에 추가).
+
+### §7.5 교훈 추가
+5. 정정 패스도 리뷰를 받아야 한다 — K-1은 "정본을 코드에 맞춘다"는 패스가 코드를 잘못 읽어 정본을 반대로 틀리게 만든 사례. 의사코드를 고칠 땐 그
+   함수의 **호출자**(여기선 `rawRemove`/`rawUnmount`가 이미 반납하는가)까지 읽을 것.
+
+## §10 3차 — 타입 표면 실측 (M, opus; 사용자 코드 모양을 `luau-lsp` 신 솔버 + `luau-analyze`로) (2026-09-08 저녁)
+
+음성 25건 중 24건 정상 거부, 양성(컴포넌트 props 유니언·이벤트 시그니처·`:Apply(Animate)`·`:List` 콜백 등) 정상, `q.D.Frame` 타입이 `UseProvider`/`AddPlugin`
+체인 뒤에도 `any`로 안 무너짐. 남은 다섯은 전부 **타입 모양·패키지 표면의 결정**이라 코드로 닫지 않고 §11 문항으로 올린다. 전부 `--!strict`에서만 난다.
+
+- **M-1 (합법이 막힘)** 무인자 `Store()`가 strict TypeError — `T`가 `unknown`으로 남아 `CheckReservedKeys<keyof<T>>`가 터지고, 스토어를 쓰는 순간(`:Names()`/`:Of()`)
+  진단이 난다. 통하는 건 `Store({})`/`Store<<{}>>()`뿐. `store-plan.md`는 무인자를 유효로 확정(`H-83`)했고 `H-157` 실측은 `Store<<{}>>()`만 봤다. 결정적 증거:
+  `spec.store.luau` 140행이 무인자 형을 `(Quad.Store :: any)()`로 우회 중(스펙 작성자가 밟았지만 기록 안 됨). → **Q43**.
+- **M-2a (합법이 막힘, 탈출구 없음)** 이미 있는 자식 배열 `{ Instance }`(또는 정확히 `{ FrameElem }`)를 `D.Frame(kids)`로 통째로 넘길 수 없다 — Luau 테이블 인덱서
+  불변성(`FrameParam<E>`의 `[number]: E`). 통하는 건 `{ table.unpack(kids) }`·개별 나열·변수를 처음부터 `FrameParam<FrameElem>`으로 선언. `Children: { Instance }`
+  props를 받는 컴포넌트 모양(`spec.componenttypes`가 안 덮음)에 탈출구가 없다. **M-2b (우회 있음)** 미리 만든 props 변수 `{ Name = "a" }`도 같은 뿌리로 막히나
+  `local p: FrameParam<FrameElem> = {...}` 선언으로 통과. → **Q44**.
+- **M-3 (strict + 신 솔버 한정)** D 프롭 자리에 **인라인** 무주석 `:Compute`(`ZIndex = n:Compute(function(h) return h:Get() + 1 end)`)가 TypeError — 함수 인자로
+  넘기는 테이블 리터럴 **안**에서만 깨지고(typed 파라미터·주석 대입·children 배열·`:With`/`:Gate`/`:Apply` 인라인은 통과), `luau-analyze`(구 솔버)는 통과라
+  test.sh는 못 보고 사용자 에디터는 본다. `typing-limits.md` §1②의 "무주석으로 통과"와 어긋남 → §1②에 캐비엇 추가(8.13, 원인은 순수 Luau 최소 재현 실패 —
+  M 미완). 부수: 같은 자리 인라인 `:Gate`에서 `emit()` 무인자 호출이 시그니처 추론을 깨뜨림(별도 문장으로 빼면 통과).
+- **M-4 (표면 누락)** `quad-base/src/init.luau`엔 `export type`이 없어 `quad_base`만 설치한 사용자는 `Quad.State<number>`를 이름으로 못 쓴다(`quad-types`를 별도
+  의존으로 — `quad-types-plan.md`의 설계이긴 하다). 더 아픈 건 quad-roblox: `spec.componenttypes`가 컴포넌트 경계의 정본 관용구로 제시하는 `IntoTextButton`·
+  `<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`가 `quad-roblox/src/init.luau`의 재노출(D/DMapper/PropTypes/OnChangeFn/Tween류)에 없어 레포 안
+  경로 `require("../src/D")`로만 닿는다 — 릴리즈 사용자는 컴포넌트 경계 타입을 못 쓴다. `quad-types-plan.md` "남은 것"의 `quad-roblox-types` 백로그와 같은
+  뿌리. → **Q45**.
+- **M-5 (`any` 붕괴)** `store:Of("mana")` 무주석이 `Source<any>` — `Of: <U>(self, name) -> Source<U>`의 `U`가 제약이 없다. `store-plan.md` 실측 표는 `Of<<boolean>>`
+  명시형만 확인. → **Q46**(주석 강제 vs 그대로 + 문서).
+
+## §11 사용자 문항 (3차 — 타입 표면, 평문 한 문단씩)
+
+**Q43 — 무인자 `Store()`.** 상황: 정본이 유효하다고 한 무인자 형이 strict에서 TypeError고 스펙조차 `any` 캐스트로 우회한다. 무엇이 막히나: 생성자 타입이
+`<T>(fields: T?) -> Store<T>` 하나라 인자가 없으면 `T`가 `unknown`이다. 갈래: (a) 생성자를 오버로드 교차(`(() -> Store<{}>) & (<T>(T) -> Store<T>)`)로 — 타입
+스파이크 하나 필요(권고) / (b) 무인자 형을 문서에서 빼고 `Store({})`만 유효로(정본 `H-83` 역전, 스펙 140행 정리) / (c) 그대로(사용자가 `Store<<{}>>()`를 쓴다).
+
+**Q44 — 자식 배열·props 변수를 `D.<Class>`에 통째로 넘기기.** 상황: Luau 인덱서 불변성 때문에 `{ Instance }` 변수는 `FrameParam<FrameElem>`이 아니다. 무엇이
+막히나: 타입 구조를 바꾸지 않는 한 언어 한계라 우회 관용구를 정하는 문제다. 갈래: (a) 한계로 인정하고 `typing-limits.md`(8.13)와 사용자 문서에 관용구 셋
+(`{ table.unpack(kids) }` / 변수를 `FrameParam<FrameElem>`으로 선언 / 컴포넌트 props의 `Children`을 `FrameParam<FrameElem>`으로 받기)을 명시(권고) /
+(b) `D.<Class>`가 `{ E }`도 받도록 파라미터를 유니언으로(`FrameParam<E> | { E }`) — 팔이 늘어 `PV73`류 솔버 비용 재측정 필요.
+
+**Q45 — 릴리즈 사용자용 타입 표면.** 상황: `quad_base`만 설치하면 `Quad.State<T>` 이름이 없고(설계상 `quad-types` 별도 의존), quad-roblox는 컴포넌트 경계 타입
+(`IntoTextButton`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)을 재노출하지 않는다. 무엇이 막히나: 재노출은 생성기(`gen-d.py`)가 31클래스 ×
+여러 별칭을 `quad-roblox/src/init.luau`에 뿜는 일이라 파일 크기·솔버 한도(8.12)를 다시 밟을 수 있고, 백로그 `quad-roblox-types`와 겹친다. 갈래: (a) quad-roblox
+`init.luau`에 컴포넌트 경계 별칭만 선별 재노출(`Into<Class>`·`<Class>Param`·`<Class>Elem`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`) + 8.12 실측(권고, 릴리즈
+전 필수로 보임) / (b) `quad-roblox-types` 패키지를 지금 만든다 / (c) 백로그 그대로(릴리즈 문서에 `require("…/D")` 경로를 안내).
+
+**Q46 — `store:Of(name)` 무주석의 `any`.** 상황: `Of<U>`의 `U`가 제약 없이 `any`로 떨어져 그 뒤 값 타입 검사가 사라진다. 갈래: (a) 그대로 두고 `store-plan.md`
+실측 표에 "무주석은 `Source<any>` — 주석 필수"를 적는다(권고 — 동적 이름은 정의상 타입이 없다) / (b) `Of`를 `Of<U>(self, name, sample: U?)`류로 바꿔 추론
+근거를 준다(새 인자, 비권장).

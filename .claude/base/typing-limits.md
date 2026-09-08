@@ -991,3 +991,17 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 별칭을 넣을 땐 "전개는 D 밖(types.luau)에서, D는 재별칭"을 기본으로 할 것. 실측 명령:
 `luau-lsp analyze`(test.sh 플래그 그대로) — 실패는 1.2s 만에 나고, 통과 전체는 3s대.
 
+## 8.13. 신 솔버(`luau-lsp --flag:LuauSolverV2`)는 함수 인자 테이블 리터럴 안의 인라인 무주석 `:Compute`를 못 푼다; 테이블 인덱서는 불변이라 `{ E }` 변수는 `<Class>Param<E>`가 아니다 (2026-09-08 round8 3차 M 실측)
+
+- **인라인 `:Compute`**: `q.D.Frame({ ZIndex = n:Compute(function(h) return h:Get() + 1 end) })`가 strict + 신 솔버에서 TypeError(*"Expected
+  `(StateData<number>, number?, ...any) -> number` but got `<a>(t1) -> add<a, number>` … `Get` is a read-only property"*). 함수 **인자로 넘기는 테이블
+  리터럴 안**에서만 깨진다 — typed 파라미터·주석 대입(`local t: Rec = {...}`)·children 배열 자리·`:With`/`:Gate`/`:Apply`/`:Mapped` 인라인은 통과.
+  `luau-analyze`(구 솔버)는 통과라 `test.sh`는 못 보고 사용자 에디터는 본다. §1②의 "무주석으로 통과"는 이 자리엔 해당 없음. 우회: 별도 문장으로
+  빼서 `local lbl: State<string> = n:Compute(...)`. 순수 Luau 최소 재현은 실패(`Box<T>` 모사는 신 솔버에서도 클린) — quad의 `StateData`/`State`
+  분리 + `previous: U?` + `...any` 조합 특유일 가능성, 원인 미확정. 부수: 같은 자리 인라인 `:Gate`의 `emit()` 무인자 호출도 시그니처 추론을 깨뜨린다.
+- **인덱서 불변성**: `local kids: { Instance } = {...}; q.D.Frame(kids)`는 `{ Instance }`(정확히 `{ FrameElem }`이어도)가 `FrameParam<FrameElem>`의
+  `[number]: E`와 불변 관계라 TypeError(유니언 56팔을 나열하는 50줄 메시지). 통하는 형태: `q.D.Frame({ table.unpack(kids) })`, 개별 나열, 변수를 처음부터
+  `FrameParam<FrameElem>`으로 선언. 미리 만든 props 변수(`{ Name = "a" }`)도 같은 뿌리로 막히나 `local p: FrameParam<FrameElem> = {...}` 선언으로 통과.
+  관용구 확정은 round8 §11 Q44.
+- 같은 실측의 나머지: 무인자 `Store()`가 strict TypeError(`T` unknown → `keyof<unknown>`; Q43), `store:Of(name)` 무주석은 `Source<any>`(Q46), 컴포넌트
+  경계 별칭(`Into<Class>`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)이 `quad-roblox/src/init.luau`에 재노출되지 않음(Q45).

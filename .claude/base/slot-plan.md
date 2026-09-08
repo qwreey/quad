@@ -2927,12 +2927,13 @@ end
 -- [시그니처 정리, 2026-08-21] index 우선 — detach 중이던 요소만 index가 없다
 -- (트리 밖이라 자리 자체가 없음), 그 경우 `index = nil`로 부른다.
 function releaseElement(self, index, element, wasDetached)
-    -- [2026-09-07 5순회 `H-393`] 소유권 반납을 **먼저, 두 팔 공통으로** — Owned=false 요소 Slot은
-    -- 부모보다 오래 살고, 반납이 없으면 죽은 elementOwner를 영구히 달았다(다음 Add에서 반사실
-    -- "already mounted elsewhere", dispose에서 "still requires its tree"). 아래 `_detachCleanup`
-    -- 의사코드가 이미 약속한 문장.
-    releaseOwner(element, self)
     if wasDetached then
+        -- [2026-09-07 5순회 `H-393`] 이 팔(detach 중이던 요소 — 트리 밖이라 rawRemove/rawUnmount를
+        -- 안 거친다)은 소유권 반납을 **먼저**, 파괴/보존 두 분기 공통으로 — Owned=false 요소 Slot은
+        -- 부모보다 오래 살고, 반납이 없으면 죽은 elementOwner를 영구히 달았다(다음 Add에서 반사실
+        -- "already mounted elsewhere"). 비-detached 팔은 아래 rawRemove/rawUnmount가 각자 반납한다
+        -- (여기서 또 부르면 두 번째 releaseOwner가 불변식 에러 — round8 K-1이 잡은 오독).
+        releaseOwner(element, self)
         if self._owned ~= false then
             if isSlot(element) then destroySlotTree(element) else nativeDispose(element) end
         end
