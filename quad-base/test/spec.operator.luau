@@ -80,6 +80,31 @@ do
 end
 
 print()
+print("=== 4b. Index<<V>>(key) — 반응형 필드 읽기, 결과 타입은 호출자가 직접 지정; 테이블이 아니면 에러 ===")
+do
+	type Theme = { Primary: string, Size: number }
+	local theme = Source({ Primary = "red", Size = 10 } :: Theme)
+	local primary: State<string> = theme:Apply(Operator.Index<<string>>("Primary"))
+	local size: State<number> = theme:Apply(Operator.Index<<number>>("Size"))
+	assert(primary:Get() == "red" and size:Get() == 10, "reads")
+	theme:Set({ Primary = "blue", Size = 12 })
+	assert(primary:Get() == "blue" and size:Get() == 12, "reactive on the whole-table State")
+	local missing: State<string?> = theme:Apply(Operator.Index<<string?>>("Nope"))
+	assert(missing:Get() == nil, "absent key → nil (no gate — the caller typed it)")
+	local ok, err = pcall(function()
+		return Operator.Index(nil :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "key must not be nil", 1, true), tostring(err))
+	local notTable = Source(5 :: any)
+	local bad: State<any> = notTable:Apply(Operator.Index<<any>>("x"))
+	ok, err = pcall(function()
+		return bad:Get()
+	end)
+	assert(not ok and string.find(tostring(err), "Operator.Index: value is not a table (got number)", 1, true), tostring(err))
+	print("PASS")
+end
+
+print()
 print("=== 5. 게이트 — 인자 타입·nil 인자(H-199 관용구)는 팩토리 호출 즉시 에러(blame은 그 줄), Apply 대상 State(직접 호출 폴백), Alternative nil default ===")
 do
 	local ok, err = pcall(function()

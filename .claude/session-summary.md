@@ -2489,4 +2489,4 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **같은 밤 회신**: (a)~(j) 전부 닫힘((e) UB — 블래스트 범위 억제 목적·고아 미처리, (h) UB, (j) 에러 반영). 둘째 단위: `Operator`(이름·범위
   확정 — And/Or·비교 제외, `IfElse`는 문항), `Context`/`Provider`(`base/context-plan.md` — 암묵 맥락 기각과의 경계는 사용자 원문),
   `ref:Unwrap()`(`StripNil<T>` 타입 함수, typing-limits 8.14). 스펙 56. **후속 회신**: (k) 불변 확장 안 함(진실 원천 하나), (l)
-  `IfElse`·컬렉션·Attr unset·평탄화는 백로그 넷으로 분리, 타입드 `Index` 제안은 실측 불가(typing-limits 8.15). 남은 문항 없음.
+  `IfElse`·컬렉션·Attr unset·평탄화는 백로그 넷으로 분리, 키 추론형 `Index`는 실측 불가(typing-limits 8.15) → 사용자 결정으로 결과 타입 직접 지정 `Operator.Index<<V>>(key)` 구현. 남은 문항 없음.

@@ -3,7 +3,7 @@
 > **⭐ [2026-09-08 구현 — 사용자 범위 확정]** `quad-base/src/Operator.luau`(의존 없는 잎, `quad.Operator.*`), 스펙 `spec.operator`.
 > 네임스페이스 이름은 **`Operator`**(아래 "열린 질문 — 네임스페이스 이름" 절의 외부 리서치 권고 그대로, 사용자: *"Operator 이름도
 > 괜찮고"*). 포함: 단항 `Not`, 산술 `Sum`/`Product`, `Min`/`Max`/`Clamp`, 비트 `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`,
-> `Alternative`(nil 대체). 숫자 인자는 plain이거나 `State<number>`(팩토리가 State만 deps로 넘긴다). **뺀 것(사용자)**: `And`/`Or`
+> `Alternative`(nil 대체), **`Index<<V>>(key)`**(반응형 필드 읽기 — 결과 타입은 호출자가 직접, `typing-limits.md` 8.15; 사용자 제안 2026-09-08). 숫자 인자는 plain이거나 `State<number>`(팩토리가 State만 deps로 넘긴다). **뺀 것(사용자)**: `And`/`Or`
 > 결합(*"솔찍히 비추. if else 우리가 쓰던 이유가 있는데, 그거에 부딛힘"*), 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`(*"조건 분기를 타는 경우
 > 쓰는게 일반적인데, 그걸 지원하는걸 안 넣어줬으니까"* — 분기 콤비네이터 `IfElse`류가 있어야 뜻이 생긴다, `question.md` 0절 (l)),
 > `Sub`/`Div`/`Xor`(선례 없음 — 아래 "포함 범위"). 사용자 문서용 관측(round9 둘째 리뷰): 비트 계열은 `bit32` 계약대로 음수는 2^32 모듈로,

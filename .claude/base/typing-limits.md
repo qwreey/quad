@@ -1033,7 +1033,9 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
   → `State<number>`, 오타 잡힘)하지만 `State<T>` 자체에 `keyof<T>`가 들어가 **테이블이 아닌 모든 `T`**(`State<string>`·`State<number>`)가
   "Type 'string' does not have keys"로 죽는다 — 결과 타입이 재귀적으로 그 메소드를 갖기 때문. 조건부 타입이 없어 못 가린다.
 - 로컬 **함수 선언** `local function Index<T, K>(key: K)`는 직접 호출에선 통과하지만 `Quad` 표면은 필드라 쓸 수 없다.
-결론: 백로그(ROADMAP). 무타입 `Operator.Index(key)`(`State<any>`)는 만들 수 있으나 제안의 조건("타입드로 된다면")을 못 채워 안 넣었다.
+결론(사용자 결정, 같은 밤): **결과 타입을 호출자가 직접 주는 `Operator.Index<<V>>(key)`**(`(key: any) -> (self: any) -> State<V>`)로 구현 —
+*"실제 인덱스 결과에 해당하는걸 Index<T>(k) 에 넣게 하는게 나을지도. 나중에 무주석 추론 가능해지면 그 때 옮기는게 나아보여."* 키에서
+추론하는 형태는 그때 다시(백로그).
 부수(round9 둘째 리뷰): `state:Apply(Operator.*)`의 **결과**를 엉뚱한 타입에 대입해도 에러가 안 난다 — `:Compute` 결과 타입이 `State<T>`
 순환 타입 안에서 억제되는 기존 한계라(손으로 반환 타입을 적은 인라인 팩토리는 잡힌다), 인자 쪽 검사만 실질이다. `spec.operator`의
 `local x: State<number> = …` 주석은 문서 가치이지 단언이 아니다(`spec.context`의 `Get`/`Unwrap`은 실제로 단언한다).

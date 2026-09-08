@@ -96,7 +96,9 @@ Min·Max·Clamp·Band·Bor·Bxor·Bnot·Shl·Shr·Alternative), `Ref:Unwrap()`(q
 릴리즈가 막히는게 아니고, 이미 있는 슈거 그룹 문서에 더해지는 정도라, 문서 재개편은 없을거야."* 새 제안: 테마 키 조회용
 `Apply(Index<<Type>>("key"))` — *"타입 함수상 그게 가능한지? 아마 안 될것 같아보이긴 함."* 스파이크 여섯(사용자가 인터럽트로 준
 힌트 `K & (string | "")`·코퍼스의 `K & keyof<T>` 관용구 포함): 필드 경유는 반환 자리 `index<T, K>`가 경계 제네릭을 못 풀고, State
-메소드 형태는 `keyof<T>`가 비테이블 `T`의 `State`를 전부 깨뜨린다 — `typing-limits.md` 8.15, 백로그. 남은 사용자 몫 없음.
+메소드 형태는 `keyof<T>`가 비테이블 `T`의 `State`를 전부 깨뜨린다 — `typing-limits.md` 8.15. 사용자 후속 결정: *"그냥 가장 간단하게,
+실제 인덱스 결과에 해당하는걸 Index<T>(k) 에 넣게 하는게 나을지도 … 그냥 타입 함수 없이 구현하자"* → `Operator.Index<<V>>(key)`
+구현(스펙 4b). 남은 사용자 몫 없음.
 
 둘째 단위 리뷰·감사(round9 §7): `H-517`(Handle 게이트를 `state:Gate` 앞·outermost로 — §6 교훈을 그 자리에서 다시 밟았다),
 `H-518`(Operator nil 인자 에러, `H-199` 관용구), `H-519`(Context 강참조·사본 신원 서술, 생성자 태그 제거), `H-520`(주석·문서 자리).

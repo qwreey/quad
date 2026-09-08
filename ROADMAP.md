@@ -67,7 +67,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - 분기 콤비네이터 `IfElse`(+ 그때 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`)와 컬렉션 계열 `Concat`/`Sorted`/`Filtered` — 순수 슈거지만 **타입 표면 결정이 필요**해 미구현(`operator-sugar-plan.md` "컬렉션 계열 후보" 절).
       - Attr 그룹 명시적 unset 유틸 — 오퍼레이터가 아니라 별도(`operator-sugar-plan.md` "Attr 그룹 명시적 unset 유틸" 절).
       - 중첩 평탄화 `State<State<T>>` → `State<T>` — 코어 로직 재검증이 필요(`operator-sugar-plan.md` "중첩 State 평탄화" 절).
-      - 타입드 `Index` 콤비네이터(`Apply(Index<<Theme>>("key"))`) — 사용자 제안, 지금 솔버로는 불가(`typing-limits.md` 8.15 실측); 무타입판은 조건 미달이라 안 넣음.
+      - 키에서 결과 타입을 추론하는 `Index`(`Apply(Index<<Theme>>("key"))` → `State<string>`) — 지금 솔버로는 불가(`typing-limits.md` 8.15 실측). 지금은 결과 타입을 직접 주는 `Operator.Index<<V>>(key)`로 구현돼 있고, 무주석 추론이 가능해지면 그때 옮긴다(사용자 결정).
 - [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
