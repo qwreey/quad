@@ -148,7 +148,7 @@ local function install(quad: any)
 			local engineTween = if tweenIn then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
 			if type(prev) == "table" and prev.Tween ~= nil then
 				-- branch 3: an engine tween is active — clean it up before the new value lands
-				-- (a snapped `{ Value, Source }` record has nothing to cancel and nothing to
+				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
 				-- Finish-snap to: the property already holds that value)
 				prev.Tween:Cancel()
 				if tweenIn and v.Override == "Finish" then

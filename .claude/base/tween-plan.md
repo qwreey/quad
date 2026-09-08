@@ -164,8 +164,8 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
    - `realv`가 plain 값 → 즉시 세팅, 슬롯은 `true` 유지.
    - `realv`가 `Tween<T>` → 이제 정상적으로 애니메이션 시작(현재 인스턴스
      프로퍼티 값에서 자연스럽게 출발), 슬롯에 새
-     `{Tween=<새 엔진 객체>, Value=realv.Value, Source=realv}` 저장.
-3. **`prev`가 `{Tween, Value, Source}` 테이블(활성 트윈 있음)**:
+     `{Tween=<새 엔진 객체>, Value=realv.Value}` 저장.
+3. **`prev`가 `{Tween, Value}` 테이블(활성 트윈 있음 — `Tween` 필드가 있는 기록)**:
    - **먼저 override 정책(기본 `Tween.Cancel`, 아래 절)에 따라 이전 트윈을
      정리 — 반드시 그 정리가 끝난 뒤에 새 값을 세팅한다.** 순서가 뒤바뀌면
      이전 트윈의 다음 인터폴레이션 프레임이 방금 세팅한 값을 덮어쓸
@@ -177,7 +177,7 @@ plain 값이 오면 Cancel과 같다). Studio 6/6(`audit/m11-unit2-studio-2026-0
      들고 있던 값 사용) — 이후 아래는 이 스냅된 값 위에서 이어감.
    - 정리 후: `realv`가 plain 값이면 즉시 덮어쓰기 + 슬롯 `true`. `realv`가
      `Tween<T>`면 (정리 결과 값에서) 새 트윈 시작 + 슬롯을 새
-     `{Tween=<새 엔진 객체>, Value=realv.Value, Source=realv}`로 갱신.
+     `{Tween=<새 엔진 객체>, Value=realv.Value}`로 갱신.
    - Tween→plain 전환은 두 옵션 모두 "정리 후 즉시 덮어쓰기"로 수렴 —
      별도 5번째 옵션 불필요로 확정(2026-08-12 세션).
 
@@ -548,7 +548,7 @@ API가 없음(`:Play`/`:Pause`/`:Cancel`뿐, 인스턴스 재사용 불가) — 
   동작과 일치.
 - **`Tween.Finish`** — 이전 트윈을 **목표값(`Value`)으로 스냅**시킨 뒤 그
   자리에서 새 트윈을 시작(기존 "끝점 이동 후 재시작"에 해당). 목표값은
-  로블록스 API로 역산 불가능하므로 릴레이션 슬롯에 `{Tween, Value, Source}`로
+  로블록스 API로 역산 불가능하므로 릴레이션 슬롯에 `{Tween, Value}`로
   같이 저장해뒀던 `Value`를 사용(위 "3-상태 저장" 절 참고).
 
 필드 이름은 `Override`(기존 문서에서 계속 써온 "override 정책" 용어와
