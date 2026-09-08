@@ -2447,3 +2447,5 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **[같은 날 오후 회신]** Q37 (a) → `keyType` 버킷 반영(`H-484`, 열셋 선언, `spec.dispatch` 19절, `D.Frame` 46.5 → 37.1µs) ·
   Q38 백로그(ROADMAP 최적화 후보 — 사용자 `rawOrder` 아이디어 줄) · Q39 폴더별 README 분리만(루트 README 백로그, base 계약서화·
   summary 분할은 안 함) · `/code-review` 단일 맥락(opus 이하) 1회.
+  **[같은 날 오후 후속]** Q39 (1) 반영 — 루트 `.claude/README.md`를 폴더별 `README.md` 일곱으로 분리(151줄/163KB → 51줄/8KB, 원문 무손실
+  이동), `doc-check.py` 색인 검사가 루트 + 폴더 README를 합쳐 봄, 포인터 넷 갱신.

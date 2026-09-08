@@ -37,7 +37,7 @@ M3=반응형 — 그날 번호·순서가 맞바뀜, 경위는 `.claude/archive/
 | 무엇이 궁금할 때 | 어디를 볼 것 |
 |---|---|
 | **지금 유효한 설계** — 어떤 결정이 확정돼 있는가 | `.claude/base/` (먼저 `.claude/base/architecture.md`) |
-| 문서 전체 색인 — 어느 파일이 뭘 다루는가 | `.claude/README.md` |
+| 문서 전체 색인 — 어느 파일이 뭘 다루는가 | `.claude/README.md`(폴더 한 줄씩) → 각 폴더의 `README.md`(파일 색인, **[2026-09-08 분리]**) |
 | 사용자가 답해야 할 열린 질문 | `.claude/question.md` |
 | **외부 모델(Gemini 등)에게 감사를 시킬 때** 먼저 읽힐 진입점 | `.claude/qa-request/external-review-entry.md` |
 | 구현 순서 / 마일스톤 | 루트 `ROADMAP.md` |

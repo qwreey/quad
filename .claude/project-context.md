@@ -1,7 +1,7 @@
 # 프로젝트 컨텍스트
 
 루트 `CLAUDE.md`가 `@import` 하는 파일. 폴더별 **상세** 색인은
-`.claude/README.md`가 소스 — 여기선 중복 서술하지 말고 가리키기만 할 것.
+각 폴더의 `README.md`가 소스(**[2026-09-08 분리]** 루트 `.claude/README.md`는 폴더 한 줄씩) — 여기선 중복 서술하지 말고 가리키기만 할 것.
 
 ## 이 프로젝트가 뭔지
 
@@ -36,7 +36,7 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
 
 ## 계획 문서 구조
 
-`.claude/README.md`가 색인. 요약:
+`.claude/README.md`가 폴더 색인, 각 폴더의 `README.md`가 파일 색인(**[2026-09-08 분리]**). 요약:
 - **[2026-08-16]** 루트 `CLAUDE.md`는 짧은 진입점일 뿐이고, 실제 내용은
   `.claude/conventions.md`(관례·작업 방식) / 이 문서 / `.claude/todos.md`
   (지금 할 일)로 쪼개져 `@import`로 다시 합쳐짐. `.claude/session-summary.md`
@@ -48,10 +48,10 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
   Fusion/Vide 비교 리서치) — 항상 읽을 필요는 없고 인용될 때만 열어볼 것.
   **[2026-08-21 확장]** 확정된 결정의 **근거 기록**(그 결정이 왜 그렇게
   났는지)도 여기 둠 — `research/`를 떠났지만 `archive/` 대상은 아닌 것들.
-  어떤 문서가 있는지는 `.claude/README.md`가 소스.
+  어떤 문서가 있는지는 `.claude/reference/README.md`가 소스.
 - `.claude/research/` — 아직 착수 전, 사용자와 상의 필요한 설계 논의. 전부
   후순위. **어떤 문서가 있는지·우선순위가 뭔지는 여기서 세지도 나열하지도
-  않고 `.claude/README.md`의 `research/` 표로 미룸**(개수뿐 아니라 파일명
+  않고 `.claude/research/README.md`의 표로 미룸**(개수뿐 아니라 파일명
   나열 자체가 새 문서가 추가될 때마다 stale해지는 패턴이 실제로 반복됐음 —
   과거엔 "두 개뿐"이라 적어놨다가, 2026-08-16엔 7개짜리 나열이 실제 11개와
   어긋난 걸 감사가 발견. 아래 luau-test/audit 문단과 같은 처리로 통일).
@@ -70,8 +70,8 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
   패턴이 실제로 반복됐음, `.claude/todos.md`의 luau-test 스파이크 항목 참고).
 - `.claude/audit/` — **[2026-08-13 신설]** 스파이크를 실제로 돌린 **실측
   결과** 기록(계획 아님). 부분 확인도 있는 그대로 남김 — **지금 몇 개가
-  있는지·각각 뭘 확인했는지는 여기서 나열 안 하고 `.claude/README.md`의
-  `audit/` 행으로 미룸**(luau-test와 같은 이유 — 나열하다 새 폴더가
+  있는지·각각 뭘 확인했는지는 여기서 나열 안 하고 `.claude/audit/README.md`로
+  미룸**(luau-test와 같은 이유 — 나열하다 새 폴더가
   추가될 때마다 stale해지는 패턴이 실제로 반복됐음, 가장 최근엔
   2026-08-15에 이 목록이 3개에서 멈춰 있는 걸 `/code-review`가 발견).
   `type-recursion-issue/`만 참고로 짚으면: **[13차 세션]** 0-Y 재실측

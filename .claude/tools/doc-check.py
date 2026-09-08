@@ -25,7 +25,7 @@
      냈고(78건 중 30건), "의역 인용 관례 때문에 오탐이 섞인다"며 WARN에
      묶여 있었다. 의역 인용을 규약으로 금지하고 불일치를 78→0으로 정리한
      뒤 ERROR로 승격함.
-  3. [ERROR] 색인 누락 — base/research/archive/reference 파일이 README에 없음
+  3. [ERROR] 색인 누락 — base/research/archive/reference 파일이 README(루트 + 폴더별 README.md)에 없음
   4. [WARN]  날짜 없는 시한부 주장 — "아직 안 돌려봄", "열린 질문 없음" 등
      시간이 지나면 거짓이 되는데 언제 기준인지 안 적힌 문장
   5. [WARN]  미반영 배너를 단 파일 vs 반영 목록 일치 여부
@@ -339,14 +339,22 @@ def check_index():
     if not os.path.exists(readme):
         errors.append("`.claude/README.md`가 없음")
         return
-    txt = open(readme, encoding='utf-8').read()
+    root_txt = open(readme, encoding='utf-8').read()
     for sub in ('base', 'research', 'archive', 'reference'):
         d = os.path.join(CLAUDE, sub)
         if not os.path.isdir(d):
             continue
+        # [2026-09-08 round7 Q39] 파일 색인은 폴더별 README.md가 소스(루트는 폴더 한 줄씩) —
+        # 둘을 합쳐 본다. 폴더 README 자신은 색인 대상이 아니다.
+        txt = root_txt
+        sub_readme = os.path.join(d, 'README.md')
+        if os.path.exists(sub_readme):
+            txt += open(sub_readme, encoding='utf-8').read()
         for f in sorted(os.listdir(d)):
+            if f == 'README.md':
+                continue
             if f.endswith('.md') and f'`{f}`' not in txt:
-                errors.append(f"README 색인 누락 → {sub}/{f}")
+                errors.append(f"README 색인 누락 → {sub}/{f} (루트 README에도 {sub}/README.md에도 없음)")
 
 
 # ---------- 4: 날짜 없는 시한부 주장 ----------
