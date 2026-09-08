@@ -2,7 +2,7 @@
 	Tag 계약 (M10, round16 spike) — 값 API(`base/tag-plan.md` "값 모양") +
 	TagFallbackHandler 참조 카운트(같은 문서 "메커니즘" 절: addTag는 process,
 	removeTag는 retractor, 위치(k) 기준 홀더 집합, 배치 호출, 깜빡임 방지) +
-	미주입 스텁 안내 에러. mock의 tag op(`installTagAttributeOps`)와 호출
+	미주입 스텁 안내 에러. mock의 tag op(`installTagAttrOps`)와 호출
 	로그로 "실제 엔진 호출은 진짜 바뀐 이름에만"을 직접 관측한다.
 ]]
 
@@ -131,7 +131,7 @@ end
 
 local function newTagQuad(log: { string }?)
 	local q = newQuad()
-	mock.installTagAttributeOps(q, log)
+	mock.installTagAttrOps(q, log)
 	return q
 end
 

@@ -4,7 +4,7 @@
 
 ## 1. 입력
 
-사용자가 Gemini 세션에서 받은 코드 품질·아키텍처 자문을 무시 파일 `qa-request/code-quality-and-architecture-advisory-ignoreme.md`로 반입했다(커밋 안 됨). §1에 사용자 본인의 회신 원문(2026-09-08 00:27), §2 기각 넷(Luau `x is Type` — 없는 문법 / `Slot:List` reconcile 전역 스크래치 — 재진입 오염 / ErrUtil 자동 태깅 — 층위 결합 / 퍼징 하네스 — 범위 이탈), §3 권고 셋(`__tostring` / `setFuncLevel(level, ...fns)` / 메시지 포맷 헬퍼). 사용자: *"기각 된 것 이외 남은 실질 조언은 아주 작은것들 뿐이라서, 사용자 몫을 검토하며 같이 처리하면될것 같아."* 남은 사용자 몫은 `question.md` 2절: round3 Q25·Q26·Q27, 구조 재편 8절 `Attr`, 10-4 정적 굽기, flatten 슈거 일곱.
+사용자가 Gemini 세션에서 받은 코드 품질·아키텍처 자문을 무시 파일(code-quality-and-architecture-advisory-ignoreme)로 반입했다(커밋 안 됨 — **[같은 날 오전 사용자 지시]** 처리 완료 배너를 달아 `qa-request/post-implementation-review-round6.md`로 정식 편입). §1에 사용자 본인의 회신 원문(2026-09-08 00:27), §2 기각 넷(Luau `x is Type` — 없는 문법 / `Slot:List` reconcile 전역 스크래치 — 재진입 오염 / ErrUtil 자동 태깅 — 층위 결합 / 퍼징 하네스 — 범위 이탈), §3 권고 셋(`__tostring` / `setFuncLevel(level, ...fns)` / 메시지 포맷 헬퍼). 사용자: *"기각 된 것 이외 남은 실질 조언은 아주 작은것들 뿐이라서, 사용자 몫을 검토하며 같이 처리하면될것 같아."* 남은 사용자 몫은 `question.md` 2절: round3 Q25·Q26·Q27, 구조 재편 8절 `Attr`, 10-4 정적 굽기, flatten 슈거 일곱.
 
 ## 2. 메인의 1차 정리(질문 여섯)와 사용자 회신
 
@@ -39,3 +39,41 @@
 
 메인이 §2의 Q25 분석(신원 dedup은 Tween 값의 멱등성, 소비 자리가 맞다 / 위로 올리는 건 새 메커니즘)을 보고한 뒤, 사용자가 자기 뜻을 정확히 짚었다: *"정확히 내가 말 한 부분은 Animate 보다 위 계층인, 처리자인 프로퍼티 핸들러(소비자) 계층이긴 했음. 슈거보다 위 계층. Source/State 아니고. 신원 가지고는 한계가 보여서, Value 만 보는게 맞다고 봄 — Time/Style 등은 Animate 가 변경되어도 무시하던것 처럼, 비교 대상이 아니라 봄. 2. Dedup 필드가 Tween 에 있는것 맞고, dedup 메커니즘을 tween 하나에만 두는것도 동의함."* 즉 메인이 Q12 인용(*"이전 Tween 을 그대로 리턴"*)을 **객체 신원**으로 읽고 구현했던 것이 어긋남의 뿌리였다 — 사용자의 모델은 처음부터 소비자 층의 **값 비교**였고, 그러면 숏핸드의 `Mapped` 새 객체 문제는 캐시 없이 사라진다. 메인이 짚은 부수 조건 하나: `Animate{ Dedup = false }`가 "새 객체를 만든다"로 구현돼 있어 값 비교 아래선 접혀 버리므로 스위치가 Tween 값에 실려야 한다 → 사용자 동의(`Tween.Dedup` 필드, 메커니즘 하나). 반영(`H-478`): `Tween.validateFields`에 `Dedup` boolean, types `TweenOptions`/`TweenData`에 `Dedup: boolean?`, `Animate`는 `FIELDS`에 `Dedup`을 넣어 전달만(`sameTween`·`previous` 삭제), Property 핸들러 `v.Dedup ~= false and prev.Value == v.Value`, 슬롯 `{ Value }`/`{ Tween, Value }`(`Source` 삭제). plain 슬롯 `true`는 값을 기억하지 않아 거기 오는 Tween은 항상 재생(핫패스 할당 회피 — 메인 판단, 문서에 명시). spec: `spec.tweenproperty` 7·8절 재작성(직접 `Dispatch.process`를 StoreBind와 같은 인덱스에 넣으면 StoreBind가 밀려나는 것을 밟아 별도 인스턴스로), `spec.shorthand` 7절(UDim 심에 `__eq` — 엔진의 값 동등을 흉내), `spec.animate` 5절, `spec.tween` 7절. test.sh exit 0(스펙 50).
 
+
+## 6. 감사 스윕(같은 날 오전, 사용자 지시) — 마지막 체크포인트 이후 136파일
+
+사용자: *"audit 돌고 있어줄래? 쌓은 부분이 엄청 많아서, stale 들이 여기저기 있을거야. sonnet 모델
+여럿 굴려서 stale 한 부분만 잡아볼래?"* — 병렬 허용이 명시돼 `e9c7ffd`(09-07 저녁 체크포인트) 이후
+범위를 각도로 갈라 sonnet 감사자를 동시에 돌렸다(읽기 전용, 수정은 메인). 1라운드 넷: A `base/` vs
+코드(확실 1 — attribute-plan의 `AttrKey<<T>>` 제네릭 잔재 셋; 판단 1 — "메시지 모양" 규약이 배열 자리
+가드 셋을 예외로 안 적음 → 규약에 예외 명시), B 인덱스 레이어(확실 3 — `luau-test/STATUS.md` 요약 개수
+29→32·헤더 36번 누락, `CLAUDE.md`의 "오늘"; 판단 1 — todos 00 꼬리의 09-06 핸드오버 블록 → 09-08로
+갱신), C research/reference/회신 대조(확실 2 — source-layout-plan 2절의 `"isTween"` 잔존 서술,
+documentation-content-map의 `AttrKey<T>`), D 코드 주석·spec·생성기(확실 1 — gen-d 주석 `Modifier.luau`).
+2라운드 셋: E 큰 base 문서 전문(확실 0; 판단 1 — 의사코드의 옛 `error(msg, 2)` 리터럴 → `architecture.md`
+error 계약 절에 읽기 규칙), F `Attr` 치환 부수 피해 전수(확실 5 + 의심 1 — 아래), G reference·question-resolved·
+session-summary·외부 진입점(확실 1 — `luau-test/README.md` 표에 27번 행 누락). 합계 확실 13 · 판단 3 ·
+의심 1, 전부 반영. 3라운드 H(이번 커밋 수정분 재검증)는 확실 1(이 개수 산술 — 처음 "확실 14"로 적었다)·판단 1(읽기
+규칙의 "스무 곳 안팎" → 실측 11개 문서 46곳)로 닫았다.
+
+**치환 부수 피해가 이번 스윕의 주 발견이다.** `66281ab`의 `Attribute`→`Attr` 일괄 치환은 "옛 `…`"
+바로 뒤 인용만 보호했는데, 그 밖의 세 범주가 덮였다: (1) 외부 이름 — Fusion 소스 경로
+`Instances/Attribute.luau`·"Fusion `Observer`/`Attribute`"(additional-primitives-plan), Roblox 엔진 개념
+"Roblox Attribute는 타입이 있는 값"·"Destroy돼도 Attribute는 nil로 안 풀리며"(attribute-plan 셋); (2)
+옛 이름 표지 "구 `Attribute<T>`"가 "구 `Attr<T>`"로 동어반복(README·architecture·attribute-plan 셋·
+bind-system-plan); (3) **사용자 인용문** 안의 낱말 — *"None, Tag, Attribute, Observer, EffectHandle …"*
+(typing-limits·source-layout-plan), *"AttributeKey 는 내부적 요소로 놓는거야"*(question·attribute-plan),
+*"Attribute 는 bindLifetime 를 못함"*(attribute-plan). 전부 치환 전 원문(`git show 66281ab^:`)으로
+복원. 반대 방향(놓친 곳)은 내부 헬퍼 `newAttribute`→`newAttr`, 테스트 헬퍼
+`installTagAttributeOps`→`installTagAttrOps`, 미구현 백엔드 패밀리 가칭 `InstanceAttribute`/
+`UDim2Attribute`→`InstanceAttr`/`UDim2Attr`(`StringAttr` 패턴과 통일). 복원 중 메인의 실수 하나: 사용자
+인용 복원 스크립트의 정규식 `\*"(.+?)"\*`이 인용이 아닌 구간(볼드 사이)까지 잡아 8개 파일을 잘못
+되돌렸고, 같은 스팬을 역적용해 원상 복구했다(diff 재검토로 확인).
+
+교훈 셋. **기계 치환의 보호 목록은 "옛 `…`" 하나로 부족하다** — 외부 이름(Fusion/Vide/Roblox/v1),
+사용자 인용(`*"…"*`), 옛 이름 표지(구/이전/원래/→ 왼쪽)를 치환 전에 grep으로 뽑아 제외하고, 치환
+뒤엔 `-` 줄 중 그 범주에 든 것을 전수 대조할 것(이번엔 F 각도의 감사자가 그 일을 했다). **인용 복원도
+치환이다** — 같은 종류의 정규식 실수를 낸다; 스팬을 넓게 잡는 정규식은 결과 diff를 반드시 읽는다.
+**감사자가 "전문 정독"한 문서에서도 다른 각도의 감사자가 더 잡는다**(A가 attribute-plan을 전문으로
+읽고도 Roblox Attribute 셋은 F가 잡았다) — 같은 파일을 "코드 대조" 각도와 "치환 전후 대조" 각도로
+따로 보는 것이 라운드 반복보다 쌌다.

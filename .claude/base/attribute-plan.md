@@ -37,24 +37,24 @@ checkpoint-handler-pattern-reversed.md`와
 Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attr(...)`
 프리미티브 신설, 이름 충돌 방지를 위해 기존 단일 키 생성자를
 `Attr<<T>>` → `AttrKey<<T>>`로 리네임(잠정 확정 — 최종 이름은
-여전히 `.claude/question.md` 용어정리 대기열). `[AttrKey "Name"]`(구
-`[Attr "Name"]`) 특수 키의 존재 자체는 `architecture.md` 4번 항목에서
+여전히 `.claude/question.md` 용어정리 대기열). `[AttrKey "Name"]`(옛
+`[Attribute "Name"]`) 특수 키의 존재 자체는 `architecture.md` 4번 항목에서
 이미 확정. UICorner 숏핸드/Tween처럼
 별도 전용 문서가 없던 걸 2026-08-07 여덟 번째 세션에 메꿈("1 프리미티브 1
 파일" 관례를 Tag/Attr에도 적용해야 한다는 사용자 지적) —
 `bind-system-plan.md`의 Attr 특수 키/타입 파라미터화 절(2026-08-06
 신설, 지금은 이 문서로 옮겨져 그쪽엔 색인만 남음) 내용을 그대로 옮기고, 논의한 `None`/`process`/`retract` 동작을 추가.
 
-## 단일 키 — `AttrKey(name)` (구 `Attr<<T>>`, 2026-09-03부터 무타입)
+## 단일 키 — `AttrKey(name)` (옛 `Attribute<<T>>`, 2026-09-03부터 무타입)
 
 > **⭐ [2026-09-03 사용자 확정 — 한 발 얹기] `AttrKey`는 값 타입을 모르는
 > 프리미티브가 됐고, 타입은 배열부 슈가 `StringAttr(name, value)`/
 > `NumberAttr`/`BooleanAttr`가 진다.** 사용자 원문: *"내부적으로
-> 클래임을 위해서 AttrKey 를 여전히 두는데, StringAttr 등은 핸들러 상
-> 싱글 attr group 마냥 작동하는거지. … AttrKey 는 내부적 요소로 놓는거야.
-> 슈거로써 StringAttr("name", value) 를 두고, 만일 없는 타입을 구현하기
-> 위해서는 AttrKey 를 쓰고, 내부 타입체크나 그런건 구현 쪽에 부담시키는거지
-> … 구조를 개편시킨다기 보단, 한 발 더 얹는거야. … 결과적으로 AttrKey 는
+> 클래임을 위해서 AttributeKey 를 여전히 두는데, StringAttribute 등은 핸들러 상
+> 싱글 attr group 마냥 작동하는거지. … AttributeKey 는 내부적 요소로 놓는거야.
+> 슈거로써 StringAttribute("name", value) 를 두고, 만일 없는 타입을 구현하기
+> 위해서는 AttributeKey 를 쓰고, 내부 타입체크나 그런건 구현 쪽에 부담시키는거지
+> … 구조를 개편시킨다기 보단, 한 발 더 얹는거야. … 결과적으로 AttributeKey 는
 > 타입이 몰라도 되는 존재가 된다."* 계기는 round16 `H10-12`(해시부 특수 키가
 > strict `<Class>Param<E>`에 타입으로 못 들어감 — `OnChange` 배열부 역전의
 > 짝). 이 절의 아래 서술 중 `AttrKey<<T>>` 제네릭·"패밀리 = 같은 키 객체"는
@@ -76,14 +76,14 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attr(
 
 ### 문제 — 타입 있는 값이라 Luau가 좁혀줄 방법이 필요
 
-Roblox Attr는 Instance/Tag와 달리 실제로 **타입이 있는 값**
+Roblox Attribute는 Instance/Tag와 달리 실제로 **타입이 있는 값**
 (string/boolean/number/Color3/UDim/UDim2/Vector2/Vector3/CFrame/Instance
 참조 등 제한된 프리미티브 집합, 테이블 등 복합 타입은 지원 안 함)이라, 그냥
 `[AttrKey "name"] = value`로 두면 `value`의 타입을 Luau가 좁혀줄 방법이
 없음. 커스텀/복합 데이터(테이블 등)는 애초에 Attr가 지원을 안 하므로
 Ref(직접 참조 획득) 쪽으로 빠지는 게 맞고, Attr는 프리미티브 전용으로
 남기면 된다는 게 사용자 판단 — Value 오브젝트가 역사적으로 Attr의
-대안(테이블/참조를 담는 용도)으로 나온 배경이지만, 지금은 Roblox Attr가
+대안(테이블/참조를 담는 용도)으로 나온 배경이지만, 지금은 Roblox Attribute가
 Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Attr를
 그대로 쓸 수 있다는 점을 사용자가 짚음(`research/debug-tooling-plan.md`의
 "Value 오브젝트(StringValue/ObjectValue 등)는 기각" 결정과 같은 방향
@@ -95,9 +95,9 @@ Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Att
 > 아니라 `InstanceHandle`**(미문서화 Studio Beta — 복제/스트리밍 미실체화를
 > 푸는 간접 참조)이다. 원본과 `==` 비교는 false고 `handle:Get()`으로
 > 언랩해야 원본(rawequal) — 단 `:Get()`은 nil일 수 있고(`:Wait()`이 실체화
-> 대기), 대상이 Destroy돼도 Attr는 nil로 안 풀리며 `:Get()`이 죽은
+> 대기), 대상이 Destroy돼도 Attribute는 nil로 안 풀리며 `:Get()`이 죽은
 > Instance를 그대로 준다. quad의 Attr **쓰기 경로(디스패치)는
-> 무영향**이고, 읽는 소비자(quad-debug, `InstanceAttribute`의 읽기 타입)가
+> 무영향**이고, 읽는 소비자(quad-debug, `InstanceAttr`의 읽기 타입)가
 > 이 사실 위에서 설계돼야 한다. 실측 전문과 사용자 설명(devforum 4753441)은
 > `audit/spike10-full-run-2026-09-01.md`가 소스.
 
@@ -106,7 +106,7 @@ Instance 참조 타입도 지원해서 `ObjectValue` 없이도 Ref 용도로 Att
   제네릭 파라미터로 타입을 명시하는 제네릭 생성자 스타일. 기본/범용 경로.
 - `[BooleanAttr "name"] = true` — 타입별로 이름이 다른 정적 생성자
   패밀리(`StringAttr`/`NumberAttr`/`Color3Attr`/
-  `InstanceAttribute` 등). 실사용 빈도가 높은 몇 개만 지름길로. **이름은
+  `InstanceAttr` 등). 실사용 빈도가 높은 몇 개만 지름길로. **이름은
   `Attr`가 아니라 이미 타입별로 갈라져 있어 아래 그룹 `Attr(...)`와
   겹치지 않음 — 리네임 대상 아님.**
 
@@ -281,7 +281,7 @@ end
   `Dispatch.retractFrom(inst, key, 1)`을 불러 **`k=2`가 아직 쓰고 있는
   바인딩까지 통째로 철거**한다.
   - **`Ref`의 "이중 배치 방지"(`base/ref-plan.md`)와 같은 클래스의
-    문제지만 같은 해법을 쓸 수 없다** — 사용자 판정: *"Attr 는
+    문제지만 같은 해법을 쓸 수 없다** — 사용자 판정: *"Attribute 는
     bindLifetime 를 못함. Ref 와 다르게 여기저기서 사용 가능하기 때문. 한
     곳에서 바운딩 했다고 다시 바운딩 못할 순 없음. 따라서 위치별 claim 을
     하나 두어야한다고 생각함."* `Ref`는 "한 곳에만 배치"가 규칙이지만
@@ -373,7 +373,7 @@ end
   이미 점유돼 있음")와 달리 여기선 이름을 그대로 찍을 수 있음.
   `base/dispatch-core-plan.md`가 "상세 에러가 필요하면 호출부가 도메인
   언어로 다시 던지는 건 자유"라고 남겨둔 자리를 이게 채움.
-- **직접 리터럴 쓰기**(`[AttrKey<<T>> "name"] = value`)는 공개
+- **직접 리터럴 쓰기**(`[AttrKey "name"] = value`)는 공개
   `AttrKey(name)`을 그대로 씀 — 한 Modifier 안에 같은 해시 키가
   중복될 수 없어 이 경로 자체의 소유자는 항상 유일하고, 그룹이 이미 그
   이름을 잡고 있으면 claim이 즉시 error.
@@ -386,7 +386,7 @@ end
 
 ### 동기
 
-Store 필드 여러 개를 각각 `[AttrKey<<T>> "name"] = store.name`으로
+Store 필드 여러 개를 각각 `[AttrKey "name"] = store.name`으로
 나열하는 건, 이미 이름 붙은 typed Source 모음(Store)이 있는 상황에서
 번거로움 — Store의 타입 체크/reactive 인프라를 attribute에도 그대로
 재활용하고 싶다는 요구에서 출발.
@@ -686,7 +686,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 | 단일 키 `AttrKey(name)`(무타입, 2026-09-03) + 이름별 weak 캐시 | quad-base |
 | 타입드 스칼라 슈가(`StringAttr(name, value)`/`NumberAttr`/`BooleanAttr` — 단일 항목 그룹, 2026-09-03) | quad-base(`Attr/init.luau`) |
 | `AttrKeyHandler`(이름 claim 포함) / `AttrGroupHandler`(전용 키 위임) | quad-base, `HANDLER_PRIORITY_FALLBACK`으로는 이걸 감싸는 `AttrKeyFallbackHandler`/`AttrGroupFallbackHandler`가 등록됨 — **[재역전, 2026-08-18] 등록 주체는 백엔드 팩토리가 아니라 quad-base 자신**(`base/dispatch-core-plan.md`의 "base가 소유하는 핸들러와 주입되는 엔진 op" 절) |
-| 엔진 고유 타입 패밀리(`Color3Attr`/`UDim2Attribute`/`InstanceAttribute`류) | 백엔드(quad-roblox의 `D` 층) |
+| 엔진 고유 타입 패밀리(`Color3Attr`/`UDim2Attr`/`InstanceAttr`류) | 백엔드(quad-roblox의 `D` 층) |
 | **`setAttr(inst, name, v)`** — `v == nil`이면 그 이름을 지움 | 백엔드가 주입 |
 
 - **왜 타입 패밀리만 갈리는가**: Roblox attribute가 받는 타입 집합
@@ -726,7 +726,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
   `Merged`(error)와 `Overridden`(뒤가 이김)을 **둘 다 제공**하는 것으로
   확정. 상세는 위 "채택안 — `Tag`와 동형인 array-part 값 객체" 절.
 - **이름은 잠정 확정, 최종 확정은 대기열**: 겹침 방지를 위해 그룹 값은
-  `Attr`, 단일 키는 `AttrKey<<T>>`로 코드/문서 전체 통일해서
+  `Attr`, 단일 키는 `AttrKey`로 코드/문서 전체 통일해서
   당장의 해석 모호성은 없앴음 — 그래도 최종 이름은 다른 가칭들(`Slot`/
   `canExecute`/`Brand`)과 함께 `.claude/question.md` 용어정리
   대기열에 있음, 나중에 한꺼번에 재검토.

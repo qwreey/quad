@@ -567,7 +567,7 @@ def emit():
     union_member_functions |= function_fields(type_body("OnChangeDescriptor", rt, "quad-roblox types.luau"))
     if "Callback" not in union_member_functions:
         raise SystemExit("gate: OnChangeDescriptor.Callback not harvested from quad-roblox types.luau")
-    # reserved Modifier methods — read from the runtime `methods` table in `Modifier.luau`
+    # reserved Modifier methods — read from the runtime `methods` table in `Dispatch/Modifier/init.luau`
     # (`function methods.X(` / `methods.X = `), not hand-copied (Q3 ⑦); the cast prefix `As` is
     # a method there too, so it lands in the set as well as in the prefix check below
     mod_src = strip_comments((ROOT / "quad-base" / "src" / "Dispatch" / "Modifier" / "init.luau").read_text())

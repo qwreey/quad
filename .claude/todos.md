@@ -41,7 +41,7 @@
      `research/source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
      통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attr/`·
      `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
-     **[2026-09-08 아침 회신 반영 — round3 §12]** Gemini 코드 품질 자문(무시 파일 `qa-request/code-quality-and-architecture-advisory-ignoreme.md`,
+     **[2026-09-08 아침 회신 반영 — round3 §12]** Gemini 코드 품질 자문(`qa-request/post-implementation-review-round6.md` — 옛 무시 파일, 2026-09-08 정식 편입;
      커밋 안 됨) 권고 셋 — `__tostring`(목록 고정, `spec.tostring` 스펙 50)·`setFuncLevel(level, ...fns)`(옛 시그니처 폐기, `H-475`)·
      메시지 헬퍼 기각 → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`); 옛 `Attribute` → **`Attr`**(+`AttrKey`·`setAttr`, 폴더
      `Attr/`); 10-4는 리서치 대상으로; Q26 (a) 축소판(`H-476`), Q27 등록 op 기각(모듈 `is<Brand>` 필드가 계약, 진단 스캔).
@@ -58,15 +58,14 @@
    - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/
      `Operator` 슈가/`Fallback`·`Traceback`/생명주기 훅 슈가/`Debounce`·`Throttle`/
      `fastscroll`/`spring`/`quad-roblox-types`).
-   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06 항목(백그라운드 에이전트
-   종료 판정 — 알림 `status: completed`가 종료, 본문 "대기 중" 무시), `HUMAN_TODO.md`
-   12번(Studio 재시작 뒤 rojo 플러그인 Connect), `archive/v2-initial-implementation/m11-implementation-round19.md`
-   §4(열린 문항 0·확인 항목 0 — `H-343`으로 전부 닫힘).
-   **직전 구간 요약**(원문 `session/2026-09-06-01-audit-sweep-and-m11-brief.md` 1~13절):
-   감사 스윕 6라운드 → fable 탐사(치명 0) → M11(Tween 세 단위) → M10 잔여
-   InstanceShorthand → M9 관례 검증 → 리뷰 2회 반영 → 아침 회신(`H-329` (a), `H-343`
-   문자열 싱글톤 `Override`) → 핸드오버(감사 A/B + 전체 코드 리뷰 R1~R3 + `/code-review
-   high`). CLI 49/49, doc-check ERROR 0.
+   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07 항목(백그라운드 에이전트
+   종료 판정 — 알림 `status: completed`가 종료 / test.sh 판정은 exit code / 문항·발견은 평문),
+   `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 둘(`-ignoreme`
+   접미, 커밋 제외 — Bookkeeping abs 온디맨드 RFC·Vide/Fusion 전환 가이드 초안, 착수는 사용자 지시 뒤).
+   **직전 구간 요약**(원문 `session/2026-09-08-01-advisory-and-user-items.md`): Gemini 자문
+   권고 셋 판정(`__tostring` 목록 고정·`setFuncLevel(level, ...fns)`·메시지 헬퍼 기각) → `Attr`
+   축약 → Q26·Q27 → Q25 값 비교 dedup(`H-478`) → 신원 잔재 탐사 → 2026-09-08 감사 스윕(sonnet
+   넷 병렬, 사용자 지시). test.sh exit 0(스펙 50), doc-check ERROR 0.
 
 
 2. **[백로그] 용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는

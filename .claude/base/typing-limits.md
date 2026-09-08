@@ -924,7 +924,7 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 
 ## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
-**⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attr, Observer, EffectHandle 들도 전부 사실 marker
+**⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker
 구조로 가도 될것 같아"*, `research/source-layout-plan.md` 10-2]** 마커 가족이 T 없는 값 타입으로도 넓어졌다 —
 `TagMarker`/`AttrMarker`/`ObserverMarker`/`EffectHandleMarker`(`None`은 처음부터 마커, `H-300`). 규칙은
 같다: 입력 자리(`NewChild`의 직접 팔과 `StateMarker<…>` 안의 팔, Tag `names` 자리의 `TagNames`, `Tag.Merged`)는

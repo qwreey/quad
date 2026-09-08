@@ -34,7 +34,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    테이블을 계속 쌓는 방식, `reference/quad-v1-architecture.md` 참고)은 폐기.
    store 바인드에 대한 변경은 "전체 변경"으로 간주(UB 아님, 문서화된 의미론) —
    부분 복사/오버레이가 필요하면 팩토리 함수로 필요한 곳만 명시적으로 복사.
-4. **PA님 스타일 특수 키 계속 지원**: `[AttrKey "Name"]`(구 `Attr`,
+4. **PA님 스타일 특수 키 계속 지원**: `[AttrKey "Name"]`(옛 `Attribute`,
    2026-08-11 아홉 번째 세션에 그룹 `Attr(...)`와 이름 충돌 방지로
    리네임) 같은 특수 바인드 키, store 컴퓨티드 바인드도 가능해야 함
    (`retract`, 구 cleanup, `base/lifecycle-pattern.md` 참고). **[정정,
@@ -414,6 +414,10 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   기존 자리 전량이 이 형태로 일괄 이관됐다(사용자 확정: *"이관 할 부분을
   이관하고 다음 단위 착수하자"*). 워커 설계·스캔 방향의 경위는
   `archive/v2-initial-implementation/m3-implementation-round12.md`의 `H-231` 절이 소스.
+  **[2026-09-08 읽기 규칙 — 감사 스윕]** 다른 `base/` 문서의 의사코드에 남은 `error(msg, 2)`/
+  `error(msg, 3)` 리터럴(2026-09-08 실측 11개 문서 46곳 — `slot-plan.md` 14곳이 최다)은 이 이관 **전** 표기다 — 뜻은 위 2행·3행(`errorBeforeNearest(msg, SURFACE)`,
+  도착지 = 사용자 호출부)으로 읽고, 코드가 정본이다. 일괄 치환하지 않는다(그 문서를 만질 때
+  같이 고친다 — `conventions.md`의 세션 ID 표기 규약과 같은 처리).
 - **⭐ 메시지는 영어로 통일한다**(**사용자 확정**, 2026-08-25). 지금
   코퍼스는 영어 6 / 한국어 약 23으로 이미 갈려 있고, 공개 표면인데
   정해진 적이 없었다. `.claude/conventions.md`의 *"사용자가 보게 될 것은
@@ -436,7 +440,9 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     for "Text" …`).
   - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` — `(em-dash) 뒤에.
   - **받은 값**은 문장 끝 `(got {typeof(x)})` — 괄호형만 쓴다(쉼표형 `, got X`·`but got X`
-    폐기: Bookkeeping `position` 게이트, Effect/Observer/Ref 배열 자리 가드가 그 잔재였다).
+    폐기: Bookkeeping `position` 게이트, Effect/Observer/Ref 배열 자리 가드가 그 잔재였다 — 뒤의
+    셋은 정규화하면서 키 타입을 이유 안에 실었다: `must be an array item, not the value of a
+    {typeof(k)} key`. 받은 값이 아니라 잘못 놓인 자리를 서술하는 문장이라 `(got …)` 꼬리가 없다).
     숫자·정해진 값은 `tostring`으로 그 값을 실어도 된다.
   - 구분자는 콜론 하나 — `Slot:List — …`(em-dash 주어)·`Tween:Mapped expects …`(콜론 없음)
     형태는 폐기.

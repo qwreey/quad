@@ -2432,3 +2432,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   Q26 (a) 축소판(둘째 증상은 Q33으로 소멸 — `H-476`) · Q27 등록 op 기각(모듈 최상위 `is<Brand>` 필드가 계약, 진단 스캔) ·
   Q25는 같은 날 아침 **값 비교 모델**로 닫힘(`H-478` — 사용자의 뜻은 처음부터 소비자 층의 `Value` 비교; `Tween.Dedup` 필드, 옛 Q12 신원 모델·슬롯 `Source` 폐기, 숏핸드 무변경) · flatten 일곱은 내일(+named 자리 축).
   커밋 `66281ab`·`55ca091`·`24320db`·`7e80ace`, test.sh exit 0(스펙 50), doc-check ERROR 0.
+  **[같은 날 오전 후속 — 감사 스윕]** 사용자 지시(*"sonnet 모델 여럿 굴려서 stale 한 부분만"*)로 `e9c7ffd` 이후 136파일을 두 라운드
+  일곱 각도(base vs 코드 / 인덱스 / research·회신 대조 / 코드 주석 / 큰 base 전문 / `Attr` 치환 부수 피해 / reference·resolved·
+  summary)로 병렬 감사 — 확실 13 + 판단 3 + 의심 1 반영(3라운드 재검증 H가 개수 산술 하나를 잡음). 주 발견은 `66281ab` 일괄 치환이 외부 이름(Fusion 경로·Roblox 엔진 개념)·
+  옛 이름 표지("구 `Attribute<T>`")·**사용자 인용문**까지 덮은 것 — 치환 전 원문으로 복원, 교훈은 세션 파일 §6.

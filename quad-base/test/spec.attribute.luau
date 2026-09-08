@@ -2,7 +2,7 @@
 	Attr 계약 (M10, round16 spike) — 단일 키(`base/attribute-plan.md`
 	"단일 키"/"동등성"/"메커니즘"/"이름 소유권") + 그룹(같은 문서 "그룹
 	`Attr(...)`"/"메커니즘 — 그룹 전용 키로 단일 키 경로에 위임").
-	mock의 `installTagAttributeOps` 로그로 "클로저는 setAttr를 절대 안
+	mock의 `installTagAttrOps` 로그로 "클로저는 setAttr를 절대 안
 	부른다"·"필드 하나 변경은 그룹 재처리 없이 단일 키 경로"를 직접 관측.
 ]]
 
@@ -13,7 +13,7 @@ local Instance = mock.Instance
 
 local function newAttrQuad(log: { string }?)
 	local q = newQuad()
-	mock.installTagAttributeOps(q, log)
+	mock.installTagAttrOps(q, log)
 	return q
 end
 

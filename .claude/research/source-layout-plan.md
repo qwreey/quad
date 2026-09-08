@@ -100,7 +100,7 @@ roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Twe
 별칭하고 있어 D 재생성 없이 정의만 옮겨졌고, quad-types에 남는 건 `FieldOut<X>` 하나). **반영
 완료**(같은 날): `quad-roblox/src/Tween.luau`(install)·`Brand.luau`·`types.luau` 정본(엔진 타입
 필드 정밀)·`test/spec.tween.luau`, quad-base엔 `BRAND_PROBES`의 문자열 `"isTween"`만(round3 §4
-Q27). 부수 발견: D 안에서 `FieldOut` 전개는 제약 한도 초과 → `typing-limits.md` 8.12.
+Q27) — **[2026-09-08]** 그 문자열도 지워졌다(Q27 계약: 모듈 `is*` 필드 스캔, 10-1 참고). 부수 발견: D 안에서 `FieldOut` 전개는 제약 한도 초과 → `typing-limits.md` 8.12.
 
 **사실**: `Tween.luau`(105줄)는 `Value`·`Override`(엔진 무관)와 `Time`/`RepeatCount`/`DelayTime`
 (number)·`Reverses`(boolean)를 검증하고 `Info`/`Style`/`Direction`은 엔진 타입으로 통과시킨다.
@@ -292,7 +292,7 @@ quad-roblox `Brand.luau` 신설(`TweenBrand`/`isTween`). 정본은 `base/brand-p
 
 ### 10-2. `None`·`Tag`·`Attr`·`Observer`·`EffectHandle`도 마커로 — **채택(사용자 제안), 반영 완료(2026-09-07 밤)**
 
-사용자: *"None, Tag, Attr, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
+사용자: *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker 구조로 가도 될것 같아."*
 사실: `None`은 이미 마커(`__quadNone`, `H-300`), `Tag`는 3절 반영에서 `__quadTag`를 얻었다. 남은 셋은
 `AttrImpl.__quadAttr`/`Observer Impl.__quadObserver`/`Effect Impl.__quadEffect`(H-300 관례 —
 `__index`로 읽히는 무비용 필드)와 quad-types `AttrMarker`/`ObserverMarker`/`EffectHandleMarker`,

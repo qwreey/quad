@@ -63,7 +63,7 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
   `isState`를 branded 타입 전부로 일반화) → **`base/brand-plan.md`**.
 - **`Tag` / `Attr` 특수 키** → **`base/tag-plan.md`** /
   **`base/attribute-plan.md`**. 이 문서가 예전에 다루던 타입 파라미터화 문제
-  (`[AttrKey<<boolean>> "name"]`(구 `Attr<<boolean>>`) vs
+  (`[AttrKey<<boolean>> "name"]`(옛 `Attribute<<boolean>>`) vs
   `[BooleanAttr "name"]`)뿐 아니라 `None`/`process`/retract 동작까지
   전부 그쪽에 확정 반영돼 있음. **[2026-08-11 아홉 번째 세션]**
   `attribute-plan.md`에 여러 Store를 한 번에 attribute로 묶는 그룹

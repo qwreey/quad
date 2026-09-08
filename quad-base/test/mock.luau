@@ -459,12 +459,12 @@ end
 -- M10 (round16 spike → 2026-09-03 engine axis): mock tag/attribute ops. The
 -- mock provider installs them like every other op (H-305 (d′) "all providers
 -- have the same shape" — user-delegated choice, fork-integration morning
--- reply 4); `installTagAttributeOps(quad, log)` stays exported as the
+-- reply 4); `installTagAttrOps(quad, log)` stays exported as the
 -- OBSERVATION re-install: the optional `log` records every engine call (names
 -- sorted — set iteration order is not deterministic) so specs can assert the
 -- batching / "only truly changed names" contracts. Bodies delegate to the
 -- private store helpers up by the instance methods.
-local function installTagAttributeOps(quad: any, log: { string }?)
+local function installTagAttrOps(quad: any, log: { string }?)
 	local function record(op: string, names: { string })
 		if log == nil then
 			return
@@ -662,7 +662,7 @@ local function mockProvider(quad: any): { [any]: any }
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
 	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim)
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
-	installTagAttributeOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
+	installTagAttrOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
 end
 
@@ -845,7 +845,7 @@ return {
 	newQuad = newQuad,
 	addSpecLeaf = addSpecLeaf,
 	assertBlamesUser = assertBlamesUser,
-	installTagAttributeOps = installTagAttributeOps,
+	installTagAttrOps = installTagAttrOps,
 	getTags = getTags,
 	getAttributes = getAttributes,
 }

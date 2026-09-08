@@ -199,7 +199,7 @@ Q3은 회신 1차에서 이미 닫힌 것을 다시 짚음(항목별 결과 §15
 
 ## §12 Gemini 코드 품질 자문 + 남은 사용자 몫 처리 (2026-09-08 새벽~아침, 대화형)
 
-자문 문서는 `qa-request/code-quality-and-architecture-advisory-ignoreme.md`(무시 파일, 커밋 안 됨 — Gemini가 사용자에게 물어 받은 회신을 §1에 원문으로 담고 있다). §2의 기각 넷(Luau `x is Type` 술어 — 존재하지 않는 문법 / `Slot:List` reconcile 전역 스크래치 — `updateFn` 재진입 오염 / ErrUtil 자동 태깅 — 층위 결합 / 반응성 DAG 퍼징 — 범위 이탈)은 사용자가 이미 기각해 손대지 않았다. §3의 권고 셋과 남은 사용자 몫을 한 흐름으로 묶어 처리했다. 결정은 전부 사용자 회신(같은 날 대화, `session/2026-09-08-01-advisory-and-user-items.md`).
+자문 문서는 `qa-request/post-implementation-review-round6.md`(**[2026-09-08 사용자 지시]** 옛 무시 파일(code-quality-and-architecture-advisory-ignoreme, 커밋 제외였음)을 처리 완료 배너와 함께 정식 편입 — Gemini가 사용자에게 물어 받은 회신을 §1에 원문으로 담고 있다). §2의 기각 넷(Luau `x is Type` 술어 — 존재하지 않는 문법 / `Slot:List` reconcile 전역 스크래치 — `updateFn` 재진입 오염 / ErrUtil 자동 태깅 — 층위 결합 / 반응성 DAG 퍼징 — 범위 이탈)은 사용자가 이미 기각해 손대지 않았다. §3의 권고 셋과 남은 사용자 몫을 한 흐름으로 묶어 처리했다. 결정은 전부 사용자 회신(같은 날 대화, `session/2026-09-08-01-advisory-and-user-items.md`).
 
 | 항목 | 결정 | 반영 |
 |---|---|---|

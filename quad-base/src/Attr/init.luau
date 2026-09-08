@@ -78,7 +78,7 @@ function AttrImpl.__tostring(self: any): string
 	return `Attr\{{table.concat(names, ", ")}}`
 end
 
-local function newAttribute(nameMap: { [string]: any }): any
+local function newAttr(nameMap: { [string]: any }): any
 	local self = setmetatable({ _nameMap = table.freeze(nameMap) }, AttrImpl)
 	AttrBrand:register(self)
 	return table.freeze(self)
@@ -148,7 +148,7 @@ local Attr = setmetatable({}, {
 			-- 4라운드 명시 — use Attr.Merged to make overlap an error)
 			flattenArg(map, select(i, ...), true, "Attr")
 		end
-		return newAttribute(map)
+		return newAttr(map)
 	end,
 })
 
@@ -161,7 +161,7 @@ function Attr.Merged(...: any): any
 		end
 		flattenArg(map, arg, false, "Attr.Merged")
 	end
-	return newAttribute(map)
+	return newAttr(map)
 end
 
 function Attr.Overridden(...: any): any
@@ -173,7 +173,7 @@ function Attr.Overridden(...: any): any
 		end
 		flattenArg(map, arg, true, "Attr.Overridden")
 	end
-	return newAttribute(map)
+	return newAttr(map)
 end
 
 table.freeze(Attr)
@@ -193,7 +193,7 @@ local function scalarSugar(fnName: string, luaType: string): (string, any) -> an
 		if not isState(value) and value ~= None and type(value) ~= luaType then
 			Err.errorBeforeNearest(`{fnName}: value of "{name}" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)
 		end
-		return newAttribute({ [name] = value })
+		return newAttr({ [name] = value })
 	end
 	Err.setFuncLevel(SURFACE, sugar)
 	return sugar
