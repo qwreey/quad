@@ -231,16 +231,26 @@ local function Init(module: any)
 			if offset == nil then
 				error(`Dispatch.recompute: sourceList[{i}] is nil — bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
-			local abs = getOffsetAt(ownerKey, i)
-			-- `H-240` check ① — BEFORE the write below stomps the signal
-			if bk.offsetSetUpTo < entryCursor then
-				i = math.max(bk.offsetSetUpTo, 1)
-				sum = prefix[i]
-				continue
-			end
-			bk.offsetSetUpTo = i -- Set done up to here
-			if offset ~= None and offset:Get() ~= abs then
-				offset:Set(abs) -- ← user code can run here
+			if offset == None then
+				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and
+				-- no user code ran since the entry snapshot: advance the cursor directly
+				-- (2026-09-08 advisory RFC, user decision `H-483`). The prefix cache is NOT
+				-- warmed here any more — `getOffsetAt` fills it on demand where a number is
+				-- actually pulled (`nativeInsert` offsets, List's physIndex), which used to
+				-- duplicate this pass one-for-one on a flat list.
+				bk.offsetSetUpTo = i
+			else
+				local abs = getOffsetAt(ownerKey, i)
+				-- `H-240` check ① — BEFORE the write below stomps the signal
+				if bk.offsetSetUpTo < entryCursor then
+					i = math.max(bk.offsetSetUpTo, 1)
+					sum = prefix[i]
+					continue
+				end
+				bk.offsetSetUpTo = i -- Set done up to here
+				if offset:Get() ~= abs then
+					offset:Set(abs) -- ← user code can run here
+				end
 			end
 			-- `H-124`: rewind check BEFORE reading lengthList[i] — user code in
 			-- the Get/Set above may have removed slots past the cursor, and dying

@@ -189,11 +189,13 @@ do
 	local bk = q.Dispatch.getBookkeeping(inst)
 	assert(bk.offsetCacheValidUpTo == 4, "cache valid to the pulled position")
 	q.Dispatch.setLength(inst, 3, 7)
-	-- 무효화(둘 다 i까지)는 setLength 꼬리의 동기 recompute가 곧바로 캐시를
-	-- 재구축하므로 중간 상태로는 관측 불가 — 값으로 확인한다: 뒤 자리는 새
+	-- 무효화는 둘 다 i까지 당긴다. [2026-09-08 `H-483`] setLength 꼬리의 동기 recompute는
+	-- None 자리(발행 채널 없음)에서 더 이상 캐시를 데우지 않으므로 캐시 커서는 당겨진
+	-- 그대로 관측된다 — 값은 getOffsetAt이 온디맨드로 채워 답한다: 뒤 자리는 새
 	-- 길이를 반영하고, i 이전 접두는 살아남은 캐시 그대로다.
-	assert(bk.offsetCacheValidUpTo == 4, "the tail recompute rebuilt the cache")
+	assert(bk.offsetCacheValidUpTo == 3, "pulled to i and left there (flat recompute no longer warms the cache): " .. bk.offsetCacheValidUpTo)
 	assert(q.Dispatch.getOffsetAt(inst, 4) == 9, "positions after i reflect the new length")
+	assert(bk.offsetCacheValidUpTo == 4, "the pull refilled the cache on demand")
 	assert(q.Dispatch.getOffsetAt(inst, 2) == 1, "positions before i kept their prefix")
 	print("PASS")
 end

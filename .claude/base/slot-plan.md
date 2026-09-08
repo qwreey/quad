@@ -777,9 +777,9 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
 | `Replace` | `Slot:Replace(index, newElement)` | **O(1)** | 그 자리 요소를 교체하고 **이전 것을 파괴** — `Extract(index, newElement)`의 파괴 짝(`Remove` ↔ `Extract` 관계와 동형). **[2026-08-21 5라운드 `B-5` 신설]** |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
-| `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환 |
+| `ExtractAll` | `Slot:ExtractAll(): {T}` | O(n) | 전체 추출(파괴 안 함) — `Clear`의 비파괴 버전, 추출된 element 배열(순서 보존)을 반환. **[2026-09-08 `H-479`]** `rawSplice(1, n, {})` 한 번 — 물리 op 1회·recompute 1회(옛 요소별 `rawUnmount` 반복은 제거마다 recompute가 돌아 O(n²), 실측 1000개 130ms → 1ms대) |
 | `Splice` | `Slot:Splice(index, removeCount, ...newElements): {T}` | O(n) | 한 위치에서 `removeCount`개를 비파괴 추출(반환)하고 그 자리에 `newElements`를 삽입 — shift+recompute 1회로 통합 |
-| `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op |
+| `Clear` | `Slot:Clear()` | O(n) | 전체 `Remove`(전부 파괴) — 빈 Slot에 호출해도 no-op. **[2026-09-08 `H-479`]** `rawRemove` 역순 반복을 **이 Slot의 배치 Blocker로 감싼다**(`rawSplice`와 같은 꼬리) — recompute 1회, `Length` emit 1회 |
 | `Move` | `Slot:Move(oldIndex, newIndex)` | **O(n)** | 제자리 재배치 — 옛/새 위치 사이 요소들이 밀림/당겨짐(배열 splice와 동일 의미), **Parent 안 건드림** |
 | `Swap` | `Slot:Swap(indexA, indexB)` | **O(1)** | 두 인덱스의 요소를 맞교환, 나머지 안 건드림, **Parent 안 건드림** |
 | `Get` | `Slot:Get(index): T?` | O(1) | 그 인덱스의 element 조회(범위 밖이면 `nil`) |
@@ -789,7 +789,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 언래핑된 원래 `State`가, 중첩은 `Slot` 자신이 돌아온다(아래 "래핑/언래핑은 Slot
 전체에 걸린 연산이다" 절). quad-types의 `SlotElement<T>`가 그 표기이고 표는
 축약이다 — 타입 표면을 표에 맞춰 `T?`로 되돌리지 말 것. **[2026-09-07 마커 — 사용자 결정]** 그 유니언은 역할별로 둘이다 — 입력(`Add`/`Replace`/`Splice`/`IndexOf`/생성자)은 `SlotElement<T> = T | StateMarker<T> | SlotMarker<T>`(공변 — `Slot<Frame>`·`State<Frame>`이 `Slot<Instance>`에 든다), 출력(`Get`/`Extract`/`ExtractAll`/`Splice` 반환·`prev`)은 전체형 `SlotItem<T> = T | State<T> | Slot<T>`(`typing-limits.md` 8.11).
-| `IndexOf` | `Slot:IndexOf(element): number?` | O(n) | element의 현재 인덱스 역조회(멤버 아니면 `nil`) — 레퍼런스만 있고 인덱스가 없을 때 다른 CRUD와 연결하는 다리 |
+| `IndexOf` | `Slot:IndexOf(element): number?` | O(1) / O(n) | element의 현재 인덱스 역조회(멤버 아니면 `nil`) — 레퍼런스만 있고 인덱스가 없을 때 다른 CRUD와 연결하는 다리. **[2026-09-08 `H-481`]** raw 요소는 `bk.indexOfElement` 역맵으로 O(1); State 요소는 슈가 래퍼가 키라 역맵에 없어 언랩 선형 폴백(O(n)) |
 
 - **`Add`가 삽입된 인덱스를 반환하는 이유(2026-08-10 세션 확정)** —
   `index`를 생략(끝에 추가)하면 호출부가 실제 위치를 모르는데, 그걸
@@ -1665,16 +1665,19 @@ function activateList(self, physicalTarget)
             -- 집합에 안 들어가, 다음 사이클 소멸 루프가 못 물어 영구 고아가
             -- 된다 — `H-38`이 고치려던 바로 그 모양이다. 선행 패스가 `seen`을
             -- 미리 채우는 것과 같은 이유.
-            prevKeys[key] = true
+            -- [2026-09-08 `H-480`] `prevKeys[key] = true`는 더 이상 여기서 안 한다 —
+            -- 위 선행 패스가 `seen`을 이미 그 집합으로 채웠고(같은 `H-38` 이유), 사이클
+            -- 꼬리에서 `prevKeys = seen`으로 통째 교체한다(아래).
             settle(key, result, detach, slotPos)
             userdata[key] = ud       -- result와 무관, 그대로 기록
         end
 
         -- [재설계, 2026-08-21] 소멸 루프 — 조용히 파괴하지 않고 **처분을 묻는다**.
         -- 아래 "`KeyGone`" 절이 소스.
-        -- [`H-38`] 스냅샷을 뜬 뒤 돈다 — 루프 안의 `settle`이 `prevKeys`를
-        -- 건드리므로(아래 `prevKeys[key] = nil`) 순회 중 원본을 바꾸면 안 된다.
-        for key in pairs(table.clone(prevKeys)) do   -- 직전 사이클에 존재했던 전체 key
+        -- [`H-38`, 2026-09-08 `H-480` 정정] 옛 코드는 루프 1의 `prevKeys[key] = true`와
+        -- 이 루프의 `prevKeys[key] = nil` 때문에 `table.clone(prevKeys)` 스냅샷을 돌았다 —
+        -- 둘 다 없어져 **읽기 전용 순회**이고 clone도 없다(사이클당 해시 테이블 복제 1회 제거).
+        for key in pairs(prevKeys) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = unwrapElement(mounted[key] or (self._detached and self._detached[key]))
                 local result, ud = updateFn(KeyGone, 0, offset, prev, userdata[key])
@@ -1690,10 +1693,11 @@ function activateList(self, physicalTarget)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
-                prevKeys[key] = nil              -- [`H-38`] 이 키는 이제 없다 —
-                                                 -- **다음 사이클엔 다시 안 묻는다**
+                -- (`H-38`의 "다음 사이클엔 다시 안 묻는다"는 아래 교체가 보장한다 —
+                -- 이 키는 `seen`에 없으므로 새 `prevKeys`에도 없다)
             end
         end
+        prevKeys = seen   -- [2026-09-08 `H-480`] 이번 사이클의 키 집합이 다음 사이클의 "직전"
 
         -- ⭐ [2026-08-27, `H-136`] 배치 닫기 — `Slot:List`의 `_physicalTarget` 분기와
         -- 같은 꼬리. `recomputeBlocker`는 따로 본다(사용자 코드가 바깥 `recompute`
@@ -2990,7 +2994,8 @@ end
 --     (`H6-6`)가 먼저 그렇게 갔고 리뷰가 승인했다.
 --   * `rawExtract`는 별도 함수가 아니다 — 제거 형태는 `rawUnmount` 그 자체이고,
 --     교체 형태(`Extract(index, new)`)는 `rawReplace(…, destroyOld = false)`다 — 규약 3(`minPos - 1`)은 적용되지 않는다(`H-360`).
---     `rawClear`도 없다 — `Clear`는 `rawRemove` 역순 반복.
+--     `rawClear`도 없다 — `Clear`는 `rawRemove` 역순 반복(**[2026-09-08 `H-479`]** 배치 Blocker로
+--     감싸 recompute 1회; `ExtractAll`은 `rawSplice(1, n, {})` 그 자체).
 --   * `rawSplice` — `rawUnmount(…, deferPhysical)` 역순 + `rawAdd(…, deferPhysical)`
 --     순차를 **이 Slot의 Blocker로 감싼** 합성이라 recompute는 1회이고,
 --     **물리 op도 한 번**이다(`H6-9` (b), 2026-09-03 사용자 확정 — 위 native* 절

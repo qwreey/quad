@@ -2436,3 +2436,11 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   일곱 각도(base vs 코드 / 인덱스 / research·회신 대조 / 코드 주석 / 큰 base 전문 / `Attr` 치환 부수 피해 / reference·resolved·
   summary)로 병렬 감사 — 확실 13 + 판단 3 + 의심 1 반영(3라운드 재검증 H가 개수 산술 하나를 잡음). 주 발견은 `66281ab` 일괄 치환이 외부 이름(Fusion 경로·Roblox 엔진 개념)·
   옛 이름 표지("구 `Attribute<T>`")·**사용자 인용문**까지 덮은 것 — 치환 전 원문으로 복원, 교훈은 세션 파일 §6.
+- **[2026-09-08-02] 사용자 반입 RFC 다섯(무시 파일) 판정·실측·반영**(`session/2026-09-08-02-rfc-triage.md`,
+  원장 `qa-request/post-implementation-review-round7.md`): 적용 `H-479`~`H-483` — Clear/ExtractAll O(N²)(제거마다 recompute, 실측
+  1000개 130ms → 1~3ms; ExtractAll은 `rawSplice` 직접 — `H-385` 위임 blame) · List `prevKeys` 스왑(clone 제거) · `IndexOf` 역맵
+  O(1)(State 요소는 언랩 폴백) · Modifier setter 클로저 캐시 · recompute abs 온디맨드(메인 기각 쪽 → 사용자 *"20줄 이내 패치라
+  기각할 이유는 없어보이는데?"* → 적용, 0.42 → 0.11ms, `spec.lengthoffset` 6절 단언 교체) · `spec.slot` 26절 신설(Clear/ExtractAll에
+  spec이 없었음). 기각·확인: 일괄 태깅(`H-434` 전면화), 명명·누수 이디엄·마커 규칙은 기존 문서가 소스, "200줄 규약"은 부재,
+  재정렬 분석의 난제 2·5는 현재 코드에 없음. 문항 Q37(getHandler 버킷 필드 — 실측 절감 5µs/`D.Frame`)·Q38(`rawPermute`, 1000개 역순
+  82ms)·Q39(문서 거버넌스 넷). test.sh exit 0(스펙 50), doc-check ERROR 0.

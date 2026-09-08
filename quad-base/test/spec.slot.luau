@@ -881,5 +881,84 @@ do
 	print("PASS")
 end
 
+
+print()
+print("=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 prevKeys 스왑(H-480) ===")
+do
+	local s = Slot()
+	local a, b, c = Instance.new("Frame"), Instance.new("Frame"), Instance.new("Frame")
+	local inner = Slot({ Instance.new("Frame"), Instance.new("Frame") })
+	s:Add(a); s:Add(inner); s:Add(b)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(childCount(parent) == 4, "4 leaves mounted: " .. childCount(parent))
+	assert(s:IndexOf(inner) == 2 and s:IndexOf(b) == 3, "IndexOf answers through the reverse map")
+	local st = q.Source(c)
+	s:Add(st)
+	assert(s:IndexOf(st) == 4, "a State element is found by unwrapping its sugar wrapper")
+	assert(s:IndexOf(c) == nil, "the State's VALUE is not a member")
+	assert(s:IndexOf(Instance.new("Frame")) == nil, "non-member → nil")
+
+	-- ExtractAll: one recompute for the whole batch — Length lands on 0 in ONE emit
+	local emits = 0
+	s.Length:Observer(function() emits += 1 end):Subscribe() -- runs at create + Subscribe; count from here
+	emits = 0
+	local out = s:ExtractAll()
+	assert(#out == 4 and out[1] == a and out[2] == inner and out[3] == b and out[4] == st, "order preserved; the State element comes back as the State")
+	assert(emits == 1, "exactly one Length emit for ExtractAll: " .. emits)
+	assert(childCount(parent) == 0 and s.Length:Get() == 0 and #s._elements == 0, "everything extracted")
+	assert(a.Parent == nil and not mock.isDestroyed(a) and not inner._destroyed, "extracted alive, not destroyed")
+	local again = Slot()
+	again:Add(a); again:Add(inner)
+	local parent2 = Instance.new("Folder")
+	dispatch.drive(parent2, { again })
+	assert(childCount(parent2) == 3, "extracted elements are reusable elsewhere: " .. childCount(parent2))
+
+	-- Clear: same batch, destroys
+	local s2 = Slot()
+	local x, y = Instance.new("Frame"), Instance.new("Frame")
+	local inner2 = Slot({ Instance.new("Frame") })
+	s2:Add(x); s2:Add(inner2); s2:Add(y)
+	local parent3 = Instance.new("Folder")
+	dispatch.drive(parent3, { s2 })
+	local emits2 = 0
+	s2.Length:Observer(function() emits2 += 1 end):Subscribe()
+	emits2 = 0
+	s2:Clear()
+	assert(emits2 == 1, "exactly one Length emit for Clear: " .. emits2)
+	assert(childCount(parent3) == 0 and mock.isDestroyed(x) and mock.isDestroyed(y) and inner2._destroyed, "Clear destroys elements and nested Slots")
+	s2:Clear() -- empty: no-op, no error
+	assert(s2.Length:Get() == 0 and emits2 == 1, "Clear on an empty Slot is a no-op")
+
+	-- pre-materialization forms (no batch gate — no bookkeeping yet)
+	local s3 = Slot({ Instance.new("Frame"), Instance.new("Frame") })
+	local out3 = s3:ExtractAll()
+	assert(#out3 == 2 and #s3._elements == 0, "unmaterialized ExtractAll")
+	local s4 = Slot({ Instance.new("Frame") })
+	s4:Clear()
+	assert(#s4._elements == 0 and out3[1].Parent == nil, "unmaterialized Clear")
+
+	-- :List KeyGone across cycles still works with the prevKeys swap (`H-480`):
+	-- a key gone in cycle 2 is asked once, and not again in cycle 3
+	local data = q.Source({ { id = "a" }, { id = "b" } })
+	local gone = {}
+	local ls = Slot()
+	ls:List(data, function(item, _i, _o, prev)
+		if item == q.KeyGone then gone[#gone + 1] = prev.Name; return nil end
+		if prev then return prev end
+		local f = Instance.new("Frame"); f.Name = item.id
+		return f
+	end, function(item) return item.id end)
+	local parent4 = Instance.new("Folder")
+	dispatch.drive(parent4, { ls })
+	data:Set({ { id = "b" } })
+	assert(#gone == 1 and gone[1] == "a" and childCount(parent4) == 1, "a asked once on KeyGone")
+	data:Set({ { id = "b" }, { id = "c" } })
+	assert(#gone == 1, "a is not asked again in the next cycle")
+	data:Set({})
+	assert(#gone == 3 and childCount(parent4) == 0, "b and c gone: " .. #gone)
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

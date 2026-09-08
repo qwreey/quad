@@ -286,27 +286,44 @@ local function Init(module: any)
 	end
 
 	function Slot_mt.IndexOf(self: any, element: any): number?
+		-- O(1) through the reverse map every raw* mutation maintains (`H-481`, 2026-09-08
+		-- advisory RFC) — a raw element is its own key there. A State element is held
+		-- by a sugar wrapper (`_wrapped`), so the map misses it: unwrap-and-scan below.
+		local direct = S.indexOfRaw(self, element)
+		if direct ~= nil then return direct end
 		for i, el in ipairs(self._elements) do
 			if S.unwrapElement(el) == element then return i end
 		end
 		return nil
 	end
 
+	-- Clear/ExtractAll — the whole-Slot forms of Remove/Extract, ONE recompute
+	-- (`H-479`, 2026-09-08 advisory RFC, measured: a per-element `rawRemove` tail
+	-- ran `recompute` N times, O(N²) — 1000 elements took ~120 ms in the CLI mock
+	-- against ~1 ms for `Splice(1, N)`). Same batch-gate idiom as `rawSplice`.
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)
+		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
+		local ownsGate = gate ~= nil and not gate:IsOn()
+		if ownsGate then gate:On() end
 		for i = #self._elements, 1, -1 do
 			S.rawRemove(self, i)
+		end
+		if ownsGate then
+			gate:OffWithoutEmit()
+			S.maybeRecompute(self, S.BK.getBookkeeping(self))
 		end
 	end
 
 	function Slot_mt.ExtractAll(self: any): { any }
 		assertMutable(self)
-		local out = {}
-		for i = #self._elements, 1, -1 do
-			table.insert(out, 1, (S.unwrapElement(self._elements[i])))
-			S.rawUnmount(self, i)
+		-- `rawSplice` directly, not `self:Splice(1, n)` — a tagged public method calling
+		-- another would make a raise inside it blame this delegation line (`H-385`).
+		local removed = S.rawSplice(self, 1, #self._elements, {})
+		for i, element in ipairs(removed) do
+			removed[i] = S.unwrapElement(element)
 		end
-		return out
+		return removed
 	end
 
 	-- forward decl — `function Slot(...)` below is a GLOBAL assignment without a

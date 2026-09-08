@@ -43,10 +43,10 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 - [ ] **[2026-09-07 신설, 사용자 결정] 최적화 후보 목록 — 관측된 병목이 없어 보류한 것을 쌓아두는 자리**(사용자:
       *"당장은 더 치명적인 문제들이 있는지 확인해보자. 물론 보는 김에 최적화 할 대상을 쌓아둬도 좋아"*, 원장
       `qa-request/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
-      - `Slot:List` 재정렬 O(N²)(N=1000에 19.6ms 벤치)·reconcile마다 `table.clone(prevKeys)`·`prepareElements` 전체
+      - `Slot:List` 재정렬 O(N²)(N=1000 역순 실측 82ms, 100은 1ms — round7 Q38)·~~reconcile마다 `table.clone(prevKeys)`~~(**[2026-09-08 `H-480`]** 제거됨)·`prepareElements` 전체
         재스캔(Q3 ①). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런
         상황을 쉽게 알긴 어려울거야. 모든 순서 변경을 미뤘다가 나중에 하는걸 만들기에도 복잡해"* — 리서치 목록에만.
-      - `Slot:Clear`/`ExtractAll` 요소마다 recompute·native op(게이트 없음), `ExtractAll`의 역순 `table.insert` O(n²)
+      - **[2026-09-08 `H-479` 대부분 닫힘]** `Slot:Clear`/`ExtractAll`의 요소마다 recompute와 `ExtractAll`의 역순 `table.insert` O(n²)는 배치화됨(recompute 1회, ExtractAll은 `rawSplice` 한 번) — 남은 잔여는 `Clear`의 요소별 `nativeRemove`뿐(파괴가 요소 단위라 의도)
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 

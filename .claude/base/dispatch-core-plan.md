@@ -2137,8 +2137,11 @@ bk.offsetSetUpTo        = math.min(bk.offsetSetUpTo,        ?)
 
 **`recompute`도 이 캐시 위에 얹힌다** — `1..N`을 순서대로 도는 함수라 매 자리에서
 `getOffsetAt`이 한 칸씩만 이어붙이므로 전체가 O(N)이고, 별도 접두합 로직을 따로
-두지 않는다. (그래서 "`recompute`가 캐시를 채울지 말지"라는 갈래 자체가 없어졌다 —
-사용자: *"함수를 나눠야할 이유를 모르겠음. 하나로 두는게 나아보임."*)
+두지 않는다. (사용자: *"함수를 나눠야할 이유를 모르겠음. 하나로 두는게 나아보임."* —
+`recompute`는 **하나의 함수**다. **[2026-09-08 `H-483` 정정]** 다만 그 안에 "이 자리가
+캐시를 채우느냐"의 분기는 생겼다: 발행 채널이 없는 None 자리는 `getOffsetAt`을 안 부르고
+커서만 올리며, 캐시는 숫자를 실제로 뽑는 곳에서 온디맨드로 채워진다 — 아래 의사코드. O(N)
+결론은 `contribution` 합산으로 그대로 성립한다.)
 
 ```lua
 local function recompute(ownerKey, bk)
@@ -2190,17 +2193,27 @@ local function recompute(ownerKey, bk)
         if offset == nil then
             error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
         end
-        local abs = Dispatch.getOffsetAt(ownerKey, i)           -- 절대 offset(캐시 경유) ← 사용자 코드 창
-        -- `H-240` 검사 ① — 아래 커서 쓰기가 신호를 덮기 **전에**. 옛 코드는
-        -- 이 쓰기가 무조건이라 읽기 창의 하강이 여기서 지워졌다(재현 확인).
-        if bk.offsetSetUpTo < entryCursor then
-            i = math.max(bk.offsetSetUpTo, 1)
-            sum = prefix[i]
-            continue
-        end
-        bk.offsetSetUpTo = i                                    -- 여기까지 Set 완료
-        if offset ~= None and offset:Get() ~= abs then          -- 실제로 다를 때만 Set
-            offset:Set(abs)                                     -- ← 사용자 코드가 돌 수 있는 자리
+        -- [2026-09-08 `H-483`, 자문 RFC — 사용자 결정] None 자리(발행 채널 없는 리프)는
+        -- Set할 대상이 없으니 `abs`도 안 뽑는다 — 진입 스냅샷 이후 사용자 코드 창이
+        -- 없어 검사 ① 없이 커서를 바로 올린다. 플랫 리스트의 recompute는 순수 합산
+        -- 루프가 되고, 접두합 캐시는 숫자를 실제로 뽑는 곳(`nativeInsert` offset,
+        -- List의 physIndex)에서 `getOffsetAt`이 온디맨드로 채운다(옛 코드는 그 채움을
+        -- 여기서 한 번 더 했다 — 플랫 1000개 실측 0.1~0.2ms/회의 중복).
+        if offset == None then
+            bk.offsetSetUpTo = i
+        else
+            local abs = Dispatch.getOffsetAt(ownerKey, i)       -- 절대 offset(캐시 경유) ← 사용자 코드 창
+            -- `H-240` 검사 ① — 아래 커서 쓰기가 신호를 덮기 **전에**. 옛 코드는
+            -- 이 쓰기가 무조건이라 읽기 창의 하강이 여기서 지워졌다(재현 확인).
+            if bk.offsetSetUpTo < entryCursor then
+                i = math.max(bk.offsetSetUpTo, 1)
+                sum = prefix[i]
+                continue
+            end
+            bk.offsetSetUpTo = i                                -- 여기까지 Set 완료
+            if offset:Get() ~= abs then                         -- 실제로 다를 때만 Set
+                offset:Set(abs)                                 -- ← 사용자 코드가 돌 수 있는 자리
+            end
         end
         -- ⭐⭐ [2026-08-27 재배치, 9라운드 `H-124`] **되감기 판정이 `lengthList[i]`
         --   읽기보다 먼저다.** 옛 순서(읽기·누적 → 판정)에선 `offset:Set(abs)` 안의

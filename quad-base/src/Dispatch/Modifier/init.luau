@@ -223,9 +223,9 @@ local function Overridden(...: any): any
 end
 methods.Overridden = Overridden
 
--- checked downcast — `mod:As<Name>()`. Unlike the setters (fresh closure per
--- `__index`, `H-250`), cast closures are CACHED per target name and tagged
--- SURFACE, so the error contract is the stack worker (`errorBeforeNearest` —
+-- checked downcast — `mod:As<Name>()`. Cast closures are CACHED per target name
+-- (the setters are too, since `H-482` — see `setterClosure` below) and, unlike the
+-- setters (`H-250`), tagged SURFACE, so the error contract is the stack worker (`errorBeforeNearest` —
 -- the destination, not a hand-counted level, `H-231`; review finding). The
 -- cache is bounded by the distinct `As<Name>` keys the code base spells.
 local castClosures: { [string]: (any) -> any } = {}
@@ -250,7 +250,47 @@ local function castClosure(target: string): (any) -> any
 	return closure
 end
 
--- generic setter synthesis — the whole per-field runtime (4절)
+-- generic setter synthesis — the whole per-field runtime (4절). Setter closures
+-- are CACHED per field name like the cast closures above (`H-482`, 2026-09-08
+-- advisory RFC): the only thing a setter captures is `key`, so one closure per
+-- distinct name serves every Modifier — a chain `mod:Size(a):Position(b)` used
+-- to allocate and drop one closure per step. Bounded by the field names the
+-- code base spells. They stay untagged: `error(..., 2)` inside blames the
+-- user's `mod:Field(...)` line directly (`H-250` — not table-reached).
+local setterClosures: { [string]: (any, any) -> any } = {}
+
+local function setterClosure(key: string): (any, any) -> any
+	local cached = setterClosures[key]
+	if cached ~= nil then
+		return cached
+	end
+	local closure = function(selfArg: any, arg: any): any
+		local oldFields = selfArg[FieldsKey]
+		local old = oldFields[key]
+		local value: any
+		if type(arg) == "function" then
+			local transform = arg :: (any) -> any
+			if isState(old) then
+				value = old:Compute(transform) -- 4-1: derived State, reactivity kept
+			else
+				value = transform(old) -- plain: current raw value, called now
+			end
+		else
+			value = arg -- literal (a State literal replaces the whole field; nil = absent)
+		end
+		if isHandlerLayerValue(value) then
+			-- level 2 = the user's `mod:Field(...)` line (the closure is not
+			-- table-reached, so no tag — `H-250`)
+			error(`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
+		end
+		local newFields = table.clone(oldFields)
+		newFields[key] = value
+		return newModifier(newFields, selfArg.__quadModifier) -- setters keep the tag
+	end
+	setterClosures[key] = closure
+	return closure
+end
+
 function ModifierMT.__index(_self: any, key: any): any
 	local method = methods[key]
 	if method ~= nil then
@@ -269,29 +309,7 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- Non-string keys (AttrKey/MapperDescriptor) go in the props table directly.
 		Err.errorBeforeNearest("Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
 	end
-	return function(selfArg: any, arg: any): any
-		local oldFields = selfArg[FieldsKey]
-		local old = oldFields[key]
-		local value: any
-		if type(arg) == "function" then
-			local transform = arg :: (any) -> any
-			if isState(old) then
-				value = old:Compute(transform) -- 4-1: derived State, reactivity kept
-			else
-				value = transform(old) -- plain: current raw value, called now
-			end
-		else
-			value = arg -- literal (a State literal replaces the whole field; nil = absent)
-		end
-		if isHandlerLayerValue(value) then
-			-- level 2 = the user's `mod:Field(...)` line (the closure is not
-			-- table-reached, so no tag — `H-250`)
-			error(`Modifier: field "{tostring(key)}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
-		end
-		local newFields = table.clone(oldFields)
-		newFields[key] = value
-		return newModifier(newFields, selfArg.__quadModifier) -- setters keep the tag
-	end
+	return setterClosure(key)
 end
 
 -- Modifier(a, b, ...) — `H-310` (사용자 확정: the SHAPE — each argument is a

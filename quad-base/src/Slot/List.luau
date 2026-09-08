@@ -125,12 +125,17 @@ return function(S: Types.SlotInternal, module: any)
 				local detach = (result == S.Detach)
 				if detach then result = nil end
 				if result ~= nil then slotPos = candidateSlot end
-				prevKeys[key] = true
 				settle(key, result, detach, slotPos)
 				userdata[key] = ud
 			end
 
-			for key in pairs(table.clone(prevKeys)) do
+			-- KeyGone pass over LAST cycle's key set, read-only — `seen` already holds
+			-- every key of this cycle (the pre-pass fills it before any settle, the
+			-- `H-38` reason), so `prevKeys` is neither written in the loop above nor
+			-- cleared here: it is simply replaced by `seen` at the tail (2026-09-08
+			-- advisory RFC, `H-480` — the old per-cycle `table.clone` snapshot existed
+			-- only to survive those two writes).
+			for key in pairs(prevKeys) do
 				if not seen[key] then
 					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
 					local result, ud = updateFn(S.KeyGone, 0, offset, prev, userdata[key])
@@ -142,9 +147,9 @@ return function(S: Types.SlotInternal, module: any)
 					end
 					settle(key, result, detach, 0)
 					userdata[key] = ud
-					prevKeys[key] = nil
 				end
 			end
+			prevKeys = seen -- this cycle's key set becomes the next cycle's "previous"
 
 			if ownsGate then
 				blocker:OffWithoutEmit()
