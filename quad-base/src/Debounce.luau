@@ -133,7 +133,10 @@ function FactoryImpl.__apply(self: any, state: any): any
 	-- upvalues, so the ONE table is what every closure — and the registry — sees)
 	local h: any = { _window = nil :: Timeout?, _cap = nil :: Timeout? }
 
-	local gated = state:Gate(function(emit)
+	-- `emit` annotated: `state` is `any` here, so an unannotated parameter is inferred from
+	-- its first use (`emit()` → `() -> boolean`) and `emit(false)` becomes an arity error
+	-- under the new solver (user, 2026-09-08 — LSP `Luau1008`).
+	local gated = state:Gate(function(emit: QuadTypes.GateEmit)
 		local b = Blocker()
 		local pass = b:Policy(emit)
 		local onWindowEnd, onCap
