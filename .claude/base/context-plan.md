@@ -1,7 +1,7 @@
 # `Context` — 명시적 값 컨테이너 (2026-09-08 신설·구현)
 
 **상태**: base — 사용자 방향 확정 + 같은 날 구현(`quad-base/src/Context.luau`, 스펙 `spec.context`). 발단은 문서화
-스캐폴딩 에이전트가 제기한 `docs-ignoreme/research/explicit-context-sugar-plan.md`(무시 파일, 커밋 밖)를 사용자가
+스캐폴딩 에이전트가 제기한 docs-ignoreme 초안의 research 문서 explicit-context-sugar-plan(무시 파일, 커밋 밖 — **[2026-09-09 삭제]** 구현·문서화 뒤 사용자 결정으로 초안에서 제거, `session/2026-09-09-01-docs-polish.md`)를 사용자가
 검토해 *"필요가 내가 보아도 있는듯"*이라고 한 것(`session/2026-09-08-04-sugar-implementation.md` §6).
 
 ## 왜 — `archive/context-rejected.md`와 어떻게 다른가

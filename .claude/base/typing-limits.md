@@ -945,7 +945,7 @@ Slot 요소 자리 `SlotElement<T>`, `Slot:List`/`Single`의 데이터, `AttrSug
 Slot 출력(`SlotItem<T>`)은 전체형이다. 마커 필드는 `StateData<T>`/`Slot<T>` 자신에도 들어 있어(런타임
 `Impl.__quadState = true`/`Slot_mt.__quadSlot = true`, `__quad*Value`는 **순수 팬텀**) 실제 값이 폭
 서브타이핑으로 든다. **팬텀 규칙(**[2026-09-07 사용자 확정]** 순수 팬텀 허용 — *"런타임 값에 없는 팬텀 괜찮아. 실제로 그래도 되는 부분은, 값이 싸다면 그래도 좋아"*(값을 둘 수 있고 싸면 두고, 못 두면 팬텀으로 둔다 — H-300의 "값에도"는 원칙이지 필수가 아니다))**. **결과(실측)**: `PVn`이 `T | TweenData<T> | StateMarker<T | Tween<T>> | None` 네 팔로
-통일(`PV73` 11팔·`SHF0` 소멸), `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<number | UDim>`·
+통일(`PV73` 11팔·`SHF0` 소멸 — **[2026-09-09 정정]** 같은 날 저녁 Q34 (a)로 `TweenData` 팔이 보간 가능 타입에만 남아 지금 생성 파일은 세 팔 `T | StateMarker<T> | None`이 기본(74 슬롯 중 10개만 네 팔, `PV73`은 `number | UDim` 각각에 팔이 붙어 다섯). 이 문장은 마커 도입 시점 실측), `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<number | UDim>`·
 정직한 `State<T | Tween<T>>`(8.9 (1)의 `H-334`가 포기한 팔)·캐스트 없는 `State<Ref<Frame?>>`(8.7 캐비엇 5)가
 전부 들어가고, 음성 아홉(State<number> 자식·형제 Ref의 State·`State<Modifier>`·`State<UDim2?>`를 `Size`에·
 `Slot<Frame>`에 State<TextLabel> 요소 등)은 그대로 거부. quad-roblox 타입 검사 4.96s → 3.41s,
@@ -1039,3 +1039,14 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 부수(round9 둘째 리뷰): `state:Apply(Operator.*)`의 **결과**를 엉뚱한 타입에 대입해도 에러가 안 난다 — `:Compute` 결과 타입이 `State<T>`
 순환 타입 안에서 억제되는 기존 한계라(손으로 반환 타입을 적은 인라인 팩토리는 잡힌다), 인자 쪽 검사만 실질이다. `spec.operator`의
 `local x: State<number> = …` 주석은 문서 가치이지 단언이 아니다(`spec.context`의 `Get`/`Unwrap`은 실제로 단언한다).
+
+## 8.16. 생명주기 훅의 요소 타입 `I`는 명시적 타입 인자로만 채워진다 — `q.OnCreated<<Frame>>(fn)`; 콜백 파라미터 주석은 신 솔버에서 죽는다 (2026-09-09 실측)
+
+`quad-types`의 `OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>`(`OnRendered` 동일)에서 `I`를 콜백 쪽 주석
+`q.OnCreated(function(inst: Frame) … end)`으로 채우면 신 솔버(`luau-lsp --flag:LuauSolverV2=true`, test.sh 플래그·defs 동일)가 그 호출 줄에서
+`Type functions do not currently support types of the form '*error-type*'`를 넷 낸다(구 솔버 `luau-analyze`도 같은 에러 — docs 2차 검증 실측) — 반환 `PreRef<I?>`의 `I`가 콜백 주석에서 역추론되지
+않아 error-type이 되고, 그 위의 타입 함수(`StripNil` 등)가 그걸 거부하는 모양. 명시적 타입 인자 `q.OnCreated<<Frame>>(function(inst) … end)`는
+클린(같은 파일에서 두 형태를 나란히 두고 실측). 로컬에 주석을 다는 우회(`local h: QuadTypes.PreRef<Frame?> = q.OnCreated(...)`)도 실패
+(docs 재작성 에이전트 실측). 스펙 `spec.hooks`는 무주석 `q.OnCreated(function() end)`만 써서 이 구멍을 안 밟았다. `quad-types`의 그 주석은
+같은 날 정정했고, 사용자 문서(docs-ignoreme reference/04·skills)는 `<<Class>>` 형태로 통일. 발견 경위: docs-ignoreme 재작성 중(2026-09-09,
+`session/2026-09-09-01-docs-polish.md`).

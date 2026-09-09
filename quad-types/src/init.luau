@@ -579,7 +579,10 @@ export type Quad = {
 	Throttle: (opts: ThrottleOptions) -> TimedGate,
 	-- 생명주기 훅 슈거(`base/lifecycle-hooks-plan.md`) — `PreRef`/`PostRef`/`Effect` 인스턴스를 돌려주는 순수
 	-- 팩토리. nil 가드 래퍼(`H-120`) 때문에 `fn`은 non-nil `inst`를 받는다. quad-base는 백엔드 요소 타입을
-	-- 모르므로 제네릭 자리(`I`) — `q.OnCreated(function(inst: Frame) … end)`처럼 콜백 쪽에 적으면 된다.
+	-- 모르므로 제네릭 자리(`I`). **[2026-09-09 실측 정정]** `I`는 명시적 타입 인자로만 채워진다 —
+	-- `q.OnCreated<<Frame>>(function(inst) … end)`. 콜백 파라미터에 주석을 다는 형태(`function(inst: Frame)`)는
+	-- 신 솔버에서 `Type functions do not currently support types of the form '*error-type*'`로 죽는다
+	-- (docs-ignoreme 재작성 중 발견, `typing-limits.md` 8.16).
 	OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>,
 	OnRendered: <I>(fn: (inst: I, ref: PostRef<I?>) -> ()) -> PostRef<I?>,
 	OnDestroyed: (fn: () -> ()) -> EffectHandle,

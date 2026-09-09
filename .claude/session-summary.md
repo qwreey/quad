@@ -2490,3 +2490,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   확정 — And/Or·비교 제외, `IfElse`는 문항), `Context`/`Provider`(`base/context-plan.md` — 암묵 맥락 기각과의 경계는 사용자 원문),
   `ref:Unwrap()`(`StripNil<T>` 타입 함수, typing-limits 8.14). 스펙 56. **후속 회신**: (k) 불변 확장 안 함(진실 원천 하나), (l)
   `IfElse`·컬렉션·Attr unset·평탄화는 백로그 넷으로 분리, 키 추론형 `Index`는 실측 불가(typing-limits 8.15) → 사용자 결정으로 결과 타입 직접 지정 `Operator.Index<<V>>(key)` 구현. 남은 문항 없음.
+- **[2026-09-09-01] `docs-ignoreme/` 사실성 검토·재작성 1차**(`session/2026-09-09-01-docs-polish.md`): 소형 모델 초안을 opus 검사 다섯 →
+  사용자 결정 넷(research/·best-practices·reference 02/03 삭제, 설치 경로 셋 유지 + "아직 없음" 표시, README §5는 코드 기준 정정) →
+  opus 재작성 일곱 → 2차 검증 다섯. 소스 전파: `quad-types` 훅 주석 정정(`OnCreated<<Frame>>`만 통과, typing-limits 8.16). 문서는 git 밖.

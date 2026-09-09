@@ -1240,7 +1240,7 @@ Ref가 조용히 통과했다(`typing-limits.md` 8.9절 — `Set`/`Callback` 이
 
 ## `:Unwrap()` — 런타임 보장 언랩 (2026-09-08 신설·구현)
 
-발단은 문서화 스캐폴딩 에이전트가 제기한 `docs-ignoreme/research/preref-unwrap-sugar-plan.md`(무시 파일)를 사용자가 *"아주
+발단은 문서화 스캐폴딩 에이전트가 제기한 docs-ignoreme 초안의 research 문서 preref-unwrap-sugar-plan(무시 파일 — **[2026-09-09 삭제]** 구현·문서화 뒤 사용자 결정으로 초안에서 제거)을 사용자가 *"아주
 간단한거"*라며 채택한 것. children 배열에 놓인 `PreRef`는 pre-pass에서 채워지고 이벤트 콜백은 마운트 뒤에만 불리므로 그
 안에서 `.Value`가 nil일 수 없는데, 타입은 `Ref<Frame?>`라 매번 `if v then` 가드를 써야 했다. **`ref:Unwrap()`**은 비어
 있으면 호출 줄에서 에러(`errorBeforeNearest`), 아니면 값을 돌려주고, **타입은 nil을 벗긴다** — `quad-types`의

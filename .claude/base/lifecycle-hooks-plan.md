@@ -3,8 +3,10 @@
 > **⭐ [2026-09-08 구현 완료]** `quad-base/src/LifecycleHooks.luau`(인스턴스별 `Init` — `Effect`가 인스턴스별이라),
 > 스펙 `spec.hooks`(nil 가드·2-인자·drive pre-pass 순서·`OnDestroyed` leaf 사망 1회). 아래 "핵심 논지" 스케치를 그대로
 > 옮겼다. 타입은 quad-base가 요소 타입을 모르므로 제네릭 — `OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>`
-> (콜백 인자에 `inst: Frame`처럼 적으면 `Frame` 슬롯의 `<Class>RefMarker`에 맞는 `PreRef<Frame?>`가 된다; 무주석이면 솔버가
-> `I`를 못 잡는다 — spec에서 확인). 문서화는 뒤로(사용자 결정 2026-09-08).
+> (~~콜백 인자에 `inst: Frame`처럼 적으면 … `PreRef<Frame?>`가 된다~~ — **[2026-09-09 실측 정정]** 그 형태는 신 솔버에서
+> `Type functions do not currently support types of the form '*error-type*'`로 죽는다. `I`는 **명시적 타입 인자**
+> `q.OnCreated<<Frame>>(function(inst) … end)`로만 채워진다 — `typing-limits.md` 8.16; 무주석이면 솔버가 `I`를 못 잡는다는
+> 것은 그대로). 문서화는 뒤로(사용자 결정 2026-09-08) → **[2026-09-09]** docs-ignoreme reference/04·skills에 `<<Class>>` 형태로 문서화됨.
 
 > **[2026-08-14 아홉 번째 세션] `research/` → `base/` 승격.** 마지막 열린
 > 항목이던 `OnRendered`의 채택 여부/메커니즘을 사용자가 확정 — **채택**,
