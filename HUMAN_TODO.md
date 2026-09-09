@@ -214,6 +214,19 @@ Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 �
 설계/구현 상세는 `.claude/base/quad-types-plan.md`의
 "`type-version-check`" 절.
 
+## 12. **[2026-09-09 신설 — 결정된 변경을 막고 있음]** Studio에서 `ReflectionService`가 Hidden/Deprecated 프로퍼티를 Write 권한과 함께 주는지 확인
+
+사용자 결정(2026-09-09): 생성 `D`에 Deprecated 프로퍼티 전부 + Hidden 중 `Font`/`Transparency`를 되살린다(v1 마이그레이션 자동완성용 — 실측·패치는
+`.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`). 그런데 `quad-roblox/src/Handlers/Property.luau`의 런타임 매치가 `ReflectionService:GetPropertiesOfClass`의
+`Permits.Write`라, 그 서비스가 Hidden/Deprecated 멤버를 빼면 타입은 광고하는데 런타임이 `Dispatch: no handler matched key Font`로 죽는다. mock 스펙은 이걸 못 본다.
+**Studio 커맨드 바에서 한 줄**(에이전트 MCP 호출은 이 세션 분류기에 막혔음):
+
+```lua
+for _, d in game:GetService("ReflectionService"):GetPropertiesOfClass("TextLabel") do if d.Name == "Font" or d.Name == "TextWrap" or d.Name == "FontSize" or d.Name == "Transparency" then print(d.Name, d.Permits and d.Permits.Write) end end
+```
+
+넷 다 이름과 Write 권한이 찍히면 에이전트가 패치를 적용한다(`todos.md` 00번). 하나라도 안 나오면 그 프로퍼티는 타입에서도 빼야 한다(계약 불일치).
+
 ## 10. **[2026-08-20 신설, 안 막음]** Tween 초기 진입 애니메이션(`initValue`) — 에이전트 작업 범위 밖
 
 `base/tween-plan.md`가 **"필요해지면 사용자가 직접 코드베이스+문서를 만진다,

@@ -47,6 +47,12 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attr(
 
 ## 단일 키 — `AttrKey(name)` (옛 `Attribute<<T>>`, 2026-09-03부터 무타입)
 
+> **[2026-09-09 사용자 결정 — 해시 키 형태의 strict 타입은 열지 않는다]** `D.Frame { [q.AttrKey("Hp")] = v }`는 런타임 정상이지만 `--!strict` 신 솔버에서
+> 생성 `<Class>Param`의 `[number]: E` 인덱서에 걸려 키·값 둘 다 에러다(`typing-limits.md` 8.17 스파이크). 고칠 수 있는 유일한 모양은 인덱서 키를
+> `number | AttrKeyObject`로 넓히는 것뿐이고(테이블당 인덱서 하나), 값까지 열면 배열부 음성 검사를 잃는다. 사용자: *"AttrKey 는 사실 BooleanAttr(key, v)
+> 같은 형태가 일반적이라 잘 안쓰긴 할 텐데"* → 옵션 넷(안 함 / 키만 + 팬텀 / 엔진 값까지 / 전부) 중 **안 함** 선택. 문서는 "해시 키 형태는 런타임만,
+> strict에선 배열부 `Attr`/`StringAttr` 등 슈가를 쓸 것"으로 안내한다(docs skills·getting-started 03).
+
 > **⭐ [2026-09-03 사용자 확정 — 한 발 얹기] `AttrKey`는 값 타입을 모르는
 > 프리미티브가 됐고, 타입은 배열부 슈가 `StringAttr(name, value)`/
 > `NumberAttr`/`BooleanAttr`가 진다.** 사용자 원문: *"내부적으로

@@ -65,6 +65,10 @@
    round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
    `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
    원문 `session/2026-09-08-04-sugar-implementation.md`.
+   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **Deprecated 전부 + Hidden `Font`/`Transparency`** 되살리기: 적용은 `HUMAN_TODO.md` 12번
+   (`ReflectionService` Write 권한 Studio 실측) 뒤, 패치·수치는 `audit/deprecated-props-spike-2026-09-09/`; (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
+   (배열부 슈가 안내만 — `attribute-plan.md` 2026-09-09 항목·`typing-limits.md` 8.17); (3) 루트 `-ignoreme` 메모 여섯 삭제(round7 흡수 확인), `comparison-vide-fusion`만
+   유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(진행 중, 결과는 세션 파일). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
    **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
    진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"
    표시로 유지, README §5는 코드 기준 정정. **소스 쪽 이월 둘**: (1) `[q.AttrKey("Hp")] = v` 해시 키가 strict에서 생성 prop 타입에 인덱서가
@@ -74,7 +78,7 @@
    구 솔버만이라 에디터에서만 나는 타입 에러를 못 잡는다(`conventions.md` 2026-09-08 항목 (2)). 사용자가 "그렇게 하자"면 붙인다.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트
    종료 판정 — 알림 `status: completed`가 종료 / test.sh 판정은 exit code / 문항·발견은 평문),
-   `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 둘(`-ignoreme`
+   `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 **하나**(2026-09-09 정리 — 여섯 삭제, `comparison-vide-fusion-ignoreme.md`만 유지; `-ignoreme`
    접미, 커밋 제외 — Bookkeeping abs 온디맨드 RFC·Vide/Fusion 전환 가이드 초안, 착수는 사용자 지시 뒤).
    **직전 구간 요약**(원문 `session/2026-09-08-01-advisory-and-user-items.md`): Gemini 자문
    권고 셋 판정(`__tostring` 목록 고정·`setFuncLevel(level, ...fns)`·메시지 헬퍼 기각) → `Attr`

@@ -1,0 +1,82 @@
+diff --git a/scripts/gen-d.py b/scripts/gen-d.py
+index ffe6d95..c11f334 100644
+--- a/scripts/gen-d.py
++++ b/scripts/gen-d.py
+@@ -45,6 +45,13 @@ SCOPE_EXTRA = {"Folder", "Camera", "WorldModel"}  # H-296 (a) 화이트리스트
+ CLASS_TAG_EXCLUDE = {"Deprecated", "NotBrowsable"}
+ CLASS_DENY = {"RelativeGui"}  # 실측: lacking capability RobloxScript
+ PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
++# [SPIKE 2026-09-09] legacy-but-working props kept in the surface and marked with a trailing
++# comment (Luau attributes cannot be attached to table-type fields — verified, so no lint is
++# possible). `Font`/`Transparency` are Hidden (not Deprecated) — both tags must be kept to
++# bring the v1 migration surface back.
++PROP_TAG_LEGACY = {"Deprecated", "Hidden"}
++# [SPIKE variant B] name whitelist — only these legacy props come back
++PROP_NAME_KEEP = {"Font", "FontSize", "TextWrap", "Transparency"}
+ EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
+ # [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
+ TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
+@@ -54,6 +61,20 @@ def tweenable(t):
+     return all(m.strip() in TWEENABLE for m in t.split("|"))
+ 
+ 
++def legacy_doc(p):
++    """[SPIKE] `---` doc comment above the field — luau-lsp shows it on hover of a member
++    access (verified). Table-key completion does NOT carry it, and no lint is possible."""
++    tags = p.get("legacy")
++    return [f"\t--- \u26a0\ufe0f **deprecated** \u2014 Roblox {'/'.join(tags)}"] if tags else []
++
++
++def legacy_note(p):
++    """[SPIKE] trailing marker for engine-legacy props — a comment is the only channel:
++    Luau `@deprecated` attaches to functions only (table-type fields are a syntax error)."""
++    tags = p.get("legacy")
++    return f" -- @deprecated (Roblox {'/'.join(tags)})" if tags else ""
++
++
+ def field_alias(t):
+     return "Field" if tweenable(t) else "FieldP"
+ PRIMITIVES = {
+@@ -197,7 +218,8 @@ def normalize(raw_path, version):
+                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
+                 # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
+                 # `<Class>OnChange`). Other excluded tags (Deprecated/NotScriptable/Hidden) still drop.
+-                other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"})
++                keep = PROP_TAG_LEGACY if m["Name"] in PROP_NAME_KEEP else set()
++                other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"} - keep)
+                 read_only = "ReadOnly" in mtags and not other_excluded
+                 if other_excluded:
+                     dropped.append(f"{name}.{m['Name']}: tags {sorted(mtags & PROP_TAG_EXCLUDE)}")
+@@ -211,7 +233,11 @@ def normalize(raw_path, version):
+                     dropped.append(f"{name}.{m['Name']}: type {t} newer than pinned defs")
+                     t = None
+                 if t is not None:
+-                    (read_props if read_only else props).append({"name": m["Name"], "type": t, "owner": owner})
++                    entry = {"name": m["Name"], "type": t, "owner": owner}
++                    legacy = sorted(mtags & PROP_TAG_LEGACY) if m["Name"] in PROP_NAME_KEEP else []
++                    if legacy:
++                        entry["legacy"] = legacy
++                    (read_props if read_only else props).append(entry)
+             elif m["MemberType"] == "Event":
+                 # `H-466`: event drops are noted like property drops (파일 머리 "조용한 절단 금지") —
+                 # `D.Frame { DragBegin = … }`가 왜 없는지도 추적 가능해야 한다
+@@ -418,7 +444,8 @@ def emit():
+         L.append("\t[number]: E,")
+         for p in c["props"]:
+             t = p["type"]
+-            L.append(f"\t{p['name']}: {pv_name[t]}?,")
++            L.extend(legacy_doc(p))
++            L.append(f"\t{p['name']}: {pv_name[t]}?,{legacy_note(p)}")
+         if is_gui_object(name):
+             for sname, t in SHORTHAND:
+                 L.append(f"\t{sname}: {pv_name[t]}?, -- 숏핸드(H-336)")
+@@ -600,7 +627,8 @@ def emit():
+             L.append(f"\tAs{d}: (self: {node}Modifier) -> {d}Modifier,")
+         for p in props:
+             t = p["type"]
+-            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,")
++            L.extend(legacy_doc(p))
++            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,{legacy_note(p)}")
+         if is_gui_object(node):
+             for sname, t in SHORTHAND:
+                 L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")

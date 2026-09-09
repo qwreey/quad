@@ -1050,3 +1050,16 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 (docs 재작성 에이전트 실측). 스펙 `spec.hooks`는 무주석 `q.OnCreated(function() end)`만 써서 이 구멍을 안 밟았다. `quad-types`의 그 주석은
 같은 날 정정했고, 사용자 문서(docs-ignoreme reference/04·skills)는 `<<Class>>` 형태로 통일. 발견 경위: docs-ignoreme 재작성 중(2026-09-09,
 `session/2026-09-09-01-docs-polish.md`).
+
+## 8.17. 테이블 타입의 인덱서는 하나뿐이라 `[AttrKey]` 해시 키를 `<Class>Param`에 따로 못 단다 — 키 유니언 확장은 되지만 값은 children 유니언에 대조된다 (2026-09-09 스파이크, 사용자 결정 "안 함")
+
+`D.Frame({ [q.AttrKey("Hp")] = hp })`는 strict 신 솔버에서 에러 둘 — 키 `Expected this to be 'number', but got 'AttrKeyObject'`, 그리고 값이 배열부 원소
+타입 `E`(children 유니언)에 대조돼 `State<number>` 거부. 스파이크(사본에서 test.sh 플래그 그대로): (a) 인덱서 둘은 `SyntaxError: Cannot have more than one table
+indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴조차 못 들어감; (c) AttrKey를 문자열 계열로 바꿔도 계산된 문자열 키는 같은 에러이고 `[string]`
+인덱서를 두면 배열부가 `Unexpected array-like table item`으로 죽음(게다가 런타임 표현은 브랜드 객체라 `_newUncachedKey` 불변식과 충돌); (d) 생성자를 오버로드
+`((ChildrenParam) -> T) & ((AttrsParam) -> T)`로 가르면 테이블 리터럴 인자에 대해 양성까지 "None of the overloads … compatible"(`H-508`의 Store 오버로드는
+테이블 리터럴 자리가 아니라 통했던 것). **살아남은 모양은 `[number | AttrKeyObject]: E`뿐** — 키·값 도메인은 독립 검사라 키 에러만 사라지고 값은 `:: any`
+(V1'; 정밀도 손실 0, 시간 무변화, `AttrKeyObject`에 순수 팬텀 `read __quadAttrKey: true`를 얹어야 아무 `{ Name: string }` 테이블이 새는 걸 막음). 값까지
+`E | AttrSlot`로 열면(V2) 배열부 음성 10 중 7 손실(맨 문자열·숫자·Color3가 자식으로 합법), 엔진 값만(V2b)이면 2 손실·스칼라는 여전히 캐스트. `Attr/Key.luau`
+헤더가 AttrKey를 "패밀리가 못 덮는 엔진 타입용"으로 못박아 스칼라는 `StringAttr` 등의 몫이라 V2b가 그 서술과 겹친다. **사용자 결정: 안 함**(`attribute-plan.md`
+2026-09-09 항목).
