@@ -21,13 +21,9 @@ export default defineConfig({
 					lang: 'en',
 				},
 			},
-			social: [
-				{
-					icon: 'github',
-					label: 'GitHub',
-					href: 'https://github.com/qwreey/quad',
-				},
-			],
+			social: {
+				github: 'https://github.com/qwreey/quad',
+			},
 			tableOfContents: {
 				minHeadingLevel: 2,
 				maxHeadingLevel: 4,
@@ -52,7 +48,13 @@ export default defineConfig({
 				},
 				{
 					label: 'Reference (레퍼런스)',
-					autogenerate: { directory: 'reference' },
+					items: [
+						{ label: '색인', link: '/ko/reference/00-index/' },
+						{ label: 'Core (quad-base)', autogenerate: { directory: 'reference/core' } },
+						{ label: 'Sugar (슈거·오퍼레이터)', autogenerate: { directory: 'reference/sugar' } },
+						{ label: 'Roblox (quad-roblox)', badge: { text: 'Roblox', variant: 'note' }, autogenerate: { directory: 'reference/roblox' } },
+						{ label: 'Extend (확장 계약)', badge: { text: 'Advanced', variant: 'caution' }, autogenerate: { directory: 'reference/extend' } },
+					],
 				},
 			],
 		}),

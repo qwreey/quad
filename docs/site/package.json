@@ -8,7 +8,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "sync": "bash sync-docs.sh"
+    "sync": "python3 sync-docs.py"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.0",

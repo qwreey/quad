@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 9] 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리
-
+---
+title: "Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리"
+description: "물리 실체가 없는 Slot으로 컴포넌트가 형제 여럿을 반환하는 문제를 푸는 설계를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-base/src/Slot/init.luau`, `quad-base/src/Slot/List.luau`, `quad-base/src/Bookkeeping.luau`
 

@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 5] 비파괴 언마운트와 소유권 공리: 포탈이 프리미티브 없이 나오는 이유
-
+---
+title: "Vol. 5 — 비파괴 언마운트와 소유권 공리: 포탈이 프리미티브 없이 나오는 이유"
+description: "소유권 공리에 따라 비파괴 언마운트가 별도 포탈 프리미티브 없이 성립하는 이유를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-base/src/Slot/Raw.luau`, `quad-base/src/Slot/Owner.luau`, `quad-base/src/Slot/Handler.luau`, `quad-base/src/Bookkeeping.luau`
 

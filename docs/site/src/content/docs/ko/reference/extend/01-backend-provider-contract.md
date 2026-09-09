@@ -1,5 +1,6 @@
-# [API Reference] 백엔드 프로바이더 규약 (Multi-Backend Contract)
-
+---
+title: "백엔드 프로바이더 규약"
+---
 > **대상 독자**: Quad를 Roblox 외 플랫폼으로 포팅하거나 커스텀 백엔드를 작성하려는 엔지니어
 > **정본 소스**: 주입 슬롯의 타입 정의는 `quad-types/src/init.luau`, Roblox 구현은 `quad-roblox/src/EngineOps.luau`와 `quad-roblox/src/LifetimeHandle.luau`, 미설치 스텁은 `quad-base/src/LifetimeHandle.luau`
 

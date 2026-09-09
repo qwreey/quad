@@ -78,4 +78,7 @@ for f in "${files[@]}"; do
 	echo "=== $f"
 	luau "$f" || fail=1
 done
+# [2026-09-09] docs/reference 커버리지 — 공개 표면 심볼이 레퍼런스 헤딩에 전부 있어야 한다(손으로 관리하는 레퍼런스의 유일한 기계 검사)
+echo "=== doc-coverage (docs/reference)"
+python3 scripts/doc-coverage.py || fail=1
 exit "$fail"

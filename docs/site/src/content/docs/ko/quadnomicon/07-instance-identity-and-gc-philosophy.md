@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 7] 인스턴스 신원, 네이티브 GC, 그리고 `Claim` 계약
-
+---
+title: "Vol. 7 — 인스턴스 신원, 네이티브 GC, 그리고 `Claim` 계약"
+description: "userdata 신원과 네이티브 GC를 다루는 quad의 Claim 계약과 정리 모델을 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-roblox/src/LifetimeHandle.luau`, `quad-base/src/Claim.luau`, `quad-base/src/Relate.luau`, `quad-base/src/Slot/Raw.luau`
 

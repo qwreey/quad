@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 4] 불변성 우회: 공변 마커로 New Solver를 길들이다
-
+---
+title: "Vol. 4 — 불변성 우회: 공변 마커로 New Solver를 길들이다"
+description: "공변 마커로 Luau New Solver의 불변성 제약과 유니언 폭발 문제를 우회하는 설계를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 타입 시스템 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-types/src/init.luau`, `quad-roblox/src/D/init.luau`(생성 파일), `scripts/gen-d.py`
 

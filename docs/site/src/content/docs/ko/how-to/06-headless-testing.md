@@ -1,5 +1,7 @@
-# [실전 레시피] 06. Roblox Studio 없이 헤드리스로 테스트하기
-
+---
+title: "06. Roblox Studio 없이 헤드리스로 테스트하기"
+description: "Studio 없이 quad의 반응형 로직과 디스패치를 헤드리스로 검증하는 방법을 설명합니다"
+---
 > **대상 독자**: 반응형 로직과 컴포넌트 조립을 Studio를 켜지 않고 검증하고 싶은 개발자
 > **다루는 개념**: `quad-base`의 엔진 무관성, 프로바이더 주입, mock 백엔드, `./scripts/test.sh`
 > **범위**: 갖다 쓸 수 있는 **공개 mock 패키지는 아직 없습니다**(§3). 이 문서가 다루는 것은 이 저장소의 테스트 구조와, 자기 프로바이더를 직접 붙여 헤드리스로 검증하는 방법입니다.
@@ -83,7 +85,7 @@ local q = Quad.New():UseProvider(myProvider)
 참고로 이 저장소의 mock 프로바이더는 물리 트리 조작·판정·훅·생명주기 넷·
 태그/어트리뷰트·시간 op를 모두 심고, 그 위에 얹는 공개 표면은 없습니다(빈 확장 —
 `D`가 없습니다). op 하나하나가 무엇을 요구하는지는
-[백엔드 프로바이더 규약](/quad/ko/reference/01-backend-provider-contract/)이
+[백엔드 프로바이더 규약](/quad/ko/reference/extend/01-backend-provider-contract/)이
 다룹니다. 다만 백엔드가 실제로 채워야 하는 op 목록의 정본은 그 백엔드의
 엔진 op 파일이니, 자기 프로바이더를 쓸 생각이라면 문서를 계약으로 믿지 말고
 그쪽을 보세요.

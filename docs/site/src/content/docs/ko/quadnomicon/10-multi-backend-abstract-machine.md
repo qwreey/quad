@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 10] 다중 백엔드 추상 기계
-
+---
+title: "Vol. 10 — 다중 백엔드 추상 기계"
+description: "엔진 비의존 코어와 주입되는 op로 다중 렌더 백엔드를 지원하는 추상 기계 설계를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-roblox/src/EngineOps.luau`, `quad-base/src/init.luau`, `quad-base/src/LifetimeHandle.luau`, `quad-base/src/NotInstalled.luau`
 

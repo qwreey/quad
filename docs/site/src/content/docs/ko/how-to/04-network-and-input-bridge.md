@@ -1,5 +1,7 @@
-# [실전 레시피] 04. RemoteEvent와 엔진 입력을 상태로 브릿징하기
-
+---
+title: "04. RemoteEvent와 엔진 입력을 상태로 브릿징하기"
+description: "RemoteEvent와 엔진 입력 신호를 Source로 브릿징해 UI에 선언적으로 반영하는 법을 설명합니다"
+---
 > **난이도**: 중급
 > **다루는 개념**: `Source`, `Store`, `Effect`, `OnDestroyed`, 단방향 데이터 흐름
 

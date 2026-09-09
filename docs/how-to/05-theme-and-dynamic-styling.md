@@ -1,3 +1,7 @@
+---
+title: "05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overridden`"
+description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라이트 테마 전환을 구현하는 법을 설명합니다"
+---
 # [실전 레시피] 05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overridden`
 
 > **대상 독자**: 다크/라이트 테마와 재사용 가능한 스타일 아키텍처를 만들려는 개발자

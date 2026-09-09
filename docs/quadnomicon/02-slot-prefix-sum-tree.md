@@ -1,3 +1,7 @@
+---
+title: "Vol. 2 — Slot-in-Slot 부분합 트리: 가상 DOM 없이 물리 트리를 제어하는 법"
+description: "가상 DOM 없이 Slot 부분합 트리로 물리 인스턴스 트리를 제어하는 내부 구조를 설명합니다"
+---
 # [Quadnomicon Vol. 2] Slot-in-Slot 부분합 트리: 가상 DOM 없이 물리 트리를 제어하는 법
 
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서

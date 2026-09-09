@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 8] 확장 가능한 디스패치 엔진과 우선순위 파이프라인
-
+---
+title: "Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인"
+description: "핸들러 레지스트리로 확장 가능한 디스패치 엔진과 우선순위 파이프라인을 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/Dispatch/StoreBind.luau`, `quad-types/src/init.luau`
 

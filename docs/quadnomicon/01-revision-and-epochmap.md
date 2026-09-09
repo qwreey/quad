@@ -1,3 +1,7 @@
+---
+title: "Vol. 1 — 32-bit Wrapping Revision과 EpochMap: 다이아몬드 글리치를 접는 법"
+description: "리비전과 EpochMap으로 정밀 반응형 시스템의 다이아몬드 의존성 문제를 푸는 설계를 다룹니다"
+---
 # [Quadnomicon Vol. 1] 32-bit Wrapping Revision과 EpochMap: 다이아몬드 글리치를 접는 법
 
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서

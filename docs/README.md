@@ -30,7 +30,7 @@ how-to를 초심자 트랙에 녹이는 3축이었으나, 스캐폴딩 과정에
 | **Overview** | 도입 여부를 판단하려는 엔지니어(퍼널 첫 단) | 솔직, 대가를 같이 적음 | 무엇을 풀려 했고 무엇을 포기했나, 맞는 경우/맞지 않는 경우, Fusion/Vide 차이표, 심층 링크 |
 | **Getting Started** | Quad를 처음 접하는 Roblox 개발자 | 친절, 선형, 최소 | 설치부터 첫 컴포넌트까지 core loop 완주 |
 | **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 디버깅, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관 |
-| **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 백엔드 프로바이더 계약, 슈거·오퍼레이터 표면 |
+| **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `D`는 표면만·Roblox 문서로 유도 |
 | **The Quadnomicon** | 프레임워크 설계자, 아키텍트 | 분석적, 한계를 숨기지 않음 | Revision/EpochMap, Slot 부분합 트리, 메모리 토폴로지, 마커 타입, 디스패치 엔진 등 내부 설계 |
 
 **2026-09-09 사용자 결정으로 없어진 트랙**: `best-practices/`(getting-started 03·skills와 중복, 안티패턴 레시피 포함 → 삭제),
@@ -42,7 +42,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 
 ## 2. 트랙별 문서 목록
 
-링크는 상대 경로(`../<track>/<file>.md`)다(`site/sync-docs.sh`가 사이트 경로로 치환). 각 파일의 제목이 곧 정본이라 여기 요약은 한 줄로만.
+링크는 상대 경로(`../<track>/<file>.md`)다(`site/sync-docs.py`가 사이트 경로로 치환). 각 파일의 제목이 곧 정본이라 여기 요약은 한 줄로만.
 
 ### Overview — 1편
 - [`01-why-quad.md`](./overview/01-why-quad.md) — 왜 Quad인가: 풀려던 문제 셋, 맞습니다/맞지 않습니다(오늘 시점 차단기 열), 설계 선택 일곱(+덤)의 "이전 선택과 그 한계 → 우리가 넘은 방법 → 그 대가/더 나쁜 점 → 심층 링크", Fusion/Vide 차이표(근거 있는 축 다섯, 수치 없음) + 우위 여섯/열위 여덟 목록. 사용자 의도: *"기술자로써 선택의 갈래를 좁혀주는"* 퍼널 첫 단 — 문서 흐름과 무관, 랜딩의 첫 액션이 여기로 온다. **[2026-09-09 사용자 프레이밍으로 재작성 — 검토 대기]**
@@ -63,9 +63,16 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.D.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
 
-### API Reference — 2편
-- [`01-backend-provider-contract.md`](./reference/01-backend-provider-contract.md) — 주입 op 전수(native* 여섯 / 판정·훅·조회 / 생명주기 넷 / Tag·Attr / 시간 op 둘), 요소 배열·0-based offset, `UseProvider` 1슬롯 락, 미주입 op 스텁.
-- [`02-sugar-and-combinator-reference.md`](./reference/02-sugar-and-combinator-reference.md) — `ref:Unwrap()`, `Context`/`Provider`, `Debounce`/`Throttle`, `Operator` 열넷(`Index<<V>>` 포함), 훅 셋(`OnRendered`는 부모 부착 미보장), `Fallback`/`Traceback`(부분 트리 미회수 명시).
+### API Reference — 손으로 관리하는 심볼 레퍼런스(26페이지 + 색인)
+**[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은
+시그니처(quad-types에서 복사) → 인자 표 → 반환 → 동작(불변식·**에러 문구 verbatim**) → 예제(mock 실행·신 솔버 검사) → 관련. **생성기 없음** — 손으로 쓴 심볼은
+전부 손으로 "관리"한다(사용자: 아키텍처가 견고해 자동화 이점이 작다). `D.<Class>` 31개 페이지도 만들지 않는다 — 표면 한 페이지·한 예시만 두고 각 클래스의 프로퍼티·이벤트는
+Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯). 빠진 심볼은 `scripts/doc-coverage.py`(test.sh 게이트)가 잡는다.
+- [`00-index.md`](./reference/00-index.md) — 심볼 → 페이지 색인.
+- `core/`(quad-base) 12편 — [모듈](./reference/core/01-quad-module.md)(New/RunInit/AddPlugin/UseProvider) · [Source](./reference/core/02-source.md) · [State](./reference/core/03-state.md) · [Store](./reference/core/04-store.md) · [Observer·Effect](./reference/core/05-observer-effect.md) · [Blocker·Gate](./reference/core/06-blocker-gate.md) · [Slot](./reference/core/07-slot.md) · [Ref](./reference/core/08-ref.md) · [Modifier](./reference/core/09-modifier.md) · [Tag·Attr](./reference/core/10-tag-attr.md) · [센티널·수명 스텁](./reference/core/11-lifetime-sentinels.md) · [술어 `is*`](./reference/core/12-predicates.md).
+- `sugar/` 5편 — [Context](./reference/sugar/01-context.md) · [Operator](./reference/sugar/02-operator.md) · [Debounce·Throttle](./reference/sugar/03-debounce-throttle.md) · [생명주기 훅](./reference/sugar/04-lifecycle-hooks.md) · [Fallback·Traceback](./reference/sugar/05-fallback-traceback.md).
+- `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`D`](./reference/roblox/02-d.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티) · [`D.Modifier`](./reference/roblox/03-d-modifier.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
+- `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
 
 ### The Quadnomicon — 11권
 > Rustonomicon 스타일 — 초보자용이 아니다. 입문은 [Getting Started](./getting-started/01-core-mental-model.md)부터.
@@ -83,8 +90,8 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [Vol. 11](./quadnomicon/11-static-grepability-and-error-architecture.md) 정적 grep 가능성·표면 blame·에러 아키텍처 — 리터럴은 raise 줄에 통째로(보간은 씀), `setFuncLevel(level, ...fns)`는 nil에 즉시 던짐.
 
 ### Web Site & Tooling — [`site/`](./site)
-Astro + Starlight(Zero-JS 기본, Pagefind 검색, Expressive Code, `ko/`·`en/` 폴더 i18n). [`site/sync-docs.sh`](./site/sync-docs.sh)가
-overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 `site/src/content/docs/ko/`로 복사하며 상대 링크를 사이트 경로로 치환한다(복사 전 대상 폴더를 비운다). `en/`은 아직 index만.
+Astro + Starlight(Zero-JS 기본, Pagefind 검색, Expressive Code, `ko/`·`en/` 폴더 i18n). [`site/sync-docs.py`](./site/sync-docs.py)가
+overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/ko/`로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
 
 ### Agent Tooling — [`skills/quad-ui-dev/`](./skills/quad-ui-dev)
 AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md`](./skills/quad-ui-dev/SKILL.md)(온톨로지·금지 패턴·strict 타입 요구사항),
@@ -104,7 +111,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 3. **검증 안 되는 것은 지운다.** 측정 없는 성능 수치, Fusion/Vide/React 내부 비교(`.claude/reference/comparison-fusion-vide.md`가 지지하는 범위만),
    "수학적 증명" 어투, 사용자 인용문 창작, `H-nnn`/`Q-nn` 원장 번호는 사용자 문서에 두지 않는다.
 4. **어조**: 위 표 그대로. 한국어 우선(코드 심볼은 영문 토큰 그대로), `skills/`만 영문.
-5. **링크**: 문서 간 링크는 상대 경로 `../<track>/<file>.md`(사이트 sync가 치환; 트랙 파일은 전부 한 단계 깊이). `.claude/`·소스 파일로의 링크는 두지 않는다
+5. **링크**: 문서 간 링크는 상대 경로(`../<track>/<file>.md`, 레퍼런스 하위 폴더는 `../../<track>/…`·`../core/…`; `site/sync-docs.py`가 재귀 복사하며 사이트 경로로 치환). frontmatter(`title`/`description`)는 원본에 둔다(사용자 결정) — sync가 없으면 실패한다. `.claude/`·소스 파일로의 링크는 두지 않는다
    (사용자에게 없는 경로) — 소스는 필요할 때 평문 파일명으로만 언급.
 
 ---

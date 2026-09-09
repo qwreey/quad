@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 6] 단일 인자 생존 게이트: 물리 수명과 반응형 전파의 분리
-
+---
+title: "Vol. 6 — 단일 인자 생존 게이트: 물리 수명과 반응형 전파의 분리"
+description: "단일 인자 생존 게이트로 인스턴스의 물리 수명과 반응형 전파를 분리하는 설계를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-roblox/src/LifetimeHandle.luau`, `quad-base/src/LifetimeHandle.luau`, `quad-base/src/Observer.luau`
 

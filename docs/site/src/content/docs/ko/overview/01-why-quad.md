@@ -1,5 +1,7 @@
-# [오버뷰] 왜 Quad인가 — 이전 선택을 안 따른 이유, 그리고 그 대가
-
+---
+title: "왜 Quad인가 — 이전 선택을 안 따른 이유, 그리고 그 대가"
+description: "Quad가 이전 프레임워크와 다른 설계를 고른 이유와 그 선택이 치른 대가를 정리합니다"
+---
 > **대상 독자**: Roblox 클라이언트 UI를 만드는 엔지니어. "이걸 배울 값이 있나"를 30분 안에 판단하려는 사람.
 > **하는 일**: 설계 선택마다 **이전 프레임워크가 무엇을 골랐고 어디서 막혔는지**, **우리는 어떻게 넘었는지**, **그 대신 무엇이 나빠졌는지**를 같이 적습니다. **안 하는 일**: 사용법도 내부 알고리즘도 아닙니다(쓰는 법은 [Getting Started](/quad/ko/getting-started/01-core-mental-model/), 원리는 [The Quadnomicon](/quad/ko/quadnomicon/01-revision-and-epochmap/) — 각 항목에서 링크합니다).
 

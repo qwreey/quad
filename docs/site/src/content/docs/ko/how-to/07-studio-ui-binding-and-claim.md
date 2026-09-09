@@ -1,5 +1,7 @@
-# [실전 레시피] 07. Studio에서 만든 UI에 반응성 붙이기 — `Claim`과 Clone 패턴
-
+---
+title: "07. Studio에서 만든 UI에 반응성 붙이기 — `Claim`과 Clone 패턴"
+description: "Studio에서 디자인한 UI 트리에 Claim으로 quad의 반응성을 붙이는 방법을 설명합니다"
+---
 > **대상 독자**: 디자이너가 Studio에서 시각적으로 완성해 둔 UI(StarterGui, 템플릿 모델)에
 > quad의 반응성을 연결하려는 개발자
 > **다루는 개념**: `q.Claim`, `D.Mapper` 디스크립터, `template:Clone()`, `Slot`
@@ -190,4 +192,4 @@ end
 ---
 
 ## 다음 단계
-- [API Reference: 순수 슈거 및 오퍼레이터 레퍼런스](/quad/ko/reference/02-sugar-and-combinator-reference/)
+- [API Reference: Claim과 Mapper](/quad/ko/reference/roblox/04-claim-mapper/)

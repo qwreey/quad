@@ -1,3 +1,7 @@
+---
+title: "Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처"
+description: "포맷 헬퍼 없이 grep 가능한 에러 문자열과 표면 blame으로 이루어진 quad 에러 아키텍처를 설명합니다"
+---
 # [Quadnomicon Vol. 11] 정적 grep 가능성, 표면 blame, 에러 아키텍처
 
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서

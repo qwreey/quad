@@ -23,3 +23,8 @@ core.[0-9]*
 # agent scratch (analysis-time repros; never commit — ba222e9 swept some in by accident)
 quad-*/test/tmp.*
 quad-*/test/zz_probe*
+
+# docs 사이트 빌드 산출물(2026-09-09)
+docs/site/node_modules/
+docs/site/dist/
+docs/site/.astro/

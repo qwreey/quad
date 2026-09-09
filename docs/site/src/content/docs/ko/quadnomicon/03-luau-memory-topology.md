@@ -1,5 +1,7 @@
-# [Quadnomicon Vol. 3] Luau 메모리 토폴로지: Ephemeron의 부재와 격리된 앵커 섬
-
+---
+title: "Vol. 3 — Luau 메모리 토폴로지: Ephemeron의 부재와 격리된 앵커 섬"
+description: "Ephemeron이 없는 Luau GC 환경에서 quad가 메모리 누수를 막는 앵커 설계를 설명합니다"
+---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-base/src/Relate.luau`, `quad-base/src/Dispatch/init.luau`, `quad-roblox/src/LifetimeHandle.luau`
 

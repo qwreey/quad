@@ -1,3 +1,7 @@
+---
+title: "08. quad v1에서 v2로 옮기기"
+description: "quad v1 코드베이스를 v2 모양으로 단계별로 옮기는 이관 순서와 방법을 안내합니다"
+---
 # [실전] 08. quad v1에서 v2로 옮기기
 
 > **대상 독자**: `Quad.Init(id)` / `Class "Frame"` / `Store.GetStore(...)` 로 쓰던 quad v1 코드베이스를 지금의 quad로 옮기려는 개발자
@@ -143,7 +147,7 @@ local moved = base:Compute(function(
 end, offset)
 ```
 
-전체 목록과 각 연산자의 계약은 [슈거·콤비네이터 레퍼런스](../reference/02-sugar-and-combinator-reference.md) §4에 있습니다.
+전체 목록과 각 연산자의 계약은 [Operator 레퍼런스](../reference/sugar/02-operator.md)에 있습니다.
 
 ### 애니메이션 — `:Tween{}`은 `:Apply(q.Animate{})`로
 

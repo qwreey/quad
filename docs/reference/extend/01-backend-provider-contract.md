@@ -1,3 +1,7 @@
+---
+description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProvider 설치 계약 — 새 백엔드를 포팅하는 사람을 위한 규약"
+title: "백엔드 프로바이더 규약"
+---
 # [API Reference] 백엔드 프로바이더 규약 (Multi-Backend Contract)
 
 > **대상 독자**: Quad를 Roblox 외 플랫폼으로 포팅하거나 커스텀 백엔드를 작성하려는 엔지니어
