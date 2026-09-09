@@ -21,7 +21,7 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
 맞바뀌었다**(M2=반응형, M3=디스패치로 확정 — 경위는 `archive/question-resolved.md`의
 "마일스톤 경계" 절) — **2026-08-24 이전에 쓰인 `session/`·`archive/`의 `M2`/`M3`는 옛 의미**.
 저장소 루트에 `quad-base/src/`·`quad-roblox/src/`·`quad-types/src/`·`quad-error/src/`·
-`type-version-check/src/`가 실제로 존재하고 구성은 `base/architecture.md` 소스 트리가 소스.
+`type-version-check/src/`가 실제로 존재하고(**[2026-09-09]** 사용자 문서 초안 `docs/`도 — 진입점 `docs/README.md`, 사이트는 `docs/site/`) 구성은 `base/architecture.md` 소스 트리가 소스.
 **⚠️ 테스트는 `./scripts/test.sh`로 돌릴 것** — `luau` CLI가 심볼릭 링크를 못 타서
 (pesde 워크스페이스 링크가 전부 심볼릭) 그냥 `luau`로 돌리면 스모크가 죽고
 `luau-analyze`는 조용히 통과한다(모듈을 `any`로 — "거짓 클린"); 그 스크립트가

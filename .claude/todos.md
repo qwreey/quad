@@ -68,7 +68,10 @@
    **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **Deprecated 전부 + Hidden `Font`/`Transparency`** 되살리기 — **같은 날 저녁 적용 완료**(`HUMAN_TODO.md` 12 사용자 실측 뒤;
    두 팔 분리 규칙, D 5250줄, 실측 원장 `audit/deprecated-props-spike-2026-09-09/`); (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
    (배열부 슈가 안내만 — `attribute-plan.md` 2026-09-09 항목·`typing-limits.md` 8.17); (3) 루트 `-ignoreme` 메모 여섯 삭제(round7 흡수 확인), `comparison-vide-fusion`만
-   유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(진행 중, 결과는 세션 파일). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
+   유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(반영 완료, 세션 파일 §7). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
+   **[2026-09-09 저녁]** 사용자 결정: 초안을 `docs-ignoreme/` → **`docs/`로 옮겨 커밋**(링크는 상대 경로, 진입점 `docs/README.md`), 오버뷰 트랙 신설(퍼널 첫 단 — 사용자 프레이밍으로
+   재작성), `comparison-vide-fusion-ignoreme.md` 삭제(오버뷰가 흡수). **`en/` 번역은 잠정 유보** — 사용자: *"내가 여러번 보고 회사 사람들이 여러번 보고 여러 실제 개발자 시점의
+   조언들을 전부 처리한 다음 시작"* — 데이터 모이기 전엔 수행하지 않는다. 다른 Deprecated 프로퍼티(Draggable 등)는 실측 안 함(사용자: 잘 안 씀, 현 정책 유지).
    **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
    진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"
    표시로 유지, README §5는 코드 기준 정정. **소스 쪽 이월 둘**: (1) `[q.AttrKey("Hp")] = v` 해시 키가 strict에서 생성 prop 타입에 인덱서가

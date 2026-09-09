@@ -68,6 +68,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - Attr 그룹 명시적 unset 유틸 — 오퍼레이터가 아니라 별도(`operator-sugar-plan.md` "Attr 그룹 명시적 unset 유틸" 절).
       - 중첩 평탄화 `State<State<T>>` → `State<T>` — 코어 로직 재검증이 필요(`operator-sugar-plan.md` "중첩 State 평탄화" 절).
       - 키에서 결과 타입을 추론하는 `Index`(`Apply(Index<<Theme>>("key"))` → `State<string>`) — 지금 솔버로는 불가(`typing-limits.md` 8.15 실측). 지금은 결과 타입을 직접 주는 `Operator.Index<<V>>(key)`로 구현돼 있고, 무주석 추론이 가능해지면 그때 옮긴다(사용자 결정).
+- [ ] **[2026-09-09 현황]** 문서 사이트 초안이 `docs/`에 커밋돼 있다(오버뷰·Getting Started·How-To·Reference·Quadnomicon + 에이전트 스킬 + Astro 사이트, 진입점 `docs/README.md`; 경위 `session/2026-09-09-01-docs-polish.md`). **`en/` 번역은 잠정 유보** — 사용자가 여러 번 보고 회사·실개발자 조언을 모두 처리한 뒤 시작(데이터 모이기 전엔 안 함).
 - [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-09 신설 — 루트 메모 정리에서 살린 아이디어]** 벤치마크 스위트(`bench.luau`류 — Slot:List 재정렬·대량 마운트 등 실측을 반복 가능하게). 지금은
   `audit/`의 일회성 실측뿐. 착수 시점 미정(관측된 병목이 생길 때).

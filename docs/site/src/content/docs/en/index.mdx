@@ -1,0 +1,39 @@
+---
+title: Quad (English)
+description: DOMless Reactive UI Framework for Roblox & Luau
+template: splash
+hero:
+  tagline: A Roblox UI renderer that creates real Instances directly — no virtual DOM — and updates only the property that changed.
+  actions:
+    - text: Getting Started
+      link: /quad/en/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub Repository
+      link: https://github.com/qwreey/quad
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+:::note
+Full English documentation is currently being mirrored from the canonical Korean technical specification.
+:::
+
+## Core Highlights
+
+<CardGrid stagger>
+	<Card title="DOMless Immediate Creation" icon="rocket">
+		Creates native Roblox instances immediately upon Luau table evaluation without VNode allocations or diffing.
+	</Card>
+	<Card title="High-Performance Slot Engine" icon="list-format">
+		Keyed `Slot:List` recycles elements — return `prev` and nothing is destroyed or remounted; on Roblox order is bookkeeping, so there is no physical reordering. You bind `LayoutOrder` yourself from the `index`/`offset` you receive.
+	</Card>
+	<Card title="3-Tier Modifier Priority" icon="setting">
+		Inline overrides, reverse modifier priority, and Modifier.Overridden composition for total design reusability.
+	</Card>
+	<Card title="Studio Template Claim" icon="puzzle">
+		Clone prefabricated Studio UI and hand it to Claim() to get the same reactivity as code-built trees.
+	</Card>
+</CardGrid>

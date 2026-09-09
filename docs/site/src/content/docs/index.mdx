@@ -1,0 +1,39 @@
+---
+title: Quad
+description: DOMless Reactive UI Framework for Roblox & Luau
+template: splash
+hero:
+  tagline: 가상 DOM 없이 실제 Instance를 바로 만들고, 바뀐 프로퍼티 하나에만 도달하는 Roblox UI 렌더러
+  actions:
+    - text: 왜 Quad인가 — 배울 값이 있나 먼저 보기
+      link: /quad/ko/overview/01-why-quad/
+      icon: right-arrow
+      variant: primary
+    - text: 시작하기 (Getting Started)
+      link: /quad/ko/getting-started/00-installation/
+      icon: open-book
+      variant: secondary
+    - text: GitHub 저장소
+      link: https://github.com/qwreey/quad
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## 주요 핵심 기능
+
+<CardGrid stagger>
+	<Card title="DOMless 즉시 생성" icon="rocket">
+		가상 DOM 트리 비교나 VNode 할당 없이, Luau 인라인 테이블 평가 시점에 즉시 실제 Roblox Instance를 생성합니다.
+	</Card>
+	<Card title="고성능 슬롯 리스트 엔진" icon="list-format">
+		키 기반 `Slot:List`가 요소를 재활용합니다 — `prev`를 돌려주면 파괴도 재마운트도 없고, Roblox에서 순서는 부기값이라 물리 재배치가 없습니다. `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
+	</Card>
+	<Card title="3단계 우선순위 Modifier" icon="setting">
+		인라인 속성 우선, 후행 Modifier 우선, Modifier.Overridden 합성으로 완벽한 스타일과 로직 재사용을 제공합니다.
+	</Card>
+	<Card title="Studio 템플릿 Claim" icon="puzzle">
+		디자이너가 제작한 Studio UI 템플릿을 Clone() 뒤 Claim()으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다.
+	</Card>
+</CardGrid>
