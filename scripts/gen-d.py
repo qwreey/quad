@@ -21,6 +21,11 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
   H-296 (a) 범위 = creatable ∧ (GuiObject∪UIComponent∪LayerCollector 하위)
             + 명시 화이트리스트 {Folder, Camera, WorldModel}
   H-297 (a) ReadOnly/Deprecated/NotScriptable/Hidden/보안≠None 프로퍼티 제외
+            — [사용자 결정 2026-09-09] Deprecated/Hidden 갈래는 좁혀졌다: v1 마이그레이션
+              자동완성을 위해 Deprecated는 통째로, Hidden은 이름 허용목록(`Font`/`Transparency`)만
+              표면에 남기고 `-- @deprecated` 주석으로 표시한다(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP;
+              실측·선택지는 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`).
+              ReadOnly는 그대로 Q19 (a)의 readProps 경로, NotScriptable/보안은 그대로 제외.
   H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커; Tween 팔은 보간 가능 타입만 — Q34, 2026-09-08),
             이벤트 = 콜백 | StateMarker<콜백> | None, children = NewChild(types.luau) — None 표현은
             H-300 (a)로 확정(센티널 마커 필드 → QuadTypes.None)
@@ -45,6 +50,17 @@ SCOPE_EXTRA = {"Folder", "Camera", "WorldModel"}  # H-296 (a) 화이트리스트
 CLASS_TAG_EXCLUDE = {"Deprecated", "NotBrowsable"}
 CLASS_DENY = {"RelativeGui"}  # 실측: lacking capability RobloxScript
 PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
+# [사용자 결정 2026-09-09] engine-legacy props are kept in the surface instead of dropped —
+# an agent migrating quad v1 → v2 needs `Font`/`FontSize`/`TextWrap` to autocomplete, and a
+# missing key surfaces as a type error it cannot resolve. 실측·선택지·결정 원문은
+# `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`(Studio 실측으로 `ReflectionService`가
+# 이 프로퍼티들을 `Permits.Write == Edit`로 준다는 전제도 확인 — 런타임 디스패치가 매치한다).
+# 정책: Deprecated 태그는 통째로, Hidden은 이름 허용목록(`HIDDEN_NAME_KEEP`)만.
+# `Font`/`Transparency`는 Deprecated가 아니라 Hidden(+NotReplicated)이라 이름으로 연다.
+# 되살린 프로퍼티는 필드 위 `---` 독 주석 + 뒤따르는 `-- @deprecated` 주석으로 표시한다 —
+# 주석이 유일한 채널이다(Luau `@deprecated` 속성은 함수 전용, 테이블 타입 필드 앞은 SyntaxError).
+PROP_TAG_LEGACY = {"Deprecated", "Hidden"}
+HIDDEN_NAME_KEEP = {"Font", "Transparency"}
 EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
 # [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
 TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
@@ -52,6 +68,22 @@ TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "
 
 def tweenable(t):
     return all(m.strip() in TWEENABLE for m in t.split("|"))
+
+
+def legacy_doc(p):
+    """`---` doc comment above the field — luau-lsp shows it on hover of a member access
+    (실측). Table-key completion does NOT carry it (`documentation: null`), so there is no
+    warning at the `D.TextLabel { Font = … }` 작성 지점 — 문서(마이그레이션 가이드)가 그 몫."""
+    tags = p.get("legacy")
+    return [f"\t--- \u26a0\ufe0f **deprecated** \u2014 Roblox {'/'.join(tags)}"] if tags else []
+
+
+def legacy_note(p):
+    """trailing marker for engine-legacy props — a comment is the only channel: Luau
+    `@deprecated` attaches to functions only (table-type fields are a syntax error), and
+    quad의 Modifier setter는 런타임 `__index`라 함수 정의 경로도 못 쓴다."""
+    tags = p.get("legacy")
+    return f" -- @deprecated (Roblox {'/'.join(tags)})" if tags else ""
 
 
 def field_alias(t):
@@ -186,7 +218,8 @@ def normalize(raw_path, version):
             mtags = set(m.get("Tags") or [])
             if m["MemberType"] == "Property":
                 # [7순회] 멤버 단위 제외도 dropped에 남긴다(파일 머리 "조용한 절단 금지") —
-                # `D.TextLabel { Font = … }`가 왜 없는지 추적 가능해야 한다
+                # `D.VideoFrame { InternalVideoUsage = … }`가 왜 없는지 추적 가능해야 한다
+                # ([2026-09-09] `Font`는 이제 안 잘린다 — legacy 되살리기, 위 PROP_TAG_LEGACY)
                 if m["Name"] == "Parent":
                     # [Q35 (a), 사용자 결정 2026-09-08 — round3 §11] WRITE surface still excludes Parent (H-142);
                     # the READ surface (OnChange) keeps it — `OnChange("Parent", fn)` was a TypeError
@@ -196,8 +229,12 @@ def normalize(raw_path, version):
                 # [round1 Q19 (a), 2026-09-07] ReadOnly props (AbsoluteSize/AbsolutePosition/TextBounds…)
                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
                 # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
-                # `<Class>OnChange`). Other excluded tags (Deprecated/NotScriptable/Hidden) still drop.
-                other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"})
+                # `<Class>OnChange`). NotScriptable는 여전히 드롭이고, Deprecated/Hidden은
+                # [사용자 결정 2026-09-09] legacy 정책(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP)이 정한다.
+                # [2026-09-09 사용자 결정] Deprecated 태그는 통째로, Hidden은 이름 허용목록만 — 두 팔을 따로 계산해
+                # Deprecated∧Hidden(archivable/className/BrickColor 쌍둥이 등, 미실측)이 Deprecated 팔을 타고 딸려오지 않게 한다
+                keep = ({"Deprecated"} if "Deprecated" in mtags else set()) | ({"Hidden"} if m["Name"] in HIDDEN_NAME_KEEP else set())
+                other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"} - keep)
                 read_only = "ReadOnly" in mtags and not other_excluded
                 if other_excluded:
                     dropped.append(f"{name}.{m['Name']}: tags {sorted(mtags & PROP_TAG_EXCLUDE)}")
@@ -211,7 +248,11 @@ def normalize(raw_path, version):
                     dropped.append(f"{name}.{m['Name']}: type {t} newer than pinned defs")
                     t = None
                 if t is not None:
-                    (read_props if read_only else props).append({"name": m["Name"], "type": t, "owner": owner})
+                    entry = {"name": m["Name"], "type": t, "owner": owner}
+                    legacy = sorted(mtags & keep) if keep else []
+                    if legacy:
+                        entry["legacy"] = legacy
+                    (read_props if read_only else props).append(entry)
             elif m["MemberType"] == "Event":
                 # `H-466`: event drops are noted like property drops (파일 머리 "조용한 절단 금지") —
                 # `D.Frame { DragBegin = … }`가 왜 없는지도 추적 가능해야 한다
@@ -418,7 +459,8 @@ def emit():
         L.append("\t[number]: E,")
         for p in c["props"]:
             t = p["type"]
-            L.append(f"\t{p['name']}: {pv_name[t]}?,")
+            L.extend(legacy_doc(p))
+            L.append(f"\t{p['name']}: {pv_name[t]}?,{legacy_note(p)}")
         if is_gui_object(name):
             for sname, t in SHORTHAND:
                 L.append(f"\t{sname}: {pv_name[t]}?, -- 숏핸드(H-336)")
@@ -600,7 +642,8 @@ def emit():
             L.append(f"\tAs{d}: (self: {node}Modifier) -> {d}Modifier,")
         for p in props:
             t = p["type"]
-            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,")
+            L.extend(legacy_doc(p))
+            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,{legacy_note(p)}")
         if is_gui_object(node):
             for sname, t in SHORTHAND:
                 L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")

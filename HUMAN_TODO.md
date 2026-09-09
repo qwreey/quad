@@ -214,7 +214,7 @@ Debounce/Throttle 작업에 쓴 워크트리는 **사용자 확인 후 정리 �
 설계/구현 상세는 `.claude/base/quad-types-plan.md`의
 "`type-version-check`" 절.
 
-## 12. **[2026-09-09 신설 — 결정된 변경을 막고 있음]** Studio에서 `ReflectionService`가 Hidden/Deprecated 프로퍼티를 Write 권한과 함께 주는지 확인
+## ✅ 12. ~~Studio에서 `ReflectionService`가 Hidden/Deprecated 프로퍼티를 Write 권한과 함께 주는지 확인~~ **[2026-09-09 해소 — 사용자 실측: `Font`/`FontSize`/`TextWrap`/`Transparency` 넷 다 `Permits.Write == Edit`("아마 예상된 결과로 보임")]** → 같은 날 gen-d 패치 적용
 
 사용자 결정(2026-09-09): 생성 `D`에 Deprecated 프로퍼티 전부 + Hidden 중 `Font`/`Transparency`를 되살린다(v1 마이그레이션 자동완성용 — 실측·패치는
 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`). 그런데 `quad-roblox/src/Handlers/Property.luau`의 런타임 매치가 `ReflectionService:GetPropertiesOfClass`의

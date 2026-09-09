@@ -154,7 +154,23 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "DistanceLowerLimit",
+     "owner": "BillboardGui",
+     "type": "number"
+    },
+    {
      "name": "DistanceStep",
+     "owner": "BillboardGui",
+     "type": "number"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "DistanceUpperLimit",
      "owner": "BillboardGui",
      "type": "number"
     },
@@ -289,6 +305,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -463,6 +487,14 @@
      "name": "VRTiltAndRollEnabled",
      "owner": "Camera",
      "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "focus",
+     "owner": "Camera",
+     "type": "CFrame"
     }
    ],
    "readProps": [
@@ -485,6 +517,14 @@
      "name": "ViewportSize",
      "owner": "Camera",
      "type": "Vector2"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -875,6 +915,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "GroupColor3",
      "owner": "CanvasGroup",
      "type": "Color3"
@@ -995,6 +1043,14 @@
      "type": "Enum.SizeConstraint"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Visible",
      "owner": "GuiObject",
      "type": "boolean"
@@ -1035,6 +1091,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -1160,6 +1224,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -1550,6 +1622,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "InputSink",
      "owner": "GuiObject",
      "type": "Enum.InputSink"
@@ -1665,6 +1745,14 @@
      "type": "Enum.FrameStyle"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Visible",
      "owner": "GuiObject",
      "type": "boolean"
@@ -1705,6 +1793,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -2191,6 +2287,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "HoverHapticEffect",
      "owner": "GuiButton",
      "type": "HapticEffect"
@@ -2401,6 +2505,14 @@
      "type": "UDim2"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Visible",
      "owner": "GuiObject",
      "type": "boolean"
@@ -2446,6 +2558,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -2837,6 +2957,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "Image",
      "owner": "ImageLabel",
      "type": "string"
@@ -3002,6 +3130,14 @@
      "type": "UDim2"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Visible",
      "owner": "GuiObject",
      "type": "boolean"
@@ -3047,6 +3183,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -3283,6 +3427,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -3698,6 +3850,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "ElasticBehavior",
      "owner": "ScrollingFrame",
      "type": "Enum.ElasticBehavior"
@@ -3863,6 +4023,14 @@
      "type": "Content"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "VerticalScrollBarInset",
      "owner": "ScrollingFrame",
      "type": "Enum.ScrollBarInset"
@@ -3923,6 +4091,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -4200,6 +4376,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -4624,9 +4808,33 @@
      "type": "number"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Font",
+     "owner": "TextBox",
+     "type": "Enum.Font"
+    },
+    {
      "name": "FontFace",
      "owner": "TextBox",
      "type": "Font"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "FontSize",
+     "owner": "TextBox",
+     "type": "Enum.FontSize"
     },
     {
      "name": "InputSink",
@@ -4834,6 +5042,14 @@
      "type": "Enum.TextTruncate"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "TextWrap",
+     "owner": "TextBox",
+     "type": "boolean"
+    },
+    {
      "name": "TextWrapped",
      "owner": "TextBox",
      "type": "boolean"
@@ -4847,6 +5063,14 @@
      "name": "TextYAlignment",
      "owner": "TextBox",
      "type": "Enum.TextYAlignment"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
     },
     {
      "name": "Visible",
@@ -4909,6 +5133,14 @@
      "name": "TextFits",
      "owner": "TextBox",
      "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -5395,9 +5627,33 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Font",
+     "owner": "TextButton",
+     "type": "Enum.Font"
+    },
+    {
      "name": "FontFace",
      "owner": "TextButton",
      "type": "Font"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "FontSize",
+     "owner": "TextButton",
+     "type": "Enum.FontSize"
     },
     {
      "name": "HoverHapticEffect",
@@ -5600,6 +5856,14 @@
      "type": "Enum.TextTruncate"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "TextWrap",
+     "owner": "TextButton",
+     "type": "boolean"
+    },
+    {
      "name": "TextWrapped",
      "owner": "TextButton",
      "type": "boolean"
@@ -5613,6 +5877,14 @@
      "name": "TextYAlignment",
      "owner": "TextButton",
      "type": "Enum.TextYAlignment"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
     },
     {
      "name": "Visible",
@@ -5675,6 +5947,14 @@
      "name": "TextFits",
      "owner": "TextButton",
      "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -6066,9 +6346,33 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Font",
+     "owner": "TextLabel",
+     "type": "Enum.Font"
+    },
+    {
      "name": "FontFace",
      "owner": "TextLabel",
      "type": "Font"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "FontSize",
+     "owner": "TextLabel",
+     "type": "Enum.FontSize"
     },
     {
      "name": "InputSink",
@@ -6246,6 +6550,14 @@
      "type": "Enum.TextTruncate"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "TextWrap",
+     "owner": "TextLabel",
+     "type": "boolean"
+    },
+    {
      "name": "TextWrapped",
      "owner": "TextLabel",
      "type": "boolean"
@@ -6259,6 +6571,14 @@
      "name": "TextYAlignment",
      "owner": "TextLabel",
      "type": "Enum.TextYAlignment"
+    },
+    {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
     },
     {
      "name": "Visible",
@@ -6321,6 +6641,14 @@
      "name": "TextFits",
      "owner": "TextLabel",
      "type": "boolean"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -6464,6 +6792,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -6616,6 +6952,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -6883,6 +7227,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7030,6 +7382,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7197,6 +7557,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7381,6 +7749,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7560,6 +7936,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7707,6 +8091,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -7941,6 +8333,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8073,6 +8473,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8245,6 +8653,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8383,6 +8799,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8560,6 +8984,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8734,6 +9166,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -8872,6 +9312,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -9312,6 +9760,14 @@
      "type": "boolean"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "InputSink",
      "owner": "GuiObject",
      "type": "Enum.InputSink"
@@ -9452,6 +9908,14 @@
      "type": "number"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Video",
      "owner": "VideoFrame",
      "type": "string"
@@ -9522,6 +9986,14 @@
      "name": "TimeLength",
      "owner": "VideoFrame",
      "type": "number"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -9922,6 +10394,14 @@
      "type": "Camera"
     },
     {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "Draggable",
+     "owner": "GuiObject",
+     "type": "boolean"
+    },
+    {
      "name": "ImageColor3",
      "owner": "ViewportFrame",
      "type": "Color3"
@@ -10052,6 +10532,14 @@
      "type": "Enum.SizeConstraint"
     },
     {
+     "legacy": [
+      "Hidden"
+     ],
+     "name": "Transparency",
+     "owner": "GuiObject",
+     "type": "number"
+    },
+    {
      "name": "Visible",
      "owner": "GuiObject",
      "type": "boolean"
@@ -10092,6 +10580,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   },
@@ -10240,6 +10736,14 @@
      "name": "Parent",
      "owner": "Instance",
      "type": "Instance"
+    },
+    {
+     "legacy": [
+      "Deprecated"
+     ],
+     "name": "className",
+     "owner": "Object",
+     "type": "string"
     }
    ]
   }
@@ -10248,8 +10752,6 @@
   "AdGui: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
   "BillboardGui.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "BillboardGui.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
-  "BillboardGui.DistanceLowerLimit: tags ['Deprecated']",
-  "BillboardGui.DistanceUpperLimit: tags ['Deprecated']",
   "BillboardGui.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "BillboardGui.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "BillboardGui.Localize: tags ['Deprecated', 'Hidden']",
@@ -10263,7 +10765,6 @@
   "BillboardGui.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "BillboardGui.archivable: tags ['Deprecated', 'Hidden']",
   "BillboardGui.childAdded (event): tags ['Deprecated']",
-  "BillboardGui.className: tags ['Deprecated', 'ReadOnly']",
   "Camera.CoordinateFrame: tags ['Deprecated', 'Hidden']",
   "Camera.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "Camera.FirstPersonTransition (event): security LocalUserSecurity",
@@ -10277,15 +10778,12 @@
   "Camera.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "Camera.archivable: tags ['Deprecated', 'Hidden']",
   "Camera.childAdded (event): tags ['Deprecated']",
-  "Camera.className: tags ['Deprecated', 'ReadOnly']",
-  "Camera.focus: tags ['Deprecated']",
   "CanvasGroup.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "CanvasGroup.BorderColor: tags ['Deprecated', 'Hidden']",
   "CanvasGroup.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "CanvasGroup.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "CanvasGroup.DragBegin (event): tags ['Deprecated']",
   "CanvasGroup.DragStopped (event): tags ['Deprecated']",
-  "CanvasGroup.Draggable: tags ['Deprecated']",
   "CanvasGroup.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "CanvasGroup.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "CanvasGroup.Localize: tags ['Deprecated', 'Hidden']",
@@ -10297,11 +10795,9 @@
   "CanvasGroup.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "CanvasGroup.SourceAssetId: tags ['Hidden']",
   "CanvasGroup.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "CanvasGroup.Transparency: tags ['Hidden']",
   "CanvasGroup.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "CanvasGroup.archivable: tags ['Deprecated', 'Hidden']",
   "CanvasGroup.childAdded (event): tags ['Deprecated']",
-  "CanvasGroup.className: tags ['Deprecated', 'ReadOnly']",
   "Folder.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "Folder.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "Folder.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10311,14 +10807,12 @@
   "Folder.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "Folder.archivable: tags ['Deprecated', 'Hidden']",
   "Folder.childAdded (event): tags ['Deprecated']",
-  "Folder.className: tags ['Deprecated', 'ReadOnly']",
   "Frame.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "Frame.BorderColor: tags ['Deprecated', 'Hidden']",
   "Frame.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "Frame.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "Frame.DragBegin (event): tags ['Deprecated']",
   "Frame.DragStopped (event): tags ['Deprecated']",
-  "Frame.Draggable: tags ['Deprecated']",
   "Frame.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "Frame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "Frame.Localize: tags ['Deprecated', 'Hidden']",
@@ -10329,11 +10823,9 @@
   "Frame.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "Frame.SourceAssetId: tags ['Hidden']",
   "Frame.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "Frame.Transparency: tags ['Hidden']",
   "Frame.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "Frame.archivable: tags ['Deprecated', 'Hidden']",
   "Frame.childAdded (event): tags ['Deprecated']",
-  "Frame.className: tags ['Deprecated', 'ReadOnly']",
   "GuiMain: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
   "ImageButton.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "ImageButton.BorderColor: tags ['Deprecated', 'Hidden']",
@@ -10342,7 +10834,6 @@
   "ImageButton.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "ImageButton.DragBegin (event): tags ['Deprecated']",
   "ImageButton.DragStopped (event): tags ['Deprecated']",
-  "ImageButton.Draggable: tags ['Deprecated']",
   "ImageButton.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "ImageButton.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ImageButton.Localize: tags ['Deprecated', 'Hidden']",
@@ -10354,11 +10845,9 @@
   "ImageButton.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "ImageButton.SourceAssetId: tags ['Hidden']",
   "ImageButton.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "ImageButton.Transparency: tags ['Hidden']",
   "ImageButton.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "ImageButton.archivable: tags ['Deprecated', 'Hidden']",
   "ImageButton.childAdded (event): tags ['Deprecated']",
-  "ImageButton.className: tags ['Deprecated', 'ReadOnly']",
   "ImageLabel.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "ImageLabel.BorderColor: tags ['Deprecated', 'Hidden']",
   "ImageLabel.ClippedRect: tags ['Hidden', 'ReadOnly']",
@@ -10366,7 +10855,6 @@
   "ImageLabel.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "ImageLabel.DragBegin (event): tags ['Deprecated']",
   "ImageLabel.DragStopped (event): tags ['Deprecated']",
-  "ImageLabel.Draggable: tags ['Deprecated']",
   "ImageLabel.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "ImageLabel.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "ImageLabel.Localize: tags ['Deprecated', 'Hidden']",
@@ -10378,11 +10866,9 @@
   "ImageLabel.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "ImageLabel.SourceAssetId: tags ['Hidden']",
   "ImageLabel.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "ImageLabel.Transparency: tags ['Hidden']",
   "ImageLabel.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "ImageLabel.archivable: tags ['Deprecated', 'Hidden']",
   "ImageLabel.childAdded (event): tags ['Deprecated']",
-  "ImageLabel.className: tags ['Deprecated', 'ReadOnly']",
   "InputActionLabel: class newer than pinned defs (whole class dropped)",
   "RelativeGui: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
   "ScreenGui.ClippedRect: tags ['Hidden', 'ReadOnly']",
@@ -10402,14 +10888,12 @@
   "ScreenGui.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "ScreenGui.archivable: tags ['Deprecated', 'Hidden']",
   "ScreenGui.childAdded (event): tags ['Deprecated']",
-  "ScreenGui.className: tags ['Deprecated', 'ReadOnly']",
   "ScrollingFrame.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "ScrollingFrame.BorderColor: tags ['Deprecated', 'Hidden']",
   "ScrollingFrame.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "ScrollingFrame.DragBegin (event): tags ['Deprecated']",
   "ScrollingFrame.DragStopped (event): tags ['Deprecated']",
-  "ScrollingFrame.Draggable: tags ['Deprecated']",
   "ScrollingFrame.DraggingScrollBar: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.HorizontalBarRect: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
@@ -10426,12 +10910,10 @@
   "ScrollingFrame.SmoothScroll: tags ['Hidden']",
   "ScrollingFrame.SourceAssetId: tags ['Hidden']",
   "ScrollingFrame.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "ScrollingFrame.Transparency: tags ['Hidden']",
   "ScrollingFrame.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "ScrollingFrame.VerticalBarRect: tags ['Hidden', 'ReadOnly']",
   "ScrollingFrame.archivable: tags ['Deprecated', 'Hidden']",
   "ScrollingFrame.childAdded (event): tags ['Deprecated']",
-  "ScrollingFrame.className: tags ['Deprecated', 'ReadOnly']",
   "SurfaceGui.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "SurfaceGui.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "SurfaceGui.HorizontalCurvature: tags ['Hidden']",
@@ -10449,16 +10931,12 @@
   "SurfaceGui.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "SurfaceGui.archivable: tags ['Deprecated', 'Hidden']",
   "SurfaceGui.childAdded (event): tags ['Deprecated']",
-  "SurfaceGui.className: tags ['Deprecated', 'ReadOnly']",
   "TextBox.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "TextBox.BorderColor: tags ['Deprecated', 'Hidden']",
   "TextBox.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "TextBox.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "TextBox.DragBegin (event): tags ['Deprecated']",
   "TextBox.DragStopped (event): tags ['Deprecated']",
-  "TextBox.Draggable: tags ['Deprecated']",
-  "TextBox.Font: tags ['Hidden']",
-  "TextBox.FontSize: tags ['Deprecated']",
   "TextBox.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "TextBox.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "TextBox.LocalizationMatchIdentifier: tags ['Hidden']",
@@ -10478,22 +10956,16 @@
   "TextBox.SourceAssetId: tags ['Hidden']",
   "TextBox.TextColor: tags ['Deprecated', 'Hidden']",
   "TextBox.TextInputType: tags ['Hidden']",
-  "TextBox.TextWrap: tags ['Deprecated']",
   "TextBox.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "TextBox.Transparency: tags ['Hidden']",
   "TextBox.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "TextBox.archivable: tags ['Deprecated', 'Hidden']",
   "TextBox.childAdded (event): tags ['Deprecated']",
-  "TextBox.className: tags ['Deprecated', 'ReadOnly']",
   "TextButton.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "TextButton.BorderColor: tags ['Deprecated', 'Hidden']",
   "TextButton.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "TextButton.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "TextButton.DragBegin (event): tags ['Deprecated']",
   "TextButton.DragStopped (event): tags ['Deprecated']",
-  "TextButton.Draggable: tags ['Deprecated']",
-  "TextButton.Font: tags ['Hidden']",
-  "TextButton.FontSize: tags ['Deprecated']",
   "TextButton.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "TextButton.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "TextButton.LocalizationMatchIdentifier: tags ['Hidden']",
@@ -10507,13 +10979,10 @@
   "TextButton.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "TextButton.SourceAssetId: tags ['Hidden']",
   "TextButton.TextColor: tags ['Deprecated', 'Hidden']",
-  "TextButton.TextWrap: tags ['Deprecated']",
   "TextButton.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "TextButton.Transparency: tags ['Hidden']",
   "TextButton.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "TextButton.archivable: tags ['Deprecated', 'Hidden']",
   "TextButton.childAdded (event): tags ['Deprecated']",
-  "TextButton.className: tags ['Deprecated', 'ReadOnly']",
   "TextChannelWindow: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
   "TextLabel.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "TextLabel.BorderColor: tags ['Deprecated', 'Hidden']",
@@ -10521,9 +10990,6 @@
   "TextLabel.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "TextLabel.DragBegin (event): tags ['Deprecated']",
   "TextLabel.DragStopped (event): tags ['Deprecated']",
-  "TextLabel.Draggable: tags ['Deprecated']",
-  "TextLabel.Font: tags ['Hidden']",
-  "TextLabel.FontSize: tags ['Deprecated']",
   "TextLabel.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "TextLabel.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
   "TextLabel.LocalizationMatchIdentifier: tags ['Hidden']",
@@ -10537,13 +11003,10 @@
   "TextLabel.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "TextLabel.SourceAssetId: tags ['Hidden']",
   "TextLabel.TextColor: tags ['Deprecated', 'Hidden']",
-  "TextLabel.TextWrap: tags ['Deprecated']",
   "TextLabel.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "TextLabel.Transparency: tags ['Hidden']",
   "TextLabel.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "TextLabel.archivable: tags ['Deprecated', 'Hidden']",
   "TextLabel.childAdded (event): tags ['Deprecated']",
-  "TextLabel.className: tags ['Deprecated', 'ReadOnly']",
   "UIAspectRatioConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIAspectRatioConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIAspectRatioConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10553,7 +11016,6 @@
   "UIAspectRatioConstraint.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIAspectRatioConstraint.archivable: tags ['Deprecated', 'Hidden']",
   "UIAspectRatioConstraint.childAdded (event): tags ['Deprecated']",
-  "UIAspectRatioConstraint.className: tags ['Deprecated', 'ReadOnly']",
   "UICorner.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UICorner.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UICorner.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10563,7 +11025,6 @@
   "UICorner.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UICorner.archivable: tags ['Deprecated', 'Hidden']",
   "UICorner.childAdded (event): tags ['Deprecated']",
-  "UICorner.className: tags ['Deprecated', 'ReadOnly']",
   "UIDragDetector.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIDragDetector.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIDragDetector.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10573,7 +11034,6 @@
   "UIDragDetector.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIDragDetector.archivable: tags ['Deprecated', 'Hidden']",
   "UIDragDetector.childAdded (event): tags ['Deprecated']",
-  "UIDragDetector.className: tags ['Deprecated', 'ReadOnly']",
   "UIFlexItem.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIFlexItem.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIFlexItem.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10583,7 +11043,6 @@
   "UIFlexItem.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIFlexItem.archivable: tags ['Deprecated', 'Hidden']",
   "UIFlexItem.childAdded (event): tags ['Deprecated']",
-  "UIFlexItem.className: tags ['Deprecated', 'ReadOnly']",
   "UIGradient.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIGradient.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIGradient.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10593,7 +11052,6 @@
   "UIGradient.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIGradient.archivable: tags ['Deprecated', 'Hidden']",
   "UIGradient.childAdded (event): tags ['Deprecated']",
-  "UIGradient.className: tags ['Deprecated', 'ReadOnly']",
   "UIGridLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIGridLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIGridLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10603,7 +11061,6 @@
   "UIGridLayout.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIGridLayout.archivable: tags ['Deprecated', 'Hidden']",
   "UIGridLayout.childAdded (event): tags ['Deprecated']",
-  "UIGridLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIListLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIListLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIListLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10613,7 +11070,6 @@
   "UIListLayout.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIListLayout.archivable: tags ['Deprecated', 'Hidden']",
   "UIListLayout.childAdded (event): tags ['Deprecated']",
-  "UIListLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIPadding.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIPadding.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIPadding.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10623,7 +11079,6 @@
   "UIPadding.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIPadding.archivable: tags ['Deprecated', 'Hidden']",
   "UIPadding.childAdded (event): tags ['Deprecated']",
-  "UIPadding.className: tags ['Deprecated', 'ReadOnly']",
   "UIPageLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIPageLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIPageLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10633,7 +11088,6 @@
   "UIPageLayout.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIPageLayout.archivable: tags ['Deprecated', 'Hidden']",
   "UIPageLayout.childAdded (event): tags ['Deprecated']",
-  "UIPageLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UIScale.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIScale.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIScale.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10643,7 +11097,6 @@
   "UIScale.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIScale.archivable: tags ['Deprecated', 'Hidden']",
   "UIScale.childAdded (event): tags ['Deprecated']",
-  "UIScale.className: tags ['Deprecated', 'ReadOnly']",
   "UIShadow.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIShadow.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIShadow.Mode: type Enum.ApplyShadowMode newer than pinned defs",
@@ -10654,7 +11107,6 @@
   "UIShadow.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIShadow.archivable: tags ['Deprecated', 'Hidden']",
   "UIShadow.childAdded (event): tags ['Deprecated']",
-  "UIShadow.className: tags ['Deprecated', 'ReadOnly']",
   "UISizeConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UISizeConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UISizeConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10664,7 +11116,6 @@
   "UISizeConstraint.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UISizeConstraint.archivable: tags ['Deprecated', 'Hidden']",
   "UISizeConstraint.childAdded (event): tags ['Deprecated']",
-  "UISizeConstraint.className: tags ['Deprecated', 'ReadOnly']",
   "UIStroke.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UIStroke.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UIStroke.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10674,7 +11125,6 @@
   "UIStroke.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UIStroke.archivable: tags ['Deprecated', 'Hidden']",
   "UIStroke.childAdded (event): tags ['Deprecated']",
-  "UIStroke.className: tags ['Deprecated', 'ReadOnly']",
   "UITableLayout.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UITableLayout.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UITableLayout.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10684,7 +11134,6 @@
   "UITableLayout.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UITableLayout.archivable: tags ['Deprecated', 'Hidden']",
   "UITableLayout.childAdded (event): tags ['Deprecated']",
-  "UITableLayout.className: tags ['Deprecated', 'ReadOnly']",
   "UITextSizeConstraint.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "UITextSizeConstraint.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "UITextSizeConstraint.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)",
@@ -10694,7 +11143,6 @@
   "UITextSizeConstraint.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "UITextSizeConstraint.archivable: tags ['Deprecated', 'Hidden']",
   "UITextSizeConstraint.childAdded (event): tags ['Deprecated']",
-  "UITextSizeConstraint.className: tags ['Deprecated', 'ReadOnly']",
   "VideoDisplay: class excluded (H-301 \u2014 deprecated/internal/capability-gated)",
   "VideoFrame.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "VideoFrame.BorderColor: tags ['Deprecated', 'Hidden']",
@@ -10702,7 +11150,6 @@
   "VideoFrame.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "VideoFrame.DragBegin (event): tags ['Deprecated']",
   "VideoFrame.DragStopped (event): tags ['Deprecated']",
-  "VideoFrame.Draggable: tags ['Deprecated']",
   "VideoFrame.InternalVideoUsage: tags ['Hidden']",
   "VideoFrame.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "VideoFrame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
@@ -10715,18 +11162,15 @@
   "VideoFrame.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "VideoFrame.SourceAssetId: tags ['Hidden']",
   "VideoFrame.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "VideoFrame.Transparency: tags ['Hidden']",
   "VideoFrame.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "VideoFrame.archivable: tags ['Deprecated', 'Hidden']",
   "VideoFrame.childAdded (event): tags ['Deprecated']",
-  "VideoFrame.className: tags ['Deprecated', 'ReadOnly']",
   "ViewportFrame.BackgroundColor: tags ['Deprecated', 'Hidden']",
   "ViewportFrame.BorderColor: tags ['Deprecated', 'Hidden']",
   "ViewportFrame.ClippedRect: tags ['Hidden', 'ReadOnly']",
   "ViewportFrame.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
   "ViewportFrame.DragBegin (event): tags ['Deprecated']",
   "ViewportFrame.DragStopped (event): tags ['Deprecated']",
-  "ViewportFrame.Draggable: tags ['Deprecated']",
   "ViewportFrame.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "ViewportFrame.IsMirrored: tags ['Hidden']",
   "ViewportFrame.IsNotOccluded: tags ['Hidden', 'ReadOnly']",
@@ -10738,14 +11182,10 @@
   "ViewportFrame.SelectionRect2D: tags ['Hidden', 'ReadOnly']",
   "ViewportFrame.SourceAssetId: tags ['Hidden']",
   "ViewportFrame.TotalGroupScale: tags ['Hidden', 'ReadOnly']",
-  "ViewportFrame.Transparency: tags ['Hidden']",
   "ViewportFrame.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
   "ViewportFrame.archivable: tags ['Deprecated', 'Hidden']",
   "ViewportFrame.childAdded (event): tags ['Deprecated']",
-  "ViewportFrame.className: tags ['Deprecated', 'ReadOnly']",
-  "WorldModel.AutoSimulate: tags ['Hidden']",
   "WorldModel.DataCost: tags ['Deprecated', 'Hidden', 'ReadOnly']",
-  "WorldModel.GravityDirection: tags ['Hidden']",
   "WorldModel.IsInSandbox: tags ['NotScriptable', 'ReadOnly']",
   "WorldModel.LevelOfDetail: security {'Read': 'PluginSecurity', 'Write': 'PluginSecurity'}",
   "WorldModel.Origin: tags ['NotScriptable']",
@@ -10755,14 +11195,10 @@
   "WorldModel.PredictionMode: tags ['NotScriptable', 'ReadOnly']",
   "WorldModel.RobloxLocked: tags ['Hidden']",
   "WorldModel.Scale: tags ['NotScriptable']",
-  "WorldModel.SimulationRate: tags ['Hidden']",
   "WorldModel.SourceAssetId: tags ['Hidden']",
   "WorldModel.UniqueId: security {'Read': 'RobloxScriptSecurity', 'Write': 'RobloxSecurity'}",
-  "WorldModel.Wind: tags ['Hidden']",
-  "WorldModel.WindDirection: tags ['Hidden']",
   "WorldModel.archivable: tags ['Deprecated', 'Hidden']",
-  "WorldModel.childAdded (event): tags ['Deprecated']",
-  "WorldModel.className: tags ['Deprecated', 'ReadOnly']"
+  "WorldModel.childAdded (event): tags ['Deprecated']"
  ],
  "dumpVersion": "version-268c7d941ba34c1a",
  "scopeRule": "creatable AND (GuiObject|UIComponent|LayerCollector descendant) OR {Folder,Camera,WorldModel} (H-296 a)"

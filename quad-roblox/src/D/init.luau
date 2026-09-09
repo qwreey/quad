@@ -91,45 +91,47 @@ type PV31 = Enum.ScrollingDirection | StateMarker<Enum.ScrollingDirection> | Non
 type PV32 = Enum.VerticalScrollBarPosition | StateMarker<Enum.VerticalScrollBarPosition> | None -- Enum.VerticalScrollBarPosition
 type PV33 = Enum.NormalId | StateMarker<Enum.NormalId> | None -- Enum.NormalId
 type PV34 = Enum.SurfaceGuiSizingMode | StateMarker<Enum.SurfaceGuiSizingMode> | None -- Enum.SurfaceGuiSizingMode
-type PV35 = Font | StateMarker<Font> | None -- Font
-type PV36 = Enum.TextDirection | StateMarker<Enum.TextDirection> | None -- Enum.TextDirection
-type PV37 = Enum.TextTruncate | StateMarker<Enum.TextTruncate> | None -- Enum.TextTruncate
-type PV38 = Enum.TextXAlignment | StateMarker<Enum.TextXAlignment> | None -- Enum.TextXAlignment
-type PV39 = Enum.TextYAlignment | StateMarker<Enum.TextYAlignment> | None -- Enum.TextYAlignment
-type PV40 = Enum.AspectType | StateMarker<Enum.AspectType> | None -- Enum.AspectType
-type PV41 = Enum.DominantAxis | StateMarker<Enum.DominantAxis> | None -- Enum.DominantAxis
-type PV42 = UDim | TweenData<UDim> | StateMarker<UDim | Tween<UDim>> | None -- UDim
-type PV43 = Enum.UIDragDetectorBoundingBehavior | StateMarker<Enum.UIDragDetectorBoundingBehavior> | None -- Enum.UIDragDetectorBoundingBehavior
-type PV44 = GuiBase2d | StateMarker<GuiBase2d> | None -- GuiBase2d
-type PV45 = Enum.UIDragDetectorDragRelativity | StateMarker<Enum.UIDragDetectorDragRelativity> | None -- Enum.UIDragDetectorDragRelativity
-type PV46 = Enum.UIDragDetectorDragSpace | StateMarker<Enum.UIDragDetectorDragSpace> | None -- Enum.UIDragDetectorDragSpace
-type PV47 = Enum.UIDragDetectorDragStyle | StateMarker<Enum.UIDragDetectorDragStyle> | None -- Enum.UIDragDetectorDragStyle
-type PV48 = Enum.UIDragDetectorResponseStyle | StateMarker<Enum.UIDragDetectorResponseStyle> | None -- Enum.UIDragDetectorResponseStyle
-type PV49 = Enum.UIDragSpeedAxisMapping | StateMarker<Enum.UIDragSpeedAxisMapping> | None -- Enum.UIDragSpeedAxisMapping
-type PV50 = Enum.UIFlexMode | StateMarker<Enum.UIFlexMode> | None -- Enum.UIFlexMode
-type PV51 = Enum.ItemLineAlignment | StateMarker<Enum.ItemLineAlignment> | None -- Enum.ItemLineAlignment
-type PV52 = ColorSequence | StateMarker<ColorSequence> | None -- ColorSequence
-type PV53 = Enum.GradientTileMode | StateMarker<Enum.GradientTileMode> | None -- Enum.GradientTileMode
-type PV54 = NumberSequence | StateMarker<NumberSequence> | None -- NumberSequence
-type PV55 = Enum.GradientType | StateMarker<Enum.GradientType> | None -- Enum.GradientType
-type PV56 = Enum.FillDirection | StateMarker<Enum.FillDirection> | None -- Enum.FillDirection
-type PV57 = Enum.HorizontalAlignment | StateMarker<Enum.HorizontalAlignment> | None -- Enum.HorizontalAlignment
-type PV58 = Enum.SortOrder | StateMarker<Enum.SortOrder> | None -- Enum.SortOrder
-type PV59 = Enum.StartCorner | StateMarker<Enum.StartCorner> | None -- Enum.StartCorner
-type PV60 = Enum.VerticalAlignment | StateMarker<Enum.VerticalAlignment> | None -- Enum.VerticalAlignment
-type PV61 = Enum.UIFlexAlignment | StateMarker<Enum.UIFlexAlignment> | None -- Enum.UIFlexAlignment
-type PV62 = Enum.EasingDirection | StateMarker<Enum.EasingDirection> | None -- Enum.EasingDirection
-type PV63 = Enum.EasingStyle | StateMarker<Enum.EasingStyle> | None -- Enum.EasingStyle
-type PV64 = Enum.ApplyStrokeMode | StateMarker<Enum.ApplyStrokeMode> | None -- Enum.ApplyStrokeMode
-type PV65 = Enum.BorderStrokePosition | StateMarker<Enum.BorderStrokePosition> | None -- Enum.BorderStrokePosition
-type PV66 = Enum.LineJoinMode | StateMarker<Enum.LineJoinMode> | None -- Enum.LineJoinMode
-type PV67 = Enum.StrokeSizingMode | StateMarker<Enum.StrokeSizingMode> | None -- Enum.StrokeSizingMode
-type PV68 = Enum.TableMajorAxis | StateMarker<Enum.TableMajorAxis> | None -- Enum.TableMajorAxis
-type PV69 = Enum.RollOffMode | StateMarker<Enum.RollOffMode> | None -- Enum.RollOffMode
-type PV70 = Camera | StateMarker<Camera> | None -- Camera
-type PV71 = Enum.ModelStreamingMode | StateMarker<Enum.ModelStreamingMode> | None -- Enum.ModelStreamingMode
-type PV72 = BasePart | StateMarker<BasePart> | None -- BasePart
-type PV73 = number | UDim | TweenData<number | UDim> | StateMarker<number | UDim | Tween<number | UDim>> | None -- number | UDim
+type PV35 = Enum.Font | StateMarker<Enum.Font> | None -- Enum.Font
+type PV36 = Font | StateMarker<Font> | None -- Font
+type PV37 = Enum.FontSize | StateMarker<Enum.FontSize> | None -- Enum.FontSize
+type PV38 = Enum.TextDirection | StateMarker<Enum.TextDirection> | None -- Enum.TextDirection
+type PV39 = Enum.TextTruncate | StateMarker<Enum.TextTruncate> | None -- Enum.TextTruncate
+type PV40 = Enum.TextXAlignment | StateMarker<Enum.TextXAlignment> | None -- Enum.TextXAlignment
+type PV41 = Enum.TextYAlignment | StateMarker<Enum.TextYAlignment> | None -- Enum.TextYAlignment
+type PV42 = Enum.AspectType | StateMarker<Enum.AspectType> | None -- Enum.AspectType
+type PV43 = Enum.DominantAxis | StateMarker<Enum.DominantAxis> | None -- Enum.DominantAxis
+type PV44 = UDim | TweenData<UDim> | StateMarker<UDim | Tween<UDim>> | None -- UDim
+type PV45 = Enum.UIDragDetectorBoundingBehavior | StateMarker<Enum.UIDragDetectorBoundingBehavior> | None -- Enum.UIDragDetectorBoundingBehavior
+type PV46 = GuiBase2d | StateMarker<GuiBase2d> | None -- GuiBase2d
+type PV47 = Enum.UIDragDetectorDragRelativity | StateMarker<Enum.UIDragDetectorDragRelativity> | None -- Enum.UIDragDetectorDragRelativity
+type PV48 = Enum.UIDragDetectorDragSpace | StateMarker<Enum.UIDragDetectorDragSpace> | None -- Enum.UIDragDetectorDragSpace
+type PV49 = Enum.UIDragDetectorDragStyle | StateMarker<Enum.UIDragDetectorDragStyle> | None -- Enum.UIDragDetectorDragStyle
+type PV50 = Enum.UIDragDetectorResponseStyle | StateMarker<Enum.UIDragDetectorResponseStyle> | None -- Enum.UIDragDetectorResponseStyle
+type PV51 = Enum.UIDragSpeedAxisMapping | StateMarker<Enum.UIDragSpeedAxisMapping> | None -- Enum.UIDragSpeedAxisMapping
+type PV52 = Enum.UIFlexMode | StateMarker<Enum.UIFlexMode> | None -- Enum.UIFlexMode
+type PV53 = Enum.ItemLineAlignment | StateMarker<Enum.ItemLineAlignment> | None -- Enum.ItemLineAlignment
+type PV54 = ColorSequence | StateMarker<ColorSequence> | None -- ColorSequence
+type PV55 = Enum.GradientTileMode | StateMarker<Enum.GradientTileMode> | None -- Enum.GradientTileMode
+type PV56 = NumberSequence | StateMarker<NumberSequence> | None -- NumberSequence
+type PV57 = Enum.GradientType | StateMarker<Enum.GradientType> | None -- Enum.GradientType
+type PV58 = Enum.FillDirection | StateMarker<Enum.FillDirection> | None -- Enum.FillDirection
+type PV59 = Enum.HorizontalAlignment | StateMarker<Enum.HorizontalAlignment> | None -- Enum.HorizontalAlignment
+type PV60 = Enum.SortOrder | StateMarker<Enum.SortOrder> | None -- Enum.SortOrder
+type PV61 = Enum.StartCorner | StateMarker<Enum.StartCorner> | None -- Enum.StartCorner
+type PV62 = Enum.VerticalAlignment | StateMarker<Enum.VerticalAlignment> | None -- Enum.VerticalAlignment
+type PV63 = Enum.UIFlexAlignment | StateMarker<Enum.UIFlexAlignment> | None -- Enum.UIFlexAlignment
+type PV64 = Enum.EasingDirection | StateMarker<Enum.EasingDirection> | None -- Enum.EasingDirection
+type PV65 = Enum.EasingStyle | StateMarker<Enum.EasingStyle> | None -- Enum.EasingStyle
+type PV66 = Enum.ApplyStrokeMode | StateMarker<Enum.ApplyStrokeMode> | None -- Enum.ApplyStrokeMode
+type PV67 = Enum.BorderStrokePosition | StateMarker<Enum.BorderStrokePosition> | None -- Enum.BorderStrokePosition
+type PV68 = Enum.LineJoinMode | StateMarker<Enum.LineJoinMode> | None -- Enum.LineJoinMode
+type PV69 = Enum.StrokeSizingMode | StateMarker<Enum.StrokeSizingMode> | None -- Enum.StrokeSizingMode
+type PV70 = Enum.TableMajorAxis | StateMarker<Enum.TableMajorAxis> | None -- Enum.TableMajorAxis
+type PV71 = Enum.RollOffMode | StateMarker<Enum.RollOffMode> | None -- Enum.RollOffMode
+type PV72 = Camera | StateMarker<Camera> | None -- Camera
+type PV73 = Enum.ModelStreamingMode | StateMarker<Enum.ModelStreamingMode> | None -- Enum.ModelStreamingMode
+type PV74 = BasePart | StateMarker<BasePart> | None -- BasePart
+type PV75 = number | UDim | TweenData<number | UDim> | StateMarker<number | UDim | Tween<number | UDim>> | None -- number | UDim
 
 export type BillboardGuiParam<E> = {
 	[number]: E,
@@ -141,7 +143,11 @@ export type BillboardGuiParam<E> = {
 	Brightness: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	DistanceLowerLimit: PV2?, -- @deprecated (Roblox Deprecated)
 	DistanceStep: PV2?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	DistanceUpperLimit: PV2?, -- @deprecated (Roblox Deprecated)
 	Enabled: PV0?,
 	ExtentsOffset: PV4?,
 	ExtentsOffsetWorldSpace: PV4?,
@@ -191,6 +197,8 @@ export type CameraParam<E> = {
 	Name: PV5?,
 	Sandboxed: PV0?,
 	VRTiltAndRollEnabled: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	focus: PV11?, -- @deprecated (Roblox Deprecated)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -217,6 +225,8 @@ export type CanvasGroupParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	GroupColor3: PV15?,
 	GroupTransparency: PV2?,
 	InputSink: PV17?,
@@ -241,10 +251,12 @@ export type CanvasGroupParam<E> = {
 	SelectionOrder: PV2?,
 	Size: PV8?,
 	SizeConstraint: PV19?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -306,6 +318,8 @@ export type FrameParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	InputSink: PV17?,
 	Interactable: PV0?,
 	LayoutOrder: PV2?,
@@ -329,10 +343,12 @@ export type FrameParam<E> = {
 	Size: PV8?,
 	SizeConstraint: PV19?,
 	Style: PV20?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -378,6 +394,8 @@ export type ImageButtonParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	HoverHapticEffect: PV21?,
 	HoverImage: PV5?,
 	HoverImageContent: PV22?,
@@ -420,10 +438,12 @@ export type ImageButtonParam<E> = {
 	SliceScale: PV2?,
 	Style: PV26?,
 	TileSize: PV8?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	Activated: (((inputObject: InputObject, clickCount: number) -> ()) | StateMarker<(inputObject: InputObject, clickCount: number) -> ()> | None)?,
@@ -476,6 +496,8 @@ export type ImageLabelParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	Image: PV5?,
 	ImageColor3: PV15?,
 	ImageContent: PV22?,
@@ -509,10 +531,12 @@ export type ImageLabelParam<E> = {
 	SliceCenter: PV25?,
 	SliceScale: PV2?,
 	TileSize: PV8?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -595,6 +619,8 @@ export type ScrollingFrameParam<E> = {
 	CanvasSize: PV8?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	ElasticBehavior: PV29?,
 	HorizontalScrollBarInset: PV30?,
 	InputSink: PV17?,
@@ -628,12 +654,14 @@ export type ScrollingFrameParam<E> = {
 	SizeConstraint: PV19?,
 	TopImage: PV5?,
 	TopImageContent: PV22?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	VerticalScrollBarInset: PV30?,
 	VerticalScrollBarPosition: PV32?,
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -721,7 +749,13 @@ export type TextBoxParam<E> = {
 	ClearTextOnFocus: PV0?,
 	ClipsDescendants: PV0?,
 	CursorPosition: PV2?,
-	FontFace: PV35?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: PV35?, -- @deprecated (Roblox Hidden)
+	FontFace: PV36?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: PV37?, -- @deprecated (Roblox Deprecated)
 	InputSink: PV17?,
 	Interactable: PV0?,
 	LayoutOrder: PV2?,
@@ -755,21 +789,25 @@ export type TextBoxParam<E> = {
 	SizeConstraint: PV19?,
 	Text: PV5?,
 	TextColor3: PV15?,
-	TextDirection: PV36?,
+	TextDirection: PV38?,
 	TextEditable: PV0?,
 	TextScaled: PV0?,
 	TextSize: PV2?,
 	TextStrokeColor3: PV15?,
 	TextStrokeTransparency: PV2?,
 	TextTransparency: PV2?,
-	TextTruncate: PV37?,
+	TextTruncate: PV39?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: PV0?, -- @deprecated (Roblox Deprecated)
 	TextWrapped: PV0?,
-	TextXAlignment: PV38?,
-	TextYAlignment: PV39?,
+	TextXAlignment: PV40?,
+	TextYAlignment: PV41?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -818,7 +856,13 @@ export type TextButtonParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
-	FontFace: PV35?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: PV35?, -- @deprecated (Roblox Hidden)
+	FontFace: PV36?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: PV37?, -- @deprecated (Roblox Deprecated)
 	HoverHapticEffect: PV21?,
 	InputSink: PV17?,
 	Interactable: PV0?,
@@ -852,20 +896,24 @@ export type TextButtonParam<E> = {
 	Style: PV26?,
 	Text: PV5?,
 	TextColor3: PV15?,
-	TextDirection: PV36?,
+	TextDirection: PV38?,
 	TextScaled: PV0?,
 	TextSize: PV2?,
 	TextStrokeColor3: PV15?,
 	TextStrokeTransparency: PV2?,
 	TextTransparency: PV2?,
-	TextTruncate: PV37?,
+	TextTruncate: PV39?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: PV0?, -- @deprecated (Roblox Deprecated)
 	TextWrapped: PV0?,
-	TextXAlignment: PV38?,
-	TextYAlignment: PV39?,
+	TextXAlignment: PV40?,
+	TextYAlignment: PV41?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	Activated: (((inputObject: InputObject, clickCount: number) -> ()) | StateMarker<(inputObject: InputObject, clickCount: number) -> ()> | None)?,
@@ -918,7 +966,13 @@ export type TextLabelParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
-	FontFace: PV35?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: PV35?, -- @deprecated (Roblox Hidden)
+	FontFace: PV36?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: PV37?, -- @deprecated (Roblox Deprecated)
 	InputSink: PV17?,
 	Interactable: PV0?,
 	LayoutOrder: PV2?,
@@ -947,20 +1001,24 @@ export type TextLabelParam<E> = {
 	SizeConstraint: PV19?,
 	Text: PV5?,
 	TextColor3: PV15?,
-	TextDirection: PV36?,
+	TextDirection: PV38?,
 	TextScaled: PV0?,
 	TextSize: PV2?,
 	TextStrokeColor3: PV15?,
 	TextStrokeTransparency: PV2?,
 	TextTransparency: PV2?,
-	TextTruncate: PV37?,
+	TextTruncate: PV39?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: PV0?, -- @deprecated (Roblox Deprecated)
 	TextWrapped: PV0?,
-	TextXAlignment: PV38?,
-	TextYAlignment: PV39?,
+	TextXAlignment: PV40?,
+	TextYAlignment: PV41?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -995,9 +1053,9 @@ export type UIAspectRatioConstraintParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	AspectRatio: PV2?,
-	AspectType: PV40?,
+	AspectType: PV42?,
 	Capabilities: PV3?,
-	DominantAxis: PV41?,
+	DominantAxis: PV43?,
 	Name: PV5?,
 	Sandboxed: PV0?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -1014,14 +1072,14 @@ export type UIAspectRatioConstraintParam<E> = {
 export type UICornerParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
-	BottomLeftRadius: PV42?,
-	BottomRightRadius: PV42?,
+	BottomLeftRadius: PV44?,
+	BottomRightRadius: PV44?,
 	Capabilities: PV3?,
-	CornerRadius: PV42?,
+	CornerRadius: PV44?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	TopLeftRadius: PV42?,
-	TopRightRadius: PV42?,
+	TopLeftRadius: PV44?,
+	TopRightRadius: PV44?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1038,16 +1096,16 @@ export type UIDragDetectorParam<E> = {
 	ActivatedCursorIcon: PV5?,
 	ActivatedCursorIconContent: PV22?,
 	Archivable: PV0?,
-	BoundingBehavior: PV43?,
-	BoundingUI: PV44?,
+	BoundingBehavior: PV45?,
+	BoundingUI: PV46?,
 	Capabilities: PV3?,
 	CursorIcon: PV5?,
 	CursorIconContent: PV22?,
 	DragAxis: PV9?,
-	DragRelativity: PV45?,
+	DragRelativity: PV47?,
 	DragRotation: PV2?,
-	DragSpace: PV46?,
-	DragStyle: PV47?,
+	DragSpace: PV48?,
+	DragStyle: PV49?,
 	DragUDim2: PV8?,
 	Enabled: PV0?,
 	MaxDragAngle: PV2?,
@@ -1056,11 +1114,11 @@ export type UIDragDetectorParam<E> = {
 	MinDragTranslation: PV8?,
 	Name: PV5?,
 	ReferenceUIInstance: PV18?,
-	ResponseStyle: PV48?,
+	ResponseStyle: PV50?,
 	Sandboxed: PV0?,
 	SelectionModeDragSpeed: PV8?,
 	SelectionModeRotateSpeed: PV2?,
-	UIDragSpeedAxisMapping: PV49?,
+	UIDragSpeedAxisMapping: PV51?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1079,9 +1137,9 @@ export type UIFlexItemParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	Capabilities: PV3?,
-	FlexMode: PV50?,
+	FlexMode: PV52?,
 	GrowRatio: PV2?,
-	ItemLineAlignment: PV51?,
+	ItemLineAlignment: PV53?,
 	Name: PV5?,
 	Sandboxed: PV0?,
 	ShrinkRatio: PV2?,
@@ -1100,16 +1158,16 @@ export type UIGradientParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	Capabilities: PV3?,
-	Color: PV52?,
+	Color: PV54?,
 	Enabled: PV0?,
 	Name: PV5?,
 	Offset: PV9?,
 	Rotation: PV2?,
 	Sandboxed: PV0?,
 	Scale: PV2?,
-	TileMode: PV53?,
-	Transparency: PV54?,
-	Type: PV55?,
+	TileMode: PV55?,
+	Transparency: PV56?,
+	Type: PV57?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1127,14 +1185,14 @@ export type UIGridLayoutParam<E> = {
 	Capabilities: PV3?,
 	CellPadding: PV8?,
 	CellSize: PV8?,
-	FillDirection: PV56?,
+	FillDirection: PV58?,
 	FillDirectionMaxCells: PV2?,
-	HorizontalAlignment: PV57?,
+	HorizontalAlignment: PV59?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	SortOrder: PV58?,
-	StartCorner: PV59?,
-	VerticalAlignment: PV60?,
+	SortOrder: PV60?,
+	StartCorner: PV61?,
+	VerticalAlignment: PV62?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1150,16 +1208,16 @@ export type UIListLayoutParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	Capabilities: PV3?,
-	FillDirection: PV56?,
-	HorizontalAlignment: PV57?,
-	HorizontalFlex: PV61?,
-	ItemLineAlignment: PV51?,
+	FillDirection: PV58?,
+	HorizontalAlignment: PV59?,
+	HorizontalFlex: PV63?,
+	ItemLineAlignment: PV53?,
 	Name: PV5?,
-	Padding: PV42?,
+	Padding: PV44?,
 	Sandboxed: PV0?,
-	SortOrder: PV58?,
-	VerticalAlignment: PV60?,
-	VerticalFlex: PV61?,
+	SortOrder: PV60?,
+	VerticalAlignment: PV62?,
+	VerticalFlex: PV63?,
 	Wraps: PV0?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
@@ -1177,10 +1235,10 @@ export type UIPaddingParam<E> = {
 	Archivable: PV0?,
 	Capabilities: PV3?,
 	Name: PV5?,
-	PaddingBottom: PV42?,
-	PaddingLeft: PV42?,
-	PaddingRight: PV42?,
-	PaddingTop: PV42?,
+	PaddingBottom: PV44?,
+	PaddingLeft: PV44?,
+	PaddingRight: PV44?,
+	PaddingTop: PV44?,
 	Sandboxed: PV0?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
@@ -1199,19 +1257,19 @@ export type UIPageLayoutParam<E> = {
 	Archivable: PV0?,
 	Capabilities: PV3?,
 	Circular: PV0?,
-	EasingDirection: PV62?,
-	EasingStyle: PV63?,
-	FillDirection: PV56?,
+	EasingDirection: PV64?,
+	EasingStyle: PV65?,
+	FillDirection: PV58?,
 	GamepadInputEnabled: PV0?,
-	HorizontalAlignment: PV57?,
+	HorizontalAlignment: PV59?,
 	Name: PV5?,
-	Padding: PV42?,
+	Padding: PV44?,
 	Sandboxed: PV0?,
 	ScrollWheelInputEnabled: PV0?,
-	SortOrder: PV58?,
+	SortOrder: PV60?,
 	TouchInputEnabled: PV0?,
 	TweenTime: PV2?,
-	VerticalAlignment: PV60?,
+	VerticalAlignment: PV62?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1247,7 +1305,7 @@ export type UIScaleParam<E> = {
 export type UIShadowParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
-	BlurRadius: PV42?,
+	BlurRadius: PV44?,
 	Capabilities: PV3?,
 	Color: PV15?,
 	Enabled: PV0?,
@@ -1291,17 +1349,17 @@ export type UISizeConstraintParam<E> = {
 
 export type UIStrokeParam<E> = {
 	[number]: E,
-	ApplyStrokeMode: PV64?,
+	ApplyStrokeMode: PV66?,
 	Archivable: PV0?,
-	BorderOffset: PV42?,
-	BorderStrokePosition: PV65?,
+	BorderOffset: PV44?,
+	BorderStrokePosition: PV67?,
 	Capabilities: PV3?,
 	Color: PV15?,
 	Enabled: PV0?,
-	LineJoinMode: PV66?,
+	LineJoinMode: PV68?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	StrokeSizingMode: PV67?,
+	StrokeSizingMode: PV69?,
 	Thickness: PV2?,
 	Transparency: PV2?,
 	ZIndex: PV2?,
@@ -1320,16 +1378,16 @@ export type UITableLayoutParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	Capabilities: PV3?,
-	FillDirection: PV56?,
+	FillDirection: PV58?,
 	FillEmptySpaceColumns: PV0?,
 	FillEmptySpaceRows: PV0?,
-	HorizontalAlignment: PV57?,
-	MajorAxis: PV68?,
+	HorizontalAlignment: PV59?,
+	MajorAxis: PV70?,
 	Name: PV5?,
 	Padding: PV8?,
 	Sandboxed: PV0?,
-	SortOrder: PV58?,
-	VerticalAlignment: PV60?,
+	SortOrder: PV60?,
+	VerticalAlignment: PV62?,
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
@@ -1374,6 +1432,8 @@ export type VideoFrameParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	InputSink: PV17?,
 	Interactable: PV0?,
 	LayoutOrder: PV2?,
@@ -1387,7 +1447,7 @@ export type VideoFrameParam<E> = {
 	Position: PV8?,
 	RollOffMaxDistance: PV2?,
 	RollOffMinDistance: PV2?,
-	RollOffMode: PV69?,
+	RollOffMode: PV71?,
 	RootLocalizationTable: PV6?,
 	Rotation: PV2?,
 	Sandboxed: PV0?,
@@ -1402,13 +1462,15 @@ export type VideoFrameParam<E> = {
 	Size: PV8?,
 	SizeConstraint: PV19?,
 	TimePosition: PV2?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Video: PV5?,
 	VideoContent: PV22?,
 	Visible: PV0?,
 	Volume: PV2?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -1459,7 +1521,9 @@ export type ViewportFrameParam<E> = {
 	BorderSizePixel: PV2?,
 	Capabilities: PV3?,
 	ClipsDescendants: PV0?,
-	CurrentCamera: PV70?,
+	CurrentCamera: PV72?,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: PV0?, -- @deprecated (Roblox Deprecated)
 	ImageColor3: PV15?,
 	ImageTransparency: PV2?,
 	InputSink: PV17?,
@@ -1486,10 +1550,12 @@ export type ViewportFrameParam<E> = {
 	SelectionOrder: PV2?,
 	Size: PV8?,
 	SizeConstraint: PV19?,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: PV2?, -- @deprecated (Roblox Hidden)
 	Visible: PV0?,
 	ZIndex: PV2?,
-	UICorner: PV73?, -- 숏핸드(H-336)
-	UIPadding: PV42?, -- 숏핸드(H-336)
+	UICorner: PV75?, -- 숏핸드(H-336)
+	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
@@ -1524,9 +1590,9 @@ export type WorldModelParam<E> = {
 	[number]: E,
 	Archivable: PV0?,
 	Capabilities: PV3?,
-	ModelStreamingMode: PV71?,
+	ModelStreamingMode: PV73?,
 	Name: PV5?,
-	PrimaryPart: PV72?,
+	PrimaryPart: PV74?,
 	Sandboxed: PV0?,
 	UseWorkspaceCollisionGroups: PV0?,
 	WorldPivot: PV11?,
@@ -1594,7 +1660,9 @@ export type PropTypes = {
 	CursorPosition: number,
 	DiagonalFieldOfView: number,
 	DisplayOrder: number,
+	DistanceLowerLimit: number,
 	DistanceStep: number,
+	DistanceUpperLimit: number,
 	DominantAxis: Enum.DominantAxis,
 	DragAxis: Vector2,
 	DragRelativity: Enum.UIDragDetectorDragRelativity,
@@ -1602,6 +1670,7 @@ export type PropTypes = {
 	DragSpace: Enum.UIDragDetectorDragSpace,
 	DragStyle: Enum.UIDragDetectorDragStyle,
 	DragUDim2: UDim2,
+	Draggable: boolean,
 	EasingDirection: Enum.EasingDirection,
 	EasingStyle: Enum.EasingStyle,
 	ElasticBehavior: Enum.ElasticBehavior,
@@ -1617,7 +1686,9 @@ export type PropTypes = {
 	FillEmptySpaceRows: boolean,
 	FlexMode: Enum.UIFlexMode,
 	Focus: CFrame,
+	Font: Enum.Font,
 	FontFace: Font,
+	FontSize: Enum.FontSize,
 	GamepadInputEnabled: boolean,
 	GroupColor3: Color3,
 	GroupTransparency: number,
@@ -1746,6 +1817,7 @@ export type PropTypes = {
 	TextStrokeTransparency: number,
 	TextTransparency: number,
 	TextTruncate: Enum.TextTruncate,
+	TextWrap: boolean,
 	TextWrapped: boolean,
 	TextXAlignment: Enum.TextXAlignment,
 	TextYAlignment: Enum.TextYAlignment,
@@ -1778,6 +1850,7 @@ export type PropTypes = {
 	ZIndex: number,
 	ZIndexBehavior: Enum.ZIndexBehavior,
 	ZOffset: number,
+	focus: CFrame,
 }
 -- OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)
 export type PropTypesRead = {
@@ -1844,7 +1917,9 @@ export type PropTypesRead = {
 	CursorPosition: number,
 	DiagonalFieldOfView: number,
 	DisplayOrder: number,
+	DistanceLowerLimit: number,
 	DistanceStep: number,
+	DistanceUpperLimit: number,
 	DominantAxis: Enum.DominantAxis,
 	DragAxis: Vector2,
 	DragRelativity: Enum.UIDragDetectorDragRelativity,
@@ -1852,6 +1927,7 @@ export type PropTypesRead = {
 	DragSpace: Enum.UIDragDetectorDragSpace,
 	DragStyle: Enum.UIDragDetectorDragStyle,
 	DragUDim2: UDim2,
+	Draggable: boolean,
 	EasingDirection: Enum.EasingDirection,
 	EasingStyle: Enum.EasingStyle,
 	ElasticBehavior: Enum.ElasticBehavior,
@@ -1867,7 +1943,9 @@ export type PropTypesRead = {
 	FillEmptySpaceRows: boolean,
 	FlexMode: Enum.UIFlexMode,
 	Focus: CFrame,
+	Font: Enum.Font,
 	FontFace: Font,
+	FontSize: Enum.FontSize,
 	GamepadInputEnabled: boolean,
 	GroupColor3: Color3,
 	GroupTransparency: number,
@@ -2004,6 +2082,7 @@ export type PropTypesRead = {
 	TextStrokeTransparency: number,
 	TextTransparency: number,
 	TextTruncate: Enum.TextTruncate,
+	TextWrap: boolean,
 	TextWrapped: boolean,
 	TextXAlignment: Enum.TextXAlignment,
 	TextYAlignment: Enum.TextYAlignment,
@@ -2038,6 +2117,8 @@ export type PropTypesRead = {
 	ZIndex: number,
 	ZIndexBehavior: Enum.ZIndexBehavior,
 	ZOffset: number,
+	className: string,
+	focus: CFrame,
 }
 export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }
 export type OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>
@@ -2051,7 +2132,9 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "Brightness", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "DistanceLowerLimit", Callback: (number) -> () }
 	| 	{ Name: "DistanceStep", Callback: (number) -> () }
+	| 	{ Name: "DistanceUpperLimit", Callback: (number) -> () }
 	| 	{ Name: "Enabled", Callback: (boolean) -> () }
 	| 	{ Name: "ExtentsOffset", Callback: (Vector3) -> () }
 	| 	{ Name: "ExtentsOffsetWorldSpace", Callback: (Vector3) -> () }
@@ -2078,6 +2161,7 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentDistance", Callback: (number) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type BillboardGuiModifier = {
 	read __quadModifier: "BillboardGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: BillboardGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2093,7 +2177,11 @@ export type BillboardGuiModifier = {
 	Brightness: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
 	Capabilities: (self: BillboardGuiModifier, value: FieldP<SecurityCapabilities>) -> BillboardGuiModifier,
 	ClipsDescendants: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	DistanceLowerLimit: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier, -- @deprecated (Roblox Deprecated)
 	DistanceStep: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	DistanceUpperLimit: (self: BillboardGuiModifier, value: Field<number>) -> BillboardGuiModifier, -- @deprecated (Roblox Deprecated)
 	Enabled: (self: BillboardGuiModifier, value: Field<boolean>) -> BillboardGuiModifier,
 	ExtentsOffset: (self: BillboardGuiModifier, value: Field<Vector3>) -> BillboardGuiModifier,
 	ExtentsOffsetWorldSpace: (self: BillboardGuiModifier, value: Field<Vector3>) -> BillboardGuiModifier,
@@ -2136,10 +2224,12 @@ export type CameraOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "VRTiltAndRollEnabled", Callback: (boolean) -> () }
+	| 	{ Name: "focus", Callback: (CFrame) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "NearPlaneZ", Callback: (number) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "ViewportSize", Callback: (Vector2) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type CameraModifier = {
 	read __quadModifier: "Camera", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: CameraModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2162,6 +2252,8 @@ export type CameraModifier = {
 	Name: (self: CameraModifier, value: FieldP<string>) -> CameraModifier,
 	Sandboxed: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
 	VRTiltAndRollEnabled: (self: CameraModifier, value: Field<boolean>) -> CameraModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	focus: (self: CameraModifier, value: Field<CFrame>) -> CameraModifier, -- @deprecated (Roblox Deprecated)
 }
 export type IntoCamera = { AsCamera: (self: any) -> CameraModifier }
 export type CameraRefMarker = { read __quadRefAccepts: (Camera) -> () }
@@ -2181,6 +2273,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "GroupColor3", Callback: (Color3) -> () }
 	| 	{ Name: "GroupTransparency", Callback: (number) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
@@ -2205,6 +2298,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "SelectionOrder", Callback: (number) -> () }
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -2213,6 +2307,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type CanvasGroupModifier = {
 	read __quadModifier: "CanvasGroup", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: CanvasGroupModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2232,6 +2327,8 @@ export type CanvasGroupModifier = {
 	BorderSizePixel: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	Capabilities: (self: CanvasGroupModifier, value: FieldP<SecurityCapabilities>) -> CanvasGroupModifier,
 	ClipsDescendants: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier, -- @deprecated (Roblox Deprecated)
 	GroupColor3: (self: CanvasGroupModifier, value: Field<Color3>) -> CanvasGroupModifier,
 	GroupTransparency: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	InputSink: (self: CanvasGroupModifier, value: FieldP<Enum.InputSink>) -> CanvasGroupModifier,
@@ -2256,6 +2353,8 @@ export type CanvasGroupModifier = {
 	SelectionOrder: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	Size: (self: CanvasGroupModifier, value: Field<UDim2>) -> CanvasGroupModifier,
 	SizeConstraint: (self: CanvasGroupModifier, value: FieldP<Enum.SizeConstraint>) -> CanvasGroupModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: CanvasGroupModifier, value: Field<boolean>) -> CanvasGroupModifier,
 	ZIndex: (self: CanvasGroupModifier, value: Field<number>) -> CanvasGroupModifier,
 	UICorner: (self: CanvasGroupModifier, value: Field<number | UDim>) -> CanvasGroupModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2275,6 +2374,7 @@ export type FolderOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type FolderModifier = {
 	read __quadModifier: "Folder", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FolderModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2305,6 +2405,7 @@ export type FrameOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
 	| 	{ Name: "LayoutOrder", Callback: (number) -> () }
@@ -2328,6 +2429,7 @@ export type FrameOnChange =
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "Style", Callback: (Enum.FrameStyle) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -2336,6 +2438,7 @@ export type FrameOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type FrameModifier = {
 	read __quadModifier: "Frame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: FrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2355,6 +2458,8 @@ export type FrameModifier = {
 	BorderSizePixel: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	Capabilities: (self: FrameModifier, value: FieldP<SecurityCapabilities>) -> FrameModifier,
 	ClipsDescendants: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: FrameModifier, value: Field<boolean>) -> FrameModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: FrameModifier, value: FieldP<Enum.InputSink>) -> FrameModifier,
 	Interactable: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	LayoutOrder: (self: FrameModifier, value: Field<number>) -> FrameModifier,
@@ -2378,6 +2483,8 @@ export type FrameModifier = {
 	Size: (self: FrameModifier, value: Field<UDim2>) -> FrameModifier,
 	SizeConstraint: (self: FrameModifier, value: FieldP<Enum.SizeConstraint>) -> FrameModifier,
 	Style: (self: FrameModifier, value: FieldP<Enum.FrameStyle>) -> FrameModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: FrameModifier, value: Field<number>) -> FrameModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: FrameModifier, value: Field<boolean>) -> FrameModifier,
 	ZIndex: (self: FrameModifier, value: Field<number>) -> FrameModifier,
 	UICorner: (self: FrameModifier, value: Field<number | UDim>) -> FrameModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2484,6 +2591,8 @@ export type GuiButtonModifier = {
 	BorderSizePixel: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	Capabilities: (self: GuiButtonModifier, value: FieldP<SecurityCapabilities>) -> GuiButtonModifier,
 	ClipsDescendants: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier, -- @deprecated (Roblox Deprecated)
 	HoverHapticEffect: (self: GuiButtonModifier, value: FieldP<HapticEffect>) -> GuiButtonModifier,
 	InputSink: (self: GuiButtonModifier, value: FieldP<Enum.InputSink>) -> GuiButtonModifier,
 	Interactable: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
@@ -2511,6 +2620,8 @@ export type GuiButtonModifier = {
 	Size: (self: GuiButtonModifier, value: Field<UDim2>) -> GuiButtonModifier,
 	SizeConstraint: (self: GuiButtonModifier, value: FieldP<Enum.SizeConstraint>) -> GuiButtonModifier,
 	Style: (self: GuiButtonModifier, value: FieldP<Enum.ButtonStyle>) -> GuiButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: GuiButtonModifier, value: Field<boolean>) -> GuiButtonModifier,
 	ZIndex: (self: GuiButtonModifier, value: Field<number>) -> GuiButtonModifier,
 	UICorner: (self: GuiButtonModifier, value: Field<number | UDim>) -> GuiButtonModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2541,6 +2652,8 @@ export type GuiLabelModifier = {
 	BorderSizePixel: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	Capabilities: (self: GuiLabelModifier, value: FieldP<SecurityCapabilities>) -> GuiLabelModifier,
 	ClipsDescendants: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: GuiLabelModifier, value: FieldP<Enum.InputSink>) -> GuiLabelModifier,
 	Interactable: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	LayoutOrder: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
@@ -2563,6 +2676,8 @@ export type GuiLabelModifier = {
 	SelectionOrder: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	Size: (self: GuiLabelModifier, value: Field<UDim2>) -> GuiLabelModifier,
 	SizeConstraint: (self: GuiLabelModifier, value: FieldP<Enum.SizeConstraint>) -> GuiLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: GuiLabelModifier, value: Field<boolean>) -> GuiLabelModifier,
 	ZIndex: (self: GuiLabelModifier, value: Field<number>) -> GuiLabelModifier,
 	UICorner: (self: GuiLabelModifier, value: Field<number | UDim>) -> GuiLabelModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2603,6 +2718,8 @@ export type GuiObjectModifier = {
 	BorderSizePixel: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	Capabilities: (self: GuiObjectModifier, value: FieldP<SecurityCapabilities>) -> GuiObjectModifier,
 	ClipsDescendants: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: GuiObjectModifier, value: FieldP<Enum.InputSink>) -> GuiObjectModifier,
 	Interactable: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	LayoutOrder: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
@@ -2625,6 +2742,8 @@ export type GuiObjectModifier = {
 	SelectionOrder: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	Size: (self: GuiObjectModifier, value: Field<UDim2>) -> GuiObjectModifier,
 	SizeConstraint: (self: GuiObjectModifier, value: FieldP<Enum.SizeConstraint>) -> GuiObjectModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: GuiObjectModifier, value: Field<boolean>) -> GuiObjectModifier,
 	ZIndex: (self: GuiObjectModifier, value: Field<number>) -> GuiObjectModifier,
 	UICorner: (self: GuiObjectModifier, value: Field<number | UDim>) -> GuiObjectModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2648,6 +2767,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "HoverHapticEffect", Callback: (HapticEffect) -> () }
 	| 	{ Name: "HoverImage", Callback: (string) -> () }
 	| 	{ Name: "HoverImageContent", Callback: (Content) -> () }
@@ -2690,6 +2810,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "SliceScale", Callback: (number) -> () }
 	| 	{ Name: "Style", Callback: (Enum.ButtonStyle) -> () }
 	| 	{ Name: "TileSize", Callback: (UDim2) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -2699,6 +2820,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type ImageButtonModifier = {
 	read __quadModifier: "ImageButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2719,6 +2841,8 @@ export type ImageButtonModifier = {
 	BorderSizePixel: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	Capabilities: (self: ImageButtonModifier, value: FieldP<SecurityCapabilities>) -> ImageButtonModifier,
 	ClipsDescendants: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier, -- @deprecated (Roblox Deprecated)
 	HoverHapticEffect: (self: ImageButtonModifier, value: FieldP<HapticEffect>) -> ImageButtonModifier,
 	HoverImage: (self: ImageButtonModifier, value: FieldP<string>) -> ImageButtonModifier,
 	HoverImageContent: (self: ImageButtonModifier, value: FieldP<Content>) -> ImageButtonModifier,
@@ -2761,6 +2885,8 @@ export type ImageButtonModifier = {
 	SliceScale: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	Style: (self: ImageButtonModifier, value: FieldP<Enum.ButtonStyle>) -> ImageButtonModifier,
 	TileSize: (self: ImageButtonModifier, value: Field<UDim2>) -> ImageButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: ImageButtonModifier, value: Field<boolean>) -> ImageButtonModifier,
 	ZIndex: (self: ImageButtonModifier, value: Field<number>) -> ImageButtonModifier,
 	UICorner: (self: ImageButtonModifier, value: Field<number | UDim>) -> ImageButtonModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -2786,6 +2912,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "Image", Callback: (string) -> () }
 	| 	{ Name: "ImageColor3", Callback: (Color3) -> () }
 	| 	{ Name: "ImageContent", Callback: (Content) -> () }
@@ -2819,6 +2946,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "SliceCenter", Callback: (Rect) -> () }
 	| 	{ Name: "SliceScale", Callback: (number) -> () }
 	| 	{ Name: "TileSize", Callback: (UDim2) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -2828,6 +2956,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type ImageLabelModifier = {
 	read __quadModifier: "ImageLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ImageLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -2847,6 +2976,8 @@ export type ImageLabelModifier = {
 	BorderSizePixel: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	Capabilities: (self: ImageLabelModifier, value: FieldP<SecurityCapabilities>) -> ImageLabelModifier,
 	ClipsDescendants: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier, -- @deprecated (Roblox Deprecated)
 	Image: (self: ImageLabelModifier, value: FieldP<string>) -> ImageLabelModifier,
 	ImageColor3: (self: ImageLabelModifier, value: Field<Color3>) -> ImageLabelModifier,
 	ImageContent: (self: ImageLabelModifier, value: FieldP<Content>) -> ImageLabelModifier,
@@ -2880,6 +3011,8 @@ export type ImageLabelModifier = {
 	SliceCenter: (self: ImageLabelModifier, value: Field<Rect>) -> ImageLabelModifier,
 	SliceScale: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	TileSize: (self: ImageLabelModifier, value: Field<UDim2>) -> ImageLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: ImageLabelModifier, value: Field<boolean>) -> ImageLabelModifier,
 	ZIndex: (self: ImageLabelModifier, value: Field<number>) -> ImageLabelModifier,
 	UICorner: (self: ImageLabelModifier, value: Field<number | UDim>) -> ImageLabelModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3042,6 +3175,7 @@ export type ScreenGuiOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type ScreenGuiModifier = {
 	read __quadModifier: "ScreenGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScreenGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3092,6 +3226,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "CanvasSize", Callback: (UDim2) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "ElasticBehavior", Callback: (Enum.ElasticBehavior) -> () }
 	| 	{ Name: "HorizontalScrollBarInset", Callback: (Enum.ScrollBarInset) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
@@ -3125,6 +3260,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "TopImage", Callback: (string) -> () }
 	| 	{ Name: "TopImageContent", Callback: (Content) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "VerticalScrollBarInset", Callback: (Enum.ScrollBarInset) -> () }
 	| 	{ Name: "VerticalScrollBarPosition", Callback: (Enum.VerticalScrollBarPosition) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
@@ -3137,6 +3273,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type ScrollingFrameModifier = {
 	read __quadModifier: "ScrollingFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ScrollingFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3161,6 +3298,8 @@ export type ScrollingFrameModifier = {
 	CanvasSize: (self: ScrollingFrameModifier, value: Field<UDim2>) -> ScrollingFrameModifier,
 	Capabilities: (self: ScrollingFrameModifier, value: FieldP<SecurityCapabilities>) -> ScrollingFrameModifier,
 	ClipsDescendants: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier, -- @deprecated (Roblox Deprecated)
 	ElasticBehavior: (self: ScrollingFrameModifier, value: FieldP<Enum.ElasticBehavior>) -> ScrollingFrameModifier,
 	HorizontalScrollBarInset: (self: ScrollingFrameModifier, value: FieldP<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
 	InputSink: (self: ScrollingFrameModifier, value: FieldP<Enum.InputSink>) -> ScrollingFrameModifier,
@@ -3194,6 +3333,8 @@ export type ScrollingFrameModifier = {
 	SizeConstraint: (self: ScrollingFrameModifier, value: FieldP<Enum.SizeConstraint>) -> ScrollingFrameModifier,
 	TopImage: (self: ScrollingFrameModifier, value: FieldP<string>) -> ScrollingFrameModifier,
 	TopImageContent: (self: ScrollingFrameModifier, value: FieldP<Content>) -> ScrollingFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: ScrollingFrameModifier, value: Field<number>) -> ScrollingFrameModifier, -- @deprecated (Roblox Hidden)
 	VerticalScrollBarInset: (self: ScrollingFrameModifier, value: FieldP<Enum.ScrollBarInset>) -> ScrollingFrameModifier,
 	VerticalScrollBarPosition: (self: ScrollingFrameModifier, value: FieldP<Enum.VerticalScrollBarPosition>) -> ScrollingFrameModifier,
 	Visible: (self: ScrollingFrameModifier, value: Field<boolean>) -> ScrollingFrameModifier,
@@ -3241,6 +3382,7 @@ export type SurfaceGuiOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type SurfaceGuiModifier = {
 	read __quadModifier: "SurfaceGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: SurfaceGuiModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3324,7 +3466,10 @@ export type TextBoxOnChange =
 	| 	{ Name: "ClearTextOnFocus", Callback: (boolean) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
 	| 	{ Name: "CursorPosition", Callback: (number) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
+	| 	{ Name: "Font", Callback: (Enum.Font) -> () }
 	| 	{ Name: "FontFace", Callback: (Font) -> () }
+	| 	{ Name: "FontSize", Callback: (Enum.FontSize) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
 	| 	{ Name: "LayoutOrder", Callback: (number) -> () }
@@ -3366,9 +3511,11 @@ export type TextBoxOnChange =
 	| 	{ Name: "TextStrokeTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTruncate", Callback: (Enum.TextTruncate) -> () }
+	| 	{ Name: "TextWrap", Callback: (boolean) -> () }
 	| 	{ Name: "TextWrapped", Callback: (boolean) -> () }
 	| 	{ Name: "TextXAlignment", Callback: (Enum.TextXAlignment) -> () }
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -3381,6 +3528,7 @@ export type TextBoxOnChange =
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type TextBoxModifier = {
 	read __quadModifier: "TextBox", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextBoxModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3402,7 +3550,13 @@ export type TextBoxModifier = {
 	ClearTextOnFocus: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	ClipsDescendants: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	CursorPosition: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: (self: TextBoxModifier, value: FieldP<Enum.Font>) -> TextBoxModifier, -- @deprecated (Roblox Hidden)
 	FontFace: (self: TextBoxModifier, value: FieldP<Font>) -> TextBoxModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: (self: TextBoxModifier, value: FieldP<Enum.FontSize>) -> TextBoxModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: TextBoxModifier, value: FieldP<Enum.InputSink>) -> TextBoxModifier,
 	Interactable: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	LayoutOrder: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
@@ -3444,9 +3598,13 @@ export type TextBoxModifier = {
 	TextStrokeTransparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	TextTransparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	TextTruncate: (self: TextBoxModifier, value: FieldP<Enum.TextTruncate>) -> TextBoxModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier, -- @deprecated (Roblox Deprecated)
 	TextWrapped: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	TextXAlignment: (self: TextBoxModifier, value: FieldP<Enum.TextXAlignment>) -> TextBoxModifier,
 	TextYAlignment: (self: TextBoxModifier, value: FieldP<Enum.TextYAlignment>) -> TextBoxModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: TextBoxModifier, value: Field<boolean>) -> TextBoxModifier,
 	ZIndex: (self: TextBoxModifier, value: Field<number>) -> TextBoxModifier,
 	UICorner: (self: TextBoxModifier, value: Field<number | UDim>) -> TextBoxModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3473,7 +3631,10 @@ export type TextButtonOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
+	| 	{ Name: "Font", Callback: (Enum.Font) -> () }
 	| 	{ Name: "FontFace", Callback: (Font) -> () }
+	| 	{ Name: "FontSize", Callback: (Enum.FontSize) -> () }
 	| 	{ Name: "HoverHapticEffect", Callback: (HapticEffect) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
@@ -3514,9 +3675,11 @@ export type TextButtonOnChange =
 	| 	{ Name: "TextStrokeTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTruncate", Callback: (Enum.TextTruncate) -> () }
+	| 	{ Name: "TextWrap", Callback: (boolean) -> () }
 	| 	{ Name: "TextWrapped", Callback: (boolean) -> () }
 	| 	{ Name: "TextXAlignment", Callback: (Enum.TextXAlignment) -> () }
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -3529,6 +3692,7 @@ export type TextButtonOnChange =
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type TextButtonModifier = {
 	read __quadModifier: "TextButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextButtonModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3549,7 +3713,13 @@ export type TextButtonModifier = {
 	BorderSizePixel: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	Capabilities: (self: TextButtonModifier, value: FieldP<SecurityCapabilities>) -> TextButtonModifier,
 	ClipsDescendants: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: (self: TextButtonModifier, value: FieldP<Enum.Font>) -> TextButtonModifier, -- @deprecated (Roblox Hidden)
 	FontFace: (self: TextButtonModifier, value: FieldP<Font>) -> TextButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: (self: TextButtonModifier, value: FieldP<Enum.FontSize>) -> TextButtonModifier, -- @deprecated (Roblox Deprecated)
 	HoverHapticEffect: (self: TextButtonModifier, value: FieldP<HapticEffect>) -> TextButtonModifier,
 	InputSink: (self: TextButtonModifier, value: FieldP<Enum.InputSink>) -> TextButtonModifier,
 	Interactable: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
@@ -3590,9 +3760,13 @@ export type TextButtonModifier = {
 	TextStrokeTransparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	TextTransparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	TextTruncate: (self: TextButtonModifier, value: FieldP<Enum.TextTruncate>) -> TextButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier, -- @deprecated (Roblox Deprecated)
 	TextWrapped: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	TextXAlignment: (self: TextButtonModifier, value: FieldP<Enum.TextXAlignment>) -> TextButtonModifier,
 	TextYAlignment: (self: TextButtonModifier, value: FieldP<Enum.TextYAlignment>) -> TextButtonModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: TextButtonModifier, value: Field<boolean>) -> TextButtonModifier,
 	ZIndex: (self: TextButtonModifier, value: Field<number>) -> TextButtonModifier,
 	UICorner: (self: TextButtonModifier, value: Field<number | UDim>) -> TextButtonModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3618,7 +3792,10 @@ export type TextLabelOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
+	| 	{ Name: "Font", Callback: (Enum.Font) -> () }
 	| 	{ Name: "FontFace", Callback: (Font) -> () }
+	| 	{ Name: "FontSize", Callback: (Enum.FontSize) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
 	| 	{ Name: "LayoutOrder", Callback: (number) -> () }
@@ -3654,9 +3831,11 @@ export type TextLabelOnChange =
 	| 	{ Name: "TextStrokeTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTransparency", Callback: (number) -> () }
 	| 	{ Name: "TextTruncate", Callback: (Enum.TextTruncate) -> () }
+	| 	{ Name: "TextWrap", Callback: (boolean) -> () }
 	| 	{ Name: "TextWrapped", Callback: (boolean) -> () }
 	| 	{ Name: "TextXAlignment", Callback: (Enum.TextXAlignment) -> () }
 	| 	{ Name: "TextYAlignment", Callback: (Enum.TextYAlignment) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -3669,6 +3848,7 @@ export type TextLabelOnChange =
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type TextLabelModifier = {
 	read __quadModifier: "TextLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: TextLabelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3688,7 +3868,13 @@ export type TextLabelModifier = {
 	BorderSizePixel: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	Capabilities: (self: TextLabelModifier, value: FieldP<SecurityCapabilities>) -> TextLabelModifier,
 	ClipsDescendants: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier, -- @deprecated (Roblox Deprecated)
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Font: (self: TextLabelModifier, value: FieldP<Enum.Font>) -> TextLabelModifier, -- @deprecated (Roblox Hidden)
 	FontFace: (self: TextLabelModifier, value: FieldP<Font>) -> TextLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	FontSize: (self: TextLabelModifier, value: FieldP<Enum.FontSize>) -> TextLabelModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: TextLabelModifier, value: FieldP<Enum.InputSink>) -> TextLabelModifier,
 	Interactable: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	LayoutOrder: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
@@ -3724,9 +3910,13 @@ export type TextLabelModifier = {
 	TextStrokeTransparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	TextTransparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	TextTruncate: (self: TextLabelModifier, value: FieldP<Enum.TextTruncate>) -> TextLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	TextWrap: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier, -- @deprecated (Roblox Deprecated)
 	TextWrapped: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	TextXAlignment: (self: TextLabelModifier, value: FieldP<Enum.TextXAlignment>) -> TextLabelModifier,
 	TextYAlignment: (self: TextLabelModifier, value: FieldP<Enum.TextYAlignment>) -> TextLabelModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: TextLabelModifier, value: Field<boolean>) -> TextLabelModifier,
 	ZIndex: (self: TextLabelModifier, value: Field<number>) -> TextLabelModifier,
 	UICorner: (self: TextLabelModifier, value: Field<number | UDim>) -> TextLabelModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -3749,6 +3939,7 @@ export type UIAspectRatioConstraintOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIAspectRatioConstraintModifier = {
 	read __quadModifier: "UIAspectRatioConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIAspectRatioConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3863,6 +4054,7 @@ export type UICornerOnChange =
 	| 	{ Name: "TopRightRadius", Callback: (UDim) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UICornerModifier = {
 	read __quadModifier: "UICorner", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UICornerModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3914,6 +4106,7 @@ export type UIDragDetectorOnChange =
 	| 	{ Name: "UIDragSpeedAxisMapping", Callback: (Enum.UIDragSpeedAxisMapping) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIDragDetectorModifier = {
 	read __quadModifier: "UIDragDetector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIDragDetectorModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -3964,6 +4157,7 @@ export type UIFlexItemOnChange =
 	| 	{ Name: "ShrinkRatio", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIFlexItemModifier = {
 	read __quadModifier: "UIFlexItem", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIFlexItemModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4000,6 +4194,7 @@ export type UIGradientOnChange =
 	| 	{ Name: "Type", Callback: (Enum.GradientType) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIGradientModifier = {
 	read __quadModifier: "UIGradient", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGradientModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4043,6 +4238,7 @@ export type UIGridLayoutOnChange =
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIGridLayoutModifier = {
 	read __quadModifier: "UIGridLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIGridLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4126,6 +4322,7 @@ export type UIListLayoutOnChange =
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIListLayoutModifier = {
 	read __quadModifier: "UIListLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIListLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4163,6 +4360,7 @@ export type UIPaddingOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIPaddingModifier = {
 	read __quadModifier: "UIPadding", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPaddingModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4206,6 +4404,7 @@ export type UIPageLayoutOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentPage", Callback: (GuiObject) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIPageLayoutModifier = {
 	read __quadModifier: "UIPageLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIPageLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4244,6 +4443,7 @@ export type UIScaleOnChange =
 	| 	{ Name: "Scale", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIScaleModifier = {
 	read __quadModifier: "UIScale", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIScaleModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4278,6 +4478,7 @@ export type UIShadowOnChange =
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIShadowModifier = {
 	read __quadModifier: "UIShadow", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIShadowModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4313,6 +4514,7 @@ export type UISizeConstraintOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UISizeConstraintModifier = {
 	read __quadModifier: "UISizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UISizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4349,6 +4551,7 @@ export type UIStrokeOnChange =
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UIStrokeModifier = {
 	read __quadModifier: "UIStroke", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UIStrokeModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4392,6 +4595,7 @@ export type UITableLayoutOnChange =
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UITableLayoutModifier = {
 	read __quadModifier: "UITableLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITableLayoutModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4426,6 +4630,7 @@ export type UITextSizeConstraintOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type UITextSizeConstraintModifier = {
 	read __quadModifier: "UITextSizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: UITextSizeConstraintModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4458,6 +4663,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "BorderSizePixel", Callback: (number) -> () }
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
 	| 	{ Name: "Interactable", Callback: (boolean) -> () }
 	| 	{ Name: "LayoutOrder", Callback: (number) -> () }
@@ -4486,6 +4692,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
 	| 	{ Name: "TimePosition", Callback: (number) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Video", Callback: (string) -> () }
 	| 	{ Name: "VideoContent", Callback: (Content) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
@@ -4500,6 +4707,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
 	| 	{ Name: "Resolution", Callback: (Vector2) -> () }
 	| 	{ Name: "TimeLength", Callback: (number) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type VideoFrameModifier = {
 	read __quadModifier: "VideoFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: VideoFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4519,6 +4727,8 @@ export type VideoFrameModifier = {
 	BorderSizePixel: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
 	Capabilities: (self: VideoFrameModifier, value: FieldP<SecurityCapabilities>) -> VideoFrameModifier,
 	ClipsDescendants: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier, -- @deprecated (Roblox Deprecated)
 	InputSink: (self: VideoFrameModifier, value: FieldP<Enum.InputSink>) -> VideoFrameModifier,
 	Interactable: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
 	LayoutOrder: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
@@ -4547,6 +4757,8 @@ export type VideoFrameModifier = {
 	Size: (self: VideoFrameModifier, value: Field<UDim2>) -> VideoFrameModifier,
 	SizeConstraint: (self: VideoFrameModifier, value: FieldP<Enum.SizeConstraint>) -> VideoFrameModifier,
 	TimePosition: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: VideoFrameModifier, value: Field<number>) -> VideoFrameModifier, -- @deprecated (Roblox Hidden)
 	Video: (self: VideoFrameModifier, value: FieldP<string>) -> VideoFrameModifier,
 	VideoContent: (self: VideoFrameModifier, value: FieldP<Content>) -> VideoFrameModifier,
 	Visible: (self: VideoFrameModifier, value: Field<boolean>) -> VideoFrameModifier,
@@ -4577,6 +4789,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "Capabilities", Callback: (SecurityCapabilities) -> () }
 	| 	{ Name: "ClipsDescendants", Callback: (boolean) -> () }
 	| 	{ Name: "CurrentCamera", Callback: (Camera) -> () }
+	| 	{ Name: "Draggable", Callback: (boolean) -> () }
 	| 	{ Name: "ImageColor3", Callback: (Color3) -> () }
 	| 	{ Name: "ImageTransparency", Callback: (number) -> () }
 	| 	{ Name: "InputSink", Callback: (Enum.InputSink) -> () }
@@ -4603,6 +4816,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "SelectionOrder", Callback: (number) -> () }
 	| 	{ Name: "Size", Callback: (UDim2) -> () }
 	| 	{ Name: "SizeConstraint", Callback: (Enum.SizeConstraint) -> () }
+	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "Visible", Callback: (boolean) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "AbsolutePosition", Callback: (Vector2) -> () }
@@ -4611,6 +4825,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type ViewportFrameModifier = {
 	read __quadModifier: "ViewportFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: ViewportFrameModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)
@@ -4632,6 +4847,8 @@ export type ViewportFrameModifier = {
 	Capabilities: (self: ViewportFrameModifier, value: FieldP<SecurityCapabilities>) -> ViewportFrameModifier,
 	ClipsDescendants: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	CurrentCamera: (self: ViewportFrameModifier, value: FieldP<Camera>) -> ViewportFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Deprecated
+	Draggable: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier, -- @deprecated (Roblox Deprecated)
 	ImageColor3: (self: ViewportFrameModifier, value: Field<Color3>) -> ViewportFrameModifier,
 	ImageTransparency: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	InputSink: (self: ViewportFrameModifier, value: FieldP<Enum.InputSink>) -> ViewportFrameModifier,
@@ -4658,6 +4875,8 @@ export type ViewportFrameModifier = {
 	SelectionOrder: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	Size: (self: ViewportFrameModifier, value: Field<UDim2>) -> ViewportFrameModifier,
 	SizeConstraint: (self: ViewportFrameModifier, value: FieldP<Enum.SizeConstraint>) -> ViewportFrameModifier,
+	--- ⚠️ **deprecated** — Roblox Hidden
+	Transparency: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier, -- @deprecated (Roblox Hidden)
 	Visible: (self: ViewportFrameModifier, value: Field<boolean>) -> ViewportFrameModifier,
 	ZIndex: (self: ViewportFrameModifier, value: Field<number>) -> ViewportFrameModifier,
 	UICorner: (self: ViewportFrameModifier, value: Field<number | UDim>) -> ViewportFrameModifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)
@@ -4681,6 +4900,7 @@ export type WorldModelOnChange =
 	| 	{ Name: "WorldPivot", Callback: (CFrame) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "className", Callback: (string) -> () }
 export type WorldModelModifier = {
 	read __quadModifier: "WorldModel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
 	Peek: <T>(self: WorldModelModifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)

@@ -65,15 +65,14 @@
    round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
    `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
    원문 `session/2026-09-08-04-sugar-implementation.md`.
-   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **Deprecated 전부 + Hidden `Font`/`Transparency`** 되살리기: 적용은 `HUMAN_TODO.md` 12번
-   (`ReflectionService` Write 권한 Studio 실측) 뒤, 패치·수치는 `audit/deprecated-props-spike-2026-09-09/`; (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
+   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **Deprecated 전부 + Hidden `Font`/`Transparency`** 되살리기 — **같은 날 저녁 적용 완료**(`HUMAN_TODO.md` 12 사용자 실측 뒤;
+   두 팔 분리 규칙, D 5250줄, 실측 원장 `audit/deprecated-props-spike-2026-09-09/`); (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
    (배열부 슈가 안내만 — `attribute-plan.md` 2026-09-09 항목·`typing-limits.md` 8.17); (3) 루트 `-ignoreme` 메모 여섯 삭제(round7 흡수 확인), `comparison-vide-fusion`만
    유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(진행 중, 결과는 세션 파일). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
    **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
    진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"
    표시로 유지, README §5는 코드 기준 정정. **소스 쪽 이월 둘**: (1) `[q.AttrKey("Hp")] = v` 해시 키가 strict에서 생성 prop 타입에 인덱서가
-   없어 에러(런타임은 정상) — 타입만 열지, 배열부 `Attr`로 안내만 할지 사용자 판단; (2) `Font`는 Deprecated라 생성 `D`에 없음(`FontFace`만) —
-   의도대로면 그대로. 다음: 2차 검증 결과 반영 → `en/` 트랙·정식 위치는 백로그(ROADMAP "문서 사이트").
+   없어 에러(런타임은 정상) — 타입만 열지, 배열부 `Attr`로 안내만 할지 사용자 판단; (2) ~~`Font`는 생성 `D`에 없음~~ → Hidden 태그였고 같은 날 되살림(위 (1)). 다음: 2차 검증 결과 반영 → `en/` 트랙·정식 위치는 백로그(ROADMAP "문서 사이트").
    **[2026-09-08 밤 이월, 사용자 미답]** test.sh에 quad-base용 신 솔버(luau-lsp `LuauSolverV2`) 패스를 게이트로 붙일지 — 지금은
    구 솔버만이라 에디터에서만 나는 타입 에러를 못 잡는다(`conventions.md` 2026-09-08 항목 (2)). 사용자가 "그렇게 하자"면 붙인다.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트

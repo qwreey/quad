@@ -22,9 +22,16 @@
 5. **비용은 없다시피**: Deprecated∪Hidden 전부 + 독 주석 — `D/init.luau` 5030 → 5678줄, test.sh exit 0, "too complex" 없음, 제거해둔
    `LuauSolverConstraintLimit` 부활 불필요, 타입 검사 3.04~3.09s → 3.27~3.36s(+8%). 이름 화이트리스트판 5098줄, 3.12~3.16s. `D.TextLabel { Font = Enum.Font.GothamBold }`·
    `TextWrap`·`FontSize`·`Transparency`·`Draggable`·`BackgroundColor(BrickColor)`·State 팔·Modifier 체인 전부 신 솔버 통과, `Font = 42`만 에러. `PropTypes`/`PropTypesRead`의 `any` 붕괴 없음.
-6. **⚠️ 막는 전제(미검증)**: `Handlers/Property.luau`의 런타임 매치는 `ReflectionService:GetPropertiesOfClass`가 준 디스크립터의 `Permits.Write`다. 그 서비스가
-   Hidden/Deprecated 멤버를 목록에서 빼면 타입은 `Font`를 광고하는데 디스패치는 매치 실패 → 런타임 에러(지금의 타입 에러보다 나쁨). 스펙은 `mock.gameShim`이라 못 잡는다.
-   **Studio 실측이 선행** — `HUMAN_TODO.md` 12번.
+6. **[2026-09-09 부분 실측 — 넷은 확인, 나머지는 미확인]** `Handlers/Property.luau`의 런타임 매치는 `ReflectionService:GetPropertiesOfClass`가 준 디스크립터의
+   `Permits.Write`다. 그 서비스가 Hidden/Deprecated 멤버를 목록에서 빼면 타입은 그 프로퍼티를 광고하는데 디스패치는 매치 실패 → **런타임 에러**(지금의 타입
+   에러보다 나쁨). 스펙은 `mock.gameShim`이라 못 잡는다.
+   - **측정된 범위(사용자 Studio 실측)**: `GetPropertiesOfClass("TextLabel")`이 **`Font`·`FontSize`·`TextWrap`·`Transparency` 넷**을 `Permits.Write == Edit`로 목록에
+     준다. 한 클래스·네 이름이 실측 전부다.
+   - **⚠️ 미측정**: 아래 "적용" 절이 적듯 실제 적용은 이 넷 말고도 레거시 이름 열하나(슬롯 ~112)를 표면에 넣었다 — `archivable`(31)·`className`(31, 읽기 표면)·
+     `Localize`(13)·`BackgroundColor`/`BorderColor`(각 10)·`Draggable`(10)·`TextColor`(3)·`CoordinateFrame`·`focus`·`DistanceLowerLimit`/`UpperLimit`. 이들은 소문자·
+     별칭형 옛 이름(`archivable`/`className`/`focus`/`CoordinateFrame`)과 모던 프로퍼티의 BrickColor 쌍둥이라 **측정된 넷과 모양이 달라 유추가 안 된다** —
+     `GetPropertiesOfClass`가 이들도 주는지는 아직 모른다. 각각 실기기에서 한 번 써봐야 확정된다.
+   - `HUMAN_TODO.md` 12번은 같은 날 해소 표시됐는데, 그 해소는 **위 넷에 한한다**.
 7. **부수 발견**: 핀 덤프를 CDN에서 받아 `normalize`하면 `classes`는 바이트 동일한데 dropped 노트가 5줄 적다(`WorldModel`의 `Wind`·`WindDirection`·`AutoSimulate`·
    `GravityDirection`·`SimulationRate` — 커밋본이 더 새 덤프에서 나옴). `test.sh`는 emit 결정성만 게이트(`gen-d.py check`)하고 normalize는 안 본다. 실제 적용 때
    어느 덤프로 재정규화할지부터 정할 것.
@@ -41,3 +48,18 @@
 - `gen-d.whitelist.patch` — 이름 화이트리스트판(`PROP_NAME_KEEP`). 같은 검증.
 - **결정된 정책은 둘의 변형**: `keep = PROP_TAG_LEGACY if ("Deprecated" in mtags or m["Name"] in HIDDEN_NAME_KEEP)` — `HIDDEN_NAME_KEEP = {"Font", "Transparency"}`.
   적용 절차: 패치 적용 → 위 한 줄로 조건 변경 → `python3 scripts/gen-d.py` 재생성 → `./scripts/test.sh; echo $?` 0 → docs의 `FontFace` 안내를 `Font`도 된다로.
+
+## 적용 (2026-09-09)
+
+`scripts/gen-d.py`에 반영하고 핀 덤프 `version-268c7d941ba34c1a`로 재정규화했다(7번의 "어느 덤프로" 물음은 핀 덤프로 닫힘 — `normalize <path> <version>`이
+로컬 경로를 받아 네트워크가 필요 없다; 그 결과 커밋본에만 있던 `WorldModel` dropped 노트 5줄은 사라진다 — 핀 덤프에 그 멤버가 없다). **규칙은 두 팔을 따로
+계산한다**: `keep = ({"Deprecated"} if "Deprecated" in mtags else set()) | ({"Hidden"} if m["Name"] in HIDDEN_NAME_KEEP else set())` — 첫 적용이
+`PROP_TAG_LEGACY` 통째로 넣어 `Deprecated ∧ Hidden` 별칭(`archivable`·`Localize`·`BackgroundColor`/`BorderColor`/`TextColor`·`CoordinateFrame`, 슬롯 수십)까지
+딸려온 것을 에이전트가 잡아 메인이 좁혔다(사용자 실측은 `TextLabel`의 넷뿐이라 미측정 범위를 넓히지 않는 쪽). 결과 legacy 표면: 쓰기 `Draggable`·`FontSize`·
+`TextWrap`·`Font`·`Transparency`·`DistanceLowerLimit`/`UpperLimit`·`focus`, 읽기(`OnChange`) `className` 하나(Deprecated+ReadOnly라 Deprecated 팔로 들어옴 —
+읽기 표면엔 `@deprecated` 마커를 안 붙인다, emit 훅이 Param/Modifier 루프 둘뿐). `D/init.luau` 5030 → 5250줄, `-- @deprecated (Roblox <tags>)` 70개 + 독 주석,
+dropped 노트 518 → 450(정책분 + WorldModel 5 + `DataCost` 31은 태그 대신 `LocalUserSecurity` 사유로 문구만 바뀜, 여전히 드롭). test.sh exit 0(스펙 56),
+`gen-d.py check` 통과, 타입 검사 +5% 안팎. 스니펫(`quad-roblox/test/tmp.legacyprops*.luau`, gitignore): `Font = Enum.Font.GothamBold`·`TextWrap`·`Transparency`·
+Modifier 체인·State/Tween 팔 통과; `Font = 42`는 `Expected this to be '(Enum.Font | None | StateMarker<Enum.Font>)?', but got 'number'`; `InternalVideoUsage`·
+`Corner`는 배열 인덱스 오독 두 줄. **미측정 잔여**: `Draggable`·`focus`·`DistanceLower/UpperLimit`(쓰기)·`className`(OnChange)은 Deprecated 팔로 들어왔지만
+리플렉션 실측이 없다(`HUMAN_TODO.md` 12는 `TextLabel` 넷에 한함) — 안 주면 그 키만 런타임 매치 실패.
