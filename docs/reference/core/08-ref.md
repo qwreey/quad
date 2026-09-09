@@ -7,7 +7,7 @@ description: 값 상자 프리미티브 — Ref/PreRef/PostRef, 콜백 등록, :
 
 `Ref<T>`는 **값 상자**입니다. 값 하나와 리비전 하나를 들고, 값이 바뀔 때 등록된 콜백을 부릅니다. `State`가 아닙니다 — 전파도, `:Get`도, `:Compute`도 없습니다. quad가 `Ref`에 주는 유일한 추가 의미는 "직전과 구별되는 표식을 나른다"(= `Epoch`)입니다.
 
-`Ref`가 실제로 빛나는 자리는 **컴포넌트가 만든 실물 인스턴스를 밖으로 꺼내오는 통로**입니다. props의 배열부에 `Ref`를 놓으면 quad가 그 자리에 만들어진 인스턴스를 `:Set` 해줍니다. 언제 채워지느냐가 셋을 가릅니다 — [`q.PreRef`](#qprereftdefault)는 배열 위치와 무관하게 **가장 먼저**, [`q.Ref`](#qreftdefault)는 **자기 배열 자리가 처리될 때**(형제 자식들과 같은 순서 위에서), [`q.PostRef`](#qpostreftdefault)는 배열부와 해시부가 **전부 끝난 뒤** 채워집니다.
+`Ref`가 실제로 빛나는 자리는 **컴포넌트가 만든 실물 인스턴스를 밖으로 꺼내오는 통로**입니다. props의 배열 부분에 `Ref`를 놓으면 quad가 그 자리에 만들어진 인스턴스를 `:Set` 해줍니다. 언제 채워지느냐가 셋을 가릅니다 — [`q.PreRef`](#qprereftdefault)는 배열 위치와 무관하게 **가장 먼저**, [`q.Ref`](#qreftdefault)는 **자기 배열 자리가 처리될 때**(형제 자식들과 같은 순서 위에서), [`q.PostRef`](#qpostreftdefault)는 배열 부분과 해시 부분이 **전부 끝난 뒤** 채워집니다.
 
 이 페이지의 심볼: [`q.Ref`](#qreftdefault) · [`q.PreRef`](#qprereftdefault) · [`q.PostRef`](#qpostreftdefault) · [`ref.Value`](#refvalue) · [`ref.Revision`](#refrevision) · [`ref.Callbacks`](#refcallbacks) · [`ref.WeakCallbacks`](#refweakcallbacks) · [`ref:Set`](#refsetvalue) · [`ref:Callback`](#refcallbackfn) · [`ref:WeakCallback`](#refweakcallbackfn) · [`ref:Uncallback`](#refuncallbackfn) · [`ref:Wait`](#refwaitthread) · [`ref:Unwrap`](#refunwrap)
 
@@ -27,6 +27,7 @@ local D = q.D
 type RefCallback<T> = (value: T, ref: Ref<T>) -> ()
 
 type Ref<T> = {
+    read __quadRefAccepts: (T) -> (), -- 타입 전용 반공변 팬텀 필드(children 자리의 클래스 검사용)
     Value: T,
     Revision: number,
     Callbacks: { [RefCallback<T> | thread]: true },
@@ -49,10 +50,16 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 ## 배열 부분에만 놓는다
 
-`Ref`/`PreRef`/`PostRef`는 props의 **배열부 리터럴 항목**으로만 놓을 수 있습니다. Modifier 필드나 `Source`/`Store` 값에 담아 우회로 넣는 것은 타입에서도 막히고, 런타임에서도 잡힙니다.
+`PreRef`/`PostRef`는 props의 **배열 부분 리터럴 항목**으로만 놓을 수 있습니다. 해시 키의 값으로 두거나 `Source`/`Store` 값에 담아 배열 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구).
 
 - `PreRef: must be an array item, not the value of a {typeof(k)} key`
 - `PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
+
+평범한 `Ref`에는 그 가드가 없습니다. 배열 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지고, 다른 자리에 두면 "Ref를 잘못 놓았다"는 진단 대신 그 자리의 주인이 내는 에러를 봅니다.
+
+- Modifier 필드 — `Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
+- 아무 핸들러도 맡지 않는 해시 키 — `Dispatch: no handler matched key {k} (value: {typeof(v)}, brand: Ref)`
+- 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `bindLifetime: value is already bound to another Instance`(생명주기는 백엔드가 심으므로 이 두 문구는 quad-roblox의 것입니다).
 
@@ -78,8 +85,8 @@ Ref: <T>(default: T) -> Ref<T>
 
 **동작**
 
-- 타입 파라미터는 **하나**입니다. nil이 들어올 수 있는 자리는 호출자가 넓힙니다 — `q.Ref(nil :: Frame?)`처럼 씁니다. props 배열부에 놓는 Ref는 인스턴스가 채워지기 전까지 비어 있으므로 사실상 항상 `T?` 형태입니다.
-- 배열부에 놓으면, **그 배열 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 배열부를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. 그 자리가 철거될 때는 `:Set(nil)`로 되돌아갑니다.
+- 타입 파라미터는 **하나**입니다. nil이 들어올 수 있는 자리는 호출자가 넓힙니다 — `q.Ref(nil :: Frame?)`처럼 씁니다. props 배열 부분에 놓는 Ref는 인스턴스가 채워지기 전까지 비어 있으므로 사실상 항상 `T?` 형태입니다.
+- 배열 부분에 놓으면, **그 배열 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 배열 부분을 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. 그 자리가 철거될 때는 `:Set(nil)`로 되돌아갑니다.
 - `Ref`는 `Epoch`이기도 합니다(다중 태깅) — `q.isRef`와 `q.isEpoch`가 둘 다 참입니다.
 
 **예제**
@@ -104,7 +111,7 @@ PreRef: <T>(default: T) -> PreRef<T>
 
 **동작** — 런타임은 `Ref`와 완전히 같고, 브랜드와 마커 필드만 다릅니다. 차이는 **발화 시점**입니다.
 
-`PreRef`는 그 인스턴스에 **아무 일도 일어나기 전에** 채워집니다. 디스패치의 pre-pass가 배열부를 한 번 훑으면서 위치와 무관하게 전부 먼저 발화시킵니다(`PreRef`끼리의 상대 순서는 배열 인덱스 순서). 그래서 같은 props 안의 이벤트 핸들러나 프로퍼티 계산이 이미 채워진 `.Value`를 볼 수 있습니다.
+`PreRef`는 그 인스턴스에 **아무 일도 일어나기 전에** 채워집니다. 디스패치의 pre-pass가 배열 부분을 한 번 훑으면서 위치와 무관하게 전부 먼저 발화시킵니다(`PreRef`끼리의 상대 순서는 배열 인덱스 순서). 그래서 같은 props 안의 이벤트 핸들러나 프로퍼티 계산이 이미 채워진 `.Value`를 볼 수 있습니다.
 
 일회용입니다 — 한 번 발화한 `PreRef`를 다른 인스턴스에 다시 놓으면 에러입니다. 인스턴스마다 새로 만드세요.
 
@@ -133,11 +140,11 @@ local form = D.Frame {
 PostRef: <T>(default: T) -> PostRef<T>
 ```
 
-**동작** — `PreRef`의 거울입니다. 이 인스턴스의 **배열부(자식·서브트리)와 해시부(프로퍼티·이벤트)가 전부 끝난 뒤** 채워집니다. 여러 개면 배열 인덱스 순서대로 발화합니다.
+**동작** — `PreRef`의 거울입니다. 이 인스턴스의 **배열 부분(자식·서브트리)와 해시 부분(프로퍼티·이벤트)가 전부 끝난 뒤** 채워집니다. 여러 개면 배열 인덱스 순서대로 발화합니다.
 
 "자식이 전부 붙었다"까지가 계약입니다 — **부모에 붙었는지는 계약이 아닙니다**(어느 쪽으로도 보장하지 않습니다). 완성된 서브트리를 재는 코드(레이아웃 측정 등)가 이 자리입니다.
 
-`PreRef`와 마찬가지로 일회용이고, 배열부 리터럴 전용입니다.
+`PreRef`와 마찬가지로 일회용이고, 배열 부분 리터럴 전용입니다.
 
 **예제**
 
@@ -167,7 +174,7 @@ Value: T
 
 직접 대입해도 막지는 않지만 리비전도 콜백도 돌지 않습니다 — 쓸 때는 항상 [`:Set`](#refsetvalue)을 쓰세요.
 
-props 배열부에 놓은 Ref는 채워지기 전까지 `nil`이라 타입이 사실상 `Ref<T?>`입니다. 런타임 보장이 있는 자리라면 [`:Unwrap()`](#refunwrap)이 그 `nil`을 벗겨줍니다.
+props 배열 부분에 놓은 Ref는 채워지기 전까지 `nil`이라 타입이 사실상 `Ref<T?>`입니다. 런타임 보장이 있는 자리라면 [`:Unwrap()`](#refunwrap)이 그 `nil`을 벗겨줍니다.
 
 ## `ref.Revision`
 
@@ -333,7 +340,7 @@ Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗�
 
 **반환** — 담긴 값. 타입에서는 `nil`만 제거됩니다(`Frame?` → `Frame`).
 
-**동작** — 배열부에 놓은 `PreRef`는 이벤트 콜백이 돌기 전에 반드시 채워지는데, 타입은 여전히 `Ref<Frame?>`라 매번 `if inst then` 가드를 써야 했습니다. `:Unwrap()`은 그 자리를 위한 것입니다.
+**동작** — 배열 부분에 놓은 `PreRef`는 이벤트 콜백이 돌기 전에 반드시 채워지는데, 타입은 여전히 `Ref<Frame?>`라 매번 `if inst then` 가드를 써야 했습니다. `:Unwrap()`은 그 자리를 위한 것입니다.
 
 **규약이지 강제가 아닙니다** — 런타임 보장이 있는 자리에서만 쓰세요. 비어 있으면 호출한 줄을 blame하며 던집니다.
 

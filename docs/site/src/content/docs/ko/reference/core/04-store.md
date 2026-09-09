@@ -7,10 +7,9 @@ description: 이름 붙은 Source 모음 — 명시적 초기화, 점 접근, Of
 이 페이지의 심볼: [`q.Store(defaults)`](#qstoredefaults) · [`store.key`](#storekey-선언된-필드) · [`store:Of<<U>>(name)`](#storeofuname) · [`store:Names()`](#storenames) · [예약 키](#예약-키)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(getting-started/00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.Source<T>` 등)
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 ```
 
@@ -34,7 +33,7 @@ export type Store<T> = T & {
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `defaults` | `{ [string]: Source<any> }` | 초기 필드. 메타테이블 없는 **평범한 테이블**이어야 하고, 값은 **전부 `Source`**여야 합니다. 생략하면 빈 Store입니다. |
+| `defaults` | `T` | 초기 필드. 넘긴 레코드 타입이 그대로 `T`가 됩니다. 런타임 계약은 메타테이블 없는 **평범한 테이블**이고 값은 **전부 `Source`**여야 한다는 것입니다 — 생략하면 빈 Store입니다. |
 
 **반환** — `Store<T>`. `T`는 넘긴 레코드 타입 그대로입니다(타입 함수 없이 평범한 레코드).
 
@@ -50,7 +49,7 @@ export type Store<T> = T & {
   | 테이블이 아님 | `Store: defaults must be a table of Sources (got {typeof(defaults)})` |
   | 메타테이블이 달림(`Source` 하나를 그대로 넘긴 경우 등) | `Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)` |
   | 브랜드 값(AttrKey·Mapper 디스크립터 등) | `Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)` |
-  | 키가 문자열이 아니거나 빈 문자열 | `Store: {what} must be a non-empty string` (`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`) |
+  | 키가 문자열이 아니거나 빈 문자열 | `Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})` (`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`) |
   | 예약된 이름 | `Store: "{name}" is a reserved store key` |
 
 - `Source`의 값 제약이 그대로 따라옵니다 — Modifier는 담을 수 없습니다. 이 검사는 `Source` 생성자가 하므로 `:Of`로 만든 필드에도 적용됩니다.

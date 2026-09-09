@@ -9,7 +9,7 @@ description: 값 기반 전파 유보 — On/Off/OffWithoutEmit/Policy와 state:
 이 페이지의 심볼: [`q.Blocker()`](#qblocker) · [`blocker.IsBlocked`](#blockerisblocked) · [`blocker:IsOn()`](#blockerison) · [`blocker:On()`](#blockeron) · [`blocker:Off()`](#blockeroff) · [`blocker:OffWithoutEmit()`](#blockeroffwithoutemit) · [`blocker:Policy(emit)`](#blockerpolicyemit) · [`state:Apply(blocker)`](#stateapplyblocker)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(getting-started/00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
 local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.State<T>` 등)

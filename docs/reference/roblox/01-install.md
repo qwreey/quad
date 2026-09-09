@@ -49,7 +49,8 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
 `QuadRoblox`는 **프로바이더 함수**이지 모듈이 아닙니다 — 직접 부르지 말고 `UseProvider`에 넘기세요.
 호출되면 순서대로 이렇게 합니다.
 
-1. **버전 게이트** — 받은 모듈의 `Version`이 이 패키지가 요구하는 패턴과 맞는지 런타임에 검사합니다.
+1. **버전 게이트** — 받은 모듈의 [`Version`](../core/01-quad-module.md)이 이 패키지가 요구하는 패턴과
+   맞는지 런타임에 검사합니다.
    맞지 않으면 소비자의 `UseProvider` 줄을 blame하며 던집니다.
 
    ```
@@ -60,14 +61,18 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    넘어온 모듈의 `Version` 필드입니다. 모노레포는 정확한 버전을 핀으로 잡고, 독립 게시 백엔드라면
    더 느슨한 패턴을 쓰게 됩니다.
 2. **모듈 뮤테이션** — 생명주기 프리미티브(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)와
-   `nativeClaim`, 엔진 op 일습을 모듈에 심고, 백엔드가 소유한 핸들러 넷(Property / InstanceChild /
-   Event / InstanceShorthand)과 OnChange 핸들러를 디스패치에 등록합니다. 주입 슬롯의 전체 목록과
+   `nativeClaim`, 엔진 op 일습을 [모듈 인스턴스](../core/01-quad-module.md)에 심고, 백엔드가 소유한
+   핸들러 넷(Property / InstanceChild / Event / InstanceShorthand)과 OnChange 핸들러를 디스패치에
+   등록합니다. 주입 슬롯의 전체 목록과
    계약은 [백엔드 프로바이더 규약](../extend/01-backend-provider-contract.md)이 소스입니다.
 3. **확장 반환** — `RobloxExtension` 테이블을 돌려줍니다.
 
 ---
 
 ## `Quad:UseProvider(QuadRoblox)`
+
+`UseProvider` 자체의 정본은 [core/01 — Quad 모듈](../core/01-quad-module.md)입니다. 여기서는
+`QuadRoblox`를 넘겼을 때 무엇이 생기는지만 봅니다.
 
 **시그니처**
 
@@ -132,7 +137,7 @@ export type RobloxExtension = {
 **타입 재익스포트** — `quad-roblox` 모듈 자체는 값 표면 외에 타입도 내보냅니다.
 `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` /
 `OnChangeDescriptor` / `AnimateInfo` / `AnimateFn`과, 생성 모듈에서 온 `D` / `DMapper` / `PropTypes` /
-`OnChangeFn`입니다.
+`OnChangeFn`, 그리고 위 다섯 키의 모양인 `RobloxExtension`입니다.
 
 ```luau
 local RobloxModule = require(<quad-roblox 모듈 경로>)

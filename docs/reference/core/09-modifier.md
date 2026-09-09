@@ -5,7 +5,7 @@ description: 불변 프로퍼티 가방 — 생성·setter 체인·Peek/Apply/Ov
 
 # Modifier
 
-`Modifier`는 **불변 프로퍼티 가방**입니다. "이 프로퍼티들을 이렇게 설정한다"를 값 하나로 만들어 들고 다니다가, 인스턴스 props의 **배열부**에 놓으면 그 필드들이 해시부로 펼쳐집니다. 테마·변형·조건부 스타일을 컴포넌트 경계 너머로 넘기는 통로입니다.
+`Modifier`는 **불변 프로퍼티 가방**입니다. "이 프로퍼티들을 이렇게 설정한다"를 값 하나로 만들어 들고 다니다가, 인스턴스 props의 **배열 부분**에 놓으면 그 필드들이 해시 부분으로 펼쳐집니다. 테마·변형·조건부 스타일을 컴포넌트 경계 너머로 넘기는 통로입니다.
 
 모든 연산이 **새 값을 돌려줍니다.** setter 하나를 부를 때마다 얕은 clone이 하나 생기고 원본은 그대로 남습니다(값 자체도 `table.freeze`돼 있습니다). 그래서 하나의 기본 Modifier에서 갈라져 나온 형제 가지들이 서로를 오염시킬 수 없습니다.
 
@@ -18,8 +18,8 @@ description: 불변 프로퍼티 가방 — 생성·setter 체인·Peek/Apply/Ov
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
-local QuadTypes = require(<quad-types 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.StateData<T>` 등)
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
 ```
@@ -41,16 +41,16 @@ type FieldOut<T> = T | State<T> | None
 
 `Peek`/`As`는 결과 타입을 호출자가 명시하는 자리이고(`mod:Peek<<UDim2>>("Size")`), `Apply`의 `self`와 factory 인자가 `any`인 것은 children 유니언의 클래스 검사를 살리기 위한 의도된 절충입니다.
 
-## 배열부에 놓는다
+## 배열 부분에 놓는다
 
-Modifier는 props의 **배열부** 항목입니다. 해시 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.
+Modifier는 props의 **배열 부분** 항목입니다. 해시 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.
 
 - `Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`
 
 펼치기 규칙은 셋입니다.
 
 1. **인라인 해시 키가 항상 이깁니다.** props에 직접 적은 `Size = …`는 어떤 Modifier의 `Size`보다 우선합니다(직접 적은 `None`도 마찬가지).
-2. **배열부의 뒤쪽 Modifier가 앞쪽을 이깁니다.**
+2. **배열 부분의 뒤쪽 Modifier가 앞쪽을 이깁니다.**
 3. 소비된 배열 자리는 내부 센티널로 채워져 배열에 구멍이 생기지 않습니다.
 
 ```luau
@@ -91,7 +91,7 @@ Modifier: setmetatable<{
 **에러**
 
 - `Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`
-- `Modifier: initial-field table keys must be non-empty field names (got {typeof(k)} at argument #{i})`
+- `Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`
 - `Modifier: field "{k}" collides with a reserved Modifier method`
 - `Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`
 - `Modifier: field "{k}" in an initial-field table cannot be a function — use mod:{k}(fn) for a transform`
@@ -190,7 +190,7 @@ type FieldOut<T> = T | State<T> | None
 
 **에러**
 
-- `Modifier:Peek: key must be a non-empty string (got {typeof(key)})`
+- `Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`
 
 **예제**
 
@@ -283,10 +283,10 @@ As<Class>: (self: <Ancestor>Modifier) -> <Class>Modifier -- 클래스별로 생�
 
 **반환** — 그 클래스로 태그된 새 Modifier.
 
-**동작** — **검사형 다운캐스트**입니다. `As` 뒤에 대문자로 시작하는 이름을 붙인 모든 키가 여기로 갑니다(`mod:AsFrame()`, `mod:AsTextButton()`). 통과 조건은 셋 중 하나입니다.
+**동작** — **검사형 다운캐스트**입니다. `As` 뒤에 대문자로 시작하는 이름을 붙인 모든 키가 여기로 갑니다(`mod:AsFrame()`, `mod:AsTextButton()`). 통과하려면 **두 조건이 모두** 맞아야 합니다.
 
-1. 대상 클래스가 등록돼 있고,
-2. 지금 Modifier의 태그가 무타입(`true`)이거나, 대상 클래스 자신이거나, **대상의 조상**이면 통과합니다(여러 부모 경로 전부를 봅니다).
+1. 대상 클래스가 등록돼 있어야 하고,
+2. 지금 Modifier의 태그가 셋 중 하나여야 합니다 — 무타입(`true`)이거나, 대상 클래스 자신이거나, **대상의 조상**(여러 부모 경로 전부를 봅니다).
 
 `As` + 대문자 접두사는 **필드 이름으로 영원히 예약**돼 있습니다. 그래서 오타 `mod:AsTextLabl()`은 조용히 `AsTextLabl`이라는 필드를 만드는 대신 에러가 됩니다. `AspectRatio`처럼 `As` 다음이 소문자면 접두사가 아니라 평범한 setter입니다.
 

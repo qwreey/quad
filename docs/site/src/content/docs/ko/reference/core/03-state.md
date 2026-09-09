@@ -7,7 +7,7 @@ description: 읽기 전용 파생 반응형 노드 — Get/Compute/With/Apply/Ob
 이 페이지의 심볼: [`state:Get()`](#stateget) · [`state:Compute(fn, ...deps)`](#statecomputefn-deps) · [`state:With(...)`](#statewith) · [`state:Apply(factory)`](#stateapplyfactory) · [`state:Observer(fn)`](#stateobserverfn) · [`state:Gate(setup)`](#stategatesetup)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(getting-started/00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
 local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.State<T>` 등)
@@ -30,7 +30,7 @@ export type State<T> = StateData<T> & {
 
 `StateData<T>`는 "값을 읽을 수 있는 부분"만 떼어낸 것이고, 콜백 파라미터 자리에 오는 lazy 핸들이 이 타입입니다. `__quadStateValue`는 타입에만 있는 팬텀 필드입니다 — 런타임 값에는 없으니 읽지 마세요. `State<T>`는 주석 자리에서 **불변**입니다(`State<number>`는 `State<number | UDim>` 자리에 들어가지 않습니다). 값을 넘겨받는 자리들은 그래서 공변 마커 타입을 요구합니다 — [Quadnomicon Vol. 4](/quad/ko/quadnomicon/04-covariant-markers/).
 
-`print(state)`는 캐시가 유효할 때 `State(<값>)`, 아직 계산 전이거나 무효화된 상태면 `State(?)`로 찍힙니다. 출력을 위해 계산을 돌리지 않기 때문입니다.
+`print(state)`는 캐시가 유효할 때 `State(<값>)`, 아직 계산 전이거나 무효화된 상태면 `State(?)`로 찍힙니다. 출력을 위해 계산을 돌리지 않기 때문입니다. `:Gate`가 끼운 게이트 노드는 같은 모양을 이름만 바꿔 씁니다 — `Gate(2)`, 캐시가 무효면 `Gate(?)`.
 
 ---
 

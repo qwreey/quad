@@ -4,7 +4,7 @@ description: "값-레벨 트윈 래퍼, 프로퍼티에서의 3-상태 동작(�
 ---
 `Tween{…}`은 "이 값으로 애니메이션하라"를 **값 하나**로 만든 래퍼입니다. 프로퍼티 자리에 평범한
 값 대신 놓으면 프로퍼티 핸들러가 엔진 트윈으로 바꿔 재생합니다. `Animate{…}`는 State 하나를
-통째로 트윈으로 감싸는 `:Apply` 콤비네이터입니다.
+통째로 트윈으로 감싸는 [`:Apply`](/quad/ko/reference/core/03-state/) 콤비네이터입니다.
 
 이 페이지의 심볼: [`q.Tween(opts)`](#qtweenopts) · [`tween:Mapped(fn)`](#tweenmappedfn) ·
 [`q.isTween(x)`](#qistweenx) · [`q.Animate(info)`](#qanimateinfo) ·
@@ -79,8 +79,9 @@ local panel = D.Frame({ Size = size })
 
 **동작 — 모든 필드는 평범한 값입니다**
 
-`Value`에 `State`를 넣을 수 없습니다. State를 애니메이션하고 싶으면 State 쪽을 감싸세요
-(`state:Apply(q.Animate{…})`) 또는 `Compute` 안에서 `Tween{…}`을 만드세요(위 예제).
+`Value`에 [`State`](/quad/ko/reference/core/03-state/)를 넣을 수 없습니다. State를 애니메이션하고 싶으면 State
+쪽을 감싸세요([`state:Apply(q.Animate{…})`](/quad/ko/reference/core/03-state/)) 또는 `Compute` 안에서 `Tween{…}`을
+만드세요(위 예제).
 
 **검증과 에러**
 
@@ -134,7 +135,8 @@ local b = FADE:Mapped(function(v: number): number return 0.5 end)
 isTween: (x: any) -> boolean
 ```
 
-그 값이 `Tween`인지 판정합니다(브랜드 검사 — 같은 모양의 평범한 테이블은 `false`).
+그 값이 `Tween`인지 판정합니다([브랜드 검사](/quad/ko/reference/core/12-predicates/) — 같은 모양의 평범한 테이블은
+`false`).
 `State`가 실어 나르는 값을 직접 읽어 분기해야 하는 드문 자리에서 씁니다.
 
 ---
@@ -187,8 +189,8 @@ local box = D.Frame({ BackgroundTransparency = animated })
   옵션 State가 바뀌었다고 애니메이션을 다시 돌리지 않고, **다음 값 변경 때** 최신 옵션이 반영됩니다.
 - **`CanAnimate`가 거짓이면** 감싸지 않고 원래 값을 그대로 내보냅니다 — 프로퍼티 핸들러가 즉시
   씁니다(모션 축소 옵션 같은 우회로). 생략하면 항상 애니메이션합니다.
-- **`nil`/`None`은 그대로 통과합니다.** 감싸지 않으므로 프로퍼티 핸들러가 `nil`을 씁니다(객체 참조를
-  놓는 경로).
+- **`nil`/[`None`](/quad/ko/reference/core/11-lifetime-sentinels/#qnone)은 그대로 통과합니다.** 감싸지 않으므로
+  프로퍼티 핸들러가 `nil`을 씁니다(객체 참조를 놓는 경로).
 - 실행마다 **새 `Tween` 값**이 만들어집니다. 같은 목표로의 재발행을 접는 것은 소비자(프로퍼티 핸들러)의
   일입니다 — 아래 `Dedup`.
 - **리터럴 옵션은 `Animate(info)` 시점에 즉시 검증**됩니다(여러분의 호출 줄을 blame). State로 준

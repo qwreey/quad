@@ -7,7 +7,7 @@ description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/Emit/R
 이 페이지의 심볼: [`q.Source(value)`](#qsourcevalue) · [`source:Set(v)`](#sourcesetv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(getting-started/00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
 local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.State<T>` 등)

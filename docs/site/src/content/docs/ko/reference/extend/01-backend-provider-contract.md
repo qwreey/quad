@@ -1,8 +1,16 @@
 ---
 title: "백엔드 프로바이더 규약"
+description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProvider 설치 계약 — 새 백엔드를 포팅하는 사람을 위한 규약"
 ---
 > **대상 독자**: Quad를 Roblox 외 플랫폼으로 포팅하거나 커스텀 백엔드를 작성하려는 엔지니어
 > **정본 소스**: 주입 슬롯의 타입 정의는 `quad-types/src/init.luau`, Roblox 구현은 `quad-roblox/src/EngineOps.luau`와 `quad-roblox/src/LifetimeHandle.luau`, 미설치 스텁은 `quad-base/src/LifetimeHandle.luau`
+
+이 페이지의 심볼: 주입 슬롯 19개를 [다섯 묶음](#1-아키텍처-개요-base와-provider의-분리)으로 —
+[물리 트리 조작 `native*`](#2-물리-트리-조작-native) · [판정·훅·조회 op](#3-판정훅조회-op) ·
+[생명주기 프리미티브](#4-생명주기-프리미티브) ·
+[메타데이터 op와 시간 op](#5-메타데이터-op와-시간-op). 그 위의 설치 계약은
+[프로바이더 설치와 1슬롯 identity 락](#6-프로바이더-설치와-1슬롯-identity-락), 빠진 슬롯의 동작은
+[슬롯이 비어 있으면 어떻게 되나](#7-슬롯이-비어-있으면-어떻게-되나)에 있습니다.
 
 ---
 
@@ -206,3 +214,11 @@ quad: nativeInsert is not available — no backend has installed the lifetime pr
 ```
 
 이 스텁은 프로바이더가 덮어쓸 때까지만 공개 표면에 앉아 있습니다. 즉 **백엔드가 슬롯 하나를 빠뜨리면 그 op를 처음 쓰는 순간 그 이름이 그대로 에러 메시지에 나옵니다** — 조합으로 대신 만들어 주는 폴백은 없습니다.
+
+---
+
+## 관련
+
+- [core/11 — 생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/) — 여기 주입되는 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 사용자 표면
+- [extend/02 — 디스패치 핸들러 계약](/quad/ko/reference/extend/02-dispatch-handler-contract/) — 이 op들을 실제로 부르는 핸들러 쪽 계약
+- [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/quad/ko/quadnomicon/10-multi-backend-abstract-machine/) — 이 경계가 왜 이렇게 그어졌는가

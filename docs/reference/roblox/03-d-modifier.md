@@ -15,7 +15,8 @@ description: "클래스별 Modifier 생성자, setter 체인의 값 대수, 검�
 :::note
 `D.Modifier`는 `quad-roblox` 백엔드 전용입니다 — `q = Quad:UseProvider(QuadRoblox)` 뒤에만 존재합니다.
 타입 없는 기본 `q.Modifier(...)`는 `quad-base`의 것이고, 예약 메소드(`Apply`/`Peek`/`Overridden`/`As`)의
-정본도 그쪽입니다. 이 페이지는 **클래스가 붙었을 때 달라지는 것**을 다룹니다.
+정본도 그쪽입니다([core/09 — Modifier](../core/09-modifier.md)). 이 페이지는 **클래스가 붙었을 때
+달라지는 것**을 다룹니다.
 :::
 
 ```luau
@@ -105,6 +106,20 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 | `q.None` | **언셋** — 그 필드를 명시적으로 `None`으로 만든다 |
 | `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") |
 | 함수 | **변환 함수** — 아래 |
+
+**보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라
+`FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](./02-d.md#해시-부분--프로퍼티와-이벤트)와 같은
+구분입니다(`Tween` 팔이 있는 타입은 `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector3`·`Color3`·
+`CFrame`·`Rect`).
+
+```luau
+-- 값 부분에서 Tween 팔이 빠진다(변환 함수의 old도 Tween 없는 전체형)
+export type FieldPV<T> = T | StateMarker<T> | None
+export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)
+
+-- 예: Enum.Font는 보간 불가라 FieldP
+Font: (self: TextBoxModifier, value: FieldP<Enum.Font>) -> TextBoxModifier
+```
 
 **변환 함수**
 
@@ -243,7 +258,8 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 ```
 
 컴포넌트가 자기 Modifier 클래스를 만들고 싶다면 `quad-base`의 `q.Modifier.TypedFactory(name)`으로
-태그 생성자를 얻고 `q.Modifier.DefineSubtype(parent, name)`으로 상속 간선을 등록하면 됩니다 —
+태그 생성자를 얻고 `q.Modifier.DefineSubtype(parent, subtype)`으로 상속 간선을 등록하면 됩니다
+([core/09 — Modifier](../core/09-modifier.md)) —
 `D.Modifier.<Class>`가 쓰는 것과 정확히 같은 등록 경로라, 커스텀 클래스도 `Into<Class>` 자리에서
 `FrameModifier`와 같은 지위를 갖습니다.
 
@@ -261,7 +277,8 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
   end
   local bold = D.Modifier.TextButton():Text("go"):Apply(Boldify)
   ```
-- `Peek: <T>(self, key: string) -> FieldOut<T>?` — **저장된 그대로** 돌려줍니다(State는 State인 채로,
+- `Peek: <T>(self, key: string) -> FieldOut<T>?`([core/09 — Modifier](../core/09-modifier.md)) —
+  **저장된 그대로** 돌려줍니다(State는 State인 채로,
   `None`은 `None`인 채로). 호출부가 `T`를 명시합니다: `mod:Peek<<UDim2>>("Size")`.
   빈 문자열이나 비문자열 키는 `Modifier:Peek: key must be a non-empty string (got {…})`.
 - `Overridden(a, b, …)` / `a:Overridden(b, …)` — 필드 단위 병합, 뒤가 이깁니다. 결과는 **태그 없는**

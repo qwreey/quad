@@ -12,9 +12,10 @@ description: leaf 구독 핸들 둘 — state:Observer(fn)과 q.Effect(fn, ...de
 이 페이지의 심볼: [`state:Observer(fn)`](#stateobserverfn) · [`observer.Subscribed`](#observersubscribed) · [`observer:Subscribe()`](#observersubscribe) · [`observer:WeakSubscribe()`](#observerweaksubscribe) · [`observer:Unsubscribe()`](#observerunsubscribe) · [`observer:WeakUnsubscribe()`](#observerweakunsubscribe) · [`q.Effect(fn, ...deps)`](#qeffectfn-deps) · [`effect:Rerun()`](#effectrerun) · [`effect:Subscribe()`](#effectsubscribe) · [`effect:WeakSubscribe()`](#effectweaksubscribe) · [`effect:Unsubscribe()`](#effectunsubscribe) · [`effect:WeakUnsubscribe()`](#effectweakunsubscribe)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(getting-started/00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.StateData<T>` 등)
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
 ```
@@ -40,7 +41,7 @@ local D = q.D
 local hp = q.Source(100)
 
 local label = D.TextLabel {
-	Text = hp:Compute(function(self)
+	Text = hp:Compute(function(self: QuadTypes.StateData<number>)
 		return `HP {self:Get()}`
 	end),
 

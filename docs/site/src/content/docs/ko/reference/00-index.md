@@ -21,6 +21,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.errorNamespace` | [core/01](/quad/ko/reference/core/01-quad-module/#qerrornamespace) · [extend/01](/quad/ko/reference/extend/01-backend-provider-contract/) |
 | `q.Relate()` | [core/01](/quad/ko/reference/core/01-quad-module/#qrelate) |
 | `QuadRoblox` | [roblox/01 — 설치](/quad/ko/reference/roblox/01-install/) |
+| `RobloxExtension` | [roblox/01](/quad/ko/reference/roblox/01-install/) |
 
 ## 반응형 코어
 
@@ -37,6 +38,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `state:Observer(fn)` | [core/05 — Observer·Effect](/quad/ko/reference/core/05-observer-effect/) · [core/03](/quad/ko/reference/core/03-state/) |
 | `state:Gate(setup)` | [core/03](/quad/ko/reference/core/03-state/) |
 | `q.Store(defaults)` | [core/04 — Store](/quad/ko/reference/core/04-store/) |
+| `store.key`(선언된 필드) | [core/04](/quad/ko/reference/core/04-store/) |
 | `store:Of<<U>>(name)` | [core/04](/quad/ko/reference/core/04-store/) |
 | `store:Names()` | [core/04](/quad/ko/reference/core/04-store/) |
 
@@ -122,6 +124,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Modifier.TypedFactory<<T>>(name)` | [core/09](/quad/ko/reference/core/09-modifier/) |
 | `q.Modifier.DefineSubtype(parent, subtype)` | [core/09](/quad/ko/reference/core/09-modifier/) |
 | `D.Modifier.<Class>(...)` | [roblox/03 — D.Modifier](/quad/ko/reference/roblox/03-d-modifier/) |
+| `mod:As()` / `mod:As<<T>>()` | [roblox/03](/quad/ko/reference/roblox/03-d-modifier/#modas--modasname--modast) · [core/09](/quad/ko/reference/core/09-modifier/) |
+| `Into<Class>` / `<Class>Modifier` | [roblox/03](/quad/ko/reference/roblox/03-d-modifier/#intoclass--classmodifier) |
 
 ## Tag / Attr
 
@@ -195,6 +199,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Debounce{...}` | [sugar/03 — Debounce·Throttle](/quad/ko/reference/sugar/03-debounce-throttle/) |
 | `q.Throttle{...}` | [sugar/03](/quad/ko/reference/sugar/03-debounce-throttle/) |
 | `handle:Flush()` / `handle:Cancel()` | [sugar/03](/quad/ko/reference/sugar/03-debounce-throttle/) |
+| `factory:Flush()` / `factory:Cancel()`(`TimedGate` 브로드캐스트) | [sugar/03](/quad/ko/reference/sugar/03-debounce-throttle/) |
 | `q.OnCreated<<I>>(fn)` | [sugar/04 — 생명주기 훅](/quad/ko/reference/sugar/04-lifecycle-hooks/) |
 | `q.OnRendered<<I>>(fn)` | [sugar/04](/quad/ko/reference/sugar/04-lifecycle-hooks/) |
 | `q.OnDestroyed(fn)` | [sugar/04](/quad/ko/reference/sugar/04-lifecycle-hooks/) |
@@ -205,9 +210,10 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.D` | [roblox/01 — 설치](/quad/ko/reference/roblox/01-install/) |
+| `q.D` | [roblox/01 — 설치](/quad/ko/reference/roblox/01-install/) · [roblox/02](/quad/ko/reference/roblox/02-d/#qd--네임스페이스와-생성되는-클래스) |
 | `D.<Class>(props)` | [roblox/02 — D](/quad/ko/reference/roblox/02-d/) |
 | `D.New<<T>>(className)(props)` | [roblox/02](/quad/ko/reference/roblox/02-d/) |
+| 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](/quad/ko/reference/roblox/02-d/#숏핸드-키-넷) |
 | `q.Claim(inst, descriptor)` | [roblox/04 — Claim·D.Mapper](/quad/ko/reference/roblox/04-claim-mapper/) |
 | `D.Mapper.<Class>(key)(props)` | [roblox/04](/quad/ko/reference/roblox/04-claim-mapper/) |
 | `D.Mapper.Root` | [roblox/04](/quad/ko/reference/roblox/04-claim-mapper/) |
@@ -229,7 +235,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Dispatch.getHandler(inst, key, value)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchgethandlerinst-key-value) |
 | `q.Dispatch.process(inst, key, value, index)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index) |
 | `q.Dispatch.retractFrom(inst, key, index)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchretractfrominst-key-index) |
-| `q.Dispatch.drive(inst, props)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-props) |
+| `q.Dispatch.drive(inst, flattened)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened) |
 | `q.Dispatch.setLength(ownerKey, i, len, anchor?, element?)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchsetlengthownerkey-i-len-anchor-element) |
 | `q.Dispatch.setOffsetSource(ownerKey, i, source)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchsetoffsetsourceownerkey-i-source) |
 | `q.Dispatch.setEmpty(ownerKey, i, anchor?)` | [extend/02](/quad/ko/reference/extend/02-dispatch-handler-contract/#qdispatchsetemptyownerkey-i-anchor) |
@@ -239,4 +245,6 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 타입
 
-타입 계약의 정본은 `quad-types/src/init.luau` 한 파일이다 — `State<T>`/`Source<T>`/`Slot<T>`/`Ref<T>`/`Store<T>`/`Handler`/`Dispatch` 같은 값 타입, 입력 자리용 마커(`StateMarker<T>`/`SlotMarker<T>`), 출력 자리의 `FieldOut<T>`, 센티널 타입(`None`/`Detach`/`KeyGone`/`MapperRoot`)이 전부 거기 선언돼 있다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](/quad/ko/quadnomicon/04-covariant-markers/)가 다룬다.
+타입 계약의 정본은 `quad-types/src/init.luau` 한 파일이다 — `State<T>`/`Source<T>`/`Slot<T>`/`Ref<T>`/`Store<T>`/`Handler`/`Dispatch` 같은 값 타입, 입력 자리용 마커(`StateMarker<T>`/`SlotMarker<T>`), 출력 자리의 `FieldOut<T>`, 센티널 타입(`None`/`Detach`/`KeyGone`/`MapperRoot`)이 전부 거기 선언돼 있다.
+
+**예외는 백엔드가 소유한 타입이다.** `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`/`AnimateInfo`/`AnimateFn`/`NewChild`/`OnChangeDescriptor`와 백엔드 확장 모양 `RobloxExtension`은 `quad-roblox/src/types.luau`(와 `quad-roblox/src/init.luau`)가 정본이고, 클래스별 생성 타입(`FrameParam<E>`/`FrameModifier`/`IntoFrame`/`PropTypes`/`PropTypesRead` 등)은 생성 모듈 `quad-roblox/src/D`가 정본이다 — 엔진 지식이 들어간 타입은 코어가 아니라 그 백엔드에 산다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](/quad/ko/quadnomicon/04-covariant-markers/)가 다룬다.

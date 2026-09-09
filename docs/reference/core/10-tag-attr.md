@@ -1,11 +1,11 @@
 ---
 title: Tag / Attr
-description: 배열부 값 객체 둘 — 태그 집합과 속성 그룹, AttrKey와 타입드 스칼라 슈가
+description: 배열 부분 값 객체 둘 — 태그 집합과 속성 그룹, AttrKey와 타입드 스칼라 슈가
 ---
 
 # Tag / Attr
 
-`Tag`와 `Attr`은 props의 **배열부에 놓는 값 객체**입니다. 인스턴스에 이름표를 붙이고(`Tag`), 이름 붙은 값을 심습니다(`Attr`). 둘 다 불변이고, 모든 연산이 새 값을 돌려줍니다.
+`Tag`와 `Attr`은 props의 **배열 부분에 놓는 값 객체**입니다. 인스턴스에 이름표를 붙이고(`Tag`), 이름 붙은 값을 심습니다(`Attr`). 둘 다 불변이고, 모든 연산이 새 값을 돌려줍니다.
 
 `Modifier`와 달리 이 둘은 프로퍼티가 아니라 **엔진의 별도 채널**로 갑니다. quad-base는 그 채널을 직접 건드리지 않고 주입된 엔진 op 셋(`addTag`/`removeTag`/`setAttr`)에 넘깁니다 — 백엔드가 그걸 채웁니다. Roblox 백엔드는 각각 `CollectionService`와 `SetAttribute`로 이어집니다.
 
@@ -21,13 +21,14 @@ description: 배열부 값 객체 둘 — 태그 집합과 속성 그룹, AttrKe
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.None` 등)
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
 ```
 
 ---
 
-# Tag
+## Tag
 
 `Tag`는 **이름의 집합**입니다. 순서가 없고 중복이 없습니다.
 
@@ -214,7 +215,7 @@ local same = q.Tag(a, b)           -- 같은 결과, 느슨한 철자
 
 ---
 
-# Attr
+## Attr
 
 `Attr`은 **이름 → 값 맵**입니다. 값은 원시 값이거나 `State`/`Source`이거나 `q.None`입니다.
 
@@ -278,7 +279,7 @@ __call: (self: any, ...any) -> Attr
 **예제**
 
 ```luau
-local hp = q.Source(100)
+local hp = q.Source(100 :: number | QuadTypes.None)
 local stats = D.Frame {
     q.Attr({ Hp = hp, Name = "hero" }),
     D.TextLabel { Text = "체력" },
@@ -371,14 +372,14 @@ type AttrKeyObject = { Name: string }
 - **값 타입을 모르는 무타입 프리미티브입니다.** 값 검증은 백엔드의 `setAttr` 몫입니다. 패밀리 슈가(`StringAttr` 등)가 못 덮는 엔진 고유 타입(`Color3`, `UDim2`, `Instance` …)이 이 키의 자리입니다.
 - 이름별 **weak 캐시**를 지납니다 — 무언가가 붙들고 있는 동안 `q.AttrKey("Hp") == q.AttrKey("Hp")`가 성립합니다.
 - 값에 `q.None`을 두면 그 속성이 삭제됩니다.
-- 한 인스턴스의 같은 이름을 **서로 다른 키 객체**가 주장하면 그 자리에서 던집니다 — `AttrKey: attribute "{name}" is already bound by another owner`.
+- 한 인스턴스의 같은 이름을 **서로 다른 키 객체**가 주장하면 그 자리에서 던집니다 — `AttrKey: attribute "{k.Name}" is already bound by another owner`.
 
 **에러**
 
 - `AttrKey: name must be a non-empty string`
 
 :::caution
-**해시 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 배열부 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
+**해시 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 배열 부분 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
 :::
 
 **예제**
@@ -409,7 +410,7 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 
 **동작** — **타입드 스칼라 슈가**입니다. 자기 핸들러를 갖지 않고 그룹 경로를 그대로 씁니다. 차이는 값 검증뿐입니다 — 패밀리는 자기 타입을 알기 때문에 원시 값의 타입을 여기서 확인합니다(`State`와 `q.None`은 그대로 통과합니다).
 
-배열부에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 해시 키 형태를 대신하는 자리입니다.
+배열 부분에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 해시 키 형태를 대신하는 자리입니다.
 
 **에러**
 
@@ -425,7 +426,8 @@ local card = D.Frame {
     q.StringAttr("Label", label),
     q.StringAttr("Kind", "unit"),
 }
-label:Set(q.None) -- 속성 Label 삭제
+label:Set("villain")                                    -- 속성 Label이 따라 바뀐다
+local blank = D.Frame { q.StringAttr("Label", q.None) } -- 값 자리의 None: 그 속성을 지운다
 ```
 
 ## `q.NumberAttr(name, value)`

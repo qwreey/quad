@@ -3,7 +3,7 @@ title: Slot
 description: 가변 자식 배열 프리미티브 — CRUD 열셋, :List/:Single 재조정, Detach/KeyGone, dispose
 ---
 
-`Slot<T>`은 **가변 자식 배열**입니다. 부모의 배열부에 한 번 놓이면, 그 뒤로 Slot에 가한 CRUD가 그대로 물리 자식에 반영됩니다 — 부모를 다시 만들지도, 렌더 함수를 다시 돌리지도 않습니다.
+`Slot<T>`은 **가변 자식 배열**입니다. 부모의 배열 부분에 한 번 놓이면, 그 뒤로 Slot에 가한 CRUD가 그대로 물리 자식에 반영됩니다 — 부모를 다시 만들지도, 렌더 함수를 다시 돌리지도 않습니다.
 
 Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 빼는 **수동 CRUD** 모드와, 데이터 배열에 맞춰 quad가 재조정하는 **`:List`/`:Single`** 모드입니다. 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
 
@@ -14,8 +14,8 @@ Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 �
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require(<quad-base 모듈 경로>)
-local QuadTypes = require(<quad-types 모듈 경로>)
 local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.SlotItem<T>` 등)
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
 ```
@@ -147,7 +147,12 @@ Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number
 
 - 수동 CRUD 진입점이라 이 Slot이 수동 모드로 고정됩니다.
 - 삽입 위치는 `n+1`(맨 뒤 다음)까지 허용됩니다. 그 밖은 에러입니다 — `Slot:Add: index out of range (got {index}, limit {limit})`, 정수가 아니면 `Slot:Add: index must be a positive integer (got {tostring(index)})`.
-- 이미 다른 곳에 마운트된 값은 거부됩니다 — `Slot:Add: this element is already mounted — multiple mounts are not allowed`.
+- 이미 다른 곳에 마운트된 값은 거부됩니다. 문구 뒤에 붙는 꼬리 안내는 아래 "죽은 Slot과 마운트 규칙" 절의 것과 같습니다.
+
+  ```
+  Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  ```
+
 - Slot을 자기 자신이나 자기 조상에 넣으면 순환이라 거부됩니다 — `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`.
 - 단일 `Add`는 현재 길이에 비례하는 비용을 냅니다. 여러 개를 한 번에 넣을 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요.
 
@@ -541,7 +546,11 @@ dispose: (value: any) -> ()
 - `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)`
 - `dispose: this backend cannot dispose this value`
 
-⚠️ 마운트 대상 인스턴스를 quad 밖에서(`inst:Destroy()`) 파괴하면 그 값은 영구히 죽습니다. 위 두 에러 뒤에는 그 사정을 알리는 안내가 이어 붙습니다 — `(if its owner was destroyed outside quad — inst:Destroy() — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)`.
+⚠️ 마운트 대상 인스턴스를 quad 밖에서(`inst:Destroy()`) 파괴하면 그 값은 영구히 죽습니다. 위 셋 가운데 `dispose: this value is still held by …` 하나에만 그 사정을 알리는 안내가 뒤에 붙습니다.
+
+```
+(if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+```
 
 **예제**
 
@@ -558,6 +567,12 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
 
 ## 죽은 Slot과 마운트 규칙
 
-- 하나의 원소는 **동시에 한 자리에만** 마운트될 수 있습니다 — `Slot: this element is already mounted — multiple mounts are not allowed`, 다른 Slot이 이미 쥐고 있으면 `Slot: this element is already mounted elsewhere — multiple mounts are not allowed`.
+- 하나의 원소는 **동시에 한 자리에만** 마운트될 수 있습니다. 첫째 문구는 Slot이 원소를 자기 것으로 가져갈 때, 둘째 문구는 그 원소를 인스턴스의 자리에 마운트할 때 이미 임자가 있는 경우입니다.
+
+  ```
+  Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  Slot: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  ```
+
 - 파괴된 Slot은 되살아나지 않습니다 — `Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Slot: destroyed Slot cannot be mounted`.
 - Slot을 자기 자신이나 자기 조상에 넣는 순환은 넣는 시점에 거부됩니다.
