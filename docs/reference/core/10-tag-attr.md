@@ -93,7 +93,7 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [컴포넌트 경계 규약](../../how-to/01-component-conventions.md), [확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md)
+**관련** — [시작하기 05. 이름표와 속성](../../getting-started/05-tag-attr.md), [컴포넌트 경계 규약](../../how-to/01-component-conventions.md), [확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md)
 
 ## `tag:Added(names)`
 
@@ -288,7 +288,7 @@ hp:Set(80)      -- 속성 Hp가 따라 바뀐다
 hp:Set(q.None)  -- 속성 Hp가 삭제된다
 ```
 
-**관련** — [확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md)
+**관련** — [시작하기 05. 이름표와 속성](../../getting-started/05-tag-attr.md), [확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md)
 
 ## `attr:NameMap()`
 

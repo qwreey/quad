@@ -6,7 +6,7 @@ description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적�
 
 > **대상 독자**: 수백~수만 개짜리 목록을 `ScrollingFrame`에 그려야 하는 개발자
 > **다루는 개념**: `LayoutOrder`/`Position` 바인딩, 윈도잉, `userdata`, `Blocker`
-> **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 09. 목록 만들기](../getting-started/09-lists.md)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
+> **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 10. 목록 만들기](../getting-started/10-lists.md)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
 > **재활용과 윈도잉은 서로 다른 행에 걸립니다**: 재활용은 **화면에 계속 남아 있는 키**에만 적용되고, 윈도우 밖으로 나가 키가 사라진 행은 재활용이 아니라 파괴(또는 `q.Detach`로 홀드)입니다(§7).
 
 ---
@@ -34,7 +34,7 @@ local D = q.D
 
 ## 2. 긴 목록에서 특히 중요한 계약 셋
 
-전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 09](../getting-started/09-lists.md)와 [레퍼런스: `Slot`](../reference/core/07-slot.md)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
+전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 10](../getting-started/10-lists.md)와 [레퍼런스: `Slot`](../reference/core/07-slot.md)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
 
 ```
 Slot():List(data, updateFn, keyFn?, opts?)

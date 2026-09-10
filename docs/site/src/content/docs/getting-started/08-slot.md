@@ -1,8 +1,8 @@
 ---
-title: "07. 자식이 들어갈 자리 — Slot"
+title: "08. 자식이 들어갈 자리 — Slot"
 description: "배열 부분의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
-> **대상 독자**: [06. Modifier](/getting-started/06-modifier/)를 끝낸 개발자
+> **대상 독자**: [07. Modifier](/getting-started/07-modifier/)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
 지금까지 자식은 **만들 때 한 번** 적어 넣었습니다. 그런데 화면을 만든 **뒤에**
@@ -108,7 +108,7 @@ print(slotB.Offset:Get(), slotB.Length:Get())   --> 4  1
 
 **실행하면** `slotA`는 자리가 그대로인데 길이만 늘고, `slotB`의 `Offset`이 3에서 4로 따라 움직입니다.
 
-둘 다 `Source`라 그대로 구독할 수 있습니다 — 그래서 `LayoutOrder`처럼 "내가 전체에서 몇 번째인가"가 필요한 프로퍼티에 `자기 순번 + offset`을 바인딩할 수 있습니다. 실제로 그렇게 쓰는 모양은 [09장](/getting-started/09-lists/)에 나옵니다.
+둘 다 `Source`라 그대로 구독할 수 있습니다 — 그래서 `LayoutOrder`처럼 "내가 전체에서 몇 번째인가"가 필요한 프로퍼티에 `자기 순번 + offset`을 바인딩할 수 있습니다. 실제로 그렇게 쓰는 모양은 [10장](/getting-started/10-lists/)에 나옵니다.
 
 > `Length`는 **마운트되기 전에는 0입니다.** 채워지는 것은 부기 재계산이고, 그건 Slot이 실제로 어딘가에 놓인 뒤에 돌기 때문입니다.
 
@@ -137,7 +137,7 @@ print(#host:GetChildren(), outer.Length:Get())                        --> 4  4
 
 지금까지는 `:Add`/`:Remove`를 **손으로** 불렀습니다. 화면에 보일 것이 "데이터 배열 하나"에서 나온다면 그 손이 매번 같은 일을 합니다 — 늘어난 항목만 만들고, 빠진 항목만 지우고, 남은 항목은 그대로 두는 일.
 
-그걸 quad가 대신 해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [09. 목록 만들기](/getting-started/09-lists/)에서 다룹니다.
+그걸 quad가 대신 해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [10. 목록 만들기](/getting-started/10-lists/)에서 다룹니다.
 
 <details>
 <summary><strong>그럼 이 Slot에 나중에 <code>:List</code>를 걸어도 되나요?</strong></summary>

@@ -1,8 +1,8 @@
 ---
-title: "14. 정리 — 여기서부터 어디로"
-description: "열네 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
+title: "15. 정리 — 여기서부터 어디로"
+description: "열다섯 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
 ---
-> **대상 독자**: [13. 값은 언제 흐르나](/getting-started/13-laziness/)까지 따라온 개발자
+> **대상 독자**: [14. 값은 언제 흐르나](/getting-started/14-laziness/)까지 따라온 개발자
 > **목표**: 만든 것을 되짚고, 다음에 읽을 곳 고르기
 
 여기서 새로 배우는 것은 없습니다.
@@ -15,15 +15,16 @@ description: "열네 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽
 - [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 해시 부분은 프로퍼티, 배열 부분은 자식, `Parent`는 밖에서.
 - [03](/getting-started/03-flowing-values/) `q.Source`와 `:Compute`로 값이 **원천에서 프로퍼티까지 흐르게** 했습니다.
 - [04](/getting-started/04-reacting/) 이벤트로 원천을 바꾸고, `:Observer`로 화면 밖에서 **관측**했습니다.
-- [05](/getting-started/05-ref-and-effect/) `q.Ref`로 인스턴스를 잡고, `q.Effect`로 **정리가 필요한 부수 효과**를 달았습니다.
-- [06](/getting-started/06-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
-- [07](/getting-started/07-slot/) `q.Slot`으로 **자식이 들어갈 자리**를 잡고 CRUD로 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것까지.
-- [08](/getting-started/08-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
-- [09](/getting-started/09-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용.
-- [10](/getting-started/10-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다.
-- [11](/getting-started/11-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
-- [12](/getting-started/12-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
-- [13](/getting-started/13-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
+- [05](/getting-started/05-tag-attr/) `q.Tag`와 `q.Attr`로 인스턴스에 **이름표와 속성**을 달아 밖에서 찾을 수 있게 했습니다.
+- [06](/getting-started/06-ref-and-effect/) `q.Ref`로 인스턴스를 잡고, `q.Effect`로 **정리가 필요한 부수 효과**를 달았습니다.
+- [07](/getting-started/07-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
+- [08](/getting-started/08-slot/) `q.Slot`으로 **자식이 들어갈 자리**를 잡고 CRUD로 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것까지.
+- [09](/getting-started/09-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
+- [10](/getting-started/10-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용.
+- [11](/getting-started/11-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다.
+- [12](/getting-started/12-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
+- [13](/getting-started/13-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
+- [14](/getting-started/14-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
 
 ---
 

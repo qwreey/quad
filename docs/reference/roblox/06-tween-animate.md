@@ -244,5 +244,5 @@ local box = D.Frame({ BackgroundTransparency = size })
 **관련**
 
 - [D — 해시 부분](./02-d.md#해시-부분--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
-- [11. 움직이게 하기 — `Tween`과 `Animate`](../../getting-started/11-animation.md)
+- [12. 움직이게 하기 — `Tween`과 `Animate`](../../getting-started/12-animation.md)
 - [05. 테마와 동적 스타일링](../../how-to/05-theme-and-dynamic-styling.md)

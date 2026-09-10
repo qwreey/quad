@@ -5,7 +5,7 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
 > **다루는 개념**: props 테이블의 병합 규칙, 배열 부분의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[시작하기 08. 컴포넌트로 쪼개기](/getting-started/08-components/)에서 컴포넌트가 평범한 함수라는 것을, [06. Modifier](/getting-started/06-modifier/)에서 스타일을 배열 부분에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 09. 컴포넌트로 쪼개기](/getting-started/09-components/)에서 컴포넌트가 평범한 함수라는 것을, [07. Modifier](/getting-started/07-modifier/)에서 스타일을 배열 부분에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -100,7 +100,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
 
-> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 07. 자식이 들어갈 자리](/getting-started/07-slot/) 참고).
+> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 08. 자식이 들어갈 자리](/getting-started/08-slot/) 참고).
 
 ---
 
@@ -179,7 +179,7 @@ local btn2 = CustomButton {
 
 ## 4. 자식을 받는 컴포넌트에 타입 붙이기
 
-호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 07. 자식이 들어갈 자리](/getting-started/07-slot/)). 그 자리에 타입을 붙이면 이렇게 됩니다.
+호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 08. 자식이 들어갈 자리](/getting-started/08-slot/)). 그 자리에 타입을 붙이면 이렇게 됩니다.
 
 ```luau
 local function ModalDialog(props: { read Title: string, read Children: QuadTypes.Slot<Instance>? }): Frame
@@ -220,7 +220,7 @@ props에 `{ DTypes.FrameElem }` 같은 배열을 받아 펼치는 모양도 문�
 
 ## 5. 선언적 메타데이터: `Tag`와 `Attr`
 
-Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 배열 부분에서 선언적으로 다룰 수 있습니다.
+Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 배열 부분에서 선언적으로 다룰 수 있습니다(기본은 [시작하기 05. 이름표와 속성](/getting-started/05-tag-attr/)에서 배웁니다 — 여기서는 컴포넌트 경계에서 지킬 규칙만 봅니다).
 
 ```luau
 local function CharacterBadge(props: { read Name: string, read Level: QuadTypes.StateMarker<number> }): Frame

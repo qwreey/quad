@@ -223,14 +223,14 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: Vide는 순수 push라 소스를 쓰는 즉시 동기·깊이우선으로 의존 노드를 재평가하고, 저자들이 다이아몬드 그래프의 중복 재평가 방지를 `todo.md`에 미해결로 남겼습니다. 의존성은 전역 스코프 스택으로 암묵 추적하는데, 그 때문에 리액티브 스코프 안의 yield가 그래프를 깨는 걸 막는 별도 장치까지 필요했습니다. Fusion은 push 무효화 + pull 재계산 하이브리드지만 eager로 표시된 노드는 즉시 재계산해야 해서, 글리치를 막으려 eager 집합을 생성 순서로 정렬합니다.
 - **우리가 넘은 방법**: `Set`은 "바뀌었다"는 신호만 보내고 값 계산을 하지 않습니다. 재계산은 `:Get()` 시점에 노드 캐시를 통해 일어나므로 신호가 두 경로로 와도 계산은 한 번이고, **다이아몬드 중복 재평가는 이 모델에서 구조적으로 발생하지 않습니다** — Vide가 미해결로 남긴 자리입니다. 의존성은 `:With` / `:Compute(fn, ...deps)`로 적으므로 암묵 추적이 필요한 yield 방어 장치도 없습니다.
 - **그 대가 / 더 나쁜 점**: 의존성을 전부 손으로 나열해야 하고 보일러플레이트가 늘어납니다. `derive()` 안에서 그냥 읽으면 잡히는 Vide 쪽 인체공학은 여기 없습니다. 의존성 목록은 정적이라 실행 중에 바뀌지 않습니다.
-- **자세히**: [13. 값은 언제 흐르나](/getting-started/13-laziness/), [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/quadnomicon/01-revision-and-epochmap/)
+- **자세히**: [14. 값은 언제 흐르나](/getting-started/14-laziness/), [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/quadnomicon/01-revision-and-epochmap/)
 
 ### (3) 형제 여럿을 다루는 자리를 Slot으로 만들고, 마운트에 소유권을 건다
 
 - **이전 선택과 그 한계**: 두 라이브러리 다 마운트에 소유권 가드가 없습니다. Fusion `Children.luau`엔 `-- TODO: check for ancestry conflicts here`가 그대로 남아 있고 이미 마운트된 인스턴스를 조건 없이 재부모화합니다. Vide `mount.luau`도 중복 마운트 체크가 전혀 없어 같은 타깃에 두 번 마운트하면 독립된 루트가 둘 생깁니다. 둘 다 **조용히** 두 벌이 됩니다.
 - **우리가 넘은 방법**: Slot이 자식 위치를 장부로 들고, 이미 마운트된 Slot의 재마운트는 즉시 던집니다. 실재하는 버그 클래스를 막는 가드이고 두 라이브러리 어디에도 없습니다.
 - **그 대가 / 더 나쁜 점**: `LayoutOrder`를 대신 넣어주지 않습니다. `updateFn`이 받는 `index`/`offset`에서 직접 바인딩해야 합니다. 이미 지정한 값을 조용히 덮는 매직이 되고 코어가 Roblox 어휘에 묶이기 때문에 하지 않는 쪽을 골랐습니다.
-- **자세히**: [07. 자식이 들어갈 자리](/getting-started/07-slot/), [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 2 — Slot-in-Slot 부분합 트리](/quadnomicon/02-slot-prefix-sum-tree/)
+- **자세히**: [08. 자식이 들어갈 자리](/getting-started/08-slot/), [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 2 — Slot-in-Slot 부분합 트리](/quadnomicon/02-slot-prefix-sum-tree/)
 
 ### (4) 수명을 GC에 위임한다
 
@@ -244,14 +244,14 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: Fusion의 Tween/Spring은 반응 그래프의 1급 노드입니다. 그래서 매 프레임 틱하는 Stopwatch/ExternalTime 소스, 즉시 재계산되는 eager 노드, 애니메이션과 입력 사이의 교차 lifetime 검증이라는 삼중 장치가 딸려옵니다. quad v1의 `:Tween`은 register 메타테이블 체인의 한 고리라 같은 메소드를 두 번 부르면 마지막 것만 남았습니다.
 - **우리가 넘은 방법**: Tween은 노드가 아니라 **프로퍼티 자리에 꽂는 값**입니다. 그래프는 비즈니스 상태가 바뀔 때만 돌고 보간은 엔진 레이어가 하므로, 프레임 클럭도 eager 노드도 교차 lifetime 체크도 Quad엔 아예 없습니다.
 - **그 대가 / 더 나쁜 점**: 애니메이션 값을 다른 `Compute`의 입력으로 합성할 수 없습니다. 그래프 노드로 두는 Fusion/Vide 쪽이 이 축에서는 낫고, 그렇게 쓰던 코드는 그대로 옮겨오지 않습니다. 명령형 API도 커스텀 함수 이징도 스텝 콜백도 없습니다.
-- **자세히**: [11. 움직이게 하기](/getting-started/11-animation/), [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/how-to/08-migrating-from-v1/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
+- **자세히**: [12. 움직이게 하기](/getting-started/12-animation/), [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/how-to/08-migrating-from-v1/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
 
 ### (6) 스타일시트 대신 Modifier, 그리고 열린 우선순위 축
 
 - **이전 선택과 그 한계**: quad v1의 `style.lua`는 이름 매칭 기반이고 선언 순서에 의존해서, 실행 순서가 꼬이면 스타일이 안 먹는 문서화된 함정이 있었습니다. 특수 키를 하나 더 넣으려면 `class.lua`의 하드코딩된 중앙 디스패처를 직접 고쳐야 했습니다. Fusion의 `SpecialKey`는 모양은 열려 있지만 우선순위가 `self/descendants/ancestor/observer` 4단계로 하드코딩돼 다섯 번째를 쓰면 에러가 납니다. Vide의 `action(callback, priority)`은 등록이 필요 없는 대신 key/value 쌍을 받지 않습니다. CSS식 스타일시트는 적용 위치가 트리 상위여야 해서 스크립팅으로 조립하기 어렵다고 보고 처음부터 후보에서 뺐습니다.
 - **우리가 넘은 방법**: 재사용 스타일은 디스패치 **이전에 정적으로 평탄화되는** 불변 값(`Modifier`)이라 런타임 캐스케이드 계산이 없고, 핸들러는 key·value·타깃을 모두 받으며 우선순위 축은 열린 공간입니다. 라이브러리를 고치지 않고 다섯 번째 우선순위를 끼워 넣을 수 있습니다.
 - **그 대가 / 더 나쁜 점**: 이름으로 멀리서 일괄 적용하는 창구가 없습니다. id를 겨냥하던 v1의 `Style "Child" {}`는 폐지됐고, 우선순위 규칙은 "배열에서 뒤에 온 것이 이김"과 "인라인 키가 무조건 이김" 둘뿐이라 넘기는 쪽이 직접 배치해야 합니다.
-- **자세히**: [06. 스타일을 값으로](/getting-started/06-modifier/), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/quadnomicon/08-extensible-dispatch-engine/)
+- **자세히**: [07. 스타일을 값으로](/getting-started/07-modifier/), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/quadnomicon/08-extensible-dispatch-engine/)
 
 ### (7) 렌더 백엔드를 부착식으로 만든다 — 코어에서 엔진 어휘를 뺀다
 
@@ -283,7 +283,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 ### 일부러 안 했다
 
-- **트리를 거슬러 올라가 조회하는 암묵 맥락이 없습니다.** React식 Context는 렌더 트리와 훅 호출 순서 위에 서는 장치인데, Quad엔 그 둘이 없습니다. Luau에도 함수와 함수 사이로 맥락을 흘려보내는 언어 장치가 없어서, 흉내 내려면 전역 스택을 두고 "지금 어느 컴포넌트를 그리는 중인가"를 관리해야 합니다 — Vide가 의존성 추적에 쓰다가 yield 방어 장치를 따로 두게 된 바로 그 물건입니다. 그래서 `q.Context`는 아무것도 조회하지 않는 **명시적 가방**입니다. 줄어드는 것은 중간 층이 알아야 할 이름의 수이지, 넘기는 행위 자체가 아닙니다 → [10. 층을 건너 값 넘기기](/getting-started/10-context/).
+- **트리를 거슬러 올라가 조회하는 암묵 맥락이 없습니다.** React식 Context는 렌더 트리와 훅 호출 순서 위에 서는 장치인데, Quad엔 그 둘이 없습니다. Luau에도 함수와 함수 사이로 맥락을 흘려보내는 언어 장치가 없어서, 흉내 내려면 전역 스택을 두고 "지금 어느 컴포넌트를 그리는 중인가"를 관리해야 합니다 — Vide가 의존성 추적에 쓰다가 yield 방어 장치를 따로 두게 된 바로 그 물건입니다. 그래서 `q.Context`는 아무것도 조회하지 않는 **명시적 가방**입니다. 줄어드는 것은 중간 층이 알아야 할 이름의 수이지, 넘기는 행위 자체가 아닙니다 → [11. 층을 건너 값 넘기기](/getting-started/11-context/).
 - **암묵 의존성 추적이 없습니다.** 전역 스코프 스택으로 "함수 실행 중과 끝 사이"를 관찰하는 방식은 Lua에서 부작용 없이 깔끔하게 되지 않는다고 보고 기각했습니다. 대신 `:Compute(fn, ...deps)` / `:With(...)`에 적습니다 — 늘어난 보일러플레이트만큼, 재실행 조건을 호출부에서 정적으로 읽습니다.
 - **의존성 목록이 실행 중에 바뀌지 않습니다.** 동적 의존성은 "State는 불변"이라는 전역 가정과 정면으로 부딪히고(목록 변경이 후행 노드 전체로 파급돼야 합니다), 실사용 사례도 사실상 없다고 봤습니다 — React의 `useMemo` deps 배열도 실무에서는 거의 항상 정적으로 나열됩니다.
 - **정리할 것을 담는 스코프 객체가 없습니다.** 생존 판정을 엔진 커넥션에, 회수를 GC에 위임했기 때문입니다. 사용자가 들고 다니는 인프라 물건은 하나도 없고, 절단면은 `Destroy` 하나입니다(그 대가는 아래 "그냥 한계").
@@ -310,7 +310,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 ## 9. 다음 걸음
 
-- **써보기**: [프레임워크 설정](/getting-started/01-setup/) → [첫 화면](/getting-started/02-first-screen/) → [값이 흐르게 하기](/getting-started/03-flowing-values/) → [반응하기](/getting-started/04-reacting/) → … → [컴포넌트로 쪼개기](/getting-started/08-components/) → [움직이게 하기](/getting-started/11-animation/) → [정리](/getting-started/14-wrap-up/)
+- **써보기**: [프레임워크 설정](/getting-started/01-setup/) → [첫 화면](/getting-started/02-first-screen/) → [값이 흐르게 하기](/getting-started/03-flowing-values/) → [반응하기](/getting-started/04-reacting/) → … → [컴포넌트로 쪼개기](/getting-started/09-components/) → [움직이게 하기](/getting-started/12-animation/) → [정리](/getting-started/15-wrap-up/)
 - **설치**: [00. 설치 및 환경 구축](/getting-started/00-installation/) — pesde + Rojo 절차와 타입 검사 플래그.
 - **경계 규약부터 보기**: [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) — props 두 부분의 규칙, 우선순위 불변식, 자식을 `Slot`으로 받기.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](/overview/02-from-v1/) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/).
