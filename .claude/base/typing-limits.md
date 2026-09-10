@@ -1078,3 +1078,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 `((self, state: T? | StateMarker<T?>, updateFn: nil?, opts?) -> Slot<T>) & (<Item, UD>(self, state: Item? | StateMarker<Item?>, updateFn: (…) -> (any, UD?), opts?) -> Slot<T>)`
 두 팔을 교집합으로 뒀다(순서 양쪽 다 시도). 결과(luau-lsp 1.69, `LuauSolverV2`): 매핑 `updateFn`을 주는 호출이 *"None of the overloads for function that accept 3 arguments are compatible"*로 죽고, "Available overloads"에 제네릭 팔이 나열되긴 하나 선택되지 않는다. 비제네릭 팔만 있는 교집합(`Apply`의 두 팔)은 되므로, 실패 조건은 **팔 하나가 메소드 제네릭인 것**. 한 시그니처 `Single: <Item, UD>(self, state: Item? | StateMarker<Item?>, updateFn: (… )?, opts?)`로 두면 양성 넷(매핑·identity·리터럴+opts·`:List` 대조군, `quad-roblox/test/spec.slottypes.luau`) 전부 통과하고, 그 대가로 identity 슈거에 원소가 아닌 State(`Source<string?>`)를 넘기는 오용을 타입이 못 잡는다 — 런타임 가드(`Slot: this backend cannot mount this value`)가 잡으므로 수용. `Item?` 형태의 파라미터 추론은 문제 없었다(`Source<string?>` → `Item = string`).
 
+## 8.20. `<<I>>`로 고정한 생명주기 훅 콜백 안에서 `inst:GetChildren()`의 반환이 `unknown`이 된다 (2026-09-11 실측, GS 08 작성 중)
+
+`q.OnRendered<<Frame>>(function(inst) print(#inst:GetChildren()) end)`가 신 솔버 strict에서 `Operator '#' could not be applied to operand of type unknown`. 같은 식이 최상위나 `PostRef<Frame?>`의 `:Callback` 콜백에서는 통과하고, 같은 콜백 안의 `inst.Size`·`inst.ClassName`·`inst:FindFirstChildOfClass(...)`도 통과한다 — **제네릭 파라미터 `I`로 들어온 인스턴스의 배열 반환 메소드만** 걸린다. 우회는 지역 변수 주석 `const kids: { Instance } = inst:GetChildren()`(GS 08이 그 형태). `reference/sugar/04-lifecycle-hooks.md`의 예제는 `inst.Size`/`inst.ClassName`이라 지금은 안 걸리지만, 자식 순회 예제를 넣을 때 같은 벽 — 8.16과 같은 뿌리(훅의 `I`는 타입 인자로만 채워진다)로 보이나 원인은 좁히지 않았다.
+

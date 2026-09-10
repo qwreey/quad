@@ -5,7 +5,7 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
 > **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[시작하기 10. 컴포넌트로 쪼개기](/getting-started/10-components/)에서 컴포넌트가 평범한 함수라는 것을, [08. Modifier](/getting-started/08-modifier/)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 11. 컴포넌트로 쪼개기](/getting-started/11-components/)에서 컴포넌트가 평범한 함수라는 것을, [09. Modifier](/getting-started/09-modifier/)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -100,7 +100,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
 
-> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 09. 자식이 들어갈 자리](/getting-started/09-slot/) 참고).
+> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 10. 자식이 들어갈 자리](/getting-started/10-slot/) 참고).
 
 ---
 
@@ -179,7 +179,7 @@ local btn2 = CustomButton {
 
 ## 4. 자식을 받는 컴포넌트에 타입 붙이기
 
-호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 09. 자식이 들어갈 자리](/getting-started/09-slot/)). 그 자리에 타입을 붙이면 이렇게 됩니다.
+호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 10. 자식이 들어갈 자리](/getting-started/10-slot/)). 그 자리에 타입을 붙이면 이렇게 됩니다.
 
 ```luau
 local function ModalDialog(props: { read Title: string, read Children: QuadTypes.Slot<Instance>? }): Frame

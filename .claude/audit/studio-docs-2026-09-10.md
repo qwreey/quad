@@ -113,7 +113,7 @@ local card = D.Frame({ Name = "Card", Size = UDim2.fromOffset(240, 160), q.Tag("
 
 ### C-2. `State<Tag>` — `:Compute`가 돌려주는 태그를 배열부에 놓기
 
-레퍼런스 `docs/reference/core/10-tag-attr.md`의 `TagNames`가 `TagMarker`를 포함하고,
+레퍼런스 `docs/reference/core/09-tag-attr.md`의 `TagNames`가 `TagMarker`를 포함하고,
 `quad-base/test/spec.tag.luau` §3이 `q.Source(q.Tag(…))`를 배열부에 놓는다. 실기기에서
 `:Compute` 형태도 그대로 선다 — **캐스트 없이** 배열부에 놓였다.
 

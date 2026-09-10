@@ -1,10 +1,10 @@
 ---
-title: "09. 자식이 들어갈 자리 — Slot"
+title: "10. 자식이 들어갈 자리 — Slot"
 description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
-# [시작하기] 09. 자식이 들어갈 자리 — `Slot`
+# [시작하기] 10. 자식이 들어갈 자리 — `Slot`
 
-> **대상 독자**: [08. Modifier](./08-modifier.md)를 끝낸 개발자
+> **대상 독자**: [09. Modifier](./09-modifier.md)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
 지금까지 자식은 **만들 때 한 번** 적어 넣었습니다. 그런데 화면을 만든 **뒤에**
@@ -204,7 +204,7 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 LayoutOrder = slotB.Offset:Compute(function(o) return o:Get() + 1 end),   -- 지금은 5
 ```
 
-여기서 `+ 1`은 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([12장](./12-lists.md)). 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
+여기서 `+ 1`은 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](./13-lists.md)). 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
 
 ---
 
@@ -239,7 +239,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 한 가지가 앞 절들과 다릅니다. **갈아 끼운 옛 원소는 파괴되지 않습니다** — 트리에서 떼어지기만 하고(`a.Parent`가 `nil`이 됩니다) 값 자체는 살아 있습니다. 실제로 `cur:Set(a)`를 다시 하면 그 인스턴스가 그대로 돌아옵니다. 그러니 **떼어 낸 옛 것은 당신 소유**입니다 — 더 쓸 일이 없으면 직접 `:Destroy()` 하세요.
 
-이건 `Slot`과 다른 물건이 아닙니다. 이 자리에는 quad가 **원소 하나짜리 작은 `Slot`을 대신 만들어 넣습니다**(`Owned = false`로 — 그래서 위처럼 파괴하지 않습니다). 그래서 `Offset`/`Length` 부기도 앞 절들과 똑같이 돕니다. 다만 그 작은 `Slot`은 밖에서 잡을 수 없어서 **`Offset` 값 자체를 쓸 수는 없습니다** — `LayoutOrder`처럼 그 값이 필요하면 [12장](./12-lists.md)의 `:Single`을 직접 걸어야 합니다.
+이건 `Slot`과 다른 물건이 아닙니다. 이 자리에는 quad가 **원소 하나짜리 작은 `Slot`을 대신 만들어 넣습니다**(`Owned = false`로 — 그래서 위처럼 파괴하지 않습니다). 그래서 `Offset`/`Length` 부기도 앞 절들과 똑같이 돕니다. 다만 그 작은 `Slot`은 밖에서 잡을 수 없어서 **`Offset` 값 자체를 쓸 수는 없습니다** — `LayoutOrder`처럼 그 값이 필요하면 [13장](./13-lists.md)의 `:Single`을 직접 걸어야 합니다.
 
 <!-- mock 실측 2026-09-11: gs.refprobe.luau G1~G4(1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨) · gs.refprobe2.luau J3/J4(떼어진 A는 Parent nil, 다시 Set하면 돌아온다) -->
 
@@ -249,7 +249,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 지금까지는 `:Add`/`:Remove`를 **손으로** 불렀습니다. 화면에 보일 것이 "데이터 배열 하나"에서 나온다면 그 손이 매번 같은 일을 합니다 — 늘어난 항목만 만들고, 빠진 항목만 지우고, 남은 항목은 그대로 두는 일.
 
-그걸 quad가 대신해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [12. 목록 만들기](./12-lists.md)에서 다룹니다.
+그걸 quad가 대신해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [13. 목록 만들기](./13-lists.md)에서 다룹니다.
 
 <details>
 <summary><strong>그럼 이 Slot에 나중에 <code>:List</code>를 걸어도 되나요?</strong></summary>

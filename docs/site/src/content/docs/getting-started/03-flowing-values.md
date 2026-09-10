@@ -91,7 +91,7 @@ flowchart LR
 
 파이프의 콜백에서 눈여겨볼 것이 하나 있습니다. **콜백이 받는 `c`는 값이 아니라 핸들입니다** — 그래서 `c:Get()`으로 읽습니다.
 
-파이프가 도는 **시점**도 짚어 둘 만합니다. `count:Set(7)`은 값을 파이프 안으로 밀어 넣지 않습니다 — **"바뀌었다"를 알릴 뿐이고**, 숫자를 글자로 바꾸는 일은 라벨이 그 값을 읽을 때 일어납니다. 이 성질이 라이브러리 곳곳에서 어떤 모습으로 나타나는지는 [16장](/getting-started/16-laziness/)에서 한 번에 봅니다.
+파이프가 도는 **시점**도 짚어 둘 만합니다. `count:Set(7)`은 값을 파이프 안으로 밀어 넣지 않습니다 — **"바뀌었다"를 알릴 뿐이고**, 숫자를 글자로 바꾸는 일은 라벨이 그 값을 읽을 때 일어납니다. 이 성질이 라이브러리 곳곳에서 어떤 모습으로 나타나는지는 [17장](/getting-started/17-laziness/)에서 한 번에 봅니다.
 
 ---
 
@@ -141,7 +141,7 @@ flowchart TB
     end
 ```
 
-안쪽 상자가 바깥 상자에 그대로 들어 있다는 것이 위 규칙의 그림입니다 — `Source`는 `State`의 메소드를 전부 가진 채 `:Set`만 더 갖습니다. 아직 안 나온 `:Apply`는 [11장](/getting-started/11-functions/)에서 처음 쓰고 [14장](/getting-started/14-animation/)에서 애니메이션에 얹으며, `:Gate`는 [15장](/getting-started/15-blocker/)의 `Blocker`가 얹히는 자리입니다.
+안쪽 상자가 바깥 상자에 그대로 들어 있다는 것이 위 규칙의 그림입니다 — `Source`는 `State`의 메소드를 전부 가진 채 `:Set`만 더 갖습니다. 아직 안 나온 `:Apply`는 [12장](/getting-started/12-functions/)에서 처음 쓰고 [15장](/getting-started/15-animation/)에서 애니메이션에 얹으며, `:Gate`는 [16장](/getting-started/16-blocker/)의 `Blocker`가 얹히는 자리입니다.
 
 </details>
 

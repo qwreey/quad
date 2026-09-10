@@ -61,7 +61,7 @@ pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇�
 
 ```
 src/client/UI/Quad.luau       → ReplicatedStorage/Client/UI/Quad   (설정 모듈, 01장)
-src/client/UI/Counter.luau    → ReplicatedStorage/Client/UI/Counter (컴포넌트, 10장)
+src/client/UI/Counter.luau    → ReplicatedStorage/Client/UI/Counter (컴포넌트, 11장)
 src/client/Main.client.luau   → StarterPlayerScripts/Main          (진입점, 01장)
 roblox_packages/              → ReplicatedStorage/roblox_packages
 ```

@@ -189,5 +189,5 @@ local shell = AppShell({ Context = rootCtx, Content = D.Frame {} })
 
 ## 관련
 
-- [컴포넌트로 쪼개기](../../getting-started/10-components.md) — 컴포넌트가 플레인 함수라는 것과 props 경계
+- [컴포넌트로 쪼개기](../../getting-started/11-components.md) — 컴포넌트가 플레인 함수라는 것과 props 경계
 - [디자인 토큰과 테마 전환](../../how-to/05-theme-and-dynamic-styling.md) — `Context`로 테마를 내려보내는 실전 배치
