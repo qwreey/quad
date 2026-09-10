@@ -1,0 +1,5 @@
+/* [2026-09-10] 다크 대응 그림 — 정본은 GitHub 방식 <picture>(prefers-color-scheme)이고,
+   sync-docs.py가 사이트용으로 .light-only/.dark-only 이미지 둘로 바꾼다. Starlight의 테마 토글은
+   OS 설정과 다를 수 있어 data-theme으로 가른다. */
+:root[data-theme='dark'] img.light-only { display: none; }
+:root[data-theme='light'] img.dark-only { display: none; }

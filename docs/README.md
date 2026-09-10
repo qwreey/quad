@@ -132,6 +132,9 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 
 ---
 
+- **[2026-09-10] 그림은 `docs/assets/`에 SVG로, 라이트·다크 두 벌** — 문서에서는 GitHub 방식 그대로 쓴다: `<picture><source media="(prefers-color-scheme: dark)" srcset="../assets/x-dark.svg"><img src="../assets/x.svg" alt="…"></picture>`. `sync-docs.py`가 사이트용으로 경로(`/assets/…`)와 테마 클래스(`.light-only`/`.dark-only`, `site/src/styles/theme-images.css`)로 바꾼다. 박스 문자 아스키아트는 쓰지 않는다(브라우저·폰트마다 깨짐) — 흐름·트리 그림은 ```mermaid.
+
+
 ## 4. 2026-09-09 검토 기록
 
 - **검사**(opus 다섯, 트랙별): 모든 트랙에서 설치 절차 누락(`UseProvider`), `quad.State<T>`류 타입 표기 오류, 근거 없는 성능 수치가 공통이었고,

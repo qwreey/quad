@@ -6,6 +6,7 @@
 - 복사본에서는 본문 첫 H1을 지운다(Starlight가 title로 H1을 그리므로 중복 방지; 원본은 GitHub에서 읽히게 H1 유지).
 - 상대 링크 `(../x/y.md)`·`(./y.md)`·`(../../x/y.md)`(+#anchor)를 사이트 경로 `/<path without .md>/`로 바꾼다(base `/`, 한국어 root 로케일).
 - GitHub 경고 블록(`> [!NOTE]` 등)은 Starlight aside(`:::note` …)로 바꾼다(2026-09-10).
+- `docs/assets/**`를 `site/public/assets/`로 복사하고 `../assets/x.svg` 참조를 `/assets/x.svg`로 바꾼다; 다크 대응 `<picture>`(GitHub 방식)는 `.light-only`/`.dark-only` 이미지 둘로 바꾼다(2026-09-10).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
 """
 import os, re, shutil, sys
@@ -55,6 +56,45 @@ def alerts_to_asides(text):
         out.append(':::')
     return '\n'.join(out)
 
+ASSETS_SRC = os.path.join(DOCS, 'assets')                      # 정본 그림(SVG 등) — 2026-09-10 사용자 결정
+ASSETS_DEST = os.path.join(SITE, 'public', 'assets')            # 사이트에선 /assets/<name>
+PICTURE = re.compile(r'<picture>\s*<source\s+media="\(prefers-color-scheme:\s*dark\)"\s+srcset="([^"]+)"\s*/?>\s*<img\s+([^>]*?)src="([^"]+)"([^>]*?)/?>\s*</picture>', re.S)
+ASSET_REF = re.compile(r'((?:\.\./)+|\./)assets/([A-Za-z0-9_./-]+)')
+
+def rewrite_assets(text):
+    """`../assets/x.svg`류를 `/assets/x.svg`로, `<picture>`(GitHub 다크 대응)를 테마 클래스 이미지 둘로.
+    Starlight는 OS 설정이 아니라 `data-theme`로 테마를 잡으므로 media query가 토글을 못 따른다 —
+    `src/styles/theme-images.css`가 `.light-only`/`.dark-only`를 가른다."""
+    def pic(m):
+        dark, pre, light, post = m.group(1), m.group(2), m.group(3), m.group(4)
+        attrs = (pre + post).strip()
+        return f'<img class="light-only" src="{light}" {attrs}>\n<img class="dark-only" src="{dark}" {attrs}>'
+    text = PICTURE.sub(pic, text)
+    return ASSET_REF.sub(lambda m: f'{BASE}assets/{m.group(2)}', text)
+
+def sync_assets():
+    if not os.path.isdir(ASSETS_SRC):
+        return 0
+    n = 0
+    written = set()
+    for dp, dn, fn in os.walk(ASSETS_SRC):
+        for f in fn:
+            sp = os.path.join(dp, f)
+            dst = os.path.join(ASSETS_DEST, os.path.relpath(sp, ASSETS_SRC))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            written.add(os.path.abspath(dst))
+            data = open(sp, 'rb').read()
+            if not os.path.exists(dst) or open(dst, 'rb').read() != data:
+                open(dst, 'wb').write(data)
+            n += 1
+    if os.path.isdir(ASSETS_DEST):
+        for dp, dn, fn in os.walk(ASSETS_DEST, topdown=False):
+            for f in fn:
+                fp = os.path.abspath(os.path.join(dp, f))
+                if fp not in written:
+                    os.remove(fp)
+    return n
+
 def strip_h1(text):
     lines = text.split('\n')
     i = 0
@@ -73,6 +113,7 @@ def strip_h1(text):
 
 def main():
     failed = 0
+    print(f'  ✓ assets: {sync_assets()} files')
     for track in TRACKS:
         src_dir = os.path.join(DOCS, track)
         if not os.path.isdir(src_dir):
@@ -94,7 +135,7 @@ def main():
                     print(f'ERROR: frontmatter 없음 — {os.path.relpath(sp, DOCS)}', file=sys.stderr)
                     failed += 1
                     continue
-                out = alerts_to_asides(strip_h1(convert(sp, text)))
+                out = rewrite_assets(alerts_to_asides(strip_h1(convert(sp, text))))
                 dst = os.path.join(dest_dir, os.path.relpath(sp, src_dir))
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 written.add(os.path.abspath(dst))

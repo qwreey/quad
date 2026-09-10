@@ -31,6 +31,7 @@ export default defineConfig({
 			defaultLocale: 'root',
 			customCss: [
 				'./src/styles/custom.css',
+				'./src/styles/theme-images.css',
 			],
 			locales: {
 				root: {
