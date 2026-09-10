@@ -72,6 +72,9 @@
    **[2026-09-09 저녁]** 사용자 결정: 초안을 `docs-ignoreme/` → **`docs/`로 옮겨 커밋**(링크는 상대 경로, 진입점 `docs/README.md`), 오버뷰 트랙 신설(퍼널 첫 단 — 사용자 프레이밍으로
    재작성), `comparison-vide-fusion-ignoreme.md` 삭제(오버뷰가 흡수). **`en/` 번역은 잠정 유보** — 사용자: *"내가 여러번 보고 회사 사람들이 여러번 보고 여러 실제 개발자 시점의
    조언들을 전부 처리한 다음 시작"* — 데이터 모이기 전엔 수행하지 않는다. 다른 Deprecated 프로퍼티(Draggable 등)는 실측 안 함(사용자: 잘 안 씀, 현 정책 유지).
+   **[2026-09-10 열린 스레드]** v1 사용자 인게이지먼트 페이지 `docs/overview/02-from-v1.md`(달라진 것/추가된 것/이관 틀 셋/새로 짤 때 전제) —
+   사용자 답 1(v1 사용자는 회사 내부+외부 둘 다) 받음, 미답 둘(이관 틀 (b)/(c) 지원 여부, v1·v2 동시 로드 허용 여부) → 세션 파일 §11.
+   **[2026-09-09 밤]** API 레퍼런스 26페이지 신설·2차 검사 반영 완료(세션 §10; `scripts/doc-coverage.py` test.sh 게이트, `docs/site/sync-docs.py`, 사이트 빌드 103페이지).
    **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
    진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"
    표시로 유지, README §5는 코드 기준 정정. **소스 쪽 이월 둘**: (1) `[q.AttrKey("Hp")] = v` 해시 키가 strict에서 생성 prop 타입에 인덱서가
