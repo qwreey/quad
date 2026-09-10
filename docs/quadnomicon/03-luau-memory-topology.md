@@ -64,8 +64,8 @@ graph TD
     RELATE --> BUCKET
     BUCKET -.->|weak value| CHAIN
 
-    INST ===|nativeClaim의 클로저가 gchold와 inst를 캡처| GCHOLD
-    GCHOLD ===|bindLifetime(inst, list)이 값을 넣음| CHAIN
+    INST ===|"nativeClaim의 클로저가 gchold와 inst를 캡처"| GCHOLD
+    GCHOLD ===|"bindLifetime(inst, list)이 값을 넣음"| CHAIN
     CHAIN --> RETRACTOR
     RETRACTOR -.->|클로저 캡처| INST
 

@@ -51,3 +51,7 @@ npm run deploy:preview    # 현재 브랜치 이름의 프리뷰 URL — <branch
 ## 로고
 
 `src/assets/quad-logo.svg`(가로 로고, 헤더 타이틀 대체)와 `public/favicon.svg`(Q 하나)는 루트의 사용자 원본(Inkscape, git 무시)을 편집기 메타데이터만 벗겨 넣은 것이다. 원본을 다시 따면 같은 정리(주석·`sodipodi`/`inkscape` 속성·id 제거, `style` → `fill`)를 거쳐 교체한다.
+
+## mermaid 문법 검사 (2026-09-10)
+
+다이어그램은 ```mermaid 블록이고 사이트가 **클라이언트에서** 그리므로 빌드는 문법 오류를 못 잡는다(브라우저에 "Syntax error in text"). `npm run check:mermaid`(= `node check-mermaid.mjs`, jsdom 위 mermaid 11 `parse()`)가 `docs/**/*.md`의 블록 전부를 검사하고 오류가 있으면 `파일:줄`과 함께 exit 1 — `deploy.sh`가 sync 뒤에 돌린다. 에지 라벨에 괄호가 들면 `|"…"|`로 따옴표를 감쌀 것(첫 오류가 그것이었다). `mermaid`는 astro-mermaid peer 범위인 **11**로 핀(12는 peer 밖).

@@ -6,6 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 python3 sync-docs.py
+node check-mermaid.mjs   # ```mermaid 문법 — 클라이언트 렌더라 빌드가 못 잡는다(2026-09-10)
 npm run build
 branch="main"
 if [ "${1:-}" = "preview" ]; then branch="$(git rev-parse --abbrev-ref HEAD)"; fi
