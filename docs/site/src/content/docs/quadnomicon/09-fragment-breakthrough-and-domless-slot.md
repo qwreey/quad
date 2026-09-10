@@ -91,9 +91,9 @@ local root = D.Frame {
 
 quad는 자리마다 길이와 오프셋을 부기합니다.
 
-1. 자리 $i$는 자기 길이를 `Dispatch.setLength(ownerKey, i, len)`으로 등록합니다.
+1. 자리 `i`는 자기 길이를 `Dispatch.setLength(ownerKey, i, len)`으로 등록합니다.
    `len`은 상수일 수도, `State`일 수도 있습니다.
-2. 자리 $i$는 자기 시작 위치를 `Dispatch.setOffsetSource(ownerKey, i, source)`로
+2. 자리 `i`는 자기 시작 위치를 `Dispatch.setOffsetSource(ownerKey, i, source)`로
    받습니다. `source`는 `Source<number>` 또는 `None`입니다.
 3. 길이가 바뀌면 그 자리 뒤쪽의 오프셋만 다시 계산됩니다. 재계산은 배치 게이트
    (`Blocker`) 안에서 모여 한 번만 돕니다.
