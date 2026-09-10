@@ -320,3 +320,59 @@ pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 
 
 사이트의 박스 문자 아스키아트는 전부 mermaid로 바꿨지만(`docs/README.md`는 사이트 밖이라 남김), 사용자가 *"Diátaxis 사분면 그림은 나중에 내가 직접 그릴게. 비슷하게 svg 로 올려줄게"*. SVG가 오면 `docs/README.md` §1의 아스키아트를 그 이미지로 교체한다(에이전트가 해도 됨).
 
+## 18. [2026-09-11 신설] 사람 몫 모음 — 도식·눈 검토·실기기·결정·배포 (사용자: "몰아서 넣어줘 … 양 많아도 좋아 천천히 처리")
+
+페이지는 **파일명 슬러그**로 가리킨다(시작하기 번호가 같은 날 두 번 바뀌었다 — `ls docs/getting-started`). 에이전트가 할 수 있는 뒷정리(SVG를 `<picture>`로 심기, 실측 결과로 문장 확정, 결정 반영)는 결과만 알려 주면 된다.
+
+### A. 도식 — 그리면 좋아질 자리 (Slot 세 그림처럼 SVG 라이트·다크 두 벌, `docs/assets/`)
+
+각 항목은 "어디에 / 무엇을 / 왜". 그림 안 라벨은 draw.io에서 **텍스트를 도형으로 변환(또는 plain text로 내보내기)**해 주면 GitHub `<img>`에서도 글자가 보인다(foreignObject 라벨은 GitHub가 안 그린다 — 사이트는 무관).
+
+1. **`*-ref.md`(+ `*-lifecycle-hooks.md`, 레퍼런스 `core/07-ref.md`) — Ref 셋이 채워지는 시점 타임라인.** 가로축이 한 인스턴스의 drive: `PreRef 전부` → `숫자 키를 순서대로(자식·Ref·Observer…)` → `문자 키(프로퍼티·이벤트)` → `PostRef 전부`. 축 끝에 "여기서 `Parent`는 아직 모름 — 리터럴이면 nil, Claim이면 이미 있음"을 표시. 지금은 산문 세 문단이 이 순서를 설명하고 있어 그림 하나면 셋이 준다.
+2. **`*-observer-effect.md`(+ `*-laziness.md`) — 핸들이 살아나는 두 길.** 만들어진 Observer/Effect(아직 자격 없음) → (a) 숫자 키 자리에 놓여 인스턴스에 매달림 / (b) `:Subscribe()` 전역 구독. 옆에 "살아나기 전 도착한 변경은 보류 → 살아나는 순간 최신값으로 한 번 재생" 화살표. 게으름 페이지의 접힘 둘이 말로 하는 것.
+3. **`*-laziness.md` — 다이아몬드 그래프.** 원천 하나 → 두 갈래 → 한 노드로 합류. 왼쪽 "신호(push)"는 두 번 도착, 오른쪽 "계산(pull, `:Get()` 시점)"은 한 번. 오버뷰 §3(Vide 대비)이 같은 그림을 쓸 수 있다.
+4. **`*-blocker.md` — 게이트 스위치.** 상류 → [게이트: 모아 둠] → 하류, 옆에 Blocker `On`/`Off` 스위치와 "Off 때 한 번에 흘려보냄 / OffWithoutEmit은 버림". `Debounce`/`Throttle`이 같은 게이트 위의 시간 정책이라는 것도 같은 그림의 변주로.
+5. **`*-modifier.md` — 우선순위 둘.** 배열 자리 Modifier A, B(뒤가 이김)와 인라인 문자 키(무조건 이김)가 한 프로퍼티에 겹치는 모습. 접힘 안 규칙 셋이 그림 하나로 준다.
+6. **`*-lists.md` — `:List` 재조정 한 사이클.** 데이터 배열 → 키 계산(중복·누락 검사) → 항목마다 `updateFn`(prev 재사용 / 새로 / nil·None 파괴 / Detach 보관) → 사라진 키에 `KeyGone`. 반환 네 갈래 표와 짝.
+7. **`*-components.md`·`how-to/01-component-conventions.md` — 컴포넌트 경계.** 함수 상자 하나에 들어오는 props(문자 키: 값·State / 숫자 키: `Children` Slot·`Ref`·`Modifier`)와 나가는 인스턴스. "마법은 없다"를 그림으로.
+8. **`*-context.md` — 가방 넘기기.** 진입점(가방에 담음) → 중간 컴포넌트(가방만 통과, 안을 모름) → 말단(자기 열쇠로 엶). React식 "거슬러 올라가 조회"와 대비되는 화살표 방향.
+9. **`*-setup.md` — 파일 배치.** `ReplicatedStorage/roblox_packages/…`, 설정 모듈 `Client/UI/Quad`, 진입점 `StarterPlayerScripts/Main.client` 트리 한 장(지금은 코드 주석으로만).
+10. **`how-to/07-studio-ui-binding-and-claim.md` — 템플릿 → `:Clone()` → `Claim` → `D.Mapper` 매핑.** 정적 프로퍼티는 템플릿에 구워 두고 동적 바인딩만 Claim이 심는다는 그림(C 실측 2번과 같이).
+11. **`overview/01-why-quad.md` §1·§6 — 전파 모델 셋 나란히.** Fusion(push 무효화+pull, eager 표시) / Vide(순수 push, 깊이우선) / Quad(신호만 push, 계산은 pull). 3번 그림의 확장판이라 같이 그리면 된다.
+12. **`docs/README.md` Diátaxis 사분면** — 17번 그대로.
+
+### B. 눈으로 볼 것 — 사람 시각 검토 각도 (밀도·흐름·큰 틀·레이아웃)
+
+**밀도(한 화면에 너무 많은가)**: `*-tag-attr.md`(리뷰어가 GS 중 가장 밀도 높다고 — 접힘 반영 뒤 다시), `*-functions.md`(225줄 — 다섯 절이 한 페이지에 맞는지, 커링 절을 둘로 가를지), `*-ref.md`(211줄 — PreRef 절과 Callback/Wait 절 중 하나를 접힘으로 더 줄일지), 새 `*-lifecycle-hooks.md`(바텀업 구성이 "손으로 짠 것 → 이름 → 구현" 세 번 반복이라 지루하지 않은지).
+
+**흐름(순서가 맞는가)**: `*-reacting.md`가 이벤트만 남아 얇아졌는데 한 페이지로 성립하는지(아니면 03과 합칠지); 06 Ref → 07 Observer·Effect → 08 훅 세 페이지 연속이 리듬으로 읽히는지(에이전트 판단으로 Ref를 앞에 뒀다 — Effect가 Ref를 의존성으로 거는 예 때문); `*-functions.md`가 컴포넌트 **뒤**인 것이 맞는지(앞에 두면 컴포넌트를 "팩토리의 한 종류"로 소개할 수 있다 — 에이전트가 뒤를 골랐다); `*-lists.md` §5 `:Single`이 `:List` 뒤에 오는 것과 `*-slot.md` §6(State를 자리에)의 분담; `*-blocker.md` → `*-laziness.md` → `*-wrap-up.md` 마무리 세 장의 호기심 훅이 실제로 동작하는지.
+
+**큰 틀**: 시작하기 19페이지가 너무 긴지 — 얇은 페이지(04 이벤트, 09 Modifier)를 이웃에 합칠지; 오버뷰 §7의 새 라벨 셋("치른 대가 / 알아 둘 것 / 다른 관점")이 첫 독자에게 자연스러운지, §8 "오늘의 성숙도 / 구조상 안 메워지는 것"이 방어적으로 읽히지 않는지, (4)·(8) 문단이 길어졌는데 줄일 곳; 레퍼런스 사이드바에서 Sugar가 Core **하위 그룹 맨 뒤**에 있는 배치가 의도와 맞는지(Core 항목 사이에 끼울 수도 있다); 레퍼런스 색인 페이지(`reference/00-index.md`) 길이와 표 폭.
+
+**레이아웃(사이트·GitHub 둘 다)**: Slot 세 그림의 데스크탑 50% / 좁은 창 90% 규칙이 실제 폰 화면에서 좋은지; 다크 모드에서 `-dark.svg` 대비; GitHub에서 draw.io 라벨이 보이는지(위 A 머리); `<details>` 안에 코드 블록이 들어갈 때 여백(custom.css); 레퍼런스의 넓은 표가 가로 스크롤로 잘리는 곳; 랜딩 페이지의 첫 액션·카드; mermaid 그림(03·quadnomicon)의 다크 모드 색.
+
+**문장·톤**: 오버뷰 존댓말 전환 뒤 어색한 문장("~하시면", "~드립니다" 과다); GS 06·07·08의 "실행하면" 뒤 문장이 실제 Studio 출력과 같은 어투인지; 사용자 노트가 아닌 에이전트 판단으로 들어간 문구(11 "Lua의 함수는 값입니다" 도입, 오버뷰 (4)(a)의 userdata 설명)가 과하지 않은지.
+
+### C. 실기기(Studio, 별도 계정) 실측 — 결과만 알려 주면 문장 확정은 에이전트가
+
+1. **`*-slot.md` 새 배치 스크린샷** — card / panel / host 예시(사용자 SVG와 같은 구조)를 실제로 띄운 화면. 문서 그림과 실물이 맞는지, 라벨 치우침 없는지.
+2. **템플릿 → `:Clone()` → `Claim` 패턴 실측**(how-to 07) — 정적 프로퍼티가 템플릿에서 그대로 오고 동적 바인딩만 Claim이 심는지, `D.Mapper` 매핑이 직계 자식만 보는지.
+3. **StyleRule vs quad 프로퍼티 직접 대입의 우선순위** — `q.Tag("Card")`에 StyleRule로 `BackgroundColor3`를 걸고 같은 프로퍼티를 quad가 `State`로 바인딩할 때 누가 이기는지(정적/동적 각각). 오버뷰 (6)과 `*-tag-attr.md`가 지금 이 사실을 **어느 쪽으로도 안 적는다** — 결과에 따라 한 문장 추가.
+4. **PostRef/`OnRendered` 시점의 `Parent`** — 리터럴 중첩(예상 nil)과 `Claim`한 인스턴스(예상 이미 있음) 둘에서 실제 값. 문서 캐비엇의 근거.
+5. **`State<Instance?>`를 자리에 놓고 갈아 끼울 때 옛 원소가 파괴되지 않고 `Parent = nil`로 남는지**(mock 실측만 있음) — `*-slot.md` §6 서술의 실기기 확인.
+6. **Deferred 시그널 플레이스에서 `Effect` cleanup이 `Destroy` 직후로 지연되는지** — 오버뷰 (4) "알아 둘 것"의 근거는 설계 실측(`lifecycle-pattern.md`)뿐이라 현 빌드에서 한 번 더.
+7. **14.2** `roblox_sync_config_generator` 없이 Studio 싱크(그대로).
+
+### D. 결정 — `.claude/question.md`와 계획서의 열린 문항
+
+- `question.md` 3절 **D5**(14.2와 같은 것).
+- `research/rfc-docs-section-plan.md` 8절 **Q1~Q6**(공개 범위·형태·기존 결정 둘의 역전·사전 정리 방식·번역·갱신 자동화).
+- ROADMAP·CHANGELOG 공개 계획서(2026-09-11 작성 중 — 끝나면 `research/README.md` 표에 오르고, 그 문서의 열린 결정 절이 여기 해당).
+- **다음 릴리즈 번호** — `CHANGELOG.md` `[Unreleased]`에 BREAKING(`Operator.Index → Indexed`)과 Changed(`Slot:Single` 타입)가 쌓여 있다. SemVer대로면 4.0.0인데 3.0.0 직후라 사용자 판단(이 결정이 나면 `scripts/check-version.py bump`는 에이전트가).
+- 시작하기의 **함수형 페이지 위치**(B 흐름 항목)와 **얇은 페이지 합치기 여부** — 에이전트가 고른 배치라 한 번 봐 달라.
+
+### E. 밖에서 할 것
+
+- 사이트 재배포: dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 오늘 커밋 여섯이 아직 배포 전이다.
+- draw.io SVG 내보내기 설정(위 A 머리) 확인.
+
