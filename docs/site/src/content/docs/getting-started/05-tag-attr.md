@@ -53,8 +53,13 @@ const CollectionService = game:GetService("CollectionService")
 print(#CollectionService:GetTagged("Card"))  --> 1
 ```
 
+<details>
+<summary><strong>quad-base가 태그를 어떻게 처리하나요?</strong></summary>
+
 quad-base는 태그 채널을 직접 건드리지 않습니다. 이름 집합을 계산해 백엔드가 심어 둔
 `addTag`/`removeTag`에 넘기고, quad-roblox가 그것을 `CollectionService`로 잇습니다.
+
+</details>
 
 <details>
 <summary><strong>같은 이름의 <code>Tag</code>를 두 곳에서 붙이면요?</strong></summary>
@@ -145,6 +150,8 @@ active:Set(q.None)           --> {Kind = "counter", Step = 1}   -- Active가 사
 
 </details>
 
+지우기 말고 하나가 더 있습니다 — 한 인스턴스의 **두 자리가 같은 이름**을 요구하는 경우입니다.
+
 <details>
 <summary><strong>이름이 겹치는 <code>Attr</code>을 한 인스턴스의 두 자리에 놓으면요?</strong></summary>
 
@@ -174,6 +181,9 @@ print(#screen:QueryDescendants(".Card"))            --> 1   태그가 Card인 �
 print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 counter인 것
 ```
 
+<details>
+<summary><strong>선택자 문법은 뭐가 더 있나요?</strong></summary>
+
 | 선택자 | 뜻 | 예 |
 |---|---|---|
 | `ClassName` | 클래스(`IsA` 기준이라 상위 클래스도 맞습니다) | `Frame`, `GuiObject` |
@@ -185,6 +195,8 @@ print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 co
 | `A, B` | 합집합 | `Frame, TextLabel` |
 
 <!-- 2026-09-10 Studio 실측(Studio 버전 0.738) -->
+
+</details>
 
 <details>
 <summary><strong>선택자가 조용히 0개를 돌려주는데요?</strong></summary>

@@ -242,10 +242,15 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 **실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `Source`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S1~S4 — LayoutOrder 4 → 5 → 4, cur:Set(nil)이면 자식 수가 4에서 3으로 -->
 
-`updateFn`은 `:List`의 것과 **`index`만 빠진** 같은 규칙입니다 — `(item, offset, prev, userdata)`를 받고, 돌려줄 수 있는 것도 위 표 그대로(`prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 값이 `nil`이 되면 `item` 자리에 `q.KeyGone`이 옵니다.
+<details>
+<summary><strong>자리에 놓은 <code>State</code>와 뭐가 다른가요?</strong></summary>
 
 `updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). **[10장 6절](./10-slot.md)에서 `State`를 자리에 놓은 것이 바로 이 모양입니다** — quad가 `updateFn` 없는 `:Single`을 대신 걸어 준 것이라, 두 장은 같은 물건의 겉과 속입니다. 다른 점은 소유권 하나입니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 파괴하지 않지만(`Owned = false`), 위처럼 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ Owned = false }`를 세 번째 인자로 주면 됩니다).
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S5 — 직접 건 :Single에서 교체된 옛 원소는 파괴됨(isDestroyed true) -->
+
+</details>
+
+`updateFn`은 `:List`의 것과 **`index`만 빠진** 같은 규칙입니다 — `(item, offset, prev, userdata)`를 받고, 돌려줄 수 있는 것도 위 표 그대로(`prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 값이 `nil`이 되면 `item` 자리에 `q.KeyGone`이 옵니다.
 
 ---
 

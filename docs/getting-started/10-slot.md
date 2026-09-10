@@ -99,6 +99,13 @@ const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 �
 
 </details>
 
+<details>
+<summary><strong>같은 원소를 두 자리에 넣으면요?</strong></summary>
+
+**하나의 원소는 동시에 한 자리에만** 마운트될 수 있습니다. 이미 다른 Slot에 든 것을 그대로 `:Add` 하면 거부되니, 먼저 `:Extract`로 꺼내세요.
+
+</details>
+
 ---
 
 ## 3. `Offset`과 `Length` — 내 구간이 어디서 시작하나
@@ -239,7 +246,14 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 한 가지가 앞 절들과 다릅니다. **갈아 끼운 옛 원소는 파괴되지 않습니다** — 트리에서 떼어지기만 하고(`a.Parent`가 `nil`이 됩니다) 값 자체는 살아 있습니다. 실제로 `cur:Set(a)`를 다시 하면 그 인스턴스가 그대로 돌아옵니다. 그러니 **떼어 낸 옛 것은 당신 소유**입니다 — 더 쓸 일이 없으면 직접 `:Destroy()` 하세요.
 
-이건 `Slot`과 다른 물건이 아닙니다. 이 자리에는 quad가 **원소 하나짜리 작은 `Slot`을 대신 만들어 넣습니다**(`Owned = false`로 — 그래서 위처럼 파괴하지 않습니다). 그래서 `Offset`/`Length` 부기도 앞 절들과 똑같이 돕니다. 다만 그 작은 `Slot`은 밖에서 잡을 수 없어서 **`Offset` 값 자체를 쓸 수는 없습니다** — `LayoutOrder`처럼 그 값이 필요하면 [13장](./13-lists.md)의 `:Single`을 직접 걸어야 합니다.
+<details>
+<summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
+
+이건 `Slot`과 다른 물건이 아닙니다. 이 자리에는 quad가 **원소 하나짜리 작은 `Slot`을 대신 만들어 넣습니다**(`Owned = false`로 — 그래서 위처럼 파괴하지 않습니다). 그래서 `Offset`/`Length` 부기도 앞 절들과 똑같이 돕니다. 다만 그 작은 `Slot`은 밖에서 잡을 수 없어서 **`Offset` 값 자체를 쓸 수는 없습니다.**
+
+</details>
+
+`LayoutOrder`처럼 이 자리의 `Offset` 값이 필요하면 [13장](./13-lists.md)의 `:Single`을 직접 걸어야 합니다.
 
 <!-- mock 실측 2026-09-11: gs.refprobe.luau G1~G4(1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨) · gs.refprobe2.luau J3/J4(떼어진 A는 Parent nil, 다시 Set하면 돌아온다) -->
 
@@ -260,8 +274,6 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 - 반대로 `:List`를 건 뒤의 수동 CRUD도 막힙니다.
 
 그래서 목록용 Slot은 인자 없이 `q.Slot()`으로 만들고 곧바로 `:List`를 겁니다.
-
-한 가지 더. **하나의 원소는 동시에 한 자리에만** 마운트될 수 있습니다. 이미 다른 Slot에 든 것을 그대로 `:Add` 하면 거부되니, 먼저 `:Extract`로 꺼내세요.
 
 </details>
 

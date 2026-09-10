@@ -43,7 +43,7 @@ return Quad:UseProvider(QuadRoblox)
 **설정 모듈만 `--!strict`이고, 이 문서의 나머지 화면 코드는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다.** 설정 모듈은 프로젝트 전체가 쓰는 타입이 나오는 자리라 엄격하게 두는 편이 이득이고, 화면 코드까지 `--!strict`으로 올릴 때 붙여야 하는 타입 주석은 [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) §6에 모아 두었습니다.
 
 <details>
-<summary><strong><code>const</code>와 문자열 <code>require</code> — 낯선 문법 둘</strong></summary>
+<summary><strong><code>const</code>와 문자열 <code>require</code>는 뭔가요?</strong></summary>
 
 **`const`**는 Luau의 **재대입할 수 없는 바인딩**입니다. `local`과 같은 자리에 쓰되 나중에 다른 값을 넣을 수 없다는 것만 다릅니다.
 
@@ -81,6 +81,11 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 모듈 인스턴스이고, Roblox의 `require` 캐시 덕에 **어느 ModuleScript에서 require해도 같은 하나(싱글턴)**입니다. `UseProvider`는 그 싱글턴에 백엔드를 설치하는 것이라, **여러 모듈이 각자 `Quad:UseProvider(QuadRoblox)`를 불러도 됩니다** — 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고(멱등), 다른 프로바이더를 넘길 때만 에러입니다.
 
 이 설정 모듈이 **싱글턴을 그대로 쓴다**는 점이 중요합니다. 같은 게임에 quad를 쓰는 다른 코드(다른 라이브러리, 다른 팀의 화면)가 자기 자리에서 또 `Quad:UseProvider(QuadRoblox)`를 불러도 같은 프로바이더라 아무 일도 안 일어나고, 그쪽이 만든 `State`와 여기서 만든 `State`는 같은 모듈의 것이라 섞어 쓸 수 있습니다.
+
+</details>
+
+<details>
+<summary><strong>인스턴스를 따로 만들 수 있나요?</strong></summary>
 
 `Quad.New()`가 끼어드는 자리도 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요할 때가 있습니다 — 같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 또는 헤드리스 테스트에서 mock 프로바이더를 붙일 때입니다. 그럴 땐 이 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](../reference/core/01-quad-module.md).
 

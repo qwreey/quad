@@ -63,7 +63,12 @@ const card = D.Frame {
 
 **이벤트는 프로퍼티와 같은 자리(문자 키)에 씁니다.** 그 이름이 프로퍼티인지 이벤트인지는 엔진 리플렉션이 판정하므로, `Activated` 같은 이름을 그대로 키로 쓰면 됩니다.
 
+<details>
+<summary><strong>콜백엔 정확히 어떤 인자가 오나요?</strong></summary>
+
 **콜백은 엔진이 주는 인자만 받습니다** — `self`도, 인스턴스도 앞에 붙지 않습니다. `Activated`라면 `function(inputObject, clickCount)`가 그대로 들어옵니다. 이 예제에서는 인자를 안 쓰니 빈 파라미터로 뒀습니다.
+
+</details>
 
 흐름을 다시 보면 이렇습니다.
 

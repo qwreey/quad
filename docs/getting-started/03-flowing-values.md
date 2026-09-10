@@ -116,7 +116,7 @@ print(both:Get())  --> "7번"
 
 **실행하면** `suffix`만 바꿨는데도 `both`가 새 값을 내놓습니다. `:Compute` 뒤에 적어 둔 것이 그 파이프가 지켜볼 목록이기 때문입니다.
 
-콜백의 자리는 `(self, previous, ...deps)`입니다 — 첫 자리는 `:Compute`를 부른 그 노드, 둘째 자리는 이 파이프가 직전에 내놓은 결과값, 셋째부터가 뒤에 적은 의존성들입니다. 핸들로 오는 것은 첫 자리와 의존성들이고, `previous`만은 값 그 자체라 **첫 계산에서는 `nil`입니다**. 값은 그대로 두고 **구독 범위만 넓히고** 싶으면 `count:With(suffix)`도 있습니다.
+콜백의 자리는 `(self, previous, ...deps)`입니다 — 첫 자리는 `:Compute`를 부른 그 노드, 둘째 자리는 이 파이프가 직전에 내놓은 결과값, 셋째부터가 뒤에 적은 의존성들입니다. 핸들로 오는 것은 첫 자리와 의존성들이고, `previous`만은 값 그 자체라 **첫 계산에서는 `nil`입니다**.
 
 ---
 
@@ -154,4 +154,4 @@ flowchart TB
 ## 더 알고 싶다면
 
 - [레퍼런스: `Source`](../reference/core/02-source.md) — `:Set`이 같은 값에도 늘 전파하는 이유, 제자리 변경을 알리는 `:Emit`
-- [레퍼런스: `State`](../reference/core/03-state.md) — `:Get`의 lazy 계산, `:Compute`의 인자 검증, `:Apply`와 `:Gate`
+- [레퍼런스: `State`](../reference/core/03-state.md) — `:Get`의 lazy 계산, `:Compute`의 인자 검증, 구독 범위만 넓히는 `:With`, `:Apply`와 `:Gate`

@@ -125,12 +125,12 @@ D.Frame { D.TextLabel { … }, props.Children }
 D.Frame { D.TextLabel { … }, props.Children or q.None }
 ```
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 구멍이 났을 때의 증상은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2에 있습니다.
-
-`props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다.
 
 <details>
 <summary><strong><code>Slot</code>은 왜 <code>Children = …</code> 같은 해시 키로 못 넘기나요?</strong></summary>
+
+`props.Children`이라는 이름부터가 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 
 넘길 수는 있습니다 — 위 코드가 그렇게 합니다. 못 하는 것은 **꽂는 쪽**입니다. `D.Frame { Children = props.Children }`처럼 해시 키의 **값 자리**에 두면 디스패치가 거부합니다.
 
