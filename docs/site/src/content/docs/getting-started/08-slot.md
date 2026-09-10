@@ -1,12 +1,12 @@
 ---
 title: "08. 자식이 들어갈 자리 — Slot"
-description: "배열 부분의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
+description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
 > **대상 독자**: [07. Modifier](/getting-started/07-modifier/)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
 지금까지 자식은 **만들 때 한 번** 적어 넣었습니다. 그런데 화면을 만든 **뒤에**
-자식을 더하거나 빼야 할 때가 있습니다. `Slot`은 배열 부분의 한 자리를
+자식을 더하거나 빼야 할 때가 있습니다. `Slot`은 숫자 키의 한 자리를
 "여기는 나중에 바뀔 구간"으로 잡아 두는 값입니다.
 
 이 장의 예제는 카운터와 별개입니다 — 부기(장부)가 어떻게 움직이는지를 작은 상자 위에서 보고, 다음 장에서 카운터로 돌아갑니다.
@@ -15,7 +15,7 @@ description: "배열 부분의 한 자리를 Slot으로 잡아 두고 CRUD로 �
 
 ## 1. 자리 하나 잡아 두기
 
-`Slot`을 배열 부분에 놓으면 **그 자리가 통째로 Slot의 자식 구간**이 됩니다.
+`Slot`을 숫자 키 자리에 놓으면 **그 자리가 통째로 Slot의 자식 구간**이 됩니다.
 
 ```luau
 -- 새 예시: 별도 스크립트(카운터와 무관)
@@ -34,10 +34,10 @@ const box = D.Frame {
 print(#box:GetChildren())   --> 2
 ```
 
-<img class="light-only" src="/assets/slot-card.svg" alt="Frame의 배열 부분에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
-<img class="dark-only" src="/assets/slot-card-dark.svg" alt="Frame의 배열 부분에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
+<img class="light-only" src="/assets/slot-card.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
+<img class="dark-only" src="/assets/slot-card-dark.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
 
-**실행하면** 상자 안에 라벨 둘이 보입니다. `box`의 배열 부분에는 원소가 하나(`items`)뿐인데 자식은 둘입니다 — Slot이 자기가 든 만큼의 자리를 차지하기 때문입니다.
+**실행하면** 상자 안에 라벨 둘이 보입니다. `box`의 숫자 키 자리에는 원소가 하나(`items`)뿐인데 자식은 둘입니다 — Slot이 자기가 든 만큼의 자리를 차지하기 때문입니다.
 
 <details>
 <summary><strong><code>--!strict</code>에서도 이대로 되나요?</strong></summary>
@@ -75,7 +75,25 @@ items:Clear()                -- 전부 파괴하고 비운다
 print(#box:GetChildren())   --> 0
 ```
 
-**실행하면** 라벨이 그때그때 늘고 줄어듭니다. 살려서 꺼내고 싶으면 `:Remove` 대신 `:Extract`, 전부 살려 꺼내려면 `:ExtractAll`이 있습니다.
+**실행하면** 라벨이 그때그때 늘고 줄어듭니다.
+
+<details>
+<summary><strong><code>:Remove</code>하면 그 라벨은 어디로 가나요?</strong></summary>
+
+사라집니다. Slot은 자리만 빌려주는 것이 아니라 **자기가 든 원소를 소유합니다** — 그래서 Slot이 원소를 버릴 때는 그 원소를 **파괴합니다**. 위의 `:Remove`도, 전부 비우는 `:Clear`도, 같은 자리를 새 원소로 갈아 끼우는 `:Replace`도 옛 원소를 파괴합니다.
+
+살려서 꺼내는 짝이 따로 있습니다.
+
+```luau
+const taken = items:Extract(1)     -- 그 자리에서 살린 채로 꺼낸다
+const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 받는다)
+```
+
+이렇게 꺼낸 원소는 **소유권이 풀린** 상태라, 다른 Slot에 다시 넣거나 `q.dispose`로 직접 지울 수 있습니다.
+
+자세한 것은 [레퍼런스: `Slot`](/reference/core/07-slot/)에 있습니다.
+
+</details>
 
 ---
 

@@ -3,7 +3,8 @@ title: "05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overrid
 description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라이트 테마 전환을 구현하는 법을 설명합니다"
 ---
 > **대상 독자**: 다크/라이트 테마와 재사용 가능한 스타일 아키텍처를 만들려는 개발자
-> **다루는 개념**: 디자인 토큰, `q.Context`, `state:Apply(q.Animate{...})`, `Modifier.Overridden`
+> **다루는 개념**: 디자인 토큰, `q.Context`, `state:Apply(factory)`, `q.Operator.Indexed`,
+> `q.Animate`, `Modifier.Overridden`
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
@@ -83,12 +84,15 @@ local DARK: ColorPalette = {
 
 local isDark = q.Source(true)
 
--- 토큰 하나 = "팔레트에서 색을 뽑는 State"에 애니메이션을 얹은 것
-local function token(pick: (ColorPalette) -> Color3)
-    return isDark
-        :Compute(function(dark)
-            return pick(if dark:Get() then DARK else LIGHT)
-        end)
+-- 지금 쓸 팔레트를 고르는 것은 한 번이면 된다
+local palette = isDark:Compute(function(dark)
+    return if dark:Get() then DARK else LIGHT
+end)
+
+-- 토큰 하나 = "팔레트에서 키 하나를 읽는 State"에 애니메이션을 얹은 것
+local function token(key: string)
+    return palette
+        :Apply(q.Operator.Indexed<<Color3>>(key))
         :Apply(q.Animate({
             Time = 0.25,
             Style = Enum.EasingStyle.Quad,
@@ -102,15 +106,27 @@ return {
         isDark:Set(not isDark:Get())
     end,
     Tokens = {
-        Background = token(function(p) return p.Background end),
-        Surface = token(function(p) return p.Surface end),
-        TextPrimary = token(function(p) return p.TextPrimary end),
-        TextMuted = token(function(p) return p.TextMuted end),
-        Accent = token(function(p) return p.Accent end),
-        Border = token(function(p) return p.Border end),
+        Background = token("Background"),
+        Surface = token("Surface"),
+        TextPrimary = token("TextPrimary"),
+        TextMuted = token("TextMuted"),
+        Accent = token("Accent"),
+        Border = token("Border"),
     },
 }
 ```
+
+### `:Apply(factory)` — 팩토리가 만든 연산을 State에 얹는다
+
+`state:Apply(factory)`는 "팩토리가 만들어 준 연산을 이 State에 적용해 새 State를
+얻는다"는 일반형입니다. 위 `token`이 그 모양을 두 번 씁니다 —
+`q.Operator.Indexed<<V>>(key)`는 상류 값에서 키 하나를 읽어 주는 팩토리(`:Compute`
+슈거)이고, 이어 붙인 `q.Animate({...})`도 같은 자리에 놓이는 팩토리입니다. 덕분에
+토큰마다 `function(p) return p.Background end`를 손으로 하나씩 둘 필요가 없습니다.
+
+`Indexed`의 값 타입은 키에서 추론되지 않으니 `<<Color3>>`처럼 호출자가 직접 적고,
+없는 키는 에러 없이 `nil`이 되니 키 이름은 팔레트 쪽과 맞춰 두세요. 이런 이름 붙은
+콤비네이터가 열넷 있습니다 — [레퍼런스: `Operator`](/reference/sugar/02-operator/).
 
 ### 애니메이션은 `state:Apply(q.Animate{...})`로 붙인다
 
@@ -182,7 +198,7 @@ end
   `:AsTextButton()`으로 검사형 하강을 합니다 — 상위 클래스 Modifier
   (`D.Modifier.GuiObject()`)도 그대로 들어옵니다. `mod:As<<T>>()`는 **무검사**
   캐스트이니 필요할 때만 쓰세요.
-- `Modifier`는 배열 부분에 놓습니다. 선택적이면 `props.Modifier or q.None`
+- `Modifier`는 숫자 키 자리에 놓습니다. 선택적이면 `props.Modifier or q.None`
   관용구를 씁니다.
 
 ---
