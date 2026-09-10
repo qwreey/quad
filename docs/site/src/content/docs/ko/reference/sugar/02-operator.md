@@ -293,5 +293,5 @@ Operator.Index: value is not a table (got number) — cannot read [x]
 
 ## 관련
 
-- [컴포넌트 합성](/quad/ko/getting-started/03-component-composition/) — `:Apply` 자리와 컴포넌트 경계
-- [v1에서 옮겨오기](/quad/ko/how-to/08-migrating-from-v1/) — v1의 연산 헬퍼가 어디로 갔는지
+- [컴포넌트 합성](/ko/getting-started/03-component-composition/) — `:Apply` 자리와 컴포넌트 경계
+- [v1에서 옮겨오기](/ko/how-to/08-migrating-from-v1/) — v1의 연산 헬퍼가 어디로 갔는지

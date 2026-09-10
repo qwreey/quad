@@ -212,6 +212,6 @@ scrollGate:Cancel()
 
 ## 관련
 
-- [Ref](/quad/ko/reference/core/08-ref/) — `Handle`이 받는 `Ref`, 그리고 [`ref:Unwrap()`](/quad/ko/reference/core/08-ref/#refunwrap)
-- [네트워크·입력 브리지](/quad/ko/how-to/04-network-and-input-bridge/) — 바깥 이벤트를 반응형 그래프로 들여올 때
-- [v1에서 옮겨오기](/quad/ko/how-to/08-migrating-from-v1/)
+- [Ref](/ko/reference/core/08-ref/) — `Handle`이 받는 `Ref`, 그리고 [`ref:Unwrap()`](/ko/reference/core/08-ref/#refunwrap)
+- [네트워크·입력 브리지](/ko/how-to/04-network-and-input-bridge/) — 바깥 이벤트를 반응형 그래프로 들여올 때
+- [v1에서 옮겨오기](/ko/how-to/08-migrating-from-v1/)

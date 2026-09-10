@@ -4,7 +4,7 @@ description: "quad v1과 v2가 무엇이 달라졌고 무엇이 추가되어 어
 ---
 > **대상 독자**: `Quad.Init(id)` / `Class "Frame"` / `Store.GetStore(...)`로 쓰는 quad v1 코드베이스를 지금도 굴리고 있는 분.
 > **하는 일**: v1의 무엇이 **왜** 없어졌고, 무엇이 새로 생겨 어떤 문제가 풀렸으며, 이관을 어떤 틀로 잡을 수 있는지를 큰 맥락에서 정리합니다.
-> **안 하는 일**: 관용구별 치환 절차가 아닙니다 — "이건 뭐로 바꿔 쓰나"의 정본은 [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/)이고, 이 문서는 판단에 필요한 만큼만 말하고 거기로 보냅니다.
+> **안 하는 일**: 관용구별 치환 절차가 아닙니다 — "이건 뭐로 바꿔 쓰나"의 정본은 [08. quad v1에서 v2로 옮기기](/ko/how-to/08-migrating-from-v1/)이고, 이 문서는 판단에 필요한 만큼만 말하고 거기로 보냅니다.
 
 ---
 
@@ -19,8 +19,8 @@ v2는 v1의 다음 버전이 아니라 **처음부터 다시 짠 별개의 라�
 그래서 v1 코드는 v2를 들여와도 **손대지 않는 한 그대로 남습니다.** 옮길 값어치는 아래
 2·3절에서 판단하시고, 옮기기로 했다면 4절의 틀 중 하나를 고르면 됩니다. 다만 오늘 시점의
 차단기 하나는 미리 짚어둡니다 — **v2는 아직 배포되지 않았습니다**(설치 경로 셋 모두
-제공 전 — [00. 설치 및 환경 구축](/quad/ko/getting-started/00-installation/)). 도입 자체를
-아직 저울질 중이라면 [왜 Quad인가](/quad/ko/overview/01-why-quad/)의 "맞지 않습니다" 목록을 먼저
+제공 전 — [00. 설치 및 환경 구축](/ko/getting-started/00-installation/)). 도입 자체를
+아직 저울질 중이라면 [왜 Quad인가](/ko/overview/01-why-quad/)의 "맞지 않습니다" 목록을 먼저
 보시는 편이 빠릅니다.
 
 ---
@@ -29,13 +29,13 @@ v2는 v1의 다음 버전이 아니라 **처음부터 다시 짠 별개의 라�
 
 v1에서 자주 쓰이던 기능 중 v2가 **의도적으로 되살리지 않은** 것들입니다. 세 번째 열은
 대체 관용구가 아니라 *그렇게 결정한 이유*입니다(무엇으로 바꿔 쓰는지는
-[08. 이관 가이드](/quad/ko/how-to/08-migrating-from-v1/) §6이 표로 정리합니다).
+[08. 이관 가이드](/ko/how-to/08-migrating-from-v1/) §6이 표로 정리합니다).
 
 | v1에 있던 것 | v2 | 왜 없앴나 |
 |---|---|---|
 | `Frame "id" {}` / `Store.GetObject(id)` / `GetObjects` | 없음 — 분류는 `Tag`, 참조는 그 자리에서 `Ref` | id를 전역에 매핑하는 모델 자체를 현실적이지 않다고 봤습니다. 충돌을 피해야 하는 단위는 대개 컴포넌트 단위로 나오는데, 그건 그 자리에서 참조를 잡으면 풀리는 문제였습니다. |
 | `Style "Child" {}` (이름 타겟 매칭) | `Modifier` — 배열 부분에 놓는 값 | v1의 스타일은 이름 매칭 기반이고 선언 순서에 의존해서, 실행 순서가 꼬이면 스타일이 조용히 안 먹는 함정이 있었습니다. |
-| 명령형 `:Tween{}` / `RunTween` / `StopTween` / 함수 이징 / 스텝 콜백 | 선언형 `q.Tween{}` / `q.Animate{}` | v1의 `:Tween`은 register 메타테이블 체인의 한 고리라 같은 메소드를 두 번 부르면 합성되지 않고 마지막 것만 남았습니다. 애니메이션을 반응 그래프 밖 "프로퍼티 자리에 꽂는 값"으로 옮긴 이유는 [왜 Quad인가](/quad/ko/overview/01-why-quad/) §3에 있습니다. |
+| 명령형 `:Tween{}` / `RunTween` / `StopTween` / 함수 이징 / 스텝 콜백 | 선언형 `q.Tween{}` / `q.Animate{}` | v1의 `:Tween`은 register 메타테이블 체인의 한 고리라 같은 메소드를 두 번 부르면 합성되지 않고 마지막 것만 남았습니다. 애니메이션을 반응 그래프 밖 "프로퍼티 자리에 꽂는 값"으로 옮긴 이유는 [왜 Quad인가](/ko/overview/01-why-quad/) §3에 있습니다. |
 | `Class.Extend()`의 `Getter` / `Setter` / `UpdateTriggers` / `:Update()` | 없음 — 컴포넌트는 평범한 함수 | 갱신이 프로퍼티 단위라 "전체를 다시 그린다"는 개념 자체가 없습니다. OOP 스타일은 타입을 붙이는 난이도가 급격히 커진다는 것도 이유였습니다. |
 | register 체이닝(`:With` → `:Add` → `:Tween` 누적) | `:Compute` / `:Apply` — 매 호출이 새 노드 | 체이닝은 호출마다 테이블과 메타테이블을 새로 쌓으면서도 정작 합성은 되지 않았고, `Register`/`Observe`만 반대로 루트 스토어를 직접 변경하는 순수·불순 혼합이었습니다. |
 | 커스텀 `Signal` / `Disconnecter` | 없음 — 정리는 인스턴스 수명에 묶임 | 이벤트 바인드 뒤에 함수를 넣는 것으로 충분하다고 판단했습니다. v1의 커스텀 Signal 구현은 정리 경로에 연결돼 있지도 않았습니다. |
@@ -64,7 +64,7 @@ v1에는 통일된 정리 모델이 없었습니다. 여러 모듈이 각자 `Pr
 **대가도 같이 알아두셔야 합니다.** quad가 만든 인스턴스는 참조를 놓는 것만으로 회수되지
 않고 **`Destroy`가 유일한 절단면**입니다. 화면을 버릴 때 `Destroy()`를 부르지 않는
 코드 스타일이라면 이 모델은 맞지 않습니다. 자세한 갈래는
-[왜 Quad인가](/quad/ko/overview/01-why-quad/) §3의 수명 항목에 있습니다.
+[왜 Quad인가](/ko/overview/01-why-quad/) §3의 수명 항목에 있습니다.
 
 ---
 
@@ -72,15 +72,15 @@ v1에는 통일된 정리 모델이 없었습니다. 여러 모듈이 각자 `Pr
 
 v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적고, 설계 근거는 링크로 넘깁니다.
 
-- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](/quad/ko/reference/core/07-slot/), [03. 긴 목록 다루기](/quad/ko/how-to/03-virtualized-infinite-scroll/)
-- **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](/quad/ko/reference/extend/02-dispatch-handler-contract/)
-- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **배열 부분에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [03. 컴포넌트 합성](/quad/ko/getting-started/03-component-composition/), [05. 테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/)
-- **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](/quad/ko/how-to/07-studio-ui-binding-and-claim/)
-- **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](/quad/ko/reference/sugar/01-context/)
-- **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](/quad/ko/reference/sugar/03-debounce-throttle/)
-- **grep 가능한 에러.** 메시지는 `주어: 이유 (got X)` 한 모양이고, 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [01. 디버깅과 문제 해결](/quad/ko/how-to/01-debugging-and-troubleshooting/)
-- **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](/quad/ko/how-to/08-migrating-from-v1/), [Quadnomicon Vol. 4 — 공변 마커](/quad/ko/quadnomicon/04-covariant-markers/)
-- **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. 헤드리스 테스트](/quad/ko/how-to/06-headless-testing/)
+- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](/ko/reference/core/07-slot/), [03. 긴 목록 다루기](/ko/how-to/03-virtualized-infinite-scroll/)
+- **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](/ko/reference/extend/02-dispatch-handler-contract/)
+- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **배열 부분에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [03. 컴포넌트 합성](/ko/getting-started/03-component-composition/), [05. 테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/)
+- **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](/ko/how-to/07-studio-ui-binding-and-claim/)
+- **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](/ko/reference/sugar/01-context/)
+- **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](/ko/reference/sugar/03-debounce-throttle/)
+- **grep 가능한 에러.** 메시지는 `주어: 이유 (got X)` 한 모양이고, 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [01. 디버깅과 문제 해결](/ko/how-to/01-debugging-and-troubleshooting/)
+- **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](/ko/how-to/08-migrating-from-v1/), [Quadnomicon Vol. 4 — 공변 마커](/ko/quadnomicon/04-covariant-markers/)
+- **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. 헤드리스 테스트](/ko/how-to/06-headless-testing/)
 
 ---
 
@@ -97,7 +97,7 @@ v2 위에 v1 관용구를 얹는 게 아니라, 화면 하나를 골라 **다시
 옮길 때 바인딩 자리가 이미 준비돼 있습니다. 한 화면을 옮길 때마다 타입 검사를 돌리세요;
 v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
-절차·대응표·strict 진단 목록은 [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/)에
+절차·대응표·strict 진단 목록은 [08. quad v1에서 v2로 옮기기](/ko/how-to/08-migrating-from-v1/)에
 있습니다. AI 코딩 에이전트에게 이 작업을 맡긴다면 quad는 에이전트용 스킬을 함께
 제공합니다 — v1 이관 레퍼런스(영문, 레포의 `docs/skills/quad-ui-dev/`)가
 대응표·제거된 기능·strict 블로커를 에이전트가 읽기 좋은 모양으로 담고 있습니다.
@@ -129,7 +129,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 `Store` 객체 자체를 반대편에 넘기지 마세요 — 넘기는 순간 두 반응 시스템이 같은 노드를
 공유하게 되고, 그때부터는 (c)와 같은 이중 소유 문제가 됩니다. 이 브릿지의 모양 자체는
 `RemoteEvent`나 엔진 입력을 상태로 격리할 때 쓰는 것과 같아서,
-[04. 외부 시그널 브릿징](/quad/ko/how-to/04-network-and-input-bridge/)의 패턴을 그대로
+[04. 외부 시그널 브릿징](/ko/how-to/04-network-and-input-bridge/)의 패턴을 그대로
 가져다 쓰면 됩니다.
 
 > **⚠️ 이 틀의 가장 큰 주의점은 수명(GC)입니다.** v2는 인스턴스에 묶이지 않은 구독을
@@ -141,7 +141,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 > 넣어 수명을 맡기고(화면을 버릴 때 `Destroy`가 같이 정리합니다), 주인이 v1 쪽이면
 > `:Subscribe()`로 살린 핸들을 v1 소유자가 강하게 들고 있다가 그 소유자가 사라지는 자리에서
 > 손으로 해제하세요. 주인 없이 떠도는 강한 구독을 남기면 안 됩니다. 구독의 강·약 계약은
-> [Observer·Effect 레퍼런스](/quad/ko/reference/core/05-observer-effect/)에 있습니다.
+> [Observer·Effect 레퍼런스](/ko/reference/core/05-observer-effect/)에 있습니다.
 
 ### (c) v1이 그린 트리를 `Claim`으로 넘겨받기 — 권장하지 않습니다
 
@@ -155,7 +155,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
 예외는 하나입니다: v1이 만들어놓고 **손을 뗀 정적 트리**(바인딩이 하나도 걸려 있지 않은
 마크업)라면 Studio 프리팹과 성질이 같으므로 `Claim`의 정상 사용 범위 안입니다.
-계약 셋은 [07. Studio UI 바인딩과 `Claim`](/quad/ko/how-to/07-studio-ui-binding-and-claim/)에
+계약 셋은 [07. Studio UI 바인딩과 `Claim`](/ko/how-to/07-studio-ui-binding-and-claim/)에
 있습니다.
 
 ### v1과 v2를 같은 클라이언트에 함께 두기
@@ -180,7 +180,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
 1. **타입 검사 환경부터 만듭니다.** luau 플래그 넷을 켜지 않으면 quad 소스가 파싱조차
    되지 않습니다. 편집기에도 같은 플래그가 필요합니다 —
-   [00. 설치 및 환경 구축](/quad/ko/getting-started/00-installation/)의 타입 검사 절.
+   [00. 설치 및 환경 구축](/ko/getting-started/00-installation/)의 타입 검사 절.
 2. **`Destroy`가 회수의 전부입니다.** 참조를 놓는 것만으로는 회수되지 않습니다. 화면을
    버리는 자리에 `Destroy()`가 반드시 있어야 합니다.
 3. **의존성은 손으로 적습니다.** `:Compute(fn, ...deps)`에 적은 것만 잡히고, 콜백 안에서
@@ -196,14 +196,14 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
    층으로 두세요.
 
 각 항목이 직역 코드에서 어떤 진단으로 나타나는지는
-[08 §7·§8](/quad/ko/how-to/08-migrating-from-v1/)이 진단 문구까지 붙여 정리합니다.
+[08 §7·§8](/ko/how-to/08-migrating-from-v1/)이 진단 문구까지 붙여 정리합니다.
 
 ---
 
 ## 6. 다음 걸음
 
-- **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/) — 툴체인 플래그 넷, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
-- **v1 습관이 가장 자주 걸리는 자리**: [01. 핵심 멘탈 모델](/quad/ko/getting-started/01-core-mental-model/)의 "v1에서 오신 분께" 요약 일곱.
-- **도입 여부를 아직 저울질 중이라면**: [왜 Quad인가](/quad/ko/overview/01-why-quad/) — 설계 선택마다의 대가와, 오늘 시점의 차단기 목록.
+- **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](/ko/how-to/08-migrating-from-v1/) — 툴체인 플래그 넷, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
+- **v1 습관이 가장 자주 걸리는 자리**: [01. 핵심 멘탈 모델](/ko/getting-started/01-core-mental-model/)의 "v1에서 오신 분께" 요약 일곱.
+- **도입 여부를 아직 저울질 중이라면**: [왜 Quad인가](/ko/overview/01-why-quad/) — 설계 선택마다의 대가와, 오늘 시점의 차단기 목록.
 - **에이전트에게 맡긴다면**: v1 이관 스킬 레퍼런스(영문, 레포의 `docs/skills/quad-ui-dev/`).
-- **왜 그렇게 결론났는지 속을 보려면**: [Quadnomicon Vol. 9 — 형제 여럿과 DOMless Slot 트리](/quad/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 8 — 확장 가능한 디스패치 엔진](/quad/ko/quadnomicon/08-extensible-dispatch-engine/), [Vol. 7 — 인스턴스 신원과 GC 철학](/quad/ko/quadnomicon/07-instance-identity-and-gc-philosophy/).
+- **왜 그렇게 결론났는지 속을 보려면**: [Quadnomicon Vol. 9 — 형제 여럿과 DOMless Slot 트리](/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 8 — 확장 가능한 디스패치 엔진](/ko/quadnomicon/08-extensible-dispatch-engine/), [Vol. 7 — 인스턴스 신원과 GC 철학](/ko/quadnomicon/07-instance-identity-and-gc-philosophy/).

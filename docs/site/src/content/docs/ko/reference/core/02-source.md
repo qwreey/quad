@@ -2,7 +2,7 @@
 title: Source
 description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/Emit/Revision, 그리고 State 메소드 전부
 ---
-`Source`는 **값을 직접 쓸 수 있는 유일한 반응형 노드**입니다. 파생 노드인 [`State`](/quad/ko/reference/core/03-state/)는 읽기 전용이고, 전파는 언제나 어떤 `Source`의 `:Set`/`:Emit`에서 시작합니다.
+`Source`는 **값을 직접 쓸 수 있는 유일한 반응형 노드**입니다. 파생 노드인 [`State`](/ko/reference/core/03-state/)는 읽기 전용이고, 전파는 언제나 어떤 `Source`의 `:Set`/`:Emit`에서 시작합니다.
 
 이 페이지의 심볼: [`q.Source(value)`](#qsourcevalue) · [`source:Set(v)`](#sourcesetv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
 
@@ -14,7 +14,7 @@ local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadT
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 ```
 
-`Source`의 생성·읽기·쓰기와 `:Compute`/`:With` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](/quad/ko/reference/core/05-observer-effect/) 참고).
+`Source`의 생성·읽기·쓰기와 `:Compute`/`:With` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](/ko/reference/core/05-observer-effect/) 참고).
 
 ---
 
@@ -54,7 +54,7 @@ local hp = q.Source(100)
 print(hp:Get()) --> 100
 ```
 
-**관련** — [Getting Started 01 핵심 모델](/quad/ko/getting-started/01-core-mental-model/) · [Quadnomicon Vol. 1](/quad/ko/quadnomicon/01-revision-and-epochmap/)
+**관련** — [Getting Started 01 핵심 모델](/ko/getting-started/01-core-mental-model/) · [Quadnomicon Vol. 1](/ko/quadnomicon/01-revision-and-epochmap/)
 
 ---
 
@@ -129,7 +129,7 @@ Revision: number
 - 크고 작음을 비교하지 마세요 — 증가가 아니라 `bit32` 랩어라운드로 감소하는 방향으로 갱신됩니다. 저장해 둔 값과 같으면 그 사이 아무 일도 없었다는 뜻, 다르면 움직였다는 뜻, 그게 전부입니다.
 - 갓 만든 `Source`의 값은 `0`입니다.
 
-**관련** — [Quadnomicon Vol. 1 — Revision과 EpochMap](/quad/ko/quadnomicon/01-revision-and-epochmap/)
+**관련** — [Quadnomicon Vol. 1 — Revision과 EpochMap](/ko/quadnomicon/01-revision-and-epochmap/)
 
 ---
 
@@ -139,12 +139,12 @@ Revision: number
 
 | 메소드 | 문서 |
 |---|---|
-| `:Get()` | [03-state](/quad/ko/reference/core/03-state/#stateget) |
-| `:Compute(fn, ...deps)` | [03-state](/quad/ko/reference/core/03-state/#statecomputefn-deps) |
-| `:With(...)` | [03-state](/quad/ko/reference/core/03-state/#statewith) |
-| `:Apply(factory)` | [03-state](/quad/ko/reference/core/03-state/#stateapplyfactory) |
-| `:Observer(fn)` | [05-observer-effect](/quad/ko/reference/core/05-observer-effect/#stateobserverfn) |
-| `:Gate(setup)` | [03-state](/quad/ko/reference/core/03-state/#stategatesetup) |
+| `:Get()` | [03-state](/ko/reference/core/03-state/#stateget) |
+| `:Compute(fn, ...deps)` | [03-state](/ko/reference/core/03-state/#statecomputefn-deps) |
+| `:With(...)` | [03-state](/ko/reference/core/03-state/#statewith) |
+| `:Apply(factory)` | [03-state](/ko/reference/core/03-state/#stateapplyfactory) |
+| `:Observer(fn)` | [05-observer-effect](/ko/reference/core/05-observer-effect/#stateobserverfn) |
+| `:Gate(setup)` | [03-state](/ko/reference/core/03-state/#stategatesetup) |
 
 한 가지 예외는 `:Get()`입니다. `Source`는 자기 값을 그대로 돌려주는 자기만의 `:Get()`을 갖습니다(캐시도 재계산도 없습니다). 나머지는 `State`의 구현을 그대로 씁니다.
 
@@ -155,4 +155,4 @@ local label: QuadTypes.State<string> = hp:Compute(function(self)
 end)
 ```
 
-**관련** — [03-state](/quad/ko/reference/core/03-state/) · [04-store](/quad/ko/reference/core/04-store/) · [How-To 02 폼 검증](/quad/ko/how-to/02-form-validation-pattern/)
+**관련** — [03-state](/ko/reference/core/03-state/) · [04-store](/ko/reference/core/04-store/) · [How-To 02 폼 검증](/ko/how-to/02-form-validation-pattern/)

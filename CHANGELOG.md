@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-10
+
 ### Changed
 
 - **BREAKING — 처음부터 다시 쓴 별개 라이브러리입니다.** 3.x는 quad v1(2.x)과 API 호환이 없고 패키지 이름도 다릅니다(`qwreey/quad_base` + `qwreey/quad_roblox`, pesde). 무엇이 왜 없어졌고 어떤 틀로 옮기는지는 [quad v1에서 오는 분께](./docs/overview/02-from-v1.md), 절차는 [quad v1에서 v2로 옮기기](./docs/how-to/08-migrating-from-v1.md). v1은 `master` 브랜치와 GitHub 릴리즈(rbxmx)에 그대로 남습니다.

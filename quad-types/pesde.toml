@@ -1,5 +1,5 @@
 name = "qwreey/quad_types"
-version = "0.0.0"
+version = "3.0.0"
 description = "quad — public type contract (no implementation) plus the version-compatibility type function; backends and plugins depend on this instead of quad-base"
 includes = ["src/**", "README.md", "LICENSE", "pesde.toml"]
 license = "MIT"

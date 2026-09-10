@@ -1,5 +1,5 @@
 name = "qwreey/quad_error"
-version = "0.0.0"
+version = "3.0.0"
 description = "Level-tagged error utility: tag functions with setFuncLevel and let errorAt/errorBefore blame the right caller frame (engine-agnostic, not quad-specific)"
 includes = ["src/**", "README.md", "LICENSE", "pesde.toml"]
 license = "MIT"

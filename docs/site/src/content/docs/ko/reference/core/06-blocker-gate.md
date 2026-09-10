@@ -4,7 +4,7 @@ description: 값 기반 전파 유보 — On/Off/OffWithoutEmit/Policy와 state:
 ---
 `Blocker`는 **전파를 잠시 붙잡아 두는 스위치**입니다. 여러 값을 한 번에 바꿀 때 중간 상태가 하류로 새는 걸 막고, 다 바꾼 뒤 **한 번만** 통지하고 싶을 때 씁니다.
 
-`Blocker` 자체는 새 메커니즘이 아니라 [`state:Gate(setup)`](/quad/ko/reference/core/03-state/#stategatesetup) 위에 얹힌 **정책**입니다 — 게이트 계약(무엇이 유보되고 `emit`이 무엇을 하는지)은 그쪽이 정본이고, 이 페이지는 그 위의 스위치만 다룹니다.
+`Blocker` 자체는 새 메커니즘이 아니라 [`state:Gate(setup)`](/ko/reference/core/03-state/#stategatesetup) 위에 얹힌 **정책**입니다 — 게이트 계약(무엇이 유보되고 `emit`이 무엇을 하는지)은 그쪽이 정본이고, 이 페이지는 그 위의 스위치만 다룹니다.
 
 이 페이지의 심볼: [`q.Blocker()`](#qblocker) · [`blocker.IsBlocked`](#blockerisblocked) · [`blocker:IsOn()`](#blockerison) · [`blocker:On()`](#blockeron) · [`blocker:Off()`](#blockeroff) · [`blocker:OffWithoutEmit()`](#blockeroffwithoutemit) · [`blocker:Policy(emit)`](#blockerpolicyemit) · [`state:Apply(blocker)`](#stateapplyblocker)
 
@@ -60,7 +60,7 @@ mp:Set(40) -- 아직 아무도 통지받지 않았다
 blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 ```
 
-**관련** — [03-state](/quad/ko/reference/core/03-state/#stategatesetup) · [05-observer-effect](/quad/ko/reference/core/05-observer-effect/)
+**관련** — [03-state](/ko/reference/core/03-state/#stategatesetup) · [05-observer-effect](/ko/reference/core/05-observer-effect/)
 
 ---
 
@@ -70,7 +70,7 @@ blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 
 그래서 **같은 `Blocker`를 겹쳐 잠그는 것은 지원하지 않습니다** — 안쪽 구간이 `:Off()`를 부르면 바깥 구간이 아직 끝나지 않았어도 풀립니다. 겹치는 구간이 필요하면 구간마다 별도의 `Blocker`를 만드세요.
 
-"유보된 게 있는가"를 알려주는 필드는 없습니다. 그 정보는 게이트의 `emit(commit)` 반환값이 유일한 통로입니다([03-state](/quad/ko/reference/core/03-state/#stategatesetup)).
+"유보된 게 있는가"를 알려주는 필드는 없습니다. 그 정보는 게이트의 `emit(commit)` 반환값이 유일한 통로입니다([03-state](/ko/reference/core/03-state/#stategatesetup)).
 
 ---
 
@@ -165,7 +165,7 @@ end)
 
 ## `state:Apply(blocker)`
 
-`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](/quad/ko/reference/core/03-state/#stateapplyfactory)의 객체 팔로 붙습니다. 정확히 다음과 같습니다:
+`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](/ko/reference/core/03-state/#stateapplyfactory)의 객체 팔로 붙습니다. 정확히 다음과 같습니다:
 
 ```luau
 state:Apply(blocker)
@@ -183,4 +183,4 @@ local gated: QuadTypes.State<number> = hp:Apply(blocker)
 
 붙이지 않은 `Blocker`는 아무 일도 하지 않습니다 — `:On()`/`:Off()`는 **붙어 있는 게이트**를 통해서만 효과를 냅니다.
 
-**관련** — [03-state](/quad/ko/reference/core/03-state/) · [05-observer-effect](/quad/ko/reference/core/05-observer-effect/) · [How-To 03 가상 스크롤](/quad/ko/how-to/03-virtualized-infinite-scroll/)
+**관련** — [03-state](/ko/reference/core/03-state/) · [05-observer-effect](/ko/reference/core/05-observer-effect/) · [How-To 03 가상 스크롤](/ko/how-to/03-virtualized-infinite-scroll/)

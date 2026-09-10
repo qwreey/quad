@@ -8,11 +8,16 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "sync": "python3 sync-docs.py"
+    "sync": "python3 sync-docs.py",
+    "deploy": "./deploy.sh",
+    "deploy:preview": "./deploy.sh preview"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.0",
     "astro": "^5.0.0",
     "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "wrangler": "^4.130.0"
   }
 }

@@ -277,4 +277,4 @@ end
 ---
 
 ## 다음 단계
-- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/quad/ko/how-to/04-network-and-input-bridge/)
+- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/ko/how-to/04-network-and-input-bridge/)

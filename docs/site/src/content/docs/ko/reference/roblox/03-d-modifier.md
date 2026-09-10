@@ -13,7 +13,7 @@ description: "클래스별 Modifier 생성자, setter 체인의 값 대수, 검�
 :::note
 `D.Modifier`는 `quad-roblox` 백엔드 전용입니다 — `q = Quad:UseProvider(QuadRoblox)` 뒤에만 존재합니다.
 타입 없는 기본 `q.Modifier(...)`는 `quad-base`의 것이고, 예약 메소드(`Apply`/`Peek`/`Overridden`/`As`)의
-정본도 그쪽입니다([core/09 — Modifier](/quad/ko/reference/core/09-modifier/)). 이 페이지는 **클래스가 붙었을 때
+정본도 그쪽입니다([core/09 — Modifier](/ko/reference/core/09-modifier/)). 이 페이지는 **클래스가 붙었을 때
 달라지는 것**을 다룹니다.
 :::
 
@@ -99,14 +99,14 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 | 넣는 것 | 뜻 |
 |---|---|
 | 리터럴 값 | 그 값으로 덮어쓴다 |
-| `Tween` | 트윈 값으로 덮어쓴다(소비는 프로퍼티 핸들러 — [Tween과 Animate](/quad/ko/reference/roblox/06-tween-animate/)) |
+| `Tween` | 트윈 값으로 덮어쓴다(소비는 프로퍼티 핸들러 — [Tween과 Animate](/ko/reference/roblox/06-tween-animate/)) |
 | `State` | State를 통째로 필드에 넣는다(발행될 때마다 프로퍼티가 따라간다) |
 | `q.None` | **언셋** — 그 필드를 명시적으로 `None`으로 만든다 |
 | `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") |
 | 함수 | **변환 함수** — 아래 |
 
 **보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라
-`FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](/quad/ko/reference/roblox/02-d/#해시-부분--프로퍼티와-이벤트)와 같은
+`FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](/ko/reference/roblox/02-d/#해시-부분--프로퍼티와-이벤트)와 같은
 구분입니다(`Tween` 팔이 있는 타입은 `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector3`·`Color3`·
 `CFrame`·`Rect`).
 
@@ -150,7 +150,7 @@ Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/S
 ```
 
 `State`/`Source`는 통과합니다. 이 값들은 필드가 아니라 **props의 배열 부분**에 놓는 것이 자리입니다
-([D — 배열 부분](/quad/ko/reference/roblox/02-d/#배열-부분--자식과-디스크립터)).
+([D — 배열 부분](/ko/reference/roblox/02-d/#배열-부분--자식과-디스크립터)).
 
 **필드 이름**
 
@@ -257,7 +257,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 
 컴포넌트가 자기 Modifier 클래스를 만들고 싶다면 `quad-base`의 `q.Modifier.TypedFactory(name)`으로
 태그 생성자를 얻고 `q.Modifier.DefineSubtype(parent, subtype)`으로 상속 간선을 등록하면 됩니다
-([core/09 — Modifier](/quad/ko/reference/core/09-modifier/)) —
+([core/09 — Modifier](/ko/reference/core/09-modifier/)) —
 `D.Modifier.<Class>`가 쓰는 것과 정확히 같은 등록 경로라, 커스텀 클래스도 `Into<Class>` 자리에서
 `FrameModifier`와 같은 지위를 갖습니다.
 
@@ -275,7 +275,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
   end
   local bold = D.Modifier.TextButton():Text("go"):Apply(Boldify)
   ```
-- `Peek: <T>(self, key: string) -> FieldOut<T>?`([core/09 — Modifier](/quad/ko/reference/core/09-modifier/)) —
+- `Peek: <T>(self, key: string) -> FieldOut<T>?`([core/09 — Modifier](/ko/reference/core/09-modifier/)) —
   **저장된 그대로** 돌려줍니다(State는 State인 채로,
   `None`은 `None`인 채로). 호출부가 `T`를 명시합니다: `mod:Peek<<UDim2>>("Size")`.
   빈 문자열이나 비문자열 키는 `Modifier:Peek: key must be a non-empty string (got {…})`.
@@ -287,6 +287,6 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 
 **관련**
 
-- [D — Instance 생성](/quad/ko/reference/roblox/02-d/) — Modifier가 배열 부분에서 소진되는 규칙
-- [03. 컴포넌트 합성](/quad/ko/getting-started/03-component-composition/)
-- [05. 테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+- [D — Instance 생성](/ko/reference/roblox/02-d/) — Modifier가 배열 부분에서 소진되는 규칙
+- [03. 컴포넌트 합성](/ko/getting-started/03-component-composition/)
+- [05. 테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/)

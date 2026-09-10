@@ -6,7 +6,7 @@ description: "공변 마커로 Luau New Solver의 불변성 제약과 유니언 
 > **관련 소스**: `quad-types/src/init.luau`, `quad-roblox/src/D/init.luau`(생성 파일), `scripts/gen-d.py`
 
 > [!CAUTION]
-> 이 권은 공개 타입 표면의 변성 설계와 솔버 한도를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/quad/ko/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 공개 타입 표면의 변성 설계와 솔버 한도를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/ko/getting-started/01-core-mental-model/)부터 보십시오.
 
 ---
 

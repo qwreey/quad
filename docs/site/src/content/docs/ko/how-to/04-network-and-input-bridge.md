@@ -205,11 +205,11 @@ end)
    `Source:Set`으로 상태를 바꿉니다.
 2. **UI와 네트워크 디커플링**: 컴포넌트는 `Store`/`State`만 소비하게 두면
    헤드리스 테스트가 쉬워집니다
-   ([06. 헤드리스 테스트](/quad/ko/how-to/06-headless-testing/)).
+   ([06. 헤드리스 테스트](/ko/how-to/06-headless-testing/)).
 3. **수명 동기화**: 컴포넌트에 매달린 외부 연결은 `Effect`의 cleanup이나
    `OnDestroyed`로 반드시 같이 정리합니다.
 
 ---
 
 ## 다음 단계
-- [05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overridden`](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+- [05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overridden`](/ko/how-to/05-theme-and-dynamic-styling/)

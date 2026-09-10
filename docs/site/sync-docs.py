@@ -4,7 +4,7 @@
 - 트랙 폴더를 재귀 복사한다(reference/core 같은 하위 폴더 포함).
 - 원본은 Starlight frontmatter(title/description)를 갖는다 — 없으면 실패한다(사용자 결정: frontmatter는 원본에).
 - 복사본에서는 본문 첫 H1을 지운다(Starlight가 title로 H1을 그리므로 중복 방지; 원본은 GitHub에서 읽히게 H1 유지).
-- 상대 링크 `(../x/y.md)`·`(./y.md)`·`(../../x/y.md)`(+#anchor)를 사이트 경로 `/quad/ko/<path without .md>/`로 바꾼다.
+- 상대 링크 `(../x/y.md)`·`(./y.md)`·`(../../x/y.md)`(+#anchor)를 사이트 경로 `/ko/<path without .md>/`로 바꾼다(base `/`).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
 """
 import os, re, shutil, sys
@@ -12,7 +12,7 @@ import os, re, shutil, sys
 SITE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.dirname(SITE)
 DEST = os.path.join(SITE, 'src', 'content', 'docs', 'ko')
-BASE = '/quad/ko/'
+BASE = '/ko/'  # [2026-09-10] Cloudflare Pages 루트 배포 — astro.config의 base '/'와 짝
 TRACKS = ['overview', 'getting-started', 'how-to', 'quadnomicon', 'reference']
 LINK = re.compile(r'\[([^\]]*)\]\(((?:\.\.?/)+[^)#\s]+?\.md)(#[^)\s]*)?\)')
 

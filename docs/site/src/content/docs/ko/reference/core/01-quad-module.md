@@ -28,7 +28,7 @@ New: () -> Quad
 
 **동작** — 완전히 독립적인 모듈 인스턴스를 만듭니다. 서브시스템(디버그 표면, 생명주기 스텁, 반응형 코어, 디스패치, Ref, Claim, Slot, Tag/Attr, 시간 게이트, 생명주기 훅)이 그 자리에서 설치됩니다.
 
-- **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/) 참고.
+- **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/) 참고.
 - 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다.
 - 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다.
 
@@ -129,7 +129,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으면 호출한 줄을 blame하며 던집니다 —
 
 ```
-quad-roblox: requires a quad-base matching version pattern '0.0.0' (got '{q.Version}')
+quad-roblox: requires a quad-base matching version pattern '3.0.0' (got '{q.Version}')
 ```
 
 **예제**
@@ -145,7 +145,7 @@ print(q2 == q) --> true
 **시그니처**
 
 ```luau
-Version: "0.0.0"
+Version: "3.0.0"
 ```
 
 **동작** — 이 quad-base 사본의 버전 문자열. 타입이 싱글톤 문자열이라 타입 층에서도 값이 그대로 보입니다. 백엔드는 `UseProvider` 시점에 이 값을 자기 패턴과 대조하는 데 씁니다(위 참고).
@@ -160,7 +160,7 @@ Version: "0.0.0"
 debug: boolean
 ```
 
-**동작** — 기본값 `false`. 지금 이 플래그를 읽는 자리는 **하나** — `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견하면 진단 줄을 출력할지 결정할 때입니다([`../extend/02-dispatch-handler-contract.md`](/quad/ko/reference/extend/02-dispatch-handler-contract/)). 그 외의 동작에는 영향이 없습니다.
+**동작** — 기본값 `false`. 지금 이 플래그를 읽는 자리는 **하나** — `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견하면 진단 줄을 출력할지 결정할 때입니다([`../extend/02-dispatch-handler-contract.md`](/ko/reference/extend/02-dispatch-handler-contract/)). 그 외의 동작에는 영향이 없습니다.
 
 ```luau
 q.debug = true -- 핸들러 우선순위 동률 경고를 켠다
@@ -188,7 +188,7 @@ errorNamespace: ErrorNamespace
 
 백엔드와 플러그인은 자기 quad-error 사본으로 새 네임스페이스를 만들지 말고 **이 값을 받아** 자기 표면을 태깅해야 합니다 — 사본마다 태그 맵이 갈리면 경계 탐색이 끊깁니다. 같은 사본 안의 모든 모듈 인스턴스가 같은 네임스페이스를 공유합니다.
 
-자세한 사용법은 [`../extend/01-backend-provider-contract.md`](/quad/ko/reference/extend/01-backend-provider-contract/).
+자세한 사용법은 [`../extend/01-backend-provider-contract.md`](/ko/reference/extend/01-backend-provider-contract/).
 
 ## `q.Relate()`
 
@@ -218,11 +218,11 @@ rel:SetStrong(host, "meta", { label = "hello" })
 print(rel:GetStrong(host, "meta").label) --> hello
 ```
 
-`q.Void`(공용 no-op 함수)도 같은 잎 계열로 모듈 표면에 실려 있습니다 — [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/#qvoid).
+`q.Void`(공용 no-op 함수)도 같은 잎 계열로 모듈 표면에 실려 있습니다 — [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/#qvoid).
 
 ## 관련
 
-- [`../../getting-started/00-installation.md`](/quad/ko/getting-started/00-installation/) — 두 패키지를 require하고 백엔드를 설치하기까지
-- [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/) — 백엔드가 없는 모듈에서 나는 스텁 에러
-- [`../extend/01-backend-provider-contract.md`](/quad/ko/reference/extend/01-backend-provider-contract/) — 프로바이더가 채워야 하는 슬롯 전체
-- [`../roblox/01-install.md`](/quad/ko/reference/roblox/01-install/) — `QuadRoblox`가 싣는 표면
+- [`../../getting-started/00-installation.md`](/ko/getting-started/00-installation/) — 두 패키지를 require하고 백엔드를 설치하기까지
+- [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/) — 백엔드가 없는 모듈에서 나는 스텁 에러
+- [`../extend/01-backend-provider-contract.md`](/ko/reference/extend/01-backend-provider-contract/) — 프로바이더가 채워야 하는 슬롯 전체
+- [`../roblox/01-install.md`](/ko/reference/roblox/01-install/) — `QuadRoblox`가 싣는 표면

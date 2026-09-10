@@ -349,8 +349,8 @@ q.Dispatch.addHandler({
 
 ## 관련
 
-- [백엔드 프로바이더 규약](/quad/ko/reference/extend/01-backend-provider-contract/) — 핸들러가 부르는 주입 op(`native*`, 생명주기)의 계약
-- [core/11 — 생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/) — retractor 자리에 돌려주는 `q.Void`, 값 자리의 `q.None`
-- [core/06 — Blocker·Gate](/quad/ko/reference/core/06-blocker-gate/) — 배치 게이트에 쓰이는 `Blocker`
-- [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](/quad/ko/quadnomicon/08-extensible-dispatch-engine/) — 이 엔진이 왜 이렇게 생겼는가
-- [Quadnomicon Vol. 2 — Slot-in-Slot 부분합 트리](/quad/ko/quadnomicon/02-slot-prefix-sum-tree/) — Length/Offset 부분합 트리의 설계
+- [백엔드 프로바이더 규약](/ko/reference/extend/01-backend-provider-contract/) — 핸들러가 부르는 주입 op(`native*`, 생명주기)의 계약
+- [core/11 — 생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/) — retractor 자리에 돌려주는 `q.Void`, 값 자리의 `q.None`
+- [core/06 — Blocker·Gate](/ko/reference/core/06-blocker-gate/) — 배치 게이트에 쓰이는 `Blocker`
+- [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](/ko/quadnomicon/08-extensible-dispatch-engine/) — 이 엔진이 왜 이렇게 생겼는가
+- [Quadnomicon Vol. 2 — Slot-in-Slot 부분합 트리](/ko/quadnomicon/02-slot-prefix-sum-tree/) — Length/Offset 부분합 트리의 설계

@@ -3,7 +3,7 @@ title: "왜 Quad인가 — 이전 선택을 안 따른 이유, 그리고 그 대
 description: "Quad가 이전 프레임워크와 다른 설계를 고른 이유와 그 선택이 치른 대가를 정리합니다"
 ---
 > **대상 독자**: Roblox 클라이언트 UI를 만드는 엔지니어. "이걸 배울 값이 있나"를 30분 안에 판단하려는 사람.
-> **하는 일**: 설계 선택마다 **이전 프레임워크가 무엇을 골랐고 어디서 막혔는지**, **우리는 어떻게 넘었는지**, **그 대신 무엇이 나빠졌는지**를 같이 적습니다. **안 하는 일**: 사용법도 내부 알고리즘도 아닙니다(쓰는 법은 [Getting Started](/quad/ko/getting-started/01-core-mental-model/), 원리는 [The Quadnomicon](/quad/ko/quadnomicon/01-revision-and-epochmap/) — 각 항목에서 링크합니다).
+> **하는 일**: 설계 선택마다 **이전 프레임워크가 무엇을 골랐고 어디서 막혔는지**, **우리는 어떻게 넘었는지**, **그 대신 무엇이 나빠졌는지**를 같이 적습니다. **안 하는 일**: 사용법도 내부 알고리즘도 아닙니다(쓰는 법은 [Getting Started](/ko/getting-started/01-core-mental-model/), 원리는 [The Quadnomicon](/ko/quadnomicon/01-revision-and-epochmap/) — 각 항목에서 링크합니다).
 
 ---
 
@@ -58,56 +58,56 @@ Fusion도, Vide도, quad 자신의 v1도 같은 문제들을 각자의 방식으
 - **이전 선택과 그 한계**: Fusion도 Vide도 quad v1도 가상 DOM을 두지 않았고, 이 선택은 그대로 이어받았습니다. 반대편 길인 vdom 재조정은 리스트 key 관리를 요구하고(불안정하면 자식 상태가 유실됩니다), 훅 호출 순서 규칙을 강제하며, 고빈도 갱신엔 리렌더를 우회하는 별도 API를 공식적으로 덧붙여야 했습니다(react-lua).
 - **우리가 넘은 방법**: `D.Frame { ... }`이 그 자리에서 실제 `Instance`를 만들어 돌려주고, 변화는 개별 프로퍼티 바인드에만 도달합니다. 중간 트리도 diffing 단계도 없어서 위 세 문제 자체가 생기지 않습니다.
 - **그 대가 / 더 나쁜 점**: "지금 트리가 어떻게 생겼는가"가 코드 한 곳에 드러나지 않습니다. 변화가 leaf 바인드로 흩어져 복잡한 조건부 트리는 재구성하기 어렵습니다. 렌더마다 서브트리를 통째로 다시 기술하는 vdom 쪽이 이 축에서는 낫습니다. 설계 변경으로 해소되는 종류가 아니라 관측 도구로만 보완됩니다.
-- **자세히**: [멘탈 모델 1 — 가상 DOM은 없다](/quad/ko/getting-started/01-core-mental-model/), [Quadnomicon Vol. 9 — DOMless Slot 트리](/quad/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
+- **자세히**: [멘탈 모델 1 — 가상 DOM은 없다](/ko/getting-started/01-core-mental-model/), [Quadnomicon Vol. 9 — DOMless Slot 트리](/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
 
 ### (2) 밀 때는 신호만, 계산은 읽을 때 — 그리고 의존성은 손으로 적는다
 
 - **이전 선택과 그 한계**: Vide는 순수 push라 소스를 쓰는 즉시 동기·깊이우선으로 의존 노드를 재평가하고, 저자들이 다이아몬드 그래프의 중복 재평가 방지를 `todo.md`에 미해결로 남겼습니다. 의존성은 전역 스코프 스택으로 암묵 추적하는데, 그 때문에 리액티브 스코프 안의 yield가 그래프를 깨는 걸 막는 별도 장치까지 필요했습니다. Fusion은 push 무효화 + pull 재계산 하이브리드지만 eager로 표시된 노드는 즉시 재계산해야 해서, 글리치를 막으려 eager 집합을 생성 순서로 정렬합니다.
 - **우리가 넘은 방법**: `Set`은 "바뀌었다"는 신호만 보내고 값 계산을 하지 않습니다. 재계산은 `:Get()` 시점에 노드 캐시를 통해 일어나므로 신호가 두 경로로 와도 계산은 한 번이고, **다이아몬드 중복 재평가는 이 모델에서 구조적으로 발생하지 않습니다** — Vide가 미해결로 남긴 자리이자 분명한 우위입니다. 의존성은 `:With` / `:Compute(fn, ...deps)`로 적으므로 암묵 추적이 필요한 yield 방어 장치도 없습니다.
 - **그 대가 / 더 나쁜 점**: 의존성을 전부 손으로 나열해야 하고 보일러플레이트가 늘어납니다. `derive()` 안에서 그냥 읽으면 잡히는 Vide 쪽 인체공학은 여기 없습니다. 의존성 목록은 정적이라 실행 중에 바뀌지 않습니다.
-- **자세히**: [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/quad/ko/quadnomicon/01-revision-and-epochmap/)
+- **자세히**: [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/ko/quadnomicon/01-revision-and-epochmap/)
 
 ### (3) 형제 여럿을 다루는 자리를 Slot으로 만들고, 마운트에 소유권을 건다
 
 - **이전 선택과 그 한계**: 두 라이브러리 다 마운트에 소유권 가드가 없습니다. Fusion `Children.luau`엔 `-- TODO: check for ancestry conflicts here`가 그대로 남아 있고 이미 마운트된 인스턴스를 조건 없이 재부모화합니다. Vide `mount.luau`도 중복 마운트 체크가 전혀 없어 같은 타깃에 두 번 마운트하면 독립된 루트가 둘 생깁니다. 둘 다 **조용히** 두 벌이 됩니다.
 - **우리가 넘은 방법**: Slot이 자식 위치를 장부로 들고, 이미 마운트된 Slot의 재마운트는 즉시 던집니다. 실재하는 버그 클래스를 막는 가드이고 두 라이브러리 어디에도 없습니다 — 분명한 우위입니다.
 - **그 대가 / 더 나쁜 점**: `LayoutOrder`를 대신 넣어주지 않습니다. `updateFn`이 받는 `index`/`offset`에서 직접 바인딩해야 합니다. 이미 지정한 값을 조용히 덮는 매직이 되고 코어가 Roblox 어휘에 묶이기 때문에 하지 않는 쪽을 골랐습니다.
-- **자세히**: [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](/quad/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 2 — Slot-in-Slot 부분합 트리](/quad/ko/quadnomicon/02-slot-prefix-sum-tree/)
+- **자세히**: [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 2 — Slot-in-Slot 부분합 트리](/ko/quadnomicon/02-slot-prefix-sum-tree/)
 
 ### (4) 수명을 GC에 위임한다
 
 - **이전 선택과 그 한계**: Fusion의 `Scope`는 배열 + 메타테이블에 생성자마다 destroy 클로저를 쌓고 `doCleanup`이 역순으로 티어다운합니다. Vide는 의존성 엣지와 구조적 소유(`owner`/`owned`)를 분리했고, 0.2.0에서 destroy가 reactive dependent까지 타고 내려가던 것을 고쳤으며 0.4.0에 활성 스코프 destroy 하드 가드를 넣었습니다. 둘 다 완전히 eager·수동이라 빠뜨리면 샙니다. quad v1은 더 나빴습니다 — 통일된 정리 모델 자체가 없어 `PropertyChangedSignal`로 참조를 붙잡는 GC 방지 핫팩이 여러 곳에 중복됐고 대칭되는 해제 경로가 없었습니다.
 - **우리가 넘은 방법**: 생존은 엔진 커넥션이 끊겼는지로 판정하고 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것도, 정리할 것을 담아 들고 다니는 스코프 객체도 없습니다 — 사용자가 들고 다니는 인프라 물건이 하나도 없다는 점은 두 라이브러리 대비 우위입니다.
 - **그 대가 / 더 나쁜 점**: 셋 다 Quad 쪽이 나쁩니다. **(a)** Quad가 만든 Instance는 참조를 놓는 것만으로 회수되지 않고 `Destroy`로만 회수됩니다. **(b)** GC와 `Destroying`의 순서가 비결정적이라는 알려진 함정을 그대로 안고 갑니다 — Vide는 정확히 그 이유로 반대편(eager 수동)을 골랐습니다. **(c)** use-after-destroy 사전 검증 안전망이 없고, 만들 계획도 없습니다.
-- **자세히**: [Quadnomicon Vol. 3 — Luau 메모리 토폴로지](/quad/ko/quadnomicon/03-luau-memory-topology/), [Vol. 7 — 인스턴스 신원·네이티브 GC·`Claim` 계약](/quad/ko/quadnomicon/07-instance-identity-and-gc-philosophy/)
+- **자세히**: [Quadnomicon Vol. 3 — Luau 메모리 토폴로지](/ko/quadnomicon/03-luau-memory-topology/), [Vol. 7 — 인스턴스 신원·네이티브 GC·`Claim` 계약](/ko/quadnomicon/07-instance-identity-and-gc-philosophy/)
 
 ### (5) 애니메이션을 반응 그래프 밖에 둔다
 
 - **이전 선택과 그 한계**: Fusion의 Tween/Spring은 반응 그래프의 1급 노드입니다. 그래서 매 프레임 틱하는 Stopwatch/ExternalTime 소스, 즉시 재계산되는 eager 노드, 애니메이션과 입력 사이의 교차 lifetime 검증이라는 삼중 장치가 딸려옵니다. quad v1의 `:Tween`은 register 메타테이블 체인의 한 고리라 같은 메소드를 두 번 부르면 마지막 것만 남았습니다.
 - **우리가 넘은 방법**: Tween은 노드가 아니라 **프로퍼티 자리에 꽂는 값**입니다. 그래프는 비즈니스 상태가 바뀔 때만 돌고 보간은 엔진 레이어가 하므로, 프레임 클럭도 eager 노드도 교차 lifetime 체크도 Quad엔 아예 없습니다.
 - **그 대가 / 더 나쁜 점**: 애니메이션 값을 다른 `Compute`의 입력으로 합성할 수 없습니다. 그래프 노드로 두는 Fusion/Vide 쪽이 이 축에서는 낫고, 그렇게 쓰던 코드는 그대로 옮겨오지 않습니다. 명령형 API도 커스텀 함수 이징도 스텝 콜백도 없습니다.
-- **자세히**: [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/quad/ko/how-to/08-migrating-from-v1/), [05. 테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+- **자세히**: [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/ko/how-to/08-migrating-from-v1/), [05. 테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/)
 
 ### (6) 스타일시트 대신 Modifier, 그리고 열린 우선순위 축
 
 - **이전 선택과 그 한계**: quad v1의 `style.lua`는 이름 매칭 기반이고 선언 순서에 의존해서, 실행 순서가 꼬이면 스타일이 안 먹는 문서화된 함정이 있었습니다. 특수 키를 하나 더 넣으려면 `class.lua`의 하드코딩된 중앙 디스패처를 직접 고쳐야 했습니다. Fusion의 `SpecialKey`는 모양은 열려 있지만 우선순위가 `self/descendants/ancestor/observer` 4단계로 하드코딩돼 다섯 번째를 쓰면 에러가 납니다. Vide의 `action(callback, priority)`은 등록이 필요 없는 대신 key/value 쌍을 받지 않습니다. CSS식 스타일시트는 적용 위치가 트리 상위여야 해서 스크립팅으로 조립하기 어렵다고 보고 처음부터 후보에서 뺐습니다.
 - **우리가 넘은 방법**: 재사용 스타일은 디스패치 **이전에 정적으로 평탄화되는** 불변 값(`Modifier`)이라 런타임 캐스케이드 계산이 없고, 핸들러는 key·value·타깃을 모두 받으며 우선순위 축은 열린 공간입니다. 라이브러리를 고치지 않고 다섯 번째 우선순위를 끼워 넣을 수 있다는 점은 Fusion 대비 우위입니다.
 - **그 대가 / 더 나쁜 점**: 이름으로 멀리서 일괄 적용하는 창구가 없습니다. id를 겨냥하던 v1의 `Style "Child" {}`는 폐지됐고, 우선순위 규칙은 "배열에서 뒤에 온 것이 이김"과 "인라인 키가 무조건 이김" 둘뿐이라 넘기는 쪽이 직접 배치해야 합니다.
-- **자세히**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/quad/ko/quadnomicon/08-extensible-dispatch-engine/)
+- **자세히**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/ko/quadnomicon/08-extensible-dispatch-engine/)
 
 ### (7) 코어에서 엔진 어휘를 뺀다
 
 - **이전 선택과 그 한계**: Fusion도 react-lua도 Roblox 전용입니다. 이건 관측된 벽이 아니라 설계 시점의 판단이었습니다 — 렌더 기술이 한 엔진에 묶이면 외부 개발자 유인이 없어 발전이 더디다고 봤고, 코어가 엔진 어휘를 직접 부르면 헤드리스로 돌릴 수도 다른 렌더 타깃으로 갈 수도 없습니다.
 - **우리가 넘은 방법**: `quad-base`는 백엔드 op를 주입받는 순수 코어이고, Roblox 구현은 `quad-roblox`가 담당합니다. 헤드리스 검증도 같은 주입 경로로 들어갑니다.
 - **그 대가 / 더 나쁜 점**: 출하되는 백엔드가 하나뿐이라 분리의 값은 아직 검증되지 않았습니다(다른 타깃은 염두에 뒀을 뿐 구현이 없습니다). 백엔드는 얇은 다리가 아니라 `Property`·`Event`·`Tween` 핸들러를 실제로 **소유**하므로 새 백엔드의 비용은 op 몇 개보다 크고, 프로바이더는 모듈 인스턴스당 한 슬롯입니다.
-- **자세히**: [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/quad/ko/quadnomicon/10-multi-backend-abstract-machine/)
+- **자세히**: [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/ko/quadnomicon/10-multi-backend-abstract-machine/)
 
 ### (덤) 에러를 grep 가능하게 만든다
 
 - **이전 선택과 그 한계**: 여기서 갈린 상대는 외부 라이브러리가 아니라 우리 자신입니다. 프로젝트 안에서 `Err.format(subject, reason, got)` 류 포맷 헬퍼가 제안됐고, 헬퍼를 두면 메시지가 조각나 로그에 찍힌 문장을 들고 소스로 grep해 돌아가는 경로가 끊긴다는 이유로 기각됐습니다.
 - **우리가 넘은 방법**: 메시지 리터럴은 던지는 줄에 통째로 남기고(보간은 값 부분에만), 공개 표면 함수에 태그를 달아 스택에서 걷어낸 뒤 **사용자 줄**을 blame합니다.
 - **그 대가 / 더 나쁜 점**: C 프레임이 태그된 표면을 직접 부르면 `파일:줄` 접두가 사라지고, 재진입에서는 바깥 진입 줄이 blame됩니다. 격리 유틸 `Fallback`은 던지기 전에 만들어진 부분 트리를 회수하지 않고, `OnRendered`는 자기 서브트리 완성만 보장할 뿐 부모에 붙었음을 보장하지 않습니다.
-- **자세히**: [Quadnomicon Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처](/quad/ko/quadnomicon/11-static-grepability-and-error-architecture/)
+- **자세히**: [Quadnomicon Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처](/ko/quadnomicon/11-static-grepability-and-error-architecture/)
 
 ---
 
@@ -168,7 +168,7 @@ D.Frame {
 
 ## 6. 다음 걸음
 
-- **써보기**: [멘탈 모델 셋](/quad/ko/getting-started/01-core-mental-model/) → [10분 카운터](/quad/ko/getting-started/02-quickstart-counter/) → [컴포넌트 합성](/quad/ko/getting-started/03-component-composition/)
-- **설치 상태 확인**: [00. 설치 및 환경 구축](/quad/ko/getting-started/00-installation/) — 세 경로 모두 아직 제공되지 않는다는 표시가 여기 있습니다.
-- **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](/quad/ko/overview/02-from-v1/) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
-- **속을 보고 판단하기**: [The Quadnomicon](/quad/ko/quadnomicon/01-revision-and-epochmap/) 열한 권 — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.
+- **써보기**: [멘탈 모델 셋](/ko/getting-started/01-core-mental-model/) → [10분 카운터](/ko/getting-started/02-quickstart-counter/) → [컴포넌트 합성](/ko/getting-started/03-component-composition/)
+- **설치 상태 확인**: [00. 설치 및 환경 구축](/ko/getting-started/00-installation/) — 세 경로 모두 아직 제공되지 않는다는 표시가 여기 있습니다.
+- **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](/ko/overview/02-from-v1/) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](/ko/how-to/08-migrating-from-v1/) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
+- **속을 보고 판단하기**: [The Quadnomicon](/ko/quadnomicon/01-revision-and-epochmap/) 열한 권 — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.

@@ -48,7 +48,7 @@ end
 
 > **철학: 마법은 없다 (No Magic)**  
 > 컴포넌트가 뒤에서 몰래 전역 상태를 만들거나 부모의 라이프사이클을 가로채지 않습니다. 필요한 것은 전부 `props`로 명시적으로 들어옵니다.  
-> **트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다** — 부모가 가진 값이 자식에게 저절로 내려오는 경로는 없고, 계층을 건너뛰어 값을 넘기고 싶으면 `q.Context`로 명시적으로 넘깁니다([05. 디자인 토큰과 테마 전환](/quad/ko/how-to/05-theme-and-dynamic-styling/) 참고).
+> **트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다** — 부모가 가진 값이 자식에게 저절로 내려오는 경로는 없고, 계층을 건너뛰어 값을 넘기고 싶으면 `q.Context`로 명시적으로 넘깁니다([05. 디자인 토큰과 테마 전환](/ko/how-to/05-theme-and-dynamic-styling/) 참고).
 
 ---
 
@@ -75,7 +75,7 @@ end
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
 
-그래서 quad는 구멍 있는 props 테이블을 **계약 밖(UB)** 으로 둡니다. 무슨 일이 나는지는 구멍이 어디에 뚫렸느냐에 따라 갈리는데, 그 증상과 에러 메시지는 [01. quad 에러 읽는 법과 런타임 디버깅](/quad/ko/how-to/01-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
+그래서 quad는 구멍 있는 props 테이블을 **계약 밖(UB)** 으로 둡니다. 무슨 일이 나는지는 구멍이 어디에 뚫렸느냐에 따라 갈리는데, 그 증상과 에러 메시지는 [01. quad 에러 읽는 법과 런타임 디버깅](/ko/how-to/01-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
 
 ```luau
 -- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 순회가 그 자리를 건너뛴다
@@ -87,7 +87,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
 
-> `props.Modifier` / `props.Ref` / `props.children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([03. `Slot:List`로 긴 목록 다루기](/quad/ko/how-to/03-virtualized-infinite-scroll/) 참고).
+> `props.Modifier` / `props.Ref` / `props.children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([03. `Slot:List`로 긴 목록 다루기](/ko/how-to/03-virtualized-infinite-scroll/) 참고).
 
 ---
 
@@ -277,5 +277,5 @@ local left, right = newCounter(0), newCounter(10)
 ---
 
 ## 다음 단계
-- [실전 레시피: 복잡한 폼 유효성 검사](/quad/ko/how-to/02-form-validation-pattern/)
-- [테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+- [실전 레시피: 복잡한 폼 유효성 검사](/ko/how-to/02-form-validation-pattern/)
+- [테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/)

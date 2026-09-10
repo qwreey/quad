@@ -131,7 +131,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으면 호출한 줄을 blame하며 던집니다 —
 
 ```
-quad-roblox: requires a quad-base matching version pattern '0.0.0' (got '{q.Version}')
+quad-roblox: requires a quad-base matching version pattern '3.0.0' (got '{q.Version}')
 ```
 
 **예제**
@@ -147,7 +147,7 @@ print(q2 == q) --> true
 **시그니처**
 
 ```luau
-Version: "0.0.0"
+Version: "3.0.0"
 ```
 
 **동작** — 이 quad-base 사본의 버전 문자열. 타입이 싱글톤 문자열이라 타입 층에서도 값이 그대로 보입니다. 백엔드는 `UseProvider` 시점에 이 값을 자기 패턴과 대조하는 데 씁니다(위 참고).

@@ -2,7 +2,7 @@
 title: State
 description: 읽기 전용 파생 반응형 노드 — Get/Compute/With/Apply/Observer/Gate
 ---
-`State`는 **파생 노드**입니다. 값을 직접 쓸 수 없고, 상류(`Source`나 다른 `State`)에서 계산돼 나옵니다. **런타임 생성자가 없습니다** — `State` 값은 `:Compute` / `:With` / `:Gate`(그리고 그 위에 얹힌 `:Apply` 팩토리들)의 결과로만 생깁니다. 쓰기가 필요하면 [`Source`](/quad/ko/reference/core/02-source/)입니다.
+`State`는 **파생 노드**입니다. 값을 직접 쓸 수 없고, 상류(`Source`나 다른 `State`)에서 계산돼 나옵니다. **런타임 생성자가 없습니다** — `State` 값은 `:Compute` / `:With` / `:Gate`(그리고 그 위에 얹힌 `:Apply` 팩토리들)의 결과로만 생깁니다. 쓰기가 필요하면 [`Source`](/ko/reference/core/02-source/)입니다.
 
 이 페이지의 심볼: [`state:Get()`](#stateget) · [`state:Compute(fn, ...deps)`](#statecomputefn-deps) · [`state:With(...)`](#statewith) · [`state:Apply(factory)`](#stateapplyfactory) · [`state:Observer(fn)`](#stateobserverfn) · [`state:Gate(setup)`](#stategatesetup)
 
@@ -28,7 +28,7 @@ export type State<T> = StateData<T> & {
 }
 ```
 
-`StateData<T>`는 "값을 읽을 수 있는 부분"만 떼어낸 것이고, 콜백 파라미터 자리에 오는 lazy 핸들이 이 타입입니다. `__quadStateValue`는 타입에만 있는 팬텀 필드입니다 — 런타임 값에는 없으니 읽지 마세요. `State<T>`는 주석 자리에서 **불변**입니다(`State<number>`는 `State<number | UDim>` 자리에 들어가지 않습니다). 값을 넘겨받는 자리들은 그래서 공변 마커 타입을 요구합니다 — [Quadnomicon Vol. 4](/quad/ko/quadnomicon/04-covariant-markers/).
+`StateData<T>`는 "값을 읽을 수 있는 부분"만 떼어낸 것이고, 콜백 파라미터 자리에 오는 lazy 핸들이 이 타입입니다. `__quadStateValue`는 타입에만 있는 팬텀 필드입니다 — 런타임 값에는 없으니 읽지 마세요. `State<T>`는 주석 자리에서 **불변**입니다(`State<number>`는 `State<number | UDim>` 자리에 들어가지 않습니다). 값을 넘겨받는 자리들은 그래서 공변 마커 타입을 요구합니다 — [Quadnomicon Vol. 4](/ko/quadnomicon/04-covariant-markers/).
 
 `print(state)`는 캐시가 유효할 때 `State(<값>)`, 아직 계산 전이거나 무효화된 상태면 `State(?)`로 찍힙니다. 출력을 위해 계산을 돌리지 않기 때문입니다. `:Gate`가 끼운 게이트 노드는 같은 모양을 이름만 바꿔 씁니다 — `Gate(2)`, 캐시가 무효면 `Gate(?)`.
 
@@ -96,7 +96,7 @@ height:Set(20)
 print(area:Get()) --> 40
 ```
 
-**관련** — [How-To 02 폼 검증](/quad/ko/how-to/02-form-validation-pattern/) · [Quadnomicon Vol. 1](/quad/ko/quadnomicon/01-revision-and-epochmap/)
+**관련** — [How-To 02 폼 검증](/ko/how-to/02-form-validation-pattern/) · [Quadnomicon Vol. 1](/ko/quadnomicon/01-revision-and-epochmap/)
 
 ---
 
@@ -150,7 +150,7 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 **동작**
 
 - 함수를 넘기면 `factory(self)`를 그대로 부릅니다.
-- 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](/quad/ko/reference/core/06-blocker-gate/), `Debounce`/`Throttle`, `Animate` 같은 것들이 이 팔로 붙습니다.
+- 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](/ko/reference/core/06-blocker-gate/), `Debounce`/`Throttle`, `Animate` 같은 것들이 이 팔로 붙습니다.
 - 둘 중 어느 쪽도 아니면
   `State: Apply factory must be a function or an object with an __apply method`
 
@@ -162,7 +162,7 @@ local blocker = q.Blocker()
 local gated: QuadTypes.State<number> = raw:Apply(blocker)
 ```
 
-**관련** — [06-blocker-gate](/quad/ko/reference/core/06-blocker-gate/) · [How-To 05 테마와 동적 스타일](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+**관련** — [06-blocker-gate](/ko/reference/core/06-blocker-gate/) · [How-To 05 테마와 동적 스타일](/ko/how-to/05-theme-and-dynamic-styling/)
 
 ---
 
@@ -175,7 +175,7 @@ Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer
 export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
 ```
 
-값을 실어주지 않는 leaf 구독 핸들을 만듭니다. 콜백은 **값이 아니라 관측 대상 핸들·자기 자신·출처**를 받고, 등록 시점에 즉시 한 번 발화합니다. 전체 계약(구독 네 진입점, 보류와 캐치업)은 **[05-observer-effect](/quad/ko/reference/core/05-observer-effect/#stateobserverfn)** 가 정본입니다.
+값을 실어주지 않는 leaf 구독 핸들을 만듭니다. 콜백은 **값이 아니라 관측 대상 핸들·자기 자신·출처**를 받고, 등록 시점에 즉시 한 번 발화합니다. 전체 계약(구독 네 진입점, 보류와 캐치업)은 **[05-observer-effect](/ko/reference/core/05-observer-effect/#stateobserverfn)** 가 정본입니다.
 
 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
 
@@ -231,4 +231,4 @@ print(#seen, held:Get()) --> 1  2   (통지는 설치 발화 한 번뿐, 값은 
 print((release :: any)()) --> true (모아둔 배치를 흘려보냄 → 구독자 1회 발화)
 ```
 
-**관련** — [06-blocker-gate](/quad/ko/reference/core/06-blocker-gate/)(`Blocker`는 이 위의 정책입니다) · [05-observer-effect](/quad/ko/reference/core/05-observer-effect/)
+**관련** — [06-blocker-gate](/ko/reference/core/06-blocker-gate/)(`Blocker`는 이 위의 정책입니다) · [05-observer-effect](/ko/reference/core/05-observer-effect/)

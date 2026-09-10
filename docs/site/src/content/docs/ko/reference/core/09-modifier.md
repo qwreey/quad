@@ -106,7 +106,7 @@ local wide = q.Modifier(card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔
 local panel = D.Frame { wide }
 ```
 
-**관련** — [테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/), [컴포넌트 조합](/quad/ko/getting-started/03-component-composition/)
+**관련** — [테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/), [컴포넌트 조합](/ko/getting-started/03-component-composition/)
 
 ## `mod:<Field>(value)`
 
@@ -335,7 +335,7 @@ local merged = q.Modifier.Overridden(theme, danger) -- danger가 이긴다
 local same = theme:Overridden(danger)               -- 같은 함수, 같은 결과
 ```
 
-**관련** — [테마와 동적 스타일링](/quad/ko/how-to/05-theme-and-dynamic-styling/)
+**관련** — [테마와 동적 스타일링](/ko/how-to/05-theme-and-dynamic-styling/)
 
 ## `q.Modifier.TypedFactory<<T>>(name)`
 

@@ -84,7 +84,7 @@ local fixed = q.Slot<<Instance>>({     -- 초기 원소 둘, 수동 CRUD Slot으
 local panel = D.Frame { list, fixed }  -- 배열부에 놓으면 그 자리가 Slot의 자식 구간이 된다
 ```
 
-**관련** — [Slot 접두합 트리](/quad/ko/quadnomicon/02-slot-prefix-sum-tree/), [DOMless Slot](/quad/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
+**관련** — [Slot 접두합 트리](/ko/quadnomicon/02-slot-prefix-sum-tree/), [DOMless Slot](/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
 
 ## `slot.Length`
 
@@ -110,7 +110,7 @@ end)
 local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty } }
 ```
 
-**관련** — [State](/quad/ko/reference/core/03-state/), [Slot 접두합 트리](/quad/ko/quadnomicon/02-slot-prefix-sum-tree/)
+**관련** — [State](/ko/reference/core/03-state/), [Slot 접두합 트리](/ko/quadnomicon/02-slot-prefix-sum-tree/)
 
 ## `slot.Offset`
 
@@ -124,7 +124,7 @@ Offset: Source<number>
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
-**관련** — [Slot 접두합 트리](/quad/ko/quadnomicon/02-slot-prefix-sum-tree/)
+**관련** — [Slot 접두합 트리](/ko/quadnomicon/02-slot-prefix-sum-tree/)
 
 ## `slot:Add(element, index?)`
 
@@ -213,7 +213,7 @@ local other = q.Slot<<Instance>>()
 other:Add(taken)                       -- 다른 Slot으로 이사
 ```
 
-**관련** — [비파괴 포털과 소유권](/quad/ko/quadnomicon/05-non-destructive-portal-and-ownership/)
+**관련** — [비파괴 포털과 소유권](/ko/quadnomicon/05-non-destructive-portal-and-ownership/)
 
 ## `slot:ExtractAll()`
 
@@ -412,7 +412,7 @@ rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- 
 
 `userdata`를 쓴다면 `ud`와 반환 팩의 두 번째 자리에 그 타입을 적습니다 — `ud: RowUD?` / `: (any, RowUD?)`.
 
-**관련** — [가상화 무한 스크롤](/quad/ko/how-to/03-virtualized-infinite-scroll/), [DOMless Slot](/quad/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
+**관련** — [가상화 무한 스크롤](/ko/how-to/03-virtualized-infinite-scroll/), [DOMless Slot](/ko/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
 
 ## `slot:Single(state, updateFn?, opts?)`
 
@@ -459,7 +459,7 @@ current:Set(D.TextLabel { Text = "화면 B" })  -- A는 파괴되고 B로 교체
 current:Set(nil)                              -- 비워진다
 ```
 
-**관련** — [비파괴 포털과 소유권](/quad/ko/quadnomicon/05-non-destructive-portal-and-ownership/)
+**관련** — [비파괴 포털과 소유권](/ko/quadnomicon/05-non-destructive-portal-and-ownership/)
 
 ## `q.Detach`
 
@@ -469,7 +469,7 @@ current:Set(nil)                              -- 비워진다
 Detach: Detach -- { read __quadDetach: true }
 ```
 
-이 페이지는 Slot 재조정 안에서의 쓰임을 다룹니다 — 센티널 자체의 정의는 [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
+이 페이지는 Slot 재조정 안에서의 쓰임을 다룹니다 — 센티널 자체의 정의는 [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
 
 **동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
 
@@ -498,7 +498,7 @@ slot:List(rows, function(
 end, function(item: Row) return item.Id end)
 ```
 
-**관련** — [가상화 무한 스크롤](/quad/ko/how-to/03-virtualized-infinite-scroll/)
+**관련** — [가상화 무한 스크롤](/ko/how-to/03-virtualized-infinite-scroll/)
 
 ## `q.KeyGone`
 
@@ -508,7 +508,7 @@ end, function(item: Row) return item.Id end)
 KeyGone: KeyGone -- { read __quadKeyGone: true }
 ```
 
-센티널 자체의 정의는 [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
+센티널 자체의 정의는 [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
 
 **동작** — 재조정 사이클의 마지막에, **지난 사이클에는 있었지만 이번 데이터에는 없는 키**마다 `updateFn`의 `item` 자리에 오는 센티널입니다. 그 키가 만든 원소를 어떻게 할지 정하라는 물음입니다.
 
@@ -536,7 +536,7 @@ dispose: (value: any) -> ()
 
 **반환** — 없음.
 
-생명주기 관점의 서술은 [생명주기와 센티널](/quad/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
+생명주기 관점의 서술은 [생명주기와 센티널](/ko/reference/core/11-lifetime-sentinels/)에도 있습니다.
 
 **동작** — quad가 관리하는 값을 지우는 **유일한 안전 경로**입니다. Slot을 주면 그 트리를 통째로 무너뜨리고(중첩 Slot 재귀, 원소 파괴), 백엔드 값을 주면 백엔드의 파괴 op로 넘깁니다.
 
@@ -563,7 +563,7 @@ local temp = q.Slot<<Instance>>({ D.Frame {}, D.Frame {} })
 q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파괴된다
 ```
 
-**관련** — [인스턴스 신원과 GC 철학](/quad/ko/quadnomicon/07-instance-identity-and-gc-philosophy/), [디버깅과 문제 해결](/quad/ko/how-to/01-debugging-and-troubleshooting/)
+**관련** — [인스턴스 신원과 GC 철학](/ko/quadnomicon/07-instance-identity-and-gc-philosophy/), [디버깅과 문제 해결](/ko/how-to/01-debugging-and-troubleshooting/)
 
 ## 죽은 Slot과 마운트 규칙
 

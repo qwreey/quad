@@ -21,7 +21,7 @@ local D = q.D
 ```
 
 :::note
-**생존 판정은 백엔드가 심습니다.** 이 페이지의 구독·바인딩은 전부 백엔드가 설치하는 생명주기 op 위에서 돕니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available — no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](/quad/ko/quadnomicon/06-liveness-gate-and-isolation/).
+**생존 판정은 백엔드가 심습니다.** 이 페이지의 구독·바인딩은 전부 백엔드가 설치하는 생명주기 op 위에서 돕니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available — no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](/ko/quadnomicon/06-liveness-gate-and-isolation/).
 :::
 
 ---
@@ -126,7 +126,7 @@ hp:Set(60)
 print(#log) --> 3
 ```
 
-**관련** — [03-state](/quad/ko/reference/core/03-state/) · [Quadnomicon Vol. 6](/quad/ko/quadnomicon/06-liveness-gate-and-isolation/)
+**관련** — [03-state](/ko/reference/core/03-state/) · [Quadnomicon Vol. 6](/ko/quadnomicon/06-liveness-gate-and-isolation/)
 
 ---
 
@@ -238,7 +238,7 @@ hp:Set(80) -- 정리 → 재실행
 effect:Unsubscribe() -- 마지막 정리 1회
 ```
 
-**관련** — [How-To 04 네트워크·입력 브리지](/quad/ko/how-to/04-network-and-input-bridge/) · [Quadnomicon Vol. 6](/quad/ko/quadnomicon/06-liveness-gate-and-isolation/)
+**관련** — [How-To 04 네트워크·입력 브리지](/ko/how-to/04-network-and-input-bridge/) · [Quadnomicon Vol. 6](/ko/quadnomicon/06-liveness-gate-and-isolation/)
 
 ---
 
@@ -285,4 +285,4 @@ effect:Unsubscribe() -- 마지막 정리 1회
 **동작** — 약한 구독을 해제합니다. **관대하며**(구독한 적 없어도 통과) **cleanup을 건드리지 않습니다**. 강한 유지가 남아 있으면 거절합니다:
 `Effect: subscribed strongly; use :Unsubscribe()`
 
-**관련** — [03-state](/quad/ko/reference/core/03-state/) · [06-blocker-gate](/quad/ko/reference/core/06-blocker-gate/) · [Quadnomicon Vol. 3 — 메모리 토폴로지](/quad/ko/quadnomicon/03-luau-memory-topology/)
+**관련** — [03-state](/ko/reference/core/03-state/) · [06-blocker-gate](/ko/reference/core/06-blocker-gate/) · [Quadnomicon Vol. 3 — 메모리 토폴로지](/ko/quadnomicon/03-luau-memory-topology/)

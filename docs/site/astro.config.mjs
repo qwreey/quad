@@ -4,11 +4,14 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://qwreey.github.io/quad',
-	base: '/quad/',
+	// [2026-09-10] Cloudflare Pages(Wrangler 직접 업로드)로 배포 — 루트 base. site는 커스텀 도메인이 정해지면 바꿀 것(DEPLOY.md).
+	site: process.env.DOCS_SITE ?? 'https://quad-docs.pages.dev',
+	base: '/',
 	integrations: [
 		starlight({
 			title: 'Quad',
+			logo: { src: './src/assets/quad-logo.svg', replacesTitle: true, alt: 'quad' },
+			favicon: '/favicon.svg',
 			description: 'DOMless Reactive UI Framework for Roblox & Luau',
 			defaultLocale: 'ko',
 			locales: {

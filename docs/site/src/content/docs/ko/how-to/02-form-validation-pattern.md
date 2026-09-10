@@ -184,4 +184,4 @@ return RegistrationForm
 ---
 
 ## 다음 단계
-- [03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉](/quad/ko/how-to/03-virtualized-infinite-scroll/)
+- [03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉](/ko/how-to/03-virtualized-infinite-scroll/)

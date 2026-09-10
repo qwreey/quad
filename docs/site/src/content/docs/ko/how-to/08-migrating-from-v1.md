@@ -29,7 +29,7 @@ luau-lsp analyze \
   <검사할 파일들>
 ```
 
-넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스 자체가 파싱되지 않고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치 및 환경 구축](/quad/ko/getting-started/00-installation/) 참고.
+넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스 자체가 파싱되지 않고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치 및 환경 구축](/ko/getting-started/00-installation/) 참고.
 
 그리고 v1의 `require(path).Init(id)` 자리는 **모듈 둘 + `UseProvider` 한 줄**로 바뀝니다.
 
@@ -50,7 +50,7 @@ local D = q.D
 | v1 | v2 | 어디서 다루나 |
 |---|---|---|
 | `require(quad).Init(id)` | `Quad:UseProvider(QuadRoblox)` | 2절 |
-| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [핵심 멘탈 모델](/quad/ko/getting-started/01-core-mental-model/) |
+| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [핵심 멘탈 모델](/ko/getting-started/01-core-mental-model/) |
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
 | `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
@@ -145,7 +145,7 @@ local moved = base:Compute(function(
 end, offset)
 ```
 
-전체 목록과 각 연산자의 계약은 [Operator 레퍼런스](/quad/ko/reference/sugar/02-operator/)에 있습니다.
+전체 목록과 각 연산자의 계약은 [Operator 레퍼런스](/ko/reference/sugar/02-operator/)에 있습니다.
 
 ### 애니메이션 — `:Tween{}`은 `:Apply(q.Animate{})`로
 
@@ -236,7 +236,7 @@ end)
 local list = D.Frame { slot }
 ```
 
-`Slot`은 컨테이너 `Frame`을 만들지 않습니다 — 자식이 부모 밑에 바로 붙습니다. 자세한 계약은 [03. `Slot:List`로 긴 목록 다루기](/quad/ko/how-to/03-virtualized-infinite-scroll/)에 있습니다.
+`Slot`은 컨테이너 `Frame`을 만들지 않습니다 — 자식이 부모 밑에 바로 붙습니다. 자세한 계약은 [03. `Slot:List`로 긴 목록 다루기](/ko/how-to/03-virtualized-infinite-scroll/)에 있습니다.
 
 ### 컴포넌트 — `Class.Extend()`는 함수 하나로
 
@@ -309,7 +309,7 @@ local card = D.Frame {
 }
 ```
 
-`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [03. 컴포넌트 합성](/quad/ko/getting-started/03-component-composition/) §3에 있습니다.
+`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [03. 컴포넌트 합성](/ko/getting-started/03-component-composition/) §3에 있습니다.
 
 ### 정리(cleanup)
 
@@ -327,7 +327,7 @@ v1의 `Signal.Bindable`·`Disconnecter`(Maid류)에 해당하는 것은 없습�
 | `Class.Extend`의 `Getter`/`Setter`/`UpdateTriggers`/`:Update()` | 없음 | 프로퍼티 단위 갱신이라 전체 재렌더가 필요 없습니다. |
 | register 체이닝(`:With`→`:Add`→`:Tween` 누적) | 없음 | 매 호출이 새 노드를 만드는 `:Compute`/`:Apply`로 명시적으로 잇습니다. |
 | `Tween.RunTween` / `RunTweens` / `StopTween` / `IsTweening` / `Tween.Easings.*` / 함수 이징 / `CallBack`·`OnStepped`·`Ended` / 테이블 트윈 | 없음 | 명령형 트윈 API가 통째로 없습니다. `q.Tween{}` / `q.Animate{}`로 선언하고, 겹칠 때의 처리는 `Override = "Cancel" \| "Finish"`로 정합니다. 이징은 `Style = Enum.EasingStyle.*` 또는 `Info = TweenInfo` — 커스텀 함수 이징과 스텝 콜백은 제공하지 않습니다. |
-| `Apply(myFrame){props}` (이미 있는 인스턴스 재바인드) | `q.Claim(inst, D.Mapper...)` | 재바인드 일반형은 기각됐고, **Studio에서 만든 프리팹을 통째로 넘겨받는 claim** 형태로만 부활했습니다. 한 번만 claim 가능하고 직계 자식을 전부 매핑해야 하며, 공동 소유 컨테이너(`PlayerGui` 등)는 대상이 아닙니다 — [07. Studio UI 바인딩과 `Claim`](/quad/ko/how-to/07-studio-ui-binding-and-claim/). |
+| `Apply(myFrame){props}` (이미 있는 인스턴스 재바인드) | `q.Claim(inst, D.Mapper...)` | 재바인드 일반형은 기각됐고, **Studio에서 만든 프리팹을 통째로 넘겨받는 claim** 형태로만 부활했습니다. 한 번만 claim 가능하고 직계 자식을 전부 매핑해야 하며, 공동 소유 컨테이너(`PlayerGui` 등)는 대상이 아닙니다 — [07. Studio UI 바인딩과 `Claim`](/ko/how-to/07-studio-ui-binding-and-claim/). |
 | `Signal.Bindable` / `Disconnecter` | 없음 | 정리는 인스턴스 수명에 묶입니다(5절). |
 | `Quad.Lang` | 없음 | 로케일은 라이브러리 범위 밖으로 분리됐습니다. |
 | `tracker.lua`(핫리로드 감시) | 없음 | 스토리북 도구가 그 자리입니다. |
@@ -390,6 +390,6 @@ Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken
 ## 9. 이관 후 검증
 
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
-2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](/quad/ko/how-to/06-headless-testing/).
+2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](/ko/how-to/06-headless-testing/).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
-4. **에러가 나면** [01. 디버깅과 문제 해결](/quad/ko/how-to/01-debugging-and-troubleshooting/)의 에러 메시지 읽는 법을 먼저 보세요.
+4. **에러가 나면** [01. 디버깅과 문제 해결](/ko/how-to/01-debugging-and-troubleshooting/)의 에러 메시지 읽는 법을 먼저 보세요.

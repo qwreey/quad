@@ -26,7 +26,7 @@ local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/
 local D = q.D
 ```
 
-**두 `require` 경로는 그대로 복사해도 되는 자리가 아닙니다.** 위 경로는 [00. 설치](/quad/ko/getting-started/00-installation/) §2의 Rojo 매핑을 그대로 쓴 것이니, 프로젝트 구성이 다르면 00 §2에 맞춰 조정하세요. 나머지 줄은 그대로 이어 붙이면 됩니다.
+**두 `require` 경로는 그대로 복사해도 되는 자리가 아닙니다.** 위 경로는 [00. 설치](/ko/getting-started/00-installation/) §2의 Rojo 매핑을 그대로 쓴 것이니, 프로젝트 구성이 다르면 00 §2에 맞춰 조정하세요. 나머지 줄은 그대로 이어 붙이면 됩니다.
 
 ---
 
@@ -186,4 +186,4 @@ end),
 ---
 
 ## 다음 단계
-- [컴포넌트 합성: 순수 함수와 경계 규약](/quad/ko/getting-started/03-component-composition/)
+- [컴포넌트 합성: 순수 함수와 경계 규약](/ko/getting-started/03-component-composition/)

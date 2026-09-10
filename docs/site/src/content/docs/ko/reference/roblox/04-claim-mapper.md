@@ -107,11 +107,11 @@ end
    이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다. 여러 quad 인스턴스가 한 트리를 나눠
    claim하는 것은 UB입니다. 이미 파괴된 Instance를 claim하는 것도 UB입니다 — 막지 않습니다.
 2. **그려지는 직계 자식은 전부 매핑합니다.** quad는 claim한 Instance의 자식 자리를
-   [부기](/quad/ko/reference/core/07-slot/)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와
+   [부기](/ko/reference/core/07-slot/)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와
    길이/오프셋 계산이 어긋납니다.
    - **디스크립터 배열의 순서가 정본**입니다. 기존 트리의 순서가 다르면 맞추는 건 사용자 책임입니다
      — quad는 재정렬하지 않습니다.
-   - **[숏핸드 키](/quad/ko/reference/roblox/02-d/#숏핸드-키-넷)가 만든 `UI*`는 부기 대상이 아닙니다** — 그려지지 않고
+   - **[숏핸드 키](/ko/reference/roblox/02-d/#숏핸드-키-넷)가 만든 `UI*`는 부기 대상이 아닙니다** — 그려지지 않고
      매달릴 뿐이라 quad가 자리로 세지 않습니다. 반대로 템플릿에 이미 있는 `UI*`를
      `M.UICorner("UICorner")({ … })`처럼 **디스크립터로 매핑하면 평범한 배열 자리**이고, 그건 부기
      대상입니다. 둘을 섞으면(템플릿에 `UICorner`가 있는데 숏핸드 키도 쓰면) `UICorner`가 둘 생기니
@@ -129,7 +129,7 @@ end
    end
    ```
 
-`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`D`와 같은 이유](/quad/ko/reference/roblox/02-d/#해시-부분--프로퍼티와-이벤트).
+`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`D`와 같은 이유](/ko/reference/roblox/02-d/#해시-부분--프로퍼티와-이벤트).
 
 ---
 
@@ -189,7 +189,7 @@ q.Claim(template, M.Frame(M.Root)({ … }))
 
 ## `q.MapperRoot`
 
-`D.Mapper.Root`가 다시 내놓는 원본 센티널입니다([`quad-base` 소유](/quad/ko/reference/core/11-lifetime-sentinels/)).
+`D.Mapper.Root`가 다시 내놓는 원본 센티널입니다([`quad-base` 소유](/ko/reference/core/11-lifetime-sentinels/)).
 `D`를 거치지 않고 디스크립터를 만들 때 쓰면 됩니다.
 
 ```luau
@@ -208,7 +208,7 @@ MapperRoot: MapperRoot -- export type MapperRoot = { read __quadMapperRoot: true
 ```
 
 `D.Mapper.<Class>` 별칭들이 얹혀 있는 **타입 없는 원본 팩토리**입니다
-([`quad-base` 소유](/quad/ko/reference/core/11-lifetime-sentinels/) — `D.<Class>`와 `D.New`의 관계와 같습니다). `D.Mapper`에 별칭이 없는 클래스를 매핑해야 할 때만
+([`quad-base` 소유](/ko/reference/core/11-lifetime-sentinels/) — `D.<Class>`와 `D.New`의 관계와 같습니다). `D.Mapper`에 별칭이 없는 클래스를 매핑해야 할 때만
 쓰세요. props는 `any`라 클래스별 검사가 없습니다.
 
 ```luau
@@ -225,6 +225,6 @@ end
 
 **관련**
 
-- [07. Studio에서 만든 UI에 반응성 붙이기](/quad/ko/how-to/07-studio-ui-binding-and-claim/) — Clone 패턴과 실전 레시피
-- [D — Instance 생성](/quad/ko/reference/roblox/02-d/) — props 테이블의 모양
-- [Quadnomicon Vol. 7 — Instance 신원과 GC 철학](/quad/ko/quadnomicon/07-instance-identity-and-gc-philosophy/)
+- [07. Studio에서 만든 UI에 반응성 붙이기](/ko/how-to/07-studio-ui-binding-and-claim/) — Clone 패턴과 실전 레시피
+- [D — Instance 생성](/ko/reference/roblox/02-d/) — props 테이블의 모양
+- [Quadnomicon Vol. 7 — Instance 신원과 GC 철학](/ko/quadnomicon/07-instance-identity-and-gc-philosophy/)

@@ -1,0 +1,3 @@
+# Cloudflare Pages 직접 업로드(Wrangler) 설정 — CI 없음, `npm run deploy`가 sync → build → upload를 한다(DEPLOY.md)
+name = "quad-docs"
+pages_build_output_dir = "./dist"

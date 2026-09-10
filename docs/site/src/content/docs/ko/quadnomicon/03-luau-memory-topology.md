@@ -6,7 +6,7 @@ description: "Ephemeron이 없는 Luau GC 환경에서 quad가 메모리 누수�
 > **관련 소스**: `quad-base/src/Relate.luau`, `quad-base/src/Dispatch/init.luau`, `quad-roblox/src/LifetimeHandle.luau`
 
 > [!CAUTION]
-> 이 권은 Luau GC 토폴로지와 앵커 설계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/quad/ko/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 Luau GC 토폴로지와 앵커 설계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/ko/getting-started/01-core-mental-model/)부터 보십시오.
 
 ---
 

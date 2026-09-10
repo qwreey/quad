@@ -105,7 +105,7 @@ end) -- 생성자의 제네릭은 추론되지 않는다 — `q.Slot<<Instance>>
 
 `Slot:List`의 인자 순서는 `(data, updateFn, keyFn?, opts?)`이고 `updateFn`은
 `(item, index, offset, prev, ud)`를 받아 `(요소, userdata)`를 돌려줍니다 —
-상세는 [03. `Slot:List`로 긴 목록 다루기](/quad/ko/how-to/03-virtualized-infinite-scroll/).
+상세는 [03. `Slot:List`로 긴 목록 다루기](/ko/how-to/03-virtualized-infinite-scroll/).
 
 ---
 
@@ -192,4 +192,4 @@ end
 ---
 
 ## 다음 단계
-- [API Reference: Claim과 Mapper](/quad/ko/reference/roblox/04-claim-mapper/)
+- [API Reference: Claim과 Mapper](/ko/reference/roblox/04-claim-mapper/)

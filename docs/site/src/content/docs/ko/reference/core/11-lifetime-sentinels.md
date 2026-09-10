@@ -58,7 +58,7 @@ Detach: Detach
 
 같은 자리에서 `nil` 또는 `q.None`을 반환하면 파괴, 요소를 반환하면 그 요소가 그 자리에 놓입니다.
 
-보관·복귀 규칙과 실제 `updateFn` 예제는 [Slot](/quad/ko/reference/core/07-slot/)이 자세합니다.
+보관·복귀 규칙과 실제 `updateFn` 예제는 [Slot](/ko/reference/core/07-slot/)이 자세합니다.
 
 ## `q.KeyGone`
 
@@ -77,7 +77,7 @@ KeyGone: KeyGone
 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
 ```
 
-재조정 사이클 안에서 언제 이 호출이 오는지는 [Slot](/quad/ko/reference/core/07-slot/)을 보세요.
+재조정 사이클 안에서 언제 이 호출이 오는지는 [Slot](/ko/reference/core/07-slot/)을 보세요.
 
 ## `q.Void`
 
@@ -89,7 +89,7 @@ Void: (...any) -> ()
 
 **동작** — quad가 내보내는 단 하나의 no-op 함수입니다. 어떤 인자를 줘도 아무 일도 하지 않고 **아무것도 반환하지 않습니다**(`select("#", q.Void(1, 2, 3))`은 `0`).
 
-새 클로저를 만들지 않기 위한 공용 값입니다. 디스패치 핸들러가 "무를 것이 없다"는 뜻으로 retractor 자리에 돌려주는 값이 바로 이것이고([`../extend/02-dispatch-handler-contract.md`](/quad/ko/reference/extend/02-dispatch-handler-contract/)), retractor를 아예 생략하는 것은 계약 위반입니다. 모든 모듈 인스턴스가 같은 함수 객체를 공유합니다.
+새 클로저를 만들지 않기 위한 공용 값입니다. 디스패치 핸들러가 "무를 것이 없다"는 뜻으로 retractor 자리에 돌려주는 값이 바로 이것이고([`../extend/02-dispatch-handler-contract.md`](/ko/reference/extend/02-dispatch-handler-contract/)), retractor를 아예 생략하는 것은 계약 위반입니다. 모든 모듈 인스턴스가 같은 함수 객체를 공유합니다.
 
 ## `q.dispose(value)`
 
@@ -130,7 +130,7 @@ slot:Extract(1) -- 파괴하지 않고 자리에서 뺀다(Remove는 파괴한�
 q.dispose(child) -- 그 다음에 파괴
 ```
 
-Slot 쪽 맥락(마운트 규칙, 죽은 Slot)은 [Slot](/quad/ko/reference/core/07-slot/)에 함께 있습니다.
+Slot 쪽 맥락(마운트 규칙, 죽은 Slot)은 [Slot](/ko/reference/core/07-slot/)에 함께 있습니다.
 
 ## `q.MapperRoot`
 
@@ -141,7 +141,7 @@ MapperRoot: MapperRoot
 -- export type MapperRoot = { read __quadMapperRoot: true }
 ```
 
-**동작** — `Claim`의 매퍼 디스크립터에서 "이 노드가 루트다"를 뜻하는 키 센티널. quad-roblox에서는 `D.Mapper.Root`로 다시 노출됩니다. 자세한 사용법은 [`../roblox/04-claim-mapper.md`](/quad/ko/reference/roblox/04-claim-mapper/).
+**동작** — `Claim`의 매퍼 디스크립터에서 "이 노드가 루트다"를 뜻하는 키 센티널. quad-roblox에서는 `D.Mapper.Root`로 다시 노출됩니다. 자세한 사용법은 [`../roblox/04-claim-mapper.md`](/ko/reference/roblox/04-claim-mapper/).
 
 ## `q.newMapperClass(className)`
 
@@ -151,7 +151,7 @@ MapperRoot: MapperRoot
 newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor
 ```
 
-**동작** — 클래스 이름 하나를 받아 매퍼 디스크립터 팩토리를 만드는 제네릭 생성자. 백엔드의 `D.Mapper.<Class>` 별칭이 전부 여기서 나옵니다. 결과 디스크립터는 `q.isMapperDescriptor`가 참이고, `q.Claim(inst, desc)`에 넘깁니다 — [`../roblox/04-claim-mapper.md`](/quad/ko/reference/roblox/04-claim-mapper/).
+**동작** — 클래스 이름 하나를 받아 매퍼 디스크립터 팩토리를 만드는 제네릭 생성자. 백엔드의 `D.Mapper.<Class>` 별칭이 전부 여기서 나옵니다. 결과 디스크립터는 `q.isMapperDescriptor`가 참이고, `q.Claim(inst, desc)`에 넘깁니다 — [`../roblox/04-claim-mapper.md`](/ko/reference/roblox/04-claim-mapper/).
 
 ## `q.bindLifetime(inst, value)`
 
@@ -169,7 +169,7 @@ bindLifetime: (inst: any, value: any) -> ()
 quad: bindLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
 ```
 
-같은 문구가 이름만 바뀌어 `unbindLifetime`/`canBound`/`canExecute`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](/quad/ko/reference/extend/01-backend-provider-contract/)가 정본입니다.
+같은 문구가 이름만 바뀌어 `unbindLifetime`/`canBound`/`canExecute`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](/ko/reference/extend/01-backend-provider-contract/)가 정본입니다.
 
 ## `q.unbindLifetime(value)`
 
@@ -205,8 +205,8 @@ canExecute: (value: any) -> boolean
 
 ## 관련
 
-- [Slot](/quad/ko/reference/core/07-slot/) — `Detach`/`KeyGone`이 실제로 오가는 `Slot:List`/`Slot:Single`
-- [브랜드 술어](/quad/ko/reference/core/12-predicates/) — 센티널에 술어가 없는 이유
-- [`../extend/01-backend-provider-contract.md`](/quad/ko/reference/extend/01-backend-provider-contract/) — 주입 슬롯 전체 목록과 계약
-- [`../extend/02-dispatch-handler-contract.md`](/quad/ko/reference/extend/02-dispatch-handler-contract/) — `Void`를 retractor로 돌려주는 자리
-- [`../../quadnomicon/03-luau-memory-topology.md`](/quad/ko/quadnomicon/03-luau-memory-topology/) — 생명주기 바인딩이 메모리 토폴로지에서 하는 역할
+- [Slot](/ko/reference/core/07-slot/) — `Detach`/`KeyGone`이 실제로 오가는 `Slot:List`/`Slot:Single`
+- [브랜드 술어](/ko/reference/core/12-predicates/) — 센티널에 술어가 없는 이유
+- [`../extend/01-backend-provider-contract.md`](/ko/reference/extend/01-backend-provider-contract/) — 주입 슬롯 전체 목록과 계약
+- [`../extend/02-dispatch-handler-contract.md`](/ko/reference/extend/02-dispatch-handler-contract/) — `Void`를 retractor로 돌려주는 자리
+- [`../../quadnomicon/03-luau-memory-topology.md`](/ko/quadnomicon/03-luau-memory-topology/) — 생명주기 바인딩이 메모리 토폴로지에서 하는 역할

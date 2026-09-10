@@ -97,7 +97,7 @@ local panel = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 조합](/quad/ko/getting-started/03-component-composition/)
+**관련** — [컴포넌트 조합](/ko/getting-started/03-component-composition/)
 
 ## `q.PreRef<<T>>(default)`
 
@@ -128,7 +128,7 @@ local form = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 조합](/quad/ko/getting-started/03-component-composition/)
+**관련** — [컴포넌트 조합](/ko/getting-started/03-component-composition/)
 
 ## `q.PostRef<<T>>(default)`
 
@@ -359,4 +359,4 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [디버깅과 문제 해결](/quad/ko/how-to/01-debugging-and-troubleshooting/)
+**관련** — [디버깅과 문제 해결](/ko/how-to/01-debugging-and-troubleshooting/)

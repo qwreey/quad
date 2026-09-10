@@ -249,4 +249,4 @@ end
 ---
 
 ## 다음 단계
-- [06. Roblox Studio 없이 헤드리스로 테스트하기](/quad/ko/how-to/06-headless-testing/)
+- [06. Roblox Studio 없이 헤드리스로 테스트하기](/ko/how-to/06-headless-testing/)

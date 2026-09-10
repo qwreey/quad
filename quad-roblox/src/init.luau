@@ -28,7 +28,7 @@ local Types = require("@self/types")
 local DModule = require("@self/D")
 
 -- 독립 게시 백엔드는 여기만 느슨한 패턴("0.*.*"류)으로 바꾸면 된다
-local VERSION_PATTERN = "0.0.0"
+local VERSION_PATTERN = "3.0.0"
 
 -- 공개 타입 재익스포트(ROADMAP M5 배너 — 몰아두는 단일 파일은 types.luau).
 -- `D`/`DMapper`/`<Class>Param<E>` 전량은 생성 파일(src/D)이 소스라 여기선

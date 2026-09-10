@@ -6,7 +6,7 @@ description: "엔진 비의존 코어와 주입되는 op로 다중 렌더 백엔
 > **관련 소스**: `quad-roblox/src/EngineOps.luau`, `quad-base/src/init.luau`, `quad-base/src/LifetimeHandle.luau`, `quad-base/src/NotInstalled.luau`
 
 > [!CAUTION]
-> 이 권은 프로바이더 인터페이스와 엔진 경계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/quad/ko/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 프로바이더 인터페이스와 엔진 경계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/ko/getting-started/01-core-mental-model/)부터 보십시오.
 
 ---
 

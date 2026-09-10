@@ -2,7 +2,7 @@
 title: Store
 description: 이름 붙은 Source 모음 — 명시적 초기화, 점 접근, Of/Names와 예약 키
 ---
-`Store`는 **이름 붙은 `Source`들의 가방**입니다. 값을 담는 새 반응형 노드가 아니라, 이미 만든 [`Source`](/quad/ko/reference/core/02-source/)들을 한 레코드로 묶어 타입이 붙은 점 접근(`store.hp`)을 주는 것이 전부입니다.
+`Store`는 **이름 붙은 `Source`들의 가방**입니다. 값을 담는 새 반응형 노드가 아니라, 이미 만든 [`Source`](/ko/reference/core/02-source/)들을 한 레코드로 묶어 타입이 붙은 점 접근(`store.hp`)을 주는 것이 전부입니다.
 
 이 페이지의 심볼: [`q.Store(defaults)`](#qstoredefaults) · [`store.key`](#storekey-선언된-필드) · [`store:Of<<U>>(name)`](#storeofuname) · [`store:Names()`](#storenames) · [예약 키](#예약-키)
 
@@ -67,7 +67,7 @@ print(store.hp:Get()) --> 100
 store.hp:Set(80)
 ```
 
-**관련** — [How-To 02 폼 검증](/quad/ko/how-to/02-form-validation-pattern/) · [02-source](/quad/ko/reference/core/02-source/)
+**관련** — [How-To 02 폼 검증](/ko/how-to/02-form-validation-pattern/) · [02-source](/ko/reference/core/02-source/)
 
 ---
 
@@ -157,4 +157,4 @@ print(table.concat(names, ",")) --> hp,mp
 - **런타임**: 생성자와 `:Of` 둘 다 같은 문으로 막습니다 — `Store: "{name}" is a reserved store key`
 - **타입 검사 시점**: `Store<T>`에 얹힌 타입 함수가 주석 자리에서 먼저 경고를 냅니다. 타입 함수는 에러를 던질 수 없어 출력으로만 알립니다 — `quad.Store: "{v}" is a reserved key`
 
-**관련** — [02-source](/quad/ko/reference/core/02-source/) · [03-state](/quad/ko/reference/core/03-state/)
+**관련** — [02-source](/ko/reference/core/02-source/) · [03-state](/ko/reference/core/03-state/)

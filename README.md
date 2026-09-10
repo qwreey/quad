@@ -1,3 +1,5 @@
+<p align="center"><img src="./docs/site/src/assets/quad-logo.svg" alt="quad" width="360"></p>
+
 # quad
 
 **quad** is a DOMless UI renderer for Roblox: reactive state (`Store` / `State` / `Source`) bound straight to Instances, no virtual DOM, a pluggable dispatch engine, and an engine-agnostic core you can test without Roblox. Documentation is in Korean under [`docs/`](./docs/README.md); an English translation is planned after the Korean text has been reviewed by real users.

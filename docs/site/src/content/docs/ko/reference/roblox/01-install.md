@@ -47,7 +47,7 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
 `QuadRoblox`는 **프로바이더 함수**이지 모듈이 아닙니다 — 직접 부르지 말고 `UseProvider`에 넘기세요.
 호출되면 순서대로 이렇게 합니다.
 
-1. **버전 게이트** — 받은 모듈의 [`Version`](/quad/ko/reference/core/01-quad-module/)이 이 패키지가 요구하는 패턴과
+1. **버전 게이트** — 받은 모듈의 [`Version`](/ko/reference/core/01-quad-module/)이 이 패키지가 요구하는 패턴과
    맞는지 런타임에 검사합니다.
    맞지 않으면 소비자의 `UseProvider` 줄을 blame하며 던집니다.
 
@@ -55,7 +55,7 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
    ```
 
-   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"0.0.0"`, `{tostring(q.Version)}`은
+   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.0.0"`, `{tostring(q.Version)}`은
    넘어온 모듈의 `Version` 필드입니다. 모노레포는 정확한 버전을 핀으로 잡고, 독립 게시 백엔드라면
    더 느슨한 패턴을 쓰게 됩니다.
 
@@ -64,17 +64,17 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    빌드 메타데이터는 양쪽 다 무시하고, 프리릴리즈는 **패턴에 프리릴리즈가 있을 때만** 정확히 같은
    문자열이어야 합니다(패턴이 `"3.1.0"`이면 `3.1.0-rc.1`도 통과, `"3.1.0-rc.1"`이면 `rc.1`만 통과).
 2. **모듈 뮤테이션** — 생명주기 프리미티브(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)와
-   `nativeClaim`, 엔진 op 일습을 [모듈 인스턴스](/quad/ko/reference/core/01-quad-module/)에 심고, 백엔드가 소유한
+   `nativeClaim`, 엔진 op 일습을 [모듈 인스턴스](/ko/reference/core/01-quad-module/)에 심고, 백엔드가 소유한
    핸들러 넷(Property / InstanceChild / Event / InstanceShorthand)과 OnChange 핸들러를 디스패치에
    등록합니다. 주입 슬롯의 전체 목록과
-   계약은 [백엔드 프로바이더 규약](/quad/ko/reference/extend/01-backend-provider-contract/)이 소스입니다.
+   계약은 [백엔드 프로바이더 규약](/ko/reference/extend/01-backend-provider-contract/)이 소스입니다.
 3. **확장 반환** — `RobloxExtension` 테이블을 돌려줍니다.
 
 ---
 
 ## `Quad:UseProvider(QuadRoblox)`
 
-`UseProvider` 자체의 정본은 [core/01 — Quad 모듈](/quad/ko/reference/core/01-quad-module/)입니다. 여기서는
+`UseProvider` 자체의 정본은 [core/01 — Quad 모듈](/ko/reference/core/01-quad-module/)입니다. 여기서는
 `QuadRoblox`를 넘겼을 때 무엇이 생기는지만 봅니다.
 
 **시그니처**
@@ -128,11 +128,11 @@ export type RobloxExtension = {
 
 | 키 | 무엇 | 상세 |
 |---|---|---|
-| `D` | Instance 생성기 네임스페이스 — 클래스별 별칭 + `New`/`Mapper`/`Modifier` | [D — Instance 생성](/quad/ko/reference/roblox/02-d/), [D.Modifier](/quad/ko/reference/roblox/03-d-modifier/), [Claim과 D.Mapper](/quad/ko/reference/roblox/04-claim-mapper/) |
-| `OnChange` | 프로퍼티 변경 신호 디스크립터 팩토리 | [q.OnChange](/quad/ko/reference/roblox/05-onchange/) |
-| `Animate` | `state:Apply`용 트윈 콤비네이터 | [Tween과 Animate](/quad/ko/reference/roblox/06-tween-animate/) |
-| `Tween` | 값-레벨 트윈 래퍼 생성자 | [Tween과 Animate](/quad/ko/reference/roblox/06-tween-animate/) |
-| `isTween` | 그 값이 `Tween`인지 판정하는 술어 | [Tween과 Animate](/quad/ko/reference/roblox/06-tween-animate/) |
+| `D` | Instance 생성기 네임스페이스 — 클래스별 별칭 + `New`/`Mapper`/`Modifier` | [D — Instance 생성](/ko/reference/roblox/02-d/), [D.Modifier](/ko/reference/roblox/03-d-modifier/), [Claim과 D.Mapper](/ko/reference/roblox/04-claim-mapper/) |
+| `OnChange` | 프로퍼티 변경 신호 디스크립터 팩토리 | [q.OnChange](/ko/reference/roblox/05-onchange/) |
+| `Animate` | `state:Apply`용 트윈 콤비네이터 | [Tween과 Animate](/ko/reference/roblox/06-tween-animate/) |
+| `Tween` | 값-레벨 트윈 래퍼 생성자 | [Tween과 Animate](/ko/reference/roblox/06-tween-animate/) |
+| `isTween` | 그 값이 `Tween`인지 판정하는 술어 | [Tween과 Animate](/ko/reference/roblox/06-tween-animate/) |
 
 `Tween`/`isTween`은 모듈에도 직접 놓입니다 — 형제 설치자(Property 핸들러, 숏핸드 핸들러, `Animate`)와
 `quad-base`의 브랜드 진단 프로브가 그 자리를 보기 때문입니다. 사용자 입장에서는 `q.Tween` 하나로 같습니다.
@@ -182,6 +182,6 @@ luau-lsp analyze --flag:LuauSolverV2=true \
 
 **관련**
 
-- [00. 설치 및 환경 구축](/quad/ko/getting-started/00-installation/) — 패키지 배치와 Rojo 매핑
-- [백엔드 프로바이더 규약](/quad/ko/reference/extend/01-backend-provider-contract/) — 주입 슬롯 전수와 포팅 계약
-- [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/quad/ko/quadnomicon/10-multi-backend-abstract-machine/)
+- [00. 설치 및 환경 구축](/ko/getting-started/00-installation/) — 패키지 배치와 Rojo 매핑
+- [백엔드 프로바이더 규약](/ko/reference/extend/01-backend-provider-contract/) — 주입 슬롯 전수와 포팅 계약
+- [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/ko/quadnomicon/10-multi-backend-abstract-machine/)

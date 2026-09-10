@@ -38,7 +38,7 @@ local q = Quad:UseProvider(QuadRoblox)
 
 `require`가 돌려주는 `Quad`는 이미 쓸 수 있는 기본 인스턴스입니다. `Quad.New()`는 서로 격리된 별도 인스턴스가 필요할 때만 씁니다.
 
-저장소상 패키지 이름은 언더스코어만 씁니다 — **`qwreey/quad_base`**, **`qwreey/quad_roblox`**(폴더 이름은 `quad-base`/`quad-roblox`로 하이픈, 매니페스트의 `name`만 언더스코어입니다). 현재 버전은 둘 다 `0.0.0`. 저장소 루트의 `qwreey/quad`는 워크스페이스 루트일 뿐 게시 대상이 아니므로(`private = true`) 이 이름으로는 설치할 수 없습니다.
+저장소상 패키지 이름은 언더스코어만 씁니다 — **`qwreey/quad_base`**, **`qwreey/quad_roblox`**(폴더 이름은 `quad-base`/`quad-roblox`로 하이픈, 매니페스트의 `name`만 언더스코어입니다). 현재 버전은 둘 다 `3.0.0`(다섯 패키지가 같은 버전으로 게시됩니다). 저장소 루트의 `qwreey/quad`는 워크스페이스 루트일 뿐 게시 대상이 아니므로(`private = true`) 이 이름으로는 설치할 수 없습니다.
 
 ---
 
@@ -54,11 +54,11 @@ local q = Quad:UseProvider(QuadRoblox)
 
 ```toml
 [dependencies]
-quad_base = { name = "qwreey/quad_base", version = "0.0.0" }
-quad_roblox = { name = "qwreey/quad_roblox", version = "0.0.0" }
+quad_base = { name = "qwreey/quad_base", version = "^3.0.0" }
+quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
 ```
 
-`quad_types` / `quad_error` / `type_version_check`는 위 둘의 의존성으로 따라 들어오므로 직접 적을 필요가 없습니다. 버전 `0.0.0`은 지금 저장소의 값이므로, 게시 시점 버전으로 바꿔 쓰세요.
+`quad_types` / `quad_error` / `type_version_check`는 위 둘의 의존성으로 따라 들어오므로 직접 적을 필요가 없습니다. `^3.0.0`은 3.x 안에서 최신을 받겠다는 뜻입니다 — 정확한 버전으로 고정하려면 `version = "3.0.0"`처럼 쓰세요.
 
 ### 2단계: Rojo 프로젝트 맵 연결
 

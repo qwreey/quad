@@ -91,7 +91,7 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [컴포넌트 조합](/quad/ko/getting-started/03-component-composition/), [확장 가능한 디스패치 엔진](/quad/ko/quadnomicon/08-extensible-dispatch-engine/)
+**관련** — [컴포넌트 조합](/ko/getting-started/03-component-composition/), [확장 가능한 디스패치 엔진](/ko/quadnomicon/08-extensible-dispatch-engine/)
 
 ## `tag:Added(names)`
 
@@ -286,7 +286,7 @@ hp:Set(80)      -- 속성 Hp가 따라 바뀐다
 hp:Set(q.None)  -- 속성 Hp가 삭제된다
 ```
 
-**관련** — [확장 가능한 디스패치 엔진](/quad/ko/quadnomicon/08-extensible-dispatch-engine/)
+**관련** — [확장 가능한 디스패치 엔진](/ko/quadnomicon/08-extensible-dispatch-engine/)
 
 ## `attr:NameMap()`
 

@@ -1,5 +1,5 @@
 name = "qwreey/quad_roblox"
-version = "0.0.0"
+version = "3.0.0"
 description = "quad — Roblox backend: installs the Roblox provider (D, Tween, Animate, OnChange) into quad-base"
 includes = ["src/**", "README.md", "LICENSE", "pesde.toml"]
 license = "MIT"
