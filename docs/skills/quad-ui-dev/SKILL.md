@@ -54,7 +54,7 @@ Snippets below assume this prologue.
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
 | **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`. DOMless. |
 | **`Modifier`** | `q.Modifier{...}` / `D.Modifier.<Class>()` | Immutable property bag | Chaining clones (`mod:Size(...)`). Later array entry wins. |
-| **`Ref<T>`** | `q.Ref(nil :: Frame?)`, `q.PreRef(...)`, `q.PostRef(...)` | Instance box | The initial value is a required argument at the type level (`Ref: <T>(default: T)`; the runtime does not check). `ref.Value` may be nil; `ref:Unwrap()` errors when empty; `:Wait()` awaits the NEXT `:Set`. |
+| **`Ref<T>`** | `q.Ref<<Frame?>>(nil)`, `q.PreRef(...)`, `q.PostRef(...)` | Instance box | The initial value is a required argument at the type level (`Ref: <T>(default: T)`; the runtime does not check). `ref.Value` may be nil; `ref:Unwrap()` errors when empty; `:Wait()` awaits the NEXT `:Set`. |
 | **`Tween<T>`** | `q.Tween{ Value = v, Time = 0.3 }` | Value container | `Value` must be plain (never a State). `Override`, `Dedup`. |
 | **`Animate`** | `q.Animate{ Time = 0.2, ... }` | Applicative sugar | `state:Apply(q.Animate{ Time = 0.2 })`. |
 | **`Debounce`/`Throttle`** | `q.Debounce{ Time = 0.3 }` | Time gate | `state:Apply(q.Debounce{...})`. Optional `Handle = q.Ref(nil)`. |
@@ -105,7 +105,7 @@ end, lastName)
 local Op = q.Operator
 local isVisible, price, tax, shipping = q.Source(true), q.Source(100), q.Source(5), q.Source(3)
 local rawPos, maxBound = q.Source(150), q.Source(100)
-local optionalName = q.Source(nil :: string?)
+local optionalName = q.Source<<string?>>(nil)
 local theme = q.Source({ Primary = "red" })
 
 local isHidden   = isVisible:Apply(Op.Not)                     -- unary
@@ -182,8 +182,8 @@ class). Prefer the generated `:As<Class>()` methods — their existence is the c
 type ThemeStore = QuadTypes.Store<{ Accent: QuadTypes.Source<Color3> }>
 local themeStore = q.Store { Accent = q.Source(Color3.fromRGB(0, 120, 255)) }
 
--- 1. provider keys: distinct table identities, cast to give them a type
-local ThemeProvider = q.Context.Provider("Theme") :: QuadTypes.Provider<ThemeStore>
+-- 1. provider keys: distinct table identities, use an explicit type argument to give them a type
+local ThemeProvider = q.Context.Provider<<ThemeStore>>("Theme")
 
 -- 2. populate at the root; :Set mutates the bag and returns it
 local ctx = q.Context():Set(ThemeProvider, themeStore)
@@ -261,7 +261,7 @@ With `{ Owned = false }` a replaced element is unmounted (`Parent = nil`) instea
 destroyed, so it can be mounted somewhere else.
 
 ```luau
-local selected = q.Source(nil :: Instance?)
+local selected = q.Source<<Instance?>>(nil)
 local slot = q.Slot<<Instance>>()
 slot:Single(selected, nil, { Owned = false })
 -- selected:Set(other) now unparents the previous element instead of destroying it
@@ -353,7 +353,7 @@ the way to drop `nil` from the type.
 
 ```luau
 local function InteractiveCard()
-    local cardRef = q.PreRef(nil :: TextButton?)   -- strict needs the element type
+    local cardRef = q.PreRef<<TextButton?>>(nil)   -- strict needs the element type
 
     return D.TextButton {              -- Frame has no Activated; use a GuiButton class
         cardRef,

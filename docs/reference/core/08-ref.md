@@ -85,14 +85,15 @@ Ref: <T>(default: T) -> Ref<T>
 
 **동작**
 
-- 타입 파라미터는 **하나**입니다. nil이 들어올 수 있는 자리는 호출자가 넓힙니다 — `q.Ref(nil :: Frame?)`처럼 씁니다. props 숫자 키 자리에 놓는 Ref는 인스턴스가 채워지기 전까지 비어 있으므로 사실상 항상 `T?` 형태입니다.
-- 숫자 키 자리에 놓으면, **그 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 숫자 키를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. 그 자리가 철거될 때는 `:Set(nil)`로 되돌아갑니다.
+- 타입 파라미터는 **하나**입니다. nil이 들어올 수 있는 자리는 호출자가 넓힙니다 — `q.Ref<<Frame?>>(nil)`처럼 씁니다. props 숫자 키 자리에 놓는 Ref는 인스턴스가 채워지기 전까지 비어 있으므로 사실상 항상 `T?` 형태입니다.
+- 숫자 키 자리에 놓으면, **그 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 숫자 키를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. **배열 자리 자체가 다른 값으로 재구동되면**(재바인드/retract 경로) `:Set(nil)`로 되돌아갑니다.
+- **인스턴스가 `Destroy()`되는 것과는 무관합니다.** `Ref`는 대상 인스턴스의 `Destroy`를 감지하지도, 반응하지도 않습니다 — 이미 파괴된 인스턴스를 계속 가리킨 채로 남는 것도 정상적으로 가능하고, 그 이후 `.Value`를 읽고 쓰는 것은 UB입니다. 파괴 시점 정리가 필요하면 `Effect`나 이벤트 쪽에서 하세요.
 - `Ref`는 `Epoch`이기도 합니다(다중 태깅) — `q.isRef`와 `q.isEpoch`가 둘 다 참입니다.
 
 **예제**
 
 ```luau
-local boxRef = q.Ref(nil :: Frame?)
+local boxRef = q.Ref<<Frame?>>(nil)
 local panel = D.Frame {
     boxRef,                       -- 배열부: 만들어진 Frame이 여기 담긴다
     D.TextLabel { Text = "제목" },
@@ -118,7 +119,7 @@ PreRef: <T>(default: T) -> PreRef<T>
 **예제**
 
 ```luau
-local inputRef = q.PreRef(nil :: TextBox?)
+local inputRef = q.PreRef<<TextBox?>>(nil)
 local form = D.Frame {
     D.TextBox { inputRef },
     D.TextButton {
@@ -149,7 +150,7 @@ PostRef: <T>(default: T) -> PostRef<T>
 **예제**
 
 ```luau
-local doneRef = q.PostRef(nil :: Frame?)
+local doneRef = q.PostRef<<Frame?>>(nil)
 local card = D.Frame {
     doneRef,
     D.TextLabel { Text = "A" },
@@ -322,7 +323,7 @@ Wait: <Self>(self: Self, thread: thread?) -> Self
 **예제**
 
 ```luau
-local ref = q.Ref(nil :: string?)
+local ref = q.Ref<<string?>>(nil)
 task.spawn(function()
     local value = ref:Wait().Value -- 다음 :Set 까지 여기서 멈춘다
     print("도착", value)
@@ -351,7 +352,7 @@ Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗�
 **예제**
 
 ```luau
-local btnRef = q.PreRef(nil :: TextButton?)
+local btnRef = q.PreRef<<TextButton?>>(nil)
 local button = D.TextButton {
     btnRef,
     Text = "보내기",

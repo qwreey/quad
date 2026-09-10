@@ -387,7 +387,7 @@ type SlotListOpts = { Owned: boolean? }
 ```luau
 type Row = { Id: string, Title: string }
 
-local rows = q.Source({ { Id = "a", Title = "첫째" } } :: { Row })
+local rows = q.Source<<{ Row }>>({ { Id = "a", Title = "첫째" } })
 local slot = q.Slot<<Instance>>()
 
 slot:List(rows, function(
@@ -452,7 +452,7 @@ Single: <UD>(
 **예제**
 
 ```luau
-local current = q.Source(nil :: Instance?)
+local current = q.Source<<Instance?>>(nil)
 local slot = q.Slot<<Instance>>():Single(current)
 local host = D.Frame { slot }
 
@@ -483,7 +483,7 @@ Detach: Detach -- { read __quadDetach: true }
 type Row = { Id: string }
 
 local visible = q.Source(true)
-local rows = q.Source({ { Id = "a" } } :: { Row })
+local rows = q.Source<<{ Row }>>({ { Id = "a" } })
 local slot = q.Slot<<Instance>>()
 
 slot:List(rows, function(

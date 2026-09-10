@@ -38,7 +38,7 @@ export type Source<T> = State<T> & {
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `v` | `T` | 초기값. `nil`도 값으로 허용됩니다(`q.Source(nil :: number?)` — 타입은 명시해야 `Source<number?>`가 됩니다). |
+| `v` | `T` | 초기값. `nil`도 값으로 허용됩니다(`q.Source<<number?>>(nil)` — 타입 인자는 명시해야 `Source<number?>`가 됩니다). |
 
 **반환** — `Source<T>`. 만들어진 시점의 `Revision`은 `0`입니다.
 

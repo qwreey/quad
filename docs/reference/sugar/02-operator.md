@@ -244,7 +244,7 @@ Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>
 `default`가 `nil`이면 팩토리 호출 줄에서 `Operator.Alternative: default must not be nil`입니다.
 
 ```luau
-local optionalName = q.Source(nil :: string?)
+local optionalName = q.Source<<string?>>(nil)
 local safeName: State<string> = optionalName:Apply(Op.Alternative("Guest")) -- "Guest"
 ```
 
@@ -262,7 +262,7 @@ Indexed: <V>(key: any) -> (self: any) -> State<V>
 
 ```luau
 type Palette = { Primary: string, Size: number }
-local palette = q.Source({ Primary = "red", Size = 10 } :: Palette)
+local palette = q.Source<<Palette>>({ Primary = "red", Size = 10 })
 
 local primary: State<string> = palette:Apply(Op.Indexed<<string>>("Primary"))
 local size: State<number> = palette:Apply(Op.Indexed<<number>>("Size"))

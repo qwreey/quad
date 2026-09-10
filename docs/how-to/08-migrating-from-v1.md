@@ -58,7 +58,7 @@ local D = q.D
 | `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
 | `[Event.Prop "Text"] = fn` | `q.OnChange("Text", fn)` (숫자 키 자리) | 5절 |
 | `Class.Extend()` + `:Render(props)` | 평범한 함수 | 5절 |
-| `self "_button"` 링커 | `q.PreRef(nil :: Frame?)` + `ref:Unwrap()` | 5절 |
+| `self "_button"` 링커 | `q.PreRef<<Frame?>>(nil)` + `ref:Unwrap()` | 5절 |
 | `Store.GetStore("myStore")` | `q.Store { key = q.Source(v) }` (이름 조회 없음) | 4절 |
 | `myStore "color"` | `store.color` | 4절 |
 | `register:With(fn)` | `state:Compute(fn, ...deps)` | 4절 |
@@ -128,7 +128,7 @@ local price = q.Source(100)
 local total = price:Apply(Op.Sum(500))
 
 -- v1: register:Default("Guest")
-local nickname = q.Source(nil :: string?)
+local nickname = q.Source<<string?>>(nil)
 local shown = nickname:Apply(Op.Alternative("Guest"))
 
 -- v1: register:With(테이블)  — 테이블 한 칸을 반응형으로 읽기
@@ -210,7 +210,7 @@ type Row = { Id: string, Title: string }
 type RowUD = { title: QuadTypes.Source<string>, order: QuadTypes.Source<number> }
 
 -- v1: local mounts = Mount(parent); mounts:Add(item); mounts:Unmount()
-local rows = q.Source({ { Id = "a", Title = "첫 줄" } } :: { Row })
+local rows = q.Source<<{ Row }>>({ { Id = "a", Title = "첫 줄" } })
 local slot = q.Slot<<Instance>>()
 
 slot:List(rows, function(
@@ -251,14 +251,14 @@ v1의 `Class.Extend()`는 `Init`/`Render`/`AfterRender`/`Getter`/`Setter`/`Updat
 | `:AfterRender(obj)` | `q.OnRendered<<T>>(fn)` — 단, 부모에 붙었음은 보장하지 않습니다 |
 | `:Unload` | `q.OnDestroyed(fn)` |
 | `.Getter` / `.Setter` / `.UpdateTriggers` / `:Update()` | 없음 — 프로퍼티 단위 갱신이라 전체 재렌더 개념 자체가 없습니다 |
-| `self "_button"` 링커 | `q.PreRef(nil :: TextButton?)` 를 숫자 키 자리에 |
+| `self "_button"` 링커 | `q.PreRef<<TextButton?>>(nil)` 를 숫자 키 자리에 |
 
 ### 이벤트와 훅
 
 ```luau
 -- v1: [Event "Activated"] = function(self, ...) end  — self는 오지 않는다
 -- v1: self "_button" 링커  → PreRef
-local buttonRef = q.PreRef(nil :: TextButton?)
+local buttonRef = q.PreRef<<TextButton?>>(nil)
 local pressed = q.Source(0)
 
 local button = D.TextButton {
@@ -360,14 +360,14 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |
 | `State<Frame>`을 `State<Instance>` 파라미터에 | `'Frame' is not exactly 'Instance'` (수백 줄) | `State<T>`는 불변입니다. 입력 자리는 생성 prop 타입(공변 마커)이나 `State<Instance>`로 선언하세요 |
 | `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | 반환 팩을 주석하세요: `): (any, UD?)` |
-| `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider("Theme") :: QuadTypes.Provider<T>` |
-| `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref(nil :: Frame?)` — 초기값의 타입이 곧 `Ref`의 타입입니다 |
+| `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider<<Theme>>("Theme")` |
+| `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` — 타입 인자로 넓힙니다 |
 | `[q.AttrKey("Hp")] = v` (해시 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
 | `D.New("Folder")({...})`의 결과를 사용 | `Type 'unknown' does not have key 'Name'` | `D.New<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
 | `Op.Sum(UDim2…)` 같은 비숫자 | `None of the overloads for function that accept 2 arguments are compatible` | 산술·비트 연산자는 숫자 전용입니다. 다른 타입은 `:Compute`로 |
 
-> **`<<T>>` 표기**: quad는 Luau의 **명시적 타입 인자** 문법을 씁니다. 화살괄호가 **둘**입니다 — `q.Slot<<Instance>>()`, `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`, `Op.Indexed<<Color3>>("Primary")`. 하나만 쓰면 비교 연산으로 파싱돼 문법 오류가 납니다.
+> **`<<T>>` 표기**: quad는 Luau의 **명시적 타입 인자** 문법을 씁니다. 화살괄호가 **둘**입니다 — `q.Slot<<Instance>>()`, `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`, `Op.Indexed<<Color3>>("Primary")`, `q.Ref<<Frame?>>(nil)`. 하나만 쓰면 비교 연산으로 파싱돼 문법 오류가 납니다.
 
 > **[2026-09-09] `Font`는 다시 씁니다 — 다만 레거시입니다.** 생성 `D`에 `Font`/`FontSize`/`TextWrap`/`Transparency`가 돌아왔습니다(엔진이 Deprecated·Hidden으로 표시한 프로퍼티를 v1 마이그레이션용으로 되살린 결정 — 필드마다 `-- @deprecated (Roblox <tags>)` 주석이 붙어 있습니다). v1 코드를 그대로 옮길 땐 `Font = Enum.Font.GothamMedium`이 타입 검사를 통과하니 먼저 컴파일을 통과시키고, **새로 쓰는 코드와 정리 단계에서는 현행 API인 `FontFace = Font.fromEnum(Enum.Font.GothamMedium)`으로 옮기세요**. ⚠️ 테이블 키 자동완성에는 이 deprecated 표시가 실리지 않습니다(에디터가 경고해주지 않는다는 뜻 — 멤버 접근 hover에만 보입니다).
 

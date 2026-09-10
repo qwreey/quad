@@ -39,7 +39,7 @@ Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadR
 | `:Init` + `props:Default("Size", v)` | `props.Size or default` |
 | `:AfterRender(obj)` | `q.OnRendered<<T>>(fn)` — parenting NOT guaranteed |
 | `:Unload` | `q.OnDestroyed(fn)` |
-| `self "_button"` linker | `q.PreRef(nil :: TextButton?)` in the array part + `ref:Unwrap()` |
+| `self "_button"` linker | `q.PreRef<<TextButton?>>(nil)` in the array part + `ref:Unwrap()` |
 | `Store.GetStore("myStore")` | `q.Store { key = q.Source(v) }` — no name lookup; **defaults must be Sources** |
 | `myStore "color"` | `store.color` (the very Source passed in) |
 | `myStore.NewKey = v` (undeclared) | `store:Of<<T>>("NewKey")` — the only dynamic door; annotation mandatory |
@@ -94,8 +94,8 @@ v2's `state:With(...)` exists and is a *different* API (it mints one extra node)
 | `q.Store()` then `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | declare in defaults, or `store:Of<<string>>("Text")` |
 | `State<Frame>` into a `State<Instance>` param | `'Frame' is not exactly 'Instance'` (hundreds of lines) | `State<T>` is invariant — declare inputs as the generated prop type (covariant marker) or `State<Instance>` |
 | `Slot:List` updateFn returning `nil` first | `Expected this to be 'nil', but got 'TextLabel'` | annotate the return pack: `): (any, UD?)` |
-| `q.Context.Provider("Theme")` uncast | `Get()` resolves to `unknown`, fails at the prop site | `:: QuadTypes.Provider<T>` |
-| `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref(nil :: Frame?)` |
+| `q.Context.Provider("Theme")` uncast | `Get()` resolves to `unknown`, fails at the prop site | `q.Context.Provider<<Theme>>("Theme")` |
+| `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` |
 | `[q.AttrKey("Hp")] = v` | `Expected this to be 'number', but got 'AttrKeyObject'` | runtime is fine, types are not opened — use array-part `q.Attr{...}` / `q.NumberAttr(...)` |
 | `D.New("Folder")({...})` result used | `Type 'unknown' does not have key 'Name'` | `D.New<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` |
@@ -103,7 +103,7 @@ v2's `state:With(...)` exists and is a *different* API (it mints one extra node)
 
 Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
 `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`,
-`q.Operator.Indexed<<Color3>>("Primary")`.
+`q.Operator.Indexed<<Color3>>("Primary")`, `q.Ref<<Frame?>>(nil)`.
 
 ## 4. What strict mode does NOT catch
 

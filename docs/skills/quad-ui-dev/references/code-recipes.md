@@ -263,7 +263,7 @@ local function SearchBar(onSearch: (string) -> ())
         end
     end)
 
-    local inputRef = q.PreRef(nil :: TextBox?)   -- strict needs the element type
+    local inputRef = q.PreRef<<TextBox?>>(nil)   -- strict needs the element type
 
     return D.Frame {
         Size = UDim2.new(1, 0, 0, 40),
@@ -302,7 +302,7 @@ never returns for an already-filled Ref.
 ## 6. Multi-Store `Context` Propagation
 
 `Context` is an explicit bag handed down through props — there is no tree lookup.
-`Context.Provider(name?)` returns an opaque identity; cast it to give it a value type.
+`Context.Provider(name?)` returns an opaque identity; give it an explicit type argument to attach a value type.
 
 ```luau
 type ThemeStore = QuadTypes.Store<{
@@ -311,8 +311,8 @@ type ThemeStore = QuadTypes.Store<{
 }>
 type InventoryStore = QuadTypes.Store<{ Coins: QuadTypes.Source<number> }>
 
-local ThemeProvider = q.Context.Provider("Theme") :: QuadTypes.Provider<ThemeStore>
-local InventoryProvider = q.Context.Provider("Inventory") :: QuadTypes.Provider<InventoryStore>
+local ThemeProvider = q.Context.Provider<<ThemeStore>>("Theme")
+local InventoryProvider = q.Context.Provider<<InventoryStore>>("Inventory")
 
 local function CoinDisplay(props: { Context: QuadTypes.Context })
     local inventory = props.Context:Get(InventoryProvider) -- errors when unset; :Peek gives nil
