@@ -47,10 +47,12 @@
   바운딩 해준다만 만족해도 해결돼."* 즉 계약은 **"프로퍼티 셋 이전에
   바운딩된다"** 하나이고, 그 따름정리가 초기값 발화다 — props에 그 프로퍼티가
   없으면 당연히 발화 없음, 파생 프로퍼티(`AbsolutePosition` 등)가 그 자리에서
-  계산돼 있다는 보장도 없음, **[2026-09-07 7순회 `H-429` 셋째 헤지]** props의 값이
+  계산돼 있다는 보장도 없음, **[2026-09-07 7순회 `H-429` 셋째 헤지 → 2026-09-10 Studio 실측으로 확정]** props의 값이
   엔진 기본값과 같으면(`Frame { Visible = true }`) 엔진이 동일값 대입에 시그널을 안
-  쏘므로 발화 없음이 정상(mock은 무조건 쏘므로 CLI와 갈린다 — `HUMAN_TODO.md` 13번
-  실측으로 확정할 것). 콜백이 초기값을 걸러야 하면 사용자가 `==`로
+  쏘므로 발화 없음이 정상 — 실측: 엔진 층(`GetPropertyChangedSignal`/`Changed`) 0회, quad 층
+  `D.Frame { Visible = true, q.OnChange("Visible", fn) }` 생성 시 0회·이어 `false` 쓰면 1회,
+  `Text = "Label"`(기본값)도 0회; mock은 `fireChanged`가 값 비교 없이 쏘므로 CLI 1회 —
+  **엔진 0 / mock 1**로 갈리는 것이 정상(`audit/studio-docs-2026-09-10.md` A절). 콜백이 초기값을 걸러야 하면 사용자가 `==`로
   거른다(사용자: *"== 비교가 엄청 싸서 그 안에서 dedup 하면 되는 부분"*) —
   quad가 초기값을 억제하지 않는다.
 - **핸들러(`"OnChange"`, NORMAL)**: `type(k) == "number"` ∧ 디스크립터

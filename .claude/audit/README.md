@@ -7,3 +7,5 @@
 - `deprecated-props-spike-2026-09-09/` — **[2026-09-09]** 생성 `D`에 Deprecated/Hidden 프로퍼티(`Font` 등) 되살리기 실측: `Font`는 Hidden 태그, Luau `@deprecated`는
   함수 전용(필드 불가 — hover 독 주석만), 포함 비용 +8%·한도 무해, 막는 전제는 `ReflectionService` Write 권한(Studio 실측 대기, HUMAN_TODO 12). 사용자 결정(Deprecated 전부 +
   Hidden `Font`/`Transparency`)과 적용용 gen-d 패치 둘(`REPORT.md`가 소스).
+
+- `studio-docs-2026-09-10.md` — **[2026-09-10 밤]** 문서 구간 실기기 배치: `HUMAN_TODO` 13 확정(**기본값과 같은 값을 쓰면 엔진은 `GetPropertyChangedSignal`을 아예 안 쏴서 `OnChange` 초기 발화가 0회** — mock은 값 비교 없이 무조건 발화해 1회, 즉 `onchange-plan.md` 셋째 헤지는 참), `HUMAN_TODO` 16 / `question.md` D9 부분 확정(문자열 `require("@game/…")`는 0.738에서 동작하고 별칭도 해석되나 **대상이 없으면 기다리지 않고 던진다**; Play Solo에선 첫 줄에 이미 `IsLoaded == true`라 실서버 접속 순서는 여전히 미실측), 튜토리얼용 Tag/Attr 왕복(`State<Tag>`를 `:Compute`로 배열부에 놓기·`None` 삭제)과 **`Instance:QueryDescendants` 셀렉터 문법 역설계**(공식 문서에 문법이 없어 전수 프로브 — `.`태그/`#`이름/`[$…]`어트리뷰트/`[…]`프로퍼티, 공백은 AND이고 자손은 `>>`, 에러 문구 표), 04장 카드의 뷰포트 시각 확인. `HUMAN_TODO` 14.2는 rojo 세션 교체가 필요해 미실측.
