@@ -2,11 +2,11 @@
 title: 심볼 색인
 description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색인
 ---
-공개 표면의 심볼을 이름으로 찾는 자리다. 각 행의 링크가 그 심볼을 **자세히 설명하는 페이지**를 가리킨다 — 같은 심볼이 두 페이지에 나오면(예: `Slot`의 센티널) 둘 다 적었다.
+공개 표면의 심볼을 이름으로 찾는 자리입니다. 각 행의 링크가 그 심볼을 **자세히 설명하는 페이지**를 가리킵니다 — 같은 심볼이 두 페이지에 나오면(예: `Slot`의 센티널) 둘 다 적었습니다.
 
-읽는 순서가 필요하면 색인이 아니라 트랙을 따라갈 것: [시작하기](/getting-started/00-installation/) → [실전 레시피](/how-to/09-debugging-and-troubleshooting/) → 여기.
+읽는 순서가 필요하면 색인이 아니라 트랙을 따라가세요: [시작하기](/getting-started/00-installation/) → [실전 레시피](/how-to/01-component-conventions/) → 여기.
 
-표기 규약: 모듈 인스턴스는 `q`, 백엔드 표면은 `q.D`를 `D`로 받아 쓴다. `q.X`는 모듈 표면의 값, `x:Method()`는 그 값의 메소드, `x.Field`는 필드다. `<<T>>`는 명시 타입 인자다.
+표기 규약은 이렇습니다. 모듈 인스턴스는 `q`, 백엔드 표면은 `q.D`를 `D`로 받아 씁니다. `q.X`는 모듈 표면의 값, `x:Method()`는 그 값의 메소드, `x.Field`는 필드입니다. `<<T>>`는 명시 타입 인자입니다.
 
 ## 모듈과 설치
 
@@ -165,7 +165,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 브랜드 술어
 
-`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/12 — 브랜드 술어](/reference/core/12-predicates/)의 한 표에 있다.
+`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/12 — 브랜드 술어](/reference/core/12-predicates/)의 한 표에 있습니다.
 
 | 심볼 | 페이지 |
 |---|---|
@@ -245,6 +245,6 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 타입
 
-타입 계약의 정본은 `quad-types/src/init.luau` 한 파일이다 — `State<T>`/`Source<T>`/`Slot<T>`/`Ref<T>`/`Store<T>`/`Handler`/`Dispatch` 같은 값 타입, 입력 자리용 마커(`StateMarker<T>`/`SlotMarker<T>`), 출력 자리의 `FieldOut<T>`, 센티널 타입(`None`/`Detach`/`KeyGone`/`MapperRoot`)이 전부 거기 선언돼 있다.
+타입 계약의 정본은 `quad-types/src/init.luau` 한 파일입니다 — `State<T>`/`Source<T>`/`Slot<T>`/`Ref<T>`/`Store<T>`/`Handler`/`Dispatch` 같은 값 타입, 입력 자리용 마커(`StateMarker<T>`/`SlotMarker<T>`), 출력 자리의 `FieldOut<T>`, 센티널 타입(`None`/`Detach`/`KeyGone`/`MapperRoot`)이 전부 거기 선언돼 있습니다.
 
-**예외는 백엔드가 소유한 타입이다.** `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`/`AnimateInfo`/`AnimateFn`/`NewChild`/`OnChangeDescriptor`와 백엔드 확장 모양 `RobloxExtension`은 `quad-roblox/src/types.luau`(와 `quad-roblox/src/init.luau`)가 정본이고, 클래스별 생성 타입(`FrameParam<E>`/`FrameModifier`/`IntoFrame`/`PropTypes`/`PropTypesRead` 등)은 생성 모듈 `quad-roblox/src/D`가 정본이다 — 엔진 지식이 들어간 타입은 코어가 아니라 그 백엔드에 산다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](/quadnomicon/04-covariant-markers/)가 다룬다.
+**예외는 백엔드가 소유한 타입입니다.** `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`/`AnimateInfo`/`AnimateFn`/`NewChild`/`OnChangeDescriptor`와 백엔드 확장 모양 `RobloxExtension`은 `quad-roblox/src/types.luau`(와 `quad-roblox/src/init.luau`)가 정본이고, 클래스별 생성 타입(`FrameParam<E>`/`FrameModifier`/`IntoFrame`/`PropTypes`/`PropTypesRead` 등)은 생성 모듈 `quad-roblox/src/D`가 정본입니다 — 엔진 지식이 들어간 타입은 코어가 아니라 그 백엔드에 삽니다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](/quadnomicon/04-covariant-markers/)가 다룹니다.
