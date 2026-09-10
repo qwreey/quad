@@ -307,6 +307,6 @@ pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 
 
 ## 15. [2026-09-10 신설] 문서 사이트 Cloudflare Pages 1회 준비 + 게시 뒤 문서 표시 정리
 
-1. **Cloudflare 인증·프로젝트 생성**(샌드박스 밖): `docs/site/DEPLOY.md`의 "1회 준비" 셋(`npm install` → `npx wrangler login` → `npx wrangler pages project create quad-docs --production-branch main`). 그 뒤부터는 `npm run deploy`. 커스텀 도메인을 붙이면 `astro.config.mjs`의 `site`를 그 도메인으로.
+1. **Cloudflare 인증·프로젝트 생성**(샌드박스 밖): `docs/site/DEPLOY.md`의 "1회 준비" 셋(`npm install` → `npx wrangler login` → `npx wrangler pages project create quad-docs --production-branch main`). 그 뒤부터는 `npm run deploy`. **커스텀 도메인 `quad.qwreey.moe`**(사용자 결정 2026-09-10): `astro.config.mjs`의 `site`는 이미 그 값 — 첫 배포 뒤 대시보드 Custom domains에서 붙이면 끝(순서·외부 DNS 경우·API 경로는 `DEPLOY.md`).
 2. **3.0.0 실게시 뒤** 설치 문서의 "[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다" 표시(`docs/getting-started/00-installation.md` — pesde 절; Wally·rbxm 절은 여전히 미제공이라 그대로)와 오버뷰 1·2편의 "아직 배포되지 않았습니다" 문장을 지울 것(에이전트가 해도 됨 — 게시 확인만 알려주면 된다). 소비자 프로젝트에서 넷의 roblox 사본이 `roblox_packages/` 한 폴더로 들어오는지도 그때 확인(설치 문서 2단계의 [2026-09-10 기준] 문장).
 

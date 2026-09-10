@@ -12,7 +12,11 @@ npx wrangler pages project create quad-docs --production-branch main
 ```
 
 - 프로젝트 이름 `quad-docs`는 `wrangler.toml`의 `name`·`deploy.sh`의 `--project-name`과 같아야 한다. 바꾸려면 셋을 같이.
-- 커스텀 도메인은 Cloudflare 대시보드 → Pages → quad-docs → Custom domains에서 붙인다. 붙인 뒤 `astro.config.mjs`의 `site`(기본 `https://quad-docs.pages.dev`)를 그 도메인으로 바꿔야 sitemap·canonical이 맞는다(환경변수 `DOCS_SITE`로도 덮어쓸 수 있다).
+- **커스텀 도메인 `quad.qwreey.moe`**(사용자 결정 2026-09-10). `astro.config.mjs`의 `site`는 이미 이 도메인이다(sitemap·canonical의 절대 URL에만 쓰인다 — `quad-docs.pages.dev`로 열어도 페이지는 그대로 뜬다; 환경변수 `DOCS_SITE`로 덮어쓸 수 있다). 붙이는 순서:
+  1. 위 `project create` 뒤 **첫 `npm run deploy`를 먼저** — 도메인은 프로젝트에 붙는 것이라 production 배포가 하나는 있어야 검증·연결이 된다.
+  2. `qwreey.moe`가 같은 Cloudflare 계정의 zone이면: 대시보드 → Workers & Pages → quad-docs → Custom domains → Set up a custom domain → `quad.qwreey.moe`. Cloudflare가 `quad` CNAME → `quad-docs.pages.dev`(proxied)를 그 zone에 자동으로 넣고 인증서를 발급한다(몇 분).
+     zone이 다른 곳(외부 DNS)이면: 그 DNS에 `quad CNAME quad-docs.pages.dev`를 먼저 넣고 같은 화면에서 도메인을 추가한다(검증이 CNAME 조회로 된다).
+  3. CLI로만 하고 싶으면 wrangler엔 도메인 명령이 없다 — API `POST /accounts/<account_id>/pages/projects/quad-docs/domains` body `{"name":"quad.qwreey.moe"}`(토큰에 Pages 편집 권한), DNS 레코드는 별도.
 - 비대화형(토큰) 인증이 필요하면 `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID` 환경변수로 대신할 수 있다(Pages 편집 권한 토큰).
 
 ## 매번

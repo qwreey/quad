@@ -4,8 +4,8 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	// [2026-09-10] Cloudflare Pages(Wrangler 직접 업로드)로 배포 — 루트 base. site는 커스텀 도메인이 정해지면 바꿀 것(DEPLOY.md).
-	site: process.env.DOCS_SITE ?? 'https://quad-docs.pages.dev',
+	// [2026-09-10] Cloudflare Pages(Wrangler 직접 업로드)로 배포 — 루트 base. 커스텀 도메인 quad.qwreey.moe(사용자 결정 2026-09-10) — sitemap·canonical의 절대 URL만 여기서 나온다. 프리뷰 URL(*.quad-docs.pages.dev)은 그대로 열린다(DEPLOY.md).
+	site: process.env.DOCS_SITE ?? 'https://quad.qwreey.moe',
 	base: '/',
 	integrations: [
 		starlight({
