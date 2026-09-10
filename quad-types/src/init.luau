@@ -533,10 +533,17 @@ export type Slot<T> = {
 		keyFn: ((item: Item, index: number) -> any)?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
-	Single: <UD>(
+	-- [2026-09-11 사용자 확정 D10] `:List`와 같은 `<Item, UD>` — 구동 State는 데이터(`Item`)이고
+	-- 원소 타입 `T`와 묶이지 않는다(사용자: "인자 같고 타입 인자 같고 … 빠질 것만 빠져야" — 빠지는 건
+	-- `index`와 `keyFn`뿐). 이전엔 `state: T?`라 `Source<string?>`로 `Slot<Instance>`를 모는 정본
+	-- 사용이 strict에서 막혔다. `updateFn` 생략 슈거(identity)는 `Item = T`여야 맞지만, 그 팔을
+	-- 오버로드(`(...) & <Item, UD>(...)`)로 두면 신 솔버가 제네릭 팔을 아예 못 고른다(2026-09-11 실측,
+	-- typing-limits 8.19) — 그래서 한 시그니처로 두고, identity 슈거에 원소가 아닌 State를 넘기는 오용은
+	-- 런타임 가드(`Slot: this backend cannot mount this value`)가 잡는다.
+	Single: <Item, UD>(
 		self: Slot<T>,
-		state: T? | StateMarker<T?>,
-		updateFn: ((item: T | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+		state: Item? | StateMarker<Item?>,
+		updateFn: ((item: Item | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
 }

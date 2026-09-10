@@ -1071,3 +1071,10 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 `type-version-check`의 `CheckVersion`이 `actual:value()`를 `pcall`로 감싸고 있었다. luau-lsp 1.69.0(신 솔버)은 그 줄에 `Unknown global 'pcall'`을 내고 함수 평가를 건너뛰었고(일부러 틀린 패턴에도 진단 0), 같은 파일의 단독 type function에서는 `pcall`이 "this function is not supported in type functions"로 죽는다(2026-09-09 에이전트 실측). **처방**: `pcall` 대신 `t.tag == "singleton"`으로 먼저 보고 `:value()`를 부른다 — 2026-09-10 사용자 결정("릴리즈 전엔 언젠간 쳐내야할 것")으로 적용. 적용 뒤 `luau-analyze`(0.734, 구·신 솔버 모두)는 `CheckVersion<"3.0.0", "2.*.*">`에 `types.never` 진단과 `print` 메시지를 정상으로 낸다.
 
 그런데 **luau-lsp 1.69.0은 적용 뒤에도 `CheckVersion`을 평가하지 않는다.** 원인을 좁히니 우리 코드가 아니다 — 한 줄짜리 `export type function Echo(t) return types.singleton(t:value()) end`를 다른 파일에 두고 `local a: M.Echo<"q"> = 5`를 검사하면 `luau-analyze`는 `Expected "q", got number`를 내지만 luau-lsp `analyze`는 진단 0이다(같은 파일 안의 type function은 luau-lsp도 정상 평가 — `print`·`types.never`·런타임 에러 전부 보인다). 즉 **모듈 경계를 넘는 type function은 luau-lsp에서 조용히 무효**다. 따라서 편집기에서 `CheckedQuad` 컴파일 타임 게이트는 여전히 안 보이고, 런타임 게이트(`UseProvider`의 버전 검사)가 정본이라는 사실은 그대로다. luau-lsp 버전을 올릴 때 이 프로브(`Echo` 두 파일)를 다시 돌려 보면 된다.
+
+## 8.19. 제네릭 팔이 든 함수 오버로드(교집합)는 신 솔버가 제네릭 팔을 고르지 못한다 — `Slot:Single`은 한 시그니처로 (2026-09-11 실측)
+
+`Slot:Single`을 `:List`처럼 `<Item, UD>`로 바꾸면서(D10, 사용자 확정) `updateFn` 생략 슈거만 `Item = T`로 묶고 싶어
+`((self, state: T? | StateMarker<T?>, updateFn: nil?, opts?) -> Slot<T>) & (<Item, UD>(self, state: Item? | StateMarker<Item?>, updateFn: (…) -> (any, UD?), opts?) -> Slot<T>)`
+두 팔을 교집합으로 뒀다(순서 양쪽 다 시도). 결과(luau-lsp 1.69, `LuauSolverV2`): 매핑 `updateFn`을 주는 호출이 *"None of the overloads for function that accept 3 arguments are compatible"*로 죽고, "Available overloads"에 제네릭 팔이 나열되긴 하나 선택되지 않는다. 비제네릭 팔만 있는 교집합(`Apply`의 두 팔)은 되므로, 실패 조건은 **팔 하나가 메소드 제네릭인 것**. 한 시그니처 `Single: <Item, UD>(self, state: Item? | StateMarker<Item?>, updateFn: (… )?, opts?)`로 두면 양성 넷(매핑·identity·리터럴+opts·`:List` 대조군, `quad-roblox/test/spec.slottypes.luau`) 전부 통과하고, 그 대가로 identity 슈거에 원소가 아닌 State(`Source<string?>`)를 넘기는 오용을 타입이 못 잡는다 — 런타임 가드(`Slot: this backend cannot mount this value`)가 잡으므로 수용. `Item?` 형태의 파라미터 추론은 문제 없었다(`Source<string?>` → `Item = string`).
+

@@ -211,7 +211,7 @@ print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스�
 -- 새 예시: 별도 스크립트
 const cur = q.Source<<string?>>(nil)
 
-const single = q.Slot():Single(cur, function(item, offset, prev, ud)
+const single = q.Slot<<Instance>>():Single(cur, function(item, offset, prev, ud)
     if item == q.KeyGone then
         return nil                        -- 값이 nil이 되면 그 원소를 파괴한다
     end
@@ -241,8 +241,6 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 
 **실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `Source`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S1~S4 — LayoutOrder 4 → 5 → 4, cur:Set(nil)이면 자식 수가 4에서 3으로 -->
-
-여기서는 `q.Slot()`을 타입 인자 없이 만들었습니다. [09장 1절](./09-slot.md)의 접힘이 `--!strict`에서는 `q.Slot<<Instance>>()`처럼 명시하라고 했는데, `:Single`은 예외입니다 — 이 자리를 모는 `cur`가 담은 것은 **화면에 올릴 인스턴스가 아니라 데이터(`string`)**이고, `:Single`의 타입은 그 둘을 갈라 두지 않았기 때문입니다(`:List`는 `data`가 별도 타입이라 갈립니다). 그래서 이 모양은 `--!strict`에서 타입 검사를 통과하지 못합니다 — 런타임은 정상입니다.
 
 `updateFn`은 `:List`의 것과 **`index`만 빠진** 같은 규칙입니다 — `(item, offset, prev, userdata)`를 받고, 돌려줄 수 있는 것도 위 표 그대로(`prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 값이 `nil`이 되면 `item` 자리에 `q.KeyGone`이 옵니다.
 

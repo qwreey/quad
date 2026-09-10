@@ -419,20 +419,22 @@ rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- 
 **시그니처**
 
 ```luau
-Single: <UD>(
+Single: <Item, UD>(
     self: Slot<T>,
-    state: T? | StateMarker<T?>,
-    updateFn: ((item: T | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+    state: Item? | StateMarker<Item?>,
+    updateFn: ((item: Item | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
     opts: SlotListOpts?
 ) -> Slot<T>
 ```
+
+타입 인자는 `:List`와 같은 `<Item, UD>`입니다 — `state`가 담는 것은 **데이터**(`Item`)이고, 원소 타입 `T`와 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 모양이 그대로 타입 검사를 통과합니다. `updateFn`을 생략하는 항등 사용에서는 `Item`이 곧 원소라 `T`로 두시면 됩니다(다른 것을 넘기면 타입이 아니라 런타임 가드 `Slot: this backend cannot mount this value`가 잡습니다).
 
 **인자**
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `state` | 값 또는 그걸 담은 State | 이 Slot이 실을 **한 개**의 원소 |
-| `updateFn` | 함수? | 생략하면 항등 — 값을 그대로 원소로 씁니다 |
+| `state` | `Item?` 또는 그걸 담은 State | 이 Slot이 실을 **한 개**의 데이터 — `updateFn`이 원소로 바꿉니다 |
+| `updateFn` | 함수? | 생략하면 항등 — 값을 그대로 원소로 씁니다(그때 `Item`은 원소 타입) |
 | `opts` | `{ Owned: boolean? }?` | `:List`와 같습니다 |
 
 **반환** — `self`.
