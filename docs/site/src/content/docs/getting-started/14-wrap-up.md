@@ -1,8 +1,8 @@
 ---
-title: "13. 정리 — 여기서부터 어디로"
-description: "열세 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
+title: "14. 정리 — 여기서부터 어디로"
+description: "열네 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
 ---
-> **대상 독자**: [12. 값은 언제 흐르나](/getting-started/12-laziness/)까지 따라온 개발자
+> **대상 독자**: [13. 값은 언제 흐르나](/getting-started/13-laziness/)까지 따라온 개발자
 > **목표**: 만든 것을 되짚고, 다음에 읽을 곳 고르기
 
 여기서 새로 배우는 것은 없습니다.
@@ -22,7 +22,8 @@ description: "열세 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽
 - [09](/getting-started/09-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용.
 - [10](/getting-started/10-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다.
 - [11](/getting-started/11-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
-- [12](/getting-started/12-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
+- [12](/getting-started/12-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
+- [13](/getting-started/13-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
 
 ---
 

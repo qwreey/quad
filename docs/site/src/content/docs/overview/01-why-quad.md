@@ -223,7 +223,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: Vide는 순수 push라 소스를 쓰는 즉시 동기·깊이우선으로 의존 노드를 재평가하고, 저자들이 다이아몬드 그래프의 중복 재평가 방지를 `todo.md`에 미해결로 남겼습니다. 의존성은 전역 스코프 스택으로 암묵 추적하는데, 그 때문에 리액티브 스코프 안의 yield가 그래프를 깨는 걸 막는 별도 장치까지 필요했습니다. Fusion은 push 무효화 + pull 재계산 하이브리드지만 eager로 표시된 노드는 즉시 재계산해야 해서, 글리치를 막으려 eager 집합을 생성 순서로 정렬합니다.
 - **우리가 넘은 방법**: `Set`은 "바뀌었다"는 신호만 보내고 값 계산을 하지 않습니다. 재계산은 `:Get()` 시점에 노드 캐시를 통해 일어나므로 신호가 두 경로로 와도 계산은 한 번이고, **다이아몬드 중복 재평가는 이 모델에서 구조적으로 발생하지 않습니다** — Vide가 미해결로 남긴 자리입니다. 의존성은 `:With` / `:Compute(fn, ...deps)`로 적으므로 암묵 추적이 필요한 yield 방어 장치도 없습니다.
 - **그 대가 / 더 나쁜 점**: 의존성을 전부 손으로 나열해야 하고 보일러플레이트가 늘어납니다. `derive()` 안에서 그냥 읽으면 잡히는 Vide 쪽 인체공학은 여기 없습니다. 의존성 목록은 정적이라 실행 중에 바뀌지 않습니다.
-- **자세히**: [12. 값은 언제 흐르나](/getting-started/12-laziness/), [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/quadnomicon/01-revision-and-epochmap/)
+- **자세히**: [13. 값은 언제 흐르나](/getting-started/13-laziness/), [Quadnomicon Vol. 1 — 32-bit Wrapping Revision과 EpochMap](/quadnomicon/01-revision-and-epochmap/)
 
 ### (3) 형제 여럿을 다루는 자리를 Slot으로 만들고, 마운트에 소유권을 건다
 
@@ -310,7 +310,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 ## 9. 다음 걸음
 
-- **써보기**: [프레임워크 설정](/getting-started/01-setup/) → [첫 화면](/getting-started/02-first-screen/) → [값이 흐르게 하기](/getting-started/03-flowing-values/) → [반응하기](/getting-started/04-reacting/) → … → [컴포넌트로 쪼개기](/getting-started/08-components/) → [움직이게 하기](/getting-started/11-animation/) → [정리](/getting-started/13-wrap-up/)
+- **써보기**: [프레임워크 설정](/getting-started/01-setup/) → [첫 화면](/getting-started/02-first-screen/) → [값이 흐르게 하기](/getting-started/03-flowing-values/) → [반응하기](/getting-started/04-reacting/) → … → [컴포넌트로 쪼개기](/getting-started/08-components/) → [움직이게 하기](/getting-started/11-animation/) → [정리](/getting-started/14-wrap-up/)
 - **설치**: [00. 설치 및 환경 구축](/getting-started/00-installation/) — pesde + Rojo 절차와 타입 검사 플래그.
 - **경계 규약부터 보기**: [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) — props 두 부분의 규칙, 우선순위 불변식, 자식을 `Slot`으로 받기.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](/overview/02-from-v1/) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/).
