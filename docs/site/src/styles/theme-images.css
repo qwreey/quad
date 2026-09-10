@@ -1,5 +1,13 @@
 /* [2026-09-10] 다크 대응 그림 — 정본은 GitHub 방식 <picture>(prefers-color-scheme)이고,
    sync-docs.py가 사이트용으로 .light-only/.dark-only 이미지 둘로 바꾼다. Starlight의 테마 토글은
    OS 설정과 다를 수 있어 data-theme으로 가른다. */
-:root[data-theme='dark'] img.light-only { display: none; }
-:root[data-theme='light'] img.dark-only { display: none; }
+.sl-markdown-content img.light-only,
+.sl-markdown-content img.dark-only {
+	display: block;
+	margin: 1.5rem auto;   /* 가운데 정렬(사용자: "이미지가 중간에 안 오는") */
+	width: 70%;            /* 콘텐츠 폭의 60~80%(사용자) — drawio SVG는 viewBox가 있어 비율대로 커진다 */
+	max-width: 100%;
+	height: auto;
+}
+:root[data-theme='dark'] .sl-markdown-content img.light-only { display: none; }
+:root[data-theme='light'] .sl-markdown-content img.dark-only { display: none; }
