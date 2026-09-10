@@ -50,7 +50,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 
 ### Getting Started (시작하기) — 4편
 - [`00-installation.md`](./getting-started/00-installation.md) — 설치 경로 셋(pesde+Rojo / Wally+Rojo / `.rbxm`). **[2026-09-10 기준] pesde만 제공**(`3.0.0` 게시, 소비자 레이아웃 실측 문장이 2단계에); Wally·`.rbxm`은 각 절 머리의 날짜 표시가 소스 — 실물이 생기면 그 표시만 지운다. `quad-base`와 `quad-roblox` 둘을 require하고 `Quad:UseProvider(QuadRoblox)`로 백엔드를 설치한다는 것이 핵심.
-- [`01-core-mental-model.md`](./getting-started/01-core-mental-model.md) — 가상 DOM 없음, `Source`는 값을 쓸 수 있는 `State`, 물리 트리와 반응성의 분리.
+- [`01-core-mental-model.md`](./getting-started/01-core-mental-model.md) — 가상 DOM 없음, `Source`는 값을 쓸 수 있는 `State`, 물리 트리와 반응성의 분리. **[2026-09-10 사용자 피드백]** 머리의 `UseProvider` 서술은 "싱글턴이라 어느 모듈에서 불러도 된다"로, 4절에 프로젝트 설정 모듈 하나(거기서 프로바이더·플러그인 설치, `Quad.New()`도 그 자리) 패턴 신설, v1 콜아웃은 `<details>`로 접힘.
 - [`02-quickstart-counter.md`](./getting-started/02-quickstart-counter.md) — 위에서 아래로 이어 붙이면 도는 카운터 하나 + `Animate`/`Tween`. mock 백엔드에서 실행 확인됨.
 - [`03-component-composition.md`](./getting-started/03-component-composition.md) — 컴포넌트=평범한 함수, `props.Modifier or None`(배열 부분, nil-hole), Modifier 우선순위 셋, 타입드 Modifier 팩토리, `Tag`/`Attr`.
 
@@ -92,7 +92,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 
 ### Web Site & Tooling — [`site/`](./site)
 Astro + Starlight(Zero-JS 기본, Pagefind 검색, Expressive Code, `ko/`·`en/` 폴더 i18n). [`site/sync-docs.py`](./site/sync-docs.py)가
-overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/ko/`로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
+overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/<track>/`(**[2026-09-10]** 한국어가 root 로케일 — 옛 `ko/`)로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
 
 ### Agent Tooling — [`skills/quad-ui-dev/`](./skills/quad-ui-dev)
 AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md`](./skills/quad-ui-dev/SKILL.md)(온톨로지·금지 패턴·strict 타입 요구사항),

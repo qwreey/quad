@@ -27,11 +27,11 @@ npm run deploy            # production(main)
 npm run deploy:preview    # 현재 브랜치 이름의 프리뷰 URL — <branch>.quad-docs.pages.dev
 ```
 
-`deploy.sh`는 `python3 sync-docs.py`(docs/ 정본 → `src/content/docs/ko/`, frontmatter 없으면 실패) → `astro build`(`dist/`) → `wrangler pages deploy dist` 순서다. 업로드 한도는 파일 20,000개·파일당 25 MiB(지금 105페이지).
+`deploy.sh`는 `python3 sync-docs.py`(docs/ 정본 → `src/content/docs/<track>/`(한국어가 root 로케일, 영어는 `en/`), frontmatter 없으면 실패) → `astro build`(`dist/`) → `wrangler pages deploy dist` 순서다. 업로드 한도는 파일 20,000개·파일당 25 MiB(지금 105페이지).
 
 ## 의존성 버전
 
-**[2026-09-10]** astro 7.3.2 · @astrojs/starlight 0.42.0 · sharp 0.35.4 · wrangler 4.130.0(스캐폴딩의 astro 5/starlight 0.32에서 첫 배포 전에 올림 — `npm audit` critical/high가 전부 그 셋의 옛 버전이었다). Starlight 0.39+ 형태로 맞춘 것: `src/content.config.ts`(옛 `src/content/config.ts`, `docsLoader`/`i18nLoader` 필수), 사이드바 autogenerate 그룹은 `items: [{ autogenerate }]`, `social`은 배열, 내부 링크는 `slug:`(로케일 접두를 Starlight가 붙인다 — `link: '/ko/…'`로 적으면 `/ko/ko/…`가 된다). `src/content/i18n/{ko,en}.json`은 빈 `{}` — UI 문자열을 덮어쓸 자리이고, 없으면 빌드가 경고한다.
+**[2026-09-10]** astro 7.3.2 · @astrojs/starlight 0.42.0 · sharp 0.35.4 · wrangler 4.130.0(스캐폴딩의 astro 5/starlight 0.32에서 첫 배포 전에 올림 — `npm audit` critical/high가 전부 그 셋의 옛 버전이었다). Starlight 0.39+ 형태로 맞춘 것: `src/content.config.ts`(옛 `src/content/config.ts`, `docsLoader`/`i18nLoader` 필수), 사이드바 autogenerate 그룹은 `items: [{ autogenerate }]`, `social`은 배열, 내부 링크는 `slug:`(로케일 접두를 Starlight가 붙인다 — `link: '/ko/…'`로 적으면 `/ko/ko/…`가 된다). **[2026-09-10]** 한국어를 root 로케일로 바꿨다(로고·홈 링크가 `/ko` 404로 가던 버그) — 한국어 URL은 `/<track>/…`, 옛 `/ko/…`는 `public/_redirects`가 301. `src/content/i18n/{ko,en}.json`은 빈 `{}` — UI 문자열을 덮어쓸 자리이고, 없으면 빌드가 경고한다.
 
 빌드 경고 `Entry docs → 404 was not found` 하나는 정상이다 — Starlight가 커스텀 404 페이지(`src/content/docs/404.md`)를 찾아보는 것이고, 없으면 내장 404(기본 로케일 ko로 번역됨)를 쓴다. 커스텀 404를 두면 이번엔 `[...slug]` 라우트와 충돌한다는 경고가 대신 뜬다(둘 다 무해, 0.42 기준).
 

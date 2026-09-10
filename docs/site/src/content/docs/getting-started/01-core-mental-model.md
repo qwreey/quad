@@ -2,8 +2,6 @@
 title: "Quad의 3대 핵심 멘탈 모델"
 description: "Quad를 다른 선언형 라이브러리와 구분 짓는 세 가지 핵심 설계 전제를 설명합니다"
 ---
-# [시작하기] Quad의 3대 핵심 멘탈 모델
-
 > **대상 독자**: Quad를 처음 접하거나 React, Vide, Fusion 등 다른 선언형 라이브러리에서 넘어온 개발자  
 > **목표**: Quad의 핵심 설계 전제 셋을 이해하고 첫 코드를 작성할 준비 마치기
 
@@ -47,7 +45,7 @@ print(myFrame.ClassName) --> "Frame"
 <details>
 <summary><strong>v1에서 오신 분께</strong> — quad v1(<code>Quad.Init(id)</code> / <code>Class "Frame"</code>)을 쓰셨다면 펼쳐 보세요</summary>
 
-v1을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 큰 그림(무엇이 왜 없어졌고 어떤 틀로 옮기는지)은 [quad v1에서 오는 분께](../overview/02-from-v1.md), 전체 이관 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md)에 있습니다.
+v1을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 큰 그림(무엇이 왜 없어졌고 어떤 틀로 옮기는지)은 [quad v1에서 오는 분께](/overview/02-from-v1/), 전체 이관 절차는 [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/)에 있습니다.
 
 - **`:With`는 이름만 같은 다른 것**입니다 — v1의 파생은 v2에서 `:Compute(fn, ...deps)`입니다.
 - **`Mount(parent, obj)`는 없습니다** — 만들어진 뒤 `obj.Parent = parent`.
@@ -78,13 +76,13 @@ Quad의 반응성에는 두 이름만 있으면 됩니다. 그리고 이 둘은 
 └──────────────────────────────────────────────┘
 ```
 
-> 다이어그램의 `:Gate(setup)`은 전파를 직접 제어하는 저수준 자리입니다. 실제로 쓰게 되는 모양은 그 위에 얹힌 `Blocker`(`state:Apply(blocker)`)이고, 그건 [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md) §5에서 다룹니다.
+> 다이어그램의 `:Gate(setup)`은 전파를 직접 제어하는 저수준 자리입니다. 실제로 쓰게 되는 모양은 그 위에 얹힌 `Blocker`(`state:Apply(blocker)`)이고, 그건 [03. `Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/) §5에서 다룹니다.
 
 1. **`State<T>`**: 값을 읽을 수 있는 반응형 노드입니다. `:Compute(fn, ...deps)`로 파생 State를 만들고, `:Observer(fn)`으로 변경을 관측합니다. **`State`에는 공개 생성자가 없습니다** — `q.State(...)` 같은 것은 없고, State는 `q.Source(...)`이거나 `:Compute`/`:With`/`:Apply`/`:Gate`가 만들어 준 파생 노드입니다.
 2. **`Source<T>`**: `State`가 할 수 있는 일을 전부 하면서, 추가로 `:Set(v)`으로 값을 넣을 수 있는 노드입니다. 그래서 상태의 '원천'입니다.
 3. **핵심 규칙**: **모든 `Source`는 그대로 `State`입니다.** `State`를 요구하는 자리(프로퍼티 바인딩, `:Compute`의 dep 등)에 `Source`를 그냥 넘기면 됩니다. 언래핑도, 프록시 변환도 없습니다.
 
-> **`:Observer(fn)`은 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다.** 이후 변경을 받으려면 인스턴스에 묶이거나(props의 배열 부분에 넣으면 quad가 묶어 줍니다) `:Subscribe()`를 불러야 합니다. 묶이기 전에 일어난 변경은 보류돼 있다가 묶는 순간 한 번 재생됩니다 — 실제로 확인하는 코드는 [06. 헤드리스 테스트](../how-to/06-headless-testing.md) §3에 있습니다.
+> **`:Observer(fn)`은 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다.** 이후 변경을 받으려면 인스턴스에 묶이거나(props의 배열 부분에 넣으면 quad가 묶어 줍니다) `:Subscribe()`를 불러야 합니다. 묶이기 전에 일어난 변경은 보류돼 있다가 묶는 순간 한 번 재생됩니다 — 실제로 확인하는 코드는 [06. 헤드리스 테스트](/how-to/06-headless-testing/) §3에 있습니다.
 
 ```luau
 local count = q.Source(0)                    -- Source<number>
@@ -96,7 +94,7 @@ count:Set(1)
 print(label:Get()) --> "클릭 1회"
 ```
 
-> `:Compute`의 콜백은 `(self, previous, ...deps)`를 받고, 넘어오는 것은 **값이 아니라 핸들**입니다. dep도 마찬가지라 `dep:Get()`으로 읽습니다. **콜백 안에서 다른 State를 읽는 것만으로는 의존성이 잡히지 않습니다** — 의존성은 `:Compute(fn, ...deps)`의 뒤 인자나 `:With(...)`로 명시해야 합니다. 이 문서의 예제는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다 — `--!strict`로 쓸 때는 콜백 파라미터에 `QuadTypes.StateData<T>` 주석을 붙이세요([컴포넌트 합성](./03-component-composition.md) §6 참고).
+> `:Compute`의 콜백은 `(self, previous, ...deps)`를 받고, 넘어오는 것은 **값이 아니라 핸들**입니다. dep도 마찬가지라 `dep:Get()`으로 읽습니다. **콜백 안에서 다른 State를 읽는 것만으로는 의존성이 잡히지 않습니다** — 의존성은 `:Compute(fn, ...deps)`의 뒤 인자나 `:With(...)`로 명시해야 합니다. 이 문서의 예제는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다 — `--!strict`로 쓸 때는 콜백 파라미터에 `QuadTypes.StateData<T>` 주석을 붙이세요([컴포넌트 합성](/getting-started/03-component-composition/) §6 참고).
 
 ---
 
@@ -133,7 +131,7 @@ D.Frame {
 
 1. **배열 부분**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **키 없는 배열 원소가 곧 자식**입니다.
 2. **해시 부분**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 해시 부분에 직접 적은 프로퍼티는 배열 부분의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
-3. **한 번에 처리된다**: 배열 부분이 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](../quadnomicon/08-extensible-dispatch-engine.md)이 다룹니다.
+3. **한 번에 처리된다**: 배열 부분이 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)이 다룹니다.
 4. **정리(Teardown)**: 인스턴스를 `Destroy()`하면 거기 묶인 구독과 트윈은 더 이상 실행되지 않습니다. Quad는 인스턴스마다 걸어 둔 엔진 연결이 끊겼는지로 생존을 판정하고, 실제 메모리 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것은 없고, **정리해야 할 것들을 담아 들고 다니는 스코프 객체도 없습니다**(Fusion의 `Scope`, Vide의 소유 스코프 자리에 해당하는 것이 quad에는 없습니다).
 
 ---
@@ -163,9 +161,9 @@ local D = q.D
 
 이 설정 모듈이 **싱글턴을 그대로 쓴다**는 점이 중요합니다. 같은 게임에 quad를 쓰는 다른 코드(다른 라이브러리, 다른 팀의 화면)가 자기 자리에서 또 `Quad:UseProvider(QuadRoblox)`를 불러도 같은 프로바이더라 아무 일도 안 일어나고, 그쪽이 만든 `State`와 여기서 만든 `State`는 같은 모듈의 것이라 섞어 쓸 수 있습니다.
 
-`Quad.New()`가 끼어드는 자리가 바로 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요하면(같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 헤드리스 테스트에서 mock 프로바이더를 붙일 때) 설정 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고, 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](../reference/core/01-quad-module.md).
+`Quad.New()`가 끼어드는 자리가 바로 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요하면(같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 헤드리스 테스트에서 mock 프로바이더를 붙일 때) 설정 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고, 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](/reference/core/01-quad-module/).
 
 ---
 
 ## 다음 단계
-- [10분 완성: 첫 인터랙티브 카운터](./02-quickstart-counter.md)
+- [10분 완성: 첫 인터랙티브 카운터](/getting-started/02-quickstart-counter/)
