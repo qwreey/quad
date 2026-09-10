@@ -169,5 +169,5 @@ DOMless Slot의 직접적인 귀결은 **컴포넌트의 반환 타입이 하나
 배열에 들어가는 것은 **호출이 끝난 값**이어야 합니다. `Slot { D.TextButton }`처럼
 호출하지 않은 생성자를 넣으면 요소 타입 화이트리스트에 걸려 즉시 error입니다:
 `Slot: this backend cannot mount this value`. `Ref`/`Observer`/`Effect`/`Modifier`
-같은 핸들러 층 값도 요소가 될 수 없습니다(그것들은 props 배열 부분의 자리이지 Slot 요소가
+같은 핸들러 층 값도 요소가 될 수 없습니다(그것들은 props 배열 부분(숫자 키)의 자리이지 Slot 요소가
 아닙니다).

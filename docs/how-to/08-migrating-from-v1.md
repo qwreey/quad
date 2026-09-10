@@ -56,7 +56,7 @@ local D = q.D
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
 | `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
-| `[Event.Prop "Text"] = fn` | `q.OnChange("Text", fn)` (배열 부분) | 5절 |
+| `[Event.Prop "Text"] = fn` | `q.OnChange("Text", fn)` (숫자 키 자리) | 5절 |
 | `Class.Extend()` + `:Render(props)` | 평범한 함수 | 5절 |
 | `self "_button"` 링커 | `q.PreRef(nil :: Frame?)` + `ref:Unwrap()` | 5절 |
 | `Store.GetStore("myStore")` | `q.Store { key = q.Source(v) }` (이름 조회 없음) | 4절 |
@@ -64,7 +64,7 @@ local D = q.D
 | `register:With(fn)` | `state:Compute(fn, ...deps)` | 4절 |
 | `register:Add(v)` | `state:Apply(q.Operator.Sum(v))` (숫자만) | 4절 |
 | `register:Default(v)` | `state:Apply(q.Operator.Alternative(v))` | 4절 |
-| `Style {...}`, `Frame { s }` | `D.Modifier.Frame {...}` (배열 부분) | 5절 |
+| `Style {...}`, `Frame { s }` | `D.Modifier.Frame {...}` (숫자 키 자리) | 5절 |
 
 > **`:With`는 이름만 같은 다른 것입니다.** v1의 `register:With(fn)`은 "이 값으로부터 파생시켜라"였고, v2에서 그 자리는 `:Compute(fn, ...deps)`입니다. v2에도 `state:With(...)`가 **있지만** 그건 의존성을 추가한 노드를 하나 더 만드는 별개의 API입니다. 옮길 때 이름만 보고 그대로 두지 마세요.
 
@@ -171,7 +171,7 @@ local frame = D.Frame { BackgroundColor3 = color, Position = position }
 
 - `register:Register(fn)`(약한 참조로 등록되던 것) → `state:Observer(fn)`. 콜백은 **값이 아니라** `(targetState, observer, emitFrom?)`을 받습니다.
 - `register:Observe(fn)` → `Observer`를 만들어 `:Subscribe()` 하거나 `q.Effect(fn, ...deps)`.
-- **둘 다 만들자마자 발화하지는 않습니다.** props의 배열 부분에 넣어 인스턴스 수명에 묶거나 `:Subscribe()`를 부르세요. v1처럼 등록만 하고 끝내면 조용합니다.
+- **둘 다 만들자마자 발화하지는 않습니다.** props의 숫자 키 자리에 넣어 인스턴스 수명에 묶거나 `:Subscribe()`를 부르세요. v1처럼 등록만 하고 끝내면 조용합니다.
 
 v1에 없던 것도 생겼습니다 — `state:Apply(blocker)`(전파 차단), `q.Debounce`/`q.Throttle`(시간 게이트). 이들은 `:Gate`가 아니라 **`:Apply`로 붙입니다.**
 
@@ -251,7 +251,7 @@ v1의 `Class.Extend()`는 `Init`/`Render`/`AfterRender`/`Getter`/`Setter`/`Updat
 | `:AfterRender(obj)` | `q.OnRendered<<T>>(fn)` — 단, 부모에 붙었음은 보장하지 않습니다 |
 | `:Unload` | `q.OnDestroyed(fn)` |
 | `.Getter` / `.Setter` / `.UpdateTriggers` / `:Update()` | 없음 — 프로퍼티 단위 갱신이라 전체 재렌더 개념 자체가 없습니다 |
-| `self "_button"` 링커 | `q.PreRef(nil :: TextButton?)` 를 배열 부분에 |
+| `self "_button"` 링커 | `q.PreRef(nil :: TextButton?)` 를 숫자 키 자리에 |
 
 ### 이벤트와 훅
 
@@ -293,7 +293,7 @@ local button = D.TextButton {
 
 ### 스타일 — `Style`은 `Modifier`로
 
-v1의 `Style`은 이름 매칭 기반이라 선언 순서에 따라 안 먹는 함정이 있었습니다. v2의 `Modifier`는 값이고, **props의 배열 부분에 놓인 순서**가 곧 우선순위입니다.
+v1의 `Style`은 이름 매칭 기반이라 선언 순서에 따라 안 먹는 함정이 있었습니다. v2의 `Modifier`는 값이고, **props의 숫자 키 자리에 놓인 순서**가 곧 우선순위입니다.
 
 ```luau
 -- v1: local s = Style { BorderSizePixel = 0 }; Frame { s }
@@ -354,7 +354,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | 생성 `D`에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |
 | 이벤트 콜백 첫 인자에 `self` | `Expected this to be '((() -> ()) \| None \| StateMarker<() -> ()>)?' but got '(unknown, unknown, unknown) -> ()'` | `self`를 지우고 엔진 시그니처와 인자 개수를 맞추세요 |
 | `Frame`에 `Activated` | `Expected this to be 'number', but got '"Activated"'` | `TextButton` / `ImageButton` 같은 `GuiButton` 계열로 |
-| 배열 부분에 `nil`이 들어감 | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.Modifier or q.None` |
+| 숫자 키 자리에 `nil`이 들어감 | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.Modifier or q.None` |
 | 미리 만들어둔 props 테이블을 `D.Frame(props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |
 | 자식 배열 변수를 `D.ScreenGui(children)` | 같은 계열의 파라미터 불일치 | `D.ScreenGui { table.unpack(children) }` — 리터럴의 **마지막** 원소일 때만 전부 펼쳐집니다 |
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |
@@ -362,7 +362,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | 반환 팩을 주석하세요: `): (any, UD?)` |
 | `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider("Theme") :: QuadTypes.Provider<T>` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref(nil :: Frame?)` — 초기값의 타입이 곧 `Ref`의 타입입니다 |
-| `[q.AttrKey("Hp")] = v` (해시 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 배열 부분의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
+| `[q.AttrKey("Hp")] = v` (해시 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
 | `D.New("Folder")({...})`의 결과를 사용 | `Type 'unknown' does not have key 'Name'` | `D.New<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
 | `Op.Sum(UDim2…)` 같은 비숫자 | `None of the overloads for function that accept 2 arguments are compatible` | 산술·비트 연산자는 숫자 전용입니다. 다른 타입은 `:Compute`로 |
@@ -377,7 +377,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 
 타입 검사가 잡아주지 못하고 런타임까지 흘러가는 자리가 둘 있습니다.
 
-**1. 배열 부분의 `nil` 구멍 — props가 느슨한 타입일 때.** v1의 props는 타입 없는 가방이라, 직역하면 `{ [string]: any }`나 `any?` 같은 모양이 되기 쉽습니다. 그러면 배열 부분에 `nil`이 들어가도 **타입 검사가 조용히 통과하고**, 실행할 때 부기 안쪽에서 죽습니다.
+**1. 숫자 키 자리의 `nil` 구멍 — props가 느슨한 타입일 때.** v1의 props는 타입 없는 가방이라, 직역하면 `{ [string]: any }`나 `any?` 같은 모양이 되기 쉽습니다. 그러면 숫자 키 자리에 `nil`이 들어가도 **타입 검사가 조용히 통과하고**, 실행할 때 부기 안쪽에서 죽습니다.
 
 ```
 Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken

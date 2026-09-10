@@ -177,7 +177,9 @@ luau-lsp analyze --flag:LuauSolverV2=true \
 | `LuauSubtypingIterationLimit` | 클래스별 `OnChange` 유니언에 멤버 많은 콜백을 대조할 때 "Code is too complex" |
 | `LuauTypeInferIterationLimit` | 조상 클래스 Modifier(`As<Class>` 메소드가 수십 개)의 캐스트·`Apply` 자리가 "too complex" |
 
-값은 저장소가 실측으로 고른 것이고, 여러분의 코드가 더 크면 더 올려야 할 수 있습니다.
+이 값들은 저장소 코드 기준으로 고른 것이라, 여러분의 코드가 더 크면 더 올려야 할 수 있습니다.
+<!-- 저장소가 실측으로 고른 값 -->
+
 `--definitions`는 `luau-analyze`가 아니라 **`luau-lsp`의 기능**입니다.
 
 ---

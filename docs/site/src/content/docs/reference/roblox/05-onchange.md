@@ -1,8 +1,8 @@
 ---
 title: "q.OnChange"
-description: "프로퍼티 변경 신호를 배열 부분 디스크립터로 붙이기 — 읽기 표면 PropTypesRead와 초기값 발화"
+description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로 붙이기 — 읽기 표면 PropTypesRead와 초기값 발화"
 ---
-`GetPropertyChangedSignal` 바인딩을 **props의 배열 부분에 놓는 값**으로 만든 것입니다.
+`GetPropertyChangedSignal` 바인딩을 **props의 숫자 키 자리에 놓는 값**으로 만든 것입니다.
 [`Tag`](/reference/core/10-tag-attr/)나 [생명주기 훅](/reference/sugar/04-lifecycle-hooks/)과 같은 자리에 놓입니다.
 
 이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn)
@@ -68,13 +68,14 @@ local box = D.Frame({
 - 콜백은 **새 값**을 받습니다 — 핸들러가 `inst:GetPropertyChangedSignal(name)`에 연결하고, 신호가
   올 때 그 시점의 `inst[name]`을 읽어 넘깁니다. Deferred 신호 모드에서는 쓰기 한 번당 전달 한 번이고
   값은 전달 시점에 읽힙니다.
-- **초기값도 콜백에 닿습니다 — 단, 쓰는 값이 엔진 기본값과 다를 때만.** props의 **배열 부분이 해시 부분보다 먼저** 처리되므로, 같은 props에
-  적은 프로퍼티 쓰기가 이미 연결된 바인딩에 도착합니다. 값이 기본값과 같으면(`Frame { Visible = true }`) 엔진이 동일값 대입에 시그널을 쏘지 않아 발화가 없습니다([2026-09-10 기준] Studio 실측: 엔진 0회 — 테스트용 mock 백엔드는 값 비교 없이 쏘므로 1회).
+- **초기값도 콜백에 닿습니다 — 단, 쓰는 값이 엔진 기본값과 다를 때만.** props의 **숫자 키가 문자 키보다 먼저** 처리되므로, 같은 props에
+  적은 프로퍼티 쓰기가 이미 연결된 바인딩에 도착합니다. 값이 기본값과 같으면(`Frame { Visible = true }`) 엔진이 동일값 대입에 시그널을 쏘지 않아 발화가 없습니다(엔진 0회 — 테스트용 mock 백엔드는 값 비교 없이 쏘므로 1회).
+  <!-- 2026-09-10 Studio 실측: 엔진 0회 / mock 1회 -->
 
   ```luau
   local seen = {}
   D.TextLabel({
-  	Text = "a", -- 해시 부분: 아래 바인딩이 연결된 뒤에 쓰인다
+  	Text = "a", -- 문자 키: 아래 바인딩이 연결된 뒤에 쓰인다
   	q.OnChange("Text", function(v)
   		table.insert(seen, v) -- seen[1] == "a"
   	end),
@@ -121,6 +122,6 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 
 **관련**
 
-- [D — 배열 부분](/reference/roblox/02-d/#배열-부분--자식과-디스크립터)
+- [D — 숫자 키](/reference/roblox/02-d/#숫자-키--자식과-디스크립터)
 - [02. 폼 검증 패턴](/how-to/02-form-validation-pattern/)
 - [04. 네트워크·입력 브리지](/how-to/04-network-and-input-bridge/)

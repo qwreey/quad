@@ -120,9 +120,11 @@ screen.Parent = playerGui
 <details>
 <summary><strong><code>game.Loaded:Wait()</code> 줄은 왜 있나요?</strong></summary>
 
-문자열 `require`는 대상이 아직 없으면 **기다리지 않고 즉시 실패하기** 때문입니다. Studio 실측(**[2026-09-10 기준]**)으로 확인한 것은 둘입니다 — 없는 대상을 가리키면 `error requiring "@game/ReplicatedStorage/LateModule": could not resolve child component "LateModule"`로 그 자리에서 끝나고, Play Solo에서는 스크립트 **첫 줄에서도** 이미 복제가 끝나 있어(`game:IsLoaded()`가 `true`) 이 줄이 없어도 성공했습니다.
+문자열 `require`는 대상이 아직 없으면 **기다리지 않고 즉시 실패하기** 때문입니다. 없는 대상을 가리키면 `error requiring "@game/ReplicatedStorage/LateModule": could not resolve child component "LateModule"`로 그 자리에서 끝나고, Play Solo에서는 스크립트 **첫 줄에서도** 이미 복제가 끝나 있어(`game:IsLoaded()`가 `true`) 이 줄이 없어도 성공합니다.
+<!-- 2026-09-10 Studio 실측으로 확인 -->
 
-문제는 Play Solo가 서버와 클라이언트를 한 프로세스에서 돌린다는 점입니다. 실접속 클라이언트는 코드를 네트워크로 동적으로 복제하므로 그 순서를 보장할 수 없고, 그 경우까지 실기기에서 확인하지는 못했습니다. 한 줄로 그 불확실성을 없앨 수 있으니 넣어 두는 쪽을 권합니다.
+문제는 Play Solo가 서버와 클라이언트를 한 프로세스에서 돌린다는 점입니다. 실접속 클라이언트는 코드를 네트워크로 동적으로 복제하므로 그 순서를 보장할 수 없습니다. 한 줄로 그 불확실성을 없앨 수 있으니 넣어 두는 쪽을 권합니다.
+<!-- 2026-09-10: 실접속 클라이언트 시나리오는 실기기에서 확인하지 못함 -->
 
 </details>
 

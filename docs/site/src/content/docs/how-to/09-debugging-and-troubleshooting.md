@@ -45,10 +45,10 @@ ServerScriptService.Components.UserProfile:42: Event: handler for "Activated" mu
 
 ## 2. 자주 밟는 함정 여섯
 
-### 함정 1: nil-hole — 배열 부분에 구멍 내기
+### 함정 1: nil-hole — 숫자 키 자리에 구멍 내기
 
-- **증상**: 배열 부분에 넘긴 값이 무시되거나, 자식 위치 부기가 어긋남.
-- **원인**: 배열 자리의 `nil`은 테이블을 sparse하게 만듭니다. 디스패치는 배열 부분을
+- **증상**: 숫자 키 자리에 넘긴 값이 무시되거나, 자식 위치 부기가 어긋남.
+- **원인**: 숫자 키 자리의 `nil`은 테이블을 sparse하게 만듭니다. 디스패치는 숫자 키 자리를
   구멍 없는 시퀀스로 전제하고(순회에서 그 자리가 빠지고, 부기 쪽은 길이 `#`에
   기대는데 구멍 있는 테이블의 `#`는 명세되지 않음) 따라서 배열 구멍은
   **정의되지 않은 동작(UB)** 입니다. 실제 결과는 구멍의 위치에 따라 갈립니다 —
@@ -101,12 +101,12 @@ Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
   `Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`.
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
-  `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **배열 부분**에
+  `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에
   놓는 것이 계약입니다 — `Ref = ...`처럼 해시 키로 주면 어떤 핸들러도 그
   키를 받지 않습니다.
 
 ```luau
--- ✅ 배열 부분에 그대로
+-- ✅ 숫자 키 자리에 그대로
 local function CustomInput(props: { InputRef: QuadTypes.Ref<TextBox?>? })
     return D.TextBox {
         props.InputRef or q.None,
@@ -184,10 +184,10 @@ end
 
 | 점검 항목 | 올바른 작성법 |
 |---|---|
-| **선택적 값 전달** | `props.Modifier or q.None` — 배열 부분의 `nil`은 구멍이다 |
-| **핸들러 층 값 자리** | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 배열 부분 |
+| **선택적 값 전달** | `props.Modifier or q.None` — 숫자 키 자리의 `nil`은 구멍이다 |
+| **핸들러 층 값 자리** | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 숫자 키 자리 |
 | **Ref 대기** | `if ref.Value then ref.Value else ref:Wait().Value`, 또는 `ref:Unwrap()` |
-| **프로퍼티 감시** | `q.OnChange("PropertyName", function(v) ... end)` — 배열 부분 |
+| **프로퍼티 감시** | `q.OnChange("PropertyName", function(v) ... end)` — 숫자 키 자리 |
 | **어트리뷰트 삭제** | `q.Attr { MyKey = q.None }` — 그룹에서 이름을 빼는 것만으로는 지워지지 않는다 |
 | **부모 붙이기** | `Parent`는 props가 아니다 — 만든 뒤 밖에서 `inst.Parent = ...` |
 | **이벤트 콜백** | 엔진 인자만 온다(self 없음). self가 필요하면 `PreRef`로 인스턴스를 잡아둘 것 |

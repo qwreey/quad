@@ -151,7 +151,7 @@ local function CrosshairOverlay()
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
 
-        -- 배열 부분에 둔다 — 마운트 시 연결, 파괴 시 해제
+        -- 숫자 키 자리에 둔다 — 마운트 시 연결, 파괴 시 해제
         q.Effect(function()
             local conn = UserInputService.InputChanged:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -191,10 +191,10 @@ q.OnDestroyed(function()
 end)
 ```
 
-인스턴스 자체를 나중에 참조해야 하면 `q.Ref(nil :: Frame?)`를 배열 부분에 두고
+인스턴스 자체를 나중에 참조해야 하면 `q.Ref(nil :: Frame?)`를 숫자 키 자리에 두고
 `ref.Value`(또는 `ref:Unwrap()`)로 읽습니다. **초기값의 타입이 곧 `Ref`의
 타입**이라, `q.Ref(nil)`은 `Ref<nil>`이 되어 프로퍼티 자리에서 거부됩니다 —
-요소 타입을 캐스트로 붙이세요. `Ref` 계열 값도 해시 키가 아니라 배열 부분에
+요소 타입을 캐스트로 붙이세요. `Ref` 계열 값도 해시 키가 아니라 숫자 키 자리에
 놓습니다.
 
 ---

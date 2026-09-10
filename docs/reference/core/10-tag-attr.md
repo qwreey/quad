@@ -1,11 +1,11 @@
 ---
 title: Tag / Attr
-description: 배열 부분 값 객체 둘 — 태그 집합과 속성 그룹, AttrKey와 타입드 스칼라 슈가
+description: 숫자 키 값 객체 둘 — 태그 집합과 속성 그룹, AttrKey와 타입드 스칼라 슈가
 ---
 
 # Tag / Attr
 
-`Tag`와 `Attr`은 props의 **배열 부분에 놓는 값 객체**입니다. 인스턴스에 이름표를 붙이고(`Tag`), 이름 붙은 값을 심습니다(`Attr`). 둘 다 불변이고, 모든 연산이 새 값을 돌려줍니다.
+`Tag`와 `Attr`은 props의 **숫자 키 자리에 놓는 값 객체**입니다. 인스턴스에 이름표를 붙이고(`Tag`), 이름 붙은 값을 심습니다(`Attr`). 둘 다 불변이고, 모든 연산이 새 값을 돌려줍니다.
 
 `Modifier`와 달리 이 둘은 프로퍼티가 아니라 **엔진의 별도 채널**로 갑니다. quad-base는 그 채널을 직접 건드리지 않고 주입된 엔진 op 셋(`addTag`/`removeTag`/`setAttr`)에 넘깁니다 — 백엔드가 그걸 채웁니다. Roblox 백엔드는 각각 `CollectionService`와 `SetAttribute`로 이어집니다.
 
@@ -379,7 +379,7 @@ type AttrKeyObject = { Name: string }
 - `AttrKey: name must be a non-empty string`
 
 :::caution
-**해시 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 배열 부분 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
+**해시 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
 :::
 
 **예제**
@@ -410,7 +410,7 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 
 **동작** — **타입드 스칼라 슈가**입니다. 자기 핸들러를 갖지 않고 그룹 경로를 그대로 씁니다. 차이는 값 검증뿐입니다 — 패밀리는 자기 타입을 알기 때문에 원시 값의 타입을 여기서 확인합니다(`State`와 `q.None`은 그대로 통과합니다).
 
-배열 부분에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 해시 키 형태를 대신하는 자리입니다.
+숫자 키 자리에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 해시 키 형태를 대신하는 자리입니다.
 
 **에러**
 

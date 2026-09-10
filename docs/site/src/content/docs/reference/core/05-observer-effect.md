@@ -30,12 +30,12 @@ local D = q.D
 
 만들어진 직후의 핸들은 **아직 실행 자격이 없습니다**(`.Subscribed`는 `false`). 자격을 얻는 경로는 둘이고, 둘 중 하나만 골라야 합니다.
 
-1. **요소 배열에 넣어 인스턴스에 매다는 것** — props의 **배열 부분**에 핸들을 넣으면, 그 인스턴스가 사는 동안만 살고 인스턴스가 파괴되면 같이 정리됩니다. UI에 딸린 부수효과는 대개 이쪽입니다.
+1. **요소 배열에 넣어 인스턴스에 매다는 것** — props의 **숫자 키** 자리에 핸들을 넣으면, 그 인스턴스가 사는 동안만 살고 인스턴스가 파괴되면 같이 정리됩니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
 **둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — `Observer: already subscribed` 또는 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구).
 
-### 배열 부분에 넣기
+### 숫자 키 자리에 넣기
 
 ```luau
 local hp = q.Source(100)
@@ -45,7 +45,7 @@ local label = D.TextLabel {
 		return `HP {self:Get()}`
 	end),
 
-	-- 배열 부분: 이 인스턴스의 수명에 매달린다
+	-- 숫자 키 자리: 이 인스턴스의 수명에 매달린다
 	hp:Observer(function(target)
 		print("hp is now", target:Get())
 	end),

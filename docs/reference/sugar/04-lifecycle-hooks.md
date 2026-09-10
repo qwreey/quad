@@ -28,7 +28,7 @@ local D = q.D
 | `OnRendered(fn)` | `PostRef<I?>` | 이 인스턴스의 children(과 그 서브트리 전체)·프로퍼티·이벤트가 **전부 세팅된 뒤** |
 | `OnDestroyed(fn)` | `EffectHandle` | 묶인 인스턴스가 죽을 때 정확히 1회(설치 시점에는 안 돈다) |
 
-- 셋 다 **children 배열**(해시 키가 아니라 배열 부분)에 놓습니다.
+- 셋 다 **children 배열**(해시 키가 아니라 숫자 키 자리)에 놓습니다.
 - **여러 번 등록하는 것은 그냥 배열 자리를 여러 개 쓰는 일**이고, 같은 종류끼리의 상대 순서는 배열 index 순서입니다. 종류가 섞여 있어도 `OnCreated`들이 먼저, `OnRendered`들이 마지막입니다.
 - `OnCreated`/`OnRendered`의 콜백은 `(inst, ref)` 두 인자를 받고, **`inst`는 항상 non-nil**입니다 — 등록 시점의 `nil` 호출은 내부 가드가 걸러냅니다.
 - `fn`이 함수가 아니면 그 줄에서 던집니다: `OnCreated: fn must be a function (got number)`(이름 자리는 훅마다 바뀝니다).

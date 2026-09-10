@@ -47,11 +47,15 @@ quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 
 ### 2단계: Rojo 프로젝트 맵 연결
 
-**pesde는 설치 디렉터리를 "의존 대상 패키지 자신의 target" 이름으로 나눕니다.** 다섯 패키지 중 `quad_roblox`만 `roblox` 타깃이고, 나머지 넷은 `luau`·`roblox` 두 타깃으로 게시됩니다. 그래서 여러분의 매니페스트 `[target] environment`가 `roblox`이면 **다섯 개가 전부 `roblox_packages/` 하나에 들어옵니다**. **[2026-09-10 기준]** 레지스트리 게시 뒤 빈 roblox 프로젝트에 `^3.0.0`을 설치해 확인했습니다(`luau_packages/`는 생기지 않음). `environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로 그 디렉터리도 트리에 올려야 합니다.
+**pesde는 설치 디렉터리를 "의존 대상 패키지 자신의 target" 이름으로 나눕니다.** 다섯 패키지 중 `quad_roblox`만 `roblox` 타깃이고, 나머지 넷은 `luau`·`roblox` 두 타깃으로 게시됩니다. 그래서 여러분의 매니페스트 `[target] environment`가 `roblox`이면 **다섯 개가 전부 `roblox_packages/` 하나에 들어옵니다**. 이 경우 `luau_packages/`는 생기지 않습니다.
+<!-- 2026-09-10: 레지스트리 게시 뒤 빈 roblox 프로젝트에 ^3.0.0을 설치해 확인 -->
+`environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로 그 디렉터리도 트리에 올려야 합니다.
 
 pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇은 링커를 놓고 실체는 `roblox_packages/.pesde/<scope>+<name>/<version>/<name>/src`에 둡니다. 직접 적은 셋만 최상위에 링커가 생기고, 따라 들어오는 둘은 `.pesde` 아래 각 패키지의 자기 `roblox_packages/`에 링크됩니다 — 그래서 트리에 올릴 건 여전히 `roblox_packages/` 하나입니다.
 
-> **`roblox_sync_config_generator` 스크립트** — pesde는 roblox 타깃 프로젝트의 매니페스트에 `[scripts] roblox_sync_config_generator`가 없으면 설치 때 `not having a roblox_sync_config_generator script in the manifest might cause issues with linking` 경고를 냅니다. pesde 공식 Roblox 가이드가 안내하는 scripts 패키지를 매니페스트에 넣어 두세요. 이 스크립트 없이 아래 매핑만으로 Studio 싱크가 실제로 되는지는 **[2026-09-10 기준]** 실기기에서 아직 확인하지 않았습니다.
+> **`roblox_sync_config_generator` 스크립트** — pesde는 roblox 타깃 프로젝트의 매니페스트에 `[scripts] roblox_sync_config_generator`가 없으면 설치 때 `not having a roblox_sync_config_generator script in the manifest might cause issues with linking` 경고를 냅니다. pesde 공식 Roblox 가이드가 안내하는 scripts 패키지를 매니페스트에 넣어 두는 걸 권장합니다.
+> <!-- 2026-09-10: 이 스크립트 없이 아래 매핑만으로 Studio 싱크가 실제로 되는지는 실기기에서 아직 확인하지 않음 -->
+
 
 이 문서의 예제들은 아래 모양을 씁니다. 디스크의 `src/client/UI/`가 게임 트리의 `ReplicatedStorage.Client.UI`가 되고, 진입점 하나가 `StarterPlayerScripts`로 갑니다.
 

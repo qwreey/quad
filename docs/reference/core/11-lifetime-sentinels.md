@@ -27,7 +27,7 @@ None: None
 -- export type None = { read __quadNone: true }
 ```
 
-**동작** — "명시적으로 없음"을 뜻하는 값입니다. `nil`과 달리 **실재하는 값**이라, 배열 부분에 들어가도 구멍(nil-hole)을 만들지 않고 순서가 있는 자리를 그대로 채웁니다. 그래서 조건부 자식·조건부 Modifier를 쓸 때 `props.Modifier or q.None` 관용구가 성립합니다.
+**동작** — "명시적으로 없음"을 뜻하는 값입니다. `nil`과 달리 **실재하는 값**이라, 숫자 키 자리에 들어가도 구멍(nil-hole)을 만들지 않고 순서가 있는 자리를 그대로 채웁니다. 그래서 조건부 자식·조건부 Modifier를 쓸 때 `props.Modifier or q.None` 관용구가 성립합니다.
 
 디스패치에서의 뜻은 "여기서 아래로는 아무것도 하지 마라"입니다. `None`은 배열이든 해시든 어느 자리에서나 매치되며, 그 자리의 다음 우선순위 핸들러에게 `nil`을 내려보냅니다. 해시 키에 놓으면 그 키를 담당하는 핸들러가 `nil`을 값으로 받습니다 — 그 `nil`을 어떻게 해석할지는 그 핸들러가 정합니다.
 
@@ -41,7 +41,7 @@ None: None
 ```luau
 local function Card(props)
 	return D.Frame {
-		props.Modifier or q.None, -- 배열 부분: nil을 넣으면 뒤 항목이 사라진다
+		props.Modifier or q.None, -- 숫자 키 자리: nil을 넣으면 뒤 항목이 사라진다
 		D.TextLabel { Text = props.Title },
 	}
 end

@@ -3,9 +3,9 @@ title: "01. 컴포넌트 경계 규약과 스타일 합성"
 description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 관용구, Modifier 우선순위 불변식 셋, Tag/Attr, 재사용 로직 추출을 정리합니다"
 ---
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
-> **다루는 개념**: props 테이블의 병합 규칙, 배열 부분의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
+> **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[시작하기 09. 컴포넌트로 쪼개기](/getting-started/09-components/)에서 컴포넌트가 평범한 함수라는 것을, [07. Modifier](/getting-started/07-modifier/)에서 스타일을 배열 부분에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 09. 컴포넌트로 쪼개기](/getting-started/09-components/)에서 컴포넌트가 평범한 함수라는 것을, [07. Modifier](/getting-started/07-modifier/)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -29,7 +29,7 @@ local DTypes = require(<quad-roblox D 모듈 경로>)
 
 ## 1. props 테이블의 두 부분이 지키는 규칙 넷
 
-`D.Frame { ... }`에 넘기는 테이블은 단순한 설정 딕셔너리가 아닙니다. **해시 부분**과 **배열 부분**이 각각 다른 뜻을 갖습니다.
+`D.Frame { ... }`에 넘기는 테이블은 단순한 설정 딕셔너리가 아닙니다. **문자 키**와 **숫자 키**가 각각 다른 뜻을 갖습니다.
 
 ```luau
 local isHovered = q.Source(false)
@@ -38,43 +38,43 @@ local CommonButtonModifier = D.Modifier.Frame {
 }
 
 D.Frame {
-    -- [1] 해시 부분: 프로퍼티 바인딩 (정적 값 또는 반응형 State/Tween)
+    -- [1] 문자 키: 프로퍼티 바인딩 (정적 값 또는 반응형 State/Tween)
     Size = UDim2.new(0, 200, 0, 50),
     BackgroundColor3 = isHovered:Compute(function(h)
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
 
-    -- [2] 해시 부분: 이벤트 리스너 (엔진이 주는 인자만 받는다 — self는 안 온다)
+    -- [2] 문자 키: 이벤트 리스너 (엔진이 주는 인자만 받는다 — self는 안 온다)
     MouseEnter = function() isHovered:Set(true) end,
     MouseLeave = function() isHovered:Set(false) end,
 
-    -- [3] 배열 부분: 재사용 가능한 스타일 (Modifier)
+    -- [3] 숫자 키: 재사용 가능한 스타일 (Modifier)
     CommonButtonModifier,
 
-    -- [4] 배열 부분: 자식 요소
+    -- [4] 숫자 키: 자식 요소
     D.TextLabel {
         Text = "클릭하세요",
     },
 }
 ```
 
-1. **배열 부분**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **키 없는 배열 원소가 곧 자식**입니다.
-2. **해시 부분**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 해시 부분에 직접 적은 프로퍼티는 배열 부분의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
-3. **한 번에 처리된다**: 배열 부분이 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)이 다룹니다.
+1. **숫자 키**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **키 없는 배열 원소가 곧 자식**입니다.
+2. **문자 키**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 문자 키에 직접 적은 프로퍼티는 숫자 키의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
+3. **한 번에 처리된다**: 숫자 키 자리가 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)이 다룹니다.
 4. **정리(Teardown)**: 인스턴스를 `Destroy()`하면 거기 묶인 구독과 트윈은 더 이상 실행되지 않습니다. Quad는 인스턴스마다 걸어 둔 엔진 연결이 끊겼는지로 생존을 판정하고, 실제 메모리 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것은 없고, **정리해야 할 것들을 담아 들고 다니는 스코프 객체도 없습니다**(Fusion의 `Scope`, Vide의 소유 스코프 자리에 해당하는 것이 quad에는 없습니다).
 
 ---
 
-## 2. 컴포넌트 경계 규약: 배열 부분의 `or None`
+## 2. 컴포넌트 경계 규약: 숫자 키 자리의 `or None`
 
 재사용 가능한 컴포넌트는 호출자가 스타일(`Modifier`)이나 내부 인스턴스 참조(`Ref`)를 주입할 수 있어야 합니다. 이때 지켜야 하는 관용구가 하나 있습니다.
 
-`Ref`는 `q.Ref(nil)`로 만들어 배열 부분에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다.
+`Ref`는 `q.Ref(nil)`로 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다.
 
 ```luau
 local function MaterialButton(props: { read Text: string?, read Modifier: DTypes.TextButtonModifier?, read Ref: QuadTypes.Ref<TextButton?>? }): TextButton
     return D.TextButton {
-        props.Modifier or None, -- ⭐ 배열 부분에서만 의미가 있는 관용구
+        props.Modifier or None, -- ⭐ 숫자 키 자리에서만 의미가 있는 관용구
         props.Ref or None,
 
         Text = props.Text or "",
@@ -82,9 +82,9 @@ local function MaterialButton(props: { read Text: string?, read Modifier: DTypes
 end
 ```
 
-### 왜 `or None`인가, 그리고 왜 하필 배열 부분인가
+### 왜 `or None`인가, 그리고 왜 하필 숫자 키 자리인가
 
-`Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **해시 키가 아니라 배열 부분**에 놓습니다. 해시 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
+`Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **해시 키가 아니라 숫자 키 자리**에 놓습니다. 해시 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
 
@@ -100,7 +100,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
 
-> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 08. 자식이 들어갈 자리](/getting-started/08-slot/) 참고).
+> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 08. 자식이 들어갈 자리](/getting-started/08-slot/) 참고).
 
 ---
 
@@ -108,16 +108,16 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다.
 
-1. **해시 부분에 직접 적은 키가 이긴다**:
+1. **직접 적은 문자 키가 이긴다**:
    `D.TextButton { props.Modifier or None, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다. 평탄화는 이미 채워진 키를 건너뛰기 때문입니다.
-2. **배열 부분에서는 뒤에 온 `Modifier`가 이긴다**:
+2. **숫자 키 자리에서는 뒤에 온 `Modifier`가 이긴다**:
    `D.TextButton { BaseMod, props.Modifier or None }`에서 뒤쪽 `Modifier`의 필드가 앞쪽을 덮습니다(역방향 스캔으로 마지막 것이 먼저 기록되고, 이미 기록된 키는 건너뜁니다).
 3. **`Modifier.Overridden(A, B)`도 같은 방향**:
    명시적 합성에서도 뒤 인자(`B`)가 앞 인자(`A`)의 같은 필드를 덮습니다. 닷 형태 `q.Modifier.Overridden(a, b)`와 콜론 형태 `a:Overridden(b)` 둘 다 됩니다.
 
 ### 클래스 태그가 붙은 Modifier 팩토리
 
-`Modifier`는 단순한 딕셔너리가 아닙니다. 어떤 클래스에 적용 가능한지 타입에 실려 있어서, `TextButton` 전용 `Modifier`를 `Frame`의 배열 부분에 넣으면 타입 검사에서 걸립니다.
+`Modifier`는 단순한 딕셔너리가 아닙니다. 어떤 클래스에 적용 가능한지 타입에 실려 있어서, `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다.
 
 > **타입 이름 하나만 먼저**: 아래 `props`처럼 반응형 값을 **받는 입력 자리**에는 `QuadTypes.StateMarker<T>`를 씁니다. 컴포넌트 안에서 만든 지역 변수나 반환 타입처럼 메소드를 실제로 부르는 자리는 `QuadTypes.State<T>` 그대로입니다.
 
@@ -214,13 +214,13 @@ props에 `{ DTypes.FrameElem }` 같은 배열을 받아 펼치는 모양도 문�
 - `table.unpack(...)`은 **테이블 리터럴의 마지막 원소일 때만** 전부 펼쳐집니다. 중간에 두면 첫 값 하나만 들어갑니다.
 - **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.
 
-그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다. `<Class>Elem` 타입 자체는 여전히 유용합니다 — 그 클래스의 배열 부분에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
+그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다. `<Class>Elem` 타입 자체는 여전히 유용합니다 — 그 클래스의 숫자 키 자리에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
 
 ---
 
 ## 5. 선언적 메타데이터: `Tag`와 `Attr`
 
-Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 배열 부분에서 선언적으로 다룰 수 있습니다(기본은 [시작하기 05. 이름표와 속성](/getting-started/05-tag-attr/)에서 배웁니다 — 여기서는 컴포넌트 경계에서 지킬 규칙만 봅니다).
+Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 숫자 키 자리에서 선언적으로 다룰 수 있습니다(기본은 [시작하기 05. 이름표와 속성](/getting-started/05-tag-attr/)에서 배웁니다 — 여기서는 컴포넌트 경계에서 지킬 규칙만 봅니다).
 
 ```luau
 local function CharacterBadge(props: { read Name: string, read Level: QuadTypes.StateMarker<number> }): Frame
@@ -292,7 +292,7 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 ## 7. 컴포넌트 작성 체크리스트
 
 - [ ] 컴포넌트는 1회 실행되는 셋업 함수인가?
-- [ ] 외부에서 주입받는 `Modifier`/`Ref`를 **배열 부분**에 놓고 `or None`으로 nil-hole을 막았는가?
+- [ ] 외부에서 주입받는 `Modifier`/`Ref`를 **숫자 키 자리**에 놓고 `or None`으로 nil-hole을 막았는가?
 - [ ] 해시 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
 - [ ] `Attr` 값을 지울 때 `None`(또는 State의 `nil`)을 쓰고, 그룹 교체만으로는 값이 안 지워진다는 걸 아는가?
 - [ ] 반응형 로직을 담은 헬퍼 함수를 React Hook의 제약 없이 자유롭게 분리했는가?

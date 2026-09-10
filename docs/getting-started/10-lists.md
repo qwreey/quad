@@ -32,7 +32,7 @@ const rows = q.Source({
 
 ## 2. 목록을 굴리는 컴포넌트
 
-`src/client/UI/CounterBoard.luau`를 만듭니다. 이 컴포넌트가 하는 일은 셋입니다 — 빈 `Slot`을 하나 만들고, 거기 `:List`를 걸고, 그 `Slot`을 자기 배열 부분에 놓는 것.
+`src/client/UI/CounterBoard.luau`를 만듭니다. 이 컴포넌트가 하는 일은 셋입니다 — 빈 `Slot`을 하나 만들고, 거기 `:List`를 걸고, 그 `Slot`을 자기 숫자 키 자리에 놓는 것.
 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/CounterBoard

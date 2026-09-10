@@ -12,7 +12,7 @@ description: "열다섯 장에서 만든 것을 한 줄씩 되짚고, 다음에 
 ## 여기까지 만든 것
 
 - [01](/getting-started/01-setup/) **설정 모듈** 하나에 `q`를 만들어 두고, 진입점에서 `ScreenGui`를 띄웠습니다.
-- [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 해시 부분은 프로퍼티, 배열 부분은 자식, `Parent`는 밖에서.
+- [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 문자 키는 프로퍼티, 숫자 키는 자식, `Parent`는 밖에서.
 - [03](/getting-started/03-flowing-values/) `q.Source`와 `:Compute`로 값이 **원천에서 프로퍼티까지 흐르게** 했습니다.
 - [04](/getting-started/04-reacting/) 이벤트로 원천을 바꾸고, `:Observer`로 화면 밖에서 **관측**했습니다.
 - [05](/getting-started/05-tag-attr/) `q.Tag`와 `q.Attr`로 인스턴스에 **이름표와 속성**을 달아 밖에서 찾을 수 있게 했습니다.
@@ -48,6 +48,6 @@ v1을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 큰 그림(�
 - **`Class.Extend()`는 없습니다** — 컴포넌트는 props를 받아 인스턴스를 돌려주는 평범한 함수입니다.
 - **`myStore "key"`는 `store.key`**입니다 — 문자열 레지스터가 아니라 그 자리에 넣은 `Source` 그 자체입니다.
 - **id로 찾아오는 창구가 없습니다** — `Frame "id" {}` / `Store.GetObject(id)`는 폐지됐고, `Ref`는 그 대체재가 아닙니다.
-- **`Style`은 `Modifier`이고 배열 부분에 놓입니다** — 이름 매칭이 아니라 **놓인 순서**가 우선순위입니다.
+- **`Style`은 `Modifier`이고 숫자 키 자리에 놓입니다** — 이름 매칭이 아니라 **놓인 순서**가 우선순위입니다.
 
 </details>

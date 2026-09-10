@@ -1,15 +1,15 @@
 ---
 title: "05. 이름표와 속성 — Tag와 Attr"
-description: "인스턴스에 CollectionService 태그와 Attribute를 배열 부분의 값으로 선언하고, 붙인 것을 기준으로 화면 밖에서 찾아봅니다"
+description: "인스턴스에 CollectionService 태그와 Attribute를 숫자 키 자리의 값으로 선언하고, 붙인 것을 기준으로 화면 밖에서 찾아봅니다"
 ---
 # [시작하기] 05. 이름표와 속성 — `Tag`와 `Attr`
 
 > **대상 독자**: [04. 반응하기](./04-reacting.md)를 끝낸 개발자
 > **목표**: 만든 인스턴스에 이름표와 값을 달고, 화면 밖의 코드가 그걸 기준으로 찾아 쓰게 하기
 
-지금까지 배열 부분에 넣은 것은 **자식**과 **관측**이었습니다. 하나가 더 있습니다 — 인스턴스
+지금까지 숫자 키 자리에 넣은 것은 **자식**과 **관측**이었습니다. 하나가 더 있습니다 — 인스턴스
 자신에 붙는 **표시**입니다. Roblox에는 그런 채널이 둘 있고(`CollectionService`의 **태그**와
-인스턴스의 **Attribute**), quad에서는 둘 다 배열 부분에 **값**으로 놓습니다.
+인스턴스의 **Attribute**), quad에서는 둘 다 숫자 키 자리에 **값**으로 놓습니다.
 
 ---
 
@@ -34,19 +34,20 @@ const card = D.Frame {
 
 ## 1. 이름표 붙이기 — `q.Tag`
 
-`card`의 **배열 부분** 맨 앞에 한 줄을 더합니다.
+`card`의 **숫자 키** 자리 맨 앞에 한 줄을 더합니다.
 
 ```luau
 -- … 위쪽 코드에 이어집니다
 const card = D.Frame {
-    q.Tag("Card"),          -- ← 배열 부분
+    q.Tag("Card"),          -- ← 숫자 키
 
     Size = UDim2.fromOffset(240, 160),
     -- …나머지 그대로…
 }
 ```
 
-**실행하면** 이 `Frame`이 `CollectionService`에 태그 `Card`로 잡힙니다(**[2026-09-10 기준] Studio 실측**).
+**실행하면** 이 `Frame`이 `CollectionService`에 태그 `Card`로 잡힙니다.
+<!-- 2026-09-10 Studio 실측 -->
 
 ```luau
 -- (확인용 — 화면 밖 아무 스크립트에서)
@@ -94,7 +95,8 @@ const card = D.Frame {
 **실행하면** 버튼을 누를 때마다 이름표가 갈아 끼워집니다 — `{Card, Even}` → `{Card, Odd}` →
 `{Card, Even}`. 정적으로 적은 `Card`는 교체 내내 남습니다(1절의 자리별 셈 그대로).
 엔진 호출도 **진짜 바뀐 이름에만** 나갑니다 — 클릭 한 번이 만드는 것은 `removeTag:Even`과
-`addTag:Odd` 둘뿐입니다. **[2026-09-10 기준] Studio 실측**입니다.
+`addTag:Odd` 둘뿐입니다.
+<!-- 2026-09-10 Studio 실측 -->
 
 ---
 
@@ -126,8 +128,7 @@ print(card:GetAttributes())  --> {Active = true, Kind = "counter", Step = 1}
 active:Set(false)            --> {Active = false, Kind = "counter", Step = 1}
 active:Set(q.None)           --> {Kind = "counter", Step = 1}   -- Active가 사라진다
 ```
-
-**[2026-09-10 기준] Studio 실측**입니다.
+<!-- 2026-09-10 Studio 실측 -->
 
 <details>
 <summary><strong><code>Attr</code> 값을 지우려면요?</strong></summary>
@@ -185,7 +186,7 @@ print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 co
 | `A > B` / `A >> B` | 직계 자식 / 자손 | `.Card >> TextLabel` |
 | `A, B` | 합집합 | `Frame, TextLabel` |
 
-**[2026-09-10 기준] Studio 실측**입니다(0.738).
+<!-- 2026-09-10 Studio 실측(Studio 버전 0.738) -->
 
 <details>
 <summary><strong>선택자가 조용히 0개를 돌려주는데요?</strong></summary>

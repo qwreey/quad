@@ -125,7 +125,7 @@ D.Frame { D.TextLabel { … }, props.Children }
 D.Frame { D.TextLabel { … }, props.Children or q.None }
 ```
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 배열 부분에 꽂는 자리라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 구멍이 났을 때의 증상은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2에 있습니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 구멍이 났을 때의 증상은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2에 있습니다.
 
 `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 
@@ -136,10 +136,10 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 
 props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
-- **해시 부분**(`이름 = 값`)에는 **프로퍼티와 이벤트**가 옵니다. 값 자리에는 리터럴·`State`·`Tween`·`None`이 올 수 있고, 어떤 이름이 프로퍼티이고 어떤 이름이 이벤트인지는 엔진 리플렉션이 판정합니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키만은 프로퍼티가 아니라 관리 자식을 만드는 숏핸드입니다.
-- **배열 부분**(키 없는 원소)에는 **자식 인스턴스와 디스크립터**가 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`. **순서가 의미를 갖습니다.**
+- **문자 키**(`이름 = 값`)에는 **프로퍼티와 이벤트**가 옵니다. 값 자리에는 리터럴·`State`·`Tween`·`None`이 올 수 있고, 어떤 이름이 프로퍼티이고 어떤 이름이 이벤트인지는 엔진 리플렉션이 판정합니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키만은 프로퍼티가 아니라 관리 자식을 만드는 숏핸드입니다.
+- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 디스크립터**가 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`. **순서가 의미를 갖습니다.**
 
-그래서 컴포넌트는 그런 값을 props의 아무 이름으로나 받되(`props.Children`, `props.Modifier`, `props.Ref`), 자기 안쪽에 꽂을 때는 **배열 부분에 `or q.None`을 붙여** 놓습니다. 이 경계 규약 전체는 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §1·§2에 있습니다.
+그래서 컴포넌트는 그런 값을 props의 아무 이름으로나 받되(`props.Children`, `props.Modifier`, `props.Ref`), 자기 안쪽에 꽂을 때는 **숫자 키 자리에 `or q.None`을 붙여** 놓습니다. 이 경계 규약 전체는 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §1·§2에 있습니다.
 
 </details>
 

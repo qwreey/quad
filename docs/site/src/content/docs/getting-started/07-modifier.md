@@ -21,12 +21,12 @@ const CardStyle = D.Modifier.Frame {
 }
 ```
 
-`card`의 해시 부분에서 `BackgroundColor3` 한 줄을 지우고, **배열 부분 맨 앞**에 `CardStyle`을 놓습니다.
+`card`의 문자 키에서 `BackgroundColor3` 한 줄을 지우고, **숫자 키 맨 앞**에 `CardStyle`을 놓습니다.
 
 ```luau
 -- … 위쪽 코드에 이어집니다
 const card = D.Frame {
-    CardStyle,                       -- ← 배열 부분
+    CardStyle,                       -- ← 숫자 키
 
     Size = UDim2.fromOffset(240, 160),
     UICorner = 12,
@@ -37,7 +37,7 @@ const card = D.Frame {
 
 **실행하면** 겉모습은 그대로입니다 — 다만 이제 그 스타일은 값이라, 다른 인스턴스에도 같은 것을 놓을 수 있습니다.
 
-`D.Modifier.<Class>`는 **클래스 태그가 붙은** 생성자입니다. `TextButton` 전용 `Modifier`를 `Frame`의 배열 부분에 넣으면 타입 검사에서 걸립니다. 테이블을 넘기는 위 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16)`) 둘 다 됩니다.
+`D.Modifier.<Class>`는 **클래스 태그가 붙은** 생성자입니다. `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다. 테이블을 넘기는 위 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16)`) 둘 다 됩니다.
 
 ---
 
@@ -65,7 +65,7 @@ hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
 
 **실행하면** `hot:Set(true)` 시점에 카드 배경이 바뀝니다. 03장에서 프로퍼티에 직접 꽂았던 그 흐름이, `Modifier`를 한 단계 거쳐 같은 자리에 도착한 것입니다.
 
-우선순위는 이 장에서 하나만 알면 충분합니다. **해시 부분에 직접 적은 키가 `Modifier`보다 우선합니다.**
+우선순위는 이 장에서 하나만 알면 충분합니다. **직접 적은 문자 키가 `Modifier`보다 우선합니다.**
 
 그리고 하나 더 알아 두면 좋은 성질이 있습니다. **`Modifier`는 불변입니다.** setter를 하나 부를 때마다 새 값이 생기고 원본은 그대로라, 하나의 기본 스타일에서 갈라 나온 형제들이 서로를 오염시키지 않습니다.
 
@@ -80,8 +80,8 @@ const big = base:TextSize(24)     -- base는 그대로 16
 
 무엇이 무엇을 덮는지는 규칙 셋뿐입니다.
 
-1. **해시 부분에 직접 적은 키가 이깁니다.** `D.TextButton { SomeMod, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다.
-2. **배열 부분에서는 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다.**
+1. **직접 적은 문자 키가 이깁니다.** `D.TextButton { SomeMod, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다.
+2. **숫자 키 자리에서는 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다.**
 3. **`Modifier.Overridden(A, B)`도 같은 방향**입니다 — 뒤 인자가 앞 인자를 덮습니다. 닷 형태와 콜론 형태(`a:Overridden(b)`) 둘 다 됩니다.
 
 빈 자리를 명시적으로 비우고 싶으면 `q.None`을 넣습니다. `nil`은 "이 `Modifier`는 그 필드에 관심 없음"이고, `q.None`은 "그 필드를 비워라"입니다 — 뜻이 다릅니다.
@@ -133,7 +133,7 @@ return {
 }
 ```
 
-쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 배열 부분에 놓습니다.
+쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다.
 
 
 ---

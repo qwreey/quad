@@ -55,7 +55,7 @@ local base = D.Modifier.GuiObject()
 -- 테이블 형태(+ 병합 — 뒤 인자가 이긴다)
 local boxed = D.Modifier.Frame({ BackgroundTransparency = 0.5 }, { Visible = false })
 
--- 배열 부분에 놓으면 그 자리에서 필드가 펼쳐진다
+-- 숫자 키 자리에 놓으면 그 자리에서 필드가 펼쳐진다
 local card = D.Frame({ boxed, D.Modifier.Frame():ZIndex(2) })
 ```
 
@@ -106,7 +106,7 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 | 함수 | **변환 함수** — 아래 |
 
 **보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라
-`FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](/reference/roblox/02-d/#해시-부분--프로퍼티와-이벤트)와 같은
+`FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](/reference/roblox/02-d/#문자-키--프로퍼티와-이벤트)와 같은
 구분입니다(`Tween` 팔이 있는 타입은 `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector3`·`Color3`·
 `CFrame`·`Rect`).
 
@@ -149,8 +149,8 @@ end)
 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
 ```
 
-`State`/`Source`는 통과합니다. 이 값들은 필드가 아니라 **props의 배열 부분**에 놓는 것이 자리입니다
-([D — 배열 부분](/reference/roblox/02-d/#배열-부분--자식과-디스크립터)).
+`State`/`Source`는 통과합니다. 이 값들은 필드가 아니라 **props의 숫자 키 자리**에 놓는 것이 자리입니다
+([D — 숫자 키](/reference/roblox/02-d/#숫자-키--자식과-디스크립터)).
 
 **필드 이름**
 
@@ -287,6 +287,6 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 
 **관련**
 
-- [D — Instance 생성](/reference/roblox/02-d/) — Modifier가 배열 부분에서 소진되는 규칙
+- [D — Instance 생성](/reference/roblox/02-d/) — Modifier가 숫자 키 자리에서 소진되는 규칙
 - [09. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)
 - [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)

@@ -100,7 +100,7 @@ end
 | 디스크립터의 props가 테이블이 아님 | `Claim: mapper props must be a table (got {typeof(desc._props)})` |
 | 이미 quad가 소유한 Instance | `nativeClaim: Instance is already claimed by quad` |
 
-`D.<Class>{…}`의 배열 부분에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
+`D.<Class>{…}`의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
 납니다 — 디스크립터는 `Claim` 전용입니다.
 
 **계약 셋**
@@ -131,7 +131,7 @@ end
    end
    ```
 
-`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`D`와 같은 이유](./02-d.md#해시-부분--프로퍼티와-이벤트).
+`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`D`와 같은 이유](./02-d.md#문자-키--프로퍼티와-이벤트).
 
 ---
 
@@ -149,13 +149,13 @@ D.Mapper.Frame: (key: string | MapperRoot) -> (FrameParam<FrameMapperElem>) -> M
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `key` | `string` 또는 `MapperRoot` | 이 자리에 놓일 자식의 이름. 루트 자리면 `M.Root` 센티널 |
-| `props` | 클래스의 props 테이블 | `D.<Class>`와 **같은 모양** — 해시 부분·배열 부분 그대로 |
+| `props` | 클래스의 props 테이블 | `D.<Class>`와 **같은 모양** — 문자 키·숫자 키 그대로 |
 
 **반환** — `MapperDescriptor`. **1회용**입니다 — 한 번 `Claim`에 쓰이면 다시 못 씁니다.
 
 **동작**
 
-`D.<Class>`와 커링 모양이 같지만 한 단계 더 있습니다(`(key)` → `(props)`). props의 배열 부분에는
+`D.<Class>`와 커링 모양이 같지만 한 단계 더 있습니다(`(key)` → `(props)`). props의 숫자 키 자리에는
 `D.<Class>`가 받는 것 전부에 더해 **다른 디스크립터**가 들어갑니다 — 그게 중첩 매핑입니다.
 
 디스크립터를 재사용하려면 값을 저장하지 말고 **호출을 팩토리로 감싸세요**.

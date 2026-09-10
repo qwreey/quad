@@ -1,6 +1,6 @@
 ---
 title: "06. 인스턴스를 손에 쥐기와 부수 효과 — Ref와 Effect"
-description: "만들어진 인스턴스를 Ref로 꺼내 쓰고, 의존성 여럿과 cleanup을 다루는 Effect를 배열 부분에 답니다"
+description: "만들어진 인스턴스를 Ref로 꺼내 쓰고, 의존성 여럿과 cleanup을 다루는 Effect를 숫자 키 자리에 답니다"
 ---
 > **대상 독자**: [05. 이름표와 속성](/getting-started/05-tag-attr/)을 끝낸 개발자
 > **목표**: 만들어진 인스턴스를 변수로 잡고, 값이 바뀔 때 정리까지 필요한 일을 붙이기
@@ -13,7 +13,7 @@ description: "만들어진 인스턴스를 Ref로 꺼내 쓰고, 의존성 여�
 
 ## 1. 인스턴스를 잡아 두기 — `q.Ref`
 
-`Ref`는 **빈 상자**입니다. props의 배열 부분에 놓아 두면 quad가 만들어진 인스턴스를 그 상자에 넣어 줍니다.
+`Ref`는 **빈 상자**입니다. props의 숫자 키 자리에 놓아 두면 quad가 만들어진 인스턴스를 그 상자에 넣어 줍니다.
 
 카드의 버튼에 상자를 하나 놓습니다.
 
@@ -24,7 +24,7 @@ const buttonRef = q.Ref(nil :: TextButton?)
 const card = D.Frame {
     -- …생략…
     D.TextButton {
-        buttonRef,                  -- ← 배열 부분: 만들어진 버튼이 여기 담긴다
+        buttonRef,                  -- ← 숫자 키: 만들어진 버튼이 여기 담긴다
         Text = "+ 1",
         Activated = function()
             count:Set(count:Get() + 1)
@@ -63,10 +63,10 @@ end,
 
 `Observer`는 "한 노드가 바뀌었다"만 알려 줍니다. 의존성이 **여럿**이거나, 매번 **뒤처리**가 필요하면 `q.Effect(fn, ...deps)`를 씁니다.
 
-`card`의 배열 부분에 한 덩이를 더합니다.
+`card`의 숫자 키 자리에 한 덩이를 더합니다.
 
 ```luau
-    -- … card의 배열 부분에 이어집니다
+    -- … card의 숫자 키 자리에 이어집니다
     q.Effect(function()
         const n = count:Get()
         print("이펙트: 지금", n)
@@ -85,7 +85,7 @@ end,
 - **값이 인자로 오지 않습니다** — 클로저로 `count:Get()`을 직접 읽습니다(`fn`이 받는 인자는 핸들 자신 하나뿐입니다).
 - **cleanup을 돌려줄 수 있습니다** — 도는 자리는 셋입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, 그리고 **매달린 인스턴스가 파괴될 때**이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
 
-`Observer`와 마찬가지로 **배열 부분에 넣어야 계속 삽니다.** 넣지 않으면 만들 때 한 번 돌고 조용해집니다.
+`Observer`와 마찬가지로 **숫자 키 자리에 넣어야 계속 삽니다.** 넣지 않으면 만들 때 한 번 돌고 조용해집니다.
 
 ---
 
@@ -108,7 +108,7 @@ local function highlightWhenBig(ref, state, threshold)
 end
 ```
 
-쓰는 쪽은 **그 호출을 배열 부분에 놓습니다.**
+쓰는 쪽은 **그 호출을 숫자 키 자리에 놓습니다.**
 
 ```luau
 -- … 위쪽 코드에 이어집니다
@@ -116,7 +116,7 @@ const card = D.Frame {
     -- …생략…
     D.TextButton { buttonRef, Text = "+ 1", Activated = … },
 
-    highlightWhenBig(buttonRef, count, 10),   -- ← 배열 부분
+    highlightWhenBig(buttonRef, count, 10),   -- ← 숫자 키
 }
 ```
 

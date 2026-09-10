@@ -20,7 +20,7 @@ description: "Studio 없이 quad의 반응형 로직과 디스패치를 헤드�
 ```
 1. 반응형 그래프 (Source, State, Store, Blocker, Compute)   → 백엔드 없이 그냥 돈다
 2. 디스패치/Slot 부기 (Slot:List, 재조정, 생명주기)          → mock 백엔드 위에서 돈다
-3. 실제 Roblox 프로퍼티/이벤트/Tween                          → Studio 실측이 필요하다
+3. 실제 Roblox 프로퍼티/이벤트/Tween                          → Roblox Studio에서 직접 확인해야 한다
 ```
 
 UI 버그가 났을 때 1·2층에서 재현되면 Studio를 열 필요가 없습니다.
@@ -123,7 +123,7 @@ assert(runs == 3, "인스턴스가 죽으면 더 이상 발화하지 않는다")
 ```
 
 실제 컴포넌트 코드에서는 `bindLifetime`을 직접 부르지 않습니다 —
-`Observer`/`Effect`를 **props의 배열 부분에** 넣으면 quad가 그 인스턴스 수명에
+`Observer`/`Effect`를 **props의 숫자 키 자리에** 넣으면 quad가 그 인스턴스 수명에
 묶어 줍니다.
 
 ---

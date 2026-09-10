@@ -28,7 +28,7 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 단위를 바꾸는 버튼을 답니다. 10점은 100포인트라 **값과 단위를 같이** 바꿔야 합니다.
 
 ```luau
--- … (Counter.luau) 카드의 배열 부분에 이어집니다
+-- … (Counter.luau) 카드의 숫자 키 자리에 이어집니다
         D.TextButton {
             Text = "단위 바꾸기",
             Activated = function()
@@ -98,7 +98,7 @@ unit:Set 뒤        Text = "100 포인트"
 같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 두겠습니다 — 게이트를 하나 끼우고(`const shown = count:Apply(blocker)` — 라벨은 `shown`을 봅니다) 버튼이 스위치를 토글하게 합니다.
 
 ```luau
--- … (Counter.luau) 카드의 배열 부분에 버튼 하나 더
+-- … (Counter.luau) 카드의 숫자 키 자리에 버튼 하나 더
         D.TextButton {
             Text = "일시정지",
             Activated = function()
