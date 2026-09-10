@@ -69,6 +69,10 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - 중첩 평탄화 `State<State<T>>` → `State<T>` — 코어 로직 재검증이 필요(`operator-sugar-plan.md` "중첩 State 평탄화" 절).
       - **[2026-09-10 개명 — 사용자 결정 (b)]** `Operator.Index` → `Operator.Indexed<<V>>(key)`(`V`는 인덱스된 값의 타입, 결과 타입은 호출자가 준다; 소비자가 없을 때 이름을 갈라 둠, CHANGELOG BREAKING). 다음 둘은 백로그: (1) 키에서 결과 타입을 추론하는 타입드 `Indexed`(`Apply(Indexed<<Theme>>("key"))` → `State<string>`) — 지금 솔버로는 불가(`typing-limits.md` 8.15 실측); (2) **`Indexer(pick)`** — 픽 함수(`function(p) return p.Background end`)를 직접 받는 일반형(값이 프로퍼티가 아니라 맵일 수도 있어 `Indexed`와 분리, 사용자 제안 2026-09-10) — 픽 함수 반환에서 `V`를 추론할 수 있게 되면 그때 추가.
 - [ ] **[2026-09-09 현황]** 문서 사이트 초안이 `docs/`에 커밋돼 있다(오버뷰·Getting Started·How-To·Reference·Quadnomicon + 에이전트 스킬 + Astro 사이트, 진입점 `docs/README.md`; 경위 `session/2026-09-09-01-docs-polish.md`). **`en/` 번역은 잠정 유보** — 사용자가 여러 번 보고 회사·실개발자 조언을 모두 처리한 뒤 시작(데이터 모이기 전엔 안 함).
+- [ ] **[2026-09-11 신설, 사용자 아이디어 — 백로깅만]** 공개 문서에 "설계 기록(RFC)" 섹션(`research/rfc-docs-section-plan.md`) — 기능 제안자가
+      "그 기능을 전에 어떻게 만들려 했나"를 스스로 볼 수 있게 `.claude/`의 계획 표면(`base/`·`archive/`·`research/`)을 가리키고, 공식 문서에서
+      진입 링크를 준다(사이드바·색인엔 넣지 않는다 — 사용자). 계획서만 있고 페이지·빌드·사이트 설정 변경은 없다. 공개 범위·형태·기존 결정
+      둘과의 충돌은 그 문서의 열린 결정(사용자 몫). 착수 시점은 문서 다듬기 뒤.
 - [ ] **[2026-09-08 신설, round7 Q39 사용자 결정 백로그]** 루트 `README.md`(라이브러리 사용자 대면 — 한 줄 소개·설치·최소 예제·비교 링크) — *"루트 readme 는 그냥 백로깅에 두고싶음"*. 문서 사이트(`research/documentation-plan.md`)와 같은 시기(폴리싱·문서화 기간, 정식 릴리즈 전).
 - [ ] **[2026-09-09 신설 — 루트 메모 정리에서 살린 아이디어]** 벤치마크 스위트(`bench.luau`류 — Slot:List 재정렬·대량 마운트 등 실측을 반복 가능하게). 지금은
   `audit/`의 일회성 실측뿐. 착수 시점 미정(관측된 병목이 생길 때).
