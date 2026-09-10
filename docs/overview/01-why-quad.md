@@ -172,5 +172,5 @@ D.Frame {
 
 - **써보기**: [멘탈 모델 셋](../getting-started/01-core-mental-model.md) → [10분 카운터](../getting-started/02-quickstart-counter.md) → [컴포넌트 합성](../getting-started/03-component-composition.md)
 - **설치 상태 확인**: [00. 설치 및 환경 구축](../getting-started/00-installation.md) — 세 경로 모두 아직 제공되지 않는다는 표시가 여기 있습니다.
-- **v1에서 옮겨오기**: [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
+- **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](./02-from-v1.md) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
 - **속을 보고 판단하기**: [The Quadnomicon](../quadnomicon/01-revision-and-epochmap.md) 열한 권 — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.

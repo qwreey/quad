@@ -44,7 +44,7 @@ print(myFrame.ClassName) --> "Frame"
 
 > ### v1에서 오신 분께
 >
-> quad v1(`Quad.Init(id)` / `Class "Frame"`)을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 전체 이관 절차는 [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/)에 있습니다.
+> quad v1(`Quad.Init(id)` / `Class "Frame"`)을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 큰 그림(무엇이 왜 없어졌고 어떤 틀로 옮기는지)은 [quad v1에서 오는 분께](/quad/ko/overview/02-from-v1/), 전체 이관 절차는 [08. quad v1에서 v2로 옮기기](/quad/ko/how-to/08-migrating-from-v1/)에 있습니다.
 >
 > - **`:With`는 이름만 같은 다른 것**입니다 — v1의 파생은 v2에서 `:Compute(fn, ...deps)`입니다.
 > - **`Mount(parent, obj)`는 없습니다** — 만들어진 뒤 `obj.Parent = parent`.

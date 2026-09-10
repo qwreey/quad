@@ -5,6 +5,7 @@
 - 원본은 Starlight frontmatter(title/description)를 갖는다 — 없으면 실패한다(사용자 결정: frontmatter는 원본에).
 - 복사본에서는 본문 첫 H1을 지운다(Starlight가 title로 H1을 그리므로 중복 방지; 원본은 GitHub에서 읽히게 H1 유지).
 - 상대 링크 `(../x/y.md)`·`(./y.md)`·`(../../x/y.md)`(+#anchor)를 사이트 경로 `/quad/ko/<path without .md>/`로 바꾼다.
+- 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
 """
 import os, re, shutil, sys
 
@@ -13,16 +14,19 @@ DOCS = os.path.dirname(SITE)
 DEST = os.path.join(SITE, 'src', 'content', 'docs', 'ko')
 BASE = '/quad/ko/'
 TRACKS = ['overview', 'getting-started', 'how-to', 'quadnomicon', 'reference']
-LINK = re.compile(r'\]\(((?:\.\.?/)+[^)#\s]+?\.md)(#[^)\s]*)?\)')
+LINK = re.compile(r'\[([^\]]*)\]\(((?:\.\.?/)+[^)#\s]+?\.md)(#[^)\s]*)?\)')
 
 def convert(src_path, text):
     def rep(m):
-        target = os.path.normpath(os.path.join(os.path.dirname(src_path), m.group(1)))
+        label, href, anchor = m.group(1), m.group(2), m.group(3) or ''
+        target = os.path.normpath(os.path.join(os.path.dirname(src_path), href))
         rel = os.path.relpath(target, DOCS)
         if rel.startswith('..'):
             return m.group(0)
+        if rel.split(os.sep)[0] not in TRACKS:
+            return label  # 사이트에 없는 페이지 — 링크를 벗긴다
         slug = rel[:-3] if rel.endswith('.md') else rel
-        return f']({BASE}{slug}/{m.group(2) or ""})'
+        return f'[{label}]({BASE}{slug}/{anchor})'
     return LINK.sub(rep, text)
 
 def strip_h1(text):
