@@ -2,9 +2,7 @@
 title: "06. 인스턴스를 손에 쥐기 — Ref"
 description: "만들어진 인스턴스를 Ref 상자에 담아 쓰고, 같은 props 안에서 먼저 채워지는 PreRef와 채워질 때를 기다리는 :Callback/:Wait까지 봅니다"
 ---
-# [시작하기] 06. 인스턴스를 손에 쥐기 — `Ref`
-
-> **대상 독자**: [05. 이름표와 속성](./05-tag-attr.md)을 끝낸 개발자
+> **대상 독자**: [05. 이름표와 속성](/getting-started/05-tag-attr/)을 끝낸 개발자
 > **목표**: 만들어진 인스턴스를 변수로 잡아 두고, 그것이 언제 손에 들어오는지 알기
 
 지금까지 화면에 무언가를 반영하는 길은 프로퍼티와 표시(태그·속성)였습니다.
@@ -142,7 +140,7 @@ end)
 **실행하면** 상자가 이미 차 있으면 그 줄에서 곧바로 찍히고, 아직이면 채워지는 순간 찍힙니다. `:Wait()`을 인자 없이 부르려면 **yield 할 수 있는 코루틴 안**이어야 해서 `task.spawn`으로 감쌌습니다. `--!strict`으로 올릴 때는 마지막 `.Value` 대신 `:Wait():Unwrap()`을 쓰면 `nil`까지 벗겨집니다.
 <!-- mock 실측 2026-09-11: gs.gs2probe.luau 5a/5b/5c, gs.gs4probe.luau W1~W3 — coroutine.create/resume로 확인(task는 CLI에 없음). 빈 상자면 suspended로 대기하다 채워질 때 진행, 이미 차 있으면 즉시 통과. :Wait():Unwrap() 형태는 consumer/P5.luau에서 신 솔버 strict exit 0 -->
 
-컴포넌트([10장](./10-components.md))에서는 **부모가 만든 `Ref`를 자식이 채우고, 부모가 이 두 방법으로 기다리는** 모양이 흔합니다.
+컴포넌트([10장](/getting-started/10-components/))에서는 **부모가 만든 `Ref`를 자식이 채우고, 부모가 이 두 방법으로 기다리는** 모양이 흔합니다.
 
 <details>
 <summary><strong>쓰던 <code>Ref</code>를 다른 인스턴스에 다시 써도 되나요?</strong></summary>
@@ -208,5 +206,5 @@ const card = D.Frame {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Ref`](../reference/core/08-ref.md) — `Ref`/`PreRef`/`PostRef` 셋의 발화 시점, `:Callback`/`:WeakCallback`/`:Wait`/`:Unwrap`의 전체 계약과 에러 문구
-- [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) — 바깥에서 `Ref`를 받는 컴포넌트의 `or None` 관용구
+- [레퍼런스: `Ref`](/reference/core/08-ref/) — `Ref`/`PreRef`/`PostRef` 셋의 발화 시점, `:Callback`/`:WeakCallback`/`:Wait`/`:Unwrap`의 전체 계약과 에러 문구
+- [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) — 바깥에서 `Ref`를 받는 컴포넌트의 `or None` 관용구

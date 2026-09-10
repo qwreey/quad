@@ -1,8 +1,8 @@
 ---
-title: "07. 스타일을 값으로 들고 다니기 — Modifier"
+title: "08. 스타일을 값으로 들고 다니기 — Modifier"
 description: "프로퍼티 묶음을 Modifier 값 하나로 만들어 여러 인스턴스에 놓고, 팩토리로 뽑아 모듈 하나에 모읍니다"
 ---
-> **대상 독자**: [06. Ref와 Effect](/getting-started/06-ref-and-effect/)를 끝낸 개발자
+> **대상 독자**: [07. 관측하기](/getting-started/07-observer-effect/)를 끝낸 개발자
 > **목표**: 반복되는 프로퍼티 묶음을 값 하나로 빼서 여러 곳에 놓기
 
 카드와 버튼의 색·테두리를 다른 화면에서도 그대로 쓰고 싶습니다. `Modifier`는

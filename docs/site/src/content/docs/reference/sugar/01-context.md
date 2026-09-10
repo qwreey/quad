@@ -158,7 +158,7 @@ read Name: string?
 
 ```luau
 type Theme = { ButtonBg: Color3 }
-local ThemeProvider = q.Context.Provider("Theme") :: QuadTypes.Provider<Theme>
+local ThemeProvider = q.Context.Provider<<Theme>>("Theme")
 local UserProvider = q.Context.Provider<<{ Name: string }>>("User")
 
 -- 리프 컴포넌트 — 필요한 키만 꺼내 쓴다
@@ -187,5 +187,5 @@ local shell = AppShell({ Context = rootCtx, Content = D.Frame {} })
 
 ## 관련
 
-- [컴포넌트로 쪼개기](/getting-started/09-components/) — 컴포넌트가 플레인 함수라는 것과 props 경계
+- [컴포넌트로 쪼개기](/getting-started/10-components/) — 컴포넌트가 플레인 함수라는 것과 props 경계
 - [디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/) — `Context`로 테마를 내려보내는 실전 배치

@@ -1,8 +1,8 @@
 ---
-title: "12. 움직이게 하기 — Tween과 Animate"
+title: "14. 움직이게 하기 — Tween과 Animate"
 description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직접 만들고, 그 위에 얹은 :Apply(q.Animate) 슈거를 씁니다"
 ---
-> **대상 독자**: [11. 층을 건너 값 넘기기](/getting-started/11-context/)를 끝낸 개발자
+> **대상 독자**: [13. 층을 건너 값 넘기기](/getting-started/13-context/)를 끝낸 개발자
 > **목표**: 색이 툭 튀지 않고 부드럽게 넘어가게 만들기
 
 `TweenService:Create`를 직접 부를 필요는 없습니다. 프로퍼티로 흘려보내는 **값**을
@@ -52,7 +52,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 
 ## 2. 편하게 — `:Apply(q.Animate { ... })`
 
-옵션이 값마다 달라질 필요가 없다면, 위 §1이 한 일(값이 바뀔 때마다 그 값을 `Tween`으로 감싸는 것)은 매번 똑같습니다. 그 반복을 대신해 주는 팩토리가 `q.Animate`이고, State에 `:Apply`로 얹습니다.
+옵션이 값마다 달라질 필요가 없다면, 위 §1이 한 일(값이 바뀔 때마다 그 값을 `Tween`으로 감싸는 것)은 매번 똑같습니다. 그 반복을 대신해 주는 팩토리가 `q.Animate`이고, [11장](/getting-started/11-functions/)에서 `q.Operator`를 붙일 때 쓴 그 `:Apply`로 State에 얹습니다.
 
 **하나.** `Counter` 안, `countText` 바로 아래에 목표 색 State를 하나 만듭니다. **여기에는 `Tween`이 없습니다** — 그냥 색을 계산할 뿐입니다.
 

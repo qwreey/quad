@@ -205,7 +205,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 ## 6. 다음 걸음
 
 - **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/) — 툴체인 플래그 넷, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
-- **v1 습관이 가장 자주 걸리는 자리**: [15. 정리 — 여기서부터 어디로](/getting-started/15-wrap-up/)의 "v1을 쓰던 손버릇" 접힘 블록.
+- **v1 습관이 가장 자주 걸리는 자리**: [17. 정리 — 여기서부터 어디로](/getting-started/17-wrap-up/)의 "v1을 쓰던 손버릇" 접힘 블록.
 - **도입 여부를 아직 저울질 중이라면**: [왜 Quad인가](/overview/01-why-quad/) — 설계 선택마다의 대가와, 오늘 시점의 차단기 목록.
 - **에이전트에게 맡긴다면**: v1 이관 스킬 레퍼런스(영문, 레포의 `docs/skills/quad-ui-dev/`).
 - **왜 그렇게 결론났는지 속을 보려면**: [Quadnomicon Vol. 9 — 형제 여럿과 DOMless Slot 트리](/quadnomicon/09-fragment-breakthrough-and-domless-slot/), [Vol. 8 — 확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/), [Vol. 7 — 인스턴스 신원과 GC 철학](/quadnomicon/07-instance-identity-and-gc-philosophy/).

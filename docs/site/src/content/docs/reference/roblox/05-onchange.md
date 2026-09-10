@@ -86,10 +86,10 @@ local box = D.Frame({
 - 배열 자리를 차지하지만 **길이는 0**입니다 — 물리 자식이 아니라서 형제 자식의 오프셋에 기여하지
   않습니다.
 - [`State`](/reference/core/03-state/)에 담아 반응형으로 바꿔 끼울 수 있습니다. `State<T>`는 불변이라
-  **클래스별 유니언으로 캐스트**해서 만듭니다.
+  **클래스별 유니언을 타입 인자로 명시**해서 만듭니다.
 
   ```luau
-  local desc = q.Source(q.OnChange("Visible", function(v: boolean) end) :: DModule.FrameOnChange)
+  local desc = q.Source<<DModule.FrameOnChange>>(q.OnChange("Visible", function(v: boolean) end))
   local box = D.Frame({ desc })
   ```
 

@@ -48,30 +48,32 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`01-why-quad.md`](./overview/01-why-quad.md) — 왜 Quad인가: **다른 도구와의 비교 문서**(2026-09-10 사용자 결정 — 시작하기가 앞에 서고 이 페이지는 후행). Docusaurus "Comparison with other tools" 방식으로 Vide/Fusion/react-lua마다 "그 도구가 잘하는 것 → 거기서 겪는 문제 → Quad는 어떻게 풀었나 → 넘어올 이유/넘어오지 않을 이유"를 한 절씩, 뒤에 축별 차이표와 설계 선택(이전 선택 → 우리 선택 → 그 대가), 그리고 "없는 것과 그 이유"를 일부러 안 했다/아직 없지만 계획이 있다/그냥 한계로 갈라 적는다. 수치·창작 인용 없음, 예정 항목에 날짜·버전 약속 없음.
 - [`02-from-v1.md`](./overview/02-from-v1.md) — quad v1에서 오는 분께: 없어진 것과 왜 없앴나(표 10행, 근거는 v1 내부 스냅샷 범위만), 새로 생긴 것이 v1의 어떤 자리를 메우나, 이관 틀 셋 — (a) 화면 단위 재작성이 주 경로, (b) v1·v2 화면 분할 공존은 **지원 경로**(양방향 브릿지, 경계를 넘는 건 항상 평범한 값, GC 상호작용은 [2026-09-10 기준] 미실측이라 핸들의 주인을 명시), (c) `Claim`으로 v1 트리 인계는 **비권장**(이중 소유) — 그리고 v1·v2 동시 로드 공식 허용 + 조건 셋, 새로 짤 때 전제 여섯. 사용자 결정 2026-09-10(§4 참고). v1 사용자는 회사 내부·외부 둘 다라 "안심시키기"와 "옮길 값어치" 둘 다 담는다. 스킬 링크 둘은 사이트에서 평문으로 벗겨진다(`sync-docs.py`).
 
-### Getting Started (시작하기) — 16편(선형 튜토리얼)
-**[2026-09-10 재구성]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸다(`13-blocker.md`와 `05-tag-attr.md`는 같은 날 추가). 페이지 구조는 목표 한 줄 → 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다).
+### Getting Started (시작하기) — 18편(선형 튜토리얼)
+**[2026-09-10 재구성, 2026-09-11 재편]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸고(`13-blocker.md`와 `05-tag-attr.md`는 같은 날 추가), 2026-09-11에 `Ref`와 `Observer`/`Effect`를 갈라 두 장으로(옛 06 `ref-and-effect` 해체, 옛 04 §2 Observer가 07로) + 함수형 패턴 장(11) 신설로 18편이 됐다. 페이지 구조는 목표 한 줄 → 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다).
 - [`00-installation.md`](./getting-started/00-installation.md) — 까는 것만: 배포 경로 표(**[2026-09-10 기준] pesde만 제공**), pesde 의존성 **셋**(`quad_types`도 직접 — 01의 타입 재수출이 그 링커를 쓴다), Rojo 매핑(rojo sourcemap으로 검증), 타입 검사 플래그 넷. Wally·`.rbxm`은 `<details>` 하나로 접었다.
 - [`01-setup.md`](./getting-started/01-setup.md) — 프레임워크 설정하기: 설정 모듈 `ReplicatedStorage/Client/UI/Quad`(문자열 `@game/…` require + 타입 재수출 + `UseProvider`)와 진입점 `StarterPlayerScripts/Main`(첫 `ScreenGui`·확인용 라벨). quad-base/quad-roblox가 왜 나뉘는지가 여기서 나온다.
 - [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `D.Frame` 카드 + 라벨 자식. 해시=프로퍼티, 배열=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
-- [`03-flowing-values.md`](./getting-started/03-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → 중간에 값을 **처리하는** 파이프(`:Compute`) → `Source`/`State` 이름 붙이기. 게으름은 암시 한 문단만(본문은 14편).
-- [`04-reacting.md`](./getting-started/04-reacting.md) — 반응하기: `Activated`로 `count:Set`, 이벤트는 해시 부분·엔진 인자만. `:Observer(fn)`.
+- [`03-flowing-values.md`](./getting-started/03-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → 중간에 값을 **처리하는** 파이프(`:Compute`) → `Source`/`State` 이름 붙이기. 게으름은 암시 한 문단만(본문은 16편).
+- [`04-reacting.md`](./getting-started/04-reacting.md) — 반응하기(이벤트만): `Activated`로 `count:Set`, 이벤트는 해시 부분·엔진 인자만. 관측은 07로 넘긴다.
 - [`05-tag-attr.md`](./getting-started/05-tag-attr.md) — 이름표와 속성: 배열 부분의 `q.Tag`(자리별 참조 계수·State에서 나오는 태그)와 `q.Attr`/`q.BooleanAttr`, 붙인 것을 `Instance:QueryDescendants`로 찾기(선택자 표는 Studio 실측), 스타일시트는 공식 문서로.
-- [`06-ref-and-effect.md`](./getting-started/06-ref-and-effect.md) — `q.Ref`로 인스턴스 잡기, `q.Effect`(의존 여럿·cleanup), 그리고 **팩토리 패턴**(Ref/Effect를 돌려주는 함수를 배열 부분에).
-- [`07-modifier.md`](./getting-started/07-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
-- [`08-slot.md`](./getting-started/08-slot.md) — 자식이 들어갈 자리: `Slot`을 배열 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot. `:List`는 암시만.
-- [`09-components.md`](./getting-started/09-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 자식은 08의 `Slot`을 `props.Children or q.None`으로 받는다.
-- [`10-lists.md`](./getting-started/10-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴.
-- [`11-context.md`](./getting-started/11-context.md) — 층을 건너 값 넘기기: `q.Context` 가방(트리 조회 없음), `Provider` 키, `Get`/`Peek`.
-- [`12-animation.md`](./getting-started/12-animation.md) — 움직이게 하기(바텀업): §1 `:Compute` 안에서 `q.Tween{…}`을 직접 만들고, §2에서 그 반복을 줄이는 `:Apply(q.Animate{…})`.
-- [`13-blocker.md`](./getting-started/13-blocker.md) — 흐름을 잠시 막기: 값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않게 `q.Blocker`로 통지를 모았다가 한 번에. 접힘 둘(게이트가 실제 메커니즘 / 시간 정책은 레퍼런스로).
-- [`14-laziness.md`](./getting-started/14-laziness.md) — 값은 언제 흐르나: 파이프·Observer·Effect·`Slot:List`·`Animate` 옵션·`Blocker` 여섯 자리를 한 표로 대조(컨베이어 벨트 비유는 여기). 사용자 결정 2026-09-10 — lazy는 라이브러리 전체에 드러나므로 뒤에서 한 번에.
-- [`15-wrap-up.md`](./getting-started/15-wrap-up.md) — 정리: 만든 것 요약 열넷, 다음 읽을 곳, v1 콜아웃 `<details>`.
+- [`06-ref.md`](./getting-started/06-ref.md) — 인스턴스를 손에 쥐기: `q.Ref`(`<<T>>` 타입 인자 소개), 같은 props 안에서 쓰는 `q.PreRef`+`:Unwrap`, 채워질 때 받는 `:Callback`/`:Wait`, 인스턴스마다 새로 만드는 이유(Destroy해도 안 비워진다), `q.PostRef`.
+- [`07-observer-effect.md`](./getting-started/07-observer-effect.md) — 관측하기: `:Observer`(인스턴스가 파괴되면 관측이 멈춘다·보류와 재생)와 `q.Effect`(의존 여럿·cleanup·`Ref`를 의존성으로). 접힘으로 핸들을 State에 담아 끄는 법.
+- [`08-modifier.md`](./getting-started/08-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
+- [`09-slot.md`](./getting-started/09-slot.md) — 자식이 들어갈 자리: `Slot`을 배열 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(내부적으로 `Owned=false` `:Single`). `:List`는 암시만.
+- [`10-components.md`](./getting-started/10-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 자식은 09의 `Slot`을 `props.Children or q.None`으로 받는다.
+- [`11-functions.md`](./getting-started/11-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, Hook 규칙이 없는 이유.
+- [`12-lists.md`](./getting-started/12-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴, 원소 하나짜리 `:Single`(Offset이 필요할 때).
+- [`13-context.md`](./getting-started/13-context.md) — 층을 건너 값 넘기기: `q.Context` 가방(트리 조회 없음), `Provider` 키, `Get`/`Peek`.
+- [`14-animation.md`](./getting-started/14-animation.md) — 움직이게 하기(바텀업): §1 `:Compute` 안에서 `q.Tween{…}`을 직접 만들고, §2에서 그 반복을 줄이는 `:Apply(q.Animate{…})`.
+- [`15-blocker.md`](./getting-started/15-blocker.md) — 흐름을 잠시 막기: 값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않게 `q.Blocker`로 통지를 모았다가 한 번에. 접힘 둘(게이트가 실제 메커니즘 / 시간 정책은 레퍼런스로).
+- [`16-laziness.md`](./getting-started/16-laziness.md) — 값은 언제 흐르나: 파이프·Observer·Effect·`Slot:List`·`Animate` 옵션·`Blocker` 여섯 자리를 한 표로 대조(컨베이어 벨트 비유는 여기). 사용자 결정 2026-09-10 — lazy는 라이브러리 전체에 드러나므로 뒤에서 한 번에.
+- [`17-wrap-up.md`](./getting-started/17-wrap-up.md) — 정리: 만든 것 요약 열여섯, 다음 읽을 곳, v1 콜아웃 `<details>`.
 
 ### How-To Guides (실전 레시피) — 9편
 **[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤.
 - [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 타입드 Modifier 팩토리, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
 - [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — `Store` 필드 + 후행 의존성 `:Compute`로 실시간 검증·버튼 제어.
-- [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 10](./getting-started/10-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Blocker`·"안 해주는 것"만 다룬다.
+- [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 12](./getting-started/12-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Blocker`·"안 해주는 것"만 다룬다.
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.

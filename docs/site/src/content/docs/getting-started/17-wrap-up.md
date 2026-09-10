@@ -1,8 +1,8 @@
 ---
-title: "15. 정리 — 여기서부터 어디로"
-description: "열다섯 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
+title: "17. 정리 — 여기서부터 어디로"
+description: "열일곱 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
 ---
-> **대상 독자**: [14. 값은 언제 흐르나](/getting-started/14-laziness/)까지 따라온 개발자
+> **대상 독자**: [16. 값은 언제 흐르나](/getting-started/16-laziness/)까지 따라온 개발자
 > **목표**: 만든 것을 되짚고, 다음에 읽을 곳 고르기
 
 여기서 새로 배우는 것은 없습니다.
@@ -14,17 +14,19 @@ description: "열다섯 장에서 만든 것을 한 줄씩 되짚고, 다음에 
 - [01](/getting-started/01-setup/) **설정 모듈** 하나에 `q`를 만들어 두고, 진입점에서 `ScreenGui`를 띄웠습니다.
 - [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 문자 키는 프로퍼티, 숫자 키는 자식, `Parent`는 밖에서.
 - [03](/getting-started/03-flowing-values/) `q.Source`와 `:Compute`로 값이 **원천에서 프로퍼티까지 흐르게** 했습니다.
-- [04](/getting-started/04-reacting/) 이벤트로 원천을 바꾸고, `:Observer`로 화면 밖에서 **관측**했습니다.
+- [04](/getting-started/04-reacting/) 버튼 **이벤트**로 원천을 바꿔 카운터를 완결시켰습니다.
 - [05](/getting-started/05-tag-attr/) `q.Tag`와 `q.Attr`로 인스턴스에 **이름표와 속성**을 달아 밖에서 찾을 수 있게 했습니다.
-- [06](/getting-started/06-ref-and-effect/) `q.Ref`로 인스턴스를 잡고, `q.Effect`로 **정리가 필요한 부수 효과**를 달았습니다.
-- [07](/getting-started/07-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
-- [08](/getting-started/08-slot/) `q.Slot`으로 카드 안에 **자식이 들어갈 자리**를 잡고 클릭 기록을 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것까지.
-- [09](/getting-started/09-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
-- [10](/getting-started/10-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용.
-- [11](/getting-started/11-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다 — 중간 컴포넌트는 안에 뭐가 들었는지 모른 채.
-- [12](/getting-started/12-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
-- [13](/getting-started/13-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
-- [14](/getting-started/14-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
+- [06](/getting-started/06-ref/) `q.Ref`/`q.PreRef`/`q.PostRef`로 **만들어진 인스턴스를 손에 쥐었습니다** — 언제 채워지는지와 `:Unwrap`/`:Callback`/`:Wait`까지.
+- [07](/getting-started/07-observer-effect/) `:Observer`로 화면 밖에서 **관측**하고, `q.Effect`로 의존성 여럿과 **cleanup**을 다뤘습니다.
+- [08](/getting-started/08-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
+- [09](/getting-started/09-slot/) `q.Slot`으로 카드 안에 **자식이 들어갈 자리**를 잡고 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것과, 자리 하나를 `State`로 갈아 끼우는 것까지.
+- [10](/getting-started/10-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
+- [11](/getting-started/11-functions/) 지금까지 써 온 콜백·클로저·**팩토리**·커링에 이름을 붙이고, 반응형 로직을 함수로 묶었습니다.
+- [12](/getting-started/12-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용, 하나짜리는 `:Single`.
+- [13](/getting-started/13-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다 — 중간 컴포넌트는 안에 뭐가 들었는지 모른 채.
+- [14](/getting-started/14-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
+- [15](/getting-started/15-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
+- [16](/getting-started/16-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
 
 ---
 

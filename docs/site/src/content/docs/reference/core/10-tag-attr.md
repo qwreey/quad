@@ -277,7 +277,7 @@ __call: (self: any, ...any) -> Attr
 **예제**
 
 ```luau
-local hp = q.Source(100 :: number | QuadTypes.None)
+local hp = q.Source<<number | QuadTypes.None>>(100)
 local stats = D.Frame {
     q.Attr({ Hp = hp, Name = "hero" }),
     D.TextLabel { Text = "체력" },

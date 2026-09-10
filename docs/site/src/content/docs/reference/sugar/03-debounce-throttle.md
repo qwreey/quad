@@ -121,7 +121,7 @@ Debounce: Apply target must be a State (got table)
 
 ## 제어 핸들 (`GateHandle`)
 
-`Handle`에 `q.Ref(nil :: QuadTypes.GateHandle?)`를 넘기면 **`:Apply` 시점에** 그 Ref가 제어 핸들로 채워집니다(마운트 시점이 아닙니다).
+`Handle`에 `q.Ref<<QuadTypes.GateHandle?>>(nil)`를 넘기면 **`:Apply` 시점에** 그 Ref가 제어 핸들로 채워집니다(마운트 시점이 아닙니다).
 
 ```luau
 export type GateHandle = {
@@ -177,7 +177,7 @@ export type TimedGate = {
 ```luau
 -- 검색창 디바운스(0.3초, 1초마다는 강제 통과) + 수동 제어 핸들
 local searchInput = q.Source("")
-local handle = q.Ref(nil :: QuadTypes.GateHandle?)
+local handle = q.Ref<<QuadTypes.GateHandle?>>(nil)
 local debounced: State<string> = searchInput:Apply(q.Debounce {
     Time = 0.3,
     MaxTime = 1.0,

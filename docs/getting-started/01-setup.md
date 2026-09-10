@@ -31,6 +31,9 @@ export type Slot<T> = QuadTypes.Slot<T>
 export type StateData<T> = QuadTypes.StateData<T>
 export type Provider<T> = QuadTypes.Provider<T>
 export type Context = QuadTypes.Context
+export type Ref<T> = QuadTypes.Ref<T>
+export type Observer = QuadTypes.Observer
+export type EffectHandle = QuadTypes.EffectHandle
 
 -- 백엔드 설치. 공통 플러그인이 있으면 같은 줄에 이어 붙인다:
 --   Quad:UseProvider(QuadRoblox):AddPlugin(MyThemePlugin)
@@ -70,7 +73,7 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 
 </details>
 
-반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.D`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 여섯도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
+반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.D`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 아홉도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
 
 <details>
 <summary><strong>다른 모듈에서 <code>UseProvider</code>를 또 부르면 어떻게 되나요?</strong></summary>

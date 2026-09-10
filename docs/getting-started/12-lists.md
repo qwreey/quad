@@ -1,13 +1,13 @@
 ---
-title: "10. 목록 만들기 — Slot:List"
+title: "12. 목록 만들기 — Slot:List"
 description: "데이터 배열 하나를 원천으로 두고, Slot:List가 항목마다 컴포넌트를 만들고 살아남은 항목은 재사용하게 합니다"
 ---
-# [시작하기] 10. 목록 만들기 — `Slot:List`
+# [시작하기] 12. 목록 만들기 — `Slot:List`
 
-> **대상 독자**: [09. 컴포넌트로 쪼개기](./09-components.md)를 끝낸 개발자
+> **대상 독자**: [11. 함수로 묶기](./11-functions.md)를 끝낸 개발자
 > **목표**: 카운터를 데이터 개수만큼 그리고, 데이터가 바뀌면 필요한 것만 만들고 지우기
 
-09장에서는 카운터 둘을 손으로 적었습니다. 개수가 데이터에 따라 달라진다면
+10장에서는 카운터 둘을 손으로 적었습니다. 개수가 데이터에 따라 달라진다면
 손으로 적을 수 없습니다. `Slot`에 **`:List`를 걸면** quad가 데이터에 맞춰
 자식들을 맞춰 줍니다.
 
@@ -67,16 +67,16 @@ end
 ```
 
 <details>
-<summary><strong>08장의 <code>q.Slot { … }</code>과 뭐가 다른가요?</strong></summary>
+<summary><strong>09장의 <code>q.Slot { … }</code>과 뭐가 다른가요?</strong></summary>
 
-`Slot`은 **두 모드 중 하나**로만 삽니다 — 손으로 원소를 넣고 빼는 **수동 CRUD** 모드(08장)와, 데이터에 맞춰 quad가 맞춰 주는 **`:List`/`:Single`** 모드입니다. 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
+`Slot`은 **두 모드 중 하나**로만 삽니다 — 손으로 원소를 넣고 빼는 **수동 CRUD** 모드(09장)와, 데이터에 맞춰 quad가 맞춰 주는 **`:List`/`:Single`** 모드입니다. 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
 
 - `:Add`를 한 번이라도 쓴 Slot, 또는 `q.Slot { ... }`처럼 초기 원소를 주고 만든 Slot(**심지어 빈 `q.Slot {}`**)에는 `:List`를 걸 수 없습니다.
 - 반대로 `:List`를 건 뒤의 수동 CRUD도 막힙니다.
 
 그래서 목록용 Slot은 위 코드처럼 **인자 없이** `q.Slot()`으로 만듭니다.
 
-원소가 최대 하나면 `:Single`이 있습니다 — `updateFn`에서 `index`가 빠지는 것 말고는 `:List`와 규칙이 같습니다. "현재 화면 하나만 띄우기" 같은 전환이 그 자리입니다.
+원소가 **최대 하나**뿐인 자리를 위한 짝도 있습니다 — `:Single`이고, 아래 5절에서 다룹니다.
 
 </details>
 
@@ -90,7 +90,7 @@ const board = CounterBoard { Rows = rows }
 board.Parent = screen
 ```
 
-**실행하면** 카운터 둘이 나란히 뜹니다 — 09장과 화면은 같지만, 이제 개수를 정하는 것은 코드가 아니라 `rows`입니다.
+**실행하면** 카운터 둘이 나란히 뜹니다 — 10장과 화면은 같지만, 이제 개수를 정하는 것은 코드가 아니라 `rows`입니다.
 
 ---
 
@@ -143,7 +143,7 @@ end
 | **`nil` 또는 `q.None`** | `prev`가 있었다면 파괴됩니다 |
 | **`q.Detach`** | 파괴하지 않고 트리 밖에 붙들어 둡니다. 그 키가 다시 오면 같은 원소가 그대로 재마운트됩니다 |
 
-**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다([08장](./08-slot.md) 5절이 그 계산이고, 위 예제는 배치를 `UIListLayout`에 맡겼습니다).
+**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다([09장](./09-slot.md) 5절이 그 계산이고, 위 예제는 배치를 `UIListLayout`에 맡겼습니다).
 
 ---
 
@@ -198,6 +198,56 @@ print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스�
 
 두 번째 반환값이 곧 **그 키의 다음 `userdata`**라, 새로 만드는 갈래에서 `Source`를 돌려주면 그 다음 사이클부터 `ud` 자리로 돌아옵니다.
 
+
+---
+
+## 5. 원소가 최대 하나라면 — `:Single`
+
+[09장 6절](./09-slot.md)에서 자식 하나를 갈아 끼울 때는 `Slot`도 `:List`도 없이 **`State`를 자리에 놓기만** 했습니다. 대부분은 그걸로 충분합니다. 그런데 그 방법에는 한 가지가 없습니다 — **`Offset`을 받을 수 없습니다.** 그 자리에 들어간 작은 Slot이 밖으로 드러나지 않기 때문입니다.
+
+앞 Slot이 자라면 내 자리도 밀리는데 **그 순번 자체가 필요할 때**(`LayoutOrder`가 대표적입니다) `:Single`을 직접 겁니다.
+
+```luau
+-- 새 예시: 별도 스크립트
+const cur = q.Source<<string?>>(nil)
+
+const single = q.Slot():Single(cur, function(item, offset, prev, ud)
+    if item == q.KeyGone then
+        return nil                        -- 값이 nil이 되면 그 원소를 파괴한다
+    end
+    return D.TextLabel {
+        Text = item,
+        LayoutOrder = offset:Compute(function(o) return o:Get() + 1 end),
+    }
+end)
+
+const top = q.Slot { D.TextLabel { Text = "T1" }, D.TextLabel { Text = "T2" } }
+
+const panel = D.Frame {
+    D.TextLabel { Text = "머리" },   -- 고정 자식 하나
+    top,                             -- 앞 구간(지금은 둘)
+    single,
+}
+
+cur:Set("지금 화면")
+print(single:Get(1).LayoutOrder)   --> 4      (머리 하나 + top 둘 = Offset 3)
+
+top:Add(D.TextLabel { Text = "T3" })
+print(single:Get(1).LayoutOrder)   --> 5      (앞이 자라 밀렸다)
+
+top:Remove(1)
+print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
+```
+
+**실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `Source`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
+<!-- mock 실측 2026-09-11: gs.gs6probe.luau S1~S4 — LayoutOrder 4 → 5 → 4, cur:Set(nil)이면 자식 수가 4에서 3으로 -->
+
+여기서는 `q.Slot()`을 타입 인자 없이 만들었습니다. [09장 1절](./09-slot.md)의 접힘이 `--!strict`에서는 `q.Slot<<Instance>>()`처럼 명시하라고 했는데, `:Single`은 예외입니다 — 이 자리를 모는 `cur`가 담은 것은 **화면에 올릴 인스턴스가 아니라 데이터(`string`)**이고, `:Single`의 타입은 그 둘을 갈라 두지 않았기 때문입니다(`:List`는 `data`가 별도 타입이라 갈립니다). 그래서 이 모양은 `--!strict`에서 타입 검사를 통과하지 못합니다 — 런타임은 정상입니다.
+
+`updateFn`은 `:List`의 것과 **`index`만 빠진** 같은 규칙입니다 — `(item, offset, prev, userdata)`를 받고, 돌려줄 수 있는 것도 위 표 그대로(`prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 값이 `nil`이 되면 `item` 자리에 `q.KeyGone`이 옵니다.
+
+`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). **[09장 6절](./09-slot.md)에서 `State`를 자리에 놓은 것이 바로 이 모양입니다** — quad가 `updateFn` 없는 `:Single`을 대신 걸어 준 것이라, 두 장은 같은 물건의 겉과 속입니다. 다른 점은 소유권 하나입니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 파괴하지 않지만(`Owned = false`), 위처럼 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ Owned = false }`를 세 번째 인자로 주면 됩니다).
+<!-- mock 실측 2026-09-11: gs.gs6probe.luau S5 — 직접 건 :Single에서 교체된 옛 원소는 파괴됨(isDestroyed true) -->
 
 ---
 

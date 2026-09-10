@@ -242,5 +242,5 @@ local box = D.Frame({ BackgroundTransparency = size })
 **관련**
 
 - [D — 문자 키](/reference/roblox/02-d/#문자-키--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
-- [12. 움직이게 하기 — `Tween`과 `Animate`](/getting-started/12-animation/)
+- [14. 움직이게 하기 — `Tween`과 `Animate`](/getting-started/14-animation/)
 - [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
