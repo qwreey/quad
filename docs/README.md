@@ -49,7 +49,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`02-from-v1.md`](./overview/02-from-v1.md) — quad v1에서 오는 분께: 없어진 것과 왜 없앴나(표 10행, 근거는 v1 내부 스냅샷 범위만), 새로 생긴 것이 v1의 어떤 자리를 메우나, 이관 틀 셋 — (a) 화면 단위 재작성이 주 경로, (b) v1·v2 화면 분할 공존은 **지원 경로**(양방향 브릿지, 경계를 넘는 건 항상 평범한 값, GC 상호작용은 [2026-09-10 기준] 미실측이라 핸들의 주인을 명시), (c) `Claim`으로 v1 트리 인계는 **비권장**(이중 소유) — 그리고 v1·v2 동시 로드 공식 허용 + 조건 셋, 새로 짤 때 전제 여섯. 사용자 결정 2026-09-10(§4 참고). v1 사용자는 회사 내부·외부 둘 다라 "안심시키기"와 "옮길 값어치" 둘 다 담는다. 스킬 링크 둘은 사이트에서 평문으로 벗겨진다(`sync-docs.py`).
 
 ### Getting Started (시작하기) — 4편
-- [`00-installation.md`](./getting-started/00-installation.md) — 설치 경로 셋(pesde+Rojo / Wally+Rojo / `.rbxm`). **셋 다 아직 제공되지 않는다**(각 절 머리의 날짜 표시가 소스 — 실물이 생기면 그 표시만 지운다). `quad-base`와 `quad-roblox` 둘을 require하고 `Quad:UseProvider(QuadRoblox)`로 백엔드를 설치한다는 것이 핵심.
+- [`00-installation.md`](./getting-started/00-installation.md) — 설치 경로 셋(pesde+Rojo / Wally+Rojo / `.rbxm`). **[2026-09-10 기준] pesde만 제공**(`3.0.0` 게시, 소비자 레이아웃 실측 문장이 2단계에); Wally·`.rbxm`은 각 절 머리의 날짜 표시가 소스 — 실물이 생기면 그 표시만 지운다. `quad-base`와 `quad-roblox` 둘을 require하고 `Quad:UseProvider(QuadRoblox)`로 백엔드를 설치한다는 것이 핵심.
 - [`01-core-mental-model.md`](./getting-started/01-core-mental-model.md) — 가상 DOM 없음, `Source`는 값을 쓸 수 있는 `State`, 물리 트리와 반응성의 분리.
 - [`02-quickstart-counter.md`](./getting-started/02-quickstart-counter.md) — 위에서 아래로 이어 붙이면 도는 카운터 하나 + `Animate`/`Tween`. mock 백엔드에서 실행 확인됨.
 - [`03-component-composition.md`](./getting-started/03-component-composition.md) — 컴포넌트=평범한 함수, `props.Modifier or None`(배열 부분, nil-hole), Modifier 우선순위 셋, 타입드 Modifier 팩토리, `Tag`/`Attr`.
@@ -132,7 +132,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
   다시 있고 `-- @deprecated (Roblox <tags>)` 주석이 붙는다 — **문서의 권장은 그대로 `FontFace`**(현행 API), `Font`는 v1 마이그레이션용 레거시로만 안내한다.
   ⚠️ 작성 지점 경고는 불가(테이블 키 자동완성은 독 주석도 deprecated 태그도 안 싣는다 — 실측) → 경고는 문서가 하는 수밖에 없다.
 - **[2026-09-09 밤] API 레퍼런스 26페이지 신설**(§2 참고) — 작성 다섯·검사 둘·수정 둘, 커버리지 게이트 154/154, 사이트 첫 빌드 103페이지. `en/` 번역은 잠정 유보(사용자가 여러 번 보고 실개발자 조언을 모은 뒤).
-- **[2026-09-10] 배포 준비** — 설치 문서 2단계의 "[2026-09-09 기준] 열린 항목"(설치 레이아웃)은 레포 밖 실제 설치로 확인해 닫았고, `roblox_sync_config_generator` 캐비엇을 추가했다. 버전 정책(사용자 결정): 레지스트리는 `3.0.0`부터, v1은 `master`. 루트 `README.md`·`CHANGELOG.md`·`LICENSE`(MIT) 신설 — 루트 README는 이 문서 체계로 들어오는 바깥 입구다. **같은 날 저녁**: 넷(`quad_base`·`quad_types`·`quad_error`·`type_version_check`)을 luau·roblox 양 타깃으로 게시하기로 결정(사용자) → 설치 문서 2단계는 roblox 프로젝트가 `roblox_packages/` 하나만 매핑하는 것으로, 퀵스타트·설치 3단계·README의 require 경로도 `roblox_packages.quad_base`로 바뀌었다(소비자 프로젝트 실측은 게시 뒤). **같은 날 밤**: 버전 리터럴 3.0.0으로 bump(설치 스니펫 `^3.0.0`), 사이트는 Cloudflare Pages 루트 배포로 전환(base `/`, 로고·파비콘, `docs/site/DEPLOY.md`·`npm run deploy`). 게시 뒤 지울 "아직 제공되지 않음" 표시는 HUMAN_TODO 15.2가 목록. `docs/getting-started/00`의 `0.0.0` 리터럴은 릴리즈 때 `scripts/check-version.py bump`가 목록으로 찍어 주니 손으로 고친다.
+- **[2026-09-10] 배포 준비** — 설치 문서 2단계의 "[2026-09-09 기준] 열린 항목"(설치 레이아웃)은 레포 밖 실제 설치로 확인해 닫았고, `roblox_sync_config_generator` 캐비엇을 추가했다. 버전 정책(사용자 결정): 레지스트리는 `3.0.0`부터, v1은 `master`. 루트 `README.md`·`CHANGELOG.md`·`LICENSE`(MIT) 신설 — 루트 README는 이 문서 체계로 들어오는 바깥 입구다. **같은 날 저녁**: 넷(`quad_base`·`quad_types`·`quad_error`·`type_version_check`)을 luau·roblox 양 타깃으로 게시하기로 결정(사용자) → 설치 문서 2단계는 roblox 프로젝트가 `roblox_packages/` 하나만 매핑하는 것으로, 퀵스타트·설치 3단계·README의 require 경로도 `roblox_packages.quad_base`로 바뀌었다(소비자 프로젝트 실측은 게시 뒤). **같은 날 밤**: 버전 리터럴 3.0.0으로 bump(설치 스니펫 `^3.0.0`), 사이트는 Cloudflare Pages 루트 배포로 전환(base `/`, 로고·파비콘, `docs/site/DEPLOY.md`·`npm run deploy`). **같은 날 밤 게시 완료**(사용자 실게시 9건 OK, 사이트 <https://quad.qwreey.moe/>): pesde 절의 "아직 제공되지 않음" 표시를 지우고 오버뷰 1·2편·루트 README를 "pesde만 제공"으로 고쳤다; 빈 roblox 프로젝트에 `^3.0.0` 설치로 레이아웃 실측(다섯 패키지가 `roblox_packages/` 하나, 교차 require 전부 해소). `docs/getting-started/00`의 `0.0.0` 리터럴은 릴리즈 때 `scripts/check-version.py bump`가 목록으로 찍어 주니 손으로 고친다.
 - **[2026-09-10] 오버뷰 2편 `02-from-v1.md` 신설**(§2 참고) — 사용자 제안(*"quad v1 유저들에 대한 인게이지먼트가 부족할지도"*)과 결정 셋: v1 사용자는 회사 내부(가장 큰 프로젝트에 지금도 사용)·외부 둘 다 / 이관 틀은 (b) 화면 단위 공존 지원·(c) `Claim` 인계 비권장, 브릿지는 양방향이되 *"v1 경계로 넘어가는건 항상 실측값"*, GC 상호작용은 미실측(잠정 백로그, *"당장은 가능한 것 부터 차근차근"*) / v1·v2 동시 로드 공식 허용 + 조건 셋(v1이 전역 테이블에 상태를 두지 않음은 v1 소스에서 확인). 작성은 opus, 검증은 메인(v1 심볼·v2 시그니처·링크 32건). 스니펫 없음.
 
 ---
@@ -149,7 +149,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 - **Quadnomicon 프레이밍**: Rustonomicon 스타일, "초보자용 아님" 경고 + Getting Started 링크.
 - **타겟 도메인**: Roblox 클라이언트 UI(`ScreenGui`/`GuiObject`) 95% 이상. 3D·서버 확장은 "타입만 맞추면 생성 가능"으로만.
 
-### 2) 패키징 및 배포 툴체인 셋 — **[2026-09-09 기준] 셋 다 아직 제공되지 않음**
+### 2) 패키징 및 배포 툴체인 셋 — **[2026-09-10 기준] pesde만 제공(`3.0.0` 게시), Wally·`.rbxm`은 아직**
 1. **pesde + Rojo**(1순위): pesde는 의존성 해결만 하므로 Rojo 결합 필수. 게시 이름은 `qwreey/quad_base`·`qwreey/quad_roblox`(하이픈 불가, 밑줄),
    roblox 타깃 설치 폴더는 `roblox_packages/`(`Packages/`가 아님). 소비자는 **두 모듈을 모두** require하고 `Quad:UseProvider(QuadRoblox)`.
    ~~`@game/Packages/quad` alias~~ — 이 레포는 커스텀 alias를 쓰지 않으며 그런 경로를 권장할 근거가 없다(정정).

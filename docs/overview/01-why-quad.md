@@ -40,7 +40,7 @@ Fusion도, Vide도, quad 자신의 v1도 같은 문제들을 각자의 방식으
 
 오늘 시점의 차단기들입니다.
 
-- **아직 배포되지 않았습니다.** pesde·Wally·`.rbxm` 세 경로 모두 [2026-09-09 기준] 제공되지 않습니다 — 게시된 패키지도 릴리스 페이지도 없습니다.
+- **설치 경로가 pesde 하나입니다.** [2026-09-10 기준] pesde 레지스트리에 `3.0.0`이 게시돼 있고, Wally 게시와 `.rbxm` 릴리스는 아직 없습니다.
 - **실전 사용 이력이 없습니다.** Fusion·Vide·react-lua는 실전에서 발견되고 고쳐진 문제들의 산물이고 Quad엔 그 이력이 없습니다 — 설계 검토로 대체되지 않는 격차입니다.
 - **타입 검사에 luau 플래그 넷이 필수입니다.** `LuauSolverV2` 없이는 소스가 파싱조차 안 되고, `LuauTarjanChildLimit`을 안 올리면 `D.Frame { Name = "x" }` 한 줄이 "Code is too complex to typecheck"로 죽습니다 — 편집기에도 같은 플래그가 필요합니다.
 - **출하되는 프로바이더 구현은 `quad-roblox` 하나입니다.** 코어(`quad-base`)는 op를 주입받는 구조지만 실제 렌더 백엔드는 그것뿐입니다(테스트용 mock은 테스트 안에만 있습니다).
@@ -171,6 +171,6 @@ D.Frame {
 ## 6. 다음 걸음
 
 - **써보기**: [멘탈 모델 셋](../getting-started/01-core-mental-model.md) → [10분 카운터](../getting-started/02-quickstart-counter.md) → [컴포넌트 합성](../getting-started/03-component-composition.md)
-- **설치 상태 확인**: [00. 설치 및 환경 구축](../getting-started/00-installation.md) — 세 경로 모두 아직 제공되지 않는다는 표시가 여기 있습니다.
+- **설치**: [00. 설치 및 환경 구축](../getting-started/00-installation.md) — pesde + Rojo 절차와 타입 검사 플래그. Wally·`.rbxm` 절엔 아직 제공되지 않는다는 표시가 있습니다.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](./02-from-v1.md) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
 - **속을 보고 판단하기**: [The Quadnomicon](../quadnomicon/01-revision-and-epochmap.md) 열한 권 — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.

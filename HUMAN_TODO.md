@@ -296,17 +296,17 @@ Sources (MCP 리서치): [Roblox/studio-rust-mcp-server](https://github.com/Robl
 것으로 알려져 있어 CLI 1회 / 엔진 0회로 갈릴 수 있다 — `onchange-plan.md` "초기값 발화 계약"
 따름정리에 셋째 헤지(기본값과 같은 값)를 넣어 두었고, 실측 결과로 그 문장을 확정/삭제할 것.
 
-## 14. [2026-09-10 신설] 3.0.0 게시 전 사람 몫 넷
+## 14. [2026-09-10 신설] 3.0.0 게시 전 사람 몫 넷 — **남은 건 2(Studio 싱크 실측)뿐 [2026-09-10 기준]**
 
 pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 메이저에 프리릴리즈 없음, `master`는 v1 그대로) 전에 사람만 할 수 있는 것.
 
-1. **공식 인덱스에 `qwreey` 스코프 등록과 게시 토큰**(`pesde auth login`) — 실게시는 `python3 scripts/publish.py --real`(사용자 전용; 의존 순 9건, 확인 프롬프트). 그 전에 `python3 scripts/check-version.py bump 3.0.0` → docs 잔여 `0.0.0` 손질 → `sync-docs.py` → 커밋 → dry-run 재확인(3.0.0 기준 표는 미확인) — 매니페스트 다섯에 `[indices] default = "https://github.com/pesde-pkg/index"`를 넣어 뒀다(dry-run 통과). 실제 게시 권한은 사용자 계정이 필요하다. 다른 인덱스를 쓸 거면 그 URL로 다섯 곳을 바꿀 것.
+1. ✅ **[2026-09-10 완료 — 사용자 실게시 9건 OK(넷 luau·roblox + quad_roblox), 빈 roblox 프로젝트 `^3.0.0` 설치로 다섯 패키지 해소 확인]** **공식 인덱스에 `qwreey` 스코프 등록과 게시 토큰**(`pesde auth login`) — 실게시는 `python3 scripts/publish.py --real`(사용자 전용; 의존 순 9건, 확인 프롬프트). 그 전에 `python3 scripts/check-version.py bump 3.0.0` → docs 잔여 `0.0.0` 손질 → `sync-docs.py` → 커밋 → dry-run 재확인(3.0.0 기준 표는 미확인) — 매니페스트 다섯에 `[indices] default = "https://github.com/pesde-pkg/index"`를 넣어 뒀다(dry-run 통과). 실제 게시 권한은 사용자 계정이 필요하다. 다른 인덱스를 쓸 거면 그 URL로 다섯 곳을 바꿀 것.
 2. **`roblox_sync_config_generator` 없이 Studio 싱크가 되는지 실측** — 소비자 프로젝트 설치에서 pesde가 경고를 낸다(설치 문서 2단계에 [2026-09-10 기준] 미확인으로 적어 둠). 결과로 그 문장을 확정/삭제.
 3. ~~**pesde 0.7.4로 dry-run 재확인**~~ **[2026-09-10 해소 — 핀 0.7.4 적용, `scripts/publish.py` dry-run 9건 OK(넷 양 타깃) + 스테이징 test.sh exit 0]** — `mise.toml` 핀이 0.7.3이고 0.7.4가 나와 있다. 게시 검사(includes 글롭·타깃 규칙)가 바뀌었을 수 있으니 핀을 올린 뒤 `pesde publish --dry-run`을 다섯 패키지에 다시 돌릴 것(에이전트가 해도 되지만 핀 변경은 사용자 결정).
 4. ~~**v1 회수 버전 목록 확인**~~ **[2026-09-10 닫힘 — 사용자: 보이는 건 2.10·2.16 둘이고 그 전 기록은 없음("소스 매니지먼트가 잘 되던게 아니라서")]**
 
 ## 15. [2026-09-10 신설] 문서 사이트 Cloudflare Pages 1회 준비 + 게시 뒤 문서 표시 정리
 
-1. **Cloudflare 인증·프로젝트 생성**(샌드박스 밖): `docs/site/DEPLOY.md`의 "1회 준비" 셋(`npm install` → `npx wrangler login` → `npx wrangler pages project create quad-docs --production-branch main`). 그 뒤부터는 `npm run deploy`. **커스텀 도메인 `quad.qwreey.moe`**(사용자 결정 2026-09-10): `astro.config.mjs`의 `site`는 이미 그 값 — 첫 배포 뒤 대시보드 Custom domains에서 붙이면 끝(순서·외부 DNS 경우·API 경로는 `DEPLOY.md`).
-2. **3.0.0 실게시 뒤** 설치 문서의 "[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다" 표시(`docs/getting-started/00-installation.md` — pesde 절; Wally·rbxm 절은 여전히 미제공이라 그대로)와 오버뷰 1·2편의 "아직 배포되지 않았습니다" 문장을 지울 것(에이전트가 해도 됨 — 게시 확인만 알려주면 된다). 소비자 프로젝트에서 넷의 roblox 사본이 `roblox_packages/` 한 폴더로 들어오는지도 그때 확인(설치 문서 2단계의 [2026-09-10 기준] 문장).
+1. ✅ **[2026-09-10 완료 — <https://quad.qwreey.moe/> 확인]** **Cloudflare 인증·프로젝트 생성**(샌드박스 밖): `docs/site/DEPLOY.md`의 "1회 준비" 셋(`npm install` → `npx wrangler login` → `npx wrangler pages project create quad-docs --production-branch main`). 그 뒤부터는 `npm run deploy`. **커스텀 도메인 `quad.qwreey.moe`**(사용자 결정 2026-09-10): `astro.config.mjs`의 `site`는 이미 그 값 — 첫 배포 뒤 대시보드 Custom domains에서 붙이면 끝(순서·외부 DNS 경우·API 경로는 `DEPLOY.md`).
+2. ✅ **[2026-09-10 완료 — 게시 확인 뒤 에이전트가 정리, 소비자 레이아웃도 빈 roblox 프로젝트에 `^3.0.0` 설치로 실측]** **3.0.0 실게시 뒤** 설치 문서의 "[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다" 표시(`docs/getting-started/00-installation.md` — pesde 절; Wally·rbxm 절은 여전히 미제공이라 그대로)와 오버뷰 1·2편의 "아직 배포되지 않았습니다" 문장을 지울 것(에이전트가 해도 됨 — 게시 확인만 알려주면 된다). 소비자 프로젝트에서 넷의 roblox 사본이 `roblox_packages/` 한 폴더로 들어오는지도 그때 확인(설치 문서 2단계의 [2026-09-10 기준] 문장).
 

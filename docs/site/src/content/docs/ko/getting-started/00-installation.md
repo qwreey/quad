@@ -9,11 +9,11 @@ description: "Quad를 프로젝트에 설치하는 세 가지 배포 경로와 �
 
 ## 1. 배포 방식 한눈에 보기
 
-Quad는 아래 세 가지 경로로 배포될 예정입니다. **다만 [2026-09-09 기준] 셋 중 어느 것도 아직 제공되지 않습니다** — 레지스트리에 게시된 패키지도, 릴리스 페이지도 아직 없습니다.
+Quad는 아래 세 가지 경로로 배포합니다. **[2026-09-10 기준] 제공되는 건 pesde 경로 하나입니다**(`3.0.0`이 pesde 레지스트리에 게시됨) — Wally 게시와 릴리스 페이지는 아직 없습니다.
 
 | 배포 방식 | 추천 대상 | 필요한 도구 | 상태 |
 |---|---|---|---|
-| **1. pesde + Rojo** | Luau 패키지 매니저를 쓰는 프로젝트 | `pesde`, `rojo` | 미제공 |
+| **1. pesde + Rojo** | Luau 패키지 매니저를 쓰는 프로젝트 | `pesde`, `rojo` | **제공 중** (`3.0.0`) |
 | **2. Wally + Rojo** | 이미 Wally를 쓰고 있는 프로젝트 | `wally`, `rojo` | 미제공 |
 | **3. Standalone `.rbxm`** | CLI 도구 없이 Studio만 쓰는 경우 | 없음 | 미제공 |
 
@@ -42,8 +42,6 @@ local q = Quad:UseProvider(QuadRoblox)
 
 ## 2. 방법 1: pesde + Rojo
 
-> ⚠️ **[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다** — 레지스트리 게시가 생기면 이 표시를 지웁니다.
-
 [pesde](https://docs.pesde.dev/)는 의존성을 내려받아 배치하는 도구일 뿐, Studio 안의 `ModuleScript`로 싱크해 주지는 않습니다. 따라서 **Rojo가 반드시 함께 필요합니다** — pesde가 디스크에 놓은 폴더를 게임 트리로 투영하는 건 Rojo의 몫입니다.
 
 ### 1단계: 패키지 둘 추가
@@ -69,7 +67,7 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
 
 > **roblox 타깃 프로젝트라면 `roblox_packages/` 하나만 매핑하면 됩니다** — 표준 pesde-Roblox 가이드 그대로입니다. 여러분의 매니페스트 `[target] environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로, 그때는 그 디렉터리도 트리에 올려야 합니다.
 
-pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇은 링커를 놓고 실체는 `.pesde/…/src`에 둡니다(레포 밖 프로젝트 설치로 확인). 넷이 roblox 사본으로 한 디렉터리에 모이는 레이아웃은 **[2026-09-10 기준]** 게시 스테이징에서 확인한 것이고, 레지스트리 게시 뒤 소비자 프로젝트에서 한 번 더 확인합니다.
+pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇은 링커를 놓고 실체는 `roblox_packages/.pesde/<scope>+<name>/<version>/<name>/src`에 둡니다. 직접 적은 둘(그리고 직접 적었다면 `quad_types`)만 최상위에 링커가 생기고, 따라 들어오는 `quad_error`·`type_version_check`는 `.pesde` 아래 각 패키지의 자기 `roblox_packages/`에 링크됩니다 — 그래서 트리에 올릴 건 여전히 `roblox_packages/` 하나입니다. **[2026-09-10 기준]** 레지스트리 게시 뒤 빈 roblox 프로젝트에 `^3.0.0`을 설치해 확인했습니다(다섯 패키지 전부 roblox 사본, `luau_packages/`는 생기지 않음).
 
 > **`roblox_sync_config_generator` 스크립트** — pesde는 roblox 타깃 프로젝트의 매니페스트에 `[scripts] roblox_sync_config_generator`가 없으면 설치 때 `not having a roblox_sync_config_generator script in the manifest might cause issues with linking` 경고를 냅니다. pesde 공식 Roblox 가이드가 안내하는 scripts 패키지를 매니페스트에 넣어 두세요. 이 스크립트 없이 위 매핑만으로 Studio 싱크가 실제로 되는지는 **[2026-09-10 기준]** 실기기에서 아직 확인하지 않았습니다.
 
