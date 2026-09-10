@@ -39,21 +39,41 @@ Roblox에는 가상 DOM이 없습니다. 화면에 있는 노드는 전부 실�
 quad는 **`Slot`을 Instance가 아닌 것으로** 만들어 이 제약을 풉니다. `Slot`은 Roblox
 데이터 모델에 존재하지 않습니다. 선언과 물리 부모 사이에 있는 **순수한 부기 노드**입니다.
 
+```mermaid
+flowchart TB
+    subgraph PHYS["물리 계층"]
+        direction TB
+        SG["ScreenGui (실제 Instance)"]
+        H["Header (Frame)"]
+        SV["SaveButton (TextButton)"]
+        CN["CancelButton (TextButton)"]
+        FT["Footer (Frame)"]
+        NOTE["ButtonGroup()이 Slot 하나로 반환"]
+        SG --> H
+        SG --> SV
+        SG --> CN
+        SG --> FT
+        SV -.- NOTE
+        CN -.- NOTE
+    end
 ```
-물리 계층:
-ScreenGui (실제 Instance)
- ├── Header       (Frame)
- ├── SaveButton   (TextButton)  ──┐ ButtonGroup()이 Slot 하나로 반환
- ├── CancelButton (TextButton)  ──┘
- └── Footer       (Frame)
 
-부기 계층:
-ScreenGui
- ├── 자리 1: Header            (Length = 1, Offset = 0)
- ├── 자리 2: Slot[ButtonGroup] (Length = 2, Offset = 1)
- │     ├── 요소 1: SaveButton   (Length = 1)
- │     └── 요소 2: CancelButton (Length = 1)
- └── 자리 3: Footer            (Length = 1, Offset = 3)
+```mermaid
+flowchart TB
+    subgraph BK["부기 계층"]
+        direction TB
+        SG2["ScreenGui"]
+        P1["자리 1: Header<br/>(Length = 1, Offset = 0)"]
+        P3["자리 3: Footer<br/>(Length = 1, Offset = 3)"]
+        subgraph P2["자리 2: Slot[ButtonGroup] — (Length = 2, Offset = 1)"]
+            direction TB
+            E1["요소 1: SaveButton<br/>(Length = 1)"]
+            E2["요소 2: CancelButton<br/>(Length = 1)"]
+        end
+        SG2 --> P1
+        SG2 --> P2
+        SG2 --> P3
+    end
 ```
 
 ```luau

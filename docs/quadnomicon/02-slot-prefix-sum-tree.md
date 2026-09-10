@@ -58,14 +58,20 @@ classDiagram
 
 슬롯 안에 또 다른 슬롯이 제약 없이 중첩됩니다.
 
-```
-Parent Slot
-├── [1] Frame A                     (length: 1, offset: 0)
-├── [2] Child Slot B                (length: 3, offset: 1)
-│       ├── [2-1] TextLabel B-1     (length: 1)
-│       ├── [2-2] TextLabel B-2     (length: 1)
-│       └── [2-3] TextLabel B-3     (length: 1)
-└── [3] Frame C                     (length: 1, offset: 4)
+```mermaid
+flowchart TB
+    P["Parent Slot"]
+    A["[1] Frame A<br/>(length: 1, offset: 0)"]
+    C["[3] Frame C<br/>(length: 1, offset: 4)"]
+    subgraph B["[2] Child Slot B — (length: 3, offset: 1)"]
+        direction TB
+        B1["[2-1] TextLabel B-1<br/>(length: 1)"]
+        B2["[2-2] TextLabel B-2<br/>(length: 1)"]
+        B3["[2-3] TextLabel B-3<br/>(length: 1)"]
+    end
+    P --> A
+    P --> B
+    P --> C
 ```
 
 `Child Slot B`에 `B-4`가 추가되어 길이가 3에서 4로 늘면:

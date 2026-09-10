@@ -76,11 +76,16 @@ Dispatch.setOffsetSource: source must be a Source<number> or None (got number)
 라이브러리 에러의 고질병은 **내부 blame**입니다. 사용자가 `D.Frame { Size = … }`를
 잘못 쓰면 Luau는 실제로 던진 자리, 즉 라이브러리 내부 파일을 가리킵니다.
 
-```
-호출 스택:
-[프레임 1] 사용자 스크립트: MyButton.luau:15  ──> D.Frame { ... }  (SURFACE 경계)
-[프레임 2] quad-base:  Dispatch/init.luau      (drive / process)
-[프레임 3] quad-roblox: Handlers/Property.luau ──> 여기서 던진다
+```mermaid
+flowchart TB
+    subgraph CS["호출 스택"]
+        direction TB
+        F1["<b>[프레임 1]</b> 사용자 스크립트: MyButton.luau:15<br/>→ D.Frame { ... }  (SURFACE 경계)"]
+        F2["<b>[프레임 2]</b> quad-base: Dispatch/init.luau<br/>(drive / process)"]
+        F3["<b>[프레임 3]</b> quad-roblox: Handlers/Property.luau<br/>→ 여기서 던진다"]
+        F1 --> F2
+        F2 --> F3
+    end
 ```
 
 `error(msg, n)`의 `n`은 프레임 수를 세는 값이라, 래퍼가 하나 늘 때마다 손으로 센 숫자가

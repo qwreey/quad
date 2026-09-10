@@ -138,17 +138,19 @@ weak 키가 되참조하게 되어 절대 회수되지 않습니다(제7권 §5)
 값이 새로 오면 엔진은 그 칸에 이미 앉아 있던 핸들러와 이번에 매치된 핸들러를
 비교합니다.
 
-```
-              Dispatch.process(inst, k, v, index)
-                                │
-                   list[index].handler == 매치된 핸들러?
-                 ┌──────────────┴──────────────┐
-                 ▼                             ▼
-        (A) 같은 핸들러                (B) 다른 핸들러(또는 빈 칸)
-                 │                             │
-  1. retractor(v, false)          1. 이 칸부터 꼬리까지 철거(꼬리부터)
-  2. retractor := NOOP            2. { handler, NOOP }로 자리 표시
-  3. h.process(...) 로 교체        3. h.process(...) 로 교체
+```mermaid
+flowchart TB
+    P["Dispatch.process(inst, k, v, index)"]
+    Q{"list[index].handler == 매치된 핸들러?"}
+    A["(A) 같은 핸들러"]
+    B["(B) 다른 핸들러(또는 빈 칸)"]
+    ASTEP["1. retractor(v, false)<br/>2. retractor := NOOP<br/>3. h.process(...) 로 교체"]
+    BSTEP["1. 이 칸부터 꼬리까지 철거(꼬리부터)<br/>2. { handler, NOOP }로 자리 표시<br/>3. h.process(...) 로 교체"]
+    P --> Q
+    Q --> A
+    Q --> B
+    A --> ASTEP
+    B --> BSTEP
 ```
 
 **(A) 같은 핸들러**: 앉아 있던 retractor에게 새 값을 `(v, false)`로 건네 자기

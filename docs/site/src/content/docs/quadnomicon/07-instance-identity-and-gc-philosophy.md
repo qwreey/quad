@@ -29,14 +29,18 @@ v2가 물려받은 것은 **그 트릭 하나**이고, 물려받지 않은 것�
 Roblox의 `Instance` 값은 엔진 객체 자체가 아니라 **엔진 객체를 가리키는 Lua
 userdata 포인터**입니다.
 
-```
-┌─────────────────┐             ┌─────────────────┐
-│ Lua             │             │ Roblox 엔진     │
-│                 │             │                 │
-│  userdata A ────┼────────────>│  엔진 객체      │
-│                 │             │  (물리 GUI)     │
-│  userdata B ────┼────────────>│                 │
-└─────────────────┘             └─────────────────┘
+```mermaid
+flowchart LR
+    subgraph Lua["Lua"]
+        direction TB
+        UA["userdata A"]
+        UB["userdata B"]
+    end
+    subgraph Engine["Roblox 엔진"]
+        OBJ["엔진 객체<br/>(물리 GUI)"]
+    end
+    UA --> OBJ
+    UB --> OBJ
 ```
 
 Lua 쪽에서 아무도 그 userdata를 참조하지 않으면 userdata는 회수될 수 있습니다. 엔진

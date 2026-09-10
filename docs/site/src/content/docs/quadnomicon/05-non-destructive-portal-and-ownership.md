@@ -71,17 +71,19 @@ local D = q.D
 
 언마운트가 서브트리를 그대로 두므로, **포탈에 전용 프리미티브가 필요 없습니다.**
 
-```
-마운트 자리 A (가방 창)                       마운트 자리 B (핫바 칸)
-┌──────────────────────────────┐            ┌──────────────────────────┐
-│  State<Slot?> a              │            │  State<Slot?> b          │
-│   └── ItemView (마운트됨)     │            │   └── (비어 있음)          │
-└──────────────┬───────────────┘            └─────────────▲────────────┘
-               │  1. A에서 떼기:                           │  2. B에 붙이기:
-               │     a:Set(nil)                           │     b:Set(itemView)
-               │     → unmountSlotTree                    │     → attachSlot
-               └───────────────────[ ItemView ]───────────┘
-                                  (메모리에 살아 있음)
+```mermaid
+flowchart LR
+    subgraph SA["마운트 자리 A (가방 창)"]
+        direction TB
+        A["State&lt;Slot?&gt; a"] --> AV["ItemView (마운트됨)"]
+    end
+    IV["<b>ItemView</b><br/>(메모리에 살아 있음)"]
+    subgraph SB["마운트 자리 B (핫바 칸)"]
+        direction TB
+        B["State&lt;Slot?&gt; b"] --> BV["(비어 있음)"]
+    end
+    AV -->|"1. A에서 떼기: a:Set(nil)<br/>→ unmountSlotTree"| IV
+    IV -->|"2. B에 붙이기: b:Set(itemView)<br/>→ attachSlot"| BV
 ```
 
 `a:Set(nil)`이 나가면 `SlotHandler`의 retractor가 돌아 서브트리를 물리 트리에서 떼고(`nativeExtract` — `.Parent = nil`), 옛 위치의 부기를 비우고, `unbindLifetime` + `releaseOwner`로 소유권을 놓습니다. `ItemView`의 Instance 트리·이벤트 연결·내부 `Source`는 그대로입니다. 이어서 `b:Set(itemView)`가 나가면 `claimOwnerAt`이 새 소유자를 잡고 `attachSlot`이 새 부모 아래로 flush합니다.
