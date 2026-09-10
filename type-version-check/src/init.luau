@@ -128,18 +128,17 @@ end
 -- selene: allow(undefined_variable) — `types`는 `type function` 블록 안에서만
 -- 주입되는 특수 전역(quad-types/src/init.luau와 같은 이유의 오탐).
 export type function CheckVersion(actual: type, pattern: type): type
-	local actualOk, actualValue = pcall(function()
-		return actual:value()
-	end)
-	if not actualOk or type(actualValue) ~= "string" then
+	-- [2026-09-10] no `pcall` here: it is not available inside type functions — the new solver
+	-- reported `Unknown global 'pcall'` and then skipped evaluating this function entirely, so
+	-- a wrong pattern produced no diagnostic. `tag` + `:value()` is the supported way to probe.
+	local actualValue = if actual.tag == "singleton" then actual:value() else nil
+	if type(actualValue) ~= "string" then
 		print("type-version-check: expected a string literal type for the actual version")
 		return types.never
 	end
 
-	local patternOk, patternValue = pcall(function()
-		return pattern:value()
-	end)
-	if not patternOk or type(patternValue) ~= "string" then
+	local patternValue = if pattern.tag == "singleton" then pattern:value() else nil
+	if type(patternValue) ~= "string" then
 		print("type-version-check: expected a string literal type for the version pattern")
 		return types.never
 	end

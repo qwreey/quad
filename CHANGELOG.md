@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `type_version_check`의 `CheckVersion` type function에서 `pcall`을 없앴습니다. luau-lsp(신 솔버)가 `Unknown global 'pcall'` 진단을 내던 것이 사라집니다. 값 여부는 `tag == "singleton"`으로 봅니다(판정 규칙은 그대로).
+
 ## [3.0.0] - 2026-09-10
 
 ### Changed

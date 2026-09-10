@@ -43,6 +43,15 @@ echo "=== luau-analyze (engine-agnostic) quad-base/src quad-types/src quad-error
 analyze_out=$(luau-analyze quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau 2>&1) || fail=1
 printf '%s\n' "$analyze_out"
 if printf '%s' "$analyze_out" | grep -q "GlobalUsedAsLocal"; then echo "FAIL: implicit global function definition (add a forward \`local\` declaration)"; fail=1; fi
+# [2026-09-10 사용자 결정 "test.sh에 뉴 솔버 붙이기 -> 좋아. 실제로 지금은 뉴 솔버 쓰는 사람들이 더 많아. 구 솔버는 거의 fallback"]
+# 엔진 무관 그룹을 신 솔버(luau-lsp, LuauSolverV2)로 한 번 더 본다 — 위 luau-analyze는 구 솔버라
+# 사용자 에디터에서만 나던 타입 에러(2026-09-08 `Debounce.luau` 사례)를 못 잡았다. defs 없이·
+# --platform=standard(Roblox 전역을 쓰면 여기서도 걸린다). 실측 0.45s. 린트만 남으면 exit 0이다.
+echo "=== luau-lsp analyze --flag:LuauSolverV2=true (new solver, engine-agnostic) quad-base/src quad-types/src quad-error/src type-version-check/src quad-base/test/spec.*.luau quad-base/test/mock.luau"
+newsolver_out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true --platform=standard \
+	--ignore "**/luau_packages/**" \
+	quad-base/src quad-types/src quad-error/src type-version-check/src quad-base/test/spec.*.luau quad-base/test/mock.luau 2>&1) || fail=1
+printf '%s\n' "$newsolver_out" | grep -v "^\[INFO\]" || true
 # ⚠️ defs 로드는 luau-analyze가 아니라 luau-lsp의 기능이다(이 빌드의
 # luau-analyze엔 --defs 옵션 자체가 없음 — 실측). 새 솔버 플래그 필수
 # (없으면 quad-types의 type function이 "syntax not supported"로 죽음),

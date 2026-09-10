@@ -966,20 +966,20 @@ print()
 print()
 print("=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 선행 검증이 거부(옛: 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===")
 do
-	local q = mock.newQuad()
-	local s = q.Slot()
+	local q2 = mock.newQuad()
+	local s = q2.Slot()
 	local ok, err = pcall(function() return s:Add(s) end)
 	assert(not ok and string.find(tostring(err), "Slot:Add: cannot add a Slot to itself or to one of its own descendants", 1, true) ~= nil, "self: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.slot.luau", "cycle gate")
 	assert(s.Length:Get() == 0 and s:IndexOf(s) == nil, "nothing was added")
-	local a, b, c = q.Slot(), q.Slot(), q.Slot()
+	local a, b, c = q2.Slot(), q2.Slot(), q2.Slot()
 	a:Add(b); b:Add(c)
 	local ok2, err2 = pcall(function() return c:Add(a) end) -- a is c's grandparent
 	assert(not ok2 and string.find(tostring(err2), "cycle", 1, true) ~= nil, "ancestor: " .. tostring(err2))
 	local ok3, err3 = pcall(function() return b:Splice(1, 0, a) end) -- Splice path shares the pre-pass
 	assert(not ok3 and string.find(tostring(err3), "Slot:Splice: cannot add a Slot", 1, true) ~= nil, "splice: " .. tostring(err3))
 	-- a sibling (not on the owner chain) is still fine, and so is a fresh Slot
-	local d = q.Slot()
+	local d = q2.Slot()
 	c:Add(d)
 	assert(a.Length:Get() == 0 and c:IndexOf(d) == 1, "legal nesting untouched")
 	-- the gate does not disturb the pre-pass's other checks: a mounted element is still "already mounted"
@@ -991,8 +991,8 @@ end
 print()
 print("=== 28. 2026-09-08 round8 H-505/H-506 — Move 뒤 역맵은 회전 구간만 다시 쓰고도 정확, 생성자는 배치 선행 패스 한 번(Slot{ a, a } 거부 유지) ===")
 do
-	local q = mock.newQuad()
-	local s = q.Slot()
+	local q2 = mock.newQuad()
+	local s = q2.Slot()
 	local f = {}
 	for i = 1, 8 do f[i] = mock.Instance.new("Frame"); s:Add(f[i]) end
 	local function check(label: string)
@@ -1010,15 +1010,15 @@ do
 	-- `indexOfElement[element]` — a one-off there silently miscomputes offsets. Six child
 	-- Slots of lengths 1..6 under a mounted root; permute and check every child's Offset
 	-- against a prefix sum, plus the root Length.
-	local root = q.Slot()
+	local root = q2.Slot()
 	local kids = {}
 	for i = 1, 6 do
-		local c = q.Slot()
+		local c = q2.Slot()
 		for _ = 1, i do c:Add(mock.Instance.new("Frame")) end
 		kids[i] = c; root:Add(c)
 	end
 	local parent = mock.Instance.new("Folder")
-	q.Dispatch.drive(parent, { root })
+	q2.Dispatch.drive(parent, { root })
 	local function checkLayout(label: string)
 		local sum = 0
 		for i = 1, 6 do
@@ -1036,12 +1036,12 @@ do
 	root:Swap(1, 6); checkLayout("mounted swap")
 	root:Get(3):Add(mock.Instance.new("Frame")); checkLayout("nested add after permutation") -- gatedRecompute via indexOfElement
 	local a = mock.Instance.new("Frame")
-	local ok, err = pcall(function() return q.Slot({ a, a }) end)
+	local ok, err = pcall(function() return q2.Slot({ a, a }) end)
 	assert(not ok and string.find(tostring(err), "Slot: the same element appears twice", 1, true) ~= nil, "constructor duplicate still caught: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.slot.luau", "constructor pre-pass blame")
 	local big = {}
 	for i = 1, 300 do big[i] = mock.Instance.new("Frame") end
-	local s2 = q.Slot(big)
+	local s2 = q2.Slot(big)
 	assert(s2:IndexOf(big[300]) == 300 and s2:IndexOf(big[1]) == 1, "batch constructor: all 300 in, indexed")
 	print("PASS")
 end
