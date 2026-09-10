@@ -1,7 +1,7 @@
 name = "qwreey/quad_base"
 version = "0.0.0"
 description = "quad — engine-agnostic core of the DOMless UI renderer: Store/State/Source reactivity and a pluggable dispatch engine"
-includes = ["src/**", "README.md", "LICENSE"]
+includes = ["src/**", "README.md", "LICENSE", "pesde.toml"]
 license = "MIT"
 authors = ["qwreey <me@qwreey.moe>"]
 repository = "https://github.com/qwreey/quad"

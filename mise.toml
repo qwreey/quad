@@ -7,7 +7,7 @@
 # 안전). 이 샌드박스 자체가 이미 mise로 `luau`를 관리 중이라 rokit보다
 # 자연스럽게 맞물림.
 [tools]
-"github:pesde-pkg/pesde" = "0.7.3+registry.0.2.3"
+"github:pesde-pkg/pesde" = "0.7.4+registry.0.2.3" # [2026-09-10] 0.7.4: full-moon 신 문법 — 게시 검증기가 `const`를 받는다(0.7.3은 거부, 실측)
 "github:rojo-rbx/rojo" = "7.7.0"
 "github:JohnnyMorganz/luau-lsp" = "1.69.0"
 # [2026-09-07 회신 4차 Q21] `luau` CLI도 핀 — 엔진 무관 analyze 그룹과 스펙 49개가 이 버전으로 돈다

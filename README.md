@@ -21,7 +21,7 @@ quad_base = { name = "qwreey/quad_base", version = "^3.0.0" }
 quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
 ```
 
-> **[2026-09-10 기준]** 레지스트리 게시 전입니다 — 첫 게시 버전은 `3.0.0`이고, 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`luau_packages`와 `roblox_packages` 둘 다)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
+> **[2026-09-10 기준]** 레지스트리 게시 전입니다 — 첫 게시 버전은 `3.0.0`이고, 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
 
 ## 첫 줄
 
@@ -31,7 +31,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 2절의 Rojo 매핑에 맞출 것)
-local Quad = require(ReplicatedStorage.luau_packages.quad_base)
+local Quad = require(ReplicatedStorage.roblox_packages.quad_base)
 local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D

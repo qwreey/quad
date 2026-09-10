@@ -300,7 +300,7 @@ Sources (MCP 리서치): [Roblox/studio-rust-mcp-server](https://github.com/Robl
 
 pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 메이저에 프리릴리즈 없음, `master`는 v1 그대로) 전에 사람만 할 수 있는 것.
 
-1. **공식 인덱스에 `qwreey` 스코프 등록과 게시 토큰** — 매니페스트 다섯에 `[indices] default = "https://github.com/pesde-pkg/index"`를 넣어 뒀다(dry-run 통과). 실제 게시 권한은 사용자 계정이 필요하다. 다른 인덱스를 쓸 거면 그 URL로 다섯 곳을 바꿀 것.
+1. **공식 인덱스에 `qwreey` 스코프 등록과 게시 토큰**(`pesde auth login`) — 실게시는 `python3 scripts/publish.py --real`(사용자 전용; 의존 순 9건, 확인 프롬프트). 그 전에 `python3 scripts/check-version.py bump 3.0.0` → docs 잔여 `0.0.0` 손질 → `sync-docs.py` → 커밋 → dry-run 재확인(3.0.0 기준 표는 미확인) — 매니페스트 다섯에 `[indices] default = "https://github.com/pesde-pkg/index"`를 넣어 뒀다(dry-run 통과). 실제 게시 권한은 사용자 계정이 필요하다. 다른 인덱스를 쓸 거면 그 URL로 다섯 곳을 바꿀 것.
 2. **`roblox_sync_config_generator` 없이 Studio 싱크가 되는지 실측** — 소비자 프로젝트 설치에서 pesde가 경고를 낸다(설치 문서 2단계에 [2026-09-10 기준] 미확인으로 적어 둠). 결과로 그 문장을 확정/삭제.
-3. ~~**pesde 0.7.4로 dry-run 재확인**~~ **[2026-09-10 사용자 결정: 핀을 0.7.4로 올린다 — 타깃 경계 작업 뒤 메인이 적용]** — `mise.toml` 핀이 0.7.3이고 0.7.4가 나와 있다. 게시 검사(includes 글롭·타깃 규칙)가 바뀌었을 수 있으니 핀을 올린 뒤 `pesde publish --dry-run`을 다섯 패키지에 다시 돌릴 것(에이전트가 해도 되지만 핀 변경은 사용자 결정).
+3. ~~**pesde 0.7.4로 dry-run 재확인**~~ **[2026-09-10 해소 — 핀 0.7.4 적용, `scripts/publish.py` dry-run 9건 OK(넷 양 타깃) + 스테이징 test.sh exit 0]** — `mise.toml` 핀이 0.7.3이고 0.7.4가 나와 있다. 게시 검사(includes 글롭·타깃 규칙)가 바뀌었을 수 있으니 핀을 올린 뒤 `pesde publish --dry-run`을 다섯 패키지에 다시 돌릴 것(에이전트가 해도 되지만 핀 변경은 사용자 결정).
 4. **v1 회수 버전 목록 확인** — `CHANGELOG.md`의 2.x 절이 "빠진 번호 2.10·2.16은 회수된 릴리즈"라고 적었다. 사용자 발언(*"2.16의 누락은 의도적일거야"*)을 근거로 2.10까지 같은 취급했으니 틀리면 그 문장만 고칠 것.

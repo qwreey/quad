@@ -48,7 +48,7 @@ local q = Quad:UseProvider(QuadRoblox)
 
 ### 1단계: 패키지 둘 추가
 
-`quad-roblox`는 런타임에 `quad_types`와 `type_version_check`만 의존하고, `quad_base`는 **개발 의존성**으로만 잡습니다(런타임에는 모듈 인스턴스를 인자로 받으므로 require하지 않습니다). 개발 의존성은 소비자에게 전파되지 않으므로, **`quad_base`는 직접 추가해야 합니다.**
+`quad-roblox`는 런타임에 `quad_types`와 `type_version_check`만 의존하고, `quad_base`는 **개발 의존성**으로만 잡습니다(런타임에는 모듈 인스턴스를 인자로 받으므로 require하지 않습니다). 개발 의존성은 소비자에게 전파되지 않으므로, **`quad_base`는 직접 추가해야 합니다.** 여러분의 매니페스트 `[target]`이 `roblox`이면 넷(`quad_base`·`quad_types`·`quad_error`·`type_version_check`)은 roblox 타깃으로 게시된 사본이 선택됩니다 — 넷 다 luau·roblox 두 타깃으로 게시되기 때문입니다.
 
 ```toml
 [dependencies]
@@ -62,14 +62,14 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "0.0.0" }
 
 **pesde는 설치 디렉터리를 "의존 대상 패키지 자신의 target" 이름으로 나눕니다.** Quad는 여기서 두 디렉터리에 걸칩니다:
 
-| 패키지 | pesde target | 설치되는 곳 |
+| 패키지 | 게시된 타깃 | roblox 프로젝트에서 설치되는 곳 |
 |---|---|---|
 | `quad_roblox` | `roblox` | `roblox_packages/` |
-| `quad_base`, `quad_types`, `quad_error`, `type_version_check` | `luau` | `luau_packages/` |
+| `quad_base`, `quad_types`, `quad_error`, `type_version_check` | `luau`와 `roblox` 둘 다 | `roblox_packages/`(프로젝트 target이 `roblox`일 때; luau 프로젝트에선 `luau_packages/`) |
 
-> ⚠️ **`roblox_packages`만 매핑하면 부족합니다 — 두 디렉터리를 모두 매핑하세요.** 위 1단계에서 직접 추가한 `quad_base`는 `luau` target이라 `luau_packages/`에 설치되고 여러분의 코드가 그것을 require하는데, 그 디렉터리가 트리에 없으면 그 require는 Studio 런타임에서 해소되지 않습니다(표준 pesde-Roblox 가이드는 `roblox_packages` 하나만 올립니다. quad 패키지끼리의 내부 require는 각 패키지의 설치 서브트리 안에 중첩돼 풀립니다).
+> **roblox 타깃 프로젝트라면 `roblox_packages/` 하나만 매핑하면 됩니다** — 표준 pesde-Roblox 가이드 그대로입니다. 여러분의 매니페스트 `[target] environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로, 그때는 그 디렉터리도 트리에 올려야 합니다.
 
-위 표의 레이아웃은 **[2026-09-10 확인]** 레포 밖의 roblox 타깃 프로젝트에 두 패키지를 실제로 설치해 확인한 것입니다(`luau_packages/quad_base.luau`·`roblox_packages/quad_roblox.luau` 링커가 생기고 각각 `.pesde/…/src`를 가리킵니다).
+pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇은 링커를 놓고 실체는 `.pesde/…/src`에 둡니다(레포 밖 프로젝트 설치로 확인). 넷이 roblox 사본으로 한 디렉터리에 모이는 레이아웃은 **[2026-09-10 기준]** 게시 스테이징에서 확인한 것이고, 레지스트리 게시 뒤 소비자 프로젝트에서 한 번 더 확인합니다.
 
 > **`roblox_sync_config_generator` 스크립트** — pesde는 roblox 타깃 프로젝트의 매니페스트에 `[scripts] roblox_sync_config_generator`가 없으면 설치 때 `not having a roblox_sync_config_generator script in the manifest might cause issues with linking` 경고를 냅니다. pesde 공식 Roblox 가이드가 안내하는 scripts 패키지를 매니페스트에 넣어 두세요. 이 스크립트 없이 위 매핑만으로 Studio 싱크가 실제로 되는지는 **[2026-09-10 기준]** 실기기에서 아직 확인하지 않았습니다.
 
@@ -81,14 +81,13 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "0.0.0" }
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "roblox_packages": { "$path": "roblox_packages" },
-      "luau_packages": { "$path": "luau_packages" },
       "Client": { "$path": "src/client" }
     }
   }
 }
 ```
 
-이 매핑에서 중요한 건 이름이 아니라 **모양**입니다. Quad 소스는 `require("./luau_packages/…")`처럼 **자기 폴더의 형제**를 상대 경로로 가리키므로, 디스크에서 형제였던 것이 Instance 공간에서도 형제여야 합니다. 저장소 자신의 `default.project.json`도 같은 규칙을 따릅니다 — 패키지마다 `Folder` 하나를 두고 그 아래에 `src`와 링크 디렉터리를 나란히 놓습니다(단, 그건 모노레포 개발용 매핑이라 소비자 트리와 모양이 다릅니다). 그리고 패키지 디렉터리는 **통째로** 매핑하세요 — pesde가 놓는 `roblox_packages/quad_roblox.luau`는 그 아래 `.pesde/…` 실체를 가리키는 얇은 링커라, 점으로 시작하는 그 하위 트리까지 같이 올라가야 require가 풀립니다(Rojo는 `.pesde`를 정상적으로 따라갑니다 — 이 저장소의 sourcemap에서 확인됨).
+이 매핑에서 중요한 건 이름이 아니라 **모양**입니다. Quad 소스는 `require("./roblox_packages/…")`처럼 **자기 폴더의 형제**를 상대 경로로 가리키므로, 디스크에서 형제였던 것이 Instance 공간에서도 형제여야 합니다. 저장소 자신의 `default.project.json`도 같은 규칙을 따릅니다 — 패키지마다 `Folder` 하나를 두고 그 아래에 `src`와 링크 디렉터리를 나란히 놓습니다(단, 그건 모노레포 개발용 매핑이라 소비자 트리와 모양이 다릅니다). 그리고 패키지 디렉터리는 **통째로** 매핑하세요 — pesde가 놓는 `roblox_packages/quad_roblox.luau`는 그 아래 `.pesde/…` 실체를 가리키는 얇은 링커라, 점으로 시작하는 그 하위 트리까지 같이 올라가야 require가 풀립니다(Rojo는 `.pesde`를 정상적으로 따라갑니다 — 이 저장소의 sourcemap에서 확인됨).
 
 위 경로들은 **프로젝트 구성에 따라 달라지는 자리**입니다. 실제 이름은 여러분의 `default.project.json`에 맞춰 바꾸세요.
 
@@ -98,7 +97,7 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "0.0.0" }
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- 설치 경로는 프로젝트 구성에 따라 다르다(위 2단계의 Rojo 매핑과 맞출 것)
-local Quad = require(ReplicatedStorage.luau_packages.quad_base)
+local Quad = require(ReplicatedStorage.roblox_packages.quad_base)
 local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
@@ -157,7 +156,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- 설치 경로는 프로젝트 구성에 따라 다르다(2절 참고)
-local Quad = require(ReplicatedStorage.luau_packages.quad_base)
+local Quad = require(ReplicatedStorage.roblox_packages.quad_base)
 local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRoblox
 local q = Quad:UseProvider(QuadRoblox)
 local D = q.D

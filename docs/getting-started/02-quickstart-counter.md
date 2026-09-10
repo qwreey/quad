@@ -22,7 +22,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 2절의 Rojo 매핑에 맞출 것)
-local Quad = require(ReplicatedStorage.luau_packages.quad_base)
+local Quad = require(ReplicatedStorage.roblox_packages.quad_base)
 local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
