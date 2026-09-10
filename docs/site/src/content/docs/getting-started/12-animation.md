@@ -18,6 +18,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 `Counter` 안, 숫자 라벨의 `TextColor3` 한 줄을 이렇게 바꿉니다.
 
 ```luau
+-- … (Counter.luau) 숫자 라벨의 TextColor3 한 줄을 이렇게 바꿉니다
         TextColor3 = count:Compute(function(c)
             const n = c:Get()
             const isMilestone = n > 0 and n % 10 == 0
@@ -56,6 +57,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 **하나.** `Counter` 안, `countText` 바로 아래에 목표 색 State를 하나 만듭니다. **여기에는 `Tween`이 없습니다** — 그냥 색을 계산할 뿐입니다.
 
 ```luau
+-- … (Counter.luau) countText 바로 아래에 이어집니다
     -- 짝수일 때 하늘색, 홀수일 때 흰색
     const numberColor = count:Compute(function(c)
         return if c:Get() % 2 == 0
@@ -67,6 +69,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 **둘.** 라벨의 `TextColor3` 자리에 그 State를 꽂되, `:Apply`로 애니메이션을 얹습니다.
 
 ```luau
+-- … (Counter.luau) 숫자 라벨의 TextColor3 자리
         TextColor3 = numberColor:Apply(q.Animate { Time = 0.3, Style = Enum.EasingStyle.Quad }),
 ```
 

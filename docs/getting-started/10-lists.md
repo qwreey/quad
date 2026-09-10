@@ -21,6 +21,7 @@ description: "데이터 배열 하나를 원천으로 두고, Slot:List가 항�
 진입점에서 항목 배열을 담은 `Source`를 하나 만듭니다. **항목마다 변하지 않는 신원(`Id`)이 하나 있어야 합니다.**
 
 ```luau
+-- (Main.client.luau 계속)
 const rows = q.Source({
     { Id = "a", Label = "왼쪽", Start = 0 },
     { Id = "b", Label = "오른쪽", Start = 10 },
@@ -34,7 +35,7 @@ const rows = q.Source({
 `src/client/UI/CounterBoard.luau`를 만듭니다. 이 컴포넌트가 하는 일은 셋입니다 — 빈 `Slot`을 하나 만들고, 거기 `:List`를 걸고, 그 `Slot`을 자기 배열 부분에 놓는 것.
 
 ```luau
--- ReplicatedStorage/Client/UI/CounterBoard
+-- 새 파일: ReplicatedStorage/Client/UI/CounterBoard
 const q = require("./Quad")
 const D = q.D
 const Counter = require("./Counter")
@@ -82,6 +83,7 @@ end
 진입점에서는 그냥 부릅니다.
 
 ```luau
+-- (Main.client.luau 계속)
 const CounterBoard = require("@game/ReplicatedStorage/Client/UI/CounterBoard")
 
 const board = CounterBoard { Rows = rows }
@@ -97,6 +99,7 @@ board.Parent = screen
 항목을 추가하는 버튼을 하나 답니다. 하는 일은 **`rows`에 새 배열을 넣는 것뿐**입니다.
 
 ```luau
+-- … Main.client.luau의 화면 어딘가에 이어집니다
 D.TextButton {
     Text = "+ 카운터",
     Activated = function()
@@ -119,6 +122,7 @@ D.TextButton {
 `q.Detach`를 돌려주면 됩니다. 그 원소를 트리에서 떼되 **파괴하지 않고 들고 있다가**, 같은 키가 다시 나타났을 때 `prev`를 돌려주면 만들지 않고 그대로 다시 붙습니다. 탭 전환처럼 숨겼다 되살리는 자리의 도구입니다.
 
 ```luau
+-- … (CounterBoard.luau) updateFn의 첫 갈래
 if item == q.KeyGone then
     return q.Detach, ud    -- 파괴 대신 보관
 end
@@ -128,17 +132,9 @@ end
 
 </details>
 
-### `updateFn`의 계약
+### `updateFn`이 돌려줄 수 있는 것 넷
 
-호출은 `updateFn(item, index, offset, prev, userdata)`이고, 돌려주는 것은 `(결과, userdata)` 둘입니다.
-
-| 자리 | 뜻 |
-|---|---|
-| `item` | 이번 사이클의 데이터 항목. 지난 사이클에는 있었는데 이번엔 사라진 키에는 **`q.KeyGone`**이 옵니다 |
-| `index` | 이 Slot 안에서의 물리 위치(1부터). 원본 배열의 인덱스가 아닙니다 — 앞선 원소가 중첩 Slot이면 그 길이만큼 건너뜁니다 |
-| `offset` | 이 Slot의 `Offset` Source 자체 — 값이 아니라 핸들입니다(앞에 형제가 몇 개 있는지) |
-| `prev` | 이 키가 지난번에 만든 원소. 처음이면 `nil` |
-| `userdata` | 이 키에 대해 지난 호출이 두 번째로 돌려준 자유 값 |
+호출은 `updateFn(item, index, offset, prev, userdata)`이고 — 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값 순서입니다(자리마다의 정확한 뜻은 [레퍼런스: `slot:List`](../reference/core/07-slot.md#slotlistdata-updatefn-keyfn-opts)) — 돌려주는 것은 `(결과, userdata)` 둘입니다. 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
 
 | 무엇을 돌려주나 | 무슨 일이 일어나나 |
 |---|---|
@@ -147,9 +143,60 @@ end
 | **`nil` 또는 `q.None`** | `prev`가 있었다면 파괴됩니다 |
 | **`q.Detach`** | 파괴하지 않고 트리 밖에 붙들어 둡니다. 그 키가 다시 오면 같은 원소가 그대로 재마운트됩니다 |
 
-**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다. 위 예제가 배치를 `UIListLayout`에 맡긴 이유입니다.
+**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다([08장](./08-slot.md) 5절이 그 계산이고, 위 예제는 배치를 `UIListLayout`에 맡겼습니다).
 
-**항목마다 바뀌는 값**(라벨 텍스트, 위치 등)은 `prev`를 돌려주는 갈래에서는 인스턴스를 다시 만들 수 없으므로, `userdata`에 `Source`를 넣어 두고 그 `Source`만 `:Set` 하는 것이 정본 관용구입니다.
+---
+
+## 4. 이미 있는 항목의 값이 바뀔 때
+
+`prev`를 돌려주는 갈래는 **인스턴스를 다시 만들지 않습니다.** 그래서 라벨 텍스트처럼 항목마다 바뀌는 값은 다른 길로 넣어야 합니다 — `userdata`에 `Source`를 넣어 두고 **그 `Source`만 `:Set`** 하는 것이 정본 관용구입니다.
+
+항목이 라벨 한 줄인 더 작은 목록으로 보겠습니다 — 위 `CounterBoard`와 겹치지 않게 데이터도 따로 둡니다.
+
+```luau
+-- 항목마다 바뀌는 값을 userdata의 Source로 들고 있는 목록
+const logRows = q.Source({
+    { Id = "a", Label = "왼쪽" },
+    { Id = "b", Label = "오른쪽" },
+})
+
+const list = q.Slot()
+
+list:List(logRows, function(item, index, offset, prev, ud)
+    if item == q.KeyGone then
+        return nil, ud
+    end
+    if prev then
+        ud:Set(item.Label)            -- ← 인스턴스는 그대로, 값만 갈아 끼운다
+        return prev, ud
+    end
+    const label = q.Source(item.Label)
+    return D.TextLabel { Text = label }, label   -- ← 두 번째 반환이 다음 ud
+end, function(item)
+    return item.Id
+end)
+
+const box = D.Frame { BackgroundTransparency = 1, list }
+```
+
+**실행하면** `a` 항목의 라벨만 바꿔 넣었을 때 그 줄의 글씨는 새것으로 바뀌는데, 인스턴스는 처음 만든 그것 그대로입니다(`c`만 새로 만들어집니다).
+
+```luau
+-- … 위쪽 코드에 이어집니다
+const first = box:GetChildren()[1]
+
+logRows:Set({
+    { Id = "a", Label = "왼쪽(수정)" },
+    { Id = "b", Label = "오른쪽" },
+    { Id = "c", Label = "새로" },
+})
+
+print(#box:GetChildren())              --> 3              (c만 새로 만들어졌다)
+print(box:GetChildren()[1].Text)       --> "왼쪽(수정)"
+print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스다)
+```
+
+두 번째 반환값이 곧 **그 키의 다음 `userdata`**라, 새로 만드는 갈래에서 `Source`를 돌려주면 그 다음 사이클부터 `ud` 자리로 돌아옵니다.
 
 
 ---

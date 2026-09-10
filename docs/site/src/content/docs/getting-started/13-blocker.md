@@ -14,6 +14,7 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 카운터에 단위를 붙입니다. 03장에서 `suffix`를 의존으로 넘겼던 그 모양 그대로입니다.
 
 ```luau
+-- … (Counter.luau) 상태 두 개와 파이프 하나
     const count = q.Source(10)
     const unit = q.Source("점")
 
@@ -25,6 +26,7 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 단위를 바꾸는 버튼을 답니다. 10점은 100포인트라 **값과 단위를 같이** 바꿔야 합니다.
 
 ```luau
+-- … (Counter.luau) 카드의 배열 부분에 이어집니다
         D.TextButton {
             Text = "단위 바꾸기",
             Activated = function()
@@ -52,6 +54,7 @@ unit:Set 뒤        Text = "100 포인트"
 `Blocker`는 **전파를 잠시 붙잡아 두는 스위치**입니다. 원천과 파이프 사이에 게이트를 끼워 두고 그 스위치로 여닫습니다.
 
 ```luau
+-- … (Counter.luau) 위 §1의 세 줄을 이렇게 고칩니다
     const blocker = q.Blocker()
 
     const gatedCount = count:Apply(blocker)
@@ -76,6 +79,7 @@ unit:Set 뒤        Text = "100 포인트"
 버튼은 바꾸는 구간을 `:On()`과 `:Off()`로 감쌉니다.
 
 ```luau
+-- … (Counter.luau) 단위 바꾸기 버튼의 Activated
             Activated = function()
                 blocker:On()
                 -- …§1의 본문 세 줄 그대로…
@@ -92,6 +96,7 @@ unit:Set 뒤        Text = "100 포인트"
 같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 두겠습니다 — 게이트를 하나 끼우고(`const shown = count:Apply(blocker)` — 라벨은 `shown`을 봅니다) 버튼이 스위치를 토글하게 합니다.
 
 ```luau
+-- … (Counter.luau) 카드의 배열 부분에 버튼 하나 더
         D.TextButton {
             Text = "일시정지",
             Activated = function()
@@ -105,6 +110,7 @@ unit:Set 뒤        Text = "100 포인트"
 **막는 것은 통지지 값이 아닙니다.** 멈춰 있는 동안에도 값은 최신입니다.
 
 ```luau
+-- (일시정지를 켜 두고 + 1을 세 번 누른 뒤)
 print(label.Text)    --> "카운트: 0"   (화면은 멈춰 있고)
 print(shown:Get())   --> 3            (값은 이미 최신이다)
 ```

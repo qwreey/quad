@@ -16,6 +16,7 @@ description: "D.Frame 하나와 그 안의 라벨을 만들어, props 테이블�
 01장에서 만든 진입점 `Main.client.luau` 안에서 계속 짭니다. 위쪽 두 줄은 이제 이것뿐입니다.
 
 ```luau
+-- (Main.client.luau 계속 — 01장에서 만든 진입점입니다)
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
 const D = q.D
 ```
@@ -27,6 +28,7 @@ const D = q.D
 01장의 `hello` 라벨을 지우고, 그 자리에 어두운 사각형 하나를 만듭니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 const card = D.Frame {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
@@ -64,7 +66,7 @@ print(card.ClassName) --> "Frame"
 `Parent`를 해시 자리에 적으면 **그 키를 맡는 핸들러가 없어** 디스패치가 그 자리에서 던집니다.
 
 ```
-Dispatch: no handler matched key Parent (value: Instance, brand: Inst)
+Dispatch: no handler matched key Parent (value: Instance, brand: Inst) — check that the provider for this value (e.g. quad-roblox) is initialized
 ```
 
 일부러 그렇게 두었습니다. `D.…`가 돌려주는 것은 이미 실물 Instance이고, "부모에 붙이는 일"은 만든 쪽이 아니라 **쓰는 쪽**이 정하는 것이기 때문입니다. 그래야 같은 컴포넌트를 어디에 붙일지가 호출 지점에 그대로 보입니다.
@@ -80,6 +82,7 @@ Dispatch: no handler matched key Parent (value: Instance, brand: Inst)
 `card`의 중괄호 안, 프로퍼티들 아래에 이 블록을 더하세요.
 
 ```luau
+-- … 위쪽 코드에 이어집니다(방금 만든 card를 이렇게 고칩니다)
 const card = D.Frame {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
@@ -89,8 +92,7 @@ const card = D.Frame {
 
     -- 여기부터가 배열 부분: 키 없는 원소는 자식이 된다
     D.TextLabel {
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.5),
+        Position = UDim2.fromOffset(16, 0),
         Size = UDim2.new(1, -32, 0, 48),
         BackgroundTransparency = 1,
         TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -104,22 +106,7 @@ const card = D.Frame {
 
 한 테이블 안에 두 가지가 섞여 있습니다. **이름이 붙은 것(해시 부분)은 프로퍼티**, **이름 없는 원소(배열 부분)는 자식**입니다. 배열 부분에는 자식 말고도 여러 가지가 올 수 있는데, 그건 다음 장부터 하나씩 나옵니다.
 
-<details>
-<summary><strong>배열 부분에 넣을 게 없을 때는 뭘 넣나요?</strong></summary>
-
-`q.None`입니다. 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리가 **구멍**이 되고, 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
-
-```luau
--- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다
-D.TextButton { props.Modifier, Text = "x" }
-
--- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로
-D.TextButton { props.Modifier or q.None, Text = "x" }
-```
-
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 지금은 배열 부분에 자식만 넣고 있으니 쓸 일이 없지만, 09장에서 컴포넌트가 바깥에서 뭔가를 넘겨받기 시작하면 이 관용구가 바로 나옵니다. 구멍이 났을 때의 증상은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2에 있습니다.
-
-</details>
+자리를 비워 둬야 할 때를 위한 값도 하나 있습니다 — `q.None`입니다. 지금은 배열 부분에 자식만 직접 적고 있으니 쓸 일이 없고, [09장](/getting-started/09-components/)에서 컴포넌트가 바깥에서 뭔가를 넘겨받기 시작하면 실제로 필요해집니다.
 
 ---
 

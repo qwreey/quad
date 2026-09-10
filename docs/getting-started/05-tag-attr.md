@@ -16,6 +16,7 @@ description: "인스턴스에 CollectionService 태그와 Attribute를 배열 �
 ## 지금까지의 코드
 
 ```luau
+-- (Main.client.luau 계속 — 배치 프로퍼티는 생략합니다)
 const count = q.Source(0)
 
 const card = D.Frame {
@@ -36,6 +37,7 @@ const card = D.Frame {
 `card`의 **배열 부분** 맨 앞에 한 줄을 더합니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 const card = D.Frame {
     q.Tag("Card"),          -- ← 배열 부분
 
@@ -47,6 +49,7 @@ const card = D.Frame {
 **실행하면** 이 `Frame`이 `CollectionService`에 태그 `Card`로 잡힙니다(**[2026-09-10 기준] Studio 실측**).
 
 ```luau
+-- (확인용 — 화면 밖 아무 스크립트에서)
 const CollectionService = game:GetService("CollectionService")
 print(#CollectionService:GetTagged("Card"))  --> 1
 ```
@@ -101,6 +104,7 @@ const card = D.Frame {
 타입별 슈가로 놓습니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 const active = q.Source(true)
 
 const card = D.Frame {

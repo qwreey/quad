@@ -5,7 +5,7 @@ description: "카운터를 평범한 함수로 감싸 props로 설정을 받고,
 > **대상 독자**: [08. 자식이 들어갈 자리](/getting-started/08-slot/)를 끝낸 개발자
 > **목표**: 카운터를 모듈 하나로 묶어 두 개를 나란히 띄우고, 바깥에서 자식을 넣을 수 있게 만들기
 
-지금 카운터는 진입점 한가운데에 통째로 적혀 있습니다. 하나 더 필요해지면 복사해야 합니다. 함수로 묶습니다.
+지금 카운터는 진입점 한가운데에 통째로 적혀 있어서, 하나 더 필요해지는 순간 그 덩어리를 복사하는 수밖에 없습니다. 그래서 함수로 묶습니다.
 
 ---
 
@@ -13,10 +13,10 @@ description: "카운터를 평범한 함수로 감싸 props로 설정을 받고,
 
 Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **props 테이블을 받아 만들어진 Instance를 돌려주는 평범한 Luau 함수**입니다.
 
-`src/client/UI/Counter.luau`를 새로 만들고, 지금까지의 코드를 그리로 옮깁니다. 바뀌어야 할 값은 `props`에서 받습니다.
+`src/client/UI/Counter.luau`를 새로 만들고, 지금까지의 코드를 그리로 옮깁니다. 바뀌어야 할 값은 `props`에서 받습니다. 08장에서 `Offset`/`Length`를 눈으로 보려고 붙였던 기록 Slot 둘은 여기서 덜어 냈습니다 — 카운터의 본체만 남깁니다.
 
 ```luau
--- ReplicatedStorage/Client/UI/Counter
+-- 새 파일: ReplicatedStorage/Client/UI/Counter
 const q = require("./Quad")     -- 같은 폴더의 설정 모듈
 const D = q.D
 
@@ -34,6 +34,7 @@ return function(props)
         UICorner = 12,
 
         D.TextLabel {
+            Position = UDim2.fromOffset(12, 0),
             Size = UDim2.new(1, -24, 0, 48),
             BackgroundTransparency = 1,
             TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -57,9 +58,10 @@ return function(props)
 end
 ```
 
-이제 진입점에서 둘을 나란히 놓습니다. **02~07에서 만들었던 `card`와 `card.Parent = screen` 줄은 지웁니다** — 그 코드는 이제 `Counter` 안으로 들어갔습니다.
+이제 진입점에서 둘을 나란히 놓습니다. **02~08에서 만들었던 `card`와 `card.Parent = screen` 줄은 지웁니다** — 그 코드는 이제 `Counter` 안으로 들어갔습니다.
 
 ```luau
+-- (Main.client.luau 계속 — 이제 진입점은 부르기만 합니다)
 const Counter = require("@game/ReplicatedStorage/Client/UI/Counter")
 
 const row = D.Frame {
@@ -78,7 +80,7 @@ row.Parent = screen
 
 **실행하면** 카운터 두 개가 나란히 뜨고, 각자 따로 셉니다. `Counter`를 부를 때마다 그 안의 `q.Source(...)`가 새로 만들어지기 때문입니다 — 컴포넌트는 **한 번 실행되는 셋업 함수**이고, 상태는 그 실행에 속합니다.
 
-`Counter { ... }`는 `Counter({ ... })`의 Lua 문법 설탕입니다 — `D.Frame { ... }`과 같은 모양이라 부르는 쪽에서 구분되지 않습니다.
+`Counter { ... }`는 `Counter({ ... })`의 Lua 슈거입니다 — `D.Frame { ... }`과 같은 모양이라 부르는 쪽에서 구분되지 않습니다.
 
 > **철학: 마법은 없다 (No Magic)**
 > 컴포넌트가 뒤에서 몰래 전역 상태를 만들거나 부모의 라이프사이클을 가로채지 않습니다. **필요한 것은 전부 `props`로 명시적으로 들어옵니다** — 트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다([11. 층을 건너 값 넘기기](/getting-started/11-context/)).
@@ -90,6 +92,7 @@ row.Parent = screen
 부르는 쪽이 카운터 안에 무언가를 더 넣고 싶다면, [08장](/getting-started/08-slot/)에서 만든 `Slot`을 props로 받으면 됩니다. `Counter`가 돌려주는 `D.Frame`의 **마지막 원소**로 한 줄을 더합니다.
 
 ```luau
+-- … (Counter.luau 계속) 돌려주는 D.Frame의 마지막 원소로
         -- …버튼 생략…
 
         props.Children or q.None,
@@ -100,6 +103,7 @@ end
 부르는 쪽은 그 자리에 넣을 것을 `q.Slot { ... }`으로 싸서 넘깁니다.
 
 ```luau
+-- … (Main.client.luau) 부르는 쪽에서
 Counter {
     Label = "오른쪽",
     Start = 10,
@@ -111,7 +115,17 @@ Counter {
 
 **실행하면** 오른쪽 카운터 안에만 라벨이 하나 더 붙습니다. `Children`을 안 넘긴 왼쪽 카운터는 그대로입니다 — `props.Children`이 `nil`이라 `q.None`이 그 자리를 지키기 때문입니다.
 
-**`or q.None`은 생략하면 안 됩니다.** 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리가 구멍이 되고, 구멍 있는 배열은 순회 순서가 보장되지 않습니다.
+**`or q.None`은 생략하면 안 됩니다.** 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리가 **구멍**이 되고, 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다. 02장에서 예고했던 그 값이 여기서 처음 필요해집니다.
+
+```luau
+-- ❌ props.Children이 없으면 마지막 자리가 구멍이 된다
+D.Frame { D.TextLabel { … }, props.Children }
+
+-- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로
+D.Frame { D.TextLabel { … }, props.Children or q.None }
+```
+
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 배열 부분에 꽂는 자리라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 구멍이 났을 때의 증상은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2에 있습니다.
 
 `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 

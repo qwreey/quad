@@ -16,6 +16,7 @@ description: "프로퍼티 묶음을 Modifier 값 하나로 만들어 여러 인
 ## 1. 값으로 빼기
 
 ```luau
+-- … 위쪽 코드에 이어집니다(card 위에 한 덩이를 둡니다)
 const CardStyle = D.Modifier.Frame {
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     BorderSizePixel = 0,
@@ -25,6 +26,7 @@ const CardStyle = D.Modifier.Frame {
 `card`의 해시 부분에서 `BackgroundColor3` 한 줄을 지우고, **배열 부분 맨 앞**에 `CardStyle`을 놓습니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 const card = D.Frame {
     CardStyle,                       -- ← 배열 부분
 
@@ -46,6 +48,7 @@ const card = D.Frame {
 `Modifier`의 필드 값 자리에는 리터럴뿐 아니라 **`State`/`Source`도 올 수 있습니다.** 그러면 그 `Modifier`를 놓은 인스턴스의 프로퍼티가 그 값을 따라갑니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다(CardStyle을 이렇게 고칩니다)
 const hot = q.Source(false)
 
 const CardStyle = D.Modifier.Frame {
@@ -66,6 +69,14 @@ hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
 
 우선순위는 이 장에서 하나만 알면 충분합니다. **해시 부분에 직접 적은 키가 `Modifier`보다 우선합니다.**
 
+그리고 하나 더 알아 두면 좋은 성질이 있습니다. **`Modifier`는 불변입니다.** setter를 하나 부를 때마다 새 값이 생기고 원본은 그대로라, 하나의 기본 스타일에서 갈라 나온 형제들이 서로를 오염시키지 않습니다.
+
+```luau
+-- … 위쪽 코드에 이어집니다
+const base = D.Modifier.TextButton { TextSize = 16 }
+const big = base:TextSize(24)     -- base는 그대로 16
+```
+
 <details>
 <summary><strong><code>Modifier</code>가 여럿이면 누가 이기나요?</strong></summary>
 
@@ -76,13 +87,6 @@ hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
 3. **`Modifier.Overridden(A, B)`도 같은 방향**입니다 — 뒤 인자가 앞 인자를 덮습니다. 닷 형태와 콜론 형태(`a:Overridden(b)`) 둘 다 됩니다.
 
 빈 자리를 명시적으로 비우고 싶으면 `q.None`을 넣습니다. `nil`은 "이 `Modifier`는 그 필드에 관심 없음"이고, `q.None`은 "그 필드를 비워라"입니다 — 뜻이 다릅니다.
-
-`Modifier`는 **불변**입니다. setter를 하나 부를 때마다 새 값이 생기고 원본은 그대로라, 하나의 기본 스타일에서 갈라 나온 형제들이 서로를 오염시키지 않습니다.
-
-```luau
-const base = D.Modifier.TextButton { TextSize = 16 }
-const big = base:TextSize(24)     -- base는 그대로 16
-```
 
 컴포넌트가 바깥에서 `Modifier`를 받아 자기 안쪽에 꽂을 때의 경계 규약(`props.Modifier or q.None`)과 상위 클래스 `Modifier`를 받는 법은 [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) §2·§3에 있습니다.
 
@@ -95,6 +99,7 @@ const big = base:TextSize(24)     -- base는 그대로 16
 스타일을 함수로 만들면 인자를 받는 스타일이 됩니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 local function accent(color)
     return D.Modifier.TextButton {
         BackgroundColor3 = color,
@@ -109,7 +114,7 @@ const button = D.TextButton { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" 
 **권장하는 배치는 스타일을 모듈 하나에 모아 내보내는 것**입니다. 화면마다 색 리터럴이 흩어지지 않고, 나중에 테마를 바꿀 때 고칠 자리가 한 곳이 됩니다.
 
 ```luau
--- ReplicatedStorage/Client/UI/Styles.luau
+-- 새 파일: ReplicatedStorage/Client/UI/Styles
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
 const D = q.D
 

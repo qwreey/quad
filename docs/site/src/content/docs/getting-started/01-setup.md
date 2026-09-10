@@ -17,7 +17,7 @@ Quad를 쓰는 프로젝트는 보통 **모듈 두 개**로 시작합니다. 하
 
 ```luau
 --!strict
--- ReplicatedStorage/Client/UI/Quad — 이 프로젝트의 quad 설정 모듈
+-- 새 파일: ReplicatedStorage/Client/UI/Quad — 이 프로젝트의 quad 설정 모듈
 const Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 const QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
 const QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types")
@@ -27,16 +27,20 @@ export type State<T> = QuadTypes.State<T>
 export type Source<T> = QuadTypes.Source<T>
 export type Slot<T> = QuadTypes.Slot<T>
 export type StateData<T> = QuadTypes.StateData<T>
+export type Provider<T> = QuadTypes.Provider<T>
+export type Context = QuadTypes.Context
 
 -- 백엔드 설치. 공통 플러그인이 있으면 같은 줄에 이어 붙인다:
 --   Quad:UseProvider(QuadRoblox):AddPlugin(MyThemePlugin)
 return Quad:UseProvider(QuadRoblox)
 ```
 
-<details>
-<summary><strong><code>const</code>는 <code>local</code>이랑 뭐가 다른가요?</strong></summary>
+**설정 모듈만 `--!strict`이고, 이 문서의 나머지 화면 코드는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다.** 설정 모듈은 프로젝트 전체가 쓰는 타입이 나오는 자리라 엄격하게 두는 편이 이득이고, 화면 코드까지 `--!strict`으로 올릴 때 붙여야 하는 타입 주석은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §6에 모아 두었습니다.
 
-`const`는 Luau의 **재대입할 수 없는 바인딩**입니다. `local`과 같은 자리에 쓰되 나중에 다른 값을 넣을 수 없다는 것만 다릅니다.
+<details>
+<summary><strong><code>const</code>와 문자열 <code>require</code> — 낯선 문법 둘</strong></summary>
+
+**`const`**는 Luau의 **재대입할 수 없는 바인딩**입니다. `local`과 같은 자리에 쓰되 나중에 다른 값을 넣을 수 없다는 것만 다릅니다.
 
 ```luau
 const D = q.D   -- 이 이름은 이제 바뀌지 않는다
@@ -45,17 +49,9 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 
 이 문서는 **재대입이 없는 자리에 `const`를 씁니다**. 취향이나 툴체인 사정으로 안 쓰고 싶다면 전부 `local`로 바꿔 읽으면 됩니다 — 동작은 같습니다.
 
-</details>
+**문자열 `require`**는 Luau가 모듈을 가리키는 방식입니다. 같은 폴더의 형제는 `./Counter`, 위 폴더는 `../`, 자기 패키지 루트는 `@self/`, 그리고 `@game/`은 DataModel 루트에서 시작하는 경로입니다. 위 코드가 쓴 `@game/ReplicatedStorage/roblox_packages/quad_base`가 그것입니다.
 
-<details>
-<summary><strong><code>require</code>에 왜 문자열 경로를 쓰나요?</strong></summary>
-
-Luau의 `require`는 **문자열 경로**를 받습니다. 같은 폴더의 형제는 `./Counter`, 위 폴더는 `../`, 자기 패키지 루트는 `@self/`, 그리고 `@game/`은 DataModel 루트에서 시작하는 경로입니다. 위 코드가 쓴 `@game/ReplicatedStorage/roblox_packages/quad_base`가 그것입니다.
-
-인스턴스 경로(`require(ReplicatedStorage.roblox_packages.quad_base)`)도 물론 됩니다. 다만 이 문서가 문자열 쪽을 권하는 이유가 둘 있습니다.
-
-- **`WaitForChild` 체인은 타입을 죽입니다.** `require(ReplicatedStorage:WaitForChild("roblox_packages"):WaitForChild("quad_base"))`는 반환이 `any`가 되어 자동완성도 타입 검사도 사라집니다. 문자열 경로는 그대로 타입이 살아 있습니다.
-- **복제 타이밍.** 인스턴스 경로는 아직 복제되지 않은 자식을 그냥 인덱싱해 `nil`을 만나고, 그래서 사람들이 `WaitForChild`로 갈아탑니다. 문자열 `require`는 대상이 없으면 **기다리지 않고 즉시 실패한다**고 알려져 있는데, **[2026-09-10 기준] 이 문서는 그 동작을 실기기에서 확인하지 않았습니다.**
+인스턴스 경로(`require(ReplicatedStorage.roblox_packages.quad_base)`)도 물론 됩니다. 다만 이 문서가 문자열 쪽을 권하는 이유는 **`WaitForChild` 체인이 타입을 죽이기** 때문입니다. `require(ReplicatedStorage:WaitForChild("roblox_packages"):WaitForChild("quad_base"))`는 반환이 `any`가 되어 자동완성도 타입 검사도 사라지는데, 인스턴스 경로를 쓰다 복제가 덜 된 자식을 만나면 결국 `WaitForChild`로 가게 됩니다. 문자열 경로는 그대로 타입이 살아 있습니다.
 
 `.luaurc`의 `aliases`(사용자 정의 별칭)는 편집기·툴링 전용이라 **엔진 런타임에서는 동작하지 않습니다**. `./`·`../`·`@self/`·`@game/`만 씁니다.
 
@@ -72,6 +68,8 @@ Luau의 `require`는 **문자열 경로**를 받습니다. 같은 폴더의 형�
 
 </details>
 
+반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.D`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 여섯도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
+
 <details>
 <summary><strong>다른 모듈에서 <code>UseProvider</code>를 또 부르면 어떻게 되나요?</strong></summary>
 
@@ -79,11 +77,9 @@ Luau의 `require`는 **문자열 경로**를 받습니다. 같은 폴더의 형�
 
 이 설정 모듈이 **싱글턴을 그대로 쓴다**는 점이 중요합니다. 같은 게임에 quad를 쓰는 다른 코드(다른 라이브러리, 다른 팀의 화면)가 자기 자리에서 또 `Quad:UseProvider(QuadRoblox)`를 불러도 같은 프로바이더라 아무 일도 안 일어나고, 그쪽이 만든 `State`와 여기서 만든 `State`는 같은 모듈의 것이라 섞어 쓸 수 있습니다.
 
-`Quad.New()`가 끼어드는 자리가 바로 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요하면(같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 헤드리스 테스트에서 mock 프로바이더를 붙일 때) 이 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고, 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](/reference/core/01-quad-module/).
+`Quad.New()`가 끼어드는 자리도 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요할 때가 있습니다 — 같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 또는 헤드리스 테스트에서 mock 프로바이더를 붙일 때입니다. 그럴 땐 이 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](/reference/core/01-quad-module/).
 
 </details>
-
-반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.D`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 넷도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
 
 ---
 
@@ -92,7 +88,10 @@ Luau의 `require`는 **문자열 경로**를 받습니다. 같은 폴더의 형�
 `src/client/Main.client.luau`를 만듭니다. 설정 모듈을 가져와 `ScreenGui`를 하나 띄우고, 잘 붙었는지 확인할 라벨을 하나 넣습니다.
 
 ```luau
+-- 새 파일: StarterPlayerScripts/Main — 이 클라이언트의 화면 진입점
 local Players = game:GetService("Players")
+
+if not game:IsLoaded() then game.Loaded:Wait() end
 
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
 const D = q.D
@@ -115,6 +114,15 @@ hello.Parent = screen
 -- 마운트는 밖에서: `Parent`는 프로퍼티 자리에 못 넘긴다
 screen.Parent = playerGui
 ```
+
+<details>
+<summary><strong><code>game.Loaded:Wait()</code> 줄은 왜 있나요?</strong></summary>
+
+문자열 `require`는 대상이 아직 없으면 **기다리지 않고 즉시 실패하기** 때문입니다. Studio 실측(**[2026-09-10 기준]**)으로 확인한 것은 둘입니다 — 없는 대상을 가리키면 `error requiring "@game/ReplicatedStorage/LateModule": could not resolve child component "LateModule"`로 그 자리에서 끝나고, Play Solo에서는 스크립트 **첫 줄에서도** 이미 복제가 끝나 있어(`game:IsLoaded()`가 `true`) 이 줄이 없어도 성공했습니다.
+
+문제는 Play Solo가 서버와 클라이언트를 한 프로세스에서 돌린다는 점입니다. 실접속 클라이언트는 코드를 네트워크로 동적으로 복제하므로 그 순서를 보장할 수 없고, 그 경우까지 실기기에서 확인하지는 못했습니다. 한 줄로 그 불확실성을 없앨 수 있으니 넣어 두는 쪽을 권합니다.
+
+</details>
 
 **실행하면** 화면 한가운데에 흰 글씨로 `Quad is running`이 뜹니다. 여기까지 왔다면 설치와 배선이 끝난 것입니다.
 

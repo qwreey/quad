@@ -18,6 +18,7 @@ description: "만들어진 인스턴스를 Ref로 꺼내 쓰고, 의존성 여�
 카드의 버튼에 상자를 하나 놓습니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다(card의 버튼을 이렇게 고칩니다)
 const buttonRef = q.Ref(nil :: TextButton?)
 
 const card = D.Frame {
@@ -46,6 +47,7 @@ print(buttonRef.Value.ClassName) --> "TextButton"
 런타임 보장이 있는 자리(예: 이벤트 콜백 안 — 그때는 이미 채워져 있습니다)에서 매번 `if inst then` 가드를 쓰기 번거로우면 `ref:Unwrap()`이 있습니다. 담긴 값을 돌려주되 타입에서 `nil`만 벗겨 주고, 정말 비어 있으면 부른 줄을 blame하며 던집니다.
 
 ```luau
+-- (버튼의 Activated 자리)
 Activated = function()
     buttonRef:Unwrap().BackgroundTransparency = 0.5 -- 가드 없이
 end,
@@ -64,6 +66,7 @@ end,
 `card`의 배열 부분에 한 덩이를 더합니다.
 
 ```luau
+    -- … card의 배열 부분에 이어집니다
     q.Effect(function()
         const n = count:Get()
         print("이펙트: 지금", n)
@@ -80,7 +83,7 @@ end,
 
 - **의존성을 여럿 겁니다** — `q.Effect(fn, a, b, c)`. 어느 하나가 움직여도 다시 돕니다.
 - **값이 인자로 오지 않습니다** — 클로저로 `count:Get()`을 직접 읽습니다(`fn`이 받는 인자는 핸들 자신 하나뿐입니다).
-- **cleanup을 돌려줄 수 있습니다** — 다음 실행 직전, 구독 해제, 그리고 매달린 인스턴스가 파괴될 때 정확히 한 번 돕니다.
+- **cleanup을 돌려줄 수 있습니다** — 도는 자리는 셋입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, 그리고 **매달린 인스턴스가 파괴될 때**이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
 
 `Observer`와 마찬가지로 **배열 부분에 넣어야 계속 삽니다.** 넣지 않으면 만들 때 한 번 돌고 조용해집니다.
 
@@ -91,6 +94,7 @@ end,
 `Ref`·`Effect`·`Observer`는 전부 **값**이라, 그것을 만들어 돌려주는 함수를 따로 둘 수 있습니다. 반응형 로직에 이름을 붙여 재사용하는 정본 모양입니다.
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 -- "이 Ref가 가리키는 버튼의 색을 이 State에 맞춰 바꾼다"를 함수 하나로
 local function highlightWhenBig(ref, state, threshold)
     return q.Effect(function()
@@ -107,6 +111,7 @@ end
 쓰는 쪽은 **그 호출을 배열 부분에 놓습니다.**
 
 ```luau
+-- … 위쪽 코드에 이어집니다
 const card = D.Frame {
     -- …생략…
     D.TextButton { buttonRef, Text = "+ 1", Activated = … },
@@ -120,13 +125,13 @@ const card = D.Frame {
 <details>
 <summary><strong>이 <code>Effect</code>는 <code>buttonRef</code>가 차기 전에 도는 것 아닌가요?</strong></summary>
 
-여기서는 아닙니다. Lua는 테이블 리터럴의 원소를 **위에서 아래로** 평가하므로, `D.TextButton { buttonRef, … }`가 먼저 실행되어 버튼이 만들어지고 `buttonRef`가 채워진 다음에야 `highlightWhenBig(...)`이 불립니다. `q.Effect`의 첫 실행은 만들어지는 그 자리에서 도니까, 그때 이미 상자에 값이 있습니다.
+여기서는 아닙니다. Lua는 테이블 리터럴의 원소를 **위에서 아래로** 평가하므로, `D.TextButton { buttonRef, … }`가 먼저 실행되어 버튼이 만들어지고 `buttonRef`가 채워진 다음에야 `highlightWhenBig(...)`이 불립니다. `q.Effect`의 첫 실행은 만들어지는 그 자리에서 돌기 때문에, 그때 이미 상자에 값이 있습니다.
 
 바꿔 말하면 **순서를 뒤집으면 첫 실행이 빈 상자를 봅니다**(그래서 위 팩토리에 `if inst then` 가드가 있습니다). 순서에 기대고 싶지 않거나, **그 인스턴스 자신**을 같은 props 테이블 안에서 읽어야 한다면 `q.PreRef`를 쓰세요 — 배열 위치와 무관하게 다른 어떤 처리보다 먼저 채워집니다. 반대로 자식과 프로퍼티가 전부 끝난 뒤 채워지는 `q.PostRef`도 있습니다. 셋의 발화 시점은 [레퍼런스: `Ref`](/reference/core/08-ref/)가 정리해 두었습니다.
 
 </details>
 
-React의 Hook과 달리 이런 함수는 **호출 위치에 규칙이 없습니다.** 조건문 안에서도, 루프 안에서도, 이름이 `use`로 시작하지 않아도 됩니다 — 컴포넌트가 매 프레임 다시 실행되지 않는 **1회성 셋업 함수**이기 때문입니다.
+React의 Hook과 달리 이런 함수는 호출 위치에 규칙이 없습니다. 조건문 안에서도, 루프 안에서도, 이름이 `use`로 시작하지 않아도 됩니다 — 컴포넌트가 매 프레임 다시 실행되지 않는 **1회성 셋업 함수**이기 때문입니다.
 
 ---
 

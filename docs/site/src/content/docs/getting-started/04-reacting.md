@@ -12,7 +12,7 @@ description: "버튼 이벤트로 Source에 값을 넣어 카운터를 완성하
 ## 지금까지의 코드
 
 ```luau
--- (AnchorPoint/Position 같은 배치 프로퍼티는 이 장부터 생략합니다 — 02장 그대로 두면 됩니다)
+-- (Main.client.luau 계속 — 카드를 화면 가운데 놓는 AnchorPoint/Position은 생략합니다)
 const count = q.Source(0)
 
 const countText = count:Compute(function(c)
@@ -25,6 +25,7 @@ const card = D.Frame {
     UICorner = 12,
 
     D.TextLabel {
+        Position = UDim2.fromOffset(16, 0),
         Size = UDim2.new(1, -32, 0, 48),
         BackgroundTransparency = 1,
         TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -41,6 +42,7 @@ const card = D.Frame {
 `card`의 배열 부분, 라벨 **아래**에 버튼을 하나 더합니다.
 
 ```luau
+    -- … card의 배열 부분, 라벨 바로 아래에 이어집니다
     D.TextButton {
         Size = UDim2.new(1, -40, 0, 42),
         Position = UDim2.new(0, 20, 1, -62),
@@ -80,6 +82,7 @@ const card = D.Frame {
 라벨의 배열 부분에 한 덩이를 더합니다.
 
 ```luau
+    -- … card 안의 라벨에 이어집니다
     D.TextLabel {
         -- …프로퍼티 생략…
         Text = countText,
@@ -91,16 +94,14 @@ const card = D.Frame {
     },
 ```
 
-**실행하면** 만들어지는 즉시 한 줄이 찍히고, 그 뒤로 버튼을 누를 때마다 한 줄씩 더 찍힙니다.
-
-**콜백은 값이 아니라 관측 대상의 핸들을 받습니다** — `:Compute`와 같습니다. 그래서 `target:Get()`으로 읽습니다.
+**실행하면** 만들어지는 즉시 한 줄이 찍히고, 그 뒤로 버튼을 누를 때마다 한 줄씩 더 찍힙니다. 콜백이 받는 것은 값이 아니라 관측 대상의 핸들이라 `target:Get()`으로 읽습니다 — `:Compute`와 같습니다.
 
 <details>
 <summary><strong>배열 부분에 안 넣으면 어떻게 되나요?</strong></summary>
 
 **`:Observer(fn)`은 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다.** 이후 변경까지 받으려면 **살아나야** 하는데, 경로가 둘입니다.
 
-1. **인스턴스에 매다는 것** — props의 배열 부분에 넣으면 quad가 묶어 줍니다. 그 인스턴스가 사는 동안만 살고, 인스턴스가 파괴되면 같이 정리됩니다. UI에 딸린 관측은 대개 이쪽입니다.
+1. **인스턴스에 묶는 것** — props의 배열 부분에 넣으면 quad가 묶어 줍니다. 그 인스턴스가 사는 동안만 살고, 인스턴스가 파괴되면 같이 정리됩니다. UI에 딸린 관측은 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
 어느 쪽도 하지 않으면 등록 시 한 번이 전부입니다.

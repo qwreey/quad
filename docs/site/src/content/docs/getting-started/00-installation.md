@@ -20,29 +20,6 @@ Quad는 아래 세 가지 경로로 배포합니다. **[2026-09-10 기준] 제�
 | **2. Wally + Rojo** | 이미 Wally를 쓰고 있는 프로젝트 | `wally`, `rojo` | 미제공 |
 | **3. Standalone `.rbxm`** | CLI 도구 없이 Studio만 쓰는 경우 | 없음 | 미제공 |
 
-<details>
-<summary><strong>Wally나 <code>.rbxm</code>으로는 못 쓰나요?</strong></summary>
-
-**Wally + Rojo**
-
-> ⚠️ **[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다** — Wally 레지스트리 게시가 생기면 이 표시를 지웁니다.
-
-Wally 쪽 절차 자체는 일반적인 Wally 프로젝트와 다르지 않습니다. `wally.toml`의 `[dependencies]`에 `quad-base`와 `quad-roblox`에 해당하는 항목 **둘**을 넣고, `wally install`로 받은 뒤 Rojo로 `Packages` 디렉터리를 게임 트리에 매핑하고, 두 모듈을 require해 `UseProvider`로 붙입니다.
-
-Wally 레지스트리에서 쓸 패키지 이름과 버전은 아직 정해지지 않았습니다 — 게시 시점에 이 절에 채워 넣습니다.
-
-**Standalone `.rbxm`**
-
-> ⚠️ **[2026-09-09 기준] 이 경로는 아직 제공되지 않습니다** — 릴리스가 생기면 이 표시를 지웁니다.
-
-CLI 도구 없이 Studio만 쓰는 경우를 위한 경로입니다. 모델 파일을 내려받아 Explorer의 `ReplicatedStorage` 안으로 드래그 앤 드롭하고, 거기 들어온 모듈 둘을 require해 `UseProvider`로 붙이는 방식이 됩니다.
-
-배포용 `.rbxm`을 올릴 릴리스 페이지는 아직 없습니다 — 생기면 이 절에 링크와 파일 이름을 채워 넣습니다.
-
-</details>
-
-저장소상 패키지 이름은 언더스코어만 씁니다 — **`qwreey/quad_base`**, **`qwreey/quad_roblox`**(폴더 이름은 `quad-base`/`quad-roblox`로 하이픈, 매니페스트의 `name`만 언더스코어입니다). 현재 버전은 `3.0.0`(다섯 패키지가 같은 버전으로 게시됩니다). 저장소 루트의 `qwreey/quad`는 워크스페이스 루트일 뿐 게시 대상이 아니므로(`private = true`) 이 이름으로는 설치할 수 없습니다.
-
 ---
 
 ## 2. pesde + Rojo
@@ -66,9 +43,11 @@ quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 
 `quad_error` / `type_version_check`는 위 셋의 의존성으로 따라 들어오므로 적을 필요가 없습니다. `^3.0.0`은 3.x 안에서 최신을 받겠다는 뜻입니다 — 정확한 버전으로 고정하려면 `version = "3.0.0"`처럼 쓰세요.
 
+이름을 적을 때 주의할 것이 하나 있습니다. **저장소상 패키지 이름은 언더스코어만 씁니다** — `qwreey/quad_base`, `qwreey/quad_roblox`처럼요(폴더 이름은 `quad-base`/`quad-roblox`로 하이픈이고, 매니페스트의 `name`만 언더스코어입니다). 다섯 패키지가 같은 버전으로 게시되며 현재 버전은 `3.0.0`입니다. 저장소 루트의 `qwreey/quad`는 워크스페이스 루트일 뿐 게시 대상이 아니라(`private = true`) 이 이름으로는 설치할 수 없습니다.
+
 ### 2단계: Rojo 프로젝트 맵 연결
 
-**pesde는 설치 디렉터리를 "의존 대상 패키지 자신의 target" 이름으로 나눕니다.** 다섯 패키지 중 `quad_roblox`만 `roblox` 타깃이고 나머지 넷은 `luau`·`roblox` 두 타깃으로 게시되므로, 여러분의 매니페스트 `[target] environment`가 `roblox`이면 **다섯 개가 전부 `roblox_packages/` 하나에 들어옵니다**. **[2026-09-10 기준]** 레지스트리 게시 뒤 빈 roblox 프로젝트에 `^3.0.0`을 설치해 확인했습니다(`luau_packages/`는 생기지 않음). `environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로 그 디렉터리도 트리에 올려야 합니다.
+**pesde는 설치 디렉터리를 "의존 대상 패키지 자신의 target" 이름으로 나눕니다.** 다섯 패키지 중 `quad_roblox`만 `roblox` 타깃이고, 나머지 넷은 `luau`·`roblox` 두 타깃으로 게시됩니다. 그래서 여러분의 매니페스트 `[target] environment`가 `roblox`이면 **다섯 개가 전부 `roblox_packages/` 하나에 들어옵니다**. **[2026-09-10 기준]** 레지스트리 게시 뒤 빈 roblox 프로젝트에 `^3.0.0`을 설치해 확인했습니다(`luau_packages/`는 생기지 않음). `environment`가 `roblox`가 아니면(예: luau) 넷의 luau 사본이 `luau_packages/`로 들어가므로 그 디렉터리도 트리에 올려야 합니다.
 
 pesde는 설치 디렉터리 안에 `roblox_packages/quad_base.luau`처럼 얇은 링커를 놓고 실체는 `roblox_packages/.pesde/<scope>+<name>/<version>/<name>/src`에 둡니다. 직접 적은 셋만 최상위에 링커가 생기고, 따라 들어오는 둘은 `.pesde` 아래 각 패키지의 자기 `roblox_packages/`에 링크됩니다 — 그래서 트리에 올릴 건 여전히 `roblox_packages/` 하나입니다.
 
@@ -128,6 +107,15 @@ luau-lsp analyze \
 - **`LuauSolverV2=true`가 없으면** quad 소스 자체가 파싱되지 않습니다 — `TypeError: read keyword is illegal here`.
 - **`LuauTarjanChildLimit`을 올리지 않으면** `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다. 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다.
 - 나머지 둘(`LuauSubtypingIterationLimit`/`LuauTypeInferIterationLimit`)은 컴포넌트가 커질 때 같은 이유로 필요해집니다.
+
+<details>
+<summary><strong>Wally나 <code>.rbxm</code>으로는 못 쓰나요?</strong></summary>
+
+**[2026-09-10 기준] 아직 그 경로가 없습니다.** Wally 레지스트리 게시도, 배포용 `.rbxm`을 올릴 릴리스 페이지도 준비되지 않았습니다 — 생기면 이 절에 패키지 이름·버전과 링크를 채워 넣습니다.
+
+Wally로 오게 되더라도 받을 것은 **셋**입니다. [01장](/getting-started/01-setup/)의 설정 모듈이 `quad_types`를 require해 타입을 다시 내보내기 때문에, `quad_base`·`quad_roblox`만으로는 그 require가 풀리지 않습니다.
+
+</details>
 
 ---
 
