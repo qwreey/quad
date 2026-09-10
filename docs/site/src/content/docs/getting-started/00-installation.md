@@ -32,7 +32,7 @@ Quad는 아래 세 가지 경로로 배포합니다. **[2026-09-10 기준] 제�
 local q = Quad:UseProvider(QuadRoblox)
 ```
 
-`quad-base`만 require하면 `Quad.D`, `Quad.Tween`, `Quad.Animate`, `Quad.OnChange`는 전부 `nil`입니다 — 이 줄을 부르기 전까지는 백엔드가 설치되지 않은 상태입니다. `require`가 돌려주는 `Quad`는 이미 쓸 수 있는 기본 인스턴스이고, 어느 ModuleScript에서 require해도 같은 하나(싱글턴)입니다. 그래서 여러 모듈이 각자 이 줄을 불러도 됩니다 — 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고(멱등), 다른 프로바이더를 넘길 때만 에러입니다. 실제 프로젝트에서는 이 줄을 설정 모듈 하나에 두고 나머지가 그걸 require하는 모양이 보통이고, 격리된 인스턴스가 필요할 때의 `Quad.New()`도 그 자리에 옵니다 — [멘탈 모델 4절](/getting-started/01-core-mental-model/#4-프로젝트에서-q를-어디에-두나--설정-모듈-하나).
+`quad-base`만 require하면 `Quad.D`, `Quad.Tween`, `Quad.Animate`, `Quad.OnChange`는 전부 `nil`입니다 — 이 줄을 부르기 전까지는 백엔드가 설치되지 않은 상태입니다. `require`가 돌려주는 `Quad`는 이미 쓸 수 있는 기본 인스턴스이고, 어느 ModuleScript에서 require해도 같은 하나(싱글턴)입니다. 그래서 여러 모듈이 각자 이 줄을 불러도 됩니다 — 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고(멱등), 다른 프로바이더를 넘길 때만 에러입니다. 실제 프로젝트에서는 이 줄을 설정 모듈 하나에 두고 나머지가 그걸 require하는 모양이 보통이고, 격리된 인스턴스가 필요할 때의 `Quad.New()`도 그 자리에 옵니다 — [멘탈 모델 4절](/getting-started/06-mental-models/#4-프로젝트에서-q를-어디에-두나--설정-모듈-하나).
 
 저장소상 패키지 이름은 언더스코어만 씁니다 — **`qwreey/quad_base`**, **`qwreey/quad_roblox`**(폴더 이름은 `quad-base`/`quad-roblox`로 하이픈, 매니페스트의 `name`만 언더스코어입니다). 현재 버전은 둘 다 `3.0.0`(다섯 패키지가 같은 버전으로 게시됩니다). 저장소 루트의 `qwreey/quad`는 워크스페이스 루트일 뿐 게시 대상이 아니므로(`private = true`) 이 이름으로는 설치할 수 없습니다.
 
@@ -188,4 +188,4 @@ gui.Parent = playerGui
 - **`Parent`는 프로퍼티가 아닙니다.** `D.ScreenGui { Parent = playerGui }`처럼 쓰면 어떤 핸들러도 그 키를 받지 않아 디스패치가 에러를 냅니다. `D.…`가 돌려주는 것은 이미 실물 Instance이므로, 만들어진 뒤 밖에서 `.Parent`를 대입해 붙입니다.
 
 화면 중앙에 어두운 사각형과 글씨가 보이면 설치가 끝난 것입니다.
-다음 장인 [01. 핵심 멘탈 모델](/getting-started/01-core-mental-model/)로 넘어가 Quad의 반응형 설계를 배워보세요.
+다음 장인 [01. 첫 화면 — Frame 하나 그리기](/getting-started/01-first-screen/)로 넘어가 첫 UI를 만들어 보세요.

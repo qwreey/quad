@@ -54,7 +54,7 @@ local hp = q.Source(100)
 print(hp:Get()) --> 100
 ```
 
-**관련** — [Getting Started 01 핵심 모델](/getting-started/01-core-mental-model/) · [Quadnomicon Vol. 1](/quadnomicon/01-revision-and-epochmap/)
+**관련** — [Getting Started 06 멘탈 모델](/getting-started/06-mental-models/) · [Quadnomicon Vol. 1](/quadnomicon/01-revision-and-epochmap/)
 
 ---
 

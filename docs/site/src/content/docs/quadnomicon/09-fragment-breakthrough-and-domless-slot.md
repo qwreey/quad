@@ -6,7 +6,7 @@ description: "물리 실체가 없는 Slot으로 컴포넌트가 형제 여럿�
 > **관련 소스**: `quad-base/src/Slot/init.luau`, `quad-base/src/Slot/List.luau`, `quad-base/src/Bookkeeping.luau`
 
 > [!CAUTION]
-> 이 권은 부분합(prefix-sum) 가상 슬롯 트리를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 부분합(prefix-sum) 가상 슬롯 트리를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-first-screen/)부터 보십시오.
 
 ---
 

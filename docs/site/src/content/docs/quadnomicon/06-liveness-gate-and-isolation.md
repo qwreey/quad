@@ -6,7 +6,7 @@ description: "단일 인자 생존 게이트로 인스턴스의 물리 수명과
 > **관련 소스**: `quad-roblox/src/LifetimeHandle.luau`, `quad-base/src/LifetimeHandle.luau`, `quad-base/src/Observer.luau`
 
 > [!CAUTION]
-> 이 권은 반응형 실행 게이트의 저수준 수명 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 반응형 실행 게이트의 저수준 수명 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-first-screen/)부터 보십시오.
 
 ---
 

@@ -108,7 +108,7 @@ local wide = q.Modifier(card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔
 local panel = D.Frame { wide }
 ```
 
-**관련** — [테마와 동적 스타일링](../../how-to/05-theme-and-dynamic-styling.md), [컴포넌트 조합](../../getting-started/03-component-composition.md)
+**관련** — [테마와 동적 스타일링](../../how-to/05-theme-and-dynamic-styling.md), [컴포넌트 경계 규약](../../how-to/09-component-conventions.md)
 
 ## `mod:<Field>(value)`
 

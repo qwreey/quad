@@ -52,7 +52,7 @@ local D = q.D
 | v1 | v2 | 어디서 다루나 |
 |---|---|---|
 | `require(quad).Init(id)` | `Quad:UseProvider(QuadRoblox)` | 2절 |
-| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [핵심 멘탈 모델](../getting-started/01-core-mental-model.md) |
+| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [첫 화면 만들기](../getting-started/01-first-screen.md) |
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
 | `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
@@ -311,7 +311,7 @@ local card = D.Frame {
 }
 ```
 
-`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [03. 컴포넌트 합성](../getting-started/03-component-composition.md) §3에 있습니다.
+`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [09. 컴포넌트 경계 규약과 스타일 합성](./09-component-conventions.md) §3에 있습니다.
 
 ### 정리(cleanup)
 

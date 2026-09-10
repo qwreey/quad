@@ -8,7 +8,7 @@ description: "핸들러 레지스트리로 확장 가능한 디스패치 엔진�
 > **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/Dispatch/StoreBind.luau`, `quad-types/src/init.luau`
 
 > [!CAUTION]
-> 이 권은 프로퍼티·자식 디스패치 엔진 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/01-core-mental-model.md)부터 보십시오.
+> 이 권은 프로퍼티·자식 디스패치 엔진 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/01-first-screen.md)부터 보십시오.
 
 ---
 

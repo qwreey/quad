@@ -99,7 +99,7 @@ local panel = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 조합](../../getting-started/03-component-composition.md)
+**관련** — [컴포넌트 경계 규약](../../how-to/09-component-conventions.md)
 
 ## `q.PreRef<<T>>(default)`
 
@@ -130,7 +130,7 @@ local form = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 조합](../../getting-started/03-component-composition.md)
+**관련** — [컴포넌트 경계 규약](../../how-to/09-component-conventions.md)
 
 ## `q.PostRef<<T>>(default)`
 

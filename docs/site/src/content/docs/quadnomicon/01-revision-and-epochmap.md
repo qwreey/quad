@@ -6,7 +6,7 @@ description: "리비전과 EpochMap으로 정밀 반응형 시스템의 다이�
 > **관련 소스**: `quad-base/src/State.luau`, `quad-base/src/EpochMap.luau`, `quad-base/src/Source.luau`
 
 > [!CAUTION]
-> 이 권은 반응형 무효화 엔진의 리비전·에폭 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 반응형 무효화 엔진의 리비전·에폭 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-first-screen/)부터 보십시오.
 
 ---
 

@@ -6,7 +6,7 @@ description: "포맷 헬퍼 없이 grep 가능한 에러 문자열과 표면 bla
 > **관련 소스**: `quad-error/src/init.luau`, `quad-base/src/ErrorNamespace.luau`
 
 > [!CAUTION]
-> 이 권은 에러 시스템 설계와 진단 철학을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-core-mental-model/)부터 보십시오.
+> 이 권은 에러 시스템 설계와 진단 철학을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-first-screen/)부터 보십시오.
 
 ---
 

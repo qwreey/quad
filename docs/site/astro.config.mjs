@@ -16,6 +16,9 @@ export default defineConfig({
 			// [2026-09-10 사용자 버그 리포트] 한국어를 root 로케일로 — 로고·홈 링크가 `/ko`(없는 페이지, 404)가 아니라 `/`로 간다.
 			// 한국어 문서는 `/<track>/…`, 영어는 `/en/…`. 옛 `/ko/…` URL은 public/_redirects가 301로 보낸다.
 			defaultLocale: 'root',
+			customCss: [
+				'./src/styles/custom.css',
+			],
 			locales: {
 				root: {
 					label: '한국어',

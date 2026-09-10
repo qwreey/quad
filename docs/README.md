@@ -29,7 +29,7 @@ how-to를 초심자 트랙에 녹이는 3축이었으나, 스캐폴딩 과정에
 |---|---|---|---|
 | **Overview** | 도입 여부를 판단하려는 엔지니어(퍼널 첫 단), quad v1 사용자 | 솔직, 대가를 같이 적음 | 무엇을 풀려 했고 무엇을 포기했나, 맞는 경우/맞지 않는 경우, Fusion/Vide 차이표, 심층 링크; v1에서 무엇이 왜 달라졌고 어떤 틀로 옮기나 |
 | **Getting Started** | Quad를 처음 접하는 Roblox 개발자 | 친절, 선형, 최소 | 설치부터 첫 컴포넌트까지 core loop 완주 |
-| **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 디버깅, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관 |
+| **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 디버깅, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관, 컴포넌트 경계 규약 |
 | **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `D`는 표면만·Roblox 문서로 유도 |
 | **The Quadnomicon** | 프레임워크 설계자, 아키텍트 | 분석적, 한계를 숨기지 않음 | Revision/EpochMap, Slot 부분합 트리, 메모리 토폴로지, 마커 타입, 디스패치 엔진 등 내부 설계 |
 
@@ -48,13 +48,16 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`01-why-quad.md`](./overview/01-why-quad.md) — 왜 Quad인가: 풀려던 문제 셋, 맞습니다/맞지 않습니다(오늘 시점 차단기 열), 설계 선택 일곱(+덤)의 "이전 선택과 그 한계 → 우리가 넘은 방법 → 그 대가/더 나쁜 점 → 심층 링크", Fusion/Vide 차이표(근거 있는 축 다섯, 수치 없음) + 우위 여섯/열위 여덟 목록. 사용자 의도: *"기술자로써 선택의 갈래를 좁혀주는"* 퍼널 첫 단 — 문서 흐름과 무관, 랜딩의 첫 액션이 여기로 온다. **[2026-09-09 사용자 프레이밍으로 재작성 — 검토 대기]**
 - [`02-from-v1.md`](./overview/02-from-v1.md) — quad v1에서 오는 분께: 없어진 것과 왜 없앴나(표 10행, 근거는 v1 내부 스냅샷 범위만), 새로 생긴 것이 v1의 어떤 자리를 메우나, 이관 틀 셋 — (a) 화면 단위 재작성이 주 경로, (b) v1·v2 화면 분할 공존은 **지원 경로**(양방향 브릿지, 경계를 넘는 건 항상 평범한 값, GC 상호작용은 [2026-09-10 기준] 미실측이라 핸들의 주인을 명시), (c) `Claim`으로 v1 트리 인계는 **비권장**(이중 소유) — 그리고 v1·v2 동시 로드 공식 허용 + 조건 셋, 새로 짤 때 전제 여섯. 사용자 결정 2026-09-10(§4 참고). v1 사용자는 회사 내부·외부 둘 다라 "안심시키기"와 "옮길 값어치" 둘 다 담는다. 스킬 링크 둘은 사이트에서 평문으로 벗겨진다(`sync-docs.py`).
 
-### Getting Started (시작하기) — 4편
+### Getting Started (시작하기) — 7편(선형 튜토리얼)
 - [`00-installation.md`](./getting-started/00-installation.md) — 설치 경로 셋(pesde+Rojo / Wally+Rojo / `.rbxm`). **[2026-09-10 기준] pesde만 제공**(`3.0.0` 게시, 소비자 레이아웃 실측 문장이 2단계에); Wally·`.rbxm`은 각 절 머리의 날짜 표시가 소스 — 실물이 생기면 그 표시만 지운다. `quad-base`와 `quad-roblox` 둘을 require하고 `Quad:UseProvider(QuadRoblox)`로 백엔드를 설치한다는 것이 핵심.
-- [`01-core-mental-model.md`](./getting-started/01-core-mental-model.md) — 가상 DOM 없음, `Source`는 값을 쓸 수 있는 `State`, 물리 트리와 반응성의 분리. **[2026-09-10 사용자 피드백]** 머리의 `UseProvider` 서술은 "싱글턴이라 어느 모듈에서 불러도 된다"로, 4절에 프로젝트 설정 모듈 하나(거기서 프로바이더·플러그인 설치, `Quad.New()`도 그 자리) 패턴 신설, v1 콜아웃은 `<details>`로 접힘.
-- [`02-quickstart-counter.md`](./getting-started/02-quickstart-counter.md) — 위에서 아래로 이어 붙이면 도는 카운터 하나 + `Animate`/`Tween`. mock 백엔드에서 실행 확인됨.
-- [`03-component-composition.md`](./getting-started/03-component-composition.md) — 컴포넌트=평범한 함수, `props.Modifier or None`(배열 부분, nil-hole), Modifier 우선순위 셋, 타입드 Modifier 팩토리, `Tag`/`Attr`.
+- [`01-first-screen.md`](./getting-started/01-first-screen.md) — 첫 화면: `D.Frame` 하나를 만들어 `PlayerGui`의 `ScreenGui`에 붙인다. 부른 순간 실물 Instance(`print(inst.ClassName)`), 해시 부분=프로퍼티, `Parent`는 밖에서, 키 없는 배열 원소가 자식, 숏핸드 `UICorner` 한 문장.
+- [`02-flowing-values.md`](./getting-started/02-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → `:Set`으로 화면이 따라옴 → 중간에 파이프(`:Compute`, 콜백은 핸들·의존은 명시) → 그제야 `Source`/`State` 이름 붙이기(모든 `Source`는 `State`). "원천 → 파이프 → 프로퍼티" 그림.
+- [`03-reacting.md`](./getting-started/03-reacting.md) — 반응하기: `Activated`로 `count:Set`, 이벤트는 해시 부분·엔진 인자만(self 없음). `:Observer(fn)`은 등록 시 1회 발화 + 배열 부분에 넣어야 계속 산다.
+- [`04-components.md`](./getting-started/04-components.md) — 컴포넌트로 쪼개기: 평범한 함수, props로 초기값·라벨, 두 개 나란히(각자 상태), `table.unpack(props.children or {})`, `D.Modifier.Frame {…}` 하나를 배열 부분에. 경계 규약은 how-to 09로.
+- [`05-animation.md`](./getting-started/05-animation.md) — 움직이게 하기: 방법 A `state:Apply(q.Animate{…})` / 방법 B `:Compute` 안에서 `q.Tween{…}`. 첫 세팅 스냅·Dedup·`Override` 넷. mock 백엔드에서 실행 확인됨.
+- [`06-mental-models.md`](./getting-started/06-mental-models.md) — 정리: 01~05에서 겪은 것에 이름 붙이기(멘탈 모델 셋 회고 + 역링크, `State`/`Source` 상자 그림), 4절에 프로젝트 설정 모듈 하나(프로바이더·플러그인 설치, `Quad.New()`도 그 자리 — `00-installation`의 4절 앵커가 여기로), v1 콜아웃 `<details>`.
 
-### How-To Guides (실전 레시피) — 8편
+### How-To Guides (실전 레시피) — 9편
 - [`01-debugging-and-troubleshooting.md`](./how-to/01-debugging-and-troubleshooting.md) — 에러 메시지 모양(`주어: 이유 (got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
 - [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — `Store` 필드 + 후행 의존성 `:Compute`로 실시간 검증·버튼 제어.
 - [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — `Slot:List` 계약(`updateFn(item, index, offset, prev, ud)`, `prev` 반환 재활용, `Detach`), `LayoutOrder`는 사용자가 `index`/`offset`에서 직접 바인딩, 윈도잉과 "안 해주는 것".
@@ -63,6 +66,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.D.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
+- [`09-component-conventions.md`](./how-to/09-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성(옛 getting-started 03에서 이동): props 두 부분의 규칙 넷, `props.Modifier or None`(nil-hole), 우선순위 불변식 셋, 타입드 Modifier 팩토리, 자식 타입, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
 
 ### API Reference — 손으로 관리하는 심볼 레퍼런스(26페이지 + 색인)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은
@@ -76,7 +80,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
 
 ### The Quadnomicon — 11권
-> Rustonomicon 스타일 — 초보자용이 아니다. 입문은 [Getting Started](./getting-started/01-core-mental-model.md)부터.
+> Rustonomicon 스타일 — 초보자용이 아니다. 입문은 [Getting Started](./getting-started/01-first-screen.md)부터.
 
 - [Vol. 1](./quadnomicon/01-revision-and-epochmap.md) 32-bit Wrapping Revision과 EpochMap — `bit32.bnot(-rev)` 랩어라운드 감소(성능이 이유), 2^32 랩은 도달 가능하지만 오판정 조건이 한 점.
 - [Vol. 2](./quadnomicon/02-slot-prefix-sum-tree.md) Slot-in-Slot 부분합 트리 — `rawSplice`의 부기 먼저·물리 한 번, Roblox `nativeMove`/`nativeSwap`는 의도된 no-op.
@@ -133,6 +137,8 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
   ⚠️ 작성 지점 경고는 불가(테이블 키 자동완성은 독 주석도 deprecated 태그도 안 싣는다 — 실측) → 경고는 문서가 하는 수밖에 없다.
 - **[2026-09-09 밤] API 레퍼런스 26페이지 신설**(§2 참고) — 작성 다섯·검사 둘·수정 둘, 커버리지 게이트 154/154, 사이트 첫 빌드 103페이지. `en/` 번역은 잠정 유보(사용자가 여러 번 보고 실개발자 조언을 모은 뒤).
 - **[2026-09-10] 배포 준비** — 설치 문서 2단계의 "[2026-09-09 기준] 열린 항목"(설치 레이아웃)은 레포 밖 실제 설치로 확인해 닫았고, `roblox_sync_config_generator` 캐비엇을 추가했다. 버전 정책(사용자 결정): 레지스트리는 `3.0.0`부터, v1은 `master`. 루트 `README.md`·`CHANGELOG.md`·`LICENSE`(MIT) 신설 — 루트 README는 이 문서 체계로 들어오는 바깥 입구다. **같은 날 저녁**: 넷(`quad_base`·`quad_types`·`quad_error`·`type_version_check`)을 luau·roblox 양 타깃으로 게시하기로 결정(사용자) → 설치 문서 2단계는 roblox 프로젝트가 `roblox_packages/` 하나만 매핑하는 것으로, 퀵스타트·설치 3단계·README의 require 경로도 `roblox_packages.quad_base`로 바뀌었다(소비자 프로젝트 실측은 게시 뒤). **같은 날 밤**: 버전 리터럴 3.0.0으로 bump(설치 스니펫 `^3.0.0`), 사이트는 Cloudflare Pages 루트 배포로 전환(base `/`, 로고·파비콘, `docs/site/DEPLOY.md`·`npm run deploy`). **같은 날 밤 게시 완료**(사용자 실게시 9건 OK, 사이트 <https://quad.qwreey.moe/>): pesde 절의 "아직 제공되지 않음" 표시를 지우고 오버뷰 1·2편·루트 README를 "pesde만 제공"으로 고쳤다; 빈 roblox 프로젝트에 `^3.0.0` 설치로 레이아웃 실측(다섯 패키지가 `roblox_packages/` 하나, 교차 require 전부 해소). `docs/getting-started/00`의 `0.0.0` 리터럴은 릴리즈 때 `scripts/check-version.py bump`가 목록으로 찍어 주니 손으로 고친다.
+- **[2026-09-10] Getting Started 재작성 — 선형 튜토리얼 7편**(사용자 진단: *"Getting started 의 3대 핵심 멘탈 모델부터 사실 사람들이 막힐거 같음 … Source State 를 설명하기 전에 흐름을 깔아야할듯"*, *"무게 균형이 안 이루어져 있기도 해"*). 옛 01(핵심 멘탈 모델)·02(10분 카운터)·03(컴포넌트 합성) 셋을 지우고 **카운터 예제 하나를 페이지마다 조금씩 키우는** 01~06으로 대체했다(페이지 구조: 목표 한 줄 → 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면; 한 페이지에 새 개념 하나). 멘탈 모델 셋은 **회고형으로 06**에 모으고(역링크 포함), 옛 03의 경계 규약·우선순위·`Tag`/`Attr`·팩토리·체크리스트와 옛 01 §3의 규칙 넷은 내용 손실 없이 [`how-to/09-component-conventions.md`](./how-to/09-component-conventions.md)로 옮겼다. 스니펫은 mock 백엔드에서 실행하고(옛 02 §4의 "1~9회는 트윈 0개, 10회째 하나" 주장 포함) 신 솔버로 타입 검사했다.
+
 - **[2026-09-10] 오버뷰 2편 `02-from-v1.md` 신설**(§2 참고) — 사용자 제안(*"quad v1 유저들에 대한 인게이지먼트가 부족할지도"*)과 결정 셋: v1 사용자는 회사 내부(가장 큰 프로젝트에 지금도 사용)·외부 둘 다 / 이관 틀은 (b) 화면 단위 공존 지원·(c) `Claim` 인계 비권장, 브릿지는 양방향이되 *"v1 경계로 넘어가는건 항상 실측값"*, GC 상호작용은 미실측(잠정 백로그, *"당장은 가능한 것 부터 차근차근"*) / v1·v2 동시 로드 공식 허용 + 조건 셋(v1이 전역 테이블에 상태를 두지 않음은 v1 소스에서 확인). 작성은 opus, 검증은 메인(v1 심볼·v2 시그니처·링크 32건). 스니펫 없음.
 
 ---

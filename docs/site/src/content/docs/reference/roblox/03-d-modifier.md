@@ -288,5 +288,5 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 **관련**
 
 - [D — Instance 생성](/reference/roblox/02-d/) — Modifier가 배열 부분에서 소진되는 규칙
-- [03. 컴포넌트 합성](/getting-started/03-component-composition/)
+- [09. 컴포넌트 경계 규약과 스타일 합성](/how-to/09-component-conventions/)
 - [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)

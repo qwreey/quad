@@ -76,7 +76,7 @@ v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적�
 
 - **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](../reference/core/07-slot.md), [03. 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md)
 - **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](../reference/extend/02-dispatch-handler-contract.md)
-- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **배열 부분에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [03. 컴포넌트 합성](../getting-started/03-component-composition.md), [05. 테마와 동적 스타일링](../how-to/05-theme-and-dynamic-styling.md)
+- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **배열 부분에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [09. 컴포넌트 경계 규약과 스타일 합성](../how-to/09-component-conventions.md), [05. 테마와 동적 스타일링](../how-to/05-theme-and-dynamic-styling.md)
 - **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](../how-to/07-studio-ui-binding-and-claim.md)
 - **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](../reference/sugar/01-context.md)
 - **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](../reference/sugar/03-debounce-throttle.md)
@@ -205,7 +205,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 ## 6. 다음 걸음
 
 - **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 툴체인 플래그 넷, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
-- **v1 습관이 가장 자주 걸리는 자리**: [01. 핵심 멘탈 모델](../getting-started/01-core-mental-model.md)의 "v1에서 오신 분께" 요약 일곱.
+- **v1 습관이 가장 자주 걸리는 자리**: [06. 정리 — 방금 겪은 것에 이름 붙이기](../getting-started/06-mental-models.md)의 "v1에서 오신 분께" 요약 일곱.
 - **도입 여부를 아직 저울질 중이라면**: [왜 Quad인가](./01-why-quad.md) — 설계 선택마다의 대가와, 오늘 시점의 차단기 목록.
 - **에이전트에게 맡긴다면**: [v1 이관 스킬 레퍼런스](../skills/quad-ui-dev/references/v1-migration.md)(영문, 레포의 `docs/skills/quad-ui-dev/`).
 - **왜 그렇게 결론났는지 속을 보려면**: [Quadnomicon Vol. 9 — 형제 여럿과 DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md), [Vol. 8 — 확장 가능한 디스패치 엔진](../quadnomicon/08-extensible-dispatch-engine.md), [Vol. 7 — 인스턴스 신원과 GC 철학](../quadnomicon/07-instance-identity-and-gc-philosophy.md).
