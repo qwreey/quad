@@ -320,8 +320,7 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
   먼저** — spec은 `luau_packages/` 사본을 보므로 안 돌리면 새 타입이 "Unknown type"으로 나온다(2026-09-08 두 번 밟음). (2) **test.sh의
   quad-base 검사는 구 솔버 `luau-analyze`다** — 사용자 에디터(luau-lsp 신 솔버)에서만 나는 타입 에러가 있다(`Debounce.luau`의
   `setup(emit)` 무주석 파라미터가 첫 사용에서 `() -> boolean`으로 굳어 `emit(false)`가 인자 수 불일치, 사용자 실측). 큰 변경 뒤엔
-  `mise exec -- luau-lsp analyze --flag:LuauSolverV2=true --ignore "**/luau_packages/**" quad-base/src <spec들>`을 한 번 돌릴 것(게이트로
-  올릴지는 미정 — `todos.md`). (3) **Studio 실측에서 rojo가 싱크한 새 파일은 이미 `require`된 모듈에 안 보인다**(require 캐시) —
+  `mise exec -- luau-lsp analyze --flag:LuauSolverV2=true --ignore "**/luau_packages/**" quad-base/src <spec들>`을 한 번 돌릴 것 — **[2026-09-10 게이트로 올림]** test.sh가 엔진 무관 그룹을 신 솔버로 한 번 더 본다(사용자: *"실제로 지금은 뉴 솔버 쓰는 사람들이 더 많아. 구 솔버는 거의 fallback"*). (3) **Studio 실측에서 rojo가 싱크한 새 파일은 이미 `require`된 모듈에 안 보인다**(require 캐시) —
   `quad-base`·`quad-roblox` 폴더를 `:Clone()`해 사본을 `require`(`audit/sugar-studio-2026-09-08.md`).
 - **⭐ [2026-09-06 신설 — 사용자 지적] 백그라운드 에이전트의 "끝났는가"는 하네스
   알림이 정하지, 에이전트 본문이 정하지 않는다.** 밤샘 구간에 `/code-review`
