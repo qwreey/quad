@@ -60,6 +60,11 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"0.0.0"`, `{tostring(q.Version)}`은
    넘어온 모듈의 `Version` 필드입니다. 모노레포는 정확한 버전을 핀으로 잡고, 독립 게시 백엔드라면
    더 느슨한 패턴을 쓰게 됩니다.
+
+   패턴은 `.`로 나뉜 자리마다 `*`(뭐든 통과) / `N^`(그 자리가 숫자로 N 이상) / 그 외(정확 일치)로
+   읽습니다. `3.1.0-rc.1`처럼 프리릴리즈·빌드 꼬리가 붙은 중간 빌드도 대조 대상입니다 — `+` 뒤
+   빌드 메타데이터는 양쪽 다 무시하고, 프리릴리즈는 **패턴에 프리릴리즈가 있을 때만** 정확히 같은
+   문자열이어야 합니다(패턴이 `"3.1.0"`이면 `3.1.0-rc.1`도 통과, `"3.1.0-rc.1"`이면 `rc.1`만 통과).
 2. **모듈 뮤테이션** — 생명주기 프리미티브(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)와
    `nativeClaim`, 엔진 op 일습을 [모듈 인스턴스](../core/01-quad-module.md)에 심고, 백엔드가 소유한
    핸들러 넷(Property / InstanceChild / Event / InstanceShorthand)과 OnChange 핸들러를 디스패치에

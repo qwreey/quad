@@ -1,7 +1,13 @@
 name = "qwreey/quad_roblox"
 version = "0.0.0"
-description = "quad — Roblox 백엔드: quad-base의 pluggable 인터페이스를 실제로 구현"
-includes = ["src/*"]
+description = "quad — Roblox backend: installs the Roblox provider (D, Tween, Animate, OnChange) into quad-base"
+includes = ["src/**", "README.md", "LICENSE"]
+license = "MIT"
+authors = ["qwreey <me@qwreey.moe>"]
+repository = "https://github.com/qwreey/quad"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
 
 [target]
 environment = "roblox"

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InitLifetimeHandle(module) — the *interface* of the four top-level
 	lifetime primitives, installed on the module instance as error stubs.

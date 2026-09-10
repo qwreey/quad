@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Observer — the leaf subscriber a `State` fires, and the owner of the two
 	global subscription registries (`Subscribed` strong / `WeakSubscribed`

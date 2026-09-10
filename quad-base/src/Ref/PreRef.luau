@@ -1,3 +1,4 @@
+--!strict
 --[[
 	PreRef — a `Ref` with a construction-time fire contract (M8 단위 ①; canon
 	`.claude/base/ref-plan.md` "`phase` 옵션 폐기 → 위치로 표현, `PreRef` 신설" 절). SAME runtime as `Ref` (`.Value`/

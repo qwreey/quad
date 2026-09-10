@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Blocker — value-based emit deferral, as a POLICY on top of `state:Gate`.
 	`.claude/base/blocker-plan.md` "메커니즘 (확정)", `.claude/base/gate-plan.md`

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InitBookkeeping(module) — the Length/Offset bookkeeping subsystem,
 	installed as the private `module._bookkeeping` namespace (`H-277`,
@@ -194,8 +195,8 @@ local function Init(module: any)
 				-- with a hole below N the range clause called a legal query illegal
 				Err.errorBefore(
 					if at > last + 1
-						then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration (H-39): position {i} is not registered`
-						else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration (H-39)`,
+						then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
+						else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
 					SURFACE
 				)
 			end

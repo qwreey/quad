@@ -1,3 +1,4 @@
+--!strict
 --[[
 	PropertyHandler — the plain-property terminal handler (backend-owned:
 	Reflection is an engine concept, `dispatch-core-plan.md` "base가 소유하는

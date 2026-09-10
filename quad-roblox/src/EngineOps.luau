@@ -1,3 +1,4 @@
+--!strict
 --[[
 	quad-roblox EngineOps — the injected engine ops this backend implements
 	in M5. The op *inventory* source is the `architecture.md` EngineOps line;

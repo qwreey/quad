@@ -1,3 +1,4 @@
+--!strict
 --[[
 	`notInstalled(name, what, hint?)` — the loud stub a quad-base module puts on
 	its public surface for an op a backend has to install (`Tag.luau` tag ops,

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	`Claim(inst, descriptor) -> inst` — take ownership of an EXISTING tree
 	(PlayerGui children, `template:Clone()` copies, Studio-authored GUI) and

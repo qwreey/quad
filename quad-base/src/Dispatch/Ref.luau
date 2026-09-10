@@ -1,3 +1,4 @@
+--!strict
 --[[
 	PreRef/PostRef pre-pass + `Processed*Ref` sentinels/handlers (M8 단위 ②).
 	Canon: `.claude/base/ref-plan.md` "`phase` 옵션 폐기 → 위치로 표현, `PreRef`

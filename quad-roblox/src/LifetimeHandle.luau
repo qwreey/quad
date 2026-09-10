@@ -1,3 +1,4 @@
+--!strict
 --[[
 	quad-roblox LifetimeHandle — the real implementation of the lifetime
 	primitives (`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`) plus

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	EpochMap — reusable epoch bookkeeping object.
 	`.claude/base/state-epoch-plan.md` §3 "`EpochMap` — 컴포지션 가능한 부기 객체",

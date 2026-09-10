@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Brand — quad-base's brand INSTANCES and `isX` predicates.
 	`.claude/base/brand-plan.md` "구현 — 인스턴스 브랜드" / "`isX` wrapper" sections,

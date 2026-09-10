@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Ref — general value box. Minimal M2 form (`ROADMAP.md` M2 "공통 기반",
 	9라운드 `H-128`): `.Value` / `.Revision` / `:Set` / `:Callback` /

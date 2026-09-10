@@ -1,3 +1,4 @@
+--!strict
 --[[
 	PostRef — a `Ref` with a construction-time fire contract (M8 단위 ①; canon
 	`.claude/base/ref-plan.md` "`PostRef`" 절). SAME runtime as `Ref` (`.Value`/

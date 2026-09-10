@@ -1,3 +1,4 @@
+--!strict
 --[[
 	ProcessedModifierHandler — the nop terminal that catches the slot
 	`flatten` consumed (`.claude/base/modifier-plan.md` "flatten의 정확한

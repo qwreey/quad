@@ -1,3 +1,4 @@
+--!strict
 --[[
 	State — derived reactive node (`:Compute` / `:With` / `:Apply`), the
 	propagation loop, and the epoch-based recompute judgement.

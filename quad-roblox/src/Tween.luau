@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Tween — the value-level wrapper, a quad-roblox VALUE since 2026-09-07 (user
 	decision, `base/tween-plan.md` "패키지 경계" 절: the option vocabulary —

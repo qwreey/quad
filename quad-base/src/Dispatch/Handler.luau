@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Handler — the handler contract, types only. `.claude/base/dispatch-core-plan.md`
 	"핸들러 계약" section, as-is:

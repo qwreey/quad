@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Void — the single no-op function quad exports.
 	`.claude/base/architecture.md` source tree `Void.luau` line / `H-162`.

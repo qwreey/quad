@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InitDebug(module) — `module.debug` 표면 설치.
 	`.claude/base/module-lifecycle-plan.md` "모듈 표면의 디버그 플래그" /

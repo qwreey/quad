@@ -1,3 +1,4 @@
+--!strict
 --[[
 	EventHandler — the string-key terminal handler for engine signals
 	(`Frame { MouseButton1Click = fn }`). Backend-owned: Reflection and the

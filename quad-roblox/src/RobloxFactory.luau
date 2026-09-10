@@ -1,3 +1,4 @@
+--!strict
 --[[
 	RobloxFactory(module) — mutates a quad-base module instance into the
 	Roblox backend: installs the lifetime primitives + `nativeClaim`

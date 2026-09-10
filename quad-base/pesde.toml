@@ -1,7 +1,13 @@
 name = "qwreey/quad_base"
 version = "0.0.0"
-description = "quad — 엔진 무관 코어: Store/State/Source 온톨로지, pluggable 디스패치 엔진"
-includes = ["src/*"]
+description = "quad — engine-agnostic core of the DOMless UI renderer: Store/State/Source reactivity and a pluggable dispatch engine"
+includes = ["src/**", "README.md", "LICENSE"]
+license = "MIT"
+authors = ["qwreey <me@qwreey.moe>"]
+repository = "https://github.com/qwreey/quad"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
 
 [target]
 environment = "luau"

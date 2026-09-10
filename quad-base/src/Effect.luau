@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Effect — a leaf consumer with several dependencies (`State`/`Source`/`Ref`)
 	and a cleanup contract. `Effect(fn, ...deps)`; `fn(self) -> ...cleanup`.

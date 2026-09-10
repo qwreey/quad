@@ -1,3 +1,4 @@
+--!strict
 --[[
 	quad-roblox package entry. `QuadRoblox` is the PROVIDER FUNCTION for
 	`quad:UseProvider(QuadRoblox)` (`H-305` (d′), 2026-09-02 사용자 확정 —

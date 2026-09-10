@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Attr — the GROUP value object + its delegating handler (M10, spike
 	round16). [2026-09-08 user decision] `Attribute` → `Attr` across the

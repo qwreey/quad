@@ -1,3 +1,4 @@
+--!strict
 --[[
 	`memberSet(fetch, accept?)` — the className → { [memberName]: true } cache
 	both Reflection-backed handlers keep (`Handlers/Property.luau`

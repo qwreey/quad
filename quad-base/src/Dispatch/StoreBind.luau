@@ -1,3 +1,4 @@
+--!strict
 --[[
 	StoreBind — the recursive re-execution handler (`.claude/base/
 	dispatch-core-plan.md` "Store 바인드는 특수 경우인가, 아니면 pluggable

@@ -285,8 +285,8 @@ getOffsetAt: (ownerKey: any, at: number) -> number
 조회할 수 있는 최대 자리는 **등록된 마지막 자리 + 1**입니다. 그보다 뒤를 묻거나, 중간 자리가 등록되지 않았으면 던집니다.
 
 ```
-Dispatch.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration (H-39): position {i} is not registered
-Dispatch.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration (H-39)
+Dispatch.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
+Dispatch.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
 ```
 
 ## `q.Dispatch.getBlocker(ownerKey)`

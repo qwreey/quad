@@ -1,3 +1,4 @@
+--!strict
 --[[
 	quad-base 최상위 진입점.
 	`.claude/base/architecture.md` 확정 결정 13 / `.claude/base/module-lifecycle-plan.md`

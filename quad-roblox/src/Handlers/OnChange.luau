@@ -1,3 +1,4 @@
+--!strict
 --[[
 	OnChange — the `GetPropertyChangedSignal` binding as an ARRAY-PART VALUE:
 	`OnChange(propertyName, fn)` returns a descriptor the children array

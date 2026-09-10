@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Animate — the `:Apply` combinator that wraps a State's value in a
 	`Tween{...}` with fixed options (M11 unit ③, round19). Canonical:

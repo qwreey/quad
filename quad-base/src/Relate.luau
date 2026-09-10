@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Relate — inst를 weak 키로 하는 범용 릴레이션 프리미티브.
 	`.claude/base/relate-plan.md` "API"/"실제 구조" 절 그대로 구현.

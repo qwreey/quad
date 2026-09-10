@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Per-instance implementation registry access (`H-174`/`H-181`) — the one
 	copy of `implsOf`, shared by `State.luau`/`Observer.luau`/`Effect.luau`

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InitDispatch(module) — the dispatch engine, installed on the module
 	instance as `module.Dispatch` (factory shape: `.claude/base/

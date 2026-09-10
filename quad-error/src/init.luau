@@ -1,3 +1,4 @@
+--!strict
 --[[
 	quad-error — level-tag based error raising. Design and core API are the
 	user's own experiment, taken as-is (2026-08-31, round12 `H-231`).

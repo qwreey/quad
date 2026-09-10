@@ -1,3 +1,4 @@
+--!strict
 --[[
 	The `None` sentinel + its two handlers (`.claude/base/dispatch-core-plan.md`
 	"`None` 센티널" / "`NilHandler`" sections, as-is; M3 unit 3).

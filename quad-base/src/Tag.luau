@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Tag — array-part value object + its reference-counted handler (M10, spike
 	round16). Canonical: `.claude/base/tag-plan.md` (value shape "값 모양",

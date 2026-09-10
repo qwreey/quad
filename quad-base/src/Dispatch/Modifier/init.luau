@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Modifier — the immutable, clone-chained property bag (M7 단위 ①). Canon:
 	`.claude/base/modifier-plan.md` 3·4·4-1·8·9·2-1절, as-is; Luau mechanics

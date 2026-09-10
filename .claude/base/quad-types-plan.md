@@ -175,6 +175,13 @@ identity에 의존하므로(`base/module-lifecycle-plan.md`의 "New()의 내부 
 통과. 예: `"3.*.*"`(메이저만 고정), `"3.3^.4^"`(마이너 3 이상 + 패치
 4 이상), `"0.0.0"`(정확 일치 — quad-types가 지금 쓰는 패턴).
 
+**[2026-09-10 추가]** 자리 분해 전에 SemVer 꼬리를 먼저 가른다
+(`<core>[-<prerelease>][+<build>]`) — `+` 뒤 build는 양쪽 다 항상 무시하고,
+prerelease는 **패턴에 있을 때만** 문자열 정확 일치를 요구한다(패턴에 없으면
+actual의 prerelease를 무시 — `"3.0^"`류 느슨한 패턴이 `3.0.1-dev.3`
+같은 중간 빌드도 받는다). `*`/`^`는 core 자리 전용이고 prerelease 자리엔
+안 먹는다. 계약과 케이스는 `quad-base/test/spec.versioncheck.luau`.
+
 ```lua
 export type function CheckVersion(actual: type, pattern: type): type
 ```

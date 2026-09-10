@@ -1,3 +1,4 @@
+--!strict
 --[[
 	The one shared error namespace (`H-231`, user-designed shape) — created
 	here once at module scope, like the Brand instances: every quad-base file

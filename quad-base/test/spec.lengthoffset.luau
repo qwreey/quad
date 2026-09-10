@@ -359,7 +359,7 @@ do
 	local okFar, errFar = pcall(function()
 		q.Dispatch.getOffsetAt(inst, 3)
 	end)
-	assert(not okFar and string.find(tostring(errFar), "past N+1", 1, true) ~= nil and string.find(tostring(errFar), "H-39", 1, true) ~= nil, "past N+1 names both causes (range / missing registration): " .. tostring(errFar))
+	assert(not okFar and string.find(tostring(errFar), "past N+1", 1, true) ~= nil and string.find(tostring(errFar), "skipped its position registration", 1, true) ~= nil, "past N+1 names both causes (range / missing registration): " .. tostring(errFar))
 	-- 6순회 `H-408`: the same range fault through the sibling surface `setOffsetSource`
 	-- blames the caller too (nearest used to land on Bookkeeping.luau itself)
 	local okVia, errVia = pcall(function()

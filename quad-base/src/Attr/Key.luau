@@ -1,3 +1,4 @@
+--!strict
 --[[
 	AttrKey — the single-key attribute primitive + its name-claim handler
 	(M10, spike round16; 옛 `Attribute/Key.luau` — the 2026-09-08 `Attr` rename,

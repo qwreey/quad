@@ -75,6 +75,10 @@
    **[2026-09-10 열린 스레드]** v1 사용자 인게이지먼트 페이지 `docs/overview/02-from-v1.md`(달라진 것/추가된 것/이관 틀 셋/새로 짤 때 전제) —
    사용자 답 셋 다 받음(v1 사용자는 회사 내부+외부 둘 다 / 이관 틀은 (b) 화면 단위 공존 지원·(c) Claim 넘겨받기 비권장, 브릿지는 양방향·경계는 평범한 값·GC
    상호작용은 실측 없음(ROADMAP 백로그) / v1·v2 동시 로드 공식 허용 + 조건 셋) → 초안 작성 중(opus), 세션 파일 §11.
+   **[2026-09-10 배포 준비]** 사용자 결정: SemVer, 레지스트리 `3.0.0`부터(메이저 프리릴리즈 없음), `master`=v1 2.x, changelog는 Keep a Changelog(루트 `CHANGELOG.md`, 규율은
+   `conventions.md` 2026-09-10 항목), MIT, 타깃 경계는 셋(quad_types·type_version_check·quad_error)을 roblox 타깃으로도 게시, README 최소본, 에러 문자열 `H-39` 제거.
+   반영 완료(세션 §12): `--!strict` 전수, 매니페스트 다섯 정비, `scripts/check-version.py` 게이트+bump, LICENSE/README, HUMAN_TODO 14(스코프 등록·sync config 실측·pesde 0.7.4·회수 버전 목록).
+   **다음**: 타깃별 이중 게시 절차(quad_roblox 의존 `target` 전환 + 워크스페이스 설치 영향) → dry-run 다섯 통과 → 릴리즈 스크립트에 게시 순서. 이월: type function 안 `pcall`(신 솔버가 `CheckVersion` 미평가 — 세션 §12 (b)).
    **[2026-09-09 밤]** API 레퍼런스 26페이지 신설·2차 검사 반영 완료(세션 §10; `scripts/doc-coverage.py` test.sh 게이트, `docs/site/sync-docs.py`, 사이트 빌드 103페이지).
    **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
    진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"

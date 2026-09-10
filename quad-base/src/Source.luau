@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Source — the writable root value. Structurally satisfies `State` (all
 	derived methods come from `State.luau`'s impl through `__index`) and is

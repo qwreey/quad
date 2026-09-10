@@ -1,7 +1,13 @@
 name = "qwreey/quad_types"
 version = "0.0.0"
-description = "quad — Quad 공개 타입 계약(구현 없음) + 버전 호환성 type function. quad-base가 구현하고, quad-roblox 등 백엔드/플러그인 패키지는 무거운 quad-base 대신 이것만 의존"
-includes = ["src/*"]
+description = "quad — public type contract (no implementation) plus the version-compatibility type function; backends and plugins depend on this instead of quad-base"
+includes = ["src/**", "README.md", "LICENSE"]
+license = "MIT"
+authors = ["qwreey <me@qwreey.moe>"]
+repository = "https://github.com/qwreey/quad"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
 
 [target]
 environment = "luau"

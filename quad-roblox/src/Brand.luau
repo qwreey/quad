@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Brand — quad-roblox's brand instances and predicates (2026-09-07, user
 	decision: the factory `Brand()` lives in quad-types so each package brands

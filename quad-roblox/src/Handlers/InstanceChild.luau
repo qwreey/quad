@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InstanceChildHandler — static child Instance at a NUMBER key
 	(`Frame { Frame {} }`). Canon: `dispatch-core-plan.md`의 `H-134` 블록

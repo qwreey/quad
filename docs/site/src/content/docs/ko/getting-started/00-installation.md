@@ -69,7 +69,9 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "0.0.0" }
 
 > ⚠️ **`roblox_packages`만 매핑하면 부족합니다 — 두 디렉터리를 모두 매핑하세요.** 위 1단계에서 직접 추가한 `quad_base`는 `luau` target이라 `luau_packages/`에 설치되고 여러분의 코드가 그것을 require하는데, 그 디렉터리가 트리에 없으면 그 require는 Studio 런타임에서 해소되지 않습니다(표준 pesde-Roblox 가이드는 `roblox_packages` 하나만 올립니다. quad 패키지끼리의 내부 require는 각 패키지의 설치 서브트리 안에 중첩돼 풀립니다).
 
-**[2026-09-09 기준] 열린 항목** — 소비자 프로젝트에서의 실제 설치 레이아웃은 게시 시점에 다시 확인해야 합니다.
+위 표의 레이아웃은 **[2026-09-10 확인]** 레포 밖의 roblox 타깃 프로젝트에 두 패키지를 실제로 설치해 확인한 것입니다(`luau_packages/quad_base.luau`·`roblox_packages/quad_roblox.luau` 링커가 생기고 각각 `.pesde/…/src`를 가리킵니다).
+
+> **`roblox_sync_config_generator` 스크립트** — pesde는 roblox 타깃 프로젝트의 매니페스트에 `[scripts] roblox_sync_config_generator`가 없으면 설치 때 `not having a roblox_sync_config_generator script in the manifest might cause issues with linking` 경고를 냅니다. pesde 공식 Roblox 가이드가 안내하는 scripts 패키지를 매니페스트에 넣어 두세요. 이 스크립트 없이 위 매핑만으로 Studio 싱크가 실제로 되는지는 **[2026-09-10 기준]** 실기기에서 아직 확인하지 않았습니다.
 
 ```json
 {

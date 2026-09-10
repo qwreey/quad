@@ -1,3 +1,4 @@
+--!strict
 --[[
 	InstanceShorthandHandler — the UI convenience keys `UICorner` /
 	`UIPadding` / `UIPaddingOffset` / `UIScale` (M10 remainder, round20).

@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Store — a named bag of Sources, explicitly initialised.
 	`.claude/base/store-plan.md` "Store = Source들의 이름 붙은 모음 (명시적

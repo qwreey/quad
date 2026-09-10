@@ -307,6 +307,7 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
   압축서술이 너무 많아서 맥락을 모르겠음 … 문서를 보는걸론 효율이 안 나오네"*(회신 3차 — Q3·Q5·Q7·Q9·
   Q14·Q18·Q19를 채팅에서 다시 풀어 설명한 뒤에야 결정이 나왔다). `/code-review` 인자에도 "발견은 평문으로"를
   넣는다(round3 §8이 그 결과). 품질 제안은 항목마다 문항 하나(묶음 금지 — 회신 1차 Q3의 교훈).
+- **⭐ [2026-09-10 신설 — 사용자 합의] 공개 표면·동작이 바뀌는 커밋은 같은 커밋에서 루트 `CHANGELOG.md`의 `[Unreleased]`에 한 줄을 넣는다.** Keep a Changelog 형식(Added/Changed/Deprecated/Removed/Fixed, 호환이 깨지면 **BREAKING** + 옮기는 법 한 줄), 소비자 언어로만(원장 `H-nnn`·`.claude/` 경로 금지 — 커밋 메시지가 그 역할). 릴리즈는 `scripts/check-version.py bump <ver>`가 버전 리터럴 전 자리와 `[Unreleased]` 절단을 같이 한다(`check-version.py`가 test.sh 게이트 — 매니페스트·소스·테스트 버전 lockstep). 버전 정책(사용자 결정 2026-09-10): 레지스트리는 `3.0.0`부터, 메이저에 프리릴리즈 없음(중간 빌드만 꼬리), `master`=v1 2.x 그대로. 경위는 `session/2026-09-09-01-docs-polish.md` §12.
 - **⭐ [2026-09-07 신설 — 메인 자체 사고] `./scripts/test.sh`의 판정은 exit code다 —
   "ALL PASS" 줄을 세지 말 것.** 스크립트는 luau-analyze/luau-lsp 진단이 있으면
   `fail=1`로 끝나지만 spec 실행은 계속돼 "ALL PASS"가 49번 찍힌다. 2026-09-07 4순회
