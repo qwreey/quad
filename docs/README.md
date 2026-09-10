@@ -185,7 +185,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
   `:With(...)`는 노드가 하나 더 생기지만 **정식 지원 경로**다(~~금지~~ 정정 — `source-state-plan.md`가 채택). 신 솔버 strict에서는 프로퍼티 자리의 인라인 무주석 `:Compute`가 에러라
   타입 붙인 지역 변수로 뺀다(`typing-limits.md` 8.13).
 - **중첩 State**: `State<State<T>>`는 **정상 지원**(StoreBind가 재귀 언랩, ~~미지원~~ 정정). 런타임이 State 값으로 거부하는 것은 **Modifier뿐**(~~Store도 금지~~ 정정) —
-  `State<Store>`는 되지만 필드 읽기가 반응형이 아니므로 `q.Operator.Index<<V>>(key)`를 쓴다.
+  `State<Store>`는 되지만 필드 읽기가 반응형이 아니므로 `q.Operator.Indexed<<V>>(key)`를 쓴다.
 - **폼 리셋**: 스토어를 통째로 바꾸지 말고 필드별 `:Set` 또는 슬롯 언마운트/재생성.
 - **`Blocker`**: 읽기를 지연시키지 않고 emit 전파만 묶는다. **`state:Apply(blocker)`로 붙여야 효력**이 있다(`On`/`Off`만으로는 아무 일도 없음).
 
@@ -239,5 +239,5 @@ Docusaurus 대신 `lune-org/docs`와 같은 Astro + Starlight. Zero-JS 기본, P
 
 ### 13) 순수 슈거 그룹(2026-09-08 구현) — 정본은 reference/02
 `ref:Unwrap()`(`StripNil<T>`), `q.Context()`/`q.Context.Provider(name?) :: QuadTypes.Provider<T>`(`Get` 없으면 에러·`Peek` nil·`Set` 체이닝, 사용자: 컴포넌트 품질을 위해 필요),
-`q.Debounce{}`/`q.Throttle{}`(주입 시간 op 위, `Handle`은 `:Apply` 시점 주입), `q.Operator.*` 열넷(`Index<<V>>` 포함; `And`/`Or`·비교·`Sub`/`Div`는 의도적으로 없음),
+`q.Debounce{}`/`q.Throttle{}`(주입 시간 op 위, `Handle`은 `:Apply` 시점 주입), `q.Operator.*` 열넷(`Indexed<<V>>` 포함; `And`/`Or`·비교·`Sub`/`Div`는 의도적으로 없음),
 `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`, `q.Fallback`/`q.Traceback`(던지기 전 부분 트리는 회수되지 않음).

@@ -157,17 +157,17 @@ local dynamicStyle2 = D.Modifier.Frame { BackgroundColor3 = themeColor }
   재귀적으로 풀립니다. 문제는 `State`에 값의 필드를 꺼내는 dot-access가 없다는
   것입니다. `Store`를 담은 `State`의 필드를 반응형으로 읽으려면 명시적인 읽기
   콤비네이터가 필요합니다.
-- **해결책 (a)**: 필드 읽기는 `q.Operator.Index`로. 결과 타입은 호출자가 직접
+- **해결책 (a)**: 필드 읽기는 `q.Operator.Indexed`로. 결과 타입은 호출자가 직접
   지정합니다(키에서 추론하지 않습니다).
 
 ```luau
 local theme = q.Source({ Primary = "red", Size = 10 })
-local primary: QuadTypes.State<string> = theme:Apply(q.Operator.Index<<string>>("Primary"))
+local primary: QuadTypes.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Primary"))
 -- theme:Set({ Primary = "blue", Size = 12 }) → primary:Get() == "blue"
 ```
 
 값이 테이블이 아니면 읽는 시점에
-`Operator.Index: value is not a table (got number) — cannot read [Primary]`.
+`Operator.Indexed: value is not a table (got number) — cannot read [Primary]`.
 
 - **해결책 (b)**: 폼 리셋처럼 스토어를 새로 만들 이유가 없다면, 스토어를 바꾸지
   말고 필드를 리셋하세요.

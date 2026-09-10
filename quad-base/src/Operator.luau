@@ -143,21 +143,21 @@ function Operator.Clamp(lo: any, hi: any): (any) -> any
 	end
 end
 
--- Index<<V>>(key): reactive field read — `theme:Apply(Operator.Index<<string>>("Primary"))`.
+-- Indexed<<V>>(key): reactive field read — `theme:Apply(Operator.Indexed<<string>>("Primary"))`.
 -- The VALUE type is given explicitly (user, 2026-09-08: "실제 인덱스 결과에 해당하는걸
 -- Index<T>(k) 에 넣게" — inference from the key is out of reach for now, `typing-limits.md`
 -- 8.15; revisit when unannotated inference works). Runtime is `h:Get()[key]`; a non-table
 -- value is the user's error (raised at emit depth → outermost).
-function Operator.Index(key: any): (any) -> any
+function Operator.Indexed(key: any): (any) -> any
 	if key == nil then
-		Err.errorBeforeNearest("Operator.Index: key must not be nil", SURFACE)
+		Err.errorBeforeNearest("Operator.Indexed: key must not be nil", SURFACE)
 	end
 	return function(self: any): any
-		checkSelf("Index", self)
+		checkSelf("Indexed", self)
 		return self:Compute(function(h: any)
 			local t = h:Get()
 			if type(t) ~= "table" then
-				Err.errorBefore(`Operator.Index: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
+				Err.errorBefore(`Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
 			end
 			return t[key]
 		end)
@@ -182,6 +182,6 @@ function Operator.Alternative(default: any): (any) -> any
 	end
 end
 
-Err.setFuncLevel(SURFACE, Operator.Not, Operator.Sum, Operator.Product, Operator.Min, Operator.Max, Operator.Band, Operator.Bor, Operator.Bxor, Operator.Bnot, Operator.Shl, Operator.Shr, Operator.Clamp, Operator.Index, Operator.Alternative) -- `H-231`: the curried entries (`Sum`…`Clamp`, `Alternative`) tag the OUTER call — their inner `factory(self)` runs inside `State.Apply`, itself tagged; the unary entries (`Not`/`Bnot`) ARE the factory, so the tag lands on the factory itself (a direct `Operator.Not(x)` call blames the caller)
+Err.setFuncLevel(SURFACE, Operator.Not, Operator.Sum, Operator.Product, Operator.Min, Operator.Max, Operator.Band, Operator.Bor, Operator.Bxor, Operator.Bnot, Operator.Shl, Operator.Shr, Operator.Clamp, Operator.Indexed, Operator.Alternative) -- `H-231`: the curried entries (`Sum`…`Clamp`, `Alternative`) tag the OUTER call — their inner `factory(self)` runs inside `State.Apply`, itself tagged; the unary entries (`Not`/`Bnot`) ARE the factory, so the tag lands on the factory itself (a direct `Operator.Not(x)` call blames the caller)
 
 return { Operator = Operator }

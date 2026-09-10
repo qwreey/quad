@@ -4,7 +4,7 @@ description: "이름 붙은 콤비네이터 열넷 — state:Apply로 붙이는 
 ---
 `state:Compute(function(h) return not h:Get() end)` 같은 보일러플레이트를 없애고, **의존성 캡처가 어긋날 수 없는 재사용 가능한 이름**을 주는 콤비네이터 모음입니다. 전부 `state:Apply(factory)`로 붙습니다.
 
-이 페이지의 심볼: [`q.Operator.Not`](#qoperatornot) · [`q.Operator.Sum(...)`](#qoperatorsum) · [`q.Operator.Product(...)`](#qoperatorproduct) · [`q.Operator.Min(...)`](#qoperatormin) · [`q.Operator.Max(...)`](#qoperatormax) · [`q.Operator.Clamp(lo, hi)`](#qoperatorclamplo-hi) · [`q.Operator.Band(...)`](#qoperatorband) · [`q.Operator.Bor(...)`](#qoperatorbor) · [`q.Operator.Bxor(...)`](#qoperatorbxor) · [`q.Operator.Bnot`](#qoperatorbnot) · [`q.Operator.Shl(n)`](#qoperatorshln) · [`q.Operator.Shr(n)`](#qoperatorshrn) · [`q.Operator.Alternative(default)`](#qoperatoralternativedefault) · [`q.Operator.Index<<V>>(key)`](#qoperatorindexvkey)
+이 페이지의 심볼: [`q.Operator.Not`](#qoperatornot) · [`q.Operator.Sum(...)`](#qoperatorsum) · [`q.Operator.Product(...)`](#qoperatorproduct) · [`q.Operator.Min(...)`](#qoperatormin) · [`q.Operator.Max(...)`](#qoperatormax) · [`q.Operator.Clamp(lo, hi)`](#qoperatorclamplo-hi) · [`q.Operator.Band(...)`](#qoperatorband) · [`q.Operator.Bor(...)`](#qoperatorbor) · [`q.Operator.Bxor(...)`](#qoperatorbxor) · [`q.Operator.Bnot`](#qoperatorbnot) · [`q.Operator.Shl(n)`](#qoperatorshln) · [`q.Operator.Shr(n)`](#qoperatorshrn) · [`q.Operator.Alternative(default)`](#qoperatoralternativedefault) · [`q.Operator.Indexed<<V>>(key)`](#qoperatorindexedvkey)
 
 `quad-base`에 있으므로 백엔드와 무관하게 존재합니다.
 
@@ -54,11 +54,11 @@ export type NumOp = (self: StateData<number>) -> State<number>
 |---|---|---|
 | 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br>`Operator.Sum: argument #2 is nil` |
 | `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Operator.Sum: Apply target must be a State (got table)` |
-| 값이 계약에 안 맞음(`Index`만) | **값을 읽는 시점** | `Operator.Index: value is not a table (got number) — cannot read [x]` |
+| 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Operator.Indexed: value is not a table (got number) — cannot read [x]` |
 
 `nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다.
 
-**산술·비트 연산자는 숫자 전용입니다.** `Sum`/`Product`/`Min`/`Max`/`Clamp`와 `Band`~`Shr`는 인자뿐 아니라 **`:Apply`를 받는 State의 값도** 숫자여야 합니다. `UDim2`나 `Color3` 같은 타입에 쓰면 타입 검사에서 `None of the overloads for function that accept 2 arguments are compatible.`로 막힙니다 — 그런 연산은 `state:Compute`로 직접 쓰십시오. 값 타입을 가리지 않는 것은 `Not`·`Alternative`·`Index` 셋입니다.
+**산술·비트 연산자는 숫자 전용입니다.** `Sum`/`Product`/`Min`/`Max`/`Clamp`와 `Band`~`Shr`는 인자뿐 아니라 **`:Apply`를 받는 State의 값도** 숫자여야 합니다. `UDim2`나 `Color3` 같은 타입에 쓰면 타입 검사에서 `None of the overloads for function that accept 2 arguments are compatible.`로 막힙니다 — 그런 연산은 `state:Compute`로 직접 쓰십시오. 값 타입을 가리지 않는 것은 `Not`·`Alternative`·`Indexed` 셋입니다.
 
 ---
 
@@ -79,7 +79,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 | `Shl` | `Op.Shl(n)` | `bit32.lshift` |
 | `Shr` | `Op.Shr(n)` | `bit32.rshift` |
 | `Alternative` | `Op.Alternative(default)` | 널 병합 — `State<T?>` → `State<T>` |
-| `Index` | `Op.Index<<V>>(key)` | 반응형 필드 읽기 |
+| `Indexed` | `Op.Indexed<<V>>(key)` | 반응형 필드 읽기 |
 
 ---
 
@@ -246,7 +246,7 @@ local optionalName = q.Source(nil :: string?)
 local safeName: State<string> = optionalName:Apply(Op.Alternative("Guest")) -- "Guest"
 ```
 
-## `q.Operator.Index<<V>>(key)`
+## `q.Operator.Indexed<<V>>(key)`
 
 **시그니처**
 
@@ -262,21 +262,21 @@ Index: <V>(key: any) -> (self: any) -> State<V>
 type Palette = { Primary: string, Size: number }
 local palette = q.Source({ Primary = "red", Size = 10 } :: Palette)
 
-local primary: State<string> = palette:Apply(Op.Index<<string>>("Primary"))
-local size: State<number> = palette:Apply(Op.Index<<number>>("Size"))
-local missing: State<string?> = palette:Apply(Op.Index<<string?>>("Nope")) -- nil
+local primary: State<string> = palette:Apply(Op.Indexed<<string>>("Primary"))
+local size: State<number> = palette:Apply(Op.Indexed<<number>>("Size"))
+local missing: State<string?> = palette:Apply(Op.Indexed<<string?>>("Nope")) -- nil
 ```
 
 에러 둘. `key`가 `nil`이면 팩토리 호출 즉시입니다.
 
 ```
-Operator.Index: key must not be nil
+Operator.Indexed: key must not be nil
 ```
 
 상류 값이 테이블이 아니면 **읽는 시점에** 던집니다(`[...]` 자리엔 그 키가 들어갑니다).
 
 ```
-Operator.Index: value is not a table (got number) — cannot read [x]
+Operator.Indexed: value is not a table (got number) — cannot read [x]
 ```
 
 ---

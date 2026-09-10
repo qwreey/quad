@@ -296,9 +296,9 @@ export type Operator = {
 	Shr: (n: NumArg) -> NumOp,
 	Clamp: (lo: NumArg, hi: NumArg) -> NumOp,
 	Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>,
-	-- 결과 타입을 호출자가 직접 준다: `theme:Apply(Operator.Index<<string>>("Primary"))`(사용자 결정 2026-09-08 —
+	-- 결과 타입을 호출자가 직접 준다: `theme:Apply(Operator.Indexed<<string>>("Primary"))`(사용자 결정 2026-09-08 —
 	-- 키에서 추론하는 타입드 형태는 지금 솔버로 불가, `typing-limits.md` 8.15; 무주석 추론이 되면 그때 옮긴다)
-	Index: <V>(key: any) -> (self: any) -> State<V>,
+	Indexed: <V>(key: any) -> (self: any) -> State<V>,
 }
 
 -- ── Tag / Attr (M10, round16 spike) ─────────────────────────────

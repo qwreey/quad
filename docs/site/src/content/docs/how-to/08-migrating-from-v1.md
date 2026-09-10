@@ -131,7 +131,7 @@ local shown = nickname:Apply(Op.Alternative("Guest"))
 
 -- v1: register:With(테이블)  — 테이블 한 칸을 반응형으로 읽기
 local theme = q.Source({ Primary = Color3.fromRGB(0, 120, 255) })
-local primary = theme:Apply(Op.Index<<Color3>>("Primary"))
+local primary = theme:Apply(Op.Indexed<<Color3>>("Primary"))
 
 -- v1의 UDim2/Color3 덧셈은 Operator가 아니라 :Compute로
 local base = q.Source(UDim2.fromOffset(0, 0))
@@ -365,7 +365,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
 | `Op.Sum(UDim2…)` 같은 비숫자 | `None of the overloads for function that accept 2 arguments are compatible` | 산술·비트 연산자는 숫자 전용입니다. 다른 타입은 `:Compute`로 |
 
-> **`<<T>>` 표기**: quad는 Luau의 **명시적 타입 인자** 문법을 씁니다. 화살괄호가 **둘**입니다 — `q.Slot<<Instance>>()`, `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`, `Op.Index<<Color3>>("Primary")`. 하나만 쓰면 비교 연산으로 파싱돼 문법 오류가 납니다.
+> **`<<T>>` 표기**: quad는 Luau의 **명시적 타입 인자** 문법을 씁니다. 화살괄호가 **둘**입니다 — `q.Slot<<Instance>>()`, `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`, `Op.Indexed<<Color3>>("Primary")`. 하나만 쓰면 비교 연산으로 파싱돼 문법 오류가 납니다.
 
 > **[2026-09-09] `Font`는 다시 씁니다 — 다만 레거시입니다.** 생성 `D`에 `Font`/`FontSize`/`TextWrap`/`Transparency`가 돌아왔습니다(엔진이 Deprecated·Hidden으로 표시한 프로퍼티를 v1 마이그레이션용으로 되살린 결정 — 필드마다 `-- @deprecated (Roblox <tags>)` 주석이 붙어 있습니다). v1 코드를 그대로 옮길 땐 `Font = Enum.Font.GothamMedium`이 타입 검사를 통과하니 먼저 컴파일을 통과시키고, **새로 쓰는 코드와 정리 단계에서는 현행 API인 `FontFace = Font.fromEnum(Enum.Font.GothamMedium)`으로 옮기세요**. ⚠️ 테이블 키 자동완성에는 이 deprecated 표시가 실리지 않습니다(에디터가 경고해주지 않는다는 뜻 — 멤버 접근 hover에만 보입니다).
 

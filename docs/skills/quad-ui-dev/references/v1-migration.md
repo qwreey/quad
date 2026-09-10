@@ -44,7 +44,7 @@ Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadR
 | `myStore "color"` | `store.color` (the very Source passed in) |
 | `myStore.NewKey = v` (undeclared) | `store:Of<<T>>("NewKey")` — the only dynamic door; annotation mandatory |
 | `register:With(fn)` | `state:Compute(fn, ...deps)` — deps arrive as **handles**, read with `:Get()` |
-| `register:With(table)` | `state:Apply(q.Operator.Index<<V>>(key))` |
+| `register:With(table)` | `state:Apply(q.Operator.Indexed<<V>>(key))` |
 | `register:Add(v)` | `state:Apply(q.Operator.Sum(v))` — **numbers only** |
 | `register:Default(v)` | `state:Apply(q.Operator.Alternative(v))` |
 | `register:Tween{ Time = 2 }` | `state:Apply(q.Animate { Time = 2 })` |
@@ -103,7 +103,7 @@ v2's `state:With(...)` exists and is a *different* API (it mints one extra node)
 
 Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
 `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`,
-`q.Operator.Index<<Color3>>("Primary")`.
+`q.Operator.Indexed<<Color3>>("Primary")`.
 
 ## 4. What strict mode does NOT catch
 

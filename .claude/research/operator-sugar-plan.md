@@ -3,14 +3,14 @@
 > **⭐ [2026-09-08 구현 — 사용자 범위 확정]** `quad-base/src/Operator.luau`(의존 없는 잎, `quad.Operator.*`), 스펙 `spec.operator`.
 > 네임스페이스 이름은 **`Operator`**(아래 "열린 질문 — 네임스페이스 이름" 절의 외부 리서치 권고 그대로, 사용자: *"Operator 이름도
 > 괜찮고"*). 포함: 단항 `Not`, 산술 `Sum`/`Product`, `Min`/`Max`/`Clamp`, 비트 `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`,
-> `Alternative`(nil 대체), **`Index<<V>>(key)`**(반응형 필드 읽기 — 결과 타입은 호출자가 직접, `typing-limits.md` 8.15; 사용자 제안 2026-09-08). 숫자 인자는 plain이거나 `State<number>`(팩토리가 State만 deps로 넘긴다). **뺀 것(사용자)**: `And`/`Or`
+> `Alternative`(nil 대체), **`Indexed<<V>>(key)`**(반응형 필드 읽기 — 결과 타입은 호출자가 직접, `typing-limits.md` 8.15; 사용자 제안 2026-09-08). 숫자 인자는 plain이거나 `State<number>`(팩토리가 State만 deps로 넘긴다). **뺀 것(사용자)**: `And`/`Or`
 > 결합(*"솔찍히 비추. if else 우리가 쓰던 이유가 있는데, 그거에 부딛힘"*), 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`(*"조건 분기를 타는 경우
 > 쓰는게 일반적인데, 그걸 지원하는걸 안 넣어줬으니까"* — 분기 콤비네이터 `IfElse`류가 있어야 뜻이 생긴다, `question.md` 0절 (l)),
 > `Sub`/`Div`/`Xor`(선례 없음 — 아래 "포함 범위"). 사용자 문서용 관측(round9 둘째 리뷰): 비트 계열은 `bit32` 계약대로 음수는 2^32 모듈로,
 > 소수는 잘린다(게이트 없음); `Alternative`는 primary가 nil이 아니어도 default State를 항상 구독한다(최신 fallback 보장); default State의
 > 값이 nil이면 결과도 nil. nil 인자는 팩토리 호출에서 에러(`H-199` 관용구, `H-517`). **나머지 열린 절은 같은 밤 사용자 결정으로 각각 별도 백로그로 분리**(ROADMAP 백로그):
 > Attr unset 유틸(오퍼레이터가 아님), 중첩 평탄화 `State<State<T>>`(코어 재검증 필요), `IfElse`+`Concat`/`Sorted`/`Filtered`(순수 슈거지만
-> 타입 표면 결정이 필요), 타입드 `Index`(솔버 한계 — `typing-limits.md` 8.15). 이 문서는 카탈로그 기록으로 남는다.
+> 타입 표면 결정이 필요), 타입드 `Indexed`(솔버 한계 — `typing-limits.md` 8.15). 이 문서는 카탈로그 기록으로 남는다.
 
 **상태**: ~~research~~ **[2026-09-08 구현 완료 — 위 배너가 소스; 아래 이 문단은 착수 전 서술]** research — 사용자 요청(2026-08-12 세션)으로 신설, 같은 세션
 후속 논의에서 `:Apply` 경유로 확정(아래 "왜 `:Apply`인가" 절). ~~**구현은 맨 마지막으로 미룸(사용자 본인이 명시)**~~(**[2026-09-08]** 구현됨): 순수 슈가라 없어도 quad 기능상

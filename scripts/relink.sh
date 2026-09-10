@@ -82,6 +82,37 @@ if [ "$fail" -ne 0 ]; then
 	exit 1
 fi
 
+# 2.5) [2026-09-10] 중첩 사본 호이스팅 — 워크스페이스 멤버를 통째로 복사하면 그 멤버 자신의
+#    luau_packages/.pesde까지 따라와 같은 패키지@버전의 **실복사본이 둘**이 된다(예: quad-roblox 아래
+#    직접 의존 quad_types + quad_base 사본 안의 quad_types). luau CLI는 둘 다 잘 돌지만 luau-lsp는
+#    둘을 다른 모듈로 봐 타입 신원이 갈린다(spec.reftypes의 'Self' 에러 — 스테이징에서 "원인 미확인"으로
+#    남겼던 것, 첫 pesde 0.7.4 설치에서 재현). 최상위에 같은 패키지@버전이 있으면 중첩 링커를 그쪽
+#    상대 경로로 고쳐 쓰고 중첩 사본은 지운다 — 상대 경로 require는 luau CLI도 탄다(실측). 매번 복사
+#    뒤에 다시 돌므로 idempotent.
+hoisted=0
+for top in */luau_packages/.pesde */roblox_packages/.pesde; do
+	[ -d "$top" ] || continue
+	for nested in "$top"/*/*/*/luau_packages/.pesde/*/* "$top"/*/*/*/roblox_packages/.pesde/*/*; do
+		[ -d "$nested" ] || continue
+		op2="$(basename "$(dirname "$nested")")"   # <owner>+<pkg>
+		ver2="$(basename "$nested")"
+		[ -d "$top/$op2/$ver2" ] || continue
+		pkg2="${op2#*+}"
+		pkgs_dir="$(dirname "$(dirname "$(dirname "$nested")")")"   # <nested>=…/<kind>_packages/.pesde/<o+p>/<ver> → 셋 위
+		linker="$pkgs_dir/$pkg2.luau"
+		[ -f "$linker" ] || continue
+		chmod u+w "$linker"
+		sed -i "s#require(\"./.pesde/$op2/$ver2/$pkg2/src\")#require(\"../../../../$op2/$ver2/$pkg2/src\")#" "$linker"
+		grep -q "../../../../$op2/$ver2/$pkg2/src" "$linker" || note_fail "hoist: linker rewrite failed: $linker"
+		rm -rf "$nested"
+		rmdir "$(dirname "$nested")" 2>/dev/null || true
+		hoisted=$((hoisted + 1))
+	done
+done
+[ "$hoisted" -gt 0 ] && echo "relink: $hoisted nested cop(y/ies) hoisted to top-level"
+
+if [ "$fail" -ne 0 ]; then exit 1; fi
+
 # 3) 최종 확인 — .pesde 아래에 심볼릭이 하나도 남으면 안 된다.
 leftover="$(find . -path ./.git -prune -o -type l -print | grep '/\.pesde/' || true)"
 if [ -n "$leftover" ]; then

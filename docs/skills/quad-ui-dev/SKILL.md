@@ -58,7 +58,7 @@ Snippets below assume this prologue.
 | **`Tween<T>`** | `q.Tween{ Value = v, Time = 0.3 }` | Value container | `Value` must be plain (never a State). `Override`, `Dedup`. |
 | **`Animate`** | `q.Animate{ Time = 0.2, ... }` | Applicative sugar | `state:Apply(q.Animate{ Time = 0.2 })`. |
 | **`Debounce`/`Throttle`** | `q.Debounce{ Time = 0.3 }` | Time gate | `state:Apply(q.Debounce{...})`. Optional `Handle = q.Ref(nil)`. |
-| **`Operator`** | `q.Operator.*` | Named combinators | `Not`, `Sum`, `Product`, `Min`, `Max`, `Clamp`, `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`, `Alternative`, `Index`. |
+| **`Operator`** | `q.Operator.*` | Named combinators | `Not`, `Sum`, `Product`, `Min`, `Max`, `Clamp`, `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`, `Alternative`, `Indexed`. |
 | **`Claim`** | `q.Claim(inst, desc)` | Prefab binding | Takes an existing tree into quad ownership. Two args — the descriptor is required. |
 
 Values that belong in the **array part** of a props table, never as hash keys:
@@ -92,9 +92,9 @@ end, lastName)
 - `State<State<T>>` is **supported**. In a property/child slot the inner state is
   subscribed too (`StoreBind` re-dispatches the unwrapped value at `index + 1`), so the
   inner `:Set` updates the instance. As a `:Compute` dependency only the outer handle is
-  subscribed — the inner `:Set` does not recompute; read it via the outer or `q.Operator.Index`.
+  subscribed — the inner `:Set` does not recompute; read it via the outer or `q.Operator.Indexed`.
 - A `Store` inside a `Source`/`State` is allowed but **not reactive per field**: the
-  outer state fires only when the whole value is replaced. Use `q.Operator.Index` for a
+  outer state fires only when the whole value is replaced. Use `q.Operator.Indexed` for a
   reactive field read.
 - A `Modifier` inside a `Source` errors: `Source: cannot hold a Modifier as a Source value`.
 - To reset a form, set the individual `Source` fields: `store.Name:Set("")`.
@@ -112,10 +112,10 @@ local isHidden   = isVisible:Apply(Op.Not)                     -- unary
 local totalPrice = price:Apply(Op.Sum(tax, shipping))          -- n-ary, plain numbers or States
 local clamped    = rawPos:Apply(Op.Clamp(0, maxBound))
 local safeName   = optionalName:Apply(Op.Alternative("Guest")) -- State<T?> -> State<T>
-local primary    = theme:Apply(Op.Index<<string>>("Primary"))  -- caller supplies the result type
+local primary    = theme:Apply(Op.Indexed<<string>>("Primary"))  -- caller supplies the result type
 ```
 
-`Op.Index` needs an explicit type argument — the key is not enough to infer it.
+`Op.Indexed` needs an explicit type argument — the key is not enough to infer it.
 `And`/`Or`, comparisons, and `Sub`/`Div` deliberately do not exist.
 
 ---

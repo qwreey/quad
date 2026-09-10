@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 format = 2
 name = "qwreey/quad"
-version = "0.0.0"
+version = "3.0.0"
 target = "roblox"
 
 [workspace."qwreey/quad_base"]
