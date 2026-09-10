@@ -313,3 +313,8 @@ pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 
 ## 16. [2026-09-10 밤 신설] 문자열 `require("@game/…")`의 복제 전 동작 실측
 
 시작하기 01(설정 모듈·진입점)이 `require("@game/ReplicatedStorage/roblox_packages/quad_base")` 형태를 권한다(사용자 결정 — 타입이 살고, 설정 모듈 재수출까지 strict 통과 실측). 에이전트 웹 리서치(DevForum 발표 스레드 FAQ, 2026-09 기준)는 문자열 require가 대상이 아직 복제되지 않았으면 **기다리지 않고 즉시 실패**하며 `game.Loaded:Wait()`를 권한다고 하고, 이건 사용자 전제("async")와 어긋난다. 실기기에서 확인할 것: `StarterPlayerScripts`의 LocalScript가 첫 줄에서 `require("@game/ReplicatedStorage/…")`를 불렀을 때 (a) 그냥 되는지 (b) 간헐적으로 실패하는지 (c) yield로 기다리는지. 결과로 01의 접힌 캐비엇 한 문장("[2026-09-10 기준] 실기기에서 확인하지 않았습니다")을 확정하고, 필요하면 `game.Loaded:Wait()` 한 줄을 진입점에 넣는다. 문항은 `.claude/question.md` 3절 D9.
+
+## 17. [2026-09-10 밤 신설] `docs/README.md`의 Diátaxis 사분면 그림을 SVG로
+
+사이트의 박스 문자 아스키아트는 전부 mermaid로 바꿨지만(`docs/README.md`는 사이트 밖이라 남김), 사용자가 *"Diátaxis 사분면 그림은 나중에 내가 직접 그릴게. 비슷하게 svg 로 올려줄게"*. SVG가 오면 `docs/README.md` §1의 아스키아트를 그 이미지로 교체한다(에이전트가 해도 됨).
+
