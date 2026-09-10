@@ -367,7 +367,7 @@ pesde 첫 게시(사용자 결정 2026-09-10: 레지스트리는 `3.0.0`부터, 
 
 - `question.md` 3절 **D5**(14.2와 같은 것).
 - `research/rfc-docs-section-plan.md` 8절 **Q1~Q6**(공개 범위·형태·기존 결정 둘의 역전·사전 정리 방식·번역·갱신 자동화).
-- ROADMAP·CHANGELOG 공개 계획서(2026-09-11 작성 중 — 끝나면 `research/README.md` 표에 오르고, 그 문서의 열린 결정 절이 여기 해당).
+- `research/roadmap-changelog-docs-plan.md` 7절 **Q1~Q8**(CHANGELOG 임베딩 여부·frontmatter 위치·사이드바·오버뷰 §8 확장 vs 새 페이지·내부 ROADMAP 공개 절 메커니즘·약속 수위·v1 원문 절·번역). 같은 조사의 부수 문항 `question.md` 3절 **D11**(`quad-mock` 이름).
 - **다음 릴리즈 번호** — `CHANGELOG.md` `[Unreleased]`에 BREAKING(`Operator.Index → Indexed`)과 Changed(`Slot:Single` 타입)가 쌓여 있다. SemVer대로면 4.0.0인데 3.0.0 직후라 사용자 판단(이 결정이 나면 `scripts/check-version.py bump`는 에이전트가).
 - 시작하기의 **함수형 페이지 위치**(B 흐름 항목)와 **얇은 페이지 합치기 여부** — 에이전트가 고른 배치라 한 번 봐 달라.
 
