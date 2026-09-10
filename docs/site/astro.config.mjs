@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import mermaid from 'astro-mermaid';
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,7 +18,9 @@ export default defineConfig({
 					: ['quad.selene.yaeji.moe', ...(process.env.DOCS_ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean)],
 		},
 	},
+	// [2026-09-10 사용자] 박스 문자 아스키아트가 브라우저·폰트마다 깨진다(CJK 폭) → ```mermaid 블록을 클라이언트에서 렌더(GitHub도 mermaid를 그린다). starlight보다 앞에 둬야 remark 단계에서 코드 블록을 가로챈다.
 	integrations: [
+		mermaid({ autoTheme: true }),
 		starlight({
 			title: 'Quad',
 			logo: { src: './src/assets/quad-logo.svg', replacesTitle: true, alt: 'quad' },

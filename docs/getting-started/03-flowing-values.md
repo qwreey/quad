@@ -82,12 +82,9 @@ count:Set(7)
 
 **실행하면** 화면에 `카운트: 7`이 보입니다. `count`가 움직이면 파이프가 다시 계산되고, 그 결과가 프로퍼티까지 흘러갑니다.
 
-```
-┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-│ q.Source(0)  │ ───▶ │ :Compute(fn) │ ───▶ │ Text = …     │
-└──────────────┘      └──────────────┘      └──────────────┘
-     원천                  파이프                프로퍼티
-   값을 넣는다            값을 처리한다          화면에 그린다
+```mermaid
+flowchart LR
+    A["<b>원천</b><br/><code>q.Source(0)</code><br/>값을 넣는다"] --> B["<b>파이프</b><br/><code>:Compute(fn)</code><br/>값을 처리한다"] --> C["<b>프로퍼티</b><br/><code>Text = …</code><br/>화면에 그린다"]
 ```
 
 파이프의 콜백에서 눈여겨볼 것이 하나 있습니다. **콜백이 받는 `c`는 값이 아니라 핸들입니다** — 그래서 `c:Get()`으로 읽습니다.
@@ -128,17 +125,15 @@ print(both:Get())  --> "7번"
 <details>
 <summary><strong><code>Source</code>와 <code>State</code>는 정확히 어떤 관계인가요?</strong></summary>
 
-```
-┌──────────────────────────────────────────────┐
-│  State<T> — 읽고, 파생시키고, 관측한다          │
-│  :Get()  :Compute(fn, ...)  :With(...)       │
-│  :Apply(factory)  :Observer(fn)  :Gate(setup)│
-│                                              │
-│  ┌────────────────────────────────────────┐  │
-│  │  Source<T> — 위의 전부 + 값을 넣는다     │  │
-│  │  :Set(v)   :Emit()   .Revision         │  │
-│  └────────────────────────────────────────┘  │
-└──────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph State["State&lt;T&gt; — 읽고, 파생시키고, 관측한다"]
+        direction TB
+        S1[":Get()  :Compute(fn, ...)  :With(...)<br/>:Apply(factory)  :Observer(fn)  :Gate(setup)"]
+        subgraph Source["Source&lt;T&gt; — 위의 전부 + 값을 넣는다"]
+            S2[":Set(v)  :Emit()  .Revision"]
+        end
+    end
 ```
 
 1. **`State<T>`**: 값을 읽을 수 있는 반응형 노드입니다. `:Compute(fn, ...deps)`로 파생 State를 만들고, `:Observer(fn)`으로 변경을 관측합니다. **`State`에는 공개 생성자가 없습니다** — `q.State(...)` 같은 것은 없고, State는 `q.Source(...)`이거나 `:Compute`/`:With`/`:Apply`/`:Gate`가 만들어 준 파생 노드입니다.
