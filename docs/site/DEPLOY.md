@@ -55,3 +55,7 @@ npm run deploy:preview    # 현재 브랜치 이름의 프리뷰 URL — <branch
 ## mermaid 문법 검사 (2026-09-10)
 
 다이어그램은 ```mermaid 블록이고 사이트가 **클라이언트에서** 그리므로 빌드는 문법 오류를 못 잡는다(브라우저에 "Syntax error in text"). `npm run check:mermaid`(= `node check-mermaid.mjs`, jsdom 위 mermaid 11 `parse()`)가 `docs/**/*.md`의 블록 전부를 검사하고 오류가 있으면 `파일:줄`과 함께 exit 1 — `deploy.sh`가 sync 뒤에 돌린다. 에지 라벨에 괄호가 들면 `|"…"|`로 따옴표를 감쌀 것(첫 오류가 그것이었다). `mermaid`는 astro-mermaid peer 범위인 **11**로 핀(12는 peer 밖).
+
+## dev 중 build 금지 (2026-09-10 실측)
+
+`./dev.sh`가 도는 동안 `npm run build`를 돌리면 dev 서버의 콘텐츠 레이어가 굳어 그 뒤 변경이 반영되지 않는다(브라우저 캐시 무시로도 옛 렌더). 둘이 `.astro/` 저장소를 공유하기 때문으로 보인다. 빌드가 필요하면 끝난 뒤 `./dev.sh`로 재시작한다. `deploy.sh`는 dev가 떠 있으면 경고를 찍는다.

@@ -10,6 +10,8 @@
 # docs/<track>/*.md를 고치면 watch-docs.py가 sync-docs.py를 다시 돌리고,
 # astro dev가 src/content/ 변경을 감지해 브라우저를 갱신한다.
 #
+# ⚠️ [2026-09-10 실측] dev가 도는 동안 `npm run build`를 돌리면 dev가 옛 렌더를 굳힌 채 낸다(브라우저 캐시 무시로도 안 풀림) —
+#    빌드가 필요하면 끝난 뒤 `./dev.sh`로 재시작할 것. 검증용 빌드는 `astro check`나 sync+check-mermaid로 대신한다.
 # ⚠️ 이 astro는 `dev`를 백그라운드 데몬으로 띄운다(로그: `npx astro dev logs`,
 # 종료: `npx astro dev stop`). 그래서 이 스크립트는 데몬을 먼저 띄우고 **감시자를
 # 포그라운드로** 잡고 있는다 — Ctrl-C면 감시자와 데몬을 같이 정리한다.
