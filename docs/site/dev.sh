@@ -4,6 +4,7 @@
 #   ./dev.sh                     # 0.0.0.0:4321
 #   PORT=8080 ./dev.sh           # 포트 바꾸기
 #   HOST=127.0.0.1 ./dev.sh      # 로컬만
+#   DOCS_ALLOWED_HOSTS=all ./dev.sh   # 프록시 호스트 제한 해제(기본 허용: quad.selene.yaeji.moe)
 #   ./dev.sh stop                # 서버 내리기(= npx astro dev stop)
 #
 # docs/<track>/*.md를 고치면 watch-docs.py가 sync-docs.py를 다시 돌리고,
@@ -26,11 +27,12 @@ fi
 # 이미 떠 있으면 내리고 다시(포트/호스트가 바뀌었을 수 있다)
 npx astro dev stop >/dev/null 2>&1 || true
 
-# --allowed-hosts: 샌드박스 밖으로 프록시해서 볼 때 Host 헤더가 달라 막히는 것을 푼다
-npx astro dev --host "$HOST" --port "$PORT" --allowed-hosts
+# 허용 호스트는 astro.config.mjs의 vite.server.allowedHosts(기본 quad.selene.yaeji.moe) — 더 열려면
+#   DOCS_ALLOWED_HOSTS=a.example,b.example ./dev.sh   또는   DOCS_ALLOWED_HOSTS=all ./dev.sh
+npx astro dev --host "$HOST" --port "$PORT"
 
 cleanup() { npx astro dev stop >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 
 echo "[dev.sh] http://${HOST}:${PORT}/ — 감시자 실행 중(Ctrl-C로 둘 다 종료)"
-python3 watch-docs.py
+python3 "$PWD/watch-docs.py"   # 절대 경로로 띄운다 — `stop`의 pkill 패턴이 이 경로를 본다(상대 경로면 못 잡아 감시자가 쌓인다)

@@ -26,6 +26,8 @@ cd docs/site && npm run dev      # = ./dev.sh — docs/ 정본 감시(watch-docs
 ./dev.sh stop                     # 종료; PORT=8080 / HOST=127.0.0.1 로 바꿀 수 있다
 ```
 
+프록시 호스트로 볼 때 vite의 `allowedHosts`가 막는다 — 기본 허용은 `quad.selene.yaeji.moe` 하나이고, `DOCS_ALLOWED_HOSTS=a.example,b.example`(추가) 또는 `DOCS_ALLOWED_HOSTS=all`로 넓힌다(`astro.config.mjs` `vite.server.allowedHosts`).
+
 `sync-docs.py`는 트랙 폴더를 지우고 다시 쓰지 않고 달라진 파일만 제자리에서 쓴다 — dev 중 감시 디렉터리가 사라지면 astro가 이후 변경을 못 보기 때문(실측).
 
 ## 매번

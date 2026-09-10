@@ -7,6 +7,16 @@ export default defineConfig({
 	// [2026-09-10] Cloudflare Pages(Wrangler 직접 업로드)로 배포 — 루트 base. 커스텀 도메인 quad.qwreey.moe(사용자 결정 2026-09-10) — sitemap·canonical의 절대 URL만 여기서 나온다. 프리뷰 URL(*.quad-docs.pages.dev)은 그대로 열린다(DEPLOY.md).
 	site: process.env.DOCS_SITE ?? 'https://quad.qwreey.moe',
 	base: '/',
+	// [2026-09-10 사용자] 로컬 dev 서버를 샌드박스 밖 프록시 호스트로 볼 때 vite가 Host 헤더로 막는다(allowedHosts).
+	// DOCS_ALLOWED_HOSTS: 쉼표 목록(추가 호스트) 또는 `all`(아무 호스트나). 기본은 quad.selene.yaeji.moe 하나.
+	vite: {
+		server: {
+			allowedHosts:
+				process.env.DOCS_ALLOWED_HOSTS === 'all'
+					? true
+					: ['quad.selene.yaeji.moe', ...(process.env.DOCS_ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean)],
+		},
+	},
 	integrations: [
 		starlight({
 			title: 'Quad',
