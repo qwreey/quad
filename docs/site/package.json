@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "./dev.sh",
+    "dev:astro": "astro dev",
+    "watch": "python3 watch-docs.py",
+    "start": "./dev.sh",
     "build": "astro build",
     "preview": "astro preview",
     "sync": "python3 sync-docs.py",

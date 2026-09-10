@@ -53,7 +53,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`01-first-screen.md`](./getting-started/01-first-screen.md) — 첫 화면: `D.Frame` 하나를 만들어 `PlayerGui`의 `ScreenGui`에 붙인다. 부른 순간 실물 Instance(`print(inst.ClassName)`), 해시 부분=프로퍼티, `Parent`는 밖에서, 키 없는 배열 원소가 자식, 숏핸드 `UICorner` 한 문장.
 - [`02-flowing-values.md`](./getting-started/02-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → `:Set`으로 화면이 따라옴 → 중간에 파이프(`:Compute`, 콜백은 핸들·의존은 명시) → 그제야 `Source`/`State` 이름 붙이기(모든 `Source`는 `State`). "원천 → 파이프 → 프로퍼티" 그림.
 - [`03-reacting.md`](./getting-started/03-reacting.md) — 반응하기: `Activated`로 `count:Set`, 이벤트는 해시 부분·엔진 인자만(self 없음). `:Observer(fn)`은 등록 시 1회 발화 + 배열 부분에 넣어야 계속 산다.
-- [`04-components.md`](./getting-started/04-components.md) — 컴포넌트로 쪼개기: 평범한 함수, props로 초기값·라벨, 두 개 나란히(각자 상태), `table.unpack(props.children or {})`, `D.Modifier.Frame {…}` 하나를 배열 부분에. 경계 규약은 how-to 09로.
+- [`04-components.md`](./getting-started/04-components.md) — 컴포넌트로 쪼개기: 평범한 함수, props로 초기값·라벨, 두 개 나란히(각자 상태), `table.unpack(props.children or {})`, `D.Modifier.Frame {…}` 하나를 배열 부분에, 그리고 §4에 `q.Context` 가방 하나(작게 — 트리 조회는 없다는 것까지). 경계 규약은 how-to 09로.
 - [`05-animation.md`](./getting-started/05-animation.md) — 움직이게 하기: 방법 A `state:Apply(q.Animate{…})` / 방법 B `:Compute` 안에서 `q.Tween{…}`. 첫 세팅 스냅·Dedup·`Override` 넷. mock 백엔드에서 실행 확인됨.
 - [`06-mental-models.md`](./getting-started/06-mental-models.md) — 정리: 01~05에서 겪은 것에 이름 붙이기(멘탈 모델 셋 회고 + 역링크, `State`/`Source` 상자 그림), 4절에 프로젝트 설정 모듈 하나(프로바이더·플러그인 설치, `Quad.New()`도 그 자리 — `00-installation`의 4절 앵커가 여기로), v1 콜아웃 `<details>`.
 
@@ -96,7 +96,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 
 ### Web Site & Tooling — [`site/`](./site)
 Astro + Starlight(Zero-JS 기본, Pagefind 검색, Expressive Code, `ko/`·`en/` 폴더 i18n). [`site/sync-docs.py`](./site/sync-docs.py)가
-overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/<track>/`(**[2026-09-10]** 한국어가 root 로케일 — 옛 `ko/`)로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
+overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/<track>/`(**[2026-09-10]** 한국어가 root 로케일 — 옛 `ko/`)로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-10]** 복사는 **in-place**다(옛 `rmtree` 제거) — dev 중 감시 디렉터리가 통째로 사라지면 `astro dev`가 두 번째 변경부터 못 보고 옛 렌더를 준다(실측). 로컬 미리보기는 [`site/dev.sh`](./site/dev.sh)(`npm run dev`) — [`site/watch-docs.py`](./site/watch-docs.py)가 정본 `.md`를 폴링해 sync를 다시 돌리고 astro dev가 갱신한다(`./dev.sh stop`으로 종료, 포트는 `PORT=`). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
 
 ### Agent Tooling — [`skills/quad-ui-dev/`](./skills/quad-ui-dev)
 AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md`](./skills/quad-ui-dev/SKILL.md)(온톨로지·금지 패턴·strict 타입 요구사항),

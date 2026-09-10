@@ -52,8 +52,12 @@ def main():
         if not os.path.isdir(src_dir):
             continue
         dest_dir = os.path.join(DEST, track)
-        shutil.rmtree(dest_dir, ignore_errors=True)
+        # [2026-09-10] rmtree 하지 않는다 — `astro dev`(chokidar)가 감시하던
+        # 디렉터리가 통째로 사라지면 그 뒤 변경을 못 보고 옛 렌더를 계속 준다
+        # (실측: dev 중 두 번째 변경부터 반영 안 됨). 대신 내용이 달라진 파일만
+        # 쓰고, 정본에서 사라진 사본만 지운다 — 출력은 동일하고 idempotent하다.
         n = 0
+        written = set()
         for dp, dn, fn in os.walk(src_dir):
             for f in sorted(fn):
                 if not f.endswith('.md'):
@@ -67,8 +71,21 @@ def main():
                 out = strip_h1(convert(sp, text))
                 dst = os.path.join(dest_dir, os.path.relpath(sp, src_dir))
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
-                open(dst, 'w', encoding='utf-8').write(out)
+                written.add(os.path.abspath(dst))
+                prev = None
+                if os.path.exists(dst):
+                    prev = open(dst, encoding='utf-8').read()
+                if prev != out:
+                    open(dst, 'w', encoding='utf-8').write(out)
                 n += 1
+        # 정본에서 없어진 사본 청소(빈 디렉터리도)
+        for dp, dn, fn in os.walk(dest_dir, topdown=False):
+            for f in fn:
+                fp = os.path.abspath(os.path.join(dp, f))
+                if fp not in written:
+                    os.remove(fp)
+            if dp != dest_dir and not os.listdir(dp):
+                os.rmdir(dp)
         print(f'  ✓ {track}: {n} files')
     if failed:
         print(f'{failed} file(s) skipped — add frontmatter', file=sys.stderr)

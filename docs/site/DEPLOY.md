@@ -19,6 +19,15 @@ npx wrangler pages project create quad-docs --production-branch main
   3. CLI로만 하고 싶으면 wrangler엔 도메인 명령이 없다 — API `POST /accounts/<account_id>/pages/projects/quad-docs/domains` body `{"name":"quad.qwreey.moe"}`(토큰에 Pages 편집 권한), DNS 레코드는 별도.
 - 비대화형(토큰) 인증이 필요하면 `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID` 환경변수로 대신할 수 있다(Pages 편집 권한 토큰).
 
+## 로컬 미리보기 (2026-09-10)
+
+```sh
+cd docs/site && npm run dev      # = ./dev.sh — docs/ 정본 감시(watch-docs.py → sync-docs.py) + astro dev(0.0.0.0:4321)
+./dev.sh stop                     # 종료; PORT=8080 / HOST=127.0.0.1 로 바꿀 수 있다
+```
+
+`sync-docs.py`는 트랙 폴더를 지우고 다시 쓰지 않고 달라진 파일만 제자리에서 쓴다 — dev 중 감시 디렉터리가 사라지면 astro가 이후 변경을 못 보기 때문(실측).
+
 ## 매번
 
 ```sh
