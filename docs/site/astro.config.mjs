@@ -47,15 +47,10 @@ export default defineConfig({
 			// [2026-09-10] Starlight 0.39+ — autogenerate 그룹은 `items: [{ autogenerate }]` 형태, 그룹의 `badge`는 유지된다(항목 badge만 지원)
 			// [2026-09-10 사용자] 그룹은 기본 접힘(`collapsed`) — 현재 페이지가 든 그룹(과 그 상위)만 Starlight가 펼친다
 			sidebar: [
-				{ label: 'Overview (왜 Quad인가)', collapsed: true, items: [{ autogenerate: { directory: 'overview' } }] },
+				// [2026-09-10 사용자] 순서: 시작하기가 맨 앞, "왜 Quad인가"는 그 뒤(비교 문서 — 먼저 밝힐 필요 없음), Quadnomicon은 레퍼런스 아래
 				{ label: 'Getting Started (시작하기)', collapsed: true, items: [{ autogenerate: { directory: 'getting-started' } }] },
+				{ label: 'Overview (왜 Quad인가)', collapsed: true, items: [{ autogenerate: { directory: 'overview' } }] },
 				{ label: 'How-To Guides (실전 가이드)', collapsed: true, items: [{ autogenerate: { directory: 'how-to' } }] },
-				{
-					label: 'The Quadnomicon (심층 아키텍처)',
-					collapsed: true,
-					badge: { text: 'Deep Dive', variant: 'caution' },
-					items: [{ autogenerate: { directory: 'quadnomicon' } }],
-				},
 				{
 					label: 'Reference (레퍼런스)',
 					collapsed: true,
@@ -66,6 +61,12 @@ export default defineConfig({
 						{ label: 'Roblox (quad-roblox)', collapsed: true, badge: { text: 'Roblox', variant: 'note' }, items: [{ autogenerate: { directory: 'reference/roblox' } }] },
 						{ label: 'Extend (확장 계약)', collapsed: true, badge: { text: 'Advanced', variant: 'caution' }, items: [{ autogenerate: { directory: 'reference/extend' } }] },
 					],
+				},
+				{
+					label: 'The Quadnomicon (심층 아키텍처)',
+					collapsed: true,
+					badge: { text: 'Deep Dive', variant: 'caution' },
+					items: [{ autogenerate: { directory: 'quadnomicon' } }],
 				},
 			],
 		}),

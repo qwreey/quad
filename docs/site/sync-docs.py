@@ -5,6 +5,7 @@
 - 원본은 Starlight frontmatter(title/description)를 갖는다 — 없으면 실패한다(사용자 결정: frontmatter는 원본에).
 - 복사본에서는 본문 첫 H1을 지운다(Starlight가 title로 H1을 그리므로 중복 방지; 원본은 GitHub에서 읽히게 H1 유지).
 - 상대 링크 `(../x/y.md)`·`(./y.md)`·`(../../x/y.md)`(+#anchor)를 사이트 경로 `/<path without .md>/`로 바꾼다(base `/`, 한국어 root 로케일).
+- GitHub 경고 블록(`> [!NOTE]` 등)은 Starlight aside(`:::note` …)로 바꾼다(2026-09-10).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
 """
 import os, re, shutil, sys
@@ -28,6 +29,31 @@ def convert(src_path, text):
         slug = rel[:-3] if rel.endswith('.md') else rel
         return f'[{label}]({BASE}{slug}/{anchor})'
     return LINK.sub(rep, text)
+
+# [2026-09-10 사용자 버그 리포트] GitHub 스타일 경고(`> [!CAUTION]` …)는 Starlight가 그대로 텍스트로 그린다 —
+# 사본에서는 Starlight aside(`:::caution` … `:::`)로 바꾼다. 원본은 GitHub에서 렌더되게 그대로 둔다.
+ALERT_KIND = {'NOTE': 'note', 'TIP': 'tip', 'IMPORTANT': 'tip', 'WARNING': 'caution', 'CAUTION': 'danger'}
+ALERT_HEAD = re.compile(r'^> \[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$')
+
+def alerts_to_asides(text):
+    lines = text.split('\n')
+    out = []
+    i = 0
+    while i < len(lines):
+        m = ALERT_HEAD.match(lines[i])
+        if not m:
+            out.append(lines[i]); i += 1
+            continue
+        kind, title = ALERT_KIND[m.group(1)], m.group(2).strip()
+        body = []
+        i += 1
+        while i < len(lines) and lines[i].startswith('>'):
+            body.append(lines[i][2:] if lines[i].startswith('> ') else lines[i][1:])
+            i += 1
+        out.append(f':::{kind}[{title}]' if title else f':::{kind}')
+        out.extend(body)
+        out.append(':::')
+    return '\n'.join(out)
 
 def strip_h1(text):
     lines = text.split('\n')
@@ -68,7 +94,7 @@ def main():
                     print(f'ERROR: frontmatter 없음 — {os.path.relpath(sp, DOCS)}', file=sys.stderr)
                     failed += 1
                     continue
-                out = strip_h1(convert(sp, text))
+                out = alerts_to_asides(strip_h1(convert(sp, text)))
                 dst = os.path.join(dest_dir, os.path.relpath(sp, src_dir))
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 written.add(os.path.abspath(dst))
