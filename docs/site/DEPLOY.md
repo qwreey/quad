@@ -29,6 +29,14 @@ npm run deploy:preview    # 현재 브랜치 이름의 프리뷰 URL — <branch
 
 `deploy.sh`는 `python3 sync-docs.py`(docs/ 정본 → `src/content/docs/ko/`, frontmatter 없으면 실패) → `astro build`(`dist/`) → `wrangler pages deploy dist` 순서다. 업로드 한도는 파일 20,000개·파일당 25 MiB(지금 105페이지).
 
+## 의존성 버전
+
+**[2026-09-10]** astro 7.3.2 · @astrojs/starlight 0.42.0 · sharp 0.35.4 · wrangler 4.130.0(스캐폴딩의 astro 5/starlight 0.32에서 첫 배포 전에 올림 — `npm audit` critical/high가 전부 그 셋의 옛 버전이었다). Starlight 0.39+ 형태로 맞춘 것: `src/content.config.ts`(옛 `src/content/config.ts`, `docsLoader`/`i18nLoader` 필수), 사이드바 autogenerate 그룹은 `items: [{ autogenerate }]`, `social`은 배열, 내부 링크는 `slug:`(로케일 접두를 Starlight가 붙인다 — `link: '/ko/…'`로 적으면 `/ko/ko/…`가 된다). `src/content/i18n/{ko,en}.json`은 빈 `{}` — UI 문자열을 덮어쓸 자리이고, 없으면 빌드가 경고한다.
+
+빌드 경고 `Entry docs → 404 was not found` 하나는 정상이다 — Starlight가 커스텀 404 페이지(`src/content/docs/404.md`)를 찾아보는 것이고, 없으면 내장 404(기본 로케일 ko로 번역됨)를 쓴다. 커스텀 404를 두면 이번엔 `[...slug]` 라우트와 충돌한다는 경고가 대신 뜬다(둘 다 무해, 0.42 기준).
+
+남는 `npm audit` high 3건은 wrangler → miniflare가 고정한 sharp 0.35.2(libheif)다. miniflare는 `wrangler dev`(로컬 Workers 런타임) 전용이고 우리는 `pages deploy`(업로드)만 쓰므로 실행 경로에 없다 — wrangler 다음 버전이 miniflare를 올리면 사라진다. `npm audit fix --force`는 wrangler를 4.15로 **내리므로** 쓰지 말 것.
+
 ## 로고
 
 `src/assets/quad-logo.svg`(가로 로고, 헤더 타이틀 대체)와 `public/favicon.svg`(Q 하나)는 루트의 사용자 원본(Inkscape, git 무시)을 편집기 메타데이터만 벗겨 넣은 것이다. 원본을 다시 따면 같은 정리(주석·`sodipodi`/`inkscape` 속성·id 제거, `style` → `fill`)를 거쳐 교체한다.

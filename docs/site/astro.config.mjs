@@ -24,39 +24,29 @@ export default defineConfig({
 					lang: 'en',
 				},
 			},
-			social: {
-				github: 'https://github.com/qwreey/quad',
-			},
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/qwreey/quad' }],
 			tableOfContents: {
 				minHeadingLevel: 2,
 				maxHeadingLevel: 4,
 			},
+			// [2026-09-10] Starlight 0.39+ — autogenerate 그룹은 `items: [{ autogenerate }]` 형태, 그룹의 `badge`는 유지된다(항목 badge만 지원)
 			sidebar: [
-				{
-					label: 'Overview (왜 Quad인가)',
-					autogenerate: { directory: 'overview' },
-				},
-				{
-					label: 'Getting Started (시작하기)',
-					autogenerate: { directory: 'getting-started' },
-				},
-				{
-					label: 'How-To Guides (실전 가이드)',
-					autogenerate: { directory: 'how-to' },
-				},
+				{ label: 'Overview (왜 Quad인가)', items: [{ autogenerate: { directory: 'overview' } }] },
+				{ label: 'Getting Started (시작하기)', items: [{ autogenerate: { directory: 'getting-started' } }] },
+				{ label: 'How-To Guides (실전 가이드)', items: [{ autogenerate: { directory: 'how-to' } }] },
 				{
 					label: 'The Quadnomicon (심층 아키텍처)',
 					badge: { text: 'Deep Dive', variant: 'caution' },
-					autogenerate: { directory: 'quadnomicon' },
+					items: [{ autogenerate: { directory: 'quadnomicon' } }],
 				},
 				{
 					label: 'Reference (레퍼런스)',
 					items: [
-						{ label: '색인', link: '/ko/reference/00-index/' },
-						{ label: 'Core (quad-base)', autogenerate: { directory: 'reference/core' } },
-						{ label: 'Sugar (슈거·오퍼레이터)', autogenerate: { directory: 'reference/sugar' } },
-						{ label: 'Roblox (quad-roblox)', badge: { text: 'Roblox', variant: 'note' }, autogenerate: { directory: 'reference/roblox' } },
-						{ label: 'Extend (확장 계약)', badge: { text: 'Advanced', variant: 'caution' }, autogenerate: { directory: 'reference/extend' } },
+						{ label: '색인', slug: 'reference/00-index' },
+						{ label: 'Core (quad-base)', items: [{ autogenerate: { directory: 'reference/core' } }] },
+						{ label: 'Sugar (슈거·오퍼레이터)', items: [{ autogenerate: { directory: 'reference/sugar' } }] },
+						{ label: 'Roblox (quad-roblox)', badge: { text: 'Roblox', variant: 'note' }, items: [{ autogenerate: { directory: 'reference/roblox' } }] },
+						{ label: 'Extend (확장 계약)', badge: { text: 'Advanced', variant: 'caution' }, items: [{ autogenerate: { directory: 'reference/extend' } }] },
 					],
 				},
 			],
