@@ -134,7 +134,7 @@ print(shown:Get())   --> 3            (값은 이미 최신이다)
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Blocker`](/reference/core/06-blocker-gate/) — `On`/`Off`/`OffWithoutEmit`/`Policy`, 푸는 도중 다시 잠갔을 때의 동작
+- [레퍼런스: `Blocker`](/reference/sugar/06-blocker/) — `On`/`Off`/`OffWithoutEmit`/`Policy`, 푸는 도중 다시 잠갔을 때의 동작
 - [레퍼런스: `state:Gate(setup)`](/reference/core/03-state/#stategatesetup) — 게이트 계약과 직접 배선
 - [레퍼런스: `Debounce` / `Throttle`](/reference/sugar/03-debounce-throttle/) — 같은 게이트 위의 시간 정책
 - [03. 긴 목록을 가볍게 그리기](/how-to/03-virtualized-infinite-scroll/) — 스크롤 이벤트 폭주를 `Blocker`로 접는 실전 예

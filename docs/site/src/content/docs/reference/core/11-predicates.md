@@ -67,7 +67,7 @@ local D = q.D
 
 ## 관련
 
-- [생명주기와 센티널](/reference/core/11-lifetime-sentinels/) — 술어가 없는 센티널들과 주입 op
+- [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) — 술어가 없는 센티널들과 주입 op
 - [Quad 모듈](/reference/core/01-quad-module/) — 모듈 인스턴스와 프로바이더 설치
 - [`../extend/01-backend-provider-contract.md`](/reference/extend/01-backend-provider-contract/) — `isInst` 등 주입 슬롯의 계약
 - [`../../quadnomicon/04-covariant-markers.md`](/quadnomicon/04-covariant-markers/) — 브랜드(런타임 판정)와 마커 필드(타입 조언층)가 왜 둘 다 있는가

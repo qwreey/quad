@@ -30,7 +30,7 @@ New: () -> Quad
 
 **동작** — 완전히 독립적인 모듈 인스턴스를 만듭니다. 서브시스템(디버그 표면, 생명주기 스텁, 반응형 코어, 디스패치, Ref, Claim, Slot, Tag/Attr, 시간 게이트, 생명주기 훅)이 그 자리에서 설치됩니다.
 
-- **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](./11-lifetime-sentinels.md) 참고.
+- **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](./10-lifetime-sentinels.md) 참고.
 - 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다.
 - 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다.
 
@@ -220,11 +220,11 @@ rel:SetStrong(host, "meta", { label = "hello" })
 print(rel:GetStrong(host, "meta").label) --> hello
 ```
 
-`q.Void`(공용 no-op 함수)도 같은 잎 계열로 모듈 표면에 실려 있습니다 — [생명주기와 센티널](./11-lifetime-sentinels.md#qvoid).
+`q.Void`(공용 no-op 함수)도 같은 잎 계열로 모듈 표면에 실려 있습니다 — [생명주기와 센티널](./10-lifetime-sentinels.md#qvoid).
 
 ## 관련
 
 - [`../../getting-started/00-installation.md`](../../getting-started/00-installation.md) — 두 패키지를 require하고 백엔드를 설치하기까지
-- [생명주기와 센티널](./11-lifetime-sentinels.md) — 백엔드가 없는 모듈에서 나는 스텁 에러
+- [생명주기와 센티널](./10-lifetime-sentinels.md) — 백엔드가 없는 모듈에서 나는 스텁 에러
 - [`../extend/01-backend-provider-contract.md`](../extend/01-backend-provider-contract.md) — 프로바이더가 채워야 하는 슬롯 전체
 - [`../roblox/01-install.md`](../roblox/01-install.md) — `QuadRoblox`가 싣는 표면

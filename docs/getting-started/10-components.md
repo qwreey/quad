@@ -151,4 +151,4 @@ props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 ## 더 알고 싶다면
 
 - [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) — 바깥에서 `Modifier`/`Ref`를 받는 컴포넌트의 `or None` 관용구, 우선순위 불변식 셋, `Tag`/`Attr`, 재사용 로직 추출, 체크리스트
-- [레퍼런스: `Slot`](../reference/core/07-slot.md) — CRUD 열셋, 죽은 Slot과 마운트 규칙, `q.dispose`
+- [레퍼런스: `Slot`](../reference/core/06-slot.md) — CRUD 열셋, 죽은 Slot과 마운트 규칙, `q.dispose`

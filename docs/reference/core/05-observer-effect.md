@@ -287,4 +287,4 @@ effect:Unsubscribe() -- 마지막 정리 1회
 **동작** — 약한 구독을 해제합니다. **관대하며**(구독한 적 없어도 통과) **cleanup을 건드리지 않습니다**. 강한 유지가 남아 있으면 거절합니다:
 `Effect: subscribed strongly; use :Unsubscribe()`
 
-**관련** — [03-state](./03-state.md) · [06-blocker-gate](./06-blocker-gate.md) · [Quadnomicon Vol. 3 — 메모리 토폴로지](../../quadnomicon/03-luau-memory-topology.md)
+**관련** — [03-state](./03-state.md) · [sugar/06-blocker](../sugar/06-blocker.md) · [Quadnomicon Vol. 3 — 메모리 토폴로지](../../quadnomicon/03-luau-memory-topology.md)

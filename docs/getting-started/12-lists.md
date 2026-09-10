@@ -134,7 +134,7 @@ end
 
 ### `updateFn`이 돌려줄 수 있는 것 넷
 
-호출은 `updateFn(item, index, offset, prev, userdata)`이고 — 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값 순서입니다(자리마다의 정확한 뜻은 [레퍼런스: `slot:List`](../reference/core/07-slot.md#slotlistdata-updatefn-keyfn-opts)) — 돌려주는 것은 `(결과, userdata)` 둘입니다. 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
+호출은 `updateFn(item, index, offset, prev, userdata)`이고 — 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값 순서입니다(자리마다의 정확한 뜻은 [레퍼런스: `slot:List`](../reference/core/06-slot.md#slotlistdata-updatefn-keyfn-opts)) — 돌려주는 것은 `(결과, userdata)` 둘입니다. 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
 
 | 무엇을 돌려주나 | 무슨 일이 일어나나 |
 |---|---|
@@ -251,5 +251,5 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Slot`](../reference/core/07-slot.md) — `:List`/`:Single`의 전체 계약, 에러 문구, `Detach`·`KeyGone`·`Owned`
+- [레퍼런스: `Slot`](../reference/core/06-slot.md) — `:List`/`:Single`의 전체 계약, 에러 문구, `Detach`·`KeyGone`·`Owned`
 - [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md) — 수백~수만 개짜리 목록의 윈도잉과 `Blocker`

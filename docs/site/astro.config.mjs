@@ -60,8 +60,15 @@ export default defineConfig({
 					collapsed: true,
 					items: [
 						{ label: '색인', slug: 'reference/00-index' },
-						{ label: 'Core (quad-base)', collapsed: true, items: [{ autogenerate: { directory: 'reference/core' } }] },
-						{ label: 'Sugar (슈거·오퍼레이터)', collapsed: true, items: [{ autogenerate: { directory: 'reference/sugar' } }] },
+						// [2026-09-11 사용자] 슈거는 quad-base 안의 물건이라 Core 아래 하위 그룹으로(Blocker도 Gate 위의 순수 슈거라 이쪽)
+						{
+							label: 'Core (quad-base)',
+							collapsed: true,
+							items: [
+								{ autogenerate: { directory: 'reference/core' } },
+								{ label: 'Sugar (순수 슈거)', collapsed: true, items: [{ autogenerate: { directory: 'reference/sugar' } }] },
+							],
+						},
 						{ label: 'Roblox (quad-roblox)', collapsed: true, badge: { text: 'Roblox', variant: 'note' }, items: [{ autogenerate: { directory: 'reference/roblox' } }] },
 						{ label: 'Extend (확장 계약)', collapsed: true, badge: { text: 'Advanced', variant: 'caution' }, items: [{ autogenerate: { directory: 'reference/extend' } }] },
 					],

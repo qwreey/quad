@@ -34,7 +34,7 @@ local D = q.D
 
 ## 2. 긴 목록에서 특히 중요한 계약 셋
 
-전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 12](../getting-started/12-lists.md)와 [레퍼런스: `Slot`](../reference/core/07-slot.md)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
+전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 12](../getting-started/12-lists.md)와 [레퍼런스: `Slot`](../reference/core/06-slot.md)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
 
 ```
 Slot():List(data, updateFn, keyFn?, opts?)

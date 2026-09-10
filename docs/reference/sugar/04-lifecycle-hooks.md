@@ -121,6 +121,6 @@ end
 
 ## 관련
 
-- [Ref](../core/08-ref.md) — 이 훅들이 얹혀 있는 `PreRef`/`PostRef` 프리미티브
+- [Ref](../core/07-ref.md) — 이 훅들이 얹혀 있는 `PreRef`/`PostRef` 프리미티브
 - [네트워크·입력 브리지](../../how-to/04-network-and-input-bridge.md) — 바깥 연결을 만들고 `OnDestroyed`로 끊는 배치
 - [Studio UI 바인딩과 Claim](../../how-to/07-studio-ui-binding-and-claim.md)

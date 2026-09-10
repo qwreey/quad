@@ -221,6 +221,6 @@ quad: nativeInsert is not available — no backend has installed the lifetime pr
 
 ## 관련
 
-- [core/11 — 생명주기와 센티널](../core/11-lifetime-sentinels.md) — 여기 주입되는 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 사용자 표면
+- [core/10 — 생명주기와 센티널](../core/10-lifetime-sentinels.md) — 여기 주입되는 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 사용자 표면
 - [extend/02 — 디스패치 핸들러 계약](./02-dispatch-handler-contract.md) — 이 op들을 실제로 부르는 핸들러 쪽 계약
 - [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](../../quadnomicon/10-multi-backend-abstract-machine.md) — 이 경계가 왜 이렇게 그어졌는가

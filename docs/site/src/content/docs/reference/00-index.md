@@ -34,7 +34,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `state:Get()` | [core/03 — State](/reference/core/03-state/) |
 | `state:Compute(fn, ...deps)` | [core/03](/reference/core/03-state/) |
 | `state:With(...)` | [core/03](/reference/core/03-state/) |
-| `state:Apply(factory)` | [core/03](/reference/core/03-state/) · [core/06](/reference/core/06-blocker-gate/) |
+| `state:Apply(factory)` | [core/03](/reference/core/03-state/) · [sugar/06](/reference/sugar/06-blocker/) |
 | `state:Observer(fn)` | [core/05 — Observer·Effect](/reference/core/05-observer-effect/) · [core/03](/reference/core/03-state/) |
 | `state:Gate(setup)` | [core/03](/reference/core/03-state/) |
 | `q.Store(defaults)` | [core/04 — Store](/reference/core/04-store/) |
@@ -62,115 +62,115 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Blocker()` | [core/06 — Blocker·Gate](/reference/core/06-blocker-gate/) |
-| `blocker.IsBlocked` | [core/06](/reference/core/06-blocker-gate/) |
-| `blocker:IsOn()` | [core/06](/reference/core/06-blocker-gate/) |
-| `blocker:On()` | [core/06](/reference/core/06-blocker-gate/) |
-| `blocker:Off()` | [core/06](/reference/core/06-blocker-gate/) |
-| `blocker:OffWithoutEmit()` | [core/06](/reference/core/06-blocker-gate/) |
-| `blocker:Policy(emit)` | [core/06](/reference/core/06-blocker-gate/) |
+| `q.Blocker()` | [sugar/06 — Blocker](/reference/sugar/06-blocker/) |
+| `blocker.IsBlocked` | [sugar/06](/reference/sugar/06-blocker/) |
+| `blocker:IsOn()` | [sugar/06](/reference/sugar/06-blocker/) |
+| `blocker:On()` | [sugar/06](/reference/sugar/06-blocker/) |
+| `blocker:Off()` | [sugar/06](/reference/sugar/06-blocker/) |
+| `blocker:OffWithoutEmit()` | [sugar/06](/reference/sugar/06-blocker/) |
+| `blocker:Policy(emit)` | [sugar/06](/reference/sugar/06-blocker/) |
 
 ## Slot
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Slot<<T>>(initial?)` | [core/07 — Slot](/reference/core/07-slot/) |
-| `slot.Length` | [core/07](/reference/core/07-slot/) |
-| `slot.Offset` | [core/07](/reference/core/07-slot/) |
-| `slot:Add(element, index?)` | [core/07](/reference/core/07-slot/) |
-| `slot:Remove(index)` | [core/07](/reference/core/07-slot/) |
-| `slot:Replace(index, newElement)` | [core/07](/reference/core/07-slot/) |
-| `slot:Extract(index, newElement?)` | [core/07](/reference/core/07-slot/) |
-| `slot:ExtractAll()` | [core/07](/reference/core/07-slot/) |
-| `slot:Splice(index, removeCount, ...)` | [core/07](/reference/core/07-slot/) |
-| `slot:Clear()` | [core/07](/reference/core/07-slot/) |
-| `slot:Move(oldIndex, newIndex)` | [core/07](/reference/core/07-slot/) |
-| `slot:Swap(indexA, indexB)` | [core/07](/reference/core/07-slot/) |
-| `slot:Get(index)` | [core/07](/reference/core/07-slot/) |
-| `slot:IndexOf(element)` | [core/07](/reference/core/07-slot/) |
-| `slot:List(data, updateFn, keyFn?, opts?)` | [core/07](/reference/core/07-slot/) |
-| `slot:Single(state, updateFn?, opts?)` | [core/07](/reference/core/07-slot/) |
+| `q.Slot<<T>>(initial?)` | [core/06 — Slot](/reference/core/06-slot/) |
+| `slot.Length` | [core/06](/reference/core/06-slot/) |
+| `slot.Offset` | [core/06](/reference/core/06-slot/) |
+| `slot:Add(element, index?)` | [core/06](/reference/core/06-slot/) |
+| `slot:Remove(index)` | [core/06](/reference/core/06-slot/) |
+| `slot:Replace(index, newElement)` | [core/06](/reference/core/06-slot/) |
+| `slot:Extract(index, newElement?)` | [core/06](/reference/core/06-slot/) |
+| `slot:ExtractAll()` | [core/06](/reference/core/06-slot/) |
+| `slot:Splice(index, removeCount, ...)` | [core/06](/reference/core/06-slot/) |
+| `slot:Clear()` | [core/06](/reference/core/06-slot/) |
+| `slot:Move(oldIndex, newIndex)` | [core/06](/reference/core/06-slot/) |
+| `slot:Swap(indexA, indexB)` | [core/06](/reference/core/06-slot/) |
+| `slot:Get(index)` | [core/06](/reference/core/06-slot/) |
+| `slot:IndexOf(element)` | [core/06](/reference/core/06-slot/) |
+| `slot:List(data, updateFn, keyFn?, opts?)` | [core/06](/reference/core/06-slot/) |
+| `slot:Single(state, updateFn?, opts?)` | [core/06](/reference/core/06-slot/) |
 
 ## Ref
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Ref<<T>>(default)` | [core/08 — Ref](/reference/core/08-ref/) |
-| `q.PreRef<<T>>(default)` | [core/08](/reference/core/08-ref/) |
-| `q.PostRef<<T>>(default)` | [core/08](/reference/core/08-ref/) |
-| `ref.Value` | [core/08](/reference/core/08-ref/) |
-| `ref.Revision` | [core/08](/reference/core/08-ref/) |
-| `ref.Callbacks` | [core/08](/reference/core/08-ref/) |
-| `ref.WeakCallbacks` | [core/08](/reference/core/08-ref/) |
-| `ref:Set(value)` | [core/08](/reference/core/08-ref/) |
-| `ref:Callback(fn)` | [core/08](/reference/core/08-ref/) |
-| `ref:WeakCallback(fn)` | [core/08](/reference/core/08-ref/) |
-| `ref:Uncallback(fn)` | [core/08](/reference/core/08-ref/) |
-| `ref:Wait(thread?)` | [core/08](/reference/core/08-ref/) |
-| `ref:Unwrap()` | [core/08](/reference/core/08-ref/) |
+| `q.Ref<<T>>(default)` | [core/07 — Ref](/reference/core/07-ref/) |
+| `q.PreRef<<T>>(default)` | [core/07](/reference/core/07-ref/) |
+| `q.PostRef<<T>>(default)` | [core/07](/reference/core/07-ref/) |
+| `ref.Value` | [core/07](/reference/core/07-ref/) |
+| `ref.Revision` | [core/07](/reference/core/07-ref/) |
+| `ref.Callbacks` | [core/07](/reference/core/07-ref/) |
+| `ref.WeakCallbacks` | [core/07](/reference/core/07-ref/) |
+| `ref:Set(value)` | [core/07](/reference/core/07-ref/) |
+| `ref:Callback(fn)` | [core/07](/reference/core/07-ref/) |
+| `ref:WeakCallback(fn)` | [core/07](/reference/core/07-ref/) |
+| `ref:Uncallback(fn)` | [core/07](/reference/core/07-ref/) |
+| `ref:Wait(thread?)` | [core/07](/reference/core/07-ref/) |
+| `ref:Unwrap()` | [core/07](/reference/core/07-ref/) |
 
 ## Modifier
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Modifier(...)` | [core/09 — Modifier](/reference/core/09-modifier/) |
-| `mod:<Field>(value)` | [core/09](/reference/core/09-modifier/) · [roblox/03](/reference/roblox/03-d-modifier/) |
-| `mod:Peek<<T>>(key)` | [core/09](/reference/core/09-modifier/) |
-| `mod:Apply(factory)` | [core/09](/reference/core/09-modifier/) |
-| `mod:Overridden(...)` | [core/09](/reference/core/09-modifier/) |
-| `mod:As(name)` | [core/09](/reference/core/09-modifier/) |
-| `mod:As<Class>()` | [core/09](/reference/core/09-modifier/) · [roblox/03](/reference/roblox/03-d-modifier/) |
-| `q.Modifier.Overridden(...)` | [core/09](/reference/core/09-modifier/) |
-| `q.Modifier.TypedFactory<<T>>(name)` | [core/09](/reference/core/09-modifier/) |
-| `q.Modifier.DefineSubtype(parent, subtype)` | [core/09](/reference/core/09-modifier/) |
+| `q.Modifier(...)` | [core/08 — Modifier](/reference/core/08-modifier/) |
+| `mod:<Field>(value)` | [core/08](/reference/core/08-modifier/) · [roblox/03](/reference/roblox/03-d-modifier/) |
+| `mod:Peek<<T>>(key)` | [core/08](/reference/core/08-modifier/) |
+| `mod:Apply(factory)` | [core/08](/reference/core/08-modifier/) |
+| `mod:Overridden(...)` | [core/08](/reference/core/08-modifier/) |
+| `mod:As(name)` | [core/08](/reference/core/08-modifier/) |
+| `mod:As<Class>()` | [core/08](/reference/core/08-modifier/) · [roblox/03](/reference/roblox/03-d-modifier/) |
+| `q.Modifier.Overridden(...)` | [core/08](/reference/core/08-modifier/) |
+| `q.Modifier.TypedFactory<<T>>(name)` | [core/08](/reference/core/08-modifier/) |
+| `q.Modifier.DefineSubtype(parent, subtype)` | [core/08](/reference/core/08-modifier/) |
 | `D.Modifier.<Class>(...)` | [roblox/03 — D.Modifier](/reference/roblox/03-d-modifier/) |
-| `mod:As()` / `mod:As<<T>>()` | [roblox/03](/reference/roblox/03-d-modifier/#modas--modasname--modast) · [core/09](/reference/core/09-modifier/) |
+| `mod:As()` / `mod:As<<T>>()` | [roblox/03](/reference/roblox/03-d-modifier/#modas--modasname--modast) · [core/08](/reference/core/08-modifier/) |
 | `Into<Class>` / `<Class>Modifier` | [roblox/03](/reference/roblox/03-d-modifier/#intoclass--classmodifier) |
 
 ## Tag / Attr
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Tag(...names)` | [core/10 — Tag·Attr](/reference/core/10-tag-attr/) |
-| `tag:Added(names)` | [core/10](/reference/core/10-tag-attr/) |
-| `tag:Removed(names)` | [core/10](/reference/core/10-tag-attr/) |
-| `tag:Contains(...names)` | [core/10](/reference/core/10-tag-attr/) |
-| `tag:Names()` | [core/10](/reference/core/10-tag-attr/) |
-| `tag:Apply(factory)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.Tag.Merged(...tags)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.Attr(...)` | [core/10](/reference/core/10-tag-attr/) |
-| `attr:NameMap()` | [core/10](/reference/core/10-tag-attr/) |
-| `q.Attr.Merged(...)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.Attr.Overridden(...)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.AttrKey(name)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.StringAttr(name, value)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.NumberAttr(name, value)` | [core/10](/reference/core/10-tag-attr/) |
-| `q.BooleanAttr(name, value)` | [core/10](/reference/core/10-tag-attr/) |
+| `q.Tag(...names)` | [core/09 — Tag·Attr](/reference/core/09-tag-attr/) |
+| `tag:Added(names)` | [core/09](/reference/core/09-tag-attr/) |
+| `tag:Removed(names)` | [core/09](/reference/core/09-tag-attr/) |
+| `tag:Contains(...names)` | [core/09](/reference/core/09-tag-attr/) |
+| `tag:Names()` | [core/09](/reference/core/09-tag-attr/) |
+| `tag:Apply(factory)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.Tag.Merged(...tags)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.Attr(...)` | [core/09](/reference/core/09-tag-attr/) |
+| `attr:NameMap()` | [core/09](/reference/core/09-tag-attr/) |
+| `q.Attr.Merged(...)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.Attr.Overridden(...)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.AttrKey(name)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.StringAttr(name, value)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.NumberAttr(name, value)` | [core/09](/reference/core/09-tag-attr/) |
+| `q.BooleanAttr(name, value)` | [core/09](/reference/core/09-tag-attr/) |
 
 ## 센티널과 생명주기
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.None` | [core/11 — 생명주기와 센티널](/reference/core/11-lifetime-sentinels/#qnone) |
-| `q.Detach` | [core/11](/reference/core/11-lifetime-sentinels/#qdetach) · [core/07](/reference/core/07-slot/) |
-| `q.KeyGone` | [core/11](/reference/core/11-lifetime-sentinels/#qkeygone) · [core/07](/reference/core/07-slot/) |
-| `q.Void` | [core/11](/reference/core/11-lifetime-sentinels/#qvoid) |
-| `q.dispose(value)` | [core/11](/reference/core/11-lifetime-sentinels/#qdisposevalue) · [core/07](/reference/core/07-slot/) |
-| `q.MapperRoot` | [core/11](/reference/core/11-lifetime-sentinels/#qmapperroot) · [roblox/04](/reference/roblox/04-claim-mapper/) |
-| `q.newMapperClass(className)` | [core/11](/reference/core/11-lifetime-sentinels/#qnewmapperclassclassname) |
-| `q.bindLifetime(inst, value)` | [core/11](/reference/core/11-lifetime-sentinels/#qbindlifetimeinst-value) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.unbindLifetime(value)` | [core/11](/reference/core/11-lifetime-sentinels/#qunbindlifetimevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.canBound(value)` | [core/11](/reference/core/11-lifetime-sentinels/#qcanboundvalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.canExecute(value)` | [core/11](/reference/core/11-lifetime-sentinels/#qcanexecutevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.None` | [core/10 — 생명주기와 센티널](/reference/core/10-lifetime-sentinels/#qnone) |
+| `q.Detach` | [core/10](/reference/core/10-lifetime-sentinels/#qdetach) · [core/06](/reference/core/06-slot/) |
+| `q.KeyGone` | [core/10](/reference/core/10-lifetime-sentinels/#qkeygone) · [core/06](/reference/core/06-slot/) |
+| `q.Void` | [core/10](/reference/core/10-lifetime-sentinels/#qvoid) |
+| `q.dispose(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qdisposevalue) · [core/06](/reference/core/06-slot/) |
+| `q.MapperRoot` | [core/10](/reference/core/10-lifetime-sentinels/#qmapperroot) · [roblox/04](/reference/roblox/04-claim-mapper/) |
+| `q.newMapperClass(className)` | [core/10](/reference/core/10-lifetime-sentinels/#qnewmapperclassclassname) |
+| `q.bindLifetime(inst, value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbindlifetimeinst-value) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.unbindLifetime(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qunbindlifetimevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.canBound(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qcanboundvalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.canExecute(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qcanexecutevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 
 ## 브랜드 술어
 
-`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/12 — 브랜드 술어](/reference/core/12-predicates/)의 한 표에 있습니다.
+`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/11 — 브랜드 술어](/reference/core/11-predicates/)의 한 표에 있습니다.
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.isInst(value)` | [core/12](/reference/core/12-predicates/) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.isTween(x)` | [core/12](/reference/core/12-predicates/) · [roblox/06](/reference/roblox/06-tween-animate/) |
+| `q.isInst(value)` | [core/11](/reference/core/11-predicates/) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.isTween(x)` | [core/11](/reference/core/11-predicates/) · [roblox/06](/reference/roblox/06-tween-animate/) |
 
 ## 슈거
 

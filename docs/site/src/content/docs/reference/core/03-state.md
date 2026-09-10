@@ -150,7 +150,7 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 **동작**
 
 - 함수를 넘기면 `factory(self)`를 그대로 부릅니다.
-- 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](/reference/core/06-blocker-gate/), `Debounce`/`Throttle`, `Animate` 같은 것들이 이 팔로 붙습니다.
+- 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](/reference/sugar/06-blocker/), `Debounce`/`Throttle`, `Animate` 같은 것들이 이 팔로 붙습니다.
 - 둘 중 어느 쪽도 아니면
   `State: Apply factory must be a function or an object with an __apply method`
 
@@ -162,7 +162,7 @@ local blocker = q.Blocker()
 local gated: QuadTypes.State<number> = raw:Apply(blocker)
 ```
 
-**관련** — [06-blocker-gate](/reference/core/06-blocker-gate/) · [How-To 05 테마와 동적 스타일](/how-to/05-theme-and-dynamic-styling/)
+**관련** — [sugar/06-blocker](/reference/sugar/06-blocker/) · [How-To 05 테마와 동적 스타일](/how-to/05-theme-and-dynamic-styling/)
 
 ---
 
@@ -231,4 +231,4 @@ print(#seen, held:Get()) --> 1  2   (통지는 설치 발화 한 번뿐, 값은 
 print((release :: any)()) --> true (모아둔 배치를 흘려보냄 → 구독자 1회 발화)
 ```
 
-**관련** — [06-blocker-gate](/reference/core/06-blocker-gate/)(`Blocker`는 이 위의 정책입니다) · [05-observer-effect](/reference/core/05-observer-effect/)
+**관련** — [sugar/06-blocker](/reference/sugar/06-blocker/)(`Blocker`는 이 위의 정책입니다) · [05-observer-effect](/reference/core/05-observer-effect/)

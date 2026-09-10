@@ -109,7 +109,7 @@ end
    이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다. 여러 quad 인스턴스가 한 트리를 나눠
    claim하는 것은 UB입니다. 이미 파괴된 Instance를 claim하는 것도 UB입니다 — 막지 않습니다.
 2. **그려지는 직계 자식은 전부 매핑합니다.** quad는 claim한 Instance의 자식 자리를
-   [부기](../core/07-slot.md)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와
+   [부기](../core/06-slot.md)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와
    길이/오프셋 계산이 어긋납니다.
    - **디스크립터 배열의 순서가 정본**입니다. 기존 트리의 순서가 다르면 맞추는 건 사용자 책임입니다
      — quad는 재정렬하지 않습니다.
@@ -191,7 +191,7 @@ q.Claim(template, M.Frame(M.Root)({ … }))
 
 ## `q.MapperRoot`
 
-`D.Mapper.Root`가 다시 내놓는 원본 센티널입니다([`quad-base` 소유](../core/11-lifetime-sentinels.md)).
+`D.Mapper.Root`가 다시 내놓는 원본 센티널입니다([`quad-base` 소유](../core/10-lifetime-sentinels.md)).
 `D`를 거치지 않고 디스크립터를 만들 때 쓰면 됩니다.
 
 ```luau
@@ -210,7 +210,7 @@ MapperRoot: MapperRoot -- export type MapperRoot = { read __quadMapperRoot: true
 ```
 
 `D.Mapper.<Class>` 별칭들이 얹혀 있는 **타입 없는 원본 팩토리**입니다
-([`quad-base` 소유](../core/11-lifetime-sentinels.md) — `D.<Class>`와 `D.New`의 관계와 같습니다). `D.Mapper`에 별칭이 없는 클래스를 매핑해야 할 때만
+([`quad-base` 소유](../core/10-lifetime-sentinels.md) — `D.<Class>`와 `D.New`의 관계와 같습니다). `D.Mapper`에 별칭이 없는 클래스를 매핑해야 할 때만
 쓰세요. props는 `any`라 클래스별 검사가 없습니다.
 
 ```luau

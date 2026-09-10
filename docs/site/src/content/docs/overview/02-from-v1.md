@@ -72,7 +72,7 @@ v1에는 통일된 정리 모델이 없었습니다. 여러 모듈이 각자 `Pr
 
 v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적고, 설계 근거는 링크로 넘깁니다.
 
-- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](/reference/core/07-slot/), [03. 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)
+- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](/reference/core/06-slot/), [03. 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)
 - **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](/reference/extend/02-dispatch-handler-contract/)
 - **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **숫자 키 자리에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [09. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
 - **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](/how-to/07-studio-ui-binding-and-claim/)

@@ -208,5 +208,5 @@ const card = D.Frame {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Ref`](../reference/core/08-ref.md) — `Ref`/`PreRef`/`PostRef` 셋의 발화 시점, `:Callback`/`:WeakCallback`/`:Wait`/`:Unwrap`의 전체 계약과 에러 문구
+- [레퍼런스: `Ref`](../reference/core/07-ref.md) — `Ref`/`PreRef`/`PostRef` 셋의 발화 시점, `:Callback`/`:WeakCallback`/`:Wait`/`:Unwrap`의 전체 계약과 에러 문구
 - [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) — 바깥에서 `Ref`를 받는 컴포넌트의 `or None` 관용구

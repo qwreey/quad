@@ -60,7 +60,7 @@ Detach: Detach
 
 같은 자리에서 `nil` 또는 `q.None`을 반환하면 파괴, 요소를 반환하면 그 요소가 그 자리에 놓입니다.
 
-보관·복귀 규칙과 실제 `updateFn` 예제는 [Slot](./07-slot.md)이 자세합니다.
+보관·복귀 규칙과 실제 `updateFn` 예제는 [Slot](./06-slot.md)이 자세합니다.
 
 ## `q.KeyGone`
 
@@ -79,7 +79,7 @@ KeyGone: KeyGone
 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
 ```
 
-재조정 사이클 안에서 언제 이 호출이 오는지는 [Slot](./07-slot.md)을 보세요.
+재조정 사이클 안에서 언제 이 호출이 오는지는 [Slot](./06-slot.md)을 보세요.
 
 ## `q.Void`
 
@@ -132,7 +132,7 @@ slot:Extract(1) -- 파괴하지 않고 자리에서 뺀다(Remove는 파괴한�
 q.dispose(child) -- 그 다음에 파괴
 ```
 
-Slot 쪽 맥락(마운트 규칙, 죽은 Slot)은 [Slot](./07-slot.md)에 함께 있습니다.
+Slot 쪽 맥락(마운트 규칙, 죽은 Slot)은 [Slot](./06-slot.md)에 함께 있습니다.
 
 ## `q.MapperRoot`
 
@@ -207,8 +207,8 @@ canExecute: (value: any) -> boolean
 
 ## 관련
 
-- [Slot](./07-slot.md) — `Detach`/`KeyGone`이 실제로 오가는 `Slot:List`/`Slot:Single`
-- [브랜드 술어](./12-predicates.md) — 센티널에 술어가 없는 이유
+- [Slot](./06-slot.md) — `Detach`/`KeyGone`이 실제로 오가는 `Slot:List`/`Slot:Single`
+- [브랜드 술어](./11-predicates.md) — 센티널에 술어가 없는 이유
 - [`../extend/01-backend-provider-contract.md`](../extend/01-backend-provider-contract.md) — 주입 슬롯 전체 목록과 계약
 - [`../extend/02-dispatch-handler-contract.md`](../extend/02-dispatch-handler-contract.md) — `Void`를 retractor로 돌려주는 자리
 - [`../../quadnomicon/03-luau-memory-topology.md`](../../quadnomicon/03-luau-memory-topology.md) — 생명주기 바인딩이 메모리 토폴로지에서 하는 역할

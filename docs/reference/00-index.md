@@ -36,7 +36,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `state:Get()` | [core/03 — State](./core/03-state.md) |
 | `state:Compute(fn, ...deps)` | [core/03](./core/03-state.md) |
 | `state:With(...)` | [core/03](./core/03-state.md) |
-| `state:Apply(factory)` | [core/03](./core/03-state.md) · [core/06](./core/06-blocker-gate.md) |
+| `state:Apply(factory)` | [core/03](./core/03-state.md) · [sugar/06](./sugar/06-blocker.md) |
 | `state:Observer(fn)` | [core/05 — Observer·Effect](./core/05-observer-effect.md) · [core/03](./core/03-state.md) |
 | `state:Gate(setup)` | [core/03](./core/03-state.md) |
 | `q.Store(defaults)` | [core/04 — Store](./core/04-store.md) |
@@ -64,115 +64,115 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Blocker()` | [core/06 — Blocker·Gate](./core/06-blocker-gate.md) |
-| `blocker.IsBlocked` | [core/06](./core/06-blocker-gate.md) |
-| `blocker:IsOn()` | [core/06](./core/06-blocker-gate.md) |
-| `blocker:On()` | [core/06](./core/06-blocker-gate.md) |
-| `blocker:Off()` | [core/06](./core/06-blocker-gate.md) |
-| `blocker:OffWithoutEmit()` | [core/06](./core/06-blocker-gate.md) |
-| `blocker:Policy(emit)` | [core/06](./core/06-blocker-gate.md) |
+| `q.Blocker()` | [sugar/06 — Blocker](./sugar/06-blocker.md) |
+| `blocker.IsBlocked` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker:IsOn()` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker:On()` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker:Off()` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker:OffWithoutEmit()` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker:Policy(emit)` | [sugar/06](./sugar/06-blocker.md) |
 
 ## Slot
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Slot<<T>>(initial?)` | [core/07 — Slot](./core/07-slot.md) |
-| `slot.Length` | [core/07](./core/07-slot.md) |
-| `slot.Offset` | [core/07](./core/07-slot.md) |
-| `slot:Add(element, index?)` | [core/07](./core/07-slot.md) |
-| `slot:Remove(index)` | [core/07](./core/07-slot.md) |
-| `slot:Replace(index, newElement)` | [core/07](./core/07-slot.md) |
-| `slot:Extract(index, newElement?)` | [core/07](./core/07-slot.md) |
-| `slot:ExtractAll()` | [core/07](./core/07-slot.md) |
-| `slot:Splice(index, removeCount, ...)` | [core/07](./core/07-slot.md) |
-| `slot:Clear()` | [core/07](./core/07-slot.md) |
-| `slot:Move(oldIndex, newIndex)` | [core/07](./core/07-slot.md) |
-| `slot:Swap(indexA, indexB)` | [core/07](./core/07-slot.md) |
-| `slot:Get(index)` | [core/07](./core/07-slot.md) |
-| `slot:IndexOf(element)` | [core/07](./core/07-slot.md) |
-| `slot:List(data, updateFn, keyFn?, opts?)` | [core/07](./core/07-slot.md) |
-| `slot:Single(state, updateFn?, opts?)` | [core/07](./core/07-slot.md) |
+| `q.Slot<<T>>(initial?)` | [core/06 — Slot](./core/06-slot.md) |
+| `slot.Length` | [core/06](./core/06-slot.md) |
+| `slot.Offset` | [core/06](./core/06-slot.md) |
+| `slot:Add(element, index?)` | [core/06](./core/06-slot.md) |
+| `slot:Remove(index)` | [core/06](./core/06-slot.md) |
+| `slot:Replace(index, newElement)` | [core/06](./core/06-slot.md) |
+| `slot:Extract(index, newElement?)` | [core/06](./core/06-slot.md) |
+| `slot:ExtractAll()` | [core/06](./core/06-slot.md) |
+| `slot:Splice(index, removeCount, ...)` | [core/06](./core/06-slot.md) |
+| `slot:Clear()` | [core/06](./core/06-slot.md) |
+| `slot:Move(oldIndex, newIndex)` | [core/06](./core/06-slot.md) |
+| `slot:Swap(indexA, indexB)` | [core/06](./core/06-slot.md) |
+| `slot:Get(index)` | [core/06](./core/06-slot.md) |
+| `slot:IndexOf(element)` | [core/06](./core/06-slot.md) |
+| `slot:List(data, updateFn, keyFn?, opts?)` | [core/06](./core/06-slot.md) |
+| `slot:Single(state, updateFn?, opts?)` | [core/06](./core/06-slot.md) |
 
 ## Ref
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Ref<<T>>(default)` | [core/08 — Ref](./core/08-ref.md) |
-| `q.PreRef<<T>>(default)` | [core/08](./core/08-ref.md) |
-| `q.PostRef<<T>>(default)` | [core/08](./core/08-ref.md) |
-| `ref.Value` | [core/08](./core/08-ref.md) |
-| `ref.Revision` | [core/08](./core/08-ref.md) |
-| `ref.Callbacks` | [core/08](./core/08-ref.md) |
-| `ref.WeakCallbacks` | [core/08](./core/08-ref.md) |
-| `ref:Set(value)` | [core/08](./core/08-ref.md) |
-| `ref:Callback(fn)` | [core/08](./core/08-ref.md) |
-| `ref:WeakCallback(fn)` | [core/08](./core/08-ref.md) |
-| `ref:Uncallback(fn)` | [core/08](./core/08-ref.md) |
-| `ref:Wait(thread?)` | [core/08](./core/08-ref.md) |
-| `ref:Unwrap()` | [core/08](./core/08-ref.md) |
+| `q.Ref<<T>>(default)` | [core/07 — Ref](./core/07-ref.md) |
+| `q.PreRef<<T>>(default)` | [core/07](./core/07-ref.md) |
+| `q.PostRef<<T>>(default)` | [core/07](./core/07-ref.md) |
+| `ref.Value` | [core/07](./core/07-ref.md) |
+| `ref.Revision` | [core/07](./core/07-ref.md) |
+| `ref.Callbacks` | [core/07](./core/07-ref.md) |
+| `ref.WeakCallbacks` | [core/07](./core/07-ref.md) |
+| `ref:Set(value)` | [core/07](./core/07-ref.md) |
+| `ref:Callback(fn)` | [core/07](./core/07-ref.md) |
+| `ref:WeakCallback(fn)` | [core/07](./core/07-ref.md) |
+| `ref:Uncallback(fn)` | [core/07](./core/07-ref.md) |
+| `ref:Wait(thread?)` | [core/07](./core/07-ref.md) |
+| `ref:Unwrap()` | [core/07](./core/07-ref.md) |
 
 ## Modifier
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Modifier(...)` | [core/09 — Modifier](./core/09-modifier.md) |
-| `mod:<Field>(value)` | [core/09](./core/09-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
-| `mod:Peek<<T>>(key)` | [core/09](./core/09-modifier.md) |
-| `mod:Apply(factory)` | [core/09](./core/09-modifier.md) |
-| `mod:Overridden(...)` | [core/09](./core/09-modifier.md) |
-| `mod:As(name)` | [core/09](./core/09-modifier.md) |
-| `mod:As<Class>()` | [core/09](./core/09-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
-| `q.Modifier.Overridden(...)` | [core/09](./core/09-modifier.md) |
-| `q.Modifier.TypedFactory<<T>>(name)` | [core/09](./core/09-modifier.md) |
-| `q.Modifier.DefineSubtype(parent, subtype)` | [core/09](./core/09-modifier.md) |
+| `q.Modifier(...)` | [core/08 — Modifier](./core/08-modifier.md) |
+| `mod:<Field>(value)` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
+| `mod:Peek<<T>>(key)` | [core/08](./core/08-modifier.md) |
+| `mod:Apply(factory)` | [core/08](./core/08-modifier.md) |
+| `mod:Overridden(...)` | [core/08](./core/08-modifier.md) |
+| `mod:As(name)` | [core/08](./core/08-modifier.md) |
+| `mod:As<Class>()` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
+| `q.Modifier.Overridden(...)` | [core/08](./core/08-modifier.md) |
+| `q.Modifier.TypedFactory<<T>>(name)` | [core/08](./core/08-modifier.md) |
+| `q.Modifier.DefineSubtype(parent, subtype)` | [core/08](./core/08-modifier.md) |
 | `D.Modifier.<Class>(...)` | [roblox/03 — D.Modifier](./roblox/03-d-modifier.md) |
-| `mod:As()` / `mod:As<<T>>()` | [roblox/03](./roblox/03-d-modifier.md#modas--modasname--modast) · [core/09](./core/09-modifier.md) |
+| `mod:As()` / `mod:As<<T>>()` | [roblox/03](./roblox/03-d-modifier.md#modas--modasname--modast) · [core/08](./core/08-modifier.md) |
 | `Into<Class>` / `<Class>Modifier` | [roblox/03](./roblox/03-d-modifier.md#intoclass--classmodifier) |
 
 ## Tag / Attr
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Tag(...names)` | [core/10 — Tag·Attr](./core/10-tag-attr.md) |
-| `tag:Added(names)` | [core/10](./core/10-tag-attr.md) |
-| `tag:Removed(names)` | [core/10](./core/10-tag-attr.md) |
-| `tag:Contains(...names)` | [core/10](./core/10-tag-attr.md) |
-| `tag:Names()` | [core/10](./core/10-tag-attr.md) |
-| `tag:Apply(factory)` | [core/10](./core/10-tag-attr.md) |
-| `q.Tag.Merged(...tags)` | [core/10](./core/10-tag-attr.md) |
-| `q.Attr(...)` | [core/10](./core/10-tag-attr.md) |
-| `attr:NameMap()` | [core/10](./core/10-tag-attr.md) |
-| `q.Attr.Merged(...)` | [core/10](./core/10-tag-attr.md) |
-| `q.Attr.Overridden(...)` | [core/10](./core/10-tag-attr.md) |
-| `q.AttrKey(name)` | [core/10](./core/10-tag-attr.md) |
-| `q.StringAttr(name, value)` | [core/10](./core/10-tag-attr.md) |
-| `q.NumberAttr(name, value)` | [core/10](./core/10-tag-attr.md) |
-| `q.BooleanAttr(name, value)` | [core/10](./core/10-tag-attr.md) |
+| `q.Tag(...names)` | [core/09 — Tag·Attr](./core/09-tag-attr.md) |
+| `tag:Added(names)` | [core/09](./core/09-tag-attr.md) |
+| `tag:Removed(names)` | [core/09](./core/09-tag-attr.md) |
+| `tag:Contains(...names)` | [core/09](./core/09-tag-attr.md) |
+| `tag:Names()` | [core/09](./core/09-tag-attr.md) |
+| `tag:Apply(factory)` | [core/09](./core/09-tag-attr.md) |
+| `q.Tag.Merged(...tags)` | [core/09](./core/09-tag-attr.md) |
+| `q.Attr(...)` | [core/09](./core/09-tag-attr.md) |
+| `attr:NameMap()` | [core/09](./core/09-tag-attr.md) |
+| `q.Attr.Merged(...)` | [core/09](./core/09-tag-attr.md) |
+| `q.Attr.Overridden(...)` | [core/09](./core/09-tag-attr.md) |
+| `q.AttrKey(name)` | [core/09](./core/09-tag-attr.md) |
+| `q.StringAttr(name, value)` | [core/09](./core/09-tag-attr.md) |
+| `q.NumberAttr(name, value)` | [core/09](./core/09-tag-attr.md) |
+| `q.BooleanAttr(name, value)` | [core/09](./core/09-tag-attr.md) |
 
 ## 센티널과 생명주기
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.None` | [core/11 — 생명주기와 센티널](./core/11-lifetime-sentinels.md#qnone) |
-| `q.Detach` | [core/11](./core/11-lifetime-sentinels.md#qdetach) · [core/07](./core/07-slot.md) |
-| `q.KeyGone` | [core/11](./core/11-lifetime-sentinels.md#qkeygone) · [core/07](./core/07-slot.md) |
-| `q.Void` | [core/11](./core/11-lifetime-sentinels.md#qvoid) |
-| `q.dispose(value)` | [core/11](./core/11-lifetime-sentinels.md#qdisposevalue) · [core/07](./core/07-slot.md) |
-| `q.MapperRoot` | [core/11](./core/11-lifetime-sentinels.md#qmapperroot) · [roblox/04](./roblox/04-claim-mapper.md) |
-| `q.newMapperClass(className)` | [core/11](./core/11-lifetime-sentinels.md#qnewmapperclassclassname) |
-| `q.bindLifetime(inst, value)` | [core/11](./core/11-lifetime-sentinels.md#qbindlifetimeinst-value) · [extend/01](./extend/01-backend-provider-contract.md) |
-| `q.unbindLifetime(value)` | [core/11](./core/11-lifetime-sentinels.md#qunbindlifetimevalue) · [extend/01](./extend/01-backend-provider-contract.md) |
-| `q.canBound(value)` | [core/11](./core/11-lifetime-sentinels.md#qcanboundvalue) · [extend/01](./extend/01-backend-provider-contract.md) |
-| `q.canExecute(value)` | [core/11](./core/11-lifetime-sentinels.md#qcanexecutevalue) · [extend/01](./extend/01-backend-provider-contract.md) |
+| `q.None` | [core/10 — 생명주기와 센티널](./core/10-lifetime-sentinels.md#qnone) |
+| `q.Detach` | [core/10](./core/10-lifetime-sentinels.md#qdetach) · [core/06](./core/06-slot.md) |
+| `q.KeyGone` | [core/10](./core/10-lifetime-sentinels.md#qkeygone) · [core/06](./core/06-slot.md) |
+| `q.Void` | [core/10](./core/10-lifetime-sentinels.md#qvoid) |
+| `q.dispose(value)` | [core/10](./core/10-lifetime-sentinels.md#qdisposevalue) · [core/06](./core/06-slot.md) |
+| `q.MapperRoot` | [core/10](./core/10-lifetime-sentinels.md#qmapperroot) · [roblox/04](./roblox/04-claim-mapper.md) |
+| `q.newMapperClass(className)` | [core/10](./core/10-lifetime-sentinels.md#qnewmapperclassclassname) |
+| `q.bindLifetime(inst, value)` | [core/10](./core/10-lifetime-sentinels.md#qbindlifetimeinst-value) · [extend/01](./extend/01-backend-provider-contract.md) |
+| `q.unbindLifetime(value)` | [core/10](./core/10-lifetime-sentinels.md#qunbindlifetimevalue) · [extend/01](./extend/01-backend-provider-contract.md) |
+| `q.canBound(value)` | [core/10](./core/10-lifetime-sentinels.md#qcanboundvalue) · [extend/01](./extend/01-backend-provider-contract.md) |
+| `q.canExecute(value)` | [core/10](./core/10-lifetime-sentinels.md#qcanexecutevalue) · [extend/01](./extend/01-backend-provider-contract.md) |
 
 ## 브랜드 술어
 
-`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/12 — 브랜드 술어](./core/12-predicates.md)의 한 표에 있습니다.
+`q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/11 — 브랜드 술어](./core/11-predicates.md)의 한 표에 있습니다.
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.isInst(value)` | [core/12](./core/12-predicates.md) · [extend/01](./extend/01-backend-provider-contract.md) |
-| `q.isTween(x)` | [core/12](./core/12-predicates.md) · [roblox/06](./roblox/06-tween-animate.md) |
+| `q.isInst(value)` | [core/11](./core/11-predicates.md) · [extend/01](./extend/01-backend-provider-contract.md) |
+| `q.isTween(x)` | [core/11](./core/11-predicates.md) · [roblox/06](./roblox/06-tween-animate.md) |
 
 ## 슈거
 

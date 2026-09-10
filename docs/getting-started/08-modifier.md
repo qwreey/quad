@@ -142,6 +142,6 @@ return {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Modifier`](../reference/core/09-modifier.md) — setter 체인, `Peek`, `Overridden`, 클래스 태그와 다운캐스트
+- [레퍼런스: `Modifier`](../reference/core/08-modifier.md) — setter 체인, `Peek`, `Overridden`, 클래스 태그와 다운캐스트
 - [레퍼런스: `D.Modifier`](../reference/roblox/03-d-modifier.md) — 클래스별 생성자와 생성된 setter 타입
 - [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md) — 토큰을 모아 두고 테마를 갈아 끼우는 실전 배치

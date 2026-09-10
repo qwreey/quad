@@ -3,7 +3,7 @@ title: "q.OnChange"
 description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로 붙이기 — 읽기 표면 PropTypesRead와 초기값 발화"
 ---
 `GetPropertyChangedSignal` 바인딩을 **props의 숫자 키 자리에 놓는 값**으로 만든 것입니다.
-[`Tag`](/reference/core/10-tag-attr/)나 [생명주기 훅](/reference/sugar/04-lifecycle-hooks/)과 같은 자리에 놓입니다.
+[`Tag`](/reference/core/09-tag-attr/)나 [생명주기 훅](/reference/sugar/04-lifecycle-hooks/)과 같은 자리에 놓입니다.
 
 이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn)
 
@@ -93,7 +93,7 @@ local box = D.Frame({
   local box = D.Frame({ desc })
   ```
 
-  그 자리에 [`q.None`](/reference/core/11-lifetime-sentinels/#qnone)을 발행하면 연결이 끊기고, 새
+  그 자리에 [`q.None`](/reference/core/10-lifetime-sentinels/#qnone)을 발행하면 연결이 끊기고, 새
   디스크립터를 발행하면 하나만 다시 연결됩니다.
   같은 값 dedup은 없습니다(`Connect`가 멱등이 아니라서, 재발행마다 Disconnect+Connect 한 번).
 

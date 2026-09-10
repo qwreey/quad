@@ -212,6 +212,6 @@ scrollGate:Cancel()
 
 ## 관련
 
-- [Ref](/reference/core/08-ref/) — `Handle`이 받는 `Ref`, 그리고 [`ref:Unwrap()`](/reference/core/08-ref/#refunwrap)
+- [Ref](/reference/core/07-ref/) — `Handle`이 받는 `Ref`, 그리고 [`ref:Unwrap()`](/reference/core/07-ref/#refunwrap)
 - [네트워크·입력 브리지](/how-to/04-network-and-input-bridge/) — 바깥 이벤트를 반응형 그래프로 들여올 때
 - [v1에서 옮겨오기](/how-to/08-migrating-from-v1/)

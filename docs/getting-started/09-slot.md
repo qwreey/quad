@@ -95,7 +95,7 @@ const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 �
 
 이렇게 꺼낸 원소는 **소유권이 풀린** 상태라, 다른 Slot에 다시 넣거나 `q.dispose`로 직접 지울 수 있습니다.
 
-자세한 것은 [레퍼런스: `Slot`](../reference/core/07-slot.md)에 있습니다.
+자세한 것은 [레퍼런스: `Slot`](../reference/core/06-slot.md)에 있습니다.
 
 </details>
 
@@ -269,5 +269,5 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Slot`](../reference/core/07-slot.md) — CRUD 열셋(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
+- [레퍼런스: `Slot`](../reference/core/06-slot.md) — CRUD 열셋(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
 - [Quadnomicon Vol. 2](../quadnomicon/02-slot-prefix-sum-tree.md) — `Offset`/`Length` 부기가 어떤 부분합 트리 위에서 도는지

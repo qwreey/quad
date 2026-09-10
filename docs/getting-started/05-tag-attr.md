@@ -220,7 +220,7 @@ installed the tag ops`. 01장에서 `Quad:UseProvider(QuadRoblox)`를 이미 했
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Tag` / `Attr`](../reference/core/10-tag-attr.md) — 전체 표면(`tag:Added`/`:Contains`/`:Names`, `q.AttrKey`, `StringAttr`/`NumberAttr`, 에러 문구)
+- [레퍼런스: `Tag` / `Attr`](../reference/core/09-tag-attr.md) — 전체 표면(`tag:Added`/`:Contains`/`:Names`, `q.AttrKey`, `StringAttr`/`NumberAttr`, 에러 문구)
 - [Roblox: `CollectionService`](https://create.roblox.com/docs/reference/engine/classes/CollectionService) · [인스턴스 Attribute](https://create.roblox.com/docs/studio/properties#instance-attributes)
 - [Roblox: `Instance:QueryDescendants`](https://create.roblox.com/docs/reference/engine/classes/Instance#QueryDescendants)
 - [Roblox: UI 스타일링](https://create.roblox.com/docs/ui/styling) · [`StyleRule.Selector`](https://create.roblox.com/docs/reference/engine/classes/StyleRule#Selector) — 태그를 선택자로 삼는 스타일시트 구성

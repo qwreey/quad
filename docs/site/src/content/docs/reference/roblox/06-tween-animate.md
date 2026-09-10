@@ -135,7 +135,7 @@ local b = FADE:Mapped(function(v: number): number return 0.5 end)
 isTween: (x: any) -> boolean
 ```
 
-그 값이 `Tween`인지 판정합니다([브랜드 검사](/reference/core/12-predicates/) — 같은 모양의 평범한 테이블은
+그 값이 `Tween`인지 판정합니다([브랜드 검사](/reference/core/11-predicates/) — 같은 모양의 평범한 테이블은
 `false`).
 `State`가 실어 나르는 값을 직접 읽어 분기해야 하는 드문 자리에서 씁니다.
 
@@ -189,7 +189,7 @@ local box = D.Frame({ BackgroundTransparency = animated })
   옵션 State가 바뀌었다고 애니메이션을 다시 돌리지 않고, **다음 값 변경 때** 최신 옵션이 반영됩니다.
 - **`CanAnimate`가 거짓이면** 감싸지 않고 원래 값을 그대로 내보냅니다 — 프로퍼티 핸들러가 즉시
   씁니다(모션 축소 옵션 같은 우회로). 생략하면 항상 애니메이션합니다.
-- **`nil`/[`None`](/reference/core/11-lifetime-sentinels/#qnone)은 그대로 통과합니다.** 감싸지 않으므로
+- **`nil`/[`None`](/reference/core/10-lifetime-sentinels/#qnone)은 그대로 통과합니다.** 감싸지 않으므로
   프로퍼티 핸들러가 `nil`을 씁니다(객체 참조를 놓는 경로).
 - 실행마다 **새 `Tween` 값**이 만들어집니다. 같은 목표로의 재발행을 접는 것은 소비자(프로퍼티 핸들러)의
   일입니다 — 아래 `Dedup`.

@@ -350,7 +350,7 @@ q.Dispatch.addHandler({
 ## 관련
 
 - [백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/) — 핸들러가 부르는 주입 op(`native*`, 생명주기)의 계약
-- [core/11 — 생명주기와 센티널](/reference/core/11-lifetime-sentinels/) — retractor 자리에 돌려주는 `q.Void`, 값 자리의 `q.None`
-- [core/06 — Blocker·Gate](/reference/core/06-blocker-gate/) — 배치 게이트에 쓰이는 `Blocker`
+- [core/10 — 생명주기와 센티널](/reference/core/10-lifetime-sentinels/) — retractor 자리에 돌려주는 `q.Void`, 값 자리의 `q.None`
+- [sugar/06 — Blocker](/reference/sugar/06-blocker/) — 배치 게이트에 쓰이는 `Blocker`
 - [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/) — 이 엔진이 왜 이렇게 생겼는가
 - [Quadnomicon Vol. 2 — Slot-in-Slot 부분합 트리](/quadnomicon/02-slot-prefix-sum-tree/) — Length/Offset 부분합 트리의 설계
