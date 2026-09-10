@@ -10,7 +10,7 @@ Roblox 엔진용 **DOMless UI 렌더러**입니다. 가상 DOM 없이 반응형 
 
 - **왜 이렇게 만들었나, 무엇을 포기했나**: [왜 Quad인가](./docs/overview/01-why-quad.md)
 - **quad v1(2.x)을 쓰고 계시다면**: [quad v1에서 오는 분께](./docs/overview/02-from-v1.md) — v1은 `master` 브랜치에 그대로 있습니다.
-- **처음 써보기**: [설치](./docs/getting-started/00-installation.md) → [첫 화면](./docs/getting-started/01-first-screen.md) → [값이 흐르게 하기](./docs/getting-started/02-flowing-values.md) → … → [정리](./docs/getting-started/06-mental-models.md)
+- **처음 써보기**: [설치](./docs/getting-started/00-installation.md) → [프레임워크 설정](./docs/getting-started/01-setup.md) → [첫 화면](./docs/getting-started/02-first-screen.md) → [값이 흐르게 하기](./docs/getting-started/03-flowing-values.md) → … → [정리](./docs/getting-started/13-wrap-up.md)
 - **전체 목차**: [docs/README.md](./docs/README.md) (Overview · Getting Started · How-To · API Reference · The Quadnomicon)
 
 ## 설치
@@ -39,7 +39,7 @@ local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/
 local D = q.D
 ```
 
-`Quad:UseProvider(QuadRoblox)` 전에는 `D`/`Tween`/`Animate`/`OnChange`가 없습니다. 이어지는 카운터 컴포넌트는 [01. 첫 화면](./docs/getting-started/01-first-screen.md)부터 이어지는 여섯 장에서 한 걸음씩 만듭니다.
+`Quad:UseProvider(QuadRoblox)` 전에는 `D`/`Tween`/`Animate`/`OnChange`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열두 장에서 한 걸음씩 만듭니다.
 
 ## 변경 이력과 버전
 

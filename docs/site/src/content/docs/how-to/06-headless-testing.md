@@ -191,8 +191,3 @@ do
     print("PASS")
 end
 ```
-
----
-
-## 다음 단계
-- [07. Studio에서 만든 UI에 반응성 붙이기 — `Claim`과 Clone 패턴](/how-to/07-studio-ui-binding-and-claim/)

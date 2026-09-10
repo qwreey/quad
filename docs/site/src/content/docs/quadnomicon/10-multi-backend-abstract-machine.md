@@ -5,8 +5,9 @@ description: "엔진 비의존 코어와 주입되는 op로 다중 렌더 백엔
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
 > **관련 소스**: `quad-roblox/src/EngineOps.luau`, `quad-base/src/init.luau`, `quad-base/src/LifetimeHandle.luau`, `quad-base/src/NotInstalled.luau`
 
-> [!CAUTION]
-> 이 권은 프로바이더 인터페이스와 엔진 경계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/01-first-screen/)부터 보십시오.
+:::danger
+이 권은 프로바이더 인터페이스와 엔진 경계를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/00-installation/)부터 보십시오.
+:::
 
 ---
 
@@ -19,12 +20,13 @@ Roblox용 UI 라이브러리는 대개 엔진과 반응형 코어가 뒤엉킵�
 
 `quad-base`는 반대 방향으로 못 박혀 있습니다.
 
-> [!IMPORTANT]
-> **코어 순수성**
-> `quad-base/src`는 Roblox 전역(`game`, `Instance`, `task` …)을 하나도 참조하지
-> 않고 Roblox 타입도 쓰지 않습니다. 검증 가능한 진술은 이것입니다 — *호출*이 없습니다.
-> ("Instance"라는 **단어**는 에러 메시지 문자열과 주석에 나옵니다. 사용자에게 그
-> 개념을 말해야 하는 자리이기 때문이고, 코드가 그 타입을 만지는 것과는 다릅니다.)
+:::tip
+**코어 순수성**
+`quad-base/src`는 Roblox 전역(`game`, `Instance`, `task` …)을 하나도 참조하지
+않고 Roblox 타입도 쓰지 않습니다. 검증 가능한 진술은 이것입니다 — *호출*이 없습니다.
+("Instance"라는 **단어**는 에러 메시지 문자열과 주석에 나옵니다. 사용자에게 그
+개념을 말해야 하는 자리이기 때문이고, 코드가 그 타입을 만지는 것과는 다릅니다.)
+:::
 
 엔진에 실제로 닿는 모든 조작은 **런타임에 주입되는 op**로 들어옵니다.
 
@@ -89,10 +91,11 @@ canExecute(value): boolean  -- 지금 실행해도 되는가(= 살아 있는 바
 `canBound`와 `canExecute`는 비공개 술어 하나(`isBoundAlive`)를 공유하는 얇은
 진입점이고, 그 술어 자체는 **백엔드 내부에만 있습니다** — 계약 표면이 아닙니다.
 
-> [!WARNING]
-> `canBound(nil)`은 **참**입니다. `isBoundAlive(nil)`이 거짓이므로 그 부정이 참이 됩니다.
-> `nil` 거부는 술어가 아니라 `bindLifetime`의 자기 게이트가 합니다
-> (`bindLifetime: value must not be nil`). 술어를 "인자 검증"으로 쓰지 말 것.
+:::caution
+`canBound(nil)`은 **참**입니다. `isBoundAlive(nil)`이 거짓이므로 그 부정이 참이 됩니다.
+`nil` 거부는 술어가 아니라 `bindLifetime`의 자기 게이트가 합니다
+(`bindLifetime: value must not be nil`). 술어를 "인자 검증"으로 쓰지 말 것.
+:::
 
 `bindLifetime`은 알려진 타입이면 뒤처리를 더 합니다(`Observer`는 밀린 emit을 한 번
 따라잡고, `Effect`는 `onDestroying`에 걸립니다). 어떤 알려진 타입도 아니면 — 평범한

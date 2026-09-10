@@ -97,7 +97,7 @@ local panel = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 경계 규약](/how-to/09-component-conventions/)
+**관련** — [컴포넌트 경계 규약](/how-to/01-component-conventions/)
 
 ## `q.PreRef<<T>>(default)`
 
@@ -128,7 +128,7 @@ local form = D.Frame {
 }
 ```
 
-**관련** — [컴포넌트 경계 규약](/how-to/09-component-conventions/)
+**관련** — [컴포넌트 경계 규약](/how-to/01-component-conventions/)
 
 ## `q.PostRef<<T>>(default)`
 
@@ -359,4 +359,4 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [디버깅과 문제 해결](/how-to/01-debugging-and-troubleshooting/)
+**관련** — [디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/)

@@ -91,7 +91,7 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [컴포넌트 경계 규약](/how-to/09-component-conventions/), [확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)
+**관련** — [컴포넌트 경계 규약](/how-to/01-component-conventions/), [확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)
 
 ## `tag:Added(names)`
 

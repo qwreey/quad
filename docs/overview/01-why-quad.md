@@ -5,7 +5,7 @@ description: "Quad가 이전 프레임워크와 다른 설계를 고른 이유�
 # [오버뷰] 왜 Quad인가 — 이전 선택을 안 따른 이유, 그리고 그 대가
 
 > **대상 독자**: Roblox 클라이언트 UI를 만드는 엔지니어. "이걸 배울 값이 있나"를 30분 안에 판단하려는 사람.
-> **하는 일**: 설계 선택마다 **이전 프레임워크가 무엇을 골랐고 어디서 막혔는지**, **우리는 어떻게 넘었는지**, **그 대신 무엇이 나빠졌는지**를 같이 적습니다. **안 하는 일**: 사용법도 내부 알고리즘도 아닙니다(쓰는 법은 [Getting Started](../getting-started/01-first-screen.md), 원리는 [The Quadnomicon](../quadnomicon/01-revision-and-epochmap.md) — 각 항목에서 링크합니다).
+> **하는 일**: 설계 선택마다 **이전 프레임워크가 무엇을 골랐고 어디서 막혔는지**, **우리는 어떻게 넘었는지**, **그 대신 무엇이 나빠졌는지**를 같이 적습니다. **안 하는 일**: 사용법도 내부 알고리즘도 아닙니다(쓰는 법은 [Getting Started](../getting-started/00-installation.md), 원리는 [The Quadnomicon](../quadnomicon/01-revision-and-epochmap.md) — 각 항목에서 링크합니다).
 
 ---
 
@@ -60,7 +60,7 @@ Fusion도, Vide도, quad 자신의 v1도 같은 문제들을 각자의 방식으
 - **이전 선택과 그 한계**: Fusion도 Vide도 quad v1도 가상 DOM을 두지 않았고, 이 선택은 그대로 이어받았습니다. 반대편 길인 vdom 재조정은 리스트 key 관리를 요구하고(불안정하면 자식 상태가 유실됩니다), 훅 호출 순서 규칙을 강제하며, 고빈도 갱신엔 리렌더를 우회하는 별도 API를 공식적으로 덧붙여야 했습니다(react-lua).
 - **우리가 넘은 방법**: `D.Frame { ... }`이 그 자리에서 실제 `Instance`를 만들어 돌려주고, 변화는 개별 프로퍼티 바인드에만 도달합니다. 중간 트리도 diffing 단계도 없어서 위 세 문제 자체가 생기지 않습니다.
 - **그 대가 / 더 나쁜 점**: "지금 트리가 어떻게 생겼는가"가 코드 한 곳에 드러나지 않습니다. 변화가 leaf 바인드로 흩어져 복잡한 조건부 트리는 재구성하기 어렵습니다. 렌더마다 서브트리를 통째로 다시 기술하는 vdom 쪽이 이 축에서는 낫습니다. 설계 변경으로 해소되는 종류가 아니라 관측 도구로만 보완됩니다.
-- **자세히**: [멘탈 모델 1 — 가상 DOM은 없다](../getting-started/06-mental-models.md#1-멘탈-모델-1-가상-dom은-없다-domless-immediate-creation), [Quadnomicon Vol. 9 — DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
+- **자세히**: [02. 첫 화면 — 부른 순간 실물 Instance](../getting-started/02-first-screen.md), [Quadnomicon Vol. 9 — DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
 
 ### (2) 밀 때는 신호만, 계산은 읽을 때 — 그리고 의존성은 손으로 적는다
 
@@ -170,7 +170,7 @@ D.Frame {
 
 ## 6. 다음 걸음
 
-- **써보기**: [첫 화면](../getting-started/01-first-screen.md) → [값이 흐르게 하기](../getting-started/02-flowing-values.md) → [반응하기](../getting-started/03-reacting.md) → [컴포넌트로 쪼개기](../getting-started/04-components.md) → [움직이게 하기](../getting-started/05-animation.md) → [정리](../getting-started/06-mental-models.md)
+- **써보기**: [프레임워크 설정](../getting-started/01-setup.md) → [첫 화면](../getting-started/02-first-screen.md) → [값이 흐르게 하기](../getting-started/03-flowing-values.md) → [반응하기](../getting-started/04-reacting.md) → … → [컴포넌트로 쪼개기](../getting-started/08-components.md) → [움직이게 하기](../getting-started/11-animation.md) → [정리](../getting-started/13-wrap-up.md)
 - **설치**: [00. 설치 및 환경 구축](../getting-started/00-installation.md) — pesde + Rojo 절차와 타입 검사 플래그. Wally·`.rbxm` 절엔 아직 제공되지 않는다는 표시가 있습니다.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](./02-from-v1.md) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 개념 대응표, 제거된 기능, strict 블로커 열여덟.
 - **속을 보고 판단하기**: [The Quadnomicon](../quadnomicon/01-revision-and-epochmap.md) 열한 권 — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.

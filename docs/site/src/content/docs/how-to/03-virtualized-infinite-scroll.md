@@ -3,7 +3,8 @@ title: "03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉"
 description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적으로 렌더링하는 법을 설명합니다"
 ---
 > **대상 독자**: 수백~수만 개짜리 목록을 `ScrollingFrame`에 그려야 하는 개발자
-> **다루는 개념**: `Slot():List`, `updateFn`의 다섯 인자와 세 갈래 처분, `userdata`, `offset`, `Blocker`
+> **다루는 개념**: `LayoutOrder`/`Position` 바인딩, 윈도잉, `userdata`, `Blocker`
+> **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 09. 목록 만들기](/getting-started/09-lists/)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
 > **재활용과 윈도잉은 서로 다른 행에 걸립니다**: 재활용은 **화면에 계속 남아 있는 키**에만 적용되고, 윈도우 밖으로 나가 키가 사라진 행은 재활용이 아니라 파괴(또는 `q.Detach`로 홀드)입니다(§7).
 
 ---
@@ -29,51 +30,20 @@ local D = q.D
 
 ---
 
-## 2. `Slot:List` 계약
+## 2. 긴 목록에서 특히 중요한 계약 셋
+
+전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 09](/getting-started/09-lists/)와 [레퍼런스: `Slot`](/reference/core/07-slot/)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
 
 ```
 Slot():List(data, updateFn, keyFn?, opts?)
-```
-
-- **`data`** — 평범한 배열, 또는 배열을 담은 `State`. 그 외에는 에러입니다
-  (`Slot:List: data must be a plain array or a State of one (got ...)`).
-  `State`면 값이 바뀔 때마다 재조정(reconcile)이 돕니다.
-- **`keyFn(item, i)`** — 항목의 신원. 생략하면 배열 인덱스가 키입니다. `nil`을
-  돌려주면 `Slot:List: keyFn returned nil for item #N`, 키가 겹치면 `Slot:List: duplicate key ...` 에러입니다.
-- **`opts.Owned = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서
-  빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다.
-
-### `updateFn`의 시그니처가 핵심입니다
-
-```
 updateFn(item, index, offset, prev, ud) -> (result, ud)
 ```
 
-| 인자 | 뜻 |
-|---|---|
-| `item` | 이번 사이클의 데이터 항목. **키가 이번 데이터에서 사라졌으면 `q.KeyGone`** |
-| `index` | 이 요소가 차지할 **Slot 안의 물리 위치**(1부터). 원본 배열의 인덱스가 아닙니다 — 요소 하나가 자식 하나면 순번과 같고, 앞선 요소가 중첩 Slot이면 그 길이만큼 건너뜁니다 |
-| `offset` | 형제 누적합 `Source` — 이 Slot 앞에 몇 개의 물리 자식이 있는지 |
-| `prev` | 이 키로 직전에 마운트돼 있던 요소(없으면 `nil`) |
-| `ud` | 이 키에 대해 직전 호출이 돌려준 `userdata`(자유 값) |
+- **`keyFn(item, i)`가 재활용을 결정합니다.** 항목의 신원이 안정적이어야 `prev`가 넘어오고, `prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 **가장 싼 경로**입니다. 생략하면 배열 인덱스가 키인데, 그러면 목록이 밀릴 때마다 신원이 어긋나 전부 새로 만들어집니다.
+- **항목마다 바뀌는 값은 `ud`에 `Source`로 넣어 둡니다.** 재활용 갈래에서는 인스턴스를 다시 만들 수 없으니, 라벨 텍스트나 위치는 그 `Source`만 `:Set` 합니다.
+- **`opts.Owned = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다.
 
-반환값은 **두 개**입니다 — `(요소, userdata)`. 이 둘의 조합이 세 갈래의 처분을
-만듭니다.
-
-| 무엇을 반환하나 | 무슨 일이 일어나나 |
-|---|---|
-| **`prev` 그대로** | 그 자리에 계속 둡니다. 마운트도 파괴도 없는 **가장 싼 경로** |
-| **새 값** | `prev`가 있었다면 **파괴**되고(`Owned = false`면 언마운트만) 새 값이 그 자리를 대신합니다 |
-| **`nil` 또는 `q.None`** | `prev`가 있었다면 **파괴**됩니다(`Owned = false`면 언마운트만) |
-| **`q.Detach`** | 파괴하지 않고 트리 밖에 붙들어 둡니다. 그 키가 다시 오면 같은 요소가 그대로 재마운트됩니다 |
-
-`item == q.KeyGone` 사이클에서는 `nil`/`q.None`(파괴)과 `q.Detach`(홀드)만
-허용됩니다 — 새 값을 돌려주면
-`Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)` 에러입니다.
-
-**재활용은 `prev`를 돌려주는 갈래에서만 일어납니다.** 그래서 항목마다 바뀌는
-값(라벨 텍스트, 위치 등)은 `userdata` 안에 `Source`로 넣어두고, 이 갈래에서
-그 `Source`만 `:Set` 합니다.
+`data`는 평범한 배열이거나 배열을 담은 `State`입니다. `State`면 값이 바뀔 때마다 재조정(reconcile)이 돕니다.
 
 ---
 
@@ -273,8 +243,3 @@ end
   `q.Detach`로 홀드)이고, 재활용은 "화면에 계속 남아 있는 키"에만 적용됩니다.
 - **스크롤 이벤트 자체의 스로틀링은 없습니다.** 5절의 `Blocker`는 사용자가
   직접 구간을 열고 닫는 도구이지 자동 프레임 병합기가 아닙니다.
-
----
-
-## 다음 단계
-- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/how-to/04-network-and-input-bridge/)

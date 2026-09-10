@@ -565,7 +565,7 @@ local temp = q.Slot<<Instance>>({ D.Frame {}, D.Frame {} })
 q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파괴된다
 ```
 
-**관련** — [인스턴스 신원과 GC 철학](../../quadnomicon/07-instance-identity-and-gc-philosophy.md), [디버깅과 문제 해결](../../how-to/01-debugging-and-troubleshooting.md)
+**관련** — [인스턴스 신원과 GC 철학](../../quadnomicon/07-instance-identity-and-gc-philosophy.md), [디버깅과 문제 해결](../../how-to/09-debugging-and-troubleshooting.md)
 
 ## 죽은 Slot과 마운트 규칙
 

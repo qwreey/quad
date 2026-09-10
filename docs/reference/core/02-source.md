@@ -56,7 +56,7 @@ local hp = q.Source(100)
 print(hp:Get()) --> 100
 ```
 
-**관련** — [Getting Started 06 멘탈 모델](../../getting-started/06-mental-models.md) · [Quadnomicon Vol. 1](../../quadnomicon/01-revision-and-epochmap.md)
+**관련** — [Getting Started 03 값이 흐르게 하기](../../getting-started/03-flowing-values.md) · [Quadnomicon Vol. 1](../../quadnomicon/01-revision-and-epochmap.md)
 
 ---
 

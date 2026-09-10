@@ -210,8 +210,3 @@ end)
    ([06. 헤드리스 테스트](./06-headless-testing.md)).
 3. **수명 동기화**: 컴포넌트에 매달린 외부 연결은 `Effect`의 cleanup이나
    `OnDestroyed`로 반드시 같이 정리합니다.
-
----
-
-## 다음 단계
-- [05. 디자인 토큰과 테마 전환 — `Animate`와 `Modifier.Overridden`](./05-theme-and-dynamic-styling.md)

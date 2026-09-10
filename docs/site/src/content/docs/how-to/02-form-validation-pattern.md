@@ -180,8 +180,3 @@ return RegistrationForm
 3. **여러 필드를 묶을 땐 후행 의존성.** `stateA:Compute(fn, stateB)` 한 줄이면
    중간 노드 없이 하나로 모입니다.
 4. **`:Compute` 콜백은 순수하게.** 계산 중에 다른 상태를 `:Set`하지 마세요.
-
----
-
-## 다음 단계
-- [03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉](/how-to/03-virtualized-infinite-scroll/)

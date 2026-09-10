@@ -8,7 +8,7 @@ description: "소유권 공리에 따라 비파괴 언마운트가 별도 포탈
 > **관련 소스**: `quad-base/src/Slot/Raw.luau`, `quad-base/src/Slot/Owner.luau`, `quad-base/src/Slot/Handler.luau`, `quad-base/src/Bookkeeping.luau`
 
 > [!CAUTION]
-> 이 권은 재조정 엔진의 저수준 수명 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/01-first-screen.md)부터 보십시오.
+> 이 권은 재조정 엔진의 저수준 수명 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/00-installation.md)부터 보십시오.
 
 ---
 

@@ -1,11 +1,11 @@
 ---
-title: "09. 컴포넌트 경계 규약과 스타일 합성"
+title: "01. 컴포넌트 경계 규약과 스타일 합성"
 description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 관용구, Modifier 우선순위 불변식 셋, Tag/Attr, 재사용 로직 추출을 정리합니다"
 ---
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
 > **다루는 개념**: props 테이블의 병합 규칙, 배열 부분의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[04. 컴포넌트로 쪼개기](/getting-started/04-components/)에서 컴포넌트가 평범한 함수라는 것과 `Modifier`를 배열 부분에 놓는다는 것까지 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 08. 컴포넌트로 쪼개기](/getting-started/08-components/)에서 컴포넌트가 평범한 함수라는 것을, [06. Modifier](/getting-started/06-modifier/)에서 스타일을 배열 부분에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -88,7 +88,7 @@ end
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
 
-그래서 quad는 구멍 있는 props 테이블을 **계약 밖(UB)** 으로 둡니다. 무슨 일이 나는지는 구멍이 어디에 뚫렸느냐에 따라 갈리는데, 그 증상과 에러 메시지는 [01. quad 에러 읽는 법과 런타임 디버깅](/how-to/01-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
+그래서 quad는 구멍 있는 props 테이블을 **계약 밖(UB)** 으로 둡니다. 무슨 일이 나는지는 구멍이 어디에 뚫렸느냐에 따라 갈리는데, 그 증상과 에러 메시지는 [09. quad 에러 읽는 법과 런타임 디버깅](/how-to/09-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
 
 ```luau
 -- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 순회가 그 자리를 건너뛴다
@@ -100,7 +100,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
 
-> `props.Modifier` / `props.Ref` / `props.children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([03. `Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/) 참고).
+> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 배열 부분에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 07. 자식이 들어갈 자리](/getting-started/07-slot/) 참고).
 
 ---
 
@@ -179,10 +179,10 @@ local btn2 = CustomButton {
 
 ## 4. 자식을 받는 컴포넌트에 타입 붙이기
 
-[04. 컴포넌트로 쪼개기](/getting-started/04-components/) §2에서 자식 배열을 `table.unpack`으로 펼치는 모양을 봤습니다. 그 자리에 타입을 붙이면 이렇게 됩니다.
+호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 07. 자식이 들어갈 자리](/getting-started/07-slot/)). 그 자리에 타입을 붙이면 이렇게 됩니다.
 
 ```luau
-local function ModalDialog(props: { read Title: string, read children: { DTypes.FrameElem }? }): Frame
+local function ModalDialog(props: { read Title: string, read Children: QuadTypes.Slot<Instance>? }): Frame
     return D.Frame {
         Size = UDim2.fromOffset(400, 300),
         BackgroundColor3 = Color3.fromRGB(25, 25, 30),
@@ -193,23 +193,28 @@ local function ModalDialog(props: { read Title: string, read children: { DTypes.
             Size = UDim2.new(1, 0, 0, 40),
         },
 
-        -- 전달받은 자식들을 컨텐츠 영역에 펼친다
+        -- 전달받은 Slot을 컨텐츠 영역의 한 자리로 놓는다
         D.Frame {
             Position = UDim2.fromOffset(0, 40),
             Size = UDim2.new(1, 0, 1, -40),
             BackgroundTransparency = 1,
 
-            table.unpack(props.children or {}),
+            props.Children or None,
         },
     }
 end
 ```
 
-`<Class>Elem`은 그 클래스의 배열 부분에 올 수 있는 것들의 타입입니다 — 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 그 유니언에 들어 있습니다.
+부르는 쪽은 `ModalDialog { Title = "설정", Children = q.Slot<<Instance>>({ ... }) }`처럼 넘깁니다. `Slot`으로 받으면 호출자가 나중에 `:Add`/`:Remove`로 내용을 갈아 끼울 수 있고, 컴포넌트 쪽은 자리 하나만 잡아 두면 됩니다.
 
-`table.unpack(...)`은 **테이블 리터럴의 마지막 원소일 때만** 전부 펼쳐집니다. 중간에 두면 첫 값 하나만 들어가니 주의하세요.
+### 자식 **배열**을 그대로 넘기지 않는 이유
 
-그리고 **자식 배열을 담은 변수를 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있으므로, 위처럼 `D.Frame { table.unpack(children) }` 형태로 마지막 원소에 펼쳐 넣으세요.
+props에 `{ DTypes.FrameElem }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.
+
+- `table.unpack(...)`은 **테이블 리터럴의 마지막 원소일 때만** 전부 펼쳐집니다. 중간에 두면 첫 값 하나만 들어갑니다.
+- **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.
+
+그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다. `<Class>Elem` 타입 자체는 여전히 유용합니다 — 그 클래스의 배열 부분에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
 
 ---
 
@@ -278,8 +283,9 @@ local left, right = newCounter(0), newCounter(10)
 
 Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `QuadTypes.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: QuadTypes.State<boolean> = ...`). 자세한 캐비엇은 [레퍼런스: `State`](/reference/core/03-state/)에 있습니다.
 
-> [!TIP]
-> 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.
+:::tip
+상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.
+:::
 
 ---
 
@@ -290,9 +296,3 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 - [ ] 해시 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
 - [ ] `Attr` 값을 지울 때 `None`(또는 State의 `nil`)을 쓰고, 그룹 교체만으로는 값이 안 지워진다는 걸 아는가?
 - [ ] 반응형 로직을 담은 헬퍼 함수를 React Hook의 제약 없이 자유롭게 분리했는가?
-
----
-
-## 다음 단계
-- [실전 레시피: 복잡한 폼 유효성 검사](/how-to/02-form-validation-pattern/)
-- [테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)

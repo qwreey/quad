@@ -6,7 +6,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 공개 표면의 심볼을 이름으로 찾는 자리다. 각 행의 링크가 그 심볼을 **자세히 설명하는 페이지**를 가리킨다 — 같은 심볼이 두 페이지에 나오면(예: `Slot`의 센티널) 둘 다 적었다.
 
-읽는 순서가 필요하면 색인이 아니라 트랙을 따라갈 것: [시작하기](../getting-started/00-installation.md) → [실전 레시피](../how-to/01-debugging-and-troubleshooting.md) → 여기.
+읽는 순서가 필요하면 색인이 아니라 트랙을 따라갈 것: [시작하기](../getting-started/00-installation.md) → [실전 레시피](../how-to/09-debugging-and-troubleshooting.md) → 여기.
 
 표기 규약: 모듈 인스턴스는 `q`, 백엔드 표면은 `q.D`를 `D`로 받아 쓴다. `q.X`는 모듈 표면의 값, `x:Method()`는 그 값의 메소드, `x.Field`는 필드다. `<<T>>`는 명시 타입 인자다.
 

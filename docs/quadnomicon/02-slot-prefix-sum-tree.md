@@ -8,7 +8,7 @@ description: "가상 DOM 없이 Slot 부분합 트리로 물리 인스턴스 트
 > **관련 소스**: `quad-base/src/Slot/init.luau`, `quad-base/src/Slot/Raw.luau`, `quad-base/src/Slot/List.luau`, `quad-base/src/Bookkeeping.luau`
 
 > [!CAUTION]
-> 이 권은 Slot 부분합 부기의 내부 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/01-first-screen.md)부터 보십시오.
+> 이 권은 Slot 부분합 부기의 내부 동작을 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/00-installation.md)부터 보십시오.
 
 ---
 

@@ -95,5 +95,5 @@ local card: Instance = SafeProfileCard({ Name = "q" })
 
 ## 관련
 
-- [디버깅과 문제 해결](/how-to/01-debugging-and-troubleshooting/) — 에러가 어느 줄을 blame하는지 읽는 법
+- [디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/) — 에러가 어느 줄을 blame하는지 읽는 법
 - [정적 grep 가능성과 에러 아키텍처](/quadnomicon/11-static-grepability-and-error-architecture/) — 이 경계가 왜 메시지를 가공하지 않는가

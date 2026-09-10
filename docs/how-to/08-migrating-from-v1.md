@@ -52,7 +52,7 @@ local D = q.D
 | v1 | v2 | 어디서 다루나 |
 |---|---|---|
 | `require(quad).Init(id)` | `Quad:UseProvider(QuadRoblox)` | 2절 |
-| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [첫 화면 만들기](../getting-started/01-first-screen.md) |
+| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [첫 화면 만들기](../getting-started/02-first-screen.md) |
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
 | `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
@@ -311,7 +311,7 @@ local card = D.Frame {
 }
 ```
 
-`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [09. 컴포넌트 경계 규약과 스타일 합성](./09-component-conventions.md) §3에 있습니다.
+`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [09. 컴포넌트 경계 규약과 스타일 합성](./01-component-conventions.md) §3에 있습니다.
 
 ### 정리(cleanup)
 
@@ -394,4 +394,4 @@ Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
 2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](./06-headless-testing.md).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
-4. **에러가 나면** [01. 디버깅과 문제 해결](./01-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.
+4. **에러가 나면** [01. 디버깅과 문제 해결](./09-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.

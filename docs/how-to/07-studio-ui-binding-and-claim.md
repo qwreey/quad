@@ -190,8 +190,3 @@ end
 없다"*를 보장하지만, `Claim` 경로에서는 그렇지 않습니다 — 인스턴스는 이미
 템플릿의 자식과 프로퍼티를 갖고 있습니다. 여기서 `PreRef`가 뜻하는 것은
 **"quad가 이 인스턴스에 무언가 하기 전"** 뿐입니다.
-
----
-
-## 다음 단계
-- [API Reference: Claim과 Mapper](../reference/roblox/04-claim-mapper.md)
