@@ -41,7 +41,7 @@ v1에서 자주 쓰이던 기능 중 v2가 **의도적으로 되살리지 않은
 | 커스텀 `Signal` / `Disconnecter` | 없음 — 정리는 인스턴스 수명에 묶임 | 이벤트 바인드 뒤에 함수를 넣는 것으로 충분하다고 판단했습니다. v1의 커스텀 Signal 구현은 정리 경로에 연결돼 있지도 않았습니다. |
 | `Mount(parent, obj)` / `mounts:Add` / `:Unmount` | `.Parent` 대입 + `Slot` | v1의 mount 모듈이 부모 부기·자식 레지스트리·생명주기 파괴를 한꺼번에 지고 있었습니다. 자식 CRUD는 `Slot`이 전담하고, 단일 부착은 엔진의 `.Parent`가 그대로 가져갑니다. |
 | `Quad.Lang` | 없음 — 라이브러리 밖 | 로케일 상태가 모듈 지역 변수라 `Init(id)`의 인스턴스 스코프를 무시했습니다(Store·Style은 스코프되는데 Lang만 전역 공유). 애초에 렌더러가 질 책임이 아니라고 봤습니다. |
-| `tracker.lua`(핫리로드 감시) | 없음 | 2.24 튜토리얼이 `require(Quad.tracker)`로 안내하던 자동 리로드입니다. 그 자리는 스토리북 도구가 대신합니다. |
+| `tracker.lua`(핫리로드 감시) | 없음 | 2.24 튜토리얼이 `require(Quad.tracker)`로 안내하던 자동 리로드입니다. 그 자리를 대신할 스토리북 도구는 예정이고 아직 없습니다. |
 | `Init(QuadId)` 네임스페이스 공유 | 기본 인스턴스 + 필요할 때만 `Quad.New()` | `require`가 이미 만들어진 기본 인스턴스를 돌려주므로, 파일마다 각자 인스턴스를 만들다 스코프가 조용히 갈라지는 사고가 구조적으로 없습니다. 공유는 모듈 export나 `q.Context`로 명시합니다. |
 
 ### id 조회가 없다는 게 실제로 뜻하는 것
@@ -74,11 +74,11 @@ v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적�
 
 - **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](/reference/core/06-slot/), [03. 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)
 - **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](/reference/extend/02-dispatch-handler-contract/)
-- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **숫자 키 자리에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [09. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
+- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **숫자 키 자리에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
 - **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](/how-to/07-studio-ui-binding-and-claim/)
 - **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](/reference/sugar/01-context/)
 - **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](/reference/sugar/03-debounce-throttle/)
-- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [01. 디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/)
+- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [09. 디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/)
 - **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](/how-to/08-migrating-from-v1/), [Quadnomicon Vol. 4 — 공변 마커](/quadnomicon/04-covariant-markers/)
 - **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. 헤드리스 테스트](/how-to/06-headless-testing/)
 

@@ -290,5 +290,5 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 **관련**
 
 - [D — Instance 생성](./02-d.md) — Modifier가 숫자 키 자리에서 소진되는 규칙
-- [09. 컴포넌트 경계 규약과 스타일 합성](../../how-to/01-component-conventions.md)
+- [01. 컴포넌트 경계 규약과 스타일 합성](../../how-to/01-component-conventions.md)
 - [05. 테마와 동적 스타일링](../../how-to/05-theme-and-dynamic-styling.md)

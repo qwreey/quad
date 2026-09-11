@@ -115,7 +115,7 @@ flowchart LR
 
 ## 3. 화면만 멈추는 "일시정지" 버튼
 
-같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 두겠습니다 — 게이트를 하나 끼우고(`const shown = count:Apply(blocker)` — 라벨은 `shown`을 봅니다) 버튼이 스위치를 토글하게 합니다.
+같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 두겠습니다(`count`도 `q.Source(0)`으로 되돌립니다) — 게이트를 하나 끼우고(`const shown = count:Apply(blocker)` — 라벨은 `shown`을 봅니다) 버튼이 스위치를 토글하게 합니다.
 
 ```luau
 -- … (Counter.luau) 카드의 숫자 키 자리에 버튼 하나 더

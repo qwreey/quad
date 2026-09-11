@@ -60,7 +60,7 @@ const CardStyle = D.Modifier.Frame {
     BorderSizePixel = 0,
 }
 
-const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160) }
+const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160) } -- …앞 장의 자식들은 그대로…
 
 hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
 ```

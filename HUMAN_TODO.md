@@ -56,6 +56,8 @@
 5. **`State<Instance?>`를 자리에 놓고 갈아 끼울 때 옛 원소가 파괴되지 않고 `Parent = nil`로 남는지**(mock 실측만 있음) — `*-slot.md` §6 서술의 실기기 확인.
 6. **Deferred 시그널 플레이스에서 `Effect` cleanup이 `Destroy` 직후로 지연되는지** — 오버뷰 (4) "알아 둘 것"의 근거는 설계 실측(`lifecycle-pattern.md`)뿐이라 현 빌드에서 한 번 더.
 7. **14.2** `roblox_sync_config_generator` 없이 Studio 싱크(그대로).
+8. **[2026-09-11 열린 탐사]** **리스폰과 quad 트리** — `PlayerGui`에 스크립트가 직접 붙인 `ScreenGui`가 `ResetOnSpawn = true`일 때 리스폰에서 지워지는지(GS 01은 `false`로 두고 한 줄 주석만 달았다), `StarterPlayerScripts`의 LocalScript 재실행과 겹치면 어떤 증상인지. 실측이 오면 how-to에 "리스폰·플레이어 생명주기" 절을 쓴다(지금 문서엔 respawn 서술이 0건).
+9. **[2026-09-11 열린 탐사]** **최소 요구 버전** — GS 01이 `const`와 문자열 `require("@game/…")`를 쓰는데 어느 Studio/luau 버전부터 되는지 문서 어디에도 없다. Studio에서 `const`가 도는 것은 확인됐지만(8번 해소) 하한 버전은 미확인 — 알려 주면 00 설치에 한 줄.
 
 #### D. 결정 — `.claude/question.md`와 계획서의 열린 문항
 
@@ -64,6 +66,10 @@
 - `research/roadmap-changelog-docs-plan.md` 7절 **Q1~Q8**(CHANGELOG 임베딩 여부·frontmatter 위치·사이드바·오버뷰 §8 확장 vs 새 페이지·내부 ROADMAP 공개 절 메커니즘·약속 수위·v1 원문 절·번역). 같은 조사의 부수 문항 `question.md` 3절 **D11**(`quad-mock` 이름).
 - **다음 릴리즈 번호** — `CHANGELOG.md` `[Unreleased]`에 BREAKING(`Operator.Index → Indexed`)과 Changed(`Slot:Single` 타입)가 쌓여 있다. SemVer대로면 4.0.0인데 3.0.0 직후라 사용자 판단(이 결정이 나면 `scripts/check-version.py bump`는 에이전트가).
 - 시작하기의 **함수형 페이지 위치**(B 흐름 항목)와 **얇은 페이지 합치기 여부** — 에이전트가 고른 배치라 한 번 봐 달라.
+- **[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.** 사이트의 `q.Operator.Indexed`는 레지스트리 3.0.0에 없다(그때 이름은 `Index`, 에이전트가 pesde에서 실제로 받은 사본으로 확인). 위 "다음 릴리즈 번호" 결정을 내리고 게시하는 것이 근본 해결이고, 그 전까지는 랜딩의 "현재 릴리즈" 줄과 `Indexed` 자리 셋에 "미게시 변경" 표시를 달아 뒀다.
+- **범위 밖 안내 절을 둘지** — 시니어가 첫날 묻는데 문서가 침묵하는 넷: 서버 사이드·`SurfaceGui`/`BillboardGui`, `StreamingEnabled`와 바인딩, Roact/Fusion 화면과의 공존, 핫 리로드(스토리북 도구는 예정). 답을 만들지 않더라도 how-to에 "아직 답이 없는 것" 절로 경계를 그어 두자는 제안(열린 탐사) — 둘지, 어느 항목을 넣을지.
+- **"현재 상태" 단락** — 오버뷰나 랜딩에 트랙 레코드(언제부터, 어디서 쓰이는지, 어느 규모까지 굴려 봤는지, 성능 수치) 한 단락을 둘지. 내용은 사용자만 안다.
+- **레퍼런스·how-to 예제의 `local` vs GS의 `const`** — 프롤로그는 통일했지만(01장 설정 모듈) 본문 `local`은 그대로 뒀다. 예제 전부를 `const`로 바꿀지(툴체인 하한과 같이).
 
 #### E. 밖에서 할 것
 

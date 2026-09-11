@@ -86,12 +86,12 @@ end
 
 `Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **문자 키가 아니라 숫자 키 자리**에 놓습니다. 문자 키의 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
 
-그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
+그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 선두나 중간이 구멍이면 quad는 그 자리에서 **에러를 냅니다**(`Dispatch.recompute: sourceList[N] is nil — a nil hole …`). 조용히 넘어가는 것은 **꼬리 구멍뿐**이고, 그마저 뒤에 원소를 하나 더 붙이는 순간 에러가 됩니다.
 
-그래서 quad는 구멍 있는 props 테이블을 **계약 밖(UB)** 으로 둡니다. 무슨 일이 나는지는 구멍이 어디에 뚫렸느냐에 따라 갈리는데, 그 증상과 에러 메시지는 [09. quad 에러 읽는 법과 런타임 디버깅](/how-to/09-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
+그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [09. quad 에러 읽는 법과 런타임 디버깅](/how-to/09-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
 
 ```luau
--- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 순회가 그 자리를 건너뛴다
+-- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 그 자리에서 에러
 D.TextButton { props.Modifier, props.Ref, Text = "x" }
 
 -- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로

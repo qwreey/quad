@@ -106,7 +106,7 @@ const D = q.D
 
 const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-const screen = D.ScreenGui { ResetOnSpawn = false }
+const screen = D.ScreenGui { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
 
 const hello = D.TextLabel {
     AnchorPoint = Vector2.new(0.5, 0.5),

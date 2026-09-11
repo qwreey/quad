@@ -353,7 +353,7 @@ local card = D.Frame {
 }
 ```
 
-`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [09. 컴포넌트 경계 규약과 스타일 합성](./01-component-conventions.md) §3에 있습니다.
+`Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [01. 컴포넌트 경계 규약과 스타일 합성](./01-component-conventions.md) §3에 있습니다.
 
 <!-- mock 실측 2026-09-11: 같은 키를 가진 Modifier 둘을 {A, B}로 놓으면 B가, {B, A}로 놓으면 A가 이겼다. 명시 프로퍼티는 둘 다 이겼다. v1 소스 확인: 2.24 class.lua의 ProcessQuadProperty가 `if processedProperty[index] then return end`로 시작하고 props를 1..n 정순으로 돌아, 먼저 처리된 쪽(배열 앞)이 이긴다. -->
 **겹치는 스타일끼리는 v1과 승자가 반대입니다.** 명시한 프로퍼티가 스타일을 이기는 것은 양쪽이 같지만, 같은 키를 가진 스타일이 둘 이상일 때 v1은 **배열에서 앞선 것**을 남겼고 3.x `Modifier`는 **뒤에 온 것**이 이깁니다. v1에서 "기본 스타일을 먼저, 예외를 나중에" 적어두었다면 옮길 때 순서를 뒤집어야 같은 화면이 나옵니다.
@@ -380,7 +380,7 @@ v1의 `Signal.Bindable`·`Disconnecter`(Maid류)에 해당하는 것은 없습�
 | `Apply(myFrame){props}` (이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다) | `q.Claim(inst, D.Mapper...)` | 재바인드 일반형은 기각됐고, **Studio에서 만든 프리팹을 통째로 넘겨받는 claim** 형태로만 부활했습니다. 한 번만 claim 가능하고 직계 자식을 전부 매핑해야 하며, 공동 소유 컨테이너(`PlayerGui` 등)는 대상이 아닙니다 — [07. Studio UI 바인딩과 `Claim`](./07-studio-ui-binding-and-claim.md). |
 | `Signal.Bindable` / `Disconnecter` | 없음 | 정리는 인스턴스 수명에 묶입니다(5절). |
 | `Quad.Lang` | 없음 | 로케일은 라이브러리 범위 밖으로 분리됐습니다. |
-| `tracker.lua`(핫리로드 감시) | 없음 | 스토리북 도구가 그 자리입니다. |
+| `tracker.lua`(핫리로드 감시) | 없음 | 그 자리를 대신할 스토리북 도구는 예정이고 아직 없습니다. |
 | `Quad.Round` | 없음 | 별개의 유틸이었고 옮겨오지 않았습니다. |
 | `RoundSize` | 없음 | 없어진 숏핸드는 이것 하나입니다. `Corner`/`PaddingAll`/`PaddingAllOffset`/`Scale`은 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale`로 **이름이 바뀌었을 뿐**이고(5절), 그 밖의 자리는 엔진 프로퍼티를 직접 씁니다. |
 
@@ -442,4 +442,4 @@ Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part 
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
 2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](./06-headless-testing.md).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
-4. **에러가 나면** [01. 디버깅과 문제 해결](./09-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.
+4. **에러가 나면** [09. 디버깅과 문제 해결](./09-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.
