@@ -56,7 +56,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 평범한 `Ref`에는 그 가드가 없습니다. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지고, 다른 자리에 두면 "Ref를 잘못 놓았다"는 진단 대신 그 자리의 주인이 내는 에러를 봅니다.
 
 - Modifier 필드 — `Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
-- 아무 핸들러도 맡지 않는 문자 키 — `Dispatch: no handler matched key {k} (value: {typeof(v)}, brand: Ref)`
+- 아무 핸들러도 맡지 않는 문자 키 — `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `bindLifetime: value is already bound to another Instance`(생명주기는 백엔드가 심으므로 이 두 문구는 quad-roblox의 것입니다).

@@ -52,7 +52,7 @@ Detach: Detach
 -- export type Detach = { read __quadDetach: true }
 ```
 
-**동작** — `Slot:List`/`Slot:Single`의 `updateFn`이 **결과 자리에 반환**하는 센티널입니다. "이 요소를 파괴하지 말고 붙잡아 둬라" — 요소는 물리 트리에서 빠지지만 파괴되지 않고 Slot이 계속 들고 있다가, 같은 키가 다시 나타나면 `prev`로 되돌아옵니다. 반환하지 않고 값 자리에 두는 용도가 아닙니다.
+**동작** — `Slot:List`/`Slot:Single`의 `updateFn`이 **결과 자리에 반환**하는 센티널입니다. "이 요소를 파괴하지 말고 붙잡아 둬라" — 요소는 물리 트리에서 빠지지만 파괴되지 않고 Slot이 계속 들고 있다가, 같은 키가 다시 나타나면 `prev`로 되돌아옵니다(`Owned = false`인 Slot에서는 보관하지 않고 소유만 풉니다 — [Slot](/reference/core/06-slot/#qdetach) 참고). 반환하지 않고 값 자리에 두는 용도가 아닙니다.
 
 같은 자리에서 `nil` 또는 `q.None`을 반환하면 파괴, 요소를 반환하면 그 요소가 그 자리에 놓입니다.
 

@@ -175,7 +175,7 @@ retractFrom: (inst: any, key: any, index: number) -> ()
 
 **동작** — `index`(포함)부터 그 자리 체인의 꼬리까지를 **깊은 쪽부터** 무릅니다. 얕은 층이 깊은 층을 만들었으므로 역순이 맞습니다. 각 retractor는 `(nil, true)`로 불립니다 — 단순 철거이고 뒤따르는 재처리가 없다는 뜻입니다.
 
-체인이 비면 그 자리는 부기에서 완전히 놓입니다. `inst`가 `nil`이면 `Dispatch.retractFrom: inst must not be nil`.
+체인이 비면 그 자리의 **체인 기록**이 놓입니다(Length/Offset 부기는 핸들러가 `setLength(…, 0)` 경로로 직접 풀어야 합니다). `inst`가 `nil`이면 `Dispatch.retractFrom: inst must not be nil`.
 
 ## `q.Dispatch.drive(inst, flattened)`
 
@@ -216,8 +216,8 @@ Dispatch.drive: array keys must be positive integers (got {키})
 
 ```
 Dispatch.{함수}: ownerKey must not be nil
-Dispatch.{함수}: position must be a positive integer (got {i})
-Dispatch.{함수}: length must be a non-negative integer (got {n})
+Dispatch.{함수}: position must be a positive integer (got {tostring(i)})
+Dispatch.{함수}: length must be a non-negative integer (got {tostring(n)})
 ```
 
 ## `q.Dispatch.setLength(ownerKey, i, len, anchor, element)`

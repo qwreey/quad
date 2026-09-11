@@ -131,8 +131,10 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으면 호출한 줄을 blame하며 던집니다 —
 
 ```
-quad-roblox: requires a quad-base matching version pattern '3.1.0' (got '{tostring(q.Version)}')
+quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
 ```
+
+`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.1.0`).
 
 **예제**
 

@@ -102,6 +102,7 @@ export type Observer = {
 - 아직 살아나지 않은(구독도 바인딩도 안 된) 핸들에도 emit은 **도착합니다**. 다만 실행 자격이 없어 **보류**되고, 그 사이 몇 번이 왔든 살아나는 시점에 **정확히 한 번**, `emitFrom = nil`로 재생됩니다.
 - 콜백은 **자기 자신의 생명주기를 바꿀 수 없습니다**. 콜백 안에서 구독을 건드리면
   `Observer: cannot change subscription from inside its own fn`
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`)
 - 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
 
 **예제**
@@ -215,6 +216,7 @@ export type EffectHandle = {
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기 구독을 바꿀 수 없습니다:
   `Effect: cannot change subscription from inside fn or cleanup`
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`)
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
 - `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행이 전부 막힙니다.
 
