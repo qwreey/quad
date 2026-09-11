@@ -30,6 +30,9 @@ def convert(src_path, text):
         target = os.path.normpath(os.path.join(os.path.dirname(src_path), href))
         rel = os.path.relpath(target, DOCS)
         if rel.startswith('..'):
+            # [2026-09-11] 루트 CHANGELOG.md는 사이트 /changelog/로 실린다(EXTRA) — docs/ 안에서 그리로 가는 링크만 치환
+            if os.path.abspath(target) == os.path.join(ROOT, 'CHANGELOG.md'):
+                return f'[{label}]({BASE}changelog/{anchor})'
             return m.group(0)
         if rel.split(os.sep)[0] not in TRACKS:
             return label  # 사이트에 없는 페이지 — 링크를 벗긴다

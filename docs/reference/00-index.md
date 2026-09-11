@@ -197,7 +197,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Operator.Shl(n)` | [sugar/02](./sugar/02-operator.md) |
 | `q.Operator.Shr(n)` | [sugar/02](./sugar/02-operator.md) |
 | `q.Operator.Alternative(default)` | [sugar/02](./sugar/02-operator.md) |
-| `q.Operator.Indexed<<V>>(key)` | [sugar/02](./sugar/02-operator.md) |
+| `q.Operator.Indexed<<V>>(key)`(3.0.0에서는 `Index` — 개명은 다음 릴리스) | [sugar/02](./sugar/02-operator.md) |
 | `q.Debounce{...}` | [sugar/03 — Debounce·Throttle](./sugar/03-debounce-throttle.md) |
 | `q.Throttle{...}` | [sugar/03](./sugar/03-debounce-throttle.md) |
 | `handle:Flush()` / `handle:Cancel()` | [sugar/03](./sugar/03-debounce-throttle.md) |

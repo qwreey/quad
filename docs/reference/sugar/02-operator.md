@@ -253,6 +253,8 @@ local safeName: State<string> = optionalName:Apply(Op.Alternative("Guest")) -- "
 Indexed: <V>(key: any) -> (self: any) -> State<V>
 ```
 
+> **[다음 릴리스]** 게시된 3.0.0에서는 이 이름이 `q.Operator.Index`입니다. `Indexed`는 아직 게시되지 않은 개명입니다([변경 이력 Unreleased](../../../CHANGELOG.md)) — 3.0.0을 쓰고 있다면 `Index`로 읽으세요.
+
 반응형 필드 읽기입니다. **결과 타입만 계약이 다릅니다** — 키에서 값 타입을 추론하는 형태는 지금 솔버로 표현할 수 없어서, 값 타입을 호출자가 명시적 타입 인자로 직접 적습니다.
 
 런타임은 상류 값에 `[key]`를 한 번 읽는 것입니다. 상류 State 전체가 바뀔 때 갱신되고, 없는 키는 `nil`입니다 — 게이트가 없습니다(타입을 적은 사람이 책임집니다).
