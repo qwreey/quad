@@ -178,7 +178,7 @@ local function VirtualList(props: { items: { { id: string, label: string } } })
 end
 ```
 
-`q.OnChange(name, fn)`는 **숫자 키 자리에** 놓는 디스크립터입니다(해시 키가
+`q.OnChange(name, fn)`는 **숫자 키 자리에** 놓는 디스크립터입니다(문자 키가
 아닙니다). 콜백은 엔진 인자만 받습니다.
 
 ---

@@ -31,13 +31,13 @@ local isHovered = q.Source(false)
 local CommonButtonModifier = D.Modifier.Frame { BorderSizePixel = 0 }
 
 D.Frame {
-    Size = UDim2.new(0, 200, 0, 50),                  -- 해시: 프로퍼티
-    BackgroundColor3 = isHovered:Compute(function(h)  -- 해시: 반응형 바인딩
+    Size = UDim2.new(0, 200, 0, 50),                  -- 문자 키: 프로퍼티
+    BackgroundColor3 = isHovered:Compute(function(h)  -- 문자 키: 반응형 바인딩
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
-    MouseEnter = function() isHovered:Set(true) end,  -- 해시: 이벤트(self는 안 온다)
-    CommonButtonModifier,                             -- 배열: 재사용 스타일
-    D.TextLabel { Text = "클릭하세요" },                -- 배열: 자식
+    MouseEnter = function() isHovered:Set(true) end,  -- 문자 키: 이벤트(self는 안 온다)
+    CommonButtonModifier,                             -- 숫자 키: 재사용 스타일
+    D.TextLabel { Text = "클릭하세요" },                -- 숫자 키: 자식
 }
 ```
 
@@ -275,7 +275,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
   - **Vide** — `action(callback, priority)`은 등록이 필요 없는 대신 key/value 쌍을 받지 않습니다.
   - **Roblox 네이티브 StyleSheet** — 이름으로 멀리서 거는 창구는 엔진이 이미 줍니다. `StyleRule`의 선택자가 곧 `CollectionService` 태그이기 때문입니다. 다만 적용 위치가 태그 선택자를 통해야 해서, 컴포넌트 코드 안에서 스타일을 **값으로 합성하거나 diff하기**는 어렵다고 보고 Modifier를 별도 축으로 뒀습니다 — 두 축은 배타적이지 않습니다.
 - **우리가 넘은 방법**: 재사용 스타일은 디스패치 **이전에 정적으로 평탄화되는** 불변 값(`Modifier`)이라 런타임 캐스케이드 계산이 없고, 핸들러는 key·value·타깃을 모두 받으며 우선순위 축은 열린 공간입니다. 라이브러리를 고치지 않고 다섯 번째 우선순위를 끼워 넣을 수 있습니다.
-- **알아 둘 것**: 이름으로 멀리서 일괄 적용하고 싶으시면 그 창구는 **엔진 쪽**입니다 — quad의 `q.Tag`가 선언한 태그(State에서 나온 태그도 됩니다)를 `StyleRule`의 선택자가 그대로 고르므로, 태그 위에 스타일시트를 얹어 바깥에서 모양을 갈아 끼우는 구성은 그대로 됩니다 → [05. 이름표와 속성](/getting-started/05-tag-attr/). Modifier가 더하는 것은 그 위의 두 번째 축입니다 — **합성되고, 코드로 diff되고, 텍스트로 이식되는** 스타일. 없어진 것은 id 하나를 겨냥하던 v1의 `Style "Child" {}`뿐이고, 그 이관은 [v1에서 오는 분께](/overview/02-from-v1/)로 넘깁니다. Modifier 쪽 우선순위 규칙은 "배열에서 뒤에 온 것이 이김"과 "인라인 키가 무조건 이김" 둘뿐이라, 넘기는 쪽이 직접 배치하시면 됩니다.
+- **알아 둘 것**: 이름으로 멀리서 일괄 적용하고 싶으시면 그 창구는 **엔진 쪽**입니다 — quad의 `q.Tag`가 선언한 태그(State에서 나온 태그도 됩니다)를 `StyleRule`의 선택자가 그대로 고르므로, 태그 위에 스타일시트를 얹어 바깥에서 모양을 갈아 끼우는 구성은 그대로 됩니다 → [05. 이름표와 속성](/getting-started/05-tag-attr/). Modifier가 더하는 것은 그 위의 두 번째 축입니다 — **합성되고, 코드로 diff되고, 텍스트로 이식되는** 스타일. 없어진 것은 id 하나를 겨냥하던 v1의 `Style "Child" {}`뿐이고, 그 이관은 [v1에서 오는 분께](/overview/02-from-v1/)로 넘깁니다. Modifier 쪽 우선순위 규칙은 "숫자 키 자리에서 뒤에 온 것이 이김"과 "인라인 키가 무조건 이김" 둘뿐이라, 넘기는 쪽이 직접 배치하시면 됩니다.
 - **자세히**: [09. 스타일을 값으로](/getting-started/09-modifier/), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/quadnomicon/08-extensible-dispatch-engine/)
 
 ### (7) 렌더 백엔드를 부착식으로 만든다 — 코어에서 엔진 어휘를 뺀다
@@ -290,7 +290,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: 어느 라이브러리든 `{ … }` 안에서 인식되는 키와 값의 종류는 라이브러리가 정합니다. Fusion의 `SpecialKey`는 새 키를 만들 수는 있지만 우선순위 4단계 안에서만이고, Vide의 `action`은 콜백 하나를 던지는 창구라 새 **값 타입**을 가르칠 수 없으며, quad v1은 `class.lua`의 중앙 디스패처가 하드코딩이라 특수 키 하나를 더 넣으려면 라이브러리를 고쳐야 했습니다.
 - **우리가 넘은 방법**: props의 자리 하나하나는 **디스패치 엔진**으로 가고, 엔진은 등록된 핸들러들을 우선순위대로 훑어 그 (요소, 키, 값)을 맡을 첫 핸들러를 찾습니다. 핸들러는 레코드 하나입니다 — 순수 판별 `isHandlable`, 숫자 `priority`, 처리하고 **되돌리는 함수(retractor)**를 돌려주는 `process`. 사용자가 이 레코드를 `q.Dispatch.addHandler`로 등록하면 그 순간부터 새 값 타입(스프링 값, 로그 값, 무엇이든)이나 새 키가 `D.Frame { … }` 안에서 인식됩니다. 값을 한 겹 벗겨 아래로 위임하는 **래핑 핸들러**는 같은 자리에 층으로 쌓이고 무를 때 역순으로 풀립니다. 백엔드의 `Property`·`Event`·`Tween`도 특권이 아니라 **같은 레지스트리에 등록된 핸들러**이고, 그 위에 얹는 `Modifier`·`Slot`·`Ref`·`Observer`도 마찬가지입니다. 새 표면(`q.MySpring` 같은 팩토리)까지 붙이려면 `q:AddPlugin(fn)`이 돌려준 테이블을 모듈에 병합해 줍니다 — 타입도 `Self & P` 교집합으로 이어져 캐스트 없이 자동완성됩니다. 그래서 코어·백엔드·플러그인이 전부 **분리 가능한 층**입니다.
 - **알아 둘 것**: 핸들러 작성에는 지켜야 할 계약이 있습니다 — `isHandlable`은 매치되지 않는 스캔에서도 반복해서 불리므로 순수해야 하고, `process`는 retractor를 반드시 돌려줘야 합니다. 확장점을 여는 라이브러리라면 어디에나 있는 종류의 계약입니다. 레지스트리는 모듈 인스턴스 스코프라 `q.New()`로 따로 만든 인스턴스에는 다시 등록해야 합니다 — `require`가 주는 기본 인스턴스만 쓰시면 해당 없고, `q.New()`는 드문 경로입니다.
-- **치른 대가**: 우선순위 축을 열어 둔 값으로, 닫힌 축에는 없는 실패 모드가 생깁니다([핸들러 계약](/reference/extend/02-dispatch-handler-contract/)). `keyType`을 `isHandlable`과 어긋나게 선언하면 등록은 통과하는데 **에러 없이** 그 버킷에서 빠지고, 더 낮은 우선순위의 핸들러가 대신 매치됩니다. 우선순위 동률의 순서는 정의돼 있지 않고 경고는 `q.debug`가 참일 때만 나옵니다. `process`가 던진 자리는 no-op 표식을 단 채 남고 **명시적 철거로도 복구되지 않습니다**(핫 패스라 `pcall`로 감싸지 않습니다). 배열 자리를 맡는 말단 핸들러는 자리마다 **길이와 오프셋 소스를 둘 다 등록**해야 하고, 하나만 빠뜨리면 그 자리가 아니라 한참 뒤의 오프셋 조회에서 터집니다. **산 것**은 라이브러리를 포크하지 않고 새 값 타입·새 키·다섯 번째 우선순위를 끼워 넣을 수 있다는 것입니다.
+- **치른 대가**: 우선순위 축을 열어 둔 값으로, 닫힌 축에는 없는 실패 모드가 생깁니다([핸들러 계약](/reference/extend/02-dispatch-handler-contract/)). `keyType`을 `isHandlable`과 어긋나게 선언하면 등록은 통과하는데 **에러 없이** 그 버킷에서 빠지고, 더 낮은 우선순위의 핸들러가 대신 매치됩니다. 우선순위 동률의 순서는 정의돼 있지 않고 경고는 `q.debug`가 참일 때만 나옵니다. `process`가 던진 자리는 no-op 표식을 단 채 남고 **명시적 철거로도 복구되지 않습니다**(핫 패스라 `pcall`로 감싸지 않습니다). 숫자 키 자리를 맡는 말단 핸들러는 자리마다 **길이와 오프셋 소스를 둘 다 등록**해야 하고, 하나만 빠뜨리면 그 자리가 아니라 한참 뒤의 오프셋 조회에서 터집니다. **산 것**은 라이브러리를 포크하지 않고 새 값 타입·새 키·다섯 번째 우선순위를 끼워 넣을 수 있다는 것입니다.
 - **자세히**: [레퍼런스: 디스패치 핸들러 계약](/reference/extend/02-dispatch-handler-contract/) — 예제 "커스텀 값 타입 하나 붙이기", [레퍼런스: Quad 모듈 — `AddPlugin`](/reference/core/01-quad-module/), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](/quadnomicon/08-extensible-dispatch-engine/)
 
 ### (덤) 에러를 grep 가능하게 만든다

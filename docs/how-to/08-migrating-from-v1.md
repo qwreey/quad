@@ -55,7 +55,7 @@ local D = q.D
 | `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [첫 화면 만들기](../getting-started/02-first-screen.md) |
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
-| `[Event "Activated"] = fn(self, …)` | 해시 키 `Activated = fn(…)` (self 없음) | 5절 |
+| `[Event "Activated"] = fn(self, …)` | 문자 키 `Activated = fn(…)` (self 없음) | 5절 |
 | `[Event.Prop "Text"] = fn` | `q.OnChange("Text", fn)` (숫자 키 자리) | 5절 |
 | `Class.Extend()` + `:Render(props)` | 평범한 함수 | 5절 |
 | `self "_button"` 링커 | `q.PreRef<<Frame?>>(nil)` + `ref:Unwrap()` | 5절 |
@@ -362,7 +362,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | 반환 팩을 주석하세요: `): (any, UD?)` |
 | `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` — 타입 인자로 넓힙니다 |
-| `[q.AttrKey("Hp")] = v` (해시 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
+| `[q.AttrKey("Hp")] = v` (문자 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
 | `D.New("Folder")({...})`의 결과를 사용 | `Type 'unknown' does not have key 'Name'` | `D.New<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
 | `Op.Sum(UDim2…)` 같은 비숫자 | `None of the overloads for function that accept 2 arguments are compatible` | 산술·비트 연산자는 숫자 전용입니다. 다른 타입은 `:Compute`로 |

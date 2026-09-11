@@ -58,7 +58,7 @@ D.Frame {
 }
 ```
 
-1. **숫자 키**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **키 없는 배열 원소가 곧 자식**입니다.
+1. **숫자 키**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **이름 없는 자리(숫자 키)가 곧 자식**입니다.
 2. **문자 키**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 문자 키에 직접 적은 프로퍼티는 숫자 키의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
 3. **한 번에 처리된다**: 숫자 키 자리가 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)이 다룹니다.
 4. **정리(Teardown)**: 인스턴스를 `Destroy()`하면 거기 묶인 구독과 트윈은 더 이상 실행되지 않습니다. Quad는 인스턴스마다 걸어 둔 엔진 연결이 끊겼는지로 생존을 판정하고, 실제 메모리 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것은 없고, **정리해야 할 것들을 담아 들고 다니는 스코프 객체도 없습니다**(Fusion의 `Scope`, Vide의 소유 스코프 자리에 해당하는 것이 quad에는 없습니다).
@@ -84,7 +84,7 @@ end
 
 ### 왜 `or None`인가, 그리고 왜 하필 숫자 키 자리인가
 
-`Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **해시 키가 아니라 숫자 키 자리**에 놓습니다. 해시 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
+`Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **문자 키가 아니라 숫자 키 자리**에 놓습니다. 문자 키의 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 구멍이 있는 배열은 `#`도 순회 순서도 보장되지 않습니다.
 
@@ -144,7 +144,7 @@ local function CustomButton(props: ButtonProps): TextButton
         props.Modifier or None,
         props.Ref or None,
 
-        -- [3] 불변식 1 — 해시 키는 어떤 Modifier도 덮지 못한다
+        -- [3] 불변식 1 — 문자 키는 어떤 Modifier도 덮지 못한다
         Text = props.Text,
         MouseButton1Click = props.OnClick,
         UICorner = 8,
@@ -293,6 +293,6 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 
 - [ ] 컴포넌트는 1회 실행되는 셋업 함수인가?
 - [ ] 외부에서 주입받는 `Modifier`/`Ref`를 **숫자 키 자리**에 놓고 `or None`으로 nil-hole을 막았는가?
-- [ ] 해시 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
+- [ ] 문자 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
 - [ ] `Attr` 값을 지울 때 `None`(또는 State의 `nil`)을 쓰고, 그룹 교체만으로는 값이 안 지워진다는 걸 아는가?
 - [ ] 반응형 로직을 담은 헬퍼 함수를 React Hook의 제약 없이 자유롭게 분리했는가?

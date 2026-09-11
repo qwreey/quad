@@ -26,7 +26,7 @@ quad는 이 둘을 분리합니다:
 
 "quad는 절대 파괴하지 않는다"는 **틀린 요약**입니다. 비파괴는 두 자리에서 성립합니다:
 
-1. **자식 배열 위치의 `State<Slot>` 교체.** 그 자리를 맡는 `SlotHandler`의 retractor는 `unmountSlotTree`를 부릅니다 — 파괴가 아니라 언마운트입니다. 맨 `State`를 Slot 요소로 넣었을 때 quad가 대신 만들어주는 래퍼 Slot도 `Owned = false`라 같은 취급입니다.
+1. **자식 숫자 키 위치의 `State<Slot>` 교체.** 그 자리를 맡는 `SlotHandler`의 retractor는 `unmountSlotTree`를 부릅니다 — 파괴가 아니라 언마운트입니다. 맨 `State`를 Slot 요소로 넣었을 때 quad가 대신 만들어주는 래퍼 Slot도 `Owned = false`라 같은 취급입니다.
 2. **`Owned = false`로 만든 Slot.** 요소를 "외부에서 빌려온 것"으로 보고, 밀려나면 언마운트만 합니다.
 
 반대로 **`:List`/`:Single`의 기본값은 `Owned = true`이고, 이 경우 데이터에서 빠진 요소는 파괴됩니다.** 이건 실수가 아니라 기본값의 의도입니다 — 리스트가 만들어낸 것은 리스트가 치웁니다.

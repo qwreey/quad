@@ -66,7 +66,7 @@ Slot: <T>(initial: { SlotElement<T> }?) -> Slot<T>
 
 - 타입 인자를 안 주면 `q.Slot()`은 `Slot<unknown>`으로 추론됩니다. strict 모드에서는 `q.Slot<<Instance>>()`처럼 **명시적으로 인스턴스화**하세요.
 - `initial`을 주면 — **빈 `Slot{}`이라도** — 그 Slot은 수동 CRUD Slot으로 고정됩니다. 나중에 `:List`를 걸 수 없습니다.
-- `initial`은 **평범한 배열**이어야 합니다. 값 하나를 괄호 없이 넘기거나(`Slot(frame)`) 해시 키를 섞으면 에러입니다.
+- `initial`은 **평범한 배열**이어야 합니다. 값 하나를 괄호 없이 넘기거나(`Slot(frame)`) 정수가 아닌 키를 섞으면 에러입니다.
   - `Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)`
   - `Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`
 - 배열 안의 중복(같은 원소 두 번)과 이미 다른 곳에 마운트된 원소는 원소를 하나도 넣기 전에 한 번에 검사됩니다.
@@ -81,7 +81,7 @@ local fixed = q.Slot<<Instance>>({     -- 초기 원소 둘, 수동 CRUD Slot으
     D.TextLabel { Text = "B" },
 })
 
-local panel = D.Frame { list, fixed }  -- 배열부에 놓으면 그 자리가 Slot의 자식 구간이 된다
+local panel = D.Frame { list, fixed }  -- 숫자 키에 놓으면 그 자리가 Slot의 자식 구간이 된다
 ```
 
 **관련** — [Slot 접두합 트리](/quadnomicon/02-slot-prefix-sum-tree/), [DOMless Slot](/quadnomicon/09-fragment-breakthrough-and-domless-slot/)

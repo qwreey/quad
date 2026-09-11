@@ -30,7 +30,7 @@ local D = q.D
 
 만들어진 직후의 핸들은 **아직 실행 자격이 없습니다**(`.Subscribed`는 `false`). 자격을 얻는 경로는 둘이고, 둘 중 하나만 골라야 합니다.
 
-1. **요소 배열에 넣어 인스턴스에 매다는 것** — props의 **숫자 키** 자리에 핸들을 넣으면, 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다), `EffectHandle`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
+1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다), `EffectHandle`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
 **둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — `Observer: already subscribed` 또는 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구).
@@ -55,7 +55,7 @@ local label = D.TextLabel {
 }
 ```
 
-해시 키 자리에 넣으면 타입 우회 실수로 보고 거절합니다:
+문자 키 자리에 넣으면 타입 우회 실수로 보고 거절합니다:
 
 - `Observer: must be an array item, not the value of a {typeof(k)} key`
 - `Effect: must be an array item, not the value of a {typeof(k)} key`

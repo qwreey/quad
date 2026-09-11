@@ -95,8 +95,8 @@ export type Handler = {
 처리할 수 있어야 하므로 `FALLBACK`입니다.
 
 목록에 **`Modifier` 핸들러가 없다는 점**도 봐 둘 만합니다. `Modifier`는 스캔에 들어오지
-않습니다 — `drive`의 첫 pre-pass인 `flatten`이 배열 부분(숫자 키)의 Modifier 슬롯을 그 자리에서
-소진해 필드를 해시 부분(문자 키)으로 합치고, 빈 슬롯에는 `ProcessedModifier` 센티널을 남깁니다.
+않습니다 — `drive`의 첫 pre-pass인 `flatten`이 숫자 키(테이블의 배열 부분)의 Modifier 슬롯을 그 자리에서
+소진해 필드를 문자 키(해시 부분)으로 합치고, 빈 슬롯에는 `ProcessedModifier` 센티널을 남깁니다.
 스캔이 보는 것은 그 센티널이고, 그 핸들러가 하는 일은 "이 자리는 길이 0"이라고
 부기에 등록하는 것뿐입니다. `PreRef`/`PostRef`도 같은 모양입니다.
 

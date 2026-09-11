@@ -145,7 +145,7 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `inst` | `any` | 대상 요소. `nil`이면 에러 |
-| `key` | `any` | props의 키(배열 자리면 숫자, 해시면 문자열 등) |
+| `key` | `any` | props의 키(숫자 키 자리면 숫자, 문자 키면 문자열 등) |
 | `value` | `any` | 그 자리의 값 |
 | `index` | `number` | 체인 깊이. 최초 진입은 `1`, 위임은 `index + 1` |
 
@@ -189,10 +189,10 @@ drive: (inst: any, flattened: { [any]: any }) -> ()
 
 **동작** — props 테이블 하나를 요소에 통째로 적용하는 파이프라인입니다. 백엔드의 생성 경로(`D.<Class>{ ... }`)와 `Claim`이 같은 함수를 부릅니다. 순서:
 
-1. **배열 자리 도메인 검사** — 배열 키는 양의 정수여야 합니다. 어떤 핸들러가 부기를 만지기 전에 먼저 봅니다.
-2. **flatten** — 배열 자리의 Modifier를 그 자리에서 소비하고, 그 필드들을 문자 키 자리에 병합합니다. 배열 길이는 바뀌지 않습니다.
+1. **숫자 키 자리 도메인 검사** — 숫자 키는 양의 정수여야 합니다. 어떤 핸들러가 부기를 만지기 전에 먼저 봅니다.
+2. **flatten** — 숫자 키 자리의 Modifier를 그 자리에서 소비하고, 그 필드들을 문자 키 자리에 병합합니다. 배열 길이는 바뀌지 않습니다.
 3. **배치 게이트 열기** — 숫자 키가 있을 때만 그 요소의 배치 Blocker를 켭니다(자식이 없는 요소가 괜히 부기를 키우지 않도록).
-4. **`PreRef` 사전 통과** — 배열의 `PreRef`가 여기서 발화하고, `PostRef`는 수집됩니다. 소비된 자리는 센티널로 바뀌어 배열에 구멍이 생기지 않습니다.
+4. **`PreRef` 사전 통과** — 숫자 키의 `PreRef`가 여기서 발화하고, `PostRef`는 수집됩니다. 소비된 자리는 센티널로 바뀌어 배열에 구멍이 생기지 않습니다.
 5. **본문 루프** — 모든 자리에 대해 `process(inst, key, value, 1)`.
 6. **`PostRef` 발화** — 본문 루프 뒤, 배치가 닫히기 **전에**. 그래서 콜백 안에서 한 `slot:Add` 같은 변경도 같은 배치에 흡수됩니다.
 7. **배치 닫기** — 게이트를 닫고 정확히 한 번 재계산합니다.
@@ -210,9 +210,9 @@ Dispatch.drive: array keys must be positive integers (got {키})
 
 ## Length/Offset 부기
 
-아래 부기 함수들은 **말단(leaf) 핸들러 작성자**를 위한 표면입니다. 배열 자리는 물리 트리에서 여러 개의 실제 요소를 차지할 수 있으므로(자식 하나일 수도, Slot이 펼치는 N개일 수도 있다), 엔진은 자리마다 "길이"와 "시작 오프셋"을 부기해 부분합으로 관리합니다.
+아래 부기 함수들은 **말단(leaf) 핸들러 작성자**를 위한 표면입니다. 숫자 키 자리는 물리 트리에서 여러 개의 실제 요소를 차지할 수 있으므로(자식 하나일 수도, Slot이 펼치는 N개일 수도 있다), 엔진은 자리마다 "길이"와 "시작 오프셋"을 부기해 부분합으로 관리합니다.
 
-**계약**: 배열 자리를 맡은 말단 핸들러는 **자리마다 길이와 오프셋 소스를 둘 다 등록**해야 합니다. 하나라도 빠뜨리면 그 owner의 오프셋 산술이 깨지고, 나중에 `getOffsetAt`이 "등록을 건너뛴 핸들러가 있다"고 알려주는 자리에서 터집니다. 해제 순서는 **`setOffsetSource(None)` 다음 `setLength(0)`**이고, 그 쌍을 한 번에 하는 함수가 `setEmpty`입니다. 해시 키 핸들러에는 이 의무가 없습니다.
+**계약**: 숫자 키 자리를 맡은 말단 핸들러는 **자리마다 길이와 오프셋 소스를 둘 다 등록**해야 합니다. 하나라도 빠뜨리면 그 owner의 오프셋 산술이 깨지고, 나중에 `getOffsetAt`이 "등록을 건너뛴 핸들러가 있다"고 알려주는 자리에서 터집니다. 해제 순서는 **`setOffsetSource(None)` 다음 `setLength(0)`**이고, 그 쌍을 한 번에 하는 함수가 `setEmpty`입니다. 문자 키 핸들러에는 이 의무가 없습니다.
 
 공통 인자 검사는 세 종류이고 함수 이름만 바뀝니다.
 
@@ -233,7 +233,7 @@ setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor:
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `ownerKey` | `any` | 부기의 주인 — 요소이거나 Slot |
-| `i` | `number` | 배열 자리(1부터) |
+| `i` | `number` | 숫자 키 자리(1부터) |
 | `len` | `number \| StateMarker<number>` | 이 자리가 차지하는 물리 요소 수. 상수이거나 `State<number>` |
 | `anchor` | `any?` | State 길이일 때 구독의 수명을 묶을 대상. 생략하면 `ownerKey` |
 | `element` | `any?` | 이 자리에 놓인 요소 — 나중에 자리를 되짚기 위한 역맵에 기록됩니다 |
@@ -321,7 +321,7 @@ end
 
 q.Dispatch.addHandler({
 	name = "LogValueHandler",
-	keyType = "string", -- 문자열 키에서만 경쟁한다
+	keyType = "string", -- 문자 키에서만 경쟁한다
 	isHandlable = function(_inst: any, key: any, value: any): boolean
 		return type(key) == "string" and type(value) == "table" and (value :: any).__logValue ~= nil
 	end,
@@ -337,7 +337,7 @@ q.Dispatch.addHandler({
 
 이제 어떤 요소의 `"Note"` 자리에 `LogValue("hello")`가 놓이면 `mount Note = hello`가 찍힙니다. 같은 자리에 `LogValue("world")`가 오면 `unmount Note (retracting = false)` → `mount Note = world` 순으로, 그 자리가 철거되면 `unmount Note (retracting = true)`로 끝납니다.
 
-배열 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Dispatch.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Dispatch.setLength(inst, key, 1)`, 아무것도 놓지 않았다면 `q.Dispatch.setEmpty(inst, key)`.
+숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Dispatch.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Dispatch.setLength(inst, key, 1)`, 아무것도 놓지 않았다면 `q.Dispatch.setEmpty(inst, key)`.
 
 ## 한계와 주의
 

@@ -74,7 +74,7 @@ Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...Ta
 - 인자가 없어도 됩니다 — `q.Tag()`는 빈 태그 집합입니다.
 - 인자마다 같은 문을 지납니다. `q.Tag(otherTag, "focus", { "a", "b" })`처럼 섞어 쓸 수 있습니다.
 - nil 슬롯은 조용히 무시되지 않고 검증 에러가 됩니다.
-- 리스트는 **배열**이어야 합니다 — 해시 키가 섞이거나 nil 구멍이 있으면 에러입니다.
+- 리스트는 **배열**이어야 합니다 — 정수가 아닌 키가 섞이거나 nil 구멍이 있으면 에러입니다.
   - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table`
   - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
   - `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
@@ -365,7 +365,7 @@ type AttrKeyObject = { Name: string }
 
 **반환** — 그 이름의 키 객체.
 
-**동작** — 속성 **단일 키** 프리미티브입니다. props의 **해시 키 자리**에 놓아 씁니다 — `D.Frame { [q.AttrKey("Hp")] = 100 }`.
+**동작** — 속성 **단일 키** 프리미티브입니다. props의 **문자 키 자리**에 놓아 씁니다 — `D.Frame { [q.AttrKey("Hp")] = 100 }`.
 
 - **값 타입을 모르는 무타입 프리미티브입니다.** 값 검증은 백엔드의 `setAttr` 몫입니다. 패밀리 슈가(`StringAttr` 등)가 못 덮는 엔진 고유 타입(`Color3`, `UDim2`, `Instance` …)이 이 키의 자리입니다.
 - 이름별 **weak 캐시**를 지납니다 — 무언가가 붙들고 있는 동안 `q.AttrKey("Hp") == q.AttrKey("Hp")`가 성립합니다.
@@ -377,7 +377,7 @@ type AttrKeyObject = { Name: string }
 - `AttrKey: name must be a non-empty string`
 
 :::caution
-**해시 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
+**문자 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
 :::
 
 **예제**
@@ -408,7 +408,7 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 
 **동작** — **타입드 스칼라 슈가**입니다. 자기 핸들러를 갖지 않고 그룹 경로를 그대로 씁니다. 차이는 값 검증뿐입니다 — 패밀리는 자기 타입을 알기 때문에 원시 값의 타입을 여기서 확인합니다(`State`와 `q.None`은 그대로 통과합니다).
 
-숫자 키 자리에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 해시 키 형태를 대신하는 자리입니다.
+숫자 키 자리에 놓으므로 strict 모드에서도 타입이 섭니다. `AttrKey`의 문자 키 형태를 대신하는 자리입니다.
 
 **에러**
 

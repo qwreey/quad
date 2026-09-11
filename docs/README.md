@@ -52,15 +52,15 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 **[2026-09-10 재구성, 2026-09-11 재편]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸고(`13-blocker.md`와 `05-tag-attr.md`는 같은 날 추가), 2026-09-11에 `Ref`와 `Observer`/`Effect`를 갈라 두 장으로(옛 06 `ref-and-effect` 해체, 옛 04 §2 Observer가 07로) + 함수형 패턴 장(11) 신설로 18편이 됐다. 같은 날 생명주기 훅 장(08)이 더해져 19편이다. 페이지 구조는 목표 한 줄 → 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다).
 - [`00-installation.md`](./getting-started/00-installation.md) — 까는 것만: 배포 경로 표(**[2026-09-10 기준] pesde만 제공**), pesde 의존성 **셋**(`quad_types`도 직접 — 01의 타입 재수출이 그 링커를 쓴다), Rojo 매핑(rojo sourcemap으로 검증), 타입 검사 플래그 넷. Wally·`.rbxm`은 `<details>` 하나로 접었다.
 - [`01-setup.md`](./getting-started/01-setup.md) — 프레임워크 설정하기: 설정 모듈 `ReplicatedStorage/Client/UI/Quad`(문자열 `@game/…` require + 타입 재수출 + `UseProvider`)와 진입점 `StarterPlayerScripts/Main`(첫 `ScreenGui`·확인용 라벨). quad-base/quad-roblox가 왜 나뉘는지가 여기서 나온다.
-- [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `D.Frame` 카드 + 라벨 자식. 해시=프로퍼티, 배열=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
+- [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `D.Frame` 카드 + 라벨 자식. 문자 키=프로퍼티, 숫자 키=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
 - [`03-flowing-values.md`](./getting-started/03-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → 중간에 값을 **처리하는** 파이프(`:Compute`) → `Source`/`State` 이름 붙이기. 게으름은 암시 한 문단만(본문은 17편).
-- [`04-reacting.md`](./getting-started/04-reacting.md) — 반응하기(이벤트만): `Activated`로 `count:Set`, 이벤트는 해시 부분·엔진 인자만. 관측은 07로 넘긴다.
-- [`05-tag-attr.md`](./getting-started/05-tag-attr.md) — 이름표와 속성: 배열 부분의 `q.Tag`(자리별 참조 계수·State에서 나오는 태그)와 `q.Attr`/`q.BooleanAttr`, 붙인 것을 `Instance:QueryDescendants`로 찾기(선택자 표는 Studio 실측), 스타일시트는 공식 문서로.
+- [`04-reacting.md`](./getting-started/04-reacting.md) — 반응하기(이벤트만): `Activated`로 `count:Set`, 이벤트는 문자 키 부분·엔진 인자만. 관측은 07로 넘긴다.
+- [`05-tag-attr.md`](./getting-started/05-tag-attr.md) — 이름표와 속성: 숫자 키 부분의 `q.Tag`(자리별 참조 계수·State에서 나오는 태그)와 `q.Attr`/`q.BooleanAttr`, 붙인 것을 `Instance:QueryDescendants`로 찾기(선택자 표는 Studio 실측), 스타일시트는 공식 문서로.
 - [`06-ref.md`](./getting-started/06-ref.md) — 인스턴스를 손에 쥐기: `q.Ref`(`<<T>>` 타입 인자 소개), 같은 props 안에서 쓰는 `q.PreRef`+`:Unwrap`, 채워질 때 받는 `:Callback`/`:Wait`, 인스턴스마다 새로 만드는 이유(Destroy해도 안 비워진다), `q.PostRef`.
 - [`07-observer-effect.md`](./getting-started/07-observer-effect.md) — 관측하기: `:Observer`(인스턴스가 파괴되면 관측이 멈춘다·보류와 재생)와 `q.Effect`(의존 여럿·cleanup·`Ref`를 의존성으로). 접힘으로 핸들을 State에 담아 끄는 법.
 - [`08-lifecycle-hooks.md`](./getting-started/08-lifecycle-hooks.md) — 생성만 보고 싶다면: `PreRef`+`:Callback`/`PostRef`+`:Callback`/cleanup만 있는 `Effect`를 손으로 짠 뒤, 그것과 **정확히 같은 것**이 `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`임을 실제 구현 열 줄로 보인다(바텀업).
 - [`09-modifier.md`](./getting-started/09-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
-- [`10-slot.md`](./getting-started/10-slot.md) — 자식이 들어갈 자리: `Slot`을 배열 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(내부적으로 `Owned=false` `:Single`). `:List`는 암시만.
+- [`10-slot.md`](./getting-started/10-slot.md) — 자식이 들어갈 자리: `Slot`을 숫자 키 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(내부적으로 `Owned=false` `:Single`). `:List`는 암시만.
 - [`11-components.md`](./getting-started/11-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 자식은 10의 `Slot`을 `props.Children or q.None`으로 받는다.
 - [`12-functions.md`](./getting-started/12-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, Hook 규칙이 없는 이유.
 - [`13-lists.md`](./getting-started/13-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴, 원소 하나짜리 `:Single`(Offset이 필요할 때).
@@ -145,8 +145,8 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
   원장의 Q번호와 충돌하는 출처 불명 블록이었다.
 - **재작성**(opus 여섯 + 00-installation 하나): 위 §3 규칙으로 전 파일 재작성, 스니펫은 mock 실행·신 솔버 타입 검사. 원본은 세션 스크래치에 스냅샷.
 - **소스로 전파된 발견**(재작성 중 실측): `quad-types`의 훅 주석이 처방하던 `q.OnCreated(function(inst: Frame))` 형태는 신 솔버에서 죽고
-  `q.OnCreated<<Frame>>(fn)`만 통과(`typing-limits.md` 8.16, 주석 정정됨); `[q.AttrKey("Hp")] = v` 해시 키는 런타임 정상이나 strict에서 생성 prop 타입에
-  인덱서가 없어 에러 — **사용자 결정(2026-09-09): 타입은 열지 않는다**, 문서는 배열 부분 `Attr`/`StringAttr` 형태를 안내; `Font = Enum.Font.X`는 생성 `D`에 없었음
+  `q.OnCreated<<Frame>>(fn)`만 통과(`typing-limits.md` 8.16, 주석 정정됨); `[q.AttrKey("Hp")] = v` 문자 키는 런타임 정상이나 strict에서 생성 prop 타입에
+  인덱서가 없어 에러 — **사용자 결정(2026-09-09): 타입은 열지 않는다**, 문서는 숫자 키 부분 `Attr`/`StringAttr` 형태를 안내; `Font = Enum.Font.X`는 생성 `D`에 없었음
   (`Hidden` 태그 — Deprecated가 아님) — **사용자 결정(2026-09-09): Deprecated 전부 + Hidden `Font`/`Transparency`를 되살린다** → **[2026-09-09 적용 완료]**
   Studio 실측(`HUMAN_TODO.md` 12 — `ReflectionService`가 넷 다 `Permits.Write == Edit`로 준다)이 확인된 뒤 `scripts/gen-d.py`에 반영했다(`PROP_TAG_LEGACY`/
   `HIDDEN_NAME_KEEP`, 실측 원장은 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`). 이제 `Font`/`FontSize`/`TextWrap`/`Transparency`가 생성 `D`에
@@ -194,9 +194,9 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 
 ### 4) Modifier 및 디스패치 불변식
 - **네임스페이스 유지**: `D.Frame { ... }` 그대로(구조분해 안 함).
-- **nil-hole 방어**: 선택적 Modifier/Ref는 **배열 부분**에 `props.Modifier or None` — 이유는 배열 리터럴의 `nil`이 순회를 깨기 때문(디스패치 엔진의 "구분 불가"가 아님, 정정).
-  `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 해시 키 값으로 올 수 없다(런타임 거부).
-- **우선순위 셋**: ① 인라인 해시 키 최우선, ② 배열 내 뒤쪽 Modifier 승(역방향 스캔 first-writer-wins), ③ `Modifier.Overridden(A, B)`/`A:Overridden(B)`는 B 승.
+- **nil-hole 방어**: 선택적 Modifier/Ref는 **숫자 키 부분**에 `props.Modifier or None` — 이유는 배열 리터럴의 `nil`이 순회를 깨기 때문(디스패치 엔진의 "구분 불가"가 아님, 정정).
+  `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 문자 키 값으로 올 수 없다(런타임 거부).
+- **우선순위 셋**: ① 인라인 문자 키 최우선, ② 숫자 키 자리 내 뒤쪽 Modifier 승(역방향 스캔 first-writer-wins), ③ `Modifier.Overridden(A, B)`/`A:Overridden(B)`는 B 승.
 - **타입드 Modifier 팩토리**: `D.Modifier.<Class>()` 빌더 체인 또는 `D.Modifier.<Class>{...}`. 다운캐스트는 **`mod:AsFrame()`류(생성 `As<Name>` 키)가 검사형**, `mod:As<<T>>()`(타입 인자만, 런타임 무동작)와 `mod:As(name)`(이름 존재만 확인)은 **무검사**(~~"`:As<Name>()` 검사형" 표기~~ 정정).
 - **`Parent`는 프로퍼티가 아니다** — 만든 뒤 밖에서 `.Parent =`.
 
@@ -227,7 +227,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 
 ### 9) `Effect` vs `Observer` 및 백엔드 계약
 - **`q.Effect(fn, ...deps)`**: 다중 의존성, cleanup 반환은 **선택**, 설치 시 동기 1회 실행, `onDestroying` 훅.
-- **`state:Observer(fn)`**: 콜백은 **값이 아니라 State 핸들**을 받는다. 등록 시 1회 발화한 뒤 **구독 상태가 아니다** — 배열 부분에 넣어 인스턴스에 묶거나 `:Subscribe()`해야 이후 변경이 온다(~~GC에만 의존~~ 정정 — Observer도 `bindLifetime`으로 묶인다).
+- **`state:Observer(fn)`**: 콜백은 **값이 아니라 State 핸들**을 받는다. 등록 시 1회 발화한 뒤 **구독 상태가 아니다** — 숫자 키 부분에 넣어 인스턴스에 묶거나 `:Subscribe()`해야 이후 변경이 온다(~~GC에만 의존~~ 정정 — Observer도 `bindLifetime`으로 묶인다).
 - ~~재귀적 트리 파괴 불변식(비-Roblox 프로바이더 의무)~~ — 그런 계약은 없다(삭제). 백엔드 계약의 전부는 reference/01의 op 목록이다.
 
 ### 10) 선언적 애니메이션

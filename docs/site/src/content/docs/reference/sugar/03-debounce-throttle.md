@@ -185,7 +185,7 @@ local debounced: State<string> = searchInput:Apply(q.Debounce {
 })
 
 -- Observer 콜백은 값이 아니라 대상 State 핸들을 받는다 — 값은 :Get()으로 읽는다.
--- 구독을 유지하려면 :Subscribe()(또는 children 배열에 넣어 인스턴스에 바인딩)해야 한다.
+-- 구독을 유지하려면 :Subscribe()(또는 숫자 키 자리에 넣어 인스턴스에 바인딩)해야 한다.
 debounced:Observer(function(target)
     print("API 검색 실행:", target:Get())
 end):Subscribe()

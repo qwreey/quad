@@ -2,7 +2,7 @@
 title: "생명주기 훅"
 description: "OnCreated / OnRendered / OnDestroyed — 각 훅이 불리는 시점과 보장하지 않는 것"
 ---
-요소의 생명주기에 콜백을 다는 **순수 팩토리** 셋입니다. 새 브랜드도, 새 디스패치 개념도 없습니다 — 돌려주는 값은 각각 `PreRef` / `PostRef` / `EffectHandle` 그 자체이고, children 배열에 그대로 놓입니다.
+요소의 생명주기에 콜백을 다는 **순수 팩토리** 셋입니다. 새 브랜드도, 새 디스패치 개념도 없습니다 — 돌려주는 값은 각각 `PreRef` / `PostRef` / `EffectHandle` 그 자체이고, 숫자 키 자리에 그대로 놓입니다.
 
 이 페이지의 심볼: [`q.OnCreated<<I>>(fn)`](#qoncreatedifn) · [`q.OnRendered<<I>>(fn)`](#qonrenderedifn) · [`q.OnDestroyed(fn)`](#qondestroyedfn)
 
@@ -26,8 +26,8 @@ local D = q.D
 | `OnRendered(fn)` | `PostRef<I?>` | 이 인스턴스의 children(과 그 서브트리 전체)·프로퍼티·이벤트가 **전부 세팅된 뒤** |
 | `OnDestroyed(fn)` | `EffectHandle` | 묶인 인스턴스가 죽을 때 정확히 1회(설치 시점에는 안 돈다) |
 
-- 셋 다 **children 배열**(해시 키가 아니라 숫자 키 자리)에 놓습니다.
-- **여러 번 등록하는 것은 그냥 배열 자리를 여러 개 쓰는 일**이고, 같은 종류끼리의 상대 순서는 배열 index 순서입니다. 종류가 섞여 있어도 `OnCreated`들이 먼저, `OnRendered`들이 마지막입니다.
+- 셋 다 **숫자 키 자리**(문자 키가 아닙니다)에 놓습니다.
+- **여러 번 등록하는 것은 그냥 숫자 키 자리를 여러 개 쓰는 일**이고, 같은 종류끼리의 상대 순서는 숫자 키 순서(1부터)입니다. 종류가 섞여 있어도 `OnCreated`들이 먼저, `OnRendered`들이 마지막입니다.
 - `OnCreated`/`OnRendered`의 콜백은 `(inst, ref)` 두 인자를 받고, **`inst`는 항상 non-nil**입니다 — 등록 시점의 `nil` 호출은 내부 가드가 걸러냅니다.
 - `fn`이 함수가 아니면 그 줄에서 던집니다: `OnCreated: fn must be a function (got number)`(이름 자리는 훅마다 바뀝니다).
 
@@ -87,7 +87,7 @@ OnDestroyed: (fn: () -> ()) -> EffectHandle
 
 **인자** — `fn`(인자 없는 정리 함수). **반환** — `EffectHandle`.
 
-**동작** — 등록 시점에는 `fn`이 돌지 않습니다. 묶인 인스턴스가 죽을 때 정확히 한 번 돌고, 그 뒤에 바인딩을 풀어도 다시 돌지 않습니다. children 배열에 놓으면 그 인스턴스에 묶입니다.
+**동작** — 등록 시점에는 `fn`이 돌지 않습니다. 묶인 인스턴스가 죽을 때 정확히 한 번 돌고, 그 뒤에 바인딩을 풀어도 다시 돌지 않습니다. 숫자 키 자리에 놓으면 그 인스턴스에 묶입니다.
 
 제네릭 자리가 없습니다 — 콜백이 인스턴스를 받지 않기 때문입니다.
 

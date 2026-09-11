@@ -7,7 +7,7 @@ description: 값 상자 프리미티브 — Ref/PreRef/PostRef, 콜백 등록, :
 
 `Ref<T>`는 **값 상자**입니다. 값 하나와 리비전 하나를 들고, 값이 바뀔 때 등록된 콜백을 부릅니다. `State`가 아닙니다 — 전파도, `:Get`도, `:Compute`도 없습니다. quad가 `Ref`에 주는 유일한 추가 의미는 "직전과 구별되는 표식을 나른다"(= `Epoch`)입니다.
 
-`Ref`가 실제로 빛나는 자리는 **컴포넌트가 만든 실물 인스턴스를 밖으로 꺼내오는 통로**입니다. props의 숫자 키 자리에 `Ref`를 놓으면 quad가 그 자리에 만들어진 인스턴스를 `:Set` 해줍니다. 언제 채워지느냐가 셋을 가릅니다 — [`q.PreRef`](#qprereftdefault)는 배열 위치와 무관하게 **가장 먼저**, [`q.Ref`](#qreftdefault)는 **자기 배열 자리가 처리될 때**(형제 자식들과 같은 순서 위에서), [`q.PostRef`](#qpostreftdefault)는 숫자 키와 문자 키가 **전부 끝난 뒤** 채워집니다.
+`Ref`가 실제로 빛나는 자리는 **컴포넌트가 만든 실물 인스턴스를 밖으로 꺼내오는 통로**입니다. props의 숫자 키 자리에 `Ref`를 놓으면 quad가 그 자리에 만들어진 인스턴스를 `:Set` 해줍니다. 언제 채워지느냐가 셋을 가릅니다 — [`q.PreRef`](#qprereftdefault)는 숫자 키 위치와 무관하게 **가장 먼저**, [`q.Ref`](#qreftdefault)는 **자기 숫자 키 자리가 처리될 때**(형제 자식들과 같은 순서 위에서), [`q.PostRef`](#qpostreftdefault)는 숫자 키와 문자 키가 **전부 끝난 뒤** 채워집니다.
 
 이 페이지의 심볼: [`q.Ref`](#qreftdefault) · [`q.PreRef`](#qprereftdefault) · [`q.PostRef`](#qpostreftdefault) · [`ref.Value`](#refvalue) · [`ref.Revision`](#refrevision) · [`ref.Callbacks`](#refcallbacks) · [`ref.WeakCallbacks`](#refweakcallbacks) · [`ref:Set`](#refsetvalue) · [`ref:Callback`](#refcallbackfn) · [`ref:WeakCallback`](#refweakcallbackfn) · [`ref:Uncallback`](#refuncallbackfn) · [`ref:Wait`](#refwaitthread) · [`ref:Unwrap`](#refunwrap)
 
@@ -50,15 +50,15 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 ## 숫자 키 자리에만 놓는다
 
-`PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 해시 키의 값으로 두거나 `Source`/`Store` 값에 담아 배열 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구).
+`PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 문자 키의 값으로 두거나 `Source`/`Store` 값에 담아 숫자 키 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구).
 
 - `PreRef: must be an array item, not the value of a {typeof(k)} key`
 - `PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
 
-평범한 `Ref`에는 그 가드가 없습니다. 배열 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지고, 다른 자리에 두면 "Ref를 잘못 놓았다"는 진단 대신 그 자리의 주인이 내는 에러를 봅니다.
+평범한 `Ref`에는 그 가드가 없습니다. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지고, 다른 자리에 두면 "Ref를 잘못 놓았다"는 진단 대신 그 자리의 주인이 내는 에러를 봅니다.
 
 - Modifier 필드 — `Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
-- 아무 핸들러도 맡지 않는 해시 키 — `Dispatch: no handler matched key {k} (value: {typeof(v)}, brand: Ref)`
+- 아무 핸들러도 맡지 않는 문자 키 — `Dispatch: no handler matched key {k} (value: {typeof(v)}, brand: Ref)`
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `bindLifetime: value is already bound to another Instance`(생명주기는 백엔드가 심으므로 이 두 문구는 quad-roblox의 것입니다).
@@ -86,7 +86,7 @@ Ref: <T>(default: T) -> Ref<T>
 **동작**
 
 - 타입 파라미터는 **하나**입니다. nil이 들어올 수 있는 자리는 호출자가 넓힙니다 — `q.Ref<<Frame?>>(nil)`처럼 씁니다. props 숫자 키 자리에 놓는 Ref는 인스턴스가 채워지기 전까지 비어 있으므로 사실상 항상 `T?` 형태입니다.
-- 숫자 키 자리에 놓으면, **그 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 숫자 키를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. **배열 자리 자체가 다른 값으로 재구동되면**(재바인드/retract 경로) `:Set(nil)`로 되돌아갑니다.
+- 숫자 키 자리에 놓으면, **그 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 숫자 키를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. **그 숫자 키 자리 자체가 다른 값으로 재구동되면**(재바인드/retract 경로) `:Set(nil)`로 되돌아갑니다.
 - **인스턴스가 `Destroy()`되는 것과는 무관합니다.** `Ref`는 대상 인스턴스의 `Destroy`를 감지하지도, 반응하지도 않습니다 — 이미 파괴된 인스턴스를 계속 가리킨 채로 남는 것도 정상적으로 가능하고, 그 이후 `.Value`를 읽고 쓰는 것은 UB입니다. 파괴 시점 정리가 필요하면 `Effect`나 이벤트 쪽에서 하세요.
 - `Ref`는 `Epoch`이기도 합니다(다중 태깅) — `q.isRef`와 `q.isEpoch`가 둘 다 참입니다.
 
@@ -95,7 +95,7 @@ Ref: <T>(default: T) -> Ref<T>
 ```luau
 local boxRef = q.Ref<<Frame?>>(nil)
 local panel = D.Frame {
-    boxRef,                       -- 배열부: 만들어진 Frame이 여기 담긴다
+    boxRef,                       -- 숫자 키: 만들어진 Frame이 여기 담긴다
     D.TextLabel { Text = "제목" },
 }
 ```
@@ -112,7 +112,7 @@ PreRef: <T>(default: T) -> PreRef<T>
 
 **동작** — 런타임은 `Ref`와 완전히 같고, 브랜드와 마커 필드만 다릅니다. 차이는 **발화 시점**입니다.
 
-`PreRef`는 그 인스턴스에 **아무 일도 일어나기 전에** 채워집니다. 디스패치의 pre-pass가 숫자 키 자리를 한 번 훑으면서 위치와 무관하게 전부 먼저 발화시킵니다(`PreRef`끼리의 상대 순서는 배열 인덱스 순서). 그래서 같은 props 안의 이벤트 핸들러나 프로퍼티 계산이 이미 채워진 `.Value`를 볼 수 있습니다.
+`PreRef`는 그 인스턴스에 **아무 일도 일어나기 전에** 채워집니다. 디스패치의 pre-pass가 숫자 키 자리를 한 번 훑으면서 위치와 무관하게 전부 먼저 발화시킵니다(`PreRef`끼리의 상대 순서는 숫자 키 순서(1부터)). 그래서 같은 props 안의 이벤트 핸들러나 프로퍼티 계산이 이미 채워진 `.Value`를 볼 수 있습니다.
 
 일회용입니다 — 한 번 발화한 `PreRef`를 다른 인스턴스에 다시 놓으면 에러입니다. 인스턴스마다 새로 만드세요.
 
@@ -141,7 +141,7 @@ local form = D.Frame {
 PostRef: <T>(default: T) -> PostRef<T>
 ```
 
-**동작** — `PreRef`의 거울입니다. 이 인스턴스의 **숫자 키(자식·서브트리)와 문자 키(프로퍼티·이벤트)가 전부 끝난 뒤** 채워집니다. 여러 개면 배열 인덱스 순서대로 발화합니다.
+**동작** — `PreRef`의 거울입니다. 이 인스턴스의 **숫자 키(자식·서브트리)와 문자 키(프로퍼티·이벤트)가 전부 끝난 뒤** 채워집니다. 여러 개면 숫자 키 순서(1부터)로 발화합니다.
 
 "자식이 전부 붙었다"까지가 계약입니다 — **부모에 붙었는지는 계약이 아닙니다**(어느 쪽으로도 보장하지 않습니다). 발화 기준은 이 인스턴스의 drive(숫자 키·문자 키 처리)가 끝난 시점이지 부모에 마운트되는 시점이 아니므로, 발화 순간 `Parent`는 `nil`일 수도 이미 채워져 있을 수도 있고(리터럴 중첩이냐 `Claim`처럼 이미 트리에 있던 인스턴스냐에 따라), **그 뒤로 바뀌지 않을 수도 있습니다** — 이후의 `Parent` 변경을 기다리는 코드는 영영 안 돌 수 있습니다. 완성된 **자기 아래** 서브트리를 재는 코드(레이아웃 측정 등)가 이 자리입니다.
 

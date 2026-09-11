@@ -54,7 +54,7 @@ print(card.ClassName) --> "Frame"
 
 </details>
 
-**중괄호 안의 `이름 = 값`은 그 인스턴스의 프로퍼티입니다.** props 테이블에서 이 부분을 quad 문서에서는 **문자 키**(Lua 테이블의 해시 부분)라고 부릅니다 — 뒤에서 나올, 이름 없는 자리인 **숫자 키**(배열 부분)와 짝을 이루는 이름입니다. 어떤 이름을 쓸 수 있는지는 quad가 정하는 게 아니라 그 클래스가 정합니다 — `Frame`의 프로퍼티 목록은 [Roblox 공식 레퍼런스](https://create.roblox.com/docs/reference/engine/classes/Frame)가 소스입니다.
+**중괄호 안의 `이름 = 값`은 그 인스턴스의 프로퍼티입니다.** props 테이블에서 이 부분을 quad 문서에서는 **문자 키**(`이름 = 값`처럼 이름이 붙은 자리)라고 부릅니다 — 뒤에서 나올 **숫자 키**(이름 없이 순서대로 놓이는 자리)와 짝을 이루는 이름입니다. 어떤 이름을 쓸 수 있는지는 quad가 정하는 게 아니라 그 클래스가 정합니다 — `Frame`의 프로퍼티 목록은 [Roblox 공식 레퍼런스](https://create.roblox.com/docs/reference/engine/classes/Frame)가 소스입니다.
 
 같이 끼워 넣은 `UICorner = 12`만은 프로퍼티가 아닙니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 quad가 그 자리에 관리 자식(`UICorner` 인스턴스)을 만들어 붙여 주는 **숏핸드**입니다.
 
@@ -63,7 +63,7 @@ print(card.ClassName) --> "Frame"
 <details>
 <summary><strong><code>Parent</code>는 왜 안에 못 쓰나요?</strong></summary>
 
-`Parent`를 해시 자리에 적으면 **그 키를 맡는 핸들러가 없어** 디스패치가 그 자리에서 던집니다.
+`Parent`를 문자 키 자리에 적으면 **그 키를 맡는 핸들러가 없어** 디스패치가 그 자리에서 던집니다.
 
 ```
 Dispatch: no handler matched key Parent (value: Instance, brand: Inst) — check that the provider for this value (e.g. quad-roblox) is initialized

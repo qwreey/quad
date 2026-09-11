@@ -41,15 +41,15 @@ type FieldOut<T> = T | State<T> | None
 
 ## 숫자 키 자리에 놓는다
 
-Modifier는 props의 **숫자 키** 항목입니다. 해시 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.
+Modifier는 props의 **숫자 키** 항목입니다. 문자 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.
 
 - `Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`
 
 펼치기 규칙은 셋입니다.
 
-1. **인라인 해시 키가 항상 이깁니다.** props에 직접 적은 `Size = …`는 어떤 Modifier의 `Size`보다 우선합니다(직접 적은 `None`도 마찬가지).
+1. **인라인 문자 키가 항상 이깁니다.** props에 직접 적은 `Size = …`는 어떤 Modifier의 `Size`보다 우선합니다(직접 적은 `None`도 마찬가지).
 2. **숫자 키 자리의 뒤쪽 Modifier가 앞쪽을 이깁니다.**
-3. 소비된 배열 자리는 내부 센티널로 채워져 배열에 구멍이 생기지 않습니다.
+3. 소비된 숫자 키 자리는 내부 센티널로 채워져 배열에 구멍이 생기지 않습니다.
 
 ```luau
 local base = q.Modifier { BackgroundTransparency = 1 }
@@ -110,7 +110,7 @@ local panel = D.Frame { wide }
 
 ## `mod:<Field>(value)`
 
-예약 메소드(`Peek`/`Apply`/`Overridden`/`As`)와 캐스트 접두사(`As` + 대문자)를 뺀 **모든 문자열 키**가 setter입니다. 클래스별 코드가 따로 생성되는 게 아니라 하나의 제네릭 `__index`가 그때그때 setter를 만들어 줍니다.
+예약 메소드(`Peek`/`Apply`/`Overridden`/`As`)와 캐스트 접두사(`As` + 대문자)를 뺀 **문자열인 키는 전부 setter**입니다. 클래스별 코드가 따로 생성되는 게 아니라 하나의 제네릭 `__index`가 그때그때 setter를 만들어 줍니다.
 
 **시그니처(생성된 클래스 타입에서의 모양)**
 

@@ -94,17 +94,17 @@ Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 
 ---
 
-### 함정 3: `Ref`를 `Modifier` 안에 넣기, 또는 해시 키로 넘기기
+### 함정 3: `Ref`를 `Modifier` 안에 넣기, 또는 문자 키로 넘기기
 
 - **증상**: `Modifier`에 넣으면
   `Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`.
-  해시 키로 주면 값에 따라
+  문자 키로 주면 값에 따라
   `PreRef: must be an array item, not the value of a string key` 또는
   `Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`.
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
   `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에
-  놓는 것이 계약입니다 — `Ref = ...`처럼 해시 키로 주면 어떤 핸들러도 그
+  놓는 것이 계약입니다 — `Ref = ...`처럼 문자 키로 주면 어떤 핸들러도 그
   키를 받지 않습니다.
 
 ```luau
