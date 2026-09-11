@@ -8,6 +8,7 @@
 - GitHub 경고 블록(`> [!NOTE]` 등)은 Starlight aside(`:::note` …)로 바꾼다(2026-09-10).
 - `docs/assets/**`를 `site/public/assets/`로 복사하고 `../assets/x.svg` 참조를 `/assets/x.svg`로 바꾼다; 다크 대응 `<picture>`(GitHub 방식)는 `.light-only`/`.dark-only` 이미지 둘로 바꾼다(2026-09-10).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
+- [2026-09-11 사용자 결정] 루트 `CHANGELOG.md`도 사이트에 싣는다(`/changelog/`) — 원본은 Keep a Changelog 형식 그대로 두고(GitHub·패키지 사본이 읽는 파일이라 frontmatter를 넣지 않는다), 사본에만 title/description을 앞에 붙인다. 원본의 `./docs/...` 링크는 루트 기준으로 풀려 사이트 경로가 된다(`research/roadmap-changelog-docs-plan.md` 2.4 실측).
 """
 import os, re, shutil, sys
 
@@ -16,6 +17,11 @@ DOCS = os.path.dirname(SITE)
 DEST = os.path.join(SITE, 'src', 'content', 'docs')  # 한국어 = root 로케일(2026-09-10); en/은 별도
 BASE = '/'  # [2026-09-10] Cloudflare Pages 루트 배포 + 한국어 root 로케일 — astro.config의 base '/'와 짝
 TRACKS = ['overview', 'getting-started', 'how-to', 'quadnomicon', 'reference']
+ROOT = os.path.dirname(DOCS)
+# 트랙 밖 원본 → 사본 경로, 사본에 붙일 frontmatter (원본은 건드리지 않는다)
+EXTRA = [
+    (os.path.join(ROOT, 'CHANGELOG.md'), 'changelog.md', {'title': 'Changelog (변경 이력)', 'description': '3.x 릴리즈마다 무엇이 생기고 바뀌고 없어졌는지 — 루트 CHANGELOG.md 원본 그대로'}),
+]
 LINK = re.compile(r'\[([^\]]*)\]\(((?:\.\.?/)+[^)#\s]+?\.md)(#[^)\s]*)?\)')
 
 def convert(src_path, text):
@@ -154,6 +160,19 @@ def main():
             if dp != dest_dir and not os.listdir(dp):
                 os.rmdir(dp)
         print(f'  ✓ {track}: {n} files')
+    for sp, name, fm in EXTRA:
+        if not os.path.exists(sp):
+            print(f'ERROR: 없음 — {sp}', file=sys.stderr)
+            failed += 1
+            continue
+        text = open(sp, encoding='utf-8').read()
+        head = '---\n' + ''.join(f'{k}: "{v}"\n' for k, v in fm.items()) + '---\n'
+        out = rewrite_assets(alerts_to_asides(strip_h1(convert(sp, head + text))))
+        dst = os.path.join(DEST, name)
+        prev = open(dst, encoding='utf-8').read() if os.path.exists(dst) else None
+        if prev != out:
+            open(dst, 'w', encoding='utf-8').write(out)
+        print(f'  ✓ {os.path.relpath(sp, ROOT)} → {name}')
     if failed:
         print(f'{failed} file(s) skipped — add frontmatter', file=sys.stderr)
         sys.exit(1)

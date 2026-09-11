@@ -29,6 +29,12 @@ def snapshot() -> dict:
                         out[p] = os.stat(p).st_mtime
                     except OSError:
                         pass
+    # [2026-09-11] 루트 CHANGELOG.md도 사이트에 실리므로(sync EXTRA) 같이 감시한다
+    extra = os.path.join(os.path.dirname(DOCS), 'CHANGELOG.md')
+    try:
+        out[extra] = os.stat(extra).st_mtime
+    except OSError:
+        pass
     return out
 
 

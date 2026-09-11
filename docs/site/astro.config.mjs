@@ -81,6 +81,8 @@ export default defineConfig({
 					badge: { text: 'Deep Dive', variant: 'caution' },
 					items: [{ autogenerate: { directory: 'quadnomicon' } }],
 				},
+				// [2026-09-11 사용자 결정] 루트 CHANGELOG.md를 sync가 /changelog/로 싣는다 — 찾아 들어오는 페이지라 사이드바 맨 아래 단일 항목
+				{ label: 'Changelog (변경 이력)', link: '/changelog/' },
 			],
 		}),
 	],
