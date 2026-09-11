@@ -25,15 +25,21 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 <CardGrid stagger>
 	<Card title="DOMless 즉시 생성" icon="rocket">
-		가상 DOM 트리 비교나 VNode 할당 없이, Luau 인라인 테이블 평가 시점에 즉시 실제 Roblox Instance를 생성합니다.
+		가상 DOM 트리 비교나 VNode 할당 없이, Luau 인라인 테이블 평가 시점에 즉시 실제 Roblox Instance를 만들어 돌려줍니다. 변화는 중간 트리를 거치지 않고 개별 프로퍼티 바인드에만 도달합니다.
 	</Card>
-	<Card title="고성능 슬롯 리스트 엔진" icon="list-format">
-		키 기반 `Slot:List`가 요소를 재활용합니다 — `prev`를 돌려주면 파괴도 재마운트도 없고, Roblox에서 순서는 부기값이라 물리 재배치가 없습니다. `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
+	<Card title="신호는 push, 계산은 pull" icon="random">
+		`:Set`은 "바뀌었다"만 알리고, 계산은 `:Get()` 시점에 노드 캐시에서 한 번 일어납니다. 신호가 몇 갈래로 도착하든 계산은 한 번이라 다이아몬드 그래프의 중복 재평가가 구조적으로 없고, 아직 살아나지 않은 관측은 보류됐다가 최신값으로 한 번만 재생됩니다.
 	</Card>
-	<Card title="3단계 우선순위 Modifier" icon="setting">
-		인라인 속성 우선, 후행 Modifier 우선, Modifier.Overridden 합성으로 완벽한 스타일과 로직 재사용을 제공합니다.
+	<Card title="원소를 재활용하는 키 기반 목록" icon="list-format">
+		`Slot:List`는 키마다 지난번 원소를 `prev`로 돌려주고, 그대로 반환하면 파괴도 재마운트도 없습니다. Roblox에서 형제 순서는 부기값이라 물리 재배치가 없고, `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
+	</Card>
+	<Card title="규칙 둘뿐인 Modifier" icon="setting">
+		재사용 스타일은 디스패치 전에 정적으로 펼쳐지는 불변 값이라 런타임 캐스케이드 계산이 없습니다. 규칙은 둘 — 인라인 해시 키가 항상 이기고, 숫자 키 자리의 뒤쪽 Modifier가 앞쪽을 이깁니다. 여럿을 하나로 합칠 때는 `Overridden`(뒤 인자가 이김)으로 합성합니다.
+	</Card>
+	<Card title="부착식 백엔드, 사용자가 정하는 어휘" icon="laptop">
+		코어는 엔진 op를 주입받는 순수 모듈이고 백엔드는 `UseProvider` 한 줄로 부착됩니다 — Roblox 백엔드와 헤드리스 mock이 같은 문으로 들어옵니다. `Frame { … }` 안에 올 수 있는 값과 키는 핸들러 레코드 하나를 등록하면 늘어나고, 우선순위 축은 열린 숫자 공간입니다.
 	</Card>
 	<Card title="Studio 템플릿 Claim" icon="puzzle">
-		디자이너가 제작한 Studio UI 템플릿을 Clone() 뒤 Claim()으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다.
+		디자이너가 제작한 Studio UI 템플릿을 `Clone()` 뒤 `Claim()`으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다.
 	</Card>
 </CardGrid>
