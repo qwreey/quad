@@ -9,7 +9,7 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 
 지금까지는 값을 하나씩 바꿨습니다. **둘을 같이 바꿔야 할 때** 무슨 일이 생기는지부터 봅니다.
 
-미리 밝혀 두면, 이 장의 `q.Blocker`는 코어 메커니즘이 아니라 `state:Gate` 위에 얹힌 **순수 슈거**입니다 — 같은 것을 라이브러리 밖에서 그대로 짤 수 있고, 그래서 레퍼런스에서도 sugar 그룹에 있습니다.
+미리 밝혀 두면, 이 장의 `q.Blocker`는 코어 메커니즘이 아니라 `state:Gate` 위에 얹힌 **순수 슈거**입니다 — 같은 것을 라이브러리 밖에서 그대로 짤 수 있고, 그래서 레퍼런스에서도 sugar 그룹에 있습니다. 붙이는 자리도 새 문법이 아닙니다 — [12장](./12-functions.md)에서 `:Apply`에 넘긴 것은 함수였고, `Blocker`는 같은 자리에 `__apply`를 가진 **객체**로 들어갑니다.
 
 ---
 
@@ -57,37 +57,44 @@ unit:Set 뒤        Text = "100 포인트"
 
 ## 2. 통지를 붙잡아 뒀다가 한 번에 — `q.Blocker()`
 
-`Blocker`는 **전파를 잠시 붙잡아 두는 스위치**입니다. 원천과 파이프 사이에 게이트를 끼워 두고 그 스위치로 여닫습니다.
+`Blocker`는 **전파를 잠시 붙잡아 두는 스위치**입니다. 파이프 끝에 게이트를 하나 끼워 두고 그 스위치로 여닫습니다.
 
 ```luau
--- … (Counter.luau) 위 §1의 세 줄을 이렇게 고칩니다
+-- … (Counter.luau) 위 §1의 파이프 끝에 한 토막을 덧붙입니다
     const blocker = q.Blocker()
 
-    const gatedCount = count:Apply(blocker)
-    const gatedUnit = unit:Apply(blocker)
-
-    const countText = gatedCount:Compute(function(c, prev, u)
+    const countText = count:Compute(function(c, prev, u)
         return `{c:Get()} {u:Get()}`
-    end, gatedUnit)
+    end, unit):Apply(blocker)      -- ← 파이프 끝에 게이트 하나
 ```
 
-03장의 그림에 게이트 한 단이 끼어든 모양입니다 — 원천 둘이 각각 게이트를 지나고, 그 게이트 둘은 스위치 하나에 묶여 있습니다.
+§1에서 바뀐 것은 **마지막 `:Apply(blocker)` 한 토막**뿐입니다 — 원천 둘도, 파이프의 콜백도 그대로입니다.
+
+**그 한 토막이 돌려주는 것이 새 노드라는 게 핵심입니다.** 라벨이 보는 `countText`는 게이트를 지난 쪽이어야 합니다 — `Blocker`를 만들어 두기만 하거나, `:Apply`를 부르고 그 반환을 받지 않은 채 게이트 없는 예전 노드를 계속 꽂아 두면 아무것도 막히지 않습니다.
+
+03장의 그림에 게이트 한 단이 끼어든 모양입니다 — 원천 둘이 파이프에서 하나로 합쳐진 **뒤에** 게이트가 섭니다.
 
 ```mermaid
 flowchart LR
-    C["<b>원천</b><br/><code>count</code><br/>값을 넣는다"] --> GC["<b>게이트</b><br/><code>gatedCount</code><br/><code>count:Apply(blocker)</code>"]
-    U["<b>원천</b><br/><code>unit</code><br/>값을 넣는다"] --> GU["<b>게이트</b><br/><code>gatedUnit</code><br/><code>unit:Apply(blocker)</code>"]
-    subgraph SW["게이트 둘이 같은 blocker 하나에 묶인다 — :On()으로 모으고, :Off()로 한 번에"]
-        direction TB
-        GC
-        GU
-    end
-    GC --> P["<b>파이프</b><br/><code>:Compute(fn)</code><br/>값을 처리한다"]
-    GU --> P
-    P --> T["<b>프로퍼티</b><br/><code>Text = …</code><br/>화면에 그린다"]
+    C["<b>원천</b><br/><code>count</code><br/>값을 넣는다"] --> P["<b>파이프</b><br/><code>:Compute(fn)</code><br/>값을 처리한다"]
+    U["<b>원천</b><br/><code>unit</code><br/>값을 넣는다"] --> P
+    P --> G["<b>게이트</b><br/><code>:Apply(blocker)</code><br/>통지를 붙잡아 둔다"]
+    G --> T["<b>프로퍼티</b><br/><code>Text = …</code><br/>화면에 그린다"]
 ```
 
-**마지막 줄이 핵심입니다** — 파이프를 `count`가 아니라 `gatedCount`/`gatedUnit` 위에 다시 세워야 합니다. `Blocker`를 만들어 두기만 하거나 `:Apply`의 반환을 버리면 아무것도 막히지 않습니다.
+**게이트를 파이프 뒤에 두는 이유**는 게이트가 모으는 것이 값이 아니라 **통지**이기 때문입니다. 붙잡아 둔 통지는 푸는 순간 전부 하류로 나갑니다. 그러니 통지가 아직 여러 갈래로 갈라져 있는 자리에 게이트를 여러 개 세우면, 푸는 순간 그 갈래 수만큼 통지가 나갑니다 — 원천 둘에 하나씩 두면 `:Off()` 한 번에 통지가 둘이고 라벨의 `Text` 쓰기도 두 번입니다. 통지까지 한 번으로 접으려면 두 원천이 **합쳐진 뒤** 한 자리에서 막아야 합니다. **1차선 톨게이트**를 세우는 자리라고 보면 됩니다 — 길이 합쳐진 다음에 세워야 차가 한 줄로 지나갑니다.
+
+<details>
+<summary><strong>원천마다 게이트를 두면 안 되나요?</strong></summary>
+
+됩니다. **중간 상태는 그쪽으로도 막힙니다** — `count:Apply(blocker):Compute(fn, unit:Apply(blocker))`로 짜도 `100 점`은 화면에 나타나지 않습니다. 첫 통지를 받고 라벨이 값을 당겨 올 때 `count`와 `unit`이 이미 둘 다 최신이기 때문입니다.
+
+갈리는 것은 그다음입니다. `:Off()` 한 번에 **통지가 둘** 나가고 라벨의 `Text` 쓰기도 **두 번**입니다(파이프 뒤에 하나면 각각 한 번). 반면 파이프 함수가 돈 횟수는 두 모양이 똑같이 한 번인데, 그건 게이트 덕이 아니라 [17장](./17-laziness.md)의 게으름 덕입니다 — 둘째 통지가 왔을 때는 새로 계산할 것이 남아 있지 않습니다.
+
+하나의 `Blocker`를 여러 노드에 붙이는 것 자체는 유효한 쓰임입니다(§4).
+
+</details>
+<!-- mock 실측 2026-09-11: gs.blocker2.luau — 파이프 뒤 게이트 하나: Off 뒤 파이프 계산 +1·통지 +1·Text 쓰기 +1 / 원천마다 게이트: 계산 +1·통지 +2·쓰기 +2, 둘 다 On 구간 화면은 `10 점` 그대로 -->
 
 <details>
 <summary><strong><code>Blocker</code> 아래에는 뭐가 있나요?</strong></summary>
@@ -109,13 +116,26 @@ flowchart LR
             end,
 ```
 
-**실행하면** 라벨은 `10 점`에서 `100 포인트`로 곧바로 넘어가고 `100 점`은 나타나지 않습니다. 파이프 함수가 돈 횟수는 마운트 1회 + 버튼 1회 = **2회**입니다(§1은 3회였습니다).
+**실행하면** 라벨은 `10 점`에서 `100 포인트`로 곧바로 넘어가고 `100 점`은 나타나지 않습니다. 파이프 함수가 돈 횟수는 마운트 1회 + 버튼 1회 = **2회**이고(§1은 3회였습니다), `:Off()`가 낸 통지는 **1회**입니다.
 
 ---
 
 ## 3. 화면만 멈추는 "일시정지" 버튼
 
-같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 두겠습니다(`count`도 `q.Source(0)`으로 되돌립니다) — 게이트를 하나 끼우고(`const shown = count:Apply(blocker)` — 라벨은 `shown`을 봅니다) 버튼이 스위치를 토글하게 합니다.
+같은 스위치를 켜 둔 채로 둘 수도 있습니다. 단위는 잠시 잊고 `count` 하나만 보는 라벨로 **되돌려** 두겠습니다 — 게이트를 파이프 뒤에 두는 것은 그대로입니다.
+
+```luau
+-- … (Counter.luau) §1·§2의 상태 둘과 파이프를 이 한 벌로 갈아 끼웁니다
+    const count = q.Source(0)
+
+    const shownText = count:Compute(function(c)
+        return `카운트: {c:Get()}`
+    end):Apply(blocker)          -- 게이트는 여전히 파이프 뒤
+
+    -- 라벨은 shownText를 봅니다:  D.TextLabel { Text = shownText }
+```
+
+버튼이 스위치를 토글하게 합니다.
 
 ```luau
 -- … (Counter.luau) 카드의 숫자 키 자리에 버튼 하나 더
@@ -133,9 +153,10 @@ flowchart LR
 
 ```luau
 -- (일시정지를 켜 두고 + 1을 세 번 누른 뒤)
-print(label.Text)    --> "카운트: 0"   (화면은 멈춰 있고)
-print(shown:Get())   --> 3            (값은 이미 최신이다)
+print(label.Text)        --> "카운트: 0"   (화면은 멈춰 있고)
+print(shownText:Get())   --> "카운트: 3"   (값은 이미 최신이다)
 ```
+<!-- mock 실측 2026-09-11: gs.blocker2.luau — 파이프 뒤 게이트 + 일시정지: On 뒤 Set 1,2,3 → 라벨 `카운트: 0` / shownText:Get() = `카운트: 3` / Off 뒤 라벨 `카운트: 3` -->
 
 <details>
 <summary><strong>시간으로 막고 싶으면요?</strong></summary>
@@ -149,7 +170,7 @@ print(shown:Get())   --> 3            (값은 이미 최신이다)
 ## 4. 알아 둘 것 셋
 
 - **`:OffWithoutEmit()`은 쌓인 것을 버리고 풉니다** — 통지 없이 조용히 끝내고 싶을 때. 버려도 그래프는 망가지지 않습니다(값은 어차피 읽는 시점에 최신입니다).
-- **하나의 `Blocker`를 여러 노드에 붙일 수 있습니다.** 위에서도 `count`와 `unit` 두 곳에 같은 스위치를 붙였고, `:Off()` **한 번**이 붙어 있는 게이트 전부를 풉니다.
+- **하나의 `Blocker`를 여러 노드에 붙일 수 있습니다.** `:Off()` **한 번**이 붙어 있는 게이트 전부를 풉니다 — 다만 통지는 **게이트마다 하나씩** 나갑니다. 그래서 한 화면을 한 번에 갱신하려는 목적이라면 게이트는 통지가 합쳐지는 자리에 하나만 두고(§2), 서로 다른 화면 여러 곳을 같은 스위치로 묶고 싶을 때 여러 노드에 붙입니다.
 - **`IsBlocked`는 카운터가 아니라 평범한 불리언입니다.** `:On()`을 두 번 해도 `:Off()` 한 번이면 풀리니, 겹치는 구간이 필요하면 구간마다 `Blocker`를 따로 만드세요.
 
 ---

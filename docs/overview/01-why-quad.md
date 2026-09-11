@@ -345,7 +345,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 ## 9. 다음 걸음
 
-- **써보기**: [프레임워크 설정](../getting-started/01-setup.md) → [첫 화면](../getting-started/02-first-screen.md) → [값이 흐르게 하기](../getting-started/03-flowing-values.md) → [반응하기](../getting-started/04-reacting.md) → … → [컴포넌트로 쪼개기](../getting-started/11-components.md) → [움직이게 하기](../getting-started/15-animation.md) → [정리](../getting-started/18-wrap-up.md)
+- **써보기**: [프레임워크 설정](../getting-started/01-setup.md) → [첫 화면](../getting-started/02-first-screen.md) → [값이 흐르게 하기](../getting-started/03-flowing-values.md) → [반응하기](../getting-started/04-reacting.md) → … → [컴포넌트로 쪼개기](../getting-started/11-components.md) → [움직이게 하기](../getting-started/15-animation.md) → [정리](../getting-started/19-wrap-up.md)
 - **설치**: [00. 설치 및 환경 구축](../getting-started/00-installation.md) — pesde + Rojo 절차와 타입 검사 플래그.
 - **경계 규약부터 보기**: [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) — props 두 부분의 규칙, 우선순위 불변식, 자식을 `Slot`으로 받기.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](./02-from-v1.md) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md).

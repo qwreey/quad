@@ -1,6 +1,6 @@
 ---
 title: "07. 관측하기 — Observer와 Effect"
-description: "값이 바뀔 때 화면 밖에서 무언가 하는 Observer와, 의존성 여럿·cleanup을 다루는 Effect를 숫자 키 자리에 답니다"
+description: "값이 바뀔 때 화면 밖에서 무언가 하는 Observer와 Effect를 숫자 키 자리에 달고, 화면 안쪽은 값으로 표현한다는 경계를 잡습니다"
 ---
 > **대상 독자**: [06. 인스턴스를 손에 쥐기](/getting-started/06-ref/)를 끝낸 개발자
 > **목표**: 값이 바뀔 때 화면 밖에서 무언가 하고, 뒤처리가 필요한 일까지 붙이기
@@ -110,7 +110,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 `Observer`와 갈리는 지점은 셋입니다.
 
-- **의존성을 여럿 겁니다** — `q.Effect(fn, a, b, c)`. 어느 하나가 움직여도 다시 돕니다. `State`/`Source`뿐 아니라 **`Ref`도 의존성 자리에 놓을 수 있습니다**(바로 아래가 그 예입니다).
+- **의존성을 여럿 겁니다** — `q.Effect(fn, a, b, c)`. 어느 하나가 움직여도 다시 돕니다. `State`/`Source`뿐 아니라 **`Ref`도 의존성 자리에 놓을 수 있습니다**(4절이 그 예입니다).
 - **값이 인자로 오지 않습니다** — 클로저로 `count:Get()`을 직접 읽습니다(`fn`이 받는 인자는 핸들 자신 하나뿐입니다).
 - **cleanup을 돌려줄 수 있습니다** — 도는 자리는 넷입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, **매달린 인스턴스가 파괴될 때**, 그리고 **그 숫자 키 자리를 다른 값으로 갈아 끼울 때**(1절 접힘에서 본 것처럼 자리를 `State`로 잡아 뒀다가 바꾸는 경우)이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
 
@@ -118,55 +118,104 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 ---
 
-## 3. `Ref`를 의존성으로 걸기
+## 3. 화면 안쪽을 바꾸고 싶다면 — `Effect`가 아니라 값으로
 
-`Effect`의 의존성 자리에 [06장](/getting-started/06-ref/)의 `Ref`를 같이 걸면 **"이 상자가 채워졌을 때"와 "이 값이 바뀌었을 때"를 한 함수에서** 다룰 수 있습니다.
+앞의 두 절이 세운 규칙은 "`Observer`와 `Effect`는 **화면 밖으로 나가는 길**"이었습니다. 그래서 "카운트가 10 이상이면 버튼을 노란색으로"처럼 **화면 안쪽**을 바꾸는 일은 이 둘의 일이 아닙니다. 그건 [03장](/getting-started/03-flowing-values/)에서 이미 배운 파이프의 일입니다.
 
-카운트가 10 이상이면 버튼 색을 바꿔 보겠습니다. 상자는 06장 3절과 같은 평범한 `Ref`입니다.
+버튼의 `BackgroundColor3`에 색 리터럴 대신 파이프를 꽂습니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다
-const buttonRef = q.Ref<<TextButton?>>(nil)
-
-const card = D.Frame {
-    -- …생략…
+-- … card 안의 버튼을 이렇게 고칩니다
     D.TextButton {
-        buttonRef,
         Text = "+ 1",
-        BackgroundColor3 = Color3.fromRGB(0, 162, 255),
+        BackgroundColor3 = count:Compute(function(c)
+            return if c:Get() >= 10
+                then Color3.fromRGB(255, 190, 0)
+                else Color3.fromRGB(0, 162, 255)
+        end),
         Activated = function()
             count:Set(count:Get() + 1)
         end,
     },
-
-    -- 숫자 키: 버튼 뒤에 놓는다
-    q.Effect(function()
-        const inst = buttonRef.Value
-        if inst then
-            inst.BackgroundColor3 = if count:Get() >= 10
-                then Color3.fromRGB(255, 190, 0)
-                else Color3.fromRGB(0, 162, 255)
-        end
-    end, count, buttonRef),
-}
 ```
 
 **실행하면** 버튼이 파란색으로 시작해서, 카운트가 10이 되는 순간 노란색으로 바뀌고, 다시 10 아래로 내려가면 파란색으로 돌아옵니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 6a/6b/6c — (0,162,255) → 10에서 (255,190,0) → 3으로 내리면 다시 (0,162,255) -->
+<!-- mock 실측 2026-09-11: gs.polish2.luau "07 §3" — (0,162,255) → 10에서 (255,190,0) → 3으로 내리면 다시 (0,162,255) -->
+
+화면에 보이는 것은 **값이 흘러 닿는 프로퍼티**로 적는 것이 quad의 기본입니다. 같은 일을 `Effect` 안에서 `inst.BackgroundColor3 = …`로 적으면 세 가지가 어긋납니다.
+
+- **그 쓰기를 quad가 모릅니다.** 같은 프로퍼티에 이미 State가 꽂혀 있으면 둘이 서로 덮어씁니다 — 파이프가 값을 쓰고 `Effect`가 그 위에 또 쓰고, 다음 변경에 다시 뒤집힙니다. 금이 그어지는 자리는 **한 프로퍼티에 주인이 둘이 되는가**입니다. [06장](/getting-started/06-ref/) 2절이 `Activated` 안에서 `BackgroundTransparency`를 손으로 쓴 것은, 그 프로퍼티에 아무 값도 꽂혀 있지 않아 부딪힐 상대가 없기 때문입니다.
+- **되돌릴 방법이 없습니다.** 조건이 풀렸을 때 원래 색으로 돌려놓는 일까지 직접 적어야 합니다. 파이프는 조건이 풀리면 그냥 다른 값을 흘려보냅니다.
+- **이 장의 규칙을 스스로 깹니다.** `Effect`가 화면 밖으로 나가는 길이라는 약속이 흐려집니다.
+
+정리하면 **계속 바뀌는 값**은 파이프로 꽂고, **한 번 일으키는 동작**은 그 자리에서 손으로 써도 됩니다. 계속 바뀌는 값을 `Effect`로 미는 것이 이 절이 말리는 모양입니다.
+
+<details>
+<summary><strong>그럼 <code>Effect</code>는 언제 쓰나요?</strong></summary>
+
+**quad 바깥에 있는 것에 손댈 때**입니다 — 엔진 서비스에 연결하고, 타이머를 걸고, 다른 시스템에 자기를 등록하는 일. 이런 일은 끝날 때 **되돌려야 하고**, `Effect`에 cleanup이 있는 이유가 바로 그것입니다. 바로 아래 4절이 그 모양이고, [08장](/getting-started/08-lifecycle-hooks/)이 그 위에 이름 붙은 훅을 얹습니다. 엔진 연결을 걸고 끊는 실전 배치는 [04. 외부 신호를 상태로 들여오기](/how-to/04-network-and-input-bridge/)에 있습니다.
+
+</details>
+
+---
+
+## 4. `Ref`를 의존성으로 걸기
+
+`Effect`의 의존성 자리에 [06장](/getting-started/06-ref/)의 `Ref`를 같이 걸면 **"이 상자가 채워졌을 때"와 "이 값이 바뀌었을 때"를 한 함수에서** 다룰 수 있습니다.
+
+바깥으로 나가는 일 하나를 붙여 보겠습니다 — 카운트가 10 이상인 동안 **게임패드 선택**(`GuiService.SelectedObject`)을 이 버튼에 두는 것입니다. 선택을 걸었으면 조건이 풀릴 때 **풀어 줘야** 하므로 cleanup이 필요한 일이고, 대상이 인스턴스라 `Ref`가 필요합니다. 상자는 06장 3절과 같은 평범한 `Ref`입니다.
+
+```luau
+-- … 위쪽 코드에 이어집니다
+const GuiService = game:GetService("GuiService")
+const buttonRef = q.Ref<<TextButton?>>(nil)
+const isBig = count:Compute(function(c) return c:Get() >= 10 end)
+
+const card = D.Frame {
+    -- …생략…
+    D.TextButton {
+        buttonRef,                                  -- ← 06장의 상자를 다시 놓습니다
+        Text = "+ 1",
+        -- …3절의 BackgroundColor3 파이프는 그대로 둡니다…
+        Activated = function() count:Set(count:Get() + 1) end,
+    },
+
+    -- 숫자 키: 카운트가 10 이상인 동안 게임패드 선택을 이 버튼에 둔다
+    q.Effect(function()
+        const inst = buttonRef.Value
+        if inst and isBig:Get() then
+            GuiService.SelectedObject = inst
+
+            return function()                       -- ← 되돌리기
+                if GuiService.SelectedObject == inst then
+                    GuiService.SelectedObject = nil
+                end
+            end
+        end
+        return nil
+    end, isBig, buttonRef),
+}
+```
+
+**실행하면** 카운트가 10이 되는 순간 게임패드 선택이 이 버튼으로 옮겨 오고, 10 아래로 내려가면 cleanup이 돌아 선택이 풀립니다. 선택이 걸려 있는 채로 카드를 `Destroy()`해도 cleanup이 한 번 돌아, 사라진 버튼이 선택된 채로 남지 않습니다.
+<!-- mock 실측 2026-09-11: GuiService를 { SelectedObject = nil } 셰임으로 대체 — count를 의존성으로 건 판에서 10에서 select, 11에서 cleanup 뒤 다시 select, 3에서 unselect, 파괴 때 unselect. Studio 실측은 사람 몫 -->
+<!-- mock 실측 2026-09-11: gs.polish2.luau "07 §4" — isBig 의존 버전: 1에서 run(false) 다시(파이프는 값이 같아도 통지를 내려보낸다), 10에서 select, 11에서 unselect 뒤 다시 select, 3에서 unselect, 12에서 select 뒤 Destroy로 unselect -->
+
+의존성 자리에 `count`를 그대로 걸 수도 있었습니다. 그런데 이 `Effect`가 정말 신경 쓰는 것은 카운트 숫자가 아니라 **10을 넘었는가**입니다. 그래서 그 판정을 `isBig` 한 줄로 먼저 만들어 두고 그것을 겁니다 — **의존성은 값 자체가 아니라 "바뀌었을 때 다시 돌아야 하는 것"으로 고릅니다.** 같은 자리에 `count`를 걸어도 화면 결과는 같지만, 의도가 코드에 남지 않습니다. 다만 도는 횟수까지 줄지는 않습니다 — 파이프는 계산 결과가 같아도 통지를 내려보내므로, 10에서 11로 갈 때도 cleanup이 돌고 곧바로 다시 선택합니다(눈에는 안 보이는 한 사이클입니다).
 
 <details>
 <summary><strong>이 <code>Effect</code>는 <code>buttonRef</code>가 차기 전에 도는 것 아닌가요?</strong></summary>
 
 여기서는 아닙니다. Lua는 테이블 리터럴의 원소를 **위에서 아래로** 평가하므로, `D.TextButton { buttonRef, … }`가 먼저 실행되어 버튼이 만들어지고 `buttonRef`가 채워진 다음에야 `q.Effect(...)`가 만들어집니다. `Effect`의 첫 실행은 만들어지는 그 자리에서 돌기 때문에, 그때 이미 상자에 값이 있습니다.
 
-바꿔 말하면 **순서를 뒤집으면 첫 실행이 빈 상자를 봅니다**(그래서 위 코드에 `if inst then` 가드가 있습니다). 그 뒤 상자가 채워지면 `Ref`가 의존성이므로 `Effect`는 어차피 한 번 더 돕니다 — 다만 그때까지의 한 사이클은 아무 일도 안 한 셈이 됩니다.
+바꿔 말하면 **순서를 뒤집으면 첫 실행이 빈 상자를 봅니다**(그래서 위 코드에 `if inst and …` 가드가 있습니다). 그 뒤 상자가 채워지면 `Ref`가 의존성이므로 `Effect`는 어차피 한 번 더 돕니다 — 다만 그때까지의 한 사이클은 아무 일도 안 한 셈이 됩니다.
 
 순서에 기대고 싶지 않다면 `q.PreRef`를 쓰세요. 숫자 키 위치와 무관하게 가장 먼저 채워지므로 첫 실행부터 값이 있습니다.
 
 </details>
 <!-- mock 실측 2026-09-11: gs.gs5probe.luau R1/R3 — Effect를 버튼 앞에 두면 첫 실행이 empty, 상자가 채워지며 has로 한 번 더 돈다 -->
 
-이 `Effect`처럼 **"어떤 Ref와 어떤 State를 묶어 이런 일을 한다"를 함수 하나로 이름 붙여 재사용**할 수 있습니다. 그 모양은 [12장](/getting-started/12-functions/)에서 한꺼번에 다룹니다.
+이 `Effect`처럼 **"어떤 Ref와 어떤 State를 묶어 이런 일을 한다"를 함수 하나로 이름 붙여 재사용**할 수 있고, 컴포넌트를 쓰기 시작하면 그 함수를 **컴포넌트에 넘겨** 안쪽 상태에 붙이게도 됩니다. 그 모양은 [12장](/getting-started/12-functions/)에서 한꺼번에 다룹니다.
 
 ---
 

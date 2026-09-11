@@ -57,38 +57,76 @@ quad에서 이 성질은 계속 나옵니다 — 컴포넌트 안에서 만든 `
 
 `q.Ref(...)`·`q.Effect(...)`·`D.Modifier.Frame {...}`·컴포넌트는 전부 **부르면 값이 나오는 함수**입니다. 그렇다면 그 호출을 **내 함수로 한 겹 감싸는** 것도 당연히 됩니다. 그런 함수를 **팩토리**라고 부릅니다.
 
-[07장](./07-observer-effect.md)에서 카드에 직접 적었던 `Effect`를 이름 있는 함수로 빼 보겠습니다.
+quad에서 팩토리가 쓰이는 자리는 둘입니다 — **값을 만들어 돌려주는 것**, 그리고 **그 팩토리 자체를 컴포넌트에 넘기는 것**.
 
-아래 `card`와 `buttonRef`는 그 07장 시점의 카드 코드입니다 — 11장에서 `Counter.luau`로 옮기기 전의 모양입니다. 이 장에는 새로 배우는 API가 없으니 손으로 따라 치지 않고 읽기만 해도 됩니다.
+### 값을 돌려주는 팩토리
+
+[07장](./07-observer-effect.md) 3절에서 버튼 색을 만든 파이프는 "기준을 넘으면 노랑, 아니면 파랑"이라는 규칙 하나였습니다. 그 규칙에 이름을 붙입니다.
 
 ```luau
--- … 07장의 카드 코드에 이어집니다
--- "이 Ref가 가리키는 버튼의 색을 이 State에 맞춰 바꾼다"를 함수 하나로
-local function highlightWhenBig(ref, state, threshold)
-    return q.Effect(function()
-        const inst = ref.Value
-        if inst then
-            inst.BackgroundColor3 = if state:Get() >= threshold
-                then Color3.fromRGB(255, 190, 0)
-                else Color3.fromRGB(0, 162, 255)
-        end
-    end, state, ref)
+-- 새 예시: 별도 스크립트(또는 Counter.luau 위쪽)
+-- "이 State가 기준을 넘었는지에 따라 두 색 중 하나를 내놓는다"를 함수 하나로
+local function highlightColor(state, threshold)
+    return state:Compute(function(c)
+        return if c:Get() >= threshold
+            then Color3.fromRGB(255, 190, 0)
+            else Color3.fromRGB(0, 162, 255)
+    end)
 end
 ```
 
-쓰는 쪽은 **그 호출을 숫자 키 자리에 놓습니다.**
+돌려주는 것이 `State`이므로, 쓰는 쪽은 **그 호출을 문자 키의 값 자리에 놓습니다.** 11장으로 옮겨 오면서 색 리터럴로 돌아가 있던 버튼을 다시 파이프로 바꿉니다.
 
 ```luau
--- … 07장의 카드 코드에 이어집니다
-const card = D.Frame {
-    D.TextButton { buttonRef, Text = "+ 1", Activated = … },
-
-    highlightWhenBig(buttonRef, count, 10),   -- ← 숫자 키
-}
+-- … (Counter.luau) 버튼의 BackgroundColor3을 이렇게 고칩니다
+        D.TextButton {
+            -- …나머지 프로퍼티 생략…
+            BackgroundColor3 = highlightColor(count, 10),   -- ← 문자 키의 값 자리
+            Text = "+ 1",
+            Activated = function() count:Set(count:Get() + 1) end,
+        },
 ```
 
-**실행하면** 07장과 똑같이 카운트가 10 이상일 때 버튼이 노란색으로 바뀝니다. 달라진 것은 그 로직이 이제 **이름을 가졌다**는 것뿐입니다 — 카드가 열 개여도 `highlightWhenBig(...)` 열 줄이면 되고, 여러 화면에서 쓸 것이면 이 함수만 모듈 하나로 빼면 됩니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 6a/6b/6c — 팩토리로 묶은 형태 그대로 (0,162,255) → 10에서 (255,190,0) → 다시 파랑 -->
+**실행하면** 07장과 똑같이 카운트가 10 이상일 때 버튼이 노란색이 됩니다. 달라진 것은 그 규칙이 이제 **이름을 가졌다**는 것뿐입니다 — 버튼이 열 개여도 `highlightColor(...)` 열 줄이면 되고, 여러 화면에서 쓸 것이면 이 함수만 모듈 하나로 빼면 됩니다.
+<!-- mock 실측 2026-09-11: gs.polish2.luau "12 §3(a)" — highlightColor(count, 10)을 BackgroundColor3에 꽂은 형태, (0,162,255) → 10에서 (255,190,0) → 3에서 다시 파랑; "12 §3(b)" props.Watch — 왼쪽 카운터: 0 | 정리 | 왼쪽 카운터: 1 | 정리(파괴); "12 §4" Doubled — 0 → count:Set(21) 뒤 42, {}를 넘기면 위 에러 문구 -->
+
+### 컴포넌트에 팩토리를 넘기기
+
+[11장](./11-components.md)의 `Counter`는 `count`를 **자기 안에 숨깁니다.** 부른 쪽은 그 `Source`를 손에 쥘 수 없습니다. 그런데 바깥에서 "이 카운터가 셀 때마다 로그를 남기고 싶다"처럼 **안쪽 상태에 무언가를 걸고 싶은** 경우가 생깁니다.
+
+이럴 때 상태를 밖으로 내주는 대신 **팩토리를 받습니다.** 컴포넌트가 자기 `count`를 그 함수에 건네고, 돌려받은 것을 자기 숫자 키 자리에 놓습니다.
+
+```luau
+-- … (Counter.luau) 돌려주는 D.Frame의 끝, props.Children 뒤에 한 줄을 더합니다
+        props.Children or q.None,
+
+        if props.Watch then props.Watch(count) else q.None,
+    }
+end
+```
+
+부르는 쪽은 그 자리에서 `count`를 받아 **무언가를 만들어 돌려줍니다.** 로그처럼 뒤처리가 따라오는 일이면 `Effect`가 됩니다.
+
+```luau
+-- … (Main.client.luau) 부르는 쪽
+Counter {
+    Label = "왼쪽",
+    Start = 0,
+    Watch = function(count)
+        return q.Effect(function()
+            print("왼쪽 카운터:", count:Get())
+            return function() print("왼쪽 카운터 정리") end
+        end, count)
+    end,
+},
+```
+
+**실행하면** 왼쪽 카운터가 만들어질 때 `왼쪽 카운터: 0`이 찍히고, 버튼을 누를 때마다 `왼쪽 카운터 정리` 뒤에 `왼쪽 카운터: 1`이 이어집니다. 그 카운터를 파괴하면 마지막 정리가 한 번 더 찍힙니다. `Watch`를 안 넘긴 카운터는 그대로입니다.
+<!-- mock 실측 2026-09-11: gs.handlers9.luau — Start=5에서 run 5 | cleanup | run 6 | cleanup(파괴), Watch 없이 부르면 자식 수 그대로 -->
+
+`if props.Watch then … else q.None`은 [11장](./11-components.md) 2절의 `props.Children or q.None`과 같은 이유입니다 — 안 넘어왔을 때 그 자리가 **구멍**이 되면 안 되니까요. 더구나 여기서는 `Children` 뒤에 원소가 하나 더 붙었으니, 11장이 "뒤에 원소를 하나라도 더 붙이는 순간"이라고 예고한 상황이 바로 이것입니다.
+
+돌려주는 것이 `Effect`여야 할 이유는 없습니다. `Observer`든 `Modifier`든, 컴포넌트는 받은 것을 자기 숫자 키 자리에 놓기만 합니다 — [07장](./07-observer-effect.md) 4절의 `Effect`(`Ref`와 파이프를 의존성으로 건 것)도 그대로 이 자리에 넘길 수 있습니다.
 
 컴포넌트도 사실 이 팩토리의 한 종류입니다. 다른 점은 돌려주는 값이 `Effect`가 아니라 **인스턴스**라는 것뿐입니다.
 
@@ -174,11 +212,13 @@ local function logWith(prefix: string)
     end
 end
 
--- 팩토리는 받는 것에 이름만 붙이면 된다
-local function highlightWhenBig(ref: q.Ref<TextButton?>, state: q.State<number>, threshold: number)
-    return q.Effect(function()
-        -- …
-    end, state, ref)
+-- 팩토리는 받는 것과 돌려주는 것에 이름만 붙이면 된다
+local function highlightColor(state: q.State<number>, threshold: number): q.State<Color3>
+    return state:Compute(function(c: q.StateData<number>): Color3
+        return if c:Get() >= threshold
+            then Color3.fromRGB(255, 190, 0)
+            else Color3.fromRGB(0, 162, 255)
+    end)
 end
 
 -- :Apply의 결과 타입은 부르는 쪽이 적는다
@@ -188,7 +228,30 @@ const total: q.State<number> = count:Apply(q.Operator.Sum(10))
 `q.StateData<T>`와 `q.State<T>`의 차이는 "핸들로 받는 자리"와 "값이 흐르는 노드"입니다. 콜백 파라미터는 앞의 것, 변수에 담아 프로퍼티로 흘려보내는 것은 뒤의 것을 씁니다.
 
 </details>
-<!-- strict 실측 2026-09-11: consumer/P4.luau·P6.luau — 위 네 형태 전부 신 솔버 strict exit 0 -->
+<!-- strict 실측 2026-09-11: consumer/P4.luau·P6.luau·P16.luau — 위 네 형태(highlightColor·__apply 객체 포함) 전부 신 솔버 strict exit 0 -->
+
+### `:Apply`에는 테이블도 들어갑니다 — `__apply`
+
+`q.Operator.Sum(10)`이 그랬듯 `:Apply`에 넘기는 것은 대개 함수입니다. 그런데 팔이 하나 더 있습니다 — **`__apply` 메소드를 가진 테이블**도 받습니다. 함수를 넘기면 `factory(state)`로 불리고, 테이블을 넘기면 `factory:__apply(state)`로 불립니다.
+
+```luau
+-- … 위쪽 코드에 이어집니다 — __apply 하나면 :Apply에 들어간다
+const Doubled = {
+    __apply = function(self, state)
+        return state:Compute(function(c) return c:Get() * 2 end)
+    end,
+}
+
+const twice = count:Apply(Doubled)
+```
+
+둘 중 어느 쪽도 아닌 것을 넘기면 그 자리에서 던집니다.
+
+```
+State: Apply factory must be a function or an object with an __apply method
+```
+
+이 팔이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](./16-blocker.md)에서 만들 `q.Blocker()`가 바로 이런 값이라 `count:Apply(blocker)`로 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다). 두 팔의 계약은 [레퍼런스: `state:Apply(factory)`](../reference/core/03-state.md#stateapplyfactory)에 있습니다.
 
 ---
 
@@ -200,8 +263,8 @@ React를 써 봤다면 여기서 한 번 멈칫하게 됩니다. Hook은 컴포�
 
 ```luau
 -- (컴포넌트 안이라면 이런 것도 됩니다)
-if props.Highlight then
-    table.insert(children, highlightWhenBig(buttonRef, count, 10))
+if props.Watch then
+    table.insert(children, props.Watch(count))
 end
 ```
 
