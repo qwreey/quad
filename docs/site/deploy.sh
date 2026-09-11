@@ -6,7 +6,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 # ⚠️ [2026-09-10 실측] astro dev가 도는 동안 build를 돌리면 dev의 콘텐츠 레이어가 굳어 옛 렌더를 계속 낸다(둘이 .astro 저장소를 공유).
-if npx astro dev status >/dev/null 2>&1; then
+# [2026-09-11 사용자 실측] `astro dev status`는 서버가 없어도 exit 0("No dev server is running.")이라 exit code로는 못 가른다 — 메시지로 판정.
+if npx astro dev status 2>/dev/null | grep -qv "No dev server is running"; then
 	echo "[deploy.sh] astro dev가 떠 있습니다 — 빌드 뒤 dev.sh를 다시 띄우세요(옛 렌더가 굳습니다)" >&2
 fi
 python3 sync-docs.py

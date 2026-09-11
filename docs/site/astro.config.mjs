@@ -2,6 +2,15 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+// [2026-09-11] 현재 버전 — 메인 패키지 quad-base/pesde.toml을 **설정 파일이 읽어 상수로 박는다**(vite define).
+// 컴포넌트가 import.meta.url로 읽으면 build에서는 번들 위치(dist/.prerender)가 기준이라 경로가 깨진다(사용자 실측: ENOENT …/docs/site/quad-base/pesde.toml).
+const manifestPath = fileURLToPath(new URL('../../quad-base/pesde.toml', import.meta.url));
+const versionMatch = readFileSync(manifestPath, 'utf8').match(/^version\s*=\s*"([^"]+)"/m);
+if (!versionMatch) throw new Error(`astro.config: no version in ${manifestPath}`);
+const QUAD_VERSION = versionMatch[1];
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,6 +20,7 @@ export default defineConfig({
 	// [2026-09-10 사용자] 로컬 dev 서버를 샌드박스 밖 프록시 호스트로 볼 때 vite가 Host 헤더로 막는다(allowedHosts).
 	// DOCS_ALLOWED_HOSTS: 쉼표 목록(추가 호스트) 또는 `all`(아무 호스트나). 기본은 quad.selene.yaeji.moe 하나.
 	vite: {
+		define: { __QUAD_VERSION__: JSON.stringify(QUAD_VERSION) },
 		server: {
 			allowedHosts:
 				process.env.DOCS_ALLOWED_HOSTS === 'all'
