@@ -320,7 +320,7 @@ local button = D.TextButton {
 }
 ```
 
-이벤트 핸들러는 **엔진이 주는 인자만** 받습니다(`self` 없음). 인자 개수도 맞아야 합니다.
+이벤트 핸들러는 **엔진이 주는 인자만** 받습니다(`self` 없음). 엔진 시그니처보다 **많은 인자를 받을 수는 없습니다** — 안 쓰는 인자는 그냥 빼면 됩니다.
 
 <!-- v1 소스 확인 2026-09-11: 2.24 event.lua의 Property:: 특수 바인딩이 func(this, this[property])로 부른다. mock 실측 2026-09-11: 3.x 콜백은 인자 하나(값)만 받았다. -->
 `q.OnChange` 콜백도 마찬가지입니다. v1의 `[Event.Prop "Text"] = fn`은 `fn(대상, 값)` 둘을 줬지만, `q.OnChange("Text", fn)`은 **값 하나만** 넘깁니다. 대상 인스턴스가 필요하면 같은 props에 `Ref`를 놓고 그쪽에서 얻으세요.
@@ -398,7 +398,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | `q.Slot()` — 타입 인자 없음 | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`. **홑화살괄호 `q.Slot<Instance>()`는 문법 오류입니다** |
 | `q.OnCreated(fn)` — 타입 인자 없음 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
 | 생성 `D`에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |
-| 이벤트 콜백 첫 인자에 `self` | `Expected this to be '((() -> ()) \| None \| StateMarker<() -> ()>)?' but got '(unknown, unknown, unknown) -> ()'` | `self`를 지우고 엔진 시그니처와 인자 개수를 맞추세요 |
+| 이벤트 콜백 첫 인자에 `self` | `Expected this to be '((() -> ()) \| None \| StateMarker<() -> ()>)?' but got '(unknown, unknown, unknown) -> ()'` | `self`를 지우세요 — 엔진이 주는 것보다 많은 인자를 받으면 그 자리에서 막힙니다 |
 | `Frame`에 `Activated` | `Expected this to be 'number', but got '"Activated"'` | `TextButton` / `ImageButton` 같은 `GuiButton` 계열로 |
 | 숫자 키 자리에 `nil`이 들어감 | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.Modifier or q.None` |
 | 미리 만들어둔 props 테이블을 `D.Frame(props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |

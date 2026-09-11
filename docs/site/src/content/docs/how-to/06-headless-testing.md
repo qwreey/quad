@@ -135,7 +135,8 @@ assert(runs == 3, "인스턴스가 죽으면 더 이상 발화하지 않는다")
 
 ```luau
 local data = q.Source({ { id = "a" }, { id = "b" } })
-local slot = q.Slot():List(data, function(item: any, _index, _offset, prev, ud): (any, any)
+-- makeElement()는 이 백엔드가 만드는 요소, parent는 이 백엔드가 소유한 부모 인스턴스
+local slot = q.Slot<<Instance>>():List(data, function(item: any, _index, _offset, prev, ud): (any, any)
     if item == q.KeyGone then
         return nil, ud
     end

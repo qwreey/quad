@@ -110,8 +110,8 @@ end
 local ROW = 50
 local BUFFER = 3
 
-local function VirtualList(props: { items: { { id: string, label: string } } })
-    local items = props.items
+local function VirtualList(props: { Items: { { id: string, label: string } } })
+    local items = props.Items
     local scrollY = q.Source(0)
     local viewportHeight = q.Source(600)
 

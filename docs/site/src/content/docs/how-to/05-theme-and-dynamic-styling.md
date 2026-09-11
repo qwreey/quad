@@ -14,6 +14,8 @@ local D = q.D
 local DTypes = require(<quad-roblox D 모듈 경로>)
 ```
 
+이 문서의 예제는 모두 위 준비 코드를 앞에 둔 상태를 가정합니다 — 파일 이름이 붙은 블록(`Theme.luau`·`Styles.luau`·`ThemedButton.luau`)도 각각 그 세 줄로 시작합니다.
+
 ---
 
 ## 1. 디자인 토큰 아키텍처
@@ -30,15 +32,18 @@ quad에는 트리를 훑어 올라가는 **암묵적** 컨텍스트가 없습니
   컴포넌트는 가방을 이름 붙은 파라미터로 받아 자기 키만 읽습니다.
 
 ```luau
+-- (가방으로 내리는 모양 — 이 문서의 나머지 절은 층이 얕아 모듈을 직접 참조합니다)
 local ThemeProvider = q.Context.Provider("Theme")
 
--- 앱 진입점에서 한 번
+-- 앱 진입점에서 한 번(Theme은 §2에서 만드는 토큰 모듈)
 local ctx = q.Context():Set(ThemeProvider, Theme)
 
 -- 아래 어딘가에서
 local theme = ctx:Get(ThemeProvider)   -- 없으면 에러
 local maybe = ctx:Peek(ThemeProvider)  -- 없으면 nil
 ```
+
+이 문서의 §2 이후는 **모듈 직접 참조**(`Theme.Tokens.…`) 쪽을 씁니다 — 층이 얕아 가방이 필요 없기 때문입니다. 가방으로 내리는 전체 흐름은 [시작하기 14](/getting-started/14-context/)에 있습니다.
 
 - `Context.Provider(name?)`가 돌려주는 것은 **테이블 신원 키**입니다 —
   모듈 간 문자열 충돌이 없습니다. 이름은 에러 메시지용 선택 인자입니다.

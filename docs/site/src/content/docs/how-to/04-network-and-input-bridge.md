@@ -59,7 +59,9 @@ UI 레이어는 `RemoteEvent`의 존재를 모릅니다.
 
 ```luau
 -- GoldDisplay.luau (UI 레이어)
-local ProfileStore = require(script.Parent.PlayerProfileState)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad") -- 01장의 설정 모듈
+local D = q.D
+local ProfileStore = require("./PlayerProfileState")
 
 local function withCommas(n: number): string
     local s = tostring(math.floor(n))
@@ -197,7 +199,7 @@ return D.Frame {
 
 인스턴스 자체를 나중에 참조해야 하면 `q.Ref<<Frame?>>(nil)`을 숫자 키 자리에 두고
 `ref.Value`(또는 `ref:Unwrap()`)로 읽습니다. **초기값의 타입이 곧 `Ref`의
-타입**이라, `q.Ref(nil)`은 `Ref<nil>`이 되어 프로퍼티 자리에서 거부됩니다 —
+타입**이라, `q.Ref(nil)`은 `Ref<nil>`이 되어 그 숫자 키 자리에서 거부됩니다 —
 타입 인자로 요소 타입을 명시하세요. `Ref` 계열 값도 문자 키가 아니라 숫자 키 자리에
 놓습니다.
 

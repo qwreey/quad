@@ -69,7 +69,7 @@ D.Frame {
 
 재사용 가능한 컴포넌트는 호출자가 스타일(`Modifier`)이나 내부 인스턴스 참조(`Ref`)를 주입할 수 있어야 합니다. 이때 지켜야 하는 관용구가 하나 있습니다.
 
-`Ref`는 `q.Ref(nil)`로 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다.
+`Ref`는 `q.Ref<<TextButton?>>(nil)`처럼 담길 타입을 적어 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다(타입 인자를 빼면 `Ref<nil>`이 되어 그 자리에서 막힙니다 — [시작하기 06](../getting-started/06-ref.md)).
 
 ```luau
 local function MaterialButton(props: { read Text: string?, read Modifier: DTypes.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
@@ -146,7 +146,7 @@ local function CustomButton(props: ButtonProps): TextButton
 
         -- [3] 불변식 1 — 문자 키는 어떤 Modifier도 덮지 못한다
         Text = props.Text,
-        MouseButton1Click = props.OnClick,
+        MouseButton1Click = props.OnClick,   -- 마우스 좌클릭만 받는 엔진 이벤트 — 게임패드·터치까지 받으려면 시작하기의 Activated
         UICorner = 8,
     }
 end
