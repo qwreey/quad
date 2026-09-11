@@ -47,8 +47,11 @@ BindableEvent 채널로 한정. 서버에서 생성되는 인스턴스(팀 테�
 
 ## 리서치 결과 요약
 
-서브에이전트로 `.claude/initreq/` 전체(quad v1, fusion, vide, rbvm, tbox,
-quad2-try, artworks)를 조사, 일반 지식으로 Roblox 엔진 제약도 확인:
+서브에이전트로 참고 레포 전체(quad v1 `qwreey/quad@f867ccb`, Fusion
+`dphfox/Fusion@2790f7b`, Vide `centau/vide@452060a`, rbvm `Sol-s-Studio/rbvm@593ea18`,
+tbox `Sol-s-Studio/tbox@7d47c8a`, 그리고 레포 밖의 quad2-try·PA님 실 코드 — 당시엔
+옛 `initreq/`에 클론돼 있었다)를 조사, 일반 지식으로 Roblox 엔진 제약도 확인.
+**아래 파일 이름은 전부 그 레포들 기준이라 백틱 없이 적는다**:
 
 1. **참고할 기존 구현체가 없음** — react-lua/roact devtools 소스 자체가 이
    레포에 없음(react-lua가 애초에 이 프로젝트의 참고 레포 목록에 없음).
@@ -56,7 +59,7 @@ quad2-try, artworks)를 조사, 일반 지식으로 Roblox 엔진 제약도 확�
    파일 0개 — 이전 시도도 손댄 적 없는 영역. v1에도 재사용할 인프라 없음
    (`customWarn.lua` 정도, `debug.traceback` 출력만 하는 3줄).
 2. **에러 발생 시점 스냅샷 방식은 있지만 상시 레지스트리는 없음** — Vide
-   (`src/graph.luau`)와 Fusion(`src/Logging/parseError.luau`)은 둘 다
+   (src/graph.luau)와 Fusion(src/Logging/parseError.luau)은 둘 다
    `xpcall`+`debug.traceback`/`debug.info`로 **에러 나는 순간에만** 스택을
    찍음. Instance→생성 위치를 항상 기록해두는 상시 레지스트리를 유지하는
    선례는 없음 — quad-debug가 여기까지 해낸다면 차별점.
@@ -67,7 +70,7 @@ quad2-try, artworks)를 조사, 일반 지식으로 Roblox 엔진 제약도 확�
    공짜로 주는 동적 트레이싱 방법은 없고, quad 코드 안에 직접 계측을 심는
    것 외엔 방법이 없음** — 사용자가 우려한 그대로 확인됨.
 4. **"no-op 기본값 → 나중에 실제 구현으로 교체" 패턴의 실사용 선례 발견** —
-   Fusion `src/External.luau`가 정확히 이 모양: 모듈 상단 upvalue
+   Fusion src/External.luau가 정확히 이 모양: 모듈 상단 upvalue
    `currentProvider: ExternalProvider? = nil`을 두고
    `External.setExternalProvider(newProvider)`(31행)로 통째로 교체, 소비
    함수(`logWarn` 등)는 매 호출 시 `if currentProvider then ... end`로만
@@ -109,7 +112,7 @@ Compute 함수가 어디서 생성됐는지"를 보여주는 **연결 그래프*
 **디스패치 이력**(무엇이 언제 어떤 값으로 `process`됐는가) 둘뿐. 파이프라인
 그래프는 이 디스패치 이력을 재구성해서 보여주는 것.
 
-### 2. 계측 지점 3곳 — no-op 훅 upvalue, Fusion `External.luau` 패턴 재사용
+### 2. 계측 지점 3곳 — no-op 훅 upvalue, Fusion External.luau 패턴 재사용
 
 사용자가 요청한 "빈 함수 만들어두고 나중에 트레이스 뽑는 동적 계측"을
 그대로 적용. `if DEBUG then` 분기를 코드 전체에 뿌리지 않고, 아래 세 지점에
@@ -360,7 +363,7 @@ Explorer(Studio 기본 창)와 플러그인의 트리 뷰(`DockWidgetPluginGui`)
 
 익스텐션이 React 로드 *전에* `window.__REACT_DEVTOOLS_GLOBAL_HOOK__`을
 먼저 심어두고, React 렌더러가 부팅하며 그걸 찾아 `hook.inject(...)`로
-스스로 등록하는 "로드 순서 무관 레지스트리" 패턴 — Fusion `External.luau`의
+스스로 등록하는 "로드 순서 무관 레지스트리" 패턴 — Fusion External.luau의
 "이미 로드된 모듈의 업밸류를 나중에 스왑"과는 다른 축(React 쪽은 "누가
 먼저 로드되든 상관없게", Fusion 쪽은 "함수 포인터 교체"). quad-debug에도
 개념은 유효하나, Roblox는 플러그인/게임이 애초에 별도 프로세스(VM)라

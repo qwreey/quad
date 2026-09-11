@@ -270,7 +270,9 @@ Roblox 어휘(`SetAttribute`/`GetAttribute`)·소문자 "attribute"(엔진 개�
    `S.fn(...)` — 전방 선언의 파일 판, 프렐류드 값 18개는 설치 전 `S`에)로 분할 — 함수 목록 동일·본문 다중집합
    diff는 의도한 네 줄(`ExtractAll`의 `(S.unwrapElement(…))` 괄호, 태깅 루프의 `S.List/S.Single`, `Slot` 전방
    선언, `Handler` require)뿐. `doc-check.py`는 `.luau` 참조를 소스 색인 접미 일치로 검사(패키지 루트부터 적은
-   경로는 ERROR, 이름·부분 경로는 WARN, `initreq` 외부 소스는 이름 폴백); 옛 경로 인용 143줄+4줄 치환. 잔여
+   경로는 ERROR, 이름·부분 경로는 WARN, 외부 소스는 옛 `initreq/` 클론까지 뒤지는 이름 폴백 —
+   **[2026-09-11]** 그 폴더가 제거되면서 폴백 경로도 사라졌고, 레포 밖 파일은 포인터 표기로
+   적어 검사에 안 걸리게 한다); 옛 경로 인용 143줄+4줄 치환. 잔여
    WARN 17건은 애초에 없던 파일 이름을 "없다"고 서술한 자리(`Handlers/Tween.luau`·`Dispatch/Leaf.luau` 등).
 5. 이동 뒤 순회 1회(직전 수정분 회귀 관측이 규칙이므로).
 6. **[추가]** 10절의 후속 제안 — Brand→quad-types(완료, 3번과 같은 커밋), 마커 전면화 +

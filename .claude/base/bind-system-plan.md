@@ -29,10 +29,10 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
 `quad-base`가 인터페이스로 소유, `quad-roblox`는 실제 구현만)까지 전부
 2026-08-04 세션에서 확정되어 `research/`에서 승격됨(`base/architecture.md`의
 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
-`.claude/initreq/raw-userinput.md`
+`.claude/reference/origin/raw-userinput.md`
 "key와 value에 대한 바인드 연산은 pluggable 하도록 구성하기" / "스토어는 스토어를
 저장 가능한가" / "Ref는 고민중" 절. v1의 문제점은 `reference/quad-v1-architecture.md`
-("ProcessQuadProperty" 하드코딩 디스패처), 참고 패턴은 `.claude/initreq/tbox`
+("ProcessQuadProperty" 하드코딩 디스패처), 참고 패턴은 `Sol-s-Studio/tbox@7d47c8a`
 (레지스트리)와 Fusion/Vide 비교는 `reference/comparison-fusion-vide.md` 참고.
 
 ## 분할된 문서로 가는 색인
@@ -133,10 +133,9 @@ RobloxFactory(QuadBase)` 세 줄 정도로 직접 조립하면 됨(별도 번들
 
 `Quad "Frame"`처럼 문자열로 인스턴스 종류를 지정하는 방식은 타입 추론이
 어려움(`base/store-plan.md`의 "타입 추론 문제" 절이 다루는 Luau 오버로드
-문제와 같은 원인). 사용자가 실제 참고 코드를
-`.claude/initreq/artworks/DeclarativeProgramming/
-DeclarativeInstance.luau`(PA님 작성, UI 포함 전반적 설계 패턴을 시범 적용한
-데모 모듈)에 공유해줘서 직접 확인 — 원래 가칭 `DI`는 Dependency Injection이
+문제와 같은 원인). 사용자가 실제 참고 코드(PA님 실 코드 — 비공개, 레포 밖,
+옛 `initreq/artworks/`의 DeclarativeProgramming/DeclarativeInstance.luau, UI 포함
+전반적 설계 패턴을 시범 적용한 데모 모듈)를 공유해줘서 직접 확인 — 원래 가칭 `DI`는 Dependency Injection이
 아니라 "Declarative Instance"(선언형 인스턴스 생성)의 약자였음.
 **[2026-08-18 확정] 네임스페이스 이름은 `D`(Declarative)** — `DI`는 Dependency
 Injection과 완전히 겹쳐 실제로 오해가 있었던 전례가 있고, `D`는 (1)
@@ -496,13 +495,13 @@ Service` 기반으로 구현)로 두면 됨 — 별도 `On` 모듈/필드 접근
 생성기 타이핑 포함).
 
 **PA님 코드와 대조해서 재확인한 것(변경 없음)**:
-- **OOP 회피 결정은 오히려 보강됨** — PA님의 `ObjectOrientedProgramming/
-  class.luau`도 `setmetatable(methods, {__index = parent})` 체이닝 상속이라
+- **OOP 회피 결정은 오히려 보강됨** — PA님의 ObjectOrientedProgramming/class.luau도
+  `setmetatable(methods, {__index = parent})` 체이닝 상속이라
   quad-v2가 피하기로 한 quad2-try `Base:Extends`와 같은 모양이고, 제네릭을
   파일마다 중첩해서 재선언해야 하는 보일러플레이트까지 동일하게 나타남.
 - **Instance 태그는 CollectionService 직접 사용 그대로 유지** — PA님의
-  `EventDrivenProgramming/Observer.luau`의 `subscribeTaggedInstance`도 얇은
-  `CollectionService` 래퍼일 뿐. `DataOrientedProgramming/TagService.luau`는
+  EventDrivenProgramming/Observer.luau의 `subscribeTaggedInstance`도 얇은
+  `CollectionService` 래퍼일 뿐. DataOrientedProgramming/TagService.luau는
   이것과 무관하게 plain-table 엔티티(비-Instance 데이터)용 커스텀 태그
   인덱스라 지금 quad-v2 스코프 밖 — Instance가 아닌 데이터에 태깅이 필요해질
   미래 시나리오를 위한 참고 자료로만 기록.

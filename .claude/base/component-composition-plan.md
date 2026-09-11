@@ -17,7 +17,7 @@ v1의 `Class.Extend()`(Init/Render/AfterRender/Getter/Setter/UpdateTriggers,
 호출되는 사용자 정의 컴포넌트를 v2에서 어떤 모양으로 작성하게 할지가 핵심
 질문.
 
-## v1 실제 메커니즘 (조사 완료, `quad.qwreey.kr` 튜토리얼 + `initreq/quad/src/` 소스로 교차검증)
+## v1 실제 메커니즘 (조사 완료, `quad.qwreey.kr` 튜토리얼 + v1 소스 `qwreey/quad@f867ccb:src/`로 교차검증)
 
 - `myStore "key"` → register(현재 State에 해당) 반환. `:Default(v)`/
   `:With(fn)`/`:Add(v)`/`:Tween(opts)` 체이닝 가능(`store.lua:433-457`).
@@ -169,7 +169,7 @@ modifier 파라미터를 두는 패턴을 명시적으로 **반례(DON'T)**로 �
 
 ### Fusion — modifier 개념 자체가 없음, multi-root는 있지만 ref 전달 관례 없음
 
-- `merge.luau`(`src/Utility/merge.luau:13-33`)는 scope 메소드 테이블 병합용이지
+- merge.luau(`dphfox/Fusion@2790f7b:src/Utility/merge.luau` 13~33행)는 scope 메소드 테이블 병합용이지
   props 병합용이 아님 — quad Modifier에 대응하는 게 Fusion엔 없음.
 - prop 전달 관례는 전부 **named table**(`props.Layout.Size`,
   `props[Children]`) — 배열 아이템으로 뭔가를 넘기는 관례 자체가 없음.

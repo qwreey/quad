@@ -18,7 +18,7 @@
 확인/타입 추론(dot-access) 전부 2026-08-04 세 라운드에서 `AskUserQuestion`으로
 확인 완료, 이후 세션들에서 `:With` 새 노드화·trailing args·`Observer`/
 `:Subscribe`·이중 바인딩 게이트까지 확정. 남은 건 정확한 함수/생성자
-이름뿐(구현 단계). 원본: `.claude/initreq/raw-userinput.md`
+이름뿐(구현 단계). 원본: `.claude/reference/origin/raw-userinput.md`
 "state는 어떻게 구현하는가" / "스토어는 스토어를 저장 가능한가" 절.
 
 > **[2026-08-13 열세 번째 세션, 해소]** self/deps를 lazy `State` 핸들로
@@ -384,7 +384,8 @@ end
 
 즉 **중복 재계산을 막는 주체는 pull-recompute + 캐시**이지, 전파를
 `invalid`로 끊는 게 아니다(`base/architecture.md`의 전파 모델 요약과 같은
-이야기). Vide가 `todo.md`에 미해결로 남긴 "다이아몬드 중복 **재평가**"는
+이야기). Vide가 자기 todo.md(`centau/vide@452060a`)에 미해결로 남긴
+"다이아몬드 중복 **재평가**"는
 이 캐시 구조로 풀린다.
 
 **⭐ [2026-08-21 역전] 중복 *통지*도 이제 접힌다.** 여기엔 원래 "quad가 추가로
@@ -1843,8 +1844,8 @@ cleanup을 안 불러도 되지만 셋째는 **파괴에 준한다**(그 `Effect
 
 ## PA님 코드와의 교차검증(2026-08-04 4차 라운드) — 둘 다 기존 확정 유지
 
-`.claude/initreq/artworks/EventDrivenProgramming/`(Connection/Event/
-Observable/Observer)을 조사한 결과, 두 지점에서 기존 확정과 실제로 다른
+PA님 실 코드(비공개, 레포 밖 — 옛 `initreq/artworks/EventDrivenProgramming/`,
+Connection/Event/Observable/Observer)를 조사한 결과, 두 지점에서 기존 확정과 실제로 다른
 선택이 나와 재검토했으나 결론은 변경 없음. **이름 주의**: 아래에서 말하는
 `Observer`는 PA님 코드의 클래스 이름(pub-sub, 8개 `subscribeXxx` 헬퍼)이고,
 위 "`state:Observer(fn)`" 절에서 확정한 quad의 `Observer`와는 이름만

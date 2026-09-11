@@ -9,8 +9,8 @@
 사용자 기억: v1을 쓸 때 "UICorner/UIPadding/UIScale 같은 걸 직접
 `Instance.new`로 만들어 Parent하는 귀찮은 작업 없이, Frame 안에 인라인으로
 넣기만 해도 CSS 스타일처럼 적용됐다 — 코드가 줄고 읽기도 편해서 꽤
-괜찮았다"는 것. v1 소스(`.claude/initreq/quad`)와 PA님 코드
-(`.claude/initreq/artworks`)를 서브에이전트로 조사해 확인.
+괜찮았다"는 것. v1 소스(`qwreey/quad@f867ccb`)와 PA님 실 코드(비공개, 레포 밖 —
+옛 `initreq/artworks`)를 서브에이전트로 조사해 확인.
 
 ## v1 실제 메커니즘 (조사 완료)
 

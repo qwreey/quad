@@ -7,7 +7,7 @@ Fusion/Vide 리서치 스냅샷이라 항상 읽어야 하는 base 컨텍스트�
 Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열어볼 것,
 실제 확정 사항은 인용하는 쪽 `base/` 문서가 소스.
 
-## Fusion (`.claude/initreq/fusion/`)
+## Fusion (`dphfox/Fusion@2790f7b`)
 
 - **반응 그래프**: push(무효화) + pull(재계산) 하이브리드. `Value:set()`이 `change()`를
   통해 `dependentSet`을 BFS로 훑으며 `invalid`로 마킹하지만, 실제 재계산은
@@ -35,11 +35,11 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
   이 문단의 Fusion 반면교사 논리(그래프 1급 노드화의 3중 복잡도) 자체는
   두 모델 다에 여전히 유효, 인용하는 결론 쪽 이름만 stale했던 것.
 
-## Vide (`.claude/initreq/vide/`)
+## Vide (`centau/vide@452060a`)
 
 - **반응 그래프**: SolidJS류 순수 push. `source()`를 쓰면 즉시, 동기적으로,
   깊이우선으로 모든 의존 노드를 재평가(lazy/pull 경로 없음). **저자들 스스로
-  `todo.md`에 "복잡한 다이아몬드 그래프에서 중복 재평가 방지" 를 미해결로 남겨둠**
+  자기 레포의 todo.md에 "복잡한 다이아몬드 그래프에서 중복 재평가 방지" 를 미해결로 남겨둠**
   — quad Store가 이 naive BFS 방식을 그대로 베끼면 안 되는 이유.
   **[2026-08-14 보강]** quad가 이걸 피하는 방식은 "전파를 중간에 끊는 것"이
   아니라 **애초에 push 시점에 계산을 안 하는 것**(pull-recompute + 노드별
@@ -55,7 +55,7 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
   `Node`에서 두 개의 별도 관계로 분리 — CHANGELOG 0.2.0에서 "destroy가 더 이상
   reactive dependent까지 타고 내려가지 않고 owned만" 으로 명시적으로 고침(초기
   설계 실수를 나중에 수정한 이력). 0.4.0에서 "활성 스코프는 destroy 불가" 하드
-  가드 추가. **역시 완전 eager/수동 — GC 의존 없음**(오히려 `root.luau`가 GC로부터
+  가드 추가. **역시 완전 eager/수동 — GC 의존 없음**(오히려 root.luau가 GC로부터
   루트를 보호하는 `refs` 테이블까지 둠).
 - **디스패치**: 대부분 Luau 키 타입으로 닫힌 하드코딩. 유일한 열린 확장점은
   `action(callback, priority)` — 등록 없이 private 메타테이블 태그로 인식되는

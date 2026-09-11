@@ -124,14 +124,17 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
 
 ## 참고: 조사에 사용한 소스 근거
 
-- Fusion: `State/ForPairs.luau`, `State/ForKeys.luau`,
-  `Utility/Contextual.luau`, `Graph/Observer.luau`, `Instances/Attribute.luau`,
-  `Memory/doCleanup.luau`
-- Vide: `indexes.luau`, `values.luau`, `context.luau`, `batch.luau`,
-  `action.luau`, `untrack.luau`, `cleanup.luau`
-- quad v1: `store.lua`, `tracker.lua`, `class.lua`(diff/reconcile/keyed
-  계열 헬퍼 없음, grep 확인)
-- artworks: `EventDrivenProgramming/Observable.luau`, `Utility/Array.luau`,
-  `GlobalDataStorage/request.luau`, `DeclarativeProgramming/DeclarativeInstance.luau`
+- Fusion(`dphfox/Fusion@2790f7b`, `src/` 기준): State/ForPairs.luau,
+  State/ForKeys.luau, Utility/Contextual.luau, Graph/Observer.luau,
+  Instances/Attribute.luau, Memory/doCleanup.luau
+- Vide(`centau/vide@452060a`, `src/` 기준): indexes.luau, values.luau,
+  context.luau, batch.luau, action.luau, untrack.luau, cleanup.luau
+- quad v1(`qwreey/quad@f867ccb`, `src/` 기준): store.lua, tracker.lua,
+  class.lua(diff/reconcile/keyed 계열 헬퍼 없음, grep 확인)
+- PA님 실 코드(비공개, 레포 밖 — 옛 `initreq/artworks/`):
+  EventDrivenProgramming/Observable.luau, Utility/Array.luau,
+  GlobalDataStorage/request.luau, DeclarativeProgramming/DeclarativeInstance.luau
 
-경로는 모두 `.claude/initreq/<repo>/...` 기준(읽기 전용 참고 레포).
+**[2026-09-11]** 위 파일 이름은 전부 **레포 밖 소스**라 백틱 없이 적는다 — 이
+레포에 존재하지 않으므로 경로로 검사할 대상이 아니다(옛 `initreq/<repo>/...`
+클론 기준이었고, 그 폴더는 제거됐다 — 해석표는 `.claude/README.md`).

@@ -65,11 +65,12 @@
 
 ### 2.3 v1 선례 — changelog와 로드맵 **둘 다** 문서 nav에 있었다
 
-사용자 진술은 사실이고, 조사해 보니 **로드맵도 같이 실려 있었다**(읽기 전용 클론 `initreq/quad`).
+사용자 진술은 사실이고, 조사해 보니 **로드맵도 같이 실려 있었다**(당시 읽기 전용 클론이던
+v1 `qwreey/quad@f867ccb` — 아래 v1 문서 파일 이름은 그 레포 기준이라 백틱 없이 적는다).
 
 - 빌드는 MkDocs + Material, 언어별 설정 둘(`mkdocs_kr.yml` / `mkdocs_en.yml`), 배포는 빌드 산출물을
   레포에 커밋하는 GitHub Pages(`Makefile`, 커스텀 도메인).
-- `mkdocs_kr.yml`의 nav 최상위 "홈" 탭 아래에 **변경사항(`changelogs.md`)**과 **로드맵(`todo.md`)**이
+- `mkdocs_kr.yml`의 nav 최상위 "홈" 탭 아래에 **변경사항(md/kr/changelogs.md)**과 **로드맵(md/kr/todo.md)**이
   갤러리·라이선스와 나란히 등재돼 있었다. 즉 v1에서 이 둘은 사이드바에 **드러나 있던** 페이지다.
 - 형식은 Keep a Changelog가 아니라 `## <버전번호>` 헤딩 + 한국어 평문 문장 나열(날짜 없음, 파괴적
   변경은 헤딩에 `BREAKING CHANGES`를 직접 붙임). 로드맵 쪽은 "진행중이거나 검토중" / "먼 미래에 . . ."

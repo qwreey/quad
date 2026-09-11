@@ -1,18 +1,19 @@
 # charm(littensy/charm) 비교 — quad-v2 설계 근거
 
 **상태**: reference — 온디맨드 참고 자료, "완료" 개념 없음. quad에 관한 결정
-자체가 아니라 charm 리서치 스냅샷(2026-08-09, `.claude/initreq/charm`에
-새로 클론)이라 항상 읽어야 하는 base 컨텍스트는 아님 — Fusion/Vide 비교와
+자체가 아니라 charm 리서치 스냅샷(2026-08-09에 `littensy/charm@b05f3a9`를 클론해
+조사 — **아래 본문의 파일 이름 인용은 전부 그 레포 기준이고, 이 레포엔 없으므로
+백틱 없이 적는다**)이라 항상 읽어야 하는 base 컨텍스트는 아님 — Fusion/Vide 비교와
 같은 성격, `quadnomicon` 소재 후보이기도 함. quad-v2의 Blocker/Effect/
 Slot:List/(미래) 네트워크 동기화 설계에 근거로 인용될 때만 열어볼 것,
 실제 확정 사항은 인용하는 쪽 `base/` 문서가 소스.
 
 **charm이 뭔지**: Roblox용 Zustand류 상태관리 라이브러리 —
-`atom`/`computed`/`subscribe`/`effect`/`batch` 핵심(`packages/charm/src/
-init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어) +
+`atom`/`computed`/`subscribe`/`effect`/`batch` 핵심(packages/charm/src/init.luau,
+~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어) +
 `react-charm`/`vide-charm`(얇은 어댑터). 코어는 실제로 절반쯤이 alien-signals
-포크(`system.luau`, dirty/pending 비트플래그 전파 엔진, 237줄 — 가장 큰
-테스트 파일이 이걸 검증하는 `topology.test.luau` 484줄)라 순수 서핏보다
+포크(system.luau, dirty/pending 비트플래그 전파 엔진, 237줄 — 가장 큰
+테스트 파일이 이걸 검증하는 topology.test.luau 484줄)라 순수 서핏보다
 알고리즘 실체가 있지만, quad는 노드/의존성 재사용 모델 자체를 안 쓰기로
 이미 갈라섰으므로 이 부분은 이식 대상이 아님.
 
@@ -89,7 +90,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   luau:32-57`(`stringifySparseArray`)는 실전에서 놓치기 쉬운 페이로드
   함정을 문서화함 — RemoteEvent/JSON 직렬화가 성긴 배열의 trailing hole을
   조용히 드롭해서, 보낼 땐 문자열 키로 재인코딩하고 받을 땐 숫자 키로
-  복원해야 함(`patch.luau:101-107`). `server.luau`는 클라이언트별 관심사
+  복원해야 함(patch.luau 101~107행). server.luau는 클라이언트별 관심사
   필터링을 하나의 전역 diff 위에 구현(`clients` 테이블의
   `PENDING_INITIAL_STATE`/`LISTENING_FOR_CHANGES` 상태, 27-32행,
   `selectFromGlobalPatch` 209-250행) + 모든 중간 변경을 보존하는 opt-in
@@ -99,7 +100,7 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
   sync 전용 구현체. 지금 스코프 밖이지만 나중에 quad가 네트워크 복제
   설계를 시작하면 첫 참고 지점으로 쓸 것.
 - **`observe()`의 엣지케이스 테스트 스위트가 `Slot:List` 테스트 체크리스트로
-  재사용할 만함.** `observe.test.luau`가 마운트 콜백 도중의 재귀적
+  재사용할 만함.** observe.test.luau가 마운트 콜백 도중의 재귀적
   add/remove(92-113행), 자기 마운트 도중 자기 자신 제거(115-132행), add/remove
   도중 dispose(134-168행), 재귀적 업데이트 중 에러가 reconciler를 안 멈추게
   하는지(170-196행)를 검증 — `observe()` 자신의 메커니즘(키별
@@ -120,9 +121,10 @@ init.luau`, ~1000줄) + `charm-sync`(클라/서버 상태 복제 diff 레이어)
 previous-in-getter). 지금 당장 base 문서를 고칠 만한 발견은 없음 — 순수
 참고자료로 등록.
 
-**인용 위치**: `packages/charm/src/init.luau:66,71-93,100-129,285-296,
+**인용 위치**(앞쪽은 charm 레포 `littensy/charm@b05f3a9` 기준, 뒤쪽은 이
+레포 문서): `packages/charm/src/init.luau:66,71-93,100-129,285-296,
 302-321,432,489,519-527,538,607-641,652-676,768-778,800-835,851-898` ·
-`packages/charm/src/system.luau`(전체, alien-signals 포크) ·
+packages/charm/src/system.luau(전체, alien-signals 포크) ·
 `packages/charm/test/gc.test.luau:9-33` · `packages/charm/test/
 computed.test.luau:84-104` · `packages/charm/test/observe.test.luau:92-196` ·
 `packages/charm-sync/src/patch.luau:10,19-30,32-57,59-89,91-131` ·

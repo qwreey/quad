@@ -30,9 +30,11 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
 컴포넌트=플레인 함수, 컴포넌트 경계 modifier/Ref 전달)는 전부 `.claude/base/`에 확정돼
 있음 — 먼저 `.claude/base/architecture.md`를 읽을 것.
 
-이전에 시도했다 폐기한 v2 재작성 시도(`.claude/initreq/quad2-try`)도 리서치
-완료 — OOP 상속/커스텀 파서/Slot 스텁/`Pipe` copy-on-write 절충안은 확인된
-죽은 접근이라 반복 조사 금지(`base/bind-system-plan.md` "확정된 것" 절 참고).
+이전에 시도했다 폐기한 v2 재작성 시도(옛 `initreq/quad2-try` — **[2026-09-11]**
+그 폴더는 제거됐고 코드는 레포 밖이다)도 리서치 완료 — OOP 상속/커스텀 파서/Slot
+스텁/`Pipe` copy-on-write 절충안은 확인된 죽은 접근이라 반복 조사 금지
+(`base/bind-system-plan.md` "확정된 것" 절 참고, 조사 원문은
+`archive/quad2-try-research-findings-rejected.md`).
 
 ## 계획 문서 구조
 
@@ -97,10 +99,13 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
   넘게 불어나 성능 저하를 유발해서 분리함. `.claude/session-summary.md`의 각
   항목이 여기로 링크. **항상 읽을 필요 없음** — 특정 결정의 논의 과정/시행착오가
   궁금할 때만 열어볼 것, 지금 유효한 설계는 항상 `base/`가 소스.
-- `.claude/initreq/` — 클론해둔 참고 레포(quad v1, Fusion, Vide, rbvm, tbox,
-  code-docker) + PA님 실 코드(`artworks/`) + 원본 요청. **읽기 전용,
-  `.gitignore`로 커밋 제외됨** — 내용을 다른 곳으로 옮기지 말고 항상 원본
-  그대로 둘 것. 리서치가 더 필요하면 이 폴더를 다시 파고들 것.
+- ~~`.claude/initreq/`~~ — **[2026-09-11 제거 — 사용자 지시]** 착수 때 클론해둔
+  참고 레포(quad v1, Fusion, Vide, rbvm, tbox, charm, code-docker,
+  roblox-project-example) + PA님 실 코드 + 원본 요청이 있던 폴더. 기술 결정이 다
+  끝나 더 읽을 일이 없고, 레포를 클론하는 다른 에이전트에겐 없는 폴더라 잡음이라는
+  판단으로 지웠다. 사용자 원본 요청 둘만 `reference/origin/`으로 원문 그대로 옮겼고,
+  옛 경로는 `.claude/README.md`의 "옛 `initreq/` 경로 해석표" 절로 푼다. **리서치가
+  더 필요하면 그 표의 sha로 스크래치 폴더에 다시 클론할 것**(레포 안으로 되돌리지 말 것).
 - `.claude/question.md` — 사용자가 답해야 할 질문 전체 취합(우선순위순).
 - 루트 `ROADMAP.md` — 설계 단계 종료 후 실제 구현 순서(M0, M1, ... 마일스톤 +
   todo 체크박스). "무엇을 확정했는가"는 `.claude/base/`가 소스, "어떤 순서로

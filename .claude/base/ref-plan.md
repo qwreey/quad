@@ -436,7 +436,7 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
   패턴과 같은 결. 단일 파라미터로 단순화하면 이 위험 자체가 없음 — 대신
   초기값만으로 좁은 타입이 추론되는 문제(`Ref(nil)`이 `Ref<nil>`로
   좁혀짐)는 `Ref<<Obj?>>(nil)`처럼 **명시적 제네릭 적용**(`f<<T>>(...)`
-  패턴, `.claude/initreq/tbox/CLAUDE.md:40-41` 선례)으로 타입을 넓혀
+  패턴, `Sol-s-Studio/tbox@7d47c8a:CLAUDE.md` 40~41행 선례)으로 타입을 넓혀
   풀면 됨 — React `useRef<HTMLDivElement>(null)`도 명시적 타입 인자 없이는
   같은 문제를 겪으므로 이미 널리 받아들여진 UX, quad가 새로 감수하는
   트레이드오프 아님.

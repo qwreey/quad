@@ -93,13 +93,13 @@ quad/
 
 ## 툴체인 — `rokit.toml`에서 `mise.toml`로 전환 (2026-08-19)
 
-원래는 `initreq/vide`(참고 레포)의 `rokit.toml` 선례를 따랐음(같은 날
+원래는 Vide(참고 레포 `centau/vide@452060a`)의 `rokit.toml` 선례를 따랐음(같은 날
 `pesde`/`rojo`/`luau-lsp` 셋 다 `/code/.local/bin`에 직접 다운로드해
 설치·핀과 버전 일치까지 검증). **같은 날 후속 세션에 `mise.toml`로
 재전환** — 사용자 결정("요즘은 rokit 보단 mise로 까는듯 하네. 더
 범용적이라 이걸 택하는듯"), 근거는
-`Word30210/roblox-project-example`(`initreq/roblox-project-example`로
-클론해 확인)의 `mise.toml`. `rokit`은 이 샌드박스에 아예 없어 한 번도
+`Word30210/roblox-project-example@9c847e8`(당시 옛 `initreq/`로 클론해
+확인)의 `mise.toml`. `rokit`은 이 샌드박스에 아예 없어 한 번도
 직접 검증 못 했던 반면, **`mise`는 이 샌드박스 자체가 이미 `luau` 설치에
 쓰고 있어서 `mise install`을 그 자리에서 실행해 진짜로 검증**함 —
 `pesde`/`rojo`/`luau-lsp`/`selene` 넷 다 GitHub artifact attestation +
@@ -166,7 +166,7 @@ require-by-string 의미론(`@self` 등)을 그대로 지원하므로, darklua�
   형제 폴더 취급 → `require("./Relate")`(◯), `require("../Relate")`(✕,
   한 단계 더 올라가 `quad-base/Relate`를 찾으려다 실패).
 
-**실측 근거**: `tbox`(`initreq/tbox`, 다른 참고 레포)의 `src/init.luau`가
+**실측 근거**: tbox(다른 참고 레포 `Sol-s-Studio/tbox@7d47c8a`)의 src/init.luau가
 `require("@self/types")`/`require("@self/schema/string")` 패턴을
 실제로 쓰고 있어 교차 확인됨. 이 세션에서 `quad-base/src/init.luau`가
 처음에 `require("./Debug")`로 잘못 짜여 크로스파일 require가 전부
@@ -352,7 +352,7 @@ require에서 여전히 안 먹는다** — `architecture.md`가 이미 이렇�
 **[2026-09-07 회신 4차 — 사용자 확정]** **폐기.** 어떤 스크립트도 selene을 돌리지 않았고 설정은 stale(`std = "luau"`라 754 errors — 원장 round1 `H-430`), luau-analyze의 lint(`.luaurc` `lint: *`)와 축이 겹친다. 사용자: *"selene 가 의미가 크게 없어보여 … core 바탕 구현이라, 필요성이 없어보임"*. `mise.toml`의 selene 핀과 패키지 넷의 `selene.toml`을 지웠다. 아래는 도입 당시 기록. 같은 결정으로 `luau` CLI를 `mise.toml`에 `0.734`로 핀(*"루아우 버전을 고정하는것도 동의"*).
 
 **[2026-08-19 신설]** 사용자 결정으로 `selene`(참고 레포
-`initreq/roblox-project-example`의 `scripts/selene.toml` 그대로 채택)을
+`Word30210/roblox-project-example@9c847e8`의 scripts/selene.toml 그대로 채택)을
 도입 — `luau-analyze`(타입체크)와 겹치지 않는 별도 축(정의되지 않은
 변수, 사용 안 하는 변수, `assert` 메시지 누락 등 스타일/버그 패턴
 린트)이라 같이 씀. `quad-base/selene.toml`/`quad-roblox/selene.toml`

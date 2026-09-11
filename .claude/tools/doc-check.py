@@ -31,7 +31,8 @@
   5. [WARN]  미반영 배너를 단 파일 vs 반영 목록 일치 여부
 
 검사 대상에서 제외되는 폴더는 `SKIP_DIRS`가 소스 — `session/`(원문 보존),
-`initreq/`(읽기 전용 클론), `worktrees/`, `tools/`(이 스크립트 자신이 여기
+`initreq/`(**[2026-09-11] 폴더 자체가 제거됨** — 항목만 남겨둔다, 있어도 무해),
+`worktrees/`, `tools/`(이 스크립트 자신이 여기
 있으므로 **doc-check.py는 자기 자신을 검사하지 않음**, 이 docstring의 주장은
 사람이 손으로 확인해야 함).
 `archive/`와 `.claude/session-summary.md`는 검사 대상이되 **히스토리 문서**라
@@ -81,6 +82,10 @@ def rel(p):
 # 20여 곳이 이 사각지대로 빠져나갔음(14차 세션 리뷰에서 발견).
 # [2026-08-16] 인용 길이 상한을 60→160자로 넓힘. 60자를 넘는 절 인용은 매치
 # 자체가 안 걸려 **검사에서 조용히 빠져나갔다** — 위양성보다 나쁜 종류의 구멍.
+# [2026-09-11] 레포 밖 소스는 `<owner>/<repo>@<sha7>:<path>` 포인터로 인용한다
+# (`conventions.md` "문서 표기 규약"). 그 표기는 `@`·`:`가 들어가 아래 문법에 애초에
+# 안 걸리므로 존재 검사 대상이 되지 않는다 — 이 레포에 없는 파일이니 그게 맞다.
+# 별도 예외 코드를 두지 않는 건 같은 이유(검사할 수 없는 것을 검사하는 척하지 않는다).
 REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,160})")?')
 
 # 소스 파일 색인(접미 일치용) — 워크스페이스 패키지의 src/test + scripts + luau-test.
@@ -134,12 +139,14 @@ def resolve(target, src):
         hits = resolve_luau(target)
         if hits:
             return os.path.join(ROOT, hits[0])
-        # 패키지 루트부터 적은 경로는 존재를 단언한 것 — 이름 폴백으로 initreq 클론의 동명 파일에
+        # 패키지 루트부터 적은 경로는 존재를 단언한 것 — 이름 폴백으로 동명의 남의 파일에
         # 걸려 통과하면 검사가 무력화된다(`H-453`: `quad-base/src/Tween.luau`가 Fusion의 Tween.luau로 통과했었다)
         if target.startswith(_SRC_ROOTS):
             return None
-        # 그 외(이름·부분 경로)는 아래 이름-기반 탐색으로 폴백(`initreq/` 클론의 외부 소스 —
-        # Fusion/Vide 리서치가 인용하는 `signal.luau`류 — 는 거기서 찾힌다)
+        # 그 외(이름·부분 경로)는 아래 이름-기반 탐색으로 폴백. **[2026-09-11]** 예전엔 이
+        # 폴백이 `initreq/` 클론까지 뒤져 외부 소스(`signal.luau`류)를 실존으로 쳐줬는데,
+        # 그 폴더가 제거되면서 그 경로는 사라졌다 — 레포 밖 파일은 이제 포인터 표기로 적어
+        # 검사 자체에 안 걸리게 한다(위 REF 주석).
     cands = [
         os.path.join(ROOT, target),
         os.path.join(CLAUDE, target),
@@ -148,7 +155,8 @@ def resolve(target, src):
     for c in cands:
         if os.path.exists(c):
             return c
-    # 파일명만으로 찾히면 인정(initreq 포함 — 읽기 전용 클론이지만 실재함).
+    # 파일명만으로 찾히면 인정(`.claude/` 안에 실재하는 파일만 — [2026-09-11] initreq 제거 전엔
+    # 그 클론까지 색인됐다).
     # 색인은 한 번만 걷는다(`H-460` — 참조마다 `.claude/` 전체를 걷던 것이 게이트 시간의 40%).
     return _claude_by_name().get(os.path.basename(target))
 
@@ -246,12 +254,15 @@ def bold_leads(path):
 def interesting(target):
     """검사 가치가 있는 참조인가.
 
-    제외: (a) `initreq/`(읽기 전용 클론, gitignore됨), (b) 아직 존재하지 않는
-    **미래 소스 트리**의 `.luau`(구현 시작 전이라 당연히 없음 — `architecture.md`가
-    설계로서 적어둔 것), (c) `YYYY-MM-DD-NN-slug.md` 같은 템플릿 자리표시자.
-    실제로 지금 존재해야 하는 건 `.md` 문서와 `luau-test/`의 스파이크뿐.
+    제외: (a) 옛 `initreq/`를 가리키는 인용(**[2026-09-11] 폴더가 제거됐다** —
+    히스토리 문서에만 남는 죽은 경로라 존재를 물을 대상이 아니다, 옛 경로 해석표는
+    `.claude/README.md`), (b) `YYYY-MM-DD-NN-slug.md`·`X.luau` 같은 템플릿 자리표시자.
+    실제로 지금 존재해야 하는 건 이 레포의 `.md` 문서와 `.luau` 소스뿐 — 레포 밖
+    소스는 포인터 표기(위 REF 주석)라 여기까지 오지도 않는다.
     """
-    if 'YYYY' in target or target in ('X.luau', '<파일>.luau'):  # 자리표시자
+    if 'YYYY' in target or target in ('X.luau', 'X/init.luau', '<파일>.luau'):  # 자리표시자
+        return False
+    if 'initreq' in target.split('/'):  # 제거된 클론(위 (a))
         return False
     # [2026-09-07 소스 재편] `.luau`도 전부 검사한다 — 옛 규칙("미래 소스 트리라 없는 게
     # 당연")은 구현이 끝난 지금 반대로 rot의 사각지대였다(라이브 md 42개가 src 경로를 인용,
@@ -308,12 +319,11 @@ def check_refs(docs):
                 (errors if OURS.search(name) else warns).append(
                     msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")
                 continue
-            # `initreq/`를 가리키는 인용은 절 검사 제외 — 읽기 전용 외부 원본이라
-            # 절 구조가 없다(`raw-userinput.md`는 스스로 "정리가 없는 생각의 흐름"
-            # 이라고 밝힌 원문). 저기로 가는 인용은 절 제목이 아니라 원문 문장을
-            # 따오는 것이므로 헤딩과 대조하는 게 애초에 의미가 없다.
-            if section and not is_archive and p.endswith('.md') \
-                    and 'initreq' not in rel(p).split(os.sep):
+            # [2026-09-11] 예전엔 옛 `initreq/`를 가리키는 인용을 여기서 절 검사에서 뺐다
+            # (읽기 전용 외부 원본이라 절 구조가 없다는 이유). 지금 그 경로는 위
+            # `interesting()`에서 이미 걸러지고, 사용자 원본 둘은 `reference/origin/`으로
+            # 옮겨져 실제로 `##` 헤딩을 갖고 있으므로 다른 문서와 똑같이 검사한다.
+            if section and not is_archive and p.endswith('.md'):
                 if p not in hcache:
                     hcache[p] = (headings(p) or [], bold_leads(p))
                 heads, leads = hcache[p]

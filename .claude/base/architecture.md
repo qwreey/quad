@@ -10,8 +10,10 @@
 
 **상태**: base — 횡단 결정의 최종 상태 요약. 특정 기능 plan이 아니라 프로젝트
 전체에 걸친 결정이라 완료 개념 없음. 근거가 된 원본 브레인스토밍은
-`.claude/initreq/raw-userinput.md`(안 옮기고 그대로 둠 — 이 문서들로 나누기 전의
-raw chain-of-thought 백업 역할). 현재 v1 구조는 `reference/quad-v1-architecture.md`,
+`.claude/reference/origin/raw-userinput.md`(이 문서들로 나누기 전의 raw chain-of-thought
+백업 역할 — **[2026-09-11 역전, 사용자 지시: initreq 제거]** 예전엔 옛 `initreq/`에 "안
+옮기고 그대로 둔다"였으나, 그 폴더를 지우면서 **내용은 한 글자도 안 고친 채** 자리만
+옮겼다). 현재 v1 구조는 `reference/quad-v1-architecture.md`,
 비교 리서치는 `reference/comparison-fusion-vide.md`, `base/lifecycle-pattern.md` 참고.
 
 ## 한 줄 요약
@@ -81,7 +83,7 @@ quad는 이제 "스크립트"가 아니라 **라이브러리**다. DOMless Roblo
    같은 것들은 일반 이벤트 바인드가 아니라 pluggable 바인드 핸들러 중 하나로
    구현(`base/dispatch-core-plan.md`).
 9. **Tracker 미구현.** v1의 소스 변경 감지 자동 재렌더 기능(hot-reload watcher,
-   실제로는 `.claude/initreq/quad/src/tracker.lua` — v1에서도 이미 `exports.lua`에
+   실제로는 `qwreey/quad@f867ccb:src/tracker.lua` — v1에서도 이미 `exports.lua`에
    연결 안 된 죽은 코드였음, `reference/quad-v1-architecture.md` 참고)은 렌더
    라이브러리 범위 밖으로 판단. 스토리북 구현체(https://ui-labs.luau.page/docs/getstarted)가
    이미 존재하므로 대체.
@@ -613,7 +615,7 @@ falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 > `base/project-setup-plan.md`), mock의 `installLifetime`(생명주기 4종 + `onDestroying`, M2 단위 1
 > `H-97`), 모듈별 `quad-base/test/spec.<module>.luau` 계약 테스트.
 
-**결정**: quad-base 테스트는 Vide 선례(`initreq/vide/test/mock.luau`, 약
+**결정**: quad-base 테스트는 Vide 선례(`centau/vide@452060a:test/mock.luau`, 약
 300줄)를 따라 최소한의 mock으로 감 — parent/children 트리 + 타입 검증 없는
 property bag + property별 변경 시그널 정도만 흉내내고, `IsA()`/클래스별
 프로퍼티 스키마/`WaitForChild`/`DataModel` 같은 건 안 만듦. 순수 `luau` CLI로

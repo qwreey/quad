@@ -13,7 +13,7 @@
 아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절이 정본)과
 소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
 architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
-`.claude/initreq/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
+`.claude/reference/origin/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
 `Children` SpecialKey와 Vide의 mount 무가드 비교는 `reference/comparison-fusion-vide.md`
 참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
 quad의 진짜 개선점.** **[2026-08-09 세 번째 세션]** CRUD 의미론
@@ -2219,8 +2219,11 @@ GC에 위임" 원칙 그대로.
 
 자식에게 내려주는 클래스 스토어는 부모 쪽에서 미리 만들어서 내려보내는 게
 편할 것 같다는 방향 — `store<<ChildClass.Props>>` 형태로 구성된 스토어를 만들면
-됨(타입 표기는 러프한 스케치, 실제 문법은 tbox의 명시적 제네릭 적용 패턴
-`f<<T>>(...)` — `.claude/initreq/tbox/CLAUDE.md:40-41` — 참고해서 확정할 것).
+됨(타입 표기는 러프한 스케치). **[2026-09-11 stale]** 여기 "실제 문법은 tbox의
+명시적 제네릭 적용 패턴 `f<<T>>(...)`(`Sol-s-Studio/tbox@7d47c8a:CLAUDE.md` 40~41행)를
+참고해서 확정할 것"이라 적혀 있었는데, `<<T>>` 표기는 그 사이 **quad 자체 관행으로
+통일**됐다(`base/ref-plan.md`의 `Ref<<Obj?>>(nil)` 등) — 참고할 선례를 찾는 단계가
+아니다. 이 절의 자식 클래스 스토어 자체는 여전히 **미착수 스케치**(구현된 적 없음).
 
 ## 열린 질문 (`.claude/question.md`에도 취합)
 

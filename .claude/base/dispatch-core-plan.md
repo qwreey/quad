@@ -20,7 +20,7 @@
 
 ## 문제
 
-v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
+v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
 숫자 키(children/style) vs 문자열 키(prop/event) vs `__type` 태그 테이블
 (register/linker/style)을 하드코딩된 if/elseif 체인으로 구분한다. 새 특수 키
 (`[Attr "X"]`, `[Tag ""]`, `PropertyChangedEvent ""` 등)를 추가하려면 이
@@ -37,8 +37,8 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 
 - `isHandlable(inst, key, value): boolean` — 이 핸들러가 이 inst/key/value
   조합을 처리할 수 있는지 판별하는 predicate. **부작용 없이, 빠르게** —
-  tbox의 type-check/constraint-check 분리 원칙(`.claude/initreq/tbox/
-  CLAUDE.md`의 "타입 체크는 분기 선택에 쓰이므로 순수해야 함")을 그대로
+  tbox의 type-check/constraint-check 분리 원칙(`Sol-s-Studio/tbox@7d47c8a:CLAUDE.md`의
+  "타입 체크는 분기 선택에 쓰이므로 순수해야 함")을 그대로
   적용: `isHandlable`은 오직 "이 핸들러가 맞는가" 판별에만 쓰이고, 실제
   유효성 검사는 핸들러가 선택된 *이후* 별도 단계에서. **`inst`도 받음
   (2026-08-07 여덟 번째 세션 정정, 원래 `(key,value)`뿐이었음)** —
@@ -165,8 +165,8 @@ v1의 `ProcessQuadProperty`(`.claude/initreq/quad/src/class.lua:134-214`)는
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
 열린 레지스트리). tbox의 `TUnion` 런타임 체커가 이미 이 "순서대로 스캔, 첫 매치
-반환, 실패 정보는 클로저로 지연 생성" 패턴을 구현해뒀음(`.claude/initreq/tbox/
-src/schema/union.luau:48-68`) — 에러 메시지는 즉시 문자열로 만들지 말고 매치
+반환, 실패 정보는 클로저로 지연 생성" 패턴을 구현해뒀음
+(`Sol-s-Studio/tbox@7d47c8a:src/schema/union.luau` 48~68행) — 에러 메시지는 즉시 문자열로 만들지 말고 매치
 실패 시에만 클로저 호출.
 
 **우선순위 동률/매치 실패 처리 — 확정(2026-08-12 열일곱 번째 세션,

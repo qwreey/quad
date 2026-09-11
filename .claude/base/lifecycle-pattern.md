@@ -19,9 +19,10 @@
 에 맡겨야함. 대신 이젠 Connected 필드로 이 연결이 살아 있는지 보고 설정 가능함.
 이게 rbvm 쪽에서 구현되어있음."
 
-rbvm(`.claude/initreq/rbvm/`)을 조사한 결과, 정확히 이 패턴이 존재함. 아래는
-그 조사 결과 요약(전체는 이 문서 작성에 쓰인 리서치 세션 참고, 소스는
-`.claude/initreq/rbvm/src/signal.luau`, `src/proxy/base.luau`, `src/namespace.luau`).
+rbvm(`Sol-s-Studio/rbvm@593ea18`)을 조사한 결과, 정확히 이 패턴이 존재함. 아래는
+그 조사 결과 요약(전체는 이 문서 작성에 쓰인 리서치 세션 참고, 소스는 그 레포의
+`src/` 기준 signal.luau, proxy/base.luau, namespace.luau — 아래 이 문서의 파일
+이름 인용은 전부 같은 기준이다).
 
 ## 채택할 패턴
 
@@ -105,7 +106,7 @@ rbvm 전역에 약한 테이블(weak table, `__mode = "k"/"v"/"kv"`)로 private 
 
 ### 4. (참고 기록) rbvm의 Signal 자체는 재사용 가능한 범용 emitter였음 — 실제로는 채택 안 함
 
-`signal.luau`의 `Signal`/`Connection` 클래스는 rbvm 프록시 시스템에 의존하지
+signal.luau의 `Signal`/`Connection` 클래스는 rbvm 프록시 시스템에 의존하지
 않는 범용 이벤트 emitter임 (`Connect`/`Once`/`Wait`/`Fire`/`Destroy`,
 `IsInited`/`OnInit`/`OnUninit` 지연 활성화 훅 포함). 사용자 원 메모에는
 "시그널 자체 구현은 아닌듯... 콜백 정도로도 충분"이라는 언급이 있어 한때
@@ -822,8 +823,8 @@ quad-roblox 구현 단계에서 실측 확인 대상 — 문제가 되면 gcconn
 `Relate` 쪽에만 맞는 말이다.
 
 **교차검증(2026-08-04 4차 라운드)**: 사용자가 공유해준 실제 참고 코드
-(`.claude/initreq/artworks/EventDrivenProgramming/`, PA님 작성)는 GC-native가
-아니라 전부 수동 `:unsubscribe()`/`:disconnect()`로 관리됨 — rbvm 기반
+(PA님 실 코드, 비공개·레포 밖 — 옛 `initreq/artworks/EventDrivenProgramming/`)는
+GC-native가 아니라 전부 수동 `:unsubscribe()`/`:disconnect()`로 관리됨 — rbvm 기반
 GC-native 원칙과 반대 선택이라 재확인했으나 **GC-native 유지로 확정**(지금까지
 명시적 dispose가 꼭 필요할 만큼 큰 자원을 다루는 실제 사례가 없었음). **막다른
 길은 아님을 기록**: rbvm처럼 관계를 양쪽 다 weak-keyed로 두고 모든 걸 connection

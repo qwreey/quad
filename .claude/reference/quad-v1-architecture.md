@@ -7,7 +7,9 @@
 기준선으로 근거 인용되는 용도는 그대로 유지(각 인용 지점은 여전히
 `base/`에 있음, 이 문서는 그 인용의 원본 소스). 아래는 리서치 에이전트가
 file:line까지 확인한 내용의 요약 — 정확한 인용이 필요하면
-`.claude/initreq/quad/src/*.lua` 원본을 볼 것.
+v1 원본(`qwreey/quad@f867ccb:src/`의 `*.lua`)을 볼 것 — 옛 `initreq/quad` 클론은
+제거됐으니 필요하면 그 sha로 스크래치에 다시 클론할 것(`.claude/README.md`의
+"옛 `initreq/` 경로 해석표" 절).
 
 ## 공개 API 개요
 
@@ -71,7 +73,7 @@ v2에서 대체될 예정 — Ref 도입과 네임스페이싱 판단까지 포�
 ## v2가 명시적으로 피하려는 것 (이 문서에서 근거로 인용)
 
 1. Metatable 체이닝으로 "불변 빌더" 흉내내기 → 대신 팩토리 함수로 필요한 곳만 복사
-   (`raw-userinput.md` "복사 구현은 지양" 항목, `.claude/initreq/raw-userinput.md:83-86`).
+   (`.claude/reference/origin/raw-userinput.md` "복사 구현은 지양" 절, 83~86행).
 2. 하드코딩된 중앙 디스패처 → pluggable `isHandlable(key,value)` + 우선순위 핸들러
    레지스트리 (`base/dispatch-core-plan.md`).
 3. 흩어진 "GC 안 되게 참조 붙잡기" 핫팩 → rbvm 스타일 `Connected` 계산 속성 +

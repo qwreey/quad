@@ -15,7 +15,10 @@ quad는 Roblox DOMless UI 렌더러를 처음부터 재작성하는 프로젝트
   `.claude/session-summary.md`(세션 요약 색인, 1200줄+)는 의도적으로
   import 안 됨, grep으로 온디맨드 조회.
 - 감사 스코프 밖: `.claude/session/`(세션 원문, stale 여부 안 따짐),
-  `.claude/initreq/`(읽기 전용 클론), `.claude/worktrees/`.
+  `.claude/reference/origin/`(**[2026-09-11]** 사용자 원본 둘, 원문 보존 — 뒤집힌
+  결정이 적혀 있어도 정상, 배너 금지), `.claude/worktrees/`. **[2026-09-11]** 읽기
+  전용 클론 `.claude/initreq/`는 폴더째 제거됨 — 옛 경로 인용을 만나면
+  `.claude/README.md`의 해석표로 풀 것.
 - `.claude/archive/`는 "뒤집힌 결정을 원문 그대로 보존"하는 목적이라 낡은
   서술이 있어도 정상 — 문제는 라이브 문서가 archive 항목을 유효한 것처럼
   인용할 때만.

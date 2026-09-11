@@ -1,8 +1,8 @@
 # quad vs Fusion/Vide/react-lua — 정직한 비교 (2026-08-06)
 
-**상태**: research — 3개 에이전트가 각각 Fusion(`.claude/initreq/fusion` 실
-소스), Vide(`.claude/initreq/vide` 실 소스), react-lua(로컬 클론 없어
-웹 리서치)를 직접 읽고 quad의 확정 설계와 대조. 목적은 마케팅이 아니라
+**상태**: research — 3개 에이전트가 각각 Fusion(실 소스 `dphfox/Fusion@2790f7b`),
+Vide(실 소스 `centau/vide@452060a`), react-lua(로컬 클론 없어 웹 리서치)를 직접 읽고 quad의 확정 설계와 대조. **아래 본문의 파일 이름은 전부 그 두
+레포 기준이라 백틱 없이 적는다**(이 레포에 없는 경로 — `conventions.md`의 "레포 밖 소스는" 절). 목적은 마케팅이 아니라
 정직한 자가점검 — "quad가 진짜 나은 부분"(나중에 초심자/quadnomicon 문서의
 "왜 quad인가" 소재)과 "quad가 진짜 불리한 부분, 그중 고칠 수 있는 것"을
 사용자가 직접 검토하기 위함. **[2026-09-06 배너]** 아래 서술의 *"quad는 구현 0줄"* 전제는 2026-08-06 시점이다 — 지금은 M0~M8·M10이 구현·Studio 실측까지 끝났다(`ROADMAP.md`). 개별 비교 항목의 결론은 종이 설계 기준으로 읽을 것. (원문) **quad는 구현 0줄** 상태라 모든 비교가
@@ -12,22 +12,22 @@
 ## 1. quad가 실제로 나은 점 (소스 근거 있음, 향후 "왜 quad인가" 문서 소재)
 
 - **Slot 단일 마운트 가드 — Fusion·Vide 둘 다 없음, 실재하는 버그 클래스를 막음.**
-  Fusion `Children.luau`엔 `-- TODO: check for ancestry conflicts here`
+  Fusion Children.luau엔 `-- TODO: check for ancestry conflicts here`
   주석이 그대로 남아있고 이미 마운트된 인스턴스를 조건 없이 재부모화함(조용한
-  이중 마운트). Vide `mount.luau`도 중복 마운트 체크가 전혀 없음. quad의
+  이중 마운트). Vide mount.luau도 중복 마운트 체크가 전혀 없음. quad의
   "이미 마운트된 Slot 재마운트 시 즉시 throw"는 둘 다에 없는 실질적 안전장치.
 - **열린 우선순위 축 — Fusion의 하드코딩된 4단계보다 확장성 좋음.** Fusion
-  `applyInstanceProps.luau`는 `{self, descendants, ancestor, observer}`
+  applyInstanceProps.luau는 `{self, descendants, ancestor, observer}`
   정확히 4개 버킷만 갖고 5번째를 쓰면 에러남. quad의 열린 숫자 우선순위
   레지스트리는 커스텀 bind key를 라이브러리 수정 없이 임의 우선순위에
   끼워넣을 수 있음.
 - **명시적 의존성이 여러 버그 클래스를 원천 차단.** Vide는 전역 `scopes`
   스택 기반 암묵 추적이라 리액티브 스코프 안 yield가 그래프를 깨는 걸 막기
-  위해 별도 `ycall` 장치까지 둠(`graph.luau`). quad의 명시적 `:With`
+  위해 별도 `ycall` 장치까지 둠(graph.luau). quad의 명시적 `:With`
   의존성 전달은 이 버그 클래스 자체가 발생하지 않음.
 - **다이아몬드 의존성 재계산 dedup — Vide가 스스로 미해결로 남긴 문제를
-  더 구조적으로 해결.** Vide `todo.md`가 diamond 그래프 중복 재평가 방지를
-  미해결로 인정했고, 실제로 `test/tests.luau`의 "recursive queue flush
+  더 구조적으로 해결.** Vide todo.md가 diamond 그래프 중복 재평가 방지를
+  미해결로 인정했고, 실제로 test/tests.luau의 "recursive queue flush
   diamond" 테스트가 이상적 2회 대신 3회 실행됨을 재현함. quad는 **애초에
   push 시점에 계산을 안 하기 때문에**(pull-recompute + 노드별 캐시) 이
   문제가 구조적으로 발생하지 않음 — 신호가 두 경로로 두 번 도착해도
@@ -45,8 +45,7 @@
   공식적으로 추가해야 했음(react-lua 스스로 "vdom 재조정만으론 부족하다"고
   인정한 셈). quad는 모든 값이 동일한 push-invalidate/pull-recompute
   모델이라 이 세 문제 자체가 없음.
-- **Tween을 그래프 밖에 둬서 구조적 복잡도를 회피.** Fusion `Animation/
-  Tween.luau`는 `Stopwatch`+`ExternalTime` 그래프 노드와
+- **Tween을 그래프 밖에 둬서 구조적 복잡도를 회피.** Fusion Animation/Tween.luau는 `Stopwatch`+`ExternalTime` 그래프 노드와
   `checkLifetime.bOutlivesA` 교차 lifetime 검증까지 필요한 3중 장치.
   quad엔 이 장치 자체가 없음(단, 반대급부는 아래 3번 참고).
 
@@ -62,7 +61,7 @@
 
 - **[2026-08-12 열여덟 번째 세션, 사용자 최종 판단 — 원래 2번(fixable)에
   있었으나 여기로 이전. 같은 날 후속 세션(스무 번째)에서 근거 보강]**
-  use-after-destroy 검증 안전망 부재. Fusion `Memory/checkLifetime.luau`류
+  use-after-destroy 검증 안전망 부재. Fusion Memory/checkLifetime.luau류
   사전 검증을 quad가 일반적으로 흡수하는 건 애초에 실행 불가능에 가까움 —
   제대로 하려면 (a) 등록된 모든 함수/클로저를 추적해 `inst` 사용을
   전부 조사하거나 (b) `inst` 자체를 래핑해 이후의 모든 읽기/쓰기를

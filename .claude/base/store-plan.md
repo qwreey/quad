@@ -15,7 +15,7 @@
 평범한 레코드로 짓는다(`WrapStore`/`ProcessStoreType` 폐기). 같은 날
 "`store.key`를 값으로" 재설계를 넣었다가 철회한 경위는
 `archive/store-value-field-redesign-withdrawn.md`. 원본:
-`.claude/initreq/raw-userinput.md`
+`.claude/reference/origin/raw-userinput.md`
 "store는 부작용을 허용함" / "스토어는 스토어를 저장 가능한가" 절.
 
 ## Store는 부작용을 허용하는 게 기본 디자인

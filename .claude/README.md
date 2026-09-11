@@ -36,7 +36,7 @@
 | `agents/` | **[2026-08-16 신설]** 프로젝트 서브에이전트 정의(`.claude/agents/*.md`, Claude Code 표준 위치). 현재 `quad-doc-auditor.md` 하나 — `doc-check.py`가 못 잡는 의미론적 stale/모순(본문 문장이 뒤집힌 결정을 여전히 서술, 개수/목록 이중 소스 드리프트 등)을 신선한 맥락에서 찾는 읽기 전용 감사자. 중대 변경 커밋 전에 위임하는 게 기본 — **[2026-08-18 재설계] 한 턴에 하나씩만 돌리고(병렬 금지) 발견이 0건인 라운드가 나올 때까지 턴을 늘리는 루프**, 수정은 메인 세션이 일괄로 함(라운드 수·범위 좁히기 규칙은 여기 안 적음 — 소스는 conventions.md)이며 절차는 `.claude/conventions.md` "작업 방식" 절이 소스(**[2026-08-16]** 이 루프를 담던 `workflows/quad-handover-audit.js`는 토큰 과다·픽스 에이전트발 부정확 서술·사용자 질의 불가 때문에 폐기됨). `tools/`의 기계 점검과 짝을 이루는 의미론적 점검 계층 |
 | `agent-memory/` | **[2026-08-16 신설]** 서브에이전트가 라운드를 넘겨 유지하는 영속 메모리(`agent-memory/<에이전트 이름>/MEMORY.md`가 색인). 지금은 `quad-doc-auditor/` 하나 — 코퍼스 구조, 반복되는 실패 패턴 등을 기억해 감사 라운드마다 처음부터 파악하지 않게 함. **사람이 손으로 채우는 문서가 아니라 에이전트가 스스로 쓰는 것**이지만, `.gitignore` 대상이 아니라 커밋하면 코퍼스 일부가 되고 `doc-check.py` 검사 대상에도 들어감(감사 대상이기도 하다는 뜻 — 여기 적힌 주장도 stale해질 수 있음). **[2026-08-16 확정] 커밋해서 추적함**(사용자 결정). 사용자 논거: "실 기록이고 디펜던시도 아니고, 어차피 `SAFETY.md`에 따라 구현 시점에는 컨테이너에서 개발되며 다른 프라이빗 git에 올라가고 검토 후 머징되는거라, 문제되는 메모리 있으면(환경 노출 등) 사람이 감사처리 마지막으로 함. 결국 프로젝트 사이드 기록이고 같이 올려지는게 맞는게, 개발 환경이 다수라서 필요해보임" — 즉 **개발 환경이 여러 개라 메모리가 따라다녀야 하고**, 노출 위험은 머지 전 사람 검토가 최종 방어선. 커밋하는 쪽이 정해졌으니 여기 내용도 감사 대상이다(에이전트가 자기 메모리에 stale한 결론을 남기는 일이 실제로 있었음 — 2026-08-16에 폐기된 워크플로를 살아있는 것처럼 서술한 2건이 감사로 잡힘) |
 | `session/` | 세션별 상세 로그 원문(`YYYY-MM-DD-NN-slug.md`, 시행착오 포함) — 색인은 `session-summary.md`, 폴더 규약은 **`session/README.md`** |
-| `initreq/` | 프로젝트 착수 시 클론해둔 참고 레포(quad v1, fusion, vide, rbvm, tbox, code-docker) + PA님 실 코드(`artworks/`, 4차 라운드 교차검증 근거) + 원본 요청(`req.md`, `raw-userinput.md`) + `quad2-try`(이전에 시도했다 폐기한 v2 재작성 시도 — 리서치 완료, 결론은 `base/bind-system-plan.md`) — 읽기 전용 리서치 소스, 여기 내용을 옮기지 말고 항상 원본 그대로 유지 |
+| ~~`initreq/`~~ | **[2026-09-11 제거 — 사용자 지시]** 착수 때 클론해둔 참고 레포 모음이었다. 기술 결정이 끝나 더 읽을 일이 없고, 레포를 클론하는 다른 에이전트에겐 없는 폴더라 잡음이 된다는 판단. 사용자 원본 요청 둘만 `reference/origin/`으로 옮겼고(원문 그대로), 나머지는 아래 "옛 `initreq/` 경로 해석표" 절의 포인터로 푼다 |
 
 `research/`의 문서가 설계 확정되면 `base/`로 승격(또는 구현 착수 시
 `qa-request/`행). 지금은 구현 라운드 전(설계 단계)이라 전부 `base/`/`research/`에만
@@ -46,5 +46,35 @@
 
 - **저장소 소유자가 답해야 할 질문 전체 취합**: `.claude/question.md`
 - **사람만 할 수 있는 일(로컬 조작/결정)**: 루트 `HUMAN_TODO.md`
-- **원본 브레인스토밍(raw chain-of-thought)**: `.claude/initreq/raw-userinput.md`,
-  `.claude/initreq/req.md` — 위 문서들로 나누기 전의 원본, 참고용 백업이니 그대로 둘 것
+- **원본 브레인스토밍(raw chain-of-thought)**: `.claude/reference/origin/raw-userinput.md`,
+  `.claude/reference/origin/req.md` — 위 문서들로 나누기 전의 원본. **[2026-09-11 역전 — 사용자:
+  initreq 제거]** 예전엔 옛 `initreq/`에 "그대로 둘 것"이었으나, 그 폴더를 지우기로 하면서
+  **한 글자도 고치지 않은 채** 여기로 옮겼다(`base/` 문서들이 절 제목으로 인용하는 원본이라
+  코퍼스 안에 남아야 한다). 내용은 계속 손대지 말 것
+
+## 옛 `initreq/` 경로 해석표
+
+**[2026-09-11 — 사용자 지시로 폴더 제거]** 사용자 판단: 클론 폴더는 *"다른 에이전트에게 있어서
+잡음에 해당"*하고, *"기술 결정이 다 되었고, 당장 코드 깊은 단위에서 동작을 파악하고자 해야할
+이유가 없고, 만일 필요해지면 그때 그때 온디멘드로 하나 스크래치에 클론해보면 돼"*. 라이브
+문서의 인용은 전부 아래 포인터 표기로 바꿨고, **히스토리 문서(`archive/`·`session/`·
+`session-summary.md`·`qa-request/`)의 옛 경로는 원문 보존 규약대로 그대로 뒀으니** 이 표로 푼다.
+
+| 옛 경로 | 지금 무엇을 가리키나 |
+|---|---|
+| `initreq/quad/` | `qwreey/quad@f867ccb` — v1 `master`(태그 `2.24-30`) |
+| `initreq/fusion/` | `dphfox/Fusion@2790f7b` — v0.3-beta-29 |
+| `initreq/vide/` | `centau/vide@452060a` — 0.4.1-1 |
+| `initreq/charm/` | `littensy/charm@b05f3a9` |
+| `initreq/rbvm/` | `Sol-s-Studio/rbvm@593ea18` |
+| `initreq/tbox/` | `Sol-s-Studio/tbox@7d47c8a` |
+| `initreq/code-docker/` | `qwreey/code-docker@d5b9ab8` |
+| `initreq/roblox-project-example/` | `Word30210/roblox-project-example@9c847e8` |
+| `initreq/raw-userinput.md`, `initreq/req.md` | `.claude/reference/origin/` (원문 그대로 옮김) |
+| `initreq/artworks/` | PA님 실 코드 — **비공개, 레포 밖**(제3자 코드라 옮기지 않았다). 조사 결론은 인용하는 쪽 `base/` 문서에 산문으로 남아 있다 |
+| `initreq/quad2-try/` | 폐기된 v2 재작성 시도 — 레포 밖(결론은 `archive/quad2-try-research-findings-rejected.md`) |
+
+인용 표기 규약은 `conventions.md`의 "레포 밖 소스는" 절이 소스 —
+`` `<owner>/<repo>@<sha7>:<path>` `` 한 덩어리로 쓴다. 다시 읽어야 하면 스크래치 폴더에
+`git clone https://github.com/<owner>/<repo>` 뒤 그 sha로 `git checkout` 할 것(전부
+오픈소스, 내부 코드를 그대로 가져온 것은 없다).
