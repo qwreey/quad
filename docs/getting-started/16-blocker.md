@@ -69,6 +69,22 @@ unit:Set 뒤        Text = "100 포인트"
     end, gatedUnit)
 ```
 
+03장의 그림에 게이트 한 단이 끼어든 모양입니다 — 원천 둘이 각각 게이트를 지나고, 그 게이트 둘은 스위치 하나에 묶여 있습니다.
+
+```mermaid
+flowchart LR
+    C["<b>원천</b><br/><code>count</code><br/>값을 넣는다"] --> GC["<b>게이트</b><br/><code>gatedCount</code><br/><code>count:Apply(blocker)</code>"]
+    U["<b>원천</b><br/><code>unit</code><br/>값을 넣는다"] --> GU["<b>게이트</b><br/><code>gatedUnit</code><br/><code>unit:Apply(blocker)</code>"]
+    subgraph SW["게이트 둘이 같은 blocker 하나에 묶인다 — :On()으로 모으고, :Off()로 한 번에"]
+        direction TB
+        GC
+        GU
+    end
+    GC --> P["<b>파이프</b><br/><code>:Compute(fn)</code><br/>값을 처리한다"]
+    GU --> P
+    P --> T["<b>프로퍼티</b><br/><code>Text = …</code><br/>화면에 그린다"]
+```
+
 **마지막 줄이 핵심입니다** — 파이프를 `count`가 아니라 `gatedCount`/`gatedUnit` 위에 다시 세워야 합니다. `Blocker`를 만들어 두기만 하거나 `:Apply`의 반환을 버리면 아무것도 막히지 않습니다.
 
 <details>
