@@ -13,7 +13,7 @@
 아래 "`State<Slot>` 교체는 파괴가 아니라 언마운트" 절이 정본)과
 소스 트리 상 패키지 경계까지 확정되어 `research/`에서 승격됨(`base/
 architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
-`.claude/reference/origin/raw-userinput.md` "slot을 구현하도록 하기로 했음" 절. Fusion의
+옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음) "slot을 구현하도록 하기로 했음" 절. Fusion의
 `Children` SpecialKey와 Vide의 mount 무가드 비교는 `reference/comparison-fusion-vide.md`
 참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
 quad의 진짜 개선점.** **[2026-08-09 세 번째 세션]** CRUD 의미론

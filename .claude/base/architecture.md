@@ -10,7 +10,7 @@
 
 **상태**: base — 횡단 결정의 최종 상태 요약. 특정 기능 plan이 아니라 프로젝트
 전체에 걸친 결정이라 완료 개념 없음. 근거가 된 원본 브레인스토밍은
-`.claude/reference/origin/raw-userinput.md`(이 문서들로 나누기 전의 raw chain-of-thought
+옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음)(이 문서들로 나누기 전의 raw chain-of-thought
 백업 역할 — **[2026-09-11 역전, 사용자 지시: initreq 제거]** 예전엔 옛 `initreq/`에 "안
 옮기고 그대로 둔다"였으나, 그 폴더를 지우면서 **내용은 한 글자도 안 고친 채** 자리만
 옮겼다). 현재 v1 구조는 `reference/quad-v1-architecture.md`,

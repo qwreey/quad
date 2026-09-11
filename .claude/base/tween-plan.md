@@ -20,7 +20,7 @@ tweenData...)] = storeValue`)은 `archive/tween-special-bind-key-reversed.md`로
 `research/`에서 `base/`로 승격.
 `initValue`는 사용자가 필요해지면 직접 처리하기로 확정(에이전트 작업
 범위에서 제외, 아래 해당 절 참고). 원본:
-`.claude/reference/origin/raw-userinput.md` "트윈은 어떻게 할 것이냐" / "스토어 값은
+옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음) "트윈은 어떻게 할 것이냐" / "스토어 값은
 항상 먼저 캐치한다" / "네임스페이스드 객체" 절. Fusion의 Tween/Spring이
 반응 그래프 안에 있는 설계는 명시적 반면교사 — `reference/
 comparison-fusion-vide.md`의 "Fusion" 절 마지막 불릿("Tween/Spring이

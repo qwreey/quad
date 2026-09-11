@@ -321,8 +321,8 @@ def check_refs(docs):
                 continue
             # [2026-09-11] 예전엔 옛 `initreq/`를 가리키는 인용을 여기서 절 검사에서 뺐다
             # (읽기 전용 외부 원본이라 절 구조가 없다는 이유). 지금 그 경로는 위
-            # `interesting()`에서 이미 걸러지고, 사용자 원본 둘은 `reference/origin/`으로
-            # 옮겨져 실제로 `##` 헤딩을 갖고 있으므로 다른 문서와 똑같이 검사한다.
+            # `interesting()`에서 이미 걸러진다(사용자 원본 둘은 2026-09-11 삭제 —
+            # base/ 문서의 절 제목 인용은 백틱 없는 평문 출처 표기라 검사 대상이 아니다).
             if section and not is_archive and p.endswith('.md'):
                 if p not in hcache:
                     hcache[p] = (headings(p) or [], bold_leads(p))

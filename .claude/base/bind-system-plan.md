@@ -29,7 +29,7 @@ Signal 미채택, Ref 역할)과 소스 트리 상 패키지 경계(디스패치
 `quad-base`가 인터페이스로 소유, `quad-roblox`는 실제 구현만)까지 전부
 2026-08-04 세션에서 확정되어 `research/`에서 승격됨(`base/architecture.md`의
 "구현 착수: 소스 트리 구조 확정" 절 참고). 원본:
-`.claude/reference/origin/raw-userinput.md`
+옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음)
 "key와 value에 대한 바인드 연산은 pluggable 하도록 구성하기" / "스토어는 스토어를
 저장 가능한가" / "Ref는 고민중" 절. v1의 문제점은 `reference/quad-v1-architecture.md`
 ("ProcessQuadProperty" 하드코딩 디스패처), 참고 패턴은 `Sol-s-Studio/tbox@7d47c8a`

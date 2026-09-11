@@ -103,8 +103,8 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
   참고 레포(quad v1, Fusion, Vide, rbvm, tbox, charm, code-docker,
   roblox-project-example) + PA님 실 코드 + 원본 요청이 있던 폴더. 기술 결정이 다
   끝나 더 읽을 일이 없고, 레포를 클론하는 다른 에이전트에겐 없는 폴더라 잡음이라는
-  판단으로 지웠다. 사용자 원본 요청 둘만 `reference/origin/`으로 원문 그대로 옮겼고,
-  옛 경로는 `.claude/README.md`의 "옛 `initreq/` 경로 해석표" 절로 푼다. **리서치가
+  판단으로 지웠다. 사용자 원본 요청 둘(raw-userinput.md·req.md)도 같은 날 사용자 판단으로
+  지웠다(내용은 `base/` 문서들에 전부 반영돼 있어 무해). 옛 경로는 `.claude/README.md`의 "옛 `initreq/` 경로 해석표" 절로 푼다. **리서치가
   더 필요하면 그 표의 sha로 스크래치 폴더에 다시 클론할 것**(레포 안으로 되돌리지 말 것).
 - `.claude/question.md` — 사용자가 답해야 할 질문 전체 취합(우선순위순).
 - 루트 `ROADMAP.md` — 설계 단계 종료 후 실제 구현 순서(M0, M1, ... 마일스톤 +

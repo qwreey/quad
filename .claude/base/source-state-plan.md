@@ -18,7 +18,7 @@
 확인/타입 추론(dot-access) 전부 2026-08-04 세 라운드에서 `AskUserQuestion`으로
 확인 완료, 이후 세션들에서 `:With` 새 노드화·trailing args·`Observer`/
 `:Subscribe`·이중 바인딩 게이트까지 확정. 남은 건 정확한 함수/생성자
-이름뿐(구현 단계). 원본: `.claude/reference/origin/raw-userinput.md`
+이름뿐(구현 단계). 원본: 옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음)
 "state는 어떻게 구현하는가" / "스토어는 스토어를 저장 가능한가" 절.
 
 > **[2026-08-13 열세 번째 세션, 해소]** self/deps를 lazy `State` 핸들로

@@ -100,9 +100,7 @@ model: sonnet
 ## 스코프 밖
 
 - `.claude/session/`(세션 원문 보존용, stale 여부를 따질 대상이 아님),
-  `.claude/reference/origin/`(**[2026-09-11 신설]** 사용자 원본 요청·브레인스토밍을
-  **원문 그대로** 보존한 자리 — 나중에 뒤집힌 결정이 그대로 적혀 있는 게 정상이고
-  배너도 달 수 없다, 배너 자리는 그걸 인용하는 `base/` 문서다), `.claude/worktrees/`는
+  `.claude/worktrees/`는
   감사 대상이 아니다(**[2026-09-11]** 여기 같이 적혀 있던 `.claude/initreq/`는 폴더
   자체가 제거됐다 — 옛 경로 해석표는 `.claude/README.md`).
 - `archive/` 안의 문서 자체는 "뒤집힌 결정을 원문 그대로 보존"하는 게

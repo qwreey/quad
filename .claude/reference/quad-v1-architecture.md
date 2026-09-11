@@ -73,7 +73,7 @@ v2에서 대체될 예정 — Ref 도입과 네임스페이싱 판단까지 포�
 ## v2가 명시적으로 피하려는 것 (이 문서에서 근거로 인용)
 
 1. Metatable 체이닝으로 "불변 빌더" 흉내내기 → 대신 팩토리 함수로 필요한 곳만 복사
-   (`.claude/reference/origin/raw-userinput.md` "복사 구현은 지양" 절, 83~86행).
+   (옛 raw-userinput.md(사용자 원본 브레인스토밍 — 2026-09-11 사용자 판단으로 삭제, 내용은 이 문서들에 전부 반영돼 있음) "복사 구현은 지양" 절, 83~86행).
 2. 하드코딩된 중앙 디스패처 → pluggable `isHandlable(key,value)` + 우선순위 핸들러
    레지스트리 (`base/dispatch-core-plan.md`).
 3. 흩어진 "GC 안 되게 참조 붙잡기" 핫팩 → rbvm 스타일 `Connected` 계산 속성 +
