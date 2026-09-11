@@ -21,7 +21,7 @@ description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 �
 - [07](/getting-started/07-observer-effect/) `:Observer`로 화면 밖에서 **관측**하고, `q.Effect`로 의존성 여럿과 **cleanup**을 다뤘습니다 — 화면 안쪽은 값으로, 바깥은 `Effect`로.
 - [08](/getting-started/08-lifecycle-hooks/) `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`로 **생성·완성·파괴 한 번씩**을 잡았습니다 — 06·07의 재료로 손수 짜 본 뒤 같은 것에 이름을 붙였습니다.
 - [09](/getting-started/09-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
-- [10](/getting-started/10-slot/) `q.Slot`으로 카드 안에 **자식이 들어갈 자리**를 잡고 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것과, 자리 하나를 `State`로 갈아 끼우는 것까지.
+- [10](/getting-started/10-slot/) `q.Slot`으로 별개의 작은 상자에 **자식이 들어갈 자리**를 잡고 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것과, 자리 하나를 `State`로 갈아 끼우는 것까지.
 - [11](/getting-started/11-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
 - [12](/getting-started/12-functions/) 지금까지 써 온 콜백·클로저·**팩토리**·커링에 이름을 붙이고, 팩토리를 컴포넌트에 넘겨 안쪽 상태에 붙였습니다.
 - [13](/getting-started/13-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용, 하나짜리는 `:Single`.

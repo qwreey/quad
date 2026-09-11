@@ -116,14 +116,10 @@ count:Set(3)   -- 짝수 → 홀수: removeTag:Even, addTag:Odd 둘
 <details>
 <summary><strong>바뀔 때마다 태그를 전부 떼었다 다시 붙이는 건 아닌가요?</strong></summary>
 
-아닙니다. 갈아 끼우는 것은 **그 자리 하나**이고, 나가는 호출은 그 자리의 옛 집합과 새 집합의
-차이뿐입니다. 여기에 1절의 자리별 셈이 겹칩니다 — 정적으로 적은 `q.Tag("Card")`는 자기 자리가
+아닙니다. 여기에 1절의 자리별 셈이 겹칩니다 — 정적으로 적은 `q.Tag("Card")`는 자기 자리가
 물러날 때까지 그대로이므로, 교체 도중에 `Card`가 잠깐 떨어지는 구간이 없습니다. 태그를 보고
 반응하는 바깥 코드(`CollectionService:GetInstanceRemovedSignal` 같은 것)가 쓸데없이 깨어나지 않는다는
 뜻이기도 합니다.
-
-**어떻게** 그렇게 되는지는 이 장의 질문이 아니라 "자리에 놓인 값을 누가 처리하나"의 질문이라,
-[18장](/getting-started/18-handlers/)에서 봅니다.
 
 </details>
 
@@ -157,10 +153,11 @@ const card = D.Frame {
 값 타입도 그대로 보존됩니다 — 문자열은 문자열로, 숫자는 숫자로, 불리언은 불리언으로.
 
 ```luau
-print(card:GetAttributes())  --> {Active = true, Kind = "counter", Step = 1}
+-- (확인용 — 화살표 뒤는 실제 출력이 아니라 그 시점의 Attribute 상태입니다)
+card:GetAttributes()         --> {Active = true, Kind = "counter", Step = 1}
 
-active:Set(false)            --> {Active = false, Kind = "counter", Step = 1}
-active:Set(q.None)           --> {Kind = "counter", Step = 1}   -- Active가 사라진다
+active:Set(false)            -- 이제 {Active = false, Kind = "counter", Step = 1}
+active:Set(q.None)           -- 이제 {Kind = "counter", Step = 1}   — Active가 사라진다
 ```
 <!-- 2026-09-10 Studio 실측 -->
 

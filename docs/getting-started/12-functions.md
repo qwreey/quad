@@ -184,7 +184,7 @@ const label = D.TextLabel {
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const plusTen = count:Apply(q.Operator.Sum(10))   -- 위에서 손으로 만든 것과 같은 결과
+const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 위에서 손으로 만든 plusTen과 같은 결과
 ```
 
 `:Apply(factory)`는 "이 팩토리가 만들어 낸 연산을 이 State에 붙인다"는 뜻입니다 — 팩토리가 자기 의존성까지 같이 들고 있어서, 한 번 이름 붙인 연산자를 여러 State에 붙여도 의존성이 따라갑니다.
@@ -252,7 +252,7 @@ const twice = count:Apply(Doubled)
 State: Apply factory must be a function or an object with an __apply method
 ```
 
-이 팔이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](./16-blocker.md)에서 만들 `q.Blocker()`가 바로 이런 값이라 `count:Apply(blocker)`로 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다). 두 팔의 계약은 [레퍼런스: `state:Apply(factory)`](../reference/core/03-state.md#stateapplyfactory)에 있습니다.
+이 팔이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](./16-blocker.md)에서 만들 `q.Blocker()`가 바로 이런 값이라 `countText:Apply(blocker)`처럼 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다). 두 팔의 계약은 [레퍼런스: `state:Apply(factory)`](../reference/core/03-state.md#stateapplyfactory)에 있습니다.
 
 ---
 

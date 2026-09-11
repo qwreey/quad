@@ -35,7 +35,7 @@ const card = D.Frame {
 }
 ```
 
-**실행하면** 겉모습은 그대로입니다 — 다만 이제 그 스타일은 값이라, 다른 인스턴스에도 같은 것을 놓을 수 있습니다.
+**실행하면** 겉모습은 그대로입니다(`BorderSizePixel = 0`이 새로 들어가 검은 1px 테두리가 빠지는 것 말고는) — 다만 이제 그 스타일은 값이라, 다른 인스턴스에도 같은 것을 놓을 수 있습니다.
 
 `D.Modifier.<Class>`는 **클래스 태그가 붙은** 생성자입니다. `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다. 테이블을 넘기는 위 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16)`) 둘 다 됩니다.
 
@@ -58,7 +58,7 @@ const CardStyle = D.Modifier.Frame {
     BorderSizePixel = 0,
 }
 
-const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160) } -- …앞 장의 자식들은 그대로…
+const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …앞 장의 자식들은 그대로…
 
 hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
 ```

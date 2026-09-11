@@ -32,7 +32,7 @@ end)
 const rendered = q.PostRef<<Frame?>>(nil)
 rendered:Callback(function(inst)
     if inst then
-        const kids: { Instance } = inst:GetChildren()
+        const kids = inst:GetChildren()
         print("다 그려짐: 자식", #kids, "개")
     end
 end)
@@ -93,7 +93,7 @@ const card = D.Frame {
         print("만들어짐:", inst.ClassName)
     end),
     q.OnRendered<<Frame>>(function(inst)
-        const kids: { Instance } = inst:GetChildren()
+        const kids = inst:GetChildren()
         print("다 그려짐: 자식", #kids, "개")
     end),
     q.OnDestroyed(function()

@@ -65,7 +65,7 @@ board.Parent = screen
 
 ## 3. 말단이 자기 열쇠로 연다
 
-`Counter`에서 색을 꺼내 씁니다. 여기서 바뀌는 것은 세 줄입니다 — 열쇠를 가져오는 `require` 한 줄, 가방을 여는 한 줄, 그리고 색을 쓰는 한 줄.
+`Counter`에서 색을 꺼내 씁니다. 여기서 바뀌는 것은 세 줄입니다 — 열쇠를 가져오는 `require` 한 줄, 가방을 여는 한 줄, 그리고 색을 쓰는 한 줄. 12장에서 얹은 강조 파이프(`highlightColor`)는 여기서 테마 색에 자리를 내줍니다.
 
 ```luau
 -- … (Counter.luau) 파일 머리에 한 줄
@@ -78,7 +78,7 @@ return function(props)
     -- …중간 생략…
 
         D.TextButton {
-            BackgroundColor3 = theme.Accent,      -- ← 리터럴 대신 가방에서 온 색
+            BackgroundColor3 = theme.Accent,      -- ← 12장의 highlightColor(count, 10) 대신 가방에서 온 색
             Text = "+ 1",
             -- …나머지 생략…
         },

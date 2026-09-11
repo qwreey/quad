@@ -100,7 +100,7 @@ Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 
 **규약이지 강제가 아닙니다.** `:Unwrap()`은 "여기서는 반드시 차 있다"를 아는 자리에서만 쓰고, 확신이 없으면 `if ref.Value then`으로 가드하세요.
 
-`PreRef`는 **일회용**입니다. 한 번 채워진 `PreRef`를 다른 인스턴스에 다시 놓으면 그 자리에서 던집니다 — 인스턴스마다 새로 만드세요(바로 아래 3절의 접힘이 그 이야기입니다).
+`PreRef`는 **일회용**입니다. 한 번 채워진 `PreRef`를 다른 인스턴스에 다시 놓으면 그 자리에서 던집니다 — 인스턴스마다 새로 만드세요(3절의 접힘 "쓰던 `Ref`를 다른 인스턴스에 다시 써도 되나요?"가 그 이야기입니다).
 
 ---
 
@@ -120,7 +120,7 @@ end)
 
 const card = D.Frame {
     -- …생략…
-    D.TextButton { buttonRef, Text = "+ 1" },
+    D.TextButton { buttonRef, Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
 }
 ```
 
