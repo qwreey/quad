@@ -113,6 +113,7 @@ def bump(new):
         cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n## {head[3:]}', 1)
         write('CHANGELOG.md', cl)
     print(f'bumped {old} -> {new}; CHANGELOG [Unreleased] cut to {head}')
+    print(f'next (after commit): git tag -a {new} -m "quad {new}" && git push origin {new}   # tags do not follow branch sync — push them to github/upstream too (conventions 2026-09-11)')
     leftovers = []
     for dp, dn, fn in os.walk(os.path.join(ROOT, 'docs')):
         if 'site' in dp.split(os.sep):
