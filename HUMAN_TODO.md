@@ -10,10 +10,6 @@
 
 ## 미해소
 
-### 19. [2026-09-11 신설, 사용자 예고] git 명령을 sandbox 쪽에서 래핑해 커밋 관례를 자동 처리 — 되면 에이전트에게 알려 줄 것
-
-사용자 원문(2026-09-11): *"git 명령을 sandbox 쪽에서 래핑어라운드해서 컨벤션에 쓰지 않아도 자동 처리되는걸 넣을것이고, 그렇게 될 예정이라고, 된다면 말해줘야한다고 HUMAN_TODO 에 기제해두면 돼."* 지금 `conventions.md`가 세션에 지키게 하는 커밋 규율(`Co-authored-by: qwreey <me@qwreey.moe>` 트레일러, Claude 트레일러 억제, 원격 push 금지)은 그 래핑이 들어오면 문서 규약이 아니라 도구가 보장한다. **래핑이 실제로 켜지면 그 사실과 무엇이 자동인지(트레일러·세션 링크·push 차단 범위)를 알려 주면**, 에이전트가 `conventions.md`의 해당 항목과 메모리 `git-remote-push-policy`를 "도구가 처리 — 세션은 안 함"으로 고친다. 그 전까지는 지금 규약 그대로.
-
 ### 18. [2026-09-11 신설] 사람 몫 모음 — 도식·눈 검토·실기기·결정·배포 (사용자: "몰아서 넣어줘 … 양 많아도 좋아 천천히 처리")
 
 페이지는 **파일명 슬러그**로 가리킨다(시작하기 번호가 같은 날 두 번 바뀌었다 — `ls docs/getting-started`). 에이전트가 할 수 있는 뒷정리(SVG를 `<picture>`로 심기, 실측 결과로 문장 확정, 결정 반영)는 결과만 알려 주면 된다.
@@ -189,6 +185,10 @@ VSCode를 실제로 띄운 게 아님 — 다음에 VSCode를 열면 워크스�
 절, `archive/question-resolved.md`로 이전됨).
 
 ## 해소됨
+
+### ✅ 19. ~~[2026-09-11 신설, 사용자 예고] git 명령을 sandbox 쪽에서 래핑해 커밋 관례를 자동 처리 — 되면 에이전트에게 알려 줄 것~~ **[같은 날 밤 해소 — 사용자가 알려 줌("알아서 qwreey-bot으로 남더라"), 에이전트 실측: `/etc/code-docker/git/hooks/ai-trailer.sh`가 `@anthropic.com` 트레일러를 `codedocker.aitrailer.name/email`로 바꾸고 세션 URL을 뗀다. 이 세션에 `name=qwreey`·`email=me@qwreey.moe` 설정(없으면 `user.name`으로 떨어짐). push 차단은 이 훅의 범위가 아니라 리모트 정책(메모리 `git-remote-push-policy`)은 그대로. `conventions.md` 항목 갱신]**
+
+사용자 원문(2026-09-11): *"git 명령을 sandbox 쪽에서 래핑어라운드해서 컨벤션에 쓰지 않아도 자동 처리되는걸 넣을것이고, 그렇게 될 예정이라고, 된다면 말해줘야한다고 HUMAN_TODO 에 기제해두면 돼."* 지금 `conventions.md`가 세션에 지키게 하는 커밋 규율(`Co-authored-by: qwreey <me@qwreey.moe>` 트레일러, Claude 트레일러 억제, 원격 push 금지)은 그 래핑이 들어오면 문서 규약이 아니라 도구가 보장한다. **래핑이 실제로 켜지면 그 사실과 무엇이 자동인지(트레일러·세션 링크·push 차단 범위)를 알려 주면**, 에이전트가 `conventions.md`의 해당 항목과 메모리 `git-remote-push-policy`를 "도구가 처리 — 세션은 안 함"으로 고친다. 그 전까지는 지금 규약 그대로.
 
 ### 0. ~~(SAFETY.md) Git 원격 저장소 계정 마련~~ **[해소됨, 2026-08-18 — `origin`(git.qwreey.moe) 마련·사용 중, 정책은 `SAFETY.md`와 메모리 `git-remote-push-policy`; 2026-09-06 감사가 이 항목의 미갱신을 발견]**
 
