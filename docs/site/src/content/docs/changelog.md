@@ -8,6 +8,8 @@ description: "3.x 릴리즈마다 무엇이 생기고 바뀌고 없어졌는지 
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-09-11
+
 ### Changed
 
 - `slot:Single`의 타입이 `:List`와 같은 `<Item, UD>`가 됐습니다 — 구동 `state`가 데이터(`Item`)라 원소 타입에 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 코드가 이제 strict를 통과합니다(런타임 변화 없음).

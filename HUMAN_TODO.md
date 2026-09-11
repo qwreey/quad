@@ -64,9 +64,9 @@
 - `question.md` 3절 **D5**(14.2와 같은 것).
 - `research/rfc-docs-section-plan.md` 8절 **Q1~Q6**(공개 범위·형태·기존 결정 둘의 역전·사전 정리 방식·번역·갱신 자동화).
 - `research/roadmap-changelog-docs-plan.md` 7절 **Q1~Q8**(CHANGELOG 임베딩 여부·frontmatter 위치·사이드바·오버뷰 §8 확장 vs 새 페이지·내부 ROADMAP 공개 절 메커니즘·약속 수위·v1 원문 절·번역). 같은 조사의 부수 문항 `question.md` 3절 **D11**(`quad-mock` 이름).
-- **다음 릴리즈 번호** — `CHANGELOG.md` `[Unreleased]`에 BREAKING(`Operator.Index → Indexed`)과 Changed(`Slot:Single` 타입)가 쌓여 있다. SemVer대로면 4.0.0인데 3.0.0 직후라 사용자 판단(이 결정이 나면 `scripts/check-version.py bump`는 에이전트가).
+- ~~**다음 릴리즈 번호**~~ **[2026-09-11 해소 — 사용자 결정 3.1.0]** `check-version.py bump 3.1.0` 완료(매니페스트 여섯·소스·테스트·CHANGELOG `[3.1.0] - 2026-09-11`, 문서의 버전 문구, publish dry-run). BREAKING(`Index → Indexed`)이 마이너에 실린 것은 사용자 판단.
 - 시작하기의 **함수형 페이지 위치**(B 흐름 항목)와 **얇은 페이지 합치기 여부** — 에이전트가 고른 배치라 한 번 봐 달라.
-- **[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.** 사이트의 `q.Operator.Indexed`는 레지스트리 3.0.0에 없다(그때 이름은 `Index`, 에이전트가 pesde에서 실제로 받은 사본으로 확인). 위 "다음 릴리즈 번호" 결정을 내리고 게시하는 것이 근본 해결이고, 그 전까지는 랜딩의 "현재 릴리즈" 줄과 `Indexed` 자리 셋에 "미게시 변경" 표시를 달아 뒀다.
+- ~~**[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.**~~ **[같은 날 해소 — 3.1.0 bump]** 게시(E 절)만 남았다. 문서의 `Indexed` 표시는 "3.0.0에서는 `Index`, 3.1.0부터 `Indexed`"로 바꿔 게시 시점과 무관하게 참.
 - **범위 밖 안내 절을 둘지** — 시니어가 첫날 묻는데 문서가 침묵하는 넷: 서버 사이드·`SurfaceGui`/`BillboardGui`, `StreamingEnabled`와 바인딩, Roact/Fusion 화면과의 공존, 핫 리로드(스토리북 도구는 예정). 답을 만들지 않더라도 how-to에 "아직 답이 없는 것" 절로 경계를 그어 두자는 제안(열린 탐사) — 둘지, 어느 항목을 넣을지.
 - **"현재 상태" 단락** — 오버뷰나 랜딩에 트랙 레코드(언제부터, 어디서 쓰이는지, 어느 규모까지 굴려 봤는지, 성능 수치) 한 단락을 둘지. 내용은 사용자만 안다.
 - **클래스별 `Modifier`/`OnChange` 타입의 공개 경로** — 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/D` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/D` 아래에만 있다(루트가 재수출하는 건 `D`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.D.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
@@ -74,7 +74,8 @@
 
 #### E. 밖에서 할 것
 
-- 사이트 재배포: dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 오늘 커밋 여섯이 아직 배포 전이다.
+- **[2026-09-11] 3.1.0 게시** — `python3 scripts/publish.py --real`(사용자만; dry-run 9건은 에이전트가 통과시킴). 게시 뒤 `git tag 3.1.0`과 세 리모트 싱크는 사용자 흐름대로.
+- 사이트 재배포: 게시 뒤 dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 2026-09-11 커밋 스무여 개가 배포 전이다 — 헤더 배지가 3.1.0으로 바뀌므로 게시 **뒤에** 배포할 것.
 - draw.io SVG 내보내기 설정(위 A 머리) 확인.
 
 

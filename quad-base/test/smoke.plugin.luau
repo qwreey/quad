@@ -3,7 +3,7 @@
 local Quad = require("../src")
 
 print("=== 1. Version 필드가 pesde.toml과 맞음 ===")
-assert(Quad.Version == "3.0.0", "quad-base/pesde.toml의 version과 일치해야 함")
+assert(Quad.Version == "3.1.0", "quad-base/pesde.toml의 version과 일치해야 함")
 print("PASS")
 
 print()

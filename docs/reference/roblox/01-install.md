@@ -57,7 +57,7 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
    ```
 
-   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.0.0"`, `{tostring(q.Version)}`은
+   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.1.0"`, `{tostring(q.Version)}`은
    넘어온 모듈의 `Version` 필드입니다. 모노레포는 정확한 버전을 핀으로 잡고, 독립 게시 백엔드라면
    더 느슨한 패턴을 쓰게 됩니다.
 

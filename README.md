@@ -24,7 +24,7 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
 quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 ```
 
-> **[2026-09-10 기준]** pesde 레지스트리에 `3.0.0`이 게시돼 있습니다(문서: <https://quad.qwreey.moe/>). 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
+> **[2026-09-11 기준]** pesde 레지스트리에 `3.1.0`이 게시돼 있습니다(문서: <https://quad.qwreey.moe/>). 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
 
 ## 첫 줄
 

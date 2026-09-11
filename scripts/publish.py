@@ -116,12 +116,12 @@ def run(cmd, cwd, capture=True, check=False):
     return p
 
 
-def sub1(path, pattern, repl, what):
-    """정확히 한 번 치환되지 않으면 죽는다 — 앵커가 사라진 걸 조용히 넘기지 않기 위함."""
+def sub1(path, pattern, repl, what, expect=1):
+    """정확히 `expect`번 치환되지 않으면 죽는다 — 앵커가 사라지거나 늘어난 걸 조용히 넘기지 않기 위함."""
     s = open(path, encoding='utf-8').read()
     s2, n = re.subn(pattern, repl, s)
-    if n != 1:
-        sys.exit(f'staging: {what} — 앵커가 {n}번 매치됐다(1이어야 함): {path}')
+    if n != expect:
+        sys.exit(f'staging: {what} — 앵커가 {n}번 매치됐다({expect}이어야 함): {path}')
     open(path, 'w', encoding='utf-8').write(s2)
 
 
@@ -237,9 +237,11 @@ def patch_stage_tooling(stage, twin_names, quad_base_is_roblox):
     # 2) test.sh — luau-lsp 패스가 `luau_packages` 사본만 무시한다. 의존이 roblox 타깃이 되면
     #    사본이 `roblox_packages`로 옮겨가 그대로 진단 대상이 된다(원본은 위 그룹이 이미 봄).
     test_sh = os.path.join(stage, 'scripts', 'test.sh')
+    #    [2026-09-11] 앵커가 둘이다 — 2026-09-10 밤 `2bdc3f0`이 엔진 무관 그룹의 신 솔버 패스를 더해
+    #    luau-lsp 블록이 두 개가 됐다(3.1.0 bump 때 dry-run이 "앵커 2번"으로 죽어 발견). 둘 다 확장한다.
     sub1(test_sh, r'--ignore "\*\*/luau_packages/\*\*" \\',
          '--ignore "**/luau_packages/**" --ignore "**/roblox_packages/**" \\\\',
-         'test.sh luau-lsp ignore 확장')
+         'test.sh luau-lsp ignore 확장', expect=2)
     # 3) gen-d.py — 생성 `D`가 박아 넣는 require 한 줄
     gen_d = os.path.join(stage, 'scripts', 'gen-d.py')
     if 'quad_types' in twin_names:

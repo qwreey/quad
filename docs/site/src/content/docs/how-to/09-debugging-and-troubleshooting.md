@@ -153,7 +153,7 @@ local dynamicStyle2 = D.Modifier.Frame { BackgroundColor3 = themeColor }
   재귀적으로 풀립니다. 문제는 `State`에 값의 필드를 꺼내는 dot-access가 없다는
   것입니다. `Store`를 담은 `State`의 필드를 반응형으로 읽으려면 명시적인 읽기
   콤비네이터가 필요합니다.
-- **해결책 (a)**: 필드 읽기는 `q.Operator.Indexed`로(게시된 3.0.0에서는 `Index` — 개명은 다음 릴리스). 결과 타입은 호출자가 직접
+- **해결책 (a)**: 필드 읽기는 `q.Operator.Indexed`로(3.0.0에서는 `Index`, 3.1.0부터 `Indexed`). 결과 타입은 호출자가 직접
   지정합니다(키에서 추론하지 않습니다).
 
 ```luau

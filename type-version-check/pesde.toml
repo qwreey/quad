@@ -1,5 +1,5 @@
 name = "qwreey/type_version_check"
-version = "3.0.0"
+version = "3.1.0"
 description = "Version pattern matching for string literal types at compile time (CheckVersion type function) and at runtime (matchesPattern): glob (*) and caret (N^) patterns with SemVer prerelease/build tails (engine-agnostic, not quad-specific)"
 includes = ["src/**", "README.md", "LICENSE", "pesde.toml"]
 license = "MIT"

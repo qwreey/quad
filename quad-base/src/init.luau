@@ -60,7 +60,7 @@ local providerRelate = Relate()
 local function New(): Quad
 	local module = {
 		New = New,
-		Version = "3.0.0",
+		Version = "3.1.0",
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,

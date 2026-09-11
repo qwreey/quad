@@ -551,7 +551,7 @@ export type Slot<T> = {
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────
 
 export type Quad = {
-	Version: "3.0.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
+	Version: "3.1.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
 	New: () -> Quad,
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
