@@ -96,22 +96,24 @@ board.Parent = screen
 
 ## 3. 데이터를 바꾸면 필요한 것만 바뀝니다
 
-항목을 추가하는 버튼을 하나 답니다. 하는 일은 **`rows`에 새 배열을 넣는 것뿐**입니다.
+항목을 추가하는 버튼을 하나 답니다. 하는 일은 **`props.Rows`에 새 배열을 넣는 것뿐**입니다 — 보드가 받은 그 `Source`를 그대로 씁니다.
 
 ```luau
--- … Main.client.luau의 화면 어딘가에 이어집니다
-D.TextButton {
-    Text = "+ 카운터",
-    Activated = function()
-        const nextRows = table.clone(rows:Get())
-        table.insert(nextRows, { Id = `c{#nextRows}`, Label = "새 카운터", Start = 0 })
-        rows:Set(nextRows)
-    end,
-},
+-- … (CounterBoard.luau) 돌려주는 D.Frame의 list 뒤에 원소 하나 더
+        D.TextButton {
+            Size = UDim2.fromOffset(120, 40),
+            Text = "+ 카운터",
+            Activated = function()
+                const nextRows = table.clone(props.Rows:Get())
+                table.insert(nextRows, { Id = `c{#nextRows}`, Label = "새 카운터", Start = 0 })
+                props.Rows:Set(nextRows)
+            end,
+        },
 ```
 
 여기서 id를 배열 길이로 만든 것은 예제라서입니다. 항목을 지우기 시작하면 같은 id가 다시 만들어져 `Slot:List: duplicate key c2`로 그 자리에서 막히니, 실제 코드에서는 절대 줄지 않는 카운터나 서버가 준 id를 쓰세요.
 <!-- mock 실측 2026-09-11: gs.polish3.luau "13 dup key" — 같은 키 둘이면 `Slot:List: duplicate key a` -->
+<!-- mock 실측 2026-09-11: gs.board.luau — 보드 안 버튼이 props.Rows:Set → 자식 3(카운터 둘+버튼)에서 4로 -->
 
 **실행하면** 카운터가 하나 더 생깁니다. 여기서 중요한 것은 **안 생긴 것**입니다.
 

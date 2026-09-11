@@ -37,6 +37,7 @@ end)
 
 const card = D.Frame {
     -- …프로퍼티 생략(UICorner = 12까지 그대로)…
+    -- …05·07장에서 붙인 숫자 키(Tag·Attr·Effect)들도 그대로…
 
     created,
     rendered,
@@ -51,7 +52,7 @@ const card = D.Frame {
 }
 ```
 
-**실행하면** 카드가 만들어지는 동안 두 줄이 순서대로 찍힙니다.
+**실행하면** 카드가 만들어지는 동안 두 줄이 순서대로 찍힙니다(07장에서 붙인 관측·이펙트 줄은 여기 적지 않았습니다).
 
 ```
 만들어짐: Frame
@@ -86,6 +87,7 @@ cleanup만 남겨 두었다가 매달린 인스턴스가 죽을 때 그것을 �
 -- … 위쪽 코드에 이어집니다(1절에서 만든 상자 둘을 지우고 card를 이렇게 고칩니다)
 const card = D.Frame {
     -- …프로퍼티 생략…
+    -- …05·07장에서 붙인 숫자 키들도 그대로…
 
     q.OnCreated<<Frame>>(function(inst)
         print("만들어짐:", inst.ClassName)

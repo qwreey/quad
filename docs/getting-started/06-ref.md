@@ -113,7 +113,7 @@ Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 `ref:Callback(fn)`은 값이 담길 때 부를 함수를 등록합니다. **등록하는 그 자리에서 지금 값으로 한 번 즉시 불리고**, 그 뒤로 채워질 때마다 다시 불립니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다(여기서는 다시 평범한 Ref로 두고, 카드를 만들기 전에 등록합니다)
+-- … 위쪽 코드에 이어집니다(여기서는 다시 평범한 Ref로 두고, 카드를 만들기 전에 등록합니다 — §2에서 넣은 BackgroundTransparency 두 줄은 그대로 둡니다)
 const buttonRef = q.Ref<<TextButton?>>(nil)
 
 buttonRef:Callback(function(inst)

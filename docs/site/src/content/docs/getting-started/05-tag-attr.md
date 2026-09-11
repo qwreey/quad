@@ -107,7 +107,7 @@ const card = D.Frame {
 그래서 두 집합이 같으면 엔진으로 나가는 호출이 **하나도 없습니다.**
 
 ```luau
--- … 위쪽 코드에 이어집니다(카드가 막 만들어진 참이라 count는 0 — 이름표는 {Card, Even})
+-- (확인용 — 카드가 막 만들어진 참이라 count는 0, 이름표는 {Card, Even}. 확인이 끝나면 아래 두 줄은 지웁니다)
 count:Set(2)   -- 짝수 → 짝수: 집합이 {Card, Even} 그대로라 엔진 호출 0
 count:Set(3)   -- 짝수 → 홀수: removeTag:Even, addTag:Odd 둘
 ```
@@ -141,6 +141,7 @@ const active = q.Source(true)
 
 const card = D.Frame {
     q.Tag("Card"),
+    -- …§2의 Even/Odd 파이프 그대로…
 
     q.Attr { Kind = "counter", Step = 1 },   -- 그룹 하나
     q.BooleanAttr("Active", active),         -- 값 하나(State도 된다)

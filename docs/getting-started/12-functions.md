@@ -162,7 +162,9 @@ print(plusTen:Get())   --> 11
 같은 모양이 관측 콜백에도 그대로 쓰입니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다
+-- 새 예시: 별도 스크립트(count를 0에서 새로 만듭니다)
+const count = q.Source(0)
+
 local function logWith(prefix)
     return function(t)
         print(prefix, t:Get())

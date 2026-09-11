@@ -97,7 +97,7 @@ const big = base:TextSize(24)     -- base는 그대로 16
 스타일을 함수로 만들면 인자를 받는 스타일이 됩니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다
+-- 새 예시: 별도 스크립트
 local function accent(color)
     return D.Modifier.TextButton {
         BackgroundColor3 = color,
@@ -109,7 +109,7 @@ end
 const button = D.TextButton { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" }
 ```
 
-**실행하면** 버튼이 넘긴 색으로 칠해집니다 — 흰 글자와 `BorderSizePixel = 0`은 팩토리 안에 그대로 있어서, 색만 다른 버튼을 얼마든지 찍어낼 수 있습니다.
+이 버튼을 화면에 붙이면 넘긴 색으로 칠해집니다 — 흰 글자와 `BorderSizePixel = 0`은 팩토리 안에 그대로 있어서, 색만 다른 버튼을 얼마든지 찍어낼 수 있습니다.
 
 **권장하는 배치는 스타일을 모듈 하나에 모아 내보내는 것**입니다. 화면마다 색 리터럴이 흩어지지 않고, 나중에 테마를 바꿀 때 고칠 자리가 한 곳이 됩니다.
 
@@ -135,7 +135,7 @@ return {
 }
 ```
 
-쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다.
+쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다 — §1의 `CardStyle` 자리에 `Styles.Card`를 그대로 갈아 끼우면 됩니다.
 
 
 ---

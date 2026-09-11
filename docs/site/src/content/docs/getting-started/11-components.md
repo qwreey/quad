@@ -15,7 +15,7 @@ Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **p
 
 `src/client/UI/Counter.luau`를 새로 만들고, 지금까지의 코드를 그리로 옮깁니다. 바뀌어야 할 값은 `props`에서 받습니다.
 
-옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 05~09장에서 붙였던 태그·속성·`CardStyle` Modifier·`buttonRef`와 그 `Effect`·생명주기 훅은 여기서 뺐고, 07장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([12장](/getting-started/12-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
+옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 05~09장에서 붙였던 태그·속성·`CardStyle` Modifier·07장의 관측(`:Observer`)과 `Effect` 둘(뒤처리 이펙트·`buttonRef`의 게임패드 선택)·생명주기 훅은 여기서 뺐고, 07장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([12장](/getting-started/12-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Counter
