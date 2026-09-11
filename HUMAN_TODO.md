@@ -29,7 +29,7 @@
 9. **`*-setup.md` — 파일 배치.** `ReplicatedStorage/roblox_packages/…`, 설정 모듈 `Client/UI/Quad`, 진입점 `StarterPlayerScripts/Main.client` 트리 한 장(지금은 코드 주석으로만).
 10. **`how-to/07-studio-ui-binding-and-claim.md` — 템플릿 → `:Clone()` → `Claim` → `D.Mapper` 매핑.** 정적 프로퍼티는 템플릿에 구워 두고 동적 바인딩만 Claim이 심는다는 그림(C 실측 2번과 같이).
 11. **`overview/01-why-quad.md` §1·§6 — 전파 모델 셋 나란히.** Fusion(push 무효화+pull, eager 표시) / Vide(순수 push, 깊이우선) / Quad(신호만 push, 계산은 pull). 3번 그림의 확장판이라 같이 그리면 된다.
-12. **`docs/README.md` Diátaxis 사분면** — 17번 그대로.
+12. ~~**`docs/README.md` Diátaxis 사분면** — 17번 그대로.~~ **[2026-09-11 해소 — 17번과 함께 스킵]**
 13. **[2026-09-11 밤 신설] `*-observer-effect.md` §4 게임패드 선택 예제** — `GuiService.SelectedObject`를 `Effect`에서 걸고 cleanup에서 푸는 것이 실기기에서 그대로 되는지(mock은 `{ SelectedObject = nil }` 셰임으로만 확인). 파괴 때 cleanup이 선택을 풀어 죽은 버튼이 선택된 채 남지 않는지.
 14. **[2026-09-11 밤 신설] `*-tag-attr.md` §4 `Instance:QueryDescendants`가 Studio 밖 실제 클라이언트에서도 되는지** — 문서는 Studio 0.738 실측만 근거로 답니다(열린 탐사 리뷰어 지적).
 
@@ -76,10 +76,6 @@
 - 사이트 재배포: 게시 뒤 dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 2026-09-11 커밋 스무여 개가 배포 전이다 — 헤더 배지가 3.1.0으로 바뀌므로 게시 **뒤에** 배포할 것.
 - draw.io SVG 내보내기 설정(위 A 머리) 확인.
 
-
-### 17. [2026-09-10 밤 신설] `docs/README.md`의 Diátaxis 사분면 그림을 SVG로
-
-사이트의 박스 문자 아스키아트는 전부 mermaid로 바꿨지만(`docs/README.md`는 사이트 밖이라 남김), 사용자가 *"Diátaxis 사분면 그림은 나중에 내가 직접 그릴게. 비슷하게 svg 로 올려줄게"*. SVG가 오면 `docs/README.md` §1의 아스키아트를 그 이미지로 교체한다(에이전트가 해도 됨).
 
 ### 14. [2026-09-10 신설] 3.0.0 게시 전 사람 몫 넷 — **남은 건 2(Studio 싱크 실측)뿐 [2026-09-10 기준]**
 
@@ -185,6 +181,11 @@ VSCode를 실제로 띄운 게 아님 — 다음에 VSCode를 열면 워크스�
 절, `archive/question-resolved.md`로 이전됨).
 
 ## 해소됨
+
+### ✅ 17. ~~[2026-09-10 밤 신설] `docs/README.md`의 Diátaxis 사분면 그림을 SVG로~~ **[2026-09-11 밤 해소 — 사용자 결정: 스킵]** `docs/README.md`는 사이트에 노출되지 않는 GitHub 전용 파일이고(사용자: "페이지 렌더링인 줄 알았는데 … 그냥 딱히 그릴 이유 없는 듯"), 에이전트도 그림을 읽기 어려워 얻는 이점이 없다. 아스키아트는 그대로 둔다.
+
+(원문) 사이트의 박스 문자 아스키아트는 전부 mermaid로 바꿨지만(`docs/README.md`는 사이트 밖이라 남김), 사용자가 *"Diátaxis 사분면 그림은 나중에 내가 직접 그릴게. 비슷하게 svg 로 올려줄게"*. SVG가 오면 `docs/README.md` §1의 아스키아트를 그 이미지로 교체한다(에이전트가 해도 됨).
+
 
 ### ✅ 19. ~~[2026-09-11 신설, 사용자 예고] git 명령을 sandbox 쪽에서 래핑해 커밋 관례를 자동 처리 — 되면 에이전트에게 알려 줄 것~~ **[같은 날 밤 해소 — 사용자가 알려 줌("알아서 qwreey-bot으로 남더라"), 에이전트 실측: `/etc/code-docker/git/hooks/ai-trailer.sh`가 `@anthropic.com` 트레일러를 `codedocker.aitrailer.name/email`로 바꾸고 세션 URL을 뗀다. 이 세션에 `name=qwreey`·`email=me@qwreey.moe` 설정(없으면 `user.name`으로 떨어짐). push 차단은 이 훅의 범위가 아니라 리모트 정책(메모리 `git-remote-push-policy`)은 그대로. `conventions.md` 항목 갱신]**
 
