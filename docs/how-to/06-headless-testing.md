@@ -35,7 +35,7 @@ UI 버그가 났을 때 1·2층에서 재현되면 Studio를 열 필요가 없�
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
+local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 
 local count = Quad.Source(0)
 local isEven = count:Compute(function(c)

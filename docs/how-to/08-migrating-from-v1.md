@@ -33,13 +33,11 @@ luau-lsp analyze \
 
 넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스의 타입 검사가 실패하고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치 및 환경 구축](../getting-started/00-installation.md) 참고.
 
-그리고 v1의 `require(path).Init(id)` 자리는 **모듈 둘 + `UseProvider` 한 줄**로 바뀝니다.
+그리고 v1의 `require(path).Init(id)` 자리는 **설정 모듈 하나**로 바뀝니다 — 패키지 둘(`quad-base`·`quad-roblox`)을 `UseProvider` 한 줄로 붙여 둔 모듈을 프로젝트에 하나 두고, 화면 코드는 그것만 require합니다([시작하기 01. 프레임워크 설정하기](../getting-started/01-setup.md)).
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -101,16 +99,16 @@ local label = D.TextLabel { Text = text, BackgroundColor3 = store.Color }
 v1의 `myStore "a,b":With(function(a, b) ... end)`처럼 문자열로 키를 나열하던 자리는 `:Compute(fn, ...deps)`입니다. 넘어오는 dep은 **값이 아니라 State 핸들**이라 `:Get()`으로 읽습니다.
 
 ```luau
-local QuadTypes = require(<quad-types 모듈 경로>)
+local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.KeyGone`·`QuadTypes.SlotItem<T>`)
 
 local width = q.Source(200)
 local topbar = q.Source(60)
 
 -- v1: myStore "width,topbar":With(function(w, tb) ... end)
 local size = width:Compute(function(
-	self: QuadTypes.StateData<number>,
+	self: q.StateData<number>,
 	_prev: UDim2?,
-	tb: QuadTypes.StateData<number>
+	tb: q.StateData<number>
 ): UDim2
 	return UDim2.fromOffset(self:Get(), tb:Get())
 end, topbar)
@@ -146,9 +144,9 @@ local primary = theme:Apply(Op.Indexed<<Color3>>("Primary"))
 local base = q.Source(UDim2.fromOffset(0, 0))
 local offset = q.Source(UDim2.fromOffset(0, 40))
 local moved = base:Compute(function(
-	self: QuadTypes.StateData<UDim2>,
+	self: q.StateData<UDim2>,
 	_prev: UDim2?,
-	off: QuadTypes.StateData<UDim2>
+	off: q.StateData<UDim2>
 ): UDim2
 	return self:Get() + off:Get()
 end, offset)
@@ -166,13 +164,13 @@ end, offset)
 ```luau
 -- v1: myStore "color":Tween{ Time = 2 }
 local hovered = q.Source(false)
-local color = hovered:Compute(function(self: QuadTypes.StateData<boolean>): Color3
+local color = hovered:Compute(function(self: q.StateData<boolean>): Color3
 	return if self:Get() then Color3.fromRGB(60, 60, 60) else Color3.fromRGB(35, 35, 35)
 end):Apply(q.Animate { Time = 0.2, Style = Enum.EasingStyle.Quad })
 
 -- 값마다 옵션을 다르게 주고 싶으면 Tween을 :Compute 안에서 만든다
 local target = q.Source(UDim2.fromScale(0, 0))
-local position = target:Compute(function(self: QuadTypes.StateData<UDim2>): any
+local position = target:Compute(function(self: q.StateData<UDim2>): any
 	return q.Tween { Value = self:Get(), Time = 0.5, Override = "Cancel" }
 end)
 
@@ -237,7 +235,7 @@ v1에서 목록을 다시 그릴 때 쓰던 `mounts:Unmount()` 뒤 재추가는 
 
 ```luau
 type Row = { Id: string, Title: string }
-type RowUD = { title: QuadTypes.Source<string>, order: QuadTypes.Source<number> }
+type RowUD = { title: q.Source<string>, order: q.Source<number> }
 
 -- v1: local mounts = Mount(parent); mounts:Add(item); mounts:Unmount()
 local rows = q.Source<<{ Row }>>({ { Id = "a", Title = "첫 줄" } })
@@ -246,7 +244,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
 	item: Row | QuadTypes.KeyGone,
 	index: number,
-	_offset: QuadTypes.Source<number>,
+	_offset: q.Source<number>,
 	prev: QuadTypes.SlotItem<Instance>?,
 	ud: RowUD?
 ): (any, RowUD?)
@@ -396,7 +394,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 
 | v1 직역 모양 | 진단 | 처방 |
 |---|---|---|
-| 프로퍼티 자리에 인라인 무주석 `:Compute` | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | 콜백 파라미터에 `QuadTypes.StateData<T>` 주석을 붙이고, 가능하면 지역 변수로 빼세요 |
+| 프로퍼티 자리에 인라인 무주석 `:Compute` | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | 콜백 파라미터에 `q.StateData<T>` 주석을 붙이고, 가능하면 지역 변수로 빼세요 |
 | `q.Slot()` — 타입 인자 없음 | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`. **홑화살괄호 `q.Slot<Instance>()`는 문법 오류입니다** |
 | `q.OnCreated(fn)` — 타입 인자 없음 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
 | 생성 `D`에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |

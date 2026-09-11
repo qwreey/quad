@@ -11,11 +11,8 @@ description: 값 기반 전파 유보 — On/Off/OffWithoutEmit/Policy와 state:
 이 페이지의 심볼: [`q.Blocker()`](#qblocker) · [`blocker.IsBlocked`](#blockerisblocked) · [`blocker:IsOn()`](#blockerison) · [`blocker:On()`](#blockeron) · [`blocker:Off()`](#blockeroff) · [`blocker:OffWithoutEmit()`](#blockeroffwithoutemit) · [`blocker:Policy(emit)`](#blockerpolicyemit) · [`state:Apply(blocker)`](#stateapplyblocker)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.State<T>` 등)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 ```
 
 ---
@@ -53,8 +50,8 @@ local hp = q.Source(100)
 local mp = q.Source(50)
 local blocker = q.Blocker()
 
-local shownHp: QuadTypes.State<number> = hp:Apply(blocker)
-local shownMp: QuadTypes.State<number> = mp:Apply(blocker)
+local shownHp: q.State<number> = hp:Apply(blocker)
+local shownMp: q.State<number> = mp:Apply(blocker)
 
 blocker:On()
 hp:Set(80)
@@ -117,7 +114,7 @@ blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 ```luau
 local hp = q.Source(100)
 local blocker = q.Blocker()
-local shown: QuadTypes.State<number> = hp:Apply(blocker)
+local shown: q.State<number> = hp:Apply(blocker)
 
 blocker:On()
 hp:Set(80)
@@ -158,7 +155,7 @@ local hp = q.Source(100)
 local blocker = q.Blocker()
 
 -- state:Apply(blocker)와 동등한 수동 배선
-local gated: QuadTypes.State<number> = hp:Gate(function(emit)
+local gated: q.State<number> = hp:Gate(function(emit)
 	return blocker:Policy(emit)
 end)
 ```
@@ -180,7 +177,7 @@ end)
 **반환** — 같은 `T`의 게이트된 `State<T>`. 객체 팔의 반환 타입이 `any`이므로 **결과 타입은 호출부에서 명시**하세요:
 
 ```luau
-local gated: QuadTypes.State<number> = hp:Apply(blocker)
+local gated: q.State<number> = hp:Apply(blocker)
 ```
 
 붙이지 않은 `Blocker`는 아무 일도 하지 않습니다 — `:On()`/`:Off()`는 **붙어 있는 게이트**를 통해서만 효과를 냅니다.

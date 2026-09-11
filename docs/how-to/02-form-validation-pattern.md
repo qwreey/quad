@@ -21,11 +21,8 @@ description: "Store와 Compute로 폼 입력 유효성 검사와 제출 버튼 �
 선언으로 끝납니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -102,10 +99,10 @@ local function RegistrationForm()
     local store, isUsernameValid, _isPasswordValid, canSubmit = makeFormState()
 
     -- 파생 상태는 props 테이블 밖에서 만들어 둔다(아래 주의 참고)
-    local showUsernameError: QuadTypes.State<boolean> = isUsernameValid:Compute(function(valid)
+    local showUsernameError: q.State<boolean> = isUsernameValid:Compute(function(valid)
         return not valid:Get()
     end)
-    local submitColor: QuadTypes.State<Color3> = canSubmit:Compute(function(enabled)
+    local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
         return if enabled:Get()
             then Color3.fromRGB(0, 170, 255)
             else Color3.fromRGB(80, 80, 90)
@@ -167,7 +164,7 @@ return RegistrationForm
 > 깨집니다.** 함수 인자로 넘기는 테이블 리터럴 안에서는 무주석 콜백의
 > 파라미터가 풀리지 않습니다(런타임은 정상이지만 편집기에 빨간 줄이
 > 그어집니다). 위처럼 **별도 문장으로 빼서 타입을 붙인 지역 변수**에 담거나,
-> 콜백 파라미터에 `QuadTypes.StateData<T>` 주석을 다세요. 숫자 키 자리에 놓는
+> 콜백 파라미터에 `q.StateData<T>` 주석을 다세요. 숫자 키 자리에 놓는
 > 값은 이 문제를 겪지 않습니다.
 
 ---

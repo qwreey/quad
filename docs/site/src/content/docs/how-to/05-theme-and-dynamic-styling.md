@@ -7,10 +7,8 @@ description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라�
 > `q.Animate`, `Modifier.Overridden`
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 -- 클래스별 Modifier 타입(`FrameModifier`/`IntoFrame` 등)은 생성된 D 모듈에서 가져온다
 local DTypes = require(<quad-roblox D 모듈 경로>)

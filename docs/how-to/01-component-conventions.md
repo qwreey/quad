@@ -12,15 +12,13 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox)
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 local None = q.None
 
 -- 값이 아니라 '타입 이름'을 가져오는 모듈
-local QuadTypes = require(<quad-types 모듈 경로>) -- State/Source/Ref/StateData …
+local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.StateMarker<T>` 등)
 -- 클래스별 Modifier·요소 타입(`TextButtonModifier`/`IntoTextButton`/`FrameElem` 등)은 생성된 D 모듈에서
 local DTypes = require(<quad-roblox D 모듈 경로>)
 ```
@@ -74,7 +72,7 @@ D.Frame {
 `Ref`는 `q.Ref(nil)`로 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다.
 
 ```luau
-local function MaterialButton(props: { read Text: string?, read Modifier: DTypes.TextButtonModifier?, read Ref: QuadTypes.Ref<TextButton?>? }): TextButton
+local function MaterialButton(props: { read Text: string?, read Modifier: DTypes.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
     return D.TextButton {
         props.Modifier or None, -- ⭐ 숫자 키 자리에서만 의미가 있는 관용구
         props.Ref or None,
@@ -121,14 +119,14 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 `Modifier`는 단순한 딕셔너리가 아닙니다. 어떤 클래스에 적용 가능한지 타입에 실려 있어서, `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다.
 
-> **타입 이름 하나만 먼저**: 아래 `props`처럼 반응형 값을 **받는 입력 자리**에는 `QuadTypes.StateMarker<T>`를 씁니다. 컴포넌트 안에서 만든 지역 변수나 반환 타입처럼 메소드를 실제로 부르는 자리는 `QuadTypes.State<T>` 그대로입니다.
+> **타입 이름 하나만 먼저**: 아래 `props`처럼 반응형 값을 **받는 입력 자리**에는 `StateMarker<T>`를, 컴포넌트 안에서 만든 지역 변수나 반환 타입처럼 메소드를 실제로 부르는 자리는 `State<T>`를 씁니다. 둘은 같은 `quad-types`에서 오지만, 설정 모듈이 다시 내보내는 아홉에 `State`는 있고 `StateMarker`는 없어서 이 문서에서는 각각 `q.State<T>`·`QuadTypes.StateMarker<T>`로 적힙니다.
 
 ```luau
 type ButtonProps = {
     read Text: string | QuadTypes.StateMarker<string>,
     read OnClick: () -> (),
     read Modifier: DTypes.TextButtonModifier?,
-    read Ref: QuadTypes.Ref<TextButton?>?,
+    read Ref: q.Ref<TextButton?>?,
 }
 
 local function CustomButton(props: ButtonProps): TextButton
@@ -184,7 +182,7 @@ local btn2 = CustomButton {
 호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 10. 자식이 들어갈 자리](../getting-started/10-slot.md)). 그 자리에 타입을 붙이면 이렇게 됩니다.
 
 ```luau
-local function ModalDialog(props: { read Title: string, read Children: QuadTypes.Slot<Instance>? }): Frame
+local function ModalDialog(props: { read Title: string, read Children: q.Slot<Instance>? }): Frame
     return D.Frame {
         Size = UDim2.fromOffset(400, 300),
         BackgroundColor3 = Color3.fromRGB(25, 25, 30),
@@ -268,7 +266,7 @@ Quad의 컴포넌트는 매 프레임 재실행되지 않는 **1회성 셋업 �
 local function newCounter(initial: number)
     local count = q.Source(initial)
     -- --!strict에서는 :Compute 콜백 파라미터에 주석이 필요하다
-    local isEven = count:Compute(function(c: QuadTypes.StateData<number>): boolean
+    local isEven = count:Compute(function(c: q.StateData<number>): boolean
         return c:Get() % 2 == 0
     end)
 
@@ -283,7 +281,7 @@ end
 local left, right = newCounter(0), newCounter(10)
 ```
 
-Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `QuadTypes.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: QuadTypes.State<boolean> = ...`). 자세한 캐비엇은 [레퍼런스: `State`](../reference/core/03-state.md)에 있습니다.
+Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `q.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: q.State<boolean> = ...`). 자세한 캐비엇은 [레퍼런스: `State`](../reference/core/03-state.md)에 있습니다.
 
 > [!TIP]
 > 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.

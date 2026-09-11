@@ -8,11 +8,8 @@ description: "quad 에러 메시지를 읽고 표면 blame으로 문제의 소�
 > **다루는 개념**: 표면(surface) 블레임, 자주 밟는 함정 여섯과 해결책
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -110,7 +107,7 @@ Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 
 ```luau
 -- ✅ 숫자 키 자리에 그대로
-local function CustomInput(props: { InputRef: QuadTypes.Ref<TextBox?>? })
+local function CustomInput(props: { InputRef: q.Ref<TextBox?>? })
     return D.TextBox {
         props.InputRef or q.None,
         PlaceholderText = "...",
@@ -163,7 +160,7 @@ local dynamicStyle2 = D.Modifier.Frame { BackgroundColor3 = themeColor }
 
 ```luau
 local theme = q.Source({ Primary = "red", Size = 10 })
-local primary: QuadTypes.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Primary"))
+local primary: q.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Primary"))
 -- theme:Set({ Primary = "blue", Size = 12 }) → primary:Get() == "blue"
 ```
 

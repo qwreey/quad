@@ -9,11 +9,8 @@ description: "명시적 타입드 값 가방 Context와 그 키 Provider의 생�
 `quad-base`에 있으므로 백엔드와 무관하게 존재합니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadTypes = require(<quad-types 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -68,7 +65,7 @@ Context.Provider: name must be a string (got number)
 type Theme = { ButtonBg: Color3 }
 
 -- (1) 캐스트
-local ThemeProvider = q.Context.Provider("Theme") :: QuadTypes.Provider<Theme>
+local ThemeProvider = q.Context.Provider("Theme") :: q.Provider<Theme>
 -- (2) 명시적 타입 인자
 local UserProvider = q.Context.Provider<<{ Name: string }>>("User")
 ```
@@ -162,13 +159,13 @@ local ThemeProvider = q.Context.Provider<<Theme>>("Theme")
 local UserProvider = q.Context.Provider<<{ Name: string }>>("User")
 
 -- 리프 컴포넌트 — 필요한 키만 꺼내 쓴다
-local function ThemedButton(props: { Context: QuadTypes.Context }): TextButton
+local function ThemedButton(props: { Context: q.Context }): TextButton
     local theme = props.Context:Get(ThemeProvider)
     return D.TextButton { BackgroundColor3 = theme.ButtonBg }
 end
 
 -- 중간 셸 — Theme/User가 뭔지 모른 채 가방만 내려보낸다
-local function AppShell(props: { Context: QuadTypes.Context, Content: Instance }): Frame
+local function AppShell(props: { Context: q.Context, Content: Instance }): Frame
     return D.Frame {
         ThemedButton({ Context = props.Context }),
         props.Content,

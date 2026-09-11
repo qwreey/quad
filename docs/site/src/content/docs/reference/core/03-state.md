@@ -7,14 +7,11 @@ description: 읽기 전용 파생 반응형 노드 — Get/Compute/With/Apply/Ob
 이 페이지의 심볼: [`state:Get()`](#stateget) · [`state:Compute(fn, ...deps)`](#statecomputefn-deps) · [`state:With(...)`](#statewith) · [`state:Apply(factory)`](#stateapplyfactory) · [`state:Observer(fn)`](#stateobserverfn) · [`state:Gate(setup)`](#stategatesetup)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.State<T>` 등)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 ```
 
-**타입 표기** — 타입은 `quad-types` 패키지에서 옵니다(`QuadTypes.State<T>`). `q.State`라는 값도, `q.State<T>`라는 타입도 없습니다.
+**타입 표기** — 타입의 출처는 `quad-types` 패키지이고, [01장의 설정 모듈](/getting-started/01-setup/)이 자주 쓰는 아홉을 다시 내보내므로 이 문서는 `q.State<T>`처럼 적습니다. `quad-base`를 직접 require한 모듈에는 `State`라는 값도, `State<T>`라는 타입도 없습니다 — 설정 모듈을 안 거친다면 `QuadTypes.State<T>`로 적으세요.
 
 ```luau
 export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
@@ -87,7 +84,7 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
 local width = q.Source(2)
 local height = q.Source(10)
 
-local area: QuadTypes.State<number> = width:Compute(function(self, previous, other: QuadTypes.StateData<number>)
+local area: q.State<number> = width:Compute(function(self, previous, other: q.StateData<number>)
 	return self:Get() * other:Get()
 end, height)
 
@@ -124,7 +121,7 @@ local text = q.Source("hello")
 local locale = q.Source("ko")
 
 -- text의 값 그대로, 다만 locale이 바뀌어도 다시 흐른다
-local shown: QuadTypes.State<string> = text:With(locale)
+local shown: q.State<string> = text:With(locale)
 print(shown:Get()) --> hello
 ```
 
@@ -159,7 +156,7 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 ```luau
 local raw = q.Source(0)
 local blocker = q.Blocker()
-local gated: QuadTypes.State<number> = raw:Apply(blocker)
+local gated: q.State<number> = raw:Apply(blocker)
 ```
 
 **관련** — [sugar/06-blocker](/reference/sugar/06-blocker/) · [How-To 05 테마와 동적 스타일](/how-to/05-theme-and-dynamic-styling/)
@@ -215,7 +212,7 @@ local raw = q.Source(0)
 local release: ((commit: boolean?) -> boolean)?
 
 -- 상류 변경을 무조건 붙잡아 두고, release()를 부를 때만 흘려보내는 정책
-local held: QuadTypes.State<number> = raw:Gate(function(emit)
+local held: q.State<number> = raw:Gate(function(emit)
 	release = emit
 	return function() end -- 상류 emit이 와도 아무것도 하지 않는다 = 유보
 end)

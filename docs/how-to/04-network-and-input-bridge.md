@@ -19,11 +19,8 @@ quad에서 권장하는 모양은 하나입니다 — **외부 신호는 `Source
 그 상태만 선언적으로 구독**합니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -75,7 +72,7 @@ end
 local function GoldDisplay()
     -- 파생 상태는 props 테이블 밖에서(함수 인자 테이블 안의 인라인 :Compute는
     -- 에디터 타입 검사에서 무주석 콜백 파라미터를 못 푼다)
-    local goldText: QuadTypes.State<string> = ProfileStore.Gold:Compute(function(gold)
+    local goldText: q.State<string> = ProfileStore.Gold:Compute(function(gold)
         return `보유 골드: {withCommas(gold:Get())} G`
     end)
 
@@ -144,7 +141,7 @@ end
 ```luau
 local function CrosshairOverlay()
     local mousePos = q.Source(Vector2.zero)
-    local dotPosition: QuadTypes.State<UDim2> = mousePos:Compute(function(pos)
+    local dotPosition: q.State<UDim2> = mousePos:Compute(function(pos)
         local p = pos:Get()
         return UDim2.fromOffset(p.X, p.Y)
     end)

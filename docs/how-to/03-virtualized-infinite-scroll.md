@@ -22,11 +22,8 @@ description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적�
 `Position`에 쓸지는 전적으로 `updateFn`을 쓰는 사람의 몫입니다(3절).
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 
@@ -62,7 +59,7 @@ updateFn(item, index, offset, prev, ud) -> (result, ud)
 local function updateFn(
     item: any,
     index: number,
-    offset: QuadTypes.State<number>,
+    offset: q.State<number>,
     prev: any,
     ud: any
 ): (any, any)
@@ -73,7 +70,7 @@ local function updateFn(
     if not prev then
         -- 새 요소: 이전 Source를 재사용하지 말고 처음부터 올바른 값으로 만든다
         local layoutOrder = q.Source(index)
-        local order: QuadTypes.State<number> = layoutOrder:With(offset):Compute(function(i)
+        local order: q.State<number> = layoutOrder:With(offset):Compute(function(i)
             return i:Get() + offset:Get()
         end)
         return D.Frame {
@@ -143,7 +140,7 @@ local function VirtualList(props: { items: { { id: string, label: string } } })
             return prev, ud
         end
         local abs = q.Source(entry.absIndex)
-        local position: QuadTypes.State<UDim2> = abs:Compute(function(a)
+        local position: q.State<UDim2> = abs:Compute(function(a)
             return UDim2.new(0, 0, 0, (a:Get() - 1) * ROW)
         end)
         local row = D.Frame {

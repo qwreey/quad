@@ -16,11 +16,9 @@ description: 불변 프로퍼티 가방 — 생성·setter 체인·Peek/Apply/Ov
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.StateData<T>` 등)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
+local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.FieldOut<T>` 등)
 local D = q.D
 ```
 
@@ -159,7 +157,7 @@ local cleared = base:BackgroundTransparency(q.None) -- 명시 해제
 local bumped = base:LayoutOrder(function(old) return (old :: number) + 1 end)
 -- 변환: 지금 값이 State면 :Compute로 이어지고 old는 핸들이다
 local doubled = live:LayoutOrder(function(old)
-    return (old :: QuadTypes.StateData<number>):Get() * 2
+    return (old :: q.StateData<number>):Get() * 2
 end)
 
 -- base 는 여전히 0.5 — 전부 새 값이다

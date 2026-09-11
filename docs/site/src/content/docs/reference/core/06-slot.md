@@ -12,11 +12,9 @@ Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 �
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>) -- 타입 주석용(`QuadTypes.SlotItem<T>` 등)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
+local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.SlotItem<T>`·`QuadTypes.KeyGone`)
 local D = q.D
 ```
 
@@ -391,7 +389,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
     item: Row | QuadTypes.KeyGone,
     index: number,
-    offset: QuadTypes.Source<number>,
+    offset: q.Source<number>,
     prev: QuadTypes.SlotItem<Instance>?,
     ud: nil
 ): (any, nil)
@@ -489,7 +487,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
     item: Row | QuadTypes.KeyGone,
     _index: number,
-    _offset: QuadTypes.Source<number>,
+    _offset: q.Source<number>,
     prev: QuadTypes.SlotItem<Instance>?,
     _ud: nil
 ): (any, nil)

@@ -19,8 +19,8 @@ description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExten
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
+local QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
 local D = q.D
 ```
@@ -32,7 +32,7 @@ local D = q.D
 **시그니처**
 
 ```luau
--- require(<quad-roblox 모듈 경로>) 가 돌려주는 테이블의 유일한 값 필드
+-- require("@game/ReplicatedStorage/roblox_packages/quad_roblox") 가 돌려주는 테이블의 유일한 값 필드
 QuadRoblox: <T>(quad: T) -> RobloxExtension
 ```
 
@@ -145,7 +145,7 @@ export type RobloxExtension = {
 `OnChangeFn`, 그리고 위 다섯 키의 모양인 `RobloxExtension`입니다.
 
 ```luau
-local RobloxModule = require(<quad-roblox 모듈 경로>)
+local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 local fade: RobloxModule.Tween<number> = q.Tween({ Value = 0, Time = 0.2 })
 ```
 

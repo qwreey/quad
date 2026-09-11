@@ -11,10 +11,8 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Dispatch.setLength(ownerKey, i, len, anchor, element)](#qdispatchsetlengthownerkey-i-len-anchor-element) · [q.Dispatch.setOffsetSource(ownerKey, i, source)](#qdispatchsetoffsetsourceownerkey-i-source) · [q.Dispatch.setEmpty(ownerKey, i, anchor)](#qdispatchsetemptyownerkey-i-anchor) · [q.Dispatch.getOffsetAt(ownerKey, at)](#qdispatchgetoffsetatownerkey-at) · [q.Dispatch.getBlocker(ownerKey)](#qdispatchgetblockerownerkey) · [q.Dispatch.getBookkeeping(ownerKey)](#qdispatchgetbookkeepingownerkey)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 

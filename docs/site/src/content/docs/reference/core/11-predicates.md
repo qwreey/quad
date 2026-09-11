@@ -7,10 +7,8 @@ quad의 값 타입은 **브랜드**로 표시됩니다 — 생성 시점에 자�
 이 페이지의 심볼: [술어 표](#술어-표) · [포함 관계](#포함-관계) · [브랜드가 없는 값](#브랜드가-없는-값) · [사본 경계](#사본-경계)
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 ```
 

@@ -18,11 +18,9 @@ description: "값-레벨 트윈 래퍼, 프로퍼티에서의 3-상태 동작(�
 :::
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadTypes = require(<quad-types 모듈 경로>)
-local RobloxModule = require(<quad-roblox 모듈 경로>)
-local q = Quad:UseProvider(RobloxModule.QuadRoblox)
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
+local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox") -- `Tween<T>` 타입
 local D = q.D
 ```
 
@@ -58,7 +56,7 @@ export type TweenOptions<T> = {
 ```luau
 local open = q.Source(false)
 
-local size = open:Compute(function(self: QuadTypes.StateData<boolean>): RobloxModule.Tween<UDim2>
+local size = open:Compute(function(self: q.StateData<boolean>): RobloxModule.Tween<UDim2>
 	return q.Tween({
 		Value = if self:Get() then UDim2.fromOffset(320, 200) else UDim2.fromOffset(320, 0),
 		Time = 0.25,
@@ -177,7 +175,7 @@ local animated = alpha:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Qu
 local reduceMotion = q.Source(false)
 local guarded = alpha:Apply(q.Animate({
 	Time = 0.3,
-	CanAnimate = reduceMotion:Compute(function(self: QuadTypes.StateData<boolean>): boolean
+	CanAnimate = reduceMotion:Compute(function(self: q.StateData<boolean>): boolean
 		return not self:Get()
 	end),
 }))

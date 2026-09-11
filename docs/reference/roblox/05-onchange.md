@@ -15,11 +15,9 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 :::
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local DModule = require(<quad-roblox 모듈 경로의 D 하위 모듈>) -- 클래스별 OnChange 유니언 타입
-local q = Quad:UseProvider(QuadRoblox)
 local D = q.D
 ```
 

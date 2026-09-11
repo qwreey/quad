@@ -7,11 +7,8 @@ description: "Studio에서 디자인한 UI 트리에 Claim으로 quad의 반응�
 > **다루는 개념**: `q.Claim`, `D.Mapper` 디스크립터, `template:Clone()`, `Slot`
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
-local Quad = require(<quad-base 모듈 경로>)
-local QuadRoblox = require(<quad-roblox 모듈 경로>).QuadRoblox
-local QuadTypes = require(<quad-types 모듈 경로>)
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.D
 local M = D.Mapper
 ```
@@ -27,7 +24,7 @@ Instance 트리를 quad 소유로 가져와, quad가 만든 트리와 똑같이 
 ```luau
 local template = script.Parent:WaitForChild("ItemCard")
 local clicks = q.Source(0)
-local clickText: QuadTypes.State<string> = clicks:Compute(function(c)
+local clickText: q.State<string> = clicks:Compute(function(c)
     return `클릭 횟수: {c:Get()}`
 end)
 
@@ -74,7 +71,7 @@ props에 안 쓴 프로퍼티는 quad가 건드리지 않습니다.
 ```luau
 local ItemTemplate = ReplicatedStorage:WaitForChild("Templates"):WaitForChild("ItemCard")
 
-local function ItemCard(item: { id: string, label: string }, label: QuadTypes.Source<string>)
+local function ItemCard(item: { id: string, label: string }, label: q.Source<string>)
     local card = ItemTemplate:Clone()
     return q.Claim(card, M.Frame(M.Root)({
         M.TextLabel("ItemName")({ Text = label }),
@@ -133,7 +130,7 @@ local ItemTemplate = D.Frame {
 코드는 손댈 것이 없습니다.
 
 ```luau
-local function ItemCard(item: { id: string, label: string }, label: QuadTypes.Source<string>)
+local function ItemCard(item: { id: string, label: string }, label: q.Source<string>)
     local card = ItemTemplate:Clone()          -- 정적 프로퍼티는 이미 들어가 있다
     return q.Claim(card, M.Frame(M.Root)({     -- 디스크립터는 사본마다 새로 만든다
         M.TextLabel("ItemName")({ Text = label }),
@@ -230,7 +227,7 @@ Studio에서 만든 창 안의 특정 영역에 동적 목록을 마운트하려
 claim하고 `Slot`을 숫자 키 자리에 넣으면 됩니다.
 
 ```luau
-local function ShopWindow(isOpen: QuadTypes.Source<boolean>, rows: QuadTypes.Slot<Instance>)
+local function ShopWindow(isOpen: q.Source<boolean>, rows: q.Slot<Instance>)
     local window = ReplicatedStorage:WaitForChild("Templates"):WaitForChild("ShopWindow"):Clone()
 
     q.Claim(window, M.Frame(M.Root)({
