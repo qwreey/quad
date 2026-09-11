@@ -43,6 +43,6 @@ import VersionLine from '../../components/VersionLine.astro';
 		코어는 엔진 op를 주입받는 순수 모듈이고 백엔드는 `UseProvider` 한 줄로 부착됩니다 — Roblox 백엔드와 헤드리스 mock이 같은 문으로 들어옵니다. `Frame { … }` 안에 올 수 있는 값과 키는 핸들러 레코드 하나를 등록하면 늘어나고, 우선순위 축은 열린 숫자 공간입니다.
 	</Card>
 	<Card title="Studio 템플릿 Claim" icon="puzzle">
-		디자이너가 제작한 Studio UI 템플릿을 `Clone()` 뒤 `Claim()`으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다.
+		디자이너가 제작한 Studio UI 템플릿을 `Clone()` 뒤 `Claim()`으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다. 템플릿은 정적 프로퍼티만 심어 `D`로 만들어도 됩니다 — 원소가 많을 때는 하나하나 짓는 것보다 엔진의 네이티브 `Clone()`으로 사본을 뜨는 쪽이 싸고, 바뀌는 값만 `Claim`의 디스크립터에 심습니다.
 	</Card>
 </CardGrid>
