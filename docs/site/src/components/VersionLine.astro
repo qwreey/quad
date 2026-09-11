@@ -1,0 +1,19 @@
+---
+// [2026-09-11 사용자] 랜딩 히어로 아래 한 줄 — 현재 릴리즈와 메인 패키지(quad_base) 링크. 버전 소스는 ../version.ts.
+import { QUAD_VERSION, PESDE_PACKAGE, PESDE_URL } from '../version';
+---
+
+<p class="version-line">
+	현재 릴리즈 <strong translate="no">v{QUAD_VERSION}</strong> — pesde
+	<a href={PESDE_URL} translate="no"><code>{PESDE_PACKAGE}</code></a>
+	(백엔드 <code>quad_roblox</code>와 타입 <code>quad_types</code>도 같은 버전으로 함께 게시됩니다)
+</p>
+
+<style>
+	.version-line {
+		text-align: center;
+		color: var(--sl-color-gray-2);
+		font-size: var(--sl-text-sm);
+		margin-top: -0.5rem;
+	}
+</style>

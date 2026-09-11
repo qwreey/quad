@@ -44,6 +44,8 @@ export default defineConfig({
 				},
 			},
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/qwreey/quad' }],
+			// [2026-09-11 사용자] 헤더 로고 옆 현재 버전 배지(quad-base/pesde.toml을 빌드 시 읽음 — src/version.ts) → pesde 패키지 페이지 링크
+			components: { SiteTitle: './src/components/SiteTitle.astro' },
 			tableOfContents: {
 				minHeadingLevel: 2,
 				maxHeadingLevel: 4,

@@ -2,6 +2,16 @@
 
 Compile-time version pattern matching for string literal types, used by **quad**, not quad-specific. `CheckVersion<Actual, Pattern>` compares a version literal against glob (`*`) / caret (`N^`) patterns; SemVer prerelease and build tails are handled (see the source header for the rules).
 
-Part of the [quad](https://github.com/qwreey/quad) monorepo. Documentation (Korean): [`docs/`](https://github.com/qwreey/quad/tree/main/docs) — start at [왜 Quad인가](https://github.com/qwreey/quad/blob/main/docs/overview/01-why-quad.md) and [설치](https://github.com/qwreey/quad/blob/main/docs/getting-started/00-installation.md).
+Part of the [quad](https://github.com/qwreey/quad) monorepo. **Documentation (Korean): <https://quad.qwreey.moe/>** — start at [설치](https://quad.qwreey.moe/getting-started/00-installation/) or [왜 Quad인가](https://quad.qwreey.moe/overview/01-why-quad/); the same text is in the repo under [`docs/`](https://github.com/qwreey/quad/tree/main/docs).
+
+All five packages are published together at the same version — `quad_base` is the main one, and the docs show its version:
+
+| Package | Role | You add it? |
+|---|---|---|
+| `qwreey/quad_base` | engine-agnostic core (reactivity + dispatch engine) | yes |
+| `qwreey/quad_roblox` | Roblox backend (`D`, `Tween`/`Animate`, `OnChange`, `Claim`) | yes, for Roblox |
+| `qwreey/quad_types` | public type contract (no implementation) | yes, for `--!strict` consumers |
+| `qwreey/quad_error` | level-tagged error utility | no — pulled in as a dependency |
+| `qwreey/type_version_check` | compile-time version pattern matching | no — pulled in as a dependency |
 
 License: MIT.
