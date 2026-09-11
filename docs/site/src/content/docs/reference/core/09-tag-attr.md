@@ -232,7 +232,7 @@ type AttrConstructor = setmetatable<{
 
 ## 삭제 규칙 — `None`만이 지운다
 
-세 가지를 구별하세요.
+네 가지를 구별하세요.
 
 | 한 일 | 결과 |
 |---|---|
