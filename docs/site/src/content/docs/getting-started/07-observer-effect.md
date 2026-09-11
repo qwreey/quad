@@ -106,12 +106,13 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 **실행하면** 만들어지는 즉시 `이펙트: 지금 0`이 찍힙니다. 버튼을 한 번 누르면 **먼저 `정리: 0회차`가 찍힌 뒤** `이펙트: 지금 1`이 이어집니다 — 다음 실행 직전에 직전 회차의 뒤처리가 도는 것입니다. 그리고 카드를 `Destroy()`하면 `정리: 1회차`가 한 번 더 찍히고 **끝납니다.** 그 뒤로는 `count`를 아무리 바꿔도 이 이펙트는 조용합니다.
 <!-- mock 실측 2026-09-11: gs.gs2probe.luau 2a~2d — run0 / run0,clean0,run1 / +clean1 / 이후 Set에 변화 없음 -->
+<!-- mock 실측 2026-09-11: gs.effectswap.luau — State<EffectHandle?> 자리를 B로 갈아 끼우면 A cleanup이 한 번 돈다(A run0/clean/run1 → swap → B run1, A cleanup → …) — 넷째 자리 -->
 
 `Observer`와 갈리는 지점은 셋입니다.
 
 - **의존성을 여럿 겁니다** — `q.Effect(fn, a, b, c)`. 어느 하나가 움직여도 다시 돕니다. `State`/`Source`뿐 아니라 **`Ref`도 의존성 자리에 놓을 수 있습니다**(바로 아래가 그 예입니다).
 - **값이 인자로 오지 않습니다** — 클로저로 `count:Get()`을 직접 읽습니다(`fn`이 받는 인자는 핸들 자신 하나뿐입니다).
-- **cleanup을 돌려줄 수 있습니다** — 도는 자리는 셋입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, 그리고 **매달린 인스턴스가 파괴될 때**이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
+- **cleanup을 돌려줄 수 있습니다** — 도는 자리는 넷입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, **매달린 인스턴스가 파괴될 때**, 그리고 **그 숫자 키 자리를 다른 값으로 갈아 끼울 때**(1절 접힘에서 본 것처럼 자리를 `State`로 잡아 뒀다가 바꾸는 경우)이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
 
 `Observer`와 마찬가지로 **숫자 키 자리에 넣어야 계속 삽니다.** 넣지 않으면 만들 때 한 번 돌고 조용해집니다.
 
@@ -171,6 +172,6 @@ const card = D.Frame {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Observer` / `Effect`](/reference/core/05-observer-effect/) — 구독 네 진입점, 보류와 재생, cleanup이 도는 세 자리
+- [레퍼런스: `Observer` / `Effect`](/reference/core/05-observer-effect/) — 구독 네 진입점, 보류와 재생, cleanup이 도는 네 자리
 - [레퍼런스: 생명주기 훅](/reference/sugar/04-lifecycle-hooks/) — `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`(`Ref`/`Effect` 위에 얹은 슈거)
 - [04. 외부 신호를 상태로 들여오기](/how-to/04-network-and-input-bridge/) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치

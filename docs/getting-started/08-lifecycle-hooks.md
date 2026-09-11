@@ -176,4 +176,4 @@ cleanup이라, 어디에도 놓지 않으면 묶일 인스턴스가 없어 그 �
 
 - [레퍼런스: 생명주기 훅](../reference/sugar/04-lifecycle-hooks.md) — 셋의 시그니처와 불리는 시점, `OnRendered`가 보장하지 않는 것, 여러 개 등록했을 때의 순서
 - [레퍼런스: `Ref`](../reference/core/07-ref.md) — 이 훅들이 얹혀 있는 `PreRef`/`PostRef` 프리미티브
-- [레퍼런스: `Observer` / `Effect`](../reference/core/05-observer-effect.md) — cleanup이 도는 세 자리
+- [레퍼런스: `Observer` / `Effect`](../reference/core/05-observer-effect.md) — cleanup이 도는 네 자리
