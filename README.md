@@ -15,12 +15,13 @@ Roblox 엔진용 **DOMless UI 렌더러**입니다. 가상 DOM 없이 반응형 
 
 ## 설치
 
-패키지 매니저는 [pesde](https://pesde.dev)입니다. 패키지 이름은 `qwreey/quad_base`(코어, luau 타깃)와 `qwreey/quad_roblox`(Roblox 백엔드, roblox 타깃) 둘이고, 나머지(`quad_types`·`quad_error`·`type_version_check`)는 의존성으로 따라 들어옵니다.
+패키지 매니저는 [pesde](https://pesde.dev)입니다. 직접 적을 패키지는 셋입니다 — `qwreey/quad_base`(코어), `qwreey/quad_roblox`(Roblox 백엔드), 그리고 `qwreey/quad_types`(타입 — 설정 모듈이 타입을 다시 내보내려면 직접 의존성이어야 링커가 생깁니다, [설치 문서](./docs/getting-started/00-installation.md)). 나머지 둘(`quad_error`·`type_version_check`)은 의존성으로 따라 들어옵니다.
 
 ```toml
 [dependencies]
 quad_base = { name = "qwreey/quad_base", version = "^3.0.0" }
 quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
+quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 ```
 
 > **[2026-09-10 기준]** pesde 레지스트리에 `3.0.0`이 게시돼 있습니다(문서: <https://quad.qwreey.moe/>). 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
