@@ -125,7 +125,7 @@ luau-lsp analyze \
   <검사할 파일들>
 ```
 
-- **`LuauSolverV2=true`가 없으면** quad 소스 자체가 파싱되지 않습니다 — `TypeError: read keyword is illegal here`.
+- **`LuauSolverV2=true`가 없으면** quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here`.
 - **`LuauTarjanChildLimit`을 올리지 않으면** `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다. 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다.
 - 나머지 둘(`LuauSubtypingIterationLimit`/`LuauTypeInferIterationLimit`)은 컴포넌트가 커질 때 같은 이유로 필요해집니다.
 

@@ -55,14 +55,15 @@ Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE)
 단위는 값이 끼기 전까지의 고정 접두사**(`State: dep #`)이고, 그 접두사는 한 줄
 안에 온전히 있습니다. 헬퍼가 있었다면 접두사조차 다른 파일에 있었을 것입니다.
 
-메시지 모양 자체도 하나로 맞춰 둡니다 — **`주어: 이유 (got X)`**.
+메시지 모양 자체도 하나로 맞춰 둡니다 — **`주어: 이유`**, 그리고 받은 값을 말할 때만 뒤에 **`(got X)`**.
 
 - **주어**는 사용자가 부른 표면의 이름입니다. 메소드는 `Slot:List`, 네임스페이스 함수는
   `Dispatch.setOffsetSource`(`quad.` 접두는 붙이지 않습니다), 생성자·불변식은 타입
   이름만(`State:`, `Tween:`). 인자 값은 주어가 아니라 이유 쪽에 싣습니다.
 - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 em-dash(` — `) 뒤에.
 - **받은 값**은 문장 끝에 괄호로 — `(got {typeof(x)})`. `, got X` 같은 쉼표형은
-  쓰지 않습니다.
+  쓰지 않습니다. 받은 값을 서술하지 않는 메시지(이미 claim된 Instance,
+  이미 프로바이더가 설치된 모듈 같은 불변식 위반)에는 이 꼬리가 없습니다.
 
 ```
 Slot:List: updateFn must be a function (got string)

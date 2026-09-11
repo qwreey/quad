@@ -80,7 +80,7 @@ publish 대상 아님. 역전된 설계는 quadnomicon 각 권이 "이런 시도
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.D.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
-- [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유 (got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
+- [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
 
 ### API Reference — 손으로 관리하는 심볼 레퍼런스(26페이지 + 색인)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은

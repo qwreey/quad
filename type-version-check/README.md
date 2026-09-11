@@ -1,6 +1,6 @@
 # qwreey/type_version_check
 
-Compile-time version pattern matching for string literal types, used by **quad**, not quad-specific. `CheckVersion<Actual, Pattern>` compares a version literal against glob (`*`) / caret (`N^`) patterns; SemVer prerelease and build tails are handled (see the source header for the rules).
+Compile-time version pattern matching for string literal types, used by **quad**, not quad-specific. `CheckVersion<Actual, Pattern>` compares a version literal against glob (`*`) / caret (`N^`) patterns; SemVer prerelease and build tails are handled (see the source header for the rules). The same rules are exported as a runtime function, `matchesPattern(actual, pattern)`, which is what `quad_roblox` uses to gate the installed `quad_base` version.
 
 Part of the [quad](https://github.com/qwreey/quad) monorepo. **Documentation (Korean): <https://quad.qwreey.moe/>** — start at [설치](https://quad.qwreey.moe/getting-started/00-installation/) or [왜 Quad인가](https://quad.qwreey.moe/overview/01-why-quad/); the same text is in the repo under [`docs/`](https://github.com/qwreey/quad/tree/main/docs).
 

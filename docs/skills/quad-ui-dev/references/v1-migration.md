@@ -14,7 +14,7 @@ luau-lsp analyze --flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 \
   --definitions=<roblox defs> <files>
 ```
 
-- No `LuauSolverV2` → quad's own sources fail to parse: `TypeError: read keyword is illegal here`.
+- No `LuauSolverV2` → type-checking quad's own sources fails: `TypeError: read keyword is illegal here`.
 - No `LuauTarjanChildLimit` → even `D.Frame { Name = "x" }` dies:
   `TypeError: Internal error: Code is too complex to typecheck!`
 
@@ -71,12 +71,15 @@ v2's `state:With(...)` exists and is a *different* API (it mints one extra node)
   `IsTweening` / `IsPropertyTweening`, `Tween.Easings.*`, function easings, `CallBack`/`OnStepped`/
   `Ended`, tweening plain tables. Only declarative `q.Tween{}` / `q.Animate{}`; overlap is settled by
   `Override = "Cancel" | "Finish"`.
-- **`Apply(inst){props}` rebinding** — rejected; only `q.Claim(inst, D.Mapper…)` survives (claim-once,
-  all direct children mapped, never a shared engine container).
+- **`Apply(inst){props}` rebinding** (only on `master`'s unreleased 2.25 line; not in the 2.24 release) —
+  rejected; only `q.Claim(inst, D.Mapper…)` survives (claim-once, all direct children mapped, never a
+  shared engine container).
 - **`Signal.Bindable` / `Disconnecter`** — cleanup is bound to instance lifetime; disconnect your own
   connections in `q.OnDestroyed`.
-- **`Quad.Lang`, `tracker.lua` (hot reload), `Quad.Round`, `customWarn`, `RoundSize`** — out of scope.
-  The surviving shorthands are exactly `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale`.
+- **`Quad.Lang`, `tracker.lua` (hot reload), `Quad.Round`, `RoundSize`** — out of scope. `RoundSize` is the
+  only shorthand that is gone: `Corner` / `PaddingAll` / `PaddingAllOffset` / `Scale` were **renamed** to
+  `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale`. They now manage only the child they created
+  themselves, so a `UICorner` you placed in Studio is left alone.
 
 ## 3. Strict-mode blockers (verbatim diagnostic heads)
 
