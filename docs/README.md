@@ -42,7 +42,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`02-from-v1.md`](./overview/02-from-v1.md) — quad v1에서 오는 분께: 없어진 것과 왜 없앴나(표 10행, 근거는 v1 내부 스냅샷 범위만), 새로 생긴 것이 v1의 어떤 자리를 메우나, 이관 틀 셋 — (a) 화면 단위 재작성이 주 경로, (b) v1·v2 화면 분할 공존은 **지원 경로**(양방향 브릿지, 경계를 넘는 건 항상 평범한 값, GC 상호작용은 [2026-09-10 기준] 미실측이라 핸들의 주인을 명시), (c) `Claim`으로 v1 트리 인계는 **비권장**(이중 소유) — 그리고 v1·v2 동시 로드 공식 허용 + 조건 셋, 새로 짤 때 전제 여섯. 사용자 결정 2026-09-10. v1 사용자는 회사 내부·외부 둘 다라 "안심시키기"와 "옮길 값어치" 둘 다 담는다. 스킬 링크 둘은 사이트에서 평문으로 벗겨진다(`sync-docs.py`).
 
 ### Getting Started (시작하기) — 20편(선형 튜토리얼)
-**[2026-09-10 재구성, 2026-09-11 재편]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸고(`13-blocker.md`와 `05-tag-attr.md`는 같은 날 추가), 2026-09-11에 `Ref`와 `Observer`/`Effect`를 갈라 두 장으로(옛 06 `ref-and-effect` 해체, 옛 04 §2 Observer가 07로) + 함수형 패턴 장(11) 신설로 18편이 됐다. 같은 날 생명주기 훅 장(08)이 더해져 19편, 같은 날 밤 핸들러 맛보기 장(18)이 더해져 20편이다. 페이지 구조는 목표 한 줄 → 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다).
+**[2026-09-10 재구성, 2026-09-11 재편]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸고(옛 `13-blocker.md`(지금 `16-blocker.md`)와 `05-tag-attr.md`는 같은 날 추가), 2026-09-11에 `Ref`와 `Observer`/`Effect`를 갈라 두 장으로(옛 06 `ref-and-effect` 해체, 옛 04 §2 Observer가 07로) + 함수형 패턴 장(11) 신설로 18편이 됐다. 같은 날 생명주기 훅 장(08)이 더해져 19편, 같은 날 밤 핸들러 맛보기 장(18)이 더해져 20편이다. 페이지 구조는 목표 한 줄 → (필요한 장에서는) 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다).
 - [`00-installation.md`](./getting-started/00-installation.md) — 까는 것만: 배포 경로 표(**[2026-09-10 기준] pesde만 제공**), pesde 의존성 **셋**(`quad_types`도 직접 — 01의 타입 재수출이 그 링커를 쓴다), Rojo 매핑(rojo sourcemap으로 검증), 타입 검사 플래그 넷. Wally·`.rbxm`은 `<details>` 하나로 접었다.
 - [`01-setup.md`](./getting-started/01-setup.md) — 프레임워크 설정하기: 설정 모듈 `ReplicatedStorage/Client/UI/Quad`(문자열 `@game/…` require + 타입 재수출 + `UseProvider`)와 진입점 `StarterPlayerScripts/Main`(첫 `ScreenGui`·확인용 라벨). quad-base/quad-roblox가 왜 나뉘는지가 여기서 나온다.
 - [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `D.Frame` 카드 + 라벨 자식. 문자 키=프로퍼티, 숫자 키=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
@@ -53,7 +53,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`07-observer-effect.md`](./getting-started/07-observer-effect.md) — 관측하기: `:Observer`(인스턴스가 파괴되면 관측이 멈춘다·보류와 재생)와 `q.Effect`(의존 여럿·cleanup), §3 화면 안쪽은 `Effect`가 아니라 값으로(프로퍼티 직접 쓰기 안티패턴), §4 `Ref`를 의존성으로(게임패드 선택 — cleanup이 실제로 필요한 예). 접힘으로 핸들을 State에 담아 끄는 법.
 - [`08-lifecycle-hooks.md`](./getting-started/08-lifecycle-hooks.md) — 생성만 보고 싶다면: `PreRef`+`:Callback`/`PostRef`+`:Callback`/cleanup만 있는 `Effect`를 손으로 짠 뒤, 그것과 **정확히 같은 것**이 `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`임을 실제 구현 열 줄로 보인다(바텀업).
 - [`09-modifier.md`](./getting-started/09-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
-- [`10-slot.md`](./getting-started/10-slot.md) — 자식이 들어갈 자리: `Slot`을 숫자 키 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(내부적으로 `Owned=false` `:Single`). `:List`는 암시만.
+- [`10-slot.md`](./getting-started/10-slot.md) — 자식이 들어갈 자리: `Slot`을 숫자 키 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(자식 처리기가 맡는다 — 옛 원소는 내려질 뿐; 옛 서술 "내부적으로 `:Single`"은 2026-09-11 정정). `:List`는 암시만.
 - [`11-components.md`](./getting-started/11-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 자식은 10의 `Slot`을 `props.Children or q.None`으로 받는다.
 - [`12-functions.md`](./getting-started/12-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 값을 돌려주는 팩토리(`highlightColor`)와 컴포넌트에 팩토리를 넘기는 패턴(`props.Watch` → Effect), 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, `:Apply`의 `__apply` 객체 팔 예고(16의 Blocker), Hook 규칙이 없는 이유.
 - [`13-lists.md`](./getting-started/13-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴, 원소 하나짜리 `:Single`(Offset이 필요할 때).
@@ -62,7 +62,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`16-blocker.md`](./getting-started/16-blocker.md) — 흐름을 잠시 막기: 값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않게 `q.Blocker`로 통지를 모았다가 한 번에 — 게이트는 **파이프 뒤**(통지가 한 줄로 모인 자리)에 하나(2026-09-11 사용자 지적·mock 실측: 원천마다 두면 통지가 게이트 수만큼). 접힘 셋(원천마다 게이트를 두면 / 게이트가 실제 메커니즘 / 시간 정책은 레퍼런스로).
 - [`17-laziness.md`](./getting-started/17-laziness.md) — 값은 언제 흐르나: 파이프·Observer·Effect·`Slot:List`·`Animate` 옵션·`Blocker` 여섯 자리를 한 표로 대조(컨베이어 벨트 비유는 여기). 사용자 결정 2026-09-10 — lazy는 라이브러리 전체에 드러나므로 뒤에서 한 번에.
 - [`18-handlers.md`](./getting-started/18-handlers.md) — 자리에 놓인 값은 누가 처리하나(핸들러 맛보기): 자리마다 핸들러 목록에서 첫 승낙자가 맡는다(`q.Dispatch.listHandlers`/`getHandler`로 들여다보기), `State`는 벗겨서 한 칸 아래로(`State<X>`가 되는가 = `X`가 되는가), 갈아 끼우면 이전 것이 빠지는 방식 여섯(Tag 차이만·Attr 이름 전부·Ref 비움·Observer 정지·Effect cleanup·Instance 떼기 — mock 실측), 심층은 레퍼런스 extend/02·Quadnomicon 08로. 사용자 요청 2026-09-11(남의 코드를 읽을 수 있는 정도가 목표).
-- [`19-wrap-up.md`](./getting-started/19-wrap-up.md) — 정리: 만든 것 요약 열여덟, 다음 읽을 곳, v1 콜아웃 `<details>`.
+- [`19-wrap-up.md`](./getting-started/19-wrap-up.md) — 정리: 만든 것 요약 열아홉(00~18), 다음 읽을 곳, v1 콜아웃 `<details>`.
 
 ### How-To Guides (실전 레시피) — 9편
 **[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤.
@@ -76,7 +76,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
 - [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
 
-### API Reference — 손으로 관리하는 심볼 레퍼런스(26페이지 + 색인)
+### API Reference — 손으로 관리하는 심볼 레퍼런스(25편 + 색인)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은
 시그니처(quad-types에서 복사) → 인자 표 → 반환 → 동작(불변식·**에러 문구 verbatim**) → 예제(mock 실행·신 솔버 검사) → 관련. **생성기 없음** — 손으로 쓴 심볼은
 전부 손으로 "관리"한다(사용자: 아키텍처가 견고해 자동화 이점이 작다). `D.<Class>` 31개 페이지도 만들지 않는다 — 표면 한 페이지·한 예시만 두고 각 클래스의 프로퍼티·이벤트는

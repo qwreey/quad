@@ -243,4 +243,4 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 - [D — 문자 키](./02-d.md#문자-키--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
 - [15. 움직이게 하기 — `Tween`과 `Animate`](../../getting-started/15-animation.md)
-- [05. 테마와 동적 스타일링](../../how-to/05-theme-and-dynamic-styling.md)
+- [05. 디자인 토큰과 테마 전환](../../how-to/05-theme-and-dynamic-styling.md)

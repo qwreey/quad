@@ -225,7 +225,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: Fusion도 Vide도 quad v1도 가상 DOM을 두지 않았고, 이 선택은 그대로 이어받았습니다. 반대편 길인 vdom 재조정은 리스트 key 관리를 요구하고(불안정하면 자식 상태가 유실됩니다), 훅 호출 순서 규칙을 강제하며, 고빈도 갱신엔 리렌더를 우회하는 별도 API를 공식적으로 덧붙여야 했습니다(react-lua).
 - **우리가 넘은 방법**: `D.Frame { ... }`이 그 자리에서 실제 `Instance`를 만들어 돌려주고, 변화는 개별 프로퍼티 바인드에만 도달합니다. 중간 트리도 diffing 단계도 없어서 위 세 문제 자체가 생기지 않습니다.
 - **치른 대가**: "지금 트리가 어떻게 생겼는가"가 코드 한 곳에 드러나지 않습니다. 변화가 leaf 바인드로 흩어져 복잡한 조건부 트리는 재구성하기 어렵습니다. 렌더마다 서브트리를 통째로 다시 기술하는 vdom 쪽이 이 축에서는 낫습니다. **산 것**은 위의 셋입니다 — key 관리도, 훅 호출 순서 규칙도, 고빈도 갱신용 별도 API도 생길 자리가 없습니다. 설계 변경으로 해소되는 종류가 아니라 관측 도구로만 보완되고, 그 자리를 메울 도구는 [§8의 "아직 없지만 계획이 있다"](#아직-없지만-계획이-있다)에 `quad-debug`로 적어 뒀습니다.
-- **자세히**: [02. 첫 화면 — 부른 순간 실물 Instance](/getting-started/02-first-screen/), [Quadnomicon Vol. 9 — DOMless Slot 트리](/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
+- **자세히**: [02. 첫 화면](/getting-started/02-first-screen/), [Quadnomicon Vol. 9 — DOMless Slot 트리](/quadnomicon/09-fragment-breakthrough-and-domless-slot/)
 
 ### (2) 밀 때는 신호만, 계산은 읽을 때 — 그리고 의존성은 손으로 적는다
 
@@ -265,7 +265,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **우리가 넘은 방법**: Tween은 노드가 아니라 **프로퍼티 자리에 꽂는 값**입니다. 그래프는 비즈니스 상태가 바뀔 때만 돌고 보간은 엔진 레이어가 하므로, 프레임 클럭도 eager 노드도 교차 lifetime 체크도 Quad엔 아예 없습니다.
 - **다른 관점**: **산 것**은 보간과 프레임 타이밍을 엔진(`TweenService`)이 맡는다는 것입니다 — 렌더 라이브러리가 트윈을 직접 구현하면 엔진의 애니메이션 관리를 전혀 따르지 못하고, 그 대신 Lua 그래프 안으로 프레임 클럭과 eager 노드가 들어옵니다. 세 도구 중 보간을 엔진에 넘기는 것은 quad뿐입니다. 남는 사실 하나는 그대로 남습니다 — **트윈 중인 값을 되읽어 다른 파생값의 입력으로 쓸 수 없습니다.** 라이브 읽기도 완료 훅도 없어서, 애니메이션 값을 그래프에 얽던 코드는 그대로 옮겨오지 않습니다. 그래프 노드로 두는 Fusion/Vide 쪽이 이 축에서는 낫고, 이 자리를 메우는 방향은 [§8의 "아직 없지만 계획이 있다"](#아직-없지만-계획이-있다)에 "지속 업데이트 원천"으로 적어 뒀습니다.
 - **알아 둘 것**: 명령형 API도 커스텀 함수 이징도 스텝 콜백도 없습니다. 엔진이 이징을 `Enum.EasingStyle`로만 받기 때문에 생기는 위임의 귀결입니다.
-- **자세히**: [15. 움직이게 하기](/getting-started/15-animation/), [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/how-to/08-migrating-from-v1/), [05. 테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
+- **자세히**: [15. 움직이게 하기](/getting-started/15-animation/), [08. quad v1에서 v2로 옮기기 — 제거된 기능과 이관 경로](/how-to/08-migrating-from-v1/), [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/)
 
 ### (6) 스타일시트 대신 Modifier, 그리고 열린 우선순위 축
 
@@ -299,7 +299,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **우리가 넘은 방법**: 메시지 리터럴은 던지는 줄에 통째로 남기고(보간은 값 부분에만), 공개 표면 함수에 태그를 달아 스택에서 걷어낸 뒤 **사용자 줄**을 blame합니다.
 - **알아 둘 것**: blame이 짚는 줄에는 경계가 있고, 그 경계는 quad의 선택이 아니라 Luau `error(level)`의 성질입니다. C 프레임이 태그된 표면을 직접 부르면(`pcall(fn, …)`처럼 함수를 그대로 넘기는 경우) `파일:줄` 접두가 사라집니다 — 메시지 자체는 그대로 남으므로 grep 경로는 끊기지 않습니다. 재진입에서는 최외곽 스캔이 바깥 진입 줄을 짚습니다(안쪽 줄이 필요한 자리는 `errorBeforeNearest` 쌍을 자리마다 가려 씁니다) → [Quadnomicon Vol. 11](/quadnomicon/11-static-grepability-and-error-architecture/).
 - **알아 둘 것**: `OnRendered`가 보장하는 것은 **자기 아래**(서브트리)의 완성이지 자기 위가 아닙니다 — 부모에 붙었음은 보장하지 않습니다([생명주기 훅](/reference/sugar/04-lifecycle-hooks/)).
-- **자세히**: [09. 디버깅과 트러블슈팅](/how-to/09-debugging-and-troubleshooting/), [Quadnomicon Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처](/quadnomicon/11-static-grepability-and-error-architecture/)
+- **자세히**: [09. 부록 — quad 에러 읽는 법](/how-to/09-debugging-and-troubleshooting/), [Quadnomicon Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처](/quadnomicon/11-static-grepability-and-error-architecture/)
 
 ---
 
@@ -344,7 +344,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 ## 9. 다음 걸음
 
 - **써보기**: [프레임워크 설정](/getting-started/01-setup/) → [첫 화면](/getting-started/02-first-screen/) → [값이 흐르게 하기](/getting-started/03-flowing-values/) → [반응하기](/getting-started/04-reacting/) → … → [컴포넌트로 쪼개기](/getting-started/11-components/) → [움직이게 하기](/getting-started/15-animation/) → [정리](/getting-started/19-wrap-up/)
-- **설치**: [00. 설치 및 환경 구축](/getting-started/00-installation/) — pesde + Rojo 절차와 타입 검사 플래그.
+- **설치**: [00. 설치](/getting-started/00-installation/) — pesde + Rojo 절차와 타입 검사 플래그.
 - **경계 규약부터 보기**: [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) — props 두 부분의 규칙, 우선순위 불변식, 자식을 `Slot`으로 받기.
 - **v1을 쓰고 계시다면**: [quad v1에서 오는 분께](/overview/02-from-v1/) — 없어진 것과 그 이유, 새로 생긴 것, 이관 틀 셋(재작성·화면 단위 공존·`Claim`)과 v1·v2 공존 조건. 절차는 [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/).
 - **속을 보고 판단하기**: [The Quadnomicon](/quadnomicon/01-revision-and-epochmap/) — 위 대가들이 왜 그렇게 결론났는지가 전부 여기 있습니다.

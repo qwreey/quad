@@ -122,4 +122,4 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 
 - [D — 숫자 키](/reference/roblox/02-d/#숫자-키--자식과-디스크립터)
 - [02. 폼 검증 패턴](/how-to/02-form-validation-pattern/)
-- [04. 네트워크·입력 브리지](/how-to/04-network-and-input-bridge/)
+- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/how-to/04-network-and-input-bridge/)

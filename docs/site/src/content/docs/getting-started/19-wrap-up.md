@@ -1,16 +1,17 @@
 ---
 title: "19. 정리 — 여기서부터 어디로"
-description: "열아홉 장에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
+description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
 ---
 > **대상 독자**: [18. 자리에 놓인 값은 누가 처리하나](/getting-started/18-handlers/)까지 따라온 개발자
 > **목표**: 만든 것을 되짚고, 다음에 읽을 곳 고르기
 
-여기서 새로 배우는 것은 없습니다.
+설치부터 핸들러까지 만든 것을 한 줄씩 되짚습니다.
 
 ---
 
 ## 여기까지 만든 것
 
+- [00](/getting-started/00-installation/) pesde와 Rojo로 **패키지 셋을 깔고**, 편집기와 CI에 타입 검사 플래그 넷을 넣었습니다.
 - [01](/getting-started/01-setup/) **설정 모듈** 하나에 `q`를 만들어 두고, 진입점에서 `ScreenGui`를 띄웠습니다.
 - [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 문자 키는 프로퍼티, 숫자 키는 자식, `Parent`는 밖에서.
 - [03](/getting-started/03-flowing-values/) `q.Source`와 `:Compute`로 값이 **원천에서 프로퍼티까지 흐르게** 했습니다.
@@ -32,22 +33,22 @@ description: "열아홉 장에서 만든 것을 한 줄씩 되짚고, 다음에 
 
 ## 화면을 내릴 때
 
-열아홉 장 동안 화면을 띄우기만 했으니 내리는 법도 한 번 적어 둡니다. 루트 하나를 `Destroy()`하면 됩니다.
+여기까지 화면을 띄우기만 했으니 내리는 법도 한 번 적어 둡니다. 루트 하나를 `Destroy()`하면 됩니다.
 
 ```luau
 -- 새 예시: 별도 스크립트(01장의 진입점에서 만든 screen을 내린다)
 screen:Destroy()
 ```
 
-**실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것 — `:Observer`, `q.Effect`(cleanup이 한 번 돕니다), 훅, 트윈 — 이 같이 멈춥니다. 07·08장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다 — `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 `Destroy()`한 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
+**실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것이 같이 멈춥니다. `:Observer`는 멈추고, `q.Effect`와 `q.OnDestroyed`는 각각 cleanup과 콜백이 **한 번 돈 뒤** 끝납니다. 07·08장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다. `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 `Destroy()`한 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
 <!-- mock 실측 2026-09-11: gs.teardown.luau — screen:Destroy() 뒤 자리에 묶인 Observer는 멈추고 Effect cleanup 1회, :Subscribe()한 강한 구독은 계속 돈다 -->
 
 ---
 
 ## 다음에 읽을 곳
 
-- **[실전 레시피](/how-to/01-component-conventions/)** — 재사용 가능한 컴포넌트를 만들 때의 경계 규약이 첫 장입니다. 이어서 폼 검증, 긴 목록, 외부 신호 브릿지, 테마, 헤드리스 테스트, Studio 템플릿 `Claim`, 그리고 부록인 [에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)이 있습니다.
-- **[API 레퍼런스](/reference/00-index/)** — 타입당 한 페이지. 시그니처·인자·에러 문구를 찾을 때.
+- **[실전 레시피](/how-to/01-component-conventions/)** — 재사용 가능한 컴포넌트를 만들 때의 경계 규약이 첫 장입니다. 이어서 폼 검증, 긴 목록, 외부 신호 브릿지, 테마, 헤드리스 테스트, Studio 템플릿 `Claim`, v1 이관, 그리고 부록인 [에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)이 있습니다.
+- **[API 레퍼런스](/reference/00-index/)** — 타입당 한 페이지. 시그니처·인자·에러 문구를 찾을 때. 시작하기에 안 나온 것 중 먼저 볼 만한 것은 이름 붙은 `Source` 묶음 [`Store`](/reference/core/04-store/)와, 컴포넌트 하나가 던져도 화면 조립이 멈추지 않게 하는 [`Fallback` / `Traceback`](/reference/sugar/05-fallback-traceback/)입니다.
 - **[The Quadnomicon](/quadnomicon/01-revision-and-epochmap/)** — 위의 동작들이 내부에서 어떻게 구현돼 있는지. 초보자용은 아닙니다.
 - **[왜 Quad인가](/overview/01-why-quad/)** — 이 설계가 무엇을 포기하고 무엇을 얻었는지, 다른 도구와의 차이.
 

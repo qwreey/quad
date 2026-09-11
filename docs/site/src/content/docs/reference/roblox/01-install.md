@@ -184,6 +184,6 @@ luau-lsp analyze --flag:LuauSolverV2=true \
 
 **관련**
 
-- [00. 설치 및 환경 구축](/getting-started/00-installation/) — 패키지 배치와 Rojo 매핑
+- [00. 설치](/getting-started/00-installation/) — 패키지 배치와 Rojo 매핑
 - [백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/) — 주입 슬롯 전수와 포팅 계약
 - [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/quadnomicon/10-multi-backend-abstract-machine/)

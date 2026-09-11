@@ -55,7 +55,7 @@ const b = q.Ref<<TextButton?>>(nil)     -- Ref<TextButton?> — 비어 있다가
 
 `Ref<nil>`을 그대로 숫자 키 자리에 놓으면 타입 검사가 그 자리에서 막습니다(`--!strict` 기준). `?`가 붙는 것은 **처음엔 비어 있기** 때문입니다. 숫자 키 자리에 놓은 `Ref`는 그 자리가 처리되기 전까지 `nil`이라, 사실상 항상 `T?` 모양입니다.
 
-같은 표기를 quad의 다른 자리에서도 씁니다 — `q.Slot<<Instance>>()`, `q.Context.Provider<<Theme>>("Theme")`, `q.Operator.Indexed<<number>>("Hp")`.
+같은 표기가 뒤 장들에서도 계속 나옵니다 — 예를 들어 `q.Slot<<Instance>>()`.
 <!-- strict 실측 2026-09-11: consumer/P5.luau — D.Frame { q.Ref(nil) }은 'Expected this to be … but got Ref<nil>'로 거부됨 -->
 
 </details>

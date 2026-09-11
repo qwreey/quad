@@ -9,7 +9,7 @@ description: "지금까지 여러 번 써 온 '함수를 값처럼 다루는' �
 
 새로 배우는 API가 없는 장입니다. 지금까지 여러 번 써 온 것 — `:Compute`에 함수를
 넘기고, `Effect`를 만들어 자리에 놓고, 컴포넌트를 부르는 것 — 은 전부 **함수를
-값처럼 다루는** 같은 습관이었습니다. 이 장은 그 습관에 이름을 붙이고, 그걸로
+값처럼 다루는** 같은 습관이었습니다. 이 장은 그 습관을 정리하고, 그걸로
 반복을 줄이는 법을 봅니다.
 
 Lua의 함수는 숫자나 테이블과 똑같은 **값**입니다. 변수에 담을 수도, 인자로 넘길
@@ -190,7 +190,7 @@ const plusTen = count:Apply(q.Operator.Sum(10))   -- 위에서 손으로 만든 
 `:Apply(factory)`는 "이 팩토리가 만들어 낸 연산을 이 State에 붙인다"는 뜻입니다 — 팩토리가 자기 의존성까지 같이 들고 있어서, 한 번 이름 붙인 연산자를 여러 State에 붙여도 의존성이 따라갑니다.
 <!-- mock 실측 2026-09-11: gs.gs2probe.luau 7c/7d — 손으로 만든 Sum(10)과 q.Operator.Sum(10)이 같은 값(11, 15) -->
 
-이름이 붙어 있는 것들: `Sum`·`Product`·`Min`·`Max`·`Clamp`·`Not`·`Alternative`·`Indexed`와 비트 연산 여섯. 전체 목록과 계약은 [레퍼런스: `Operator`](../reference/sugar/02-operator.md)에 있습니다.
+산술·비교·불리언·비트 연산까지 이름 붙은 것이 열넷 있습니다. 전체 목록과 계약은 [레퍼런스: `Operator`](../reference/sugar/02-operator.md)에 있습니다.
 
 <details>
 <summary><strong><code>--!strict</code>에서는 이 함수들에 뭘 적나요?</strong></summary>
@@ -262,11 +262,13 @@ React를 써 봤다면 여기서 한 번 멈칫하게 됩니다. Hook은 컴포�
 **quad의 이 함수들에는 그런 규칙이 없습니다.** 조건문 안에서도, 루프 안에서도, 이름이 `use`로 시작하지 않아도 됩니다.
 
 ```luau
--- (컴포넌트 안이라면 이런 것도 됩니다)
-if props.Watch then
-    table.insert(children, props.Watch(count))
-end
+-- (컴포넌트 안이라면 이런 것도 됩니다 — 조건식 안에서 만들어도, 이름이 use로 시작하지 않아도 됩니다)
+const extra = if props.Verbose
+    then q.Effect(function() print(count:Get()) end, count)
+    else q.None
+-- …그리고 이 값을 숫자 키 자리에 그대로 놓습니다
 ```
+<!-- mock 실측 2026-09-11: gs.polish3.luau "12 §5" — Verbose면 Effect가 돌고, 아니면 None이 자리를 지킨다 -->
 
 <details>
 <summary><strong>왜 Hook 규칙이 없나요?</strong></summary>

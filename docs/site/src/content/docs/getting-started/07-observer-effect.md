@@ -112,7 +112,13 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 - **의존성을 여럿 겁니다** — `q.Effect(fn, a, b, c)`. 어느 하나가 움직여도 다시 돕니다. `State`/`Source`뿐 아니라 **`Ref`도 의존성 자리에 놓을 수 있습니다**(4절이 그 예입니다).
 - **값이 인자로 오지 않습니다** — 클로저로 `count:Get()`을 직접 읽습니다(`fn`이 받는 인자는 핸들 자신 하나뿐입니다).
-- **cleanup을 돌려줄 수 있습니다** — 도는 자리는 넷입니다. **다음 실행 직전**, **`:Unsubscribe()`로 강한 구독을 끊을 때**, **매달린 인스턴스가 파괴될 때**, 그리고 **그 숫자 키 자리를 다른 값으로 갈아 끼울 때**(1절 접힘에서 본 것처럼 자리를 `State`로 잡아 뒀다가 바꾸는 경우)이고, 그때마다 정확히 한 번입니다(약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다).
+- **cleanup을 돌려줄 수 있습니다** — 도는 자리는 넷이고, 넷 각각에서 정확히 한 번씩 돕니다.
+  - 다음 실행 직전
+  - `:Unsubscribe()`로 강한 구독을 끊을 때
+  - 매달린 인스턴스가 파괴될 때
+  - 그 숫자 키 자리를 다른 값으로 갈아 끼울 때(1절 접힘처럼 자리를 `State`로 잡아 뒀다가 바꾸는 경우)
+
+  약하게 풀어 주는 `:WeakUnsubscribe()`는 cleanup을 건드리지 않습니다.
 
 `Observer`와 마찬가지로 **숫자 키 자리에 넣어야 계속 삽니다.** 넣지 않으면 만들 때 한 번 돌고 조용해집니다.
 
@@ -144,7 +150,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 화면에 보이는 것은 **값이 흘러 닿는 프로퍼티**로 적는 것이 quad의 기본입니다. 같은 일을 `Effect` 안에서 `inst.BackgroundColor3 = …`로 적으면 세 가지가 어긋납니다.
 
-- **그 쓰기를 quad가 모릅니다.** 같은 프로퍼티에 이미 State가 꽂혀 있으면 둘이 서로 덮어씁니다 — 파이프가 값을 쓰고 `Effect`가 그 위에 또 쓰고, 다음 변경에 다시 뒤집힙니다. 금이 그어지는 자리는 **한 프로퍼티에 주인이 둘이 되는가**입니다. [06장](/getting-started/06-ref/) 2절이 `Activated` 안에서 `BackgroundTransparency`를 손으로 쓴 것은, 그 프로퍼티에 아무 값도 꽂혀 있지 않아 부딪힐 상대가 없기 때문입니다.
+- **한 프로퍼티에 주인이 둘이 됩니다.** 같은 프로퍼티에 이미 State가 꽂혀 있으면 파이프가 값을 쓰고 `Effect`가 그 위에 또 쓰고, 다음 변경에 다시 뒤집힙니다. quad는 그 손쓰기를 모릅니다. [06장](/getting-started/06-ref/) 2절이 `Activated` 안에서 `BackgroundTransparency`를 손으로 쓴 것은, 그 프로퍼티에 `State`가 꽂혀 있지 않아 다시 쓸 주인이 없기 때문입니다(정적 리터럴 `BackgroundTransparency = 0`은 한 번 쓰이고 끝입니다).
 - **되돌릴 방법이 없습니다.** 조건이 풀렸을 때 원래 색으로 돌려놓는 일까지 직접 적어야 합니다. 파이프는 조건이 풀리면 그냥 다른 값을 흘려보냅니다.
 - **이 장의 규칙을 스스로 깹니다.** `Effect`가 화면 밖으로 나가는 길이라는 약속이 흐려집니다.
 
@@ -153,7 +159,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 <details>
 <summary><strong>그럼 <code>Effect</code>는 언제 쓰나요?</strong></summary>
 
-**quad 바깥에 있는 것에 손댈 때**입니다 — 엔진 서비스에 연결하고, 타이머를 걸고, 다른 시스템에 자기를 등록하는 일. 이런 일은 끝날 때 **되돌려야 하고**, `Effect`에 cleanup이 있는 이유가 바로 그것입니다. 바로 아래 4절이 그 모양이고, [08장](/getting-started/08-lifecycle-hooks/)이 그 위에 이름 붙은 훅을 얹습니다. 엔진 연결을 걸고 끊는 실전 배치는 [04. 외부 신호를 상태로 들여오기](/how-to/04-network-and-input-bridge/)에 있습니다.
+**quad 바깥에 있는 것에 손댈 때**입니다 — 엔진 서비스에 연결하고, 타이머를 걸고, 다른 시스템에 자기를 등록하는 일. 이런 일은 끝날 때 **되돌려야 하고**, `Effect`에 cleanup이 있는 이유가 바로 그것입니다. 바로 아래 4절이 그 모양이고, [08장](/getting-started/08-lifecycle-hooks/)이 그 위에 이름 붙은 훅을 얹습니다. 엔진 연결을 걸고 끊는 실전 배치는 [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/how-to/04-network-and-input-bridge/)에 있습니다.
 
 </details>
 
@@ -163,7 +169,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 `Effect`의 의존성 자리에 [06장](/getting-started/06-ref/)의 `Ref`를 같이 걸면 **"이 상자가 채워졌을 때"와 "이 값이 바뀌었을 때"를 한 함수에서** 다룰 수 있습니다.
 
-바깥으로 나가는 일 하나를 붙여 보겠습니다 — 카운트가 10 이상인 동안 **게임패드 선택**(`GuiService.SelectedObject`)을 이 버튼에 두는 것입니다. 선택을 걸었으면 조건이 풀릴 때 **풀어 줘야** 하므로 cleanup이 필요한 일이고, 대상이 인스턴스라 `Ref`가 필요합니다. 상자는 06장 3절과 같은 평범한 `Ref`입니다.
+바깥으로 나가는 일 하나를 붙여 보겠습니다 — 카운트가 10 이상인 동안 **게임패드 선택**(`GuiService.SelectedObject`)을 이 버튼에 두는 것입니다. 선택을 걸었으면 조건이 풀릴 때 **풀어 줘야** 하므로 cleanup이 필요한 일이고, 대상이 인스턴스라 `Ref`가 필요합니다. 상자는 06장 1절과 같은 평범한 `Ref`입니다.
 
 ```luau
 -- … 위쪽 코드에 이어집니다
@@ -174,7 +180,7 @@ const isBig = count:Compute(function(c) return c:Get() >= 10 end)
 const card = D.Frame {
     -- …생략…
     D.TextButton {
-        buttonRef,                                  -- ← 06장의 상자를 다시 놓습니다
+        buttonRef,                                  -- ← 06장과 같은 평범한 Ref(인스턴스마다 새로 만든다)
         Text = "+ 1",
         -- …3절의 BackgroundColor3 파이프는 그대로 둡니다…
         Activated = function() count:Set(count:Get() + 1) end,
@@ -223,4 +229,4 @@ const card = D.Frame {
 
 - [레퍼런스: `Observer` / `Effect`](/reference/core/05-observer-effect/) — 구독 네 진입점, 보류와 재생, cleanup이 도는 네 자리
 - [레퍼런스: 생명주기 훅](/reference/sugar/04-lifecycle-hooks/) — `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`(`Ref`/`Effect` 위에 얹은 슈거)
-- [04. 외부 신호를 상태로 들여오기](/how-to/04-network-and-input-bridge/) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치
+- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/how-to/04-network-and-input-bridge/) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치

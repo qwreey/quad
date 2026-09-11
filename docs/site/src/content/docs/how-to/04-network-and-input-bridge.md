@@ -29,9 +29,12 @@ local D = q.D
 상태 레이어와 UI 레이어를 파일로 나눕니다. 상태 레이어는 `Source:Set`만
 합니다.
 
+`q.Store`는 시작하기에서 다루지 않았습니다 — 이름 붙은 `Source`들을 한 테이블에 담는 묶음이고, 전체 표면은 [레퍼런스: `Store`](/reference/core/04-store/)에 있습니다.
+
 ```luau
 -- PlayerProfileState.luau (상태 레이어)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local q = require("@game/ReplicatedStorage/Client/UI/Quad") -- 01장의 설정 모듈
 
 local ProfileStore = q.Store({
     Gold = q.Source(0),

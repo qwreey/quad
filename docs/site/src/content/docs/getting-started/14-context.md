@@ -115,7 +115,7 @@ export type Theme = { Accent: Color3 }
 
 return {
     Provider = q.Context.Provider("Theme") :: q.Provider<Theme>,
-    -- 캐스트 대신 명시적 타입 인자도 됩니다
+    -- 캐스트 대신 명시적 타입 인자도 된다
     -- Provider = q.Context.Provider<<Theme>>("Theme"),
 }
 ```

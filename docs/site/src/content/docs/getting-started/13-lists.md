@@ -80,6 +80,8 @@ end
 
 진입점에서는 그냥 부릅니다.
 
+**11장에서 만든 `row`와 `row.Parent = screen` 줄은 지웁니다** — 카운터 둘을 손으로 적던 자리를 이 보드가 대신합니다.
+
 ```luau
 -- (Main.client.luau 계속)
 const CounterBoard = require("@game/ReplicatedStorage/Client/UI/CounterBoard")
@@ -108,10 +110,13 @@ D.TextButton {
 },
 ```
 
+여기서 id를 배열 길이로 만든 것은 예제라서입니다. 항목을 지우기 시작하면 같은 id가 다시 만들어져 `Slot:List: duplicate key c2`로 그 자리에서 막히니, 실제 코드에서는 절대 줄지 않는 카운터나 서버가 준 id를 쓰세요.
+<!-- mock 실측 2026-09-11: gs.polish3.luau "13 dup key" — 같은 키 둘이면 `Slot:List: duplicate key a` -->
+
 **실행하면** 카운터가 하나 더 생깁니다. 여기서 중요한 것은 **안 생긴 것**입니다.
 
 - 이미 있던 `a`·`b`는 **다시 만들어지지 않습니다.** `updateFn`이 `prev`를 그대로 돌려준 갈래가 "그 자리에 계속 두라"는 뜻이고, 그 인스턴스는 신원까지 그대로입니다(누르던 카운트도 그대로 남습니다).
-- 새 키 `c`만 `Counter { ... }`가 한 번 불립니다.
+- 새로 생긴 키 하나에만 `Counter { ... }`가 한 번 불립니다.
 - 반대로 데이터에서 어떤 키가 빠지면 그 키에 `q.KeyGone`으로 `updateFn`이 한 번 더 불리고, 위 코드처럼 `nil`을 돌려주면 그 인스턴스가 **파괴됩니다.**
 
 <details>
@@ -132,7 +137,7 @@ end
 
 ### `updateFn`이 돌려줄 수 있는 것 넷
 
-호출은 `updateFn(item, index, offset, prev, userdata)`이고 — 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값 순서입니다(자리마다의 정확한 뜻은 [레퍼런스: `slot:List`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)) — 돌려주는 것은 `(결과, userdata)` 둘입니다. 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
+호출은 `updateFn(item, index, offset, prev, userdata)`입니다. 차례로 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값입니다(각각의 정확한 뜻은 [레퍼런스: `slot:List`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)). 돌려주는 것은 `(결과, userdata)` 둘이고, 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
 
 | 무엇을 돌려주나 | 무슨 일이 일어나나 |
 |---|---|
@@ -177,7 +182,7 @@ end)
 const box = D.Frame { BackgroundTransparency = 1, list }
 ```
 
-**실행하면** `a` 항목의 라벨만 바꿔 넣었을 때 그 줄의 글씨는 새것으로 바뀌는데, 인스턴스는 처음 만든 그것 그대로입니다(`c`만 새로 만들어집니다).
+`a` 항목의 라벨만 바꿔 넣고, 새 키 `c`를 하나 더합니다.
 
 ```luau
 -- … 위쪽 코드에 이어집니다
@@ -194,6 +199,8 @@ print(box:GetChildren()[1].Text)       --> "왼쪽(수정)"
 print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스다)
 ```
 
+**실행하면** `a`의 글씨만 새것으로 바뀌고, 그 라벨 인스턴스는 처음 만든 그대로입니다. 새로 만들어지는 것은 새 키 `c` 하나뿐입니다.
+
 두 번째 반환값이 곧 **그 키의 다음 `userdata`**라, 새로 만드는 갈래에서 `Source`를 돌려주면 그 다음 사이클부터 `ud` 자리로 돌아옵니다.
 
 
@@ -201,7 +208,7 @@ print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스�
 
 ## 5. 원소가 최대 하나라면 — `:Single`
 
-[10장 6절](/getting-started/10-slot/)에서 자식 하나를 갈아 끼울 때는 `Slot`도 `:List`도 없이 **`State`를 자리에 놓기만** 했습니다. 대부분은 그걸로 충분합니다. 그런데 그 방법에는 한 가지가 없습니다 — **`Offset`을 받을 수 없습니다.** 그 자리에 들어간 작은 Slot이 밖으로 드러나지 않기 때문입니다.
+[10장 6절](/getting-started/10-slot/)에서 자식 하나를 갈아 끼울 때는 `Slot`도 `:List`도 없이 **`State`를 자리에 놓기만** 했습니다. 대부분은 그걸로 충분합니다. 그런데 그 방법에는 한 가지가 없습니다 — **`Offset`을 받을 수 없습니다.** 그 자리는 `Offset` 발행 채널을 두지 않기 때문입니다.
 
 앞 Slot이 자라면 내 자리도 밀리는데 **그 순번 자체가 필요할 때**(`LayoutOrder`가 대표적입니다) `:Single`을 직접 겁니다.
 
@@ -228,7 +235,7 @@ const panel = D.Frame {
 }
 
 cur:Set("지금 화면")
-print(single:Get(1).LayoutOrder)   --> 4      (머리 하나 + top 둘 = Offset 3)
+print(single:Get(1).LayoutOrder)   --> 4      (머리 하나 + top 둘 = Offset 3; :Get(index)는 그 자리의 원소를 읽습니다)
 
 top:Add(D.TextLabel { Text = "T3" })
 print(single:Get(1).LayoutOrder)   --> 5      (앞이 자라 밀렸다)
@@ -243,7 +250,7 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 <details>
 <summary><strong>자리에 놓은 <code>State</code>와 뭐가 다른가요?</strong></summary>
 
-`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). **[10장 6절](/getting-started/10-slot/)에서 `State`를 자리에 놓은 것이 바로 이 모양입니다** — quad가 `updateFn` 없는 `:Single`을 대신 걸어 준 것이라, 두 장은 같은 물건의 겉과 속입니다. 다른 점은 소유권 하나입니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 파괴하지 않지만(`Owned = false`), 위처럼 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ Owned = false }`를 세 번째 인자로 주면 됩니다).
+`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). [10장 6절](/getting-started/10-slot/)에서 `State`를 자리에 놓은 것과 **겉보기 결과는 같지만 안쪽은 다릅니다** — 자리에 놓은 `State`는 `:Single`이 아니라 자식 인스턴스 처리기가 맡습니다([18장](/getting-started/18-handlers/)). 소유권 차이도 그래서 생깁니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 내려놓기만 하지만, 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ Owned = false }`를 세 번째 인자로 주면 됩니다).
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S5 — 직접 건 :Single에서 교체된 옛 원소는 파괴됨(isDestroyed true) -->
 
 </details>

@@ -21,7 +21,7 @@ v2는 v1의 다음 버전이 아니라 **처음부터 다시 짠 별개의 라�
 그래서 v1 코드는 v2를 들여와도 **손대지 않는 한 그대로 남습니다.** 옮길 값어치는 아래
 2·3절에서 판단하시고, 옮기기로 했다면 4절의 틀 중 하나를 고르면 됩니다. 설치는 [2026-09-10 기준]
 pesde 경로만 열려 있습니다(v1처럼 `.rbxm` 하나를 내려받는 경로는 아직 없음 —
-[00. 설치 및 환경 구축](../getting-started/00-installation.md)). 도입 자체를
+[00. 설치](../getting-started/00-installation.md)). 도입 자체를
 아직 저울질 중이라면 [왜 Quad인가](./01-why-quad.md)의 "맞지 않습니다" 목록을 먼저
 보시는 편이 빠릅니다.
 
@@ -74,13 +74,13 @@ v1에는 통일된 정리 모델이 없었습니다. 여러 모듈이 각자 `Pr
 
 v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적고, 설계 근거는 링크로 넘깁니다.
 
-- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](../reference/core/06-slot.md), [03. 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md)
+- **`Slot` — 형제 여럿과 자리의 소유권.** `mounts:Add`/`:Unmount`로 손수 하던 목록 관리가, 자리 부기를 스스로 들고 있는 값이 됩니다. 키가 같은 항목은 인스턴스를 재활용하고 사라진 키만 파괴하며, 이미 마운트된 것을 다시 마운트하면 조용히 두 벌이 되는 대신 즉시 에러가 납니다. → [Slot 레퍼런스](../reference/core/06-slot.md), [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md)
 - **열린 디스패치 — 특수 키를 라이브러리 밖에서 추가.** v1에서 새 특수 키를 하나 넣으려면 중앙의 하드코딩된 `if/elseif` 디스패처를 직접 고쳐야 했습니다. v2는 값의 종류마다 핸들러가 등록되고 우선순위 축이 열려 있어, 라이브러리를 고치지 않고 끼어들 수 있습니다. → [Dispatch·Handler 계약](../reference/extend/02-dispatch-handler-contract.md)
-- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **숫자 키 자리에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md), [05. 테마와 동적 스타일링](../how-to/05-theme-and-dynamic-styling.md)
+- **`Modifier` — 값이 된 스타일.** 이름 매칭 대신 **숫자 키 자리에 놓인 순서**가 곧 우선순위이고, 디스패치 이전에 정적으로 평탄화되는 불변 값이라 런타임 캐스케이드 계산이 없습니다. → [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md), [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)
 - **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio UI 바인딩과 `Claim`](../how-to/07-studio-ui-binding-and-claim.md)
 - **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](../reference/sugar/01-context.md)
 - **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](../reference/sugar/03-debounce-throttle.md)
-- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [09. 디버깅과 문제 해결](../how-to/09-debugging-and-troubleshooting.md)
+- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [09. 부록 — quad 에러 읽는 법](../how-to/09-debugging-and-troubleshooting.md)
 - **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](../how-to/08-migrating-from-v1.md), [Quadnomicon Vol. 4 — 공변 마커](../quadnomicon/04-covariant-markers.md)
 - **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. 헤드리스 테스트](../how-to/06-headless-testing.md)
 
@@ -131,7 +131,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 `Store` 객체 자체를 반대편에 넘기지 마세요 — 넘기는 순간 두 반응 시스템이 같은 노드를
 공유하게 되고, 그때부터는 (c)와 같은 이중 소유 문제가 됩니다. 이 브릿지의 모양 자체는
 `RemoteEvent`나 엔진 입력을 상태로 격리할 때 쓰는 것과 같아서,
-[04. 외부 시그널 브릿징](../how-to/04-network-and-input-bridge.md)의 패턴을 그대로
+[04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md)의 패턴을 그대로
 가져다 쓰면 됩니다.
 
 > **⚠️ 이 틀의 가장 큰 주의점은 수명(GC)입니다.** v2는 인스턴스에 묶이지 않은 구독을
@@ -184,7 +184,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
 1. **타입 검사 환경부터 만듭니다.** luau 플래그 넷을 켜지 않으면 quad 소스의 타입 검사가
    실패합니다. 편집기에도 같은 플래그가 필요합니다 —
-   [00. 설치 및 환경 구축](../getting-started/00-installation.md)의 타입 검사 절.
+   [00. 설치](../getting-started/00-installation.md)의 타입 검사 절.
 2. **`Destroy`가 회수의 전부입니다.** 참조를 놓는 것만으로는 회수되지 않습니다. 화면을
    버리는 자리에 `Destroy()`가 반드시 있어야 합니다.
 3. **의존성은 손으로 적습니다.** `:Compute(fn, ...deps)`에 적은 것만 잡히고, 콜백 안에서

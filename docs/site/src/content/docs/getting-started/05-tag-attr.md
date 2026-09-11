@@ -68,12 +68,12 @@ quad-base는 태그 채널을 직접 건드리지 않습니다. 이름 집합을
 **마지막 자리가 물러날 때** 비로소 엔진에서 뗍니다.
 
 ```luau
-const inst = D.Frame { q.Source(q.Tag("Card")), q.Source(q.Tag("Card", "Panel")) }
+const inst = D.Frame { q.Tag("Card"), q.Tag("Card", "Panel") }
 -- 태그 {Card, Panel} — 엔진 호출은 addTag:Card, addTag:Panel 둘뿐(Card는 한 번만)
 ```
 
-두 번째 자리가 둘 다 놓아도(`:Set(q.Tag())`) 나가는 것은 `removeTag:Panel` 하나입니다 — `Card`는
-첫 자리가 아직 잡고 있습니다. 그래서 컴포넌트 여럿이 같은 인스턴스에 같은 이름을 요구해도
+두 번째 자리가 물러나도(2절처럼 자리를 값에서 내놓다가 빈 `q.Tag()`로 바꾸는 경우) 나가는 것은
+`removeTag:Panel` 하나입니다 — `Card`는 첫 자리가 아직 잡고 있습니다. 그래서 컴포넌트 여럿이 같은 인스턴스에 같은 이름을 요구해도
 서로를 지우지 않습니다. 같은 불변 `Tag` 객체를 두 자리에 놓아도 두 자리로 셉니다.
 
 </details>
@@ -166,17 +166,19 @@ active:Set(q.None)           --> {Kind = "counter", Step = 1}   -- Active가 사
 <details>
 <summary><strong><code>Attr</code> 값을 지우려면요?</strong></summary>
 
-지우기의 유일한 표현은 **`q.None`**입니다. 셋을 구별하세요.
+리터럴로 적는 자리에서 지우기의 유일한 표현은 **`q.None`**입니다. 넷을 구별하세요.
 
 | 한 일 | 결과 |
 |---|---|
 | 값에 `q.None`을 둔다 | 엔진에서 그 속성이 **삭제**됩니다 |
 | 바인딩된 `State`가 `q.None`이 된다 | 같습니다 — 삭제됩니다 |
+| 바인딩된 `State`가 `nil`을 내놓는다 | 이것도 삭제됩니다 — `State`가 흘려보내는 `nil`은 거부되지 않습니다 |
 | 그 `Attr` 값 객체를 다른 것으로 **교체**한다 | 옛 속성 값이 엔진에 **그대로 남습니다** |
 
-세 번째가 함정입니다. 자리에서 물러나는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
-손대지 않습니다. `nil`은 애초에 거부됩니다 — 평범한 테이블은 `nil`을 담을 수 없어 항목이
-조용히 사라지기 때문입니다.
+네 번째가 함정입니다. 자리에서 물러나는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
+손대지 않습니다. 리터럴 `nil`이 거부되는 것은 평범한 테이블이 `nil`을 담을 수 없어 항목이 조용히
+사라지기 때문이고, `State` 안의 `nil`은 그 문제가 없어 그대로 삭제로 흐릅니다.
+<!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 바인딩된 State가 nil을 내놓으면 속성이 삭제된다 -->
 
 </details>
 

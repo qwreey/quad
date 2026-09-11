@@ -29,7 +29,7 @@ luau-lsp analyze \
   <검사할 파일들>
 ```
 
-넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스의 타입 검사가 실패하고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치 및 환경 구축](/getting-started/00-installation/) 참고.
+넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스의 타입 검사가 실패하고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치](/getting-started/00-installation/) 참고.
 
 그리고 v1의 `require(path).Init(id)` 자리는 **설정 모듈 하나**로 바뀝니다 — 패키지 둘(`quad-base`·`quad-roblox`)을 `UseProvider` 한 줄로 붙여 둔 모듈을 프로젝트에 하나 두고, 화면 코드는 그것만 require합니다([시작하기 01. 프레임워크 설정하기](/getting-started/01-setup/)).
 
@@ -438,4 +438,4 @@ Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part 
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
 2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](/how-to/06-headless-testing/).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
-4. **에러가 나면** [09. 디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/)의 에러 메시지 읽는 법을 먼저 보세요.
+4. **에러가 나면** [09. 부록 — quad 에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)의 에러 메시지 읽는 법을 먼저 보세요.

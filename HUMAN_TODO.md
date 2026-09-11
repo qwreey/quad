@@ -34,6 +34,8 @@
 10. **`how-to/07-studio-ui-binding-and-claim.md` — 템플릿 → `:Clone()` → `Claim` → `D.Mapper` 매핑.** 정적 프로퍼티는 템플릿에 구워 두고 동적 바인딩만 Claim이 심는다는 그림(C 실측 2번과 같이).
 11. **`overview/01-why-quad.md` §1·§6 — 전파 모델 셋 나란히.** Fusion(push 무효화+pull, eager 표시) / Vide(순수 push, 깊이우선) / Quad(신호만 push, 계산은 pull). 3번 그림의 확장판이라 같이 그리면 된다.
 12. **`docs/README.md` Diátaxis 사분면** — 17번 그대로.
+13. **[2026-09-11 밤 신설] `*-observer-effect.md` §4 게임패드 선택 예제** — `GuiService.SelectedObject`를 `Effect`에서 걸고 cleanup에서 푸는 것이 실기기에서 그대로 되는지(mock은 `{ SelectedObject = nil }` 셰임으로만 확인). 파괴 때 cleanup이 선택을 풀어 죽은 버튼이 선택된 채 남지 않는지.
+14. **[2026-09-11 밤 신설] `*-tag-attr.md` §4 `Instance:QueryDescendants`가 Studio 밖 실제 클라이언트에서도 되는지** — 문서는 Studio 0.738 실측만 근거로 답니다(열린 탐사 리뷰어 지적).
 
 #### B. 눈으로 볼 것 — 사람 시각 검토 각도 (밀도·흐름·큰 틀·레이아웃)
 

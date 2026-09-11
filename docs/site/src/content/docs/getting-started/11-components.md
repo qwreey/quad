@@ -127,7 +127,8 @@ D.Frame { D.TextLabel { … }, props.Children }
 D.Frame { D.TextLabel { … }, props.Children or q.None }
 ```
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Dispatch: no handler matched key 1 (value: boolean) — …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
+<!-- mock 실측 2026-09-11: gs.polish3.luau "11 conditional child" — false 자식은 위 에러, or q.None이면 자리만 비운다 -->
 
 <details>
 <summary><strong><code>Slot</code>은 왜 <code>Children = …</code> 같은 문자 키로 못 넘기나요?</strong></summary>

@@ -120,7 +120,7 @@ return {
 
 `state:Apply(factory)`는 "팩토리가 만들어 준 연산을 이 State에 적용해 새 State를
 얻는다"는 일반형입니다. 위 `token`이 그 모양을 두 번 씁니다 —
-`q.Operator.Indexed<<V>>(key)`는 상류 값에서 키 하나를 읽어 주는 팩토리(`:Compute`
+`q.Operator.Indexed<<V>>(key)`(3.0.0에서는 `Index`, 3.1.0부터 `Indexed`)는 상류 값에서 키 하나를 읽어 주는 팩토리(`:Compute`
 슈거)이고, 이어 붙인 `q.Animate({...})`도 같은 자리에 놓이는 팩토리입니다. 덕분에
 토큰마다 `function(p) return p.Background end`를 손으로 하나씩 둘 필요가 없습니다.
 

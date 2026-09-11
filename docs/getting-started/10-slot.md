@@ -207,13 +207,18 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 `Offset`과 `Length`는 둘 다 `Source`라 **그대로 구독할 수 있습니다.** `LayoutOrder`처럼 "내가 부모 전체에서 몇 번째인가"를 요구하는 프로퍼티가 있으면, 그 값을 계산해 꽂아 두면 됩니다.
 
 ```luau
--- … 3절의 panel 예시에 이어집니다: slotB의 첫 원소가 전체에서 몇 번째인가
-LayoutOrder = slotB.Offset:Compute(function(o) return o:Get() + 1 end),   -- 지금은 5
+-- … 3절의 panel 예시에 이어집니다(slotA에 A3를 넣은 뒤라 slotB.Offset은 4입니다)
+slotB:Add(D.TextLabel {
+    Text = "B2",
+    -- 이 Slot의 둘째 원소가 부모 전체에서 몇 번째인가: Offset + 2
+    LayoutOrder = slotB.Offset:Compute(function(o) return o:Get() + 2 end),   -- 지금은 6
+})
 ```
 
-**실행하면** 그 원소의 `LayoutOrder`가 5로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
+**실행하면** `B2`의 `LayoutOrder`가 6으로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
+<!-- mock 실측 2026-09-11: gs.polish4.luau — slotB.Offset 4, B2 LayoutOrder 6, slotA에 A4를 더 넣으면 7 -->
 
-여기서 `+ 1`은 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](./13-lists.md)).
+여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](./13-lists.md)).
 
 ---
 
@@ -251,7 +256,8 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <details>
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
-이건 `Slot`과 다른 물건이 아닙니다. 이 자리에는 quad가 **원소 하나짜리 작은 `Slot`을 대신 만들어 넣습니다**(`Owned = false`로 — 그래서 위처럼 파괴하지 않습니다). 그래서 `Offset`/`Length` 부기도 앞 절들과 똑같이 돕니다. 다만 그 작은 `Slot`은 밖에서 잡을 수 없어서 **`Offset` 값 자체를 쓸 수는 없습니다.**
+아닙니다. 이 자리를 맡는 것은 **자식 인스턴스를 맡는 그 처리기 그대로**입니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 부기에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [18장](./18-handlers.md)에서 봅니다.
+<!-- mock 실측 2026-09-11: gs.stateinst.luau — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 Owned=false :Single)은 Slot의 요소로 State를 넣을 때(Elements.luau)에만 맞는 것이었다 -->
 
 </details>
 
@@ -270,12 +276,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <details>
 <summary><strong>그럼 이 Slot에 나중에 <code>:List</code>를 걸어도 되나요?</strong></summary>
 
-안 됩니다. `Slot`은 **두 모드 중 하나**로만 삽니다 — 손으로 넣고 빼는 **수동 CRUD** 모드(이 장)와, 데이터에 맞춰 quad가 맞춰 주는 **`:List`/`:Single`** 모드입니다. 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
-
-- `:Add`를 한 번이라도 쓴 Slot, 또는 `q.Slot { ... }`처럼 초기 원소를 주고 만든 Slot(**심지어 빈 `q.Slot {}`**)에는 `:List`를 걸 수 없습니다.
-- 반대로 `:List`를 건 뒤의 수동 CRUD도 막힙니다.
-
-그래서 목록용 Slot은 인자 없이 `q.Slot()`으로 만들고 곧바로 `:List`를 겁니다.
+안 됩니다. `Slot`은 **수동 CRUD**(이 장)와 **`:List`/`:Single`** 두 모드 중 하나로만 살고 둘은 상호 배타라, `q.Slot { ... }`처럼 초기 원소를 주고 만든 Slot(**심지어 빈 `q.Slot {}`**)에는 `:List`를 걸 수 없습니다. 그래서 목록용 Slot은 인자 없이 `q.Slot()`으로 만듭니다 — 자세한 규칙은 [13장](./13-lists.md) 2절에 있습니다.
 
 </details>
 

@@ -66,7 +66,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
     end)
 ```
 
-**둘.** 라벨의 `TextColor3` 자리에 그 State를 꽂되, `:Apply`로 애니메이션을 얹습니다.
+**둘.** §1에서 `q.Tween`으로 고쳤던 라벨의 `TextColor3` 한 줄을 다시 이렇게 바꿉니다 — 그 State를 꽂되, `:Apply`로 애니메이션을 얹습니다.
 
 ```luau
 -- … (Counter.luau) 숫자 라벨의 TextColor3 자리

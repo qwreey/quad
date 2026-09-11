@@ -57,6 +57,8 @@ mp:Set(40) -- 아직 아무도 통지받지 않았다
 blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 ```
 
+하류가 하나로 합쳐지는 화면이라면 게이트는 **합쳐진 뒤** 한 자리에만 두는 편이 낫습니다 — 통지도 한 번으로 접힙니다([시작하기 16](/getting-started/16-blocker/) §2). 위처럼 원천마다 두는 것은 서로 다른 하류를 같은 스위치로 묶고 싶을 때의 모양입니다.
+
 **관련** — [03-state](/reference/core/03-state/#stategatesetup) · [05-observer-effect](/reference/core/05-observer-effect/)
 
 ---

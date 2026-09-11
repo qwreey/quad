@@ -14,7 +14,8 @@ description: "버튼 이벤트를 문자 키 자리에 적어 Source에 값을 �
 ## 지금까지의 코드
 
 ```luau
--- (Main.client.luau 계속 — 카드를 화면 가운데 놓는 AnchorPoint/Position은 생략합니다)
+-- (Main.client.luau 계속 — 카드를 화면 가운데 놓는 AnchorPoint/Position은 생략합니다.
+--  03장 §3에서 확인용으로 만든 suffix/both와 count:Set(7) 줄은 지웁니다)
 const count = q.Source(0)
 
 const countText = count:Compute(function(c)
@@ -80,11 +81,11 @@ const card = D.Frame {
 
 버튼 콜백이 손대는 것은 **원천 하나뿐**입니다. 화면을 직접 고치는 코드는 어디에도 없습니다.
 
-값이 바뀔 때 화면 **밖에서** 무언가 하는 길 — 로그를 찍거나, 소리를 내거나, 서버로 보내는 일 — 은 [07. 관측하기](./07-observer-effect.md)에서 다룹니다.
+값이 바뀔 때 화면 **밖에서** 무언가 하는 길 — 로그를 찍거나, 소리를 내거나, 서버로 보내는 일 — 은 [07. 관측하기](./07-observer-effect.md)에서 다룹니다. 반대 방향, 즉 엔진이 바꾼 프로퍼티(입력창의 `Text`, 스크롤의 `CanvasPosition`)를 `Source`로 들여오는 것은 `q.OnChange("Text", fn)`이고 숫자 키 자리에 놓습니다 — 시작하기에서는 다루지 않으니 필요해지면 [레퍼런스: `OnChange`](../reference/roblox/05-onchange.md)를 보세요.
 
 ---
 
 ## 더 알고 싶다면
 
 - [레퍼런스: `D` — 문자 키](../reference/roblox/02-d.md#문자-키--프로퍼티와-이벤트) — 이벤트 값 자리에 올 수 있는 것, 콜백이 아닌 값을 넣었을 때의 에러
-- [04. 외부 신호를 상태로 들여오기](../how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리하기
+- [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리하기

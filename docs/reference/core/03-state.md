@@ -150,7 +150,6 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 
 - 함수를 넘기면 `factory(self)`를 그대로 부릅니다.
 - 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](../sugar/06-blocker.md)와 `Debounce`/`Throttle`이 이 팔로 붙습니다(`q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다).
-<!-- 2026-09-11 정정: 옛 문장은 Animate도 객체 팔로 적었으나 quad-roblox/src/Animate.luau는 함수를 반환한다 -->
 - 둘 중 어느 쪽도 아니면
   `State: Apply factory must be a function or an object with an __apply method`
 

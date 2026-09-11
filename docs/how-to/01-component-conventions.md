@@ -88,7 +88,7 @@ end
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 선두나 중간이 구멍이면 quad는 그 자리에서 **에러를 냅니다**(`Dispatch.recompute: sourceList[N] is nil — a nil hole …`). 조용히 넘어가는 것은 **꼬리 구멍뿐**이고, 그마저 뒤에 원소를 하나 더 붙이는 순간 에러가 됩니다.
 
-그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [09. quad 에러 읽는 법과 런타임 디버깅](./09-debugging-and-troubleshooting.md)의 함정 1에 정리돼 있습니다.
+그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [09. 부록 — quad 에러 읽는 법](./09-debugging-and-troubleshooting.md)의 함정 1에 정리돼 있습니다.
 
 ```luau
 -- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 그 자리에서 에러
@@ -215,6 +215,24 @@ props에 `{ DTypes.FrameElem }` 같은 배열을 받아 펼치는 모양도 문�
 - **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.
 
 그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다. `<Class>Elem` 타입 자체는 여전히 유용합니다 — 그 클래스의 숫자 키 자리에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
+
+반대로 **컴포넌트가 형제 여럿을 돌려줘야** 할 때도 `Slot`입니다. 래퍼 `Frame`을 만드는 대신 `Slot` 하나를 돌려주면, 부르는 쪽은 그 반환값을 숫자 키 자리에 그대로 놓습니다.
+
+```luau
+local function Rows(props: { read Items: { string } })
+    local rows = q.Slot<<Instance>>()
+    for _, text in props.Items do
+        rows:Add(D.TextLabel { Text = text })
+    end
+    return rows
+end
+
+local list = D.Frame {
+    D.TextLabel { Text = "머리" },
+    Rows { Items = { "a", "b" } },   -- 자식 셋: 머리 + a + b
+}
+```
+<!-- mock 실측 2026-09-11: gs.polish3.luau "how-to 01 Slot-returning component" — 자식 3; strict 실측 consumer/P17.luau exit 0 -->
 
 ---
 

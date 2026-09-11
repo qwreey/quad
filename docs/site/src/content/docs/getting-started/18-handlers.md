@@ -10,9 +10,8 @@ description: "props의 자리마다 어떤 핸들러가 값을 맡는지, State�
 담은 `State`를 놓아 관측을 껐고, [10장](/getting-started/10-slot/)에서는 자식 인스턴스 하나를 담은 `State`를
 놓아 화면을 갈아 끼웠습니다. 세 장이 각각 "이렇게도 된다"고 말했지만, 셋은 **같은 원리 하나**입니다.
 
-이 장은 그 원리를 **밖에서 보이는 만큼만** 봅니다. 새로 배우는 API는 사실상 없습니다 — 나오는 둘
-(`q.Dispatch.listHandlers()`와 `q.Dispatch.getHandler(...)`)은 무언가를 만드는 도구가 아니라 지금
-상태를 **들여다보는** 창구입니다.
+이 장은 그 원리를 **밖에서 보이는 만큼만** 봅니다. 나오는 이름 둘(`q.Dispatch.listHandlers()`와
+`q.Dispatch.getHandler(...)`)은 무언가를 만드는 도구가 아니라 지금 상태를 **들여다보는** 창구입니다.
 
 ---
 
@@ -31,9 +30,10 @@ for _, handler in q.Dispatch.listHandlers() do
 end
 ```
 
-**실행하면** `SlotHandler`, `StoreBind`, `Event`, `InstanceChild`, `Property` 같은 이름이 훑는
-순서대로 쭉 찍힙니다. 이름은 **진단용**이라 버전이나 백엔드에 따라 달라질 수 있습니다 — 외우지
-말고 "이런 것들이 줄 서 있구나" 정도로 보시면 됩니다.
+**실행하면** `SlotHandler`, `StoreBind`, `Event`, `InstanceChild`, `Property` 같은 이름이 **우선순위
+순으로** 쭉 찍힙니다. 한 자리가 실제로 훑는 것은 그중 그 키 타입에 해당하는 것들뿐이고, 우선순위가
+같은 것들끼리의 순서는 정해져 있지 않습니다. 이름은 **진단용**이라 버전이나 백엔드에 따라 달라질 수 있습니다 — 외우지
+말고 "이런 것들이 줄 서 있구나" 정도로 보면 됩니다.
 
 어떤 값이 그중 누구에게 가는지는 `q.Dispatch.getHandler(inst, key, value)`로 물어볼 수 있습니다.
 앞 장들에서 놓아 온 것들을 하나씩 물어보면 이렇습니다.
@@ -120,6 +120,7 @@ print(label.Text)   --> "B"    -- a는 이제 이 자리와 무관하다
 
 **실행하면** 마지막 줄이 `B` 그대로입니다. `which`가 `b`를 가리키는 순간 `a`를 보던 아래 칸이
 통째로 걷혔기 때문입니다. 다음 절이 그 "걷힌다"를 봅니다.
+<!-- mock 실측 2026-09-11: gs.ch18.luau "18 §2 C" — A / A2 / B / B -->
 
 ---
 
@@ -133,7 +134,7 @@ print(label.Text)   --> "B"    -- a는 이제 이 자리와 무관하다
 -- 새 예시: 별도 스크립트
 const count = q.Source(0)
 
-local function makeEffect(label: string)
+local function makeEffect(label)
     return q.Effect(function()
         print(`{label} run {count:Get()}`)
         return function()
@@ -193,8 +194,8 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 남는다"를 함정으로 짚은 것이 이 줄입니다.
 
 여섯 줄을 관통하는 규칙은 하나입니다. **같은 핸들러가 그 칸을 계속 맡으면** 아래 칸은 건드리지
-않고, 앉아 있던 것이 새 값을 받아 자기 **전이**를 합니다(전이의 내용이 종류마다 다른 것이 위 표의
-차이입니다). **핸들러가 바뀌거나 `nil`이 오면** 그 칸과 그 아래를 깊은 쪽부터 전부 **되돌린 뒤**
+않고, 앉아 있던 것이 새 값을 받아 자기 전이를 합니다(전이의 내용이 종류마다 다른 것이 위 표의
+차이입니다). **핸들러가 바뀌거나 `nil`이 오면** 그 칸과 그 아래를 깊은 쪽부터 전부 되돌린 뒤
 새로 설치합니다. Effect의 cleanup, Observer의 정지, Ref의 비움, 인스턴스 떼기가 전부 그
 "되돌리기"의 얼굴입니다.
 
