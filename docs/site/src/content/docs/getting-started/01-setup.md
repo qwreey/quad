@@ -97,7 +97,7 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 
 ```luau
 -- 새 파일: StarterPlayerScripts/Main — 이 클라이언트의 화면 진입점
-local Players = game:GetService("Players")
+const Players = game:GetService("Players")
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 

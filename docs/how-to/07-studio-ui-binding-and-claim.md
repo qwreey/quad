@@ -87,6 +87,7 @@ local function ItemCard(item: { id: string, label: string }, label: q.Source<str
     }))
 end
 
+local itemsState = q.Source({ { id = "sword", label = "검" }, { id = "shield", label = "방패" } }) -- 인벤토리 데이터
 local rows = q.Slot<<Instance>>():List(itemsState, function(item: any, _index, _offset, prev, ud): (any, any)
     if item == q.KeyGone then
         return nil, ud

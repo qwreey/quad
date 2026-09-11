@@ -157,7 +157,7 @@ end
 항목이 라벨 한 줄인 더 작은 목록으로 보겠습니다 — 위 `CounterBoard`와 겹치지 않게 데이터도 따로 둡니다.
 
 ```luau
--- 항목마다 바뀌는 값을 userdata의 Source로 들고 있는 목록
+-- 새 예시: 별도 스크립트 — 항목마다 바뀌는 값을 userdata의 Source로 들고 있는 목록
 const logRows = q.Source({
     { Id = "a", Label = "왼쪽" },
     { Id = "b", Label = "오른쪽" },

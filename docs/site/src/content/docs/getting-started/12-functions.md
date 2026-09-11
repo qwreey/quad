@@ -220,6 +220,7 @@ local function highlightColor(state: q.State<number>, threshold: number): q.Stat
 end
 
 -- :Apply의 결과 타입은 부르는 쪽이 적는다
+const count = q.Source(0)
 const total: q.State<number> = count:Apply(q.Operator.Sum(10))
 ```
 

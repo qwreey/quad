@@ -184,6 +184,7 @@ PreRef: already fired — a PreRef is one-shot, make a new one for each instance
 `q.PostRef`를 `PreRef`와 같은 자리(숫자 키)에 놓고 `:Callback`으로 받으면 됩니다.
 
 ```luau
+-- 새 예시: 별도 스크립트
 const doneRef = q.PostRef<<Frame?>>(nil)
 
 doneRef:Callback(function(inst)

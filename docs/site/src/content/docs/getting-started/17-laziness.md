@@ -65,6 +65,7 @@ print(calls, label.Text)  --> 1   "3"
 n:Set(5)
 print(calls, label.Text)  --> 2   "15"
 ```
+<!-- mock 실측 2026-09-11: gs.walk17.luau §1d — 1 "3" / 2 "15"; oe.blocker.luau 다이아몬드 동일 -->
 
 </details>
 
@@ -82,7 +83,7 @@ print(calls, label.Text)  --> 2   "15"
 한 번입니다. 몇 번이 밀렸든 살아나는 시점에 최신값으로 정확히 한 번입니다.
 
 ```luau
-local log = {}
+const log = {}
 const hp = q.Source(100)
 
 const observer = hp:Observer(function(target)
@@ -97,6 +98,7 @@ print(#log)          --> 1   (아직 살아나지 않았다 — 보류)
 observer:Subscribe()
 print(#log, log[2])  --> 2   60   (보류분 1회 재생, 최신값)
 ```
+<!-- mock 실측 2026-09-11: gs.walk17.luau §2 — 1 / 1 / 2 60 -->
 
 </details>
 
@@ -109,15 +111,20 @@ print(#log, log[2])  --> 2   60   (보류분 1회 재생, 최신값)
 재조정은 **마운트되는 시점**과 그 뒤로 **데이터가 바뀔 때마다** 돕니다. 13장의 목록에 `updateFn` 호출 수를 세는 카운터를 넣어 보면 이렇습니다.
 
 ```luau
--- (13장의 목록에 updateFn 호출 수를 세는 카운터를 넣었을 때)
+-- (13장의 목록을 한 파일로 줄이고 updateFn 안에 updates += 1을 넣은 조각)
 print(updates)   --> 0   (:List를 걸어만 뒀을 때 — 아직 마운트 전)
 
 const board = D.Frame { list }
 print(updates)   --> 2   (키 둘)
 
-rows:Set({ { Id = "a" }, { Id = "b" }, { Id = "c" } })
+rows:Set({
+    { Id = "a", Label = "왼쪽", Start = 0 },
+    { Id = "b", Label = "오른쪽", Start = 10 },
+    { Id = "c", Label = "새로", Start = 0 },
+})
 print(updates)   --> 5   (a·b·c 세 번 — a·b는 prev를 돌려받는 싼 경로)
 ```
+<!-- mock 실측 2026-09-11: gs.walk17b.luau — 0 / 2 / 5 -->
 
 **실행하면** 마운트 전에는 `updateFn`이 한 번도 불리지 않습니다. 목록 역시 "데이터를 넣었다"가 아니라 "어딘가에서 그려질 때" 처음 돕니다. 한 사이클 안에서 `updateFn`은 키마다 한 번씩 불리고(사라진 키에는 `q.KeyGone`으로 한 번 더), 물리 반영과 부기 재계산은 그 사이클 **끝에 한 번**으로 묶입니다.
 
@@ -152,10 +159,11 @@ print(runs)          --> 3   (마운트 1 + :Set 두 번)
 -- 같은 구간을 blocker:On()/Off()로 감싸면
 print(runs)          --> 2   (마운트 1 + 푸는 순간 1)
 ```
+<!-- mock 실측 2026-09-11: gs.blocker2.luau — 게이트 없음 +2(마운트 1 포함 3), 파이프 뒤 게이트 +1(2) -->
 
 게이트를 파이프 뒤에 하나 두든 원천마다 하나씩 두든 이 숫자는 같습니다. 계산을 한 번으로 접는 것은 게이트가 아니라 이 게으름이고, 게이트가 접는 것은 **통지의 수**입니다(16장 §2).
 
-읽는 쪽이 값을 요구할 때 계산한다는 원칙이 여기서도 그대로입니다 — 통지를 미뤄도 값이 낡지 않는 이유가 그것입니다. 16장의 "일시정지" 버튼에서 화면이 멈춰 있는 동안에도 게이트된 `shownText`의 `:Get()`이 최신을 돌려줬던 게 그래서입니다.
+읽는 쪽이 값을 요구할 때 계산한다는 원칙이 여기서도 그대로입니다 — 통지를 미뤄도 값이 낡지 않는 이유가 그것입니다. 16장의 "일시정지" 버튼에서 화면이 멈춰 있는 동안에도 게이트된 `countText`의 `:Get()`이 최신을 돌려줬던 게 그래서입니다.
 
 ---
 

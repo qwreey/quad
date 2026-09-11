@@ -31,7 +31,7 @@ return {
 진입점에서 가방을 만들어 값을 담고, 화면에 같이 넘깁니다.
 
 ```luau
--- (Main.client.luau 계속)
+-- (Main.client.luau 계속 — 13장의 board 두 줄은 아래 두 줄로 갈아 끼웁니다)
 const Theme = require("@game/ReplicatedStorage/Client/UI/Theme")
 
 const ctx = q.Context():Set(Theme.Provider, {

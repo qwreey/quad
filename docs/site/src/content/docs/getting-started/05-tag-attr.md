@@ -16,6 +16,7 @@ description: "인스턴스에 CollectionService 태그와 Attribute를 숫자 �
 ```luau
 -- (Main.client.luau 계속 — 배치 프로퍼티는 생략합니다)
 const count = q.Source(0)
+const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
 
 const card = D.Frame {
     Size = UDim2.fromOffset(240, 160),
@@ -23,7 +24,7 @@ const card = D.Frame {
     UICorner = 12,
 
     -- 라벨과 버튼(크기·색 같은 프로퍼티는 04장 그대로라 여기선 줄였습니다)
-    D.TextLabel { Text = count:Compute(function(c) return `카운트: {c:Get()}` end) },
+    D.TextLabel { Text = countText },
     D.TextButton { Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
 }
 ```
