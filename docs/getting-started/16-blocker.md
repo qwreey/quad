@@ -17,6 +17,8 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 
 카운터에 단위를 붙입니다. 03장에서 `suffix`를 의존으로 넘겼던 그 모양 그대로입니다.
 
+이 장의 예제는 `Blocker` 하나를 보기 위해 **props 없이 값을 직접 박은 단독 카운터**로 되돌립니다 — 11장의 `props.Start`/`props.Label`도, 14장의 `props.Ctx`도 여기서는 쓰지 않습니다.
+
 ```luau
 -- … (Counter.luau) 상태 두 개와 파이프 하나
     const count = q.Source(10)

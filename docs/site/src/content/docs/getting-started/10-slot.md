@@ -203,7 +203,9 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 LayoutOrder = slotB.Offset:Compute(function(o) return o:Get() + 1 end),   -- 지금은 5
 ```
 
-여기서 `+ 1`은 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](/getting-started/13-lists/)). 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
+**실행하면** 그 원소의 `LayoutOrder`가 5로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
+
+여기서 `+ 1`은 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](/getting-started/13-lists/)).
 
 ---
 

@@ -183,6 +183,8 @@ print(#screen:QueryDescendants(".Card"))            --> 1   태그가 Card인 �
 print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 counter인 것
 ```
 
+**실행하면** 둘 다 `1`이 찍힙니다 — 태그로 고른 것도 속성으로 고른 것도 방금 만든 그 카드 하나입니다.
+
 <details>
 <summary><strong>선택자 문법은 뭐가 더 있나요?</strong></summary>
 

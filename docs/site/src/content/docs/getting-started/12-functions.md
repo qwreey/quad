@@ -57,8 +57,10 @@ quad에서 이 성질은 계속 나옵니다 — 컴포넌트 안에서 만든 `
 
 [07장](/getting-started/07-observer-effect/)에서 카드에 직접 적었던 `Effect`를 이름 있는 함수로 빼 보겠습니다.
 
+아래 `card`와 `buttonRef`는 그 07장 시점의 카드 코드입니다 — 11장에서 `Counter.luau`로 옮기기 전의 모양입니다. 이 장에는 새로 배우는 API가 없으니 손으로 따라 치지 않고 읽기만 해도 됩니다.
+
 ```luau
--- … 위쪽 코드에 이어집니다
+-- … 07장의 카드 코드에 이어집니다
 -- "이 Ref가 가리키는 버튼의 색을 이 State에 맞춰 바꾼다"를 함수 하나로
 local function highlightWhenBig(ref, state, threshold)
     return q.Effect(function()
@@ -75,7 +77,7 @@ end
 쓰는 쪽은 **그 호출을 숫자 키 자리에 놓습니다.**
 
 ```luau
--- … 위쪽 코드에 이어집니다
+-- … 07장의 카드 코드에 이어집니다
 const card = D.Frame {
     D.TextButton { buttonRef, Text = "+ 1", Activated = … },
 
