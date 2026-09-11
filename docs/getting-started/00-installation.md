@@ -133,5 +133,5 @@ luau-lsp analyze \
 
 ## 더 알고 싶다면
 
-- [레퍼런스: 설치·확장 표면](../reference/roblox/01-install.md) — `quad-roblox`가 설치하는 것 전부
+- [레퍼런스: 설치와 프로바이더](../reference/roblox/01-install.md) — `quad-roblox`가 설치하는 것 전부
 - [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — v1 프로젝트의 툴체인을 바꿀 때

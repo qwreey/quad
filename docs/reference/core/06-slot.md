@@ -1,6 +1,6 @@
 ---
 title: Slot
-description: 가변 자식 배열 프리미티브 — CRUD 열셋, :List/:Single 재조정, Detach/KeyGone, dispose
+description: 가변 자식 배열 프리미티브 — CRUD 열하나, :List/:Single 재조정, Detach/KeyGone, dispose
 ---
 
 # Slot\<T\>
@@ -120,7 +120,7 @@ local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty }
 Offset: Source<number>
 ```
 
-**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 `Source<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`의 `updateFn`이 네 번째 자리에서 받는 것도 이 Source입니다.
+**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 `Source<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`의 `updateFn`이 세 번째 자리(`:Single`에서는 `index`가 빠져 두 번째)에서 받는 것도 이 Source입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 

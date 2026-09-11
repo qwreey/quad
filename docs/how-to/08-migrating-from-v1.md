@@ -53,7 +53,7 @@ v1의 `Init()`은 id 없이 부를 때마다 **새 인스턴스**를 만들었�
 | v1 | v2 | 어디서 다루나 |
 |---|---|---|
 | `require(quad).Init(id)` | `Quad:UseProvider(QuadRoblox)` | 2절 |
-| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [첫 화면 만들기](../getting-started/02-first-screen.md) |
+| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` | [02. 첫 화면](../getting-started/02-first-screen.md) |
 | `Mount(parent, obj)` | `obj.Parent = parent` | 5절 |
 | `mounts:Add(item)` / `:Unmount()` | `q.Slot<<Instance>>()` + `:Add`/`:Clear` | 5절 |
 | `[Event "Activated"] = fn(self, …)` | 문자 키 `Activated = fn(…)` (self 없음) | 5절 |
@@ -178,7 +178,7 @@ local frame = D.Frame { BackgroundColor3 = color, Position = position }
 ```
 
 <!-- v1 소스 확인 2026-09-11: 2.24 md/kr/include/tweenOptions.md가 Easing(문자열|함수, 기본 Exp2)·Direction(문자열, 기본 Out)을 정의한다. 3.x가 복사하는 필드 아홉은 quad-roblox Animate의 FIELDS, 기본 Style은 Property 핸들러의 buildInfo. mock 실측 2026-09-11: Easing 키를 넣어도 q.Animate/q.Tween 생성이 통과하고, strict luau-lsp도 모르는 키를 잡지 않았다(Time = "문자열"은 잡는다). -->
-**옵션 이름이 v1과 겹치지 않습니다.** v1의 `TweenOptions`는 `Easing`(문자열이나 함수, 기본 `Exp2`)과 문자열 `Direction`을 받았습니다. `q.Animate`/`q.Tween`이 읽는 필드는 `Info`·`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`·`Override`·`Dedup` 아홉 개뿐입니다.
+**옵션 이름이 v1과 겹치지 않습니다.** v1의 `TweenOptions`는 `Easing`(문자열이나 함수, 기본 `Exp2`)과 문자열 `Direction`을 받았습니다. `q.Animate`/`q.Tween`이 읽는 필드는 `Info`·`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`·`Override`·`Dedup` 아홉 개이고, `q.Animate`는 여기에 `CanAnimate`를 하나 더 읽습니다.
 
 모르는 키는 **에러도 타입 진단도 없이 무시됩니다.** `Easing`을 그대로 옮겨 적으면 그 줄은 통과하고 곡선만 기본값인 `Enum.EasingStyle.Quad`가 됩니다 — 이징은 `Style = Enum.EasingStyle.*`로 옮기세요. `Direction`도 문자열이 아니라 `Enum.EasingDirection.*`이고, 문자열을 그대로 두면 quad가 막지 않고 엔진의 `TweenInfo` 생성까지 흘려보냅니다.
 
@@ -375,10 +375,10 @@ v1의 `Signal.Bindable`·`Disconnecter`(Maid류)에 해당하는 것은 없습�
 | `Class.Extend`의 `Getter`/`Setter`/`UpdateTriggers`/`:Update()` | 없음 | 프로퍼티 단위 갱신이라 전체 재렌더가 필요 없습니다. |
 | register 체이닝(`:With`→`:Add`→`:Tween` 누적) | 없음 | 매 호출이 새 노드를 만드는 `:Compute`/`:Apply`로 명시적으로 잇습니다. |
 | `Tween.RunTween` / `RunTweens` / `StopTween` / `IsTweening` / `Tween.Easings.*` / 함수 이징 / `CallBack`·`OnStepped`·`Ended` / 테이블 트윈 | 없음 | 명령형 트윈 API가 통째로 없습니다. `q.Tween{}` / `q.Animate{}`로 선언하고, 겹칠 때의 처리는 `Override = "Cancel" \| "Finish"`로 정합니다. 이징은 `Style = Enum.EasingStyle.*` 또는 `Info = TweenInfo` — 커스텀 함수 이징과 스텝 콜백은 제공하지 않습니다. |
-| `Apply(myFrame){props}` (이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다) | `q.Claim(inst, D.Mapper...)` | 재바인드 일반형은 기각됐고, **Studio에서 만든 프리팹을 통째로 넘겨받는 claim** 형태로만 부활했습니다. 한 번만 claim 가능하고 직계 자식을 전부 매핑해야 하며, 공동 소유 컨테이너(`PlayerGui` 등)는 대상이 아닙니다 — [07. Studio UI 바인딩과 `Claim`](./07-studio-ui-binding-and-claim.md). |
+| `Apply(myFrame){props}` (이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다) | `q.Claim(inst, D.Mapper...)` | 재바인드 일반형은 기각됐고, **Studio에서 만든 프리팹을 통째로 넘겨받는 claim** 형태로만 부활했습니다. 한 번만 claim 가능하고 직계 자식을 전부 매핑해야 하며, 공동 소유 컨테이너(`PlayerGui` 등)는 대상이 아닙니다 — [07. Studio에서 만든 UI에 반응성 붙이기](./07-studio-ui-binding-and-claim.md). |
 | `Signal.Bindable` / `Disconnecter` | 없음 | 정리는 인스턴스 수명에 묶입니다(5절). |
 | `Quad.Lang` | 없음 | 로케일은 라이브러리 범위 밖으로 분리됐습니다. |
-| `tracker.lua`(핫리로드 감시) | 없음 | 그 자리를 대신할 스토리북 도구는 예정이고 아직 없습니다. |
+| `tracker.lua`(핫리로드 감시) | 없음 | 그 자리는 이미 있는 스토리북 도구(ui-labs 등)가 대신합니다 — quad가 만들 계획은 없습니다. |
 | `Quad.Round` | 없음 | 별개의 유틸이었고 옮겨오지 않았습니다. |
 | `RoundSize` | 없음 | 없어진 숏핸드는 이것 하나입니다. `Corner`/`PaddingAll`/`PaddingAllOffset`/`Scale`은 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale`로 **이름이 바뀌었을 뿐**이고(5절), 그 밖의 자리는 엔진 프로퍼티를 직접 씁니다. |
 
@@ -438,6 +438,6 @@ Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part 
 ## 9. 이관 후 검증
 
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
-2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. 헤드리스 테스트](./06-headless-testing.md).
+2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. Roblox Studio 없이 헤드리스로 테스트하기](./06-headless-testing.md).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
 4. **에러가 나면** [09. 부록 — quad 에러 읽는 법](./09-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.

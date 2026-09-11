@@ -121,7 +121,7 @@ end
 - **원인**: 한 인스턴스는 생애 동안 한 번만 claim됩니다. `D.New`가 만든
   인스턴스도 이미 claim된 상태이고, 부모를 `Claim`할 때 매핑된 자식도 같이
   claim되므로 그 자식에 다시 걸면 여기서 막힙니다. 자세한 계약은
-  [07. Studio UI 바인딩과 Claim](/how-to/07-studio-ui-binding-and-claim/).
+  [07. Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/).
 - 이미 파괴된 인스턴스를 다시 쓰면 사촌 격 에러가 납니다 —
   `bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`.
 

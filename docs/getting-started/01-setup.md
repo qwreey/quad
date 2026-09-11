@@ -145,4 +145,4 @@ screen.Parent = playerGui
 ## 더 알고 싶다면
 
 - [레퍼런스: Quad 모듈](../reference/core/01-quad-module.md) — `New`/`UseProvider`/`AddPlugin`/`RunInit`
-- [06. 헤드리스 테스트](../how-to/06-headless-testing.md) — 설정 모듈의 그 한 줄을 mock 프로바이더로 바꾸는 자리
+- [06. Roblox Studio 없이 헤드리스로 테스트하기](../how-to/06-headless-testing.md) — 설정 모듈의 그 한 줄을 mock 프로바이더로 바꾸는 자리

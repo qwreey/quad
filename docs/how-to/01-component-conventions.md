@@ -7,7 +7,7 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
 > **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[시작하기 11. 컴포넌트로 쪼개기](../getting-started/11-components.md)에서 컴포넌트가 평범한 함수라는 것을, [09. Modifier](../getting-started/09-modifier.md)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 11. 컴포넌트로 쪼개기](../getting-started/11-components.md)에서 컴포넌트가 평범한 함수라는 것을, [09. 스타일을 값으로 들고 다니기](../getting-started/09-modifier.md)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -40,7 +40,7 @@ local CommonButtonModifier = D.Modifier.Frame {
 D.Frame {
     -- [1] 문자 키: 프로퍼티 바인딩 (정적 값 또는 반응형 State/Tween)
     Size = UDim2.new(0, 200, 0, 50),
-    BackgroundColor3 = isHovered:Compute(function(h)
+    BackgroundColor3 = isHovered:Compute(function(h)  -- 편집기 타입 검사까지 보려면 지역 변수로 빼세요(02 §3)
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
 
@@ -60,7 +60,7 @@ D.Frame {
 
 1. **숫자 키**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **이름 없는 자리(숫자 키)가 곧 자식**입니다.
 2. **문자 키**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 문자 키에 직접 적은 프로퍼티는 숫자 키의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
-3. **한 번에 처리된다**: 숫자 키 자리가 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8: 디스패치 엔진](../quadnomicon/08-extensible-dispatch-engine.md)이 다룹니다.
+3. **한 번에 처리된다**: 숫자 키 자리가 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../quadnomicon/08-extensible-dispatch-engine.md)이 다룹니다.
 4. **정리(Teardown)**: 인스턴스를 `Destroy()`하면 거기 묶인 구독과 트윈은 더 이상 실행되지 않습니다. Quad는 인스턴스마다 걸어 둔 엔진 연결이 끊겼는지로 생존을 판정하고, 실제 메모리 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것은 없고, **정리해야 할 것들을 담아 들고 다니는 스코프 객체도 없습니다**(Fusion의 `Scope`, Vide의 소유 스코프 자리에 해당하는 것이 quad에는 없습니다).
 
 ---
@@ -266,7 +266,7 @@ end
    같은 태그를 여러 자리(컴포넌트, `Modifier`, State로 바뀌는 `Tag` 값 …)에서 요구해도, quad는 참조 카운트로 **한 곳이라도 요구하는 동안 태그가 유지**되도록 관리합니다. 마지막 요구가 사라질 때 비로소 태그가 제거됩니다.
 2. **`None`이거나 State의 값이 `nil`이면 어트리뷰트가 삭제된다**:
    - `q.Attr { MyKey = None }` — 즉시 삭제(`inst:SetAttribute(key, nil)`).
-   - 바인딩된 `State`의 값이 `nil`이 된 경우도 마찬가지로 **삭제**됩니다. 단일 키 경로는 값을 그대로 엔진에 넘기고, `nil`도 예외가 아닙니다.
+   - 바인딩된 `State`의 값이 `nil`이 된 경우도 마찬가지로 **삭제**됩니다. 그룹이든 스칼라 슈가든 그 이름의 핸들러가 값을 그대로 엔진에 넘기고, `nil`도 예외가 아닙니다.
    - 반면 그룹 테이블에 `nil`을 직접 적는 것(`q.Attr { MyKey = nil }`)은 애초에 항목이 생기지 않는 것과 같습니다 — 지우려는 뜻이면 `None`을 쓰세요.
 3. **다만 '그룹 자체가 교체되어 이름이 사라진' 경우는 값이 남는다**:
    `Attr` 그룹 값을 통째로 다른 그룹으로 바꿔서 어떤 이름이 새 그룹에 없어졌다면, 그 이름의 구독만 끊기고 인스턴스에 이미 찍혀 있던 값은 **그대로 남습니다**. 그룹을 물릴 때 엔진에 지우기를 요청하지는 않기 때문입니다. 지우고 싶으면 새 그룹에서 그 이름을 `None`으로 명시하세요.

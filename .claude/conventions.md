@@ -491,25 +491,7 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
   **로컬 git 커밋까지만** 하고 원격 추가/푸시는 하지 말 것. (2) Roblox Studio는
   메인 계정이 아닌 별도 계정으로만 사용 — 로그인 계정 전환을 사용자가 안 해줬다면
   Studio 관련 작업(MCP 연결 등)을 진행하지 말고 대기.
-- **⭐⭐ [2026-09-11 밤 갱신 — 도구가 처리] 커밋 트레일러는 sandbox의 git 훅이 자동으로 고친다 — 세션은 하네스 기본 트레일러를 그대로 쓴다.** 사용자가 예고했던 git 래핑(옛 `HUMAN_TODO` 19)이 켜졌다: `core.hooksPath=/etc/code-docker/git/hooks`의 `ai-trailer.sh`(prepare-commit-msg·commit-msg 양쪽)가 `@anthropic.com` 도메인의 `Co-Authored-By:` 줄을 `codedocker.aitrailer.name/email`로 바꾸고(`keepModel=true`라 모델명이 괄호로 남는다 — `Co-Authored-By: qwreey (Fable 5.1) <me@qwreey.moe>`), `Claude-Session:` 줄은 떼어낸다(`stripSession=true`). 메인이 이 세션에 `name=qwreey`/`email=me@qwreey.moe`를 `/code/.gitconfig`에 설정했고(설정 전엔 `user.name`인 `qwreey-agent-selene <yaejihan54@gmail.com>`로 떨어졌다) `-m`·`--amend`(멱등)·수동 qwreey 줄 통과를 스크래치 레포에서 실측했다. **따라서 앞으로 커밋 메시지 끝엔 하네스가 주는 그대로 `Co-Authored-By: Claude <모델> <noreply@anthropic.com>`과 `Claude-Session: …`을 쓰고, 손으로 `Co-authored-by: qwreey <me@qwreey.moe>`를 따로 넣지 않는다**(넣으면 훅이 바꾼 줄과 둘이 남는다). 아래 문단은 그 전 규약의 근거 기록이다.
-  - ~~**[2026-08-18 신설, 같은 날 정정] 이 레포의 모든 커밋에 사용자 GitHub
-  계정(`github.com/qwreey`)을 co-author로 추가할 것 — 커밋 메시지 끝에
-  `Co-authored-by: qwreey <me@qwreey.moe>`만 넣는다. 하네스 기본
-  `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` 트레일러는 이
-  레포에 한해 넣지 말 것.**~~ **사용자 확정**(2026-08-18) — 커밋 계정 자체가
-  `qwreey-bot`이라 이미 에이전트 커밋임이 드러나므로 Claude 트레일러까지
-  이중으로 밝힐 필요는 없고, 대신 해당 GitHub 계정 프로필에 Claude를
-  사용한다고 명시해둘 예정("어차피 qwreey-bot 자체가 에이전트가 커밋했다고
-  알려주는지라 큰 필요는 없어"). `.claude/settings.json`에
-  `"includeCoAuthoredBy": false`도 선언해뒀지만 **[2026-08-18 확인] 하네스
-  버그로 무시됨**(`includeCoAuthoredBy`/`attribution.commit` 둘 다 알려진
-  미해결 버그 — GitHub Issue #7543/#65657) — 그래서 실제 억제는 이 문장을
-  세션이 읽고 지키는 방식으로만 보장된다. **qwreey 트레일러는 계속
-  추가한다** — 위 문단이 이미 그 근거(GitHub 기여 그래프 반영)를 서술함,
-  여기서 반복 안 함. `github` 리모트로 싱크되어
-  `upstream`(`github.com/qwreey/quad`, 사용자 본인 소유)에 PR이 merge될 때
-  GitHub 기여 그래프에 반영되게 하기 위함 — 관련 리모트 정책은 메모리
-  `git-remote-push-policy` 및 위 `SAFETY.md` 항목 참고.
+- **[2026-09-11] 커밋 트레일러는 레포 규약이 아니다 — 하네스가 주는 `Co-Authored-By`·`Claude-Session` 줄을 그대로 두고 손으로 다른 co-author 줄을 넣지 않는다.** 계정별 치환(qwreey-bot 환경의 sandbox 훅)은 실행 환경의 몫이라 다른 사용자·에이전트에겐 해당 없음. 이 세션 환경의 실측과 옛 규약(2026-08-18 수동 `Co-authored-by: qwreey` 줄)의 경위는 `session/2026-09-09-01-docs-polish.md` 끝 문단과 메모리 `feedback-git-trailer-hook`.
 - **⭐ [2026-08-28 신설] M2 자율 구현 규약 — 본문은
   `archive/v2-initial-implementation/m2-implementation-round11-brief.md`가 소스, 여기선
   가리키기만.** 사용자 결정(2026-08-28, *"수정하고 너가 진행하자"*)으로 M2는

@@ -179,16 +179,20 @@ end
 
 | 훅 | 언제 | 무엇을 받나 |
 |---|---|---|
-| `q.OnCreated(fn)` | quad가 이 인스턴스에 무언가 하기 전 | 인스턴스 |
-| `q.OnRendered(fn)` | 이 인스턴스의 처리가 끝난 뒤 | 인스턴스 |
+| `q.OnCreated<<I>>(fn)` | quad가 이 인스턴스에 무언가 하기 전 | 인스턴스 |
+| `q.OnRendered<<I>>(fn)` | 이 인스턴스의 처리가 끝난 뒤 | 인스턴스 |
 | `q.OnDestroyed(fn)` | 인스턴스가 파괴될 때 | — |
 
 ```luau
 local conn: RBXScriptConnection? -- 컴포넌트 안에서 만든 커넥션을 바깥 지역 변수로 들고 있는 경우
 -- ... conn = SomeSignal:Connect(...) ...
-q.OnDestroyed(function()
-    if conn then conn:Disconnect() end
-end)
+return D.Frame {
+    -- 숫자 키 자리에 둔다 — 돌려주는 EffectHandle이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
+    q.OnDestroyed(function()
+        if conn then conn:Disconnect() end
+    end),
+    -- …나머지 자식·프로퍼티…
+}
 ```
 
 인스턴스 자체를 나중에 참조해야 하면 `q.Ref<<Frame?>>(nil)`을 숫자 키 자리에 두고
@@ -205,6 +209,6 @@ end)
    `Source:Set`으로 상태를 바꿉니다.
 2. **UI와 네트워크 디커플링**: 컴포넌트는 `Store`/`State`만 소비하게 두면
    헤드리스 테스트가 쉬워집니다
-   ([06. 헤드리스 테스트](/how-to/06-headless-testing/)).
+   ([06. Roblox Studio 없이 헤드리스로 테스트하기](/how-to/06-headless-testing/)).
 3. **수명 동기화**: 컴포넌트에 매달린 외부 연결은 `Effect`의 cleanup이나
    `OnDestroyed`로 반드시 같이 정리합니다.

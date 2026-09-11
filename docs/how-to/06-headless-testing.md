@@ -34,7 +34,7 @@ UI 버그가 났을 때 1·2층에서 재현되면 Studio를 열 필요가 없�
 백엔드 설치 없이 `quad-base`만 있으면 됩니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
+-- 설치 경로는 프로젝트 구성에 따라 다르다(시작하기 00 참고)
 local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 
 local count = Quad.Source(0)
@@ -177,11 +177,11 @@ Roblox 프로퍼티/이벤트까지 태우려면 `quad-roblox`를 설치한 채 
   못 타기 때문**입니다 — 패키지 링크를 실제 복사로 바꿔놓지 않으면 스모크가
   죽고, 더 나쁘게 `luau-analyze`는 모듈을 `any`로 떨어뜨린 채 **조용히
   통과**합니다("거짓 클린").
-- 그다음 타입 검사 두 그룹이 돕니다. `quad-base`/`quad-types`/`quad-error`는
-  **Roblox 정의 없이** 분석해서 엔진 전역이 새어 들어오면 그 자리에서
+- 그다음 타입 검사 두 그룹이 돕니다. 엔진 무관 그룹(`quad-base`/`quad-types`/`quad-error`/`type-version-check`)은
+  **Roblox 정의 없이** 구 솔버와 신 솔버 두 패스로 분석해서 엔진 전역이 새어 들어오면 그 자리에서
   걸립니다. `quad-roblox`만 Roblox 타입 정의를 얹고 봅니다.
-- 마지막으로 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
-  `quad-roblox/test/spec.*.luau`를 하나씩 실행합니다.
+- 그다음 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
+  `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 문서 커버리지와 버전 정합성 게이트가 돕니다.
 
 테스트 프레임워크는 쓰지 않습니다. 각 spec은 그냥 `assert`와 `print`로 된
 평범한 Luau 스크립트이고, 실패하면 `assert`가 그 자리에서 던집니다.

@@ -140,7 +140,7 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
 - **문자 키**(`이름 = 값`)에는 **프로퍼티와 이벤트**가 옵니다. 값 자리에는 리터럴·`State`·`Tween`·`None`이 올 수 있고, 어떤 이름이 프로퍼티이고 어떤 이름이 이벤트인지는 엔진 리플렉션이 판정합니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키만은 프로퍼티가 아니라 관리 자식을 만드는 숏핸드입니다.
-- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 디스크립터**가 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`. **순서가 의미를 갖습니다.**
+- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 디스크립터**가 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`, 구멍을 메우는 `q.None`, 그리고 **위의 것들을 담은 `State`**([10장](/getting-started/10-slot/) 6절). **순서가 의미를 갖습니다.**
 
 그래서 컴포넌트는 그런 값을 props의 아무 이름으로나 받되(`props.Children`, `props.Modifier`, `props.Ref`), 자기 안쪽에 꽂을 때는 **숫자 키 자리에 `or q.None`을 붙여** 놓습니다. 이 경계 규약 전체는 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §1·§2에 있습니다.
 
@@ -152,4 +152,4 @@ props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 ## 더 알고 싶다면
 
 - [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) — 바깥에서 `Modifier`/`Ref`를 받는 컴포넌트의 `or None` 관용구, 우선순위 불변식 셋, `Tag`/`Attr`, 재사용 로직 추출, 체크리스트
-- [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열셋, 죽은 Slot과 마운트 규칙, `q.dispose`
+- [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열하나, 죽은 Slot과 마운트 규칙, `q.dispose`

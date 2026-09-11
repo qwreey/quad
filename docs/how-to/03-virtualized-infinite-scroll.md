@@ -50,8 +50,8 @@ updateFn(item, index, offset, prev, ud) -> (result, ud)
 
 `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다. 자동으로 넣어주는 안은
 검토 후 기각됐습니다 — 컴포넌트가 스스로 지정한 `LayoutOrder`를 Slot이 조용히
-덮어쓰게 되고("매직 없이 명시적"이라는 기조와 충돌), `updateFn`이 동적 요소를
-전부 다룬다는 원래 설계도 깨지기 때문입니다.
+덮어쓰게 되고("매직 없이 명시적"이라는 기조와 충돌), `LayoutOrder`는 Roblox 전용
+프로퍼티라 엔진을 모르는 `quad-base`의 Slot 층에 그 지식이 새는 레이어링 위반이기 때문입니다.
 
 `UIListLayout`으로 세로 배치를 할 때의 정본 관용구는 이렇습니다.
 
@@ -189,14 +189,14 @@ end
 만들고, 목록은 그 게이트된 State를 구독하게 합니다.
 
 ```luau
-local rawScrollY = q.Source(0)
+local scrollY = q.Source(0)                       -- §4의 그 원천 그대로
 local scrollGate = q.Blocker()
-local scrollY = rawScrollY:Apply(scrollGate) -- 게이트된 노드 — 아래 계산은 이걸 본다
+local gatedScrollY = scrollY:Apply(scrollGate)     -- 게이트된 노드 — 목록의 계산은 이제 이걸 본다
 
--- 묶어서 밀어 넣을 구간
+-- 묶어서 밀어 넣을 구간(OnChange 콜백은 여전히 scrollY:Set을 부른다)
 scrollGate:On()
-rawScrollY:Set(120)
-rawScrollY:Set(180)
+scrollY:Set(120)
+scrollY:Set(180)
 scrollGate:Off()  -- 여기서 정확히 한 번 전파된다(OffWithoutEmit이면 버려진다)
 ```
 
@@ -231,9 +231,9 @@ Roblox에서는 형제의 물리적 순서가 렌더 순서를 정하지 않습�
 quad-roblox 백엔드는 재정렬 op를 **일부러 아무 일도 하지 않게** 구현합니다.
 
 ```luau
--- quad-roblox/src/EngineOps.luau
+-- quad-roblox/src/EngineOps.luau의 요지(타입 주석은 뺐습니다)
 local function nativeMove(_target, _fromOffset, _elements, _toOffset)
-    -- no-op on purpose — order is bookkeeping, not physical, on Roblox
+    -- no-op on purpose (see header) — order is bookkeeping, not physical, on Roblox
 end
 ```
 

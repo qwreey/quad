@@ -2,7 +2,7 @@
 title: "10. 자식이 들어갈 자리 — Slot"
 description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
-> **대상 독자**: [09. Modifier](/getting-started/09-modifier/)를 끝낸 개발자
+> **대상 독자**: [09. 스타일을 값으로 들고 다니기](/getting-started/09-modifier/)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
 지금까지 자식은 **만들 때 한 번** 적어 넣었습니다. 그런데 화면을 만든 **뒤에**
@@ -276,5 +276,5 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열셋(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
+- [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열하나(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
 - [Quadnomicon Vol. 2](/quadnomicon/02-slot-prefix-sum-tree/) — `Offset`/`Length` 부기가 어떤 부분합 트리 위에서 도는지

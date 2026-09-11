@@ -34,7 +34,7 @@ local CommonButtonModifier = D.Modifier.Frame { BorderSizePixel = 0 }
 
 D.Frame {
     Size = UDim2.new(0, 200, 0, 50),                  -- 문자 키: 프로퍼티
-    BackgroundColor3 = isHovered:Compute(function(h)  -- 문자 키: 반응형 바인딩
+    BackgroundColor3 = isHovered:Compute(function(h)  -- 문자 키: 반응형 바인딩(편집기 타입 검사까지 보려면 지역 변수로 빼세요 — how-to 02 §3)
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
     MouseEnter = function() isHovered:Set(true) end,  -- 문자 키: 이벤트(self는 안 온다)
@@ -205,7 +205,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 | 의존성 선언 | 명시적 `use()` — 이미 destroy된 Scope의 값을 `use`했는지 검사할 수 있음 | 암묵적(전역 스코프 스택) — 리액티브 스코프 안 yield를 막는 별도 장치가 필요 | 명시적 `:With` / `:Compute(fn, ...deps)` |
 | 정리·스코프 모델 | `Scope` 배열에 destroy 클로저를 모아 수동 티어다운. GC 비의존 | 의존성 엣지와 소유(`owner`/`owned`)를 분리한 수동 destroy. GC 비의존 | 스코프 객체 없음. 생존 판정은 엔진 커넥션(`.Connected` — 전환이 `Destroy`와 동기)이고 회수는 GC — 대신 `Destroy`가 유일한 절단면 |
 | 마운트 소유권 | 이미 마운트된 인스턴스를 조건 없이 재부모화(가드 없음) | 중복 마운트 체크 없음 — 같은 타깃에 두 번 마운트하면 루트가 둘 | 재마운트는 즉시 에러 |
-| `Frame { … }` 안의 어휘를 누가 정하나 | 라이브러리 — `SpecialKey` 모양은 열려 있으나 우선순위가 4단계 하드코딩 | 라이브러리 — `action(callback, priority)`은 등록은 필요 없지만 key/value를 받지 않음 | **사용자** — (요소, 키, 값)을 판별하는 핸들러 레코드 하나를 등록하면 새 값 타입·새 키가 코어 수정 없이 인식, 우선순위는 열린 숫자 공간, 백엔드의 `Property`/`Event`/`Tween`도 같은 경로로 등록된 핸들러 |
+| `Frame { … }` 안의 어휘를 누가 정하나 | 라이브러리 — `SpecialKey` 모양은 열려 있으나 우선순위가 4단계 하드코딩 | 라이브러리 — `action(callback, priority)`은 등록은 필요 없지만 key/value를 받지 않음 | **사용자** — (요소, 키, 값)을 판별하는 핸들러 레코드 하나를 등록하면 새 값 타입·새 키가 코어 수정 없이 인식, 우선순위는 열린 숫자 공간, 백엔드의 `Property`/`Event`/`OnChange`도 같은 경로로 등록된 핸들러 |
 | 렌더 백엔드 | Roblox 전용 — 엔진 API를 직접 부름 | `create`가 Roblox Instance를 직접 만듦 — 교체 창구 없음 | **부착식** — 코어는 엔진 op를 주입받고, 백엔드는 `UseProvider(provider)` 한 줄로 설치(Roblox 백엔드·헤드리스 mock이 같은 문) |
 | 애니메이션 | 그래프의 1급 노드 — 다른 파생값의 입력으로 합성 가능, 대신 프레임 클럭·eager·교차 lifetime 검증 | `spring()`이 그래프 노드 — 합성 가능 | 그래프 밖의 값 — 보간·프레임 타이밍은 엔진(`TweenService`)이 담당해 딸려오는 장치가 없고, 대신 합성이 안 됨 |
 
@@ -227,7 +227,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: Fusion도 Vide도 quad v1도 가상 DOM을 두지 않았고, 이 선택은 그대로 이어받았습니다. 반대편 길인 vdom 재조정은 리스트 key 관리를 요구하고(불안정하면 자식 상태가 유실됩니다), 훅 호출 순서 규칙을 강제하며, 고빈도 갱신엔 리렌더를 우회하는 별도 API를 공식적으로 덧붙여야 했습니다(react-lua).
 - **우리가 넘은 방법**: `D.Frame { ... }`이 그 자리에서 실제 `Instance`를 만들어 돌려주고, 변화는 개별 프로퍼티 바인드에만 도달합니다. 중간 트리도 diffing 단계도 없어서 위 세 문제 자체가 생기지 않습니다.
 - **치른 대가**: "지금 트리가 어떻게 생겼는가"가 코드 한 곳에 드러나지 않습니다. 변화가 leaf 바인드로 흩어져 복잡한 조건부 트리는 재구성하기 어렵습니다. 렌더마다 서브트리를 통째로 다시 기술하는 vdom 쪽이 이 축에서는 낫습니다. **산 것**은 위의 셋입니다 — key 관리도, 훅 호출 순서 규칙도, 고빈도 갱신용 별도 API도 생길 자리가 없습니다. 설계 변경으로 해소되는 종류가 아니라 관측 도구로만 보완되고, 그 자리를 메울 도구는 [§8의 "아직 없지만 계획이 있다"](#아직-없지만-계획이-있다)에 `quad-debug`로 적어 뒀습니다.
-- **자세히**: [02. 첫 화면](../getting-started/02-first-screen.md), [Quadnomicon Vol. 9 — DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
+- **자세히**: [02. 첫 화면](../getting-started/02-first-screen.md), [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
 
 ### (2) 밀 때는 신호만, 계산은 읽을 때 — 그리고 의존성은 손으로 적는다
 
@@ -243,7 +243,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 - **이전 선택과 그 한계**: 두 라이브러리 다 마운트에 소유권 가드가 없습니다. Fusion `Children.luau`엔 `-- TODO: check for ancestry conflicts here`가 그대로 남아 있고 이미 마운트된 인스턴스를 조건 없이 재부모화합니다. Vide `mount.luau`도 중복 마운트 체크가 전혀 없어 같은 타깃에 두 번 마운트하면 독립된 루트가 둘 생깁니다. 둘 다 **조용히** 두 벌이 됩니다.
 - **우리가 넘은 방법**: Slot이 자식 위치를 장부로 들고, 이미 마운트된 Slot의 재마운트는 즉시 던집니다. 실재하는 버그 클래스를 막는 가드이고 두 라이브러리 어디에도 없습니다.
-- **알아 둘 것**: `LayoutOrder`는 직접 넣으셔야 합니다 — `updateFn`이 받는 `index`/`offset`에서 대입하면 됩니다. 대신 채워 주지 않는 것 자체는 Fusion·Vide도 같습니다(Vide의 `defaults.luau`가 정해 주는 것은 `SortOrder` 기본값까지입니다). quad가 다른 점은 그 자리의 `index`/`offset`을 **반응형 값으로 쥐어 준다**는 것이고, 이미 지정해 둔 값을 조용히 덮지 않으려고 대입만 남겼습니다. 소유권 가드가 막는 것도 실재하는 버그 클래스(조용히 두 벌이 되는 것)뿐이라, 한 자리에 한 번 마운트하는 정상 사용에서는 걸리지 않습니다.
+- **알아 둘 것**: `LayoutOrder`는 직접 넣으셔야 합니다 — `updateFn`이 받는 `index`/`offset`에서 대입하면 됩니다. 대신 채워 주지 않는 것 자체는 Fusion·Vide도 같습니다. quad가 다른 점은 그 자리의 `index`/`offset`을 **반응형 값으로 쥐어 준다**는 것이고, 이미 지정해 둔 값을 조용히 덮지 않으려고 대입만 남겼습니다. 소유권 가드가 막는 것도 실재하는 버그 클래스(조용히 두 벌이 되는 것)뿐이라, 한 자리에 한 번 마운트하는 정상 사용에서는 걸리지 않습니다.
 - **자세히**: [10. 자식이 들어갈 자리](../getting-started/10-slot.md), [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md), [Vol. 2 — Slot-in-Slot 부분합 트리](../quadnomicon/02-slot-prefix-sum-tree.md)
 
 ### (4) 수명을 GC에 위임한다
@@ -259,7 +259,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **치른 대가 (b)**: 스코프 없는 모델이 자기 때문에 내는 비용이 둘 있습니다. 컴포넌트가 트리를 만드는 도중에 던지면, 그때까지 만들어진 부분 트리는 자기 앵커로 스스로를 붙들고 있어서 격리 경계인 `Fallback`도 회수해 주지 않습니다([레퍼런스 `Fallback`](../reference/sugar/05-fallback-traceback.md)). 그리고 quad 밖에서 부모를 `Destroy`한 뒤에는 그 아래 있던 값을 다른 자리에 다시 마운트할 수 없습니다 — 살려서 옮기실 값은 파괴 전에 `:Extract`로 빼 두셔야 합니다([레퍼런스 `Slot`](../reference/core/06-slot.md)). **산 것**은 사용자가 들고 다녀야 하는 인프라 물건이 하나도 없다는 것입니다.
 - **알아 둘 것**: 생존 판정은 `Destroying`이 아니라 인스턴스에 걸어 둔 엔진 커넥션의 `.Connected`이고, 그 전환은 `Destroy`와 동기입니다 — 파괴 뒤의 발화는 순서와 무관하게 막힙니다([Quadnomicon Vol. 6](../quadnomicon/06-liveness-gate-and-isolation.md)). `Destroying` 시그널에 기대는 소비자는 `Effect`의 cleanup 하나인데, 시그널 동작이 `Deferred`로 설정된 플레이스에서는 그 cleanup이 파괴와 같은 줄기가 아니라 **직후에 지연 배달**됩니다. cleanup이 파괴와 같은 프레임에 동기로 돈다는 전제를 두지 마세요 — 이건 quad의 선택이 아니라 엔진 성질입니다.
 - **알아 둘 것**: quad가 소유한 경로(프로퍼티·이벤트·Slot)는 파괴 뒤 발화가 게이트로 막히고, 파괴된 Instance를 다시 바인드하면 그 자리에서 에러가 납니다. 없는 것은 **사용자가 직접 들고 계신 Instance 참조**까지 추적해 주는 층입니다. Roblox가 "이 인스턴스는 깨끗이 파괴됐는가"를 묻는 술어를 주지 않아서, 그걸 제대로 하려면 모든 Instance 사용을 감싸야 합니다 — 그건 렌더러가 아니라 전용 Instance 래퍼 도구의 영역이라고 보고 흡수하지 않았습니다(만들 계획도 없습니다).
-- **자세히**: [Quadnomicon Vol. 3 — Luau 메모리 토폴로지](../quadnomicon/03-luau-memory-topology.md), [Vol. 7 — 인스턴스 신원·네이티브 GC·`Claim` 계약](../quadnomicon/07-instance-identity-and-gc-philosophy.md)
+- **자세히**: [Quadnomicon Vol. 3 — Luau 메모리 토폴로지](../quadnomicon/03-luau-memory-topology.md), [Vol. 7 — 인스턴스 신원, 네이티브 GC](../quadnomicon/07-instance-identity-and-gc-philosophy.md)
 
 ### (5) 애니메이션을 반응 그래프 밖에 둔다
 
@@ -278,19 +278,19 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
   - **Roblox 네이티브 StyleSheet** — 이름으로 멀리서 거는 창구는 엔진이 이미 줍니다. `StyleRule`의 선택자가 곧 `CollectionService` 태그이기 때문입니다. 다만 적용 위치가 태그 선택자를 통해야 해서, 컴포넌트 코드 안에서 스타일을 **값으로 합성하거나 diff하기**는 어렵다고 보고 Modifier를 별도 축으로 뒀습니다 — 두 축은 배타적이지 않습니다.
 - **우리가 넘은 방법**: 재사용 스타일은 디스패치 **이전에 정적으로 평탄화되는** 불변 값(`Modifier`)이라 런타임 캐스케이드 계산이 없고, 핸들러는 key·value·타깃을 모두 받으며 우선순위 축은 열린 공간입니다. 라이브러리를 고치지 않고 다섯 번째 우선순위를 끼워 넣을 수 있습니다.
 - **알아 둘 것**: 이름으로 멀리서 일괄 적용하고 싶으시면 그 창구는 **엔진 쪽**입니다 — quad의 `q.Tag`가 선언한 태그(State에서 나온 태그도 됩니다)를 `StyleRule`의 선택자가 그대로 고르므로, 태그 위에 스타일시트를 얹어 바깥에서 모양을 갈아 끼우는 구성은 그대로 됩니다 → [05. 이름표와 속성](../getting-started/05-tag-attr.md). Modifier가 더하는 것은 그 위의 두 번째 축입니다 — **합성되고, 코드로 diff되고, 텍스트로 이식되는** 스타일. 없어진 것은 id 하나를 겨냥하던 v1의 `Style "Child" {}`뿐이고, 그 이관은 [v1에서 오는 분께](./02-from-v1.md)로 넘깁니다. Modifier 쪽 우선순위 규칙은 "숫자 키 자리에서 뒤에 온 것이 이김"과 "인라인 키가 무조건 이김" 둘뿐이라, 넘기는 쪽이 직접 배치하시면 됩니다.
-- **자세히**: [09. 스타일을 값으로](../getting-started/09-modifier.md), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](../quadnomicon/08-extensible-dispatch-engine.md)
+- **자세히**: [09. 스타일을 값으로 들고 다니기](../getting-started/09-modifier.md), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](../quadnomicon/08-extensible-dispatch-engine.md)
 
 ### (7) 렌더 백엔드를 부착식으로 만든다 — 코어에서 엔진 어휘를 뺀다
 
 - **이전 선택과 그 한계**: Fusion도 react-lua도 Roblox 전용이고, Vide의 `create`도 Roblox Instance를 직접 만듭니다 — 렌더링이 엔진 API에 직접 묶여 있어 다른 타깃으로 갈 창구도, 엔진 없이 돌릴 창구도 없습니다. 이건 관측된 벽이라기보다 설계 시점의 판단이었습니다 — 렌더 기술이 한 엔진에 묶이면 외부 개발자 유인이 없어 발전이 더디다고 봤습니다.
-- **우리가 넘은 방법**: `quad-base`는 엔진을 모릅니다. 물리 트리 조작(`nativeInsert`·`nativeRemove`…)·생명주기·메타데이터·시간 같은 **op를 주입받는** 순수 코어이고, 백엔드는 그 op와 자기 핸들러(`Property`/`Event`/`Tween`)를 들고 `Quad:UseProvider(provider)` 한 줄로 **부착**됩니다. Roblox 백엔드 `quad-roblox`는 특권이 없는 첫 손님입니다 — 코어에 Roblox 분기가 하나도 없고, 같은 공개 경로로 설치됩니다. 헤드리스 검증에 쓰는 mock 백엔드도 같은 문으로 들어오므로, 엔진 없이 렌더 결과를 검증하는 것과 다른 렌더 타깃을 붙이는 것이 **같은 일**입니다. 프로바이더 슬롯은 모듈 인스턴스당 하나이고, 같은 프로바이더의 재설치는 no-op, 다른 프로바이더는 즉시 에러라 두 백엔드가 조용히 섞이지 않습니다.
-- **알아 둘 것**: 백엔드는 얇은 다리가 아니라 `Property`·`Event`·`Tween` 핸들러를 실제로 **소유**하므로, 새 백엔드를 만드는 비용은 op 몇 개를 채우는 것보다 큽니다. 다만 그 비용은 백엔드를 **쓰는** 쪽이 아니라 **만드는** 쪽만 냅니다 — 그리고 이음매가 아예 없어 포크가 유일한 길인 쪽보다는 쌉니다. 실제로 그 계약을 전부 통과하는 두 번째 구현이 이미 있습니다([백엔드 계약](../reference/extend/01-backend-provider-contract.md)에 참고 구현으로 적어 뒀습니다). 오늘 출하되는 프로덕션 백엔드가 몇 개인지는 설계의 대가가 아니라 현황이라 [§8의 "오늘의 성숙도"](#오늘의-성숙도)에 적었습니다.
-- **자세히**: [레퍼런스: 백엔드 프로바이더 규약](../reference/extend/01-backend-provider-contract.md), [06. 헤드리스 테스트](../how-to/06-headless-testing.md), [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](../quadnomicon/10-multi-backend-abstract-machine.md)
+- **우리가 넘은 방법**: `quad-base`는 엔진을 모릅니다. 물리 트리 조작(`nativeInsert`·`nativeRemove`…)·생명주기·메타데이터·시간 같은 **op를 주입받는** 순수 코어이고, 백엔드는 그 op와 자기 핸들러(`Property`/`Event`/`OnChange`)를 들고 `Quad:UseProvider(provider)` 한 줄로 **부착**됩니다. Roblox 백엔드 `quad-roblox`는 특권이 없는 첫 손님입니다 — 코어에 Roblox 분기가 하나도 없고, 같은 공개 경로로 설치됩니다. 헤드리스 검증에 쓰는 mock 백엔드도 같은 문으로 들어오므로, 엔진 없이 렌더 결과를 검증하는 것과 다른 렌더 타깃을 붙이는 것이 **같은 일**입니다. 프로바이더 슬롯은 모듈 인스턴스당 하나이고, 같은 프로바이더의 재설치는 no-op, 다른 프로바이더는 즉시 에러라 두 백엔드가 조용히 섞이지 않습니다.
+- **알아 둘 것**: 백엔드는 얇은 다리가 아니라 `Property`·`Event`·`OnChange` 핸들러를 실제로 **소유**하므로, 새 백엔드를 만드는 비용은 op 몇 개를 채우는 것보다 큽니다. 다만 그 비용은 백엔드를 **쓰는** 쪽이 아니라 **만드는** 쪽만 냅니다 — 그리고 이음매가 아예 없어 포크가 유일한 길인 쪽보다는 쌉니다. 실제로 그 계약을 전부 통과하는 두 번째 구현이 이미 있습니다([백엔드 계약](../reference/extend/01-backend-provider-contract.md)에 참고 구현으로 적어 뒀습니다). 오늘 출하되는 프로덕션 백엔드가 몇 개인지는 설계의 대가가 아니라 현황이라 [§8의 "오늘의 성숙도"](#오늘의-성숙도)에 적었습니다.
+- **자세히**: [레퍼런스: 백엔드 프로바이더 규약](../reference/extend/01-backend-provider-contract.md), [06. Roblox Studio 없이 헤드리스로 테스트하기](../how-to/06-headless-testing.md), [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](../quadnomicon/10-multi-backend-abstract-machine.md)
 
 ### (8) `Frame { … }` 안에 무엇이 올 수 있는지를 코어가 정하지 않는다 — 핸들러와 플러그인
 
 - **이전 선택과 그 한계**: 어느 라이브러리든 `{ … }` 안에서 인식되는 키와 값의 종류는 라이브러리가 정합니다. Fusion의 `SpecialKey`는 새 키를 만들 수는 있지만 우선순위 4단계 안에서만이고, Vide의 `action`은 콜백 하나를 던지는 창구라 새 **값 타입**을 가르칠 수 없으며, quad v1은 `class.lua`의 중앙 디스패처가 하드코딩이라 특수 키 하나를 더 넣으려면 라이브러리를 고쳐야 했습니다.
-- **우리가 넘은 방법**: props의 자리 하나하나는 **디스패치 엔진**으로 가고, 엔진은 등록된 핸들러들을 우선순위대로 훑어 그 (요소, 키, 값)을 맡을 첫 핸들러를 찾습니다. 핸들러는 레코드 하나입니다 — 순수 판별 `isHandlable`, 숫자 `priority`, 처리하고 **되돌리는 함수(retractor)**를 돌려주는 `process`. 사용자가 이 레코드를 `q.Dispatch.addHandler`로 등록하면 그 순간부터 새 값 타입(스프링 값, 로그 값, 무엇이든)이나 새 키가 `D.Frame { … }` 안에서 인식됩니다. 값을 한 겹 벗겨 아래로 위임하는 **래핑 핸들러**는 같은 자리에 층으로 쌓이고 무를 때 역순으로 풀립니다. 백엔드의 `Property`·`Event`·`Tween`도 특권이 아니라 **같은 레지스트리에 등록된 핸들러**이고, 그 위에 얹는 `Modifier`·`Slot`·`Ref`·`Observer`도 마찬가지입니다. 새 표면(`q.MySpring` 같은 팩토리)까지 붙이려면 `q:AddPlugin(fn)`이 돌려준 테이블을 모듈에 병합해 줍니다 — 타입도 `Self & P` 교집합으로 이어져 캐스트 없이 자동완성됩니다. 그래서 코어·백엔드·플러그인이 전부 **분리 가능한 층**입니다.
+- **우리가 넘은 방법**: props의 자리 하나하나는 **디스패치 엔진**으로 가고, 엔진은 등록된 핸들러들을 우선순위대로 훑어 그 (요소, 키, 값)을 맡을 첫 핸들러를 찾습니다. 핸들러는 레코드 하나입니다 — 순수 판별 `isHandlable`, 숫자 `priority`, 처리하고 **되돌리는 함수(retractor)**를 돌려주는 `process`. 사용자가 이 레코드를 `q.Dispatch.addHandler`로 등록하면 그 순간부터 새 값 타입(스프링 값, 로그 값, 무엇이든)이나 새 키가 `D.Frame { … }` 안에서 인식됩니다. 값을 한 겹 벗겨 아래로 위임하는 **래핑 핸들러**는 같은 자리에 층으로 쌓이고 무를 때 역순으로 풀립니다. 백엔드의 `Property`·`Event`·`OnChange`도 특권이 아니라 **같은 레지스트리에 등록된 핸들러**이고(`Tween`은 그 `Property` 핸들러가 소비하는 값 타입입니다), 그 위에 얹는 `Modifier`·`Slot`·`Ref`·`Observer`도 마찬가지입니다. 새 표면(`q.MySpring` 같은 팩토리)까지 붙이려면 `q:AddPlugin(fn)`이 돌려준 테이블을 모듈에 병합해 줍니다 — 타입도 `Self & P` 교집합으로 이어져 캐스트 없이 자동완성됩니다. 그래서 코어·백엔드·플러그인이 전부 **분리 가능한 층**입니다.
 - **알아 둘 것**: 핸들러 작성에는 지켜야 할 계약이 있습니다 — `isHandlable`은 매치되지 않는 스캔에서도 반복해서 불리므로 순수해야 하고, `process`는 retractor를 반드시 돌려줘야 합니다. 확장점을 여는 라이브러리라면 어디에나 있는 종류의 계약입니다. 레지스트리는 모듈 인스턴스 스코프라 `q.New()`로 따로 만든 인스턴스에는 다시 등록해야 합니다 — `require`가 주는 기본 인스턴스만 쓰시면 해당 없고, `q.New()`는 드문 경로입니다.
 - **치른 대가**: 우선순위 축을 열어 둔 값으로, 닫힌 축에는 없는 실패 모드가 생깁니다([핸들러 계약](../reference/extend/02-dispatch-handler-contract.md)). `keyType`을 `isHandlable`과 어긋나게 선언하면 등록은 통과하는데 **에러 없이** 그 버킷에서 빠지고, 더 낮은 우선순위의 핸들러가 대신 매치됩니다. 우선순위 동률의 순서는 정의돼 있지 않고 경고는 `q.debug`가 참일 때만 나옵니다. `process`가 던진 자리는 no-op 표식을 단 채 남고 **명시적 철거로도 복구되지 않습니다**(핫 패스라 `pcall`로 감싸지 않습니다). 숫자 키 자리를 맡는 말단 핸들러는 자리마다 **길이와 오프셋 소스를 둘 다 등록**해야 하고, 하나만 빠뜨리면 그 자리가 아니라 한참 뒤의 오프셋 조회에서 터집니다. **산 것**은 라이브러리를 포크하지 않고 새 값 타입·새 키·다섯 번째 우선순위를 끼워 넣을 수 있다는 것입니다.
 - **자세히**: [레퍼런스: 디스패치 핸들러 계약](../reference/extend/02-dispatch-handler-contract.md) — 예제 "커스텀 값 타입 하나 붙이기", [레퍼런스: Quad 모듈 — `AddPlugin`](../reference/core/01-quad-module.md), [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이프라인](../quadnomicon/08-extensible-dispatch-engine.md)
