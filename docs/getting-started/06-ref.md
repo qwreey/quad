@@ -122,7 +122,7 @@ end)
 
 const card = D.Frame {
     -- …생략…
-    D.TextButton { buttonRef, Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
+    D.TextButton { buttonRef, Text = "+ 1", --[[ …BackgroundTransparency 두 줄과 Activated는 §2 그대로… ]] },
 }
 ```
 

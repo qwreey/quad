@@ -137,7 +137,7 @@ return {
 }
 ```
 
-쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다 — §1의 `CardStyle` 자리에 `Styles.Card`를 그대로 갈아 끼우면 됩니다.
+쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다 — 모양은 §1의 `CardStyle`을 그런 모듈로 옮긴 것입니다(§2의 `hot` 파이프가 든 `CardStyle`을 이것으로 갈아 끼우면 배경은 정적 색으로 돌아갑니다). 이 튜토리얼에서는 만들어만 두고 쓰지 않습니다 — 실전 배치는 [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)에 있습니다.
 
 
 ---

@@ -131,18 +131,14 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 버튼의 `BackgroundColor3`에 색 리터럴 대신 파이프를 꽂습니다.
 
 ```luau
--- … card 안의 버튼을 이렇게 고칩니다
+-- … card 안의 버튼에 한 줄을 더합니다
     D.TextButton {
-        -- …06장의 buttonRef와 BackgroundTransparency 두 줄은 그대로…
-        Text = "+ 1",
+        -- …buttonRef·Text·BackgroundTransparency = 0·Activated(06장 2절 그대로)…
         BackgroundColor3 = count:Compute(function(c)
             return if c:Get() >= 10
                 then Color3.fromRGB(255, 190, 0)
                 else Color3.fromRGB(0, 162, 255)
         end),
-        Activated = function()
-            count:Set(count:Get() + 1)
-        end,
     },
 ```
 
@@ -182,8 +178,7 @@ const card = D.Frame {
     D.TextButton {
         buttonRef,                                  -- ← 06장과 같은 평범한 Ref(인스턴스마다 새로 만든다)
         Text = "+ 1",
-        -- …3절의 BackgroundColor3 파이프는 그대로 둡니다…
-        Activated = function() count:Set(count:Get() + 1) end,
+        -- …3절의 BackgroundColor3 파이프와 06장 2절의 BackgroundTransparency·Activated는 그대로…
     },
 
     -- 숫자 키: 카운트가 10 이상인 동안 게임패드 선택을 이 버튼에 둔다

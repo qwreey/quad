@@ -82,7 +82,7 @@ end
 
 진입점에서는 그냥 부릅니다.
 
-**11장에서 만든 `row`와 `row.Parent = screen` 줄은 지웁니다** — 카운터 둘을 손으로 적던 자리를 이 보드가 대신합니다.
+**11장에서 만든 `row`와 `row.Parent = screen` 줄, 그리고 `Counter`를 require하던 줄은 지웁니다** — 카운터 둘을 손으로 적던 자리를 이 보드가 대신합니다(`Counter`는 이제 보드가 require합니다). 11장의 `Children`과 12장의 `Watch`도 `row`와 함께 사라지지만, `Counter.luau`의 `props.Children or q.None`·`props.Watch` 두 자리는 그대로 둬도 됩니다 — 넘어오지 않으면 `q.None`이 자리를 지킵니다.
 
 ```luau
 -- (Main.client.luau 계속)
