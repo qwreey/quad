@@ -13,7 +13,7 @@ description: "버튼 이벤트를 문자 키 자리에 적어 Source에 값을 �
 
 ```luau
 -- (Main.client.luau 계속 — 카드를 화면 가운데 놓는 AnchorPoint/Position은 생략합니다.
---  03장 §3에서 확인용으로 만든 suffix/both와 count:Set(7) 줄은 지웁니다)
+--  03장 §2의 count:Set(7)과 §3에서 확인용으로 만든 suffix/both 줄은 지웁니다)
 const count = q.Source(0)
 
 const countText = count:Compute(function(c)

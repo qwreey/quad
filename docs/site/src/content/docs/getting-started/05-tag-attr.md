@@ -154,7 +154,7 @@ const card = D.Frame {
 값 타입도 그대로 보존됩니다 — 문자열은 문자열로, 숫자는 숫자로, 불리언은 불리언으로.
 
 ```luau
--- (확인용 — 화살표 뒤는 실제 출력이 아니라 그 시점의 Attribute 상태입니다)
+-- (확인용 — 화살표 뒤는 실제 출력이 아니라 그 시점의 Attribute 상태입니다. 확인이 끝나면 active:Set 두 줄은 지웁니다)
 card:GetAttributes()         --> {Active = true, Kind = "counter", Step = 1}
 
 active:Set(false)            -- 이제 {Active = false, Kind = "counter", Step = 1}

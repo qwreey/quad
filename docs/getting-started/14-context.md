@@ -110,7 +110,7 @@ Context:Get: no value for Provider(Locale) — the creator of this Context did n
 `Provider<T>`의 `T`는 값에 없는 팬텀이라, **키를 만드는 자리에서 한 번** 적어 주면 그 뒤로는 `:Get`이 알아서 추론됩니다. 위 `Theme` 모듈에 타입까지 같이 두면 됩니다.
 
 ```luau
--- 새 파일: ReplicatedStorage/Client/UI/Theme (--!strict)
+-- (§1의 Theme 모듈 — 타입까지 넣은 모양, --!strict)
 const q = require("./Quad")
 
 export type Theme = { Accent: Color3 }

@@ -183,8 +183,8 @@ const label = D.TextLabel {
 방금 손으로 만든 `Sum` 같은 것은 quad에 이미 들어 있습니다. `q.Operator`가 그 모음이고, 붙이는 자리는 `:Compute`가 아니라 **`:Apply`**입니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다
-const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 위에서 손으로 만든 plusTen과 같은 결과
+-- … 이 절 첫 조각(Sum/plusTen을 만든 별도 스크립트)에 이어집니다
+const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 앞서 손으로 만든 Sum(10)과 같은 결과
 ```
 
 `:Apply(factory)`는 "이 팩토리가 만들어 낸 연산을 이 State에 붙인다"는 뜻입니다 — 팩토리가 자기 의존성까지 같이 들고 있어서, 한 번 이름 붙인 연산자를 여러 State에 붙여도 의존성이 따라갑니다.

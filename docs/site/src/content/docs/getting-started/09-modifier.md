@@ -31,7 +31,7 @@ const card = D.Frame {
     Size = UDim2.fromOffset(240, 160),
     UICorner = 12,
 
-    -- …자식들 생략…
+    -- …05~08장에서 붙인 숫자 키와 자식들 생략…
 }
 ```
 
@@ -58,9 +58,9 @@ const CardStyle = D.Modifier.Frame {
     BorderSizePixel = 0,
 }
 
-const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …앞 장의 자식들은 그대로…
+const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …05~08장에서 붙인 숫자 키와 자식들은 그대로…
 
-hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다
+hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다(확인이 끝나면 이 줄은 지웁니다)
 ```
 
 **실행하면** `hot:Set(true)` 시점에 카드 배경이 바뀝니다. 03장에서 프로퍼티에 직접 꽂았던 그 흐름이, `Modifier`를 한 단계 거쳐 같은 자리에 도착한 것입니다.

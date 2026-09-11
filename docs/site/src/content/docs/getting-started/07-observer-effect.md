@@ -133,6 +133,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 ```luau
 -- … card 안의 버튼을 이렇게 고칩니다
     D.TextButton {
+        -- …06장의 buttonRef와 BackgroundTransparency 두 줄은 그대로…
         Text = "+ 1",
         BackgroundColor3 = count:Compute(function(c)
             return if c:Get() >= 10
@@ -169,12 +170,11 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 `Effect`의 의존성 자리에 [06장](/getting-started/06-ref/)의 `Ref`를 같이 걸면 **"이 상자가 채워졌을 때"와 "이 값이 바뀌었을 때"를 한 함수에서** 다룰 수 있습니다.
 
-바깥으로 나가는 일 하나를 붙여 보겠습니다 — 카운트가 10 이상인 동안 **게임패드 선택**(`GuiService.SelectedObject`)을 이 버튼에 두는 것입니다. 선택을 걸었으면 조건이 풀릴 때 **풀어 줘야** 하므로 cleanup이 필요한 일이고, 대상이 인스턴스라 `Ref`가 필요합니다. 상자는 06장 1절과 같은 평범한 `Ref`입니다.
+바깥으로 나가는 일 하나를 붙여 보겠습니다 — 카운트가 10 이상인 동안 **게임패드 선택**(`GuiService.SelectedObject`)을 이 버튼에 두는 것입니다. 선택을 걸었으면 조건이 풀릴 때 **풀어 줘야** 하므로 cleanup이 필요한 일이고, 대상이 인스턴스라 `Ref`가 필요합니다. 상자는 06장 3절에서 만든 `buttonRef`를 그대로 씁니다 — 평범한 `Ref`입니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다
+-- … 위쪽 코드에 이어집니다(buttonRef는 06장 3절에서 만든 그 상자 그대로)
 const GuiService = game:GetService("GuiService")
-const buttonRef = q.Ref<<TextButton?>>(nil)
 const isBig = count:Compute(function(c) return c:Get() >= 10 end)
 
 const card = D.Frame {
