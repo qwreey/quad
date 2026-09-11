@@ -242,7 +242,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Dispatch.recompute: sourceList[{i}] is nil — bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+				error(`Dispatch.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None; if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			if offset == None then
 				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and

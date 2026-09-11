@@ -110,7 +110,7 @@ Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
 1. **Nil hole in the array part when the props type is loose.** With a precise element type the
    union mismatch is reported; with `any?` (the shape a v1 untyped props bag translates into) it
    passes silently and dies at runtime inside bookkeeping:
-   `Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken`.
+   `Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …`.
    Always write `or q.None`, and do not type props as `any`.
 2. **`store:Of("x")` without a type argument** yields `Source<any>`, disabling checking downstream.
    Keys added by `Of` after the fact land on the **next** re-dispatch.

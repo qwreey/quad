@@ -27,7 +27,7 @@ Message substrings below are copied from the source; match on them, do not parap
 | `Debounce: Time must be a non-negative number or a State<number> (got ...)` | Negative or wrong-typed `Time` in `q.Debounce`/`q.Throttle` (`Throttle:` for the throttle) | Pass a non-negative number of seconds or a `State<number>` |
 | `Operator.Sum: Apply target must be a State (got ...)` | Calling an operator factory on a plain value | Use `:Apply` on a State: `myState:Apply(q.Operator.Not)` |
 | `Dispatch: no handler matched key Parent (value: ..., brand: Inst)` | `Parent = someInstance` as a prop | `Parent` is not a prop — set `.Parent` from outside after creation |
-| `Dispatch.recompute: sourceList[N] is nil — bookkeeping is broken` | A `nil` hole in the array part of a props table | Use `q.None`: `props.Modifier or q.None` |
+| `Dispatch.recompute: sourceList[N] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | A `nil` hole in the array part of a props table | Use `q.None`: `props.Modifier or q.None` |
 
 ---
 

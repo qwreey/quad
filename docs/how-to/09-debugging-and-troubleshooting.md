@@ -54,8 +54,8 @@ ServerScriptService.Components.UserProfile:42: Event: handler for "Activated" mu
   구멍 없는 시퀀스로 전제하고(순회에서 그 자리가 빠지고, 부기 쪽은 길이 `#`에
   기대는데 구멍 있는 테이블의 `#`는 명세되지 않음) 따라서 배열 구멍은
   **정의되지 않은 동작(UB)** 입니다. 실제 결과는 구멍의 위치에 따라 갈립니다 —
-  1번 자리나 중간이 구멍이면 위치 부기가 어긋나 quad 내부를 가리키는 에러
-  (`Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken …`)가 나고,
+  1번 자리나 중간이 구멍이면 위치 부기가 어긋나 그 자리에서 에러가 나고
+  (`Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
   꼬리 구멍은 우연히 통과합니다.
 - **해결책**: 선택적 값 뒤에는 **`or None`**을 붙입니다.
 

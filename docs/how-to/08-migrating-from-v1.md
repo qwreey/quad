@@ -380,10 +380,10 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 **1. 숫자 키 자리의 `nil` 구멍 — props가 느슨한 타입일 때.** v1의 props는 타입 없는 가방이라, 직역하면 `{ [string]: any }`나 `any?` 같은 모양이 되기 쉽습니다. 그러면 숫자 키 자리에 `nil`이 들어가도 **타입 검사가 조용히 통과하고**, 실행할 때 부기 안쪽에서 죽습니다.
 
 ```
-Dispatch.recompute: sourceList[1] is nil — bookkeeping is broken
+Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
 ```
 
-작성자의 줄이 아니라 엔진 안쪽을 가리키는 에러라 원인을 찾기 어렵습니다. **선택적으로 넘기는 값은 예외 없이 `or q.None`을 붙이세요** — `props.Modifier or q.None`. props 타입을 `any`로 두지 말고 정확히 적어두면 이 실수는 타입 검사에서 잡힙니다.
+메시지 앞부분이 구멍을 의심하라고 말해 주지만, 가리키는 줄은 작성자의 줄이 아니라 엔진 안쪽입니다. **선택적으로 넘기는 값은 예외 없이 `or q.None`을 붙이세요** — `props.Modifier or q.None`. props 타입을 `any`로 두지 말고 정확히 적어두면 이 실수는 타입 검사에서 잡힙니다.
 
 **2. 동적 스토어.** v1처럼 `store.NewKey = v`로 키를 늘리던 코드는 타입에서 막히지만(7절), `store:Of`로 옮긴 뒤에도 **주석을 빠뜨리면** `Source<any>`가 되어 그 아래 전부가 검사에서 빠집니다. `store:Of<<T>>(name)`의 타입 인자는 생략하지 마세요.
 

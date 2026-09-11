@@ -419,7 +419,7 @@ the solver can see; `Fallback` returns `Ok | Err`.
 
 | Anti-pattern | Observed result | Correct form |
 | :--- | :--- | :--- |
-| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Dispatch.recompute: sourceList[2] is nil — bookkeeping is broken` | `{ a, q.None, b }`, or `props.X or q.None` |
+| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Dispatch.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
 | `Modifier` as a hash key | `Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
 | `PreRef`/`PostRef`/`Observer` as a hash key | `PreRef: must be an array item, not the value of a string key` (same shape for `PostRef:`/`Observer:`) | Put the value in the array part |
 | `Ref`/`Slot`/`Tag` as a hash key | `Dispatch: no handler matched key <K> (value: table, brand: Ref)` (brand `Slot`/`Tag` likewise) | Put the value in the array part |
