@@ -30,7 +30,7 @@ import VersionLine from '../../components/VersionLine.astro';
 
 ```luau
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.D
+const D = q.Declaration
 
 const count = q.Source(0)                       -- ① 값의 원천
 const countText = count:Compute(function(c)     -- ② 파이프: 숫자를 글자로 처리한다

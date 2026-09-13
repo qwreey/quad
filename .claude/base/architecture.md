@@ -350,9 +350,9 @@ quad/
         │   │                      # **[2026-09-03 정정, round15 `H6-14`]** 여기 한때 `Slot/init.luau`("base Slot 재조정 로직의 실제 적용/해제")가 있었다 — 2026-08-21 `native*` 주입 op 확정으로 그 몫은 위 `EngineOps.luau`의 native* 여섯이 그 자체가 됐고(SlotHandler는 quad-base `Slot/Handler.luau`, 물리 조작은 주입 op), 별도 파일은 없다
         │   └── InstanceChild.luau # k:number, v:Instance — 중첩 인스턴스 자식(예: Frame { Frame {} })
         ├── Animate.luau           # `Animate(info)` 편의 콤비네이터 — `factory(self)->State`(**[2026-09-06 M11 ③]** 선언 타입 `(self: any) -> State<Tween<any>>`, `H-334`), `:Apply`로 붙임(내부는 `:Compute`/`Tween{...}` 조합), base 프리미티브 아님(`base/tween-plan.md`)
-        ├── types.luau             # **[2026-09-02 M5]** 공개 타입 단일 파일(ROADMAP M5 배너) — `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`(**[2026-09-07]** 정본 — quad-types 별칭이 아니라 여기 정의, 엔진 타입 필드 정밀)·`FieldOut<T>`(quad-types `FieldOut<X>`에 `X = T | Tween<T>` — D 밖에서 전개해야 한도 안, typing-limits 8.12)·`NewChild`·`OnChangeDescriptor`·`AnimateInfo`/`AnimateFn`(`H-334`); Roblox 전역을 쓰는 유일한 타입 파일이라 defs로 분석
-        ├── D/
-        │   └── init.luau          # **전량 코드 생성 산출물** — 제네릭 생성자 `New`(커링: `New "Frame" {...}`) + 클래스별 정적 별칭 필드(`D.Frame = New<<Frame>> "Frame" :: (({...}) -> Frame)`). **[2026-09-04 M7 단위 ③]** `D.Modifier.<Class>()`(런타임은 `quad.Modifier` 하나, 클래스별 캐스트 별칭)·`<Class>Modifier`·`Field<V>`·`DModifier`도 여기(마커 방식은 `typing-limits.md` 8.8절). 생성 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입/`State<T>`/`None`까지 타입으로 찍음(**[2026-08-18 확정]** `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)
+        ├── types.luau             # **[2026-09-02 M5]** 공개 타입 단일 파일(ROADMAP M5 배너) — `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`(**[2026-09-07]** 정본 — quad-types 별칭이 아니라 여기 정의, 엔진 타입 필드 정밀)·`FieldOut<T>`(quad-types `FieldOut<X>`에 `X = T | Tween<T>` — `Declaration` 밖에서 전개해야 한도 안, typing-limits 8.12)·`NewChild`·`OnChangeDescriptor`·`AnimateInfo`/`AnimateFn`(`H-334`); Roblox 전역을 쓰는 유일한 타입 파일이라 defs로 분석
+        ├── Declaration/           # **[2026-09-14 개명]** 옛 `D/` — 모듈 필드·타입이 `Declaration`으로 바뀌면서 폴더도 같이(`research/public-surface-pre-adoption-review.md` (1))
+        │   └── init.luau          # **전량 코드 생성 산출물** — 제네릭 생성자 `New`(커링: `New "Frame" {...}`) + 클래스별 정적 별칭 필드(`D.Frame = New<<Frame>> "Frame" :: (({...}) -> Frame)`, `D`는 `q.Declaration`의 관례 별칭). **[2026-09-04 M7 단위 ③]** `D.Modifier.<Class>()`(런타임은 `quad.Modifier` 하나, 클래스별 캐스트 별칭)·`<Class>Modifier`·`Field<V>`·`DeclarationModifier`도 여기(마커 방식은 `typing-limits.md` 8.8절). 생성 범위는 "GUI에 쓰이는 모든 인스턴스", 이벤트 필드의 콜백 타입/`State<T>`/`None`까지 타입으로 찍음(**[2026-08-18 확정]** `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절)
         └── init.luau
 ```
 
@@ -531,14 +531,18 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
      직접 (A, B) 해주어도 좋고. 콜론과 닷 둘다 가능함"*). 분류 자체는
      "닷 접근으로도 부를 수 있는 정적 결합 함수"라는 표면 차이로 유지하되,
      2번(콜론 메서드)과 배타적이지 않다는 점에 유의.
-  4. **`D`(Declarative) 네임스페이스와 그 필드**(`D.Frame`/`D.InstSlot`/
+  4. **`Declaration` 네임스페이스와 그 필드**(`D.Frame`/`D.InstSlot`/
      `D.FrameModifier`) 및 생성자 `New` — **[2026-08-18 신설]** 프리미티브
      타입은 아니지만 사용자가 직접 쓰는 선언형 표면이라 대문자.
-     **표기 규약: 문서에서 `D`가 처음 나오는 자리에서는 항상
-     `D`(Declarative)로 풀어쓸 것** — 한 글자 식별자라 grep이 어렵고
-     이름만으로 뜻이 안 드러난다는 게 2026-08-08부터 개명을 미뤄온 유일한
-     사유였고, 이 표기 규약이 그 보완책으로 같이 확정됐다
-     (`base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절).
+     **[2026-09-14 정정 — 사용자 결정] 표기 규약이 바뀌었다: 모듈 필드·타입
+     이름은 `q.Declaration`(옛 `q.D`)이고, `D`는 문서·예제가 파일마다 한 줄로
+     받는 **관례 별칭**이다** — `const D = q.Declaration`. 따라서 문서에서
+     `D`가 처음 나오는 자리에서는 "`D`는 `q.Declaration`의 관례 별칭"임을
+     밝히고 쓴다(옛 규약이던 *"항상 `D`(Declarative)로 풀어쓸 것"*은 폐기 —
+     한 글자 식별자의 grep·가독성 문제를 표기 규약으로 때우던 것인데, 이름
+     자체를 옮겨 그 문제가 사라졌다. 경위는
+     `research/public-surface-pre-adoption-review.md` (1)번 항목,
+     `base/bind-system-plan.md`의 "인스턴스 생성 / 이벤트 네이밍 인체공학" 절).
 - **소문자 시작(camelCase)** — 특정 프리미티브 타입 하나에 안 묶이고 여러
   타입을 넘나드는 범용 유틸(`isState`/`isSource`/`isRef`/`isPreRef`/
   `isPostRef`/`isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/

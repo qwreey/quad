@@ -72,7 +72,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.
-- [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.D.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
+- [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Declaration.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
 - [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
 
@@ -84,7 +84,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [`00-index.md`](./reference/00-index.md) — 심볼 → 페이지 색인.
 - `core/`(quad-base) 11편 — [모듈](./reference/core/01-quad-module.md)(New/RunInit/AddPlugin/UseProvider) · [Source](./reference/core/02-source.md) · [State](./reference/core/03-state.md) · [Store](./reference/core/04-store.md) · [Observer·Effect](./reference/core/05-observer-effect.md) · [Slot](./reference/core/06-slot.md) · [Ref](./reference/core/07-ref.md) · [Modifier](./reference/core/08-modifier.md) · [Tag·Attr](./reference/core/09-tag-attr.md) · [센티널·수명 스텁](./reference/core/10-lifetime-sentinels.md) · [술어 `is*`](./reference/core/11-predicates.md).
 - `sugar/` 6편(사이트 사이드바에서는 Core 아래 하위 그룹 — quad-base 안의 순수 슈거) — [Context](./reference/sugar/01-context.md) · [Operator](./reference/sugar/02-operator.md) · [Debounce·Throttle](./reference/sugar/03-debounce-throttle.md) · [생명주기 훅](./reference/sugar/04-lifecycle-hooks.md) · [Fallback·Traceback](./reference/sugar/05-fallback-traceback.md) · [Blocker](./reference/sugar/06-blocker.md)(`state:Gate` 위의 정책 — 2026-09-11 사용자 결정으로 core에서 이동).
-- `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`D`](./reference/roblox/02-d.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티) · [`D.Modifier`](./reference/roblox/03-d-modifier.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
+- `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`Declaration`](./reference/roblox/02-d.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티) · [`D.Modifier`](./reference/roblox/03-d-modifier.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
 - `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
 
 ### The Quadnomicon — 11권

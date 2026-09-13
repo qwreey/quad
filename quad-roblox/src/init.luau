@@ -11,7 +11,7 @@
 	same day). One string compare at install — the monorepo pins the exact
 	version "0.0.0"; independently published backends would pick a looser
 	pattern), lets RobloxFactory mutate the module (ops/handlers), and
-	returns the typed extension `RobloxExtension` — so `q.D` is fully typed
+	returns the typed extension `RobloxExtension` — so `q.Declaration` is fully typed
 	through the `Self & P` intersection with zero casts. The
 	one-slot/identity guard lives in `UseProvider` itself, not here.
 
@@ -25,13 +25,13 @@ local QuadTypes = require("./luau_packages/quad_types")
 local TypeVersionCheck = require("./luau_packages/type_version_check")
 local RobloxFactory = require("@self/RobloxFactory")
 local Types = require("@self/types")
-local DModule = require("@self/D")
+local DeclarationModule = require("@self/Declaration")
 
 -- 독립 게시 백엔드는 여기만 느슨한 패턴("0.*.*"류)으로 바꾸면 된다
 local VERSION_PATTERN = "3.1.0"
 
 -- 공개 타입 재익스포트(ROADMAP M5 배너 — 몰아두는 단일 파일은 types.luau).
--- `D`/`DMapper`/`<Class>Param<E>` 전량은 생성 파일(src/D)이 소스라 여기선
+-- `Declaration`/`DeclarationMapper`/`<Class>Param<E>` 전량은 생성 파일(src/Declaration)이 소스라 여기선
 -- 네임스페이스 타입 둘만 재익스포트 — 개별 Param이 필요한 소비자는
 -- 생성 모듈에서 직접 가져간다(손 나열은 "전량 생성" 계약과 충돌, `H-305`).
 -- `Tween` 값 타입 일가(2026-09-07 — quad-types에서 이곳으로, `types.luau` 주석)
@@ -41,12 +41,12 @@ export type TweenOptions<T> = Types.TweenOptions<T>
 export type TweenOverride = Types.TweenOverride
 export type TweenConstructor = Types.TweenConstructor
 export type NewChild = Types.NewChild
-export type D = DModule.D
-export type DMapper = DModule.DMapper
+export type Declaration = DeclarationModule.Declaration
+export type DeclarationMapper = DeclarationModule.DeclarationMapper
 export type OnChangeDescriptor = Types.OnChangeDescriptor
-export type PropTypes = DModule.PropTypes
-export type OnChangeFn = DModule.OnChangeFn
--- M10: `OnChange(name, fn)` rides the same extension merge as `D` — the
+export type PropTypes = DeclarationModule.PropTypes
+export type OnChangeFn = DeclarationModule.OnChangeFn
+-- M10: `OnChange(name, fn)` rides the same extension merge as `Declaration` — the
 -- runtime (Handlers/OnChange.luau) is untyped, the GENERATED `OnChangeFn`
 -- (name → callback parameter type via `index<PropTypesRead, K>` — 읽기 표면, Q19; luau-test `30`)
 -- is what `q.OnChange` carries through `Self & P`
@@ -58,7 +58,7 @@ export type AnimateFn = Types.AnimateFn
 -- `Tween`/`isTween`(2026-09-07): 백엔드 값 타입은 백엔드 표면 — 같은 병합으로 실린다
 -- (런타임은 `Tween.luau` install이 모듈에 직접도 놓는다 — 형제 설치자와 base 진단 프로브가 본다).
 export type RobloxExtension = {
-	D: DModule.D,
+	Declaration: DeclarationModule.Declaration,
 	OnChange: OnChangeFn,
 	Animate: AnimateFn,
 	Tween: Types.TweenConstructor,

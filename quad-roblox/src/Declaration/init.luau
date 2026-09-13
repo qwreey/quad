@@ -4940,10 +4940,10 @@ export type WorldRootModifier = {
 }
 export type IntoWorldRoot = { AsWorldRoot: (self: any) -> WorldRootModifier }
 
--- D 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이
+-- Declaration 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이
 -- 싣는 풀 타입 표면. 아래 런타임 별칭 캐스트와 1:1 — 손 나열 금지 계약대로
 -- 생성기가 같이 찍는다.
-export type DMapper = {
+export type DeclarationMapper = {
 	Root: MapperRoot,
 	BillboardGui: (key: string | MapperRoot) -> (BillboardGuiParam<BillboardGuiMapperElem>) -> MapperDescriptor,
 	Camera: (key: string | MapperRoot) -> (CameraParam<CameraMapperElem>) -> MapperDescriptor,
@@ -4977,7 +4977,7 @@ export type DMapper = {
 	ViewportFrame: (key: string | MapperRoot) -> (ViewportFrameParam<ViewportFrameMapperElem>) -> MapperDescriptor,
 	WorldModel: (key: string | MapperRoot) -> (WorldModelParam<WorldModelMapperElem>) -> MapperDescriptor,
 }
-export type DModifier = {
+export type DeclarationModifier = {
 	BillboardGui: (...(BillboardGuiModifier | { [string]: any })) -> BillboardGuiModifier,
 	Camera: (...(CameraModifier | { [string]: any })) -> CameraModifier,
 	CanvasGroup: (...(CanvasGroupModifier | { [string]: any })) -> CanvasGroupModifier,
@@ -5026,10 +5026,10 @@ export type DModifier = {
 	WorldModel: (...(WorldModelModifier | { [string]: any })) -> WorldModelModifier,
 	WorldRoot: (...(WorldRootModifier | { [string]: any })) -> WorldRootModifier,
 }
-export type D = {
+export type Declaration = {
 	New: <T>(className: string) -> (props: any) -> T,
-	Mapper: DMapper,
-	Modifier: DModifier,
+	Mapper: DeclarationMapper,
+	Modifier: DeclarationModifier,
 	BillboardGui: (BillboardGuiParam<BillboardGuiElem>) -> BillboardGui,
 	Camera: (CameraParam<CameraElem>) -> Camera,
 	CanvasGroup: (CanvasGroupParam<CanvasGroupElem>) -> CanvasGroup,
@@ -5063,10 +5063,10 @@ export type D = {
 	WorldModel: (WorldModelParam<WorldModelElem>) -> WorldModel,
 }
 
---[[ InitD(quad) — `UseProvider` 확장(`RobloxExtension.D`)으로 실린다
-	(round14 H-299의 module.D 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).
+--[[ InitDeclaration(quad) — `UseProvider` 확장(`RobloxExtension.Declaration`)으로 실린다
+	(round14 H-299의 module.Declaration 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).
 	New의 ①~④ 순서는 bind-system-plan 파이프라인 의사코드가 계약. ]]
-return function(quad: any): D
+return function(quad: any): Declaration
 	local function New<T>(className: string): (props: any) -> T
 		local function stage(props: any): T
 			local inst = Instance.new(className) -- ①
@@ -5246,5 +5246,5 @@ return function(quad: any): D
 	quad.Modifier.DefineSubtype("WorldRoot", "WorldModel")
 	quad.Modifier.DefineSubtype("Model", "WorldRoot")
 	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, New) -- 별칭·스테이지는 New 안에서 태그됨
-	return (D :: any) :: D
+	return (D :: any) :: Declaration
 end

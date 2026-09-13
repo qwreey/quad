@@ -5,7 +5,7 @@ description: "공변 마커로 Luau New Solver의 불변성 제약과 유니언 
 # [Quadnomicon Vol. 4] 불변성 우회: 공변 마커로 New Solver를 길들이다
 
 > **작성 목적**: 프레임워크 아키텍트 및 타입 시스템 엔지니어를 위한 기술 해설서
-> **관련 소스**: `quad-types/src/init.luau`, `quad-roblox/src/D/init.luau`(생성 파일), `scripts/gen-d.py`
+> **관련 소스**: `quad-types/src/init.luau`, `quad-roblox/src/Declaration/init.luau`(생성 파일), `scripts/gen-d.py`
 
 > [!CAUTION]
 > 이 권은 공개 타입 표면의 변성 설계와 솔버 한도를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/00-installation.md)부터 보십시오.
@@ -45,10 +45,10 @@ type PropValue<T> =
 
 | 플래그 | 올린 계기 | 값 |
 |---|---|---|
-| `LuauTarjanChildLimit` | 생성 `export type D`/`DMapper`(31클래스 Param 인스턴스화), 뒤이어 클래스별 `<Class>Modifier` + `DModifier` | 기본 10000 → 40000 → 160000 |
+| `LuauTarjanChildLimit` | 생성 `export type Declaration`/`DeclarationMapper`(31클래스 Param 인스턴스화), 뒤이어 클래스별 `<Class>Modifier` + `DeclarationModifier` | 기본 10000 → 40000 → 160000 |
 | `LuauSubtypingIterationLimit` | 생성 `<Class>OnChange` 유니언 대 멤버 많은 콜백 타입(Color3/string) | 100000으로 핀 |
 | `LuauTypeInferIterationLimit` | 상위 클래스 Modifier 타입(`As<Class>` 메소드 수십 개)의 캐스트 자리와 `Apply` 인자 자리 | 기본 20000 → 1000000으로 핀 |
-| `LuauSolverConstraintLimit` | 숏핸드 키 넷을 GuiObject 계열 10클래스에 얹자 `export type D`가 다시 too complex | 1000000으로 핀 |
+| `LuauSolverConstraintLimit` | 숏핸드 키 넷을 GuiObject 계열 10클래스에 얹자 `export type Declaration`이 다시 too complex | 1000000으로 핀 |
 
 그리고 전체 타입 검사에 **4.96초**가 걸렸습니다.
 

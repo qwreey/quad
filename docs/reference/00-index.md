@@ -8,7 +8,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 읽는 순서가 필요하면 색인이 아니라 트랙을 따라가세요: [시작하기](../getting-started/00-installation.md) → [실전 레시피](../how-to/01-component-conventions.md) → 여기.
 
-표기 규약은 이렇습니다. 모듈 인스턴스는 `q`, 백엔드 표면은 `q.D`를 `D`로 받아 씁니다. `q.X`는 모듈 표면의 값, `x:Method()`는 그 값의 메소드, `x.Field`는 필드입니다. `<<T>>`는 명시 타입 인자입니다.
+표기 규약은 이렇습니다. 모듈 인스턴스는 `q`, 백엔드 표면은 `q.Declaration`을 `D`로 받아 씁니다. `q.X`는 모듈 표면의 값, `x:Method()`는 그 값의 메소드, `x.Field`는 필드입니다. `<<T>>`는 명시 타입 인자입니다.
 
 ## 모듈과 설치
 
@@ -212,8 +212,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.D` | [roblox/01 — 설치](./roblox/01-install.md) · [roblox/02](./roblox/02-d.md#qd--네임스페이스와-생성되는-클래스) |
-| `D.<Class>(props)` | [roblox/02 — D](./roblox/02-d.md) |
+| `q.Declaration` | [roblox/01 — 설치](./roblox/01-install.md) · [roblox/02](./roblox/02-d.md#qdeclaration--네임스페이스와-생성되는-클래스) |
+| `D.<Class>(props)` | [roblox/02 — Declaration](./roblox/02-d.md) |
 | `D.New<<T>>(className)(props)` | [roblox/02](./roblox/02-d.md) |
 | 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](./roblox/02-d.md#숏핸드-키-넷) |
 | `q.Claim(inst, descriptor)` | [roblox/04 — Claim·D.Mapper](./roblox/04-claim-mapper.md) |
@@ -249,4 +249,4 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 타입 계약의 정본은 `quad-types/src/init.luau` 한 파일입니다 — `State<T>`/`Source<T>`/`Slot<T>`/`Ref<T>`/`Store<T>`/`Handler`/`Dispatch` 같은 값 타입, 입력 자리용 마커(`StateMarker<T>`/`SlotMarker<T>`), 출력 자리의 `FieldOut<T>`, 센티널 타입(`None`/`Detach`/`KeyGone`/`MapperRoot`)이 전부 거기 선언돼 있습니다.
 
-**예외는 백엔드가 소유한 타입입니다.** `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`/`AnimateInfo`/`AnimateFn`/`NewChild`/`OnChangeDescriptor`와 백엔드 확장 모양 `RobloxExtension`은 `quad-roblox/src/types.luau`(와 `quad-roblox/src/init.luau`)가 정본이고, 클래스별 생성 타입(`FrameParam<E>`/`FrameModifier`/`IntoFrame`/`PropTypes`/`PropTypesRead` 등)은 생성 모듈 `quad-roblox/src/D`가 정본입니다 — 엔진 지식이 들어간 타입은 코어가 아니라 그 백엔드에 삽니다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](../quadnomicon/04-covariant-markers.md)가 다룹니다.
+**예외는 백엔드가 소유한 타입입니다.** `Tween<T>`/`TweenData<T>`/`TweenOptions<T>`/`TweenOverride`/`TweenConstructor`/`AnimateInfo`/`AnimateFn`/`NewChild`/`OnChangeDescriptor`와 백엔드 확장 모양 `RobloxExtension`은 `quad-roblox/src/types.luau`(와 `quad-roblox/src/init.luau`)가 정본이고, 클래스별 생성 타입(`FrameParam<E>`/`FrameModifier`/`IntoFrame`/`PropTypes`/`PropTypesRead` 등)은 생성 모듈 `quad-roblox/src/Declaration`이 정본입니다 — 엔진 지식이 들어간 타입은 코어가 아니라 그 백엔드에 삽니다. 각 타입이 왜 그 모양인지는 [Quadnomicon 4권 — 공변 마커](../quadnomicon/04-covariant-markers.md)가 다룹니다.

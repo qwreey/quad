@@ -184,7 +184,7 @@ function methods.Apply(self: any, factory: (any) -> any): any
 	return factory(self) -- nothing more, nothing less (8절)
 end
 
--- mod:As() — unchecked cast (11절): the "go somewhere D does not know" path.
+-- mod:As() — unchecked cast (11절): the "go somewhere Declaration does not know" path.
 -- No name: the value itself (a type-level cast only, tag untouched — nothing
 -- to retag to). A name: retag after an EXISTENCE check (typo guard), no
 -- ancestry check — that is what the checked `As<Name>()` is for.

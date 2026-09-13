@@ -40,7 +40,7 @@ local gameShim = mock.gameShim(REFLECTED)
 local q = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty)).game = gameShim
 ;(getfenv(installEvent)).game = gameShim
-;(getfenv(q.D.New)).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New)).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 q.errorNamespace.setFuncLevel(require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE, q.isInst)
 
@@ -53,7 +53,7 @@ end
 print("=== 1. Event — 리플렉션 매치로 Connect, 엔진 인자만 그대로(self 없음) ===")
 do
 	local got = nil
-	local b = q.D.TextButton({
+	local b = q.Declaration.TextButton({
 		Name = "Btn",
 		Activated = function(...)
 			got = { n = select("#", ...), ... }
@@ -69,7 +69,7 @@ print()
 print("=== 2. 클래스별 판별 — 다른 클래스의 이벤트 이름은 매치 안 됨(no-match error, 사용자 blame) ===")
 do
 	local ok, err = pcall(function()
-		q.D.Frame({ MouseButton1Click = function() end })
+		q.Declaration.Frame({ MouseButton1Click = function() end })
 	end)
 	assert(not ok, "MouseButton1Click is not a Frame event")
 	mock.assertBlamesUser(err, SPEC_FILE, "foreign event key")
@@ -83,7 +83,7 @@ do
 	local src = q.Source(function()
 		calls += 1
 	end)
-	local b = q.D.TextButton({ MouseButton1Click = src })
+	local b = q.Declaration.TextButton({ MouseButton1Click = src })
 	local sig = b.MouseButton1Click
 	assert(liveConnections(sig) == 1, "reactive callback connected once")
 	sig:Fire()
@@ -120,7 +120,7 @@ do
 	local OnChange = q.OnChange
 	local seen = {}
 	local seen2 = {}
-	local b = q.D.TextButton({
+	local b = q.Declaration.TextButton({
 		Text = "a", -- 해시 파트 — 배열부의 Connect 뒤에 대입되므로 초기값도 콜백에 닿는다(계약)
 		OnChange("Text", function(v)
 			table.insert(seen, v)
@@ -161,7 +161,7 @@ do
 	local src = q.Source(q.OnChange("Text", function()
 		calls += 1
 	end))
-	local b = q.D.TextButton({ src })
+	local b = q.Declaration.TextButton({ src })
 	local sig = b:GetPropertyChangedSignal("Text")
 	assert(liveConnections(sig) == 1, "connected once through StoreBind unwrap")
 	b.Text = "b"
@@ -186,7 +186,7 @@ end
 print()
 print("=== 6. 교대 — 같은 이벤트 자리의 평문/State 교체가 연결을 하나로 유지, OnChange 팩토리는 quad 간 공유 ===")
 do
-	local b = q.D.TextButton({ MouseButton1Click = function() end })
+	local b = q.Declaration.TextButton({ MouseButton1Click = function() end })
 	local sig = b.MouseButton1Click
 	local src = q.Source(function() end)
 	q.Dispatch.process(b, "MouseButton1Click", src, 1) -- 평문 → State
@@ -214,13 +214,13 @@ print()
 print("=== 8. round8 H-507 (Studio 실측 2026-09-08) — 비함수 핸들러는 quad가 거부(엔진은 던지지 않고 콘솔에만 남긴다) ===")
 do
 	for label, v in { number = 5, str = "str", tbl = {} } :: { [string]: any } do
-		local ok, err = pcall(function() return q.D.TextButton({ MouseButton1Click = v }) end)
+		local ok, err = pcall(function() return q.Declaration.TextButton({ MouseButton1Click = v }) end)
 		assert(not ok and string.find(tostring(err), 'Event: handler for "MouseButton1Click" must be a function (got', 1, true) ~= nil, label .. ": " .. tostring(err))
 		mock.assertBlamesUser(err, SPEC_FILE, "Event value gate (" .. label .. ")")
 	end
 	-- a State that later carries a non-function: the gate fires at that Set (StoreBind re-dispatch)
 	local st = q.Source(function() end)
-	local b = q.D.TextButton({ MouseButton1Click = st })
+	local b = q.Declaration.TextButton({ MouseButton1Click = st })
 	assert(liveConnections(b.MouseButton1Click) == 1, "function via State connects")
 	local ok2, err2 = pcall(function() st:Set(5) end)
 	assert(not ok2 and string.find(tostring(err2), "must be a function (got number)", 1, true) ~= nil, "State-carried non-function rejected: " .. tostring(err2))

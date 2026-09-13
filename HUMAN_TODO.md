@@ -67,7 +67,7 @@
 - ~~**[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.**~~ **[같은 날 해소 — 3.1.0 bump]** 게시(E 절)만 남았다. 문서의 `Indexed` 표시는 "3.0.0에서는 `Index`, 3.1.0부터 `Indexed`"로 바꿔 게시 시점과 무관하게 참.
 - **범위 밖 안내 절을 둘지** — 시니어가 첫날 묻는데 문서가 침묵하는 넷: 서버 사이드·`SurfaceGui`/`BillboardGui`, `StreamingEnabled`와 바인딩, Roact/Fusion 화면과의 공존, 핫 리로드(스토리북 도구는 예정). 답을 만들지 않더라도 how-to에 "아직 답이 없는 것" 절로 경계를 그어 두자는 제안(열린 탐사) — 둘지, 어느 항목을 넣을지.
 - **"현재 상태" 단락** — 오버뷰나 랜딩에 트랙 레코드(언제부터, 어디서 쓰이는지, 어느 규모까지 굴려 봤는지, 성능 수치) 한 단락을 둘지. 내용은 사용자만 안다.
-- **클래스별 `Modifier`/`OnChange` 타입의 공개 경로** — 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/D` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/D` 아래에만 있다(루트가 재수출하는 건 `D`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.D.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
+- **클래스별 `Modifier`/`OnChange` 타입의 공개 경로** — 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/Declaration` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/Declaration` 아래에만 있다(루트가 재수출하는 건 `Declaration`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.Declaration.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
 - **레퍼런스·how-to 예제의 `local` vs GS의 `const`** — 프롤로그는 통일했지만(01장 설정 모듈) 본문 `local`은 그대로 뒀다. 예제 전부를 `const`로 바꿀지(툴체인 하한과 같이).
 
 #### E. 밖에서 할 것

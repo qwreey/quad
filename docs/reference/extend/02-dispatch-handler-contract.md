@@ -13,7 +13,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 ```
 
 `q.Dispatch`는 모듈 인스턴스마다 따로 있는 네임스페이스입니다 — 핸들러 레지스트리와 부기는 인스턴스별 상태라, 한 인스턴스에 등록한 핸들러는 다른 인스턴스에서 보이지 않습니다.

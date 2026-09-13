@@ -8,7 +8,7 @@
 
 	`Tween<T>` — the value-level wrapper `tween-plan.md`'s "확정: `Tween{...}`
 	최종 모양" section pins down. M5 needed the TYPE first because the
-	generated `D` prop unions include it (round14 `H-298` (a)); M11 unit ①
+	generated `Declaration` prop unions include it (round14 `H-298` (a)); M11 unit ①
 	(2026-09-06) put the value type into quad-types (engine-free — Roblox
 	types as `any`) with this file re-exporting it AS-IS; **2026-09-07 (user
 	decision, tween-plan "패키지 경계")** the whole value — type here, runtime
@@ -18,9 +18,9 @@
 	PropertyHandler consumption is unit ②.
 
 	`NewChild` — the backend-agnostic core of the children-array element
-	union. Since 2026-09-03 the generated `D.<Class>Param<E>` is instantiated
+	union. Since 2026-09-03 the generated `Declaration.<Class>Param<E>` is instantiated
 	with a per-class alias `<Class>Elem = NewChild | <Class>OnChange |
-	State<<Class>OnChange> | { read __quadModifier: "<Class>" | … }` (src/D,
+	State<<Class>OnChange> | { read __quadModifier: "<Class>" | … }` (src/Declaration,
 	`base/onchange-plan.md` "타이핑" 절; the last member is the class-tag
 	marker of M7 unit ④ — `base/modifier-plan.md` 11절) —
 	array-part descriptor kinds join THAT alias, not this union
@@ -96,9 +96,9 @@ export type Tween<T> = TweenData<T> & {
 export type TweenConstructor = <T>(opts: TweenOptions<T>) -> Tween<T>
 -- Modifier 필드에 "저장된 그대로"의 값(`Peek` 반환·setter 변환 함수의 `old`) — quad-types의
 -- `FieldOut<X> = X | State<X> | None`에 이 백엔드의 값 대수 `X = T | Tween<T>`를 넣은 것(전개형
--- `T | Tween<T> | State<T | Tween<T>> | None`, round3 Q23 (a)/Q24 후속). **여기서 별칭하고 생성 D는
--- `Types.FieldOut<T>`로 다시 별칭한다** — 같은 전개를 D 안에서 하면(인라인 유니언이든
--- `QuadTypes.FieldOut<T | Tween<T>>` 인스턴스화든) `export type D`가 솔버 제약 한도를 넘어
+-- `T | Tween<T> | State<T | Tween<T>> | None`, round3 Q23 (a)/Q24 후속). **여기서 별칭하고 생성 Declaration은
+-- `Types.FieldOut<T>`로 다시 별칭한다** — 같은 전개를 Declaration 안에서 하면(인라인 유니언이든
+-- `QuadTypes.FieldOut<T | Tween<T>>` 인스턴스화든) `export type Declaration`이 솔버 제약 한도를 넘어
 -- "too complex"(2026-09-07 실측, typing-limits 8.12).
 export type FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>
 
@@ -134,7 +134,7 @@ export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tw
 -- and `Attr(...)` (the typed scalar sugar `StringAttr(name, v)` etc.
 -- returns an `Attr`, so it rides the same member) + their State forms
 -- (StoreBind unwraps array elements). OnChange descriptors are NOT here — they
--- are per-class (`<Class>Elem` in the generated D, `base/onchange-plan.md`).
+-- are per-class (`<Class>Elem` in the generated Declaration, `base/onchange-plan.md`).
 export type NewChild =
 	Instance
 	-- ⭐ [2026-09-07 사용자 결정 — 공변/불변] State·Slot 팔은 **마커**(`StateMarker`/`SlotMarker`,
@@ -173,7 +173,7 @@ export type NewChild =
 -- value since the 2026-09-03 reversal): frozen `{ Name, Callback }`,
 -- Handlers/OnChange.luau. This is the RUNTIME shape; the checked factory
 -- type (`OnChangeFn`, name → callback parameter via `index<PropTypesRead, K>` — 읽기 표면, Q19 2026-09-07)
--- and the per-class descriptor unions are generated (src/D).
+-- and the per-class descriptor unions are generated (src/Declaration).
 export type OnChangeDescriptor = { read Name: string, read Callback: (any) -> () }
 
 return {}

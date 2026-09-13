@@ -23,7 +23,7 @@
 local installTween = require("./Tween") -- 2026-09-07: Tween is a quad-roblox value (tween-plan "패키지 경계")
 local installLifetime = require("./LifetimeHandle")
 local installEngineOps = require("./EngineOps")
-local InitD = require("./D")
+local InitDeclaration = require("./Declaration")
 local installPropertyHandler = require("./Handlers/Property")
 local installInstanceChildHandler = require("./Handlers/InstanceChild")
 local installEventHandler = require("./Handlers/Event")
@@ -44,14 +44,14 @@ local function RobloxFactory(module: any): any
 	installEventHandler(module)
 	installInstanceShorthandHandler(module) -- UICorner/UIPadding/UIPaddingOffset/UIScale — PropertyHandler보다 높은 우선순위(H-138)
 	OnChangeModule.install(module)
-	-- `H-299` → `H-305` (d′): `D`는 module.D 직접 대입이 아니라
+	-- `H-299` → `H-305` (d′): `Declaration`은 module.Declaration 직접 대입이 아니라
 	-- `UseProvider`의 확장 병합으로 실린다 — 반환 테이블이 그 확장이고,
 	-- `RobloxExtension` 타입(init.luau)이 이 모양의 정본. 사용법은 동일:
-	-- `local D = quad.D`(병합 후) 또는 반환 교집합에서 바로 `q.D`.
+	-- `local D = quad.Declaration`(병합 후) 또는 반환 교집합에서 바로 `q.Declaration`.
 	-- `OnChange`(M10)도 같은 병합으로 실린다 — 디스크립터 팩토리는 모듈
 	-- 레벨, 타입은 생성 `OnChangeFn`(init.luau `RobloxExtension`)이 입힌다.
 	return {
-		D = InitD(module),
+		Declaration = InitDeclaration(module),
 		OnChange = OnChangeModule.OnChange,
 		Animate = installAnimate(module, tween.validateFields), -- `H-464`: eager literal-option check shares Tween's validator
 		Tween = tween.Tween, -- already on the module (install) — listed so the typed extension is honest

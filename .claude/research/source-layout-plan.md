@@ -41,7 +41,7 @@ quad-types 재배치·D 정적 굽기)은 10절. 사용자 원문(2026-09-07 낮
    10, `Ref` 6 …). 옮기면 **조용히 stale**. 재편 커밋엔 (a) 그 인용 전수 치환과 (b) `doc-check.py`를
    "지금 존재하는 src 경로는 검사"로 넓히는 것을 같이 넣어야 한다.
 7. **빌드·테스트 설정은 디렉토리 단위**(`default.project.json`·`.luaurc`·`test.sh` — 하드코딩은
-   `quad-roblox/src/D/init.luau` 하나)라 투명. `pesde.toml`의 `includes = ["src/*"]`가 중첩 폴더를
+   `quad-roblox/src/Declaration/init.luau` 하나)라 투명. `pesde.toml`의 `includes = ["src/*"]`가 중첩 폴더를
    게시에 포함하는지는 **미검증**(이미 `Dispatch/`·`Debug/`가 같은 조건 — 새 문제는 아님).
 8. **`BRAND_PROBES`**(`Dispatch/init.luau:79`)는 손 유지 술어 목록 — 값 타입을 옮겨도 술어는
    `Brand.luau`에 남아야 한다(`H-403`이 `isSlot`을 이미 그리로).

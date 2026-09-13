@@ -19,7 +19,7 @@ quad에서 권장하는 모양은 하나입니다 — **외부 신호는 `Source
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 ```
 
 ---
@@ -60,7 +60,7 @@ UI 레이어는 `RemoteEvent`의 존재를 모릅니다.
 ```luau
 -- GoldDisplay.luau (UI 레이어)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad") -- 01장의 설정 모듈
-local D = q.D
+local D = q.Declaration
 local ProfileStore = require("./PlayerProfileState")
 
 local function withCommas(n: number): string

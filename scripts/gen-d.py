@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gen-d.py — `quad-roblox/src/D/init.luau` 코드 생성기 (M5 단위 ②).
+"""gen-d.py — `quad-roblox/src/Declaration/init.luau` 코드 생성기 (M5 단위 ②).
 
 두 단계(round14 Q5 (a) — 덤프를 재사용 가능한 형태로 남긴다):
   normalize <raw-API-Dump.json> <clientVersionUpload>
@@ -7,7 +7,7 @@
         M7 단위 ③·④가 같은 emit()을 확장해 <Class>Modifier 타입도 여기서 생성,
         Parent 제외는 여기 덤프 층)
   emit
-      → quad-roblox/src/D/init.luau        (커밋되는 최종 산출물)
+      → quad-roblox/src/Declaration/init.luau  (커밋되는 최종 산출물)
 
 raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의존 아님):
   VER=$(curl -s https://clientsettings.roblox.com/v2/client-version/WindowsStudio64 \
@@ -40,7 +40,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SURFACE = ROOT / "quad-roblox" / "dump" / "api-surface.json"
-OUT = ROOT / "quad-roblox" / "src" / "D" / "init.luau"
+OUT = ROOT / "quad-roblox" / "src" / "Declaration" / "init.luau"
 
 SCOPE_ROOTS = ("GuiObject", "UIComponent", "LayerCollector")
 SCOPE_EXTRA = {"Folder", "Camera", "WorldModel"}  # H-296 (a) 화이트리스트(vide 반례)
@@ -371,7 +371,7 @@ def emit():
     # 이 백엔드의 필드 값 대수 `T | Tween<T>`를 X에 넣은 별칭은 types.luau가 만들고 여기선 그걸
     # 다시 별칭만 한다(전개형은 이동 전과 같다: `T | Tween<T> | State<T | Tween<T>> | None`, Q23 (a)/
     # Q24 후속). ⚠️ 이 파일 안에서 전개하면(인라인이든 `QuadTypes.FieldOut<T | Tween<T>>`든) `export
-    # type D`가 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
+    # type Declaration`이 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
     L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
     L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
     # [Q34 (a)] non-interpolable property types get the Tween-less shape — same three roles
@@ -385,7 +385,7 @@ def emit():
     # T' = T | Tween<T> 확장(Animate가 State<Tween<T>>를 돌려준다). 새 솔버는
     # State<T>가 불변이라 State<T | Tween<T>> 하나로는 State<T>를 못 받는다(실측).
     # 프로퍼티 값 유니언은 타입별 별칭 하나로(PVn) — 같은 유니언을 수백 자리에
-    # 인라인하면 State<Tween<T>>가 더해진 뒤 DMapper 인스턴스화에서 "too complex"
+    # 인라인하면 State<Tween<T>>가 더해진 뒤 DeclarationMapper 인스턴스화에서 "too complex"
     # (Tarjan 640000·다른 한도 플래그로도 안 풀림, 실측). State 안은 전체형 Tween<T>:
     # State<X>는 불변이라 Animate/`:Compute`가 돌려주는 State<Tween<T>>와 X가 글자
     # 그대로 같아야 들어간다(데이터부·정밀판 별칭은 거부). 바깥은 데이터부(8.8절).
@@ -673,7 +673,7 @@ def emit():
         # "too complex"(2026-09-04 실측 — typing-limits 8.8절). 대신 조상 체인 마커
         # 하나로 폭 서브타이핑: 자기 클래스와 조상 클래스의 Modifier만 들어온다
         # (다른 클래스는 태그 불일치로 거부 — 단위 ④가 되찾은 클래스 소속 검사).
-        # 배열 원소 유니언은 클래스당 별칭 하나 — D/DMapper 타입과 런타임 캐스트
+        # 배열 원소 유니언은 클래스당 별칭 하나 — Declaration/DeclarationMapper 타입과 런타임 캐스트
         # 네 자리가 같은 별칭을 참조한다(손 나열 드리프트 방지, 리뷰 반영)
         marker = " | ".join(f'"{n}"' for n in [name] + ancestors(name))
         # M8 단위 ③(round18 H-321): Ref/PreRef/PostRef는 반공변 팬텀 마커로 —
@@ -687,32 +687,32 @@ def emit():
         L.append(f"export type {name}Elem = NewChild | {name}OnChange | StateMarker<{name}OnChange> | {{ read __quadModifier: {marker} }} | {name}RefMarker | StateMarker<{name}RefMarker>")
         L.append(f"export type {name}MapperElem = {name}Elem | MapperDescriptor")
         L.append("")
-    L.append("-- D 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")
+    L.append("-- Declaration 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")
     L.append("-- 싣는 풀 타입 표면. 아래 런타임 별칭 캐스트와 1:1 — 손 나열 금지 계약대로")
     L.append("-- 생성기가 같이 찍는다.")
-    L.append("export type DMapper = {")
+    L.append("export type DeclarationMapper = {")
     L.append("\tRoot: MapperRoot,")
     for name in names:
         L.append(
             f"\t{name}: (key: string | MapperRoot) -> ({name}Param<{name}MapperElem>) -> MapperDescriptor,"
         )
     L.append("}")
-    L.append("export type DModifier = {")
+    L.append("export type DeclarationModifier = {")
     for name in mod_classes:
         L.append(f"\t{name}: (...({name}Modifier | {{ [string]: any }})) -> {name}Modifier,")
     L.append("}")
-    L.append("export type D = {")
+    L.append("export type Declaration = {")
     L.append("\tNew: <T>(className: string) -> (props: any) -> T,")
-    L.append("\tMapper: DMapper,")
-    L.append("\tModifier: DModifier,")
+    L.append("\tMapper: DeclarationMapper,")
+    L.append("\tModifier: DeclarationModifier,")
     for name in names:
         L.append(f"\t{name}: ({name}Param<{name}Elem>) -> {name},")
     L.append("}")
     L.append("")
-    L.append("--[[ InitD(quad) — `UseProvider` 확장(`RobloxExtension.D`)으로 실린다")
-    L.append("\t(round14 H-299의 module.D 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).")
+    L.append("--[[ InitDeclaration(quad) — `UseProvider` 확장(`RobloxExtension.Declaration`)으로 실린다")
+    L.append("\t(round14 H-299의 module.Declaration 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).")
     L.append("\tNew의 ①~④ 순서는 bind-system-plan 파이프라인 의사코드가 계약. ]]")
-    L.append("return function(quad: any): D")
+    L.append("return function(quad: any): Declaration")
     L.append("\tlocal function New<T>(className: string): (props: any) -> T")
     L.append("\t\tlocal function stage(props: any): T")
     L.append("\t\t\tlocal inst = Instance.new(className) -- ①")
@@ -749,7 +749,7 @@ def emit():
         if parent:
             L.append(f'\tquad.Modifier.DefineSubtype("{parent}", "{name}")')
     L.append("\tquad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, New) -- 별칭·스테이지는 New 안에서 태그됨")
-    L.append("\treturn (D :: any) :: D")
+    L.append("\treturn (D :: any) :: Declaration")
     L.append("end")
     text = "\n".join(L) + "\n"
     if CHECK_ONLY:
@@ -759,7 +759,7 @@ def emit():
         current = OUT.read_text() if OUT.exists() else ""
         if current != text:
             raise SystemExit(f"gen-d check: {OUT} differs from a fresh emit — run `python3 scripts/gen-d.py emit` and commit")
-        print(f"check: {len(names)} classes, generated D is up to date")
+        print(f"check: {len(names)} classes, generated Declaration is up to date")
         return
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(text)

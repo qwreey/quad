@@ -2,7 +2,7 @@
 --[[
 	Tween 타입 표면 — strict 양성(M11 단위 ①, round19 Q3·`H-326`; [2026-09-07] Tween은
 	quad-roblox의 값 타입 — `types.luau`가 정본, 엔진 타입 필드 정밀). `Types.Tween<T>` 값이
-	생성 `D`의 스칼라 유니언
+	생성 `Declaration`의 스칼라 유니언
 	`T | TweenData<T> | StateMarker<T | Tween<T>> | None`(타입별 별칭 PVn; [2026-09-07 마커] State 팔은 공변 마커 하나) — 에 들어가고,
 	`Mapped`의 U 전환·`State<Tween<T>>`·센티널 필드가 UseProvider 교집합을
 	거쳐도 정확히 타이핑되는지. 음성(다른 T의 Tween·옵션 타입·문자열 Override·
@@ -23,7 +23,7 @@ local function _types()
 	local refined: Types.TweenData<UDim2> = t -- 데이터부 자리(D 유니언 멤버)에 전체형이 든다
 	local info: TweenInfo? = t.Info -- 엔진 타입 필드가 정밀하다(2026-09-07 — quad-types 시절엔 any)
 	-- D 슬롯: Tween 직접 / Info 우선 + Override 센티널 / State<Tween<T>> / Mapped 결과
-	local f1 = q.D.Frame({
+	local f1 = q.Declaration.Frame({
 		Position = t,
 		Size = q.Tween({ Value = UDim2.new(), Info = TweenInfo.new(0.2), Override = "Finish" }),
 		BackgroundTransparency = q.Tween({ Value = 0 }):Mapped(function(v: number): number
@@ -34,11 +34,11 @@ local function _types()
 	local anim: QuadTypes.State<Types.Tween<UDim2>> = src:Compute(function(h: QuadTypes.StateData<UDim2>): Types.Tween<UDim2>
 		return q.Tween({ Value = h:Get(), Time = 0.3 })
 	end)
-	local f2 = q.D.Frame({ Position = anim })
+	local f2 = q.Declaration.Frame({ Position = anim })
 	-- Animate(단위 ③, H-334): factory 결과는 State<Tween<T>>로 선언 — D 슬롯·setter에 들어간다
 	local animated: QuadTypes.State<Types.Tween<UDim2>> = src:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Bounce, CanAnimate = q.Source(true) }))
-	local f3 = q.D.Frame({ Position = animated })
-	local m3 = q.D.Modifier.Frame():Position(animated)
+	local f3 = q.Declaration.Frame({ Position = animated })
+	local m3 = q.Declaration.Modifier.Frame():Position(animated)
 	-- 센티널·옵션 타입
 	local o: Types.TweenOverride = "Cancel"
 	local opts: Types.TweenOptions<number> = { Value = 1, Reverses = true }

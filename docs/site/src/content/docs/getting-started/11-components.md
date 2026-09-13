@@ -20,7 +20,7 @@ Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **p
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Counter
 const q = require("./Quad")     -- 같은 폴더의 설정 모듈
-const D = q.D
+const D = q.Declaration
 
 return function(props)
     -- 상태는 컴포넌트 안에서 만든다 — 부른 쪽마다 자기 것을 갖는다

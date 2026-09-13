@@ -1,5 +1,5 @@
 --[[
-	M5 단위 ② 계약 — 생성된 `D`(quad-roblox/src/D/init.luau, gen-d.py 산출물).
+	M5 단위 ② 계약 — 생성된 `Declaration`(quad-roblox/src/Declaration/init.luau, gen-d.py 산출물).
 	정본: bind-system-plan.md 인스턴스 생성 절(커링·별칭·범위·Parent 제외),
 	round14 `H-295`~`H-299`. 실제 Instance 생성(①~④ 파이프라인 실주행)은 CLI에
 	Roblox 전역이 없어 못 돈다 — 그 몫은 Studio 스모크(클래스 실생성)와 단위
@@ -12,10 +12,10 @@ local QuadRoblox = require("../src").QuadRoblox
 local mock = require("../../quad-base/test/mock")
 local q: any = Quad.New():UseProvider(QuadRoblox)
 
-print("=== 1. D 설치(H-299) — module.D, 별칭 전부 함수, New 포함 ===")
+print("=== 1. Declaration 설치(H-299) — module.Declaration, 별칭 전부 함수, New 포함 ===")
 do
-	local D = q.D
-	assert(type(D) == "table", "factory installs module.D")
+	local D = q.Declaration
+	assert(type(D) == "table", "factory installs module.Declaration")
 	assert(type(D.New) == "function", "generic New is exposed for out-of-scope classes")
 	local n = 0
 	for name, v in D :: { [string]: any } do
@@ -30,7 +30,7 @@ do
 		elseif name == "Modifier" then
 			-- M7 단위 ③·④: 클래스별 타입드 Modifier 생성자 네임스페이스(round17 Q3 (a)) —
 			-- 단위 ④부터 `quad.Modifier.TypedFactory(name)`이 돌려준 태그 생성자 +
-			-- `DefineSubtype` 간선(스코프 + 조상 클래스 — GuiObject류도 여기엔 있다, D 별칭엔 없다)
+			-- `DefineSubtype` 간선(스코프 + 조상 클래스 — GuiObject류도 여기엔 있다, Declaration 별칭엔 없다)
 			assert(type(v) == "table", "D.Modifier is a namespace of per-class constructors")
 			-- (새 솔버: `type(x) == "function"`으로 좁힌 변수는 최상위 `function` 타입이
 			--  돼 호출이 막힌다 — 검사용 변수와 호출용 변수를 갈라 둔다)
@@ -58,7 +58,7 @@ end
 print()
 print("=== 2. 범위 관찰 계약 — H-296 (a) 화이트리스트 트리오 존재, defs-드롭 클래스 부재 ===")
 do
-	local D = q.D
+	local D = q.Declaration
 	-- 계층식 몫의 대표들
 	for _, name in { "Frame", "TextLabel", "ScreenGui", "SurfaceGui", "UIListLayout", "UICorner", "ViewportFrame" } do
 		assert(type(D[name]) == "function", name .. " must be generated (hierarchy rule)")
@@ -81,7 +81,7 @@ end
 print()
 print("=== 3. 커링 계약 — New(name)은 함수(2단계 호출), 별칭은 이미 1회 적용된 것 ===")
 do
-	local D = q.D
+	local D = q.Declaration
 	local curried = D.New("Frame")
 	assert(type(curried) == "function", "New(name) returns the props-taking stage")
 	-- 별칭과 커링 결과는 같은 모양(둘 다 props 함수) — 실행은 Roblox 전역 필요라 여기까지
@@ -93,11 +93,11 @@ end
 --  구조상 보장되고, 후자는 scripts/test.sh의 grep 게이트가 커밋 산출물을 직접 본다.)
 
 print()
-print("=== 4. H-238 — D의 함수 전부 SURFACE 태그(리뷰 발견 반영 — 실제 태그 레벨 조회) ===")
+print("=== 4. H-238 — Declaration의 함수 전부 SURFACE 태그(리뷰 발견 반영 — 실제 태그 레벨 조회) ===")
 do
 	local QuadTypes = require("../luau_packages/quad_types")
 	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
-	local D = q.D
+	local D = q.Declaration
 	assert(q.errorNamespace.getFuncLevel(D.New) == SURFACE, "New itself must be tagged")
 	assert(q.errorNamespace.getFuncLevel(D.Frame) == SURFACE, "aliases must be tagged (stage closures)")
 	assert(q.errorNamespace.getFuncLevel(D.UIListLayout) == SURFACE, "every alias, not just Frame")
@@ -110,11 +110,11 @@ end
 print()
 print("=== 5. 파이프라인 CLI e2e(탐사자 관측 반영) — getfenv 주입으로 ①~④ 실주행 ===")
 do
-	-- 생성 D는 전역 `Instance`를 스테이지 안에서 lazy 참조한다 — CLI엔 그
-	-- 전역이 없지만 D 모듈 env에 mock을 주입하면 파이프라인이 실주행된다
+	-- 생성 Declaration은 전역 `Instance`를 스테이지 안에서 lazy 참조한다 — CLI엔 그
+	-- 전역이 없지만 Declaration 모듈 env에 mock을 주입하면 파이프라인이 실주행된다
 	-- (getfenv는 env를 비최적화하지만 테스트 전용이라 무방). 단언은 단위
 	-- ③ 이후에도 안정한 것만: ① 생성 + ② nativeClaim까지.
-	local D = q.D
+	local D = q.Declaration
 	getfenv(D.New :: any).Instance = { new = mock.Instance.new }
 	local frame = D.Frame({}) :: any
 	assert(mock.isMockInstance(frame) and frame.ClassName == "Frame", "① 물리 생성 완주(mock)")

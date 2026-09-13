@@ -2,7 +2,7 @@
 --[[
 	Modifier 타이핑(M7 단위 ③·④) — 생성 `<Class>Modifier`(스코프 클래스 + 그 조상 전부)/
 	`D.Modifier.<Class>()`/`Field<V>`/검사형 `As<Class>()`/무검사 `As<<T>>()`/
-	`Into<Class>` 인터페이스/조상 체인 마커 children 유니언이 실물 규모(D 스코프
+	`Into<Class>` 인터페이스/조상 체인 마커 children 유니언이 실물 규모(Declaration 스코프
 	전체)에서 strict를 통과하는가. 양성만 담고 본문은 실행하지 않는다
 	(spec.onchangetypes 관례). 음성(다른 클래스 Modifier를 자식 자리에 / 하위가
 	아닌 클래스로 As / Into 불만족 / As 뒤 오타 setter)은 luau-test `31`이
@@ -13,7 +13,7 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
-local DModule = require("../src/D")
+local DeclarationModule = require("../src/Declaration")
 local Types = require("../src/types")
 type State<T> = QuadTypes.State<T>
 type None = QuadTypes.None
@@ -21,18 +21,18 @@ type Tween<T> = Types.Tween<T>
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
--- D에 없는 커스텀 Modifier 클래스(컴포넌트 몫) — 타입 별칭 + `Into` 구현만으로
--- D의 클래스와 같은 지위(modifier-plan 11절). 런타임은 `TypedFactory<<T>>(name)` +
+-- Declaration에 없는 커스텀 Modifier 클래스(컴포넌트 몫) — 타입 별칭 + `Into` 구현만으로
+-- Declaration의 클래스와 같은 지위(modifier-plan 11절). 런타임은 `TypedFactory<<T>>(name)` +
 -- `DefineSubtype(parent, name)`(spec.modifier 9절).
 type MaterialButtonModifier = {
 	read __quadModifier: "MaterialButton",
-	Elevation: (self: MaterialButtonModifier, value: DModule.Field<number>) -> MaterialButtonModifier,
+	Elevation: (self: MaterialButtonModifier, value: DeclarationModule.Field<number>) -> MaterialButtonModifier,
 	AsMaterialButton: (self: MaterialButtonModifier) -> MaterialButtonModifier,
-	AsTextButton: (self: MaterialButtonModifier) -> DModule.TextButtonModifier,
+	AsTextButton: (self: MaterialButtonModifier) -> DeclarationModule.TextButtonModifier,
 }
 
 local function _neverCalled(custom: MaterialButtonModifier)
-	local D = q.D
+	local D = q.Declaration
 	-- 사용자 정의 클래스의 타입드 생성자 — T는 호출자가 명시(`As<<T>>()`와 같은 관례)
 	local MaterialButton = q.Modifier.TypedFactory<<MaterialButtonModifier>>("MaterialButton")
 	q.Modifier.DefineSubtype("TextButton", "MaterialButton")
@@ -51,13 +51,13 @@ local function _neverCalled(custom: MaterialButtonModifier)
 	end)
 	local m2 = m:Size(size):Size(sizeTween) -- State 필드(4-1: 리터럴 State는 통째 교체) — 둘 다
 	-- Peek<<T>>: 호출부가 T를 명시(정본 9절), 반환은 raw 유니언 그대로
-	local peeked: DModule.FieldOut<UDim2>? = m2:Peek<<UDim2>>("Size") -- Q24 후속: old와 같은 FieldOut(Tween 팔 포함)
+	local peeked: DeclarationModule.FieldOut<UDim2>? = m2:Peek<<UDim2>>("Size") -- Q24 후속: old와 같은 FieldOut(Tween 팔 포함)
 	-- Apply: 팩토리에 주석을 달면 그대로 타입드(any 인자 — 8.9절); 상위 클래스
 	-- 팩토리도 그냥 들어간다(Q5의 Boldify 요구)
-	local Boldify = function(mod: DModule.TextButtonModifier): DModule.TextButtonModifier
+	local Boldify = function(mod: DeclarationModule.TextButtonModifier): DeclarationModule.TextButtonModifier
 		return mod:TextSize(20)
 	end
-	local Raise = function(mod: DModule.GuiObjectModifier): DModule.GuiObjectModifier
+	local Raise = function(mod: DeclarationModule.GuiObjectModifier): DeclarationModule.GuiObjectModifier
 		return mod:ZIndex(5)
 	end
 	local b = D.Modifier.TextButton():Text("x"):Apply(Boldify)
@@ -73,12 +73,12 @@ local function _neverCalled(custom: MaterialButtonModifier)
 	local t = g:AsTextLabel():Text("x"):TextSize(20)
 	local fr = g:AsFrame():Style(Enum.FrameStyle.Custom)
 	local btn = inst:AsGuiObject():Visible(false):AsTextButton():Text("go")
-	-- 항등 As<Self> + 무검사 As<<T>>()(D 밖 타입으로도)
+	-- 항등 As<Self> + 무검사 As<<T>>()(Declaration 밖 타입으로도)
 	local same = t:AsTextLabel()
-	local forced = g:As<<DModule.TextLabelModifier>>():Text("z")
+	local forced = g:As<<DeclarationModule.TextLabelModifier>>():Text("z")
 	local toCustom = D.Modifier.TextButton():As<<MaterialButtonModifier>>("MaterialButton"):Elevation(2)
 	-- Into<Class>: 상위·자기·커스텀 구현체 전부 받는 인터페이스
-	local function Bold(mod: DModule.IntoTextButton): DModule.TextButtonModifier
+	local function Bold(mod: DeclarationModule.IntoTextButton): DeclarationModule.TextButtonModifier
 		return mod:AsTextButton():TextSize(20)
 	end
 	local i1 = Bold(D.Modifier.GuiButton():AutoButtonColor(true)) -- 상위

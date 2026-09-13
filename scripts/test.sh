@@ -14,7 +14,7 @@ fail=0
 # (H-142/Q5 (a); CLI Luau엔 io가 없어 spec이 못 보므로 여기서 커밋 산출물을 직접 봄)
 # [Q35 (a), 2026-09-08] the READ surface (`PropTypesRead`, OnChange only) carries Parent on purpose —
 # the gate looks at every other block (write surface: PropTypes / <Class>Param / Modifier setters)
-if awk '/^export type PropTypesRead = \{/{skip=1} skip && /^\}/{skip=0; next} !skip && /^\tParent:/{found=1} END{exit !found}' quad-roblox/src/D/init.luau; then
+if awk '/^export type PropTypesRead = \{/{skip=1} skip && /^\}/{skip=0; next} !skip && /^\tParent:/{found=1} END{exit !found}' quad-roblox/src/Declaration/init.luau; then
 	echo "gen-d gate: Parent field leaked into the generated WRITE surface" >&2
 	fail=1
 fi
@@ -26,7 +26,7 @@ if grep -rnE '^function [A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(' --include='*.luau'
 	echo "FAIL: module-scope global function definition (prefix with local)" >&2
 	fail=1
 fi
-if ! grep -q "GENERATED FILE" quad-roblox/src/D/init.luau; then
+if ! grep -q "GENERATED FILE" quad-roblox/src/Declaration/init.luau; then
 	echo "gen-d gate: generated banner missing" >&2
 	fail=1
 fi
@@ -57,10 +57,10 @@ printf '%s\n' "$newsolver_out" | grep -v "^\[INFO\]" || true
 # (없으면 quad-types의 type function이 "syntax not supported"로 죽음),
 # --ignore로 의존 패키지 사본의 진단은 숨긴다(그쪽은 위 그룹이 원본을 봄).
 echo "=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau quad-roblox/src quad-roblox/test/spec.*.luau"
-# LuauTarjanChildLimit: 생성 `export type D`/`DMapper`(31클래스 Param 인스턴스화,
+# LuauTarjanChildLimit: 생성 `export type Declaration`/`DeclarationMapper`(31클래스 Param 인스턴스화,
 # H-305 d′)가 기본 한도(10000)를 넘어 "Code is too complex"를 낸다 — 실측상
 # 40000이면 전 그룹 클린, 1.2s대(성능 무해). 한도 자체의 등재는 typing-limits.
-# [2026-09-04 M7 단위 ③] 클래스별 `<Class>Modifier`(재귀 setter 수십 개) + `DModifier`
+# [2026-09-04 M7 단위 ③] 클래스별 `<Class>Modifier`(재귀 setter 수십 개) + `DeclarationModifier`
 # 네임스페이스가 더해져 40000으로 다시 넘침 — 160000이면 클린(실측), 시간 무해.
 # LuauSubtypingIterationLimit(M10 OnChange, 2026-09-03): 생성 `<Class>OnChange`
 # 유니언(클래스당 수십 멤버)에 Color3/string처럼 멤버가 많은 타입의 콜백을
@@ -71,7 +71,7 @@ echo "=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau 
 # 타입의 팩토리를 `Apply`에 넘기는 자리가 기본 한도(20000)에서 "too complex" —
 # 실측상 50만이면 클린, 100만으로 핀(시간 무해, 3.2s대; typing-limits 8.9절).
 # LuauSolverConstraintLimit(round20 InstanceShorthand, 2026-09-06)은 GuiObject 계열 10클래스의
-# Param/Modifier에 숏핸드 키 넷을 얹자 `export type D`(UIStroke 자리)가 "too complex"라 100만으로
+# Param/Modifier에 숏핸드 키 넷을 얹자 `export type Declaration`(UIStroke 자리)가 "too complex"라 100만으로
 # 핀했던 것 — **[2026-09-07 마커] 제거.** 슬롯 유니언의 State 팔이 공변 마커 하나로 줄자(typing-limits
 # 8.11) 이 플래그 없이 클린이고 전체 시간도 4.96s → 3.41s(실측). 다시 "too complex"가 나면 그때 되살릴 것.
 lsp_out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \

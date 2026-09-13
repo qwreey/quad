@@ -18,7 +18,7 @@ local Quad = QuadBase.New():UseProvider(QuadRoblox)
 local Tween = Quad.Tween
 
 -- 타입 양성(strict — 본문 실행 없음): 생성자 제네릭 추론, `Mapped`의 U 전환,
--- 센티널 타입, `TweenData<T>` 자리(D 유니언 멤버)에 Tween 값이 들어간다
+-- 센티널 타입, `TweenData<T>` 자리(Declaration 유니언 멤버)에 Tween 값이 들어간다
 local function _types()
 	local a: Types.Tween<number> = Tween({ Value = 1, Time = 0.3, Override = "Finish" })
 	local b: Types.Tween<string> = a:Mapped(function(v: number): string

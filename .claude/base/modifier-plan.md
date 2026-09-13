@@ -458,7 +458,7 @@ Modifier에는 없음).
 "누가 modifier에 타입을 붙여주냐"는 새 문제가 아니라, Store/인스턴스 생성에
 이미 적용한 **"정적으로 알려진 건 dot-access"** 프로젝트 전역 관습
 (`base/store-plan.md` "타입 추론 문제" 절)을 그대로 적용하면 됨 —
-`mod:UICorner(8)`/`mod:FontSize(...)`처럼 `D`(Declarative) 쪽 "제네릭 생성자
+`mod:UICorner(8)`/`mod:FontSize(...)`처럼 `Declaration` 쪽 "제네릭 생성자
 함수 하나 + 클래스별 정적 필드" 패턴 재사용.
 **[정정, 2026-08-18 구현 전 QA]** 여기 짝으로 적혀 있던 두 서술이 이번
 라운드에 바뀌었다 — (a) "동적인 건 **문자열 폴백**"의 그 폴백

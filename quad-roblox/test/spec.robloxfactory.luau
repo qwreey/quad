@@ -28,7 +28,7 @@ local SPEC_FILE = "spec.robloxfactory.luau"
 print("=== 1. 진입점 — UseProvider identity 락: 같은 fn no-op·다른 identity error (H-305 d′) ===")
 do
 	local q = Quad.New():UseProvider(QuadRoblox)
-	assert(type((q :: any).D) == "table", "extension merge lands D on the module")
+	assert(type((q :: any).Declaration) == "table", "extension merge lands Declaration on the module")
 	local before = (q :: any).bindLifetime
 	local again = (q :: any):UseProvider(QuadRoblox)
 	assert(again == q and (q :: any).bindLifetime == before, "same provider fn again is a no-op (functions untouched)")
@@ -74,7 +74,7 @@ do
 	end)
 	assert(not okThrow, "the throwing provider propagates its error")
 	local recovered = (fresh :: any):UseProvider(QuadRoblox)
-	assert(type(recovered.D) == "table", "H-307: a failed install must not poison the slot — retry installs fully")
+	assert(type(recovered.Declaration) == "table", "H-307: a failed install must not poison the slot — retry installs fully")
 
 	-- `H-306` (a): 런타임 버전 게이트 — 컴파일 타임 배선은 UseProvider
 	-- 간접 흐름에서 불활성임이 실측돼(탐사자) 런타임 검사로 전환됐다.
@@ -91,7 +91,7 @@ do
 	-- H-307과의 합류 확인 — 실패한 설치가 슬롯을 안 잡았으니 정정 후 재시도 완주
 	;(wrongVersion :: any).Version = "3.1.0"
 	local fixed = (wrongVersion :: any):UseProvider(QuadRoblox)
-	assert(type(fixed.D) == "table", "corrected version installs fully on retry")
+	assert(type(fixed.Declaration) == "table", "corrected version installs fully on retry")
 	print("PASS")
 end
 

@@ -13,7 +13,7 @@ description: "컴포넌트 에러 격리 경계 — 시그니처, err: any 계�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 ```
 
 ---

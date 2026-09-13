@@ -9,7 +9,7 @@ quad의 값 타입은 **브랜드**로 표시됩니다 — 생성 시점에 자�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 ```
 
 ## 술어 표

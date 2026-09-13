@@ -9,7 +9,7 @@ description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 -- 클래스별 Modifier 타입(`FrameModifier`/`IntoFrame` 등)은 생성된 D 모듈에서 가져온다
 local DTypes = require(<quad-roblox D 모듈 경로>)
 ```

@@ -147,6 +147,19 @@ grep이 어렵고 이름만으로 뜻이 안 드러나는 게 유일한 단점�
 **문서에서 `D`가 처음 나오는 자리에서는 항상 `D`(Declarative)로 풀어쓴다**
 (표기 규약은 `base/architecture.md`의 "코드 스타일 — 네이밍 케이싱" 절).
 
+**[2026-09-14 정정 — 사용자 결정]** 위 2026-08-18 확정은 **원문 그대로 남기되 더 이상 현행이
+아니다** — 모듈 필드·타입 이름은 이제 `Declaration`이다(`q.Declaration`, `export type
+Declaration`/`DeclarationMapper`/`DeclarationModifier`, 생성 폴더 `quad-roblox/src/Declaration/`).
+근거 셋 중 (3) *"`D.FrameModifier`류 타입 프리픽스가 짧아야 한다"*는 M7 단위 ③에서 타입 이름이
+`<Class>Modifier`가 되면서 **만료**됐고(바로 위 괄호가 스스로 정정해 둔 그 사실), 남은 (1)·(2)는
+이름 길이와 무관해 긴 이름으로도 그대로 성립한다. 유일한 단점으로 적어 둔 "grep이 어렵고
+이름만으로 뜻이 안 드러난다"가 개명의 직접 사유다. **문서의 별칭 관례는 유지한다** — 파일마다
+`const D = q.Declaration` 한 줄을 받고 본문은 `D.Frame {…}` 그대로 쓴다(별칭 이름은 사용자 자유).
+옛 `q.D` 별칭은 남기지 않는다(자동완성에 둘이 뜨면 개명의 목적이 무너짐). 위 표기 규약
+*"항상 `D`(Declarative)로 풀어쓴다"*도 같이 폐기됐다 — 새 규약은 `base/architecture.md`의
+"코드 스타일 — 네이밍 케이싱" 절. 비용 조사와 갈래 판단은
+`research/public-surface-pre-adoption-review.md` (1)번 항목.
+
 **인스턴스 생성 — 호출 모양은 PA님 코드 그대로, 타입은 생성기가 만든다
 ([2026-08-18 구현 전 QA에서 후자를 정정])**: 처음 제안했던 "필드=1급 타입
 경로, 문자열=폴백"이라는 2트랙 구상보다 실제 호출 모양은 더 단순했음
@@ -269,7 +282,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
 `New "Frame"` 꼴로, 팩토리는 `New()` 꼴로 쓸 것.)
 
 ```lua
--- quad-roblox/src/D/init.luau — 생성기가 찍는 커링 생성자. 아래 ①~④ 순서가 계약.
+-- quad-roblox/src/Declaration/init.luau — 생성기가 찍는 커링 생성자. 아래 ①~④ 순서가 계약.
 local function New(className: string)
     return function(props)
         -- ① 물리 생성 — 백엔드의 일. base는 `Instance`를 모른다

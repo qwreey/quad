@@ -55,13 +55,13 @@ local gameShim = mock.gameShim(counted)
 local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim -- Property 모듈 env에 주입
 ;(getfenv(installEvent) :: any).game = gameShim -- Event 모듈도 같은 심(이벤트 미선언 → 매치 없음)
-;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)
 q.errorNamespace.setFuncLevel((require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE, q.isInst)
 
 print("=== 1. Property — Reflection 멤버십 매치로 실프로퍼티만 세팅 ===")
 do
-	local f = q.D.Frame({ Name = "Styled", Size = 42, Visible = true }) :: any
+	local f = q.Declaration.Frame({ Name = "Styled", Size = 42, Visible = true }) :: any
 	assert(f.Name == "Styled" and f.Size == 42 and f.Visible == true, "properties assigned through the pipeline")
 	print("PASS")
 end
@@ -70,7 +70,7 @@ print()
 print("=== 2. 비프로퍼티 문자열 키·Parent 키 — 매치 핸들러 없음 error(H-142 배선) ===")
 do
 	local ok, err = pcall(function()
-		q.D.Frame({ Bogus = 1 })
+		q.Declaration.Frame({ Bogus = 1 })
 	end)
 	assert(not ok, "a non-property string key must not silently pass")
 	mock.assertBlamesUser(err, SPEC_FILE, "bogus key")
@@ -95,7 +95,7 @@ print("=== 3. InstanceChild — 마운트 + H-134 부기(오프셋 산술이 실
 do
 	local c1, c2 = Instance.new("TextLabel"), Instance.new("TextLabel")
 	c1.Name, c2.Name = "A", "B"
-	local f = q.D.Frame({ c1, c2 }) :: any
+	local f = q.Declaration.Frame({ c1, c2 }) :: any
 	assert(c1.Parent == f and c2.Parent == f, "both static children mounted")
 	assert(q.Dispatch.getOffsetAt(f, 1) == 0 and q.Dispatch.getOffsetAt(f, 2) == 1, "H-39/H-134: each terminal registered length 1 — offsets 0,1")
 	print("PASS")
@@ -106,7 +106,7 @@ print("=== 4. 교체·철거 — 옛 자식은 내림(파괴 아님), H-154 dedu
 do
 	local c1, c3 = Instance.new("TextLabel"), Instance.new("TextLabel")
 	c1.Name, c3.Name = "Old", "New"
-	local f = q.D.Frame({ c1 }) :: any
+	local f = q.Declaration.Frame({ c1 }) :: any
 
 	-- 같은 값 재발행 — dedup: Parent가 nil로 내려가는 전이가 없어야 한다
 	local nilTransitions = 0
@@ -139,7 +139,7 @@ do
 	local c1, c2 = Instance.new("TextLabel"), Instance.new("TextLabel")
 	c1.Name, c2.Name = "R1", "R2"
 	local src = q.Source(c1)
-	local f = q.D.Frame({ src }) :: any
+	local f = q.Declaration.Frame({ src }) :: any
 	assert(c1.Parent == f, "reactive child mounted through StoreBind unwrap")
 	src:Set(c2)
 	assert(c1.Parent == nil and c2.Parent == f, "re-emission demotes old, mounts new")
@@ -152,7 +152,7 @@ do
 	-- 이 우선순위가 회귀하면 mock에선 `inst.Size = <State 테이블>`이 조용히
 	-- 성공한다(property bag) — 그래서 실값 단언으로 핀한다
 	local src = q.Source(10)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	assert(f.Size == 10, "reactive property drove the unwrapped value, not the State table")
 	src:Set(20)
 	assert(f.Size == 20, "re-emission reaches the property")
@@ -168,12 +168,12 @@ print()
 print("=== 7. Reflection 캐시(탐사자 🟡-2a·b 승격) — 클래스당 정확히 1회 + 멤버십 분리 ===")
 do
 	local before = reflectionCalls.Frame or 0
-	q.D.Frame({ Visible = true })
-	q.D.Frame({ Visible = false })
+	q.Declaration.Frame({ Visible = true })
+	q.Declaration.Frame({ Visible = false })
 	assert((reflectionCalls.Frame or 0) - before <= 1, "GetPropertiesOfClass is cached per class (at most one new call)")
 	-- 클래스별 분리 — TextLabel의 Text는 Frame에선 프로퍼티가 아니다
 	local ok = pcall(function()
-		q.D.Frame({ Text = "nope" })
+		q.Declaration.Frame({ Text = "nope" })
 	end)
 	assert(not ok, "membership is per-class (Text is not a Frame property)")
 	print("PASS")
@@ -184,7 +184,7 @@ print("=== 8. 타입 교대(탐사자 🟡-2c·d 승격) — child↔None↔nil�
 do
 	local c1, c2, sib = Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("TextLabel")
 	local src = q.Source(c1 :: any)
-	local f = q.D.Frame({ src, sib }) :: any
+	local f = q.Declaration.Frame({ src, sib }) :: any
 	assert(c1.Parent == f and q.Dispatch.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
 
 	src:Set(q.None) -- NoneHandler → nil 재귀 → NilHandler(길이 0)
@@ -212,7 +212,7 @@ print()
 print("=== 9. Property nil 쓰기(Q33 (a), 2026-09-08 — M10 skip-defense 역전) — None/nil 재발행은 nil을 쓴다(오브젝트 참조 해제 경로; 못 받는 타입은 엔진이 에러) ===")
 do
 	local src = q.Source(true)
-	local f = q.D.Frame({ Visible = src }) :: any
+	local f = q.Declaration.Frame({ Visible = src }) :: any
 	assert(f.Visible == true, "initial reactive write")
 	-- mock의 프로퍼티 백은 nil 대입을 받아주므로 회귀는 "값이 nil이 됐는가"로 핀한다
 	src:Set(q.None) -- NoneHandler → nil 재귀 → Property(키 매치, v == nil)
@@ -230,14 +230,14 @@ print("=== 10. Modifier(M7 단위 ②) — D.Frame { mod, … }: flatten이 driv
 do
 	local src = q.Source(3)
 	local mod = q.Modifier():Name("FromMod"):ZIndex(src):Visible(false)
-	local f = q.D.Frame({ mod, Visible = true }) :: any
+	local f = q.Declaration.Frame({ mod, Visible = true }) :: any
 	assert(f.Name == "FromMod" and f.ZIndex == 3, "modifier fields landed as properties (State unwrapped)")
 	assert(f.Visible == true, "inline key beats the modifier")
 	src:Set(4)
 	assert(f.ZIndex == 4, "reactive field stays live")
 	-- 자식과 섞여도 오프셋 무영향
 	local c = Instance.new("TextLabel")
-	local f2 = q.D.Frame({ q.Modifier():Name("M"), c }) :: any
+	local f2 = q.Declaration.Frame({ q.Modifier():Name("M"), c }) :: any
 	assert(c.Parent == f2 and q.Dispatch.getOffsetAt(f2, 2) == 0 and f2.Name == "M", "sentinel slot contributes 0; child mounts")
 	print("PASS")
 end

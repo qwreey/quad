@@ -40,7 +40,7 @@ local QuadError = require("./luau_packages/quad_error")
 -- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 -- ⭐ [2026-09-07 사용자 결정 — 공변/불변 문제] **마커 타입** `StateMarker<T>`: '입력받는
--- 자리'(children 유니언, 생성 D 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
+-- 자리'(children 유니언, 생성 Declaration 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
 -- 전체형 `State<T>` 대신 이 마커를 요구한다. 전체형은 `Set(T)`/`Get(): T`가 양쪽 위치라
 -- **불변**이어서 `State<number>`가 `State<number | UDim>` 자리에 못 들어갔고(`H-326`/`H-327`/
 -- `H-353` — 멤버별 팔 나열로 우회), 읽기 전용 팬텀 필드만 든 마커는 **T에 공변**이라 한 팔로
@@ -92,7 +92,7 @@ export type KeyGone = { read __quadKeyGone: true }
 -- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
 -- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
 -- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
--- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `D` 유니언(스칼라·
+-- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `Declaration` 유니언(스칼라·
 -- 이벤트·children)이 None을 실을 수 있게 한다.
 export type None = { read __quadNone: true }
 
@@ -373,12 +373,12 @@ export type ModifierConstructor = setmetatable<{
 	TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T,
 	DefineSubtype: (parent: string, subtype: string) -> (),
 }, { __call: (self: any, ...(Modifier | { [string]: any })) -> Modifier }>
--- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 D의 `Field<T>`)가
+-- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 Declaration의 `Field<T>`)가
 -- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
 -- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
 -- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
 -- `types.luau`의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
--- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 D는 그걸 재별칭 — D 안 전개는 typing-limits 8.12).
+-- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 Declaration은 그걸 재별칭 — Declaration 안 전개는 typing-limits 8.12).
 -- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
 -- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
 export type FieldOut<T> = T | State<T> | None
@@ -559,7 +559,7 @@ export type Quad = {
 	-- 백엔드(프로바이더) 설치 전용(`H-305` (d′), 2026-09-02 사용자 확정) —
 	-- AddPlugin과 타입 모양은 같지만 계약이 다르다: 모듈당 1슬롯 fn
 	-- identity 락(같은 fn 재호출 no-op / 다른 identity — 다른 프로바이더든
-	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`D` 등)은
+	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`Declaration` 등)은
 	-- 이 반환 교집합 `Self & P`로 타입이 실린다 — quad-types엔 안 실림.
 	UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P,
 

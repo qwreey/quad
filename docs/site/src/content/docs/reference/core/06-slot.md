@@ -15,7 +15,7 @@ Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 �
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.SlotItem<T>`·`QuadTypes.KeyGone`)
-local D = q.D
+local D = q.Declaration
 ```
 
 ## 원소 대수 — 넣는 자리와 꺼내는 자리의 타입이 다르다

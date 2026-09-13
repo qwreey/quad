@@ -37,7 +37,7 @@ const rows = q.Source({
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/CounterBoard
 const q = require("./Quad")
-const D = q.D
+const D = q.Declaration
 const Counter = require("./Counter")
 
 return function(props)

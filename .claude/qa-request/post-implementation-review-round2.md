@@ -137,7 +137,7 @@
 
 ### [G-05] `D.New(className)` 팩토리 파이프라인에서 `drive` 실패 시 미마운트 Instance 거동
 
-- **위치**: `quad-roblox/src/D/init.luau` (생성된 `New` 함수, `scripts/gen-d.py:584-592`)
+- **위치**: 옛 `quad-roblox/src/D/init.luau`(2026-09-14 개명 뒤 `Declaration/init.luau`) (생성된 `New` 함수, `scripts/gen-d.py:584-592`)
 - **심각도**: Low / Normal GC Path
 - **현상 분석**:
   - `New(className)(props)`에서 `drive` 도중 throw가 발생하면, 생성된 `inst`는 반환되지 않고 `Parent`에도 붙지 않은 고아 상태가 됩니다.

@@ -33,7 +33,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 -- enum defaults come from the `Enum` global, shimmed here with plain markers
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
-;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 
 local Tween = q.Tween
@@ -45,7 +45,7 @@ end
 print("=== 1. 첫 세팅 스냅 — Tween 값이어도 엔진 트윈 없이 즉시 Value, plain도 동일 ===")
 do
 	mock.resetTweenLog()
-	local f = q.D.Frame({ Size = Tween({ Value = 10, Time = 0.3 }), Position = 5 }) :: any
+	local f = q.Declaration.Frame({ Size = Tween({ Value = 10, Time = 0.3 }), Position = 5 }) :: any
 	assert(f.Size == 10 and f.Position == 5, "snapped to Value / plain")
 	assert(#log == 0, "no engine tween on first set")
 	print("PASS")
@@ -56,7 +56,7 @@ print("=== 2. 세팅된 뒤 Tween — Create·Play 1회, 슬롯에 {Tween, Value
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	assert(f.Size == 0 and #log == 0, "first set via State: snap")
 	src:Set(Tween({ Value = 20, Time = 0.5, Style = "S" }))
 	assert(#log == 1 and lastTween().plays == 1, "engine tween created and played once")
@@ -76,7 +76,7 @@ print("=== 3. Tween→Tween 기본(Cancel) — 이전 Cancel 1, 스냅 없음, �
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	src:Set(Tween({ Value = 10 }))
 	local first = lastTween()
 	f.Size = 4 -- pretend the engine interpolated to 4
@@ -92,7 +92,7 @@ print("=== 4. Tween→Tween Finish — 이전 Cancel 뒤 prev.Value로 스냅, �
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	src:Set(Tween({ Value = 10 }))
 	local first = lastTween()
 	f.Size = 4
@@ -108,7 +108,7 @@ print("=== 5. Tween→plain — Cancel 뒤 즉시 덮어쓰기, Create 없음; p
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	src:Set(Tween({ Value = 10 }))
 	local first = lastTween()
 	src:Set(7)
@@ -126,7 +126,7 @@ do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
 	local pos = q.Source(1 :: any)
-	local f = q.D.Frame({ Size = src, Position = pos }) :: any
+	local f = q.Declaration.Frame({ Size = src, Position = pos }) :: any
 	local FAST = Tween({ Value = 0, Time = 0.1 })
 	src:Set(FAST:Mapped(function() return 50 end))
 	assert(#log == 1 and log[1].props.Size == 50 and log[1].info.args[1] == 0.1, "Mapped keeps options, swaps Value")
@@ -143,7 +143,7 @@ print("=== 7. Q8 (a) Animate 아래 nil/None 통과(해제 가능); Q25 (2026-09
 do
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
-	local f = q.D.Frame({ Size = src:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local f = q.Declaration.Frame({ Size = src:Apply(q.Animate({ Time = 0.2 })) }) :: any
 	src:Set(10)
 	assert(#log == 1 and log[1].props.Size == 10, "first animated set")
 	src:Set(10) -- H-391 재현 경로 — 같은 값 재발행(Animate는 매번 새 Tween 객체를 만든다)
@@ -153,13 +153,13 @@ do
 	src:Set(nil)
 	assert(#log == 1 and f.Size == nil, "Q8: nil passes Animate untouched → nil written (Q33)")
 	local src2 = q.Source(0 :: any)
-	q.D.Frame({ Size = src2:Apply(q.Animate({ Time = 0.2, Dedup = false })) })
+	q.Declaration.Frame({ Size = src2:Apply(q.Animate({ Time = 0.2, Dedup = false })) })
 	src2:Set(10)
 	src2:Set(10)
 	assert(#log == 3 and log[3].props.Size == 10 and log[2].tween.cancels == 1, "Animate{ Dedup = false } → Tween.Dedup = false: the same target re-triggers (cancel + new tween)")
 	-- hand-built Tweens, no Animate: equal Value folds regardless of object/options; Dedup=false restarts
 	mock.resetTweenLog()
-	local g = q.D.Frame({ Size = Tween({ Value = 0, Time = 0.1 }) }) :: any -- snapped record { Value = 0 }
+	local g = q.Declaration.Frame({ Size = Tween({ Value = 0, Time = 0.1 }) }) :: any -- snapped record { Value = 0 }
 	q.Dispatch.process(g, "Size", Tween({ Value = 10, Time = 0.9 }), 1)
 	assert(#log == 1, "new target: Create")
 	q.Dispatch.process(g, "Size", Tween({ Value = 10, Time = 0.2 }), 1)
@@ -175,7 +175,7 @@ do
 	mock.resetTweenLog()
 	local t1 = Tween({ Value = 10, Time = 0.3 })
 	local src = q.Source(t1 :: any)
-	local f = q.D.Frame({ Size = src }) :: any
+	local f = q.Declaration.Frame({ Size = src }) :: any
 	assert(f.Size == 10 and #log == 0, "first set: snap, no engine tween")
 	src:Set(t1) -- before Q26 this made a same→same engine tween
 	assert(#log == 0, "same target re-emitted after the snap: folded (no Create)")
@@ -186,7 +186,7 @@ do
 	assert(#log == 1 and lastTween().cancels == 0, "a different Tween after a snapped record: Create 1, nothing to cancel")
 	-- Finish against a snapped record has nothing to snap to (the property already holds Value)
 	mock.resetTweenLog()
-	local g = q.D.Frame({ Size = Tween({ Value = 1, Time = 0.1 }) }) :: any
+	local g = q.Declaration.Frame({ Size = Tween({ Value = 1, Time = 0.1 }) }) :: any
 	g.Size = 5 -- external write
 	q.Dispatch.process(g, "Size", Tween({ Value = 9, Time = 0.1, Override = "Finish" }), 1)
 	assert(g.Size == 5 and #log == 1, "Finish over a snapped record: no re-snap of the old value, just the new Create")
@@ -199,7 +199,7 @@ do
 	local src = q.Source(1)
 	local badTime = q.Source("x")
 	local ok, err = pcall(function()
-		return q.D.Frame({ Size = src:Apply(q.Animate({ Time = badTime })) })
+		return q.Declaration.Frame({ Size = src:Apply(q.Animate({ Time = badTime })) })
 	end)
 	assert(not ok and string.find(tostring(err), "Time must be a number", 1, true) ~= nil, "State option validated at drive: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.tweenproperty.luau", "drive-path blame")

@@ -15,8 +15,8 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local DModule = require(<quad-roblox 모듈 경로의 D 하위 모듈>) -- 클래스별 OnChange 유니언 타입
-local D = q.D
+local DeclarationModule = require(<quad-roblox 모듈 경로의 Declaration 하위 모듈>) -- 클래스별 OnChange 유니언 타입
+local D = q.Declaration
 ```
 
 ---
@@ -26,7 +26,7 @@ local D = q.D
 **시그니처**
 
 ```luau
--- 생성 타입(quad-roblox/src/D). `PropTypesRead`는 D 스코프 전체의 "읽기 가능한
+-- 생성 타입(quad-roblox/src/Declaration). `PropTypesRead`는 D 스코프 전체의 "읽기 가능한
 -- 프로퍼티 이름 → 타입" 맵이고, 클래스 간 타입이 충돌하는 이름은 any다.
 export type OnChangeFn = <K>(
 	name: K & keyof<PropTypesRead>,
@@ -86,7 +86,7 @@ local box = D.Frame({
   **클래스별 유니언을 타입 인자로 명시**해서 만듭니다.
 
   ```luau
-  local desc = q.Source<<DModule.FrameOnChange>>(q.OnChange("Visible", function(v: boolean) end))
+  local desc = q.Source<<DeclarationModule.FrameOnChange>>(q.OnChange("Visible", function(v: boolean) end))
   local box = D.Frame({ desc })
   ```
 

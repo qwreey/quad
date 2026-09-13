@@ -48,7 +48,7 @@ return Quad:UseProvider(QuadRoblox)
 **`const`**는 Luau의 **재대입할 수 없는 바인딩**입니다. `local`과 같은 자리에 쓰되 나중에 다른 값을 넣을 수 없다는 것만 다릅니다.
 
 ```luau
-const D = q.D   -- 이 이름은 이제 바뀌지 않는다
+const D = q.Declaration   -- 이 이름은 이제 바뀌지 않는다
 local n = 0     -- 이쪽은 바뀔 수 있다
 ```
 
@@ -69,11 +69,11 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 
 **`quad-base`**는 엔진을 모르는 코어입니다 — `Source`/`State`/`Slot`/`Modifier`와 디스패치 엔진이 여기 있고, 이것만으로는 Roblox `Instance`를 하나도 만들 수 없습니다. **`quad-roblox`**는 Roblox 백엔드로, `D`(Instance 생성기)·`Tween`·`Animate`·`OnChange`가 여기서 옵니다.
 
-`UseProvider` 전까지 `Quad.D`·`Quad.Tween`·`Quad.Animate`·`Quad.OnChange`는 전부 `nil`입니다. 코어가 엔진 어휘를 모르기 때문에 같은 코어 위에 다른 백엔드(헤드리스 테스트용 mock 등)를 붙일 수 있고, 그 갈아 끼우는 자리가 바로 이 한 줄입니다.
+`UseProvider` 전까지 `Quad.Declaration`·`Quad.Tween`·`Quad.Animate`·`Quad.OnChange`는 전부 `nil`입니다. 코어가 엔진 어휘를 모르기 때문에 같은 코어 위에 다른 백엔드(헤드리스 테스트용 mock 등)를 붙일 수 있고, 그 갈아 끼우는 자리가 바로 이 한 줄입니다.
 
 </details>
 
-반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.D`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 아홉도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
+반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.Declaration`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 아홉도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
 
 <details>
 <summary><strong>다른 모듈에서 <code>UseProvider</code>를 또 부르면 어떻게 되나요?</strong></summary>
@@ -104,7 +104,7 @@ const Players = game:GetService("Players")
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.D
+const D = q.Declaration
 
 const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 

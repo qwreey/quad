@@ -116,7 +116,7 @@ const button = D.TextButton { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Styles
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.D
+const D = q.Declaration
 
 local function accent(color)
     return D.Modifier.TextButton {

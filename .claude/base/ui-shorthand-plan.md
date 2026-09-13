@@ -58,7 +58,7 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 **[2026-09-06 구현됨 — M10 잔여, round20 `H-335`~`H-337`]** `quad-roblox/src/Handlers/
 InstanceShorthand.luau` — 아래 "남은 열린 질문"의 단순화 후보대로 **룩업 표 하나**
 (`{ key → { class, childName, props, wrap } }`)로 키 넷을 구동한다. 우선순위
-`HANDLER_PRIORITY_NORMAL + 1`, 자식은 `quad.D.New(class)({ Name = childName })`로
+`HANDLER_PRIORITY_NORMAL + 1`, 자식은 `quad.Declaration.New(class)({ Name = childName })`로
 (`UI-5` 자동 충족) 만들어 핸들러가 부착, 조회는 `Relate`. 값 모양: `UICorner: number |
 UDim`(number → offset), `UIPadding: UDim`, `UIPaddingOffset: number`, `UIScale: number`.
 **캐비엇 `H-335`**: `UIPadding`/`UIPaddingOffset`은 v1처럼 `_quad_padding` 하나를 공유한다

@@ -8,13 +8,13 @@
 
 **(a)에 동의한다: 모듈 필드·타입을 풀 이름으로 바꾸고, 문서의 별칭 관례 `const D = q.<풀 이름>`은 유지한다.** 근거는 아래 (1)이 적은 그대로다 — 2026-08-18의 근거 셋 중 "타입 프리픽스가 짧아야 한다"는 M7에서 타입 이름이 `FrameModifier`가 되면서 만료됐고, 남은 둘은 이름 길이와 무관하다. 별칭을 유지하면 문서 본문 4,729곳의 `D.` 표기는 그대로이고 바뀌는 것은 `q.D` 393곳(대부분 `const D = q.D` 154곳)뿐이라 기계 치환이다. 코드는 여섯 자리 + 스펙. 사용자가 없는 지금이 비용이 가장 싸고, 3.2.0에 **BREAKING**으로 한 줄이면 된다(메이저 불필요라는 사용자 판단에 동의).
 
-**낱말은 사용자 결정** — 정본 어원은 형용사 *Declarative*, 동료 제안은 명사 *Declaration*, 대안은 동사 *Declare*. 네임스페이스로는 명사가 자연스럽다(`q.Declaration.Frame`). 같이 정할 것 둘: 옛 `q.D` 별칭을 남기지 않는다(자동완성에 둘이 뜨면 목적이 무너진다 — 권고), `export type D`·`DMapper`·`DModifier` 타입 이름도 같이 옮긴다(권고). `base/bind-system-plan.md`·`architecture.md`의 "`D`(Declarative)" 표기 규약은 같은 커밋에서 "`D`는 `q.<풀 이름>`의 관례 별칭"으로 바꾼다.
+**낱말은 사용자 결정** — 정본 어원은 형용사 *Declarative*, 동료 제안은 명사 *Declaration*, 대안은 동사 *Declare*. 네임스페이스로는 명사가 자연스럽다(`q.Declaration.Frame`). 같이 정할 것 둘: 옛 `q.D` 별칭을 남기지 않는다(자동완성에 둘이 뜨면 목적이 무너진다 — 권고), `export type D`·`DMapper`·`DModifier` 타입 이름도 같이 옮긴다(권고). `base/bind-system-plan.md`의 2026-08-18 확정과 `architecture.md`의 "`Declaration` 네임스페이스와 그 필드" 절 표기 규약은 같은 커밋에서 "`D`는 `q.<풀 이름>`의 관례 별칭"으로 바꾼다.
 
 **같이 하면 싼 것**: (2) 백엔드 버전 게이트를 `"3.*.*"`로 — base 패치마다 다섯 패키지 lockstep 게시를 강제하는 지금 값은 SemVer 약속보다 좁다. (10) 생성기에 `New`/`Mapper`/`Modifier`(`Mapper`엔 `Root`) 이름 충돌 게이트 세 줄 — 개명 커밋에 얹는다. (11-i) "에러 문구는 진단이지 API가 아니다" 한 줄 — 3.1.0에서 이미 문구를 바꿨다.
 
 ## 결정 문항 (항목당 하나 — 상세는 아래 번호)
 
-1. (1) `D` → 풀 이름으로 바꿀지, 바꾸면 `Declaration` / `Declare` / 다른 낱말 중 무엇으로.
+1. (1) **[닫힘 2026-09-14 — `Declaration`으로, (a) 채택]** `D` → 풀 이름으로 바꿀지, 바꾸면 `Declaration` / `Declare` / 다른 낱말 중 무엇으로.
 2. (2) `quad-roblox`의 `VERSION_PATTERN`을 `"3.*.*"`로 풀지.
 3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지.
 4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지.
@@ -37,13 +37,20 @@
 
 ## (1) `D` 네임스페이스 이름 — 코디네이터가 전달한 사용자 문항
 
+**[결정 2026-09-14 — 사용자: *"지금이 가장 좋은 포인트"*] (a) 채택, 낱말은 `Declaration`.** 모듈 필드·타입을
+풀 이름으로 옮겼다 — `q.Declaration`, `export type Declaration`/`DeclarationMapper`/`DeclarationModifier`,
+생성 폴더 `quad-roblox/src/Declaration/`(옛 `D/`). 문서의 별칭 관례 `const D = q.Declaration`은 유지(본문의
+`D.Frame {…}` 표기는 그대로). 옛 `q.D` 별칭은 남기지 않는다. 사용자가 없는 단계라 메이저 없이 3.2.0에
+**BREAKING** 한 줄. `base/bind-system-plan.md`의 2026-08-18 확정과 `base/architecture.md`의 표기 규약은
+같은 커밋에서 정정했다. 아래 본문은 **결정 전** 조사 원문이라 `q.D`·옛 타입 이름이 그대로 남아 있다.
+
 **무엇** — 모듈 필드 이름 `D`. 런타임은 `quad-roblox/src/RobloxFactory.luau:54`(`D = InitD(module)`), 타입은 `quad-roblox/src/init.luau:44`(`export type D = DModule.D`)와 `:61`(`RobloxExtension`의 `D` 필드), 생성기는 `scripts/gen-d.py:704`(`export type D = {`)와 `:738`(런타임 테이블 조립), 내부 사용처 하나가 `quad-roblox/src/Handlers/InstanceShorthand.luau:80`(`quad.D.New(...)`)입니다.
 
 **먼저 사실 정정 하나** — 이 프로젝트에서 `D`는 **Declaration이 아니라 Declarative**입니다. 출처는 `.claude/base/bind-system-plan.md:137-148`: PA님 실 코드의 옛 `DeclarativeInstance.luau`에서 온 가칭 `DI`("Declarative Instance")를 2026-08-18에 `D`(Declarative)로 확정했고, 근거 셋을 명시했습니다 — (1) Instance 전용이 아니라 quad-* 전반의 declare 요소로 확장 가능, (2) 엔진 종속 없이 다른 백엔드에서도 재사용 가능, (3) *"`D.FrameModifier`류 타입 프리픽스가 짧아야 한다"*. 단점은 *"한 글자 식별자라 grep이 어렵고 이름만으로 뜻이 안 드러나는 게 유일한 단점"*이라 적혀 있고, 보완책이 `architecture.md:534-540`의 문서 표기 규약(*"문서에서 `D`가 처음 나오는 자리에서는 항상 `D`(Declarative)로 풀어쓸 것"*)입니다.
 
 **그때 근거가 지금도 성립하는가** — 셋 중 (3)이 **만료됐습니다.** 같은 문단이 스스로 괄호로 정정해 뒀습니다: *"**[2026-09-04 M7 단위 ③]** 실물은 타입 `<Class>Modifier`(생성 `D` 모듈 export) + 값 `D.Modifier.<Class>()`"*. 즉 타입 이름은 `D.FrameModifier`가 아니라 `FrameModifier`라 **타입 프리픽스가 짧아야 할 이유가 애초에 사라졌습니다.** (1)·(2)는 이름의 길이와 무관한 논거라 그대로 성립하고, 긴 이름으로 바꿔도 훼손되지 않습니다. 그리고 유일한 단점으로 적힌 "이름만으로 뜻이 안 드러난다"가 정확히 동료분이 짚은 그 지점이고, 보완책이 문서 규약(사람이 지켜야 하는 것)뿐이라는 것도 그대로입니다.
 
-**비용 실측** — 코드 쪽은 작습니다. 실제로 바꿔야 하는 자리는 위에 적은 **여섯 곳**(RobloxFactory 반환 키, init.luau의 `export type D`와 `RobloxExtension` 필드, gen-d.py의 타입 이름·런타임 테이블, InstanceShorthand의 내부 읽기 한 줄)에 스펙 파일 몇 개(`quad-roblox/test/spec.d.luau`·`spec.component.luau` 등 `q.D`를 읽는 파일 열 개 남짓)입니다. 생성 파일 `quad-roblox/src/D/init.luau`는 생성기를 고치고 재생성하면 되고 `gen-d.py check` 게이트가 정합성을 잡아 줍니다. 문서 쪽은 기계 치환입니다 — `docs/` 전체에서 `q.D`가 **393곳**, 그 중 별칭을 만드는 `const D = q.D` 꼴이 **154곳**이고, 별칭 뒤의 `D.<무엇>` 사용은 **4,729곳**인데 **별칭 관례를 유지하면 이 4,729곳은 한 글자도 안 바뀝니다.** 실질 치환 대상은 `q.D`가 나오는 393곳 + `docs/skills/quad-ui-dev` 두 곳뿐입니다.
+**비용 실측** — 코드 쪽은 작습니다. 실제로 바꿔야 하는 자리는 위에 적은 **여섯 곳**(RobloxFactory 반환 키, init.luau의 `export type D`와 `RobloxExtension` 필드, gen-d.py의 타입 이름·런타임 테이블, InstanceShorthand의 내부 읽기 한 줄)에 스펙 파일 몇 개(`quad-roblox/test/spec.d.luau`·`spec.component.luau` 등 `q.D`를 읽는 파일 열 개 남짓)입니다. 생성 파일 옛 `quad-roblox/src/D/init.luau`(지금은 `Declaration/`)는 생성기를 고치고 재생성하면 되고 `gen-d.py check` 게이트가 정합성을 잡아 줍니다. 문서 쪽은 기계 치환입니다 — `docs/` 전체에서 `q.D`가 **393곳**, 그 중 별칭을 만드는 `const D = q.D` 꼴이 **154곳**이고, 별칭 뒤의 `D.<무엇>` 사용은 **4,729곳**인데 **별칭 관례를 유지하면 이 4,729곳은 한 글자도 안 바뀝니다.** 실질 치환 대상은 `q.D`가 나오는 393곳 + `docs/skills/quad-ui-dev` 두 곳뿐입니다.
 
 **갈래별 판단**
 

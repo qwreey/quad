@@ -38,7 +38,7 @@ luau-lsp analyze \
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 ```
 
 `require(quad-base)`가 돌려주는 값이 **이미** 기본 인스턴스입니다. v1의 `Init(id)`처럼 id로 같은 인스턴스를 다시 얻는 개념은 없습니다 — 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰고, 여러 스크립트가 같은 상태를 나눠 쓰려면 그 `Store`를 모듈에서 export 하거나 `q.Context`로 넘기세요.

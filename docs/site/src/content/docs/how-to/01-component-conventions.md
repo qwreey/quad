@@ -12,7 +12,7 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 local None = q.None
 
 -- 값이 아니라 '타입 이름'을 가져오는 모듈

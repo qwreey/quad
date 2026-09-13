@@ -1222,7 +1222,7 @@ no-op이라 되돌릴 상태가 없음.
 기존 관용구 강제)은 거부된다. `Ref<T>`를 직접 넣으면 실물 규모에서 형제 클래스
 Ref가 조용히 통과했다(`typing-limits.md` 8.9절 — `Set`/`Callback` 이름 충돌 +
 제네릭 메소드 반공변 미검사; 실측 `luau-test/32`, round18 `H-321`). `State<Ref>`는
-`State<T>` 불변성 때문에 `q.Source(ref :: DModule.FrameRefMarker)`로 만든다(8.7
+`State<T>` 불변성 때문에 `q.Source(ref :: DeclarationModule.FrameRefMarker)`로 만든다(8.7
 캐비엇 5) — **[2026-09-07 마커 — 사용자 결정]** 이 캐스트는 불필요해졌다: `<Class>Elem`의 팔이 `StateMarker<FrameRefMarker>`라 `q.Source(ref)`(`State<Ref<Frame?>>`)가 공변 + 폭 서브타이핑으로 든다(`typing-limits.md` 8.11, `spec.componenttypes`). `PreRef`/`PostRef`는 `Ref<T>`의 교집합이라 같은 마커로 통과하며,
 `State<PreRef>`는 타입이 못 가르고 런타임 가드가 잡는다.
 

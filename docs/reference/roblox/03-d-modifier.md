@@ -22,8 +22,8 @@ description: "클래스별 Modifier 생성자, setter 체인의 값 대수, 검�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local DModule = require(<quad-roblox 모듈 경로의 D 하위 모듈>) -- 클래스별 Modifier 타입이 사는 생성 모듈
-local D = q.D
+local DeclarationModule = require(<quad-roblox 모듈 경로의 Declaration 하위 모듈>) -- 클래스별 Modifier 타입이 사는 생성 모듈
+local D = q.Declaration
 ```
 
 ---
@@ -213,7 +213,7 @@ class" 에러를 냅니다.
 | `mod:As<<T>>()` | 타입 인자로 결과 타입을 강제한다(`D`가 모르는 타입으로도 갈 수 있다) |
 
 ```luau
-local forced: DModule.TextLabelModifier = D.Modifier.GuiObject():As<<DModule.TextLabelModifier>>()
+local forced: DeclarationModule.TextLabelModifier = D.Modifier.GuiObject():As<<DeclarationModule.TextLabelModifier>>()
 local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조상 검사 없음)
 ```
 
@@ -240,7 +240,7 @@ export type IntoFrame = { AsFrame: (self: any) -> FrameModifier }    -- 인터�
 
 ```luau
 type ThemedProps = {
-	read Modifier: DModule.IntoTextButton?,
+	read Modifier: DeclarationModule.IntoTextButton?,
 	read Text: string?,
 }
 
@@ -270,7 +270,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
   클래스 검사가 살아납니다. 주석을 달면 조상 클래스 팩토리도 그대로 받습니다.
 
   ```luau
-  local Boldify = function(mod: DModule.TextButtonModifier): DModule.TextButtonModifier
+  local Boldify = function(mod: DeclarationModule.TextButtonModifier): DeclarationModule.TextButtonModifier
   	return mod:TextSize(20)
   end
   local bold = D.Modifier.TextButton():Text("go"):Apply(Boldify)
@@ -287,6 +287,6 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 
 **관련**
 
-- [D — Instance 생성](./02-d.md) — Modifier가 숫자 키 자리에서 소진되는 규칙
+- [Declaration — Instance 생성](./02-d.md) — Modifier가 숫자 키 자리에서 소진되는 규칙
 - [01. 컴포넌트 경계 규약과 스타일 합성](../../how-to/01-component-conventions.md)
 - [05. 디자인 토큰과 테마 전환](../../how-to/05-theme-and-dynamic-styling.md)

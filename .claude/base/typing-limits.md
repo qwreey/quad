@@ -645,7 +645,7 @@ Tarjan·TypeInfer 상향은 무효, **`LuauSolverConstraintLimit`**(기본값 �
 | Tween<T>>` 멤버(M11 `H-334`)는 이 플래그로도 안 풀렸다 — 증상마다 한 번씩 재봐야 한다.
 
 **[2026-09-02 실측, `H-305` (d′) 반영 중]** 생성된 `export type D`/
-`DMapper`(31클래스 × `<Class>Param<E>` 인스턴스화, 클래스당 필드 40~60개 ×
+`DeclarationMapper`(31클래스 × `<Class>Param<E>` 인스턴스화, 클래스당 필드 40~60개 ×
 4-유니언)는 **별칭 선언이 존재하는 것만으로**(참조 안 해도) luau-lsp/새
 솔버가 `Internal error: Code is too complex to typecheck!`를 낸다. 이분
 실측: 별칭을 클래스별 소형 별칭으로 쪼개 합성해도 **무효**(총 정규화
@@ -654,7 +654,7 @@ Tarjan·TypeInfer 상향은 무효, **`LuauSolverConstraintLimit`**(기본값 �
 무효). `scripts/test.sh`가 quad-roblox 그룹에 `40000`을 실어 전 그룹
 클린·1.2s대(성능 무해). **[2026-09-04 M7 단위 ③]** 클래스별 `<Class>Modifier`
 (재귀 setter 수십 개)가 클래스 수만큼(소스는 `quad-roblox/dump/api-surface.json`)
-+ `DModifier` 별칭이 더해져 40000을 다시 넘김 →
++ `DeclarationModifier` 별칭이 더해져 40000을 다시 넘김 →
 **160000**(4.3s대, 무해). 별칭 존재 비용은 클래스 수 × 멤버 수에 비례하므로
 생성 표면이 늘 때마다 이 값을 재실측할 것. 부수 관측 하나: 그 교집합 결과 타입
 (`Quad & RobloxExtension`)을 `any` 파라미터로 흘리는 클로저 추론은
@@ -788,7 +788,7 @@ base는 `{ read __quadModifier: true }`(`QuadTypes.ModifierMarker`, `NewChild`),
 `State<X>` 멤버는 `:Compute`/`Animate`가 돌려주는 타입과 X가 글자 그대로 같아야
 한다(정밀판 별칭·데이터부 전부 거부). 그래서 생성 `D`와 `Field<T>`는 State 멤버
 둘을 각각 나열한다. (2) 같은 유니언을 수백 자리에 인라인하면(멤버 하나 추가만으로)
-`DMapper` 인스턴스화가 "too complex" — `LuauTarjanChildLimit` 640000·
+`DeclarationMapper` 인스턴스화가 "too complex" — `LuauTarjanChildLimit` 640000·
 `TypeInferRecursionLimit`·`CheckRecursionLimit`·`SolverRecursionLimit`·
 `NormalizeCacheLimit`·`TypeInferTypePackLoopLimit` 전부 무효(실측). **프로퍼티 타입별
 별칭 하나(`type PVn = …`)로 유니언을 한 번만 선언**하면 1.8s에 클린 — 한도 플래그가
@@ -993,14 +993,14 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 
 ## 8.13. 신 솔버(`luau-lsp --flag:LuauSolverV2`)는 함수 인자 테이블 리터럴 안의 인라인 무주석 `:Compute`를 못 푼다; 테이블 인덱서는 불변이라 `{ E }` 변수는 `<Class>Param<E>`가 아니다 (2026-09-08 round8 3차 M 실측)
 
-- **인라인 `:Compute`**: `q.D.Frame({ ZIndex = n:Compute(function(h) return h:Get() + 1 end) })`가 strict + 신 솔버에서 TypeError(*"Expected
+- **인라인 `:Compute`**: `q.Declaration.Frame({ ZIndex = n:Compute(function(h) return h:Get() + 1 end) })`가 strict + 신 솔버에서 TypeError(*"Expected
   `(StateData<number>, number?, ...any) -> number` but got `<a>(t1) -> add<a, number>` … `Get` is a read-only property"*). 함수 **인자로 넘기는 테이블
   리터럴 안**에서만 깨진다 — typed 파라미터·주석 대입(`local t: Rec = {...}`)·children 배열 자리·`:With`/`:Gate`/`:Apply`/`:Mapped` 인라인은 통과.
   `luau-analyze`(구 솔버)는 통과라 `test.sh`는 못 보고 사용자 에디터는 본다. §1②의 "무주석으로 통과"는 이 자리엔 해당 없음. 우회: 별도 문장으로
   빼서 `local lbl: State<string> = n:Compute(...)`. 순수 Luau 최소 재현은 실패(`Box<T>` 모사는 신 솔버에서도 클린) — quad의 `StateData`/`State`
   분리 + `previous: U?` + `...any` 조합 특유일 가능성, 원인 미확정. 부수: 같은 자리 인라인 `:Gate`의 `emit()` 무인자 호출도 시그니처 추론을 깨뜨린다.
-- **인덱서 불변성**: `local kids: { Instance } = {...}; q.D.Frame(kids)`는 `{ Instance }`(정확히 `{ FrameElem }`이어도)가 `FrameParam<FrameElem>`의
-  `[number]: E`와 불변 관계라 TypeError(유니언 56팔을 나열하는 50줄 메시지). 통하는 형태: `q.D.Frame({ table.unpack(kids) })`, 개별 나열, 변수를 처음부터
+- **인덱서 불변성**: `local kids: { Instance } = {...}; q.Declaration.Frame(kids)`는 `{ Instance }`(정확히 `{ FrameElem }`이어도)가 `FrameParam<FrameElem>`의
+  `[number]: E`와 불변 관계라 TypeError(유니언 56팔을 나열하는 50줄 메시지). 통하는 형태: `q.Declaration.Frame({ table.unpack(kids) })`, 개별 나열, 변수를 처음부터
   `FrameParam<FrameElem>`으로 선언. 미리 만든 props 변수(`{ Name = "a" }`)도 같은 뿌리로 막히나 `local p: FrameParam<FrameElem> = {...}` 선언으로 통과.
   관용구 확정은 round8 §11 Q44.
 - 같은 실측의 나머지와 결정(**[2026-09-08 회신, round8 §17]**): 무인자 `Store()`의 strict TypeError(`T` unknown → `keyof<unknown>`)는

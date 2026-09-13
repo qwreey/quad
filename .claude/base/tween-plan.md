@@ -219,7 +219,7 @@ Enum·Content·Font·Sequence류는 `T | StateMarker<T> | None`(Modifier setter�
 Modifier setter `Field<T>`)은 **`State<T>`와 `State<Tween<T>>`를 각각 나열**한다
 (`T | State<T> | TweenData<T> | State<Tween<T>> | None` — 바깥 Tween은 데이터부
 8.8절, 안쪽은 `Animate`가 돌려주는 타입과 글자 그대로 같아야 하는 전체형). 이
-확장이 `DMapper` 인스턴스화를 "too complex"로 만들어 생성기는 프로퍼티
+확장이 `DeclarationMapper` 인스턴스화를 "too complex"로 만들어 생성기는 프로퍼티
 타입별 별칭 `PVn`으로 유니언을 한 번만 선언한다. "새 타입 기계 불필요"는
 그대로다 — 멤버 나열이 늘었을 뿐.
 

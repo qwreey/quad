@@ -26,7 +26,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
-;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 -- UDim 심 — 엔진 전역이 없는 CLI에서 `UDim.new(0, n)`을 테이블로
 -- 엔진처럼 값 동등(`UDim.new(0, 8) == UDim.new(0, 8)`) — Q25 값 dedup이 그 위에 선다
@@ -52,11 +52,11 @@ end
 
 print("=== 1. UICorner = 8 — 관리 자식 _quad_round 생성·부착, CornerRadius = UDim(0, 8); UDim은 그대로 ===")
 do
-	local f = q.D.Frame({ UICorner = 8 }) :: any
+	local f = q.Declaration.Frame({ UICorner = 8 }) :: any
 	local c = childNamed(f, "_quad_round")
 	assert(c ~= nil and c.ClassName == "UICorner" and c.Parent == f, "managed child created and parented")
 	assert(c.CornerRadius.Offset == 8 and c.CornerRadius.Scale == 0, "number → offset UDim")
-	local f2 = q.D.Frame({ UICorner = UDimNew(0.5, 0) }) :: any
+	local f2 = q.Declaration.Frame({ UICorner = UDimNew(0.5, 0) }) :: any
 	assert(childNamed(f2, "_quad_round").CornerRadius.Scale == 0.5, "UDim passes through")
 	print("PASS")
 end
@@ -65,7 +65,7 @@ print()
 print("=== 2. 반응형 — State<number> 변경은 자식을 재생성하지 않고 프로퍼티만 갱신(Relate 조회) ===")
 do
 	local s = q.Source(4)
-	local f = q.D.Frame({ UICorner = s }) :: any
+	local f = q.Declaration.Frame({ UICorner = s }) :: any
 	local c = childNamed(f, "_quad_round")
 	s:Set(12)
 	assert(childNamed(f, "_quad_round") == c and c.CornerRadius.Offset == 12, "same child, property updated")
@@ -77,7 +77,7 @@ print()
 print("=== 3. nil — 자식 파괴(retractFrom 뒤), 다시 숫자면 재생성(첫 값 스냅); None 경유도 같은 경로 ===")
 do
 	local s = q.Source(4 :: any)
-	local f = q.D.Frame({ UICorner = s }) :: any
+	local f = q.Declaration.Frame({ UICorner = s }) :: any
 	local c1 = childNamed(f, "_quad_round")
 	s:Set(nil)
 	assert(childNamed(f, "_quad_round") == nil and mock.isDestroyed(c1), "child destroyed on nil")
@@ -94,7 +94,7 @@ print("=== 4. Tween — Tween<number>이 Mapped로 UDim Tween이 되어 (child, 
 do
 	mock.resetTweenLog()
 	local s = q.Source(4 :: any)
-	local f = q.D.Frame({ UICorner = s }) :: any
+	local f = q.Declaration.Frame({ UICorner = s }) :: any
 	local c = childNamed(f, "_quad_round")
 	s:Set(Tween({ Value = 10, Time = 0.2 }))
 	local log = mock.tweenLog
@@ -106,15 +106,15 @@ end
 print()
 print("=== 5. UIPadding(UDim)·UIPaddingOffset(number) — 같은 _quad_padding 자식, 네 프로퍼티; UIScale ===")
 do
-	local f = q.D.Frame({ UIPadding = UDimNew(0, 4) }) :: any
+	local f = q.Declaration.Frame({ UIPadding = UDimNew(0, 4) }) :: any
 	local p = childNamed(f, "_quad_padding")
 	assert(p ~= nil and p.PaddingLeft.Offset == 4 and p.PaddingRight.Offset == 4 and p.PaddingTop.Offset == 4 and p.PaddingBottom.Offset == 4, "all four paddings")
-	local f2 = q.D.Frame({ UIPaddingOffset = 6 }) :: any
+	local f2 = q.Declaration.Frame({ UIPaddingOffset = 6 }) :: any
 	assert(childNamed(f2, "_quad_padding").PaddingTop.Offset == 6, "offset form")
-	local f3 = q.D.Frame({ UIScale = 1.5 }) :: any
+	local f3 = q.Declaration.Frame({ UIScale = 1.5 }) :: any
 	assert(childNamed(f3, "_quad_scale").Scale == 1.5, "UIScale")
 	-- 두 키가 한 인스턴스에 같이 — 자식 하나, 나중 process가 이김(H-335)
-	local f4 = q.D.Frame({ UIPadding = UDimNew(0, 1), UIPaddingOffset = 2 }) :: any
+	local f4 = q.Declaration.Frame({ UIPadding = UDimNew(0, 1), UIPaddingOffset = 2 }) :: any
 	local kids = 0
 	for _, c in f4:GetChildren() do if c.Name == "_quad_padding" then kids += 1 end end
 	assert(kids == 1, "shared managed child")
@@ -134,7 +134,7 @@ print("=== 7. Q25 (2026-09-08) — Animate 아래 같은 값 재발행: Mapped�
 do
 	mock.resetTweenLog()
 	local s = q.Source(4 :: any)
-	local f = q.D.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local f = q.Declaration.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
 	local c = childNamed(f, "_quad_round")
 	local log = mock.tweenLog
 	s:Set(10)

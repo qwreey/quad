@@ -47,7 +47,7 @@ fails. Input positions are covariant markers, so the same value *does* go into a
 ```luau
 local base = D.Modifier.GuiObject():Visible(true)
 local checked = base:AsTextButton():Text("go")                    -- CHECKED (one method per subclass)
-local forced  = base:As<<DModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
+local forced  = base:As<<DeclarationModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
 ```
 
 `:As<<T>>()` does no class check; its optional string argument only names a custom class.

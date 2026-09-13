@@ -8,7 +8,7 @@
 
 1. **코드가 진실이다.** 인용된 심볼·시그니처·에러 문자열은 `quad-base/src`·`quad-roblox/src`·`quad-types/src`와 스펙(`quad-*/test/spec.*.luau`)에서
    grep으로 확인한다. `.claude/base/`는 확정 설계, `.claude/archive/`는 기각된 설계 — 후자를 현행처럼 쓰지 않는다.
-2. **예제는 돌아야 한다.** 설치 프롤로그(`Quad:UseProvider(QuadRoblox)`)가 있어야 `q.D`가 생긴다. 스니펫은 `quad-base/test/mock.luau` 위에서
+2. **예제는 돌아야 한다.** 설치 프롤로그(`Quad:UseProvider(QuadRoblox)`)가 있어야 `q.Declaration`이 생긴다. 스니펫은 `quad-base/test/mock.luau` 위에서
    실제로 실행하고, 신 솔버(`luau-lsp --flag:LuauSolverV2=true`, `scripts/test.sh`와 같은 플래그·defs)로 타입 검사한다.
 3. **검증 안 되는 것은 지운다.** 측정 없는 성능 수치, Fusion/Vide/React 내부 비교(`.claude/reference/comparison-fusion-vide.md`가 지지하는 범위만),
    "수학적 증명" 어투, 사용자 인용문 창작, `H-nnn`/`Q-nn` 원장 번호는 사용자 문서에 두지 않는다.
@@ -99,7 +99,7 @@
 - **순환**: `A:Add(B); B:Add(A)`는 즉시 런타임 에러(~~무한 재귀~~ 정정). 성능 수치(O(1) 등)는 적지 않는다.
 
 ### 7) `Claim` 및 Studio 협업
-- **패턴**: Studio 템플릿 `:Clone()` 뒤 `q.Claim(clone, q.D.Mapper...)` — 둘째 인자는 props가 아니라 **매퍼 디스크립터**(1회용). ~~"5~10배 빠름"~~은 미실측(정정, 수치 삭제).
+- **패턴**: Studio 템플릿 `:Clone()` 뒤 `q.Claim(clone, q.Declaration.Mapper...)` — 둘째 인자는 props가 아니라 **매퍼 디스크립터**(1회용). ~~"5~10배 빠름"~~은 미실측(정정, 수치 삭제).
 - **계약 셋**: ① claim-once(이중 claim은 `nativeClaim: Instance is already claimed by quad`), ② **그려지는 직계 자식은 전부 매핑**(부분 매핑 기각 — ~~"직계 자식 전속 관할권"~~ 정정),
   ③ `PlayerGui`류 공동 소유 컨테이너는 **대상 밖**(런타임 검사 없음 — 전용 `ScreenGui`를 만들어 거기에).
 

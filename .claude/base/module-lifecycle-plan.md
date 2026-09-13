@@ -206,7 +206,7 @@ return Init
   팩토리(`RobloxFactory`)는 자기 가드 없이 ops를 뮤테이션하고 타입드
   확장(`RobloxExtension = { D: D }` — **[2026-09-03 M10]** `OnChange`
   팩토리도 같은 확장에 합류, 실제 모양은 `quad-roblox/src/init.luau`가
-  소스)만 반환한다 — `q.D`가 `Self & P`
+  소스)만 반환한다 — `q.Declaration`이 `Self & P`
   교집합으로 캐스트 0에 풀 타입이 실리는 게 이 모양의 핵심 이득
   (round14 `H-305` (d) 실측 + `luau-test` 스파이크 23 선례).
 - **플래그를 실제 작업 전에 먼저 세우는 이유**: 나중에 `InitA`↔`InitB`처럼

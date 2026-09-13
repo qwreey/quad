@@ -72,7 +72,7 @@ local Quad = require(<quad-base module>)              -- already a live instance
 local QuadRoblox = require(<quad-roblox module>).QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only
 local q = Quad:UseProvider(QuadRoblox)                -- installs D / OnChange / Animate / Tween / isTween
-local D = q.D
+local D = q.Declaration
 ```
 
 Snippets below assume this prologue.
@@ -81,8 +81,8 @@ Snippets below assume this prologue.
 - `UseProvider` is one slot per module: a *different* provider function errors
   (`UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
-  `Provider<T>`, `Context`) and the generated `D` module (`DModule.FrameModifier`,
-  `DModule.Field<T>`, …). **`q.State<T>` does not exist** — `q` is a value, not a type.
+  `Provider<T>`, `Context`) and the generated `Declaration` module (`DeclarationModule.FrameModifier`,
+  `DeclarationModule.Field<T>`, …). **`q.State<T>` does not exist** — `q` is a value, not a type.
 
 ### 1.2 Core Ontological Grammar
 
@@ -172,7 +172,7 @@ export type ButtonProps = {
     Text: string | QuadTypes.State<string>,
     -- the handler type must match the engine signature exactly, arity included
     OnClick: (inputObject: InputObject, clickCount: number) -> (),
-    Modifier: any?,   -- or DModule.IntoTextButton for a typed boundary
+    Modifier: any?,   -- or DeclarationModule.IntoTextButton for a typed boundary
 }
 
 local function Button(props: ButtonProps)
@@ -208,7 +208,7 @@ local sameThing = D.Modifier.TextButton{ BackgroundTransparency = 0.5, Text = "G
 
 local base = D.Modifier.GuiObject():Visible(true)
 local checked   = base:AsTextButton():Text("ok")            -- CHECKED: one method per subclass
-local unchecked = base:As<<DModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
+local unchecked = base:As<<DeclarationModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
 ```
 
 `:As<<T>>()` performs no class check (its optional string argument only names a custom

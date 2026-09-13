@@ -21,7 +21,7 @@ description: "D.Frame 하나와 그 안의 라벨을 만들어, props 테이블�
 ```luau
 -- (Main.client.luau 계속 — 01장에서 만든 진입점입니다)
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.D
+const D = q.Declaration
 ```
 
 ---
@@ -141,5 +141,5 @@ Dispatch.recompute: sourceList[2] is nil — a nil hole in the numeric-key part 
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `D` — Instance 생성](../reference/roblox/02-d.md) — 문자 키·숫자 키에 올 수 있는 것 전부, 숏핸드 키 넷, `D`에 별칭이 없는 클래스를 만드는 `D.New`
+- [레퍼런스: `Declaration` — Instance 생성](../reference/roblox/02-d.md) — 문자 키·숫자 키에 올 수 있는 것 전부, 숏핸드 키 넷, `D`에 별칭이 없는 클래스를 만드는 `D.New`
 - [00. 설치](./00-installation.md) §2 3단계 — 타입 검사 플래그 넷(편집기와 CI에 같은 값을 넣어야 합니다)

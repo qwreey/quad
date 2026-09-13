@@ -18,7 +18,7 @@ Studio에서 만든 GUI, `template:Clone()` 사본처럼 **이미 존재하는 �
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.D
+local D = q.Declaration
 local M = D.Mapper
 ```
 
@@ -224,5 +224,5 @@ end
 **관련**
 
 - [07. Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/) — Clone 패턴과 실전 레시피
-- [D — Instance 생성](/reference/roblox/02-d/) — props 테이블의 모양
+- [Declaration — Instance 생성](/reference/roblox/02-d/) — props 테이블의 모양
 - [Quadnomicon Vol. 7 — Instance 신원과 GC 철학](/quadnomicon/07-instance-identity-and-gc-philosophy/)

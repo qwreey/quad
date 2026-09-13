@@ -758,7 +758,7 @@ local function mockProvider(quad: any): { [any]: any }
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	installTagAttrOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	installTimers(quad) -- 2026-09-08: 시간 op 둘도 같은 프로바이더가(가상 시계 — 위 `advanceTime`)
-	return {} -- mock은 얹는 공개 표면이 없다(D 없음) — 빈 확장
+	return {} -- mock은 얹는 공개 표면이 없다(Declaration 없음) — 빈 확장
 end
 
 local function installLifetime(quad: any)

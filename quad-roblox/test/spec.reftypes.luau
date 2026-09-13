@@ -10,13 +10,13 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
-local DModule = require("../src/D")
+local DeclarationModule = require("../src/Declaration")
 type Ref<T> = QuadTypes.Ref<T>
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
 local function _neverCalled()
-	local D = q.D
+	local D = q.Declaration
 	-- 자기 클래스 박스(nil 가능·불가능 둘 다), 상위 클래스 박스, 체이닝 뒤, PreRef/PostRef
 	local rF = q.Ref(nil :: Frame?)
 	local rFixed = q.Ref(Instance.new("Frame"))
@@ -25,7 +25,7 @@ local function _neverCalled()
 	local pre = q.PreRef(nil :: Frame?):Callback(function(v) end)
 	local post = q.PostRef(nil :: Frame?)
 	-- State<Ref>: `State<T>` 불변성 — 마커로 캐스트해 만든다(8.7 캐비엇 5, OnChange·Modifier와 같은 규칙)
-	local reactive = q.Source(rF :: DModule.FrameRefMarker)
+	local reactive = q.Source(rF :: DeclarationModule.FrameRefMarker)
 	local f = D.Frame({
 		rF,
 		rFixed,

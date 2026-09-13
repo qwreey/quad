@@ -51,7 +51,7 @@ Roblox 엔진용 DOMless 반응형 UI 렌더러 `quad`의 v2 재작성. 루트 `
 
 - **코드 ↔ 정본 불일치**: 헤더가 가리키는 절과 실제 동작이 다른가(메시지·순서·에러 깊이 포함).
 - **런타임 결함**: 구체 입력 → 잘못된 출력/크래시/조용한 무시. 재현 경로(어느 공개 API를 어떤 인자로)를 반드시.
-- **타입 표면**: `quad-types/src/init.luau`, `quad-roblox/src/types.luau`, 생성물 `quad-roblox/src/D/init.luau`와
+- **타입 표면**: `quad-types/src/init.luau`, `quad-roblox/src/types.luau`, 생성물 `quad-roblox/src/Declaration/init.luau`와
   생성기 `scripts/gen-d.py` — 약속한 타입이 값에 없거나(`H-300` 관례: 마커 필드는 런타임에도 있다), 유니언 팔이
   실제 값을 거부하는가. 알려진 한계는 `base/typing-limits.md`가 소스라 거기 있는 건 제외.
 - **테스트 갭**: 정본의 계약 문장 중 `quad-*/test/spec.*.luau`가 안 짚는 것.

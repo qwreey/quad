@@ -16,7 +16,7 @@ type SlotItem<T> = QuadTypes.SlotItem<T>
 local q = Quad.New():UseProvider(QuadRoblox)
 
 local function _neverCalled()
-	local D = q.D
+	local D = q.Declaration
 	-- (1) 매핑 updateFn: Item = string, 원소 = Instance, UD = number
 	local cur = q.Source(nil :: string?)
 	local mapped = q.Slot<<Instance>>():Single(cur, function(item: any, offset: Source<number>, prev: SlotItem<Instance>?, ud: number?): (any, number?)

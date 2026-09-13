@@ -9,19 +9,19 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
-local DModule = require("../src/D")
+local DeclarationModule = require("../src/Declaration")
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
 type ButtonProps = {
 	read Text: string?,
-	read Modifier: DModule.IntoTextButton?, -- 인터페이스 `Into<TextButton>`: TextButtonModifier·상위 클래스·커스텀 구현체 전부
+	read Modifier: DeclarationModule.IntoTextButton?, -- 인터페이스 `Into<TextButton>`: TextButtonModifier·상위 클래스·커스텀 구현체 전부
 	read Ref: QuadTypes.Ref<TextButton?>?,
 	read Content: Instance?,
 }
 
 local function MaterialButton(props: ButtonProps): TextButton
-	return q.D.TextButton({
+	return q.Declaration.TextButton({
 		if props.Modifier then props.Modifier:AsTextButton() else q.None,
 		props.Ref or q.None,
 		props.Content or q.None,
@@ -32,14 +32,14 @@ end
 
 type MaterialModifier = {
 	read __quadModifier: "MaterialButtonTyped",
-	AsTextButton: (self: MaterialModifier) -> DModule.TextButtonModifier,
+	AsTextButton: (self: MaterialModifier) -> DeclarationModule.TextButtonModifier,
 	AsMaterialButtonTyped: (self: MaterialModifier) -> MaterialModifier,
 }
 
 -- `H-351`: children 자리의 Slot(정본 bind-system-plan "children 원소" 확장 규칙의 M6 팔)
 local function _slotChild()
 	local slot = q.Slot() :: QuadTypes.Slot<Instance> -- 생성자 제네릭 추론은 캐스트로(`H-354`)
-	return q.D.Frame({ slot }), q.D.ScrollingFrame({ q.D.Frame({}), slot, q.None })
+	return q.Declaration.Frame({ slot }), q.Declaration.ScrollingFrame({ q.Declaration.Frame({}), slot, q.None })
 end
 
 -- `H-355` / Q2 (a): children 자리의 Observer·EffectHandle(정본 leaf 관용구 — strict 유니언 팔)
@@ -47,7 +47,7 @@ local function _observerChild()
 	local s = q.Source(1)
 	local o = s:Observer(function() end)
 	local e = q.Effect(function() end)
-	return q.D.Frame({ o, e }), q.D.TextLabel({ q.None, o, q.D.Frame({}), e })
+	return q.Declaration.Frame({ o, e }), q.Declaration.TextLabel({ q.None, o, q.Declaration.Frame({}), e })
 end
 
 -- [2026-09-07 마커, 사용자 결정 — 공변/불변] 옛 전체형 `State<Instance>`·`Slot<Instance>` 팔이 거부하던
@@ -55,7 +55,7 @@ end
 -- State·State<Modifier>·`Slot<Frame>`에 State<TextLabel> 요소 등 아홉)은 2026-09-07 tmp 프로브로 전부 거부 확인
 -- (원장 round1 §16). `q.Slot()` 캐스트 없는 생성(`H-354`)은 그대로 안 된다 — 생성자 `T` 추론 문제라 별개.
 local function _markerChildren()
-	local frameState = q.Source(q.D.Frame({})) -- Source<Frame> — 옛 State<Instance> 불변 팔은 거부했다
+	local frameState = q.Source(q.Declaration.Frame({})) -- Source<Frame> — 옛 State<Instance> 불변 팔은 거부했다
 	local maybe = q.Source(nil :: Frame?) -- State<Instance?> — NilHandler 팔(`State<Slot|nil>` 계약)
 	local slot = q.Slot() :: QuadTypes.Slot<Frame> -- Slot<Frame>이 SlotMarker<Instance>에(공변)
 	local slotState = q.Source(slot) -- State<Slot<Frame>> — Q1의 원래 팔, 팔 추가 없이 든다
@@ -67,18 +67,18 @@ local function _markerChildren()
 	outer:Add(slot) -- Slot 요소 자리도 마커: Slot<Frame> → Slot<Instance>
 	outer:Add(frameState)
 	local got: QuadTypes.SlotItem<Instance>? = outer:Get(1) -- 출력은 전체형(SlotItem)
-	return q.D.Frame({ frameState, maybe, slot, slotState, refState, obsState, effState, got :: any }), q.D.ScrollingFrame({ outer })
+	return q.Declaration.Frame({ frameState, maybe, slot, slotState, refState, obsState, effState, got :: any }), q.Declaration.ScrollingFrame({ outer })
 end
 
 local function _neverCalled()
 	local ref = q.Ref(nil :: TextButton?)
-	local a: TextButton = MaterialButton({ Text = "a", Modifier = q.D.Modifier.TextButton():BackgroundTransparency(0.5), Ref = ref, Content = q.D.TextLabel({}) })
-	local b: TextButton = MaterialButton({ Modifier = q.D.Modifier.GuiObject():ZIndex(2) }) -- 상위 클래스 Modifier도 Into<TextButton>
+	local a: TextButton = MaterialButton({ Text = "a", Modifier = q.Declaration.Modifier.TextButton():BackgroundTransparency(0.5), Ref = ref, Content = q.Declaration.TextLabel({}) })
+	local b: TextButton = MaterialButton({ Modifier = q.Declaration.Modifier.GuiObject():ZIndex(2) }) -- 상위 클래스 Modifier도 Into<TextButton>
 	local Material = q.Modifier.TypedFactory<<MaterialModifier>>("MaterialButtonTyped")
 	q.Modifier.DefineSubtype("TextButton", "MaterialButtonTyped")
 	local c: TextButton = MaterialButton({ Modifier = Material({}) }) -- 커스텀 클래스 구현체
 	local d: TextButton = MaterialButton({})
-	local parent = q.D.Frame({ a, b, c, d })
+	local parent = q.Declaration.Frame({ a, b, c, d })
 	return parent
 end
 

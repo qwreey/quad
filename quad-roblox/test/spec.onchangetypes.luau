@@ -8,18 +8,18 @@
 
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
-local DModule = require("../src/D")
+local DeclarationModule = require("../src/Declaration")
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
 local function _neverCalled()
-	local D = q.D
+	local D = q.Declaration
 	local OnChange = q.OnChange
 	-- 주석 콜백 + 무주석 추론 + 같은 이름 둘 + 변수 경유 + State<디스크립터>
 	local pre = OnChange("Size", function(v: UDim2) end)
 	-- State<T>는 Set 파라미터 때문에 불변 — Source<단일 디스크립터>는 State<클래스 유니언>에
 	-- 안 맞으므로 클래스 유니언으로 캐스트해 만든다(반응형 자식 State<Instance>도 같은 규칙)
-	local reactive = q.Source(OnChange("Visible", function(v: boolean) end) :: DModule.FrameOnChange)
+	local reactive = q.Source(OnChange("Visible", function(v: boolean) end) :: DeclarationModule.FrameOnChange)
 	local f = D.Frame({
 		Name = "typed",
 		OnChange("Position", function(v: UDim2) end),
@@ -55,7 +55,7 @@ local function _readSurface()
 	local a = q.OnChange("AbsoluteSize", function(v: Vector2) end)
 	local b = q.OnChange("AbsolutePosition", function(v: Vector2) end)
 	local c = q.OnChange("TextBounds", function(v: Vector2) end)
-	return q.D.Frame({ a, b }), q.D.TextLabel({ c })
+	return q.Declaration.Frame({ a, b }), q.Declaration.TextLabel({ c })
 end
 
 print("=== ALL PASS ===")

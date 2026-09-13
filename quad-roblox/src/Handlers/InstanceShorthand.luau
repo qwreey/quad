@@ -24,7 +24,7 @@
 	still reaches this handler as nil through NoneHandler's recursion.
 
 	Managed child: created through the module's own instance path
-	(`quad.D.New(class)({ Name = childName })` — `Instance.new` → `nativeClaim`
+	(`quad.Declaration.New(class)({ Name = childName })` — `Instance.new` → `nativeClaim`
 	→ drive, so gcconn/gchold are set up exactly like any quad instance,
 	`UI-5`), parented by this handler (physical attach — the same place
 	InstanceChildHandler does it), and remembered in a `Relate` keyed by
@@ -76,8 +76,8 @@ local function install(quad: any)
 	local function ensureManagedChild(inst: any, entry: any): any
 		local child = managed:GetStrong(inst, entry.childName)
 		if child == nil then
-			-- late read: `quad.D` is merged by UseProvider after this install ran (`H-174`)
-			child = quad.D.New(entry.class)({ Name = entry.childName })
+			-- late read: `quad.Declaration` is merged by UseProvider after this install ran (`H-174`)
+			child = quad.Declaration.New(entry.class)({ Name = entry.childName })
 			child.Parent = inst
 			managed:SetStrong(inst, entry.childName, child)
 		end

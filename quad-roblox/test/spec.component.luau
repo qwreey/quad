@@ -27,10 +27,10 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(installShorthand) :: any).UDim = { new = function(s: number, o: number) return { Scale = s, Offset = o } end }
-;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 
-local D, None, Modifier = q.D, q.None, q.Modifier
+local D, None, Modifier = q.Declaration, q.None, q.Modifier
 
 -- ── 예제 ① 단일 루트 컴포넌트 — 정본 관용구 그대로 ─────────────────────────
 -- props: { Text: string?, Corner: number?, Modifier: TextButtonModifier?, Ref: Ref<TextButton?>?, Content: Instance? }

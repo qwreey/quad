@@ -23,7 +23,7 @@ local gameShim = mock.gameShim(REFLECTED)
 local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installEvent) :: any).game = gameShim
-;(getfenv(q.D.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.isInst = mock.isMockInstance
 
 -- "이미 있는 트리" — Studio/Clone 사본의 mock 대역
@@ -41,7 +41,7 @@ local function makeTemplate()
 	return root, title, list, inner
 end
 
-local M = q.D.Mapper
+local M = q.Declaration.Mapper
 
 print("=== 1. 기본 Claim — 소유 + 매핑 자식 props 적용 + 배열 슬롯 교체·부기 ===")
 do
@@ -115,7 +115,7 @@ print()
 print("=== 5. New 자식 혼입(§7-3) — 매핑과 생성이 한 배열에 ===")
 do
 	local root, title = makeTemplate()
-	local made = q.D.TextLabel({ Text = "fresh" })
+	local made = q.Declaration.TextLabel({ Text = "fresh" })
 	q.Claim(root, M.Frame(M.Root)({
 		M.TextLabel("Title")({ Text = "mapped" }),
 		made,
@@ -152,13 +152,13 @@ print("=== 7. 탐사자 승격 — New 배열의 디스크립터 no-match / Clai
 do
 	-- §2 load-bearing: New children엔 MapperDescriptor가 오면 안 되고, 오면 no-match
 	local ok, err = pcall(function()
-		q.D.Frame({ M.TextLabel("X")({}) })
+		q.Declaration.Frame({ M.TextLabel("X")({}) })
 	end)
 	assert(not ok and string.find(tostring(err), "no handler matched", 1, true) ~= nil, "descriptor in New children must hit no-match: " .. tostring(err))
 	assert(string.find(tostring(err), "brand: MapperDescriptor", 1, true) ~= nil, "`H-346`: the no-match names the brand: " .. tostring(err))
 
 	-- Claim 표면 경유의 이중 claim(New-made inst)
-	local made = q.D.Frame({})
+	local made = q.Declaration.Frame({})
 	local ok2, err2 = pcall(function()
 		q.Claim(made, M.Frame(M.Root)({}))
 	end)
@@ -168,7 +168,7 @@ do
 	-- 깊이 2 매핑 자식의 반응형 + New 혼입 동시(탐사 스파이크 A 승격)
 	local root, _, list, inner = makeTemplate()
 	local src = q.Source("d2")
-	local made2 = q.D.TextLabel({ Text = "mixed" })
+	local made2 = q.Declaration.TextLabel({ Text = "mixed" })
 	q.Claim(root, M.Frame(M.Root)({
 		M.Frame("List")({
 			M.TextLabel("Inner")({ Text = src }),

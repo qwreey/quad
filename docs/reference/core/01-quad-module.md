@@ -15,7 +15,7 @@ description: require 결과가 곧 기본 인스턴스 — New/RunInit/AddPlugin
 local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 local QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
-local D = q.D
+local D = q.Declaration
 ```
 
 ## `q.New()`
@@ -115,7 +115,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 |---|---|---|
 | `providerFn` | `(Self) -> P` | 백엔드 프로바이더 함수 — 모듈의 주입 슬롯을 채우고 백엔드 고유 표면을 돌려줍니다 |
 
-**반환** — 같은 모듈. 타입은 `Self & P`이므로 여기서부터 `q.D`/`q.Tween` 같은 백엔드 표면이 타입에 실립니다.
+**반환** — 같은 모듈. 타입은 `Self & P`이므로 여기서부터 `q.Declaration`/`q.Tween` 같은 백엔드 표면이 타입에 실립니다.
 
 **동작** — 병합 자체는 `AddPlugin`과 같지만 계약이 다릅니다: **모듈당 프로바이더는 하나**이고, 잠금은 프로바이더 함수의 identity로 겁니다.
 
