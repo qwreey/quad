@@ -109,8 +109,16 @@ def bump(new):
         write(f, s)
     cl = read('CHANGELOG.md')
     head = f'## [{new}] - {datetime.date.today().isoformat()}'
-    if '## [Unreleased]' in cl:
-        cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n## {head[3:]}', 1)
+    # [2026-09-13 사용자] [Unreleased] 아래에는 고정 안내문 한 줄과 `---`가 있다(비어 있을 때 다음 버전 헤딩이 붙어 보이던 것을 가른다).
+    # 안내문·hr은 남기고 그 사이의 항목만 새 버전 헤딩 아래로 옮긴다. 안내문/hr이 없으면 옛 방식(헤딩 바로 뒤에 삽입).
+    m = re.search(r'## \[Unreleased\]\n\n(_[^\n]*_)\n\n(.*?)---\n', cl, re.S)
+    if m:
+        entries = m.group(2).strip('\n')
+        body = (entries + '\n\n') if entries else ''
+        cl = cl[:m.start()] + f'## [Unreleased]\n\n{m.group(1)}\n\n---\n\n{head}\n\n{body}' + cl[m.end():].lstrip('\n')
+        write('CHANGELOG.md', cl)
+    elif '## [Unreleased]' in cl:
+        cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n{head}', 1)
         write('CHANGELOG.md', cl)
     print(f'bumped {old} -> {new}; CHANGELOG [Unreleased] cut to {head}')
     print(f'next (after commit): git tag -a {new} -m "quad {new}" && git push origin {new}   # tags do not follow branch sync — push them to github/upstream too (conventions 2026-09-11)')
