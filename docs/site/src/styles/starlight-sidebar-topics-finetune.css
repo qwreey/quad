@@ -27,4 +27,13 @@
             background-color: var(--sl-color-text-accent);
         }
     }
+
+    /* 항상 최상위에 있도록 - 오직 데스크톱에서만 작동함. */
+    /* 잘 작동하지 않아 적용 보류. 작은 화면에서 가림이 심해 필요에 비해 부작용 큼. */
+    /* @media screen and (min-width: 768px) {
+        position: sticky;
+        top: 1rem;
+        box-shadow: 0px -1rem 2rem 0 var(--sl-color-bg-sidebar);
+        background: var(--sl-color-bg-sidebar);
+    } */
 }

@@ -4,10 +4,20 @@ main .content-panel .hero {
 	padding-block: 1.5rem 0.5rem;
 }
 
+[data-has-hero] .content-panel {
+	@media screen and (min-width: 768px) {
+		padding-left: 3rem;
+		padding-right: 3rem;
+	}
+}
+
 [data-has-hero] .sl-markdown-content {
 	/* Finetune - 개행선 */
 	> hr {
-		margin-block: 4.75rem;
+		margin-block: 2.75rem;
+		@media screen and (min-width: 768px) {
+			margin-block: 4.75rem;
+		}
 	}
 
 	/* Finetune - 해딩 */
@@ -33,7 +43,7 @@ main .content-panel .hero {
 
 	/* Finetune - 최상위 부분에 있어서 좀 더 바닥 margin 을 높게 유지해 최상위 영역이 복잡해보이지 않도록 */
 	.version-line {
-		margin-bottom: 8rem;
+		margin-bottom: 6.8rem;
 		margin-top: 1rem;
 	}
 }

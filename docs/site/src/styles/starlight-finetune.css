@@ -18,3 +18,39 @@ header>.header {
         height: calc(var(--sl-nav-height) * .9 - 2 * var(--sl-nav-pad-y));
     }
 }
+
+/* 푸터 영역에 대한 손질 */
+footer {
+    > .pagination-links {
+        .link-title {
+            /* 기본 페이지 전환 카드가 너무 크고 산만함. wrap 되어 분산이 심하기에 작게 줄임. 기본 2xl*/
+            font-size: var(--sl-text-lg);
+        }
+    }
+}
+
+/* 오른쪽 사이드바에 대한 파인튠 */
+.right-sidebar > .right-sidebar-panel {
+    h2 {
+        /* 너무 굵어 시각적으로 분산을 일으킴. 작게 줄임 */
+        font-weight: 500;
+    }
+}
+
+/* 탑바에 약간 블러 추가 */
+header, mobile-starlight-toc>nav {
+  /* Make the background semi-transparent */
+  /* customCss는 Starlight의 @layer 밖이라 !important 없이도 이긴다 */
+  background-color: color-mix(in srgb, var(--sl-color-bg-nav) 85%, transparent);
+  
+  /* Apply the blur effect */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); /* Safari support */
+
+  /* Optional: Make the bottom border subtle */
+  border-bottom: 1px solid var(--sl-color-gray-5);
+}
+
+site-search>button {
+    background-color: color-mix(in srgb, color-mix(in srgb, var(--sl-color-black) 40%, transparent) 95%, black);
+}

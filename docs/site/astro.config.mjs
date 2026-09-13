@@ -51,6 +51,7 @@ export default defineConfig({
 				'./src/styles/starlight-sidebar-topics-finetune.css',
 				'./src/styles/starlight-finetune.css',
 				'./src/styles/starlight-mermaid-zoom.css',
+				'./src/styles/starlight-quiz-finetune.css',
 				'./src/styles/starlight-landing.css', // [2026-09-14] 랜딩 여백·FAQ summary 굵기 — 메인이 관리
 			],
 			locales: {

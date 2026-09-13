@@ -1,0 +1,4 @@
+/* 퀴즈 영역과 콘텐츠 영역이 너무 가까움. 머진을 추가 */
+sl-quiz-results {
+    margin-top: 4rem;
+}
