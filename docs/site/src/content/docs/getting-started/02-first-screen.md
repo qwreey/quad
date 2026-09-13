@@ -43,7 +43,7 @@ card.Parent = screen
 **실행하면** 화면 한가운데에 모서리가 둥근 어두운 사각형이 하나 뜹니다.
 
 <details>
-<summary><strong><code>D.Frame { … }</code>이 돌려주는 건 뭔가요?</strong></summary>
+<summary><strong><code>D.Frame &#123; … &#125;</code>이 돌려주는 건 뭔가요?</strong></summary>
 
 **부른 그 순간 만들어진 진짜 Roblox Instance입니다.** 나중에 렌더러가 만들어 줄 "설계도"를 받은 게 아닙니다. 그래서 이렇게 바로 읽힙니다.
 
@@ -131,7 +131,6 @@ Dispatch.recompute: sourceList[2] is nil — a nil hole in the numeric-key part 
 물음표까지가 여러분에게 하는 말입니다 — "2번 자리가 비었다, `q.None`으로 메꿔라". 세미콜론 뒤는 확장을 만드는 사람을 위한 힌트라 지금은 몰라도 됩니다. 맨 끝이 `nil`인 것은 그냥 거기서 끝난 것으로 읽혀 넘어가지만, 뒤에 원소가 하나라도 더 붙는 순간 구멍이 되므로 자리와 무관하게 비우지 않는 습관이 안전합니다.
 
 </details>
-<!-- mock 실측 2026-09-11: gs.nilhole.luau — 중간 nil은 위 에러 verbatim, 끝 nil은 자식 1개로 통과, q.None으로 메꾸면 자식 2개 -->
 
 자리를 비워 둬야 할 때를 위한 값이 그래서 하나 있습니다 — `q.None`입니다. 구멍 대신 이것을 놓으면 자리는 차 있되 아무것도 만들지 않습니다. 지금은 숫자 키 자리에 자식만 직접 적고 있으니 쓸 일이 없고, [11장](/getting-started/11-components/)에서 컴포넌트가 바깥에서 뭔가를 넘겨받기 시작하면 실제로 필요해집니다.
 

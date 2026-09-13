@@ -20,7 +20,15 @@
     "astro": "^7.3.2",
     "astro-mermaid": "^2.1.0",
     "mermaid": "^11.17.2",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.4",
+    "starlight-changelogs": "^0.7.0",
+    "starlight-contextual-menu": "^0.1.5",
+    "starlight-image-zoom": "^0.16.0",
+    "starlight-markdown": "^0.1.5",
+    "starlight-md-txt": "^0.1.0",
+    "starlight-quiz": "^1.0.2",
+    "starlight-sidebar-swipe": "^0.3.2",
+    "starlight-sidebar-topics": "^0.9.0"
   },
   "devDependencies": {
     "jsdom": "^30.0.1",

@@ -63,7 +63,7 @@ Slot: <T>(initial: { SlotElement<T> }?) -> Slot<T>
 **동작**
 
 - 타입 인자를 안 주면 `q.Slot()`은 `Slot<unknown>`으로 추론됩니다.
-<!-- strict 실측 2026-09-11: consumer/P19.luau — q.Slot():Get(1)을 number에 대입하면 'Slot<unknown>'이 유니언에 보인다 --> strict 모드에서는 `q.Slot<<Instance>>()`처럼 **명시적으로 인스턴스화**하세요.
+strict 모드에서는 `q.Slot<<Instance>>()`처럼 **명시적으로 인스턴스화**하세요.
 - `initial`을 주면 — **빈 `Slot{}`이라도** — 그 Slot은 수동 CRUD Slot으로 고정됩니다. 나중에 `:List`를 걸 수 없습니다.
 - `initial`은 **평범한 배열**이어야 합니다. 값 하나를 괄호 없이 넘기거나(`Slot(frame)`) 정수가 아닌 키를 섞으면 에러입니다.
   - `Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)`
@@ -475,7 +475,6 @@ Detach: Detach -- { read __quadDetach: true }
 **동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
 
 보관은 `Owned`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `Owned = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
-<!-- mock 실측 2026-09-11: gs.owned.luau — Owned=true는 같은 인스턴스가 prev로 돌아옴(made 2), Owned=false는 prev nil·새로 만듦(made 3), 둘 다 옛 원소 파괴 안 됨 -->
 
 **예제**
 

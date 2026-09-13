@@ -41,7 +41,6 @@ screen:Destroy()
 ```
 
 **실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것이 같이 멈춥니다. `:Observer`는 멈추고, `q.Effect`와 `q.OnDestroyed`는 각각 cleanup과 콜백이 **한 번 돈 뒤** 끝납니다. 07·08장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다. `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 `Destroy()`한 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
-<!-- mock 실측 2026-09-11: gs.teardown.luau — screen:Destroy() 뒤 자리에 묶인 Observer는 멈추고 Effect cleanup 1회, :Subscribe()한 강한 구독은 계속 돈다 -->
 
 ---
 

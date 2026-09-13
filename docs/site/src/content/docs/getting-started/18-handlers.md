@@ -50,7 +50,6 @@ end
 | 문자 키 `Activated`에 함수(04) | `Event` |
 | **숫자 키든 문자 키든** `q.Source(...)`(03) | `StoreBind` |
 
-<!-- mock 실측 2026-09-11: gs.handlers9.luau — 위 아홉 자리의 getHandler(...).name -->
 
 앞 장들이 하나씩 "숫자 키 자리엔 자식만 오는 게 아니다"라고 말해 온 것이 이 표입니다. 자식
 인스턴스는 **특권을 가진 것이 아니라** 저 목록의 한 줄(`InstanceChild`)일 뿐입니다.
@@ -120,7 +119,6 @@ print(label.Text)   --> "B"    -- a는 이제 이 자리와 무관하다
 
 **실행하면** 마지막 줄이 `B` 그대로입니다. `which`가 `b`를 가리키는 순간 `a`를 보던 아래 칸이
 통째로 걷혔기 때문입니다. 다음 절이 그 "걷힌다"를 봅니다.
-<!-- mock 실측 2026-09-11: gs.ch18.luau "18 §2 C" — A / A2 / B / B -->
 
 ---
 
@@ -155,7 +153,6 @@ host:Destroy()                            --> B cleanup
 **실행하면** `A cleanup`이 자리를 떠나는 시점에 **정확히 한 번** 찍힙니다. 그 뒤로 `count`를 아무리
 바꿔도 A는 다시 돌지 않습니다. 07장이 cleanup이 도는 네 자리 중 하나로 꼽았던 "그 숫자 키 자리를
 다른 값으로 갈아 끼울 때"가 이것입니다.
-<!-- mock 실측 2026-09-11: gs.effectswap.luau — A run 0 / A cleanup / A run 1 / B run 1 / A cleanup / B cleanup / B run 2 / B cleanup -->
 
 `Ref`도 같은 식으로 빠집니다. 자리를 떠나는 상자는 **비워집니다.**
 
@@ -188,7 +185,6 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 | `EffectHandle` | 떠나는 것의 cleanup이 **한 번** 돕니다. 새 것은 놓이기 전, 만들어질 때 이미 한 번 돌아 있습니다 |
 | 자식 `Instance` | 옛 것은 트리에서 **떼어지기만** 하고 파괴되지 않습니다(10장 6절 그대로) |
 
-<!-- mock 실측 2026-09-11: gs.handlerslot.luau — 여섯 종류를 각각 q.Source에 담아 :Set으로 갈아 끼운 관측 -->
 
 `Attr` 줄만 결이 다릅니다 — `Tag`처럼 "차이만"이 아닙니다. 05장 3절이 "교체하면 옛 속성 값이 그대로
 남는다"를 함정으로 짚은 것이 이 줄입니다.

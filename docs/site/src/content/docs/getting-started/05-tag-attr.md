@@ -46,7 +46,6 @@ const card = D.Frame {
 ```
 
 **실행하면** 이 `Frame`이 `CollectionService`에 태그 `Card`로 잡힙니다.
-<!-- 2026-09-10 Studio 실측 -->
 
 ```luau
 -- (확인용 — 화면 밖 아무 스크립트에서)
@@ -100,7 +99,6 @@ const card = D.Frame {
 `{Card, Even}`. 정적으로 적은 `Card`는 교체 내내 남습니다(1절의 자리별 셈 그대로).
 엔진 호출도 **진짜 바뀐 이름에만** 나갑니다 — 클릭 한 번이 만드는 것은 `removeTag:Even`과
 `addTag:Odd` 둘뿐입니다.
-<!-- 2026-09-10 Studio 실측 -->
 
 "진짜 바뀐 이름에만"을 한 번 더 짚어 둘 만합니다. 파이프가 새 `Tag`를 내놓을 때 quad가 하는 일은
 **옛 이름 집합과 새 이름 집합을 대 보는 것**입니다 — 빠진 이름만 떼고, 생긴 이름만 붙입니다.
@@ -111,7 +109,6 @@ const card = D.Frame {
 count:Set(2)   -- 짝수 → 짝수: 집합이 {Card, Even} 그대로라 엔진 호출 0
 count:Set(3)   -- 짝수 → 홀수: removeTag:Even, addTag:Odd 둘
 ```
-<!-- mock 실측 2026-09-11: gs.ch18.luau "05 §2 A" — Set(2) 엔진 호출 0, Set(3) removeTag:Even addTag:Odd -->
 
 <details>
 <summary><strong>바뀔 때마다 태그를 전부 떼었다 다시 붙이는 건 아닌가요?</strong></summary>
@@ -160,7 +157,6 @@ card:GetAttributes()         --> {Active = true, Kind = "counter", Step = 1}
 active:Set(false)            -- 이제 {Active = false, Kind = "counter", Step = 1}
 active:Set(q.None)           -- 이제 {Kind = "counter", Step = 1}   — Active가 사라진다
 ```
-<!-- 2026-09-10 Studio 실측 -->
 
 <details>
 <summary><strong><code>Attr</code> 값을 지우려면요?</strong></summary>
@@ -177,7 +173,6 @@ active:Set(q.None)           -- 이제 {Kind = "counter", Step = 1}   — Active
 네 번째가 함정입니다. 자리에서 물러나는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
 손대지 않습니다. 리터럴 `nil`이 거부되는 것은 평범한 테이블이 `nil`을 담을 수 없어 항목이 조용히
 사라지기 때문이고, `State` 안의 `nil`은 그 문제가 없어 그대로 삭제로 흐릅니다.
-<!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 바인딩된 State가 nil을 내놓으면 속성이 삭제된다 -->
 
 </details>
 
@@ -227,7 +222,6 @@ print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 co
 | `A > B` / `A >> B` | 직계 자식 / 자손 | `.Card >> TextLabel` |
 | `A, B` | 합집합 | `Frame, TextLabel` |
 
-<!-- 2026-09-10 Studio 실측(Studio 버전 0.738) -->
 
 </details>
 

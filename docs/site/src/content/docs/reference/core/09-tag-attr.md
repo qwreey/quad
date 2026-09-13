@@ -52,7 +52,6 @@ Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)
 **참조 계수로 붙습니다.** 한 인스턴스의 여러 자리에서 같은 이름을 얹으면 자리마다 세어지고, 마지막 자리가 물러날 때 비로소 엔진에서 떨어집니다. 같은 불변 `Tag` 객체를 두 자리에 놓아도 두 번으로 셉니다. 엔진 호출은 이름별로 묶여 한 번에 나갑니다.
 
 **자리의 `Tag`가 갈릴 때 엔진으로 나가는 것은 옛 집합과 새 집합의 차이뿐입니다** — 빠진 이름만 `removeTag`, 생긴 이름만 `addTag`, 각각 한 번에 묶여서. 두 집합이 같으면 호출이 없습니다.
-<!-- mock 실측 2026-09-11: gs.handlerslot.luau — {Card,Even}→{Card,Odd}는 removeTag:Even addTag:Odd, 같은 집합이면 호출 0 -->
 
 ## `q.Tag(...names)`
 
@@ -242,7 +241,6 @@ type AttrConstructor = setmetatable<{
 | 그 `Attr` 값 객체를 다른 것으로 **교체**한다 | 옛 속성 값이 엔진에 **그대로 남습니다** |
 
 네 번째가 중요합니다. 자리에서 물러나는 `Attr`은 구독을 끊고 이름 소유권만 반납할 뿐, 엔진 쪽에는 손대지 않습니다. 지우고 싶으면 명시적으로 `q.None`(또는 바인딩된 `State`의 `nil`)을 보내야 합니다. **리터럴** `nil`이 그 자리에서 거부되는 것은 평범한 테이블이 `nil`을 담을 수 없어 항목이 조용히 사라지기 때문이고, 그래서 리터럴 자리에서 지우기의 유일한 표현은 `q.None`입니다.
-<!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 State의 nil이 삭제로 흐른다 -->
 
 ## `q.Attr(...)`
 

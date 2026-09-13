@@ -34,8 +34,8 @@ const box = D.Frame {
 print(#box:GetChildren())   --> 2
 ```
 
-<img class="light-only" src="/assets/slot-card.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
-<img class="dark-only" src="/assets/slot-card-dark.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
+<img class="light-only" src="/assets/slot-card.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다" />
+<img class="dark-only" src="/assets/slot-card-dark.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다" />
 
 **실행하면** 상자 안에 라벨 둘이 보입니다. `box`의 숫자 키 자리에는 원소가 하나(`items`)뿐인데 자식은 둘입니다 — Slot이 자기가 든 만큼의 자리를 차지하기 때문입니다.
 
@@ -128,8 +128,8 @@ print(slotA.Offset:Get(), slotA.Length:Get())   --> 1  2
 print(slotB.Offset:Get(), slotB.Length:Get())   --> 3  1
 ```
 
-<img class="light-only" src="/assets/slot-panel.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1">
-<img class="dark-only" src="/assets/slot-panel-dark.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1">
+<img class="light-only" src="/assets/slot-panel.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1" />
+<img class="dark-only" src="/assets/slot-panel-dark.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1" />
 
 `slotA` 앞에는 고정 자식 하나가 있으니 `Offset`이 1이고, `slotB` 앞에는 그 하나에 `slotA`의 둘이 더해져 3입니다.
 
@@ -171,8 +171,8 @@ print(innerA.Offset:Get(), innerA.Length:Get())                      --> 0  2
 print(innerB.Offset:Get(), innerB.Length:Get())                      --> 3  1
 ```
 
-<img class="light-only" src="/assets/slot-host.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합">
-<img class="dark-only" src="/assets/slot-host-dark.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합">
+<img class="light-only" src="/assets/slot-host.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합" />
+<img class="dark-only" src="/assets/slot-host-dark.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합" />
 
 `innerB`의 `Offset`이 3인 것은 그 위에 `Inner1`·`Inner2`(innerA의 둘)와 `Outer`(하나)가 있기 때문입니다. `outer` 자신은 `host`의 첫 자리라 `Offset` 0이고, 안쪽 넷을 전부 품어 `Length` 4입니다.
 
@@ -208,7 +208,6 @@ slotB:Add(D.TextLabel {
 ```
 
 **실행하면** `B2`의 `LayoutOrder`가 6으로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
-<!-- mock 실측 2026-09-11: gs.polish4.luau — slotB.Offset 4, B2 LayoutOrder 6, slotA에 A4를 더 넣으면 7 -->
 
 여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](/getting-started/13-lists/)).
 
@@ -249,13 +248,11 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
 아닙니다. 이 자리를 맡는 것은 **자식 인스턴스를 맡는 그 처리기 그대로**입니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 부기에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [18장](/getting-started/18-handlers/)에서 봅니다.
-<!-- mock 실측 2026-09-11: gs.stateinst.luau — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 Owned=false :Single)은 Slot의 요소로 State를 넣을 때(Elements.luau)에만 맞는 것이었다 -->
 
 </details>
 
 `LayoutOrder`처럼 이 자리의 `Offset` 값이 필요하면 [13장](/getting-started/13-lists/)의 `:Single`을 직접 걸어야 합니다.
 
-<!-- mock 실측 2026-09-11: gs.refprobe.luau G1~G4(1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨) · gs.refprobe2.luau J3/J4(떼어진 A는 Parent nil, 다시 Set하면 돌아온다) -->
 
 ---
 

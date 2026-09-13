@@ -230,7 +230,6 @@ local list = D.Frame {
     Rows { Items = { "a", "b" } },   -- 자식 셋: 머리 + a + b
 }
 ```
-<!-- mock 실측 2026-09-11: gs.polish3.luau "how-to 01 Slot-returning component" — 자식 3; strict 실측 consumer/P17.luau exit 0 -->
 
 ---
 

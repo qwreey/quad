@@ -2,6 +2,9 @@
 title: "03. 값이 흐르게 하기 — 원천에서 프로퍼티까지"
 description: "값의 원천을 만들고, 중간에 값을 처리하는 파이프를 끼우고, 그 끝을 프로퍼티에 꽂아 화면이 값을 따라오게 만듭니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **대상 독자**: [02. 첫 화면](/getting-started/02-first-screen/)을 끝낸 개발자
 > **목표**: 값 하나를 바꿨을 때 화면이 저절로 따라오게 만들고, 그 길에 파이프를 하나 끼워 보기
 
@@ -149,7 +152,37 @@ flowchart TB
 
 ---
 
+## 이해 점검
+
+<Quiz title={"파이프 콜백이 받는 값"}>
+
+`count:Compute(function(c) ... end)`에서 콜백이 받는 `c`는 무엇인가요?
+
+- [ ] 이미 계산이 끝난 숫자 값 그 자체입니다
+- [x] 값을 담은 핸들이라 `c:Get()`으로 꺼내야 합니다
+- [ ] 파이프가 다음에 낼 이전 결과값(`previous`)입니다
+
+파이프 콜백의 첫 인자는 그 파이프가 지켜보는 노드의 핸들이라 `c:Get()`으로 값을 꺼냅니다. 둘째 인자로 오는 `previous`는 이 파이프의 직전 결과값이고, 첫 인자와는 다른 것입니다.
+
+</Quiz>
+
+<Quiz title={"Source와 State의 관계"}>
+
+`Source`와 `State`의 관계로 옳은 것은 무엇인가요?
+
+- [ ] `State`에도 `q.State(...)`라는 공개 생성자가 있어 값을 직접 만들 수 있습니다
+- [x] 모든 `Source`는 그대로 `State`이므로, `State`를 요구하는 자리에 `Source`를 언래핑 없이 그대로 넘길 수 있습니다
+- [ ] `Source`는 `State`와 달리 `:Compute`나 `:With` 같은 메소드를 갖지 않습니다
+
+`State`는 읽기만 되는 파생 노드라 공개 생성자가 없고(`q.State(...)` 같은 것은 없습니다), `Source`는 `State`의 메소드를 전부 가진 채 `:Set`·`:Emit`·`.Revision`만 더 갖습니다. 그래서 `State` 자리에 `Source`를 그대로 꽂을 수 있습니다.
+
+</Quiz>
+
+---
+
 ## 더 알고 싶다면
 
 - [레퍼런스: `Source`](/reference/core/02-source/) — `:Set`이 같은 값에도 늘 전파하는 이유, 제자리 변경을 알리는 `:Emit`
 - [레퍼런스: `State`](/reference/core/03-state/) — `:Get`의 lazy 계산, `:Compute`의 인자 검증, 구독 범위만 넓히는 `:With`, `:Apply`와 `:Gate`
+
+<QuizResults />

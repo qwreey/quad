@@ -27,3 +27,71 @@
 	--sl-color-gray-7: #f9f5f4;
 	--sl-color-black: #ffffff;
 }
+
+/* [2026-09-13 코디네이터 지시] mermaid 다이어그램 클릭 확대 — 스크립트는 public/scripts/mermaid-zoom.js,
+   astro.config.mjs의 starlight().head가 모든 페이지에 붙인다. astro-mermaid가 그린 svg는 원래 크기가
+   작아서(콘텐츠 폭에 맞춘 인라인 렌더) GitHub처럼 확대해 볼 수 있게 만든다. */
+pre.mermaid[data-processed] {
+	cursor: zoom-in;
+}
+.mermaid-zoom-dialog {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	max-width: 100vw;
+	max-height: 100vh;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: var(--sl-color-bg);
+	overscroll-behavior: contain;
+}
+.mermaid-zoom-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.6);
+}
+.mermaid-zoom-wrap {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: grab;
+	touch-action: none;
+}
+.mermaid-zoom-wrap.dragging {
+	cursor: grabbing;
+}
+.mermaid-zoom-wrap svg {
+	transition: transform 0.05s linear;
+	will-change: transform;
+}
+.mermaid-zoom-close {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	z-index: 1;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--sl-color-gray-5);
+	background: var(--sl-color-bg-nav);
+	color: var(--sl-color-white);
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+}
+.mermaid-zoom-hint {
+	position: absolute;
+	bottom: 1rem;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	padding: 0.4rem 0.8rem;
+	border-radius: 999px;
+	background: var(--sl-color-bg-nav);
+	color: var(--sl-color-gray-2);
+	font-size: 0.8rem;
+	white-space: nowrap;
+}

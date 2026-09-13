@@ -37,7 +37,6 @@ print(buttonRef.Value.ClassName) --> "TextButton"
 ```
 
 **실행하면** 출력 창에 `TextButton`이 찍힙니다.
-<!-- mock 실측 2026-09-11: gs.refprobe.luau A1 — Ref가 채워지고 ClassName이 나온다 -->
 
 `q.Ref<<TextButton?>>(nil)`의 꺾쇠 둘이 낯설 수 있습니다.
 
@@ -56,7 +55,6 @@ const b = q.Ref<<TextButton?>>(nil)     -- Ref<TextButton?> — 비어 있다가
 `Ref<nil>`을 그대로 숫자 키 자리에 놓으면 타입 검사가 그 자리에서 막습니다(`--!strict` 기준). `?`가 붙는 것은 **처음엔 비어 있기** 때문입니다. 숫자 키 자리에 놓은 `Ref`는 그 자리가 처리되기 전까지 `nil`이라, 사실상 항상 `T?` 모양입니다.
 
 같은 표기가 뒤 장들에서도 계속 나옵니다 — 예를 들어 `q.Slot<<Instance>>()`.
-<!-- strict 실측 2026-09-11: consumer/P5.luau — D.Frame { q.Ref(nil) }은 'Expected this to be … but got Ref<nil>'로 거부됨 -->
 
 </details>
 
@@ -87,7 +85,6 @@ const buttonRef = q.PreRef<<TextButton?>>(nil)
 ```
 
 **실행하면** 버튼을 누를 때 숫자가 오르면서 버튼이 반투명해집니다 — `BackgroundTransparency`가 `0`에서 `0.5`로 바뀝니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 3a/3b — 클릭 전 0, 클릭 후 0.5 -->
 
 **같은 props 안에서 자기 인스턴스를 쓸 때는 `PreRef`를 권합니다.** 숫자 키 자리의 위치와 무관하게 먼저 채워지므로, 이벤트 핸들러든 프로퍼티 계산이든 그 상자가 비어 있는 것을 볼 일이 없습니다.
 
@@ -96,7 +93,6 @@ const buttonRef = q.PreRef<<TextButton?>>(nil)
 ```
 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 ```
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 3c — 빈 Ref에 :Unwrap() -->
 
 **규약이지 강제가 아닙니다.** `:Unwrap()`은 "여기서는 반드시 차 있다"를 아는 자리에서만 쓰고, 확신이 없으면 `if ref.Value then`으로 가드하세요.
 
@@ -125,7 +121,6 @@ const card = D.Frame {
 ```
 
 **실행하면** `상자: nil`이 먼저 찍히고(등록 시점엔 비어 있으니까), 카드가 만들어지면서 `상자: TextButton`이 이어서 찍힙니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 4 — 호출 순서 nil → TextButton -->
 
 기다렸다가 **그 줄에서 이어서 쓰고 싶다면** `ref:Wait()`이 있습니다. 다만 성질이 하나 있습니다 — **`:Wait()`은 언제나 다음번 채워짐을 기다립니다.** 이미 차 있어도 기다립니다. 그래서 관용구는 둘을 합친 모양입니다.
 
@@ -138,7 +133,6 @@ end)
 ```
 
 **실행하면** 상자가 이미 차 있으면 그 줄에서 곧바로 찍히고, 아직이면 채워지는 순간 찍힙니다. `:Wait()`을 인자 없이 부르려면 **yield 할 수 있는 코루틴 안**이어야 해서 `task.spawn`으로 감쌌습니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 5a/5b/5c, gs.gs4probe.luau W1~W3 — coroutine.create/resume로 확인(task는 CLI에 없음). 빈 상자면 suspended로 대기하다 채워질 때 진행, 이미 차 있으면 즉시 통과. :Wait():Unwrap() 형태는 consumer/P5.luau에서 신 솔버 strict exit 0 -->
 
 <details>
 <summary><strong>왜 이미 차 있어도 기다리나요?</strong></summary>
@@ -173,7 +167,6 @@ PreRef: already fired — a PreRef is one-shot, make a new one for each instance
 **결론은 하나입니다 — `Ref`는 인스턴스마다 새로 만듭니다.** 목록처럼 인스턴스가 계속 갈리는 자리라면 `Ref`를 돌려 쓰지 말고, 항목을 만드는 그 자리에서 하나씩 만드세요.
 
 </details>
-<!-- mock 실측 2026-09-11: gs.refprobe.luau B1(살아 있을 때 에러)·B2(Destroy 뒤 재사용은 통과, .Value는 죽은 옛 인스턴스)·A2(Destroy해도 안 비워짐)·C1(PreRef 일회용) -->
 
 ---
 
@@ -201,7 +194,6 @@ const card = D.Frame {
 ```
 
 **실행하면** `자식 수: 2`가 찍힙니다(등록 시점의 `nil` 한 번은 위 가드가 걸러 냅니다).
-<!-- mock 실측 2026-09-11: gs.gs3probe.luau P1 — 자식 둘이 이미 붙은 채로, Parent는 아직 nil인 시점에 불린다 -->
 
 <details>
 <summary><strong>그때 <code>Parent</code>도 정해져 있나요?</strong></summary>

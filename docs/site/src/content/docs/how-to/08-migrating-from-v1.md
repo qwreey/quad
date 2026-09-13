@@ -41,7 +41,6 @@ local D = q.D
 
 `require(quad-base)`가 돌려주는 값이 **이미** 기본 인스턴스입니다. v1의 `Init(id)`처럼 id로 같은 인스턴스를 다시 얻는 개념은 없습니다 — 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰고, 여러 스크립트가 같은 상태를 나눠 쓰려면 그 `Store`를 모듈에서 export 하거나 `q.Context`로 넘기세요.
 
-<!-- v1 소스 확인 2026-09-11: 2.24 exports.lua의 Init은 id가 없으면 매번 새 this를 만든다. 3.x UseProvider의 멱등·락은 quad-base init.luau. -->
 v1의 `Init()`은 id 없이 부를 때마다 **새 인스턴스**를 만들었습니다. 그래서 설치 줄이 여러 파일에 흩어지면 스코프가 조용히 갈라졌습니다. 3.x에서는 같은 프로바이더로 `UseProvider`를 다시 불러도 아무 일도 하지 않으므로(다른 프로바이더를 주면 에러), 설치 줄을 여러 스크립트가 각자 적어도 인스턴스가 갈라지지 않습니다.
 
 ---
@@ -88,7 +87,6 @@ text:Set("0 sec")
 local label = D.TextLabel { Text = text, BackgroundColor3 = store.Color }
 ```
 
-<!-- mock 실측 2026-09-11: store.Text = "x" 뒤 필드는 plain string이 되고(rawequal false), 먼저 만든 라벨은 옛 Source를 계속 본다 — 옛 Source:Set()이 여전히 라벨을 갱신했다. -->
 - **`store.key`는 넣은 `Source` 그 자체입니다.** 값을 바꿀 땐 `store.key:Set(v)`를 쓰세요. `store.key = v`는 필드를 통째로 갈아치워 `Source`를 잃어버립니다. v1에서는 `myStore.color = v`가 구독자를 깨우는 정상적인 쓰기였으니 이 자리는 특히 조심하세요 — 대입해도 에러가 나지 않고, **이미 그 `Source`에 물려 있던 바인딩은 옛 `Source`를 계속 보기 때문에** 화면이 조용히 갱신을 멈춘 것처럼 보입니다.
 - **선언 안 한 키를 대입하는 v1 습관은 `store:Of<<T>>(name)`로 옮깁니다.** 없는 이름이면 그 자리에서 `Source`를 만들어 저장합니다. `Of`로 **나중에** 늘어난 키는 다음 재디스패치 때 반영됩니다.
 
@@ -116,7 +114,6 @@ local frame = D.Frame { Size = size }
 
 `--!strict`에서는 **콜백 파라미터 주석이 사실상 필수**입니다(7절 첫 줄). 콜백 안에서 다른 State를 그냥 읽는 것으로는 의존성이 잡히지 않습니다 — 뒤 인자로 명시하세요.
 
-<!-- v1 소스 확인 2026-09-11: 2.24 store.lua의 CalcWithDefault/CalcWithNewValue가 with(tstore, set, rawKey, withItem)로 호출한다. -->
 **콜백 인자 자리가 다릅니다.** v1의 `register:With(fn)`은 `fn(스토어, 새 값, 키, 대상)` 순으로 불렀습니다. `:Compute`의 둘째 인자는 새 값이 아니라 **직전 계산 결과**이고, 첫 계산에서는 `nil`입니다. v1 콜백 본문을 그대로 옮기면 이 자리에서 조용히 어긋나니 인자 이름부터 다시 붙이세요.
 
 ### 연산자 — `Sum`은 숫자 전용이다
@@ -150,7 +147,6 @@ local moved = base:Compute(function(
 end, offset)
 ```
 
-<!-- mock 실측 2026-09-11: :Apply(Sum(5)):Apply(Alternative(0))는 "attempt to perform arithmetic (add) on nil and number"로 죽고, 역순은 5를 준다. Alternative는 nil→Guest, 값→값, 다시 nil→Guest로 매번 적용된다. v1 소스 확인: 2.24 store.lua에서 dvalue를 보는 곳은 CalcWithDefault뿐이고 갱신 경로 CalcWithNewValue에는 없다. -->
 **`Alternative`는 `Default`보다 자주 발화합니다.** v1의 `:Default(v)`는 생성 시점 계산에서 스토어 값이 `nil`일 때만 쓰였고, 그 값에는 `:Add`나 `:With`가 붙지 않았습니다. 3.x의 `Alternative(v)`는 체인에 놓인 그 자리에서 값이 `nil`이 될 때마다 적용되고, 결과는 뒤 연산자로 계속 흘러갑니다.
 
 그래서 **체인 순서가 결과를 바꿉니다.** `:Apply(Op.Sum(5)):Apply(Op.Alternative(0))`는 `Sum`이 먼저 `nil`을 받아 산술 에러로 죽습니다. 대체를 먼저 두는 `:Apply(Op.Alternative(0)):Apply(Op.Sum(5))`가 v1의 `:Default` 뒤 `:Add`에 해당하는 모양입니다.
@@ -175,7 +171,6 @@ end)
 local frame = D.Frame { BackgroundColor3 = color, Position = position }
 ```
 
-<!-- v1 소스 확인 2026-09-11: 2.24 md/kr/include/tweenOptions.md가 Easing(문자열|함수, 기본 Exp2)·Direction(문자열, 기본 Out)을 정의한다. 3.x가 복사하는 필드 아홉은 quad-roblox Animate의 FIELDS, 기본 Style은 Property 핸들러의 buildInfo. mock 실측 2026-09-11: Easing 키를 넣어도 q.Animate/q.Tween 생성이 통과하고, strict luau-lsp도 모르는 키를 잡지 않았다(Time = "문자열"은 잡는다). -->
 **옵션 이름이 v1과 겹치지 않습니다.** v1의 `TweenOptions`는 `Easing`(문자열이나 함수, 기본 `Exp2`)과 문자열 `Direction`을 받았습니다. `q.Animate`/`q.Tween`이 읽는 필드는 `Info`·`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`·`Override`·`Dedup` 아홉 개이고, `q.Animate`는 여기에 `CanAnimate`를 하나 더 읽습니다.
 
 모르는 키는 **에러도 타입 진단도 없이 무시됩니다.** `Easing`을 그대로 옮겨 적으면 그 줄은 통과하고 곡선만 기본값인 `Enum.EasingStyle.Quad`가 됩니다 — 이징은 `Style = Enum.EasingStyle.*`로 옮기세요. `Direction`도 문자열이 아니라 `Enum.EasingDirection.*`이고, 문자열을 그대로 두면 quad가 막지 않고 엔진의 `TweenInfo` 생성까지 흘려보냅니다.
@@ -184,7 +179,6 @@ local frame = D.Frame { BackgroundColor3 = color, Position = position }
 
 - `register:Register(fn)`(약한 참조로 등록되던 것) → `state:Observer(fn)`. 콜백은 **값이 아니라** `(targetState, observer, emitFrom?)`을 받습니다.
 - `register:Observe(fn)` → `Observer`를 만들어 `:Subscribe()` 하거나 `q.Effect(fn, ...deps)`.
-<!-- mock 실측 2026-09-11: s:Observer(fn)도 q.Effect(fn, s)도 만드는 그 줄에서 콜백이 한 번 찍혔다. v1 소스 확인: 2.24 store.lua의 Register는 등록만 한다. -->
 - **둘 다 만드는 순간 한 번 돕니다.** 그 뒤로 계속 불리게 하려면 props의 숫자 키 자리에 넣어 인스턴스 수명에 묶거나 `:Subscribe()`를 부르세요 — 만들어두기만 하면 첫 한 번 뒤로는 조용합니다. v1의 `register:Register`는 등록할 때 부르지 않았으니, 옮길 때 이 첫 호출을 감안하세요.
 
 v1에 없던 것도 생겼습니다 — `state:Apply(blocker)`(전파 차단), `q.Debounce`/`q.Throttle`(시간 게이트). 이들은 `:Gate`가 아니라 **`:Apply`로 붙입니다.**
@@ -215,10 +209,8 @@ gui.Parent = playerGui
 
 `Parent`는 프로퍼티로 넘길 수 없습니다 — 어떤 핸들러도 그 키를 받지 않아 디스패치가 에러를 냅니다.
 
-<!-- mock 실측 2026-09-11: D.Frame({Name="첫째"},{Name="둘째"})는 에러 없이 통과하고 Name이 "첫째"로 남았다. v1 소스 확인: 2.24 class.lua의 Make가 pack(...)으로 여러 테이블을 돌고, Import(ClassName, defaultProperties)가 그 기본값 테이블을 마지막 인자로 덧붙인다. -->
 **props 테이블은 하나만 받습니다.** v1은 `Class("Frame", 기본값)`처럼 테이블을 여러 개 넘길 수 있었고 그것들을 앞에서부터 합쳤습니다. `D.<Class>`는 첫 테이블만 읽고 **뒤에 넘긴 테이블을 에러 없이 버립니다.** 공통 기본값은 옮기는 쪽에서 한 테이블로 합치거나 `Modifier`로 만들어 숫자 키 자리에 놓으세요.
 
-<!-- mock 실측 2026-09-11: D.Frame { (false and D.TextLabel{}) } 은 아래 메시지로 죽고, `or q.None`을 붙이면 자식 0개로 통과했다. v1 소스 확인: 2.24 class.lua의 자식 분기가 `indexType == "number" and valueType ~= "boolean"`이라 boolean을 건너뛴다. strict 검사 2026-09-11: (cond and D.TextLabel{...}) or q.None 을 자식 자리에 둔 파일이 플래그 넷으로 클린. -->
 **자식 자리의 `false`도 에러입니다.** v1은 `cond and Frame {...}`이 만드는 `false`를 조용히 건너뛰었지만, 3.x에는 그 값을 받는 핸들러가 없습니다.
 
 ```
@@ -279,7 +271,6 @@ v1의 `Class.Extend()`는 `Init`/`Render`/`AfterRender`/`Getter`/`Setter`/`Updat
 | `.Getter` / `.Setter` / `.UpdateTriggers` / `:Update()` | 없음 — 프로퍼티 단위 갱신이라 전체 재렌더 개념 자체가 없습니다 |
 | `self "_button"` 링커 | `q.PreRef<<TextButton?>>(nil)` 를 숫자 키 자리에 |
 
-<!-- v1 소스 확인 2026-09-11: 2.24 class.lua의 this:Destroy가 `if unload then unload(self,object) else destroy(object) end`이고, :Update 경로가 옛 인스턴스에 대해 self:Destroy(lastObject)를 부른다. 3.x OnDestroyed는 quad-base LifecycleHooks에서 Effect의 정리 함수로 만들어진다. -->
 **`Unload`와 `q.OnDestroyed`는 역할이 다릅니다.** v1의 `Unload`는 정의하면 기본 파괴를 **대신했고**, `:Update()`로 인스턴스를 갈아끼울 때 옛 인스턴스에 대해서도 불렸습니다. `q.OnDestroyed`는 `Effect`가 돌려주는 정리 함수라 파괴를 대신하지 않습니다 — 파괴는 그대로 일어나고 그 김에 정리만 실행됩니다. `Unload` 안에서 파괴를 막거나 다른 것을 대신 파괴하던 코드는 옮길 자리가 없으니 호출하는 쪽에서 다시 그리세요.
 
 ### 이벤트와 훅
@@ -320,13 +311,10 @@ local button = D.TextButton {
 
 이벤트 핸들러는 **엔진이 주는 인자만** 받습니다(`self` 없음). 엔진 시그니처보다 **많은 인자를 받을 수는 없습니다** — 안 쓰는 인자는 그냥 빼면 됩니다.
 
-<!-- v1 소스 확인 2026-09-11: 2.24 event.lua의 Property:: 특수 바인딩이 func(this, this[property])로 부른다. mock 실측 2026-09-11: 3.x 콜백은 인자 하나(값)만 받았다. -->
 `q.OnChange` 콜백도 마찬가지입니다. v1의 `[Event.Prop "Text"] = fn`은 `fn(대상, 값)` 둘을 줬지만, `q.OnChange("Text", fn)`은 **값 하나만** 넘깁니다. 대상 인스턴스가 필요하면 같은 props에 `Ref`를 놓고 그쪽에서 얻으세요.
 
-<!-- mock 실측 2026-09-11: 같은 props에 Text = "초기값"과 q.OnChange("Text", …)를 같이 두면 생성 직후 이미 1회 호출됐고 인자는 "초기값"이었다. v1 소스 확인: 2.24 class.lua의 Make가 이벤트 바인딩을 프로퍼티·자식 뒤에 연결한다. 지연 신호 모드에서의 v1 동작은 실측하지 않았다. -->
 **`q.OnChange`는 같은 props가 적은 초기값에도 한 번 불립니다 — 단, 그 값이 엔진 기본값과 다를 때만.** 숫자 키 쪽이 문자 키보다 먼저 처리되어, 연결이 이미 살아 있는 상태에서 그 프로퍼티의 첫 쓰기가 도착하기 때문입니다(기본값과 같은 값이면 엔진이 시그널을 쏘지 않습니다 — [레퍼런스: `OnChange`](/reference/roblox/05-onchange/)). v1의 `Event.Prop`은 프로퍼티를 다 적용한 뒤에 연결됐으니 초기값에는 불리지 않았습니다 — 소리를 내거나 로그를 남기는 콜백이라면 생성 때 한 번 더 도는 것을 감안하세요.
 
-<!-- v1 소스 확인 2026-09-11: 2.24 class.lua의 Make는 문자 키 프로퍼티 → 숫자 키 자식·스타일 → 이벤트 바인딩 순으로 돌고, Event.Created는 그 이벤트 바인딩 단계에 있다. mock 실측 2026-09-11: OnCreated 안에서 읽은 Text가 nil(props 미적용)이었고, 훅이 쓴 값은 props 값으로 덮였다. OnRendered에서는 props 값이 보였다. -->
 **`q.OnCreated`는 v1의 `Event.Created`보다 이릅니다.** v1은 props를 다 적용한 뒤에 불렀지만 `q.OnCreated`는 props보다 **먼저** 돕니다. 그래서 그 안에서 프로퍼티를 읽으면 엔진 기본값이 나오고, 거기서 쓴 값은 뒤따라오는 props가 덮어씁니다. 적용된 값이 필요한 코드는 `q.OnRendered`로 옮기세요.
 
 ### 스타일 — `Style`은 `Modifier`로
@@ -351,10 +339,8 @@ local card = D.Frame {
 
 `Style "Child" {}`처럼 **이름으로 대상을 고르는 형태는 없습니다.** 그 스타일을 쓸 요소에 직접 `Modifier`를 넘기세요. 우선순위 규칙 셋은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §3에 있습니다.
 
-<!-- mock 실측 2026-09-11: 같은 키를 가진 Modifier 둘을 {A, B}로 놓으면 B가, {B, A}로 놓으면 A가 이겼다. 명시 프로퍼티는 둘 다 이겼다. v1 소스 확인: 2.24 class.lua의 ProcessQuadProperty가 `if processedProperty[index] then return end`로 시작하고 props를 1..n 정순으로 돌아, 먼저 처리된 쪽(배열 앞)이 이긴다. -->
 **겹치는 스타일끼리는 v1과 승자가 반대입니다.** 명시한 프로퍼티가 스타일을 이기는 것은 양쪽이 같지만, 같은 키를 가진 스타일이 둘 이상일 때 v1은 **배열에서 앞선 것**을 남겼고 3.x `Modifier`는 **뒤에 온 것**이 이깁니다. v1에서 "기본 스타일을 먼저, 예외를 나중에" 적어두었다면 옮길 때 순서를 뒤집어야 같은 화면이 나옵니다.
 
-<!-- v1 소스 확인 2026-09-11: 2.24 class.lua의 Corner/PaddingAll/PaddingAllOffset/Scale이 대상 자신이거나 FindFirstChildOfClass로 찾은 것을 쓰고, 없을 때만 _quad_round 등의 이름으로 만든다. 3.x는 자기가 만든 자식을 Relate로 기억하고 사용자가 만든 UICorner는 건드리지 않는다(InstanceShorthand). -->
 **숏핸드가 만지는 대상도 좁아졌습니다.** v1은 대상 자신이 `UICorner`면 그것을, 아니면 이미 붙어 있던 `UICorner` 자식을 찾아 썼습니다. 3.x는 **자기가 만든 자식만** 기억하고 사용자가 넣어 둔 같은 클래스 인스턴스는 건드리지 않습니다. Studio에서 `UICorner`를 미리 넣어 두고 v1 숏핸드로 조절하던 프리팹은 그 자식을 지우고 `UICorner` 키만 남기세요. 값의 모양도 조금 넓어져서, `UICorner`는 숫자뿐 아니라 `UDim`도 받습니다.
 
 ### 정리(cleanup)

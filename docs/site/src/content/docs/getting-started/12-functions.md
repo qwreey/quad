@@ -86,7 +86,6 @@ end
 ```
 
 **실행하면** 07장과 똑같이 카운트가 10 이상일 때 버튼이 노란색이 됩니다. 달라진 것은 그 규칙이 이제 **이름을 가졌다**는 것뿐입니다 — 버튼이 열 개여도 `highlightColor(...)` 열 줄이면 되고, 여러 화면에서 쓸 것이면 이 함수만 모듈 하나로 빼면 됩니다.
-<!-- mock 실측 2026-09-11: gs.polish2.luau "12 §3(a)" — highlightColor(count, 10)을 BackgroundColor3에 꽂은 형태, (0,162,255) → 10에서 (255,190,0) → 3에서 다시 파랑; "12 §3(b)" props.Watch — 왼쪽 카운터: 0 | 정리 | 왼쪽 카운터: 1 | 정리(파괴); "12 §4" Doubled — 0 → count:Set(21) 뒤 42, {}를 넘기면 위 에러 문구 -->
 
 ### 컴포넌트에 팩토리를 넘기기
 
@@ -120,7 +119,6 @@ Counter {
 ```
 
 **실행하면** 왼쪽 카운터가 만들어질 때 `왼쪽 카운터: 0`이 찍히고, 버튼을 누를 때마다 `왼쪽 카운터 정리` 뒤에 `왼쪽 카운터: 1`이 이어집니다. 그 카운터를 파괴하면 마지막 정리가 한 번 더 찍힙니다. `Watch`를 안 넘긴 카운터는 그대로입니다.
-<!-- mock 실측 2026-09-11: gs.handlers9.luau — Start=5에서 run 5 | cleanup | run 6 | cleanup(파괴), Watch 없이 부르면 자식 수 그대로 -->
 
 `if props.Watch then … else q.None`은 [11장](/getting-started/11-components/) 2절의 `props.Children or q.None`과 같은 이유입니다 — 안 넘어왔을 때 그 자리가 **구멍**이 되면 안 되니까요. 더구나 여기서는 `Children` 뒤에 원소가 하나 더 붙었으니, 11장이 "뒤에 원소를 하나라도 더 붙이는 순간"이라고 예고한 상황이 바로 이것입니다.
 
@@ -155,7 +153,6 @@ print(plusTen:Get())   --> 11
 ```
 
 `Sum(10)`이 만들어 낸 것은 값이 아니라 **함수**입니다. 그리고 그 함수는 `10`을 기억하고 있습니다(2절의 클로저입니다). 이렇게 "인자를 나눠서 단계적으로 받는" 모양을 **커링**이라고 부릅니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 7a/7b — 0에서 10, count:Set(1) 뒤 11 -->
 
 같은 모양이 관측 콜백에도 그대로 쓰입니다.
 
@@ -176,7 +173,6 @@ const label = D.TextLabel {
 ```
 
 **실행하면** `카운트: 0`으로 시작해 값이 바뀔 때마다 같은 접두사로 찍힙니다. 접두사가 다른 관측을 열 개 붙여야 한다면, 열 개의 익명 함수 대신 `logWith(...)` 열 줄이 됩니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 8 — "카운트: 0 | 카운트: 1 | 카운트: 2" -->
 
 ### 흔한 연산은 이미 있습니다 — `q.Operator`
 
@@ -188,7 +184,6 @@ const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 앞서 손으로 만든 S
 ```
 
 `:Apply(factory)`는 "이 팩토리가 만들어 낸 연산을 이 State에 붙인다"는 뜻입니다 — 팩토리가 자기 의존성까지 같이 들고 있어서, 한 번 이름 붙인 연산자를 여러 State에 붙여도 의존성이 따라갑니다.
-<!-- mock 실측 2026-09-11: gs.gs2probe.luau 7c/7d — 손으로 만든 Sum(10)과 q.Operator.Sum(10)이 같은 값(11, 15) -->
 
 산술·비교·불리언·비트 연산까지 이름 붙은 것이 열넷 있습니다. 전체 목록과 계약은 [레퍼런스: `Operator`](/reference/sugar/02-operator/)에 있습니다.
 
@@ -229,7 +224,6 @@ const total: q.State<number> = count:Apply(q.Operator.Sum(10))
 `q.StateData<T>`와 `q.State<T>`의 차이는 "핸들로 받는 자리"와 "값이 흐르는 노드"입니다. 콜백 파라미터는 앞의 것, 변수에 담아 프로퍼티로 흘려보내는 것은 뒤의 것을 씁니다.
 
 </details>
-<!-- strict 실측 2026-09-11: consumer/P4.luau·P6.luau·P16.luau — 위 네 형태(highlightColor·__apply 객체 포함) 전부 신 솔버 strict exit 0 -->
 
 ### `:Apply`에는 테이블도 들어갑니다 — `__apply`
 
@@ -269,7 +263,6 @@ const extra = if props.Verbose
     else q.None
 -- …그리고 이 값을 숫자 키 자리에 그대로 놓습니다
 ```
-<!-- mock 실측 2026-09-11: gs.polish3.luau "12 §5" — Verbose면 Effect가 돌고, 아니면 None이 자리를 지킨다 -->
 
 <details>
 <summary><strong>왜 Hook 규칙이 없나요?</strong></summary>

@@ -19,3 +19,9 @@
 }
 :root[data-theme='dark'] .sl-markdown-content img.light-only { display: none; }
 :root[data-theme='light'] .sl-markdown-content img.dark-only { display: none; }
+
+/* [2026-09-13] starlight-image-zoom이 각 `<img>`를 `<starlight-image-zoom-zoomable>`로 감싸고 확대 버튼을
+   그 안 형제로 붙인다 — 위 규칙이 `<img>` 자신만 숨기면 버튼은 안 숨어서 꺼진 테마 쪽 이미지 위에 빈 확대
+   버튼만 남는다(실측). 래퍼째로 숨겨서 버튼도 같이 사라지게 한다. */
+:root[data-theme='dark'] .sl-markdown-content starlight-image-zoom-zoomable:has(img.light-only) { display: none; }
+:root[data-theme='light'] .sl-markdown-content starlight-image-zoom-zoomable:has(img.dark-only) { display: none; }

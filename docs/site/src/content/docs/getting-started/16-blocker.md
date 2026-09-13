@@ -92,7 +92,6 @@ flowchart LR
 하나의 `Blocker`를 여러 노드에 붙이는 것 자체는 유효한 쓰임입니다(§4).
 
 </details>
-<!-- mock 실측 2026-09-11: gs.blocker2.luau — 파이프 뒤 게이트 하나: Off 뒤 파이프 계산 +1·통지 +1·Text 쓰기 +1 / 원천마다 게이트: 계산 +1·통지 +2·쓰기 +2, 둘 다 On 구간 화면은 `10 점` 그대로 -->
 
 <details>
 <summary><strong><code>Blocker</code> 아래에는 뭐가 있나요?</strong></summary>
@@ -141,7 +140,6 @@ flowchart LR
 print(label.Text)        --> "10 점"   (화면은 멈춰 있고)
 print(countText:Get())   --> "13 점"   (값은 이미 최신이다)
 ```
-<!-- mock 실측 2026-09-11: gs.polish3.luau "16 §3" — §2 상태 그대로 On 뒤 +1 셋 → 라벨 `10 점` / countText:Get() `13 점` / Off 뒤 라벨 `13 점` -->
 
 <details>
 <summary><strong>시간으로 막고 싶으면요?</strong></summary>

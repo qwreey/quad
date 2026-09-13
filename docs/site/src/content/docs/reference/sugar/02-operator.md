@@ -49,7 +49,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 
 | 무엇 | 언제 | 예 |
 |---|---|---|
-| 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br>`Operator.Sum: argument #2 is nil` |
+| 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br />`Operator.Sum: argument #2 is nil` |
 | `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Operator.Sum: Apply target must be a State (got table)` |
 | 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Operator.Indexed: value is not a table (got number) — cannot read [x]` |
 

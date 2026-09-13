@@ -9,8 +9,29 @@
 - `docs/assets/**`를 `site/public/assets/`로 복사하고 `../assets/x.svg` 참조를 `/assets/x.svg`로 바꾼다; 다크 대응 `<picture>`(GitHub 방식)는 `.light-only`/`.dark-only` 이미지 둘로 바꾼다(2026-09-10).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
 - [2026-09-11 사용자 결정] 루트 `CHANGELOG.md`도 사이트에 싣는다(`/changelog/`) — 원본은 Keep a Changelog 형식 그대로 두고(GitHub·패키지 사본이 읽는 파일이라 frontmatter를 넣지 않는다), 사본에만 title/description을 앞에 붙인다. 원본의 `./docs/...` 링크는 루트 기준으로 풀려 사이트 경로가 된다(`research/roadmap-changelog-docs-plan.md` 2.4 실측).
+- [2026-09-13] 한 줄 전체가 `<!-- ... -->` HTML 주석뿐인 줄(맨 앞 blockquote `> `는 허용, 코드 펜스 안·리스트 들여쓰기
+  줄은 그대로 둔다)을 사본에서 지운다 — starlight-md-txt(플러그인 도입, astro.config 참고)가 모든 docs 항목을
+  remark-mdx로 다시 파싱하는데, MDX는 HTML 주석 문법 자체를 안 받고(공백을 앞뒤로 끼워도 마찬가지 — 실측) `{/* text */}`만
+  허용한다. 이 코퍼스의 그런 주석은 전부 "mock 실측 …"/"strict 실측 …" 같은 **내부 감사 메모**라 어차피 HTML에서도 안
+  보였다 — 읽는 사람에게 보여줄 내용이 아니므로 사이트 사본에서만 지우고 원본(`docs/`)엔 그대로 남긴다.
+- [2026-09-13] 같은 이유(starlight-md-txt의 remark-mdx 재파싱)로, 백틱이 아니라 raw HTML `<code>` 태그로 감싼 인라인
+  코드 안의 리터럴 `{`/`}`를 HTML 엔티티로 바꾼다 — 코퍼스 전체에서 단 두 곳(`getting-started/02-first-screen.md`·
+  `getting-started/13-lists.md`의 `<details><summary><code>D.Frame { … }</code>…` 꼴 캡션)만 해당하고, `<code>` 태그
+  안에서 엔티티는 그대로 `{`/`}`로 렌더되므로 화면엔 변화가 없다.
+- [2026-09-13] 이해 점검 퀴즈(starlight-quiz, astro.config 참고) — 원본 `.md`는 GitHub에서도 읽히므로 MDX
+  import/JSX를 직접 담을 수 없다. 대신 원본에 ` ```quiz ` 코드펜스(GitHub에선 무해한 코드 블록으로 보인다)로
+  퀴즈를 적으면, `expand_quizzes()`가 펜스를 벗겨 `<Quiz>` 블록으로 편다 — 본문 파싱은 하지 않는다(질문/체크리스트/
+  설명은 그 자체로 이미 GFM이고, starlight-quiz가 그 GFM을 렌더된 DOM에서 런타임에 읽는다 —
+  `node_modules/starlight-quiz/lib/parse.ts`의 `findAnswerList`/`splitAtRule` 참고). 펜스 첫 줄 `# 제목`만 뽑아
+  `title` prop으로 옮긴다. 펜스가 하나라도 있던 페이지는 (a) 사본 확장자를 `.mdx`로 바꾸고(슬러그는 같다 — 옛
+  `.md` 사본은 기존 청소 로직이 지운다, `written` 집합에 `.mdx` 경로만 넣으므로), (b) frontmatter 뒤에
+  `import { Quiz, QuizResults } from 'starlight-quiz/components';`를 삽입하고, (c) 파일 끝에
+  `<QuizResults />`를 붙인다. 펜스 전개는 `strip_html_comments`/`escape_code_tag_braces`/`self_close_void_tags`
+  (전부 ` ``` `/`~~~` 줄로 펜스를 세어 안쪽을 건너뛴다)보다 먼저 돈다 — 안 그러면 그 함수들이 방금 편
+  `<Quiz>` 본문을 "코드 펜스 안"으로 착각하고 건너뛰거나, 반대로 펜스 카운트가 어긋난다. 펜스 형식·전개 예시는
+  `docs/getting-started/03-flowing-values.md`(첫 파일럿)가 실물 소스.
 """
-import os, re, shutil, sys
+import json, os, re, shutil, sys
 
 SITE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.dirname(SITE)
@@ -73,11 +94,13 @@ ASSET_REF = re.compile(r'((?:\.\./)+|\./)assets/([A-Za-z0-9_./-]+)')
 def rewrite_assets(text):
     """`../assets/x.svg`류를 `/assets/x.svg`로, `<picture>`(GitHub 다크 대응)를 테마 클래스 이미지 둘로.
     Starlight는 OS 설정이 아니라 `data-theme`로 테마를 잡으므로 media query가 토글을 못 따른다 —
-    `src/styles/theme-images.css`가 `.light-only`/`.dark-only`를 가른다."""
+    `src/styles/theme-images.css`가 `.light-only`/`.dark-only`를 가른다.
+    [2026-09-13] `<img ... />`로 셀프클로징한다 — starlight-md-txt의 remark-mdx 재파싱은 HTML(commonmark)과 달리
+    void 요소도 명시적으로 닫지 않으면 "닫는 태그가 없다"고 에러 낸다(실측: `10-slot.md`)."""
     def pic(m):
         dark, pre, light, post = m.group(1), m.group(2), m.group(3), m.group(4)
         attrs = (pre + post).strip()
-        return f'<img class="light-only" src="{light}" {attrs}>\n<img class="dark-only" src="{dark}" {attrs}>'
+        return f'<img class="light-only" src="{light}" {attrs} />\n<img class="dark-only" src="{dark}" {attrs} />'
     text = PICTURE.sub(pic, text)
     return ASSET_REF.sub(lambda m: f'{BASE}assets/{m.group(2)}', text)
 
@@ -103,6 +126,116 @@ def sync_assets():
                 if fp not in written:
                     os.remove(fp)
     return n
+
+HTML_COMMENT_LINE = re.compile(r'^[ \t]*(?:>\s*)?<!--.*-->\s*$')
+HTML_COMMENT_PREFIX = re.compile(r'^<!--.*?-->\s*')
+CODE_TAG = re.compile(r'<code>([^<]*)</code>')
+VOID_TAG = re.compile(r'<(br|hr|wbr)\s*>')
+
+def self_close_void_tags(text):
+    """`<br>`/`<hr>`/`<wbr>`(HTML의 안 닫는 void 요소)를 `<br />` 식으로 셀프클로징한다(코드 펜스는 건드리지 않는다) —
+    `<img>`는 `rewrite_assets`의 `pic()`가 이미 셀프클로징으로 만든다. 이유는 그 함수 docstring 참고
+    (실측: `reference/sugar/02-operator.md`의 표 안 `<br>` 하나가 이 경로로 걸렸다)."""
+    lines = text.split('\n')
+    out = []
+    in_fence = False
+    for line in lines:
+        if line.strip().startswith('```') or line.strip().startswith('~~~'):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        out.append(line if in_fence else VOID_TAG.sub(lambda m: f'<{m.group(1)} />', line))
+    return '\n'.join(out)
+
+def escape_code_tag_braces(text):
+    """raw HTML `<code>...</code>`(백틱이 아니라 태그를 쓴 인라인 코드 — `<details><summary>` 안 캡션에서 쓰인다) 안의
+    리터럴 `{`/`}`를 HTML 엔티티로 바꾼다(코드 펜스는 건드리지 않는다: 펜스 안은 이미 안전).
+    MDX는 마크다운 백틱 코드 스팬은 보호하지만 raw HTML 흐름 안의 `{}`는 여전히 JS 표현식 시작으로 읽는다 —
+    실측: `q.Slot { … }`/`D.Frame { … }`를 `<code>`로 감싼 두 캡션(13-lists.md·02-first-screen.md)이 이 경로로 깨졌다.
+    엔티티는 `<code>` 태그 안에서 그대로 `{`/`}`로 렌더되므로 화면엔 변화가 없다."""
+    def esc(m):
+        return '<code>' + m.group(1).replace('{', '&#123;').replace('}', '&#125;') + '</code>'
+    lines = text.split('\n')
+    out = []
+    in_fence = False
+    for line in lines:
+        if line.strip().startswith('```') or line.strip().startswith('~~~'):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        out.append(line if in_fence else CODE_TAG.sub(esc, line))
+    return '\n'.join(out)
+
+def strip_html_comments(text):
+    """`<!-- ... -->` 한 줄 전체가 주석뿐인 줄(들여쓰기·blockquote 머리 `> `는 허용)은 통째로 지우고, 줄 맨 앞에 주석이
+    붙고 뒤에 진짜 본문이 이어지는 경우(`06-slot.md`의 "strict 실측 …" 한 줄이 실례)는 그 주석 부분만 잘라내 본문은
+    남긴다. MDX가 HTML 주석 문법을 아예 못 받아 starlight-md-txt의 remark-mdx 파싱이 깨지는 것을 막는다(위 모듈
+    docstring 참고). 내부 감사 메모라 지워도 읽는 사람에게 보이던 내용이 없다."""
+    lines = text.split('\n')
+    out = []
+    in_fence = False
+    for line in lines:
+        if line.strip().startswith('```') or line.strip().startswith('~~~'):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if not in_fence:
+            if HTML_COMMENT_LINE.match(line):
+                continue
+            line = HTML_COMMENT_PREFIX.sub('', line)
+        out.append(line)
+    return '\n'.join(out)
+
+QUIZ_FENCE = re.compile(r'^```quiz\n(.*?)\n```[ \t]*$', re.M | re.S)
+QUIZ_IMPORT = "import { Quiz, QuizResults } from 'starlight-quiz/components';"
+
+def expand_quizzes(text):
+    """` ```quiz ` 펜스를 `<Quiz>` MDX 블록으로 편다. 펜스 첫(비어있지 않은) 줄이 `# 제목`이면 그 줄(+뒤 빈 줄)을
+    떼어 `title` prop으로 옮기고(JSON 문자열로 이스케이프 — JSX 속성 안 따옴표 문제를 피한다), 나머지는 그대로
+    본문에 넣는다 — 질문/체크리스트/설명 구조는 손대지 않는다(모듈 docstring 참고). 여는/닫는 태그 바로 안쪽에
+    빈 줄을 하나씩 둔다 — MDX는 flow JSX 요소의 자식을 블록으로 띄워야 마크다운으로 파싱하므로, 붙여 쓰면
+    질문 줄이 그냥 텍스트로 눌러앉거나 체크리스트가 `<ul>`로 안 열릴 수 있다(빌드는 그래도 exit 0이라 조용히 샌다).
+    반환값 (변환된 텍스트, 펜스 개수) — 개수가 0보다 크면 호출자(`transform`)가 import 삽입·`<QuizResults />`를 붙인다."""
+    count = 0
+    def rep(m):
+        nonlocal count
+        count += 1
+        lines = m.group(1).split('\n')
+        while lines and lines[0].strip() == '':
+            lines.pop(0)
+        title = None
+        if lines and lines[0].startswith('# '):
+            title = lines[0][2:].strip()
+            lines.pop(0)
+            while lines and lines[0].strip() == '':
+                lines.pop(0)
+        inner = '\n'.join(lines).strip('\n')
+        attr = f' title={{{json.dumps(title, ensure_ascii=False)}}}' if title else ''
+        return f'<Quiz{attr}>\n\n{inner}\n\n</Quiz>'
+    return QUIZ_FENCE.sub(rep, text), count
+
+def insert_quiz_import(text):
+    """frontmatter(첫 줄 `---` ~ 닫는 `---`) 바로 뒤에 퀴즈 컴포넌트 import를 끼운다. 호출 시점엔 텍스트가 이미
+    `---\\n`으로 시작함이 보장돼 있다(main()의 frontmatter 체크)."""
+    lines = text.split('\n')
+    i = 1
+    while i < len(lines) and lines[i].strip() != '---':
+        i += 1
+    i += 1
+    lines[i:i] = ['', QUIZ_IMPORT, '']
+    return '\n'.join(lines)
+
+def transform(src_path, text):
+    """정본 텍스트 하나에 모든 치환(링크 재작성 → H1 제거 → 퀴즈 펜스 전개 → 주석/코드태그/void태그 →
+    asides/asset)을 순서대로 적용한다. 트랙 루프와 `EXTRA`(CHANGELOG) 루프가 이 한 함수를 공유한다 —
+    갈라져 있으면 한쪽에만 단계를 추가하는 drift가 난다. 퀴즈 펜스가 있었으면 import를 끼우고 파일 끝에
+    `<QuizResults />`를 붙인 뒤 (출력, True)를 반환 — 호출자가 사본 확장자를 `.mdx`로 바꾼다."""
+    out = strip_h1(convert(src_path, text))
+    out, quiz_count = expand_quizzes(out)
+    out = rewrite_assets(alerts_to_asides(self_close_void_tags(escape_code_tag_braces(strip_html_comments(out)))))
+    if quiz_count:
+        out = insert_quiz_import(out).rstrip('\n') + '\n\n<QuizResults />\n'
+    return out, bool(quiz_count)
 
 def strip_h1(text):
     lines = text.split('\n')
@@ -144,8 +277,11 @@ def main():
                     print(f'ERROR: frontmatter 없음 — {os.path.relpath(sp, DOCS)}', file=sys.stderr)
                     failed += 1
                     continue
-                out = rewrite_assets(alerts_to_asides(strip_h1(convert(sp, text))))
-                dst = os.path.join(dest_dir, os.path.relpath(sp, src_dir))
+                out, has_quiz = transform(sp, text)
+                rel = os.path.relpath(sp, src_dir)
+                if has_quiz:
+                    rel = os.path.splitext(rel)[0] + '.mdx'
+                dst = os.path.join(dest_dir, rel)
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 written.add(os.path.abspath(dst))
                 prev = None
@@ -170,8 +306,9 @@ def main():
             continue
         text = open(sp, encoding='utf-8').read()
         head = '---\n' + ''.join(f'{k}: "{v}"\n' for k, v in fm.items()) + '---\n'
-        out = rewrite_assets(alerts_to_asides(strip_h1(convert(sp, head + text))))
-        dst = os.path.join(DEST, name)
+        out, has_quiz = transform(sp, head + text)
+        dst_name = os.path.splitext(name)[0] + '.mdx' if has_quiz else name
+        dst = os.path.join(DEST, dst_name)
         prev = open(dst, encoding='utf-8').read() if os.path.exists(dst) else None
         if prev != out:
             open(dst, 'w', encoding='utf-8').write(out)
