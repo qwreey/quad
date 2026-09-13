@@ -18,12 +18,52 @@ mapping table, removed features, strict-mode blockers).
 
 ---
 
+## 0. Live Docs — fetch the real page before you assert
+
+This skill is a compressed summary. The published docs at <https://quad.qwreey.moe/> are the
+user-facing source of truth (snippets there are executed on the mock backend and type-checked
+with the new solver). **When a user asks something this file does not answer, or when you need to
+verify a signature, an error string, or a contract, fetch the page's plain-markdown twin instead
+of guessing.**
+
+- **URL rule**: append `.md.txt` to any page path — `https://quad.qwreey.moe/<track>/<page>.md.txt`
+  (Korean is the root locale, so there is no `/ko/` prefix; an English tree, when it exists, lives
+  under `/en/…`). Example: `https://quad.qwreey.moe/reference/core/06-slot.md.txt`. The response is
+  `text/plain` markdown with only `title`/`description` frontmatter. There is no `llms.txt` index —
+  use the map below.
+- **Map (what to fetch for what)**:
+  - `reference/00-index` — every public symbol → its page. Start here for name lookups.
+  - `reference/core/01`…`11` (module, Source, State, Store, Observer·Effect, Slot, Ref, Modifier,
+    Tag·Attr, sentinels, predicates), `reference/sugar/01`…`06` (Context, Operator,
+    Debounce·Throttle, lifecycle hooks, Fallback·Traceback, Blocker), `reference/roblox/01`…`06`
+    (install, `D`, `D.Modifier`, Claim·Mapper, OnChange, Tween·Animate), `reference/extend/01`·`02`
+    (backend provider / dispatch handler contracts). One type per page: signature → args → return →
+    example → behavior → **error table (verbatim strings)** → related.
+  - `how-to/01`…`09` — recipes: component boundary conventions, form validation, long lists,
+    RemoteEvent/input bridging, theming, headless testing, Studio `Claim`, v1 migration, and the
+    error-reading appendix (`09`).
+  - `getting-started/00`…`19` — the linear tutorial (one counter grows chapter by chapter). Fetch a
+    chapter when the user is learning, not for lookups.
+  - `overview/01` (comparison with Fusion/Vide/react-lua, design trade-offs, what is missing and
+    why), `overview/02` (for quad v1 users).
+  - `quadnomicon/01`…`11` — internals (revision/epoch, Slot prefix-sum tree, memory topology,
+    markers, ownership, liveness gate, dispatch engine, …). Only when the question is "how is it
+    implemented".
+  - `/changelog/` — full CHANGELOG (Keep a Changelog; `[Unreleased]` first). Version pages also exist
+    under `/changelog-versions/`.
+- **Precedence when sources disagree**: source code > reference page > this skill. Never invent a
+  symbol that neither the index nor the source lists.
+
 ## 1. Quick Reference & Core Invariants
 
 ### 1.1 Environment & Imports
 
 `quad-base` and `quad-roblox` are two separate modules; there is no `Quad.QuadRoblox`.
-Distribution is undecided — write require paths for whatever layout the project uses.
+Distribution is pesde (`qwreey/quad_base`, `qwreey/quad_roblox`, `qwreey/quad_types`, roblox target
+→ one `roblox_packages/` folder; see `getting-started/00-installation`). The docs' convention is one
+setup module (`ReplicatedStorage/Client/UI/Quad`) that installs the provider once and re-exports the
+types, required as `require("@game/ReplicatedStorage/Client/UI/Quad")` — follow the project's
+layout if it differs.
 
 ```luau
 --!strict
