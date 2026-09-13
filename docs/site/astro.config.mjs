@@ -7,8 +7,6 @@ import { fileURLToPath } from 'node:url';
 // [2026-09-13 사용자] 플러그인 여섯 + 다이어그램 확대(HUMAN_TODO 도식 항목 관련 사용자 후속 요청) — 각 훅 자리에 결정 배너를 남긴다.
 import starlightQuiz from 'starlight-quiz';
 import starlightMdTxt from 'starlight-md-txt';
-import starlightContextualMenu from 'starlight-contextual-menu';
-import starlightSidebarSwipe from 'starlight-sidebar-swipe';
 import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs';
 import starlightSidebarTopicsPlugin from 'starlight-sidebar-topics';
 import starlightImageZoom from 'starlight-image-zoom';
@@ -50,6 +48,8 @@ export default defineConfig({
 			customCss: [
 				'./src/styles/custom.css',
 				'./src/styles/theme-images.css',
+				'./src/styles/user-theme.css',
+				'./src/styles/starlight-sidebar-topics-tweak.css',
 			],
 			locales: {
 				root: {
@@ -66,7 +66,11 @@ export default defineConfig({
 			components: { SiteTitle: './src/components/SiteTitle.astro' },
 			// [2026-09-13 코디네이터 지시] mermaid 다이어그램 클릭 확대(스크립트는 public/scripts/mermaid-zoom.js —
 			// astro-mermaid가 그리는 인라인 svg는 빌드 타임 rehype 변환(starlight-image-zoom)이 못 잡아서 별도로 둔다).
-			head: [{ tag: 'script', attrs: { src: '/scripts/mermaid-zoom.js', defer: true } }],
+			head: [
+				{ tag: 'script', attrs: { src: '/scripts/mermaid-zoom.js', defer: true } },
+				// [2026-09-14] 모바일에서 왼쪽 가장자리 스와이프로 사이드바 popover 열기/닫기(플러그인 대체 — 위 plugins 주석)
+				{ tag: 'script', attrs: { src: '/scripts/sidebar-swipe.js', defer: true } },
+			],
 			tableOfContents: {
 				minHeadingLevel: 2,
 				maxHeadingLevel: 4,
@@ -80,21 +84,17 @@ export default defineConfig({
 			plugins: [
 				starlightSidebarTopicsPlugin(
 					[
+						// [2026-09-14 사용자] 트랙이 너무 잘게 갈려 난잡하다 — 읽는 흐름(다른 도구 경험자: 오버뷰 → 시작하기 → 실전 가이드,
+						// 처음이면 시작하기부터)이 한 맥락이라 셋을 'Docs' 토픽 하나로 묶고 안에서 그룹으로 나눈다. 오버뷰는 두 페이지뿐이라
+						// 토픽으로 세울 무게가 아니고, 오버뷰 머리가 이미 처음 오는 사람을 시작하기로 보낸다. 랜딩 첫 액션은 여전히 시작하기.
 						{
-							label: 'Getting Started (시작하기)',
+							label: 'Docs (문서)',
 							link: '/getting-started/00-installation/',
-							items: [{ autogenerate: { directory: 'getting-started' } }],
-						},
-						// [2026-09-10 사용자] 순서: 시작하기가 맨 앞, 왜 Quad인가는 그 뒤(비교 문서) — 토픽 순서도 같게(2026-09-13)
-						{
-							label: 'Overview (왜 Quad인가)',
-							link: '/overview/01-why-quad/',
-							items: [{ autogenerate: { directory: 'overview' } }],
-						},
-						{
-							label: 'How-To Guides (실전 가이드)',
-							link: '/how-to/01-component-conventions/',
-							items: [{ autogenerate: { directory: 'how-to' } }],
+							items: [
+								{ label: 'Overview (왜 Quad인가)', collapsed: true, items: [{ autogenerate: { directory: 'overview' } }] },
+								{ label: 'Getting Started (시작하기)', collapsed: true, items: [{ autogenerate: { directory: 'getting-started' } }] },
+								{ label: 'How-To Guides (실전 가이드)', collapsed: true, items: [{ autogenerate: { directory: 'how-to' } }] },
+							],
 						},
 						{
 							label: 'Reference (레퍼런스)',
@@ -151,12 +151,8 @@ export default defineConfig({
 				starlightQuiz(),
 				// [2026-09-13 사용자] 각 페이지 원문을 `<slug>.md.txt`로 노출 — AI 에이전트가 읽는 용도(파일럿 결과는 보고 2번)
 				starlightMdTxt({ format: '.md.txt' }),
-				// [2026-09-13 사용자] 본문 복사 + AI 프로바이더에 물어보기. copy/view 버튼은 `<path>/index.md`를 하드코딩해서 fetch하므로
-				// `injectMarkdownRoutes`(기본 true, starlight-markdown 경유)를 켠 채로 둔다 — starlight-md-txt의 `.md.txt`와
-				// 형식이 달라 라우트가 겹치지 않는다.
-				starlightContextualMenu({ actions: ['copy', 'chatgpt', 'claude'] }),
-				// [2026-09-13 사용자] 모바일 사이드바 스와이프 — 옵션 없이 켜기만 하면 됨
-				starlightSidebarSwipe(),
+				// [2026-09-14] starlight-sidebar-swipe 0.3.2는 Starlight 0.42의 popover 기반 모바일 사이드바와 안 맞아(빈 패널 — quad-site-tester 실측)
+				// 뺐다. 스와이프는 public/scripts/sidebar-swipe.js가 네이티브 popover(showPopover/hidePopover)로 연다.
 				starlightChangelogs(),
 				// [2026-09-13 코디네이터 추가] 다이어그램 확대 — docs/assets SVG(<img class="light-only/dark-only">)를 zoom 대상으로
 				// 자동으로 잡는다(rehype가 markdown의 <img>/<picture>를 감싼다). astro-mermaid 인라인 <svg>는 이 플러그인의

@@ -1,33 +1,3 @@
-/* Dark mode colors. */
-:root {
-	--sl-color-accent-low: #440d0d;
-	--sl-color-accent: #c7001e;
-	--sl-color-accent-high: #fab4ad;
-	--sl-color-white: #ffffff;
-	--sl-color-gray-1: #f4ebea;
-	--sl-color-gray-2: #d0c6c4;
-	--sl-color-gray-3: #b39f9c;
-	--sl-color-gray-4: #655351;
-	--sl-color-gray-5: #443432;
-	--sl-color-gray-6: #322221;
-	--sl-color-black: #1d1615;
-}
-/* Light mode colors. */
-:root[data-theme='light'] {
-	--sl-color-accent-low: #fec8c2;
-	--sl-color-accent: #d90042;
-	--sl-color-accent-high: #63040c;
-	--sl-color-white: #1d1615;
-	--sl-color-gray-1: #322221;
-	--sl-color-gray-2: #443432;
-	--sl-color-gray-3: #655351;
-	--sl-color-gray-4: #9a8684;
-	--sl-color-gray-5: #cabfbe;
-	--sl-color-gray-6: #f4ebea;
-	--sl-color-gray-7: #f9f5f4;
-	--sl-color-black: #ffffff;
-}
-
 /* [2026-09-13 코디네이터 지시] mermaid 다이어그램 클릭 확대 — 스크립트는 public/scripts/mermaid-zoom.js,
    astro.config.mjs의 starlight().head가 모든 페이지에 붙인다. astro-mermaid가 그린 svg는 원래 크기가
    작아서(콘텐츠 폭에 맞춘 인라인 렌더) GitHub처럼 확대해 볼 수 있게 만든다. */
