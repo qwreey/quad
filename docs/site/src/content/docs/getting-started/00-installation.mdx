@@ -2,6 +2,9 @@
 title: "00. 설치"
 description: "pesde와 Rojo로 Quad를 프로젝트에 깔고, 타입 검사 플래그 넷을 편집기와 CI에 넣습니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **대상 독자**: Roblox Studio 또는 Luau CLI 툴체인(Rojo, pesde 등) 환경에서 Quad를 프로젝트에 붙이려는 개발자
 > **목표**: 패키지를 내려받아 게임 트리에 올리고, 타입 검사 플래그를 켜기
 
@@ -127,7 +130,37 @@ luau-lsp analyze \
 
 ---
 
+## 이해 점검
+
+<Quiz title={"세 패키지를 직접 적는 이유"}>
+
+`quad_base`·`quad_roblox`·`quad_types` 셋을 의존성에 직접 적어야 하는 이유는 무엇인가요?
+
+- [ ] 셋 중 하나라도 빠지면 나머지가 내려받아지지 않도록 레지스트리가 막아 두었기 때문입니다
+- [x] `quad_base`는 개발 의존성이라 전파되지 않고, `quad_types`는 직접 의존성이어야 최상위에 링커가 생기기 때문입니다
+- [ ] 따라 들어오는 `quad_error`·`type_version_check`까지 다섯을 전부 적어야 하기 때문입니다
+
+`quad_roblox`는 `quad_base`를 개발 의존성으로만 잡는데 개발 의존성은 소비자에게 전파되지 않고, `quad_types`는 직접 의존성으로 적어야 최상위에 링커가 생겨 설정 모듈의 require가 풀립니다. `quad_error`와 `type_version_check`는 위 셋의 의존성으로 따라 들어오므로 적을 필요가 없습니다.
+
+</Quiz>
+
+<Quiz title={"타입 검사 플래그"}>
+
+`D.Frame { Name = "x" }` 한 줄만 있어도 `Internal error: Code is too complex to typecheck!`로 죽는다면 무엇이 빠진 것인가요?
+
+- [ ] `LuauSolverV2=true` — 이 값이 없을 때 나는 에러입니다
+- [x] `LuauTarjanChildLimit` — 생성된 `D`의 프로퍼티 유니언이 커서 이 한도를 올려야 합니다
+- [ ] `LuauSubtypingIterationLimit` — 프로퍼티를 한 줄만 적어도 이 한도부터 걸립니다
+
+생성된 `D`의 프로퍼티 유니언이 크기 때문에, `LuauTarjanChildLimit`을 올리지 않으면 한 줄짜리 선언에서도 이 에러가 납니다. `LuauSolverV2=true`가 빠졌을 때 나는 것은 `read keyword is illegal here`이고, 나머지 둘은 컴포넌트가 커질 때 같은 이유로 필요해집니다.
+
+</Quiz>
+
+---
+
 ## 더 알고 싶다면
 
 - [레퍼런스: 설치와 프로바이더](/reference/roblox/01-install/) — `quad-roblox`가 설치하는 것 전부
 - [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/) — v1 프로젝트의 툴체인을 바꿀 때
+
+<QuizResults />

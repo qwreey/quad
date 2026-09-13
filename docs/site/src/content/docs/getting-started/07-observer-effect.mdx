@@ -2,6 +2,9 @@
 title: "07. 관측하기 — Observer와 Effect"
 description: "값이 바뀔 때 화면 밖에서 무언가 하는 Observer와 Effect를 숫자 키 자리에 달고, 화면 안쪽은 값으로 표현한다는 경계를 잡습니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **대상 독자**: [06. 인스턴스를 손에 쥐기](/getting-started/06-ref/)를 끝낸 개발자
 > **목표**: 값이 바뀔 때 화면 밖에서 무언가 하고, 뒤처리가 필요한 일까지 붙이기
 
@@ -212,8 +215,52 @@ const card = D.Frame {
 
 ---
 
+## 이해 점검
+
+<Quiz title={"어디에도 놓지 않은 `Observer`"}>
+
+`count:Observer(fn)`을 변수에만 담고 숫자 키 자리에도, 구독에도 걸지 않으면 어떻게 되나요?
+
+- [ ] 아무 일도 일어나지 않습니다 — 어딘가에 놓여야 첫 발화가 시작됩니다
+- [x] 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다
+- [ ] 인스턴스와 무관하게 살아 있어 값이 바뀔 때마다 계속 발화합니다
+
+`:Observer(fn)`은 등록 자리에서 한 번 발화합니다. 이후 변경까지 받으려면 숫자 키 자리에 넣어 인스턴스에 묶이거나 `:Subscribe()`/`:WeakSubscribe()`로 구독되어야 하고, 어느 쪽도 하지 않으면 등록 시 한 번이 전부입니다.
+
+</Quiz>
+
+<Quiz title={"cleanup이 도는 자리"}>
+
+`q.Effect`가 돌려준 cleanup이 실제로 도는 자리를 **모두 고르세요**.
+
+- [x] 그 이펙트가 다음에 다시 실행되기 직전
+- [x] `:Unsubscribe()`로 강한 구독을 끊을 때
+- [x] 매달린 인스턴스가 파괴될 때
+- [x] 그 숫자 키 자리를 다른 값으로 갈아 끼울 때
+- [ ] `:WeakUnsubscribe()`로 약하게 풀어 줄 때
+
+cleanup이 도는 자리는 넷이고(다음 실행 직전, `:Unsubscribe()`로 강한 구독을 끊을 때, 매달린 인스턴스가 파괴될 때, 그 자리를 갈아 끼울 때) 각각에서 정확히 한 번씩 돕니다. 약하게 풀어 주는 `:WeakUnsubscribe()`만은 cleanup을 건드리지 않습니다.
+
+</Quiz>
+
+<Quiz title={"화면 안쪽을 바꾸는 길"}>
+
+"카운트가 10 이상이면 버튼을 노란색으로"는 어떻게 적는 것이 quad의 기본인가요?
+
+- [ ] `Effect` 안에서 그 인스턴스의 `BackgroundColor3`에 직접 대입합니다
+- [x] `BackgroundColor3` 자리에 파이프를 꽂아 값이 흘러 닿게 합니다
+- [ ] `Observer` 콜백에서 조건을 보고 색을 쓰고, 조건이 풀리면 원래 색으로 되돌립니다
+
+`Observer`와 `Effect`는 화면 밖으로 나가는 길이고, 화면에 보이는 것은 값이 흘러 닿는 프로퍼티로 적습니다. 같은 일을 `Effect` 안에서 손으로 쓰면 한 프로퍼티에 주인이 둘이 되고, 조건이 풀렸을 때 원래 값으로 돌려놓는 일까지 직접 적어야 합니다.
+
+</Quiz>
+
+---
+
 ## 더 알고 싶다면
 
 - [레퍼런스: `Observer` / `Effect`](/reference/core/05-observer-effect/) — 구독 네 진입점, 보류와 재생, cleanup이 도는 네 자리
 - [레퍼런스: 생명주기 훅](/reference/sugar/04-lifecycle-hooks/) — `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`(`Ref`/`Effect` 위에 얹은 슈거)
 - [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](/how-to/04-network-and-input-bridge/) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치
+
+<QuizResults />

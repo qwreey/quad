@@ -2,6 +2,9 @@
 title: "10. 자식이 들어갈 자리 — Slot"
 description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **대상 독자**: [09. 스타일을 값으로 들고 다니기](/getting-started/09-modifier/)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
@@ -271,7 +274,49 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 ---
 
+## 이해 점검
+
+<Quiz title={"Slot이 원소를 버릴 때"}>
+
+`items:Remove(1)`이나 `items:Clear()`로 Slot에서 빠진 원소는 어떻게 되나요?
+
+- [ ] Slot은 자리만 빌려준 것이라 원소는 트리에서 떨어진 채 그대로 살아 있습니다
+- [x] Slot이 원소를 소유하므로 파괴됩니다 — 살려서 꺼내려면 `:Extract`나 `:ExtractAll`을 씁니다
+- [ ] `:Remove`는 파괴하지만 `:Clear`는 목록만 비우고 원소는 남겨 둡니다
+
+Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유하므로, `:Remove`도 `:Clear`도 `:Replace`도 옛 원소를 파괴합니다. 살려서 꺼내는 짝이 `:Extract`·`:ExtractAll`이고, 그렇게 꺼낸 원소는 소유권이 풀린 상태입니다.
+
+</Quiz>
+
+<Quiz title={"Offset이 세는 것"}>
+
+`slot.Offset`이 나타내는 값은 무엇인가요?
+
+- [ ] 이 Slot이 차지하는 물리 자식의 개수입니다
+- [ ] 이 Slot 앞에 놓인 다른 Slot의 개수입니다
+- [x] 이 Slot의 첫 원소 앞에 있는 물리 자식의 개수입니다 — 첫 원소는 전체에서 `Offset + 1`번째가 됩니다
+
+`Offset`은 앞에 놓인 **물리 자식**을 0부터 센 값입니다. 3절의 패널에서 `slotB`의 `Offset`이 3인 것도 앞의 고정 자식 하나에 `slotA`의 둘이 더해진 결과이고, 개수를 세는 쪽은 `Offset`이 아니라 `Length`입니다.
+
+</Quiz>
+
+<Quiz title={"자리에 State 하나만 놓았을 때"}>
+
+숫자 키 자리에 `State` 하나를 놓아 자식을 갈아 끼울 때 옳은 것은 무엇인가요?
+
+- [ ] Slot의 `:Replace`와 같아서 갈아 끼운 옛 원소가 파괴됩니다
+- [x] 옛 원소는 트리에서 떼어지기만 하고 파괴되지 않으므로, 더 쓸 일이 없으면 직접 `:Destroy()` 해야 합니다
+- [ ] `Offset`/`Length` 부기에 참여하지 않으므로 앞 구간이 자라도 이 자리는 영향을 받지 않습니다
+
+이 자리는 `Parent`를 `nil`로 내려놓을 뿐이라 값 자체는 살아 있고, 같은 값을 다시 `:Set`하면 그 인스턴스가 그대로 돌아옵니다. 부기에는 앞 절들과 똑같이 참여하되, `Offset` 발행 채널이 없어 그 자리의 `Offset` 값만 쓸 수 없습니다.
+
+</Quiz>
+
+---
+
 ## 더 알고 싶다면
 
 - [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열하나(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
 - [Quadnomicon Vol. 2](/quadnomicon/02-slot-prefix-sum-tree/) — `Offset`/`Length` 부기가 어떤 부분합 트리 위에서 도는지
+
+<QuizResults />

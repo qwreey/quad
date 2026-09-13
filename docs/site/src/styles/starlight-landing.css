@@ -1,0 +1,41 @@
+/* [2026-09-14 사용자] 랜딩 밀도 — hero 아래 여백이 커서 '현재 릴리즈' 줄이 잘리고, 절끼리는 붙어 보였다.
+   hero 여백을 줄이고 절 사이를 hr + 여백으로 가른다. FAQ의 접힘은 훑어보는 자리라 summary를 굵게 두지 않는다. */
+main .content-panel .hero {
+	padding-block: 1.5rem 0.5rem;
+}
+
+[data-has-hero] .sl-markdown-content {
+	/* Finetune - 개행선 */
+	> hr {
+		margin-block: 4.75rem;
+	}
+
+	/* Finetune - 해딩 */
+	> .level-h2 {
+		margin-top: 0;
+		margin-bottom: 2.25rem;
+	}
+	> .level-h3 {
+		margin-top: 2rem;
+		margin-bottom: 1.45rem;
+		> h3 {
+			font-weight: 500;
+		}
+	}
+
+	/* Finetune - 접는 영역 */
+	> details {
+		margin-block: 0.5rem;
+		> summary {
+			font-weight: 500;
+		}
+	}
+
+	/* Finetune - 최상위 부분에 있어서 좀 더 바닥 margin 을 높게 유지해 최상위 영역이 복잡해보이지 않도록 */
+	.version-line {
+		margin-bottom: 8rem;
+		margin-top: 1rem;
+	}
+}
+
+

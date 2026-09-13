@@ -2,6 +2,9 @@
 title: "01. 프레임워크 설정하기"
 description: "설정 모듈 하나에 q를 만들어 두고, 진입점에서 ScreenGui를 띄워 첫 글씨를 확인합니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **대상 독자**: [00. 설치](/getting-started/00-installation/)를 끝낸 개발자
 > **목표**: 프로젝트에 quad 설정 모듈 하나와 화면 진입점 하나를 만들고, 화면에 글씨가 뜨는 것까지 확인하기
 
@@ -138,7 +141,37 @@ screen.Parent = playerGui
 
 ---
 
+## 이해 점검
+
+<Quiz title={"설정 모듈과 싱글턴"}>
+
+다른 모듈에서 `Quad:UseProvider(QuadRoblox)`를 한 번 더 부르면 어떻게 되나요?
+
+- [ ] 두 번째 호출이 새 quad 인스턴스를 만들어, 앞서 만든 `State`와 섞어 쓸 수 없게 됩니다
+- [x] 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고, 다른 프로바이더를 넘길 때만 에러가 납니다
+- [ ] 프로바이더가 두 번 설치되어 `Declaration`이 만드는 인스턴스가 둘씩 생깁니다
+
+`require`가 돌려주는 것은 어느 ModuleScript에서 require해도 같은 하나(싱글턴)이고, `UseProvider`는 그 싱글턴에 백엔드를 설치하는 것이라 같은 프로바이더면 멱등입니다. 싱글턴과 분리된 인스턴스가 필요할 때 쓰는 것이 `Quad.New()`입니다.
+
+</Quiz>
+
+<Quiz title={"문자열 require를 권하는 이유"}>
+
+이 문서가 인스턴스 경로 대신 문자열 `require`를 권하는 이유는 무엇인가요?
+
+- [ ] 인스턴스 경로는 엔진 런타임에서 동작하지 않아 편집기에서만 풀리기 때문입니다
+- [x] 인스턴스 경로를 쓰다 `WaitForChild` 체인으로 가면 반환이 `any`가 되어 타입이 죽기 때문입니다
+- [ ] 문자열 경로는 대상이 아직 없어도 생길 때까지 기다려 주기 때문입니다
+
+인스턴스 경로도 물론 동작하지만, 복제가 덜 된 자식을 만나면 결국 `WaitForChild`로 가게 되고 그 반환은 `any`라 자동완성도 타입 검사도 사라집니다. 문자열 경로는 타입이 살아 있는 대신 대상이 아직 없으면 기다리지 않고 즉시 실패합니다 — 진입점에 `game.Loaded:Wait()` 줄을 둔 이유가 그것입니다.
+
+</Quiz>
+
+---
+
 ## 더 알고 싶다면
 
 - [레퍼런스: Quad 모듈](/reference/core/01-quad-module/) — `New`/`UseProvider`/`AddPlugin`/`RunInit`
 - [06. Roblox Studio 없이 헤드리스로 테스트하기](/how-to/06-headless-testing/) — 설정 모듈의 그 한 줄을 mock 프로바이더로 바꾸는 자리
+
+<QuizResults />

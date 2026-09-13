@@ -24,6 +24,33 @@ import VersionLine from '../../components/VersionLine.astro';
 
 <VersionLine />
 
+---
+
+## 주요 핵심 기능
+
+<CardGrid stagger>
+	<Card title="DOMless 즉시 생성" icon="rocket">
+		가상 DOM 트리 비교나 VNode 할당 없이, Luau 인라인 테이블 평가 시점에 즉시 실제 Roblox Instance를 만들어 돌려줍니다. 변화는 중간 트리를 거치지 않고 개별 프로퍼티 바인드에만 도달합니다.
+	</Card>
+	<Card title="신호는 push, 계산은 pull" icon="random">
+		`:Set`은 "바뀌었다"만 알리고, 계산은 `:Get()` 시점에 노드 캐시에서 한 번 일어납니다. 신호가 몇 갈래로 도착하든 계산은 한 번이라 다이아몬드 그래프의 중복 재평가가 구조적으로 없고, 아직 살아나지 않은 관측은 보류됐다가 최신값으로 한 번만 재생됩니다.
+	</Card>
+	<Card title="원소를 재활용하는 키 기반 목록" icon="list-format">
+		`Slot:List`는 키마다 지난번 원소를 `prev`로 돌려주고, 그대로 반환하면 파괴도 재마운트도 없습니다. Roblox에서 형제 순서는 부기값이라 물리 재배치가 없고, `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
+	</Card>
+	<Card title="규칙 둘뿐인 Modifier" icon="setting">
+		재사용 스타일은 디스패치 전에 정적으로 펼쳐지는 불변 값이라 런타임 캐스케이드 계산이 없습니다. 규칙은 둘 — 인라인 문자 키가 항상 이기고, 숫자 키 자리의 뒤쪽 Modifier가 앞쪽을 이깁니다. 여럿을 하나로 합칠 때는 `Overridden`(뒤 인자가 이김)으로 합성합니다.
+	</Card>
+	<Card title="부착식 백엔드, 사용자가 정하는 어휘" icon="laptop">
+		코어는 엔진 op를 주입받는 순수 모듈이고 백엔드는 `UseProvider` 한 줄로 부착됩니다 — Roblox 백엔드와 헤드리스 mock이 같은 문으로 들어옵니다. `Frame { … }` 안에 올 수 있는 값과 키는 핸들러 레코드 하나를 등록하면 늘어나고, 우선순위 축은 열린 숫자 공간입니다.
+	</Card>
+	<Card title="Studio 템플릿 Claim" icon="puzzle">
+		디자이너가 제작한 Studio UI 템플릿을 `Clone()` 뒤 `Claim()`으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다. 템플릿은 정적 프로퍼티만 심어 `D`로 만들어도 됩니다 — 원소가 많을 때는 하나하나 짓는 것보다 엔진의 네이티브 `Clone()`으로 사본을 뜨는 쪽이 싸고, 바뀌는 값만 `Claim`의 디스크립터에 심습니다.
+	</Card>
+</CardGrid>
+
+---
+
 ## 코드로 먼저 보기
 
 값은 원천에서 프로퍼티까지 흐르고, 이벤트는 문자 키에 이름으로 놓이고, 자식과 스타일은 숫자 키 자리에 값으로 놓입니다. `D.Frame { … }`을 부르는 그 순간 실제 Instance가 만들어집니다.
@@ -56,50 +83,28 @@ const card = D.Frame {
 
 이 카드가 어떻게 자라는지는 [시작하기](/getting-started/00-installation/)가 스무 편에 걸쳐 따라갑니다 — 목록·컴포넌트·애니메이션·통지 접기까지.
 
-## 주요 핵심 기능
-
-<CardGrid stagger>
-	<Card title="DOMless 즉시 생성" icon="rocket">
-		가상 DOM 트리 비교나 VNode 할당 없이, Luau 인라인 테이블 평가 시점에 즉시 실제 Roblox Instance를 만들어 돌려줍니다. 변화는 중간 트리를 거치지 않고 개별 프로퍼티 바인드에만 도달합니다.
-	</Card>
-	<Card title="신호는 push, 계산은 pull" icon="random">
-		`:Set`은 "바뀌었다"만 알리고, 계산은 `:Get()` 시점에 노드 캐시에서 한 번 일어납니다. 신호가 몇 갈래로 도착하든 계산은 한 번이라 다이아몬드 그래프의 중복 재평가가 구조적으로 없고, 아직 살아나지 않은 관측은 보류됐다가 최신값으로 한 번만 재생됩니다.
-	</Card>
-	<Card title="원소를 재활용하는 키 기반 목록" icon="list-format">
-		`Slot:List`는 키마다 지난번 원소를 `prev`로 돌려주고, 그대로 반환하면 파괴도 재마운트도 없습니다. Roblox에서 형제 순서는 부기값이라 물리 재배치가 없고, `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
-	</Card>
-	<Card title="규칙 둘뿐인 Modifier" icon="setting">
-		재사용 스타일은 디스패치 전에 정적으로 펼쳐지는 불변 값이라 런타임 캐스케이드 계산이 없습니다. 규칙은 둘 — 인라인 문자 키가 항상 이기고, 숫자 키 자리의 뒤쪽 Modifier가 앞쪽을 이깁니다. 여럿을 하나로 합칠 때는 `Overridden`(뒤 인자가 이김)으로 합성합니다.
-	</Card>
-	<Card title="부착식 백엔드, 사용자가 정하는 어휘" icon="laptop">
-		코어는 엔진 op를 주입받는 순수 모듈이고 백엔드는 `UseProvider` 한 줄로 부착됩니다 — Roblox 백엔드와 헤드리스 mock이 같은 문으로 들어옵니다. `Frame { … }` 안에 올 수 있는 값과 키는 핸들러 레코드 하나를 등록하면 늘어나고, 우선순위 축은 열린 숫자 공간입니다.
-	</Card>
-	<Card title="Studio 템플릿 Claim" icon="puzzle">
-		디자이너가 제작한 Studio UI 템플릿을 `Clone()` 뒤 `Claim()`으로 넘겨받아, 코드로 만든 트리와 같은 반응성을 붙입니다. 템플릿은 정적 프로퍼티만 심어 `D`로 만들어도 됩니다 — 원소가 많을 때는 하나하나 짓는 것보다 엔진의 네이티브 `Clone()`으로 사본을 뜨는 쪽이 싸고, 바뀌는 값만 `Claim`의 디스크립터에 심습니다.
-	</Card>
-</CardGrid>
-
+---
 
 ## 자주 묻는 질문
 
 ### 이런 걸 만들 수 있나요
 
 <details>
-<summary><strong>목록이나 스크롤이 수천 개가 되어도 괜찮은가요?</strong></summary>
+<summary>목록이나 스크롤이 수천 개가 되어도 괜찮은가요?</summary>
 
 재활용(살아남은 항목은 다시 만들지 않는 것)은 `Slot:List`가 그대로 해 줍니다. 윈도잉(보이는 구간과 여유분만 만드는 것)은 quad가 자동으로 해 주지 않고, 넘겨받는 `index`/`offset` 위에 직접 구현하는 패턴입니다 — [`Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)가 그 구현을 통째로 보여 줍니다.
 
 </details>
 
 <details>
-<summary><strong>Studio에서 디자이너가 만든 UI에 붙일 수 있나요?</strong></summary>
+<summary>Studio에서 디자이너가 만든 UI에 붙일 수 있나요?</summary>
 
 네. `q.Claim`이 이미 있는 Instance 트리를 quad 소유로 가져와, 코드로 만든 트리와 똑같이 구동합니다. 어느 자식이 어느 자리인지는 `D.Mapper` 디스크립터로 지목합니다 — [Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/).
 
 </details>
 
 <details>
-<summary><strong>Roblox Studio 없이 테스트할 수 있나요?</strong></summary>
+<summary>Roblox Studio 없이 테스트할 수 있나요?</summary>
 
 네. `quad-base`는 `Instance`·`game`·`task` 같은 엔진 전역을 참조하지 않아서 `Source`/`State`/`Slot`의 반응형 로직은 평범한 `luau` CLI에서 그대로 검증됩니다. 실제 프로퍼티·이벤트·Tween까지 보려면 Studio가 필요합니다 — [Studio 없이 헤드리스로 테스트하기](/how-to/06-headless-testing/).
 
@@ -108,28 +113,35 @@ const card = D.Frame {
 ### 이런 기능도 있나요
 
 <details>
-<summary><strong>애니메이션은 어떻게 하나요?</strong></summary>
+<summary>Tag나 Attribute 같은 최신 Roblox 기능과도 맞나요?</summary>
+
+네. `CollectionService` 태그는 `q.Tag("Card")`, Attribute는 `q.Attr { Kind = "counter" }`로 숫자 키 자리에 값으로 놓습니다. 값이 바뀌면 태그·속성도 따라 바뀌고, 붙인 것은 `Instance:QueryDescendants` 선택자로 화면 밖에서 찾을 수 있습니다 — [이름표와 속성](/getting-started/05-tag-attr/).
+
+</details>
+
+<details>
+<summary>애니메이션은 어떻게 하나요?</summary>
 
 값을 `q.Tween { … }`으로 감싸 프로퍼티에 흘리면 그 목표로 보간됩니다. 자주 쓰는 모양은 `:Apply(q.Animate)` 슈거로 한 줄이 됩니다 — [움직이게 하기](/getting-started/15-animation/).
 
 </details>
 
 <details>
-<summary><strong>컴포넌트 하나가 에러를 던지면 화면 전체가 멈추나요?</strong></summary>
+<summary>컴포넌트 하나가 에러를 던지면 화면 전체가 멈추나요?</summary>
 
 `q.Fallback`(`pcall` 기반)이나 `q.Traceback`(`xpcall` + `debug.traceback` 기반)으로 감싸면 에러가 호출자까지 번지지 않고 대체 결과를 돌려줍니다. 던지기 전에 이미 만들어진 부분 트리는 이 경계가 정리해 주지 않는다는 알려진 구멍이 있습니다 — [Fallback / Traceback](/reference/sugar/05-fallback-traceback/).
 
 </details>
 
 <details>
-<summary><strong>어떤 Roblox 클래스를 만들 수 있나요?</strong></summary>
+<summary>어떤 Roblox 클래스를 만들 수 있나요?</summary>
 
-`D.<Class>` 별칭은 `Frame`·`TextButton`·`ScrollingFrame` 등 31개입니다(서비스·추상 클래스·Deprecated/NotBrowsable 클래스는 범위 밖). 목록에 없는 클래스는 `D.New<<T>>(className)`으로 만듭니다 — [`D` — Instance 생성](/reference/roblox/02-d/).
+`D.<Class>` 별칭은 `Frame`·`TextButton`·`ScrollingFrame` 등 31개입니다(서비스·추상 클래스·Deprecated/NotBrowsable 클래스는 범위 밖). 목록에 없는 클래스는 `D.New<<T>>(className)`으로 만듭니다 — [`Declaration` — Instance 생성](/reference/roblox/02-d/).
 
 </details>
 
 <details>
-<summary><strong>내 화면 코드도 strict 타입 검사를 받게 할 수 있나요?</strong></summary>
+<summary>내 화면 코드도 strict 타입 검사를 받게 할 수 있나요?</summary>
 
 됩니다. 문서 예제는 설정 모듈 하나만 `--!strict`로 두고 화면 코드는 기본 모드를 가정하지만, 화면 코드까지 strict로 올릴 때 파생 노드와 콜백 파라미터에 붙이는 타입 주석 규칙이 따로 정리돼 있습니다 — [설치](/getting-started/00-installation/)의 타입 검사 플래그와 [컴포넌트 경계 규약](/how-to/01-component-conventions/).
 
@@ -138,24 +150,24 @@ const card = D.Frame {
 ### 같이 쓸 수 있나요
 
 <details>
-<summary><strong>quad v1과 같은 클라이언트에 둘 수 있나요?</strong></summary>
+<summary>quad v1과 같은 클라이언트에 둘 수 있나요?</summary>
 
 네. 같은 클라이언트에 v1과 v2를 함께 두는 것은 허용됩니다 — 모듈이 겹치지 않게 두고, 같은 인스턴스를 두 쪽이 함께 만지지 않고, 전역으로 상태를 섞지 않는다는 조건 셋을 지키면 됩니다. 화면 단위로 나눠 옮기는 틀은 [quad v1에서 오는 분께](/overview/02-from-v1/)에 있습니다.
 
 </details>
 
-### 왜 이렇게 만들었나요
+### React를 쓰다 오셨다면
 
 <details>
-<summary><strong>가상 DOM이 없다는 게 정확히 무슨 뜻인가요?</strong></summary>
+<summary>Hook 규칙(최상단에서, 조건문 밖에서, 같은 순서로)은 없나요?</summary>
 
-`D.Frame { … }`을 부르는 그 순간 진짜 Instance가 만들어집니다 — 나중에 비교할 이전 트리도, diff 단계도 없습니다. 컴포넌트 함수가 반환되는 시점에 이미 실물이 있으므로 그 자리에서 바로 읽거나 붙일 수 있습니다 — [첫 화면](/getting-started/02-first-screen/).
+없습니다. Hook 규칙은 컴포넌트 함수가 몇 번이고 다시 실행된다는 전제에서 나옵니다. quad의 컴포넌트는 한 번만 실행되는 셋업 함수라 "두 번째 실행의 순서"라는 것 자체가 없고, 조건문이나 루프 안에서 상태를 만들어도 문제가 없습니다 — [함수로 묶기](/getting-started/12-functions/).
 
 </details>
 
 <details>
-<summary><strong>왜 Hook 규칙(호출 순서 고정 같은 것)이 없나요?</strong></summary>
+<summary>가상 DOM과 diff가 없다는 게 정확히 무슨 뜻인가요?</summary>
 
-Hook 규칙은 컴포넌트 함수가 몇 번이고 다시 실행된다는 전제에서 나옵니다. quad의 컴포넌트는 한 번만 실행되는 셋업 함수라 "두 번째 실행의 순서"라는 것 자체가 없고, 조건문이나 루프 안에서 상태를 만들어도 문제가 없습니다 — [함수로 묶기](/getting-started/12-functions/).
+`D.Frame { … }`을 부르는 그 순간 진짜 Instance가 만들어집니다 — 나중에 비교할 이전 트리도, diff 단계도 없습니다. 컴포넌트 함수가 반환되는 시점에 이미 실물이 있으므로 그 자리에서 바로 읽거나 붙일 수 있습니다 — [첫 화면](/getting-started/02-first-screen/).
 
 </details>

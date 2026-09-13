@@ -1,0 +1,20 @@
+/* 선택 안 된 탑래밸 바로 아래 li 들이 너무 두꺼워보이는 문제를 해결 */
+/* 비 탑래밸 요소와 접힘 타겟 요소는 안정적이므로 추가적으로 해결할 것이 없다 */
+sl-sidebar-state-persist >ul >li {
+    &:not(:has([aria-current="page"])) {
+        a { font-weight: 400; }
+    }
+}
+
+/* 해더 영역에 대한 손질 */
+header>.header {
+    /* 검색 영역을 큰 화면 상태에서 중앙으로 이동시켜 레이아웃의 균형을 맞춤 */
+    >.sl-flex:has(>site-search) {
+        justify-content: center;
+    }
+
+    /* 아이콘의 원본 사이즈 표현식에 *0.9 를 인가해 조금 더 보기 좋은 크기로 제공. */
+    .site-title >img {
+        height: calc(var(--sl-nav-height) * .9 - 2 * var(--sl-nav-pad-y));
+    }
+}

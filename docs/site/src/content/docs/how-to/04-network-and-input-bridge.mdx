@@ -2,6 +2,9 @@
 title: "04. RemoteEvent와 엔진 입력을 상태로 브릿징하기"
 description: "RemoteEvent와 엔진 입력 신호를 Source로 브릿징해 UI에 선언적으로 반영하는 법을 설명합니다"
 ---
+
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
 > **난이도**: 중급
 > **다루는 개념**: `Source`, `Store`, `Effect`, `OnDestroyed`, 단방향 데이터 흐름
 
@@ -214,3 +217,33 @@ return D.Frame {
    ([06. Roblox Studio 없이 헤드리스로 테스트하기](/how-to/06-headless-testing/)).
 3. **수명 동기화**: 컴포넌트에 매달린 외부 연결은 `Effect`의 cleanup이나
    `OnDestroyed`로 반드시 같이 정리합니다.
+
+---
+
+## 이해 점검
+
+<Quiz title={"외부 신호가 UI에 닿는 길"}>
+
+`RemoteEvent`나 하드웨어 입력을 UI에 반영할 때 이 문서가 권하는 모양은 무엇인가요?
+
+- [x] 리스너 안에서는 `Source:Set`으로 상태만 바꾸고, UI는 그 상태를 선언적으로 구독합니다
+- [ ] 리스너 안에서 Frame 위치나 Text를 직접 고쳐 화면을 즉시 맞춥니다
+- [ ] UI 컴포넌트가 `RemoteEvent`를 직접 구독해 값을 받아 씁니다
+
+명령형으로 리스너 안에서 인스턴스를 고치면 상태 동기화가 깨집니다. 상태 레이어와 UI 레이어를 파일로 갈라 두면 UI 레이어는 `RemoteEvent`의 존재를 모르고, 그래서 헤드리스 검증도 쉬워집니다.
+
+</Quiz>
+
+<Quiz title={"컴포넌트 수명에 연결 묶기"}>
+
+컴포넌트가 살아 있는 동안에만 엔진 신호를 듣게 하려면 어떻게 하나요?
+
+- [x] `q.Effect` 안에서 연결을 만들고 해제 함수를 돌려준 뒤, 그 `Effect`를 숫자 키 자리에 놓습니다
+- [ ] `q.Effect`는 cleanup 함수를 반드시 돌려줘야 하므로 정리할 것이 없어도 빈 함수를 돌려줍니다
+- [ ] `q.OnDestroyed(fn)`은 문자 키에 놓아야 인스턴스 수명에 묶입니다
+
+숫자 키 자리에 두면 quad가 그 `Effect`를 인스턴스 수명에 묶고 파괴될 때 cleanup을 부릅니다. cleanup 반환은 선택이고, 정리만 필요한 자리에 더 짧은 `q.OnDestroyed`도 같은 숫자 키 자리에 놓습니다.
+
+</Quiz>
+
+<QuizResults />

@@ -46,10 +46,12 @@ export default defineConfig({
 			// 한국어 문서는 `/<track>/…`, 영어는 `/en/…`. 옛 `/ko/…` URL은 public/_redirects가 301로 보낸다.
 			defaultLocale: 'root',
 			customCss: [
-				'./src/styles/custom.css',
-				'./src/styles/theme-images.css',
-				'./src/styles/user-theme.css',
-				'./src/styles/starlight-sidebar-topics-tweak.css',
+				'./src/styles/starlight-theme.css',
+				'./src/styles/starlight-themed-images.css',
+				'./src/styles/starlight-sidebar-topics-finetune.css',
+				'./src/styles/starlight-finetune.css',
+				'./src/styles/starlight-mermaid-zoom.css',
+				'./src/styles/starlight-landing.css', // [2026-09-14] 랜딩 여백·FAQ summary 굵기 — 메인이 관리
 			],
 			locales: {
 				root: {

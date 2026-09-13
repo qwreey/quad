@@ -191,3 +191,19 @@ end
 | **어트리뷰트 삭제** | `q.Attr { MyKey = q.None }` — 그룹에서 이름을 빼는 것만으로는 지워지지 않는다 |
 | **부모 붙이기** | `Parent`는 props가 아니다 — 만든 뒤 밖에서 `inst.Parent = ...` |
 | **이벤트 콜백** | 엔진 인자만 온다(self 없음). self가 필요하면 `PreRef`로 인스턴스를 잡아둘 것 |
+
+---
+
+## 이해 점검
+
+```quiz
+# `Source`에 `Modifier`를 담으면
+
+테마가 바뀔 때 스타일을 통째로 갈아 끼우려고 `Modifier`를 `Source`에 담으면 어떻게 되나요?
+
+- [x] `Source: cannot hold a Modifier as a Source value`로 막힙니다 — 바뀌는 것은 스타일 **필드**이므로 필드마다 `Source`를 두고 `Modifier`가 그 `Source`를 참조하게 합니다
+- [ ] 그대로 됩니다 — `Modifier`도 평범한 값이라 담아서 숫자 키 자리에 놓으면 갈아 끼워집니다
+- [ ] 반대 방향도 막히므로 `Modifier`의 필드에는 리터럴만 넣을 수 있습니다
+
+`Modifier`가 `Source`를 참조하는 방향은 정상입니다 — 빌더 체인으로 써도, 초기 필드 테이블로 써도 같은 값이 나옵니다.
+```
