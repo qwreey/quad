@@ -134,7 +134,7 @@ quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으�
 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
 ```
 
-`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.1.0`).
+`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.2.0`).
 
 **예제**
 
@@ -149,7 +149,7 @@ print(q2 == q) --> true
 **시그니처**
 
 ```luau
-Version: "3.1.0"
+Version: "3.2.0"
 ```
 
 **동작** — 이 quad-base 사본의 버전 문자열. 타입이 싱글톤 문자열이라 타입 층에서도 값이 그대로 보입니다. 백엔드는 `UseProvider` 시점에 이 값을 자기 패턴과 대조하는 데 씁니다(위 참고).
