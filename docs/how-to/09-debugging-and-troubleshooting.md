@@ -21,7 +21,7 @@ quad는 공개 표면 함수에 태그를 달아두고, 에러를 낼 때 **스�
 프레임을 걷어내 그 바깥의 사용자 줄**을 blame합니다.
 
 ```
-ServerScriptService.Components.UserProfile:42: Event: handler for "Activated" must be a function (got table)
+ReplicatedStorage.Client.UI.UserProfile:42: Event: handler for "Activated" must be a function (got table)
 ```
 
 ### 기대할 수 있는 것
@@ -36,7 +36,7 @@ ServerScriptService.Components.UserProfile:42: Event: handler for "Activated" mu
 ### 기대하면 안 되는 것 — 알려진 한계 둘
 
 1. **C 프레임이 태그된 표면을 직접 부르면 `파일:줄` 접두가 사라집니다**
-   (`pcall(q.Dispatch.drive, ...)` 같은 직전달). 메시지는 살아남습니다 —
+   (`pcall(quad함수, ...)`처럼 quad 함수를 그대로 넘기는 경우). 메시지는 살아남습니다 —
    접두가 필요하면 `pcall(function() ... end)`으로 감싸세요.
 2. **재진입 진입에서는 바깥 진입 줄이 blame됩니다.** observer 콜백 안에서
    다시 디스패치를 유발하면 최외곽 스캔이 바깥 진입 줄을 가리킵니다.

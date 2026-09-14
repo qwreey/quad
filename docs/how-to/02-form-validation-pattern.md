@@ -66,7 +66,7 @@ end
 -- 부르는 쪽 — 원천을 만들고, 그 위에 판정을 얹는다
 local agreed = q.Source(false)
 
--- 약관에 동의해야만 제출할 수 있다
+-- 약관에 동의해야만 제출할 수 있다(지금은 동의 여부 그대로지만, 폼이 커지면 조건이 여기에 늘어난다)
 local canSubmit: q.State<boolean> = agreed:Compute(function(c)
     return c:Get()
 end)
@@ -78,11 +78,13 @@ local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
 end)
 
 local panel = D.Frame {
+    D.UIListLayout { Padding = UDim.new(0, 8) },
+
     Checkbox { Label = "약관에 동의합니다", Value = agreed },
 
     D.TextButton {
         Text = "가입하기",
-        AutoButtonColor = canSubmit,
+        Interactable = canSubmit, -- false면 눌리지 않는다
         BackgroundColor3 = submitColor,
     },
 }
@@ -211,6 +213,9 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
         Size = UDim2.new(0, 320, 0, 240),
         BackgroundColor3 = Color3.fromRGB(30, 30, 35),
 
+        -- 세로로 쌓는다(각 요소의 Size 같은 모양 프로퍼티는 줄이려고 생략했다)
+        D.UIListLayout { Padding = UDim.new(0, 8) },
+
         -- 아이디 입력창
         D.TextBox {
             PlaceholderText = "아이디 (4자 이상)",
@@ -239,9 +244,10 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
         -- 제출 버튼 — 결과를 직접 처리하지 않고 상태에 적기만 한다
         D.TextButton {
             Text = "가입하기",
-            AutoButtonColor = form.CanSubmit,
+            Interactable = form.CanSubmit, -- false면 눌리지 않는다
             BackgroundColor3 = submitColor,
             MouseButton1Click = function()
+                -- Interactable로 이미 막히지만, 상태 기준으로 한 번 더 확인한다
                 if not form.CanSubmit:Get() then
                     return
                 end
@@ -303,7 +309,7 @@ local screen = D.ScreenGui {
   한 번 불리므로(실측: 숫자 키 자리에 놓기 전에 이미 1회), 아직 제출이 없는 상태를
   `nil`로 걸러내야 합니다. 제출 버튼을 누르면 그때 2회째가 오고, 그 시점의
   `Submitted`에 방금 적힌 payload가 들어 있습니다.
-- **관측도 화면과 함께 죽습니다.** `q.dispose(screen)`으로 화면을 내린 뒤에 `Submitted`를 바꿔도
+- **관측도 화면과 함께 죽습니다.** `q.dispose(screen)`(quad가 관리하는 값을 확인하며 파괴하는 정본 경로 — 시작하기 10)으로 화면을 내린 뒤에 `Submitted`를 바꿔도
   콜백은 더 불리지 않습니다(실측: 발화 수 2 그대로). 화면보다 오래 사는 소비자가
   필요하면 숫자 키 자리 대신 `observer:Subscribe()`로 전역 구독을 잡으세요 —
   대신 그 수명은 직접 책임집니다([레퍼런스: `Observer`](../reference/core/05-observer-effect.md)).
@@ -333,7 +339,7 @@ local function submit(props: Props)
 end
 ```
 
-§3의 버튼은 `MouseButton1Click = function() submit(props) end`이 되고, 부르는
+§4의 버튼은 `MouseButton1Click = function() submit(props) end`이 되고, 부르는
 쪽은 `RegistrationForm { Form = form, OnSubmit = function(payload) … end }`으로
 넘깁니다.
 

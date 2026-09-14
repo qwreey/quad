@@ -40,7 +40,7 @@ local CommonButtonModifier = D.Modifier.Frame {
 D.Frame {
     -- [1] 문자 키: 프로퍼티 바인딩 (정적 값 또는 반응형 State/Tween)
     Size = UDim2.new(0, 200, 0, 50),
-    BackgroundColor3 = isHovered:Compute(function(h)  -- 편집기 타입 검사까지 보려면 지역 변수로 빼세요(02 §3)
+    BackgroundColor3 = isHovered:Compute(function(h)  -- 편집기 타입 검사까지 보려면 지역 변수로 빼세요(02 §4)
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
 

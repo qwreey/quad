@@ -5,7 +5,7 @@ description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적�
 # [실전 레시피] 03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉
 
 > **대상 독자**: 수백~수만 개짜리 목록을 `ScrollingFrame`에 그려야 하는 개발자
-> **다루는 개념**: `LayoutOrder`/`Position` 바인딩, 윈도잉, `userdata`, `Blocker`
+> **다루는 개념**: `LayoutOrder`/`Position` 바인딩, 윈도잉, `userdata`, `Throttle`
 > **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 13. 목록 만들기](../getting-started/13-lists.md)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
 > **재활용과 윈도잉은 서로 다른 행에 걸립니다**: 재활용은 **화면에 계속 남아 있는 키**에만 적용되고, 윈도우 밖으로 나가 키가 사라진 행은 재활용이 아니라 파괴(또는 `q.Detach`로 홀드)입니다(§6).
 
@@ -59,7 +59,7 @@ updateFn(item, index, offset, prev, ud) -> (result, ud)
 local function updateFn(
     item: any,
     index: number,
-    offset: q.State<number>,
+    offset: q.Source<number>, -- 이 Slot 앞에 놓인 물리 자식 수를 담은 Source
     prev: any,
     ud: any
 ): (any, any)
@@ -182,29 +182,30 @@ end
 
 ---
 
-## 5. 스크롤 이벤트 폭주 누그러뜨리기 — `Blocker`
+## 5. 스크롤 이벤트 폭주 누그러뜨리기 — `Throttle`
 
-`CanvasPosition`은 한 프레임에도 여러 번 바뀔 수 있습니다. 여러 변경을 한 번의
-전파로 접으려면 `Blocker`를 **`state:Apply(blocker)`로 붙여** 게이트된 State를
-만들고, 목록은 그 게이트된 State를 구독하게 합니다.
+`CanvasPosition`은 한 프레임에도 여러 번 바뀔 수 있고, 바뀔 때마다 §4의 `window`
+계산과 `Slot:List` 재조정이 돕니다. 목록을 그렇게 자주 다시 자를 필요는 없으니,
+원천에 `q.Throttle`을 `:Apply`로 붙여 **정해진 창마다 한 번만** 아래로 통지하게
+하고, `window`는 그 게이트된 State를 보게 합니다.
 
 ```luau
-local scrollY = q.Source(0)                       -- §4의 그 원천 그대로
-local scrollGate = q.Blocker()
-local gatedScrollY = scrollY:Apply(scrollGate)     -- 게이트된 노드 — 목록의 계산은 이제 이걸 본다
+-- §4의 VirtualList 안에서 바뀌는 두 곳
+local scrollY = q.Source(0)                                    -- OnChange 콜백은 그대로 이걸 :Set 한다
+local gatedScrollY = scrollY:Apply(q.Throttle { Time = 0.1 })  -- 0.1초 창마다 한 번 통지
 
--- 묶어서 밀어 넣을 구간(OnChange 콜백은 여전히 scrollY:Set을 부른다)
-scrollGate:On()
-scrollY:Set(120)
-scrollY:Set(180)
-scrollGate:Off()  -- 여기서 정확히 한 번 전파된다(OffWithoutEmit이면 버려진다)
+local window = gatedScrollY:Compute(function(y, _previous, height)
+    -- …§4 본문 그대로…
+end, viewportHeight)
 ```
 
-- `blocker`를 그냥 만들어 두기만 하면 아무것도 막히지 않습니다 — `:Apply`로
-  붙인 State만 게이트됩니다.
-- 같은 `Blocker`를 **중첩해서** `On` 두 번, `Off` 한 번 하는 식은 지원하지
-  않습니다(`IsBlocked`는 카운터가 아니라 단순 불리언). 겹치는 배치가 필요하면
-  배치마다 새 `Blocker`를 만드세요.
+- 창 안에서 막히는 것은 **통지**이지 값이 아닙니다 — `gatedScrollY:Get()`은
+  언제나 마지막 스크롤 위치입니다.
+- 스크롤이 **멈춘 뒤에** 한 번만 계산하고 싶다면 `q.Debounce`를 씁니다. 옵션과
+  `Flush`/`Cancel`은 [레퍼런스: Debounce / Throttle](../reference/sugar/03-debounce-throttle.md)에 있습니다.
+- 시간이 아니라 **코드 구간**을 직접 열고 닫고 싶다면(데이터 여러 개를 한꺼번에
+  바꾸는 동안 목록을 멈추는 경우) `Blocker`가 그 도구입니다 —
+  [시작하기 16](../getting-started/16-blocker.md).
 
 ---
 
@@ -219,8 +220,6 @@ scrollGate:Off()  -- 여기서 정확히 한 번 전파된다(OffWithoutEmit이�
   가정합니다 — 가변 높이는 직접 누적 높이를 관리해야 합니다.
 - **윈도우 밖으로 나간 행은 재활용되지 않습니다.** 키가 사라지면 파괴(또는
   `q.Detach`로 홀드)이고, 재활용은 "화면에 계속 남아 있는 키"에만 적용됩니다.
-- **스크롤 이벤트 자체의 스로틀링은 없습니다.** 5절의 `Blocker`는 사용자가
-  직접 구간을 열고 닫는 도구이지 자동 프레임 병합기가 아닙니다.
 
 ---
 

@@ -4,7 +4,7 @@ description: "RemoteEvent와 엔진 입력 신호를 Source로 브릿징해 UI�
 ---
 # [실전 레시피] 04. RemoteEvent와 엔진 입력을 상태로 브릿징하기
 
-> **난이도**: 중급
+> **대상 독자**: 서버 이벤트·입력·프레임 신호를 UI 상태로 들여오려는 개발자
 > **다루는 개념**: `Source`, `Store`, `Effect`, `OnDestroyed`, 단방향 데이터 흐름
 
 ---
@@ -188,15 +188,18 @@ end
 | `q.OnDestroyed(fn)` | 인스턴스가 파괴될 때 | — |
 
 ```luau
-local conn: RBXScriptConnection? -- 컴포넌트 안에서 만든 커넥션을 바깥 지역 변수로 들고 있는 경우
--- ... conn = SomeSignal:Connect(...) ...
-return D.Frame {
-    -- 숫자 키 자리에 둔다 — 돌려주는 EffectHandle이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
-    q.OnDestroyed(function()
-        if conn then conn:Disconnect() end
-    end),
-    -- …나머지 자식·프로퍼티…
-}
+local function StatusPanel()
+    -- 컴포넌트를 만들 때 연결하고, 파괴될 때 끊는다
+    local conn = SomeSignal:Connect(function(...) --[[ … ]] end)
+
+    return D.Frame {
+        -- 숫자 키 자리에 둔다 — 돌려주는 EffectHandle이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
+        q.OnDestroyed(function()
+            conn:Disconnect()
+        end),
+        -- …나머지 자식·프로퍼티…
+    }
+end
 ```
 
 인스턴스 자체를 나중에 참조해야 하면 `q.Ref<<Frame?>>(nil)`을 숫자 키 자리에 두고

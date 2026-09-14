@@ -206,7 +206,7 @@ local children: { Instance } = { D.TextLabel { Text = "제목" }, D.TextLabel { 
 -- v1: Mount(screenGui, Frame{...}, another)
 local gui = D.ScreenGui {
 	D.Frame {
-		-- 자식 배열 변수는 테이블 리터럴의 마지막 원소로 펼쳐서만 넘긴다
+		-- 자식 배열 변수는 테이블 리터럴의 마지막 원소로 펼쳐서만 넘긴다(직역용 임시 모양 — 정리할 때는 Slot으로 받는다, how-to 01)
 		table.unpack(children),
 	},
 }
@@ -345,7 +345,7 @@ local Accent = D.Modifier.Frame():BackgroundColor3(Color3.fromRGB(0, 120, 255))
 
 local card = D.Frame {
 	Size = UDim2.fromOffset(200, 80),
-	UICorner = 12, -- v1의 Corner = 16
+	UICorner = 12, -- v1의 Corner = 12
 	CardStyle,
 	Accent, -- 뒤에 온 Modifier가 필드 단위로 이긴다
 }

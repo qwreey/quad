@@ -16,7 +16,7 @@ description: "D.Frame 하나와 그 안의 라벨을 만들어, props 테이블�
 
 ## 준비 코드
 
-01장에서 만든 진입점 `Main.client.luau` 안에서 계속 짭니다. 01장의 `screen`·`playerGui` 줄은 그대로 두고 `hello` 라벨만 지웁니다. 이 장부터 코드에서 반복해 적지 않는 윗줄은 이 둘입니다.
+01장에서 만든 진입점 `Main.client.luau` 안에서 계속 짭니다. 01장의 `screen`·`playerGui` 줄은 그대로 두고 `hello` 라벨만 지웁니다. 이 장부터는 그 줄들과 아래 `q`·`D` 두 줄을 코드에서 반복해 적지 않습니다.
 
 ```luau
 -- (Main.client.luau 계속 — 01장에서 만든 진입점입니다)

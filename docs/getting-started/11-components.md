@@ -220,7 +220,7 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 <!-- mock 실측 2026-09-11: gs.polish3.luau "11 conditional child" — false 자식은 위 에러, or q.None이면 자리만 비운다 -->
 
 <details>
-<summary><strong><code>Slot</code>은 왜 <code>Children = …</code> 같은 문자 키로 못 넘기나요?</strong></summary>
+<summary><strong>받은 <code>Slot</code>을 왜 <code>Children = …</code> 같은 문자 키 자리에 꽂지 못하나요?</strong></summary>
 
 `props.Children`이라는 이름부터가 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 
@@ -259,9 +259,9 @@ props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
 - [ ] `Children`은 원래 문자 키의 값 자리에 꽂아야 하고, `q.None`은 그때 쓰는 기본값이기 때문입니다
 - [ ] `q.None`이 그 자리에 빈 컨테이너를 하나 만들어 레이아웃을 유지해 주기 때문입니다
-- [x] 숫자 키 자리의 표현식이 `nil`로 평가되면 그 자리가 **구멍**이 되고, 뒤에 원소가 하나라도 더 붙으면 그 자리에서 에러가 나기 때문입니다
+- [x] `nil`로 평가된 숫자 키 자리는 **구멍**이 되어, 뒤에 원소가 더 붙으면 에러가 나기 때문입니다
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널이라 기여는 0이지만 위치는 그대로 지킵니다. 반대로 문자 키의 값 자리에 `Slot`을 두면 디스패치가 거부하므로, 꽂는 자리는 언제나 숫자 키입니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널이라 기여는 0이지만 위치는 그대로 지킵니다. 그래서 안 넘어올 수 있는 값을 숫자 키 자리에 꽂을 때는 `or q.None`을 붙여 둡니다.
 ```
 
 ---

@@ -34,7 +34,7 @@ local CommonButtonModifier = D.Modifier.Frame { BorderSizePixel = 0 }
 
 D.Frame {
     Size = UDim2.new(0, 200, 0, 50),                  -- 문자 키: 프로퍼티
-    BackgroundColor3 = isHovered:Compute(function(h)  -- 문자 키: 반응형 바인딩(편집기 타입 검사까지 보려면 지역 변수로 빼세요 — how-to 02 §3)
+    BackgroundColor3 = isHovered:Compute(function(h)  -- 문자 키: 반응형 바인딩(편집기 타입 검사까지 보려면 지역 변수로 빼세요 — how-to 02 §4)
         return if h:Get() then Color3.fromRGB(80, 120, 240) else Color3.fromRGB(50, 50, 60)
     end),
     MouseEnter = function() isHovered:Set(true) end,  -- 문자 키: 이벤트(self는 안 온다)
@@ -300,7 +300,6 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 - **이전 선택과 그 한계**: 여기서 갈린 상대는 외부 라이브러리가 아니라 우리 자신입니다. 프로젝트 안에서 `Err.format(subject, reason, got)` 류 포맷 헬퍼가 제안됐고, 헬퍼를 두면 메시지가 조각나 로그에 찍힌 문장을 들고 소스로 grep해 돌아가는 경로가 끊긴다는 이유로 기각됐습니다.
 - **우리가 넘은 방법**: 메시지 리터럴은 던지는 줄에 통째로 남기고(보간은 값 부분에만), 공개 표면 함수에 태그를 달아 스택에서 걷어낸 뒤 **사용자 줄**을 blame합니다.
 - **알아 둘 것**: blame이 짚는 줄에는 경계가 있고, 그 경계는 quad의 선택이 아니라 Luau `error(level)`의 성질입니다. C 프레임이 태그된 표면을 직접 부르면(`pcall(fn, …)`처럼 함수를 그대로 넘기는 경우) `파일:줄` 접두가 사라집니다 — 메시지 자체는 그대로 남으므로 grep 경로는 끊기지 않습니다. 재진입에서는 최외곽 스캔이 바깥 진입 줄을 짚습니다(안쪽 줄이 필요한 자리는 `errorBeforeNearest` 쌍을 자리마다 가려 씁니다) → [Quadnomicon Vol. 11](../quadnomicon/11-static-grepability-and-error-architecture.md).
-- **알아 둘 것**: `OnRendered`가 보장하는 것은 **자기 아래**(서브트리)의 완성이지 자기 위가 아닙니다 — 부모에 붙었음은 보장하지 않습니다([생명주기 훅](../reference/sugar/04-lifecycle-hooks.md)).
 - **자세히**: [09. 부록 — quad 에러 읽는 법](../how-to/09-debugging-and-troubleshooting.md), [Quadnomicon Vol. 11 — 정적 grep 가능성, 표면 blame, 에러 아키텍처](../quadnomicon/11-static-grepability-and-error-architecture.md)
 
 ---

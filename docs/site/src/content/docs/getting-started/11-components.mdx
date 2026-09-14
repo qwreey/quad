@@ -218,7 +218,7 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 `q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Dispatch: no handler matched key 1 (value: boolean) — …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
 
 <details>
-<summary><strong><code>Slot</code>은 왜 <code>Children = …</code> 같은 문자 키로 못 넘기나요?</strong></summary>
+<summary><strong>받은 <code>Slot</code>을 왜 <code>Children = …</code> 같은 문자 키 자리에 꽂지 못하나요?</strong></summary>
 
 `props.Children`이라는 이름부터가 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 
@@ -256,9 +256,9 @@ props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
 - [ ] `Children`은 원래 문자 키의 값 자리에 꽂아야 하고, `q.None`은 그때 쓰는 기본값이기 때문입니다
 - [ ] `q.None`이 그 자리에 빈 컨테이너를 하나 만들어 레이아웃을 유지해 주기 때문입니다
-- [x] 숫자 키 자리의 표현식이 `nil`로 평가되면 그 자리가 **구멍**이 되고, 뒤에 원소가 하나라도 더 붙으면 그 자리에서 에러가 나기 때문입니다
+- [x] `nil`로 평가된 숫자 키 자리는 **구멍**이 되어, 뒤에 원소가 더 붙으면 에러가 나기 때문입니다
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널이라 기여는 0이지만 위치는 그대로 지킵니다. 반대로 문자 키의 값 자리에 `Slot`을 두면 디스패치가 거부하므로, 꽂는 자리는 언제나 숫자 키입니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널이라 기여는 0이지만 위치는 그대로 지킵니다. 그래서 안 넘어올 수 있는 값을 숫자 키 자리에 꽂을 때는 `or q.None`을 붙여 둡니다.
 
 </Quiz>
 
