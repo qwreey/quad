@@ -139,7 +139,7 @@ Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야*
   }
 }
 ```
-<!-- 2026-09-14: 확장 1.69.0의 editors/code/package.json·src/extension.ts로 설정 키와 적용 순서를 확인(sync → enableNewSolver → override). 같은 날 사용자 실측: code-server + 확장 1.69.0(linux-x64)에서 이 블록과 똑같은 설정으로(사용자 설정 파일에 넣음) D 선언 자동완성·새 솔버 적용·에러 없음 확인. 워크스페이스 .vscode/settings.json 경로 자체는 따로 돌려 보지 않음(같은 설정 키라 결과는 같아야 함) -->
+<!-- 2026-09-14: 확장 1.69.0의 editors/code/package.json·src/extension.ts로 설정 키와 적용 순서를 확인(sync → enableNewSolver → override). 같은 날 사용자 실측: code-server + 확장 1.69.0(linux-x64)에서 이 블록과 똑같은 설정으로(사용자 설정 파일에 넣음) D 선언 자동완성·새 솔버 적용·에러 없음 확인. 워크스페이스 .vscode/settings.json 경로 자체는 따로 돌려 보지 않음(같은 설정 키라 결과는 같아야 함). 음성대조: override의 한도 셋을 빼면 곧바로 타입이 error-type으로 무너지고(눈에 띄는 에러 없이 조용히), 다시 넣으면 정상 — 확장이 한도를 넓게 잡아 두지 않으며 이 셋이 있어야 동작함 -->
 
 - **`enableNewSolver`가 첫 플래그(`LuauSolverV2`)를 켭니다.** 나머지 셋은 `override`에 넣습니다. `override`에 `"LuauSolverV2": "true"`를 같이 적어도 결과는 같습니다.
 - **`override`의 값은 문자열입니다** — `"160000"`처럼 따옴표로 감싸세요. 스키마가 문자열만 받습니다.
@@ -148,7 +148,7 @@ Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야*
 - **확장은 기본으로 Roblox가 공개한 Luau 플래그를 받아와 적용합니다**(`luau-lsp.fflags.sync`). `override`가 그 뒤에 적용되므로 위 값이 이깁니다.
 - 설정을 바꾸면 확장이 언어 서버를 다시 띄우라는 알림을 냅니다. 알림에서 다시 띄우거나 VS Code 창을 다시 로드하세요(명령 팔레트 → `Developer: Reload Window`).
 
-적용됐는지는 `D.Frame { Name = "x" }` 한 줄로 확인할 수 있습니다. 그 줄에 "too complex to typecheck"가 뜨면 설정이 먹지 않은 것입니다.
+적용됐는지는 `D.Frame { Name = "x" }` 한 줄로 확인할 수 있습니다. 편집기에서는 한도 플래그가 빠져도 **눈에 띄는 에러 없이 조용히 무너지는 경우가 많습니다** — `D.`나 props 안에서 자동완성이 안 나오거나, 마우스를 올린 타입이 `*error-type*`으로 보이면 설정이 먹지 않은 것입니다. CLI에서는 같은 상황이 "too complex to typecheck" 에러로 드러납니다.
 
 #### CI와 터미널 — `luau-lsp analyze`
 

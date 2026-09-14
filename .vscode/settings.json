@@ -1,3 +1,9 @@
 {
-	"luau-lsp.fflags.enableNewSolver": true
+	"luau-lsp.platform.type": "roblox",
+	"luau-lsp.fflags.enableNewSolver": true,
+	"luau-lsp.fflags.override": {
+		"LuauTarjanChildLimit": "160000",
+		"LuauSubtypingIterationLimit": "100000",
+		"LuauTypeInferIterationLimit": "1000000"
+	}
 }
