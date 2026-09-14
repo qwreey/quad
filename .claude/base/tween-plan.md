@@ -2,7 +2,7 @@
 
 **상태**: base — **2026-08-10 세션에서 구조 전체가 재설계됨.** 기존
 "`v`가 Store인 아무 `k`나 잡는 우선순위 최상위 Dispatch 핸들러" 모델은
-`research/pre-implementation-audit.md` 1-1이 지적한 구조적 모호함("애니메이션
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-1이 지적한 구조적 모호함("애니메이션
 없는 일반 반응형 프로퍼티 바인딩도 결국 이름이 Tween인 파일을 거쳐가는가")을
 명확히 답하지 못했음 — 대체된 새 모델(`Tween<T>`를 PropertyHandler가
 소비하는 값-레벨 래퍼로 두는 것)이 이 모호함을 구조적으로 해소함, 아래
@@ -448,7 +448,7 @@ end)
 **⭐ [2026-09-07 사용자 결정 — 역전] `Tween`은 통째로 quad-roblox의 값이다.** 옛 서술(아래
 취소선)은 "값 타입은 엔진 무관이라 base"였는데, 옵션 어휘(`Time`/`Style`/`Direction`/
 `RepeatCount`/`Reverses`/`DelayTime`)는 Roblox `TweenInfo.new`의 인자를 이름으로 푼 것이라
-어휘 자체가 엔진 지식이고(`research/source-layout-plan.md` 2절 사실 확인), 사용자 논거는 셋 —
+어휘 자체가 엔진 지식이고(`archive/surveys/2026-09-07-source-layout-plan.md` 2절 사실 확인), 사용자 논거는 셋 —
 *"Tween 자체가 워낙 엔진의 지식인지라, 엔진 자체로 옮기고 싶어"*, *"이미 Animate 가 온전히
 roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Tween 도 quad-roblox 에 있지 말아야할
 이유가 없어"*, *"웹은 Transition 으로 이름도 다른데다가 … 한 css 프롭에 다른 프롭의 애니메이션을
@@ -644,7 +644,7 @@ tween:Mapped(fn: (T) -> U): Tween<U>   -- opts를 clone하고 Value만 fn(Value)
 
 ### 자연 완료(Completed) 시 per-instance 북키핑 — 정리 안 해도 됨 (확정)
 
-`research/pre-implementation-audit.md` 2-10번이 제기했던 질문. **결론:
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 2-10번이 제기했던 질문. **결론:
 Completed 이벤트를 구독해 3-상태 릴레이션 슬롯을 `true`로 되돌리는 등의
 정리 로직은 만들지 않는다.**
 

@@ -8,7 +8,7 @@
 - GitHub 경고 블록(`> [!NOTE]` 등)은 Starlight aside(`:::note` …)로 바꾼다(2026-09-10).
 - `docs/assets/**`를 `site/public/assets/`로 복사하고 `../assets/x.svg` 참조를 `/assets/x.svg`로 바꾼다; 다크 대응 `<picture>`(GitHub 방식)는 `.light-only`/`.dark-only` 이미지 둘로 바꾼다(2026-09-10).
 - 트랙 밖(`skills/` 등 사이트에 복사되지 않는 곳)을 가리키는 링크는 링크를 벗기고 텍스트만 남긴다(GitHub에서는 원본 링크가 그대로 산다).
-- [2026-09-11 사용자 결정] 루트 `CHANGELOG.md`도 사이트에 싣는다(`/changelog/`) — 원본은 Keep a Changelog 형식 그대로 두고(GitHub·패키지 사본이 읽는 파일이라 frontmatter를 넣지 않는다), 사본에만 title/description을 앞에 붙인다. 원본의 `./docs/...` 링크는 루트 기준으로 풀려 사이트 경로가 된다(`research/roadmap-changelog-docs-plan.md` 2.4 실측).
+- [2026-09-11 사용자 결정] 루트 `CHANGELOG.md`도 사이트에 싣는다(`/changelog/`) — 원본은 Keep a Changelog 형식 그대로 두고(GitHub·패키지 사본이 읽는 파일이라 frontmatter를 넣지 않는다), 사본에만 title/description을 앞에 붙인다. 원본의 `./docs/...` 링크는 루트 기준으로 풀려 사이트 경로가 된다(`archive/surveys/2026-09-11-roadmap-changelog-docs-plan.md` 2.4 실측).
 - [2026-09-13] 한 줄 전체가 `<!-- ... -->` HTML 주석뿐인 줄(맨 앞 blockquote `> `는 허용, 코드 펜스 안·리스트 들여쓰기
   줄은 그대로 둔다)을 사본에서 지운다 — starlight-md-txt(플러그인 도입, astro.config 참고)가 모든 docs 항목을
   remark-mdx로 다시 파싱하는데, MDX는 HTML 주석 문법 자체를 안 받고(공백을 앞뒤로 끼워도 마찬가지 — 실측) `{/* text */}`만

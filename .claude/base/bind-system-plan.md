@@ -445,7 +445,7 @@ end
     다를 수 있는 최종 사용자 코드고, quad의 마운트(Slot)는 *부기가 있는* 자리에
     넣는 별개 개념이다. 루트 전용 props 키(`H-142` 취지와 충돌)도 기각. 사용자
     문서에 "루트는 직접 `.Parent =`, 그 아래는 절대 직접 하지 말 것"을 같이
-    적을 것(`research/documentation-content-map.md` 대상).
+    적을 것(`archive/surveys/2026-08-06-documentation-content-map.md` 대상).
 
 **이벤트 바인딩 — `On.EventName` 도트액세스 안 씀, PA님 방식(평범한 문자열
 키 + 런타임 리플렉션)으로 전환**: `DeclarativeInstance.luau:13-91`의

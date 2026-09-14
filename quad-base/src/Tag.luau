@@ -7,7 +7,7 @@
 	Value API (immutable clone chaining — every operation returns a clone).
 	`names` everywhere below is `string | Tag | { names }` — a name, another
 	Tag (its whole set), or a plain list of those, nested to any depth
-	(user decision 2026-09-07, `research/source-layout-plan.md` 3절 (b) —
+	(user decision 2026-09-07, `archive/surveys/2026-09-07-source-layout-plan.md` 3절 (b) —
 	*"Tag() 로 초기 부터 잡는게 유리"*; this reverses `H-389`'s strings-only
 	constructor and `H-380`'s "a Tag is not a list" rejection — the same
 	`flattenInto` door now takes all three, like `Attr(store, attr,

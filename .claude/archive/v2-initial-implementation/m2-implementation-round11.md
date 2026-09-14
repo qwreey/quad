@@ -31,7 +31,7 @@
 | `H-183` | **②** | 3 | 🟡 | Observer 설치 발화 안에서 `self:Subscribe()`/`bindLifetime(inst, self)`를 부르면 `_catchUp`이 `fn`을 중첩 재생하고 생성자가 "already subscribed"로 죽음 — Effect의 `isRunning` 가드(`H-147`)에 해당하는 것이 Observer엔 없음 | ✅ (a) 사용자 확정(2026-08-31) — Observer `_running` 가드(네 진입점 + `_assertBindable`; fn error 시 플래그 잔류는 설계상 인정), `spec.observer` 9 |
 | `H-184` | **②** | 1·3 | 🟡 | `bindLifetime`이 부기를 커밋한 **뒤** `_bindDestroying`의 `isRunning` 가드가 던지면 Effect가 묶인 채(`canExecute` 참) `Destroying` 연결 없이 남음 — 순서는 `lifecycle-pattern.md` (1) 그대로라 quad-roblox도 상속 | ✅ (a) 사용자 확정(2026-08-31) — `bindLifetime`이 커밋 전 `value:_assertBindable()` 문의(Effect·Observer 공통 훅), `lifecycle-pattern.md` (1)·mock 동시 반영, `spec.effect` 10·`spec.observer` 9 |
 | `H-185` | **②** | 3 | 🟢 | `EffectFn`은 `-> ...(() -> ())` 팩(H-95)인데 런타임은 첫 반환만 cleanup으로 저장 — `return stopA, stopB`가 타입은 통과하고 `stopB`는 조용히 버려짐 | ✅ 사용자 확정(2026-08-31, (a) 아님) — cleanup은 **하나만**: 목록 소진은 표면만 넓혀 기각, 다중 정리는 클로저로 묶는 게 계약(문서·타입 주석 명시, 런타임 무변경) |
-| `H-186` | **②** | 3 | 🟡 | 교차 인스턴스 dep(`A.Effect(fn, B.Source(0))`)을 막지도 정의하지도 않음 — dep의 백엔드가 게이팅하고 에러가 엉뚱한 인스턴스를 가리킴; `architecture.md` 13번은 다중 `New()`를 지원으로 서술 | ✅ (b) 사용자 확정(2026-08-31 회신 3) — **UB 문서화**, 추후 생각해볼 점으로("확인. UB로 놓는게 맞아보여") — `architecture.md` 13번 `H-186` 항목 + `documentation-content-map.md` §4, 코드는 주석만 |
+| `H-186` | **②** | 3 | 🟡 | 교차 인스턴스 dep(`A.Effect(fn, B.Source(0))`)을 막지도 정의하지도 않음 — dep의 백엔드가 게이팅하고 에러가 엉뚱한 인스턴스를 가리킴; `architecture.md` 13번은 다중 `New()`를 지원으로 서술 | ✅ (b) 사용자 확정(2026-08-31 회신 3) — **UB 문서화**, 추후 생각해볼 점으로("확인. UB로 놓는게 맞아보여") — `architecture.md` 13번 `H-186` 항목 + `archive/surveys/2026-08-06-documentation-content-map.md` §4, 코드는 주석만 |
 | `H-187` | **②** | 3·4 | 🟢 | `quad-types`의 새 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)이 `base/`에 없는 이름 — 시그니처는 문서 그대로, 이름은 구현이 붙임 | ✅ (a) 사용자 확정(2026-08-31) — 이름 그대로 승인("부분부분 타입을 뽑아 재사용성 … 이의 없음"), `quad-types-plan.md`에 기록 |
 | `H-188` | ① | 4 | 🟡 | `state:Gate(setup)`가 검증 실패로 error할 때 반쯤 만든 노드가 상류 `_subs`에 남아 다음 `Set`이 `nil` 호출로 죽음(GC 타이밍 의존) | ✅ 실패 시 detach + setup 전 `_onUpstreamEmit = Void`, `spec.gate` 1 |
 | `H-189` | ① | 3 | 🟢 | `Observer.Subscribed`가 초기화되지 않아 `nil`(타입은 `boolean`, Effect는 `false`) | ✅ `false`로, `spec.observer` 1 |
@@ -522,7 +522,7 @@ lazy 하게 읽으면 되는거 아냐? Set 재진입 같은 경우는, 반복�
 `H-169`: *"callback 도중에 set 된다면 처음부터 다시 수행. 후행의 요소는 set으로 인해
 과거의 값을 받지는 않음"*(기존 확정과 동일 의미 — 안쪽 파동이 전부 돌고 바깥 순회는
 리비전 비교로 놓음) / `H-170`: (a) 재확인 + **한계 문서화 지시**(원문은 `ref-plan.md`
-`:Wait` 절, 등록은 `documentation-content-map.md` §4의 `H-170` 항목). 확정 근거 인용:
+`:Wait` 절, 등록은 `archive/surveys/2026-08-06-documentation-content-map.md` §4의 `H-170` 항목). 확정 근거 인용:
 
 - **`H-182`** (a) + 네이밍: *"slot 에서 _destroyed 이라는 단어를 썼었고 그거와 다른 점은
   이건 '죽는 도중만' 확인한다는것 — slot 은 죽으면 재바운딩 못 하지만, Effect 는 다시

@@ -20,7 +20,7 @@
 >   M8 Ref(`<Class>RefMarker`, `PreRef`/`PostRef`), M6 Slot, M11 Tween/Animate,
 >   숏핸드. ROADMAP M9 항목 둘: 관례 문서화/예제, 관례를 정식 컴포넌트로 검증
 >   (M0 스파이크 `06-component-boundary-nil-hole-props`의 정식화).
-> - **문서화 자체(사이트·quadnomicon)는 M9가 아니다** — `research/documentation-plan.md`
+> - **문서화 자체(사이트·quadnomicon)는 M9가 아니다** — `archive/surveys/2026-08-06-documentation-plan.md`
 >   백로그. M9의 "문서화"는 **정본에 관례를 확정 서술 + 실물 예제(spec)**까지.
 >
 > §2~§5는 round20 규약(= M11 = M8 = … = M3 준용본) 준용.
@@ -35,7 +35,7 @@
 | **Q2** | **경계 필드 이름(새 표면 — 사용자 문항)** — 정본이 가칭으로 쓰는 `props.Modifier`/`props.Ref` | (a) **가칭 그대로 확정** `Modifier`/`Ref`(quad 값 이름과 1:1, 자동완성에서 곧바로 읽힘) / (b) 소문자 `modifier`/`ref` / (c) 다른 | **(a)** | 코퍼스 전체가 이미 이 표기로 서술해 왔고, 컴포넌트 저작자가 `props.Modifier or None`을 그대로 옮겨 적는 관용구가 한 글자도 안 바뀐다. **회신 전엔 spec·예제를 가칭으로 쓴다**(이름 교체는 치환 한 번) |
 | **Q3** | `Component` 래퍼 | (a) **만들지 않는다** — 컴포넌트는 함수, 타입은 `(props: P) -> Instance`(또는 `-> Slot<T>`) 그대로 / (b) 식별용 슈가 | **(a)** | 정본 *"아마 불필요"* + "마법 안 쓴다" 사용자 확정. 필요가 관측되면 그때 |
 | **Q4** | 검증 범위(ROADMAP 항목 2) | (a) **`quad-roblox/test/spec.component.luau`** — 플레인 함수 컴포넌트 예제 셋을 mock으로 실주행: ① 단일 루트(`MaterialButton(props)` — `props.Modifier or None`·`props.Ref or None`·`Overridden`·자식 전달·Tween/숏핸드 조합) ② Slot 반환 컴포넌트(`ItemList(props)` — Modifier/Ref 파라미터 없음, 형제 레벨 펼침) ③ nil-hole 회귀(스파이크 `06` 정식화 — `or None` 없이 꽂으면 실제로 무엇이 깨지는지 관측) + strict 타입 spec(`spec.componenttypes` — props 타입 `{ Modifier: DModule.FrameModifier?, Ref: QuadTypes.Ref<Frame?>?, … }`, `TypedFactory<<MaterialButtonModifier>>`/`DefineSubtype`/`Into<TextButton>` 경유) / (b) 런타임만 | **(a)** | M7 ④가 "컴포넌트 Modifier"를 이미 사용자 시나리오(`MaterialButton`)로 실측했으니 그 예제를 정식화하면 된다 |
-| **Q5** | 정본 갱신 범위 | (a) `component-composition-plan.md`에 "구현 확정" 배너 + 예제 코드 블록(spec과 동일 소스) + "남은 열린 질문" 닫힘, `research/documentation-content-map.md`에 관례 항목(이미 등재돼 있으면 포인터만) / (b) 예제 파일을 별도 디렉터리(`examples/`)로 | **(a)** | 예제의 소스는 하나(spec) — 사이트용 예제는 문서화 마일스톤 몫 |
+| **Q5** | 정본 갱신 범위 | (a) `component-composition-plan.md`에 "구현 확정" 배너 + 예제 코드 블록(spec과 동일 소스) + "남은 열린 질문" 닫힘, `archive/surveys/2026-08-06-documentation-content-map.md`에 관례 항목(이미 등재돼 있으면 포인터만) / (b) 예제 파일을 별도 디렉터리(`examples/`)로 | **(a)** | 예제의 소스는 하나(spec) — 사이트용 예제는 문서화 마일스톤 몫 |
 | **Q6** | Studio | (a) **생략** — 엔진 대면 델타 없음(전부 기존 핸들러 조합); 발견 문서에 기록 / (b) 한 번 | **(a)** | Q1 규약 |
 
 ## §1 범위 — 한 단위
@@ -51,4 +51,4 @@ round20 규약 준용. 발견 문서 `m9-implementation-round21.md`(`H-340`부�
 
 **[2026-09-06 완료 — `H-340`/`H-341`]** `spec.component`(5절: 단일 루트·생략·`Overridden`·Slot 반환·커스텀 클래스 상향)·`spec.componenttypes`(strict — `IntoTextButton`·`Ref<TextButton?>`·`TypedFactory<<T>>`), 정본 배너, ROADMAP M9 둘 `[x]`. Studio 생략(Q6 (a)). §4 문항 둘(Q2 이름·`H-340`).
 
-Q5 (a)의 "예제 코드 블록"은 넣지 않았다 — 예제의 소스는 spec 하나(같은 코드를 정본에 복제하면 갈라진다, 감사 마감 라운드 판단); `documentation-content-map.md`엔 포인터만.
+Q5 (a)의 "예제 코드 블록"은 넣지 않았다 — 예제의 소스는 spec 하나(같은 코드를 정본에 복제하면 갈라진다, 감사 마감 라운드 판단); `archive/surveys/2026-08-06-documentation-content-map.md`엔 포인터만.

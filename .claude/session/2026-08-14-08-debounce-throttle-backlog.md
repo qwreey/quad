@@ -31,7 +31,7 @@ request #7 ...`). 로컬 `main`(`10cd31b`)으로 `git reset --hard`해서
 module-lifecycle-plan.md`(백엔드 주입 경로), `base/purity-and-effects-plan.md`,
 `base/bind-system-plan.md`의 온톨로지/전파 모델 절, `base/tween-plan.md`
 헤딩(엔진 종속 프리미티브의 선례), `research/operator-sugar-plan.md`(이
-항목이 원래 매달려 있던 자리), `research/additional-primitives-plan.md`.
+항목이 원래 매달려 있던 자리), `archive/surveys/2026-08-06-additional-primitives-plan.md`.
 
 ## 실제로 새로 알아낸 것 세 가지
 
@@ -318,7 +318,7 @@ dedup"은 **지금 넣지 않고** 순수 구현 최적화로만 남기는 쪽. 
 | `base/architecture.md` | 원래도 맞는 서술("pull-recompute가 다이아몬드를 푼다")이었으나 주체가 캐시임을 명시 보강 + 역전 포인터 |
 | `base/blocker-plan.md` | **"emit 전파를 지연시킬 수 있는 유일한 요소"**로 위치 명문화 — 옛 서술이 사실상 Blocker의 일을 모든 State에 암묵적으로 심어 존재 의의를 반쯤 지웠다는 점까지 |
 | `reference/comparison-fusion-vide.md` | Vide 대비 "전파를 끊어서"가 아니라 "애초에 push 시점에 계산을 안 해서"로 |
-| `research/framework-comparison-findings.md` | 같은 정정. quad가 더 낫다는 결론은 유지, 다만 중복 *통지*는 안 접음을 명시 |
+| `archive/surveys/2026-08-06-framework-comparison-findings.md` | 같은 정정. quad가 더 낫다는 결론은 유지, 다만 중복 *통지*는 안 접음을 명시 |
 | `ROADMAP.md` | M0 체크리스트의 "이미 invalid면 전파 중단되는지"를 **정반대**로 교체 + `:Get()` 안 하는 Observer 확인 항목 추가 |
 | `luau-test` `05-store-state-diamond-propagation.luau` | **옛 모델을 통과 상태로 검증 중이었음** → `rewrite-required/`. `STATUS.md` 개수(done 14→13, rewrite 5→6)/`README.md`도 동기화 |
 | `audit/luau-test-first-run-2026-08-13.md` | `05` 행 정정 + **"런타임 12개 전원 통과"를 액면대로 읽지 말라**는 경고 추가(검증 대상이 바뀐 게 이제 셋이라 현행 설계 기준으론 9개) |
@@ -335,7 +335,7 @@ dedup"은 **지금 넣지 않고** 순수 구현 최적화로만 남기는 쪽. 
 `README.md` research 표 새 행, `question.md` 3번, `ROADMAP.md` 백로그
 (+"M3에서 `Blocker` 구현할 때 게이트를 공용으로 빼둘 것" 지시),
 `operator-sugar-plan.md`(이관 완료 표시 + 배치 추측 정정),
-`additional-primitives-plan.md`(2026-08-06의 "빈 자리 아님" 판정이 뒤집힘
+`archive/surveys/2026-08-06-additional-primitives-plan.md`(2026-08-06의 "빈 자리 아님" 판정이 뒤집힘
 표시). `doc-check.py` — 이번 변경으로 새로 생긴 ERROR/WARN 0건(워크트리엔
 `initreq/`가 gitignore로 없어서 그 참조 1건이 ERROR로 뜨지만 워크트리
 아티팩트, 본 레포에선 정상).

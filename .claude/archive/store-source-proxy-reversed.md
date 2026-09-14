@@ -5,7 +5,7 @@
 **현재 유효한 설계**: `base/source-state-plan.md`의 "Source가 State를
 만족함 — 구조적 서브타입" 절이 최종 소스. 이 파일은 더 이상 능동적으로
 참고할 필요 없음(구현에 안 씀) — 왜 이 경로를 갔다가 되돌아왔는지가
-`quadnomicon`(프레임워크 설계자용 심화 콘텐츠, `research/documentation-plan.md`
+`quadnomicon`(프레임워크 설계자용 심화 콘텐츠, `archive/surveys/2026-08-06-documentation-plan.md`
 0번 항목) 소재로 가치 있어서 사유·원문을 통째로 보존해둔 것.
 
 ## 역전된 사례 — 원래 무엇을 확정했었나 (2026-08-04 원문)

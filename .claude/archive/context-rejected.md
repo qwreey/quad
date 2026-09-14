@@ -67,4 +67,4 @@ Context 대신 권고했던 대안 — "레이어드 Store"(자식 Source 모음
 Context, 레이어드 Store 둘 다 프리미티브로 만들지 않음. "왜 Context가
 없는가"(명시적 Store 전달이 이미 그 역할을 하고, 타입 강제가 Context의
 실패 모드보다 안전하다는 논증)는 `quadnomicon` 에세이 후보로 등록
-(`research/documentation-content-map.md` 참고).
+(`archive/surveys/2026-08-06-documentation-content-map.md` 참고).

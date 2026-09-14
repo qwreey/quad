@@ -5,7 +5,7 @@
 	surface (옛 `Attribute/init.luau`; `AttrKey`, `StringAttr`…, engine op
 	`setAttr`): quad's Attr is engine-agnostic on its face, and the fact that it
 	binds to a Roblox Attribute is the backend's implementation detail
-	(`research/source-layout-plan.md` 8절). Canonical: `.claude/base/attribute-plan.md` ("그룹
+	(`archive/surveys/2026-09-07-source-layout-plan.md` 8절). Canonical: `.claude/base/attribute-plan.md` ("그룹
 	`Attr(...)`", "메커니즘 — 그룹 전용 키로 단일 키 경로에 위임",
 	"이름 소유권"), as-is.
 

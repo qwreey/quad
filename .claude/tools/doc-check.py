@@ -266,7 +266,7 @@ def interesting(target):
         return False
     # [2026-09-07 소스 재편] `.luau`도 전부 검사한다 — 옛 규칙("미래 소스 트리라 없는 게
     # 당연")은 구현이 끝난 지금 반대로 rot의 사각지대였다(라이브 md 42개가 src 경로를 인용,
-    # 파일을 옮기면 조용히 stale — `research/source-layout-plan.md` 0절 6번). 해석은 아래
+    # 파일을 옮기면 조용히 stale — `archive/surveys/2026-09-07-source-layout-plan.md` 0절 6번). 해석은 아래
     # `resolve`가 소스 루트 전체에서 접미 일치로 한다.
     return True
 

@@ -89,7 +89,7 @@ do
 	mock.assertBlamesUser(errM, "spec.tag.luau", "Merged blame")
 	-- 3순회 `H-380`: a Source / AttrKey / hash table / nil-hole list used to pass
 	-- `ipairs` as an EMPTY list (silent no-op) — still validation errors. A Tag VALUE
-	-- left this set on 2026-09-07 (user decision, `research/source-layout-plan.md` 3절
+	-- left this set on 2026-09-07 (user decision, `archive/surveys/2026-09-07-source-layout-plan.md` 3절
 	-- (b)): `names` is `string | Tag | { names }` everywhere, see the positives below.
 	local a = q.Tag("alpha")
 	for label, bad in { source = q.Source(1), attrKey = q.AttrKey("k"), hash = { gamma = true }, hole = { "b", nil, "c" }, nested = { "b", { 42 } } } :: { [string]: any } do

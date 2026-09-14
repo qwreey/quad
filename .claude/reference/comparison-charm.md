@@ -132,5 +132,5 @@ computed.test.luau:84-104` · `packages/charm/test/observe.test.luau:92-196` ·
 `README.md:185-196,262-287` · `base/store-plan.md` · `base/source-state-plan.md` ·
 `base/blocker-plan.md:25-44,65-68` · `base/lifecycle-pattern.md`(GC-native
 원칙) · `archive/batch-rejected.md` · `base/dispatch-core-plan.md`
-(None 센티널) · `research/additional-primitives-plan.md`(Blocker/키 기반
+(None 센티널) · `archive/surveys/2026-08-06-additional-primitives-plan.md`(Blocker/키 기반
 컬렉션 미결 상태).

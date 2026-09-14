@@ -1,6 +1,6 @@
 # 문서 콘텐츠 분류 맵 (초심자/api/심화/skip)
 
-**상태**: research — `documentation-plan.md` 0번 항목(3축 구조: 초심자/api/심화
+**상태**: research — `archive/surveys/2026-08-06-documentation-plan.md` 0번 항목(3축 구조: 초심자/api/심화
 + 백엔드별 트랙 분리)이 확정된 뒤, 실제로 각 축에 뭘 채울지 `.claude/base/*.md`
 전체 + 관련 `research/*.md`(tween-plan, ui-shorthand-plan)를 2026-08-06 세션에
 6개 에이전트로 병렬 서베이해 분류함. **아직 문서를 쓰라는 뜻 아님** — 착수
@@ -139,7 +139,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 3. 왜 push-invalidate/pull-recompute인가(Fusion eager 노드 미채택) — `bind-system-plan.md`
 4. 왜 State는 플래튼하지 않는가 — 작성 완료(위 3번)
 5. 왜 GC-native 생명주기인가(Signal 클래스 없음) — `lifecycle-pattern.md`
-6. 왜 이벤트 핸들러는 self를 안 받는가 — `bind-system-plan.md`, `research/documentation-plan.md` 3번과 통합 가능
+6. 왜 이벤트 핸들러는 self를 안 받는가 — `bind-system-plan.md`, `archive/surveys/2026-08-06-documentation-plan.md` 3번과 통합 가능
 7. 왜 컴포넌트 경계는 named parameter인가(Compose/Fusion/Vide/v1 수렴) — `component-composition-plan.md`
 8. 왜 "다중 루트 반환" 개념을 없앴는가 — `component-composition-plan.md`
 9. 왜 Slot은 단일 마운트 소유권을 강제하는가(v1/Fusion/Vide 대비) — `slot-plan.md`, `comparison-fusion-vide.md`
@@ -152,11 +152,11 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
 16. **State 파생 체인 동작 원리** — emit이 아래로 전파되고, `Get()` 요청이
     위로 거슬러 올라가 재계산된 뒤 다시 아래로 내려오는 흐름을 명확히
     설명(Blocker/Effect 둘 다 이 흐름 위에서 동작하므로 선행 이해로 필요)
-    — `research/additional-primitives-plan.md` "문서화 백로그" 절
+    — `archive/surveys/2026-08-06-additional-primitives-plan.md` "문서화 백로그" 절
     (2026-08-06~07 신설)
 17. **`:Compute` 함수 안에서 `if` 등으로 일부 의존값만 조건부로 사용하는
     유연한 구조** — 명시적 의존성 선언(`:With`) 위에서도 실제 계산은
-    조건부로 일부만 쓸 수 있다는 팁 — `research/additional-primitives-plan.md`
+    조건부로 일부만 쓸 수 있다는 팁 — `archive/surveys/2026-08-06-additional-primitives-plan.md`
     "문서화 백로그" 절
 18. **Blocker 사용 가이드** — 파이프라인 최종 연산 지점(무거운 계산이
     실제 일어나는 derived state)에 배치하는 게 원칙이라는 것, **네스팅
@@ -165,7 +165,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
     이어짐) — `base/blocker-plan.md`
 19. 여러 Source를 한꺼번에 바꿀 때 Blocker 없이도 중복 재계산/재대입을
     피하는 파이프라인/업데이트 순서 팁(Blocker를 안 쓰는 단순 케이스용
-    보조 팁) — `research/additional-primitives-plan.md` "문서화 백로그" 절
+    보조 팁) — `archive/surveys/2026-08-06-additional-primitives-plan.md` "문서화 백로그" 절
 20. **[2026-08-26 신설, 8라운드 `H-116`] quad 값은 만든 모듈 사본 안에서만
     유효하다** — 패키지 매니저 생태계에서 두 라이브러리가 서로 다른 quad
     버전을 끌어와 **같은 게임에 quad 두 벌이 공존**하는 건 예정된 미래인데,
@@ -225,7 +225,7 @@ v1 폐기 API/버그/구조 결함 전부 v2 설계를 정당화하는 내부 �
    채택된 이유 — Vide 경험자 대상 비교
 
 **2026-08-06~07 후속 세션에서 추가된 후보(전부 `research/
-additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
+archive/surveys/2026-08-06-additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 3. **왜 lexical Batch를 기각하고 대신 값 기반 Blocker를 택했는가** —
    Solid `batch()`/MobX `runInAction()`류 lexical transaction이 Roblox의
    협조적 스케줄링(코루틴 yield) 환경에서 왜 근본적으로 위험한지(전역/
@@ -339,7 +339,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
   세부 시맨틱 — `Slot:List(data, updateFn, keyFn?)`로 2026-08-09 세 번째
   세션에 전부 확정·통합(`base/slot-plan.md`), `Extract`도 CRUD 표에서
   완전히 확정(2026-08-09 열한 번째 세션엔 `Extract(index, newElement?)`로
-  더 확장). `research/additional-primitives-plan.md`는 더 이상 열린
+  더 확장). `archive/surveys/2026-08-06-additional-primitives-plan.md`는 더 이상 열린
   항목 없음, 배경 자료로만 유지.
 - **"hook"/"pre-hook"(+`PostRef` 이후로는 "post-hook") 용어 채택 여부**
   (2026-08-07, 위 심화 후보 6번 참고)
@@ -360,7 +360,7 @@ additional-primitives-plan.md`의 "문서화 백로그" 절이 원자료)**:
 ## 다음 단계
 
 이 맵 자체를 지금 실행할 필요는 없음(구현 착수가 여전히 최우선,
-`documentation-plan.md` "다음 단계" 참고). 나중에 실제로 문서 사이트
+`archive/surveys/2026-08-06-documentation-plan.md` "다음 단계" 참고). 나중에 실제로 문서 사이트
 작업을 시작할 때: (1) 위 1번 목차 초안으로 초심자 트랙 스캐폴딩, (2) 파일별
 [api] 항목으로 레퍼런스 페이지 스캐폴딩, (3) 4번 리스트를 심화 섹션
 에세이 백로그로 사용.

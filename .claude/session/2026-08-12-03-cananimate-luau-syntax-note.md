@@ -42,7 +42,7 @@
 architecture.md`(신규 "코드 스타일 — Luau 문법 관례" 절).
 
 **여전히 열려있는 것**: 안 바뀜 — 자연 완료(Completed) 시 per-instance
-북키핑 정리 여부 하나(`research/pre-implementation-audit.md` 2-10번,
+북키핑 정리 여부 하나(`archive/surveys/2026-08-06-pre-implementation-audit.md` 2-10번,
 M11 착수 시).
 
 **다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터, `.claude/luau-test/`

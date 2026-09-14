@@ -61,7 +61,7 @@
 
 - `question.md` 3절 **D5**(14.2와 같은 것).
 - `research/rfc-docs-section-plan.md` 8절 **Q1~Q6**(공개 범위·형태·기존 결정 둘의 역전·사전 정리 방식·번역·갱신 자동화).
-- `research/roadmap-changelog-docs-plan.md` 7절 **Q1~Q8**(CHANGELOG 임베딩 여부·frontmatter 위치·사이드바·오버뷰 §8 확장 vs 새 페이지·내부 ROADMAP 공개 절 메커니즘·약속 수위·v1 원문 절·번역). 같은 조사의 부수 문항 `question.md` 3절 **D11**(`quad-mock` 이름).
+- ~~옛 로드맵·changelog 구상 7절 Q1~Q8~~ **[2026-09-14 닫힘 — 문서는 `archive/surveys/2026-09-11-roadmap-changelog-docs-plan.md`]** CHANGELOG 쪽(Q1·Q2·Q3·Q7)은 2026-09-11에 사이트로 반영돼 닫혔고, 공개 로드맵 쪽(Q4·Q5·Q6)은 사용자 결정으로 만들지 않고 블로그 구상 `research/blog-plan.md`(4절 결정 여섯)로 대신한다. 번역(Q8)은 `en/` 유보에 딸려 따로 묻지 않는다. 같은 조사의 부수 문항 `question.md` 3절 **D11**(`quad-mock` 이름)은 그대로 열려 있다.
 - ~~**다음 릴리즈 번호**~~ **[2026-09-11 해소 — 사용자 결정 3.1.0]** `check-version.py bump 3.1.0` 완료(매니페스트 여섯·소스·테스트·CHANGELOG `[3.1.0] - 2026-09-11`, 문서의 버전 문구, publish dry-run). BREAKING(`Index → Indexed`)이 마이너에 실린 것은 사용자 판단.
 - 시작하기의 **함수형 페이지 위치**(B 흐름 항목)와 **얇은 페이지 합치기 여부** — 에이전트가 고른 배치라 한 번 봐 달라.
 - ~~**[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.**~~ **[같은 날 해소 — 3.1.0 bump]** 게시(E 절)만 남았다. 문서의 `Indexed` 표시는 "3.0.0에서는 `Index`, 3.1.0부터 `Indexed`"로 바꿔 게시 시점과 무관하게 참.

@@ -9,7 +9,7 @@
 "React의 `useMemo(fn, deps)`처럼 `:With(...)` 없이 `:Compute(fn, a, b, c)`로
 바로 추가 의존성을 선언하면 더 편하지 않냐"는 제안으로 이어진 짧은 세션.
 검토 끝에 확정, `base/bind-system-plan.md`(`:Compute` 절 신규 소절)/
-`base/effect-plan.md`/`ROADMAP.md`(M3)/`research/documentation-content-map.md`
+`base/effect-plan.md`/`ROADMAP.md`(M3)/`archive/surveys/2026-08-06-documentation-content-map.md`
 (quadnomicon 후보 7번)에 반영 완료:
 
 - **`:Compute(fn, ...)`는 채택 — 진짜 공짜 sugar라는 게 사용자가 직접 밝힌

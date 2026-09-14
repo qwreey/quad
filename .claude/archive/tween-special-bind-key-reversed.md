@@ -33,7 +33,7 @@
 
 ## 왜 역전됐나
 
-`research/pre-implementation-audit.md` 우선순위1-1이 지적한 구조적
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1-1이 지적한 구조적
 모호함이 출발점 — 이 문서 전체에서 "`v`가 store인 값을 구독해 `realv`로
 재귀 process하는" 범용 메커니즘의 유일한 구체 예시가 항상 "Tween"으로만
 등장했음. 그런데 Tween(실제 애니메이션, override/cancel 정책)은 명백히

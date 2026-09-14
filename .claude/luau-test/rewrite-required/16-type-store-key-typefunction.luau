@@ -6,7 +6,7 @@
 
 	배경: .claude/base/bind-system-plan.md "`store.key` 레코드 필드 타이핑"
 	절(2026-08-12 열일곱 번째 세션) — 사용자가 제시한 WrapStore/
-	ProcessStoreType 스케치를 그대로 옮김. `research/pre-implementation-audit.md`
+	ProcessStoreType 스케치를 그대로 옮김. `archive/surveys/2026-08-06-pre-implementation-audit.md`
 	1-10 해소 근거.
 
 	[2026-08-15 audit/type-recursive-issue-with-typeof/REPORT.md 6-1절에서 복구]

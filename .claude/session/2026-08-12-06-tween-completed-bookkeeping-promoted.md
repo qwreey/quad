@@ -2,7 +2,7 @@
 
 `research/tween-plan.md`에 마지막으로 남아있던 열린 질문 — 자연 완료
 (Completed) 시 per-instance weak-keyed 저장소(3-상태 릴레이션 슬롯)에
-남은 이전 Tween 참조를 정리해야 하는가(`research/pre-implementation-audit.md`
+남은 이전 Tween 참조를 정리해야 하는가(`archive/surveys/2026-08-06-pre-implementation-audit.md`
 2-10번) — 를 사용자가 직접 결론냄.
 
 ## 결론: 정리 안 해도 됨
@@ -33,7 +33,7 @@
 - `base/tween-plan.md`(구 `research/tween-plan.md`) — 헤더/열린 질문
   절 갱신, "자연 완료(Completed) 시 per-instance 북키핑 — 정리 안 해도
   됨 (확정)" 절 신설.
-- `research/pre-implementation-audit.md` 2-10번 — `[해소됨]` 표시 추가.
+- `archive/surveys/2026-08-06-pre-implementation-audit.md` 2-10번 — `[해소됨]` 표시 추가.
 - `.claude/README.md` — `research/` 표에서 `tween-plan.md` 행 제거,
   `base/` 표에 추가. `archive/tween-special-bind-key-reversed.md` 행의
   경로도 `base/tween-plan.md`로 갱신.
@@ -42,8 +42,8 @@
 - 라이브 크로스레퍼런스(`research/tween-plan.md` → `base/tween-plan.md`)
   일괄 갱신: `base/architecture.md`(2곳), `base/attribute-plan.md`,
   `base/modifier-plan.md`(2곳), `base/bind-system-plan.md`(4곳),
-  `research/pre-implementation-audit.md`, `research/operator-sugar-plan.md`,
-  `research/documentation-content-map.md`,
+  `archive/surveys/2026-08-06-pre-implementation-audit.md`, `research/operator-sugar-plan.md`,
+  `archive/surveys/2026-08-06-documentation-content-map.md`,
   `archive/tween-special-bind-key-reversed.md`. **`session/` 안의 과거
   기록은 의도적으로 안 건드림** — 그 시점엔 실제로 `research/`였으므로
   원문 그대로 정확함.

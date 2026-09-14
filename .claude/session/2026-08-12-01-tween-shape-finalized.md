@@ -72,7 +72,7 @@ v=isTween(realv)` 분기를 PropertyHandler가 잡고, 실제 트윈 로직은 �
 
 **여전히 열려있는 것**(다음 세션 이후, 급하지 않음): `Animate` 콤비네이터
 정확한 시그니처(조건/옵션 분리 vs 통합), 자연 완료(Completed) 시
-per-instance 북키핑 정리 여부(`research/pre-implementation-audit.md`
+per-instance 북키핑 정리 여부(`archive/surveys/2026-08-06-pre-implementation-audit.md`
 2-10번). `initValue`는 질문 목록에서 완전히 빠짐 — 필요해지면 사용자가
 직접.
 

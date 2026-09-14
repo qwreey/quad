@@ -7,7 +7,7 @@
 Explore 에이전트로 quad의 현재 반응형 코어(State/Source, `:Compute`,
 `:With`, `:Apply`, `Operator.*` 카탈로그, Tag/Attribute/Modifier의
 Merged/Overridden 병합, Slot의 store-bind 재구독, HKT 언급 여부,
-`framework-comparison-findings.md`의 Haskell 비교 여부)를 그라운딩된 사실로
+`archive/surveys/2026-08-06-framework-comparison-findings.md`의 Haskell 비교 여부)를 그라운딩된 사실로
 먼저 조사시킴.
 
 ## 1부 — Haskell 비교 조사 결과

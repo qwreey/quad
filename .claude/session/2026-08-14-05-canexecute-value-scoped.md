@@ -179,7 +179,7 @@ weak 로 들어가있지.**"* — 1라운드에서 "코드로 한 번도 안 나
   "다른 곳에서 안전하게 유지되는 것은 항상 `SetWeak`" 두 절 신설.
 - `base/effect-plan.md` / `base/slot-plan.md`(호출부 5곳 + 주석 2곳) /
   `base/architecture.md` / `base/store-semantics.md` /
-  `research/pre-implementation-audit.md` — 시그니처·근거 정정.
+  `archive/surveys/2026-08-06-pre-implementation-audit.md` — 시그니처·근거 정정.
 - `luau-test`(`10`을 `rewrite-required/`로) / `audit/gcconn-trick-verification.md` /
   `ROADMAP.md` / `question.md` / `.claude/README.md` / `CLAUDE.md` — 동기화.
 

@@ -35,7 +35,7 @@
 유지, 틀렸던 부분만 짧게 정정 포인터).
 
 **부수 발견 — `props.Modifier`/`props.Ref` nil-hole 위험도가 이전
-서술보다 큼.** `pre-implementation-audit.md` 1-5가 이미 이 위험을
+서술보다 큼.** `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-5가 이미 이 위험을
 "뒤 항목까지 무시될 수 있음"으로 국소적 피해처럼 서술해뒀는데, 이번
 REPL 실측으로 실제로는 구멍이 하나만 생겨도 **그 테이블 전체**가 순서
 보장을 잃을 수 있다는 게 드러남 — M0 스파이크에서 반드시 실측하고,
@@ -61,7 +61,7 @@ nil-hole 위험도 실측이 우선순위 높아짐.
    확정)을 그대로 재사용해 새 코드/할당이 하나도 안 늘어나기 때문 —
    `flatten`이 `isModifier(None) == false`라 그냥 통과시키고, 이어지는
    두 패스 루프가 `None`을 만나면 스킵. `base/component-composition-plan.md`
-   "필수 관용구" 절 신설, `ROADMAP.md` M0/`pre-implementation-audit.md`
+   "필수 관용구" 절 신설, `ROADMAP.md` M0/`archive/surveys/2026-08-06-pre-implementation-audit.md`
    1-5/`question.md`에 반영(1-5는 해소로 표시).
 2. **`Modifier()` 바닥 생성자가 문서 어디에도 없었던 갭 발견·보강** —
    `Source(default)`/`Ref(default)`/`Store({defaults})`와 나란히 있어야

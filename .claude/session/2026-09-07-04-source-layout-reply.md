@@ -2,7 +2,7 @@
 
 **앞 세션**: `session/2026-09-07-03-*.md`(회신 3·4차, Q24, 체크포인트 `e9c7ffd`). 이 세션은 compact 뒤
 루트 `layout-usernote-ignoreme.md`(구조 재편 여덟에 대한 사용자 회신, 커밋 제외)를 읽고
-`research/source-layout-plan.md` 9절 순서대로 반영했다. 결정 원문과 상태는 그 문서 각 절 머리의
+`archive/surveys/2026-09-07-source-layout-plan.md` 9절 순서대로 반영했다. 결정 원문과 상태는 그 문서 각 절 머리의
 `[결정]` 줄과 10절이 소스 — 여기선 경위와 시행착오만.
 
 ## 1. 회신 요지(사용자 원문은 source-layout-plan 각 절)
@@ -36,11 +36,11 @@ Attribute/Observer/EffectHandle 마커화, quad-types 단일 파일 재배치(�
 
 감사자 1라운드(diff 범위, sonnet): **16건, 전부 같은 원인** — 옛 경로 인용을 기계 치환하면서 "옛 `Ref.luau`"처럼
 옛 이름을 서술하는 자리(내가 방금 쓴 `architecture.md` 트리 항목 머리 포함)까지 새 이름으로 덮어 자기모순·동어반복
-(`source-layout-plan.md` 5절 "`Slot/Handler.luau` → `Slot/Handler.luau`")을 만들었고, 2절 헤더가 기각된 권고를
+(`archive/surveys/2026-09-07-source-layout-plan.md` 5절 "`Slot/Handler.luau` → `Slot/Handler.luau`")을 만들었고, 2절 헤더가 기각된 권고를
 제목으로 달고 있었으며, round1 Q3 ⑤의 중의적 `Ref.luau`가 틀린 쪽(`Ref/init.luau`)으로 확정됐다(실제는
 `Dispatch/Ref.luau`). 전부 원문대로 되돌림. 재발 방지: `doc-check.py`가 인용 앞 40자에 `옛`이 있으면 건너뛰고,
 `conventions.md` 표기 규약에 "옛 이름은 `옛 \`X.luau\``, 치환은 그 앞을 제외" 신설. 2라운드는 각도 교대
-(코드 헤더↔정본·인덱스 레이어·배너 아래 본문·luau-test/audit): **2건** — `source-layout-plan.md` §5~§7이 자기 규약
+(코드 헤더↔정본·인덱스 레이어·배너 아래 본문·luau-test/audit): **2건** — `archive/surveys/2026-09-07-source-layout-plan.md` §5~§7이 자기 규약
 ("결정은 절 머리 `[결정]` 줄")을 안 지켜 §9와 갈렸고 §2에 결정 전 분석이 현재형으로 남음(배너·마커 추가), 외부 감사
 진입점이 패키지 다섯을 내용까지 나열해 세 번째 사본을 만듦(`architecture.md` 포인터로 축약). 사소: 하드코딩 `G-14/S-10`
 제거, `옛` 예외 창 40→120자. 3라운드는 수정분 + 코드 헤더의 옛 경로 grep. `/code-review`(파인더 8·검증자 4 opus, 미완 1)는

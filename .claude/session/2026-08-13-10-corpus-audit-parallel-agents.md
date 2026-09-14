@@ -33,7 +33,7 @@
 ## 발견 및 수정
 
 **1. `luau-test/` 재편 후 깨진 flat 경로 참조** — `research/
-pre-implementation-audit.md`, `base/store-semantics.md`,
+archive/surveys/2026-08-06-pre-implementation-audit.md`, `base/store-semantics.md`,
 `base/modifier-plan.md`(2곳), `base/lifecycle-pattern.md`,
 `.claude/README.md`, `audit/gcconn-trick-verification.md`(4곳)가 옛
 `luau-test/08-...`/`/09-...`/`/10`/`/17`/`/gc-trigger-helper...` 경로를

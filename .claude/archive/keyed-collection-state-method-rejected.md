@@ -1,12 +1,12 @@
 # [기각됨] 키 기반 동적 컬렉션 재조정 프리미티브를 `state:Keyed(...)` State 메소드로 두는 안
 
-**기각 일시**: `research/additional-primitives-plan.md` 논의 도중(날짜 미상,
+**기각 일시**: `archive/surveys/2026-08-06-additional-primitives-plan.md` 논의 도중(날짜 미상,
 "이전 라운드"로만 기록). **현재 유효한 설계**: `research/
-additional-primitives-plan.md` "폼 팩터" 절 — 이 프리미티브는 자유 함수로
+archive/surveys/2026-08-06-additional-primitives-plan.md` "폼 팩터" 절 — 이 프리미티브는 자유 함수로
 두고, `data` 인자가 plain array/table이든 `State<array>`/`Source<array>`든
 둘 다 받는 폴리모픽 컨벤션(quad의 leaf 프로퍼티가 이미 쓰는 "리터럴 또는
 State 둘 다" 관례와 동일)을 따름. 이름 자체는 아직 미정 — 이 프리미티브의
-최종 설계는 여전히 열려있는 질문이라 `question.md`/`additional-primitives-plan.md`
+최종 설계는 여전히 열려있는 질문이라 `question.md`/`archive/surveys/2026-08-06-additional-primitives-plan.md`
 본문을 계속 참고할 것, 이 파일은 "왜 State 메소드가 아닌가"라는 기각
 사유만 보존.
 

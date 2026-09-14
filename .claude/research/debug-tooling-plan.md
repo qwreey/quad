@@ -333,7 +333,7 @@ UI를 클릭한 순간)에 강제로 그 계산을 트리거하는 건 이 전�
 이름 바꾸는 건 비용이 크지 않음. v1이 이미 `_quad_round`/`_quad_padding`/
 `_quad_scale` 네이밍(`base/ui-shorthand-plan.md` 참고)으로 정확히
 이 관습을 썼던 전례 — quad-v2에서 내부 자동 생성물이 생기면 그대로
-재사용. `research/documentation-plan.md`의 "UI 요소 네이밍 컨벤션 문서"
+재사용. `archive/surveys/2026-08-06-documentation-plan.md`의 "UI 요소 네이밍 컨벤션 문서"
 백로그에도 이 구체적 규칙을 추가해둠.
 
 **플러그인 UI 아키텍처 확인(사용자 질문에 대한 답 — 맞음)**: 세 개의
@@ -541,4 +541,4 @@ Tween mock 등 동적 동작 포함")와 목적이 다름:
 
 - 이번 논의에서 파생된 문서화 숙제(UI 네이밍 컨벤션, Store 부작용을 게임
   시스템에서 깔끔하게 쓰는 패턴)는 quad-debug 범위가 아니라
-  `research/documentation-plan.md`로 분리해 뼈대만 기록함.
+  `archive/surveys/2026-08-06-documentation-plan.md`로 분리해 뼈대만 기록함.

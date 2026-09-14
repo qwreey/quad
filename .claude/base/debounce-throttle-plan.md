@@ -80,7 +80,7 @@
 
 `research/operator-sugar-plan.md`가 "`Operator.*` 카탈로그 밖의 별도
 설계 질문"으로 분리해뒀던 항목이 이 문서의 출발점(그 문서 "열린 질문 —
-포함 범위" 절의 Debounce/Throttle 항목). `research/additional-primitives-plan.md`가
+포함 범위" 절의 Debounce/Throttle 항목). `archive/surveys/2026-08-06-additional-primitives-plan.md`가
 2026-08-06 조사에서 "Fusion/Vide/v1 어디에도 없으니 quad도 굳이 안
 만들어도 된다는 정황"으로 적어둔 판단은 **이 요청으로 뒤집힘**(그
 문서에도 포인터를 남겨둠).
@@ -376,7 +376,7 @@ quad의 전파 모델은 `base/source-state-plan.md`의 "전파 모델 확정" �
 푸는가" 절 신설 + `Observer` 절 상호 참조), `base/architecture.md`,
 `base/blocker-plan.md`("전파를 지연시키는 유일한 요소"로 위치 명문화),
 `reference/comparison-fusion-vide.md`,
-`research/framework-comparison-findings.md`, `archive/v2-initial-implementation/roadmap.md` M0 체크리스트,
+`archive/surveys/2026-08-06-framework-comparison-findings.md`, `archive/v2-initial-implementation/roadmap.md` M0 체크리스트,
 스파이크 `05-store-state-diamond-propagation.luau`(옛 모델을 통과 상태로
 검증 중이었음 → `rewrite-required/`), `audit/luau-test-first-run-2026-08-13.md`.
 
@@ -1259,7 +1259,7 @@ Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름�
 
 **그래도 착수 시점이 뒤로 밀리진 않는다.** 설계 자체가 실제 기능 갭에서
 나온 요청(사용자가 "만들어야 한다"고 직접 지정, `research/
-additional-primitives-plan.md`가 원래 "안 만들어도 된다"고 판단했던 걸
+archive/surveys/2026-08-06-additional-primitives-plan.md`가 원래 "안 만들어도 된다"고 판단했던 걸
 뒤집은 배경)이라는 사실은 안 바뀌고, 이 문서가 `research/`에서 `base/`로
 승격된 것도 별개로 유효 — 달라지는 건 오직 **구현 우선순위**뿐이다.
 순수 슈가라는 게 확인됐으니 `Operator` 콤비네이터 카탈로그와 같은 급으로

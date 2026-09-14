@@ -19,14 +19,14 @@ Fallback((T...)→OriginalComp, (errorMessage)→ErrorComp) → (T…)→Origina
 
 ## 확인한 것 — 기존 결론과의 관계
 
-`research/additional-primitives-plan.md`를 확인한 결과, 이미 "Error
+`archive/surveys/2026-08-06-additional-primitives-plan.md`를 확인한 결과, 이미 "Error
 Boundary는 빈 자리 아님 — `pcall(MyComp, props)`만으로 React Error
 Boundary와 같은 격리 효과를 프레임워크 지원 없이 얻는다"는 결론이 확정돼
 있었음(2026-08-06~07 세션, 이 문서는 이후 "새로 열린 설계 질문 없음"으로
 배경 자료화됨). 사용자의 `Fallback` 요청은 이 결론을 뒤집는 게 아니라
 정확히 그 결론이 지목한 메커니즘(`pcall(MyComp, props)`)을 감싸는 얇은
 편의 함수 — `Operator` 콤비네이터가 `:Compute`/`:Apply` 위에 얹힌 것과
-같은 관계이므로, `additional-primitives-plan.md`를 다시 열지 않고 새
+같은 관계이므로, `archive/surveys/2026-08-06-additional-primitives-plan.md`를 다시 열지 않고 새
 research 문서로 분리하는 게 맞다고 판단.
 
 `research/debug-tooling-plan.md`가 이미 확인해둔 선례(Vide/Fusion 둘 다

@@ -210,7 +210,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Declaration` | [roblox/01 — 설치](/reference/roblox/01-install/) · [roblox/02](/reference/roblox/02-d/#qdeclaration--네임스페이스와-생성되는-클래스) |
+| `q.Declaration`(3.1.0까지는 `q.D`) | [roblox/01 — 설치](/reference/roblox/01-install/) · [roblox/02](/reference/roblox/02-d/#qdeclaration--네임스페이스와-생성되는-클래스) |
 | `D.<Class>(props)` | [roblox/02 — Declaration](/reference/roblox/02-d/) |
 | `D.New<<T>>(className)(props)` | [roblox/02](/reference/roblox/02-d/) |
 | 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](/reference/roblox/02-d/#숏핸드-키-넷) |

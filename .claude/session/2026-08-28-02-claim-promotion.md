@@ -68,7 +68,7 @@ PlayerGui 직하 Slot을 여러 스크립트가 공유하려면 `Claim` 한 번 
 `bind-system-plan.md` `H-146` 배너("폐기" → "좁혀서 복원") / `slot-plan.md` 두 곳 /
 `architecture.md` 주입 op 목록에 `nativeFindChild`(조합 폴백 예외) / `ROADMAP.md`
 M2 배너·M5 두 체크박스 / `question.md` 최우선 절 비움 + `archive/question-resolved.md`
-절 / `debug-tooling-plan.md` "열린 질문"에 검사 범위 이관 / `documentation-content-map.md`
+절 / `debug-tooling-plan.md` "열린 질문"에 검사 범위 이관 / `archive/surveys/2026-08-06-documentation-content-map.md`
 §4 21번 / `README.md` 행 이동 / `CLAUDE.md`·`todos.md`·`project-context.md` /
 `-round10-followup.md` 후속 3 절. 코퍼스의 옛 경로는 새 경로로 일괄 치환(히스토리
 문서 포함 — 파일 참조가 깨지지 않게).

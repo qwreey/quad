@@ -65,8 +65,8 @@ weak-value로 낮추면 풀리는지) 둘 다 넣은 순수 luau CLI 스파이�
 - `base/`/`research/` 문서 **본문 자체는 이미 전부 최신**이었음 — 갭은
   전적으로 `.claude/README.md`의 요약 테이블(색인 레이어)에만 있었음.
   `bind-system-plan.md`/`slot-plan.md`/`tag-plan.md`/`modifier-plan.md`/
-  `architecture.md`/`framework-comparison-findings.md`/
-  `operator-sugar-plan.md`/`pre-implementation-audit.md` 8개 행에
+  `architecture.md`/`archive/surveys/2026-08-06-framework-comparison-findings.md`/
+  `operator-sugar-plan.md`/`archive/surveys/2026-08-06-pre-implementation-audit.md` 8개 행에
   세션 12~21 변경사항을 인용 마커로 보강.
 - `attribute-plan.md` 행은 단순 append가 아니라 실제 오류 수정 — 세션 11의
   중간 단계(`v==nil` 가드)를 "현재 상태"인 것처럼 적어뒀는데, 세션 16이
@@ -78,8 +78,8 @@ weak-value로 낮추면 풀리는지) 둘 다 넣은 순수 luau CLI 스파이�
   03/04/11/18과는 다른 새 알고리즘 모양이라 실측 가치가 있다고 판단해
   작성. Ref/Slot의 retract-via-`Relate`-diff(세션 8/9)는 기존 03/04와 같은
   메커니즘 급이라 스파이크 불필요로 판단, 추가 안 함.
-- Part C(세션 17~21의 `pre-implementation-audit.md`/
-  `framework-comparison-findings.md`/`operator-sugar-plan.md`/
+- Part C(세션 17~21의 `archive/surveys/2026-08-06-pre-implementation-audit.md`/
+  `archive/surveys/2026-08-06-framework-comparison-findings.md`/`operator-sugar-plan.md`/
   `question.md`/`ROADMAP.md` 개별 파일 스팟체크)는 전부 이미 정확해서
   추가 수정 없음.
 

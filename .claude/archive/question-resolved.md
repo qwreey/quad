@@ -182,7 +182,7 @@ pre-implementation-qa-round3.md`가 원본) — 트레이싱 중 `attachSlot`이
 > 의존성은 무엇이 푸는가" 절 신설 + `Observer` 절 상호 참조),
 > `base/architecture.md`, `base/blocker-plan.md`,
 > `reference/comparison-fusion-vide.md`,
-> `research/framework-comparison-findings.md`, `ROADMAP.md` M0 체크리스트,
+> `archive/surveys/2026-08-06-framework-comparison-findings.md`, `ROADMAP.md` M0 체크리스트,
 > 스파이크 `05`(→`rewrite-required/`), `audit/luau-test-first-run-2026-08-13.md`.
 >
 > 원문·역전 근거·영향 범위 전체: `archive/invalidate-dedup-propagation-reversed.md`.
@@ -514,7 +514,7 @@ State emit 전파 루프만 `canExecute`로. 상세는
 사용자 질문: "다른 독립 프리미티브나 종속 파생 데이터는 뭐가 더 필요할 것
 같나요. 이것만으로 이 프로젝트는 충분하다 생각해요?" — 여러 서브에이전트
 조사 + 사용자와 라이브 논의로 계속 수렴 중. **2026-08-07 문서 정리에서
-확정/기각된 항목은 `research/additional-primitives-plan.md`에서
+확정/기각된 항목은 `archive/surveys/2026-08-06-additional-primitives-plan.md`에서
 분리됨**: Blocker → `base/blocker-plan.md`, Effect → `base/effect-plan.md`, Batch →
 `archive/batch-rejected.md`, Context(+레이어드 Store) → `archive/
 context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 남김.
@@ -532,7 +532,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   "해결됨" 절과 `base/bind-system-plan.md`의 Observer 절.
 - Untrack/Suspense/Error Boundary/Readonly는 조사 결과 새 프리미티브 없이
   기존 설계·Lua 자체 기능으로 이미 충분한 것으로 판단(`research/
-  additional-primitives-plan.md` "빈 자리 아닌 것" 절).
+  archive/surveys/2026-08-06-additional-primitives-plan.md` "빈 자리 아닌 것" 절).
 - **[해소됨, 2026-08-11 세션]** `Slot:Single(state, updateFn)` — `:List`를
   0/1개짜리 배열로 감싸는 순수 sugar로 확정(`index` 없이 `offset`/
   `prev`/`userdata`만 전달, 고정 key로 `prev` 재사용 보장). `base/
@@ -662,7 +662,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 
 ### 2. 구현 착수 직전 감사 결과 (2026-08-06 신설, M0 착수 전 확인 권장)
 
-`research/pre-implementation-audit.md` — `base/` 전체를 M0 착수 직전
+`archive/surveys/2026-08-06-pre-implementation-audit.md` — `base/` 전체를 M0 착수 직전
 시점에서 모호성/지연결정리스크/단순화후보 세 렌즈로 재감사한 결과. 총
 11개 우선순위1(구현 중 바로 부딪힐 가능성 높음) + 11개 우선순위2(지금
 정해두면 싼 지연리스크) + 2개 단순화후보. 전체는 그 문서 참고, 특히
@@ -700,12 +700,12 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 - **[해소됨]** retract 시 "이전 핸들러" 추적 책임 소재 — Dispatch 체인
   (`chains`)+`Dispatch.retractFrom`(2026-08-08 세 번째 세션엔 `retractUnder`라는
   이름이었음, 2026-08-13 다섯 번째 세션에 인덱스 기반으로 재설계되며 개명)로 이미
-  해소(`pre-implementation-audit.md` 1-2, `bind-system-plan.md` "Dispatch
+  해소(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-2, `bind-system-plan.md` "Dispatch
   체인" 절). **[해소됨, 2026-08-09 세션]** `:Compute`의 `previous` 인자
   오버엔지니어링 의심도 기각(`source-state-plan.md` "previous" 절,
-  `pre-implementation-audit.md` 3-1). **[해소됨]** UI shorthand의 기존
+  `archive/surveys/2026-08-06-pre-implementation-audit.md` 3-1). **[해소됨]** UI shorthand의 기존
   UICorner 매칭 기준도 `base/ui-shorthand-plan.md`에 이미 확정 반영돼
-  있던 것을 이번에 `pre-implementation-audit.md` 2-11에도 해소 표시로
+  있던 것을 이번에 `archive/surveys/2026-08-06-pre-implementation-audit.md` 2-11에도 해소 표시로
   동기화. **[해소됨, 2026-08-09 세 번째 세션]** Slot CRUD 의미론
   (`add`/`remove`/`clear`) 미정의(1-7)/`isMounted` 이중 추적 혼용(1-8) —
   `base/slot-plan.md` 참고. **[해소됨, 2026-08-12 열일곱 번째 세션]**
@@ -714,7 +714,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   즉시 error), provider 미주입 상태 dispatch 처리(1-4, 매치실패 규칙에
   자연 흡수), `store.key`의 레코드 필드 타이핑(1-10, Luau `type function`으로
   가능함 확인), Modifier `__index`+`table.clone` 트릭 검증(1-11, 메타테이블
-  참조 공유 방식 확인) — 상세는 `pre-implementation-audit.md` 해당 항목,
+  참조 공유 방식 확인) — 상세는 `archive/surveys/2026-08-06-pre-implementation-audit.md` 해당 항목,
   `base/bind-system-plan.md`/`base/modifier-plan.md` 참고. **우선순위1
   11개 전부 해소됨.** **[2026-08-13 갱신]** 그 다음 게이트였던
   `.claude/luau-test/` 스파이크는 **여섯 번째 세션에 첫 실측이 돌아
@@ -780,7 +780,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M2 Dispatch/
   M3 Source/M5 DI 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
-  패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
+  패턴)** — `archive/surveys/2026-08-06-documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
 - **[해소됨, 2026-08-09 열한 번째 세션]** Attribute 특수 키 타입
   파라미터화 — `[AttributeKey<<boolean>> "name"]`(구 `Attribute<<boolean>>`,
@@ -802,7 +802,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
   불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
   시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
-- **[해소됨, 2026-08-12 열여덟 번째 세션]** `framework-comparison-findings.md`의
+- **[해소됨, 2026-08-12 열여덟 번째 세션]** `archive/surveys/2026-08-06-framework-comparison-findings.md`의
   두 남은 개선 후보 — 둘 다 "고칠 필요 없음, 의도된 설계"로 사용자가 최종
   판단해 문서 3번 절(못 고치는 트레이드오프)로 이전. use-after-destroy 검증
   안전망은 `bindLifetime`/`Effect`로 이미 커버되는 영역에 별도 장치를 얹는
@@ -810,7 +810,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
   모순되어 완전한 UB로 남기고 문서화로만 대응. `:With`의 동적 의존성도
   State immutable 가정과 정면 모순(실사용 사례도 거의 없음, React
   `useMemo` deps도 대부분 정적) — 의도적 비지원으로 확정. 상세는
-  `research/framework-comparison-findings.md` 3번 절.
+  `archive/surveys/2026-08-06-framework-comparison-findings.md` 3번 절.
 
 - **[해소됨, 2026-08-14 열 번째 세션]** 0-B. `dispose(any)` — 시그니처/범위.
   **결론**: 범위를 `Slot`+엔진 객체(Instance)로만 좁히고 **Observer/Effect는
@@ -894,7 +894,7 @@ context-rejected.md`. 아래는 그중 **아직 실제로 열려있는 것만** 
 (CLAUDE.md 전 히스토리) 어디에도 그런 서술이 없었음 — 존재한 적 없는
 출처였다. 같이 발견된 다른 두 건은 인용 대상만 틀린 것이라 실제 소스로
 재조준 완료(`research/v1-compat-plan.md`→`base/component-composition-plan.md`+
-`base/store-plan.md`, `research/pre-implementation-audit.md`→`ROADMAP.md`).
+`base/store-plan.md`, `archive/surveys/2026-08-06-pre-implementation-audit.md`→`ROADMAP.md`).
 
 **사용자 논거**: "(a) 하면 될 것 같아. 그리고 추측하건데, 내가 세션 중
 했던 말을 옮겨적지 않은 경우로 보이기도 함." — 즉 원칙 자체는 실제로

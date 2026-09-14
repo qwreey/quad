@@ -32,7 +32,7 @@
 **⭐ [2026-09-07 사용자 결정 — 이름 자리 통일] 생성자·`Added`·`Removed`의 이름 자리는 전부
 `names = string | Tag | { names }`다** — 문자열, 다른 Tag(그 집합 전부), 그 둘의 plain 리스트(중첩
 허용). `Tag(a, "x", { "y", b })`처럼 처음부터 다른 Tag에서 가져와 잡을 수 있다. 사용자 원문(회신,
-`research/source-layout-plan.md` 3절 (b) 권고 채택): *"권고대로, flattenInto 와 타입을 고치면
+`archive/surveys/2026-09-07-source-layout-plan.md` 3절 (b) 권고 채택): *"권고대로, flattenInto 와 타입을 고치면
 되므로, 비용도 크지 않은편"*, 발단은 *"Tag() 로 초기 부터 잡는게 유리한데 … flattenInto 를 약간
 건들고 타입이 변경되어야하는것 아닌지?"*. 이로써 `H-389`(생성자는 `...string`)와 `H-380`의 "Tag는
 리스트가 아니다" 거부는 **되돌려졌고**, 나머지(`Source`/`AttrKey`/해시 테이블/nil 구멍 거부,

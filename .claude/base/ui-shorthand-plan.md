@@ -365,5 +365,5 @@ Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘
   테이블로 구동되는 단일 `Handlers/InstanceShorthand.luau`로 통합할지
   (`Properties`가 단수가 아니라 목록인 이유는 `UIPadding`이 자식 프로퍼티
   4개에 같은 값을 쓰기 때문 — 위 "Tween 지원" 절) —
-  `research/pre-implementation-audit.md` 3-2번 참고, 강제 사항 아님,
+  `archive/surveys/2026-08-06-pre-implementation-audit.md` 3-2번 참고, 강제 사항 아님,
   구현 시점에 결정할 정도의 사소한 개선 후보.

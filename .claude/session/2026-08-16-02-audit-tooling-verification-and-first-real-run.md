@@ -67,7 +67,7 @@
   `base/component-composition-plan.md` §1(자동 store 생성/자동 흡수 매직
   폐기, 사용자 확정)과 `base/store-plan.md` "Store 값 설정 문법" 절
   (`__newindex` 자동 위임 폐기). → 재조준.
-- **`research/pre-implementation-audit.md:434`** — 역시 실재. 실제 소스는
+- **`archive/surveys/2026-08-06-pre-implementation-audit.md:434`** — 역시 실재. 실제 소스는
   루트 `ROADMAP.md`의 quad-debug 백로그 항목 + `question.md`. 다만
   `research/debug-tooling-plan.md` 쪽은 더 약한 표현("존재 가능성만
   인지")이라 그 온도차도 같이 적었다. → 재조준.

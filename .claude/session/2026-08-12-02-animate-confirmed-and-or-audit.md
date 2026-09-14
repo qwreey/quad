@@ -60,7 +60,7 @@ opts)`)는 폐기 — 새 `Animate(info)`는 조건 분기를 안 가지므로, 
 `.claude/question.md`(트윈 요약 행 갱신).
 
 **여전히 열려있는 것**: 자연 완료(Completed) 시 per-instance 북키핑 정리
-여부 하나뿐(`research/pre-implementation-audit.md` 2-10번, M11 착수 시).
+여부 하나뿐(`archive/surveys/2026-08-06-pre-implementation-audit.md` 2-10번, M11 착수 시).
 `research/tween-plan.md`는 이걸로 사실상 마감 상태.
 
 **다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터, `.claude/luau-test/`

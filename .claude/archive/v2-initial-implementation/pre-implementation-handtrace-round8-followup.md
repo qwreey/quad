@@ -414,7 +414,7 @@ children 배열 관용구 캐비엇) · `base/ref-plan.md`(콜백 계약 항목�
 테이블이 **모듈 사본마다 분리**된다 — 한 사본이 만든 값을 다른 사본에 넘기면
 `isState`/`isObserver`가 거짓이 되어 요소 화이트리스트 검증(`H-40`)이
 **정상 값을 이물로 판정**한다. 설계로 막을 일이 아니라 **문서화할 사실**이라
-`research/documentation-content-map.md` §4에 항목 20번으로 등록했다.
+`archive/surveys/2026-08-06-documentation-content-map.md` §4에 항목 20번으로 등록했다.
 
 ---
 

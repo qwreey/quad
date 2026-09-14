@@ -43,7 +43,7 @@ devlog 원자료로서는 시행착오가 섞인 원문 그대로가 더 가치 
 3. CLAUDE.md 앞부분(언어 관례~작업 방식, 1~104행)은 거의 그대로 유지,
    "계획 문서 구조" 절에 `.claude/session/` 신규 폴더 설명 bullet만 추가.
 4. "지금 할 일" 절을 압축 — 원래 50줄 넘게 각 항목의 세부 배경을 반복
-   서술하던 걸, `.claude/question.md`/`research/pre-implementation-audit.md`
+   서술하던 걸, `.claude/question.md`/`archive/surveys/2026-08-06-pre-implementation-audit.md`
    같은 "소스" 문서를 다시 대조해 지금 실제로 열려있는 것만 짧게 남기고
    해소된 세부사항은 걷어냄(예: 용어 정리 항목은 원래 "State가 위험,
    DI가 충돌, PerInstanceState가 충돌" 3개를 나열했었는데, `PerInstanceState`는

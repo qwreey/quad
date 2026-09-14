@@ -9,7 +9,7 @@
 	절(2026-08-12 열일곱 번째 세션) — 사용자가 설명한 메커니즘(원본 키를
 	네이티브 슬롯 단위로 얕은 복사 + 메타테이블은 복사가 아니라
 	getmetatable/setmetatable로 참조 공유)을 실제 코드로 재현.
-	`research/pre-implementation-audit.md` 1-11 해소 근거.
+	`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-11 해소 근거.
 
 	실행: `luau 17-modifier-index-tableclone-chaining.luau`
 

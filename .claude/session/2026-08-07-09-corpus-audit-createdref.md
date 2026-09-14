@@ -41,7 +41,7 @@ Ref가 아직 "instance 얻는 통로"로 좁게 정의됐던 시절)의 잔재�
 bind-system-plan.md`(바인드 방법 절 재작성, "CreatedRef와의 관계" 절
 삭제, "phase 옵션 폐기" 절/열린질문 절 정리) · `ROADMAP.md`(M0/M8 체크
 박스) · `question.md`(용어 재검토 목록에서 제거, 해소로 표시) ·
-`architecture.md`(소스트리 주석) · `research/documentation-content-map.md`
+`architecture.md`(소스트리 주석) · `archive/surveys/2026-08-06-documentation-content-map.md`
 전부 동기화 완료. `archive/ref-phase-option-reversed.md`(phase 옵션
 자체의 역전 이력)와 CLAUDE.md 이전 세션 로그의 `CreatedRef` 언급은
 당시 기록으로서 정확하므로 그대로 둠 — 역사적 서술과 현재 유효한 설계를
@@ -53,7 +53,7 @@ bind-system-plan.md`(바인드 방법 절 재작성, "CreatedRef와의 관계" �
 필요해 보인다, hook과 pre-hook의 차이(취소 가능/순서 등록 가능)도 적어
 두면 좋겠다"고 제안 — 이건 런타임 설계가 아니라 문서 사이트 콘텐츠
 분류 아이디어라 base/에 "확정"으로 못박지 않고 `research/
-documentation-content-map.md`(심화 콘텐츠 후보 6번 + "문서화 아직 보류"
+archive/surveys/2026-08-06-documentation-content-map.md`(심화 콘텐츠 후보 6번 + "문서화 아직 보류"
 목록)에 사용자 원문 프레이밍 그대로 미확정 표시로 남겨둠 — `PreRef`가
 "인스턴스에 뭐가 일어나기 전에 채워진다"는 사실 자체는 이미 확정
 서술돼 있었지만(재확인 후 "메모에서 지워도 됨"으로 답변), "hook"/
@@ -98,7 +98,7 @@ documentation-content-map.md`(심화 콘텐츠 후보 6번 + "문서화 아직 �
    어떻게든 우회한 버그 케이스뿐 — no-op이 아니라 즉시 `error`가 맞음.
 
 전부 `base/bind-system-plan.md` "PreRef" 절에 반영, `ROADMAP.md` M8
-체크박스 갱신, `research/documentation-content-map.md`의 "복수 PreRef
+체크박스 갱신, `archive/surveys/2026-08-06-documentation-content-map.md`의 "복수 PreRef
 순서" 미정 표시 제거(해소됨, "취소 가능성"만 계속 미정으로 남김).
 
 **같은 세션 두 번째 후속 — "호이스팅이 물리적 재배치가 아니라 별도

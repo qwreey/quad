@@ -192,7 +192,7 @@ const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 앞서 손으로 만든 S
 `:Apply(factory)`는 "이 팩토리가 만들어 낸 연산을 이 State에 붙인다"는 뜻입니다 — 팩토리가 자기 의존성까지 같이 들고 있어서, 한 번 이름 붙인 연산자를 여러 State에 붙여도 의존성이 따라갑니다.
 <!-- mock 실측 2026-09-11: gs.gs2probe.luau 7c/7d — 손으로 만든 Sum(10)과 q.Operator.Sum(10)이 같은 값(11, 15) -->
 
-산술·비교·불리언·비트 연산까지 이름 붙은 것이 열넷 있습니다. 전체 목록과 계약은 [레퍼런스: `Operator`](../reference/sugar/02-operator.md)에 있습니다.
+산술·논리·비트 연산까지 이름 붙은 것이 열넷 있습니다. 전체 목록과 계약은 [레퍼런스: `Operator`](../reference/sugar/02-operator.md)에 있습니다.
 
 <details>
 <summary><strong><code>--!strict</code>에서는 이 함수들에 뭘 적나요?</strong></summary>

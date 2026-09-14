@@ -63,7 +63,7 @@ export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 -- [2026-09-03 사용자 확정] 제네릭 자체가 폐기된 무타입 프리미티브다(값 타입은
 -- 배열부 슈가 `AttrSugar<T>`가 진다 — attribute-plan 머리 배너); 옛 "제네릭
 -- 파라미터 값 좁힘 미실측" 항목은 닫혔다(typing-limits §3).
--- [2026-09-07 사용자 결정 — `research/source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
+-- [2026-09-07 사용자 결정 — `archive/surveys/2026-09-07-source-layout-plan.md` 3절 (b)] 이름 자리는 어디서나
 -- `TagNames` = 문자열 | 다른 Tag(마커 — 입력 자리, 8.11) | 그것들의 plain 리스트(중첩 허용).
 -- 리스트 인덱서가 `read`인 이유: 가변 `{T}`는 T에 불변이라 `{ tag, "x" }` 리터럴(`{Tag | string}`)을
 -- 거부한다(스파이크 2026-09-07). 해시 테이블은 인덱서 타입을 통과하므로(인덱서 없는 테이블은

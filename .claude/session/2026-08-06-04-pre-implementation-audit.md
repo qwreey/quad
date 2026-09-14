@@ -2,7 +2,7 @@
 <!-- 이 파일은 quadnomicon 개발로그 소재용 원자료로, 당시 시행착오(정정 전 서술 포함)를 그대로 보존함. -->
 <!-- 현재 유효한 설계는 이 파일이 아니라 base//research//archive/가 최종 소스 — 이 파일 안의 판단이 이후 세션에서 뒤집혔을 수 있음. -->
 
-## 2026-08-06 네 번째 세션 — M0 착수 직전 크리티컬 감사, `research/pre-implementation-audit.md` 신설
+## 2026-08-06 네 번째 세션 — M0 착수 직전 크리티컬 감사, `archive/surveys/2026-08-06-pre-implementation-audit.md` 신설
 
 사용자 요청: "실 개발 시 모호하여 인터럽트될 수 있는 부분, 나중에 결정되면
 치명적일 것 같은 것, 지금 구조가 오버엔지니어링일 수 있어 보이며 더 나은
@@ -11,7 +11,7 @@ bind-system/store-semantics/module-lifecycle/component-composition/
 modifier/purity-and-effects/slot/lifecycle-pattern/quad-v1-architecture)와
 근접 `research/`(existing-instance-bind/tween/ui-shorthand) + `ROADMAP.md`를
 4개 클러스터로 나눠 서브에이전트 4개를 병렬로 돌려 "모호성/지연결정리스크/
-단순화후보" 세 렌즈로 재감사, 결과를 `research/pre-implementation-audit.md`
+단순화후보" 세 렌즈로 재감사, 결과를 `archive/surveys/2026-08-06-pre-implementation-audit.md`
 로 종합. `.claude/question.md`엔 이미 취합된 것(용어 재검토, M0 스파이크
 항목 자체 등)과 겹치지 않는 새 발견만 반영.
 
@@ -23,7 +23,7 @@ main에 커밋을 완료해줘서(`4b839b0`) 워크트리를 새로 만들어 �
 main에 미커밋 변경이 있는지(`git status`) 먼저 확인하고 필요하면 커밋을
 요청하거나 파일을 직접 동기화할 것.**
 
-**핵심 발견 요약** (전체 25개 항목은 `pre-implementation-audit.md` 참고,
+**핵심 발견 요약** (전체 25개 항목은 `archive/surveys/2026-08-06-pre-implementation-audit.md` 참고,
 우선순위1만 발췌):
 
 - **Tween.luau가 문서 전체에서 "범용 store-bind 캐치올 핸들러"의 유일한
@@ -61,7 +61,7 @@ architecture.md` 소스트리 주석 두 곳 — `Store.luau`가 여전히 옛 `
 일반화 결정 반영 안 됨). 온톨로지 요약 절 stale은 같은 세션 도중 커밋
 `4b839b0`에서 이미 독립적으로 고쳐져 있었음을 확인 — 재작업 없이 스킵.
 
-**다음 세션이 할 일**: M0 착수 전에 `pre-implementation-audit.md` 우선순위1
+**다음 세션이 할 일**: M0 착수 전에 `archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1
 항목(특히 위 6개)부터 확인 — "지금 할 일" 1번 참고. `.claude/question.md`
 2번에 사용자 판단이 필요한 항목 요약이 반영돼 있음.
 

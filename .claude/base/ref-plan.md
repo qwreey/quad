@@ -41,7 +41,7 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
   완전히 무관하게 동작하므로(아래 "Destroy와는 무관" 절), 관례를 벗어난
   반출·장기보관은 use-after-destroy가 발생할 수 있는 사실상 유일한
   자리가 됨. quad는 이 케이스에 런타임 안전망을 두지 않기로 확정
-  (`research/framework-comparison-findings.md` 3번 절 근거) — 대응은
+  (`archive/surveys/2026-08-06-framework-comparison-findings.md` 3번 절 근거) — 대응은
   이 관례를 지키는 것뿐, 위반 시 결과는 완전한 UB.
 - **바인드 방법**: children을 배열 아이템으로 넣듯 `Ref(default)`(또는
   `:Callback(fn)`을 미리 걸어둔 `Ref(default):Callback(fn)`) 인스턴스
@@ -309,7 +309,7 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
       감싸지 않는다"와 같은 결). 대기자가 다시 yield한 뒤 나는 에러는 우리 손 밖이다
       (사용자: *"후행 yield 로 나가는건 우리가 처리 어렵긴 해. 그치만 당장 돌아오는 결과
       false 은 확인 해줄 수 있는듯"*). **[2026-08-31 재확인 — 이 한계는 공개 문서화
-      대상이다**(`research/documentation-content-map.md` §4)**.** 사용자 원문: *"중간에
+      대상이다**(`archive/surveys/2026-08-06-documentation-content-map.md` §4)**.** 사용자 원문: *"중간에
       yield 되어버린 다음 다른곳에서 resume 되는건 우리가 처리해줄 수 없음. 그러나 그
       부분은 우리의 처리 관할이 아님, 필요한 경우 루프 resume 으로 감싸거나, 안에서
       spawn 을 하도록, 단일 resume 에서만 생긴 에러만 throw 해줄 뿐임"* — 다단
@@ -431,7 +431,7 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
   인자에서 추론되는 다른 타입 파라미터가 만드는 합집합이 깔끔하게
   풀리지 않고 미해소 제네릭 변수가 결과 타입에 남는 것으로 확인(사용자가
   직접 Luau 플레이그라운드류로 확인) — `Source<T> satisfies State<T>`나
-  `State<Modifier>` 차단 검증 항목(`research/pre-implementation-audit.md`)
+  `State<Modifier>` 차단 검증 항목(`archive/surveys/2026-08-06-pre-implementation-audit.md`)
   에서 이미 반복 확인된 "Luau 제네릭 솔버는 복잡한 조합에서 잘 안 풀린다"는
   패턴과 같은 결. 단일 파라미터로 단순화하면 이 위험 자체가 없음 — 대신
   초기값만으로 좁은 타입이 추론되는 문제(`Ref(nil)`이 `Ref<nil>`로
@@ -930,7 +930,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     이 위험을 원천 회피함(검증 불필요, 애초에 구멍을 안 만드므로).
     **여전히 M0에서 검증해야 하는 건 다른 케이스**: `props.Modifier`/
     `props.Ref`를 caller가 안 넘겨 생기는 리터럴 `nil`-hole(`{nil, ref,
-    child}`, `research/pre-implementation-audit.md` 1-5)은 caller가 직접 쓰는 raw
+    child}`, `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-5)은 caller가 직접 쓰는 raw
     Lua 리터럴이라 프레임워크가 `None`으로 대신 못 채워줌 — 이번 REPL
     실측으로 그 케이스의 실제 위험도가 이전 서술("뒤 항목까지 무시될 수
     있음", 국소적 피해로 서술돼 있었음)보다 훨씬 큼이 드러남: 구멍이 하나만
@@ -1069,7 +1069,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
   "고치지" 않는다** — 두 패스 순서를 뒤집거나 재배치하는 시도는
   오버엔지니어링으로 판단해 안 함(이걸 원하면 애초에 PreRef를 쓰면 됨).
   이 결정과 이유는 나중에 `quadnomicon` 콘텐츠로 문서화 예정
-  (`research/documentation-content-map.md` 후보로 메모). **[보강,
+  (`archive/surveys/2026-08-06-documentation-content-map.md` 후보로 메모). **[보강,
   2026-08-14 아홉 번째 세션]** "두 패스가 **전부 끝난 뒤**"라는 타이밍은
   이제 아래 `PostRef`가 제공함 — 그건 두 패스의 순서를 건드리는 게 아니라
   그 뒤에 얹히는 것이라 이 결정과 상충하지 않음.

@@ -887,7 +887,7 @@ M2의 핵심이 전파 루프인데 그걸 한 번도 안 돌려보고 M3로 넘
 | 감사 2차 | **새 의사코드를 손으로 실행** | 6 | `lifecycle-pattern.md`의 `bindLifetime`이 폐기된 `_observers` cascade를 **정본 의사코드로** 들고 있었다, `ref-plan.md`가 같은 파일 안에서 `:Uncallback`과 `:WeakCallback` 두 계약을 동시 주장, gate flush 스니펫이 4단계 중 2단계만 |
 | 감사 3차 | **소비자 관점**(M2 표면을 쓰는 쪽) | 6 | **Store 재설계가 소비자 예시 12개 파일에 전혀 안 퍼짐** — 특히 `component-composition-plan.md` §3이 배너 없이 옛 모델을 "확정"으로 서술 |
 | 감사 4차 | **구현자 관점**(M2를 위에서부터 짜 내려간다면) | 4 | **`store:Names()`가 런타임에 구현 불가능**(Luau가 타입 인자를 지움) — 이게 오전 Store 재설계를 **철회**하게 만든 발단이다. 그 외 `Effect`↔`Blocker` 체크박스 순서, `Observer.luau` 파일명 누락, `GateNode` 조립 의사코드 부재 |
-| 감사 5차 | **철회가 완전한가** | 13 | **`architecture.md`를 철회에서 통째로 놓쳤다**(두 자리, 그중 하나는 같은 파일 안에서 모순), `source-state-plan.md`가 한 파일 안에서 대입 부활/폐기를 동시 주장, `GetDynamic`→`Of` 개명이 5곳 누락(**`ROADMAP` 체크박스 제목 포함**), `pre-implementation-audit.md`의 **"이미 고침" 목록**이 철회된 고침을 완료로 기록 |
+| 감사 5차 | **철회가 완전한가** | 13 | **`architecture.md`를 철회에서 통째로 놓쳤다**(두 자리, 그중 하나는 같은 파일 안에서 모순), `source-state-plan.md`가 한 파일 안에서 대입 부활/폐기를 동시 주장, `GetDynamic`→`Of` 개명이 5곳 누락(**`ROADMAP` 체크박스 제목 포함**), `archive/surveys/2026-08-06-pre-implementation-audit.md`의 **"이미 고침" 목록**이 철회된 고침을 완료로 기록 |
 | 감사 6차 | **최종형 수렴 + `H-74`/`H-79`/`H-83` 재판정** | 3 | `effect-plan.md`가 **같은 문서 안에서** 폐기된 `_installing`을 "확정"으로 서술, `README.md`의 `effect-plan` 색인 행이 하루 전 상태, followup의 `H-74`/`H-79` 판정 문구가 철회된 모델을 근거로 인용. **`base/`는 전부 최종형으로 일관** — 잔재가 인덱스·기록 레이어에만 남았다 |
 
 **교훈 둘** — (1) **각도를 바꾸면 계속 나온다.** 여섯 패스가 12/12/6/6/4/13/3건을

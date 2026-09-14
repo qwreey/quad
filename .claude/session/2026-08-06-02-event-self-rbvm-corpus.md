@@ -24,7 +24,7 @@ Connection도 자연히 정리되므로(`lifecycle-pattern.md`, GC-native) 감�
 self(Instance)를 받지 않는다" 절. `research/debug-tooling-plan.md`/
 `.claude/question.md`의 관련 항목은 "해소됨"으로 갱신 완료, 이 결정을
 설명하는 문서화 숙제("왜 thin wrapper를 안 주는가", "권장 이벤트 핸들링
-패턴")는 `research/documentation-plan.md` 3번으로 신설(다른 두 항목과
+패턴")는 `archive/surveys/2026-08-06-documentation-plan.md` 3번으로 신설(다른 두 항목과
 동일하게 아직 백로그 뼈대만).
 
 **2. rbvm GC 패턴 — "실물 검증됨" 근거 보강.** 사용자가 "GC 처리를 봐야
@@ -42,7 +42,7 @@ Destroying` 기반 gcHold 클로저, 네임스페이스 Dispose 훅 등)은 이�
 승격된 `base/` 경로로 갱신, `comparison-fusion-vide.md`의 낡은 "Vide식
 암묵적 추적 vs Fusion식 명시적 축, quad는 미정" 서술을 실제 확정 사실
 (`bind-system-plan.md`의 `:With`+`:Compute` 명시적 모델 채택)로 정정,
-`tween-plan.md`의 끊긴 절 참조 수정, `documentation-plan.md`의 인용
+`tween-plan.md`의 끊긴 절 참조 수정, `archive/surveys/2026-08-06-documentation-plan.md`의 인용
 오류 정정. `module-lifecycle-plan.md`가 스스로 "question.md에도 취합"
 표시해뒀지만 누락돼 있던 "프로바이더" 이름(provider/processor/plug)
 미정 항목도 `question.md`에 추가함. 여러 문서에 흩어져 있던 진짜 열린

@@ -323,7 +323,7 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
     못할 부분을 방어하려고 애매한 방법을 택할 이유가 없다"*(실물 Roblox엔
     깨끗한 destroyed 술어가 없다 — 후보 검출식은 실측으로 기각됨). 즉시
     error 주 방어선 원칙의 경계 사례 — **방어는 방어할 수 있을 때 제공**.
-    문서화 대상 등재는 `research/documentation-content-map.md` §4.
+    문서화 대상 등재는 `archive/surveys/2026-08-06-documentation-content-map.md` §4.
 
 ## 8. 검토 후 안 만들기로 한 것
 
@@ -362,7 +362,7 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
   **[2026-09-08 정정]** 폴백 규칙 철회(위 항목) 뒤엔 "예외"가 아니라 여섯과 같은 기본 규칙이다.
 - debug 모드 `seen` 맵(범위는 `research/debug-tooling-plan.md`가 소스).
 - `archive/v2-initial-implementation/roadmap.md` M5 체크박스가 진행의 소스.
-- **문서화 대상**(`research/documentation-content-map.md` §4): "전부 매핑" 계약과
+- **문서화 대상**(`archive/surveys/2026-08-06-documentation-content-map.md` §4): "전부 매핑" 계약과
   숏핸드 (i)/(ii) 규칙, 루트 `.Parent =`는 밖에서 / 그 아래는 절대 직접 하지 말 것,
   여러 스크립트의 PlayerGui는 각자 `ScreenGui` + 중간 모듈 패턴, claim된 inst에선
   `PreRef`/`OnCreated`가 "이미 있는 것 위에서" 뜬다는 것(§4).

@@ -50,7 +50,7 @@
   자체 내부에서 갱신돼야 함. 안 그러면 값이 계속 `None`으로 유지되는 매
   사이클마다 "1차 매치는 `NoneHandler`, 재귀 호출 뒤 실제 담당은 다른
   핸들러"로 바깥 루프가 오판해 불필요한 `retract`가 반복 호출될 위험 —
-  `ROADMAP.md` M2에 반영, `pre-implementation-audit.md`의 "이전 매치
+  `ROADMAP.md` M2에 반영, `archive/surveys/2026-08-06-pre-implementation-audit.md`의 "이전 매치
   핸들러 추적" 항목과 같은 부류라 새 우선순위 등급 없이 거기 흡수.
 
 **부수 정리**: `question.md`에서 "미확정"이던 `None` 항목을 해소로

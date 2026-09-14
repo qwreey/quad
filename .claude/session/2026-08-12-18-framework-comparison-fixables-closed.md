@@ -1,7 +1,7 @@
-# 2026-08-12 열여덟 번째 세션 — `framework-comparison-findings.md` 남은 두 항목 "고칠 필요 없음"으로 최종 판단
+# 2026-08-12 열여덟 번째 세션 — `archive/surveys/2026-08-06-framework-comparison-findings.md` 남은 두 항목 "고칠 필요 없음"으로 최종 판단
 
 **배경**: `question.md` 낮은 우선순위 목록에 남아있던
-`framework-comparison-findings.md`의 "고칠 만한 것" 2번 절 두 항목
+`archive/surveys/2026-08-06-framework-comparison-findings.md`의 "고칠 만한 것" 2번 절 두 항목
 (use-after-destroy 검증 안전망 부재, `:With`의 정적 의존성/동적 With
 미지원)이 여전히 "사용자 판단 전" 상태였음. 사용자가 이번 세션에서 둘 다
 명확한 근거를 들어 "고칠 필요 없음, 의도된 설계"로 확정.
@@ -34,7 +34,7 @@ React를 봐도 `useMemo(fn, [...])`의 deps 리스트를 동적으로 조립하
 
 ## 반영
 
-- `research/framework-comparison-findings.md`: 2번 절(고칠 만한 것)에서
+- `archive/surveys/2026-08-06-framework-comparison-findings.md`: 2번 절(고칠 만한 것)에서
   두 항목 제거, 3번 절(못 고치는 것 — 의도된 트레이드오프)로 근거와 함께
   이전. "다음 단계" 절도 "해소됨"으로 갱신 — 이 문서는 더 이상 사용자
   판단 대기 항목이 없음.

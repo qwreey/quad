@@ -24,7 +24,7 @@
 
 ## 왜 새 프리미티브가 아닌가
 
-`research/additional-primitives-plan.md`가 이미 "Error Boundary는 빈
+`archive/surveys/2026-08-06-additional-primitives-plan.md`가 이미 "Error Boundary는 빈
 자리 아님 — `pcall(MyComp, props)`만으로 React Error Boundary와 같은
 격리 효과를 프레임워크 지원 없이 얻는다"고 확정해둔 결론을 뒤집는 게
 아니라, **그 결론 위에 얹는 순수 슈가**(그 문서를 다시 열 필요 없음) —

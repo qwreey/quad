@@ -528,7 +528,7 @@ gc되긴 하지만.)"*
 **결론**: 노드별 캐시 유지(현재 모델) 유지, 플래튼 기각. Modifier가
 플래튼+클론을 쓰는 건 애초에 캐싱이 필요 없는 정적 데이터라 성립하는
 것이고, State는 존재 이유 자체(캐싱)가 달라 같은 패턴을 적용할 수 없음.
-`research/documentation-plan.md`의 심화 문서 후보로 남겨둠 — "왜 State는
+`archive/surveys/2026-08-06-documentation-plan.md`의 심화 문서 후보로 남겨둠 — "왜 State는
 Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사용자를 위한
 좋은 심화 콘텐츠 소재.
 
@@ -789,7 +789,7 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
   **합치는 노드를 안 만들므로** 이 원칙의 대상이 아니다(위 역전 배너).
   원칙 자체("숨겨지는 비용이 있는가")는 그대로 유효하고, 바뀐 건 *어디에
   비용이 있는가*에 대한 사실 판단이다. `quadnomicon`
-  에세이 후보로 좋음(`research/documentation-content-map.md` 6번 항목
+  에세이 후보로 좋음(`archive/surveys/2026-08-06-documentation-content-map.md` 6번 항목
   다음에 추가) — "왜 Compute만 여러 deps를 편하게 받고 Effect/Observer는
   안 그런가"가 겉보기엔 비일관적으로 보이지만 실제로는 "숨겨지는 비용이
   있는가"라는 하나의 원칙에서 나온 것이라는 게 소재.
@@ -919,7 +919,7 @@ stale하다" 수준이 아니라 **영영 갱신이 안 일어날 수 있음**. 
 안 남아있으면, 이 최적화는 그냥 조용히 작동을 멈춘다.
 
 **[2026-08-09 세션] 오버엔지니어링 의심 재검토 — 기각, 현재 설계
-유지.** `research/pre-implementation-audit.md` 3-1이 "클로저 업밸류로
+유지.** `archive/surveys/2026-08-06-pre-implementation-audit.md` 3-1이 "클로저 업밸류로
 이미 되는 걸 별도 API로 만든 것 아니냐"고 의심했던 것에 대한 사용자
 반박: 클로저 업밸류 대안은 실제로 다음처럼 즉시실행함수(IIFE)로 감싸
 업밸류를 준비해야 함 —
@@ -941,7 +941,7 @@ someSource:Compute(computeFn)
 단순하다는 게 사용자 논거. 반대로 `previous`가 없으면 `fn`은 매 호출마다
 새 인스턴스를 만들어야 해서(예: `LocalizationTable.new()`) lazy든
 아니든 재계산이 일어날 때마다 항상 비싼 재생성이 발생 — `previous`가
-막으려는 문제는 실재함. **`pre-implementation-audit.md` 3-1 해소 —
+막으려는 문제는 실재함. **`archive/surveys/2026-08-06-pre-implementation-audit.md` 3-1 해소 —
 현재 `fn(self, previous)` 설계 그대로 유지, API 표면을 줄이지 않음.**
 
 **스코핑 명확화(2026-08-09 세션에 확인, 새 결정 아님) — `previous`는 `self`

@@ -145,7 +145,7 @@ diff 자체의 결함):
   핸들러도 같은 순서 오류가 **이번 세션 이전부터** 있어서 같이 고침.
 - **[low]** `architecture.md` 정정 배너가 원문을 "콜론"이 아니라 "콜백"
   메서드로 오인용(정정하려는 문장의 뜻이 뒤집힘), ROADMAP 433행에 리네임
-  전 "대기 중/잠정 표기" 잔여, `documentation-content-map.md`가 `D` 스윕에서
+  전 "대기 중/잠정 표기" 잔여, `archive/surveys/2026-08-06-documentation-content-map.md`가 `D` 스윕에서
   누락.
 
 ## 절차 변경 — 감사 루프를 병렬에서 순차로 (사용자 지침)

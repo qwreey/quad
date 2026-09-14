@@ -46,7 +46,7 @@ Claude가 그 문서에 "quad-debug로도 안 커버함"이라고 쓴 문장이 
 - `base/bind-system-plan.md`: "Ref — 도입 확정" 절에 "권장 관례" 문단
   신설 — useRef급 스코프 관례를 명문화, use-after-destroy가 발생 가능한
   유일한 자리로 이 관례 위반을 지목.
-- `research/framework-comparison-findings.md`: use-after-destroy 항목을
+- `archive/surveys/2026-08-06-framework-comparison-findings.md`: use-after-destroy 항목을
   위 4가지 근거로 재작성(rbvm 위임, quad-debug 스코프 경계, Ref 관례
   귀결, Tag/Attribute/Tween 전용 디버깅 투자가 낫다는 판단) — 결론(안전망
   안 만듦)은 그대로, 근거가 훨씬 탄탄해짐.

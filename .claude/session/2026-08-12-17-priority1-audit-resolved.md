@@ -1,6 +1,6 @@
-# 2026-08-12 열일곱 번째 세션 — `pre-implementation-audit.md` 우선순위1 마지막 넷 전부 해소
+# 2026-08-12 열일곱 번째 세션 — `archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1 마지막 넷 전부 해소
 
-**배경**: 이전 세션(열여섯 번째)까지 `research/pre-implementation-audit.md`의
+**배경**: 이전 세션(열여섯 번째)까지 `archive/surveys/2026-08-06-pre-implementation-audit.md`의
 우선순위1 11개 중 7개는 해소됐지만 4개(1-3/1-4/1-10/1-11)가 열려있었음.
 사용자가 이번 세션에서 4개 전부에 대해 구체적인 결정을 한 번에 제시.
 
@@ -70,7 +70,7 @@ https://luau.org/types-library/) 기반 구체적 구현 방법을 제시 — `T
 - `base/module-lifecycle-plan.md`: provider 미주입 케이스 해소 표시 추가.
 - `base/modifier-plan.md`: `table.clone` 정확한 동작 절 추가, Property
   소유권 레지스트리 기각 절 추가.
-- `research/pre-implementation-audit.md`: 1-3/1-4/1-10/1-11 전부
+- `archive/surveys/2026-08-06-pre-implementation-audit.md`: 1-3/1-4/1-10/1-11 전부
   `[해소됨]` 표시, "다음 액션 제안" 절 갱신 — **우선순위1 11개 전부 해소**.
 - `.claude/question.md` 2번 절 동기화.
 
@@ -80,7 +80,7 @@ M0 착수 전 남은 유일한 게이트는 `.claude/luau-test/` 스파이크 �
 ## 핸드오버 점검(같은 세션, 후속) — 누락된 스파이크 파일 발견
 
 사용자가 "세션 중 알게된 지식 누락/stale 점검" 요청 — 위 문서 반영을 다시
-훑던 중, 1-10/1-11은 `pre-implementation-audit.md`/`base/`에 "확인됨"으로
+훑던 중, 1-10/1-11은 `archive/surveys/2026-08-06-pre-implementation-audit.md`/`base/`에 "확인됨"으로
 표시했지만 실제로는 **사용자의 설명/지식을 바탕으로 한 설계 레벨 확인이지,
 실제 Luau 코드로 돌려본 적은 없다**는 걸 재확인. 그런데 `.claude/luau-test/`
 15개 파일 중 이 둘(Luau `type function`으로 `store.key` 타이핑, 제네릭
@@ -102,7 +102,7 @@ M0 착수 전 남은 유일한 게이트는 `.claude/luau-test/` 스파이크 �
   모드 `Dispatch.listHandlers()` 포함) 체크리스트 항목이 통째로 빠져있던
   것, M3/M7의 `store.key`/`table.clone` 항목에 새 스파이크 파일 링크가
   없던 것을 같이 보강.
-- `pre-implementation-audit.md`의 1-10/1-11 해소 블럭과 "다음 액션 제안"에
+- `archive/surveys/2026-08-06-pre-implementation-audit.md`의 1-10/1-11 해소 블럭과 "다음 액션 제안"에
   새 스파이크 파일 이름을 명시적으로 링크.
 
 **교훈**: "설계는 확정됐다"와 "실제로 실행해서 확인했다"를 같은 `[해소됨]`

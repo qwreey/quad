@@ -3,14 +3,14 @@
 <!-- 현재 유효한 설계는 이 파일이 아니라 base//research//archive/가 최종 소스 — 이 파일 안의 판단이 이후 세션에서 뒤집혔을 수 있음. -->
 
 ## 2026-08-10 두 번째 세션 — Tween 구조 전면 재설계: 독립 Dispatch 핸들러 →
-값-레벨 `Tween<T>` 래퍼, `pre-implementation-audit.md` 1-1 완전 해소
+값-레벨 `Tween<T>` 래퍼, `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-1 완전 해소
 
 사용자가 "트윈도 타입 문제가 있다 — 키 타입을 어떻게 하냐, Property
 setter가 더 분발해서 `V`가 `isTween`이면 트윈 넣는 게 낫지 않냐"고
 제기하며 시작된 긴 단일 스레드. 기존 확정 모델(`[Tween(key,
 tweenData...)] = storeValue`, `v`가 Store인 아무 `k`나 잡는 우선순위
 최상위 Dispatch 핸들러, 2026-08-04부터 확정)이 실은
-`research/pre-implementation-audit.md` 우선순위1-1이 이미 지적해뒀던
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1-1이 이미 지적해뒀던
 구조적 모호함("애니메이션 없는 일반 반응형 프로퍼티 바인딩도 결국
 이름이 Tween인 파일을 거쳐가는가")을 안고 있었다는 걸 사용자 제안이
 정확히 겨냥한 것으로 드러나, 세션 내내 살을 붙여 완전히 재설계까지
@@ -108,7 +108,7 @@ Tween 제거, `None` 센티널 절 예시 갱신, Ref/Brand 절 문구 정정),
 `quad-roblox/Handlers/Tween.luau` 삭제하고 `Handlers/Property.luau`
 설명에 흡수, `Animate.luau` 신설), `base/modifier-plan.md`(핸들러 계층
 분류에서 Tween 제외 + 신규 "10. `Tween<T>`와의 타입 합성" 절),
-`research/pre-implementation-audit.md`(우선순위1-1 해소 표시),
+`archive/surveys/2026-08-06-pre-implementation-audit.md`(우선순위1-1 해소 표시),
 `ROADMAP.md`(M11 전면 재작성, M2/M7 체크박스 갱신), `.claude/question.md`/
 `.claude/README.md`(참조 동기화).
 

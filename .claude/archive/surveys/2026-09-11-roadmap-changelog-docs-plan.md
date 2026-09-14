@@ -158,7 +158,7 @@ v1 `qwreey/quad@f867ccb` — 아래 v1 문서 파일 이름은 그 레포 기준
 | 문서: 설계 기록(RFC) 섹션 | `.claude/` 계획 표면을 기능 제안자가 읽게 하는 진입 | `ROADMAP.md` 백로그, `research/rfc-docs-section-plan.md` | 아이디어(계획서만) | 있음 |
 | 문서: 이 항목 | 공개 문서에 후행 로드맵·변경 이력 싣기 | 이 문서 | 아이디어(계획서만) | 있음 |
 | 문서: 실행 가능한 스니펫 | luau-web + mock 백엔드로 웹 문서에서 예제를 고쳐 돌려보기 | `ROADMAP.md` 백로그, `todos.md` | 아이디어(웹 백엔드 선행) | 있음(약함) |
-| 문서: 심화 축 잔여 | 4축 중 세부 문서 셋(UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링) | `research/documentation-plan.md`, `question.md` | 부분 구현 | 있음(약함) |
+| 문서: 심화 축 잔여 | 4축 중 세부 문서 셋(UI 네이밍 컨벤션·Store 부작용 패턴·권장 이벤트 핸들링) | `archive/surveys/2026-08-06-documentation-plan.md`, `question.md` | 부분 구현 | 있음(약함) |
 | 두 번째 프로덕션 백엔드 | 창구·계약은 열려 있고 mock이 통과하지만 출하는 하나뿐 | `docs/overview/01-why-quad.md`의 "오늘의 성숙도" 절 | 성숙도 서술(약속 아님) | 있음 |
 
 ### 3.2 뜻은 있지만 **걷어내야** 실을 수 있는 것

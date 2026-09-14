@@ -28,7 +28,7 @@
 - **Tween 승격(research→base) 반영 누락**: `tween-plan.md` 상태 필드가
   여전히 "research", `architecture.md` 2곳("Tween은 여전히 research/에
   있음"), `ui-shorthand-plan.md`의 폐기된 "Tween 핸들러" 용어 — 전부 수정.
-- **`question.md`/`CLAUDE.md`의 "지금 할 일" 1번**: `pre-implementation-audit.md`
+- **`question.md`/`CLAUDE.md`의 "지금 할 일" 1번**: `archive/surveys/2026-08-06-pre-implementation-audit.md`
   우선순위1 중 열려있는 게 "1개(1-3)뿐"이라던 요약이 실제로는 4개(1-3/
   1-4/1-10/1-11, 원문에 `[해소됨]` 마커 없음)였음 — 개수/목록만 정정,
   실제 해소는 사용자가 "나중으로 연기" 선택.

@@ -211,7 +211,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 - **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항** — `qa-request/post-implementation-review-round3.md` §4가 소스. Q22~Q24는 회신 4차,
   **Q25·Q26·Q27은 2026-09-08 회신으로 전부 닫힘**(§12 — Q25는 값 비교 모델·`Tween.Dedup` 필드, `H-478`). 여기 남은 것 없음.
 
-- **[2026-09-07 신설, 같은 날 밤 회신 반영] 소스 구조 재편** — `research/source-layout-plan.md`가 소스(각 절
+- **[2026-09-07 신설, 같은 날 밤 회신 반영] 소스 구조 재편** — `archive/surveys/2026-09-07-source-layout-plan.md`가 소스(각 절
   머리 `[결정]` 줄 + 9절 상태). 회신으로 닫힌 것: 1절 Slot 분할·3절 Tag 유니언·4절 패밀리 접기(5·6·7절 포함)·
   2절 Tween(권고 (c) 대신 **통째 이동 (b)**)·10-1 Brand→quad-types·10-2 마커 전면화·10-3 quad-types 재배치.
   **[2026-09-08 회신으로 전부 닫힘]** (1) 8절 옛 `Attribute` → `Attr` 축약 — **한다**(+`AttrKey`·엔진 op `setAttr`),
@@ -277,7 +277,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   착수 못 함"으로 직접 후순위 지정한 건 여전함 — base 설계(M3 Dispatch/
   M2 Source/M5 `D` 생성자) 시점에 훅 확장 지점만 고려해두면 됨.
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
-  패턴)** — `research/documentation-plan.md`(뼈대만). 정식 백로그 항목으로
+  패턴)** — `archive/surveys/2026-08-06-documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
 - **v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat`** —
   `research/v1-compat-plan.md`(신규, 2026-08-06, 두 차례 후속 논의로 수렴).
@@ -331,7 +331,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 > (2026-08-24 해소·아카이브 이관), 지금은 바로 위 "낮은 우선순위" 절이다.
 > 옛 세션/아카이브 문서가 `question.md` N번을 가리키면 **그 문서가 쓰인
 > 시점의 번호**로 읽을 것. 우선순위1 11개의 개별 상태가 궁금하면
-> `research/pre-implementation-audit.md`가 원본이자 최신.
+> `archive/surveys/2026-08-06-pre-implementation-audit.md`가 원본이자 최신.
 
 ---
 전체 순서/우선순위는 `.claude/todos.md`가 최종 소스. 확정된 것들의 문서
@@ -343,6 +343,6 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 사용자 요청(*"이제 내가 말해줘야할 부분을 알려줘"*)으로 모은 것. 자유서술 답이 곧 결정이고, 닫히면 그 자리에서 지운다. **[2026-09-10 밤 회신]** D1·D2·D3·D6·D7·D8은 같은 밤 회신으로 닫혔다(회신 원문·반영은 `session/2026-09-09-01-docs-polish.md` 끝의 2026-09-10 밤 2차 통독 피드백 문단) — D1 문자열 원천 유지(단 §2 문구를 "처리"로, 파이프≠컨베이어 암시), D2 별도 페이지, D3 통독 피드백 열두 갈래(GS 12페이지 재구성), D6 게이트 부착(`2bdc3f0`), D7 `pcall` 제거(같은 커밋), D8 백로그 그대로("문서를 다 다듬고 … 그 때 다른걸 시작하자"). 남은 것:
 
 - **~~D10~~ [2026-09-11 닫힘 — 사용자: "List 와 같이 Item, UD 를 Single 에 두는거 내 처음 목적이 맞았음. 인자 같고 타입 인자 같고 … 빠질것만 빠져야하는데, Item 도 실수로 빠진게 맞는듯"]** → (a) 반영. identity 슈거를 별도 오버로드 팔로 두는 것은 신 솔버가 제네릭 팔을 못 골라 기각(`typing-limits.md` 8.19) — 한 시그니처, 오용은 런타임 가드.
-- **D11. [2026-09-11 신설] `quad-mock` 이름이 두 물건을 가리키는가.** 오버뷰 §8은 "헤드리스 검증용 **공개 mock 백엔드**(예정)"를 이름 없이 약속하고, `ROADMAP.md` 백로그·how-to 06·`docs/README.md`는 `quad-mock`을 "범용 렌더 디버깅 도구(Tween mock 등 동적 동작 포함)"라 부른다(`research/roadmap-changelog-docs-plan.md` 조사에서 발견). 한 물건이면(테스트 mock을 공개 패키지로 꺼내면서 동적 동작을 얹는 것) 오버뷰에 이름을 적고 ROADMAP 문구를 맞추면 되고, 둘이면 오버뷰 항목에 별도 이름이 필요하다. 메인 추정은 한 물건.
+- **D11. [2026-09-11 신설] `quad-mock` 이름이 두 물건을 가리키는가.** 오버뷰 §8은 "헤드리스 검증용 **공개 mock 백엔드**(예정)"를 이름 없이 약속하고, `ROADMAP.md` 백로그·how-to 06·`docs/README.md`는 `quad-mock`을 "범용 렌더 디버깅 도구(Tween mock 등 동적 동작 포함)"라 부른다(`archive/surveys/2026-09-11-roadmap-changelog-docs-plan.md` 조사에서 발견). 한 물건이면(테스트 mock을 공개 패키지로 꺼내면서 동적 동작을 얹는 것) 오버뷰에 이름을 적고 ROADMAP 문구를 맞추면 되고, 둘이면 오버뷰 항목에 별도 이름이 필요하다. 메인 추정은 한 물건.
 - **D5. HUMAN_TODO 14.2** — `roblox_sync_config_generator` 없이 Rojo 매핑만으로 Studio 싱크가 되는지 실기기 실측(설치 문서 2단계의 [2026-09-10 기준] 미확인 문장이 그 결과를 기다린다).
 - **~~D9~~ [2026-09-10 밤 닫힘 — 사용자: "기다릴 필요는 있는듯. 아니면 WaitForChild 를 하거나. … 실제 클라이언트는 코드들을 동적으로 네트워크로 복제하고 있는 상황이라, 뭐가 먼저 실행될지 몰라서 진짜 없어서 에러 날 수 있긴 해"] → 진입점에 `game.Loaded:Wait()` 한 줄 + 접힘에 실측 근거(편집자 반영 중). D4(custom.css)도 같은 회신으로 닫힘("확실히 끝났어").

@@ -2850,7 +2850,7 @@ level 2      : ./e1_errlevel.luau:12: Slot:Add — index가 범위 밖(1..3): 9
 즉 **동적 경로 가드 계열과 모듈 초기화는 영어, Slot/Dispatch/dispose/Blocker는
 한국어**다. 한 라이브러리의 공개 표면에서 이렇게 갈리면 사용자가 검색으로
 찾기도 어렵고(에러 문구가 그대로 검색어가 된다), 문서 사이트
-(`research/documentation-plan.md`)의 에러 레퍼런스도 두 언어를 섞게 된다.
+(`archive/surveys/2026-08-06-documentation-plan.md`)의 에러 레퍼런스도 두 언어를 섞게 된다.
 
 **왜 결정이 필요한가**: `.claude/conventions.md`가 정한 것은
 *"사용자가 보게 될 것은 한국어"* 인데, 그 "사용자"는 **이 프로젝트의

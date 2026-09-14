@@ -10,7 +10,7 @@
 (`btn1`/`btn2`/`btn3`류, 20개까지도 가능)를 표현하려면 구 모델은 태그
 개수만큼 키를 갱신해야 해서 끔찍하다는 실사용 근거. 이 논의가 "retract가
 새 값의 타입에 따라 이전 핸들러를 정확히 찾아 부를 수 있는가"라는 훨씬
-근본적인 구멍(`pre-implementation-audit.md` 1-2번이 이미 지적해뒀던 것)을
+근본적인 구멍(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-2번이 이미 지적해뒀던 것)을
 직접 건드리게 됐고, 몇 차례 시행착오 끝에 사용자가 제시한 "체인+
 `retractUnder`" 설계로 수렴. 세 갈래로 정리:
 
@@ -34,7 +34,7 @@ quad-base, `CollectionService` 글루(`Handlers/Tag.luau`)만 quad-roblox —
 
 **2. Tag 재설계가 "retract가 실제로 필요해지는" 첫 array-part store-bind
 사례가 되며, 기존 "이전 핸들러 추적" 설계 공백이 정면으로 드러남.**
-`pre-implementation-audit.md` 1-2번이 이미 "store-bind 재실행 모델에서
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-2번이 이미 "store-bind 재실행 모델에서
 realv 타입이 매 갱신마다 바뀔 수 있는데 '이전 핸들러'를 누가 추적하는지
 불명"이라고 짚어뒀던 것 — Tag가 `Tag(...)`↔`nil` 사이를 오가며 실제로
 핸들러 타입이 바뀌는 구체 사례가 되어 더 이상 미룰 수 없어짐. 시행착오
@@ -79,13 +79,13 @@ realv 타입이 매 갱신마다 바뀔 수 있는데 '이전 핸들러'를 누�
 디스패치 모델"/"None 센티널"/"Store 바인드는 특수 경우인가" 절 갱신)/
 `base/tag-plan.md`(전면 재작성)/`archive/tag-hash-key-model-reversed.md`
 (신규)/`base/architecture.md`(소스트리 `Tag.luau` 추가, 4번 항목 정정)/
-`ROADMAP.md`(M2/M4/M10)/`research/pre-implementation-audit.md`(1-2번
+`ROADMAP.md`(M2/M4/M10)/`archive/surveys/2026-08-06-pre-implementation-audit.md`(1-2번
 해소 표시)에 반영 완료.**
 
 **다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터). M2/M4 스파이크
 검증 목록에 `chains`/`retractUnder`가 다단 체인에서 실제로 정확히
-동작하는지가 새로 추가됨(추론만으로 확정된 것, `pre-implementation-audit.md`
-류 "실제 Luau로 부딪혀본 적 없는 것" 범주). `pre-implementation-audit.md`
+동작하는지가 새로 추가됨(추론만으로 확정된 것, `archive/surveys/2026-08-06-pre-implementation-audit.md`
+류 "실제 Luau로 부딪혀본 적 없는 것" 범주). `archive/surveys/2026-08-06-pre-implementation-audit.md`
 1-1번(Tween이 유일한 store-bind 예시라 "일반 store-bind와 Tween이 같은
 핸들러인지"가 불명확한 문제)은 Tag가 두 번째 구체 사례가 되면서 정황상
 "별개 핸들러, 둘 다 `Dispatch/StoreBind.luau` 재사용"쪽에 힘이 실리지만

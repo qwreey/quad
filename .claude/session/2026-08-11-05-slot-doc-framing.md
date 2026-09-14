@@ -8,7 +8,7 @@
 짧은 문서화 톤 논의. 사용자가 "Slot을 동적렌더 가능하게 돕는 도구로
 설명하는 게 문서 톤상 정해져 있냐"고 질문 — 확인 결과 미정이었음(`base/
 slot-plan.md`는 "뮤터블 자식 배열, 엄격한 단일 마운트 소유권"이라는 더
-넓은 컴포지션 도구로, `documentation-content-map.md`도 초심자 단계에선
+넓은 컴포지션 도구로, `archive/surveys/2026-08-06-documentation-content-map.md`도 초심자 단계에선
 "children 배열" 정적 구조 서술을 앞세우고 동적 CRUD/`:List`는 층을 나눠
 후순위로 배치해뒀었음). 사용자가 바로 확정 요청: **Slot의 요지 자체가
 "안에서 요소가 생기든 말든 자유롭다"는 것이라, "동적 렌더링을 가능하게
@@ -16,7 +16,7 @@ slot-plan.md`는 "뮤터블 자식 배열, 엄격한 단일 마운트 소유권"
 백로그(2026-08-09 여섯 번째 세션)도 같은 프레이밍의 특수 케이스(1개
 아니면 0개의 동적 렌더)일 뿐이라는 것도 사용자가 직접 짚음.
 
-`research/documentation-content-map.md`(modifier-plan.md/slot-plan.md
+`archive/surveys/2026-08-06-documentation-content-map.md`(modifier-plan.md/slot-plan.md
 절 최상단에 프레이밍 확정 명시, 겸사겸사 옆에 있던 stale 마커 —
 "Slot 형제 순서 보장 미확정"이 실제로는 2026-08-09 여섯 번째 세션에
 Length/Offset으로 이미 해소돼 있었던 것도 발견해 정정)/`base/

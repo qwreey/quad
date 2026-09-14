@@ -147,6 +147,6 @@ Connect가 도는 숨은 churn 비용도 있음(Store Set은 dedup 안 함,
 전부 store-bind되는데 이벤트만 특별 취급해서 뺄 근거가 약하고, 구현
 비용도 낮으니(위 "엔지니어링 비용이 낮은 이유" 참고) 일관되게 지원해두는
 쪽을 택함. 그냥 "이런 것도 가능하다" 정도로 존재하고, quad가 이 패턴을
-적극 권장하진 않는다는 톤으로 문서화(`research/documentation-plan.md`
+적극 권장하진 않는다는 톤으로 문서화(`archive/surveys/2026-08-06-documentation-plan.md`
 3번 "권장 이벤트 핸들링 패턴" 문서에 이 대조까지 반영 예정).
 

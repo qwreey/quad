@@ -366,7 +366,7 @@ offset이 밀리고 당겨지는 케이스(이건 이미 "그냥 확인된 것"�
 - quad는 **암묵적 자동 추적을 기각**했고(`base/source-state-plan.md`),
   의존성은 `:With`로 **정적으로** 선언하게 돼 있음. 게다가 "`:With`의
   동적 의존성 미지원"은 2026-08-12 열여덟 번째 세션에 **의도된
-  트레이드오프로 확정**됨(`research/framework-comparison-findings.md`) —
+  트레이드오프로 확정**됨(`archive/surveys/2026-08-06-framework-comparison-findings.md`) —
   State immutable 가정과 정면으로 부딪힌다는 이유.
 - 그런데 평탄화 노드는 본질적으로 **안쪽 State가 바뀔 때마다 구독
   대상을 갈아타야** 함 = 의존성 집합이 런타임에 변함. 즉 이 도구는

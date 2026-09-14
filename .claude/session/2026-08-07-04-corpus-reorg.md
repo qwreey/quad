@@ -32,13 +32,13 @@
    가능성 명시 — v1에서도 가능했던 기능이고, Tween처럼 무거운 API
    표면 없이 기존 per-instance weak-table 유틸(`base.perInstanceState`)
    재사용만으로 충분하다는 점을 추가.
-4. **`additional-primitives-plan.md`를 4갈래로 분리**: 확정된 `Blocker`/
+4. **`archive/surveys/2026-08-06-additional-primitives-plan.md`를 4갈래로 분리**: 확정된 `Blocker`/
    `Effect`는 각각 새 `base/blocker-plan.md`/`base/effect-plan.md`로
    승격(Blocker는 State와 같은 마일스톤에서 개발하기로 해서
    `store-semantics.md`에 교차 참조 추가, `ROADMAP.md` M3에도 체크박스
    반영). 기각된 `Batch`(lexical block)와 `Context`(+대안이던 레이어드
    Store)는 각각 `archive/batch-rejected.md`/`archive/context-rejected.md`로
-   분리. `research/additional-primitives-plan.md`엔 아직 실제로 열려있는
+   분리. `archive/surveys/2026-08-06-additional-primitives-plan.md`엔 아직 실제로 열려있는
    것(키 기반 동적 컬렉션 재조정) 하나만 남김. **[같은 날 바로 정정]**
    처음엔 Blocker/Effect를 `base/additional-primitives.md` 한 파일로
    합쳐 승격했으나, 사용자가 "State 볼 때 Effect까지 볼 필요는 없다,

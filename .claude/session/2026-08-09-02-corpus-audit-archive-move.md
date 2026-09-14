@@ -22,20 +22,20 @@
   실제로 다른 내용을 다룸 — Ref 필드 충돌 없음의 근거를 잘못 인용)와
   폐기된 `StoreSource` 프록시와 혼동될 수 있는 "Source 양방향 프록시"
   표현도 정정.
-- `documentation-content-map.md`: 폐기된 `myStore.key = value` 대입
+- `archive/surveys/2026-08-06-documentation-content-map.md`: 폐기된 `myStore.key = value` 대입
   문법이 예시로 남아있던 것(같은 파일 바로 다음 줄은 `:Set()`으로 옳게
   써서 자기모순) → 정정.
 - `ROADMAP.md`: 세션 인용 오류 2건(`git blame`으로 실제 커밋 시점 확인해
   정정 — M0의 Source/State 서브타입 항목은 "세 번째 세션", M2의
   `LifetimeHandle` 순서 역전 항목은 "네 번째 세션"이 맞음), `Bound`/
   `None` "가칭" 표기가 이미 이름 확정됐는데 안 지워진 것 2건 정정, M6에
-  Slot CRUD 의미론 확정 체크박스 누락돼 있던 것 추가(`pre-implementation-audit.md`
+  Slot CRUD 의미론 확정 체크박스 누락돼 있던 것 추가(`archive/surveys/2026-08-06-pre-implementation-audit.md`
   우선순위1이 이미 지적했던 갭).
 - `question.md`: `Tag`/`Added`/`Removed`/`Merged`가 `tag-plan.md`에서
   "여기서 추적 중"이라 주장했지만 실제로 빠져있던 것 추가.
 - `archive/context-rejected.md`: 다른 archive 문서와 달리 base/ 포인터가
   없던 것 보강.
-- `additional-primitives-plan.md`: State/Observer를 "독립 프리미티브"로
+- `archive/surveys/2026-08-06-additional-primitives-plan.md`: State/Observer를 "독립 프리미티브"로
   잘못 묶은 표현 정정(확정된 분류는 Source/Store/Ref/Modifier/Slot/DI=
   독립 프리미티브, State/Observer=파생 데이터, 2026-08-08 두 번째 세션
   "Handler는 세 번째 카테고리" 절 참고).
@@ -49,7 +49,7 @@
 - `archive/observer-cleanup-contract-rejected.md` — `effect-plan.md`의
   "Observer 자체에 React `useEffect`식 cleanup 반환 계약을 추가하는 안"
   기각 서술(코드 예시 포함) 이전.
-- `archive/keyed-collection-state-method-rejected.md` — `additional-primitives-plan.md`의
+- `archive/keyed-collection-state-method-rejected.md` — `archive/surveys/2026-08-06-additional-primitives-plan.md`의
   "키 기반 동적 컬렉션 재조정을 `state:Keyed(...)` State 메소드로 두려던"
   초안 기각 서술 이전(이 프리미티브 자체는 여전히 열린 질문 — 폼 팩터
   결정 부분만 이전됨).
@@ -65,7 +65,7 @@
 재정정 단락, `modifier-plan.md` 9-1(b)의 "동질적/이질적" 초안 — 전부
 현재 설계를 정당화하는 근거로 너무 밀착돼 있어서, 분리하면 "왜 이렇게
 안 했는지"가 같이 잘려나가 다음 에이전트가 같은 대안을 또 검토할
-위험이 있다고 판단해 그대로 둠. `documentation-content-map.md`가 최근
+위험이 있다고 판단해 그대로 둠. `archive/surveys/2026-08-06-documentation-content-map.md`가 최근
 추가된 5개 base 문서(`relate`/`blocker`/`effect`/`tag`/`attribute`-plan.md)의
 초심자/api/심화 분류를 아직 안 갖고 있는 것도 실제 설계 판단(콘텐츠
 분류)이 필요해 손 안 댐 — 문서 자신도 이미 "지금 당장 안 급함"이라고

@@ -1,6 +1,6 @@
 # Blocker — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게
 
-**상태**: base — `research/additional-primitives-plan.md`(다른 프레임워크
+**상태**: base — `archive/surveys/2026-08-06-additional-primitives-plan.md`(다른 프레임워크
 대비 갭 분석)에서 갈라져 나온 확정 프리미티브. lexical `Batch(fn)`으로
 풀려던 대안은 기각되어 `archive/batch-rejected.md`로 분리됨 — 이 문서는
 **확정된 Blocker만** 다룬다. `base/effect-plan.md`(같은 조사에서 나온

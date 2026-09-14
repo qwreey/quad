@@ -59,9 +59,9 @@ Fusion/Vide/react-lua 정직 비교 완료. **핵심**: `Source<T>`가 구조적
 **2026-08-06 네 번째 세션 — M0 착수 직전 크리티컬 감사**
 (`session/2026-08-06-04-pre-implementation-audit.md`)
 `.claude/base/` 전체를 모호성/지연결정리스크/단순화후보 세 렌즈로 재감사,
-`research/pre-implementation-audit.md` 신설(우선순위1 11개 등). 대부분은
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 신설(우선순위1 11개 등). 대부분은
 이후 세션에서 해소됨(우선순위1 11개 전원) — 현재 상태의 원본은
-`research/pre-implementation-audit.md`.
+`archive/surveys/2026-08-06-pre-implementation-audit.md`.
 
 **2026-08-07 세션 — `:With`도 새 State 노드** (`session/2026-08-07-01-with-new-node.md`)
 `:With(...)`는 clone 빌더가 아니라 매번 새 State 노드를 만드는 것으로 확정
@@ -222,7 +222,7 @@ quad가 마운트한 부모 Instance에 `Slot`/store-bind 경로를 안 거치�
 `Tween(opts) -> Tween<T>` 값-레벨 래퍼로 전환 — PropertyHandler가
 `realv`를 다 풀어낸 뒤 `isTween(realv)`로 직접 분기. 이걸로
 "일반 반응형 바인딩도 Tween 파일을 거쳐가는가"라는 오래된 구조적 모호함
-(`pre-implementation-audit.md` 1-1)이 구조적으로 해소됨. 3-상태 릴레이션
+(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-1)이 구조적으로 해소됨. 3-상태 릴레이션
 슬롯으로 진입 애니메이션 버그 방지, `T'=T|Tween<T>` 타입 치환만으로 해결.
 
 **2026-08-10 세 번째 세션 — `OnChange` 특수 키** (`session/2026-08-10-04-onchange-key.md`)
@@ -371,7 +371,7 @@ bind-system-plan.md`) `local addTax = Sum(a,b)`처럼 만든 값을 `:Compute`�
 
 **2026-08-12 일곱 번째 세션 — `PreRef`는 취소 개념 없음, 재사용은 error**
 (`session/2026-08-12-07-preref-single-use-no-cancel.md`)
-`documentation-content-map.md`에 미정으로 남아있던 "`PreRef` 취소 가능성"
+`archive/surveys/2026-08-06-documentation-content-map.md`에 미정으로 남아있던 "`PreRef` 취소 가능성"
 해소: `PreRef`는 pre-pass에서 fire와 동시에 소진돼 정상 `retract` 체인에
 아예 안 올라가므로 취소 개념 자체가 없음(사용자 직관과 기존 구조가
 정확히 일치). 진짜 위험은 취소가 아니라 재사용(stale `.Value`로 콜백이
@@ -519,7 +519,7 @@ vararg 유지(요소 개수가 대개 소수로 고정, 동적이면 Slot-in-Slo
 재설계, Slot 소유권 일반화** (`session/2026-08-12-16-corpus-audit-attribute-retract-slot-owner.md`)
 7개 에이전트로 `.claude/` 코퍼스 전체를 감사해 stale 서술 다수 정정
 (retract-always-fires 정정 전파 누락, Tween research→base 승격 반영
-누락, `Relate` API 인자 개수 버그, `pre-implementation-audit.md` 열린
+누락, `Relate` API 인자 개수 버그, `archive/surveys/2026-08-06-pre-implementation-audit.md` 열린
 항목 개수 오류 등). 이어서 사용자가 diff를 직접 검토하며 Attribute
 `retract`를 다단계로 재설계 — **최종: retract는 완전 no-op(SetAttribute는
 오직 `process(inst,k,nil)`), Attribute는 오직 명시적 `None`/`nil`로만
@@ -536,7 +536,7 @@ Attribute 자동 unset이 필요해지면 쓸 `:Apply` opt-in 유틸을
 
 **2026-08-12 열일곱 번째 세션 — 우선순위1 마지막 넷 전부 해소**
 (`session/2026-08-12-17-priority1-audit-resolved.md`)
-`pre-implementation-audit.md` 우선순위1 중 열려있던 마지막 넷을 사용자가
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1 중 열려있던 마지막 넷을 사용자가
 한 번에 확정: 우선순위 동률/매치실패(1-3, tiebreak 강제 대신
 `HANDLER_PRIORITY_*` 상수+디버그 모드 동률 감지/핸들러 목록 함수, 매치실패는
 즉시 error), provider 미주입 dispatch(1-4, 매치실패 규칙에 자연 흡수),
@@ -553,7 +553,7 @@ typefunction.luau`/`17-modifier-index-tableclone-chaining.luau` 신규
 추가(총 17개), `ROADMAP.md` M2/M3/M7 체크리스트에도 누락됐던 항목(디버그
 모드 동률 감지+`listHandlers`, `store.key`/`table.clone` 실측 링크) 보강.
 
-**2026-08-12 열여덟 번째 세션 — `framework-comparison-findings.md` 남은
+**2026-08-12 열여덟 번째 세션 — `archive/surveys/2026-08-06-framework-comparison-findings.md` 남은
 두 항목 "고칠 필요 없음"으로 최종 판단**
 (`session/2026-08-12-18-framework-comparison-fixables-closed.md`)
 "고칠 만한 것"으로 분류돼 있던 use-after-destroy 검증 안전망 부재,
@@ -590,7 +590,7 @@ quad 자신이 만든 효과만 설명하는 스코프라 외부 조작은 원�
 아님(`research/debug-tooling-plan.md`가 이미 명시), 실제 위험 지점은
 `Ref`가 관례를 벗어나 반출되는 경우뿐(React `useRef`급 스코프 관례를
 `base/bind-system-plan.md`에 이번에 명문화) — 전부 동의로 최종 기각,
-근거를 `research/framework-comparison-findings.md`에 보강.
+근거를 `archive/surveys/2026-08-06-framework-comparison-findings.md`에 보강.
 
 **2026-08-12 스물한 번째 세션 — 네이밍 정리 후속: `Pipe` 기각, `Compute`
 vs `Computed`, `:With`/`Tag`·`Modifier` clone 대조 명문화**
@@ -882,7 +882,7 @@ claim**으로 확정. 이걸로 마지막 게이트가 열려 **0-A(하강 diff 
 함수를 감싸 에러 시 자동으로 플레이스홀더를 그려주는
 유틸(`Fallback(original, onError)`)을 제안하고 백로그 문서화를 요청 —
 워크트리에서 작업.
-`research/additional-primitives-plan.md`가 이미 확정한 "Error Boundary는
+`archive/surveys/2026-08-06-additional-primitives-plan.md`가 이미 확정한 "Error Boundary는
 빈 자리 아님, `pcall(MyComp,props)`로 충분"이라는 결론을 뒤집는 게 아니라
 그 위에 얹는 순수 슈가(`Operator`가 `:Compute`/`:Apply` 위에 얹힌 것과
 같은 관계)로 판단해 새 research 문서 신설(세 번째 세션에
@@ -1303,7 +1303,7 @@ stale")가 틀렸음**을 잡아냄(실제로는 `initreq/tbox/CLAUDE.md`를 가
 보고) — 어느 쪽도 확정하지 말고 재시작 직후 실행에서 볼 것. 전 세션이
 "존재하지 않는 원칙 인용" 3건으로 넘긴 것은 재분류돼 **2건이 인용 대상
 오류**로 판명(`v1-compat-plan.md`→`component-composition-plan.md`+
-`store-plan.md`, `pre-implementation-audit.md`→`ROADMAP.md`), 진짜 출처 없는
+`store-plan.md`, `archive/surveys/2026-08-06-pre-implementation-audit.md`→`ROADMAP.md`), 진짜 출처 없는
 1건(`modifier-plan.md:536`)만 `question.md` 3번으로 올려 사용자 판단 대기.
 `quad-handover-audit` 첫 실동은 에이전트 67개/6라운드에 **수렴 실패**(새 발견
 28→15→16→7→11→6, 라운드5에서 되레 증가) — 단조 감소 전제와 `MAX_ROUNDS`
@@ -1343,7 +1343,7 @@ blob과 바이트 단위로 동일, 메인이 `git rev-parse`로 독립 확인).
 안 됐던 탓. 남은 미해결은 `tools:` 필드 미반영뿐(적힌 Grep/Glob이 안
 주어지고 안 적은 `advisor`가 주어짐). 첫 감사 라운드는 그 외에 자기
 메모리 2개의 stale 서술(폐기된 워크플로를 살아있는 것처럼 서술),
-`documentation-content-map.md`의 "943줄, 최대 문서"(실측 203줄, 최대는
+`archive/surveys/2026-08-06-documentation-content-map.md`의 "943줄, 최대 문서"(실측 203줄, 최대는
 `slot-plan.md` 1970줄), `README.md`의 패스 수 하드코딩을 잡았고, 직전
 커밋의 미재감사 6건은 **회귀 없음**으로 확인해 `todos.md`의 ⚠️ 블록을 닫음.
 
@@ -1423,7 +1423,7 @@ blob과 바이트 단위로 동일, 메인이 `git rev-parse`로 독립 확인).
 같이 고침.
 
 **커밋 전 감사가 이 세션 자신의 실수를 하나 잡았다** —
-`pre-implementation-audit.md`의 "아직 안 고침" 절에 있는
+`archive/surveys/2026-08-06-pre-implementation-audit.md`의 "아직 안 고침" 절에 있는
 `State<Modifier>` 항목이 해소된 것 같아 해소 마커를 달았는데, 바로 아래
 문단에 **2026-08-09 세션이 단 `[완전 해소]` 마커가 이미 있었다.** 중복인
 데다 해소 시점을 2026-08-16으로 잘못 읽히게 만들어 되돌림. 이 항목이
@@ -2381,7 +2381,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `H-392`~`H-402`(§11 — `setOffsetSource` 쓰기 순서 HIGH·Detach `releaseOwner`·이중 바인드 메시지; Q13~Q17,
   Q7 둘째). 이어 `H-403`(isSlot→Brand)·`H-404`(전역 슈거 게이트)·`H-405`(exit code 절차 오류)·문서 재편
   (`archive/v2-initial-implementation/`, 원장 개명)·6순회 `H-406`~`H-416`(Property 트윈 Create 선행·SlotHandler
-  pre-pass·`H-397` 회귀 복원; Q18~Q20·Q7 셋째)·사용자 구조 의견 여덟 → `research/source-layout-plan.md`. Gemini 외부 리뷰 검증(§13) —
+  pre-pass·`H-397` 회귀 복원; Q18~Q20·Q7 셋째)·사용자 구조 의견 여덟 → `archive/surveys/2026-09-07-source-layout-plan.md`. Gemini 외부 리뷰 검증(§13) —
   실존 셋 `H-417`~`H-419`(빈 태그/속성 이름·`Claim` inst 게이트·`drive` props 게이트). 7순회 `H-420`~`H-430`(§14 —
   **HIGH** 생성기 `ContentId` 오매핑 재정규화, gen-d `check`·모듈 스코프 전역 게이트, Claim props·Ref normal·
   Bookkeeping 구멍 메시지; Q21 툴체인).
@@ -2411,7 +2411,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   **핸드오버 감사 루프**: 3라운드 8→2→1 + 같은 원인 잔여 grep 0 — 체크포인트. "문항·발견은 평문 한 문단" 규약을 conventions로 승격. 남은 몫: Q25·Q26, 구조 재편 여덟(레이아웃 회신 파일 미반영), flatten 일곱.
 
 - **`session/2026-09-07-04-source-layout-reply.md`** — **구조 재편 회신 반영**(사용자 회신 `layout-usernote-ignoreme.md`,
-  `research/source-layout-plan.md` 각 절 `[결정]`·10절): Tag 이름 자리 `string | Tag | { names }`(`TagNames` read 인덱서 —
+  `archive/surveys/2026-09-07-source-layout-plan.md` 각 절 `[결정]`·10절): Tag 이름 자리 `string | Tag | { names }`(`TagNames` read 인덱서 —
   가변 `{T}` 불변 실측, `H-380`/`H-389` 부분 역전) · **Brand 팩토리 → quad-types**(`QuadTypes.Brand`, 패키지마다 자기
   `Brand.luau`) · **Tween 통째 quad-roblox**(권고 (c) 기각 — *"전부 엔진 어휘"*; `install`·`RobloxExtension`·types 정본
   정밀·spec 이동; 부수 발견 `typing-limits.md` 8.12 — D 안 `FieldOut` 전개는 제약 한도 초과, `types.luau` 별칭·D 재별칭) ·

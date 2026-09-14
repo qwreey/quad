@@ -275,7 +275,7 @@ return Frame { props.Modifier or None, props.Ref or None, child }
 - 이 관용구는 컴포넌트 저작자가 **직접 챙겨야 하는 규율**(base가 강제로
   검증해줄 방법은 없음, Lua는 이런 걸 린트로만 잡을 수 있음) — quad
   문서화(초심자 가이드/`props.Modifier`/`props.Ref` 절)에 필수 패턴으로
-  명시할 것, `research/documentation-content-map.md`에 반영 필요.
+  명시할 것, `archive/surveys/2026-08-06-documentation-content-map.md`에 반영 필요.
 
 Compose(named `modifier` 파라미터 강제, 린트로 감시)와
 Fusion/Vide(named prop 전달, `[Children]`류 예약 키)가 서로 다른 이유로 전부

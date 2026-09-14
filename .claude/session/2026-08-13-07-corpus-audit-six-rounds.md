@@ -27,7 +27,7 @@ CLAUDE.md)/luau-test)로 병렬 파견 — 각 에이전트는 파일을 직접 
    lazy-핸들 계약(이후 0-Y로 명명)이 "확정"으로 서술된 곳에 경고 배너
    부재, `slot-plan.md`의 3-인자 `process` 표기 잔존+`rawUnmount`/호출부
    인자 불일치, `README.md`의 `question.md` 포인터 오타(0-A→0-Z),
-   `ROADMAP.md` M7 배너 누락, `documentation-content-map.md`의 이미
+   `ROADMAP.md` M7 배너 누락, `archive/surveys/2026-08-06-documentation-content-map.md`의 이미
    해소된 Tween 질문이 "열림"으로 잔존, `luau-test/13` 헤더가 실측
    결과와 반대로 서술, `STATUS.md`의 파일 15 이중 등재.
 
@@ -36,8 +36,8 @@ CLAUDE.md)/luau-test)로 병렬 파견 — 각 에이전트는 파일을 직접 
    배너를 붙여 생긴 모순, ROADMAP M6 배너 누락, `tag-plan.md`의 "열린
    질문 없음"이 같은 파일 최상단 배너와 모순, `slot-plan.md`의 "제거는
    항상 파괴 확정"이라는 뒤집힌 전제가 바로 앞 문장의 정정과 모순,
-   `documentation-content-map.md`/`comparison-fusion-vide.md`의 stale
-   Tween 구모델 인용 추가 발견, `pre-implementation-audit.md` 2-1이
+   `archive/surveys/2026-08-06-documentation-content-map.md`/`comparison-fusion-vide.md`의 stale
+   Tween 구모델 인용 추가 발견, `archive/surveys/2026-08-06-pre-implementation-audit.md` 2-1이
    이미 실측(`luau-test/08`) 통과했는데 미표시.
 
 3. **`b228efc`(11건)** — 여기서부터 두 반복 패턴이 뚜렷해짐: (a) Slot

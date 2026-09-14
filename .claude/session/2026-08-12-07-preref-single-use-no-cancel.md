@@ -4,7 +4,7 @@
 
 이전 세션(대화 초반)에서 사용자가 "지금 확정이긴 한데 다른 의견 나오면
 뒤집힐 만한 부분이 뭐가 있을지" 물어봐서 서브에이전트로 `.claude/`
-전체를 감사했음. 그 결과 중 하나가 `research/documentation-content-map.md`
+전체를 감사했음. 그 결과 중 하나가 `archive/surveys/2026-08-06-documentation-content-map.md`
 262-269행에 **명시적으로 미정으로 표시돼 있던 항목**: `PreRef`의 취소
 가능성 — "PreRef는 fire와 동시에 소진되는 1회성 pre-pass 참가자라
 '취소'라는 개념 자체가 성립하는지부터 다시 볼 것"이라고만 적혀 있고
@@ -52,7 +52,7 @@ fire된 PreRef 객체를 두 번째 construction에 다시 놓으면, 거기서 
 - `base/bind-system-plan.md` — "동적 경로로 도착한 PreRef는 런타임에도
   명시적으로 에러" 절 바로 아래에 새 항목 추가(구조적 근거, 재사용
   위험 시나리오, 구현 메커니즘, 관용구 전부 포함).
-- `research/documentation-content-map.md` — 심화 후보 6번과 "문서화 아직
+- `archive/surveys/2026-08-06-documentation-content-map.md` — 심화 후보 6번과 "문서화 아직
   보류" 목록 두 곳에서 취소 가능성 항목을 [해소됨]으로 정정, "hook"/
   "pre-hook" 용어 채택 여부만 계속 열린 채로 남김. 두 항목 다 "이미
   question.md에도 열려있음"이라던 서술이 실제로는 부정확했던 것도 같이

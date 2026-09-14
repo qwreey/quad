@@ -1027,9 +1027,9 @@ D-7의 재역전 여부, N-4의 `NoneHandler`/`NilHandler` 역할 분담, ST-2�
 | `question.md` | 43, 46, 47 | **`DI` 항목 자체** — 해소 처리해 `archive/question-resolved.md`로 이전(`Merge`→`Overridden` 등 기존 해소 항목과 같은 방식). 46–47행의 파급(`DI.FrameModifier`류 타입 프리픽스)은 **이번 리네임에 실제로 포함**되므로 반영 목록에 흡수 |
 | `question.md` | 183 | "M3 Source/M5 DI 생성자" |
 | `todos.md` | 95 | 용어 정리 목록의 "`DI`→`D`(1순위)" — 해소로 제거 |
-| `research/additional-primitives-plan.md` | 21 | 프리미티브 나열 `.../`Slot`/`DI`)` |
+| `archive/surveys/2026-08-06-additional-primitives-plan.md` | 21 | 프리미티브 나열 `.../`Slot`/`DI`)` |
 | `research/debug-tooling-plan.md` | 5, 126, 379, 460, 479 | "Source/DI 생성자", `DI/init.luau`, "DI 제네릭 생성자", "Dispatch/DI", "M5(quad-roblox DI 제네릭 생성자)" |
-| `research/pre-implementation-audit.md` | 537, 538, 541 | "DI 쪽 패턴 재사용", "DI 타입 생성 계층(M5)", "M5 DI 체크리스트" |
+| `archive/surveys/2026-08-06-pre-implementation-audit.md` | 537, 538, 541 | "DI 쪽 패턴 재사용", "DI 타입 생성 계층(M5)", "M5 DI 체크리스트" |
 | 이 문서 자신 | BS-2의 파급 문단 | `DI/init.luau` 주석과 `D`/`DI` 생성기 언급 |
 
 **갈래 ② "DI 키" → "특수 키" (설명용 표현)**

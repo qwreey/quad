@@ -170,7 +170,7 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
 실패 시에만 클로저 호출.
 
 **우선순위 동률/매치 실패 처리 — 확정(2026-08-12 열일곱 번째 세션,
-`pre-implementation-audit.md` 1-3/1-4 해소).**
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-3/1-4 해소).**
 
 - **동률(같은 `priority` 값)에 대한 tiebreak 규칙은 강제하지 않는다.**
   "등록 순서가 이긴다" 같은 규칙을 강제하면 `NoneHandler`/`StoreBind`처럼
@@ -223,7 +223,7 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
     서술은 워커 도입 전 반나절 동안의 상태다.
   **이걸로 `module-lifecycle-plan.md`의 "열린 질문이었던 것 — 전부
   해소됨" 절에 있는 "provider가 아직 주입 안 된 상태에서 dispatch가
-  호출되면?" 케이스(`pre-implementation-audit.md`
+  호출되면?" 케이스(`archive/surveys/2026-08-06-pre-implementation-audit.md`
   1-4)도 별도 분기 없이 자동으로 해소됨** — **backend가 직접 소유하는
   핸들러(`Property`/`Event`/`Slot`류)에 한해** provider 미주입 상태는
   결국 그 클래스를 다루는 핸들러가 레지스트리에 하나도 없는 상태이므로
@@ -725,7 +725,7 @@ end
   "핸들러 계약" 절 참고), `NoneHandler` 자신이 손댈 필요 없음.
 - **[해소됨, 2026-08-08 세 번째 세션, 2026-08-13 다섯 번째 세션에
   인덱스 기반으로 재정정]** "이 키를 지금 누가 담당 중인가" bookkeeping —
-  `pre-implementation-audit.md` 우선순위1 "이전에 실제로 매치됐던 핸들러
+  `archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1 "이전에 실제로 매치됐던 핸들러
   추적" 항목이 여기서 다시 언급됐던 것. 아래 "Dispatch 체인" 절의
   `chains`/`Dispatch.retractFrom`로 구체화됨 — `NoneHandler`의 재귀
   재호출도 이 메커니즘 위에서 동일하게 동작(`None`으로 유지되는 매
@@ -977,7 +977,7 @@ Fallback Handler들도 존재하지 않아**, 위 "매치 실패는 즉시 `erro
   유일하게 안전한 기본값.
   - **"provider 미주입"과 "이 백엔드가 애초에 Tag를 지원 안 함"은 이
     기본 스텁 수준에서 여전히 구분 안 됨** — 둘 다 그 슬롯이 안
-    채워진 같은 상태라 원천적으로 구별 불가(`pre-implementation-audit.md`
+    채워진 같은 상태라 원천적으로 구별 불가(`archive/surveys/2026-08-06-pre-implementation-audit.md`
     1-4, 2026-08-12 열일곱 번째 세션 확정 원칙 그대로).
 - **[관례, opt-in] 더 명확한 메시지나 진짜 원자적 실패(부기 mutation
   0회)를 원하는 백엔드는, 그거대로 `HANDLER_PRIORITY_FALLBACK + 1`

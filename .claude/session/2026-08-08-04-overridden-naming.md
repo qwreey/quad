@@ -19,8 +19,8 @@
 
 `base/modifier-plan.md`/`base/component-composition-plan.md`/
 `base/bind-system-plan.md`/`base/tag-plan.md`(비교 문구)/
-`base/architecture.md`/`ROADMAP.md`/`research/pre-implementation-audit.md`/
-`research/documentation-content-map.md`/`.claude/README.md`/
+`base/architecture.md`/`ROADMAP.md`/`archive/surveys/2026-08-06-pre-implementation-audit.md`/
+`archive/surveys/2026-08-06-documentation-content-map.md`/`.claude/README.md`/
 `.claude/question.md` 전부에서 `Override` → `Overridden`으로 기계적
 치환 + 각 문서의 "가칭"/"이름만 잠정" 표시를 "이름 확정"으로 갱신
 (`question.md`의 3순위 용어 재검토 목록에선 완전히 제거, `Peek`/

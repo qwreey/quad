@@ -33,7 +33,7 @@
 런타임 12개 전원 통과), "`19`는 재작성 대기"(사실은 완료·통과), "설계는
 더 이상 안 막힘"(실측이 0-Y를 염)이라고 서술 중이었음 — 항상 로드되는
 진입점이라 파급이 가장 큼. 같은 stale이 `question.md` 2번,
-`pre-implementation-audit.md`에도.
+`archive/surveys/2026-08-06-pre-implementation-audit.md`에도.
 Slot 파괴→언마운트 전환 미반영도 6곳 추가 발견 — `slot-plan.md` 최상단
 "상태" 줄의 `retract=폐기`(4라운드가 같은 사유로 *다른* 곳을 고쳤던 것),
 `reconcile`이 `rawRemove`를 부른다는 서술 3곳, `question.md` 확정

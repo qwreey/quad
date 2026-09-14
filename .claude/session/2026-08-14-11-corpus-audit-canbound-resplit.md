@@ -19,11 +19,11 @@ HUMAN_TODO.md/question.md/`.claude/README.md`) 6개 영역을 서브에이전트
 - `store-plan.md` — `store.key` 타입함수 접근을 "실측 확인"처럼 과장
   서술해 `typing-limits.md`(스파이크 `16`은 여전히 `rewrite-required/`,
   미검증)와 모순 → caveat 추가
-- `additional-primitives-plan.md` — "새로 열린 질문 없음" 배너가 이후
+- `archive/surveys/2026-08-06-additional-primitives-plan.md` — "새로 열린 질문 없음" 배너가 이후
   세션에 추가된 열린 질문 2개(Attribute unset 유틸, `State<State<T>>`
   평탄화)와 자기모순
 - `comparison-charm.md`+`.claude/README.md` — "quad가 미결로 남긴 previous
-  값 비교 문제"라며 존재하지 않는 문서(`additional-primitives-plan.md`)를
+  값 비교 문제"라며 존재하지 않는 문서(`archive/surveys/2026-08-06-additional-primitives-plan.md`)를
   잘못 인용 — 실제로는 `source-state-plan.md`에 이미 확정된 `:Compute`의
   `previous` 인자
 - `luau-test/STATUS.md`/`README.md` — `canExecute` 재정정 세션 번호가
@@ -86,7 +86,7 @@ M2/M3/M8 체크리스트, `base/source-state-plan.md`의 "이중 바인딩 금�
 절(게이트를 `canBound`로 교체), `base/effect-plan.md`(UB 절 갱신 +
 "세 번째 세션" 오표기를 "다섯 번째"로 같이 정정 — lifecycle-pattern.md에서
 도 같은 오표기 발견해 정정), `base/architecture.md`(소스 트리 주석),
-`base/dispatch-core-plan.md`/`research/pre-implementation-audit.md`
+`base/dispatch-core-plan.md`/`archive/surveys/2026-08-06-pre-implementation-audit.md`
 (절 제목 인용 갱신), `luau-test/README.md`/`audit/
 gcconn-trick-verification.md`(스파이크 `10` 재작성 시 반영할 새 게이트
 이름 갱신), CLAUDE.md 자신("지금 할 일" 0번 — `question.md`의 "결정
@@ -125,7 +125,7 @@ named 자리 바인드 같은 실제 기능이 확정되면 base 가드를 안 �
 
 이어서 사용자가 Tag/Attribute의 미주입 백엔드 실패 모드(base 기본
 스텁이 명확한 에러를 낸다는 것)를 확인한 뒤, "미지원"과 "미등록"을
-구분 안 하는 게 맞는지 질문 — 확정 원칙(`pre-implementation-audit.md`
+구분 안 하는 게 맞는지 질문 — 확정 원칙(`archive/surveys/2026-08-06-pre-implementation-audit.md`
 1-4, 스텁 입장에선 원천적으로 구별 불가) 그대로 재확인. 사용자가
 "정말로 미지원인 백엔드는 FALLBACK보다 높은 우선순위로 자기 Handler를
 등록해 명시적으로 에러내면 된다"는 관례를 문서에 말로만 적어두자고

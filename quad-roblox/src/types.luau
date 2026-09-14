@@ -148,7 +148,7 @@ export type NewChild =
 	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
 	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attr/Observer/EffectHandle도 입력 자리는 마커
-	-- (`research/source-layout-plan.md` 10-2): 메소드가 든 전체형이 유니언에 앉을 이유가 없고(8.8·8.9의
+	-- (`archive/surveys/2026-09-07-source-layout-plan.md` 10-2): 메소드가 든 전체형이 유니언에 앉을 이유가 없고(8.8·8.9의
 	-- 함수 필드 게이트가 그 때문), 타입 검사 예산도 준다(사용자: *"타입 체크 비용을 아끼기 위해 마커만
 	-- 두는것도 괜찮아보임"*). 실제 값은 폭 서브타이핑으로 든다(8.11).
 	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttrMarker | QuadTypes.ObserverMarker | QuadTypes.EffectHandleMarker | QuadTypes.None)?>

@@ -211,8 +211,8 @@ SAFETY 원칙→`conventions.md`.
 
 같은 에이전트가 `ref-plan.md:541`의 `위 "지금 할 일" 우선순위1 항목`도
 발견 — 분할과 무관한 **원래부터 잘못된 참조**였고(그 "우선순위1"은
-`research/pre-implementation-audit.md`의 용어), 진단이 확실해서
-`pre-implementation-audit.md` 1-5로 정정.
+`archive/surveys/2026-08-06-pre-implementation-audit.md`의 용어), 진단이 확실해서
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-5로 정정.
 
 **추측 수정을 금지한 게 효과가 있었음.** 진짜 orphan 3건은 손대지 않고
 보고만 하게 했고, 코퍼스 전체 grep으로 인용된 원칙이 어디에도 없음을 확인:
@@ -220,7 +220,7 @@ SAFETY 원칙→`conventions.md`.
   방어/최적화하려고 구조를 복잡하게 만들지 않는다" 원칙
 - `v1-compat-plan.md:50` — CLAUDE.md에 "이 자동 위임/재렌더 매직은 v2에서
   폐기하기로 확정"이라 기록됐다는 서술
-- `pre-implementation-audit.md:434` — CLAUDE.md가 M2/M3/M5에서 quad-debug
+- `archive/surveys/2026-08-06-pre-implementation-audit.md:434` — CLAUDE.md가 M2/M3/M5에서 quad-debug
   훅 확장 지점을 고려하라고 명시해뒀다는 서술
 
 셋 다 **분할 이전부터** 존재하지 않던 인용이다. 원칙을 복원할지 인용을

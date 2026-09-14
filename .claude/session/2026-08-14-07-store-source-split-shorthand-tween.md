@@ -63,7 +63,7 @@ Tween이 **독립 Dispatch 핸들러**(우선순위를 다투는 특수 bind key
 `archive/existing-instance-bind-rejected.md`로 이전하고 기각 사유 배너를
 달았음. 배너에 같이 적어둔 것: quad가 만들지 않은 Instance의 자식 구성
 변화까지 추적하려면 Instance 가상화가 필요한데, 그건
-`research/framework-comparison-findings.md`가 use-after-destroy 안전망을
+`archive/surveys/2026-08-06-framework-comparison-findings.md`가 use-after-destroy 안전망을
 기각할 때 쓴 것과 같은 이유(rbvm 같은 전문 라이브러리의 영역)로 스코프 밖.
 
 **파생 정리(체크리스트 2번 — 배너가 부정하는 본문을 같은 커밋에서 고칠 것)**:
@@ -80,7 +80,7 @@ Tween이 **독립 Dispatch 핸들러**(우선순위를 다투는 특수 bind key
   정리는 유지하되, 그 UB를 실제로 건드릴 뻔한 유일한 경로가 닫혔음을 명시.
 - `base/modifier-plan.md`(Default→실값 flatten 미정 문제), `base/dispatch-core-plan.md`
   (인덱스 체인의 "미래 재바인드에 유리" 부수 효과 서술 — quad-debug/자기
-  인스턴스 재발행 근거만 남기고 재프레이밍), `research/pre-implementation-audit.md`
+  인스턴스 재발행 근거만 남기고 재프레이밍), `archive/surveys/2026-08-06-pre-implementation-audit.md`
   2-4(Slot 단일 마운트 소유권과의 긴장 → "기능이 기각되어 해소"),
   `question.md`(항목 제거) + `archive/question-resolved.md`(해소 기록),
   `ROADMAP.md` 백로그(항목 제거), `CLAUDE.md` 2곳.

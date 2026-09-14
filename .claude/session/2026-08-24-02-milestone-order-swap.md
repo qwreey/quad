@@ -103,7 +103,7 @@ question-resolved.md`에 같이 박아뒀다.
   `dispatch-core-plan.md`/`project-setup-plan.md`,
   `research/operator-sugar-plan.md`/`debug-tooling-plan.md`,
   `luau-test/STATUS.md` — 번호 참조 갱신.
-- `research/pre-implementation-audit.md` — 번호 갱신 + 히스토리 블록 정정
+- `archive/surveys/2026-08-06-pre-implementation-audit.md` — 번호 갱신 + 히스토리 블록 정정
   (8절 참고).
 - 인덱스 레이어: `.claude/README.md`/`todos.md`/`project-context.md`/
   루트 `CLAUDE.md`/`HUMAN_TODO.md`.
@@ -156,7 +156,7 @@ question-resolved.md`에 같이 박아뒀다.
   뿌려졌다"*로 치환돼 **나열 순서가 뒤집혔다**. M2가 먼저 지어지므로
   "M3를 시작으로 … M2"는 성립하지 않는다 — 서브시스템을 붙이는 모든
   마일스톤을 순서대로 적고 "계기는 `Dispatch`, 첫 적용은 M2"로 갈라 썼다.
-- **(MEDIUM)** `research/pre-implementation-audit.md`의 **히스토리 블록**이
+- **(MEDIUM)** `archive/surveys/2026-08-06-pre-implementation-audit.md`의 **히스토리 블록**이
   기계 치환을 맞았다 — *"M1·M3(디스패치) 투자가 먼저 이뤄진 뒤에야
   검증되는 셈"*이라는 원래 우려가 새 번호에선 **문장 그대로 거짓**이 됐다
   (Store/State가 이제 디스패치보다 먼저다). `session/`·`archive/`·

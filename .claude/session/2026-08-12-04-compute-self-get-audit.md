@@ -44,7 +44,7 @@ lazy State 핸들로 통일" 절 바로 뒤에 "이 실수가 반복되기 쉬�
 1곳), `base/tag-plan.md`, `base/bind-system-plan.md`(감사 결과 노트).
 
 **여전히 열려있는 것**: 안 바뀜 — 자연 완료(Completed) 시 per-instance
-북키핑 정리 여부 하나(`research/pre-implementation-audit.md` 2-10번).
+북키핑 정리 여부 하나(`archive/surveys/2026-08-06-pre-implementation-audit.md` 2-10번).
 
 **다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터, `.claude/luau-test/`
 결과 확인 우선).

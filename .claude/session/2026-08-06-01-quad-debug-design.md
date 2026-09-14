@@ -49,7 +49,7 @@
 - 부수적으로 파생된 두 가지(quad-debug 범위 밖) 문서화 아이디어 —
   UI 네이밍 컨벤션 문서, 스킬/쿨타임/재화 같은 게임 시스템에서 Store의
   부작용 허용을 깔끔한 패턴으로 쓰는 법 문서 — 를 `research/
-  documentation-plan.md`에 뼈대만 분리해서 남김(위 "지금 할 일" 4번).
+  archive/surveys/2026-08-06-documentation-plan.md`에 뼈대만 분리해서 남김(위 "지금 할 일" 4번).
 - **이벤트 self 관습 확인 필요했던 항목 — 같은 날 후속 세션에서 해소됨.**
   아래 "2026-08-06 후속 세션" 절 참고.
 
@@ -84,7 +84,7 @@
   트리에 대응 노드가 없으면 부모로 대신 선택, 있으면(사용자가 직접
   bind한 경우 등, UB 아님) 정확히 그 노드 선택. 내부 자동 생성물은
   `_`/`QUAD_` 접두어로 네이밍(v1 `_quad_round`류 재사용,
-  `documentation-plan.md` 네이밍 컨벤션과 연결). 플러그인 UI는 세
+  `archive/surveys/2026-08-06-documentation-plan.md` 네이밍 컨벤션과 연결). 플러그인 UI는 세
   상호작용면(자기 트리 뷰/리프 클릭→상세 패널/실제 Explorer 선택과 연동,
   Explorer와 플러그인 트리는 별도 도킹 위젯)으로 구성된다는 것도 사용자
   질문에 확인 응답 — `debug-tooling-plan.md` "핵심 설계 방향" 9번.

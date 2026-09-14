@@ -70,7 +70,7 @@ Q1(a)로 `Ref` 콜백의 출처가 2번째 자리, Q2로 Observer의 출처가 3
   `dispatch-core-plan`/`slot-plan`/`gate-plan`/`modifier-plan`/
   `lifecycle-hooks-plan`/`project-setup-plan` — 에 감사 루프가 더한
   `architecture.md`/`typing-limits.md`), `ROADMAP.md`, `luau-test/STATUS.md`,
-  `research/documentation-content-map.md`, `audit/type-recursion-issue/spikes/`
+  `archive/surveys/2026-08-06-documentation-content-map.md`, `audit/type-recursion-issue/spikes/`
   2개(배너), 인덱스 레이어 6개.
 - `doc-check.py` ERROR 0.
 

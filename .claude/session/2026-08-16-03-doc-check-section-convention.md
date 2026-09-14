@@ -186,7 +186,7 @@ C 줄머리 볼드 + 앞부분일치     해소 26  → 선두 장식(⚠️) �
 
 ## 1라운드 감사 — 이 세션 자신의 실수
 
-`pre-implementation-audit.md`의 "아직 안 고침" 절에 있는 `State<Modifier>`
+`archive/surveys/2026-08-06-pre-implementation-audit.md`의 "아직 안 고침" 절에 있는 `State<Modifier>`
 비일관성 항목이 해소된 것으로 보여 `**[해소됨 — 2026-08-16 확인]**` 마커를
 달았는데, **바로 다음 문단에 2026-08-09 세션이 단 `**[완전 해소, 2026-08-09
 세션]**`이 이미 있었다.** 중복일 뿐 아니라 해소 시점을 일주일 뒤로 잘못
@@ -213,7 +213,7 @@ C 줄머리 볼드 + 앞부분일치     해소 26  → 선두 장식(⚠️) �
    문장이 위반. `2026-08-07 여덟 번째 세션` → 세션 파일 ID로 교정했고,
    이번에 건드린 다른 두 줄(`README.md`의 `tools/` 행, `lifecycle-pattern.md`)도
    규약의 "만지는 김에 같이 고친다" 조항대로 처리했다.
-2. **`research/framework-comparison-findings.md`의 수정이 "고침"이 아니라
+2. **`archive/surveys/2026-08-06-framework-comparison-findings.md`의 수정이 "고침"이 아니라
    "검사망 회피"였다** — `"왜 quad를 쓰는가"` 인용을 문법만 비껴가게 고쳐서
    검사 대상에서 통째로 빠졌는데, 감사자가 `REF` 정규식으로 `group(3)`이
    `None`이 되는 걸 직접 확인해 잡았다. 같은 diff의 다른 두 회피

@@ -6,7 +6,7 @@
 > `setAttribute`). 사용자 논거: *"quad 의 Attr 은 기본적으로 엔진과 무관하다는게 표면적으로 드러나고, 그 구현이
 > 실제로 Attribute 로 바인드 된다는게 명확해져서 괜찮은 것 같음"* — Roblox 쪽 `SetAttribute`/`GetAttribute`와
 > 소문자 "attribute"(엔진 개념)는 그대로. 이 파일 이름(`attribute-plan.md`)과 spec 파일 이름은 개념명이라
-> 유지. 경위는 `research/source-layout-plan.md` 8절, `session/2026-09-08-01-advisory-and-user-items.md`.
+> 유지. 경위는 `archive/surveys/2026-09-07-source-layout-plan.md` 8절, `session/2026-09-08-01-advisory-and-user-items.md`.
 
 > **✅ [2026-08-13 열네 번째 세션] `question.md` 0-Z(이름 소유권) 확정 +
 > 하강 diff 재디스패치 반영 완료 — 이 문서는 이제 최신 모델을 서술합니다.**

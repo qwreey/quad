@@ -8,7 +8,7 @@
 세션이 새로 알아야 할 건 4번(Source/State 재구성)뿐**, 1~3번은 배경/참고용.
 
 **1. 문서 사이트 구조 확정 — 초심자/api/심화 3축 + `quadnomicon` 4번째 축.**
-`research/documentation-plan.md` 0번 항목에 전부 반영. 초심자는 "core loop
+`archive/surveys/2026-08-06-documentation-plan.md` 0번 항목에 전부 반영. 초심자는 "core loop
 완주에 필요한 최소 집합만, 백엔드 구체적(quad-roblox), quad-base/roblox
 분리 노출 안 함, 다른 백엔드 생기면 그때 별도 트랙 추가"로 스코프 확정.
 api는 간략 설명 + 심화로 "더 알아보기" 링크 패턴. `quadnomicon`(Rustonomicon
@@ -18,10 +18,10 @@ api는 간략 설명 + 심화로 "더 알아보기" 링크 패턴. `quadnomicon`
 들어가고 그냥 `.claude/` 내부에만 영구히 남음(RFC 저장소 성격). GC처럼
 quad 밖 배경지식이 깊은 주제는 새 티어 없이 "quad 활용법만 심화에, 일반
 개념은 외부 링크"로 처리. 실제 콘텐츠 분류(초심자 core loop 목차 초안,
-파일별 분류, 심화 에세이 후보 15개)는 `research/documentation-content-map.md`.
+파일별 분류, 심화 에세이 후보 15개)는 `archive/surveys/2026-08-06-documentation-content-map.md`.
 
 **2. quad vs Fusion/Vide/react-lua 정직 비교 — 3개 에이전트가 실제
-소스/웹 리서치로 검증.** `research/framework-comparison-findings.md`.
+소스/웹 리서치로 검증.** `archive/surveys/2026-08-06-framework-comparison-findings.md`.
 요지: quad의 Slot 단일 마운트 가드·열린 우선순위 축·명시적 의존성·다이아몬드
 dedup은 실 소스 근거로 확인된 진짜 강점(Fusion `Children.luau`의 TODO
 주석, Vide `mount.luau`의 중복 체크 부재, Vide 자신이 `todo.md`에 미해결로
@@ -32,7 +32,7 @@ Tween 비합성성·"지금 트리 상태" 파악 어려움은 의도된 트레�
 개념 자체가 안 맞음. 성숙도 격차(quad 구현 0줄)는 정직하게 명시.
 
 **3. 위 1·2번에서 파생된 실행 항목**: 아직 결정 아님, `research/
-documentation-plan.md`/`framework-comparison-findings.md`의 "다음 단계"에
+archive/surveys/2026-08-06-documentation-plan.md`/`archive/surveys/2026-08-06-framework-comparison-findings.md`의 "다음 단계"에
 남겨둔 사용자 판단 대기 항목들(문서화 착수 시점, 프레임워크 비교에서 나온
 개선안 반영 여부/시점) 그대로 참고.
 
@@ -78,7 +78,7 @@ documentation-plan.md`/`framework-comparison-findings.md`의 "다음 단계"에
   만족함" 절이 최종 소스), `base/bind-system-plan.md`(온톨로지·타입 추론
   절 정정), `base/component-composition-plan.md`(`StoreSource`/타입
   유니온 절 재작성), `ROADMAP.md`(M0 항목 추가), `research/
-  documentation-content-map.md`/`.claude/README.md`(참조 갱신). 이름
+  archive/surveys/2026-08-06-documentation-content-map.md`/`.claude/README.md`(참조 갱신). 이름
   자체(`Source`/`State`)는 여느 때처럼 "지금 할 일" 2번 용어 정리
   라운드까지 가칭.
 

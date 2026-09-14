@@ -142,7 +142,7 @@ Docusaurus 대신 `lune-org/docs`와 같은 Astro + Starlight. Zero-JS 기본, P
 
 **옛 §1 첫 문단**
 
-Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **Overview**(왜 Quad인가 — 2026-09-09 사용자 요청)는 **[2026-09-10 사용자 결정]** 퍼널 첫 단이 아니라 시작하기 뒤에 오는 **다른 도구와의 비교 문서**(Docusaurus "Comparison with other tools" 방식)다 — 사이드바·랜딩 첫 액션은 시작하기. `.claude/research/documentation-plan.md`(2026-08-06)의 원안은
+Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **Overview**(왜 Quad인가 — 2026-09-09 사용자 요청)는 **[2026-09-10 사용자 결정]** 퍼널 첫 단이 아니라 시작하기 뒤에 오는 **다른 도구와의 비교 문서**(Docusaurus "Comparison with other tools" 방식)다 — 사이드바·랜딩 첫 액션은 시작하기. `.claude/archive/surveys/2026-08-06-documentation-plan.md`(2026-08-06)의 원안은
 how-to를 초심자 트랙에 녹이는 3축이었으나, 스캐폴딩 과정에서 how-to를 별도 트랙으로 두는 쪽으로 진행됐고 2026-09-09 검토에서 그대로
 유지했다(설명 트랙은 `quadnomicon` 하나로 통합 — "심화"와 분리하지 않는다).
 

@@ -84,7 +84,7 @@ type function으로 0-Y 자체(재귀 `Compute`)를 우회하는 시도는
 - `luau-test/rewrite-required/16-...` → `luau-test/done/16-...`
   (복구 완료), `STATUS.md`/`README.md` 동기화(rewrite-required 7→6,
   done 13→14).
-- `research/pre-implementation-audit.md` 1-10에 실측 완료 포인터 추가.
+- `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-10에 실측 완료 포인터 추가.
 - 전체 실측 원문+스파이크 15개: `audit/type-recursive-issue-with-typeof/`
   (`REPORT.md` + `spikes/`, 사용자가 만든 `test-ignoreme`/`test2`/`test3`도
   `00`대 파일로 보존).

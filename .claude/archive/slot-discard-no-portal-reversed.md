@@ -165,6 +165,6 @@ UB**(`state<Frame>`에서 먼저 `frame:Destroy()`하고 `Set`하는 것과 같�
   Slot 행 정정.
 - `.claude/README.md` — `slot-plan.md` 행에 이 역전 반영.
 - `ROADMAP.md` — 비파괴 경로 `unmountSlotTree`를 별도 구현 항목으로 추가.
-- `research/documentation-content-map.md` — "retract=폐기 확정 히스토리
+- `archive/surveys/2026-08-06-documentation-content-map.md` — "retract=폐기 확정 히스토리
   (portal 검토 후 기각)"를 심화 문서 소재에서 **"왜 한때 destroy+no-portal로
   결정했었는가"라는 히스토리 소재**로 격하.

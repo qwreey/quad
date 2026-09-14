@@ -343,7 +343,7 @@ print**(`base/dispatch-core-plan.md`의 "핸들러 계약" 절)이고, 앞으로
   담는다는 결론.
 - **[해소됨, 2026-08-12 열일곱 번째 세션]** provider(팩토리)가 아직 한
   번도 실행 안 된 상태에서 dispatch가 호출되면 어떻게 되는지
-  (`pre-implementation-audit.md` 1-4) — 별도 케이스로 처리하지 않음.
+  (`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-4) — 별도 케이스로 처리하지 않음.
   provider 미주입 상태는 결국 그 클래스의 핸들러가 레지스트리에 하나도
   없는 상태이므로, `base/dispatch-core-plan.md` "우선순위 동률/매치 실패
   처리" 절의 일반 "매치 실패 시 즉시 error" 규칙 하나로 자연히 커버됨.

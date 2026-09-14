@@ -105,7 +105,7 @@ dedup으로 지목 — **base 안에서 두 문서가 서로 다른 것을 가�
 | `base/architecture.md` | 원래도 맞는 서술이었으나, 캐시가 주체임을 명시적으로 보강 |
 | `base/blocker-plan.md` | "emit 전파를 지연시킬 수 있는 유일한 요소"라는 위치를 명문화 |
 | `reference/comparison-fusion-vide.md` | Vide 대비 서술에서 "플래그 dedup" → "캐시" |
-| `research/framework-comparison-findings.md` | 같은 정정 |
+| `archive/surveys/2026-08-06-framework-comparison-findings.md` | 같은 정정 |
 | `research/debounce-throttle-plan.md` | 이 문서의 3절 발견이 통째로 철회됨(아래) |
 | `ROADMAP.md` | M0 체크리스트의 "이미 invalid면 전파 중단되는지" 항목 교체 |
 | `luau-test` `05-store-state-diamond-propagation.luau` | 틀린 모델을 **통과 상태로 검증 중이었음** → `rewrite-required/`로 이동 |

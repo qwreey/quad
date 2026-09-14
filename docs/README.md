@@ -66,9 +66,9 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 
 ### How-To Guides (실전 레시피) — 9편
 **[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤.
-- [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 타입드 Modifier 팩토리, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
+- [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
 - [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — 값을 밖에서 받는 체크박스로 시작해, 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 후행 의존성 `:Compute`로 실시간 검증·버튼 제어, 제출 결과는 바깥이 관측.
-- [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 13](./getting-started/13-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Blocker`·"안 해주는 것"만 다룬다.
+- [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 13](./getting-started/13-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Throttle`·"안 해주는 것"만 다룬다.
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.

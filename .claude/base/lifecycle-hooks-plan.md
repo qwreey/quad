@@ -20,7 +20,7 @@
 `Ref`/`PreRef`/`PostRef`(`base/ref-plan.md`)와
 `Effect`(`base/effect-plan.md`) 프리미티브 위에 얹는 **순수 슈가** —
 `base/fallback-plan.md`의 `Fallback`/`Traceback`이
-`additional-primitives-plan.md`의 기존 결론 위에 얹혔던 것과 같은 관계,
+`archive/surveys/2026-08-06-additional-primitives-plan.md`의 기존 결론 위에 얹혔던 것과 같은 관계,
 이 문서도 그 프리미티브들의 확정 사항을 하나도 안 뒤집음.
 
 ~~구현 우선순위는 여전히 맨 뒤~~ **[2026-09-08]** 구현됨(위 배너; 옛 서술 — 형제 백로그들

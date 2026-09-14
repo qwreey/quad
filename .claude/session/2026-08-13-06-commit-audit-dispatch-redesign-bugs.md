@@ -540,7 +540,7 @@ base 4개 문서엔 ⚠️ 배너를 달아뒀는데 정작 **구현 순서의 �
 `store-semantics.md`의 "`State`는 가칭" stale(2026-08-12에 확정됨),
 `luau-test/README.md`의 `04`/`19` 판정 기준이 재작성된 파일을 못 따라간 것
 (**`19` C섹션 기준이 정상 동작을 실패로 오판하게 돼 있었음**),
-`documentation-content-map.md`의 4종 계약/`Attribute<T>` 옛 이름,
+`archive/surveys/2026-08-06-documentation-content-map.md`의 4종 계약/`Attribute<T>` 옛 이름,
 `modifier-plan.md`의 "정정이 원문에 소급 안 됨" 패턴.
 
 **판단해서 안 고친 것**: `effect-plan.md`의 "cleanup" 14곳 —

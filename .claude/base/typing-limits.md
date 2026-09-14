@@ -149,7 +149,7 @@ local label = count:Compute(function(c) return tostring(c:Get()) end)
 
 이건 **API 문서/예제/튜토리얼에도 그대로 반영해야 하는 관례**입니다
 (사용자가 무주석으로 쓰면 조용히 타입 안전성을 잃으므로) —
-`research/documentation-plan.md`/`documentation-content-map.md`가
+`archive/surveys/2026-08-06-documentation-plan.md`/`archive/surveys/2026-08-06-documentation-content-map.md`가
 문서 작성에 들어갈 때 이 관례를 초심자 트랙에 넣을 것.
 
 ### 그래서 우리가 하는 것 — ② 타입 선언은 "데이터부/메소드부" 쪼개기
@@ -426,7 +426,7 @@ RFC가 순수 내부 변경이고 우리 선언이 이미 그 대상 모양이�
 `audit/type-recursive-issue-with-typeof/REPORT.md` 6-1절 — 폐기 전 기록]**
 
 `Store<T>` → `{[K]: Source<V>}` 합성을 Luau `type function`으로 하는
-설계(`pre-implementation-audit.md` 1-10)는 그 시점 **설계와 실측 둘 다
+설계(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-10)는 그 시점 **설계와 실측 둘 다
 확정**이었습니다. 원래 스파이크가 깨졌던 이유는 설계 문제가 아니라
 **`types.newfunction`의 API 버전 드리프트**였습니다 — 시그니처가
 `(parameters: {head: {type}?, tail: type?}, returns: {head: {type}?,
@@ -925,7 +925,7 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 ## 8.11. 읽기 전용 마커 필드는 T에 공변이다 — 입력 자리는 `StateMarker<T>`/`SlotMarker<T>`, 전체형 `State<T>`/`Slot<T>`는 출력·`self`에만 (2026-09-07, 스파이크 `34`·`35`, 사용자 결정 적용)
 
 **⭐ [2026-09-07 밤 확장 — 사용자 제안 *"None, Tag, Attribute, Observer, EffectHandle 들도 전부 사실 marker
-구조로 가도 될것 같아"*, `research/source-layout-plan.md` 10-2]** 마커 가족이 T 없는 값 타입으로도 넓어졌다 —
+구조로 가도 될것 같아"*, `archive/surveys/2026-09-07-source-layout-plan.md` 10-2]** 마커 가족이 T 없는 값 타입으로도 넓어졌다 —
 `TagMarker`/`AttrMarker`/`ObserverMarker`/`EffectHandleMarker`(`None`은 처음부터 마커, `H-300`). 규칙은
 같다: 입력 자리(`NewChild`의 직접 팔과 `StateMarker<…>` 안의 팔, Tag `names` 자리의 `TagNames`, `Tag.Merged`)는
 마커, 출력·`self`는 전체형, 런타임 값은 `Impl.__quadX = true`로 필드를 실제로 갖는다(`__index`, 무비용). 이득:

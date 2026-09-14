@@ -214,7 +214,7 @@ quad-roblox가 구현을 채워넣는다고 되어 있는데, 후보 구현 방�
 핵심 predicate의 실제 정확도 보장이 아직 안 정해진 채로 그 위에 여러 기능이
 이미 "확정"되어 쌓인 상태.
 
-부가적으로, `framework-comparison-findings.md`는 "Vide는 GC와
+부가적으로, `archive/surveys/2026-08-06-framework-comparison-findings.md`는 "Vide는 GC와
 `Instance.Destroying` 발화 순서가 비결정적이라는 알려진 함정 때문에 의도적
 eager cleanup을 택했다"는 구체적 위험을 지적하며 "quad는 rbvm 실물 검증
 근거로 이 리스크가 완화됐다"고 적었지만, `lifecycle-pattern.md` 본문
@@ -718,7 +718,7 @@ Handler"라고만 서술해, 사실상 3개의 거의 동일한 형태(리터럴
 ### 아직 안 고침 (판단 필요해서 여기 남김)
 
 - **[해소됨, 2026-09-02 M5 단위 ① 실측 `H-291`]** ~~Destroying 훅 신뢰도에 대한 서술이 `lifecycle-pattern.md` 내부에서도,
-  `framework-comparison-findings.md`와의 사이에서도 어긋남~~ — `base/lifecycle-pattern.md`의
+  `archive/surveys/2026-08-06-framework-comparison-findings.md`와의 사이에서도 어긋남~~ — `base/lifecycle-pattern.md`의
   `H-291` 배너가 하나의 확정 문장으로 정리했다: Deferred 시그널 모드에서
   `Destroying`/`GetPropertyChangedSignal` 콜백은 지연 배달될 수 있고 `gcconn.Connected`
   전환만 동기다(Studio 실측). 2026-09-06 감사가 이 항목의 미갱신을 발견.

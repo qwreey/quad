@@ -62,7 +62,7 @@ Roblox 코드(Frame 만들기 등) 안에서 자연스럽게 등장시키고, �
 
 **콘텐츠 분류 완료(2026-08-06)**: 위 3축을 실제로 뭘로 채울지
 `.claude/base/*.md` 전체 + 관련 `research/*.md`(tween-plan, ui-shorthand-plan)를
-초심자/api/심화/skip으로 서베이한 결과는 `research/documentation-content-map.md`
+초심자/api/심화/skip으로 서베이한 결과는 `archive/surveys/2026-08-06-documentation-content-map.md`
 참고 — 초심자 core loop 목차 초안, 파일별 상세 분류, 심화 전용 신설 콘텐츠
 후보(14개 에세이 소재), 아직 미확정이라 문서화 보류해야 할 항목까지 정리됨.
 api 항목은 간략 설명 + 심화로 "더 알아보기" 링크를 다는 패턴(사용자 확정)도

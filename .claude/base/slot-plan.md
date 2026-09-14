@@ -17,8 +17,8 @@ architecture.md`의 "구현 착수: 소스 트리 구조 확정" 절 참고). �
 `Children` SpecialKey와 Vide의 mount 무가드 비교는 `reference/comparison-fusion-vide.md`
 참고 — 결론: **두 라이브러리 어디에도 이런 엄격한 단일 마운트 가드가 없음,
 quad의 진짜 개선점.** **[2026-08-09 세 번째 세션]** CRUD 의미론
-(`pre-implementation-audit.md` 1-7/1-8) 완전 확정, `research/
-additional-primitives-plan.md`가 다루던 키 기반 동적 컬렉션 재조정도
+(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-7/1-8) 완전 확정, `research/
+archive/surveys/2026-08-06-additional-primitives-plan.md`가 다루던 키 기반 동적 컬렉션 재조정도
 `Slot:List(...)` 메소드로 이 문서에 승격·통합 완료 — 아래 참고.
 **[2026-08-12 열다섯 번째 세션]** `Splice(index, removeCount,
 ...newElements)` CRUD 신설 — 구간 제거+삽입을 shift/recompute 1회로
@@ -1035,7 +1035,7 @@ splice 의미)와 `Swap`(O(1), 순수 페어 교환)을 공개 CRUD에 추가 �
 맞바꿔라"를 산출하지 않으므로 내부적으로는 계속 `Move`(의 가드 없는 버전)만
 사용 — `Swap`은 순수하게 수동 Slot 사용자를 위한 편의 API.
 
-## `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정 (2026-08-09 세 번째 세션, `research/additional-primitives-plan.md`에서 승격·통합)
+## `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정 (2026-08-09 세 번째 세션, `archive/surveys/2026-08-06-additional-primitives-plan.md`에서 승격·통합)
 
 Fusion `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
 `key` prop에 대응하는 프리미티브 — 데이터 배열을 정체성(key) 기준으로
@@ -1077,7 +1077,7 @@ slot:List(data, updateFn, function(item) return item.id end)
 ```
 
 재정렬/중간 삽입이 실제로 일어나는 목록엔 이 패턴을 기본 권장 관용구로
-문서화(콘텐츠 사이트 착수 시 반영 — `research/documentation-content-map.md`).
+문서화(콘텐츠 사이트 착수 시 반영 — `archive/surveys/2026-08-06-documentation-content-map.md`).
 
 **같은 사이클 안에서 `keyFn`이 중복 key를 반환하면 즉시 `error`
 (2026-08-11 세션)** — `reconcile`이 어차피 `seen[key]`를 채우고 있으므로

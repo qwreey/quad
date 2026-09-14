@@ -68,7 +68,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       `component-composition-plan.md` "필수 관용구" 절)로 nil-hole을 막는
       케이스를 반드시 포함할 것 — caller가 Modifier/Ref를 안 넘겨도
       `or None`이 항상 non-nil을 보장하므로 `{nil, ref, child}`류 리터럴
-      구멍 자체가 안 생김(`research/pre-implementation-audit.md` 1-5).
+      구멍 자체가 안 생김(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-5).
       M0에서 검증할 것은 "어떻게 막을지"가 아니라 이 관용구가 실제로
       타입 체크/런타임 양쪽에서 문제없이 동작하는지** —
       `luau-test/done/06-component-boundary-nil-hole-props.luau` 통과
@@ -268,7 +268,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       **[2026-09-02]** M5 단위 ①로 앞당겨 완료, 아래 M8 항목 참고) — 원래
       M8에만 있었으나 M4(StoreBind의 `Connected` 확인)/M6(Slot의
       `canExecute`)이 이미 이 인터페이스를 전제로 서술돼 있어 로드맵
-      순서가 역전돼 있었음(`pre-implementation-audit.md` 우선순위1-9 —
+      순서가 역전돼 있었음(`archive/surveys/2026-08-06-pre-implementation-audit.md` 우선순위1-9 —
       2026-08-07 네 번째 세션에 반영. **[2026-08-22 정정]** 여기 있던
       `question.md` 번호 참조는 그 항목이 해소되며 이미 깨져 있었고,
       지금 그 번호는 다른 항목이 쓰고 있어서 지웠다).
@@ -857,7 +857,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       등록하면 언제나 이김, 2026-08-13 열네 번째 세션 신설) 등 목적별 상수,
       매치 실패(`isHandlable`을 만족하는 핸들러 없음)는 `Brand`+`typeof(v)`
       출력 후 즉시 error(provider 초기화 확인 안내 포함 — provider
-      미주입 상태도 이 경로로 자동 커버, `pre-implementation-audit.md`
+      미주입 상태도 이 경로로 자동 커버, `archive/surveys/2026-08-06-pre-implementation-audit.md`
       1-3/1-4), 핸들러 등록/정렬 시점 동률 감지 print 경고 +
       `Dispatch.listHandlers()` 디버그 유틸. **[2026-08-18]** 동률 경고는
       무조건 찍지 않고 **모듈 표면의 `Quad.debug`(boolean, 기본 `false`)가
@@ -878,7 +878,7 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       (StoreBind/NoneHandler)의 정리를 다단 체인까지 정확히 전파(2026-08-08
       신설 → 2026-08-13 다섯 번째 세션 인덱스화 → **같은 날 열네 번째 세션
       하강 diff로 전면 교체**, `base/dispatch-core-plan.md` "Dispatch 체인"
-      절, `pre-implementation-audit.md` 1-2번 "이전 핸들러 추적" 항목 해소).
+      절, `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-2번 "이전 핸들러 추적" 항목 해소).
       **구현 시 반드시 지킬 것**:
       - **재디스패치는 하강 diff** — 래핑 핸들러는 선행 `retractFrom`을
         부르지 않고 그냥 `Dispatch.process(inst,k,realv,index+1)`. 비교는

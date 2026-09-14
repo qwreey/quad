@@ -334,7 +334,7 @@ Compute를 합치고 싶다"는 동기였는데, 이미 두 가지로 다 커버
 끊김. flatten도 그 테이블 필드를 직접 읽으면 됨.
 
 **`table.clone`의 정확한 동작 — 확인됨(2026-08-12 열일곱 번째 세션,
-`pre-implementation-audit.md` 1-11 해소).** 새 빈 테이블을 만들고 원본의
+`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-11 해소).** 새 빈 테이블을 만들고 원본의
 키를 네이티브 슬롯 단위로 복사(얕은 복사, 값 자체는 안 파고듦)한 뒤,
 원본의 `getmetatable` 결과를 그대로 그 새 테이블에 `setmetatable` — **이
 메타테이블은 복사되는 게 아니라 같은 참조를 공유**함. 그래서 위 제네릭
@@ -419,7 +419,7 @@ UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 
   **이 안쪽 케이스는 방어 로직 없는 순수 UB로 문서화만 하고 넘어감** —
   의도치 않게 자주 발생할 이유가 없는 조합이라 실사용 위험은 낮음.
 - **7번 절(`State<Modifier>` UB)과의 비대칭이 이걸로 줄어듦** —
-  `pre-implementation-audit.md`가 지적했던 "같은 문서 안에서 한쪽은
+  `archive/surveys/2026-08-06-pre-implementation-audit.md`가 지적했던 "같은 문서 안에서 한쪽은
   방어(타입 차단 시도), 한쪽은 무방비 UB"라는 비일관성이, 이제 둘 다
   "적극적으로 막는다"는 같은 방향으로 정리됨(메커니즘은 여전히 다름 —
   하나는 타입 레벨 차단 시도+실패 시 UB 폴백, 하나는 런타임 `error` —
@@ -519,7 +519,7 @@ dispatch 밖에서만 처리되는 유일한 존재")과 정면으로 충돌함 
 predicate(`Brand` 절)를 State/Source 쪽에도 적용해 **런타임에 직접
 막는다.** 타입 차단(`State<Modifier>` 같은 조합을 타입 정의 단계에서
 거부)은 여전히 되면 좋은 보너스로 계속 시도해볼 수 있지만
-(`research/pre-implementation-audit.md` 2-2 — Luau에서 실제로 가능한지
+(`archive/surveys/2026-08-06-pre-implementation-audit.md` 2-2 — Luau에서 실제로 가능한지
 미검증), **더 이상 유일한 방어선이 아님** — 타입이 뚫려도 런타임
 `error`가 항상 잡아준다.
 
@@ -725,7 +725,7 @@ Modifier 인자를 받으면 `Overridden`과 같은 병합을 한다(사용자: 
 
 **문서 배치**: 초심자 문서엔 `Overridden`를 아예 안 보여주고(위 "용도를 좁게
 문서화" 절), 이 "언제 `Apply` vs `Overridden`, 성능 기준" 절 전체는 api/심화
-문서 전용 — `research/documentation-content-map.md`의 modifier-plan.md
+문서 전용 — `archive/surveys/2026-08-06-documentation-content-map.md`의 modifier-plan.md
 분류에 반영 완료.
 
 **미검토로 남긴 것**: `Apply` 체인이 실측으로 병목이라고 확인되면 그때

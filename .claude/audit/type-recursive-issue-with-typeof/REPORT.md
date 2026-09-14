@@ -216,7 +216,7 @@ quad 설계 문제가 아니라 **`setmetatable`+`typeof(genericFn<<T>>())`
   단계 `t1`로 깔끔하게 표기됨) — hover/에러 가독성 면에서 오히려
   `typeof`보다 나음.
 
-**→ `pre-implementation-audit.md` 1-10과 `typing-limits.md` §5의
+**→ `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-10과 `typing-limits.md` §5의
 근거가 됨. 이건 "설계가 막혔었다"가 아니라 "실측 스크립트가 낡은
 API를 썼었다"였을 뿐이라, 원 설계(`bind-system-plan.md`의 `store.key`
 레코드 필드 타이핑)는 그대로 유효 — 승격만 하면 됨.**
@@ -254,7 +254,7 @@ lazy expansion"과 다름), 아직 안 정해진 제네릭을 인자로 자기 �
   가치가 있음(다음에 누가 또 같은 길을 시도하지 않도록).
 - **`typing-limits.md` §5는 "미검증" → "검증 완료"로 승격.** 스파이크
   `16`을 `spikes/09`의 수정 내용으로 고쳐 `luau-test/done/`으로 옮기고
-  `pre-implementation-audit.md` 1-10 관련 서술도 "설계 확정, 실측
+  `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-10 관련 서술도 "설계 확정, 실측
   미완"에서 "설계+실측 둘 다 완료"로 갱신.
 - **선언 스타일 규약이 base 코드 전체(특히 `bind-system-plan.md`/
   `source-state-plan.md`의 `State`/`Source`/`Modifier` 등 재귀 제네릭을

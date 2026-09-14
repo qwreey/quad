@@ -17,13 +17,13 @@
 > 열리는 게 아니라 **버그를 일으키기에 치명적인 표면이 대량으로 노출**됨.
 > 그 표면을 다 막으려면 quad가 "내가 만들지 않은 Instance의 자식
 > 구성이 언제 어떻게 바뀌는지"까지 추적해야 하는데, 그건
-> `research/framework-comparison-findings.md`가 use-after-destroy
+> `archive/surveys/2026-08-06-framework-comparison-findings.md`가 use-after-destroy
 > 안전망을 기각할 때 쓴 것과 같은 이유(Instance 가상화/추적은 rbvm 같은
 > 전문 라이브러리의 영역, quad가 재발명하면 오버엔지니어링)로 스코프
 > 밖임.
 >
 > 아래 원문은 기각 전 서술 그대로 보존(당시엔 "미정 유지"가 결론이었음).
-> 관련해서 이미 지적돼 있던 긴장은 두 곳 — `research/pre-implementation-audit.md`
+> 관련해서 이미 지적돼 있던 긴장은 두 곳 — `archive/surveys/2026-08-06-pre-implementation-audit.md`
 > 2-4(Slot의 "엄격한 단일 마운트 소유권" 불변식과 근본적으로 충돌),
 > `base/architecture.md`의 "복사 구현 지양, store 바인드 변경은 전체
 > 변경" 원칙. 둘 다 이번 기각으로 해소됨.

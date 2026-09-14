@@ -6,8 +6,8 @@
 재조정이 `Slot:List(...)` 메소드로 통합·승격
 
 위에서 예고된 "다음 세션 주제"(Slot과 키 기반 동적 컬렉션 재조정)를
-실제로 다룬 세션. `pre-implementation-audit.md` 1-7/1-8과
-`research/additional-primitives-plan.md`의 마지막 열린 항목이 전부
+실제로 다룬 세션. `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-7/1-8과
+`archive/surveys/2026-08-06-additional-primitives-plan.md`의 마지막 열린 항목이 전부
 `base/slot-plan.md`에 흡수·확정됐음 — 상세는 그 문서 본문이 소스,
 여기는 요지만:
 
@@ -60,8 +60,8 @@
   할 부분은 아닌 것 같다", `Blocker`류 값-동등성 기반 전파 억제도 검토했으나
   "확정 안 하면 이전 값 자체가 없어서 비교가 안 된다"는 근본적 어려움이
   있어 기술적으로 더 논의해볼 만한 주제로만 `research/
-  additional-primitives-plan.md`에 백로깅.
-- **`research/additional-primitives-plan.md` 사실상 전부 해소** — 마지막
+  archive/surveys/2026-08-06-additional-primitives-plan.md`에 백로깅.
+- **`archive/surveys/2026-08-06-additional-primitives-plan.md` 사실상 전부 해소** — 마지막
   열린 항목(키 기반 컬렉션)까지 없어져서, 이 문서엔 이제 새로 열린 설계
   질문이 없음(배경 자료로만 유지). `question.md`/`ROADMAP.md`(M6 체크박스)/
   `README.md` 전부 동기화 완료.
@@ -69,7 +69,7 @@
 **다음 세션이 할 일**: 안 바뀜(`ROADMAP.md` M0부터) — Slot/키 기반 컬렉션
 재조정이 이번 세션에서 완결됐으므로 더 이상 "다음 세션 예고" 대상 아님.
 남은 열린 것은 여전히 `question.md`의 `DI`→`D`/`canExecute`→`isAlive`/
-`Brand` 이름, `pre-implementation-audit.md` 1-3(우선순위 스캔 동률 처리),
+`Brand` 이름, `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-3(우선순위 스캔 동률 처리),
 "여러 Slot이 형제로 섞일 때 순서 보장"(Roblox 단일 백엔드론 급하지 않음)
 정도.
 
@@ -282,13 +282,13 @@ Source/Store를 새로 안 만들려면 이전 상태를 어딘가 저장해야 
 3. **문서화 순서(getting-started에서 단순 버전만 가르치고 나중에
    `prev`/`userdata` 최적화를 알려줄지, 아니면 Slot이 학습 순서상 후반부라
    처음부터 완전한 형태로 가르칠지)는 결정 안 함** — `research/
-   documentation-content-map.md`의 modifier/slot 절에 백로그로 추가,
+   archive/surveys/2026-08-06-documentation-content-map.md`의 modifier/slot 절에 백로그로 추가,
    제 의견(후자 쪽으로 기욺)만 메모, 실제 콘텐츠 작성 시점 결정 사항이라
    지금 확정 안 함.
 
 전부 `base/slot-plan.md`(`:List` 시그니처/코드 재정렬, `keyFn` 기본값
 설명, "`userdata`의 생명주기 제약" 신규 절)/`ROADMAP.md`(M6)/`README.md`/
-`research/documentation-content-map.md` 반영 완료.
+`archive/surveys/2026-08-06-documentation-content-map.md` 반영 완료.
 
 **다음 세션이 할 일**: 여전히 안 바뀜(`ROADMAP.md` M0부터).
 

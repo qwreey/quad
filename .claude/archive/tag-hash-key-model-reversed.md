@@ -37,7 +37,7 @@
 | retract | 불필요(핸들러 타입 안 바뀜) | 필요(값이 `nil`이 되면 핸들러 자체가 안 바뀜, 전체 삭제) — `Dispatch` 체인 메커니즘(`bind-system-plan.md` "Dispatch 체인" 절)과 맞물려 재설계됨 |
 
 부수적으로, 이 역전이 `Dispatch.process`/`retract`의 "이전 매치 핸들러
-추적" 문제(`pre-implementation-audit.md` 1-2번)를 실제로 파고드는 계기가
+추적" 문제(`archive/surveys/2026-08-06-pre-implementation-audit.md` 1-2번)를 실제로 파고드는 계기가
 됐음 — Tag가 재귀 재-dispatch(`Source<Tag|nil>`가 store-bind를 거쳐
 TagHandler로 위임)에 진입하는 첫 구체 사례가 되면서, "핸들러 타입이 안
 바뀌니 retract 불필요"라는 구 모델의 전제 자체가 신 모델에서 깨졌고, 그

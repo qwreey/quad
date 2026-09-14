@@ -16,7 +16,7 @@
    시 즉시 에러)는 안 바뀜 — `base/bind-system-plan.md` "이중 바인딩
    금지" 절, `base/effect-plan.md`, `.claude/question.md` 반영.
 2. **`:Compute(fn)`의 `previous` 인자 — 오버엔지니어링 의심 기각, 현재
-   설계 유지.** `pre-implementation-audit.md` 3-1이 "클로저 업밸류로
+   설계 유지.** `archive/surveys/2026-08-06-pre-implementation-audit.md` 3-1이 "클로저 업밸류로
    이미 되는 걸 별도 API로 만든 것 아니냐"고 의심했던 데 대해 사용자가
    직접 반박 — 클로저 업밸류 대안은 IIFE로 감싸는 준비 비용이 오히려
    `previous`라는 인자 하나보다 무겁고 번거로움. **부수적으로 스코핑도
@@ -27,7 +27,7 @@
    검토 중 발견 — `previous`는 그 대신 "이 `:Compute` 호출 하나가 만든
    결과 State 노드" 자신에 귀속되는 것으로 정리(State가 호출마다 새
    노드를 만든다는 기존 온톨로지의 당연한 귀결이라 새 결정은 아님).
-   `base/bind-system-plan.md`의 "previous" 절, `pre-implementation-audit.md`
+   `base/bind-system-plan.md`의 "previous" 절, `archive/surveys/2026-08-06-pre-implementation-audit.md`
    3-1 반영.
 3. **Modifier 필드에 핸들러 계층 값(Ref/PreRef/Observer/Effect/Slot/
    Modifier)이 들어오면 UB 대신 즉시 `error`로 확정.** 기존
@@ -38,11 +38,11 @@
    `isSlot`/`isModifier`)를 제네릭 `__index` setter가 최종 저장 직전에
    확인하기만 하면 되므로 구현 비용 거의 0. `isSlot`/`isEffect`
    predicate가 `Brand` 절에 명시적으로 없던 갭도 같이 보강.
-   `pre-implementation-audit.md`가 지적했던 "`State<Modifier>`는 방어,
+   `archive/surveys/2026-08-06-pre-implementation-audit.md`가 지적했던 "`State<Modifier>`는 방어,
    Ref/Slot은 무방비"라는 비일관성이 이걸로 절반 해소(메커니즘 차이는
    남지만 "막을 가치가 있다"는 판단은 통일) — `base/modifier-plan.md`
    "핸들러 계층을 모름" 절, `base/bind-system-plan.md`의 `Brand` 절,
-   `pre-implementation-audit.md` 문서모순 절 반영.
+   `archive/surveys/2026-08-06-pre-implementation-audit.md` 문서모순 절 반영.
 4. **UI shorthand(UICorner/UIPadding/UIScale)가 Modifier 체이닝에서도
    되는지 — 이미 확정돼 있던 것 재확인, 새 결정 없음.** `mod:UICorner(8)`은
    그냥 제네릭 `__index` setter가 `UICorner` 필드를 채우는 것뿐이고,
@@ -76,9 +76,9 @@ retract도 되는 애고 런타임 값이라"): Slot/Tag/Attribute/Tween 등은
 State/Source 값으로 담겨도 기존 재귀 재-dispatch가 그대로 처리해줌 —
 Modifier만 예외인 건 Modifier가 애초에 dispatch 경로 자체를 안 타는
 유일한 존재라서. `base/modifier-plan.md` 7번, `base/store-semantics.md`
-"따름정리" 절, `research/pre-implementation-audit.md` 2-2/문서모순 절
+"따름정리" 절, `archive/surveys/2026-08-06-pre-implementation-audit.md` 2-2/문서모순 절
 (완전 해소로 갱신), `.claude/question.md`, `ROADMAP.md` M7 반영 완료 —
-이걸로 `pre-implementation-audit.md`가 지적했던 "State<Modifier>는
+이걸로 `archive/surveys/2026-08-06-pre-implementation-audit.md`가 지적했던 "State<Modifier>는
 방어, Ref/Slot은 무방비"라는 비일관성이 완전히 해소됨.
 
 **핸드오버 준비 완료** — 이번 대화(2026-08-08~09에 걸친 세션)에서 나온

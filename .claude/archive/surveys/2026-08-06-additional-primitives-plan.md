@@ -26,7 +26,7 @@ context-rejected.md`. **[2026-08-09 세 번째 세션]** 마지막으로 남아�
 
 서브에이전트 여러 개를 병렬/순차로 띄워 조사(웹 프레임워크 서베이, Fusion/
 Vide/v1/artworks 소스 근거 조사, Context 구현 난이도 판정) + 그 결과를
-사용자와 라이브로 검증/반박/재조정. `research/framework-comparison-findings.md`
+사용자와 라이브로 검증/반박/재조정. `archive/surveys/2026-08-06-framework-comparison-findings.md`
 (quad vs Fusion/Vide/react-lua 강점/약점 비교)와는 다른 질문 — 그 문서는
 "같은 개념을 quad가 얼마나 잘 구현했는가", 이 문서는 "개념 자체가 통째로
 없는 게 있는가/필요한가".
@@ -77,7 +77,7 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
   Spinner end`류는 마운트 시점 단 한 번만 평가되고 데이터 도착 후
   재평가 안 됨. Slot + Observer 조합으로 실제 구현은 가능하나 1급 패턴이
   아니라서, 새 코어 프리미티브보다는 **"render-once 함정" 문서화
-  우선순위 문제**로 재분류(`research/documentation-plan.md`의 권장 패턴
+  우선순위 문제**로 재분류(`archive/surveys/2026-08-06-documentation-plan.md`의 권장 패턴
   문서 부류에 속함, React 습관 개발자가 특히 잘 빠질 실수).
 - **Error Boundary**: quad 컴포넌트는 평범한 Lua 함수 호출이라, 리스트
   개별 아이템 생성 주변에 `pcall(MyComp, props)`를 감싸는 것만으로 React
@@ -97,7 +97,7 @@ State 메소드로 두려던 초기 폼팩터가 기각된 경위만 여전히
   외부 리서치에서 RxJS/VueUse 등 Roblox 밖에선 가장 흔한 콤비네이터
   카테고리 중 하나로 확인돼 근거로서의 무게가 이미 약해져 있었음.)
 
-## 문서화 백로그 (2026-08-06~07, `documentation-content-map.md`에도 반영)
+## 문서화 백로그 (2026-08-06~07, `archive/surveys/2026-08-06-documentation-content-map.md`에도 반영)
 
 - **quadnomicon 에세이**:
   - "왜 lexical Batch를 기각하고 대신 값 기반 Blocker를 택했는가" —

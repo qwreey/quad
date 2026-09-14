@@ -6,7 +6,7 @@
 	Luau에서 문제없이 짜이는지.
 
 	배경: ROADMAP.md M0 5번째 항목, .claude/base/component-composition-plan.md
-	"필수 관용구" 절, .claude/research/pre-implementation-audit.md 1-5.
+	"필수 관용구" 절, .claude/archive/surveys/2026-08-06-pre-implementation-audit.md 1-5.
 
 	두 가지 방법으로 확인 필요함:
 	1. 런타임 동작(nil-hole 재현) 확인: `luau 06-component-boundary-nil-hole-props.luau`
