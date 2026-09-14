@@ -132,12 +132,13 @@ export default defineConfig({
 							label: 'Changelog (변경 이력)',
 							link: '/changelog-versions/',
 							items: [
+								// [2026-09-14 사용자] 전체 버전이 맨 위 — 버전이 쌓여도 아래로 묻히지 않게. 전문 미러(/changelog/) 링크는
+								// 뺐다(전체 버전 페이지가 같은 내용을 다 보여 준다; 페이지 자체는 VersionLine의 #unreleased 딥링크용으로 남긴다).
 								...makeChangelogsSidebarLinks([
+									{ type: 'all', base: 'changelog-versions', label: '전체 버전' },
 									{ type: 'latest', base: 'changelog-versions', label: '최신 버전' },
 									{ type: 'recent', base: 'changelog-versions', count: 5 },
-									{ type: 'all', base: 'changelog-versions', label: '전체 버전' },
 								]),
-								{ label: '전문 미러 (기존, /changelog/)', link: '/changelog/' },
 							],
 						},
 					],
@@ -148,7 +149,7 @@ export default defineConfig({
 						// 페이지가 아니라 sidebar-topics가 자동으로 못 찾는다 — 'changelog' 토픽에 수동으로 묶는다.
 						// picomatch가 매칭하는 id는 맨 앞에 슬래시가 붙는다(ensureLeadingSlash) — 패턴에도 슬래시가 있어야 매칭된다.
 						// en 로케일 페이지는 id 앞에 `en/`이 그대로 붙어 나오므로(로케일별 topics 자동 처리 없음) 패턴을 둘 다 둔다.
-						topics: { changelog: ['/changelog-versions/**', '/en/changelog-versions/**'] },
+						topics: { changelog: ['/changelog-versions/**', '/en/changelog-versions/**', '/changelog', '/en/changelog'] } // 콘텐츠 페이지 id는 'changelog'(앞에 /가 붙고 뒤엔 없음 — middleware의 ensureLeadingSlash),
 					},
 				),
 				starlightQuiz(),
