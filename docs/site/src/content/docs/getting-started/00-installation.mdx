@@ -112,7 +112,45 @@ roblox_packages/              → ReplicatedStorage/roblox_packages
 
 ### 3단계: 타입 검사 플래그
 
-Quad를 쓰는 코드는 **아래 네 플래그가 전부 켜져 있어야** 타입 검사가 돕니다. 편집기(luau-lsp)와 CI 양쪽에 같은 값을 넣으세요.
+Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야** 타입 검사가 돕니다.
+
+| 플래그 | 값 | 없으면 |
+|---|---|---|
+| `LuauSolverV2` | `true` | quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here` |
+| `LuauTarjanChildLimit` | `160000` | `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다. 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다 |
+| `LuauSubtypingIterationLimit` | `100000` | 컴포넌트가 커질 때 같은 이유로 필요해집니다 |
+| `LuauTypeInferIterationLimit` | `1000000` | 〃 |
+
+편집기와 CI 양쪽에 같은 값을 넣으세요.
+
+#### VS Code — Luau Language Server 확장
+
+대부분은 VS Code에서 JohnnyMorganz의 **Luau Language Server** 확장(`johnnymorganz.luau-lsp`)을 쓸 것입니다. 확장을 설치한 뒤, 프로젝트 루트의 `.vscode/settings.json`에 아래를 넣습니다.
+
+```json
+{
+  "luau-lsp.platform.type": "roblox",
+  "luau-lsp.fflags.enableNewSolver": true,
+  "luau-lsp.fflags.override": {
+    "LuauTarjanChildLimit": "160000",
+    "LuauSubtypingIterationLimit": "100000",
+    "LuauTypeInferIterationLimit": "1000000"
+  }
+}
+```
+
+- **`enableNewSolver`가 첫 플래그(`LuauSolverV2`)를 켭니다.** 나머지 셋은 `override`에 넣습니다. `override`에 `"LuauSolverV2": "true"`를 같이 적어도 결과는 같습니다.
+- **`override`의 값은 문자열입니다** — `"160000"`처럼 따옴표로 감싸세요. 스키마가 문자열만 받습니다.
+- **사용자 설정이 아니라 워크스페이스 설정(`.vscode/settings.json`)에 두는 걸 권합니다.** 저장소에 같이 커밋하면 팀원 모두 같은 값으로 검사하고, Quad를 안 쓰는 다른 프로젝트의 검사는 바뀌지 않습니다.
+- **`--definitions`에 해당하는 설정은 따로 필요 없습니다.** 확장이 Roblox 타입 정의를 알아서 내려받습니다(`luau-lsp.types.roblox`, 기본 켜짐). Rojo가 `PATH`에 있으면 `default.project.json`으로 sourcemap도 자동 생성하므로(`luau-lsp.sourcemap.autogenerate`, 기본 켜짐) 2단계에서 만든 매핑을 그대로 따라 require를 풉니다.
+- **확장은 기본으로 Roblox가 공개한 Luau 플래그를 받아와 적용합니다**(`luau-lsp.fflags.sync`). `override`가 그 뒤에 적용되므로 위 값이 이깁니다.
+- 설정을 바꾸면 확장이 언어 서버를 다시 띄우라는 알림을 냅니다. 알림에서 다시 띄우거나 VS Code 창을 다시 로드하세요(명령 팔레트 → `Developer: Reload Window`).
+
+적용됐는지는 `D.Frame { Name = "x" }` 한 줄로 확인할 수 있습니다. 그 줄에 "too complex to typecheck"가 뜨면 설정이 먹지 않은 것입니다.
+
+#### CI와 터미널 — `luau-lsp analyze`
+
+CI에서는 같은 확장의 CLI인 `luau-lsp`로 검사합니다. 편집기와 달리 Roblox 타입 정의를 자동으로 받지 않으므로 `--definitions`로 직접 넘깁니다.
 
 ```bash
 luau-lsp analyze \
@@ -124,9 +162,12 @@ luau-lsp analyze \
   <검사할 파일들>
 ```
 
-- **`LuauSolverV2=true`가 없으면** quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here`.
-- **`LuauTarjanChildLimit`을 올리지 않으면** `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다. 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다.
-- 나머지 둘(`LuauSubtypingIterationLimit`/`LuauTypeInferIterationLimit`)은 컴포넌트가 커질 때 같은 이유로 필요해집니다.
+<details>
+<summary><strong>Neovim 같은 다른 편집기는요?</strong></summary>
+
+같은 `luau-lsp` 언어 서버를 쓰므로 넣을 값은 똑같습니다. 서버를 띄우는 인자에 위와 같은 `--flag:이름=값` 넷을 붙이거나, 쓰는 플러그인이 FFlag 설정을 따로 받으면 그 자리에 넣으세요.
+
+</details>
 
 ---
 

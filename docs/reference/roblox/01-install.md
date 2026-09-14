@@ -182,6 +182,8 @@ luau-lsp analyze --flag:LuauSolverV2=true \
 
 `--definitions`는 `luau-analyze`가 아니라 **`luau-lsp`의 기능**입니다.
 
+VS Code의 Luau Language Server 확장(`johnnymorganz.luau-lsp`)에서는 같은 값을 `.vscode/settings.json`의 `luau-lsp.fflags.enableNewSolver`와 `luau-lsp.fflags.override`로 넣고, Roblox 타입 정의는 확장이 알아서 받습니다 — 설정 예시는 [00. 설치](../../getting-started/00-installation.md)의 3단계에 있습니다.
+
 ---
 
 **관련**

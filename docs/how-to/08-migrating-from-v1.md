@@ -31,7 +31,7 @@ luau-lsp analyze \
   <검사할 파일들>
 ```
 
-넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스의 타입 검사가 실패하고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기(luau-lsp)에도 같은 플래그를 넣으세요 — [00. 설치](../getting-started/00-installation.md) 참고.
+넷 다 필요합니다. `LuauSolverV2=true`가 없으면 quad 소스의 타입 검사가 실패하고(`TypeError: read keyword is illegal here`), `LuauTarjanChildLimit`을 올리지 않으면 `D.Frame { Name = "x" }` 한 줄도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(생성된 `D`의 프로퍼티 유니언이 큽니다). 나머지 둘은 큰 컴포넌트에서 같은 이유로 필요해집니다. 편집기에도 같은 플래그를 넣으세요 — VS Code의 Luau Language Server 확장에 넣는 법은 [00. 설치](../getting-started/00-installation.md)의 3단계에 있습니다.
 
 그리고 v1의 `require(path).Init(id)` 자리는 **설정 모듈 하나**로 바뀝니다 — 패키지 둘(`quad-base`·`quad-roblox`)을 `UseProvider` 한 줄로 붙여 둔 모듈을 프로젝트에 하나 두고, 화면 코드는 그것만 require합니다([시작하기 01. 프레임워크 설정하기](../getting-started/01-setup.md)).
 
