@@ -22,7 +22,7 @@ description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 �
 - [08](/getting-started/08-lifecycle-hooks/) `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`로 **생성·완성·파괴 한 번씩**을 잡았습니다 — 06·07의 재료로 손수 짜 본 뒤 같은 것에 이름을 붙였습니다.
 - [09](/getting-started/09-modifier/) 반복되는 프로퍼티 묶음을 `Modifier` **값**으로 빼 모듈 하나에 모았습니다.
 - [10](/getting-started/10-slot/) `q.Slot`으로 별개의 작은 상자에 **자식이 들어갈 자리**를 잡고 넣고 뺐습니다 — `Offset`/`Length`가 따라 움직이는 것과, 자리 하나를 `State`로 갈아 끼우는 것까지.
-- [11](/getting-started/11-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다.
+- [11](/getting-started/11-components/) 카운터를 **컴포넌트**로 쪼개고, 그 `Slot`을 props로 넘겨받았습니다 — 안에서 만드는 상태와, 체크박스처럼 **밖에서 받아 되돌려 쓰는 원천**까지.
 - [12](/getting-started/12-functions/) 지금까지 써 온 콜백·클로저·**팩토리**·커링에 이름을 붙이고, 팩토리를 컴포넌트에 넘겨 안쪽 상태에 붙였습니다.
 - [13](/getting-started/13-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용, 하나짜리는 `:Single`.
 - [14](/getting-started/14-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다 — 중간 컴포넌트는 안에 뭐가 들었는지 모른 채.
@@ -33,14 +33,25 @@ description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 �
 
 ## 화면을 내릴 때
 
-여기까지 화면을 띄우기만 했으니 내리는 법도 한 번 적어 둡니다. 루트 하나를 `Destroy()`하면 됩니다.
+여기까지 화면을 띄우기만 했으니 내리는 법도 한 번 적어 둡니다. quad가 만든 값을 버리는 정본 경로는 `q.dispose`입니다. 루트 하나를 넘기면 됩니다.
 
 ```luau
 -- 새 예시: 별도 스크립트(01장의 진입점에서 만든 screen을 내린다)
-screen:Destroy()
+q.dispose(screen)
 ```
 
-**실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것이 같이 멈춥니다. `:Observer`는 멈추고, `q.Effect`와 `q.OnDestroyed`는 각각 cleanup과 콜백이 **한 번 돈 뒤** 끝납니다. 07·08장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다. `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 `Destroy()`한 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
+**실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것이 같이 멈춥니다. `:Observer`는 멈추고, `q.Effect`와 `q.OnDestroyed`는 각각 cleanup과 콜백이 **한 번 돈 뒤** 끝납니다. 07·08장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다. `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 버린 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
+
+<details>
+<summary><strong><code>inst:Destroy()</code>와 뭐가 다른가요?</strong></summary>
+
+결과는 같습니다. `q.dispose`도 결국 인스턴스를 파괴하고, quad는 인스턴스의 엔진 연결이 끊긴 것으로 죽음을 알아채므로 밖에서 `Destroy()`해도 위와 똑같이 정리됩니다. 다른 점은 **버리면 안 되는 값을 막아 주는지**입니다.
+
+- **Slot 안에 있는 원소**를 `q.dispose`에 넘기면 파괴하지 않고 에러를 냅니다 — `dispose: this value is still held by a Slot or a mounted position — …`. 먼저 `:Extract`로 자리에서 빼거나(10장), `:List`라면 데이터에서 그 키를 지우세요. `Destroy()`는 그 확인 없이 지워서 Slot이 죽은 원소를 든 채로 남습니다.
+- **`State<Instance?>` 자리에 지금 놓인 원소**는 `q.dispose`도 막지 않습니다. 먼저 `cur:Set(nil)`(또는 다른 값)으로 자리에서 내려놓은 뒤 버리세요. 10장 §6에서 갈아 끼워 떼어진 옛 원소는 이미 내려와 있으니 바로 `q.dispose`하면 됩니다.
+- 루트처럼 어디에도 놓이지 않은 값은 둘 중 무엇을 써도 같습니다. 그래도 `q.dispose`로 통일해 두면, 나중에 그 값이 어딘가에 놓이게 됐을 때 실수를 에러로 잡습니다.
+
+</details>
 
 ---
 

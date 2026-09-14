@@ -54,7 +54,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`08-lifecycle-hooks.md`](./getting-started/08-lifecycle-hooks.md) — 생성만 보고 싶다면: `PreRef`+`:Callback`/`PostRef`+`:Callback`/cleanup만 있는 `Effect`를 손으로 짠 뒤, 그것과 **정확히 같은 것**이 `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`임을 실제 구현 열 줄로 보인다(바텀업).
 - [`09-modifier.md`](./getting-started/09-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
 - [`10-slot.md`](./getting-started/10-slot.md) — 자식이 들어갈 자리: `Slot`을 숫자 키 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(자식 처리기가 맡는다 — 옛 원소는 내려질 뿐; 옛 서술 "내부적으로 `:Single`"은 2026-09-11 정정). `:List`는 암시만.
-- [`11-components.md`](./getting-started/11-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 자식은 10의 `Slot`을 `props.Children or q.None`으로 받는다.
+- [`11-components.md`](./getting-started/11-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 상태는 안에서 만들거나 밖에서 받은 원천을 되돌려 쓰고(체크박스), 자식은 10의 `Slot`을 `props.Children or q.None`으로 받는다.
 - [`12-functions.md`](./getting-started/12-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 값을 돌려주는 팩토리(`highlightColor`)와 컴포넌트에 팩토리를 넘기는 패턴(`props.Watch` → Effect), 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, `:Apply`의 `__apply` 객체 팔 예고(16의 Blocker), Hook 규칙이 없는 이유.
 - [`13-lists.md`](./getting-started/13-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴, 원소 하나짜리 `:Single`(Offset이 필요할 때).
 - [`14-context.md`](./getting-started/14-context.md) — 층을 건너 값 넘기기: `q.Context` 가방(트리 조회 없음), `Provider` 키, `Get`/`Peek`.
@@ -67,7 +67,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 ### How-To Guides (실전 레시피) — 9편
 **[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤.
 - [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 타입드 Modifier 팩토리, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
-- [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 후행 의존성 `:Compute`로 실시간 검증·버튼 제어, 제출 결과는 바깥이 관측.
+- [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — 값을 밖에서 받는 체크박스로 시작해, 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 후행 의존성 `:Compute`로 실시간 검증·버튼 제어, 제출 결과는 바깥이 관측.
 - [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 13](./getting-started/13-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Blocker`·"안 해주는 것"만 다룬다.
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.

@@ -120,7 +120,7 @@ assert(runs == 2, "묶는 순간 보류분이 한 번 재생된다")
 hp:Set(80)
 assert(runs == 3, "이후 변경은 그대로 발화")
 
-host:Destroy()
+q.dispose(host)                  -- quad가 관리하는 값을 버리는 정본 경로(밖에서 :Destroy()해도 결과는 같다)
 hp:Set(70)
 assert(runs == 3, "인스턴스가 죽으면 더 이상 발화하지 않는다")
 ```

@@ -1,12 +1,12 @@
 ---
 title: "02. 폼 유효성 검사와 제출 버튼 제어"
-description: "폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 실시간 검증·버튼 제어와 제출 결과 관측을 선언적으로 구현하는 법을 다룹니다"
+description: "값을 밖에서 받는 체크박스에서 시작해, 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 실시간 검증·버튼 제어와 제출 결과 관측을 선언적으로 구현하는 법을 다룹니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 > **대상 독자**: 입력이 여럿인 화면을 만들고, 그 결과를 컴포넌트 바깥에서 받아야 하는 개발자
-> **다루는 개념**: `Store`, `Source`, `:Compute`, `:With`, `OnChange`, `Observer`, 상태 주입
+> **다루는 개념**: 상태 주입(작게는 체크박스 하나부터), `Source`/`State`, `Store`, `:Compute`, `:With`, `OnChange`, `Observer`
 
 ---
 
@@ -33,7 +33,71 @@ local D = q.Declaration
 
 ---
 
-## 2. 폼 상태를 테이블 하나로 묶기
+## 2. 작은 것부터 — 값을 밖에서 받는 체크박스
+
+폼을 통째로 짜기 전에, 같은 모양의 가장 작은 판을 하나 먼저 봅니다. **체크박스**입니다. 체크가 켜졌는지를 정작 필요로 하는 것은 체크박스 자신이 아니라 그것을 화면에 놓은 쪽이므로, 상태를 안에서 만들면 바깥이 값을 볼 길이 없습니다. 그래서 **원천은 부르는 쪽이 만들어 props로 넘깁니다.**
+
+```luau
+-- 재사용 컴포넌트(예: ReplicatedStorage/Client/UI/Checkbox)
+local function Checkbox(props: { read Value: q.Source<boolean>, read Label: string }): TextButton
+    local checked = props.Value
+
+    -- 파생은 props 테이블 밖에서 만들어 둔다(§4의 주의 참고)
+    local labelText: q.State<string> = checked:Compute(function(c)
+        return `{if c:Get() then "☑" else "☐"} {props.Label}`
+    end)
+
+    return D.TextButton {
+        Size = UDim2.new(1, 0, 0, 32),
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Text = labelText,
+
+        Activated = function()
+            checked:Set(not checked:Get())
+        end,
+    }
+end
+```
+
+컴포넌트가 하는 일은 둘뿐입니다 — 받은 원천을 **읽어 그리고**, 눌리면 그 자리에 **되돌려 씁니다**. 값을 어떻게 쓸지는 전부 바깥의 몫이라, 바깥은 같은 원천에 파이프를 붙여 자기 판정을 만듭니다. 아래 폼에서 실제로 필요한 판정 하나를 미리 만들어 보면 이렇습니다.
+
+```luau
+-- 부르는 쪽 — 원천을 만들고, 그 위에 판정을 얹는다
+local agreed = q.Source(false)
+
+-- 약관에 동의해야만 제출할 수 있다
+local canSubmit: q.State<boolean> = agreed:Compute(function(c)
+    return c:Get()
+end)
+
+local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
+    return if enabled:Get()
+        then Color3.fromRGB(0, 170, 255)
+        else Color3.fromRGB(80, 80, 90)
+end)
+
+local panel = D.Frame {
+    Checkbox { Label = "약관에 동의합니다", Value = agreed },
+
+    D.TextButton {
+        Text = "가입하기",
+        AutoButtonColor = canSubmit,
+        BackgroundColor3 = submitColor,
+    },
+}
+```
+
+체크박스를 누르면 `AutoButtonColor`와 버튼 색이 같이 따라옵니다. 체크박스는 제출 버튼이 있는지도 모르고, 제출 버튼은 체크박스가 있는지도 모릅니다 — 둘을 잇는 것은 **밖에서 만든 원천 하나**뿐입니다.
+
+읽기만 하면 되는 컴포넌트라면 `Source` 대신 파생된 `State`를 넘기세요. **`State`에는 `:Set`이 없어서** 받은 쪽이 값을 바꿀 길이 없고, 그래서 "이 컴포넌트는 읽기만 한다"가 넘기는 것의 종류로 드러납니다([레퍼런스: `State`](/reference/core/03-state/)).
+
+**이 모양을 값 여럿·검증·제출까지 키운 것이 아래의 폼입니다.** 원천이 하나에서 여럿이 되니 그것을 `Store` 하나에 모으고, 판정이 하나에서 여럿이 되니 `:Compute`를 겹치고, 결과를 바깥으로 내보낼 자리가 하나 더 필요해질 뿐 — 밖에서 만들어 넣는다는 뼈대는 그대로입니다.
+
+---
+
+## 3. 폼 상태를 테이블 하나로 묶기
 
 `q.Store`는 **이름 붙은 `Source`들을 담는 테이블**입니다. 생성자에 넘기는 값은
 전부 `Source`여야 하고(아니면 그 자리에서 거부합니다), 꺼낼 때는
@@ -89,10 +153,10 @@ type FormState = typeof(makeFormState())
 - `FormState` 타입을 손으로 적을 필요는 없습니다. `typeof(makeFormState())`가 반환 테이블의 모양을 그대로 타입으로 씁니다(모듈로 나눌 땐 `Submission`과 함께 `export type`으로 내보내세요 — 부르는 쪽이 둘 다 씁니다).
 - `q.Source<<Submission?>>(nil)`처럼 **타입 인자를 명시**해야 `Source<Submission?>`가 됩니다 — 값만 보고는 `nil`밖에 알 수 없기 때문입니다.
 
-**폼 상태는 컴포넌트 밖에서 만들어 주입합니다.** 전역에 싱글톤으로 두면 그 폼을
+**폼 상태는 컴포넌트 밖에서 만들어 주입합니다** — §2의 체크박스와 같은 이유입니다. 전역에 싱글톤으로 두면 그 폼을
 두 번 띄울 수 없고, 반대로 컴포넌트 안에서 만들어 버리면 바깥이 결과를 볼
 길이 없습니다. `makeFormState()`를 **부르는 쪽마다 한 벌씩** 만들면 둘 다
-풀립니다(근거는 [§5](#5-핵심-모범-사례)).
+풀립니다(근거는 [§6](#6-핵심-모범-사례)).
 
 ### `:Compute` 콜백의 인자 순서
 
@@ -122,7 +186,7 @@ end)
 
 ---
 
-## 3. UI 조립 — 컴포넌트는 상태를 받기만 한다
+## 4. UI 조립 — 컴포넌트는 상태를 받기만 한다
 
 컴포넌트가 하는 일은 **받은 상태를 화면에 잇는 것**뿐입니다. 상태를 만들지도,
 결과를 어디로 보낼지 정하지도 않습니다.
@@ -208,7 +272,7 @@ end
 
 ---
 
-## 4. 밖에서 만들어 넘기고, 밖에서 결과 받기
+## 5. 밖에서 만들어 넘기고, 밖에서 결과 받기
 
 부르는 쪽이 폼 상태를 만들어 넘기고, 같은 테이블의 `Submitted`를 관측합니다.
 상태와 컴포넌트를 각각 모듈로 빼 두었다면(`makeFormState`를 내보내는 모듈과
@@ -238,7 +302,7 @@ local screen = D.ScreenGui {
   한 번 불리므로(실측: 숫자 키 자리에 놓기 전에 이미 1회), 아직 제출이 없는 상태를
   `nil`로 걸러내야 합니다. 제출 버튼을 누르면 그때 2회째가 오고, 그 시점의
   `Submitted`에 방금 적힌 payload가 들어 있습니다.
-- **관측도 화면과 함께 죽습니다.** `screen:Destroy()` 뒤에 `Submitted`를 바꿔도
+- **관측도 화면과 함께 죽습니다.** `q.dispose(screen)`으로 화면을 내린 뒤에 `Submitted`를 바꿔도
   콜백은 더 불리지 않습니다(실측: 발화 수 2 그대로). 화면보다 오래 사는 소비자가
   필요하면 숫자 키 자리 대신 `observer:Subscribe()`로 전역 구독을 잡으세요 —
   대신 그 수명은 직접 책임집니다([레퍼런스: `Observer`](/reference/core/05-observer-effect/)).
@@ -281,7 +345,7 @@ end
 
 ---
 
-## 5. 핵심 모범 사례
+## 6. 핵심 모범 사례
 
 1. **폼 상태는 밖에서 만들어 props로 주입하기.** 이유가 셋입니다 — 같은 폼을 두
    번 띄워도 서로 독립이고, 상위가 결과를 소비할 수 있고, UI를 켜지 않고 상태만
