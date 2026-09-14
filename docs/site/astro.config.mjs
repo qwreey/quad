@@ -17,6 +17,10 @@ const manifestPath = fileURLToPath(new URL('../../quad-base/pesde.toml', import.
 const versionMatch = readFileSync(manifestPath, 'utf8').match(/^version\s*=\s*"([^"]+)"/m);
 if (!versionMatch) throw new Error(`astro.config: no version in ${manifestPath}`);
 const QUAD_VERSION = versionMatch[1];
+// [2026-09-14] 변경 이력 사이드바 항목용 — 루트 CHANGELOG.md의 `## [x.y.z]` 헤딩(새 것이 위). bump가 절을 만들면 자동으로 따라온다.
+const changelogPath = fileURLToPath(new URL('../../CHANGELOG.md', import.meta.url));
+const CHANGELOG_VERSIONS = [...readFileSync(changelogPath, 'utf8').matchAll(/^## \[(\d+\.\d+\.\d+)\]/gm)].map((m) => m[1]);
+if (CHANGELOG_VERSIONS.length === 0) throw new Error(`astro.config: no version headings in ${changelogPath}`);
 
 // https://astro.build/config
 export default defineConfig({
@@ -134,12 +138,14 @@ export default defineConfig({
 							items: [
 								// [2026-09-14 사용자] 전체 버전이 맨 위 — 버전이 쌓여도 아래로 묻히지 않게. 전문 미러(/changelog/) 링크는
 								// 뺐다(전체 버전 페이지가 같은 내용을 다 보여 준다; 페이지 자체는 VersionLine의 #unreleased 딥링크용으로 남긴다).
-								// [2026-09-14 사용자] '최신 버전'과 recent 목록의 첫 항목이 같은 URL이라 둘이 같이 선택돼 보였다 → 최신 항목 하나만
-								// `<버전> (최신)` 라벨로 두고 recent는 뺀다(옛 버전은 전체 버전 페이지에서). 버전은 QUAD_VERSION(pesde.toml)에서.
-								...makeChangelogsSidebarLinks([
-									{ type: 'all', base: 'changelog-versions', label: '전체 버전' },
-									{ type: 'latest', base: 'changelog-versions', label: `${QUAD_VERSION} (최신)` },
-								]),
+								// [2026-09-14 사용자] 플러그인의 latest+recent는 첫 항목이 같은 URL이라 둘이 같이 선택돼 보였고, latest만 두면 옛 버전이
+								// 사이드바에서 사라진다 → CHANGELOG.md의 `## [x.y.z]` 헤딩을 설정 시점에 읽어 항목을 직접 만든다: 맨 위 '전체 버전',
+								// 그 다음 `<최신> (최신)`, 이어서 옛 버전들. 슬러그는 플러그인 규칙(점→하이픈)과 같다. 대괄호 없는 절(2.x)은 전체 버전에서.
+								...makeChangelogsSidebarLinks([{ type: 'all', base: 'changelog-versions', label: '전체 버전' }]),
+								...CHANGELOG_VERSIONS.map((v, i) => ({
+									label: i === 0 ? `${v} (최신)` : v,
+									link: `/changelog-versions/version/${v.replaceAll('.', '-')}/`,
+								})),
 							],
 						},
 					],
