@@ -117,7 +117,7 @@ Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야*
 | 플래그 | 값 | 없으면 |
 |---|---|---|
 | `LuauSolverV2` | `true` | quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here` |
-| `LuauTarjanChildLimit` | `160000` | `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다. 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다 |
+| `LuauTarjanChildLimit` | `160000` | `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(편집기에서는 에러 없이 타입이 `*error-type*`으로 무너집니다). 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다 |
 | `LuauSubtypingIterationLimit` | `100000` | 컴포넌트가 커질 때 같은 이유로 필요해집니다 |
 | `LuauTypeInferIterationLimit` | `1000000` | 〃 |
 
@@ -187,13 +187,13 @@ luau-lsp analyze \
 
 <Quiz title={"타입 검사 플래그"}>
 
-`D.Frame { Name = "x" }` 한 줄만 있어도 `Internal error: Code is too complex to typecheck!`로 죽는다면 무엇이 빠진 것인가요?
+`D.Frame { Name = "x" }` 한 줄을 적었더니, CLI 검사는 `Code is too complex to typecheck!`로 죽고 VS Code에서는 에러 없이 자동완성이 안 나오며 타입이 `*error-type*`으로 보입니다. 무엇이 빠진 것인가요?
 
-- [ ] `LuauSolverV2=true` — 이 값이 없을 때 나는 에러입니다
-- [x] `LuauTarjanChildLimit` — 생성된 `D`의 프로퍼티 유니언이 커서 이 한도를 올려야 합니다
-- [ ] `LuauSubtypingIterationLimit` — 프로퍼티를 한 줄만 적어도 이 한도부터 걸립니다
+- [ ] `LuauSolverV2=true` — 새 솔버가 꺼져 있을 때 나는 증상입니다
+- [x] `LuauTarjanChildLimit` 같은 한도 플래그 — 생성된 `D`의 프로퍼티 유니언이 커서 한도를 올려야 합니다
+- [ ] 아무것도 빠지지 않았습니다 — VS Code 확장이 한도를 넉넉히 잡아 두므로 편집기 쪽은 CLI의 에러와 무관합니다
 
-생성된 `D`의 프로퍼티 유니언이 크기 때문에, `LuauTarjanChildLimit`을 올리지 않으면 한 줄짜리 선언에서도 이 에러가 납니다. `LuauSolverV2=true`가 빠졌을 때 나는 것은 `read keyword is illegal here`이고, 나머지 둘은 컴포넌트가 커질 때 같은 이유로 필요해집니다.
+생성된 `D`의 프로퍼티 유니언이 크기 때문에, 한도를 올리지 않으면 한 줄짜리 선언에서도 검사가 무너집니다. CLI는 그걸 에러로 알려 주지만 편집기는 조용히 타입을 잃는 쪽으로 드러날 뿐 원인은 같고, VS Code 확장도 한도를 따로 넓혀 두지 않으니 `luau-lsp.fflags.override`에 넣어야 합니다. `LuauSolverV2=true`가 빠졌을 때 나는 것은 `read keyword is illegal here`입니다.
 
 </Quiz>
 
