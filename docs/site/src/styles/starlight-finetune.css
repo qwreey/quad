@@ -102,7 +102,7 @@ header, mobile-starlight-toc>nav, sl-sidebar-pane[popover]:popover-open {
             background-color: color-mix(in srgb, #ffffff 90%, transparent);
         }
     }
-    backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px); /* Safari support */
+    backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--sl-color-gray-5);
 }
