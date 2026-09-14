@@ -16,6 +16,14 @@ export const collections = {
 				base: 'changelog-versions',
 				changelog: '../../CHANGELOG.md',
 				title: 'Changelog (변경 이력)',
+				// [2026-09-14 사용자] "최신 버전"이 [Unreleased]를 가리켰다 — 플러그인의 ignoredVersions: ['Unreleased']는 대괄호가
+				// 남은 제목 "[Unreleased]"과 안 맞는다. process가 falsy를 돌려주면 그 절은 버려지고, 아니면 돌려준 문자열이 제목이
+				// 된다(날짜는 원제목에서 따로 뽑는다). 게시 안 된 항목은 전문 페이지 /changelog/#unreleased 로만 보인다.
+				process: ({ title }) => {
+					const m = /^\[([^\]]+)\](?: - .*)?$/.exec(title);
+					const version = m ? m[1] : title;
+					return version === 'Unreleased' ? undefined : version;
+				},
 			},
 		]),
 	}),
