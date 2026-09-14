@@ -134,9 +134,9 @@
    "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
    `.claude/base/README.md` 표(`fallback-plan.md`/
    `lifecycle-hooks-plan.md`)와 `.claude/research/README.md` 표
-   (`debug-tooling-plan.md`/`archive/surveys/2026-08-06-documentation-plan.md`/
-   `archive/surveys/2026-08-06-documentation-content-map.md`/`archive/surveys/2026-08-06-framework-comparison-findings.md`/
-   `operator-sugar-plan.md`).
+   (`debug-tooling-plan.md`/`operator-sugar-plan.md`). 문서 사이트 구조·콘텐츠 맵·프레임워크 비교 조사는
+   **[2026-09-14]** 끝나 `archive/surveys/`로 옮겨졌다(`2026-08-06-documentation-plan.md`/
+   `2026-08-06-documentation-content-map.md`/`2026-08-06-framework-comparison-findings.md`).
    **[2026-08-14 추가, 2026-08-19 설계 전부 해소 후 `base/`로 승격]** 시간
    기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)도
    백로그이지만 위 항목들과는 발단이 다름 — **사용자가 직접 요청한 실제
