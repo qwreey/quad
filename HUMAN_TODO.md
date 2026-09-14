@@ -70,7 +70,14 @@
 - **클래스별 `Modifier`/`OnChange` 타입의 공개 경로** — 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/Declaration` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/Declaration` 아래에만 있다(루트가 재수출하는 건 `Declaration`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.Declaration.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
 - **레퍼런스·how-to 예제의 `local` vs GS의 `const`** — 프롤로그는 통일했지만(01장 설정 모듈) 본문 `local`은 그대로 뒀다. 예제 전부를 `const`로 바꿀지(툴체인 하한과 같이).
 
+#### F. [2026-09-14 신설] BREAKING 허용 주간 — 끝나는 시점을 알려 줄 것
+
+- 지금은 실사용자가 없어 **BREAKING을 마이너에 실어도 되는 기간**(사용자: *"블래스트 범위가 존재하지 않아서 4.0 으로 갈 이유가 없어. 지금은 breaking changes 가 허용되는 주간이야"*). 3.2.0이 그 첫 예(`q.D` → `q.Declaration`). **그 기간이 끝나면(실제 사용자가 생기는지 실측 뒤) 사용자가 알려 준다** — 그때부터는 BREAKING = 메이저, `research/public-surface-pre-adoption-review.md`의 열린 문항(2~16)은 그 전에 닫아야 싸다.
+- 실측 대상: pesde 다운로드/의존 패키지, 사내 도입 화면 수. 내용은 사용자만 안다.
+
 #### E. 밖에서 할 것
+
+- **[2026-09-14] 3.2.0 게시** — bump 완료(`check-version.py bump 3.2.0`; CHANGELOG `[3.2.0] - 2026-09-14`에 `q.D → q.Declaration` BREAKING 둘; pesde install·test.sh exit 0·publish dry-run 9건 OK; 태그 `3.2.0`은 에이전트가 origin에 올림). 남은 것: `python3 scripts/publish.py --real`(사용자만) → 사이트 배포 → `git push github --tags`·`git push upstream --tags`. 게시 전까지 설치 문서의 "레지스트리에 3.2.0 게시됨"은 선행 서술이다.
 
 - **[2026-09-11] 3.1.0 게시** — `python3 scripts/publish.py --real`(사용자만; dry-run 9건은 에이전트가 통과시킴). **[같은 날 밤 게시 완료, 리모트 싱크 완료 — 사용자]** 태그 `3.0.0`(7a080e0)·`3.1.0`(01818b5)은 에이전트가 만들어 origin에 올렸다. **남은 것: 태그는 브랜치 싱크에 안 따라가므로 github/upstream에 `git push github --tags`·`git push upstream --tags`를 사용자가 한 번.**
 - 사이트 재배포: 게시 뒤 dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 2026-09-11 커밋 스무여 개가 배포 전이다 — 헤더 배지가 3.1.0으로 바뀌므로 게시 **뒤에** 배포할 것.

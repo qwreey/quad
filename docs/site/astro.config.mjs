@@ -134,10 +134,11 @@ export default defineConfig({
 							items: [
 								// [2026-09-14 사용자] 전체 버전이 맨 위 — 버전이 쌓여도 아래로 묻히지 않게. 전문 미러(/changelog/) 링크는
 								// 뺐다(전체 버전 페이지가 같은 내용을 다 보여 준다; 페이지 자체는 VersionLine의 #unreleased 딥링크용으로 남긴다).
+								// [2026-09-14 사용자] '최신 버전'과 recent 목록의 첫 항목이 같은 URL이라 둘이 같이 선택돼 보였다 → 최신 항목 하나만
+								// `<버전> (최신)` 라벨로 두고 recent는 뺀다(옛 버전은 전체 버전 페이지에서). 버전은 QUAD_VERSION(pesde.toml)에서.
 								...makeChangelogsSidebarLinks([
 									{ type: 'all', base: 'changelog-versions', label: '전체 버전' },
-									{ type: 'latest', base: 'changelog-versions', label: '최신 버전' },
-									{ type: 'recent', base: 'changelog-versions', count: 5 },
+									{ type: 'latest', base: 'changelog-versions', label: `${QUAD_VERSION} (최신)` },
 								]),
 							],
 						},

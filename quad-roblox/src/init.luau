@@ -28,7 +28,7 @@ local Types = require("@self/types")
 local DeclarationModule = require("@self/Declaration")
 
 -- 독립 게시 백엔드는 여기만 느슨한 패턴("0.*.*"류)으로 바꾸면 된다
-local VERSION_PATTERN = "3.1.0"
+local VERSION_PATTERN = "3.2.0"
 
 -- 공개 타입 재익스포트(ROADMAP M5 배너 — 몰아두는 단일 파일은 types.luau).
 -- `Declaration`/`DeclarationMapper`/`<Class>Param<E>` 전량은 생성 파일(src/Declaration)이 소스라 여기선
