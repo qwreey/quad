@@ -1,7 +1,7 @@
 /* 사용자 지정 테마(다크) */
 :root {
 	--sl-color-accent-low: #440d0d;
-	--sl-color-accent: #c7001e;
+	--sl-color-accent: #ff6a80;
 	--sl-color-accent-high: #fab4ad;
 	--sl-color-white: #ffffff;
 	--sl-color-gray-1: #f4ebea;
@@ -16,7 +16,7 @@
 /* 사용자 지정 테마(라이트) */
 :root[data-theme='light'] {
 	--sl-color-accent-low: #fec8c2;
-	--sl-color-accent: #d90042;
+	--sl-color-accent: #ff556e;
 	--sl-color-accent-high: #63040c;
 	--sl-color-white: #1d1615;
 	--sl-color-gray-1: #322221;
@@ -27,4 +27,12 @@
 	--sl-color-gray-6: #f4ebea;
 	--sl-color-gray-7: #f9f5f4;
 	--sl-color-black: #ffffff;
+}
+
+/* 백드롭 배경을 더 진하게 주어, 배경을 덜 보이게 하여 배경 어텐션을 떨어트림. 시인성 개선 */
+:root, ::backdrop {
+	--sl-color-backdrop-overlay: rgba(18, 8, 8, 0.8);
+}
+:root[data-theme='light'], [data-theme='light'] ::backdrop {
+	--sl-color-backdrop-overlay: rgba(136, 119, 119, 0.8);
 }

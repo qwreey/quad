@@ -1,8 +1,44 @@
-/* 선택 안 된 탑래밸 바로 아래 li 들이 너무 두꺼워보이는 문제를 해결 */
-/* 비 탑래밸 요소와 접힘 타겟 요소는 안정적이므로 추가적으로 해결할 것이 없다 */
-sl-sidebar-state-persist >ul >li {
-    &:not(:has([aria-current="page"])) {
-        a { font-weight: 400; }
+/* 
+    Font size reference:
+    --sl-text-2xs: 0.75rem;
+    --sl-text-xs: 0.8125rem;
+    --sl-text-sm: 0.875rem;
+    --sl-text-base: 1rem;
+    --sl-text-lg: 1.125rem;
+    --sl-text-xl: 1.25rem;
+    --sl-text-2xl: 1.5rem;
+    --sl-text-3xl: 1.8125rem;
+    --sl-text-4xl: 2.1875rem;
+    --sl-text-5xl: 2.625rem;
+    --sl-text-6xl: 4rem;
+ */
+
+sl-sidebar-state-persist {
+    /* 탑래밸 바로 아래 li>a 들이 너무 두꺼워보이는 문제를 해결 */
+    >ul >li a {
+        font-weight: 400;
+        font-size: var(--sl-text-xs);
+        &:is([aria-current="page"]) {
+            font-weight: 500;
+        }
+    }
+
+    /* 접고 펼치는 영역이 두꺼워 보이는 문제를 해결 */
+    >ul >li details {
+        /* 타이틀 영역 */
+        >summary>.group-label>span {
+            font-weight: 400;
+            font-size: var(--sl-text-sm);
+        }
+        /* 내부 영역 위쪽 margin */
+        >ul {
+            margin-top: 0.4rem;
+        }
+    }
+
+    /* 모바일 레이아웃의 펼처진 사이드바는 테마/언어를 바닥에 놓이도록 하여 본문과 분리되도록. */
+    .top-level {
+        flex-grow: 1;
     }
 }
 
@@ -17,6 +53,23 @@ header>.header {
     .site-title >img {
         height: calc(var(--sl-nav-height) * .9 - 2 * var(--sl-nav-pad-y));
     }
+
+    /* 시인성을 위해 검색 바 배경 색상을 조절. 밝은/어두운 테마 모두 pass */
+    site-search>button {
+        @media (width >= 50rem) {
+            background-color: color-mix(in srgb, color-mix(in srgb, var(--sl-color-black) 40%, transparent) 95%, black);
+        }
+    }
+    
+    /* 해더의 왼쪽 부분이 쓸모 없이 많은 영역을 차지함을 개선. 필요한 공간만 사용하도록 둠. */
+    grid-template-columns:
+        /* 1 (site title): runs up until the main content column’s left edge or the width of the title, whichever is the largest */
+        /* minmax(calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))), auto) */
+        auto
+        /* 2 (search box): all free space that is available. */
+        1fr
+        /* 3 (right items): use the space that these need. */
+        auto;
 }
 
 /* 푸터 영역에 대한 손질 */
@@ -29,7 +82,7 @@ footer {
     }
 }
 
-/* 오른쪽 사이드바에 대한 파인튠 */
+/* 오른쪽 사이드바에(목차, 퀴즈) 대한 파인튠 */
 .right-sidebar > .right-sidebar-panel {
     h2 {
         /* 너무 굵어 시각적으로 분산을 일으킴. 작게 줄임 */
@@ -37,20 +90,19 @@ footer {
     }
 }
 
-/* 탑바에 약간 블러 추가 */
-header, mobile-starlight-toc>nav {
-  /* Make the background semi-transparent */
-  /* customCss는 Starlight의 @layer 밖이라 !important 없이도 이긴다 */
-  background-color: color-mix(in srgb, var(--sl-color-bg-nav) 85%, transparent);
-  
-  /* Apply the blur effect */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px); /* Safari support */
-
-  /* Optional: Make the bottom border subtle */
-  border-bottom: 1px solid var(--sl-color-gray-5);
-}
-
-site-search>button {
-    background-color: color-mix(in srgb, color-mix(in srgb, var(--sl-color-black) 40%, transparent) 95%, black);
+/* 탑바에 약간 블러 추가, 목차 nav 와 팝오버 사이드바도 포함 */
+header, mobile-starlight-toc>nav, sl-sidebar-pane[popover]:popover-open {
+    /* customCss는 Starlight의 @layer 밖이라 !important 없이도 이긴다 */
+    background-color: color-mix(in srgb, color-mix(in srgb, var(--sl-color-bg-nav) 85%, transparent) 95%, #491919);
+    &:is(:root[data-theme='light'] &) {
+        background-color: color-mix(in srgb, color-mix(in srgb, var(--sl-color-bg-nav) 35%, #ffffff) 90%, transparent);
+    }
+    &:is(mobile-starlight-toc>nav) {
+        &:is(:root[data-theme='light'] &) {
+            background-color: color-mix(in srgb, #ffffff 90%, transparent);
+        }
+    }
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px); /* Safari support */
+    border-bottom: 1px solid var(--sl-color-gray-5);
 }

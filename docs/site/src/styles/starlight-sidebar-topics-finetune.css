@@ -2,6 +2,9 @@
 .starlight-sidebar-topics {
     /* 아웃라인을 두어 일반 섹션과 확실한 차이를 둠 */
     outline: 1px solid var(--sl-color-gray-5);
+    &:is(:root[data-theme='light'] &) {
+        outline: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 50%, transparent);
+    }
     outline-offset: 0.2rem;
     margin-bottom: 0.6rem;
 
@@ -16,10 +19,14 @@
     /* 내부 요소에 대한 패딩 제어, 눈으로 실측하고 적절한 값을 구해옴. 각 값은 항상 조절가능 값으로 */
     padding: 0.3rem 0.3rem 0.3rem 0.4rem;
 
-    /* 내부 요소에 대해여 선택 영역 처리 */
+    /* 내부 요소에 대해여 선택 영역 처리와 폰트 크기 처리 */
     li {
-        border-radius: 0.4rem;
+        a {
+            font-weight: 400;
+            font-size: var(--sl-text-xs);
+        }
         &:has(.starlight-sidebar-topics-current) {
+            border-radius: 0.4rem;
             a {
                 color: var(--sl-color-text-invert);
                 font-weight: 600;

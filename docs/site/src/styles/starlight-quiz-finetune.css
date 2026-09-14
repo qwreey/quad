@@ -1,4 +1,48 @@
 /* 퀴즈 영역과 콘텐츠 영역이 너무 가까움. 머진을 추가 */
 sl-quiz-results {
-    margin-top: 4rem;
+    margin-top: 2rem;
+	@media screen and (min-width: 768px) {
+        margin-top: 4rem;
+    }
+}
+
+sl-quiz-progress {
+    padding-bottom: 1.2rem; /* 퀴즈 영역과 목차 영역이 마진이 너무 광활해 공간이 낭비됨을 개선. 적절한 padding 적용 */
+    /* 답한 퀴즈가 없는 경우 초기화 버튼을 노출시키지 않음 */
+    &:has(.sl-quiz-progress-bar[aria-valuenow="0"]) .sl-quiz-progress-reset {
+        display: none
+    }
+
+    /* 모바일 뷰에서 어색한 위치에 있는 stats 를 오른쪽에 두어 해소 */
+    &.sl-quiz-progress--mobile > .sl-quiz-progress-footer > .sl-quiz-progress-stats {
+        text-align: right;
+    }
+
+    /* 모바일 뷰에서 리셋 버튼 크기를 맞춤형으로 두기 */
+    &.sl-quiz-progress--mobile > .sl-quiz-progress-reset {
+        flex: 0 0 fit-content;
+    }
+
+}
+
+/* 각 답변/피드백 요소들 끼리 너무 장황한 margin 을 해소 */
+.sl-quiz-answer {
+    margin-top: 0.2rem;
+}
+.sl-quiz-feedback {
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--slq-border);
+    &:is([hidden]) {
+        display: none;
+    }
+}
+.sl-quiz-content {
+    padding-top: 0.8rem;
+    margin-top: 0.1rem;
+}
+
+/* inline 요소가 가지는 line-height 로 인한 바닥 여백을 줄임 */
+sl-quiz {
+    padding-bottom: 0.5rem;
 }
