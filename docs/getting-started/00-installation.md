@@ -139,7 +139,7 @@ Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야*
   }
 }
 ```
-<!-- 2026-09-14: 확장 1.69.0의 editors/code/package.json·src/extension.ts로 설정 키와 적용 순서를 확인(sync → enableNewSolver → override). VS Code 실기기에서 이 파일로 에러가 사라지는 것은 아직 확인하지 않음 -->
+<!-- 2026-09-14: 확장 1.69.0의 editors/code/package.json·src/extension.ts로 설정 키와 적용 순서를 확인(sync → enableNewSolver → override). 같은 날 사용자 실측: code-server + 확장 1.69.0(linux-x64)에서 이 블록과 똑같은 설정으로(사용자 설정 파일에 넣음) D 선언 자동완성·새 솔버 적용·에러 없음 확인. 워크스페이스 .vscode/settings.json 경로 자체는 따로 돌려 보지 않음(같은 설정 키라 결과는 같아야 함) -->
 
 - **`enableNewSolver`가 첫 플래그(`LuauSolverV2`)를 켭니다.** 나머지 셋은 `override`에 넣습니다. `override`에 `"LuauSolverV2": "true"`를 같이 적어도 결과는 같습니다.
 - **`override`의 값은 문자열입니다** — `"160000"`처럼 따옴표로 감싸세요. 스키마가 문자열만 받습니다.
