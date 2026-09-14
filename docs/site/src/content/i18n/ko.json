@@ -1,1 +1,11 @@
-{}
+{
+	"starlightChangelogs.compare.label": "이후 버전 전부",
+	"starlightChangelogs.compare.title": "{{version}} 이후의 모든 버전",
+	"starlightChangelogs.pagination.next": "이전 버전들",
+	"starlightChangelogs.pagination.prev": "더 새로운 버전들",
+	"starlightChangelogs.version.date": "{{date, datetime(dateStyle: medium)}}",
+	"starlightChangelogs.version.find": "버전 찾기",
+	"starlightChangelogs.version.open": "{{provider}}에서 보기",
+	"starlightChangelogs.version.title": "버전 {{version}}",
+	"starlightChangelogs.versions.all": "전체 버전"
+}
