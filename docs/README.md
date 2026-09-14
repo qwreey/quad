@@ -93,7 +93,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [Vol. 1](./quadnomicon/01-revision-and-epochmap.md) 32-bit Wrapping Revision과 EpochMap — `bit32.bnot(-rev)` 랩어라운드 감소(성능이 이유), 2^32 랩은 도달 가능하지만 오판정 조건이 한 점.
 - [Vol. 2](./quadnomicon/02-slot-prefix-sum-tree.md) Slot-in-Slot 부분합 트리 — `rawSplice`의 부기 먼저·물리 한 번, Roblox `nativeMove`/`nativeSwap`는 의도된 no-op.
 - [Vol. 3](./quadnomicon/03-luau-memory-topology.md) Luau 메모리 토폴로지 — Ephemeron 없는 weak 테이블과 `Relate`, `bindLifetime` 앵커, "quad가 만든 Instance는 Destroy로만 회수된다".
-- [Vol. 4](./quadnomicon/04-covariant-markers.md) 공변 마커 — 입력 자리의 `StateMarker<T>`(11팔 → 4팔), 한도 플래그 넷의 계기.
+- [Vol. 4](./quadnomicon/04-covariant-markers.md) 공변 마커 — 입력 자리의 `StateMarker<T>`(슬롯 유니언이 최대 11팔에서 기본 세 팔, 보간 가능 타입은 네 팔로), 한도 플래그 넷의 계기.
 - [Vol. 5](./quadnomicon/05-non-destructive-portal-and-ownership.md) 비파괴 언마운트와 소유권 공리 — 비파괴는 `State<Slot>` 교체와 `Owned = false`에 한정, 기본 `Owned = true`는 파괴.
 - [Vol. 6](./quadnomicon/06-liveness-gate-and-isolation.md) 단일 인자 생존 게이트 — `canBound(v) == not canExecute(v)`, GC 앵커는 `nativeClaim`의 `ClassName` 커넥션.
 - [Vol. 7](./quadnomicon/07-instance-identity-and-gc-philosophy.md) 인스턴스 신원·네이티브 GC·`Claim` 계약.

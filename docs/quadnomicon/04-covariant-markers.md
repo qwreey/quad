@@ -100,7 +100,7 @@ export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 type PV2 = number | TweenData<number> | StateMarker<number | Tween<number>> | None -- number
 ```
 
-State 계열의 여러 팔이 **공변 마커 한 팔**로 접히면서, 슬롯 유니언은 `T | StateMarker<T> | None` 세 팔이 기본 모양이 됐습니다. TweenService가 보간할 수 있는 타입의 슬롯만 `TweenData<T>` 팔이 하나 더 붙어 `T | TweenData<T> | StateMarker<T | Tween<T>> | None`이 됩니다(생성 파일 기준 74개 슬롯 중 10개). 가장 심했던 슬롯(`number | UDim`을 받는 `UICorner` 자리)은 **11팔에서 다섯 팔**(`number | UDim | TweenData<…> | StateMarker<…> | None`)로 줄었습니다.
+State 계열의 여러 팔이 **공변 마커 한 팔**로 접히면서, 슬롯 유니언은 `T | StateMarker<T> | None` 세 팔이 기본 모양이 됐습니다. TweenService가 보간할 수 있는 타입의 슬롯만 `TweenData<T>` 팔이 하나 더 붙어 `T | TweenData<T> | StateMarker<T | Tween<T>> | None`이 됩니다(생성 파일 기준 76개 슬롯 중 10개). 가장 심했던 슬롯(`number | UDim`을 받는 `UICorner` 자리)은 **11팔에서 다섯 팔**(`number | UDim | TweenData<…> | StateMarker<…> | None`)로 줄었습니다.
 
 | 지표 | 마커 도입 전 | 마커 도입 후 |
 |---|---|---|
