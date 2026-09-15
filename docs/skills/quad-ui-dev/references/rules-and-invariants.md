@@ -1,7 +1,7 @@
 # Quad Rules & Invariants (Diagnostic Cheat Sheet)
 
 Runtime error text → cause → fix, plus the typing rules that bite in `--!strict`.
-Message substrings below are copied from the source; match on them, do not paraphrase.
+Message substrings below are copied from the source; match on them when diagnosing, do not paraphrase. They are diagnostics, not API — never branch on message text in user code (wording may change without notice).
 
 ---
 

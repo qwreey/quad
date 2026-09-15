@@ -72,6 +72,8 @@ blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 
 "유보된 게 있는가"를 알려주는 필드는 없습니다. 그 정보는 게이트의 `emit(commit)` 반환값이 유일한 통로입니다([03-state](../core/03-state.md#stategatesetup)).
 
+**strict 캐비엇 — 필드 비교는 메소드 호출을 건너 좁혀진 채 남습니다.** 한 함수 안에서 `blocker.Blocking == false`를 비교한 뒤 `blocker:On()`을 부르고 다시 `blocker.Blocking == true`를 비교하면, 타입 검사기는 앞 비교로 좁힌 값(`false`)을 그대로 들고 있어 두 번째 비교를 모순으로 봅니다(`Cannot compare unrelated types`) — 메소드가 필드를 바꾼다는 걸 검사기가 모르기 때문이고, 런타임 값은 정상입니다. 같은 함수에서 다시 읽어야 하면 함수를 거쳐 읽으세요(`local function blocking(b) return b.Blocking end`). [`observer.Subscribed`](../core/05-observer-effect.md#observersubscribed)도 같습니다.
+
 ---
 
 ## `blocker:On()`

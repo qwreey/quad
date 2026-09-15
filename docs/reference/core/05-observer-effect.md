@@ -138,6 +138,8 @@ print(#log) --> 3
 
 `EffectHandle`도 같은 이름의 플래그를 같은 뜻으로 갖습니다.
 
+**strict 캐비엇** — 한 함수 안에서 `.Subscribed`를 비교한 뒤 `:Subscribe()`/`:Unsubscribe()`를 부르고 같은 필드를 다시 비교하면, 타입 검사기가 앞 비교로 좁힌 값을 그대로 들고 있어 두 번째 비교를 모순으로 봅니다(런타임 값은 정상). 다시 읽어야 하면 함수를 거쳐 읽으세요 — `local function subscribed(h) return h.Subscribed end`.
+
 ---
 
 ## `observer:Subscribe()`
