@@ -19,7 +19,8 @@ import os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FILES = ['quad-types/src/init.luau', 'quad-roblox/src/types.luau', 'quad-roblox/src/Declaration/init.luau']
 INPUT_RECORD = re.compile(r'^export type ([A-Za-z_]+(?:Options|Opts|Info))(?:<[^>]*>)? = \{', re.M)
-TOKEN = re.compile(r'(?<![A-Za-z0-9_.])(State|Source)<')
+# [2026-09-15 code-review] quad-roblox writes the qualified form `QuadTypes.State<…>` — without the optional prefix that file had zero tokens
+TOKEN = re.compile(r'(?<![A-Za-z0-9_.])(?:QuadTypes\.)?(State|Source)<')
 
 
 def blank(text):
@@ -75,7 +76,8 @@ def main():
     files = sys.argv[1:] or FILES
     for f in files:
         if not os.path.exists(f if os.path.isabs(f) else os.path.join(ROOT, f)):
-            continue
+            # [2026-09-15 code-review] a gate must not go quiet when a target moves — fail loudly
+            sys.exit(f'type-surface-check: target file not found: {f} (update FILES if it moved)')
         for ln, line in check(f):
             total += 1
             print(f'{f}:{ln}: full State/Source in an input position — use StateMarker<T> (or mark `type-surface: allow` with a reason)\n    {line[:160]}')
