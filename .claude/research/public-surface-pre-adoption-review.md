@@ -16,7 +16,7 @@
 
 1. (1) **[닫힘 2026-09-14 — `Declaration`으로, (a) 채택]** `D` → 풀 이름으로 바꿀지, 바꾸면 `Declaration` / `Declare` / 다른 낱말 중 무엇으로.
 2. (2) `quad-roblox`의 `VERSION_PATTERN`을 `"3.*.*"`로 풀지. **[닫힘 2026-09-15 — `"3.2^.0^"`(메이저 고정 하한, bump가 하한을 올림) + `N^` 사전식 하한]**
-3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지.
+3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지. **[닫힘 2026-09-15 — 뺌, 번호는 이어서 4.0.0부터·옛 3.x yank]**
 4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지. **[닫힘 2026-09-15 — `State<number>`로 업캐스트, BREAKING(타입)]**
 5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외). **[닫힘 2026-09-15 — 붙임, BREAKING(타입)]**
 6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나.
@@ -83,6 +83,8 @@
 ---
 
 ## (3) 범용 패키지 둘(`quad_error`·`type_version_check`)이 quad의 버전 번호를 짊어지고 있다
+
+**[결정 2026-09-15 — (나) lockstep에서 빼고 번호는 이어서]** 메인 보강: 레지스트리에 3.0.0~3.2.0이 이미 있어 1.0.0 새 출발은 번호 역전이라, 갈래를 (가) 영원히 lockstep / (나) 빼고 이어서(문법 좁힘이 자기 SemVer로 4.0.0) / (다) 1.0.0 + 3.x yank로 다시 올림. 사용자: *"나는 (나) 가 맞다고 봐. 확실히 처리된 이후 4.0.0 으로 내고, 3.x.x 는 전부 yank 해줄게. 이로써 quad 와 그 둘은 분리되어 버전이 올라. 이전 버전을 다시 어라운드 해서 1.0.0 으로 가는건 비동의."* 메인 해석: 둘 다 4.0.0(3.x 전부 yank면 `quad_error`도 새 번호가 있어야 설치된다). 반영: `check-version.py`(lockstep 넷 매니페스트만 + `bump-package`), `publish.py --with`(새 번호일 때만 게시, 쌍둥이에 CHANGELOG), 두 폴더 `CHANGELOG.md` 신설(문법 BREAKING 항목을 루트에서 이동), 매니페스트 includes, 두 README, 설치 문서 00, 루트 CHANGELOG 한 줄, conventions 버전 정책, HUMAN_TODO 20(게시 순서)·9. 저장소 분리(HUMAN_TODO 9)는 별개로 여전히 사용자 몫.
 
 **무엇** — `quad-error/pesde.toml`과 `type-version-check/pesde.toml`이 둘 다 `version = "3.1.0"`이고, 설명문에는 스스로 *"engine-agnostic, **not quad-specific**"*이라고 적혀 있습니다. `type-version-check/src/init.luau` 헤더는 한 발 더 나가 *"사용자가 나중에 독립 저장소로 직접 분리할 예정(`HUMAN_TODO.md` 참고) — 그래서 이 파일 안에 `Quad`류 quad 전용 이름/타입을 절대 안 섞는다"*고 선언합니다.
 

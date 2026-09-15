@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """버전 리터럴 정합성 검사 + 릴리즈 bump (2026-09-10).
 
-quad는 워크스페이스 멤버 다섯을 같은 버전으로 게시한다(lockstep). 버전 문자열은 매니페스트 여섯과 소스·테스트 몇 곳에
+quad는 워크스페이스 멤버 셋(quad_base·quad_roblox·quad_types)을 같은 버전으로 게시한다(lockstep). 범용 패키지 둘
+(quad_error·type_version_check)은 [2026-09-15 사용자 결정 — 공개 표면 (3) (나)] lockstep에서 빠져 자기 SemVer를 따로 올린다
+(번호는 이어서 — 첫 독립 릴리즈가 4.0.0, 옛 3.x는 yank). 그 둘은 `bump-package`로 매니페스트와 자기 CHANGELOG.md만 올린다.
+lockstep 버전 문자열은 매니페스트 넷과 소스·테스트 몇 곳에
 따로 박혀 있는데, 소스끼리는 타입 캐스트와 스펙으로 묶여 있지만 매니페스트는 아무 게이트도 보지 않았다 — 이 스크립트가 그 구멍을 막는다.
 
   python3 scripts/check-version.py            # 전 자리가 quad-base/pesde.toml의 version과 같은지, VERSION_PATTERN이 그 버전을 받는지 (exit 1이면 불일치)
+  python3 scripts/check-version.py bump-package type-version-check 4.0.0  # 독립 패키지 하나: 매니페스트 + <폴더>/CHANGELOG.md의 [Unreleased] 절단
   python3 scripts/check-version.py bump 3.0.0 # 전 자리를 새 버전으로 바꾸고 CHANGELOG의 [Unreleased]를 잘라 버전 헤딩으로. VERSION_PATTERN은 새 버전을 하한으로 한 `M.m^.p^`(2026-09-15 — 메이저 고정 사전식 하한, 프리릴리즈 bump면 그 빌드 정확히 `M.m.p-rc.N`).
                                               # docs/ 안의 옛 버전 문자열은 바꾸지 않고 목록만 찍는다(verbatim 에러 문구가 섞여 있어 손으로 볼 것).
 """
 import datetime, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MANIFESTS = ['pesde.toml', 'quad-base/pesde.toml', 'quad-roblox/pesde.toml', 'quad-types/pesde.toml', 'quad-error/pesde.toml',
-             'type-version-check/pesde.toml']
+MANIFESTS = ['pesde.toml', 'quad-base/pesde.toml', 'quad-roblox/pesde.toml', 'quad-types/pesde.toml']
+# [2026-09-15] versioned on their own (not lockstep) — bump with `bump-package`
+INDEPENDENT = ['quad-error', 'type-version-check']
 # (파일, 정규식 — 그룹 1이 버전) : 소스·테스트 리터럴
 SITES = [
     ('quad-base/src/init.luau', r'(?m)^(\s*Version = ")([^"]+)(",)'),
@@ -115,9 +120,42 @@ def check():
         sys.exit(1)
 
 
-def bump(new):
+def check_semver(new):
     if not re.match(r'^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$', new):
         sys.exit(f'not a SemVer version: {new}')
+
+
+def cut_changelog(path, new):
+    cl = read(path)
+    head = f'## [{new}] - {datetime.date.today().isoformat()}'
+    # [2026-09-13 사용자] [Unreleased] 아래에는 고정 안내문 한 줄과 `---`가 있다(비어 있을 때 다음 버전 헤딩이 붙어 보이던 것을 가른다).
+    # 안내문·hr은 남기고 그 사이의 항목만 새 버전 헤딩 아래로 옮긴다. 안내문/hr이 없으면 옛 방식(헤딩 바로 뒤에 삽입).
+    m = re.search(r'## \[Unreleased\]\n\n(_[^\n]*_)\n\n(.*?)---\n', cl, re.S)
+    if m:
+        entries = m.group(2).strip('\n')
+        body = (entries + '\n\n') if entries else ''
+        cl = cl[:m.start()] + f'## [Unreleased]\n\n{m.group(1)}\n\n---\n\n{head}\n\n{body}' + cl[m.end():].lstrip('\n')
+        write(path, cl)
+    elif '## [Unreleased]' in cl:
+        cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n{head}', 1)
+        write(path, cl)
+    return head
+
+
+def bump_package(member, new):
+    if member not in INDEPENDENT:
+        sys.exit(f'not an independently versioned package: {member} (choose from {", ".join(INDEPENDENT)})')
+    check_semver(new)
+    manifest = f'{member}/pesde.toml'
+    old = manifest_version(read(manifest))
+    write(manifest, re.sub(r'(?m)^version = "[^"]+"$', f'version = "{new}"', read(manifest), count=1))
+    head = cut_changelog(f'{member}/CHANGELOG.md', new)
+    print(f'bumped {member} {old} -> {new}; {member}/CHANGELOG.md [Unreleased] cut to {head}')
+    print('publish it before (or together with) the quad release that needs it: python3 scripts/publish.py --with ' + member)
+
+
+def bump(new):
+    check_semver(new)
     old = manifest_version(read('quad-base/pesde.toml'))
     for m in MANIFESTS:
         write(m, re.sub(r'(?m)^version = "[^"]+"$', f'version = "{new}"', read(m), count=1))
@@ -137,19 +175,9 @@ def bump(new):
         if n == 0:
             sys.exit(f'site not found: {f} {rx}')
         write(f, s)
-    cl = read('CHANGELOG.md')
-    head = f'## [{new}] - {datetime.date.today().isoformat()}'
+    head = cut_changelog('CHANGELOG.md', new)
     # [2026-09-13 사용자] [Unreleased] 아래에는 고정 안내문 한 줄과 `---`가 있다(비어 있을 때 다음 버전 헤딩이 붙어 보이던 것을 가른다).
     # 안내문·hr은 남기고 그 사이의 항목만 새 버전 헤딩 아래로 옮긴다. 안내문/hr이 없으면 옛 방식(헤딩 바로 뒤에 삽입).
-    m = re.search(r'## \[Unreleased\]\n\n(_[^\n]*_)\n\n(.*?)---\n', cl, re.S)
-    if m:
-        entries = m.group(2).strip('\n')
-        body = (entries + '\n\n') if entries else ''
-        cl = cl[:m.start()] + f'## [Unreleased]\n\n{m.group(1)}\n\n---\n\n{head}\n\n{body}' + cl[m.end():].lstrip('\n')
-        write('CHANGELOG.md', cl)
-    elif '## [Unreleased]' in cl:
-        cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n{head}', 1)
-        write('CHANGELOG.md', cl)
     print(f'bumped {old} -> {new}; CHANGELOG [Unreleased] cut to {head}')
     print(f'next (after commit): git tag -a {new} -m "quad {new}" && git push origin {new}   # tags do not follow branch sync — push them to github/upstream too (conventions 2026-09-11)')
     leftovers = []
@@ -169,7 +197,9 @@ def bump(new):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 3 and sys.argv[1] == 'bump':
+    if len(sys.argv) >= 4 and sys.argv[1] == 'bump-package':
+        bump_package(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) >= 3 and sys.argv[1] == 'bump':
         bump(sys.argv[2])
     else:
         check()
