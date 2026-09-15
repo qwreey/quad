@@ -335,7 +335,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 | `data` | `{ Item }` 또는 그걸 담은 State | 재조정의 원본. State면 값이 바뀔 때마다 다시 돕니다 |
 | `updateFn` | 함수 | 항목 하나를 어떻게 만들/유지/버릴지 결정합니다(아래 계약) |
 | `keyFn` | `((item, index) -> any)?` | 항목의 신원. 기본값은 **인덱스**입니다 |
-| `opts` | `{ OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다 |
+| `opts` | `{ read OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다 |
 
 **반환** — `self`(체이닝용).
 
@@ -439,7 +439,7 @@ Single: <Item, UD>(
 |---|---|---|
 | `state` | `Item?` 또는 그걸 담은 State | 이 Slot이 실을 **한 개**의 데이터 — `updateFn`이 원소로 바꿉니다 |
 | `updateFn` | 함수? | 생략하면 항등 — 값을 그대로 원소로 씁니다(그때 `Item`은 원소 타입) |
-| `opts` | `{ OwnsElements: boolean? }?` | `:List`와 같습니다 |
+| `opts` | `{ read OwnsElements: boolean? }?` | `:List`와 같습니다 |
 
 **반환** — `self`.
 
