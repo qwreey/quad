@@ -48,6 +48,12 @@ do
 	expectCross("Slot:List data", function()
 		A.Slot():List(B.Source({}), function(_ctx: any) return nil end)
 	end)
+	-- `:Single` gates at its own entry — the message names Single and the blame is this file (not List.luau)
+	local okS, errS = pcall(function()
+		A.Slot():Single(B.Source(1))
+	end)
+	assert(not okS and string.find(tostring(errS), "Slot:Single: this value was made by another quad module instance", 1, true) ~= nil, "Single names itself: " .. tostring(errS))
+	assert(string.find(tostring(errS), "spec.moduleidentity.luau", 1, true) ~= nil, "Single blames the user line: " .. tostring(errS))
 	print("PASS")
 end
 

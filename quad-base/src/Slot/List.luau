@@ -245,6 +245,11 @@ return function(S: Types.SlotInternal, module: any)
 		if updateFn ~= nil and type(updateFn) ~= "function" then
 			S.Err.errorBeforeNearest(`Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
 		end
+		if S.isState(state) then
+			-- [2026-09-15 code-review] cross-instance gate at the PUBLIC entry (`H-385` reasoning): inside `List`
+			-- it would name "Slot:List" and blame this file's delegation line, not the user's `:Single(...)`
+			ModuleIdentity.assertOwnAtCall(module, state, "Slot:Single")
+		end
 		local uf = updateFn or identityUpdateFn
 		-- `H-467` (Gemini 5차 G-16, 사용자 Q30 "의미론적으로 None == nil"): None is the
 		-- absent element too — `{ None }` used to reach updateFn as an item and never KeyGone
