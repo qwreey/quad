@@ -529,6 +529,8 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
 명시적 규칙으로 정리해달라고 요청 — 실제로 지금까지 나온 모든 이름이
 예외 없이 따르는 규칙이라 새로 뭘 바꿀 필요는 없고, 그냥 문서화만:
 
+**[2026-09-15 정정 — 사용자 결정, 공개 표면 (29)] 아래 "프리미티브 타입 자신의 어휘" 기준은 실제 표면을 다 설명하지 못한다** — 대문자인데 프리미티브가 아닌 사용자 함수(`Fallback`/`Traceback`, `OnCreated`/`OnRendered`/`OnDestroyed`, `Debounce`/`Throttle`, `Claim`)와, 앱 코드가 부르는데 소문자인 `dispose`가 있다. **실제 관행으로 다시 쓴 기준: 앱 코드가 값을 만들거나 감싸는 함수(생성자·팩토리·슈거)는 대문자, 판별 술어(`isX`)·생명주기 조작(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`/`dispose`)·백엔드 주입 계약(`native*`/`newMapperClass`/`setTimeout` 등)·엔진 네임스페이스 멤버는 소문자.** 이름은 바꾸지 않았다(비파괴). 사용자: *"dispose 는 누가 소유하는 함수도 아니고, 네임스페이스가 없을 뿐 setLengthSource 같은것 과도 유사함"*. **`Claim`의 분류는 열려 있다** — 사용자 *"claim 은 확실히 더 생각해보고싶네. 예외인 부분으로 두는게 뭔가 애매한 느낌"*(`research/public-surface-pre-adoption-review.md` (29) 결정 줄).
+
 - **대문자 시작(PascalCase)** — 다음 세 가지, 공통점은 전부 **어떤
   프리미티브 타입 자신의 공개 어휘**라는 것:
   1. 프리미티브 타입 생성자, `Type(args)` 스타일: `Source(default)`/

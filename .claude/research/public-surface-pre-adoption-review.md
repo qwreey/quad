@@ -346,6 +346,7 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 ## 찾았지만 문제 아님 (같은 걱정을 두 번 하지 않도록)
 
 - **`q`라는 한 글자** — 이건 사용자가 자기 파일에서 만드는 지역 이름이지 API가 아닙니다(`const q = require(...)`). 라이브러리가 강제하는 게 없습니다. 위 (1)에서 `D`가 문제인 이유는 **라이브러리가 `q.D`라는 필드 이름을 소유하기 때문**이고, `q`는 그렇지 않습니다.
+- **[2026-09-15 정정 — (29)] 아래 "실제 표면 전체가 이 규칙을 따릅니다"는 틀렸다** — 규칙 문장이 관행을 다 설명하지 못했고, 문장을 고쳤다(`base/architecture.md` 케이싱 절 배너).
 - **`isState`/`canBound` 등 소문자 vs `Source`/`Ref` 대문자** — `architecture.md:505-560`이 일관된 규칙을 명문화해 뒀습니다: *"이게 특정 프리미티브 타입 하나의 전용 소유물인가?"* — 그렇다면 대문자, 범용 유틸이거나 프리미티브가 아닌 엔진 소속이면 소문자. 실제 표면 전체가 이 규칙을 따릅니다. 재론 불필요합니다(유일한 예외가 위 (13)의 `Brand`).
 - **`q.Ref<<Frame?>>(nil)`의 명시 타입 인자** — 결정이 끝났고 근거도 여전히 유효합니다(`base/ref-plan.md:421-442`, `H-167`/`H-168`). 2파라미터 React식 설계는 Luau 솔버가 미해소 제네릭 변수를 남겨 기각됐고, `default: T?`로 넓히는 안은 `Ref(5).Value`까지 nil 검사를 강요해 기각됐습니다. 보일러플레이트로 보이지만 React `useRef<HTMLDivElement>(null)`과 같은 UX입니다.
 - **`Operator.Indexed<<V>>`·`OnCreated<<I>>`·`Single`의 명시 타입 인자** — 셋 다 **솔버 제약이지 설계 선택이 아닙니다**(`typing-limits.md` 8.15·8.16·8.19에 각각 실측 기록). 추론이 좋아지면 시그니처를 안 바꾸고 그냥 생략 가능해지는 종류라, 지금 손댈 것이 없습니다.
@@ -410,6 +411,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 **(27) `Blocker`에 같은 상태를 읽는 공개 경로가 둘이다** — 필드 `IsBlocked`와 메소드 `:IsOn()`(런타임은 `return self.IsBlocked` 한 줄), 레퍼런스도 둘을 따로 싣는다. 형제 `Observer`/`EffectHandle`은 필드 `Subscribed` 하나뿐이고, 두 이름이 다른 낱말("Blocked" 대 "On")이라 같은 것인지 한눈에 안 보인다. 갈래: 둘 다 유지하고 별칭 명시 / `IsOn` 제거 / `IsBlocked` 제거. 어느 쪽을 남길지는 사용자 몫.
 
 **(28) 생성 `Declaration` 모듈의 export 목록이 통째로 계약이 되려 한다** — 생성기가 도움 별칭까지 전부 `export type`으로 찍는다(클래스마다 `<Class>Elem`·`MapperElem`·`RefMarker`·`OnChange`·`Param`, `<Class>Modifier`·`Into<Class>`, 값 별칭 `Field`/`FieldV`/`FieldP`/`FieldPV`/`FieldOut`/`FieldOutP`). 스펙이 사용자처럼 쓰는 건 `Field<T>`·`FieldOut<T>`·`Into<Class>`·`<Class>Modifier`·`<Class>RefMarker`이고, 보간 불가 타입 커스텀 setter엔 이름에서 뜻이 안 보이는 `FieldP`가 필요하다. 클래스별 타입의 공개 경로는 `HUMAN_TODO.md` D에 이미 열려 있으니, **그 결정 때 export 목록도 같이 정할 것**이 새로 짚은 점 — 경로가 열리는 순간 지금 export 전체가 계약이 된다. 탐사자 권고 D와 한 문항으로 묶어 공개 목록을 고르고 나머지는 `export` 없이; `FieldP` 류 이름은 새 이름이라 문항.
+
+**[결정 2026-09-15 — (가) 규칙 문장만 관행에 맞게, 이름 무변경; `Claim` 분류는 열림]** 사용자: *"나도 권고를 따르고 싶음. dispose 는 누가 소유하는 함수도 아니고, 네임스페이스가 없을 뿐 setLengthSource 같은것 과도 유사함. 근데 claim 은 확실히 더 생각해보고싶네. 예외인 부분으로 두는게 뭔가 애매한 느낌"*. 반영: `base/architecture.md` 케이싱 절 머리 정정 배너(새 기준 한 줄), 아래 "찾았지만 문제 아님"의 케이싱 항목 정정. `Claim`(대문자 유지 / 소문자 생명주기 가족 / `Declaration` 네임스페이스로 이동)은 사용자 검토 중.
 
 **(29) 케이싱 규칙 문장과 실제 사용자 함수가 어긋난다** — 위 "찾았지만 문제 아님"은 "실제 표면 전체가 이 규칙을 따른다"고 적었는데 반례가 있다. 기준 문장("특정 프리미티브 타입 하나의 전용 소유물이면 대문자, 아니면 소문자")과 달리 프리미티브가 아닌 사용자 함수 `q.Claim`·`Fallback`·`Traceback`·`OnCreated`/`OnRendered`/`OnDestroyed`·`Debounce`/`Throttle`이 대문자이고, 레퍼런스 core/10이 사용자용으로 싣는 `q.dispose`와 `q.newMapperClass`는 소문자다 — 특히 `Claim`(넘겨받음)과 `dispose`(파괴)는 짝인데 갈린다. 실제 관행은 "앱 개발자가 부르면 대문자, 백엔드 계약·술어는 소문자"로 보인다. 갈래: 규칙 문장을 관행에 맞게 고치기(비파괴) / 관행대로 `dispose` → `Dispose`(BREAKING, 이번 창이 마지막). 사용자 문항, 확신 중.
 
