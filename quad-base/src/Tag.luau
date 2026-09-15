@@ -16,7 +16,7 @@
 	  tag:Added(names) -> Tag              -- clone + add name(s)
 	  tag:Removed(names) -> Tag
 	  tag:Contains(...names) -> boolean     -- all present (vararg; nil is an error)
-	  tag:Names() -> iterator<string>
+	  for name in tag do             -- generalized iteration (`__iter`, 2026-09-15; was tag:Names())
 	  tag:Apply(factory) -> U              -- factory(self) sugar (Modifier pattern)
 	  Tag.Merged(tag1, tag2, ...) -> Tag   -- lossless set union (Tags only — the
 	                                          strict spelling of Tag(tag1, tag2, ...))
@@ -160,12 +160,11 @@ function TagImpl.Contains(self: any, ...: string): boolean
 	return true
 end
 
-function TagImpl.Names(self: any): () -> string?
-	local name: string? = nil
-	return function(): string?
-		name = next(self._names, name)
-		return name
-	end
+-- [2026-09-15 user decision, public surface (26)] generalized iteration instead of a `:Names()` method —
+-- `for name in tag do`. Hands out the frozen set itself (no allocation); `pairs(tag)` bypasses `__iter`
+-- and walks the wrapper (Luau superseded `__pairs` with `__iter`) — documented caveat, not supported.
+function TagImpl.__iter(self: any)
+	return next, self._names
 end
 
 function TagImpl.Apply(self: any, factory: any): any
@@ -212,7 +211,7 @@ table.freeze(Tag)
 -- when nested in a callback) land on the user's line, not this file. Tagged
 -- once at file scope — the tag map lives in the shared namespace (`H-231`).
 -- (통합 감사 2라운드 발견 — fork 산출물엔 스텁만 태그돼 있었다.)
-Err.setFuncLevel(SURFACE, getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, TagImpl.Removed, TagImpl.Contains, TagImpl.Names, TagImpl.Apply)
+Err.setFuncLevel(SURFACE, getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, TagImpl.Removed, TagImpl.Contains, TagImpl.Apply)
 
 --[[
 	InitTag(module) — installs the value namespace, the op stubs (when no
@@ -258,7 +257,7 @@ local function Init(module: any)
 			dispatch.setEmpty(inst, k, inst) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			local added: { string } = {}
-			for name in v:Names() do
+			for name in v do
 				local holders = tagNameMap:GetStrong(inst, name)
 				if holders == nil then
 					holders = {}
@@ -279,7 +278,7 @@ local function Init(module: any)
 					return -- immutable: same object = same name set, pure skip
 				end
 				local removed: { string } = {}
-				for name in v:Names() do
+				for name in v do
 					if nextValue ~= nil and nextValue:Contains(name) then
 						-- survivor: KEEP the holder registration (2026-08-14
 						-- 리뷰 정정 — dropping it would make the following

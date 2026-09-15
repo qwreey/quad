@@ -310,14 +310,19 @@ export type Operator = {
 }
 
 -- ── Tag / Attr (M10, round16 spike) ─────────────────────────────
-export type Tag = {
+-- [2026-09-15 사용자 결정 — 공개 표면 (26)] 이름 목록은 `:Names()` 메소드가 아니라 일반화 반복(`__iter`)으로 —
+-- `for name, _ in tag do`. 이터레이터는 새 데이터를 만들지 않고, 컨테이너 순회는 `__iter`에 묶는 게 Luau 관례
+-- (사용자). 평범한 레코드 타입은 두 솔버 모두 `Cannot iterate over a table without indexer`라 메타테이블 타입으로 감싼다
+-- (콜러블 테이블과 같은 `setmetatable<A, B>` 표기, typing-limits 8.6). `pairs(tag)`는 `__iter`를 안 타고 내부 필드를
+-- 돈다 — Luau가 `__pairs`를 `__iter`로 대체했으므로 지원 대상이 아니다(레퍼런스 캐비엇).
+export type TagIter = (self: any) -> (({ [string]: true }, string?) -> (string?, true?), { [string]: true })
+export type Tag = setmetatable<{
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
 	Added: (self: Tag, names: TagNames) -> Tag,
 	Removed: (self: Tag, names: TagNames) -> Tag,
 	Contains: (self: Tag, ...string) -> boolean, -- all present; vararg (`H-468`)
-	Names: (self: Tag) -> () -> string?,
 	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
-}
+}, { __iter: TagIter }>
 -- `H10-3`/`H10-4` (d): 교집합(함수∩테이블 — 무거주라 값 캐스트 붕괴 +
 -- 제네릭 오염)이 아니라 솔버의 콜러블-테이블 표기로 선언한다. 실측
 -- A/B·잔여 구멍은 typing-limits 8.6절. `Merged`는 Tag만 받는 엄격형(`Tag(a, b)`와 결과 같음).

@@ -13,7 +13,7 @@ description: 숫자 키 값 객체 둘 — 태그 집합과 속성 그룹, AttrK
 백엔드를 설치하기 전에 `Tag`/`Attr`을 실제로 인스턴스에 적용하면 "아직 설치되지 않았다"는 안내 에러가 납니다. 값을 만들고 합성하는 것 자체는 백엔드 없이도 됩니다.
 :::
 
-이 페이지의 심볼: [`q.Tag`](#qtagnames) · [`tag:Added`](#tagaddednames) · [`tag:Removed`](#tagremovednames) · [`tag:Contains`](#tagcontainsnames) · [`tag:Names`](#tagnames) · [`tag:Apply`](#tagapplyfactory) · [`q.Tag.Merged`](#qtagmergedtags) · [`q.Attr`](#qattr) · [`attr:NameMap`](#attrnamemap) · [`q.Attr.Merged`](#qattrmerged) · [`q.Attr.Overridden`](#qattroverridden) · [`q.AttrKey`](#qattrkeyname) · [`q.StringAttr`](#qstringattrname-value) · [`q.NumberAttr`](#qnumberattrname-value) · [`q.BooleanAttr`](#qbooleanattrname-value)
+이 페이지의 심볼: [`q.Tag`](#qtagnames) · [`tag:Added`](#tagaddednames) · [`tag:Removed`](#tagremovednames) · [`tag:Contains`](#tagcontainsnames) · [`for name in tag`](#for-name-in-tag) · [`tag:Apply`](#tagapplyfactory) · [`q.Tag.Merged`](#qtagmergedtags) · [`q.Attr`](#qattr) · [`attr:NameMap`](#attrnamemap) · [`q.Attr.Merged`](#qattrmerged) · [`q.Attr.Overridden`](#qattroverridden) · [`q.AttrKey`](#qattrkeyname) · [`q.StringAttr`](#qstringattrname-value) · [`q.NumberAttr`](#qnumberattrname-value) · [`q.BooleanAttr`](#qbooleanattrname-value)
 
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
 
@@ -157,23 +157,24 @@ print(tag:Contains("card", "selected"))   -- true (전부 있어야 참)
 print(tag:Contains("card", "missing"))    -- false
 ```
 
-## `tag:Names()`
+## `for name in tag`
 
 **시그니처**
 
 ```luau
-Names: (self: Tag) -> () -> string?
+export type Tag = setmetatable<{ …메소드… }, { __iter: TagIter }>
 ```
 
-**반환** — 이름을 하나씩 돌려주고 끝나면 `nil`을 주는 **이터레이터 함수**.
+**동작** — 이름 목록은 메소드가 아니라 **Luau 일반화 반복**(`__iter`)으로 돕니다. 반복 변수는 `(이름, true)`이고, 새 테이블을 만들지 않습니다. 집합이라 **순서 보장이 없습니다.**
 
-**동작** — 집합이라 **순서 보장이 없습니다.** `for` 문의 제너릭 자리에 그대로 넣어 씁니다.
+- `pairs(tag)`/`next(tag)`는 `__iter`를 타지 않아 이름 대신 Tag의 내부 필드를 돕니다 — Luau는 `__pairs`를 `__iter`로 대체했습니다. 제너릭 `for`로 도세요.
+- 3.2.0까지의 `tag:Names()`는 없어졌습니다(`for name in tag:Names() do` → `for name in tag do`).
 
 **예제**
 
 ```luau
 local tag = q.Tag("a", "b")
-for name in tag:Names() do
+for name in tag do
     print(name) -- 순서는 보장되지 않는다
 end
 ```

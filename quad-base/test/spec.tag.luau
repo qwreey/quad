@@ -27,10 +27,13 @@ do
 	assert(m:Contains("selected") and m:Contains("primary") and m:Contains("hover"), "Merged = lossless union")
 	assert(q.isTag(q.Tag()), "empty Tag is valid")
 	local n = 0
-	for _ in a:Names() do
+	for name, present in a do -- 2026-09-15: `__iter` replaced `:Names()`
+		local s: string = name
+		assert(type(s) == "string" and present == true, "__iter yields (name, true)")
 		n += 1
 	end
-	assert(n == 2, "Names iterates exactly the held names")
+	assert(n == 2, "__iter walks exactly the held names")
+	assert((a :: any).Names == nil, "the :Names() method is gone")
 	assert(a:Apply(function(self: any)
 		return self:Contains("selected")
 	end) == true, "Apply sugar")

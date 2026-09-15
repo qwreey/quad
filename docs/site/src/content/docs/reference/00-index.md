@@ -135,7 +135,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `tag:Added(names)` | [core/09](/reference/core/09-tag-attr/) |
 | `tag:Removed(names)` | [core/09](/reference/core/09-tag-attr/) |
 | `tag:Contains(...names)` | [core/09](/reference/core/09-tag-attr/) |
-| `tag:Names()` | [core/09](/reference/core/09-tag-attr/) |
+| `for name in tag` | [core/09](/reference/core/09-tag-attr/) |
 | `tag:Apply(factory)` | [core/09](/reference/core/09-tag-attr/) |
 | `q.Tag.Merged(...tags)` | [core/09](/reference/core/09-tag-attr/) |
 | `q.Attr(...)` | [core/09](/reference/core/09-tag-attr/) |
