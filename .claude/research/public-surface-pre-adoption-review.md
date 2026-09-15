@@ -442,6 +442,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 **[메커니즘 조사 2026-09-15 — opus, Luau 소스]** 신 솔버 전용: 제약을 만들어진 순서대로 풀어, 앞선 확장이 본문의 아직 안 풀린 `State<U>`를 무한 확장으로 오판해 통째 에러 타입으로 묶고 진단은 스코프 경로 밖이라 사라진다(구 솔버는 문장을 의존성 순 재정렬해 순서 문제가 없음). **부수 정정: `luau-analyze` 0.734도 기본 신 솔버 — test.sh·conventions·typing-limits의 "구 솔버" 표기가 틀렸다**; 진짜 구 솔버(`--solver=old`)는 `read` 필드를 거부해 quad 타입을 못 읽는다. 상세 `typing-limits.md` 8.21. 사용자 문항 둘: 구 솔버 지원 표기, 업스트림 보고.
 
+**[결정 2026-09-15]** 사용자: *"구솔버는 요즘 버려, 켜는게 standard 라서 신 솔버 기준으로 가면 될것 같아. 전재를 신 솔버로 둬야할것 같아. 두 솔버 모두 충족하는 타입을 만들 방법이 없고, 구 솔버나 신 솔버 중 택하라 한다면, 한계점 상 구 솔버는 택하지 못하거든. - index/keyof 나 type function 도 신 솔버 없이 못 써. 다만 보고에 대한 초안이나 문제 정의를 작성해주면 내가 읽어볼게. 심각도 따라 보고할지 내가 결정할게. 그리고 무한 확장을 부분적 표면을 줄이는 marker 사용의 필요는 여전해, 타입 컴플랙시티 예산 절감이 필요하고(사용자는 이 라이브러리만 가지고 게임을 만들진 않을것임)"* → 전제는 신 솔버(typing-limits 머리), 보고 초안 `research/luau-upstream-order-leak-report.md`(보고 여부는 사용자), 입력 자리 마커 원칙 유지.
+
 **(32) 비파괴 — 옵션 테이블 셋과 `q.Slot` 첫 인자가 `read` 규칙을 안 따른다** — `typing-limits.md`가 적은 규칙(읽기만 하는 옵션 타입은 필드를 `read`로 — 탐사자 인용, 절 제목 아님)을 `TweenOptions`·`AnimateInfo`는 따르나 `DebounceOptions`·`ThrottleOptions`·`SlotListOpts`와 `q.Slot`의 `initial: { SlotElement<T> }?`는 안 따라, 옵션을 변수에 담아 넘기면 두 솔버가 거부한다(`local opts = { Owned = false }`를 `:List`에). `read`를 붙이면 받는 입력이 넓어질 뿐이라 **BREAKING 창과 무관** — 언제 해도 됨, 확신 높음. (19)의 "모르는 키 에러"와 같이 손대면 편하다.
 
 참고(판단 재료 약함): 무타입·생성자·클래스별 `Modifier.Overridden`이 전부 `any`를 돌려준다(기록된 솔버 제약). 나중에 `Modifier`로 좁히면 `local m: FrameModifier = …Overridden(a, b)`가 깨질 수 있어, 좁힐 계획이 있으면 이번 창에 재측정할 가치가 있다(미실측).
