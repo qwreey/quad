@@ -65,7 +65,7 @@ end
 -- irrelevant to the union semantics and the engine batch call takes a list
 local function newTag(names: { [string]: true }): any
 	local self = setmetatable({ _names = table.freeze(names) }, TagImpl)
-	TagBrand:register(self)
+	TagBrand:Register(self)
 	return table.freeze(self)
 end
 

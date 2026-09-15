@@ -37,6 +37,8 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
 
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_bookkeeping`·`_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
+
 ---
 
 ## 2. 물리 트리 조작 (`native*`)

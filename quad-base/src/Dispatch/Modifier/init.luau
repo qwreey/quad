@@ -127,7 +127,7 @@ local function newModifier(fields: { [any]: any }, tag: any): any
 	-- class (unit ④; the recursive per-class table types themselves blow the
 	-- solver — unit ③). A literal key, so it never reaches `__index`.
 	local mod = setmetatable({ [FieldsKey] = fields, __quadModifier = tag }, ModifierMT)
-	ModifierBrand:register(mod)
+	ModifierBrand:Register(mod)
 	return table.freeze(mod)
 end
 

@@ -172,10 +172,9 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   - **[2026-08-21 갱신] 표면이 바뀌어서 "OOP 인스턴스의 클래스명을 얻는
     느낌"이라는 원래 요구는 이제 안 맞는다** — 인스턴스 브랜드로 재작성되며
     역조회(`Brand.get`)가 없어졌고, 지금 하는 일은 **집합 멤버십**
-    (`SomeBrand:is(x)`)이다. 이름 후보도 그 방향으로 다시 볼 것.
-  - **메소드 케이싱도 같이 볼 것** — `:register`/`:is`가 소문자인데 quad
-    공개 표면 관례는 PascalCase다(`:Get`/`:Set`). base 내부 유틸이라 지금은
-    기존 `Brand.set`/`Brand.get` 관례를 이었지만, 이름을 정할 때 같이 정리.
+    (`SomeBrand:Is(x)`)이다. 이름 후보도 그 방향으로 다시 볼 것.
+  - **[해소 2026-09-15] 메소드 케이싱** — `:Register`/`:Is`로 올렸다(사용자 결정,
+    `research/public-surface-pre-adoption-review.md` (13)번). 남은 건 `Brand`라는 이름뿐.
 - **`Tag`/`Added`/`Removed`/`Merged`(3순위, 사소함, 2026-08-08 세 번째
   세션 array-part 값 객체 재설계 때 확정된 API 표면)**: `base/tag-plan.md`가
   "열린 질문 없음, 값 모양/메커니즘/retract/패키지 배치 전부 확정, 이름

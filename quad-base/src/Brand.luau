@@ -24,8 +24,10 @@
 	expressed once, in the predicate (`isState`/`isRef` below), never by
 	double registration.
 
-	Method names are lowercase (`:register`/`:is`) on purpose — this is a
-	base-internal utility, not a public quad surface (`brand-plan.md`).
+	Method names are PascalCase (`:Register`/`:Is`) — renamed from lowercase
+	on 2026-09-15 (user decision): once the factory moved to quad-types it became
+	a public surface for third-party backends, so the old "base-internal utility"
+	reason for lowercase no longer held (`brand-plan.md`).
 
 	`Brand` depends on nothing. In particular there is no `None` special
 	case here — `isNone` is `v == None` and lives with `None.luau` (M3).
@@ -65,49 +67,49 @@ local AttrKeyBrand = Brand()
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
-	return EpochBrand:is(x)
+	return EpochBrand:Is(x)
 end
 local function isSource(x: any): boolean
-	return SourceBrand:is(x)
+	return SourceBrand:Is(x)
 end
 local function isStore(x: any): boolean
-	return StoreBrand:is(x)
+	return StoreBrand:Is(x)
 end
 local function isObserver(x: any): boolean
-	return ObserverBrand:is(x)
+	return ObserverBrand:Is(x)
 end
 local function isEffect(x: any): boolean
-	return EffectBrand:is(x)
+	return EffectBrand:Is(x)
 end
 local function isContext(x: any): boolean
-	return ContextBrand:is(x)
+	return ContextBrand:Is(x)
 end
 local function isProvider(x: any): boolean
-	return ProviderBrand:is(x)
+	return ProviderBrand:Is(x)
 end
 local function isBlocker(x: any): boolean
-	return BlockerBrand:is(x)
+	return BlockerBrand:Is(x)
 end
 local function isModifier(x: any): boolean
-	return ModifierBrand:is(x)
+	return ModifierBrand:Is(x)
 end
 local function isMapperDescriptor(x: any): boolean
-	return MapperBrand:is(x)
+	return MapperBrand:Is(x)
 end
 local function isTag(x: any): boolean
-	return TagBrand:is(x)
+	return TagBrand:Is(x)
 end
 local function isAttr(x: any): boolean
-	return AttrBrand:is(x)
+	return AttrBrand:Is(x)
 end
 local function isAttrKey(x: any): boolean
-	return AttrKeyBrand:is(x)
+	return AttrKeyBrand:Is(x)
 end
 -- `H-403` (사용자 지시 2026-09-07): lived in 옛 `Slot.luau` (now `Slot/init.luau`) alone while every sibling
 -- predicate lives here — moved so the set has one home (`slot-plan.md`: "`isSlot`은
 -- `Brand`의"). `Slot/init.luau` re-exposes it on the module like before.
 local function isSlot(x: any): boolean
-	return SlotBrand:is(x)
+	return SlotBrand:Is(x)
 end
 -- 3순회 `H-377`: the quad values that are frozen PLAIN tables — no metatable,
 -- branded only here. Every `getmetatable(x) == nil` "plain table" gate
@@ -122,19 +124,19 @@ end
 -- wider one is composed on top of it, so the direction of inclusion is
 -- visible in the code (`brand-plan.md`).
 local function isState(x: any): boolean
-	return isSource(x) or StateBrand:is(x) -- Source structurally satisfies State
+	return isSource(x) or StateBrand:Is(x) -- Source structurally satisfies State
 end
 
 local function isPreRef(x: any): boolean
-	return PreRefBrand:is(x)
+	return PreRefBrand:Is(x)
 end
 local function isPostRef(x: any): boolean
-	return PostRefBrand:is(x)
+	return PostRefBrand:Is(x)
 end
 local function isRef(x: any): boolean
 	-- PreRef/PostRef reuse the Ref runtime = both are a kind of Ref.
 	-- They are exclusive siblings of each other.
-	return isPreRef(x) or isPostRef(x) or RefBrand:is(x)
+	return isPreRef(x) or isPostRef(x) or RefBrand:Is(x)
 end
 
 return {

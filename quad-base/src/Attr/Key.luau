@@ -44,7 +44,7 @@ local isAttrKey = Brand.isAttrKey
 
 local function newKeyObject(name: string): any
 	local key = table.freeze({ Name = name })
-	AttrKeyBrand:register(key)
+	AttrKeyBrand:Register(key)
 	return key
 end
 

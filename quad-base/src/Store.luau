@@ -113,7 +113,7 @@ local function Init(module: any)
 			end
 		end
 		setmetatable(self, Impl)
-		StoreBrand:register(self)
+		StoreBrand:Register(self)
 		return self
 	end
 

@@ -120,7 +120,7 @@ local function createImpl(module: any)
 			_cacheCurrCount = nil, -- never computed yet → always differs
 			_cache = nil,
 		}, mt or Impl)
-		StateBrand:register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
+		StateBrand:Register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
 		-- §4 seeding: valueEpochMap takes every upstream epoch, live.
 		for _, dep in deps do
 			dep._subs[self] = true

@@ -381,6 +381,11 @@ def emit():
     L.append("export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
     L.append("")
     names = sorted(classes.keys())
+    # [2026-09-15 사용자 결정] Declaration/DeclarationMapper 테이블은 클래스 이름과 예약 이름이 같은
+    # 테이블에 산다 — 엔진이 그 이름의 클래스를 내놓으면 예약 필드를 조용히 덮으므로 여기서 멈춘다.
+    for name in names:
+        if name in ("New", "Mapper", "Modifier", "Root"):
+            raise SystemExit(f"gate: class {name} collides with a reserved Declaration/DeclarationMapper field (New/Mapper/Modifier/Root)")
     # [2026-09-06 M11 단위 ① H-326] + State<Tween<T>> — tween-plan "타입 대수"의
     # T' = T | Tween<T> 확장(Animate가 State<Tween<T>>를 돌려준다). 새 솔버는
     # State<T>가 불변이라 State<T | Tween<T>> 하나로는 State<T>를 못 받는다(실측).

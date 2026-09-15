@@ -197,8 +197,8 @@ local function Ref<T>(default: T): Ref<T>
 		Callbacks = {},
 		WeakCallbacks = setmetatable({}, WEAK_KEY_MT),
 	}, RefImpl)
-	RefBrand:register(self)
-	EpochBrand:register(self) -- multi-tagging: a Ref is also an Epoch
+	RefBrand:Register(self)
+	EpochBrand:Register(self) -- multi-tagging: a Ref is also an Epoch
 	return (self :: any) :: Ref<T>
 end
 
@@ -225,9 +225,9 @@ local function registerDispatchHandlers(module: any)
 		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			-- array-only leaf; the most specific brands win the other two kinds.
-			-- `RefBrand:is` (not `isRef`, which is the union of all three) — the
+			-- `RefBrand:Is` (not `isRef`, which is the union of all three) — the
 			-- exclusions already cover the other two, so three lookups, not five
-			return type(k) == "number" and RefBrand:is(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
+			return type(k) == "number" and RefBrand:Is(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
@@ -283,7 +283,7 @@ end
 -- between the two files (review, M8 ②). Not a public surface.
 local function tagged<T>(default: T, brand: any, markerKey: string): any
 	local self: any = Ref(default)
-	brand:register(self)
+	brand:Register(self)
 	self[markerKey] = true -- H-300 marker for the nominal type
 	self._fired = false -- one-shot guard the pre-pass flips at consume time
 	return self

@@ -21,15 +21,15 @@
 5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외).
 6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나.
 7. (7) `Slot:List`/`:Single`의 `updateFn` 인자 모양 — 테이블 하나 / `:Single`에도 `index` / `opts`만 마지막으로 통일 / 그대로.
-8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지.
-9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용.
-10. (10) 생성기에 `D` 예약 이름 충돌 게이트를 넣을지.
+8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지. **[2026-09-15 부분 — 잠정 변경 표면임에 동의, `T`의 층 나눔은 사용자 검토 중(아래 (8) 머리)]**
+9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용. **[닫힘 2026-09-15 — 허용 + `q.debug` 경고]**
+10. (10) 생성기에 `D` 예약 이름 충돌 게이트를 넣을지. **[닫힘 2026-09-15 — 게이트 넣음]**
 11. (11) "에러 문구로 분기하지 말 것" 정책 한 줄을 레퍼런스·extend에 적을지.
 12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지.
-13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸).
+13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸). **[닫힘 2026-09-15 — 올림, BREAKING]**
 14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지.
 15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지.
-16. (17) "`_` 접두 필드는 비공개"를 extend/01에 명시할지.
+16. (17) "`_` 접두 필드는 비공개"를 extend/01에 명시할지. **[닫힘 2026-09-15 — 명시(내부 계약, 언제든 바뀜)]**
 
 ---
 
@@ -152,6 +152,16 @@
 
 ## (8) `Modifier:Peek<<T>>`의 `T`가 "프로퍼티 타입"이 아니라 "값 대수 전부"다
 
+**[2026-09-15 사용자 회신 — 잠정 변경 표면임에 동의, 설계는 검토 중(결정 아님)]** 사용자: *"nil 도 존재하고, T 를
+받아 T | State<T> | None | nil 형태로 던져주는건 가능해보이는데, T 를 T | Tween<T> 까지 확장시키는건 엔진 표면을
+모르는 우리가 못 해. 아마 그건 유저의 책임 같아. 전체 T 를 쓰는걸 유저 책임으로 둘지, 아니면 엔진 표면은 직접
+써야하고, 필요에 맞춰 써야하지만 내부적 요소들은 확장을 해줄지"*. 갈래는 둘이다 — (가) `T`는 저장된 값 전체라
+호출자가 `State`/`None`까지 적는다(`Peek<<UDim2 | State<UDim2> | None>>`), (나) base가 소유한 층(`State`·`None`·`nil`)은
+base가 감싸고 백엔드가 소유한 층(`Tween` 등)만 호출자가 `T` 안에 넣는다. **(나)가 지금 코드의 실제 모양**이다
+(`FieldOut<T> = T | State<T> | None`, 반환 `?`). 메인 의견은 (나) 유지 + 레퍼런스에 층 나눔을 규칙으로 적기 —
+base는 백엔드의 값 층을 열거할 수 없고(quad-spring이 `Spring<T>`를 더할 수 있다), 생성 `<Class>Modifier:Peek`는
+백엔드가 층을 이미 채워 주므로 호출자 몫은 무타입 `q.Modifier()`를 프로바이더 아래에서 쓸 때만 생긴다. 사용자 판단 대기.
+
 **무엇** — `quad-types/src/init.luau:352`와 그 위 주석 376-383. 주석이 스스로 경고합니다: *"⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 — 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것"*.
 
 **왜 나중에 바꾸기 어려운가** — 명시 타입 인자의 **의미**가 계약이 됐습니다. 사용자는 `Peek<<UDim2>>`라고 쓰면 "UDim2 프로퍼티를 본다"는 뜻이길 기대하는데 실제 뜻은 "저장된 값이 정확히 `UDim2 | State<UDim2> | None`이다"입니다. 나중에 `T`의 의미를 "프로퍼티 타입"으로 바꾸면 **기존 호출부가 전부 틀린 타입을 받습니다**(에러가 아니라 잘못된 좁힘 — 가장 나쁜 종류의 breaking).
@@ -166,6 +176,13 @@
 
 ## (9) `AddPlugin`이 충돌을 전혀 검사하지 않는다
 
+**[결정 2026-09-15 — 허용 + `q.debug` 경고]** 사용자: *"사용자층 문제가 아니라 플러그인 프로바이더측 문제이긴 하나,
+막는게 아주 쉽고 런타임 내내 실행이 아니라 플러그인 추가에서만 체킹되므로 괜찮은것 같음. 내 권고는 debug 모드일 때
+알려주는것, 의도적으로 코어 부품을 확장하는 경우를 완전히 닫아버릴 이유는 크게 존재하지 않는다고 보임. 단 확실히
+문제를 일으키고 위험한 표면이기에 디버거에 눈에 띄어야할 이유는 존재함."* 반영: `module.AddPlugin`이 `module.debug`일
+때 기존 값과 다른 값으로 덮는 키마다 `print` 한 줄(Dispatch 동률 경고와 같은 층), `UseProvider`는 제외(프로바이더는
+수명 스텁 등 기존 슬롯을 덮는 게 계약). 레퍼런스 core/01, CHANGELOG Added, `smoke.plugin.luau` 4절.
+
 **무엇** — `quad-base/src/init.luau`의 `mergeExtension`(`for k, v in extension do self[k] = v end`)과 그것을 부르는 `module.AddPlugin`. `UseProvider`는 바로 아래에 1슬롯 identity 락이 있고 두 번째 프로바이더에 명시적 에러를 냅니다. **`AddPlugin`에는 아무것도 없습니다** — 플러그인이 `Source`나 `Dispatch`를 통째로 덮어써도 조용히 지나갑니다.
 
 **왜 나중에 바꾸기 어려운가** — 이건 **의도적 확장점**입니다(*"라이브러리를 고치지 않고 props의 특수 키를 추가할 수 있습니다"* — CHANGELOG 3.0.0). 플러그인 생태계가 생긴 뒤 "코어 필드 섀도잉은 에러"를 넣으면 그때 돌던 플러그인이 깨집니다. 반대로 지금 정하면 공짜입니다.
@@ -179,6 +196,10 @@
 ---
 
 ## (10) `D` 네임스페이스에 클래스 이름과 예약 이름이 **같은 테이블에** 살고, 충돌 게이트가 없다
+
+**[결정 2026-09-15 — 게이트 넣음]** 사용자: *"10번은 생성기 게이트를 두는게 맞는것 같아."* 반영: `scripts/gen-d.py`의
+`names` 조립 직후 클래스 이름이 `New`/`Mapper`/`Modifier`/`Root` 중 하나면 `SystemExit`(Declaration·DeclarationMapper
+두 테이블의 예약 이름을 한 집합으로). 지금 충돌 없음 — `gen-d.py check` 통과, 동작 변화 0.
 
 **무엇** — `scripts/gen-d.py:738`이 `local D = { New = New, Mapper = Mapper, Modifier = ModifierNS }`를 만든 뒤 `:739-741`에서 클래스마다 `D.<name> = ...`를 찍습니다. `DMapper`도 같은 모양으로 `Root`와 클래스 이름이 섞입니다(`:693-698`, `:733`). **Roblox가 `New`/`Mapper`/`Modifier`라는 클래스를 내놓으면 그 대입이 예약 필드를 조용히 덮어씁니다.** 생성기에는 이 충돌을 잡는 게이트가 없습니다 — 반면 `<Class>Modifier`의 예약 메소드 충돌은 제대로 막혀 있습니다(`:618-627`, `property collides with a reserved Modifier method`로 `SystemExit`).
 
@@ -221,6 +242,10 @@
 ---
 
 ## (13) `Brand`의 소문자 메소드 — 근거가 만료됐다
+
+**[결정 2026-09-15 — 올림]** 사용자: *"13번 Brand 메소드를 대문자로 바꾼다 -> 동의"*. `Register`/`Is`로 개명(quad-types
+정의, quad-base·quad-roblox 호출부·스펙, `base/brand-plan.md`·`architecture.md` 케이싱 절). CHANGELOG `[Unreleased]`
+BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 해당. `Brand`라는 이름 자체는 그대로(`question.md` 1절).
 
 **무엇** — `quad-types/src/init.luau:748-763`의 `Brand = { register, is }`. 소문자인 근거는 `architecture.md:505-560`의 케이싱 규칙이 명시합니다: *"`Brand`는 생성자가 있지만 **사용자 표면이 아닌 base 내부 유틸**"*. `question.md` 1절도 *"메소드 케이싱도 같이 볼 것 — `:register`/`:is`가 소문자인데 quad 공개 표면 관례는 PascalCase다… base 내부 유틸이라 지금은 기존 관례를 이었지만, 이름을 정할 때 같이 정리"*로 열어 뒀습니다.
 
@@ -277,6 +302,10 @@
 ---
 
 ## (17) 모듈 표면에 선언되지 않은 언더스코어 필드 둘
+
+**[결정 2026-09-15 — 명시, 권고보다 강하게]** 사용자: *"17번도 동의, _ 언더스코어 필드는 언제나 바뀔 수 있고, 내부
+계약이지 외부 노출 표면은 아닌걸로 못박어도 될것 같음."* 반영: 레퍼런스 core/01(`AddPlugin` 절 뒤)·extend/01(1절 끝)과
+`base/architecture.md` 케이싱 절에 "`_` 접두 필드는 공개 표면이 아닌 내부 계약, 언제든 바뀜". 이름을 바꾸거나 숨기지는 않는다.
 
 **무엇** — `quad-base/src/` 전수에서 모듈에 대입되는 필드 중 `Quad` 타입에 없는 것이 둘입니다: `module._bookkeeping`, `module._slotInternal`. `quad-types/src/init.luau:241`의 `Timeout._native`도 같은 계열(공개 타입 안의 언더스코어 필드)입니다.
 

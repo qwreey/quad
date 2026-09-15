@@ -48,7 +48,7 @@ local function Provider(name: string?): any
 		Err.errorBeforeNearest(`Context.Provider: name must be a string (got {typeof(name)})`, SURFACE)
 	end
 	local self = setmetatable({ __quadProvider = true, Name = name }, ProviderImpl)
-	ProviderBrand:register(self)
+	ProviderBrand:Register(self)
 	return table.freeze(self)
 end
 
@@ -94,7 +94,7 @@ end
 
 local function Context(): any
 	local self = setmetatable({ _values = {} }, ContextImpl)
-	ContextBrand:register(self)
+	ContextBrand:Register(self)
 	return self
 end
 

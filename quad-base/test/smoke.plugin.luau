@@ -52,4 +52,19 @@ do
 end
 
 print()
+print("=== 4. 기존 필드 덮어쓰기 — 허용하되 debug일 때 경고(2026-09-15 사용자 결정) ===")
+do
+	local m = Quad.New()
+	m.debug = true
+	local replacement = function() end
+	print("(아래 AddPlugin 덮어쓰기 경고 한 줄은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)")
+	m:AddPlugin(function(_self)
+		return { Effect = replacement, Fresh = true }
+	end)
+	assert((m :: any).Effect == replacement, "덮어쓰기는 막지 않는다 — 플러그인 값이 이겨야 함")
+	assert((m :: any).Fresh == true, "새 필드는 경고 없이 병합돼야 함")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

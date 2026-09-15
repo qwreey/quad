@@ -124,7 +124,7 @@ local function Blocker(): Blocker
 		IsBlocked = false,
 		_handles = setmetatable({}, WEAK_KEY_MT),
 	}, BlockerImpl)
-	BlockerBrand:register(self)
+	BlockerBrand:Register(self)
 	return (self :: any) :: Blocker
 end
 

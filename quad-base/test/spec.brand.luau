@@ -9,10 +9,10 @@ print("=== 1. register/is — 등록한 값만 통과 ===")
 do
 	local b = Brand.Brand()
 	local x, y = {}, {}
-	b:register(x)
-	assert(b:is(x) == true, "registered value must pass")
-	assert(b:is(y) == false, "unregistered value must not pass")
-	assert(b:is(nil) == false and b:is(1) == false and b:is("s") == false, "non-table values are never members")
+	b:Register(x)
+	assert(b:Is(x) == true, "registered value must pass")
+	assert(b:Is(y) == false, "unregistered value must not pass")
+	assert(b:Is(nil) == false and b:Is(1) == false and b:Is("s") == false, "non-table values are never members")
 	print("PASS")
 end
 
@@ -21,9 +21,9 @@ print("=== 2. 다중 태깅 — 한 값이 여러 브랜드에 동시에 ===")
 do
 	local a, b = Brand.Brand(), Brand.Brand()
 	local x = {}
-	a:register(x)
-	b:register(x)
-	assert(a:is(x) and b:is(x), "a value may belong to several brands at once")
+	a:Register(x)
+	b:Register(x)
+	assert(a:Is(x) and b:Is(x), "a value may belong to several brands at once")
 	print("PASS")
 end
 
@@ -32,8 +32,8 @@ print("=== 3. 브랜드 간 독립 — 한 브랜드 등록이 다른 브랜드�
 do
 	local a, b = Brand.Brand(), Brand.Brand()
 	local x = {}
-	a:register(x)
-	assert(b:is(x) == false, "registration must not leak across brands")
+	a:Register(x)
+	assert(b:Is(x) == false, "registration must not leak across brands")
 	print("PASS")
 end
 
@@ -44,7 +44,7 @@ do
 	local weak = setmetatable({}, { __mode = "v" })
 	do
 		local x = {}
-		b:register(x)
+		b:Register(x)
 		weak[1] = x
 	end
 	collectgarbage()
@@ -57,9 +57,9 @@ print()
 print("=== 5. isRef 계층 — PreRef/PostRef는 Ref의 한 종류, 서로는 배타 ===")
 do
 	local pre, post, plain = {}, {}, {}
-	Brand.PreRefBrand:register(pre)
-	Brand.PostRefBrand:register(post)
-	Brand.RefBrand:register(plain)
+	Brand.PreRefBrand:Register(pre)
+	Brand.PostRefBrand:Register(post)
+	Brand.RefBrand:Register(plain)
 
 	assert(Brand.isRef(pre) and Brand.isRef(post) and Brand.isRef(plain), "isRef passes {Ref, PreRef, PostRef}")
 	assert(Brand.isPreRef(pre) and not Brand.isPreRef(post) and not Brand.isPreRef(plain), "isPreRef is the most specific identity")
@@ -76,8 +76,8 @@ print()
 print("=== 6. isState 계층 — Source는 State를 구조적으로 만족 ===")
 do
 	local src, st = {}, {}
-	Brand.SourceBrand:register(src)
-	Brand.StateBrand:register(st)
+	Brand.SourceBrand:Register(src)
+	Brand.StateBrand:Register(st)
 	assert(Brand.isState(src) and Brand.isState(st), "isState passes both")
 	assert(Brand.isSource(src) and not Brand.isSource(st), "isSource is the narrower one")
 	print("PASS")
@@ -99,7 +99,7 @@ do
 		local x = {}
 		assert((Quad :: any)[name] == (Brand :: any)[name], name .. " must be re-exported on Quad as the same function")
 		assert((Brand :: any)[name](x) == false, name .. " false before registration")
-		brand:register(x)
+		brand:Register(x)
 		assert((Brand :: any)[name](x) == true, name .. " true after registration")
 	end
 	print("PASS")

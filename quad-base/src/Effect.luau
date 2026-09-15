@@ -242,7 +242,7 @@ local function createImpl(module: any)
 			_destroyConn = nil,
 			Subscribed = false,
 		}, Impl)
-		EffectBrand:register(self)
+		EffectBrand:Register(self)
 
 		-- (0) deps validation — once, in the constructor. `select("#")` so a nil hole
 		--     does not silently truncate the list.

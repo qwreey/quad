@@ -62,7 +62,7 @@ do
 		end
 	end)
 	assert(setups == 1, "setup ran once")
-	assert(Brand.StateBrand:is(g) and Quad.isState(g) and not Quad.isEpoch(g), "a GateNode is a State (H-152), not an Epoch")
+	assert(Brand.StateBrand:Is(g) and Quad.isState(g) and not Quad.isEpoch(g), "a GateNode is a State (H-152), not an Epoch")
 	assert(g:Get() == 1, "value passes through")
 	s:Set(2)
 	assert(g:Get() == 2, "…and follows the upstream")

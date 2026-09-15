@@ -19,7 +19,7 @@ do
 	assert(s.Revision == 0, "initial revision")
 	assert(Quad.isSource(s) and Quad.isEpoch(s), "Source is both Source and Epoch")
 	assert(Quad.isState(s), "isState passes a Source by composition")
-	assert(Brand.StateBrand:is(s) == false, "…but it is NOT registered in StateBrand (predicate composition, not double registration)")
+	assert(Brand.StateBrand:Is(s) == false, "…but it is NOT registered in StateBrand (predicate composition, not double registration)")
 	assert(not Quad.isRef(s) and not Quad.isStore(s), "nothing else")
 	local n: Source<number?> = Source(nil :: number?)
 	assert(n:Get() == nil, "Source(nil) holds nil")
@@ -55,7 +55,7 @@ print()
 print("=== 4. Modifier 가드 — 생성자와 Set 둘 다, level 2 ===")
 do
 	local mod = {}
-	Brand.ModifierBrand:register(mod)
+	Brand.ModifierBrand:Register(mod)
 	local ok, err = pcall(function()
 		Source(mod :: any)
 	end)

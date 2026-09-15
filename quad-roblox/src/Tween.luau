@@ -137,7 +137,7 @@ local function install(quad: any): any
 	local function newTween(opts: any): any
 		validate(opts)
 		local self: any = setmetatable(table.clone(opts), TweenImpl)
-		TweenBrand:register(self)
+		TweenBrand:Register(self)
 		return table.freeze(self)
 	end
 

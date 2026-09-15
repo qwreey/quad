@@ -4,7 +4,8 @@
 > 자기 완결적인 유틸이라 디스패치 코어와 같은 파일에 있을 이유가 없었음.
 >
 > **[2026-08-21 전면 재작성] 공유 레지스트리 + `Brand.get(x) -> tag`(객체당
-> 태그 하나)에서 **인스턴스 브랜드**(`Brand()` + `:register`/`:is`, 다중 태깅
+> 태그 하나)에서 **인스턴스 브랜드**(`Brand()` + `:Register`/`:Is` — **[2026-09-15] 옛 소문자
+> `:register`/`:is`에서 개명**, 아래 "메소드 이름" 문단, 다중 태깅
 > 허용)로 바뀜.** 역전 원문은 `archive/brand-shared-registry-reversed.md`,
 > 근거 기록은 `reference/epoch-brand-composition.md`. **뒤집힌 건 API 표면
 > 하나뿐**이고 weak-key 레지스트리·테이블 아이덴티티·duck-typing 기각 근거·
@@ -74,7 +75,7 @@ local ObserverBrand, EffectBrand, TagBrand, AttrBrand, TweenBrand,
       Brand(), Brand(), Brand(), Brand(), Brand(), Brand(), Brand()
 
 -- 각 타입의 모든 생성 지점(Observer(...), Source(...), :With(...), Tag(...) 등)에서:
-ObserverBrand:register(newHandle)
+ObserverBrand:Register(newHandle)
 ```
 
 **⭐ 다중 태깅이 이 설계의 존재 이유다.** 한 값이 **여러 브랜드에 동시에**
@@ -82,15 +83,15 @@ ObserverBrand:register(newHandle)
 
 ```lua
 -- Source는 Source이면서 동시에 Epoch다 (base/state-epoch-plan.md)
-SourceBrand:register(source)
-EpochBrand:register(source)
+SourceBrand:Register(source)
+EpochBrand:Register(source)
 ```
 
 옛 모양(`Brand.get(x) -> tag`, 객체당 태그 하나)으로는 이걸 표현할 수 없었고,
 그게 재작성의 직접 발단이다 — `archive/brand-shared-registry-reversed.md`.
 
 **부수 이득 — 외부 확장이 열린다.** `Source`가 아닌 원천(외부 시계 등)이
-`Epoch`로 참여하고 싶으면 `EpochBrand:register(self)` 한 줄이면 되고,
+`Epoch`로 참여하고 싶으면 `EpochBrand:Register(self)` 한 줄이면 되고,
 `isEpoch` 구현을 고칠 필요가 없다. 사용자 논거: *"본인이 거기 속하면, 본인이
 직접 해당 브랜드를 가져와 등록하면 … `isXXXX`에서 각각의 구현을 넣을 필요가
 없어짐. 따라서 외부 확장도 쉬워진다."*
@@ -108,16 +109,18 @@ EpochBrand:register(source)
 되어 헷갈릴 여지가 없음. 새 모양에선 이게 더 강해진다 — 브랜드가 값이라
 `nil`을 인덱싱하면 그 자리에서 에러가 난다.
 
-**메소드 이름이 소문자인 건 이 유틸의 기존 관례를 잇는 것**(`Brand.set`/
-`Brand.get`이 그랬다). quad 공개 표면의 PascalCase 메소드 관례(`:Get`/`:Set`/
-`:With`)와 다른데, `Brand`는 사용자가 직접 부르는 프리미티브가 아니라 base
-내부 유틸이고 사용자에게 노출되는 건 `isX` wrapper들이다 — 이름 자체가
-용어 정리 대기 항목이므로 케이싱도 그때 같이 본다(`question.md` 1번).
+**메소드 이름은 PascalCase `:Register`/`:Is`다 — [2026-09-15 사용자 결정, 옛 소문자에서 개명].**
+옛 소문자 `:register`/`:is`는 `Brand.set`/`Brand.get` 관례를 이은 것이었고, 근거는 "사용자가 직접
+부르는 프리미티브가 아니라 base 내부 유틸"이었다. 2026-09-07에 팩토리가 quad-types로 옮겨 서드파티
+백엔드(장래 quad-spring 등)가 자기 브랜드를 만드는 **공개 표면**이 되면서 그 근거가 소멸했고,
+`research/public-surface-pre-adoption-review.md` (13)번 권고에 사용자가 동의했다(*"13번 Brand 메소드를
+대문자로 바꾼다 -> 동의"*). 사용자 코드가 보는 건 여전히 `isX` wrapper들이라 소비자 코드는 안 바뀐다.
+`Brand`라는 **이름 자체**는 여전히 `question.md` 1번의 용어 정리 대기 항목이다.
 
 ## `isX` wrapper — 포함 관계는 predicate 합성으로 (2026-08-09 열한 번째 세션)
 
 **`isX`는 브랜드를 직접 노출 안 하고 각자 얇은 wrapper로 감쌈** — 단순
-항등인 경우(`isObserver(x) = ObserverBrand:is(x)`)와, 상위 관계(subtype)가
+항등인 경우(`isObserver(x) = ObserverBrand:Is(x)`)와, 상위 관계(subtype)가
 있어 **더 구체적인 브랜드 체크 위에 OR로 얹는** 경우(`isState`/`isRef`)로
 갈림. **[정정, 2026-08-09 열한 번째 세션]** 후자를 "집합 멤버십"(플랫한 셋
 체크)으로 구현하던 방식을 "더 구체적인 predicate를 먼저 정의하고 그 위에
@@ -126,21 +129,21 @@ predicate를 내포하는지(포함 관계의 방향)가 코드 모양 자체에
 
 ```lua
 local function isSource(x)
-  return SourceBrand:is(x)
+  return SourceBrand:Is(x)
 end
 local function isState(x)
-  return isSource(x) or StateBrand:is(x)  -- Source가 State를 구조적으로 만족
+  return isSource(x) or StateBrand:Is(x)  -- Source가 State를 구조적으로 만족
 end
 
 local function isPreRef(x)
-  return PreRefBrand:is(x)
+  return PreRefBrand:Is(x)
 end
 local function isPostRef(x)                     -- [2026-08-14 아홉 번째 세션] PostRef 확정
-  return PostRefBrand:is(x)
+  return PostRefBrand:Is(x)
 end
 local function isRef(x)
   -- PreRef/PostRef가 Ref 런타임을 재사용 = 둘 다 Ref의 한 종류
-  return isPreRef(x) or isPostRef(x) or RefBrand:is(x)
+  return isPreRef(x) or isPostRef(x) or RefBrand:Is(x)
 end
 ```
 
@@ -177,8 +180,8 @@ end
 **`PreRef`도 "Ref 런타임을 그대로 재사용하는" 관계라 같은 포함
 방향(상위=Ref, 하위=PreRef)으로 다뤄야 일관적**이라는 지적으로 뒤집힘.
 
-- **`isPreRef(x)`가 가장 구체적인 항등 체크**(`PreRefBrand:is(x)`),
-  **`isRef(x)`는 그 위에 `RefBrand:is(x)`를 OR로 얹은 상위 개념** — 즉
+- **`isPreRef(x)`가 가장 구체적인 항등 체크**(`PreRefBrand:Is(x)`),
+  **`isRef(x)`는 그 위에 `RefBrand:Is(x)`를 OR로 얹은 상위 개념** — 즉
   **`isRef(preRefInstance)`는 `true`.**
 - **`(v=Ref)` children 배열 leaf 매치 핸들러(M8 — `H-278`로 `Ref/init.luau` 소유)는
   이제 `isHandlable`을 `isRef(v) and not isPreRef(v) and not isPostRef(v)`로
@@ -188,7 +191,7 @@ end
   명시적으로 말해야 하는 모양으로 바뀜(두 pre-pass 소진이 이미 걸러줘
   정상 경로에선 거의 안 걸리지만, `base/ref-plan.md`의 두 동적 경로 가드
   Handler와 이 조합이 같이 "일반 Ref 경로를 절대 타면 안 됨"을 보장).
-  `isModifier`도 같은 단순 항등(`ModifierBrand:is(x)`, 상위 개념 없음).
+  `isModifier`도 같은 단순 항등(`ModifierBrand:Is(x)`, 상위 개념 없음).
 - **`PostRef`도 `PreRef`와 완전히 같은 포함 방향** — `Ref` 런타임을 그대로
   재사용하고 브랜드만 다르므로 `isRef(postRefInstance)`도 `true`.
   즉 `isRef`는 이제 `{Ref, PreRef, PostRef}` 셋을 통과시키는 상위 개념이고,
@@ -196,7 +199,7 @@ end
   사이엔 포함 관계가 없음(서로 배타적인 형제).
 
 **같은 이유로 `isSlot`/`isEffect`도 명시(2026-08-09 세션)** —
-`SlotBrand:is(x)`/`EffectBrand:is(x)`인 단순 항등 predicate, 브랜드
+`SlotBrand:Is(x)`/`EffectBrand:Is(x)`인 단순 항등 predicate, 브랜드
 자체는 원래부터 목록에 있었지만 `isX` wrapper로 명시적으로 안 적혀 있던
 것을 `base/modifier-plan.md`의
 "Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)이
@@ -219,7 +222,7 @@ isNone 대신 필요한 곳에서 v == None 하면 되는 일, 혹은 isNone 구
   자체는 그대로 유효.
 - **`None`을 `NoneBrand`에 평범하게 등록하는 것 자체는 무방**(사용자가
   허용) — 다만 **[2026-08-21]** 역조회 창구가 없어졌으므로 등록의 유일한
-  효용은 `NoneBrand:is(x)`뿐이고, 그건 `v == None`이 더 싸다. 어느 쪽이든
+  효용은 `NoneBrand:Is(x)`뿐이고, 그건 `v == None`이 더 싸다. 어느 쪽이든
   `Brand` 쪽 코드는 그대로다.
 
 **duck-typing(예: `type(x) == "table" and x.Compute ~= nil`)을 쓰지 않는

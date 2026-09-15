@@ -548,12 +548,17 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   `isPostRef`/`isModifier`/`isObserver`/... `Brand` 절), 생명주기 게이트(`canExecute`/
   `bindLifetime`, `base/lifecycle-pattern.md`), 그리고 **프리미티브가
   아닌** 내부 엔진/레지스트리의 네임스페이스 멤버(`Dispatch.process`/
-  `getHandler`/`addHandler`/`drive`, `Brand()`의 `:register`/`:is`) — 이 셋은 "타입
+  `getHandler`/`addHandler`/`drive`) — 이 셋은 "타입
   고유의 어휘"가 아니라 여러 타입에 걸쳐 쓰이거나(`isX`류) 프리미티브
-  자체가 아닌 것(Dispatch는 `Type(args)` 생성자가 없는 내부 엔진이고,
-  `Brand`는 생성자가 있지만 사용자 표면이 아닌 base 내부 유틸 — 사용자에게
-  노출되는 건 `isX` wrapper들이다)의
-  구성원이라 PascalCase 대상이 아님. Handler 계약 필드(`isHandlable`/
+  자체가 아닌 것(Dispatch는 `Type(args)` 생성자가 없는 내부 엔진)의
+  구성원이라 PascalCase 대상이 아님. **[2026-09-15 사용자 결정] `Brand()`의
+  메소드는 이 목록에서 빠졌다** — 옛 소문자 `:register`/`:is`는 "사용자 표면이 아닌
+  base 내부 유틸"이 근거였는데, 팩토리가 quad-types로 옮겨 서드파티 백엔드가 쓰는
+  공개 표면이 되면서 근거가 소멸해 `:Register`/`:Is`로 올렸다(`base/brand-plan.md`).
+  **같은 날 명문화: `_`로 시작하는 필드(`module._bookkeeping`/`_slotInternal`,
+  `Timeout._native`)는 공개 표면이 아니라 내부 계약이고 언제든 바뀐다** — 케이싱
+  규칙의 대상도 아니다(사용자: *"_ 언더스코어 필드는 언제나 바뀔 수 있고, 내부
+  계약이지 외부 노출 표면은 아닌걸로 못박어도"*; 문서 쪽 표기는 레퍼런스 core/01·extend/01). Handler 계약 필드(`isHandlable`/
   `priority`/`process`, 선택 `name`·`keyType` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
   반환값으로 합쳐지기 전엔 4종이었음)도 여기 속함 — 이건 애초에 "함수"라기보다
   구현체가 채워 넣는 구조체 필드.

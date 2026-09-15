@@ -9,7 +9,7 @@ local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
 local function epoch(rev: number): any
 	local e = { Revision = rev }
-	Brand.EpochBrand:register(e)
+	Brand.EpochBrand:Register(e)
 	return e
 end
 

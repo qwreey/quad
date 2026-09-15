@@ -100,8 +100,8 @@ local function Init(module: any)
 			Revision = 0,
 			_subs = setmetatable({}, WEAK_KEY_MT), -- weak-key subscribers (downstream)
 		}, Impl)
-		SourceBrand:register(self)
-		EpochBrand:register(self)
+		SourceBrand:Register(self)
+		EpochBrand:Register(self)
 		return self
 	end
 

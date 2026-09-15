@@ -743,20 +743,21 @@ export type CheckedQuad<T, Pattern> = T & { __versionCheck: TypeVersionCheck.Che
 -- Tween, 장래 quad-spring: Spring). `Brand()`는 weak-key 집합 하나를 쥔 객체 하나를 만들고, 값은
 -- 자기가 속한 브랜드(들)에 스스로 등록한다(다중 태깅이 설계의 존재 이유 — `Source`는
 -- `SourceBrand`이자 `EpochBrand`). 역조회는 없다(`archive/brand-shared-registry-reversed.md`).
--- 메소드 이름이 소문자인 건 공개 quad 표면이 아니라 패키지 내부 유틸이기 때문(brand-plan).
+-- 메소드는 PascalCase(`:Register`/`:Is`) — [2026-09-15 사용자 결정] 팩토리가 quad-types로 옮겨
+-- 서드파티 백엔드가 쓰는 공개 표면이 되면서 옛 소문자 근거("패키지 내부 유틸")가 소멸했다.
 -- 아무것에도 의존하지 않는다(특히 `None` 분기 없음 — `isNone`은 `v == None`).
 export type Brand = {
-	register: (self: Brand, x: any) -> (),
-	is: (self: Brand, x: any) -> boolean,
+	Register: (self: Brand, x: any) -> (),
+	Is: (self: Brand, x: any) -> boolean,
 }
 
 local function Brand(): Brand
 	local members = setmetatable({}, { __mode = "k" }) :: { [any]: true }
 	return {
-		register = function(_self: Brand, x: any)
+		Register = function(_self: Brand, x: any)
 			members[x] = true
 		end,
-		is = function(_self: Brand, x: any): boolean
+		Is = function(_self: Brand, x: any): boolean
 			return members[x] == true
 		end,
 	}

@@ -81,7 +81,7 @@ end
 
 local function newAttr(nameMap: { [string]: any }): any
 	local self = setmetatable({ _nameMap = table.freeze(nameMap) }, AttrImpl)
-	AttrBrand:register(self)
+	AttrBrand:Register(self)
 	return table.freeze(self)
 end
 

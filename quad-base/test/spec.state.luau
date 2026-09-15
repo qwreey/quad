@@ -55,7 +55,7 @@ do
 	local d: State<number> = s:Compute(function(x)
 		return x:Get()
 	end)
-	assert(Brand.StateBrand:is(d) and Quad.isState(d) and not Quad.isSource(d) and not Quad.isEpoch(d), "a derived node is a State, not a Source/Epoch")
+	assert(Brand.StateBrand:Is(d) and Quad.isState(d) and not Quad.isSource(d) and not Quad.isEpoch(d), "a derived node is a State, not a Source/Epoch")
 	local p = probe(d)
 	s:Set(2)
 	assert(p.count == 1 and p.last == s, "downstream receives the SAME source epoch, not the node")
@@ -181,7 +181,7 @@ do
 	local a, b = Source(1), Source(10)
 	local w: State<number> = a:With(b)
 	assert(w:Get() == 1, "With's value is self's")
-	assert(Brand.StateBrand:is(w) and w ~= a, "a new node")
+	assert(Brand.StateBrand:Is(w) and w ~= a, "a new node")
 	local pw = probe(w)
 	b:Set(20)
 	assert(pw.count == 1 and pw.last == b, "With subscribes to the extra dep")
@@ -310,7 +310,7 @@ print()
 print("=== 12. 가드 — Compute 결과가 Modifier면 캐싱 전에 error(level 3, H-205); dep이 State가 아니면 error ===")
 do
 	local mod = {}
-	Brand.ModifierBrand:register(mod)
+	Brand.ModifierBrand:Register(mod)
 	local s = Source(1)
 	local d: State<any> = s:Compute(function()
 		return mod

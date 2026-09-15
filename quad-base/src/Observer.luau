@@ -192,7 +192,7 @@ local function createImpl(module: any)
 			_running = false, -- `H-183`: raised around every fn run; entry points refuse while up
 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
-		ObserverBrand:register(o)
+		ObserverBrand:Register(o)
 		o._running = true -- `H-183`: the install fire is an fn run like any other
 		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
 		o._running = false

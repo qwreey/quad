@@ -18,7 +18,7 @@ local QuadTypes = require("../luau_packages/quad_types")
 local TweenBrand = QuadTypes.Brand()
 
 local function isTween(x: any): boolean
-	return TweenBrand:is(x)
+	return TweenBrand:Is(x)
 end
 
 return {

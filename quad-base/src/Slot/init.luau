@@ -365,7 +365,7 @@ local function Init(module: any)
 			Offset = module.Source(0),
 			_mounted = false,
 		}, Slot_mt)
-		Brand.SlotBrand:register(self)
+		Brand.SlotBrand:Register(self)
 		self._baseObserver = S.makeBaseObserver(self)
 		if initial ~= nil then
 			-- 4순회 `H-386` (the `H-380` container gate, sibling entry): `Slot(frame)` /

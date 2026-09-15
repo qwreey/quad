@@ -131,7 +131,23 @@ local function New(): Quad
 	end
 
 	function module.AddPlugin(self, pluginFn)
-		mergeExtension(self, pluginFn(self))
+		local extension = pluginFn(self)
+		-- [2026-09-15 사용자 결정] 기존 필드 덮어쓰기는 막지 않는다(코어를 의도적으로
+		-- 확장하는 플러그인을 닫을 이유가 없음) — 다만 위험한 표면이라 debug일 때
+		-- 눈에 띄게 알린다. 설치 시점에 한 번만 도는 검사라 hot path 비용이 없다.
+		-- UseProvider는 제외: 프로바이더는 수명 스텁 등 기존 슬롯을 덮는 게 계약이다.
+		if module.debug then
+			for k, v in extension do
+				local existing = self[k]
+				if existing ~= nil and existing ~= v then
+					print(
+						`AddPlugin: plugin overwrites existing module field "{tostring(k)}"`
+							.. " — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field"
+					)
+				end
+			end
+		end
+		mergeExtension(self, extension)
 		return self :: any
 	end
 

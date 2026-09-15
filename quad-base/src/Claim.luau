@@ -62,7 +62,7 @@ local function Init(module: any)
 					_props = props,
 					_fired = false,
 				}
-				Brand.MapperBrand:register(desc)
+				Brand.MapperBrand:Register(desc)
 				return desc
 			end
 			Err.setFuncLevel(SURFACE, staged)
