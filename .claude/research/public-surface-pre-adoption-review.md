@@ -273,6 +273,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 ## (14) `Owned` 옵션 키 — 프로젝트가 스스로 "잠정"이라 표시해 둔 이름
 
+**[2026-09-15 독립 조사 둘(sonnet, 원장·`question.md` 차단) — 둘 다 `Owned` 유지 1순위, `OwnsElements` 2순위, `DestroyElements` 비권장]** 사용자는 `OwnsElements`에 동의하는 쪽이며 객관 확인을 요청(*"15처럼 반박이 나올 수도 있어서 깨끗한 맥락에서"*). 두 조사가 코드로 같은 사실을 확인했다 — `Owned = false`는 파괴 여부 하나가 아니라 **요소 수명 책임 모드 전체**를 바꾼다: (a) 빠진 요소를 파괴 대신 떼기만(`Slot/Raw.luau` `releaseElement`), (b) `Detach` 반환이 보관이 아니라 완전 해제로 격하되어 같은 키가 돌아와도 `ctx.Prev`가 nil(`Slot/List.luau` `settle`, 레퍼런스 core/06이 이미 가르침), (c) Slot 자신이 파괴될 때 자식을 파괴하지 않고 떼기만(`Slot/Tree.luau` `destroySlotTree`). 그래서 `DestroyElements`는 (b)를 약속하지 않는 좁은 이름이라 "`DestroyElements=false`인데 왜 `Prev`가 안 오지"라는 오독을 이름이 만든다(두 조사 공통). (i) **생태계 선례 조사**: 같은 뜻의 불리언 옵션 표준 이름은 못 찾음(Fusion은 불리언이 아니라 destructor 함수 `cleanup`/`doNothing`, Vide는 매핑 안 `cleanup()` — 미확인, 웹 UI 킷의 `destroyOnClose`는 `DestroyElements`와 같은 과소 서술). 결론 `Owned` 유지(중상), 바꾼다면 `OwnsElements`(중) — 방향 모호성("Slot이 소유당하는가?")을 없애는 게 유일한 실익, `ManagesElements`는 새 어휘라 약함, `KeepElementsAlive`/`RetainElements`는 `Detach`의 "보관"과 충돌. (ii) **코퍼스 정합·오독 조사**: 결론 `Owned` 유지(높음) — Quadnomicon 5권(`docs/quadnomicon/05-non-destructive-portal-and-ownership.md`)이 Ref·Attr·Slot 전역 "소유권 공리"를 이 어휘로 가르치고, 옵션 테이블의 다른 불리언(`Leading`/`Trailing`)이 한 낱말 형용사라 `OwnsElements` 같은 동사구 옵션 키는 선례가 없다; 극성 반전 `Borrowed = true`는 비용만 커서 기각. 방향 오독은 이 옵션이 요소를 들이는 `:List`/`:Single`에만 있어 문맥상 좁혀진다고 봄. **메인 정리**: 반박의 핵심은 "`OwnsElements`가 틀렸다"가 아니라 "`Owned`로도 충분하고 형용사 관례에 맞다"이며, `OwnsElements`의 실익(주어 방향 명시)은 두 조사 모두 인정했다. 둘 사이 선택은 표기 관례(한 낱말 형용사) 대 자기 설명성의 저울질이라 사용자 판단 대기. (부수 — 조사 (i)이 적은 "(c)에서 사용자가 만든 비소유 Slot은 자식의 `elementOwner` 기록도 풀지 않는다"는 메인이 `Slot/Tree.luau` `destroySlotTree`로 확인: 맞다 — 슈거 래퍼만 `releaseSugarWrapper`로 풀고, 사용자 Slot은 claim을 유지한다. 같은 함수의 Q14 (a) "두 루프 모두 해제"는 소유 Slot 쪽 분기 이야기라 모순 아님. 즉 (c)는 "파괴 안 함 + 소유 기록 유지"라 역시 파괴 한 축으로 안 줄어든다.)
+
 **무엇** — `quad-types/src/init.luau:507`의 `SlotListOpts = { Owned: boolean? }`. `question.md` 1절이 직접 적습니다: *"`elementOwner`/`claimOwner`/`releaseOwner`와 같은 뿌리라 골랐지만 **잠정 이름**이다 — 형용사라 옵션 테이블 키로는 자연스러운데, 실제로 묻는 건 '이 Slot이 요소의 수명을 책임지는가'라서 `OwnsElements`처럼 주어를 드러내는 쪽이 나을 수도 있음."*
 
 **왜 나중에 바꾸기 어려운가** — 옵션 테이블 키는 사용자 코드에 리터럴로 박히고, Luau는 잘못된 키를 strict에서 잡아 주므로(닫힌 레코드) 개명은 확실한 breaking입니다. 다만 이 옵션을 명시적으로 쓰는 사람은 드뭅니다(기본값 `true`).
@@ -355,6 +357,63 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 ## 미완·확인 못 한 것
 
-- **(5)번의 `read` 전환 실비용**을 코드로 확인하지 못했습니다(읽기 전용 제약). `Ref` impl이 공개 타입을 통해 쓰는지 별도 impl 타입을 쓰는지에 따라 캐스트 개수가 달라집니다.
-- **(7)번 `updateFn` 테이블화의 hot path 비용**은 실측 없이 추정입니다.
+**[2026-09-15 둘 다 닫힘]** 처음 이 절에 있던 미완 둘은 결정 반영 때 실측으로 닫혔다 — (5)번 `read` 전환 실비용은 `Ref/init.luau` `:Set`의 캐스트 두 줄뿐(나머지는 impl 타입으로 써서 무변경, (5)번 결정 줄), (7)번 `updateFn` 테이블화 hot path 비용은 `audit/updatefn-ctx-table-bench-2026-09-15/REPORT.md`(호출당 27~50 ns, 1000항목 패스당 0.1~0.15 ms — (7)번 실측 줄). 원장 밖 릴리즈 전 추가 탐사 결과는 이 절 아래에 쌓는다.
+
+---
+
+## 원장 밖 추가 탐사 (2026-09-15, opus 셋 — 타입 표면·런타임 계약과 패키징·문서 약속)
+
+사용자 요청: *"원장 내용 이외에 릴리즈 전에 더 처리해야할 내용이 나오는지 보고싶어"*. 셋 다 읽기 전용, 원장 1~17과 `[Unreleased]`를 먼저 읽고 겹치지 않게. 실측 스크래치는 세션 스크래치(`hunt-types/`·`hunt-runtime/`·`hunt-docs/`, 레포 밖)에 있었다. 메인이 직접 재확인한 것은 "메인 확인"으로 적는다. 아래 번호 (18)~는 이 절 안의 번호다. **새 필드·이름·메커니즘이 필요한 것은 전부 사용자 문항**이고 코드는 아직 안 건드렸다.
+
+### 가. 동작 — 조용히 틀리는 것 (조이는 방향이라 지금이 싸다)
+
+**(18) Effect `fn`이 함수도 nil도 아닌 값을 돌려주면 그 자리에선 통과하고, 다음 재실행에서 quad 내부 줄이 터진 뒤 그 Effect가 영구히 죽는다** — 실측: `fn`이 `42`를 돌려주면 첫 의존성 변경에서 `Effect.luau`의 cleanup 호출이 *"attempt to call a number value"*, 다음 `Set`부터는 에러도 실행도 없이 조용하고, `:Unsubscribe()`는 사실과 다른 *"cannot change subscription from inside fn or cleanup"*으로 거부. React·Fusion 습관으로 연결 객체(`{ Disconnect = … }`)를 돌려주는 경우도 같다. 인스턴스 파괴 경로면 이 에러가 엔진 Destroying 시그널 안에서 난다. 사용자가 던진 게 아니라 quad가 받아들인 값 때문이라 예외 안전성 계약("사용자 코드가 던지면 죽는다") 밖이고, 위 (12)의 비대칭 원칙이 말한 "조용히 망가지는" 예외에 해당한다. 갈래: (가) 반환 직후 `function`/`nil`만 받고 나머지는 사용자 줄을 가리키는 에러(몇 줄), (나) 연결 객체·Instance도 받아 주기(새 메커니즘 — (가) 뒤에 넓혀도 비파괴). 탐사자 권고 (가), 확신 높음.
+
+**(19) 옵션 테이블의 모르는 키(오타)가 런타임에서도 타입에서도 조용히 통과한다** — 실측: `q.Debounce({ Time = 0.3, leading = true })`, `q.Throttle({ …, MaxTimee = 1 })`, `slot:List(…, { owned = false })`가 에러 없이 만들어지고 오타 옵션은 무시된다; 구·신 솔버 둘 다 진단 없음(같은 파일의 음성 대조는 둘 다 잡음). `q.Debounce({ Time = "x" })`도 두 솔버에서 진단이 없었다(원인 미조사 — 옵션 타입이 사실상 느슨하다는 신호일 수 있음). 코드 판독: `Animate{}`는 고정 목록만 읽어 `Duration = 0.3` 같은 오타는 기본 시간으로 돈다. 같은 뿌리 하나 더: `Debounce`/`Throttle`은 옵션 테이블을 참조로 들고 창마다 `opts.Time`을 다시 읽고 `Animate`도 매 실행 다시 읽어, 만든 뒤 옵션 테이블을 고치면 동작이 따라 바뀌고 생성 시 검증도 우회된다(동적 값의 정식 통로 `State<number>`는 이미 있다). 갈래: (가) 모든 옵션 테이블에 "모르는 키는 에러" + 생성 시 얕은 복사(설치 시점 한 번, hot path 비용 없음), (나) `q.debug`일 때만 경고, (다) 문서화만. 정책이라 사용자 문항, 탐사자 권고 (가) 확신 중상.
+
+**(20) 반응형 콜백 안의 yield에 계약이 없고, 실제 동작이 조용히 이상하다** — 실측: Observer `fn`이 첫 호출에서 `coroutine.yield()`하면 파동이 그 자리에서 멈추고, 그동안 바깥 `Unsubscribe`는 사실과 다른 "inside its own fn"으로 거부되며, 다른 스레드의 `Set`이 같은 `fn`을 동시에 재진입시킨다(로그 `A1start, A2start, A2end, A1end`). Roblox는 이벤트 핸들러가 전부 코루틴이라 콜백 안 `task.wait`는 흔한 실수다. 문서의 yield 언급은 `Ref:Wait`뿐. 갈래: (가) "Observer·Effect·Compute·Ref 콜백과 cleanup 안의 yield는 UB"를 core/03·05·07에 명시(비용 0), (나) `q.debug`일 때 yield 감지 경고(새 메커니즘 — 문항). 탐사자 권고 최소 (가), 확신 중상.
+
+**(21) `:List`의 `updateFn`이 도중에 던지면 그 Slot이 영구히 재계산되지 않는다(문서에 없음)** — 메인 확인(`quad-base/src/Slot/List.luau` `reconcile`): 배치 Blocker를 켠 뒤(`ownsGate`) 끄는 줄은 정상 종료 때만 돈다 — 다음 사이클은 `blocker:IsOn()`이 이미 참이라 `ownsGate`가 거짓이고 끄는 사람이 없다. quad 자신의 에러도 같은 창에서 난다(이미 마운트된 원소를 반환해 `settle`이 던질 때, KeyGone에 원소를 돌려줄 때). 키 계산의 두 에러(nil·중복 키)는 Blocker를 켜기 전이라 안전. 같은 부류를 `:Clear`는 Q40 (a) "그대로"로 닫았고 레퍼런스 `06-slot.md`가 `:Clear`에만 경고한다. 탐사자 제안은 동작 그대로 + `:List` 절에 같은 경고 한 줄. 메인 의견: Q40과 같은 부류라 문서화가 일관되나, `:List`는 사용자 `updateFn`이 매 갱신마다 도는 자리라 `:Clear`보다 밟기 쉽다 — 경고로 둘지 끄는 줄을 보장할지(`pcall` 없이는 불가 — 감싸지 않는다는 계약과 충돌)는 사용자 판단.
+
+**(22) `AddPlugin`에 멱등성이 없다** — 실측: 핸들러 하나를 등록하는 플러그인을 두 번 `AddPlugin`하면 두 번 실행되어 같은 이름 핸들러가 `listHandlers()`에 둘, `q.debug`에선 자기 필드를 덮는다고 경고까지 낸다. `UseProvider`는 "require 캐시가 같은 identity를 주므로 여러 스크립트가 불러도 no-op"을 이유로 identity 락이 있는데, 여러 LocalScript가 공유 설정 모듈 밖에서 각자 `AddPlugin`하는 같은 상황이 플러그인엔 없다. 갈래: (가) 같은 `pluginFn` identity 재호출은 no-op(`RunInit` 가드와 같은 모양, 새 필드 없음), (나) "한 번만 부를 것" 문서화. 위 (9)의 경고 설계와 겹쳐 사용자 문항. 탐사자 권고 (가), 확신 중상.
+
+### 나. 패키징·버전 — 다음 릴리즈 자체가 걸린 것
+
+**(23) 패키지끼리 `version = "^"`로 물려 있는데 다음 릴리즈에 런타임 BREAKING(Brand 개명)이 마이너로 실린다** — 메인 확인: `quad-base/pesde.toml`·`quad-roblox/pesde.toml`이 `quad_types`/`quad_error`/`type_version_check`/`quad_base`를 `workspace = …, version = "^"`로 참조한다. `[Unreleased]`의 `:register` → `:Register`는 타입만이 아니라 런타임 호출이라, 소비자 트리가 "quad_roblox 3.2.0(고정) + quad_types 3.3.x"로 풀리면 3.2.0의 `Brand.luau`/`Tween.luau`가 없는 소문자 메소드를 불러 require 시점에 죽는다. 설치 문서는 `^3.0.0`과 "정확한 버전으로 고정하려면 `version = "3.2.0"`"을 둘 다 안내하므로 한쪽만 고정하는 조합을 문서가 만든다. 미확인 둘: pesde가 게시 때 `"^"`를 `^3.2.0`으로 치환하는지, 해석기가 두 범위를 한 버전으로 합치는지(합치지 않으면 크래시 대신 quad_types 사본이 둘로 갈린다). pesde 0.7.4 바이너리에 워크스페이스 버전 종류 Caret/Tilde/Exact 문자열이 있어 `version = "="`가 가능해 보인다(미실측). 갈래: (가) quad 패키지끼리 참조를 이번 릴리즈부터 `"="`로 — lockstep을 매니페스트가 강제, (나) 마이너 BREAKING을 멈추고 메이저를 올림, (다) 그대로. (가)는 위 (3)(범용 둘을 lockstep에서 뺄지)과 같이 정해야 한다 — 뺀다면 그 둘만 `^`. 탐사자 권고 Brand 개명이 나가기 전에 (가), 확신 중(미확인 둘 때문). **위 (2) `VERSION_PATTERN` 완화와도 얽힌다** — 매니페스트가 `=`로 묶으면 패턴 완화의 실익(베이스 패치마다 전 패키지 lockstep 릴리즈 강요 해소)과 방향이 반대다. 셋((2)·(3)·(23))을 한 문항으로 볼 것.
+
+**(24) `type_version_check`의 `N^`가 SemVer caret이 아니라 자리마다 독립으로 "이상"을 본다** — 메인 확인: `type-version-check/src/init.luau` 헤더가 *"`N^` — 그 자리 값이 N 이상이면 통과(caret)"*, 예시 `"3.3^.4^"`(마이너 3 이상 + 패치 4 이상). 실측: `matchesPattern("3.3.0", "3.2^.1^")`가 false("3.2.1 이상"을 뜻하려던 패턴이 3.3.0을 거부), `("4.0.0", "3^.2^.0^")`도 false, 헤더 예시 `"3.3^.4^"`는 3.4.0을 거부한다(하한으로 못 씀); 프리릴리즈 규칙 때문에 `("3.2.0-rc.1", "3.2^.*")`는 true. 서드파티 백엔드 작성자가 헤더의 "(caret)"을 믿고 게시하면 base 마이너가 오르는 날 `UseProvider`에서 터진다. 갈래: (가) `N^`를 "이 자리부터 오른쪽까지 사전식 이상"으로 재정의(참이던 쌍이 거짓이 되는 경우가 없어 순수하게 넓힘; 런타임과 type function 두 벌), (나) 뜻 유지 + 헤더·README에 "자리별 독립, caret 아님" 경고와 올바른 예시. 탐사자 권고 (가), 확신 중상. (3)(이 패키지를 lockstep에서 뺄지)과 같은 자리.
+
+### 다. 타입 표면
+
+**(25) `Context:Set`이 Provider의 타입과 다른 값을 막지 못한다** — 실측(두 솔버): `Provider<T>`의 `T`가 읽기 전용 팬텀 필드 하나에만 실려 공변이라 `ctx:Set(p, "not a number")`(p는 `Provider<number>`)가 `T`를 `number | string`으로 넓혀 통과한다. 대조군 `Ref<number>`에 문자열은 에러. 결과적으로 `ctx:Get(p)`가 `number`라 약속하는데 문자열이 나올 수 있다. 막는 모양: `Ref`가 이미 쓰는 방식대로 반공변 팬텀 필드 하나 추가(예 `read __quadProviderAccepts: (T) -> ()`, 런타임 값 `Void`) — 스크래치 복제본에서 잘못된 `Set`만 에러, 명시 인자·레퍼런스의 캐스트·`Get` 추론·체이닝은 통과(실제 quad-types·`spec.context`·문서 스니펫엔 미실험). 조이는 변경이라 `Provider<Frame>`을 `Provider<Instance>` 자리에 넘기던 코드도 거부된다. 새 필드라 사용자 문항, 대안은 "알려진 구멍"으로 레퍼런스에만. 탐사자 권고 이번 창에 막기, 사실 확실·모양 중상.
+
+**(26) `Tag:Names()`와 `store:Names()`가 이름은 같고 모양이 다르다** — `Tag`는 이터레이터 함수(`for name in tag:Names()`), `Store`는 배열(`for _, n in store:Names()`), `Attr`는 세 번째 모양 `:NameMap()`. 두 레퍼런스도 각자 다르게 적었다. 신 솔버는 둘 다 반복을 허용해 틀려도 타입 에러가 안 날 수 있다(부분 실측). 갈래: Tag도 배열로 맞춤(태그 집합은 작아 할당 무의미), Tag 쪽 이름만 바꿈(새 이름 — 문항), 레퍼런스에 대비 한 줄. 탐사자 권고 배열로 맞춤, 확신 중.
+
+**(27) `Blocker`에 같은 상태를 읽는 공개 경로가 둘이다** — 필드 `IsBlocked`와 메소드 `:IsOn()`(런타임은 `return self.IsBlocked` 한 줄), 레퍼런스도 둘을 따로 싣는다. 형제 `Observer`/`EffectHandle`은 필드 `Subscribed` 하나뿐이고, 두 이름이 다른 낱말("Blocked" 대 "On")이라 같은 것인지 한눈에 안 보인다. 갈래: 둘 다 유지하고 별칭 명시 / `IsOn` 제거 / `IsBlocked` 제거. 어느 쪽을 남길지는 사용자 몫.
+
+**(28) 생성 `Declaration` 모듈의 export 목록이 통째로 계약이 되려 한다** — 생성기가 도움 별칭까지 전부 `export type`으로 찍는다(클래스마다 `<Class>Elem`·`MapperElem`·`RefMarker`·`OnChange`·`Param`, `<Class>Modifier`·`Into<Class>`, 값 별칭 `Field`/`FieldV`/`FieldP`/`FieldPV`/`FieldOut`/`FieldOutP`). 스펙이 사용자처럼 쓰는 건 `Field<T>`·`FieldOut<T>`·`Into<Class>`·`<Class>Modifier`·`<Class>RefMarker`이고, 보간 불가 타입 커스텀 setter엔 이름에서 뜻이 안 보이는 `FieldP`가 필요하다. 클래스별 타입의 공개 경로는 `HUMAN_TODO.md` D에 이미 열려 있으니, **그 결정 때 export 목록도 같이 정할 것**이 새로 짚은 점 — 경로가 열리는 순간 지금 export 전체가 계약이 된다. 탐사자 권고 D와 한 문항으로 묶어 공개 목록을 고르고 나머지는 `export` 없이; `FieldP` 류 이름은 새 이름이라 문항.
+
+**(29) 케이싱 규칙 문장과 실제 사용자 함수가 어긋난다** — 위 "찾았지만 문제 아님"은 "실제 표면 전체가 이 규칙을 따른다"고 적었는데 반례가 있다. 기준 문장("특정 프리미티브 타입 하나의 전용 소유물이면 대문자, 아니면 소문자")과 달리 프리미티브가 아닌 사용자 함수 `q.Claim`·`Fallback`·`Traceback`·`OnCreated`/`OnRendered`/`OnDestroyed`·`Debounce`/`Throttle`이 대문자이고, 레퍼런스 core/10이 사용자용으로 싣는 `q.dispose`와 `q.newMapperClass`는 소문자다 — 특히 `Claim`(넘겨받음)과 `dispose`(파괴)는 짝인데 갈린다. 실제 관행은 "앱 개발자가 부르면 대문자, 백엔드 계약·술어는 소문자"로 보인다. 갈래: 규칙 문장을 관행에 맞게 고치기(비파괴) / 관행대로 `dispose` → `Dispose`(BREAKING, 이번 창이 마지막). 사용자 문항, 확신 중.
+
+**(30) 백엔드가 심는 연산들이 사용자 네임스페이스 `q.`에 평평하게 산다** — `nativeInsert` 등 여섯, `isInst`, `onDestroying`, `nativeClaim`, `nativeFindChild`, `addTag`/`removeTag`/`setAttr`, `setTimeout`/`clearTimeout`, 생명주기 넷, `newMapperClass`가 전부 `Quad` 타입 필드라 앱 개발자의 자동완성에 섞이고, `q.setTimeout(fn, 1)`은 Roblox 백엔드에서 실제로 돈다. 나중에 하위 필드로 옮기면 서드파티 백엔드와 그걸 부른 앱 코드가 같이 깨진다. 지금 옮기는 비용도 크다("모듈 필드는 매번 `module.x`로 읽는다" 규약이라 내부 읽기 자리 수십 곳). 갈래: 레퍼런스에 "백엔드 계약이지 앱 API 아님" 명시(비용 거의 0) / 하위 네임스페이스로 이동(새 이름 — 문항). 탐사자 권고 최소 명시, 확신 중하.
+
+**(31) `Observer`와 `EffectHandle` 타입 이름의 비대칭** — `state:Observer(fn)`은 `Observer`, `q.Effect(fn)`은 `EffectHandle`(마커 `ObserverMarker`/`EffectHandleMarker`, 술어 `isObserver`/`isEffect`). 설정 모듈 문서가 `EffectHandle`을 재수출하게 해 이미 사용자 주석에 들어간다. Luau는 타입·값 이름 공간이 따로라 `Effect` 타입 이름을 막는 제약은 없어 보이나 `effect-plan.md`에서 근거를 못 찾음. 확신 하(취향 비중 큼) — 올리기만 한다.
+
+**(32) 비파괴 — 옵션 테이블 셋과 `q.Slot` 첫 인자가 `read` 규칙을 안 따른다** — `typing-limits.md`가 적은 규칙(읽기만 하는 옵션 타입은 필드를 `read`로 — 탐사자 인용, 절 제목 아님)을 `TweenOptions`·`AnimateInfo`는 따르나 `DebounceOptions`·`ThrottleOptions`·`SlotListOpts`와 `q.Slot`의 `initial: { SlotElement<T> }?`는 안 따라, 옵션을 변수에 담아 넘기면 두 솔버가 거부한다(`local opts = { Owned = false }`를 `:List`에). `read`를 붙이면 받는 입력이 넓어질 뿐이라 **BREAKING 창과 무관** — 언제 해도 됨, 확신 높음. (19)의 "모르는 키 에러"와 같이 손대면 편하다.
+
+참고(판단 재료 약함): 무타입·생성자·클래스별 `Modifier.Overridden`이 전부 `any`를 돌려준다(기록된 솔버 제약). 나중에 `Modifier`로 좁히면 `local m: FrameModifier = …Overridden(a, b)`가 깨질 수 있어, 좁힐 계획이 있으면 이번 창에 재측정할 가치가 있다(미실측).
+
+### 라. 문서 약속 — 문구를 좁히거나 채울 것 (새 이름·메커니즘 없음, 대부분 메인 자율 가능)
+
+**확실한 잔재·오류 (게시 전 고칠 것)**: 사이트 수기 랜딩 `docs/site/src/content/docs/index.mdx`(두 곳)·`en/index.mdx`(한 곳)가 아직 옛 위치 인자 이름(`prev` 반환, 넘겨받은 `index`/`offset`) — `sync-docs.py`가 복사하지 않는 파일이라 오늘 치환에서 빠졌다; 랜딩과 `getting-started/15-animation.md` 머리 설명의 "`:Apply(q.Animate)` 슈거"는 실제 모양 `:Apply(q.Animate { … })`와 달라 그대로 따라 쓰면 State가 옵션 자리로 간다; `docs/reference/core/06-slot.md`의 Offset 설명("첫 원소가 시작하는 절대 물리 위치")이 1부터 세는 값으로 읽히나 실제(GS 10 퀴즈·extend/01과 같이)는 앞에 있는 물리 자식 수, 0부터; `:Single`의 KeyGone 서술("값이 nil이거나 None이면 `ctx.Item`으로 KeyGone")이 넘친다 — 처음부터 nil이면 `updateFn`이 아예 안 불리고, 있다가 없어지는 전이에서만 온다.
+
+**약속을 좁히거나 "정해져 있지 않음"을 적을 것**: (i) 같은 원천의 Observer·Effect, 같은 Ref 콜백의 발화 순서 — 실측으로 한 프로세스 안에서도 매번 달랐다(weak 키 `_subs` 해시 순회); core/02·05·07에 "순서 정의 안 됨, 등록 순서도 아님"(나중에 보장하는 건 비파괴). (ii) KeyGone 호출끼리의 순서(`pairs(prevKeys)`) — core/06의 사이클 세 단계 서술 옆에. (iii) `source.Revision`이 "`bit32` 랩어라운드로 감소하는 방향"까지 약속(core/02) — core/07처럼 "일치 비교만 의미"로. (iv) `ref.Callbacks`/`WeakCallbacks`의 자료 모양(키가 콜백인 집합, weak, `:Wait` 코루틴이 `thread` 키)을 core/07이 자세히 적어 `read`로 막은 표현을 읽기 쪽으로 다시 계약화 — "진단용, 모양은 바뀔 수 있음"을 붙일지 사용자 판단. (v) `AddPlugin` 경고는 돌려준 확장 테이블만 본다 — `pluginFn` 안의 직접 대입은 조용하니 core/01 문장을 "돌려준 테이블이 덮는 필드"로. (vi) GS 17 "원천이 한 번 움직였을 때 계산은 한 번만" — 계산 중 상류가 움직이면 수렴까지 다시 돈다(레퍼런스 core/03은 이미 그렇게 씀), 추정·영향 낮음.
+
+**CHANGELOG `[Unreleased]`**: `read` 목록의 `Timeout._native`가 바로 위 "`_` 필드는 공개 표면 아님"과 부딪친다(빼거나 괄호); `Epoch.Revision` `read`로 자기 값에 Epoch를 직접 구현하던 백엔드 작성자도 깨지는데 옮기는 법이 quad 메소드만 안내한다("자기 impl 타입이나 캐스트로"); `ref.Value = x` → `ref:Set(x)`는 콜백 발화·Revision 갱신이 새로 붙는 동작 변화라는 한 줄(추정).
+
+**스킬**: `docs/skills/quad-ui-dev/references/rules-and-invariants.md`가 에러 문구에 "match on them"을 권한다 — 위 (11) 정책과 반대, (11)을 닫을 때 같이. `SKILL.md`의 "`q.State<T>` does not exist"는 레퍼런스가 설정 모듈 재수출 전제로 `q.State<T>`를 쓰는 것과 같이 읽으면 모순 — "설정 모듈을 거치지 않을 때" 조건을 붙일 것.
+
+**탐사자가 미완으로 표시한 것**: how-to·시작하기 본문 전수 대조(약속 낱말 247줄 중 계약성 있는 것만 봄), Tween/Animate·OnChange·Claim·Context·Operator 레퍼런스 동작 주장 대조, 랜딩 FAQ "`D.<Class>` 31개" 개수. 런타임 탐사의 미완: Tween·Animate 모르는 키 런타임 실측, `Time = "x"` 무진단 원인, pesde 게시 매니페스트 치환·버전 합치기.
+
+**세 탐사가 확인하고 문제없다고 한 것(다시 볼 필요 없음)**: 오늘 바꾼 표면의 잔재는 위 랜딩 둘 말고 없음(의도된 v1 역사 서술 제외); 사이트 사본 동기화; `Source:Set`·`Ref:Set`의 같은 값 발행; `UseProvider` 멱등·실패 시 재시도 가능; `q.debug`는 설치 시점 출력 두 곳뿐; `Unsubscribe` 두 번 에러 대 `WeakUnsubscribe` 관대(문서화됨); `unbindLifetime` 미바인드 no-op·nil 에러; `KeyGone` 반환 검증; keyFn nil·중복 에러; `Context:Set(nil)`·미설정 `:Get` 에러; Debounce/Throttle 기본값·둘 다 false 에러; Tween 옵션 검증; `Blocker:Off` 멱등; PreRef/Ref/PostRef 순서 계약; 숫자 키 먼저 처리(spec.drive 감시, 스크래치 실측); Gate `emit`; Observer 등록 즉시 한 번 발화; `ctx` 매 호출 새 테이블·KeyGone `Index = 0`; CHANGELOG의 Brand·Depend·updateFn·Length/Offset 옮기는 법; `quad-base` 엔진 전역 무참조; 생성 `PV0`~`PV75` 비export; `q.Slot()` 무캐스트 `Slot<unknown>`(기록된 관용구); `RunInit`·`ObserverFn`·`Operator.Alternative`·`Tag.Contains`는 나중에 넓혀도 비파괴; `Ref.Unwrap` 두 솔버 깨끗.
 - `docs/quadnomicon/`·`docs/how-to/`의 개별 문장까지 전수 대조하지는 않았습니다 — 공개 표면의 **정본**(quad-types·두 init.luau·생성기·매니페스트)과 레퍼런스 색인을 기준으로 삼았습니다.
