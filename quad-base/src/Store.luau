@@ -45,6 +45,12 @@ local isSource = Brand.isSource
 -- `CheckReservedKeys`. `__reservedCheck` cannot be derived from `__index`
 -- because it is a phantom field.
 local RESERVED = { Of = true, Names = true, __reservedCheck = true }
+-- [2026-09-15 사용자 결정 — 공개 표면 (6)] every key starting with "__" is reserved too: Store's public
+-- methods stay frozen at Of/Names (new features ship as free functions/sugar), and the double-underscore
+-- space is kept for phantom/marker fields that the type side may add later. Mirror in `CheckReservedKeys`.
+local function isReserved(name: string): boolean
+	return RESERVED[name] == true or string.sub(name, 1, 2) == "__"
+end
 
 -- One predicate for both doors (`Of` `H-201`, constructor `H-347`) — 0순회 `H-367`:
 -- they had drifted apart once already (the constructor let `Store({ Source(1) })` in).
@@ -55,7 +61,7 @@ local function checkKey(name: any, what: string)
 		-- round3 `H-443` (외부 리뷰 G-13): "" rode `Attr(store)` to `setAttr("")`
 		Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
 	end
-	if RESERVED[name] then
+	if isReserved(name) then
 		Err.errorBeforeNearest(`Store: "{name}" is a reserved store key`, SURFACE)
 	end
 end

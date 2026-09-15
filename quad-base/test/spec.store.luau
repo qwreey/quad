@@ -70,7 +70,8 @@ end
 print()
 print("=== 3. 예약 이름 (H-153) — 생성자 순회와 Of 둘 다 error(level 2) ===")
 do
-	for _, name in { "Of", "Names", "__reservedCheck" } do
+	-- [2026-09-15] the "__" prefix is reserved as a whole (not only the phantom's own name)
+	for _, name in { "Of", "Names", "__reservedCheck", "__anything" } do
 		local ok, err = pcall(function()
 			Store({ [name] = Source(1) } :: any)
 		end)

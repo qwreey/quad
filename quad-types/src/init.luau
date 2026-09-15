@@ -490,7 +490,8 @@ export type function CheckReservedKeys(keys: type)
 	for _, k in list do
 		if k:is("singleton") then
 			local v = k:value()
-			if v == "Of" or v == "Names" or v == "__reservedCheck" then
+			-- [2026-09-15] plus the whole "__" prefix (Store.luau `isReserved` — keep the two in step)
+			if v == "Of" or v == "Names" or (type(v) == "string" and string.sub(v, 1, 2) == "__") then
 				print(`quad.Store: "{v}" is a reserved key`)
 				return types.never
 			end

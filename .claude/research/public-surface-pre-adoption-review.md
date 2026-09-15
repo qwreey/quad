@@ -19,7 +19,7 @@
 3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지. **[닫힘 2026-09-15 — 뺌, 번호는 이어서 4.0.0부터·옛 3.x yank]**
 4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지. **[닫힘 2026-09-15 — `State<number>`로 업캐스트, BREAKING(타입)]**
 5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외). **[닫힘 2026-09-15 — 붙임, BREAKING(타입)]**
-6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나.
+6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나. **[닫힘 2026-09-15 — 메소드 동결 + `__` 접두 전부 예약, BREAKING]**
 7. (7) `Slot:List`/`:Single`의 `updateFn` 인자 모양 — 테이블 하나 / `:Single`에도 `index` / `opts`만 마지막으로 통일 / 그대로. **[닫힘 2026-09-15 — 매 호출 새 테이블 `updateFn(ctx)`, 필드 PascalCase, BREAKING]**
 8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지. **[닫힘 2026-09-15 — (나) 층 나눔 유지, 백엔드마다 레퍼런스에 명시; 프로바이더 재타이핑 기각]**
 9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용. **[닫힘 2026-09-15 — 허용 + `q.debug` 경고]**
@@ -131,6 +131,8 @@
 ---
 
 ## (6) `Store`의 예약 키가 셋뿐이고 **확장 정책이 없다**
+
+**[결정 2026-09-15 — (i)+(iii): 메소드 동결 + `__` 접두 예약]** 메인 권고(보이는 메소드는 `Of`/`Names`로 계약상 동결하고 새 기능은 `q.` 쪽 함수·슈거로, 팬텀·마커 필드가 늘 자리는 `__` 접두 전체 예약; 계획된 Store 메소드 없음 grep 확인), 사용자: *"나도 가/나 에 동의."* 반영: `Store.luau` `isReserved`(RESERVED + `__` 접두)·quad-types `CheckReservedKeys` 사본, `spec.store` §3에 `__anything`, 레퍼런스 core/04 "예약 키" 절(메소드 동결 약속), CHANGELOG BREAKING, `base/store-plan.md` 배너.
 
 **무엇** — `quad-base/src/Store.luau:47`의 `RESERVED = { Of = true, Names = true, __reservedCheck = true }`와 그 타입 쪽 사본 `quad-types/src/init.luau:473-485`(`CheckReservedKeys`). `Store<T> = T & { Of, Names, __reservedCheck }`(488-492)라 **사용자 필드와 Store 메소드가 같은 이름 공간에 삽니다.**
 
