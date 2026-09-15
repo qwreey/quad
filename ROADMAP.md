@@ -59,7 +59,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         Modifier 필드 수천 개 체이닝 초선형(immutable clone 설계 그대로; 실사용에 없음).
       - **[2026-09-08 `H-479` 대부분 닫힘]** `Slot:Clear`/`ExtractAll`의 요소마다 recompute와 `ExtractAll`의 역순 `table.insert` O(n²)는 배치화됨(recompute 1회, ExtractAll은 `rawSplice` 한 번) — 남은 잔여는 `Clear`의 요소별 `nativeRemove`뿐(파괴가 요소 단위라 의도)
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
-      - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
+      - `drive`의 recompute 호출부가 배치 `blocker.Blocking`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
 - [ ] **[2026-09-08 밤 신설 — 사용자 제기, 결정 대기 `question.md` 0절]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
 - [ ] **[2026-09-15 신설 — 사용자 결정, 리서치 먼저·비파괴]** 에러 식별자와 문서 앵커 — 메시지 끝에 붙는 코드(TypeScript `TS2339: Property does not exist on type`류)로 문서에서 grep·링크할 표면을 만드는 것. 사용자: *"문서에 grep 할 수 있는 표면이 없다는건 아쉽게 느껴져 … 메니징을 어떻게 미려하게 할 수 있냐가 큰 문제. 보통 어떻게 하는지 리서치도 필요하고, 문서에 ref 를 걸 때 깨짐을 어떻게 잡느냐도 중요해. 앵커가 있어야한다는 점은 여전히 필요"*. 지금은 "메시지는 API 아님" 정책만 명시(공개 표면 (11) (가)), 잠정 방향은 정책 + 식별자 둘 다. 조사할 것: 다른 컴파일러·라이브러리의 에러 코드 관리 방식, 코드 → 레퍼런스 앵커 규약, 깨진 앵커를 `doc-check.py`/`doc-coverage.py`류로 잡는 법, quad-error의 `err: any` 계약과 `Fallback`/`Traceback`에 미치는 영향. 메시지 자체가 API가 아니라고 선언했으므로 코드를 붙이는 변경은 비파괴.
