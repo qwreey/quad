@@ -16,6 +16,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 - **BREAKING — `quad_types`의 `Brand()`가 돌려주는 객체의 메소드가 `:register`/`:is`에서 `:Register`/`:Is`로 바뀌었습니다.** 자기 값 타입에 브랜드를 붙이는 백엔드·플러그인 작성자에게만 해당하고, `q.isState` 같은 술어를 쓰는 코드는 그대로입니다. 옮기는 법: 호출부의 메소드 이름 첫 글자만 대문자로.
 - 문서에 명시: `_`로 시작하는 필드(`_bookkeeping` 등)는 공개 표면이 아니며 예고 없이 바뀝니다.
+- **BREAKING(타입만) — `slot.Length`/`slot.Offset`과 `updateFn`의 `offset` 인자가 `Source<number>`에서 읽기 전용 `State<number>`로 좁혀졌습니다.** 값을 채우는 것은 quad뿐이라 `:Set`을 부르면 조용히 레이아웃이 어긋났는데, 이제 strict에서 막힙니다. `:Get`/`:Compute`/`:Observer`/`:With`는 그대로입니다. 옮기는 법: `updateFn`에 `offset: Source<number>`라고 주석을 달았다면 `State<number>`로 바꾸세요.
+- **BREAKING(타입만) — 사용자가 읽기만 하는 상태 필드에 `read`가 붙었습니다**: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`, `Source.Revision`, `Observer`·`EffectHandle`의 `Subscribed`, `Blocker.IsBlocked`, `AttrKey`의 `Name`, `Timeout._native`. 런타임 동작은 같습니다. 옮기는 법: 이 필드에 직접 대입하던 코드는 `ref:Set(v)`, `:Subscribe()`/`:Unsubscribe()`, `blocker:On()`/`:Off()` 같은 메소드로 바꾸세요.
 
 ---
 

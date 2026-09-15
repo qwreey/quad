@@ -244,7 +244,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
 	item: Row | QuadTypes.KeyGone,
 	index: number,
-	_offset: q.Source<number>,
+	_offset: q.State<number>,
 	prev: QuadTypes.SlotItem<Instance>?,
 	ud: RowUD?
 ): (any, RowUD?)

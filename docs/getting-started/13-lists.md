@@ -250,7 +250,7 @@ top:Remove(1)
 print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 ```
 
-**실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `Source`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
+**실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `State`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S1~S4 — LayoutOrder 4 → 5 → 4, cur:Set(nil)이면 자식 수가 4에서 3으로 -->
 
 <details>

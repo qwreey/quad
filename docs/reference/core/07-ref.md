@@ -26,10 +26,10 @@ type RefCallback<T> = (value: T, ref: Ref<T>) -> ()
 
 type Ref<T> = {
     read __quadRefAccepts: (T) -> (), -- 타입 전용 반공변 팬텀 필드(children 자리의 클래스 검사용)
-    Value: T,
-    Revision: number,
-    Callbacks: { [RefCallback<T> | thread]: true },
-    WeakCallbacks: { [RefCallback<T>]: true },
+    read Value: T,
+    read Revision: number,
+    read Callbacks: { [RefCallback<T> | thread]: true },
+    read WeakCallbacks: { [RefCallback<T>]: true },
     Set: <Self>(self: Self, value: T) -> Self,
     Callback: <Self>(self: Self, fn: RefCallback<T>) -> Self,
     WeakCallback: <Self>(self: Self, fn: RefCallback<T>) -> Self,
@@ -166,7 +166,7 @@ end)
 **시그니처**
 
 ```luau
-Value: T
+read Value: T
 ```
 
 **동작** — 지금 담긴 값. 직접 읽습니다. `:Set`이 가장 먼저 갱신하는 것이 이 필드이므로, 콜백 안에서 `ref.Value`를 읽으면 이미 새 값입니다.
@@ -180,7 +180,7 @@ props 숫자 키 자리에 놓은 Ref는 채워지기 전까지 `nil`이라 타�
 **시그니처**
 
 ```luau
-Revision: number
+read Revision: number
 ```
 
 **동작** — `:Set` 때마다 바뀌는 표식입니다. `Ref`를 `Epoch`으로 만드는 필드입니다.
@@ -192,7 +192,7 @@ Revision: number
 **시그니처**
 
 ```luau
-Callbacks: { [RefCallback<T> | thread]: true }
+read Callbacks: { [RefCallback<T> | thread]: true }
 ```
 
 **동작** — 강하게 붙들린 콜백들의 **집합**(배열이 아닙니다). 키가 콜백 함수 자신이라 중복 등록은 자동으로 하나로 합쳐집니다 — "몇 번 등록했나"라는 질문이 존재하지 않습니다.
@@ -204,7 +204,7 @@ Callbacks: { [RefCallback<T> | thread]: true }
 **시그니처**
 
 ```luau
-WeakCallbacks: { [RefCallback<T>]: true }
+read WeakCallbacks: { [RefCallback<T>]: true }
 ```
 
 **동작** — 같은 집합이되 **weak 키** 테이블입니다. 여기에만 등록된 콜백은 다른 곳에서 붙들지 않으면 GC 대상이 됩니다.

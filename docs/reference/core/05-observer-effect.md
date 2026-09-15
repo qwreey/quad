@@ -71,7 +71,7 @@ Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer
 export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
 export type Observer = {
 	read __quadObserver: true,
-	Subscribed: boolean,
+	read Subscribed: boolean,
 	Subscribe: (self: Observer) -> Observer,
 	WeakSubscribe: (self: Observer) -> Observer,
 	Unsubscribe: (self: Observer) -> Observer,
@@ -186,7 +186,7 @@ Effect: (fn: EffectFn, ...any) -> EffectHandle
 export type EffectFn = (self: EffectHandle) -> ...(() -> ())
 export type EffectHandle = {
 	read __quadEffect: true,
-	Subscribed: boolean,
+	read Subscribed: boolean,
 	Rerun: (self: EffectHandle) -> EffectHandle,
 	Subscribe: (self: EffectHandle) -> EffectHandle,
 	WeakSubscribe: (self: EffectHandle) -> EffectHandle,

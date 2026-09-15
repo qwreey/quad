@@ -60,8 +60,10 @@ function RefImpl.__tostring(self: any): string
 end
 
 function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
-	self.Value = value -- (1) settle the value first
-	self.Revision = bit32.bnot(-self.Revision) -- (2) before callbacks (`H-108`)
+	-- the public `Ref<T>` declares these `read` (2026-09-15) — only the owner writes, through the impl view
+	local w = self :: any
+	w.Value = value -- (1) settle the value first
+	w.Revision = bit32.bnot(-self.Revision) -- (2) before callbacks (`H-108`)
 
 	-- (3) snapshot before iterating (`H-23`): registering/unregistering during
 	-- the walk must not disturb the iteration. `H-208` (user, 2026-08-31):

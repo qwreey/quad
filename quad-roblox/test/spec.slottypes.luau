@@ -10,7 +10,7 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
-type Source<T> = QuadTypes.Source<T>
+type State<T> = QuadTypes.State<T>
 type SlotItem<T> = QuadTypes.SlotItem<T>
 
 local q = Quad.New():UseProvider(QuadRoblox)
@@ -19,7 +19,7 @@ local function _neverCalled()
 	local D = q.Declaration
 	-- (1) 매핑 updateFn: Item = string, 원소 = Instance, UD = number
 	local cur = q.Source(nil :: string?)
-	local mapped = q.Slot<<Instance>>():Single(cur, function(item: any, offset: Source<number>, prev: SlotItem<Instance>?, ud: number?): (any, number?)
+	local mapped = q.Slot<<Instance>>():Single(cur, function(item: any, offset: State<number>, prev: SlotItem<Instance>?, ud: number?): (any, number?)
 		if item == q.KeyGone then
 			return nil, nil
 		end

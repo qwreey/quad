@@ -92,14 +92,14 @@ local panel = D.Frame { list, fixed }  -- 숫자 키에 놓으면 그 자리가 
 **시그니처**
 
 ```luau
-Length: Source<number>
+read Length: State<number>
 ```
 
-**동작** — 이 Slot이 차지하는 **물리 원소의 총 개수**를 싣는 반응형 `Source<number>`입니다. 중첩 Slot은 자기 물리 잎의 수만큼 기여하므로, 원소 배열의 길이(`#`)와 항상 같지는 않습니다.
+**동작** — 이 Slot이 차지하는 **물리 원소의 총 개수**를 싣는 반응형 `State<number>`입니다 — **읽기 전용**이라 `:Set`이 없습니다(값을 채우는 것은 quad의 부기뿐입니다). 중첩 Slot은 자기 물리 잎의 수만큼 기여하므로, 원소 배열의 길이(`#`)와 항상 같지는 않습니다.
 
 **마운트 전에는 0입니다.** 채워지는 것은 부기(bookkeeping) 재계산이고, 그건 Slot이 실제로 어딘가에 놓인 뒤에 돕니다. 그래서 `:Add` 직후에 `Length:Get()`을 읽으면 아직 0일 수 있습니다.
 
-`Source`이므로 `:Compute`/`:Observer`로 그대로 구독할 수 있습니다.
+`State`이므로 `:Compute`/`:Observer`로 그대로 구독할 수 있습니다.
 
 **예제**
 
@@ -118,10 +118,10 @@ local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty }
 **시그니처**
 
 ```luau
-Offset: Source<number>
+read Offset: State<number>
 ```
 
-**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 `Source<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`의 `updateFn`이 세 번째 자리(`:Single`에서는 `index`가 빠져 두 번째)에서 받는 것도 이 Source입니다.
+**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`의 `updateFn`이 세 번째 자리(`:Single`에서는 `index`가 빠져 두 번째)에서 받는 것도 이 State입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
@@ -320,7 +320,7 @@ IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?
 List: <Item, UD>(
     self: Slot<T>,
     data: { Item } | StateMarker<{ Item }>,
-    updateFn: (item: Item | KeyGone, index: number, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
+    updateFn: (item: Item | KeyGone, index: number, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
     keyFn: ((item: Item, index: number) -> any)?,
     opts: SlotListOpts?
 ) -> Slot<T>
@@ -347,7 +347,7 @@ type SlotListOpts = { Owned: boolean? }
 |---|---|
 | `item` | 이번 사이클의 데이터 항목. 지난 사이클에 있었는데 이번엔 사라진 키에는 `q.KeyGone`이 옵니다 |
 | `index` | 이 Slot 안에서의 물리 위치(`Offset` 기준 1부터). 중첩 Slot이 섞여 있으면 데이터 배열의 인덱스와 다릅니다 |
-| `offset` | 이 Slot의 `Offset` Source 자체 — 값이 아니라 핸들입니다 |
+| `offset` | 이 Slot의 `Offset` State 자체 — 값이 아니라 핸들입니다 |
 | `prev` | 이 키가 지난번에 만든 원소(언래핑됨). 처음이면 `nil` |
 | `userdata` | 지난 호출이 두 번째로 반환한 값. 키마다 따로 보관됩니다 |
 
@@ -392,7 +392,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
     item: Row | QuadTypes.KeyGone,
     index: number,
-    offset: q.Source<number>,
+    offset: QuadTypes.State<number>,
     prev: QuadTypes.SlotItem<Instance>?,
     ud: nil
 ): (any, nil)
@@ -423,7 +423,7 @@ rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- 
 Single: <Item, UD>(
     self: Slot<T>,
     state: Item? | StateMarker<Item?>,
-    updateFn: ((item: Item | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+    updateFn: ((item: Item | KeyGone, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
     opts: SlotListOpts?
 ) -> Slot<T>
 ```
@@ -491,7 +491,7 @@ local slot = q.Slot<<Instance>>()
 slot:List(rows, function(
     item: Row | QuadTypes.KeyGone,
     _index: number,
-    _offset: q.Source<number>,
+    _offset: QuadTypes.State<number>,
     prev: QuadTypes.SlotItem<Instance>?,
     _ud: nil
 ): (any, nil)

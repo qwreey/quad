@@ -96,7 +96,7 @@ local function Leaderboard(itemsState: QuadTypes.State<{ Item }>)
     slot:List(itemsState, function(
         item: Item | QuadTypes.KeyGone,
         physIndex: number,
-        offset: QuadTypes.Source<number>,
+        offset: QuadTypes.State<number>,
         prev: QuadTypes.SlotItem<Instance>?,
         ud: RowUD?
     ): (any, RowUD?)

@@ -25,7 +25,7 @@ local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 Source: <T>(v: T) -> Source<T>
 
 export type Source<T> = State<T> & {
-	Revision: number,
+	read Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
@@ -119,7 +119,7 @@ items:Emit()                   -- 이제 하류가 안다
 **시그니처**
 
 ```luau
-Revision: number
+read Revision: number
 ```
 
 **동작**

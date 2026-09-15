@@ -17,11 +17,11 @@
 1. (1) **[닫힘 2026-09-14 — `Declaration`으로, (a) 채택]** `D` → 풀 이름으로 바꿀지, 바꾸면 `Declaration` / `Declare` / 다른 낱말 중 무엇으로.
 2. (2) `quad-roblox`의 `VERSION_PATTERN`을 `"3.*.*"`로 풀지.
 3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지.
-4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지.
-5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외).
+4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지. **[닫힘 2026-09-15 — `State<number>`로 업캐스트, BREAKING(타입)]**
+5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외). **[닫힘 2026-09-15 — 붙임, BREAKING(타입)]**
 6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나.
 7. (7) `Slot:List`/`:Single`의 `updateFn` 인자 모양 — 테이블 하나 / `:Single`에도 `index` / `opts`만 마지막으로 통일 / 그대로.
-8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지. **[2026-09-15 부분 — 잠정 변경 표면임에 동의, `T`의 층 나눔은 사용자 검토 중(아래 (8) 머리)]**
+8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지. **[닫힘 2026-09-15 — (나) 층 나눔 유지, 백엔드마다 레퍼런스에 명시; 프로바이더 재타이핑 기각]**
 9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용. **[닫힘 2026-09-15 — 허용 + `q.debug` 경고]**
 10. (10) 생성기에 `D` 예약 이름 충돌 게이트를 넣을지. **[닫힘 2026-09-15 — 게이트 넣음]**
 11. (11) "에러 문구로 분기하지 말 것" 정책 한 줄을 레퍼런스·extend에 적을지.
@@ -96,6 +96,8 @@
 
 ## (4) `slot.Length`/`slot.Offset`이 **쓰기 가능한 `Source<number>`**로 노출돼 있다
 
+**[결정 2026-09-15 — `State<number>`로 업캐스트]** 사용자: *"ReadonlySource? ReadSource? 등으로 두거나, 아에 State 로 업케스팅 하는걸 검토해볼만 한듯. readonly 라는 의미 자체를 state 가 먹고 있어서 괜찮은거 같고, 내부적 다운캐스팅이 필요한건 케비엇이지만, 내부 계약이라 문제가 없어."* 새 이름(`ReadonlySource`)을 만들지 않고 기존 `State`가 읽기 전용의 뜻을 진다. 반영: `Slot`의 `read Length`/`read Offset: State<number>`, `:List`/`:Single` `updateFn`의 `offset: State<number>`; 실물은 여전히 Source이고 부기(`Bookkeeping.luau`)가 `any` 경로로 쓴다(추가 캐스트 불필요했음). 음성 실측: strict에서 `slot.Length:Set(99)` 거부. 문서 core/06·how-to 03·08·GS 13·스킬 둘, CHANGELOG BREAKING.
+
 **무엇** — `quad-types/src/init.luau:516-517`. 레퍼런스(`docs/reference/core/06-slot.md:90-102, 116-126`)는 읽는 법만 설명하고 *"`Source`이므로 `:Compute`/`:Observer`로 그대로 구독할 수 있습니다"*라고 안내합니다. 그런데 타입이 `Source`라 `slot.Length:Set(99)`가 strict를 그냥 통과합니다. 실제 쓰기 주체는 부기뿐입니다 — `quad-base/src/Bookkeeping.luau:302`의 `ownerKey.Length:Set(sum)` 한 곳.
 
 **왜 나중에 바꾸기 어려운가** — 사용자가 `:Set`을 부르면 접두합이 실제 자식 수와 어긋나 **조용히** 레이아웃이 틀어집니다(예외 안전성 계약상 quad는 복구하지 않습니다 — `architecture.md`의 "예외 안전성 계약 — 감싸지 않는다" 절). 나중에 `State<number>`로 좁히는 것은 타입 레벨 breaking이고, 방어 가드를 넣는 것은 hot path 비용입니다.
@@ -109,6 +111,8 @@
 ---
 
 ## (5) 공개 값 타입의 필드가 대부분 `read` 없이 선언돼 있다
+
+**[결정 2026-09-15 — 붙임]** 사용자: *"5 도 확인해봤는데, read 를 타입에 붙이는건 단순해서 가능한것 같아."* 반영: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`, `Source.Revision`, `Epoch.Revision`(안 붙이면 `Source`가 `Epoch`에 안 들어간다 — 실측), `Observer`·`EffectHandle`의 `Subscribed`, `Blocker.IsBlocked`, `AttrKeyObject.Name`, `Timeout._native`. `Handler`·`q.debug` 제외. 실비용은 `Ref/init.luau`의 `:Set` 두 줄 캐스트뿐(Observer/Effect/Blocker/Source는 impl 타입으로 써서 무변경). 음성 실측: `ref.Value = 5`·`observer.Subscribed = true` strict 거부. 레퍼런스 시그니처 블록 네 페이지, CHANGELOG BREAKING.
 
 **무엇** — `quad-types/src/init.luau`에서 마커 필드는 의도적으로 `read __quad*`인데(같은 파일 55·57·71·83행 등) 정작 사용자가 읽는 상태 필드들은 전부 쓰기 가능합니다: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`(159-162), `Observer.Subscribed`(195), `EffectHandle.Subscribed`(207), `Blocker.IsBlocked`(225), `Source.Revision`(405), `AttrKeyObject.Name`(332), `Timeout._native`(241). 레퍼런스는 전부 **읽는 것**으로만 서술합니다(예: `docs/reference/core/07-ref.md:172` *"지금 담긴 값. 직접 읽습니다"*, `sugar/06-blocker.md:82` *"`IsBlocked`를 그대로 읽는 얇은 접근자"*).
 
@@ -160,7 +164,9 @@
 base가 감싸고 백엔드가 소유한 층(`Tween` 등)만 호출자가 `T` 안에 넣는다. **(나)가 지금 코드의 실제 모양**이다
 (`FieldOut<T> = T | State<T> | None`, 반환 `?`). 메인 의견은 (나) 유지 + 레퍼런스에 층 나눔을 규칙으로 적기 —
 base는 백엔드의 값 층을 열거할 수 없고(quad-spring이 `Spring<T>`를 더할 수 있다), 생성 `<Class>Modifier:Peek`는
-백엔드가 층을 이미 채워 주므로 호출자 몫은 무타입 `q.Modifier()`를 프로바이더 아래에서 쓸 때만 생긴다. 사용자 판단 대기.
+백엔드가 층을 이미 채워 주므로 호출자 몫은 무타입 `q.Modifier()`를 프로바이더 아래에서 쓸 때만 생긴다.
+
+**[결정 2026-09-15 — (나) 유지 + 백엔드마다 레퍼런스에 층 나눔 명시]** 사용자: *"8번에 대한 네 생각은 나도 동의해. 세번째 가능성은 너무 오버엔지니어링 같음. 각 백엔드 마다 층 나눔을 레퍼런스에 적는게 가장 간단하고, 다른 백엔드에 있어서도 처리가 가능케 두는것 같음. 만일 처리를 넣는다 하면 다른 백엔드에서 온 modifier 조작기가 그대로 통과하는 등 다른 표면 문제를 낼 가능성이 있지 않을까 직감적으로 느껴지거든."* 기각: 프로바이더가 `UseProvider` 반환 교집합으로 base `Modifier`의 `Peek`를 다시 입히는 안(오버엔지니어링 + 다른 백엔드 조작기 통과 위험). 반영: 레퍼런스 core/08(base 층 규칙)·roblox/03(Tween 층·무타입 호출 예)·extend/01(백엔드의 문서화 의무). 코드 무변경.
 
 **무엇** — `quad-types/src/init.luau:352`와 그 위 주석 376-383. 주석이 스스로 경고합니다: *"⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 — 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것"*.
 

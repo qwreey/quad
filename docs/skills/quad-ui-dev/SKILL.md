@@ -246,7 +246,7 @@ Instance and coexist with `UIListLayout` / `UIGridLayout`.
 ### 4.2 Keyed `Slot:List` with `userdata` Recycling
 
 `updateFn(item, index, offset, prev, ud) -> (result, ud)`. `offset` is a
-`Source<number>`. Return `prev` to keep an element, `q.Detach` to unmount but keep it
+read-only `State<number>`. Return `prev` to keep an element, `q.Detach` to unmount but keep it
 alive, `nil`/`q.None` to destroy it. `item` is `q.KeyGone` when a key left the data.
 
 Under `--!strict` the callback parameters and its return pack must be annotated, and the
@@ -262,7 +262,7 @@ local function ItemList(itemsState: QuadTypes.State<{ ItemData }>)
     slot:List(itemsState, function(
         item: ItemData | QuadTypes.KeyGone,
         physIndex: number,
-        offset: QuadTypes.Source<number>,
+        offset: QuadTypes.State<number>,
         prev: QuadTypes.SlotItem<Instance>?,
         ud: RowUD?
     ): (any, RowUD?)

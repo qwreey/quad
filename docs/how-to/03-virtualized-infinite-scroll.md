@@ -59,7 +59,7 @@ updateFn(item, index, offset, prev, ud) -> (result, ud)
 local function updateFn(
     item: any,
     index: number,
-    offset: q.Source<number>, -- 이 Slot 앞에 놓인 물리 자식 수를 담은 Source
+    offset: q.State<number>, -- 이 Slot 앞에 놓인 물리 자식 수를 담은 읽기 전용 State
     prev: any,
     ud: any
 ): (any, any)

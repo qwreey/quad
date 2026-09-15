@@ -59,8 +59,10 @@ A ──> B ──┐
 이름 붙인 것이 `Epoch`다.
 
 ```lua
-type Epoch = { Revision: number }
+type Epoch = { read Revision: number }
 ```
+
+**[2026-09-15 사용자 결정]** 공개 타입은 `read Revision` — 리비전을 올리는 건 소유자(`Source`/`Ref`)뿐이고, `Source.Revision`을 `read`로 좁히면서 `Epoch`도 같이 좁혀야 `Source`가 구조적으로 `Epoch`에 들어간다(실측, `research/public-surface-pre-adoption-review.md` (5)번).
 
 - **그 자체로 키가 되는 unique 테이블**이다 — `EpochMap`이 `[epoch] = revision`
   으로 들고 있는다.

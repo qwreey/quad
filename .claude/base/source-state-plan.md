@@ -99,7 +99,7 @@ RefSource라는 별도 타입은 폐기**하는 쪽으로 수렴.
   검토했던 "State를 weak table로 캐싱" 절충안보다 더 싸다(래퍼 생성/
   캐싱 단계 자체가 사라짐).
 - **⭐ [2026-08-21 확정] `Source`는 `Epoch` 인터페이스도 같은 방식으로
-  구조적으로 만족한다** — `type Epoch = { Revision: number }`이고, `:Set()`/
+  구조적으로 만족한다** — `type Epoch = { Revision: number }`이고(**[2026-09-15]** 공개 타입은 `read Revision` — `base/state-epoch-plan.md`), `:Set()`/
   `:Emit()`이 그 `Revision`을 **갱신한다**(직전과 다른 값으로 — `Epoch`
   계약이 요구하는 건 "다르다"뿐이라 방향은 계약이 아니고, 확정된 연산
   `bit32.bnot(-rev)`는 실제로 **감소**한다). **`Revision`은 공개 필드여야

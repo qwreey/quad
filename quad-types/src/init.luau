@@ -110,7 +110,7 @@ export type ErrorNamespace = QuadError.Namespace
 
 -- `Epoch` — 최소 인터페이스(`.claude/base/state-epoch-plan.md` §2). 판정은
 -- identity + "직전과 다른 Revision"뿐, 순서 비교 없음. 런타임 판별은 `isEpoch`.
-export type Epoch = { Revision: number }
+export type Epoch = { read Revision: number } -- 읽기 전용(2026-09-15) — 올리는 건 소유자뿐
 export type EpochSet = { [Epoch]: true } -- 집합이지 배열이 아니다(게이트 배치가 그대로 넘어온다)
 
 -- `Relate` — inst를 weak 키로 하는 릴레이션(`.claude/base/relate-plan.md` "API").
@@ -156,10 +156,10 @@ export type Ref<T> = {
 	-- 안 겹치는 비제네릭 이름에 T를 굽는다. 런타임 값은 `Void`(호출되지 않음, H-300
 	-- "타입이 약속하면 값에도"). 사용자 표현: "non-lazy type으로 T 비교자를 넣어 굽는다"
 	read __quadRefAccepts: (T) -> (),
-	Value: T,
-	Revision: number,
-	Callbacks: { [RefCallback<T> | thread]: true }, -- 강한 해시맵 셋(+ M8 `:Wait` 대기자)
-	WeakCallbacks: { [RefCallback<T>]: true }, -- weak-key 테이블
+	read Value: T,
+	read Revision: number,
+	read Callbacks: { [RefCallback<T> | thread]: true }, -- 강한 해시맵 셋(+ M8 `:Wait` 대기자)
+	read WeakCallbacks: { [RefCallback<T>]: true }, -- weak-key 테이블
 	-- self 반환 메소드는 `<Self>` 제네릭(M8 단위 ① 리뷰 반영, round18 `H-317`):
 	-- 반환을 `Ref<T>`로 고정하면 `PreRef(x):Callback(fn)` 체이닝에서 마커
 	-- (`PreRef<T>` 교집합)가 사라져 nominal 타입이 첫 호출에 증발한다. 소형
@@ -192,7 +192,7 @@ export type StateData<T> = { read __quadState: true, read __quadStateValue: T, G
 -- 네 진입점은 `lifecycle-pattern.md` (2) — Weak가 프리미티브, `.Subscribed`는 강·약 공용.
 export type Observer = {
 	read __quadObserver: true, -- 런타임 `Impl.__quadObserver = true`(H-300; 입력 자리는 `ObserverMarker`)
-	Subscribed: boolean,
+	read Subscribed: boolean,
 	Subscribe: (self: Observer) -> Observer,
 	WeakSubscribe: (self: Observer) -> Observer,
 	Unsubscribe: (self: Observer) -> Observer,
@@ -204,7 +204,7 @@ export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom
 -- 네 진입점은 Observer와 같은 이름·같은 게이트이되 **본문은 자기 것**(`H-144`).
 export type EffectHandle = {
 	read __quadEffect: true, -- 런타임 `Impl.__quadEffect = true`(H-300; 입력 자리는 `EffectHandleMarker`)
-	Subscribed: boolean,
+	read Subscribed: boolean,
 	Rerun: (self: EffectHandle) -> EffectHandle,
 	Subscribe: (self: EffectHandle) -> EffectHandle,
 	WeakSubscribe: (self: EffectHandle) -> EffectHandle,
@@ -222,7 +222,7 @@ export type GateSetup = (emit: GateEmit) -> () -> ()
 
 -- `Blocker` — `GateNode` 위의 정책(`blocker-plan.md`). `state:Apply(blocker)`가 `__apply`로 배선.
 export type Blocker = {
-	IsBlocked: boolean,
+	read IsBlocked: boolean,
 	IsOn: (self: Blocker) -> boolean,
 	On: (self: Blocker) -> Blocker,
 	Off: (self: Blocker) -> Blocker,
@@ -238,7 +238,7 @@ export type Blocker = {
 -- 시그니처: 함수가 먼저, Roblox `task.delay`는 반대). 닫힌 루프라 `any`가 아니라 마커로 사실상 nominal
 -- (6절 "`Timeout` 핸들의 타입"; 마커 이름만 코퍼스 관례 `__quad*`(H-300)로 — 옛 표기 `__type_timeout`).
 -- `_native`는 백엔드 페이로드 — base는 읽지도 쓰지도 않는다.
-export type Timeout = { read __quadTimeout: true, _native: any }
+export type Timeout = { read __quadTimeout: true, read _native: any }
 -- 제어 핸들(5-4절): `Handle = Ref<<GateHandle?>>(nil)`로 받는다. 메소드형(`h.Value:Flush()`).
 export type GateHandle = {
 	Flush: (self: GateHandle) -> (), -- 보류분이 있으면 지금 통과(+창 재개방), 없으면 no-op
@@ -329,7 +329,7 @@ export type AttrConstructor = setmetatable<{
 	Overridden: (...Attr) -> Attr,
 }, { __call: (self: any, ...any) -> Attr }>
 
-export type AttrKeyObject = { Name: string }
+export type AttrKeyObject = { read Name: string }
 -- [2026-09-03 사용자 확정] AttrKey는 무타입 프리미티브(값 타입을 모른다 —
 -- 패밀리가 못 덮는 엔진 고유 타입은 이걸로, 검증은 백엔드 setAttr 몫)
 export type AttrKeyConstructor = (name: string) -> AttrKeyObject
@@ -402,7 +402,7 @@ export type State<T> = StateData<T> & {
 }
 -- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
 export type Source<T> = State<T> & {
-	Revision: number,
+	read Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
@@ -513,8 +513,8 @@ export type SlotListOpts = { Owned: boolean? }
 export type Slot<T> = {
 	read __quadSlot: true, -- 런타임 `Slot_mt.__quadSlot = true`
 	read __quadSlotValue: T, -- 순수 팬텀(StateMarker와 같은 층)
-	Length: Source<number>,
-	Offset: Source<number>,
+	read Length: State<number>, -- [2026-09-15 사용자 결정] 읽기 전용 — 쓰는 주체는 부기뿐(내부는 캐스트)
+	read Offset: State<number>,
 	Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number,
 	Remove: (self: Slot<T>, index: number) -> (),
 	Replace: (self: Slot<T>, index: number, newElement: SlotElement<T>) -> (),
@@ -529,7 +529,7 @@ export type Slot<T> = {
 	List: <Item, UD>(
 		self: Slot<T>,
 		data: { Item } | StateMarker<{ Item }>,
-		updateFn: (item: Item | KeyGone, index: number, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
+		updateFn: (item: Item | KeyGone, index: number, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
 		keyFn: ((item: Item, index: number) -> any)?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
@@ -543,7 +543,7 @@ export type Slot<T> = {
 	Single: <Item, UD>(
 		self: Slot<T>,
 		state: Item? | StateMarker<Item?>,
-		updateFn: ((item: Item | KeyGone, offset: Source<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+		updateFn: ((item: Item | KeyGone, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
 }

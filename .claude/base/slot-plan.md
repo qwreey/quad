@@ -1116,6 +1116,7 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
   아래 `updateFn`의 `index`(압축된 마운트 위치)와 이름만 같고 값은 다름,
   위 "용어 주의" 참고.
 - **`updateFn<UD = any>(item, index: number, offset: Source<number>,
+  [2026-09-15 사용자 결정: 공개 타입은 읽기 전용 `State<number>` — 실물은 같은 Source]
   prev: T?, userdata: UD?): (T | nil, UD?)` — 매 reconcile 사이클마다
   모든 key에 대해 호출됨.**
   - **⭐⭐ [2026-08-25 정정, 7라운드 `H-95`] 이 반환 타입 그대로면 strict에서
@@ -1154,7 +1155,7 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
     안에 직접 `Source`를 만들어 관리**해야 함, 원치 않으면(웹 백엔드처럼
     무시해도 되는 경우 등) 그냥 버려도 그만 — 아래 "왜 `LayoutOrder`를
     Slot이 대신 안 해주는가" 절의 예시 참고.
-  - **`offset: Source<number>`** — 이 `Slot` 자신의 `Slot.Offset`을 그대로
+  - **`offset: Source<number>`**(**[2026-09-15]** 공개 타입은 `State<number>` — `slot.Length`/`slot.Offset`도 `read … State<number>`, 쓰는 건 부기뿐) — 이 `Slot` 자신의 `Slot.Offset`을 그대로
     전달(모든 key가 같은 값을 공유) — 형제로 섞인 다른 Slot/정적 자식이
     기여한 개수의 누적합(`base/dispatch-core-plan.md`의 "Length/Offset" 절
     참고). `index`와 마찬가지로 실제 프로퍼티에 어떻게 반영할지는
