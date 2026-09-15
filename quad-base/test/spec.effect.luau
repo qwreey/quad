@@ -354,4 +354,32 @@ do
 end
 
 print()
+print("=== 공개 표면 (18) 2026-09-15 — fn이 함수도 nil도 아닌 값을 돌려주면 그 자리에서 던진다(사용자 줄 blame) ===")
+do
+	-- 생성 시점: fn은 생성자에서 즉시 돈다 → 생성 줄 blame
+	local okNum, errNum = pcall(function()
+		Effect((function()
+			return 42
+		end :: any))
+	end)
+	assert(not okNum and string.find(tostring(errNum), "Effect: fn must return a cleanup function or nothing (got number)", 1, true) ~= nil, "install-time non-function return: " .. tostring(errNum))
+	mock.assertBlamesUser(errNum, "spec.effect.luau", "install-time return check blames the user")
+	-- 전파 시점: 첫 실행은 정상, 연결 객체를 돌려주는 회차에서 :Set 줄 blame
+	local s = Source(1)
+	local e = Effect((function(): any
+		if s:Get() == 2 then
+			return { Disconnect = function() end }
+		end
+		return nil
+	end :: any), s):Subscribe()
+	local okSet, errSet = pcall(function()
+		s:Set(2)
+	end)
+	assert(not okSet and string.find(tostring(errSet), "(got table)", 1, true) ~= nil, "emit-time non-function return: " .. tostring(errSet))
+	mock.assertBlamesUser(errSet, "spec.effect.luau", "emit-time return check blames the user")
+	assert((e :: any)._running == true, "the Effect dies exactly as when fn throws")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

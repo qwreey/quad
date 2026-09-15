@@ -211,7 +211,8 @@ export type EffectHandle = {
   - `Effect: fn must be a function`
   - `Effect: dep #{i} is nil`
   - `Effect: dep #{i} is not a State/Source/Ref` (번호는 `...deps`에서의 자리입니다)
-- **cleanup은 함수 하나입니다.** 타입의 가변 반환 표기는 "아무것도 안 돌려줘도 된다"를 위한 것이고, 런타임이 소진하는 것은 **첫 번째 반환 하나**뿐입니다. 정리할 게 여럿이면 한 클로저로 묶으세요 — `return function() a() b() end`.
+- **cleanup은 함수 하나입니다.** 타입의 가변 반환 표기는 "아무것도 안 돌려줘도 된다"를 위한 것이고, 런타임이 소진하는 것은 **첫 번째 반환 하나**뿐입니다. 정리할 게 여럿이면 한 클로저로 묶으세요 — `return function() a() b() end`. 함수도 `nil`도 아닌 값(숫자, 연결 객체 등)을 돌려주면 그 자리에서 던지고, `fn`이 던진 것과 같이 그 `Effect`는 죽습니다 — 연결은 `return function() conn:Disconnect() end`처럼 감싸세요.
+  - `Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`
 - cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<EffectHandle?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다).
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기 구독을 바꿀 수 없습니다:

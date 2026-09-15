@@ -19,6 +19,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - 문서에 명시: `_`로 시작하는 필드(`_bookkeeping` 등)는 공개 표면이 아니며 예고 없이 바뀝니다.
 - 문서에 명시(정의되지 않은 동작): 같은 원천을 구독한 하류·Ref 콜백끼리의 발화 순서와 `KeyGone` 호출끼리의 순서(등록 순서가 아닙니다), Observer·Effect·계산 함수·Ref 콜백 안의 yield, `updateFn`이 도중에 던진 뒤의 그 Slot(더 재조정되지 않습니다), 서로를 설치하는 플러그인 순환.
 - **BREAKING — `slot:List`/`slot:Single`의 옵션 `Owned`가 `OwnsElements`로 바뀌었습니다.** 뜻은 그대로입니다(기본 `true`, `false`면 이 Slot이 원소의 수명을 책임지지 않음). 옛 키는 조용히 무시되어 기본값(소유)으로 돌아가니 반드시 옮기세요 — `q.debug`를 켜면 모르는 키로 알려 줍니다. 옮기는 법: `{ Owned = false }`를 `{ OwnsElements = false }`로.
+- `q.Effect`의 `fn`이 함수도 `nil`도 아닌 값을 돌려주면 그 자리에서 `Effect: fn must return a cleanup function or nothing (got …)`을 던집니다(사용자 줄 blame). 전에는 값을 저장했다가 다음 정리 때 quad 내부에서 `attempt to call …`로 터지고 그 `Effect`가 조용히 멈췄습니다. 연결 객체를 돌려주던 코드는 `return function() conn:Disconnect() end`로 감싸세요.
 - `q:AddPlugin`이 같은 플러그인 함수를 다시 받으면 아무것도 하지 않습니다(`q:RunInit`과 같은 identity 기준). 여러 스크립트가 각자 설치해도 한 번만 돕니다. 도중에 던진 플러그인은 설치된 것으로 치지 않아 다시 부르면 처음부터 돕니다.
 - `quad_roblox`가 요구하는 `quad_base` 버전이 정확히 일치에서 **같은 메이저 안의 하한**(`3.2^.0^` — 3.2.0 이상, 메이저 3)으로 풀렸습니다. `quad_base`만 올라가도 설치 시점 검사에서 막히지 않습니다. 프리릴리즈 빌드는 그 빌드만 받습니다(패턴 `3.3.0-rc.2`).
 - **BREAKING — `type_version_check`의 패턴 문법을 넓히고, 규칙 하나를 좁혔습니다.**

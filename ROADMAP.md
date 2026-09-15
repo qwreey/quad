@@ -62,6 +62,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       - `drive`의 recompute 호출부가 배치 `blocker:IsOn()`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
 - [ ] **[2026-09-08 밤 신설 — 사용자 제기, 결정 대기 `question.md` 0절]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
+- [ ] **[2026-09-15 신설 — 사용자 결정, 순수 슈거·비파괴]** 연결 객체용 cleanup 슈거(가칭 `Disconnector` — `Effect`의 `fn`이 `RBXScriptConnection`류를 돌려주고 싶을 때 `return function() conn:Disconnect() end`를 대신 만들어 주는 팩토리·커링 함수). 코어는 넓히지 않는다 — `Effect`는 함수/nil만 받고 그 밖은 즉시 에러(공개 표면 (18)). 사용자: *"팩토리&커링 함수를 넣어서 해결이 가능한 표면이라서 새로운 규격을 내야할 이유도 없고, 순수 슈거로 처리 가능해 … base 만 아닌 어디에 있어도 별 상관은 없어보임"*. 유용성이 드러나면 위치(사용자 코드 관용구 / quad-roblox 슈거)부터 정한다.
 - [x] **[2026-09-08 밤 구현 — 사용자 범위 확정]** `Operator` 콤비네이터(`Operator.luau`, `research/operator-sugar-plan.md` 머리 배너), `Context`/`Provider`(`Context.luau`, `base/context-plan.md` — 불변 확장은 사용자 결정으로 안 만듦), `ref:Unwrap()`(`ref-plan.md`).
 - [ ] **[2026-09-08 밤 신설 — 사용자 결정으로 `operator-sugar-plan.md`에서 분리한 백로그 넷]** 릴리즈를 막지 않고, 문서 재개편 없이 이미 있는 슈거 그룹 절에 더해지는 것들(사용자: *"이미 구현된 슈거를 통해 먼저 문서화를 어느정도 다듬어 두면, 나중에 추가는 쉬워"*):
       - 분기 콤비네이터 `IfElse`(+ 그때 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`)와 컬렉션 계열 `Concat`/`Sorted`/`Filtered` — 순수 슈거지만 **타입 표면 결정이 필요**해 미구현(`operator-sugar-plan.md` "컬렉션 계열 후보" 절).

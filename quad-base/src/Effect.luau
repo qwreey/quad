@@ -95,7 +95,16 @@ local function createImpl(module: any)
 			-- `H-185` (user, 2026-08-31): the cleanup is ONE function — wrap several
 			-- teardowns in one closure (`function() a() b() end`); extra returns are
 			-- deliberately not collected (a list would widen the re-entry surface).
-			self._cleanup = self.fn(self)
+			local cleanup = self.fn(self)
+			if cleanup ~= nil and type(cleanup) ~= "function" then
+				-- 2026-09-15 (user decision, public surface (18)): a non-function return (a number, a
+				-- connection object out of React/Fusion habit) used to be stored and blow up later inside
+				-- `_consumeCleanup` blaming this file, leaving the Effect silently dead. Raise HERE — the
+				-- Effect dies exactly as when fn throws (`_running` stays), but at the cause with a clear
+				-- message. Outermost blame: the user's `q.Effect` line at install, the `:Set` line at emit depth.
+				Err.errorBefore(`Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)
+			end
+			self._cleanup = cleanup
 		until not self._pending
 		self._running = false
 	end
