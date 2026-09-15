@@ -11,6 +11,7 @@
 ]]
 
 local Types = require("./types")
+local ModuleIdentity = require("../ModuleIdentity")
 
 return function(S: Types.SlotInternal, module: any)
 
@@ -210,6 +211,9 @@ return function(S: Types.SlotInternal, module: any)
 			-- round3 `H-441`/`H-446`: a plain array or a State of one — branded tables (None/Store/Tween/Modifier)
 			-- have metatables and used to pass as an empty list
 			S.Err.errorBeforeNearest(`Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, S.SURFACE)
+		end
+		if S.isState(data) then
+			ModuleIdentity.assertOwnAtCall(module, data, "Slot:List") -- [2026-09-15] a data State from another instance
 		end
 		if keyFn ~= nil and type(keyFn) ~= "function" then
 			S.Err.errorBeforeNearest(`Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`

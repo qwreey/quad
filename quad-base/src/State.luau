@@ -76,6 +76,7 @@ local function createImpl(module: any)
 	-- `StateMarker<T>` 브랜드 필드(H-300 "타입이 약속하면 값에도") — 판정은 여전히 Brand 레지스트리,
 	-- 이 필드는 타입 좁힘·진단용 조언층. `__quadStateValue`는 순수 팬텀(quad-types 주석).
 	Impl.__quadState = true
+	Impl._moduleIdentity = module.moduleIdentity -- cross-instance guard token; Source/Gate impls inherit it via `__index`
 	-- `__tostring` (2026-09-08, advisory 권고 1): the cached value only while the cache is valid —
 	-- NEVER recompute here (a print must not run user code); stale/uncomputed shows as `?`.
 	local function describe(self: any, kind: string): string

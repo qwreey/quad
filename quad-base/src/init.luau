@@ -63,6 +63,10 @@ local function New(): Quad
 	local module = {
 		New = New,
 		Version = "3.2.0",
+		-- [2026-09-15 공개 표면 (12)] per-instance identity token — an EMPTY table, never the module
+		-- itself (holds nothing). Subsystems store it on their per-instance impl and compare it where a
+		-- value may come from another instance (`ModuleIdentity.luau`).
+		moduleIdentity = {},
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,

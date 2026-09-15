@@ -43,6 +43,7 @@ local Observer = require("./Observer")
 local Relate = require("./Relate")
 local Void = require("./Void")
 local InitDispatch = require("./Dispatch")
+local ModuleIdentity = require("./ModuleIdentity")
 
 local EffectBrand = Brand.EffectBrand
 local isState = Brand.isState
@@ -66,6 +67,7 @@ local function createImpl(module: any)
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
 	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadEffect = true
+	Impl._moduleIdentity = module.moduleIdentity -- cross-instance guard token (`ModuleIdentity.luau`)
 	-- `__tostring` (2026-09-08, advisory 권고 1)
 	function Impl.__tostring(self: any): string
 		return `Effect({ObserverImpl._subscriptionOf(self)})`
@@ -334,6 +336,7 @@ local function registerDispatchHandlers(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
+			ModuleIdentity.assertOwnAtDispatch(module, v, "Effect")
 			local old = relate:GetWeak(inst, k) -- `H-71`; load-bearing dedup (`H-266`)
 			if old ~= v then
 				module.bindLifetime(inst, v)

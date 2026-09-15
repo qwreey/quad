@@ -25,7 +25,7 @@
 9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용. **[닫힘 2026-09-15 — 허용 + `q.debug` 경고]**
 10. (10) 생성기에 `D` 예약 이름 충돌 게이트를 넣을지. **[닫힘 2026-09-15 — 게이트 넣음]**
 11. (11) "에러 문구로 분기하지 말 것" 정책 한 줄을 레퍼런스·extend에 적을지.
-12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지.
+12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지. **[닫힘 2026-09-15 — `q.moduleIdentity` 빈 토큰 + 서브시스템별 가드]**
 13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸). **[닫힘 2026-09-15 — 올림, BREAKING]**
 14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지. **[닫힘 2026-09-15 — `OwnsElements`, BREAKING]**
 15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지. **[닫힘 2026-09-15 — `Depend`로 개명, BREAKING]**
@@ -248,6 +248,8 @@ base는 백엔드의 값 층을 열거할 수 없고(quad-spring이 `Spring<T>`�
 ---
 
 ## (12) 문서가 UB로 둔 것들 — 지금 조일지, 영원히 UB로 못 박을지
+
+**[결정 2026-09-15 — 가드, 모양은 사용자 설계]** 메인 실측으로 전제 정정: 의존성 간선은 인스턴스를 넘어도 멀쩡하고, 깨지는 건 인스턴스별 생명주기 레지스트리(다른 인스턴스 Effect 결합 시 실행 안 됨·이중 결합 검사 갈림, Roblox 백엔드도 같은 구조). 메인 권고 (나) 핸들에 모듈 기록 + 결합 자리 비교. 사용자: *"권고가 맞다고 봐. 프로바이더 측 문제가 아니라 유저측 문제고, 조용히 섞이면 디버깅이 치명적이게 힘들어서, 가드 비용에 비해서 싼 필드 하나는 좋아. 근데 gc 영향을 주지 않는 방어적으로 코딩하기 위해 identity 를 잡는 테이블 같은건 비어있는걸 써서 비교해야한다고 봐. 다만 외부 객체에 대해서 섞이는건 방어하지 못해서, 반쯤만 막히는걸수도 있어. … 난 그래서 가장 단순하게 가고싶어. 각 모듈들이 처리해야할 부분이 되고, quad-base 는 단순히 Quad.identity (또는 명시적 moduleIdentity) 를 제공해. 그냥 테이블 하나고, 필요한 곳에서 끌어가서 붙이고 비교해야하도록 둬야할듯 해. 각 모듈 구조를 아는 구현자만이 그걸 어떻게 저장할 지 알 수 있거든. userdata 면 릴레이션을 해야할 수도 있고, 단순 테이블이면 필드가 가장 싸고."* 이름은 선택지 질문으로 `moduleIdentity`(항등 함수 뜻 `identityUpdateFn`과 구분). 반영: `New()`의 `moduleIdentity = {}`, quad-types `read moduleIdentity: {}`, `ModuleIdentity.luau`(dispatch 깊이/직접 호출 두 blame), Observer·Effect·State·Slot 인스턴스별 Impl에 `_moduleIdentity`, 받는 문 다섯(Observer/Effect/Slot 핸들러·StoreBind·`:List` 데이터), `spec.moduleidentity`, 레퍼런스 core/01(`q.New()` 경고 + `q.moduleIdentity` 절), CHANGELOG Added·Changed, `architecture.md` 13번 역전 배너. Ref·Blocker(공유 잎)·백엔드 op 직접 호출·`Claim` 이중 claim은 범위 밖(UB).
 
 **무엇** — 지금 열려 있는 UB 목록: 인스턴스를 가로지르는 값 혼용(`architecture.md` 13번의 `H-186`), 같은 키 재진입, 숫자 키 자리의 `nil` 구멍, `D.New`의 클래스 이름 오타(Q41 — *"(c) 그대로·재개봉 금지"*로 닫힘), Instance를 매개로 한 Slot 순환(Q42 — UB), `Slot:Clear`의 창 안 파괴로 인한 동결(Q40 — (a) 그대로), `Fallback`/`Traceback`의 부분 트리 미회수(0절 (e) — UB).
 

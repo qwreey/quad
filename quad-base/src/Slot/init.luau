@@ -57,6 +57,7 @@ local function Init(module: any)
 	-- contract (`H-181`, spec.init test 2).
 	local Slot_mt = {}
 	Slot_mt.__index = Slot_mt
+	Slot_mt._moduleIdentity = module.moduleIdentity -- cross-instance guard token (`ModuleIdentity.luau`)
 	Slot_mt.__quadSlot = true -- `SlotMarker<T>` 브랜드 필드(H-300; 판정은 `Brand.isSlot`)
 	-- `__tostring` (2026-09-08, advisory 권고 1): element count + mount/destroy state, read-only
 	function Slot_mt.__tostring(self: any): string

@@ -6,7 +6,7 @@ description: require 결과가 곧 기본 인스턴스 — New/RunInit/AddPlugin
 
 한 인스턴스는 자기만의 디스패치 핸들러 레지스트리, 부기(bookkeeping), 프로바이더 슬롯을 가집니다. `Void`/`Ref`/`Relate`/`Blocker` 같은 의존 없는 잎 모듈은 인스턴스끼리 공유되지만, `Source`/`Effect`처럼 인스턴스 상태를 닫아 쥐는 팩토리는 인스턴스마다 다른 함수입니다.
 
-이 페이지의 심볼: [q.New()](#qnew) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.Relate()](#qrelate)
+이 페이지의 심볼: [q.New()](#qnew) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
@@ -31,6 +31,7 @@ New: () -> Quad
 - **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) 참고.
 - 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다.
 - 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다.
+- **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터)에 놓으면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` 사본이 둘 생겨도 같은 일이 납니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 그대로 됩니다.
 
 **예제**
 
@@ -205,6 +206,35 @@ errorNamespace: ErrorNamespace
 **에러 메시지는 사람이 읽는 진단이지 API가 아닙니다.** 문구는 예고 없이 다듬어질 수 있으니 코드가 문구로 분기하지 마세요(`string.find(err, "...")` 금지) — 실패를 코드에서 가르려면 호출 전에 조건을 확인하세요. 레퍼런스가 문구를 그대로 싣는 것은 검색해서 원인을 찾으라는 뜻입니다.
 
 자세한 사용법은 [`../extend/01-backend-provider-contract.md`](/reference/extend/01-backend-provider-contract/).
+
+## `q.moduleIdentity`
+
+**시그니처**
+
+```luau
+read moduleIdentity: {}
+```
+
+**동작** — 이 모듈 인스턴스의 identity 토큰입니다. 내용이 없는 빈 테이블이고 모듈을 붙잡지 않으며, 계약은 "인스턴스마다 하나, 서로 다름"뿐입니다.
+
+- quad-base는 Observer·Effect·Slot·State가 자기 인스턴스의 것인지 이 토큰으로 판정합니다(위 `q.New()`의 "인스턴스끼리 값을 섞지 마세요").
+- **백엔드·플러그인이 자기 값에 같은 검사를 하고 싶다면** 이 토큰을 값이 사는 곳에 붙여 두고 비교하세요. 어디에 둘지는 구현자 몫입니다 — 평범한 테이블이면 필드(메타테이블 쪽에 두면 값마다 칸이 들지 않음), userdata처럼 필드를 못 붙이는 값이면 [`q.Relate()`](#qrelate) 같은 약한 관계로.
+
+**예제**
+
+```luau
+local Impl = {}
+Impl.__index = Impl
+Impl._moduleIdentity = q.moduleIdentity -- 값마다가 아니라 메타테이블에 한 번
+
+local function assertOwn(value)
+	if value._moduleIdentity ~= q.moduleIdentity then
+		error("MyPlugin: value belongs to another quad instance", 2)
+	end
+end
+```
+
+---
 
 ## `q.Relate()`
 

@@ -38,6 +38,7 @@
 
 local Brand = require("../Brand")
 local QuadTypes = require("../../luau_packages/quad_types")
+local ModuleIdentity = require("../ModuleIdentity")
 
 -- `isState` composes `isSource` (Source structurally satisfies State,
 -- `Brand.luau`) — exactly the "v가 State/Source인 경우" the section confirms.
@@ -61,6 +62,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 			-- Fires once right here (registration fire) — the initial mount IS
 			-- the first re-run. The (B)-branch occupancy marker is already in
 			-- place, so the recursion below finds a hole-free chain list.
+			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
 			local observer = state:Observer(function()
 				local realv = state:Get()
 				dispatch.process(inst, k, realv, index + 1)

@@ -629,6 +629,10 @@ export type Quad = {
 	-- 네임스페이스를 만들지 말고 이걸 받을 것.
 	errorNamespace: ErrorNamespace,
 
+	-- [2026-09-15 공개 표면 (12)] 인스턴스 identity 토큰 — 빈 테이블(모듈을 붙잡지 않는다). 백엔드·플러그인이
+	-- 자기 값에 붙여 두고 "이 인스턴스가 만든 값인가"를 비교하는 데 쓴다. 내용은 없고 identity만 계약.
+	read moduleIdentity: {},
+
 	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
 	-- 여기선 재export. `isNone`은 `v == None` 신원 비교 — 이 구조 타입은
 	-- 조언층일 뿐 판정이 아니다, 최상위 `export type None` 참고(`H-300`).

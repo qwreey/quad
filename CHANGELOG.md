@@ -10,10 +10,14 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Added
 
+- `q.moduleIdentity` — 모듈 인스턴스마다 하나인 빈 identity 토큰. 백엔드·플러그인이 자기 값에 붙여 두고 "이 인스턴스가 만든 값인가"를 비교하는 데 씁니다(quad-base가 아래 인스턴스 교차 검사에 같은 방법을 씁니다).
+
 - `q.debug`가 켜져 있을 때 `q:AddPlugin`이 모듈의 기존 필드를 덮어쓰면 설치 시점에 한 줄을 출력합니다. 덮어쓰기 자체는 그대로 허용됩니다(코어 부품을 일부러 갈아 끼우는 플러그인용). `UseProvider`는 해당 없음.
 - `q.debug`가 켜져 있으면 옵션 테이블의 모르는 키(오타·옛 이름)를 한 줄로 알립니다 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 경고만 하고 실행은 계속합니다(모르는 키는 전처럼 무시).
 
 ### Changed
+
+- **Observer·Effect·Slot·State를 만든 quad 인스턴스가 아닌 다른 인스턴스의 트리에 놓으면 그 자리에서 에러가 납니다**(`…: this value was made by another quad module instance …`) — 숫자 키 자리, 프로퍼티 값, `slot:List`의 데이터 State. 전에는 에러 없이 받아들여졌지만 생명주기 기록이 인스턴스마다 따로라 그 값이 조용히 돌지 않았습니다(`quad_base` 사본이 둘 생긴 프로젝트에서 흔히 밟는 경우). 제대로 돌던 코드는 영향이 없습니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 그대로 되고, `Ref`·`Blocker` 같은 공유 값은 검사하지 않습니다(두 인스턴스에 걸쳐 쓰면 정의되지 않은 동작).
 
 - **BREAKING — `quad_types`의 `Brand()`가 돌려주는 객체의 메소드가 `:register`/`:is`에서 `:Register`/`:Is`로 바뀌었습니다.** 자기 값 타입에 브랜드를 붙이는 백엔드·플러그인 작성자에게만 해당하고, `q.isState` 같은 술어를 쓰는 코드는 그대로입니다. 옮기는 법: 호출부의 메소드 이름 첫 글자만 대문자로.
 - 문서에 명시: `_`로 시작하는 필드(`_bookkeeping` 등)는 공개 표면이 아니며 예고 없이 바뀝니다.

@@ -11,6 +11,7 @@
 
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
+local ModuleIdentity = require("../ModuleIdentity")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function register(dispatch: any, module: any)
@@ -33,6 +34,7 @@ local function register(dispatch: any, module: any)
 			if slotValue._destroyed then
 				Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE)
 			end
+			ModuleIdentity.assertOwnAtDispatch(module, slotValue, "Slot") -- before claim/bind commit (same reason as above)
 			if internal.claimOwnerAt(slotValue, inst, k) then
 				module.bindLifetime(inst, slotValue)
 				internal.attachSlot(slotValue, inst, inst, k)

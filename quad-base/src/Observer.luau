@@ -40,6 +40,7 @@ local Err = require("./ErrorNamespace")
 local Relate = require("./Relate")
 local Void = require("./Void")
 local InitDispatch = require("./Dispatch")
+local ModuleIdentity = require("./ModuleIdentity")
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
@@ -59,6 +60,7 @@ local function createImpl(module: any)
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
 	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadObserver = true
+	Impl._moduleIdentity = module.moduleIdentity -- cross-instance guard token (`ModuleIdentity.luau`), read via `__index`
 
 	-- Registries — owned here, shared with `Effect.luau` (`H-99`). Per quad
 	-- instance because the gates that read `.Subscribed` are per instance.
@@ -243,6 +245,7 @@ local function registerDispatchHandlers(module: any)
 			-- leaf contributes no physical element, so the pair is None/0.
 			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
+			ModuleIdentity.assertOwnAtDispatch(module, v, "Observer") -- another instance's handle would never run here
 			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
 			if old ~= v then
 				module.bindLifetime(inst, v)
