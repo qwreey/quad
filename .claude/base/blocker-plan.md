@@ -1,5 +1,7 @@
 # Blocker — 여러 Source를 한꺼번에 바꿔도 파생값 재계산이 한 번만 되게
 
+**[2026-09-15 개명 — 사용자 결정, 공개 표면 (27)] 상태 필드는 `Blocking` 하나다** — 아래 본문의 `IsBlocked` 필드와 `:IsOn()` 메소드는 개명 전 표기 그대로 둔다(같은 값을 읽는 길이 둘이던 것을 필드 하나로). 사용자: *"되었던 과거 상태와, 지금도 blocking 중 은 완전 다른거라 blocking 으로 두는거 동의해. 다른 표면이랑 형태가 다른 이름인건 맞지만, 의도가 분명"* — `Is` 접두는 `q.isX` 판별 함수와 겹쳐 뗐고, `Enabled`는 흐름이 켜졌다로 뒤집혀 읽혀 기각, 과거분사 `Blocked`는 "막아 낸 적이 있다"로 읽혀 기각(독립 조사 둘 — `research/public-surface-pre-adoption-review.md` (27)).
+
 **상태**: base — `archive/surveys/2026-08-06-additional-primitives-plan.md`(다른 프레임워크
 대비 갭 분석)에서 갈라져 나온 확정 프리미티브. lexical `Batch(fn)`으로
 풀려던 대안은 기각되어 `archive/batch-rejected.md`로 분리됨 — 이 문서는

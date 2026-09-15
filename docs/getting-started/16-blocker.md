@@ -129,7 +129,7 @@ flowchart LR
         D.TextButton {
             Text = "일시정지",
             Activated = function()
-                if blocker:IsOn() then blocker:Off() else blocker:On() end
+                if blocker.Blocking then blocker:Off() else blocker:On() end
             end,
         },
 ```
@@ -157,7 +157,7 @@ print(countText:Get())   --> "13 점"   (값은 이미 최신이다)
 
 - **`:OffWithoutEmit()`은 쌓인 것을 버리고 풉니다** — 통지 없이 조용히 끝내고 싶을 때. 버려도 그래프는 망가지지 않습니다(값은 어차피 읽는 시점에 최신입니다).
 - **하나의 `Blocker`를 여러 노드에 붙일 수 있습니다.** `:Off()` **한 번**이 붙어 있는 게이트를 차례로 풉니다 — 다만 통지는 **게이트마다 하나씩** 나갑니다. 그래서 한 화면을 한 번에 갱신하려는 목적이라면 게이트는 통지가 합쳐지는 자리에 하나만 두고(§2), 서로 다른 화면 여러 곳을 같은 스위치로 묶고 싶을 때 여러 노드에 붙입니다.
-- **`:IsOn()`이 읽는 값 `IsBlocked`는 카운터가 아니라 평범한 불리언입니다.** `:On()`을 두 번 해도 `:Off()` 한 번이면 풀리니, 겹치는 구간이 필요하면 구간마다 `Blocker`를 따로 만드세요.
+- **`Blocking`은 카운터가 아니라 평범한 불리언입니다.** `:On()`을 두 번 해도 `:Off()` 한 번이면 풀리니, 겹치는 구간이 필요하면 구간마다 `Blocker`를 따로 만드세요.
 
 ---
 

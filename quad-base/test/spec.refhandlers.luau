@@ -123,7 +123,7 @@ do
 	local p1 = q.PreRef(nil :: any):Callback(function(v)
 		if v then
 			table.insert(log, "pre1")
-			gateOnAtPre = q.Dispatch.getBlocker(v):IsOn() -- ⓪ → (a): 게이트가 켜진 뒤 fire
+			gateOnAtPre = q.Dispatch.getBlocker(v).Blocking -- ⓪ → (a): 게이트가 켜진 뒤 fire
 		end
 	end)
 	local p2 = q.PreRef(nil :: any):Callback(function(v)
@@ -165,7 +165,7 @@ do
 		if v then
 			table.insert(log, "post1")
 			parentAtFire = v.Parent
-			gateOnAtFire = q.Dispatch.getBlocker(v):IsOn() -- H-17: 배치 게이트가 켜진 채로 실행
+			gateOnAtFire = q.Dispatch.getBlocker(v).Blocking -- H-17: 배치 게이트가 켜진 채로 실행
 		end
 	end)
 	local post2 = q.PostRef(nil :: any):Callback(function(v)
@@ -182,7 +182,7 @@ do
 	assert(table.concat(log, ",") == "pre,prop:Name,post1,post2", "PostRefs fire last in index order: " .. table.concat(log, ","))
 	assert(parentAtFire == nil, "literal path: not yet parented at fire (no guarantee either way — brief Q6)")
 	assert(gateOnAtFire == true, "PostRef fires BEFORE the batch closes — gate still on (H-17), one recompute catches up")
-	assert(not q.Dispatch.getBlocker(inst):IsOn(), "…and the batch is closed after drive returns")
+	assert(not q.Dispatch.getBlocker(inst).Blocking, "…and the batch is closed after drive returns")
 	local bk = q.Dispatch.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None and bk.lengthList[3] == 0, "consumed slots registered None/0 (ProcessedPostRefHandler)")
 	local ok, err = pcall(function()

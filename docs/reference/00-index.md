@@ -65,8 +65,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | 심볼 | 페이지 |
 |---|---|
 | `q.Blocker()` | [sugar/06 — Blocker](./sugar/06-blocker.md) |
-| `blocker.IsBlocked` | [sugar/06](./sugar/06-blocker.md) |
-| `blocker:IsOn()` | [sugar/06](./sugar/06-blocker.md) |
+| `blocker.Blocking` | [sugar/06](./sugar/06-blocker.md) |
 | `blocker:On()` | [sugar/06](./sugar/06-blocker.md) |
 | `blocker:Off()` | [sugar/06](./sugar/06-blocker.md) |
 | `blocker:OffWithoutEmit()` | [sugar/06](./sugar/06-blocker.md) |

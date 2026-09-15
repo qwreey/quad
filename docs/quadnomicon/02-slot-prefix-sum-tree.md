@@ -93,7 +93,7 @@ flowchart TB
 
 ```luau
 local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil -- [1] 배치 Blocker
-local ownsGate = gate ~= nil and not gate:IsOn()
+local ownsGate = gate ~= nil and not gate.Blocking
 if ownsGate then gate:On() end
 
 base = S.BK.getOffsetAt(self, index) -- [2] 변형 전에 읽는다(캐시는 현재 배치를 서술)

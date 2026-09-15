@@ -222,8 +222,9 @@ export type GateSetup = (emit: GateEmit) -> () -> ()
 
 -- `Blocker` — `GateNode` 위의 정책(`blocker-plan.md`). `state:Apply(blocker)`가 `__apply`로 배선.
 export type Blocker = {
-	read IsBlocked: boolean,
-	IsOn: (self: Blocker) -> boolean,
+	-- [2026-09-15 사용자 결정 (27)] 상태는 필드 하나(옛 상태 필드 + 접근자 메소드 쌍). 진행형인 이유: 과거분사 `Blocked`는
+	-- "막아 낸 적이 있다/무언가 막혀 있다"로 읽힌다(블로커는 스스로 막는 능동 주체; `Subscribed`는 수동이라 과거분사)
+	read Blocking: boolean,
 	On: (self: Blocker) -> Blocker,
 	Off: (self: Blocker) -> Blocker,
 	OffWithoutEmit: (self: Blocker) -> Blocker,

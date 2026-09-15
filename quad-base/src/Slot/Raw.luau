@@ -73,7 +73,7 @@ return function(S: Types.SlotInternal, module: any)
 	-- Extracted 2026-09-03 (user-approved) — it was copy-pasted at every
 	-- raw* tail and the reconcile/List tails.
 	local function maybeRecompute(self: any, bk: any)
-		if S.BK.getBlocker(self):IsOn() or bk.recomputeBlocker:IsOn() then return end
+		if S.BK.getBlocker(self).Blocking or bk.recomputeBlocker.Blocking then return end
 		S.BK.recompute(self, bk)
 	end
 
@@ -334,7 +334,7 @@ return function(S: Types.SlotInternal, module: any)
 		end
 		local mounted = self._mounted
 		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
-		local ownsGate = gate ~= nil and not gate:IsOn()
+		local ownsGate = gate ~= nil and not gate.Blocking
 		if ownsGate then gate:On() end
 
 		local base, removedLeaves: { any } = 0, {}

@@ -5,10 +5,10 @@
 	5번 (`blocker:Policy(emit)`), as-is.
 
 	  Blocker() -> blocker
-	  blocker:On()              -- IsBlocked = true, nothing else
-	  blocker:Off()             -- IsBlocked = false FIRST, then every registered handle with emit=true
+	  blocker:On()              -- Blocking = true, nothing else
+	  blocker:Off()             -- Blocking = false FIRST, then every registered handle with emit=true
 	  blocker:OffWithoutEmit()  -- same path with emit=false: the withheld batch is DISCARDED
-	  blocker:IsOn() -> boolean -- thin read of `IsBlocked`
+	  blocker.Blocking          -- read-only boolean (2026-09-15: one field replaces the old flag + accessor pair)
 	  blocker:Policy(emit) -> onUpstreamEmit
 	                            -- this blocker's gate policy as a value; registers the
 	                            -- onunblock handle at THIS call (weak-key set)
@@ -20,7 +20,7 @@
 	lives exactly as long as its GateNode. A Blocker holding handles strongly
 	was rejected — it would pin every gated state and its upstream chain.
 	`Off`/`OffWithoutEmit` snapshot the set before walking (a flush can create
-	new gates mid-walk). `IsBlocked` is a plain boolean — nesting the same
+	new gates mid-walk). `Blocking` is a plain boolean — nesting the same
 	Blocker is deliberately unsupported; make a new one per overlapping batch.
 	"HasBlockedEmit" has no field here: it IS `next(gate._withheld) ~= nil`, and
 	the gate's `emit(commit) -> boolean` is the only channel to it.
@@ -44,15 +44,12 @@ local BlockerImpl = {}
 BlockerImpl.__index = BlockerImpl
 -- `__tostring` (2026-09-08, advisory 권고 1)
 function BlockerImpl.__tostring(self: any): string
-	return `Blocker({if self.IsBlocked then "on" else "off"})`
+	return `Blocker({if self.Blocking then "on" else "off"})`
 end
 
-function BlockerImpl.IsOn(self: any): boolean
-	return self.IsBlocked
-end
 
 function BlockerImpl.On(self: any): any
-	self.IsBlocked = true
+	self.Blocking = true
 	return self
 end
 
@@ -63,7 +60,7 @@ local function runHandles(self: any, doEmit: boolean)
 		snapshot[#snapshot + 1] = handle
 	end
 	for _, handle in snapshot do
-		if self.IsBlocked then
+		if self.Blocking then
 			-- `H-203` (a): a downstream fired by an earlier handle's flush re-blocked
 			-- this blocker — stop; the remaining handles keep their withheld batches
 			-- for the next Off. A half-flushed stop is fine by quad's contract
@@ -75,13 +72,13 @@ local function runHandles(self: any, doEmit: boolean)
 end
 
 function BlockerImpl.Off(self: any): any
-	self.IsBlocked = false -- first, so a flush that re-enters sees the blocker open
+	self.Blocking = false -- first, so a flush that re-enters sees the blocker open
 	runHandles(self, true)
 	return self
 end
 
 function BlockerImpl.OffWithoutEmit(self: any): any
-	self.IsBlocked = false
+	self.Blocking = false
 	runHandles(self, false)
 	return self
 end
@@ -105,7 +102,7 @@ function BlockerImpl.Policy(self: any, emit: (boolean?) -> boolean): () -> ()
 	end
 	self._handles[handle] = true -- `H-63` (1): weak-key set
 	return function() -- onUpstreamEmit — `H-63` (2): THIS closure is the handle's strong owner
-		if self.IsBlocked then
+		if self.Blocking then
 			return -- the gate already put the source into its withheld set; nothing to do
 		end
 		handle(true) -- open: pass through — going through `handle` is what keeps it alive (upvalue)
@@ -121,7 +118,7 @@ end
 
 local function Blocker(): Blocker
 	local self = setmetatable({
-		IsBlocked = false,
+		Blocking = false,
 		_handles = setmetatable({}, WEAK_KEY_MT),
 	}, BlockerImpl)
 	BlockerBrand:Register(self)
@@ -129,6 +126,6 @@ local function Blocker(): Blocker
 end
 
 -- `H-231`: public surface joins the shared error-namespace tag layer
-Err.setFuncLevel(SURFACE, BlockerImpl.IsOn, BlockerImpl.On, BlockerImpl.Off, BlockerImpl.OffWithoutEmit, BlockerImpl.Policy, BlockerImpl.__apply, Blocker)
+Err.setFuncLevel(SURFACE, BlockerImpl.On, BlockerImpl.Off, BlockerImpl.OffWithoutEmit, BlockerImpl.Policy, BlockerImpl.__apply, Blocker)
 
 return Blocker

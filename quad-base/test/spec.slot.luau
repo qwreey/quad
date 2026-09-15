@@ -691,7 +691,7 @@ do
 	dispatch.drive(parent, { s })
 	local dead = Slot(); q.dispose(dead)
 	assert(not pcall(function() s:Splice(1, 0, dead) end), "destroyed Slot element rejected")
-	assert(not dispatch.getBlocker(s):IsOn(), "batch gate NOT left On")
+	assert(not dispatch.getBlocker(s).Blocking, "batch gate NOT left On")
 	assert(#s._elements == 2 and s.Length:Get() == 2, "nothing mutated")
 	s:Add(Instance.new("Frame"))
 	assert(s.Length:Get() == 3 and childCount(parent) == 3, "bookkeeping still alive after the rejected Splice")
@@ -776,7 +776,7 @@ do
 	local f = Instance.new("Frame")
 	assert(not pcall(function() s:Splice(2, 0, q.Source(f), q.Source(f)) end), "two States over one instance rejected")
 	assert(not pcall(function() s:Splice(2, 0, f, q.Source(f)) end), "raw + State over the same instance rejected")
-	assert(#s._elements == 1 and childCount(parent) == 1 and not dispatch.getBlocker(s):IsOn(), "nothing mutated, gate open")
+	assert(#s._elements == 1 and childCount(parent) == 1 and not dispatch.getBlocker(s).Blocking, "nothing mutated, gate open")
 	s:Add(Instance.new("Frame"))
 	assert(s.Length:Get() == 2, "still reactive")
 

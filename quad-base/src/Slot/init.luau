@@ -329,7 +329,7 @@ local function Init(module: any)
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)
 		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
-		local ownsGate = gate ~= nil and not gate:IsOn()
+		local ownsGate = gate ~= nil and not gate.Blocking
 		if ownsGate then gate:On() end
 		for i = #self._elements, 1, -1 do
 			S.rawRemove(self, i)

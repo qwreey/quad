@@ -112,7 +112,7 @@ return function(S: Types.SlotInternal, module: any)
 			end
 
 			local blocker = S.BK.getBlocker(self)
-			local ownsGate = not blocker:IsOn()
+			local ownsGate = not blocker.Blocking
 			if ownsGate then blocker:On() end
 
 			local slotPos = 0

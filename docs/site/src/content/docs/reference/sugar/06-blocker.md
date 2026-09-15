@@ -6,7 +6,7 @@ description: 값 기반 전파 유보 — On/Off/OffWithoutEmit/Policy와 state:
 
 `Blocker` 자체는 새 메커니즘이 아니라 [`state:Gate(setup)`](/reference/core/03-state/#stategatesetup) 위에 얹힌 **정책**입니다 — 게이트 계약(무엇이 유보되고 `emit`이 무엇을 하는지)은 그쪽이 정본이고, 이 페이지는 그 위의 스위치만 다룹니다.
 
-이 페이지의 심볼: [`q.Blocker()`](#qblocker) · [`blocker.IsBlocked`](#blockerisblocked) · [`blocker:IsOn()`](#blockerison) · [`blocker:On()`](#blockeron) · [`blocker:Off()`](#blockeroff) · [`blocker:OffWithoutEmit()`](#blockeroffwithoutemit) · [`blocker:Policy(emit)`](#blockerpolicyemit) · [`state:Apply(blocker)`](#stateapplyblocker)
+이 페이지의 심볼: [`q.Blocker()`](#qblocker) · [`blocker.Blocking`](#blockerblocking) · [`blocker:On()`](#blockeron) · [`blocker:Off()`](#blockeroff) · [`blocker:OffWithoutEmit()`](#blockeroffwithoutemit) · [`blocker:Policy(emit)`](#blockerpolicyemit) · [`state:Apply(blocker)`](#stateapplyblocker)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -23,8 +23,7 @@ local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 Blocker: () -> Blocker
 
 export type Blocker = {
-	read IsBlocked: boolean,
-	IsOn: (self: Blocker) -> boolean,
+	read Blocking: boolean,
 	On: (self: Blocker) -> Blocker,
 	Off: (self: Blocker) -> Blocker,
 	OffWithoutEmit: (self: Blocker) -> Blocker,
@@ -33,7 +32,7 @@ export type Blocker = {
 }
 ```
 
-**반환** — 꺼진 상태(`IsBlocked = false`)의 새 `Blocker`.
+**반환** — 꺼진 상태(`Blocking = false`)의 새 `Blocker`.
 
 **동작**
 
@@ -63,21 +62,13 @@ blocker:Off() -- 두 게이트가 각각 한 번씩 통지
 
 ---
 
-## `blocker.IsBlocked`
+## `blocker.Blocking`
 
 `boolean` 필드 — 지금 막고 있는지. **평범한 불리언이지 카운터가 아닙니다.**
 
 그래서 **같은 `Blocker`를 겹쳐 잠그는 것은 지원하지 않습니다** — 안쪽 구간이 `:Off()`를 부르면 바깥 구간이 아직 끝나지 않았어도 풀립니다. 겹치는 구간이 필요하면 구간마다 별도의 `Blocker`를 만드세요.
 
 "유보된 게 있는가"를 알려주는 필드는 없습니다. 그 정보는 게이트의 `emit(commit)` 반환값이 유일한 통로입니다([03-state](/reference/core/03-state/#stategatesetup)).
-
----
-
-## `blocker:IsOn()`
-
-**시그니처** — `IsOn: (self: Blocker) -> boolean`
-
-`IsBlocked`를 그대로 읽는 얇은 접근자입니다.
 
 ---
 

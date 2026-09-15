@@ -317,10 +317,10 @@ local function Init(module: any)
 		local cur = if element ~= nil then bk.indexOfElement[element] else i
 		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)
 		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, cur)
-		if blocker:IsOn() then
+		if blocker.Blocking then
 			return -- batch registration in progress
 		end
-		if bk.recomputeBlocker:IsOn() then
+		if bk.recomputeBlocker.Blocking then
 			return -- recompute reentry — the outer pass's rewind picks it up
 		end
 		recompute(ownerKey, bk)

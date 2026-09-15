@@ -233,7 +233,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- `held` = "this signal is withheld, not passed" — read the Blocker BEFORE
 			-- anything below flips it (`H-510`): a re-entrant emit during a timer-path
 			-- commit sees no window but a still-On Blocker, so `pass()` withholds
-			local held = b:IsOn() or not leading
+			local held = b.Blocking or not leading
 			if h._window == nil then
 				-- idle: a leading gate passes now (Blocker is Off → `pass()` flushes),
 				-- otherwise withhold first

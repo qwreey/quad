@@ -131,7 +131,7 @@ do
 	local inst = Instance.new("Frame")
 	q.Dispatch.drive(inst, { 2, 3, 1, Size = "s" })
 	assert(sources[1]:Get() == 0 and sources[2]:Get() == 2 and sources[3]:Get() == 5, "immediate calc filled offsets in order")
-	assert(q.Dispatch.getBlocker(inst):IsOn() == false, "batch blocker closed after drive")
+	assert(q.Dispatch.getBlocker(inst).Blocking == false, "batch blocker closed after drive")
 	assert(q.Dispatch.getBookkeeping(inst).N == 3, "bk.N = registered array positions")
 
 	-- 배치 중 각 Source가 정확히 1회만 Set을 받았다 — 즉시 계산 1회, 배치 중
@@ -172,7 +172,7 @@ do
 	assert(once, "the reentrant callback actually ran")
 	assert(s2:Get() == 5, "position 2 rewound to the new base")
 	assert(s3:Get() == 6, "position 3 followed")
-	assert(q.Dispatch.getBookkeeping(inst).recomputeBlocker:IsOn() == false, "reentry blocker released")
+	assert(q.Dispatch.getBookkeeping(inst).recomputeBlocker.Blocking == false, "reentry blocker released")
 	print("PASS")
 end
 
@@ -331,7 +331,7 @@ do
 	assert(src2:Get() == 7, `position 2 offset reflects the mid-read change (got {src2:Get()})`)
 	assert(src3:Get() == 9, `position 3 follows: 7 + len2(2) (got {src3:Get()})`)
 	local bk = q.Dispatch.getBookkeeping(inst)
-	assert(bk.offsetSetUpTo == 3 and not bk.recomputeBlocker:IsOn(), "the pass completed cleanly (no frozen blocker)")
+	assert(bk.offsetSetUpTo == 3 and not bk.recomputeBlocker.Blocking, "the pass completed cleanly (no frozen blocker)")
 	print("PASS")
 end
 
@@ -451,7 +451,7 @@ do
 	assert(src5:Get() == 9, `position 5 followed: 7 + 1 + 1 (got {src5:Get()})`)
 	assert(q.Dispatch.getOffsetAt(inst, 4) == 8, "on-demand read of a None position after the rewind")
 	local bk = q.Dispatch.getBookkeeping(inst)
-	assert(bk.offsetSetUpTo == 5 and not bk.recomputeBlocker:IsOn(), "the pass completed cleanly (no frozen blocker)")
+	assert(bk.offsetSetUpTo == 5 and not bk.recomputeBlocker.Blocking, "the pass completed cleanly (no frozen blocker)")
 	print("PASS")
 end
 

@@ -1,5 +1,5 @@
 --[[
-	Blocker 계약 — `.claude/base/blocker-plan.md` "메커니즘 (확정)"(On/Off/OffWithoutEmit/IsOn/Policy/`__apply`,
+	Blocker 계약 — `.claude/base/blocker-plan.md` "메커니즘 (확정)"(On/Off/OffWithoutEmit/Policy·`Blocking` 필드/`__apply`,
 	onunblock 핸들 보관 `H-63` 셋) / "재진입(네스팅) — 의도적으로 미지원", `.claude/base/gate-plan.md` 5번·8번.
 ]]
 
@@ -24,15 +24,21 @@ local function probe(target: any): Probe
 	return p
 end
 
-print("=== 1. 생성·상태 — IsOn/On/Off/OffWithoutEmit은 self 반환, 브랜드, 단순 불리언(카운터 아님) ===")
+-- `Blocking` is a read field: read it through a call so the old solver does not refine `b` across asserts
+-- (a field comparison narrows it; the old `:IsOn()` method call never did)
+local function blocking(x: any): boolean
+	return x.Blocking
+end
+
+print("=== 1. 생성·상태 — On/Off/OffWithoutEmit은 self 반환, `Blocking` 필드(2026-09-15 옛 상태 필드·접근자 쌍 대체), 브랜드, 단순 불리언(카운터 아님) ===")
 do
 	local b = Blocker()
 	assert(Quad.isBlocker(b) and not Quad.isState(b), "brand")
-	assert(b:IsOn() == false, "starts open")
-	assert(b:On() == b and b:IsOn() == true, "On")
+	assert(blocking(b) == false, "starts open")
+	assert(b:On() == b and blocking(b) == true, "On")
 	b:On() -- twice: still just true
-	assert(b:Off() == b and b:IsOn() == false, "Off — no counting: one Off closes two Ons")
-	assert(b:OffWithoutEmit() == b and b:IsOn() == false, "idempotent")
+	assert(b:Off() == b and blocking(b) == false, "Off — no counting: one Off closes two Ons")
+	assert(b:OffWithoutEmit() == b and blocking(b) == false, "idempotent")
 	print("PASS")
 end
 
@@ -152,7 +158,7 @@ do
 end
 
 print()
-print("=== 8. H-203 — Off 순회 중 재차단: 남은 핸들은 유보 유지, IsOn true인 채 통지가 새지 않는다 ===")
+print("=== 8. H-203 — Off 순회 중 재차단: 남은 핸들은 유보 유지, Blocking true인 채 통지가 새지 않는다 ===")
 do
 	local b = Blocker()
 	local s, t = Source(0), Source(0)
@@ -180,7 +186,7 @@ do
 	assert(delivered == 0, "both withheld")
 	b:Off()
 	assert(delivered == 1, "exactly one gate flushed — the re-block stopped the walk")
-	assert(b:IsOn() == true, "the mid-walk On() sticks")
+	assert(blocking(b) == true, "the mid-walk On() sticks")
 	b:Off()
 	assert(delivered == 2, "the survivor's withheld batch flushes on the next Off")
 	print("PASS")

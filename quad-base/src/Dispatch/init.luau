@@ -454,7 +454,7 @@ local function Init(module: any)
 		if blocker then
 			blocker:OffWithoutEmit()
 			local bk = bookkeeping.getBookkeeping(inst)
-			if not bk.recomputeBlocker:IsOn() then
+			if not bk.recomputeBlocker.Blocking then
 				bookkeeping.recompute(inst, bk)
 			end
 		end
