@@ -95,7 +95,7 @@
 - **`LayoutOrder`는 사용자 몫**: quad는 `updateFn`에 `index`(이 Slot 안의 물리 위치)와 `offset`(읽기 전용 `State<number>` — 2026-09-15 좁힘)만 넘긴다. 자동 `LayoutOrder`는 기각된 설계
   (~~`LayoutOrder = SlotOffset + ItemIndex` 공식~~ 정정 — 정본 관용구는 `slot-plan.md`의 `:With(offset):Compute`).
 - **재활용**: `updateFn(item, index, offset, prev, ud)`에서 `ud`에 `Source`를 보관하고 `ud.src:Set(new)` 후 `return prev, ud`. `ud`에 Instance를 담지 말 것 — 잠깐 떼어둘 땐 `return q.Detach`.
-- **`Owned`**: `:List`/`:Single` 기본 `Owned = true`는 빠진 요소를 파괴. 비파괴는 `Owned = false`와 자식 자리의 `State<Slot>` 교체뿐. `Slot { State<Instance> }`는 내부적으로 `Single(state, nil, { Owned = false })`.
+- **`OwnsElements`**(**[2026-09-15]** 옛 이름 `Owned`에서 개명): `:List`/`:Single` 기본 `OwnsElements = true`는 빠진 요소를 파괴. 비파괴는 `OwnsElements = false`와 자식 자리의 `State<Slot>` 교체뿐. `Slot { State<Instance> }`는 내부적으로 `Single(state, nil, { OwnsElements = false })`.
 - **순환**: `A:Add(B); B:Add(A)`는 즉시 런타임 에러(~~무한 재귀~~ 정정). 성능 수치(O(1) 등)는 적지 않는다.
 
 ### 7) `Claim` 및 Studio 협업
