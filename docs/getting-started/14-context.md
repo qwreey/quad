@@ -105,6 +105,18 @@ Context:Get: no value for Provider(Locale) — the creator of this Context did n
 ```
 
 <details>
+<summary><strong>왜 가방을 복제해서 넘기는 API는 없나요?</strong></summary>
+
+`Tag`나 `Modifier`처럼 "원본은 두고 몇 개만 바꾼 사본"을 돌려주는 방식을 일부러 두지 않았습니다. 가방이 서브트리마다 갈라지면 두 가지가 꼬입니다.
+
+- **디버깅할 표면이 늘어납니다.** 가방이 하나면 어디서든 그걸 찍어 보면 전부 보이지만, 사본이 여럿이면 "이 자리는 어느 사본을 받았나"부터 따라가야 합니다.
+- **위로 넘기는 동작이 따로 필요해집니다.** 자식이 받은 사본을 바꿨을 때 그걸 부모 쪽에 반영하려면 별도 장치를 만들어야 합니다.
+
+그래서 가방은 하나의 진실로 두고, 서브트리에 값을 더해야 한다면 만드는 쪽이 새 가방을 만들어 필요한 열쇠를 다시 `:Set` 해 넘깁니다.
+
+</details>
+
+<details>
 <summary><strong><code>ctx:Get(...)</code>의 타입은 어디서 오나요?</strong></summary>
 
 `Provider<T>`의 `T`는 값에 없는 팬텀이라, **키를 만드는 자리에서 한 번** 적어 주면 그 뒤로는 `:Get`이 알아서 추론됩니다. 위 `Theme` 모듈에 타입까지 같이 두면 됩니다.
