@@ -34,8 +34,17 @@ local VERSION_PATTERN = "3.2^.0^"
 
 -- 공개 타입 재익스포트(ROADMAP M5 배너 — 몰아두는 단일 파일은 types.luau).
 -- `Declaration`/`DeclarationMapper`/`<Class>Param<E>` 전량은 생성 파일(src/Declaration)이 소스라 여기선
--- 네임스페이스 타입 둘만 재익스포트 — 개별 Param이 필요한 소비자는
--- 생성 모듈에서 직접 가져간다(손 나열은 "전량 생성" 계약과 충돌, `H-305`).
+-- 네임스페이스 타입 둘만 손으로 재익스포트한다(손 나열은 "전량 생성" 계약과 충돌, `H-305`).
+-- [2026-09-15 공개 표면 (28) 잠정 — 사용자] 생성 모듈에서 사용자가 쓰는 타입은 아래 GENERATED 블록이
+-- `scripts/gen-d.py emit`으로 이 파일에 직접 찍는다(pesde 설치에선 생성 모듈 경로가 `.pesde/…` 밑뿐이라
+-- 루트 재수출이 유일한 공개 경로). **공개 계약은 이 루트가 내보내는 이름뿐** — 생성 모듈의 구조와 그 안의
+-- 나머지 export는 바뀔 수 있다. 지금은 D를 타입 함수로 팩토리화할 예정이라(사용자) 바뀌지 않을
+-- 클래스 무관 별칭 둘만 싣는다 — 클래스별 타입은 그 작업 뒤에 이 블록으로.
+
+-- BEGIN GENERATED ROOT EXPORTS (scripts/gen-d.py emit — do not edit by hand)
+export type Field<T> = DeclarationModule.Field<T>
+export type FieldOut<T> = DeclarationModule.FieldOut<T>
+-- END GENERATED ROOT EXPORTS
 -- `Tween` 값 타입 일가(2026-09-07 — quad-types에서 이곳으로, `types.luau` 주석)
 export type Tween<T> = Types.Tween<T>
 export type TweenData<T> = Types.TweenData<T>

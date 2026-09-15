@@ -41,6 +41,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SURFACE = ROOT / "quad-roblox" / "dump" / "api-surface.json"
 OUT = ROOT / "quad-roblox" / "src" / "Declaration" / "init.luau"
+ROOT_INIT = ROOT / "quad-roblox" / "src" / "init.luau"  # [2026-09-15] generated root export block lives here
 
 SCOPE_ROOTS = ("GuiObject", "UIComponent", "LayerCollector")
 SCOPE_EXTRA = {"Folder", "Camera", "WorldModel"}  # H-296 (a) 화이트리스트(vide 반례)
@@ -757,7 +758,26 @@ def emit():
     L.append("\treturn (D :: any) :: Declaration")
     L.append("end")
     text = "\n".join(L) + "\n"
+    # [2026-09-15 공개 표면 (28) 잠정 — 사용자: "일부 export 표면이 자동화 될 수 있도록, auto gen 영역이
+    # init 에 박히는것"] the per-class types users write get a generated re-export block in the package
+    # root — the only public path under pesde (the generated module sits under `.pesde/…`). The contract is
+    # the root's names; the generated module's layout may change.
+    # Same day, user: "바뀌지 않을 것만 넣어줘" — D itself is due to be factored with type functions
+    # (`keyof<Class>`/`index<Class, K>` are honest in Roblox luau-lsp), so per-class names
+    # (`<Class>Modifier`/`Into<Class>`) and the interpolable split (`FieldP`/`FieldOutP`) may not survive;
+    # only the class-independent value aliases go public for now. The block stays generated so the
+    # refactor can grow it.
+    R = []
+    R.append("export type Field<T> = DeclarationModule.Field<T>")
+    R.append("export type FieldOut<T> = DeclarationModule.FieldOut<T>")
+    root_text = ROOT_INIT.read_text()
+    m = re.search(r"(-- BEGIN GENERATED ROOT EXPORTS[^\n]*\n)(.*?)(-- END GENERATED ROOT EXPORTS)", root_text, re.S)
+    if not m:
+        raise SystemExit(f"gate: GENERATED ROOT EXPORTS markers not found in {ROOT_INIT}")
+    new_root = root_text[:m.start(2)] + "\n".join(R) + "\n" + root_text[m.start(3):]
     if CHECK_ONLY:
+        if new_root != root_text:
+            raise SystemExit(f"gen-d check: the generated root export block in {ROOT_INIT} is stale — run `python3 scripts/gen-d.py emit` and commit")
         # [7순회 H-423] `check` — test.sh gate: the committed D must equal a fresh emit
         # (deterministic: every output walk is sorted, every input is tracked). Also runs
         # every SystemExit gate above without touching the tree.
@@ -768,6 +788,7 @@ def emit():
         return
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(text)
+    ROOT_INIT.write_text(new_root)
     print(f"emit: {len(names)} classes -> {OUT}")
 
 
