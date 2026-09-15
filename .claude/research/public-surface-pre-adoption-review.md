@@ -28,7 +28,7 @@
 12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지.
 13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸). **[닫힘 2026-09-15 — 올림, BREAKING]**
 14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지.
-15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지.
+15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지. **[2026-09-15 열림 — 바꾸는 방향엔 동의, 낱말 `Watch`/`Track` 검토 중; 다음 bump 전까지]**
 16. (17) "`_` 접두 필드는 비공개"를 extend/01에 명시할지. **[닫힘 2026-09-15 — 명시(내부 계약, 언제든 바뀜)]**
 
 ---
@@ -280,6 +280,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 ---
 
 ## (15) `state:With(...)` — v1과 같은 이름, 다른 뜻이고, 이름이 뜻을 안 드러낸다
+
+**[2026-09-15 사용자 논의 — 바꾸는 방향엔 동의, 낱말은 열어 둠]** 사용자 제안 `Watch`: *"Compute 처럼 일반형 동사로 Watch 붙이는거, 후행 생성 state 가 그것들을 '바라볼' 뿐, 값의 변경을 따라 자신도 업데이트가 될 뿐 그걸 직접 읽어오지 않는다는 점을 잘 드러내는 자기설명적 이름"*. `Observer`와의 구분(사용자): *"Observer 는 fn 이 해당 state 를 관측하는것(물론 get 이 안날 수도 있지만), Watch 는 state 가 다른 state 의 변경을 따라가는것"* — 개명하면 레퍼런스에 이 한 줄을 적는다. 대안 `Track`을 사용자가 제기해 **당장은 열린 표면**으로 남김. 메인 의견(`Watch` 쪽): `With`는 실제로 오독된 기록이 있고(`base/slot-plan.md` 8라운드 — `:With(offset):Compute(function(i, o))`의 `o`를 offset으로 읽음), `Track`은 반응형 어휘에서 "읽을 때 의존성을 기록"(Vue 코어 `track()`, MobX tracking)이나 "값을 추적해 따라감"으로 읽혀 값이 넘어온다는 같은 오해를 부를 수 있다. `Watch`의 약점은 Vue식 `watch(source, callback)` 습관인데, 함수를 넘기면 dep 검증(`H-70`)이 즉시 던지므로 조용히 틀리지 않는다. 개명 시 같이 할 것: GS 12·13장의 사용자 prop 이름 `props.Watch`(콜백 — Vue식 뜻) 변경, 옛 이름 별칭 없음, CHANGELOG BREAKING, v1 이관 문서의 "이름만 같은 다른 API" 각주 제거. 비용: 코드 `:With(` 6곳 + 타입·구현, 문서 28곳. **시한**: BREAKING이라 다음 릴리즈 bump 전에 정할 것.
 
 **무엇** — `quad-types/src/init.luau:391`, 레퍼런스 `docs/reference/core/03-state.md:102-118`. 뜻은 *"값은 그대로 두고 구독 범위만 넓히는 노드"*입니다. v1의 `register:With(fn)`은 파생(지금의 `:Compute`)이었고, CHANGELOG가 이미 경고합니다: *"3.x의 `state:With()`는 이름만 같은 다른 API입니다."*
 
