@@ -5,7 +5,7 @@ quad는 워크스페이스 멤버 다섯을 같은 버전으로 게시한다(loc
 따로 박혀 있는데, 소스끼리는 타입 캐스트와 스펙으로 묶여 있지만 매니페스트는 아무 게이트도 보지 않았다 — 이 스크립트가 그 구멍을 막는다.
 
   python3 scripts/check-version.py            # 전 자리가 quad-base/pesde.toml의 version과 같은지, VERSION_PATTERN이 그 버전을 받는지 (exit 1이면 불일치)
-  python3 scripts/check-version.py bump 3.0.0 # 전 자리를 새 버전으로 바꾸고 CHANGELOG의 [Unreleased]를 잘라 버전 헤딩으로. VERSION_PATTERN은 새 버전을 하한으로 한 `M.m^.p^`(2026-09-15 — 메이저 고정 사전식 하한).
+  python3 scripts/check-version.py bump 3.0.0 # 전 자리를 새 버전으로 바꾸고 CHANGELOG의 [Unreleased]를 잘라 버전 헤딩으로. VERSION_PATTERN은 새 버전을 하한으로 한 `M.m^.p^`(2026-09-15 — 메이저 고정 사전식 하한, 프리릴리즈 bump면 꼬리를 붙여 `M.m^.p^-rc.N`).
                                               # docs/ 안의 옛 버전 문자열은 바꾸지 않고 목록만 찍는다(verbatim 에러 문구가 섞여 있어 손으로 볼 것).
 """
 import datetime, os, re, sys
@@ -115,9 +115,12 @@ def bump(new):
         if n == 0:
             sys.exit(f'site not found: {f} {rx}')
         write(f, s)
-    # [2026-09-15 사용자 결정] VERSION_PATTERN is a floor within the major: "M.m^.p^" of the new release
-    major, minor, patch = split_tail(new)[0].split('.')
-    floor = f'{major}.{minor}^.{patch}^'
+    # [2026-09-15 사용자 결정] VERSION_PATTERN is a floor within the major: "M.m^.p^" of the new release.
+    # A prerelease bump keeps its tail ("M.m^.p^-rc.2") so an rc backend accepts only the same rc base —
+    # prerelease and release builds must not mix (code-review 1a7c4dc..04e8bad, user (가)).
+    core, pre = split_tail(new)
+    major, minor, patch = core.split('.')
+    floor = f'{major}.{minor}^.{patch}^' + (f'-{pre}' if pre is not None else '')
     for f, rx in [PATTERN_SITE, PATTERN_ECHO_SITE]:
         s, n = re.subn(rx, lambda mo: mo.group(1) + floor + mo.group(3), read(f))
         if n == 0:

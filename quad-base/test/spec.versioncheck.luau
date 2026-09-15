@@ -54,6 +54,10 @@ do
 	expect("4.0.0", "3^.2^.0^", true)
 	expect("4.0.0", "3.2^.0^", false) -- caret 없는 앞 자리는 여전히 정확 일치(메이저 고정)
 	expect("3.9.0", "3.2^.0", true) -- 넘은 뒤엔 뒤의 정확 자리도 무시
+	-- 프리릴리즈 bump가 쓰는 꼬리 달린 하한(check-version.py) — 같은 rc만 통과, 릴리즈·다른 rc는 막힘
+	expect("3.3.0-rc.2", "3.3^.0^-rc.2", true)
+	expect("3.3.0-rc.1", "3.3^.0^-rc.2", false)
+	expect("3.3.0", "3.3^.0^-rc.2", false)
 	-- 자리 개수가 다르면 불일치(기존 의미 유지), 숫자가 아닌 자리에 caret도 불일치
 	expect("3.1.0", "3.1", false)
 	expect("3.1", "3.1.0", false)
