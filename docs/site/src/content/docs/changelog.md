@@ -51,6 +51,10 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - **BREAKING(타입만) — `Provider<T>`(Context의 열쇠)가 `T`에 불변이 됐습니다.** 전에는 `Provider<number>`에 문자열을 `ctx:Set` 해도 타입 검사가 통과해 `ctx:Get`의 약속이 깨졌습니다. 이제 넣는 값의 타입이 열쇠와 같아야 하고, `Provider<Frame>`을 `Provider<Instance>` 자리에 넘길 수도 없습니다(`Ref<T>`와 같은 규칙). 런타임 동작은 같습니다. 옮기는 법: 열쇠를 넘겨받는 자리의 타입을 그 열쇠와 같게 적으세요.
 - **BREAKING(타입만) — 사용자가 읽기만 하는 상태 필드에 `read`가 붙었습니다**: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`, `Source.Revision`과 `quad_types`의 `Epoch` 타입의 `Revision`, `Observer`·`Effect`의 `Subscribed`, `Blocker.Blocking`(아래 개명), `AttrKey`의 `Name`, `Timeout._native`. 런타임 동작은 같습니다. 옮기는 법: 이 필드에 직접 대입하던 코드는 `ref:Set(v)`, `:Subscribe()`/`:Unsubscribe()`, `blocker:On()`/`:Off()` 같은 메소드로 바꾸세요.
 
+### Fixed
+
+- strict 타입 검사가 조용히 꺼져 있던 자리 둘을 고쳤습니다: `q.Debounce`/`q.Throttle` 옵션의 `Time`·`MaxTime`(아무 값이나 통과했습니다)과 `q.Operator`의 계산 함수들이 돌려주는 타입(`s:Apply(q.Operator.Sum(1))` 결과가 무엇에든 대입됐습니다). 원인은 타입 선언 순서였고 런타임 동작은 같습니다. 이제 `Time = "x"` 같은 값은 타입 에러가 나며, 옵션의 State 자리는 `StateMarker<number>`로 선언됩니다(진짜 `State<number>`를 그대로 넘기면 됩니다).
+
 ---
 
 ## [3.2.0] - 2026-09-14

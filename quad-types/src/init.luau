@@ -184,6 +184,44 @@ export type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 -- ── 반응형 코어(M2 단위 2) ────────────────────────────────────────────
 export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
+-- [2026-09-15 공개 표면 (32) 후속 — 사용자 결정] State/Source(와 FieldOut)를 StateData 바로 뒤로 끌어올림: 비균일 재귀
+-- 제네릭(`Compute: <U> -> State<U>`)보다 먼저 선언된 비제네릭 별칭이 그걸 인스턴스화하면 참조가 통째로 에러 타입(any)이
+-- 된다(두 솔버, opus 조사 — 옵션 `Time`·Operator 반환이 조용히 무검사였다). State/Source를 참조하는 별칭은 이 뒤에 둘 것.
+-- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 Declaration의 `Field<T>`)가
+-- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
+-- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
+-- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
+-- `types.luau`의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
+-- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 Declaration은 그걸 재별칭 — Declaration 안 전개는 typing-limits 8.12).
+-- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
+-- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
+export type FieldOut<T> = T | State<T> | None
+
+export type State<T> = StateData<T> & {
+	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
+	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
+	-- "미검증"으로 남겨둔 자리). 콜백 안에서 dep 파라미터에 주석을 달 것.
+	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
+	-- [2026-09-15 사용자 결정] 옛 `With` → `Depend`: 값은 리시버 그대로, `...deps`만 추가로 건다(`:Compute`/`q.Effect`의 deps와 같은 낱말)
+	Depend: (self: StateData<T>, ...any) -> State<T>,
+	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
+	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
+	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
+	-- 받아 `state:Apply(blocker)`가 strict에서 막힌다. 객체 쪽은 `any`를 돌려주므로 결과는
+	-- `local g: State<number> = s:Apply(b)`로 명시(§1①의 파생 State 명시 주석 관례와 같다).
+	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
+	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
+	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
+	-- 전파 경로에 GateNode 하나(값은 안 가린다, 통지만 유보). 같은 T.
+	Gate: (self: StateData<T>, setup: GateSetup) -> State<T>,
+}
+-- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
+export type Source<T> = State<T> & {
+	read Revision: number,
+	Set: (self: Source<T>, v: T) -> Source<T>,
+	Emit: (self: Source<T>) -> Source<T>,
+}
+
 
 -- 타입 별칭 이름 넷(`ObserverFn`/`EffectFn`/`GateEmit`/`GateSetup`)은 구현이 붙였고
 -- `H-187` (a)로 사용자 승인(2026-08-31, "이름 그대로 사용해도 좋음").
@@ -246,14 +284,14 @@ export type GateHandle = {
 	Cancel: (self: GateHandle) -> (), -- 보류분을 버리고 idle로(전파 없음)
 }
 export type DebounceOptions = {
-	read Time: number | State<number>, -- 창 길이(초) — 신호마다 리셋. State면 스케줄 시점에만 `:Get()`(구독 없음)
+	read Time: number | StateMarker<number>, -- 창 길이(초) — 신호마다 리셋. State면 스케줄 시점에만 `:Get()`(구독 없음); 입력 자리라 마커
 	read Leading: boolean?, -- 기본 false
 	read Trailing: boolean?, -- 기본 true
-	read MaxTime: (number | State<number>)?, -- 신호가 안 끊겨도 최대 이 간격마다 통과(Debounce 전용)
+	read MaxTime: (number | StateMarker<number>)?, -- 신호가 안 끊겨도 최대 이 간격마다 통과(Debounce 전용)
 	read Handle: Ref<GateHandle?>?,
 }
 export type ThrottleOptions = {
-	read Time: number | State<number>, -- 창 길이(초) — 신호가 리셋하지 못함
+	read Time: number | StateMarker<number>, -- 창 길이(초) — 신호가 리셋하지 못함
 	read Leading: boolean?, -- 기본 true
 	read Trailing: boolean?, -- 기본 true
 	read Handle: Ref<GateHandle?>?,
@@ -387,41 +425,6 @@ export type ModifierConstructor = setmetatable<{
 	TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T,
 	DefineSubtype: (parent: string, subtype: string) -> (),
 }, { __call: (self: any, ...(Modifier | { [string]: any })) -> Modifier }>
--- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 Declaration의 `Field<T>`)가
--- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
--- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
--- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
--- `types.luau`의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
--- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 Declaration은 그걸 재별칭 — Declaration 안 전개는 typing-limits 8.12).
--- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
--- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
-export type FieldOut<T> = T | State<T> | None
-
-export type State<T> = StateData<T> & {
-	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
-	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
-	-- "미검증"으로 남겨둔 자리). 콜백 안에서 dep 파라미터에 주석을 달 것.
-	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
-	-- [2026-09-15 사용자 결정] 옛 `With` → `Depend`: 값은 리시버 그대로, `...deps`만 추가로 건다(`:Compute`/`q.Effect`의 deps와 같은 낱말)
-	Depend: (self: StateData<T>, ...any) -> State<T>,
-	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
-	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
-	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
-	-- 받아 `state:Apply(blocker)`가 strict에서 막힌다. 객체 쪽은 `any`를 돌려주므로 결과는
-	-- `local g: State<number> = s:Apply(b)`로 명시(§1①의 파생 State 명시 주석 관례와 같다).
-	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
-	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
-	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
-	-- 전파 경로에 GateNode 하나(값은 안 가린다, 통지만 유보). 같은 T.
-	Gate: (self: StateData<T>, setup: GateSetup) -> State<T>,
-}
--- `Source`는 `State`를 구조적으로 만족하고 동시에 `Epoch`다(다중 태깅).
-export type Source<T> = State<T> & {
-	read Revision: number,
-	Set: (self: Source<T>, v: T) -> Source<T>,
-	Emit: (self: Source<T>) -> Source<T>,
-}
-
 -- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
 -- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`·`keyType`**(`.claude/base/
 -- dispatch-core-plan.md` "핸들러 계약"): `isHandlable`은 부작용 없는 순수

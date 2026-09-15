@@ -47,10 +47,10 @@ type State<T> = q.State<T>
 Debounce: (opts: DebounceOptions) -> TimedGate
 
 export type DebounceOptions = {
-    read Time: number | State<number>,
+    read Time: number | StateMarker<number>,
     read Leading: boolean?, -- 기본 false
     read Trailing: boolean?, -- 기본 true
-    read MaxTime: (number | State<number>)?,
+    read MaxTime: (number | StateMarker<number>)?,
     read Handle: Ref<GateHandle?>?,
 }
 ```
@@ -65,7 +65,7 @@ export type DebounceOptions = {
 Throttle: (opts: ThrottleOptions) -> TimedGate
 
 export type ThrottleOptions = {
-    read Time: number | State<number>,
+    read Time: number | StateMarker<number>,
     read Leading: boolean?, -- 기본 true
     read Trailing: boolean?, -- 기본 true
     read Handle: Ref<GateHandle?>?,

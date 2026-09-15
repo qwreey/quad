@@ -1082,3 +1082,13 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 `q.OnRendered<<Frame>>(function(inst) print(#inst:GetChildren()) end)`가 신 솔버 strict에서 `Operator '#' could not be applied to operand of type unknown`. 같은 식이 최상위나 `PostRef<Frame?>`의 `:Callback` 콜백에서는 통과하고, 같은 콜백 안의 `inst.Size`·`inst.ClassName`·`inst:FindFirstChildOfClass(...)`도 통과한다 — **제네릭 파라미터 `I`로 들어온 인스턴스의 배열 반환 메소드만** 걸린다. 우회는 지역 변수 주석 `const kids: { Instance } = inst:GetChildren()`(GS 08이 그 형태). `reference/sugar/04-lifecycle-hooks.md`의 예제는 `inst.Size`/`inst.ClassName`이라 지금은 안 걸리지만, 자식 순회 예제를 넣을 때 같은 벽 — 8.16과 같은 뿌리(훅의 `I`는 타입 인자로만 채워진다)로 보이나 원인은 좁히지 않았다.
 
+## 8.21. 비균일 재귀 제네릭보다 **앞에 선언된** 별칭이 그걸 인스턴스화하면 그 참조가 통째로 에러 타입(any)이 된다 — `State`/`Source`는 파일 앞쪽에, 참조하는 별칭은 그 뒤에 (2026-09-15 실측, 두 솔버)
+
+증상: quad-types에서 `DebounceOptions`/`ThrottleOptions`(당시 `Time: number | State<number>`)와 `Operator` 블록(`NumOp` 등 반환 `State<number>`)이 `State<T>` 정의보다 먼저 선언돼 있어, `q.Debounce({ Time = "x" })`·`Time = true`가 통과하고 `s:Apply(q.Operator.Sum(1))` 결과가 무엇에든 대입됐다(구 솔버 `luau-analyze` 0.734, 신 솔버 `luau-lsp` 1.69.0 판정 동일). `State`를 안 쓰는 옆 필드(`Leading: boolean?`)는 정상 진단.
+
+조건 둘이 **동시에** 성립할 때만 샌다(require 없는 최소 재현): (1) 참조하는 별칭이 대상 제네릭보다 파일에서 먼저 선언, (2) 대상이 **비균일 재귀**(`Compute: <U>(self: S<T>, …) -> S<U>`처럼 다른 타입 인자로 자기를 반환 — §1의 그 모양). 뒤로 옮기거나 균일 재귀(`-> S<T>`만)면 진단된다. 같은 파일 안에서도 새고, 필드를 읽어 `boolean`에 대입해도 진단 0 — 필드 타입 자체가 에러 타입이다. §1은 "그 메소드의 반환만 에러 타입"까지였고, 이건 그 확장이다.
+
+조치(사용자 결정 — 공개 표면 (32) 후속): `FieldOut`/`State`/`Source` 정의를 `StateData` 바로 뒤로 끌어올림(블록마다 내리는 대신 — 앞으로 생길 앞선 참조까지 덮음) + 입력 자리인 옵션 `Time`/`MaxTime`은 `StateMarker<number>`로(8.11 입력 자리 마커 규약; 출력부가 아니라 자동완성 손실 없음). 실측: 옵션 오값 진단, 진짜 State 통과, `Operator` 직접 호출·`Alternative` 반환 정상, 타입 검사 시간 변화 없음. 정적 스캔으로 남은 앞선 참조 셋(`RefCallback`→`Ref`, `SlotItem`→`Slot`은 균일 재귀라 안전; `FieldOut`→`State`는 실측 무해). **규칙: 비균일 재귀 제네릭(`State`/`Source`)을 참조하는 별칭은 그 정의 뒤에 둘 것.** 남은 무진단 `s:Apply(q.Operator.Not)`은 이 건이 아니라 8.14(`self: any` 함수의 `Apply` 오버로드 해소).
+
+왜 순서가 영향을 주는지(솔버 내부 경로)는 Luau 소스 조사 중 — 결과를 이 절에 덧붙인다.
+
