@@ -122,7 +122,7 @@ return {
 }
 ```
 
-`q.Provider<Theme>`는 [01장](./01-setup.md) 설정 모듈의 `export type Provider<T> = QuadTypes.Provider<T>` 줄에서 옵니다.
+`q.Provider<Theme>`는 [01장](./01-setup.md) 설정 모듈의 `export type Provider<T> = QuadTypes.Provider<T>` 줄에서 옵니다. 이 열쇠의 `T`는 **넣는 타입과 꺼내는 타입이 같아야** 해서, 다른 타입의 값을 `:Set` 하거나 `Provider<Frame>`을 `Provider<Instance>` 자리에 넘기면 타입 에러가 납니다([레퍼런스](../reference/sugar/01-context.md)).
 
 </details>
 

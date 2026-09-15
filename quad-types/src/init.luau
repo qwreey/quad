@@ -269,7 +269,15 @@ export type TimedGate = {
 -- ── Context / Provider (2026-09-08, `base/context-plan.md`) ─────────────────────
 -- 명시적 값 컨테이너 — 트리 탐색이 아니라 props로 건네는 타입드 다중 Store 가방(암묵 Context는 `archive/context-rejected.md`).
 -- `Provider<T>`는 테이블 신원 키; `T`는 팬텀(`__quadProviderValue`)이라 `ctx:Get(p)`가 `T`로 추론된다.
-export type Provider<T> = { read __quadProvider: true, read __quadProviderValue: T, read Name: string? }
+-- [2026-09-15 사용자 결정 (25)] `__quadProviderAccepts` — 반공변 팬텀(런타임 값 `Void`, `Ref.__quadRefAccepts`와 같은 층)을 더해
+-- `T`를 불변으로: 공변 팬텀 하나뿐이면 `ctx:Set(p, 다른 타입)`이 `T`를 넓혀 통과했다. 읽고 쓰는 필드라 불변이 정상
+-- (사용자: TypeScript React `RefObject`도 불변) — `Provider<Frame>`은 `Provider<Instance>` 자리에 안 들어간다.
+export type Provider<T> = {
+	read __quadProvider: true,
+	read __quadProviderValue: T,
+	read __quadProviderAccepts: (T) -> (),
+	read Name: string?,
+}
 export type Context = {
 	read __quadContext: true,
 	Set: <T>(self: Context, provider: Provider<T>, value: T) -> Context, -- 이 가방을 변경, self 반환

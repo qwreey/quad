@@ -29,6 +29,7 @@
 ]]
 
 local Brand = require("./Brand")
+local Void = require("./Void")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 
@@ -39,6 +40,9 @@ local isProvider = Brand.isProvider
 
 local ProviderImpl = {}
 ProviderImpl.__index = ProviderImpl
+-- 2026-09-15 (25): the contravariant phantom that makes `Provider<T>` invariant — type-only, the value is
+-- `Void` read through `__index` (zero per-instance slots, like `RefImpl.__quadRefAccepts`); nothing reads it
+ProviderImpl.__quadProviderAccepts = Void
 function ProviderImpl.__tostring(self: any): string
 	return if self.Name ~= nil then `Provider({self.Name})` else "Provider"
 end

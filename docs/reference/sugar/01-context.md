@@ -42,7 +42,7 @@ Context: ContextConstructor
 
 ```luau
 Provider: <T>(name: string?) -> Provider<T>
--- export type Provider<T> = { read __quadProvider: true, read __quadProviderValue: T, read Name: string? }
+-- export type Provider<T> = { read __quadProvider: true, read __quadProviderValue: T, read __quadProviderAccepts: (T) -> (), read Name: string? }
 ```
 
 **인자**
@@ -73,6 +73,8 @@ local UserProvider = q.Context.Provider<<{ Name: string }>>("User")
 ```
 
 ---
+
+**`Provider<T>`는 `T`에 불변입니다.** 값을 넣고(`:Set`) 꺼내는(`:Get`) 열쇠라, `Provider<Frame>`은 `Provider<Instance>` 자리에 들어가지 않고 `Provider<number>`에 문자열을 `:Set`하면 타입 에러입니다. TypeScript React의 `RefObject<T>`가 불변인 것과 같은 이유입니다 — 넓은 열쇠로 대입을 허용하면 다른 쪽이 좁은 타입을 기대하는 가방에 넓은 값을 넣을 수 있게 됩니다. `__quadProviderAccepts`와 `__quadProviderValue`는 그 불변성을 만드는 **타입 전용 팬텀 필드**이니 읽지 마세요.
 
 ## `ctx:Set(provider, value)`
 

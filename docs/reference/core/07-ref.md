@@ -42,6 +42,8 @@ type PreRef<T> = Ref<T> & { read __quadPreRef: true }
 type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 ```
 
+**`Ref<T>`는 `T`에 불변입니다** — 읽고(`.Value`) 쓰는(`:Set`) 값이라, `Ref<Frame>`은 `Ref<Instance>` 자리에 들어가지 않습니다(TypeScript React의 `RefObject<T>`와 같습니다). 넓은 쪽 타입으로 넘기면 받는 쪽이 `:Set`으로 다른 클래스를 넣어 원래 주인의 기대를 깰 수 있기 때문입니다. 받는 자리의 타입을 그 `Ref`와 같게 적으세요.
+
 콜백의 두 번째 인자는 `Ref` 자신입니다(= 그 `Epoch`). 평범한 사용자 콜백은 그냥 무시하면 됩니다.
 
 변경 메소드는 전부 `self`를 돌려주므로 체이닝됩니다. 반환 타입이 `<Self>` 제네릭이라 `q.PreRef(x):Callback(fn)`도 여전히 `PreRef`입니다.
