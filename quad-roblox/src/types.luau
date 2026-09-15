@@ -143,15 +143,15 @@ export type NewChild =
 	-- 마커는 T에 공변이라 값 유니언 하나로 끝난다 — `State<Frame>`, `State<Instance?>`(NilHandler
 	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StoreBind 언랩 → SlotHandler),
 	-- `State<Tag>`/`State<Attr>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
-	-- 여기 없다. [round3 `H-431`] `State<Observer?>`/`State<EffectHandle?>`는 정본이 지시하는 leaf 종료
+	-- 여기 없다. [round3 `H-431`] `State<Observer?>`/`State<Effect?>`는 정본이 지시하는 leaf 종료
 	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StoreBind 언랩 →
 	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
-	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attr/Observer/EffectHandle도 입력 자리는 마커
+	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attr/Observer/Effect도 입력 자리는 마커
 	-- (`archive/surveys/2026-09-07-source-layout-plan.md` 10-2): 메소드가 든 전체형이 유니언에 앉을 이유가 없고(8.8·8.9의
 	-- 함수 필드 게이트가 그 때문), 타입 검사 예산도 준다(사용자: *"타입 체크 비용을 아끼기 위해 마커만
 	-- 두는것도 괜찮아보임"*). 실제 값은 폭 서브타이핑으로 든다(8.11).
-	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttrMarker | QuadTypes.ObserverMarker | QuadTypes.EffectHandleMarker | QuadTypes.None)?>
+	| QuadTypes.StateMarker<(Instance | QuadTypes.SlotMarker<Instance> | QuadTypes.TagMarker | QuadTypes.AttrMarker | QuadTypes.ObserverMarker | QuadTypes.EffectMarker | QuadTypes.None)?>
 	| QuadTypes.None
 	| QuadTypes.TagMarker
 	| QuadTypes.AttrMarker
@@ -160,7 +160,7 @@ export type NewChild =
 	-- `source-state-plan.md` "`state:Observer(fn)`" 절·`effect-plan.md` canonised (leaf
 	-- handlers in `Observer.luau`/`Effect.luau`), missing from the M5 widening list (`H-355`).
 	| QuadTypes.ObserverMarker
-	| QuadTypes.EffectHandleMarker
+	| QuadTypes.EffectMarker
 	-- M7 단위 ③·④: Modifier는 MARKER로만 — 클래스별 `<Class>Modifier`를 유니언에
 	-- 직접 넣으면 큰 클래스의 캐스트 자리에서 "too complex"(2026-09-04 실측,
 	-- typing-limits 8.8절). 여기(`true`)는 무타입 base `Modifier()`의 명시 허용이고,

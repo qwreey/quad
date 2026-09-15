@@ -89,7 +89,7 @@ D.TextBox {
   a **handle**; `#dep` is silently `0`. Read with `dep:Get()`.
 - `state:Observer(fn)` → `fn(targetState, observer, emitFrom?)`. The value is **not**
   passed — call `targetState:Get()`.
-- A fresh `Observer`/`EffectHandle` fires once at registration and is then **not
+- A fresh `Observer`/`Effect` fires once at registration and is then **not
   subscribed** (`Subscribed == false`): later changes are held, not delivered. Put the
   handle in an array part to bind it to that instance's lifetime (delivery resumes with one
   catch-up; `Subscribed` stays `false` — that flag only reflects `:Subscribe()`), or call

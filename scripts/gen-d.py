@@ -609,7 +609,7 @@ def emit():
             # shrink of the gate (file-head rule: no silent truncation)
             raise SystemExit(f"gate: depth-0 scan ended at depth {depth} — cannot harvest function fields")
         return names
-    for tname in ("StateData<T>", "State<T>", "Tag", "Attr", "Slot<T>", "Observer", "EffectHandle"):
+    for tname in ("StateData<T>", "State<T>", "Tag", "Attr", "Slot<T>", "Observer", "Effect"):
         union_member_functions |= function_fields(type_body(tname))
     # `<Class>Elem` = NewChild | <Class>OnChange | … — the descriptor's function fields join too
     union_member_functions |= function_fields(type_body("OnChangeDescriptor", rt, "quad-roblox types.luau"))

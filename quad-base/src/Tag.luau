@@ -48,7 +48,7 @@ TagImpl.__index = TagImpl
 -- `TagMarker` (quad-types) — the type promises the marker, so the value carries
 -- it (`H-300`); read through `__index`, zero per-instance slots. Identity is
 -- still the brand (`isTag`) — this field is the input-position type's evidence
--- (user decision 2026-09-07: Tag/Attr/Observer/EffectHandle go marker
+-- (user decision 2026-09-07: Tag/Attr/Observer/Effect go marker
 -- like State/Slot, typing-limits 8.11).
 TagImpl.__quadTag = true
 -- `__tostring` (2026-09-08, advisory 권고 1): the name set, sorted (it is a hash set)

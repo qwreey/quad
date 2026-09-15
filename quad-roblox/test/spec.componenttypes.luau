@@ -42,7 +42,7 @@ local function _slotChild()
 	return q.Declaration.Frame({ slot }), q.Declaration.ScrollingFrame({ q.Declaration.Frame({}), slot, q.None })
 end
 
--- `H-355` / Q2 (a): children 자리의 Observer·EffectHandle(정본 leaf 관용구 — strict 유니언 팔)
+-- `H-355` / Q2 (a): children 자리의 Observer·Effect(정본 leaf 관용구 — strict 유니언 팔)
 local function _observerChild()
 	local s = q.Source(1)
 	local o = s:Observer(function() end)
@@ -62,7 +62,7 @@ local function _markerChildren()
 	local ref = q.Ref(nil :: Frame?)
 	local refState = q.Source(ref) -- State<Ref<Frame?>> — 8.7 캐비엇 5의 `:: FrameRefMarker` 캐스트 불필요
 	local obsState = q.Source(nil :: QuadTypes.Observer?) -- round3 `H-431`: leaf 종료 관용구 `State<Observer?>`(slot-plan)
-	local effState = q.Source(nil :: QuadTypes.EffectHandle?)
+	local effState = q.Source(nil :: QuadTypes.Effect?)
 	local outer = q.Slot() :: QuadTypes.Slot<Instance>
 	outer:Add(slot) -- Slot 요소 자리도 마커: Slot<Frame> → Slot<Instance>
 	outer:Add(frameState)

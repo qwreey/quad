@@ -193,7 +193,7 @@ local function StatusPanel()
     local conn = SomeSignal:Connect(function(...) --[[ … ]] end)
 
     return D.Frame {
-        -- 숫자 키 자리에 둔다 — 돌려주는 EffectHandle이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
+        -- 숫자 키 자리에 둔다 — 돌려주는 Effect이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
         q.OnDestroyed(function()
             conn:Disconnect()
         end),

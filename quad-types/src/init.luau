@@ -75,7 +75,7 @@ export type AttrMarker = { read __quadAttr: true }
 
 export type ObserverMarker = { read __quadObserver: true }
 
-export type EffectHandleMarker = { read __quadEffect: true }
+export type EffectMarker = { read __quadEffect: true }
 
 -- children 유니언용 마커 타입 — 무타입 base Modifier의 것(`true`). 클래스 태그
 -- 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`는 생성기가 클래스별
@@ -200,20 +200,20 @@ export type Observer = {
 }
 export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
 
--- `EffectHandle` — `Effect(fn, ...deps)`의 핸들(`effect-plan.md`). `fn(self) -> ...cleanup`.
+-- `Effect` — `Effect(fn, ...deps)`의 핸들(`effect-plan.md`). `fn(self) -> ...cleanup`.
 -- 네 진입점은 Observer와 같은 이름·같은 게이트이되 **본문은 자기 것**(`H-144`).
-export type EffectHandle = {
-	read __quadEffect: true, -- 런타임 `Impl.__quadEffect = true`(H-300; 입력 자리는 `EffectHandleMarker`)
+export type Effect = {
+	read __quadEffect: true, -- 런타임 `Impl.__quadEffect = true`(H-300; 입력 자리는 `EffectMarker`)
 	read Subscribed: boolean,
-	Rerun: (self: EffectHandle) -> EffectHandle,
-	Subscribe: (self: EffectHandle) -> EffectHandle,
-	WeakSubscribe: (self: EffectHandle) -> EffectHandle,
-	Unsubscribe: (self: EffectHandle) -> EffectHandle,
-	WeakUnsubscribe: (self: EffectHandle) -> EffectHandle,
+	Rerun: (self: Effect) -> Effect,
+	Subscribe: (self: Effect) -> Effect,
+	WeakSubscribe: (self: Effect) -> Effect,
+	Unsubscribe: (self: Effect) -> Effect,
+	WeakUnsubscribe: (self: Effect) -> Effect,
 }
 -- ⚠️ 팩 표기는 "반환 안 해도 됨"을 위한 것(`H-95`) — 런타임이 소진하는 cleanup은
 -- **첫 반환 하나뿐**이다(`H-185` 확정: 여러 정리는 `function() a() b() end`로 묶을 것).
-export type EffectFn = (self: EffectHandle) -> ...(() -> ())
+export type EffectFn = (self: Effect) -> ...(() -> ())
 
 -- `state:Gate(setup)`의 정책 계약(`gate-plan.md` 2번): 바깥은 생성 시 1회, 반환 클로저는 상류
 -- emit마다. `emit()`/`emit(true)` = 흡수 집합 flush, `emit(false)` = 버리기, 반환 = 쌓인 게 있었나.
@@ -642,7 +642,7 @@ export type Quad = {
 	-- the runtime is unchanged (`Store.luau` `or {}`, `H-83`).
 	Store: (() -> Store<{}>) & (<T>(defaults: T) -> Store<T>),
 	-- 단위 3. deps는 State/Source/Ref(`H-70`), `fn`엔 안 넘어간다.
-	Effect: (fn: EffectFn, ...any) -> EffectHandle,
+	Effect: (fn: EffectFn, ...any) -> Effect,
 	-- 단위 4.
 	Blocker: () -> Blocker,
 	-- 시간 게이트 슈거(`base/debounce-throttle-plan.md`) — `Blocker`+`state:Gate`+아래 시간 op 위의 순수 슈거.
@@ -656,7 +656,7 @@ export type Quad = {
 	-- (docs-ignoreme 재작성 중 발견, `typing-limits.md` 8.16).
 	OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>,
 	OnRendered: <I>(fn: (inst: I, ref: PostRef<I?>) -> ()) -> PostRef<I?>,
-	OnDestroyed: (fn: () -> ()) -> EffectHandle,
+	OnDestroyed: (fn: () -> ()) -> Effect,
 	-- 컴포넌트 에러 격리 슈거(`base/fallback-plan.md`) — `pcall`/`xpcall`+`debug.traceback` 위의 순수 함수.
 	-- `err`는 `any`(문자열 가정 금지 — 그 문서 "`err: any`임을 반드시 문서화" 절).
 	Fallback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any) -> Err) -> (A...) -> Ok | Err,

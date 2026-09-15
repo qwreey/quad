@@ -21,6 +21,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- **BREAKING(타입만) — `q.Effect`가 돌려주는 핸들의 타입 이름이 `EffectHandle`에서 `Effect`로, 입력 자리 마커가 `EffectHandleMarker`에서 `EffectMarker`로 바뀌었습니다.** `state:Observer` → `Observer`, `q.Slot` → `Slot`처럼 생성자와 타입 이름이 같은 규칙에서 이것만 벗어나 있었습니다(술어 `isEffect`와도 맞춤). 런타임은 같습니다. 옮기는 법: 주석·재수출의 `EffectHandle`을 `Effect`로(설정 모듈의 `export type EffectHandle = QuadTypes.EffectHandle` → `export type Effect = QuadTypes.Effect`).
+
 - **BREAKING — 백엔드가 심는 계약 op가 `q.Backend`로, Length/Offset 부기 함수가 `q.Bookkeeping`으로 옮겨졌습니다.** 앱 코드가 부를 표면이 아닌 것들이 `q.` 자동완성에 섞여 있었습니다. 멤버 이름은 그대로입니다.
   - `q.Backend`: `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`, `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/`nativeSwap`/`nativeDispose`, `nativeClaim`/`nativeFindChild`/`isInst`/`onDestroying`, `addTag`/`removeTag`/`setAttr`, `setTimeout`/`clearTimeout`.
   - `q.Bookkeeping`: `setLength`/`setOffsetSource`/`setEmpty`/`getOffsetAt`/`getBlocker`/`getBookkeeping` — `q.Dispatch`에서는 빠졌습니다. 에러 문구의 접두도 `Dispatch.`에서 `Bookkeeping.`으로 바뀌었습니다.
@@ -45,7 +47,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - **BREAKING — `blocker.IsBlocked`와 `blocker:IsOn()`이 `blocker.Blocking` 필드 하나로 바뀌었습니다.** 같은 값을 읽는 길이 둘이었습니다. 진행형인 이유는 "지금 막고 있다"를 뜻하기 때문입니다(과거형은 "막아 낸 적이 있다"로 읽힙니다). 옮기는 법: `blocker:IsOn()`과 `blocker.IsBlocked`를 `blocker.Blocking`으로.
 - **BREAKING — `tag:Names()`가 없어지고 Tag를 직접 반복합니다**: `for name in tag do`(Luau 일반화 반복 `__iter`, 새 테이블을 만들지 않음). `store:Names()`는 배열을 돌려주는데 `tag:Names()`는 이터레이터라 이름이 같고 모양이 달랐습니다. 옛 호출은 없는 메소드라 즉시 에러가 납니다. 옮기는 법: `for name in tag:Names() do`를 `for name in tag do`로. `pairs(tag)`는 이름을 돌지 않습니다(Luau가 `__pairs`를 `__iter`로 대체).
 - **BREAKING(타입만) — `Provider<T>`(Context의 열쇠)가 `T`에 불변이 됐습니다.** 전에는 `Provider<number>`에 문자열을 `ctx:Set` 해도 타입 검사가 통과해 `ctx:Get`의 약속이 깨졌습니다. 이제 넣는 값의 타입이 열쇠와 같아야 하고, `Provider<Frame>`을 `Provider<Instance>` 자리에 넘길 수도 없습니다(`Ref<T>`와 같은 규칙). 런타임 동작은 같습니다. 옮기는 법: 열쇠를 넘겨받는 자리의 타입을 그 열쇠와 같게 적으세요.
-- **BREAKING(타입만) — 사용자가 읽기만 하는 상태 필드에 `read`가 붙었습니다**: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`, `Source.Revision`과 `quad_types`의 `Epoch` 타입의 `Revision`, `Observer`·`EffectHandle`의 `Subscribed`, `Blocker.Blocking`(아래 개명), `AttrKey`의 `Name`, `Timeout._native`. 런타임 동작은 같습니다. 옮기는 법: 이 필드에 직접 대입하던 코드는 `ref:Set(v)`, `:Subscribe()`/`:Unsubscribe()`, `blocker:On()`/`:Off()` 같은 메소드로 바꾸세요.
+- **BREAKING(타입만) — 사용자가 읽기만 하는 상태 필드에 `read`가 붙었습니다**: `Ref`의 `Value`/`Revision`/`Callbacks`/`WeakCallbacks`, `Source.Revision`과 `quad_types`의 `Epoch` 타입의 `Revision`, `Observer`·`Effect`의 `Subscribed`, `Blocker.Blocking`(아래 개명), `AttrKey`의 `Name`, `Timeout._native`. 런타임 동작은 같습니다. 옮기는 법: 이 필드에 직접 대입하던 코드는 `ref:Set(v)`, `:Subscribe()`/`:Unsubscribe()`, `blocker:On()`/`:Off()` 같은 메소드로 바꾸세요.
 
 ---
 

@@ -7,7 +7,7 @@
 심볼 소스(코드가 진실):
   - `quad-types/src/init.luau`의 `export type Quad = { ... }` 필드 → `q.<name>` (모듈 표면 전부: 설치되는 것 포함)
   - `quad-roblox/src/init.luau`의 `export type RobloxExtension = { ... }` 필드 → `q.<name>`
-  - `quad-types`의 주요 타입(State/Source/Store/Slot/Ref/Observer/EffectHandle/Blocker/Modifier/Tag/Attr/Context/
+  - `quad-types`의 주요 타입(State/Source/Store/Slot/Ref/Observer/Effect/Blocker/Modifier/Tag/Attr/Context/
     TimedGate/GateHandle/Handler/Dispatch) 최상위 필드 → 멤버 이름
 매치 규칙(`##`/`###` 헤딩과 표 행 텍스트, 백틱·역슬래시·HTML 엔티티 무시, `00-index.md` 제외):
   - 모듈 키: `q.<name>`/`q:<name>` 뒤에 `(`/`{`/`.`/공백/끝
@@ -30,7 +30,7 @@ INJECTED = {
     'onDestroying', 'nativeClaim', 'nativeFindChild', 'bindLifetime', 'unbindLifetime', 'canBound', 'canExecute',
     'addTag', 'removeTag', 'setAttr', 'setTimeout', 'clearTimeout',
 }
-MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'EffectHandle', 'Blocker', 'Modifier', 'Tag',
+MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'Effect', 'Blocker', 'Modifier', 'Tag',
                 'Attr', 'Context', 'TimedGate', 'GateHandle', 'Handler', 'Dispatch', 'Bookkeeping']
 
 

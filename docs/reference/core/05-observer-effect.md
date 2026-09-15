@@ -2,12 +2,12 @@
 title: Observer / Effect
 description: leaf 구독 핸들 둘 — state:Observer(fn)과 q.Effect(fn, ...deps), 구독 네 진입점과 cleanup
 ---
-# Observer / EffectHandle
+# Observer / Effect
 
 반응형 그래프의 **말단**에 붙어 바깥세상에 부수효과를 내는 핸들 둘입니다.
 
 - **`Observer`** — 노드 **하나**를 관측합니다. 값을 실어주지 않고, cleanup 개념도 없습니다.
-- **`EffectHandle`** — 의존성 **여럿**(`State`/`Source`/`Ref`)을 걸고, 함수가 돌려준 cleanup을 생명주기에 맞춰 소진합니다.
+- **`Effect`** — 의존성 **여럿**(`State`/`Source`/`Ref`)을 걸고, 함수가 돌려준 cleanup을 생명주기에 맞춰 소진합니다.
 
 둘은 이름이 같은 네 진입점(`:Subscribe` / `:WeakSubscribe` / `:Unsubscribe` / `:WeakUnsubscribe`)과 `.Subscribed` 플래그를 공유하지만, **본문은 각자의 것**입니다 — 아래 각 절이 그 차이를 적습니다.
 
@@ -29,7 +29,7 @@ local D = q.Declaration
 
 만들어진 직후의 핸들은 **아직 실행 자격이 없습니다**(`.Subscribed`는 `false`). 자격을 얻는 경로는 둘이고, 둘 중 하나만 골라야 합니다.
 
-1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다), `EffectHandle`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
+1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
 **둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — `Observer: already subscribed` 또는 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구).
@@ -136,7 +136,7 @@ print(#log) --> 3
 
 `boolean` 필드. **강한 구독뿐 아니라 약한 구독에서도 `true`가 됩니다** — "지금 살아 있는가"를 나타내는 플래그이지 "강하게 잡혀 있는가"가 아닙니다. 강·약 구분은 해제할 때 어느 문을 써야 하는지로 드러납니다(아래 두 쌍).
 
-`EffectHandle`도 같은 이름의 플래그를 같은 뜻으로 갖습니다.
+`Effect`도 같은 이름의 플래그를 같은 뜻으로 갖습니다.
 
 **strict 캐비엇** — 한 함수 안에서 `.Subscribed`를 비교한 뒤 `:Subscribe()`/`:Unsubscribe()`를 부르고 같은 필드를 다시 비교하면, 타입 검사기가 앞 비교로 좁힌 값을 그대로 들고 있어 두 번째 비교를 모순으로 봅니다(런타임 값은 정상). 다시 읽어야 하면 함수를 거쳐 읽으세요 — `local function subscribed(h) return h.Subscribed end`.
 
@@ -185,17 +185,17 @@ print(#log) --> 3
 **시그니처**
 
 ```luau
-Effect: (fn: EffectFn, ...any) -> EffectHandle
+Effect: (fn: EffectFn, ...any) -> Effect
 
-export type EffectFn = (self: EffectHandle) -> ...(() -> ())
-export type EffectHandle = {
+export type EffectFn = (self: Effect) -> ...(() -> ())
+export type Effect = {
 	read __quadEffect: true,
 	read Subscribed: boolean,
-	Rerun: (self: EffectHandle) -> EffectHandle,
-	Subscribe: (self: EffectHandle) -> EffectHandle,
-	WeakSubscribe: (self: EffectHandle) -> EffectHandle,
-	Unsubscribe: (self: EffectHandle) -> EffectHandle,
-	WeakUnsubscribe: (self: EffectHandle) -> EffectHandle,
+	Rerun: (self: Effect) -> Effect,
+	Subscribe: (self: Effect) -> Effect,
+	WeakSubscribe: (self: Effect) -> Effect,
+	Unsubscribe: (self: Effect) -> Effect,
+	WeakUnsubscribe: (self: Effect) -> Effect,
 }
 ```
 
@@ -206,7 +206,7 @@ export type EffectHandle = {
 | `fn` | `EffectFn` | 부수효과 본문. 인자로 **핸들 자신**을 받습니다(의존성 값은 넘어오지 않습니다 — 클로저로 직접 읽으세요). cleanup 함수를 돌려줄 수 있습니다. |
 | `...deps` | `State` / `Source` / `Ref` | 이것들이 움직일 때마다 `fn`이 다시 돕니다. |
 
-**반환** — `EffectHandle`. **아직 구독되지 않은 상태**입니다.
+**반환** — `Effect`. **아직 구독되지 않은 상태**입니다.
 
 **동작**
 
@@ -217,7 +217,7 @@ export type EffectHandle = {
   - `Effect: dep #{i} is not a State/Source/Ref` (번호는 `...deps`에서의 자리입니다)
 - **cleanup은 함수 하나입니다.** 타입의 가변 반환 표기는 "아무것도 안 돌려줘도 된다"를 위한 것이고, 런타임이 소진하는 것은 **첫 번째 반환 하나**뿐입니다. 정리할 게 여럿이면 한 클로저로 묶으세요 — `return function() a() b() end`. 함수도 `nil`도 아닌 값(숫자, 연결 객체 등)을 돌려주면 그 자리에서 던지고, `fn`이 던진 것과 같이 그 `Effect`는 죽습니다 — 연결은 `return function() conn:Disconnect() end`처럼 감싸세요.
   - `Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`
-- cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<EffectHandle?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다).
+- cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<Effect?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다).
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기 구독을 바꿀 수 없습니다:
   `Effect: cannot change subscription from inside fn or cleanup`
@@ -251,7 +251,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 ## `effect:Rerun()`
 
-**시그니처** — `Rerun: (self: EffectHandle) -> EffectHandle` (인자 없음, self 반환)
+**시그니처** — `Rerun: (self: Effect) -> Effect` (인자 없음, self 반환)
 
 **동작** — `fn`을 지금 다시 돌립니다(직전 cleanup을 먼저 소진하고). 실행 자격이 없으면(구독·바인딩 전, 파괴 파동 안, cleanup 실행 중) **돌지 않고 요청을 보류**했다가 살아나는 시점에 한 번 재생합니다. 이미 `fn`이 도는 중이면 그 실행이 끝난 뒤로 미뤄집니다.
 
@@ -259,7 +259,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 ## `effect:Subscribe()`
 
-**시그니처** — `Subscribe: (self: EffectHandle) -> EffectHandle`
+**시그니처** — `Subscribe: (self: Effect) -> Effect`
 
 **동작** — **강한 구독**. 레지스트리가 핸들을 강하게 잡습니다. `.Subscribed`를 올린 뒤, 보류된 변경이 있으면 한 번 재생합니다.
 
@@ -269,7 +269,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 ## `effect:WeakSubscribe()`
 
-**시그니처** — `WeakSubscribe: (self: EffectHandle) -> EffectHandle`
+**시그니처** — `WeakSubscribe: (self: Effect) -> Effect`
 
 **동작** — **약한 구독**. 나머지는 `:Subscribe()`와 같지만 레지스트리가 핸들을 잡아주지 않습니다 — 참조를 놓으면 수거됩니다. 이때 `Effect`가 강하게 쥐고 있던 의존성 등록(`Ref` 콜백, 내부 Observer)도 함께 사라집니다.
 
@@ -277,7 +277,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 ## `effect:Unsubscribe()`
 
-**시그니처** — `Unsubscribe: (self: EffectHandle) -> EffectHandle`
+**시그니처** — `Unsubscribe: (self: Effect) -> Effect`
 
 **동작** — 강한 구독을 해제하고 **마지막 cleanup을 정확히 한 번 소진합니다**. 엄격합니다:
 `Effect: not subscribed strongly; use :WeakUnsubscribe()`
@@ -287,7 +287,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 ## `effect:WeakUnsubscribe()`
 
-**시그니처** — `WeakUnsubscribe: (self: EffectHandle) -> EffectHandle`
+**시그니처** — `WeakUnsubscribe: (self: Effect) -> Effect`
 
 **동작** — 약한 구독을 해제합니다. **관대하며**(구독한 적 없어도 통과) **cleanup을 건드리지 않습니다**. 강한 유지가 남아 있으면 거절합니다:
 `Effect: subscribed strongly; use :Unsubscribe()`

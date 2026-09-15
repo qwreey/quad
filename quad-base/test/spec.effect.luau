@@ -1,6 +1,6 @@
 --[[
 	Effect 계약 — `.claude/base/effect-plan.md` "확정 구조" / "의사코드 — 생성자" / `_bindDestroying` /
-	`_unbindDestroying` / `_consumeCleanup` / `rawRerun`+`Rerun` / "`EffectHandle:Subscribe()`" /
+	`_unbindDestroying` / `_consumeCleanup` / `rawRerun`+`Rerun` / "`Effect:Subscribe()`" /
 	"`Effect(fn, ...deps)`". `H-70`/`H-107`/`H-144`/`H-147`/`H-150`/`H-151`/`H-159`/`H-160`/`H-182`/`H-184`.
 ]]
 
@@ -8,7 +8,7 @@ local Quad = require("../src")
 local mock = require("./mock")
 local QuadTypes = require("../luau_packages/quad_types")
 
-type EffectHandle = QuadTypes.EffectHandle
+type Effect = QuadTypes.Effect
 
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
@@ -28,7 +28,7 @@ do
 		assert(quad.isEffect(self), "fn receives the handle")
 	end, s, r, s) -- duplicate dep is ignored
 	assert(runs == 1, "installed once on creation, before any binding (force)")
-	assert((e :: any).__quadEffect == true, "EffectHandleMarker field readable (H-300, 2026-09-07 마커 전면화)")
+	assert((e :: any).__quadEffect == true, "EffectMarker field readable (H-300, 2026-09-07 마커 전면화)")
 	assert(quad.isEffect(e) and not quad.isObserver(e), "brand")
 	local depCount = 0
 	for _ in pairs((e :: any)._deps) do

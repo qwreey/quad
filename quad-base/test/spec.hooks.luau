@@ -13,7 +13,7 @@ local SPEC_FILE = "spec.hooks.luau"
 local q = mock.newQuad()
 local OnCreated, OnRendered, OnDestroyed = q.OnCreated, q.OnRendered, q.OnDestroyed
 
-print("=== 1. 팩토리 — fn 게이트(blame은 호출 줄), 반환은 PreRef/PostRef/EffectHandle 인스턴스 그 자체(새 브랜드 없음) ===")
+print("=== 1. 팩토리 — fn 게이트(blame은 호출 줄), 반환은 PreRef/PostRef/Effect 인스턴스 그 자체(새 브랜드 없음) ===")
 do
 	for _, name in { "OnCreated", "OnRendered", "OnDestroyed" } do
 		local ok, err = pcall(function()
@@ -27,7 +27,7 @@ do
 	local eff = OnDestroyed(function() end)
 	assert(q.isPreRef(pre) and q.isRef(pre) and not q.isPostRef(pre), "OnCreated → PreRef")
 	assert(q.isPostRef(post) and q.isRef(post) and not q.isPreRef(post), "OnRendered → PostRef")
-	assert(q.isEffect(eff), "OnDestroyed → EffectHandle")
+	assert(q.isEffect(eff), "OnDestroyed → Effect")
 	assert(OnCreated(function() end) ~= pre, "every call is a fresh instance (multiple registration)")
 	print("PASS")
 end

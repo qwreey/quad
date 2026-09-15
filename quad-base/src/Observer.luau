@@ -30,7 +30,7 @@
 	    `level 2` from its own body (`H-104`).
 
 	An Observer is NOT an `Epoch` and carries no epoch bookkeeping — it only
-	forwards the source it received. `EffectHandle` does NOT reuse these
+	forwards the source it received. `Effect` does NOT reuse these
 	bodies (heterogeneous types; `conventions.md` 설계 원칙).
 ]]
 
@@ -58,7 +58,7 @@ local function createImpl(module: any)
 	-- `ObserverMarker` (quad-types) — the type promises the marker, so the value carries it
 	-- (`H-300`); read through `__index`, zero per-instance slots. Identity stays the brand —
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
-	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
+	-- Attr/Observer/Effect go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadObserver = true
 	Impl._moduleIdentity = module.moduleIdentity -- cross-instance guard token (`ModuleIdentity.luau`), read via `__index`
 

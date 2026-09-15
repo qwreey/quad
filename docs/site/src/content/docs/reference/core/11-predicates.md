@@ -23,7 +23,7 @@ local D = q.Declaration
 | `q.isState(x)` | `q.Source(v)`, `:Compute`/`:Depend`가 만든 파생 State, `:Gate`가 끼운 게이트 노드 | quad-base 기본 표면 |
 | `q.isStore(x)` | `q.Store(defaults?)` | quad-base 기본 표면 |
 | `q.isObserver(x)` | `state:Observer(fn)`이 돌려준 핸들 | quad-base 기본 표면 |
-| `q.isEffect(x)` | `q.Effect(fn, ...deps)`가 돌려준 `EffectHandle` | quad-base 기본 표면 |
+| `q.isEffect(x)` | `q.Effect(fn, ...deps)`가 돌려준 `Effect` | quad-base 기본 표면 |
 | `q.isBlocker(x)` | `q.Blocker()` | quad-base 기본 표면 |
 | `q.isContext(x)` | `q.Context()` | quad-base 기본 표면 |
 | `q.isProvider(x)` | `q.Context.Provider(name?)` | quad-base 기본 표면 |

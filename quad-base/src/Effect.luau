@@ -22,7 +22,7 @@
 	    (`_pending`), an unexecutable state HOLDS the request (`H-159`), the
 	    loop has no death judgement (`H-147`); errors leave `_running` /
 	    `_cleanupRunning` set — that Effect is dead, by contract.
-	  - "`EffectHandle:Subscribe()`": four entry points of its OWN (not
+	  - "`Effect:Subscribe()`": four entry points of its OWN (not
 	    Observer's bodies, `H-144`), first line `isRunning` guard (`H-147`),
 	    `resubscribeTail` replays a held change after registration,
 	    `Unsubscribe` consumes the cleanup.
@@ -62,10 +62,10 @@ local function createImpl(module: any)
 
 	local Impl = {}
 	Impl.__index = Impl
-	-- `EffectHandleMarker` (quad-types) — the type promises the marker, so the value carries it
+	-- `EffectMarker` (quad-types) — the type promises the marker, so the value carries it
 	-- (`H-300`); read through `__index`, zero per-instance slots. Identity stays the brand —
 	-- the field is the input-position type's evidence (user decision 2026-09-07: Tag/
-	-- Attr/Observer/EffectHandle go marker like State/Slot, typing-limits 8.11).
+	-- Attr/Observer/Effect go marker like State/Slot, typing-limits 8.11).
 	Impl.__quadEffect = true
 	Impl._moduleIdentity = module.moduleIdentity -- cross-instance guard token (`ModuleIdentity.luau`)
 	-- `__tostring` (2026-09-08, advisory 권고 1)
@@ -179,7 +179,7 @@ local function createImpl(module: any)
 		return self
 	end
 
-	-- ── four entry points — EffectHandle's OWN bodies (`H-144` (b)) ────
+	-- ── four entry points — Effect's OWN bodies (`H-144` (b)) ────
 	function Impl.WeakSubscribe(self: any): any
 		if isRunning(self) then
 			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`

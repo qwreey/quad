@@ -6,7 +6,7 @@
 	token that holds nothing (no back-reference to the module, so nothing it is stored on keeps the
 	module alive). Each subsystem that owns a per-instance implementation stores the token where its
 	shape makes that cheapest (the per-instance Impl/metatable read through `__index` for Observer,
-	EffectHandle, State/Source and Slot — zero per-value slots) and compares it at the doors where a
+	Effect, State/Source and Slot — zero per-value slots) and compares it at the doors where a
 	value can arrive from another instance. Values from shared leaf modules (Ref, Blocker, …) have no
 	owning instance and are not guarded — mixing those stays documented UB.
 

@@ -1,5 +1,7 @@
 # Effect — 설치 + 확정 정리, `state` 있으면 Observer를 감싸 재실행도 지원
 
+> **[2026-09-15 표기 변경 — 공개 표면 (31) 사용자 결정]** 핸들 타입 이름 `EffectHandle` → **`Effect`**, 마커 `EffectHandleMarker` → `EffectMarker`(생성자·타입 이름 일치 규칙, 사용자: *"취향보단 일관성 문제"*). 본문의 `EffectHandle`(의사코드의 클래스 이름 포함)은 그 전 이름이다.
+
 **상태**: base — `archive/surveys/2026-08-06-additional-primitives-plan.md`(다른 프레임워크
 대비 갭 분석)에서 갈라져 나온 확정 프리미티브. `base/blocker-plan.md`(같은
 조사에서 나온 다른 확정 프리미티브)와는 서로 무관 — Store/State 작업이나

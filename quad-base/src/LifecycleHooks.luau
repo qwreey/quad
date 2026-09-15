@@ -9,7 +9,7 @@
 	  OnDestroyed(fn) -> Effect(function() return fn end) -- fn runs once as the leaf-death cleanup
 
 	These are plain factories: the value that lands in the children array is
-	the PreRef/PostRef/EffectHandle itself — no new brand, no dispatch concept,
+	the PreRef/PostRef/Effect itself — no new brand, no dispatch concept,
 	multiple registrations are just multiple array slots (relative order among
 	the same kind = array index order, the Ref pre-pass contract).
 

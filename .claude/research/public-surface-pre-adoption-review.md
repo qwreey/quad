@@ -428,6 +428,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 **(30) 백엔드가 심는 연산들이 사용자 네임스페이스 `q.`에 평평하게 산다** — `nativeInsert` 등 여섯, `isInst`, `onDestroying`, `nativeClaim`, `nativeFindChild`, `addTag`/`removeTag`/`setAttr`, `setTimeout`/`clearTimeout`, 생명주기 넷, `newMapperClass`가 전부 `Quad` 타입 필드라 앱 개발자의 자동완성에 섞이고, `q.setTimeout(fn, 1)`은 Roblox 백엔드에서 실제로 돈다. 나중에 하위 필드로 옮기면 서드파티 백엔드와 그걸 부른 앱 코드가 같이 깨진다. 지금 옮기는 비용도 크다("모듈 필드는 매번 `module.x`로 읽는다" 규약이라 내부 읽기 자리 수십 곳). 갈래: 레퍼런스에 "백엔드 계약이지 앱 API 아님" 명시(비용 거의 0) / 하위 네임스페이스로 이동(새 이름 — 문항). 탐사자 권고 최소 명시, 확신 중하.
 
+**[결정 2026-09-15 — (가) `EffectHandle` → `Effect`, `EffectHandleMarker` → `EffectMarker`, BREAKING(타입)]** 메인 확인: 근거 기록 없음, `Effect` 타입 이름 미사용, 생성자·타입 이름 일치에서 유일한 예외(술어 `isEffect`·마커 필드 `__quadEffect`는 이미 Effect). 사용자: *"권고안 대로 감. 솔찍히 취향보단 일관성 문제라, 다른걸 택할 이유가 없어"*. 반영: 타입·src·스펙·스크립트·문서(설정 모듈 재수출 포함) 기계 치환, CHANGELOG BREAKING(+ `[Unreleased]` 안 옛 이름 갱신), `base/effect-plan.md` 배너.
+
 **(31) `Observer`와 `EffectHandle` 타입 이름의 비대칭** — `state:Observer(fn)`은 `Observer`, `q.Effect(fn)`은 `EffectHandle`(마커 `ObserverMarker`/`EffectHandleMarker`, 술어 `isObserver`/`isEffect`). 설정 모듈 문서가 `EffectHandle`을 재수출하게 해 이미 사용자 주석에 들어간다. Luau는 타입·값 이름 공간이 따로라 `Effect` 타입 이름을 막는 제약은 없어 보이나 `effect-plan.md`에서 근거를 못 찾음. 확신 하(취향 비중 큼) — 올리기만 한다.
 
 **(32) 비파괴 — 옵션 테이블 셋과 `q.Slot` 첫 인자가 `read` 규칙을 안 따른다** — `typing-limits.md`가 적은 규칙(읽기만 하는 옵션 타입은 필드를 `read`로 — 탐사자 인용, 절 제목 아님)을 `TweenOptions`·`AnimateInfo`는 따르나 `DebounceOptions`·`ThrottleOptions`·`SlotListOpts`와 `q.Slot`의 `initial: { SlotElement<T> }?`는 안 따라, 옵션을 변수에 담아 넘기면 두 솔버가 거부한다(`local opts = { Owned = false }`를 `:List`에). `read`를 붙이면 받는 입력이 넓어질 뿐이라 **BREAKING 창과 무관** — 언제 해도 됨, 확신 높음. (19)의 "모르는 키 에러"와 같이 손대면 편하다.

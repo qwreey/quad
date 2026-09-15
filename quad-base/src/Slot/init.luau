@@ -70,9 +70,9 @@ local function Init(module: any)
 	module:RunInit(InitDispatch) -- idempotent pull (`H-174` idiom; `H-358` — was the only Init relying on init.luau's order)
 	local Dispatch = module.Dispatch
 	-- H6-2: the Bookkeeping header states Slot must reach the bookkeeping
-	-- subsystem directly (not through Dispatch) — and `recompute` is only on
-	-- `_bookkeeping` (Dispatch re-exports the other five, not it). Route all six
-	-- prefix-sum ops through BK.
+	-- subsystem directly (not through Dispatch) — and the internal `_recompute`
+	-- is only there. Route all prefix-sum ops through BK (`module.Bookkeeping`,
+	-- public namespace since 2026-09-15).
 	local BK = module.Bookkeeping
 	local None = module.None
 	local isState = module.isState

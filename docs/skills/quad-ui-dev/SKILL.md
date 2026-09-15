@@ -102,7 +102,7 @@ Snippets below assume this prologue.
 | **`Claim`** | `q.Claim(inst, desc)` | Prefab binding | Takes an existing tree into quad ownership. Two args — the descriptor is required. |
 
 Values that belong in the **array part** of a props table, never as hash keys:
-`Ref`/`PreRef`/`PostRef`, `Observer`, `EffectHandle`, `Slot`, `Modifier`, `Tag`, `Attr`,
+`Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
 `q.OnChange(...)`, `q.OnCreated/OnRendered/OnDestroyed(...)`, and child instances.
 `AttrKey` is the exception — a hash key: `[q.AttrKey("Hp")] = hpState` (see 6.2).
 
@@ -416,7 +416,7 @@ end
 - `q.OnRendered<<Class>>(fn)` → a `PostRef`: runs after this instance's own children and
   properties are mounted. **It does not guarantee that the instance is parented**, so
   do not read `AbsoluteSize`/`AbsolutePosition` there.
-- `q.OnDestroyed(fn)` → an `EffectHandle`: runs on leaf death.
+- `q.OnDestroyed(fn)` → an `Effect`: runs on leaf death.
 
 All three go in the array part; multiple registrations fire in array order. Give the two
 Ref-returning hooks their element type explicitly (`q.OnCreated<<Frame>>(...)`) —

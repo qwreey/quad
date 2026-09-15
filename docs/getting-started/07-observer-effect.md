@@ -108,7 +108,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 **실행하면** 만들어지는 즉시 `이펙트: 지금 0`이 찍힙니다. 버튼을 한 번 누르면 **먼저 `정리: 0회차`가 찍힌 뒤** `이펙트: 지금 1`이 이어집니다 — 다음 실행 직전에 직전 회차의 뒤처리가 도는 것입니다. 그리고 카드를 `Destroy()`하면 `정리: 1회차`가 한 번 더 찍히고 **끝납니다.** 그 뒤로는 `count`를 아무리 바꿔도 이 이펙트는 조용합니다.
 <!-- mock 실측 2026-09-11: gs.gs2probe.luau 2a~2d — run0 / run0,clean0,run1 / +clean1 / 이후 Set에 변화 없음 -->
-<!-- mock 실측 2026-09-11: gs.effectswap.luau — State<EffectHandle?> 자리를 B로 갈아 끼우면 A cleanup이 한 번 돈다(A run0/clean/run1 → swap → B run1, A cleanup → …) — 넷째 자리 -->
+<!-- mock 실측 2026-09-11: gs.effectswap.luau — State<Effect?> 자리를 B로 갈아 끼우면 A cleanup이 한 번 돈다(A run0/clean/run1 → swap → B run1, A cleanup → …) — 넷째 자리 -->
 
 `Observer`와 갈리는 지점은 셋입니다.
 

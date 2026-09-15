@@ -142,7 +142,7 @@ end)
 
 **핸들러 층 값은 필드에 들어갈 수 없습니다**
 
-`Ref`/`PreRef`/`PostRef`/`Observer`/`EffectHandle`/`Slot`/`Modifier`를 필드 값으로 주면 — 리터럴이든
+`Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`를 필드 값으로 주면 — 리터럴이든
 변환 함수의 반환이든 — 그 자리에서 던집니다.
 
 ```
