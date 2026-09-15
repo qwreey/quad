@@ -266,9 +266,20 @@ function FactoryImpl.__apply(self: any, state: any): any
 	return gated
 end
 
+local KNOWN_OPTIONS = { Time = true, Leading = true, Trailing = true, MaxTime = true, Handle = true }
+
 local function make(module: any, name: string, reset: boolean, opts: any): any
 	if type(opts) ~= "table" then
 		Err.errorBeforeNearest(`{name}: options table expected (got {typeof(opts)})`, SURFACE)
+	end
+	-- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, and execution
+	-- continues — non-fatal blame with a cost belongs to the debug layer
+	if module.debug then
+		for key in opts do
+			if not KNOWN_OPTIONS[key] then
+				print(`{name}: unknown option "{tostring(key)}" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)`)
+			end
+		end
 	end
 	checkTime(name, "Time", opts.Time, false)
 	checkFlag(name, "Leading", opts.Leading)

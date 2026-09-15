@@ -15,7 +15,7 @@
 ## 결정 문항 (항목당 하나 — 상세는 아래 번호)
 
 1. (1) **[닫힘 2026-09-14 — `Declaration`으로, (a) 채택]** `D` → 풀 이름으로 바꿀지, 바꾸면 `Declaration` / `Declare` / 다른 낱말 중 무엇으로.
-2. (2) `quad-roblox`의 `VERSION_PATTERN`을 `"3.*.*"`로 풀지.
+2. (2) `quad-roblox`의 `VERSION_PATTERN`을 `"3.*.*"`로 풀지. **[닫힘 2026-09-15 — `"3.2^.0^"`(메이저 고정 하한, bump가 하한을 올림) + `N^` 사전식 하한]**
 3. (3) `quad_error`·`type_version_check`를 lockstep에서 빼고 자기 번호(1.0.0)를 줄지, 영원히 lockstep인지.
 4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지. **[닫힘 2026-09-15 — `State<number>`로 업캐스트, BREAKING(타입)]**
 5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외). **[닫힘 2026-09-15 — 붙임, BREAKING(타입)]**
@@ -27,7 +27,7 @@
 11. (11) "에러 문구로 분기하지 말 것" 정책 한 줄을 레퍼런스·extend에 적을지.
 12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지.
 13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸). **[닫힘 2026-09-15 — 올림, BREAKING]**
-14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지.
+14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지. **[닫힘 2026-09-15 — `OwnsElements`, BREAKING]**
 15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지. **[닫힘 2026-09-15 — `Depend`로 개명, BREAKING]**
 16. (17) "`_` 접두 필드는 비공개"를 extend/01에 명시할지. **[닫힘 2026-09-15 — 명시(내부 계약, 언제든 바뀜)]**
 
@@ -67,6 +67,8 @@
 ---
 
 ## (2) quad-roblox의 버전 게이트가 **정확히 일치**라서 base 패치 하나가 백엔드 릴리즈를 강제한다
+
+**[결정 2026-09-15 — 메이저 고정 하한 + 사전식 `^`]** 사용자(아래 (23)/(24)와 한 회신): *"선행 요소가 up이면 후행이 무시 가능하게 두는게 가장 멀쩡해보임. 선행 3 에는 ^ 하지 마(나중에 릴리즈 이후 breaking 생기면 그 땐 진짜 올릴 부분이라)"*. 메인 해석: `N^`는 사전식 하한((24) (가)), 메이저 자리엔 `^`를 두지 않는다. 반영: `VERSION_PATTERN = "3.2^.0^"`, `check-version.py bump`가 새 릴리즈의 `M.m^.p^`로 하한을 올림(패턴 반영 스펙 줄도 같이 — 검사는 이제 VERSION_PATTERN과 대조), `spec.robloxfactory`에 같은 메이저 안 새 base 설치 양성, 레퍼런스 core/01·roblox/01, CHANGELOG Changed.
 
 **무엇** — `quad-roblox/src/init.luau:38`의 `local VERSION_PATTERN = "3.1.0"`. 설치 시점에 `TypeVersionCheck.matchesPattern(q.Version, VERSION_PATTERN)`로 검사하고 어긋나면 `UseProvider` 줄에서 즉시 raise합니다(`:78-83`). `type-version-check/src/init.luau` 헤더가 적어 두었듯 패턴 문법은 자리별 `*`(와일드카드)·`N^`(이상)·정확 일치를 지원하므로 **`"3.*.*"`나 `"3^.*.*"`가 이미 표현 가능합니다** — 지금 정확값을 쓰는 건 문법 제약이 아니라 선택입니다.
 
@@ -273,6 +275,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 ## (14) `Owned` 옵션 키 — 프로젝트가 스스로 "잠정"이라 표시해 둔 이름
 
+**[결정 2026-09-15 — `OwnsElements`]** 사용자(아래 독립 조사 둘을 본 뒤): *"?.Owned 로 앞을 가리고 보면 의도가 완전히 희석되는데다가, 내부적으로 사용될 뿐에 가깝고 실질적으로 사용되는 표면은 아닌 정도라서, OwnsElements처럼 되어도 별 상관 없는것으로 보여. 이미 KeyGone 처럼 두 단어 조합으로 명료한 단어선택을 했던 적도 있고, 서브 flag 라서 바꾸지 말아야할 이유도 존재하진 않아. 장점을 포기해야할 단점이 보이지 않는 점에서"*. 반영: quad-types `SlotListOpts`, `Slot/List.luau`·`Elements.luau`와 주석, 스펙 둘, 문서 아홉(레퍼런스 core/06·10, GS 10·13, how-to 03, overview 02, Quadnomicon 5권, README, 스킬), `base/slot-plan.md` 배너·`question.md` 1절 해소, CHANGELOG BREAKING(옛 키는 조용히 무시되고 debug면 알림). 내부 필드 `_owned`는 그대로.
+
 **[2026-09-15 독립 조사 둘(sonnet, 원장·`question.md` 차단) — 둘 다 `Owned` 유지 1순위, `OwnsElements` 2순위, `DestroyElements` 비권장]** 사용자는 `OwnsElements`에 동의하는 쪽이며 객관 확인을 요청(*"15처럼 반박이 나올 수도 있어서 깨끗한 맥락에서"*). 두 조사가 코드로 같은 사실을 확인했다 — `Owned = false`는 파괴 여부 하나가 아니라 **요소 수명 책임 모드 전체**를 바꾼다: (a) 빠진 요소를 파괴 대신 떼기만(`Slot/Raw.luau` `releaseElement`), (b) `Detach` 반환이 보관이 아니라 완전 해제로 격하되어 같은 키가 돌아와도 `ctx.Prev`가 nil(`Slot/List.luau` `settle`, 레퍼런스 core/06이 이미 가르침), (c) Slot 자신이 파괴될 때 자식을 파괴하지 않고 떼기만(`Slot/Tree.luau` `destroySlotTree`). 그래서 `DestroyElements`는 (b)를 약속하지 않는 좁은 이름이라 "`DestroyElements=false`인데 왜 `Prev`가 안 오지"라는 오독을 이름이 만든다(두 조사 공통). (i) **생태계 선례 조사**: 같은 뜻의 불리언 옵션 표준 이름은 못 찾음(Fusion은 불리언이 아니라 destructor 함수 `cleanup`/`doNothing`, Vide는 매핑 안 `cleanup()` — 미확인, 웹 UI 킷의 `destroyOnClose`는 `DestroyElements`와 같은 과소 서술). 결론 `Owned` 유지(중상), 바꾼다면 `OwnsElements`(중) — 방향 모호성("Slot이 소유당하는가?")을 없애는 게 유일한 실익, `ManagesElements`는 새 어휘라 약함, `KeepElementsAlive`/`RetainElements`는 `Detach`의 "보관"과 충돌. (ii) **코퍼스 정합·오독 조사**: 결론 `Owned` 유지(높음) — Quadnomicon 5권(`docs/quadnomicon/05-non-destructive-portal-and-ownership.md`)이 Ref·Attr·Slot 전역 "소유권 공리"를 이 어휘로 가르치고, 옵션 테이블의 다른 불리언(`Leading`/`Trailing`)이 한 낱말 형용사라 `OwnsElements` 같은 동사구 옵션 키는 선례가 없다; 극성 반전 `Borrowed = true`는 비용만 커서 기각. 방향 오독은 이 옵션이 요소를 들이는 `:List`/`:Single`에만 있어 문맥상 좁혀진다고 봄. **메인 정리**: 반박의 핵심은 "`OwnsElements`가 틀렸다"가 아니라 "`Owned`로도 충분하고 형용사 관례에 맞다"이며, `OwnsElements`의 실익(주어 방향 명시)은 두 조사 모두 인정했다. 둘 사이 선택은 표기 관례(한 낱말 형용사) 대 자기 설명성의 저울질이라 사용자 판단 대기. (부수 — 조사 (i)이 적은 "(c)에서 사용자가 만든 비소유 Slot은 자식의 `elementOwner` 기록도 풀지 않는다"는 메인이 `Slot/Tree.luau` `destroySlotTree`로 확인: 맞다 — 슈거 래퍼만 `releaseSugarWrapper`로 풀고, 사용자 Slot은 claim을 유지한다. 같은 함수의 Q14 (a) "두 루프 모두 해제"는 소유 Slot 쪽 분기 이야기라 모순 아님. 즉 (c)는 "파괴 안 함 + 소유 기록 유지"라 역시 파괴 한 축으로 안 줄어든다.)
 
 **무엇** — `quad-types/src/init.luau:507`의 `SlotListOpts = { Owned: boolean? }`. `question.md` 1절이 직접 적습니다: *"`elementOwner`/`claimOwner`/`releaseOwner`와 같은 뿌리라 골랐지만 **잠정 이름**이다 — 형용사라 옵션 테이블 키로는 자연스러운데, 실제로 묻는 건 '이 Slot이 요소의 수명을 책임지는가'라서 `OwnsElements`처럼 주어를 드러내는 쪽이 나을 수도 있음."*
@@ -362,6 +366,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 ---
 
 ## 원장 밖 추가 탐사 (2026-09-15, opus 셋 — 타입 표면·런타임 계약과 패키징·문서 약속)
+
+**[회신 4차 2026-09-15 — 이 절 결정 요약]** (19) **debug 층 경고** — 사용자: *"런타임 체킹을 넣기도 애매하고 … 클론을 하거나 처리를 넣어야할 필요는 모르겠음. debug 모드에서 블래임 해주는건 괜찮다고 봐 … 런타임 비용이 큰 블래임은 debug 모드에 넣는게 난 이롭다 … debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주자"* → 원칙은 `base/architecture.md`의 "debug 층" 절(신설), 반영: `Debounce`/`Throttle`·`Slot:List`/`:Single` opts·`Tween`·`Animate`에서 `q.debug`일 때 모르는 키 `print`(얕은 복사·에러 없음 — "살아 있는 옵션"도 그대로). (20) **UB 명시**(사용자 *"UB명시가 맞는것 같아"*) → 레퍼런스 core/03·05·07. (21) **동작 그대로 + UB 문서화** — 사용자: *"이미 언급되었던 것이야 … 라이브러리 잘못이 아니라, 유저 잘못임 … UB에 가깝고, 이 또한 debug 플래그 따라서 처리를 더할 순 있어도, 동작을 변경시킬 필요는 없다고 봐"* → core/06, `architecture.md` 예외 안전성 절에 한 줄(debug 처리는 이번엔 안 넣음). (22) **identity dedup** — 사용자: *"이건 내가 RunInit 처럼 dedup 하자고 했었음 … 구현 자체에 답이 있는듯"* → `AddPlugin`에 `pluginRelate`, 표시는 성공 후(UseProvider `H-307`과 같은 이유 — 메인 선택, RunInit의 실행 전 표시와 다름), `smoke.plugin` 5절. (24) **사전식 하한**(위 (2) 결정 줄). (23) 매니페스트 쪽은 사용자가 `^`를 메이저 고정 caret으로 유지하는 것으로 읽었다 — 다만 이미 게시된 3.2.0이 새 `quad_types`와 섞일 때의 Brand 런타임 호환 문제는 별도 문항으로 사용자에게 올림(대화형). (25) 사용자: *"어떻게 막히는지 보여주면 될듯"* → 스크래치 시연 뒤 결정. 문서 약속 묶음(라)은 사용자 *"알아서 고칠 수 있는 부분에 대해서는 확인했고, 괜찮다"* → 반영(랜딩 둘·GS 15·17·core/01·02·06·07·스킬·CHANGELOG 빈틈 셋; 스킬의 에러 문구 매칭 권고는 (11)과 같이). (18)·(26)~(32)와 원장 (3)·(6)·(11)·(12)는 사용자 지시 *"나머지는 하나하나 인터랙티브로 나에게 물어보면서"*로 대화형 진행.
 
 사용자 요청: *"원장 내용 이외에 릴리즈 전에 더 처리해야할 내용이 나오는지 보고싶어"*. 셋 다 읽기 전용, 원장 1~17과 `[Unreleased]`를 먼저 읽고 겹치지 않게. 실측 스크래치는 세션 스크래치(`hunt-types/`·`hunt-runtime/`·`hunt-docs/`, 레포 밖)에 있었다. 메인이 직접 재확인한 것은 "메인 확인"으로 적는다. 아래 번호 (18)~는 이 절 안의 번호다. **새 필드·이름·메커니즘이 필요한 것은 전부 사용자 문항**이고 코드는 아직 안 건드렸다.
 

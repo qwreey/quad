@@ -28,7 +28,7 @@ Full English documentation is currently being mirrored from the canonical Korean
 		Creates native Roblox instances immediately upon Luau table evaluation without VNode allocations or diffing.
 	</Card>
 	<Card title="High-Performance Slot Engine" icon="list-format">
-		Keyed `Slot:List` recycles elements — return `prev` and nothing is destroyed or remounted; on Roblox order is bookkeeping, so there is no physical reordering. You bind `LayoutOrder` yourself from the `index`/`offset` you receive.
+		Keyed `Slot:List` recycles elements — return `ctx.Prev` and nothing is destroyed or remounted; on Roblox order is bookkeeping, so there is no physical reordering. You bind `LayoutOrder` yourself from the `ctx.Index`/`ctx.Offset` you receive.
 	</Card>
 	<Card title="3-Tier Modifier Priority" icon="setting">
 		Inline overrides, reverse modifier priority, and Modifier.Overridden composition for total design reusability.

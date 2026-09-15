@@ -124,4 +124,18 @@ do
 end
 
 print()
+print("=== 6. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Animate는 그대로 돈다 ===")
+do
+	q.debug = true
+	print("(아래 Animate unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)")
+	local animate = q.Animate({ Duration = 0.3 })
+	q.debug = false
+	assert(type(animate) == "function", "typo key does not stop construction")
+	local node = q.Source(1):Apply(animate)
+	local out = node:Get()
+	assert(type(out) == "table" and out.Value == 1 and out.Time == nil, "runs with defaults: " .. tostring(out))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

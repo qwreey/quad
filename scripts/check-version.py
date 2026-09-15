@@ -18,8 +18,9 @@ SITES = [
     ('quad-base/src/init.luau', r'(?m)^(\s*Version = ")([^"]+)(",)'),
     ('quad-types/src/init.luau', r'(?m)^(\s*Version: ")([^"]+)(",)'),
     ('quad-base/test/smoke.plugin.luau', r'(Quad\.Version == ")([^"]+)(")'),
-    ('quad-roblox/test/spec.robloxfactory.luau', r"(version pattern ')([^']+)(')"),
 ]
+# [2026-09-15] the spec asserts the pattern string itself, so it is checked against VERSION_PATTERN (not the version)
+PATTERN_ECHO_SITE = ('quad-roblox/test/spec.robloxfactory.luau', r"(version pattern ')([^']+)(')")
 # bump 때만: 같은 파일에 일부러 틀린 값(9.9.9)도 있어 검사 대상은 아니고, 옛 버전과 같은 대입만 새 버전으로 바꾼다
 BUMP_ONLY = [('quad-roblox/test/spec.robloxfactory.luau', r'(:: any\)\.Version = ")OLD(")')]
 PATTERN_SITE = ('quad-roblox/src/init.luau', r'(?m)^(local VERSION_PATTERN = ")([^"]+)(")')
@@ -60,10 +61,13 @@ def matches_pattern(actual, pattern):
             continue
         if y.endswith('^'):
             try:
-                if int(x) < int(y[:-1]):
-                    return False
+                xi, yi = int(x), int(y[:-1])
             except ValueError:
                 return False
+            if xi < yi:
+                return False
+            if xi > yi:
+                return True  # [2026-09-15] lexicographic floor: a leading ^ place above its minimum ignores later places
         elif x != y:
             return False
     return True
@@ -92,6 +96,10 @@ def check():
     if pattern is None or not matches_pattern(canonical, pattern):
         print(f'  MISMATCH {PATTERN_SITE[0]}: VERSION_PATTERN {pattern!r} does not accept {canonical!r}')
         ok = False
+    em = re.search(PATTERN_ECHO_SITE[1], read(PATTERN_ECHO_SITE[0]))
+    if em is None or em.group(2) != pattern:
+        print(f'  MISMATCH {PATTERN_ECHO_SITE[0]}: asserted pattern {em.group(2) if em else None!r} != VERSION_PATTERN {pattern!r}')
+        ok = False
     if not ok:
         sys.exit(1)
 
@@ -102,8 +110,16 @@ def bump(new):
     old = manifest_version(read('quad-base/pesde.toml'))
     for m in MANIFESTS:
         write(m, re.sub(r'(?m)^version = "[^"]+"$', f'version = "{new}"', read(m), count=1))
-    for f, rx in SITES + [PATTERN_SITE] + [(f, rx.replace('OLD', re.escape(old))) for f, rx in BUMP_ONLY]:
+    for f, rx in SITES + [(f, rx.replace('OLD', re.escape(old))) for f, rx in BUMP_ONLY]:
         s, n = re.subn(rx, lambda mo: mo.group(1) + new + mo.group(3) if mo.lastindex == 3 else mo.group(1) + new + mo.group(2), read(f))
+        if n == 0:
+            sys.exit(f'site not found: {f} {rx}')
+        write(f, s)
+    # [2026-09-15 사용자 결정] VERSION_PATTERN is a floor within the major: "M.m^.p^" of the new release
+    major, minor, patch = split_tail(new)[0].split('.')
+    floor = f'{major}.{minor}^.{patch}^'
+    for f, rx in [PATTERN_SITE, PATTERN_ECHO_SITE]:
+        s, n = re.subn(rx, lambda mo: mo.group(1) + floor + mo.group(3), read(f))
         if n == 0:
             sys.exit(f'site not found: {f} {rx}')
         write(f, s)

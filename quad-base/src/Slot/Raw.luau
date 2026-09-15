@@ -374,10 +374,10 @@ return function(S: Types.SlotInternal, module: any)
 		return removed
 	end
 
-	-- releaseElement: disposition of a pushed-out/removed element — Owned decides.
+	-- releaseElement: disposition of a pushed-out/removed element — OwnsElements decides.
 	local function releaseElement(self: any, index: number?, element: any, wasDetached: boolean)
 		if wasDetached then
-			-- 5순회 `H-393`: release ownership FIRST, both arms — an `Owned = false`
+			-- 5순회 `H-393`: release ownership FIRST, both arms — an `OwnsElements = false`
 			-- element Slot outlives its parent, and without this it kept a dead
 			-- `elementOwner` forever ("already mounted elsewhere" on the next
 			-- Add, "still requires its tree" on dispose — both counterfactual).

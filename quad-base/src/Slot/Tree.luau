@@ -95,7 +95,7 @@ return function(S: Types.SlotInternal, module: any)
 	-- mints a fresh wrapper. So it must not keep owning the user's instance —
 	-- otherwise the next Add(state)/dispose(inst) fails "already mounted"
 	-- until GC clears the weak record (the nondeterminism slot-plan forbids).
-	-- Portal unmount (State<Slot> swap) and user-made Owned=false lists keep
+	-- Portal unmount (State<Slot> swap) and user-made OwnsElements=false lists keep
 	-- ownership exactly as before — they are real Slots the user still holds.
 	local function releaseSugarWrapper(wrapper: any)
 		for _, element in ipairs(wrapper._elements) do
@@ -146,11 +146,11 @@ return function(S: Types.SlotInternal, module: any)
 		if slot._owned == false then
 			unmountSlotTree(slot)
 			-- a sugar wrapper asked to die leaves its user's instance alive AND
-			-- unclaimed (`H6-12` (b)); a user-made Owned=false list keeps its claims
+			-- unclaimed (`H6-12` (b)); a user-made OwnsElements=false list keeps its claims
 			if slot._wrapped ~= nil then releaseSugarWrapper(slot) end
 			return
 		end
-		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `Owned = false`
+		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `OwnsElements = false`
 		-- element Slot survives `destroySlotTree` (unmount-only branch above) and kept a dead
 		-- `elementOwner` forever ("already mounted elsewhere" on its next Add). Destroyed
 		-- elements do not care (weak registry). The C-4 exemption assumed every element dies.

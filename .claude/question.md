@@ -132,7 +132,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 - **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
-- **`Owned`(3순위, 2026-08-21 신설)**: `:List`/`:Single`의 설치 시점
+- **[2026-09-15 해소 — `OwnsElements`로 개명, 사용자 결정] `Owned`(3순위, 2026-08-21 신설)**: `:List`/`:Single`의 설치 시점
   플래그(기본 `true`, `false`면 어떤 경로로도 파괴 안 함).
   `elementOwner`/`claimOwner`/`releaseOwner`와 같은 뿌리라 골랐지만
   **잠정 이름**이다 — 형용사라 옵션 테이블 키로는 자연스러운데, 실제로

@@ -38,7 +38,7 @@ local function _neverCalled()
 	local current = q.Source(nil :: Instance?)
 	local identity = q.Slot<<Instance>>():Single(current)
 	-- (3) 값 직접, opts
-	local literal = q.Slot<<Instance>>():Single(D.TextLabel({ Text = "A" }), nil, { Owned = false })
+	local literal = q.Slot<<Instance>>():Single(D.TextLabel({ Text = "A" }), nil, { OwnsElements = false })
 	-- (4) 대조군 :List — 같은 <Item, UD> 모양
 	type Row = { Id: string }
 	local rows = q.Source({ { Id = "a" } } :: { Row })

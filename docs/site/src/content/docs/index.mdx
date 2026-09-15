@@ -36,7 +36,7 @@ import VersionLine from '../../components/VersionLine.astro';
 		`:Set`은 "바뀌었다"만 알리고, 계산은 `:Get()` 시점에 노드 캐시에서 한 번 일어납니다. 신호가 몇 갈래로 도착하든 계산은 한 번이라 다이아몬드 그래프의 중복 재평가가 구조적으로 없고, 아직 살아나지 않은 관측은 보류됐다가 최신값으로 한 번만 재생됩니다.
 	</Card>
 	<Card title="원소를 재활용하는 키 기반 목록" icon="list-format">
-		`Slot:List`는 키마다 지난번 원소를 `prev`로 돌려주고, 그대로 반환하면 파괴도 재마운트도 없습니다. Roblox에서 형제 순서는 부기값이라 물리 재배치가 없고, `LayoutOrder`는 넘겨받은 `index`/`offset`으로 직접 바인딩합니다.
+		`Slot:List`는 키마다 지난번 원소를 `ctx.Prev`로 돌려주고, 그대로 반환하면 파괴도 재마운트도 없습니다. Roblox에서 형제 순서는 부기값이라 물리 재배치가 없고, `LayoutOrder`는 넘겨받은 `ctx.Index`/`ctx.Offset`으로 직접 바인딩합니다.
 	</Card>
 	<Card title="규칙 둘뿐인 Modifier" icon="setting">
 		재사용 스타일은 디스패치 전에 정적으로 펼쳐지는 불변 값이라 런타임 캐스케이드 계산이 없습니다. 규칙은 둘 — 인라인 문자 키가 항상 이기고, 숫자 키 자리의 뒤쪽 Modifier가 앞쪽을 이깁니다. 여럿을 하나로 합칠 때는 `Overridden`(뒤 인자가 이김)으로 합성합니다.
@@ -92,7 +92,7 @@ const card = D.Frame {
 <details>
 <summary>목록이나 스크롤이 수천 개가 되어도 괜찮은가요?</summary>
 
-재활용(살아남은 항목은 다시 만들지 않는 것)은 `Slot:List`가 그대로 해 줍니다. 윈도잉(보이는 구간과 여유분만 만드는 것)은 quad가 자동으로 해 주지 않고, 넘겨받는 `index`/`offset` 위에 직접 구현하는 패턴입니다 — [`Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)가 그 구현을 통째로 보여 줍니다.
+재활용(살아남은 항목은 다시 만들지 않는 것)은 `Slot:List`가 그대로 해 줍니다. 윈도잉(보이는 구간과 여유분만 만드는 것)은 quad가 자동으로 해 주지 않고, 넘겨받는 `ctx.Index`/`ctx.Offset` 위에 직접 구현하는 패턴입니다 — [`Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)가 그 구현을 통째로 보여 줍니다.
 
 </details>
 
@@ -122,7 +122,7 @@ const card = D.Frame {
 <details>
 <summary>애니메이션은 어떻게 하나요?</summary>
 
-값을 `q.Tween { … }`으로 감싸 프로퍼티에 흘리면 그 목표로 보간됩니다. 자주 쓰는 모양은 `:Apply(q.Animate)` 슈거로 한 줄이 됩니다 — [움직이게 하기](/getting-started/15-animation/).
+값을 `q.Tween { … }`으로 감싸 프로퍼티에 흘리면 그 목표로 보간됩니다. 자주 쓰는 모양은 `:Apply(q.Animate { … })` 슈거로 한 줄이 됩니다 — [움직이게 하기](/getting-started/15-animation/).
 
 </details>
 

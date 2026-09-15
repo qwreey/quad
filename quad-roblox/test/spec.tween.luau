@@ -181,4 +181,16 @@ do
 end
 
 print()
+print("=== 8. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Tween은 그대로 만들어진다 ===")
+do
+	local quadAny: any = Quad
+	quadAny.debug = true
+	print("(아래 Tween unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)")
+	local t = Tween(({ Value = 1, Duraton = 0.3 } :: any))
+	quadAny.debug = false
+	assert(t.Value == 1 and t.Time == nil, "typo key ignored, Tween built with defaults")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

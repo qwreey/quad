@@ -25,10 +25,10 @@ quad는 이 둘을 분리합니다:
 
 "quad는 절대 파괴하지 않는다"는 **틀린 요약**입니다. 비파괴는 두 자리에서 성립합니다:
 
-1. **자식 숫자 키 위치의 `State<Slot>` 교체.** 그 자리를 맡는 `SlotHandler`의 retractor는 `unmountSlotTree`를 부릅니다 — 파괴가 아니라 언마운트입니다. 맨 `State`를 Slot 요소로 넣었을 때 quad가 대신 만들어주는 래퍼 Slot도 `Owned = false`라 같은 취급입니다.
-2. **`Owned = false`로 만든 Slot.** 요소를 "외부에서 빌려온 것"으로 보고, 밀려나면 언마운트만 합니다.
+1. **자식 숫자 키 위치의 `State<Slot>` 교체.** 그 자리를 맡는 `SlotHandler`의 retractor는 `unmountSlotTree`를 부릅니다 — 파괴가 아니라 언마운트입니다. 맨 `State`를 Slot 요소로 넣었을 때 quad가 대신 만들어주는 래퍼 Slot도 `OwnsElements = false`라 같은 취급입니다.
+2. **`OwnsElements = false`로 만든 Slot.** 요소를 "외부에서 빌려온 것"으로 보고, 밀려나면 언마운트만 합니다.
 
-반대로 **`:List`/`:Single`의 기본값은 `Owned = true`이고, 이 경우 데이터에서 빠진 요소는 파괴됩니다.** 이건 실수가 아니라 기본값의 의도입니다 — 리스트가 만들어낸 것은 리스트가 치웁니다.
+반대로 **`:List`/`:Single`의 기본값은 `OwnsElements = true`이고, 이 경우 데이터에서 빠진 요소는 파괴됩니다.** 이건 실수가 아니라 기본값의 의도입니다 — 리스트가 만들어낸 것은 리스트가 치웁니다.
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -90,11 +90,11 @@ flowchart LR
 
 ```luau
 D.Frame {
-    q.Slot<<Instance>> { myInstanceState }, -- 맨 State 요소는 Slot():Single(state, nil, { Owned = false })로 감싸진다
+    q.Slot<<Instance>> { myInstanceState }, -- 맨 State 요소는 Slot():Single(state, nil, { OwnsElements = false })로 감싸진다
 }
 ```
 
-이 래퍼는 `Owned = false`이므로 `myInstanceState`가 다른 Instance로 바뀌어도 이전 Instance는 살아 있고, 외부 변수에 붙들거나 다른 슬롯으로 옮길 수 있습니다. 최종 파괴 책임은 그걸 만든 쪽에 있습니다.
+이 래퍼는 `OwnsElements = false`이므로 `myInstanceState`가 다른 Instance로 바뀌어도 이전 Instance는 살아 있고, 외부 변수에 붙들거나 다른 슬롯으로 옮길 수 있습니다. 최종 파괴 책임은 그걸 만든 쪽에 있습니다.
 
 ### 보장되지 않는 것
 
@@ -121,9 +121,9 @@ q.Dispatch.setLength(ownerKey, position, 0)            -- 2. 길이를 0으로 �
 | 상황 | quad의 동작 |
 |---|---|
 | 자식 위치의 `State<Slot>` 교체 | `unmountSlotTree` — 이전 Slot은 살아 있고 다시 붙일 수 있다 |
-| 맨 `State` 요소의 값 교체 | 래퍼가 `Owned = false` — 이전 Instance는 살아 있다 |
-| `:List`/`:Single` 기본값(`Owned = true`)에서 키가 빠짐 | 그 요소는 파괴된다 |
-| `:List`/`:Single`에 `Owned = false` | 언마운트만, 파괴 없음 |
+| 맨 `State` 요소의 값 교체 | 래퍼가 `OwnsElements = false` — 이전 Instance는 살아 있다 |
+| `:List`/`:Single` 기본값(`OwnsElements = true`)에서 키가 빠짐 | 그 요소는 파괴된다 |
+| `:List`/`:Single`에 `OwnsElements = false` | 언마운트만, 파괴 없음 |
 | `q.dispose(value)` | 아직 소유돼 있으면 거부(에러), 아니면 파괴 |
 | 아무도 안 들고 있는, 뗀 값 | 평범한 Lua GC |
 

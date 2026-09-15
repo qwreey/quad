@@ -137,7 +137,7 @@ if ctx.Item == q.KeyGone then
 end
 ```
 
-원소를 **밖에서** 관리하고 싶다면 `opts.Owned = false`가 있습니다 — `list:List(data, updateFn, keyFn, { Owned = false })`처럼 주면 이 Slot이 원소를 파괴하지 않고 목록에서 빠질 때 언마운트만 합니다.
+원소를 **밖에서** 관리하고 싶다면 `opts.OwnsElements = false`가 있습니다 — `list:List(data, updateFn, keyFn, { OwnsElements = false })`처럼 주면 이 Slot이 원소를 파괴하지 않고 목록에서 빠질 때 언마운트만 합니다.
 
 </details>
 
@@ -256,7 +256,7 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 <details>
 <summary><strong>자리에 놓은 <code>State</code>와 뭐가 다른가요?</strong></summary>
 
-`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). [10장 6절](./10-slot.md)에서 `State`를 자리에 놓은 것과 **겉보기 결과는 같지만 안쪽은 다릅니다** — 자리에 놓은 `State`는 `:Single`이 아니라 자식 인스턴스 처리기가 맡습니다([18장](./18-handlers.md)). 소유권 차이도 그래서 생깁니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 내려놓기만 하지만, 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ Owned = false }`를 세 번째 인자로 주면 됩니다).
+`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). [10장 6절](./10-slot.md)에서 `State`를 자리에 놓은 것과 **겉보기 결과는 같지만 안쪽은 다릅니다** — 자리에 놓은 `State`는 `:Single`이 아니라 자식 인스턴스 처리기가 맡습니다([18장](./18-handlers.md)). 소유권 차이도 그래서 생깁니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 내려놓기만 하지만, 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ OwnsElements = false }`를 세 번째 인자로 주면 됩니다).
 <!-- mock 실측 2026-09-11: gs.gs6probe.luau S5 — 직접 건 :Single에서 교체된 옛 원소는 파괴됨(isDestroyed true) -->
 
 </details>
@@ -307,5 +307,5 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Slot`](../reference/core/06-slot.md) — `:List`/`:Single`의 전체 계약, 에러 문구, `Detach`·`KeyGone`·`Owned`
+- [레퍼런스: `Slot`](../reference/core/06-slot.md) — `:List`/`:Single`의 전체 계약, 에러 문구, `Detach`·`KeyGone`·`OwnsElements`
 - [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md) — 수백~수만 개짜리 목록의 윈도잉과 `Throttle`

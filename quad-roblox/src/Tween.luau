@@ -154,7 +154,20 @@ local function install(quad: any): any
 
 	-- Plain generic function (`H-343`): `Tween{...}` constructs, nothing else lives
 	-- on it. `H-238`: surface-tagged so validation raises blame the user's line.
+	-- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, execution continues.
+	-- Checked here (the user's constructor call), not in `validate` — `Mapped` re-validates per emit.
+	local KNOWN_OPTIONS = {
+		Value = true, Info = true, Time = true, Style = true, Direction = true,
+		RepeatCount = true, Reverses = true, DelayTime = true, Override = true, Dedup = true,
+	}
 	local function Tween(opts: any): any
+		if quad.debug and type(opts) == "table" then
+			for key in opts do
+				if not KNOWN_OPTIONS[key] then
+					print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup)`)
+				end
+			end
+		end
 		return newTween(opts)
 	end
 

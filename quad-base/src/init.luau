@@ -56,6 +56,8 @@ local runInitRelate = Relate()
 -- identity 락(`H-305` (d′), 사용자 확정 2026-09-02) — RunInit 멱등 가드의
 -- 공개판. runInitRelate와 같은 이유로 weak-키잉.
 local providerRelate = Relate()
+-- [2026-09-15] AddPlugin identity dedup — same weak-keying reason as runInitRelate
+local pluginRelate = Relate()
 
 local function New(): Quad
 	local module = {
@@ -131,6 +133,12 @@ local function New(): Quad
 	end
 
 	function module.AddPlugin(self, pluginFn)
+		-- [2026-09-15 사용자 결정] RunInit처럼 identity dedup — 여러 스크립트가 같은 모듈을 require한 뒤
+		-- 각자 `:AddPlugin(spring)`을 불러도 한 번만 설치된다. 표시는 성공 후(UseProvider `H-307`과 같은
+		-- 이유 — 도중에 던진 플러그인의 재시도가 no-op로 삼켜지지 않게).
+		if pluginRelate:GetStrong(self, pluginFn) then
+			return self :: any
+		end
 		local extension = pluginFn(self)
 		-- [2026-09-15 사용자 결정] 기존 필드 덮어쓰기는 막지 않는다(코어를 의도적으로
 		-- 확장하는 플러그인을 닫을 이유가 없음) — 다만 위험한 표면이라 debug일 때
@@ -148,6 +156,7 @@ local function New(): Quad
 			end
 		end
 		mergeExtension(self, extension)
+		pluginRelate:SetStrong(self, pluginFn, true)
 		return self :: any
 	end
 

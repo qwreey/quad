@@ -505,7 +505,7 @@ export type Store<T> = T & {
 -- 원래 값"이라 전체형 `SlotItem<T>` — 같은 값의 두 역할이라 별칭이 둘이다.
 export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
 export type SlotItem<T> = T | State<T> | Slot<T>
-export type SlotListOpts = { Owned: boolean? }
+export type SlotListOpts = { OwnsElements: boolean? }
 -- `updateFn(ctx) -> (result, userdata)` — [2026-09-15 사용자 결정] 옛 위치 인자 다섯을 매 호출 새 테이블 하나로
 -- (`ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`, `:List`·`:Single` 같은 모양; 필드에 `read`를 안 붙이는 건 사용자가 평범한
 -- 레코드로 주석을 달면 반공변 자리에서 어긋나기 때문). `result`는

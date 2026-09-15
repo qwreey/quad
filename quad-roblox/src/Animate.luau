@@ -57,9 +57,23 @@ local function install(quad: any, validateFields: (any, any?) -> ()): any
 		end
 	end
 
+	local KNOWN_OPTIONS: { [string]: boolean } = { CanAnimate = true }
+	for _, name in FIELDS do
+		KNOWN_OPTIONS[name] = true
+	end
+
 	local function Animate(info: any): any
 		if type(info) ~= "table" then
 			Err.errorBeforeNearest("Animate: expected an options table (Animate{ Time = ... })", SURFACE)
+		end
+		-- [2026-09-15 사용자 결정] unknown keys (typos such as `Duration`) are reported only under
+		-- `q.debug`; execution continues with the defaults
+		if quad.debug then
+			for key in info do
+				if not KNOWN_OPTIONS[key] then
+					print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
+				end
+			end
 		end
 		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
 		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.

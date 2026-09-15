@@ -218,7 +218,16 @@ return function(S: Types.SlotInternal, module: any)
 		self._listData = data
 		self._updateFn = updateFn
 		self._keyFn = keyFn or function(_item: any, index: number) return index end
-		if opts and opts.Owned == false then self._owned = false end
+		if opts and opts.OwnsElements == false then self._owned = false end
+		if module.debug and type(opts) == "table" then
+			-- [2026-09-15 사용자 결정] unknown option keys (typos, the pre-rename `Owned`) are reported
+			-- only under `q.debug`; execution continues
+			for key in opts do
+				if key ~= "OwnsElements" then
+					print(`Slot:List/:Single: unknown option "{tostring(key)}" is ignored (known: OwnsElements)`)
+				end
+			end
+		end
 		-- if already materialized, activate now (mount is a one-shot event)
 		if self._physicalTarget then
 			self:_activateList(self._physicalTarget)

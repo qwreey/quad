@@ -121,7 +121,7 @@ local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty }
 read Offset: State<number>
 ```
 
-**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
+**동작** — 마운트 대상 안에서 이 Slot의 첫 원소 **앞에 놓인 물리 자식 수**(0부터 센 절대 위치 — 앞에 아무것도 없으면 0, 첫 원소는 `Offset + 1`번째)를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
@@ -325,7 +325,7 @@ List: <Item, UD>(
     opts: SlotListOpts?
 ) -> Slot<T>
 
-type SlotListOpts = { Owned: boolean? }
+type SlotListOpts = { OwnsElements: boolean? }
 ```
 
 **인자**
@@ -335,7 +335,7 @@ type SlotListOpts = { Owned: boolean? }
 | `data` | `{ Item }` 또는 그걸 담은 State | 재조정의 원본. State면 값이 바뀔 때마다 다시 돕니다 |
 | `updateFn` | 함수 | 항목 하나를 어떻게 만들/유지/버릴지 결정합니다(아래 계약) |
 | `keyFn` | `((item, index) -> any)?` | 항목의 신원. 기본값은 **인덱스**입니다 |
-| `opts` | `{ Owned: boolean? }?` | `Owned = false`면 이 Slot이 원소를 파괴하지 않습니다 |
+| `opts` | `{ OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다 |
 
 **반환** — `self`(체이닝용).
 
@@ -374,10 +374,12 @@ type SlotListOpts = { Owned: boolean? }
 - 인자 검증 에러: `Slot:List: updateFn must be a function (got {typeof(updateFn)})`, `Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, `Slot:List: keyFn must be a function (got {typeof(keyFn)})`.
 - 재조정 중 에러: `Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Slot:List: keyFn returned nil for item #{i}`, `Slot:List: duplicate key {tostring(key)}`.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
+- `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
+- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot은 더 이상 재조정되지 않습니다.** 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
 
-**`Owned = false`**
+**`OwnsElements = false`**
 
-기본은 소유(`Owned = true`)입니다 — 이 Slot이 버리는 원소는 파괴됩니다. `Owned = false`를 주면 버릴 때 소유권만 풀고 살려둡니다. 그 Slot이 통째로 파괴돼도 원소는 살아남아 다른 Slot에 다시 넣을 수 있습니다. 원소를 밖에서 관리하는 가상화 목록이나 포털이 이 옵션의 자리입니다.
+기본은 소유(`OwnsElements = true`)입니다 — 이 Slot이 버리는 원소는 파괴됩니다. `OwnsElements = false`를 주면 버릴 때 소유권만 풀고 살려둡니다. 그 Slot이 통째로 파괴돼도 원소는 살아남아 다른 Slot에 다시 넣을 수 있습니다. 원소를 밖에서 관리하는 가상화 목록이나 포털이 이 옵션의 자리입니다.
 
 **예제**
 
@@ -437,19 +439,19 @@ Single: <Item, UD>(
 |---|---|---|
 | `state` | `Item?` 또는 그걸 담은 State | 이 Slot이 실을 **한 개**의 데이터 — `updateFn`이 원소로 바꿉니다 |
 | `updateFn` | 함수? | 생략하면 항등 — 값을 그대로 원소로 씁니다(그때 `Item`은 원소 타입) |
-| `opts` | `{ Owned: boolean? }?` | `:List`와 같습니다 |
+| `opts` | `{ OwnsElements: boolean? }?` | `:List`와 같습니다 |
 
 **반환** — `self`.
 
 **동작**
 
-- 원소가 최대 하나인 `:List`입니다. 설치 규칙·모드 배타성·`Owned` 의미는 전부 `:List`와 같습니다.
+- 원소가 최대 하나인 `:List`입니다. 설치 규칙·모드 배타성·`OwnsElements` 의미는 전부 `:List`와 같습니다.
 - `updateFn`은 `:List`와 **같은 모양의 `ctx`** 하나를 받습니다(`ctx.Index`도 들어옵니다). 그래서 같은 `updateFn`을 `:List`와 `:Single`에 나눠 쓸 수 있습니다.
-- `state`의 값이 `nil`이거나 `q.None`이면 원소가 없는 상태입니다. `updateFn`에는 그때 `ctx.Item`으로 `q.KeyGone`이 옵니다.
+- `state`의 값이 `nil`이거나 `q.None`이면 원소가 없는 상태입니다. 값이 있다가 `nil`/`q.None`이 되면 `updateFn`에 `ctx.Item`으로 `q.KeyGone`이 옵니다 — 처음부터 비어 있으면 `updateFn`은 불리지 않습니다.
 - `state`가 State면 값이 바뀔 때마다 그 자리가 통째로 교체됩니다.
 - 인자 검증 에러: `Slot:Single: updateFn must be a function (got {typeof(updateFn)})`.
 
-`Slot`에 State를 원소로 넣는 `slot:Add(someState)`는 내부적으로 `Owned = false`인 래퍼 Slot에 `:Single`을 건 것과 같습니다. 래퍼가 `Owned = false`이므로 값이 바뀔 때 **옛 원소는 파괴되지 않습니다** — 더 쓸 일이 없으면 직접 `q.dispose` 하세요.
+`Slot`에 State를 원소로 넣는 `slot:Add(someState)`는 내부적으로 `OwnsElements = false`인 래퍼 Slot에 `:Single`을 건 것과 같습니다. 래퍼가 `OwnsElements = false`이므로 값이 바뀔 때 **옛 원소는 파괴되지 않습니다** — 더 쓸 일이 없으면 직접 `q.dispose` 하세요.
 
 **예제**
 
@@ -477,8 +479,8 @@ Detach: Detach -- { read __quadDetach: true }
 
 **동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `ctx.Prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
 
-보관은 `Owned`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `Owned = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `ctx.Prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
-<!-- mock 실측 2026-09-11: gs.owned.luau — Owned=true는 같은 인스턴스가 prev로 돌아옴(made 2), Owned=false는 prev nil·새로 만듦(made 3), 둘 다 옛 원소 파괴 안 됨 -->
+보관은 `OwnsElements`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `OwnsElements = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `ctx.Prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
+<!-- mock 실측 2026-09-11: gs.owned.luau — OwnsElements=true는 같은 인스턴스가 prev로 돌아옴(made 2), OwnsElements=false는 prev nil·새로 만듦(made 3), 둘 다 옛 원소 파괴 안 됨 -->
 
 **예제**
 

@@ -2052,6 +2052,8 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   (`quad.Detach`로 접근)은 그대로다.
 ### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
 
+**[2026-09-15 개명 — 사용자 결정] 옵션 키는 이제 `OwnsElements`다**(뜻·기본값 무변경, 내부 필드 `_owned`도 그대로). 사용자: *"?.Owned 로 앞을 가리고 보면 의도가 완전히 희석되는데다가 … KeyGone 처럼 두 단어 조합으로 명료한 단어선택을 했던 적도 있고 … 장점을 포기해야할 단점이 보이지 않는 점에서 나는 OwnsElements 로 쓰는게 이롭다고 봐"*. 독립 조사 둘은 `Owned` 유지(형용사 관례)를 1순위로 냈으나 `OwnsElements`의 주어 명시 장점은 인정했다(`research/public-surface-pre-adoption-review.md` (14)). 아래 본문과 의사코드의 `Owned`는 개명 전 표기 그대로 둔다 — 코드·문서의 현재 키는 `OwnsElements`.
+
 위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데
 **[2026-09-07 밤 `H-467`, 사용자 Q30 *"의미론적으로 None == nil이 맞다"*]** `:Single`은 `None`을 `nil`과 같게 본다 —
 빈 배열로 변환돼 KeyGone 언마운트를 탄다(`{ None }`이 `updateFn`의 item으로 가던 것은 Gemini 5차 `G-16`).

@@ -82,7 +82,7 @@ Snippets below assume this prologue.
   (`UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
   `Provider<T>`, `Context`) and the generated `Declaration` module (`DeclarationModule.FrameModifier`,
-  `DeclarationModule.Field<T>`, …). **`q.State<T>` does not exist** — `q` is a value, not a type.
+  `DeclarationModule.Field<T>`, …). **`q.State<T>` does not exist on the module value itself** — `q` is a value, not a type (the `q.State<T>` form in the reference works only because the setup module re-exports the types under its own name).
 
 ### 1.2 Core Ontological Grammar
 
@@ -301,13 +301,13 @@ order is expressed through `LayoutOrder`.
 ### 4.3 Non-owning `Slot:Single`
 
 Same `updateFn(ctx)` shape as `List`, `ctx.Index` included — one `updateFn` can serve both.
-With `{ Owned = false }` a replaced element is unmounted (`Parent = nil`) instead of
+With `{ OwnsElements = false }` a replaced element is unmounted (`Parent = nil`) instead of
 destroyed, so it can be mounted somewhere else.
 
 ```luau
 local selected = q.Source<<Instance?>>(nil)
 local slot = q.Slot<<Instance>>()
-slot:Single(selected, nil, { Owned = false })
+slot:Single(selected, nil, { OwnsElements = false })
 -- selected:Set(other) now unparents the previous element instead of destroying it
 ```
 

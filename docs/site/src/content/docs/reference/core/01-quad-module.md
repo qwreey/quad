@@ -84,9 +84,9 @@ AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P
 
 **반환** — 같은 모듈(identity 그대로). 타입은 원래 표면과 확장의 교집합 `Self & P`라 체이닝이 그대로 이어집니다.
 
-**동작** — `pluginFn(self)`가 돌려준 테이블의 필드를 모듈에 얕게 병합합니다. 새 인스턴스를 만들지 않고 받은 모듈을 그 자리에서 뮤테이션합니다 — `RunInit` 기록이 identity에 의존하기 때문입니다. 슬롯 락이 없으므로 같은 필드를 나중 플러그인이 덮어씁니다. 백엔드 설치에는 이걸 쓰지 말고 `UseProvider`를 쓰세요.
+**동작** — `pluginFn(self)`가 돌려준 테이블의 필드를 모듈에 얕게 병합합니다. 새 인스턴스를 만들지 않고 받은 모듈을 그 자리에서 뮤테이션합니다 — `RunInit` 기록이 identity에 의존하기 때문입니다. 슬롯 락이 없으므로 같은 필드를 나중 플러그인이 덮어씁니다. **같은 `pluginFn`을 다시 넘기면 아무것도 하지 않습니다** — `RunInit`과 같은 identity 기준이라 여러 스크립트가 각자 설치해도 한 번만 돕니다. 설치 표시는 `pluginFn`이 끝까지 돈 뒤에 하므로, 도중에 던진 플러그인은 다시 부르면 처음부터 돕니다. 백엔드 설치에는 이걸 쓰지 말고 `UseProvider`를 쓰세요.
 
-**이미 있는 필드를 덮을 때** — 막지 않습니다. 코어 부품을 일부러 갈아 끼우는 플러그인도 쓸 수 있어야 하기 때문입니다. 다만 `q.Source` 같은 코어 필드가 남의 것으로 바뀌면 원인을 찾기 어려우므로, [`q.debug`](#qdebug)가 켜져 있으면 설치 시점에 한 줄을 출력합니다. 검사는 `AddPlugin`을 부를 때 한 번만 돌고, `q.debug`는 그보다 **먼저** 켜 두어야 합니다.
+**이미 있는 필드를 덮을 때** — 막지 않습니다. 코어 부품을 일부러 갈아 끼우는 플러그인도 쓸 수 있어야 하기 때문입니다. 다만 `q.Source` 같은 코어 필드가 남의 것으로 바뀌면 원인을 찾기 어려우므로, [`q.debug`](#qdebug)가 켜져 있으면 설치 시점에 한 줄을 출력합니다. 검사 대상은 `pluginFn`이 **돌려준 테이블**이 덮는 필드뿐이고, `pluginFn` 안에서 모듈에 직접 대입한 필드는 알리지 않습니다. 검사는 `AddPlugin`을 부를 때 한 번만 돌고, `q.debug`는 그보다 **먼저** 켜 두어야 합니다.
 
 - `AddPlugin: plugin overwrites existing module field "{k}" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field`
 
@@ -138,7 +138,7 @@ quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으�
 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
 ```
 
-`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.2.0`).
+`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.2^.0^` — 같은 메이저 안에서 3.2.0 이상).
 
 **예제**
 
@@ -168,10 +168,16 @@ Version: "3.2.0"
 debug: boolean
 ```
 
-**동작** — 기본값 `false`. 지금 이 플래그를 읽는 자리는 **하나** — `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견하면 진단 줄을 출력할지 결정할 때입니다([`../extend/02-dispatch-handler-contract.md`](/reference/extend/02-dispatch-handler-contract/)). 그 외의 동작에는 영향이 없습니다.
+**동작** — 기본값 `false`. 진단 줄을 켜는 플래그입니다 — 켜도 동작은 바뀌지 않고, 치명적이지 않은 실수를 한 줄씩 출력한 뒤 **실행을 그대로 계속합니다**. 지금 이 플래그를 읽는 자리는 셋입니다.
+
+- `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견할 때([`../extend/02-dispatch-handler-contract.md`](/reference/extend/02-dispatch-handler-contract/)).
+- [`q:AddPlugin`](#qaddpluginpluginfn)이 기존 필드를 덮을 때.
+- 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다.
+
+셋 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요.
 
 ```luau
-q.debug = true -- 핸들러 우선순위 동률 경고를 켠다
+q.debug = true -- 동률·덮어쓰기·모르는 옵션 키 진단을 켠다
 ```
 
 ## `q.errorNamespace`

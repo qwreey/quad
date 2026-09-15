@@ -197,6 +197,8 @@ read Callbacks: { [RefCallback<T> | thread]: true }
 
 [`:Wait()`](#refwaitthread)의 대기 코루틴도 여기 `thread` 키로 들어갔다가 `:Set`이 소진합니다.
 
+이 필드와 [`ref.WeakCallbacks`](#refweakcallbacks)는 진단용으로 읽는 자리입니다 — 테이블의 모양(키 구성, weak 여부)은 예고 없이 바뀔 수 있으니 코드가 기대지 마세요.
+
 ## `ref.WeakCallbacks`
 
 **시그니처**
@@ -236,6 +238,8 @@ Set: <Self>(self: Self, value: T) -> Self
 `thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. 대기 중인 코루틴 자신이나 그 코루틴이 resume한 코루틴에서 `:Set`을 부르면 그 자리에서 던집니다.
 
 - `Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
+
+콜백끼리의 발화 순서는 **정해져 있지 않습니다**(등록 순서도 아닙니다). 콜백 안에서 yield하는 것은 정의되지 않은 동작입니다 — 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 
 **예제**
 

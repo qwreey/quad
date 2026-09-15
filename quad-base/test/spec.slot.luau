@@ -271,7 +271,7 @@ do
 end
 
 print()
-print("=== 12b. 5순회 H-393 — Detach된 Owned=false 요소 Slot을 settle이 nil로 버릴 때 소유권을 먼저 놓는다(죽은 owner가 영구히 남던 것) ===")
+print("=== 12b. 5순회 H-393 — Detach된 OwnsElements=false 요소 Slot을 settle이 nil로 버릴 때 소유권을 먼저 놓는다(죽은 owner가 영구히 남던 것) ===")
 do
 	local show, drop = q.Source(true), q.Source(false)
 	local data = q.Source({ { id = "x" } })
@@ -280,7 +280,7 @@ do
 		if item == q.KeyGone then return nil end
 		if prev then return prev end
 		local f = Instance.new("Frame"); f.Name = item.id; return f
-	end, function(item) return item.id end, { Owned = false })
+	end, function(item) return item.id end, { OwnsElements = false })
 	local outer = Slot()
 	outer:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return q.Detach end
@@ -294,11 +294,11 @@ do
 	show:Set(false); data:Set({ { id = "x" } }) -- Detach
 	drop:Set(true); show:Set(true); data:Set({ { id = "x" } }) -- key back, updateFn returns nil → dropped
 	assert(childCount(parent) == 0, "dropped")
-	-- sub is Owned=false: it survives its parent — and must be mountable again
+	-- sub is OwnsElements=false: it survives its parent — and must be mountable again
 	local other = Slot()
 	other:Add(sub)
 	dispatch.drive(Instance.new("Folder"), { other })
-	assert(other:Get(1) == sub, "the surviving Owned=false Slot remounts elsewhere (owner released)")
+	assert(other:Get(1) == sub, "the surviving OwnsElements=false Slot remounts elsewhere (owner released)")
 	print("PASS")
 end
 
@@ -520,7 +520,7 @@ do
 	local sth = q.Source(h)
 	s:Add(sth)
 	s:Remove(s:IndexOf(sth))
-	assert(not mock.isDestroyed(h) and h.Parent == nil, "Owned=false wrapper: Remove unmounts, does not destroy")
+	assert(not mock.isDestroyed(h) and h.Parent == nil, "OwnsElements=false wrapper: Remove unmounts, does not destroy")
 	local reclaim = Slot(); reclaim:Add(h)
 	dispatch.drive(Instance.new("Folder"), { reclaim })
 	assert(h.Parent ~= nil, "the instance is claimable elsewhere after the wrapper died")
@@ -599,7 +599,7 @@ do
 end
 
 print()
-print("=== 20. KeyGone 처분 세 갈래 — nil(파괴) / Detach(홀드→재마운트) / 새 값(error), Owned=false는 언마운트만 ===")
+print("=== 20. KeyGone 처분 세 갈래 — nil(파괴) / Detach(홀드→재마운트) / 새 값(error), OwnsElements=false는 언마운트만 ===")
 do
 	local frames, builds = {}, 0
 	local data = q.Source({ { id = "a" }, { id = "b" } })
@@ -637,19 +637,19 @@ do
 	goneReply = "new"
 	assert(not pcall(function() data:Set({}) end), "KeyGone accepts only nil/None/Detach")
 
-	-- Owned = false: the user's frames are never destroyed, only unmounted
+	-- OwnsElements = false: the user's frames are never destroyed, only unmounted
 	local u1 = Instance.new("Frame"); u1.Name = "u1"
 	local udata = q.Source({ { id = "u1", f = u1 } })
 	local us = Slot()
 	us:List(udata, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		return prev or item.f
-	end, function(item) return item.id end, { Owned = false })
+	end, function(item) return item.id end, { OwnsElements = false })
 	local uparent = Instance.new("Folder")
 	dispatch.drive(uparent, { us })
 	assert(u1.Parent == uparent, "user frame mounted")
 	udata:Set({})
-	assert(not mock.isDestroyed(u1) and u1.Parent == nil and childCount(uparent) == 0, "Owned=false: KeyGone→nil unmounts only")
+	assert(not mock.isDestroyed(u1) and u1.Parent == nil and childCount(uparent) == 0, "OwnsElements=false: KeyGone→nil unmounts only")
 	-- and the element is free again (ownership released on the way out)
 	local reuse = Slot(); reuse:Add(u1)
 	dispatch.drive(Instance.new("Folder"), { reuse })
@@ -805,7 +805,7 @@ do
 	print("PASS")
 end
 
-print("=== 24. 회신 3차(2026-09-07) — Q9 (b) 마운트 대상이 quad 밖에서 Destroy된 Slot은 죽은 것(메시지가 그렇게 말한다), Q14 (a) destroySlotTree가 Owned=false 자식의 소유권을 놓는다, G-11 List 인자 게이트 ===")
+print("=== 24. 회신 3차(2026-09-07) — Q9 (b) 마운트 대상이 quad 밖에서 Destroy된 Slot은 죽은 것(메시지가 그렇게 말한다), Q14 (a) destroySlotTree가 OwnsElements=false 자식의 소유권을 놓는다, G-11 List 인자 게이트 ===")
 do
 	-- Q9: zombie — the two messages name the cause
 	local frame = mock.Instance.new("Frame")
@@ -817,19 +817,19 @@ do
 	assert(not okD and string.find(tostring(errD), "destroyed outside quad", 1, true) ~= nil, "dispose names the destroyed-owner case: " .. tostring(errD))
 	local okA, errA = pcall(function() q.Slot():Add(s) end)
 	assert(not okA and string.find(tostring(errA), "cannot be reused after its parent is destroyed", 1, true) ~= nil, "Add names the destroyed-owner case: " .. tostring(errA))
-	-- Q14: an Owned=false child Slot survives its parent's destruction AND is free again
+	-- Q14: an OwnsElements=false child Slot survives its parent's destruction AND is free again
 	local parent = q.Slot()
 	local child = q.Slot()
 	child:List({ 1 }, function(_ctx)
 		return mock.Instance.new("Frame")
-	end, nil, { Owned = false })
+	end, nil, { OwnsElements = false })
 	parent:Add(child)
 	local host = mock.Instance.new("Frame")
 	local holder = q.Source(parent :: any)
 	q.Dispatch.drive(host, { holder })
 	holder:Set(nil) -- unmount (retract)
-	q.dispose(parent) -- destroySlotTree(parent): child is Owned=false → unmount-only, must be released
-	assert(not child._destroyed, "Owned=false child survives (S-07 / slot-plan)")
+	q.dispose(parent) -- destroySlotTree(parent): child is OwnsElements=false → unmount-only, must be released
+	assert(not child._destroyed, "OwnsElements=false child survives (S-07 / slot-plan)")
 	q.Slot():Add(child) -- used to raise "already mounted elsewhere" (dead elementOwner)
 	-- G-11: List argument gates blame the caller, not Slot/List.luau
 	local okL, errL = pcall(function() q.Slot():List(nil :: any, function() end) end)

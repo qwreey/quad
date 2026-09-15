@@ -49,7 +49,7 @@ return function(S: Types.SlotInternal, module: any)
 			return v
 		end
 		local sub = S.Slot()
-		sub:Single(v, nil, { Owned = false })
+		sub:Single(v, nil, { OwnsElements = false })
 		sub._wrapped = v
 		return sub
 	end

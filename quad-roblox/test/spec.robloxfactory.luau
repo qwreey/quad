@@ -85,7 +85,7 @@ do
 		(wrongVersion :: any):UseProvider(QuadRoblox)
 	end)
 	assert(not okVer, "a version-mismatched quad must be rejected at install")
-	assert(string.find(tostring(errVer), "version pattern '3.2.0'", 1, true) ~= nil, "message names the pattern: " .. tostring(errVer))
+	assert(string.find(tostring(errVer), "version pattern '3.2^.0^'", 1, true) ~= nil, "message names the pattern: " .. tostring(errVer))
 	assert(string.find(tostring(errVer), "got '9.9.9'", 1, true) ~= nil, "message names the actual version")
 	mock.assertBlamesUser(errVer, SPEC_FILE, "version mismatch")
 	-- H-307과의 합류 확인 — 실패한 설치가 슬롯을 안 잡았으니 정정 후 재시도 완주

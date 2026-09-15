@@ -104,6 +104,8 @@ export type Observer = {
   `Observer: cannot change subscription from inside its own fn`
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`)
 - 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
+- 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
+- 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있습니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 
 **예제**
 
@@ -219,6 +221,7 @@ export type EffectHandle = {
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`)
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
 - `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행이 전부 막힙니다.
+- `fn`과 cleanup 안에서 **yield하지 마세요** — [`state:Observer`](#stateobserverfn)와 같은 정의되지 않은 동작입니다.
 
 **예제**
 

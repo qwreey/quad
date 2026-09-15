@@ -12,12 +12,15 @@
 	`<core>[-<prerelease>][+<build>]`로 먼저 가른 뒤, **core**만 `.`로
 	나눠 자리별로 본다. 각 자리가
 	- `"*"` — 와일드카드(뭐든 통과)
-	- `"N^"` — 그 자리 값이 숫자로 봤을 때 N **이상**이면 통과(caret)
+	- `"N^"` — 그 자리 값이 숫자로 봤을 때 N **이상**이면 통과. **[2026-09-15
+	  사용자 결정] 사전식 하한**: N보다 **크면 뒤 자리는 보지 않고 통과**,
+	  같으면 다음 자리로 넘어간다(옛 판정은 자리마다 독립이라 `"3.3^.4^"`가
+	  3.4.0을 거부했다)
 	- 그 외 — 정확히 같은 문자열이어야 통과
 
-	예: `"3.*.*"`(메이저만 고정), `"3.3^.4^"`(마이너 3 이상 + 패치
-	4 이상), `"0.0.0"`(정확히 일치, quad-types의 `CheckedQuad`가 지금
-	쓰는 방식).
+	예: `"3.*.*"`(메이저만 고정), `"3.3^.4^"`(메이저 3 안에서 3.3.4 이상 —
+	3.4.0도 통과), `"3^.3^.4^"`(3.3.4 이상, 메이저도 올라가도 됨),
+	`"0.0.0"`(정확히 일치, quad-types의 `CheckedQuad`가 지금 쓰는 방식).
 
 	**[2026-09-10 신설] 프리릴리즈/빌드 꼬리**(`3.1.0-rc.1`,
 	`3.0.1-dev.3+build.7`류 중간 빌드용):
@@ -96,6 +99,11 @@ local function matchesPattern(actual: string, pattern: string): boolean
 			local actualNumber = tonumber(actualPart)
 			if minValue == nil or actualNumber == nil or actualNumber < minValue then
 				return false
+			end
+			if actualNumber > minValue then
+				-- [2026-09-15] lexicographic floor: once a leading `^` place exceeds its minimum,
+				-- the places after it are ignored ("3.3^.4^" accepts 3.4.0)
+				return true
 			end
 		else
 			if actualPart ~= patternPart then
@@ -178,6 +186,9 @@ export type function CheckVersion(actual: type, pattern: type): type
 				local actualNumber = tonumber(actualPart)
 				if minValue == nil or actualNumber == nil or actualNumber < minValue then
 					return false
+				end
+				if actualNumber > minValue then
+					return true -- [2026-09-15] lexicographic floor, same as the runtime copy above
 				end
 			else
 				if actualPart ~= patternPart then

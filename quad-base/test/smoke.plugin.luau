@@ -67,4 +67,59 @@ do
 end
 
 print()
+print("=== 5. 같은 플러그인 두 번 — identity dedup, 표시는 성공 후(2026-09-15 사용자 결정) ===")
+do
+	local m: any = Quad.New()
+	local runs = 0
+	local function counting(_self: any)
+		runs += 1
+		return { Counted = runs }
+	end
+	m:AddPlugin(counting):AddPlugin(counting)
+	assert(runs == 1, "같은 pluginFn은 한 번만 실행돼야 함")
+	assert(m.Counted == 1, "확장은 첫 설치 그대로")
+	local other: any = Quad.New()
+	other:AddPlugin(counting)
+	assert(runs == 2, "다른 모듈 인스턴스엔 따로 설치된다")
+
+	local failing = true
+	local function flaky(_self: any)
+		if failing then
+			error("install exploded", 0)
+		end
+		return { Flaky = true }
+	end
+	local m2: any = Quad.New()
+	assert(not pcall(function()
+		m2:AddPlugin(flaky)
+	end), "던지는 플러그인은 에러를 전파")
+	failing = false
+	m2:AddPlugin(flaky)
+	assert(m2.Flaky == true, "실패한 설치는 표시되지 않아 재시도가 완주한다")
+	print("PASS")
+end
+
+print()
+print("=== 6. debug 층 — 모르는 옵션 키는 경고만 하고 실행은 계속(2026-09-15 사용자 결정) ===")
+do
+	local m: any = Quad.New()
+	m.debug = true
+	print("(아래 unknown option 경고 셋은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)")
+	local gate = m.Debounce({ Time = 0.3, leading = true })
+	assert(gate ~= nil, "Debounce: 오타 키가 있어도 만들어진다")
+	local throttle = m.Throttle({ Time = 0.3, trailing = false })
+	assert(throttle ~= nil, "Throttle: 오타 키가 있어도 만들어진다")
+	local slot = m.Slot():List({}, function(_ctx: any)
+		return nil
+	end, nil, { Owned = false })
+	assert(slot._owned ~= false, "옛 키 Owned는 무시되고 기본값(소유)으로 남는다")
+	local quiet: any = Quad.New()
+	local s2 = quiet.Slot():List({}, function(_ctx: any)
+		return nil
+	end, nil, { OwnsElements = false })
+	assert(s2._owned == false, "OwnsElements = false는 그대로 먹는다(debug 꺼짐 — 출력 없음)")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
