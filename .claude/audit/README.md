@@ -9,3 +9,5 @@
   Hidden `Font`/`Transparency`)과 적용용 gen-d 패치 둘(`REPORT.md`가 소스).
 
 - `studio-docs-2026-09-10.md` — **[2026-09-10 밤]** 문서 구간 실기기 배치: `HUMAN_TODO` 13 확정(**기본값과 같은 값을 쓰면 엔진은 `GetPropertyChangedSignal`을 아예 안 쏴서 `OnChange` 초기 발화가 0회** — mock은 값 비교 없이 무조건 발화해 1회, 즉 `onchange-plan.md` 셋째 헤지는 참), `HUMAN_TODO` 16 / `question.md` D9 부분 확정(문자열 `require("@game/…")`는 0.738에서 동작하고 별칭도 해석되나 **대상이 없으면 기다리지 않고 던진다**; Play Solo에선 첫 줄에 이미 `IsLoaded == true`라 실서버 접속 순서는 여전히 미실측), 튜토리얼용 Tag/Attr 왕복(`State<Tag>`를 `:Compute`로 배열부에 놓기·`None` 삭제)과 **`Instance:QueryDescendants` 셀렉터 문법 역설계**(공식 문서에 문법이 없어 전수 프로브 — `.`태그/`#`이름/`[$…]`어트리뷰트/`[…]`프로퍼티, 공백은 AND이고 자손은 `>>`, 에러 문구 표), 04장 카드의 뷰포트 시각 확인. `HUMAN_TODO` 14.2는 rojo 세션 교체가 필요해 미실측.
+
+- `updatefn-ctx-table-bench-2026-09-15/` — **[2026-09-15]** `Slot:List`/`:Single` `updateFn` 인자를 테이블로 넘길 때 매 호출 새 테이블 vs 재사용(덮어쓰기·`table.clear`) 실측, -O0~-O2·`--codegen`. 새 테이블은 호출당 +27~50 ns, 매 호출 `clear`는 새 테이블보다 느림, mock reconcile 1000항목 갱신 패스에서 새 테이블 − 재사용 ≈ 0.1~0.15 ms → 새 테이블 채택 근거(`research/public-surface-pre-adoption-review.md` (7)번). 스크립트 둘 동봉, `REPORT.md`가 소스.

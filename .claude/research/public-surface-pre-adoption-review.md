@@ -20,7 +20,7 @@
 4. (4) `slot.Length`/`slot.Offset`(과 `updateFn`의 `offset`)을 `State<number>`로 좁힐지. **[닫힘 2026-09-15 — `State<number>`로 업캐스트, BREAKING(타입)]**
 5. (5) 공개 값 타입의 상태 필드(`Ref.Value`/`Revision`, `Observer.Subscribed`, `Blocker.IsBlocked` 등)에 `read`를 붙일지(`Handler`·`q.debug` 제외). **[닫힘 2026-09-15 — 붙임, BREAKING(타입)]**
 6. (6) `Store` 예약 키 확장 정책 — `__` 접두 예약 / 확장 자리 하나 / "메소드 추가 안 함" 중 하나.
-7. (7) `Slot:List`/`:Single`의 `updateFn` 인자 모양 — 테이블 하나 / `:Single`에도 `index` / `opts`만 마지막으로 통일 / 그대로. **[2026-09-15 열림 — 테이블 방향 사용자 선호, 재사용 테이블 검토 중(스파이크 제안)]**
+7. (7) `Slot:List`/`:Single`의 `updateFn` 인자 모양 — 테이블 하나 / `:Single`에도 `index` / `opts`만 마지막으로 통일 / 그대로. **[2026-09-15 방향 결정 — 입력은 매 호출 새 테이블(실측 뒤 사용자 조건 충족), 타입 스파이크·구현 전]**
 8. (8) 무타입 `Modifier():Peek<<T>>`의 `T` 의미("값 대수 전부")를 레퍼런스에 못 박을지, 이름을 가를지. **[닫힘 2026-09-15 — (나) 층 나눔 유지, 백엔드마다 레퍼런스에 명시; 프로바이더 재타이핑 기각]**
 9. (9) `AddPlugin`이 기존 필드를 덮을 때 — 에러 / `q.debug` 경고 / 허용. **[닫힘 2026-09-15 — 허용 + `q.debug` 경고]**
 10. (10) 생성기에 `D` 예약 이름 충돌 게이트를 넣을지. **[닫힘 2026-09-15 — 게이트 넣음]**
@@ -28,7 +28,7 @@
 12. (12) `H-186`(인스턴스 교차 값 혼용)을 영원히 UB로 못 박을지, 3.2.0에 절반 가드를 둘지.
 13. (13) `Brand`의 `register`/`is`를 `Register`/`Is`로 올릴지(quad-types 공개 팩토리가 된 뒤 소문자 근거가 소멸). **[닫힘 2026-09-15 — 올림, BREAKING]**
 14. (14) `SlotListOpts.Owned` 이름을 `OwnsElements`/`DestroyElements`로 바꿀지.
-15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지. **[2026-09-15 열림 — 독립 조사 둘이 `Watch`·`Track` 둘 다 불리, `With` 존치 vs `DependOn`류; 다음 bump 전까지]**
+15. (15) `state:With(...)` 이름을 뜻이 드러나는 것(`Watching`/`Also`/…)으로 바꿀지. **[2026-09-15 열림 — `Watch`·`Track` 접음, 사용자·메인 모두 `Depend` 쪽; 확정 대기, 다음 bump 전까지]**
 16. (17) "`_` 접두 필드는 비공개"를 extend/01에 명시할지. **[닫힘 2026-09-15 — 명시(내부 계약, 언제든 바뀜)]**
 
 ---
@@ -143,6 +143,8 @@
 ## (7) `Slot:List`와 `Slot:Single`의 인자 순서·개수가 갈라져 있다
 
 **[2026-09-15 사용자 논의 — 테이블 방향, 결정 전]** 사용자: *"updateFn 이 list/single 공유되게 사용될 수 있다는 점에서 index 가 0 으로 의미없는게 single 에도 들어가더라도 괜찮을것 같아. 그런데 인자 나열이 확장성이 없고, 자동완성 상 입력할 것도 많고 불편 … 인자의 순서에 따라 민감하고 실수 가능 표면이 너무 넓어서, 테이블 사용이 편해보여. 다만 테이블을 한번 만들고, 계속 set 해서 재활용 … update 패스 이후엔 table.clear … 해시 키가 코드줄에 그대로 있으면 … 프리해싱도 먹을거라, 빨라. 다른 필드를 직접 쓰는건 저장되지 않는다는 … 케비엇을 남기가만 하면"*. 메인 의견: 입력만 테이블(반환 `(result, userdata)`는 유지), 재사용 비용 논거는 맞다. 걸리는 셋 — (a) `updateFn` 안에서 만드는 `:Compute`·이벤트 콜백이 `ctx`를 클로저로 붙잡으면 클리어 뒤 nil/다른 항목 값을 조용히 읽는다(React 16 SyntheticEvent 풀링이 같은 문제로 17에서 제거된 선례) → 경고문 대신 `__index` 메타메소드 가드(없는 키 읽기에서만 불림 — 활성 중엔 nil, 비활성이면 "필드를 지역으로 옮겨라" 에러); (b) 재진입 — 모듈 공용이면 중첩 Slot reconcile이 덮으므로 최소 Slot마다, 같은 Slot 동기 재진입 경로가 있으면 활성 중일 때만 새 테이블; (c) 타입 — `Slot<T>` 재귀 그룹 안에서 메소드 제네릭을 받는 별칭은 거부된 기록(`quad-types` `Slot` 주석)이라 인라인 레코드가 필요할 수 있음. 제안 순서: 스파이크(두 솔버 타입·재진입 경로·1000항목 새 테이블 vs 재사용 측정) → 재사용 + 가드. BREAKING(모든 `updateFn`).
+
+**[2026-09-15 실측 → 새 테이블]** 사용자: *"t.clear 와 그냥 계속 생성하는 테이블 간 성능 편차를 실즉하고, 별다른 문제가 없다면 후자로 단순 생성하는게 나아보여. 클로저를 생각 못 했어서 … 의미 없는 선재 최적화로 약점을 만들게 될 수도"*. 실측 원장 `audit/updatefn-ctx-table-bench-2026-09-15/REPORT.md`(스크립트 둘 동봉): 호출당 새 테이블은 재사용보다 27~50 ns 더 들고(-O0~-O2·codegen 전부), 매 호출 `clear`는 새 테이블보다 느리다. 실제 mock reconcile 1000항목 갱신 패스(가장 가벼운 `updateFn`)에서 새 테이블 − 재사용 ≈ 패스당 0.1~0.15 ms — 조건 충족으로 **매 호출 새 테이블**. 재진입·클로저 가드 문제는 이걸로 사라진다. 남은 것: (c) 타입 모양 스파이크(인라인 레코드 vs 별칭, 두 솔버), 반환 `(result, userdata)` 유지 확인, 필드 이름 확정(`item`/`index`/`offset`/`prev`/`userdata`), 구현·문서·CHANGELOG BREAKING.
 
 **무엇** — `quad-types/src/init.luau:529-548`. 사용자가 보는 모양은 `slot:List(data, updateFn, keyFn?, opts?)`와 `slot:Single(state, updateFn?, opts?)`이고, `updateFn`이 받는 인자는 각각 `(item, index, offset, prev, ud)`와 `(item, offset, prev, ud)`입니다. 레퍼런스도 이 차이를 그대로 적습니다(`docs/reference/core/06-slot.md:124` *"`:Single`에서는 `index`가 빠져 두 번째"*).
 
@@ -286,6 +288,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 **[2026-09-15 사용자 논의 — 바꾸는 방향엔 동의, 낱말은 열어 둠]** 사용자 제안 `Watch`: *"Compute 처럼 일반형 동사로 Watch 붙이는거, 후행 생성 state 가 그것들을 '바라볼' 뿐, 값의 변경을 따라 자신도 업데이트가 될 뿐 그걸 직접 읽어오지 않는다는 점을 잘 드러내는 자기설명적 이름"*. `Observer`와의 구분(사용자): *"Observer 는 fn 이 해당 state 를 관측하는것(물론 get 이 안날 수도 있지만), Watch 는 state 가 다른 state 의 변경을 따라가는것"* — 개명하면 레퍼런스에 이 한 줄을 적는다. 대안 `Track`을 사용자가 제기해 **당장은 열린 표면**으로 남김. 메인 의견(`Watch` 쪽): `With`는 실제로 오독된 기록이 있고(`base/slot-plan.md` 8라운드 — `:With(offset):Compute(function(i, o))`의 `o`를 offset으로 읽음), `Track`은 반응형 어휘에서 "읽을 때 의존성을 기록"(Vue 코어 `track()`, MobX tracking)이나 "값을 추적해 따라감"으로 읽혀 값이 넘어온다는 같은 오해를 부를 수 있다. `Watch`의 약점은 Vue식 `watch(source, callback)` 습관인데, 함수를 넘기면 dep 검증(`H-70`)이 즉시 던지므로 조용히 틀리지 않는다. 개명 시 같이 할 것: GS 12·13장의 사용자 prop 이름 `props.Watch`(콜백 — Vue식 뜻) 변경, 옛 이름 별칭 없음, CHANGELOG BREAKING, v1 이관 문서의 "이름만 같은 다른 API" 각주 제거. 비용: 코드 `:With(` 6곳 + 타입·구현, 문서 28곳. **시한**: BREAKING이라 다음 릴리즈 bump 전에 정할 것.
 
 **[2026-09-15 독립 조사 둘(sonnet, 이 절을 읽지 않게 차단) — 위 메인 의견(`Watch` 쪽)을 뒤집음]** 사용자 요청(*"객관적으로 어느 어휘가 맞는지"*). (i) **생태계 선례**: 순위 `With` > `DependOn` > `Track` > `Watch`. `watch`는 Vue `watch(source, cb)`로 "콜백이 돈다"가 압도적으로 굳어 있다(확신 높음). `track`은 Vue 코어·MobX·Vide `untrack`에서 "읽을 때 자동 등록" 뜻의 내부 용어이고 명시 인자로 부르는 선례가 없다. 같은 연산의 선례는 Fusion 내부 `depend(dependent, dependency)`(`dphfox/Fusion@2790f7b:src/Graph/depend.luau`, 사용처 Tween·Spring·Computed — 비공개 함수)와 RxJS `sample(notifier)`(동형, 이름이 생소). `With`의 약점은 RxJS `withLatestFrom` 잔상("with면 값을 가져온다"). (ii) **코퍼스 정합·읽기 오독**: 순위 `With` > `Track` ≈ `Watch`(둘 다 기각 쪽), 추가 후보 `Widen`(충돌 없음, 문장으로 어색). `Track`은 `docs/overview/01-why-quad.md`가 quad의 정체성으로 반복하는 "암묵 의존성 **추적**이 없다"와 같은 낱말이라 자기모순으로 읽힌다. `Watch`는 GS 12의 `props.Watch`(콜백을 받는 사용자 prop — 예제 이름이라 바꿀 수는 있음)와 겹치고, 체인 `a:Watch(b):Compute(fn)`이 두 단계 다 콜백이 있는 것처럼 읽힌다. `With`는 이웃 중 유일하게 콜백을 받지 않는 파생 메소드라 전치사의 중립성이 오히려 맞다. v1 충돌은 이관 문서 경고 여덟 곳으로 이미 치른 비용. **메인 종합**: 두 축이 독립적으로 같은 방향 — `Watch`·`Track`은 접는 게 맞다. 남는 선택은 `With` 존치(오독 기록 — `slot-plan.md` 8라운드 `o`를 offset으로 읽은 사례 — 은 RxJS식 "값이 따라온다" 오해와 같은 축이라 약점이 실재) vs 콜백·값 함의가 없는 서술형 동사(`DependOn` — Fusion 동형 선례, 두 낱말이라 quad의 짧은 동사 관례와 어긋남). 사용자 판단 대기.
+
+**[2026-09-15 사용자 논의 — `Depend`]** 사용자: *"DependOn 은 아주 깔끔하게 맞아떨어지긴 해. Depend 로 적는건 너무 문법 파괴같음? 내 눈으로 봤을 때에도 With(offset):Compute(function(i, o)) 는 확실히 어색함이 드러나고, Watch():Compute() 도 둘 다 돌것 같음 … watch 안에서 cb 불릴 느낌"*, 이어서 *"compute 안에 deps 도 그렇고, effect 쪽도 deps 로 적는데 유사하고 의미론적으로 일치하는 맥락이라, 짝이 맞다는 장점"*. 메인 의견: `Depend` 찬성 — (1) 전치사 생략은 API 이름에서 흔하고 같은 연산의 선례 Fusion `depend(dependent, dependency)`도 `on`을 뗐다, 메소드 문법이라 리시버가 주어(`text:Depend(locale)` = text가 locale에 의존) — 방향 오독 여지 작음; (2) `:Compute(fn, ...deps)`·`q.Effect(fn, ...deps)`의 인자 이름과 같은 낱말이라 `:Depend(...deps)`가 "그 deps만 따로 거는 것"으로 짝이 맞는다(사용자 논거와 같음); (3) 콜백·값 전달 함의가 없다 — 반응형 어휘에서 dependency는 곧 "재계산 트리거"; (4) quad의 한 낱말 동사 관례(`Compute`/`Apply`/`Gate`)에 맞고 `DependOn`보다 짧다; (5) 한국어 문서의 "의존성"과 1:1. 코퍼스 충돌 없음(조사 (ii)·메인 grep — 주석 하나뿐). 약점: 영어 원어민에겐 `Depend(x)`가 살짝 어색할 수 있음(치명 아님). 확정되면 위 "개명 시 같이 할 것"에서 `props.Watch` 변경은 불필요(충돌 사라짐).
 
 **무엇** — `quad-types/src/init.luau:391`, 레퍼런스 `docs/reference/core/03-state.md:102-118`. 뜻은 *"값은 그대로 두고 구독 범위만 넓히는 노드"*입니다. v1의 `register:With(fn)`은 파생(지금의 `:Compute`)이었고, CHANGELOG가 이미 경고합니다: *"3.x의 `state:With()`는 이름만 같은 다른 API입니다."*
 
