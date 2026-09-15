@@ -8,59 +8,53 @@
 	quad 전용 이름/타입을 절대 안 섞는다. `quad-types`의
 	`CheckedQuad<T, Pattern>`이 이 위에 얹히는 소비자 중 하나일 뿐.
 
-	**패턴 문법**: 양쪽 문자열을 SemVer 2.0.0의
-	`<core>[-<prerelease>][+<build>]`로 먼저 가른 뒤, **core**만 `.`로
-	나눠 자리별로 본다. 각 자리가
-	- `"*"` — 와일드카드(뭐든 통과)
-	- `"N^"` — 그 자리 값이 숫자로 봤을 때 N **이상**이면 통과. **[2026-09-15
-	  사용자 결정] 사전식 하한**: N보다 **크면 뒤 자리는 보지 않고 통과**,
-	  같으면 다음 자리로 넘어간다(옛 판정은 자리마다 독립이라 `"3.3^.4^"`가
-	  3.4.0을 거부했다)
-	- 그 외 — 정확히 같은 문자열이어야 통과
+	**패턴 문법 — [2026-09-15 사용자 설계로 재정의]**:
+	1. **`|`로 먼저 나눈다** — 대안(OR). 하나라도 맞으면 통과. 메이저 여럿과
+	   호환되는 소비자용: `"3.2^.0^|4.0^.0^"`(3.2.0 이상의 3.x, 또는 4.x).
+	   `|`를 맨 앞에 두는 이유(사용자): 뒤에 두면 `3|4.0^.0^`의 `0^`가
+	   어느 메이저에 걸리는지 안 읽힌다. `|`가 없으면 대안 하나 — 옛 패턴은
+	   전부 그대로 문법상 유효하다.
+	2. 대안마다(그리고 actual도) SemVer 2.0.0 `<core>[-<prerelease>][+<build>]`로
+	   가른다 — **build(`+` 뒤)를 먼저 잘라 버리고**(양쪽 다 항상 무시;
+	   `3.0.0+build-7`의 `-`는 프리릴리즈 구분자가 아니다), 남은 앞부분을
+	   **첫 `-`에서만** 나눈다(프리릴리즈 식별자 안의 `-`는 문자열의 일부 —
+	   `rc-1`). 꼬리가 없으면 `nil`, 빈 꼬리(`"3.0.0-"`)는 `""`.
+	3. **프리릴리즈 꼬리의 있고 없음은 양쪽이 같아야 한다** — 꼬리 없는
+	   패턴(`"3.*.*"` 포함)은 rc 빌드를 받지 않고, 꼬리 있는 패턴은 릴리즈를
+	   받지 않는다. 사용자: *"프리릴리즈와 릴리즈 요소를 섞는건 안 되도록"*,
+	   *"beta 든 rc 든 처리 도구는 한 곳에 있고, 그걸 쓸지 말지가 처리자
+	   측"* — rc도 받고 싶은 쪽은 `|`로 꼬리 달린 대안을 더한다
+	   (`"3.3.0|3.3.0-rc.1^"`). **옛 규칙(2026-09-10 "패턴에 꼬리가 없으면
+	   actual 꼬리는 무시")을 되돌린 유일한 좁힘.**
+	4. core와 prerelease를 각각 `.`로 나눠 **따로** 판정한다(자리 개수가
+	   다르면 불일치). 자리마다:
+	   - `"*"` — 뭐든 통과
+	   - `"N^"` — 숫자로 N 이상. **사전식 하한**: N보다 **크면 그 구간
+	     (core 또는 prerelease)의 뒤 자리는 보지 않고 통과**, 같으면 다음
+	     자리로(`"3.3^.4^"`는 3.4.0을 받는다). 숫자가 아닌 자리엔 안 먹는다.
+	   - 그 외 — 정확히 같은 문자열(프리릴리즈의 `rc`/`beta` 같은 글자 자리가
+	     여기 해당 — 크고 작음을 따지지 않는다)
+	   core에서 넘었다고 prerelease를 건너뛰지 않는다 — 사용자: *"rc 를 적을
+	   땐 기본적으로 선행 부분이 확정 버전인걸 아는 경우"*. 그래서
+	   `"3.3^.0^-rc.1^"`은 `3.4.0-rc.0`을 받지 않는다(구간을 가르려면 `|`).
 
-	예: `"3.*.*"`(메이저만 고정), `"3.3^.4^"`(메이저 3 안에서 3.3.4 이상 —
-	3.4.0도 통과), `"3^.3^.4^"`(3.3.4 이상, 메이저도 올라가도 됨),
-	`"0.0.0"`(정확히 일치, quad-types의 `CheckedQuad`가 지금 쓰는 방식).
+	예: `"3.*.*"`(메이저 3의 릴리즈), `"3.2^.0^"`(메이저 3 안에서 3.2.0
+	이상), `"3.2^.0^|4.0^.0^"`(두 메이저), `"3.3.0-rc.2"`(그 rc만),
+	`"3.3.0-rc.1^"`(3.3.0의 rc.1 이후 rc), `"0.0.0"`(정확히 일치, quad-types의
+	`CheckedQuad`가 지금 쓰는 방식). 깨진 입력(`""`, `"-"`, 빈 대안)에 별도
+	방어는 없다 — 자리 개수·꼬리 유무가 어긋나 자연히 false로 떨어진다.
 
-	**[2026-09-10 신설] 프리릴리즈/빌드 꼬리**(`3.1.0-rc.1`,
-	`3.0.1-dev.3+build.7`류 중간 빌드용):
-	- **build(`+` 뒤)는 양쪽 다 항상 무시**한다 — SemVer도 우선순위
-	  비교에서 무시한다. `+`를 먼저 자르므로 `3.0.0+build-7`의 `-`는
-	  프리릴리즈 구분자가 아니다.
-	- **패턴에 프리릴리즈가 없으면 actual의 프리릴리즈는 무시**한다 —
-	  `"3.0^"`류 느슨한 패턴은 rc 빌드도 통과(알파/rc 빌드는 base와
-	  백엔드가 같이 나가므로 이게 실용적).
-	- **패턴에 프리릴리즈가 있으면 actual의 프리릴리즈와 문자열이 정확히
-	  같아야** 한다 — `"3.1.0-rc.1"`은 `rc.1`만 통과하고 `rc.2`나
-	  꼬리 없는 `3.1.0`은 막힌다. 첫 `-`만 구분자라 `rc-1`처럼 `-`가
-	  더 있어도 통째로 한 문자열로 본다.
-	- 프리릴리즈 자리엔 `*`/`^`가 안 먹는다 — 문자열 그대로 비교한다
-	  (와일드카드/caret은 core 자리 전용). **이건 이 변경이 유일하게
-	  좁힌 방향**이다 — 예전엔 꼬리도 그냥 `.` 분할에 섞여서
-	  `"3.1.0-rc.*"`가 `3.1.0-rc.1`을 통과시켰지만 이제 안 통과한다.
-	- `""`나 `"-"`처럼 깨진 입력에 별도 방어를 두지 않는다 — 자리 개수나
-	  프리릴리즈가 어긋나 자연히 false로 떨어진다. 다만 **꼬리가 비어
-	  있는 것("`3.0.0-`")은 "프리릴리즈가 없다"가 아니라 "빈 프리릴리즈가
-	  있다"** — 패턴에 프리릴리즈가 없으면 다른 꼬리와 똑같이 무시되고
-	  (`("3.0.0-", "3.0.0")`은 통과), 패턴 쪽이 `"3.0.0-"`이면 actual도
-	  빈 프리릴리즈여야 한다. 두 뜻을 한 값에 겹치지 않으려고 "꼬리 없음"은
-	  `nil`, "빈 꼬리"는 `""`로 갈라 둔 결과다.
-
-	**⚠️ `matchesPattern`은 아래 `type function` 안에 통째로 다시
-	적혀 있다(중복) — 실측 확인된 제약**: `type function`은 같은 파일의
-	바깥 스코프 로컬 함수를 아예 참조 못 한다(`Type function cannot
-	reference outer local 'X'`로 컴파일 자체가 실패함). 그래서 순수
-	런타임 유틸(아래, 테스트/문서화/일반 사용 목적)과 `type function`
-	내부 구현은 로직이 같아도 물리적으로 별개 함수여야 한다 — 하나를
-	고치면 반드시 다른 하나도 같이 고칠 것. **[2026-09-10] 꼬리를
-	가르는 `splitTail`도 같은 이유로 두 벌**이다(런타임 로컬 하나 +
-	`type function` 안 중첩 하나).
+	**⚠️ 판정 로직은 아래 `type function` 안에 통째로 다시 적혀 있다(중복) —
+	실측 확인된 제약**: `type function`은 같은 파일의 바깥 스코프 로컬 함수를
+	아예 참조 못 한다(`Type function cannot reference outer local 'X'`로
+	컴파일 자체가 실패함). 그래서 런타임 유틸과 `type function` 내부 구현은
+	로직이 같아도 물리적으로 별개 함수여야 한다 — 하나를 고치면 반드시 다른
+	하나도(그리고 `scripts/check-version.py`의 Python 포트도) 같이 고칠 것.
 ]]
 
--- SemVer 2.0.0 `<core>[-<prerelease>][+<build>]` — build를 **먼저** 잘라내고
--- (그래야 `3.0.0+build-7`의 `-`가 프리릴리즈로 안 읽힌다) 남은 앞부분의 첫 `-`
+-- `<core>[-<prerelease>][+<build>]` — build를 **먼저** 잘라내고 남은 앞부분의 첫 `-`
 -- 뒤를 프리릴리즈로 본다. 꼬리가 없으면 nil(빈 문자열이 아니다 — `"3.0.0-"`은
--- "빈 프리릴리즈가 있다"로 남아 규칙 3/4가 안 뭉개진다).
+-- "빈 프리릴리즈가 있다"로 남는다).
 local function splitTail(version: string): (string, string?)
 	local core = version
 	local plusIndex = string.find(core, "+", 1, true)
@@ -74,26 +68,18 @@ local function splitTail(version: string): (string, string?)
 	return core, nil
 end
 
-local function matchesPattern(actual: string, pattern: string): boolean
-	local actualCore, actualPrerelease = splitTail(actual)
-	local patternCore, patternPrerelease = splitTail(pattern)
-	-- 패턴에 프리릴리즈가 없으면 actual 쪽 꼬리는 무시, 있으면 정확 일치
-	if patternPrerelease ~= nil and actualPrerelease ~= patternPrerelease then
-		return false
-	end
-
-	local actualParts = string.split(actualCore, ".")
-	local patternParts = string.split(patternCore, ".")
+-- 한 구간(core 또는 prerelease)의 `.` 자리 판정 — `*` / 사전식 `N^` / 정확 일치
+local function matchesPlaces(actual: string, pattern: string): boolean
+	local actualParts = string.split(actual, ".")
+	local patternParts = string.split(pattern, ".")
 	if #actualParts ~= #patternParts then
 		return false
 	end
-
 	for i, patternPart in patternParts do
 		local actualPart = actualParts[i]
 		if patternPart == "*" then
 			continue
 		end
-
 		if string.sub(patternPart, -1) == "^" then
 			local minValue = tonumber(string.sub(patternPart, 1, -2))
 			local actualNumber = tonumber(actualPart)
@@ -101,29 +87,46 @@ local function matchesPattern(actual: string, pattern: string): boolean
 				return false
 			end
 			if actualNumber > minValue then
-				-- [2026-09-15] lexicographic floor: once a leading `^` place exceeds its minimum,
-				-- the places after it are ignored ("3.3^.4^" accepts 3.4.0)
-				return true
+				return true -- lexicographic floor: the rest of this section is ignored
 			end
-		else
-			if actualPart ~= patternPart then
-				return false
-			end
+		elseif actualPart ~= patternPart then
+			return false
 		end
 	end
-
 	return true
+end
+
+local function matchesAlternative(actual: string, pattern: string): boolean
+	local actualCore, actualPrerelease = splitTail(actual)
+	local patternCore, patternPrerelease = splitTail(pattern)
+	if (actualPrerelease == nil) ~= (patternPrerelease == nil) then
+		return false -- prerelease and release never mix
+	end
+	if not matchesPlaces(actualCore, patternCore) then
+		return false
+	end
+	if patternPrerelease ~= nil and actualPrerelease ~= nil then
+		return matchesPlaces(actualPrerelease, patternPrerelease)
+	end
+	return true
+end
+
+local function matchesPattern(actual: string, pattern: string): boolean
+	for _, alternative in string.split(pattern, "|") do
+		if matchesAlternative(actual, alternative) then
+			return true
+		end
+	end
+	return false
 end
 
 --[[
 	`CheckVersion<Actual, Pattern>` — `Actual`/`Pattern` 둘 다 문자열
 	리터럴(singleton) 타입이어야 함. 판정 규칙은 위 "패턴 문법"과 완전히
-	같다(core 자리별 `*`/`N^`/정확 일치 + **[2026-09-10]** build 무시,
-	패턴에 프리릴리즈가 있을 때만 프리릴리즈 정확 일치). 일치하면
-	트리비얼한 `true` 하나만 반환하고, 불일치하면 `print`+`types.never`로
-	사람이 읽을 메시지를 낸다(`error()`는 쓰지 않음 — `typing-limits.md` §6/`quad-types-plan.md`
-	참고, type function 안에서 `error()`를 쓰면 "type function 자체가
-	실패함"으로 판정돼 버려짐).
+	같다. 일치하면 트리비얼한 `true` 하나만 반환하고, 불일치하면
+	`print`+`types.never`로 사람이 읽을 메시지를 낸다(`error()`는 쓰지 않음 —
+	`typing-limits.md` §6/`quad-types-plan.md` 참고, type function 안에서 `error()`를
+	쓰면 "type function 자체가 실패함"으로 판정돼 버려짐).
 
 	**⚠️ 이 type function이 반환하는 값은 절대 원본 타입을 담지 않는다** —
 	`Actual`/`Pattern`을 그대로도, 재구성해서도 반환하지 않고 트리비얼한
@@ -151,7 +154,7 @@ export type function CheckVersion(actual: type, pattern: type): type
 		return types.never
 	end
 
-	-- splitTail/matchesPattern과 로직 동일 — 위 경고문 참고, 바깥 함수를 못 불러서 복제함
+	-- splitTail/matchesPlaces/matchesAlternative/matchesPattern과 로직 동일 — 위 경고문 참고, 바깥 함수를 못 불러서 복제함
 	local function splitTail(version: string): (string, string?)
 		local core = version
 		local plusIndex = string.find(core, "+", 1, true)
@@ -165,14 +168,9 @@ export type function CheckVersion(actual: type, pattern: type): type
 		return core, nil
 	end
 
-	local function matches(actualStr: string, patternStr: string): boolean
-		local actualCore, actualPrerelease = splitTail(actualStr)
-		local patternCore, patternPrerelease = splitTail(patternStr)
-		if patternPrerelease ~= nil and actualPrerelease ~= patternPrerelease then
-			return false
-		end
-		local actualParts = string.split(actualCore, ".")
-		local patternParts = string.split(patternCore, ".")
+	local function matchesPlaces(actualStr: string, patternStr: string): boolean
+		local actualParts = string.split(actualStr, ".")
+		local patternParts = string.split(patternStr, ".")
 		if #actualParts ~= #patternParts then
 			return false
 		end
@@ -188,18 +186,39 @@ export type function CheckVersion(actual: type, pattern: type): type
 					return false
 				end
 				if actualNumber > minValue then
-					return true -- [2026-09-15] lexicographic floor, same as the runtime copy above
+					return true
 				end
-			else
-				if actualPart ~= patternPart then
-					return false
-				end
+			elseif actualPart ~= patternPart then
+				return false
 			end
 		end
 		return true
 	end
 
-	if not matches(actualValue :: string, patternValue :: string) then
+	local function matchesAlternative(actualStr: string, patternStr: string): boolean
+		local actualCore, actualPrerelease = splitTail(actualStr)
+		local patternCore, patternPrerelease = splitTail(patternStr)
+		if (actualPrerelease == nil) ~= (patternPrerelease == nil) then
+			return false
+		end
+		if not matchesPlaces(actualCore, patternCore) then
+			return false
+		end
+		if patternPrerelease ~= nil and actualPrerelease ~= nil then
+			return matchesPlaces(actualPrerelease, patternPrerelease)
+		end
+		return true
+	end
+
+	local matched = false
+	for _, alternative in string.split(patternValue :: string, "|") do
+		if matchesAlternative(actualValue :: string, alternative) then
+			matched = true
+			break
+		end
+	end
+
+	if not matched then
 		print(`type-version-check: version "{actualValue}" does not match pattern "{patternValue}"`)
 		return types.never
 	end
