@@ -83,8 +83,8 @@ local InitDispatch = require("../Dispatch")
 
 function module.Init(quad: any)
 	quad.AttrKey = AttrKey
-	if quad.setAttr == nil then
-		quad.setAttr = notInstalled("setAttr")
+	if quad.Backend.setAttr == nil then
+		quad.Backend.setAttr = notInstalled("setAttr")
 	end
 
 	quad:RunInit(InitDispatch)
@@ -113,7 +113,7 @@ function module.Init(quad: any)
 			end
 			nameClaims:SetStrong(inst, k.Name, k)
 
-			quad.setAttr(inst, k.Name, v) -- unconditional, nil included (late read `H-174`)
+			quad.Backend.setAttr(inst, k.Name, v) -- unconditional, nil included (late read `H-174`)
 
 			return function(_nextValue: any?, _retracting: boolean)
 				-- no engine side effect — claim return only, and only while we

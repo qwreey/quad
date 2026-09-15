@@ -113,7 +113,7 @@ assert(runs == 1, "등록 즉시 1회 발화한다")
 hp:Set(90)
 assert(runs == 1, "아직 아무 인스턴스에도 안 묶였다 — 변경은 보류된다")
 
-q.bindLifetime(host, observer)   -- host는 이 백엔드가 소유한 인스턴스
+q.Backend.bindLifetime(host, observer)   -- host는 이 백엔드가 소유한 인스턴스
 assert(runs == 2, "묶는 순간 보류분이 한 번 재생된다")
 
 hp:Set(80)

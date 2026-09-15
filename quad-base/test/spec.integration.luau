@@ -52,11 +52,11 @@ do
 	q.Dispatch.drive(inst, { "a", o, q.None, e, "b", Text = "hello", Value = 42 })
 
 	assert(inst.Text == "hello" and inst.Value == 42, "hash props landed on the mock")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.N == 5, "all five array positions registered")
 	-- lengths [1,0,0,0,1] → offsets(0-based): 0,1,1,1,1
-	assert(q.Dispatch.getOffsetAt(inst, 1) == 0 and sources[1]:Get() == 0, "position 1")
-	assert(q.Dispatch.getOffsetAt(inst, 5) == 1 and sources[5]:Get() == 1, "only 'a' contributes before 'b'")
+	assert(q.Bookkeeping.getOffsetAt(inst, 1) == 0 and sources[1]:Get() == 0, "position 1")
+	assert(q.Bookkeeping.getOffsetAt(inst, 5) == 1 and sources[5]:Get() == 1, "only 'a' contributes before 'b'")
 	assert(bk.sourceList[2] == q.None and bk.sourceList[3] == q.None and bk.sourceList[4] == q.None, "leaf/None positions: no publish channel")
 
 	s:Set(2)
@@ -77,13 +77,13 @@ do
 	assert(sources[3]:Get() == 1, "steady state: observer contributes 0")
 
 	q.Dispatch.process(inst, 2, "now-a-string", 1)
-	assert(not q.canExecute(o), "descending diff retracted the old occupant (unbound)")
+	assert(not q.Backend.canExecute(o), "descending diff retracted the old occupant (unbound)")
 	assert(sources[3]:Get() == 2, "position 3 offset follows the new contribution")
 
 	-- 반대 방향: 문자열 자리에 Observer — 다시 0 기여로
 	local o2 = s:Observer(function() end)
 	q.Dispatch.process(inst, 2, o2, 1)
-	assert(q.canExecute(o2), "restored a leaf occupant")
+	assert(q.Backend.canExecute(o2), "restored a leaf occupant")
 	assert(sources[3]:Get() == 1, "offset came back down")
 	print("PASS")
 end
@@ -103,7 +103,7 @@ do
 	q.Dispatch.drive(inst, { o, Text = "hello" })
 
 	inst:Destroy()
-	assert(not q.canExecute(o), "gcconn cut — the observer is no longer executable")
+	assert(not q.Backend.canExecute(o), "gcconn cut — the observer is no longer executable")
 	local before = runs
 	s:Set(2)
 	assert(runs == before, "no fire after Destroy")

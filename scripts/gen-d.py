@@ -722,7 +722,7 @@ def emit():
     L.append("\tlocal function New<T>(className: string): (props: any) -> T")
     L.append("\t\tlocal function stage(props: any): T")
     L.append("\t\t\tlocal inst = Instance.new(className) -- ①")
-    L.append("\t\t\tquad.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저")
+    L.append("\t\t\tquad.Backend.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저")
     L.append("\t\t\t-- ③④ — flatten(Modifier 소진)은 drive의 첫 pre-pass(round17 Q4 (a),")
     L.append("\t\t\t-- 2026-09-04): New와 Claim이 같은 호출 자리를 쓴다")
     L.append("\t\t\tquad.Dispatch.drive(inst, props)")

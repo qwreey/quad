@@ -202,15 +202,15 @@ do
 	local sources = {}
 	mock.addSpecLeaf(q, sources)
 	q.Dispatch.drive(inst, { q.Attr({ Hp = 1 }), "child" })
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 0, "group contributes 0 to the offset math")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "group contributes 0 to the offset math")
 
 	local bare = Quad.New()
 	-- [M10 엔진 축] mockProvider가 attribute op까지 심으므로 모듈 자신의 스텁을
 	-- 붙잡아 뒀다가 설치 뒤 되돌린다(spec.tag 2와 같은 이유 — 디스패치 경유
 	-- blame 경로 유지)
-	local stub = bare.setAttr
+	local stub = bare.Backend.setAttr
 	mock.installLifetime(bare)
-	bare.setAttr = stub
+	bare.Backend.setAttr = stub
 	local inst2 = Instance.new("Frame")
 	local ok, err = pcall(function()
 		bare.Dispatch.drive(inst2, { [bare.AttrKey("Hp")] = 5 })

@@ -29,7 +29,7 @@ return function(S: Types.SlotInternal, module: any)
 		if self._listActivated then
 			-- remount: keep closure state, move the detachCleanup anchor only.
 			-- (_listObserver re-bind is materializeSlotTree's tail — H-163.)
-			module.bindLifetime(physicalTarget, self._detachCleanup)
+			module.Backend.bindLifetime(physicalTarget, self._detachCleanup)
 			return
 		end
 		self._listActivated = true
@@ -181,13 +181,13 @@ return function(S: Types.SlotInternal, module: any)
 				end
 			end
 		end)
-		module.bindLifetime(physicalTarget, self._detachCleanup)
+		module.Backend.bindLifetime(physicalTarget, self._detachCleanup)
 
 		local data = self._listData
 		if S.isState(data) then
 			local observer = data:Observer(function() reconcile(data:Get()) end)
 			self._listObserver = observer
-			module.bindLifetime(physicalTarget, observer)
+			module.Backend.bindLifetime(physicalTarget, observer)
 		else
 			reconcile(data)
 		end

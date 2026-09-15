@@ -63,8 +63,8 @@ do
 	local inst = Instance.new("Frame")
 	local mod = Modifier():Size(10):Text("t")
 	q.Dispatch.drive(inst, { "a", mod, "b", Text = "inline" })
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 1, "leaf a contributes 1")
-	assert(q.Dispatch.getOffsetAt(inst, 3) == 1, "the consumed modifier slot contributes 0 — b sits right after a")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 1, "leaf a contributes 1")
+	assert(q.Bookkeeping.getOffsetAt(inst, 3) == 1, "the consumed modifier slot contributes 0 — b sits right after a")
 	table.sort(hashLog)
 	assert(table.concat(hashLog, ",") == "Size=10,Text=inline", "merged field dispatched as a hash key; inline Text won: " .. table.concat(hashLog, ","))
 
@@ -93,9 +93,9 @@ do
 	assert(table.find(names, "ProcessedModifierHandler") ~= nil, "handler registered by InitDispatch: " .. table.concat(names, ","))
 	local inst = Instance.new("Frame")
 	q.Dispatch.drive(inst, { Modifier():X(1), "leaf" })
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 0, "sentinel slot length 0")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "sentinel slot length 0")
 	q.Dispatch.retractFrom(inst, 1, 1) -- Void retractor — 에러 없이 통과
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 0, "retraction leaves bookkeeping at 0")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "retraction leaves bookkeeping at 0")
 	print("PASS")
 end
 

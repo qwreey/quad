@@ -108,8 +108,8 @@ D.Frame {
 옛 소유자에게서 위치를 반납할 때는 순서가 계약입니다. 이건 `rawUnmount`의 꼬리가 아니라 Dispatch 표면의 해제 경로(`setEmpty`)이고, 잎 핸들러들이 "마운트 안 하는 위치"를 등록할 때도 같은 본문을 씁니다:
 
 ```luau
-q.Dispatch.setOffsetSource(ownerKey, position, q.None) -- 1. 발행 채널을 먼저 끊는다
-q.Dispatch.setLength(ownerKey, position, 0)            -- 2. 길이를 0으로 접고 재계산
+q.Bookkeeping.setOffsetSource(ownerKey, position, q.None) -- 1. 발행 채널을 먼저 끊는다
+q.Bookkeeping.setLength(ownerKey, position, 0)            -- 2. 길이를 0으로 접고 재계산
 ```
 
 **순서가 뒤집히면 안 되는 이유**: `setLength`는 끝에서 재계산을 돌립니다. 먼저 부르면 아직 등록돼 있는 옛 `Source`에 헛된 `:Set`이 날아갑니다. 두 줄이 한 함수(`setEmpty`)로 묶여 있는 것도 여러 종단 지점에서 순서가 어긋나지 않게 하기 위해서입니다.

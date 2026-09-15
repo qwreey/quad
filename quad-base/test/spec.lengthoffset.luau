@@ -33,16 +33,16 @@ do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	local s1, s2, s3 = q.Source(-1), q.Source(-1), q.Source(-1)
-	q.Dispatch.setOffsetSource(inst, 1, s1)
-	q.Dispatch.setLength(inst, 1, 2)
-	q.Dispatch.setOffsetSource(inst, 2, s2)
-	q.Dispatch.setLength(inst, 2, 3)
-	q.Dispatch.setOffsetSource(inst, 3, s3)
-	q.Dispatch.setLength(inst, 3, 1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, 2)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 3)
+	q.Bookkeeping.setOffsetSource(inst, 3, s3)
+	q.Bookkeeping.setLength(inst, 3, 1)
 	assert(s1:Get() == 0, "position 1 offset = base(0) for a physical inst")
 	assert(s2:Get() == 2, "position 2 offset = length of 1")
 	assert(s3:Get() == 5, "position 3 offset = lengths of 1..2")
-	assert(q.Dispatch.getOffsetAt(inst, 3) == 5, "getOffsetAt agrees with the published Source")
+	assert(q.Bookkeeping.getOffsetAt(inst, 3) == 5, "getOffsetAt agrees with the published Source")
 	print("PASS")
 end
 
@@ -51,13 +51,13 @@ print("=== 2. None 자리 — 발행 채널 없음일 뿐 참여는 setLength가
 do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
-	q.Dispatch.setOffsetSource(inst, 1, q.None) -- 얼리 리턴(계산 없음)
-	q.Dispatch.setLength(inst, 1, 4)
+	q.Bookkeeping.setOffsetSource(inst, 1, q.None) -- 얼리 리턴(계산 없음)
+	q.Bookkeeping.setLength(inst, 1, 4)
 	local s2 = q.Source(-1)
-	q.Dispatch.setOffsetSource(inst, 2, s2)
-	q.Dispatch.setLength(inst, 2, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
 	assert(s2:Get() == 4, "a None neighbor still contributes its length")
-	assert(q.Dispatch.getOffsetAt(inst, 1) == 0, "the None position's own number is pullable")
+	assert(q.Bookkeeping.getOffsetAt(inst, 1) == 0, "the None position's own number is pullable")
 	print("PASS")
 end
 
@@ -69,12 +69,12 @@ do
 	local len1 = q.Source(2)
 	local s1, s2, s3 = q.Source(-1), q.Source(-1), q.Source(-1)
 	local elem1 = Instance.new("Frame") -- 그 자리 요소(H-141: gatedRecompute가 조회할 키)
-	q.Dispatch.setOffsetSource(inst, 1, s1)
-	q.Dispatch.setLength(inst, 1, len1, inst, elem1)
-	q.Dispatch.setOffsetSource(inst, 2, s2)
-	q.Dispatch.setLength(inst, 2, 1)
-	q.Dispatch.setOffsetSource(inst, 3, s3)
-	q.Dispatch.setLength(inst, 3, 1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, len1, inst, elem1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
+	q.Bookkeeping.setOffsetSource(inst, 3, s3)
+	q.Bookkeeping.setLength(inst, 3, 1)
 	assert(s2:Get() == 2 and s3:Get() == 3, "initial offsets")
 
 	local s1Sets = probe(q, s1)
@@ -112,8 +112,8 @@ do
 			end):Subscribe()
 			local _ = obs
 			setCounts[k] = 0 -- 등록 즉시 1회 실행 보정
-			q.Dispatch.setOffsetSource(inst, k, src)
-			q.Dispatch.setLength(inst, k, v) -- v = 이 자리의 기여도(숫자)
+			q.Bookkeeping.setOffsetSource(inst, k, src)
+			q.Bookkeeping.setLength(inst, k, v) -- v = 이 자리의 기여도(숫자)
 			return q.Void
 		end,
 	} :: QuadTypes.Handler)
@@ -131,8 +131,8 @@ do
 	local inst = Instance.new("Frame")
 	q.Dispatch.drive(inst, { 2, 3, 1, Size = "s" })
 	assert(sources[1]:Get() == 0 and sources[2]:Get() == 2 and sources[3]:Get() == 5, "immediate calc filled offsets in order")
-	assert(q.Dispatch.getBlocker(inst).Blocking == false, "batch blocker closed after drive")
-	assert(q.Dispatch.getBookkeeping(inst).N == 3, "bk.N = registered array positions")
+	assert(q.Bookkeeping.getBlocker(inst).Blocking == false, "batch blocker closed after drive")
+	assert(q.Bookkeeping.getBookkeeping(inst).N == 3, "bk.N = registered array positions")
 
 	-- 배치 중 각 Source가 정확히 1회만 Set을 받았다 — 즉시 계산 1회, 배치 중
 	-- gatedRecompute는 전부 스킵, 마지막 recompute는 ~= 가드로 no-op(검증 패스)
@@ -148,12 +148,12 @@ do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	local s1, s2, s3 = q.Source(-1), q.Source(-1), q.Source(-1)
-	q.Dispatch.setOffsetSource(inst, 1, s1)
-	q.Dispatch.setLength(inst, 1, 1)
-	q.Dispatch.setOffsetSource(inst, 2, s2)
-	q.Dispatch.setLength(inst, 2, 1)
-	q.Dispatch.setOffsetSource(inst, 3, s3)
-	q.Dispatch.setLength(inst, 3, 1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
+	q.Bookkeeping.setOffsetSource(inst, 3, s3)
+	q.Bookkeeping.setLength(inst, 3, 1)
 	assert(s2:Get() == 1 and s3:Get() == 2, "steady state")
 
 	-- s2가 다음으로 Set되는 순간(= recompute 커서가 2일 때) 앞자리 1의 길이를
@@ -163,16 +163,16 @@ do
 	local obs = (s2 :: any):Observer(function()
 		if not once and s2:Get() == 2 then
 			once = true
-			q.Dispatch.setLength(inst, 1, 5) -- 콜백 안 재진입 — 게이트 + 되감기 경로
+			q.Bookkeeping.setLength(inst, 1, 5) -- 콜백 안 재진입 — 게이트 + 되감기 경로
 		end
 	end):Subscribe()
 	local _ = obs
 
-	q.Dispatch.setLength(inst, 1, 2) -- 트리거: s2가 2로 Set되는 recompute
+	q.Bookkeeping.setLength(inst, 1, 2) -- 트리거: s2가 2로 Set되는 recompute
 	assert(once, "the reentrant callback actually ran")
 	assert(s2:Get() == 5, "position 2 rewound to the new base")
 	assert(s3:Get() == 6, "position 3 followed")
-	assert(q.Dispatch.getBookkeeping(inst).recomputeBlocker.Blocking == false, "reentry blocker released")
+	assert(q.Bookkeeping.getBookkeeping(inst).recomputeBlocker.Blocking == false, "reentry blocker released")
 	print("PASS")
 end
 
@@ -182,21 +182,21 @@ do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	for i = 1, 4 do
-		q.Dispatch.setOffsetSource(inst, i, q.None)
-		q.Dispatch.setLength(inst, i, 1)
+		q.Bookkeeping.setOffsetSource(inst, i, q.None)
+		q.Bookkeeping.setLength(inst, i, 1)
 	end
-	assert(q.Dispatch.getOffsetAt(inst, 4) == 3, "prefix cache built")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 3, "prefix cache built")
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.offsetCacheValidUpTo == 4, "cache valid to the pulled position")
-	q.Dispatch.setLength(inst, 3, 7)
+	q.Bookkeeping.setLength(inst, 3, 7)
 	-- 무효화는 둘 다 i까지 당긴다. [2026-09-08 `H-483`] setLength 꼬리의 동기 recompute는
 	-- None 자리(발행 채널 없음)에서 더 이상 캐시를 데우지 않으므로 캐시 커서는 당겨진
 	-- 그대로 관측된다 — 값은 getOffsetAt이 온디맨드로 채워 답한다: 뒤 자리는 새
 	-- 길이를 반영하고, i 이전 접두는 살아남은 캐시 그대로다.
 	assert(bk.offsetCacheValidUpTo == 3, "pulled to i and left there (flat recompute no longer warms the cache): " .. bk.offsetCacheValidUpTo)
-	assert(q.Dispatch.getOffsetAt(inst, 4) == 9, "positions after i reflect the new length")
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 9, "positions after i reflect the new length")
 	assert(bk.offsetCacheValidUpTo == 4, "the pull refilled the cache on demand")
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 1, "positions before i kept their prefix")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 1, "positions before i kept their prefix")
 	print("PASS")
 end
 
@@ -208,9 +208,9 @@ do
 	local function build(): any
 		local inst = Instance.new("Frame")
 		local len = q.Source(1)
-		q.Dispatch.setOffsetSource(inst, 1, q.Source(-1))
-		q.Dispatch.setLength(inst, 1, len, inst, Instance.new("Frame"))
-		weakProbe[1] = q.Dispatch.getBookkeeping(inst)
+		q.Bookkeeping.setOffsetSource(inst, 1, q.Source(-1))
+		q.Bookkeeping.setLength(inst, 1, len, inst, Instance.new("Frame"))
+		weakProbe[1] = q.Bookkeeping.getBookkeeping(inst)
 		return inst
 	end
 	local inst = build()
@@ -233,10 +233,10 @@ do
 	local anchor = Instance.new("Frame")
 	local len = q.Source(1)
 	local s1, s2 = q.Source(-1), q.Source(-1)
-	q.Dispatch.setOffsetSource(owner, 1, s1)
-	q.Dispatch.setLength(owner, 1, len, anchor, anchor)
-	q.Dispatch.setOffsetSource(owner, 2, s2)
-	q.Dispatch.setLength(owner, 2, 1)
+	q.Bookkeeping.setOffsetSource(owner, 1, s1)
+	q.Bookkeeping.setLength(owner, 1, len, anchor, anchor)
+	q.Bookkeeping.setOffsetSource(owner, 2, s2)
+	q.Bookkeeping.setLength(owner, 2, 1)
 	len:Set(3)
 	assert(s2:Get() == 3, "anchored observer drives recompute while the anchor lives")
 	anchor:Destroy()
@@ -253,7 +253,7 @@ do
 	local bads: { any } = { 1.5, -1, 0, "1", 0 / 0 }
 	for _, bad in bads do
 		local ok, err = pcall(function()
-			q.Dispatch.setLength(owner, bad :: any, 1)
+			q.Bookkeeping.setLength(owner, bad :: any, 1)
 		end)
 		assert(
 			not ok and string.find(tostring(err), "positive integer", 1, true) ~= nil,
@@ -262,7 +262,7 @@ do
 		-- errorBeforeNearest(사용자 입력) — 부른 쪽(이 파일)을 blame
 		mock.assertBlamesUser(err, "spec.lengthoffset.luau", "gate blame") -- `H-282`: 내부-제외까지
 		local ok2, err2 = pcall(function()
-			q.Dispatch.setOffsetSource(owner, bad :: any, q.None)
+			q.Bookkeeping.setOffsetSource(owner, bad :: any, q.None)
 		end)
 		assert(
 			not ok2 and string.find(tostring(err2), "positive integer", 1, true) ~= nil,
@@ -271,7 +271,7 @@ do
 		-- round3 `H-434`: setEmpty는 Dispatch 표면(H-242 태그)이라 자기 앞에서 검증한다 — 안쪽 setOffsetSource가
 		-- 던지면 nearest+1이 setEmpty 본문(quad 내부)을 blame했다
 		local ok4, err4 = pcall(function()
-			q.Dispatch.setEmpty(owner, bad :: any)
+			q.Bookkeeping.setEmpty(owner, bad :: any)
 		end)
 		assert(
 			not ok4 and string.find(tostring(err4), "setEmpty: position must be a positive integer", 1, true) ~= nil,
@@ -280,12 +280,12 @@ do
 		mock.assertBlamesUser(err4, "spec.lengthoffset.luau", "setEmpty gate blame")
 	end
 	-- 오염이 전혀 안 남았는지 — 검증이 부기 변형 전에 있다
-	local bk = q.Dispatch.getBookkeeping(owner)
+	local bk = q.Bookkeeping.getBookkeeping(owner)
 	assert(bk.N == nil and bk.offsetCacheValidUpTo == 0, "rejected inputs left the bookkeeping untouched")
 	-- 희소 양의 정수는 이 게이트를 통과한다 — 연속성은 recompute의 기존 error 몫
-	q.Dispatch.setOffsetSource(owner, 3, q.None)
+	q.Bookkeeping.setOffsetSource(owner, 3, q.None)
 	local ok3, err3 = pcall(function()
-		q.Dispatch.setLength(owner, 3, 0)
+		q.Bookkeeping.setLength(owner, 3, 0)
 	end)
 	assert(
 		not ok3 and string.find(tostring(err3), "sourceList", 1, true) ~= nil,
@@ -294,7 +294,7 @@ do
 	assert(bk.N == 3, "the sparse position itself passed the gate before recompute objected")
 	-- `H-280`: 공개 표면 셋째(getOffsetAt)도 같은 게이트 — 0이면 cache[0](nil) 반환이었다
 	local ok4, err4 = pcall(function()
-		q.Dispatch.getOffsetAt(owner, 0)
+		q.Bookkeeping.getOffsetAt(owner, 0)
 	end)
 	assert(not ok4 and string.find(tostring(err4), "positive integer", 1, true) ~= nil, `getOffsetAt gated too: {tostring(err4)}`)
 	print("PASS")
@@ -314,23 +314,23 @@ do
 	local len2 = s1:Compute(function(x: any)
 		if poison then
 			poison = false
-			q.Dispatch.setLength(inst, 1, 7)
+			q.Bookkeeping.setLength(inst, 1, 7)
 		end
 		return x:Get()
 	end)
-	q.Dispatch.setOffsetSource(inst, 1, src1)
-	q.Dispatch.setLength(inst, 1, 1)
-	q.Dispatch.setOffsetSource(inst, 2, src2)
-	q.Dispatch.setLength(inst, 2, len2)
-	q.Dispatch.setOffsetSource(inst, 3, src3)
-	q.Dispatch.setLength(inst, 3, 1)
+	q.Bookkeeping.setOffsetSource(inst, 1, src1)
+	q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, src2)
+	q.Bookkeeping.setLength(inst, 2, len2)
+	q.Bookkeeping.setOffsetSource(inst, 3, src3)
+	q.Bookkeeping.setLength(inst, 3, 1)
 	assert(src1:Get() == 0 and src2:Get() == 1 and src3:Get() == 2, "steady state (len2 == 1)")
 
 	poison = true
 	s1:Set(2) -- len2 무효화 → recompute → contribution의 :Get()이 setLength(1, 7)을 실행
 	assert(src2:Get() == 7, `position 2 offset reflects the mid-read change (got {src2:Get()})`)
 	assert(src3:Get() == 9, `position 3 follows: 7 + len2(2) (got {src3:Get()})`)
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.offsetSetUpTo == 3 and not bk.recomputeBlocker.Blocking, "the pass completed cleanly (no frozen blocker)")
 	print("PASS")
 end
@@ -342,28 +342,28 @@ do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	local okBad = pcall(function()
-		q.Dispatch.setOffsetSource(inst, 1, {} :: any) -- not a Source and not None
+		q.Bookkeeping.setOffsetSource(inst, 1, {} :: any) -- not a Source and not None
 	end)
 	assert(not okBad, "a non-Source offset target errors")
 	-- bookkeeping untouched — before H-392 `sourceList[1]` held the bad table and
 	-- the next setLength died inside recomputeBlocker:On(), freezing the owner
-	assert((q :: any)._bookkeeping.getBookkeeping(inst).sourceList[1] == nil, "nothing was written before the read raised")
-	q.Dispatch.setOffsetSource(inst, 1, q.None)
-	q.Dispatch.setLength(inst, 1, 5)
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 5, "offset arithmetic works after the rejected call")
+	assert((q :: any).Bookkeeping.getBookkeeping(inst).sourceList[1] == nil, "nothing was written before the read raised")
+	q.Bookkeeping.setOffsetSource(inst, 1, q.None)
+	q.Bookkeeping.setLength(inst, 1, 5)
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 5, "offset arithmetic works after the rejected call")
 	local s = q.Source(-1)
-	q.Dispatch.setOffsetSource(inst, 1, s)
+	q.Bookkeeping.setOffsetSource(inst, 1, s)
 	assert(s:Get() == 0, "a real Source still gets its offset")
 	-- N+1 is the last legal query; past it is user input, blamed here — not "bookkeeping is broken"
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 5, "N+1 legal")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 5, "N+1 legal")
 	local okFar, errFar = pcall(function()
-		q.Dispatch.getOffsetAt(inst, 3)
+		q.Bookkeeping.getOffsetAt(inst, 3)
 	end)
 	assert(not okFar and string.find(tostring(errFar), "past N+1", 1, true) ~= nil and string.find(tostring(errFar), "skipped its position registration", 1, true) ~= nil, "past N+1 names both causes (range / missing registration): " .. tostring(errFar))
 	-- 6순회 `H-408`: the same range fault through the sibling surface `setOffsetSource`
 	-- blames the caller too (nearest used to land on Bookkeeping.luau itself)
 	local okVia, errVia = pcall(function()
-		q.Dispatch.setOffsetSource(inst, 5, q.Source(0))
+		q.Bookkeeping.setOffsetSource(inst, 5, q.Source(0))
 	end)
 	assert(not okVia and string.find(tostring(errVia), "past N+1", 1, true) ~= nil, "setOffsetSource past N+1 errors with the range message: " .. tostring(errVia))
 	mock.assertBlamesUser(errVia, "spec.lengthoffset.luau", "range error via setOffsetSource blames the caller")
@@ -376,23 +376,23 @@ do
 	local q = newQuad()
 	local inst = mock.Instance.new("Frame")
 	local okS, errS = pcall(function()
-		q.Dispatch.setOffsetSource(inst, 1, { Get = function() return 0 end } :: any)
+		q.Bookkeeping.setOffsetSource(inst, 1, { Get = function() return 0 end } :: any)
 	end)
 	assert(not okS and string.find(tostring(errS), "source must be a Source<number> or None", 1, true) ~= nil, "plain table rejected: " .. tostring(errS))
 	mock.assertBlamesUser(errS, "spec.lengthoffset.luau", "setOffsetSource gate blame")
 	for _, bad in { -1, 1.5, "3" } :: { any } do
 		local ok, err = pcall(function()
-			q.Dispatch.setLength(inst, 1, bad)
+			q.Bookkeeping.setLength(inst, 1, bad)
 		end)
 		assert(not ok and string.find(tostring(err), "length must be a non-negative integer", 1, true) ~= nil, `setLength rejects {tostring(bad)}: {tostring(err)}`)
 		mock.assertBlamesUser(err, "spec.lengthoffset.luau", "setLength domain blame")
 	end
-	q.Dispatch.setOffsetSource(inst, 1, q.None)
-	q.Dispatch.setLength(inst, 1, 0) -- zero is legal
+	q.Bookkeeping.setOffsetSource(inst, 1, q.None)
+	q.Bookkeeping.setLength(inst, 1, 0) -- zero is legal
 	local len = q.Source(2)
-	q.Dispatch.setOffsetSource(inst, 2, q.None)
-	q.Dispatch.setLength(inst, 2, len)
-	assert(q.Dispatch.getOffsetAt(inst, 3) == 2, "State length contributes")
+	q.Bookkeeping.setOffsetSource(inst, 2, q.None)
+	q.Bookkeeping.setLength(inst, 2, len)
+	assert(q.Bookkeeping.getOffsetAt(inst, 3) == 2, "State length contributes")
 	local okR, errR = pcall(function()
 		len:Set(-4) -- the length observer validates BEFORE recomputing (round3 `H-445`)
 	end)
@@ -400,7 +400,7 @@ do
 	mock.assertBlamesUser(errR, "spec.lengthoffset.luau", "State length blame is the :Set line")
 	-- `H-445`: the throw happened outside the recomputeBlocker window — the owner is NOT frozen
 	len:Set(3)
-	assert(q.Dispatch.getOffsetAt(inst, 3) == 3, "offsets keep flowing after the rejected value")
+	assert(q.Bookkeeping.getOffsetAt(inst, 3) == 3, "offsets keep flowing after the rejected value")
 	print("PASS")
 end
 
@@ -411,7 +411,7 @@ do
 		name = "BadLeaf",
 		isHandlable = function(_i: any, k: any, v: any): boolean return type(k) == "number" and v == "bad-leaf" end,
 		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
-		process = function(inst: any, k: any): any q.Dispatch.setLength(inst, k, 1); return q.Void end,
+		process = function(inst: any, k: any): any q.Bookkeeping.setLength(inst, k, 1); return q.Void end,
 	})
 	local ok, err = pcall(function() q.Dispatch.drive(Instance.new("Frame"), { "bad-leaf" }) end)
 	assert(not ok and string.find(tostring(err), "setLength without setOffsetSource?", 1, true) ~= nil, "mirror named: " .. tostring(err))
@@ -429,28 +429,28 @@ do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	local src1, src3, src5 = q.Source(-1), q.Source(-1), q.Source(-1)
-	q.Dispatch.setOffsetSource(inst, 1, src1); q.Dispatch.setLength(inst, 1, 1)
-	q.Dispatch.setOffsetSource(inst, 2, q.None); q.Dispatch.setLength(inst, 2, 1)
-	q.Dispatch.setOffsetSource(inst, 3, src3); q.Dispatch.setLength(inst, 3, 1)
-	q.Dispatch.setOffsetSource(inst, 4, q.None); q.Dispatch.setLength(inst, 4, 1)
-	q.Dispatch.setOffsetSource(inst, 5, src5); q.Dispatch.setLength(inst, 5, 1)
+	q.Bookkeeping.setOffsetSource(inst, 1, src1); q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, q.None); q.Bookkeeping.setLength(inst, 2, 1)
+	q.Bookkeeping.setOffsetSource(inst, 3, src3); q.Bookkeeping.setLength(inst, 3, 1)
+	q.Bookkeeping.setOffsetSource(inst, 4, q.None); q.Bookkeeping.setLength(inst, 4, 1)
+	q.Bookkeeping.setOffsetSource(inst, 5, src5); q.Bookkeeping.setLength(inst, 5, 1)
 	assert(src1:Get() == 0 and src3:Get() == 2 and src5:Get() == 4, "steady state (mixed None/Source)")
 
 	local once = false
 	local obs = (src3 :: any):Observer(function()
 		if not once and src3:Get() == 3 then
 			once = true
-			q.Dispatch.setLength(inst, 2, 5) -- 커서를 None 자리 2로 내림 (재진입 → 게이트 + 되감기)
+			q.Bookkeeping.setLength(inst, 2, 5) -- 커서를 None 자리 2로 내림 (재진입 → 게이트 + 되감기)
 		end
 	end):Subscribe()
 	local _ = obs
 
-	q.Dispatch.setLength(inst, 1, 2) -- 트리거: src3이 3으로 Set되는 recompute
+	q.Bookkeeping.setLength(inst, 1, 2) -- 트리거: src3이 3으로 Set되는 recompute
 	assert(once, "the reentrant callback actually ran")
 	assert(src3:Get() == 7, `position 3 rewound through the None slot: 2 + 5 (got {src3:Get()})`)
 	assert(src5:Get() == 9, `position 5 followed: 7 + 1 + 1 (got {src5:Get()})`)
-	assert(q.Dispatch.getOffsetAt(inst, 4) == 8, "on-demand read of a None position after the rewind")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 8, "on-demand read of a None position after the rewind")
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.offsetSetUpTo == 5 and not bk.recomputeBlocker.Blocking, "the pass completed cleanly (no frozen blocker)")
 	print("PASS")
 end

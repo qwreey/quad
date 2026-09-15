@@ -8,7 +8,7 @@ description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그�
 
 센티널은 전부 `table.freeze`된 테이블 하나이고 **판정은 언제나 신원 비교**(`v == q.None`)입니다. 타입에 붙어 있는 마커 필드(`__quadNone` 등)는 유니언 타입을 표현하기 위한 조언층일 뿐, 그걸로 판정하지 않습니다.
 
-이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.newMapperClass(className)](#qnewmapperclassclassname) · [q.bindLifetime(inst, value)](#qbindlifetimeinst-value) · [q.unbindLifetime(value)](#qunbindlifetimevalue) · [q.canBound(value)](#qcanboundvalue) · [q.canExecute(value)](#qcanexecutevalue)
+이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.newMapperClass(className)](#qnewmapperclassclassname) · [q.Backend.bindLifetime(inst, value)](#qbackendbindlifetimeinst-value) · [q.Backend.unbindLifetime(value)](#qbackendunbindlifetimevalue) · [q.Backend.canBound(value)](#qbackendcanboundvalue) · [q.Backend.canExecute(value)](#qbackendcanexecutevalue)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -101,7 +101,7 @@ dispose: (value: any) -> ()
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `value` | `any` | 파괴할 값 — Slot이거나, 백엔드가 요소로 인정하는 값(`q.isInst`가 참) |
+| `value` | `any` | 파괴할 값 — Slot이거나, 백엔드가 요소로 인정하는 값(`q.Backend.isInst`가 참) |
 
 **반환** — 없음.
 
@@ -117,7 +117,7 @@ dispose: this value is still held by a Slot or a mounted position — Remove/Ext
 dispose: this backend cannot dispose this value
 ```
 
-마지막 문구는 "Slot도 아니고 이 백엔드의 요소도 아니다"라는 뜻입니다. 백엔드가 설치되지 않은 모듈에서는 그 전에 `q.isInst` 스텁이 먼저 던집니다(아래 참고).
+마지막 문구는 "Slot도 아니고 이 백엔드의 요소도 아니다"라는 뜻입니다. 백엔드가 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다(아래 참고).
 
 **예제**
 
@@ -153,7 +153,7 @@ newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescr
 
 **동작** — 클래스 이름 하나를 받아 매퍼 디스크립터 팩토리를 만드는 제네릭 생성자. 백엔드의 `D.Mapper.<Class>` 별칭이 전부 여기서 나옵니다. 결과 디스크립터는 `q.isMapperDescriptor`가 참이고, `q.Claim(inst, desc)`에 넘깁니다 — [`../roblox/04-claim-mapper.md`](../roblox/04-claim-mapper.md).
 
-## `q.bindLifetime(inst, value)`
+## `q.Backend.bindLifetime(inst, value)`
 
 **시그니처**
 
@@ -171,7 +171,7 @@ quad: bindLifetime is not available — no backend has installed the lifetime pr
 
 같은 문구가 이름만 바뀌어 `unbindLifetime`/`canBound`/`canExecute`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](../extend/01-backend-provider-contract.md)가 정본입니다.
 
-## `q.unbindLifetime(value)`
+## `q.Backend.unbindLifetime(value)`
 
 **시그니처**
 
@@ -179,9 +179,9 @@ quad: bindLifetime is not available — no backend has installed the lifetime pr
 unbindLifetime: (value: any) -> ()
 ```
 
-**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`은 에러입니다. 나머지는 `q.bindLifetime`과 같습니다 — 백엔드가 심고, 미설치면 같은 모양의 스텁 에러가 납니다.
+**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`은 에러입니다. 나머지는 `q.Backend.bindLifetime`과 같습니다 — 백엔드가 심고, 미설치면 같은 모양의 스텁 에러가 납니다.
 
-## `q.canBound(value)`
+## `q.Backend.canBound(value)`
 
 **시그니처**
 
@@ -191,7 +191,7 @@ canBound: (value: any) -> boolean
 
 **동작** — "지금 이 값을 묶어도 되는가" — 어디에도 묶여 있지 않으면 참. 백엔드가 심고, 미설치면 스텁 에러.
 
-## `q.canExecute(value)`
+## `q.Backend.canExecute(value)`
 
 **시그니처**
 

@@ -464,17 +464,6 @@ export type Dispatch = {
 	addHandler: (handler: Handler) -> (),
 	listHandlers: () -> { Handler },
 	drive: (inst: any, flattened: { [any]: any }) -> (),
-	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
-	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
-	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
-	setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor: any?, element: any?) -> (),
-	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
-	-- 그 해제 쌍을 한 본문으로(setOffsetSource(None) → setLength(0, anchor)) — 말단
-	-- nop/leaf 핸들러의 "빈 자리 등록"(post-implementation review Q3 ③, 2026-09-07)
-	setEmpty: (ownerKey: any, i: number, anchor: any?) -> (),
-	getOffsetAt: (ownerKey: any, at: number) -> number,
-	getBlocker: (ownerKey: any) -> Blocker,
-	getBookkeeping: (ownerKey: any) -> any,
 	HANDLER_PRIORITY_HIGH: number,
 	HANDLER_PRIORITY_NORMAL: number,
 	HANDLER_PRIORITY_LOW: number,
@@ -568,6 +557,63 @@ export type Slot<T> = {
 
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────
 
+-- `Bookkeeping` — [2026-09-15 공개 표면 (30) 사용자 결정] 말단 핸들러 작성자가 쓰는 Length/Offset 부기
+-- 네임스페이스(옛 Dispatch 재수출 여섯 + 비공개 `_bookkeeping`을 하나로). `_recompute`는 내부.
+export type Bookkeeping = {
+	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
+	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
+	-- 해제는 setOffsetSource(None) → setLength(0) 순서.
+	setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor: any?, element: any?) -> (),
+	setOffsetSource: (ownerKey: any, i: number, source: any) -> (), -- Source<number> | None
+	-- 그 해제 쌍을 한 본문으로(setOffsetSource(None) → setLength(0, anchor)) — 말단
+	-- nop/leaf 핸들러의 "빈 자리 등록"(post-implementation review Q3 ③, 2026-09-07)
+	setEmpty: (ownerKey: any, i: number, anchor: any?) -> (),
+	getOffsetAt: (ownerKey: any, at: number) -> number,
+	getBlocker: (ownerKey: any) -> Blocker,
+	getBookkeeping: (ownerKey: any) -> any,
+}
+
+-- `Backend` — [2026-09-15 공개 표면 (30) 사용자 결정] 백엔드가 설치하고 quad가 부르는 계약 op 네임스페이스.
+-- 앱 코드가 부를 표면이 아니다(자동완성·`Quad` 타입에서 분리). 멤버 이름은 옛 평평한 `q.<op>` 그대로.
+export type Backend = {
+	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
+	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
+	bindLifetime: (inst: any, value: any) -> (),
+	unbindLifetime: (value: any) -> (),
+	canBound: (value: any) -> boolean,
+	canExecute: (value: any) -> boolean,
+	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
+	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
+	-- 시간 op 둘(`architecture.md` EngineOps 줄, `debounce-throttle-plan.md` 6절) — 미주입이면 에러 스텁.
+	setTimeout: (func: () -> (), delay: number) -> Timeout,
+	clearTimeout: (timeout: Timeout) -> (),
+	-- 주입 물리 op(`architecture.md` EngineOps, M5 몫 — `H-25` 단위 ⑤
+	-- 확인분). quad-base엔 값이 없고(스텁도 없음 — 미설치 접근은 nil 호출
+	-- 크래시) 백엔드 팩토리가 설치한다. 시그니처 정본은
+	-- `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
+	nativeInsert: (target: any, offset: number, elements: { any }) -> (),
+	nativeExtract: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeRemove: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
+	nativeMove: (target: any, fromOffset: number, elements: { any }, toOffset: number) -> (),
+	nativeSwap: (target: any, offsetA: number, elementsA: { any }, offsetB: number, elementsB: { any }) -> (),
+	nativeDispose: (element: any) -> (),
+	-- 요소 타입 화이트리스트 술어(`H-40` 주입 술어) — 백엔드가 자기 실물
+	-- 판정으로 설치, 테스트는 mock 판정으로 교체.
+	isInst: (value: any) -> boolean,
+	-- gcconn/gchold 셋업 op(claim-plan §7-9 — `New` ②단계와 `Claim`이 같은
+	-- op를 부른다. 이중 claim은 셋업 유무로 error).
+	nativeClaim: (inst: any) -> (),
+	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+	nativeFindChild: (inst: any, key: any) -> any,
+	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
+	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
+	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox
+	-- `EngineOps`가 CollectionService/`SetAttribute`로 채움.
+	addTag: (inst: any, names: { string }) -> (),
+	removeTag: (inst: any, names: { string }) -> (),
+	setAttr: (inst: any, name: string, v: any) -> (),
+}
+
 export type Quad = {
 	Version: "3.2.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
@@ -623,6 +669,9 @@ export type Quad = {
 	-- 같이 갱신하는 규칙의 M3 몫). 닫힌 레코드라 이 필드가 없으면
 	-- `quad.Dispatch` 접근이 런타임엔 되는데 `luau-analyze`에선 타입에러다.
 	Dispatch: Dispatch,
+	-- [2026-09-15 공개 표면 (30)] Length/Offset 부기와 백엔드 계약 op는 각자의 네임스페이스로
+	Bookkeeping: Bookkeeping,
+	Backend: Backend,
 
 	-- 공유 에러 네임스페이스(`H-231`) — quad-base의 모든 표면·백엔드가 같은
 	-- 태그 맵을 써야 워커가 경계를 본다. 백엔드는 자기 quad-error 사본의
@@ -640,17 +689,6 @@ export type Quad = {
 	-- (사용자 지적 — 옛 `any`는 마커 이전 "신원이라 표현 불가" 시절의 잔재).
 	None: None,
 
-	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
-	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
-	bindLifetime: (inst: any, value: any) -> (),
-	unbindLifetime: (value: any) -> (),
-	canBound: (value: any) -> boolean,
-	canExecute: (value: any) -> boolean,
-	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
-	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
-	-- 시간 op 둘(`architecture.md` EngineOps 줄, `debounce-throttle-plan.md` 6절) — 미주입이면 에러 스텁.
-	setTimeout: (func: () -> (), delay: number) -> Timeout,
-	clearTimeout: (timeout: Timeout) -> (),
 
 	-- Slot 표면(M6 — `H-25` 몫, 2026-09-03). `Slot(initial?)`은 `:Add` 반복 sugar.
 	-- `dispose`는 quad 관리 값을 지우는 유일한 안전 경로(마운트 중이면 error).
@@ -687,31 +725,6 @@ export type Quad = {
 	MapperRoot: MapperRoot,
 	newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
 
-	-- 주입 물리 op(`architecture.md` EngineOps, M5 몫 — `H-25` 단위 ⑤
-	-- 확인분). quad-base엔 값이 없고(스텁도 없음 — 미설치 접근은 nil 호출
-	-- 크래시) 백엔드 팩토리가 설치한다. 시그니처 정본은
-	-- `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
-	nativeInsert: (target: any, offset: number, elements: { any }) -> (),
-	nativeExtract: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
-	nativeRemove: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),
-	nativeMove: (target: any, fromOffset: number, elements: { any }, toOffset: number) -> (),
-	nativeSwap: (target: any, offsetA: number, elementsA: { any }, offsetB: number, elementsB: { any }) -> (),
-	nativeDispose: (element: any) -> (),
-	-- 요소 타입 화이트리스트 술어(`H-40` 주입 술어) — 백엔드가 자기 실물
-	-- 판정으로 설치, 테스트는 mock 판정으로 교체.
-	isInst: (value: any) -> boolean,
-	-- gcconn/gchold 셋업 op(claim-plan §7-9 — `New` ②단계와 `Claim`이 같은
-	-- op를 부른다. 이중 claim은 셋업 유무로 error).
-	nativeClaim: (inst: any) -> (),
-	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
-	nativeFindChild: (inst: any, key: any) -> any,
-	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
-	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
-	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox
-	-- `EngineOps`가 CollectionService/`SetAttribute`로 채움.
-	addTag: (inst: any, names: { string }) -> (),
-	removeTag: (inst: any, names: { string }) -> (),
-	setAttr: (inst: any, name: string, v: any) -> (),
 
 	-- M10 (round16 spike) — Tag/Attr 표면(`H-25`의 "마일스톤마다 갱신" 몫)
 	isTag: (x: any) -> boolean,

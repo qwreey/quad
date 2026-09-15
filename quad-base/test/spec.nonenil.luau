@@ -60,12 +60,12 @@ do
 	local inst = Instance.new("Frame")
 	-- 자리 1 = None(기여 0), 자리 2 = 실요소(기여 1), 자리 3 = 실요소
 	q.Dispatch.drive(inst, { q.None, "a", "b" })
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.N == 3, "the None position is registered, not skipped")
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "NilHandler registered 0 + None channel")
 	assert(sources[2]:Get() == 0, "position 2 offset: the None position contributes 0")
 	assert(sources[3]:Get() == 1, "position 3 offset follows")
-	assert(q.Dispatch.getOffsetAt(inst, 1) == 0, "the None position's own number is pullable")
+	assert(q.Bookkeeping.getOffsetAt(inst, 1) == 0, "the None position's own number is pullable")
 	print("PASS")
 end
 
@@ -106,7 +106,7 @@ do
 	assert(not ok and string.find(tostring(err), "no handler matched", 1, true) ~= nil, "hash nil is not NilHandler's")
 	-- 숫자 키 nil: NilHandler 매치(직접 리액티브 경로 — State<Slot|nil>의 nil)
 	q.Dispatch.process(inst, 1, nil, 1)
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "numeric nil lands on NilHandler")
 	print("PASS")
 end

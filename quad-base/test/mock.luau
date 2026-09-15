@@ -438,14 +438,14 @@ local function installNative(quad: any)
 		return isMockInstance(value)
 	end
 
-	quad.nativeInsert = nativeInsert
-	quad.nativeExtract = nativeExtract
-	quad.nativeRemove = nativeRemove
-	quad.nativeMove = nativeMove
-	quad.nativeFindChild = nativeFindChild
-	quad.nativeSwap = nativeSwap
-	quad.nativeDispose = nativeDispose
-	quad.isInst = isInst
+	quad.Backend.nativeInsert = nativeInsert
+	quad.Backend.nativeExtract = nativeExtract
+	quad.Backend.nativeRemove = nativeRemove
+	quad.Backend.nativeMove = nativeMove
+	quad.Backend.nativeFindChild = nativeFindChild
+	quad.Backend.nativeSwap = nativeSwap
+	quad.Backend.nativeDispose = nativeDispose
+	quad.Backend.isInst = isInst
 
 	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst)
 end
@@ -487,9 +487,9 @@ local function installTagAttrOps(quad: any, log: { string }?)
 			table.insert(log, `setAttr:{name}={tostring(v)}`)
 		end
 	end
-	quad.addTag = addTag
-	quad.removeTag = removeTag
-	quad.setAttr = setAttr
+	quad.Backend.addTag = addTag
+	quad.Backend.removeTag = removeTag
+	quad.Backend.setAttr = setAttr
 	-- `H-238`: the backend tags everything it installs
 	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, addTag, removeTag, setAttr)
 end
@@ -583,8 +583,8 @@ local function installTimers(quad: any)
 			end
 		end
 	end
-	quad.setTimeout = setTimeout
-	quad.clearTimeout = clearTimeout
+	quad.Backend.setTimeout = setTimeout
+	quad.Backend.clearTimeout = clearTimeout
 	Err.setFuncLevel(SURFACE, setTimeout, clearTimeout)
 end
 
@@ -744,12 +744,12 @@ local function mockProvider(quad: any): { [any]: any }
 		claim(inst)
 	end
 
-	quad.bindLifetime = bindLifetime
-	quad.unbindLifetime = unbindLifetime
-	quad.canBound = canBound
-	quad.canExecute = canExecute
-	quad.onDestroying = onDestroying
-	quad.nativeClaim = nativeClaim
+	quad.Backend.bindLifetime = bindLifetime
+	quad.Backend.unbindLifetime = unbindLifetime
+	quad.Backend.canBound = canBound
+	quad.Backend.canExecute = canExecute
+	quad.Backend.onDestroying = onDestroying
+	quad.Backend.nativeClaim = nativeClaim
 
 	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
@@ -790,8 +790,8 @@ local function addSpecLeaf(q: any, sources: { any }, log: { string }?)
 		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			local src = sources[k] or q.Source(-1)
 			sources[k] = src
-			q.Dispatch.setOffsetSource(inst, k, src)
-			q.Dispatch.setLength(inst, k, 1)
+			q.Bookkeeping.setOffsetSource(inst, k, src)
+			q.Bookkeeping.setLength(inst, k, 1)
 			if log ~= nil then
 				local logList: { string } = log
 				return function(hint: any?, retracting: boolean)

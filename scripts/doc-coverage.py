@@ -13,7 +13,8 @@
   - 모듈 키: `q.<name>`/`q:<name>` 뒤에 `(`/`{`/`.`/공백/끝
   - 멤버: `:<name>(` 또는 `.<name>`(필드) — 타입별로 어느 페이지든 헤딩에 있으면 통과(타입 구분은 안 한다: 이름이 겹치는
     멤버(`Set`/`Get`/`Apply`)는 한 페이지만 있어도 통과한다 — 검사의 목적은 "통째로 빠진 심볼"을 잡는 것)
-제외: `__`로 시작하는 내부 필드, `read __quad*` 마커, 주입 op(bindLifetime 등 19개 — extend/01이 계약 에세이로 덮는다).
+제외: `__`로 시작하는 내부 필드, `read __quad*` 마커, 주입 op(`q.Backend`의 bindLifetime 등 19개 — extend/01이 계약 에세이로 덮는다).
+[2026-09-15] `Backend`/`Bookkeeping` 네임스페이스는 모듈 키로(`q.Backend`/`q.Bookkeeping` 헤딩), Bookkeeping 멤버는 멤버로 센다.
 사용법: python3 scripts/doc-coverage.py  (빠진 심볼이 있으면 exit 1)
 """
 import os, re, sys
@@ -30,7 +31,7 @@ INJECTED = {
     'addTag', 'removeTag', 'setAttr', 'setTimeout', 'clearTimeout',
 }
 MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'EffectHandle', 'Blocker', 'Modifier', 'Tag',
-                'Attr', 'Context', 'TimedGate', 'GateHandle', 'Handler', 'Dispatch']
+                'Attr', 'Context', 'TimedGate', 'GateHandle', 'Handler', 'Dispatch', 'Bookkeeping']
 
 
 def strip_comments(text):

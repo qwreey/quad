@@ -105,7 +105,7 @@ for k, element in ipairs(newElements) do
 end
 -- ... newLeaves 수집 ...
 -- [4] 물리 op 단 한 번 (제거가 없으면 nativeInsert 한 번)
-module.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
+module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
 
 if ownsGate then
     gate:OffWithoutEmit()            -- [5] 파동 없이 게이트 해제

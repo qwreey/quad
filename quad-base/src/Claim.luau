@@ -83,7 +83,7 @@ local function Init(module: any)
 		if type(desc._props) ~= "table" then
 			Err.errorBefore(`Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
 		end
-		module.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
+		module.Backend.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
 		-- `H-471` (탐사 A, `H-425`의 잔여): consume the descriptor only once the claim is ours —
 		-- a nativeClaim raise (already claimed / child not found) used to burn it first, so
 		-- the retry reported "already used" instead of the real cause
@@ -97,7 +97,7 @@ local function Init(module: any)
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
 				-- 이름 부재·중복은 UB(§3 — debug 검사는 debug 도구 몫):
 				-- nativeFindChild가 nil을 주면 아래 재귀가 자연 크래시한다
-				local child = module.nativeFindChild(inst, v._key)
+				local child = module.Backend.nativeFindChild(inst, v._key)
 				resolve(child, v)
 				props[i] = child -- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4)
 			end
@@ -110,7 +110,7 @@ local function Init(module: any)
 		-- non-Instance reached the backend's `nativeClaim`, whose first line indexes
 		-- it (raw VM error blaming `LifetimeHandle.luau`). `isInst` is the backend's
 		-- own predicate (the base stub raises a clear "not installed" error).
-		if not module.isInst(inst) then
+		if not module.Backend.isInst(inst) then
 			Err.errorBefore(`Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
 		end
 		if not Brand.isMapperDescriptor(desc) then

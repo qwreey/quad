@@ -67,11 +67,11 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 				local realv = state:Get()
 				dispatch.process(inst, k, realv, index + 1)
 			end)
-			module.bindLifetime(inst, observer)
+			module.Backend.bindLifetime(inst, observer)
 			return function(_nextValue: any?, _retracting: boolean)
 				-- Own resource only — the descending diff (or retractFrom)
 				-- handles everything delegated below this slot.
-				module.unbindLifetime(observer)
+				module.Backend.unbindLifetime(observer)
 			end
 		end,
 	})

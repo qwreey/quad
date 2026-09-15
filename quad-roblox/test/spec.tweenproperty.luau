@@ -6,7 +6,7 @@
 	Cancel 유지·Finish 스냅의 엔진 시맨틱은 Studio(brief Q7).
 
 	CLI 실주행 심(spec.handlers 관용구): `getfenv(installProperty).game`(Reflection +
-	TweenService), `getfenv(installProperty).TweenInfo`, `getfenv(D.New).Instance`, `q.isInst`.
+	TweenService), `getfenv(installProperty).TweenInfo`, `getfenv(D.New).Instance`, `q.Backend.isInst`.
 ]]
 
 local Quad = require("../luau_packages/quad_base")
@@ -34,7 +34,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance
+q.Backend.isInst = mock.isMockInstance
 
 local Tween = q.Tween
 local log = mock.tweenLog

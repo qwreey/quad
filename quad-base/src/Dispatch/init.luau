@@ -115,7 +115,7 @@ local function Init(module: any)
 	-- back-reference its own weak key — the `H-71` "leaks 100%" pattern (no
 	-- ephemerons in Luau), and Destroy calls no retract by contract. So the
 	-- strong anchor is NOT chains but the instance's own gchold:
-	-- `module.bindLifetime(inst, list)` on list creation ties the list's
+	-- `module.Backend.bindLifetime(inst, list)` on list creation ties the list's
 	-- lifetime to the bind lifetime — Destroy collapses the gchold island and
 	-- the whole chain graph (lists, retractors, observers, the inst userdata)
 	-- becomes collectable, with retractors never called (contract kept; this
@@ -229,7 +229,7 @@ local function Init(module: any)
 			list[i] = nil
 		end
 		if release and #list == 0 then
-			module.unbindLifetime(list) -- the `H-229` anchor — pure GC relation, symmetric release
+			module.Backend.unbindLifetime(list) -- the `H-229` anchor — pure GC relation, symmetric release
 			chains:SetWeak(inst, k, nil)
 		end
 	end
@@ -262,7 +262,7 @@ local function Init(module: any)
 			-- inst's bind lifetime (gchold), chains only holds it weakly.
 			-- bindLifetime treats a value matching no known type as a pure GC
 			-- relation (user-confirmed contract, `lifecycle-pattern.md`).
-			module.bindLifetime(inst, list)
+			module.Backend.bindLifetime(inst, list)
 			chains:SetWeak(inst, k, list)
 		end
 
@@ -377,11 +377,10 @@ local function Init(module: any)
 	end
 
 	-- ── Length/Offset bookkeeping — moved to `src/Bookkeeping.luau` (`H-277`,
-	-- user-directed split; dependency {Slot, Dispatch} -> Bookkeeping). The
-	-- public calling surface stays on this Dispatch table below — same
-	-- function objects, no wrappers (terminal-handler contract H-39/H-25).
+	-- user-directed split; dependency {Slot, Dispatch} -> Bookkeeping). [2026-09-15 공개 표면 (30)]
+	-- its public surface is its own namespace `module.Bookkeeping` — no longer re-exported here.
 	module:RunInit(InitBookkeeping)
-	local bookkeeping = module._bookkeeping
+	local bookkeeping = module.Bookkeeping
 
 	local function drive(inst: any, flattened: { [any]: any })
 		-- `H-419` (외부 리뷰 G-07): a non-table props value used to die inside
@@ -455,7 +454,7 @@ local function Init(module: any)
 			blocker:OffWithoutEmit()
 			local bk = bookkeeping.getBookkeeping(inst)
 			if not bk.recomputeBlocker.Blocking then
-				bookkeeping.recompute(inst, bk)
+				bookkeeping._recompute(inst, bk)
 			end
 		end
 	end
@@ -470,12 +469,6 @@ local function Init(module: any)
 		addHandler = addHandler,
 		listHandlers = listHandlers,
 		drive = drive,
-		setLength = bookkeeping.setLength,
-		setOffsetSource = bookkeeping.setOffsetSource,
-		setEmpty = bookkeeping.setEmpty,
-		getOffsetAt = bookkeeping.getOffsetAt,
-		getBlocker = bookkeeping.getBlocker,
-		getBookkeeping = bookkeeping.getBookkeeping,
 		HANDLER_PRIORITY_HIGH = HANDLER_PRIORITY_HIGH,
 		HANDLER_PRIORITY_NORMAL = HANDLER_PRIORITY_NORMAL,
 		HANDLER_PRIORITY_LOW = HANDLER_PRIORITY_LOW,
@@ -495,11 +488,11 @@ local function Init(module: any)
 	-- M3 unit 3: quad-base fills its own registry with the None pair —
 	-- NoneHandler (recursion only) + NilHandler (the one place an empty array
 	-- position is registered out of the order math).
-	NoneModule.register(Dispatch)
+	NoneModule.register(Dispatch, bookkeeping)
 	-- M7 단위 ②: the flatten sentinel's nop terminal (`H-35`) — registered
 	-- with the None pair for the same self-ownership reason.
-	ProcessedModifierModule.register(Dispatch)
-	RefPrePass.register(Dispatch) -- M8 단위 ② — ProcessedPreRef/PostRef 전담 핸들러
+	ProcessedModifierModule.register(Dispatch, bookkeeping)
+	RefPrePass.register(Dispatch, bookkeeping) -- M8 단위 ② — ProcessedPreRef/PostRef 전담 핸들러
 	-- M4: StoreBind — the descending diff's own recursion, so it registers
 	-- here like the None pair, not from a value module (round13 §0 Q3 (a);
 	-- `H-278`'s scope was leaf handlers for one value type). It needs `module`

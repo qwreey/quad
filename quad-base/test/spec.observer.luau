@@ -56,7 +56,7 @@ do
 	assert(#calls == 1, "unbound observer does not fire")
 	assert((o :: any)._rerunRequired == true, "…the change is held (H-159)")
 	local inst = Instance.new("Frame")
-	quad.bindLifetime(inst, o)
+	quad.Backend.bindLifetime(inst, o)
 	assert(#calls == 2 and calls[2].from == nil, "bind replays the held change once, with no source (H-164)")
 	assert((o :: any)._rerunRequired == false, "flag lowered")
 	s:Set(3)
@@ -95,7 +95,7 @@ do
 	end)
 	s:Set(2) -- held
 	assert(o:WeakSubscribe() == o, "returns self")
-	assert(o.Subscribed == true and quad.canExecute(o) == true, "flag + gate")
+	assert(o.Subscribed == true and quad.Backend.canExecute(o) == true, "flag + gate")
 	assert(calls == 2, "WeakSubscribe replayed the held change once")
 	s:Set(3)
 	assert(calls == 3, "fires while weakly subscribed")
@@ -105,7 +105,7 @@ do
 	assert(not ok and string.find(tostring(err), "already subscribed", 1, true) ~= nil, "double subscribe: " .. tostring(err))
 	assert(string.find(tostring(err), "spec.observer.luau", 1, true) ~= nil, "level 2")
 	local ok2, err2 = pcall(function()
-		quad.bindLifetime(Instance.new("Frame"), o)
+		quad.Backend.bindLifetime(Instance.new("Frame"), o)
 	end)
 	assert(not ok2 and string.find(tostring(err2), "already subscribed", 1, true) ~= nil, "bindLifetime shares the gate: " .. tostring(err2))
 	print("PASS")
@@ -118,7 +118,7 @@ do
 	local o = s:Observer(function() end)
 	o:WeakUnsubscribe() -- never subscribed: silent
 	o:WeakSubscribe():WeakUnsubscribe()
-	assert((o :: any).Subscribed == false and quad.canExecute(o) == false, "released")
+	assert((o :: any).Subscribed == false and quad.Backend.canExecute(o) == false, "released")
 	o:WeakUnsubscribe() -- already released: silent
 	o:Subscribe()
 	local ok, err = pcall(function()
@@ -150,7 +150,7 @@ do
 	end)
 	assert(not ok2 and string.find(tostring(err2), "use :WeakUnsubscribe()", 1, true) ~= nil, "strict: weakly subscribed → error: " .. tostring(err2))
 	assert(w.Subscribed == true, "…untouched")
-	assert(o:Unsubscribe() == o and o.Subscribed == false and quad.canExecute(o) == false, "released both tables")
+	assert(o:Unsubscribe() == o and o.Subscribed == false and quad.Backend.canExecute(o) == false, "released both tables")
 	local ok3 = pcall(function()
 		o:Unsubscribe()
 	end)
@@ -246,7 +246,7 @@ do
 			subErr = tostring(err)
 		end
 		local ok2, err2 = pcall(function()
-			quad.bindLifetime(inst, self)
+			quad.Backend.bindLifetime(inst, self)
 		end)
 		if not ok2 then
 			bindErr = tostring(err2)
@@ -255,9 +255,9 @@ do
 	assert(subErr ~= nil and string.find(subErr, "inside its own fn", 1, true) ~= nil, "Subscribe inside the install fire errors: " .. tostring(subErr))
 	assert(bindErr ~= nil and string.find(bindErr, "inside its own fn", 1, true) ~= nil, "bindLifetime inside the install fire errors: " .. tostring(bindErr))
 	-- H-184: the refused bind committed NOTHING — the handle binds cleanly afterwards
-	assert(quad.canBound(o), "not half-bound after the refusal")
-	quad.bindLifetime(inst, o)
-	assert(quad.canExecute(o), "binds cleanly after construction")
+	assert(quad.Backend.canBound(o), "not half-bound after the refusal")
+	quad.Backend.bindLifetime(inst, o)
+	assert(quad.Backend.canExecute(o), "binds cleanly after construction")
 	-- _receive-time fn runs are guarded the same way
 	local recvErr: any = nil
 	local s3 = Source(0)
@@ -272,7 +272,7 @@ do
 			end
 		end
 	end)
-	quad.bindLifetime(Instance.new("Frame"), o3)
+	quad.Backend.bindLifetime(Instance.new("Frame"), o3)
 	s3:Set(1)
 	assert(recvErr ~= nil and string.find(recvErr, "inside its own fn", 1, true) ~= nil, "entry point inside a _receive fn errors: " .. tostring(recvErr))
 	-- fn이 error로 죽으면 _running이 선 채 남는다 — 진입점은 막히지만 발화는 계속
@@ -285,7 +285,7 @@ do
 			error("observer fn boom")
 		end
 	end)
-	quad.bindLifetime(Instance.new("Frame"), o4)
+	quad.Backend.bindLifetime(Instance.new("Frame"), o4)
 	assert(not pcall(function()
 		s4:Set(1)
 	end), "the fn error propagates out of Set")

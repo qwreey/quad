@@ -58,7 +58,7 @@ Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE)
 메시지 모양 자체도 하나로 맞춰 둡니다 — **`주어: 이유`**, 그리고 받은 값을 말할 때만 뒤에 **`(got X)`**.
 
 - **주어**는 사용자가 부른 표면의 이름입니다. 메소드는 `Slot:List`, 네임스페이스 함수는
-  `Dispatch.setOffsetSource`(`quad.` 접두는 붙이지 않습니다), 생성자·불변식은 타입
+  `Bookkeeping.setOffsetSource`(`quad.` 접두는 붙이지 않습니다), 생성자·불변식은 타입
   이름만(`State:`, `Tween:`). 인자 값은 주어가 아니라 이유 쪽에 싣습니다.
 - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 em-dash(` — `) 뒤에.
 - **받은 값**은 문장 끝에 괄호로 — `(got {typeof(x)})`. `, got X` 같은 쉼표형은
@@ -67,7 +67,7 @@ Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE)
 
 ```
 Slot:List: updateFn must be a function (got string)
-Dispatch.setOffsetSource: source must be a Source<number> or None (got number)
+Bookkeeping.setOffsetSource: source must be a Source<number> or None (got number)
 ```
 
 ---

@@ -93,7 +93,7 @@ AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P
 
 - `AddPlugin: plugin overwrites existing module field "{k}" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field`
 
-**`_`로 시작하는 필드는 공개 표면이 아닙니다.** 모듈에 런타임으로 존재하더라도(`_bookkeeping` 등) 내부 계약이며 예고 없이 바뀝니다 — 읽거나 덮어쓰는 코드에 기대지 마세요.
+**`_`로 시작하는 필드는 공개 표면이 아닙니다.** 모듈에 런타임으로 존재하더라도(`_slotInternal` 등) 내부 계약이며 예고 없이 바뀝니다 — 읽거나 덮어쓰는 코드에 기대지 마세요.
 
 **예제**
 

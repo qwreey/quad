@@ -16,7 +16,7 @@ return function(S: Types.SlotInternal, module: any)
 	-- anything else through the backend's dispose — round3 `H-451` folded the hand copies that
 	-- `H-393`/Q14 kept catching one at a time (destroySlotTree loops, releaseElement, detach cleanup).
 	local function destroyElement(element: any)
-		if S.isSlot(element) then S.destroySlotTree(element) else module.nativeDispose(element) end
+		if S.isSlot(element) then S.destroySlotTree(element) else module.Backend.nativeDispose(element) end
 	end
 
 	-- wrap: element-type whitelist gate (H-40) + State→wrapper-Slot. raw* only
@@ -43,7 +43,7 @@ return function(S: Types.SlotInternal, module: any)
 			if v == nil or v == S.None then
 				raise("Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
 			end
-			if not module.isInst(v) then
+			if not module.Backend.isInst(v) then
 				raise("Slot: this backend cannot mount this value", S.SURFACE)
 			end
 			return v

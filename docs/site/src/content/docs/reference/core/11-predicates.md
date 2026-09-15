@@ -14,7 +14,7 @@ local D = q.Declaration
 
 ## 술어 표
 
-전부 `(x: any) -> boolean` 한 모양입니다(`q.isInst`만 파라미터 이름이 `value`). 부작용이 없고, 어떤 값을 줘도 던지지 않습니다 — 등록되지 않은 테이블·`nil`·숫자에는 그냥 `false`.
+전부 `(x: any) -> boolean` 한 모양입니다(`q.Backend.isInst`만 파라미터 이름이 `value`). 부작용이 없고, 어떤 값을 줘도 던지지 않습니다 — 등록되지 않은 테이블·`nil`·숫자에는 그냥 `false`.
 
 | 이름 | 참인 값 | 어디서 |
 |---|---|---|
@@ -36,7 +36,7 @@ local D = q.Declaration
 | `q.isTag(x)` | `q.Tag(...)`, `Tag.Merged(...)`, `tag:Added(...)`/`:Removed(...)`의 결과 | quad-base 기본 표면 |
 | `q.isAttr(x)` | `q.Attr(...)`, `q.StringAttr`/`q.NumberAttr`/`q.BooleanAttr`가 만든 단일 항목 그룹 | quad-base 기본 표면 |
 | `q.isAttrKey(x)` | `q.AttrKey(name)`, 그리고 `Attr` 그룹이 이름마다 내부로 쓰는 키 객체 | quad-base 기본 표면 |
-| `q.isInst(value)` | 백엔드가 "요소"로 인정하는 값 — quad-roblox면 실제 `Instance` | **백엔드 주입** (미설치면 에러) |
+| `q.Backend.isInst(value)` | 백엔드가 "요소"로 인정하는 값 — quad-roblox면 실제 `Instance` | **백엔드 주입** (미설치면 에러) |
 | `q.isTween(x)` | `q.Tween{ ... }` | **quad-roblox 확장** |
 
 시그니처의 정본은 `quad-types/src/init.luau`의 `Quad` 레코드입니다. 한 묶음에 몰려 있지는 않습니다 — `isEpoch`부터 `isMapperDescriptor`까지는 브랜드 술어 묶음에, `isSlot`은 `Slot` 표면과 함께, `isTag`/`isAttr`/`isAttrKey`는 Tag/Attr 표면과 함께, `isInst`는 주입 슬롯 묶음에 선언돼 있습니다. `isTween`은 `quad-roblox/src/init.luau`의 `RobloxExtension`에 있습니다 — 백엔드 값의 브랜드는 백엔드 표면이 싣습니다.

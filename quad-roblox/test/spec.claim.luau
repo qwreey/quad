@@ -24,7 +24,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance
+q.Backend.isInst = mock.isMockInstance
 
 -- "이미 있는 트리" — Studio/Clone 사본의 mock 대역
 local function makeTemplate()
@@ -55,15 +55,15 @@ do
 	assert(root.BackgroundTransparency == 0.25, "root props driven too")
 	-- 소유 실증: 재claim은 nativeClaim의 셋업-유무 판정으로 error(§7-10)
 	local ok = pcall(function()
-		q.nativeClaim(root)
+		q.Backend.nativeClaim(root)
 	end)
 	assert(not ok, "root is now quad-owned (double claim errors)")
 	local ok2 = pcall(function()
-		q.nativeClaim(title)
+		q.Backend.nativeClaim(title)
 	end)
 	assert(not ok2, "resolved children are claimed as well")
 	-- 배기 부기: 매핑 자식이 정적 자식으로 부기됨(위치 2의 오프셋 = 자리 1 길이)
-	assert(q.Dispatch.getOffsetAt(root, 2) == 1, "resolved child registered length 1 via InstanceChildHandler")
+	assert(q.Bookkeeping.getOffsetAt(root, 2) == 1, "resolved child registered length 1 via InstanceChildHandler")
 	print("PASS")
 end
 
@@ -78,7 +78,7 @@ do
 	}))
 	assert(inner.Text == "deep", "nested mapped child driven")
 	local ok = pcall(function()
-		q.nativeClaim(list)
+		q.Backend.nativeClaim(list)
 	end)
 	assert(not ok, "intermediate mapped inst claimed")
 	print("PASS")
@@ -121,7 +121,7 @@ do
 		made,
 	}))
 	assert(title.Text == "mapped" and made.Parent == root, "mapped + freshly-made children coexist")
-	assert(q.Dispatch.getOffsetAt(root, 3) == 2, "both positions bookkept (lengths 1+1)")
+	assert(q.Bookkeeping.getOffsetAt(root, 3) == 2, "both positions bookkept (lengths 1+1)")
 
 	-- H-304: None 채움(관용구) 뒤의 디스크립터도 해석된다 — drive 동형 순회
 	local root2, title2 = makeTemplate()
@@ -178,7 +178,7 @@ do
 	assert(inner.Text == "d2" and made2.Parent == list, "depth-2 reactive + New mix drove")
 	src:Set("d2b")
 	assert(inner.Text == "d2b", "depth-2 re-emission reaches the claimed subtree")
-	assert(q.Dispatch.getOffsetAt(list, 3) == 2, "mapped(1) + made(1) bookkept at depth 2")
+	assert(q.Bookkeeping.getOffsetAt(list, 3) == 2, "mapped(1) + made(1) bookkept at depth 2")
 	print("PASS")
 end
 
@@ -195,7 +195,7 @@ do
 	assert(title.Text == "from mod" and title.Name == "Inline", "child modifier fields driven; inline key wins")
 	src:Set(0.5)
 	assert(root.BackgroundTransparency == 0.5, "reactive field stays live through the Claim path")
-	assert(q.Dispatch.getOffsetAt(root, 2) == 0, "consumed modifier slot contributes 0 (mapped child sits at position 2 → offset counts slot 1 only)")
+	assert(q.Bookkeeping.getOffsetAt(root, 2) == 0, "consumed modifier slot contributes 0 (mapped child sits at position 2 → offset counts slot 1 only)")
 	print("PASS")
 end
 

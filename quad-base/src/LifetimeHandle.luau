@@ -52,32 +52,32 @@ local function notInstalled(name: string): (...any) -> ...any
 end
 
 local function Init(module: any)
-	module.bindLifetime = notInstalled("bindLifetime")
-	module.unbindLifetime = notInstalled("unbindLifetime")
-	module.canBound = notInstalled("canBound")
-	module.canExecute = notInstalled("canExecute")
+	module.Backend.bindLifetime = notInstalled("bindLifetime")
+	module.Backend.unbindLifetime = notInstalled("unbindLifetime")
+	module.Backend.canBound = notInstalled("canBound")
+	module.Backend.canExecute = notInstalled("canExecute")
 	-- `onDestroying(inst, fn): Connection` — the injected engine op `Effect._bindDestroying`
 	-- calls (`architecture.md` EngineOps line: a hook, not a manipulation, so no
 	-- composition fallback — missing means a clear error). The same backend that
 	-- fills the four above fills this one; until then, the same loud stub.
-	module.onDestroying = notInstalled("onDestroying")
+	module.Backend.onDestroying = notInstalled("onDestroying")
 	-- `H-373`: the three non-composable engine ops (see header). `if nil` — a
 	-- provider may already be there (same idiom as `Tag.luau`/`Attr/Key.luau`).
-	if module.isInst == nil then
-		module.isInst = notInstalled("isInst")
+	if module.Backend.isInst == nil then
+		module.Backend.isInst = notInstalled("isInst")
 	end
-	if module.nativeClaim == nil then
-		module.nativeClaim = notInstalled("nativeClaim")
+	if module.Backend.nativeClaim == nil then
+		module.Backend.nativeClaim = notInstalled("nativeClaim")
 	end
-	if module.nativeFindChild == nil then
-		module.nativeFindChild = notInstalled("nativeFindChild")
+	if module.Backend.nativeFindChild == nil then
+		module.Backend.nativeFindChild = notInstalled("nativeFindChild")
 	end
 	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
 	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
 	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
 	for _, name in { "nativeInsert", "nativeExtract", "nativeRemove", "nativeMove", "nativeSwap", "nativeDispose" } do
-		if module[name] == nil then
-			module[name] = notInstalled(name)
+		if module.Backend[name] == nil then
+			module.Backend[name] = notInstalled(name)
 		end
 	end
 	-- 2026-09-08: the two time ops (`architecture.md` EngineOps line — the last
@@ -85,8 +85,8 @@ local function Init(module: any)
 	-- `bindLifetime`/`canExecute`: pure Luau has no scheduler at all, so base cannot
 	-- default them — `Debounce`/`Throttle` need a backend (or the mock's virtual clock).
 	for _, name in { "setTimeout", "clearTimeout" } do
-		if module[name] == nil then
-			module[name] = notInstalled(name)
+		if module.Backend[name] == nil then
+			module.Backend[name] = notInstalled(name)
 		end
 	end
 end

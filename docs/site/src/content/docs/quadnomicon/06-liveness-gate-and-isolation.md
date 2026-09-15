@@ -135,7 +135,7 @@ end
 
 ```luau
 function Impl._receive(self: any, from: any)
-    if module.canExecute(self) then -- read at fire time
+    if module.Backend.canExecute(self) then -- read at fire time
         ...
         self.fn(self._state, self, from)
         ...

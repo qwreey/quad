@@ -21,9 +21,9 @@ local ProcessedModifier = ModifierModule.ProcessedModifier
 
 local module = {}
 
-function module.register(dispatch: QuadTypes.Dispatch)
+function module.register(dispatch: QuadTypes.Dispatch, bookkeeping: QuadTypes.Bookkeeping)
 	-- the shared nop-terminal factory (`None.luau`, Q3 ⑤) — same body as the Processed*Ref pair
-	NoneModule.addProcessedHandler(dispatch, "ProcessedModifierHandler", ProcessedModifier)
+	NoneModule.addProcessedHandler(dispatch, bookkeeping, "ProcessedModifierHandler", ProcessedModifier)
 end
 
 return module

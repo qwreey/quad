@@ -38,9 +38,9 @@ do
 	end)
 	q.Dispatch.drive(inst, { r })
 	assert(r.Value == inst and seen[#seen] == inst, "leaf sets the Ref to the instance and callbacks see it")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "H-39: leaf registered None/0")
-	assert(not q.canBound(r), "bound (gchold) — canBound is false while alive here")
+	assert(not q.Backend.canBound(r), "bound (gchold) — canBound is false while alive here")
 	print("PASS")
 end
 
@@ -84,8 +84,8 @@ do
 	assert(notifyA == 2 and refA.Value == inst, "same Ref re-emitted → no re-notify, still bound")
 	src:Set(refB)
 	assert(refA.Value == nil and notifyA == 3, "old Ref told nil exactly once")
-	assert(q.canBound(refA), "old Ref released — may be placed elsewhere")
-	assert(refB.Value == inst and not q.canBound(refB), "new Ref bound")
+	assert(q.Backend.canBound(refA), "old Ref released — may be placed elsewhere")
+	assert(refB.Value == inst and not q.Backend.canBound(refB), "new Ref bound")
 	-- 해제된 refA는 다른 자리에 다시 놓을 수 있다
 	local other = Instance.new("Frame")
 	q.Dispatch.drive(other, { refA })
@@ -108,7 +108,7 @@ do
 		end
 	end)
 	q.Dispatch.drive(inst, { src })
-	assert(reentered == 1 and r.Value == inst and not q.canBound(r), "re-entrant same-v re-dispatch is a no-op")
+	assert(reentered == 1 and r.Value == inst and not q.Backend.canBound(r), "re-entrant same-v re-dispatch is a no-op")
 	print("PASS")
 end
 
@@ -123,7 +123,7 @@ do
 	local p1 = q.PreRef(nil :: any):Callback(function(v)
 		if v then
 			table.insert(log, "pre1")
-			gateOnAtPre = q.Dispatch.getBlocker(v).Blocking -- ⓪ → (a): 게이트가 켜진 뒤 fire
+			gateOnAtPre = q.Bookkeeping.getBlocker(v).Blocking -- ⓪ → (a): 게이트가 켜진 뒤 fire
 		end
 	end)
 	local p2 = q.PreRef(nil :: any):Callback(function(v)
@@ -140,7 +140,7 @@ do
 	assert(table.concat(log, ",") == "pre1,pre2,ref,prop:Name", "PreRefs fire first in index order, then the body loop: " .. table.concat(log, ","))
 	assert(p1.Value == inst and p2.Value == inst, "fired with the instance")
 	assert(gateOnAtPre == true, "PreRef fires inside the batch gate (canon ⓪ before (a)) — a callback touching bookkeeping is absorbed")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[2] == 0 and bk.sourceList[2] == q.None and bk.lengthList[3] == 0, "consumed slots registered None/0 (ProcessedPreRefHandler)")
 	assert((p1 :: any)._fired == true, "one-shot guard set")
 	-- 재사용은 pre-pass에서 즉시 error(사용자 줄)
@@ -165,7 +165,7 @@ do
 		if v then
 			table.insert(log, "post1")
 			parentAtFire = v.Parent
-			gateOnAtFire = q.Dispatch.getBlocker(v).Blocking -- H-17: 배치 게이트가 켜진 채로 실행
+			gateOnAtFire = q.Bookkeeping.getBlocker(v).Blocking -- H-17: 배치 게이트가 켜진 채로 실행
 		end
 	end)
 	local post2 = q.PostRef(nil :: any):Callback(function(v)
@@ -182,8 +182,8 @@ do
 	assert(table.concat(log, ",") == "pre,prop:Name,post1,post2", "PostRefs fire last in index order: " .. table.concat(log, ","))
 	assert(parentAtFire == nil, "literal path: not yet parented at fire (no guarantee either way — brief Q6)")
 	assert(gateOnAtFire == true, "PostRef fires BEFORE the batch closes — gate still on (H-17), one recompute catches up")
-	assert(not q.Dispatch.getBlocker(inst).Blocking, "…and the batch is closed after drive returns")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	assert(not q.Bookkeeping.getBlocker(inst).Blocking, "…and the batch is closed after drive returns")
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None and bk.lengthList[3] == 0, "consumed slots registered None/0 (ProcessedPostRefHandler)")
 	local ok, err = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { post1 })
@@ -231,7 +231,7 @@ do
 	q.Dispatch.retractFrom(inst, 2, 1)
 	assert(pre.Value == inst and post.Value == inst, "retracting a consumed slot is a no-op (fire is not undone)")
 	q.Dispatch.retractFrom(inst, 3, 1)
-	assert(r.Value == nil and q.canBound(r), "plain leaf retract tells nil and releases")
+	assert(r.Value == nil and q.Backend.canBound(r), "plain leaf retract tells nil and releases")
 	print("PASS")
 end
 

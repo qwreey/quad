@@ -6,7 +6,7 @@
 
 	Assembly (`H-174`): `Observer.Init(module)` builds one implementation (and
 	one registry pair) per quad instance; the lifetime gates are read as
-	`module.canExecute(self)` / `module.canBound(self)` AT CALL TIME — never
+	`module.Backend.canExecute(self)` / `module.Backend.canBound(self)` AT CALL TIME — never
 	captured at init, the backend overwrites those fields after `New()`.
 	`State.luau` reaches the constructor through `implFor(module)`.
 
@@ -79,7 +79,7 @@ local function createImpl(module: any)
 
 	-- ── EmitReceive ──────────────────────────────────────────────────
 	function Impl._receive(self: any, from: any)
-		if module.canExecute(self) then -- read at fire time (`H-174`)
+		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
 			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric); an fn
 			-- that throws leaves the flag set — dead by contract. Save/restore, not
 			-- true/false: a reentrant wave (fn sets its own State) must not lower
@@ -122,7 +122,7 @@ local function createImpl(module: any)
 		if self._running then
 			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
 		end
-		if not module.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
+		if not module.Backend.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
 			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
 				SURFACE
@@ -154,7 +154,7 @@ local function createImpl(module: any)
 		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.
-		if not module.canBound(self) then
+		if not module.Backend.canBound(self) then
 			Err.errorBeforeNearest(
 				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
 				SURFACE
@@ -243,17 +243,17 @@ local function registerDispatchHandlers(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — this
 			-- leaf contributes no physical element, so the pair is None/0.
-			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
+			module.Bookkeeping.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			ModuleIdentity.assertOwnAtDispatch(module, v, "Observer") -- another instance's handle would never run here
 			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
 			if old ~= v then
-				module.bindLifetime(inst, v)
+				module.Backend.bindLifetime(inst, v)
 			end
 			relate:SetWeak(inst, k, v)
 			return function(nextValue: any?, _retracting: boolean)
 				if nextValue ~= v then
-					module.unbindLifetime(v)
+					module.Backend.unbindLifetime(v)
 					-- Clear only when we actually stand down — unconditional
 					-- clearing would kill the dedup on spurious re-emits
 					-- (nextValue == v), the exact RefLeafHandler bug.

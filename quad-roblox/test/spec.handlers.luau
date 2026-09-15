@@ -8,7 +8,7 @@
 	- `getfenv(D.New).Instance` — 생성 D의 lazy 전역(단위 ② spec 선례)
 	- `getfenv(Property install 함수).game` — Reflection 심(디스크립터 배열
 	  `.Name` 모양은 2026-09-02 Studio 실측 그대로)
-	- `q.isInst` — `H-40`이 "주입 술어"로 만든 그 자리(mock 인식으로 교체)
+	- `q.Backend.isInst` — `H-40`이 "주입 술어"로 만든 그 자리(mock 인식으로 교체)
 ]]
 
 local Quad = require("../luau_packages/quad_base")
@@ -56,8 +56,8 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim -- Property 모듈 env에 주입
 ;(getfenv(installEvent) :: any).game = gameShim -- Event 모듈도 같은 심(이벤트 미선언 → 매치 없음)
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)
-q.errorNamespace.setFuncLevel((require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE, q.isInst)
+q.Backend.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)
+q.errorNamespace.setFuncLevel((require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE, q.Backend.isInst)
 
 print("=== 1. Property — Reflection 멤버십 매치로 실프로퍼티만 세팅 ===")
 do
@@ -76,7 +76,7 @@ do
 	mock.assertBlamesUser(err, SPEC_FILE, "bogus key")
 
 	local f = Instance.new("Frame")
-	q.nativeClaim(f)
+	q.Backend.nativeClaim(f)
 	local ok2 = pcall(function()
 		q.Dispatch.process(f, "Parent", Instance.new("Frame"), 1)
 	end)
@@ -97,7 +97,7 @@ do
 	c1.Name, c2.Name = "A", "B"
 	local f = q.Declaration.Frame({ c1, c2 }) :: any
 	assert(c1.Parent == f and c2.Parent == f, "both static children mounted")
-	assert(q.Dispatch.getOffsetAt(f, 1) == 0 and q.Dispatch.getOffsetAt(f, 2) == 1, "H-39/H-134: each terminal registered length 1 — offsets 0,1")
+	assert(q.Bookkeeping.getOffsetAt(f, 1) == 0 and q.Bookkeeping.getOffsetAt(f, 2) == 1, "H-39/H-134: each terminal registered length 1 — offsets 0,1")
 	print("PASS")
 end
 
@@ -124,12 +124,12 @@ do
 	assert(c3.Parent == f, "replacement mounted")
 	-- 위치 2의 오프셋(=자리 1의 길이 합)이 살아있는 부기를 실제로 핀한다 —
 	-- 위치 1의 0은 부트스트랩 경로라 공허(리뷰 발견)
-	assert(q.Dispatch.getOffsetAt(f, 2) == 1, "replacement kept length 1 at position 1 (real bookkeeping pin)")
+	assert(q.Bookkeeping.getOffsetAt(f, 2) == 1, "replacement kept length 1 at position 1 (real bookkeeping pin)")
 
 	-- 단순 철거 — retractFrom 경유
 	q.Dispatch.retractFrom(f, 1, 1)
 	assert(c3.Parent == nil, "plain retraction demotes the child")
-	assert(q.Dispatch.getOffsetAt(f, 2) == 0, "retract set length 0 (H-134 retract bookkeeping)")
+	assert(q.Bookkeeping.getOffsetAt(f, 2) == 0, "retract set length 0 (H-134 retract bookkeeping)")
 	print("PASS")
 end
 
@@ -185,13 +185,13 @@ do
 	local c1, c2, sib = Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("TextLabel")
 	local src = q.Source(c1 :: any)
 	local f = q.Declaration.Frame({ src, sib }) :: any
-	assert(c1.Parent == f and q.Dispatch.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
+	assert(c1.Parent == f and q.Bookkeeping.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
 
 	src:Set(q.None) -- NoneHandler → nil 재귀 → NilHandler(길이 0)
-	assert(c1.Parent == nil and q.Dispatch.getOffsetAt(f, 2) == 0, "None hands off to NilHandler — sibling offset follows")
+	assert(c1.Parent == nil and q.Bookkeeping.getOffsetAt(f, 2) == 0, "None hands off to NilHandler — sibling offset follows")
 
 	src:Set(c2 :: any)
-	assert(c2.Parent == f and q.Dispatch.getOffsetAt(f, 2) == 1, "back to a child — offset restored")
+	assert(c2.Parent == f and q.Bookkeeping.getOffsetAt(f, 2) == 1, "back to a child — offset restored")
 
 	-- StoreBind 경유 같은 값 재발행 — dedup이 재발행 경로에서도 detach를 접는다
 	local nilTransitions = 0
@@ -204,7 +204,7 @@ do
 	assert(c2.Parent == f and nilTransitions == 0, "H-154 dedup holds through the StoreBind re-emission path")
 
 	src:Set(nil :: any) -- 진짜 nil — NilHandler 직행
-	assert(c2.Parent == nil and q.Dispatch.getOffsetAt(f, 2) == 0, "reactive nil unmounts and zeroes the length")
+	assert(c2.Parent == nil and q.Bookkeeping.getOffsetAt(f, 2) == 0, "reactive nil unmounts and zeroes the length")
 	print("PASS")
 end
 
@@ -238,7 +238,7 @@ do
 	-- 자식과 섞여도 오프셋 무영향
 	local c = Instance.new("TextLabel")
 	local f2 = q.Declaration.Frame({ q.Modifier():Name("M"), c }) :: any
-	assert(c.Parent == f2 and q.Dispatch.getOffsetAt(f2, 2) == 0 and f2.Name == "M", "sentinel slot contributes 0; child mounts")
+	assert(c.Parent == f2 and q.Bookkeeping.getOffsetAt(f2, 2) == 0 and f2.Name == "M", "sentinel slot contributes 0; child mounts")
 	print("PASS")
 end
 

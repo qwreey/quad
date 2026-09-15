@@ -90,10 +90,10 @@ local module = {
 	firePostRefs = firePostRefs,
 }
 
-function module.register(dispatch: QuadTypes.Dispatch)
+function module.register(dispatch: QuadTypes.Dispatch, bookkeeping: QuadTypes.Bookkeeping)
 	-- canon `ProcessedPreRefHandler` block — the shared nop-terminal factory (Q3 ⑤)
-	NoneModule.addProcessedHandler(dispatch, "ProcessedPreRefHandler", ProcessedPreRef)
-	NoneModule.addProcessedHandler(dispatch, "ProcessedPostRefHandler", ProcessedPostRef)
+	NoneModule.addProcessedHandler(dispatch, bookkeeping, "ProcessedPreRefHandler", ProcessedPreRef)
+	NoneModule.addProcessedHandler(dispatch, bookkeeping, "ProcessedPostRefHandler", ProcessedPostRef)
 end
 
 return module

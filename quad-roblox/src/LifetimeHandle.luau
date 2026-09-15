@@ -173,11 +173,11 @@ local function install(quad: any)
 		BindData:SetWeak(value, "gcconn", nil)
 	end
 
-	quad.bindLifetime = bindLifetime
-	quad.unbindLifetime = unbindLifetime
-	quad.canBound = canBound
-	quad.canExecute = canExecute
-	quad.nativeClaim = nativeClaim
+	quad.Backend.bindLifetime = bindLifetime
+	quad.Backend.unbindLifetime = unbindLifetime
+	quad.Backend.canBound = canBound
+	quad.Backend.canExecute = canExecute
+	quad.Backend.nativeClaim = nativeClaim
 
 	-- `H-238`: the backend must tag every function it installs in the shared
 	-- error namespace, or errorBeforeNearest below these frames cannot find

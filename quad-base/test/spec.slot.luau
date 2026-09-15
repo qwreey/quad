@@ -391,7 +391,7 @@ do
 	end)
 	assert(not ok, "a Slot at a NAME key must not be handled")
 	assert(string.find(tostring(err), "position must be a positive integer", 1, true) == nil, "must fail as a dispatch match error, not an internal bookkeeping error: " .. tostring(err))
-	assert(q.canBound(s) == true, "no orphaned lifetime bind (claim/bind must not have committed)")
+	assert(q.Backend.canBound(s) == true, "no orphaned lifetime bind (claim/bind must not have committed)")
 
 	local data = q.Source({ { id = "a" }, { n = 2 } })
 	local s2 = Slot()
@@ -412,14 +412,14 @@ end
 -- spy(name, fn): temporarily replace an injected op on `q` (Slot reads
 -- `module.<op>` late — `H-174`), returning the captured call list.
 local function spy(name, body)
-	local orig, calls = q[name], {}
-	q[name] = function(...)
+	local orig, calls = q.Backend[name], {}
+	q.Backend[name] = function(...)
 		table.insert(calls, { ... })
 		if orig then return orig(...) end
 		return nil
 	end
 	body()
-	q[name] = orig
+	q.Backend[name] = orig
 	return calls
 end
 
@@ -445,7 +445,7 @@ do
 	assert(#m[3] == 2 and m[3][1] == i1 and m[3][2] == i2, "elements = flattened leaves of the nested Slot (collectLeaves)")
 	assert(s:IndexOf(inner) == 1 and s:IndexOf(a) == 2, "reordered")
 	assert(inner.Offset:Get() == 0, "inner Offset follows its new position: " .. inner.Offset:Get())
-	assert(dispatch.getOffsetAt(s, 3) == 3, "c still at absolute 3")
+	assert(q.Bookkeeping.getOffsetAt(s, 3) == 3, "c still at absolute 3")
 
 	-- Move(1, 3): the block moves down past a(1) and c(1) → lands at 2
 	moves = spy("nativeMove", function() s:Move(1, 3) end)
@@ -457,7 +457,7 @@ do
 	local w = swaps[1]
 	assert(w[2] == 0 and w[3][1] == a and w[4] == 2 and #w[5] == 2 and w[5][1] == i1, "nativeSwap(target, 0, {a}, 2, {i1,i2})")
 	assert(s:IndexOf(inner) == 1 and s:IndexOf(c) == 2 and s:IndexOf(a) == 3, "swapped ends, middle fixed")
-	assert(inner.Offset:Get() == 0 and dispatch.getOffsetAt(s, 3) == 3, "offsets after swap")
+	assert(inner.Offset:Get() == 0 and q.Bookkeeping.getOffsetAt(s, 3) == 3, "offsets after swap")
 
 	-- Swap(i, i) is a no-op (no physical op); range errors are fail-fast
 	assert(#spy("nativeSwap", function() s:Swap(2, 2) end) == 0, "Swap(i,i) no-op")
@@ -540,9 +540,9 @@ do
 	x.Name, y.Name, z.Name = "x", "y", "z"
 
 	local recomputes = 0
-	local bkTable = q._bookkeeping
-	local origRecompute = bkTable.recompute
-	bkTable.recompute = function(...) recomputes += 1; return origRecompute(...) end
+	local bkTable = q.Bookkeeping
+	local origRecompute = bkTable._recompute
+	bkTable._recompute = function(...) recomputes += 1; return origRecompute(...) end
 	local removed
 	local inserts
 	local extracts = spy("nativeExtract", function()
@@ -550,7 +550,7 @@ do
 			removed = s:Splice(2, 2, x, y, z)
 		end)
 	end)
-	bkTable.recompute = origRecompute
+	bkTable._recompute = origRecompute
 	assert(#removed == 2 and removed[1] == b and removed[2] == c, "removed span returned in order")
 	assert(b.Parent == nil and not mock.isDestroyed(b) and c.Parent == nil and not mock.isDestroyed(c), "removed alive")
 	assert(s:Get(1) == a and s:Get(2) == x and s:Get(3) == y and s:Get(4) == z and s:Get(5) == d, "a,x,y,z,d")
@@ -562,7 +562,7 @@ do
 	assert(e[1] == parent and e[2] == 1, "offset of the span (1): " .. tostring(e[2]))
 	assert(#e[3] == 2 and e[3][1] == b and e[3][2] == c, "removed leaves in order")
 	assert(#e[4] == 3 and e[4][1] == x and e[4][2] == y and e[4][3] == z, "new leaves in order")
-	assert(dispatch.getOffsetAt(s, 5) == 4, "offsets settled after the batch")
+	assert(q.Bookkeeping.getOffsetAt(s, 5) == 4, "offsets settled after the batch")
 
 	-- nested Slots on both sides still fold into the one op (collectLeaves)
 	local inner = Slot(); local i1, i2 = Instance.new("Frame"), Instance.new("Frame")
@@ -674,7 +674,7 @@ do
 	local calls = spy("nativeMove", function() dispatch.drive(parent, { s }) end)
 	assert(#calls == 0, "no reposition op replayed at mount")
 	assert(s.Length:Get() == 3 and childCount(parent) == 3, "mounted in the final order")
-	assert(dispatch.getOffsetAt(s, 1) == 0 and dispatch.getOffsetAt(s, 3) == 2, "offsets from the final layout")
+	assert(q.Bookkeeping.getOffsetAt(s, 1) == 0 and q.Bookkeeping.getOffsetAt(s, 3) == 2, "offsets from the final layout")
 	assert(a.Parent == nil and not mock.isDestroyed(a), "spliced-out element alive, unmounted")
 	print("PASS")
 end
@@ -691,7 +691,7 @@ do
 	dispatch.drive(parent, { s })
 	local dead = Slot(); q.dispose(dead)
 	assert(not pcall(function() s:Splice(1, 0, dead) end), "destroyed Slot element rejected")
-	assert(not dispatch.getBlocker(s).Blocking, "batch gate NOT left On")
+	assert(not q.Bookkeeping.getBlocker(s).Blocking, "batch gate NOT left On")
 	assert(#s._elements == 2 and s.Length:Get() == 2, "nothing mutated")
 	s:Add(Instance.new("Frame"))
 	assert(s.Length:Get() == 3 and childCount(parent) == 3, "bookkeeping still alive after the rejected Splice")
@@ -776,7 +776,7 @@ do
 	local f = Instance.new("Frame")
 	assert(not pcall(function() s:Splice(2, 0, q.Source(f), q.Source(f)) end), "two States over one instance rejected")
 	assert(not pcall(function() s:Splice(2, 0, f, q.Source(f)) end), "raw + State over the same instance rejected")
-	assert(#s._elements == 1 and childCount(parent) == 1 and not dispatch.getBlocker(s).Blocking, "nothing mutated, gate open")
+	assert(#s._elements == 1 and childCount(parent) == 1 and not q.Bookkeeping.getBlocker(s).Blocking, "nothing mutated, gate open")
 	s:Add(Instance.new("Frame"))
 	assert(s.Length:Get() == 2, "still reactive")
 
@@ -893,7 +893,7 @@ do
 	dispatch.drive(parent, { s })
 	assert(childCount(parent) == 4, "4 leaves mounted: " .. childCount(parent))
 	assert(s:IndexOf(inner) == 2 and s:IndexOf(b) == 3, "IndexOf answers the current positions")
-	local map = dispatch.getBookkeeping(s).indexOfElement
+	local map = q.Bookkeeping.getBookkeeping(s).indexOfElement
 	assert(map[inner] == 2 and map[b] == 3, "the reverse map itself holds them (the O(1) path is real, not the scan fallback)")
 	local st = q.Source(c)
 	s:Add(st)

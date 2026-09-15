@@ -27,8 +27,8 @@
 	    `resubscribeTail` replays a held change after registration,
 	    `Unsubscribe` consumes the cleanup.
 
-	Assembly (`H-174`): `Effect.Init(module)` — gates (`module.canExecute` /
-	`module.canBound`) and the injected `module.onDestroying` are read at call
+	Assembly (`H-174`): `Effect.Init(module)` — gates (`module.Backend.canExecute` /
+	`module.Backend.canBound`) and the injected `module.Backend.onDestroying` are read at call
 	time; the registries come from `Observer.luau` (`H-99`), pulled in with
 	`module:RunInit(Observer.Init)` (idempotent).
 ]]
@@ -85,7 +85,7 @@ local function createImpl(module: any)
 			self._pending = true -- re-entered while running → deferred re-run
 			return
 		end
-		if self._cleanupRunning or self._dying or (not force and not module.canExecute(self)) then
+		if self._cleanupRunning or self._dying or (not force and not module.Backend.canExecute(self)) then
 			self._rerunRequired = true -- `H-159`/`H-160`/`H-182`: unexecutable (cleanup running / dying / unbound / dead)
 			return --   → HOLD, replayed once on the next bind/subscribe
 		end
@@ -137,7 +137,7 @@ local function createImpl(module: any)
 		self:_unbindDestroying() -- rebind (portal remount): drop the old connection first — idempotent
 		self._dying = false -- `H-182`: rebinding a survivor of a Destroy wave re-arms it
 		-- (1) leaf dies → cleanup exactly once. The one hook point (`LP-2`).
-		self._destroyConn = module.onDestroying(inst, function() -- injected op, read at call time
+		self._destroyConn = module.Backend.onDestroying(inst, function() -- injected op, read at call time
 			-- `H-182`: `canExecute` stays true for the rest of the Destroy wave (gcconn
 			-- is cut last) — the flag closes that window so a dep change later in the
 			-- wave HOLDS instead of re-running fn on the dying leaf. NOT `_destroyed`
@@ -184,7 +184,7 @@ local function createImpl(module: any)
 		if isRunning(self) then
 			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
-		if not module.canBound(self) then
+		if not module.Backend.canBound(self) then
 			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
@@ -198,7 +198,7 @@ local function createImpl(module: any)
 		if isRunning(self) then
 			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
-		if not module.canBound(self) then
+		if not module.Backend.canBound(self) then
 			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
 		end
 		self.Subscribed = true
@@ -334,17 +334,17 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
-			dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
+			module.Bookkeeping.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			ModuleIdentity.assertOwnAtDispatch(module, v, "Effect")
 			local old = relate:GetWeak(inst, k) -- `H-71`; load-bearing dedup (`H-266`)
 			if old ~= v then
-				module.bindLifetime(inst, v)
+				module.Backend.bindLifetime(inst, v)
 			end
 			relate:SetWeak(inst, k, v)
 			return function(nextValue: any?, _retracting: boolean)
 				if nextValue ~= v then
-					module.unbindLifetime(v)
+					module.Backend.unbindLifetime(v)
 					-- `H-57`: value-swap retract is destruction-equivalent for
 					-- an Effect (it never comes back) — consume its cleanup.
 					v:_consumeCleanup()

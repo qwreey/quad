@@ -41,8 +41,8 @@ local q = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty)).game = gameShim
 ;(getfenv(installEvent)).game = gameShim
 ;(getfenv(q.Declaration.New)).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance
-q.errorNamespace.setFuncLevel(require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE, q.isInst)
+q.Backend.isInst = mock.isMockInstance
+q.errorNamespace.setFuncLevel(require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE, q.Backend.isInst)
 
 -- 살아있는 연결 수(mock Signal 내부 — 관측 전용). mock의 Disconnect/
 -- DisconnectAll이 끊긴 항목을 배열에서 바로 빼므로 길이가 곧 생존 수다.
@@ -136,7 +136,7 @@ do
 	b.Name = "x"
 	assert(#seen == 2, "other properties do not trigger it")
 	-- 길이 0 말단: 형제 자식 오프셋에 기여하지 않는다(H-39)
-	assert(q.Dispatch.getOffsetAt(b, 3) == 0, "descriptors contribute length 0")
+	assert(q.Bookkeeping.getOffsetAt(b, 3) == 0, "descriptors contribute length 0")
 
 	local d = OnChange("Text", function() end)
 	assert(d.Name == "Text" and type(d.Callback) == "function", "descriptor shape { Name, Callback }")

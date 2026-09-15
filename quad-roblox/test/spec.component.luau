@@ -28,7 +28,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(installShorthand) :: any).UDim = { new = function(s: number, o: number) return { Scale = s, Offset = o } end }
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance
+q.Backend.isInst = mock.isMockInstance
 
 local D, None, Modifier = q.Declaration, q.None, q.Modifier
 
@@ -112,9 +112,9 @@ do
 	assert(table.concat(names, ",") == "H,a,b,F", "flattened between siblings: " .. table.concat(names, ","))
 	-- 논리 순서는 Length/Offset 부기(정본 slot-plan) — 물리 자식 순서는 백엔드 몫이라
 	-- mock의 GetChildren은 부착 순서일 뿐(ROADMAP 백로그 "Slot 형제 순서 보장")
-	assert(q.Dispatch.getOffsetAt(frame, 3) == 3, "footer sits after header(1) + list(2)")
+	assert(q.Bookkeeping.getOffsetAt(frame, 3) == 3, "footer sits after header(1) + list(2)")
 	list:Add(D.TextLabel({ Text = "c" }))
-	assert(q.Dispatch.getOffsetAt(frame, 3) == 4, "later Add shifts the footer's logical offset")
+	assert(q.Bookkeeping.getOffsetAt(frame, 3) == 4, "later Add shifts the footer's logical offset")
 	local found = false
 	for _, c in frame:GetChildren() do if c.Text == "c" then found = c.Parent == frame end end
 	assert(found, "added item is a physical child of the parent")

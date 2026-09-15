@@ -152,20 +152,20 @@ local function install(quad: any)
 		task.cancel(timeout._native)
 	end
 
-	quad.nativeInsert = nativeInsert
-	quad.nativeExtract = nativeExtract
-	quad.nativeRemove = nativeRemove
-	quad.nativeMove = nativeMove
-	quad.nativeSwap = nativeSwap
-	quad.nativeDispose = nativeDispose
-	quad.isInst = isInst
-	quad.onDestroying = onDestroying
-	quad.nativeFindChild = nativeFindChild
-	quad.addTag = addTag
-	quad.removeTag = removeTag
-	quad.setAttr = setAttr
-	quad.setTimeout = setTimeout
-	quad.clearTimeout = clearTimeout
+	quad.Backend.nativeInsert = nativeInsert
+	quad.Backend.nativeExtract = nativeExtract
+	quad.Backend.nativeRemove = nativeRemove
+	quad.Backend.nativeMove = nativeMove
+	quad.Backend.nativeSwap = nativeSwap
+	quad.Backend.nativeDispose = nativeDispose
+	quad.Backend.isInst = isInst
+	quad.Backend.onDestroying = onDestroying
+	quad.Backend.nativeFindChild = nativeFindChild
+	quad.Backend.addTag = addTag
+	quad.Backend.removeTag = removeTag
+	quad.Backend.setAttr = setAttr
+	quad.Backend.setTimeout = setTimeout
+	quad.Backend.clearTimeout = clearTimeout
 
 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
 	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr, setTimeout, clearTimeout)

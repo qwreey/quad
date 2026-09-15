@@ -88,11 +88,11 @@ do
 	end)
 	assert(runs == 0, "install runs the wrapper only, never fn")
 	local inst = Instance.new("Frame")
-	q.bindLifetime(inst, e)
+	q.Backend.bindLifetime(inst, e)
 	assert(runs == 0, "bound: still not run")
 	inst:Destroy()
 	assert(runs == 1, "leaf death → fn once")
-	q.unbindLifetime(e)
+	q.Backend.unbindLifetime(e)
 	assert(runs == 1, "no double run")
 	-- drive path: an OnDestroyed in the children array is bound to that inst
 	local runs2 = 0

@@ -50,11 +50,11 @@ do
 	-- [M10 엔진 축] mockProvider가 이제 tag op까지 심으므로(installLifetime은
 	-- 그 위임 래퍼) "생명주기만 설치"가 불가능해졌다 — 모듈 자신의 스텁을
 	-- 붙잡아 뒀다가 프로바이더 설치 뒤 그 op만 되돌린다(Tag.luau는
-	-- `module.addTag`를 호출 시점에 읽는다, `H-174`). 그래야 디스패치 경유
+	-- `module.Backend.addTag`를 호출 시점에 읽는다, `H-174`). 그래야 디스패치 경유
 	-- blame 경로(핸들러 프레임을 지나 사용자 줄까지)가 계속 검증된다(통합 리뷰).
-	local stub = q.addTag
+	local stub = q.Backend.addTag
 	mock.installLifetime(q)
-	q.addTag = stub
+	q.Backend.addTag = stub
 	local inst = Instance.new("Frame")
 	local ok, err = pcall(function()
 		q.Dispatch.drive(inst, { q.Tag("a") })
@@ -193,7 +193,7 @@ do
 	mock.addSpecLeaf(q, sources, leafLog) -- 문자열 leaf(자리 기여 1)
 	q.Dispatch.drive(inst, { q.Tag("card"), "child" }) -- Tag 앞, leaf 뒤
 	-- Tag 자리(k=1)가 None/0으로 등록됐으므로 offset 산술이 성립한다
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 0, "Tag contributes 0 to the offset math")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "Tag contributes 0 to the offset math")
 	print("PASS")
 end
 

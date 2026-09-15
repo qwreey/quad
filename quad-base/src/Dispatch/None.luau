@@ -55,7 +55,7 @@ local None = sentinel("None")
 
 local module = { None = None, sentinel = sentinel }
 
--- The terminal "empty slot" registration is `dispatch.setEmpty` (Bookkeeping, 2026-09-07 Q3 ③).
+-- The terminal "empty slot" registration is `bookkeeping.setEmpty` (Bookkeeping, 2026-09-07 Q3 ③).
 
 -- The `Processed*` nop terminal (ProcessedModifier / ProcessedPreRef /
 -- ProcessedPostRef — `modifier-plan.md` `H-35` block, `ref-plan.md` canon):
@@ -64,7 +64,7 @@ local module = { None = None, sentinel = sentinel }
 -- with `Void` — flatten / the pre-pass fire already happened, nothing to
 -- undo. One factory for the three (Q3 ⑤ — `Dispatch/Modifier/Handler.luau`, 옛 `Dispatch/Modifier.luau`, was a
 -- third hand copy of `Dispatch/Ref.luau`'s local `addProcessed`).
-function module.addProcessedHandler(dispatch: QuadTypes.Dispatch, name: string, sent: any)
+function module.addProcessedHandler(dispatch: QuadTypes.Dispatch, bookkeeping: QuadTypes.Bookkeeping, name: string, sent: any)
 	dispatch.addHandler({
 		name = name,
 		isHandlable = function(_inst: any, _k: any, v: any): boolean
@@ -72,7 +72,7 @@ function module.addProcessedHandler(dispatch: QuadTypes.Dispatch, name: string, 
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH, -- "매우 높음, NoneHandler와 동급"
 		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			dispatch.setEmpty(inst, k, inst) -- canon block: offsetSource → length 0 (`H-35`)
+			bookkeeping.setEmpty(inst, k, inst) -- canon block: offsetSource → length 0 (`H-35`)
 			return Void
 		end,
 	})
@@ -84,7 +84,7 @@ end
 -- shared error namespace itself.
 -- `H-259`: typed against the shared contract — the only two production
 -- handlers must not be the only untyped ones (the drift hole `H-227` closed).
-function module.register(dispatch: QuadTypes.Dispatch)
+function module.register(dispatch: QuadTypes.Dispatch, bookkeeping: QuadTypes.Bookkeeping)
 	dispatch.addHandler({
 		name = "NoneHandler",
 		-- the sentinel itself — real nil can't come out of a table traversal;
@@ -110,7 +110,7 @@ function module.register(dispatch: QuadTypes.Dispatch)
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 			-- no recursion — already nil, nothing further to hand down
-			dispatch.setEmpty(inst, k)
+			bookkeeping.setEmpty(inst, k)
 			return Void
 		end,
 	})

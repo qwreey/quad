@@ -5,7 +5,7 @@
 
 	[M6 fork, H6] Built in slices across M6 — the fork gave the core, the
 	2026-09-03 remainder unit closed the rest (ROADMAP M6: no remainder). The subsystem
-	factory pattern (`H-174`): `module.bindLifetime`/`isState`/`Dispatch.*` are
+	factory pattern (`H-174`): `module.Backend.bindLifetime`/`isState`/`Dispatch.*` are
 	read late off `module` (backends overwrite them after New()). elementOwner
 	and the Detach/KeyGone sentinels live here (re-exported at top level like
 	None), so the top-level SlotHandler and this file share one registry.
@@ -27,8 +27,8 @@
 	back onto it (`S.name = name`), cross-file calls are late `S.name(...)` lookups —
 	Luau forward declarations cannot cross files — and siblings read `S.x` directly
 	everywhere (no per-file re-captures, no wrapper functions). Backend-injected
-	primitives are not on `S`: every use is an inline `module.bindLifetime(...)`/
-	`module.isInst(...)` read (`H-174`; the old wrapper trio was a leftover of the M6
+	primitives are not on `S`: every use is an inline `module.Backend.bindLifetime(...)`/
+	`module.Backend.isInst(...)` read (`H-174`; the old wrapper trio was a leftover of the M6
 	fork's style, not a need — a hashed field read is cheap, user 2026-09-07). This init keeps the public Slot_mt CRUD,
 	the gates (assertLive/assertManual/assertMutable/checkIndex/occupantOf/
 	prepareElements), the `Slot(initial)` constructor, `dispose`, the module exposure
@@ -73,7 +73,7 @@ local function Init(module: any)
 	-- subsystem directly (not through Dispatch) — and `recompute` is only on
 	-- `_bookkeeping` (Dispatch re-exports the other five, not it). Route all six
 	-- prefix-sum ops through BK.
-	local BK = module._bookkeeping
+	local BK = module.Bookkeeping
 	local None = module.None
 	local isState = module.isState
 	-- ⚠️ H-174: lifetime primitives + native ops + isInst are backend-injected
@@ -415,7 +415,7 @@ local function Init(module: any)
 			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)" .. ZOMBIE_NOTE, SURFACE)
 		end
 		if isSlot(value) then S.destroySlotTree(value)
-		elseif module.isInst(value) then module.nativeDispose(value)
+		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
 		else Err.errorBeforeNearest("dispose: this backend cannot dispose this value", SURFACE) end
 	end
 

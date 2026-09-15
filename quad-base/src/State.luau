@@ -6,7 +6,7 @@
 	Assembly (`H-174`, user-confirmed 2026-08-28): `State.Init(module)` builds
 	one implementation table per `quad` instance and keeps `module` in its
 	closure, so later units (`Observer`, `Gate`) can read lifetime gates as
-	`module.canExecute(...)` AT FIRE TIME (never captured at init — the
+	`module.Backend.canExecute(...)` AT FIRE TIME (never captured at init — the
 	backend overwrites those fields after `New()`). `implFor(module)` hands
 	the same table to `Source.luau`'s init (its only caller — `Store.luau`
 	never touches it; it reaches State only through the `Source` values it

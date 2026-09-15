@@ -6,7 +6,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 
 이 페이지는 **핸들러를 직접 작성하는 사람**을 위한 계약입니다. 새 값 타입(백엔드의 `Tween`, 플러그인의 스프링 값)이나 새 props 어휘를 추가하려면 여기 규약을 지키는 테이블 하나를 `q.Dispatch.addHandler`로 등록하면 됩니다.
 
-이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Dispatch.setLength(ownerKey, i, len, anchor, element)](#qdispatchsetlengthownerkey-i-len-anchor-element) · [q.Dispatch.setOffsetSource(ownerKey, i, source)](#qdispatchsetoffsetsourceownerkey-i-source) · [q.Dispatch.setEmpty(ownerKey, i, anchor)](#qdispatchsetemptyownerkey-i-anchor) · [q.Dispatch.getOffsetAt(ownerKey, at)](#qdispatchgetoffsetatownerkey-at) · [q.Dispatch.getBlocker(ownerKey)](#qdispatchgetblockerownerkey) · [q.Dispatch.getBookkeeping(ownerKey)](#qdispatchgetbookkeepingownerkey)
+이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBlocker(ownerKey)](#qbookkeepinggetblockerownerkey) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -208,19 +208,19 @@ Dispatch.drive: array keys must be positive integers (got {키})
 
 ## Length/Offset 부기
 
-아래 부기 함수들은 **말단(leaf) 핸들러 작성자**를 위한 표면입니다. 숫자 키 자리는 물리 트리에서 여러 개의 실제 요소를 차지할 수 있으므로(자식 하나일 수도, Slot이 펼치는 N개일 수도 있다), 엔진은 자리마다 "길이"와 "시작 오프셋"을 부기해 부분합으로 관리합니다.
+아래 부기 함수들은 **말단(leaf) 핸들러 작성자**를 위한 표면이고, `q.Dispatch`가 아니라 **`q.Bookkeeping` 네임스페이스**에 삽니다(타입 `Bookkeeping`). 숫자 키 자리는 물리 트리에서 여러 개의 실제 요소를 차지할 수 있으므로(자식 하나일 수도, Slot이 펼치는 N개일 수도 있다), 엔진은 자리마다 "길이"와 "시작 오프셋"을 부기해 부분합으로 관리합니다.
 
 **계약**: 숫자 키 자리를 맡은 말단 핸들러는 **자리마다 길이와 오프셋 소스를 둘 다 등록**해야 합니다. 하나라도 빠뜨리면 그 owner의 오프셋 산술이 깨지고, 나중에 `getOffsetAt`이 "등록을 건너뛴 핸들러가 있다"고 알려주는 자리에서 터집니다. 해제 순서는 **`setOffsetSource(None)` 다음 `setLength(0)`**이고, 그 쌍을 한 번에 하는 함수가 `setEmpty`입니다. 문자 키 핸들러에는 이 의무가 없습니다.
 
 공통 인자 검사는 세 종류이고 함수 이름만 바뀝니다.
 
 ```
-Dispatch.{함수}: ownerKey must not be nil
-Dispatch.{함수}: position must be a positive integer (got {tostring(i)})
-Dispatch.{함수}: length must be a non-negative integer (got {tostring(n)})
+Bookkeeping.{함수}: ownerKey must not be nil
+Bookkeeping.{함수}: position must be a positive integer (got {tostring(i)})
+Bookkeeping.{함수}: length must be a non-negative integer (got {tostring(n)})
 ```
 
-## `q.Dispatch.setLength(ownerKey, i, len, anchor, element)`
+## `q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)`
 
 **시그니처**
 
@@ -240,7 +240,7 @@ setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor:
 
 `State` 길이의 값 검사는 그 상태의 옵서버 안에서 돕니다 — 재계산 창 안에서 던져 owner를 얼어붙게 만들지 않기 위해서입니다.
 
-## `q.Dispatch.setOffsetSource(ownerKey, i, source)`
+## `q.Bookkeeping.setOffsetSource(ownerKey, i, source)`
 
 **시그니처**
 
@@ -251,12 +251,12 @@ setOffsetSource: (ownerKey: any, i: number, source: any) -> () -- Source<number>
 **동작** — 자리 `i`의 **오프셋 발행 채널**을 등록합니다. `Source<number>`를 주면 그 자리의 절대 오프셋이 바뀔 때마다 그 소스에 `:Set`됩니다(등록 즉시 현재 값과 다르면 한 번 발행). `q.None`을 주면 "발행 채널 없음"이라는 뜻입니다 — **참여하지 않는다는 뜻이 아닙니다**(참여 여부는 길이 쪽이 답합니다). 그런 자리의 오프셋이 필요하면 `getOffsetAt`으로 당겨옵니다.
 
 ```
-Dispatch.setOffsetSource: source must be a Source<number> or None (got {typeof})
+Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof})
 ```
 
 이 검사는 부기를 한 글자도 쓰기 전에 돕니다 — 잘못된 소스를 절반쯤 기록한 채 실패하면 그 owner의 오프셋 산술이 영구히 얼어붙기 때문입니다.
 
-## `q.Dispatch.setEmpty(ownerKey, i, anchor)`
+## `q.Bookkeeping.setEmpty(ownerKey, i, anchor)`
 
 **시그니처**
 
@@ -266,7 +266,7 @@ setEmpty: (ownerKey: any, i: number, anchor: any?) -> ()
 
 **동작** — "이 자리는 비어 있다"를 등록하는 관용구 한 줄. 내부적으로 `setOffsetSource(ownerKey, i, None)` 다음 `setLength(ownerKey, i, 0, anchor)`를 그 순서대로 부릅니다. 아무것도 마운트하지 않는 말단 핸들러(값이 `nil`인 자리, 소비된 센티널 자리)가 자기 자리를 순서 산술에서 빼지 않고 등록하는 방법입니다.
 
-## `q.Dispatch.getOffsetAt(ownerKey, at)`
+## `q.Bookkeeping.getOffsetAt(ownerKey, at)`
 
 **시그니처**
 
@@ -281,11 +281,11 @@ getOffsetAt: (ownerKey: any, at: number) -> number
 조회할 수 있는 최대 자리는 **등록된 마지막 자리 + 1**입니다. 그보다 뒤를 묻거나, 중간 자리가 등록되지 않았으면 던집니다.
 
 ```
-Dispatch.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
-Dispatch.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
+Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
+Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
 ```
 
-## `q.Dispatch.getBlocker(ownerKey)`
+## `q.Bookkeeping.getBlocker(ownerKey)`
 
 **시그니처**
 
@@ -295,7 +295,7 @@ getBlocker: (ownerKey: any) -> Blocker
 
 **반환** — 그 owner의 **배치 Blocker**(없으면 만들어서). 켜져 있는 동안 자리 등록이 재계산을 촉발하지 않습니다 — 여러 자리를 한 번에 등록할 때 매 자리마다 전체 재계산이 도는 것을 막는 게이트입니다. `drive`가 숫자 키가 있을 때 이걸 켜고, 마지막에 닫으면서 정확히 한 번 재계산합니다.
 
-## `q.Dispatch.getBookkeeping(ownerKey)`
+## `q.Bookkeeping.getBookkeeping(ownerKey)`
 
 **시그니처**
 
@@ -335,7 +335,7 @@ q.Dispatch.addHandler({
 
 이제 어떤 요소의 `"Note"` 자리에 `LogValue("hello")`가 놓이면 `mount Note = hello`가 찍힙니다. 같은 자리에 `LogValue("world")`가 오면 `unmount Note (retracting = false)` → `mount Note = world` 순으로, 그 자리가 철거되면 `unmount Note (retracting = true)`로 끝납니다.
 
-숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Dispatch.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Dispatch.setLength(inst, key, 1)`, 아무것도 놓지 않았다면 `q.Dispatch.setEmpty(inst, key)`.
+숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Bookkeeping.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Bookkeeping.setLength(inst, key, 1)`, 아무것도 놓지 않았다면 `q.Bookkeeping.setEmpty(inst, key)`.
 
 ## 한계와 주의
 

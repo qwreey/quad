@@ -1,5 +1,7 @@
 # 라이프사이클 패턴 — rbvm의 `Connected` + GC 관용구 채택
 
+> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`bindLifetime`·`canExecute`·`native*`·`isInst`·`nativeClaim`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`, 이름 그대로)로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
+
 **상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(`retract`) 전략의 원본.
 완료 개념 없음, 구현하면서 세부 조정 있을 수 있음.
 

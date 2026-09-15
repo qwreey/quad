@@ -21,6 +21,12 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- **BREAKING — 백엔드가 심는 계약 op가 `q.Backend`로, Length/Offset 부기 함수가 `q.Bookkeeping`으로 옮겨졌습니다.** 앱 코드가 부를 표면이 아닌 것들이 `q.` 자동완성에 섞여 있었습니다. 멤버 이름은 그대로입니다.
+  - `q.Backend`: `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`, `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/`nativeSwap`/`nativeDispose`, `nativeClaim`/`nativeFindChild`/`isInst`/`onDestroying`, `addTag`/`removeTag`/`setAttr`, `setTimeout`/`clearTimeout`.
+  - `q.Bookkeeping`: `setLength`/`setOffsetSource`/`setEmpty`/`getOffsetAt`/`getBlocker`/`getBookkeeping` — `q.Dispatch`에서는 빠졌습니다. 에러 문구의 접두도 `Dispatch.`에서 `Bookkeeping.`으로 바뀌었습니다.
+  - `q.dispose`, `q.newMapperClass`, `is*` 술어는 그대로 `q.`에 있습니다.
+  - 옮기는 법: 백엔드 작성자는 `quad.nativeInsert = …`를 `quad.Backend.nativeInsert = …`로, 핸들러 작성자는 `q.Dispatch.setLength(…)`를 `q.Bookkeeping.setLength(…)`로, 테스트에서 `q.bindLifetime(…)`을 부르던 코드는 `q.Backend.bindLifetime(…)`으로.
+
 - **Observer·Effect·Slot·State를 만든 quad 인스턴스가 아닌 다른 인스턴스의 트리에 놓으면 그 자리에서 에러가 납니다**(`…: this value was made by another quad module instance …`) — 숫자 키 자리, 프로퍼티 값, `slot:List`의 데이터 State. 전에는 에러 없이 받아들여졌지만 생명주기 기록이 인스턴스마다 따로라 그 값이 조용히 돌지 않았습니다(`quad_base` 사본이 둘 생긴 프로젝트에서 흔히 밟는 경우). 제대로 돌던 코드는 영향이 없습니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 그대로 되고, `Ref`·`Blocker` 같은 공유 값은 검사하지 않습니다(두 인스턴스에 걸쳐 쓰면 정의되지 않은 동작).
 
 - **BREAKING — `quad_types`의 `Brand()`가 돌려주는 객체의 메소드가 `:register`/`:is`에서 `:Register`/`:Is`로 바뀌었습니다.** 자기 값 타입에 브랜드를 붙이는 백엔드·플러그인 작성자에게만 해당하고, `q.isState` 같은 술어를 쓰는 코드는 그대로입니다. 옮기는 법: 호출부의 메소드 이름 첫 글자만 대문자로.

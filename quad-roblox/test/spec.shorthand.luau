@@ -2,7 +2,7 @@
 	InstanceShorthand 계약 (M10 잔여, round20) — `base/ui-shorthand-plan.md`
 	"메커니즘"·"`v`가 `nil`인 경우"·"Tween 지원" 절. CLI 실주행 심(spec.handlers
 	관용구): Reflection 심(부모·자식 클래스의 프로퍼티), `getfenv(D.New).Instance`,
-	`q.isInst`, `getfenv(installShorthand).UDim`(엔진 전역 — 테이블로 대체),
+	`q.Backend.isInst`, `getfenv(installShorthand).UDim`(엔진 전역 — 테이블로 대체),
 	Property 모듈엔 `TweenInfo`/`TweenService` 심(mock).
 ]]
 
@@ -27,7 +27,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
-q.isInst = mock.isMockInstance
+q.Backend.isInst = mock.isMockInstance
 -- UDim 심 — 엔진 전역이 없는 CLI에서 `UDim.new(0, n)`을 테이블로
 -- 엔진처럼 값 동등(`UDim.new(0, 8) == UDim.new(0, 8)`) — Q25 값 dedup이 그 위에 선다
 local UDIM_MT = {

@@ -36,19 +36,19 @@ local function install(quad: any)
 		name = "InstanceChild",
 		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
-			return type(k) == "number" and quad.isInst(v) -- 늦은 읽기(H-174) — 술어는 갈아끼울 수 있는 주입면
+			return type(k) == "number" and quad.Backend.isInst(v) -- 늦은 읽기(H-174) — 술어는 갈아끼울 수 있는 주입면
 		end,
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
-			dispatch.setOffsetSource(inst, k, None)
+			quad.Bookkeeping.setOffsetSource(inst, k, None)
 			v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게
-			dispatch.setLength(inst, k, 1, inst)
+			quad.Bookkeeping.setLength(inst, k, 1, inst)
 			return function(nextValue: any?, _retracting: boolean)
 				if nextValue == v then
 					return -- `H-154` 같은 값 재발행 dedup — 물리 detach/attach와 recompute 1회를 접는다
 				end
 				v.Parent = nil -- 내림(파괴 아님)
-				dispatch.setEmpty(inst, k)
+				quad.Bookkeeping.setEmpty(inst, k)
 			end
 		end,
 	} :: QuadTypes.Handler)

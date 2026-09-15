@@ -36,9 +36,9 @@ print("=== 1. 설치 — 프로바이더가 세 op을 심는다(스텁 아님), 
 do
 	local q = newQuad()
 	local bare = Quad.New()
-	assert(q.addTag ~= bare.addTag and q.removeTag ~= bare.removeTag and q.setAttr ~= bare.setAttr, "ops replaced the base stubs")
+	assert(q.Backend.addTag ~= bare.Backend.addTag and q.Backend.removeTag ~= bare.Backend.removeTag and q.Backend.setAttr ~= bare.Backend.setAttr, "ops replaced the base stubs")
 	local ok, err = pcall(function()
-		bare.addTag(Instance.new("Frame"), { "a" })
+		bare.Backend.addTag(Instance.new("Frame"), { "a" })
 	end)
 	assert(not ok and string.find(tostring(err), "addTag is not available", 1, true), "bare module still guides: " .. tostring(err))
 	print("PASS")
@@ -49,7 +49,7 @@ print("=== 2. Tag — 배치 addTag / 깜빡임 없는 diff / nil로 전량 제�
 do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
-	q.nativeClaim(inst) -- 실물 생명주기 계약: 미claim 루트는 bindLifetime이 거부
+	q.Backend.nativeClaim(inst) -- 실물 생명주기 계약: 미claim 루트는 bindLifetime이 거부
 	local src = q.Source(q.Tag("a", "b"))
 	q.Dispatch.drive(inst, { src })
 	assert(tagsOf(inst) == "a,b", "initial tags via CollectionService:AddTag: " .. tagsOf(inst))
@@ -65,7 +65,7 @@ print("=== 3. Attr — 단일 키·그룹·반응형 값·nil 삭제 (inst:SetAt
 do
 	local q = newQuad()
 	local inst = Instance.new("Frame")
-	q.nativeClaim(inst)
+	q.Backend.nativeClaim(inst)
 	local hp = q.Source(5)
 	q.Dispatch.drive(inst, { [q.AttrKey("Hp")] = hp, [q.AttrKey("Title")] = "quad" })
 	assert(inst:GetAttribute("Hp") == 5 and inst:GetAttribute("Title") == "quad", "single keys written")
@@ -75,7 +75,7 @@ do
 	assert(inst:GetAttribute("Hp") == nil, "nil deletes the attribute")
 
 	local inst2 = Instance.new("Frame")
-	q.nativeClaim(inst2)
+	q.Backend.nativeClaim(inst2)
 	q.Dispatch.drive(inst2, { q.Attr({ Level = 3, Name = "x" }) })
 	assert(inst2:GetAttribute("Level") == 3 and inst2:GetAttribute("Name") == "x", "group written through the single-key path")
 	print("PASS")

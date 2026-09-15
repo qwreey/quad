@@ -90,7 +90,7 @@ local function install(quad: any)
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal — no physical element, so the pair is None/0
-			dispatch.setEmpty(inst, k, inst)
+			quad.Bookkeeping.setEmpty(inst, k, inst)
 
 			local name = v.Name
 			local callback = v.Callback :: (any) -> ()

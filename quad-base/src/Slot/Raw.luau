@@ -74,14 +74,14 @@ return function(S: Types.SlotInternal, module: any)
 	-- raw* tail and the reconcile/List tails.
 	local function maybeRecompute(self: any, bk: any)
 		if S.BK.getBlocker(self).Blocking or bk.recomputeBlocker.Blocking then return end
-		S.BK.recompute(self, bk)
+		S.BK._recompute(self, bk)
 	end
 
 	-- unbindObserverAt — a position's length observer (State-length slots
 	-- only; constants have none) goes with the position.
 	local function unbindObserverAt(bk: any, index: number)
 		local observer = bk.observers[index]
-		if observer then module.unbindLifetime(observer) end
+		if observer then module.Backend.unbindLifetime(observer) end
 	end
 
 	-- vacate — the shared tail of the raw 3-family (rawRemove/rawUnmount/
@@ -121,7 +121,7 @@ return function(S: Types.SlotInternal, module: any)
 		else
 			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
-				module.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+				module.Backend.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 			end
 			S.BK.setLength(self, index, 1, self._physicalTarget, element)
 		end
@@ -148,9 +148,9 @@ return function(S: Types.SlotInternal, module: any)
 		S.releaseOwner(element, self)
 		if S.isSlot(element) then S.destroySlotTree(element)
 		elseif self._mounted then
-			module.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+			module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		else
-			module.nativeDispose(element)
+			module.Backend.nativeDispose(element)
 		end
 		vacate(self, index, element, bk)
 	end
@@ -162,7 +162,7 @@ return function(S: Types.SlotInternal, module: any)
 		S.releaseOwner(element, self)
 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
 		elseif self._mounted and not deferPhysical then
-			module.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
 		vacate(self, index, element, bk)
 	end
@@ -175,7 +175,7 @@ return function(S: Types.SlotInternal, module: any)
 		-- would let someone else claim what slot._detached still holds.
 		if S.isSlot(element) then S.unmountSlotTree(element)
 		elseif self._mounted then
-			module.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
 		vacate(self, index, element, bk)
 	end
@@ -217,7 +217,7 @@ return function(S: Types.SlotInternal, module: any)
 			if S.isSlot(oldElement) then
 				if destroyOld then S.destroySlotTree(oldElement) else leaveAsElement(oldElement) end
 			else
-				local op = if destroyOld then module.nativeRemove else module.nativeExtract
+				local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
 				op(self._mountedInst, offset, { oldElement })
 			end
 			if S.isSlot(newElement) then
@@ -225,9 +225,9 @@ return function(S: Types.SlotInternal, module: any)
 				return
 			end
 			S.BK.setOffsetSource(self, index, S.None)
-			module.nativeInsert(self._mountedInst, offset, { newElement })
+			module.Backend.nativeInsert(self._mountedInst, offset, { newElement })
 		else
-			local op = if destroyOld then module.nativeRemove else module.nativeExtract
+			local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
 			op(self._mountedInst, offset, { oldElement }, { newElement })
 		end
 		S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
@@ -273,7 +273,7 @@ return function(S: Types.SlotInternal, module: any)
 			if fromIndex < toIndex then
 				toOffset += #S.leavesOf(els[toIndex]) - #moving
 			end
-			module.nativeMove(self._mountedInst, fromOffset, moving, toOffset)
+			module.Backend.nativeMove(self._mountedInst, fromOffset, moving, toOffset)
 		end
 		rotateInPlace(els, fromIndex, toIndex)
 		local lo = math.min(fromIndex, toIndex)
@@ -300,7 +300,7 @@ return function(S: Types.SlotInternal, module: any)
 		local els = self._elements
 		local lo, hi = math.min(indexA, indexB), math.max(indexA, indexB)
 		if self._mounted then
-			module.nativeSwap(
+			module.Backend.nativeSwap(
 				self._mountedInst,
 				S.BK.getOffsetAt(self, lo), S.leavesOf(els[lo]),
 				S.BK.getOffsetAt(self, hi), S.leavesOf(els[hi])
@@ -358,9 +358,9 @@ return function(S: Types.SlotInternal, module: any)
 				else table.insert(newLeaves, element) end
 			end
 			if #removedLeaves > 0 then
-				module.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
+				module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
 			elseif #newLeaves > 0 then
-				module.nativeInsert(self._mountedInst, base, newLeaves)
+				module.Backend.nativeInsert(self._mountedInst, base, newLeaves)
 			end
 			for _, element in ipairs(newElements) do
 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end

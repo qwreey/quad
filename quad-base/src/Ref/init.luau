@@ -235,18 +235,18 @@ local function registerDispatchHandlers(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — no
 			-- physical element, so None/0 (shared body: offsetSource → length)
-			dispatch.setEmpty(inst, k, inst)
+			module.Bookkeeping.setEmpty(inst, k, inst)
 
 			local old = relate:GetWeak(inst, k) -- read Weak to match the SetWeak write (`H-71`)
 			if old ~= v then -- same Ref already here → spurious re-emit, skip both
-				module.bindLifetime(inst, v) -- alive elsewhere → error here (double placement)
+				module.Backend.bindLifetime(inst, v) -- alive elsewhere → error here (double placement)
 				relate:SetWeak(inst, k, v) -- BEFORE Set (Q4): a callback re-driving this slot dedups
 				v:Set(inst)
 			end
 			return function(nextValue: any?, _retracting: boolean)
 				-- nextValue is nil or a new Ref this same handler is about to bind
 				if nextValue ~= v then
-					module.unbindLifetime(v) -- v may be placed elsewhere afterwards
+					module.Backend.unbindLifetime(v) -- v may be placed elsewhere afterwards
 					v:Set(nil) -- the ordinary re-set contract, no new channel
 					-- clear only when actually standing down (checklist 4)
 					if relate:GetWeak(inst, k) == v then

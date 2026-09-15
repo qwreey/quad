@@ -27,7 +27,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 1. 모듈 인스턴스를 **뮤테이션**해서 아래 주입 슬롯들을 채웁니다.
 2. 백엔드 고유 표면(Roblox라면 `Declaration`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
 
-주입 슬롯은 전부 19개이고, 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Quad` 레코드입니다.
+주입 슬롯은 전부 19개이고 모두 **`q.Backend` 네임스페이스**에 삽니다(`quad.Backend.nativeInsert = …`로 심고, quad는 `module.Backend.nativeInsert(…)`로 부릅니다). 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Backend` 레코드입니다. 이것들은 백엔드가 설치하고 quad가 부르는 계약이지 앱 코드가 부를 API가 아닙니다 — 앱의 `q.` 자동완성에 섞이지 않도록 따로 둔 이유입니다.
 
 | 묶음 | 슬롯 |
 |---|---|
@@ -39,7 +39,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
 
-**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_bookkeeping`·`_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
 
 ---
 
@@ -121,7 +121,7 @@ canExecute     (value: any) -> boolean
 
 **`canBound(v) == not canExecute(v)`** — 둘은 백엔드 비공개 술어 하나(`isBoundAlive`)를 공유하는 얇은 진입점이어야 합니다. quad-roblox와 mock 모두 그 술어가 보는 것은 둘뿐입니다: (a) `bindLifetime`이 값에 복사해 둔 gcconn의 `.Connected`, (b) 값이 `Observer`/`Effect`라면 전역 구독 상태(`.Subscribed`).
 
-네 함수는 `module.canExecute(v)`처럼 **모듈 인스턴스의 필드로** 읽어야 합니다. `Init` 시점에 지역 변수로 캡처해 두면 백엔드가 나중에 덮어쓴 실 구현이 아니라 스텁을 계속 부르게 됩니다.
+네 함수는 `module.Backend.canExecute(v)`처럼 **부를 때마다 `Backend` 네임스페이스의 필드로** 읽어야 합니다. `Init` 시점에 지역 변수로 캡처해 두면 백엔드가 나중에 덮어쓴 실 구현이 아니라 스텁을 계속 부르게 됩니다.
 
 ### 4.1 Roblox의 파괴 동작
 
@@ -181,7 +181,7 @@ local customWidgetNamespace = { -- 이 백엔드가 얹는 고유 표면
 
 local function CustomProvider(quad: any)
     -- [1] 주입 슬롯을 채운다(§2~§5 전부 — 하나라도 빠지면 그 op는 안내 스텁 에러로 남는다)
-    quad.nativeInsert = function(target: any, _offset: number, elements: { any })
+    quad.Backend.nativeInsert = function(target: any, _offset: number, elements: { any })
         for _, element in elements do
             element.Parent = target
         end

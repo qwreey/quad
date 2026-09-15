@@ -67,6 +67,9 @@ local function New(): Quad
 		-- itself (holds nothing). Subsystems store it on their per-instance impl and compare it where a
 		-- value may come from another instance (`ModuleIdentity.luau`).
 		moduleIdentity = {},
+		-- [2026-09-15 공개 표면 (30) 사용자 결정] 백엔드가 심는 계약 op(생명주기·엔진·태그/속성·시간)의
+		-- 네임스페이스 — 스텁은 각 Init이 채우고 프로바이더가 덮는다(멤버 이름은 옛 평평한 이름 그대로).
+		Backend = {} :: any,
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,

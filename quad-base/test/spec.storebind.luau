@@ -156,8 +156,8 @@ do
 	addPropLeaf(q, log, "num", isNumber, q.Dispatch.HANDLER_PRIORITY_NORMAL + 1)
 	-- unbindLifetime 호출 시점을 관측 — StoreBind는 생명주기 넷을 발화 시점에
 	-- `module.xxx`로 늦게 읽으므로(`H-174`) 스펙의 래퍼가 실제로 잡힌다
-	local origUnbind = q.unbindLifetime
-	q.unbindLifetime = function(value: any)
+	local origUnbind = q.Backend.unbindLifetime
+	q.Backend.unbindLifetime = function(value: any)
 		table.insert(log, "unbind")
 		origUnbind(value)
 	end
@@ -199,17 +199,17 @@ do
 	local src = q.Source("a")
 	q.Dispatch.drive(inst, { src, "static" })
 	-- 자리 1: StoreBind@1 → SpecLeaf@2(길이 1), 자리 2: SpecLeaf@1
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 1, "position 1 contributes length 1 while holding a string")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 1, "position 1 contributes length 1 while holding a string")
 	table.clear(log)
 
 	src:Set(q.None) -- StoreBind 재귀 → NoneHandler@2 → nil@3 → NilHandler(길이 0)
 	expectLog(log, { "leaf:retract:1:nil:true" }) -- (B)@2 — leaf가 먼저 물러난다
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 0, "None collapses position 1's length — the sibling offset moved reactively")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "None collapses position 1's length — the sibling offset moved reactively")
 	table.clear(log)
 
 	src:Set("b") -- 다시 좁혀진다 — None 체인(2·3, retract는 둘 다 `Void`)이
 	-- 물러나고 leaf가 재설치된다. addSpecLeaf는 retract만 기록하므로 로그 0
-	assert(q.Dispatch.getOffsetAt(inst, 2) == 1, "back to a real value restores the length")
+	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 1, "back to a real value restores the length")
 	expectLog(log, {})
 	print("PASS")
 end

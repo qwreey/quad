@@ -119,7 +119,7 @@ do
 	local frame = D.Frame({}) :: any
 	assert(mock.isMockInstance(frame) and frame.ClassName == "Frame", "① 물리 생성 완주(mock)")
 	local ok, err = pcall(function()
-		q.nativeClaim(frame)
+		q.Backend.nativeClaim(frame)
 	end)
 	assert(not ok and string.find(tostring(err), "already claimed", 1, true) ~= nil, "② New가 nativeClaim을 이미 걸었다: " .. tostring(err))
 	-- 범위 밖 폴백도 같은 파이프라인

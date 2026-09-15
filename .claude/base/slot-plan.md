@@ -1,5 +1,7 @@
 # Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
+> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`bindLifetime`·`canExecute`·`native*`·`isInst`·`nativeClaim`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`, 이름 그대로)로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
+
 > **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
 > 이전 ⚠️ 배너가 예고하던 교체가 끝났음 — 래핑 핸들러의 `retractFrom`
 > 선행 호출이 폐기되고 `Dispatch.process`가 핸들러를 먼저 비교하며,

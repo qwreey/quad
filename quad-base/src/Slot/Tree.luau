@@ -37,7 +37,7 @@ return function(S: Types.SlotInternal, module: any)
 		local blocker = S.BK.getBlocker(slot)
 		blocker:On()
 		slot._baseObserver._rerunRequired = false
-		module.bindLifetime(physicalTarget, slot._baseObserver)
+		module.Backend.bindLifetime(physicalTarget, slot._baseObserver)
 		S.BK.setOffsetSource(ownerKey, position, slot.Offset)
 
 		local remountingList = slot._listed and slot._listActivated
@@ -59,7 +59,7 @@ return function(S: Types.SlotInternal, module: any)
 		blocker:OffWithoutEmit()
 		S.maybeRecompute(slot, S.BK.getBookkeeping(slot)) -- the batch gate just opened; only the reentry gate can still hold
 		if remountingList and slot._listObserver then
-			module.bindLifetime(physicalTarget, slot._listObserver)
+			module.Backend.bindLifetime(physicalTarget, slot._listObserver)
 		end
 		S.BK.setLength(ownerKey, position, slot.Length, physicalTarget, slot)
 	end
@@ -77,7 +77,7 @@ return function(S: Types.SlotInternal, module: any)
 	end
 
 	local function mountSlotTree(slot: any, physicalTarget: any)
-		module.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
+		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
 		markMountedTree(slot, physicalTarget)
 	end
 
@@ -115,11 +115,11 @@ return function(S: Types.SlotInternal, module: any)
 		end
 		local bk = S.BK.getBookkeeping(slot)
 		for _, observer in pairs(bk.observers) do
-			module.unbindLifetime(observer)
+			module.Backend.unbindLifetime(observer)
 		end
-		if slot._listObserver then module.unbindLifetime(slot._listObserver) end
-		if slot._detachCleanup then module.unbindLifetime(slot._detachCleanup) end
-		module.unbindLifetime(slot._baseObserver)
+		if slot._listObserver then module.Backend.unbindLifetime(slot._listObserver) end
+		if slot._detachCleanup then module.Backend.unbindLifetime(slot._detachCleanup) end
+		module.Backend.unbindLifetime(slot._baseObserver)
 		slot._mounted, slot._mountedInst = false, nil
 		slot._physicalTarget = nil
 		-- round15 `H6-19` (통합 리뷰 재현): restore the UNMATERIALIZED invariant.
@@ -136,7 +136,7 @@ return function(S: Types.SlotInternal, module: any)
 
 	local function unmountSlotTree(slot: any)
 		if slot._mounted then
-			module.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
+			module.Backend.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
 		end
 		teardownTree(slot)
 	end
@@ -166,14 +166,14 @@ return function(S: Types.SlotInternal, module: any)
 			end
 		end
 		if slot._detachCleanup then
-			module.unbindLifetime(slot._detachCleanup)
+			module.Backend.unbindLifetime(slot._detachCleanup)
 			slot._detachCleanup = nil
 		end
-		if slot._listObserver then module.unbindLifetime(slot._listObserver) end
-		module.unbindLifetime(slot._baseObserver)
+		if slot._listObserver then module.Backend.unbindLifetime(slot._listObserver) end
+		module.Backend.unbindLifetime(slot._baseObserver)
 		local bk = S.BK.getBookkeeping(slot)
 		for _, observer in pairs(bk.observers) do
-			module.unbindLifetime(observer)
+			module.Backend.unbindLifetime(observer)
 		end
 		slot._mounted, slot._mountedInst = false, nil
 		slot._physicalTarget = nil

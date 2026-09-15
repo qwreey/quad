@@ -36,15 +36,15 @@ local function register(dispatch: any, module: any)
 			end
 			ModuleIdentity.assertOwnAtDispatch(module, slotValue, "Slot") -- before claim/bind commit (same reason as above)
 			if internal.claimOwnerAt(slotValue, inst, k) then
-				module.bindLifetime(inst, slotValue)
+				module.Backend.bindLifetime(inst, slotValue)
 				internal.attachSlot(slotValue, inst, inst, k)
 			end
 			return function(nextValue: any, _retracting: boolean)
 				-- nextValue is nil or a Slot the same handler will process (typed)
 				if slotValue == nextValue then return end
 				internal.unmountSlotTree(slotValue)
-				dispatch.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
-				module.unbindLifetime(slotValue)
+				module.Bookkeeping.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
+				module.Backend.unbindLifetime(slotValue)
 				internal.releaseOwner(slotValue, inst)
 			end
 		end,

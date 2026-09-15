@@ -157,10 +157,10 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.dispose(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qdisposevalue) · [core/06](/reference/core/06-slot/) |
 | `q.MapperRoot` | [core/10](/reference/core/10-lifetime-sentinels/#qmapperroot) · [roblox/04](/reference/roblox/04-claim-mapper/) |
 | `q.newMapperClass(className)` | [core/10](/reference/core/10-lifetime-sentinels/#qnewmapperclassclassname) |
-| `q.bindLifetime(inst, value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbindlifetimeinst-value) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.unbindLifetime(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qunbindlifetimevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.canBound(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qcanboundvalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
-| `q.canExecute(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qcanexecutevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.bindLifetime(inst, value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendbindlifetimeinst-value) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.unbindLifetime(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendunbindlifetimevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.canBound(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendcanboundvalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.canExecute(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendcanexecutevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 
 ## 브랜드 술어
 
@@ -168,7 +168,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.isInst(value)` | [core/11](/reference/core/11-predicates/) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.isInst(value)` | [core/11](/reference/core/11-predicates/) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 | `q.isTween(x)` | [core/11](/reference/core/11-predicates/) · [roblox/06](/reference/roblox/06-tween-animate/) |
 
 ## 슈거
@@ -235,12 +235,12 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Dispatch.process(inst, key, value, index)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index) |
 | `q.Dispatch.retractFrom(inst, key, index)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchretractfrominst-key-index) |
 | `q.Dispatch.drive(inst, flattened)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened) |
-| `q.Dispatch.setLength(ownerKey, i, len, anchor?, element?)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchsetlengthownerkey-i-len-anchor-element) |
-| `q.Dispatch.setOffsetSource(ownerKey, i, source)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchsetoffsetsourceownerkey-i-source) |
-| `q.Dispatch.setEmpty(ownerKey, i, anchor?)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchsetemptyownerkey-i-anchor) |
-| `q.Dispatch.getOffsetAt(ownerKey, at)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchgetoffsetatownerkey-at) |
-| `q.Dispatch.getBlocker(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchgetblockerownerkey) |
-| `q.Dispatch.getBookkeeping(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qdispatchgetbookkeepingownerkey) |
+| `q.Bookkeeping.setLength(ownerKey, i, len, anchor?, element?)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepingsetlengthownerkey-i-len-anchor-element) |
+| `q.Bookkeeping.setOffsetSource(ownerKey, i, source)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepingsetoffsetsourceownerkey-i-source) |
+| `q.Bookkeeping.setEmpty(ownerKey, i, anchor?)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepingsetemptyownerkey-i-anchor) |
+| `q.Bookkeeping.getOffsetAt(ownerKey, at)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetoffsetatownerkey-at) |
+| `q.Bookkeeping.getBlocker(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetblockerownerkey) |
+| `q.Bookkeeping.getBookkeeping(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetbookkeepingownerkey) |
 
 ## 타입
 

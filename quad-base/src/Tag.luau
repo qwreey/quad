@@ -227,11 +227,11 @@ local InitDispatch = require("./Dispatch")
 
 local function Init(module: any)
 	module.Tag = Tag
-	if module.addTag == nil then
-		module.addTag = notInstalled("addTag")
+	if module.Backend.addTag == nil then
+		module.Backend.addTag = notInstalled("addTag")
 	end
-	if module.removeTag == nil then
-		module.removeTag = notInstalled("removeTag")
+	if module.Backend.removeTag == nil then
+		module.Backend.removeTag = notInstalled("removeTag")
 	end
 
 	module:RunInit(InitDispatch) -- idempotent pull (`H-174` idiom)
@@ -254,7 +254,7 @@ local function Init(module: any)
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal handlers register their array position — a Tag
 			-- contributes no physical element, so the pair is None/0
-			dispatch.setEmpty(inst, k, inst) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
+			module.Bookkeeping.setEmpty(inst, k, inst) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)
 
 			local added: { string } = {}
 			for name in v do
@@ -269,7 +269,7 @@ local function Init(module: any)
 				holders[k] = true
 			end
 			if #added > 0 then
-				module.addTag(inst, added) -- batched (web className contract); late read (`H-174`)
+				module.Backend.addTag(inst, added) -- batched (web className contract); late read (`H-174`)
 			end
 			return function(nextValue: any?, _retracting: boolean)
 				-- nextValue is nil (plain retract) or a Tag this same handler
@@ -297,7 +297,7 @@ local function Init(module: any)
 					end
 				end
 				if #removed > 0 then
-					module.removeTag(inst, removed) -- batched
+					module.Backend.removeTag(inst, removed) -- batched
 				end
 			end
 		end,

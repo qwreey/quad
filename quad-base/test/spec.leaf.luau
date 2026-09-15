@@ -28,9 +28,9 @@ do
 
 	q.Dispatch.drive(inst, { o })
 	assert(runs == 2, "binding replays the held emit once (_catchUp)")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "H-39: leaf registered None/0")
-	assert(q.canExecute(o), "bound via gchold")
+	assert(q.Backend.canExecute(o), "bound via gchold")
 	s:Set(3)
 	assert(runs == 3, "bound observer fires per change")
 	print("PASS")
@@ -49,10 +49,10 @@ do
 	assert(runs == 1, "installed once on creation")
 
 	q.Dispatch.drive(inst, { e })
-	assert(q.canExecute(e), "bound via gchold")
+	assert(q.Backend.canExecute(e), "bound via gchold")
 	s:Set(2)
 	assert(runs == 2, "bound effect reruns per dep change")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None, "H-39 for the effect position too")
 	print("PASS")
 end
@@ -70,7 +70,7 @@ do
 	-- 자체가 dedup의 증거. 재발행은 process 경유가 정본 경로다 — drive는
 	-- 1회 계약(`H-275`, 사용자: "무엇이 되었든 drive는 한번 뿐").
 	q.Dispatch.process(inst, 1, o, 1)
-	assert(q.canExecute(o), "still bound after spurious re-dispatch")
+	assert(q.Backend.canExecute(o), "still bound after spurious re-dispatch")
 	print("PASS")
 end
 
@@ -89,7 +89,7 @@ do
 	end)
 	q.Dispatch.drive(inst, { oA })
 	q.Dispatch.process(inst, 1, oB, 1)
-	assert(not q.canExecute(oA) and q.canExecute(oB), "swap moved the binding")
+	assert(not q.Backend.canExecute(oA) and q.Backend.canExecute(oB), "swap moved the binding")
 	local beforeA = runsA
 	s:Set(2)
 	assert(runsA == beforeA and runsB >= 2, "only the new occupant fires")
@@ -106,7 +106,7 @@ do
 	q.Dispatch.drive(inst2, { e1 })
 	q.Dispatch.process(inst2, 1, e2, 1)
 	assert(cleanups == 1, "swap retract consumed e1's cleanup")
-	assert(not q.canExecute(e1) and q.canExecute(e2), "binding moved")
+	assert(not q.Backend.canExecute(e1) and q.Backend.canExecute(e2), "binding moved")
 	print("PASS")
 end
 
@@ -124,9 +124,9 @@ do
 	end, s)
 	q.Dispatch.drive(inst, { e })
 	q.Dispatch.process(inst, 1, nil, 1)
-	assert(not q.canExecute(e), "retracted: unbound")
+	assert(not q.Backend.canExecute(e), "retracted: unbound")
 	assert(cleanups == 1, "plain retract (nil) also consumes cleanup via the swap branch")
-	local bk = q.Dispatch.getBookkeeping(inst)
+	local bk = q.Bookkeeping.getBookkeeping(inst)
 	-- `H-276`: 이 단언은 NilHandler의 재등록과 leaf 자신의 등록 잔존값을 구별하지
 	-- 못한다(둘 다 None/0) — "자리가 등록된 채 남는다"까지만 단언하고, NilHandler
 	-- 등록 자체의 회귀는 spec.nonenil 3이 잡는다.

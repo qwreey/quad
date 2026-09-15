@@ -152,13 +152,13 @@ function FactoryImpl.__apply(self: any, state: any): any
 
 		local function closeWindow()
 			if h._window ~= nil then
-				module.clearTimeout(h._window)
+				module.Backend.clearTimeout(h._window)
 				h._window = nil
 			end
 		end
 		local function clearCap()
 			if h._cap ~= nil then
-				module.clearTimeout(h._cap)
+				module.Backend.clearTimeout(h._cap)
 				h._cap = nil
 			end
 		end
@@ -166,7 +166,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- read + schedule BEFORE any state change (`H-509`, the `H-392`/`H-445`
 			-- precedent): a throwing Time read or a missing backend must not leave
 			-- the Blocker On with no window (withheld signals with no timer to free them)
-			local t = module.setTimeout(onWindowEnd, readTime(name, "Time", opts.Time))
+			local t = module.Backend.setTimeout(onWindowEnd, readTime(name, "Time", opts.Time))
 			b:On() -- inside a window: upstream emits are withheld by `pass()`
 			h._window = t
 		end
@@ -254,7 +254,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- MaxTime (Debounce only): a second timer the signal never resets — armed
 			-- when something is withheld and only if trailing can pass it.
 			if held and maxTime ~= nil and trailing and h._cap == nil then
-				h._cap = module.setTimeout(onCap, readTime(name, "MaxTime", maxTime))
+				h._cap = module.Backend.setTimeout(onCap, readTime(name, "MaxTime", maxTime))
 			end
 		end
 	end)

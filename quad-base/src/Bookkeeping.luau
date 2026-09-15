@@ -1,7 +1,7 @@
 --!strict
 --[[
 	InitBookkeeping(module) — the Length/Offset bookkeeping subsystem,
-	installed as the private `module._bookkeeping` namespace (`H-277`,
+	installed as the `module.Bookkeeping` namespace (`H-277`,
 	user-directed split: Dispatch's mandate is process/handler matching, and
 	this half — prefix sums, cursors, batch Blockers — is a separate concern
 	that M6's Slot must reach WITHOUT going through Dispatch. Dependency
@@ -9,11 +9,10 @@
 	the SlotBrand probe below is brand-leaf discrimination, not a Slot
 	dependency).
 
-	The PUBLIC calling surface stays `quad.Dispatch.setLength` etc. — the
-	terminal-handler contract (H-39/H-25) is written against those names, so
-	InitDispatch re-exports these same function objects (no wrappers). Slot
-	wiring landed (M6 편입, 2026-09-03) without renaming — Slot captures
-	`module._bookkeeping` directly (`H6-2`), the public names are untouched.
+	[2026-09-15 공개 표면 (30) 사용자 결정] The public calling surface is this namespace itself —
+	`quad.Bookkeeping.setLength` etc., typed `QuadTypes.Bookkeeping`. Before, the six were re-exported
+	on the Dispatch table and this table was the private `_bookkeeping`. Slot captures it directly
+	(`H6-2`); `_recompute` stays internal (`_` prefix).
 
 	Sources, as-is: `dispatch-core-plan.md` "Length/Offset" / "두 필드" /
 	"배치 등록을 안전하게 만드는 Blocker 게이팅" — plus the `H-240` (a)
@@ -55,7 +54,7 @@ local function Init(module: any)
 	-- contiguity. User-input class -> nearest blame (the handler that called).
 	local function checkPosition(fnName: string, i: any)
 		if type(i) ~= "number" or i % 1 ~= 0 or i <= 0 then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
+			Err.errorBeforeNearest(`Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
 		end
 	end
 	-- `H-504` (2026-09-08 round8 K-2): every public bookkeeping entry with a nil owner died in
@@ -64,7 +63,7 @@ local function Init(module: any)
 	-- only. Nearest: these are direct-call surfaces.
 	local function checkOwner(fnName: string, ownerKey: any)
 		if ownerKey == nil then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: ownerKey must not be nil`, SURFACE)
+			Err.errorBeforeNearest(`Bookkeeping.{fnName}: ownerKey must not be nil`, SURFACE)
 		end
 	end
 
@@ -119,7 +118,7 @@ local function Init(module: any)
 		local bk = bookkeeping:GetWeak(ownerKey, "bk")
 		if bk == nil then
 			bk = newBk()
-			module.bindLifetime(ownerKey, bk)
+			module.Backend.bindLifetime(ownerKey, bk)
 			bookkeeping:SetWeak(ownerKey, "bk", bk)
 		end
 		return bk
@@ -135,7 +134,7 @@ local function Init(module: any)
 	-- `checkPosition`'s header says to keep out of the window).
 	local function checkLengthValue(fnName: string, n: any)
 		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+			Err.errorBeforeNearest(`Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
 		end
 	end
 
@@ -195,8 +194,8 @@ local function Init(module: any)
 				-- with a hole below N the range clause called a legal query illegal
 				Err.errorBefore(
 					if at > last + 1
-						then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
-						else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
+						then `Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
+						else `Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
 					SURFACE
 				)
 			end
@@ -242,7 +241,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Dispatch.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None; if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+				error(`Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None; if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			if offset == None then
 				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and
@@ -282,7 +281,7 @@ local function Init(module: any)
 			-- setOffsetSource without setLength) died as an anonymous arithmetic error
 			-- inside recomputeBlocker:On, freezing the owner. Internal invariant.
 			if bk.lengthList[i] == nil then
-				error(`Dispatch.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+				error(`Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
 			end
 			sum += contribution(bk, i)
 			-- `H-240` check ② — contribution's own Get window; the possibly
@@ -338,7 +337,7 @@ local function Init(module: any)
 
 		local oldObserver = bk.observers[i]
 		if oldObserver then
-			module.unbindLifetime(oldObserver) -- no need to know gchold internals or which inst
+			module.Backend.unbindLifetime(oldObserver) -- no need to know gchold internals or which inst
 			bk.observers[i] = nil
 		end
 
@@ -357,7 +356,7 @@ local function Init(module: any)
 				checkLengthValue("setLength", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line
 				gatedRecompute(bk, blocker, ownerKey, element, i)
 			end) -- immediate first run is gated too
-			module.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
+			module.Backend.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
 			bk.observers[i] = observer
 		else
 			gatedRecompute(bk, blocker, ownerKey, element, i) -- constants go through the same gate, no closure (4순회 `H-390`)
@@ -374,7 +373,7 @@ local function Init(module: any)
 		if source ~= None and not Brand.isSource(source) then
 			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
 			-- die at `:Get()` with a Bookkeeping.luau line
-			Err.errorBeforeNearest(`Dispatch.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+			Err.errorBeforeNearest(`Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
 		end
 		local bk = getBookkeeping(ownerKey)
 		if source == None then
@@ -413,15 +412,22 @@ local function Init(module: any)
 		setLength(ownerKey, i, 0, anchor)
 	end
 
-	module._bookkeeping = {
+	module.Bookkeeping = {
 		getBlocker = getBlocker,
 		getBookkeeping = getBookkeeping,
 		getOffsetAt = getOffsetAt,
-		recompute = recompute,
+		_recompute = recompute, -- internal (Slot/Dispatch only)
 		setLength = setLength,
 		setOffsetSource = setOffsetSource,
 		setEmpty = setEmpty,
 	}
+	-- the public six join the error tag layer here now that they are off the Dispatch table (its `H-242`
+	-- loop used to tag them) — handler-depth raises keep blaming the handler author's call
+	for key, v in module.Bookkeeping :: { [string]: any } do
+		if type(v) == "function" and string.sub(key, 1, 1) ~= "_" then
+			Err.setFuncLevel(SURFACE, v)
+		end
+	end
 end
 
 return Init

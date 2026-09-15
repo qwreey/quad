@@ -18,7 +18,7 @@ do
 	assert(type(m.Source) == "function" and type(m.Store) == "function", "Source/Store constructors (unit 2, per instance)")
 	assert(type(m.Effect) == "function" and m.Effect ~= Quad.Effect, "Effect constructor (unit 3, per instance)")
 	assert(type(m.Blocker) == "function" and m.Blocker == Quad.Blocker, "Blocker constructor (unit 4, shared leaf)")
-	assert(type(m.onDestroying) == "function", "onDestroying engine-op stub")
+	assert(type(m.Backend.onDestroying) == "function", "onDestroying engine-op stub")
 	assert(m.Source ~= Quad.Source, "Source is an instance-level factory (H-174), not a shared leaf")
 	local predicates: { (any) -> boolean } = {
 		m.isEpoch, m.isSource, m.isState, m.isStore, m.isObserver, m.isEffect,
@@ -28,8 +28,8 @@ do
 		assert(type(p) == "function", "predicate #" .. i .. " must be a function")
 		assert(p({}) == false, "predicate #" .. i .. " is false for an unregistered table")
 	end
-	assert(type(m.bindLifetime) == "function" and type(m.unbindLifetime) == "function", "lifetime stubs")
-	assert(type(m.canBound) == "function" and type(m.canExecute) == "function", "lifetime stubs")
+	assert(type(m.Backend.bindLifetime) == "function" and type(m.Backend.unbindLifetime) == "function", "lifetime stubs")
+	assert(type(m.Backend.canBound) == "function" and type(m.Backend.canExecute) == "function", "lifetime stubs")
 	assert(m.Void == Quad.Void and m.Ref == Quad.Ref and m.Relate == Quad.Relate, "leaf modules are shared across instances")
 	print("PASS")
 end

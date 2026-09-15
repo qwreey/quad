@@ -1,5 +1,7 @@
 # 디스패치 코어 — Handler 계약 / Dispatch 체인 / 재디스패치 하강 diff
 
+> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`bindLifetime`·`canExecute`·`native*`·`isInst`·`nativeClaim`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`, 이름 그대로)로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
+
 **상태**: base — 2026-08-13 열네 번째 세션에 `bind-system-plan.md`에서
 분리(2단계 분할). 같은 세션에 `question.md` **0-A/0-Z**가 확정되어
 **재디스패치 모델이 "철거 후 재구축"에서 "하강 diff"로 전면 교체**됐고,

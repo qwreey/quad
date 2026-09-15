@@ -65,13 +65,13 @@ do
 	r:Set(2)
 	assert(runs == 1 and (e :: any)._rerunRequired == true, "unbound: changes held, not run")
 	local inst = Instance.new("Frame")
-	quad.bindLifetime(inst, e)
+	quad.Backend.bindLifetime(inst, e)
 	assert(runs == 2 and (e :: any)._rerunRequired == false, "bind replays the hold exactly once (not per change)")
 	s:Set(3)
 	assert(runs == 3, "State dep fires")
 	r:Set(3)
 	assert(runs == 4, "Ref dep fires")
-	quad.unbindLifetime(e)
+	quad.Backend.unbindLifetime(e)
 	s:Set(4)
 	assert(runs == 4, "unbound again: silent (held)")
 	print("PASS")
@@ -127,12 +127,12 @@ do
 			table.insert(log, "clean")
 		end
 	end, s)
-	quad.bindLifetime(inst, e2)
+	quad.Backend.bindLifetime(inst, e2)
 	assert(table.concat(log, ",") == "run", "bound: no replay (nothing held)")
 	inst:Destroy()
 	assert(table.concat(log, ",") == "run,clean", "Destroying consumed the cleanup")
 	assert((e2 :: any)._destroyConn == nil, "connection dropped")
-	quad.unbindLifetime(e2) -- 죽은 뒤에도 안전(no-op)
+	quad.Backend.unbindLifetime(e2) -- 죽은 뒤에도 안전(no-op)
 	print("PASS")
 end
 
@@ -145,9 +145,9 @@ do
 		runs += 1
 	end, s)
 	local a, b = Instance.new("Frame"), Instance.new("Frame")
-	quad.bindLifetime(a, e)
-	quad.unbindLifetime(e)
-	quad.bindLifetime(b, e)
+	quad.Backend.bindLifetime(a, e)
+	quad.Backend.unbindLifetime(e)
+	quad.Backend.bindLifetime(b, e)
 	assert(runs == 1, "no held change → no re-run on (re)bind, got " .. runs)
 	print("PASS")
 end
@@ -202,9 +202,9 @@ do
 	local e = Effect(function()
 		runs += 1
 	end, s)
-	assert(quad.canExecute(e) == false, "unbound")
+	assert(quad.Backend.canExecute(e) == false, "unbound")
 	s:Set(2) -- held
-	assert(e:WeakSubscribe() == e and e.Subscribed == true and quad.canExecute(e) == true, "weak primitive")
+	assert(e:WeakSubscribe() == e and e.Subscribed == true and quad.Backend.canExecute(e) == true, "weak primitive")
 	assert(runs == 2, "tail replayed the hold")
 	assert(not pcall(function()
 		e:Subscribe()
@@ -221,7 +221,7 @@ do
 		e:Unsubscribe()
 	end), "strict")
 	local ok, err = pcall(function()
-		quad.bindLifetime(Instance.new("Frame"), Effect(function() end, s):Subscribe())
+		quad.Backend.bindLifetime(Instance.new("Frame"), Effect(function() end, s):Subscribe())
 	end)
 	assert(not ok and string.find(tostring(err), "already subscribed", 1, true) ~= nil, "bindLifetime shares the gate: " .. tostring(err))
 	print("PASS")
@@ -296,13 +296,13 @@ do
 			cleansA += 1
 		end
 	end, count)
-	quad.bindLifetime(parent, A)
+	quad.Backend.bindLifetime(parent, A)
 	local B = Effect(function()
 		return function()
 			count:Set(-1) -- fires A's internal observer mid-wave, after A's Destroying ran
 		end
 	end)
-	quad.bindLifetime(child, B)
+	quad.Backend.bindLifetime(child, B)
 	assert(runsA == 1 and cleansA == 0, "setup: one install run")
 	parent:Destroy()
 	assert(cleansA == 1, "A's cleanup ran exactly once in the wave")
@@ -311,7 +311,7 @@ do
 	assert(A._rerunRequired == true, "the change was held, not dropped")
 	-- 재무장: 재바인드가 _dying을 내리고 홀드를 1회 재생
 	local fresh = Instance.new("Frame")
-	quad.bindLifetime(fresh, A)
+	quad.Backend.bindLifetime(fresh, A)
 	assert(runsA == 2, "rebinding replays the held change once")
 	assert(A._dying == false, "rebind re-armed the handle")
 	fresh:Destroy()
@@ -325,16 +325,16 @@ do
 	local bindErr: any = nil
 	local C: any = Effect(function(self)
 		local ok, err = pcall(function()
-			quad.bindLifetime(inst2, self)
+			quad.Backend.bindLifetime(inst2, self)
 		end)
 		if not ok then
 			bindErr = tostring(err)
 		end
 	end)
 	assert(bindErr ~= nil and string.find(bindErr, "inside its own fn or cleanup", 1, true) ~= nil, "bind inside fn refused: " .. tostring(bindErr))
-	assert(quad.canBound(C), "nothing was committed — not half-bound")
-	quad.bindLifetime(inst2, C)
-	assert(quad.canExecute(C), "binds cleanly afterwards")
+	assert(quad.Backend.canBound(C), "nothing was committed — not half-bound")
+	quad.Backend.bindLifetime(inst2, C)
+	assert(quad.Backend.canExecute(C), "binds cleanly afterwards")
 	print("PASS")
 end
 

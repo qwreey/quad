@@ -5070,7 +5070,7 @@ return function(quad: any): Declaration
 	local function New<T>(className: string): (props: any) -> T
 		local function stage(props: any): T
 			local inst = Instance.new(className) -- ①
-			quad.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저
+			quad.Backend.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저
 			-- ③④ — flatten(Modifier 소진)은 drive의 첫 pre-pass(round17 Q4 (a),
 			-- 2026-09-04): New와 Claim이 같은 호출 자리를 쓴다
 			quad.Dispatch.drive(inst, props)
