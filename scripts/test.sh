@@ -92,6 +92,9 @@ done
 # [2026-09-09] docs/reference 커버리지 — 공개 표면 심볼이 레퍼런스 헤딩에 전부 있어야 한다(손으로 관리하는 레퍼런스의 유일한 기계 검사)
 echo "=== doc-coverage (docs/reference)"
 python3 scripts/doc-coverage.py || fail=1
+# [2026-09-15 사용자 결정] 입력 자리 = 마커 규칙(typing-limits 8.11) — 공개 타입의 입력 극성 자리에 전체형 State/Source가 오면 실패
+echo "=== type-surface-check (input positions use markers)"
+python3 scripts/type-surface-check.py || fail=1
 # [2026-09-10] 버전 리터럴 정합성 — 매니페스트 여섯·소스·테스트의 버전이 같고 VERSION_PATTERN이 그 버전을 받는지
 echo "=== check-version"
 python3 scripts/check-version.py || fail=1
