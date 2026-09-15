@@ -340,7 +340,7 @@ opus 로 내려도 좋아"*). **판정 기준은 "작업 batch 가 커야" + 난
   `GlobalUsedAsLocal` lint를 잡아 실패시킨다(`H-404`).
 - **⭐ [2026-09-08 신설 — 슈거 구간 실측 셋] 검사·실측 절차의 구멍.** (1) **quad-types를 고치면 `mise exec -- pesde install`을
   먼저** — spec은 `luau_packages/` 사본을 보므로 안 돌리면 새 타입이 "Unknown type"으로 나온다(2026-09-08 두 번 밟음). (2) **test.sh의
-  quad-base 검사는 구 솔버 `luau-analyze`다** — 사용자 에디터(luau-lsp 신 솔버)에서만 나는 타입 에러가 있다(`Debounce.luau`의
+  quad-base 검사는 구 솔버 `luau-analyze`다** — **⚠️ [2026-09-15 사실 정정] `luau-analyze` 0.734의 기본값도 신 솔버다(`--solver=old`만 구 솔버이고, 그건 `read` 필드를 거부해 이 코퍼스를 아예 못 읽는다 — `base/typing-limits.md` 8.21). 아래 사례의 차이는 솔버 종류가 아니라 Luau 빌드(0.734 vs luau-lsp 내장 729)·설정 차이로 보이나 좁히지 않았다.** — 사용자 에디터(luau-lsp 신 솔버)에서만 나는 타입 에러가 있다(`Debounce.luau`의
   `setup(emit)` 무주석 파라미터가 첫 사용에서 `() -> boolean`으로 굳어 `emit(false)`가 인자 수 불일치, 사용자 실측). 큰 변경 뒤엔
   `mise exec -- luau-lsp analyze --flag:LuauSolverV2=true --ignore "**/luau_packages/**" quad-base/src <spec들>`을 한 번 돌릴 것 — **[2026-09-10 게이트로 올림]** test.sh가 엔진 무관 그룹을 신 솔버로 한 번 더 본다(사용자: *"실제로 지금은 뉴 솔버 쓰는 사람들이 더 많아. 구 솔버는 거의 fallback"*). (3) **Studio 실측에서 rojo가 싱크한 새 파일은 이미 `require`된 모듈에 안 보인다**(require 캐시) —
   `quad-base`·`quad-roblox` 폴더를 `:Clone()`해 사본을 `require`(`audit/sugar-studio-2026-09-08.md`). **(4) [2026-09-10]** 버전 bump 뒤 `pesde install`을 안 돌리면 `pesde.lock`이 옛 버전(0.0.0)을 들고 있고 `.relink-manifest`도 옛 경로를 기억한다 — bump 뒤엔 `pesde install`, relink가 "missing link parent"를 내면 `.relink-manifest`를 지우고 다시. 그리고 relink가 멤버 폴더를 통째로 복사하면 그 멤버의 `luau_packages`까지 따라와 같은 패키지의 실복사본이 둘 생겨 luau-lsp 타입 신원이 갈린다(`spec.reftypes` `Self` 에러) — `relink.sh` 2.5단계가 중첩 사본을 최상위로 호이스팅한다.

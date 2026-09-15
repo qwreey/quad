@@ -1,5 +1,7 @@
 # 타입 시스템의 한계와 그 대응 — quad 전역 규약
 
+> **⚠️ [2026-09-15 사실 정정 — 8.21]** 이 문서의 "구 솔버(`luau-analyze`)·신 솔버(`luau-lsp`)" / "두 솔버" 표기는 **둘 다 신 솔버**였다 — `luau-analyze` 0.734는 기본값이 신 솔버이고(`--solver=old`만 구 솔버), 진짜 구 솔버는 `read` 필드를 거부해 quad 타입을 못 읽는다. 그 표기는 "Luau 빌드 두 벌(luau 0.734 CLI / luau-lsp 1.69.0 내장 release 729)"로 읽을 것.
+
 **이 문서는 "Luau 타입 시스템이 quad 설계에 대해 못 해주는 것"을 한
 군데 모은 확정 문서입니다.** 각 한계마다 (a) 정확히 무엇이 안 되는가,
 (b) 그래서 우리가 코드/문서에서 뭘 해야 하는가, (c) 언제/어떻게 풀릴
@@ -1082,13 +1084,24 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 `q.OnRendered<<Frame>>(function(inst) print(#inst:GetChildren()) end)`가 신 솔버 strict에서 `Operator '#' could not be applied to operand of type unknown`. 같은 식이 최상위나 `PostRef<Frame?>`의 `:Callback` 콜백에서는 통과하고, 같은 콜백 안의 `inst.Size`·`inst.ClassName`·`inst:FindFirstChildOfClass(...)`도 통과한다 — **제네릭 파라미터 `I`로 들어온 인스턴스의 배열 반환 메소드만** 걸린다. 우회는 지역 변수 주석 `const kids: { Instance } = inst:GetChildren()`(GS 08이 그 형태). `reference/sugar/04-lifecycle-hooks.md`의 예제는 `inst.Size`/`inst.ClassName`이라 지금은 안 걸리지만, 자식 순회 예제를 넣을 때 같은 벽 — 8.16과 같은 뿌리(훅의 `I`는 타입 인자로만 채워진다)로 보이나 원인은 좁히지 않았다.
 
-## 8.21. 비균일 재귀 제네릭보다 **앞에 선언된** 별칭이 그걸 인스턴스화하면 그 참조가 통째로 에러 타입(any)이 된다 — `State`/`Source`는 파일 앞쪽에, 참조하는 별칭은 그 뒤에 (2026-09-15 실측, 두 솔버)
+## 8.21. 비균일 재귀 제네릭보다 **앞에 선언된** 별칭이 그걸 인스턴스화하면 그 참조가 통째로 에러 타입(any)이 된다 — `State`/`Source`는 파일 앞쪽에, 참조하는 별칭은 그 뒤에 (2026-09-15 실측, **신 솔버 전용**)
 
-증상: quad-types에서 `DebounceOptions`/`ThrottleOptions`(당시 `Time: number | State<number>`)와 `Operator` 블록(`NumOp` 등 반환 `State<number>`)이 `State<T>` 정의보다 먼저 선언돼 있어, `q.Debounce({ Time = "x" })`·`Time = true`가 통과하고 `s:Apply(q.Operator.Sum(1))` 결과가 무엇에든 대입됐다(구 솔버 `luau-analyze` 0.734, 신 솔버 `luau-lsp` 1.69.0 판정 동일). `State`를 안 쓰는 옆 필드(`Leading: boolean?`)는 정상 진단.
+증상: quad-types에서 `DebounceOptions`/`ThrottleOptions`(당시 `Time: number | State<number>`)와 `Operator` 블록(`NumOp` 등 반환 `State<number>`)이 `State<T>` 정의보다 먼저 선언돼 있어, `q.Debounce({ Time = "x" })`·`Time = true`가 통과하고 `s:Apply(q.Operator.Sum(1))` 결과가 무엇에든 대입됐다(`luau-analyze` 0.734와 `luau-lsp` 1.69.0 판정 동일 — **⚠️ 둘 다 신 솔버다**, 아래 정정). `State`를 안 쓰는 옆 필드(`Leading: boolean?`)는 정상 진단.
 
 조건 둘이 **동시에** 성립할 때만 샌다(require 없는 최소 재현): (1) 참조하는 별칭이 대상 제네릭보다 파일에서 먼저 선언, (2) 대상이 **비균일 재귀**(`Compute: <U>(self: S<T>, …) -> S<U>`처럼 다른 타입 인자로 자기를 반환 — §1의 그 모양). 뒤로 옮기거나 균일 재귀(`-> S<T>`만)면 진단된다. 같은 파일 안에서도 새고, 필드를 읽어 `boolean`에 대입해도 진단 0 — 필드 타입 자체가 에러 타입이다. §1은 "그 메소드의 반환만 에러 타입"까지였고, 이건 그 확장이다.
 
 조치(사용자 결정 — 공개 표면 (32) 후속): `FieldOut`/`State`/`Source` 정의를 `StateData` 바로 뒤로 끌어올림(블록마다 내리는 대신 — 앞으로 생길 앞선 참조까지 덮음) + 입력 자리인 옵션 `Time`/`MaxTime`은 `StateMarker<number>`로(8.11 입력 자리 마커 규약; 출력부가 아니라 자동완성 손실 없음). 실측: 옵션 오값 진단, 진짜 State 통과, `Operator` 직접 호출·`Alternative` 반환 정상, 타입 검사 시간 변화 없음. 정적 스캔으로 남은 앞선 참조 셋(`RefCallback`→`Ref`, `SlotItem`→`Slot`은 균일 재귀라 안전; `FieldOut`→`State`는 실측 무해). **규칙: 비균일 재귀 제네릭(`State`/`Source`)을 참조하는 별칭은 그 정의 뒤에 둘 것.** 남은 무진단 `s:Apply(q.Operator.Not)`은 이 건이 아니라 8.14(`self: any` 함수의 `Apply` 오버로드 해소).
 
-왜 순서가 영향을 주는지(솔버 내부 경로)는 Luau 소스 조사 중 — 결과를 이 절에 덧붙인다.
+**⚠️ 정정 — "두 솔버"는 둘 다 신 솔버였다(같은 날 소스 조사·실측).** `luau-analyze` 0.734의 기본값은 신 솔버다(`--help`: *"--solver={new|old}: selects which typechecker to use (defaults to the new solver)"*; `luau-lang/luau@3fc82b1:CLI/src/Analyze.cpp:143`). 진짜 구 솔버(`--solver=old`)는 이 코퍼스의 `read` 필드를 *"read keyword is illegal here"*로 거부한다(quad-types+quad-base 229건). `read`를 뗀 사본으로 재면 구 솔버엔 **이 순서 의존이 없다** — 대신 비균일 재귀 자리에 "Recursive type being used with different parameters."를 보이게 띄운다.
+
+**왜 순서가 영향을 주나(신 솔버 내부 경로 — opus 소스 조사, `luau-lang/luau@3fc82b1`=0.734; luau-lsp 1.69.0이 쓰는 release 729 `@6e9b580`도 같은 로직 확인):**
+- **구 솔버엔 순서 문제가 없다** — 블록을 검사하기 전에 문장을 의존성 순으로 재정렬한다(`Analysis/src/TypeInfer.cpp:497` `toposort`, 타입 참조도 간선 — `Analysis/src/TopoSortStatements.cpp:287`). 비균일 재귀는 본문 안의 그 자리에서만 `RecursiveRestraintViolation`으로 에러 타입이 되고 진단이 뜬다(`TypeInfer.cpp:6086-6088`).
+- **신 솔버는 재정렬 없이 제약을 만들어진 순서대로 푼다.** 제약 생성기가 별칭 뼈대를 등록한 뒤(`Analysis/src/ConstraintGenerator.cpp:911`·`:937`) 문장 순서대로 본문을 풀며, 제네릭 참조(`SC<number>`)마다 `TypeAliasExpansionConstraint`를 쌓는다(`:4232`·`:4238`). 앞에 선언된 `OptsC` 안의 `SC<number>` 확장이 SC 본문 안의 `SC<T>`·`SC<U>` 확장보다 **먼저** 큐에 들어가고, 솔버는 벡터 앞에서부터 돈다(`ConstraintSolver.cpp:538`).
+- 확장을 처리할 때 **무한 확장 가드**가 별칭 본문을 훑어, 아직 확장 안 된 같은 별칭 참조의 인자가 자기 제네릭 매개변수와 다르면 무한 타입으로 판정하고 **바깥 확장 전체를 `errorType`으로** 묶는다(`ConstraintSolver.cpp:1448-1454`, 판정 `:376-378`). `OptsC`의 확장이 먼저 돌 때 `Compute`의 `SC<U>`는 아직 대기 중이고 `U ≠ T`라 가드가 오판한다 → `SC<number>` 통째가 에러 타입.
+- 뒤에 선언하면 멀쩡한 이유: 그땐 SC 본문 확장이 이미 끝나 `SC<T>`는 본문에, `SC<U>`는 error에 묶였고, 가드 방문자는 묶인 타입을 건너뛴다(`skipBoundTypes = true`, `:339`) — 손상은 `Compute` 반환 한 곳(§1)만 남는다. 균일 재귀는 인자가 항등이라 가드가 걸릴 일이 없다. 실패는 캐시되지 않아(캐시 쓰기는 성공 경로 끝 `:1559`) 같은 파일 뒤쪽의 `SC<number>`는 멀쩡하다.
+- **진단이 사라지는 이유:** 가드는 즉시 보고하지 않고 `invalidTypeAliases`에 적어 두는데(`:1454`), 보고는 TypeChecker2가 별칭 문장을 감싸는 스코프에서 부모 쪽으로만 찾는다(`TypeChecker2.cpp:1315`, `Scope.cpp:253`) — 기록된 스코프(`OptsC` 정의 스코프·`<U>` 서명 스코프)가 그 경로 밖이라 아무것도 안 뜬다.
+- 판별 재현(스크래치 `/code/Projects/quad-scratch/luau-order-probe/`, 레포 밖): SC 앞의 **함수 매개변수 주석**도 샌다(별칭 전용 아님); 앞 별칭이 SC 뒤에 선언된 비제네릭 `SCN = SC<number>`를 거치면 안전; 이미 풀린 다른 모듈의 `M.SC<number>`는 안전; `Compute`가 다른 이름의 별칭을 거쳐 자기를 반환하면 가드(별칭 신원 비교)가 못 잡아 누수 없음 + 재귀 진단이 보임. 미완: 제약 처리 순서를 무작위화하는 `randomizeConstraintResolutionSeed`(CLI 미노출)로의 판별.
+- 업스트림: 정확히 이 증상의 이슈는 못 찾음 — 인접 #921(구 솔버 순서 의존, icebox), #1438(신 솔버 재귀 에러), #2380, RFC "Relax the recursive type restriction". 새로 보고할 만한 버그로 보임(보고 여부는 사용자).
+
+**실무 규칙(보강):** 비균일 재귀 제네릭 별칭은 그걸 인스턴스화하는 **모든 별칭·주석보다 먼저** 선언하거나 다른 모듈에서 가져와 쓸 것 — 신 솔버가 앞선 확장을 무한 타입으로 오판해 통째로 에러 타입으로 만들고 진단도 내지 않는다.
 

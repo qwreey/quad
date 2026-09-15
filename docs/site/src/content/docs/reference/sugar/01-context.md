@@ -59,7 +59,7 @@ Provider: <T>(name: string?) -> Provider<T>
 Context.Provider: name must be a string (got number)
 ```
 
-**타입은 만드는 자리에서 한 번 붙입니다.** `T`는 값에 없는 팬텀이라, 캐스트든 명시적 타입 인자든 한쪽으로 적어주면 그 뒤로는 `Get`이 알아서 추론됩니다. 둘 다 구 솔버(`luau-analyze`)·신 솔버(`luau-lsp --flag:LuauSolverV2=true`) 양쪽에서 통과합니다.
+**타입은 만드는 자리에서 한 번 붙입니다.** `T`는 값에 없는 팬텀이라, 캐스트든 명시적 타입 인자든 한쪽으로 적어주면 그 뒤로는 `Get`이 알아서 추론됩니다. 둘 다 `luau-analyze`와 `luau-lsp --flag:LuauSolverV2=true`(둘 다 신 솔버) 양쪽에서 통과합니다.
 
 ```luau
 type Theme = { ButtonBg: Color3 }

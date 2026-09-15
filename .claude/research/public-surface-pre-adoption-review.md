@@ -440,6 +440,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 **[반영 2026-09-15]** (나)는 블록을 하나씩 내리는 대신 `FieldOut`/`State`/`Source` 정의를 `StateData` 바로 뒤로 끌어올려 적용(같은 원리, 앞으로 생길 앞선 참조까지 덮음 — 조사자가 미실측으로 남긴 변형을 메인이 실측), (가) 옵션 `Time`/`MaxTime` → `StateMarker<number>`. 실측(두 솔버): `Time = "x"`/`true` 진단, 진짜 State 통과, `Operator.Sum`·`Not` 직접 호출·`Alternative` 반환 타입 정상, `FieldOut`은 원래 새지 않음. 남은 무진단 `s:Apply(q.Operator.Not)`은 앞선 참조가 아니라 `self: any` 함수의 `Apply` 오버로드 해소(8.14 기록된 한계) — 손대지 않음. 재귀 대상 앞선 참조 전수(정적 스캔): 남은 셋 중 `RefCallback`→`Ref`·`SlotItem`→`Slot`은 균일 재귀라 안전, `FieldOut`→`State`는 실측으로 무해. 다른 입력 자리 `State<…>`는 없음(남은 것은 사용자 콜백에 건네는 값·읽기 전용 출력 필드). test.sh exit 0, 타입 검사 시간 변화 없음(base 0.44s·roblox 3.17s·구 솔버 0.19s). `typing-limits.md` 8.21 신설.
 
+**[메커니즘 조사 2026-09-15 — opus, Luau 소스]** 신 솔버 전용: 제약을 만들어진 순서대로 풀어, 앞선 확장이 본문의 아직 안 풀린 `State<U>`를 무한 확장으로 오판해 통째 에러 타입으로 묶고 진단은 스코프 경로 밖이라 사라진다(구 솔버는 문장을 의존성 순 재정렬해 순서 문제가 없음). **부수 정정: `luau-analyze` 0.734도 기본 신 솔버 — test.sh·conventions·typing-limits의 "구 솔버" 표기가 틀렸다**; 진짜 구 솔버(`--solver=old`)는 `read` 필드를 거부해 quad 타입을 못 읽는다. 상세 `typing-limits.md` 8.21. 사용자 문항 둘: 구 솔버 지원 표기, 업스트림 보고.
+
 **(32) 비파괴 — 옵션 테이블 셋과 `q.Slot` 첫 인자가 `read` 규칙을 안 따른다** — `typing-limits.md`가 적은 규칙(읽기만 하는 옵션 타입은 필드를 `read`로 — 탐사자 인용, 절 제목 아님)을 `TweenOptions`·`AnimateInfo`는 따르나 `DebounceOptions`·`ThrottleOptions`·`SlotListOpts`와 `q.Slot`의 `initial: { SlotElement<T> }?`는 안 따라, 옵션을 변수에 담아 넘기면 두 솔버가 거부한다(`local opts = { Owned = false }`를 `:List`에). `read`를 붙이면 받는 입력이 넓어질 뿐이라 **BREAKING 창과 무관** — 언제 해도 됨, 확신 높음. (19)의 "모르는 키 에러"와 같이 손대면 편하다.
 
 참고(판단 재료 약함): 무타입·생성자·클래스별 `Modifier.Overridden`이 전부 `any`를 돌려준다(기록된 솔버 제약). 나중에 `Modifier`로 좁히면 `local m: FrameModifier = …Overridden(a, b)`가 깨질 수 있어, 좁힐 계획이 있으면 이번 창에 재측정할 가치가 있다(미실측).
