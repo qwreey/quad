@@ -49,7 +49,7 @@ type SlotItem<T> = T | State<T> | Slot<T>
 **시그니처**
 
 ```luau
-Slot: <T>(initial: { SlotElement<T> }?) -> Slot<T>
+Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>
 ```
 
 **인자**
@@ -323,7 +323,7 @@ List: <Item, UD>(
     opts: SlotListOpts?
 ) -> Slot<T>
 
-type SlotListOpts = { OwnsElements: boolean? }
+type SlotListOpts = { read OwnsElements: boolean? }
 ```
 
 **인자**

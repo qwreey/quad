@@ -432,6 +432,8 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 **(31) `Observer`와 `EffectHandle` 타입 이름의 비대칭** — `state:Observer(fn)`은 `Observer`, `q.Effect(fn)`은 `EffectHandle`(마커 `ObserverMarker`/`EffectHandleMarker`, 술어 `isObserver`/`isEffect`). 설정 모듈 문서가 `EffectHandle`을 재수출하게 해 이미 사용자 주석에 들어간다. Luau는 타입·값 이름 공간이 따로라 `Effect` 타입 이름을 막는 제약은 없어 보이나 `effect-plan.md`에서 근거를 못 찾음. 확신 하(취향 비중 큼) — 올리기만 한다.
 
+**[결정 2026-09-15 — 붙임(비파괴)]** 메인 실측: 변수에 담은 옵션·배열 네 경우가 두 솔버 모두 거부 → `read` 필드·`{ read [number]: SlotElement<T> }` 뒤 통과, 음성 대조(`OwnsElements = 5`·`Leading = "yes"`) 여전히 에러, test.sh exit 0. 사용자: *"확인했어, 맞는 방향인것 같고, Debounce 는 왜 그런지 확인을 해봐야겠네"* — 변경 전부터 있던 `q.Debounce({ Time = "x" })` 무진단은 opus 배경 조사로(결과는 이 줄 아래에 덧붙인다).
+
 **(32) 비파괴 — 옵션 테이블 셋과 `q.Slot` 첫 인자가 `read` 규칙을 안 따른다** — `typing-limits.md`가 적은 규칙(읽기만 하는 옵션 타입은 필드를 `read`로 — 탐사자 인용, 절 제목 아님)을 `TweenOptions`·`AnimateInfo`는 따르나 `DebounceOptions`·`ThrottleOptions`·`SlotListOpts`와 `q.Slot`의 `initial: { SlotElement<T> }?`는 안 따라, 옵션을 변수에 담아 넘기면 두 솔버가 거부한다(`local opts = { Owned = false }`를 `:List`에). `read`를 붙이면 받는 입력이 넓어질 뿐이라 **BREAKING 창과 무관** — 언제 해도 됨, 확신 높음. (19)의 "모르는 키 에러"와 같이 손대면 편하다.
 
 참고(판단 재료 약함): 무타입·생성자·클래스별 `Modifier.Overridden`이 전부 `any`를 돌려준다(기록된 솔버 제약). 나중에 `Modifier`로 좁히면 `local m: FrameModifier = …Overridden(a, b)`가 깨질 수 있어, 좁힐 계획이 있으면 이번 창에 재측정할 가치가 있다(미실측).

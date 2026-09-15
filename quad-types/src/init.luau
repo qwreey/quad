@@ -246,17 +246,17 @@ export type GateHandle = {
 	Cancel: (self: GateHandle) -> (), -- 보류분을 버리고 idle로(전파 없음)
 }
 export type DebounceOptions = {
-	Time: number | State<number>, -- 창 길이(초) — 신호마다 리셋. State면 스케줄 시점에만 `:Get()`(구독 없음)
-	Leading: boolean?, -- 기본 false
-	Trailing: boolean?, -- 기본 true
-	MaxTime: (number | State<number>)?, -- 신호가 안 끊겨도 최대 이 간격마다 통과(Debounce 전용)
-	Handle: Ref<GateHandle?>?,
+	read Time: number | State<number>, -- 창 길이(초) — 신호마다 리셋. State면 스케줄 시점에만 `:Get()`(구독 없음)
+	read Leading: boolean?, -- 기본 false
+	read Trailing: boolean?, -- 기본 true
+	read MaxTime: (number | State<number>)?, -- 신호가 안 끊겨도 최대 이 간격마다 통과(Debounce 전용)
+	read Handle: Ref<GateHandle?>?,
 }
 export type ThrottleOptions = {
-	Time: number | State<number>, -- 창 길이(초) — 신호가 리셋하지 못함
-	Leading: boolean?, -- 기본 true
-	Trailing: boolean?, -- 기본 true
-	Handle: Ref<GateHandle?>?,
+	read Time: number | State<number>, -- 창 길이(초) — 신호가 리셋하지 못함
+	read Leading: boolean?, -- 기본 true
+	read Trailing: boolean?, -- 기본 true
+	read Handle: Ref<GateHandle?>?,
 }
 -- `Debounce{...}`/`Throttle{...}`가 돌려주는 애플리커티브 팩토리(`__apply` 메소드형, `H-158`) — 자기가 만든
 -- 게이트 전부에 `:Flush()`/`:Cancel()` 브로드캐스트(weak 레지스트리, 5-4절). 결과 State는 호출부가 명시
@@ -509,7 +509,7 @@ export type Store<T> = T & {
 -- 원래 값"이라 전체형 `SlotItem<T>` — 같은 값의 두 역할이라 별칭이 둘이다.
 export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
 export type SlotItem<T> = T | State<T> | Slot<T>
-export type SlotListOpts = { OwnsElements: boolean? }
+export type SlotListOpts = { read OwnsElements: boolean? }
 -- `updateFn(ctx) -> (result, userdata)` — [2026-09-15 사용자 결정] 옛 위치 인자 다섯을 매 호출 새 테이블 하나로
 -- (`ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`, `:List`·`:Single` 같은 모양; 필드에 `read`를 안 붙이는 건 사용자가 평범한
 -- 레코드로 주석을 달면 반공변 자리에서 어긋나기 때문). `result`는
@@ -692,7 +692,7 @@ export type Quad = {
 
 	-- Slot 표면(M6 — `H-25` 몫, 2026-09-03). `Slot(initial?)`은 `:Add` 반복 sugar.
 	-- `dispose`는 quad 관리 값을 지우는 유일한 안전 경로(마운트 중이면 error).
-	Slot: <T>(initial: { SlotElement<T> }?) -> Slot<T>,
+	Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>,
 	Detach: Detach,
 	KeyGone: KeyGone,
 	dispose: (value: any) -> (),

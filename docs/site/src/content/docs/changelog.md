@@ -21,6 +21,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- 옵션 테이블을 변수에 담아 넘겨도 strict 타입 검사가 통과합니다 — `q.Debounce`/`q.Throttle`의 옵션, `slot:List`/`slot:Single`의 `opts`, 그리고 `q.Slot(initial)`의 배열(필드·원소가 읽기 전용 `read`로 선언됨). 전에는 `local opts = { Time = 0.3 }` 뒤 `q.Debounce(opts)`가 가변 필드 불변성으로 거부됐습니다. 받는 입력이 넓어지기만 해 기존 코드는 그대로 통과합니다.
+
 - **BREAKING(타입만) — `q.Effect`가 돌려주는 핸들의 타입 이름이 `EffectHandle`에서 `Effect`로, 입력 자리 마커가 `EffectHandleMarker`에서 `EffectMarker`로 바뀌었습니다.** `state:Observer` → `Observer`, `q.Slot` → `Slot`처럼 생성자와 타입 이름이 같은 규칙에서 이것만 벗어나 있었습니다(술어 `isEffect`와도 맞춤). 런타임은 같습니다. 옮기는 법: 주석·재수출의 `EffectHandle`을 `Effect`로(설정 모듈의 `export type EffectHandle = QuadTypes.EffectHandle` → `export type Effect = QuadTypes.Effect`).
 
 - **BREAKING — 백엔드가 심는 계약 op가 `q.Backend`로, Length/Offset 부기 함수가 `q.Bookkeeping`으로 옮겨졌습니다.** 앱 코드가 부를 표면이 아닌 것들이 `q.` 자동완성에 섞여 있었습니다. 멤버 이름은 그대로입니다.
