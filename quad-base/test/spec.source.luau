@@ -71,15 +71,15 @@ do
 end
 
 print()
-print("=== 5. State 메소드 위임 — Source에서 With/Compute/Apply가 바로 됨 ===")
+print("=== 5. State 메소드 위임 — Source에서 Depend/Compute/Apply가 바로 됨 ===")
 do
 	local s = Source(3)
 	local doubled: QuadTypes.State<number> = s:Compute(function(x): number
 		return x:Get() * 2
 	end)
 	assert(doubled:Get() == 6, "Compute through a Source")
-	local w: QuadTypes.State<number> = s:With(Source(0))
-	assert(w:Get() == 3, "With passes self's value through")
+	local w: QuadTypes.State<number> = s:Depend(Source(0))
+	assert(w:Get() == 3, "Depend passes self's value through")
 	local applied = s:Apply(function(st: QuadTypes.StateData<number>): number
 		return st:Get() + 1
 	end)

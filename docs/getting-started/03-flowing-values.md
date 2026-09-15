@@ -125,7 +125,7 @@ print(both:Get())  --> "7번"
 여기까지 만든 것에 이름을 붙입니다.
 
 - **`Source`** — 값을 **넣을 수 있는** 원천. `q.Source(v)`로 만들고 `:Set(v)`으로 씁니다.
-- **`State`** — 읽기만 되는 파이프의 끝. `:Compute`가 만들어 준 노드가 이것입니다(의존성만 더한 노드를 만드는 `:With`도 있지만 이 튜토리얼에서는 쓰지 않습니다). **공개 생성자가 없습니다** — `q.State(...)` 같은 것은 없습니다.
+- **`State`** — 읽기만 되는 파이프의 끝. `:Compute`가 만들어 준 노드가 이것입니다(의존성만 더한 노드를 만드는 `:Depend`도 있지만 이 튜토리얼에서는 쓰지 않습니다). **공개 생성자가 없습니다** — `q.State(...)` 같은 것은 없습니다.
 
 둘의 관계를 정하는 규칙은 하나뿐입니다. **모든 `Source`는 그대로 `State`입니다.** `State`를 요구하는 자리(프로퍼티 자리, `:Compute`의 의존성 자리)에 `Source`를 그냥 넘기면 됩니다 — 언래핑도, 변환도 없습니다. 위 1절에서 `Text = label`이 그대로 통했던 게 그래서입니다.
 
@@ -136,7 +136,7 @@ print(both:Get())  --> "7번"
 flowchart TB
     subgraph State["State&lt;T&gt; — 읽고, 파생시키고, 관측한다"]
         direction TB
-        S1[":Get()  :Compute(fn, ...)  :With(...)<br/>:Apply(factory)  :Observer(fn)  :Gate(setup)"]
+        S1[":Get()  :Compute(fn, ...)  :Depend(...)<br/>:Apply(factory)  :Observer(fn)  :Gate(setup)"]
         subgraph Source["Source&lt;T&gt; — 위의 전부 + 값을 넣는다"]
             S2[":Set(v)  :Emit()  .Revision"]
         end
@@ -172,7 +172,7 @@ flowchart TB
 
 - [ ] `State`에도 `q.State(...)`라는 공개 생성자가 있어 값을 직접 만들 수 있습니다
 - [x] 모든 `Source`는 그대로 `State`이므로, `State`를 요구하는 자리에 `Source`를 언래핑 없이 그대로 넘길 수 있습니다
-- [ ] `Source`는 `State`와 달리 `:Compute`나 `:With` 같은 메소드를 갖지 않습니다
+- [ ] `Source`는 `State`와 달리 `:Compute`나 `:Depend` 같은 메소드를 갖지 않습니다
 
 `State`는 읽기만 되는 파생 노드라 공개 생성자가 없고(`q.State(...)` 같은 것은 없습니다), `Source`는 `State`의 메소드를 전부 가진 채 `:Set`·`:Emit`·`.Revision`만 더 갖습니다. 그래서 `State` 자리에 `Source`를 그대로 꽂을 수 있습니다.
 ```
@@ -182,4 +182,4 @@ flowchart TB
 ## 더 알고 싶다면
 
 - [레퍼런스: `Source`](../reference/core/02-source.md) — `:Set`이 같은 값에도 늘 전파하는 이유, 제자리 변경을 알리는 `:Emit`
-- [레퍼런스: `State`](../reference/core/03-state.md) — `:Get`의 lazy 계산, `:Compute`의 인자 검증, 구독 범위만 넓히는 `:With`, `:Apply`와 `:Gate`
+- [레퍼런스: `State`](../reference/core/03-state.md) — `:Get`의 lazy 계산, `:Compute`의 인자 검증, 구독 범위만 넓히는 `:Depend`, `:Apply`와 `:Gate`

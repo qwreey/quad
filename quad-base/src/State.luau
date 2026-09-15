@@ -1,6 +1,6 @@
 --!strict
 --[[
-	State — derived reactive node (`:Compute` / `:With` / `:Apply`), the
+	State — derived reactive node (`:Compute` / `:Depend` / `:Apply`), the
 	propagation loop, and the epoch-based recompute judgement.
 
 	Assembly (`H-174`, user-confirmed 2026-08-28): `State.Init(module)` builds
@@ -13,7 +13,7 @@
 	creates).
 
 	There is no runtime `State` constructor — nodes exist only as results of
-	`:Compute`/`:With` (and `:Gate`, unit 4). `State` is NOT an `Epoch`
+	`:Compute`/`:Depend` (and `:Gate`, unit 4). `State` is NOT an `Epoch`
 	(`state-epoch-plan.md` §4): its counters are private recompute
 	bookkeeping, and upstream tracking goes through `valueEpochMap`.
 
@@ -107,7 +107,7 @@ local function createImpl(module: any)
 	local function newNode(deps: { any }, fn: any, mt: any?): any
 		for i, dep in deps do
 			if not isState(dep) then
-				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/With/Gate the user called
+				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/Depend/Gate the user called
 			end
 		end
 		local self = setmetatable({
@@ -214,14 +214,15 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local dep = (select(i, ...))
 			if dep == nil then
-				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the With/Compute the user called
+				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the Depend/Compute the user called
 			end
 			deps[i + 1] = dep
 		end
 		return deps
 	end
 
-	function Impl.With(self: any, ...: any): any
+	-- 2026-09-15: renamed from `With` (user decision — same word as the `...deps` of Compute/Effect)
+	function Impl.Depend(self: any, ...: any): any
 		return newNode(collectDeps(self, ...), passThrough) -- value is `self`'s, subscriptions are wider
 	end
 
@@ -327,7 +328,7 @@ local function createImpl(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	Err.setFuncLevel(SURFACE, Impl.Get, Impl.With, Impl.Compute, Impl.Gate, Impl.Observer, Impl.Apply)
+	Err.setFuncLevel(SURFACE, Impl.Get, Impl.Depend, Impl.Compute, Impl.Gate, Impl.Observer, Impl.Apply)
 
 	return Impl
 end

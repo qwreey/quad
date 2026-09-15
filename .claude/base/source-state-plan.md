@@ -534,6 +534,8 @@ Modifier처럼 플래튼하지 않는가"는 설계 근거를 알고 싶은 사�
 
 ## 여러 값을 묶어 파생값 만들기 — `:With` + `:Compute`, 포지셔널 인자 지양
 
+> **[2026-09-15 사용자 결정] 공개 이름은 `:Depend(...)`다** — 옛 `:With`에서 개명(동작 동일; `:Compute`/`q.Effect`의 `deps`와 같은 낱말, `With`는 "값이 따라온다"로 오독됨). 이 절의 `:With` 서술은 그 시점 원문이다. 경위는 `research/public-surface-pre-adoption-review.md` (15)번.
+
 **사용자 확인 완료, 상세 방향 확정.** 후보로 검토했던 두 방식 모두 기각:
 
 - **암묵적 자동 추적(Vide식 ambient stack)** 기각 — "함수 실행 중과 끝 사이를
@@ -597,6 +599,8 @@ Tag/Modifier의 클론은 호출 즉시 결과가 확정되는 값이라 "-ed"(�
 `Computed`보다 quad의 명명 체계 안에서 정확함.
 
 ### `:With`도 새 State 노드로 확정, 가변인자로 체인 남발 방지 (2026-08-07)
+
+> **[2026-09-15 사용자 결정] 공개 이름은 `:Depend(...)`다** — 옛 `:With`에서 개명(동작 동일; `:Compute`/`q.Effect`의 `deps`와 같은 낱말, `With`는 "값이 따라온다"로 오독됨). 이 절의 `:With` 서술은 그 시점 원문이다. 경위는 `research/public-surface-pre-adoption-review.md` (15)번.
 
 **문제 제기(사용자)**: `:With(...)`가 문서상 가변인자 표기이긴 한데, 실제로
 호출마다(`:With(a):With(b):With(c)`처럼 체이닝할 때) 매번 새 State 노드를

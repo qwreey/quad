@@ -86,6 +86,12 @@ AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P
 
 **동작** — `pluginFn(self)`가 돌려준 테이블의 필드를 모듈에 얕게 병합합니다. 새 인스턴스를 만들지 않고 받은 모듈을 그 자리에서 뮤테이션합니다 — `RunInit` 기록이 identity에 의존하기 때문입니다. 슬롯 락이 없으므로 같은 필드를 나중 플러그인이 덮어씁니다. 백엔드 설치에는 이걸 쓰지 말고 `UseProvider`를 쓰세요.
 
+**이미 있는 필드를 덮을 때** — 막지 않습니다. 코어 부품을 일부러 갈아 끼우는 플러그인도 쓸 수 있어야 하기 때문입니다. 다만 `q.Source` 같은 코어 필드가 남의 것으로 바뀌면 원인을 찾기 어려우므로, [`q.debug`](#qdebug)가 켜져 있으면 설치 시점에 한 줄을 출력합니다. 검사는 `AddPlugin`을 부를 때 한 번만 돌고, `q.debug`는 그보다 **먼저** 켜 두어야 합니다.
+
+- `AddPlugin: plugin overwrites existing module field "{k}" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field`
+
+**`_`로 시작하는 필드는 공개 표면이 아닙니다.** 모듈에 런타임으로 존재하더라도(`_bookkeeping` 등) 내부 계약이며 예고 없이 바뀝니다 — 읽거나 덮어쓰는 코드에 기대지 마세요.
+
 **예제**
 
 ```luau

@@ -54,8 +54,9 @@ Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadR
 | `Corner` / `PaddingAll` / `PaddingAllOffset` / `Scale` | `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` |
 | `Font = Enum.Font.X` | works — kept in the generated `D` as engine-legacy (Roblox tags it `Hidden`), marked `-- @deprecated`. Fine for a literal port; `FontFace = Font.fromEnum(...)` is the current API. Same for `FontSize` / `TextWrap` / `Transparency` |
 
-**`:With` is a name clash, not a rename.** v1 `register:With(fn)` = derive → v2 `:Compute(fn, ...deps)`.
-v2's `state:With(...)` exists and is a *different* API (it mints one extra node). Never map by name alone.
+**v2 has no `:With`.** v1 `register:With(fn)` = derive → v2 `:Compute(fn, ...deps)`.
+v2's `state:Depend(...)` only widens the subscription (mints one extra node, passes no value, takes no callback) —
+it is *not* the port of `:With`. Never map by name alone.
 
 ## 2. Removed, with no drop-in replacement
 

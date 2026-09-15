@@ -35,7 +35,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `source.Revision` | [core/02](./core/02-source.md) |
 | `state:Get()` | [core/03 — State](./core/03-state.md) |
 | `state:Compute(fn, ...deps)` | [core/03](./core/03-state.md) |
-| `state:With(...)` | [core/03](./core/03-state.md) |
+| `state:Depend(...)` | [core/03](./core/03-state.md) |
 | `state:Apply(factory)` | [core/03](./core/03-state.md) · [sugar/06](./sugar/06-blocker.md) |
 | `state:Observer(fn)` | [core/05 — Observer·Effect](./core/05-observer-effect.md) · [core/03](./core/03-state.md) |
 | `state:Gate(setup)` | [core/03](./core/03-state.md) |

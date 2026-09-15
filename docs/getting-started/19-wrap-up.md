@@ -73,7 +73,7 @@ quad v1(`Quad.Init(id)` / `Class "Frame"`)을 쓰던 분이라면 걸리는 자�
 
 v1을 쓰던 분이 가장 자주 넘어지는 자리들입니다. 큰 그림(무엇이 왜 없어졌고 어떤 틀로 옮기는지)은 [quad v1에서 오는 분께](../overview/02-from-v1.md), 전체 이관 절차는 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md)에 있습니다.
 
-- **`:With`는 이름만 같은 다른 것**입니다 — v1의 파생은 v2에서 `:Compute(fn, ...deps)`입니다.
+- **v2에는 `:With`가 없습니다** — v1의 파생(`register:With(fn)`)은 v2에서 `:Compute(fn, ...deps)`입니다. 구독만 넓히는 v2의 `:Depend(...)`는 파생이 아니니 이름을 바꿔 옮기는 자리가 아닙니다.
 - **`Mount(parent, obj)`는 없습니다** — 만들어진 뒤 `obj.Parent = parent`.
 - **이벤트는 문자 키에, `self`는 오지 않습니다** — `[Event "Activated"] = fn(self, …)` → `Activated = fn(…)`.
 - **`Class.Extend()`는 없습니다** — 컴포넌트는 props를 받아 인스턴스를 돌려주는 평범한 함수입니다.

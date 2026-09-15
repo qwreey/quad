@@ -44,14 +44,14 @@ const Counter = require("./Counter")
 return function(props)
     const list = q.Slot()
 
-    list:List(props.Rows, function(item, index, offset, prev, ud)
-        if item == q.KeyGone then
-            return nil, ud                    -- 이번 데이터에서 사라진 키 → 파괴
+    list:List(props.Rows, function(ctx)
+        if ctx.Item == q.KeyGone then
+            return nil, ctx.UserData          -- 이번 데이터에서 사라진 키 → 파괴
         end
-        if prev then
-            return prev, ud                   -- 이미 있는 키 → 그대로 둔다(재사용)
+        if ctx.Prev then
+            return ctx.Prev, ctx.UserData     -- 이미 있는 키 → 그대로 둔다(재사용)
         end
-        return Counter { Label = item.Label, Start = item.Start }, ud   -- 새 키 → 만든다
+        return Counter { Label = ctx.Item.Label, Start = ctx.Item.Start }, ctx.UserData   -- 새 키 → 만든다
     end, function(item)
         return item.Id                        -- 신원은 Id
     end)
@@ -67,7 +67,7 @@ return function(props)
 end
 ```
 
-`updateFn`의 인자 다섯은 차례로 이번 항목(`item`), 위치(`index`·`offset`), 이 키가 지난번에 만든 원소(`prev`), 이 키에 붙여 둘 자유 값(`ud`)입니다. 돌려주는 것도 `(원소, ud)` 둘이고, 자세한 뜻은 아래 3절의 표에서 봅니다.
+`updateFn`은 테이블 하나(`ctx`)를 받습니다. 필드는 이번 항목(`ctx.Item`), 위치(`ctx.Index`·`ctx.Offset`), 이 키가 지난번에 만든 원소(`ctx.Prev`), 이 키에 붙여 둘 자유 값(`ctx.UserData`)입니다. 돌려주는 것은 `(원소, userdata)` 둘이고, 자세한 뜻은 아래 3절의 표에서 봅니다.
 
 <details>
 <summary><strong>10장의 <code>q.Slot &#123; … &#125;</code>과 뭐가 다른가요?</strong></summary>
@@ -120,19 +120,19 @@ board.Parent = screen
 
 **실행하면** 카운터가 하나 더 생깁니다. 여기서 중요한 것은 **안 생긴 것**입니다.
 
-- 이미 있던 `a`·`b`는 **다시 만들어지지 않습니다.** `updateFn`이 `prev`를 그대로 돌려준 갈래가 "그 자리에 계속 두라"는 뜻이고, 그 인스턴스는 신원까지 그대로입니다(누르던 카운트도 그대로 남습니다).
+- 이미 있던 `a`·`b`는 **다시 만들어지지 않습니다.** `updateFn`이 `ctx.Prev`를 그대로 돌려준 갈래가 "그 자리에 계속 두라"는 뜻이고, 그 인스턴스는 신원까지 그대로입니다(누르던 카운트도 그대로 남습니다).
 - 새로 생긴 키 하나에만 `Counter { ... }`가 한 번 불립니다.
 - 반대로 데이터에서 어떤 키가 빠지면 그 키에 `q.KeyGone`으로 `updateFn`이 한 번 더 불리고, 위 코드처럼 `nil`을 돌려주면 그 인스턴스가 **파괴됩니다.**
 
 <details>
 <summary><strong>빠진 항목을 파괴하지 않고 잠깐 숨겨 두려면요?</strong></summary>
 
-`q.Detach`를 돌려주면 됩니다. 그 원소를 트리에서 떼되 **파괴하지 않고 들고 있다가**, 같은 키가 다시 나타났을 때 `prev`를 돌려주면 만들지 않고 그대로 다시 붙습니다. 탭 전환처럼 숨겼다 되살리는 자리의 도구입니다.
+`q.Detach`를 돌려주면 됩니다. 그 원소를 트리에서 떼되 **파괴하지 않고 들고 있다가**, 같은 키가 다시 나타났을 때 `ctx.Prev`를 돌려주면 만들지 않고 그대로 다시 붙습니다. 탭 전환처럼 숨겼다 되살리는 자리의 도구입니다.
 
 ```luau
 -- … (CounterBoard.luau) updateFn의 첫 갈래
-if item == q.KeyGone then
-    return q.Detach, ud    -- 파괴 대신 보관
+if ctx.Item == q.KeyGone then
+    return q.Detach, ctx.UserData    -- 파괴 대신 보관
 end
 ```
 
@@ -142,22 +142,22 @@ end
 
 ### `updateFn`이 돌려줄 수 있는 것 넷
 
-호출은 `updateFn(item, index, offset, prev, userdata)`입니다. 차례로 이번 항목, 이 Slot 안에서의 물리 위치, 이 Slot의 `Offset` Source, 이 키가 지난번에 만든 원소, 이 키의 자유 값입니다(각각의 정확한 뜻은 [레퍼런스: `slot:List`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)). 돌려주는 것은 `(결과, userdata)` 둘이고, 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
+호출은 `updateFn(ctx)`입니다. `ctx`의 필드는 `Item`(이번 항목), `Index`(이 Slot 안에서의 물리 위치), `Offset`(이 Slot의 `Offset` State), `Prev`(이 키가 지난번에 만든 원소), `UserData`(이 키의 자유 값)입니다(각각의 정확한 뜻은 [레퍼런스: `slot:List`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)). 돌려주는 것은 `(결과, userdata)` 둘이고, 결과 자리에 무엇을 놓느냐가 그 항목의 운명을 정합니다.
 
 | 무엇을 돌려주나 | 무슨 일이 일어나나 |
 |---|---|
-| **`prev` 그대로** | 그 자리에 계속 둡니다 — 마운트도 파괴도 없는 **가장 싼 경로** |
-| **새 값** | `prev`가 있었다면 파괴되고 새 값이 그 자리를 대신합니다 |
-| **`nil` 또는 `q.None`** | `prev`가 있었다면 파괴됩니다 |
+| **`ctx.Prev` 그대로** | 그 자리에 계속 둡니다 — 마운트도 파괴도 없는 **가장 싼 경로** |
+| **새 값** | `ctx.Prev`가 있었다면 파괴되고 새 값이 그 자리를 대신합니다 |
+| **`nil` 또는 `q.None`** | `ctx.Prev`가 있었다면 파괴됩니다 |
 | **`q.Detach`** | 파괴하지 않고 트리 밖에 붙들어 둡니다. 그 키가 다시 오면 같은 원소가 그대로 재마운트됩니다 |
 
-**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다([10장](/getting-started/10-slot/) 5절이 그 계산이고, 위 예제는 항목을 뒤에 붙이기만 해서 배치를 `UIListLayout`에 맡겼습니다 — 데이터 중간에 항목이 끼어들 수 있다면 `index`/`offset`으로 `LayoutOrder`를 채우세요).
+**순서는 quad가 정하지 않습니다.** `Slot`은 `LayoutOrder`라는 이름을 알지 못합니다 — `ctx.Index`와 `ctx.Offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지 `Position`에 쓸지는 `updateFn`을 쓰는 쪽의 몫입니다([10장](/getting-started/10-slot/) 5절이 그 계산이고, 위 예제는 항목을 뒤에 붙이기만 해서 배치를 `UIListLayout`에 맡겼습니다 — 데이터 중간에 항목이 끼어들 수 있다면 `ctx.Index`/`ctx.Offset`으로 `LayoutOrder`를 채우세요).
 
 ---
 
 ## 4. 이미 있는 항목의 값이 바뀔 때
 
-`prev`를 돌려주는 갈래는 **인스턴스를 다시 만들지 않습니다.** 그래서 라벨 텍스트처럼 항목마다 바뀌는 값은 다른 길로 넣어야 합니다 — `userdata`에 `Source`를 넣어 두고 **그 `Source`만 `:Set`** 하는 것이 정본 관용구입니다.
+`ctx.Prev`를 돌려주는 갈래는 **인스턴스를 다시 만들지 않습니다.** 그래서 라벨 텍스트처럼 항목마다 바뀌는 값은 다른 길로 넣어야 합니다 — `userdata`에 `Source`를 넣어 두고 **그 `Source`만 `:Set`** 하는 것이 정본 관용구입니다.
 
 항목이 라벨 한 줄인 더 작은 목록으로 보겠습니다 — 위 `CounterBoard`와 겹치지 않게 데이터도 따로 둡니다.
 
@@ -170,16 +170,16 @@ const logRows = q.Source({
 
 const list = q.Slot()
 
-list:List(logRows, function(item, index, offset, prev, ud)
-    if item == q.KeyGone then
-        return nil, ud
+list:List(logRows, function(ctx)
+    if ctx.Item == q.KeyGone then
+        return nil, ctx.UserData
     end
-    if prev then
-        ud:Set(item.Label)            -- ← 인스턴스는 그대로, 값만 갈아 끼운다
-        return prev, ud
+    if ctx.Prev then
+        ctx.UserData:Set(ctx.Item.Label)   -- ← 인스턴스는 그대로, 값만 갈아 끼운다
+        return ctx.Prev, ctx.UserData
     end
-    const label = q.Source(item.Label)
-    return D.TextLabel { Text = label }, label   -- ← 두 번째 반환이 다음 ud
+    const label = q.Source(ctx.Item.Label)
+    return D.TextLabel { Text = label }, label   -- ← 두 번째 반환이 다음 ctx.UserData
 end, function(item)
     return item.Id
 end)
@@ -206,7 +206,7 @@ print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스�
 
 **실행하면** `a`의 글씨만 새것으로 바뀌고, 그 라벨 인스턴스는 처음 만든 그대로입니다. 새로 만들어지는 것은 새 키 `c` 하나뿐입니다.
 
-두 번째 반환값이 곧 **그 키의 다음 `userdata`**라, 새로 만드는 갈래에서 `Source`를 돌려주면 그 다음 사이클부터 `ud` 자리로 돌아옵니다.
+두 번째 반환값이 곧 **그 키의 다음 `userdata`**라, 새로 만드는 갈래에서 `Source`를 돌려주면 그 다음 사이클부터 `ctx.UserData`로 돌아옵니다.
 
 
 ---
@@ -221,13 +221,13 @@ print(box:GetChildren()[1] == first)   --> true           (같은 인스턴스�
 -- 새 예시: 별도 스크립트
 const cur = q.Source<<string?>>(nil)
 
-const single = q.Slot<<Instance>>():Single(cur, function(item, offset, prev, ud)
-    if item == q.KeyGone then
+const single = q.Slot<<Instance>>():Single(cur, function(ctx)
+    if ctx.Item == q.KeyGone then
         return nil                        -- 값이 nil이 되면 그 원소를 파괴한다
     end
     return D.TextLabel {
-        Text = item,
-        LayoutOrder = offset:Compute(function(o) return o:Get() + 1 end),
+        Text = ctx.Item,
+        LayoutOrder = ctx.Offset:Compute(function(o) return o:Get() + 1 end),
     }
 end)
 
@@ -249,7 +249,7 @@ top:Remove(1)
 print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 ```
 
-**실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `Source`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
+**실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `State`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
 
 <details>
 <summary><strong>자리에 놓은 <code>State</code>와 뭐가 다른가요?</strong></summary>
@@ -258,7 +258,7 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 
 </details>
 
-`updateFn`은 `:List`의 것과 **`index`만 빠진** 같은 규칙입니다 — `(item, offset, prev, userdata)`를 받고, 돌려줄 수 있는 것도 위 표 그대로(`prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 값이 `nil`이 되면 `item` 자리에 `q.KeyGone`이 옵니다.
+`updateFn`은 `:List`의 것과 **같은 규칙**입니다 — 같은 모양의 `ctx`를 받고(`ctx.Index`도 옵니다), 돌려줄 수 있는 것도 위 표 그대로(`ctx.Prev` 재사용 / 새 값 / `nil`·`q.None` / `q.Detach`)입니다. 그래서 같은 `updateFn`을 `:List`와 `:Single`에 나눠 쓸 수도 있습니다. 값이 `nil`이 되면 `ctx.Item`으로 `q.KeyGone`이 옵니다.
 
 ---
 
@@ -281,22 +281,22 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 `updateFn`의 결과 자리에 놓는 값의 뜻으로 옳은 것은 무엇인가요?
 
 - [ ] `nil`을 돌려주면 그 원소가 트리에서 떼어져 보관됐다가 같은 키가 다시 오면 붙습니다
-- [x] `prev`를 그대로 돌려주면 마운트도 파괴도 없이 그 자리에 계속 둡니다
-- [ ] 새 값을 돌려주면 `prev`도 그대로 남아 그 자리에 둘이 함께 놓입니다
+- [x] `ctx.Prev`를 그대로 돌려주면 마운트도 파괴도 없이 그 자리에 계속 둡니다
+- [ ] 새 값을 돌려주면 `ctx.Prev`도 그대로 남아 그 자리에 둘이 함께 놓입니다
 
-`nil`이나 `q.None`은 `prev`가 있었다면 파괴하고, 파괴하지 않고 붙들어 두는 쪽은 `q.Detach`입니다. 새 값을 돌려주면 `prev`는 파괴되고 새 값이 그 자리를 대신합니다.
+`nil`이나 `q.None`은 `ctx.Prev`가 있었다면 파괴하고, 파괴하지 않고 붙들어 두는 쪽은 `q.Detach`입니다. 새 값을 돌려주면 `ctx.Prev`는 파괴되고 새 값이 그 자리를 대신합니다.
 
 </Quiz>
 
 <Quiz title={"이미 있는 항목의 값이 바뀔 때"}>
 
-`prev`를 돌려주는 재활용 갈래에서 라벨 텍스트처럼 항목마다 바뀌는 값은 어떻게 넣나요?
+`ctx.Prev`를 돌려주는 재활용 갈래에서 라벨 텍스트처럼 항목마다 바뀌는 값은 어떻게 넣나요?
 
-- [ ] `item`이 바뀌면 quad가 그 인스턴스의 프로퍼티를 알아서 갱신해 줍니다
+- [ ] `ctx.Item`이 바뀌면 quad가 그 인스턴스의 프로퍼티를 알아서 갱신해 줍니다
 - [ ] 값이 바뀐 항목은 새 값을 돌려줘 인스턴스를 다시 만드는 것이 정본입니다
 - [x] `userdata`에 `Source`를 넣어 두고 그 `Source`만 `:Set` 합니다
 
-`prev`를 돌려주는 갈래는 인스턴스를 다시 만들지 않으므로 바뀌는 값은 다른 길로 넣어야 합니다. 새로 만드는 갈래에서 `Source`를 만들어 프로퍼티에 꽂고 두 번째 반환값(`userdata`)으로 돌려주면, 다음 사이클의 `ud`로 그 `Source`가 돌아와 `:Set`만 하면 됩니다.
+`ctx.Prev`를 돌려주는 갈래는 인스턴스를 다시 만들지 않으므로 바뀌는 값은 다른 길로 넣어야 합니다. 새로 만드는 갈래에서 `Source`를 만들어 프로퍼티에 꽂고 두 번째 반환값(`userdata`)으로 돌려주면, 다음 사이클의 `ctx.UserData`로 그 `Source`가 돌아와 `:Set`만 하면 됩니다.
 
 </Quiz>
 

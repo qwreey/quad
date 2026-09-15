@@ -96,5 +96,6 @@ D.TextBox {
   `:Subscribe()` on an unbound handle (replays the held change once; calling it on a bound
   handle errors `Observer: already bound to an Instance`). Silent "my observer never fires" bugs are
   almost always this.
-- `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(item, index, offset, prev, ud)`.
-- `slot:Single(state, updateFn?, opts?)` → `updateFn(item, offset, prev, ud)` (no index).
+- `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(ctx) -> (result, userdata)`, `ctx = { Item, Index, Offset, Prev, UserData }`
+  (a fresh table per call — closures may capture `ctx`; `Index` is `0` on a `KeyGone` call).
+- `slot:Single(state, updateFn?, opts?)` → the same `updateFn(ctx)` shape, `Index` included (one `updateFn` can serve both).

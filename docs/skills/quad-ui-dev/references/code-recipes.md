@@ -71,11 +71,12 @@ event.
 
 ## 2. Keyed List with `userdata` Recycling
 
-`updateFn(item, index, offset, prev, ud) -> (result, ud)`; `keyFn` is the 3rd argument (`slot:List(data, updateFn, keyFn?, opts?)`).
-Return `prev` to reuse an element, `q.Detach` to unmount but keep it, `nil`/`q.None` to
-destroy it. `item` is `q.KeyGone` when a key disappeared from the data. There is no
+`updateFn(ctx) -> (result, userdata)` with `ctx = { Item, Index, Offset, Prev, UserData }` (a fresh table per call);
+`keyFn` is the 3rd argument (`slot:List(data, updateFn, keyFn?, opts?)`).
+Return `ctx.Prev` to reuse an element, `q.Detach` to unmount but keep it, `nil`/`q.None` to
+destroy it. `ctx.Item` is `q.KeyGone` when a key disappeared from the data. There is no
 virtualization here — every row exists; only the Instances and their Sources are recycled.
-Under `--!strict` the callback parameters and its return pack must be annotated, and the
+Under `--!strict` the `ctx` parameter and the return pack must be annotated, and the
 slot needs its element type: `q.Slot<<Instance>>()`.
 
 ```luau
@@ -89,32 +90,34 @@ type RowUD = {
     scoreSrc: QuadTypes.Source<string>,
     orderSrc: QuadTypes.Source<number>,
 }
+type RowCtx = {
+    Item: Item | QuadTypes.KeyGone,
+    Index: number,
+    Offset: QuadTypes.State<number>,
+    Prev: QuadTypes.SlotItem<Instance>?,
+    UserData: RowUD?,
+}
 
 local function Leaderboard(itemsState: QuadTypes.State<{ Item }>)
     local slot = q.Slot<<Instance>>()
 
-    slot:List(itemsState, function(
-        item: Item | QuadTypes.KeyGone,
-        physIndex: number,
-        offset: QuadTypes.State<number>,
-        prev: QuadTypes.SlotItem<Instance>?,
-        ud: RowUD?
-    ): (any, RowUD?)
-        if item == q.KeyGone then
+    slot:List(itemsState, function(ctx: RowCtx): (any, RowUD?)
+        if ctx.Item == q.KeyGone then
             return nil -- the key left the data: destroy the row
         end
-        local data = item :: Item
+        local data = ctx.Item :: Item
+        local prev, ud = ctx.Prev, ctx.UserData
         if prev and ud then
             -- recycle path: mutate the cached Sources, reuse the Instance
             ud.titleSrc:Set(data.Title)
             ud.scoreSrc:Set(`Score: {data.Score}`)
-            ud.orderSrc:Set(physIndex)
+            ud.orderSrc:Set(ctx.Index)
             return prev, ud
         end
 
         local titleSrc = q.Source(data.Title)
         local scoreSrc = q.Source(`Score: {data.Score}`)
-        local orderSrc = q.Source(physIndex)
+        local orderSrc = q.Source(ctx.Index)
 
         local row = D.Frame {
             LayoutOrder = orderSrc,

@@ -89,7 +89,7 @@ Snippets below assume this prologue.
 | Concept | Constructor / Type | Mutability | Key Methods & Rules |
 | :--- | :--- | :--- | :--- |
 | **`Source<T>`** | `q.Source(init)` | Writable root | `:Get()`, `:Set(v)`, `:Emit()`. Propagates synchronously. |
-| **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:With(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
+| **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:Depend(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
 | **`Store`** | `q.Store{ key = q.Source(v) }` | Bag of Sources | Reset per field: `store.Field:Set(v)`. |
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
 | **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`. DOMless. |
@@ -125,7 +125,8 @@ local fullName = firstName:Compute(function(self, prev, last)
 end, lastName)
 ```
 
-`state:With(...)` is supported (it mints one extra node) — not prohibited.
+`state:Depend(...)` is supported (it mints one extra node that passes the receiver's value through and
+also re-publishes when the given deps change — no callback, no values passed) — not prohibited.
 
 ### 2.2 Nesting and Stores
 
@@ -245,39 +246,42 @@ Instance and coexist with `UIListLayout` / `UIGridLayout`.
 
 ### 4.2 Keyed `Slot:List` with `userdata` Recycling
 
-`updateFn(item, index, offset, prev, ud) -> (result, ud)`. `offset` is a
-read-only `State<number>`. Return `prev` to keep an element, `q.Detach` to unmount but keep it
-alive, `nil`/`q.None` to destroy it. `item` is `q.KeyGone` when a key left the data.
+`updateFn(ctx) -> (result, userdata)` with `ctx = { Item, Index, Offset, Prev, UserData }` — a fresh
+table per call, so closures created inside may capture `ctx`. `ctx.Offset` is a
+read-only `State<number>`. Return `ctx.Prev` to keep an element, `q.Detach` to unmount but keep it
+alive, `nil`/`q.None` to destroy it. `ctx.Item` is `q.KeyGone` when a key left the data (`ctx.Index` is `0` then).
 
-Under `--!strict` the callback parameters and its return pack must be annotated, and the
+Under `--!strict` the `ctx` parameter and the return pack must be annotated, and the
 slot needs its element type: `q.Slot<<Instance>>()`.
 
 ```luau
 type ItemData = { Id: string, Title: string }
 type RowUD = { titleSrc: QuadTypes.Source<string>, orderSrc: QuadTypes.Source<number> }
+type RowCtx = {
+    Item: ItemData | QuadTypes.KeyGone,
+    Index: number,
+    Offset: QuadTypes.State<number>,
+    Prev: QuadTypes.SlotItem<Instance>?,
+    UserData: RowUD?,
+}
 
 local function ItemList(itemsState: QuadTypes.State<{ ItemData }>)
     local slot = q.Slot<<Instance>>()
 
-    slot:List(itemsState, function(
-        item: ItemData | QuadTypes.KeyGone,
-        physIndex: number,
-        offset: QuadTypes.State<number>,
-        prev: QuadTypes.SlotItem<Instance>?,
-        ud: RowUD?
-    ): (any, RowUD?)
-        if item == q.KeyGone then
+    slot:List(itemsState, function(ctx: RowCtx): (any, RowUD?)
+        if ctx.Item == q.KeyGone then
             return nil -- key gone: destroy
         end
-        local data = item :: ItemData
+        local data = ctx.Item :: ItemData
+        local prev, ud = ctx.Prev, ctx.UserData
         if prev and ud then
             ud.titleSrc:Set(data.Title)     -- mutate cached Sources, reuse the Instance
-            ud.orderSrc:Set(physIndex)
+            ud.orderSrc:Set(ctx.Index)
             return prev, ud
         end
 
         local titleSrc = q.Source(data.Title)
-        local orderSrc = q.Source(physIndex)
+        local orderSrc = q.Source(ctx.Index)
         local row = D.Frame {
             LayoutOrder = orderSrc,
             D.TextLabel { Text = titleSrc },
@@ -296,7 +300,7 @@ order is expressed through `LayoutOrder`.
 
 ### 4.3 Non-owning `Slot:Single`
 
-`updateFn(item, offset, prev, ud)` — one fewer parameter than `List` (no index).
+Same `updateFn(ctx)` shape as `List`, `ctx.Index` included — one `updateFn` can serve both.
 With `{ Owned = false }` a replaced element is unmounted (`Parent = nil`) instead of
 destroyed, so it can be mounted somewhere else.
 

@@ -37,6 +37,8 @@ type FieldOut<T> = T | State<T> | None
 
 `Peek`/`As`는 결과 타입을 호출자가 명시하는 자리이고(`mod:Peek<<UDim2>>("Size")`), `Apply`의 `self`와 factory 인자가 `any`인 것은 children 유니언의 클래스 검사를 살리기 위한 의도된 절충입니다.
 
+**`Peek<<T>>`의 `T`는 어디까지인가 — 층 나눔.** `FieldOut<T>`가 감싸는 것은 **quad-base가 소유한 층뿐**입니다 — `State<T>`, `None`, 그리고 반환의 `?`(값이 없음). 백엔드가 더하는 값 층(Roblox의 `Tween<T>` 같은 것)은 quad-base가 알 수 없으므로 **`T` 안에 호출자가 넣습니다.** 백엔드마다 어떤 층이 있는지는 그 백엔드의 레퍼런스가 적습니다(quad-roblox: [roblox/03](/reference/roblox/03-d-modifier/)). 백엔드가 생성한 클래스별 Modifier의 `Peek`는 그 층을 이미 채워 두므로, 호출자가 층을 챙겨야 하는 것은 **무타입 `q.Modifier()`**를 쓸 때뿐입니다.
+
 ## 숫자 키 자리에 놓는다
 
 Modifier는 props의 **숫자 키** 항목입니다. 문자 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.

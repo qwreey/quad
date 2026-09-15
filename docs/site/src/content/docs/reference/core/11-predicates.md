@@ -20,7 +20,7 @@ local D = q.Declaration
 |---|---|---|
 | `q.isEpoch(x)` | `q.Source(v)`, `q.Ref(v)`/`q.PreRef(v)`/`q.PostRef(v)` — `Revision`을 가진 값 | quad-base 기본 표면 |
 | `q.isSource(x)` | `q.Source(v)` | quad-base 기본 표면 |
-| `q.isState(x)` | `q.Source(v)`, `:Compute`/`:With`가 만든 파생 State, `:Gate`가 끼운 게이트 노드 | quad-base 기본 표면 |
+| `q.isState(x)` | `q.Source(v)`, `:Compute`/`:Depend`가 만든 파생 State, `:Gate`가 끼운 게이트 노드 | quad-base 기본 표면 |
 | `q.isStore(x)` | `q.Store(defaults?)` | quad-base 기본 표면 |
 | `q.isObserver(x)` | `state:Observer(fn)`이 돌려준 핸들 | quad-base 기본 표면 |
 | `q.isEffect(x)` | `q.Effect(fn, ...deps)`가 돌려준 `EffectHandle` | quad-base 기본 표면 |

@@ -5,7 +5,7 @@ description: "값을 밖에서 받는 체크박스에서 시작해, 폼 상태�
 # [실전 레시피] 02. 폼 유효성 검사와 제출 버튼 제어
 
 > **대상 독자**: 입력이 여럿인 화면을 만들고, 그 결과를 컴포넌트 바깥에서 받아야 하는 개발자
-> **다루는 개념**: 상태 주입(작게는 체크박스 하나부터), `Source`/`State`, `Store`, `:Compute`, `:With`, `OnChange`, `Observer`
+> **다루는 개념**: 상태 주입(작게는 체크박스 하나부터), `Source`/`State`, `Store`, `:Compute`, `:Depend`, `OnChange`, `Observer`
 
 ---
 
@@ -173,17 +173,17 @@ state:Compute(function(self, previous, ...deps) ... end, ...deps)
 - 세 번째부터가 뒤에 넘긴 의존성들이고, 이들도 전부 핸들이라 `:Get()`으로
   읽습니다.
 
-`:With(other)`로 구독만 넓히고 클로저로 직접 읽는 방법도 있습니다. 노드가
+`:Depend(other)`로 구독만 넓히고 클로저로 직접 읽는 방법도 있습니다. 노드가
 하나 더 생길 뿐 금지된 방법은 아닙니다.
 
 ```luau
 -- makeFormState 안에서, [3] 대신
-local canSubmit = isUsernameValid:With(isPasswordValid):Compute(function(validUser)
-    return validUser:Get() and isPasswordValid:Get()   -- :With한 값은 클로저로 읽는다
+local canSubmit = isUsernameValid:Depend(isPasswordValid):Compute(function(validUser)
+    return validUser:Get() and isPasswordValid:Get()   -- :Depend한 값은 클로저로 읽는다
 end)
 ```
 
-> ⚠️ `:With`로 모은 값은 콜백에 **포지셔널로 넘어오지 않습니다**. 두 번째
+> ⚠️ `:Depend`로 모은 값은 콜백에 **포지셔널로 넘어오지 않습니다**. 두 번째
 > 자리에 오는 것은 여전히 `previous`입니다.
 
 ---
@@ -381,9 +381,9 @@ end
 
 - [x] 첫째는 `state` 자신(핸들), 둘째는 직전 계산 결과, 셋째부터가 뒤에 넘긴 의존성들입니다
 - [ ] 첫째가 직전 계산 결과이고 둘째부터 뒤에 넘긴 의존성들입니다
-- [ ] `:With`로 모은 값도 둘째 자리부터 포지셔널로 이어서 들어옵니다
+- [ ] `:Depend`로 모은 값도 둘째 자리부터 포지셔널로 이어서 들어옵니다
 
-첫 인자와 의존성은 값이 아니라 핸들이라 `:Get()`으로 읽고, 둘째 자리는 첫 사이클에 `nil`인 `previous`입니다. `:With`로 모은 값은 포지셔널로 넘어오지 않으므로 클로저로 직접 읽어야 합니다.
+첫 인자와 의존성은 값이 아니라 핸들이라 `:Get()`으로 읽고, 둘째 자리는 첫 사이클에 `nil`인 `previous`입니다. `:Depend`로 모은 값은 포지셔널로 넘어오지 않으므로 클로저로 직접 읽어야 합니다.
 ```
 
 ```quiz

@@ -152,7 +152,7 @@ do
 	local b: State<number> = s:Compute(function(x): number
 		return x:Get()
 	end)
-	local w: State<number> = a:With(b)
+	local w: State<number> = a:Depend(b)
 	local policyRuns = 0
 	local g: State<number> = w:Gate(function(emit)
 		return function()
@@ -209,7 +209,7 @@ print("=== 7. 게이트 안 게이트 — 받은 배치를 풀어 자기 집합�
 do
 	local s, t = Source(1), Source(1)
 	local outerCtl, innerCtl = switchPolicy(), switchPolicy()
-	local outer: State<number> = s:With(t):Gate(outerCtl.setup)
+	local outer: State<number> = s:Depend(t):Gate(outerCtl.setup)
 	local inner: State<number> = outer:Gate(innerCtl.setup)
 	local p = probe(inner)
 	innerCtl.close()

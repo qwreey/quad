@@ -12,6 +12,8 @@ local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
 type State<T> = QuadTypes.State<T>
 type SlotItem<T> = QuadTypes.SlotItem<T>
+-- 사용자 쪽 별칭 — updateFn 인자 테이블(2026-09-15)을 이름 붙여 주석으로 쓰는 관용구가 strict에서 서는가
+type Ctx<Item, UD> = { Item: Item, Index: number, Offset: State<number>, Prev: SlotItem<Instance>?, UserData: UD? }
 
 local q = Quad.New():UseProvider(QuadRoblox)
 
@@ -19,7 +21,8 @@ local function _neverCalled()
 	local D = q.Declaration
 	-- (1) 매핑 updateFn: Item = string, 원소 = Instance, UD = number
 	local cur = q.Source(nil :: string?)
-	local mapped = q.Slot<<Instance>>():Single(cur, function(item: any, offset: State<number>, prev: SlotItem<Instance>?, ud: number?): (any, number?)
+	local mapped = q.Slot<<Instance>>():Single(cur, function(ctx: Ctx<any, number>): (any, number?)
+		local item, offset, ud = ctx.Item, ctx.Offset, ctx.UserData
 		if item == q.KeyGone then
 			return nil, nil
 		end
@@ -39,7 +42,8 @@ local function _neverCalled()
 	-- (4) 대조군 :List — 같은 <Item, UD> 모양
 	type Row = { Id: string }
 	local rows = q.Source({ { Id = "a" } } :: { Row })
-	local listed = q.Slot<<Instance>>():List(rows, function(item: any, index, offset, prev, ud: number?): (any, number?)
+	local listed = q.Slot<<Instance>>():List(rows, function(ctx: Ctx<any, number>): (any, number?)
+		local item, ud = ctx.Item, ctx.UserData
 		if item == q.KeyGone then
 			return nil, nil
 		end

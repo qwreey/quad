@@ -176,15 +176,15 @@ do
 end
 
 print()
-print("=== 7. :With — pass-through 새 노드, 구독만 넓힘; :Compute(fn, ...deps) — 노드 1개, positional lazy deps ===")
+print("=== 7. :Depend — pass-through 새 노드, 구독만 넓힘; :Compute(fn, ...deps) — 노드 1개, positional lazy deps ===")
 do
 	local a, b = Source(1), Source(10)
-	local w: State<number> = a:With(b)
-	assert(w:Get() == 1, "With's value is self's")
+	local w: State<number> = a:Depend(b)
+	assert(w:Get() == 1, "Depend's value is self's")
 	assert(Brand.StateBrand:Is(w) and w ~= a, "a new node")
 	local pw = probe(w)
 	b:Set(20)
-	assert(pw.count == 1 and pw.last == b, "With subscribes to the extra dep")
+	assert(pw.count == 1 and pw.last == b, "Depend subscribes to the extra dep")
 	assert(w:Get() == 1, "…but still passes self through")
 
 	local runs = 0
@@ -193,7 +193,7 @@ do
 		return x:Get() + dep:Get()
 	end, b)
 	assert(c:Get() == 21 and runs == 1, "trailing dep arrives as a lazy positional after previous")
-	assert(#(c :: any)._hold == 2, "one node with two edges — no combining With node")
+	assert(#(c :: any)._hold == 2, "one node with two edges — no combining Depend node")
 	b:Set(30)
 	assert(c:Get() == 31 and runs == 2, "dep change invalidates")
 	print("PASS")
@@ -278,7 +278,7 @@ do
 	local leaf: any
 	local function build()
 		local root = Source(1)
-		local mid: State<number> = root:With(Source(0))
+		local mid: State<number> = root:Depend(Source(0))
 		weakNodes[1] = root
 		weakNodes[2] = mid
 		leaf = mid:Compute(function(x)
@@ -355,9 +355,9 @@ do
 	end)
 	assert(not ok2 and string.find(tostring(err2), "dep #3 is nil", 1, true) ~= nil, "mid-list nil dep: " .. tostring(err2))
 	local ok3 = pcall(function()
-		s:With(nil :: any)
+		s:Depend(nil :: any)
 	end)
-	assert(not ok3, "With rejects nil deps through the same collector")
+	assert(not ok3, "Depend rejects nil deps through the same collector")
 	-- H-202: non-function fn errors at Compute, not at the first Get deep in _recompute.
 	local ok4, err4 = pcall(function()
 		(s :: any):Compute(42)

@@ -200,7 +200,7 @@ do
 	local data = q.Source({ { id = "a", n = 1 }, { id = "b", n = 2 } })
 	local s = Slot()
 	local built = {}
-	s:List(data, function(item, _index, _off, prev, _ud)
+	s:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		if prev then return prev end -- reuse
 		local f = Instance.new("Frame"); f.Name = item.id
@@ -251,7 +251,7 @@ do
 	local s = Slot()
 	local theFrame
 	local builds = 0
-	s:List(data, function(item, _i, _o, prev, _ud)
+	s:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return q.Detach end
 		if not show:Get() then return q.Detach end
 		if prev then return prev end
@@ -276,13 +276,13 @@ do
 	local show, drop = q.Source(true), q.Source(false)
 	local data = q.Source({ { id = "x" } })
 	local sub = Slot()
-	sub:List(q.Source({ { id = "a" } }), function(item, _i, _o, prev)
+	sub:List(q.Source({ { id = "a" } }), function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		if prev then return prev end
 		local f = Instance.new("Frame"); f.Name = item.id; return f
 	end, function(item) return item.id end, { Owned = false })
 	local outer = Slot()
-	outer:List(data, function(item, _i, _o, prev)
+	outer:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return q.Detach end
 		if not show:Get() then return q.Detach end
 		if drop:Get() then return nil end -- settle drops the detached prev → releaseElement(wasDetached)
@@ -331,7 +331,7 @@ do
 	local sy = q.Source(Instance.new("Frame"))
 	local data = q.Source({ { id = "x", s = sx }, { id = "y", s = sy } })
 	local s = Slot()
-	s:List(data, function(item, _i, _o, prev, _ud)
+	s:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		if prev then return prev end
 		return item.s -- a State element → wrapElement makes a wrapper Slot
@@ -358,7 +358,7 @@ do
 	local builds = 0
 	local data = q.Source({ { id = "a" }, { id = "b" } })
 	local list = Slot()
-	list:List(data, function(item, _i, _o, prev, _ud)
+	list:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		if prev then return prev end
 		builds += 1
@@ -396,7 +396,7 @@ do
 	local data = q.Source({ { id = "a" }, { n = 2 } })
 	local s2 = Slot()
 	local ok2, err2 = pcall(function()
-		s2:List(data, function(item, _i, _o, prev)
+		s2:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 			if item == q.KeyGone then return nil end
 			return prev or Instance.new("Frame")
 		end, function(item) return item.id end)
@@ -605,7 +605,7 @@ do
 	local data = q.Source({ { id = "a" }, { id = "b" } })
 	local goneReply = "nil" -- what updateFn returns for KeyGone
 	local s = Slot()
-	s:List(data, function(item, _i, _o, prev, _ud)
+	s:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then
 			if goneReply == "nil" then return nil end
 			if goneReply == "detach" then return q.Detach end
@@ -641,7 +641,7 @@ do
 	local u1 = Instance.new("Frame"); u1.Name = "u1"
 	local udata = q.Source({ { id = "u1", f = u1 } })
 	local us = Slot()
-	us:List(udata, function(item, _i, _o, prev, _ud)
+	us:List(udata, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then return nil end
 		return prev or item.f
 	end, function(item) return item.id end, { Owned = false })
@@ -820,7 +820,7 @@ do
 	-- Q14: an Owned=false child Slot survives its parent's destruction AND is free again
 	local parent = q.Slot()
 	local child = q.Slot()
-	child:List({ 1 }, function(_item, _index, _offset, _prev)
+	child:List({ 1 }, function(_ctx)
 		return mock.Instance.new("Frame")
 	end, nil, { Owned = false })
 	parent:Add(child)
@@ -854,7 +854,7 @@ do
 	local src = q.Source(Instance.new("Frame"))
 	local s = Slot()
 	local gone = 0
-	s:Single(src, function(item, off, prev, ud)
+	s:Single(src, function(ctx) local item = ctx.Item
 		if item == q.KeyGone then gone += 1; return nil end
 		assert(item ~= q.None, "None must never reach updateFn as an item")
 		return item
@@ -945,7 +945,7 @@ do
 	local data = q.Source({ { id = "a" }, { id = "b" } })
 	local gone = {}
 	local ls = Slot()
-	ls:List(data, function(item, _i, _o, prev)
+	ls:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
 		if item == q.KeyGone then gone[#gone + 1] = prev.Name; return nil end
 		if prev then return prev end
 		local f = Instance.new("Frame"); f.Name = item.id

@@ -25,7 +25,7 @@ local D = q.Declaration
 ```luau
 -- 입력 자리(생성자 initial, Add/Replace/Extract의 새 원소, Splice, IndexOf)
 type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
--- 출력 자리(Get/Extract/ExtractAll/Splice의 반환, updateFn의 prev)
+-- 출력 자리(Get/Extract/ExtractAll/Splice의 반환, updateFn의 ctx.Prev)
 type SlotItem<T> = T | State<T> | Slot<T>
 ```
 
@@ -121,7 +121,7 @@ local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty }
 read Offset: State<number>
 ```
 
-**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`의 `updateFn`이 세 번째 자리(`:Single`에서는 `index`가 빠져 두 번째)에서 받는 것도 이 State입니다.
+**동작** — 마운트 대상 안에서 이 Slot의 첫 원소가 시작하는 **절대 물리 위치**를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
@@ -320,7 +320,7 @@ IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?
 List: <Item, UD>(
     self: Slot<T>,
     data: { Item } | StateMarker<{ Item }>,
-    updateFn: (item: Item | KeyGone, index: number, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
+    updateFn: (ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?),
     keyFn: ((item: Item, index: number) -> any)?,
     opts: SlotListOpts?
 ) -> Slot<T>
@@ -341,26 +341,26 @@ type SlotListOpts = { Owned: boolean? }
 
 **`updateFn` 계약**
 
-호출 시그니처는 `updateFn(item, index, offset, prev, userdata) -> (result, userdata)`입니다.
+호출 시그니처는 `updateFn(ctx) -> (result, userdata)`입니다. `ctx`는 필드 다섯을 담은 테이블 하나이고, **호출마다 새로 만들어집니다** — `updateFn` 안에서 만든 클로저(`:Compute` 콜백, 이벤트 콜백)가 `ctx`를 붙잡아 나중에 읽어도 다음 호출의 값으로 바뀌지 않습니다.
 
-| 자리 | 뜻 |
+| 필드 | 뜻 |
 |---|---|
-| `item` | 이번 사이클의 데이터 항목. 지난 사이클에 있었는데 이번엔 사라진 키에는 `q.KeyGone`이 옵니다 |
-| `index` | 이 Slot 안에서의 물리 위치(`Offset` 기준 1부터). 중첩 Slot이 섞여 있으면 데이터 배열의 인덱스와 다릅니다 |
-| `offset` | 이 Slot의 `Offset` State 자체 — 값이 아니라 핸들입니다 |
-| `prev` | 이 키가 지난번에 만든 원소(언래핑됨). 처음이면 `nil` |
-| `userdata` | 지난 호출이 두 번째로 반환한 값. 키마다 따로 보관됩니다 |
+| `ctx.Item` | 이번 사이클의 데이터 항목. 지난 사이클에 있었는데 이번엔 사라진 키에는 `q.KeyGone`이 옵니다 |
+| `ctx.Index` | 이 Slot 안에서의 물리 위치(`Offset` 기준 1부터). 중첩 Slot이 섞여 있으면 데이터 배열의 인덱스와 다릅니다. `KeyGone` 호출에서는 `0`입니다 |
+| `ctx.Offset` | 이 Slot의 `Offset` State 자체 — 값이 아니라 핸들입니다 |
+| `ctx.Prev` | 이 키가 지난번에 만든 원소(언래핑됨). 처음이면 `nil` |
+| `ctx.UserData` | 지난 호출이 두 번째로 반환한 값. 키마다 따로 보관됩니다 |
 
-반환값 `result`의 뜻은 넷입니다.
+반환값은 `(result, userdata)` 둘입니다. `result`의 뜻은 넷입니다.
 
 | 반환 | 뜻 |
 |---|---|
-| 새 원소 | 그 자리에 놓습니다. `prev`가 있었으면 교체(소유 Slot이면 옛 원소 파괴) |
-| `prev` 그대로 | 그대로 유지 — 다시 만들지 않습니다. 위치만 필요하면 옮깁니다 |
+| 새 원소 | 그 자리에 놓습니다. `ctx.Prev`가 있었으면 교체(소유 Slot이면 옛 원소 파괴) |
+| `ctx.Prev` 그대로 | 그대로 유지 — 다시 만들지 않습니다. 위치만 필요하면 옮깁니다 |
 | `nil` 또는 `q.None` | 이 키를 버립니다(소유 Slot이면 파괴) |
-| `q.Detach` | 트리에서 떼되 **파괴하지 않고** 보관합니다. 다음에 `prev`를 반환하면 그대로 다시 붙습니다 |
+| `q.Detach` | 트리에서 떼되 **파괴하지 않고** 보관합니다. 다음에 `ctx.Prev`를 반환하면 그대로 다시 붙습니다 |
 
-두 번째 반환값은 이 키의 다음 `userdata`가 됩니다.
+두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
 
 **동작**
 
@@ -381,28 +381,29 @@ type SlotListOpts = { Owned: boolean? }
 
 **예제**
 
-`--!strict`에서는 `updateFn`의 **파라미터 전부와 반환 팩**에 주석을 달아야 합니다 — 반환이 갈래마다 다른 타입이라, 주석이 없으면 첫 `return`에서 반환 타입이 굳어 나머지 갈래가 거부됩니다.
+`--!strict`에서는 `updateFn`의 **`ctx` 파라미터와 반환 팩**에 주석을 달아야 합니다 — 반환이 갈래마다 다른 타입이라, 주석이 없으면 첫 `return`에서 반환 타입이 굳어 나머지 갈래가 거부됩니다. `ctx` 타입이 길면 파일 안에 별칭을 하나 두면 됩니다.
 
 ```luau
 type Row = { Id: string, Title: string }
+type RowCtx = {
+    Item: Row | QuadTypes.KeyGone,
+    Index: number,
+    Offset: QuadTypes.State<number>,
+    Prev: QuadTypes.SlotItem<Instance>?,
+    UserData: nil,
+}
 
 local rows = q.Source<<{ Row }>>({ { Id = "a", Title = "첫째" } })
 local slot = q.Slot<<Instance>>()
 
-slot:List(rows, function(
-    item: Row | QuadTypes.KeyGone,
-    index: number,
-    offset: QuadTypes.State<number>,
-    prev: QuadTypes.SlotItem<Instance>?,
-    ud: nil
-): (any, nil)
-    if item == q.KeyGone then
+slot:List(rows, function(ctx: RowCtx): (any, nil)
+    if ctx.Item == q.KeyGone then
         return nil            -- 사라진 키: 파괴
     end
-    if prev then
-        return prev           -- 이미 있는 키: 그대로 둔다
+    if ctx.Prev then
+        return ctx.Prev       -- 이미 있는 키: 그대로 둔다
     end
-    return D.TextLabel { Text = (item :: Row).Title }
+    return D.TextLabel { Text = (ctx.Item :: Row).Title }
 end, function(item: Row)
     return item.Id            -- 신원은 Id
 end)
@@ -411,7 +412,7 @@ local view = D.Frame { slot }
 rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- a는 재사용, b는 새로 생성
 ```
 
-`userdata`를 쓴다면 `ud`와 반환 팩의 두 번째 자리에 그 타입을 적습니다 — `ud: RowUD?` / `: (any, RowUD?)`.
+`userdata`를 쓴다면 `ctx` 타입의 `UserData` 필드와 반환 팩의 두 번째 자리에 그 타입을 적습니다 — `UserData: RowUD?` / `: (any, RowUD?)`.
 
 **관련** — [가상화 무한 스크롤](../../how-to/03-virtualized-infinite-scroll.md), [DOMless Slot](../../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
 
@@ -423,7 +424,7 @@ rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- 
 Single: <Item, UD>(
     self: Slot<T>,
     state: Item? | StateMarker<Item?>,
-    updateFn: ((item: Item | KeyGone, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+    updateFn: ((ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?))?,
     opts: SlotListOpts?
 ) -> Slot<T>
 ```
@@ -443,8 +444,8 @@ Single: <Item, UD>(
 **동작**
 
 - 원소가 최대 하나인 `:List`입니다. 설치 규칙·모드 배타성·`Owned` 의미는 전부 `:List`와 같습니다.
-- `updateFn`의 인자에서 `index`가 빠집니다 — `(item, offset, prev, userdata)`.
-- `state`의 값이 `nil`이거나 `q.None`이면 원소가 없는 상태입니다. `updateFn`에는 그때 `q.KeyGone`이 옵니다.
+- `updateFn`은 `:List`와 **같은 모양의 `ctx`** 하나를 받습니다(`ctx.Index`도 들어옵니다). 그래서 같은 `updateFn`을 `:List`와 `:Single`에 나눠 쓸 수 있습니다.
+- `state`의 값이 `nil`이거나 `q.None`이면 원소가 없는 상태입니다. `updateFn`에는 그때 `ctx.Item`으로 `q.KeyGone`이 옵니다.
 - `state`가 State면 값이 바뀔 때마다 그 자리가 통째로 교체됩니다.
 - 인자 검증 에러: `Slot:Single: updateFn must be a function (got {typeof(updateFn)})`.
 
@@ -474,30 +475,31 @@ Detach: Detach -- { read __quadDetach: true }
 
 이 페이지는 Slot 재조정 안에서의 쓰임을 다룹니다 — 센티널 자체의 정의는 [생명주기와 센티널](./10-lifetime-sentinels.md)에도 있습니다.
 
-**동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
+**동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `ctx.Prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
 
-보관은 `Owned`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `Owned = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
+보관은 `Owned`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `Owned = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `ctx.Prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
 <!-- mock 실측 2026-09-11: gs.owned.luau — Owned=true는 같은 인스턴스가 prev로 돌아옴(made 2), Owned=false는 prev nil·새로 만듦(made 3), 둘 다 옛 원소 파괴 안 됨 -->
 
 **예제**
 
 ```luau
 type Row = { Id: string }
+type RowCtx = {
+    Item: Row | QuadTypes.KeyGone,
+    Index: number,
+    Offset: QuadTypes.State<number>,
+    Prev: QuadTypes.SlotItem<Instance>?,
+    UserData: nil,
+}
 
 local visible = q.Source(true)
 local rows = q.Source<<{ Row }>>({ { Id = "a" } })
 local slot = q.Slot<<Instance>>()
 
-slot:List(rows, function(
-    item: Row | QuadTypes.KeyGone,
-    _index: number,
-    _offset: QuadTypes.State<number>,
-    prev: QuadTypes.SlotItem<Instance>?,
-    _ud: nil
-): (any, nil)
-    if item == q.KeyGone then return q.Detach end
+slot:List(rows, function(ctx: RowCtx): (any, nil)
+    if ctx.Item == q.KeyGone then return q.Detach end
     if not visible:Get() then return q.Detach end -- 숨김: 떼되 살려둔다
-    if prev then return prev end                  -- 복귀: 그대로 다시 붙는다
+    if ctx.Prev then return ctx.Prev end          -- 복귀: 그대로 다시 붙는다
     return D.Frame {}
 end, function(item: Row) return item.Id end)
 ```
@@ -514,12 +516,12 @@ KeyGone: KeyGone -- { read __quadKeyGone: true }
 
 센티널 자체의 정의는 [생명주기와 센티널](./10-lifetime-sentinels.md)에도 있습니다.
 
-**동작** — 재조정 사이클의 마지막에, **지난 사이클에는 있었지만 이번 데이터에는 없는 키**마다 `updateFn`의 `item` 자리에 오는 센티널입니다. 그 키가 만든 원소를 어떻게 할지 정하라는 물음입니다.
+**동작** — 재조정 사이클의 마지막에, **지난 사이클에는 있었지만 이번 데이터에는 없는 키**마다 `updateFn`의 `ctx.Item`으로 오는 센티널입니다(그 호출의 `ctx.Index`는 `0`). 그 키가 만든 원소를 어떻게 할지 정하라는 물음입니다.
 
 이 호출에서 허용되는 반환은 `nil`/`q.None`(버림)과 `q.Detach`(보관) 둘뿐입니다. `updateFn`의 첫 줄에서 신원 비교로 갈라내는 것이 관용구입니다.
 
 ```luau
-if item == q.KeyGone then
+if ctx.Item == q.KeyGone then
     return nil -- 이 키의 원소를 파괴한다
 end
 ```

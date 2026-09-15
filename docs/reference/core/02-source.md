@@ -13,7 +13,7 @@ description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/Emit/R
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 ```
 
-`Source`의 생성·읽기·쓰기와 `:Compute`/`:With` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](./05-observer-effect.md) 참고).
+`Source`의 생성·읽기·쓰기와 `:Compute`/`:Depend` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](./05-observer-effect.md) 참고).
 
 ---
 
@@ -140,7 +140,7 @@ read Revision: number
 |---|---|
 | `:Get()` | [03-state](./03-state.md#stateget) |
 | `:Compute(fn, ...deps)` | [03-state](./03-state.md#statecomputefn-deps) |
-| `:With(...)` | [03-state](./03-state.md#statewith) |
+| `:Depend(...)` | [03-state](./03-state.md#statedepend) |
 | `:Apply(factory)` | [03-state](./03-state.md#stateapplyfactory) |
 | `:Observer(fn)` | [05-observer-effect](./05-observer-effect.md#stateobserverfn) |
 | `:Gate(setup)` | [03-state](./03-state.md#stategatesetup) |

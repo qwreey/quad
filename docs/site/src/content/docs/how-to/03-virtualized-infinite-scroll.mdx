@@ -19,7 +19,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 항목은 다시 만들지 않는다)과 **윈도잉**(보이는 구간+여유분만 만든다)입니다.
 
 둘 다의 토대는 `Slot():List`입니다. 다만 **quad는 위치를 대신 정해주지
-않습니다** — `index`와 `offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지
+않습니다** — `ctx.Index`와 `ctx.Offset`을 넘겨줄 뿐, 그것을 `LayoutOrder`에 쓸지
 `Position`에 쓸지는 전적으로 `updateFn`을 쓰는 사람의 몫입니다(3절).
 
 ```luau
@@ -32,15 +32,16 @@ local D = q.Declaration
 
 ## 2. 긴 목록에서 특히 중요한 계약 셋
 
-전체 계약(다섯 인자와 네 갈래 반환)은 [시작하기 13](/getting-started/13-lists/)와 [레퍼런스: `Slot`](/reference/core/06-slot/)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
+전체 계약(`ctx` 필드 다섯과 네 갈래 반환)은 [시작하기 13](/getting-started/13-lists/)와 [레퍼런스: `Slot`](/reference/core/06-slot/)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
 
 ```
 Slot():List(data, updateFn, keyFn?, opts?)
-updateFn(item, index, offset, prev, ud) -> (result, ud)
+updateFn(ctx) -> (result, userdata)
+-- ctx = { Item, Index, Offset, Prev, UserData } (호출마다 새 테이블)
 ```
 
-- **`keyFn(item, i)`가 재활용을 결정합니다.** 항목의 신원이 안정적이어야 `prev`가 넘어오고, `prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 **가장 싼 경로**입니다. 생략하면 배열 인덱스가 키인데, 그러면 목록이 밀릴 때마다 신원이 어긋나 전부 새로 만들어집니다.
-- **항목마다 바뀌는 값은 `ud`에 `Source`로 넣어 둡니다.** 재활용 갈래에서는 인스턴스를 다시 만들 수 없으니, 라벨 텍스트나 위치는 그 `Source`만 `:Set` 합니다.
+- **`keyFn(item, i)`가 재활용을 결정합니다.** 항목의 신원이 안정적이어야 `ctx.Prev`가 넘어오고, `ctx.Prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 **가장 싼 경로**입니다. 생략하면 배열 인덱스가 키인데, 그러면 목록이 밀릴 때마다 신원이 어긋나 전부 새로 만들어집니다.
+- **항목마다 바뀌는 값은 `userdata`에 `Source`로 넣어 둡니다**(다음 호출의 `ctx.UserData`로 돌아옵니다). 재활용 갈래에서는 인스턴스를 다시 만들 수 없으니, 라벨 텍스트나 위치는 그 `Source`만 `:Set` 합니다.
 - **`opts.Owned = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다.
 
 `data`는 평범한 배열이거나 배열을 담은 `State`입니다. `State`면 값이 바뀔 때마다 재조정(reconcile)이 돕니다.
@@ -57,22 +58,22 @@ updateFn(item, index, offset, prev, ud) -> (result, ud)
 `UIListLayout`으로 세로 배치를 할 때의 정본 관용구는 이렇습니다.
 
 ```luau
-local function updateFn(
-    item: any,
-    index: number,
-    offset: q.Source<number>, -- 이 Slot 앞에 놓인 물리 자식 수를 담은 Source
-    prev: any,
-    ud: any
-): (any, any)
-    if item == q.KeyGone then
-        return nil, ud -- 사라진 키 — 파괴
+local function updateFn(ctx: {
+    Item: any,
+    Index: number,
+    Offset: q.State<number>, -- 이 Slot 앞에 놓인 물리 자식 수를 담은 읽기 전용 State
+    Prev: any,
+    UserData: any,
+}): (any, any)
+    if ctx.Item == q.KeyGone then
+        return nil, ctx.UserData -- 사라진 키 — 파괴
     end
 
-    if not prev then
+    if not ctx.Prev then
         -- 새 요소: 이전 Source를 재사용하지 말고 처음부터 올바른 값으로 만든다
-        local layoutOrder = q.Source(index)
-        local order: q.State<number> = layoutOrder:With(offset):Compute(function(i)
-            return i:Get() + offset:Get()
+        local layoutOrder = q.Source(ctx.Index)
+        local order: q.State<number> = layoutOrder:Depend(ctx.Offset):Compute(function(i)
+            return i:Get() + ctx.Offset:Get()
         end)
         return D.Frame {
             LayoutOrder = order,
@@ -81,17 +82,17 @@ local function updateFn(
     end
 
     -- 재활용: 실제로 바뀔 때만 Set
-    local layoutOrder = ud.layoutOrder
-    if layoutOrder:Get() ~= index then
-        layoutOrder:Set(index)
+    local layoutOrder = ctx.UserData.layoutOrder
+    if layoutOrder:Get() ~= ctx.Index then
+        layoutOrder:Set(ctx.Index)
     end
-    return prev, ud
+    return ctx.Prev, ctx.UserData
 end
 ```
 
-> ⚠️ `:With(offset)`으로 모은 값은 `Compute` 콜백에 **포지셔널로 넘어오지
+> ⚠️ `:Depend(ctx.Offset)`으로 모은 값은 `Compute` 콜백에 **포지셔널로 넘어오지
 > 않습니다**. 두 번째 자리에 오는 것은 직전 계산 결과(`previous`)입니다 —
-> 위처럼 클로저로 `offset:Get()`을 직접 읽으세요.
+> 위처럼 클로저로 `ctx.Offset:Get()`을 직접 읽으세요.
 >
 > `:Compute`를 props 테이블 안에 인라인으로 쓰지 않고 위처럼 타입 붙인 지역
 > 변수로 빼는 이유는 에디터 타입 검사입니다 — 함수 인자로 넘기는 테이블
@@ -129,7 +130,8 @@ local function VirtualList(props: { Items: { { id: string, label: string } } })
         return slice
     end, viewportHeight)
 
-    local rows = q.Slot<<Instance>>():List(window, function(entry: any, _index, _offset, prev, ud): (any, any)
+    local rows = q.Slot<<Instance>>():List(window, function(ctx: any): (any, any)
+        local entry, prev, ud = ctx.Item, ctx.Prev, ctx.UserData
         if entry == q.KeyGone then
             return nil, ud
         end
@@ -255,7 +257,7 @@ end
 - [ ] `keyFn`을 생략해도 quad가 항목 테이블의 신원으로 같은 항목을 알아봅니다
 - [ ] `keyFn`은 항목의 정렬 순서를 정하는 함수라 재활용과는 무관합니다
 
-신원이 안정적이어야 `prev`가 넘어오고, `prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 가장 싼 경로입니다.
+신원이 안정적이어야 `ctx.Prev`가 넘어오고, `ctx.Prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 가장 싼 경로입니다.
 
 </Quiz>
 

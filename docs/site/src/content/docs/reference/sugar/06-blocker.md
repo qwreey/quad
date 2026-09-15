@@ -23,7 +23,7 @@ local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 Blocker: () -> Blocker
 
 export type Blocker = {
-	IsBlocked: boolean,
+	read IsBlocked: boolean,
 	IsOn: (self: Blocker) -> boolean,
 	On: (self: Blocker) -> Blocker,
 	Off: (self: Blocker) -> Blocker,

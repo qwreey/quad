@@ -129,27 +129,27 @@ quad는 자리마다 길이와 오프셋을 부기합니다.
    선언했는데 엔진이 조용히 덮어쓰면 원인을 찾기 어려운 렌더 버그가 됩니다.
 2. **엔진 중립.** 웹 백엔드에서 물리 순서는 삽입 위치나 CSS `order`의 몫입니다.
    `LayoutOrder`를 코어에 박으면 슬롯 트리가 Roblox에 묶입니다.
-3. **재료는 줍니다.** `Slot():List(...)`의 `updateFn`은 `(item, index, offset, prev,
-   ud)`를 받습니다 — `index`는 이 Slot 안에서의 물리 위치(1부터, 앞선 요소들의 실제
-   길이를 반영합니다), `offset`은 이 Slot의 시작 위치를 나르는 `Source<number>`입니다. 쓸지
+3. **재료는 줍니다.** `Slot():List(...)`의 `updateFn`은 `ctx` 테이블 하나(`Item`/`Index`/`Offset`/`Prev`/
+   `UserData`)를 받습니다 — `ctx.Index`는 이 Slot 안에서의 물리 위치(1부터, 앞선 요소들의
+   실제 길이를 반영합니다), `ctx.Offset`은 이 Slot의 시작 위치를 나르는 `State<number>`입니다. 쓸지
    말지는 컴포넌트 작성자가 정합니다.
 
 ```luau
 local data = q.Source({ "a", "b", "c" })
 local list = q.Slot<<Instance>>()
-list:List(data, function(item, index, offset, prev, ud)
-	if item == q.KeyGone then
-		return nil, ud -- 키가 빠진 사이클: 파괴(nil/None) 또는 홀드(Detach)만 허용
+list:List(data, function(ctx)
+	if ctx.Item == q.KeyGone then
+		return nil, ctx.UserData -- 키가 빠진 사이클: 파괴(nil/None) 또는 홀드(Detach)만 허용
 	end
-	if prev and ud then
-		ud.order:Set(index) -- 재활용: 자리 값만 갱신하고 요소는 그대로
-		return prev, ud
+	if ctx.Prev and ctx.UserData then
+		ctx.UserData.order:Set(ctx.Index) -- 재활용: 자리 값만 갱신하고 요소는 그대로
+		return ctx.Prev, ctx.UserData
 	end
-	local order = q.Source(index)
-	local layoutOrder = order:With(offset):Compute(function(i: q.StateData<number>): number
-		return i:Get() + offset:Get()
+	local order = q.Source(ctx.Index)
+	local layoutOrder = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number
+		return i:Get() + ctx.Offset:Get()
 	end)
-	return D.TextButton { Text = item :: string, LayoutOrder = layoutOrder }, { order = order }
+	return D.TextButton { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }
 end, function(item) return item end) -- keyFn: 문자열 자신이 키(생략하면 배열 index가 키)
 ```
 

@@ -388,7 +388,8 @@ export type State<T> = StateData<T> & {
 	-- 추론이 `{read Get: ...}`로 뒤틀려 정상 호출까지 막힌다(M2 단위 2 실측, 스파이크 15가
 	-- "미검증"으로 남겨둔 자리). 콜백 안에서 dep 파라미터에 주석을 달 것.
 	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
-	With: (self: StateData<T>, ...any) -> State<T>,
+	-- [2026-09-15 사용자 결정] 옛 `With` → `Depend`: 값은 리시버 그대로, `...deps`만 추가로 건다(`:Compute`/`q.Effect`의 deps와 같은 낱말)
+	Depend: (self: StateData<T>, ...any) -> State<T>,
 	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
 	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
 	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
@@ -505,7 +506,9 @@ export type Store<T> = T & {
 export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
 export type SlotItem<T> = T | State<T> | Slot<T>
 export type SlotListOpts = { Owned: boolean? }
--- `updateFn(item, index, offset, prev, userdata) -> (result, userdata)`: `result`는
+-- `updateFn(ctx) -> (result, userdata)` — [2026-09-15 사용자 결정] 옛 위치 인자 다섯을 매 호출 새 테이블 하나로
+-- (`ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`, `:List`·`:Single` 같은 모양; 필드에 `read`를 안 붙이는 건 사용자가 평범한
+-- 레코드로 주석을 달면 반공변 자리에서 어긋나기 때문). `result`는
 -- 요소 | nil/None(파괴) | Detach(홀드). `item`엔 `KeyGone` 센티널도 온다.
 -- (별도 alias로 빼지 않는다 — `Slot<T>`↔`SlotElement<T>` 재귀 그룹 안에서
 -- 메소드 제네릭 `<Item, UD>`를 인자로 받는 alias는 "다른 파라미터의 재귀"로
@@ -529,7 +532,7 @@ export type Slot<T> = {
 	List: <Item, UD>(
 		self: Slot<T>,
 		data: { Item } | StateMarker<{ Item }>,
-		updateFn: (item: Item | KeyGone, index: number, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?),
+		updateFn: (ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?),
 		keyFn: ((item: Item, index: number) -> any)?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
@@ -543,7 +546,7 @@ export type Slot<T> = {
 	Single: <Item, UD>(
 		self: Slot<T>,
 		state: Item? | StateMarker<Item?>,
-		updateFn: ((item: Item | KeyGone, offset: State<number>, prev: SlotItem<T>?, userdata: UD?) -> (any, UD?))?,
+		updateFn: ((ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?))?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
 }

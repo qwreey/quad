@@ -89,7 +89,8 @@ local function ItemCard(item: { id: string, label: string }, label: q.Source<str
 end
 
 local itemsState = q.Source({ { id = "sword", label = "검" }, { id = "shield", label = "방패" } }) -- 인벤토리 데이터
-local rows = q.Slot<<Instance>>():List(itemsState, function(item: any, _index, _offset, prev, ud): (any, any)
+local rows = q.Slot<<Instance>>():List(itemsState, function(ctx: any): (any, any)
+    local item, prev, ud = ctx.Item, ctx.Prev, ctx.UserData
     if item == q.KeyGone then
         return nil, ud
     end
@@ -105,7 +106,7 @@ end) -- 생성자의 제네릭은 추론되지 않는다 — `q.Slot<<Instance>>
 ```
 
 `Slot:List`의 인자 순서는 `(data, updateFn, keyFn?, opts?)`이고 `updateFn`은
-`(item, index, offset, prev, ud)`를 받아 `(요소, userdata)`를 돌려줍니다 —
+`ctx` 테이블 하나(`Item`/`Index`/`Offset`/`Prev`/`UserData`)를 받아 `(요소, userdata)`를 돌려줍니다 —
 상세는 [03. `Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/).
 
 ### 템플릿을 코드로 만들어도 됩니다

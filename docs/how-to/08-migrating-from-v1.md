@@ -67,7 +67,7 @@ v1의 `Init()`은 id 없이 부를 때마다 **새 인스턴스**를 만들었�
 | `register:Default(v)` | `state:Apply(q.Operator.Alternative(v))` | 4절 |
 | `Style {...}`, `Frame { s }` | `D.Modifier.Frame {...}` (숫자 키 자리) | 5절 |
 
-> **`:With`는 이름만 같은 다른 것입니다.** v1의 `register:With(fn)`은 "이 값으로부터 파생시켜라"였고, v2에서 그 자리는 `:Compute(fn, ...deps)`입니다. v2에도 `state:With(...)`가 **있지만** 그건 의존성을 추가한 노드를 하나 더 만드는 별개의 API입니다. 옮길 때 이름만 보고 그대로 두지 마세요.
+> **v2에는 `:With`가 없습니다.** v1의 `register:With(fn)`은 "이 값으로부터 파생시켜라"였고, v2에서 그 자리는 `:Compute(fn, ...deps)`입니다. 값은 건네지 않고 구독만 넓힌 노드를 하나 더 만드는 v2 연산은 `state:Depend(...)`라는 별개의 API입니다 — `:With`를 `:Depend`로 이름만 바꿔 옮기지 마세요.
 
 ---
 
@@ -236,28 +236,30 @@ v1에서 목록을 다시 그릴 때 쓰던 `mounts:Unmount()` 뒤 재추가는 
 ```luau
 type Row = { Id: string, Title: string }
 type RowUD = { title: q.Source<string>, order: q.Source<number> }
+type RowCtx = {
+	Item: Row | QuadTypes.KeyGone,
+	Index: number,
+	Offset: q.State<number>,
+	Prev: QuadTypes.SlotItem<Instance>?,
+	UserData: RowUD?,
+}
 
 -- v1: local mounts = Mount(parent); mounts:Add(item); mounts:Unmount()
 local rows = q.Source<<{ Row }>>({ { Id = "a", Title = "첫 줄" } })
 local slot = q.Slot<<Instance>>()
 
-slot:List(rows, function(
-	item: Row | QuadTypes.KeyGone,
-	index: number,
-	_offset: q.State<number>,
-	prev: QuadTypes.SlotItem<Instance>?,
-	ud: RowUD?
-): (any, RowUD?)
-	if item == q.KeyGone then
+slot:List(rows, function(ctx: RowCtx): (any, RowUD?)
+	if ctx.Item == q.KeyGone then
 		return nil -- 키가 사라졌다: 파괴
 	end
-	local data = item :: Row
+	local data = ctx.Item :: Row
+	local prev, ud = ctx.Prev, ctx.UserData
 	if prev and ud then
-		ud.title:Set(data.Title) -- 캐시해둔 Source만 갱신하고 인스턴스는 재활용한다
-		ud.order:Set(index)      -- 순서도 Source로 들고 있어야 재정렬이 반영된다
+		ud.title:Set(data.Title)     -- 캐시해둔 Source만 갱신하고 인스턴스는 재활용한다
+		ud.order:Set(ctx.Index)      -- 순서도 Source로 들고 있어야 재정렬이 반영된다
 		return prev, ud
 	end
-	local title, order = q.Source(data.Title), q.Source(index)
+	local title, order = q.Source(data.Title), q.Source(ctx.Index)
 	return D.TextLabel { LayoutOrder = order, Text = title }, { title = title, order = order }
 end, function(item: Row): string
 	return item.Id
@@ -447,15 +449,15 @@ Dispatch.recompute: sourceList[1] is nil — a nil hole in the numeric-key part 
 ## 이해 점검
 
 ```quiz
-# 이름이 같아 위험한 `:With`
+# v1의 `:With`는 어디로 가나
 
 v1의 `register:With(fn)`을 옮길 때 주의할 점은 무엇인가요?
 
-- [x] 그 자리는 v2의 `:Compute(fn, ...deps)`입니다 — v2에도 `state:With(...)`가 있지만 의존성을 추가한 노드를 하나 더 만드는 별개의 API입니다
-- [ ] 이름이 같고 하는 일도 같으므로 `:With`를 그대로 두면 됩니다
-- [ ] v2에는 `:With`라는 이름이 아예 없어 옮길 때 반드시 지워야 합니다
+- [x] 그 자리는 v2의 `:Compute(fn, ...deps)`입니다 — v2에는 `:With`가 없고, 구독만 넓히는 `state:Depend(...)`는 파생이 아닌 별개의 API입니다
+- [ ] v2에도 같은 이름의 `:With`가 있으므로 그대로 두면 됩니다
+- [ ] 의존성을 적는 v2 연산인 `:Depend(...)`로 이름만 바꾸면 됩니다
 
-v1의 `:With`는 "이 값으로부터 파생시켜라"였고 v2에서 그 역할은 `:Compute`가 맡습니다. 이름만 보고 그대로 두면 다른 API를 쓰게 됩니다.
+v1의 `:With`는 "이 값으로부터 파생시켜라"였고 v2에서 그 역할은 `:Compute`가 맡습니다. `:Depend`는 값을 건네지 않고 구독만 넓히므로, 이름만 바꿔 옮기면 파생 콜백이 사라집니다.
 ```
 
 ```quiz

@@ -1037,6 +1037,8 @@ splice 의미)와 `Swap`(O(1), 순수 페어 교환)을 공개 CRUD에 추가 �
 
 ## `Slot:List(data, updateFn, keyFn?)` — 키 기반 동적 컬렉션 재조정 (2026-08-09 세 번째 세션, `archive/surveys/2026-08-06-additional-primitives-plan.md`에서 승격·통합)
 
+> **[2026-09-15 사용자 결정] `updateFn`은 위치 인자 대신 매 호출 새 테이블 하나를 받는다** — `updateFn(ctx)`, `ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`(PascalCase), `:Single`도 같은 모양(`Index` 포함), 반환 `(result, userdata)`는 그대로, `Offset`의 공개 타입은 읽기 전용 `State<number>`. 이 절의 위치 인자 서술은 그 시점 원문이다. 새 테이블을 고른 실측은 `audit/updatefn-ctx-table-bench-2026-09-15/REPORT.md`, 경위는 `research/public-surface-pre-adoption-review.md` (7)번.
+
 Fusion `ForPairs`/`ForKeys`/`ForValues`, Vide `indexes()`/`values()`, React
 `key` prop에 대응하는 프리미티브 — 데이터 배열을 정체성(key) 기준으로
 diff해서 변경분만 생성/갱신/언마운트한다(**[정정, 2026-08-13 4차 감사]**
@@ -2275,6 +2277,8 @@ UI에 직접 관측, (2) `Dispatch.setLength(inst, i, slot.Length)`가 형제
 `Claim`(M5 스코프 — `H-161`).
 
 ## `Slot:Single(state, updateFn?, opts?)` — 확정 (2026-08-11 세션, `:List` 위의 순수 sugar)
+
+> **[2026-09-15 사용자 결정] `updateFn`은 위치 인자 대신 매 호출 새 테이블 하나를 받는다** — `updateFn(ctx)`, `ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`(PascalCase), `:Single`도 같은 모양(`Index` 포함), 반환 `(result, userdata)`는 그대로, `Offset`의 공개 타입은 읽기 전용 `State<number>`. 이 절의 위치 인자 서술은 그 시점 원문이다. 새 테이블을 고른 실측은 `audit/updatefn-ctx-table-bench-2026-09-15/REPORT.md`, 경위는 `research/public-surface-pre-adoption-review.md` (7)번.
 
 기존 "백로그, 미착수"에서 실제 설계까지 완료됨 — 새 reconcile 로직
 없이 **`:List`를 정확히 0/1개짜리 배열로 감싸는 sugar**:

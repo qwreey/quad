@@ -212,7 +212,7 @@ slotB:Add(D.TextLabel {
 
 **실행하면** `B2`의 `LayoutOrder`가 6으로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
 
-여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 두 번째 인자 `index`로 넘겨줍니다([13장](/getting-started/13-lists/)).
+여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 받는 `ctx.Index`로 넘겨줍니다([13장](/getting-started/13-lists/)).
 
 ---
 

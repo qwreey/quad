@@ -15,7 +15,8 @@ local Types = require("./types")
 return function(S: Types.SlotInternal, module: any)
 
 	-- ── :List / :Single (slice 4) ──────────────────────────────────────
-	local function identityUpdateFn(item: any): any
+	local function identityUpdateFn(ctx: any): any
+		local item = ctx.Item
 		if item == S.KeyGone then return nil end
 		return item
 	end
@@ -120,7 +121,9 @@ return function(S: Types.SlotInternal, module: any)
 				local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
 				local candidateSlot = slotPos + 1
 				local physIndex = S.BK.getOffsetAt(self, candidateSlot) - offset:Get() + 1
-				local result, ud = updateFn(item, physIndex, offset, prev, userdata[key])
+				-- 2026-09-15 (user decision): a FRESH context table per call — a reused one would let a closure
+				-- made inside updateFn read a later item's fields (cost: audit/updatefn-ctx-table-bench-2026-09-15)
+				local result, ud = updateFn({ Item = item, Index = physIndex, Offset = offset, Prev = prev, UserData = userdata[key] })
 				if result == S.None then result = nil end
 				local detach = (result == S.Detach)
 				if detach then result = nil end
@@ -148,7 +151,7 @@ return function(S: Types.SlotInternal, module: any)
 			for key in pairs(prevKeys) do
 				if not seen[key] then
 					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
-					local result, ud = updateFn(S.KeyGone, 0, offset, prev, userdata[key])
+					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
 					if result == S.None then result = nil end
 					local detach = (result == S.Detach)
 					if detach then result = nil end
@@ -236,9 +239,8 @@ return function(S: Types.SlotInternal, module: any)
 		local data = if S.isState(state)
 			then state:Compute(function(v: any) local g = v:Get(); return (if g == nil or g == None then {} else { g }) end)
 			else (if state == nil or state == None then {} else { state })
-		return self:List(data, function(item: any, _index: number, off: any, prev: any, ud: any)
-			return (uf :: any)(item, off, prev, ud)
-		end, function() return true end, opts)
+		-- same context shape as :List (Index included — one updateFn works for both)
+		return self:List(data, uf, function() return true end, opts)
 	end
 
 	S.List = S.Slot_mt.List -- for init's setFuncLevel tagging call

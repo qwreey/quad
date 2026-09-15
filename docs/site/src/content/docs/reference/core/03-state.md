@@ -1,10 +1,10 @@
 ---
 title: State
-description: 읽기 전용 파생 반응형 노드 — Get/Compute/With/Apply/Observer/Gate
+description: 읽기 전용 파생 반응형 노드 — Get/Compute/Depend/Apply/Observer/Gate
 ---
-`State`는 **파생 노드**입니다. 값을 직접 쓸 수 없고, 상류(`Source`나 다른 `State`)에서 계산돼 나옵니다. **런타임 생성자가 없습니다** — `State` 값은 `:Compute` / `:With` / `:Gate`(그리고 그 위에 얹힌 `:Apply` 팩토리들)의 결과로만 생깁니다. 쓰기가 필요하면 [`Source`](/reference/core/02-source/)입니다.
+`State`는 **파생 노드**입니다. 값을 직접 쓸 수 없고, 상류(`Source`나 다른 `State`)에서 계산돼 나옵니다. **런타임 생성자가 없습니다** — `State` 값은 `:Compute` / `:Depend` / `:Gate`(그리고 그 위에 얹힌 `:Apply` 팩토리들)의 결과로만 생깁니다. 쓰기가 필요하면 [`Source`](/reference/core/02-source/)입니다.
 
-이 페이지의 심볼: [`state:Get()`](#stateget) · [`state:Compute(fn, ...deps)`](#statecomputefn-deps) · [`state:With(...)`](#statewith) · [`state:Apply(factory)`](#stateapplyfactory) · [`state:Observer(fn)`](#stateobserverfn) · [`state:Gate(setup)`](#stategatesetup)
+이 페이지의 심볼: [`state:Get()`](#stateget) · [`state:Compute(fn, ...deps)`](#statecomputefn-deps) · [`state:Depend(...)`](#statedepend) · [`state:Apply(factory)`](#stateapplyfactory) · [`state:Observer(fn)`](#stateobserverfn) · [`state:Gate(setup)`](#stategatesetup)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -18,7 +18,7 @@ export type StateData<T> = { read __quadState: true, read __quadStateValue: T, G
 
 export type State<T> = StateData<T> & {
 	Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
-	With: (self: StateData<T>, ...any) -> State<T>,
+	Depend: (self: StateData<T>, ...any) -> State<T>,
 	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
 	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
 	Gate: (self: StateData<T>, setup: GateSetup) -> State<T>,
@@ -97,12 +97,12 @@ print(area:Get()) --> 40
 
 ---
 
-## `state:With(...)`
+## `state:Depend(...)`
 
 **시그니처**
 
 ```luau
-With: (self: StateData<T>, ...any) -> State<T>
+Depend: (self: StateData<T>, ...any) -> State<T>
 ```
 
 **인자** — 넘긴 가변 인자는 **전부 추가 의존성**입니다(`:Compute`와 같은 검증을 받습니다).
@@ -113,6 +113,8 @@ With: (self: StateData<T>, ...any) -> State<T>
 
 - 값은 그대로 두고 **구독 범위만 넓히는** 노드를 하나 만듭니다. "A의 값을 쓰되, B가 움직여도 다시 발행되어야 한다"가 필요할 때 씁니다.
 - `:Compute`처럼 계산 함수를 받지 않으므로 `previous` 같은 개념도 없습니다.
+- 넘긴 의존성의 **값을 읽어 오지 않습니다.** 이름이 `:Compute(fn, ...deps)`·`q.Effect(fn, ...deps)`의 `deps`와 같은 낱말인 이유입니다 — 그 deps만 따로 거는 연산입니다. 값이 필요하면 뒤에 붙인 `:Compute` 안에서 직접 `:Get()`하세요.
+- `:Observer(fn)`와 헷갈리지 마세요 — `:Observer`는 **fn이 이 State를 관측**하는 구독 핸들이고, `:Depend`는 **State가 다른 State의 변경을 따라가는** 새 노드입니다(콜백이 없습니다).
 
 **예제**
 
@@ -121,7 +123,7 @@ local text = q.Source("hello")
 local locale = q.Source("ko")
 
 -- text의 값 그대로, 다만 locale이 바뀌어도 다시 흐른다
-local shown: q.State<string> = text:With(locale)
+local shown: q.State<string> = text:Depend(locale)
 print(shown:Get()) --> hello
 ```
 

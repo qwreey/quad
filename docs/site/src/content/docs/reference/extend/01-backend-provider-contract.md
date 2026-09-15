@@ -21,7 +21,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 백엔드는 `quad:UseProvider(providerFn)`으로 설치되며, 프로바이더 함수는 두 가지 일을 합니다.
 
 1. 모듈 인스턴스를 **뮤테이션**해서 아래 주입 슬롯들을 채웁니다.
-2. 백엔드 고유 표면(Roblox라면 `D`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
+2. 백엔드 고유 표면(Roblox라면 `Declaration`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
 
 주입 슬롯은 전부 19개이고, 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Quad` 레코드입니다.
 
@@ -34,6 +34,8 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 | 시간 op | `setTimeout` `clearTimeout` |
 
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
+
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_bookkeeping`·`_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
 
 ---
 
@@ -199,7 +201,9 @@ local q = Quad.New():UseProvider(CustomProvider)
    `UseProvider: this Quad module already has a provider — a module cannot serve two backends`
 4. **슬롯 마킹은 프로바이더 함수가 성공적으로 반환한 뒤**에 일어납니다. 설치 도중 던지면 슬롯이 점유되지 않으므로, 원인을 고치고 다시 부를 수 있습니다.
 
-반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 다섯 개 키입니다 — `D`(생성된 클래스 네임스페이스), `OnChange`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
+반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 다섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
+
+**백엔드가 값 층을 더한다면 자기 레퍼런스에 적습니다.** quad-base의 `FieldOut<T>`(Modifier `Peek` 반환·setter 변환 함수의 `old`)는 base가 소유한 층(`State`·`None`·`nil`)만 감쌉니다. 백엔드 고유의 값 층(quad-roblox의 `Tween<T>`)은 base가 알 수 없으므로, 백엔드가 생성하는 클래스별 타입에서 채우고 **무타입 `q.Modifier()`에서는 호출자가 `T` 안에 넣는다**는 것을 그 백엔드 문서에 밝혀 두세요([core/08의 층 나눔](/reference/core/08-modifier/)).
 
 `QuadRoblox`는 설치 시점에 받은 quad-base 인스턴스의 `Version`을 자기 패턴과 대조하고, 안 맞으면 그 자리에서 던집니다. 패턴은 `.`로 나뉜 자리마다 `*`(뭐든) / `N^`(N 이상) / 정확 일치로 읽히며, `3.1.0-rc.1` 같은 프리릴리즈 꼬리는 패턴에 프리릴리즈가 있을 때만 정확 일치를 요구하고(`"3.*.*"`류 느슨한 패턴은 rc 빌드도 통과) `+` 뒤 빌드 메타데이터는 양쪽 다 무시합니다. 락은 프로바이더가 아니라 `UseProvider` 안에 있으므로, 프로바이더 작성자가 가드를 빠뜨려도 구조적으로 막힙니다. `AddPlugin`은 같은 병합을 하되 락이 없습니다 — 백엔드 팩토리를 `AddPlugin`으로 넘기는 것은 지원 대상이 아닙니다.
 

@@ -81,7 +81,7 @@ flowchart TB
 3. `Frame C`의 오프셋은 미리 계산돼 있는 게 아니라 `getOffsetAt(owner, 3)`이 **필요할 때** 앞선 길이들을 누적해 채웁니다(부분합 캐시는 커서 아래까지만 유효).
 4. `recompute`가 발행 채널이 있는 위치마다 새 절대 오프셋을 `:Set`하고, 마지막에 이 Slot 자신의 `Length`를 갱신합니다 — 그게 다시 조부모의 부기를 깨웁니다.
 
-**오프셋이 실제로 무엇에 쓰이나**: Roblox 백엔드는 자식 순서를 물리 프로퍼티로 갖지 않아서 `nativeInsert`/`nativeExtract`가 받은 오프셋을 **무시합니다** — 그 인자는 순서가 물리적인 백엔드(DOM 등)와 공유하는 계약입니다. Roblox에서 실질적 소비자는 **`updateFn`이 받는 `offset` Source**이고, 사용자가 거기서 `LayoutOrder` 같은 걸 계산합니다(Slot이 대신 바인딩해주지는 않습니다 — 요소가 이미 지정한 값을 덮어쓰는 매직이 되기 때문).
+**오프셋이 실제로 무엇에 쓰이나**: Roblox 백엔드는 자식 순서를 물리 프로퍼티로 갖지 않아서 `nativeInsert`/`nativeExtract`가 받은 오프셋을 **무시합니다** — 그 인자는 순서가 물리적인 백엔드(DOM 등)와 공유하는 계약입니다. Roblox에서 실질적 소비자는 **`updateFn`이 받는 `ctx.Offset` State**이고, 사용자가 거기서 `LayoutOrder` 같은 걸 계산합니다(Slot이 대신 바인딩해주지는 않습니다 — 요소가 이미 지정한 값을 덮어쓰는 매직이 되기 때문).
 
 **순서 변경은 물리 op가 아닙니다.** `rawMove`는 Roblox에서 `nativeMove`를 부르지만 그 구현은 **의도적인 no-op**입니다. 실제로 순서를 바꾸는 건 `lengthList`/`sourceList`/`observers`를 `_elements`와 **같은 순열로** 회전시키는 `rotateInPlace`와 뒤따르는 recompute뿐입니다. `sourceList`가 특히 위치가 아니라 요소에 묶인 값(중첩 Slot 자신의 `.Offset`)이라, `_elements`만 회전시키면 recompute가 옛 점유자의 Source에 오프셋을 써 넣습니다.
 

@@ -54,10 +54,10 @@ board.Parent = screen
 ```luau
 -- … (CounterBoard.luau) updateFn의 마지막 갈래를 이렇게 고칩니다
         return Counter {
-            Label = item.Label,
-            Start = item.Start,
+            Label = ctx.Item.Label,
+            Start = ctx.Item.Start,
             Ctx = props.Ctx,          -- ← 이 한 줄만 추가. 안에 뭐가 들었는지는 모른다
-        }, ud
+        }, ctx.UserData
 ```
 
 `CounterBoard`는 `Theme`을 require하지도, 그 열쇠 이름을 알지도 **못합니다.** 강조 색이 하나 더 늘든 폰트가 들어오든 이 파일은 그대로입니다 — 그것이 이 도구가 줄여 주는 비용입니다.

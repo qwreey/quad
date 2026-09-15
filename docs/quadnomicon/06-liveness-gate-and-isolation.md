@@ -130,7 +130,7 @@ end
 
 ### 3.4 왜 "묶이지 않으면 거짓"이 버그가 아닌가
 
-이 게이트를 타는 값은 **`Observer`와 `Effect`뿐입니다.** 파생 State 노드(`:With`/`:Compute`/`:Gate`가 만든 것)는 이 게이트를 타지 않습니다 — 만약 탄다면 자식 노드는 `bindLifetime`된 적도 `:Subscribe()`된 적도 없으니 전부 걸러지고, 루트의 `:Set`이 파생 State에 한 번도 닿지 못할 것입니다. 파생 노드의 생존은 `canExecute`가 아니라 State 그래프의 `_hold` 불변식이 책임집니다.
+이 게이트를 타는 값은 **`Observer`와 `Effect`뿐입니다.** 파생 State 노드(`:Depend`/`:Compute`/`:Gate`가 만든 것)는 이 게이트를 타지 않습니다 — 만약 탄다면 자식 노드는 `bindLifetime`된 적도 `:Subscribe()`된 적도 없으니 전부 걸러지고, 루트의 `:Set`이 파생 State에 한 번도 닿지 못할 것입니다. 파생 노드의 생존은 `canExecute`가 아니라 State 그래프의 `_hold` 불변식이 책임집니다.
 
 실제 호출부는 `Observer:_receive`입니다:
 

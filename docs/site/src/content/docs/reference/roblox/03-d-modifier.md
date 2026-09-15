@@ -276,6 +276,10 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 - `Peek: <T>(self, key: string) -> FieldOut<T>?`([core/08 — Modifier](/reference/core/08-modifier/)) —
   **저장된 그대로** 돌려줍니다(State는 State인 채로,
   `None`은 `None`인 채로). 호출부가 `T`를 명시합니다: `mod:Peek<<UDim2>>("Size")`.
+  **quad-roblox의 값 층은 `Tween<T>` 하나입니다.** 클래스별 Modifier의 `Peek`는 보간 가능한 프로퍼티에
+  이 층을 이미 넣어 두지만(`FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`), **무타입 `q.Modifier()`**의
+  `Peek`는 quad-base의 정의라 Tween을 모릅니다 — 그 필드에 Tween이 들어 있을 수 있으면
+  `mod:Peek<<UDim2 | q.Tween<UDim2>>>("Size")`처럼 `T` 안에 적으세요([core/08의 층 나눔](/reference/core/08-modifier/)).
   빈 문자열이나 비문자열 키는 `Modifier:Peek: key must be a non-empty string (got {…})`.
 - `Overridden(a, b, …)` / `a:Overridden(b, …)` — 필드 단위 병합, 뒤가 이깁니다. 결과는 **태그 없는**
   Modifier입니다(입력들의 태그가 서로 다를 수 있어 하나를 고르지 않습니다) — 클래스가 필요하면
