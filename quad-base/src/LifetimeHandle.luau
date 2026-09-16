@@ -26,8 +26,8 @@
 	first-class primitives handler authors call directly, like `isState`.
 	The `onDestroying(inst, fn)` engine op stub is installed here too (M2 unit
 	3) — it belongs to the same backend injection and `Effect` needs it.
-	2순회 `H-373`: so are `isInst`/`nativeClaim`/`nativeFindChild` — the three
-	ops `architecture.md` (EngineOps line) and `slot-plan.md` ("기본 구현(조합
+	2순회 `H-373`: so are `isInst`/`nativeClaim`/`nativeFindChild` (and, since
+	2026-09-16, `isClaimed`) — the ops `architecture.md` (EngineOps line) and `slot-plan.md` ("기본 구현(조합
 	폴백) — 미주입이 에러가 아니다") classify with `onDestroying` as "cannot be
 	composed, so missing = a clear error"; without stubs a bare `Quad.New()`
 	raised a nil-call from `Slot/Elements.luau`/`Claim.luau` and blamed quad internals.
@@ -61,7 +61,7 @@ local function Init(module: any)
 	-- composition fallback — missing means a clear error). The same backend that
 	-- fills the four above fills this one; until then, the same loud stub.
 	module.Backend.onDestroying = notInstalled("onDestroying")
-	-- `H-373`: the three non-composable engine ops (see header). `if nil` — a
+	-- `H-373`: the non-composable engine ops (see header) — three then, four with `isClaimed`. `if nil` — a
 	-- provider may already be there (same idiom as `Tag.luau`/`Attr/Key.luau`).
 	if module.Backend.isInst == nil then
 		module.Backend.isInst = notInstalled("isInst")

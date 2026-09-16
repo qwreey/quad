@@ -295,33 +295,15 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
   불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
   시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
+- **[2026-09-16 신설 — code-review 발견, 사용자 문항] 정적 자식 자리 `D.Frame { foreign }`에는 같은 게이트가 없다.** 상황: Slot은 이제 미claim 요소를 거부하는데, quad-roblox의 `Handlers/InstanceChild.luau`는 숫자 키 자리의 raw Instance를 `isInst`만 보고 `Parent`를 잡고 길이 부기를 만든다 — `nativeClaim`도 `isClaimed`도 안 부른다(`spec.handlers`가 raw `Instance.new` 자식으로 성공을 단언). 무엇이 막히나: 사용자가 `slot:Add(foreign)`은 에러, `D.Frame { foreign }`은 통과라는 비대칭을 보고 정적 자리로 옮겨 "고치면" 옛 stale 동작(밖에서 Destroy되면 부기가 시체를 가리킴)이 그대로 돌아온다. 갈래: (a) `InstanceChild`에도 `isClaimed` 게이트(정적 자리도 미claim 거부 — 표면 변경, Slot과 대칭) / (b) 정적 자리는 공인 adoption 경로로 두고 문서에 "정적 자리는 소유 검사가 없다, 죽음 추적도 없다"를 명시 / (c) 그대로. 메인 권고 (a) — 오늘 결정의 논거(소유는 명시적, 조용한 stale 금지)가 자리와 무관하게 성립하고 BREAKING 허용 주간 안이다. `v1-compat-plan.md` 7-3이 두 경로를 나란히 물었던 문항이라 Slot만 닫힌 상태.
 - **[해소 2026-09-16 — (b) 사용자 결정: 미claim이면 `Add`에서 에러, 자동 claim은 마법("명시적으로 claim 안 한게 다른 경로로 claim 될 수 있다는거고, 마법 아님?"); 판정 술어는 quad-roblox의 gchold 유무("gchold 같은게 있는 경우가 claim 된 판정처럼 되는거지?" — 맞음)를 백엔드 계약 op 하나로 노출, mock은 항상 참. 구현 완료 같은 날 — `isClaimed` op(quad-types·quad-base 스텁·quad-roblox·mock)·`Slot/Elements.luau` 게이트·`spec.slot` 22·레퍼런스 core/06·extend/01·CHANGELOG BREAKING; `claim-plan.md` 14번] Slot이 quad 밖에서 만들어진 임의 Instance를 받을 수 있는가**
   (2026-08-06 추가) — v1 compat 등에서 넘어온 foreign
   Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
   **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
-  **[2026-09-03 현황 — 확인 시점 도래]** Slot 코어가 fork 편입으로
-  존재한다(`quad-base/src/Slot/init.luau`). 현 구현의 사실: 요소 판정은
-  주입 술어 `isInst`뿐이라 **foreign Instance도 요소로 받아들여지고**
-  물리 op(`nativeInsert` 등)·`elementOwner` Relate 키잉까지는 돌지만,
-  실물 Roblox에선 **claim 안 된 userdata의 동일성 구멍**(`H-293`/
-  lifecycle-pattern (0))이 그대로 적용된다 — "받아진다"와 "안전하다"가
-  갈리는 자리. **[2026-09-03 사용자 회신 — 방향은 잡혔고 갈래만 회신 대기]**
-  사용자: *"quad외부의 것의 움직임은 사실, quad 자체가 인스턴스의 죽음 까지
-  추적을 하는 부분이고, 임의로 Destroy 를 걸면 안 되는지라, claim 이 반
-  강제가 될 순 있어. 그런데 생각해보면, 미 claim 이라고 해도 Slot 자체가
-  strong 하게 홀드하지 않아?"* — 맞다: `_elements`는 평범한 배열(weak 아님)
-  이라 Slot이 요소를 강하게 쥔다 → 요소가 Slot 안에 있는 동안 userdata
-  참조가 살아 있어 **동일성 구멍(H-293 계열)은 Slot 요소엔 적용되지 않는다**
-  (claim의 gcconn 고정은 "Lua 참조가 하나도 없을 때"를 위한 것). 남는 건
-  **죽음 추적**뿐 — 미claim 요소엔 `bindLifetime`이 fail-fast(`H-290`)라
-  그 요소 위의 leaf 바인딩이 불가능하다. 갈래: (a) **Slot이 `Add` 시
-  미claim 요소를 자동 claim**(반강제 — "이미 claim됐는가" 술어 또는
-  claim-if-needed op 하나가 필요, 새 주입 op라 사용자 결정) / (b) 사용자가
-  먼저 claim해야 하고 미claim이면 `Add`에서 error(명시적) / (c) 현행 유지
-  (미claim도 받되 leaf 바인딩만 불가). **권고 (a)** — 사용자 논지("죽음까지
-  quad가 추적, 임의 Destroy 금지")를 Slot이 자동으로 보장하고, 요소가 강하게
-  잡혀 있어 claim 시점의 동일성도 안전하다. v1-compat 착수 전이면 되는
-  결정이라 급하지 않음.
+  **[2026-09-16 정리 — 옛 본문 압축]** 2026-09-03 시점 현황(요소 판정이 `isInst`뿐이라 foreign도 조용히 들어감, 단 미claim 요소엔
+  `bindLifetime`이 fail-fast(`H-290`)라 leaf 바인딩 불가)과 갈래 셋((a) `Add` 때 자동 claim — 옛 메인 권고 / (b) 미claim이면 `Add` 에러 /
+  (c) 현행)은 **(b)로 닫혔다** — (a)는 마법이라 기각, (c)는 조용히 stale해지는 유일한 갈래. 지금의 사실은 `Slot/Elements.luau`의
+  `isClaimed` 게이트와 `claim-plan.md` 14번이 소스, 논의 원문은 `session/2026-09-16-01-d-typefunction-measurement.md` §5.
 
 > **⚠️ 번호는 재사용된다 — 옛 문서가 가리키는 번호를 그대로 믿지 말 것.**
 > 예전 "0번(추가 프리미티브)"과 "2번(구현 착수 직전 감사 결과)"은 전원

@@ -197,6 +197,13 @@ local function Init(module: any)
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			if occupant ~= nil then
+				-- [2026-09-16 code-review] the isClaimed gate in wrapElement sees only raw values; a State's
+				-- current occupant was gated later, inside the wrapper's reconcile — after rawAdd had
+				-- already inserted (ghost element: `#_elements` 1, Length 0). Gate the occupant here,
+				-- in the pre-pass, so nothing is inserted on failure.
+				if element ~= raw and module.Backend.isInst(occupant) and not module.Backend.isClaimed(occupant) then
+					Err.errorBeforeNearest(surface .. ": this element is not claimed by quad — build it with the Declaration or take it over with Claim first", SURFACE)
+				end
 				if seen[occupant] then
 					Err.errorBeforeNearest(surface .. ": the same element appears twice", SURFACE)
 				end

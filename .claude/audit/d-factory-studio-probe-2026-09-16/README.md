@@ -11,7 +11,7 @@
 1. Studio에서 **새 타입 솔버(Luau Type Solver V2) 베타**를 켤 것 — 안 켜면 `type function` 문법
    자체가 "syntax not supported"로 죽는다(01번에서 바로 드러난다).
 2. 이 폴더에서 `rojo serve probe.project.json` → Studio 플러그인으로 연결(스크립트는 `src/` 아래 — 프로젝트 파일이 든 폴더를 `$path`로 잡으면 rojo가 중첩 프로젝트로 무한 재귀해 stack overflow로 죽는다, 2026-09-16 실측).
-   - `ServerScriptService/dprobe/` 아래에 `src/`의 01~05가 들어간다.
+   - `ServerScriptService/dprobe/` 아래에 `src/`의 01~06이 들어간다.
    - `ReplicatedStorage/quad-roblox/`도 같이 싱크된다(05번 대조군이 쓴다).
    - rojo 없이 스크립트 편집기에 그대로 붙여 넣어도 된다(02·05만 경로에 의존).
 3. 스크립트 분석 창(보기 → 스크립트 분석)을 열어 둘 것 — 타입 함수의 `print`는 **출력 창이 아니라
@@ -25,6 +25,7 @@
 | `02*-*.luau` | **다른 모듈**의 type function을 평가하는가, 정의 모듈이 자기 인스턴스화를 해 둬야 하는가 | 프라임됨=평가함 / 프라임 안 됨=**조용히 무진단**(2-c) |
 | `03-classdump.luau` | Studio의 클래스 타입 데이터가 luau-lsp의 defs와 **같은 것**을 주는가 | Frame=1>GuiObject=50>GuiBase2d=15>…, **전부 rw**(읽기 전용 표시 없음), 이벤트는 `Connect`를 가진 테이블 |
 | `04-factory.luau` | 타입 함수가 만든 props/Modifier 테이블에서 **진단과 자동완성**이 나오는가 | 진단 전부 정상, 체이닝 정상, 한도 플래그 없이 클린 |
+| `06-events.luau` | Studio의 `extern:RBXScriptSignal`에서 type function이 콜백 시그니처를 꺼낼 수 있는가(03 후속) | 테이블 경로: `Connect` 파라미터 2개(self, 콜백); Studio 재실행 결과는 `REPORT.md` |
 | `05-current-d.luau` | 오늘의 생성 D는 Studio에서 어떤가(대조군) | 한도 플래그(`LuauTarjanChildLimit` 등) 없이는 100군데쯤에서 "too complex" |
 
 가장 중요한 두 가지:

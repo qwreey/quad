@@ -1047,7 +1047,7 @@ do
 end
 
 print()
-print("=== 22. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===")
+print("=== 29. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===")
 do
 	-- the mock claims lazily so its isClaimed is always true; flip the slot to reach the gate.
 	local q3 = mock.newQuad()
@@ -1068,6 +1068,11 @@ do
 	assert(not ok2 and string.find(tostring(err2), "not claimed", 1, true) ~= nil, "constructor pre-pass hits the same gate: " .. tostring(err2))
 	local ok3, err3 = pcall(function() return s:Splice(2, 0, foreign) end)
 	assert(not ok3 and string.find(tostring(err3), "not claimed", 1, true) ~= nil, "Splice hits the same gate: " .. tostring(err3))
+	-- code-review: a State whose current value is unclaimed must fail in the pre-pass, not after rawAdd
+	local ok4, err4 = pcall(function() return s:Add(q3.Source(foreign)) end)
+	assert(not ok4 and string.find(tostring(err4), "not claimed", 1, true) ~= nil, "State-wrapped unclaimed occupant rejected: " .. tostring(err4))
+	assert(#s._elements == 1, "no ghost element after the rejected State Add (unmounted: Length stays 0 by design)")
+	assert(string.find(tostring(err4), "Slot:Add: this element is not claimed", 1, true) ~= nil, "pre-pass surface prefix: " .. tostring(err4))
 	q3.Backend.isClaimed = saved
 	print("PASS")
 end

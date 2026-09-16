@@ -27,7 +27,7 @@ REF = os.path.join(ROOT, 'docs', 'reference')
 CONTRACT_ONLY = {'Handler'}  # 레코드 계약 — extend/02가 필드 표로 설명한다(멤버 헤딩을 요구하지 않는다)
 INJECTED = {
     'nativeInsert', 'nativeExtract', 'nativeRemove', 'nativeMove', 'nativeSwap', 'nativeDispose', 'isInst',
-    'onDestroying', 'nativeClaim', 'nativeFindChild', 'bindLifetime', 'unbindLifetime', 'canBound', 'canExecute',
+    'onDestroying', 'nativeClaim', 'isClaimed', 'nativeFindChild', 'bindLifetime', 'unbindLifetime', 'canBound', 'canExecute',
     'addTag', 'removeTag', 'setAttr', 'setTimeout', 'clearTimeout',
 }
 MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'Effect', 'Blocker', 'Modifier', 'Tag',

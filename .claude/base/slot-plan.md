@@ -192,7 +192,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   `Add`(및 내부 `raw*`)에서 즉시 `error` — "Slot 안엔 실제로 마운트
   가능한 값만 들어간다"는 단일 규칙으로 단순화.
 - **⭐ [전면 정정, 2026-08-24 6라운드 손 트레이싱 `H-40`] 판정은 블랙리스트가
-  아니라 화이트리스트다 — `isSlot` → `isState` → `isInst`.** 아래 "핸들러 계층
+  아니라 화이트리스트다 — `isSlot` → `isState` → `isInst` → **[2026-09-16] `isClaimed`**(미claim 요소 거부, `claim-plan.md` 14번).** 아래 "핸들러 계층
   값 … 금지" 항목은 **열거된 것만** 막는 블랙리스트였고, 그래서 목록에 없는
   값 타입이 전부 샜다. 실제로 `Tween`이 그대로 통과해 `_elements`에 들어가고
   (물리적으로는 아무것도 안 붙는데 `Length`만 유령 +1), 나중 파괴 경로의
@@ -3513,6 +3513,9 @@ local function wrapElement(v)
         end
         if not isInst(v) then     -- 백엔드 주입 술어(위 `native*` 절)
             error("Slot: this backend cannot mount this value", 2)
+        end
+        if not isClaimed(v) then  -- [2026-09-16 사용자 결정] 미claim 요소 거부 — 자동 claim은 마법(`claim-plan.md` 14번)
+            error("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first", 2)
         end
         return v
     end

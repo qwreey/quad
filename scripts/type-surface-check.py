@@ -71,6 +71,33 @@ def check(path):
     return bad
 
 
+# [2026-09-16 code-review] priming rule (`base/typing-limits.md` 8.22): a module that exports a type
+# function must instantiate it at least once in the same file. Under luau-lsp's default "all FFlags on"
+# (`LuauDoNotExportBrokenTypeFunction=true`) an unprimed export reaches consumers as *error-type* with
+# zero diagnostics — the gate is the only thing that catches the omission.
+PRIMING_DIRS = ['quad-base/src', 'quad-types/src', 'quad-roblox/src', 'quad-error/src', 'type-version-check/src']
+EXPORTED_TF = re.compile(r'^export type function ([A-Za-z_][A-Za-z0-9_]*)', re.M)
+
+
+def check_priming():
+    bad = []
+    for d in PRIMING_DIRS:
+        base = os.path.join(ROOT, d)
+        if not os.path.isdir(base):
+            sys.exit(f'type-surface-check: priming dir not found: {d} (update PRIMING_DIRS if it moved)')
+        for dirpath, _, names in os.walk(base):
+            for n in names:
+                if not n.endswith('.luau'):
+                    continue
+                path = os.path.join(dirpath, n)
+                text = blank(open(path, encoding='utf-8').read())
+                for m in EXPORTED_TF.finditer(text):
+                    name = m.group(1)
+                    if not re.search(r'(?<![A-Za-z0-9_.])' + re.escape(name) + r'\s*<', text[m.end():]):
+                        bad.append((os.path.relpath(path, ROOT), text.count('\n', 0, m.start()) + 1, name))
+    return bad
+
+
 def main():
     total = 0
     files = sys.argv[1:] or FILES
@@ -82,7 +109,11 @@ def main():
             total += 1
             print(f'{f}:{ln}: full State/Source in an input position — use StateMarker<T> (or mark `type-surface: allow` with a reason)\n    {line[:160]}')
     print(f'type-surface-check: {total} input-position State/Source')
-    if total:
+    unprimed = check_priming() if not sys.argv[1:] else []
+    for f, ln, name in unprimed:
+        print(f'{f}:{ln}: exported type function `{name}` is never instantiated in its own module — add `type _Prime = {name}<…>` (typing-limits 8.22)')
+    print(f'type-surface-check: {len(unprimed)} unprimed exported type function')
+    if total or unprimed:
         sys.exit(1)
 
 

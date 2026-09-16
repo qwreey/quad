@@ -9,10 +9,10 @@ local mock = require("./mock")
 
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
-print("=== 1. 미주입 스텁 — 생명주기 넷 + 조합 불가 엔진 op 넷(onDestroying/isInst/nativeClaim/nativeFindChild, 2순회 H-373) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
+print("=== 1. 미주입 스텁 — 생명주기 넷 + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
 do
 	local fresh = Quad.New()
-	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "nativeFindChild" } do
+	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
 		local ok, err = pcall(function()
 			return (fresh :: any).Backend[name]({}, {})
 		end)
@@ -40,7 +40,7 @@ do
 		lineUser = (debug.info(1, "l") :: number) + 1
 		return viaSurface(name)
 	end
-	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "nativeFindChild" } do
+	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
 		local ok, err = pcall(user, name)
 		assert(not ok, name .. " stub errors")
 		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the surface frame: " .. tostring(err))

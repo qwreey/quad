@@ -21,6 +21,7 @@ Message substrings below are copied from the source; match on them when diagnosi
 | `Slot:List: duplicate key ...` | `keyFn` returned the same key for two items | Return a unique identifier (e.g. `item.Id`) |
 | `Slot:Remove: index must be a positive integer (got ...)` | `slot:Remove(childInstance)` — CRUD takes indices | `slot:Remove(slot:IndexOf(child))` |
 | `Slot: destroyed Slot cannot be an element` / `... cannot be mounted` / `... cannot be reused` | Reusing a Slot whose owner Instance was destroyed | Create a fresh `q.Slot()` |
+| `Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first` | Putting an Instance quad does not own (`Instance.new`, another library's tree) into a Slot (`Add`/constructor/`Replace`/`Splice`/`List`) | `q.Claim` it first, or build it with `D.<Class> { … }` — Slot never claims on your behalf |
 | `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — this errors immediately, it does not recurse |
 | `Context:Get: no value for Provider(...)` | Reading a provider key the Context never `:Set` | `:Set` it at the root, or probe with `:Peek` |
 | `Context:Set: value for ... must not be nil` | `ctx:Set(provider, nil)` | Absence is "not set" — omit the key |

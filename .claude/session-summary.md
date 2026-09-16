@@ -2497,4 +2497,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   luau-lsp·사용자 VSCode·Studio 셋에서 실측 팩(`audit/d-factory-studio-probe-2026-09-16/`) — 체커는 같고 타입 정의만 다름(프로퍼티 수·Hidden·deprecated·
   이벤트 표현), 읽기 전용 표시는 어디에도 없음, Studio는 생성 D에 too complex 없음. 사용자 결정: 생성 D를 릴리즈 stable 표면으로, 클래스 매개 type
   function 경로는 unstable 백로그. 부산물: typing-limits 8.18 정정(`LuauDoNotExportBrokenTypeFunction` — CLI "전 FFlag 켬"이 만든 관측, 실사용자 환경엔 없던
-  문제) + 8.22(프라이밍 규칙), `type-version-check` `_Prime`.
+  문제) + 8.22(프라이밍 규칙), `type-version-check` `_Prime`. **같은 날 후속(§5)**: 시한 있는 결정 문항 일곱 대화형 처리 — HUMAN_TODO F 잠정 10월,
+  docs-review 2-6 여덟 반영, `question.md` §1 용어 여섯 전부 닫힘(`canExecute`는 sonnet 두 시각 뒤 유지), **Slot이 미claim 요소를 거부하는
+  BREAKING 변경(계약 op `isClaimed`, 자동 claim은 마법 — 사용자)**, 클래스별 타입 루트 재수출(`<Class>Modifier`/`Into<Class>`/`<Class>Elem`, HUMAN_TODO D 해소).

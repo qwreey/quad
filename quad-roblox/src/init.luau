@@ -8,7 +8,10 @@
 	generic-body local annotation is never re-evaluated per call site
 	(quad-types-plan trap 2, measured), and NO type position forces the
 	check through the `UseProvider` indirection (candidate matrix measured
-	same day). One string compare at install — the monorepo pins the exact
+	same day; presumably a type-system limit separate from the 2026-09-16
+	FFlag finding in `typing-limits.md` 8.18 — that matrix was never re-run
+	with `LuauDoNotExportBrokenTypeFunction=false`, so treat this as an
+	unverified assumption). One string compare at install — the monorepo pins the exact
 	version "0.0.0"; independently published backends would pick a looser
 	pattern), lets RobloxFactory mutate the module (ops/handlers), and
 	returns the typed extension `RobloxExtension` — so `q.Declaration` is fully typed
