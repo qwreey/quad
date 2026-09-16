@@ -23,3 +23,8 @@
 반영: `typing-limits.md` 8.18 정정 + 8.22 신설, `type-version-check` 프라이밍(`_Prime`, 패키지 CHANGELOG Fixed), ROADMAP 백로그 항목(unstable 경로 + 만들 때 규칙), HUMAN_TODO D 방향 확정, `research/public-surface-pre-adoption-review.md` (28) 닫힘, `audit/README.md`·`REPORT.md`. test.sh는 "전부 켬" 그대로(프라이밍 누락 조기 경보).
 
 후속(같은 날): 사용자가 `06-events.luau`를 다시 돌려 `[P6-2]`~`[P6-5]` 회신 — extern 시그널은 `readproperty` 불가(테이블 전용)라 `properties()`로 `Connect`를 찾아야 하고, 그 파라미터는 `(self: RBXScriptSignal, 콜백)`으로 콜백이 2번째(리눅스와 같음). `readparent()`는 같은 이름의 원형을 돌려준다. 사용자 자체 프로브(TextButton `properties()` 29개)로 Studio 목록에 메소드·Deprecated/Hidden·읽기 전용이 혼재함도 확인. 미완 없음.
+
+## 5. 같은 날 후속 — 시한 있는 결정 문항 대화형 처리(F·2-6·§1 용어)
+
+opus 에이전트가 열린 결정 문항 49건을 추려 온 뒤(시한 있는 것 7) 사용자가 *"시한 있는 것부터 하나씩 대화형으로 보자"*. HUMAN_TODO F: *"기본적으로 연휴 구간 끝나는 10월쯤으로 잡고 있어. 사내 첫 사용 시인데 … breaking 주간은 우리가 '끝내도 되는 정도다' 가 오는 시점까지 릴리즈를 지연할 수 있어 … a 에 가까우면서 동시에 b에도 가까움. c는 전혀 아니야."* → 잠정 2026년 10월, 종료 통보는 사용자. `docs-review` 2-6 여덟 건 일괄 승인(*"전부 맞는 요소고 진행해도 돼"*) → opus 반영, 5번은 `nativeMove`/`nativeSwap`이 의도된 no-op임을 확인해 부기만 바뀐다는 표현으로 좁힘. `question.md` §1 용어 여섯: `Slot`·`Brand`(사용자: *"kind 는 분법적 요소로 보일 수 있고 … Marker 는 *Marker 타입이 존재해서 … 바꿀 이유가 없음"*)·`Tag`류·`Attr`류 유지, `hintValue`→`nextValue`(코드·공개 문서 0건이라 비파괴). `canExecute`: 메인이 `canEmit`을 제안했으나 사용자가 emit/epoch 관계론과 방향이 다르다고 반대 → 사용자 요청으로 sonnet 두 시각 독립 검토(둘 다 `canEmit` 기각, 유지 vs `canRun`) → 사용자 *"나도 유지로 닫는거 동의해. 원래부터 이견이 없었거든."* §1은 이제 열린 항목 없음.
+

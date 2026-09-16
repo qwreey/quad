@@ -129,7 +129,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 `base/lifecycle-pattern.md`의 "`canBound` vs `canExecute`" 절,
 `archive/canexecute-inst-arg-reversed.md` 하단 addendum 참고.)
 
-- **`Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
+- **[해소 2026-09-16 — 유지, 사용자 동의("얻는거 없어서 권고:유지 동의")] `Slot`(2순위)**: Vue의 "slot"(콘텐츠 주입 지점)과 이름은 같지만 의미가
   다름(quad의 Slot은 자식 배열 재조정 프리미티브) — Vue 배경 있는 사람이
   헷갈릴 수 있음.
 - **[2026-09-15 해소 — `OwnsElements`로 개명, 사용자 결정] `Owned`(3순위, 2026-08-21 신설)**: `:List`/`:Single`의 설치 시점
@@ -139,7 +139,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   묻는 건 "이 Slot이 요소의 수명을 책임지는가"라서 `OwnsElements`처럼
   주어를 드러내는 쪽이 나을 수도 있음. `base/slot-plan.md`의
   "소유권은 설치 시점에 정해진다" 절.
-- **`canExecute`(3순위, 사소함)**: 실제로 "이 값이 아직 살아있나" 확인인데
+- **[해소 2026-09-16 — 유지, 사용자 결정("원래부터 이견이 없었거든. 의미가 문제되는것 처럼 안 보여")] `canExecute`(3순위, 사소함)**: 메인의 `canEmit` 제안은 사용자 반대("emit 은 이미 있는 epoch/emit 관계론과 의미가 달라짐. canExecute 는 도달된다가 아니라 '실행되는 맥락이냐'에 가까워서, observer/effect 가 메인 콜백이 실행되느냐에 가깝기에 emit 과는 겹치는 문제가 생긴다 봐") → sonnet 두 시각(API 독자 / 구현 의미론)이 독립 검증: `canExecute`는 구독자 콜백 실행 직전에서만 불리는 수신측 게이트(`Observer._receive`·`Effect.rawRerun`), emit은 코퍼스에서 발신자 사건으로 굳어 있어 `canEmit`은 방향이 반대 — 기각. `canRun`은 의미론상 동치이나 `Effect:Rerun`과 겹치고 관측된 오독 사고 없이 백엔드 계약 BREAKING을 만드는 셈이라 유지. 원문 `session/2026-09-16-01-d-typefunction-measurement.md` §5. (옛 서술 ↓) 실제로 "이 값이 아직 살아있나" 확인인데
   이름이 범용 권한 체크처럼 들림 — `isAlive` 쪽이 더 직접적이라는 제안이
   있었으나, **(2026-08-08 재검토)** `isAlive`는 top-level `isX` 계열
   (`isState`/`isRef`/`isPreRef`/`isModifier`/`isObserver`류 — 전부 타입
@@ -156,14 +156,14 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   `canExecute`" 절) — 이 이름 정리 항목은 이제 `canExecute`(emit 게이팅
   전용)에만 적용되고, `canBound`(이중 바인딩 가드 전용)는 별개 이름으로
   유지됨. 둘 다 판정 로직은 비공개 헬퍼 하나를 공유.
-- **클로저 인자 이름 `hintValue`(3순위, 사소함, 2026-08-13 열네 번째
+- **[해소 2026-09-16 — `nextValue`로, 사용자 동의; 코드·공개 문서엔 옛 이름 0건이라 비파괴, `dispatch-core-plan.md` 계약 서술 갱신] 클로저 인자 이름 `hintValue`(3순위, 사소함, 2026-08-13 열네 번째
   세션 신설)**: 하강 diff 재디스패치에서 이 인자는 더 이상 "힌트"가
   아니라 **`nil`이거나 같은 핸들러가 곧 처리할 새 값**임이 계약으로
   보장됨(`base/dispatch-core-plan.md`) — 이름이 옛 모델의 잔재라
   `nextValue`류가 더 정확함. 코퍼스에 이미 널리 쓰인 이름이라 이번엔
   안 바꾸고 대기열에만 올림(의사코드는 새로 쓰는 자리부터 `nextValue`를
   쓰기 시작했음).
-- **`Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
+- **[해소 2026-09-16 — 유지, 사용자 결정: "kind 는 분법적 요소로 보일 수 있고, 포함 관계를 표현하는 어휘가 아닐 수 있어보이고, Marker 는 *Marker 타입이 존재해서 StateMarker 가 무엇을 의미하는지 모를 수도 있음. 바꿀 이유가 없음"] `Brand`(3순위, 사소함, 2026-08-07 여덟 번째 세션 추가)**: 런타임
   nominal 타입 판별 통합 메커니즘 — `base/brand-plan.md`에서 동작/구현
   방식은 확정, 이름만 열린 질문(사용자가 직접 제기). `Tag`는 이미
   quad-roblox의 `CollectionService` 래퍼로 쓰여서 이름 충돌, 후보로
@@ -175,7 +175,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
     (`SomeBrand:Is(x)`)이다. 이름 후보도 그 방향으로 다시 볼 것.
   - **[해소 2026-09-15] 메소드 케이싱** — `:Register`/`:Is`로 올렸다(사용자 결정,
     `research/public-surface-pre-adoption-review.md` (13)번). 남은 건 `Brand`라는 이름뿐.
-- **`Tag`/`Added`/`Removed`/`Merged`(3순위, 사소함, 2026-08-08 세 번째
+- **[해소 2026-09-16 — 유지, 사용자("문제가 없는 부분"); `Brand` 유지로 충돌 문항도 소멸] `Tag`/`Added`/`Removed`/`Merged`(3순위, 사소함, 2026-08-08 세 번째
   세션 array-part 값 객체 재설계 때 확정된 API 표면)**: `base/tag-plan.md`가
   "열린 질문 없음, 값 모양/메커니즘/retract/패키지 배치 전부 확정, 이름
   자체만 용어 정리 대상"이라고 명시해뒀으나 이 목록에 반영이 안 돼 있던
@@ -184,7 +184,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   "`Tag`가 이미 이 뜻으로 쓰이고 있어서 충돌"이라는 이유로 `Brand`의
   대안 이름 후보에서 제외됐다는 점은 참고할 것 — 두 이름이 같은 코퍼스
   안에서 공존 가능한지도 같이 검토 대상.
-- **`Attr`/`AttrKey`(3순위, 사소함, 2026-08-11 아홉 번째 세션
+- **[해소 2026-09-16 — 유지, 사용자] `Attr`/`AttrKey`(3순위, 사소함, 2026-08-11 아홉 번째 세션
   추가)**: 여러 Store를 한 번에 attribute로 묶는 그룹 프리미티브
   (`Attr(store1, store2, ...)`, `Tag`와 동형)가 신설되면서, 기존
   단일 키 생성자 `Attr<<T>>("name")`를 이름 충돌 방지를 위해
