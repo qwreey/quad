@@ -90,8 +90,7 @@ end
 -- reject a `{Tag | string}` literal — spike 2026-09-07). Hash tables slip past
 -- the type (a table without an indexer satisfies an indexer type), so this
 -- runtime gate is the one that names them.
-local flattenDepth = 0
-local function flattenInto(target: { [string]: true }, v: any)
+local function flattenInto(target: { [string]: true }, v: any, depth: number)
 	if type(v) == "string" then
 		addName(target, v)
 	elseif isTag(v) then
@@ -109,9 +108,9 @@ local function flattenInto(target: { [string]: true }, v: any)
 		end
 		-- [2026-09-16 hunt F] a list that contains itself recursed to a raw stack overflow with
 		-- `Brand.luau` on the blame line; every other bad list shape here has a domain message
-		flattenDepth += 1
-		if flattenDepth > 64 then
-			flattenDepth = 0
+		-- depth travels as a parameter, not module state — a counter that only reset on error
+		-- would drift upward across normal calls (hunt F 재검) and misfire on the 64th
+		if depth > 64 then
 			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
 		end
 		local count, maxIndex = 0, 0
@@ -123,7 +122,7 @@ local function flattenInto(target: { [string]: true }, v: any)
 			if k > maxIndex then
 				maxIndex = k
 			end
-			flattenInto(target, item)
+			flattenInto(target, item, depth + 1)
 		end
 		if count ~= maxIndex then
 			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
@@ -135,7 +134,7 @@ end
 
 function TagImpl.Added(self: any, nameOrList: any): any
 	local names = table.clone(self._names)
-	flattenInto(names, nameOrList)
+	flattenInto(names, nameOrList, 1)
 	return newTag(names)
 end
 
@@ -143,7 +142,7 @@ function TagImpl.Removed(self: any, nameOrList: any): any
 	-- `H-344`: same validation as `Added` — a non-string used to be a silent
 	-- no-op and `nil` a VM "table index is nil" blaming this file
 	local toRemove: { [string]: true } = {}
-	flattenInto(toRemove, nameOrList)
+	flattenInto(toRemove, nameOrList, 1)
 	local names = table.clone(self._names)
 	for name in pairs(toRemove) do
 		names[name] = nil
@@ -194,7 +193,7 @@ local Tag = setmetatable({}, {
 		-- silently drop everything after it; Attr's __call does the same,
 		-- 통합 리뷰 발견). A nil slot is a validation error like any non-name.
 		for i = 1, select("#", ...) do
-			flattenInto(names, (select(i, ...)))
+			flattenInto(names, (select(i, ...)), 1)
 		end
 		return newTag(names)
 	end,
@@ -207,7 +206,7 @@ function Tag.Merged(...: any): any
 		if not isTag(tag) then
 			Err.errorBeforeNearest("Tag.Merged: arguments must be Tag values", SURFACE)
 		end
-		flattenInto(names, tag) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
+		flattenInto(names, tag, 1) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
 	end
 	return newTag(names)
 end

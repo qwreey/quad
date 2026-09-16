@@ -90,7 +90,10 @@ do
 	t[1] = t
 	local err = failsWith(function() return q.Tag(t) end, "this list nests deeper than 64 levels (does it contain itself?)", "self-containing list")
 	mock.assertBlamesUser(err, "spec.inputgates.luau", "Tag cycle gate blames the caller")
-	assert(q.Tag("a", { "b", { "c" } }):Contains("c"), "nested lists still flatten after the guard reset")
+	assert(q.Tag("a", { "b", { "c" } }):Contains("c"), "nested lists still flatten after the guard")
+	for _ = 1, 200 do -- depth is per call, not accumulated module state (re-check found the counter drifting)
+		assert(q.Tag({ { { "deep" } } }):Contains("deep"), "repeated nested Tags never trip the depth guard")
+	end
 	print("PASS")
 end
 
