@@ -181,6 +181,11 @@ function methods.Peek(self: any, key: any): any
 end
 
 function methods.Apply(self: any, factory: (any) -> any): any
+	-- [2026-09-16 hunt F] the sibling `State:Apply`/`Tag:Apply` (`H-497`) gate a non-function;
+	-- here it died at the call with this file on the blame line
+	if type(factory) ~= "function" then
+		Err.errorBeforeNearest(`Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)
+	end
 	return factory(self) -- nothing more, nothing less (8절)
 end
 
@@ -360,7 +365,10 @@ local function construct(tag: any, ...: any): any
 					Err.errorBeforeNearest(`Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
 				end
 				if type(v) == "function" then
-					Err.errorBeforeNearest(`Modifier: field "{k}" in an initial-field table cannot be a function — use mod:{k}(fn) for a transform`, SURFACE)
+					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
+					-- transform-function arm (the setter would call it once with old=nil and store nil).
+					-- Modifiers carry no events (modifier-plan: the generated <Class>Modifier omits them).
+					Err.errorBeforeNearest(`Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
 					Err.errorBeforeNearest(`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)

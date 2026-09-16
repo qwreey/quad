@@ -97,13 +97,13 @@ return function(S: Types.SlotInternal, module: any)
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
 				local key = keyFn(item, i)
-				if key == nil then
+				if key == nil or key ~= key then -- [2026-09-16 hunt A] NaN is the same raw "table index is NaN" trap
 					-- fail-fast domain error instead of Luau's raw "table index is nil"
 					-- at seen[key] (통합 리뷰 발견). errorBefore (outermost), not
 					-- Nearest: reconcile runs at dispatch/emission depth (mount or
 					-- data:Set), never as a direct user call — `H10-2` reasoning,
 					-- same for the duplicate-key raise below
-					S.Err.errorBefore(`Slot:List: keyFn returned nil for item #{i}`, S.SURFACE)
+					S.Err.errorBefore(`Slot:List: keyFn returned {if key == nil then "nil" else "NaN"} for item #{i}`, S.SURFACE)
 				end
 				if seen[key] then
 					S.Err.errorBefore(`Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
@@ -222,6 +222,12 @@ return function(S: Types.SlotInternal, module: any)
 		self._listData = data
 		self._updateFn = updateFn
 		self._keyFn = keyFn or function(_item: any, index: number) return index end
+		-- [2026-09-16 hunt F] the option bag was the one unchecked argument (`H-441`/`H-446` closed the
+		-- others): a number died on `opts.OwnsElements` with this file on the blame line, a string
+		-- indexed to nil and silently dropped the option.
+		if opts ~= nil and type(opts) ~= "table" then
+			S.Err.errorBeforeNearest(`Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+		end
 		if opts and opts.OwnsElements == false then self._owned = false end
 		if module.debug and type(opts) == "table" then
 			-- [2026-09-15 사용자 결정] unknown option keys (typos, the pre-rename `Owned`) are reported
@@ -244,6 +250,9 @@ return function(S: Types.SlotInternal, module: any)
 		checkListInstall(self) -- `H-385`: gate here so the blame is this call, not the delegation below
 		if updateFn ~= nil and type(updateFn) ~= "function" then
 			S.Err.errorBeforeNearest(`Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
+		end
+		if opts ~= nil and type(opts) ~= "table" then -- [2026-09-16 hunt F] same gate at this entry so the blame is this call
+			S.Err.errorBeforeNearest(`Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
 		if S.isState(state) then
 			-- [2026-09-15 code-review] cross-instance gate at the PUBLIC entry (`H-385` reasoning): inside `List`

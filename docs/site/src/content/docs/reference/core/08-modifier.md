@@ -92,7 +92,7 @@ Modifier: setmetatable<{
 - `Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`
 - `Modifier: field "{k}" collides with a reserved Modifier method`
 - `Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`
-- `Modifier: field "{k}" in an initial-field table cannot be a function — use mod:{k}(fn) for a transform`
+- `Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
 - `Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
 
 **예제**

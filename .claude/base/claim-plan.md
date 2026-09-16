@@ -325,6 +325,8 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
     error 주 방어선 원칙의 경계 사례 — **방어는 방어할 수 있을 때 제공**.
     문서화 대상 등재는 `archive/surveys/2026-08-06-documentation-content-map.md` §4.
 
+15. **[2026-09-16 round10 `H-520`]** 매퍼 키 **부재**는 UB(§3)였지만 실제 증상이 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`(leaf 메시지)이라 `H-418`/`H-442`/`H-504` 부류로 닫았다 — `Claim: no child matched key … under … (mapper …)`로 fail-fast. 이름 **중복**은 여전히 UB(`FindFirstChild` 승리). 클래스 불일치 검사는 round10 §4 문항.
+
 14. **[2026-09-16 사용자 결정 — `question.md` §2 Slot foreign Instance]** **Slot은 미claim 요소를 받지 않는다** — 백엔드 계약 op `isClaimed(inst)`(quad-roblox: `nativeClaim`이 남긴 gchold 유무 — 이중 claim 판정과 같은 검사; mock: lazy claim이라 mock 인스턴스면 참)를 `Slot/Elements.luau`의 요소 게이트가 부르고 거짓이면 `Slot: this element is not claimed by quad …`로 거부한다(모든 진입 경로 — Add·생성자·Replace·Splice·List/Single; `State`에 담긴 요소는 pre-pass에서 현재값으로). **같은 날 code-review 뒤 사용자 결정 — 정적 자식 자리도 대칭**: `Handlers/InstanceChild.luau`의 `process`가 부기 전에 같은 술어로 거부한다(`InstanceChild: this Instance is not claimed by quad …`, `errorBefore`라 `D.<Class>` 줄 blame). `Add` 때 자동 claim(옛 메인 권고 (a))은 기각 — 사용자: *"명시적으로 claim 안 한게 다른 경로로 claim 될 수 있다는거고, 마법 아님?"* 배경 사실: `rawAdd`는 `elementOwner` 부기 + `_elements` 삽입 + 물리 op뿐이라 요소에 `bindLifetime`이 걸리지 않고(Slot의 `bindLifetime`은 전부 자기 옵저버를 `physicalTarget`에 묶는 것), 옛 현행은 foreign 요소가 조용히 들어가 밖에서 Destroy되면 부기가 stale해졌다. 판정 술어를 확인한 사용자: *"gchold 같은게 있는 경우가 claim 된 판정처럼 되는거지?"* — 맞음. 원문 `session/2026-09-16-01-d-typefunction-measurement.md`.
 
 ## 8. 검토 후 안 만들기로 한 것

@@ -90,6 +90,7 @@ end
 -- reject a `{Tag | string}` literal — spike 2026-09-07). Hash tables slip past
 -- the type (a table without an indexer satisfies an indexer type), so this
 -- runtime gate is the one that names them.
+local flattenDepth = 0
 local function flattenInto(target: { [string]: true }, v: any)
 	if type(v) == "string" then
 		addName(target, v)
@@ -105,6 +106,13 @@ local function flattenInto(target: { [string]: true }, v: any)
 					else "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
 				SURFACE
 			)
+		end
+		-- [2026-09-16 hunt F] a list that contains itself recursed to a raw stack overflow with
+		-- `Brand.luau` on the blame line; every other bad list shape here has a domain message
+		flattenDepth += 1
+		if flattenDepth > 64 then
+			flattenDepth = 0
+			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
 		end
 		local count, maxIndex = 0, 0
 		for k, item in pairs(v :: { [any]: any }) do

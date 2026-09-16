@@ -20,14 +20,15 @@ Message substrings below are copied from the source; match on them when diagnosi
 | `Tween: Value must be a plain value, not a State` | `q.Tween { Value = myState }` | `myState:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
 | `Slot:List: duplicate key ...` | `keyFn` returned the same key for two items | Return a unique identifier (e.g. `item.Id`) |
 | `Slot:Remove: index must be a positive integer (got ...)` | `slot:Remove(childInstance)` — CRUD takes indices | `slot:Remove(slot:IndexOf(child))` |
-| `Slot: destroyed Slot cannot be an element` / `... cannot be mounted` / `... cannot be reused` | Reusing a Slot whose owner Instance was destroyed | Create a fresh `q.Slot()` |
+| `Slot: destroyed Slot cannot be an element` / `... cannot be mounted` / `... cannot be reused` | Reusing a Slot that was **destroyed as an element** — an owning parent Slot `:Remove`/`:Clear`d it, its `:List` key disappeared, or `q.dispose(slot)` ran | Create a fresh `q.Slot()` |
+| `... (if its owner was destroyed outside quad — inst:Destroy() — the value went with it ...)` | A different case, appended as a note to other messages ("already mounted", `dispose:`): the mount target Instance was destroyed outside quad | Extract the value before destroying its owner, as with an Instance |
 | `Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first` | Putting an Instance quad does not own (`Instance.new`, another library's tree) into a Slot (`Add`/constructor/`Replace`/`Splice`/`List`) | `q.Claim` it first, or build it with `D.<Class> { … }` — Slot never claims on your behalf |
 | `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — this errors immediately, it does not recurse |
 | `Context:Get: no value for Provider(...)` | Reading a provider key the Context never `:Set` | `:Set` it at the root, or probe with `:Peek` |
 | `Context:Set: value for ... must not be nil` | `ctx:Set(provider, nil)` | Absence is "not set" — omit the key |
 | `Debounce: Time must be a non-negative number or a State<number> (got ...)` | Negative or wrong-typed `Time` in `q.Debounce`/`q.Throttle` (`Throttle:` for the throttle) | Pass a non-negative number of seconds or a `State<number>` |
 | `Operator.Sum: Apply target must be a State (got ...)` | Calling an operator factory on a plain value | Use `:Apply` on a State: `myState:Apply(q.Operator.Not)` |
-| `Dispatch: no handler matched key Parent (value: ..., brand: Inst)` | `Parent = someInstance` as a prop | `Parent` is not a prop — set `.Parent` from outside after creation |
+| `Dispatch: no handler matched key Parent (value: ...)` | `Parent = someInstance` as a prop | `Parent` is not a prop — set `.Parent` from outside after creation |
 | `Bookkeeping.recompute: sourceList[N] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | A `nil` hole in the array part of a props table | Use `q.None`: `props.Modifier or q.None` |
 
 ---
@@ -51,7 +52,9 @@ local checked = base:AsTextButton():Text("go")                    -- CHECKED (on
 local forced  = base:As<<DeclarationModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
 ```
 
-`:As<<T>>()` does no class check; its optional string argument only names a custom class.
+`:As<<T>>()` does no ancestry check. Its optional string argument must be an already
+registered Modifier class name — an unknown one raises `Modifier: unknown modifier class "..."` —
+and it only retags; it never checks that the value really is that class.
 Prefer `:As<Class>()` — the method existing *is* the check.
 
 ### 2.3 Event Callback Signatures
@@ -93,7 +96,7 @@ D.TextBox {
 - A fresh `Observer`/`Effect` fires once at registration and is then **not
   subscribed** (`Subscribed == false`): later changes are held, not delivered. Put the
   handle in an array part to bind it to that instance's lifetime (delivery resumes with one
-  catch-up; `Subscribed` stays `false` — that flag only reflects `:Subscribe()`), or call
+  catch-up; `Subscribed` stays `false` — that flag only reflects `:Subscribe()`/`:WeakSubscribe()`), or call
   `:Subscribe()` on an unbound handle (replays the held change once; calling it on a bound
   handle errors `Observer: already bound to an Instance`). Silent "my observer never fires" bugs are
   almost always this.

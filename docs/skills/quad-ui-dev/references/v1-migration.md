@@ -119,5 +119,5 @@ Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
 2. **`store:Of("x")` without a type argument** yields `Source<any>`, disabling checking downstream.
    Keys added by `Of` after the fact land on the **next** re-dispatch.
 3. **`q.Store { k = plainValue }`** type-checks but errors at construction:
-   `Store: default for "k" is not a Source`. Wrap every default in `q.Source(...)`.
+   `Store: default for "k" is not a Source (got ...)`. Wrap every default in `q.Source(...)`.
 4. **`store.key = v`** replaces the field wholesale and loses the `Source`. Use `store.key:Set(v)`.

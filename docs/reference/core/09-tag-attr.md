@@ -38,7 +38,6 @@ type Tag = {
     Added: (self: Tag, names: TagNames) -> Tag,
     Removed: (self: Tag, names: TagNames) -> Tag,
     Contains: (self: Tag, ...string) -> boolean,
-    Names: (self: Tag) -> () -> string?,
     Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
 }
 ```

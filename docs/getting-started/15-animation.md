@@ -47,7 +47,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 - **`Value`는 plain 값이어야 합니다** — State를 넣을 수 없습니다. 반응성은 `Tween`을 감싼 State가 담당합니다.
 - **같은 목표인지는 `Value`만 봅니다.** `Time`/`Style`은 비교하지 않고, 비교는 값 동등입니다. 같은 값이어도 매번 다시 재생하고 싶으면 `Dedup = false`를 넣으세요.
 - **목표가 다르면 진행 중이던 트윈을 정리하고 새로 겁니다.** `Override = "Cancel"`(기본)은 지금 보간된 값에서 이어 새 트윈을 시작하고, `"Finish"`는 이전 목표값으로 먼저 스냅한 뒤 새 트윈을 시작합니다.
-- **`Tween` 팔이 있는 프로퍼티 타입은 정해져 있습니다** — `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector3`·`Color3`·`CFrame`·`Rect`. 그 밖의 타입(`Enum.*`, `string`, Instance 참조 등)의 프로퍼티에 `Tween`을 넣으면 타입 에러입니다.
+- **`Tween` 팔이 있는 프로퍼티 타입은 정해져 있습니다** — `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector2int16`·`Vector3`·`Color3`·`CFrame`·`Rect`. 그 밖의 타입(`Enum.*`, `string`, Instance 참조 등)의 프로퍼티에 `Tween`을 넣으면 타입 에러입니다.
 
 </details>
 

@@ -95,9 +95,13 @@ local function Init(module: any)
 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
 		for i, v in props :: { [any]: any } do
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
-				-- 이름 부재·중복은 UB(§3 — debug 검사는 debug 도구 몫):
-				-- nativeFindChild가 nil을 주면 아래 재귀가 자연 크래시한다
+				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
+				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
+				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).
 				local child = module.Backend.nativeFindChild(inst, v._key)
+				if child == nil then
+					Err.errorBefore(`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)})`, SURFACE)
+				end
 				resolve(child, v)
 				props[i] = child -- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4)
 			end

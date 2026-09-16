@@ -200,4 +200,17 @@ do
 end
 
 print()
+print()
+print("=== 9. 없는 키 — leaf 모듈 크래시 대신 Claim 메시지(hunt C F7, H-418/H-442/H-504 부류) ===")
+do
+	local root = makeTemplate()
+	local ok, err = pcall(function()
+		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Nope")({ Text = "x" }) }))
+	end)
+	assert(not ok and string.find(tostring(err), "Claim: no child matched key Nope", 1, true) ~= nil, "missing key names the key: " .. tostring(err))
+	assert(string.find(tostring(err), "LifetimeHandle", 1, true) == nil, "no leaf module in the message")
+	mock.assertBlamesUser(err, "spec.claim.luau", "missing-key error blames the Claim line")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

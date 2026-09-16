@@ -25,6 +25,34 @@ return function(S: Types.SlotInternal, module: any)
 	-- public CRUD / `Slot{}`) passes `errorBeforeNearest` so a CRUD call made
 	-- inside a reactive callback blames its own line, not the `:Set` that ran
 	-- the callback; `settle` (reconcile depth) passes `errorBefore`.
+	-- [2026-09-16 hunt A] the raw-value gate, shared by wrapElement (raw elements) and
+	-- prepareElements (the CURRENT value of a State element) — every arm must fail in the
+	-- pre-pass, before rawAdd/rawReplace touch anything (`H-30`/`H-31`, slot-plan "검증을
+	-- 선행 패스로"). Before this the isInst/handler-layer/destroyed arms of a State's
+	-- occupant were checked inside the wrapper's reconcile — after the insert (ghost
+	-- element, Blocker left On; unmounted Slots did not raise at all until drive).
+	local function checkRawElement(v: any, raise: (string, any) -> ())
+		if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
+			or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
+			raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
+		end
+		if v == nil or v == S.None then
+			raise("Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
+		end
+		if not module.Backend.isInst(v) then
+			raise("Slot: this backend cannot mount this value", S.SURFACE)
+		end
+		-- [2026-09-16 사용자 결정 — question.md §2] a foreign element (made outside quad, never
+		-- claimed) is rejected here rather than silently accepted: Add only did elementOwner
+		-- bookkeeping, so an unclaimed element had no death tracking and any leaf binding on it
+		-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
+		-- the user takes ownership first with `Claim` (or builds it with the Declaration).
+		if not module.Backend.isClaimed(v) then
+			raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first", S.SURFACE)
+		end
+	end
+	S.checkRawElement = checkRawElement
+
 	local function wrapElement(v: any, raise: (string, any) -> ()): any
 		if S.isSlot(v) then
 			-- round15 `H6-19`: a destroyed Slot must fail HERE (pre-pass), not
@@ -36,24 +64,7 @@ return function(S: Types.SlotInternal, module: any)
 			return v
 		end
 		if not S.isState(v) then
-			if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
-				or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
-				raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
-			end
-			if v == nil or v == S.None then
-				raise("Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
-			end
-			if not module.Backend.isInst(v) then
-				raise("Slot: this backend cannot mount this value", S.SURFACE)
-			end
-			-- [2026-09-16 사용자 결정 — question.md §2] a foreign element (made outside quad, never
-			-- claimed) is rejected here rather than silently accepted: Add only did elementOwner
-			-- bookkeeping, so an unclaimed element had no death tracking and any leaf binding on it
-			-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
-			-- the user takes ownership first with `Claim` (or builds it with the Declaration).
-			if not module.Backend.isClaimed(v) then
-				raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first", S.SURFACE)
-			end
+			checkRawElement(v, raise)
 			return v
 		end
 		local sub = S.Slot()

@@ -221,7 +221,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 
 ## 7. 슬롯이 비어 있으면 어떻게 되나
 
-quad-base는 위 19슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
+quad-base는 위 20슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
 
 ```
 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)

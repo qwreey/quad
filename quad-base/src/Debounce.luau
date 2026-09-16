@@ -237,18 +237,28 @@ function FactoryImpl.__apply(self: any, state: any): any
 			if h._window == nil then
 				-- idle: a leading gate passes now (Blocker is Off → `pass()` flushes),
 				-- otherwise withhold first
+				-- [2026-09-16 hunt B] `H-509` again, one level up: the callers flipped state BEFORE
+				-- openWindow's read+schedule — a throwing Time read (bad State value, missing backend)
+				-- left Blocker On with no window and the signal withheld until the next emit.
+				-- Non-leading: open first (schedules, then On), then withhold. Leading: pass while Off,
+				-- then open — a throw there leaves the gate idle, which is consistent.
 				if not leading then
-					b:On()
-				end
-				pass()
-				if h._window == nil then -- guard: a re-entrant emit during the pass may have opened it
 					openWindow()
+					pass()
+				else
+					pass()
+					if h._window == nil then -- guard: a re-entrant emit during the pass may have opened it
+						openWindow()
+					end
 				end
 			else
 				pass() -- Blocker is On → withheld
 				if reset then -- the one bit: Debounce restarts the window, Throttle keeps it
-					closeWindow()
+					-- schedule the new window before dropping the old one (same `H-509` rule): if
+					-- the Time read throws, the old window still ends the batch
+					local old = h._window
 					openWindow()
+					module.Backend.clearTimeout(old)
 				end
 			end
 			-- MaxTime (Debounce only): a second timer the signal never resets — armed

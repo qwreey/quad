@@ -133,13 +133,21 @@ local function New(): Quad
 	-- AddPlugin/UseProvider 공용 병합(리뷰 `H-308` — 복사 2벌은 `H-261`
 	-- 선례의 드리프트 자리; 순수 데이터 병합이라 본문 공유 금지 원칙의
 	-- "데이터·순수 술어" 예외에 해당)
-	local function mergeExtension(self: any, extension: any)
+	local function mergeExtension(self: any, extension: any, who: string)
+		-- [2026-09-16 hunt F] a plugin/provider that mutates the module and forgets to return its
+		-- extension table died in this loop ("attempt to iterate over a nil value", this file blamed)
+		if type(extension) ~= "table" then
+			Err.errorBefore(`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
 		for k, v in extension do
 			self[k] = v
 		end
 	end
 
 	function module.AddPlugin(self, pluginFn)
+		if type(pluginFn) ~= "function" then -- [2026-09-16 hunt F] nil reached Relate ("key must not be nil", leaf file blamed)
+			Err.errorBeforeNearest(`AddPlugin: plugin must be a function (got {typeof(pluginFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
 		-- [2026-09-15 사용자 결정] RunInit처럼 identity dedup — 여러 스크립트가 같은 모듈을 require한 뒤
 		-- 각자 `:AddPlugin(spring)`을 불러도 한 번만 설치된다. 표시는 성공 후(UseProvider `H-307`과 같은
 		-- 이유 — 도중에 던진 플러그인의 재시도가 no-op로 삼켜지지 않게).
@@ -162,7 +170,7 @@ local function New(): Quad
 				end
 			end
 		end
-		mergeExtension(self, extension)
+		mergeExtension(self, extension, "AddPlugin")
 		pluginRelate:SetStrong(self, pluginFn, true)
 		return self :: any
 	end
@@ -177,6 +185,9 @@ local function New(): Quad
 	-- 락이 base에 사는 이유: 프로바이더 작성자가 가드를 빠뜨리는
 	-- `H-294`류 실수를 구조적으로 차단.
 	function module.UseProvider(self, providerFn)
+		if type(providerFn) ~= "function" then -- [2026-09-16 hunt F] `UseProvider(nil)` was a silent no-op (nil == nil hit the idempotent branch)
+			Err.errorBeforeNearest(`UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
 		local current = providerRelate:GetStrong(self, "provider")
 		if current == providerFn then
 			return self :: any -- same provider again — idempotent no-op
@@ -196,7 +207,7 @@ local function New(): Quad
 		-- 던졌을 때 슬롯만 점유된 채 확장이 영영 병합되지 않는 좀비를
 		-- 만든다(재시도가 멱등 no-op로 삼켜짐).
 		local extension = providerFn(self)
-		mergeExtension(self, extension)
+		mergeExtension(self, extension, "UseProvider")
 		providerRelate:SetStrong(self, "provider", providerFn)
 		return self :: any
 	end

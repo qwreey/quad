@@ -166,7 +166,9 @@ local primary    = theme:Apply(Op.Indexed<<string>>("Primary"))  -- caller suppl
 ### 3.1 Component Contract
 
 A component is a plain function returning an `Instance` or a `Slot`. Do not mutate its
-`props` table (convention — quad neither freezes nor copies it).
+`props` table (convention — quad neither freezes nor copies it). quad itself does mutate the
+table you hand to `D.<Class>`: `drive` rewrites it **in place** — every Modifier in the array
+part is replaced by a processed marker and its fields are merged into the hash part.
 
 ```luau
 export type ButtonProps = {
@@ -212,8 +214,10 @@ local checked   = base:AsTextButton():Text("ok")            -- CHECKED: one meth
 local unchecked = base:As<<DeclarationModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
 ```
 
-`:As<<T>>()` performs no class check (its optional string argument only names a custom
-class). Prefer the generated `:As<Class>()` methods — their existence is the check.
+`:As<<T>>()` performs no ancestry check. Its optional string argument must be an already
+registered Modifier class name (`Modifier.TypedFactory`/`DefineSubtype`); an unknown name raises
+`Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the generated
+`:As<Class>()` methods — their existence is the check.
 
 ### 3.4 Multi-Store Prop Passing via `Context`
 
@@ -473,6 +477,6 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | `q.Claim(inst)` with one argument | `Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
 | Reusing a `D.Mapper` descriptor | `Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
 | `A:Add(B); B:Add(A)` | Immediate error: `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Keep the slot graph acyclic |
-| `Parent = ...` as a prop | `Dispatch: no handler matched key Parent (value: Instance, brand: Inst)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
+| `Parent = ...` as a prop | `Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
 | `Activated` on a `Frame` | `Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |
 | `AbsoluteSize` read inside `OnRendered` | No error, but `PostRef` guarantees only the subtree — parenting is explicitly not guaranteed | Read it later, from an event or an explicit connection |

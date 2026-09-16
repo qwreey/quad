@@ -106,7 +106,9 @@ do
 	assert(p.count == 0, "0.69: not yet")
 	advance(0.01)
 	assert(p.count == 1, "0.7: once")
-	assert(table.concat(mock.timerLog(), ",") == "set(0.3)@0,clear@0.2,set(0.3)@0.2,clear@0.4,set(0.3)@0.4,fire@0.7,set(0.3)@0.7", table.concat(mock.timerLog(), ","))
+	-- [2026-09-16 hunt B] the restart schedules the new window BEFORE clearing the old one (`H-509`
+	-- rule at the caller: a throwing Time read must not drop the only window) — set precedes clear
+	assert(table.concat(mock.timerLog(), ",") == "set(0.3)@0,set(0.3)@0.2,clear@0.2,set(0.3)@0.4,clear@0.4,fire@0.7,set(0.3)@0.7", table.concat(mock.timerLog(), ","))
 	print("PASS")
 end
 
@@ -240,6 +242,37 @@ do
 	s2:Set(2)
 	assert(p2.count == 2, "after the throw the gate is idle again: this signal leads (Blocker was not left On)")
 	assert(mock.pendingTimers() == 1, "and exactly one window")
+	print("PASS")
+end
+
+print()
+print("=== 7d. H-509 호출자 층 — Leading=false idle과 Debounce 재개방에서 Time 오류가 Blocker On/창 없음을 안 남긴다(hunt B) ===")
+do
+	fresh()
+	local t = Source(1 :: any)
+	local s = Source(0)
+	local g: State<number> = s:Apply(Throttle({ Time = t, Leading = false }))
+	local p = probe(g)
+	t:Set(-1)
+	assert(not pcall(function() s:Set(1) end), "idle non-leading: throws at the schedule")
+	t:Set(1)
+	s:Set(2)
+	advance(1)
+	assert(p.count == 1, "after the throw the gate was idle: the next signal opens a window and passes at its end (not withheld forever)")
+	advance(1) -- the pass at the window end opens one more (plan 8절 2×Time) — let it lapse
+	assert(p.count == 1 and mock.pendingTimers() == 0, "idle again")
+	-- Debounce restart: a throwing Time read on the restart keeps the OLD window alive
+	local t2 = Source(1 :: any)
+	local s2 = Source(0)
+	local g2: State<number> = s2:Apply(Debounce({ Time = t2 }))
+	local p2 = probe(g2)
+	s2:Set(1)
+	t2:Set("x")
+	assert(not pcall(function() s2:Set(2) end), "restart: throws at the schedule")
+	assert(mock.pendingTimers() == 1, "the old window survived the failed restart")
+	t2:Set(1) -- the window end re-opens one (2×Time) and reads Time again
+	advance(1)
+	assert(p2.count == 1, "and it still ends the batch")
 	print("PASS")
 end
 

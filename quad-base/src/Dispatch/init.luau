@@ -37,6 +37,7 @@
 ]]
 
 local Relate = require("./Relate")
+local Brand = require("./Brand") -- [2026-09-16 hunt F] drive's plain-branded guard
 local Void = require("./Void")
 local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
@@ -243,13 +244,25 @@ local function Init(module: any)
 		end
 	end
 
+	-- [2026-09-16 hunt F] chain depth is a positive-integer domain like the array positions
+	-- `Bookkeeping.checkPosition` guards (`H-256`): a fractional index parked a retractor at
+	-- `list[1.5]` that no unwind ever visited, 0/negative surfaced as "bookkeeping is broken",
+	-- a string as a raw VM error.
+	local function checkIndex(fnName: string, index: any)
+		if type(index) ~= "number" or index % 1 ~= 0 or index < 1 then
+			Err.errorBeforeNearest(`Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})`, SURFACE)
+		end
+	end
+
 	local function retractFrom(inst: any, k: any, index: number)
 		checkInst("retractFrom", inst)
+		checkIndex("retractFrom", index)
 		retractRange(inst, k, index, true)
 	end
 
 	local function process(inst: any, k: any, v: any, index: number)
 		checkInst("process", inst)
+		checkIndex("process", index)
 		-- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* —
 		-- h.process가 재귀 Dispatch.process(inst,k,…,index+1)를 부르는 게 정상
 		-- 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 없으면
@@ -389,7 +402,10 @@ local function Init(module: any)
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
-		if getmetatable(flattened) ~= nil or brandNameOf(flattened) ~= nil then
+		-- [2026-09-16 hunt F] `brandNameOf` is the diagnostics-only module scan (pcall per provider
+		-- predicate + 16 probes) — `H-470` put it in the hot path (every drive, ~12% measured). The
+		-- only branded values WITHOUT a metatable are the plain-branded set (`Brand.isPlainBranded`).
+		if getmetatable(flattened) ~= nil or Brand.isPlainBranded(flattened) then
 			-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
 			-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
 			-- `H-386`/`H-389`), and canon says `flattened` is always a plain table

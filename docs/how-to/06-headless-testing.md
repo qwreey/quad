@@ -179,8 +179,10 @@ Roblox 프로퍼티/이벤트까지 태우려면 `quad-roblox`를 설치한 채 
   죽고, 더 나쁘게 `luau-analyze`는 모듈을 `any`로 떨어뜨린 채 **조용히
   통과**합니다("거짓 클린").
 - 그다음 타입 검사 두 그룹이 돕니다. 엔진 무관 그룹(`quad-base`/`quad-types`/`quad-error`/`type-version-check`)은
-  **Roblox 정의 없이** 구 솔버와 신 솔버 두 패스로 분석해서 엔진 전역이 새어 들어오면 그 자리에서
-  걸립니다. `quad-roblox`만 Roblox 타입 정의를 얹고 봅니다.
+  **Roblox 정의 없이** 두 패스로 분석해서 엔진 전역이 새어 들어오면 그 자리에서 걸립니다 —
+  `luau-analyze` 한 번, `luau-lsp analyze --flag:LuauSolverV2=true` 한 번입니다. 둘 다 신 솔버이고,
+  차이는 솔버 종류가 아니라 Luau 빌드(luau-analyze 0.734 / luau-lsp 1.69.0 내장)와 설정입니다.
+  `quad-roblox`만 Roblox 타입 정의를 얹고 봅니다.
 - 그다음 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
   `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 문서 커버리지와 버전 정합성 게이트가 돕니다.
 

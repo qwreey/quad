@@ -1077,4 +1077,62 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 30. State 요소의 현재값도 pre-pass 게이트(hunt A) — 마운트 전후 모두 삽입 전에 거부, Replace는 옛 요소를 살려 둔다 ===")
+do
+	local q4 = mock.newQuad()
+	local host = mock.Instance.new("Frame")
+	-- mounted
+	local s = q4.Slot({ mock.Instance.new("Frame") })
+	q4.Dispatch.drive(host, { s })
+	local badSrc = q4.Source(42 :: any)
+	local ok, err = pcall(function() return s:Add(badSrc) end)
+	assert(not ok and string.find(tostring(err), "Slot:Add: this backend cannot mount this value", 1, true) ~= nil, "State holding a non-element rejected in the pre-pass: " .. tostring(err))
+	assert(#s._elements == 1 and s.Length:Get() == 1 and s:IndexOf(badSrc) == nil, "no ghost wrapper after the rejected Add")
+	local badRef = q4.Source(q4.Ref(nil) :: any)
+	local ok2, err2 = pcall(function() return s:Add(badRef) end)
+	assert(not ok2 and string.find(tostring(err2), "handler-layer values", 1, true) ~= nil, "handler-layer occupant rejected: " .. tostring(err2))
+	assert(#s._elements == 1, "still no ghost")
+	-- unmounted: used to pass silently and die at drive
+	local u = q4.Slot()
+	local ok3, err3 = pcall(function() return u:Add(q4.Source(42 :: any)) end)
+	assert(not ok3 and string.find(tostring(err3), "cannot mount this value", 1, true) ~= nil, "unmounted Slot rejects too: " .. tostring(err3))
+	local ok3b = pcall(function() return q4.Slot({ mock.Instance.new("Frame"), q4.Source(42 :: any) }) end)
+	assert(not ok3b, "constructor rejects too")
+	-- Replace keeps the old element on failure
+	local a = s:Get(1)
+	local ok4 = pcall(function() return s:Replace(1, q4.Source(42 :: any)) end)
+	assert(not ok4 and s:Get(1) == a and a.Parent == host, "Replace failed before destroying the old element")
+	-- a destroyed Slot inside a State is rejected the same way
+	local victim = q4.Slot()
+	local holder = q4.Slot({ victim })
+	holder:Remove(1) -- destroys victim as an element
+	local ok5, err5 = pcall(function() return s:Add(q4.Source(victim :: any)) end)
+	assert(not ok5 and string.find(tostring(err5), "destroyed Slot cannot be an element", 1, true) ~= nil, "destroyed Slot occupant rejected: " .. tostring(err5))
+	assert(#s._elements == 1, "no ghost")
+	print("PASS")
+end
+
+print()
+print("=== 31. keyFn NaN은 nil과 같은 도메인 에러(hunt A); 같은 Slot의 요소를 되넣으면 '이미 이 Slot에 있다'(Move/Swap 안내) ===")
+do
+	local q5 = mock.newQuad()
+	local host = mock.Instance.new("Frame")
+	local data = q5.Source({ { id = 0 / 0 } })
+	local l = q5.Slot()
+	l:List(data, function(ctx) return mock.Instance.new("Frame") end, function(item) return item.id end)
+	local ok, err = pcall(function() q5.Dispatch.drive(host, { l }) end)
+	assert(not ok and string.find(tostring(err), "keyFn returned NaN for item #1", 1, true) ~= nil, "NaN key domain error: " .. tostring(err))
+	local a, b = mock.Instance.new("Frame"), mock.Instance.new("Frame")
+	local s = q5.Slot({ a, b })
+	local ok2, err2 = pcall(function() return s:Splice(1, 2, b, a) end)
+	assert(not ok2 and string.find(tostring(err2), "already in this Slot — reorder with Move/Swap", 1, true) ~= nil, "re-adding a held element names the real reason: " .. tostring(err2))
+	local ok3, err3 = pcall(function() return s:Replace(1, s:Get(1)) end)
+	assert(not ok3 and string.find(tostring(err3), "already in this Slot", 1, true) ~= nil, "Replace with the same element too: " .. tostring(err3))
+	local c = mock.Instance.new("Frame")
+	local ok4, err4 = pcall(function() return s:Splice(3, 0, c, c) end)
+	assert(not ok4 and string.find(tostring(err4), "the same element appears twice", 1, true) ~= nil, "a real batch duplicate keeps its message: " .. tostring(err4))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

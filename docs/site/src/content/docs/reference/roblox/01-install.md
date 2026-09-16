@@ -107,8 +107,8 @@ local D = q.Declaration -- 병합된 확장. `Quad.Declaration`으로도 같은 
 
   메시지가 점유자를 이름으로 짚지 않는 것은 identity 잠금에 이름이 없기 때문입니다.
 - 잠금이 `quad-base` 쪽에 사는 이유는 프로바이더 작성자가 가드를 빠뜨려도 구조적으로 막히게 하려는
-  것입니다. 그래서 `RobloxFactory`를 직접 부르거나 `AddPlugin`으로 우회하면 이 잠금과 확장 병합을
-  둘 다 건너뛰게 됩니다 — 지원 대상이 아닙니다.
+  것입니다. 그래서 `RobloxFactory`를 직접 부르면 이 잠금도 확장 병합도 거치지 않고, `AddPlugin`으로
+  우회하면 확장 병합은 되지만 1슬롯 identity 보호가 없습니다 — 둘 다 지원 대상이 아닙니다.
 
 두 모듈 인스턴스가 필요하면 `Quad.New()`로 격리된 인스턴스를 만들어 각각 설치하세요.
 
@@ -142,7 +142,7 @@ export type RobloxExtension = {
 **타입 재익스포트** — `quad-roblox` 모듈 자체는 값 표면 외에 타입도 내보냅니다.
 `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` /
 `OnChangeDescriptor` / `AnimateInfo` / `AnimateFn`과, 생성 모듈에서 온 `Declaration` / `DeclarationMapper` / `PropTypes` /
-`OnChangeFn`, 그리고 위 다섯 키의 모양인 `RobloxExtension`입니다.
+`OnChangeFn` / `Field<T>` / `FieldOut<T>`, 그리고 위 다섯 키의 모양인 `RobloxExtension`입니다.
 
 ```luau
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")

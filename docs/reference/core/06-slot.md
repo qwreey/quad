@@ -71,7 +71,7 @@ Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>
 - `initial`은 **평범한 배열**이어야 합니다. 값 하나를 괄호 없이 넘기거나(`Slot(frame)`) 정수가 아닌 키를 섞으면 에러입니다.
   - `Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)`
   - `Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`
-- 배열 안의 중복(같은 원소 두 번 — `Slot: the same element appears twice`)과 이미 다른 곳에 마운트된 원소는 원소를 하나도 넣기 전에 한 번에 검사됩니다.
+- 배열 안의 중복(같은 원소 두 번 — `Slot: the same element appears twice`), 이 Slot이 이미 들고 있는 원소를 되넣는 것(`Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again` — `Replace(i, slot:Get(i))`도 같습니다), 이미 다른 곳에 마운트된 원소는 원소를 하나도 넣기 전에 한 번에 검사됩니다. `State`에 담긴 원소는 그 **현재값**으로 같은 검사(마운트 가능·소유·파괴된 Slot 아님)를 미리 받습니다 — 실패한 호출은 아무것도 바꾸지 않습니다.
 - 배열 중간의 nil 구멍은 정의되지 않은 동작입니다 — `ipairs`가 거기서 멈추고 뒤는 무시됩니다.
 
 **예제**
@@ -378,7 +378,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 - 사이클 순서는 (1) 데이터 순서대로 키를 계산해 중복/누락을 먼저 검사, (2) 항목마다 `updateFn`, (3) 지난 사이클에 있었지만 이번엔 없는 키에 `q.KeyGone`으로 `updateFn`을 한 번 더 — 입니다.
 - `KeyGone` 호출에서는 `nil`/`q.None`(파괴)과 `q.Detach`(보관)만 반환할 수 있습니다. 새 원소를 반환하면 `Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)`.
 - 인자 검증 에러: `Slot:List: updateFn must be a function (got {typeof(updateFn)})`, `Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, `Slot:List: keyFn must be a function (got {typeof(keyFn)})`.
-- 재조정 중 에러: `Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Slot:List: keyFn returned nil for item #{i}`, `Slot:List: duplicate key {tostring(key)}`.
+- 재조정 중 에러: `Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
 - `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot은 더 이상 재조정되지 않습니다.** 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.

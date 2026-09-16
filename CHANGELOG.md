@@ -55,6 +55,13 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `Slot`에 `State`로 담아 넣은 원소의 검사(마운트 가능한 값인지·quad 소유인지·파괴된 Slot이 아닌지)가 삽입 **뒤**에 돌아, 거부된 호출이 유령 원소를 남기고 그 Slot의 재조정을 멈추게 하던 것 — 이제 다른 원소와 같이 넣기 전에 검사하고, 실패한 `Add`/`Replace`/`Splice`/생성자는 아무것도 바꾸지 않습니다(마운트 전 Slot도 그 자리에서 거부합니다).
+- `Debounce`/`Throttle`의 `Time`이 `State`일 때 그 값이 잘못돼 창을 못 열면(음수·문자열, 또는 시간 op가 없는 백엔드) 게이트가 "막힘 상태인데 타이머 없음"으로 굳어 다음 신호까지 통지가 멈추던 것 — 창을 먼저 잡고 상태를 바꾸도록 순서를 고쳤습니다.
+- `Claim`의 매퍼 키가 트리에 없을 때 내부 파일 이름으로 죽던 것 — `Claim: no child matched key … under …`로 키를 말합니다.
+- `Modifier` 초기 필드에 함수를 넣었을 때의 안내가 이벤트 핸들러를 변환 함수 자리로 이끌던 것 — 이벤트는 Modifier에 두지 않고 선언의 인라인 키나 `State`로 넣으라고 안내합니다.
+- 인자 모양을 검사하지 않던 입구에 검사를 넣었습니다(전부 호출한 줄을 가리킵니다): `Dispatch.process`/`retractFrom`의 `index`(양의 정수), `Modifier:Apply`의 factory(함수), `slot:List`/`:Single`의 `opts`(테이블 — 문자열은 조용히 무시됐습니다), `AddPlugin`/`UseProvider`의 인자(함수)와 반환값(확장 테이블). `UseProvider(nil)`이 아무 일도 없이 성공하던 것도 이제 에러입니다.
+- 검증에 실패한 CRUD 호출(`Add(nil)` 등)이 Slot을 수동 모드로 표시해 뒤의 `:List`가 "CRUD를 썼다"고 거부하던 것 — 실제로 바꾼 호출만 표시합니다.
+- `Slot:Splice`가 같은 호출에서 빼는 원소를 되넣거나 `Replace(i, slot:Get(i))`를 하면 "같은 원소가 두 번"이라던 것 — "이미 이 Slot에 있다, Move/Swap을 쓰라"로 바르게 말합니다. `keyFn`이 NaN을 돌려주면 nil과 같은 도메인 에러입니다. `Tag`에 자기를 담은 리스트를 주면 내부 스택 오버플로 대신 도메인 에러입니다.
 - strict 타입 검사가 조용히 꺼져 있던 자리 둘을 고쳤습니다: `q.Debounce`/`q.Throttle` 옵션의 `Time`·`MaxTime`(아무 값이나 통과했습니다)과 `q.Operator`의 계산 함수들이 돌려주는 타입(`s:Apply(q.Operator.Sum(1))` 결과가 무엇에든 대입됐습니다). 원인은 타입 선언 순서였고 런타임 동작은 같습니다. 이제 `Time = "x"` 같은 값은 타입 에러가 나며, 옵션의 State 자리는 `StateMarker<number>`로 선언됩니다(진짜 `State<number>`를 그대로 넘기면 됩니다).
 
 ---

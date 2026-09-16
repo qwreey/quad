@@ -1120,3 +1120,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 - **읽기 전용 표시는 어느 환경에도 없다** — `AbsoluteSize`·`ClassName`이 셋 다 `rw`. ReadOnly/NotScriptable/보안/태그는 API 덤프에만 있고(`H-295`), 타입 데이터에서 파생하는 표면은 그 정책을 **생성 데이터로 따로** 받아야 한다(현 스코프에서 드롭 이름 46개, 클래스 간 이름 충돌은 `Scale` 하나 — `gen-d.py` 덤프 실측).
 - **결정(사용자, 2026-09-16)**: 지금의 생성 `Declaration`이 **stable 표면**이다 — 세 환경에서 같은 표면·같은 진단을 냈고 Studio에선 "too complex"도 없다(리눅스 CLI만 한도 플래그 셋이 필요). 클래스 매개 type function 경로(`ModifierOf<Class>`류)는 **unstable 경로**로 따로 열 수 있고 언제든 바뀔 수 있다 — 목적은 gen을 필수가 아니게 두고 필요한 표면만 만들며 D의 줄 수를 줄이는 것이지 1급 대상이 아니다(ROADMAP 백로그). §6(type function을 거친 값의 제네릭 self 체이닝)은 그 경로를 만들 때 다시 본다. **같은 날 후속(docs-review 2-2)**: stable 확정의 첫 결과로 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem`이 들어갔다(9/15의 "바뀌지 않을 것만" 유보가 풀림).
 
+## 8.23. 이벤트 콜백 자리의 파라미터 수 부족은 타입 에러가 아니다; `store:Of<<T>>`·`Peek<<T>>`·`As<<T>>`는 무검사 캐스트다 (2026-09-16 round10 탐사 D)
+
+`D.Frame { MouseEnter = function(x) end }`(기대 `(number, number) -> ()`)와 `function() end`는 Luau 함수 서브타이핑(적은 인자를 받는 함수는 많은 인자를 받는 함수 타입의 서브타입 — 초과 인자는 버려지는 호출 관례) 때문에 진단 0이다. 파라미터 타입이 다르거나 **더 많으면** 잡힌다. quad 결함이 아니라 언어 성질 — 레퍼런스 roblox/02 이벤트 절에 적었다. `store:Of<<T>>(name)`는 `name`을 `keyof<T>`로 좁히지 않고 `T`도 자유 제네릭이라 실제 필드 타입과 대조하지 않는다(`Peek<<T>>`/`As<<T>>`와 같은 계열) — 레퍼런스 core/04에 명시.
+

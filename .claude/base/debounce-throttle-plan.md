@@ -87,6 +87,8 @@
 
 ---
 
+> **[2026-09-16 round10 `H-518`]** `H-509`의 "읽기·스케줄 먼저, 상태 변경은 뒤"는 `openWindow` 본문뿐 아니라 **그 호출자**(idle 비-leading 분기의 `b:On()`, 재개방 분기의 `closeWindow()`)에도 적용된다 — 그 둘이 먼저 상태를 바꿔 Time 읽기가 던지면 Blocker On·창 없음이 남았다(mock 실측). 지금은 비-leading idle이 `openWindow()` 뒤 `pass()`, 재개방은 새 창을 잡은 뒤 옛 타이머를 지운다(spec.debounce 3·7d).
+
 ## 0. 세 줄 요약
 
 1. **Debounce/Throttle은 `Blocker`와 같은 자리(무효화 전파 게이트)에

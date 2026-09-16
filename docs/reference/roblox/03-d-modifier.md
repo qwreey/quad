@@ -69,7 +69,7 @@ local card = D.Frame({ boxed, D.Modifier.Frame():ZIndex(2) })
 | 문자열이 아닌 키, 또는 `""` | `Modifier: initial-field table keys must be non-empty field names (got {…} at argument #{i})` |
 | 예약 메소드 이름 | `Modifier: field "{k}" collides with a reserved Modifier method` |
 | `As<Class>` 접두 이름 | `Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields` |
-| 함수 값 | `Modifier: field "{k}" in an initial-field table cannot be a function — use mod:{k}(fn) for a transform` |
+| 함수 값 | `Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` |
 | Modifier도 평범한 테이블도 아닌 인자 | `Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})` |
 
 **생성되는 Modifier 클래스는 47개**입니다 — `D`의 별칭 31개보다 많습니다. `GuiObject`/`GuiButton`/
@@ -107,8 +107,8 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 
 **보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라
 `FieldP<T>`를 받습니다 — [`D`의 프로퍼티 값 대수](./02-d.md#문자-키--프로퍼티와-이벤트)와 같은
-구분입니다(`Tween` 팔이 있는 타입은 `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector3`·`Color3`·
-`CFrame`·`Rect`).
+구분입니다(`Tween` 팔이 있는 타입은 `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector2int16`·
+`Vector3`·`Color3`·`CFrame`·`Rect`).
 
 ```luau
 -- 값 부분에서 Tween 팔이 빠진다(변환 함수의 old도 Tween 없는 전체형)

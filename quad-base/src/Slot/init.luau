@@ -129,8 +129,13 @@ local function Init(module: any)
 	local function assertLive(self: any)
 		if self._destroyed then Err.errorBeforeNearest("Slot: destroyed Slot cannot be reused", SURFACE) end
 	end
+	-- [2026-09-16 hunt F] `_crudUsed` is set by `markManual` at each CRUD's mutation point, not
+	-- here — a CRUD call rejected by its own validation (`Add(nil)`, out-of-range `Remove`) used to
+	-- lock the Slot as manual, and a later `:List` blamed "CRUD was used" (the `H-386` shape again).
 	local function assertManual(self: any)
 		if self._listed then Err.errorBeforeNearest("Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
+	end
+	local function markManual(self: any)
 		self._crudUsed = true
 	end
 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded)
@@ -187,22 +192,38 @@ local function Init(module: any)
 	-- the same 1000 took 1 ms). Single `Add` stays O(current length) by design — batches
 	-- go through Splice (CRUD 표).
 	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
-		local prepared, seen = table.create(count), {}
+		local prepared, seen, inSlot = table.create(count), {}, {}
 		for _, existing in ipairs(self._elements) do
 			local occ = occupantOf(existing)
-			if occ ~= nil then seen[occ] = true end
+			if occ ~= nil then seen[occ] = true; inSlot[occ] = true end
 		end
 		for i = 1, count do
 			local raw = items[i]
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			if occupant ~= nil then
-				-- [2026-09-16 code-review] the isClaimed gate in wrapElement sees only raw values; a State's
-				-- current occupant was gated later, inside the wrapper's reconcile — after rawAdd had
-				-- already inserted (ghost element: `#_elements` 1, Length 0). Gate the occupant here,
-				-- in the pre-pass, so nothing is inserted on failure.
-				if element ~= raw and module.Backend.isInst(occupant) and not module.Backend.isClaimed(occupant) then
-					Err.errorBeforeNearest(surface .. ": this element is not claimed by quad — build it with the Declaration or take it over with Claim first", SURFACE)
+				-- [2026-09-16 code-review + hunt A] wrapElement gates only raw values; a State's CURRENT
+				-- value was gated later, inside the wrapper's reconcile — after rawAdd had inserted
+				-- (ghost element, Blocker left On; an unmounted Slot did not raise at all; Replace had
+				-- already destroyed the old element). Gate the occupant here, in the pre-pass, with the
+				-- same raw gate, so nothing is touched on failure. A State may hold a Slot (`State<Slot>`
+				-- swap) — that arm only rejects a destroyed one, as wrapElement does for a raw Slot.
+				if element ~= raw then
+					if isSlot(occupant) then
+						if occupant._destroyed then
+							Err.errorBeforeNearest(surface .. ": destroyed Slot cannot be an element", SURFACE)
+						end
+					elseif not module.isState(occupant) then
+						S.checkRawElement(occupant, function(msg: string, level: any)
+							Err.errorBeforeNearest(surface .. msg:sub(#"Slot" + 1), level)
+						end)
+					end
+				end
+				if inSlot[occupant] then
+					-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
+					-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
+					-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.
+					Err.errorBeforeNearest(surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE)
 				end
 				if seen[occupant] then
 					Err.errorBeforeNearest(surface .. ": the same element appears twice", SURFACE)
@@ -234,12 +255,15 @@ local function Init(module: any)
 	function Slot_mt.Add(self: any, element: any, index: number?): number
 		assertMutable(self)
 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
-		return S.rawAdd(self, prepareElements(self, "Slot:Add", 1, { element })[1], index)
+		local prepared = prepareElements(self, "Slot:Add", 1, { element })
+		markManual(self)
+		return S.rawAdd(self, prepared[1], index)
 	end
 
 	function Slot_mt.Remove(self: any, index: number)
 		assertMutable(self)
 		checkIndex(self, index, "Slot:Remove")
+		markManual(self)
 		S.rawRemove(self, index)
 	end
 
@@ -249,6 +273,7 @@ local function Init(module: any)
 		assertMutable(self)
 		checkIndex(self, index, "Slot:Replace")
 		local prepared = prepareElements(self, "Slot:Replace", 1, { newElement })
+		markManual(self)
 		S.rawReplace(self, index, prepared[1], true)
 	end
 
@@ -261,8 +286,10 @@ local function Init(module: any)
 		local old = self._elements[index]
 		if newElement ~= nil then
 			local prepared = prepareElements(self, "Slot:Extract", 1, { newElement })
+			markManual(self)
 			S.rawReplace(self, index, prepared[1], false)
 		else
+			markManual(self)
 			S.rawUnmount(self, index)
 		end
 		return S.unwrapElement(old)
@@ -280,6 +307,7 @@ local function Init(module: any)
 		end
 		local items = table.pack(...)
 		local prepared = prepareElements(self, "Slot:Splice", items.n, items)
+		markManual(self)
 		local removed = S.rawSplice(self, index, removeCount, prepared)
 		for i, element in ipairs(removed) do
 			removed[i] = S.unwrapElement(element)
@@ -294,6 +322,7 @@ local function Init(module: any)
 		assertMutable(self)
 		checkIndex(self, oldIndex, "Slot:Move")
 		checkIndex(self, newIndex, "Slot:Move")
+		markManual(self)
 		S.rawMove(self, oldIndex, newIndex)
 	end
 
@@ -301,6 +330,7 @@ local function Init(module: any)
 		assertMutable(self)
 		checkIndex(self, indexA, "Slot:Swap")
 		checkIndex(self, indexB, "Slot:Swap")
+		markManual(self)
 		S.rawSwap(self, indexA, indexB) -- Swap(i, i) is a no-op inside
 	end
 
@@ -336,6 +366,7 @@ local function Init(module: any)
 	-- `updateFn` (`H-38` note in round7 `H-485`; 2026-09-08 감사 A-2).
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)
+		markManual(self)
 		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
 		local ownsGate = gate ~= nil and not gate.Blocking
 		if ownsGate then gate:On() end
@@ -350,6 +381,7 @@ local function Init(module: any)
 
 	function Slot_mt.ExtractAll(self: any): { any }
 		assertMutable(self)
+		markManual(self)
 		-- `rawSplice` directly, not `self:Splice(1, n)` — a tagged public method calling
 		-- another would make a raise inside it blame this delegation line (`H-385`).
 		local removed = S.rawSplice(self, 1, #self._elements, {})
