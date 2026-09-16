@@ -12,7 +12,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Added
 
-- `quad_roblox` 패키지 루트가 프로퍼티 값 타입 `Field<T>`(setter가 받는 값)와 `FieldOut<T>`(변환 함수의 `old`·`Peek`이 돌려주는 저장된 값)를 내보냅니다. 전에는 생성 모듈 경로로만 닿았는데, pesde 설치에서는 그 경로가 드러나지 않았습니다. 클래스별 타입(`TextButtonModifier` 등)은 아직 공개 경로가 없습니다.
+- `quad_roblox` 패키지 루트가 프로퍼티 값 타입 `Field<T>`(setter가 받는 값)와 `FieldOut<T>`(변환 함수의 `old`·`Peek`이 돌려주는 저장된 값)를 내보냅니다. 전에는 생성 모듈 경로로만 닿았는데, pesde 설치에서는 그 경로가 드러나지 않았습니다. 클래스별 타입도 같은 루트에서 내보냅니다 — `<Class>Modifier`(상위 클래스 포함), `Into<Class>`, `<Class>Elem`. how-to의 `require(<생성 모듈 경로>)` 자리표시자는 이 경로로 바뀌었습니다.
 
 - `q.moduleIdentity` — 모듈 인스턴스마다 하나인 빈 identity 토큰. 백엔드·플러그인이 자기 값에 붙여 두고 "이 인스턴스가 만든 값인가"를 비교하는 데 씁니다(quad-base가 아래 인스턴스 교차 검사에 같은 방법을 씁니다).
 

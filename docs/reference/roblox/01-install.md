@@ -151,9 +151,15 @@ local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblo
 local fade: RobloxModule.Tween<number> = q.Tween({ Value = 0, Time = 0.2 })
 ```
 
-클래스별 타입(`FrameModifier`, `IntoTextButton`, `FrameParam<E>` 등)은 재익스포트 목록에 없고
-**생성 모듈**(`quad-roblox/src/Declaration`)에서 직접 가져갑니다 — 손으로 나열하면 "전량 생성" 계약과 어긋나기
-때문입니다.
+클래스별 타입도 같은 경로로 닿습니다 — 생성기가 루트에 찍어 두는 재익스포트 블록에 **`<Class>Modifier`**(`FrameModifier`,
+상위 클래스 `GuiObjectModifier`까지), **`Into<Class>`**(`IntoTextButton`), **`<Class>Elem`**(`FrameElem`)이 들어 있습니다.
+
+```luau
+local function Button(props: { read Modifier: RobloxModule.TextButtonModifier? }): TextButton
+```
+
+`<Class>Param<E>`·`FieldP<T>`·`<Class>OnChange`처럼 그 블록에 없는 이름은 안정 표면이 아니라 **생성 모듈**
+(`quad-roblox/src/Declaration`)에서만 가져갈 수 있고, 모양이 바뀔 수 있습니다.
 
 ---
 

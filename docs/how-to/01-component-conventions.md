@@ -19,11 +19,11 @@ local None = q.None
 
 -- 값이 아니라 '타입 이름'을 가져오는 모듈
 local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.StateMarker<T>` 등)
--- 클래스별 Modifier·요소 타입(`TextButtonModifier`/`IntoTextButton`/`FrameElem` 등)은 생성된 D 모듈에서
-local DTypes = require(<quad-roblox D 모듈 경로>)
+-- 클래스별 Modifier·요소 타입(`TextButtonModifier`/`IntoTextButton`/`FrameElem` 등)은 quad_roblox 패키지 루트가 내보낸다
+local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 ```
 
-아래 예제에서 `DTypes`로 쓰는 클래스별 타입(`TextButtonModifier`, `IntoTextButton`, `FrameElem` …)은 quad-roblox의 **생성 `D` 모듈**에 들어 있습니다 — 가져오는 경로는 설치 구성에 따라 다릅니다(00-installation 참고).
+아래 예제에서 `RobloxModule`로 쓰는 클래스별 타입(`TextButtonModifier`, `IntoTextButton`, `FrameElem` …)은 `quad_roblox` 패키지 루트가 그대로 내보내므로 설치 방식과 무관하게 이 경로로 닿습니다(전체 목록은 [레퍼런스: 설치](../reference/roblox/01-install.md)의 타입 재익스포트 절).
 
 ---
 
@@ -72,7 +72,7 @@ D.Frame {
 `Ref`는 `q.Ref<<TextButton?>>(nil)`처럼 담길 타입을 적어 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다(타입 인자를 빼면 `Ref<nil>`이 되어 그 자리에서 막힙니다 — [시작하기 06](../getting-started/06-ref.md)).
 
 ```luau
-local function MaterialButton(props: { read Text: string?, read Modifier: DTypes.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
+local function MaterialButton(props: { read Text: string?, read Modifier: RobloxModule.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
     return D.TextButton {
         props.Modifier or None, -- ⭐ 숫자 키 자리에서만 의미가 있는 관용구
         props.Ref or None,
@@ -127,7 +127,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 type ButtonProps = {
     read Text: string | QuadTypes.StateMarker<string>,
     read OnClick: () -> (),
-    read Modifier: DTypes.TextButtonModifier?,
+    read Modifier: RobloxModule.TextButtonModifier?,
     read Ref: q.Ref<TextButton?>?,
 }
 
@@ -175,7 +175,7 @@ local btn2 = CustomButton {
 
 케이스 B에서 `BackgroundColor3`와 `Size`는 덮어씌워지고, 기본 스타일의 `TextColor3`/`TextSize`는 그대로 남습니다.
 
-> 상위 클래스 `Modifier`(예: `D.Modifier.GuiObject { ... }`)까지 받고 싶다면 `props.Modifier`를 인터페이스 타입 `DTypes.IntoTextButton?`으로 선언하고, 꽂을 때 `if props.Modifier then props.Modifier:AsTextButton() else None`으로 내려받으세요.
+> 상위 클래스 `Modifier`(예: `D.Modifier.GuiObject { ... }`)까지 받고 싶다면 `props.Modifier`를 인터페이스 타입 `RobloxModule.IntoTextButton?`으로 선언하고, 꽂을 때 `if props.Modifier then props.Modifier:AsTextButton() else None`으로 내려받으세요.
 
 ---
 
@@ -211,7 +211,7 @@ end
 
 ### 자식 **배열**을 그대로 넘기지 않는 이유
 
-props에 `{ DTypes.FrameElem }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.
+props에 `{ RobloxModule.FrameElem }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.
 
 - `table.unpack(...)`은 **테이블 리터럴의 마지막 원소일 때만** 전부 펼쳐집니다. 중간에 두면 첫 값 하나만 들어갑니다.
 - **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.

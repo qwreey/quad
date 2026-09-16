@@ -762,14 +762,21 @@ def emit():
     # init 에 박히는것"] the per-class types users write get a generated re-export block in the package
     # root — the only public path under pesde (the generated module sits under `.pesde/…`). The contract is
     # the root's names; the generated module's layout may change.
-    # Same day, user: "바뀌지 않을 것만 넣어줘" — D itself is due to be factored with type functions
-    # (`keyof<Class>`/`index<Class, K>` are honest in Roblox luau-lsp), so per-class names
-    # (`<Class>Modifier`/`Into<Class>`) and the interpolable split (`FieldP`/`FieldOutP`) may not survive;
-    # only the class-independent value aliases go public for now. The block stays generated so the
-    # refactor can grow it.
+    # Same day, user: "바뀌지 않을 것만 넣어줘" — at the time D was due to be factored with type
+    # functions, so only the class-independent value aliases went public.
+    # [2026-09-16 user decision — docs-review 2-2 / HUMAN_TODO D] the generated Declaration is the
+    # STABLE surface (type-function path is a separate unstable backlog), so the per-class names the
+    # docs and specs actually write go public too: `<Class>Modifier` / `Into<Class>` (all Modifier
+    # classes, ancestors included) and `<Class>Elem` (scope classes). `<Class>Param<E>`, `FieldP`/
+    # `FieldOutP`, `<Class>OnChange`/`RefMarker`/`MapperElem` stay generated-module-only.
     R = []
     R.append("export type Field<T> = DeclarationModule.Field<T>")
     R.append("export type FieldOut<T> = DeclarationModule.FieldOut<T>")
+    for name in mod_classes:
+        R.append(f"export type {name}Modifier = DeclarationModule.{name}Modifier")
+        R.append(f"export type Into{name} = DeclarationModule.Into{name}")
+    for name in names:
+        R.append(f"export type {name}Elem = DeclarationModule.{name}Elem")
     root_text = ROOT_INIT.read_text()
     m = re.search(r"(-- BEGIN GENERATED ROOT EXPORTS[^\n]*\n)(.*?)(-- END GENERATED ROOT EXPORTS)", root_text, re.S)
     if not m:

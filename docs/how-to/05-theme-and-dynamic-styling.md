@@ -12,8 +12,8 @@ description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라�
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local D = q.Declaration
--- 클래스별 Modifier 타입(`FrameModifier`/`IntoFrame` 등)은 생성된 D 모듈에서 가져온다
-local DTypes = require(<quad-roblox D 모듈 경로>)
+-- 클래스별 Modifier 타입(`FrameModifier`/`IntoTextButton` 등)은 quad_roblox 패키지 루트가 내보낸다
+local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 ```
 
 이 문서의 예제는 모두 위 준비 코드를 앞에 둔 상태를 가정합니다 — 파일 이름이 붙은 블록(`Theme.luau`·`Styles.luau`·`ThemedButton.luau`)도 각각 그 세 줄로 시작하고, 다른 파일을 쓰는 블록은 그 아래에 require 줄을 적었습니다.
@@ -184,7 +184,7 @@ local Styles = require("./Styles")
 local function ThemedButton(props: {
     read Text: string?,
     read OnClick: () -> (),
-    read Modifier: DTypes.IntoTextButton?,
+    read Modifier: RobloxModule.IntoTextButton?,
 })
     -- 호출자 오버라이드가 있으면 기본 스타일 위에 얹는다(뒤가 이긴다)
     local effective = if props.Modifier

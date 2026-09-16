@@ -63,7 +63,7 @@ CLI에서 돈다"면서 `@game/…` 경로로 require한다(CLI에서 안 풀림
 이야기는 기여자 문서(레포 README나 `.claude/`)로 옮기기, (b) 공개 mock(`quad-mock`)이 생길 때까지 페이지를 목록에서 내리기, (c) 그대로.
 메인 권고는 (a). (옛 N7·문항 없음 — 외부자 통독 발견)
 
-**2-2. how-to 01·05의 `require(<quad-roblox D 모듈 경로>)` 자리표시자.** 클래스별 타입(`TextButtonModifier`·`IntoTextButton` 등)을
+**2-2. how-to 01·05의 `require(<quad-roblox D 모듈 경로>)` 자리표시자.** **[2026-09-16 닫힘 — (d) 사용자 "권고대로": 생성 D가 stable로 확정돼 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem`을 편입(`gen-d.py`), how-to 01·05는 `RobloxModule.…`, 설치 문서 타입 재익스포트 절 갱신, `spec.rootexports` 양성 추가.]** 클래스별 타입(`TextButtonModifier`·`IntoTextButton` 등)을
 가져오는 경로가 문서 어디에도 없어, 두 레시피를 복사하면 첫 줄에서 막힌다. 이미 열려 있던 `HUMAN_TODO.md` D절 "클래스별 타입 경로"와
 같은 문제다. 갈래는 (a) 설정 모듈(시작하기 01)이 생성 모듈을 다시 내보내게 하고 문서는 그 경로를 쓰기(공개 표면 변경 — 다른 결정과
 엮임), (b) pesde 설치 기준 실제 경로(`roblox_packages/…`)를 설치 문서에 한 줄 적기, (c) 타입 주석 없이도 되는 모양으로 예제를 바꾸기.
