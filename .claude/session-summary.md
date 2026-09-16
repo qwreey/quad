@@ -2499,4 +2499,6 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   function 경로는 unstable 백로그. 부산물: typing-limits 8.18 정정(`LuauDoNotExportBrokenTypeFunction` — CLI "전 FFlag 켬"이 만든 관측, 실사용자 환경엔 없던
   문제) + 8.22(프라이밍 규칙), `type-version-check` `_Prime`. **같은 날 후속(§5)**: 시한 있는 결정 문항 일곱 대화형 처리 — HUMAN_TODO F 잠정 10월,
   docs-review 2-6 여덟 반영, `question.md` §1 용어 여섯 전부 닫힘(`canExecute`는 sonnet 두 시각 뒤 유지), **Slot이 미claim 요소를 거부하는
-  BREAKING 변경(계약 op `isClaimed`, 자동 claim은 마법 — 사용자)**, 클래스별 타입 루트 재수출(`<Class>Modifier`/`Into<Class>`/`<Class>Elem`, HUMAN_TODO D 해소).
+  BREAKING 변경(계약 op `isClaimed`, 자동 claim은 마법 — 사용자)**, 클래스별 타입 루트 재수출(`<Class>Modifier`/`Into<Class>`/`<Class>Elem`, HUMAN_TODO D 해소). **밤(§6·§7)**: 체크포인트 code-review 10건 반영 +
+  정적 자식 자리 `isClaimed` 대칭 게이트(사용자 "권고대로") → 여섯 갈래 결함 탐사 **round10**(`qa-request/post-implementation-review-round10.md`):
+  `H-517`~`H-530` 반영(HIGH `H-517` State 요소 검사가 삽입 뒤), 사용자 문항 `Q48`~`Q54`(HIGH Q48 정적 자식 소유권 부기 부재).
