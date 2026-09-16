@@ -16,7 +16,7 @@
 | 04 팩토리 진단·자동완성·체이닝 | 전부 정상 | 전부 정상(문구 동일) | 전부 정상, 한도 플래그 불필요 |
 | 05 생성 D 진단·자동완성·체이닝 | 정상, **too complex 없음** | 정상(워크스페이스 한도 override 있음) | 100군데에서 한도 플래그 없이는 too complex |
 | 06 `index<Frame,"MouseEnter">`의 `Connect` | 콜백 인자 검사 정직(`(string)->()` 거부) | — | 정직 |
-| 06 `[P6-2]`~`[P6-5]`(extern에서 콜백 꺼내기) | `[P6-2]` extern props `Connect/ConnectParallel/Once/Wait:function`, `[P6-3]` parent=`RBXScriptSignal`(자기 이름), `readproperty`는 extern 거부 → 프로브를 `properties()` 경로로 고침(`[P6-5]` 파라미터 위치는 재실행 대기) | — | 테이블 경로: 파라미터 2개(self, 콜백) |
+| 06 `[P6-2]`~`[P6-5]`(extern에서 콜백 꺼내기) | `[P6-2]` extern props `Connect/ConnectParallel/Once/Wait:function`, `[P6-3]` parent=`RBXScriptSignal`(자기 이름), `readproperty`는 extern 거부 → `properties()` 경로로 고친 뒤 재실행: `[P6-4] Connect tag=function (RBXScriptSignal, (number, number) -> ()) -> RBXScriptConnection`, `[P6-5] 파라미터 2개: 1:extern=RBXScriptSignal \| 2:function=(number, number) -> ()` — **콜백은 2번째, 리눅스와 같음** | — | 테이블 경로: 파라미터 2개(self, 콜백) |
 
 ## 2-c의 원인 — `LuauDoNotExportBrokenTypeFunction`
 

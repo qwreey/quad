@@ -22,4 +22,4 @@
 
 반영: `typing-limits.md` 8.18 정정 + 8.22 신설, `type-version-check` 프라이밍(`_Prime`, 패키지 CHANGELOG Fixed), ROADMAP 백로그 항목(unstable 경로 + 만들 때 규칙), HUMAN_TODO D 방향 확정, `research/public-surface-pre-adoption-review.md` (28) 닫힘, `audit/README.md`·`REPORT.md`. test.sh는 "전부 켬" 그대로(프라이밍 누락 조기 경보).
 
-미완: Studio에서 `06-events.luau`의 `[P6-2]`~`[P6-5]`(extern 시그널에서 type function이 콜백을 꺼낼 수 있는가)는 미보고 — unstable 경로를 만들 때 다시 본다.
+후속(같은 날): 사용자가 `06-events.luau`를 다시 돌려 `[P6-2]`~`[P6-5]` 회신 — extern 시그널은 `readproperty` 불가(테이블 전용)라 `properties()`로 `Connect`를 찾아야 하고, 그 파라미터는 `(self: RBXScriptSignal, 콜백)`으로 콜백이 2번째(리눅스와 같음). `readparent()`는 같은 이름의 원형을 돌려준다. 사용자 자체 프로브(TextButton `properties()` 29개)로 Studio 목록에 메소드·Deprecated/Hidden·읽기 전용이 혼재함도 확인. 미완 없음.

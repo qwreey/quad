@@ -40,7 +40,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 
 ## 백로그 (스코프 밖 — 필요성이 실제로 드러나면 그때 설계)
 
-- [ ] **[2026-09-16 신설, 사용자 결정] 클래스 매개 type function 경로 — unstable.** `ModifierOf<Class>`/`ParamOf<Class>`류를 Luau type function으로 열어 생성 `Declaration` 없이도(또는 필요한 표면만) 클래스별 타입을 얻게 하는 것. 실측으로 성립은 확인됐다(세 환경 진단·자동완성·체이닝 동일, Studio 한도 문제 없음 — `typing-limits.md` 8.22, `audit/d-factory-studio-probe-2026-09-16/`). **생성 D가 stable 표면이고 이 경로는 unstable(언제든 변경 가능)**로 표시해 둔다 — 체커마다 타입 정의가 달라(Hidden/deprecated 유무·이벤트 표현) 표면이 defs 버전을 따라 흔들리기 때문. 만들 때의 규칙: 프라이밍 인스턴스화 필수, 읽기 전용/NotScriptable/`Parent`/숏핸드는 덤프 생성 데이터로 넘김(deny 46 + `Scale` 예외), 이벤트 콜백은 `Connect` 파라미터에서(extern이면 `readproperty` — Studio 실측 미완: `[P6-2]`~`[P6-5]`), Deprecated hover 독 주석은 못 단다.
+- [ ] **[2026-09-16 신설, 사용자 결정] 클래스 매개 type function 경로 — unstable.** `ModifierOf<Class>`/`ParamOf<Class>`류를 Luau type function으로 열어 생성 `Declaration` 없이도(또는 필요한 표면만) 클래스별 타입을 얻게 하는 것. 실측으로 성립은 확인됐다(세 환경 진단·자동완성·체이닝 동일, Studio 한도 문제 없음 — `typing-limits.md` 8.22, `audit/d-factory-studio-probe-2026-09-16/`). **생성 D가 stable 표면이고 이 경로는 unstable(언제든 변경 가능)**로 표시해 둔다 — 체커마다 타입 정의가 달라(Hidden/deprecated 유무·이벤트 표현) 표면이 defs 버전을 따라 흔들리기 때문. 만들 때의 규칙: 프라이밍 인스턴스화 필수, 읽기 전용/NotScriptable/`Parent`/숏핸드는 덤프 생성 데이터로 넘김(deny 46 + `Scale` 예외), 이벤트 콜백은 `properties()`에서 `Connect`를 찾아 `parameters().head[2]`(extern·테이블 공통 — Studio 실측 확정, `readproperty`는 테이블 전용), Deprecated hover 독 주석은 못 단다.
 - [ ] **[2026-09-07 신설, 사용자 결정] 최적화 후보 목록 — 관측된 병목이 없어 보류한 것을 쌓아두는 자리**(사용자:
       *"당장은 더 치명적인 문제들이 있는지 확인해보자. 물론 보는 김에 최적화 할 대상을 쌓아둬도 좋아"*, 원장
       `qa-request/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
