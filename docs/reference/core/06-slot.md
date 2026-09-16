@@ -278,6 +278,8 @@ Move: (self: Slot<T>, oldIndex: number, newIndex: number) -> ()
 
 **동작** — 위치만 바꿉니다. 소유권 변화도, 파괴도 없습니다. 두 인덱스 모두 1..n이어야 합니다.
 
+Roblox 백엔드에서는 이것으로 **화면에 보이는 순서가 바뀌지 않습니다.** 자식의 물리 순서가 의미를 갖지 않아 재정렬 op(`nativeMove`)가 의도된 no-op이고, 바뀌는 것은 quad의 부기뿐입니다 — 이 Slot 안의 인덱스, `slot:Get`/`slot:IndexOf`, 이후 삽입 위치, 그리고 그 구간에 걸린 중첩 `Slot`의 `Offset`이 새 순서를 따릅니다. 보이는 순서는 `LayoutOrder`(또는 직접 계산한 `Position`)가 정하니 그쪽을 같이 바꿔야 합니다.
+
 ## `slot:Swap(indexA, indexB)`
 
 **시그니처**
@@ -287,6 +289,8 @@ Swap: (self: Slot<T>, indexA: number, indexB: number) -> ()
 ```
 
 **동작** — 두 자리를 맞바꿉니다. 같은 인덱스를 두 번 주면 아무 일도 하지 않습니다.
+
+`:Move`와 마찬가지로 Roblox 백엔드에서는 화면 순서가 바뀌지 않습니다 — `nativeSwap`도 의도된 no-op이라 부기상의 순서만 맞바뀌고, 보이는 순서는 `LayoutOrder`가 정합니다.
 
 ## `slot:Get(index)`
 

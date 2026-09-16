@@ -16,7 +16,8 @@ UI는 혼자 있지 않습니다 — 서버의 `RemoteEvent`, `UserInputService`
 안에서 직접 Frame 위치를 바꾸고 Text를 대입하다가 상태 동기화가 깨집니다.
 
 quad에서 권장하는 모양은 하나입니다 — **외부 신호는 `Source`로 밀어넣고, UI는
-그 상태만 선언적으로 구독**합니다.
+그 상태만 선언적으로 구독**합니다(`Source`의 전체 표면은
+[레퍼런스: `Source`](../reference/core/02-source.md)에 있습니다).
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -177,9 +178,11 @@ end
 ```
 
 `Effect`의 cleanup 반환은 선택입니다 — 정리할 게 없으면 아무것도 돌려주지
-않아도 됩니다.
+않아도 됩니다. 구독 네 진입점과 cleanup 계약은
+[레퍼런스: `Observer` / `Effect`](../reference/core/05-observer-effect.md)에 있습니다.
 
-정리만 필요한 자리에는 생명주기 훅 슈가가 더 짧습니다.
+정리만 필요한 자리에는 생명주기 훅 슈가가 더 짧습니다(세 훅이 각각 언제 불리고
+무엇을 보장하지 않는지는 [레퍼런스: 생명주기 훅](../reference/sugar/04-lifecycle-hooks.md)).
 
 | 훅 | 언제 | 무엇을 받나 |
 |---|---|---|

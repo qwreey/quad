@@ -12,6 +12,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 모듈과 설치
 
+quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드 프로바이더를 붙이는 심볼들입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.New()` | [core/01 — Quad 모듈](./core/01-quad-module.md#qnew) |
@@ -26,6 +28,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `RobloxExtension` | [roblox/01](./roblox/01-install.md) |
 
 ## 반응형 코어
+
+값이 흐르는 그래프를 만드는 심볼들 — 값을 쓰는 원천, 거기서 파생되는 노드, 이름 붙은 원천 묶음.
 
 | 심볼 | 페이지 |
 |---|---|
@@ -46,6 +50,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 구독 핸들
 
+값이 바뀔 때 부를 콜백을 그래프의 잎에 다는 핸들 둘과, 그 구독을 켜고 끄는 메소드들입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.Effect(fn, ...deps)` | [core/05 — Observer·Effect](./core/05-observer-effect.md) |
@@ -62,6 +68,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 전파 게이트
 
+값은 항상 최신으로 두고 **아래로의 통지만** 묶었다가 한 번에 내보내는 심볼들입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.Blocker()` | [sugar/06 — Blocker](./sugar/06-blocker.md) |
@@ -72,6 +80,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `blocker:Policy(emit)` | [sugar/06](./sugar/06-blocker.md) |
 
 ## Slot
+
+자식이 들어갈 자리를 잡고, 수동 CRUD나 데이터 기반 목록으로 그 안을 채우는 심볼들입니다.
 
 | 심볼 | 페이지 |
 |---|---|
@@ -94,6 +104,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## Ref
 
+quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 때를 기다리거나 받아 보는 방법들입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.Ref<<T>>(default)` | [core/07 — Ref](./core/07-ref.md) |
@@ -112,6 +124,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## Modifier
 
+프로퍼티 묶음을 불변 값으로 들고 다니며 합성·오버라이드·다운캐스트하는 심볼들입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.Modifier(...)` | [core/08 — Modifier](./core/08-modifier.md) |
@@ -129,6 +143,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `Into<Class>` / `<Class>Modifier` | [roblox/03](./roblox/03-d-modifier.md#intoclass--classmodifier) |
 
 ## Tag / Attr
+
+인스턴스에 `CollectionService` 태그와 어트리뷰트를 선언적으로 붙이는, 숫자 키 자리의 값 객체 둘입니다.
 
 | 심볼 | 페이지 |
 |---|---|
@@ -150,6 +166,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 센티널과 생명주기
 
+자리를 비우거나 원소를 떼어 두는 특수 값들과, 값의 수명을 인스턴스에 묶는 백엔드 표면입니다.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.None` | [core/10 — 생명주기와 센티널](./core/10-lifetime-sentinels.md#qnone) |
@@ -166,6 +184,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 브랜드 술어
 
+받은 값이 quad의 어떤 종류인지 되묻는 술어 묶음입니다.
+
 `q.isEpoch` · `q.isSource` · `q.isState` · `q.isStore` · `q.isObserver` · `q.isEffect` · `q.isBlocker` · `q.isContext` · `q.isProvider` · `q.isModifier` · `q.isRef` · `q.isPreRef` · `q.isPostRef` · `q.isMapperDescriptor` · `q.isSlot` · `q.isTag` · `q.isAttr` · `q.isAttrKey` — 전부 [core/11 — 브랜드 술어](./core/11-predicates.md)의 한 표에 있습니다.
 
 | 심볼 | 페이지 |
@@ -174,6 +194,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.isTween(x)` | [core/11](./core/11-predicates.md) · [roblox/06](./roblox/06-tween-animate.md) |
 
 ## 슈거
+
+코어 위에 순수하게 얹힌 것들 — 값 가방, 연산 콤비네이터, 시간 게이트, 생명주기 훅, 에러 격리.
 
 | 심볼 | 페이지 |
 |---|---|
@@ -209,6 +231,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## Roblox 백엔드
 
+`quad-roblox`가 얹는 표면 — 인스턴스 선언, 이미 있는 트리의 `Claim`, 프로퍼티 감시, 트윈.
+
 | 심볼 | 페이지 |
 |---|---|
 | `q.Declaration`(3.1.0까지는 `q.D`) | [roblox/01 — 설치](./roblox/01-install.md) · [roblox/02](./roblox/02-d.md#qdeclaration--네임스페이스와-생성되는-클래스) |
@@ -224,6 +248,8 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 | `q.Animate(info)` | [roblox/06](./roblox/06-tween-animate.md) |
 
 ## 확장 계약
+
+자기 백엔드나 핸들러를 직접 붙일 때 쓰는 계약 — 주입 op, 핸들러 레코드, 디스패치와 부기 표면.
 
 | 심볼 | 페이지 |
 |---|---|

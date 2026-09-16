@@ -45,6 +45,8 @@ q.Claim(template, M.Frame(M.Root)({
 ```
 
 `Claim`은 넘긴 Instance를 **그대로 돌려줍니다**(`local inst = q.Claim(inst, ...)`).
+디스크립터 해석·계약·에러 문구의 정본은
+[레퍼런스: `Claim`과 `D.Mapper`](/reference/roblox/04-claim-mapper/)입니다.
 
 ### 두 번째 인자는 항상 `D.Mapper` 디스크립터입니다
 
@@ -169,6 +171,11 @@ end
 
 ## 3. `Claim`의 계약 세 가지
 
+왜 계약이 이 모양인지 — 인스턴스 신원을 무엇으로 고정하고, "일부만 매핑하고 나머지는
+남의 것으로 둔다"는 모드가 왜 기각됐는지 — 는
+[Quadnomicon Vol. 7 — 인스턴스 신원, 네이티브 GC, 그리고 `Claim` 계약](/quadnomicon/07-instance-identity-and-gc-philosophy/)이
+다룹니다.
+
 ### 1) 한 번만 Claim한다
 
 한 Instance는 생애 동안 정확히 한 번만 claim됩니다. `D.New`로 만든 Instance도
@@ -229,7 +236,9 @@ screen.Parent = player:WaitForChild("PlayerGui") -- 허용: 루트의 Parent는 
 ## 4. 사전 제작된 컨테이너에 `Slot` 꽂기
 
 Studio에서 만든 창 안의 특정 영역에 동적 목록을 마운트하려면, 그 영역을
-claim하고 `Slot`을 숫자 키 자리에 넣으면 됩니다.
+claim하고 `Slot`을 숫자 키 자리에 넣으면 됩니다(`Slot`의 기본은
+[시작하기 10. 자식이 들어갈 자리](/getting-started/10-slot/), 전체 표면은
+[레퍼런스: `Slot`](/reference/core/06-slot/)).
 
 ```luau
 local function ShopWindow(isOpen: q.Source<boolean>, rows: q.Slot<Instance>)

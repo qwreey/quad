@@ -40,7 +40,7 @@ export type Effect = QuadTypes.Effect
 return Quad:UseProvider(QuadRoblox)
 ```
 
-**설정 모듈만 `--!strict`이고, 이 문서의 나머지 화면 코드는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다.** 설정 모듈은 프로젝트 전체가 쓰는 타입이 나오는 자리라 엄격하게 두는 편이 이득이고, 화면 코드까지 `--!strict`으로 올릴 때 붙여야 하는 타입 주석은 [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) §6에 모아 두었습니다.
+**설정 모듈만 `--!strict`이고, 이 문서의 나머지 화면 코드는 Roblox 기본 모드(`--!nonstrict`)를 가정합니다.** 설정 모듈은 프로젝트 전체가 쓰는 타입이 나오는 자리라 엄격하게 두는 편이 이득이고, 화면 코드까지 `--!strict`으로 올릴 때 붙여야 하는 타입 주석은 [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) §6에 모아 두었습니다. 실제로 뜨는 진단 문구와 그 처방을 한 표로 보려면 [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) §7의 strict 체크리스트를 보세요 — 표지는 이관 문서지만 항목 대부분은 v1 고유가 아니라 quad 일반 진단입니다.
 
 <details>
 <summary><strong><code>const</code>와 문자열 <code>require</code>는 뭔가요?</strong></summary>

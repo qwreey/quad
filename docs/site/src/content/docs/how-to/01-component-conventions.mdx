@@ -99,7 +99,9 @@ D.TextButton { props.Modifier, props.Ref, Text = "x" }
 D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 ```
 
-`None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다.
+`None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다. 센티널 전체는 [레퍼런스: 생명주기와 센티널](/reference/core/10-lifetime-sentinels/)에 있습니다.
+
+그리고 **받은 값을 숫자 키 자리에 놓지 않으면 그냥 사라집니다.** 호출자가 넘긴 `props.Modifier`를 컴포넌트가 어느 자리에도 놓지 않으면 그 `Modifier`는 아무 일도 하지 않고 조용히 버려집니다 — quad에는 "넘겨받고 안 쓴 값"을 잡아 주는 방어가 없어서 경고도 에러도 나지 않습니다. 호출자가 스타일을 줬는데 화면이 그대로라면 이 자리를 먼저 보세요.
 
 > `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 10. 자식이 들어갈 자리](/getting-started/10-slot/) 참고).
 
@@ -107,7 +109,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 ## 3. 스타일 합성 및 우선순위 3대 불변식
 
-컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다.
+컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다(`Modifier` 값 자체의 표면은 [레퍼런스: `Modifier`](/reference/core/08-modifier/), 클래스별 생성자는 [레퍼런스: `D.Modifier`](/reference/roblox/03-d-modifier/)에 있습니다).
 
 1. **직접 적은 문자 키가 이긴다**:
    `D.TextButton { props.Modifier or None, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다. 평탄화는 이미 채워진 키를 건너뛰기 때문입니다.
@@ -238,7 +240,7 @@ local list = D.Frame {
 
 ## 5. 선언적 메타데이터: `Tag`와 `Attr`
 
-Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 숫자 키 자리에서 선언적으로 다룰 수 있습니다(기본은 [시작하기 05. 이름표와 속성](/getting-started/05-tag-attr/)에서 배웁니다 — 여기서는 컴포넌트 경계에서 지킬 규칙만 봅니다).
+Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 숫자 키 자리에서 선언적으로 다룰 수 있습니다(기본은 [시작하기 05. 이름표와 속성](/getting-started/05-tag-attr/)에서 배웁니다 — 여기서는 컴포넌트 경계에서 지킬 규칙만 봅니다. 두 값의 전체 표면은 [레퍼런스: `Tag` / `Attr`](/reference/core/09-tag-attr/)에 있습니다).
 
 ```luau
 local function CharacterBadge(props: { read Name: string, read Level: QuadTypes.StateMarker<number> }): Frame
@@ -263,7 +265,7 @@ end
 ### `Tag`와 `Attr`에서 알아둘 규칙
 
 1. **`Tag`는 합집합이다**:
-   같은 태그를 여러 자리(컴포넌트, `Modifier`, State로 바뀌는 `Tag` 값 …)에서 요구해도, quad는 참조 카운트로 **한 곳이라도 요구하는 동안 태그가 유지**되도록 관리합니다. 마지막 요구가 사라질 때 비로소 태그가 제거됩니다.
+   같은 태그를 여러 자리(컴포넌트, `Modifier`, State로 바뀌는 `Tag` 값 …)에서 요구해도, quad는 참조 카운트로 **한 곳이라도 요구하는 동안 태그가 유지**되도록 관리합니다. 마지막 요구가 사라질 때 비로소 태그가 제거됩니다. 여러 곳에서 온 `Tag` 값을 미리 하나로 합쳐 넘기고 싶다면 `q.Tag.Merged(tagA, tagB, …)`가 손실 없는 합집합을 돌려줍니다 — `q.Tag(tagA, tagB, …)`와 결과는 같고, **`Tag` 값만 받는** 엄격한 철자라 문자열이나 리스트를 섞으면 `Tag.Merged: arguments must be Tag values`입니다.
 2. **`None`이거나 State의 값이 `nil`이면 어트리뷰트가 삭제된다**:
    - `q.Attr { MyKey = None }` — 즉시 삭제(`inst:SetAttribute(key, nil)`).
    - 바인딩된 `State`의 값이 `nil`이 된 경우도 마찬가지로 **삭제**됩니다. 그룹이든 스칼라 슈가든 그 이름의 핸들러가 값을 그대로 엔진에 넘기고, `nil`도 예외가 아닙니다.
@@ -299,7 +301,7 @@ end
 local left, right = newCounter(0), newCounter(10)
 ```
 
-Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `q.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: q.State<boolean> = ...`). 자세한 캐비엇은 [레퍼런스: `State`](/reference/core/03-state/)에 있습니다.
+Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `q.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: q.State<boolean> = ...`). 자세한 캐비엇은 [레퍼런스: `State`](/reference/core/03-state/)에 있습니다. `--!strict`에서 실제로 뜨는 진단과 그 처방을 한 표로 모은 것은 [08. quad v1에서 v2로 옮기기](/how-to/08-migrating-from-v1/) §7에 있습니다 — 표지는 이관 문서지만 항목 대부분은 v1 고유가 아니라 quad 일반 진단입니다.
 
 :::tip
 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.
