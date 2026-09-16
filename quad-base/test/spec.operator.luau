@@ -132,4 +132,28 @@ do
 end
 
 print()
+print("=== 6. round10 H-1 — 인자 State의 현재값이 nil/비숫자면 조용히 건너뛰지 않고 읽는 줄을 blame ===")
+do
+	local price, tax, ship = Source(1000), Source(100 :: any), Source(50)
+	local total = price:Apply(Operator.Sum(tax, ship))
+	assert(total:Get() == 1150, "sanity")
+	tax:Set(nil)
+	local ok, err = pcall(function() return total:Get() end)
+	assert(not ok and string.find(tostring(err), "Operator.Sum: argument #1 is a State whose current value is nil", 1, true) ~= nil, "nil current value is an error, not a skipped term: " .. tostring(err))
+	assert(string.find(tostring(err), "Operator.luau", 1, true) == nil, "no quad file on the blame line: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.operator.luau", "nil-value error blames the reading line")
+	tax:Set("x")
+	local ok2, err2 = pcall(function() return total:Get() end)
+	assert(not ok2 and string.find(tostring(err2), "current value must be a number (got string)", 1, true) ~= nil, "wrong-type current value: " .. tostring(err2))
+	local mask = Source(0xFF)
+	local band = mask:Apply(Operator.Band(Source(nil :: any)))
+	local ok3, err3 = pcall(function() return band:Get() end)
+	assert(not ok3 and string.find(tostring(err3), "Operator.Band: argument #1 is a State whose current value is nil", 1, true) ~= nil, "bitwise too: " .. tostring(err3))
+	local selfNil = (Source(nil :: any) :: any):Apply(Operator.Sum(1))
+	local ok4, err4 = pcall(function() return selfNil:Get() end)
+	assert(not ok4 and string.find(tostring(err4), "the Apply target's current value must be a number (got nil)", 1, true) ~= nil, "target's own value checked: " .. tostring(err4))
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

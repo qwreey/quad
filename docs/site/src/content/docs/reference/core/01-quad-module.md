@@ -31,7 +31,7 @@ New: () -> Quad
 - **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `bindLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태입니다 — [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) 참고.
 - 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다.
 - 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다.
-- **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터)에 놓으면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` 사본이 둘 생겨도 같은 일이 납니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 검사하지 않지만, 그쪽도 **정의되지 않은 동작**입니다 — 막지 않을 뿐 보장하지 않습니다.
+- **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 — `Add`/생성자/`Replace`/`Splice`)에 놓거나 `q.dispose`에 넘기면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` 사본이 둘 생겨도 같은 일이 납니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 검사하지 않지만, 그쪽도 **정의되지 않은 동작**입니다 — 막지 않을 뿐 보장하지 않습니다.
 
 **예제**
 

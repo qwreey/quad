@@ -75,4 +75,29 @@ do
 end
 
 print()
+print()
+print("=== 4. round10 H-4 — Slot 요소 문(Add/생성자/Replace/Splice)과 dispose도 교차 인스턴스 문이다 ===")
+do
+	local bSlot, bState = B.Slot(), B.Source(Instance.new("Frame"))
+	local a = A.Slot()
+	expectCross("Add(other Slot)", function() a:Add(bSlot) end)
+	expectCross("Add(other State)", function() a:Add(bState) end)
+	expectCross("constructor", function() A.Slot({ bSlot }) end)
+	expectCross("Splice", function() a:Splice(1, 0, bSlot) end)
+	a:Add(Instance.new("Frame"))
+	expectCross("Replace", function() a:Replace(1, bSlot) end)
+	expectCross("dispose(other Slot)", function() A.dispose(bSlot) end)
+	local host = Instance.new("Frame")
+	local held = Instance.new("Frame")
+	local bHolder = B.Slot({ held })
+	B.Dispatch.drive(host, { bHolder })
+	local saved = A.Backend.isClaimed
+	A.Backend.isClaimed = function() return false end -- the mock claims lazily; the real backend answers per instance
+	local ok, err = pcall(function() A.dispose(held) end)
+	assert(not ok and string.find(tostring(err), "dispose: this Instance is not claimed by this quad module instance", 1, true) ~= nil, "foreign-owned Instance refused: " .. tostring(err))
+	A.Backend.isClaimed = saved
+	assert(bHolder.Length:Get() == 1 and held.Parent == host, "B's tree untouched")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

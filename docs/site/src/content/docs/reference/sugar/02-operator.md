@@ -53,7 +53,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 | `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Operator.Sum: Apply target must be a State (got table)` |
 | 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Operator.Indexed: value is not a table (got number) — cannot read [x]` |
 
-`nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다.
+`nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
 
 **산술·비트 연산자는 숫자 전용입니다.** `Sum`/`Product`/`Min`/`Max`/`Clamp`와 `Band`~`Shr`는 인자뿐 아니라 **`:Apply`를 받는 State의 값도** 숫자여야 합니다. `UDim2`나 `Color3` 같은 타입에 쓰면 타입 검사에서 `None of the overloads for function that accept 2 arguments are compatible.`로 막힙니다 — 그런 연산은 `state:Compute`로 직접 쓰십시오. 값 타입을 가리지 않는 것은 `Not`·`Alternative`·`Indexed` 셋입니다.
 

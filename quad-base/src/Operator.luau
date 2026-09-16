@@ -50,7 +50,18 @@ local function splitArgs(name: string, args: { any }, n: number, kind: string): 
 		for i = 1, n do
 			if isDep[i] then
 				d += 1
-				out[i] = handles[d]:Get()
+				local v = handles[d]:Get()
+				-- round10 H-1: the factory checks each ARGUMENT for nil (`H-199`), but a State whose
+				-- CURRENT VALUE is nil (fresh `store:Of`, `Indexed` miss, `Source<number?>`) left a
+				-- hole here, and `fold`'s generalized `for` skipped it — `Sum(price, nil, ship)` quietly
+				-- returned `price + ship` while `Clamp`/`Shl` died with a raw VM error. Outermost blame:
+				-- this runs inside Compute, so the user's `:Get()`/`:Set` line is the frame that matters.
+				if v == nil then
+					Err.errorBefore(`Operator.{name}: argument #{i} is a State whose current value is nil`, SURFACE)
+				elseif type(v) ~= kind then
+					Err.errorBefore(`Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})`, SURFACE)
+				end
+				out[i] = v
 			else
 				out[i] = args[i]
 			end
@@ -74,6 +85,9 @@ local function fold(name: string, op: (number, number) -> number): (...any) -> (
 			checkSelf(name, self)
 			return self:Compute(function(h: any, _prev: any, ...: any)
 				local acc = h:Get()
+				if type(acc) ~= "number" then -- round10 H-1: the target's own value gets the same check as the args
+					Err.errorBefore(`Operator.{name}: the Apply target's current value must be a number (got {typeof(acc)})`, SURFACE)
+				end
 				for _, v in read(...) do
 					acc = op(acc, v)
 				end

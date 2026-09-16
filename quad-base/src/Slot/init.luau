@@ -41,6 +41,7 @@ local Err = require("./ErrorNamespace")
 local InitDispatch = require("./Dispatch")
 local Types = require("@self/types")
 local QuadTypes = require("../luau_packages/quad_types")
+local ModuleIdentity = require("./ModuleIdentity") -- round10 H-4: element doors + dispose are cross-instance doors too
 
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
@@ -201,6 +202,12 @@ local function Init(module: any)
 		end
 		for i = 1, count do
 			local raw = items[i]
+			-- round10 H-4: a Slot/State made by ANOTHER quad module instance arrived through this door
+			-- unchecked (drive's SlotHandler and :List's data State already refuse — `H-186` doors), and
+			-- the other instance's `dispose` then tore it out of this tree with the bookkeeping left behind
+			if isSlot(raw) or module.isState(raw) then
+				ModuleIdentity.assertOwnAtCall(module, raw, surface)
+			end
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			-- `None` in a State is the absent element (`H-467`/Q30: None == nil) — skip like nil
@@ -455,8 +462,18 @@ local function Init(module: any)
 			-- Q9: same note as the "already mounted" sites (one constant — round3 `H-451`)
 			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)" .. ZOMBIE_NOTE, SURFACE)
 		end
+		-- round10 H-4: `elementOwner` is per module instance, so another instance's held element passed
+		-- this check and was destroyed under a live tree. A quad value from another instance is refused
+		-- (`H-186` door); an Instance this instance never claimed is refused too (symmetric with Add).
+		if isSlot(value) or module.isState(value) then
+			ModuleIdentity.assertOwnAtCall(module, value, "dispose")
+		end
 		if isSlot(value) then S.destroySlotTree(value)
-		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
+		elseif module.Backend.isInst(value) then
+			if not module.Backend.isClaimed(value) then
+				Err.errorBeforeNearest("dispose: this Instance is not claimed by this quad module instance — dispose it through the instance that owns it", SURFACE)
+			end
+			module.Backend.nativeDispose(value)
 		else Err.errorBeforeNearest("dispose: this backend cannot dispose this value", SURFACE) end
 	end
 

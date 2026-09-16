@@ -59,6 +59,9 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `Debounce`/`Throttle`의 `Time`이 `State`일 때 그 값이 잘못돼 창을 못 열면(음수·문자열, 또는 시간 op가 없는 백엔드) 게이트가 "막힘 상태인데 타이머 없음"으로 굳어 다음 신호까지 통지가 멈추던 것 — 창을 먼저 잡고 상태를 바꾸도록 순서를 고쳤습니다.
 - `Claim`의 매퍼 키가 트리에 없을 때 내부 파일 이름으로 죽던 것 — `Claim: no child matched key … under …`로 키를 말합니다.
 - `Modifier` 초기 필드에 함수를 넣었을 때의 안내가 이벤트 핸들러를 변환 함수 자리로 이끌던 것 — 이벤트는 Modifier에 두지 않고 선언의 인라인 키나 `State`로 넣으라고 안내합니다.
+- `q.Operator`의 `Sum`/`Product`/`Min`/`Max`/`Band`/`Bor`/`Bxor`가 값이 `nil`인 `State` 인자를 조용히 건너뛰고 나머지만 계산하던 것(`Clamp`/`Shl`은 내부 에러) — 읽는 시점에 `Operator.Sum: argument #N is a State whose current value is nil …`로 던집니다.
+- 다른 quad 모듈 인스턴스가 만든 `Slot`/`State`를 `Slot`의 원소 자리(`Add`/생성자/`Replace`/`Splice`)에 넣거나 `q.dispose`에 넘기면 이제 거부합니다(전에는 통과해 다른 인스턴스의 트리를 조용히 망가뜨릴 수 있었습니다). `q.dispose`는 이 인스턴스가 claim한 Instance만 파괴합니다.
+- `q.Blocker()`를 `__apply`로 State가 아닌 값에 걸면 내부 에러가 나던 것 — `Blocker: Apply target must be a State …`.
 - `Animate`가 건 `State`에 `Tween`이나 `State`를 넣었을 때 나는 검증 에러가 quad 내부 줄(`Animate.luau`)을 가리키던 것 — 호출한 줄을 가리킵니다.
 - `q.debug = true`를 `UseProvider` 앞에 켜면 quad-roblox 자신의 핸들러 등록에 "priority tie" 경고 두 줄이 찍히던 것(의도된 동률) — 프로바이더 설치 중에는 그 진단을 내지 않습니다.
 - `Claim`의 루트 디스크립터에 문자열 키를 주면(`M.Frame("Name")`) 조용히 무시되고 루트 자신이 claim되던 것 — `Claim: the root descriptor takes M.Root, not a key …`로 거부합니다. 자식 자리에 `M.Root`나 숫자를 키로 주면 `nativeFindChild: key must be a child name string …`입니다(전에는 엔진 에러가 내부 파일을 가리켰습니다).

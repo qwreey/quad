@@ -206,4 +206,14 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 10. round10 H-2 — Blocker:__apply의 대상 게이트(형제 Apply와 같은 모양) ===")
+do
+	local b = Blocker()
+	local ok, err = pcall(function() return b:__apply(5) end)
+	assert(not ok and string.find(tostring(err), "Blocker: Apply target must be a State (got number)", 1, true) ~= nil, "non-State target: " .. tostring(err))
+	assert(string.find(tostring(err), "Blocker.luau", 1, true) == nil, "no quad file on the blame line: " .. tostring(err))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
