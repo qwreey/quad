@@ -81,6 +81,7 @@ Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...Ta
   - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
   - `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
   - `Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)`
+  - `Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)`
 
 **예제**
 

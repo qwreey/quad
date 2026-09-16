@@ -165,7 +165,7 @@ Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) —
 Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} — return Void when there is nothing to undo
 ```
 
-`inst`가 `nil`이면 `Dispatch.process: inst must not be nil`.
+`inst`가 `nil`이면 `Dispatch.process: inst must not be nil`, `index`가 양의 정수가 아니면 `Dispatch.process: index must be a positive integer (got {index})`.
 
 ## `q.Dispatch.retractFrom(inst, key, index)`
 
@@ -177,7 +177,7 @@ retractFrom: (inst: any, key: any, index: number) -> ()
 
 **동작** — `index`(포함)부터 그 자리 체인의 꼬리까지를 **깊은 쪽부터** 무릅니다. 얕은 층이 깊은 층을 만들었으므로 역순이 맞습니다. 각 retractor는 `(nil, true)`로 불립니다 — 단순 철거이고 뒤따르는 재처리가 없다는 뜻입니다.
 
-체인이 비면 그 자리의 **체인 기록**이 놓입니다(Length/Offset 부기는 핸들러가 `setLength(…, 0)` 경로로 직접 풀어야 합니다). `inst`가 `nil`이면 `Dispatch.retractFrom: inst must not be nil`.
+체인이 비면 그 자리의 **체인 기록**이 놓입니다(Length/Offset 부기는 핸들러가 `setLength(…, 0)` 경로로 직접 풀어야 합니다). `inst`가 `nil`이면 `Dispatch.retractFrom: inst must not be nil`, `index`가 양의 정수가 아니면 `Dispatch.retractFrom: index must be a positive integer (got {index})`.
 
 ## `q.Dispatch.drive(inst, flattened)`
 

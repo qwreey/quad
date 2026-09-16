@@ -217,7 +217,7 @@ Apply: <U>(self: any, factory: (any) -> U) -> U
 
 **반환** — `factory(self)`의 결과 그대로.
 
-**동작** — **순수한 호출 슈거입니다.** 계약도, 검사도, 추가 의미도 없습니다. 재사용 가능한 스타일 조합을 함수로 떼어 두고 체인 중간에 끼워 넣을 때 씁니다.
+**동작** — **순수한 호출 슈거입니다.** factory가 함수인지만 검사하고(`Modifier:Apply: factory must be a function (got {typeof(factory)})`), 그 밖의 계약도 추가 의미도 없습니다. 재사용 가능한 스타일 조합을 함수로 떼어 두고 체인 중간에 끼워 넣을 때 씁니다.
 
 주석이 붙은 factory는 타입이 그대로 서고, 무주석 factory는 `any`가 됩니다.
 

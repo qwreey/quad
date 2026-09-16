@@ -90,6 +90,8 @@ AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P
 **이미 있는 필드를 덮을 때** — 막지 않습니다. 코어 부품을 일부러 갈아 끼우는 플러그인도 쓸 수 있어야 하기 때문입니다. 다만 `q.Source` 같은 코어 필드가 남의 것으로 바뀌면 원인을 찾기 어려우므로, [`q.debug`](#qdebug)가 켜져 있으면 설치 시점에 한 줄을 출력합니다. 검사 대상은 `pluginFn`이 **돌려준 테이블**이 덮는 필드뿐이고, `pluginFn` 안에서 모듈에 직접 대입한 필드는 알리지 않습니다. 검사는 `AddPlugin`을 부를 때 한 번만 돌고, `q.debug`는 그보다 **먼저** 켜 두어야 합니다.
 
 - `AddPlugin: plugin overwrites existing module field "{k}" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field`
+- `AddPlugin: plugin must be a function (got {typeof(pluginFn)})`
+- `AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)` — 모듈을 고쳐 쓰기만 하고 아무것도 돌려주지 않는 플러그인이 흔한 실수입니다.
 
 **`_`로 시작하는 필드는 공개 표면이 아닙니다.** 모듈에 런타임으로 존재하더라도(`_slotInternal` 등) 내부 계약이며 예고 없이 바뀝니다 — 읽거나 덮어쓰는 코드에 기대지 마세요.
 
@@ -132,6 +134,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
   ```
 
 - 슬롯 표시는 **성공한 뒤에** 찍습니다. `providerFn`이 도중에 던지면 슬롯은 비어 있는 채로 남아 다시 시도할 수 있습니다(표시를 먼저 찍었다면 재시도가 멱등 no-op에 삼켜져 확장이 영영 병합되지 않는 좀비가 됩니다).
+- 인자 모양은 먼저 검사합니다 — `UseProvider: provider must be a function (got {typeof(providerFn)})`(`UseProvider(nil)`은 전에 조용히 통과했습니다), 프로바이더가 확장 테이블을 돌려주지 않으면 `UseProvider: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`.
 
 quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으면 호출한 줄을 blame하며 던집니다 —
 
