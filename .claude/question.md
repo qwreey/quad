@@ -295,8 +295,8 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
   불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
   시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
-- **Slot이 quad 밖에서 만들어진 임의 Instance를 받을 수 있는가**
-  (2026-08-06 추가, 아직 안 풀림) — v1 compat 등에서 넘어온 foreign
+- **[해소 2026-09-16 — (b) 사용자 결정: 미claim이면 `Add`에서 에러, 자동 claim은 마법("명시적으로 claim 안 한게 다른 경로로 claim 될 수 있다는거고, 마법 아님?"); 판정 술어는 quad-roblox의 gchold 유무("gchold 같은게 있는 경우가 claim 된 판정처럼 되는거지?" — 맞음)를 백엔드 계약 op 하나로 노출, mock은 항상 참. 구현은 2-2 결정 뒤 착수, 계약 슬롯 추가라 10월 전 창] Slot이 quad 밖에서 만들어진 임의 Instance를 받을 수 있는가**
+  (2026-08-06 추가) — v1 compat 등에서 넘어온 foreign
   Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
   **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
   **[2026-09-03 현황 — 확인 시점 도래]** Slot 코어가 fork 편입으로
