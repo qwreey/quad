@@ -192,15 +192,19 @@ local function Init(module: any)
 	-- the same 1000 took 1 ms). Single `Add` stays O(current length) by design — batches
 	-- go through Splice (CRUD 표).
 	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
-		local prepared, seen, inSlot = table.create(count), {}, {}
+		-- one table: existing occupants are seeded as "held" (this Slot already has it), batch
+		-- occupants as true (duplicate within the call) — a second table cost +39% on 2000 Adds
+		local prepared, seen = table.create(count), {}
 		for _, existing in ipairs(self._elements) do
 			local occ = occupantOf(existing)
-			if occ ~= nil then seen[occ] = true; inSlot[occ] = true end
+			if occ ~= nil then seen[occ] = "held" end
 		end
 		for i = 1, count do
 			local raw = items[i]
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
+			-- `None` in a State is the absent element (`H-467`/Q30: None == nil) — skip like nil
+			if occupant == S.None then occupant = nil end
 			if occupant ~= nil then
 				-- [2026-09-16 code-review + hunt A] wrapElement gates only raw values; a State's CURRENT
 				-- value was gated later, inside the wrapper's reconcile — after rawAdd had inserted
@@ -214,12 +218,10 @@ local function Init(module: any)
 							Err.errorBeforeNearest(surface .. ": destroyed Slot cannot be an element", SURFACE)
 						end
 					elseif not module.isState(occupant) then
-						S.checkRawElement(occupant, function(msg: string, level: any)
-							Err.errorBeforeNearest(surface .. msg:sub(#"Slot" + 1), level)
-						end)
+						S.checkRawElement(occupant, Err.errorBeforeNearest) -- same `Slot: …` messages as the raw path (one greppable form)
 					end
 				end
-				if inSlot[occupant] then
+				if seen[occupant] == "held" then
 					-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
 					-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
 					-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.

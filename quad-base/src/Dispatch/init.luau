@@ -37,7 +37,6 @@
 ]]
 
 local Relate = require("./Relate")
-local Brand = require("./Brand") -- [2026-09-16 hunt F] drive's plain-branded guard
 local Void = require("./Void")
 local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
@@ -402,10 +401,11 @@ local function Init(module: any)
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
-		-- [2026-09-16 hunt F] `brandNameOf` is the diagnostics-only module scan (pcall per provider
-		-- predicate + 16 probes) — `H-470` put it in the hot path (every drive, ~12% measured). The
-		-- only branded values WITHOUT a metatable are the plain-branded set (`Brand.isPlainBranded`).
-		if getmetatable(flattened) ~= nil or Brand.isPlainBranded(flattened) then
+		-- [2026-09-16 round10] `brandNameOf` is the diagnostics-only module scan and this is the hot
+		-- path (~12% of drive, measured) — but narrowing it to `Brand.isPlainBranded` would drop
+		-- provider brands registered as `is<Brand>` fields without a metatable (Q27 contract, code-review),
+		-- so the scan stays; the speed-up is a ROADMAP optimisation candidate.
+		if getmetatable(flattened) ~= nil or brandNameOf(flattened) ~= nil then
 			-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
 			-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
 			-- `H-386`/`H-389`), and canon says `flattened` is always a plain table

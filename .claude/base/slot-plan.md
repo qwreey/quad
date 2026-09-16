@@ -951,7 +951,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
   그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
-  다시 호출) — 별도 가드 불필요. CRUD는 평범한 동기 테이블 뮤테이션 +
+  다시 호출) — 별도 가드 불필요 — **[2026-09-16 round10 Q52, 문항 열림]** 예외 하나 발견: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`이 **조상** Slot을 CRUD하면 walk가 깨진다(`bindLifetime: already bound`, 부기 영구 파손). Observer 안(마운트 walk 밖)은 정상. 처리는 `qa-request/post-implementation-review-round10.md` §4 Q52. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
   간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —

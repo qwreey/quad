@@ -19,8 +19,8 @@
 - **`H-525` (LOW, 탐사 F) `:List`/`:Single`의 `opts`가 무검사** — 숫자는 내부 줄 크래시, 문자열은 조용히 무시. 테이블 게이트(양쪽 진입점). `spec.inputgates` 3.
 - **`H-526` (MED, 탐사 F) `AddPlugin`/`UseProvider` 입구 무검사 + `UseProvider(nil)` 조용한 no-op** — 함수 게이트, 반환 확장 테이블 게이트(`mergeExtension`이 `who`를 받아 "AddPlugin/UseProvider: the function must return its extension table"). `spec.inputgates` 4.
 - **`H-527` (LOW, 탐사 F) 검증에 실패한 CRUD가 Slot을 수동으로 표시했다**(`H-386`의 재발 모양) — `assertManual`에서 표시를 떼고 각 CRUD의 변경 지점에 `markManual`. `spec.inputgates` 5.
-- **`H-528` (LOW·성능, 탐사 F) `drive`가 "cold path 전용" `brandNameOf`를 매 구동마다 돌렸다**(`H-470` 가드가 조건식 안에 둠 — 실측 12%). 메타테이블 없는 브랜드 값은 `Brand.isPlainBranded` 집합뿐이라 그것으로 대체.
-- **`H-529` (LOW, 탐사 F) `Tag`가 자기를 담은 리스트에 raw stack overflow** — 깊이 64 가드 + 도메인 메시지. `spec.inputgates` 6.
+- **`H-528` (LOW·성능, 탐사 F) — [같은 밤 code-review로 철회] `drive`가 "cold path 전용" `brandNameOf`를 매 구동마다 돌렸다**(`H-470` 가드가 조건식 안에 둠 — 실측 12%). 처음엔 `Brand.isPlainBranded`로 대체했으나 code-review가 그 좁힘이 Q27 등록 계약(프로바이더가 `is<Brand>` 필드로 등록, 메타테이블 요구 없음)을 조용히 깨는 것을 지적 — 스캔으로 되돌리고 ROADMAP 최적화 후보 목록에 올렸다(관측된 병목 아님).
+- **`H-529` (LOW, 탐사 F) `Tag`가 자기를 담은 리스트에 raw stack overflow** — 깊이 64 가드 + 도메인 메시지. `spec.inputgates` 6. **재검(감사 3라운드·code-review 동시 발견)**: 첫 구현이 모듈 전역 카운터라 정상 경로에서 안 줄어 65번째 호출부터 오탐 — 깊이를 파라미터로(`65c2780`), 200회 반복 단언.
 - **`H-530` (문서, 탐사 D·E·C) 공개 문서 사실 오류 열아홉 + 문서화 둘** — extend/01 §7 "19슬롯"→20, `brand: Inst` 꼬리 셋 삭제(brandNameOf는 `isInst`를 모른다), install.md의 `AddPlugin`은 병합은 됨, roblox/02 `Transparency` 표의 UIShadow/UIStroke, core/09 `Names` 잔재, 스킬의 destroyed Slot 원인, how-to 02 `AutoButtonColor`, how-to 06 솔버 서술, install.md 재익스포트 목록에 `Field`/`FieldOut`, Tween 팔 10개(`Vector2int16`), props 테이블 제자리 변형, `As<<T>>` 문자열 인자, `Subscribed`와 `WeakSubscribe`, extend/02 `setLength` 캐시 문장, core/01 다른 인스턴스 dep은 UB, v1-migration 메시지 꼬리, core/04 `__` 거부 주체, `UIPadding`/`UIPaddingOffset` 승자 미정. 문서화: 이벤트 콜백 파라미터 수 부족은 타입 에러가 아님(Luau 서브타이핑), `store:Of<<T>>` 무검사 캐스트(`typing-limits.md` 8.23).
 
 ## §3 문서와 일치·참고로만 남긴 것
@@ -41,8 +41,14 @@
 
 **Q53 — 프로퍼티 체인을 철거해도 그 키의 엔진 Tween이 취소되지 않는다(탐사 C F6, 실기기 몫).** `Property` retractor가 `Void`라 3-상태 슬롯과 진행 중 `TweenBase`를 안 건드립니다(mock: 철거 뒤 `Playing`). 도달 경로는 `InstanceShorthand.destroyManagedChild`(`UICorner = state`에 Tween이 흐르는 중 `state:Set(None)` → 체인 철거 뒤 `child:Destroy()`) — 파괴된 인스턴스를 향해 도는 Tween이 Roblox에서 무엇을 하는지는 Studio 실측이 필요합니다. HUMAN_TODO 실기기 항목 후보.
 
+**Q55 — Debounce/Throttle의 창 끝·MaxTime·`Flush` 경로에서 Time 읽기가 던지면 여전히 Blocker On·타이머 없음이 남는다(code-review, `H-518`의 잔여).** 상황: `H-518`은 emit 클로저의 두 자리만 고쳤고, `commitIdle`(창 끝·cap)과 `h.Flush`는 `closeWindow(); clearCap(); emit(); openWindow()` 순서라 `openWindow`의 Time 읽기(`State`가 음수·문자열로 바뀐 경우)가 던지면 같은 반쪽 상태가 남습니다(mock 실측 — 그 순간 배치는 이미 emit돼 유실은 없고, 다음 정상 신호에서 자가 회복; Roblox의 `task.delay` 안 raise는 출력만 찍히고 조용히 굳음). 무엇이 막히나: 이 세 자리는 타이머 콜백 안이라 "읽기 먼저" 순서 바꾸기로는 못 닫고, 실패 시 `goIdle()`로 복구하려면 `openWindow`를 **pcall로 감싸 되던져야** 합니다 — 코퍼스의 "사용자 콜백을 감싸지 않는다"(architecture 예외 안전성 계약)와 부딪히는 자리(Time State의 `:Get()`이 사용자 Compute를 돌릴 수 있음). 갈래: (a) `openWindow`만 pcall로 감싸 실패 시 `goIdle()` 뒤 원문 그대로 되던짐(`error(err, 0)`) / (b) Time 값을 창을 열 때가 아니라 **신호가 들어올 때** 읽어 두고(캐시) 타이머 경로는 캐시값으로 열어 던질 일을 없앰(폴링 규약 5-2와의 관계 정리 필요) / (c) 문서화만("Time State를 유효하지 않은 값으로 바꾸면 게이트가 다음 신호까지 멈춘다"). 메인 권고 (b) 쪽 검토 — 감싸지 않으면서 닫히지만 규약 정리가 필요합니다.
+
 **Q54 — 다른 quad 모듈 인스턴스가 만든 Instance를 정적 자식/Slot에 넣으면 "Declaration으로 만들어라"는 메시지가 난다(탐사 C F5, 소).** `isClaimed`는 인스턴스별 `InstData`를 보므로 q1이 만든 것을 q2에 넣으면 미claim으로 거부되는데, 사용자는 이미 Declaration으로 만든 상태라 안내가 헛돕니다. `ModuleIdentity`의 전용 문구(*"values cannot cross instances"*)를 백엔드 값에도 붙일지(메시지에 "an Instance made by another quad module instance also counts as not claimed here" 한 구절 추가 — 문서 인용 넷 갱신), 아니면 `H-186` UB 문서만으로 둘지.
 
-## §5 참고 — 재현 스크립트
+## §5 같은 밤 code-review(`1bc6d3e..94d8f76`, high, 파인더 8·검증자 4 opus) — 반영
+
+발견 9(+ 이미 닫힌 1): (1) State 현재값 `None`이 nil/None 팔에 걸려 `slot:Add(q.Source(q.None))`이 거부되던 회귀(`H-467`/Q30 None==nil) → None을 nil처럼 건너뜀(`spec.slot` 30); (2) `opts` 게이트가 `_listed = true` 뒤에 있어 거부된 `:List`가 반설치 상태를 남김 → 대입 앞으로(`spec.inputgates` 3 재시도 단언); (3) `AddPlugin`의 debug 덮어쓰기 루프가 새 게이트보다 먼저 nil을 순회 → 게이트를 `pluginFn` 직후로(`spec.inputgates` 4 debug on); (4) `commitIdle`/`Flush` 경로의 같은 반쪽 상태 → **Q55**; (5) `H-528`의 `isPlainBranded` 좁힘이 Q27 계약을 깸 → 철회; (6) `seen`/`inSlot` 이중 시드 +39% → 한 테이블 마커; (7) 메시지 접두 수술(`msg:sub`) → State 경로도 raw와 같은 `Slot: …` 한 모양; (8) 반응형 자식 스왑에서 게이트가 체인 철거 뒤에 던지는 것 → CHANGELOG BREAKING 줄에 한 구절; (9) extend/01·CHANGELOG의 `isClaimed` 호출 범위에 정적 자식(hot path) 명시; (10) `H-529` 카운터 결함은 `65c2780`이 이미 닫음. 잔여 정리 항목(검증 안 함): `checkIndex`가 양의 정수 술어의 세 번째 사본, `markManual` 손 배치 열 곳(빈 Slot `Clear`도 표시), `Claim` 부재 raise가 `nativeClaim`/`_fired` 뒤라 고친 재시도가 "already used"(H-425/H-471 모양) — 다음 라운드.
+
+## §6 참고 — 재현 스크립트
 
 `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/hunt-{a,b,c,d,e,f}/`(세션 스크래치 — 세션이 끝나면 사라진다; 필요한 것은 각 H/Q에 spec으로 옮겼거나 §4에 재현 절차를 적었다).

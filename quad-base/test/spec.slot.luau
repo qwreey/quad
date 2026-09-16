@@ -1072,7 +1072,7 @@ do
 	local ok4, err4 = pcall(function() return s:Add(q3.Source(foreign)) end)
 	assert(not ok4 and string.find(tostring(err4), "not claimed", 1, true) ~= nil, "State-wrapped unclaimed occupant rejected: " .. tostring(err4))
 	assert(#s._elements == 1, "no ghost element after the rejected State Add (unmounted: Length stays 0 by design)")
-	assert(string.find(tostring(err4), "Slot:Add: this element is not claimed", 1, true) ~= nil, "pre-pass surface prefix: " .. tostring(err4))
+	assert(string.find(tostring(err4), "Slot: this element is not claimed", 1, true) ~= nil, "one message form for raw and State paths: " .. tostring(err4))
 	q3.Backend.isClaimed = saved
 	print("PASS")
 end
@@ -1087,7 +1087,11 @@ do
 	q4.Dispatch.drive(host, { s })
 	local badSrc = q4.Source(42 :: any)
 	local ok, err = pcall(function() return s:Add(badSrc) end)
-	assert(not ok and string.find(tostring(err), "Slot:Add: this backend cannot mount this value", 1, true) ~= nil, "State holding a non-element rejected in the pre-pass: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "Slot: this backend cannot mount this value", 1, true) ~= nil, "State holding a non-element rejected in the pre-pass (same message as the raw path): " .. tostring(err))
+	-- None in a State is the absent element (H-467/Q30) — accepted like nil, not rejected by the None arm (code-review)
+	local noneSrc = q4.Source(q4.None :: any)
+	assert(s:Add(noneSrc) == 2 and s.Length:Get() == 1, "State<None> is an empty position, not an error")
+	s:Remove(2)
 	assert(#s._elements == 1 and s.Length:Get() == 1 and s:IndexOf(badSrc) == nil, "no ghost wrapper after the rejected Add")
 	local badRef = q4.Source(q4.Ref(nil) :: any)
 	local ok2, err2 = pcall(function() return s:Add(badRef) end)

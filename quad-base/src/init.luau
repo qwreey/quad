@@ -137,7 +137,7 @@ local function New(): Quad
 		-- [2026-09-16 hunt F] a plugin/provider that mutates the module and forgets to return its
 		-- extension table died in this loop ("attempt to iterate over a nil value", this file blamed)
 		if type(extension) ~= "table" then
-			Err.errorBefore(`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)
+			Err.errorBeforeNearest(`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE) -- Nearest like the sibling gates
 		end
 		for k, v in extension do
 			self[k] = v
@@ -155,6 +155,9 @@ local function New(): Quad
 			return self :: any
 		end
 		local extension = pluginFn(self)
+		if type(extension) ~= "table" then -- before the debug loop below iterates it (code-review: debug mode skipped the gate)
+			Err.errorBeforeNearest(`AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
 		-- [2026-09-15 사용자 결정] 기존 필드 덮어쓰기는 막지 않는다(코어를 의도적으로
 		-- 확장하는 플러그인을 닫을 이유가 없음) — 다만 위험한 표면이라 debug일 때
 		-- 눈에 띄게 알린다. 설치 시점에 한 번만 도는 검사라 hot path 비용이 없다.

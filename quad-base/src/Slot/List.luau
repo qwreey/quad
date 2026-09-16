@@ -218,16 +218,16 @@ return function(S: Types.SlotInternal, module: any)
 		if keyFn ~= nil and type(keyFn) ~= "function" then
 			S.Err.errorBeforeNearest(`Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`
 		end
-		self._listed = true
-		self._listData = data
-		self._updateFn = updateFn
-		self._keyFn = keyFn or function(_item: any, index: number) return index end
-		-- [2026-09-16 hunt F] the option bag was the one unchecked argument (`H-441`/`H-446` closed the
+		-- [2026-09-16 hunt F] the option bag was the one unchecked argument — gated BEFORE `_listed` (a rejected call must not half-install, code-review) (`H-441`/`H-446` closed the
 		-- others): a number died on `opts.OwnsElements` with this file on the blame line, a string
 		-- indexed to nil and silently dropped the option.
 		if opts ~= nil and type(opts) ~= "table" then
 			S.Err.errorBeforeNearest(`Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
+		self._listed = true
+		self._listData = data
+		self._updateFn = updateFn
+		self._keyFn = keyFn or function(_item: any, index: number) return index end
 		if opts and opts.OwnsElements == false then self._owned = false end
 		if module.debug and type(opts) == "table" then
 			-- [2026-09-15 사용자 결정] unknown option keys (typos, the pre-rename `Owned`) are reported

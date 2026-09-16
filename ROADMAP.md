@@ -58,6 +58,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         1회라 선형. 후보: recompute를 `offsetSetUpTo` 커서부터 재개(캐시된 접두합 신뢰 — `H-240`/`H-124` 되감기 계약과 대조 필요, 설계 판단).
       - **[2026-09-08 round8 L-5/L-6]** `addHandler` N개 등록 O(N²)(등록마다 정렬 + `H-484` 버킷 재구축; 실사용 22개라 무해),
         Modifier 필드 수천 개 체이닝 초선형(immutable clone 설계 그대로; 실사용에 없음).
+      - **[2026-09-16 round10 `H-528` 철회분]** `Dispatch.drive`의 괄호-누락 가드(`H-470`)가 매 구동마다 cold-path `brandNameOf`(모듈 `is*` 필드 스캔 + pcall + 프로브 16)를 돈다 — 실측 drive의 ~12%. 좁히면(`Brand.isPlainBranded`) 프로바이더 브랜드 등록 계약(Q27)을 깨므로 그대로 둠. 후보: 프로바이더 술어 목록을 설치 시점에 캐시(AddPlugin/UseProvider가 무효화).
       - **[2026-09-08 `H-479` 대부분 닫힘]** `Slot:Clear`/`ExtractAll`의 요소마다 recompute와 `ExtractAll`의 역순 `table.insert` O(n²)는 배치화됨(recompute 1회, ExtractAll은 `rawSplice` 한 번) — 남은 잔여는 `Clear`의 요소별 `nativeRemove`뿐(파괴가 요소 단위라 의도)
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker.Blocking`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).

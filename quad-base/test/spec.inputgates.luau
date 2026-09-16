@@ -50,6 +50,9 @@ do
 	local s2 = q.Slot()
 	local err = failsWith(function() s2:Single(q.Source(nil), nil, "x") end, "Slot:Single: opts must be a table (got string)", "string opts")
 	mock.assertBlamesUser(err, "spec.inputgates.luau", "opts gate blames the caller")
+	-- a rejected install must not half-install (code-review): the same Slot installs fine afterwards
+	s:List(q.Source({}), function() return nil end)
+	s2:Single(q.Source(nil))
 	print("PASS")
 end
 
@@ -61,6 +64,9 @@ do
 	mock.assertBlamesUser(err, "spec.inputgates.luau", "AddPlugin gate blames the caller")
 	failsWith(function() q:UseProvider(nil) end, "UseProvider: provider must be a function (got nil)", "UseProvider(nil) used to be a silent no-op")
 	failsWith(function() q:AddPlugin(function(m) m.X = 1 end) end, "AddPlugin: the function must return its extension table (got nil", "plugin forgot to return")
+	q.debug = true -- code-review: the debug overwrite loop used to iterate the nil before the gate
+	failsWith(function() q:AddPlugin(function(m) m.Y = 1 end) end, "AddPlugin: the function must return its extension table (got nil", "plugin forgot to return (debug on)")
+	q.debug = false
 	failsWith(function() q:UseProvider(function(m) return 5 end) end, "UseProvider: the function must return its extension table (got number", "provider returned a number")
 	-- a real provider still installs after the rejects (the failed ones did not occupy the slot)
 	q:UseProvider(mock.mockProvider)
