@@ -7,7 +7,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 > **대상 독자**: Quad를 Roblox 외 플랫폼으로 포팅하거나 커스텀 백엔드를 작성하려는 엔지니어
 > **정본 소스**: 주입 슬롯의 타입 정의는 `quad-types/src/init.luau`, Roblox 구현은 `quad-roblox/src/EngineOps.luau`와 `quad-roblox/src/LifetimeHandle.luau`, 미설치 스텁은 `quad-base/src/LifetimeHandle.luau`
 
-이 페이지의 심볼: 주입 슬롯 19개를 [다섯 묶음](#1-아키텍처-개요-base와-provider의-분리)으로 —
+이 페이지의 심볼: 주입 슬롯 20개를 [다섯 묶음](#1-아키텍처-개요-base와-provider의-분리)으로 —
 [물리 트리 조작 `native*`](#2-물리-트리-조작-native) · [판정·훅·조회 op](#3-판정훅조회-op) ·
 [생명주기 프리미티브](#4-생명주기-프리미티브) ·
 [메타데이터 op와 시간 op](#5-메타데이터-op와-시간-op). 그 위의 설치 계약은
@@ -27,12 +27,12 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 1. 모듈 인스턴스를 **뮤테이션**해서 아래 주입 슬롯들을 채웁니다.
 2. 백엔드 고유 표면(Roblox라면 `Declaration`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
 
-주입 슬롯은 전부 19개이고 모두 **`q.Backend` 네임스페이스**에 삽니다(`quad.Backend.nativeInsert = …`로 심고, quad는 `module.Backend.nativeInsert(…)`로 부릅니다). 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Backend` 레코드입니다. 이것들은 백엔드가 설치하고 quad가 부르는 계약이지 앱 코드가 부를 API가 아닙니다 — 앱의 `q.` 자동완성에 섞이지 않도록 따로 둔 이유입니다.
+주입 슬롯은 전부 20개이고 모두 **`q.Backend` 네임스페이스**에 삽니다(`quad.Backend.nativeInsert = …`로 심고, quad는 `module.Backend.nativeInsert(…)`로 부릅니다). 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Backend` 레코드입니다. 이것들은 백엔드가 설치하고 quad가 부르는 계약이지 앱 코드가 부를 API가 아닙니다 — 앱의 `q.` 자동완성에 섞이지 않도록 따로 둔 이유입니다.
 
 | 묶음 | 슬롯 |
 |---|---|
 | 물리 트리 조작 (`native*`) | `nativeInsert` `nativeExtract` `nativeRemove` `nativeMove` `nativeSwap` `nativeDispose` |
-| 판정·훅·조회 op | `isInst` `onDestroying` `nativeClaim` `nativeFindChild` |
+| 판정·훅·조회 op | `isInst` `onDestroying` `nativeClaim` `isClaimed` `nativeFindChild` |
 | 생명주기 프리미티브 | `bindLifetime` `unbindLifetime` `canBound` `canExecute` |
 | 메타데이터 op | `addTag` `removeTag` `setAttr` |
 | 시간 op | `setTimeout` `clearTimeout` |
@@ -87,18 +87,20 @@ DOM처럼 자식 순서가 실제 물리 성질인 플랫폼을 쓴다면 이 �
 
 ## 3. 판정·훅·조회 op
 
-`native*`와 달리 이 넷은 조작이 아니라 **판정·훅·조회**입니다.
+`native*`와 달리 이 다섯은 조작이 아니라 **판정·훅·조회**입니다.
 
 ```
 isInst          (value: any) -> boolean
 onDestroying    (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () }
 nativeClaim     (inst: any) -> ()
+isClaimed       (inst: any) -> boolean
 nativeFindChild (inst: any, key: any) -> any
 ```
 
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
 - **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다.
 - **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
+- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때 부르고, 거짓이면 그 원소를 거부합니다(`Slot: this element is not claimed by quad …`) — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있는가 한 줄이라 이중 claim 판정과 같은 것을 봅니다. mock은 lazy claim이라 mock 인스턴스면 참입니다.
 - **`nativeFindChild(inst, key)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). quad-roblox 구현은 `inst:FindFirstChild(key)`입니다.
 
 ---

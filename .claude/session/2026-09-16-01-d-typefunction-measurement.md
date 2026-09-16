@@ -30,3 +30,6 @@ opus 에이전트가 열린 결정 문항 49건을 추려 온 뒤(시한 있는 
 
 **Slot foreign Instance claim 정책(같은 날, `question.md` §2)** — 메인 권고 (a) 자동 claim에 사용자: *"명시적으로 claim 안 한게 다른 경로로 claim 될 수 있다는거고, 마법 아님? 난 사실 b쪽으로 기우는듯"*. 사실 확인(사용자 질문 *"foreign instance 에 bindlifetime 이 slot 에 넣는것 만으로 자동으로 걸림?"*): 안 걸린다 — `rawAdd`는 `elementOwner` 부기 + `_elements` 삽입 + 물리 op뿐이고 Slot의 `bindLifetime`은 전부 자기 옵저버를 `physicalTarget`에 묶는 것이라, (c)는 "조용히 들어가 밖에서 Destroy되면 stale"이 된다. 결정 **(b)**: 미claim이면 `Add` 에러. 판정은 quad-roblox `InstData`의 gchold 유무(*"gchold 같은게 있는 경우가 claim 된 판정처럼 되는거지?"* — 맞음, `nativeClaim`이 한 번 넣고 이중 claim 에러도 같은 검사)를 op 하나로 노출, mock은 항상 참.
 
+**구현(같은 날)**: `isClaimed(inst): boolean` 계약 op(quad-types `Backend`, quad-base `LifetimeHandle` 스텁, quad-roblox gchold 유무, mock은 mock 인스턴스면 참 — lazy claim이라 게이트 스펙은 슬롯을 덮어써서 검사, `spec.slot` 22), 게이트는 `Slot/Elements.luau` `wrapElement`의 `isInst` 검사 바로 뒤(모든 진입 경로가 지나는 한 자리). 문서: core/06(원소 대수 거부 목록 + Add 규칙), extend/01(슬롯 20개·§3 다섯), CHANGELOG Added(op — 프로바이더 BREAKING)·Changed(Slot BREAKING + 옮기는 법). test.sh exit 0(스펙 60).
+
+**docs-review 2-2(같은 날)**: 사용자 *"권고대로"* → (d) 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem` 편입(`gen-d.py`, 141 export), how-to 01·05 `RobloxModule.…`, 설치 문서 타입 재익스포트 절, `spec.rootexports` 양성; quad-roblox 검사 3.23s(9/15 시제품과 같음). 시한 있는 결정 문항 일곱 전부 닫힘.

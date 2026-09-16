@@ -749,12 +749,19 @@ local function mockProvider(quad: any): { [any]: any }
 	quad.Backend.canBound = canBound
 	quad.Backend.canExecute = canExecute
 	quad.Backend.onDestroying = onDestroying
+	-- [2026-09-16] `isClaimed` — the mock claims LAZILY (bindLifetime claims on demand), so every mock
+	-- instance counts as claimed here; specs that need the Slot gate to fire override this slot
+	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup instead.
+	local function isClaimed(inst: any): boolean
+		return isMockInstance(inst)
+	end
 	quad.Backend.nativeClaim = nativeClaim
+	quad.Backend.isClaimed = isClaimed
 
 	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
-	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim)
+	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim, isClaimed)
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	installTagAttrOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	installTimers(quad) -- 2026-09-08: 시간 op 둘도 같은 프로바이더가(가상 시계 — 위 `advanceTime`)

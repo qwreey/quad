@@ -44,6 +44,7 @@ type SlotItem<T> = T | State<T> | Slot<T>
 - `Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements`
 - `Slot: nil/None cannot be an element — only actually mountable values`
 - `Slot: this backend cannot mount this value`
+- `Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first` — quad 밖에서 만든 인스턴스(`Instance.new`, 다른 라이브러리가 만든 트리)는 quad가 소유하고 있지 않아 죽음을 추적할 수 없으므로 원소로 받지 않습니다. 먼저 [`Claim`](../roblox/04-claim-mapper.md)으로 넘겨받거나 `Declaration`으로 만드세요. Slot이 대신 claim해 주지는 않습니다 — 소유는 언제나 사용자가 명시적으로 시작합니다.
 - `Slot: destroyed Slot cannot be an element`
 
 ## `q.Slot<<T>>(initial?)`
@@ -155,6 +156,7 @@ Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number
   ```
 
 - Slot을 자기 자신이나 자기 조상에 넣으면 순환이라 거부됩니다 — `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`.
+- quad가 소유하지 않은(claim되지 않은) 인스턴스는 거부됩니다 — 위 "원소 대수" 절의 `Slot: this element is not claimed by quad …`. 생성자 `initial`·`:Replace`·`:Splice`·`:List`/`:Single`의 새 원소도 같은 검사를 지납니다.
 - 단일 `Add`는 현재 길이에 비례하는 비용을 냅니다. 여러 개를 한 번에 넣을 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요.
 
 **예제**

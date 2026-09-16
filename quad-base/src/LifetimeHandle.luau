@@ -69,6 +69,11 @@ local function Init(module: any)
 	if module.Backend.nativeClaim == nil then
 		module.Backend.nativeClaim = notInstalled("nativeClaim")
 	end
+	-- [2026-09-16] `isClaimed(inst)` — Slot's foreign-element gate (`Slot/Elements.luau`); user decision:
+	-- unclaimed elements are rejected, never auto-claimed (question.md §2, 2026-09-16).
+	if module.Backend.isClaimed == nil then
+		module.Backend.isClaimed = notInstalled("isClaimed")
+	end
 	if module.Backend.nativeFindChild == nil then
 		module.Backend.nativeFindChild = notInstalled("nativeFindChild")
 	end

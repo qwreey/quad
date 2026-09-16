@@ -606,6 +606,10 @@ export type Backend = {
 	-- gcconn/gchold 셋업 op(claim-plan §7-9 — `New` ②단계와 `Claim`이 같은
 	-- op를 부른다. 이중 claim은 셋업 유무로 error).
 	nativeClaim: (inst: any) -> (),
+	-- [2026-09-16 사용자 결정 — question.md §2 Slot foreign Instance] claim 여부 술어: quad-roblox는 `nativeClaim`이
+	-- 남긴 셋업(gchold) 유무, mock은 lazy claim이라 mock 인스턴스면 참. Slot이 요소를 받을 때 미claim이면 거부한다
+	-- (자동 claim은 마법 — 사용자가 `Claim`/`Declaration`으로 먼저 소유해야 한다).
+	isClaimed: (inst: any) -> boolean,
 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
 	nativeFindChild: (inst: any, key: any) -> any,
 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`

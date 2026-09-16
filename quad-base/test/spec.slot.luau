@@ -1046,4 +1046,30 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 22. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===")
+do
+	-- the mock claims lazily so its isClaimed is always true; flip the slot to reach the gate.
+	local q3 = mock.newQuad()
+	local saved = q3.Backend.isClaimed
+	local claimed = {}
+	q3.Backend.isClaimed = function(inst) return claimed[inst] == true end
+	local foreign, owned = mock.Instance.new("Frame"), mock.Instance.new("Frame")
+	claimed[owned] = true
+	local s = q3.Slot()
+	local ok, err = pcall(function() return s:Add(foreign) end)
+	assert(not ok and string.find(tostring(err), "Slot: this element is not claimed by quad", 1, true) ~= nil, "unclaimed element rejected: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "isClaimed gate blames the Add line")
+	assert(s.Length:Get() == 0, "nothing entered")
+	assert(s:Add(owned) == 1, "claimed element accepted")
+	local owned2 = mock.Instance.new("Frame")
+	claimed[owned2] = true
+	local ok2, err2 = pcall(function() return q3.Slot({ owned2, foreign }) end)
+	assert(not ok2 and string.find(tostring(err2), "not claimed", 1, true) ~= nil, "constructor pre-pass hits the same gate: " .. tostring(err2))
+	local ok3, err3 = pcall(function() return s:Splice(2, 0, foreign) end)
+	assert(not ok3 and string.find(tostring(err3), "not claimed", 1, true) ~= nil, "Splice hits the same gate: " .. tostring(err3))
+	q3.Backend.isClaimed = saved
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

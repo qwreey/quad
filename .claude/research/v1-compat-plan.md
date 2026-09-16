@@ -253,7 +253,7 @@ v2 트리 안에 과거 v1 컴포넌트를 리프로 박아넣는 것, (B) 기�
   훅으로 강제할지도 Slot 실제 구현 시점 확인 필요.
 - **[2026-09-03 현황]** 위 둘 중 **첫째는 확인됐다** — M6 Slot 코어가
   실재하고 `isInst`만 보므로 quad 밖 Instance도 요소로 받아들여진다(갈래는
-  `question.md`의 Slot foreign 항목, (a) 자동 claim 권고로 회신 대기).
+  `question.md`의 Slot foreign 항목 — **[2026-09-16 닫힘 (b)]** 미claim이면 `Add`가 거부, 자동 claim은 마법이라 기각; `isClaimed` op, `claim-plan.md` 14번).
   **둘째(그 요소에 대한 retract "폐기"의 정확한 동작)는 여전히 미확인** —
   현 구현은 `Remove`가 `nativeRemove`(= `Destroy`)이고 `Owned = false`
   경로만 언마운트라, 7-1의 "Unmount 경유" 훅 자리는 v1-compat 착수 때

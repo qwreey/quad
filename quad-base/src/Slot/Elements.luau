@@ -46,6 +46,14 @@ return function(S: Types.SlotInternal, module: any)
 			if not module.Backend.isInst(v) then
 				raise("Slot: this backend cannot mount this value", S.SURFACE)
 			end
+			-- [2026-09-16 사용자 결정 — question.md §2] a foreign element (made outside quad, never
+			-- claimed) is rejected here rather than silently accepted: Add only did elementOwner
+			-- bookkeeping, so an unclaimed element had no death tracking and any leaf binding on it
+			-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
+			-- the user takes ownership first with `Claim` (or builds it with the Declaration).
+			if not module.Backend.isClaimed(v) then
+				raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first", S.SURFACE)
+			end
 			return v
 		end
 		local sub = S.Slot()

@@ -72,6 +72,12 @@ local function install(quad: any)
 		InstData:SetWeak(inst, "gcconn", gcconn)
 	end
 
+	-- [2026-09-16 사용자 결정] claim 여부 — `nativeClaim`이 남기는 셋업(gchold) 유무 그대로(이중 claim 판정과 같은 검사).
+	-- Slot이 요소를 받을 때 부른다(`Slot/Elements.luau`); 파괴된 인스턴스도 셋업이 남아 있으면 참(`H-293` UB 그대로).
+	local function isClaimed(inst: any): boolean
+		return inst ~= nil and InstData:GetWeak(inst, "gchold") ~= nil
+	end
+
 	-- (1) private predicate shared by both public entry points ((3))
 	local function isBoundAlive(value: any): boolean
 		if value == nil then
@@ -178,11 +184,12 @@ local function install(quad: any)
 	quad.Backend.canBound = canBound
 	quad.Backend.canExecute = canExecute
 	quad.Backend.nativeClaim = nativeClaim
+	quad.Backend.isClaimed = isClaimed
 
 	-- `H-238`: the backend must tag every function it installs in the shared
 	-- error namespace, or errorBeforeNearest below these frames cannot find
 	-- the surface and blames the wrong line.
-	Err.setFuncLevel(SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, nativeClaim)
+	Err.setFuncLevel(SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, nativeClaim, isClaimed)
 end
 
 return install
