@@ -28,16 +28,32 @@ type function EventProbe(cls: type, evName: type)
 					local parent = ty:readparent()
 					print("[P6-3] extern parent: " .. tostring(parent))
 				end
-				-- (b) Connect를 읽어 2번 파라미터(콜백)를 꺼내 본다 — extern/table 공통 경로
-				local conn = ty:readproperty(types.singleton("Connect"))
+				-- (b) Connect를 읽어 콜백 파라미터를 꺼내 본다. [Studio 실측 2026-09-16] `readproperty`는
+				-- 테이블 전용("expected self to be either a table, but got extern")이라 extern은 properties()로 찾는다.
+				local conn: type? = nil
+				if ty.tag == "table" then
+					conn = ty:readproperty(types.singleton("Connect"))
+				else
+					for pk, pv in ty:properties() do
+						if pk:value() == "Connect" then
+							conn = pv.read or pv.write
+							break
+						end
+					end
+				end
 				if conn == nil then
 					print("[P6-4] Connect 없음")
 				else
 					print("[P6-4] Connect tag=" .. tostring(conn.tag) .. " " .. string.sub(tostring(conn), 1, 80))
 					if conn.tag == "function" then
 						local head = conn:parameters().head
-						local cb = if head ~= nil then head[2] else nil
-						print("[P6-5] 콜백=" .. (if cb then tostring(cb) else "못 찾음") .. " (head 길이 " .. tostring(if head then #head else -1) .. ")")
+						local parts = {}
+						if head ~= nil then
+							for i, h in head do
+								parts[#parts + 1] = i .. ":" .. tostring(h.tag) .. "=" .. string.sub(tostring(h), 1, 40)
+							end
+						end
+						print("[P6-5] 파라미터 " .. tostring(if head then #head else -1) .. "개: " .. table.concat(parts, " | "))
 					elseif conn.tag == "intersection" then
 						for i, c in conn:components() do
 							print("[P6-5." .. i .. "] 오버로드 " .. tostring(c))
