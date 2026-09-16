@@ -138,4 +138,19 @@ do
 end
 
 print()
+print()
+print("=== 7. round10 G-1 — Animate가 건 State에 Tween/State를 넣으면 Tween 검증이 사용자 줄을 blame(옛: Animate.luau:115) ===")
+do
+	local s = q.Source(0 :: any)
+	local g = s:Apply(Animate({ Time = 0.1 }))
+	local ok, err = pcall(function()
+		s:Set(q.Tween({ Value = 5 }))
+		return g:Get()
+	end)
+	assert(not ok and string.find(tostring(err), "Tween: Value must be a plain value, not None or another Tween", 1, true) ~= nil, "nested Tween rejected: " .. tostring(err))
+	assert(string.find(tostring(err), "Animate.luau", 1, true) == nil, "no quad file on the blame line: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.animate.luau", "Tween validation inside Animate's Compute blames the user's line")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

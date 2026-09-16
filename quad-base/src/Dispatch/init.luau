@@ -349,7 +349,7 @@ local function Init(module: any)
 			-- the tie print below, so a rejected handler leaves no misleading line)
 			Err.errorBeforeNearest(`Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
 		end
-		if module.debug then
+		if module.debug and not module._installingProvider then -- round10 G-2: a provider's intended ties are not user mistakes
 			for _, existing in handlers do
 				-- two handlers declaring DIFFERENT key types never share a bucket, so
 				-- their equal priority is not a tie (`H-484` follow-up, code-review)

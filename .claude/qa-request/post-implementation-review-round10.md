@@ -49,6 +49,18 @@
 
 발견 9(+ 이미 닫힌 1): (1) State 현재값 `None`이 nil/None 팔에 걸려 `slot:Add(q.Source(q.None))`이 거부되던 회귀(`H-467`/Q30 None==nil) → None을 nil처럼 건너뜀(`spec.slot` 30); (2) `opts` 게이트가 `_listed = true` 뒤에 있어 거부된 `:List`가 반설치 상태를 남김 → 대입 앞으로(`spec.inputgates` 3 재시도 단언); (3) `AddPlugin`의 debug 덮어쓰기 루프가 새 게이트보다 먼저 nil을 순회 → 게이트를 `pluginFn` 직후로(`spec.inputgates` 4 debug on); (4) `commitIdle`/`Flush` 경로의 같은 반쪽 상태 → **Q55**; (5) `H-528`의 `isPlainBranded` 좁힘이 Q27 계약을 깸 → 철회; (6) `seen`/`inSlot` 이중 시드 +39% → 한 테이블 마커; (7) 메시지 접두 수술(`msg:sub`) → State 경로도 raw와 같은 `Slot: …` 한 모양; (8) 반응형 자식 스왑에서 게이트가 체인 철거 뒤에 던지는 것 → CHANGELOG BREAKING 줄에 한 구절; (9) extend/01·CHANGELOG의 `isClaimed` 호출 범위에 정적 자식(hot path) 명시; (10) `H-529` 카운터 결함은 `65c2780`이 이미 닫음. 잔여 정리 항목(검증 안 함): `checkIndex`가 양의 정수 술어의 세 번째 사본, `markManual` 손 배치 열 곳(빈 Slot `Clear`도 표시), `Claim` 부재 raise가 `nativeClaim`/`_fired` 뒤라 고친 재시도가 "already used"(H-425/H-471 모양) — 다음 라운드.
 
+## §7 소진 확인 1 — 탐사 G(2026-09-17 새벽, opus): quad-roblox/src 전수 정적 + 실행
+
+사용자: *"찾은 부분 이외 다른 부분이 더 있나, 소진되었나 확인하기 위해 opus 둘을 띄우고 … 소진되었다면 내일 batch 작업 해줄게."* G(quad-roblox 층 — 어젯밤 F는 quad-base만)는 **새 발견 7**(확실 5·개연 2)이라 아직 소진이 아니다. 반영:
+
+- **`H-531` (MED, G-1) `Animate`가 건 State에 Tween/State를 넣으면 `Tween` 검증이 `Animate.luau:115`를 blame.** `H-464`(리터럴 호이스트)·`H-502`(State 필드 outermost)가 닫은 것은 `validateFields`뿐이고 `Tween.validate`의 `Value` 검사 넷은 nearest 그대로였다 — 세 번째 층. `validate(opts, raise?)`·`newTween(opts, raise?)`·내부 `tweenOutermost`를 두고 `Animate`가 그것을 쓴다. `spec.animate` 7.
+- **`H-532` (LOW, G-2) `q.debug = true`를 `UseProvider` 앞에 켜면(core/01이 권하는 순서) 백엔드 자기 등록이 거짓 동률 경고 두 줄**(Property/Event, InstanceChild/OnChange — 값 모양으로 서로소, keyType 같아 `H-484` 좁힘이 안 닿음). 프로바이더 설치 중(`_installingProvider`)엔 동률 진단을 끈다.
+- **`H-533` (LOW, G-4) 루트 디스크립터의 문자열 키가 조용히 무시**돼 `M.Frame("SomeName")`이 루트 자신을 claim — `Claim: the root descriptor takes M.Root, not a key`. `spec.claim` 10.
+- **`H-534` (LOW·개연→게이트, G-5) `nativeFindChild`에 비문자열 키**(`M.Root`를 자식 자리에, 숫자)는 실물 `FindFirstChild`가 `EngineOps.luau`를 blame하며 던지고 mock은 nil을 줘 스펙이 못 본다 — quad-roblox op에 문자열 게이트(`nativeFindChild: key must be a child name string`). `spec.claim` 10.
+- **Q48 보강(G-6, MED)**: 숏핸드 관리 자식(`_quad_round`/`_quad_padding`/`_quad_scale`)도 소유권 부기 밖 — `q.dispose(child)`가 에러 없이 파괴하고 `managed` Relate가 시체를 쥐어 이후 `UICorner` 발행이 시체에 조용히 써진다(헤더의 "엔진이 raise한다"는 틀림 — 파괴된 인스턴스도 `Parent` 외 프로퍼티 쓰기는 허용). **Q48 (a)의 `(inst, k)` 등록은 이 자식을 안 덮는다** — 세 번째 자리로 같이 결정할 것.
+- **Q53 보강(G-7, LOW)**: Property retractor가 `Void`라 3-상태 슬롯이 철거 뒤에도 남는 것의 두 번째 증상 — 철거 뒤 같은 타깃 Tween 재선언이 Q25 값 dedup에 걸려 통째로 무시(공개 `Dispatch.retractFrom` 경로). Q53을 "엔진 트윈 Cancel"로만 닫으면 이건 안 닫힌다 — 슬롯을 비워야 둘 다.
+- **Q56 — `bindLifetime`이 부기를 커밋한 뒤 사용자 코드(`_catchUp`/`_bindDestroying`)를 돌려 반쪽 바인딩이 남는다(G-3, LOW).** 상황: 142~146행 `H-184` 주석은 "`_assertBindable`을 커밋 앞에 — 던지면 반쪽 핸들을 남기지 말 것"이라 적었지만, 바로 뒤의 held emit 캐치업과 Destroying 훅 연결은 커밋 뒤라, 바인딩 전에 보류된 emit이 있는 Observer/Effect의 콜백이 던지면 `D.Frame { obs }`가 raise한 뒤 고친 새 Frame으로 재시도해도 `bindLifetime: value is already bound to another Instance`(실측 둘 다). 실패한 Frame은 claim 셋업의 자기 참조 커넥션에 핀되어 그 Observer는 영구 재바인딩 불가. 무엇이 막히나: architecture "예외 안전성 계약"이 throw 뒤 부기 정합성을 보장하지 않는다고 하지만 `H-425`/`H-471`과 같은 "고친 재시도가 진짜 원인 대신 already-X를 말한다" 모양. 갈래: (a) `_catchUp`/`_bindDestroying`이 던지면 되감기(unbind + Relate 제거) 뒤 원문 되던짐 — pcall 필요(Q55와 같은 축) / (b) `H-184` 문구를 "`_assertBindable`까지만"으로 좁히고 UB 문서화 / (c) 캐치업을 바인딩 밖(호출자 `Dispatch` 쪽)에서 돌리도록 순서 재배치(감싸지 않고 닫힘 — 설계 변경). 권고 (c) 검토, 최소 (b).
+
 ## §6 참고 — 재현 스크립트
 
 `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/hunt-{a,b,c,d,e,f}/`(세션 스크래치 — 세션이 끝나면 사라진다; 필요한 것은 각 H/Q에 spec으로 옮겼거나 §4에 재현 절차를 적었다).

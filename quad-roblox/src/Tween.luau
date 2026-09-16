@@ -110,32 +110,37 @@ local function install(quad: any): any
 		end
 	end
 
-	local function validate(opts: any)
+	-- `raise` — nearest by default (direct `q.Tween{}` call); `Animate` passes outermost because its
+	-- lazy Compute's nearest tagged frame is `Tween` itself, which blamed `Animate.luau` (round10 G-1 —
+	-- the third layer of the `H-464`/`H-502` residue: literals were hoisted, State fields were routed,
+	-- but the four `Value` checks here still blamed nearest)
+	local function validate(opts: any, raise: ((string, number) -> ())?)
+		local fail = raise or Err.errorBeforeNearest
 		if type(opts) ~= "table" then
-			Err.errorBeforeNearest("Tween: expected an options table (Tween{ Value = ... })", SURFACE)
+			fail("Tween: expected an options table (Tween{ Value = ... })", SURFACE)
 		end
 		if opts.Value == nil then
-			Err.errorBeforeNearest("Tween: Value is required", SURFACE)
+			fail("Tween: Value is required", SURFACE)
 		end
 		if isState(opts.Value) then
 			-- Q16 (b) (사용자 결정 2026-09-07): every Tween field is a plain value (tween-plan 불변식) —
 			-- a State here reached the engine as a table (`H-398`). Put the Tween in the State instead.
-			Err.errorBeforeNearest("Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
+			fail("Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
 		end
 		if opts.Value == None or isTween(opts.Value) then
 			-- `H-463`: the same invariant, the other two non-plain quad values — None (the frozen
 			-- sentinel) and a nested Tween both reached the engine as a table through
 			-- `Property.process`'s Tween branch. To release a property, emit None ITSELF
 			-- (`Animate` passes nil/None through untouched — Q8 (a)).
-			Err.errorBeforeNearest("Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)
+			fail("Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)
 		end
-		validateFields(opts)
+		validateFields(opts, raise)
 	end
 
 	-- clone → brand → freeze. `table.clone` keeps the caller's table untouched
 	-- (immutability is ours to guarantee, not the caller's).
-	local function newTween(opts: any): any
-		validate(opts)
+	local function newTween(opts: any, raise: ((string, number) -> ())?): any
+		validate(opts, raise)
 		local self: any = setmetatable(table.clone(opts), TweenImpl)
 		TweenBrand:Register(self)
 		return table.freeze(self)
@@ -177,7 +182,11 @@ local function install(quad: any): any
 	quad.isTween = isTween
 	-- `validateFields` is quad-roblox-internal wiring for `Animate.luau` (via RobloxFactory),
 	-- not a module surface
-	return { Tween = Tween, isTween = isTween, validateFields = validateFields }
+	-- `tweenOutermost` — the same constructor with outermost blame, for `Animate`'s lazy Compute (G-1)
+	local function tweenOutermost(opts: any): any
+		return newTween(opts, Err.errorBefore)
+	end
+	return { Tween = Tween, isTween = isTween, validateFields = validateFields, tweenOutermost = tweenOutermost }
 end
 
 return install

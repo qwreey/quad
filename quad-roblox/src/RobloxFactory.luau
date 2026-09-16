@@ -53,7 +53,7 @@ local function RobloxFactory(module: any): any
 	return {
 		Declaration = InitDeclaration(module),
 		OnChange = OnChangeModule.OnChange,
-		Animate = installAnimate(module, tween.validateFields), -- `H-464`: eager literal-option check shares Tween's validator
+		Animate = installAnimate(module, tween.validateFields, tween.tweenOutermost), -- `H-464`: eager literal-option check shares Tween's validator
 		Tween = tween.Tween, -- already on the module (install) — listed so the typed extension is honest
 		isTween = tween.isTween,
 	}

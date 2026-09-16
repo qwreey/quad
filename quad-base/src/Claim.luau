@@ -120,6 +120,11 @@ local function Init(module: any)
 		if not Brand.isMapperDescriptor(desc) then
 			Err.errorBefore("Claim: second argument must be a D.Mapper descriptor", SURFACE)
 		end
+		-- round10 G-4: the root descriptor's key was never read, so `M.Frame("SomeName")` at the root
+		-- silently claimed `inst` itself instead of the child the user meant
+		if desc._key ~= MapperRoot then
+			Err.errorBefore(`Claim: the root descriptor takes M.Root, not a key (got {tostring(desc._key)} — put the keyed descriptor in the root's props instead)`, SURFACE)
+		end
 		resolve(inst, desc)
 		return inst
 	end

@@ -61,6 +61,9 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `Debounce`/`Throttle`의 `Time`이 `State`일 때 그 값이 잘못돼 창을 못 열면(음수·문자열, 또는 시간 op가 없는 백엔드) 게이트가 "막힘 상태인데 타이머 없음"으로 굳어 다음 신호까지 통지가 멈추던 것 — 창을 먼저 잡고 상태를 바꾸도록 순서를 고쳤습니다.
 - `Claim`의 매퍼 키가 트리에 없을 때 내부 파일 이름으로 죽던 것 — `Claim: no child matched key … under …`로 키를 말합니다.
 - `Modifier` 초기 필드에 함수를 넣었을 때의 안내가 이벤트 핸들러를 변환 함수 자리로 이끌던 것 — 이벤트는 Modifier에 두지 않고 선언의 인라인 키나 `State`로 넣으라고 안내합니다.
+- `Animate`가 건 `State`에 `Tween`이나 `State`를 넣었을 때 나는 검증 에러가 quad 내부 줄(`Animate.luau`)을 가리키던 것 — 호출한 줄을 가리킵니다.
+- `q.debug = true`를 `UseProvider` 앞에 켜면 quad-roblox 자신의 핸들러 등록에 "priority tie" 경고 두 줄이 찍히던 것(의도된 동률) — 프로바이더 설치 중에는 그 진단을 내지 않습니다.
+- `Claim`의 루트 디스크립터에 문자열 키를 주면(`M.Frame("Name")`) 조용히 무시되고 루트 자신이 claim되던 것 — `Claim: the root descriptor takes M.Root, not a key …`로 거부합니다. 자식 자리에 `M.Root`나 숫자를 키로 주면 `nativeFindChild: key must be a child name string …`입니다(전에는 엔진 에러가 내부 파일을 가리켰습니다).
 - 인자 모양을 검사하지 않던 입구에 검사를 넣었습니다(전부 호출한 줄을 가리킵니다): `Dispatch.process`/`retractFrom`의 `index`(양의 정수), `Modifier:Apply`의 factory(함수), `slot:List`/`:Single`의 `opts`(테이블 — 문자열은 조용히 무시됐습니다), `AddPlugin`/`UseProvider`의 인자(함수)와 반환값(확장 테이블). `UseProvider(nil)`이 아무 일도 없이 성공하던 것도 이제 에러입니다.
 - 검증에 실패한 CRUD 호출(`Add(nil)` 등)이 Slot을 수동 모드로 표시해 뒤의 `:List`가 "CRUD를 썼다"고 거부하던 것 — 실제로 바꾼 호출만 표시합니다.
 - `Slot:Splice`가 같은 호출에서 빼는 원소를 되넣거나 `Replace(i, slot:Get(i))`를 하면 "같은 원소가 두 번"이라던 것 — "이미 이 Slot에 있다, Move/Swap을 쓰라"로 바르게 말합니다. `keyFn`이 NaN을 돌려주면 nil과 같은 도메인 에러입니다. `Tag`에 자기를 담은 리스트를 주면 내부 스택 오버플로 대신 도메인 에러입니다.
