@@ -94,6 +94,7 @@ print()
 print("=== 3. InstanceChild — 마운트 + H-134 부기(오프셋 산술이 실제로 선다) ===")
 do
 	local c1, c2 = Instance.new("TextLabel"), Instance.new("TextLabel")
+	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2) -- 2026-09-16: static children must be quad-owned (spec 11)
 	c1.Name, c2.Name = "A", "B"
 	local f = q.Declaration.Frame({ c1, c2 }) :: any
 	assert(c1.Parent == f and c2.Parent == f, "both static children mounted")
@@ -105,6 +106,7 @@ print()
 print("=== 4. 교체·철거 — 옛 자식은 내림(파괴 아님), H-154 dedup은 detach를 접는다 ===")
 do
 	local c1, c3 = Instance.new("TextLabel"), Instance.new("TextLabel")
+	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c3)
 	c1.Name, c3.Name = "Old", "New"
 	local f = q.Declaration.Frame({ c1 }) :: any
 
@@ -137,6 +139,7 @@ print()
 print("=== 5. 반응형 자식 — State<Instance>가 StoreBind → InstanceChild로 흐른다 ===")
 do
 	local c1, c2 = Instance.new("TextLabel"), Instance.new("TextLabel")
+	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2)
 	c1.Name, c2.Name = "R1", "R2"
 	local src = q.Source(c1)
 	local f = q.Declaration.Frame({ src }) :: any
@@ -183,6 +186,7 @@ print()
 print("=== 8. 타입 교대(탐사자 🟡-2c·d 승격) — child↔None↔nil에서 형제 오프셋 추적 + StoreBind 경유 dedup ===")
 do
 	local c1, c2, sib = Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("TextLabel")
+	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2); q.Backend.nativeClaim(sib)
 	local src = q.Source(c1 :: any)
 	local f = q.Declaration.Frame({ src, sib }) :: any
 	assert(c1.Parent == f and q.Bookkeeping.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
@@ -237,10 +241,27 @@ do
 	assert(f.ZIndex == 4, "reactive field stays live")
 	-- 자식과 섞여도 오프셋 무영향
 	local c = Instance.new("TextLabel")
+	q.Backend.nativeClaim(c)
 	local f2 = q.Declaration.Frame({ q.Modifier():Name("M"), c }) :: any
 	assert(c.Parent == f2 and q.Bookkeeping.getOffsetAt(f2, 2) == 0 and f2.Name == "M", "sentinel slot contributes 0; child mounts")
 	print("PASS")
 end
 
 print()
+print()
+print("=== 11. 미claim 정적 자식 거부 — Slot 게이트와 대칭(2026-09-16 사용자 결정, question.md §2) ===")
+do
+	-- quad-roblox specs run the REAL LifetimeHandle over mock instances, so this exercises the
+	-- real predicate (gchold setup) — no override needed.
+	local foreign, owned = Instance.new("TextLabel"), Instance.new("TextLabel")
+	q.Backend.nativeClaim(owned)
+	local ok, err = pcall(function() return q.Declaration.Frame({ foreign }) end)
+	assert(not ok and string.find(tostring(err), "InstanceChild: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
+	assert(foreign.Parent == nil, "no bookkeeping/parenting happened before the raise")
+	mock.assertBlamesUser(err, "spec.handlers.luau", "static-child gate blames the D.Frame line")
+	local f = q.Declaration.Frame({ owned }) :: any
+	assert(owned.Parent == f, "claimed child mounts")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -21,6 +21,9 @@
 	early-return. The old child is DEMOTED, not destroyed
 	(`slot-plan.md`의 "`State<Slot>` 교체는 파괴가 아니라 언마운트").
 
+	[2026-09-16] `isClaimed` gate before the bookkeeping — same rule as the Slot element
+	gate (`claim-plan.md` 14번): a static child must already be quad-owned.
+
 	`isInst`는 주입 술어(H-40 화이트리스트) — quad-roblox 실물은
 	`typeof == "Instance"`, mock 환경의 spec은 그 술어 자리를 갈아 끼운다
 	(그게 이 술어가 주입식인 이유 그 자체).
@@ -31,6 +34,8 @@ local QuadTypes = require("../../luau_packages/quad_types")
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	local None = quad.None
+	local Err = quad.errorNamespace
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	dispatch.addHandler({
 		name = "InstanceChild",
@@ -40,6 +45,14 @@ local function install(quad: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
+			-- [2026-09-16 사용자 결정 — question.md §2, Slot 게이트와 대칭] a child quad does not own
+			-- (never claimed: `Instance.new`, another library's tree) is rejected before any
+			-- bookkeeping — otherwise its death outside quad leaves a length-1 entry pointing at a
+			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
+			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
+			if not quad.Backend.isClaimed(v) then
+				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first", SURFACE)
+			end
 			quad.Bookkeeping.setOffsetSource(inst, k, None)
 			v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게
 			quad.Bookkeeping.setLength(inst, k, 1, inst)

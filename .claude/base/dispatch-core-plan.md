@@ -1713,7 +1713,7 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   `getOffsetAt(inst, 2)`가 `lengthList[1] == nil`을 만나 `H-106` 가드로 error
   (순서를 뒤집으면 `bk.N`이 1에서 멈춰 안 터진다 — 위와 같은 "가끔" 모양).
   확정(사용자, 갈래 없음 — `H-39`의 "예외 없이"에 이 핸들러를 넣는 것뿐):
-  `process`에서 `setOffsetSource(inst, k, None)` → **`v.Parent = inst`** →
+  `process`에서 **[2026-09-16] `if not isClaimed(v) then error("InstanceChild: this Instance is not claimed by quad …") end`**(미claim 정적 자식 거부 — Slot 요소 게이트와 대칭, `claim-plan.md` 14번) → `setOffsetSource(inst, k, None)` → **`v.Parent = inst`** →
   **`setLength(inst, k, 1, inst)`**(상수 `1`). 반환 클로저는 (A)/(B) 분기·단순
   철거에서 **`if nextValue == v then return end`**(**[2026-08-28 확정, 10라운드
   `H-154`]** 같은 값 재발행 dedup — `SlotHandler`의 retractor 쪽 `slotValue ==
