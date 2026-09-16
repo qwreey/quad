@@ -159,7 +159,7 @@ end)
 
 ## `state:Apply(blocker)`
 
-`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](../core/03-state.md#stateapplyfactory)의 객체 팔로 붙습니다. 정확히 다음과 같습니다:
+`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](../core/03-state.md#stateapplyfactory)의 객체 팔로 붙습니다(대상이 `State`가 아니면 `Blocker: Apply target must be a State (got {typeof(state)})`). 정확히 다음과 같습니다:
 
 ```luau
 state:Apply(blocker)

@@ -9,6 +9,7 @@
 ]]
 
 local Types = require("./types")
+local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
 
 return function(S: Types.SlotInternal, module: any)
 
@@ -54,6 +55,11 @@ return function(S: Types.SlotInternal, module: any)
 	S.checkRawElement = checkRawElement
 
 	local function wrapElement(v: any, raise: (string, any) -> ()): any
+		-- round10 H-537 (code-review 보강): the cross-instance door for Slot/State elements lives HERE so all
+		-- three arrivals (CRUD pre-pass, :List reconcile, wrapper Single) pass it once
+		if S.isSlot(v) or S.isState(v) then
+			ModuleIdentity.assertOwnAtCall(module, v, "Slot")
+		end
 		if S.isSlot(v) then
 			-- round15 `H6-19`: a destroyed Slot must fail HERE (pre-pass), not
 			-- inside attachSlot after the array/ownership mutation — otherwise

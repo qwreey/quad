@@ -98,6 +98,11 @@ local function Init(module: any)
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
 				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).
+				-- round10 G-5 (§7-1 debug check): a non-string key (M.Root in a child slot, a number) is
+				-- backend-defined — Roblox's FindFirstChild raises its own error on it
+				if module.debug and type(v._key) ~= "string" then
+					print(`Claim: child descriptor key is a {typeof(v._key)} — M.Root is only for the root descriptor; a child key is a name`)
+				end
 				local child = module.Backend.nativeFindChild(inst, v._key)
 				if child == nil then
 					Err.errorBefore(`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)})`, SURFACE)
@@ -120,10 +125,10 @@ local function Init(module: any)
 		if not Brand.isMapperDescriptor(desc) then
 			Err.errorBefore("Claim: second argument must be a D.Mapper descriptor", SURFACE)
 		end
-		-- round10 G-4: the root descriptor's key was never read, so `M.Frame("SomeName")` at the root
-		-- silently claimed `inst` itself instead of the child the user meant
-		if desc._key ~= MapperRoot then
-			Err.errorBefore(`Claim: the root descriptor takes M.Root, not a key (got {tostring(desc._key)} — put the keyed descriptor in the root's props instead)`, SURFACE)
+		-- round10 G-4 (claim-plan §7-1: a DEBUG check, not a runtime guard — §3 principle): the root
+		-- descriptor's key is never read, so `M.Frame("SomeName")` at the root claims `inst` itself
+		if module.debug and desc._key ~= MapperRoot then
+			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
 		end
 		resolve(inst, desc)
 		return inst

@@ -202,12 +202,6 @@ local function Init(module: any)
 		end
 		for i = 1, count do
 			local raw = items[i]
-			-- round10 H-4: a Slot/State made by ANOTHER quad module instance arrived through this door
-			-- unchecked (drive's SlotHandler and :List's data State already refuse — `H-186` doors), and
-			-- the other instance's `dispose` then tore it out of this tree with the bookkeeping left behind
-			if isSlot(raw) or module.isState(raw) then
-				ModuleIdentity.assertOwnAtCall(module, raw, surface)
-			end
 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
 			local occupant = if element ~= raw then raw:Get() else raw
 			-- `None` in a State is the absent element (`H-467`/Q30: None == nil) — skip like nil
@@ -220,6 +214,11 @@ local function Init(module: any)
 				-- same raw gate, so nothing is touched on failure. A State may hold a Slot (`State<Slot>`
 				-- swap) — that arm only rejects a destroyed one, as wrapElement does for a raw Slot.
 				if element ~= raw then
+					-- code-review: the occupant of this instance's State may itself be another instance's
+					-- Slot/State (`a:Add(A.Source(bSlot))`) — same door as wrapElement's raw arm
+					if isSlot(occupant) or module.isState(occupant) then
+						ModuleIdentity.assertOwnAtCall(module, occupant, surface)
+					end
 					if isSlot(occupant) then
 						if occupant._destroyed then
 							Err.errorBeforeNearest(surface .. ": destroyed Slot cannot be an element", SURFACE)
@@ -462,18 +461,15 @@ local function Init(module: any)
 			-- Q9: same note as the "already mounted" sites (one constant — round3 `H-451`)
 			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)" .. ZOMBIE_NOTE, SURFACE)
 		end
-		-- round10 H-4: `elementOwner` is per module instance, so another instance's held element passed
-		-- this check and was destroyed under a live tree. A quad value from another instance is refused
-		-- (`H-186` door); an Instance this instance never claimed is refused too (symmetric with Add).
+		-- round10 H-537: `elementOwner` is per module instance, so another instance's Slot passed this
+		-- check and was destroyed under a live tree — a quad value from another instance is refused
+		-- (`H-186` door). An Instance is NOT gated here (code-review): `q.dispose(Instance.new(...))` has
+		-- always been allowed and base cannot tell "claimed elsewhere" from "never claimed" — Q58.
 		if isSlot(value) or module.isState(value) then
 			ModuleIdentity.assertOwnAtCall(module, value, "dispose")
 		end
 		if isSlot(value) then S.destroySlotTree(value)
-		elseif module.Backend.isInst(value) then
-			if not module.Backend.isClaimed(value) then
-				Err.errorBeforeNearest("dispose: this Instance is not claimed by this quad module instance — dispose it through the instance that owns it", SURFACE)
-			end
-			module.Backend.nativeDispose(value)
+		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
 		else Err.errorBeforeNearest("dispose: this backend cannot dispose this value", SURFACE) end
 	end
 

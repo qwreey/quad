@@ -44,7 +44,6 @@ local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses"
 local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any): any
 	local isState = quad.isState
 	local None = quad.None
-	local Tween = quad.Tween
 	local Err = quad.errorNamespace -- shared namespace (`H-231`)
 
 	-- if-then-else, not `and/or`: `false`-valued options (Override/CanAnimate)
@@ -108,12 +107,10 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 				for _, name in FIELDS do
 					opts[name] = resolve(info[name])
 				end
-				-- `H-502`: State-resolved options are validated HERE with outermost blame — the
-				-- `Tween(opts)` below re-checks with nearest, which from this closure is
-				-- `Animate.luau` (the `H-464` residue: literals were hoisted, States were not)
-				validateFields(opts, Err.errorBefore)
-				-- round10 G-1: `Tween(opts)` re-validated `Value` with NEAREST, which from this closure is
-				-- `Animate.luau` itself (a Tween/State fed to an Animated State blamed quad's line)
+				-- `H-502`/round10 G-1: everything here runs inside Compute, where the nearest tagged frame is
+				-- quad's own — so the whole construction (field checks AND the four `Value` checks) uses the
+				-- outermost-blame constructor; the former separate `validateFields(opts, Err.errorBefore)` line
+				-- was an exact duplicate of what `tweenOutermost` runs (code-review)
 				return tweenOutermost(opts) -- a fresh value every run; the Property handler folds equal targets
 			end)
 		end

@@ -214,20 +214,16 @@ do
 end
 
 print()
-print("=== 10. 루트 디스크립터의 문자열 키·자식 자리의 M.Root — 조용히 무시/leaf 에러 대신 Claim·nativeFindChild 메시지(round10 G-4·G-5) ===")
+print("=== 10. 루트 디스크립터의 문자열 키·자식 자리의 M.Root — claim-plan §7-1대로 런타임 가드 없음(debug 검사만), 자식 M.Root는 '부재' 메시지(round10 G-4·G-5 축소) ===")
 do
 	local root = makeTemplate()
-	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame("Title")({ Name = "x" }))
-	end)
-	assert(not ok and string.find(tostring(err), "Claim: the root descriptor takes M.Root, not a key (got Title", 1, true) ~= nil, "root key rejected: " .. tostring(err))
-	mock.assertBlamesUser(err, "spec.claim.luau", "root-key error blames the Claim line")
+	local out = q.Claim(root, M.Frame("Title")({ Name = "x" })) -- the root key is ignored (debug prints a note)
+	assert(out == root and root.Name == "x", "root-key form claims the root itself, as before")
 	local root2 = makeTemplate()
 	local ok2, err2 = pcall(function()
 		return q.Claim(root2, M.Frame(M.Root)({ M.TextLabel(M.Root)({}) }))
 	end)
-	assert(not ok2 and string.find(tostring(err2), "nativeFindChild: key must be a child name string (got table", 1, true) ~= nil, "M.Root as a child key rejected by the op: " .. tostring(err2))
-	assert(string.find(tostring(err2), "EngineOps", 1, true) == nil, "no leaf module in the message")
+	assert(not ok2 and string.find(tostring(err2), "Claim: no child matched key", 1, true) ~= nil, "M.Root as a child key: the mock finds nothing → absence message: " .. tostring(err2))
 	print("PASS")
 end
 

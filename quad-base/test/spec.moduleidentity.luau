@@ -76,7 +76,7 @@ end
 
 print()
 print()
-print("=== 4. round10 H-4 — Slot 요소 문(Add/생성자/Replace/Splice)과 dispose도 교차 인스턴스 문이다 ===")
+print("=== 4. round10 H-537 — Slot 요소 문(Add/생성자/Replace/Extract/Splice, State 안의 점유자, :List 반환값)과 dispose(quad 값)도 교차 인스턴스 문이다 ===")
 do
 	local bSlot, bState = B.Slot(), B.Source(Instance.new("Frame"))
 	local a = A.Slot()
@@ -86,17 +86,20 @@ do
 	expectCross("Splice", function() a:Splice(1, 0, bSlot) end)
 	a:Add(Instance.new("Frame"))
 	expectCross("Replace", function() a:Replace(1, bSlot) end)
-	expectCross("dispose(other Slot)", function() A.dispose(bSlot) end)
+	expectCross("Extract(i, new)", function() a:Extract(1, bSlot) end)
+	-- code-review: this instance's State holding the other instance's Slot/State must not slip through
+	expectCross("Add(A.Source(other Slot))", function() a:Add(A.Source(bSlot)) end)
+	expectCross("Add(A.Source(other State))", function() a:Add(A.Source(bState)) end)
+	-- :List reconcile returning another instance's Slot (the wrapElement door inside the cycle)
 	local host = Instance.new("Frame")
-	local held = Instance.new("Frame")
-	local bHolder = B.Slot({ held })
-	B.Dispatch.drive(host, { bHolder })
-	local saved = A.Backend.isClaimed
-	A.Backend.isClaimed = function() return false end -- the mock claims lazily; the real backend answers per instance
-	local ok, err = pcall(function() A.dispose(held) end)
-	assert(not ok and string.find(tostring(err), "dispose: this Instance is not claimed by this quad module instance", 1, true) ~= nil, "foreign-owned Instance refused: " .. tostring(err))
-	A.Backend.isClaimed = saved
-	assert(bHolder.Length:Get() == 1 and held.Parent == host, "B's tree untouched")
+	local l = A.Slot()
+	l:List(A.Source({ 1 }), function() return bSlot end)
+	local okL, errL = pcall(function() A.Dispatch.drive(host, { l }) end)
+	assert(not okL and string.find(tostring(errL), "another quad module instance", 1, true) ~= nil, ":List result crosses instances: " .. tostring(errL))
+	-- dispose of another instance's quad value
+	expectCross("dispose(other Slot)", function() A.dispose(bSlot) end)
+	expectCross("dispose(other State)", function() A.dispose(bState) end)
+	assert(bSlot.Length:Get() == 0 and not (bSlot :: any)._destroyed, "B's Slot untouched")
 	print("PASS")
 end
 

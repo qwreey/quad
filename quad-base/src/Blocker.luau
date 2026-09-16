@@ -113,7 +113,7 @@ end
 function BlockerImpl.__apply(self: any, state: any): any
 	-- round10 H-2: the one gate-policy entry without an argument gate (`H-492` closed `Policy`'s `emit`;
 	-- `TimedGate:__apply` and every sibling `Apply` check the target) — `__apply(5)` died on `.Gate`
-	if type(state) ~= "table" or type(state.Gate) ~= "function" then
+	if not Brand.isState(state) then -- code-review: `{ Gate = f }` passed the duck check
 		Err.errorBeforeNearest(`Blocker: Apply target must be a State (got {typeof(state)})`, SURFACE)
 	end
 	return state:Gate(function(emit)

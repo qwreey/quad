@@ -209,11 +209,7 @@ local function New(): Quad
 		-- UseProvider 재호출은 계약 밖), 실행-전 표시는 providerFn이 도중
 		-- 던졌을 때 슬롯만 점유된 채 확장이 영영 병합되지 않는 좀비를
 		-- 만든다(재시도가 멱등 no-op로 삼켜짐).
-		-- round10 G-2: a provider's own handlers may tie on purpose (Property/Event, InstanceChild/OnChange —
-		-- disjoint by VALUE shape, same keyType), so the addHandler tie diagnostic is muted while it installs
-		self._installingProvider = true
 		local extension = providerFn(self)
-		self._installingProvider = nil
 		mergeExtension(self, extension, "UseProvider")
 		providerRelate:SetStrong(self, "provider", providerFn)
 		return self :: any

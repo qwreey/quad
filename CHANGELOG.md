@@ -60,11 +60,10 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `Claim`의 매퍼 키가 트리에 없을 때 내부 파일 이름으로 죽던 것 — `Claim: no child matched key … under …`로 키를 말합니다.
 - `Modifier` 초기 필드에 함수를 넣었을 때의 안내가 이벤트 핸들러를 변환 함수 자리로 이끌던 것 — 이벤트는 Modifier에 두지 않고 선언의 인라인 키나 `State`로 넣으라고 안내합니다.
 - `q.Operator`의 `Sum`/`Product`/`Min`/`Max`/`Band`/`Bor`/`Bxor`가 값이 `nil`인 `State` 인자를 조용히 건너뛰고 나머지만 계산하던 것(`Clamp`/`Shl`은 내부 에러) — 읽는 시점에 `Operator.Sum: argument #N is a State whose current value is nil …`로 던집니다.
-- 다른 quad 모듈 인스턴스가 만든 `Slot`/`State`를 `Slot`의 원소 자리(`Add`/생성자/`Replace`/`Splice`)에 넣거나 `q.dispose`에 넘기면 이제 거부합니다(전에는 통과해 다른 인스턴스의 트리를 조용히 망가뜨릴 수 있었습니다). `q.dispose`는 이 인스턴스가 claim한 Instance만 파괴합니다.
+- 다른 quad 모듈 인스턴스가 만든 `Slot`을 `Slot`의 원소 자리(`Add`/생성자/`Replace`/`Extract`/`Splice`, `State`에 담아서, `:List`의 반환값으로)에 넣거나 `q.dispose`에 넘기면 이제 거부합니다 — 전에는 통과해 다른 인스턴스의 트리를 조용히 망가뜨릴 수 있었습니다(`State`는 이미 거부됐고 이제 같은 자리에서 같은 문구로 거부합니다).
 - `q.Blocker()`를 `__apply`로 State가 아닌 값에 걸면 내부 에러가 나던 것 — `Blocker: Apply target must be a State …`.
 - `Animate`가 건 `State`에 `Tween`이나 `State`를 넣었을 때 나는 검증 에러가 quad 내부 줄(`Animate.luau`)을 가리키던 것 — 호출한 줄을 가리킵니다.
-- `q.debug = true`를 `UseProvider` 앞에 켜면 quad-roblox 자신의 핸들러 등록에 "priority tie" 경고 두 줄이 찍히던 것(의도된 동률) — 프로바이더 설치 중에는 그 진단을 내지 않습니다.
-- `Claim`의 루트 디스크립터에 문자열 키를 주면(`M.Frame("Name")`) 조용히 무시되고 루트 자신이 claim되던 것 — `Claim: the root descriptor takes M.Root, not a key …`로 거부합니다. 자식 자리에 `M.Root`나 숫자를 키로 주면 `nativeFindChild: key must be a child name string …`입니다(전에는 엔진 에러가 내부 파일을 가리켰습니다).
+- `q.debug`가 켜져 있으면 `Claim`이 두 가지 실수를 알려 줍니다: 루트 디스크립터에 문자열 키를 준 경우(`M.Frame("Name")` — 키는 무시되고 루트 자신이 claim됩니다)와 자식 자리의 키가 문자열이 아닌 경우(`M.Root`를 자식에). 동작은 그대로입니다(런타임 검사를 두지 않는 `Claim`의 규칙).
 - 인자 모양을 검사하지 않던 입구에 검사를 넣었습니다(전부 호출한 줄을 가리킵니다): `Dispatch.process`/`retractFrom`의 `index`(양의 정수), `Modifier:Apply`의 factory(함수), `slot:List`/`:Single`의 `opts`(테이블 — 문자열은 조용히 무시됐습니다), `AddPlugin`/`UseProvider`의 인자(함수)와 반환값(확장 테이블). `UseProvider(nil)`이 아무 일도 없이 성공하던 것도 이제 에러입니다.
 - 검증에 실패한 CRUD 호출(`Add(nil)` 등)이 Slot을 수동 모드로 표시해 뒤의 `:List`가 "CRUD를 썼다"고 거부하던 것 — 실제로 바꾼 호출만 표시합니다.
 - `Slot:Splice`가 같은 호출에서 빼는 원소를 되넣거나 `Replace(i, slot:Get(i))`를 하면 "같은 원소가 두 번"이라던 것 — "이미 이 Slot에 있다, Move/Swap을 쓰라"로 바르게 말합니다. `keyFn`이 NaN을 돌려주면 nil과 같은 도메인 에러입니다. `Tag`에 자기를 담은 리스트를 주면 내부 스택 오버플로 대신 도메인 에러입니다.

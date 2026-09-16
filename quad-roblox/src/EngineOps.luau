@@ -95,11 +95,6 @@ local function install(quad: any)
 	end
 
 	local function nativeFindChild(inst: any, key: any): any?
-		-- round10 G-5: `FindFirstChild` raises its own error on a non-string key with this file on the
-		-- blame line (a `M.Root`/number where a name is due); the mock returns nil there, hiding it
-		if type(key) ~= "string" then
-			Err.errorBefore(`nativeFindChild: key must be a child name string (got {typeof(key)} — M.Root is only for the root descriptor)`, SURFACE)
-		end
 		return inst:FindFirstChild(key)
 	end
 

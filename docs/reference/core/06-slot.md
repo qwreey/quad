@@ -559,8 +559,9 @@ dispose: (value: any) -> ()
 - `dispose: value must not be nil`
 - `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)`
 - `dispose: this backend cannot dispose this value`
+- `dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드나 `quad_base` 사본이 둘인 프로젝트).
 
-⚠️ 마운트 대상 인스턴스를 quad 밖에서(`inst:Destroy()`) 파괴하면 그 값은 영구히 죽습니다. 위 셋 가운데 `dispose: this value is still held by …` 하나에만 그 사정을 알리는 안내가 뒤에 붙습니다.
+⚠️ 마운트 대상 인스턴스를 quad 밖에서(`inst:Destroy()`) 파괴하면 그 값은 영구히 죽습니다. 위 넷 가운데 `dispose: this value is still held by …` 하나에만 그 사정을 알리는 안내가 뒤에 붙습니다.
 
 ```
 (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)

@@ -32,8 +32,8 @@ local OnChangeModule = require("./Handlers/OnChange")
 local installAnimate = require("./Animate") -- M11 단위 ③ — :Apply 콤비네이터(모듈 인스턴스의 Tween/isState 위)
 
 local function RobloxFactory(module: any): any
-	-- FIRST: Property/InstanceShorthand/Animate read `quad.Tween`/`quad.isTween` off the
-	-- module at their own install (Tween.luau sets both directly and returns the pair)
+	-- FIRST: Property/InstanceShorthand read `quad.Tween`/`quad.isTween` off the module at their
+	-- own install (Animate gets Tween's validator/constructor passed in below) (Tween.luau sets both directly and returns the pair)
 	local tween = installTween(module)
 	installLifetime(module)
 	installEngineOps(module)

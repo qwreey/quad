@@ -152,6 +152,18 @@ do
 	local selfNil = (Source(nil :: any) :: any):Apply(Operator.Sum(1))
 	local ok4, err4 = pcall(function() return selfNil:Get() end)
 	assert(not ok4 and string.find(tostring(err4), "the Apply target's current value must be a number (got nil)", 1, true) ~= nil, "target's own value checked: " .. tostring(err4))
+	-- code-review: the same check for the non-fold operators (Clamp/Shl/Shr/Bnot) — no raw VM error blaming Operator.luau
+	local ops: { [string]: any } = { Clamp = Operator.Clamp(0, 10), Shl = Operator.Shl(1), Bnot = Operator.Bnot }
+	for label, f in ops do
+		local node = (Source(nil :: any) :: any):Apply(f)
+		local okN, errN = pcall(function() return node:Get() end)
+		assert(not okN and string.find(tostring(errN), "the Apply target's current value must be a number (got nil)", 1, true) ~= nil, label .. ": " .. tostring(errN))
+		assert(string.find(tostring(errN), "Operator.luau", 1, true) == nil, label .. " blames the user: " .. tostring(errN))
+	end
+	-- Alternative: a default State whose current value is nil is an error, like a plain nil default at the factory
+	local alt = (Source(nil :: any) :: any):Apply(Operator.Alternative(Source(nil :: any)))
+	local okA, errA = pcall(function() return alt:Get() end)
+	assert(not okA and string.find(tostring(errA), "Operator.Alternative: the default State's current value is nil", 1, true) ~= nil, "Alternative default nil: " .. tostring(errA))
 	print("PASS")
 end
 

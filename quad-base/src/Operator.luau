@@ -71,6 +71,15 @@ local function splitArgs(name: string, args: { any }, n: number, kind: string): 
 	return deps, read
 end
 
+-- round10 H-535 (code-review 보강): every operator reads the target's value inside Compute — the
+-- check lives here so fold/unary/withArg/Clamp share it (outermost blame: the user's :Get/:Set line)
+local function checkTarget(name: string, v: any, kind: string)
+	if type(v) ~= kind then
+		Err.errorBefore(`Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})`, SURFACE)
+	end
+	return v
+end
+
 local function checkSelf(name: string, self: any)
 	if not isState(self) then
 		Err.errorBeforeNearest(`Operator.{name}: Apply target must be a State (got {typeof(self)})`, SURFACE)
@@ -84,10 +93,7 @@ local function fold(name: string, op: (number, number) -> number): (...any) -> (
 		return function(self: any): any
 			checkSelf(name, self)
 			return self:Compute(function(h: any, _prev: any, ...: any)
-				local acc = h:Get()
-				if type(acc) ~= "number" then -- round10 H-1: the target's own value gets the same check as the args
-					Err.errorBefore(`Operator.{name}: the Apply target's current value must be a number (got {typeof(acc)})`, SURFACE)
-				end
+				local acc = checkTarget(name, h:Get(), "number")
 				for _, v in read(...) do
 					acc = op(acc, v)
 				end
@@ -114,7 +120,7 @@ local function withArg(name: string, op: (number, number) -> number): (any) -> (
 		return function(self: any): any
 			checkSelf(name, self)
 			return self:Compute(function(h: any, _prev: any, ...: any)
-				return op(h:Get(), read(...)[1])
+				return op(checkTarget(name, h:Get(), "number"), read(...)[1])
 			end, table.unpack(deps))
 		end
 	end
@@ -139,7 +145,7 @@ local Operator = {
 	Bor = fold("Bor", bit32.bor),
 	Bxor = fold("Bxor", bit32.bxor),
 	Bnot = unary("Bnot", function(v: any): number
-		return bit32.bnot(v)
+		return bit32.bnot(checkTarget("Bnot", v, "number"))
 	end),
 	Shl = withArg("Shl", bit32.lshift),
 	Shr = withArg("Shr", bit32.rshift),
@@ -152,7 +158,7 @@ function Operator.Clamp(lo: any, hi: any): (any) -> any
 		checkSelf("Clamp", self)
 		return self:Compute(function(h: any, _prev: any, ...: any)
 			local r = read(...)
-			return math.clamp(h:Get(), r[1], r[2])
+			return math.clamp(checkTarget("Clamp", h:Get(), "number"), r[1], r[2])
 		end, table.unpack(deps))
 	end
 end
@@ -191,7 +197,14 @@ function Operator.Alternative(default: any): (any) -> any
 			if v ~= nil then
 				return v
 			end
-			return if d ~= nil then d:Get() else default
+			if d ~= nil then
+				local dv = d:Get()
+				if dv == nil then -- code-review: a plain nil default is refused at the factory; a State default whose value is nil slipped through
+					Err.errorBefore("Operator.Alternative: the default State's current value is nil", SURFACE)
+				end
+				return dv
+			end
+			return default
 		end, table.unpack(deps))
 	end
 end

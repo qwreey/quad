@@ -213,6 +213,8 @@ do
 	local ok, err = pcall(function() return b:__apply(5) end)
 	assert(not ok and string.find(tostring(err), "Blocker: Apply target must be a State (got number)", 1, true) ~= nil, "non-State target: " .. tostring(err))
 	assert(string.find(tostring(err), "Blocker.luau", 1, true) == nil, "no quad file on the blame line: " .. tostring(err))
+	local ok2 = pcall(function() return b:__apply({ Gate = function() end }) end)
+	assert(not ok2, "duck-typed table is not a State (brand check)")
 	print("PASS")
 end
 
