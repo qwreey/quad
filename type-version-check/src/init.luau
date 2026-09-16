@@ -226,6 +226,13 @@ export type function CheckVersion(actual: type, pattern: type): type
 	return types.singleton(true)
 end
 
+-- [2026-09-16] Priming: an exported type function that its own module never instantiates is not
+-- exported when `LuauDoNotExportBrokenTypeFunction` is on (luau-lsp `analyze` enables every FFlag by
+-- default; the flag is off in Luau's defaults and in Roblox's synced values today, so editors were
+-- fine — but it may ship). One instantiation here opens the function for consumers with any
+-- arguments (`typing-limits.md` 8.18 정정·8.22). The alias itself is not part of the surface.
+export type _Prime = CheckVersion<"0.0.0", "0.*.*">
+
 return {
 	matchesPattern = matchesPattern,
 }

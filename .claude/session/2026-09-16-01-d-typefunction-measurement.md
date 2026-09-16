@@ -1,0 +1,25 @@
+# 2026-09-16 (1) — 생성 `Declaration` 팩토리화 실측과 결정(stable D / unstable type function 경로)
+
+사용자 요청: *"더 할 일 특히, D부분 타입 조절에 대해 의논 시작해볼래? 우선 lsp 실측부터 보고, 내가 자동완성으로 보고해야할 studio 에 대해 돌릴 코드도 준비해야해."* 2026-09-15에 "급한 다음 작업"으로 지정됐던 D 타입 함수 팩토리화의 착수 전 실측 세션. 실측 팩과 결과는 `audit/d-factory-studio-probe-2026-09-16/`(`REPORT.md`), 승격은 `base/typing-limits.md` 8.18 정정·8.22.
+
+## 1. 전제 좁히기(사용자, 세션 초반)
+
+*"로블록스 타입이 없는 lsp/checker 같은 경우 UDim2 같은것 부터 에러 나서 그건 범위에 못 둘듯. … 사실상 roblox 를 아는 체커/lsp 만 지원 가능함. 큰 문제는 그 엔진/lsp/체커들이 어떻게 달라지느냐, 같은 구현을 보느냐야. 직접 만들더라도 외부의 UDim 타입이랑 다른 뭔가로 크래시 나면, 의미가 없거든."* → 대조 축을 "Roblox를 아는 두 구현"(luau-lsp+defs / Studio 내장)으로 잡고, 실측의 질문을 "체커가 같은가"와 "정의가 같은가"로 나눴다.
+
+## 2. 리눅스 실측(메인 + opus 하네스)
+
+`keyof`/`index`는 extern 타입에 정상이나 `keyof`엔 메소드·이벤트·읽기 전용·소문자 별칭이 다 든다. 사용자 정의 type function은 `properties()`/`readparent()`/`tostring`으로 클래스를 걸어 올라갈 수 있고(`:name()`·`:parent()` 없음), props 테이블(Tween/State/None 팔·이벤트 콜백은 `Connect` 2번 인자·자식 인덱서)과 재귀 Modifier 테이블(체이닝·`__quadModifier` 리터럴) 시제품이 양성·음성 전부 통과. 20클래스×100호출 0.77s(기본 한도) vs 생성 D 1.12s(한도 플래그 셋 필요). LSP completion 하네스(`dprobe/lspc.py`)로 type function 테이블의 키 자동완성 79필드 확인. 덤프 스코프 31클래스에서 드롭 이름 46·충돌 `Scale` 하나.
+
+가장 큰 부산물: **8.18이 틀렸다.** 처음엔 "정의 모듈이 한 번 인스턴스화하면(프라이밍) 소비자가 임의 인자로 써도 된다"까지 좁혔고(Echo 실험 — `Echo<"z">` 프라이밍 뒤 소비자 `Echo<"q">` 정상), 실코드 `type-version-check`에 한 줄 넣어 편집기 게이트가 살아나는 것도 확인했다. 그런데 사용자 VSCode·Studio는 프라이밍 없이도 2-c를 잡았다(사용자 주석: *"2-c 생략 이유는 같은 출력이라 그랬음"*). 사용자가 *"여기에 깔린 code server 에 LSP 가 살아있어. 인자를 딸 수 있는지 볼래?"* — `ps`로 확장 서버 인자를 땄더니 `--no-flags-enabled` + `globalTypes.PluginSecurity.d.luau`. opus 서브에이전트가 확장이 보내는 플래그 집합(동기 590개)을 재구성해 재현하고 bool 96개를 이분탐색 → **`LuauDoNotExportBrokenTypeFunction`** 하나. CLI `analyze`는 전 FFlag 켬(`--help` 원문 "do not enable all Luau FFlags by default")이라 `true`, Luau 기본·Roblox 동기값은 `false`. 메인이 실코드 `CheckVersion`(pesde 링크 경로)으로 재확인.
+
+## 3. Studio·VSCode 실측(사용자 — 주석으로 회신)
+
+사용자 요약: *"보이는 바로는 LSP 는 같다, - 근데 정의가 다르다."* 진단 문구 글자까지 동일(*"에러 규격이 완전히 동일 하다 … 내부적으로 쓰는 lsp 는 같은 가능성이 보임"*), 자동완성·체이닝 둘 다 됨. 갈리는 것: `Frame` 체인 개수(Studio 1>55>16>0>58>6 / VSCode 1>45>11>0>53>5 / 핀 defs 1>50>15>0>55>5), Hidden `Transparency`가 VSCode defs엔 없음, Studio `keyof`에 deprecated `BackgroundColor`·`DataCost`, 이벤트가 Studio에선 `extern:RBXScriptSignal`(*"Event 부분만 따로 리스트업 해서 Name -> Func 하는 조합기를 만들어야할 가능성"*), `FontFace`가 Studio는 테이블. 읽기 전용 표시는 셋 다 없음. `script.Parent` require는 VSCode에서 sourcemap 없이 깨져 문자열 require로 통일. 05: *"컴플랙스 같은건 안떠."* 06: `index<Frame,"MouseEnter">`의 `Connect`가 Studio에서도 콜백 인자를 정직하게 검사(`(string)->()` 거부), 추가 실측 `index<Te,"Connect">` → `(func: (x: number, y: number) -> ()) -> RBXScriptConnection`. rojo가 프로젝트 파일이 든 폴더를 `$path`로 잡으면 stack overflow(*"project 파일이 바로 옆에 있어서 터지는건가?"* — 맞음, `src/` 분리).
+
+## 4. 결정(사용자)
+
+메인 권고는 "생성 D 유지"(체커는 같고 정의가 갈리므로 순수 팩토리는 표면을 defs 버전에 맡기게 되고, Studio에선 한도 문제도 없음). 사용자: *"확인. 그 경로는 unstable 경로로 두고, 언제든 변경될 수 있다로 둬줘. 지금 쓰는 일반적인 표면을 릴리즈에 stable 로 둬야겠음. 다만 타입 함수로 만들어낸다는건 gen 을 필수가 아니게 둘 수 있고 fallback 으로 gen 이 굴러가고, 각각 필요한 표면만 생성할 수도 있게돼. 그리고 타입 함수를 넣으면 D의 줄 수가 확실하게 줄어들어. - 그게 목적이였음. 엄청 큰게 있으면 사람들은 경계하고, 파일 크기를 보고 라이브러리 크기를 측정하려 들어서 … 이 역시 이점 trade-off 에 비해 크지 않다면 고려되지 않더라도 돼. 1급 대상은 아니야. 다만 user side 에서 breaking changes 가 나오는걸 먼저 쳐내고 싶었어서 우선순위를 높게 둔거야. 다만 그건 unstable 으로 두는 경로가 존재해."*
+
+반영: `typing-limits.md` 8.18 정정 + 8.22 신설, `type-version-check` 프라이밍(`_Prime`, 패키지 CHANGELOG Fixed), ROADMAP 백로그 항목(unstable 경로 + 만들 때 규칙), HUMAN_TODO D 방향 확정, `research/public-surface-pre-adoption-review.md` (28) 닫힘, `audit/README.md`·`REPORT.md`. test.sh는 "전부 켬" 그대로(프라이밍 누락 조기 경보).
+
+미완: Studio에서 `06-events.luau`의 `[P6-2]`~`[P6-5]`(extern 시그널에서 type function이 콜백을 꺼낼 수 있는가)는 미보고 — unstable 경로를 만들 때 다시 본다.

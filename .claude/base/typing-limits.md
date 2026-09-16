@@ -1076,6 +1076,8 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 그런데 **luau-lsp 1.69.0은 적용 뒤에도 `CheckVersion`을 평가하지 않는다.** 원인을 좁히니 우리 코드가 아니다 — 한 줄짜리 `export type function Echo(t) return types.singleton(t:value()) end`를 다른 파일에 두고 `local a: M.Echo<"q"> = 5`를 검사하면 `luau-analyze`는 `Expected "q", got number`를 내지만 luau-lsp `analyze`는 진단 0이다(같은 파일 안의 type function은 luau-lsp도 정상 평가 — `print`·`types.never`·런타임 에러 전부 보인다). 즉 **모듈 경계를 넘는 type function은 luau-lsp에서 조용히 무효**다. 따라서 편집기에서 `CheckedQuad` 컴파일 타임 게이트는 여전히 안 보이고, 런타임 게이트(`UseProvider`의 버전 검사)가 정본이라는 사실은 그대로다. luau-lsp 버전을 올릴 때 이 프로브(`Echo` 두 파일)를 다시 돌려 보면 된다.
 
+**⚠️ [2026-09-16 정정 — 위 둘째 문단은 틀렸다.]** "모듈 경계를 넘는 type function은 luau-lsp에서 조용히 무효"는 우리 검사 명령의 **FFlag 구성**이 만든 관측이었다. 원인은 플래그 하나 — `LuauDoNotExportBrokenTypeFunction`. `luau-lsp analyze`는 옵션 없이 부르면 **모든 FFlag를 켠 채** 돈다(`--help`: *"--no-flags-enabled: do not enable all Luau FFlags by default"*), 그 상태에서 이 플래그가 `true`라 **정의 모듈이 자기 type function을 한 번도 인스턴스화하지 않으면 그 함수가 수출되지 않아** 소비자 쪽 `M.Fn<…>`이 진단 없이 `*error-type*`이 된다. Luau 컴파일 기본값과 Roblox 동기값(2026-09-16 clientsettingscdn)은 둘 다 `false`이고, VSCode 확장은 `--no-flags-enabled` + 동기값으로 서버를 띄우므로 **실사용자(VSCode 확장·Studio)에겐 이 문제가 없다** — `CheckedQuad` 편집기 게이트도 그쪽에선 2026-09-10 이후 줄곧 동작하고 있었다. 실측 경위·이분탐색은 `audit/d-factory-studio-probe-2026-09-16/REPORT.md`. 재현: `luau-lsp analyze --flag:LuauSolverV2=true --flag:LuauDoNotExportBrokenTypeFunction=false <소비자 파일>`이면 같은 바이너리가 정상 진단을 낸다. **규칙(8.22)**: 수출하는 type function은 정의 모듈 안에서 한 번 인스턴스화해 둔다("프라이밍") — 그러면 이 플래그가 켜져도(앞으로 기본값이 될 수 있다 — "전부 켬"에 든 플래그는 개발 중 동작이다) 소비자가 임의 인자로 쓸 수 있다(인스턴스화 한 번이 함수 전체를 열고, 인자는 달라도 된다 — 실측). test.sh의 analyze는 그대로 "전부 켬"으로 둔다 — 프라이밍 누락을 미리 잡는 조기 경보다.
+
 ## 8.19. 제네릭 팔이 든 함수 오버로드(교집합)는 신 솔버가 제네릭 팔을 고르지 못한다 — `Slot:Single`은 한 시그니처로 (2026-09-11 실측)
 
 `Slot:Single`을 `:List`처럼 `<Item, UD>`로 바꾸면서(D10, 사용자 확정) `updateFn` 생략 슈거만 `Item = T`로 묶고 싶어
@@ -1106,4 +1108,14 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 - 업스트림: 정확히 이 증상의 이슈는 못 찾음 — 인접 #921(구 솔버 순서 의존, icebox), #1438(신 솔버 재귀 에러), #2380, RFC "Relax the recursive type restriction". 새로 보고할 만한 버그로 보임(보고 여부는 사용자).
 
 **실무 규칙(보강 — 입력 자리는 애초에 8.11의 마커 원칙과 `scripts/type-surface-check.py` 게이트가 막는다):** 비균일 재귀 제네릭 별칭은 그걸 인스턴스화하는 **모든 별칭·주석보다 먼저** 선언하거나 다른 모듈에서 가져와 쓸 것 — 신 솔버가 앞선 확장을 무한 타입으로 오판해 통째로 에러 타입으로 만들고 진단도 내지 않는다.
+
+## 8.22. 수출하는 type function은 정의 모듈에서 한 번 인스턴스화해 둘 것(프라이밍); 클래스 타입 데이터는 체커마다 다르고 읽기 전용 표시는 어디에도 없다 (2026-09-16 실측 — 생성 `Declaration` 팩토리화 조사)
+
+생성 `Declaration`(5250줄)을 Luau type function으로 대체할 수 있는지 luau-lsp 1.69.0(핀 defs)·사용자 VSCode(확장, `globalTypes.PluginSecurity.d.luau`)·Studio 셋에서 실측했다(팩·결과 `audit/d-factory-studio-probe-2026-09-16/`, 결정 `session/2026-09-16-01-d-typefunction-measurement.md`). 남기는 사실:
+
+- **프라이밍 규칙** — 8.18 정정 참고. `export type function F(...)`를 두는 모듈은 `export type _Prime = F<…>` 같은 인스턴스화를 하나 둔다(`type-version-check`에 2026-09-16 적용). 이 세션이 만들 뻔한 팩토리 생성기 출력에도 같은 규칙이 든다.
+- **type function은 extern(클래스) 타입을 걸어 올라갈 수 있다**: `cls:properties()`(그 레벨만), `cls:readparent()`, `tostring(cls)`가 클래스 이름. `:name()`·`:parent()`는 없다. `types.newtable`의 props 인자는 `{[type]: {read: type?, write: type?}}`(optional 주석이 아니면 본문 검사가 거부), `types.optional`은 없다(`unionof(t, singleton(nil))`).
+- **체커 동작은 세 환경이 같다** — 진단 문구 글자까지, 테이블 키 자동완성(type function이 만든 테이블에서도 뜬다 — LSP completion 실측 79필드), 재귀 Modifier 체이닝, 프라이밍 플래그 반응까지. **다른 것은 타입 정의 데이터다**: `Frame` 체인의 프로퍼티 수가 핀 defs 1>50>15>0>55>5 / 사용자 VSCode defs 1>45>11>0>53>5 / Studio 1>55>16>0>58>6. Hidden `Transparency`가 최신 defs엔 없고, Studio `keyof<Frame>`엔 deprecated `BackgroundColor`·`DataCost`가 있으며, 이벤트가 defs에선 `Connect`를 가진 테이블·Studio에선 `extern:RBXScriptSignal`(단 `index<index<Frame,"MouseEnter">,"Connect">`는 Studio에서도 `(func: (x: number, y: number) -> ()) -> RBXScriptConnection`으로 정직), `FontFace`가 한쪽은 extern·한쪽은 테이블.
+- **읽기 전용 표시는 어느 환경에도 없다** — `AbsoluteSize`·`ClassName`이 셋 다 `rw`. ReadOnly/NotScriptable/보안/태그는 API 덤프에만 있고(`H-295`), 타입 데이터에서 파생하는 표면은 그 정책을 **생성 데이터로 따로** 받아야 한다(현 스코프에서 드롭 이름 46개, 클래스 간 이름 충돌은 `Scale` 하나 — `gen-d.py` 덤프 실측).
+- **결정(사용자, 2026-09-16)**: 지금의 생성 `Declaration`이 **stable 표면**이다 — 세 환경에서 같은 표면·같은 진단을 냈고 Studio에선 "too complex"도 없다(리눅스 CLI만 한도 플래그 셋이 필요). 클래스 매개 type function 경로(`ModifierOf<Class>`류)는 **unstable 경로**로 따로 열 수 있고 언제든 바뀔 수 있다 — 목적은 gen을 필수가 아니게 두고 필요한 표면만 만들며 D의 줄 수를 줄이는 것이지 1급 대상이 아니다(ROADMAP 백로그). §6(type function을 거친 값의 제네릭 self 체이닝)은 그 경로를 만들 때 다시 본다.
 

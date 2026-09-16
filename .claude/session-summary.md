@@ -2493,3 +2493,8 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 - **[2026-09-09-01] `docs-ignoreme/` 사실성 검토·재작성 1차**(`session/2026-09-09-01-docs-polish.md`): 소형 모델 초안을 opus 검사 다섯 →
   사용자 결정 넷(research/·best-practices·reference 02/03 삭제, 설치 경로 셋 유지 + "아직 없음" 표시, README §5는 코드 기준 정정) →
   opus 재작성 일곱 → 2차 검증 다섯. 소스 전파: `quad-types` 훅 주석 정정(`OnCreated<<Frame>>`만 통과, typing-limits 8.16). 문서는 git 밖.
+- **[2026-09-16-01] 생성 `Declaration` 팩토리화 실측 → stable D / unstable type function 경로**(`session/2026-09-16-01-d-typefunction-measurement.md`):
+  luau-lsp·사용자 VSCode·Studio 셋에서 실측 팩(`audit/d-factory-studio-probe-2026-09-16/`) — 체커는 같고 타입 정의만 다름(프로퍼티 수·Hidden·deprecated·
+  이벤트 표현), 읽기 전용 표시는 어디에도 없음, Studio는 생성 D에 too complex 없음. 사용자 결정: 생성 D를 릴리즈 stable 표면으로, 클래스 매개 type
+  function 경로는 unstable 백로그. 부산물: typing-limits 8.18 정정(`LuauDoNotExportBrokenTypeFunction` — CLI "전 FFlag 켬"이 만든 관측, 실사용자 환경엔 없던
+  문제) + 8.22(프라이밍 규칙), `type-version-check` `_Prime`.
