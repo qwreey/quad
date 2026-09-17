@@ -1139,4 +1139,57 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 32. round10 Q52 (a) (2026-09-17) — 마운트 walk 중인 조상 Slot의 CRUD는 즉시 error(사용자 줄 blame); 정상 사용(자기 자식 Slot 구성·마운트 뒤 Observer CRUD·형제 CRUD)은 그대로 ===")
+do
+	local q6 = mock.newQuad()
+	-- (1) the round10 repro: a nested :List's first updateFn adds to the outer Slot
+	local host = mock.Instance.new("Frame")
+	local outer = q6.Slot()
+	local inner = q6.Slot()
+	local data = q6.Source({ 1 })
+	inner:List(data, function(ctx)
+		outer:Add(mock.Instance.new("Frame"), 1)
+		return mock.Instance.new("Frame")
+	end, function(item) return item end)
+	outer:Add(inner)
+	local ok, err = pcall(function() q6.Dispatch.drive(host, { outer }) end)
+	assert(not ok and string.find(tostring(err), "Slot: cannot mutate a Slot while it is being mounted", 1, true) ~= nil, "ancestor CRUD mid-mount is the Q52 error: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "blames the updateFn's Add line")
+	-- (2) installing :List on a mounting ancestor is the same error
+	local host2 = mock.Instance.new("Frame")
+	local outer2 = q6.Slot()
+	local inner2 = q6.Slot()
+	inner2:List(q6.Source({ 1 }), function(ctx)
+		outer2:List(q6.Source({}), function() return nil end, function(i) return i end)
+		return mock.Instance.new("Frame")
+	end, function(item) return item end)
+	outer2:Add(inner2)
+	local ok2, err2 = pcall(function() q6.Dispatch.drive(host2, { outer2 }) end)
+	assert(not ok2 and string.find(tostring(err2), "while it is being mounted", 1, true) ~= nil, "install mid-mount: " .. tostring(err2))
+	-- (3) normal use: an updateFn that BUILDS its own child Slot (not on the walk) and CRUDs it,
+	-- a sibling Slot already mounted, and an Observer CRUD after the mount — all fine
+	local host3 = mock.Instance.new("Frame")
+	local sibling = q6.Slot({ mock.Instance.new("Frame") })
+	local root = q6.Slot()
+	local list = q6.Slot()
+	local items = q6.Source({ 1, 2 })
+	list:List(items, function(ctx)
+		local child = q6.Slot()
+		child:Add(mock.Instance.new("Frame"))
+		child:Add(mock.Instance.new("Frame"), 1)
+		sibling:Add(mock.Instance.new("Frame")) -- sibling on another branch, already materialized
+		return child
+	end, function(item) return item end)
+	root:Add(list)
+	q6.Dispatch.drive(host3, { sibling, root })
+	assert(sibling.Length:Get() == 3 and root.Length:Get() == 4, `mounted through normal use (sibling {sibling.Length:Get()}, root {root.Length:Get()})`)
+	items:Set({ 1, 2, 3 })
+	assert(root.Length:Get() == 6, "reconciliation after mount still works")
+	root:Add(mock.Instance.new("Frame"), 1) -- CRUD after the mount, outside any walk
+	assert(root.Length:Get() == 7, "post-mount CRUD on the mounted ancestor is allowed")
+	assert(not root._materializing and not list._materializing, "flags are down after the walk")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

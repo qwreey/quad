@@ -956,7 +956,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
   그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
-  다시 호출) — 별도 가드 불필요 — **[2026-09-16 round10 Q52, 문항 열림]** 예외 하나 발견: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`이 **조상** Slot을 CRUD하면 walk가 깨진다(`bindLifetime: already bound`, 부기 영구 파손). Observer 안(마운트 walk 밖)은 정상. 처리는 `qa-request/post-implementation-review-round10.md` §4 Q52. CRUD는 평범한 동기 테이블 뮤테이션 +
+  다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
   간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —

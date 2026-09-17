@@ -366,6 +366,12 @@ type SlotListOpts = { read OwnsElements: boolean? }
 
 두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
 
+`updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 처음 마운트될 때 `updateFn`은 조상들의 마운트 walk 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요.
+
+```
+Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer
+```
+
 **동작**
 
 - `:List`는 **설치**입니다. 한 Slot에 한 번만 걸 수 있고, 수동 CRUD를 이미 쓴 Slot(빈 `Slot{}` 포함)에는 걸 수 없습니다.

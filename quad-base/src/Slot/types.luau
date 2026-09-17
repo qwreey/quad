@@ -68,6 +68,7 @@ export type SlotInternal = {
 	Single: (self: any, state: any, updateFn: any?, opts: any?) -> any,
 	-- init.luau (published AFTER the installs)
 	assertLive: (self: any) -> (),
+	assertNotMounting: (self: any) -> (),
 	Slot: (initial: { any }?) -> any,
 }
 

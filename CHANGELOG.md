@@ -61,6 +61,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- 중첩 `:List`/`:Single`의 `updateFn`이 첫 마운트 중에 조상 Slot을 CRUD하면 내부 에러(`bindLifetime: value is already bound`)로 죽고 그 트리의 부기가 영구히 깨지던 것 — 이제 그 자리에서 `Slot: cannot mutate a Slot while it is being mounted …`로 거부합니다(`updateFn`은 항목을 원소로 바꾸는 함수이고, 조상은 마운트 뒤 Observer에서 바꾸세요). 자기 자식 Slot을 채우거나 마운트 뒤에 조상을 바꾸던 코드는 영향이 없습니다.
 - `Effect`의 cleanup 안에서 의존성을 `:Set`하면 뒤따르는 `fn`이 그 값을 읽고도 (cleanup, fn) 사이클이 같은 입력으로 한 번 더 돌던 것 — 이제 한 사이클입니다. `fn` 안의 `:Set`이 한 번 더 돌게 하는 것은 그대로입니다.
 - `Slot`에 `State`로 담아 넣은 원소의 검사(마운트 가능한 값인지·quad 소유인지·파괴된 Slot이 아닌지)가 삽입 **뒤**에 돌아, 거부된 호출이 유령 원소를 남기고 그 Slot의 재조정을 멈추게 하던 것 — 이제 다른 원소와 같이 넣기 전에 검사하고, 실패한 `Add`/`Replace`/`Extract`/`Splice`/생성자는 아무것도 바꾸지 않습니다(마운트 전 Slot도 그 자리에서 거부합니다).
 - `Debounce`/`Throttle`의 `Time`이 `State`일 때 그 값이 잘못돼 창을 못 열면(음수·문자열, 또는 시간 op가 없는 백엔드) 게이트가 "막힘 상태인데 타이머 없음"으로 굳어 다음 신호까지 통지가 멈추던 것 — 창을 먼저 잡고 상태를 바꾸도록 순서를 고쳤습니다.

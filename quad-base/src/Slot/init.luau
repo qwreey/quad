@@ -139,13 +139,24 @@ local function Init(module: any)
 	local function markManual(self: any)
 		self._crudUsed = true
 	end
-	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded)
+	-- round10 Q52 (a) (user decision 2026-09-17): no CRUD on a Slot whose mount walk is on the
+	-- stack — the `:List` updateFn is a pure item→element function, and an ancestor CRUD from
+	-- inside it broke the walk (slot-plan "재진입성" 절의 예외). User: "compute 든 slot 이든
+	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
+	local function assertNotMounting(self: any)
+		if self._materializing then
+			Err.errorBeforeNearest("Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer", SURFACE)
+		end
+	end
+	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount
 	local function assertMutable(self: any)
 		assertLive(self)
 		assertManual(self)
+		assertNotMounting(self)
 	end
 
 	S.assertLive = assertLive -- `checkListInstall` (Slot/List.luau) gates through this
+	S.assertNotMounting = assertNotMounting -- and this (Q52)
 
 	-- checkIndex: fail-fast, no clamping (CRUD table "에러 조건"). `allowEnd`
 	-- admits n+1 (an insertion position — Add/Splice); otherwise 1..n.
@@ -412,6 +423,7 @@ local function Init(module: any)
 			Length = module.Source(0),
 			Offset = module.Source(0),
 			_mounted = false,
+			_materializing = false, -- round10 Q52 (a): mount walk on the stack
 		}, Slot_mt)
 		Brand.SlotBrand:Register(self)
 		self._baseObserver = S.makeBaseObserver(self)

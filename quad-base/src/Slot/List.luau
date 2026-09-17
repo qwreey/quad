@@ -198,6 +198,7 @@ return function(S: Types.SlotInternal, module: any)
 	-- `Single`'s own delegation line (`Slot/List.luau`), not the user's `:Single(...)`.
 	local function checkListInstall(self: any)
 		S.assertLive(self)
+		S.assertNotMounting(self) -- round10 Q52 (a)
 		if self._listed then S.Err.errorBeforeNearest("Slot: already has :List/:Single installed", S.SURFACE) end
 		if self._crudUsed then S.Err.errorBeforeNearest("Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
 	end

@@ -33,6 +33,14 @@ return function(S: Types.SlotInternal, module: any)
 	local function materializeSlotTree(slot: any, physicalTarget: any, ownerKey: any, position: number)
 		if slot._destroyed then S.Err.errorBefore("Slot: destroyed Slot cannot be mounted", S.SURFACE) end
 		slot._physicalTarget = physicalTarget
+		-- round10 Q52 (a) (user decision 2026-09-17): while this walk runs, public CRUD (and
+		-- :List/:Single install) on THIS Slot raises — a nested :List's first `updateFn` (or an
+		-- Observer fired by the recompute below) that mutated an ancestor used to break the
+		-- `ipairs` walk (`bindLifetime: already bound`, bookkeeping gone for good). Ancestors on
+		-- the walk stack all carry the flag; siblings not on it are untouched. No unwinding
+		-- (architecture "예외 안전성 계약"): a throw mid-walk leaves the flag up along with the
+		-- open blocker — the tree was already unrecoverable there.
+		slot._materializing = true
 
 		local blocker = S.BK.getBlocker(slot)
 		blocker:On()
@@ -62,6 +70,7 @@ return function(S: Types.SlotInternal, module: any)
 			module.Backend.bindLifetime(physicalTarget, slot._listObserver)
 		end
 		S.BK.setLength(ownerKey, position, slot.Length, physicalTarget, slot)
+		slot._materializing = false
 	end
 
 	-- Mounting is two halves (`H6-9` (b), user decision 2026-09-03): the FLAG
