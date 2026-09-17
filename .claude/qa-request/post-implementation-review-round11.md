@@ -68,7 +68,7 @@
 - **`H-571`·`H-573`** (I′) `:List` data 딕셔너리가 조용히 목록을 비움(`H-396` 짝 게이트) / 순환 State 사슬 stack overflow → StoreBind 메시지 / `updateFn`이 `KeyGone` 반환 시 안내. **`H-572`** 문서: State에 담은 원소는 `Remove`/`Replace`/`Clear`/KeyGone/`dispose` 어느 경로로도 파괴되지 않음(core/06 다섯 자리가 "파괴합니다"라고 약속) — 코드는 `H6-12` (b) 설계, 문서 정정. 차등 퍼즈 넷 18만 사이클·Store 0. 성능 수치(N=5000 역순 2.1초)는 ROADMAP 항목 보강.
 - **`H-574`** (H′, HIGH) Deferred에서 같은 청크 안 재바인드된 핸들을 옛 Destroying 콜백이 죽임 — stale 콜백 무시(`effect-plan.md` 끝 절, `spec.effect` 11). H′ 나머지: 엔진 사실 다섯(`lifecycle-pattern.md` 끝 절), 시체 쓰기는 엔진이 조용한 둘뿐(quad 결함 없음), Deferred에서 B″ cleanup-throw 계열 재현 안 됨, how-to 07 `Clone` → `Claim` 관용구 첫 검증 통과, Q62 보강(네 입구). quad가 붙이지 않은 태그를 뗌(입양·사본 트리) → **Q69**(core/09 캐비엇은 지금). 숏핸드 관리 자식 사본 중복은 §3′ UB 그대로(how-to 07이 이미 적음).
 - **L′** 동작 결함 0. 최적화 축 셋(단일 CRUD recompute 전량 O(N) → 한 항목씩 목록 구축 O(N²)·`:List` 사이클 O(전체)·Modifier 캐시 무한 성장)과 `H-545` walk의 O(깊이)(실무 무해) — `architecture.md` 끝 절·ROADMAP 백로그 수치·core/06 비용 서술·주석 셋 정정. mock 성능 오염원 셋 기록.
-- **절차 기록**: H′ 탐사자가 Studio MCP `execute_luau`로 엔진 사실을 실측했다(Place1.rbxl, 스크래치 인스턴스만 생성·파괴, 사용자 트리 무변경이라 보고). 메인은 Studio 사용을 지시하지 않았고 SAFETY.md의 계정 조건을 확인하지 않은 채였다 — 사용자에게 보고, 이후 탐사 브리프에 "Studio MCP 사용 금지"를 명시한다.
+- **절차 기록**: H′ 탐사자가 Studio MCP `execute_luau`로 엔진 사실을 실측했다(Place1.rbxl, 스크래치 인스턴스만 생성·파괴, 사용자 트리 무변경). 메인이 지시하지 않은 도구라 보고했으나 **사용자 판정(2026-09-18)**: 이 환경의 Studio는 샌드박스·실험 플레이스라는 전제가 이미 있고 auto mode가 허용한 데도 이유가 있다 — *"문제를 일으켰다기 보단, 컨벤션 상 자연스럽게 나온 동작"*. 따라서 실기기 실측은 탐사자가 해도 되는 범위이고, 그 실측 결과(`lifecycle-pattern.md` 끝 절)는 정상 근거로 쓴다.
 
 ## §3′ 확인 — 문서와 일치(발견 아님)
 
