@@ -72,7 +72,8 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
 - 콜백이 받는 것은 **값이 아니라 lazy 핸들**입니다. 첫 인자 `self`는 **리시버**(`:Compute`를 부른 그 노드)의 핸들이고, 세 번째 인자부터는 `...deps`가 넘긴 순서 그대로의 핸들입니다. 전부 `:Get()`으로 읽습니다.
 - 예외는 두 번째 인자 `previous`입니다 — 이건 핸들이 아니라 **이 노드가 직전에 계산해 둔 결과값 자체**이고, 아직 한 번도 계산하지 않았으면 `nil`입니다. 노드마다 독립적으로 기억됩니다.
 - 조건에 따라 `self:Get()`을 건너뛰는 계산도 그대로 허용됩니다 — 읽지 않으면 그 회차엔 상류를 계산하지 않습니다.
-- 계산 함수 안에서 **yield하지 마세요** — 정의되지 않은 동작입니다(계산은 읽는 쪽의 `:Get()` 안에서 동기로 돕니다).
+- 계산 함수는 **값 한 세대에 한 번만 돕니다.** 계산 함수가 자기 노드의 값을 읽거나(직접, 또는 하류 State를 거쳐 — 의존성 순환), yield하는 사이 다른 코루틴이 같은 노드를 읽으면 그 `:Get()` 줄에서 아래 문구로 에러가 납니다. 순환은 만든 쪽의 실수라 그 자리에서 잡히고, yield는 지원하지 않습니다(계산은 읽는 쪽의 `:Get()` 안에서 동기로 돕니다). 계산 함수가 **던지면** 그 세대의 재읽기도 같은 문구로 에러이고, 상류가 바뀌어 새 세대가 되면 다시 돕니다 — 잘못된 값을 고쳐 `:Set`하면 회복됩니다.
+  `State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
 - 계산 결과로 **Modifier를 돌려줄 수 없습니다**:
   `State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
 - 인자 검증: `State: Compute fn must be a function` / `State: dep #{i + 1} is nil` / `State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다.

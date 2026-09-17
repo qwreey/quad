@@ -154,7 +154,11 @@ local function Init(module: any)
 	-- position i's own `:Get()` REPLACING that same position's length entry
 	-- (`setLength(owner, i, …)` mid-read) — a lowering exactly TO the cursor
 	-- is indistinguishable from the no-op baseline, kin to the standing
-	-- "재진입/자기 재정의 무방어" family.
+	-- "재진입/자기 재정의 무방어" family. round10 Q50 (a) (2026-09-17): a LENGTH
+	-- Compute whose fn touches its own owner's bookkeeping now raises State's
+	-- re-entry error (the nested recompute reads the node being computed) — and
+	-- since that raise unwinds through recompute's On/Off window the owner is
+	-- frozen, like any throw in that window (same UB family; spec.lengthoffset 10).
 	-- bootstrap: position 1's offset is this owner's base itself — a Slot's own
 	-- .Offset, or 0 for a physical inst (no base concept). Also re-run when a
 	-- restart lands on 0 (`H-350`): a base change lowers both cursors to 0 (Slot

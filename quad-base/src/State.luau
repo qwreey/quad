@@ -120,6 +120,7 @@ local function createImpl(module: any)
 			_cacheTargetCount = 0,
 			_cacheCurrCount = nil, -- never computed yet → always differs
 			_cache = nil,
+			_computing = -1, -- round10 Q50 (a): the generation whose fn is on the stack (or never returned); -1 = none
 		}, mt or Impl)
 		StateBrand:Register(self) -- `H-152`: a GateNode is a State too — first line of its assembly
 		-- §4 seeding: valueEpochMap takes every upstream epoch, live.
@@ -157,7 +158,23 @@ local function createImpl(module: any)
 	end
 
 	function Impl._recompute(self: any)
+		-- round10 Q50 (a) (user decision 2026-09-17): ONE flag, no unwinding — `_running`'s
+		-- twin on Observer/Effect, stamped with the generation instead of `true`. It catches
+		-- a dependency cycle (fn reads its own value, directly or through a downstream State —
+		-- used to be an `EpochMap.luau` stack overflow, and a half value became a valid cache
+		-- when a frame swallowed it) and a read from another coroutine while fn yields (fn
+		-- used to run twice per generation). No pcall (architecture "예외 안전성 계약 — 감싸지
+		-- 않는다"), so a fn that THROWS leaves the stamp: re-reads of the SAME generation get
+		-- this message too, and the next upstream change (a new generation) lets fn run again
+		-- — that is why the stamp is the generation, not a boolean: the Effect rule ("a throw
+		-- kills it") would have turned one transient Operator/validation raise into a dead
+		-- binding. Nearest blame: the `:Get()` line that closed the cycle. User: "순수 flag 로
+		-- 막는게 가능하고 … 유저의 흔하게 날 수 있는 실수라 … 단순 마법 없이 flag 셋으로 만족".
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
+		if self._computing == gen then
+			Err.errorBeforeNearest("State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
+		end
+		self._computing = gen
 		local hold = self._hold
 		-- `H-198` (user-confirmed 2026-08-31): stamp upstream revisions BEFORE fn —
 		-- anything that moves DURING fn (a reentrant Set, or one withheld by a
@@ -170,6 +187,7 @@ local function createImpl(module: any)
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
+		self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
 		if isModifier(result) then
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —

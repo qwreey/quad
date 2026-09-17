@@ -301,16 +301,17 @@ do
 end
 
 print()
-print("=== 10. H-240 — :Get() 창의 커서 되감기: 읽기 중 사용자 코드가 낮춰도 낡은 값이 '완료'되지 않는다 ===")
+print("=== 10. H-240의 원 재현(길이 Compute의 fn이 같은 owner의 앞자리를 setLength)은 round10 Q50 (a)부터 Compute 재진입 error다 — 그 fn이 중첩 recompute를 통해 자기 값을 다시 읽으므로 ===")
 do
+	-- Before Q50 the nested recompute re-ran len2's fn inside itself (twice per generation) and
+	-- the H-240 cursor rewind hid it. The contribution-window rewind (check ②) stays in
+	-- Bookkeeping as defense; the deterministic H-240 coverage is spec 5 (the offset:Set window).
+	-- Handler-author rule: a length Compute must not mutate its own owner's bookkeeping.
 	local q = newQuad()
 	local inst = Instance.new("Frame")
 	local s1 = q.Source(1)
-	local src1, src2, src3 = q.Source(-1), q.Source(-1), q.Source(-1)
+	local src1, src2 = q.Source(-1), q.Source(-1)
 	local poison = false
-	-- 길이 2가 파생 State — 그 재계산(:Get) 도중 사용자 코드가 같은 owner의
-	-- 앞 자리를 setLength(커서 하강). 보강 전엔 contribution 뒤 커서 쓰기가
-	-- 신호를 덮어 src2가 낡은 값(1)인 채 "완료" 표시됐다(원 재현).
 	local len2 = s1:Compute(function(x: any)
 		if poison then
 			poison = false
@@ -322,16 +323,10 @@ do
 	q.Bookkeeping.setLength(inst, 1, 1)
 	q.Bookkeeping.setOffsetSource(inst, 2, src2)
 	q.Bookkeeping.setLength(inst, 2, len2)
-	q.Bookkeeping.setOffsetSource(inst, 3, src3)
-	q.Bookkeeping.setLength(inst, 3, 1)
-	assert(src1:Get() == 0 and src2:Get() == 1 and src3:Get() == 2, "steady state (len2 == 1)")
-
+	assert(src1:Get() == 0 and src2:Get() == 1, "steady state (len2 == 1)")
 	poison = true
-	s1:Set(2) -- len2 무효화 → recompute → contribution의 :Get()이 setLength(1, 7)을 실행
-	assert(src2:Get() == 7, `position 2 offset reflects the mid-read change (got {src2:Get()})`)
-	assert(src3:Get() == 9, `position 3 follows: 7 + len2(2) (got {src3:Get()})`)
-	local bk = q.Bookkeeping.getBookkeeping(inst)
-	assert(bk.offsetSetUpTo == 3 and not bk.recomputeBlocker.Blocking, "the pass completed cleanly (no frozen blocker)")
+	local ok, err = pcall(function() s1:Set(2) end)
+	assert(not ok and string.find(tostring(err), "State: Compute fn is already running for this value", 1, true) ~= nil, "self-read through the nested recompute is the Q50 cycle error: " .. tostring(err))
 	print("PASS")
 end
 

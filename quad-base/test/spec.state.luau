@@ -159,7 +159,9 @@ do
 	-- Get이 루프라 같은 호출 안에서 재시작해 항상 최신으로 수렴한 값을 돌려준다.
 	assert(d:Get() == 2 and runs == 2, "the same Get restarted and returned the converged value")
 	assert(d:Get() == 2 and runs == 2, "then stable")
-	-- fn이 던지면 cacheCurrCount가 안 갱신돼 다음 Get이 다시 시도한다
+	-- fn이 던지면 cacheCurrCount가 안 갱신된다 — [round10 Q50 (a), 2026-09-17] 다만 같은 세대의
+	-- 다음 Get은 재진입 에러(스탬프가 남아 있다)이고, 상류가 바뀐 새 세대에서 다시 시도한다
+	-- (옛 계약 "다음 Get이 다시 시도한다"에서 좁힘 — 세부는 spec 14)
 	local boom = true
 	local e: State<number> = s:Compute(function(x)
 		if boom then
@@ -171,7 +173,12 @@ do
 		e:Get()
 	end), "fn threw")
 	boom = false
-	assert(e:Get() == 2, "a thrown fn never marked the cache valid — recomputed on the next Get")
+	local okSame, errSame = pcall(function()
+		e:Get()
+	end)
+	assert(not okSame and string.find(tostring(errSame), "an earlier read that threw", 1, true) ~= nil, "same generation: the stamp stays")
+	s:Set(3)
+	assert(e:Get() == 3, "a thrown fn never marked the cache valid — recomputed on the next generation")
 	print("PASS")
 end
 
@@ -364,6 +371,57 @@ do
 	end)
 	assert(not ok4 and string.find(tostring(err4), "Compute fn must be a function", 1, true) ~= nil, "non-function fn: " .. tostring(err4))
 	assert(string.find(tostring(err4), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+	print("PASS")
+end
+
+print()
+print("=== 14. round10 Q50 (a) (2026-09-17) — Compute 재진입 가드: 순환은 사용자 줄 blame으로 즉시 error; fn이 던지면 같은 세대의 재읽기도 error, 상류가 바뀌면 다시 돈다 ===")
+do
+	-- (1) direct cycle: fn reads the result node through an upvalue
+	local src = Source(1)
+	local cyc: any
+	cyc = src:Compute(function(self: any)
+		return self:Get() + cyc:Get()
+	end)
+	local ok, err = pcall(function() return cyc:Get() end)
+	assert(not ok and string.find(tostring(err), "State: Compute fn is already running for this value", 1, true) ~= nil, "cycle detected: " .. tostring(err))
+	assert(string.find(tostring(err), "spec.state.luau", 1, true) ~= nil and string.find(tostring(err), "EpochMap", 1, true) == nil, "blames the user's Get line, not EpochMap: " .. tostring(err))
+	-- (2) indirect cycle through a downstream State
+	local a: any
+	local b: any
+	a = src:Compute(function(self: any) return self:Get() + b:Get() end)
+	b = a:Compute(function(self: any) return self:Get() * 2 end)
+	local ok2, err2 = pcall(function() return b:Get() end)
+	assert(not ok2 and string.find(tostring(err2), "already running", 1, true) ~= nil, "indirect cycle detected: " .. tostring(err2))
+	-- (3) the cyclic node keeps raising while its generation stands (the stamp was never cleared)
+	local ok3 = pcall(function() return cyc:Get() end)
+	assert(not ok3, "still raises on the next read (fn never returned — stamp stays)")
+	-- (4) a normal Compute is unaffected: same-generation re-reads and Set-driven recompute
+	local n = src:Compute(function(self: any) return self:Get() * 10 end)
+	assert(n:Get() == 10, "plain Compute reads")
+	assert(n:Get() == 10, "same-generation re-read is cached, not re-entrant")
+	src:Set(2)
+	assert(n:Get() == 20, "recompute after Set")
+	-- (5) a throwing fn: the first read raises the fn's own error; a re-read of the same generation
+	-- says the fn never returned; an upstream change (new generation) runs fn again — so a
+	-- transient validation raise (Operator's nil/wrong-type value) does not kill the node
+	local bad = false
+	local boom = src:Compute(function(self: any)
+		if bad then
+			error("boom")
+		end
+		return self:Get()
+	end)
+	assert(boom:Get() == 2, "sane before")
+	bad = true
+	src:Set(3)
+	local ok4, err4 = pcall(function() return boom:Get() end)
+	assert(not ok4 and string.find(tostring(err4), "boom", 1, true) ~= nil, "fn's own error first")
+	local ok5, err5 = pcall(function() return boom:Get() end)
+	assert(not ok5 and string.find(tostring(err5), "an earlier read that threw", 1, true) ~= nil, "same generation re-read: " .. tostring(err5))
+	bad = false
+	src:Set(4)
+	assert(boom:Get() == 4, "runs again after an upstream change")
 	print("PASS")
 end
 
