@@ -311,4 +311,24 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 13. round10 Q58 (나) (2026-09-17) — quad-roblox 핸들러끼리는 우선순위 동률이 없다(q.debug 설치 시 tie 출력 0): Event·OnChange는 NORMAL - 1 ===")
+do
+	local printed = {}
+	local env = getfenv(q.Dispatch.addHandler) :: any
+	local oldPrint = rawget(env, "print")
+	env.print = function(...: any) table.insert(printed, table.concat({ ... }, " ")) end
+	local q2: any = Quad.New()
+	q2.debug = true
+	q2:UseProvider(QuadRoblox)
+	env.print = oldPrint
+	for _, line in printed do
+		assert(string.find(line, "priority tie", 1, true) == nil, "tie line printed: " .. line)
+	end
+	local byName = {}
+	for _, h in q2.Dispatch.listHandlers() do byName[h.name] = h.priority end
+	assert(byName.Event == byName.Property - 1 and byName.OnChange == byName.InstanceChild - 1, "band offsets")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

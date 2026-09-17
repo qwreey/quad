@@ -65,7 +65,11 @@ local function install(quad: any)
 			-- v deliberately not inspected — nil must match too (header)
 			return type(k) == "string" and isEventOf(inst.ClassName, k)
 		end,
-		priority = dispatch.HANDLER_PRIORITY_NORMAL,
+		-- round10 Q58 (나) (user decision 2026-09-17): one band step below Property — the two
+		-- predicates are disjoint (reflection: a member is a property OR an event) so the order
+		-- never matters, but equal priorities are an undefined order (`table.sort` is unstable)
+		-- and printed a `q.debug` tie line; a band offset is the documented way to say "no tie".
+		priority = dispatch.HANDLER_PRIORITY_NORMAL - 1,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			if v == nil then
 				return Void -- `None`/`nil`: disconnect-only (event-plan) — nothing to connect

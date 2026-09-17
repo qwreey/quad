@@ -55,7 +55,7 @@
   **엔진 0 / mock 1**로 갈리는 것이 정상(`audit/studio-docs-2026-09-10.md` A절). 콜백이 초기값을 걸러야 하면 사용자가 `==`로
   거른다(사용자: *"== 비교가 엄청 싸서 그 안에서 dedup 하면 되는 부분"*) —
   quad가 초기값을 억제하지 않는다.
-- **핸들러(`"OnChange"`, NORMAL)**: `type(k) == "number"` ∧ 디스크립터
+- **핸들러(`"OnChange"`, NORMAL − 1 — [2026-09-17 round10 Q58 (나)] `InstanceChild`와의 동률을 밴드 오프셋으로 해소, 술어가 배타적이라 동작 무변경)**: `type(k) == "number"` ∧ 디스크립터
   (`H-52` 키 가드). 말단이라 배열 위치를 등록한다(`H-39`) —
   `TagFallbackHandler`와 같은 `setOffsetSource(inst, k, None)` +
   `setLength(inst, k, 0)`(물리 요소 없음). `process`는

@@ -31,6 +31,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 - **`:Compute` 계산 함수의 재진입이 에러가 됩니다.** 계산 함수가 자기 노드의 값을 읽는 의존성 순환(직접, 또는 하류 State를 거쳐)은 전에는 내부 파일을 가리키는 `stack overflow`였고, 그것을 `q.Fallback` 같은 프레임이 삼키면 반쯤 계산된 값이 유효 캐시로 굳었습니다. yield하는 계산 함수를 다른 코루틴이 그 사이 읽으면 함수가 두 번 돌았습니다. 이제 둘 다 읽는 줄에서 `State: Compute fn is already running for this value …`로 즉시 에러입니다. 부수 규칙 하나: 계산 함수가 던지면 **같은 세대의 재읽기**도 그 문구로 에러이고(전에는 함수가 다시 돌았습니다), 상류가 바뀌면 다시 돕니다. 순환·yield·던지는 계산 함수를 쓰지 않던 코드는 영향이 없습니다. 핸들러 작성자용 한 줄: 길이로 등록한 `State`의 계산 함수가 같은 owner의 부기를 건드리면 이 에러입니다(중첩 재계산이 자기 값을 읽습니다).
 
+- quad-roblox의 `Event`·`OnChange` 핸들러 우선순위가 `HANDLER_PRIORITY_NORMAL - 1`로 내려갔습니다(각각 `Property`·`InstanceChild`와 같은 값이었음). 판정이 서로 배타적이라 동작은 같고, `q.debug`를 켰을 때 설치 시점에 찍히던 "priority tie" 안내 두 줄이 사라집니다. 자기 핸들러를 NORMAL 근처에 두는 플러그인은 `q.Dispatch.listHandlers()`로 자리를 확인하세요.
+
 - 옵션 테이블을 변수에 담아 넘겨도 strict 타입 검사가 통과합니다 — `q.Debounce`/`q.Throttle`의 옵션, `slot:List`/`slot:Single`의 `opts`, 그리고 `q.Slot(initial)`의 배열(필드·원소가 읽기 전용 `read`로 선언됨). 전에는 `local opts = { Time = 0.3 }` 뒤 `q.Debounce(opts)`가 가변 필드 불변성으로 거부됐습니다. 받는 입력이 넓어지기만 해 기존 코드는 그대로 통과합니다.
 
 - **BREAKING(타입만) — `q.Effect`가 돌려주는 핸들의 타입 이름이 `EffectHandle`에서 `Effect`로, 입력 자리 마커가 `EffectHandleMarker`에서 `EffectMarker`로 바뀌었습니다.** `state:Observer` → `Observer`, `q.Slot` → `Slot`처럼 생성자와 타입 이름이 같은 규칙에서 이것만 벗어나 있었습니다(술어 `isEffect`와도 맞춤). 런타임은 같습니다. 옮기는 법: 주석·재수출의 `EffectHandle`을 `Effect`로(설정 모듈의 `export type EffectHandle = QuadTypes.EffectHandle` → `export type Effect = QuadTypes.Effect`).

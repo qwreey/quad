@@ -87,7 +87,10 @@ local function install(quad: any)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
 			return type(k) == "number" and isOnChange(v)
 		end,
-		priority = dispatch.HANDLER_PRIORITY_NORMAL,
+		-- round10 Q58 (나) (user decision 2026-09-17): one band step below InstanceChild — disjoint
+		-- predicates (Instance value vs OnChange marker), offset only to give each its own slot
+		-- instead of an undefined-order tie (and the `q.debug` tie line it printed).
+		priority = dispatch.HANDLER_PRIORITY_NORMAL - 1,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
 			-- `H-39`: terminal — no physical element, so the pair is None/0
 			quad.Bookkeeping.setEmpty(inst, k, inst)

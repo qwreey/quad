@@ -479,8 +479,10 @@ local function Init(module: any)
 		end
 		-- round10 H-537: `elementOwner` is per module instance, so another instance's Slot passed this
 		-- check and was destroyed under a live tree — a quad value from another instance is refused
-		-- (`H-186` door). An Instance is NOT gated here (code-review): `q.dispose(Instance.new(...))` has
-		-- always been allowed and base cannot tell "claimed elsewhere" from "never claimed" — Q58.
+		-- (`H-186` door). An Instance is NOT gated on ownership — round10 Q58 (가), user decision
+		-- 2026-09-17: the contract is "can this be removed without breaking our bookkeeping", not
+		-- "did we make it" ("소유하지 않더라도 부기에 없는 형태가 맞다면 지울 수 있다"), so
+		-- `q.dispose(Instance.new(...))` stays allowed; another instance's seated Instance is UB.
 		if isSlot(value) or module.isState(value) then
 			ModuleIdentity.assertOwnAtCall(module, value, "dispose")
 		end
