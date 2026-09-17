@@ -351,7 +351,16 @@ do
 	local ok2, err2 = pcall(function() seat:Set(host) end)
 	assert(not ok2 and string.find(tostring(err2), "cannot place an Instance inside itself or one of its own descendants", 1, true) ~= nil, "ancestor: " .. tostring(err2))
 	assert(f.Parent == host and host.Parent == nil, "tree untouched")
-	q.dispose(host) -- nothing seated: the seat commit never happened
+	-- an OCCUPIED State seat: the old child is already down before the guard raises (Q60 shape,
+	-- same as the two sibling arms — documented in CHANGELOG)
+	local old = q.Declaration.TextLabel({}) :: any
+	local seat2 = q.Source(old)
+	local f2 = q.Declaration.Frame({ seat2 }) :: any
+	f2.Parent = host
+	local okc = pcall(function() seat2:Set(host) end)
+	assert(not okc and old.Parent == nil, "the previous occupant is retracted before the rejection (Q60)")
+	q.dispose(old)
+	q.dispose(host) -- nothing seated by the rejected calls
 	-- H-546: the two public seat ops fail fast on nil, like their six Bookkeeping siblings
 	local c = q.Declaration.TextLabel({}) :: any
 	local ok3, err3 = pcall(function() return q.Bookkeeping.claimOwnerAt(nil, c, 1) end)
@@ -361,7 +370,7 @@ do
 	local ok5, err5 = pcall(function() return q.Bookkeeping.releaseOwner(nil, c) end)
 	assert(not ok5 and string.find(tostring(err5), "Bookkeeping.releaseOwner: element must not be nil", 1, true) ~= nil, tostring(err5))
 	local ok4b, err4b = pcall(function() return q.Bookkeeping.claimOwnerAt(c, c, nil) end)
-	assert(not ok4b and string.find(tostring(err4b), "Bookkeeping.claimOwnerAt: k (position) must not be nil", 1, true) ~= nil, tostring(err4b))
+	assert(not ok4b and string.find(tostring(err4b), "Bookkeeping.claimOwnerAt: k (seat key", 1, true) ~= nil, tostring(err4b))
 	local ok6, err6 = pcall(function() return q.Bookkeeping.releaseOwner(c, nil) end)
 	assert(not ok6 and string.find(tostring(err6), "Bookkeeping.releaseOwner: ownerKey must not be nil", 1, true) ~= nil, tostring(err6))
 	q.dispose(c) -- nothing was seated by the rejected calls

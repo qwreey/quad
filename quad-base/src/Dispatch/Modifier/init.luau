@@ -372,6 +372,12 @@ local function construct(tag: any, ...: any): any
 				if string.match(k, "^As%u") ~= nil then
 					Err.errorBeforeNearest(`Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
 				end
+				if string.sub(k, 1, 2) == "__" then
+					-- round11 code-review (`H-561`): the `__index` twin of this gate (`H-552`) — both
+					-- creation paths must refuse the same keys (`H-310`); a `__apply` field here died
+					-- much later in Dispatch with "no handler matched key __apply"
+					Err.errorBeforeNearest(`Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`, SURFACE)
+				end
 				if type(v) == "function" then
 					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
 					-- transform-function arm (the setter would call it once with old=nil and store nil).

@@ -83,7 +83,9 @@ local function install(quad: any)
 		-- Destroy cuts — so a destroyed Instance read as claimed until the next GC and as not claimed
 		-- after it (`Slot:Add(corpse)` passed and seated it before the GC, threw after). `H-293` makes
 		-- feeding a destroyed Instance UB, but the gate should not depend on GC pacing: a cut gcconn
-		-- is "not claimed" right away — the message already says a destroyed Instance counts as such.
+		-- is "not claimed" right away (the two gate messages now say a destroyed Instance counts as such).
+		-- NOT applied to `nativeClaim`'s double-claim check above nor to `bindLifetime`'s gate: a
+		-- corpse re-claimed pre-GC would get a fresh gcconn that never fires and read as alive forever.
 		local gcconn = InstData:GetWeak(inst, "gcconn")
 		return InstData:GetWeak(inst, "gchold") ~= nil and gcconn ~= nil and gcconn.Connected == true
 	end

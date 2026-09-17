@@ -767,7 +767,8 @@ local function mockProvider(quad: any): { [any]: any }
 	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup + gcconn `.Connected`
 	-- (round11 `H-548`: a destroyed Instance is "not claimed" at once, not after the next GC).
 	local function isClaimed(inst: any): boolean
-		return isMockInstance(inst)
+		-- round11 code-review: mirror the real provider's `H-548` half — a destroyed instance is not claimed
+		return isMockInstance(inst) and not getData(inst).destroyed
 	end
 	quad.Backend.nativeClaim = nativeClaim
 	quad.Backend.isClaimed = isClaimed

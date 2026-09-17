@@ -3522,7 +3522,7 @@ local function wrapElement(v)
             error("Slot: this backend cannot mount this value", 2)
         end
         if not isClaimed(v) then  -- [2026-09-16 사용자 결정] 미claim 요소 거부 — 자동 claim은 마법(`claim-plan.md` 14번)
-            error("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
+            error("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
         end
         return v
     end

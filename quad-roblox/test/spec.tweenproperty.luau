@@ -222,9 +222,14 @@ do
 	local g = q.Declaration.Frame({ Size = src }) :: any
 	src:Set(Tween({ Value = 20, Time = 0.5 }))
 	assert(#log == 1, "engine tween")
+	-- GC INSIDE the process window (code-review): the mock fires the property-changed signal
+	-- synchronously from `__newindex`, so an OnChange that collects runs while Dispatch has
+	-- parked NOOP in the chain slot — the only moment the weak retractor cache is unanchored
+	q.Dispatch.drive(g, { q.OnChange("Size", function()
+		collectgarbage()
+		collectgarbage()
+	end) })
 	src:Set(7) -- plain after a Tween: the retractor must not depend on the weak cache surviving
-	collectgarbage()
-	collectgarbage()
 	q.Dispatch.retractFrom(g, "Size", 1)
 	assert(log[1].tween.cancels >= 1, "teardown cancelled the running tween")
 	q.Dispatch.drive(g, { Size = Tween({ Value = 9, Time = 0.5 }) })

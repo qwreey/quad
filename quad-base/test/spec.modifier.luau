@@ -400,6 +400,10 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "State: Apply factory must be a function or an object with an __apply method", 1, true) ~= nil, tostring(err))
 	assert(type(mod.Size) == "function", "ordinary names still get setters")
+	local okc, errc = pcall(function()
+		return Modifier({ __apply = 5 })
+	end)
+	assert(not okc and string.find(tostring(errc), 'Modifier: field "__apply" starts with "__"', 1, true) ~= nil, "construct refuses the same keys: " .. tostring(errc))
 	print("PASS")
 end
 

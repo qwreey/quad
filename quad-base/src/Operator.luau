@@ -158,10 +158,10 @@ function Operator.Clamp(lo: any, hi: any): (any) -> any
 		checkSelf("Clamp", self)
 		return self:Compute(function(h: any, _prev: any, ...: any)
 			local r = read(...)
-			if r[1] > r[2] then
+			if r[1] ~= r[1] or r[2] ~= r[2] or r[1] > r[2] then -- NaN too (round11 code-review): `>` is false on NaN and math.clamp raised with this file's blame
 				-- round11 `H-553` (탐사 C″ 2): `math.clamp` raises its own "max must be greater than or
 				-- equal to min" blaming this file — reactive bounds crossing for a frame is ordinary
-				Err.errorBefore(`Operator.Clamp: min must be <= max (got min {r[1]}, max {r[2]})`, SURFACE)
+				Err.errorBefore(`Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})`, SURFACE)
 			end
 			return math.clamp(checkTarget("Clamp", h:Get(), "number"), r[1], r[2])
 		end, table.unpack(deps))

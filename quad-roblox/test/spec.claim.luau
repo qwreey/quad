@@ -289,6 +289,15 @@ do
 	assert(title2.Name == "Title", "nothing driven")
 	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "c" }) })) -- nothing was claimed by the rejected call
 	assert(title2.Name == "c")
+	-- array-key domain (H-560): a [0] descriptor is refused in pass 1, before any claim
+	local root3, title3 = makeTemplate()
+	local ok3, err3 = pcall(function()
+		return q.Claim(root3, M.Frame(M.Root)({ [0] = M.TextLabel("Title")({ Name = "z" }) }))
+	end)
+	assert(not ok3 and string.find(tostring(err3), "Claim: array keys must be positive integers (got 0)", 1, true) ~= nil, tostring(err3))
+	assert(title3.Name == "Title", "not driven")
+	q.Claim(root3, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "ok" }) }))
+	assert(title3.Name == "ok", "not claimed either")
 	print("PASS")
 end
 

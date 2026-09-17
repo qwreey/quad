@@ -84,8 +84,10 @@ local function Init(module: any)
 	-- bottom-up. Before, `nativeClaim(root)` ran before its children were even looked up, so
 	-- a missing/wrong-class child left root (and every earlier sibling) claimed and a fixed
 	-- retry died on "already claimed" instead of the real cause — the very shape `H-425`/
-	-- `H-471` had already fixed for the props gate. What remains non-atomic is the drive
-	-- itself (a handler throw mid-tree): that is the Declaration's general mid-throw UB.
+	-- `H-471` had already fixed for the props gate. What remains non-atomic: the drive
+	-- itself (a handler throw mid-tree — the Declaration's general mid-throw UB) and a CHILD
+	-- that is already claimed (pass 1 cannot ask `isClaimed` while the mock's lazy claim
+	-- answers true for every instance — round11 Q64).
 	type Step = { inst: any, desc: any, children: { [number]: any } }
 	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
 		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
@@ -111,6 +113,12 @@ local function Init(module: any)
 		local children: { [number]: any } = {}
 		for i, v in desc._props :: { [any]: any } do
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
+				-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
+				-- used to be asked only by `drive` — after the root and this child were claimed and the
+				-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
+				if i < 1 or i % 1 ~= 0 then
+					Err.errorBefore(`Claim: array keys must be positive integers (got {i})`, SURFACE)
+				end
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
 				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).

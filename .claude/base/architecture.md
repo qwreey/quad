@@ -508,7 +508,7 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   요구까지 방어/최적화하려고 구조를 복잡하게 만들지 않는다"* 원칙 그대로.
 - **적용 자리 넷**(7라운드가 찾은 것): State 전파 루프(구독자당 hot path),
   게이트 flush + `Blocker:Off()` 순회, `Dispatch.drive`의 배치 게이팅,
-  Dispatch 체인 슬롯. 각각의 실패 모드는 그 문서들이 적는다. **[2026-09-17 round11 `H-555` — 탐사 B″ 1] 다섯째 자리: `Bookkeeping.recompute`의 `recomputeBlocker` On/Off 창** — 그 안에서 중첩 Slot의 `Offset:Set`이 돌므로 `slot.Offset`(공개 읽기 State)을 구독한 사용자 Effect/Observer가 던지면 그 소유자의 부기가 영구 동결된다(리마운트 계약 `H-232`가 `bk`를 살려 둬 재드라이브·재마운트로도 안 풀림). 증상은 **에러 없는 조용한 오배치**(형제 Slot이 옛 오프셋에 앉음). `Bookkeeping.luau` 주석은 Q50 맥락에서 "같은 UB 부류"라고만 적었고 트리거로 남용(자기 부기를 만지는 길이 Compute)만 들었는데, 평범한 `Offset` 구독 콜백의 throw가 같은 창이다 — 레퍼런스 core/06 `Length`/`Offset`에 캐비엇.
+  Dispatch 체인 슬롯. 각각의 실패 모드는 그 문서들이 적는다. **[2026-09-17 round11 `H-555` — 탐사 B″ 1] 다섯째 자리: `Bookkeeping.recompute`의 `recomputeBlocker` On/Off 창** — 그 안에서 중첩 Slot의 `Offset:Set`이 돌므로 `slot.Offset`(공개 읽기 State)을 구독한 사용자 Effect/Observer가 던지면 그 소유자의 부기가 영구 동결된다(리마운트 계약 `H-232`가 `bk`를 살려 둬 재드라이브·재마운트로도 안 풀림). 증상은 **에러 없는 조용한 오배치**(형제 Slot이 옛 오프셋에 앉음). `Bookkeeping.luau` 주석은 Q50 맥락에서 "같은 UB 부류"라고만 적었고 트리거로 남용(자기 부기를 만지는 길이 Compute)만 들었는데, 평범한 `Offset` 구독 콜백의 throw가 같은 창이다 — 레퍼런스 core/06 `Offset`에 캐비엇. `Length:Set`은 `OffWithoutEmit()` 뒤(창 밖)라 안전하다(code-review 실측 — 던져도 다음 변경에서 회복).
 - **같은 원칙이 `EffectHandle:Rerun()`에도 적용된다** — `fn`이 던지면
   `_running`이 참으로 남는 것까지 포함해 복구하지 않는다(사용자: *"에러가
   난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의 일반 동작"*).
