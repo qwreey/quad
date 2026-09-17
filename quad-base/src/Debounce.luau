@@ -39,6 +39,15 @@
 	test mock) is fully deterministic — plan 11절 "가상 시계로 결정론적 테스트".
 	The min-form is a later optimization behind the same surface.
 
+	Time sampling (round10 Q55 (b), user decision 2026-09-17): `Time` is read ONCE per
+	upstream signal, first thing in `onUpstreamEmit`, into `h._time`; every `openWindow`
+	(signal path, the trailing reopen in `commitIdle`, `Flush`) uses that cache. The
+	only site that can throw (a bad State value, a throwing Compute behind it) is
+	therefore the signal entry, before any state change — the timer callbacks and
+	`Flush` run no user code and cannot leave "Blocker On, no timer" (the `H-518`
+	residue). Consequence: a Time change with no signal in between reaches the next
+	window one signal later. `MaxTime` was already signal-path only.
+
 	GC (plan 8): a pending timer holds its gate through the callback upvalues
 	for at most 2 × Time after the last signal (the window that a pass reopens
 	must see an empty set before the gate goes idle) — bounded, self-healing. The
@@ -140,7 +149,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 
 	-- the per-gate handle: Flush/Cancel + the timer state (fields, not
 	-- upvalues, so the ONE table is what every closure — and the registry — sees)
-	local h: any = { _window = nil :: Timeout?, _cap = nil :: Timeout? }
+	local h: any = { _window = nil :: Timeout?, _cap = nil :: Timeout?, _time = nil :: number? }
 
 	-- `emit` annotated: `state` is `any` here, so an unannotated parameter is inferred from
 	-- its first use (`emit()` → `() -> boolean`) and `emit(false)` becomes an arity error
@@ -163,10 +172,11 @@ function FactoryImpl.__apply(self: any, state: any): any
 			end
 		end
 		local function openWindow()
-			-- read + schedule BEFORE any state change (`H-509`, the `H-392`/`H-445`
-			-- precedent): a throwing Time read or a missing backend must not leave
-			-- the Blocker On with no window (withheld signals with no timer to free them)
-			local t = module.Backend.setTimeout(onWindowEnd, readTime(name, "Time", opts.Time))
+			-- schedule BEFORE any state change (`H-509`, the `H-392`/`H-445` precedent): a
+			-- missing backend must not leave the Blocker On with no window. The Time value is
+			-- `h._time` — sampled at the signal (Q55 (b)), never read here, so the timer-path
+			-- callers (`commitIdle`, `Flush`) cannot throw through this.
+			local t = module.Backend.setTimeout(onWindowEnd, h._time)
 			b:On() -- inside a window: upstream emits are withheld by `pass()`
 			h._window = t
 		end
@@ -230,6 +240,9 @@ function FactoryImpl.__apply(self: any, state: any): any
 		end
 
 		return function() -- onUpstreamEmit (synchronous; the gate already merged the source into its set)
+			-- Q55 (b): the ONE Time read — before anything changes, so a throw leaves the gate
+			-- exactly as it was (an open window still ends its batch; idle stays idle)
+			h._time = readTime(name, "Time", opts.Time)
 			-- `held` = "this signal is withheld, not passed" — read the Blocker BEFORE
 			-- anything below flips it (`H-510`): a re-entrant emit during a timer-path
 			-- commit sees no window but a still-On Blocker, so `pass()` withholds
@@ -238,7 +251,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 				-- idle: a leading gate passes now (Blocker is Off → `pass()` flushes),
 				-- otherwise withhold first
 				-- [2026-09-16 hunt B] `H-509` again, one level up: the callers flipped state BEFORE
-				-- openWindow's read+schedule — a throwing Time read (bad State value, missing backend)
+				-- openWindow's schedule — a missing backend (and, before Q55, a throwing Time read)
 				-- left Blocker On with no window and the signal withheld until the next emit.
 				-- Non-leading: open first (schedules, then On), then withhold. Leading: pass while Off,
 				-- then open — a throw there leaves the gate idle, which is consistent.
@@ -255,7 +268,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 				pass() -- Blocker is On → withheld
 				if reset then -- the one bit: Debounce restarts the window, Throttle keeps it
 					-- schedule the new window before dropping the old one (same `H-509` rule): if
-					-- the Time read throws, the old window still ends the batch
+					-- the backend throws, the old window still ends the batch
 					local old = h._window
 					openWindow()
 					module.Backend.clearTimeout(old)

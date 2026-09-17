@@ -237,10 +237,11 @@ do
 	local g2: State<number> = s2:Apply(Throttle({ Time = t }))
 	local p2 = probe(g2)
 	t:Set("x")
-	assert(not pcall(function() s2:Set(1) end), "throws at the schedule")
+	assert(not pcall(function() s2:Set(1) end), "throws at the signal entry (Q55 (b): the Time read is the first thing, before the leading pass)")
+	assert(p2.count == 0 and mock.pendingTimers() == 0, "nothing changed underneath the throw: the signal stays merged in the gate's set, no window")
 	t:Set(1)
 	s2:Set(2)
-	assert(p2.count == 2, "after the throw the gate is idle again: this signal leads (Blocker was not left On)")
+	assert(p2.count == 1, "after the throw the gate is idle again: this signal leads and carries the withheld one in the same pass (Blocker was not left On)")
 	assert(mock.pendingTimers() == 1, "and exactly one window")
 	print("PASS")
 end
@@ -341,7 +342,7 @@ do
 end
 
 print()
-print("=== 9. Time = State<number> — 스케줄 시점에만 읽는다: 바꿔도 진행 중인 창은 그대로, 다음 창부터 ===")
+print("=== 9. Time = State<number> — 신호가 들어올 때 읽는다(round10 Q55 (b), 2026-09-17): 바꿔도 진행 중인 창은 그대로, 다음 신호가 여는 창부터 ===")
 do
 	fresh()
 	local t = Source(1)
@@ -367,6 +368,33 @@ do
 		src:Set(1)
 	end)
 	assert(not ok and string.find(tostring(err), "Time must be a non%-negative number"), tostring(err))
+	-- Q55 (b): the timer path never reads Time — a value gone bad DURING a window does not
+	-- throw inside the timer callback (which used to leave Blocker On with no timer); the
+	-- trailing reopen uses the value sampled at the last signal, and the next signal is
+	-- where the bad value is reported — with nothing changed underneath it
+	local t2 = Source(1)
+	local s2 = Source(0)
+	local g2: State<number> = s2:Apply(Throttle({ Time = t2 }))
+	local p2 = probe(g2)
+	s2:Set(1) -- leading: passes, window 1.0 (sampled 1)
+	s2:Set(2) -- withheld; sample still 1
+	t2:Set("x" :: any) -- bad value, no signal
+	advance(1) -- window end → trailing passes 2 → reopen with the CACHED 1.0, no throw
+	assert(p2.count == 2, "trailing passed through the timer path with a bad Time State")
+	assert(string.sub(mock.timerLog()[#mock.timerLog()], 1, 3) == "set", "the reopen was scheduled (no stuck gate)")
+	local ok2, err2 = pcall(function() s2:Set(3) end)
+	assert(not ok2 and string.find(tostring(err2), "Time must be a non%-negative number"), "reported at the next signal: " .. tostring(err2))
+	t2:Set(0.3)
+	s2:Set(4) -- withheld in the still-open reopened window (1.0 from the cache)
+	advance(1)
+	assert(p2.count == 3, "the reopened window ran with the cached 1.0 and passed 4")
+	-- a Time change with no signal reaches the window only one signal later
+	t2:Set(0.1)
+	advance(1) -- the post-trailing reopen used 0.3 (sampled at s2:Set(4)); nothing withheld → idle
+	s2:Set(5) -- samples 0.1 → leading pass + 0.1 window
+	s2:Set(6)
+	advance(0.1)
+	assert(p2.count == 5, "next signal's window is 0.1")
 	print("PASS")
 end
 

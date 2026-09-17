@@ -89,7 +89,7 @@ export type ThrottleOptions = {
 - `Leading`과 `Trailing`을 **둘 다 `false`로 주면 에러**입니다 — 아무것도 통과하지 못하므로.
 - `MaxTime`은 **`Debounce` 전용**입니다. `Throttle`은 이미 `Time`마다 통과시키므로 옵션 자체가 거부됩니다.
 - `MaxTime` 타이머는 **뭔가 보류됐고 `Trailing`이 그걸 통과시킬 수 있을 때만** 걸립니다. `Trailing = false`인 Debounce에 `MaxTime`을 줘도 아무 일도 하지 않습니다.
-- `Time`/`MaxTime`에 `State`를 줘도 **구독하지 않습니다** — 타이머를 거는 시점에만 한 번 읽습니다. 이미 걸린 타이머는 자기 지연을 유지합니다.
+- `Time`/`MaxTime`에 `State`를 줘도 **구독하지 않습니다** — 상류 신호가 들어올 때 한 번 읽습니다. 이미 걸린 타이머는 자기 지연을 유지하고, 창이 닫힌 뒤 다시 여는 창(trailing 통과 뒤·`Flush` 뒤)은 **마지막 신호 때 읽은 값**을 씁니다. 신호 없이 값만 바꾸면 다음 신호부터 반영됩니다.
 
 **옵션 게이트(팩토리를 부르는 줄에서 던집니다).** 이름 자리(`Debounce`/`Throttle`)는 부른 쪽에 따라 바뀝니다.
 
@@ -103,7 +103,7 @@ Debounce: Leading and Trailing both false would pass nothing through
 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
 ```
 
-`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **타이머를 거는 시점**에 한 번 더 검사합니다. 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
+`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던지고, 게이트의 상태는 그 전과 같습니다 — 타이머 콜백 안에서는 읽지 않습니다). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
 Debounce: Time must be a non-negative number (got string)
