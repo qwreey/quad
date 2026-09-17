@@ -395,6 +395,16 @@ function bindLifetime(inst, value)
     -- 없는 값은 물을 것이 없다. mock(installLifetime)과 실 구현
     -- (`quad-roblox/src/LifetimeHandle.luau` — [2026-09-02] M5 단위 ①로
     -- 구현됨) 둘 다 이 순서.
+    -- ⭐ [2026-09-17 round10 Q56 (b), 사용자 결정] 이 "반쪽 핸들을 남기지 않는다"는
+    -- **`_assertBindable`까지만**이다 — 아래 커밋 뒤에 도는 `_catchUp`/`_bindDestroying`은
+    -- 사용자 콜백(바인딩 전에 보류된 emit의 재생)을 돌리고, 거기서 던지면 핸들은 이
+    -- inst에 묶인 채 남는다(같은 핸들로 재시도하면 "already bound to another
+    -- Instance"). pcall 되감기는 `architecture.md` "예외 안전성 계약 — 감싸지 않는다"와
+    -- 부딪혀 안 하고, 캐치업을 op 밖으로 옮기는 재배치(c)도 던지는 위치만 옮길 뿐
+    -- 반쪽은 같아 기각 — UB로 문서화(레퍼런스 core/05·extend/01). 사용자: *"에러로
+    -- 인해 자료가 깨지는건 일반적이고, 그에 비해 에러를 내는 조건이 어려워서 UB에
+    -- 가까운것"*. 재시도는 새 핸들로(Declaration 안에서 인라인으로 만드는 보통 코드는
+    -- 자연히 그렇다).
     if type(value) == "table" and value._assertBindable ~= nil then
         value:_assertBindable()
     end

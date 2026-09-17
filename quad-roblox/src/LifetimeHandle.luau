@@ -140,7 +140,12 @@ local function install(quad: any)
 			)
 		end
 		-- `H-184`: ask the value's own hook guard BEFORE committing bookkeeping —
-		-- if it throws we must not leave a half-bound handle behind.
+		-- if it throws we must not leave a half-bound handle behind. That promise covers
+		-- `_assertBindable` ONLY: the catch-up / Destroying hookup below run user callbacks
+		-- AFTER the commit, and a throw there leaves the handle bound to this inst (a retry
+		-- with the same handle says "already bound to another Instance"). Documented UB —
+		-- round10 Q56 (b), user decision 2026-09-17 ("에러로 인해 자료가 깨지는건 일반적이고 …
+		-- UB에 가까운것"); no pcall (architecture "예외 안전성 계약 — 감싸지 않는다").
 		if type(value) == "table" and (value :: any)._assertBindable ~= nil then
 			(value :: any):_assertBindable()
 		end

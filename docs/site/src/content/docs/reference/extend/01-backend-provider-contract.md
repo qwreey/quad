@@ -114,7 +114,7 @@ canBound       (value: any) -> boolean
 canExecute     (value: any) -> boolean
 ```
 
-- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다.
+- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
 - **`unbindLifetime(value)`** — **인자 하나**. 이 값 하나만 조기 해제하며, `inst`는 건드리지 않습니다. cleanup을 부르지도, 안쪽 Observer를 떼지도 않습니다(대칭적 해제일 뿐). 안 묶인 값에 부르면 no-op이지만 `nil`은 에러입니다 — 인자가 빠진 것이지 "안 묶인 값"이 아니기 때문입니다.
 - **`canBound(value)`** — "지금 이 값을 묶어도 되는가". 아직 아무 데도 안 묶여 있거나, 묶였던 인스턴스가 이미 파괴됐으면(연결이 끊겼으면) 참 — 즉 죽은 뒤 재사용은 허용됩니다.
 - **`canExecute(value)`** — "이 값이 지금 발화해도 되는가". **묶인 채 살아 있으면 참**입니다. State 전파가 이 게이트로 죽은 요소에 매달린 Observer/Effect를 걸러냅니다.

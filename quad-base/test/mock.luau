@@ -693,7 +693,7 @@ local function mockProvider(quad: any): { [any]: any }
 		BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
 
 		if isObserver(value) then
-			value:_catchUp() -- [H-159] 묶이기 전 홀드된 emit 1회 (단위 3에서 합류)
+			value:_catchUp() -- [H-159] 묶이기 전 홀드된 emit 1회 (단위 3에서 합류) — 커밋 뒤 사용자 콜백: 던지면 반쪽 바인딩 UB(round10 Q56 (b))
 		end
 		if isEffect(value) then
 			value:_bindDestroying(inst) -- Destroying 연결 + 홀드 캐치업 1회 (단위 3)

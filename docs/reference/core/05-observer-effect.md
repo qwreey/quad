@@ -106,6 +106,7 @@ export type Observer = {
 - 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
 - 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있습니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
+- 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 `Declaration`은 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
 
 **예제**
 
