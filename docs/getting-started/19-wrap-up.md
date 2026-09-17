@@ -54,7 +54,7 @@ q.dispose(screen)
 - **숫자 키 자리에 지금 놓인 원소** — `D.Frame { child }`의 정적 자식, `State<Instance?>` 자리에 지금 놓인 원소, `UICorner = 8`이 만든 관리 자식 — 도 같은 에러로 막힙니다. 먼저 `cur:Set(nil)`(또는 다른 값)으로 자리에서 내려놓은 뒤 버리세요. 10장 §6에서 갈아 끼워 떼어진 옛 원소는 이미 내려와 있으니 바로 `q.dispose`하면 됩니다.
 - 루트처럼 어디에도 놓이지 않은 값은 둘 중 무엇을 써도 같습니다. 그래도 `q.dispose`로 통일해 두면, 나중에 그 값이 어딘가에 놓이게 됐을 때 실수를 에러로 잡습니다.
 
-<!-- mock 실측 2026-09-14: gs.dispose3.luau — Slot 원소 dispose는 위 문구로 에러, Extract 뒤엔 성공. [2026-09-17 재실측] State 자리의 현재 원소도 이제 같은 문구로 거부되고 `cur:Set(nil)` 뒤에 성공(정적 자식 소유권 자리, round10 Q48) -->
+<!-- mock 실측 2026-09-14: gs.dispose3.luau — Slot 원소 dispose는 위 문구로 에러, Extract 뒤엔 성공. [2026-09-17] State 자리의 현재 원소도 이제 같은 문구로 거부되고 `cur:Set(nil)` 뒤에 성공 — 실측은 quad-roblox `spec.handlers` 12 (4)(정적 자식 소유권 자리, round10 Q48) -->
 </details>
 
 ---
