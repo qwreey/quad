@@ -24,7 +24,9 @@ local function register(dispatch: any, module: any)
 			-- a Slot at a NAME key must not match — otherwise claim/bindLifetime
 			-- commit before Bookkeeping.checkPosition throws an internal error
 			-- and the ownership/lifetime bind is orphaned (통합 리뷰 발견)
-			return type(k) == "number" and internal.isSlot(v)
+			-- positive integer only (checkpoint code-review 2026-09-17): the public
+			-- `Dispatch.process(inst, 0, slot, 1)` used to commit the seat before `checkPosition`
+			return type(k) == "number" and k >= 1 and k % 1 == 0 and internal.isSlot(v)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_HIGH,
 		process = function(inst: any, k: any, slotValue: any, _index: number): (any?, boolean) -> ()

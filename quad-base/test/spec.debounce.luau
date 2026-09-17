@@ -388,6 +388,24 @@ do
 	s2:Set(4) -- withheld in the still-open reopened window (1.0 from the cache)
 	advance(1)
 	assert(p2.count == 3, "the reopened window ran with the cached 1.0 and passed 4")
+	-- (checkpoint code-review) first read throws → Flush must not schedule a nil window
+	local t3 = Source("x" :: any)
+	local s3 = Source(0)
+	local h3 = Ref(nil :: GateHandle?)
+	local g3: State<number> = s3:Apply(Throttle({ Time = t3, Handle = h3 }))
+	local p3 = probe(g3)
+	local timersBefore = mock.pendingTimers() -- the s2 gate above still has a window open
+	assert(not pcall(function() s3:Set(1) end), "first read throws")
+	t3:Set(1)
+	;(h3.Value :: GateHandle):Flush() -- passes the merged signal, no window (no valid Time yet)
+	assert(p3.count == 1 and mock.pendingTimers() == timersBefore, "Flush passed the batch and stayed idle")
+	-- (checkpoint code-review) a bad MaxTime is reported at the entry too, before any state change
+	local m4 = Source("bad" :: any)
+	local s4 = Source(0)
+	local _g4: State<number> = s4:Apply(Debounce({ Time = 0.3, MaxTime = m4 }))
+	local okM, errM = pcall(function() s4:Set(1) end)
+	assert(not okM and string.find(tostring(errM), "MaxTime must be a non%-negative number"), tostring(errM))
+	assert(mock.pendingTimers() == timersBefore, "no window was opened before the MaxTime read threw")
 	-- a Time change with no signal reaches the window only one signal later
 	t2:Set(0.1)
 	advance(1) -- the post-trailing reopen used 0.3 (sampled at s2:Set(4)); nothing withheld → idle

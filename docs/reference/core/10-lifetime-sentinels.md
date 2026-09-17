@@ -107,13 +107,13 @@ dispose: (value: any) -> ()
 
 **동작** — quad가 관리하는 값을 파괴하는 **유일한 안전 경로**입니다. Slot이면 그 Slot 트리를 통째로 파괴하고, 백엔드 요소면 주입된 파괴 op를 부릅니다.
 
-누가 들고 있는 값은 파괴하지 않습니다. 어떤 Slot의 원소이거나 마운트된 자리(정적 자식·숏핸드가 만든 관리 자식 포함)를 차지하고 있으면 먼저 그 자리에서 빼야 합니다. 검사하는 것은 그것뿐입니다 — "quad가 만든 값인가"는 보지 않으므로, 어느 자리에도 놓이지 않은 `Instance.new`/`:Clone()` 결과도 지웁니다. 다른 quad 인스턴스의 자리에 앉은 Instance는 이쪽 부기에 없어 거부되지 않습니다(인스턴스 간 값 섞기는 정의되지 않은 동작).
+누가 들고 있는 값은 파괴하지 않습니다. 어떤 Slot의 원소이거나 마운트된 자리(정적 자식·숏핸드가 만든 관리 자식 포함)를 차지하고 있으면 먼저 그 자리에서 빼야 합니다 — Slot이면 `Extract`/데이터 키 삭제, 숫자 키 자리면 그 자리를 쥔 State를 `:Set(nil)`, 숏핸드 관리 자식이면 그 키를 `nil`로(자식이 같이 갑니다). 검사하는 것은 그것뿐입니다 — "quad가 만든 값인가"는 보지 않으므로, 어느 자리에도 놓이지 않은 `Instance.new`/`:Clone()` 결과도 지웁니다. 다른 quad 인스턴스의 자리에 앉은 Instance는 이쪽 부기에 없어 거부되지 않습니다(인스턴스 간 값 섞기는 정의되지 않은 동작).
 
 에러 문구는 넷입니다.
 
 ```
 dispose: value must not be nil
-dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (`:Set(nil)` the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
 dispose: this backend cannot dispose this value
 ```
 

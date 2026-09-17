@@ -20,7 +20,7 @@
 	bookkeeping (`H-39` is about ARRAY positions only). The retractor is
 	`Void` for plain values: a property cannot be "unset", and a descending-diff
 	replacement simply writes the next value. [round10 Q53 (a), user decision
-	2026-09-17] a chain that carried a TWEEN returns a real retractor instead —
+	2026-09-17] a chain that has carried a TWEEN (at any point) returns a real retractor instead —
 	on teardown (`retracting == true`: `Dispatch.retractFrom`, the shorthand's
 	managed-child destroy) it `Cancel`s the running engine tween and clears the
 	`(inst, k)` slot; on a value swap (`retracting == false`) it does nothing,
@@ -80,10 +80,14 @@ local function install(quad: any)
 	-- 3-state slot (header) — weak-keyed by inst through Relate, so a dying
 	-- instance drops its slots (and the engine tween handle) with it
 	local tweenSlots = quad.Relate()
-	-- (inst, k) -> the tween-chain retractor (round10 Q53 (a)); weak-keyed by inst like the slots
+	-- (inst, k) -> the tween-chain retractor (round10 Q53 (a)). Weak VALUE (`H-71`/`H-229`, checkpoint
+	-- code-review): the closure captures `inst`, so a strong bucket value would back-reference its
+	-- own weak key and pin every tweened Instance for the module's lifetime (Luau has no ephemerons).
+	-- The live chain holds the retractor strongly (`list[index].retractor`); after teardown the
+	-- entry may collect and a later chain simply mints a new one — identity never matters.
 	local tweenRetractors = quad.Relate()
 	local function tweenRetractor(inst: any, k: any): (any?, boolean) -> ()
-		local r = tweenRetractors:GetStrong(inst, k)
+		local r = tweenRetractors:GetWeak(inst, k)
 		if r == nil then
 			r = function(_nextValue: any?, retracting: boolean)
 				if not retracting then
@@ -95,7 +99,7 @@ local function install(quad: any)
 				end
 				tweenSlots:SetStrong(inst, k, nil) -- fresh chain next time: first set snaps again
 			end
-			tweenRetractors:SetStrong(inst, k, r)
+			tweenRetractors:SetWeak(inst, k, r)
 		end
 		return r
 	end
@@ -193,7 +197,9 @@ local function install(quad: any)
 			end
 			inst[k] = v
 			tweenSlots:SetStrong(inst, k, true)
-			return Void
+			-- a chain that has ever carried a Tween keeps its retractor (checkpoint code-review): the
+			-- `true` record must also go on teardown, or a re-driven Tween animates instead of snapping
+			return tweenRetractors:GetWeak(inst, k) or Void
 		end,
 	} :: QuadTypes.Handler)
 end

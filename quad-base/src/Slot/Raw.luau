@@ -117,7 +117,15 @@ return function(S: Types.SlotInternal, module: any)
 		spliceArraysUp(self, index)
 		local physical = self._mounted and not deferPhysical
 		if S.isSlot(element) then
+			-- Q52 guard on THIS Slot too (checkpoint code-review): a `:List` element added at runtime
+			-- runs its first `updateFn` inside attachSlot, between spliceArraysUp and the length
+			-- registration — a CRUD on `self` from there shifted the array under the captured
+			-- position and left Length short for good. Save/restore: `_activateList` calls rawAdd
+			-- while `self` is already on a mount walk.
+			local wasMaterializing = self._materializing
+			self._materializing = true
 			S.attachSlot(element, self._physicalTarget, self, index, physical)
+			self._materializing = wasMaterializing
 		else
 			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
@@ -203,7 +211,10 @@ return function(S: Types.SlotInternal, module: any)
 			end
 			if self._physicalTarget ~= nil then
 				if S.isSlot(newElement) then
+					local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+					self._materializing = true
 					S.attachSlot(newElement, self._physicalTarget, self, index, false)
+					self._materializing = wasMaterializing
 				else
 					S.BK.setOffsetSource(self, index, S.None)
 					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
@@ -221,7 +232,10 @@ return function(S: Types.SlotInternal, module: any)
 				op(self._mountedInst, offset, { oldElement })
 			end
 			if S.isSlot(newElement) then
+				local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+				self._materializing = true
 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
+				self._materializing = wasMaterializing
 				return
 			end
 			S.BK.setOffsetSource(self, index, S.None)

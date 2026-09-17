@@ -11,8 +11,9 @@
 	Match rule: string key ∧ the key is an event of `inst.ClassName` per
 	`ReflectionService:GetEventsOfClass` (descriptor array with `.Name`,
 	inherited included — Studio-measured 2026-09-03; events are NOT in
-	`GetPropertiesOfClass`, so this set and PropertyHandler's are disjoint
-	and both sit at NORMAL priority). The match is KEY-based on purpose: it
+	`GetPropertiesOfClass`, so this set and PropertyHandler's are disjoint;
+	this handler sits one band step below Property — `NORMAL - 1`, round10
+	Q58 (나) 2026-09-17). The match is KEY-based on purpose: it
 	must also fire for `v == nil` (event-plan "이벤트도 store-bind 가능" —
 	`= None` reaches here as `nil` through NoneHandler's recursion; NilHandler
 	is number-key only, so no overlap).

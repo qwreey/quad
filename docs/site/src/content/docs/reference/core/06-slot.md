@@ -366,7 +366,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 
 두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
 
-`updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 처음 마운트될 때 `updateFn`은 조상들의 마운트 walk 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요.
+`updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요.
 
 ```
 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer
@@ -560,7 +560,7 @@ dispose: (value: any) -> ()
 **마운트 중인 값에는 쓸 수 없습니다.** 먼저 꺼내야 합니다.
 
 - `dispose: value must not be nil`
-- `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner)`
+- `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (`:Set(nil)` the State holding it; a shorthand-managed child goes with its key)`
 - `dispose: this backend cannot dispose this value`
 - `dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드나 `quad_base` 사본이 둘인 프로젝트).
 

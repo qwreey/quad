@@ -49,7 +49,7 @@ return function(S: Types.SlotInternal, module: any)
 		-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
 		-- the user takes ownership first with `Claim` (or builds it with the Declaration).
 		if not module.Backend.isClaimed(v) then
-			raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first" .. " (an Instance made by another quad module instance also counts as not claimed here)", S.SURFACE)
+			raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here)", S.SURFACE)
 		end
 	end
 	S.checkRawElement = checkRawElement

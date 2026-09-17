@@ -170,6 +170,10 @@ local function createImpl(module: any)
 		-- kills it") would have turned one transient Operator/validation raise into a dead
 		-- binding. Nearest blame: the `:Get()` line that closed the cycle. User: "순수 flag 로
 		-- 막는게 가능하고 … 유저의 흔하게 날 수 있는 실수라 … 단순 마법 없이 flag 셋으로 만족".
+		-- NOT caught (checkpoint code-review): a fn that `Set`s its own dep and THEN reads itself —
+		-- the Set bumps the generation, so the re-entry looks like a new one and recurses until
+		-- stack overflow. That is the `Get` loop's standing UB ("re-Sets its own dep on every
+		-- pass never converges"); a generation-free flag would re-open the thrown-fn problem.
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
 		if self._computing == gen then
 			Err.errorBeforeNearest("State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)

@@ -122,7 +122,7 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   `H-272` 관례의 확장: 리터럴 level 2는 `Claim`의 DFS 경유 호출에서 quad
   내부를 blame하고, 최외곽 표면 걷기면 직접 호출·`Claim` 경유 양쪽에서
   사용자 줄에 닿는다.
-- **매칭은 프로바이더 주입 op** `nativeFindChild(inst, key)`(가칭) — Roblox는
+- **매칭은 프로바이더 주입 op** `nativeFindChild(inst, key, className?)`(**[2026-09-17]** 셋째 인자는 17번) — Roblox는
   `Name`, web은 id/selector. **quad-base가 순회·부기 전반을 구현하고
   프로바이더는 이 핸들만 낸다**(사용자: *"quad-base 에서 전반을 구현해주고
   필요 핸들을 구현하라고 남기는건 괜찮은 생각"*). 주입 op 전체 목록의 단일
@@ -359,8 +359,8 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
 - 프로바이더 op **`nativeClaim(inst)`**(§7-9) — `lifecycle-pattern.md` (0)의 코드가 본체,
   `New` ②단계가 같은 op를 부르도록 `base/bind-system-plan.md` 의사코드 주석 갱신됨.
   `base/architecture.md` 주입 op 목록에 추가됨. **[2026-09-08 정정]** 옛 "조합 폴백 예외" 분류는 소멸 — 2026-09-07 회신 4차(Q6)로 폴백 규칙 자체가 철회돼 `native*` 여섯 전부 필수·미주입이면 안내 스텁 에러다(`slot-plan.md`의 "기본 구현(조합 폴백)" 절 배너).
-- 프로바이더 op `nativeFindChild(inst, key)`(이름 가칭) — `base/architecture.md` 주입 op
-  목록에 추가됨(quad-roblox는 `inst:FindFirstChild(key)`). 옛 "`native*` 조합 폴백의
+- 프로바이더 op `nativeFindChild(inst, key, className?)`(**[2026-09-17]** 셋째 인자는 17번) — `base/architecture.md` 주입 op
+  목록에 추가됨(quad-roblox는 `inst:FindFirstChild(key)` 뒤 `IsA`). 옛 "`native*` 조합 폴백의
   예외 — 조회라 조합으로 만들 수 없어 `isInst`처럼 미주입이면 명확한 error"는
   **에이전트 분류**였고(사용자 발언은 "필요 핸들을 구현하라고 남기는 건 괜찮다"까지),
   **[2026-09-08 정정]** 폴백 규칙 철회(위 항목) 뒤엔 "예외"가 아니라 여섯과 같은 기본 규칙이다.

@@ -476,15 +476,17 @@ local function claimOwner(element, ownerKey, fromDetached)
     elementOwner:SetWeak(element, OWNER, ownerKey)
 end
 
--- top-level(`SlotHandler`) 전용 — "같은 (inst,k) 자리의 spurious 재발행"만
--- false, 그 외 중복은 전부 error. 반환값 = 실제로 새로 클레임했는가.
+-- 자리(seat) 등록 — `SlotHandler`뿐 아니라 **[2026-09-17 Q48 (a)]** quad-roblox의 정적 자식·
+-- 숏핸드 관리 자식도 `module.Bookkeeping.claimOwnerAt`로 같은 레지스트리에 앉는다(공개 op).
+-- "같은 (inst,k) 자리의 spurious 재발행"만 false, 그 외 중복은 전부 error(메시지 접두는
+-- 어느 자리에서든 나므로 `Bookkeeping.claimOwnerAt:`, `errorBefore`). 반환값 = 실제로 새로 클레임했는가.
 local function claimOwnerAt(element, inst, k)
     local current = elementOwner:GetWeak(element, OWNER)
     if current == inst and elementOwner:GetWeak(element, OWNER_POS) == k then
         return false  -- 정확히 이 자리가 이미 들고 있음 — 재확인만, no-op
     end
     if current ~= nil then
-        error("Slot: this element is already mounted elsewhere — multiple mounts are not allowed", 2)
+        error("Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed", 2) -- [2026-09-17] 접두는 Bookkeeping
     end
     elementOwner:SetWeak(element, OWNER, inst)
     elementOwner:SetWeak(element, OWNER_POS, k)
@@ -499,7 +501,7 @@ local function releaseOwner(element, ownerKey)
     -- 무시 없이 즉시 error" 원칙과 같은 결로 즉시 error.
     local current = elementOwner:GetWeak(element, OWNER)
     if current ~= ownerKey then
-        error("releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", 1)
+        error("Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", 1) -- [2026-09-17] 공개 op라 Nearest raise
     end
     elementOwner:SetWeak(element, OWNER, nil)
     elementOwner:SetWeak(element, OWNER_POS, nil)
@@ -956,7 +958,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
   그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
-  다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
+  다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
   간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —

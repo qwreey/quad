@@ -308,6 +308,13 @@ do
 	assert(not ok6, "still seated after the dedup re-emit")
 	s:Clear()
 	q.dispose(e)
+	-- (6) (checkpoint code-review) a bad position key through the public process never seats the child
+	local c5 = q.Declaration.TextLabel({}) :: any
+	local host5 = q.Declaration.Frame({}) :: any
+	local ok7 = pcall(function() q.Dispatch.process(host5, 0, c5, 1) end)
+	assert(not ok7, "key 0 matches no handler")
+	local host6 = q.Declaration.Frame({ c5 }) :: any
+	assert(c5.Parent == host6, "no seat leaked from the rejected call")
 	print("PASS")
 end
 

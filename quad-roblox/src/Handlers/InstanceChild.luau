@@ -48,7 +48,10 @@ local function install(quad: any)
 		name = "InstanceChild",
 		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
 		isHandlable = function(_inst: any, k: any, v: any): boolean
-			return type(k) == "number" and quad.Backend.isInst(v) -- 늦은 읽기(H-174) — 술어는 갈아끼울 수 있는 주입면
+			-- positive integer only (checkpoint code-review, `H-52` family): `drive` already rejects
+			-- other keys, but the public `Dispatch.process(inst, 0, v, 1)` does not — the seat
+			-- (`claimOwnerAt`) committed before `checkPosition` threw and stayed for good
+			return type(k) == "number" and k >= 1 and k % 1 == 0 and quad.Backend.isInst(v) -- 늦은 읽기(H-174) — 술어는 갈아끼울 수 있는 주입면
 		end,
 		priority = dispatch.HANDLER_PRIORITY_NORMAL,
 		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()

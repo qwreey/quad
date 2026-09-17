@@ -51,7 +51,7 @@ nativeDispose(element)
 ```
 
 **판정·훅 op** — 조작이 아니라 질문이라 조합으로 만들 수 없습니다.
-`isInst(value)` / `onDestroying(inst, fn)` / `nativeFindChild(inst, key)` /
+`isInst(value)` / `onDestroying(inst, fn)` / `nativeFindChild(inst, key, className?)` /
 `nativeClaim(inst)`.
 
 **Tag·Attr op** — `addTag(inst, {string})` / `removeTag(inst, {string})` /

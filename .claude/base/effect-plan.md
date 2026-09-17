@@ -404,14 +404,15 @@ function EffectHandle:_consumeCleanup()
     self._rerunRequired = true     -- ⭐ 소진됐다 = 다음 기회에 다시 설치해야 한다(아래 캐비엇)
     if c then
         -- ⭐ [2026-08-28 확정, 10라운드 감사 2라운드] cleanup은 **세 자리**에서 돈다 —
-        --   `rawRerun` 루프 머리 / `Unsubscribe()` / leaf `Destroying` 콜백. 뒤의 둘은
+        --   `rawRerun` 루프 머리 / `Unsubscribe()` / leaf `Destroying` 콜백(**[2026-09-17]** 넷째:
+        --   숫자 키 자리 값 교체 retract — `EffectLeafHandler`, `H-57`). 뒤의 둘은
         --   `_running` 밖이라 cleanup 안의 `self:Subscribe()`가 가드를 지나
         --   `Unsubscribe()`가 끝나기도 전에 `fn`이 재진입했다. `_running`에 뜻을
         --   얹지 않고 **별도 플래그**로 잡는다(사용자: *"_running 으로 묶어 보는건
         --   여전히 별로 괜찮은 이유가 없음. _cleanupRunning 같은걸 넣지 말아야할
         --   이유가 없는것"*).
         self._cleanupRunning = true
-        c()
+        c(self._dying == true)         -- ⭐ [2026-09-17 round10 Q57] `dying` — Destroying 콜백의 소진만 true
         self._cleanupRunning = false
     end
 end

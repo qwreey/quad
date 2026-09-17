@@ -21,7 +21,7 @@
 	value, so the same name in two array slots binds twice instead of the
 	hash-key form's silent last-wins.
 
-	Handler ("OnChange", NORMAL priority): number key ∧ descriptor value
+	Handler ("OnChange", `NORMAL - 1` — one step below InstanceChild, round10 Q58 (나)): number key ∧ descriptor value
 	(`H-52` key guard). Terminal ⇒ registers its array position (`H-39`) as
 	None/0 like TagFallbackHandler — no physical element. process connects
 	`inst:GetPropertyChangedSignal(name):Connect(function() fn(inst[name]) end)`

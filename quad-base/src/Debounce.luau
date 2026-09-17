@@ -40,13 +40,14 @@
 	The min-form is a later optimization behind the same surface.
 
 	Time sampling (round10 Q55 (b), user decision 2026-09-17): `Time` is read ONCE per
-	upstream signal, first thing in `onUpstreamEmit`, into `h._time`; every `openWindow`
-	(signal path, the trailing reopen in `commitIdle`, `Flush`) uses that cache. The
-	only site that can throw (a bad State value, a throwing Compute behind it) is
-	therefore the signal entry, before any state change — the timer callbacks and
-	`Flush` run no user code and cannot leave "Blocker On, no timer" (the `H-518`
-	residue). Consequence: a Time change with no signal in between reaches the next
-	window one signal later. `MaxTime` was already signal-path only.
+	upstream signal, first thing in `onUpstreamEmit`, into `h._time` (`MaxTime` is read
+	right after it, into a local); every `openWindow` (signal path, the trailing reopen
+	in `commitIdle`, `Flush`) uses that cache. The only site that can throw (a bad
+	State value, a throwing Compute behind it) is therefore the signal entry, before
+	any state change — the timer callbacks and `Flush` run no user code and cannot
+	leave "Blocker On, no timer" (the `H-518` residue). If the very first read threw,
+	`h._time` is still nil and `Flush` reopens nothing (stays idle). Consequence: a
+	Time change with no signal in between reaches the next window one signal later.
 
 	GC (plan 8): a pending timer holds its gate through the callback upvalues
 	for at most 2 × Time after the last signal (the window that a pass reopens
@@ -71,12 +72,12 @@ type Timeout = QuadTypes.Timeout
 
 local WEAK_KEY_MT = { __mode = "k" }
 
--- `Time`/`MaxTime` are read at each schedule point only (plan 5-2: polling,
--- no subscription — an already scheduled timer keeps its delay).
+-- `Time`/`MaxTime` are read once per upstream signal, at the gate's entry (plan 5-2 as of
+-- round10 Q55 (b): polling, no subscription — an already scheduled timer keeps its delay).
 local function readTime(name: string, field: string, t: any): number
 	local v = if isState(t) then t:Get() else t
 	if type(v) ~= "number" or v ~= v or v < 0 then
-		-- reached from emit depth (upstream signal) and from timer callbacks — outermost
+		-- reached from emit depth (upstream signal) only — outermost
 		Err.errorBefore(`{name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
 	end
 	return v
@@ -231,7 +232,12 @@ function FactoryImpl.__apply(self: any, state: any): any
 			if emit() then
 				closeWindow()
 				clearCap()
-				openWindow()
+				-- `h._time` is nil only if no signal has ever passed the Time read (the first read
+				-- threw and the signal sat merged in the set) — then there is no valid length to
+				-- reopen with: stay idle rather than schedule nil (checkpoint code-review)
+				if h._time ~= nil then
+					openWindow()
+				end
 			end
 		end
 		function h.Cancel(_self: any)
@@ -243,6 +249,10 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- Q55 (b): the ONE Time read — before anything changes, so a throw leaves the gate
 			-- exactly as it was (an open window still ends its batch; idle stays idle)
 			h._time = readTime(name, "Time", opts.Time)
+			-- MaxTime too (checkpoint code-review): read here, before any state change, so the
+			-- "only throwing site is the entry" claim holds for both options — a cap read at the
+			-- tail used to throw after `pass()`/`openWindow()` had moved the Blocker and timer
+			local maxT = if maxTime ~= nil then readTime(name, "MaxTime", maxTime) else nil
 			-- `held` = "this signal is withheld, not passed" — read the Blocker BEFORE
 			-- anything below flips it (`H-510`): a re-entrant emit during a timer-path
 			-- commit sees no window but a still-On Blocker, so `pass()` withholds
@@ -277,7 +287,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- MaxTime (Debounce only): a second timer the signal never resets — armed
 			-- when something is withheld and only if trailing can pass it.
 			if held and maxTime ~= nil and trailing and h._cap == nil then
-				h._cap = module.Backend.setTimeout(onCap, readTime(name, "MaxTime", maxTime))
+				h._cap = module.Backend.setTimeout(onCap, maxT :: number)
 			end
 		end
 	end)

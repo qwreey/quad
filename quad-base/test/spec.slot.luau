@@ -1189,6 +1189,19 @@ do
 	root:Add(mock.Instance.new("Frame"), 1) -- CRUD after the mount, outside any walk
 	assert(root.Length:Get() == 7, "post-mount CRUD on the mounted ancestor is allowed")
 	assert(not root._materializing and not list._materializing, "flags are down after the walk")
+	-- (4) the same mistake at RUNTIME (checkpoint code-review): a :List child added to an already
+	-- mounted parent runs its first updateFn inside the parent's raw mutation window — same error
+	local host4 = mock.Instance.new("Frame")
+	local p4 = q6.Slot({ mock.Instance.new("Frame") })
+	q6.Dispatch.drive(host4, { p4 })
+	local child4 = q6.Slot()
+	child4:List(q6.Source({ 1 }), function(ctx)
+		p4:Add(mock.Instance.new("Frame"), 1)
+		return mock.Instance.new("Frame")
+	end, function(item) return item end)
+	local ok4, err4 = pcall(function() return p4:Add(child4) end)
+	assert(not ok4 and string.find(tostring(err4), "while it is being mounted", 1, true) ~= nil, "runtime Add of a :List that CRUDs its new parent: " .. tostring(err4))
+	-- (the raise unwound before the window's restore — the flag stays up on p4, as any throw mid-mount does)
 	print("PASS")
 end
 
