@@ -227,4 +227,20 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 11. round10 Q49 (a) (2026-09-17) — 이름은 맞고 클래스가 다른 자식은 '부재'로 거부(엔진 IsA / mock ClassName); 맞는 클래스는 그대로 ===")
+do
+	local root, title = makeTemplate() -- Title is a TextLabel
+	local ok, err = pcall(function()
+		return q.Claim(root, M.Frame(M.Root)({ M.ImageLabel("Title")({ Name = "x" }) }))
+	end)
+	assert(not ok and string.find(tostring(err), "Claim: no child matched key Title", 1, true) ~= nil and string.find(tostring(err), "must also be a ImageLabel", 1, true) ~= nil, "class mismatch is a fail-fast absence: " .. tostring(err))
+	assert(title.Name == "Title", "nothing was applied to the wrong-class child")
+	mock.assertBlamesUser(err, "spec.claim.luau", "class-mismatch error blames the Claim line")
+	local root2, title2 = makeTemplate()
+	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "ok" }) }))
+	assert(title2.Name == "ok", "matching class still resolves")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

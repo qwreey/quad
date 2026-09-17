@@ -92,14 +92,14 @@ isInst          (value: any) -> boolean
 onDestroying    (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () }
 nativeClaim     (inst: any) -> ()
 isClaimed       (inst: any) -> boolean
-nativeFindChild (inst: any, key: any) -> any
+nativeFindChild (inst: any, key: any, className: string?) -> any
 ```
 
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
 - **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다.
 - **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
 - **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Slot: this element is not claimed by quad …` / `InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있는가 한 줄이라 이중 claim 판정과 같은 것을 봅니다. mock은 lazy claim이라 mock 인스턴스면 참입니다.
-- **`nativeFindChild(inst, key)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). quad-roblox 구현은 `inst:FindFirstChild(key)`입니다.
+- **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
 
 ---
 

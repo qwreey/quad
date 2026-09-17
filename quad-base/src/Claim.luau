@@ -103,9 +103,11 @@ local function Init(module: any)
 				if module.debug and type(v._key) ~= "string" then
 					print(`Claim: child descriptor key is a {typeof(v._key)} — M.Root is only for the root descriptor; a child key is a name`)
 				end
-				local child = module.Backend.nativeFindChild(inst, v._key)
+				-- round10 Q49 (a) (user decision 2026-09-17): the descriptor's class goes to the backend —
+				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
+				local child = module.Backend.nativeFindChild(inst, v._key, v._className)
 				if child == nil then
-					Err.errorBefore(`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)})`, SURFACE)
+					Err.errorBefore(`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
 				end
 				resolve(child, v)
 				props[i] = child -- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4)

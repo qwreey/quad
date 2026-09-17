@@ -94,8 +94,16 @@ local function install(quad: any)
 		return inst.Destroying:Connect(fn)
 	end
 
-	local function nativeFindChild(inst: any, key: any): any?
-		return inst:FindFirstChild(key)
+	-- round10 Q49 (a) (user decision 2026-09-17): the mapper's class rides along — a child
+	-- with the right name but the wrong class is "not found" (`IsA`, so subclasses pass).
+	-- Before, `M.TextLabel("Kid")` silently claimed an ImageLabel named Kid when the props
+	-- happened to overlap. User: "이름만 보던 함수에 className 넣고 검사 한번 한다".
+	local function nativeFindChild(inst: any, key: any, className: string?): any?
+		local child = inst:FindFirstChild(key)
+		if child ~= nil and className ~= nil and not child:IsA(className) then
+			return nil
+		end
+		return child
 	end
 
 	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract

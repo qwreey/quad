@@ -618,7 +618,7 @@ export type Backend = {
 	-- (자동 claim은 마법 — 사용자가 `Claim`/`Declaration`으로 먼저 소유해야 한다).
 	isClaimed: (inst: any) -> boolean,
 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
-	nativeFindChild: (inst: any, key: any) -> any,
+	nativeFindChild: (inst: any, key: any, className: string?) -> any, -- 클래스가 다르면 nil(round10 Q49 (a), 2026-09-17)
 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
 	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
 	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox

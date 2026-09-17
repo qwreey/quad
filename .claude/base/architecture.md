@@ -661,8 +661,10 @@ falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 
 **결정**: quad-base 테스트는 Vide 선례(`centau/vide@452060a:test/mock.luau`, 약
 300줄)를 따라 최소한의 mock으로 감 — parent/children 트리 + 타입 검증 없는
-property bag + property별 변경 시그널 정도만 흉내내고, `IsA()`/클래스별
-프로퍼티 스키마/`WaitForChild`/`DataModel` 같은 건 안 만듦. 순수 `luau` CLI로
+property bag + property별 변경 시그널 정도만 흉내내고, 클래스별
+프로퍼티 스키마/`WaitForChild`/`DataModel` 같은 건 안 만듦(**[2026-09-17]**
+`IsA()`만 예외 — round10 Q49로 실 `nativeFindChild`가 부르므로 계층 없는
+`ClassName` 동등으로 추가). 순수 `luau` CLI로
 Studio/엔진 없이 테스트(Vide가 실제로 이렇게 CI에 물려놓음) — Fusion처럼
 Studio 안에서만 도는 방식은 채택 안 함. 근거: quad-base 코어(Store/State/
 Source/Modifier/Slot, 디스패치 엔진)는 이미 `inst`를 `any`로 취급하고

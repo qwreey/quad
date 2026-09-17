@@ -1,8 +1,9 @@
 --[[
 	quad-base용 최소 mock — Vide `test/mock.luau` 선례를 따르되 범위를 더
 	좁힘(`.claude/base/architecture.md` "테스트 전략" 절): parent/children
-	트리 + 타입 검증 없는 property bag + property별 변경 시그널만. `IsA()`/
-	클래스별 프로퍼티 스키마/`WaitForChild`/`DataModel`은 만들지 않는다 —
+	트리 + 타입 검증 없는 property bag + property별 변경 시그널만(+ `IsA` —
+	계층 없는 `ClassName` 동등, round10 Q49). 클래스별 프로퍼티 스키마/
+	`WaitForChild`/`DataModel`은 만들지 않는다 —
 	quad-base 코어는 `inst`를 `any`로 취급하고 Instance 특정 동작을 참조하지
 	않으므로 mock이 실제 Roblox 충실도를 가질 이유가 없다(같은 절).
 
@@ -332,6 +333,13 @@ function methods.GetChildren(inst: any): { any }
 	return out
 end
 
+-- round10 Q49 (a): the real `nativeFindChild` (quad-roblox EngineOps, run over mock instances by
+-- the quad-roblox specs) calls `child:IsA(className)`. No class hierarchy here (file header), so
+-- `IsA` is plain `ClassName` equality — the one Instance method added since the header's list.
+function methods.IsA(inst: any, className: string): boolean
+	return inst.ClassName == className
+end
+
 function methods.FindFirstChild(inst: any, name: string): any?
 	local data = getData(inst)
 	for _, childData in data.children do
@@ -424,10 +432,15 @@ local function installNative(quad: any)
 			end
 		end
 	end
-	-- 2순회 `H-374`: the real provider's `nativeFindChild(inst, key)` is
-	-- `inst:FindFirstChild(key)` (quad-roblox EngineOps) — same here
-	local function nativeFindChild(inst: any, key: any): any?
-		return inst:FindFirstChild(key)
+	-- 2순회 `H-374`: the real provider's `nativeFindChild(inst, key, className?)` is
+	-- `inst:FindFirstChild(key)` + `IsA(className)` (quad-roblox EngineOps) — the mock has no
+	-- class hierarchy (file header), so the class check is `ClassName ==` (round10 Q49 (a))
+	local function nativeFindChild(inst: any, key: any, className: string?): any?
+		local child = inst:FindFirstChild(key)
+		if child ~= nil and className ~= nil and child.ClassName ~= className then
+			return nil
+		end
+		return child
 	end
 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
