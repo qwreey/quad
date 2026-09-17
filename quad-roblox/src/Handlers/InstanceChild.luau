@@ -58,7 +58,7 @@ local function install(quad: any)
 			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
 			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
 			if not quad.Backend.isClaimed(v) then
-				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first", SURFACE)
+				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here)", SURFACE)
 			end
 			if quad.Bookkeeping.claimOwnerAt(v, inst, k) then -- Q48 (a): one seat per value — raises if held elsewhere
 				quad.Bookkeeping.setOffsetSource(inst, k, None)

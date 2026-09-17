@@ -668,3 +668,8 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 `initValue`(진입 애니메이션)는 별도 취급 — 위 해당 절 참고, **에이전트
 작업 범위에서 제외, 필요해지면 사용자가 직접 처리**하기로 확정(질문
 목록이 아님).
+
+## [2026-09-17 사용자 결정 — round10 Q53 (a)] Tween 체인의 retractor — 철거 때 Cancel + 슬롯 비움
+
+`Handlers/Property.luau`의 retractor는 평범한 값엔 `Void` 그대로이지만(`H-135`: 프로퍼티는 되돌릴 게 없다), **Tween 값을 처리한 체인은 `(inst, k)`당 하나 캐시된 실제 retractor**를 돌려준다. 철거(`retracting == true` — `Dispatch.retractFrom`, 숏핸드 관리 자식 파괴 직전의 체인 철거)면 슬롯의 엔진 Tween을 `Cancel`하고 3-상태 슬롯을 지운다(다음 체인은 "첫 설정 = 스냅"부터); 값 교체(`retracting == false`)면 아무것도 안 한다 — 이전 Tween을 Cancel할지 Finish-스냅할지는 **들어오는** Tween의 `Override`가 정하므로(`H-343`) `process`의 몫이고, 철거에는 들어오는 값이 없어 Cancel뿐이다(사용자 확인: *"프로퍼티의 retractor 가 retract 구간에서 tween 을 멈추는건 맞긴 한듯"*). 계기 둘(round10 탐사 C F6·G-7): 철거 뒤에도 엔진 Tween이 파괴된 관리 자식을 향해 돌았고(사용자 실기기: *"파괴된 인스턴스에 대한 tween 은 삭제되고, 코너는 갑자기 사라져"* — 파괴 전 취소가 옳다), 슬롯이 남아 철거 뒤 같은 타깃 Tween 재선언이 Q25 값 dedup에 통째로 먹혔다. 스펙 `spec.shorthand` 9.
+

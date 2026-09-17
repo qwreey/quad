@@ -161,4 +161,26 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 9. round10 Q53 (a) (2026-09-17) — 체인 철거는 진행 중 엔진 Tween을 Cancel하고 슬롯을 비운다: 관리 자식 파괴 전 취소, 철거 뒤 같은 타깃 Tween 재선언은 dedup되지 않는다(G-7) ===")
+do
+	mock.resetTweenLog()
+	local s = q.Source(4 :: any)
+	local f = q.Declaration.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local log = mock.tweenLog
+	s:Set(10) -- engine tween running on the managed child
+	assert(#log == 1 and log[1].tween.cancels == 0, "tween playing")
+	q.Dispatch.process(f, "UICorner", nil, 1) -- destroys the managed child: chains retracted first
+	assert(log[1].tween.cancels == 1, "teardown cancelled the running tween before the child died")
+	-- direct chain teardown on a plain property: slot cleared → same-target tween is fresh again
+	mock.resetTweenLog()
+	local g = q.Declaration.Frame({ Size = q.Tween({ Value = 7, Time = 0.1 }) }) :: any -- first set snaps, slot { Value = 7 }
+	q.Dispatch.retractFrom(g, "Size", 1)
+	q.Dispatch.process(g, "Size", q.Tween({ Value = 7, Time = 0.1 }), 1) -- used to be deduped away by the stale slot
+	assert(g.Size == 7 and #log == 0, "after teardown the chain is fresh: first set snaps again (no dedup swallow, no tween)")
+	q.Dispatch.process(g, "Size", q.Tween({ Value = 9, Time = 0.1 }), 1)
+	assert(#log == 1, "and the next value animates")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -65,6 +65,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- 프로퍼티 자리의 체인을 철거해도(숏핸드 `UICorner = …`를 `nil`로 내려 관리 자식을 파괴할 때, `q.Dispatch.retractFrom`) 진행 중인 엔진 Tween이 취소되지 않고 그 키의 Tween 기록이 남아, 파괴된 자식을 향해 Tween이 돌고 철거 뒤 같은 목표값의 Tween을 다시 선언하면 통째로 무시되던 것 — 이제 철거 때 취소하고 기록을 비웁니다(다음 값은 첫 설정처럼 스냅). 값 교체 때의 동작(`Override`)은 그대로입니다.
+- 미claim 인스턴스 거부 문구 둘(`Slot: …`, `InstanceChild: …`)에 "다른 quad 모듈 인스턴스가 만든 Instance도 여기서는 미claim"이라는 꼬리 구절이 붙었습니다 — `quad_base` 사본이 둘인 프로젝트에서 "이미 Declaration으로 만들었는데" 하고 헤매던 경우.
 - `q.OnDestroyed(fn)`을 `State` 자리에 담아 `q.None`으로 뺐을 때 인스턴스가 살아 있는데 `fn`이 돌고, 되꽂은 뒤 파괴하면 통틀어 두 번 돌던 것 — 이제 죽을 때 정확히 한 번만 돕니다(자리를 떠날 때는 돌지 않고, 뺀 채로 죽으면 돌지 않습니다).
 - 중첩 `:List`/`:Single`의 `updateFn`이 첫 마운트 중에 조상 Slot을 CRUD하면 내부 에러(`bindLifetime: value is already bound`)로 죽고 그 트리의 부기가 영구히 깨지던 것 — 이제 그 자리에서 `Slot: cannot mutate a Slot while it is being mounted …`로 거부합니다(`updateFn`은 항목을 원소로 바꾸는 함수이고, 조상은 마운트 뒤 Observer에서 바꾸세요). 자기 자식 Slot을 채우거나 마운트 뒤에 조상을 바꾸던 코드는 영향이 없습니다.
 - `Effect`의 cleanup 안에서 의존성을 `:Set`하면 뒤따르는 `fn`이 그 값을 읽고도 (cleanup, fn) 사이클이 같은 입력으로 한 번 더 돌던 것 — 이제 한 사이클입니다. `fn` 안의 `:Set`이 한 번 더 돌게 하는 것은 그대로입니다.

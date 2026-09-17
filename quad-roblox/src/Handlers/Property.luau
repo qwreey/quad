@@ -11,14 +11,23 @@
 	(descriptor array with `.Name`, inherited included — Studio-measured
 	2026-09-02). Event keys are NOT properties in that API (measured
 	2026-09-03: `GetEventsOfClass` and `GetPropertiesOfClass` are disjoint),
-	so they fall through to `Handlers/Event.luau` — a separate handler at the
-	same NORMAL priority (M10). A string key that is neither raises the
+	so they fall through to `Handlers/Event.luau` — a separate handler one
+	band step below (`NORMAL - 1`, round10 Q58 (나); it was the same NORMAL
+	value until 2026-09-17). A string key that is neither raises the
 	regular no-match error.
 
 	process is one line (`inst[k] = v`) — hash keys touch no Length/Offset
 	bookkeeping (`H-39` is about ARRAY positions only). The retractor is
-	`Void`: a property cannot be "unset", and a descending-diff replacement
-	simply writes the next value. `v == nil` (a `None` re-dispatch, or a
+	`Void` for plain values: a property cannot be "unset", and a descending-diff
+	replacement simply writes the next value. [round10 Q53 (a), user decision
+	2026-09-17] a chain that carried a TWEEN returns a real retractor instead —
+	on teardown (`retracting == true`: `Dispatch.retractFrom`, the shorthand's
+	managed-child destroy) it `Cancel`s the running engine tween and clears the
+	`(inst, k)` slot; on a value swap (`retracting == false`) it does nothing,
+	because `process` already cancels/Finish-snaps by the INCOMING tween's
+	`Override`. Before: the engine tween ran on into the destroyed child (Studio:
+	the corner just vanished) and the stale slot deduped a re-declared same-target
+	tween away (G-7). One closure per (inst, k), cached — not one per emit. `v == nil` (a `None` re-dispatch, or a
 	State that computed nil) WRITES nil — [Q33 (a), 2026-09-08] object
 	references (Adornee/Part0/NextSelection*) are released only this way; a
 	property that cannot take nil raises in the engine, and that raise is the
@@ -71,6 +80,25 @@ local function install(quad: any)
 	-- 3-state slot (header) — weak-keyed by inst through Relate, so a dying
 	-- instance drops its slots (and the engine tween handle) with it
 	local tweenSlots = quad.Relate()
+	-- (inst, k) -> the tween-chain retractor (round10 Q53 (a)); weak-keyed by inst like the slots
+	local tweenRetractors = quad.Relate()
+	local function tweenRetractor(inst: any, k: any): (any?, boolean) -> ()
+		local r = tweenRetractors:GetStrong(inst, k)
+		if r == nil then
+			r = function(_nextValue: any?, retracting: boolean)
+				if not retracting then
+					return -- value swap: process handles the previous tween (Override)
+				end
+				local slot = tweenSlots:GetStrong(inst, k)
+				if type(slot) == "table" and slot.Tween ~= nil then
+					slot.Tween:Cancel() -- the property keeps whatever value it reached
+				end
+				tweenSlots:SetStrong(inst, k, nil) -- fresh chain next time: first set snaps again
+			end
+			tweenRetractors:SetStrong(inst, k, r)
+		end
+		return r
+	end
 
 	local tweenService: any = nil
 	local function getTweenService(): any
@@ -131,7 +159,7 @@ local function install(quad: any)
 				-- Q25 (사용자 결정 2026-09-08): same target VALUE — the active tween keeps
 				-- running, no cancel + restart (`H-391`); a completed tween is not
 				-- re-triggered either. `Tween{ Dedup = false }` is the re-trigger switch.
-				return Void
+				return tweenRetractor(inst, k) -- still a tween chain: teardown must cancel/clear (Q53)
 			end
 			if prev == nil then
 				-- branch 1: first set — snap, no animation even for a Tween value.
@@ -139,7 +167,7 @@ local function install(quad: any)
 				-- tween) so the value dedup above already holds after the snap.
 				inst[k] = if tweenIn then v.Value else v
 				tweenSlots:SetStrong(inst, k, if tweenIn then { Value = v.Value } else true)
-				return Void
+				return if tweenIn then tweenRetractor(inst, k) else Void
 			end
 			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
 			-- engine tween before touching the old one — `TweenService:Create` may
@@ -161,10 +189,10 @@ local function install(quad: any)
 			if tweenIn then
 				tweenSlots:SetStrong(inst, k, { Tween = engineTween, Value = v.Value })
 				engineTween:Play()
-			else
-				inst[k] = v
-				tweenSlots:SetStrong(inst, k, true)
+				return tweenRetractor(inst, k)
 			end
+			inst[k] = v
+			tweenSlots:SetStrong(inst, k, true)
 			return Void
 		end,
 	} :: QuadTypes.Handler)
