@@ -109,4 +109,30 @@ do
 end
 
 print()
+print("=== 5. round10 Q57 — State 자리에 담아 뺐다 되꽂아도 OnDestroyed는 살아 있는 인스턴스에서 안 돌고, 죽을 때 정확히 한 번 ===")
+do
+	local runs = 0
+	local hook = OnDestroyed(function()
+		runs += 1
+	end)
+	local seat = q.Source(hook)
+	local inst = Instance.new("Frame")
+	q.Dispatch.drive(inst, { seat })
+	seat:Set(q.None) -- leaves the seat while inst is alive: cleanup consumed with dying = false
+	assert(runs == 0, "no run on leaving the seat")
+	seat:Set(hook) -- re-seated: fn re-installed
+	inst:Destroy()
+	assert(runs == 1, "death → exactly once overall")
+	-- left out for good: removing the hook means it never fires
+	local runs2 = 0
+	local seat2 = q.Source(OnDestroyed(function() runs2 += 1 end))
+	local inst2 = Instance.new("Frame")
+	q.Dispatch.drive(inst2, { seat2 })
+	seat2:Set(q.None)
+	inst2:Destroy()
+	assert(runs2 == 0, "hook removed before death does not fire")
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

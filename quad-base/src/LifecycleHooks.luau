@@ -6,7 +6,8 @@
 	  OnCreated(fn)   -> PreRef():Callback(guard(fn))    -- before anything happens to the inst
 	  OnRendered(fn)  -> PostRef():Callback(guard(fn))   -- after its own subtree/props/events;
 	                                                     -- NOT "attached to a parent" (plan ①)
-	  OnDestroyed(fn) -> Effect(function() return fn end) -- fn runs once as the leaf-death cleanup
+	  OnDestroyed(fn) -> Effect(function() return function(dying) if dying then fn() end end end)
+	                                                     -- fn runs once, at the leaf's death only
 
 	These are plain factories: the value that lands in the children array is
 	the PreRef/PostRef/Effect itself — no new brand, no dispatch concept,
@@ -17,8 +18,11 @@
 	the current value, so a default-less PreRef would call `fn(nil)` before the
 	pre-pass — the guard drops the nil call and forwards BOTH arguments
 	(`fn(value, ref)`, `H-107` — a 1-arg wrapper would swallow the Epoch).
-	`OnDestroyed`'s wrapper only returns `fn` at install (no side effect); `fn`
+	`OnDestroyed`'s wrapper only returns a cleanup at install (no side effect); `fn`
 	itself runs when the bound instance dies (`effect-plan.md` deps-less contract).
+	round10 Q57 (2026-09-17): the cleanup keys on Effect's `dying` argument — leaving a
+	`State` seat alive (`st:Set(q.None)`) or `Unsubscribe` consumes the cleanup with
+	`dying = false` and fn does NOT run; re-seating re-installs it; death runs it once.
 ]]
 
 local QuadTypes = require("../luau_packages/quad_types")
@@ -54,7 +58,11 @@ local function Init(module: any)
 	local function OnDestroyed(fn: any): any
 		checkFn("OnDestroyed", fn)
 		return module.Effect(function()
-			return fn
+			return function(dying: boolean)
+				if dying then
+					fn()
+				end
+			end
 		end)
 	end
 	module.OnCreated = OnCreated

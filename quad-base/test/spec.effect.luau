@@ -417,4 +417,40 @@ do
 end
 
 print()
+print("=== round10 Q57 (2026-09-17, 사용자 제안) — cleanup(dying): 잎 사망 소진만 true, 재실행 직전·Unsubscribe·자리 교체는 false; () -> () cleanup은 그대로 ===")
+do
+	local seen = {}
+	local function mk(tag: string)
+		return function()
+			return function(dying: boolean)
+				table.insert(seen, tag .. ":" .. tostring(dying))
+			end
+		end
+	end
+	-- (1) rerun before fn
+	local a = Source(1)
+	local e1 = Effect(mk("rerun"), a):Subscribe()
+	a:Set(2)
+	-- (2) Unsubscribe
+	e1:Unsubscribe()
+	-- (3) value-swap retract at a numeric-key seat (inst alive)
+	local inst = Instance.new("Frame")
+	local seat = Source(Effect(mk("swap")) :: any)
+	quad.Dispatch.drive(inst, { seat })
+	seat:Set(nil)
+	-- (4) leaf death
+	local inst2 = Instance.new("Frame")
+	quad.Dispatch.drive(inst2, { Effect(mk("death")) })
+	inst2:Destroy()
+	assert(table.concat(seen, " ") == "rerun:false rerun:false swap:false death:true", "dying per site: " .. table.concat(seen, " "))
+	-- an arity-0 cleanup still works
+	local plain = 0
+	local inst3 = Instance.new("Frame")
+	quad.Dispatch.drive(inst3, { Effect(function() return function() plain += 1 end end) })
+	inst3:Destroy()
+	assert(plain == 1, "() -> () cleanup unchanged")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

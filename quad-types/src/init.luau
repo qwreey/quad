@@ -251,7 +251,9 @@ export type Effect = {
 }
 -- ⚠️ 팩 표기는 "반환 안 해도 됨"을 위한 것(`H-95`) — 런타임이 소진하는 cleanup은
 -- **첫 반환 하나뿐**이다(`H-185` 확정: 여러 정리는 `function() a() b() end`로 묶을 것).
-export type EffectFn = (self: Effect) -> ...(() -> ())
+-- cleanup의 `dying`(2026-09-17 round10 Q57, 사용자 제안): 묶인 인스턴스가 죽어서 소진될 때만 true,
+-- 다른 소진(fn 재실행 직전·Unsubscribe·자리 교체)은 false. 인자 없는 `() -> ()`도 그대로 맞는다.
+export type EffectFn = (self: Effect) -> ...((dying: boolean) -> ())
 
 -- `state:Gate(setup)`의 정책 계약(`gate-plan.md` 2번): 바깥은 생성 시 1회, 반환 클로저는 상류
 -- emit마다. `emit()`/`emit(true)` = 흡수 집합 flush, `emit(false)` = 버리기, 반환 = 쌓인 게 있었나.

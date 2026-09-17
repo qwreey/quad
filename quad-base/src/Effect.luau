@@ -168,13 +168,21 @@ local function createImpl(module: any)
 	end
 
 	-- read → clear → run. `_cleanup`'s presence is not "installed" — the flag is.
+	-- round10 Q57 (user proposal 2026-09-17): the cleanup receives `dying` — true only when the
+	-- consumption is the leaf's death (`_bindDestroying`'s Destroying callback sets `_dying`
+	-- one line before calling here); false at the other three sites (rerun before fn,
+	-- `Unsubscribe`, the numeric-key value-swap retract). Pure addition — a `() -> ()`
+	-- cleanup ignores it (arity subtyping, typing-limits 8.23). `OnDestroyed` keys on it.
+	-- User: "_dying 이 true 로 새워지는건 오직 onDestroying 콜백 뿐이고, 내부적으로 있는 값을
+	-- 외부에 노출해주는것일 뿐" — chosen over a public `Dying` field ("값이 설정되는 순간
+	-- 순간에 진실성이고, 생명주기 계약 자체는 외부에서 접근하는데 있어 도움이 안 되는것").
 	function Impl._consumeCleanup(self: any)
 		local c: any = self._cleanup
 		self._cleanup = nil
 		self._rerunRequired = true -- consumed = must install again at the next chance
 		if c ~= nil then
 			self._cleanupRunning = true -- `H-160`: cleanup runs outside `_running` in two of its three sites
-			(c :: () -> ())()
+			(c :: (boolean) -> ())(self._dying == true)
 			self._cleanupRunning = false
 		end
 	end
@@ -350,8 +358,10 @@ local function registerDispatchHandlers(module: any)
 			return function(nextValue: any?, _retracting: boolean)
 				if nextValue ~= v then
 					module.Backend.unbindLifetime(v)
-					-- `H-57`: value-swap retract is destruction-equivalent for
-					-- an Effect (it never comes back) — consume its cleanup.
+					-- `H-57`: the value leaving its seat consumes its cleanup (`dying` = false —
+					-- the inst is alive). The old premise "destruction-equivalent, it never comes
+					-- back" was wrong (round10 Q57): re-seating it re-installs fn through
+					-- `_rerunRequired` and it lives on — that is why `dying` exists.
 					v:_consumeCleanup()
 					if relate:GetWeak(inst, k) == v then
 						relate:SetWeak(inst, k, nil)

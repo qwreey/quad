@@ -1,7 +1,7 @@
 # 생명주기 훅 슈가 — `OnCreated` / `OnRendered` / `OnDestroyed`
 
 > **⭐ [2026-09-08 구현 완료]** `quad-base/src/LifecycleHooks.luau`(인스턴스별 `Init` — `Effect`가 인스턴스별이라),
-> 스펙 `spec.hooks`(nil 가드·2-인자·drive pre-pass 순서·`OnDestroyed` leaf 사망 1회). 아래 "핵심 논지" 스케치를 그대로
+> 스펙 `spec.hooks`(nil 가드·2-인자·drive pre-pass 순서·`OnDestroyed` leaf 사망 1회·State 자리 교체). **[2026-09-17 round10 Q57 — 사용자 제안]** `OnDestroyed`는 `Effect(function() return function(dying) if dying then fn() end end end)`다 — `Effect`의 cleanup이 `dying`(잎 사망 소진만 true — `_bindDestroying`의 Destroying 콜백이 `_dying`을 세운 직후의 소진; fn 재실행 직전·`Unsubscribe`·자리 교체 retract는 false)을 받게 된 순수 추가 위에 얹힌다. 계기: 훅을 `State` 자리에 담아 `q.None`으로 빼는 관용구에서 인스턴스가 살아 있는데 fn이 돌고 되꽂으면 두 번 돌았다(탐사 H 실측; `Effect.luau` `H-57`의 "값 교체 철거 = 파괴와 동등, 다시 안 돌아온다" 전제가 틀림 — 되꽂으면 `_rerunRequired`로 부활). 사용자: *"_dying 이 true 로 새워지는건 오직 onDestroying 콜백 뿐이고, 내부적으로 있는 값을 외부에 노출해주는것일 뿐"*; 공개 `Dying` 필드 대신 boolean 인자 — *"dying 같은 경우 값이 설정되는 순간 순간에 진실성이고, 생명주기 계약 자체는 외부에서 접근하는데 있어 도움이 안 되는것 같음"*. "새 개념 없는 plain 함수"라는 아래 핵심 논지는 그대로다 — 슈거는 인자 하나에 `if`를 걸 뿐이다. 아래 "핵심 논지" 스케치를 그대로
 > 옮겼다. 타입은 quad-base가 요소 타입을 모르므로 제네릭 — `OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>`
 > (~~콜백 인자에 `inst: Frame`처럼 적으면 … `PreRef<Frame?>`가 된다~~ — **[2026-09-09 실측 정정]** 그 형태는 신 솔버에서
 > `Type functions do not currently support types of the form '*error-type*'`로 죽는다. `I`는 **명시적 타입 인자**

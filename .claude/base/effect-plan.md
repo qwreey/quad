@@ -374,6 +374,11 @@ end
 --   사라져 **영구 미소진**이다. `fn`이 자기 생명주기를 못 바꾼다(`H-147` (A))는
 --   계약의 물리판 — 사용자: *"bind/unbind 에 간접 영향을 주는건데, UB 인게 맞다는 생각"*.
 --   `SignalBehavior` 구분 자체는 `base/ref-plan.md`가 소스.
+--   **[2026-09-17 round10 Q57] cleanup은 `dying: boolean`을 받는다** — `_consumeCleanup`이
+--   `self._dying`을 넘긴다(잎 사망 소진만 true). 옛 `H-57` 전제 "값 교체 철거는 파괴와
+--   동등(다시 안 돌아온다)"는 틀렸다 — 되꽂으면 `_rerunRequired`로 fn이 다시 설치된다. 그래서
+--   자리 교체 소진은 `dying = false`이고 `OnDestroyed`는 그 값으로 죽음만 골라 낸다
+--   (`lifecycle-hooks-plan.md` 머리 배너가 결정 원문).
 --   **[2026-09-07 `H-357`, 핸드오버 `/code-review`] 같은 UB의 두 번째 트리거 — `fn` 안에서
 --   자기 leaf가 *철거*되는 것**(`effectState:Set(E2)`로 값 교체, 또는 `fn`이 자기를 담은
 --   Slot 요소를 제거). `EffectLeafHandler`의 retractor가 `fn` 실행 중 동기로

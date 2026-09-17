@@ -12,6 +12,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Added
 
+- `Effect`의 cleanup이 인자 하나 `dying: boolean`을 받습니다 — 묶인 인스턴스가 **죽어서** 소진될 때만 `true`, 다음 `fn` 실행 직전·`:Unsubscribe()`·숫자 키 자리를 떠날 때는 `false`. 인자를 안 받던 cleanup은 그대로 됩니다. 이걸로 `q.OnDestroyed`가 고쳐졌습니다(아래 Fixed).
+
 - `q.Bookkeeping.claimOwnerAt(element, inst, k)` / `q.Bookkeeping.releaseOwner(element, ownerKey)` — 숫자 키 자리에 값을 놓는 핸들러가 "이 값은 이 자리에 앉아 있다"를 등록·해제하는 소유권 op. `Slot`이 원소에 쓰던 그 레지스트리 하나를 정적 자식·숏핸드 관리 자식과 같이 씁니다. 자기 핸들러가 자식을 부모에 붙인다면 이 둘을 불러야 아래 단일 마운트 규칙에 들어갑니다.
 
 - 백엔드 계약 op `isClaimed(inst)` — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 정적 자식 자리마다(구동 hot path) 부릅니다. **BREAKING(프로바이더 작성자)** — 자기 백엔드를 만든 쪽은 이 op를 설치해야 합니다(quad-roblox는 claim 셋업 유무, mock은 항상 참). 앱 코드에는 영향이 없습니다.
@@ -63,6 +65,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `q.OnDestroyed(fn)`을 `State` 자리에 담아 `q.None`으로 뺐을 때 인스턴스가 살아 있는데 `fn`이 돌고, 되꽂은 뒤 파괴하면 통틀어 두 번 돌던 것 — 이제 죽을 때 정확히 한 번만 돕니다(자리를 떠날 때는 돌지 않고, 뺀 채로 죽으면 돌지 않습니다).
 - 중첩 `:List`/`:Single`의 `updateFn`이 첫 마운트 중에 조상 Slot을 CRUD하면 내부 에러(`bindLifetime: value is already bound`)로 죽고 그 트리의 부기가 영구히 깨지던 것 — 이제 그 자리에서 `Slot: cannot mutate a Slot while it is being mounted …`로 거부합니다(`updateFn`은 항목을 원소로 바꾸는 함수이고, 조상은 마운트 뒤 Observer에서 바꾸세요). 자기 자식 Slot을 채우거나 마운트 뒤에 조상을 바꾸던 코드는 영향이 없습니다.
 - `Effect`의 cleanup 안에서 의존성을 `:Set`하면 뒤따르는 `fn`이 그 값을 읽고도 (cleanup, fn) 사이클이 같은 입력으로 한 번 더 돌던 것 — 이제 한 사이클입니다. `fn` 안의 `:Set`이 한 번 더 돌게 하는 것은 그대로입니다.
 - `Slot`에 `State`로 담아 넣은 원소의 검사(마운트 가능한 값인지·quad 소유인지·파괴된 Slot이 아닌지)가 삽입 **뒤**에 돌아, 거부된 호출이 유령 원소를 남기고 그 Slot의 재조정을 멈추게 하던 것 — 이제 다른 원소와 같이 넣기 전에 검사하고, 실패한 `Add`/`Replace`/`Extract`/`Splice`/생성자는 아무것도 바꾸지 않습니다(마운트 전 Slot도 그 자리에서 거부합니다).
