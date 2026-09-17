@@ -488,6 +488,14 @@ local function Init(module: any)
 		unmountSlotTree = S.unmountSlotTree,
 		isSlot = isSlot,
 	}
+	-- [2026-09-17 round10 Q48 (a) — user decision] the seat ops are public on the bookkeeping
+	-- namespace: a provider's numeric-key handler that parents a value (quad-roblox's
+	-- `InstanceChild`) or makes a managed child (`InstanceShorthand`) registers the seat in
+	-- THIS registry — one `elementOwner` for every mount site, no second registry. Tagged
+	-- SURFACE here (Bookkeeping's own tagging loop ran before this Init).
+	module.Bookkeeping.claimOwnerAt = S.claimOwnerAt
+	module.Bookkeeping.releaseOwner = S.releaseOwner
+	Err.setFuncLevel(SURFACE, S.claimOwnerAt, S.releaseOwner)
 
 	-- Register the top-level SlotHandler here (H-278: the owning module
 	-- registers its own handler). Dispatch is installed (pulled at the top of

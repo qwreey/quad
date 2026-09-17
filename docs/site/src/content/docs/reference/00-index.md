@@ -267,6 +267,8 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | `q.Bookkeeping.getOffsetAt(ownerKey, at)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetoffsetatownerkey-at) |
 | `q.Bookkeeping.getBlocker(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetblockerownerkey) |
 | `q.Bookkeeping.getBookkeeping(ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetbookkeepingownerkey) |
+| `q.Bookkeeping.claimOwnerAt(element, inst, k)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepingclaimowneratelement-inst-k) |
+| `q.Bookkeeping.releaseOwner(element, ownerKey)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#qbookkeepingreleaseownerelement-ownerkey) |
 
 ## 타입
 

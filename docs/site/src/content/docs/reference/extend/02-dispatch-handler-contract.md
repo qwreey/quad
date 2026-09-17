@@ -6,7 +6,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 
 이 페이지는 **핸들러를 직접 작성하는 사람**을 위한 계약입니다. 새 값 타입(백엔드의 `Tween`, 플러그인의 스프링 값)이나 새 props 어휘를 추가하려면 여기 규약을 지키는 테이블 하나를 `q.Dispatch.addHandler`로 등록하면 됩니다.
 
-이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBlocker(ownerKey)](#qbookkeepinggetblockerownerkey) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey)
+이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBlocker(ownerKey)](#qbookkeepinggetblockerownerkey) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey) · [q.Bookkeeping.claimOwnerAt(element, inst, k)](#qbookkeepingclaimowneratelement-inst-k) · [q.Bookkeeping.releaseOwner(element, ownerKey)](#qbookkeepingreleaseownerelement-ownerkey)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -212,6 +212,8 @@ Dispatch.drive: array keys must be positive integers (got {키})
 
 **계약**: 숫자 키 자리를 맡은 말단 핸들러는 **자리마다 길이와 오프셋 소스를 둘 다 등록**해야 합니다. 하나라도 빠뜨리면 그 owner의 오프셋 산술이 깨지고, 나중에 `getOffsetAt`이 "등록을 건너뛴 핸들러가 있다"고 알려주는 자리에서 터집니다. 해제 순서는 **`setOffsetSource(None)` 다음 `setLength(0)`**이고, 그 쌍을 한 번에 하는 함수가 `setEmpty`입니다. 문자 키 핸들러에는 이 의무가 없습니다.
 
+**소유권 계약**: 자리에 **값을 실제로 놓는**(부모를 바꾸는) 핸들러는 그 값의 **자리를 등록**해야 합니다 — `process`에서 `claimOwnerAt(value, inst, k)`, retractor에서 `releaseOwner(value, inst)`. 하나의 값은 동시에 한 자리에만 앉을 수 있고, 그 레지스트리는 `Slot`의 원소·정적 자식·숏핸드가 만드는 관리 자식이 **전부 같이 씁니다** — 그래서 어느 경로로든 두 번째 자리는 `already mounted elsewhere`로 거부되고, 앉아 있는 동안 `q.dispose`도 거부됩니다. 아무것도 놓지 않는 핸들러(`setEmpty`만 부르는 잎)와 문자 키 핸들러에는 이 의무가 없습니다.
+
 공통 인자 검사는 세 종류이고 함수 이름만 바뀝니다.
 
 ```
@@ -307,6 +309,36 @@ getBookkeeping: (ownerKey: any) -> any
 
 반환 타입이 `any`인 이유는 그 테이블의 필드 구성이 공개 계약이 아니기 때문입니다 — 진단·디버깅용으로 열려 있을 뿐, 필드 모양에 의존하는 코드를 쓰지 마세요.
 
+## `q.Bookkeeping.claimOwnerAt(element, inst, k)`
+
+**시그니처**
+
+```luau
+claimOwnerAt: (element: any, inst: any, k: any) -> boolean
+```
+
+**동작** — `element`가 `inst`의 자리 `k`에 앉는다고 등록합니다. 다른 자리가 이미 쥔 값이면 던지고, **정확히 같은 자리**가 이미 쥐고 있으면 `false`를 돌려주며 아무것도 하지 않습니다(같은 값 재발행 dedup 뒤 다시 `process`될 때 — 이때는 물리 부착도 건너뛰면 됩니다). 새로 등록했으면 `true`. 자리를 등록하는 순서는 **부기·물리 부착보다 먼저**입니다 — 거부가 나면 아무것도 남지 않아야 하므로.
+
+내장 핸들러가 쓰는 자리 종류는 셋입니다 — Slot의 원소(Slot 자신이 owner), 정적 자식(`(inst, 숫자 키)`), 숏핸드 관리 자식(`(inst, 자식 이름)`). 전부 한 레지스트리라 서로 섞이지 않습니다.
+
+```
+Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+```
+
+## `q.Bookkeeping.releaseOwner(element, ownerKey)`
+
+**시그니처**
+
+```luau
+releaseOwner: (element: any, ownerKey: any) -> ()
+```
+
+**동작** — `claimOwnerAt`으로 등록한 자리를 풉니다. retractor에서, 부기 해제(`setEmpty`)까지 끝낸 **마지막**에 부르는 것이 내장 핸들러의 순서입니다. 그 `ownerKey`가 쥔 값이 아니면 소유권 추적이 깨진 것이므로 던집니다.
+
+```
+Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+```
+
 ## 예제 — 커스텀 값 타입 하나 붙이기
 
 값 타입 하나와 그걸 맡을 핸들러를 등록합니다. 아래 코드는 위 프롤로그만 있으면 그대로 돕니다(등록까지가 전부이고, 실제 마운트는 그 값이 props 자리에 놓일 때 일어납니다).
@@ -335,7 +367,7 @@ q.Dispatch.addHandler({
 
 이제 어떤 요소의 `"Note"` 자리에 `LogValue("hello")`가 놓이면 `mount Note = hello`가 찍힙니다. 같은 자리에 `LogValue("world")`가 오면 `unmount Note (retracting = false)` → `mount Note = world` 순으로, 그 자리가 철거되면 `unmount Note (retracting = true)`로 끝납니다.
 
-숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Bookkeeping.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Bookkeeping.setLength(inst, key, 1)`, 아무것도 놓지 않았다면 `q.Bookkeeping.setEmpty(inst, key)`.
+숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Bookkeeping.claimOwnerAt(value, inst, key)`로 자리를 잡은 뒤 `q.Bookkeeping.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Bookkeeping.setLength(inst, key, 1)`(retractor에서는 `setEmpty` 뒤 `releaseOwner(value, inst)`), 아무것도 놓지 않았다면 `q.Bookkeeping.setEmpty(inst, key)`.
 
 ## 한계와 주의
 

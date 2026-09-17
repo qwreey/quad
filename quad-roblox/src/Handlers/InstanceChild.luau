@@ -23,6 +23,13 @@
 
 	[2026-09-16] `isClaimed` gate before the bookkeeping — same rule as the Slot element
 	gate (`claim-plan.md` 14번): a static child must already be quad-owned.
+	[2026-09-17 round10 Q48 (a) — user decision] ownership seat in the SAME registry the
+	Slot paths use: `Bookkeeping.claimOwnerAt(v, inst, k)` before the bookkeeping,
+	`releaseOwner(v, inst)` in the retractor. A child already held elsewhere (another
+	static seat, a Slot, `D.Frame { c, c }`) is refused instead of silently re-parented,
+	and `q.dispose(c)` refuses it while it sits here. `claimOwnerAt` returning false means
+	exactly this seat already holds it — only reachable through the `H-154` dedup path,
+	which returns before releasing, so the physical attach is skipped too.
 
 	`isInst`는 주입 술어(H-40 화이트리스트) — quad-roblox 실물은
 	`typeof == "Instance"`, mock 환경의 spec은 그 술어 자리를 갈아 끼운다
@@ -53,15 +60,18 @@ local function install(quad: any)
 			if not quad.Backend.isClaimed(v) then
 				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first", SURFACE)
 			end
-			quad.Bookkeeping.setOffsetSource(inst, k, None)
-			v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게
-			quad.Bookkeeping.setLength(inst, k, 1, inst)
+			if quad.Bookkeeping.claimOwnerAt(v, inst, k) then -- Q48 (a): one seat per value — raises if held elsewhere
+				quad.Bookkeeping.setOffsetSource(inst, k, None)
+				v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게
+				quad.Bookkeeping.setLength(inst, k, 1, inst)
+			end
 			return function(nextValue: any?, _retracting: boolean)
 				if nextValue == v then
 					return -- `H-154` 같은 값 재발행 dedup — 물리 detach/attach와 recompute 1회를 접는다
 				end
 				v.Parent = nil -- 내림(파괴 아님)
 				quad.Bookkeeping.setEmpty(inst, k)
+				quad.Bookkeeping.releaseOwner(v, inst) -- Q48 (a): seat freed last (SlotHandler order)
 			end
 		end,
 	} :: QuadTypes.Handler)

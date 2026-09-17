@@ -574,6 +574,13 @@ export type Bookkeeping = {
 	getOffsetAt: (ownerKey: any, at: number) -> number,
 	getBlocker: (ownerKey: any) -> Blocker,
 	getBookkeeping: (ownerKey: any) -> any,
+	-- 소유권 부기(2026-09-17 round10 Q48 (a) 사용자 결정) — 값 하나는 동시에 한 자리에만. 숫자 키
+	-- 자리에 값을 놓는(부모를 바꾸는) 말단 핸들러는 `claimOwnerAt(value, inst, k)`로 자리를 등록하고
+	-- retractor에서 `releaseOwner(value, inst)`로 푼다. Slot의 원소·정적 자식·숏핸드 관리 자식이
+	-- 같은 레지스트리를 쓰며, 다른 자리가 이미 쥔 값은 `already mounted elsewhere`로 거부되고
+	-- 쥐인 동안 `q.dispose`도 거부된다. 반환 false = 정확히 같은 자리가 이미 쥐고 있음(재확인 no-op).
+	claimOwnerAt: (element: any, inst: any, k: any) -> boolean,
+	releaseOwner: (element: any, ownerKey: any) -> (),
 }
 
 -- `Backend` — [2026-09-15 공개 표면 (30) 사용자 결정] 백엔드가 설치하고 quad가 부르는 계약 op 네임스페이스.

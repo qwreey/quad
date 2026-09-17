@@ -274,6 +274,11 @@ Slot에 들어간 요소는 **ownership이 귀속**되며 다른 곳에 마운�
 마운트 경로 자체**(`attachSlot` 분해분 — 별도 `Mount` 함수가 아니다; **[2026-08-28]**
 이미 있는 트리를 quad가 소유하는 `Claim`(`base/claim-plan.md`, 같은 `inst` 이중
 claim은 error)도 이 단일 마운트 불변식을 그대로 진다)가 이 강제를 담당.
+**[2026-09-17 사용자 결정 — round10 Q48 (a)]** 이 불변식의 레지스트리(`elementOwner`)는
+**하나**이고 Slot 경로만의 것이 아니다 — quad-roblox의 정적 자식(`Handlers/InstanceChild.luau`)과
+숏핸드 관리 자식(`Handlers/InstanceShorthand.luau`)도 `module.Bookkeeping.claimOwnerAt`/`releaseOwner`로
+같은 레지스트리에 자리를 등록한다. 그 전까지는 정적 자리가 이 불변식 밖이라 같은 Instance가
+두 부모에 조용히 들어갔다(경위·결정 원문은 `base/claim-plan.md` 16번).
 
 Fusion의 `Children` SpecialKey는 이걸 "특정 SpecialKey 하나의 내부 부기"로만
 구현했고(재사용 가능한 1급 프리미티브가 아님), Vide는 아예 이 개념이 없어서

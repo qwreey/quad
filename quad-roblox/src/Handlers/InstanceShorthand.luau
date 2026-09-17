@@ -31,8 +31,13 @@
 	childName (lookup by reference, never `FindFirstChild` — user requirement).
 	The name is display/judgement only ("quad's own child"); a user-made
 	`UICorner` is never touched. A managed child the user destroyed or
-	re-parented is out of contract (Q5 (a)) — the delegated write then raises
-	the engine's own error (`H-103` NOOP-marker caveat).
+	re-parented is out of contract (Q5 (a)) — and note the engine does NOT
+	raise on property writes to a destroyed Instance (only `Parent` is locked),
+	so such a write goes to the corpse silently (round10 G-6). What IS gated:
+	[2026-09-17 round10 Q48 (a) — user decision] the managed child holds a seat
+	`(inst, childName)` in the shared ownership registry
+	(`Bookkeeping.claimOwnerAt` at creation, `releaseOwner` before destroy), so
+	`q.dispose(child)` refuses it and no static seat or Slot can take it.
 
 	Hash keys ⇒ no Length/Offset bookkeeping (`H-39` is array-only).
 	No validation raises of its own since Q17 (2026-09-07) — see the process body.
@@ -78,6 +83,7 @@ local function install(quad: any)
 		if child == nil then
 			-- late read: `quad.Declaration` is merged by UseProvider after this install ran (`H-174`)
 			child = quad.Declaration.New(entry.class)({ Name = entry.childName })
+			quad.Bookkeeping.claimOwnerAt(child, inst, entry.childName) -- Q48 (a): fresh Instance — never held, cannot raise
 			child.Parent = inst
 			managed:SetStrong(inst, entry.childName, child)
 		end
@@ -96,6 +102,7 @@ local function install(quad: any)
 			dispatch.retractFrom(child, prop, 1)
 		end
 		managed:SetStrong(inst, entry.childName, nil)
+		quad.Bookkeeping.releaseOwner(child, inst) -- Q48 (a): free the seat before the corpse
 		child:Destroy()
 	end
 

@@ -579,11 +579,11 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
 
 ## 죽은 Slot과 마운트 규칙
 
-- 하나의 원소는 **동시에 한 자리에만** 마운트될 수 있습니다. 첫째 문구는 Slot이 원소를 자기 것으로 가져갈 때, 둘째 문구는 그 원소를 인스턴스의 자리에 마운트할 때 이미 임자가 있는 경우입니다.
+- 하나의 원소는 **동시에 한 자리에만** 마운트될 수 있습니다. 첫째 문구는 Slot이 원소를 자기 것으로 가져갈 때, 둘째 문구는 그 원소를 인스턴스의 자리(숫자 키의 Slot·정적 자식)에 마운트할 때 이미 임자가 있는 경우입니다. 이 규칙의 레지스트리는 하나라 Slot 원소·정적 자식(`D.Frame { c }`)·숏핸드가 만든 관리 자식(`UICorner = 8`의 `_quad_round`)이 서로 섞이지 않습니다 — 정적 자식을 `slot:Add`하거나 Slot 원소를 정적 자리에 놓으면 같은 문구로 거부됩니다.
 
   ```
   Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
-  Slot: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
   ```
 
 - 파괴된 Slot은 되살아나지 않습니다 — `Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Slot: destroyed Slot cannot be mounted`.

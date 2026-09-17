@@ -367,3 +367,8 @@ Tween 상태를 기억해두는 것과 정확히 같은 패턴. 새 메커니즘
   4개에 같은 값을 쓰기 때문 — 위 "Tween 지원" 절) —
   `archive/surveys/2026-08-06-pre-implementation-audit.md` 3-2번 참고, 강제 사항 아님,
   구현 시점에 결정할 정도의 사소한 개선 후보.
+
+## [2026-09-17] 관리 자식의 소유권 자리 — round10 Q48 (a)·G-6
+
+관리 자식(`_quad_round`/`_quad_padding`/`_quad_scale`)은 이제 생성 때 `Bookkeeping.claimOwnerAt(child, inst, childName)`으로 Slot·정적 자식과 **같은** `elementOwner` 레지스트리에 앉고, `v == nil` 파괴 직전에 `releaseOwner`로 풀린다. 계기: `q.dispose(child)`가 에러 없이 파괴한 뒤 다음 값 발행이 시체에 조용히 써졌다 — 위 "Q5 (a)" 서술의 "엔진이 raise한다"는 `Parent` 쓰기에만 맞고 일반 프로퍼티 쓰기는 파괴된 인스턴스에도 허용된다(탐사 G 실측). 이제 `q.dispose`는 앉아 있는 관리 자식을 거부하고, 정적 자리·Slot도 그 자식을 받지 않는다. 사용자가 관리 자식을 직접 `Destroy`하는 것은 여전히 계약 밖(Q5 (a) 그대로). 결정 원문은 `base/claim-plan.md` 16번.
+

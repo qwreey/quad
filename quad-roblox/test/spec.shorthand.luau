@@ -146,4 +146,19 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 8. 관리 자식 소유권 자리(round10 Q48 (a)·G-6) — dispose 거부, nil로 내리면 자리도 풀린다 ===")
+do
+	local f = q.Declaration.Frame({ UICorner = 8 }) :: any
+	local child = f:FindFirstChild("_quad_round")
+	assert(child ~= nil, "managed child exists")
+	local ok, err = pcall(function() q.dispose(child) end)
+	assert(not ok and string.find(tostring(err), "dispose: this value is still held by a Slot or a mounted position", 1, true) ~= nil, "dispose refuses the managed child: " .. tostring(err))
+	local ok2, err2 = pcall(function() return q.Declaration.Frame({ child }) end)
+	assert(not ok2 and string.find(tostring(err2), "already mounted elsewhere", 1, true) ~= nil, "a static seat cannot take the managed child: " .. tostring(err2))
+	q.Dispatch.process(f, "UICorner", nil, 1) -- destroys the managed child and frees its seat
+	assert(f:FindFirstChild("_quad_round") == nil, "managed child destroyed")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

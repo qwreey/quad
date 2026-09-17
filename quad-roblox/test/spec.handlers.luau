@@ -264,4 +264,51 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 12. 정적 자식 소유권 자리(round10 Q48 (a), 2026-09-17 사용자 결정) — Slot과 같은 레지스트리, 한 값은 한 자리 ===")
+do
+	local c = q.Declaration.TextLabel({}) :: any
+	local a = q.Declaration.Frame({ c }) :: any
+	assert(c.Parent == a, "first static seat mounts")
+	-- (1) a second static seat refuses instead of silently re-parenting
+	local ok, err = pcall(function() return q.Declaration.Frame({ c }) end)
+	assert(not ok and string.find(tostring(err), "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere", 1, true) ~= nil, "double static mount rejected: " .. tostring(err))
+	assert(c.Parent == a, "the first tree keeps its child")
+	mock.assertBlamesUser(err, SPEC_FILE, "double-mount raise blames the D.Frame line")
+	-- (2) the same child twice in one Declaration
+	local c2 = q.Declaration.TextLabel({}) :: any
+	local ok2, err2 = pcall(function() return q.Declaration.Frame({ c2, c2 }) end)
+	assert(not ok2 and string.find(tostring(err2), "already mounted elsewhere", 1, true) ~= nil, "{c, c} rejected: " .. tostring(err2))
+	-- (3) a Slot cannot take a statically seated child, and a static seat cannot take a Slot element
+	local ok3, err3 = pcall(function() return q.Slot():Add(c) end)
+	assert(not ok3 and string.find(tostring(err3), "Slot:Add: this element is already mounted", 1, true) ~= nil, "Slot refuses a static child: " .. tostring(err3))
+	local e = q.Declaration.TextLabel({}) :: any
+	local s = q.Slot({ e })
+	local ok4, err4 = pcall(function() return q.Declaration.Frame({ e }) end)
+	assert(not ok4 and string.find(tostring(err4), "already mounted elsewhere", 1, true) ~= nil, "static seat refuses a Slot element: " .. tostring(err4))
+	-- (4) dispose refuses a seated child; after the seat is retracted it is disposable
+	local ok5, err5 = pcall(function() q.dispose(c) end)
+	assert(not ok5 and string.find(tostring(err5), "dispose: this value is still held by a Slot or a mounted position", 1, true) ~= nil, "dispose refuses a seated static child: " .. tostring(err5))
+	-- (c2 stays seated in the half-built Frame above — a raise mid-Declaration leaves the seats
+	-- taken so far, as any handler raise does; use a fresh child here)
+	local c4 = q.Declaration.TextLabel({}) :: any
+	local st = q.Source(c4)
+	local b = q.Declaration.Frame({ st }) :: any
+	assert(c4.Parent == b, "reactive static seat mounts")
+	st:Set(nil)
+	assert(c4.Parent == nil, "retracted")
+	q.dispose(c4) -- seat released by the retractor — allowed now
+	-- (5) `H-154` dedup: re-emitting the same child keeps the seat (no release/reclaim) and stays mounted
+	local c3 = q.Declaration.TextLabel({}) :: any
+	local st3 = q.Source(c3)
+	local p3 = q.Declaration.Frame({ st3 }) :: any
+	st3:Set(c3)
+	assert(c3.Parent == p3, "same-value re-emit keeps the child mounted")
+	local ok6 = pcall(function() return q.Declaration.Frame({ c3 }) end)
+	assert(not ok6, "still seated after the dedup re-emit")
+	s:Clear()
+	q.dispose(e)
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

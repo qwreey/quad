@@ -10,6 +10,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Added
 
+- `q.Bookkeeping.claimOwnerAt(element, inst, k)` / `q.Bookkeeping.releaseOwner(element, ownerKey)` — 숫자 키 자리에 값을 놓는 핸들러가 "이 값은 이 자리에 앉아 있다"를 등록·해제하는 소유권 op. `Slot`이 원소에 쓰던 그 레지스트리 하나를 정적 자식·숏핸드 관리 자식과 같이 씁니다. 자기 핸들러가 자식을 부모에 붙인다면 이 둘을 불러야 아래 단일 마운트 규칙에 들어갑니다.
+
 - 백엔드 계약 op `isClaimed(inst)` — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 정적 자식 자리마다(구동 hot path) 부릅니다. **BREAKING(프로바이더 작성자)** — 자기 백엔드를 만든 쪽은 이 op를 설치해야 합니다(quad-roblox는 claim 셋업 유무, mock은 항상 참). 앱 코드에는 영향이 없습니다.
 
 - `quad_roblox` 패키지 루트가 프로퍼티 값 타입 `Field<T>`(setter가 받는 값)와 `FieldOut<T>`(변환 함수의 `old`·`Peek`이 돌려주는 저장된 값)를 내보냅니다. 전에는 생성 모듈 경로로만 닿았는데, pesde 설치에서는 그 경로가 드러나지 않았습니다. 클래스별 타입도 같은 루트에서 내보냅니다 — `<Class>Modifier`(상위 클래스 포함), `Into<Class>`, `<Class>Elem`. how-to의 `require(<생성 모듈 경로>)` 자리표시자는 이 경로로 바뀌었습니다.
@@ -22,6 +24,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 ### Changed
 
 - **BREAKING — `Slot`이 quad 밖에서 만든(claim되지 않은) 인스턴스를 더는 원소로 받지 않습니다.** 전에는 조용히 들어갔고 죽음 추적이 없어 밖에서 `Destroy`되면 Slot이 stale해졌습니다. 이제 `Add`·생성자·`Replace`·`Extract`·`Splice`·`List`/`Single`이 `Slot: this element is not claimed by quad …`로 거부합니다(`State`에 담긴 원소도 그 현재값으로 미리 검사합니다). `List`/`Single`의 `updateFn`이 그런 원소를 돌려주면 재조정 도중의 예외라 그 Slot은 더 이상 재조정되지 않습니다 — 원소를 만들 때 claim하세요. 옮기는 법: 그 인스턴스를 먼저 `Claim`으로 넘겨받거나 `Declaration`으로 만드세요 — Slot이 대신 claim하지 않습니다. **정적 자식 자리도 같습니다** — `D.Frame { Instance.new("TextLabel") }`처럼 숫자 키에 놓은 미claim 인스턴스는 `InstanceChild: this Instance is not claimed by quad …`로 거부됩니다. 그 자리의 `State<Instance?>`를 나중에 미claim 인스턴스로 `:Set`하는 경우도 같은 거부인데, 이때는 옛 자식이 이미 내려간 뒤(체인 철거 뒤 새 값 처리)라 그 자리는 빈 채로 남습니다.
+
+- **BREAKING — 정적 자식과 숏핸드 관리 자식도 "한 값은 한 자리" 규칙 안에 들어갑니다.** 전에는 같은 Instance를 `D.Frame { c }` 둘에 놓으면 에러 없이 둘째가 가져가고 첫째의 자리 부기는 남아, 첫째가 자리를 내릴 때 살아 있는 둘째 트리에서 그 자식을 뜯어냈습니다. `{ c, c }`도 통과했고, 정적 자식을 `slot:Add`하거나 `q.dispose`하는 것도 막히지 않았습니다. 이제 둘째 자리는 `Bookkeeping.claimOwnerAt: this element is already mounted elsewhere …`로 거부되고(첫째 트리는 그대로), 앉아 있는 자식은 `q.dispose`가 `dispose: this value is still held by a Slot or a mounted position …`로 거부합니다. `UICorner = 8` 같은 숏핸드가 만든 관리 자식(`_quad_round`·`_quad_padding`·`_quad_scale`)도 같습니다 — 전에는 `q.dispose`가 조용히 파괴한 뒤 다음 값 발행이 파괴된 인스턴스에 써졌습니다. 옮기는 법: 한 Instance를 다른 자리로 옮기려면 먼저 그 자리에서 내리세요(자리를 쥔 State를 `:Set(nil)`, Slot이면 `Extract`). 두 곳에 같은 모양이 필요하면 Instance를 둘 만드세요. 제대로 돌던 코드는 영향이 없습니다 — 이 변경은 원래 막혔어야 할 것을 막은 것입니다.
 
 - 옵션 테이블을 변수에 담아 넘겨도 strict 타입 검사가 통과합니다 — `q.Debounce`/`q.Throttle`의 옵션, `slot:List`/`slot:Single`의 `opts`, 그리고 `q.Slot(initial)`의 배열(필드·원소가 읽기 전용 `read`로 선언됨). 전에는 `local opts = { Time = 0.3 }` 뒤 `q.Debounce(opts)`가 가변 필드 불변성으로 거부됐습니다. 받는 입력이 넓어지기만 해 기존 코드는 그대로 통과합니다.
 
