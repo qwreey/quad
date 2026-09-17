@@ -145,13 +145,17 @@ end
 
 local function OnDestroyed(fn)
     return q.Effect(function()
-        return fn                       -- 의존성 없는 Effect의 cleanup이 곧 파괴 콜백
+        return function(dying)          -- 의존성 없는 Effect의 cleanup이 곧 파괴 콜백 —
+            if dying then fn() end      -- 인스턴스가 죽어서 불린 때만(자리를 떠날 때는 아님)
+        end
     end)
 end
 ```
 
-**새 브랜드도, 새 디스패치 개념도 없습니다.** 1절에서 손으로 짠 것과
-글자까지 같은 모양이고, 그래서 두 절의 출력이 같았던 것입니다. 훅을 여러 개
+**새 브랜드도, 새 디스패치 개념도 없습니다.** 1절에서 손으로 짠 것과 같은 모양이고,
+그래서 두 절의 출력이 같았던 것입니다. `OnDestroyed`의 `dying` 한 줄만 다릅니다 — Effect의
+cleanup은 인스턴스가 죽을 때만이 아니라 그 자리를 떠날 때도 불리는데(7장), 훅은 그중
+죽음만 골라 받습니다. 자리에 직접 놓는 이 장의 쓰임에서는 둘이 같습니다. 훅을 여러 개
 등록하는 것도 그저 **숫자 키 자리를 여러 개 쓰는 일**이라, 같은 종류끼리는 숫자 키에
 적은 순서대로 불립니다.
 

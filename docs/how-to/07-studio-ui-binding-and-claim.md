@@ -160,8 +160,9 @@ end
   `nativeClaim: Instance is already claimed by quad`입니다. 원본은 찍어내는 틀로만
   두고, claim하는 것은 언제나 사본입니다.
 - **매핑할 자식에는 `Name`을 주세요.** `D.TextLabel { … }`의 기본 이름은 클래스
-  이름이라, 이름을 안 주면 `M.TextLabel("ItemName")`이 찾을 자식이 없습니다. 이름
-  부재는 UB라 quad의 안내 문구가 아니라 내부에서 그대로 크래시합니다.
+  이름이라, 이름을 안 주면 `M.TextLabel("ItemName")`이 찾을 자식이 없어
+  `Claim: no child matched key ItemName under … (mapper TextLabel) — a child with that name must also be a TextLabel`로
+  거부됩니다. 이름은 맞는데 클래스가 다른 자식(`ImageLabel`인데 `M.TextLabel`)도 같은 에러입니다.
 - **템플릿에서 숏핸드 키로 만든 `UI*`는 디스크립터에서 다시 쓰지 마세요.** 위
   템플릿의 `UICorner = UDim.new(0, 8)`이 만든 자식은 사본에도 그대로 있습니다 —
   `Claim` 쪽 props에서 숏핸드 키를 또 쓰면 `UICorner`가 둘이 됩니다. 디스크립터에 **적지도 않습니다** — 그려지지 않는 자식이라 부기 대상이 아니므로(§3의 계약 2), 사본에 그대로 두면 됩니다.
@@ -208,9 +209,10 @@ M.Frame("Footer")({})   -- 자리는 채우되, 이 아래로는 내려가지 �
 - **숏핸드 키가 만든 `UICorner` 같은 `UI*`는 부기 대상이 아닙니다**(Studio 템플릿에 이미 들어 있는 `UIListLayout`·`UICorner` 같은 `UI*`는 디스크립터에 **적지 않아도 됩니다** — 굳이 매핑하면 평범한 숫자 키 자리가 되어 부기 대상에 들어갈 뿐입니다) — 그려지지 않고 단순히
   `Parent`로 매달리기 때문입니다. 다만 템플릿의 `UICorner`와 quad의 숏핸드
   키를 같이 쓰면 둘이 생기니 하나만 쓰세요.
-- **이름 중복이나 부재는 UB입니다.** 특히 없는 이름을 적으면 quad의 안내 문구
-  없이 내부에서 그대로 크래시하니, 템플릿의 자식 이름과 디스크립터의 키를 맞춰
-  두세요.
+- **이름 중복은 UB, 부재와 클래스 불일치는 즉시 에러입니다.** 같은 이름이 둘이면
+  어느 쪽이 잡히는지 정해져 있지 않습니다(`FindFirstChild`가 고르는 쪽). 없는 이름이나
+  클래스가 다른 자식은 `Claim: no child matched key … — a child with that name must also be a …`로
+  그 자리에서 거부되니, 템플릿의 자식 이름·클래스와 디스크립터를 맞춰 두세요.
 
 ### 3) `PlayerGui`/`CoreGui`는 대상이 아니다
 
