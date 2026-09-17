@@ -176,6 +176,18 @@ local function createImpl(module: any)
 		-- pass never converges"); a generation-free flag would re-open the thrown-fn problem.
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
 		if self._computing == gen then
+			-- round11 `H-540` (탐사 B′): a thrown fn leaves the stamp AND an invalid cache, so `Get`
+			-- never reaches its `Refresh` drift branch (that one needs a valid cache) — an upstream
+			-- that moved behind a closed gate (Blocker/Debounce: no `_receive`, no new generation)
+			-- could then never let fn run again ("$250 stays THROW until any ungated Set"). Ask
+			-- the drift here: moved → this is a new generation after all, take it. A real cycle
+			-- (fn still on the stack, nothing moved) keeps raising below.
+			if self._valueEpochMap:Refresh() then
+				self:_invalidate()
+				gen = self._cacheTargetCount
+			end
+		end
+		if self._computing == gen then
 			Err.errorBeforeNearest("State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
 		end
 		self._computing = gen

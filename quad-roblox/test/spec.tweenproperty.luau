@@ -37,6 +37,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 q.Backend.isInst = mock.isMockInstance
 
 local Tween = q.Tween
+local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 local log = mock.tweenLog
 local function lastTween(): any
 	return log[#log].tween
@@ -203,6 +204,31 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "Time must be a number", 1, true) ~= nil, "State option validated at drive: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.tweenproperty.luau", "drive-path blame")
+	print("PASS")
+end
+
+print()
+print("=== 10. round11 H-547 (2026-09-17) — Tween을 거친 적 없는 체인도 철거 때 기록이 지워져 다음 Tween은 스냅; retractor는 GC를 견딘다 ===")
+do
+	mock.resetTweenLog()
+	-- (1) plain → teardown → Tween: snaps (was: animated, the `true` record survived the Void retractor)
+	local f = q.Declaration.Frame({ Size = 1 }) :: any
+	q.Dispatch.retractFrom(f, "Size", 1)
+	q.Dispatch.drive(f, { Size = Tween({ Value = 5, Time = 0.3 }) })
+	assert(f.Size == 5 and #log == 0, "first set after teardown snaps, no engine tween")
+	-- (2) Tween → plain → (GC in the window) → teardown → Tween: still snaps
+	mock.resetTweenLog()
+	local src = q.Source(0 :: any)
+	local g = q.Declaration.Frame({ Size = src }) :: any
+	src:Set(Tween({ Value = 20, Time = 0.5 }))
+	assert(#log == 1, "engine tween")
+	src:Set(7) -- plain after a Tween: the retractor must not depend on the weak cache surviving
+	collectgarbage()
+	collectgarbage()
+	q.Dispatch.retractFrom(g, "Size", 1)
+	assert(log[1].tween.cancels >= 1, "teardown cancelled the running tween")
+	q.Dispatch.drive(g, { Size = Tween({ Value = 9, Time = 0.5 }) })
+	assert(g.Size == 9 and #log == 1, "re-driven Tween snaps (record cleared on teardown)")
 	print("PASS")
 end
 

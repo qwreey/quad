@@ -17,10 +17,11 @@
 	regular no-match error.
 
 	process is one line (`inst[k] = v`) — hash keys touch no Length/Offset
-	bookkeeping (`H-39` is about ARRAY positions only). The retractor is
-	`Void` for plain values: a property cannot be "unset", and a descending-diff
-	replacement simply writes the next value. [round10 Q53 (a), user decision
-	2026-09-17] a chain that has carried a TWEEN (at any point) returns a real retractor instead —
+	bookkeeping (`H-39` is about ARRAY positions only). A property cannot be
+	"unset", and a descending-diff replacement simply writes the next value — so
+	the retractor does nothing on a value swap. [round10 Q53 (a), user decision
+	2026-09-17; round11 `H-547` widened it from "a chain that has carried a Tween"
+	to EVERY chain] the per-(inst, k) retractor is returned by every path —
 	on teardown (`retracting == true`: `Dispatch.retractFrom`, the shorthand's
 	managed-child destroy) it `Cancel`s the running engine tween and clears the
 	`(inst, k)` slot; on a value swap (`retracting == false`) it does nothing,
@@ -74,7 +75,6 @@ local Reflection = require("../Reflection")
 
 local function install(quad: any)
 	local dispatch = quad.Dispatch
-	local Void = quad.Void
 	local isTween = quad.isTween
 
 	-- 3-state slot (header) — weak-keyed by inst through Relate, so a dying
@@ -171,7 +171,7 @@ local function install(quad: any)
 				-- tween) so the value dedup above already holds after the snap.
 				inst[k] = if tweenIn then v.Value else v
 				tweenSlots:SetStrong(inst, k, if tweenIn then { Value = v.Value } else true)
-				return if tweenIn then tweenRetractor(inst, k) else Void
+				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
 			end
 			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
 			-- engine tween before touching the old one — `TweenService:Create` may
@@ -197,9 +197,15 @@ local function install(quad: any)
 			end
 			inst[k] = v
 			tweenSlots:SetStrong(inst, k, true)
-			-- a chain that has ever carried a Tween keeps its retractor (checkpoint code-review): the
-			-- `true` record must also go on teardown, or a re-driven Tween animates instead of snapping
-			return tweenRetractors:GetWeak(inst, k) or Void
+			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
+			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
+			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there
+			-- before calling `process`, so a GC step inside this function turned it into Void (the
+			-- Tween record then survived teardown: no Cancel, next re-drive animated); (2) a chain that
+			-- never carried a Tween wrote `true` with Void, so after teardown the next Tween skipped
+			-- branch 1 and animated instead of snapping (tween-plan "3-state store"). The retractor is
+			-- cached weakly and re-minted when collected — identity never matters.
+			return tweenRetractor(inst, k)
 		end,
 	} :: QuadTypes.Handler)
 end

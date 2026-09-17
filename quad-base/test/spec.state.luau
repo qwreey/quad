@@ -426,4 +426,45 @@ do
 end
 
 print()
+print("=== 15. round11 H-540 (2026-09-17) — fn이 던진 뒤 닫힌 게이트 너머의 상류 변경(드리프트)도 새 세대: 고친 값으로 다시 돈다 ===")
+do
+	local s = Source(1)
+	local open = true
+	local g = s:Gate(function(emit)
+		return function()
+			if open then
+				emit()
+			end
+		end
+	end)
+	local throwOnce = true
+	local c = g:Compute(function(self)
+		local v = self:Get()
+		if throwOnce then
+			throwOnce = false
+			error("transient", 0)
+		end
+		return v * 10
+	end)
+	local ok1, err1 = pcall(function()
+		return c:Get()
+	end)
+	assert(not ok1 and string.find(tostring(err1), "transient", 1, true), "first read throws the fn's own error: " .. tostring(err1))
+	open = false -- the gate withholds: no _receive, no new generation for c
+	s:Set(2)
+	assert(c:Get() == 20, "the withheld upstream change is drift — fn runs again with the corrected value")
+	assert(c:Get() == 20, "and the cache is valid afterwards")
+	-- a real cycle is still caught (drift check must not open the door)
+	local cyc: any
+	cyc = Source(1):Compute(function(): number
+		return (cyc :: any):Get() :: number
+	end)
+	local ok2, err2 = pcall(function()
+		return cyc:Get()
+	end)
+	assert(not ok2 and string.find(tostring(err2), "already running", 1, true), "cycle still raises: " .. tostring(err2))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

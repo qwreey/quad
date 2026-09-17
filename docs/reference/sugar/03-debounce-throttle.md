@@ -85,12 +85,12 @@ export type ThrottleOptions = {
 | `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부 |
 | `Leading` | `boolean?` | `false` | `true` | 창이 열릴 때 첫 신호를 즉시 통과시킬지 |
 | `Trailing` | `boolean?` | `true` | `true` | 창이 닫힐 때 보류분을 통과시킬지 |
-| `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도 최대 이 간격마다 강제 통과 |
+| `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도, 보류가 시작된 뒤 최대 이만큼 안에 강제 통과 |
 | `Handle` | `Ref<GateHandle?>?` | `nil` | `nil` | 수동 제어 핸들을 받을 Ref |
 
 - `Leading`과 `Trailing`을 **둘 다 `false`로 주면 에러**입니다 — 아무것도 통과하지 못하므로.
 - `MaxTime`은 **`Debounce` 전용**입니다. `Throttle`은 이미 `Time`마다 통과시키므로 옵션 자체가 거부됩니다.
-- `MaxTime` 타이머는 **뭔가 보류됐고 `Trailing`이 그걸 통과시킬 수 있을 때만** 걸립니다. `Trailing = false`인 Debounce에 `MaxTime`을 줘도 아무 일도 하지 않습니다.
+- `MaxTime` 타이머는 **뭔가 보류됐고 `Trailing`이 그걸 통과시킬 수 있을 때만** 걸립니다. `Trailing = false`인 Debounce에 `MaxTime`을 줘도 아무 일도 하지 않습니다 — 읽지도 않으므로 그 자리의 `State`는 검증되지도, 계산되지도 않습니다. 그리고 그 타이머는 통과 시점이 아니라 **그다음 보류되는 신호**부터 잽니다 — 신호가 쉬지 않고 들어올 때 실제 통과 간격은 `MaxTime`에 "통과 뒤 다음 신호까지의 틈"이 더해집니다(0.1초마다 신호에 `MaxTime = 1`이면 1.0~1.1초).
 - `Time`/`MaxTime`에 `State`를 줘도 **구독하지 않습니다** — 상류 신호가 들어올 때 한 번 읽습니다. 이미 걸린 타이머는 자기 지연을 유지하고, 창이 닫힌 뒤 다시 여는 창(trailing 통과 뒤·`Flush` 뒤)은 **마지막 신호 때 읽은 값**을 씁니다. 신호 없이 값만 바꾸면 다음 신호부터 반영됩니다.
 
 **옵션 게이트(팩토리를 부르는 줄에서 던집니다).** 이름 자리(`Debounce`/`Throttle`)는 부른 쪽에 따라 바뀝니다.

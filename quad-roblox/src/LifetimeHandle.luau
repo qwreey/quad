@@ -75,7 +75,16 @@ local function install(quad: any)
 	-- [2026-09-16 사용자 결정] claim 여부 — `nativeClaim`이 남기는 셋업(gchold) 유무 그대로(이중 claim 판정과 같은 검사).
 	-- Slot이 요소를 받을 때 부른다(`Slot/Elements.luau`); 파괴된 인스턴스도 셋업이 남아 있으면 참(`H-293` UB 그대로).
 	local function isClaimed(inst: any): boolean
-		return inst ~= nil and InstData:GetWeak(inst, "gchold") ~= nil
+		if inst == nil then
+			return false
+		end
+		-- round11 `H-548` (탐사 D′): gchold/gcconn are weak values anchored by the gcconn closure, which
+		-- Destroy cuts — so a destroyed Instance read as claimed until the next GC and as not claimed
+		-- after it (`Slot:Add(corpse)` passed and seated it before the GC, threw after). `H-293` makes
+		-- feeding a destroyed Instance UB, but the gate should not depend on GC pacing: a cut gcconn
+		-- is "not claimed" right away — the message already says a destroyed Instance counts as such.
+		local gcconn = InstData:GetWeak(inst, "gcconn")
+		return InstData:GetWeak(inst, "gchold") ~= nil and gcconn ~= nil and gcconn.Connected == true
 	end
 
 	-- (1) private predicate shared by both public entry points ((3))

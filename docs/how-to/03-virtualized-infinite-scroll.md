@@ -41,7 +41,7 @@ updateFn(ctx) -> (result, userdata)
 
 - **`keyFn(item, i)`가 재활용을 결정합니다.** 항목의 신원이 안정적이어야 `ctx.Prev`가 넘어오고, `ctx.Prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 **가장 싼 경로**입니다. 생략하면 배열 인덱스가 키인데, 그러면 목록이 밀릴 때마다 신원이 어긋나 전부 새로 만들어집니다.
 - **항목마다 바뀌는 값은 `userdata`에 `Source`로 넣어 둡니다**(다음 호출의 `ctx.UserData`로 돌아옵니다). 재활용 갈래에서는 인스턴스를 다시 만들 수 없으니, 라벨 텍스트나 위치는 그 `Source`만 `:Set` 합니다.
-- **`opts.OwnsElements = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다 — 단 그 Instance는 먼저 [`Claim`](../reference/roblox/04-claim-mapper.md)으로 quad 소유로 넘겨져 있어야 합니다(claim되지 않은 원소는 Slot이 거부합니다). `OwnsElements = false`는 "버릴 때 파괴하지 않는다"는 뜻이지 소유 검사를 건너뛰는 옵션이 아닙니다.
+- **`opts.OwnsElements = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다 — 단 그 Instance는 먼저 [`Claim`](../reference/roblox/04-claim-mapper.md)으로 quad 소유로 넘겨져 있어야 합니다(claim되지 않은 원소는 Slot이 거부합니다). `OwnsElements = false`는 "버릴 때 파괴하지 않는다"는 뜻이지 소유 검사를 건너뛰는 옵션이 아닙니다. 그리고 목록이 마운트된 채로 그 화면(부모 Instance)이 파괴되면 엔진이 자손을 지우므로 넘긴 Instance도 같이 죽습니다 — 살려야 하면 철거 전에 data에서 빼세요.
 
 `data`는 평범한 배열이거나 배열을 담은 `State`입니다. `State`면 값이 바뀔 때마다 재조정(reconcile)이 돕니다.
 

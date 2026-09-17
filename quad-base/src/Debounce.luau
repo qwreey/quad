@@ -244,6 +244,10 @@ function FactoryImpl.__apply(self: any, state: any): any
 			emit(false) -- drop, no propagation (set now empty → goIdle is safe)
 			goIdle()
 		end
+		-- round11 `H-541` (탐사 C′): the per-gate handle is public surface (reference sugar/03) —
+		-- without the tag a throw inside `Flush` (backend `setTimeout` missing) blamed this file
+		-- while the factory's broadcast `Flush` blamed the user's line
+		Err.setFuncLevel(SURFACE, h.Flush, h.Cancel)
 
 		return function() -- onUpstreamEmit (synchronous; the gate already merged the source into its set)
 			-- Q55 (b): the ONE Time read — before anything changes, so a throw leaves the gate
@@ -252,7 +256,10 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- MaxTime too (checkpoint code-review): read here, before any state change, so the
 			-- "only throwing site is the entry" claim holds for both options — a cap read at the
 			-- tail used to throw after `pass()`/`openWindow()` had moved the Blocker and timer
-			local maxT = if maxTime ~= nil then readTime(name, "MaxTime", maxTime) else nil
+			-- round11 `H-542` (탐사 C′): only when it can be armed — a `Trailing = false` Debounce
+			-- "does nothing" with MaxTime (reference sugar/03), so it must not validate it either
+			-- (an invalid State there threw on `:Set`) nor re-run a Compute State every signal
+			local maxT = if maxTime ~= nil and trailing then readTime(name, "MaxTime", maxTime) else nil
 			-- `held` = "this signal is withheld, not passed" — read the Blocker BEFORE
 			-- anything below flips it (`H-510`): a re-entrant emit during a timer-path
 			-- commit sees no window but a still-On Blocker, so `pass()` withholds

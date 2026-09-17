@@ -338,4 +338,46 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 14. round11 H-544/H-545/H-546/H-548 (2026-09-17) — 정적 자리 순환 가드·소유권 op nil 게이트·파괴된 인스턴스는 즉시 미claim·nil 구멍 메시지의 회수 경로 ===")
+do
+	-- H-545: a cycle through the static seat is refused before any bookkeeping (Slot's H-500 twin)
+	local host = q.Declaration.Frame({}) :: any
+	local seat = q.Source(nil :: any)
+	local f = q.Declaration.Frame({ seat }) :: any
+	f.Parent = host
+	local ok, err = pcall(function() seat:Set(f) end)
+	assert(not ok and string.find(tostring(err), "InstanceChild: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
+	local ok2, err2 = pcall(function() seat:Set(host) end)
+	assert(not ok2 and string.find(tostring(err2), "cannot place an Instance inside itself or one of its own descendants", 1, true) ~= nil, "ancestor: " .. tostring(err2))
+	assert(f.Parent == host and host.Parent == nil, "tree untouched")
+	q.dispose(host) -- nothing seated: the seat commit never happened
+	-- H-546: the two public seat ops fail fast on nil, like their six Bookkeeping siblings
+	local c = q.Declaration.TextLabel({}) :: any
+	local ok3, err3 = pcall(function() return q.Bookkeeping.claimOwnerAt(nil, c, 1) end)
+	assert(not ok3 and string.find(tostring(err3), "Bookkeeping.claimOwnerAt: element must not be nil", 1, true) ~= nil, tostring(err3))
+	local ok4, err4 = pcall(function() return q.Bookkeeping.claimOwnerAt(c, nil, 1) end)
+	assert(not ok4 and string.find(tostring(err4), "Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", 1, true) ~= nil, tostring(err4))
+	local ok5, err5 = pcall(function() return q.Bookkeeping.releaseOwner(nil, c) end)
+	assert(not ok5 and string.find(tostring(err5), "Bookkeeping.releaseOwner: element must not be nil", 1, true) ~= nil, tostring(err5))
+	local ok6, err6 = pcall(function() return q.Bookkeeping.releaseOwner(c, nil) end)
+	assert(not ok6 and string.find(tostring(err6), "Bookkeeping.releaseOwner: ownerKey must not be nil", 1, true) ~= nil, tostring(err6))
+	q.dispose(c) -- nothing was seated by the rejected calls
+	-- H-548: a destroyed quad Instance is "not claimed" right away (not after the next GC)
+	local corpse = q.Declaration.TextLabel({}) :: any
+	assert(q.Backend.isClaimed(corpse), "alive: claimed")
+	corpse:Destroy()
+	assert(not q.Backend.isClaimed(corpse), "destroyed: not claimed, before any GC")
+	local ok7, err7 = pcall(function() return q.Slot({ corpse }) end)
+	assert(not ok7 and string.find(tostring(err7), "not claimed", 1, true) ~= nil, "Slot refuses the corpse deterministically: " .. tostring(err7))
+	-- H-544: the nil-hole message names the half-built Instance as the recovery path
+	local c1 = q.Declaration.TextLabel({}) :: any
+	local c3 = q.Declaration.TextLabel({}) :: any
+	local ok8, err8 = pcall(function() return q.Declaration.Frame({ c1, nil :: any, c3 }) end)
+	assert(not ok8 and string.find(tostring(err8), "stay seated in the half-built Instance", 1, true) ~= nil, tostring(err8))
+	assert(c1.Parent ~= nil, "the child placed before the raise sits in the half-built Frame")
+	q.dispose(c1.Parent) -- the documented recovery: dispose the half-built host
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

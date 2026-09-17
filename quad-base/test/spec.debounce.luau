@@ -481,4 +481,46 @@ do
 end
 
 print()
+print("=== 12. round11 H-541/H-542 (2026-09-17) — 게이트 핸들 Flush의 blame은 사용자 줄; Trailing = false Debounce는 MaxTime을 읽지도 않는다 ===")
+do
+	-- H-541: the per-gate handle's Flush is public surface — a backend-less throw blames this file
+	local bare = Quad.New()
+	local s = bare.Source(0)
+	local handle = bare.Ref(nil :: GateHandle?)
+	local g: State<number> = s:Apply(bare.Debounce({ Time = 1, Handle = handle }))
+	assert(g:Get() == 0, "Apply itself needs no timer")
+	pcall(function()
+		s:Set(1) -- first signal: setTimeout stub throws (spec 11) — the signal stays merged
+	end)
+	local ok, err = pcall(function()
+		(handle.Value :: GateHandle):Flush() -- something withheld → emit → reopen → setTimeout stub throws
+	end)
+	assert(not ok and string.find(tostring(err), "setTimeout is not available", 1, true), tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "handle Flush blames the user's line, not Debounce.luau")
+	-- H-542: Trailing = false → MaxTime is never armed, so it is neither validated nor computed per signal
+	local src = q.Source(0)
+	local reads = 0
+	local maxTime = q.Source(1):Compute(function(self)
+		reads += 1
+		return self:Get()
+	end)
+	local d: State<number> = src:Apply(q.Debounce({ Time = 0.5, Leading = true, Trailing = false, MaxTime = maxTime }))
+	assert(d:Get() == 0)
+	src:Set(1)
+	src:Set(2)
+	src:Set(3)
+	assert(reads == 0, "MaxTime Compute never ran: " .. reads)
+	local bad = q.Source(-1 :: any)
+	local src2 = q.Source(0)
+	local d3: State<number> = src2:Apply(q.Debounce({ Time = 0.5, Leading = true, Trailing = false, MaxTime = bad }))
+	assert(d3:Get() == 0)
+	local ok3, err3 = pcall(function()
+		src2:Set(1)
+	end)
+	assert(ok3, "an invalid MaxTime does not throw when it cannot be used: " .. tostring(err3))
+	advance(1)
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

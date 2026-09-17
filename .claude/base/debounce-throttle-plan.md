@@ -462,7 +462,7 @@ type DebounceOptions = {
     Time: number | State<number>,     -- 필수. 창 길이(초) — 신호마다 리셋됨
     Leading: boolean?,                -- 기본 false. 버스트의 첫 신호를 즉시 통과시킬지
     Trailing: boolean?,               -- 기본 true.  조용해진 뒤 한 번 통과시킬지
-    MaxTime: (number | State<number>)?, -- 기본 nil. 신호가 안 끊겨도 최대 이 간격마다 강제 통과
+    MaxTime: (number | State<number>)?, -- 기본 nil. 신호가 안 끊겨도 보류가 시작된 뒤 최대 이만큼 안에 강제 통과(H-543: 커밋이 아니라 다음 보류 신호부터 잰다)
     Handle: Ref<GateHandle>?,     -- 기본 nil. 이 인스턴스 전용 제어 핸들(5-4절)
 }
 
@@ -1295,3 +1295,5 @@ archive/surveys/2026-08-06-additional-primitives-plan.md`가 원래 "안 만들�
 하면 같은 걸 두 번 설계하게 되는 것도 그대로다. 표면/이름은 `base/gate-plan.md`가 소스(이 문서의 1절이 그 일반화를 처음
 권고한 자리로 거기 인용돼 있다). 프리미티브 자체(`Debounce`/`Throttle` 함수)는 그 위에 아무
 때나 나중에 얹으면 된다.
+
+**[2026-09-17 round11 탐사 C′ — `H-541`·`H-542`·`H-543`] 가상 시계 퍼즈(시드 5000·스텝 20만 누적)에서 값·부기 결함 0.** 오늘 들어간 `h._time` 캐시·MaxTime 진입 읽기·`Flush` nil 가드는 모든 순열("Blocker On인데 타이머 없음"·배치 유실·이중 통과·타이머 누수·재진입·체인·Time 피드백)을 견뎠고 8절의 "마지막 신호 뒤 최대 2 × Time" 유계도 21설정 전수 초과 0. 남은 셋은 표면 손질: **`H-541`** per-gate 핸들 `h.Flush`/`h.Cancel`이 `setFuncLevel` 태그 밖이라 `Flush` 안에서 던지는 유일한 자리(백엔드 `setTimeout` 미설치)가 `Debounce.luau` 줄을 blame했다 — 팩토리 브로드캐스트 `Flush`는 사용자 줄이었으니 `H-231` 규약 위반; 핸들 생성 직후 태그. **`H-542`** `Trailing = false` Debounce는 cap을 절대 무장하지 않는데(`and trailing`) 진입에서 `MaxTime`을 무조건 읽어 검증·Compute 재실행이 났다(레퍼런스 sugar/03 "아무 일도 하지 않습니다"와 어긋남 — 잘못된 MaxTime State가 `:Set`을 던지게 했다) — `and trailing`일 때만 읽는다. `Throttle`은 `MaxTime`을 생성 때 거부하는데 이 조합은 조용히 받는 비대칭은 `H-32`가 정상 사용례로 부르므로 그대로(거부로 바꾸는 것은 결정 사안 — 이번엔 안 올림). **`H-543`** 5-2절/레퍼런스의 "최대 이 간격마다 강제 통과"는 실측보다 강하다 — cap은 커밋이 `clearCap()`한 뒤 **다음 보류 신호**에서 다시 무장되므로 실제 주기는 `MaxTime + (커밋 → 다음 신호 간격)`(0.1초 간격 신호에 `MaxTime = 1`이면 1.0~1.1). 초과는 신호 간격으로 유계라 실해 없음; 문구를 "보류가 시작된 뒤 최대 MaxTime"으로 정정. 스펙 `spec.debounce` 12.

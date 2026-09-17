@@ -63,6 +63,18 @@ local function install(quad: any)
 			if not quad.Backend.isClaimed(v) then
 				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here)", SURFACE)
 			end
+			-- round11 `H-545` (탐사 A′): the static seat had no twin of Slot's `H-500` cycle guard —
+			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
+			-- "circular reference" raise would come AFTER the seat/offset commit (a stuck seat, `H-544`
+			-- shape). Walk the ancestor chain (Parent is nil at creation, so this is O(1) on the
+			-- Declaration path); errorBefore blames the user's line.
+			local ancestor = inst
+			while ancestor ~= nil do
+				if ancestor == v then
+					Err.errorBefore("InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+				end
+				ancestor = ancestor.Parent
+			end
 			if quad.Bookkeeping.claimOwnerAt(v, inst, k) then -- Q48 (a): one seat per value — raises if held elsewhere
 				quad.Bookkeeping.setOffsetSource(inst, k, None)
 				v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게

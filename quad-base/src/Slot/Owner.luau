@@ -33,6 +33,16 @@ return function(S: Types.SlotInternal, module: any)
 	end
 
 	local function claimOwnerAt(element: any, inst: any, k: any): boolean
+		-- round11 `H-546` (탐사 A′, `H-504` family): public since Q48 — a nil element died as
+		-- `Relate:GetWeak: inst must not be nil` (leaf blame), and a nil inst "succeeded" (OWNER
+		-- nil, OWNER_POS k → the caller attaches under nobody). Same fail-fast as the six
+		-- `Bookkeeping.<op>` siblings.
+		if element == nil then
+			S.Err.errorBeforeNearest("Bookkeeping.claimOwnerAt: element must not be nil", S.SURFACE)
+		end
+		if inst == nil then
+			S.Err.errorBeforeNearest("Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", S.SURFACE)
+		end
 		local current = S.elementOwner:GetWeak(element, S.OWNER)
 		if current == inst and S.elementOwner:GetWeak(element, S.OWNER_POS) == k then
 			return false -- exactly this position already holds it — re-confirm, no-op
@@ -46,6 +56,12 @@ return function(S: Types.SlotInternal, module: any)
 	end
 
 	local function releaseOwner(element: any, ownerKey: any)
+		if element == nil then
+			S.Err.errorBeforeNearest("Bookkeeping.releaseOwner: element must not be nil", S.SURFACE) -- `H-546`
+		end
+		if ownerKey == nil then
+			S.Err.errorBeforeNearest("Bookkeeping.releaseOwner: ownerKey must not be nil", S.SURFACE)
+		end
 		local current = S.elementOwner:GetWeak(element, S.OWNER)
 		if current ~= ownerKey then
 			-- public since Q48 (a): a handler author releasing what they never claimed lands here

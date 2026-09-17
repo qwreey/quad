@@ -118,7 +118,7 @@ Destroy 전까지 userdata 동일성을 고정해주므로, 모든 `inst`-키 `R
 >   실측). `SetWeak`으로 낮추면 0/50으로 안전해진다.
 > - **내부 키가 `inst`를 되참조하면 `SetStrong`/`SetWeak` 둘 다 샌다**
 >   (`H-77`, 50/50 · 50/50 실측) — `WeakMap`도 **키는 강하게** 잡기 때문.
->   이 슬롯은 위 규칙 문단에 **아예 등장하지 않았다.**
+>   이 슬롯은 위 규칙 문단에 **아예 등장하지 않았다.** **[2026-09-17 round11 `H-549` — 탐사 D′ 정적 전수]** 내부 키가 객체인 자리는 이제 **셋**이다 — `runInitRelate`(initFn)·`groupClaimKeys`(그룹 값)에 2026-09-15의 `pluginRelate:SetStrong(self, pluginFn, true)`(`init.luau` `AddPlugin` dedup)가 더해졌다. `pluginFn`이 바깥 `q`를 캡처한 인라인 클로저면 모듈이 영원히 산다(50/50 실측; 캡처 안 하면 0/50). 모듈은 보통 싱글턴이라 실해는 없고 `runInitRelate`와 같은 논거("인라인 클로저면 dedup 자체가 무의미")로 계약만 적는다 — 레퍼런스 core/01 `AddPlugin` 캐비엇. 나머지 `SetStrong` 아홉 자리·`__mode="k"` 열둘·`SetWeak` 여덟 자리는 전수 판정 안전(원장 round11 §2′).
 >
 > **그래서 지금 규칙은 이렇다**:
 >
