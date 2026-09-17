@@ -7,7 +7,7 @@
 1. **1차 팬아웃 여섯(A′~F′, opus 다섯 + sonnet 하나)** — 공통 브리프는 세션 scratchpad `r11/common.md`(규약: 레포 소스 불변·임시 파일 `-ignoreme`·마지막 메시지에 전부·pcall 처방 금지). 메인은 그 사이 State 세대 스탬프·Effect cleanup·Property retractor·InstanceChild 자리 순서를 손 트레이싱해 후보 하나(던진 fn + 닫힌 게이트)를 기록 — B′가 같은 것을 HIGH로 냈다(`H-540`).
 2. **판정 순서**: E′(가짜 프로바이더) → `H-538`·`H-539` 커밋 `2f8dad2` → B′·C′·D′·A′·F′ → `H-540`~`H-550` 커밋 `3348a68`. 판정 기준은 §0 세 갈래 그대로: 문서가 이미 답을 가진 것(선행 패스 원칙 `H-30`/`H-31`, `H-231` 태그 규약, `H-504` nil 게이트, `H-500` 순환 가드, tween-plan 3-상태, Q56 "창 안 throw = UB")은 자율, 새 메커니즘(핸들러 검증 단계·백엔드 술어·이름 변경·`OwnsElements=false` 분기 동작·`_running` 예외)은 문항.
 3. **2차 팬아웃 넷(A″ 반영분 적대 검증·B″ raise 249자리 전수·C″ 슈거 층·D″ 문서 대조)** — A″가 **회귀** 하나를 잡았다: `H-539`가 claim을 bottom-up 계획 순서로 돌려 이미 claim된 루트로 `Claim`하면 자식을 전부 claim·drive한 뒤에야 던짐(`spec.claim` 7이 props를 비워 못 잡음). `H-551`(claim은 루트부터, drive만 bottom-up) 등 `H-551`~`H-559` 커밋 `69591cd`.
-4. **감사 루프**(각도: base 정합성 → 인덱스·docs·주석 → 반영분 재검·미러) → `71ad4fe` → `/code-review high` → 체크포인트.
+4. **감사 루프**(각도: base 정합성 4 → 인덱스·docs·주석 5 → 반영분 재검·미러 2 → 코드 주석·archive 4 — 0에 닿지 않아 각도 소진으로 닫음) → `71ad4fe`·`fa97a74`·`7b2a35e` → **`/code-review high`**(`27b8306..HEAD`, 파인더 8·검증자 4 opus: CONFIRMED 9·PLAUSIBLE 1 — `H-560`·`H-561` 코드 둘, 스펙 셋, 문구·문서 여섯, 문항 둘 Q64·Q65) → 반영분 감사 1라운드 4건(옛 문구 인용·CHANGELOG 누락) → 체크포인트 `d1cc1d4`.
 
 ## 메인의 사고와 되돌림
 
@@ -23,6 +23,14 @@
 - Q61 `OwnsElements=false` 폐기 — round1 Q14 (a)의 역방향; 사용자 확정 "재사용 가능"과의 정합을 사용자가 판단.
 - Q62 Slot 원소 순환 — base가 엔진 무관이라 조상 사슬을 못 걸음; 술어 추가는 계약 BREAKING. 권고 UB.
 - Q63 던진 Effect 해제 — `_running` 하나로 "fn 위"와 "굳음"을 못 가름; 권고 `Unsubscribe`만 통과.
+- Q64 Claim 1패스 `isClaimed` — mock의 lazy claim(모든 인스턴스 참)과 충돌; 권고 문서(이미 quad 소유인 자식은 디스크립터에서 뺀다).
+- Q65 핸들러 교체 시 Tween 기록 — retractor가 `retracting` 하나로 철거와 교체를 못 가름; 권고 새 동작(종류가 바뀌면 스냅) 채택.
+
+## 체크포인트 판정에서 배운 것
+
+- 두 패스 Claim의 "아무것도 claim하기 전에"는 세 번 과장됐다(19번 → 21번 → code-review): 실제 무손상은 "해석 실패·이미 claim된 루트·배열 키"까지이고, "자식이 이미 claim" · "drive 단계"는 남는다.
+- H-547의 "모든 체인이 retractor"는 Dispatch (B) 갈래(핸들러 교체)가 `retracting == true`로 부른다는 사실을 놓쳐 동작을 바꿨다(Q65) — retractor 계약의 두 호출 경로를 항상 같이 볼 것.
+- 스크립트로 문서를 고칠 때 `open(p,'w')`를 예외 가능한 식과 같은 문장에 두면 파일이 비워진다(claim-plan.md 391줄이 0바이트가 됐다가 HEAD에서 복구) — 문자열을 먼저 만들고 마지막에 쓸 것.
 
 ## 소진 판정
 
