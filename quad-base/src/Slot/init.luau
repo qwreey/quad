@@ -206,7 +206,11 @@ local function Init(module: any)
 	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
 		-- one table: existing occupants are seeded as "held" (this Slot already has it), batch
 		-- occupants as true (duplicate within the call) — a second table cost +39% on 2000 Adds
-		local prepared, seen = table.create(count), {}
+		local prepared = table.create(count)
+		-- `"held"` = an element this Slot already holds, `true` = seen in this batch. Annotated:
+		-- inferred from the first write the table became `{ [any]: boolean }` in luau-lsp and the
+		-- `== "held"` below was "Cannot compare unrelated types" (user's editor, 2026-09-17)
+		local seen: { [any]: boolean | "held" } = {}
 		for _, existing in ipairs(self._elements) do
 			local occ = occupantOf(existing)
 			if occ ~= nil then seen[occ] = "held" end
