@@ -560,7 +560,7 @@ dispose: (value: any) -> ()
 **마운트 중인 값에는 쓸 수 없습니다.** 먼저 꺼내야 합니다.
 
 - `dispose: value must not be nil`
-- `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (`:Set(nil)` the State holding it; a shorthand-managed child goes with its key)`
+- `dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)`
 - `dispose: this backend cannot dispose this value`
 - `dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드나 `quad_base` 사본이 둘인 프로젝트).
 

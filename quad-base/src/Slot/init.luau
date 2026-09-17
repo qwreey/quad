@@ -475,7 +475,7 @@ local function Init(module: any)
 			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
 			-- detached element cannot be Remove/Extract-ed — it goes with its owner)
 			-- Q9: same note as the "already mounted" sites (one constant — round3 `H-451`)
-			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (`:Set(nil)` the State holding it; a shorthand-managed child goes with its key)" .. ZOMBIE_NOTE, SURFACE)
+			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)" .. ZOMBIE_NOTE, SURFACE)
 		end
 		-- round10 H-537: `elementOwner` is per module instance, so another instance's Slot passed this
 		-- check and was destroyed under a live tree — a quad value from another instance is refused
