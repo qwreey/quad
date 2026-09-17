@@ -91,8 +91,13 @@ local function createImpl(module: any)
 		end
 		self._running = true
 		repeat
-			self._pending = false
 			self:_consumeCleanup() -- sets `_rerunRequired = true`
+			-- round10 Q51 (a) (user decision 2026-09-17): `_pending` goes down AFTER the cleanup,
+			-- right before fn — a `Set` made inside the cleanup is consumed by the fn that follows
+			-- (it reads the new value), so it must not queue one more (cleanup, fn) cycle with the
+			-- same input. It used to be lowered before the cleanup ("cl fn cl fn" for one Set).
+			-- Requests that arrive DURING fn still re-run (`_pending` = a request while running).
+			self._pending = false
 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
 			-- `H-185` (user, 2026-08-31): the cleanup is ONE function — wrap several
 			-- teardowns in one closure (`function() a() b() end`); extra returns are

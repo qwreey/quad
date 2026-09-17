@@ -382,4 +382,39 @@ do
 end
 
 print()
+print("=== round10 Q51 (a) (2026-09-17) — cleanup 안의 dep Set은 뒤따르는 fn이 소비한다: 사이클 하나(cl fn), 옛 순서의 cl fn cl fn이 아니다 ===")
+do
+	local a = Source(1)
+	local log = {}
+	local once = true
+	local e = Effect(function()
+		table.insert(log, "fn" .. tostring(a:Get()))
+		return function()
+			table.insert(log, "cl")
+			if once then
+				once = false
+				a:Set(99) -- inside the cleanup: the fn that follows reads 99
+			end
+		end
+	end, a):Subscribe()
+	assert(table.concat(log, " ") == "fn1", "install")
+	a:Set(2) -- cleanup runs (Sets 99), then fn reads 99 — no extra cycle
+	assert(table.concat(log, " ") == "fn1 cl fn99", "one cycle, fn saw the cleanup's Set: " .. table.concat(log, " "))
+	-- a Set DURING fn still queues one more run (that is what `_pending` is for)
+	local inFn = true
+	local log2 = {}
+	local b = Source(1)
+	local e2 = Effect(function()
+		table.insert(log2, "fn" .. tostring(b:Get()))
+		if inFn then
+			inFn = false
+			b:Set(5)
+		end
+	end, b):Subscribe()
+	assert(table.concat(log2, " ") == "fn1 fn5", "a Set inside fn re-runs once: " .. table.concat(log2, " "))
+	e:Unsubscribe(); e2:Unsubscribe()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

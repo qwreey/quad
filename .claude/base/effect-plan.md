@@ -456,8 +456,13 @@ local function rawRerun(self, force: boolean)
                                        --   뒤, 같은 파동의 잔여 구간)도 같은 홀드 — `H-160`의 연장이다.
     self._running = true
     repeat
-        self._pending = false
         self:_consumeCleanup()         -- 안에서 `_rerunRequired = true`
+        self._pending = false          -- ⭐ [2026-09-17 round10 Q51 (a), 사용자 결정] cleanup **뒤**·fn **직전**에
+                                       --   내린다 — cleanup 안의 `Set`은 바로 뒤의 fn이 소비하므로(새 값을 읽는다)
+                                       --   같은 입력으로 (cleanup, fn) 한 바퀴를 더 돌 이유가 없다. 옛 순서(cleanup
+                                       --   앞)는 그 `Set` 한 번에 `cl fn cl fn`이 났다(탐사 B 실측). 사용자: *"진짜
+                                       --   소비된게 맞아서 순서의 문제라 a가 맞는것 같아"*. fn **중**에 온 요청은 그대로
+                                       --   한 바퀴 더 돈다(아래 `until`).
         self._rerunRequired = false    -- ⭐ 실제로 돈다 — 이 플래그가 내려가는 **유일한** 자리
         self._cleanup = self.fn(self)  -- ⭐ [2026-08-31 `H-185`, 사용자 확정] cleanup은 **첫 반환 하나뿐** —
                                        --   여러 정리는 `function() a() b() end`로 묶는 게 계약. 반환 전부를
