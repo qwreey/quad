@@ -2493,6 +2493,12 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 - **[2026-09-09-01] `docs-ignoreme/` 사실성 검토·재작성 1차**(`session/2026-09-09-01-docs-polish.md`): 소형 모델 초안을 opus 검사 다섯 →
   사용자 결정 넷(research/·best-practices·reference 02/03 삭제, 설치 경로 셋 유지 + "아직 없음" 표시, README §5는 코드 기준 정정) →
   opus 재작성 일곱 → 2차 검증 다섯. 소스 전파: `quad-types` 훅 주석 정정(`OnCreated<<Frame>>`만 통과, typing-limits 8.16). 문서는 git 밖.
+- **[2026-09-17-01] round10 배치 회신 — `Q48`~`Q58` 열하나 대화형 해소**(`session/2026-09-17-01-round10-batch-reply.md`):
+  커밋 열한 개(`720bf60..1e3e468`). Q48 (a) 정적 자식·숏핸드 관리 자식도 같은 `elementOwner`(`q.Bookkeeping.claimOwnerAt/releaseOwner` 공개, BREAKING) /
+  Q50 (a) `_recompute` 재진입 가드 — 세대 스탬프(불린이면 일시적 검증 raise가 노드를 죽여 메인이 조정·보고) / Q51 (a) `_pending` 하강 fn 직전 / Q52 (a)
+  `_materializing` 가드 / Q55 (b) Time 신호 진입 캐시(흐름도 확인) / Q56 (b) UB 문서화(메인 (c) 철회) / Q49 (a) `nativeFindChild` 셋째 인자 className(mock `IsA`) /
+  Q57 사용자 제안 — cleanup `dying: boolean` 인자, `OnDestroyed`가 그 값으로 죽음만 / Q58 (가) dispose 소유 미검사 캐비엇·(나) `Event`·`OnChange` NORMAL − 1 /
+  Q53 (a) Tween 체인 retractor(철거 때 Cancel + 슬롯 비움; 사용자 실기기: 파괴된 인스턴스의 Tween은 삭제) / Q54 꼬리 구절. 원장 round10 문항 전부 닫힘.
 - **[2026-09-16-01] 생성 `Declaration` 팩토리화 실측 → stable D / unstable type function 경로**(`session/2026-09-16-01-d-typefunction-measurement.md`):
   luau-lsp·사용자 VSCode·Studio 셋에서 실측 팩(`audit/d-factory-studio-probe-2026-09-16/`) — 체커는 같고 타입 정의만 다름(프로퍼티 수·Hidden·deprecated·
   이벤트 표현), 읽기 전용 표시는 어디에도 없음, Studio는 생성 D에 too complex 없음. 사용자 결정: 생성 D를 릴리즈 stable 표면으로, 클래스 매개 type

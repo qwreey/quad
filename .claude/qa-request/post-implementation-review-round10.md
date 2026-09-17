@@ -4,7 +4,7 @@
 
 ## §1 결론 한 줄
 
-동작 결함 둘이 **HIGH**였다 — (1) `State`로 담은 Slot 요소의 검사가 삽입 뒤에 돌아 유령 요소·재조정 정지를 남긴 것(`H-517`, 고침), (2) 정적 자식 자리에 소유권 부기가 없어 같은 Instance가 두 부모에 조용히 들어가고 한쪽 철거가 다른 트리를 뜯는 것(`Q48`, 문항 — 새 메커니즘). 나머지는 게이트 누락(입구 검증 부재 여섯)·메시지 오도·문서 사실 오류였고 전부 반영했다. 반응형 코어는 차등 퍼즈에서 0건 — 남은 것은 정책 문항(yield 재진입·cleanup 안 Set·순환 진단).
+동작 결함 둘이 **HIGH**였다 — (1) `State`로 담은 Slot 요소의 검사가 삽입 뒤에 돌아 유령 요소·재조정 정지를 남긴 것(`H-517`, 고침), (2) 정적 자식 자리에 소유권 부기가 없어 같은 Instance가 두 부모에 조용히 들어가고 한쪽 철거가 다른 트리를 뜯는 것(`Q48`, 문항 — 새 메커니즘; **[2026-09-17 닫힘]** §10). 나머지는 게이트 누락(입구 검증 부재 여섯)·메시지 오도·문서 사실 오류였고 전부 반영했다. 반응형 코어는 차등 퍼즈에서 0건 — 남은 것은 정책 문항(yield 재진입·cleanup 안 Set·순환 진단).
 
 ## §2 반영한 것(자율 — 문서가 이미 답을 가진 것)
 
@@ -75,6 +75,10 @@
 발견 10, 처리: (1) 교차 인스턴스 문이 raw만 보고 State 점유자·`:List` 반환값을 놓침 → `wrapElement` 한 자리 + 점유자 검사; (2) `_installingProvider`가 providerFn 예외에 영구 잔존·제3자 동률 침묵 → `H-532` 철회, Q58 (나); (3) Operator 대상값 검사가 fold에만 → `checkTarget` 공유(unary/withArg/Clamp/Bnot), `Alternative` 기본 State의 nil 값도 에러; (4) `dispose`의 Instance `isClaimed` 게이트는 호환 파괴·오진 메시지 → 원상, Q58 (가); (5) 뮤트 플래그의 대가 미기록 → (2)로 해소; (6) `nativeFindChild` 게이트가 mock과 계약 분기 + 주체 없는 메시지 → 철회(§7-1 debug 안내); (7) `H-533`/`H-534`가 `claim-plan.md` §7-1의 확정(런타임 가드 안 둠) 역전 → debug 검사로 축소; (8) 레퍼런스 열거 stale(core/10 "셋"→넷, core/06, sugar/06 `__apply` 문구, core/01·CHANGELOG의 `Extract`·State 팔 과장, question.md 개수) → 갱신; (9) `Alternative` 기본 State nil 통과·`Blocker:__apply` 덕 타이핑 → 고침(`Brand.isState`); (10) `Animate`의 `validateFields` 중복 호출·죽은 `local Tween`·낡은 주석 → 정리. 잔여(미반영, 기존 부채): 커링 팩토리 직접 호출(`Operator.Sum(1)({})`)의 `checkSelf` blame이 `Operator.luau`; `read`/`fold`의 재계산당 테이블 둘.
 
 **Q58 — 두 정책(code-review에서 갈린 것). [해소 2026-09-17 — (가) 안 좁힘: 사용자 *"'부기를 깨지 않는 조건을 성립하고 안전히 제거'에 가깝게"* → core/06·core/10 캐비엇·`Slot/init.luau` 주석·`claim-plan.md` 18번; (나) 오프셋: `Event`·`OnChange` = NORMAL − 1(사용자 *"결정론적으로 해석되지 않기 때문에 각각 오프셋"*), `spec.handlers` 13, `onchange-plan.md`.]** (가) `q.dispose(Instance)`를 "이 인스턴스가 claim한 것"으로 좁힐지: 좁히면 다른 quad 인스턴스가 마운트한 Instance를 뜯는 것(H-537의 첫 갈래)을 막지만 `Instance.new`/`:Clone()` 결과를 `q.dispose`로 파괴하던 호환(문서 core/10·06·시작하기 19가 권하는 일괄 사용)을 깨고, base는 "남의 것"과 "미claim"을 못 갈라 메시지가 오진한다 — BREAKING 표시와 옮기는 법이 같이 필요. (나) quad-roblox의 의도된 동률 두 쌍(Property/Event, InstanceChild/OnChange)을 `HANDLER_PRIORITY_NORMAL ± 1` 밴드 오프셋으로 띄워 `q.debug`의 거짓 경고를 없앨지 — 문서가 이미 밴드 오프셋을 의도된 사용법으로 못박았고 InstanceShorthand가 그렇게 쓴다. 권고: (가)는 안 좁힘(문서에 "dispose는 소유를 검사하지 않는다 — 다른 인스턴스의 값은 거부하지만 Instance는 파괴한다" 한 줄), (나)는 오프셋.
+
+## §10 사용자 회신(2026-09-17, 대화형) — `Q48`~`Q58` 전부 닫힘
+
+각 문항 머리의 `[해소 2026-09-17 — …]` 태그가 결정과 반영 위치의 소스. 흐름·논거 원문은 `session/2026-09-17-01-round10-batch-reply.md`, 결정 원문은 `base/claim-plan.md` 16~18번·`state-epoch-plan.md`·`effect-plan.md`·`slot-plan.md`·`debounce-throttle-plan.md`·`lifecycle-pattern.md`·`lifecycle-hooks-plan.md`·`tween-plan.md`·`onchange-plan.md`의 같은 날 항목. 갈래 밖 결정 하나(Q57 — 사용자 제안 cleanup `dying` 인자), 메인 조정 둘(Q50 세대 스탬프, Q55 leading 진입 순서 — 세션 파일 끝 절). 잔여 정리 항목(§5·§9의 `checkIndex` 세 번째 사본·`markManual` 열 자리·`Claim` 부재 raise 위치·커링 `Operator` blame·`read`/`fold` 테이블 둘)은 그대로 남아 있다 — 문항이 아니라 정리 후보.
 
 ## §6 참고 — 재현 스크립트
 
