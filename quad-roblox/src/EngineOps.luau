@@ -12,7 +12,7 @@
 	    nativeSwap   (target, offsetA, elementsA, offsetB, elementsB)
 	    nativeDispose(element)
 	  judgement/hook ops (no composition fallback — absent means error):
-	    isInst(value) / onDestroying(inst, fn) / nativeFindChild(inst, key)
+	    isInst(value) / onDestroying(inst, fn) / nativeFindChild(inst, key, className?)
 	  (`nativeClaim` also belongs to this inventory but is implemented in
 	   LifetimeHandle.luau — it shares InstData with isBoundAlive.)
 
