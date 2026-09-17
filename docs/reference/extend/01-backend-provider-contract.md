@@ -39,7 +39,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
 
-**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.) **이름을 부른 예외 셋**이 있습니다 — `bindLifetime`이 값 쪽에서 불러야 하는 `Observer`/`Effect`의 `_assertBindable()`·`_catchUp()`·`_bindDestroying(inst)`(아래 "생명주기 프리미티브" 절). 밑줄이 붙어 있지만 이 셋은 백엔드가 알아야 하는 규약의 일부이고, 이 페이지가 이름을 유지합니다. 그중 하나라도 빼먹으면 quad-base는 항의하지 않고 조용히 어긋납니다 — `_bindDestroying`을 안 부르면 Effect의 마지막 cleanup이 인스턴스가 죽을 때 영영 돌지 않습니다.
 
 ---
 
@@ -116,7 +116,7 @@ canBound       (value: any) -> boolean
 canExecute     (value: any) -> boolean
 ```
 
-- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
+- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: **먼저 `canBound(value)`가 거짓이면 아무것도 남기지 않고 던집니다**(quad-roblox 문구는 `bindLifetime: value is already bound to another Instance` / `… to this Instance` / `… already subscribed` — 이 거부가 곧 [Observer/Effect 레퍼런스](../core/05-observer-effect.md)가 약속하는 "살아 있는 핸들을 다른 인스턴스에 다시 놓으면 거절"의 실체입니다. 백엔드가 이 검사를 빼면 두 번째 인스턴스가 조용히 핸들을 가져가고 첫 인스턴스는 죽은 참조를 쥡니다). 다음으로 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
 - **`unbindLifetime(value)`** — **인자 하나**. 이 값 하나만 조기 해제하며, `inst`는 건드리지 않습니다. cleanup을 부르지도, 안쪽 Observer를 떼지도 않습니다(대칭적 해제일 뿐). 안 묶인 값에 부르면 no-op이지만 `nil`은 에러입니다 — 인자가 빠진 것이지 "안 묶인 값"이 아니기 때문입니다.
 - **`canBound(value)`** — "지금 이 값을 묶어도 되는가". 아직 아무 데도 안 묶여 있거나, 묶였던 인스턴스가 이미 파괴됐으면(연결이 끊겼으면) 참 — 즉 죽은 뒤 재사용은 허용됩니다.
 - **`canExecute(value)`** — "이 값이 지금 발화해도 되는가". **묶인 채 살아 있으면 참**입니다. State 전파가 이 게이트로 죽은 요소에 매달린 Observer/Effect를 걸러냅니다.

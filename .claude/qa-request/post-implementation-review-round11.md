@@ -27,6 +27,17 @@
 
 `q.Bookkeeping.claimOwnerAt/releaseOwner`, `Backend.nativeFindChild(inst, key, className?)`, Effect cleanup `dying: boolean`, `State._computing`(세대 스탬프), `Slot._materializing`(walk + raw* attach 창), `Debounce h._time`(+ MaxTime 로컬), `Property tweenRetractors`(SetWeak, Tween을 거친 체인은 유지), `Event`/`OnChange` NORMAL − 1, `InstanceChild`/`SlotHandler` isHandlable 양의 정수 키. 결정 원문: `base/claim-plan.md` 16~18번, `state-epoch-plan.md`·`effect-plan.md`·`slot-plan.md`·`debounce-throttle-plan.md`·`lifecycle-hooks-plan.md`·`tween-plan.md` 끝 절, `session/2026-09-17-01-round10-batch-reply.md`.
 
+## §2′ 반영한 것(자율 — 문서가 이미 답을 가진 것)
+
+- **`H-538` (탐사 E′, 문서 결함 둘 — extend/01) 프로바이더 계약이 `bindLifetime`의 거부 조건과 밑줄 메소드 셋을 서술하지 않았다.** 문서만 보고 짠 가짜 프로바이더에서 (1) 같은 `Effect` 핸들을 두 인스턴스에 `drive`해도 통과했다 — core/05가 약속하는 "살아 있는 핸들 재바인딩 거절"의 실체는 quad-roblox `LifetimeHandle.luau`의 `if not canBound(value) then error` 한 줄인데 extend/01의 순서 계약은 `_assertBindable` → 커밋 → `_catchUp`/`_bindDestroying`만 적었다; (2) 같은 문서가 "`_` 필드는 규약이 아니다"라고 못박고는 바로 아래서 `_catchUp`/`_bindDestroying` 호출을 요구하는 자기모순 — `_bindDestroying`을 빼면 Effect 마지막 cleanup이 죽을 때 영영 안 돈다(가짜 프로바이더 실측 `cleanupRan` 2 → 1). 코드는 quad-roblox·mock 둘 다 맞다. 반영: extend/01에 `canBound` 거부를 순서 계약 첫 항으로, 밑줄 예외 셋을 "이름을 부른 예외"로 명시; CHANGELOG Fixed 한 줄. 이름을 밑줄 없는 것으로 바꿀지는 §4 Q59.
+- **`H-539` (탐사 E′ + round10 §5 이월) `Claim`이 자식 조회 전에 루트를 claim해 실패한 호출이 부분 claim을 남겼다.** 자식 부재·클래스 불일치·디스크립터 재사용 어느 실패에서도 루트와 앞선 형제가 claim된 채 남아 고친 재시도가 `nativeClaim: Instance is already claimed by quad`로 죽었다(가짜 프로바이더 + mock 재현 — mock은 `nativeClaim`의 gchold 검사가 같은 판정). `H-425`/`H-471`의 원칙("재시도가 진짜 원인을 보고")과 `H-30`/`H-31` 선행 패스 원칙대로 두 패스로: `resolve`는 검증만 하며 계획을 bottom-up으로 쌓고, `commit`이 `nativeClaim` → `_fired` → 슬롯 교체 → `drive`. 같은 디스크립터가 한 트리의 두 자리에 오는 것도 1패스에서 "already used". drive 단계 throw는 그대로 UB(레퍼런스 roblox/04·how-to 07 명시). `claim-plan.md` 17 정정·19 신설, `spec.claim` 12, CHANGELOG Fixed.
+
+## §3′ 확인 — 문서와 일치(발견 아님)
+
+- 탐사 E′: `nativeMove`/`nativeSwap`의 offset 의미론(extend/01 §2)을 순서 있는 배열 백엔드로 처음 실측 — 전 케이스 일치(Roblox·mock은 no-op이라 이번이 첫 검증). `claimOwnerAt` false dedup·`releaseOwner` 이중 호출 거부·`nativeFindChild` className nil·`UseProvider` 락·우선순위 밴드 실값·`unbindLifetime(nil)`·미설치 스텁 메시지 전부 문서대로. 메모: dispatch 엔진은 같은 값 재처리를 자동으로 건너뛰지 않는다 — retractor가 `nextValue == v`를 직접 봐야 `claimOwnerAt`이 false를 돌려주는 경로에 닿는다(소박한 핸들러는 탈부착만 반복, 깨지지 않음).
+
 ## §4 사용자 문항
+
+- **Q59 (탐사 E′ `H-538`의 후속 — 이름).** 상황: 프로바이더가 `bindLifetime` 안에서 값 쪽 메소드 셋(`_assertBindable`·`_catchUp`·`_bindDestroying`)을 불러야 하는데 이름이 밑줄로 시작해 "규약이 아니다" 규칙과 충돌합니다. 지금은 문서에 "이름을 부른 예외 셋"으로 적어 닫았습니다. 막히는 것: 없음 — 동작은 맞고 문서만 고쳤습니다. 갈래: (a) 지금처럼 예외로 두고 이름 유지(BREAKING 없음), (b) 밑줄을 뗀 이름(예: `AssertBindable`/`CatchUp`/`BindDestroying`)으로 바꾸고 옛 이름은 제거(프로바이더 계약 BREAKING — 창 안이면 가능, quad-roblox·mock 둘 다 고침). 권고: (a). 프로바이더를 짜는 사람은 mock을 참고 구현으로 읽으라고 문서가 이미 안내하고, 셋은 값 타입(Observer/Effect)의 내부 훅이라 밑줄이 "quad-base 안쪽 것"이라는 뜻으로는 맞습니다 — 이름을 바꾸면 얻는 건 규칙의 형식적 일관성뿐입니다.
 
 (비어 있음 — 탐사 뒤 `Q59`부터.)

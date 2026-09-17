@@ -243,4 +243,30 @@ do
 	print("PASS")
 end
 
+
+print()
+print("=== 12. round11 H-539 (2026-09-17) — 해석은 두 패스: 자식 부재/클래스 불일치/재사용은 아무것도 claim하기 전에 던지고, 고친 재시도가 그대로 통한다 ===")
+do
+	local root, title = makeTemplate()
+	local ok, err = pcall(function()
+		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), M.Frame("Wrong")({}) }))
+	end)
+	assert(not ok and string.find(tostring(err), "Claim: no child matched key Wrong", 1, true) ~= nil, "the real cause: " .. tostring(err))
+	assert(title.Name == "Title", "nothing was driven")
+	-- fixed retry on the SAME root: `nativeClaim` (mock: gchold presence, same as the real provider) would
+	-- say "already claimed" if root or the earlier sibling had been claimed by the failed call
+	local out = q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+	assert(out == root and title.Name == "t", "a fixed retry claims and drives normally (nothing was claimed by the failed call)")
+	-- the same descriptor object at two slots of one tree: rejected before any claim
+	local root2, title2 = makeTemplate()
+	local d = M.TextLabel("Title")({ Name = "x" })
+	local ok2, err2 = pcall(function()
+		return q.Claim(root2, M.Frame(M.Root)({ d, d }))
+	end)
+	assert(not ok2 and string.find(tostring(err2), "already used", 1, true) ~= nil, "same descriptor twice: " .. tostring(err2))
+	local out2 = q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "y" }) }))
+	assert(out2 == root2 and title2.Name == "y", "still nothing was claimed by the rejected call")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

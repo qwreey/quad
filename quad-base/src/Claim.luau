@@ -72,28 +72,33 @@ local function Init(module: any)
 		return keyed
 	end
 
-	-- DFS 해석 + bottom-up drive (claim-plan §4)
-	local function resolve(inst: any, desc: any)
-		if desc._fired then
+	-- DFS 해석 + bottom-up drive (claim-plan §4) — TWO passes (round11 `H-539`, the residue
+	-- round10 §5 carried over): pass 1 resolves the whole tree WITHOUT touching anything
+	-- (`_fired`/props/`nativeFindChild` checks only — the `H-30`/`H-31` pre-pass rule: a
+	-- multi-element op validates everything before it mutates), pass 2 claims + drives
+	-- bottom-up. Before, `nativeClaim(root)` ran before its children were even looked up, so
+	-- a missing/wrong-class child left root (and every earlier sibling) claimed and a fixed
+	-- retry died on "already claimed" instead of the real cause — the very shape `H-425`/
+	-- `H-471` had already fixed for the props gate. What remains non-atomic is the drive
+	-- itself (a handler throw mid-tree): that is the Declaration's general mid-throw UB.
+	type Step = { inst: any, desc: any, children: { [number]: any } }
+	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
+		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
 			Err.errorBefore("Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
 		end
+		seen[desc] = true
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
 		-- hit "already claimed". `drive`'s own gate (`H-419`) comes too late for Claim.
 		if type(desc._props) ~= "table" then
 			Err.errorBefore(`Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
 		end
-		module.Backend.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
-		-- `H-471` (탐사 A, `H-425`의 잔여): consume the descriptor only once the claim is ours —
-		-- a nativeClaim raise (already claimed / child not found) used to burn it first, so
-		-- the retry reported "already used" instead of the real cause
-		desc._fired = true
-		local props = desc._props
 		-- `drive`와 같은 일반화 순회(H-304) — `ipairs`는 nil 구멍에서 멈춰
 		-- 구멍 뒤의 디스크립터가 미해석으로 drive에 새는 순회 불일치를 만든다
 		-- (감사 발견). 구멍 자체는 기존 관용구(`or None`)의 몫 — 여기선
 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
-		for i, v in props :: { [any]: any } do
+		local children: { [number]: any } = {}
+		for i, v in desc._props :: { [any]: any } do
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
@@ -109,11 +114,29 @@ local function Init(module: any)
 				if child == nil then
 					Err.errorBefore(`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
 				end
-				resolve(child, v)
-				props[i] = child -- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4)
+				resolve(child, v, plan, seen)
+				children[i] = child
 			end
 		end
-		module.Dispatch.drive(inst, props)
+		table.insert(plan, { inst = inst, desc = desc, children = children }) -- children first: the drive order is bottom-up
+	end
+
+	local function commit(plan: { Step })
+		for _, step in plan do
+			local inst, desc = step.inst, step.desc
+			module.Backend.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
+			-- `H-471` (탐사 A, `H-425`의 잔여): consume the descriptor only once the claim is ours —
+			-- a nativeClaim raise (already claimed) used to burn it first, so the retry reported
+			-- "already used" instead of the real cause
+			desc._fired = true
+			local props = desc._props
+			for i, child in step.children do
+				-- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4). The child was
+				-- claimed and driven by an earlier step (bottom-up).
+				props[i] = child
+			end
+			module.Dispatch.drive(inst, props)
+		end
 	end
 
 	local function Claim(inst: any, desc: any): any
@@ -132,7 +155,9 @@ local function Init(module: any)
 		if module.debug and desc._key ~= MapperRoot then
 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
 		end
-		resolve(inst, desc)
+		local plan: { Step } = {}
+		resolve(inst, desc, plan, {})
+		commit(plan)
 		return inst
 	end
 

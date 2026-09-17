@@ -65,6 +65,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `q.Claim`이 자식 키 부재·클래스 불일치·디스크립터 재사용으로 실패할 때 루트와 앞선 형제가 이미 claim된 채 남아, 키를 고친 재시도가 진짜 원인 대신 `nativeClaim: Instance is already claimed by quad`로 죽던 것 — 이제 트리 전체를 먼저 해석한 뒤에 claim·적용하므로 그런 실패는 아무것도 남기지 않습니다. 적용 단계에서 던지는 경우는 전과 같습니다.
+- 프로바이더 계약 문서: `bindLifetime`이 `canBound`가 거짓인 값을 거부해야 한다는 것과, 값 쪽 `_assertBindable`/`_catchUp`/`_bindDestroying` 셋이 밑줄에도 불구하고 규약의 일부라는 것을 명시했습니다(quad-roblox·mock은 원래 그렇게 동작합니다 — 문서만 보고 짠 백엔드가 그 검사를 빼면 살아 있는 핸들이 다른 인스턴스로 조용히 옮겨가고, `_bindDestroying`을 빼면 Effect의 마지막 cleanup이 돌지 않습니다).
 - 프로퍼티 자리의 체인을 철거해도(숏핸드 `UICorner = …`를 `nil`로 내려 관리 자식을 파괴할 때, `q.Dispatch.retractFrom`) 진행 중인 엔진 Tween이 취소되지 않고 그 키의 Tween 기록이 남아, 파괴된 자식을 향해 Tween이 돌고 철거 뒤 같은 목표값의 Tween을 다시 선언하면 통째로 무시되던 것 — 이제 철거 때 취소하고 기록을 비웁니다(다음 값은 첫 설정처럼 스냅). 값 교체 때의 동작(`Override`)은 그대로입니다.
 - 미claim 인스턴스 거부 문구 둘(`Slot: …`, `InstanceChild: …`)에 "다른 quad 모듈 인스턴스가 만든 Instance도 여기서는 미claim"이라는 꼬리 구절이 붙었습니다 — `quad_base` 사본이 둘인 프로젝트에서 "이미 Declaration으로 만들었는데" 하고 헤매던 경우.
 - `q.OnDestroyed(fn)`을 `State` 자리에 담아 `q.None`으로 뺐을 때 인스턴스가 살아 있는데 `fn`이 돌고, 되꽂은 뒤 파괴하면 통틀어 두 번 돌던 것 — 이제 죽을 때 정확히 한 번만 돕니다(자리를 떠날 때는 돌지 않고, 뺀 채로 죽으면 돌지 않습니다).
