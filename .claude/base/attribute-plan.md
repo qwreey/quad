@@ -757,3 +757,5 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
 괜찮으니, 문서화로 부분 실패를 따로 관리 안 한다는걸 적어두는거라면, 동의"*.
 fail-fast 톤(이 문서 "에러 메시지는 도메인 언어로" 절)과 같은 결이고,
 `archive/question-resolved.md`에 이관 기록.
+
+**[2026-09-17 round11 탐사 B″ 4 — UB 확인]** `AttrGroupFallbackHandler.process`는 `groupClaimKeys:SetStrong(inst, v, k)`를 위임 루프 **앞에** 커밋하고, 재진입 때 "이 자리가 이미 이 그룹을 쥠"을 `H-154` 재발행으로 읽어 루프를 건너뛴다. 첫 적용이 루프 중간에 던졌으면(이름 하나의 값이 던지는 Compute) 그 해석이 거짓이라, 원인을 고친 뒤 **같은 그룹 객체**로 재드라이브해도 조용한 no-op이고 빠진 이름은 새 `Attr` 객체를 만들어야 붙는다. Declaration 중간 throw의 일반 UB 범주(architecture "예외 안전성 계약")라 고치지 않는다 — 회복은 새 그룹 객체.

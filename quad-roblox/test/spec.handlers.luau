@@ -360,6 +360,8 @@ do
 	assert(not ok4 and string.find(tostring(err4), "Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", 1, true) ~= nil, tostring(err4))
 	local ok5, err5 = pcall(function() return q.Bookkeeping.releaseOwner(nil, c) end)
 	assert(not ok5 and string.find(tostring(err5), "Bookkeeping.releaseOwner: element must not be nil", 1, true) ~= nil, tostring(err5))
+	local ok4b, err4b = pcall(function() return q.Bookkeeping.claimOwnerAt(c, c, nil) end)
+	assert(not ok4b and string.find(tostring(err4b), "Bookkeeping.claimOwnerAt: k (position) must not be nil", 1, true) ~= nil, tostring(err4b))
 	local ok6, err6 = pcall(function() return q.Bookkeeping.releaseOwner(c, nil) end)
 	assert(not ok6 and string.find(tostring(err6), "Bookkeeping.releaseOwner: ownerKey must not be nil", 1, true) ~= nil, tostring(err6))
 	q.dispose(c) -- nothing was seated by the rejected calls

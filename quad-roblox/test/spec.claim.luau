@@ -269,4 +269,27 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 13. round11 H-551 (2026-09-17) — 이미 claim된 루트는 첫 mutation에서 던져 자식을 건드리지 않는다; 서로 다른 디스크립터가 같은 자식으로 해석되면 1패스에서 거부 ===")
+do
+	local root, title = makeTemplate()
+	q.Backend.nativeClaim(root) -- someone owns the root already
+	local ok, err = pcall(function()
+		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+	end)
+	assert(not ok and string.find(tostring(err), "already claimed", 1, true) ~= nil, tostring(err))
+	assert(title.Name == "Title", "the child was neither driven …")
+	q.Claim(title, M.TextLabel(M.Root)({ Name = "u" })) -- … nor claimed: a direct Claim on it still works
+	assert(title.Name == "u")
+	local root2, title2 = makeTemplate()
+	local ok2, err2 = pcall(function()
+		return q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "a" }), M.TextLabel("Title")({ Name = "b" }) }))
+	end)
+	assert(not ok2 and string.find(tostring(err2), "Claim: two mapper descriptors resolved to the same Instance", 1, true) ~= nil, tostring(err2))
+	assert(title2.Name == "Title", "nothing driven")
+	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "c" }) })) -- nothing was claimed by the rejected call
+	assert(title2.Name == "c")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

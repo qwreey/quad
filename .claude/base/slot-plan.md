@@ -4101,3 +4101,5 @@ State가 아니라 raw number"라는 설계(위 "왜 `LayoutOrder`를 Slot이 �
 아이템이 각자 멀티루트를 반환하며 그 개수가 outer 리스트 reconcile
 없이 동적으로 바뀜)는 드물 것으로 예상 — 실제로 문제가 되면 그때
 `updateFn`이 자체적으로 방어하는 패턴을 문서화.
+
+**[2026-09-17 round11 `H-554` — 탐사 B″ 2] Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면(가장 흔하게는 그 `:List`의 첫 `updateFn`) 부모 Slot의 save/restore가 건너뛰어져 부모가 영구히 "마운트 중"이 되고, 이후 최상위 코드의 `parent:Add(x)`까지 "updateFn이 조상을 CRUD하지 말라"는 문구로 거부된다.** pcall 없이는 못 풀고(architecture "감싸지 않는다"; Q52 항목의 "throw 뒤 플래그는 그대로") 회복 경로는 호스트 Instance의 `q.dispose`뿐이다 — 문구에 그 둘째 원인과 회수 경로를 붙였다("or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance"). Splice 창에서는 물리 상태도 어긋난다(`_elements`에서 빠진 원소가 호스트 자식으로 남음) — 같은 UB.

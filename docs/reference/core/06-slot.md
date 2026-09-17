@@ -122,6 +122,10 @@ local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty }
 read Offset: State<number>
 ```
 
+:::caution
+`Length`·`Offset`을 구독한 콜백(`:Observer`·`Effect`·`Compute`)은 **던지면 안 됩니다.** 이 값들은 부모의 자리 부기가 다시 계산되는 창 안에서 `:Set`되므로, 거기서 던지면 그 부모의 부기가 영구히 멈춥니다 — 이후 에러는 나지 않지만 형제 Slot의 자식이 옛 오프셋에 앉습니다. 던질 수 있는 일은 콜백 밖에서 끝내세요(`updateFn`과 같은 계약).
+:::
+
 **동작** — 마운트 대상 안에서 이 Slot의 첫 원소 **앞에 놓인 숫자 키 자리들의 길이 합**(0부터 센 절대 위치 — 앞에 아무것도 없으면 0, 첫 원소는 `Offset + 1`번째; 문자 키 숏핸드가 만든 관리 자식(`UICorner = 8`의 `UICorner`)은 물리 자식이지만 여기 세지 않습니다 — Roblox에서 자식의 물리 순서는 계약이 아닙니다)를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
@@ -387,7 +391,7 @@ Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateF
 - 재조정 중 에러: `Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
-- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot은 더 이상 재조정되지 않습니다.** 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
+- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만, 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
 
 **`OwnsElements = false`**
 

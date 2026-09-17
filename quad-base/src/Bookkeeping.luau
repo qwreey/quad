@@ -245,7 +245,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance — q.dispose it, reachable as child.Parent, before retrying with the same children); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+				error(`Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			if offset == None then
 				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and

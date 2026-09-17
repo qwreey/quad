@@ -43,6 +43,9 @@ return function(S: Types.SlotInternal, module: any)
 		if inst == nil then
 			S.Err.errorBeforeNearest("Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", S.SURFACE)
 		end
+		if k == nil then -- 탐사 A″ 5: a nil position wrote OWNER_POS = nil and returned true — a seat nobody could re-confirm or release from the handler side
+			S.Err.errorBeforeNearest("Bookkeeping.claimOwnerAt: k (position) must not be nil", S.SURFACE)
+		end
 		local current = S.elementOwner:GetWeak(element, S.OWNER)
 		if current == inst and S.elementOwner:GetWeak(element, S.OWNER_POS) == k then
 			return false -- exactly this position already holds it — re-confirm, no-op

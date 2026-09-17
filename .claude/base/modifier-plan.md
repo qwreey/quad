@@ -965,3 +965,5 @@ materialMod }`는 **런타임은 통과하고 타입만 거부**한다 — 그 �
   `Peek`/`isState` — 동작은 위 9번 절에서 확정, 이름도 2026-08-08 다섯
   번째 세션(`.claude/question.md` 용어 정리 라운드)에서 더 나은 대안 없어
   현재 이름 그대로 최종 확정됨.
+
+**[2026-09-17 round11 `H-552` — 탐사 C″ 1] 제네릭 `__index`는 `__` 접두 이름에 setter를 만들지 않는다.** 8절의 순서(예약 메소드 → 캐스트 접두 → 제네릭 setter)에서 `mod.__apply`가 setter 클로저로 나와 `State:Apply`의 오리 타입 검사(`type(factory.__apply) == "function"`)를 통과했고, `mod:__apply(state)`가 setter로 실행돼 `__apply = <State>` 필드가 박힌 Modifier 클론이 조용히 만들어졌다 — 배열부에 넣으면 한참 뒤 `Dispatch: no handler matched key __apply`가 사용자가 쓴 적 없는 키를 대며 프로바이더 설치를 의심하라고 했다. 이제 `__`로 시작하는 문자열 키는 `nil`(메타메소드 이름은 프로퍼티가 아니다)이라 `Apply`가 다른 비팩토리 값과 같은 문구로 거부한다. 스펙 `spec.modifier` 16.

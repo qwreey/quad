@@ -87,6 +87,12 @@ local function Init(module: any)
 			Err.errorBefore("Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
 		end
 		seen[desc] = true
+		if seen[inst] then
+			-- round11 `H-551` (탐사 A″ 4): two DIFFERENT descriptors resolving to the same child
+			-- passed pass 1 and the second `nativeClaim` died mid-commit with a leaf message
+			Err.errorBefore(`Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor`, SURFACE)
+		end
+		seen[inst] = true
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
 		-- hit "already claimed". `drive`'s own gate (`H-419`) comes too late for Claim.
@@ -122,13 +128,20 @@ local function Init(module: any)
 	end
 
 	local function commit(plan: { Step })
-		for _, step in plan do
-			local inst, desc = step.inst, step.desc
-			module.Backend.nativeClaim(inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
+		-- round11 `H-551` (탐사 A″ 1): claims go ROOT-FIRST (reverse of the bottom-up plan) so
+		-- `nativeClaim(root)` is again the first mutation — with claims interleaved bottom-up, an
+		-- already-claimed root was reported only after every child had been claimed AND driven.
+		-- Drives still run bottom-up below; "claim before its drive" (§4) holds for every inst.
+		for i = #plan, 1, -1 do
+			local step = plan[i]
+			module.Backend.nativeClaim(step.inst) -- 소유 먼저 — 이 아래부터 inst-키 Relate가 생긴다(§7-9)
 			-- `H-471` (탐사 A, `H-425`의 잔여): consume the descriptor only once the claim is ours —
 			-- a nativeClaim raise (already claimed) used to burn it first, so the retry reported
 			-- "already used" instead of the real cause
-			desc._fired = true
+			step.desc._fired = true
+		end
+		for _, step in plan do
+			local inst, desc = step.inst, step.desc
 			local props = desc._props
 			for i, child in step.children do
 				-- 해석된 Instance로 교체 — InstanceChildHandler가 그대로 받는다(§2/§4). The child was

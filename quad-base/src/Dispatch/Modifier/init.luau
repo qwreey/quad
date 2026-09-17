@@ -308,6 +308,14 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- generator refuses to emit a property that matches the prefix.
 		return castClosure(string.sub(key, 3))
 	end
+	if type(key) == "string" and string.sub(key, 1, 2) == "__" then
+		-- round11 `H-552` (탐사 C″ 1): a `__`-prefixed name is never a property — serving a setter
+		-- for `__apply` made `state:Apply(modifier)` pass State's duck-typed factory check and mint
+		-- a Modifier with an `__apply = <State>` field that died much later in Dispatch with
+		-- "no handler matched key __apply". nil here → Apply's own "must be a function or an
+		-- object with an __apply method" raise, like every other non-factory value.
+		return nil
+	end
 	if type(key) ~= "string" then
 		-- Q11 (a) (사용자 결정 2026-09-07): the generic setter mirrors `construct`'s key rule
 		-- (`H-310` — the two creation paths must not drift): only string keys become setters;

@@ -158,6 +158,11 @@ function Operator.Clamp(lo: any, hi: any): (any) -> any
 		checkSelf("Clamp", self)
 		return self:Compute(function(h: any, _prev: any, ...: any)
 			local r = read(...)
+			if r[1] > r[2] then
+				-- round11 `H-553` (탐사 C″ 2): `math.clamp` raises its own "max must be greater than or
+				-- equal to min" blaming this file — reactive bounds crossing for a frame is ordinary
+				Err.errorBefore(`Operator.Clamp: min must be <= max (got min {r[1]}, max {r[2]})`, SURFACE)
+			end
 			return math.clamp(checkTarget("Clamp", h:Get(), "number"), r[1], r[2])
 		end, table.unpack(deps))
 	end
@@ -171,6 +176,11 @@ end
 function Operator.Indexed(key: any): (any) -> any
 	if key == nil then
 		Err.errorBeforeNearest("Operator.Indexed: key must not be nil", SURFACE)
+	end
+	if isState(key) then
+		-- round11 `H-553` (탐사 C″ 5): every sibling takes `T | State<T>`, so a State key is a natural
+		-- guess — it silently read `t[<State object>]` (always nil) forever
+		Err.errorBeforeNearest("Operator.Indexed: key must be a plain value, not a State (the key is not reactive)", SURFACE)
 	end
 	return function(self: any): any
 		checkSelf("Indexed", self)

@@ -145,7 +145,7 @@ local function Init(module: any)
 	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
 	local function assertNotMounting(self: any)
 		if self._materializing then
-			Err.errorBeforeNearest("Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer", SURFACE)
+			Err.errorBeforeNearest("Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)", SURFACE)
 		end
 	end
 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount

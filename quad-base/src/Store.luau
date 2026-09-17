@@ -22,7 +22,8 @@
 	  rename both together. `__reservedCheck` is a phantom (type-only) field.
 	- `isModifier` is NOT checked here — the `Source` constructor does it,
 	  which covers the `Of` path too (`modifier-plan.md` 7번).
-	- Nothing lets an externally made Source be inserted later; `Of` is the
+	- No METHOD lets an externally made Source be inserted later (a raw field write
+	  `store.x = Source(...)` is not blocked at runtime — the type surface is the gate); `Of` is the
 	  one lazy spot left, and it is explicit about giving up type safety.
 
 	Assembly (`H-174`): `InitStore(module)` — `Of` creates values through

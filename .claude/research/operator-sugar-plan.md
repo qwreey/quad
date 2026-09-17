@@ -8,7 +8,7 @@
 > 쓰는게 일반적인데, 그걸 지원하는걸 안 넣어줬으니까"* — 분기 콤비네이터 `IfElse`류가 있어야 뜻이 생긴다, `question.md` 0절 (l)),
 > `Sub`/`Div`/`Xor`(선례 없음 — 아래 "포함 범위"). 사용자 문서용 관측(round9 둘째 리뷰): 비트 계열은 `bit32` 계약대로 음수는 2^32 모듈로,
 > 소수는 잘린다(게이트 없음); `Alternative`는 primary가 nil이 아니어도 default State를 항상 구독한다(최신 fallback 보장); default State의
-> 값이 nil이면 결과도 nil. nil 인자는 팩토리 호출에서 에러(`H-199` 관용구, `H-517`). **나머지 열린 절은 같은 밤 사용자 결정으로 각각 별도 백로그로 분리**(ROADMAP 백로그):
+> ~~값이 nil이면 결과도 nil~~ **[2026-09-17 정정 — round11 탐사 C″ 3]** default State의 현재값이 nil이면 읽는 줄에서 `Operator.Alternative: the default State's current value is nil`로 던진다(2026-09-08 이후 code-review가 넣은 게이트가 정본 — 레퍼런스 sugar/02에 명시). nil 인자는 팩토리 호출에서 에러(`H-199` 관용구, `H-517`). **나머지 열린 절은 같은 밤 사용자 결정으로 각각 별도 백로그로 분리**(ROADMAP 백로그):
 > Attr unset 유틸(오퍼레이터가 아님), 중첩 평탄화 `State<State<T>>`(코어 재검증 필요), `IfElse`+`Concat`/`Sorted`/`Filtered`(순수 슈거지만
 > 타입 표면 결정이 필요), 타입드 `Indexed`(솔버 한계 — `typing-limits.md` 8.15). 이 문서는 카탈로그 기록으로 남는다.
 

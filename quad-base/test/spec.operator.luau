@@ -168,4 +168,26 @@ do
 end
 
 print()
+print("=== 7. round11 H-553 (2026-09-17) — Clamp 경계 엇갈림은 사용자 줄 blame의 Operator 메시지; Indexed 키에 State는 거부 ===")
+do
+	local v = Source(5)
+	local hi = Source(10)
+	local c = v:Apply(Operator.Clamp(0, hi))
+	assert(c:Get() == 5)
+	hi:Set(-5)
+	local ok, err = pcall(function()
+		return c:Get()
+	end)
+	assert(not ok and string.find(tostring(err), "Operator.Clamp: min must be <= max", 1, true) ~= nil, tostring(err))
+	assert(string.find(tostring(err), "Operator.luau", 1, true) == nil, "no internal file in the message: " .. tostring(err))
+	hi:Set(3)
+	assert(c:Get() == 3, "recovers on the next generation")
+	local ok2, err2 = pcall(function()
+		return Operator.Indexed(Source("k"))
+	end)
+	assert(not ok2 and string.find(tostring(err2), "Operator.Indexed: key must be a plain value, not a State", 1, true) ~= nil, tostring(err2))
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

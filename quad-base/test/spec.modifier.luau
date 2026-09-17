@@ -391,4 +391,17 @@ do
 end
 
 print()
+print("=== 16. round11 H-552 (2026-09-17) — `__` 접두 이름은 setter가 아니다: state:Apply(modifier)는 팩토리 검사에서 거부 ===")
+do
+	local mod = Modifier({ Name = "x" })
+	assert(rawget(mod, "__apply") == nil and mod.__apply == nil, "no setter for a metamethod-looking name")
+	local ok, err = pcall(function()
+		return q.Source(1):Apply(mod)
+	end)
+	assert(not ok and string.find(tostring(err), "State: Apply factory must be a function or an object with an __apply method", 1, true) ~= nil, tostring(err))
+	assert(type(mod.Size) == "function", "ordinary names still get setters")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
