@@ -555,7 +555,8 @@ RefLeafHandler.isHandlable(inst, k, v) =
     -- 이 체크가 필수라고 이미 명시돼 있었음. 빠지면 HIGH 우선순위 leaf가 named 자리로
     -- 흘러온 Ref까지 삼킨다 — [2026-09-06 리뷰 정정] plain Ref엔 FALLBACK 가드가 없다
     -- (등록된 가드는 PreRef/PostRef뿐 — named 자리의 plain Ref는 일반 no-match error,
-    -- spec.refhandlers 7절); 이 검사는 그 no-match가 살아 있게 하는 자리다.
+    -- spec.refhandlers 7절 — **[2026-09-17 round11 `H-567`]** 이제 Ref에도 같은 가드가 있어
+    -- "Ref: must be an array item …"); 이 검사는 그 가드가 살아 있게 하는 자리다.
 
 function RefLeafHandler.process(inst, k, v, index)
     -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져 있었다.
@@ -1247,3 +1248,5 @@ Ref가 조용히 통과했다(`typing-limits.md` 8.9절 — `Set`/`Callback` 이
 `StripNil<T>` 타입 함수(유니언에서 `nil` 성분만 제거; 2026-09-08 스파이크로 구·신 솔버 모두 `number?` → `number`,
 `(number | string)?` → `number | string` 확인, `typing-limits.md` 8.14). 런타임은 `Ref` 공통(`PreRef`/`PostRef` 포함)이라
 "보장이 있는 자리 전용"은 규약이지 강제가 아니다 — 빈 Ref에 부르면 그 줄에서 죽는다. 스펙 `spec.ref` U절.
+
+**[2026-09-17 round11 3차 탐사 K′ — `H-569` + `Wait` 캐비엇]** `RefLeafHandler`의 retractor가 `v:Set(nil)` **뒤에** dedup 기록(`relate:SetWeak(inst, k, nil)`)을 지웠다 — `Set(nil)`은 `ref:Wait()` 대기자를 quad의 철거 스택 안에서 인라인 resume하고(`H-170` 설계: 단일 resume의 에러는 `:Set` 자리로 되던짐), 문서가 strict에서 권하는 `ref:Wait():Unwrap()`이 그 nil에 던지면 기록이 남아 같은 Ref를 되꽂는 호출이 `old == v` dedup에 걸려 성공한 채 영영 안 채워졌다(K′ 3). `H-256` read-then-write 순서로 기록을 먼저 지운다(`spec.ref` 17). 문서에 없던 세 사실을 core/07에 적는다: 대기자 본문은 마운트/철거 파동 안에서 돈다(그래서 `task.spawn`의 에러 격리가 `:Wait()`에 park하는 순간 사라진다), 철거도 `:Set(nil)`이라 대기자가 nil로 깨어난다, 영영 안 깨어나는 대기자는 `Callbacks`에 강하게 남고 취소 수단이 없다(K′ 5). Observer fn의 yield는 완료 순서가 뒤집혀 마지막 관측값이 낡을 수 있고 Effect는 `_pending` 루프로 회복한다(K′ 2 — core/05의 "Observer와 같은 UB"를 갈라 적음). Effect fn이 yield하는 사이 leaf가 죽으면 yield 뒤 잡은 자원의 cleanup이 영영 안 돈다(K′ 1) — **Q68**.

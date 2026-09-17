@@ -54,4 +54,20 @@ do
 end
 
 print()
+print("=== 3. round11 H-566 (2026-09-17) — RunInit 인자 게이트(형제 AddPlugin/UseProvider와 같은 모양) ===")
+do
+	local q = Quad.New()
+	local ok, err = pcall(function()
+		q:RunInit(nil :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "Quad:RunInit: initFn must be a function (got nil)", 1, true) ~= nil, tostring(err))
+	assert(string.find(tostring(err), "Relate", 1, true) == nil, "no leaf module: " .. tostring(err))
+	local ok2, err2 = pcall(function()
+		q:RunInit(5 :: any)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "got number", 1, true) ~= nil, tostring(err2))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

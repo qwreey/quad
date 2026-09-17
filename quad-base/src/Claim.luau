@@ -58,6 +58,10 @@ local function Init(module: any)
 	-- (className)(key)(props) -> descriptor. `D.Mapper.<Class>`는 이 커링에
 	-- 캐스트만 얹은 생성기 산출물(별칭) — `D.<Class>`와 `New`의 관계 동형.
 	local function newMapperClass(className: string): (key: any) -> (props: any) -> any
+		if type(className) ~= "string" or className == "" then
+			-- round11 `H-568` (탐사 G′ 9): the sibling factories (`Modifier.TypedFactory`/`DefineSubtype`) gate the name
+			Err.errorBeforeNearest(`newMapperClass: className must be a non-empty string (got {typeof(className)})`, SURFACE)
+		end
 		local function keyed(key: any): (props: any) -> any
 			local function staged(props: any): any
 				local desc = {

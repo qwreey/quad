@@ -523,4 +523,34 @@ do
 end
 
 print()
+print("=== 13. round11 H-570 (2026-09-17) — flush 도중 하류가 handle:Cancel()을 재진입으로 부르면 창을 다시 열지 않는다(다음 leading 신호가 즉시 통과) ===")
+do
+	fresh()
+	local s = Source(0)
+	local h = Ref(nil :: GateHandle?)
+	local g: State<number> = s:Apply(Throttle({ Time = 1, Handle = h }))
+	local cancelOnce = true
+	local p = { count = 0 } :: any
+	function p._receive(self: any, _from: any)
+		self.count += 1
+		if cancelOnce and g:Get() == 2 then
+			cancelOnce = false
+			;(h.Value :: GateHandle):Cancel() -- re-entrant Cancel inside the window-end flush
+		end
+	end
+	;(g :: any)._subs[p] = true
+	s:Set(1) -- leading: passes, opens a window
+	s:Set(2) -- withheld
+	assert(p.count == 1 and mock.pendingTimers() == 1)
+	advance(1)
+	assert(p.count == 2 and g:Get() == 2, "2 passed at window end")
+	assert(mock.pendingTimers() == 0, "no window reopened after the re-entrant Cancel (used to reopen)")
+	s:Set(3)
+	assert(p.count == 3 and g:Get() == 3, "the next signal is leading again — passes immediately")
+	advance(2)
+	assert(mock.pendingTimers() == 0)
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

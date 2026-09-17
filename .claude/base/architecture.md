@@ -741,3 +741,5 @@ API 이름뿐.
 (`bind-system-plan.md`/`dispatch-core-plan.md`/`source-state-plan.md`/
 `store-plan.md`/`module-lifecycle-plan.md`/
 `slot-plan.md`/`modifier-plan.md`/`component-composition-plan.md`).
+
+**[2026-09-17 round11 3차 탐사 L′ — 성능·복잡도 스캔, 동작 결함 0]** 초선형·비정상 상수는 셋이고 전부 최적화 축(BREAKING 아님, ROADMAP 백로그에 수치와 함께): (1) 마운트된 Slot의 모든 단일 CRUD(`Remove`/`Move`/`Swap`/`Replace`/`Add`)가 원소 수 N에 비례 — `Bookkeeping.recompute`가 `i = 1`부터 전량을 훑고 `offsetSetUpTo` 커서를 재개 지점으로 안 쓴다(10,000개에서 1.4ms/회, 자리당 ~120ns + `prefix` 가비지 16B/자리); 그래서 한 항목씩 붙이는 목록 구축은 O(N²)(2,000줄 0.6초)이고 `Move`/`Swap` 루프에는 배치 경로가 없다 — 문서 core/06은 `Add`에만 비용을 적었다(정정). (2) `:List` 한 사이클은 변경 크기와 무관하게 O(전체 항목)(16,000행에 1행 추가 12.9ms) — "한 사이클 = 한 배치" 계약의 하한. (3) Modifier setter/cast 클로저 캐시는 계산된 이름·실패한 캐스트에 무한 성장(`H-331` 모양). 오늘 반영분의 회귀는 `H-545` 조상 walk가 State 스왑에서 O(깊이)인 것 하나(D=256에서 +17µs, 실무 깊이에서 평탄). 반응형 코어·Slot 조회·Tag/Attr·Debounce·Declaration은 전부 선형/상수, 메모리 누수 0. mock 충실도(성능 측정 오염원): `Parent` setter·`Destroy`가 형제 배열 `table.find`+`remove`(끝 자식 삭제 O(형제 수) — `Clear`가 mock에서 초선형으로 보임), `FindFirstChild` 선형 스캔, `clearTimeout`이 전역 배열 `table.find`(살아 있는 타이머 수 O(N) — 실 백엔드 `task.cancel`은 O(1)).

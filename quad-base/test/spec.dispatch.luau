@@ -597,4 +597,72 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 21. round11 H-563/H-564/H-565/H-567/H-568 (2026-09-17) — 비브랜드 is* 헬퍼 무시·체인 구멍 index 거부·nil 키 게이트·base 브랜드 no-match 안내·priority NaN·addHandler dedup ===")
+do
+	local q: any = newQuad()
+	-- H-563: a module-level `is*` helper that is not a brand predicate must not kill drive
+	q.isEmpty = function(t: any): boolean
+		return type(t) == "table" and next(t) == nil
+	end
+	q.isMobile = function(): boolean
+		return true
+	end
+	local inst = Instance.new("Frame")
+	q.Dispatch.drive(inst, {}) -- used to die with "props must be a plain { ... } table (got Empty)"
+	local okB, errB = pcall(function()
+		q.Dispatch.drive(inst, q.Source(1))
+	end)
+	assert(not okB and string.find(tostring(errB), "props must be a plain", 1, true) ~= nil, "the H-470 gate still refuses a quad value: " .. tostring(errB))
+	assert(string.find(tostring(errB), "Mobile", 1, true) == nil and string.find(tostring(errB), "Empty", 1, true) == nil, "diagnostics not polluted by the helpers: " .. tostring(errB))
+	q.isEmpty, q.isMobile = nil, nil
+	-- H-564: an index that would leave a gap in the chain is refused
+	q.Dispatch.addHandler({
+		name = "OnlyK",
+		keyType = "string",
+		isHandlable = function(_i: any, k: any): boolean
+			return k == "K"
+		end,
+		priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(): (any?, boolean) -> ()
+			return Quad.Void
+		end,
+	})
+	local okG, errG = pcall(function()
+		q.Dispatch.process(inst, "K", 1, 3)
+	end)
+	assert(not okG and string.find(tostring(errG), "Dispatch.process: index 3 would leave a gap in the chain", 1, true) ~= nil, tostring(errG))
+	q.Dispatch.process(inst, "K", 1, 1)
+	q.Dispatch.process(inst, "K", 1, 2) -- #list + 1 is fine (a delegating handler's index + 1)
+	-- H-565: nil key fails fast with a Dispatch message, not a Relate leaf line
+	local okK, errK = pcall(function()
+		q.Dispatch.process(inst, nil, 1, 1)
+	end)
+	assert(not okK and string.find(tostring(errK), "Dispatch.process: key must not be nil", 1, true) ~= nil, tostring(errK))
+	local okR, errR = pcall(function()
+		q.Dispatch.retractFrom(inst, nil, 1)
+	end)
+	assert(not okR and string.find(tostring(errR), "Dispatch.retractFrom: key must not be nil", 1, true) ~= nil, tostring(errR))
+	-- H-567: a BASE brand at a string key does not blame the provider
+	local okS, errS = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { Children = q.Slot() })
+	end)
+	assert(not okS and string.find(tostring(errS), "Slot: must be an array item, not the value of a string key", 1, true) ~= nil, "Slot guard: " .. tostring(errS))
+	local okT, errT = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Tag() })
+	end)
+	assert(not okT and string.find(tostring(errT), "brand: Tag", 1, true) ~= nil and string.find(tostring(errT), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errT), "provider", 1, true) == nil, "base brand hint: " .. tostring(errT))
+	-- H-568: NaN/inf priority refused; the same handler table twice registers once
+	local okN, errN = pcall(function()
+		q.Dispatch.addHandler({ isHandlable = function() return false end, priority = 0 / 0, process = function() return Quad.Void end })
+	end)
+	assert(not okN and string.find(tostring(errN), "priority must be a finite number", 1, true) ~= nil, tostring(errN))
+	local h = { name = "Twice", isHandlable = function() return false end, priority = -5, process = function() return Quad.Void end }
+	local before = #q.Dispatch.listHandlers()
+	q.Dispatch.addHandler(h)
+	q.Dispatch.addHandler(h)
+	assert(#q.Dispatch.listHandlers() == before + 1, "identity dedup")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

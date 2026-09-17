@@ -271,8 +271,10 @@ local function createImpl(module: any)
 		-- (0) deps validation — once, in the constructor. `select("#")` so a nil hole
 		--     does not silently truncate the list.
 		-- `H-186` (user-confirmed 2026-08-31): a dep from ANOTHER quad instance is UB —
-		--   deliberately not checked (a guard here closes only half the hole: a foreign
-		--   `bindLifetime` on our handle is unreachable from base). Documented, revisit at M5.
+		--   not checked here. (The old "a guard here closes only half the hole" reasoning was
+		--   withdrawn on 2026-09-15 — architecture "교차 인스턴스": the guard belongs at the
+		--   seat/StoreBind entry, where `q.moduleIdentity` is compared; a dependency edge across
+		--   instances simply fires.)
 		local seen = {}
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))

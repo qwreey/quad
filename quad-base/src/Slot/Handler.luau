@@ -51,6 +51,17 @@ local function register(dispatch: any, module: any)
 			end
 		end,
 	} :: QuadTypes.Handler)
+	dispatch.addHandler({
+		name = "SlotDynamicPathGuard", -- round11 `H-567`: the family's fifth guard — `Frame { Children = slot }`
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return internal.isSlot(v)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
+		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			Err.errorBefore(`Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+			return module.Void -- unreachable; keeps the contract type
+		end,
+	} :: QuadTypes.Handler)
 end
 
 return { register = register }

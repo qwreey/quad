@@ -301,4 +301,14 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 14. round11 H-568 (2026-09-17) — newMapperClass 이름 게이트 ===")
+do
+	local ok, err = pcall(function()
+		return q.newMapperClass(5 :: any)
+	end)
+	assert(not ok and string.find(tostring(err), "newMapperClass: className must be a non-empty string (got number)", 1, true) ~= nil, tostring(err))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

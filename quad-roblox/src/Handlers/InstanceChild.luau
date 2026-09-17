@@ -67,7 +67,9 @@ local function install(quad: any)
 			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
 			-- "circular reference" raise would come AFTER the seat/offset commit (a stuck seat, `H-544`
 			-- shape). Walk the ancestor chain (Parent is nil at creation, so this is O(1) on the
-			-- Declaration path); errorBefore blames the user's line.
+			-- Declaration path; a State swap re-runs it with `inst` already at depth D — O(D),
+			-- round11 L′ 5: +17µs at D=256, flat at realistic depths); errorBefore blames the
+			-- user's line.
 			local ancestor = inst
 			while ancestor ~= nil do
 				if ancestor == v then

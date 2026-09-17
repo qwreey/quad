@@ -377,4 +377,28 @@ do
 end
 
 print()
+print("=== 17. round11 H-569 (2026-09-17) — 철거의 Set(nil)에 깨어난 대기자가 던져도 dedup 기록은 이미 지워져 같은 Ref를 되꽂으면 채워진다 ===")
+do
+	local mock = require("./mock")
+	local q: any = mock.newQuad()
+	local Instance = mock.Instance
+	local ref = q.Ref(nil :: any)
+	local host = Instance.new("Frame")
+	local seat = q.Source(ref)
+	q.Dispatch.drive(host, { seat })
+	assert(ref.Value == host, "filled")
+	local co = coroutine.create(function()
+		return ref:Wait():Unwrap() -- the strict idiom — wakes on the retract's Set(nil) and throws
+	end)
+	coroutine.resume(co)
+	local ok, err = pcall(function()
+		seat:Set(nil) -- retract: Set(nil) wakes the waiter inline; its throw comes back here (H-170)
+	end)
+	assert(not ok and string.find(tostring(err), "Unwrap", 1, true) ~= nil, "the waiter's error propagates through the retract: " .. tostring(err))
+	seat:Set(ref) -- re-place the SAME Ref: used to hit the dedup record and never fill
+	assert(ref.Value == host, "re-placed and filled again")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -63,8 +63,9 @@ local HANDLER_PRIORITY_LOW = QuadTypes.HANDLER_PRIORITY_LOW
 local HANDLER_PRIORITY_FALLBACK = QuadTypes.HANDLER_PRIORITY_FALLBACK
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
--- Probed (cold path only) to name a value's brand in the match-failure
--- message — there is deliberately no reverse lookup on Brand
+-- Probed to name a value's brand in the match-failure message, and by the `H-470`
+-- props gate in `drive` (a hot path, ~12% of drive — round11 L′ 7 corrected the old
+-- "cold path only" note) — there is deliberately no reverse lookup on Brand
 -- (`archive/brand-shared-registry-reversed.md`), so we ask the module's own
 -- public predicates. Base predicates here, in order; provider brands are found
 -- by CONTRACT (round3 §4 Q27, user decision 2026-09-08): a provider installs its
@@ -150,9 +151,26 @@ local function Init(module: any)
 	-- Diagnostics only (cold path): provider `is<Brand>` fields first, then the
 	-- ordered base list. A provider predicate is `pcall`ed — a non-brand `isX` helper
 	-- must not turn a match-failure diagnostic into its own raise.
+	-- round11 `H-563` (탐사 G′ 1): a module-level `is*` helper that is NOT a brand predicate
+	-- (`q.isEmpty`, a plugin's `isMobile` ignoring its argument) answered `true` for a plain
+	-- props table and the `H-470` gate killed EVERY `D.<Class>{}` ("props must be a plain
+	-- table … (got Empty)"). A brand predicate is false on a plain empty table and on a
+	-- non-table — probe once per function identity (weak-keyed cache) and skip the rest.
+	local brandPredicateOk: { [any]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+	local function isBrandPredicate(predicate: any): boolean
+		local cached = brandPredicateOk[predicate]
+		if cached ~= nil then
+			return cached
+		end
+		local ok1, r1 = pcall(predicate, {})
+		local ok2, r2 = pcall(predicate, 0)
+		local verdict = ok1 and ok2 and r1 ~= true and r2 ~= true
+		brandPredicateOk[predicate] = verdict
+		return verdict
+	end
 	local function brandNameOf(v: any): string?
 		for name, predicate in module do
-			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" then
+			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" and isBrandPredicate(predicate) then
 				local ok, hit = pcall(predicate, v)
 				if ok and hit == true then
 					return string.sub(name, 3) -- "isTween" -> "Tween"
@@ -175,8 +193,11 @@ local function Init(module: any)
 	-- where the user entered.
 	local function noMatchMessage(k: any, v: any): string
 		local brand = brandNameOf(v)
+		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
+		-- initialized" — that hint only fits a provider brand or an unbranded value
+		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
 		return `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
-			.. " — check that the provider for this value (e.g. quad-roblox) is initialized"
+			.. (if isBase then " — a quad value at a string key: it belongs in a numeric (array) slot" else " — check that the provider for this value (e.g. quad-roblox) is initialized")
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from
@@ -253,14 +274,22 @@ local function Init(module: any)
 		end
 	end
 
+	local function checkKey(fnName: string, k: any) -- round11 `H-565` (탐사 G′ 3, `H-504`'s other half)
+		if k == nil then
+			Err.errorBeforeNearest(`Dispatch.{fnName}: key must not be nil`, SURFACE)
+		end
+	end
+
 	local function retractFrom(inst: any, k: any, index: number)
 		checkInst("retractFrom", inst)
+		checkKey("retractFrom", k)
 		checkIndex("retractFrom", index)
 		retractRange(inst, k, index, true)
 	end
 
 	local function process(inst: any, k: any, v: any, index: number)
 		checkInst("process", inst)
+		checkKey("process", k)
 		checkIndex("process", index)
 		-- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* —
 		-- h.process가 재귀 Dispatch.process(inst,k,…,index+1)를 부르는 게 정상
@@ -276,6 +305,12 @@ local function Init(module: any)
 			-- relation (user-confirmed contract, `lifecycle-pattern.md`).
 			module.Backend.bindLifetime(inst, list)
 			chains:SetWeak(inst, k, list)
+		end
+		if index > #list + 1 then
+			-- round11 `H-564` (탐사 G′ 2, `H-256`'s sibling): a gap index parked a slot no unwind ever
+			-- visits (`retractRange` starts at #list) and `release and #list == 0` then dropped the
+			-- list with a live retractor in it — dispatch-core-plan "list가 구멍 없는 시퀀스"
+			Err.errorBeforeNearest(`Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)`, SURFACE)
 		end
 
 		local slot = list[index]
@@ -342,6 +377,16 @@ local function Init(module: any)
 		-- Tie detection is free at registration time (the registry is sorted
 		-- here, statically). No tiebreak rule is enforced — ties are usually a
 		-- handler-design mistake, surfaced via debug visibility only.
+		local pr = handler.priority
+		if pr ~= pr or pr == math.huge or pr == -math.huge then
+			-- round11 `H-568` (탐사 G′ 7): NaN sorted anywhere and defeated the tie print (`==` false)
+			Err.errorBeforeNearest(`Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})`, SURFACE)
+		end
+		for _, existing in handlers do
+			if existing == handler then
+				return -- round11 `H-568` (탐사 G′ 8): identity dedup, like RunInit/AddPlugin/UseProvider
+			end
+		end
 		local kt = handler.keyType
 		if kt ~= nil and kt ~= "number" and kt ~= "string" then
 			-- registration gate (`H-484`): a typo here would silently drop the handler

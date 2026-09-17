@@ -247,11 +247,14 @@ local function registerDispatchHandlers(module: any)
 				-- nextValue is nil or a new Ref this same handler is about to bind
 				if nextValue ~= v then
 					module.Backend.unbindLifetime(v) -- v may be placed elsewhere afterwards
-					v:Set(nil) -- the ordinary re-set contract, no new channel
-					-- clear only when actually standing down (checklist 4)
+					-- clear only when actually standing down (checklist 4) — BEFORE the Set (round11
+					-- `H-569`, 탐사 K′ 3, `H-256` read-then-write): `Set(nil)` wakes `ref:Wait()` waiters
+					-- inline and a throwing one (`:Unwrap()` on nil) used to leave this record, so
+					-- re-placing the same Ref hit the `old == v` dedup and never filled it again
 					if relate:GetWeak(inst, k) == v then
 						relate:SetWeak(inst, k, nil)
 					end
+					v:Set(nil) -- the ordinary re-set contract, no new channel
 				end
 			end
 		end,
@@ -278,6 +281,7 @@ local function registerDispatchHandlers(module: any)
 	end
 	addGuard("PreRefDynamicPathGuard", Brand.isPreRef, "PreRef")
 	addGuard("PostRefDynamicPathGuard", Brand.isPostRef, "PostRef")
+	addGuard("RefDynamicPathGuard", Brand.isRef, "Ref") -- round11 `H-567`: `Frame { Ref = ref }` got the no-match message
 end
 
 -- PreRef/PostRef share this body by canon ("Ref 런타임 그대로 재사용, 브랜드

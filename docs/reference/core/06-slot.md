@@ -161,7 +161,7 @@ Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number
 
 - Slot을 자기 자신이나 자기 조상에 넣으면 순환이라 거부됩니다 — `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`.
 - quad가 소유하지 않은(claim되지 않은) 인스턴스는 거부됩니다 — 위 "원소 대수" 절의 `Slot: this element is not claimed by quad …`. 생성자 `initial`·`:Replace`·`:Splice`·`:List`/`:Single`의 새 원소도 같은 검사를 지납니다.
-- 단일 `Add`는 현재 길이에 비례하는 비용을 냅니다. 여러 개를 한 번에 넣을 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요.
+- 마운트된 Slot의 단일 변경(`Add`·`Remove`·`Replace`·`Move`·`Swap`·`Extract`)은 현재 길이에 비례하는 부기 비용을 냅니다 — `Move`/`Swap`은 Roblox에서 물리 이동이 없을 뿐 자리 계산은 전량 돕니다. 여러 개를 한 번에 넣거나 뺄 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요(한 호출에 여럿이 배치이고, 한 개씩 반복 호출은 배치가 아닙니다). `:List`의 한 사이클도 바뀐 항목 수와 무관하게 전체 항목 수에 비례합니다.
 
 **예제**
 

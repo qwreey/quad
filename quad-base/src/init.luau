@@ -123,6 +123,11 @@ local function New(): Quad
 	} :: Quad
 
 	function module.RunInit(self, initFn)
+		if type(initFn) ~= "function" then
+			-- round11 `H-566` (탐사 G′ 4): the siblings got this gate on 2026-09-16 (hunt F); nil died
+			-- in Relate ("key must not be nil", leaf blame), a number as "attempt to call"
+			Err.errorBeforeNearest(`Quad:RunInit: initFn must be a function (got {typeof(initFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
 		if runInitRelate:GetStrong(self, initFn) then
 			return -- 이 module 인스턴스에 이 initFn은 이미 실행됨, no-op
 		end

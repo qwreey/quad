@@ -204,6 +204,9 @@ function FactoryImpl.__apply(self: any, state: any): any
 			if h._window ~= nil then
 				return
 			end
+			if not b.Blocking then
+				return -- round11 `H-570` (탐사 K′ 4): a downstream `handle:Cancel()` inside the flush went idle — do not reopen
+			end
 			if had then
 				openWindow()
 			else

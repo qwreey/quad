@@ -105,7 +105,7 @@ export type Observer = {
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`)
 - 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
-- 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있습니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
+- 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있고, 겹치면 나중 값의 콜백이 먼저 끝나 **마지막으로 처리한 값이 낡은 값**이 됩니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 - 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 `Declaration`은 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
 
 **예제**
@@ -226,7 +226,7 @@ export type Effect = {
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`)
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
 - `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행이 전부 막힙니다.
-- `fn`과 cleanup 안에서 **yield하지 마세요** — [`state:Observer`](#stateobserverfn)와 같은 정의되지 않은 동작입니다.
+- `fn`과 cleanup 안에서 **yield하지 마세요** — 정의되지 않은 동작입니다. 증상은 `Observer`와 다릅니다: `Effect`는 겹친 요청을 `fn`이 돌아온 뒤 한 번 더 도는 것으로 흡수하지만, yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려가면 **그 뒤에 잡은 자원의 cleanup은 영영 돌지 않습니다**(죽음의 cleanup은 이미 지나갔습니다). 네트워크 왕복은 `fn` 밖(따로 띄운 코루틴)에서 하고 결과를 `State`로 넣으세요.
 
 **예제**
 

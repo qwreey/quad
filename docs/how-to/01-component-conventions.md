@@ -286,7 +286,7 @@ Quad의 컴포넌트는 매 프레임 재실행되지 않는 **1회성 셋업 �
 local function newCounter(initial: number)
     local count = q.Source(initial)
     -- --!strict에서는 :Compute 콜백 파라미터에 주석이 필요하다
-    local isEven = count:Compute(function(c: q.StateData<number>): boolean
+    local isEven: q.State<boolean> = count:Compute(function(c: q.StateData<number>): boolean
         return c:Get() % 2 == 0
     end)
 

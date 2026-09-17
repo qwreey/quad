@@ -233,7 +233,9 @@ methods.Overridden = Overridden
 -- (the setters are too, since `H-482` — see `setterClosure` below) and, unlike the
 -- setters (`H-250`), tagged SURFACE, so the error contract is the stack worker (`errorBeforeNearest` —
 -- the destination, not a hand-counted level, `H-231`; review finding). The
--- cache is bounded by the distinct `As<Name>` keys the code base spells.
+-- cache is bounded by the distinct `As<Name>` keys the code base spells — UNLESS the name is
+-- computed (`mod["As"..x]`): then it grows forever, and a cast that raises (unknown class)
+-- is cached too (round11 L′ 4: 20,000 failing casts → +5.9MB). ROADMAP backlog.
 local castClosures: { [string]: (any) -> any } = {}
 
 local function castClosure(target: string): (any) -> any
@@ -260,8 +262,9 @@ end
 -- are CACHED per field name like the cast closures above (`H-482`, 2026-09-08
 -- advisory RFC): the only thing a setter captures is `key`, so one closure per
 -- distinct name serves every Modifier — a chain `mod:Size(a):Position(b)` used
--- to allocate and drop one closure per step. Bounded by the field names the
--- code base spells. They stay untagged: `error(..., 2)` inside blames the
+-- to allocate and drop one closure per step. Bounded by the field names the (static) code
+-- spells — a computed name (`m["Prop"..i]`) grows it without bound (round11 L′ 4, `H-331`
+-- shape; ROADMAP backlog). They stay untagged: `error(..., 2)` inside blames the
 -- user's `mod:Field(...)` line directly (`H-250` — not table-reached).
 local setterClosures: { [string]: (any, any) -> any } = {}
 
