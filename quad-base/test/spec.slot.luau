@@ -1205,4 +1205,39 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 33. round11 H-571 (2026-09-17) — :List data가 배열이 아니면(딕셔너리·해시 키 혼입) 조용히 비우지 않고 거부; updateFn이 q.KeyGone을 돌려주면 안내 에러 ===")
+do
+	local data = q.Source({ { id = "a" }, { id = "b" } })
+	local s = Slot()
+	s:List(data, function(ctx)
+		if ctx.Item == q.KeyGone then return nil end
+		if ctx.Prev then return ctx.Prev end
+		return Instance.new("Frame")
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	assert(s.Length:Get() == 2)
+	local ok, err = pcall(function()
+		data:Set({ a = { id = "a" }, b = { id = "b" } } :: any) -- an id-keyed map, not an array
+	end)
+	assert(not ok and string.find(tostring(err), "Slot:List: data must be a plain array — key \"", 1, true) ~= nil, tostring(err))
+	assert(s.Length:Get() == 2 and childCount(parent) == 2, "nothing was destroyed by the rejected data")
+	local ok2, err2 = pcall(function()
+		data:Set({ { id = "a" }, extra = 1 } :: any)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "key \"extra\" is not an array position", 1, true) ~= nil, tostring(err2))
+	-- updateFn returning the input marker
+	local data2 = q.Source({ { id = "x" } })
+	local s2 = Slot()
+	local ok3, err3 = pcall(function()
+		s2:List(data2, function(ctx)
+			return q.KeyGone :: any
+		end, function(item) return item.id end)
+		dispatch.drive(Instance.new("Folder"), { s2 })
+	end)
+	assert(not ok3 and string.find(tostring(err3), "Slot:List: updateFn returned q.KeyGone", 1, true) ~= nil, tostring(err3))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

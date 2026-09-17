@@ -1086,3 +1086,5 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
 
 `.claude/question.md`의 관련 항목도 해소됨으로 갱신 완료(그 항목은
 이후 `archive/question-resolved.md`로 이전).
+
+**[2026-09-17 round11 3차 탐사 H′ — `H-574`, Deferred 시그널 실측] `_bindDestroying`의 Destroying 콜백은 자기가 아직 바인딩의 주인일 때만 돈다.** Roblox 기본 `SignalBehavior.Deferred`는 `Destroying` 핸들러를 다음 재개 지점으로 미루고 `Destroy`는 gcconn만 동기로 끊는다(`H-291` 실측: 큐잉된 발화는 Destroy가 연결을 끊어도 정확히 1회). 그 사이에 같은 핸들이 다른 인스턴스에 다시 묶이면(행 캐시가 훅·Effect 핸들을 재사용하는 목록에서 한 청크 안에 키를 뺐다 다시 넣는 경우) 재개 지점의 옛 콜백이 새 `_destroyConn`을 끊고 `_dying`을 세우고 cleanup을 살아 있는 새 호스트 위에서 `dying = true`로 소진했다 — 이후 dep 변경은 `_dying` 홀드로 fn이 영영 안 돌고, 새 호스트의 진짜 죽음엔 cleanup이 없었다. `H-182` 주석의 "어느 순서든 같다"는 창 안 재바인드를 빠뜨렸다. 콜백이 만든 연결(`conn`)이 지금의 `self._destroyConn`이 아니면 stale — 그대로 반환(새 필드 없음). Immediate(mock)에서는 나지 않는다. `spec.effect` 11(지연 큐 심). quad 내부가 스스로 이 창에 들어가는 경로는 없다(`_detachCleanup` 재마운트는 `claimOwnerAt`이 앞에서 막음) — 사용자가 핸들을 인스턴스 사이에 재사용할 때만.

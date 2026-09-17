@@ -453,4 +453,49 @@ do
 end
 
 print()
+print("=== 11. round11 H-574 (2026-09-17, Deferred 실측) — 호스트가 죽은 뒤 같은 청크에서 다른 인스턴스에 다시 묶인 핸들은 옛 Destroying 콜백(지연 배달)에 죽지 않는다 ===")
+do
+	-- Roblox default SignalBehavior.Deferred: `Destroying` handlers run at the next resume point while
+	-- Destroy cuts gcconn synchronously. Model it by queueing what quad's onDestroying registers.
+	local origOnDestroying = quad.Backend.onDestroying
+	local queue = {}
+	quad.Backend.onDestroying = function(inst: any, fn: () -> ()): any
+		return origOnDestroying(inst, function()
+			table.insert(queue, fn)
+		end)
+	end
+	local function flush()
+		local q = queue
+		queue = {}
+		for _, fn in q do
+			fn()
+		end
+	end
+	local dep = Source(0)
+	local runs, cleanups = 0, {}
+	local eff = Effect(function()
+		runs += 1
+		return function(dying: boolean)
+			table.insert(cleanups, dying)
+		end
+	end, dep)
+	local host1 = Instance.new("Frame")
+	quad.Dispatch.drive(host1, { eff })
+	host1:Destroy() -- gcconn cut now; the Destroying callback is queued
+	local host2 = Instance.new("Frame")
+	quad.Dispatch.drive(host2, { eff }) -- rebind inside the same chunk (a row cache re-using its hook handle)
+	flush() -- the OLD callback arrives now — it must not touch the new binding
+	dep:Set(1)
+	assert(runs == 2, "fn still runs on the new host (was held forever): " .. runs)
+	assert(#cleanups == 1 and cleanups[1] == false, "only the rerun cleanup so far, dying=false: " .. #cleanups)
+	host2:Destroy()
+	flush()
+	assert(#cleanups == 2 and cleanups[2] == true, "the real death runs the cleanup once with dying=true: " .. #cleanups)
+	dep:Set(2)
+	assert(runs == 2, "dead after the real death")
+	quad.Backend.onDestroying = origOnDestroying
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

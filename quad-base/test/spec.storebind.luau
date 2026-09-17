@@ -252,4 +252,32 @@ do
 end
 
 print()
+print("=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StoreBind 메시지 ===")
+do
+	local q: any = newQuad()
+	local sources, log = {}, {}
+	addSpecLeaf(q, sources, log)
+	local a = q.Source(nil :: any)
+	local b = q.Source(a)
+	a:Set(b)
+	local ok, err = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { a })
+	end)
+	assert(not ok and string.find(tostring(err), "StoreBind: the State's value chain is circular", 1, true) ~= nil, tostring(err))
+	assert(string.find(tostring(err), "stack overflow", 1, true) == nil and string.find(tostring(err), "Brand.luau", 1, true) == nil, "no leaf blame: " .. tostring(err))
+	local s = q.Source(nil :: any)
+	s:Set(s)
+	local ok2, err2 = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { s })
+	end)
+	assert(not ok2 and string.find(tostring(err2), "circular", 1, true) ~= nil, tostring(err2))
+	-- a finite chain still unwraps
+	local inner = q.Source("v")
+	local outer = q.Source(inner)
+	local inst = Instance.new("Frame")
+	q.Dispatch.drive(inst, { outer }) -- finite State<State<string>>: unwraps without raising
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

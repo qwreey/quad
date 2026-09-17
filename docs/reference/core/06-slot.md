@@ -180,7 +180,7 @@ local root = D.Frame { slot }
 Remove: (self: Slot<T>, index: number) -> ()
 ```
 
-**동작** — 그 자리의 원소를 떼고 **파괴합니다**. 살려서 꺼내려면 [`:Extract`](#slotextractindex-newelement)를 쓰세요. 범위는 1..n이고 클램프는 없습니다.
+**동작** — 그 자리의 원소를 떼고 **파괴합니다**(`State`에 담아 넣은 원소는 예외 — 아래 "State에 담은 원소" 참고). 살려서 꺼내려면 [`:Extract`](#slotextractindex-newelement)를 쓰세요. 범위는 1..n이고 클램프는 없습니다.
 
 ## `slot:Replace(index, newElement)`
 
@@ -394,6 +394,8 @@ Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateF
 - `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만, 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
 
 **`OwnsElements = false`**
+
+**State에 담은 원소는 파괴되지 않습니다.** `slot:Add(q.Source(frame))`처럼 `State`로 넣은 원소는 그 State가 주인이라, `Remove`·`Replace`·`Clear`·`:List`의 키 소멸·`q.dispose(slot)` 어느 경로로 버려도 인스턴스는 살아남고 자리에서만 내려옵니다(`Parent = nil`, 소유권 해제 — 다른 Slot에 다시 넣을 수 있습니다). 화면을 철거할 때 그 인스턴스까지 없애려면 그 State를 `q.dispose`하거나 값을 `q.None`으로 바꾸고 인스턴스를 직접 `q.dispose`하세요. `State<Slot>`(리스트 안 포털)도 같습니다.
 
 기본은 소유(`OwnsElements = true`)입니다 — 이 Slot이 버리는 원소는 파괴됩니다. `OwnsElements = false`를 주면 버릴 때 소유권만 풀고 살려둡니다. 그 Slot이 통째로 파괴돼도 원소는 살아남아 다른 Slot에 다시 넣을 수 있습니다. 원소를 밖에서 관리하는 가상화 목록이나 포털이 이 옵션의 자리입니다. 단, Slot이 **마운트된 채로 그 부모 Instance가 파괴되면** 엔진이 자손을 지우므로 원소도 같이 죽습니다 — 화면을 철거할 때 살려야 할 원소는 먼저 `:Extract`하거나 data에서 키를 빼세요. 그래도 원소는 quad 소유(`Declaration`으로 만들었거나 `Claim`으로 넘겨받은 것)여야 합니다 — 이 옵션은 파괴 여부만 바꾸고, 위 "원소 대수"의 미claim 거부는 그대로 적용됩니다.
 

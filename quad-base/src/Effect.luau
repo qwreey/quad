@@ -142,7 +142,18 @@ local function createImpl(module: any)
 		self:_unbindDestroying() -- rebind (portal remount): drop the old connection first — idempotent
 		self._dying = false -- `H-182`: rebinding a survivor of a Destroy wave re-arms it
 		-- (1) leaf dies → cleanup exactly once. The one hook point (`LP-2`).
-		self._destroyConn = module.Backend.onDestroying(inst, function() -- injected op, read at call time
+		local conn
+		conn = module.Backend.onDestroying(inst, function() -- injected op, read at call time
+			-- round11 `H-574` (탐사 H′ 1, Deferred 실측): Roblox's default SignalBehavior queues
+			-- `Destroying` while Destroy cuts gcconn synchronously — a handle rebound to a NEW
+			-- instance inside that same chunk got this OLD callback at the resume point, which
+			-- disconnected the new binding, raised `_dying` and consumed the cleanup on a living
+			-- host (fn never ran again; the new host's death ran no cleanup). `H-182`'s "either
+			-- order is the same" argument assumed no rebind in the window. A callback that no
+			-- longer owns the binding is stale — ignore it.
+			if self._destroyConn ~= conn then
+				return
+			end
 			-- `H-182`: `canExecute` stays true for the rest of the Destroy wave (gcconn
 			-- is cut last) — the flag closes that window so a dep change later in the
 			-- wave HOLDS instead of re-running fn on the dying leaf. NOT `_destroyed`
@@ -151,6 +162,7 @@ local function createImpl(module: any)
 			self:_unbindDestroying()
 			self:_consumeCleanup()
 		end)
+		self._destroyConn = conn
 		-- (2) catch-up: a change held while unexecutable is replayed once. gcconn is
 		--     connected by now, so the public Rerun's gate passes.
 		if self._rerunRequired then

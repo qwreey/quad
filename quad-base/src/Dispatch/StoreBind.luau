@@ -39,6 +39,8 @@
 local Brand = require("../Brand")
 local QuadTypes = require("../../luau_packages/quad_types")
 local ModuleIdentity = require("../ModuleIdentity")
+local Err = require("../ErrorNamespace")
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE -- round11 `H-573` raise
 
 -- `isState` composes `isSource` (Source structurally satisfies State,
 -- `Brand.luau`) — exactly the "v가 State/Source인 경우" the section confirms.
@@ -65,6 +67,20 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
 			local observer = state:Observer(function()
 				local realv = state:Get()
+				if isState(realv) then
+					-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
+					-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
+					-- "Brand.luau: stack overflow" — walk the chain once with a visited set
+					local visited = { [state] = true }
+					local cur = realv
+					while isState(cur) do
+						if visited[cur] then
+							Err.errorBefore("StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
+						end
+						visited[cur] = true
+						cur = cur:Get()
+					end
+				end
 				dispatch.process(inst, k, realv, index + 1)
 			end)
 			module.Backend.bindLifetime(inst, observer)

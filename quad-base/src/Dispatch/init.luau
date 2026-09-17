@@ -196,8 +196,12 @@ local function Init(module: any)
 		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
 		-- initialized" — that hint only fits a provider brand or an unbranded value
 		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
-		return `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})`
-			.. (if isBase then " — a quad value at a string key: it belongs in a numeric (array) slot" else " — check that the provider for this value (e.g. quad-roblox) is initialized")
+		local hint = if not isBase
+			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
+			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"
+			else " — this quad value has no handler at an array position"
+		return `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from

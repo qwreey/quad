@@ -58,6 +58,9 @@
 5. **`State<Instance?>`를 자리에 놓고 갈아 끼울 때 옛 원소가 파괴되지 않고 `Parent = nil`로 남는지**(mock 실측만 있음) — `*-slot.md` §6 서술의 실기기 확인.
 6. **Deferred 시그널 플레이스에서 `Effect` cleanup이 `Destroy` 직후로 지연되는지** — 오버뷰 (4) "알아 둘 것"의 근거는 설계 실측(`lifecycle-pattern.md`)뿐이라 현 빌드에서 한 번 더.
 7. **14.2** `roblox_sync_config_generator` 없이 Studio 싱크(그대로).
+10. **[2026-09-17 round11]** `q.OnChange("className", fn)` — 소문자 Deprecated 별칭이 읽기 표면에 있는데 `GetPropertyChangedSignal("className")`이 실기기에서 유효한지(J′). 무효면 생성기 읽기 표면에서 뺄 것.
+11. **[2026-09-17 round11]** Slot 원소로 자기/조상 Instance를 넣었을 때 엔진 circular-reference raise 뒤 남는 상태(Q62 — `Add`/`Replace`/`Splice`/`Extract` 네 입구)와, `nativeRemove`/`nativeExtract`의 `Parent` 대입이 잠긴·파괴된 인스턴스에서 던지는 경우 `releaseOwner` → `vacate` 사이 창(B″ 8) — mock에선 못 잡는 둘.
+12. **[2026-09-17 round11]** 물리 자식 순서 — mock `nativeInsert`가 offset을 무시해 CLI로 관측 불가(K′). 형제 Slot·`Move`/`Swap`·`:List` 재정렬 뒤 실제 자식 순서가 부기와 맞는지 한 번.
 8. **[2026-09-11 열린 탐사]** **리스폰과 quad 트리** — `PlayerGui`에 스크립트가 직접 붙인 `ScreenGui`가 `ResetOnSpawn = true`일 때 리스폰에서 지워지는지(GS 01은 `false`로 두고 한 줄 주석만 달았다), `StarterPlayerScripts`의 LocalScript 재실행과 겹치면 어떤 증상인지. 실측이 오면 how-to에 "리스폰·플레이어 생명주기" 절을 쓴다(지금 문서엔 respawn 서술이 0건).
 9. **[2026-09-11 열린 탐사]** **최소 요구 버전** — GS 01이 `const`와 문자열 `require("@game/…")`를 쓰는데 어느 Studio/luau 버전부터 되는지 문서 어디에도 없다. Studio에서 `const`가 도는 것은 확인됐지만(8번 해소) 하한 버전은 미확인 — 알려 주면 00 설치에 한 줄.
 

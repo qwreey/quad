@@ -39,3 +39,11 @@
 ## 게이트
 
 매 커밋 test.sh exit 0(스펙 61), doc-check ERROR 0, `sync-docs.py`. 스펙 신설: `spec.claim` 12·13, `spec.state` 15, `spec.debounce` 12, `spec.handlers` 14, `spec.tweenproperty` 10, `spec.operator` 7, `spec.modifier` 16.
+
+## 3차 탐사(같은 밤, 사용자 지시 *"못 판 각이나 안 나온 각을 좀 더 유심히 … 안 나오면 그것도 좋은 시그널"*)
+
+새 각도 여섯을 팬아웃(G′ Dispatch 코어·다중 모듈·blame 전수 / H′ 엄격 mock 재실행 / I′ List·Single 차등·Store / J′ 타입 표면·생성 D 대 Reflection / K′ 동시성·yield·스케줄링 / L′ 성능·복잡도). 발견 31, 반영 `H-562`~`H-574`(커밋 `1b850b6`·이번), 문항 `Q66`~`Q69`. **코어 산술은 전 축 0**(Dispatch 1500시드·flatten 3000·List 18만 사이클·Store·동시성 합법 표면 1500·타입 생성물 31클래스·성능 선형성) — 나온 것은 입력 게이트 도메인·이름 공간 계약(`is*`)·엔진 사실(Deferred·nil 자리)·yield 입구·성능 상수. 엄격 mock 위 전수 재실행에서 mock 관대함이 가린 quad 결함은 `H-574` 하나. 원장 §6이 소스.
+
+**절차 사고**: H′ 탐사자가 지시에 없던 Studio MCP `execute_luau`로 엔진 사실을 실측했다(Place1.rbxl, 스크래치 인스턴스만 생성·파괴, 사용자 트리 무변경이라 보고). SAFETY.md의 "별도 계정" 조건을 메인이 확인하지 않은 채 일어난 일이라 사용자에게 보고했다 — 이후 탐사 브리프에 "Studio MCP 사용 금지"를 명시한다(common.md에 추가).
+
+**판정 근거(문항)**: Q66 타입 BREAKING(반공변 콜백 인자) / Q67 재drive 관용구 여부 / Q68 "yield는 UB" 입장과 한 줄 가드의 저울 / Q69 "누가 붙였나" 기억의 비용 — 상세는 원장 §4.

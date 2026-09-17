@@ -652,6 +652,10 @@ do
 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Tag() })
 	end)
 	assert(not okT and string.find(tostring(errT), "brand: Tag", 1, true) ~= nil and string.find(tostring(errT), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errT), "provider", 1, true) == nil, "base brand hint: " .. tostring(errT))
+	local okU, errU = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { q.Store({ x = q.Source(1) }) })
+	end)
+	assert(not okU and string.find(tostring(errU), "a Store is not a value for any key", 1, true) ~= nil and string.find(tostring(errU), "string key", 1, true) == nil, "Store hint at a numeric key (탐사 I′ 3): " .. tostring(errU))
 	-- H-568: NaN/inf priority refused; the same handler table twice registers once
 	local okN, errN = pcall(function()
 		q.Dispatch.addHandler({ isHandlable = function() return false end, priority = 0 / 0, process = function() return Quad.Void end })
