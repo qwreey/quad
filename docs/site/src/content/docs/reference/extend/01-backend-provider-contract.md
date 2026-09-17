@@ -37,7 +37,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
 
-**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.)
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.) **이름을 부른 예외 셋**이 있습니다 — `bindLifetime`이 값 쪽에서 불러야 하는 `Observer`/`Effect`의 `_assertBindable()`·`_catchUp()`·`_bindDestroying(inst)`(아래 "생명주기 프리미티브" 절). 밑줄이 붙어 있지만 이 셋은 백엔드가 알아야 하는 규약의 일부이고, 이 페이지가 이름을 유지합니다. 그중 하나라도 빼먹으면 quad-base는 항의하지 않고 조용히 어긋납니다 — `_bindDestroying`을 안 부르면 Effect의 마지막 cleanup이 인스턴스가 죽을 때 영영 돌지 않습니다.
 
 ---
 
@@ -98,7 +98,7 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
 - **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다.
 - **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
-- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Slot: this element is not claimed by quad …` / `InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있는가 한 줄이라 이중 claim 판정과 같은 것을 봅니다. mock은 lazy claim이라 mock 인스턴스면 참입니다.
+- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Slot: this element is not claimed by quad …` / `InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그 인스턴스의 `Destroying` 연결이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). mock은 lazy claim이라 mock 인스턴스면 참입니다.
 - **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
 
 ---
@@ -114,7 +114,7 @@ canBound       (value: any) -> boolean
 canExecute     (value: any) -> boolean
 ```
 
-- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
+- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: **먼저 `canBound(value)`가 거짓이면 아무것도 남기지 않고 던집니다**(quad-roblox 문구는 `bindLifetime: value is already bound to another Instance` / `… to this Instance` / `… already subscribed` — 이 거부가 곧 [Observer/Effect 레퍼런스](/reference/core/05-observer-effect/)가 약속하는 "살아 있는 핸들을 다른 인스턴스에 다시 놓으면 거절"의 실체입니다. 백엔드가 이 검사를 빼면 두 번째 인스턴스가 조용히 핸들을 가져가고 첫 인스턴스는 죽은 참조를 쥡니다). 다음으로 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
 - **`unbindLifetime(value)`** — **인자 하나**. 이 값 하나만 조기 해제하며, `inst`는 건드리지 않습니다. cleanup을 부르지도, 안쪽 Observer를 떼지도 않습니다(대칭적 해제일 뿐). 안 묶인 값에 부르면 no-op이지만 `nil`은 에러입니다 — 인자가 빠진 것이지 "안 묶인 값"이 아니기 때문입니다.
 - **`canBound(value)`** — "지금 이 값을 묶어도 되는가". 아직 아무 데도 안 묶여 있거나, 묶였던 인스턴스가 이미 파괴됐으면(연결이 끊겼으면) 참 — 즉 죽은 뒤 재사용은 허용됩니다.
 - **`canExecute(value)`** — "이 값이 지금 발화해도 되는가". **묶인 채 살아 있으면 참**입니다. State 전파가 이 게이트로 죽은 요소에 매달린 Observer/Effect를 걸러냅니다.

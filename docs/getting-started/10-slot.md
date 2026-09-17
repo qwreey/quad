@@ -113,7 +113,7 @@ const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 �
 Slot은 자기 상태를 두 개의 `Source`로 들고 있습니다.
 
 - **`slot.Length`** — 이 Slot이 차지하는 물리 자식의 **개수**
-- **`slot.Offset`** — 이 Slot의 첫 원소 앞에 **몇 개의 물리 자식이 있는지**를 나타냅니다. 0부터 세므로 앞에 아무것도 없으면 0이고, 이 Slot의 첫 원소는 전체에서 `Offset + 1`번째가 됩니다
+- **`slot.Offset`** — 이 Slot의 첫 원소 앞에 **앞선 숫자 키 자리들의 길이 합**(형제 Slot·정적 자식이 차지한 자리 수)를 나타냅니다. 0부터 세므로 앞에 아무것도 없으면 0이고, 이 Slot의 첫 원소는 전체에서 `Offset + 1`번째가 됩니다 `Length`와 `Offset`을 구독하는 콜백(`:Compute`·`:Observer`·`Effect`)은 던지면 안 됩니다 — 부모의 자리 계산 도중에 불리는 값이라, 거기서 던지면 그 부모의 자리 계산이 멈춥니다([레퍼런스](../reference/core/06-slot.md)의 `Offset` 캐비엇).
 
 한 부모에 Slot을 둘 놓고 직접 찍어 보면 관계가 보입니다.
 

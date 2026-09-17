@@ -76,7 +76,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 | `Shl` | `Op.Shl(n)` | `bit32.lshift` |
 | `Shr` | `Op.Shr(n)` | `bit32.rshift` |
 | `Alternative` | `Op.Alternative(default)` | 널 병합 — `State<T?>` → `State<T>` |
-| `Indexed` | `Op.Indexed<<V>>(key)` | 반응형 필드 읽기 |
+| `Indexed` | `Op.Indexed<<V>>(key)` | 반응형 필드 읽기(키 자체는 반응형이 아님 — State 키는 거부) |
 
 ---
 
@@ -149,7 +149,7 @@ self와 인자들의 최대값(`math.max` 폴딩).
 Clamp: (lo: NumArg, hi: NumArg) -> NumOp
 ```
 
-`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Operator.Clamp: argument #2 is nil`입니다.
+`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Operator.Clamp: min must be <= max (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다.
 
 ```luau
 local posX, maxX = q.Source(150), q.Source(100)
@@ -236,7 +236,9 @@ Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>
 
 널 병합입니다 — self가 `nil`이면 `default`, 아니면 self. `default`가 State면 의존성으로 등록되므로 기본값 쪽이 바뀌어도 결과가 따라옵니다. 값 타입을 가리지 않습니다.
 
-`default`가 `nil`이면 팩토리 호출 줄에서 `Operator.Alternative: default must not be nil`입니다.
+`default`가 `nil`이면 팩토리 호출 줄에서 `Operator.Alternative: default must not be nil`입니다. `default`가 State인데 그 **현재값**이 `nil`이면(아직 안 채운 `store:Of`) 읽는 줄에서 `Operator.Alternative: the default State's current value is nil`로 던집니다 — 기본값 자리에는 값이 있어야 합니다.
+
+`q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 "비움"으로 처리). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며, 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
 
 ```luau
 local optionalName = q.Source<<string?>>(nil)

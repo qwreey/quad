@@ -212,7 +212,7 @@ Dispatch.drive: array keys must be positive integers (got {키})
 
 **계약**: 숫자 키 자리를 맡은 말단 핸들러는 **자리마다 길이와 오프셋 소스를 둘 다 등록**해야 합니다. 하나라도 빠뜨리면 그 owner의 오프셋 산술이 깨지고, 나중에 `getOffsetAt`이 "등록을 건너뛴 핸들러가 있다"고 알려주는 자리에서 터집니다. 해제 순서는 **`setOffsetSource(None)` 다음 `setLength(0)`**이고, 그 쌍을 한 번에 하는 함수가 `setEmpty`입니다. 문자 키 핸들러에는 이 의무가 없습니다.
 
-**소유권 계약**: 자리에 **값을 실제로 놓는**(부모를 바꾸는) 핸들러는 그 값의 **자리를 등록**해야 합니다 — `process`에서 `claimOwnerAt(value, inst, k)`, retractor에서 `releaseOwner(value, inst)`. 하나의 값은 동시에 한 자리에만 앉을 수 있고, 그 레지스트리는 `Slot`의 원소·정적 자식·숏핸드가 만드는 관리 자식이 **전부 같이 씁니다** — 그래서 어느 경로로든 두 번째 자리는 `already mounted elsewhere`로 거부되고, 앉아 있는 동안 `q.dispose`도 거부됩니다. 기준은 키 종류가 아니라 **부모를 바꾸는가**입니다 — 문자 키 핸들러라도 자식을 만들어 붙이면 등록합니다(숏핸드가 `(inst, "_quad_round")` 자리로 그렇게 합니다). 값을 놓지 않는 핸들러(`setEmpty`만 부르는 잎, 프로퍼티·이벤트처럼 값을 쓰기만 하는 핸들러)에는 이 의무가 없습니다.
+**소유권 계약**: 자리에 **값을 실제로 놓는**(부모를 바꾸는) 핸들러는 그 값의 **자리를 등록**해야 합니다 — `process`에서 `claimOwnerAt(value, inst, k)`, retractor에서 `releaseOwner(value, inst)`. 하나의 값은 동시에 한 자리에만 앉을 수 있고, 그 레지스트리는 `Slot`의 원소·정적 자식·숏핸드가 만드는 관리 자식이 **전부 같이 씁니다** — 그래서 어느 경로로든 두 번째 자리는 `already mounted elsewhere`로 거부되고, 앉아 있는 동안 `q.dispose`도 거부됩니다. 기준은 키 종류가 아니라 **부모를 바꾸는가**입니다 — 문자 키 핸들러라도 자식을 만들어 붙이면 등록합니다(숏핸드가 `(inst, "_quad_round")` 자리로 그렇게 합니다). 값을 놓지 않는 핸들러(`setEmpty`만 부르는 잎, 프로퍼티·이벤트처럼 값을 쓰기만 하는 핸들러)에는 이 의무가 없습니다. **자기가 잡은 자리만 풉니다** — `releaseOwner`는 ownerKey가 맞기만 하면 통과하므로, 남의 자리(예: 어떤 Slot의 원소)를 그 Slot을 ownerKey로 넘겨 풀면 그 Slot의 부기가 깨져 다음 CRUD에서 `ownership tracking is broken`으로 동결됩니다. 두 op 모두 `element`·`inst`/`ownerKey`가 `nil`이면 즉시 에러입니다.
 
 공통 인자 검사는 세 종류이고 함수 이름만 바뀝니다.
 

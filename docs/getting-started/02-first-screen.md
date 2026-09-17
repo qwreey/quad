@@ -127,10 +127,10 @@ const card = D.Frame {
 ```
 
 ```
-Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
 ```
 
-물음표까지가 여러분에게 하는 말입니다 — "2번 자리가 비었다, `q.None`으로 메꿔라". 세미콜론 뒤는 확장을 만드는 사람을 위한 힌트라 지금은 몰라도 됩니다. 맨 끝이 `nil`인 것은 그냥 거기서 끝난 것으로 읽혀 넘어가지만, 뒤에 원소가 하나라도 더 붙는 순간 구멍이 되므로 자리와 무관하게 비우지 않는 습관이 안전합니다.
+물음표까지가 여러분에게 하는 말입니다 — "2번 자리가 비었다, `q.None`으로 메꿔라". 괄호 안은 이미 놓인 자식이 있을 때의 정리법(반쯤 지어진 인스턴스를 `q.dispose`)이고, 세미콜론 뒤는 확장을 만드는 사람을 위한 힌트라 지금은 몰라도 됩니다. 맨 끝이 `nil`인 것은 그냥 거기서 끝난 것으로 읽혀 넘어가지만, 뒤에 원소가 하나라도 더 붙는 순간 구멍이 되므로 자리와 무관하게 비우지 않는 습관이 안전합니다.
 
 </details>
 <!-- mock 실측 2026-09-11: gs.nilhole.luau — 중간 nil은 위 에러 verbatim, 끝 nil은 자식 1개로 통과, q.None으로 메꾸면 자식 2개 -->

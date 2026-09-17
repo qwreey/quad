@@ -917,7 +917,7 @@ Bold(m: IntoTextLabel) return m:AsTextLabel():FontFace(…) end` 하나로 셋�
 실측). 생성기가 클래스마다 찍고, 커스텀 클래스는 사용자가 같은 형태로 쓴다.
 
 **예약 캐스트 접두**: 런타임 `__index`는 예약 메소드(`Apply`/`Peek`/
-`Overridden`/`As`) → **`^As%u`(As 뒤 대문자)면 캐스트 경로** → 나머지만 setter.
+`Overridden`/`As`) → **`^As%u`(As 뒤 대문자)면 캐스트 경로** → **[2026-09-17 `H-552`]** `__` 접두는 nil(끝 절) → 나머지만 setter.
 그래서 `mod:AsTextLabl()` 같은 오타는 필드 `AsTextLabl`을 조용히 만들지 않고
 error다 — **사용자 요구**: *"As로 시작하는건 전부 Cast 프리디파인드로 두고
 시작해야할것 같아"*(안 그러면 As가 프로퍼티처럼 동작해 타입도 런타임도 못 잡는

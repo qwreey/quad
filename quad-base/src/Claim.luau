@@ -7,11 +7,16 @@
 	only two ops (`nativeClaim`, `nativeFindChild` — user: "quad-base 에서
 	전반을 구현해주고 필요 핸들을 구현하라고 남기는건 괜찮은 생각").
 
-	Shape (§4 — a layer ON TOP of drive, handlers unchanged):
-	  DFS down resolving mapper descriptors by key (`nativeFindChild`),
-	  claim each resolved inst (`nativeClaim`, BEFORE its drive — same
-	  reason `New`'s ② precedes ③④), drive children bottom-up, then the
-	  parent. A resolved child's array slot is REPLACED by its Instance so
+	Shape (§4 — a layer ON TOP of drive, handlers unchanged; TWO passes since
+	round11 `H-539`/`H-551`, claim-plan 19·21):
+	  pass 1 `resolve` — DFS down resolving mapper descriptors by key
+	  (`nativeFindChild`), validating only (one-shot, props table, absence /
+	  class mismatch, one descriptor per child) and stacking a bottom-up plan;
+	  pass 2 `commit` — `nativeClaim` every planned inst ROOT-FIRST (the first
+	  mutation is the root claim, so an already-claimed root touches nothing;
+	  each inst is claimed BEFORE its drive — same reason `New`'s ② precedes
+	  ③④), then drive children bottom-up, then the parent.
+	  A resolved child's array slot is REPLACED by its Instance so
 	  `InstanceChildHandler` sees a plain static child (§2 — the PreRef
 	  "Processed sentinel" half of the idiom is deliberately NOT taken).
 

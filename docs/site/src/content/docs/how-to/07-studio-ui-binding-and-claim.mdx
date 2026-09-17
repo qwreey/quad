@@ -183,6 +183,8 @@ end
 이미 claim된 상태입니다. 다시 걸면 `nativeClaim: Instance is already claimed by quad`
 입니다 — 별도 레지스트리가 아니라 claim 시점에 심는 소유 데이터의 유무로
 판정합니다. **여러 quad 인스턴스가 한 트리를 나눠 claim하는 것은 UB**입니다.
+자식 키를 잘못 적어 `Claim: no child matched key …`로 실패한 호출은 아무것도 claim하지
+않습니다(해석이 전부 끝난 뒤에 claim합니다) — 키를 고쳐 같은 루트에 다시 걸면 됩니다.
 
 ### 2) 디스크립터를 쓴 노드마다, 그 노드의 직계 자식은 전부 적는다
 

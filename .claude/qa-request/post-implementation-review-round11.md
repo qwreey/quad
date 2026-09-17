@@ -26,7 +26,7 @@
 
 ## §3 참고 — 오늘 반영으로 새로 생긴 표면(탐사자에게 줄 목록)
 
-`q.Bookkeeping.claimOwnerAt/releaseOwner`, `Backend.nativeFindChild(inst, key, className?)`, Effect cleanup `dying: boolean`, `State._computing`(세대 스탬프), `Slot._materializing`(walk + raw* attach 창), `Debounce h._time`(+ MaxTime 로컬), `Property tweenRetractors`(SetWeak, Tween을 거친 체인은 유지), `Event`/`OnChange` NORMAL − 1, `InstanceChild`/`SlotHandler` isHandlable 양의 정수 키. 결정 원문: `base/claim-plan.md` 16~18번, `state-epoch-plan.md`·`effect-plan.md`·`slot-plan.md`·`debounce-throttle-plan.md`·`lifecycle-hooks-plan.md`·`tween-plan.md` 끝 절, `session/2026-09-17-01-round10-batch-reply.md`.
+`q.Bookkeeping.claimOwnerAt/releaseOwner`, `Backend.nativeFindChild(inst, key, className?)`, Effect cleanup `dying: boolean`, `State._computing`(세대 스탬프), `Slot._materializing`(walk + raw* attach 창), `Debounce h._time`(+ MaxTime 로컬), `Property tweenRetractors`(SetWeak, ~~Tween을 거친 체인은 유지~~ — `H-547`로 모든 체인), `Event`/`OnChange` NORMAL − 1, `InstanceChild`/`SlotHandler` isHandlable 양의 정수 키. 결정 원문: `base/claim-plan.md` 16~18번, `state-epoch-plan.md`·`effect-plan.md`·`slot-plan.md`·`debounce-throttle-plan.md`·`lifecycle-hooks-plan.md`·`tween-plan.md` 끝 절, `session/2026-09-17-01-round10-batch-reply.md`.
 
 ## §2′ 반영한 것(자율 — 문서가 이미 답을 가진 것)
 
