@@ -764,7 +764,8 @@ local function mockProvider(quad: any): { [any]: any }
 	quad.Backend.onDestroying = onDestroying
 	-- [2026-09-16] `isClaimed` — the mock claims LAZILY (bindLifetime claims on demand), so every mock
 	-- instance counts as claimed here; specs that need the Slot gate to fire override this slot
-	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup instead.
+	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup + gcconn `.Connected`
+	-- (round11 `H-548`: a destroyed Instance is "not claimed" at once, not after the next GC).
 	local function isClaimed(inst: any): boolean
 		return isMockInstance(inst)
 	end

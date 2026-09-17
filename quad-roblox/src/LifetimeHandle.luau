@@ -73,7 +73,8 @@ local function install(quad: any)
 	end
 
 	-- [2026-09-16 사용자 결정] claim 여부 — `nativeClaim`이 남기는 셋업(gchold) 유무 그대로(이중 claim 판정과 같은 검사).
-	-- Slot이 요소를 받을 때 부른다(`Slot/Elements.luau`); 파괴된 인스턴스도 셋업이 남아 있으면 참(`H-293` UB 그대로).
+	-- Slot이 요소를 받을 때 부른다(`Slot/Elements.luau`); ~~파괴된 인스턴스도 셋업이 남아 있으면 참~~ → round11 `H-548`: 파괴되면
+	-- 즉시 거짓(gcconn 끊김 — 아래 주석). 파괴된 인스턴스를 넣는 것 자체는 `H-293` UB 그대로.
 	local function isClaimed(inst: any): boolean
 		if inst == nil then
 			return false

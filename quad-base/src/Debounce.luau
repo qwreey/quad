@@ -41,7 +41,7 @@
 
 	Time sampling (round10 Q55 (b), user decision 2026-09-17): `Time` is read ONCE per
 	upstream signal, first thing in `onUpstreamEmit`, into `h._time` (`MaxTime` is read
-	right after it, into a local); every `openWindow` (signal path, the trailing reopen
+	right after it, into a local — only when `Trailing` can arm it, round11 `H-542`); every `openWindow` (signal path, the trailing reopen
 	in `commitIdle`, `Flush`) uses that cache. The only site that can throw (a bad
 	State value, a throwing Compute behind it) is therefore the signal entry, before
 	any state change — the timer callbacks and `Flush` run no user code and cannot
@@ -73,7 +73,8 @@ type Timeout = QuadTypes.Timeout
 local WEAK_KEY_MT = { __mode = "k" }
 
 -- `Time`/`MaxTime` are read once per upstream signal, at the gate's entry (plan 5-2 as of
--- round10 Q55 (b): polling, no subscription — an already scheduled timer keeps its delay).
+-- round10 Q55 (b): polling, no subscription — an already scheduled timer keeps its delay;
+-- `MaxTime` is not read at all when `Trailing = false`, `H-542`).
 local function readTime(name: string, field: string, t: any): number
 	local v = if isState(t) then t:Get() else t
 	if type(v) ~= "number" or v ~= v or v < 0 then
