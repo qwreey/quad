@@ -208,14 +208,25 @@ do
 end
 
 print()
-print("=== 10. round11 H-547 (2026-09-17) — Tween을 거친 적 없는 체인도 철거 때 기록이 지워져 다음 Tween은 스냅; retractor는 GC를 견딘다 ===")
+print("=== 10. round11 H-547 (2026-09-17) → Q65 (2026-09-18) — 기록은 (inst, k)에 인스턴스 수명 동안 남는다: 철거·핸들러 교체 뒤에도 '쓴 적 있음'이라 다음 Tween은 애니메이션; 진행 중이던 트윈만 Cancel 뒤 true; retractor는 GC를 견딘다 ===")
 do
 	mock.resetTweenLog()
-	-- (1) plain → teardown → Tween: snaps (was: animated, the `true` record survived the Void retractor)
+	-- (1) plain → teardown → Tween: ANIMATES — the property was written once, that is what "first set" means
 	local f = q.Declaration.Frame({ Size = 1 }) :: any
 	q.Dispatch.retractFrom(f, "Size", 1)
 	q.Dispatch.drive(f, { Size = Tween({ Value = 5, Time = 0.3 }) })
-	assert(f.Size == 5 and #log == 0, "first set after teardown snaps, no engine tween")
+	assert(f.Size == 1 and #log == 1, "not a first set any more: engine tween, no snap")
+	-- (1b) Q65's three paths — the handler switch (plain ↔ State, via None) no longer erases the record
+	mock.resetTweenLog()
+	local h = q.Declaration.Frame({ Size = 0 }) :: any
+	q.Dispatch.drive(h, { Size = q.Source(Tween({ Value = 10, Time = 0.3 })) }) -- plain → State
+	assert(#log == 1, "plain → State: animates (was: snapped)")
+	local hs = q.Source(Tween({ Value = 20, Time = 0.3 }) :: any)
+	q.Dispatch.drive(h, { Size = hs }) -- State → State (same handler, value swap): animates
+	assert(#log == 2, "State swap animates")
+	hs:Set(q.None) -- writes nil (Q33) — the mock accepts it; the running tween is cancelled
+	hs:Set(Tween({ Value = 30, Time = 0.3 }))
+	assert(#log == 3, "after None: still not a first set — animates (was: snapped)")
 	-- (2) Tween → plain → (GC in the window) → teardown → Tween: still snaps
 	mock.resetTweenLog()
 	local src = q.Source(0 :: any)
@@ -233,7 +244,17 @@ do
 	q.Dispatch.retractFrom(g, "Size", 1)
 	assert(log[1].tween.cancels >= 1, "teardown cancelled the running tween")
 	q.Dispatch.drive(g, { Size = Tween({ Value = 9, Time = 0.5 }) })
-	assert(g.Size == 9 and #log == 1, "re-driven Tween snaps (record cleared on teardown)")
+	assert(g.Size == 7 and #log == 2, "re-driven Tween animates (the record survived teardown)")
+	-- (3) a RUNNING tween at teardown: Cancel, and the record forgets the target (true) — a re-declared
+	-- same-target Tween must play (G-7), not be deduped against a value the property never reached
+	mock.resetTweenLog()
+	local k = q.Declaration.Frame({ Size = 0 }) :: any
+	q.Dispatch.drive(k, { Size = Tween({ Value = 50, Time = 1 }) })
+	assert(#log == 1 and log[1].tween.cancels == 0, "running")
+	q.Dispatch.retractFrom(k, "Size", 1)
+	assert(log[1].tween.cancels == 1, "cancelled at teardown")
+	q.Dispatch.drive(k, { Size = Tween({ Value = 50, Time = 1 }) })
+	assert(#log == 2, "same target after a cancelled tween plays again (record was downgraded to true)")
 	print("PASS")
 end
 

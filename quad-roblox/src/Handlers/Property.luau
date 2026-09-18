@@ -23,8 +23,10 @@
 	2026-09-17; round11 `H-547` widened it from "a chain that has carried a Tween"
 	to EVERY chain] the per-(inst, k) retractor is returned by every path —
 	on teardown (`retracting == true`: `Dispatch.retractFrom`, the shorthand's
-	managed-child destroy) it `Cancel`s the running engine tween and clears the
-	`(inst, k)` slot; on a value swap (`retracting == false`) it does nothing,
+	managed-child destroy, AND Dispatch's handler-switch branch) it `Cancel`s the
+	running engine tween and downgrades that record to `true` (round11 Q65: the
+	record is per (inst, k) for the Instance's life — never reset to nil, so "first
+	set = snap" is quad's first write to that property); on a value swap (`retracting == false`) it does nothing,
 	because `process` already cancels/Finish-snaps by the INCOMING tween's
 	`Override`. Before: the engine tween ran on into the destroyed child (Studio:
 	the corner just vanished) and the stale slot deduped a re-declared same-target
@@ -93,11 +95,20 @@ local function install(quad: any)
 				if not retracting then
 					return -- value swap: process handles the previous tween (Override)
 				end
+				-- round11 Q65 (user decision 2026-09-18): teardown does NOT forget that the property was
+				-- written. "First set = snap" means quad's first write to THIS (inst, k) — the record lives
+				-- with the Instance (weak key), not with the chain. Only a record that names a RUNNING tween
+				-- is downgraded: after `Cancel` the property sits at an interpolated value, so its `Value`
+				-- would be a lie the dedup believes (G-7 — a re-declared same-target tween skipped for good).
+				-- `true` = "set before, target unknown" — the next Tween always plays. A `true` / `{ Value }`
+				-- record (nothing running) stays: the property really holds that value. Before this, the
+				-- slot was reset to nil, which also fired on a handler switch (plain ↔ State, via None — the
+				-- (B) branch calls the old retractor with retracting == true) and made the next Tween snap.
 				local slot = tweenSlots:GetStrong(inst, k)
 				if type(slot) == "table" and slot.Tween ~= nil then
 					slot.Tween:Cancel() -- the property keeps whatever value it reached
+					tweenSlots:SetStrong(inst, k, true)
 				end
-				tweenSlots:SetStrong(inst, k, nil) -- fresh chain next time: first set snaps again
 			end
 			tweenRetractors:SetWeak(inst, k, r)
 		end
