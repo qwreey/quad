@@ -45,6 +45,8 @@ export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K
 | `name` | 프로퍼티 이름 문자열 | `PropTypesRead`의 키여야 한다 — 오타는 타입 에러 |
 | `fn` | `(newValue) -> ()` | 그 프로퍼티가 바뀔 때 불린다. 파라미터 타입은 이름에서 추론된다 |
 
+**`"Parent"`의 콜백 인자는 `Instance?`입니다.** 인스턴스가 트리에서 빠지는 순간 엔진이 `nil`을 주고, 그 순간을 잡는 것이 `Parent`를 지켜보는 주된 이유라서 타입이 그렇게 생성됩니다 — `function(p: Instance)`로 주석하면 타입 에러이고, 본문에서 `nil`을 먼저 걸러야 합니다. 같은 이유로 `AncestryChanged` 이벤트의 둘째 인자 `parent`도 `Instance?`입니다([`02-d`](./02-d.md) 이벤트 절).
+
 **반환** — frozen 디스크립터 `{ Name, Callback }`. **캐시가 없어** 호출마다 새 값입니다.
 
 **예제**

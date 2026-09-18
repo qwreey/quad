@@ -129,6 +129,15 @@ def is_desc(classes, name, root):
     return False
 
 
+# [round11 Q66 (b), 사용자 결정 2026-09-18] Event parameters the engine passes as nil although the API
+# Dump types them as a bare Class (the Dump has no optionality; the pinned defs say `Instance?`).
+# This is the CLOSED list of "defs says optional, our surface said not" over the whole scope
+# (탐사 J′): `Parent` (readProps, handled inline above) and `AncestryChanged.parent` — the other
+# two the defs mark optional, `Camera.CameraSubject` and `Model.PrimaryPart`, are WRITE-surface
+# properties where a bare type is harmless (writing nil is typed elsewhere), so they stay.
+ENGINE_NIL_EVENT_PARAMS = {("AncestryChanged", "parent")}
+
+
 def map_type(vt, dropped, ctx):
     cat, name = vt["Category"], vt["Name"]
     if cat == "Primitive":
@@ -223,9 +232,12 @@ def normalize(raw_path, version):
                 # ([2026-09-09] `Font`는 이제 안 잘린다 — legacy 되살리기, 위 PROP_TAG_LEGACY)
                 if m["Name"] == "Parent":
                     # [Q35 (a), 사용자 결정 2026-09-08 — round3 §11] WRITE surface still excludes Parent (H-142);
-                    # the READ surface (OnChange) keeps it — `OnChange("Parent", fn)` was a TypeError
-                    dropped.append(f"{name}.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35)")
-                    read_props.append({"name": "Parent", "type": "Instance", "owner": owner})
+                    # the READ surface (OnChange) keeps it — `OnChange("Parent", fn)` was a TypeError.
+                    # [round11 Q66 (b), 사용자 결정 2026-09-18] `Instance?` — the engine hands nil the moment the
+                    # Instance leaves the tree, which is the main reason to watch Parent at all; the API Dump
+                    # carries no optionality, the pinned defs say `Instance?`. See ENGINE_NIL_EVENT_PARAMS.
+                    dropped.append(f"{name}.Parent: excluded from the write surface by design (H-142, Q5 (a)); kept in readProps (Q35) as Instance? (Q66)")
+                    read_props.append({"name": "Parent", "type": "Instance?", "owner": owner})
                     continue
                 # [round1 Q19 (a), 2026-09-07] ReadOnly props (AbsoluteSize/AbsolutePosition/TextBounds…)
                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
@@ -275,6 +287,8 @@ def normalize(raw_path, version):
                     pname = p["Name"]
                     if pname in RESERVED or not pname.isidentifier():
                         pname = "_" + pname
+                    if (m["Name"], p["Name"]) in ENGINE_NIL_EVENT_PARAMS:
+                        t += "?"  # after the defs gate — `Instance?` is not a declared type name
                     params.append({"name": pname, "type": t})
                 if ok:
                     events.append({"name": m["Name"], "params": params, "owner": owner})

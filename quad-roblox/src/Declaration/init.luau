@@ -168,7 +168,7 @@ export type BillboardGuiParam<E> = {
 	StudsOffset: PV4?,
 	StudsOffsetWorldSpace: PV4?,
 	ZIndexBehavior: PV10?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -199,7 +199,7 @@ export type CameraParam<E> = {
 	VRTiltAndRollEnabled: PV0?,
 	--- ⚠️ **deprecated** — Roblox Deprecated
 	focus: PV11?, -- @deprecated (Roblox Deprecated)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -259,7 +259,7 @@ export type CanvasGroupParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -293,7 +293,7 @@ export type FolderParam<E> = {
 	Capabilities: PV3?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -351,7 +351,7 @@ export type FrameParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -447,7 +447,7 @@ export type ImageButtonParam<E> = {
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	Activated: (((inputObject: InputObject, clickCount: number) -> ()) | StateMarker<(inputObject: InputObject, clickCount: number) -> ()> | None)?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -539,7 +539,7 @@ export type ImageLabelParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -588,7 +588,7 @@ export type ScreenGuiParam<E> = {
 	SelectionBehaviorUp: PV7?,
 	SelectionGroup: PV0?,
 	ZIndexBehavior: PV10?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -664,7 +664,7 @@ export type ScrollingFrameParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -721,7 +721,7 @@ export type SurfaceGuiParam<E> = {
 	ToolPunchThroughDistance: PV2?,
 	ZIndexBehavior: PV10?,
 	ZOffset: PV2?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -810,7 +810,7 @@ export type TextBoxParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -917,7 +917,7 @@ export type TextButtonParam<E> = {
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
 	Activated: (((inputObject: InputObject, clickCount: number) -> ()) | StateMarker<(inputObject: InputObject, clickCount: number) -> ()> | None)?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1021,7 +1021,7 @@ export type TextLabelParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1058,7 +1058,7 @@ export type UIAspectRatioConstraintParam<E> = {
 	DominantAxis: PV43?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1080,7 +1080,7 @@ export type UICornerParam<E> = {
 	Sandboxed: PV0?,
 	TopLeftRadius: PV44?,
 	TopRightRadius: PV44?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1119,7 +1119,7 @@ export type UIDragDetectorParam<E> = {
 	SelectionModeDragSpeed: PV8?,
 	SelectionModeRotateSpeed: PV2?,
 	UIDragSpeedAxisMapping: PV51?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1143,7 +1143,7 @@ export type UIFlexItemParam<E> = {
 	Name: PV5?,
 	Sandboxed: PV0?,
 	ShrinkRatio: PV2?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1168,7 +1168,7 @@ export type UIGradientParam<E> = {
 	TileMode: PV55?,
 	Transparency: PV56?,
 	Type: PV57?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1193,7 +1193,7 @@ export type UIGridLayoutParam<E> = {
 	SortOrder: PV60?,
 	StartCorner: PV61?,
 	VerticalAlignment: PV62?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1219,7 +1219,7 @@ export type UIListLayoutParam<E> = {
 	VerticalAlignment: PV62?,
 	VerticalFlex: PV63?,
 	Wraps: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1240,7 +1240,7 @@ export type UIPaddingParam<E> = {
 	PaddingRight: PV44?,
 	PaddingTop: PV44?,
 	Sandboxed: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1270,7 +1270,7 @@ export type UIPageLayoutParam<E> = {
 	TouchInputEnabled: PV0?,
 	TweenTime: PV2?,
 	VerticalAlignment: PV62?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1291,7 +1291,7 @@ export type UIScaleParam<E> = {
 	Name: PV5?,
 	Sandboxed: PV0?,
 	Scale: PV2?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1317,7 +1317,7 @@ export type UIShadowParam<E> = {
 	Spread: PV8?,
 	Transparency: PV2?,
 	ZIndex: PV2?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1336,7 +1336,7 @@ export type UISizeConstraintParam<E> = {
 	MinSize: PV9?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1363,7 +1363,7 @@ export type UIStrokeParam<E> = {
 	Thickness: PV2?,
 	Transparency: PV2?,
 	ZIndex: PV2?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1388,7 +1388,7 @@ export type UITableLayoutParam<E> = {
 	Sandboxed: PV0?,
 	SortOrder: PV60?,
 	VerticalAlignment: PV62?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1407,7 +1407,7 @@ export type UITextSizeConstraintParam<E> = {
 	MinTextSize: PV2?,
 	Name: PV5?,
 	Sandboxed: PV0?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1473,7 +1473,7 @@ export type VideoFrameParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1558,7 +1558,7 @@ export type ViewportFrameParam<E> = {
 	UIPadding: PV44?, -- 숏핸드(H-336)
 	UIPaddingOffset: PV2?, -- 숏핸드(H-336)
 	UIScale: PV2?, -- 숏핸드(H-336)
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -1596,7 +1596,7 @@ export type WorldModelParam<E> = {
 	Sandboxed: PV0?,
 	UseWorkspaceCollisionGroups: PV0?,
 	WorldPivot: PV11?,
-	AncestryChanged: (((child: Instance, parent: Instance) -> ()) | StateMarker<(child: Instance, parent: Instance) -> ()> | None)?,
+	AncestryChanged: (((child: Instance, parent: Instance?) -> ()) | StateMarker<(child: Instance, parent: Instance?) -> ()> | None)?,
 	AttributeChanged: (((attribute: string) -> ()) | StateMarker<(attribute: string) -> ()> | None)?,
 	Changed: (((property: string) -> ()) | StateMarker<(property: string) -> ()> | None)?,
 	ChildAdded: (((child: Instance) -> ()) | StateMarker<(child: Instance) -> ()> | None)?,
@@ -2009,7 +2009,7 @@ export type PropTypesRead = {
 	PaddingLeft: UDim,
 	PaddingRight: UDim,
 	PaddingTop: UDim,
-	Parent: Instance,
+	Parent: Instance?,
 	PixelsPerStud: number,
 	PlaceholderColor3: Color3,
 	PlaceholderText: string,
@@ -2160,7 +2160,7 @@ export type BillboardGuiOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentDistance", Callback: (number) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type BillboardGuiModifier = {
 	read __quadModifier: "BillboardGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2227,7 +2227,7 @@ export type CameraOnChange =
 	| 	{ Name: "focus", Callback: (CFrame) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "NearPlaneZ", Callback: (number) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "ViewportSize", Callback: (Vector2) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type CameraModifier = {
@@ -2306,7 +2306,7 @@ export type CanvasGroupOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type CanvasGroupModifier = {
 	read __quadModifier: "CanvasGroup", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2373,7 +2373,7 @@ export type FolderOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type FolderModifier = {
 	read __quadModifier: "Folder", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2437,7 +2437,7 @@ export type FrameOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type FrameModifier = {
 	read __quadModifier: "Frame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2819,7 +2819,7 @@ export type ImageButtonOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type ImageButtonModifier = {
 	read __quadModifier: "ImageButton", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -2955,7 +2955,7 @@ export type ImageLabelOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type ImageLabelModifier = {
 	read __quadModifier: "ImageLabel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -3174,7 +3174,7 @@ export type ScreenGuiOnChange =
 	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type ScreenGuiModifier = {
 	read __quadModifier: "ScreenGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -3272,7 +3272,7 @@ export type ScrollingFrameOnChange =
 	| 	{ Name: "AbsoluteWindowSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type ScrollingFrameModifier = {
 	read __quadModifier: "ScrollingFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -3381,7 +3381,7 @@ export type SurfaceGuiOnChange =
 	| 	{ Name: "AbsoluteRotation", Callback: (number) -> () }
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type SurfaceGuiModifier = {
 	read __quadModifier: "SurfaceGui", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -3525,7 +3525,7 @@ export type TextBoxOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
@@ -3689,7 +3689,7 @@ export type TextButtonOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
@@ -3845,7 +3845,7 @@ export type TextLabelOnChange =
 	| 	{ Name: "ContentText", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "OpenTypeFeaturesError", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "TextBounds", Callback: (Vector2) -> () }
 	| 	{ Name: "TextFits", Callback: (boolean) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
@@ -3938,7 +3938,7 @@ export type UIAspectRatioConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIAspectRatioConstraintModifier = {
 	read __quadModifier: "UIAspectRatioConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4053,7 +4053,7 @@ export type UICornerOnChange =
 	| 	{ Name: "TopLeftRadius", Callback: (UDim) -> () }
 	| 	{ Name: "TopRightRadius", Callback: (UDim) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UICornerModifier = {
 	read __quadModifier: "UICorner", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4105,7 +4105,7 @@ export type UIDragDetectorOnChange =
 	| 	{ Name: "SelectionModeRotateSpeed", Callback: (number) -> () }
 	| 	{ Name: "UIDragSpeedAxisMapping", Callback: (Enum.UIDragSpeedAxisMapping) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIDragDetectorModifier = {
 	read __quadModifier: "UIDragDetector", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4156,7 +4156,7 @@ export type UIFlexItemOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ShrinkRatio", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIFlexItemModifier = {
 	read __quadModifier: "UIFlexItem", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4193,7 +4193,7 @@ export type UIGradientOnChange =
 	| 	{ Name: "Transparency", Callback: (NumberSequence) -> () }
 	| 	{ Name: "Type", Callback: (Enum.GradientType) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIGradientModifier = {
 	read __quadModifier: "UIGradient", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4237,7 +4237,7 @@ export type UIGridLayoutOnChange =
 	| 	{ Name: "AbsoluteCellSize", Callback: (Vector2) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIGridLayoutModifier = {
 	read __quadModifier: "UIGridLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4321,7 +4321,7 @@ export type UIListLayoutOnChange =
 	| 	{ Name: "Wraps", Callback: (boolean) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIListLayoutModifier = {
 	read __quadModifier: "UIListLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4359,7 +4359,7 @@ export type UIPaddingOnChange =
 	| 	{ Name: "PaddingTop", Callback: (UDim) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIPaddingModifier = {
 	read __quadModifier: "UIPadding", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4403,7 +4403,7 @@ export type UIPageLayoutOnChange =
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "CurrentPage", Callback: (GuiObject) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIPageLayoutModifier = {
 	read __quadModifier: "UIPageLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4442,7 +4442,7 @@ export type UIScaleOnChange =
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "Scale", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIScaleModifier = {
 	read __quadModifier: "UIScale", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4477,7 +4477,7 @@ export type UIShadowOnChange =
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIShadowModifier = {
 	read __quadModifier: "UIShadow", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4513,7 +4513,7 @@ export type UISizeConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UISizeConstraintModifier = {
 	read __quadModifier: "UISizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4550,7 +4550,7 @@ export type UIStrokeOnChange =
 	| 	{ Name: "Transparency", Callback: (number) -> () }
 	| 	{ Name: "ZIndex", Callback: (number) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UIStrokeModifier = {
 	read __quadModifier: "UIStroke", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4594,7 +4594,7 @@ export type UITableLayoutOnChange =
 	| 	{ Name: "VerticalAlignment", Callback: (Enum.VerticalAlignment) -> () }
 	| 	{ Name: "AbsoluteContentSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UITableLayoutModifier = {
 	read __quadModifier: "UITableLayout", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4629,7 +4629,7 @@ export type UITextSizeConstraintOnChange =
 	| 	{ Name: "Name", Callback: (string) -> () }
 	| 	{ Name: "Sandboxed", Callback: (boolean) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type UITextSizeConstraintModifier = {
 	read __quadModifier: "UITextSizeConstraint", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4704,7 +4704,7 @@ export type VideoFrameOnChange =
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
 	| 	{ Name: "IsLoaded", Callback: (boolean) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "Resolution", Callback: (Vector2) -> () }
 	| 	{ Name: "TimeLength", Callback: (number) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
@@ -4824,7 +4824,7 @@ export type ViewportFrameOnChange =
 	| 	{ Name: "AbsoluteSize", Callback: (Vector2) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
 	| 	{ Name: "GuiState", Callback: (Enum.GuiState) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type ViewportFrameModifier = {
 	read __quadModifier: "ViewportFrame", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
@@ -4899,7 +4899,7 @@ export type WorldModelOnChange =
 	| 	{ Name: "UseWorkspaceCollisionGroups", Callback: (boolean) -> () }
 	| 	{ Name: "WorldPivot", Callback: (CFrame) -> () }
 	| 	{ Name: "ClassName", Callback: (string) -> () }
-	| 	{ Name: "Parent", Callback: (Instance) -> () }
+	| 	{ Name: "Parent", Callback: (Instance?) -> () }
 	| 	{ Name: "className", Callback: (string) -> () }
 export type WorldModelModifier = {
 	read __quadModifier: "WorldModel", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴
