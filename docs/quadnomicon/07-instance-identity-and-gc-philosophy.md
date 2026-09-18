@@ -81,7 +81,7 @@ InstData:SetWeak(inst, "gcconn", gcconn)
   userdata 신원 고정입니다.
 - **릴레이션은 `SetWeak`입니다.** `gchold`와 `gcconn`은 클로저 ↔ `gchold[1]` 상호
   참조로 이미 살아 있으므로, 여기서 강참조를 한 겹 더 걸면 상호 강참조 누수가 됩니다.
-- `bindLifetime(inst, value)`은 이 `gchold`의 해시 자리에 값을 넣고 `gcconn` 참조를
+- `holdLifetime(inst, value)`(quad-base의 `bindLifetime`이 게이트를 지난 뒤 부르는 백엔드 op)은 이 `gchold`의 해시 자리에 값을 넣고 `gcconn` 참조를
   값 쪽에 복사합니다. 알려진 타입이 아니면(평범한 테이블·클로저) 그 GC 릴레이션만 하고
   끝납니다.
 

@@ -65,7 +65,8 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    `+` 뒤 빌드 메타데이터는 양쪽 다 무시하고, `3.1.0-rc.1` 같은 프리릴리즈 꼬리는 **있고 없음이 양쪽에서
    같아야** 합니다(꼬리 없는 패턴은 rc 빌드를 받지 않음). 전체 문법은
    [백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/)에 있습니다.
-2. **모듈 뮤테이션** — 생명주기 프리미티브(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)와
+2. **모듈 뮤테이션** — 생명주기 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy` — 그 위의
+   `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`는 quad-base 것)과
    `nativeClaim`, 엔진 op 일습을 [모듈 인스턴스](/reference/core/01-quad-module/)에 심고, 백엔드가 소유한
    핸들러 넷(Property / InstanceChild / Event / InstanceShorthand)과 OnChange 핸들러를 디스패치에
    등록합니다. 주입 슬롯의 전체 목록과

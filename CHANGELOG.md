@@ -14,7 +14,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 - `q.Bookkeeping.claimOwnerAt(element, inst, k)` / `q.Bookkeeping.releaseOwner(element, ownerKey)` — 숫자 키 자리에 값을 놓는 핸들러가 "이 값은 이 자리에 앉아 있다"를 등록·해제하는 소유권 op. `Slot`이 원소에 쓰던 그 레지스트리 하나를 정적 자식·숏핸드 관리 자식과 같이 씁니다. 자기 핸들러가 자식을 부모에 붙인다면 이 둘을 불러야 아래 단일 마운트 규칙에 들어갑니다.
 
-- 백엔드 계약 op `isClaimed(inst)` — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 정적 자식 자리마다(구동 hot path) 부릅니다. **BREAKING(프로바이더 작성자)** — 자기 백엔드를 만든 쪽은 이 op를 설치해야 합니다(quad-roblox는 claim 셋업 유무, mock은 항상 참). 앱 코드에는 영향이 없습니다.
+- 백엔드 계약 op `isClaimed(inst)` — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 정적 자식 자리마다(구동 hot path) 부릅니다. **BREAKING(프로바이더 작성자)** — 자기 백엔드를 만든 쪽은 이 op를 설치해야 합니다(quad-roblox는 claim 셋업 유무; 테스트 mock은 `Instance.new`가 태어날 때 claim된 것, 밖의 것은 `Instance.foreign`). 앱 코드에는 영향이 없습니다.
 
 - `quad_roblox` 패키지 루트가 프로퍼티 값 타입 `Field<T>`(setter가 받는 값)와 `FieldOut<T>`(변환 함수의 `old`·`Peek`이 돌려주는 저장된 값)를 내보냅니다. 전에는 생성 모듈 경로로만 닿았는데, pesde 설치에서는 그 경로가 드러나지 않았습니다. 클래스별 타입도 같은 루트에서 내보냅니다 — `<Class>Modifier`(상위 클래스 포함), `Into<Class>`, `<Class>Elem`. how-to의 `require(<생성 모듈 경로>)` 자리표시자는 이 경로로 바뀌었습니다.
 
@@ -76,7 +76,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `fn`이 던져 죽은 `Effect`를 `:Unsubscribe()`/`:WeakUnsubscribe()`로 놓아줄 수 있습니다. 전에는 죽은 핸들의 네 진입점이 전부 `cannot change subscription from inside fn or cleanup`으로 거부돼 강한 구독이 그 핸들과 상류를 모듈 수명 동안 붙들었습니다. `Observer`도 같습니다 — 콜백이 던져 굳은 핸들을 해제할 수 있고, 굳은 핸들은 (재)구독·재바인드만 막히지 발화는 계속된다는 것을 문서가 바로 적습니다. 부수로 콜백 안에서 자기를 해제하는 것도 됩니다(해제는 콜백을 다시 부르지 않습니다).
 - `Effect`의 `fn`이 도는 동안 핸들이 실행 자격을 잃으면(fn 안에서 자기를 해제했거나, `fn`이 yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려간 경우) `fn`이 돌려준 cleanup을 저장하지 않고 **즉시 소진**합니다(인스턴스 죽음이 원인이면 `dying = true`). 전에는 그 cleanup이 아무도 소진하지 않는 핸들에 남아 조용한 영구 누수였습니다. `fn` 안 yield는 여전히 정의되지 않은 동작이지만, 가장 흔한 실수(네트워크 왕복 뒤 연결)의 결과가 "누수"에서 "정리됨"으로 바뀝니다.
 
-- 프로퍼티 자리를 철거(`q.Dispatch.retractFrom`, 숏핸드 관리 자식 파괴)한 뒤 같은 자리에 처음 놓는 `Tween`이 스냅하지 않고 애니메이션되던 것 — 전 체인이 Tween을 한 번도 안 거쳤을 때, 또는 (드물게) 철거 직전 GC 타이밍에 따라 그랬습니다. 이제 모든 프로퍼티 체인이 철거 때 기록을 지우므로 철거 뒤 첫 설정은 언제나 스냅입니다.
+- 프로퍼티 자리를 철거(`q.Dispatch.retractFrom`, 숏핸드 관리 자식 파괴)할 때 진행 중이던 엔진 Tween이 (드물게) 철거 직전 GC 타이밍에 따라 취소되지 않던 것 — 이제 모든 프로퍼티 체인이 철거 때 취소합니다. 철거 뒤 첫 `Tween`이 스냅하는가는 위 "첫 설정은 스냅" 항목의 기준(그 프로퍼티를 처음 쓰는가)을 따릅니다.
 - 파괴된 quad Instance가 다음 GC까지 "claim된 것"으로 읽혀, 그 사이 `slot:Add(파괴된 인스턴스)`가 통과해 시체를 가리키는 자리를 만들던 것 — 이제 파괴 즉시 `not claimed`로 거부합니다(파괴된 Instance를 넣는 것은 여전히 정의되지 않은 동작입니다).
 - 정적 자식 자리에 그 부모 자신이나 조상을 넣으면(`src:Set(host)`) 자리 부기가 먼저 잡힌 채 엔진의 순환 에러로 죽던 것 — 이제 `InstanceChild: cannot place an Instance inside itself or one of its own descendants …`로 거부합니다(Slot의 같은 규칙과 짝; `State` 자리라면 옛 자식은 거부 전에 이미 내려가 있습니다 — 위 두 거부와 같습니다).
 - `Trailing = false`인 `Debounce`가 쓰지도 않는 `MaxTime`을 신호마다 읽어, 그 자리의 `State`가 잘못된 값이면 `:Set`이 던지고 `Compute`면 매 신호 다시 계산되던 것 — 이제 읽지 않습니다. 게이트 핸들의 `Flush`가 던질 때(백엔드 미설치) blame이 내부 파일이던 것도 사용자 줄로.
