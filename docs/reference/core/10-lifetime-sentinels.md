@@ -189,7 +189,7 @@ unbindLifetime: (value: any) -> ()
 canBound: (value: any) -> boolean
 ```
 
-**동작** — "지금 이 값을 묶어도 되는가" — 어디에도 묶여 있지 않으면 참. 백엔드가 심고, 미설치면 스텁 에러.
+**동작** — "지금 이 값을 묶어도 되는가" — 어디에도 묶여 있지 않으면 참. quad-base가 구현하고, 인스턴스 쪽 판정만 백엔드의 `isHeld`에 묻습니다 — 백엔드가 없으면 그 스텁 에러가 납니다.
 
 ## `q.Backend.canExecute(value)`
 
@@ -199,9 +199,9 @@ canBound: (value: any) -> boolean
 canExecute: (value: any) -> boolean
 ```
 
-**동작** — "지금 이 값이 발화해도 되는가" — 전파 게이트가 구독을 통과시킬지 판정할 때 묻습니다. 백엔드가 심고, 미설치면 스텁 에러.
+**동작** — "지금 이 값이 발화해도 되는가" — 전파 게이트가 구독을 통과시킬지 판정할 때 묻습니다. quad-base가 구현하고, 인스턴스 쪽 판정만 백엔드의 `isHeld`에 묻습니다 — 백엔드가 없으면 그 스텁 에러가 납니다.
 
-`canBound(v) == not canExecute(v)`가 계약입니다 — 둘은 백엔드가 가진 하나의 비공개 술어를 서로 반대로 감싼 것입니다.
+`canBound(v) == not canExecute(v)`가 계약입니다 — 둘은 quad-base가 가진 하나의 비공개 술어를 서로 반대로 감싼 것이고, 그 술어가 백엔드에 묻는 것은 `isHeld(v)` 하나입니다.
 
 ## 관련
 
