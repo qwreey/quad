@@ -728,8 +728,9 @@ local function resubscribeTail(self)
     end
 end
 
--- ⭐⭐ [2026-08-28 확정, 10라운드 `H-147`] **네 진입점(과 `_bindDestroying`) 첫 줄에
--- 가드** — `fn`/cleanup은 자기 구독을 바꿀 수 없다(위 `Rerun` 정의의 (A)). 보는
+-- ⭐⭐ [2026-08-28 확정, 10라운드 `H-147`] **~~네 진입점~~ 구독 쪽 둘(`Subscribe`/`WeakSubscribe`,
+-- 과 `_bindDestroying`) 첫 줄에 가드** — **[2026-09-18 round11 Q63 (b)] 해제 둘은 게이트 없음**(위
+-- 437행 절) — `fn`/cleanup은 자기를 (재)구독할 수 없다(위 `Rerun` 정의의 (A)). 보는
 -- 플래그는 둘: `_running`(`fn` 실행 중)과 **`_cleanupRunning`**(cleanup 실행 중 —
 -- 감사 2라운드에서 신설, `_consumeCleanup` 참고). **`error`는 헬퍼가 아니라 각
 -- 본문에서 던진다** — 헬퍼 안의 `error(…, 2)`는 헬퍼의 호출 줄(quad 내부)을
@@ -768,8 +769,7 @@ function EffectHandle:Subscribe()
     return self
 end
 
-function EffectHandle:WeakUnsubscribe()        -- 관대(`H-133`) — cleanup 안 건드림
-    if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
+function EffectHandle:WeakUnsubscribe()        -- 관대(`H-133`) — cleanup 안 건드림. [2026-09-18 Q63 (b)] `isRunning` 가드 없음
     if Subscribed[self] ~= nil then
         error("subscribed strongly; use :Unsubscribe()", 2)
     end
@@ -778,8 +778,7 @@ function EffectHandle:WeakUnsubscribe()        -- 관대(`H-133`) — cleanup �
     return self
 end
 
-function EffectHandle:Unsubscribe()
-    if isRunning(self) then error("cannot change subscription from inside fn or cleanup", 2) end  -- `H-147`
+function EffectHandle:Unsubscribe()            -- [2026-09-18 Q63 (b)] `isRunning` 가드 없음 — 해제는 fn을 안 부른다
     if Subscribed[self] == nil then            -- ⭐ 게이트가 **먼저** — 강하게 구독된 적 없으면
         error("not subscribed strongly; use :WeakUnsubscribe()", 2)  --   (leaf 바인딩·약한
     end                                        --   구독·미구독) 여기서 error, cleanup엔 손도
@@ -796,11 +795,13 @@ end
   `Unsubscribe`와 leaf 사망(`unbindLifetime`의 훅) **둘뿐**(**[2026-08-28
   `H-147`]** 2026-08-27에 잠깐 "`fn` 안 자기 해제"가 셋째로 있었으나 그 허용
   자체가 폐기됐다).
-- **`fn` 안에서 허용되는 핸들 호출은 `self:Rerun()`뿐이다** — 자기 구독을 바꾸는
-  넷(`Subscribe`/`WeakSubscribe`/`Unsubscribe`/`WeakUnsubscribe`)은 `_running`
-  가드가 error로 막는다(**[2026-08-28 `H-147`]** 위 `Rerun` 정의 (A)). cleanup
-  안에서도 같다 — 어느 자리(`Rerun` 루프·`Unsubscribe`·leaf `Destroying`)에서 돌든
-  `_cleanupRunning`이 서 있어 같은 가드가 먼저 걸린다.
+- **`fn` 안에서 허용되는 핸들 호출은 `self:Rerun()`과 해제 둘이다** — 자기를 (재)구독하는
+  둘(`Subscribe`/`WeakSubscribe`)은 `_running` 가드가 error로 막는다(**[2026-08-28 `H-147`]**
+  위 `Rerun` 정의 (A)); ~~해제 둘도 같다~~ **[2026-09-18 round11 Q63 (b)]** `Unsubscribe`/
+  `WeakUnsubscribe`는 통과한다(해제는 fn을 부르지 않아 재진입이 없고, 던져 죽은 핸들을
+  놓아주는 유일한 길 — fn 안에서 자기를 해제하고 돌려준 cleanup은 `rawRerun` 꼬리가 즉시
+  소진). cleanup 안에서도 같다 — 어느 자리(`Rerun` 루프·`Unsubscribe`·leaf `Destroying`)에서
+  돌든 `_cleanupRunning`이 서 있어 구독 쪽 가드가 먼저 걸린다.
 - 실측(9라운드 `core9.luau`, `t12` 매트릭스 — **당시 함수 배정 형태에서의 실측**이고
   (b) 재작성 뒤 재실행하지는 않았다[2026-08-27 기준]; 게이트 순서는 그대로라
   같은 결과가 나올 것으로 추정할 뿐, 확정 근거는 M2 구현 테스트가 될 것): leaf 바인딩된

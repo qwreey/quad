@@ -606,7 +606,7 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
 
 ## 코드 스타일 — 모듈 필드는 매번 `module.x`로 읽는다, 래퍼·로컬 캡처를 만들지 않는다 (2026-09-07 신설, 사용자)
 
-백엔드가 주입하는 값(`bindLifetime`/`unbindLifetime`/`isInst`/`native*`/`onDestroying`…)은 `H-174`대로
+백엔드가 주입하는 값(`isInst`/`native*`/`onDestroying`/hold op 넷 `holdLifetime`·`isHeld`… — **[2026-09-18 Q59]** `bindLifetime`/`unbindLifetime`은 이제 quad-base 것이지만 같은 규칙으로 읽는다)은 `H-174`대로
 **호출 시점에 `module.x(...)`로 읽는다** — Init 시점 로컬 캡처는 설치 전 스텁을 영원히 잡아 금지이고,
 `local function bindLifetime(...) module.bindLifetime(...) end` 같은 **래퍼도 만들지 않는다**. 사용자
 원문(2026-09-07, Q29 회신): *"그냥 받은 module 그대로 사용할 수 있는건데, 다른곳과 똑같이 module.bindLifetime
@@ -656,7 +656,7 @@ falsy(`nil`/`false`)여도 정확하게 동작함(`dispatch-core-plan.md`의
 
 > **[2026-08-29 포인터]** 아래는 2026-08-04의 mock 범위 결정이고 지금도 유효하다. 실제 테스트
 > 체계는 그 위에 얹혔다 — `./scripts/test.sh`(relink → `luau-analyze` → `smoke.*`/`spec.*`,
-> `base/project-setup-plan.md`), mock의 `installLifetime`(생명주기 4종 + `onDestroying`, M2 단위 1
+> `base/project-setup-plan.md`), mock의 `installLifetime`(~~생명주기 4종~~ **[2026-09-18 Q59]** hold op 넷 + `onDestroying`, M2 단위 1
 > `H-97`), 모듈별 `quad-base/test/spec.<module>.luau` 계약 테스트.
 
 **결정**: quad-base 테스트는 Vide 선례(`centau/vide@452060a:test/mock.luau`, 약

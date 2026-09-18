@@ -1,6 +1,6 @@
 # 라이프사이클 패턴 — rbvm의 `Connected` + GC 관용구 채택
 
-> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`bindLifetime`·`canExecute`·`native*`·`isInst`·`nativeClaim`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`, 이름 그대로)로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
+> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`native*`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`·**[2026-09-18 round11 Q59]** hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, 이름 그대로 — `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`도 같은 네임스페이스에 살지만 그 넷은 quad-base가 직접 구현한다, `lifecycle-pattern.md` (1-2))로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
 
 **상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(`retract`) 전략의 원본.
 완료 개념 없음, 구현하면서 세부 조정 있을 수 있음.
@@ -596,9 +596,9 @@ BREAKING(창 안) — quad-roblox·mock 둘 다 고쳤고, 스펙은 `spec.lifet
 확정**: *"observer 랑 effect 랑 헤테로지니어스한 타입인데 … '하나의 무언가가 두
 일을 동작하지 않는가에 유의하자'"* — Observer 본문은 Observer만 쓴다. `Effect`
 쪽 넷(`Unsubscribe`는 cleanup 소진, `Subscribe`/`WeakSubscribe`는
-**[2026-08-27 `H-144`]** 등록 끝에 `_rerunRequired → Rerun`, 넷 다 첫 줄에
-**[2026-08-28 `H-147`]** `_running`/`_cleanupRunning` 가드 — `fn`/cleanup은 자기 구독을
-못 바꾼다)은
+**[2026-08-27 `H-144`]** 등록 끝에 `_rerunRequired → Rerun`, ~~넷 다~~ **[2026-09-18 Q63 (b)]**
+구독 쪽 둘 첫 줄에 **[2026-08-28 `H-147`]** `_running`/`_cleanupRunning` 가드 — `fn`/cleanup은
+자기를 (재)구독 못 하고, 해제는 된다)은
 `base/effect-plan.md`의 "`EffectHandle:Subscribe()`" 절이 소스:
 
 ```lua

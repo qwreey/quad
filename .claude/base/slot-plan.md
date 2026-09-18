@@ -1,6 +1,6 @@
 # Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
-> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`bindLifetime`·`canExecute`·`native*`·`isInst`·`nativeClaim`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`, 이름 그대로)로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
+> **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`native*`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`·**[2026-09-18 round11 Q59]** hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, 이름 그대로 — `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`도 같은 네임스페이스에 살지만 그 넷은 quad-base가 직접 구현한다, `lifecycle-pattern.md` (1-2))로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
 
 > **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
 > 이전 ⚠️ 배너가 예고하던 교체가 끝났음 — 래핑 핸들러의 `retractFrom`
@@ -2105,7 +2105,7 @@ Slot:Single(state, updateFn?, opts?)
   Slot을 파괴할 땐 자기 요소를 죽이지 않고 언마운트만 한다. 그래서 플래그는
   클로저 업밸류가 아니라 **Slot 필드**(`slot._owned`)여야 파괴 walk가 읽을 수
   있다.
-  - **⭐ [2026-09-03 `H6-12` (b), 사용자 확정] 슈가 래퍼만 소유권을 놓는다.**
+  - **⭐ [2026-09-03 `H6-12` (b), 사용자 확정] 슈가 래퍼만 소유권을 놓는다.** **⚠️ [2026-09-18 round11 Q61 — 부분 철회]** 아래 "사용자가 직접 만든 `Owned = false` 리스트 … 그대로 소유권을 유지"는 **파괴 walk(`destroySlotTree`)에 한해 뒤집혔다** — 지금은 래퍼든 사용자 리스트든 파괴 경로에서 요소 전부의 소유권을 놓고 비운다(위 "`Owned` 옵션" 절 Q61 항목). 요소로서 떠나는 경로(`leaveAsElement`)의 "래퍼만" 처방과 포탈 언마운트의 소유권 유지는 그대로.
     `wrapElement`가 만든 래퍼(`_wrapped ~= nil` — `Add(state)`의 `State → Slot`
     구현)는 바깥 Slot을 **요소로서 떠나는 순간 버려진다**(사용자 손엔
     언래핑된 `State`가 돌아가고 재-`Add`는 새 래퍼를 만든다). 그런데
@@ -3793,7 +3793,7 @@ destroying"*). 시체 요소를 다른 Slot에 다시 넣는 반대 방향도 �
   **[확인 완료, 2026-08-21] Slot-in-Slot에서도 재귀가 성립한다** — 파괴 walk는
   `destroySlotTree`이고 그게 `_elements`를 훑다 `isSlot(element)`면 재귀하며,
   **`_detached`(Detach로 홀드 중인 것)까지 같은 함수가 훑는다**(위 코드).
-  `_owned == false`면 파괴 대신 언마운트로 빠지는 것도 그 안에 있다. 즉
+  `_owned == false`면 파괴 대신 언마운트로 빠지는 것(**[2026-09-18 Q61]** + 요소 전부 소유권 반납·비움)도 그 안에 있다. 즉
   `dispose(slot)` 한 번으로 서브트리 전체 + 홀드분 전체가 정리된다 —
   **남는 예외는 `userdata` 안에 사용자가 직접 넣어둔 것뿐**이고, 그건
   위 "`userdata`의 생명주기 제약" 절대로 사용자 책임이다.
