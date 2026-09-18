@@ -956,7 +956,10 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   후보의 조상 사슬은 엔진 조회(새 백엔드 op)라 만들지 않는다. 실물(`audit/round8-studio-2026-09-08.md`)은 엔진이 "Attempt to
   set Frame as its own parent"/"circular reference"로 raise하고, 그 뒤 요소는 들어갔는데 부기·물리는 안 된 반쪽 상태가 남는다
   (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
-  그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주.
+  그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주. **[2026-09-18 round11 Q62 재확인]** 정적 자식 자리에
+  `H-545`(quad-roblox `InstanceChild`의 조상 walk)가 생겨 비대칭이 됐지만 Slot 쪽은 그대로 UB — 사용자: *"리컬션을 막는 비용 대비
+  이득 trade-off 가 불균형이라 나도 막을 이유를 못 느꼈어"*. 백엔드 술어 추가(계약 BREAKING)·`rawAdd` 순서 변경 둘 다 기각. 사용자
+  문서 core/06에 캐비엇을 붙였다(전엔 base 문서에만 있었다). 실기기 잔여 상태는 HUMAN_TODO 실측 항목.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
