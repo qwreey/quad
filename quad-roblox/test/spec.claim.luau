@@ -311,4 +311,22 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 16. round11 Q64 (b) (2026-09-18) — 이미 quad 소유인 자식은 1패스의 isClaimed 게이트에서 거부: 인스턴스 이름을 실은 Claim: 문구, 루트·형제는 무손상, 그 자식을 뺀 재시도는 통한다 ===")
+do
+	local root, title = makeTemplate()
+	local widget = Instance.new("Frame"); widget.Name = "Widget"
+	q.Backend.nativeClaim(widget) -- a quad-owned widget parked in the template
+	widget.Parent = root
+	local ok, err = pcall(function()
+		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), M.Frame("Widget")({}) }))
+	end)
+	assert(not ok and string.find(tostring(err), "Claim: ", 1, true) ~= nil and string.find(tostring(err), "already claimed by quad", 1, true) ~= nil and string.find(tostring(err), "Widget", 1, true) ~= nil, "pass 1 names the owned child: " .. tostring(err))
+	assert(not q.Backend.isClaimed(root) and not q.Backend.isClaimed(title) and title.Name == "Title", "root and the earlier sibling were not claimed nor driven")
+	-- leave the owned child out of the descriptor: the retry claims the rest normally
+	local out = q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+	assert(out == root and title.Name == "t" and q.Backend.isClaimed(root), "retry on the same root works")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

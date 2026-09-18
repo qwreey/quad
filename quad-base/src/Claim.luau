@@ -104,6 +104,15 @@ local function Init(module: any)
 			Err.errorBefore(`Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor`, SURFACE)
 		end
 		seen[inst] = true
+		-- round11 Q64 (b) (user decision 2026-09-18): ask the backend's `isClaimed` in the validating pass
+		-- — an already-owned child (a widget parked in a template, a child claimed earlier) used to pass
+		-- pass 1 and die in `commit` at its `nativeClaim` with the provider's leaf message, leaving the
+		-- root and earlier siblings claimed (and the root unclaimable for good). User: "isClaimed -> false
+		-- 여야 Claim 가능한다도 맞는 수순". The root goes through here too, so a double claim of the root
+		-- now carries the Instance's name instead of the provider's bare line.
+		if module.Backend.isClaimed(inst) then
+			Err.errorBefore(`Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
+		end
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
 		-- hit "already claimed". `drive`'s own gate (`H-419`) comes too late for Claim.

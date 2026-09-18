@@ -25,6 +25,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- `Claim`이 트리를 해석하는 단계에서 **이미 quad 소유인 인스턴스**(루트든 자식이든 — 템플릿에 꽂아 둔 `Declaration` 위젯, 먼저 `Claim`한 자식)를 `Claim: <이름> is already claimed by quad …`로 거부합니다. 아무것도 claim하기 전이라 루트와 형제는 무손상이고, 그 자식을 디스크립터에서 빼면 같은 루트에 다시 걸 수 있습니다. 전에는 자식의 경우 루트와 앞선 형제가 claim된 채 남아 그 루트를 영영 `Claim`할 수 없었습니다. 자기 백엔드를 만든 쪽: `isClaimed`가 "`nativeClaim`이 지나간 것만 참"이어야 이 게이트가 성립합니다(quad-roblox는 원래 그렇습니다).
+
 - `OwnsElements = false`인 `:List`/`:Single` Slot을 `q.dispose`하거나 소유하는 부모 Slot이 `Remove`/`Clear`로 버리면, 그 Slot이 쥐고 있던 원소 전부의 소유권이 풀립니다(원소는 파괴되지 않고 다른 Slot에 넣거나 `q.dispose`할 수 있습니다). 그 Slot은 빈 채로 살아남아 다시 쓸 수 있고, 다음 마운트에서 data로부터 처음부터 조정합니다. 전에는 원소가 버려진 Slot에 계속 묶여 있어 `already mounted elsewhere`/`still held by a Slot`으로 거부됐고, Slot 참조를 버린 뒤엔 되돌릴 길이 없었습니다. `Extract`로 빼는 경우는 전처럼 원소를 쥔 채 옮겨갑니다.
 
 - **BREAKING — `Slot`이 quad 밖에서 만든(claim되지 않은) 인스턴스를 더는 원소로 받지 않습니다.** 전에는 조용히 들어갔고 죽음 추적이 없어 밖에서 `Destroy`되면 Slot이 stale해졌습니다. 이제 `Add`·생성자·`Replace`·`Extract`·`Splice`·`List`/`Single`이 `Slot: this element is not claimed by quad …`로 거부합니다(`State`에 담긴 원소도 그 현재값으로 미리 검사합니다). `List`/`Single`의 `updateFn`이 그런 원소를 돌려주면 재조정 도중의 예외라 그 Slot의 `Length`가 더 이상 발행되지 않습니다(재조정은 계속 돌지만 같은 부모의 형제 Slot이 옛 오프셋에 앉습니다, 에러 없이) — 원소를 만들 때 claim하세요. 옮기는 법: 그 인스턴스를 먼저 `Claim`으로 넘겨받거나 `Declaration`으로 만드세요 — Slot이 대신 claim하지 않습니다. **정적 자식 자리도 같습니다** — `D.Frame { Instance.new("TextLabel") }`처럼 숫자 키에 놓은 미claim 인스턴스는 `InstanceChild: this Instance is not claimed by quad …`로 거부됩니다. 그 자리의 `State<Instance?>`를 나중에 미claim 인스턴스로 `:Set`하는 경우도 같은 거부인데, 이때는 옛 자식이 이미 내려간 뒤(체인 철거 뒤 새 값 처리)라 그 자리는 빈 채로 남습니다.

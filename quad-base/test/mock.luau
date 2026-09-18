@@ -27,7 +27,11 @@
 	Roblox와 다른 점 하나: gcconn/gchold 셋업(`nativeClaim`)은 quad가 Instance를
 	만들 때 하는 일인데 mock Instance는 quad 밖에서 만들어지므로 여기선
 	`holdLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
-	(userdata 동일성 구멍, 같은 문서 (0) 절).
+	(userdata 동일성 구멍, 같은 문서 (0) 절). **[2026-09-18 round11 Q64]** "quad 소유"의
+	판정은 `Data.claimed` 플래그 하나다 — `Instance.new`는 Declaration이 만든 것의 대역이라
+	태어날 때 claim(`isClaimed` 참, `nativeClaim`/`Claim`은 "already claimed"), 밖에서 만든
+	것은 `Instance.foreign`(`nativeClaim`·lazy hold가 지나가야 참). 전엔 `isClaimed`가
+	"살아 있는 mock이면 참"이고 이중 claim 판정은 gchold 유무라 두 뜻이 갈라져 있었다.
 ]]
 
 export type Signal = {
@@ -107,6 +111,7 @@ type Data = {
 	events: { [string]: Signal }, -- lazily minted per declared event name (M10)
 	destroying: Signal,
 	destroyed: boolean,
+	claimed: boolean, -- round11 Q64 (2026-09-18): ONE notion of "quad-owned" for the mock — see Instance.new
 }
 
 local dataOf = setmetatable({}, { __mode = "k" }) :: { [any]: Data }
@@ -156,6 +161,9 @@ local function getProxy(data: Data): any
 	end
 
 	local proxy = setmetatable({}, {
+		__tostring = function() -- Roblox: `tostring(inst)` is its Name — error messages rely on it
+			return data.name
+		end,
 		__index = function(_, key)
 			if methods[key] then
 				return methods[key]
@@ -226,7 +234,13 @@ end
 
 local Instance = {}
 
-function Instance.new(className: string): MockInstance
+-- round11 Q64 (user decision 2026-09-18): the mock has ONE notion of "claimed by quad". `Instance.new`
+-- stands in for a Declaration-made Instance (there is no Declaration in the mock) and is claimed at
+-- birth — `isClaimed` true, `nativeClaim`/`Claim` refuse it as "already claimed". An Instance made
+-- OUTSIDE quad (the thing `Claim` adopts and the Slot/InstanceChild gates reject) is
+-- `Instance.foreign(className)`. Before, `isClaimed` said "any live mock instance" while the double-
+-- claim check said "has gchold" — two meanings, and pass 1 of `Claim` could not ask the gate.
+local function newInstance(className: string, claimed: boolean): MockInstance
 	local data: Data = {
 		className = className,
 		name = className,
@@ -237,8 +251,18 @@ function Instance.new(className: string): MockInstance
 		events = {},
 		destroying = newSignal(),
 		destroyed = false,
+		claimed = claimed,
 	}
 	return (getProxy(data) :: any) :: MockInstance
+end
+
+function Instance.new(className: string): MockInstance
+	return newInstance(className, true)
+end
+
+-- an Instance quad did not make and has not claimed (Roblox: `Instance.new`, `:Clone()`, Studio-built)
+function Instance.foreign(className: string): MockInstance
+	return newInstance(className, false)
 end
 
 -- M10 engine-axis (2026-09-03): tag/attribute state lives here so BOTH routes
@@ -616,8 +640,9 @@ local function mockProvider(quad: any): { [any]: any }
 	-- `false or`: local 함수가 상수 접힘/인라인되면 아래 클로저의 업밸류 캡처가 사라진다
 	local nop = (false or function(...: any) end) :: (...any) -> ()
 
-	-- (0) nativeClaim 상당 — mock에선 lazy(헤더 주석 참고)
+	-- (0) nativeClaim 상당 — mock에선 lazy(헤더 주석 참고). Q64: 어느 경로든 여기를 지나면 quad 소유.
 	local function claim(inst: any)
+		getData(inst).claimed = true
 		if InstData:GetWeak(inst, "gchold") ~= nil then
 			return
 		end
@@ -708,7 +733,7 @@ local function mockProvider(quad: any): { [any]: any }
 		if not isMockInstance(inst) then
 			Err.errorBefore("nativeClaim: inst is not a mock instance", SURFACE)
 		end
-		if InstData:GetWeak(inst, "gchold") ~= nil then
+		if InstData:GetWeak(inst, "gchold") ~= nil or getData(inst).claimed then -- Q64: one notion — a born-claimed `Instance.new` is a double claim too
 			Err.errorBefore("nativeClaim: Instance is already claimed by quad", SURFACE)
 		end
 		claim(inst)
@@ -719,13 +744,16 @@ local function mockProvider(quad: any): { [any]: any }
 	quad.Backend.isHeld = isHeld
 	quad.Backend.isHeldBy = isHeldBy
 	quad.Backend.onDestroying = onDestroying
-	-- [2026-09-16] `isClaimed` — the mock claims LAZILY (holdLifetime claims on demand), so every mock
-	-- instance counts as claimed here; specs that need the Slot gate to fire override this slot
-	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup + gcconn `.Connected`
-	-- (round11 `H-548`: a destroyed Instance is "not claimed" at once, not after the next GC).
+	-- [2026-09-16] `isClaimed` — round11 Q64 (2026-09-18): the mock's one `claimed` flag (`Instance.new` =
+	-- born claimed, `Instance.foreign` = not until `nativeClaim`/lazy hold). The real provider answers
+	-- from the gchold setup + gcconn `.Connected` (round11 `H-548`: a destroyed Instance is "not
+	-- claimed" at once, not after the next GC) — mirrored by the `destroyed` half.
 	local function isClaimed(inst: any): boolean
-		-- round11 code-review: mirror the real provider's `H-548` half — a destroyed instance is not claimed
-		return isMockInstance(inst) and not getData(inst).destroyed
+		if not isMockInstance(inst) then
+			return false
+		end
+		local data = getData(inst)
+		return data.claimed and not data.destroyed
 	end
 	quad.Backend.nativeClaim = nativeClaim
 	quad.Backend.isClaimed = isClaimed

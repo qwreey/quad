@@ -1049,13 +1049,9 @@ end
 print()
 print("=== 29. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===")
 do
-	-- the mock claims lazily so its isClaimed is always true; flip the slot to reach the gate.
+	-- round11 Q64: the mock's own notion — `Instance.foreign` is not claimed, `Instance.new` is (no override needed)
 	local q3 = mock.newQuad()
-	local saved = q3.Backend.isClaimed
-	local claimed = {}
-	q3.Backend.isClaimed = function(inst) return claimed[inst] == true end
-	local foreign, owned = mock.Instance.new("Frame"), mock.Instance.new("Frame")
-	claimed[owned] = true
+	local foreign, owned = mock.Instance.foreign("Frame"), mock.Instance.new("Frame")
 	local s = q3.Slot()
 	local ok, err = pcall(function() return s:Add(foreign) end)
 	assert(not ok and string.find(tostring(err), "Slot: this element is not claimed by quad", 1, true) ~= nil, "unclaimed element rejected: " .. tostring(err))
@@ -1063,7 +1059,6 @@ do
 	assert(s.Length:Get() == 0, "nothing entered")
 	assert(s:Add(owned) == 1, "claimed element accepted")
 	local owned2 = mock.Instance.new("Frame")
-	claimed[owned2] = true
 	local ok2, err2 = pcall(function() return q3.Slot({ owned2, foreign }) end)
 	assert(not ok2 and string.find(tostring(err2), "not claimed", 1, true) ~= nil, "constructor pre-pass hits the same gate: " .. tostring(err2))
 	local ok3, err3 = pcall(function() return s:Splice(2, 0, foreign) end)
@@ -1073,7 +1068,6 @@ do
 	assert(not ok4 and string.find(tostring(err4), "not claimed", 1, true) ~= nil, "State-wrapped unclaimed occupant rejected: " .. tostring(err4))
 	assert(#s._elements == 1, "no ghost element after the rejected State Add (unmounted: Length stays 0 by design)")
 	assert(string.find(tostring(err4), "Slot: this element is not claimed", 1, true) ~= nil, "one message form for raw and State paths: " .. tostring(err4))
-	q3.Backend.isClaimed = saved
 	print("PASS")
 end
 

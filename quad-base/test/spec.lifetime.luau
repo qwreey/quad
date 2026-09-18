@@ -237,8 +237,10 @@ end
 print()
 print("=== 9. mock 프로바이더도 nativeClaim/nativeFindChild를 심는다 — 실 프로바이더와 같은 형태 (2순회 H-374, H-305 (d′)) ===")
 do
-	local root = Instance.new("Frame")
-	local child = Instance.new("TextLabel")
+	-- round11 Q64: `Instance.new` is born claimed in the mock (stands in for a Declaration-made one) —
+	-- what `nativeClaim`/`Claim` adopt is `Instance.foreign`
+	local root = Instance.foreign("Frame")
+	local child = Instance.foreign("TextLabel")
 	child.Name = "Title"
 	child.Parent = root
 	assert(quad.Backend.nativeFindChild(root, "Title") == child and quad.Backend.nativeFindChild(root, "Nope") == nil, "nativeFindChild = FindFirstChild")
@@ -250,8 +252,8 @@ do
 	mock.assertBlamesUser(err, "spec.lifetime.luau", "nativeClaim blame")
 	-- Claim itself runs under the mock backend — resolve → nativeClaim → nativeFindChild → drive
 	-- (a fresh tree: `root` above is already claimed, and Claim claims first)
-	local root2 = Instance.new("Frame")
-	local child2 = Instance.new("TextLabel")
+	local root2 = Instance.foreign("Frame")
+	local child2 = Instance.foreign("TextLabel")
 	child2.Name = "Title"
 	child2.Parent = root2
 	-- (mock has no Property/InstanceChild handlers, so a root-only descriptor:
@@ -270,7 +272,7 @@ do
 	assert(not okN and string.find(tostring(errN), "first argument must be an Instance", 1, true) ~= nil, "Claim(nil) is a surface error: " .. tostring(errN))
 	mock.assertBlamesUser(errN, "spec.lifetime.luau", "Claim(nil) blame")
 	-- 7순회 `H-425`: non-table props are refused BEFORE nativeClaim — a fixed retry still works
-	local root3 = Instance.new("Frame")
+	local root3 = Instance.foreign("Frame")
 	local okP, errP = pcall(function()
 		quad.Claim(root3, M("Frame")(quad.MapperRoot)("oops" :: any))
 	end)
