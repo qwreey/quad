@@ -255,6 +255,17 @@ do
 	assert(log[1].tween.cancels == 1, "cancelled at teardown")
 	q.Dispatch.drive(k, { Size = Tween({ Value = 50, Time = 1 }) })
 	assert(#log == 2, "same target after a cancelled tween plays again (record was downgraded to true)")
+	-- (4) code-review: a tween that COMPLETED before teardown (the property holds its target) keeps its
+	-- { Value } record — a re-declared same target is deduped, not replayed as a no-op tween
+	mock.resetTweenLog()
+	local m = q.Declaration.Frame({ Size = 0 }) :: any
+	q.Dispatch.drive(m, { Size = Tween({ Value = 60, Time = 1 }) })
+	m.Size = 60 -- the mock does not interpolate: stand in for the engine reaching the target
+	q.Dispatch.retractFrom(m, "Size", 1)
+	q.Dispatch.drive(m, { Size = Tween({ Value = 60, Time = 1 }) })
+	assert(#log == 1, "completed tween's target survives teardown: same-target re-declare is deduped")
+	q.Dispatch.drive(m, { Size = Tween({ Value = 61, Time = 1 }) })
+	assert(#log == 2, "a new target animates")
 	print("PASS")
 end
 

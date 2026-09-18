@@ -92,6 +92,13 @@ local function createImpl(module: any)
 		self._running = true
 		repeat
 			self:_consumeCleanup() -- sets `_rerunRequired = true`
+			-- round11 code-review (2026-09-18, after Q63 (b)): the cleanup just run may have UNSUBSCRIBED
+			-- this handle (the gate is gone) — then fn must not run on a dead handle. Hold instead
+			-- (`_rerunRequired` is already up); the forced install never gets here with a cleanup.
+			if not force and (self._dying or not module.Backend.canExecute(self)) then
+				self._pending = false
+				break
+			end
 			-- round10 Q51 (a) (user decision 2026-09-17): `_pending` goes down AFTER the cleanup,
 			-- right before fn — a `Set` made inside the cleanup is consumed by the fn that follows
 			-- (it reads the new value), so it must not queue one more (cleanup, fn) cycle with the
@@ -118,8 +125,11 @@ local function createImpl(module: any)
 			-- an empty slot before fn returned). A cleanup stored now would sit on a handle nothing will
 			-- ever consume — so consume it at once (`dying` = whether the leaf's death is the cause) and
 			-- hold. Not on the forced install: the constructor runs fn before any bind on purpose.
-			if not force and cleanup ~= nil and (self._dying or not module.Backend.canExecute(self)) then
-				self:_consumeCleanup() -- sets `_rerunRequired` — replayed if the handle is re-armed
+			-- Checked REGARDLESS of whether a cleanup came back (code-review): with `_pending` up
+			-- (fn Set a dep, then unsubscribed itself) the loop would otherwise run fn again on the
+			-- dead handle and die in its second Unsubscribe with `_running` stuck.
+			if not force and (self._dying or not module.Backend.canExecute(self)) then
+				self:_consumeCleanup() -- nil-safe; sets `_rerunRequired` — replayed if the handle is re-armed
 				self._pending = false
 				break
 			end
@@ -204,9 +214,12 @@ local function createImpl(module: any)
 		self._cleanup = nil
 		self._rerunRequired = true -- consumed = must install again at the next chance
 		if c ~= nil then
+			-- save/restore, not true/false (`H-332` shape): a cleanup may call `Unsubscribe` (Q63 (b)),
+			-- which re-enters here with an empty slot — it must not lower the flag for the outer cleanup's tail
+			local outer = self._cleanupRunning
 			self._cleanupRunning = true -- `H-160`: cleanup runs outside `_running` in two of its three sites
 			(c :: (boolean) -> ())(self._dying == true)
-			self._cleanupRunning = false
+			self._cleanupRunning = outer
 		end
 	end
 

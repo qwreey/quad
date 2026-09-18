@@ -733,7 +733,7 @@ local function mockProvider(quad: any): { [any]: any }
 		if not isMockInstance(inst) then
 			Err.errorBefore("nativeClaim: inst is not a mock instance", SURFACE)
 		end
-		if InstData:GetWeak(inst, "gchold") ~= nil or getData(inst).claimed then -- Q64: one notion — a born-claimed `Instance.new` is a double claim too
+		if getData(inst).claimed then -- Q64: ONE notion — `claim()` raises this flag before it ever writes gchold, so the flag alone is the check
 			Err.errorBefore("nativeClaim: Instance is already claimed by quad", SURFACE)
 		end
 		claim(inst)

@@ -164,15 +164,22 @@ return function(S: Types.SlotInternal, module: any)
 			-- Extract / a non-owning parent's Remove never come here (rawUnmount → leaveAsElement):
 			-- there the Slot leaves WITH its elements — user: "dispose 하기 전 경로에는 안 사라지는게
 			-- 맞는데, dispose 자체는 recursive 하게 돌아서 release 가 되는게 맞다".
+			-- code-review (2026-09-18): an element that is a sugar WRAPPER Slot (wrapElement's
+			-- `State → Slot`, reachable by nobody once released) must let go of its own inner
+			-- Instance too, or that Instance stays "already mounted" until GC — the very hole `H6-12`
+			-- (b) closed on the leave path (`leaveAsElement`). A user-made nested Slot is the user's
+			-- to keep (it leaves with its elements, like Extract).
 			local bk = S.BK.getBookkeeping(slot)
 			for _, element in ipairs(slot._elements) do
 				S.releaseOwner(element, slot)
-				bk.indexOfElement[element] = nil
+				if S.isSlot(element) and (element :: any)._wrapped ~= nil then releaseSugarWrapper(element) end
 			end
 			table.clear(slot._elements)
+			table.clear(bk.indexOfElement) -- 1:1 with `_elements` (every writer keeps it so) — one clear states that
 			if slot._detached then
 				for key, element in pairs(slot._detached) do
 					S.releaseOwner(element, slot)
+					if S.isSlot(element) and (element :: any)._wrapped ~= nil then releaseSugarWrapper(element) end
 					slot._detached[key] = nil
 				end
 			end

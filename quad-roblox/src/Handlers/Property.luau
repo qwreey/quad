@@ -107,7 +107,11 @@ local function install(quad: any)
 				local slot = tweenSlots:GetStrong(inst, k)
 				if type(slot) == "table" and slot.Tween ~= nil then
 					slot.Tween:Cancel() -- the property keeps whatever value it reached
-					tweenSlots:SetStrong(inst, k, true)
+					-- code-review (2026-09-18): `.Tween` is still set after a tween COMPLETED on its own
+					-- (nothing clears it on completion), and then the property really holds `Value` — keep
+					-- the `{ Value }` snap record so the dedup stays right. The truth is read from the
+					-- property itself, not from the engine's PlaybackState (engine-agnostic, mock-safe).
+					tweenSlots:SetStrong(inst, k, if inst[k] == slot.Value then { Value = slot.Value } else true)
 				end
 			end
 			tweenRetractors:SetWeak(inst, k, r)

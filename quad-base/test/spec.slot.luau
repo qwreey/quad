@@ -1295,5 +1295,18 @@ do
 	local host3 = Instance.new("Folder")
 	dispatch.drive(host3, { elsewhere })
 	assert(c2.Parent == host3, "moved with its element intact")
+
+	-- (4) code-review: an element that is a sugar WRAPPER (updateFn returned a State) — the wrapper is
+	-- released from the list AND lets go of its inner Instance (else "already mounted" until GC)
+	local inner = Instance.new("TextLabel")
+	local st = q.Source(inner :: any)
+	local wl = Slot()
+	wl:List({ 1 }, function(ctx) if ctx.Item == q.KeyGone then return nil end return ctx.Prev or st end, nil, { OwnsElements = false })
+	local wp = Slot({ wl })
+	dispatch.drive(Instance.new("Folder"), { wp })
+	assert(inner.Parent ~= nil, "inner mounted through the wrapper")
+	wp:Clear() -- owning parent destroys wl → non-owning branch → wrapper released → inner released
+	assert(inner.Parent == nil and not mock.isDestroyed(inner), "inner unseated, alive")
+	Slot():Add(inner) -- used to raise "already mounted"
 	print("PASS")
 end

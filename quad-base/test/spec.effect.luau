@@ -551,6 +551,37 @@ do
 	assert(quad.Backend.canBound(e2), "unbound")
 	coroutine.resume(co2)
 	assert(cleaned2 == 2 and dying2 == false and (e2 :: any)._cleanup == nil, "consumed at once (dying = false), not stored: " .. cleaned2)
+	-- (3) code-review: fn Sets a dep (→ _pending), unsubscribes itself, returns NOTHING — the loop must not run
+	-- fn again on the dead handle (it used to, and died in the second Unsubscribe with _running stuck)
+	local a, b = Source(0), Source(0)
+	local runs3 = 0
+	local e3: any
+	e3 = Effect(function()
+		runs3 += 1
+		if a:Get() == 1 then
+			b:Set(b:Get() + 1) -- re-entrant request while running
+			e3:Unsubscribe()
+			return
+		end
+		return function() end
+	end, a, b):Subscribe()
+	a:Set(1) -- used to throw "not subscribed strongly" out of this line
+	assert(runs3 == 2 and e3.Subscribed == false and (e3 :: any)._running == false, "fn ran once for the Set, handle released, not stuck: runs=" .. runs3)
+	-- (4) code-review: the CLEANUP unsubscribes the handle — fn must not run after it, and the nested
+	-- consume must not throw nor lower `_cleanupRunning` for the outer cleanup's tail
+	local d = Source(0)
+	local runs4, subInCleanup = 0, nil
+	local e4: any
+	e4 = Effect(function()
+		runs4 += 1
+		return function()
+			e4:Unsubscribe()
+			subInCleanup = pcall(function() e4:Subscribe() end) -- still inside a cleanup → gated
+		end
+	end, d):Subscribe()
+	d:Set(1) -- used to throw from inside _consumeCleanup, leaving _running AND _cleanupRunning stuck
+	assert(runs4 == 1 and e4.Subscribed == false and (e4 :: any)._running == false and (e4 :: any)._cleanupRunning == false, "cleanup released the handle; fn did not run again; flags clean")
+	assert(subInCleanup == false, "Subscribe inside the rest of the cleanup is still gated (save/restore)")
 	print("PASS")
 end
 

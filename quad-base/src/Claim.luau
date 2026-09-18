@@ -89,9 +89,9 @@ local function Init(module: any)
 	-- a missing/wrong-class child left root (and every earlier sibling) claimed and a fixed
 	-- retry died on "already claimed" instead of the real cause — the very shape `H-425`/
 	-- `H-471` had already fixed for the props gate. What remains non-atomic: the drive
-	-- itself (a handler throw mid-tree — the Declaration's general mid-throw UB) and a CHILD
-	-- that is already claimed (pass 1 cannot ask `isClaimed` while the mock's lazy claim
-	-- answers true for every instance — round11 Q64).
+	-- itself (a handler throw mid-tree — the Declaration's general mid-throw UB). An already-
+	-- claimed child used to be the other case — closed by round11 Q64 (b): pass 1 asks
+	-- `Backend.isClaimed` on every instance (the mock's "claimed" became one flag so it can).
 	type Step = { inst: any, desc: any, children: { [number]: any } }
 	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
 		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
