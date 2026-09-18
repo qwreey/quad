@@ -370,8 +370,11 @@ end
 --   파괴하는 것은 UB.** `Workspace.SignalBehavior`가 `Deferred`(현재 기본)면
 --   `Destroying` 콜백이 다음 리줌으로 늦춰져 경합이 없지만, `Immediate`(레거시)면
 --   `fn` 실행 도중 위 콜백이 동기 발화해 `_consumeCleanup`(이미 비어 있음 — no-op)과
---   `_destroyConn` 해제만 일어나고, `fn`이 돌려준 cleanup은 저장되지만 소진할 연결이
---   사라져 **영구 미소진**이다. `fn`이 자기 생명주기를 못 바꾼다(`H-147` (A))는
+--   `_destroyConn` 해제만 일어나고, `fn`이 돌려준 cleanup은 ~~저장되지만 소진할 연결이
+--   사라져 **영구 미소진**이다~~ **[2026-09-18 round11 Q68 (b)] `rawRerun` 꼬리가 즉시 소진한다**
+--   (`_dying`이거나 `canExecute` 거짓이면 저장하지 않고 `_consumeCleanup` — UB 입장은 그대로,
+--   가장 흔한 실수(yield 중 leaf 사망)의 결과가 누수에서 정리로; `spec.effect` 12).
+--   `fn`이 자기 생명주기를 못 바꾼다(`H-147` (A))는
 --   계약의 물리판 — 사용자: *"bind/unbind 에 간접 영향을 주는건데, UB 인게 맞다는 생각"*.
 --   `SignalBehavior` 구분 자체는 `base/ref-plan.md`가 소스.
 --   **[2026-09-17 round10 Q57] cleanup은 `dying: boolean`을 받는다** — `_consumeCleanup`이
@@ -383,7 +386,8 @@ end
 --   자기 leaf가 *철거*되는 것**(`effectState:Set(E2)`로 값 교체, 또는 `fn`이 자기를 담은
 --   Slot 요소를 제거). `EffectLeafHandler`의 retractor가 `fn` 실행 중 동기로
 --   `unbindLifetime` + `_consumeCleanup`(아직 비어 있음)을 돌리고, 그 뒤 `fn`이 돌려준
---   cleanup은 다시 묶이지 않는 핸들에 저장돼 **영구 미소진** — 위와 같은 `H-147` (A)의
+--   cleanup은 ~~다시 묶이지 않는 핸들에 저장돼 **영구 미소진**~~ **[2026-09-18 Q68 (b)] 같은
+--   꼬리가 즉시 소진(`dying = false`)** — 위와 같은 `H-147` (A)의
 --   물리판(Immediate 구분도 필요 없다 — 시그널이 아니라 동기 retract). 가드를 넣지 않는다
 --   (`_assertBindable`의 `isRunning` 가드는 bind 쪽 — unbind에 같은 가드를 두면 철거가
 --   실패하는 더 나쁜 상태가 된다).

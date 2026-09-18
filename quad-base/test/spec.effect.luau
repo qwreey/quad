@@ -514,4 +514,44 @@ do
 end
 
 print()
+print()
+print("=== 12. round11 Q68 (b) (2026-09-18) — fn이 yield하는 사이 leaf가 죽으면(_dying) fn이 돌려준 cleanup을 저장하지 않고 즉시 dying=true로 소진(전엔 죽은 핸들에 남는 영구 누수); 자리 철거로 실행 자격을 잃은 경우도 같다 ===")
+do
+	-- (1) yield + host death
+	local s = Source(0)
+	local host = Instance.new("Frame")
+	local cleaned, dyingArg = 0, nil
+	local e = Effect(function()
+		if s:Get() == 1 then
+			coroutine.yield() -- the "network round trip" — UB by contract, but the most common shape
+		end
+		return function(d: boolean) cleaned += 1; dyingArg = d end
+	end, s)
+	quad.Backend.bindLifetime(host, e)
+	local co = coroutine.create(function() s:Set(1) end)
+	assert(coroutine.resume(co) and coroutine.status(co) == "suspended", "fn is parked mid-run")
+	assert(cleaned == 1 and dyingArg == false, "the install cleanup was consumed before fn ran (rerun)")
+	host:Destroy() -- Destroying → _dying, _consumeCleanup on an empty slot (no-op)
+	assert(cleaned == 1, "nothing to consume yet")
+	assert(coroutine.resume(co), "fn resumes and returns its cleanup")
+	assert(cleaned == 2 and dyingArg == true and (e :: any)._cleanup == nil, "consumed at once with dying = true, not stored: cleaned=" .. cleaned)
+	assert(not quad.Backend.canExecute(e), "dead handle")
+	-- (2) yield + position retract (unbind, host alive): consumed with dying = false
+	local s2 = Source(0)
+	local host2 = Instance.new("Frame")
+	local cleaned2, dying2 = 0, nil
+	local e2 = Effect(function()
+		if s2:Get() == 1 then coroutine.yield() end
+		return function(d: boolean) cleaned2 += 1; dying2 = d end
+	end, s2)
+	quad.Backend.bindLifetime(host2, e2)
+	local co2 = coroutine.create(function() s2:Set(1) end)
+	coroutine.resume(co2)
+	quad.Backend.unbindLifetime(e2) -- the position retracts while fn is parked
+	assert(quad.Backend.canBound(e2), "unbound")
+	coroutine.resume(co2)
+	assert(cleaned2 == 2 and dying2 == false and (e2 :: any)._cleanup == nil, "consumed at once (dying = false), not stored: " .. cleaned2)
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
