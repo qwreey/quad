@@ -588,12 +588,20 @@ export type Bookkeeping = {
 -- `Backend` — [2026-09-15 공개 표면 (30) 사용자 결정] 백엔드가 설치하고 quad가 부르는 계약 op 네임스페이스.
 -- 앱 코드가 부를 표면이 아니다(자동완성·`Quad` 타입에서 분리). 멤버 이름은 옛 평평한 `q.<op>` 그대로.
 export type Backend = {
-	-- 생명주기 4종 — quad-base는 인터페이스(에러 스텁)만, 백엔드가 주입
-	-- (`.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
+	-- 생명주기 4종 — [2026-09-18 round11 Q59 사용자 결정] quad-base가 직접 구현한다(백엔드가 심지 않는다;
+	-- `.claude/base/lifecycle-pattern.md`). `canBound(v) == not canExecute(v)`.
 	bindLifetime: (inst: any, value: any) -> (),
 	unbindLifetime: (value: any) -> (),
 	canBound: (value: any) -> boolean,
 	canExecute: (value: any) -> boolean,
+	-- 생명주기 hold op 넷 — 백엔드가 주입하는 인스턴스 쪽 부기. 위 4종은 이 넷 위에 조립된다.
+	-- `holdLifetime`: value를 inst의 강참조 홀더에 넣고 value에 생존 증거를 약참조로 남긴다(inst가 quad 소유가
+	-- 아니면 던짐 — 커밋 동작). `releaseLifetime`: 그 역(안 쥐고 있으면 no-op, inst는 안 건드림, cleanup 안 부름).
+	-- `isHeld`: value에 남긴 증거가 아직 살아 있는가(순수 술어). `isHeldBy`: 바로 이 inst가 쥐고 있는가.
+	holdLifetime: (inst: any, value: any) -> (),
+	releaseLifetime: (value: any) -> (),
+	isHeld: (value: any) -> boolean,
+	isHeldBy: (value: any, inst: any) -> boolean,
 	-- 주입 엔진 op(`architecture.md` EngineOps) — `Effect._bindDestroying`이 부른다. 미주입이면 에러 스텁.
 	onDestroying: (inst: any, fn: () -> ()) -> { Connected: boolean, Disconnect: (self: any) -> () },
 	-- 시간 op 둘(`architecture.md` EngineOps 줄, `debounce-throttle-plan.md` 6절) — 미주입이면 에러 스텁.

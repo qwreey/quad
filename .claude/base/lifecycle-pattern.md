@@ -205,7 +205,9 @@ GC에 묶이지 않음 — v1이 여기저기서 `PropertyChangedSignal`에 연�
 덮어쓴다, 아래 "`Connected` 체크는 rbvm 패턴을 그대로 베끼는 게 아니라" 절.
 **[2026-09-01 명시]** 실코드 `LifetimeHandle.luau`는 생명주기 넷에 더해
 엔진 op **`onDestroying` 스텁도 같이** 심는다 — 같은 백엔드가 채우는
-주입이라서(그 파일 주석이 소스). 백엔드가 덮어쓸 필드는 총 다섯).
+주입이라서(그 파일 주석이 소스). ~~백엔드가 덮어쓸 필드는 총 다섯~~ **[2026-09-18
+round11 Q59]** 생명주기 넷은 이제 quad-base가 직접 구현하고 백엔드는 그 아래 **hold op
+넷**만 심는다 — 아래 "(1-2)" 절).
 아래 시그니처의 이름은 그 필드 이름이다. **⭐ [2026-08-28 `H-174`, 사용자 확정]
 반응형 모듈(`Source`/`State`/`Observer`/`Effect`…)은 이 넷을 `module.canExecute(self)`처럼
 모듈 인스턴스에서 발화 시점에 늦게 읽는다** — 조립은 `InitXxx(module)` 팩토리가
@@ -494,6 +496,53 @@ function canExecute(value)
     return isBoundAlive(value)
 end
 ```
+
+#### (1-2) ⭐ [2026-09-18 round11 Q59, 사용자 결정] 넷은 quad-base가 조립하고, 백엔드는 hold op 넷만 심는다
+
+위 (1) 스케치는 **한 함수의 논리**로는 그대로 유효하지만, **누가 그 코드를 가지는가**가
+바뀌었다. 구현 뒤 실코드를 보니 quad-roblox와 mock이 `bindLifetime` 본문 40줄을 글자까지
+같이 복제하고 있었고, 그 절반 이상이 base의 값 타입 지식이었다 — nil 게이트, 거부 메시지
+세 팔(`isObserver`/`isEffect`·`.Subscribed`), `_assertBindable` 선행 호출, 커밋 뒤
+`_catchUp`/`_bindDestroying`, `unbindLifetime`의 `_unbindDestroying`, `isBoundAlive`의
+`.Subscribed` 팔. 백엔드가 진짜로 아는 것은 셋뿐이었다: inst가 quad 소유인가, 값을 그
+inst의 홀더에 넣고 빼기, inst 쪽 증거(gcconn)가 살아 있는가. 그래서 base 내부 훅 셋이
+프로바이더 계약으로 새어 나왔고(round11 `H-538`의 "이름을 부른 예외 셋"), 그게 Q59의
+증상이었다. **사용자 원문**: *"bindLifetime 자체가 base 가 아는 경계랑 각 백엔드가 아는
+경계가 섞여있다는 점이 문제가 돼. 이 구조상에서는 base 에 사소한 변경만 와도 백엔드 전부
+코드 개편이 불가피함 … 여러 맥락이 섞여 한줄 한줄 크리티컬한 구역이 나왔고, 하는 일이
+크다고 볼 수 있으며 중복돼."*(`session/2026-09-18-01-round11-batch-reply.md`).
+
+**모양**: `quad-base/src/LifetimeHandle.luau`가 `bindLifetime`/`unbindLifetime`/`canBound`/
+`canExecute` 넷을 **직접 구현해 `Backend`에 심고**(백엔드는 이 넷을 심지 않는다), 백엔드는
+인스턴스 쪽 부기만 담은 **hold op 넷**을 주입한다:
+
+```lua
+-- 백엔드가 주입 (quad-roblox `LifetimeHandle.luau`, mock `installLifetime`)
+holdLifetime(inst, value)        -- gchold[value] = true + BindData 약참조 둘. inst 미claim이면 던짐(roblox) / lazy claim(mock). 커밋.
+releaseLifetime(value)           -- 그 역. 안 쥐고 있으면 no-op, inst 무관, cleanup 안 부름
+isHeld(value): boolean           -- BindData의 gcconn.Connected — 옛 isBoundAlive의 (a) 팔
+isHeldBy(value, inst): boolean   -- 홀더가 이 inst 것인가 — `H-395` 메시지 팔 하나용
+
+-- quad-base가 조립
+isBoundAlive(v) = v ~= nil and (Backend.isHeld(v) or ((isObserver(v) or isEffect(v)) and v.Subscribed == true))
+canBound(v) = not isBoundAlive(v);  canExecute(v) = isBoundAlive(v)
+bindLifetime(inst, v): nil 게이트 → canBound 거부 세 팔(isHeldBy로 같은-inst 팔) → _assertBindable → Backend.holdLifetime → _catchUp / _bindDestroying
+unbindLifetime(v): nil 게이트 → _unbindDestroying → Backend.releaseLifetime
+```
+
+**이름**(사용자 결정, sonnet 둘의 독립 의견이 일치): `hold`는 기존 명사 `gchold`의 동사이고
+`release`는 `Bookkeeping.releaseOwner`와 같은 결이라 claim(인스턴스 물리 등록)/hold(값을
+홀더에)/release(놓기)의 사다리가 선다. 임시안 attach/detach는 버렸다 — `q.Detach`(떼되
+살려둔다)와 op 2(생존 보장을 거둔다)의 뜻이 반대이고 `attachSlot`·물리 attach와도 겹친다.
+`Lifetime` 접미는 유지(`bindLifetime` 옆 같은 절에 놓이므로 `isInst`/`isClaimed`와 구분).
+
+**바뀌지 않은 것**: 위 (1)의 순서 계약(canBound 거부 → 커밋 전 훅 → 커밋 → 커밋 뒤 훅), (3)의
+"이름은 둘, 판정 로직은 하나", `H-174`의 늦은 읽기(base도 `Backend.isHeld`를 부를 때마다 읽는다),
+`H-290`의 "미claim inst는 에러"(이제 `holdLifetime` 안 — 메시지 접두는 사용자가 부른 프리미티브
+이름 `bindLifetime:` 그대로), `H-548`의 "그 게이트엔 gcconn 끊김 검사를 안 쓴다". **바뀐 것 하나**:
+에러 궤적 — 미claim inst에 이미 묶인 값을 넣으면 전엔 "not claimed"가, 지금은 base 게이트가
+먼저라 "already bound"가 난다(둘 다 프로그램 오류, 정상 프로그램은 무관). 프로바이더 계약
+BREAKING(창 안) — quad-roblox·mock 둘 다 고쳤고, 스펙은 `spec.lifetime` 1·1a·1b.
 
 #### (1-1) ✅ [역전됨, 2026-08-21 구현 전 QA 5라운드 `C-4`] 첫 인자는 **항상 물리 Instance**다
 

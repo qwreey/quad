@@ -31,13 +31,15 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 |---|---|
 | 물리 트리 조작 (`native*`) | `nativeInsert` `nativeExtract` `nativeRemove` `nativeMove` `nativeSwap` `nativeDispose` |
 | 판정·훅·조회 op | `isInst` `onDestroying` `nativeClaim` `isClaimed` `nativeFindChild` |
-| 생명주기 프리미티브 | `bindLifetime` `unbindLifetime` `canBound` `canExecute` |
+| 생명주기 hold op | `holdLifetime` `releaseLifetime` `isHeld` `isHeldBy` |
 | 메타데이터 op | `addTag` `removeTag` `setAttr` |
 | 시간 op | `setTimeout` `clearTimeout` |
 
+`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`는 이 표에 **없습니다** — 그 넷은 quad-base가 위 hold op 넷 위에 직접 조립하는 프리미티브라 백엔드가 심지 않습니다(아래 §4). 같은 `q.Backend` 네임스페이스에 살지만 채우는 쪽이 다릅니다.
+
 두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
 
-**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.) **이름을 부른 예외 셋**이 있습니다 — `bindLifetime`이 값 쪽에서 불러야 하는 `Observer`/`Effect`의 `_assertBindable()`·`_catchUp()`·`_bindDestroying(inst)`(아래 "생명주기 프리미티브" 절). 밑줄이 붙어 있지만 이 셋은 백엔드가 알아야 하는 규약의 일부이고, 이 페이지가 이름을 유지합니다. 그중 하나라도 빼먹으면 quad-base는 항의하지 않고 조용히 어긋납니다 — `_bindDestroying`을 안 부르면 Effect의 마지막 cleanup이 인스턴스가 죽을 때 영영 돌지 않습니다.
+**`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.) 한때 `bindLifetime`을 백엔드가 구현하면서 `Observer`/`Effect`의 밑줄 훅 셋을 예외로 불러야 했는데, 지금은 `bindLifetime` 자체가 quad-base 것이라 그 훅들은 백엔드가 알 필요도, 부를 일도 없습니다(아래 §4).
 
 ---
 
@@ -103,25 +105,25 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 
 ---
 
-## 4. 생명주기 프리미티브
+## 4. 생명주기 hold op
 
-Luau에는 ephemeron이 없어서, "이 값이 저 요소가 사는 동안 살아 있게 하라"와 "이 값이 지금 발화해도 되는가"를 백엔드가 직접 구현해야 합니다.
+Luau에는 ephemeron이 없어서, "이 값이 저 요소가 사는 동안 살아 있게 하라"의 **인스턴스 쪽 부기**를 백엔드가 직접 구현해야 합니다. 백엔드가 심는 것은 아래 넷뿐이고, 그 위의 프리미티브 넷(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)은 quad-base가 조립합니다 — 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅과 전역 구독 상태)은 전부 거기 있습니다.
 
 ```
-bindLifetime   (inst: any, value: any) -> ()
-unbindLifetime (value: any) -> ()
-canBound       (value: any) -> boolean
-canExecute     (value: any) -> boolean
+holdLifetime    (inst: any, value: any) -> ()
+releaseLifetime (value: any) -> ()
+isHeld          (value: any) -> boolean
+isHeldBy        (value: any, inst: any) -> boolean
 ```
 
-- **`bindLifetime(inst, value)`** — `inst`가 사는 동안 `value`가 살아 있도록 강참조로 묶고, `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. `inst`를 필요로 하는 건 이 하나뿐입니다. 순서 계약: **먼저 `canBound(value)`가 거짓이면 아무것도 남기지 않고 던집니다**(quad-roblox 문구는 `bindLifetime: value is already bound to another Instance` / `… to this Instance` / `… already subscribed` — 이 거부가 곧 [Observer/Effect 레퍼런스](/reference/core/05-observer-effect/)가 약속하는 "살아 있는 핸들을 다른 인스턴스에 다시 놓으면 거절"의 실체입니다. 백엔드가 이 검사를 빼면 두 번째 인스턴스가 조용히 핸들을 가져가고 첫 인스턴스는 죽은 참조를 쥡니다). 다음으로 값의 `_assertBindable`이 있으면 **부기를 커밋하기 전에** 부르고(던지면 아무것도 남기지 않음), 커밋 뒤에 Observer의 `_catchUp()`·Effect의 `_bindDestroying(inst)`를 부릅니다 — 이 둘은 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작, quad-roblox·mock 모두 같음 — pcall로 감싸지 마세요).
-- **`unbindLifetime(value)`** — **인자 하나**. 이 값 하나만 조기 해제하며, `inst`는 건드리지 않습니다. cleanup을 부르지도, 안쪽 Observer를 떼지도 않습니다(대칭적 해제일 뿐). 안 묶인 값에 부르면 no-op이지만 `nil`은 에러입니다 — 인자가 빠진 것이지 "안 묶인 값"이 아니기 때문입니다.
-- **`canBound(value)`** — "지금 이 값을 묶어도 되는가". 아직 아무 데도 안 묶여 있거나, 묶였던 인스턴스가 이미 파괴됐으면(연결이 끊겼으면) 참 — 즉 죽은 뒤 재사용은 허용됩니다.
-- **`canExecute(value)`** — "이 값이 지금 발화해도 되는가". **묶인 채 살아 있으면 참**입니다. State 전파가 이 게이트로 죽은 요소에 매달린 Observer/Effect를 걸러냅니다.
+- **`holdLifetime(inst, value)`** — `value`를 `inst`의 강참조 홀더에 넣고(`inst`가 사는 동안 `value`가 GC되지 않게), `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. 이것이 **커밋**입니다. quad-base는 자기 게이트(nil, `canBound`, 값의 바인드 전 훅)를 전부 통과시킨 뒤에야 이걸 부르고, 이게 돌아오면 값의 커밋 뒤 훅(`Observer`의 따라잡기, `Effect`의 `onDestroying` 연결)을 돌립니다. `inst`가 이 백엔드의 quad 소유 요소가 아니면 **아무것도 쓰지 않고 던지세요** — quad-roblox 문구는 `bindLifetime: Instance is not claimed by quad …`입니다(접두는 사용자가 부른 프리미티브 이름 `bindLifetime:`으로 — 사용자는 `holdLifetime`을 모릅니다). mock은 여기서 lazy claim을 합니다(mock 인스턴스는 quad 밖에서 만들어지므로). 파괴된 인스턴스를 `isClaimed`처럼 즉시 거부하지는 **마세요** — GC 전에 다시 claim된 시체가 영원히 살아 있는 gcconn을 얻는 구멍이 있어, 여기서는 셋업 유무만 봅니다.
+- **`releaseLifetime(value)`** — 역입니다. 홀더에서 `value`를 빼고 남긴 근거를 지웁니다. 안 쥐고 있던 값이면 no-op, `inst`는 건드리지 않고, **cleanup을 부르지도 안쪽 구독을 떼지도 않습니다** — 그건 quad-base의 `unbindLifetime`이 이걸 부르기 전에 이미 처리합니다. `nil` 게이트도 quad-base 몫이라 여기엔 필요 없습니다.
+- **`isHeld(value)`** — "`value`에 남긴 근거가 아직 살아 있는가". quad-roblox와 mock 모두 `holdLifetime`이 복사해 둔 gcconn의 `.Connected`를 봅니다 — 인스턴스가 Destroy되면 즉시 거짓이 되고, 그 뒤 GC가 약한 항목을 치웁니다. 순수 술어입니다: 던지지 말고, `nil`에는 거짓을 돌려주세요. 매 emit 전파마다 불리므로 싸게 만드세요.
+- **`isHeldBy(value, inst)`** — "`value`를 쥔 것이 바로 이 `inst`인가". quad-base가 거부 메시지 한 팔(`… already bound to this Instance (the same handle at two positions?)`)을 고르는 데만 씁니다. 순수 술어입니다.
 
-**`canBound(v) == not canExecute(v)`** — 둘은 백엔드 비공개 술어 하나(`isBoundAlive`)를 공유하는 얇은 진입점이어야 합니다. quad-roblox와 mock 모두 그 술어가 보는 것은 둘뿐입니다: (a) `bindLifetime`이 값에 복사해 둔 gcconn의 `.Connected`, (b) 값이 `Observer`/`Effect`라면 전역 구독 상태(`.Subscribed`).
+**quad-base가 그 위에서 하는 일** — 읽는 사람이 경계를 알 수 있게 적습니다. `canExecute(v)`는 `isHeld(v)`이거나, `v`가 `Observer`/`Effect`이면서 전역 구독 상태(`.Subscribed`)가 참일 때 참이고, `canBound(v)`는 그 부정입니다. `bindLifetime(inst, value)`는 nil 게이트 → `canBound` 거부(`bindLifetime: value is already subscribed` / `… already bound to this Instance …` / `… to another Instance`) → 값의 바인드 전 훅(던지면 아무것도 남기지 않음) → **`holdLifetime`** → 값의 커밋 뒤 훅 순서이고, 마지막 단계는 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작 — pcall로 감싸지 않습니다). `unbindLifetime(value)`는 nil 게이트 → `Effect`의 `Destroying` 연결 해제 → **`releaseLifetime`**입니다. 이 넷의 사용자 표면은 [core/10](/reference/core/10-lifetime-sentinels/)에 있습니다.
 
-네 함수는 `module.Backend.canExecute(v)`처럼 **부를 때마다 `Backend` 네임스페이스의 필드로** 읽어야 합니다. `Init` 시점에 지역 변수로 캡처해 두면 백엔드가 나중에 덮어쓴 실 구현이 아니라 스텁을 계속 부르게 됩니다.
+hold op 넷은 quad-base가 `module.Backend.isHeld(v)`처럼 **부를 때마다 `Backend` 네임스페이스의 필드로** 읽습니다. 백엔드 쪽에서도 자기 op를 부를 일이 있으면 같은 방식으로 읽으세요 — `Init` 시점에 지역 변수로 캡처해 두면 나중에 덮어쓴 실 구현이 아니라 스텁을 계속 부르게 됩니다.
 
 ### 4.1 Roblox의 파괴 동작
 
@@ -233,6 +235,6 @@ quad: nativeInsert is not available — no backend has installed the lifetime pr
 
 ## 관련
 
-- [core/10 — 생명주기와 센티널](/reference/core/10-lifetime-sentinels/) — 여기 주입되는 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 사용자 표면
+- [core/10 — 생명주기와 센티널](/reference/core/10-lifetime-sentinels/) — 여기 주입되는 hold op 위에 quad-base가 조립하는 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`의 사용자 표면
 - [extend/02 — 디스패치 핸들러 계약](/reference/extend/02-dispatch-handler-contract/) — 이 op들을 실제로 부르는 핸들러 쪽 계약
 - [Quadnomicon Vol. 10 — 다중 백엔드 추상 기계](/quadnomicon/10-multi-backend-abstract-machine/) — 이 경계가 왜 이렇게 그어졌는가

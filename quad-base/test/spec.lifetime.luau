@@ -9,10 +9,10 @@ local mock = require("./mock")
 
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
-print("=== 1. 미주입 스텁 — 생명주기 넷 + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
+print("=== 1. 미주입 스텁 — hold op 넷(holdLifetime/releaseLifetime/isHeld/isHeldBy, round11 Q59) + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
 do
 	local fresh = Quad.New()
-	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
+	for _, name in { "holdLifetime", "releaseLifetime", "isHeld", "isHeldBy", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
 		local ok, err = pcall(function()
 			return (fresh :: any).Backend[name]({}, {})
 		end)
@@ -26,7 +26,23 @@ do
 end
 
 print()
-print("=== 1b. 스텁의 에러 깊이 — 여덟 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===")
+print("=== 1a. 생명주기 넷은 quad-base 것(round11 Q59, 2026-09-18) — 백엔드 없이도 함수이고, 부르면 hold op 스텁에 닿아 그 op 이름으로 error, blame은 호출부 ===")
+do
+	local fresh = Quad.New()
+	for _, pair in { { "bindLifetime", "isHeld" }, { "unbindLifetime", "releaseLifetime" }, { "canBound", "isHeld" }, { "canExecute", "isHeld" } } do
+		local name, stub = pair[1], pair[2]
+		assert(type((fresh :: any).Backend[name]) == "function", name .. " is installed by quad-base itself")
+		local ok, err = pcall(function()
+			return (fresh :: any).Backend[name]({}, {})
+		end)
+		assert(not ok and string.find(tostring(err), stub .. " is not available", 1, true) ~= nil, name .. " reaches the " .. stub .. " stub: " .. tostring(err))
+		assert(string.find(tostring(err), "spec.lifetime.luau", 1, true) ~= nil, name .. ": blame is the caller: " .. tostring(err))
+	end
+	print("PASS")
+end
+
+print()
+print("=== 1b. 스텁의 에러 깊이 — 아홉 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===")
 do
 	local fresh = Quad.New()
 	local QuadTypes = require("../luau_packages/quad_types")
@@ -40,7 +56,7 @@ do
 		lineUser = (debug.info(1, "l") :: number) + 1
 		return viaSurface(name)
 	end
-	for _, name in { "bindLifetime", "unbindLifetime", "canBound", "canExecute", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
+	for _, name in { "holdLifetime", "releaseLifetime", "isHeld", "isHeldBy", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
 		local ok, err = pcall(user, name)
 		assert(not ok, name .. " stub errors")
 		assert(string.find(tostring(err), `spec.lifetime.luau:{lineUser}:`, 1, true) ~= nil, name .. ": outermost — blames past the surface frame: " .. tostring(err))
@@ -51,8 +67,8 @@ do
 	local okO, errO = pcall(function()
 		fresh.Source(1):Observer(function() end):Subscribe()
 	end)
-	assert(not okO and string.find(tostring(errO), "canBound is not available", 1, true) ~= nil, "Subscribe reaches the canBound stub: " .. tostring(errO))
-	mock.assertBlamesUser(errO, "spec.lifetime.luau", "canBound via Observer:Subscribe blames the user")
+	assert(not okO and string.find(tostring(errO), "isHeld is not available", 1, true) ~= nil, "Subscribe reaches the isHeld stub through base's canBound: " .. tostring(errO))
+	mock.assertBlamesUser(errO, "spec.lifetime.luau", "isHeld via Observer:Subscribe blames the user")
 	local okS, errS = pcall(function()
 		fresh.Slot():Add(mock.Instance.new("Frame"))
 	end)

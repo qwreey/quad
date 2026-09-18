@@ -82,28 +82,49 @@ InstData:SetWeak(inst, "gcconn", gcconn)
 
 `ClassName`은 절대 안 바뀌는 프로퍼티라 이 신호는 발화하지 않습니다. 목적은 콜백이 `gchold`와 `inst`를 업밸류로 잡는 것이고, 부수적으로 **`gcconn.Connected`가 Destroy 시점에 즉시 뒤집힙니다** — 그게 곧 생존 판정의 근거입니다.
 
-### 3.2 셋업 ②: `bindLifetime(inst, value)`
+### 3.2 셋업 ②: `holdLifetime(inst, value)` — 그리고 그 위의 `bindLifetime`
+
+백엔드가 가진 것은 인스턴스 쪽 부기뿐입니다:
 
 ```luau
+-- 백엔드 (quad-roblox / mock): holdLifetime
 gchold[value] = true                                   -- 강참조: value는 최소한 inst만큼 산다
 BindData:SetWeak(value, "gchold", gchold)              -- 둘 다 weak — 섬은 위 클로저가 살린다
 BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
+```
 
+값 쪽 지식은 quad-base가 그 위에 얹습니다:
+
+```luau
+-- quad-base: bindLifetime
+if not canBound(value) then error(...) end             -- 거부 메시지 세 팔은 여기
+if value._assertBindable then value:_assertBindable() end -- 커밋 전 훅
+Backend.holdLifetime(inst, value)                      -- 커밋
 if isObserver(value) then value:_catchUp() end
 if isEffect(value) then value:_bindDestroying(inst) end
 ```
+
+한때 `bindLifetime` 전체를 백엔드가 구현했고 두 백엔드가 같은 40줄을 복제했습니다 — 그 절반 이상이 base의 값 타입 지식이었고, 밑줄 훅 셋이 프로바이더 계약으로 새어 나왔습니다. 경계를 다시 그은 것이 이 모양입니다(2026-09-18).
 
 **`bindLifetime`은 `Destroying`을 듣지 않습니다.** GC 앵커는 위 `ClassName` 커넥션이고, `Destroying` 훅업은 오직 `Effect`에만 붙습니다(`_bindDestroying`). 그리고 이 함수는 이미 살아 있는 바인딩을 가진 값을 거부합니다 — 그 판정도 아래 술어 하나로 합니다.
 
 ### 3.3 판정: `isBoundAlive`와 두 진입점
 
+술어의 인스턴스 쪽 절반(`isHeld`)은 백엔드, 나머지는 quad-base입니다:
+
 ```luau
+-- 백엔드: isHeld
+local function isHeld(value: any): boolean
+    local gcconn = BindData:GetWeak(value, "gcconn")
+    return gcconn ~= nil and gcconn.Connected == true
+end
+
+-- quad-base: isBoundAlive (비공개), canBound, canExecute
 local function isBoundAlive(value: any): boolean
     if value == nil then
         return false
     end
-    local gcconn = BindData:GetWeak(value, "gcconn")
-    if gcconn ~= nil and gcconn.Connected then
+    if Backend.isHeld(value) then
         return true
     end
     if isObserver(value) or isEffect(value) then
@@ -162,4 +183,4 @@ end
 | `bindLifetime` | `(inst, value) -> ()` | 마운트 시점 | — (수명을 잇는 쪽; 거부는 `canBound`로 판정) |
 | `unbindLifetime` | `(value) -> ()` | 조기 해제 | — (`gchold[value]`만 지움, cleanup은 부르지 않음) |
 
-`canBound(v) == not canExecute(v)`이고, 둘 다 백엔드가 소유한 비공개 술어 `isBoundAlive` 하나를 감쌉니다. quad-base 쪽에는 이 넷의 **인터페이스만** 있고 기본 구현은 소리 나는 스텁입니다 — 엔진을 모르는 코어가 임의의 "옳은 기본값"을 추측할 수 없기 때문입니다.
+`canBound(v) == not canExecute(v)`이고, 둘 다 quad-base의 비공개 술어 `isBoundAlive` 하나를 감쌉니다. 그 술어가 백엔드에 묻는 것은 `isHeld(v)` 하나뿐이고, 백엔드가 심는 것도 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)뿐입니다 — 그 넷의 기본 구현은 소리 나는 스텁입니다. 엔진을 모르는 코어가 인스턴스 쪽 부기의 "옳은 기본값"을 추측할 수 없기 때문입니다.

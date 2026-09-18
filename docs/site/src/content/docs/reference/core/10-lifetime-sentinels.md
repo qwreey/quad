@@ -161,13 +161,13 @@ bindLifetime: (inst: any, value: any) -> ()
 
 **동작** — 값 하나의 수명을 요소(`inst`)의 수명에 묶습니다. 요소가 죽으면 묶인 값들도 같이 수거되고, 구독은 그때부터 발화하지 않습니다.
 
-**⚠️ quad-base에는 구현이 없습니다.** 이 네 함수와 엔진 op들은 백엔드가 모듈 인스턴스에 뮤테이션으로 심습니다 — quad-base는 임의의 엔진에서 "옳은" 기본값을 추측할 수 없으므로, 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.New()`에서 부르면:
+**이 네 함수는 quad-base 것입니다.** 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅, 전역 구독 상태)은 여기 있고, 인스턴스 쪽 부기만 백엔드가 심는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)에 맡깁니다. quad-base는 임의의 엔진에서 그 부기의 "옳은" 기본값을 추측할 수 없으므로, 그 넷의 자리엔 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.New()`에서 `bindLifetime`을 부르면 그 스텁에 닿습니다:
 
 ```
-quad: bindLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
 ```
 
-같은 문구가 이름만 바뀌어 `unbindLifetime`/`canBound`/`canExecute`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](/reference/extend/01-backend-provider-contract/)가 정본입니다.
+같은 문구가 이름만 바뀌어 hold op `holdLifetime`·`releaseLifetime`·`isHeldBy`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](/reference/extend/01-backend-provider-contract/)가 정본입니다.
 
 ## `q.Backend.unbindLifetime(value)`
 
@@ -177,7 +177,7 @@ quad: bindLifetime is not available — no backend has installed the lifetime pr
 unbindLifetime: (value: any) -> ()
 ```
 
-**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`은 에러입니다. 나머지는 `q.Backend.bindLifetime`과 같습니다 — 백엔드가 심고, 미설치면 같은 모양의 스텁 에러가 납니다.
+**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`은 에러입니다. `Effect`면 `Destroying` 연결을 끊고 나서 백엔드의 `releaseLifetime`에 맡깁니다 — cleanup은 부르지 않습니다. 백엔드가 없으면 `releaseLifetime` 스텁 에러가 납니다.
 
 ## `q.Backend.canBound(value)`
 

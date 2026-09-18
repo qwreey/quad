@@ -61,7 +61,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 - 아무 핸들러도 맡지 않는 문자 키 — `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
 
-하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `bindLifetime: value is already bound to another Instance`(생명주기는 백엔드가 심으므로 이 두 문구는 quad-roblox의 것입니다).
+하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).
 
 `PreRef`/`PostRef`는 그 위에 **일회용**이기까지 합니다.
 

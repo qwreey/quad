@@ -10,12 +10,13 @@
 	Vide의 mock과 달리 GC-독립 userdata 프록시 트릭을 안 씀 — 그건 Roblox
 	엔진 userdata가 Lua 참조와 무관하게 회수·재생성되는 **엔진 GC 동일성**을
 	흉내내려는 것이고, 그건 quad-roblox의 `nativeClaim`이 실기기에서 다루는
-	자리라 mock 범위 밖. 반면 **생명주기 계약 로직**(`bindLifetime`/`canBound`/
-	`canExecute`/`unbindLifetime`이 gcconn의 `.Connected`로 판정하는 것)은
-	mock 시그널 위에서 그대로 재현한다 — 아래 `installLifetime`.
+	자리라 mock 범위 밖. 반면 **생명주기 계약 로직**(생존을 gcconn의 `.Connected`로
+	판정하는 것)은 mock 시그널 위에서 그대로 재현한다 — 아래 `installLifetime`.
 
-	**[2026-08-28 M2, ROADMAP `H-97`] `installLifetime(quad)`** — 생명주기 4종
-	(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)의 mock 백엔드.
+	**[2026-08-28 M2, ROADMAP `H-97`] `installLifetime(quad)`** — 생명주기 hold op 넷
+	(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)의 mock 백엔드. **[2026-09-18
+	round11 Q59]** `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` 자체는 quad-base가
+	이 넷 위에 조립한다(`quad-base/src/LifetimeHandle.luau`) — 백엔드는 gchold/gcconn 부기만.
 	quad-roblox가 할 모듈 뮤테이션을 그대로 흉내내며, 본문은
 	`.claude/base/lifecycle-pattern.md` (0)/(1)의 실 구현 스케치를 그대로 옮긴
 	것(gcconn = 절대 안 발화하는 `ClassName` 변경 시그널의 Connection,
@@ -25,7 +26,7 @@
 	false`), 두 번째 Destroy는 no-op. gcconn의 `.Connected`가 곧 생존 판정이라서.
 	Roblox와 다른 점 하나: gcconn/gchold 셋업(`nativeClaim`)은 quad가 Instance를
 	만들 때 하는 일인데 mock Instance는 quad 밖에서 만들어지므로 여기선
-	`bindLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
+	`holdLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
 	(userdata 동일성 구멍, 같은 문서 (0) 절).
 ]]
 
@@ -602,16 +603,15 @@ local function installTimers(quad: any)
 end
 
 local function mockProvider(quad: any): { [any]: any }
-	local isObserver, isEffect = quad.isObserver, quad.isEffect
 	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
-	-- bindLifetime의 주 호출부가 디스패치 깊이(Leaf.process)라 리터럴 level 2는
+	-- holdLifetime의 주 호출부가 디스패치 깊이(Leaf.process → bindLifetime)라 리터럴 level 2는
 	-- quad 내부를 blame했다. errorBefore(최외곽)면 직접 호출·디스패치 경유
 	-- 양쪽에서 사용자 줄에 닿는다(`lifecycle-pattern.md` 스케치도 같이 정정).
 	local Err = quad.errorNamespace
 	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	local InstData = Relate() -- inst  -> gchold/gcconn ((0)에서 채움)
-	local BindData = Relate() -- value -> gchold/gcconn (bindLifetime이 채움)
+	local BindData = Relate() -- value -> gchold/gcconn (holdLifetime이 채움)
 
 	-- `false or`: local 함수가 상수 접힘/인라인되면 아래 클로저의 업밸류 캡처가 사라진다
 	local nop = (false or function(...: any) end) :: (...any) -> ()
@@ -637,93 +637,50 @@ local function mockProvider(quad: any): { [any]: any }
 		InstData:SetWeak(inst, "gcconn", gcconn)
 	end
 
-	-- 비공개 — canBound/canExecute가 공유하는 실제 판정.
-	local function isBoundAlive(value: any): boolean
+	-- ── hold op 넷 (round11 Q59, 2026-09-18) — 백엔드가 가진 생명주기 코드는 이것뿐 ──
+	-- `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`는 quad-base가 이 넷 위에 조립한다
+	-- (`quad-base/src/LifetimeHandle.luau`): nil 게이트·거부 메시지·Observer/Effect 훅·`.Subscribed`
+	-- 팔은 거기. 여기는 gchold/gcconn 부기만 — quad-roblox와 같은 모양(lazy claim 하나만 다름).
+
+	-- `isHeld(value)` — inst-scoped 생존: holdLifetime이 value에 복사해둔 gcconn의 `.Connected`
+	local function isHeld(value: any): boolean
 		if value == nil then
-			return false -- round3 `H-444`: same contract as the real backend
+			return false -- round3 `H-444`: nil 키는 Relate에서 죽는다
 		end
-		-- (a) inst-scoped 경로: bindLifetime이 복사해둔 gcconn을 value 자신에게서 찾음
 		local gcconn = BindData:GetWeak(value, "gcconn")
-		if gcconn ~= nil and gcconn.Connected then
-			return true
-		end
-		-- (b) 전역 경로: 구독 경로(강/약)가 세운 것. Observer/Effect에만 있는 필드.
-		if isObserver(value) or isEffect(value) then
-			return value.Subscribed == true
-		end
-		return false
+		return gcconn ~= nil and gcconn.Connected == true
 	end
 
-	local function canBound(value: any): boolean
-		return not isBoundAlive(value)
+	-- `isHeldBy(value, inst)` — 5순회 `H-395`의 same-Instance 메시지 팔 (lazy claim이 아직
+	-- 안 돌았으면 inst 쪽 홀더가 없어 거짓)
+	local function isHeldBy(value: any, inst: any): boolean
+		if value == nil or inst == nil then
+			return false
+		end
+		local held = BindData:GetWeak(value, "gchold")
+		return held ~= nil and held == InstData:GetWeak(inst, "gchold")
 	end
 
-	local function canExecute(value: any): boolean
-		return isBoundAlive(value)
-	end
-
-	local function bindLifetime(inst: any, value: any)
-		if inst == nil then
-			Err.errorBefore("bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`
-		end
-		if value == nil then
-			Err.errorBefore("bindLifetime: value must not be nil", SURFACE) -- round3 `H-447`
-		end
+	-- `holdLifetime(inst, value)` — 커밋. base가 자기 게이트(nil·canBound·`_assertBindable`) 뒤,
+	-- 값의 커밋 뒤 훅(`_catchUp`/`_bindDestroying`) 앞에 부른다.
+	local function holdLifetime(inst: any, value: any)
 		if not isMockInstance(inst) then
-			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE)
+			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE) -- 사용자가 부른 프리미티브 이름으로
 		end
-		if not canBound(value) then
-			-- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
-			-- 인덱싱하면 안 됨 — value가 평범한 클로저일 수도 있음.
-			local isGlobal = isObserver(value) or isEffect(value)
-			if isGlobal then
-				isGlobal = value.Subscribed == true
-			end
-			-- 5순회 `H-395`: same-Instance arm, mirrored from quad-roblox (the
-			-- lazy claim may not have run yet — then the inst holds nothing)
-			local held = BindData:GetWeak(value, "gchold")
-			local sameInst = held ~= nil and held == InstData:GetWeak(inst, "gchold")
-			Err.errorBefore(
-				if isGlobal
-					then "bindLifetime: value is already subscribed"
-					elseif sameInst then "bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
-					else "bindLifetime: value is already bound to another Instance",
-				SURFACE
-			)
-		end
-		-- [H-184] 훅 가드를 커밋 **전에** 묻는다 — 가드가 거부해도 반쯤 묶인 핸들
-		-- (묶였는데 Destroying 연결 없음)이 남지 않는다. 값이 훅을 안 가지면(평범한
-		-- 클로저 등) 물을 것이 없다. quad-roblox의 bindLifetime도 같은 순서여야 한다.
-		if type(value) == "table" and (value :: any)._assertBindable ~= nil then
-			(value :: any):_assertBindable()
-		end
-		claim(inst)
+		claim(inst) -- mock만 lazy(헤더 주석) — quad-roblox는 여기서 "not claimed" 에러
 
 		local gchold = InstData:GetWeak(inst, "gchold")
 		gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)
 		-- value가 자기 홀더/생존 판정 근거를 직접 들고 있게 함(계약 2). 둘 다 weak.
 		BindData:SetWeak(value, "gchold", gchold)
 		BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
-
-		if isObserver(value) then
-			value:_catchUp() -- [H-159] 묶이기 전 홀드된 emit 1회 (단위 3에서 합류) — 커밋 뒤 사용자 콜백: 던지면 반쪽 바인딩 UB(round10 Q56 (b))
-		end
-		if isEffect(value) then
-			value:_bindDestroying(inst) -- Destroying 연결 + 홀드 캐치업 1회 (단위 3)
-		end
 	end
 
-	local function unbindLifetime(value: any)
-		if value == nil then
-			Err.errorBeforeNearest("unbindLifetime: value must not be nil", SURFACE) -- `H-474` (Q31) — mirrors roblox
-		end
-		-- bind의 대칭 — cleanup은 부르지 않고, Ref 콜백/내부 Observer도 안 뗀다.
-		if isEffect(value) then
-			value:_unbindDestroying() -- Destroying 연결만 끊는다 (단위 3)
-		end
+	-- `releaseLifetime(value)` — 역. 안 쥐고 있으면 no-op, inst는 안 건드림, cleanup 안 부름.
+	local function releaseLifetime(value: any)
 		local gchold = BindData:GetWeak(value, "gchold")
 		if gchold then
-			gchold[value] = nil -- inst는 안 건드림, 이 value 하나만 조기 해제
+			gchold[value] = nil -- 이 value 하나만 조기 해제
 		end
 		BindData:SetWeak(value, "gchold", nil)
 		BindData:SetWeak(value, "gcconn", nil)
@@ -740,7 +697,7 @@ local function mockProvider(quad: any): { [any]: any }
 
 	-- 2순회 `H-374`: the explicit `nativeClaim` op the real provider installs
 	-- (`H-305` (d′) "전부 같은 형태" — mock is a backend too, `H-294`). The
-	-- lazy internal `claim` stays idempotent (bindLifetime claims on demand);
+	-- lazy internal `claim` stays idempotent (holdLifetime claims on demand);
 	-- the explicit op mirrors the real one's double-claim contract (§7-10).
 	-- 3순회 note: the "already claimed" marker (`gchold`) is SHARED with the
 	-- lazy claim, so `bindLifetime(inst, v)` then `Claim(inst, …)` reads as
@@ -757,12 +714,12 @@ local function mockProvider(quad: any): { [any]: any }
 		claim(inst)
 	end
 
-	quad.Backend.bindLifetime = bindLifetime
-	quad.Backend.unbindLifetime = unbindLifetime
-	quad.Backend.canBound = canBound
-	quad.Backend.canExecute = canExecute
+	quad.Backend.holdLifetime = holdLifetime
+	quad.Backend.releaseLifetime = releaseLifetime
+	quad.Backend.isHeld = isHeld
+	quad.Backend.isHeldBy = isHeldBy
 	quad.Backend.onDestroying = onDestroying
-	-- [2026-09-16] `isClaimed` — the mock claims LAZILY (bindLifetime claims on demand), so every mock
+	-- [2026-09-16] `isClaimed` — the mock claims LAZILY (holdLifetime claims on demand), so every mock
 	-- instance counts as claimed here; specs that need the Slot gate to fire override this slot
 	-- (`spec.slot.luau` 22). The real provider answers from the gchold setup + gcconn `.Connected`
 	-- (round11 `H-548`: a destroyed Instance is "not claimed" at once, not after the next GC).
@@ -776,7 +733,7 @@ local function mockProvider(quad: any): { [any]: any }
 	-- `H-238`: 백엔드는 자기 교체 함수들을 공유 에러 네임스페이스에 태그한다
 	-- (`LifetimeHandle.luau` 계약 — 안 하면 이 경로 아래의 errorBeforeNearest가
 	-- 표면 프레임을 못 찾아 blame이 엉뚱한 바깥/raise 자리로 간다).
-	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, bindLifetime, unbindLifetime, canBound, canExecute, onDestroying, nativeClaim, isClaimed)
+	quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, holdLifetime, releaseLifetime, isHeld, isHeldBy, onDestroying, nativeClaim, isClaimed)
 	installNative(quad) -- [M6 편입] native*+isInst도 mock 백엔드의 일부 — 한 프로바이더가 전부 설치(H-305 (d′) "전부 같은 형태")
 	installTagAttrOps(quad) -- [M10 엔진 축] addTag/removeTag/setAttr도 같은 프로바이더가(로그는 재설치 opt-in)
 	installTimers(quad) -- 2026-09-08: 시간 op 둘도 같은 프로바이더가(가상 시계 — 위 `advanceTime`)

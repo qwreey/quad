@@ -89,7 +89,9 @@ canExecute(value): boolean  -- 지금 실행해도 되는가(= 살아 있는 바
 ```
 
 `canBound`와 `canExecute`는 비공개 술어 하나(`isBoundAlive`)를 공유하는 얇은
-진입점이고, 그 술어 자체는 **백엔드 내부에만 있습니다** — 계약 표면이 아닙니다.
+진입점이고, 그 술어는 quad-base 안에 있습니다 — 계약 표면이 아닙니다. 이 넷 전부가
+quad-base 것이고, 백엔드가 심는 것은 그 아래의 hold op 넷(`holdLifetime`/`releaseLifetime`/
+`isHeld`/`isHeldBy` — 값을 인스턴스의 홀더에 넣고 빼고, 아직 쥐고 있는지 묻는 것)뿐입니다.
 
 :::caution
 `canBound(nil)`은 **참**입니다. `isBoundAlive(nil)`이 거짓이므로 그 부정이 참이 됩니다.

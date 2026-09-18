@@ -14,7 +14,7 @@
 	  judgement/hook ops (no composition fallback — absent means error):
 	    isInst(value) / onDestroying(inst, fn) / nativeFindChild(inst, key, className?)
 	  (`nativeClaim` also belongs to this inventory but is implemented in
-	   LifetimeHandle.luau — it shares InstData with isBoundAlive.)
+	   LifetimeHandle.luau — it shares InstData with holdLifetime/isHeld.)
 
 	  [M10 engine axis, 2026-09-03] base-owned handlers' injected ops
 	  (`dispatch-core-plan.md` "base가 소유하는 핸들러와 주입되는 엔진 op"):

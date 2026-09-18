@@ -37,6 +37,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 - **BREAKING(타입만) — `q.Effect`가 돌려주는 핸들의 타입 이름이 `EffectHandle`에서 `Effect`로, 입력 자리 마커가 `EffectHandleMarker`에서 `EffectMarker`로 바뀌었습니다.** `state:Observer` → `Observer`, `q.Slot` → `Slot`처럼 생성자와 타입 이름이 같은 규칙에서 이것만 벗어나 있었습니다(술어 `isEffect`와도 맞춤). 런타임은 같습니다. 옮기는 법: 주석·재수출의 `EffectHandle`을 `Effect`로(설정 모듈의 `export type EffectHandle = QuadTypes.EffectHandle` → `export type Effect = QuadTypes.Effect`).
 
+- **BREAKING(프로바이더 작성자) — 백엔드가 심는 생명주기 op가 바뀌었습니다.** 전에는 백엔드가 `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` 넷을 통째로 구현했고, 그러려면 `Observer`/`Effect`의 밑줄 훅 셋을 정해진 순서로 불러야 했습니다. 이제 그 넷은 quad-base가 직접 구현하고, 백엔드는 인스턴스 쪽 부기만 담은 **hold op 넷**을 심습니다 — `holdLifetime(inst, value)`(값을 인스턴스의 강참조 홀더에 넣고 생존 근거를 남김, quad 소유가 아니면 던짐), `releaseLifetime(value)`(그 역), `isHeld(value)`(근거가 아직 살아 있는가), `isHeldBy(value, inst)`(이 인스턴스가 쥐고 있는가). 옮기는 법: 자기 백엔드의 `bindLifetime` 본문에서 gchold/gcconn 부기 부분만 `holdLifetime`으로, 해제 부분만 `releaseLifetime`으로 옮기고, 살아 있음 판정의 gcconn 절반을 `isHeld`로 두세요. 나머지 줄(nil 검사, 거부 메시지, 훅 호출, `.Subscribed` 판정)은 지우면 됩니다 — quad-base가 합니다. 앱 코드에는 영향이 없습니다(quad-roblox 사용자는 그대로).
+
 - **BREAKING — 백엔드가 심는 계약 op가 `q.Backend`로, Length/Offset 부기 함수가 `q.Bookkeeping`으로 옮겨졌습니다.** 앱 코드가 부를 표면이 아닌 것들이 `q.` 자동완성에 섞여 있었습니다. 멤버 이름은 그대로입니다.
   - `q.Backend`: `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`, `nativeInsert`/`nativeExtract`/`nativeRemove`/`nativeMove`/`nativeSwap`/`nativeDispose`, `nativeClaim`/`nativeFindChild`/`isInst`/`onDestroying`, `addTag`/`removeTag`/`setAttr`, `setTimeout`/`clearTimeout`.
   - `q.Bookkeeping`: `setLength`/`setOffsetSource`/`setEmpty`/`getOffsetAt`/`getBlocker`/`getBookkeeping` — `q.Dispatch`에서는 빠졌습니다. 에러 문구의 접두도 `Dispatch.`에서 `Bookkeeping.`으로 바뀌었습니다.
