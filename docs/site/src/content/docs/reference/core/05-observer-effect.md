@@ -98,9 +98,10 @@ export type Observer = {
 - **등록 즉시 한 번 발화합니다**(`emitFrom = nil`). 초기값 반영을 따로 적을 필요가 없습니다.
 - 그 첫 발화 **뒤에** 상류의 구독자 집합에 합류합니다 — 첫 발화 안에서 대상 노드를 `:Set`해도 자기 자신이 그걸 다시 받지 않습니다.
 - 아직 살아나지 않은(구독도 바인딩도 안 된) 핸들에도 emit은 **도착합니다**. 다만 실행 자격이 없어 **보류**되고, 그 사이 몇 번이 왔든 살아나는 시점에 **정확히 한 번**, `emitFrom = nil`로 재생됩니다.
-- 콜백은 **자기 자신의 생명주기를 바꿀 수 없습니다**. 콜백 안에서 구독을 건드리면
+- 콜백은 **자기 자신을 구독하거나 묶을 수 없습니다**. 콜백 안에서 `:Subscribe()`/`:WeakSubscribe()`를 부르면
   `Observer: cannot change subscription from inside its own fn`
-  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`)
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
+- 콜백이 예외를 던지면 그 핸들은 **굳습니다** — 이후 (재)구독과 다른 인스턴스에 묶기는 위 문구로 거부됩니다. 발화 자체는 막히지 않아 상류가 바뀌면 콜백은 계속 돕니다(quad는 예외를 잡지 않으므로 "던졌다"는 사실을 따로 기억하지 못합니다). 정리하려면 `:Unsubscribe()`(강한 구독) 또는 묶인 인스턴스의 파괴로 놓아주세요.
 - 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
 - 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있고, 겹치면 나중 값의 콜백이 먼저 끝나 **마지막으로 처리한 값이 낡은 값**이 됩니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
@@ -167,6 +168,7 @@ print(#log) --> 3
 
 **동작** — 강한 구독을 해제합니다(강·약 등록을 둘 다 지우고 `.Subscribed`를 내립니다). **엄격합니다** — 강하게 구독한 적이 없으면 거절합니다:
 `Observer: not subscribed strongly; use :WeakUnsubscribe()`
+콜백 안에서, 그리고 콜백이 던져 굳은 뒤에도 됩니다 — 해제는 콜백을 부르지 않습니다.
 
 ---
 
@@ -219,11 +221,11 @@ export type Effect = {
 - cleanup 안에서 의존성을 `:Set`해도 됩니다 — 바로 뒤에 도는 `fn`이 그 새 값을 읽고, 그것으로 한 사이클입니다(같은 입력으로 한 번 더 돌지 않습니다). `fn` 안에서 의존성을 `:Set`하면 한 번 더 돕니다.
 - cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<Effect?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다). cleanup은 인자 하나 `dying`을 받습니다 — 셋째 자리(**인스턴스가 죽어서**)에서만 `true`이고 나머지 셋에서는 `false`입니다. 죽을 때만 해야 할 정리와 자리를 떠날 때마다 할 정리를 이걸로 가릅니다. 인자를 안 받는 `function() … end`도 그대로 됩니다.
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
-- `fn`이나 cleanup 안에서 자기 구독을 바꿀 수 없습니다:
+- `fn`이나 cleanup 안에서 자기를 (재)구독할 수 없습니다:
   `Effect: cannot change subscription from inside fn or cleanup`
-  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`)
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 `fn` 안에서도 됩니다 — `fn`을 다시 부르지 않고, `fn`이 그 뒤 돌려준 cleanup은 저장되지 않고 즉시 소진됩니다(핸들이 더는 실행 자격이 없으므로).
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
-- `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행이 전부 막힙니다.
+- `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행과 (재)구독이 막힙니다. 남는 일은 `:Unsubscribe()`(강한 구독을 풀어 핸들과 상류를 놓아줌 — 그때 소진할 cleanup은 없습니다, 던진 `fn`은 돌려준 게 없으니까) 또는 `:WeakUnsubscribe()`뿐입니다. 죽은 핸들을 강한 구독에 둔 채 버리면 모듈 수명 동안 남습니다.
 - `fn`과 cleanup 안에서 **yield하지 마세요** — 정의되지 않은 동작입니다. 증상은 `Observer`와 다릅니다: `Effect`는 겹친 요청을 `fn`이 돌아온 뒤 한 번 더 도는 것으로 흡수하지만, yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려가면 **그 뒤에 잡은 자원의 cleanup은 영영 돌지 않습니다**(죽음의 cleanup은 이미 지나갔습니다). 네트워크 왕복은 `fn` 밖(따로 띄운 코루틴)에서 하고 결과를 `State`로 넣으세요.
 
 **예제**
@@ -281,7 +283,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — 강한 구독을 해제하고 **마지막 cleanup을 정확히 한 번 소진합니다**. 엄격합니다:
 `Effect: not subscribed strongly; use :WeakUnsubscribe()`
-(이 문에서 거절당하면 cleanup은 건드려지지 않습니다.)
+(이 문에서 거절당하면 cleanup은 건드려지지 않습니다.) `fn` 안에서도, `fn`이 던져 죽은 뒤에도 됩니다 — `fn`을 부르지 않습니다.
 
 ---
 

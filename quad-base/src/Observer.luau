@@ -80,10 +80,12 @@ local function createImpl(module: any)
 	-- ── EmitReceive ──────────────────────────────────────────────────
 	function Impl._receive(self: any, from: any)
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
-			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric); an fn
-			-- that throws leaves the flag set — dead by contract. Save/restore, not
-			-- true/false: a reentrant wave (fn sets its own State) must not lower
-			-- the guard for the outer fn's tail (`H-332`, fable 탐사 2026-09-06)
+			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
+			-- that throws leaves the flag set — NOT "dead": this gate does not read it, so
+			-- the Observer keeps firing; what the stuck flag blocks is (re)subscribing and
+			-- (re)binding (`_assertBindable`) — round11 Q63 corrected the old "dead by
+			-- contract" wording. Save/restore, not true/false: a reentrant wave (fn sets
+			-- its own State) must not lower the guard for the outer fn's tail (`H-332`)
 			local outer = self._running
 			self._running = true
 			self.fn(self._state, self, from)
@@ -134,10 +136,11 @@ local function createImpl(module: any)
 		return self
 	end
 
+	-- round11 Q63 (b) (user decision 2026-09-18): the two UNsubscribe entries are not gated on
+	-- `_running` — an fn that threw leaves the flag up forever, and a strongly subscribed handle
+	-- could then never be released (module-lifetime keep of the handle and its `_state`).
+	-- Releasing runs no fn, so the `H-183` reentrancy the gate exists for stays closed.
 	function Impl.WeakUnsubscribe(self: any): any
-		if self._running then
-			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
-		end
 		-- A strong keep left behind would make a half-released, never-GC'd handle: fail fast.
 		if Subscribed[self] ~= nil then
 			Err.errorBeforeNearest("Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
@@ -167,10 +170,7 @@ local function createImpl(module: any)
 		return self
 	end
 
-	function Impl.Unsubscribe(self: any): any
-		if self._running then
-			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
-		end
+	function Impl.Unsubscribe(self: any): any -- no `_running` gate — see WeakUnsubscribe (Q63 (b))
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
 			Err.errorBeforeNearest("Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)

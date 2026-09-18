@@ -112,6 +112,17 @@ local function createImpl(module: any)
 				Err.errorBefore(`Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)
 			end
 			self._cleanup = cleanup
+			-- round11 Q63/Q68 (b) (user decision 2026-09-18): the handle may have lost its executability
+			-- WHILE fn ran — it unsubscribed itself (Q63 (b) opened that door), or it yielded and the
+			-- leaf died / the position was retracted meanwhile (Q68: `_dying` + `_consumeCleanup` ran on
+			-- an empty slot before fn returned). A cleanup stored now would sit on a handle nothing will
+			-- ever consume — so consume it at once (`dying` = whether the leaf's death is the cause) and
+			-- hold. Not on the forced install: the constructor runs fn before any bind on purpose.
+			if not force and cleanup ~= nil and (self._dying or not module.Backend.canExecute(self)) then
+				self:_consumeCleanup() -- sets `_rerunRequired` — replayed if the handle is re-armed
+				self._pending = false
+				break
+			end
 		until not self._pending
 		self._running = false
 	end
@@ -234,10 +245,15 @@ local function createImpl(module: any)
 		return self
 	end
 
+	-- round11 Q63 (b) (user decision 2026-09-18): the two UNsubscribe entries are NOT gated on
+	-- `isRunning`. An fn that threw leaves `_running` up forever (dead by contract, no pcall), and
+	-- with the gate the handle could never be released — the strong `Subscribed` keep held it and
+	-- its upstream for the module's lifetime. Releasing is the safe direction: it never calls fn
+	-- (a dead handle's `_cleanup` is already nil — rawRerun consumed it before fn ran), so the
+	-- `H-147` reentrancy the gate guards (subscribing yourself from inside fn) stays closed.
+	-- Side effect: fn may now unsubscribe itself; a cleanup it then returns is consumed at once
+	-- by rawRerun's tail (Q68 (b) — the handle is no longer executable).
 	function Impl.WeakUnsubscribe(self: any): any -- lenient (`H-133`) — does not touch the cleanup
-		if isRunning(self) then
-			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
-		end
 		if Subscribed[self] ~= nil then
 			Err.errorBeforeNearest("Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
@@ -246,10 +262,7 @@ local function createImpl(module: any)
 		return self
 	end
 
-	function Impl.Unsubscribe(self: any): any
-		if isRunning(self) then
-			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
-		end
+	function Impl.Unsubscribe(self: any): any -- no `isRunning` gate — see WeakUnsubscribe (Q63 (b))
 		if Subscribed[self] == nil then -- gate FIRST: never strongly subscribed → error, cleanup untouched
 			Err.errorBeforeNearest("Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end

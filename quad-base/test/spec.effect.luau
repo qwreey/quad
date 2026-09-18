@@ -187,7 +187,9 @@ do
 			end
 		end
 	end, s)
-	assert(#caught == 4, "all four entry points refuse inside fn, got " .. table.concat(caught, ","))
+	-- round11 Q63 (b): only the SUBSCRIBE entries are gated on `isRunning`; `Unsubscribe` here is refused by
+	-- its own strictness gate (never strongly subscribed), and `WeakUnsubscribe` is lenient — passes silently
+	assert(table.concat(caught, ",") == "Subscribe,WeakSubscribe,Unsubscribe", "subscribe entries refuse inside fn, releasing is not gated; got " .. table.concat(caught, ","))
 	e2:Subscribe()
 	e2:Unsubscribe() -- runs the cleanup → its Subscribe attempt must error too
 	assert(caught[#caught] == "cleanup:Subscribe", "entry points refuse inside cleanup too")
@@ -228,7 +230,7 @@ do
 end
 
 print()
-print("=== 8. error — fn이 던지면 그 Effect는 죽는다(_running 남음), 이후 재진입 전부 차단 ===")
+print("=== 8. error — fn이 던지면 그 Effect는 죽는다(_running 남음), 재실행·(재)구독은 차단; round11 Q63 (b): 해제(Unsubscribe/WeakUnsubscribe)는 통과해 강한 킵이 풀린다 ===")
 do
 	local s = Source(1)
 	local e = Effect(function()
@@ -243,8 +245,22 @@ do
 	assert((e :: any)._running == true, "dead: _running stays set")
 	s:Set(1) -- 발화는 _pending으로만 기록되고 fn은 안 돈다
 	assert(not pcall(function()
-		e:Unsubscribe()
-	end), "entry points are blocked on a dead handle")
+		e:Subscribe()
+	end), "(re)subscribing is blocked on a dead handle")
+	e:Unsubscribe() -- used to be refused too → the strong keep held the dead handle forever
+	assert(e.Subscribed == false, "released")
+	local ok2 = pcall(function() e:Unsubscribe() end)
+	assert(not ok2, "second Unsubscribe: the strictness gate still applies")
+	-- fn이 자기를 해제하고 cleanup을 돌려주는 모양: Unsubscribe는 fn을 안 부르고, 돌려준 cleanup은 rawRerun 꼬리가 즉시 소진(Q68 (b))
+	local cleaned = 0
+	local s2 = Source(0)
+	local e2: any
+	e2 = Effect(function()
+		if s2:Get() == 1 then e2:Unsubscribe() end -- not on the install run (e2 is not assigned yet there)
+		return function() cleaned += 1 end
+	end, s2):Subscribe()
+	s2:Set(1) -- rerun: old cleanup consumed (1), fn unsubscribes itself, its NEW cleanup is consumed at once (2)
+	assert(e2.Subscribed == false and cleaned == 2 and (e2 :: any)._cleanup == nil, "self-unsubscribe inside fn: released, returned cleanup consumed at once: " .. cleaned)
 	print("PASS")
 end
 

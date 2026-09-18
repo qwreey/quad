@@ -430,6 +430,8 @@ end
 생성자·`_consumeCleanup`·`rawRerun`의 홀드 셋, 내려가는 곳은 `rawRerun`이 `fn`을
 실제로 돌리는 자리 하나. `_installed`는 이 플래그의 부정형이라 통합했다.
 
+**[2026-09-18 round11 Q63 (b), 사용자 결정] `H-147`의 `isRunning` 게이트는 이제 `Subscribe`/`WeakSubscribe`(과 `_assertBindable`)에만 있다 — `Unsubscribe`/`WeakUnsubscribe`는 통과한다.** 던진 `fn`이 `_running`을 세워둔 채 죽으면(pcall 없음 — 플래그를 되돌릴 자리가 없다) 네 진입점이 다 막혀 강한 `Subscribed` 킵이 그 핸들과 상류를 모듈 수명 동안 붙들었다(탐사 B″ 3). 해제는 fn을 부르지 않고(죽은 핸들의 `_cleanup`은 `rawRerun`이 fn 전에 이미 소진해 nil) 안전한 방향의 전이라 `H-147`이 막으려던 "fn 안에서 자기를 구독해 재진입"을 열지 않는다. 부수: fn 안에서 자기를 해제하고 cleanup을 돌려주면 `rawRerun` 꼬리가 즉시 소진한다(Q68 (b) — 실행 자격 없는 핸들에 cleanup을 저장하지 않음). 원문 `session/2026-09-18-01-round11-batch-reply.md`.
+
 **⭐ [2026-08-25 신설, 7라운드 `H-60`; 2026-08-28 10라운드 `H-147`로 재정의]
 `rawRerun(self, force)` 본체 + 공개 `EffectHandle:Rerun()`.**
 지금까지 호출부만 다섯 곳이고 정의가 없었다. **[2026-08-28]** 사용자 지적으로
