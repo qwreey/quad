@@ -20,7 +20,7 @@ local D = q.Declaration
 ```
 
 :::note
-**생존 판정은 백엔드가 심습니다.** 이 페이지의 구독·바인딩은 전부 백엔드가 설치하는 생명주기 op 위에서 돕니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available — no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](../../quadnomicon/06-liveness-gate-and-isolation.md).
+**생존 판정의 인스턴스 쪽 절반은 백엔드가 심습니다.** 판정 자체(`canBound`/`canExecute`)와 바인딩(`bindLifetime`)은 quad-base 것이고, 그 아래 "이 값이 살아 있는 인스턴스에 묶여 있는가"만 백엔드의 hold op(`isHeld` 등)에 묻습니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available — no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](../../quadnomicon/06-liveness-gate-and-isolation.md).
 :::
 
 ---

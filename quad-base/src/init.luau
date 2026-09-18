@@ -221,7 +221,7 @@ local function New(): Quad
 	end
 
 	module:RunInit(InitDebug)
-	module:RunInit(InitLifetimeHandle) -- 생명주기 4종 에러 스텁 — 백엔드가 덮어씀
+	module:RunInit(InitLifetimeHandle) -- 생명주기 4종은 여기서 구현(round11 Q59); hold op 넷 등 엔진 op 에러 스텁 — 백엔드가 덮어씀
 	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. 각 Init이 자기 의존성을
 	-- `module:RunInit(...)`로 직접 당겨오므로(멱등) 여기 순서는 무관하다.
 	module:RunInit(State.Init)

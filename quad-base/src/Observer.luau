@@ -191,7 +191,7 @@ local function createImpl(module: any)
 			fn = fn or alwaysObserve,
 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
 			_rerunRequired = true,
-			_running = false, -- `H-183`: raised around every fn run; entry points refuse while up
+			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
 		ObserverBrand:Register(o)

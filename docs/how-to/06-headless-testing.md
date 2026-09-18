@@ -84,7 +84,7 @@ local q = Quad.New():UseProvider(myProvider)
 - `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 인스턴스입니다.
   테스트마다 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰세요.
 
-참고로 이 저장소의 mock 프로바이더는 물리 트리 조작·판정·훅·생명주기 넷·
+참고로 이 저장소의 mock 프로바이더는 물리 트리 조작·판정·훅·생명주기 hold op 넷·
 태그/어트리뷰트·시간 op를 모두 심고, 그 위에 얹는 공개 표면은 없습니다(빈 확장 —
 `D`가 없습니다). op 하나하나가 무엇을 요구하는지는
 [백엔드 프로바이더 규약](../reference/extend/01-backend-provider-contract.md)이
