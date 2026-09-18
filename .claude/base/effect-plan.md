@@ -517,8 +517,9 @@ end
   그래서 루프 안엔 판정이 없다. (한때 "`fire` 첫 줄에서 보고 죽은 핸들은 no-op"
   이었는데 그 문장은 `H-159` 이전 것.)
 - **error 시 UB — 그 Effect는 죽는다.** 전파되고 복구하지 않는다: `fn`이 error하면
-  `_running`이, cleanup이 error하면 `_cleanupRunning`이 참으로 남아 **이후 모든
-  재진입(`Rerun`·네 진입점·재바인드)이 막힌다**. **[2026-08-28 `H-160` 사용자 확정]**
+  `_running`이, cleanup이 error하면 `_cleanupRunning`이 참으로 남아 **이후 재실행·(재)구독·
+  재바인드(`Rerun`·`Subscribe`/`WeakSubscribe`·`_assertBindable`)가 막힌다** — **[2026-09-18 Q63 (b)]**
+  해제 둘(`Unsubscribe`/`WeakUnsubscribe`)은 통과한다(죽은 핸들을 놓아주는 길). **[2026-08-28 `H-160` 사용자 확정]**
   *"한번 죽는게 나오면 Effect 가 전부 죽는다가 계약으로 상향되어도 문제는 없는듯.
   이미 _running 도 그러한 제약을 받으니까."* — 계약으로 명문화. *"에러가 난 이후 데이터의 무결이 깨져도 별 책임 안 진다는 quad의
   일반 동작"*(사용자). 수렴 책임은 사용자 `fn`에 있고 무한 루프도 UB다.
@@ -566,7 +567,7 @@ end
   못 한다; **[2026-08-28 `H-159`]** 옛 `_installed`의 부정형을 흡수),
   `_running`/`_pending`(재진입 — `_pending`은 실행 **중**에 온 요청, `_rerunRequired`는
   실행 **불가 상태**에 온 요청), **`_cleanupRunning`**(cleanup 실행 중 — `_running`과
-  별개, 네 진입점 가드가 둘 다 본다, **[2026-08-28]**), **`_dying`**(**[2026-08-31
+  별개, 구독 쪽 두 진입점의 가드가 둘 다 본다 — **[2026-09-18 Q63 (b)]** 해제 둘은 안 봄, **[2026-08-28]**), **`_dying`**(**[2026-08-31
   `H-182`]** Destroy 파동에서 자기 `Destroying` 콜백이 소진한 뒤의 잔여 구간 —
   `rawRerun`이 홀드 조건으로 보고, 재바인드·`Subscribe`류가 내린다),
   **`.Subscribed`**(공개 플래그 — `canExecute`가

@@ -1,10 +1,10 @@
 ---
 title: 생명주기와 센티널
-description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그리고 백엔드가 심는 생명주기 프리미티브 넷
+description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그리고 quad-base가 백엔드의 hold op 위에 조립하는 생명주기 프리미티브 넷
 ---
 # 생명주기와 센티널
 
-값이 아니라 **뜻**을 나르는 상수들(센티널), 관리 중인 값을 파괴하는 유일한 경로 `q.dispose`, 그리고 quad-base가 인터페이스만 두고 백엔드가 실제 구현을 심는 생명주기 프리미티브 넷을 모읍니다.
+값이 아니라 **뜻**을 나르는 상수들(센티널), 관리 중인 값을 파괴하는 유일한 경로 `q.dispose`, 그리고 quad-base가 구현하고 인스턴스 쪽 부기만 백엔드의 hold op 넷에 맡기는 생명주기 프리미티브 넷을 모읍니다.
 
 센티널은 전부 `table.freeze`된 테이블 하나이고 **판정은 언제나 신원 비교**(`v == q.None`)입니다. 타입에 붙어 있는 마커 필드(`__quadNone` 등)는 유니언 타입을 표현하기 위한 조언층일 뿐, 그걸로 판정하지 않습니다.
 

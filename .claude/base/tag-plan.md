@@ -335,8 +335,9 @@ removeTag(inst: any, names: {string}): ()
   }
   ```
 - 이건 새 아키텍처 개념이 아니라 이미 확정된 "base는 인터페이스/값,
-  backend는 구현"(`LifetimeHandle`의 `bindLifetime`/`canExecute`,
-  `Dispatch.addHandler` 자체가 그 패턴)을 핸들러 층까지 밀어붙인 것.
+  backend는 구현"(`LifetimeHandle`의 hold op 넷 `holdLifetime`/`isHeld` — **[2026-09-18 Q59]** 한때
+  `bindLifetime`/`canExecute`가 예시였으나 그 넷은 이제 quad-base가 구현, `Dispatch.addHandler`
+  자체가 그 패턴)을 핸들러 층까지 밀어붙인 것.
 
 ## [2026-09-18 round11 Q69 — 사용자 결정] 밖에서 붙인 태그는 세지 않는다 — 이름으로 피한다
 

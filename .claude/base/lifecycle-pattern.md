@@ -757,8 +757,8 @@ emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-pl
 `WeakSubscribe`가 1회 발화. Effect와 같은 뜻("`fn`이 돌아야 하는데 아직 안 돌았다"):
 생성 시 참 → `state:Observer(fn)` 생성자의 "등록 시점 즉시 1회 실행"이 돌면서 거짓 →
 그 뒤 묶이기 전 사이에 온 변경이 다시 세운다), **`_running`**(**[2026-08-31 `H-183`]**
-모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`) 둘레에 서는 재진입 플래그 — 네 진입점과
-`_assertBindable`이 거부에 쓴다, 위 (2) 배너), **`_receive(from)`**(`EmitReceive` —
+모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`) 둘레에 서는 재진입 플래그 — 구독 쪽 두 진입점과
+`_assertBindable`이 거부에 쓴다(해제 둘은 안 봄 — **[2026-09-18 Q63 (b)]**), 위 (2) 배너), **`_receive(from)`**(`EmitReceive` —
 `source-state-plan.md`의 `_emitDown` 아래), **`_catchUp()`**(홀드가 있었으면 출처 없이 1회 —
 `bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 Observer 인스턴스의
 필드가 아니라 **quad 인스턴스별 임플의 클로저 로컬**(`Observer.Init(module)`이 만든다, `H-174`;

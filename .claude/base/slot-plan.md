@@ -2784,8 +2784,11 @@ local function destroySlotTree(slot)
         -- `_detachCleanup`을 내려 다음 마운트에서 :List가 처음부터 다시 조정한다(클로저의
         -- `mounted`/`prevKeys`가 없는 요소를 가리키지 않게). Extract·비소유 부모의 Remove는
         -- `rawUnmount` → `leaveAsElement`라 여기 안 오고 요소를 쥔 채 떠난다.
-        for _, element in ipairs(slot._elements) do releaseOwner(element, slot); bk.indexOfElement[element] = nil end
-        table.clear(slot._elements)  -- (+ `_detached` 같은 처리)
+        for _, element in ipairs(slot._elements) do
+            releaseOwner(element, slot)
+            if isSlot(element) and element._wrapped ~= nil then releaseSugarWrapper(element) end  -- `H-576`: 래퍼는 안쪽 Instance도 놓는다
+        end
+        table.clear(slot._elements); table.clear(bk.indexOfElement)  -- `H-580`: 둘은 1:1 (+ `_detached` 같은 처리)
         slot._listActivated, slot._listObserver, slot._detachCleanup = nil, nil, nil
         return
     end
