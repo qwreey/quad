@@ -2061,6 +2061,8 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   (`quad.Detach`로 접근)은 그대로다.
 ### ⭐ 소유권은 설치 시점에 정해진다 — `Owned` 옵션 (2026-08-21 구현 전 QA 4라운드 확정)
 
+**[2026-09-18 round11 Q61 — 사용자 결정] `Owned = false` Slot을 *파괴*하면(`dispose`, 소유하는 부모의 Remove/Clear) 그 Slot이 쥔 요소 전부의 소유권을 놓고 빈 채 살아남는다** — 전에는 슈가 래퍼(`H6-12` (b))만 놓고 사용자가 만든 리스트는 요소를 계속 소유해, 앱이 Slot 참조를 버리면 그 요소는 어디에도 못 넣고 `dispose`도 못 하는 채로 갇혔다(탐사 F′ 1). Q14 (a)가 푼 것은 *부모가 이 Slot에* 쥔 소유권이었고 이번은 *이 Slot이 자기 요소에* 쥔 것. 사용자: *"dispose 하기 전 경로에는 안 사라지는게 맞는데, dispose 자체는 recursive 하게 돌아서 release 가 되는게 맞다"* — 그래서 Extract(비파괴)는 요소를 쥔 채 떠나고, 파괴 경로만 놓는다(`destroySlotTree` 의사코드, `session/2026-09-18-01-round11-batch-reply.md`). 부수: :List의 조정 클로저 상태는 재마운트 때 처음부터(`_listActivated` 내림).
+
 **[2026-09-15 개명 — 사용자 결정] 옵션 키는 이제 `OwnsElements`다**(뜻·기본값 무변경, 내부 필드 `_owned`도 그대로). 사용자: *"?.Owned 로 앞을 가리고 보면 의도가 완전히 희석되는데다가 … KeyGone 처럼 두 단어 조합으로 명료한 단어선택을 했던 적도 있고 … 장점을 포기해야할 단점이 보이지 않는 점에서 나는 OwnsElements 로 쓰는게 이롭다고 봐"*. 독립 조사 둘은 `Owned` 유지(형용사 관례)를 1순위로 냈으나 `OwnsElements`의 주어 명시 장점은 인정했다(`research/public-surface-pre-adoption-review.md` (14)). 아래 본문과 의사코드의 `Owned`는 개명 전 표기 그대로 둔다 — 코드·문서의 현재 키는 `OwnsElements`.
 
 위 표("`nil` → 파괴")는 **`:List`가 그 요소를 만든 경우**를 전제한다. 그런데
@@ -2771,10 +2773,17 @@ local function destroySlotTree(slot)
     -- 언마운트만(위 "`Owned` 옵션" 절). `Slot:Add(state)` sugar가 그 경우.
     if slot._owned == false then
         unmountSlotTree(slot)
-        -- [2026-09-03 `H6-12` (b)] 슈가 래퍼(`_wrapped`)가 죽으라는 요청을 받으면
-        -- 사용자 Instance는 살리되 **소유권은 놓는다** — 사용자가 만든
-        -- Owned=false 리스트는 그대로(위 "`Owned` 옵션" 절).
-        if slot._wrapped ~= nil then releaseSugarWrapper(slot) end
+        -- ~~[2026-09-03 `H6-12` (b)] 슈가 래퍼(`_wrapped`)만 소유권을 놓고 사용자가 만든
+        -- Owned=false 리스트는 그대로~~ **[2026-09-18 round11 Q61, 사용자 결정]** 파괴 요청
+        -- (`dispose`·소유하는 부모의 Remove/Clear — 둘 다 여기로 온다)은 래퍼든 사용자
+        -- 리스트든 쥔 요소 **전부의 소유권을 놓고 비운다** — 요소는 살아남아 자유, Slot은
+        -- 빈 채 재사용 가능(`_destroyed` 안 세움은 그대로). `_listActivated`/`_listObserver`/
+        -- `_detachCleanup`을 내려 다음 마운트에서 :List가 처음부터 다시 조정한다(클로저의
+        -- `mounted`/`prevKeys`가 없는 요소를 가리키지 않게). Extract·비소유 부모의 Remove는
+        -- `rawUnmount` → `leaveAsElement`라 여기 안 오고 요소를 쥔 채 떠난다.
+        for _, element in ipairs(slot._elements) do releaseOwner(element, slot); bk.indexOfElement[element] = nil end
+        table.clear(slot._elements)  -- (+ `_detached` 같은 처리)
+        slot._listActivated, slot._listObserver, slot._detachCleanup = nil, nil, nil
         return
     end
     for i, element in ipairs(slot._elements) do

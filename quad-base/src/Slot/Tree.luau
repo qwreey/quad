@@ -154,9 +154,34 @@ return function(S: Types.SlotInternal, module: any)
 		if slot._destroyed then return end
 		if slot._owned == false then
 			unmountSlotTree(slot)
-			-- a sugar wrapper asked to die leaves its user's instance alive AND
-			-- unclaimed (`H6-12` (b)); a user-made OwnsElements=false list keeps its claims
-			if slot._wrapped ~= nil then releaseSugarWrapper(slot) end
+			-- round11 Q61 (user decision 2026-09-18): a destroy request (`q.dispose(slot)`, or an
+			-- OWNING parent's Remove/Clear — both land here) RELEASES every element this Slot holds
+			-- and empties it. The elements survive (OwnsElements = false never destroys them) and
+			-- are free again — before this, only the sugar wrapper (`H6-12` (b)) let go, and a
+			-- user-made OwnsElements=false list kept owning elements nobody could reach any more
+			-- ("already mounted elsewhere" on Add, "still held by a Slot" on dispose — 탐사 F′ 1).
+			-- The Slot itself stays alive and reusable (no `_destroyed`, Q14-era decision), now EMPTY.
+			-- Extract / a non-owning parent's Remove never come here (rawUnmount → leaveAsElement):
+			-- there the Slot leaves WITH its elements — user: "dispose 하기 전 경로에는 안 사라지는게
+			-- 맞는데, dispose 자체는 recursive 하게 돌아서 release 가 되는게 맞다".
+			local bk = S.BK.getBookkeeping(slot)
+			for _, element in ipairs(slot._elements) do
+				S.releaseOwner(element, slot)
+				bk.indexOfElement[element] = nil
+			end
+			table.clear(slot._elements)
+			if slot._detached then
+				for key, element in pairs(slot._detached) do
+					S.releaseOwner(element, slot)
+					slot._detached[key] = nil
+				end
+			end
+			-- a :List/:Single reactivates from scratch at its next mount — the reconcile
+			-- closure's `mounted`/`prevKeys` would otherwise name elements that are no
+			-- longer here. `_listed` stays (the mode lock is not undone).
+			slot._listActivated = nil
+			slot._listObserver = nil
+			slot._detachCleanup = nil
 			return
 		end
 		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `OwnsElements = false`

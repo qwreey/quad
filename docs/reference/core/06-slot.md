@@ -397,7 +397,7 @@ Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateF
 
 **State에 담은 원소는 파괴되지 않습니다.** `slot:Add(q.Source(frame))`처럼 `State`로 넣은 원소는 그 State가 주인이라, `Remove`·`Replace`·`Clear`·`:List`의 키 소멸·`q.dispose(slot)` 어느 경로로 버려도 인스턴스는 살아남고 자리에서만 내려옵니다(`Parent = nil`, 소유권 해제 — 다른 Slot에 다시 넣을 수 있습니다). 화면을 철거할 때 그 인스턴스까지 없애려면 그 State를 `q.dispose`하거나 값을 `q.None`으로 바꾸고 인스턴스를 직접 `q.dispose`하세요. `State<Slot>`(리스트 안 포털)도 같습니다.
 
-기본은 소유(`OwnsElements = true`)입니다 — 이 Slot이 버리는 원소는 파괴됩니다. `OwnsElements = false`를 주면 버릴 때 소유권만 풀고 살려둡니다. 그 Slot이 통째로 파괴돼도 원소는 살아남아 다른 Slot에 다시 넣을 수 있습니다. 원소를 밖에서 관리하는 가상화 목록이나 포털이 이 옵션의 자리입니다. 단, Slot이 **마운트된 채로 그 부모 Instance가 파괴되면** 엔진이 자손을 지우므로 원소도 같이 죽습니다 — 화면을 철거할 때 살려야 할 원소는 먼저 `:Extract`하거나 data에서 키를 빼세요. 그래도 원소는 quad 소유(`Declaration`으로 만들었거나 `Claim`으로 넘겨받은 것)여야 합니다 — 이 옵션은 파괴 여부만 바꾸고, 위 "원소 대수"의 미claim 거부는 그대로 적용됩니다.
+기본은 소유(`OwnsElements = true`)입니다 — 이 Slot이 버리는 원소는 파괴됩니다. `OwnsElements = false`를 주면 버릴 때 소유권만 풀고 살려둡니다. 그 Slot 자체를 버릴 때도 같습니다 — `q.dispose(slot)`하거나 소유하는 부모 Slot이 이 Slot을 `Remove`/`Clear`로 파괴하면, 이 Slot은 쥐고 있던 원소 전부의 소유권을 놓고 **빈 채로** 살아남습니다(파괴되지 않고 다시 쓸 수 있으며, 다음 마운트에서 data로부터 처음부터 다시 조정합니다). 원소는 살아남아 다른 Slot에 다시 넣거나 `q.dispose`할 수 있습니다. 반면 부모에서 `Extract`로 빼는 것은 파괴가 아니라서 이 Slot은 원소를 **쥔 채** 떨어져 나오고, 그대로 다른 Slot에 넣으면 원소째 옮겨갑니다. 원소를 밖에서 관리하는 가상화 목록이나 포털이 이 옵션의 자리입니다. 단, Slot이 **마운트된 채로 그 부모 Instance가 파괴되면** 엔진이 자손을 지우므로 원소도 같이 죽습니다 — 화면을 철거할 때 살려야 할 원소는 먼저 `:Extract`하거나 data에서 키를 빼세요. 그래도 원소는 quad 소유(`Declaration`으로 만들었거나 `Claim`으로 넘겨받은 것)여야 합니다 — 이 옵션은 파괴 여부만 바꾸고, 위 "원소 대수"의 미claim 거부는 그대로 적용됩니다.
 
 **예제**
 

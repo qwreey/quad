@@ -1241,3 +1241,65 @@ do
 end
 
 print("=== ALL PASS ===")
+
+print()
+print("=== 38. round11 Q61 (2026-09-18) — OwnsElements=false Slot을 dispose하거나 소유하는 부모가 Remove하면 자기 원소의 소유권을 놓고 비운다(원소는 자유, Slot은 빈 채 재사용 가능); Extract 경로는 원소째 옮겨간다 ===")
+do
+	-- (1) q.dispose(slot): elements released, Slot empty + reusable, remount reconciles from scratch
+	local made = 0
+	local frames: { any } = {}
+	local data = q.Source({ { id = "a" }, { id = "b" } })
+	local s = Slot()
+	s:List(data, function(ctx) local item, prev = ctx.Item, ctx.Prev
+		if item == q.KeyGone then return nil end
+		if prev then return prev end
+		made += 1
+		local f = Instance.new("Frame"); f.Name = item.id; table.insert(frames, f)
+		return f
+	end, function(item) return item.id end, { OwnsElements = false })
+	local host = Instance.new("Folder")
+	local holder = q.Source(s :: any)
+	dispatch.drive(host, { holder })
+	assert(made == 2 and frames[1].Parent == host and frames[2].Parent == host, "mounted two user frames")
+	holder:Set(nil) -- unmount (portal retract) — elements stay the Slot's
+	assert(frames[1].Parent == nil and not pcall(function() q.dispose(frames[1]) end), "after unmount the Slot still owns its elements")
+	q.dispose(s)
+	assert(not s._destroyed, "OwnsElements=false Slot survives dispose (reusable)")
+	assert(#s._elements == 0, "…but it is EMPTY now (Length stays stale while unmounted — existing behaviour): " .. tostring(#s._elements))
+	assert(not mock.isDestroyed(frames[1]) and not mock.isDestroyed(frames[2]), "elements are not destroyed")
+	local reuse = Slot(); reuse:Add(frames[1]) -- used to raise "already mounted elsewhere"
+	q.dispose(frames[2]) -- used to raise "still held by a Slot"
+	assert(mock.isDestroyed(frames[2]), "released element can be disposed")
+	-- the disposed Slot remounts and reconciles from scratch (fresh closure state, Prev = nil)
+	local host2 = Instance.new("Folder")
+	dispatch.drive(host2, { s })
+	assert(made == 4 and #s._elements == 2 and childCount(host2) == 2, "remount rebuilt both keys anew: made=" .. made)
+	assert(frames[1].Parent ~= host2, "the element that moved to another Slot was not re-seated here")
+
+	-- (2) an OWNING parent's Remove of an OwnsElements=false child Slot releases the child's elements too
+	local parent = Slot()
+	local child = Slot()
+	local c1 = Instance.new("Frame")
+	child:List({ 1 }, function(ctx) if ctx.Item == q.KeyGone then return nil end return ctx.Prev or c1 end, nil, { OwnsElements = false })
+	parent:Add(child)
+	dispatch.drive(Instance.new("Folder"), { parent })
+	assert(c1.Parent ~= nil, "child element mounted through the parent")
+	parent:Remove(1) -- parent owns child → destroySlotTree(child) → unmount-only branch
+	assert(not child._destroyed and #child._elements == 0 and not mock.isDestroyed(c1) and c1.Parent == nil, "child survives empty, element alive and unseated")
+	Slot():Add(c1) -- free again
+
+	-- (3) Extract is NOT a destroy: the child leaves WITH its elements and can be re-added elsewhere
+	local parent2 = Slot()
+	local child2 = Slot()
+	local c2 = Instance.new("Frame")
+	child2:List({ 1 }, function(ctx) if ctx.Item == q.KeyGone then return nil end return ctx.Prev or c2 end, nil, { OwnsElements = false })
+	parent2:Add(child2)
+	dispatch.drive(Instance.new("Folder"), { parent2 })
+	local extracted = parent2:Extract(1)
+	assert(extracted == child2 and #child2._elements == 1 and child2._elements[1] == c2, "Extract keeps the child's elements")
+	local elsewhere = Slot(); elsewhere:Add(child2)
+	local host3 = Instance.new("Folder")
+	dispatch.drive(host3, { elsewhere })
+	assert(c2.Parent == host3, "moved with its element intact")
+	print("PASS")
+end
