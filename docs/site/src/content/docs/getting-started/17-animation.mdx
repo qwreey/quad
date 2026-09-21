@@ -1,10 +1,11 @@
 ---
-title: "16. 움직이게 하기 — Tween과 Animate"
+title: "17. 움직이게 하기 — Tween과 Animate"
 description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직접 만들고, 그 위에 얹은 :Apply(q.Animate { … }) 슈거를 씁니다"
 ---
-# [시작하기] 16. 움직이게 하기 — `Tween`과 `Animate`
 
-> **대상 독자**: [15. 설정값 여럿을 한 곳에 담기](./15-store.md)를 끝낸 개발자
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
+> **대상 독자**: [16. 설정값 여럿을 한 곳에 담기](/getting-started/16-store/)를 끝낸 개발자
 > **목표**: 색이 툭 튀지 않고 부드럽게 넘어가게 만들기
 
 `TweenService:Create`를 직접 부를 필요는 없습니다. 프로퍼티로 흘려보내는 **값**을
@@ -80,7 +81,7 @@ const flash = q.Source(false)
 
 ## 2. 편하게 — `:Apply(q.Animate { ... })`
 
-옵션이 값마다 달라질 필요가 없다면, 위 §1이 한 일(값이 바뀔 때마다 그 값을 `Tween`으로 감싸는 것)은 매번 똑같습니다. 그 반복을 대신해 주는 팩토리가 `q.Animate`이고, [12장](./12-functions.md)에서 `q.Operator`를 붙일 때 쓴 그 `:Apply`로 State에 얹습니다.
+옵션이 값마다 달라질 필요가 없다면, 위 §1이 한 일(값이 바뀔 때마다 그 값을 `Tween`으로 감싸는 것)은 매번 똑같습니다. 그 반복을 대신해 주는 팩토리가 `q.Animate`이고, [13장](/getting-started/13-functions/)에서 `q.Operator`를 붙일 때 쓴 그 `:Apply`로 State에 얹습니다.
 
 **하나.** `Counter` 안, `countText` 바로 아래에 목표 색 State를 하나 만듭니다. **여기에는 `Tween`이 없습니다** — 그냥 색을 계산할 뿐입니다.
 
@@ -118,8 +119,7 @@ const flash = q.Source(false)
 
 ## 이해 점검
 
-```quiz
-# Tween은 어떤 물건인가
+<Quiz title={"Tween은 어떤 물건인가"}>
 
 `q.Tween { ... }`이 만드는 값에 대한 설명으로 옳은 것은 무엇인가요?
 
@@ -128,10 +128,10 @@ const flash = q.Source(false)
 - [x] 상태 노드가 아니라 값 래퍼라, `:Compute` 안에서 만들어 돌려주면 프로퍼티 핸들러가 알아봅니다
 
 `Tween`은 State가 내놓는 값을 감싸 "이 목표로 보간해 달라"고 전달하는 불변 값입니다. `Value`는 plain 값이어야 하고, 반응성은 그 `Tween`을 감싼 State가 담당합니다.
-```
 
-```quiz
-# 1~9회 클릭에 아무 일도 안 일어난 이유
+</Quiz>
+
+<Quiz title={"1~9회 클릭에 아무 일도 안 일어난 이유"}>
 
 10회째에만 색이 넘어가고 그 전에는 화면이 그대로였던 이유는 무엇인가요?
 
@@ -140,11 +140,14 @@ const flash = q.Source(false)
 - [ ] 처음 설정될 때만 트윈이 걸리고 그 뒤로는 값이 바로 찍히기 때문입니다
 
 비교 대상은 `Value`뿐이고(`Time`이나 `Style`은 보지 않습니다) 비교는 값 동등입니다. 같은 값에도 매번 다시 재생하려면 `Dedup = false`를 넣으면 되고, 트윈이 걸리지 않는 것은 오히려 **처음** 설정될 때입니다.
-```
+
+</Quiz>
 
 ---
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Tween`과 `Animate`](../reference/roblox/06-tween-animate.md) — 옵션 전부, 검증 에러 문구, 프로퍼티에서의 3-상태 동작
-- [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md) — 테마 색을 토큰으로 두고 전환에 애니메이션 얹기
+- [레퍼런스: `Tween`과 `Animate`](/reference/roblox/06-tween-animate/) — 옵션 전부, 검증 에러 문구, 프로퍼티에서의 3-상태 동작
+- [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/) — 테마 색을 토큰으로 두고 전환에 애니메이션 얹기
+
+<QuizResults />

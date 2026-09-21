@@ -1,10 +1,11 @@
 ---
-title: "10. 자식이 들어갈 자리 — Slot"
+title: "11. 자식이 들어갈 자리 — Slot"
 description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자식을 넣고 빼며, Offset과 Length가 어떻게 따라 움직이는지 봅니다"
 ---
-# [시작하기] 10. 자식이 들어갈 자리 — `Slot`
 
-> **대상 독자**: [09. 스타일을 값으로 들고 다니기](./09-modifier.md)를 끝낸 개발자
+import { Quiz, QuizResults } from 'starlight-quiz/components';
+
+> **대상 독자**: [10. 스타일을 값으로 들고 다니기](/getting-started/10-modifier/)를 끝낸 개발자
 > **목표**: 만들어 놓은 화면의 자식을 나중에 넣고 빼기
 
 지금까지 자식은 **만들 때 한 번** 적어 넣었습니다. 그런데 화면을 만든 **뒤에**
@@ -36,10 +37,8 @@ const box = D.Frame {
 print(#box:GetChildren())   --> 2
 ```
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/slot-card-dark.svg">
-  <img src="../assets/slot-card.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다">
-</picture>
+<img class="light-only" src="/assets/slot-card.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다" />
+<img class="dark-only" src="/assets/slot-card-dark.svg" alt="Frame의 숫자 키 자리에 놓인 items Slot — Slot이 든 원소 둘이 Frame의 실제 자식이 된다" />
 
 **실행하면** 상자 안에 라벨 둘이 보입니다. `box`의 숫자 키 자리에는 원소가 하나(`items`)뿐인데 자식은 둘입니다 — Slot이 자기가 든 만큼의 자리를 차지하기 때문입니다.
 
@@ -54,7 +53,7 @@ const items = q.Slot<<Instance>>({
 })
 ```
 
-[01장](./01-setup.md)에서 `export type Slot<T> = QuadTypes.Slot<T>`를 다시 내보내 두었으니, 파라미터 타입은 `props: { Children: q.Slot<Instance>? }`처럼 그대로 씁니다.
+[01장](/getting-started/01-setup/)에서 `export type Slot<T> = QuadTypes.Slot<T>`를 다시 내보내 두었으니, 파라미터 타입은 `props: { Children: q.Slot<Instance>? }`처럼 그대로 씁니다.
 
 </details>
 
@@ -95,7 +94,7 @@ const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 �
 
 이렇게 꺼낸 원소는 **소유권이 풀린** 상태라, 다른 Slot에 다시 넣거나 `q.dispose`로 직접 지울 수 있습니다.
 
-자세한 것은 [레퍼런스: `Slot`](../reference/core/06-slot.md)에 있습니다.
+자세한 것은 [레퍼런스: `Slot`](/reference/core/06-slot/)에 있습니다.
 
 </details>
 
@@ -113,7 +112,7 @@ const rest = items:ExtractAll()    -- 전부 살린 채로 비운다(배열로 �
 Slot은 자기 상태를 두 개의 `Source`로 들고 있습니다.
 
 - **`slot.Length`** — 이 Slot이 차지하는 물리 자식의 **개수**
-- **`slot.Offset`** — 이 Slot의 첫 원소 앞에 **앞선 숫자 키 자리들의 길이 합**(형제 Slot·정적 자식이 차지한 자리 수)를 나타냅니다. 0부터 세므로 앞에 아무것도 없으면 0이고, 이 Slot의 첫 원소는 전체에서 `Offset + 1`번째가 됩니다. `Offset`을 구독하는 콜백(`:Compute`·`:Observer`·`Effect`)은 던지면 안 됩니다 — 부모의 자리 계산 도중에 불리는 값이라, 거기서 던지면 그 부모의 자리 계산이 멈춥니다([레퍼런스](../reference/core/06-slot.md)의 `Offset` 캐비엇).
+- **`slot.Offset`** — 이 Slot의 첫 원소 앞에 **앞선 숫자 키 자리들의 길이 합**(형제 Slot·정적 자식이 차지한 자리 수)를 나타냅니다. 0부터 세므로 앞에 아무것도 없으면 0이고, 이 Slot의 첫 원소는 전체에서 `Offset + 1`번째가 됩니다. `Offset`을 구독하는 콜백(`:Compute`·`:Observer`·`Effect`)은 던지면 안 됩니다 — 부모의 자리 계산 도중에 불리는 값이라, 거기서 던지면 그 부모의 자리 계산이 멈춥니다([레퍼런스](/reference/core/06-slot/)의 `Offset` 캐비엇).
 
 한 부모에 Slot을 둘 놓고 직접 찍어 보면 관계가 보입니다.
 
@@ -132,10 +131,8 @@ print(slotA.Offset:Get(), slotA.Length:Get())   --> 1  2
 print(slotB.Offset:Get(), slotB.Length:Get())   --> 3  1
 ```
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/slot-panel-dark.svg">
-  <img src="../assets/slot-panel.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1">
-</picture>
+<img class="light-only" src="/assets/slot-panel.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1" />
+<img class="dark-only" src="/assets/slot-panel-dark.svg" alt="panel 안의 고정 자식 하나와 slotA·slotB — slotA는 Offset 1 Length 2, slotB는 Offset 3 Length 1" />
 
 `slotA` 앞에는 고정 자식 하나가 있으니 `Offset`이 1이고, `slotB` 앞에는 그 하나에 `slotA`의 둘이 더해져 3입니다.
 
@@ -177,10 +174,8 @@ print(innerA.Offset:Get(), innerA.Length:Get())                      --> 0  2
 print(innerB.Offset:Get(), innerB.Length:Get())                      --> 3  1
 ```
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../assets/slot-host-dark.svg">
-  <img src="../assets/slot-host.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합">
-</picture>
+<img class="light-only" src="/assets/slot-host.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합" />
+<img class="dark-only" src="/assets/slot-host-dark.svg" alt="host 안의 outer Slot(Offset 0 Length 4) — 그 안에 innerA(Offset 0 Length 2), Outer, innerB(Offset 3 Length 1). innerB의 Offset 3은 위에 놓인 Inner1·Inner2·Outer의 길이 합" />
 
 `innerB`의 `Offset`이 3인 것은 그 위에 `Inner1`·`Inner2`(innerA의 둘)와 `Outer`(하나)가 있기 때문입니다. `outer` 자신은 `host`의 첫 자리라 `Offset` 0이고, 안쪽 넷을 전부 품어 `Length` 4입니다.
 
@@ -216,9 +211,8 @@ slotB:Add(D.TextLabel {
 ```
 
 **실행하면** `B2`의 `LayoutOrder`가 6으로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
-<!-- mock 실측 2026-09-11: gs.polish4.luau — slotB.Offset 4, B2 LayoutOrder 6, slotA에 A4를 더 넣으면 7 -->
 
-여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 받는 `ctx.Index`로 넘겨줍니다([13장](./13-lists.md)).
+여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 받는 `ctx.Index`로 넘겨줍니다([14장](/getting-started/14-lists/)).
 
 ---
 
@@ -252,19 +246,16 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 **실행하면** 그 자리가 `cur`를 따라 하나씩 갈아 끼워집니다. `Slot`을 만들지도, `:Add`/`:Remove`를 부르지도 않았습니다.
 
 한 가지가 앞 절들과 다릅니다. **갈아 끼운 옛 원소는 파괴되지 않습니다** — 트리에서 떼어지기만 하고(`a.Parent`가 `nil`이 됩니다) 값 자체는 살아 있습니다. 실제로 `cur:Set(a)`를 다시 하면 그 인스턴스가 그대로 돌아옵니다. 그러니 **떼어 낸 옛 것은 여러분 소유**입니다 — 더 쓸 일이 없으면 `q.dispose(a)`로 파괴하세요. quad가 관리하는 값을 버리는 정본 경로가 `q.dispose`이고, `Slot`이 들고 있는 값이면 파괴 대신 에러로 알려 줍니다(`inst:Destroy()`는 그 확인 없이 지웁니다). 다만 이 절처럼 `State` 자리에 **지금 놓여 있는** 원소는 `q.dispose`도 막지 않으니, 버리기 전에 먼저 다른 값으로 갈아 끼우세요.
-<!-- mock 실측 2026-09-14: gs.dispose2.luau — cur:Set(b) 뒤 a.Parent nil, q.dispose(a) 성공 -->
 
 <details>
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
-아닙니다. 이 자리는 **자식 인스턴스를 놓을 때와 같은 규칙으로** 처리됩니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 장부에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [19장](./19-handlers.md)에서 봅니다.
-<!-- mock 실측 2026-09-11: gs.stateinst.luau — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 OwnsElements=false :Single)은 Slot의 요소로 State를 넣을 때(Elements.luau)에만 맞는 것이었다 -->
+아닙니다. 이 자리는 **자식 인스턴스를 놓을 때와 같은 규칙으로** 처리됩니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 장부에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [20장](/getting-started/20-handlers/)에서 봅니다.
 
 </details>
 
-`LayoutOrder`처럼 이 자리의 `Offset` 값이 필요하면 [13장](./13-lists.md)의 `:Single`을 직접 걸어야 합니다.
+`LayoutOrder`처럼 이 자리의 `Offset` 값이 필요하면 [14장](/getting-started/14-lists/)의 `:Single`을 직접 걸어야 합니다.
 
-<!-- mock 실측 2026-09-11: gs.refprobe.luau G1~G4(1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨) · gs.refprobe2.luau J3/J4(떼어진 A는 Parent nil, 다시 Set하면 돌아온다) -->
 
 ---
 
@@ -272,12 +263,12 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 지금까지는 `:Add`/`:Remove`를 **손으로** 불렀습니다. 화면에 보일 것이 "데이터 배열 하나"에서 나온다면 그 손이 매번 같은 일을 합니다 — 늘어난 항목만 만들고, 빠진 항목만 지우고, 남은 항목은 그대로 두는 일.
 
-그걸 quad가 대신해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [13. 목록 만들기](./13-lists.md)에서 다룹니다.
+그걸 quad가 대신해 주는 것이 `Slot`의 다른 모드인 **`:List`**이고, [14. 목록 만들기](/getting-started/14-lists/)에서 다룹니다.
 
 <details>
 <summary><strong>그럼 이 Slot에 나중에 <code>:List</code>를 걸어도 되나요?</strong></summary>
 
-안 됩니다. `Slot`은 **수동 CRUD**(이 장)와 **`:List`/`:Single`** 두 모드 중 하나로만 살고 둘은 상호 배타라, `q.Slot { ... }`처럼 초기 원소를 주고 만든 Slot(**심지어 빈 `q.Slot {}`**)에는 `:List`를 걸 수 없습니다. 그래서 목록용 Slot은 인자 없이 `q.Slot()`으로 만듭니다 — 자세한 규칙은 [13장](./13-lists.md) 2절에 있습니다.
+안 됩니다. `Slot`은 **수동 CRUD**(이 장)와 **`:List`/`:Single`** 두 모드 중 하나로만 살고 둘은 상호 배타라, `q.Slot { ... }`처럼 초기 원소를 주고 만든 Slot(**심지어 빈 `q.Slot {}`**)에는 `:List`를 걸 수 없습니다. 그래서 목록용 Slot은 인자 없이 `q.Slot()`으로 만듭니다 — 자세한 규칙은 [14장](/getting-started/14-lists/) 2절에 있습니다.
 
 </details>
 
@@ -285,8 +276,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 
 ## 이해 점검
 
-```quiz
-# Slot이 원소를 버릴 때
+<Quiz title={"Slot이 원소를 버릴 때"}>
 
 `items:Remove(1)`이나 `items:Clear()`로 Slot에서 빠진 원소는 어떻게 되나요?
 
@@ -295,10 +285,10 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 - [ ] `:Remove`는 파괴하지만 `:Clear`는 목록만 비우고 원소는 남겨 둡니다
 
 Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유하므로, `:Remove`도 `:Clear`도 `:Replace`도 옛 원소를 파괴합니다. 살려서 꺼내는 짝이 `:Extract`·`:ExtractAll`이고, 그렇게 꺼낸 원소는 소유권이 풀린 상태입니다.
-```
 
-```quiz
-# Offset이 세는 것
+</Quiz>
+
+<Quiz title={"Offset이 세는 것"}>
 
 `slot.Offset`이 나타내는 값은 무엇인가요?
 
@@ -307,10 +297,10 @@ Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유�
 - [x] 이 Slot의 첫 원소 앞에 있는 물리 자식의 개수입니다 — 첫 원소는 전체에서 `Offset + 1`번째가 됩니다
 
 `Offset`은 앞에 놓인 **물리 자식**을 0부터 센 값입니다. 3절의 패널에서 `slotB`의 `Offset`이 3인 것도 앞의 고정 자식 하나에 `slotA`의 둘이 더해진 결과이고, 개수를 세는 쪽은 `Offset`이 아니라 `Length`입니다.
-```
 
-```quiz
-# 자리에 State 하나만 놓았을 때
+</Quiz>
+
+<Quiz title={"자리에 State 하나만 놓았을 때"}>
 
 숫자 키 자리에 `State` 하나를 놓아 자식을 갈아 끼울 때 옳은 것은 무엇인가요?
 
@@ -319,11 +309,14 @@ Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유�
 - [ ] `Offset`/`Length` 장부에 참여하지 않으므로 앞 구간이 자라도 이 자리는 영향을 받지 않습니다
 
 이 자리는 `Parent`를 `nil`로 내려놓을 뿐이라 값 자체는 살아 있고, 같은 값을 다시 `:Set`하면 그 인스턴스가 그대로 돌아옵니다. 장부에는 앞 절들과 똑같이 참여하되, `Offset` 발행 채널이 없어 그 자리의 `Offset` 값만 쓸 수 없습니다.
-```
+
+</Quiz>
 
 ---
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Slot`](../reference/core/06-slot.md) — CRUD 열하나(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
-- [Quadnomicon Vol. 2](../quadnomicon/02-slot-prefix-sum-tree.md) — `Offset`/`Length` 장부가 어떤 부분합 트리 위에서 도는지
+- [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열하나(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
+- [Quadnomicon Vol. 2](/quadnomicon/02-slot-prefix-sum-tree/) — `Offset`/`Length` 장부가 어떤 부분합 트리 위에서 도는지
+
+<QuizResults />

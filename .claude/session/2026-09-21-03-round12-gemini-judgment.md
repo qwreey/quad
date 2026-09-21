@@ -37,3 +37,13 @@ Q71 — 사용자: *"파괴로 인한 트윈이 진짜 컴플리트까지 나는
 **되쓰기 슈거 모양 결정(사용자, 저녁 식사 전)**: 순수 슈거, in(`Text = src`)과 out(`Bind("Text", src)`) 나란히 — out은 `OnChange` 위 팩토리. 이름은 sonnet 탐사로. 탐사 둘(외부자·내부자, 원문 `archive/surveys/2026-09-21-writeback-naming-exploration.md`)이 `Out`으로 수렴: `Bind`는 `bindLifetime` 핵심 어휘와 충돌하고 "한 줄이면 양방향"이라는 틀린 멘탈 모델을 심는다. 내부자가 잡은 실질: 배열부→해시부 순서 계약 + `H-68`(같은 값도 emit) 때문에 in/out을 같이 걸면 초기 바인딩마다 echo emit이 구조적으로 생겨 `v ~= src:Get()` 가드가 실익이 있다. 사용자 몫: 이름.
 
 **`Out` 구현(사용자 *"Out 권고대로 가면 될것 같아"*)**: `Handlers/OnChange.luau`에 팩토리 `Out` + `RobloxFactory`/`RobloxExtension`/`OutFn` 타입 + 스펙(runtime 4b·types) + 레퍼런스 roblox/05·01·00-index·SKILL·CHANGELOG. 타입에서 한 번 막혔다 — 8.11대로 `StateMarker<T> & { read Set }`로 받으니 `q.Source("")` 양성이 거부됐고, 스크래치 다섯 모양 대조 결과 신 솔버가 왼쪽 교집합을 조각마다 목표에 대조해 전체형 `Source<…>`만 통과(`typing-limits.md` 8.25; 첫 스크래치의 음성은 무주석 Compute 콜백이라 에러 타입으로 다 통과하던 것도 잡아 주석으로 고침). `type-surface: allow` 첫 사례.
+
+## 되돌아오는 흐름 — 장 배치·05장 손질·Tag nil 규칙 (같은 날 밤, 대화형)
+
+**장 배치**: 외부자 탐사(9절)가 분리로 수렴하고 "05 뒤" 관찰을 덧붙였다 → 사용자: *"5 뒤로, 다만 반응하기 위에서 있는게, 4번으로 있는게 흐름 상 내려보내고 다시 올려보내고를 보여주는 흐름 상 맞지만, tag/attr 도 아래로 내려보냄을 보여주는 부분이라 괜찮다 봐."* 같이 온 지시 셋: 05장 §2에 `tag:Added(if … then "Even" else nil)` 관용구를 보일 것(처음엔 `""`로 적었으나 빈 이름은 `H-417` 거부 — 관용구는 nil), §3 그룹 `q.Attr`에 State를 코드로 보일 것, 05장 끝/06장 머리에 "지금까지 내려보냈고 이제 반대로" 전환 문구.
+
+**Tag nil 규칙(사용자 동의)**: 내 판정은 "인자 자리 nil = 없음 / 리스트 안 구멍 = 에러"로 갈라도 코퍼스 선(tag-plan의 Compute nil 논거)과 모순이 없다는 것, 대가는 오타 변수의 조용한 무시. 사용자가 더 무거운 근거를 얹었다 — 불변 Tag는 결과를 `=`로 받아야 하는데 문장 꼴 `if cond then tag:Added("x") end`는 돌려준 Tag를 조용히 버리고 타입 검사도 못 잡으니, 조건을 인자 안에 두는 표현식 꼴을 권장 동작으로 삼아야 한다(원문은 `tag-plan.md` 끝 절). 반영·커밋 `102a3935`(생성자 슬롯·Added/Removed·Merged 슬롯, `Contains(nil)`·리스트 구멍은 그대로 에러; `TagNames?`; spec.tag 교체; core/09; CHANGELOG Changed).
+
+**위임**: 05장 손질 + 새 `06-flowing-back.md` + 06~20 → 07~21 재번호 + mock 스크래치(`gs.flowingback.luau`) 검증을 sonnet 하나에 묶어 맡김(15장 때와 같은 방식 — 세션 파일 02의 교훈). 메인은 결과를 레퍼런스·코드와 대조한다.
+
+**결과 대조(sonnet 산출물)**: 06장 본문은 레퍼런스·코드와 일치(§3의 "메아리 방지" 설명, §5 런타임 문구, emit 횟수 1→1→2→3 — `gs.flowingback.luau` 재실행으로 확인). 05장 §2의 엔진 호출 수치는 재실측대로 갱신됐다(짝→홀 `removeTag:Even` 하나). **사고 하나**: 재번호 치환이 슬러그 첫 글자를 잘라 `./08-bserver-effect.md`·`./11-lot.md`·`./20-andlers.md`류 깨진 링크 43곳(16파일)을 만들었는데, sonnet의 번호 대조 스캔(번호만 비교)·doc-check(백틱 참조만)·test.sh 어느 게이트에도 안 걸렸다 — diff를 읽다 발견, sed로 복구(잔여 0), 상대 링크 전수 스캔 0. 같은 구멍이 다음에도 열리지 않게 `doc-check.py`에 **마크다운 상대 링크 실존 검사(ERROR)** 를 신설했다(`docs/` + 라이브 `.claude`). 랜딩의 "스물한 편"도 스물두로. 교훈: 재번호는 "번호 대조"가 아니라 "링크 대상 실존"으로 검증할 것.

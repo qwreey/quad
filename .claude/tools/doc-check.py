@@ -25,6 +25,7 @@
      냈고(78건 중 30건), "의역 인용 관례 때문에 오탐이 섞인다"며 WARN에
      묶여 있었다. 의역 인용을 규약으로 금지하고 불일치를 78→0으로 정리한
      뒤 ERROR로 승격함.
+  3-1. [ERROR] 깨진 마크다운 링크 — `](./x.md)` 상대 링크의 대상이 없음(`docs/` + 라이브 `.claude`, [2026-09-21])
   3. [ERROR] 색인 누락 — base/research/archive/reference 파일이 README(루트 + 폴더별 README.md)에 없음
   4. [WARN]  날짜 없는 시한부 주장 — "아직 안 돌려봄", "열린 질문 없음" 등
      시간이 지나면 거짓이 되는데 언제 기준인지 안 적힌 문장
@@ -344,6 +345,36 @@ def check_refs(docs):
 
 
 # ---------- 3: 색인 누락 ----------
+MD_LINK = re.compile(r'\]\((\.{1,2}/[^)#\s]+\.(?:md|mdx))(?:#[^)]*)?\)')
+
+
+def check_md_links(docs):
+    """[2026-09-21 신설] 마크다운 상대 링크 `](./x.md)`의 실존 — `docs/`(site 미러 제외)와 라이브 `.claude` 문서.
+    계기: 06장 신설 재번호 때 슬러그 첫 글자가 잘린 링크(`./08-bserver-effect.md`) 43곳이 백틱 참조 검사·
+    번호 대조 스캔·test.sh 어느 게이트에도 안 걸리고 통과했다(sonnet 재번호, 메인이 diff에서 발견)."""
+    targets = list(docs)
+    for dp, dn, fn in os.walk(os.path.join(ROOT, 'docs')):
+        relp = os.path.relpath(dp, ROOT)
+        if relp.startswith(os.path.join('docs', 'site')) or 'node_modules' in relp.split(os.sep):
+            dn[:] = []
+            continue
+        for f in fn:
+            if f.endswith('.md'):
+                targets.append(os.path.join(dp, f))
+    for d in sorted(set(targets)):
+        if is_history(d):
+            continue
+        text = open(d, encoding='utf-8').read()
+        # 코드 스팬·펜스 안의 링크는 인용이지 링크가 아니다(원장이 깨진 링크 원문을 백틱으로 인용한다) — 같은 길이의 공백으로
+        scan = re.sub(r'```.*?```', lambda m: re.sub(r'[^\n]', ' ', m.group(0)), text, flags=re.S)
+        scan = re.sub(r'`[^`\n]*`', lambda m: ' ' * len(m.group(0)), scan)
+        for m in MD_LINK.finditer(scan):
+            t = os.path.normpath(os.path.join(os.path.dirname(d), m.group(1)))
+            if not os.path.exists(t):
+                ln = text.count('\n', 0, m.start()) + 1
+                errors.append(f"{rel(d)}:{ln}  깨진 마크다운 링크 → {m.group(1)}")
+
+
 def check_index():
     readme = os.path.join(CLAUDE, 'README.md')
     if not os.path.exists(readme):
@@ -417,6 +448,7 @@ def main():
     quiet = '--quiet' in sys.argv
     docs = live_docs()
     check_refs(docs)
+    check_md_links(docs)
     check_index()
     check_temporal(docs)
     check_banner(docs)

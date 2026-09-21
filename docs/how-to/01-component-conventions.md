@@ -7,7 +7,7 @@ description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
 > **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
-[시작하기 11. 컴포넌트로 쪼개기](../getting-started/11-components.md)에서 컴포넌트가 평범한 함수라는 것을, [09. 스타일을 값으로 들고 다니기](../getting-started/09-modifier.md)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
+[시작하기 12. 컴포넌트로 쪼개기](../getting-started/12-components.md)에서 컴포넌트가 평범한 함수라는 것을, [10. 스타일을 값으로 들고 다니기](../getting-started/10-modifier.md)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
 이 문서의 예제는 모두 아래 준비 코드를 앞에 둔 상태를 가정합니다.
 
@@ -69,7 +69,7 @@ D.Frame {
 
 재사용 가능한 컴포넌트는 호출자가 스타일(`Modifier`)이나 내부 인스턴스 참조(`Ref`)를 주입할 수 있어야 합니다. 이때 지켜야 하는 관용구가 하나 있습니다.
 
-`Ref`는 `q.Ref<<TextButton?>>(nil)`처럼 담길 타입을 적어 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다(타입 인자를 빼면 `Ref<nil>`이 되어 그 자리에서 막힙니다 — [시작하기 06](../getting-started/06-ref.md)).
+`Ref`는 `q.Ref<<TextButton?>>(nil)`처럼 담길 타입을 적어 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다(타입 인자를 빼면 `Ref<nil>`이 되어 그 자리에서 막힙니다 — [시작하기 07](../getting-started/07-ref.md)).
 
 ```luau
 local function MaterialButton(props: { read Text: string?, read Modifier: RobloxModule.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
@@ -102,7 +102,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 그리고 **받은 값을 숫자 키 자리에 놓지 않으면 그냥 사라집니다.** 호출자가 넘긴 `props.Modifier`를 컴포넌트가 어느 자리에도 놓지 않으면 그 `Modifier`는 아무 일도 하지 않고 조용히 버려집니다 — quad에는 "넘겨받고 안 쓴 값"을 잡아 주는 방어가 없어서 경고도 에러도 나지 않습니다. 호출자가 스타일을 줬는데 화면이 그대로라면 이 자리를 먼저 보세요.
 
-> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 10. 자식이 들어갈 자리](../getting-started/10-slot.md) 참고).
+> `props.Modifier` / `props.Ref` / `props.Children`이라는 이름은 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다. 참고로 `Slot`을 반환하는 컴포넌트에는 이 파라미터들이 없습니다 — 꽂을 루트 인스턴스가 없기 때문입니다. `Slot`은 자식이 들어갈 **자리**를 숫자 키 자리에 잡아 두고 그 구간의 요소를 quad가 관리하게 하는 값입니다([시작하기 11. 자식이 들어갈 자리](../getting-started/11-slot.md) 참고).
 
 ---
 
@@ -181,7 +181,7 @@ local btn2 = CustomButton {
 
 ## 4. 자식을 받는 컴포넌트에 타입 붙이기
 
-호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 10. 자식이 들어갈 자리](../getting-started/10-slot.md)). 그 자리에 타입을 붙이면 이렇게 됩니다.
+호출자가 넣을 자식은 **`Slot` 하나로 받습니다**([시작하기 11. 자식이 들어갈 자리](../getting-started/11-slot.md)). 그 자리에 타입을 붙이면 이렇게 됩니다.
 
 ```luau
 local function ModalDialog(props: { read Title: string, read Children: q.Slot<Instance>? }): Frame

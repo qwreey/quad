@@ -1,11 +1,11 @@
 ---
-title: "09. 스타일을 값으로 들고 다니기 — Modifier"
+title: "10. 스타일을 값으로 들고 다니기 — Modifier"
 description: "프로퍼티 묶음을 Modifier 값 하나로 만들어 여러 인스턴스에 놓고, 팩토리로 뽑아 모듈 하나에 모읍니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
-> **대상 독자**: [08. 생성만 보고 싶다면](/getting-started/08-lifecycle-hooks/)을 끝낸 개발자
+> **대상 독자**: [09. 생성만 보고 싶다면](/getting-started/09-lifecycle-hooks/)을 끝낸 개발자
 > **목표**: 반복되는 프로퍼티 묶음을 값 하나로 빼서 여러 곳에 놓기
 
 카드와 버튼의 색·테두리를 다른 화면에서도 그대로 쓰고 싶습니다. `Modifier`는
@@ -61,7 +61,7 @@ const CardStyle = D.Modifier.Frame {
     BorderSizePixel = 0,
 }
 
-const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …05~08장에서 붙인 숫자 키와 자식들은 그대로…
+const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …05·07~09장에서 붙인 숫자 키와 자식들은 그대로…
 
 hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다(확인이 끝나면 이 줄은 지웁니다)
 ```
@@ -171,7 +171,7 @@ const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis
 const label = D.TextLabel { title, Text = "카운터" }
 ```
 
-`emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 넘긴 것이 함수인지만 검사하는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [12장](/getting-started/12-functions/)에서 이름(커링)을 붙입니다.
+`emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 넘긴 것이 함수인지만 검사하는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [13장](/getting-started/13-functions/)에서 이름(커링)을 붙입니다.
 
 ---
 

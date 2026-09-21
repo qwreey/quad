@@ -46,7 +46,7 @@ local theme = ctx:Get(ThemeProvider)   -- 없으면 에러
 local maybe = ctx:Peek(ThemeProvider)  -- 없으면 nil
 ```
 
-이 문서의 §2 이후는 **모듈 직접 참조**(`Theme.Tokens.…`) 쪽을 씁니다 — 층이 얕아 가방이 필요 없기 때문입니다. 가방으로 내리는 전체 흐름은 [시작하기 14](../getting-started/14-context.md)에, `Context`/`Provider`의 전체 표면은 [레퍼런스: `Context`](../reference/sugar/01-context.md)에 있습니다.
+이 문서의 §2 이후는 **모듈 직접 참조**(`Theme.Tokens.…`) 쪽을 씁니다 — 층이 얕아 가방이 필요 없기 때문입니다. 가방으로 내리는 전체 흐름은 [시작하기 15](../getting-started/15-context.md)에, `Context`/`Provider`의 전체 표면은 [레퍼런스: `Context`](../reference/sugar/01-context.md)에 있습니다.
 
 - `Context.Provider(name?)`가 돌려주는 것은 **테이블 신원 키**입니다 —
   모듈 간 문자열 충돌이 없습니다. 이름은 에러 메시지용 선택 인자입니다.

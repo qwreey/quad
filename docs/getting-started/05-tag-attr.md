@@ -85,23 +85,34 @@ const inst = D.Frame { q.Tag("Card"), q.Tag("Card", "Panel") }
 
 ## 2. 이름표도 값에서 나올 수 있습니다
 
-태그 자리에 `State`를 놓으면 그 파이프가 내놓는 `Tag`가 그대로 이름표가 됩니다.
+태그 자리에 `State`를 놓으면 그 파이프가 내놓는 `Tag`가 그대로 이름표가 됩니다. 여기서 짚어 둘
+것 하나 — **`Tag`는 불변**이라 `:Added`/`:Removed`는 원본을 고치는 게 아니라 **새 `Tag`를
+돌려줍니다.** 그래서 조건은 `if`문으로 감싸는 게 아니라 인자 **안**에 씁니다.
 
 ```luau
 const card = D.Frame {
     q.Tag("Card"),
     count:Compute(function(c)
-        return q.Tag(if c:Get() % 2 == 0 then "Even" else "Odd")
+        return q.Tag("Card"):Added(if c:Get() % 2 == 0 then "Even" else nil)
     end),
 
     -- …나머지 그대로…
 }
 ```
 
-**실행하면** 버튼을 누를 때마다 이름표가 갈아 끼워집니다 — `{Card, Even}` → `{Card, Odd}` →
-`{Card, Even}`. 정적으로 적은 `Card`는 교체 내내 남습니다(1절의 자리별 셈 그대로).
-엔진 호출도 **진짜 바뀐 이름에만** 나갑니다 — 클릭 한 번이 만드는 것은 `removeTag:Even`과
-`addTag:Odd` 둘뿐입니다.
+`nil`은 "더할 것 없음"입니다 — 그래서 짝수일 땐 `{Card, Even}`, 홀수일 땐 `{Card}`가 나갑니다.
+`if even then base:Added("Even") end`처럼 **문장**으로 쓰면 돌려준 `Tag`를 그 자리에서 버려
+아무 일도 하지 않고, `Tag`가 불변인 걸 몰랐다는 신호를 타입 검사도 잡아 주지 않습니다 — 반환값을
+버리는 문장이라 문법만 보면 멀쩡합니다. 그래서 조건은 늘 인자 자리에, 결과는 `=`으로 받는 걸
+규칙으로 삼습니다.
+이름표를 하나 더 갈아 끼우고 싶으면 `:Added(...):Removed(...)`처럼 이어 붙입니다 — 왼쪽부터
+읽히는 체인입니다.
+
+**실행하면** 버튼을 누를 때마다 이름표가 갈아 끼워집니다 — `{Card, Even}` → `{Card}` →
+`{Card, Even}`. 정적으로 적은 `Card`는 교체 내내 남습니다(1절의 자리별 셈 그대로) — 파이프가
+내놓는 `Tag`에도 매번 `"Card"`를 다시 적었지만, 그건 **집합을 맞추기 위한 것**일 뿐 엔진에
+새로 붙는 게 아닙니다(자리 자체가 다르니까요). 엔진 호출도 **진짜 바뀐 이름에만** 나갑니다 —
+짝수에서 홀수로 넘어가는 클릭 한 번이 만드는 것은 `removeTag:Even` 하나뿐입니다.
 <!-- 2026-09-10 Studio 실측 -->
 
 "진짜 바뀐 이름에만"을 한 번 더 짚어 둘 만합니다. 파이프가 새 `Tag`를 내놓을 때 quad가 하는 일은
@@ -111,9 +122,9 @@ const card = D.Frame {
 ```luau
 -- (확인용 — 카드가 막 만들어진 참이라 count는 0, 이름표는 {Card, Even}. 확인이 끝나면 아래 두 줄은 지웁니다)
 count:Set(2)   -- 짝수 → 짝수: 집합이 {Card, Even} 그대로라 엔진 호출 0
-count:Set(3)   -- 짝수 → 홀수: removeTag:Even, addTag:Odd 둘
+count:Set(3)   -- 짝수 → 홀수: 집합이 {Card}가 되어 removeTag:Even 하나
 ```
-<!-- mock 실측 2026-09-11: gs.ch18.luau "05 §2 A" — Set(2) 엔진 호출 0, Set(3) removeTag:Even addTag:Odd -->
+<!-- mock 실측 2026-09-21: quad-roblox/test/gs.ch05recheck.luau "05 §2 재검증" — Set(2) 엔진 호출 0, Set(3) removeTag:Even 하나(addTag 없음), Set(5)(홀수→홀수) 0, Set(4)(홀수→짝수) addTag:Even 하나 -->
 
 <details>
 <summary><strong>바뀔 때마다 태그를 전부 떼었다 다시 붙이는 건 아닌가요?</strong></summary>
@@ -126,9 +137,9 @@ count:Set(3)   -- 짝수 → 홀수: removeTag:Even, addTag:Odd 둘
 </details>
 
 숫자 키 자리를 `State`로 잡아 두고 갈아 끼울 수 있는 것은 `Tag`만이 아닙니다. `State<>` 안에 들어갈
-수 있는 것이 생각보다 넓어서, [07장](./07-observer-effect.md)에서는 **관측 핸들**을 이 방법으로 껐다
-켜고, [10장](./10-slot.md)에서는 **자식 인스턴스**를 이 방법으로 갈아 끼우게 됩니다. 세 장이 각각
-"이렇게도 된다"고 말하지만 사실은 원리 하나이고, 그 하나는 [19장](./19-handlers.md)에서 봅니다.
+수 있는 것이 생각보다 넓어서, [08장](./08-observer-effect.md)에서는 **관측 핸들**을 이 방법으로 껐다
+켜고, [11장](./11-slot.md)에서는 **자식 인스턴스**를 이 방법으로 갈아 끼우게 됩니다. 세 장이 각각
+"이렇게도 된다"고 말하지만 사실은 원리 하나이고, 그 하나는 [20장](./20-handlers.md)에서 봅니다.
 
 ---
 
@@ -143,26 +154,34 @@ const active = q.Source(true)
 
 const card = D.Frame {
     q.Tag("Card"),
-    -- …§2의 Even/Odd 파이프 그대로…
+    -- …§2의 짝수/홀수 파이프 그대로…
 
-    q.Attr { Kind = "counter", Step = 1 },   -- 그룹 하나
-    q.BooleanAttr("Active", active),         -- 값 하나(State도 된다)
+    q.Attr { Kind = "counter", Count = count },   -- 그룹 하나 — 값 자리에 State를 그대로 넣는다
+    q.BooleanAttr("Active", active),               -- 값 하나(State도 된다)
 
     -- …나머지 그대로…
 }
 ```
 
+그룹 안에 넣은 `Count = count`를 눈여겨보세요 — 항목 값은 원시 값뿐 아니라 `State`/`Source`도
+그대로 받습니다(2절의 `Tag`처럼 항목 하나를 파이프로 감싸는 게 아니라, **그룹 자체는 리터럴로
+두고 그 안의 한 값만** 반응하게 둘 수 있다는 뜻입니다). `count`는 이 장 맨 위에서 만든 그 카운터
+`Source`이므로, 여기서는 새로 만들 것이 없습니다.
+
 **실행하면** 셋이 그 인스턴스의 Attribute로 심깁니다(Studio 속성 창 아래쪽 **Attributes** 칸).
-값 타입도 그대로 보존됩니다 — 문자열은 문자열로, 숫자는 숫자로, 불리언은 불리언으로.
+값 타입도 그대로 보존됩니다 — 문자열은 문자열로, 숫자는 숫자로, 불리언은 불리언으로 — 그리고
+`Count`는 `count`가 바뀔 때마다 **따로 심을 필요 없이** 따라갑니다.
 
 ```luau
 -- (확인용 — 화살표 뒤는 실제 출력이 아니라 그 시점의 Attribute 상태입니다. 확인이 끝나면 active:Set 두 줄은 지웁니다)
-card:GetAttributes()         --> {Active = true, Kind = "counter", Step = 1}
+card:GetAttributes()         --> {Active = true, Kind = "counter", Count = 0}
 
-active:Set(false)            -- 이제 {Active = false, Kind = "counter", Step = 1}
-active:Set(q.None)           -- 이제 {Kind = "counter", Step = 1}   — Active가 사라진다
+-- (+1 버튼을 두 번 누르면) card:GetAttributes()  --> {..., Count = 2}   — count를 따라간다
+
+active:Set(false)            -- 이제 {Active = false, Kind = "counter", Count = 2}
+active:Set(q.None)           -- 이제 {Kind = "counter", Count = 2}   — Active가 사라진다
 ```
-<!-- 2026-09-10 Studio 실측 -->
+<!-- 2026-09-10 Studio 실측(Active/Kind/None 경로) + mock 실측 2026-09-21: quad-roblox/test/gs.ch05recheck.luau "05 §3 재검증" — Count가 count:Set을 따라가는 것 확인 -->
 
 <details>
 <summary><strong><code>Attr</code> 값을 지우려면요?</strong></summary>
@@ -176,7 +195,7 @@ active:Set(q.None)           -- 이제 {Kind = "counter", Step = 1}   — Active
 | 바인딩된 `State`가 `nil`을 내놓는다 | 이것도 삭제됩니다 — `State`가 흘려보내는 `nil`은 거부되지 않습니다 |
 | 그 `Attr` 값 객체를 다른 것으로 **교체**한다 | 옛 속성 값이 엔진에 **그대로 남습니다** |
 
-네 번째가 함정입니다(`Attr`을 내놓는 `State`로 자리를 잡아 두고 그 파이프가 다른 `Attr`을 내놓는 경우 — 2절의 `Tag`와 같은 모양이고, 원리는 [19장](./19-handlers.md)에서 봅니다). 자리에서 빠지는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
+네 번째가 함정입니다(`Attr`을 내놓는 `State`로 자리를 잡아 두고 그 파이프가 다른 `Attr`을 내놓는 경우 — 2절의 `Tag`와 같은 모양이고, 원리는 [20장](./20-handlers.md)에서 봅니다). 자리에서 빠지는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
 손대지 않습니다. 리터럴 `nil`이 거부되는 것은 평범한 테이블이 `nil`을 담을 수 없어 항목이 조용히
 사라지기 때문이고, `State` 안의 `nil`은 그 문제가 없어 그대로 삭제로 흐릅니다.
 <!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 바인딩된 State가 nil을 내놓으면 속성이 삭제된다 -->
@@ -302,6 +321,10 @@ installed the tag ops …`(뒤에 프로바이더를 설치하라는 안내가 �
 ```
 
 ---
+
+지금까지(03~05장) 배운 것은 전부 값을 상태에서 인스턴스로 **내려보내는** 흐름이었습니다. 현실의
+화면에는 반대 방향도 있습니다 — 사용자가 입력창에 타이핑하는 값처럼, 인스턴스에서 상태로
+**올라오는** 값입니다. [06장](./06-flowing-back.md)에서 그 반대 방향을 봅니다.
 
 ## 더 알고 싶다면
 

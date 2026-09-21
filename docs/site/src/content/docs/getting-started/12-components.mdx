@@ -1,11 +1,11 @@
 ---
-title: "11. 컴포넌트로 쪼개기"
+title: "12. 컴포넌트로 쪼개기"
 description: "카운터를 평범한 함수로 감싸 props로 설정을 받고, 상태를 밖에서 받고, Slot으로 자식을 넘겨받습니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
-> **대상 독자**: [10. 자식이 들어갈 자리](/getting-started/10-slot/)를 끝낸 개발자
+> **대상 독자**: [11. 자식이 들어갈 자리](/getting-started/11-slot/)를 끝낸 개발자
 > **목표**: 카운터를 모듈 하나로 묶어 두 개를 나란히 띄우고, 상태와 자식을 바깥에서 받을 수 있게 만들기
 
 지금 카운터는 진입점 한가운데에 통째로 적혀 있어서, 하나 더 필요해지는 순간 그 덩어리를 복사하는 수밖에 없습니다. 그래서 함수로 묶습니다.
@@ -18,7 +18,7 @@ Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **p
 
 `src/client/UI/Counter.luau`를 새로 만들고, 지금까지의 코드를 그리로 옮깁니다. 바뀌어야 할 값은 `props`에서 받습니다.
 
-옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 05~09장에서 붙였던 태그·속성·06장의 `buttonRef`와 그 위의 `:Callback`/`:Wait`·버튼의 `BackgroundTransparency` 손쓰기·`CardStyle` Modifier·07장의 관측(`:Observer`)과 `Effect` 둘(뒤처리 이펙트·`buttonRef`의 게임패드 선택)·생명주기 훅은 여기서 뺐고, 07장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([12장](/getting-started/12-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
+옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 05·07~10장에서 붙였던 태그·속성·07장의 `buttonRef`와 그 위의 `:Callback`/`:Wait`·버튼의 `BackgroundTransparency` 손쓰기·`CardStyle` Modifier·08장의 관측(`:Observer`)과 `Effect` 둘(뒤처리 이펙트·`buttonRef`의 게임패드 선택)·생명주기 훅은 여기서 뺐고, 08장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([13장](/getting-started/13-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Counter
@@ -88,7 +88,7 @@ row.Parent = screen
 `Counter { ... }`는 `Counter({ ... })`의 Lua 슈거입니다 — `D.Frame { ... }`과 같은 모양이라 부르는 쪽에서 구분되지 않습니다.
 
 > **철학: 마법은 없다 (No Magic)**
-> 컴포넌트가 뒤에서 몰래 전역 상태를 만들거나 부모의 라이프사이클을 가로채지 않습니다. **필요한 것은 전부 `props`로 명시적으로 들어옵니다** — 트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다([14. 층을 건너 값 넘기기](/getting-started/14-context/)).
+> 컴포넌트가 뒤에서 몰래 전역 상태를 만들거나 부모의 라이프사이클을 가로채지 않습니다. **필요한 것은 전부 `props`로 명시적으로 들어옵니다** — 트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다([15. 층을 건너 값 넘기기](/getting-started/15-context/)).
 
 ---
 
@@ -174,7 +174,7 @@ row.Parent = screen
 screen.Parent = playerGui
 ```
 
-02~10장에서 `card`에 붙였던 태그·속성·`Ref`·관측·`Effect`·생명주기 훅·`Modifier`는 이 시점엔 아직 `Counter.luau`로 옮겨지지 않았습니다 — 이 절 서두에서 밝힌 대로 지금은 뼈대(카운트·라벨·버튼)만 옮겼습니다. 버튼 색도 07장의 파이프 대신 다시 리터럴이고, [12장](/getting-started/12-functions/)에서 파이프로 되돌립니다.
+02~05·07~10장에서 `card`에 붙였던 태그·속성·`Ref`·관측·`Effect`·생명주기 훅·`Modifier`는 이 시점엔 아직 `Counter.luau`로 옮겨지지 않았습니다 — 이 절 서두에서 밝힌 대로 지금은 뼈대(카운트·라벨·버튼)만 옮겼습니다. 버튼 색도 08장의 파이프 대신 다시 리터럴이고, [13장](/getting-started/13-functions/)에서 파이프로 되돌립니다.
 
 ---
 
@@ -265,7 +265,7 @@ const readOnly = agreed:Compute(function(c) return c:Get() end)
 
 ## 3. 자식을 넘겨받기
 
-부르는 쪽이 카운터 안에 무언가를 더 넣고 싶다면, [10장](/getting-started/10-slot/)에서 만든 `Slot`을 props로 받으면 됩니다. `Counter`가 돌려주는 `D.Frame`의 **마지막 원소**로 한 줄을 더합니다.
+부르는 쪽이 카운터 안에 무언가를 더 넣고 싶다면, [11장](/getting-started/11-slot/)에서 만든 `Slot`을 props로 받으면 됩니다. `Counter`가 돌려주는 `D.Frame`의 **마지막 원소**로 한 줄을 더합니다.
 
 ```luau
 -- … (Counter.luau 계속) 돌려주는 D.Frame의 마지막 원소로
@@ -313,7 +313,7 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
 - **문자 키**(`이름 = 값`)에는 **프로퍼티와 이벤트**가 옵니다. 값 자리에는 리터럴·`State`·`Tween`·`None`이 올 수 있고, 어떤 이름이 프로퍼티이고 어떤 이름이 이벤트인지는 엔진 리플렉션이 판정합니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키만은 프로퍼티가 아니라 관리 자식을 만드는 숏핸드입니다.
-- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 자리에 놓는 값들**이 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`, 구멍을 메우는 `q.None`, 그리고 **위의 것들을 담은 `State`**([10장](/getting-started/10-slot/) 6절). **순서가 의미를 갖습니다.**
+- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 자리에 놓는 값들**이 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`, 구멍을 메우는 `q.None`, 그리고 **위의 것들을 담은 `State`**([11장](/getting-started/11-slot/) 6절). **순서가 의미를 갖습니다.**
 
 그래서 컴포넌트는 그런 값을 props의 아무 이름으로나 받되(`props.Children`, `props.Modifier`, `props.Ref`), 자기 안쪽에 꽂을 때는 **숫자 키 자리에 `or q.None`을 붙여** 놓습니다. 이 경계 규약 전체는 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §1·§2에 있습니다.
 

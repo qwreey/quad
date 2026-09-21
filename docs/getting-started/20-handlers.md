@@ -1,16 +1,15 @@
 ---
-title: "19. 자리에 놓인 값은 누가 처리하나 — 핸들러 맛보기"
+title: "20. 자리에 놓인 값은 누가 처리하나 — 핸들러 맛보기"
 description: "props의 자리마다 어떤 핸들러가 값을 맡는지, State가 어떻게 한 겹 벗겨지는지, 자리를 갈아 끼울 때 이전 것이 어떻게 빠지는지를 밖에서 보이는 만큼 봅니다"
 ---
+# [시작하기] 20. 자리에 놓인 값은 누가 처리하나 — 핸들러 맛보기
 
-import { Quiz, QuizResults } from 'starlight-quiz/components';
-
-> **대상 독자**: [18. 값은 언제 흐르나](/getting-started/18-laziness/)까지 따라온 개발자
+> **대상 독자**: [19. 값은 언제 흐르나](./19-laziness.md)까지 따라온 개발자
 > **목표**: props의 자리 하나가 값을 어떻게 맡고 어떻게 놓는지 감 잡기 — 남이 써 둔 코드를 읽을 수 있을 만큼
 
-앞에서 같은 모양을 세 번 만났습니다. [05장](/getting-started/05-tag-attr/)에서는 숫자 키 자리에 `Tag`를 내놓는
-`State`를 놓아 이름표를 갈아 끼웠고, [07장](/getting-started/07-observer-effect/)에서는 같은 자리에 관측 핸들을
-담은 `State`를 놓아 관측을 껐고, [10장](/getting-started/10-slot/)에서는 자식 인스턴스 하나를 담은 `State`를
+앞에서 같은 모양을 세 번 만났습니다. [05장](./05-tag-attr.md)에서는 숫자 키 자리에 `Tag`를 내놓는
+`State`를 놓아 이름표를 갈아 끼웠고, [08장](./08-observer-effect.md)에서는 같은 자리에 관측 핸들을
+담은 `State`를 놓아 관측을 껐고, [11장](./11-slot.md)에서는 자식 인스턴스 하나를 담은 `State`를
 놓아 화면을 갈아 끼웠습니다. 세 장이 각각 "이렇게도 된다"고 말했지만, 셋은 **같은 원리 하나**입니다.
 
 이 장은 그 원리를 **밖에서 보이는 만큼만** 봅니다. 나오는 이름 둘(`q.Dispatch.listHandlers()`와
@@ -53,6 +52,7 @@ end
 | 문자 키 `Activated`에 함수(04) | `Event` |
 | **숫자 키든 문자 키든** `q.Source(...)`(03) | `StoreBind` |
 
+<!-- mock 실측 2026-09-11: gs.handlers9.luau — 위 아홉 자리의 getHandler(...).name -->
 
 앞 장들이 하나씩 "숫자 키 자리엔 자식만 오는 게 아니다"라고 말해 온 것이 이 표입니다. 자식
 인스턴스는 **특권을 가진 것이 아니라** 저 목록의 한 줄(`InstanceChild`)일 뿐입니다.
@@ -91,11 +91,11 @@ Effect: must be an array item, not the value of a string key
 
 > **`State<X>`가 그 자리에 되는가** = **`X`가 그 자리에 되는가**
 
-05·07·10장이 전부 여기서 나옵니다. `Tag`가 숫자 키 자리에 되니까 `State<Tag>`도 되고, 관측 핸들이
+05·08·11장이 전부 여기서 나옵니다. `Tag`가 숫자 키 자리에 되니까 `State<Tag>`도 되고, 관측 핸들이
 되니까 `State<Observer?>`도 되고, 자식 인스턴스가 되니까 `State<Instance?>`도 됩니다. 셋을 따로
 지원한 것이 아니라, **한 칸 아래로 내려간 뒤에는 셋을 구분할 이유가 없어지는** 것입니다.
 
-[03장](/getting-started/03-flowing-values/)에서 파이프가 프로퍼티에 닿았던 것도 정확히 같은 경로입니다.
+[03장](./03-flowing-values.md)에서 파이프가 프로퍼티에 닿았던 것도 정확히 같은 경로입니다.
 `Text = count:Compute(...)`의 자리에서 `StoreBind`가 먼저 잡고, 벗긴 문자열이 한 칸 아래에서
 `Property`에게 갑니다. "파이프를 프로퍼티에 꽂는다"는 표현은 그 두 칸을 줄여 부른 것입니다.
 
@@ -122,6 +122,7 @@ print(label.Text)   --> "B"    -- a는 이제 이 자리와 무관하다
 
 **실행하면** 마지막 줄이 `B` 그대로입니다. `which`가 `b`를 가리키는 순간 `a`를 보던 아래 칸이
 통째로 걷혔기 때문입니다. 다음 절이 그 "걷힌다"를 봅니다.
+<!-- mock 실측 2026-09-11: gs.ch18.luau "18 §2 C" — A / A2 / B / B -->
 
 ---
 
@@ -154,8 +155,9 @@ host:Destroy()                            --> B cleanup
 ```
 
 **실행하면** `A cleanup`이 자리를 떠나는 시점에 **정확히 한 번** 찍힙니다. 그 뒤로 `count`를 아무리
-바꿔도 A는 다시 돌지 않습니다. 07장이 cleanup이 도는 네 자리 중 하나로 꼽았던 "그 숫자 키 자리를
+바꿔도 A는 다시 돌지 않습니다. 08장이 cleanup이 도는 네 자리 중 하나로 꼽았던 "그 숫자 키 자리를
 다른 값으로 갈아 끼울 때"가 이것입니다.
+<!-- mock 실측 2026-09-11: gs.effectswap.luau — A run 0 / A cleanup / A run 1 / B run 1 / A cleanup / B cleanup / B run 2 / B cleanup -->
 
 `Ref`도 같은 식으로 빠집니다. 자리를 떠나는 상자는 **비워집니다.**
 
@@ -172,7 +174,7 @@ which:Set(refB)
 print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 ```
 
-[06장](/getting-started/06-ref/)에서는 반대 이야기를 했습니다 — **담긴 인스턴스를 `Destroy()`해도 상자는 스스로
+[07장](./07-ref.md)에서는 반대 이야기를 했습니다 — **담긴 인스턴스를 `Destroy()`해도 상자는 스스로
 비워지지 않는다**고요. 두 서술은 어긋나지 않습니다. 여기서 비워지는 이유는 인스턴스가 죽어서가
 아니라 **그 상자가 자리를 떠났기** 때문입니다. `Ref`는 대상의 죽음을 모르고, 자기가 앉은 자리가
 걷히는 것만 압니다.
@@ -186,8 +188,9 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 | `Ref` | 떠나는 상자가 **비워지고**(`:Callback`도 `nil`로 한 번 불립니다) 새 상자가 채워집니다. `nil`을 놓으면 둘 다 빈 채로 남습니다 |
 | `Observer` | 떠나는 것은 그 시점부터 멈춥니다. 새 것은 놓이는 순간 최신값으로 한 번(보류분 재생) 뒤 계속 받습니다 |
 | `Effect` | 떠나는 것의 cleanup이 **한 번** 돕니다. 새 것은 놓이기 전, 만들어질 때 이미 한 번 돌아 있습니다 |
-| 자식 `Instance` | 옛 것은 트리에서 **떼어지기만** 하고 파괴되지 않습니다(10장 6절 그대로) |
+| 자식 `Instance` | 옛 것은 트리에서 **떼어지기만** 하고 파괴되지 않습니다(11장 6절 그대로) |
 
+<!-- mock 실측 2026-09-11: gs.handlerslot.luau — 여섯 종류를 각각 q.Source에 담아 :Set으로 갈아 끼운 관측 -->
 
 `Attr` 줄만 결이 다릅니다 — `Tag`처럼 "차이만"이 아닙니다. 05장 3절이 "교체하면 옛 속성 값이 그대로
 남는다"를 함정으로 짚은 것이 이 줄입니다.
@@ -203,7 +206,7 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 
 아닙니다. `Destroy()`는 자리를 갈아 끼우는 일이 아니라 **수명을 수거하는** 일이라, 그 인스턴스에
 매달려 있던 것이 자리별 되돌리기를 거치지 않고 통째로 수거됩니다. `Effect`의 cleanup이 그때도 한 번
-도는 것은 수명 쪽 경로에 따로 걸려 있기 때문이지, 위 표의 전이가 돌아서가 아닙니다([20장](/getting-started/20-wrap-up/)의
+도는 것은 수명 쪽 경로에 따로 걸려 있기 때문이지, 위 표의 전이가 돌아서가 아닙니다([21장](./21-wrap-up.md)의
 "화면을 내릴 때"가 그 경로입니다). 그래서 `Destroy()`한 트리는 다시 못 살리지만, 자리를 떠났을 뿐인
 것은 다시 놓으면 그대로 돌아옵니다.
 
@@ -223,7 +226,7 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 타입도 같은 줄에 서서 같은 질문을 받습니다. `D.Frame { ... }` 안의 낯선 값은 문법이 아니라
 **어딘가에서 등록된 핸들러 하나**입니다.
 
-값에 처리를 맡기는 창구가 props만인 것도 아닙니다. [17장](/getting-started/17-blocker/)에서 `q.Blocker()`를
+값에 처리를 맡기는 창구가 props만인 것도 아닙니다. [18장](./18-blocker.md)에서 `q.Blocker()`를
 `:Apply`에 넘길 수 있었던 것도 결이 같습니다 — `state:Apply(factory)`는 넘어온 것이 함수면 그대로
 부르고, `__apply` 메소드를 가진 테이블이면 그 메소드를 부릅니다. 다만 이건 위 핸들러 목록과 **다른
 창구**입니다. 닮은 것은 "규약을 만족하는 값이면 라이브러리가 그 값을 몰라도 자리에 앉는다"이지,
@@ -236,7 +239,8 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 
 ## 이해 점검
 
-<Quiz title={"자리에 도착한 State를 누가 맡나"}>
+```quiz
+# 자리에 도착한 State를 누가 맡나
 
 숫자 키 자리든 문자 키 자리든 `State`가 오면 무슨 일이 일어나나요?
 
@@ -245,10 +249,10 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 - [x] 같은 핸들러가 맡아 **한 겹 벗기고**, 그 안의 실제 값을 같은 자리의 한 칸 아래로 다시 넘깁니다
 
 그래서 `State<X>`가 그 자리에 되는가는 `X`가 그 자리에 되는가와 같은 물음이 됩니다. 이름표든 관측 핸들이든 자식 인스턴스든 따로 지원한 것이 아니라, 한 칸 아래로 내려간 뒤에는 구분할 이유가 없어지는 것입니다.
+```
 
-</Quiz>
-
-<Quiz title={"갈아 끼울 때 종류마다 다른 것"}>
+```quiz
+# 갈아 끼울 때 종류마다 다른 것
 
 자리의 `State`가 내놓던 값이 바뀔 때 일어나는 일로 옳은 것은 무엇인가요?
 
@@ -257,10 +261,10 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 - [ ] 떠나는 `Ref` 상자는 담고 있던 인스턴스를 그대로 쥔 채 남습니다
 
 `Attr` 줄만 결이 다릅니다 — `Tag`가 두 집합의 차이만 내보내는 것과 달리, 새 그룹은 이름 전부를 다시 심고 옛 이름의 값은 지워지지 않습니다. `Ref`는 반대로 자리를 떠날 때 **비워집니다**.
+```
 
-</Quiz>
-
-<Quiz title={"`Destroy()`도 같은 되돌리기인가"}>
+```quiz
+# `Destroy()`도 같은 되돌리기인가
 
 인스턴스를 `Destroy()` 할 때도 자리별 되돌리기가 도나요?
 
@@ -269,16 +273,13 @@ print(refA.Value ~= nil, refB.Value ~= nil)   --> false  true
 - [ ] 네 — 자리별 되돌리기가 돌기 때문에 `Effect`의 cleanup도 그 표의 전이로 불립니다
 
 `Effect`의 cleanup이 파괴 때도 한 번 도는 것은 수명 쪽 경로에 따로 걸려 있기 때문입니다. 그래서 `Destroy()`한 트리는 다시 못 살리지만, 자리를 떠났을 뿐인 것은 다시 놓으면 그대로 돌아옵니다.
-
-</Quiz>
+```
 
 ---
 
 ## 더 알고 싶다면
 
-- [레퍼런스: 디스패치 핸들러 계약](/reference/extend/02-dispatch-handler-contract/) — 핸들러 레코드, 되돌리기 함수의 계약, 우선순위 밴드, 직접 등록해 보는 예제
-- [Quadnomicon Vol. 8](/quadnomicon/08-extensible-dispatch-engine/) — 자리의 칸이 어떻게 쌓이고, 값이 바뀔 때 어디까지 다시 도는지
-- [레퍼런스: `State`](/reference/core/03-state/#stateapplyfactory) — `:Apply`가 받는 두 모양(함수와 `__apply`)
-- [레퍼런스: `Tag` / `Attr`](/reference/core/09-tag-attr/) — 집합·이름 규칙과 에러 문구 전체
-
-<QuizResults />
+- [레퍼런스: 디스패치 핸들러 계약](../reference/extend/02-dispatch-handler-contract.md) — 핸들러 레코드, 되돌리기 함수의 계약, 우선순위 밴드, 직접 등록해 보는 예제
+- [Quadnomicon Vol. 8](../quadnomicon/08-extensible-dispatch-engine.md) — 자리의 칸이 어떻게 쌓이고, 값이 바뀔 때 어디까지 다시 도는지
+- [레퍼런스: `State`](../reference/core/03-state.md#stateapplyfactory) — `:Apply`가 받는 두 모양(함수와 `__apply`)
+- [레퍼런스: `Tag` / `Attr`](../reference/core/09-tag-attr.md) — 집합·이름 규칙과 에러 문구 전체

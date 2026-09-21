@@ -16,7 +16,7 @@
   보였다 — 읽는 사람에게 보여줄 내용이 아니므로 사이트 사본에서만 지우고 원본(`docs/`)엔 그대로 남긴다.
 - [2026-09-13] 같은 이유(starlight-md-txt의 remark-mdx 재파싱)로, 백틱이 아니라 raw HTML `<code>` 태그로 감싼 인라인
   코드 안의 리터럴 `{`/`}`를 HTML 엔티티로 바꾼다 — 코퍼스 전체에서 단 두 곳(`getting-started/02-first-screen.md`·
-  `getting-started/13-lists.md`의 `<details><summary><code>D.Frame { … }</code>…` 꼴 캡션)만 해당하고, `<code>` 태그
+  `getting-started/14-lists.md`의 `<details><summary><code>D.Frame { … }</code>…` 꼴 캡션)만 해당하고, `<code>` 태그
   안에서 엔티티는 그대로 `{`/`}`로 렌더되므로 화면엔 변화가 없다.
 - [2026-09-13] 이해 점검 퀴즈(starlight-quiz, astro.config 참고) — 원본 `.md`는 GitHub에서도 읽히므로 MDX
   import/JSX를 직접 담을 수 없다. 대신 원본에 ` ```quiz ` 코드펜스(GitHub에선 무해한 코드 블록으로 보인다)로
@@ -96,7 +96,7 @@ def rewrite_assets(text):
     Starlight는 OS 설정이 아니라 `data-theme`로 테마를 잡으므로 media query가 토글을 못 따른다 —
     `src/styles/theme-images.css`가 `.light-only`/`.dark-only`를 가른다.
     [2026-09-13] `<img ... />`로 셀프클로징한다 — starlight-md-txt의 remark-mdx 재파싱은 HTML(commonmark)과 달리
-    void 요소도 명시적으로 닫지 않으면 "닫는 태그가 없다"고 에러 낸다(실측: `10-slot.md`)."""
+    void 요소도 명시적으로 닫지 않으면 "닫는 태그가 없다"고 에러 낸다(실측: `11-slot.md`)."""
     def pic(m):
         dark, pre, light, post = m.group(1), m.group(2), m.group(3), m.group(4)
         attrs = (pre + post).strip()
@@ -151,7 +151,7 @@ def escape_code_tag_braces(text):
     """raw HTML `<code>...</code>`(백틱이 아니라 태그를 쓴 인라인 코드 — `<details><summary>` 안 캡션에서 쓰인다) 안의
     리터럴 `{`/`}`를 HTML 엔티티로 바꾼다(코드 펜스는 건드리지 않는다: 펜스 안은 이미 안전).
     MDX는 마크다운 백틱 코드 스팬은 보호하지만 raw HTML 흐름 안의 `{}`는 여전히 JS 표현식 시작으로 읽는다 —
-    실측: `q.Slot { … }`/`D.Frame { … }`를 `<code>`로 감싼 두 캡션(13-lists.md·02-first-screen.md)이 이 경로로 깨졌다.
+    실측: `q.Slot { … }`/`D.Frame { … }`를 `<code>`로 감싼 두 캡션(14-lists.md·02-first-screen.md)이 이 경로로 깨졌다.
     엔티티는 `<code>` 태그 안에서 그대로 `{`/`}`로 렌더되므로 화면엔 변화가 없다."""
     def esc(m):
         return '<code>' + m.group(1).replace('{', '&#123;').replace('}', '&#125;') + '</code>'

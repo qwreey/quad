@@ -1,11 +1,10 @@
 ---
-title: "14. 층을 건너 값 넘기기 — q.Context"
+title: "15. 층을 건너 값 넘기기 — q.Context"
 description: "값 여러 개를 가방 하나로 묶어, 중간 컴포넌트가 안에 뭐가 들었는지 모른 채 아래로 넘기게 합니다"
 ---
+# [시작하기] 15. 층을 건너 값 넘기기 — `q.Context`
 
-import { Quiz, QuizResults } from 'starlight-quiz/components';
-
-> **대상 독자**: [13. 목록 만들기](/getting-started/13-lists/)를 끝낸 개발자
+> **대상 독자**: [14. 목록 만들기](./14-lists.md)를 끝낸 개발자
 > **목표**: 진입점에서 만든 값을 중간 층이 모르는 채로 말단 컴포넌트까지 내려보내기
 
 값은 props로 내리는 게 기본입니다. 다만 층이 깊어지면 중간 컴포넌트들이 자기가
@@ -34,7 +33,7 @@ return {
 진입점에서 가방을 만들어 값을 담고, 화면에 같이 넘깁니다.
 
 ```luau
--- (Main.client.luau 계속 — 13장의 board 두 줄은 아래 두 줄로 갈아 끼웁니다)
+-- (Main.client.luau 계속 — 14장의 board 두 줄은 아래 두 줄로 갈아 끼웁니다)
 const Theme = require("@game/ReplicatedStorage/Client/UI/Theme")
 
 const ctx = q.Context():Set(Theme.Provider, {
@@ -66,7 +65,7 @@ board.Parent = screen
 
 ## 3. 말단이 자기 열쇠로 연다
 
-`Counter`에서 색을 꺼내 씁니다. 여기서 바뀌는 것은 세 줄입니다 — 열쇠를 가져오는 `require` 한 줄, 가방을 여는 한 줄, 그리고 색을 쓰는 한 줄. 12장에서 얹은 강조 파이프(`highlightColor`)는 여기서 테마 색에 자리를 내줍니다.
+`Counter`에서 색을 꺼내 씁니다. 여기서 바뀌는 것은 세 줄입니다 — 열쇠를 가져오는 `require` 한 줄, 가방을 여는 한 줄, 그리고 색을 쓰는 한 줄. 13장에서 얹은 강조 파이프(`highlightColor`)는 여기서 테마 색에 자리를 내줍니다.
 
 ```luau
 -- … (Counter.luau) 파일 머리에 한 줄
@@ -79,7 +78,7 @@ return function(props)
     -- …중간 생략…
 
         D.TextButton {
-            BackgroundColor3 = theme.Accent,      -- ← 12장의 highlightColor(count, 10) 대신 가방에서 온 색
+            BackgroundColor3 = theme.Accent,      -- ← 13장의 highlightColor(count, 10) 대신 가방에서 온 색
             Text = "+ 1",
             -- …나머지 생략…
         },
@@ -135,7 +134,7 @@ return {
 }
 ```
 
-`q.Provider<Theme>`는 [01장](/getting-started/01-setup/) 설정 모듈의 `export type Provider<T> = QuadTypes.Provider<T>` 줄에서 옵니다. 이 열쇠의 `T`는 **넣는 타입과 꺼내는 타입이 같아야** 해서, 다른 타입의 값을 `:Set` 하거나 `Provider<Frame>`을 `Provider<Instance>` 자리에 넘기면 타입 에러가 납니다([레퍼런스](/reference/sugar/01-context/)).
+`q.Provider<Theme>`는 [01장](./01-setup.md) 설정 모듈의 `export type Provider<T> = QuadTypes.Provider<T>` 줄에서 옵니다. 이 열쇠의 `T`는 **넣는 타입과 꺼내는 타입이 같아야** 해서, 다른 타입의 값을 `:Set` 하거나 `Provider<Frame>`을 `Provider<Instance>` 자리에 넘기면 타입 에러가 납니다([레퍼런스](../reference/sugar/01-context.md)).
 
 </details>
 
@@ -143,7 +142,8 @@ return {
 
 ## 이해 점검
 
-<Quiz title={"중간 층이 하는 일"}>
+```quiz
+# 중간 층이 하는 일
 
 가방을 받아 아래로 넘기기만 하는 중간 컴포넌트에 대한 설명으로 옳은 것은 무엇인가요?
 
@@ -152,10 +152,10 @@ return {
 - [x] 가방을 그대로 건네기만 하면 되고, 열쇠 이름도 안에 든 것도 몰라도 됩니다
 
 중간 층은 열쇠 모듈을 require하지도 그 이름을 알지도 못한 채 한 줄로 넘기기만 합니다. 다만 가방도 손으로 넘기는 것이라, 줄어드는 것은 중간 층이 알아야 할 **이름**의 수이지 넘기는 행위 자체가 아닙니다.
+```
 
-</Quiz>
-
-<Quiz title={"열쇠와 가방의 규칙"}>
+```quiz
+# 열쇠와 가방의 규칙
 
 `q.Context`와 `Provider`에 대한 설명으로 옳은 것은 무엇인가요?
 
@@ -164,14 +164,11 @@ return {
 - [x] `Provider(name?)`가 돌려주는 것은 테이블 신원 키라, 같은 이름을 두 번 줘도 서로 다른 열쇠입니다
 
 이름은 에러 메시지용 선택 인자일 뿐이라 문자열 충돌이 생기지 않습니다. 그리고 없는 키를 물었을 때 `:Get`은 에러를 내고 `:Peek`은 `nil`을 돌려줍니다.
-
-</Quiz>
+```
 
 ---
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Context` / `Provider`](/reference/sugar/01-context/) — 타입을 붙이는 두 방법, 에러 문구, 가방의 수명
-- [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/) — 토큰을 아래로 내리는 두 방법
-
-<QuizResults />
+- [레퍼런스: `Context` / `Provider`](../reference/sugar/01-context.md) — 타입을 붙이는 두 방법, 에러 문구, 가방의 수명
+- [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md) — 토큰을 아래로 내리는 두 방법

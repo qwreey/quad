@@ -78,7 +78,7 @@ pesde는 설치 디렉터리 안에 얇은 링커를 놓고 실체는 `.pesde/` 
 
 ```
 src/client/UI/Quad.luau       → ReplicatedStorage/Client/UI/Quad   (설정 모듈, 01장)
-src/client/UI/Counter.luau    → ReplicatedStorage/Client/UI/Counter (컴포넌트, 11장)
+src/client/UI/Counter.luau    → ReplicatedStorage/Client/UI/Counter (컴포넌트, 12장)
 src/client/Main.client.luau   → StarterPlayerScripts/Main          (진입점, 01장)
 roblox_packages/              → ReplicatedStorage/roblox_packages
 ```
