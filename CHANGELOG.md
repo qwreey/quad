@@ -39,6 +39,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 - 옵션 테이블을 변수에 담아 넘겨도 strict 타입 검사가 통과합니다 — `q.Debounce`/`q.Throttle`의 옵션, `slot:List`/`slot:Single`의 `opts`, 그리고 `q.Slot(initial)`의 배열(필드·원소가 읽기 전용 `read`로 선언됨). 전에는 `local opts = { Time = 0.3 }` 뒤 `q.Debounce(opts)`가 가변 필드 불변성으로 거부됐습니다. 받는 입력이 넓어지기만 해 기존 코드는 그대로 통과합니다.
 
+- **BREAKING(타입만) — 생성 `Declaration`의 레거시 프로퍼티가 허용목록으로 줄었습니다.** 남는 것은 `Font`·`Transparency`(Hidden)·`FontSize`·`TextWrap`(Deprecated) 넷이고, `Draggable`·`BillboardGui.DistanceLowerLimit`/`DistanceUpperLimit`·`Camera.focus`(쓰기 표면)와 `className`(`q.OnChange` 읽기 표면 — 그 변경 시그널은 실기기에서 발화하지 않습니다)은 타입에서 빠집니다. 런타임은 같습니다(디스패치는 엔진 리플렉션을 따르므로 `Draggable = true`는 여전히 써집니다 — 다만 strict에서 타입 에러). 옮기는 법: 빠진 키를 쓰는 곳은 현행 API로 바꾸거나, 꼭 필요하면 `D.New`/`q.Dispatch.drive`에 `any`로 넘기세요.
+
 - **BREAKING(타입만) — `q.OnChange("Parent", fn)`의 콜백 인자와 `AncestryChanged` 이벤트의 `parent` 인자가 `Instance`에서 `Instance?`로 바뀌었습니다.** 엔진은 인스턴스가 트리에서 빠질 때 이 두 자리에 `nil`을 주는데(그 순간을 잡는 것이 이 API를 쓰는 주된 이유), 생성 타입이 `Instance`라 `function(p: Instance) print(p.Name) end`가 strict를 통과한 채 실기기에서 죽었습니다. 런타임은 같습니다. 옮기는 법: 콜백 주석을 `Instance?`로 바꾸거나 주석을 빼고(추론됨), 본문에서 `nil`을 먼저 거르세요. `Camera.CameraSubject`·`Model.PrimaryPart`는 쓰기 자리라 그대로입니다.
 
 - **BREAKING(타입만) — `q.Effect`가 돌려주는 핸들의 타입 이름이 `EffectHandle`에서 `Effect`로, 입력 자리 마커가 `EffectHandleMarker`에서 `EffectMarker`로 바뀌었습니다.** `state:Observer` → `Observer`, `q.Slot` → `Slot`처럼 생성자와 타입 이름이 같은 규칙에서 이것만 벗어나 있었습니다(술어 `isEffect`와도 맞춤). 런타임은 같습니다. 옮기는 법: 주석·재수출의 `EffectHandle`을 `Effect`로(설정 모듈의 `export type EffectHandle = QuadTypes.EffectHandle` → `export type Effect = QuadTypes.Effect`).

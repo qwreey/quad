@@ -23,7 +23,7 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
   H-297 (a) ReadOnly/Deprecated/NotScriptable/Hidden/보안≠None 프로퍼티 제외
             — [사용자 결정 2026-09-09] Deprecated/Hidden 갈래는 좁혀졌다: v1 마이그레이션
               자동완성을 위해 Deprecated는 통째로, Hidden은 이름 허용목록(`Font`/`Transparency`)만
-              표면에 남기고 `-- @deprecated` 주석으로 표시한다(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP;
+              표면에 남기고 `-- @deprecated` 주석으로 표시한다(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP/DEPRECATED_NAME_KEEP — [2026-09-21] Deprecated도 허용목록;
               실측·선택지는 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`).
               ReadOnly는 그대로 Q19 (a)의 readProps 경로, NotScriptable/보안은 그대로 제외.
   H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커; Tween 팔은 보간 가능 타입만 — Q34, 2026-09-08),
@@ -56,12 +56,17 @@ PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
 # missing key surfaces as a type error it cannot resolve. 실측·선택지·결정 원문은
 # `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`(Studio 실측으로 `ReflectionService`가
 # 이 프로퍼티들을 `Permits.Write == Edit`로 준다는 전제도 확인 — 런타임 디스패치가 매치한다).
-# 정책: Deprecated 태그는 통째로, Hidden은 이름 허용목록(`HIDDEN_NAME_KEEP`)만.
+# 정책: ~~Deprecated 태그는 통째로~~ **[2026-09-21 사용자 결정 — round11 실측 1번]** Deprecated도 이름
+# 허용목록(`DEPRECATED_NAME_KEEP`)만 — 의도는 처음부터 "자주 쓰이던 것만"이었고(재작성 노고가 큰 것),
+# 소문자 별칭(`className`/`focus`)은 quad v1 이전의 유물이라 뺀다(`className`의 변경 시그널은 Studio
+# 실측에서 만들어지지만 발화하지 않는 죽은 시그널 — `audit/round11-studio-2026-09-21/REPORT.md` 1번);
+# `Draggable`·`DistanceLowerLimit`/`DistanceUpperLimit`도 사용자 판단으로 뺀다. Hidden은 이름 허용목록(`HIDDEN_NAME_KEEP`)만.
 # `Font`/`Transparency`는 Deprecated가 아니라 Hidden(+NotReplicated)이라 이름으로 연다.
 # 되살린 프로퍼티는 필드 위 `---` 독 주석 + 뒤따르는 `-- @deprecated` 주석으로 표시한다 —
 # 주석이 유일한 채널이다(Luau `@deprecated` 속성은 함수 전용, 테이블 타입 필드 앞은 SyntaxError).
 PROP_TAG_LEGACY = {"Deprecated", "Hidden"}
 HIDDEN_NAME_KEEP = {"Font", "Transparency"}
+DEPRECATED_NAME_KEEP = {"FontSize", "TextWrap"}  # [2026-09-21] v1-era text props with real rewrite cost
 EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
 # [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
 TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
@@ -244,9 +249,9 @@ def normalize(raw_path, version):
                 # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
                 # `<Class>OnChange`). NotScriptable는 여전히 드롭이고, Deprecated/Hidden은
                 # [사용자 결정 2026-09-09] legacy 정책(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP)이 정한다.
-                # [2026-09-09 사용자 결정] Deprecated 태그는 통째로, Hidden은 이름 허용목록만 — 두 팔을 따로 계산해
-                # Deprecated∧Hidden(archivable/className/BrickColor 쌍둥이 등, 미실측)이 Deprecated 팔을 타고 딸려오지 않게 한다
-                keep = ({"Deprecated"} if "Deprecated" in mtags else set()) | ({"Hidden"} if m["Name"] in HIDDEN_NAME_KEEP else set())
+                # [2026-09-09 사용자 결정] ~~Deprecated 태그는 통째로~~ [2026-09-21] Deprecated·Hidden 둘 다 이름 허용목록 —
+                # 두 팔을 따로 계산해 Deprecated∧Hidden 쌍둥이가 한쪽 팔을 타고 딸려오지 않게 한다
+                keep = ({"Deprecated"} if "Deprecated" in mtags and m["Name"] in DEPRECATED_NAME_KEEP else set()) | ({"Hidden"} if m["Name"] in HIDDEN_NAME_KEEP else set())
                 other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"} - keep)
                 read_only = "ReadOnly" in mtags and not other_excluded
                 if other_excluded:

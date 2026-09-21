@@ -22,7 +22,7 @@
 
 **사용자 의견(2026-09-21)**: *"소문자 별칭들에 대한 동작은 roblox 측에서도 deprecated 라서 우리가 보장할 것이 없어. 문서화로 끝나는 범위이고, 우리가 표면에서 주든 말든 큰 문제 없다 봄. Deprecated 를 통으로 유지한다기 보단, 자주 쓰이던 것들만 유지해준다였어. remove 나 destroy 처럼 안 쓰이는건 지워도 돼. 특히 소문자는 quad v1 이 있기도 전의 요소야. 그리고 v1 이 바로 compat 하게 연결되지 못한다는게, 중간자가 있어야한다는게 지금 상황이고 마이그레이션에 있어서 재작성은 불가피하기에 자잘한 요소는 멈춰둬도 돼. 다만 재작성에 노고가 많이 드는 Font 등 일부 표면을 놔둔다는건데."* — 즉 2026-09-09의 "Deprecated 통째" 규칙(`PROP_TAG_LEGACY`)은 메인이 넓게 적은 것이고 의도는 허용목록.
 
-**메인 의견**: Hidden처럼 Deprecated도 허용목록으로. 남길 후보 `Font`·`Transparency`·`FontSize`·`TextWrap`, 뺄 후보 `className`·`Camera.focus`·`DistanceLowerLimit`/`DistanceUpperLimit`, `Draggable`은 사용자 판단. 타입 표면만 바뀌는 변경(BREAKING 주간 안), 생성기 규칙 + 표면 JSON. **반영은 보류(사용자 지시) — 결정: (대기)**.
+**메인 의견**: Hidden처럼 Deprecated도 허용목록으로. 남길 후보 `Font`·`Transparency`·`FontSize`·`TextWrap`, 뺄 후보 `className`·`Camera.focus`·`DistanceLowerLimit`/`DistanceUpperLimit`, `Draggable`은 사용자 판단. 타입 표면만 바뀌는 변경(BREAKING 주간 안), 생성기 규칙 + 표면 JSON. **결정(2026-09-21)**: 허용목록 `FontSize`·`TextWrap`(+Hidden `Font`·`Transparency`), `Draggable` 제외(사용자) — 같은 날 반영.
 
 ## 2. 물리 자식 순서(HUMAN_TODO 12, K′) — **실측 불가(환경), 보류**
 
@@ -102,7 +102,7 @@
 
 ## 라운드 정리(2026-09-21)
 
-여섯 후보 전부 실측. 코드 변경 0(사용자 지시). 결정·문서 묶음(반영 대기):
+여섯 후보 전부 실측. 라운드 중 코드 변경 0(사용자 지시). 결정·문서 묶음 — **[같은 날 반영 완료]**(생성기 `DEPRECATED_NAME_KEEP` + 표면 JSON + D 재생성, roblox/02·core/06·slot-plan·GS 07·CHANGELOG·todos; test.sh exit 0):
 1. **Deprecated 허용목록**(1번): 남김 `Font`·`Transparency`·`FontSize`·`TextWrap`, 뺌 `className`·`Camera.focus`·`DistanceLowerLimit`/`DistanceUpperLimit`·**`Draggable`**(사용자: *"deprecated 의 draggable 은 딱히 포함하지 않아도 될것 같아"*). 생성기 `PROP_TAG_LEGACY` 통째 규칙 → 이름 허용목록(Hidden과 같은 모양) + 표면 JSON + D 재생성, 타입 BREAKING(창 안), CHANGELOG.
 2. **Q62 회복 안내 정정**(3번): core/06 Slot 순환 캐비엇·slot-plan Q42 항목의 "`Remove(1)`로 복구" → "`Extract` 뒤 원래 부모에 재부착; `Splice`로 넣었으면 그 Slot은 동결(Q40)".
 3. **Q9 좀비 UB 한 줄**(4번): core/06 "파괴된 Slot" 불릿 옆 문안(4번 절).

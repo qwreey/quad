@@ -200,7 +200,7 @@ const card = D.Frame {
 }
 ```
 
-**실행하면** 카운트가 10이 되는 순간 게임패드 선택이 이 버튼으로 옮겨 오고, 10 아래로 내려가면 cleanup이 돌아 선택이 풀립니다. 선택이 걸려 있는 채로 카드를 `Destroy()`해도 cleanup이 한 번 돌아, 사라진 버튼이 선택된 채로 남지 않습니다. 게임패드 없이 마우스로만 확인한다면 선택 표시가 눈에 잘 띄지 않을 수 있으니, 선택을 거는 줄과 cleanup 안에 `print`를 넣어 보세요.
+**실행하면** 카운트가 10이 되는 순간 게임패드 선택이 이 버튼으로 옮겨 오고, 10 아래로 내려가면 cleanup이 돌아 선택이 풀립니다. 선택이 걸려 있는 채로 카드를 `Destroy()`해도 cleanup이 한 번 돌아, 사라진 버튼이 선택된 채로 남지 않습니다. 게임패드 없이 마우스로만 확인한다면 선택 표시가 눈에 잘 띄지 않을 수 있으니, 선택을 거는 줄과 cleanup 안에 `print`를 넣어 보세요. 두 가지만 알아 두세요 — 이 버튼은 `PlayerGui` 아래에 있어야 합니다(밖에 있으면 엔진이 `SelectedObject` 대입을 거부해 `fn`이 던지고 그 `Effect`는 죽습니다 — 테스트용으로 화면 밖에 두고 돌리면 그렇게 됩니다), 그리고 파괴로 도는 cleanup은 `Destroy()` 직후가 아니라 한 틱 뒤에 돕니다(엔진의 `Destroying`이 지연 배달되기 때문 — 파괴된 선택을 엔진이 스스로 비워 주지는 않으므로 이 cleanup이 실제로 필요한 일입니다).
 <!-- mock 실측 2026-09-11: GuiService를 { SelectedObject = nil } 셰임으로 대체 — count를 의존성으로 건 판에서 10에서 select, 11에서 cleanup 뒤 다시 select, 3에서 unselect, 파괴 때 unselect. Studio 실측은 사람 몫 -->
 <!-- mock 실측 2026-09-11: gs.polish2.luau "07 §4" — isBig 의존 버전: 1에서 run(false) 다시(파이프는 값이 같아도 통지를 내려보낸다), 10에서 select, 11에서 unselect 뒤 다시 select, 3에서 unselect, 12에서 select 뒤 Destroy로 unselect -->
 

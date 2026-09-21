@@ -955,7 +955,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   타깃(또는 그 조상)을 요소로 넣는 것. `H-500`의 Slot–Slot 순환 게이트는 후보가 Slot일 때만 owner 체인을 걷고, Instance
   후보의 조상 사슬은 엔진 조회(새 백엔드 op)라 만들지 않는다. 실물(`audit/round8-studio-2026-09-08.md`)은 엔진이 "Attempt to
   set Frame as its own parent"/"circular reference"로 raise하고, 그 뒤 요소는 들어갔는데 부기·물리는 안 된 반쪽 상태가 남는다
-  (`Remove(1)`로 복구 가능) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
+  (~~`Remove(1)`로 복구 가능~~ **[2026-09-21 실측 정정 — `audit/round11-studio-2026-09-21/REPORT.md` 3번]** `Remove`는 그 인스턴스(자기/조상)를 파괴하므로 안 됨 — `Extract` 뒤 원부모 재부착; `Splice` 삽입은 Blocker 창 동결(Q40)) — 사용자: *"애초에 UB임. 엔진 자체도 UB이고 … 에러 난 다음 반쪽짜리 데이터로 정확하지 않게 되어도
   그건 quad가 이전부터 허용해왔던 UB 뒤 깨짐"*. Q9 좀비·재진입성과 같은 범주. **[2026-09-18 round11 Q62 재확인]** 정적 자식 자리에
   `H-545`(quad-roblox `InstanceChild`의 조상 walk)가 생겨 비대칭이 됐지만 Slot 쪽은 그대로 UB — 사용자: *"리컬션을 막는 비용 대비
   이득 trade-off 가 불균형이라 나도 막을 이유를 못 느꼈어"*. 백엔드 술어 추가(계약 BREAKING)·`rawAdd` 순서 변경 둘 다 기각. 사용자

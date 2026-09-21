@@ -65,7 +65,7 @@
    round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
    `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
    원문 `session/2026-09-08-04-sugar-implementation.md`.
-   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **Deprecated 전부 + Hidden `Font`/`Transparency`** 되살리기 — **같은 날 저녁 적용 완료**(`HUMAN_TODO.md` 12 사용자 실측 뒤;
+   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **~~Deprecated 전부~~(**[2026-09-21 정정]** 의도는 "자주 쓰이던 것만" — 허용목록 `FontSize`/`TextWrap`, 소문자 별칭·`Draggable`·거리 한계는 뺌) + Hidden `Font`/`Transparency`** 되살리기 — **같은 날 저녁 적용 완료**(`HUMAN_TODO.md` 12 사용자 실측 뒤;
    두 팔 분리 규칙, D 5250줄, 실측 원장 `audit/deprecated-props-spike-2026-09-09/`); (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
    (배열부 슈가 안내만 — `attribute-plan.md` 2026-09-09 항목·`typing-limits.md` 8.17); (3) 루트 `-ignoreme` 메모 여섯 삭제(round7 흡수 확인), `comparison-vide-fusion`만
    유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(반영 완료, 세션 파일 §7). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
