@@ -72,3 +72,19 @@
 
 **판정**: 창은 실기기에서 **도달 불가** — 엔진은 시체의 `Parent = nil`·산 것의 `Parent = 시체`를 조용히 통과시키고(H′), 시체 원소는 `H-548` 게이트가 선행 패스에서 막아 던질 입력이 없다. 관측된 모양은 알려진 Q9 좀비 UB 그대로. **사용자(2026-09-21)**: *"닫아도 될것 같아. UB로써 문서 추가를 준비해둬줘."* → HUMAN_TODO 11 완결. **문서 추가(준비, 반영은 뒤에 묶어서)** — core/06 "파괴된 Slot" 불릿 옆에: *"마운트 대상이 quad 밖에서 파괴된 Slot은 그 사실을 모릅니다 — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙습니다(정의되지 않은 동작). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다 — 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요."* 3번의 회복 안내 정정과 같은 묶음.
 
+## 5. tweenSlots GC — 강하게 쥔 `Tween`이 대상 Instance를 붙잡는가(ROADMAP 백로그, `H-71` 모양 우려)
+
+**측정(2026-09-21, sonnet, quad 없이 순수 엔진)**: N=20, weak-value 카나리 + 에포크당 `table.create(5000)`×20 할당 압력 + `task.wait(0.05)`, 상한 150에포크(전부 3~9에포크 수렴). Studio Edit 스레드의 `collectgarbage`는 `count`만(다른 인자는 에러 — 기존 기록과 일치).
+
+| 그룹 | 남은 수/20 | hold 비운 뒤 |
+|---|---|---|
+| A 대조군(Tween 없음, Destroy) | 0 | — |
+| B 강한 보유·Playing·Destroy | 0 | 0 |
+| C 강한 보유·Completed·Destroy | 0 | 0 |
+| D 강한 보유·Cancelled·Destroy | 0 | 0 |
+| E 약한 보유·Playing | 0(Tween도 0) | — |
+| F 강한 보유·Playing·`Parent = nil`만 | 0 | 0 |
+| G 확증 | Frame 회수 시점에 Tween은 20/20 생존(`PlaybackState` Playing) | — |
+
+**판정**: 강하게 쥔 `TweenService:Create()` 반환 객체는 대상 Instance의 userdata를 Lua GC 그래프에 **붙잡지 않는다**(세 상태·두 파괴 방식 모두; G에서 Tween 생존 + 대상만 먼저 회수 확인 — 연결은 엔진 내부 참조). 범위 한정: `Frame`·`Size`·Workspace 하위. → `tweenSlots`의 `{ Tween, Value }` 강한 저장은 안전, ROADMAP의 "완료된 Tween을 `{ Value }`로 낮추는 처방(`Completed` 연결)" 불필요, Q65의 기록 유지 결정도 GC 면에서 뒷받침. **사용자(2026-09-21)**: *"맨 처음에 해당 사실을 간접적으로 알고 있었어(그러나 사실 확인이 필요했음). 근데 실측 상 확정되었기에, 내 처음 의견인 처방이 필요 없다였는데, 네 의견과 일치해 닫아짐으로 두면 될것 같아."* → 닫힘. ROADMAP 백로그 문장 정정은 문서 묶음에 포함.
+
