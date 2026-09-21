@@ -36,3 +36,26 @@ Cancelled→Started→Completed 순서가 안정한가). 사용자 원문은 그
   결정적이다(사실 3·4). `OnCompleted`만 엔진 `Completed`에서, `playbackState == Completed`일 때만(사실 2).
 - 레코드에 "끝났다" 표시가 필요하다(완료 콜백에서 세움) — 끝난 트윈에 `Cancel`이 갔을 때 `OnCancelled`를 내지 않기 위해(사실 2).
 - 철거(retract)는 `Cancel` + 연결 `Disconnect` — 파괴된 인스턴스에서 `OnCompleted`가 나는 것(사실 5)과 클로저 고정(사실 8)을 같이 막는다. **[2026-09-21 round12 `H-593` 정정]** 그건 자리가 retractor를 거쳐 철거될 때만이다 — 파괴 경로(`Destroy`/`q.dispose`/Slot 트리 파괴)는 프로퍼티 체인의 retractor를 돌리지 않으므로 사실 5 그대로 엔진 통지가 온다 — round12 `Q71`(사용자 결정, `H-594`): `isClaimed`가 거짓이면 콜백을 안 부른다.
+
+## [2026-09-21 저녁 추가] 콜백 GC 프로브 (mock, CLI — 사용자 *"gc문제가 우려되는데 이것 한번 더 보고 가고싶음"*)
+
+스크립트 `gc-probe.luau`(같은 폴더, 실행법은 머리 주석). 약한 값 테이블로 Tween 값(콜백 셋을 든 테이블)·콜백이 포획한 테이블·mock 트윈·인스턴스를 추적하고,
+정착 경로 다섯 × 콜백 유무로 `collectgarbage("collect")` 5회 뒤 생존을 찍었다. 첫 시도의 실수 둘을 고친 뒤 결과(둘 다 오늘 오전 에이전트가 낸 것과 같은
+종류 — 포획 변수를 호출자가 `nil`로 지워 포획이 사라졌고, mock `tweenLog`가 트윈·인스턴스를 강하게 쥐고 있었다):
+
+```
+A-complete-then-teardown     callbacks=false/true  still alive: (none)
+B-replace(Cancelled)-teardown callbacks=false/true  still alive: (none)
+C-destroy-late-complete      callbacks=false/true  still alive: (none)   ← H-594 무시 경로
+D-destroy-no-notice          callbacks=false/true  still alive: (none)
+E-complete-inst-kept         callbacks=false/true  still alive: inst
+```
+
+읽는 법: (1) 정착 자리 넷(자연 완료 핸들러, `stopRunning` 두 갈래, `H-594` 무시 갈래) 전부 `rec.Cb = nil`·`rec.Conn = nil`·`Disconnect`를 하므로
+콜백과 그 포획은 정착 즉시 놓인다 — 콜백이 있어도 없을 때와 생존 집합이 같다. (2) 레코드 자체는 교체·철거 전까지 `tweenSlots`에 남지만 `Tween`·`Value`·
+`Done`만 들고, 엔진 트윈은 인스턴스를 Lua 그래프에 안 붙잡는다(Studio 2026-09-08 Q47·2026-09-21 tweenSlots GC 실측). (3) E는 콜백과 무관 — 파괴하지
+않은 quad 제작 인스턴스는 체인 버킷이 약한 키를 되참조해 `Destroy`(gcconn 절단)로만 회수되는 기존 설계(`ui-shorthand-plan.md` `H-218` 문단·`relate-plan.md` `H-71`).
+(4) D는 mock에선 트윈을 아무도 안 쥐어 전부 수거됐지만, **실엔진에선 재생 중인 트윈을 TweenService가 쥐므로** 연결 → 클로저 → 레코드 → `Cb` → 사용자 포획이
+트윈이 끝날 때까지(= `Time`만큼) 산다. 유한 트윈이면 상한이 있고, **`RepeatCount = -1` 트윈을 철거 없이 `Destroy`하면** 엔진이 시체 위에서 영원히 돌리는
+것으로 추정돼(사실 5의 연장, **미실측**) 콜백 유무와 무관하게 엔진 쪽에서 새고 콜백이 있으면 그 사슬도 같이 남는다 — 무한 트윈은 파괴 전에 값을 바꾸거나
+자리를 철거해 끊는 것이 사용자 몫(레퍼런스 캐비엇 한 줄).
