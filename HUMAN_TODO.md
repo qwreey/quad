@@ -58,7 +58,7 @@
 5. **`State<Instance?>`를 자리에 놓고 갈아 끼울 때 옛 원소가 파괴되지 않고 `Parent = nil`로 남는지**(mock 실측만 있음) — `*-slot.md` §6 서술의 실기기 확인.
 6. **Deferred 시그널 플레이스에서 `Effect` cleanup이 `Destroy` 직후로 지연되는지** — 오버뷰 (4) "알아 둘 것"의 근거는 설계 실측(`lifecycle-pattern.md`)뿐이라 현 빌드에서 한 번 더.
 7. **14.2** `roblox_sync_config_generator` 없이 Studio 싱크(그대로).
-10. **[2026-09-17 round11]** `q.OnChange("className", fn)` — 소문자 Deprecated 별칭이 읽기 표면에 있는데 `GetPropertyChangedSignal("className")`이 실기기에서 유효한지(J′). 무효면 생성기 읽기 표면에서 뺄 것.
+10. ~~**[2026-09-17 round11]** `q.OnChange("className", fn)` — 소문자 Deprecated 별칭이 읽기 표면에 있는데 `GetPropertyChangedSignal("className")`이 실기기에서 유효한지(J′). 무효면 생성기 읽기 표면에서 뺄 것.~~ **[2026-09-21 실측 완료 — `audit/round11-studio-2026-09-21/REPORT.md` 1번]** 시그널은 만들어지지만 발화하지 않는다(죽은 시그널). 반영은 Deprecated 허용목록 결정(사용자)과 묶어서 — 그 문서 1번 끝 "결정" 줄.
 11. **[2026-09-17 round11]** Slot 원소로 자기/조상 Instance를 넣었을 때 엔진 circular-reference raise 뒤 남는 상태(Q62 — `Add`/`Replace`/`Splice`/`Extract` 네 입구)와, `nativeRemove`/`nativeExtract`의 `Parent` 대입이 잠긴·파괴된 인스턴스에서 던지는 경우 `releaseOwner` → `vacate` 사이 창(B″ 8) — mock에선 못 잡는 둘.
 12. **[2026-09-17 round11]** 물리 자식 순서 — mock `nativeInsert`가 offset을 무시해 CLI로 관측 불가(K′). 형제 Slot·`Move`/`Swap`·`:List` 재정렬 뒤 실제 자식 순서가 부기와 맞는지 한 번.
 8. **[2026-09-11 열린 탐사]** **리스폰과 quad 트리** — `PlayerGui`에 스크립트가 직접 붙인 `ScreenGui`가 `ResetOnSpawn = true`일 때 리스폰에서 지워지는지(GS 01은 `false`로 두고 한 줄 주석만 달았다), `StarterPlayerScripts`의 LocalScript 재실행과 겹치면 어떤 증상인지. 실측이 오면 how-to에 "리스폰·플레이어 생명주기" 절을 쓴다(지금 문서엔 respawn 서술이 0건).
