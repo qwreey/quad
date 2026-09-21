@@ -30,4 +30,15 @@
 
 **해결(같은 날)**: Beta Features엔 끌 항목이 없었고(사용자), 사용자가 명령줄에서 quad 폴더 둘을 `Sandboxed` + capability로 설정했으나 그 집합에 든 `ScriptGlobals`가 실행 스레드에 없어 여전히 거부. 스레드의 capability를 전수 열거(스크래치 샌드박스 폴더에 하나씩 대입해 성공 여부로): **HAS** = RunClientScript·RunServerScript·AccessOutsideWrite·LoadString·CreateInstances·Basic·Audio·Physics·UI·CSG·Chat·Animation·Avatar·Input·Environment·RemoteEvent·LegacySound·Players·**CapabilityControl**·AssetRead·AssetManagement·DynamicGeneration·PlatformAvatarEditing·AssetCreateUpdate·Capture·SensitiveInput·Monetization·LoadOwnedAsset·Social·ServerCommunication·Logging·PromptExternalPurchase·Groups·Teleport·Consequences·Material·AvatarBehavior·AvatarAppearance / **LACKS** = AssetRequire·**ScriptGlobals**·DataStore·Network·Plugin·LocalUser·WritePlayer·RobloxScript·RobloxEngine·Unassigned·InternalTest·PluginOrOpenCloud·Assistant·RemoteCommand·LoadUnownedAsset. 스레드에 `CapabilityControl`이 있어 메인이 두 폴더의 `Capabilities`를 `RunServerScript·RunClientScript·Basic·CreateInstances·UI·Environment·Players·Physics·Input·Animation·Audio·AccessOutsideWrite·Logging`으로 다시 설정 — quad는 `_G`/`shared`/`getfenv`를 src에서 안 쓰므로(`getfenv` 심은 spec 쪽) `ScriptGlobals` 없이 정상. 스모크: 클론(스크래치 폴더도 `Sandboxed` + 같은 집합) → `Quad.New():UseProvider(QuadRoblox)` → `D.Frame{ Size = src, slot, D.TextLabel }` + `src:Set(q.Tween{…})` 통과. **이후 Studio 실측의 로드 관용구**: 스크래치 폴더를 `Sandboxed = true` + 위 집합으로 만든 뒤 `quad-roblox` 클론을 그 아래에, `require(clone.luau_packages.quad_base)`·`require(clone.src).QuadRoblox`.
 
+**측정(같은 날, sonnet, 검증된 로드 관용구)**:
+
+| 단계 | 물리 `GetChildren()` | quad 부기 `_elements` | Length/Offset |
+|---|---|---|---|
+| 마운트 `{s0, A(a1,a2), s1, B(b1,b2)}` | s0,a1,a2,s1,b1,b2 | A: a1,a2 / B: b1,b2 | A.Length 2, A.Offset 1, B.Offset 4 |
+| `A:Add(a3)` | …,b2,**a3**(호스트 맨 끝) | A: a1,a2,a3 | A.Length 3, B.Offset 5 |
+| `A:Move(1,3)` → `A:Swap(1,2)` | 변화 없음 | A: a3,a2,a1 | 그대로 |
+| `A:Remove(2)` → `B:Add(b3)` | s0,a1,s1,b1,b2,a3,b3 | A: a3,a1 / B: b1,b2,b3 | A.Length 2, B.Offset 4 |
+| `:List` [x,y,z] → `[z,x,y]` | x,y,z(변화 없음) | C: z,x,y | — |
+
+**사실**: 물리 순서 = 부모 대입 순서, quad는 이후 안 건드린다(`Move`/`Swap`/`:List` 재정렬은 부기만; 새 원소는 논리 위치와 무관하게 호스트 자식 배열 끝). 부기(`Length`/`Offset`)는 전 단계 정확. 설계 그대로(`nativeMove`/`nativeSwap` 의도적 no-op, `nativeInsert` 오프셋 무시) — extend/01·core/06 `Move`/`Swap`·GS 13이 이미 서술. **판정**: 결함도 문서 공백도 아님. **사용자(2026-09-21)**: *"확인했어. 기록하고 넘어가자"* — HUMAN_TODO 12 닫음, 변경 없음.
 
