@@ -42,3 +42,20 @@
 
 **사실**: 물리 순서 = 부모 대입 순서, quad는 이후 안 건드린다(`Move`/`Swap`/`:List` 재정렬은 부기만; 새 원소는 논리 위치와 무관하게 호스트 자식 배열 끝). 부기(`Length`/`Offset`)는 전 단계 정확. 설계 그대로(`nativeMove`/`nativeSwap` 의도적 no-op, `nativeInsert` 오프셋 무시) — extend/01·core/06 `Move`/`Swap`·GS 13이 이미 서술. **판정**: 결함도 문서 공백도 아님. **사용자(2026-09-21)**: *"확인했어. 기록하고 넘어가자"* — HUMAN_TODO 12 닫음, 변경 없음.
 
+## 3. Q62 — Instance 매개 순환의 네 입구 잔여 상태(HUMAN_TODO 11 전반)
+
+**측정(2026-09-21, sonnet)**: `s = q.Slot(); s:Add(e1); host = D.Frame({ Name="host", s }); host.Parent = probe`(조상 케이스는 `anc = D.Frame{…}; host.Parent = anc`). 에이전트가 첫 라운드에 `D.Frame({…}, s)`(자식을 둘째 인자로 — 조용히 버려짐)로 잘못 불러 재실측.
+
+| 입구 | 엔진 에러 | 직후 | 다른 Slot Add / dispose | 회복 | 이후 CRUD |
+|---|---|---|---|---|---|
+| `s:Add(host)` | `Attempt to set …host as its own parent` | `_elements` 2, `Length` 1, `host.Parent` 불변 | "already mounted" / "still held by a Slot" | `Extract(2)` → 정확히 복구, 새 Slot에 재추가 가능 | 정상 |
+| `s:Replace(1, host)` | 같음 | `_elements` 1, `e1` 살아남음(파괴 안 됨) | 같음 | `Extract(1)` → 정상 | 정상 |
+| `s:Splice(1, 0, host)` | 같음 | `_elements` 2, `Length` 1 | 같음 | `Extract(1)` 직후 카운트는 맞으나 **이후 `Length` 영구 고착**(`elements` 3, `Length` 1) | **동결** |
+| `s:Splice(1, 1, host)` | 같음 | `e1` 살아남음 | 같음 | `Extract(1)` → 정상(이 배치는 우연히 자가치유) | 정상 |
+| `s:Add(anc)` | `… would result in circular reference` | 같은 모양, `anc.Parent` 불변 | 같음 | `Extract(2)` 되지만 **`anc.Parent = nil`**(실제 부모에서 뜯김) | 정상 |
+
+**사실·판정**:
+- `Splice` 삽입 경로의 동결은 새 결함이 아니라 확정된 UB — `rawSplice`가 배치 Blocker를 켠 뒤 물리 op를 부르고 거기서 던지면 `OffWithoutEmit`에 못 가 재계산이 영영 멈춘다(round8 Q40 (a)·`H6-19`의 모양; 순환은 선행 패스가 못 걸러 창 안까지 들어간다).
+- **문서의 회복 안내 "`slot:Remove(그 자리)`"는 틀렸다** — `Remove`는 `nativeRemove` → `element:Destroy()`라 host 자신을 넣은 경우 **host를 파괴**, 조상이면 **조상째(host 포함) 파괴**. 통하는 것은 `Extract`이고, 그것도 `nativeExtract`의 무조건 `element.Parent = nil`이 host/조상을 실제 부모에서 뜯어내므로 "Extract 뒤 원래 부모에 다시 붙여라, Splice로 넣었으면 그 Slot은 동결이라 버려라"가 정직한 안내. → **문서 정정 대상**(core/06 Q62 캐비엇, slot-plan Q42 항목의 "`Remove(1)`로 복구") — 반영은 뒤에 묶어서.
+- `nativeExtract`의 `Parent = nil` 가드(`if element.Parent == target`)는 "물리 자식이었던 적 없는 원소"에만 의미가 있고 그 상태를 만드는 길은 순환뿐(다른 곳에 소유된 원소는 선행 패스 `claimOwnerAt`이 거부해 `_elements`에 못 들어감). **사용자(2026-09-21)**: *"3번은 정확히는 host 요소가 recursive 하거나 owned(unreleased) 인걸 끼워 넣는 경우임? 그렇다면 원칙상 보류에 동의해. 순환은 UB확정 난 맞다 봐."* — 순환뿐임을 확인, 가드 보류(드문 오용에 구조를 쓰지 않는다), 순환 UB 유지.
+
