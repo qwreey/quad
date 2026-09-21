@@ -128,7 +128,7 @@ callback을 쓰는게 일반적이여 보이긴 해. 타입으로도 편하기�
    **이름 `Out` — 사용자 *"Out 권고대로 가면 될것 같아"*(같은 날 밤). 구현 완료**: `q.Out(name, src)`(`Handlers/OnChange.luau` 팩토리, `RobloxExtension.Out`, 타입은 전체형 `Source<…>` — 마커+`Set` 교집합은 신 솔버가 거부, `typing-limits.md` 8.25), 스펙 `spec.events` 4b·`spec.onchangetypes`, 레퍼런스 roblox/05·01, CHANGELOG Added, 정본 `onchange-plan.md` 끝 절.
 3. ~~문서 위치~~ — **닫힘(사용자, 9절 탐사 뒤)**: 분리, 자리는 **05 뒤** — *"5 뒤로, 다만 반응하기 위에서 있는게 … 흐름 상 맞지만, tag/attr 도 아래로 내려보냄을 보여주는 부분이라 괜찮다 봐"*. 새 `06-flowing-back.md`(다시 위로 올려보내기 — `q.Out`), 06~20 → 07~21 재번호, 05장은 `tag:Added(if … else nil)` 관용구·그룹 `q.Attr`의 State·전환 문장까지(sonnet 작성·mock `gs.flowingback.luau`, 메인 대조).
 4. ~~web-vs-quad 다섯의 흡수~~ — **닫힘(사용자 *"권고대로. 해당 부분은 어디서 온 사람이 보기 좋게 포장해주는 그런건데 심층 문서에 갈 이유가 없고, 안 붙여놓을 이유도 없음"*)**: 오버뷰 `03-from-the-web.md`("웹에서 오셨다면" — 대응표 + fine-grained 설명 + 없는 것·다른 것, 팩트체크에서 틀린 주장은 고쳐서; sonnet 작성·메인 대조).
-5. 루트 `-ignoreme` 원본 여덟은 archive 사본이 생겼으니 사용자가 지울지(에이전트는 사용자 파일을 지우지 않는다).
+5. ~~루트 `-ignoreme` 원본 여덟~~ — **닫힘(사용자 *"지워도 돼"* — sonnet이 archive 사본 바이트 동일·흡수 경로·잔여 참조 없음을 확인한 뒤 아홉 파일(`test-ignoreme.luau` 포함) 삭제, 2026-09-21 밤)**.
 
 ## 8. 이름·걸러내기 탐사 (2026-09-21 밤, sonnet 둘 — 원문 `archive/surveys/2026-09-21-writeback-naming-exploration.md`)
 
