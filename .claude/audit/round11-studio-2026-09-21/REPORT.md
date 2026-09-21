@@ -59,3 +59,16 @@
 - **문서의 회복 안내 "`slot:Remove(그 자리)`"는 틀렸다** — `Remove`는 `nativeRemove` → `element:Destroy()`라 host 자신을 넣은 경우 **host를 파괴**, 조상이면 **조상째(host 포함) 파괴**. 통하는 것은 `Extract`이고, 그것도 `nativeExtract`의 무조건 `element.Parent = nil`이 host/조상을 실제 부모에서 뜯어내므로 "Extract 뒤 원래 부모에 다시 붙여라, Splice로 넣었으면 그 Slot은 동결이라 버려라"가 정직한 안내. → **문서 정정 대상**(core/06 Q62 캐비엇, slot-plan Q42 항목의 "`Remove(1)`로 복구") — 반영은 뒤에 묶어서.
 - `nativeExtract`의 `Parent = nil` 가드(`if element.Parent == target`)는 "물리 자식이었던 적 없는 원소"에만 의미가 있고 그 상태를 만드는 길은 순환뿐(다른 곳에 소유된 원소는 선행 패스 `claimOwnerAt`이 거부해 `_elements`에 못 들어감). **사용자(2026-09-21)**: *"3번은 정확히는 host 요소가 recursive 하거나 owned(unreleased) 인걸 끼워 넣는 경우임? 그렇다면 원칙상 보류에 동의해. 순환은 UB확정 난 맞다 봐."* — 순환뿐임을 확인, 가드 보류(드문 오용에 구조를 쓰지 않는다), 순환 UB 유지.
 
+## 4. B″-8 — `releaseOwner` → `vacate` 창(HUMAN_TODO 11 후반)
+
+**측정(2026-09-21, sonnet)**: 밖에서 파괴된 호스트(Q9 좀비) 위에서 `Extract`/`Remove`/`Add`/`Replace`/`Splice`/`dispose` 여섯 + 대조군.
+
+| 케이스 | `Parent` 대입 throw | 결과 |
+|---|---|---|
+| `Extract(1)` / `Remove(1)` | 없음 | 배열 줄고 `Length` 정확; 뽑은 원소 재사용은 quad 게이트 "not claimed … a destroyed one", `dispose(s)`는 "still held … cannot be reused after its parent is destroyed" |
+| `Add(e3)` / `Replace(1,e9)` / `Splice(1,1,e8)` | 없음 | 성공, 새 원소가 **시체 호스트에 물리적으로 붙음**(`e3.Parent == host`), `Length` 정상 증가, 동결 없음 |
+| `dispose(s)`(선행 CRUD 없이) | — | quad 게이트로 거부, 그 뒤 `Add`는 계속 성공 |
+| 대조군(산 호스트) | — | 다섯 연산 정상 |
+
+**판정**: 창은 실기기에서 **도달 불가** — 엔진은 시체의 `Parent = nil`·산 것의 `Parent = 시체`를 조용히 통과시키고(H′), 시체 원소는 `H-548` 게이트가 선행 패스에서 막아 던질 입력이 없다. 관측된 모양은 알려진 Q9 좀비 UB 그대로. **사용자(2026-09-21)**: *"닫아도 될것 같아. UB로써 문서 추가를 준비해둬줘."* → HUMAN_TODO 11 완결. **문서 추가(준비, 반영은 뒤에 묶어서)** — core/06 "파괴된 Slot" 불릿 옆에: *"마운트 대상이 quad 밖에서 파괴된 Slot은 그 사실을 모릅니다 — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙습니다(정의되지 않은 동작). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다 — 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요."* 3번의 회복 안내 정정과 같은 묶음.
+
