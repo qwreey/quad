@@ -374,6 +374,11 @@ end
 --   사라져 **영구 미소진**이다~~ **[2026-09-18 round11 Q68 (b)] `rawRerun` 꼬리가 즉시 소진한다**
 --   (`_dying`이거나 `canExecute` 거짓이면 저장하지 않고 `_consumeCleanup` — UB 입장은 그대로,
 --   가장 흔한 실수(yield 중 leaf 사망)의 결과가 누수에서 정리로; `spec.effect` 12).
+--   **[2026-09-21 round12 G-28 확인 기록, `H-590`]** 그 즉시 소진의 `dying` 인자는 `_dying` 그대로다 —
+--   Deferred에서 `Destroy`가 gcconn은 동기로 끊고 `Destroying` 통지는 다음 재개점에 보내므로, 파괴한
+--   그 청크가 멈춰 있던 fn을 **직접 재개**하면(`coroutine.resume`/`task.spawn(thread)`; `task.wait`
+--   재개는 통지 뒤라 해당 없음) 꼬리가 통지보다 먼저 돌아 cleanup이 `dying = false`를 받는다.
+--   플래그 정의가 "Destroying 콜백만 올린다"(Q57 사용자 원문)라 그대로 둔다 — yield 자체가 UB.
 --   `fn`이 자기 생명주기를 못 바꾼다(`H-147` (A))는
 --   계약의 물리판 — 사용자: *"bind/unbind 에 간접 영향을 주는건데, UB 인게 맞다는 생각"*.
 --   `SignalBehavior` 구분 자체는 `base/ref-plan.md`가 소스.

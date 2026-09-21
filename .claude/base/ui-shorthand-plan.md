@@ -290,9 +290,12 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
 멈춤/무효/삭제 처리되고, 트윈 자체가 retract 되어도 아무것도 안 하는 nop 라
 의미가 없을것이다."*
 
-- **두 겹으로 무의미하다**: (a) Roblox 엔진이 Destroy 시점에 그 인스턴스에
-  걸린 Tween을 알아서 정리하고(`base/lifecycle-pattern.md`의 "retract는 Destroy 시점에 필요 없는 이유가
-  엔진 레벨에서 한 번 더 보강됨" 절), (b) `PropertyHandler`가 반환하는 retractor는 애초에
+- **두 겹으로 무의미하다**: (a) ~~Roblox 엔진이 Destroy 시점에 그 인스턴스에
+  걸린 Tween을 알아서 정리하고~~(`base/lifecycle-pattern.md`의 "retract는 Destroy 시점에 필요 없는 이유가
+  엔진 레벨에서 한 번 더 보강됨" 절 — **[2026-09-21 round12 `H-593` 정정]** 실측은 반대다: 엔진 트윈은
+  파괴된 인스턴스 위에서 끝까지 돈다(`audit/tween-completed-2026-09-21/REPORT.md` 사실 5). 결론은 그대로
+  선다 — 죽은 인스턴스에 값을 쓰는 게 무해하고, 어차피 아래 `H-218` 확정으로 자식을 버릴 때
+  `retractFrom`이 의무라 그 경로에선 `stopRunning`이 `Cancel`을 돌린다), (b) `PropertyHandler`가 반환하는 retractor는 애초에
   몸체가 no-op이라(`base/tween-plan.md`의 "왜 `retract`가 더 이상 필요
   없는가" 절) 불러봐야 하는 일이 없다.
 - **그래도 호출이 금지되는 건 아니다** — `retractor` 안에서 **다른 키**에

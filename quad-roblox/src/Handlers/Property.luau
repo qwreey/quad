@@ -102,7 +102,14 @@ local function install(quad: any)
 	--               while that tween had not finished. The engine's own Cancelled notice is deferred (REPORT 3)
 	--               and lands AFTER a synchronous replacement's Started (REPORT 4) — so it is never used.
 	-- Order on replacement is therefore fixed: old Cancelled → new Started → (later) new Completed. A
-	-- Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
+	-- Writing the SAME property from inside `Started` or `Cancelled` (a `:Set` on the State seated there) is
+	-- same-key re-entry — UB by user decision (dispatch-core-plan Q5 (a); round12 G-23/G-26, `H-589`): `Cancelled`
+	-- fires before this call's own slot write and a snap's `Completed` follows its `Started`, so a nested
+	-- `process` would be overwritten or land out of order. No gate is added (user: no re-entry gates). The
+	-- place to chain the next tween on the same property is `Completed` — on the engine path it fires outside
+	-- `process`, on a snap after the slot write. A Destroy runs no chain retractor (no `Destroying` hook here),
+	-- so a tween keeps running on the destroyed Instance and `Completed` still fires at its natural end
+	-- (REPORT 5·6; round12 `Q71`, open). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
 	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
 	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
 	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get

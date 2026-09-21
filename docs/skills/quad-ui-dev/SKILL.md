@@ -343,7 +343,12 @@ and freshly built `D.*` children may be mixed into the same array.
 ### Invariants of `Claim`
 
 1. **Claim-once**: an Instance can be claimed once. Instances made by `D.*` are already
-   claimed — `nativeClaim: Instance is already claimed by quad`.
+   claimed — `Claim: <instance> is already claimed by quad — a Declaration-made or
+   already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive
+   it separately, or dispose it and rebuild)`. This is `q.Claim`'s own pre-check (it runs
+   before any claim in the descriptor tree is committed, root and mapped children alike).
+   `nativeClaim: Instance is already claimed by quad` is the lower-level backend guard the
+   same check used to surface as, before that pre-pass existed.
 2. **One-shot descriptor**: a `M.<Class>(key)({...})` value is consumed by the `Claim`
    that uses it — `Claim: mapper descriptor was already used (descriptors are one-shot)`.
 3. **Own-all**: quad owns the resolved children; external code must not add or remove
@@ -366,17 +371,46 @@ local btnColor = hoverSrc:Compute(function(self)
 end):Apply(q.Animate { Time = 0.2, Style = Enum.EasingStyle.Quad })
 
 -- Tween: a first-class value emitted from a Compute
+local flash = q.Source(false)
 local positionState = targetSrc:Compute(function(self)
     return q.Tween {
         Value = self:Get(),   -- plain value; a State here errors
         Time = 0.5,
         Override = "Cancel",  -- "Cancel" (default) or "Finish"
         Dedup = true,         -- skip when the target equals the recorded one
+        Started = function() flash:Set(true) end,     -- all three: () -> (), no args
+        Completed = function() flash:Set(false) end,
+        Cancelled = function() flash:Set(false) end,
     }
 end)
 ```
 
 The first assignment snaps to the value; later emissions run an engine tween.
+
+- `Started`/`Completed`/`Cancelled` are always **`() -> ()`** — no Instance is passed. A
+  callback that captured the Instance would sit in the engine tween's connection and pin it
+  alive for as long as that (inst, property) record holds a tween. Route state through a
+  `Source` and drive `Visible`/etc. from it as a prop instead of writing the Instance directly
+  in the callback.
+- `Started` fires synchronously right after the engine tween is played (or, on a snap, right
+  before `Completed`).
+- `Completed` fires only on a **natural finish** (the engine's `Completed` signal with
+  `PlaybackState.Completed`) — never for a cancelled tween.
+- `Cancelled` fires synchronously at the moment quad cancels a still-running tween — a new
+  value replaces it, or the slot is torn down. On replacement the order is always: old
+  `Cancelled` → new `Started` → (later) new `Completed`.
+- A `Tween` skipped by `Dedup` (same target as the recorded one) fires none of the three.
+- A snap — the very first write to that (Instance, property), or an `Info`-less
+  `Tween{ Time = 0 }` with no `DelayTime`/`RepeatCount`/`Reverses` — writes the value
+  synchronously and fires `Started` then `Completed` back to back.
+- Do **not** write the same property again from inside `Started` or `Cancelled` (a `:Set` on
+  the State seated there): both fire while the property handler is still processing that
+  slot, so it is same-key re-entry — undefined behaviour. Changing other States/properties is
+  fine (the `flash` pattern above). Chain the next tween on the same property from `Completed`.
+- `q.Animate{...}` accepts the same three fields and passes them through to the `Tween` it
+  builds. With `CanAnimate = false` **and** any callback present, the property is still
+  written synchronously, and `Started`+`Completed` fire together (so "motion off" does not
+  also mean "finished handler never runs").
 
 ### 6.2 `Tag` and `Attr`
 
@@ -428,8 +462,17 @@ without it `--!strict` fails with `Type functions do not currently support types
 
 `state:Observer(fn)` fires once at registration and then **holds** further changes — a
 fresh Observer has `Subscribed == false`. Bind it by putting the handle in an array part
-(it then lives and dies with that instance), or call `:Subscribe()`. `q.Effect(fn, ...deps)`
-behaves the same way; its cleanup return is optional.
+(it then lives and dies with that instance), or call `:Subscribe()` (strong keep) /
+`:WeakSubscribe()` (the registry does not keep the handle alive — a dropped reference is
+collected). `q.Effect(fn, ...deps)` behaves the same way; its cleanup return is optional.
+
+`Effect`'s cleanup function receives one argument, `dying: boolean` (a `() -> ()` cleanup
+still type-checks — arity subtyping). It runs at four sites, and `dying` is `true` only at
+the one that is the bound Instance actually being destroyed; the other three (re-run right
+before `fn`, `effect:Unsubscribe()`, and the numeric-key slot holding the Effect being
+re-driven with another value) pass `false`. `q.OnDestroyed(fn)` is built on this flag.
+`:Unsubscribe()`/`:WeakUnsubscribe()` are the release pair for `:Subscribe()`/`:WeakSubscribe()`;
+`:Unsubscribe()` runs the last cleanup exactly once (`:WeakUnsubscribe()` does not touch it).
 
 ### 6.4 Reactive Time Gates
 
@@ -469,8 +512,8 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | :--- | :--- | :--- |
 | Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
 | `Modifier` as a hash key | `Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
-| `PreRef`/`PostRef`/`Observer` as a hash key | `PreRef: must be an array item, not the value of a string key` (same shape for `PostRef:`/`Observer:`) | Put the value in the array part |
-| `Ref`/`Slot`/`Tag` as a hash key | `Dispatch: no handler matched key <K> (value: table, brand: Ref)` (brand `Slot`/`Tag` likewise) | Put the value in the array part |
+| `Ref`/`PreRef`/`PostRef`/`Slot`/`Effect`/`Observer` as a hash key | `<Kind>: must be an array item, not the value of a string key` (same shape for `Ref:`/`PreRef:`/`PostRef:`/`Slot:`/`Effect:`/`Observer:`) | Put the value in the array part |
+| `Tag` as a hash key | `Dispatch: no handler matched key <K> (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
 | Reading a `:Compute` dep without `:Get()` | No error — `#handle` is `0`, concatenation is garbage | `dep:Get()` |
 | `Modifier` inside a `Source` | `Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
 | `q.Tween{ Value = someState }` | `Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |

@@ -929,8 +929,12 @@ quad는 자신이 만든 instance를 항상 끝까지 들고 있어서 이런 �
 추가.
 
 **retract는 Destroy 시점에 필요 없는 이유가 엔진 레벨에서 한 번 더 보강됨.**
-Roblox 엔진 자체가 Destroy 시 Tag/Attr/실행 중인 Tween을 전부 알아서
-정리해준다 — 라이브러리가 따로 처리할 필요가 없음. Roblox 이외의 엔진에서
+Roblox 엔진 자체가 Destroy 시 Tag/Attr/~~실행 중인 Tween~~을 전부 알아서
+정리해준다 — 라이브러리가 따로 처리할 필요가 없음. **[2026-09-21 round12 `H-593` 정정 — Tween 부분]**
+실행 중인 Tween은 정리되지 **않는다**(`audit/tween-completed-2026-09-21/REPORT.md` 사실 5·6: 파괴된
+인스턴스 위에서 끝까지 돌아 `Completed`를 내고 연결도 남는다). "retract가 필요 없다"는 결론은 그
+트윈이 죽은 인스턴스에 값을 쓰는 게 무해하다는 데서 오는 것이지 엔진 정리에서 오는 게 아니며,
+콜백을 실은 트윈이라면 `Completed`가 파괴 뒤 그대로 불린다 — 처방은 round12 `Q71`(열림). Roblox 이외의 엔진에서
 이런 정리가 필요하다면 그건 그 엔진의 `quad-X` 서브패키지가 책임질 문제(base
 관심사 아님). 사용자가 커스텀 Destroy-time 처리가 필요하면 **`Effect`(그리고 그 슈가
 `OnDestroyed`)를 쓰면 되는 구조**라, 라이브러리가 강제로 제공할 필요도 없음.

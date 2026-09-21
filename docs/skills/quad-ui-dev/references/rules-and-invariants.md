@@ -12,7 +12,7 @@ Message substrings below are copied from the source; match on them when diagnosi
 | `Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes` | A `nil` gap in a name list: `{ "Tag1", nil, "Tag2" }` | Filter the list before passing it. `q.None` is **not** a substitute — it is rejected as "a table with a metatable" |
 | `Ref: Wait() must be called from a yieldable coroutine` | `ref:Wait()` on a non-yieldable thread | Call it inside `task.spawn`, or pass a thread to register a waiter without yielding |
 | `Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed` | `:Unwrap()` before the Ref was filled, or the Ref was never put in an array part | Place the `PreRef` in the children array; unwrap only after the instance exists |
-| `nativeClaim: Instance is already claimed by quad` | `q.Claim` on the same Instance twice, or on something `D.*` produced | Claim only unmanaged instances |
+| `Claim: <instance> is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (…)` | `q.Claim` on the same Instance twice, or on something `D.*` produced | Claim only unmanaged instances |
 | `bindLifetime: Instance is not claimed by quad` | A foreign Instance (never created by `D.*` nor claimed), or an already-destroyed one | `q.Claim(inst, descriptor)` first; never reuse a destroyed Instance |
 | `Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst)` with one argument | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({ ... }))` |
 | `Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | `{ Modifier = myMod }` as a hash key | Put it in the array part: `{ myMod }` |

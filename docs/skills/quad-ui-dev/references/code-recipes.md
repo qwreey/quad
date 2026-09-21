@@ -183,7 +183,9 @@ end
 Mapped children accept the same props as `D.*` calls (plain values, States, Modifiers,
 events), and freshly built `D.*` children may be mixed into the same array. Claiming an
 Instance twice — including anything `D.*` produced — errors with
-`nativeClaim: Instance is already claimed by quad`.
+`Claim: <instance> is already claimed by quad — a Declaration-made or already-Claimed
+Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or
+dispose it and rebuild)`.
 
 ---
 
