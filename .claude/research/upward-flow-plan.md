@@ -111,7 +111,55 @@ callback을 쓰는게 일반적이여 보이긴 해. 타입으로도 편하기�
 ## 7. 정해야 할 것 (→ `question.md` 2절)
 
 1. ~~3절 실측을 지금 돌릴지~~ — **닫힘**: 이미 2026-09-10에 실측돼 있었다(감사자 발견, 3절 정정). 문항 아님.
-2. `Bind` 채택 여부와 모양 (i)/(ii)/(iii) — 권고: 문서는 (iii)로 먼저, (i)는 후보로 두고 사용자 결정.
+2. ~~`Bind` 채택 여부와 모양~~ — **[2026-09-21 밤 사용자 결정 — 모양 확정, 이름은 탐사 뒤]** 순수 슈거로, **in 하나·out 하나를 명시적으로 나란히**:
+   ```luau
+   TextBox {
+       Text = textSrc,          -- in: 상태 → 프로퍼티 (있던 길)
+       Bind("Text", textSrc),   -- out: 프로퍼티 → 상태 (OnChange 위에 얹는 슈거, 같은 값 걸러내기까지)
+   }
+   ```
+   사용자: *"순수 슈거로 만들고 싶음. 명시적으로 out 으로 나가는 부분 하나, in 으로 들어가는 부분 하나 … 이러면 OnChange 위에
+   얹어지는 슈거가 되고 diff 까지 가능. inout 은 in 에 out 을 얹는다 구조가 가장 이롭고 구현이 쉽고, 핸들러 둘이 분기로 돌아간다가
+   바로 보이는 부분이라고 생각함. Bind 는 이름을 대신 Out 으로 하든, 어떤게 좋은지는 sonnet 으로 더 탐사해보아야한다고 생각함.
+   모양과 구조가 우리 컨벤션에서 나올 수 있는건 이게 최선이라고 생각함. 유의점은 compute 해서 in 을 넣으면 안 된다는건데, 그걸
+   캐비엇으로 남기더라도 명확함의 이점이 더 큰것 같음."* 즉 4절의 (i)에서 "핸들러 하나가 둘 다"를 뺀 꼴 — 내려 쓰기는 Property
+   핸들러 그대로, 새 값은 `OnChange` 디스크립터를 만드는 팩토리일 뿐이라 핸들러도 브랜드도 새로 생기지 않는다. 캐비엇: in 자리에
+   파생 State(`:Compute` 결과)를 넣으면 out이 되쓸 곳이 없다 — 타입은 `Source<T>`를 받게 해 strict에서 막고, 문서에 한 줄.
+   **남은 것: 이름** — 탐사자 둘(외부자·내부자)이 8절에서 `Out`으로 수렴(2순위 `Writeback`, `Bind`는 양쪽 다 비권고). 걸러내기는 `v ~= src:Get()`일 때만 `Set`(초기 바인딩 echo 방지 — 8절). 사용자가 이름을 고르면 착수.
 3. 문서 위치 (a) 04장 확장 / (b) 새 장 / (c) 오버뷰 페이지 — 권고 (a).
 4. web-vs-quad 다섯의 흡수 (a) 오버뷰 페이지 / (b) Quadnomicon / (c) archive만 — 권고 (a).
 5. 루트 `-ignoreme` 원본 여덟은 archive 사본이 생겼으니 사용자가 지울지(에이전트는 사용자 파일을 지우지 않는다).
+
+## 8. 이름·걸러내기 탐사 (2026-09-21 밤, sonnet 둘 — 원문 `archive/surveys/2026-09-21-writeback-naming-exploration.md`)
+
+두 각도가 **같은 답으로 수렴했다 — `Out`**. 외부자(Fusion/Vide를 써 본 Roblox 개발자 시점): `Bind`는 WPF/Avalonia의 `Binding`처럼
+양방향이거나 모드가 있는 일반 명사라, 같은 테이블에 `Text = textSrc` 줄이 있는데 아래에 `Bind("Text", textSrc)`가 또 있으면 "한 줄이면
+양방향이 다 되고 위 줄은 필요 없어지는 게 아닌가"라는 **실제 동작과 반대되는 멘탈 모델**을 첫눈에 심는다 — 다른 후보의 단순한 낯섦과는
+질이 다른 문제. `Out`은 "이 값이 인스턴스 밖으로 나온다"가 단어에 있어 위 줄과 다른 일임이 바로 읽히고, Fusion의 `Out`이 하는 일(프로퍼티가
+바뀔 때마다 미리 준 값 객체에 `:set`)과 뜻이 정확히 같아 전이 학습이 된다. 구조 차이(Fusion은 해시 키 특수 심볼, 여기는 배열부 값)는
+`02-d.md`를 한 번 훑으면 풀리는 얕은 마찰. `Sync`는 `Bind`보다 더 양방향처럼 들리고, `Writeback`은 동작이 그대로 드러나 2순위,
+`OnChangeSet`은 `q.OnChange`와 겹쳐 보여 남매인지 대체인지 헷갈린다. 이름이 "OnChange 기반"임을 담을 필요는 없다 — 슈거는 결과만 말하는
+편이 오래간다.
+
+내부자(코퍼스 규약·충돌 실측): `Bind`는 quad-base 110건·quad-roblox 13건이 매치되는데 양보다 **뜻**이 문제 — `bindLifetime`/`unbindLifetime`
+(값의 GC 수명을 Instance에 묶는 핵심 계약, `lifecycle-pattern.md`)·`BindData`가 이미 전혀 다른 의미로 코드 전역에 박혀 있어, `question.md` 1절이
+경계하는 "다른 뜻으로 이미 쓰이는 단어" 패턴 그대로다. `Out`은 `FieldOut<T>`(Modifier `Peek`의 "저장된 그대로" 타입)와만 스치고 오히려 어감이
+어울린다. `Sync`는 `EpochMap:Sync`, `Into`는 `Into<Frame>` 타입 패턴과 겹친다. `On*` 관례(숫자 키 자리 팩토리)로는 `On*`도 후보지만 `OnChangeSet`류는
+"OnChange의 옵션 변형"으로 오독될 약한 위험. **메인 보충**: `On*`는 이 코퍼스에서 콜백·훅을 받는 팩토리(`OnChange`·`OnCreated`류)에 붙고, 콜백
+없는 배열부 값(`Tag`·`Attr`·`PreRef`·`PostRef`)은 맨 파스칼이다 — `Out`은 콜백을 안 받으니 `Tag`·`Attr` 부류가 맞다.
+
+**타입**: `Source<T> = State<T> & { Set, Emit, Revision }`라 시그니처를 `<K>(name: K & keyof<PropTypesRead>, src: Source<index<PropTypesRead, K>>) ->
+OnChangeDescriptor<K>`로 두면 `:Compute` 결과(`State<U>`, `Set` 없음)는 strict에서 구조적으로 거부된다 — 마커·브랜드 불필요, `OnChangeFn`·
+`PropTypesRead`(전역 단일 타입)를 그대로 재사용하므로 gen-d도 안 건드린다. 사용자 캐비엇("compute 해서 in 을 넣으면 안 된다")은 타입이 먼저
+막고 문서가 한 줄 보탠다.
+
+**걸러내기의 뜻 — 넣는 게 맞다, 그리고 루프 방지가 아니라 echo 방지다.** 엔진이 같은 값 재대입에 시그널을 안 쏘므로 루프는 저절로 끊긴다.
+그런데 초기 바인딩에 구체적 echo가 있다: 배열부(`Out`의 `OnChange` 연결)가 해시부(`Text = textSrc` 대입)보다 먼저 돌고(`onchange-plan.md` 순서
+계약), 그 뒤 해시부 대입이 엔진 기본값과 다르면 시그널이 쏘여 이미 연결된 콜백이 그 값으로 돈다 → 콜백이 무조건 `src:Set(v)`하면 `Source:Set`은
+같은 값도 항상 emit(`H-68`)이라 **그 Source의 모든 구독자가 초기 바인딩마다 한 번 더 헛돈다**. `if v ~= src:Get() then src:Set(v) end`가 정확히
+이걸 막고(콜백 시점에 `src`는 자기가 흘린 값을 들고 있다), 바깥에서 진짜 바뀐 값만 `Set`한다. `src:Get()`은 단순 필드 읽기라 콜백 안에서 안전
+(quad엔 앰비언트 의존성 추적이 없다). 포커스·타이핑 정책은 값 동등성과 다른 범주라 슈거에 넣지 않는다(외부자: "논의 없이 슬쩍 들어오면 가장
+우려스럽다").
+
+**구현(사실)**: quad-roblox에 함수 하나 — `OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`를 돌려준다. 새 브랜드·핸들러·
+`Dispatch` 변경 없음, `Handlers/OnChange.luau` 무변경. 이름은 사용자 결정(→ 7절 2번).
