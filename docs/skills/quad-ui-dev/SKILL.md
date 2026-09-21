@@ -395,7 +395,8 @@ The first assignment snaps to the value; later emissions run an engine tween.
 - `Started` fires synchronously right after the engine tween is played (or, on a snap, right
   before `Completed`).
 - `Completed` fires only on a **natural finish** (the engine's `Completed` signal with
-  `PlaybackState.Completed`) — never for a cancelled tween.
+  `PlaybackState.Completed`) — never for a cancelled tween, and not when the Instance was
+  destroyed while the tween ran (a Destroy does not cancel the tween; its late notice is ignored).
 - `Cancelled` fires synchronously at the moment quad cancels a still-running tween — a new
   value replaces it, or the slot is torn down. On replacement the order is always: old
   `Cancelled` → new `Started` → (later) new `Completed`.

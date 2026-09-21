@@ -35,4 +35,4 @@ Cancelled→Started→Completed 순서가 안정한가). 사용자 원문은 그
 - `OnCancelled`·`OnStarted`는 엔진 시그널이 아니라 **quad가 `:Cancel()`·`:Play()`를 부르는 그 자리에서 동기로** 내야 순서가
   결정적이다(사실 3·4). `OnCompleted`만 엔진 `Completed`에서, `playbackState == Completed`일 때만(사실 2).
 - 레코드에 "끝났다" 표시가 필요하다(완료 콜백에서 세움) — 끝난 트윈에 `Cancel`이 갔을 때 `OnCancelled`를 내지 않기 위해(사실 2).
-- 철거(retract)는 `Cancel` + 연결 `Disconnect` — 파괴된 인스턴스에서 `OnCompleted`가 나는 것(사실 5)과 클로저 고정(사실 8)을 같이 막는다. **[2026-09-21 round12 `H-593` 정정]** 그건 자리가 retractor를 거쳐 철거될 때만이다 — 파괴 경로(`Destroy`/`q.dispose`/Slot 트리 파괴)는 프로퍼티 체인의 retractor를 돌리지 않으므로 사실 5 그대로 `Completed`가 온다(처방은 round12 `Q71`).
+- 철거(retract)는 `Cancel` + 연결 `Disconnect` — 파괴된 인스턴스에서 `OnCompleted`가 나는 것(사실 5)과 클로저 고정(사실 8)을 같이 막는다. **[2026-09-21 round12 `H-593` 정정]** 그건 자리가 retractor를 거쳐 철거될 때만이다 — 파괴 경로(`Destroy`/`q.dispose`/Slot 트리 파괴)는 프로퍼티 체인의 retractor를 돌리지 않으므로 사실 5 그대로 엔진 통지가 온다 — round12 `Q71`(사용자 결정, `H-594`): `isClaimed`가 거짓이면 콜백을 안 부른다.

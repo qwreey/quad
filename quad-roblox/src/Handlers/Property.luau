@@ -108,8 +108,9 @@ local function install(quad: any)
 	-- `process` would be overwritten or land out of order. No gate is added (user: no re-entry gates). The
 	-- place to chain the next tween on the same property is `Completed` — on the engine path it fires outside
 	-- `process`, on a snap after the slot write. A Destroy runs no chain retractor (no `Destroying` hook here),
-	-- so a tween keeps running on the destroyed Instance and `Completed` still fires at its natural end
-	-- (REPORT 5·6; round12 `Q71`, open). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
+	-- so a tween keeps running on the destroyed Instance and the engine still sends `Completed` at its natural
+	-- end (REPORT 5·6) — that notice is ignored when the Instance is no longer claimed (round12 Q71, `H-594`;
+	-- gate in the connection below). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
 	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
 	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
 	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get
@@ -315,7 +316,13 @@ local function install(quad: any)
 							rec.Done = true
 							local cb = rec.Cb
 							rec.Cb = nil
-							if cb ~= nil then
+							-- round12 Q71 (user decision 2026-09-21, `H-594`): a Destroy runs no chain retractor, so the
+							-- engine tween finishes on the corpse and still sends this notice (REPORT 5·6). Not undone,
+							-- just IGNORED: `isClaimed` reads the gcconn Destroy cuts synchronously (even under
+							-- Deferred), and only a claimed Instance can carry a tween in the first place. The Instance
+							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
+							-- `inst`.
+							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
 								fire(cb, "Completed")
 							end
 						end

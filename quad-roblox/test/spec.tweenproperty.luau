@@ -392,6 +392,18 @@ do
 	m.Size = 2
 	q.Dispatch.retractFrom(m, "Size", 1)
 	assert(n.cancels == 0, "finished tween not cancelled at teardown")
+	-- round12 Q71 (`H-594`): Destroy runs no retractor — the tween finishes on the corpse; its Completed
+	-- notice is ignored (isClaimed false: gcconn cut), and nothing is cancelled
+	mock.resetTweenLog()
+	table.clear(order)
+	local src8 = q.Source(0 :: any)
+	local o = q.Declaration.Frame({ Size = src8 }) :: any
+	src8:Set(tw("d", 1))
+	local dz = lastTween()
+	table.clear(order)
+	o:Destroy()
+	dz:simulateCompleted()
+	assert(#order == 0 and dz.cancels == 0, "destroyed Instance: Completed ignored, not cancelled: " .. table.concat(order, ","))
 	print("PASS")
 end
 

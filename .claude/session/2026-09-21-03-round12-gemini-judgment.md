@@ -21,3 +21,7 @@ G-24·G-30(스킬 문서)은 `external-review-entry.md` §0 A가 이미 stale로
 감사 루프 2라운드 수렴(2 → 0). 1라운드 확실 발견 둘은 같은 뿌리였다 — `lifecycle-pattern.md`의 2026-08-04 가정 *"Roblox 엔진이 Destroy 시 … 실행 중인 Tween을 전부 알아서 정리해준다"*와 그걸 (a) 전제로 인용하는 `ui-shorthand-plan.md` `H-218` 블록. 둘 다 오늘 실측(REPORT 사실 5·6)에 반하므로 취소선 + `H-593` 정정을 달았고, `H-218`의 결론("자식을 버릴 때 `retractFrom` 의무")은 근거를 바꿔(죽은 인스턴스에 쓰는 건 무해 + 그 경로는 어차피 `stopRunning`이 돈다) 그대로 세웠다 — 결론 재검토는 `Q71` (b)와 같은 물음이라 거기서 답이 난다. 감사자가 사용자 판단으로 분류한 하나: SKILL/core·05/sugar·04의 `dying` 서술이 "죽을 때만 true"로 무조건인데 `H-590` 창을 안 적었다 — 그 창은 이미 "fn 안 yield는 UB" 우산 안이라 캐비엇을 더 적지 않았다(사용자가 원하면 한 줄). 2라운드(정정 전제의 인용처 전수 grep·인덱스 레이어·배너 자기모순)는 발견 0.
 
 test.sh exit 0(스펙 61), doc-check ERROR 0, 사이트 동기화(GS 18·19·roblox/06 미러). 커밋은 이 파일과 같은 커밋.
+
+## 사용자 회신(같은 날 저녁)
+
+Q71 — 사용자: *"파괴로 인한 트윈이 진짜 컴플리트까지 나는지는 한번 봐야할 것 같음. isClaimed 를 통해서 완료 이후 inst 가 gcconn 이 disconnected 상태라면 무시할 수 있다고 봐. claim 이 안 돌면 tween 자체를 못 굴려서, 판정대상으로 쓸 수 있어. 되돌리지는 않지만, 무시할 수는 있는것 같음. defer 이여도 gcconn 판정 자체는 싱크로 돌거야"*. 앞 문장은 REPORT 사실 5가 이미 답(파괴 뒤 `Completed(Completed)` 발화·연결 잔존 — 오늘 Studio 실측); 뒤는 내가 낸 세 갈래 밖의 넷째 안이고 내 권고 (a)보다 낫다 — (b)의 연결 추가도 (c)의 `inst` 포획도 없이, 이미 있는 `isClaimed`(gcconn `.Connected`, `H-548`)와 트윈이 어차피 쥐고 있는 `tween.Instance`만으로 닫힌다. `H-594`로 반영. Q72 — *"권고대로"* (a).

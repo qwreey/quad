@@ -285,7 +285,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — 강한 구독을 해제하고 **마지막 cleanup을 정확히 한 번 소진합니다**. 엄격합니다:
 `Effect: not subscribed strongly; use :WeakUnsubscribe()`
-(이 문에서 거절당하면 cleanup은 건드려지지 않습니다.) `fn` 안에서도, `fn`이 던져 죽은 뒤에도 됩니다 — `fn`을 부르지 않습니다.
+(이 문에서 거절당하면 cleanup은 건드려지지 않습니다.) `fn` 안에서도, `fn`이 던져 죽은 뒤에도 됩니다 — `fn`을 부르지 않습니다. cleanup 안에서 자기를 해제하는 것은 그 cleanup이 다음 `fn` 직전·인스턴스 파괴·자리 교체로 소진될 때만 뜻이 있습니다 — **이 메소드가 소진한 cleanup 안에서 다시 `:Unsubscribe()`를 부르면** 강한 구독은 이미 풀린 뒤라 위 문구로 던집니다(이중 해제).
 
 ---
 

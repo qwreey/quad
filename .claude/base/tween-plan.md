@@ -712,7 +712,7 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 `Completed`를 내는 엔진 동작(사실 5·6)은 연결이 먼저 끊겨 콜백에 닿지 않는다.~~ **[2026-09-21 round12 `H-593` 정정]** 그 문장은 철거가
 retractor를 거칠 때만 참이다 — **파괴 경로(`Destroy`/`q.dispose`/Slot 트리 파괴)는 프로퍼티 체인의 retractor를 돌리지 않는다**(Dispatch·
 Bookkeeping 어디에도 `Destroying` 훅이 없다, GS 19 "`Destroy()`할 때도 이 되돌리기가 도나요?" 그대로). 그래서 콜백을 실은 트윈은 파괴된
-인스턴스 위에서 끝까지 돌고 `Completed`가 자연 완료 때 그대로 불린다(`Cancelled`는 안 온다). 처방은 사용자 문항 round12 `Q71`(아래).
+인스턴스 위에서 끝까지 돌고 엔진은 `Completed` 통지를 그대로 보낸다(`Cancelled`는 안 온다). **[같은 날 저녁 Q71 닫힘 — 사용자 결정, `H-594`] 되돌리지 않고 무시한다**: `Completed` 연결이 `Backend.isClaimed(tween.Instance)`가 거짓이면 콜백을 안 부른다 — 사용자: *"isClaimed 를 통해서 완료 이후 inst 가 gcconn 이 disconnected 상태라면 무시할 수 있다고 봐. claim 이 안 돌면 tween 자체를 못 굴려서, 판정대상으로 쓸 수 있어. 되돌리지는 않지만, 무시할 수는 있는것 같음. defer 이여도 gcconn 판정 자체는 싱크로 돌거야"*. 근거 셋이 다 기실측이다: `Destroy`는 gcconn을 동기로 끊고(`H-548`·`H-574`), 프로퍼티 핸들러는 claim된 인스턴스에서만 돌며, 인스턴스는 `tween.Instance`로 읽어 클로저가 `inst`를 새로 잡지 않는다(엔진 트윈이 어차피 쥔다). 스펙 11 마지막 케이스(mock `Destroy` → `simulateCompleted` 무발화·무취소). 실기기 배선 확인은 여전히 rojo 재기동 뒤 사람 몫.
 
 **[2026-09-21 round12(Gemini 합본) 판정 — `qa-request/post-implementation-review-round12.md` 머리 배너가 소스]** (1) **`H-589`** 콜백 안
 같은 자리 재진입: `Started`·`Cancelled` 안에서 같은 프로퍼티에 묶인 State를 `:Set`하면 branch 3의 `Cancelled`가 이 호출의 슬롯 쓰기
@@ -721,7 +721,7 @@ Bookkeeping 어디에도 `Destroying` 훅이 없다, GS 19 "`Destroy()`할 때�
 Gemini의 재진입 가드는 안 넣고 UB로 문서화 — 코드 머리·레퍼런스 roblox/06 한 문단("다음 트윈을 잇는 자리는 `Completed`" — 엔진 경로의
 `Completed`는 `process` 밖, 스냅의 `Completed`는 슬롯 쓰기 뒤라 연쇄가 안전하다). (2) G-27(던지는 `Cancelled`가 `process`를 중단) —
 Gemini 스스로 기각, 확인 기록; "슬롯이 영구 고착"은 틀렸다 — `Done`이 먼저 서므로 다음 쓰기의 `stopRunning(prev)`가 그냥 돌아오고 정상
-진행한다. (3) 위 `H-593`·`Q71`.
+진행한다. (3) 위 `H-593`·`Q71`(같은 날 저녁 닫힘 → `H-594` 무시 게이트). (4) `Q72`(cleanup 안 재해제)는 사용자 회신 (a) — core/05 한 줄.
 
 **mock** — 가짜 트윈에 `Completed` 시그널(`Cancel`은 **동기로** `Cancelled`를 발화 — 엔진보다 엄격, quad가 먼저 끊었는지 검증) +
 `simulateCompleted()`. 스펙: `spec.tweenproperty` 11, `spec.tween` 3·4, `spec.animate` 2, `spec.tweentypes`. **실기기 배선 미실측**
