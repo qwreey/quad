@@ -88,3 +88,24 @@
 
 **판정**: 강하게 쥔 `TweenService:Create()` 반환 객체는 대상 Instance의 userdata를 Lua GC 그래프에 **붙잡지 않는다**(세 상태·두 파괴 방식 모두; G에서 Tween 생존 + 대상만 먼저 회수 확인 — 연결은 엔진 내부 참조). 범위 한정: `Frame`·`Size`·Workspace 하위. → `tweenSlots`의 `{ Tween, Value }` 강한 저장은 안전, ROADMAP의 "완료된 Tween을 `{ Value }`로 낮추는 처방(`Completed` 연결)" 불필요, Q65의 기록 유지 결정도 GC 면에서 뒷받침. **사용자(2026-09-21)**: *"맨 처음에 해당 사실을 간접적으로 알고 있었어(그러나 사실 확인이 필요했음). 근데 실측 상 확정되었기에, 내 처음 의견인 처방이 필요 없다였는데, 네 의견과 일치해 닫아짐으로 두면 될것 같아."* → 닫힘. ROADMAP 백로그 문장 정정은 문서 묶음에 포함.
 
+## 6. GS 07 `GuiService.SelectedObject` 예제(HUMAN_TODO 13)
+
+**측정(2026-09-21, sonnet, 예제 그대로)**:
+
+| 위치 | 결과 |
+|---|---|
+| (ii) `StarterGui` 아래 `ScreenGui`(정상 사용) | 10 → select, 11 → cleanup(`dying=false`) 뒤 재select, 3 → 해제 — 전부 **동기**. `card:Destroy()`는 cleanup `dying=true` 정확히 한 번, **지연**(`task.wait()` 뒤; 파괴 직후 동기 시점엔 죽은 버튼이 아직 선택돼 있음) |
+| (i) GUI 트리 밖(`ServerStorage` 아래) | `GuiService.SelectedObject = inst`가 엔진 에러: `Cannot set GuiService.SelectedObject to … because it is not a descendant of a PlayerGui` |
+| 대조군(quad 없이 선택 뒤 `Destroy`) | 엔진은 파괴된 선택을 스스로 비우지 않음(`task.wait()` 뒤에도 죽은 인스턴스) |
+
+**판정**: 문서 서술은 정상 사용에서 그대로 성립하고, "사라진 버튼이 선택된 채 남지 않는다"는 보장은 **엔진이 아니라 quad의 cleanup**이 만든다(대조군). 부수 사실 둘 — 문서 묶음에 캐비엇으로: (a) PlayerGui 자손이 아니면 대입이 던진다(테스트용으로 밖에 두고 돌리면 fn이 던져 그 Effect는 죽음), (b) 파괴로 인한 cleanup은 Deferred라 한 틱 뒤(`H-291`과 같은 사실 — GS 07 문장은 즉시처럼 읽힘). `count:Set(11)`에서 `isBig`가 true→true인데 Effect가 재실행되는 것은 push-invalidate 모델의 알려진 동작(GS 07 mock 실측 주석과 같음). **사용자(2026-09-21)**: *"확인했어. 해당 사실대로 기록되면 될것 같아."* → HUMAN_TODO 13 닫음.
+
+## 라운드 정리(2026-09-21)
+
+여섯 후보 전부 실측. 코드 변경 0(사용자 지시). 결정·문서 묶음(반영 대기):
+1. **Deprecated 허용목록**(1번): 남김 `Font`·`Transparency`·`FontSize`·`TextWrap`, 뺌 `className`·`Camera.focus`·`DistanceLowerLimit`/`DistanceUpperLimit`·**`Draggable`**(사용자: *"deprecated 의 draggable 은 딱히 포함하지 않아도 될것 같아"*). 생성기 `PROP_TAG_LEGACY` 통째 규칙 → 이름 허용목록(Hidden과 같은 모양) + 표면 JSON + D 재생성, 타입 BREAKING(창 안), CHANGELOG.
+2. **Q62 회복 안내 정정**(3번): core/06 Slot 순환 캐비엇·slot-plan Q42 항목의 "`Remove(1)`로 복구" → "`Extract` 뒤 원래 부모에 재부착; `Splice`로 넣었으면 그 Slot은 동결(Q40)".
+3. **Q9 좀비 UB 한 줄**(4번): core/06 "파괴된 Slot" 불릿 옆 문안(4번 절).
+4. **GS 07 캐비엇 둘**(6번).
+5. ROADMAP tweenSlots 메모(5번)는 반영 완료.
+
