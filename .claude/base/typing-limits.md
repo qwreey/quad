@@ -1131,3 +1131,27 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 주석하거나, `local cb: any = v[name]; if cb then (cb :: any)() end`처럼 truthiness로 좁히거나, `(v :: { [string]: (() -> ())? })[name]`으로
 캐스트하면 통과한다(스크래치 다섯 변형 중 무주석 `~= nil`만 실패). 계기: `Handlers/Property.luau`의 Tween 콜백 발화 헬퍼
 (`Started`/`Completed`/`Cancelled`, docs-review 1-5). 규칙: **`any`에서 꺼낸 함수 로컬은 호출 전에 함수 타입을 적는다.**
+
+## 8.25. 왼쪽이 교집합인 값은 구조 타입 하나에 대조할 때 **모든 조각**이 만족해야 한다 — `Source<T>`를 "마커 + `{ read Set }`"로 받을 수 없다 (2026-09-21 실측, 신 솔버)
+
+**계기**: `q.Out(name, src)`(되쓰기 슈거, `research/upward-flow-plan.md` 8절)의 `src` 자리를 8.11 규칙대로 마커로 받되 "쓸 수 있는
+값"만 통과시키려고 `StateMarker<T> & { read Set: (self: any, value: T) -> any }`로 적었더니 `q.Source("")`를 넘기는 양성 호출이
+거부됐다. 에러가 조각별로 난다 — *"Expected `{ read Set: … }` but got `StateData<string>`"*, *"… but got t1(State 본체)"* — 즉
+`Source<T> = StateData<T> & State-part & { Revision, Set, Emit }`의 각 조각을 목표 `{ read Set }`에 따로 대조하고 하나라도 실패하면
+거부한다. 부분 타이핑 이론의 "교집합은 어느 한 조각이 만족하면 된다"와 반대다. 스크래치로 다섯 모양을 대조(양성 `q.Source("")`,
+음성 주석 붙인 `State<string>`, 값 타입 오류 `q.Source(5)`):
+
+| 모양 | 양성 | 음성 거부 | 값 타입 오류 잡음 |
+|---|---|---|---|
+| `Source<index<PTR, K>>` 전체형 | 통과 | 거부(`Set` 없음) | 잡음 |
+| `{ read Set: (any, T) -> any }` 단독 | **거부** | — | — |
+| `StateMarker<T> & { read Set }` | **거부** | — | — |
+| `{ __quadState, __quadStateValue, read Set }` 한 테이블 | **거부** | — | — |
+| `<S>(…, src: S & { read Set })` | **거부** | — | — |
+
+**결론**: 쓸 수 있는 값을 입력 자리에서 요구해야 하면 전체형 `Source<T>`가 유일한 답이다 — `type-surface-check.py`에 `type-surface: allow`로
+예외를 달고 이유를 적는다(첫 사례 `quad-roblox/src/init.luau`의 `OutFn`). 비용은 인자가 늘 `Source<T>` 별칭 인스턴스라 구조 전개가 아닌
+별칭 대조로 끝나 8.11이 걱정한 재귀 예산을 거의 안 쓴다. **주의**: 음성 시험에 `src:Compute(function(s) return s:Get() end)`처럼 무주석
+콜백의 결과를 쓰면 안 된다 — §1의 무주석 파라미터 추론 실패로 결과가 에러 타입이 돼 무엇이든 통과한다(이번 스크래치가 처음 그렇게 잘못
+짜였다). 음성은 `(nil :: any) :: State<string>`처럼 주석으로 만들 것.
+

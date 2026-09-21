@@ -155,6 +155,39 @@ do
 end
 
 print()
+print("=== 4b. Out — Source에 되쓰는 슈거(OnChange 위): 초기 echo·같은 값 건너뜀, Source만 받음 ===")
+do
+	local src = q.Source("a")
+	local emits = 0 -- Observer fires once at registration, then once per emit (`Revision` is an unsigned countdown, so count emits instead)
+	src:Observer(function()
+		emits += 1
+	end):Subscribe()
+	assert(emits == 1, "observer baseline")
+	local b = q.Declaration.TextButton({
+		Text = src, -- in
+		q.Out("Text", src), -- out
+	})
+	assert(b.Text == "a" and emits == 1, "initial write echoes back the value src already holds — skipped, no extra emit")
+	b.Text = "typed" -- the engine side changes the property
+	assert(src:Get() == "typed" and emits == 2, "engine change lands in the Source once")
+	b.Text = "typed" -- the mock fires on a same-value write (the engine does not) — the sugar skips either way
+	assert(emits == 2, "same value again: skipped")
+	src:Set("ext") -- Source → property → signal → callback sees its own value → skipped
+	assert(b.Text == "ext" and emits == 3, "no echo emit on the way back")
+	local d = q.Out("Text", src)
+	assert(d.Name == "Text" and type(d.Callback) == "function", "an OnChange descriptor — no new brand")
+	local okN, errN = pcall(function() return q.Out(42, src) end)
+	assert(not okN, "non-string name rejected")
+	mock.assertBlamesUser(errN, SPEC_FILE, "Out(42)")
+	local okV, errV = pcall(function() return q.Out("Text", 5) end)
+	assert(not okV and string.find(errV, "must be a Source", 1, true) ~= nil, "non-Source rejected: " .. tostring(errV))
+	mock.assertBlamesUser(errV, SPEC_FILE, "Out(name, 5)")
+	local okS, errS = pcall(function() return q.Out("Text", src:Compute(function(s) return s:Get() end)) end)
+	assert(not okS and string.find(errS, "read-only State", 1, true) ~= nil, "a :Compute State is named as read-only: " .. tostring(errS))
+	print("PASS")
+end
+
+print()
 print("=== 5. OnChange store-bind — State<디스크립터> 교체·None으로 끄기·재연결·철거 ===")
 do
 	local calls = 0

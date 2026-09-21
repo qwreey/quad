@@ -243,6 +243,7 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | `D.Mapper.<Class>(key)(props)` | [roblox/04](./roblox/04-claim-mapper.md) |
 | `D.Mapper.Root` | [roblox/04](./roblox/04-claim-mapper.md) |
 | `q.OnChange(name, fn)` | [roblox/05 — OnChange](./roblox/05-onchange.md) |
+| `q.Out(name, src)` | [roblox/05 — OnChange](./roblox/05-onchange.md#qoutname-src) |
 | `q.Tween(opts)` | [roblox/06 — Tween·Animate](./roblox/06-tween-animate.md) |
 | `tween:Mapped(fn)` | [roblox/06](./roblox/06-tween-animate.md) |
 | `q.Animate(info)` | [roblox/06](./roblox/06-tween-animate.md) |

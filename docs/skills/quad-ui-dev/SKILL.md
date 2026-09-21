@@ -71,7 +71,7 @@ layout if it differs.
 local Quad = require(<quad-base module>)              -- already a live instance
 local QuadRoblox = require(<quad-roblox module>).QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only
-local q = Quad:UseProvider(QuadRoblox)                -- installs D / OnChange / Animate / Tween / isTween
+local q = Quad:UseProvider(QuadRoblox)                -- installs D / OnChange / Out / Animate / Tween / isTween
 local D = q.Declaration
 ```
 
@@ -103,7 +103,9 @@ Snippets below assume this prologue.
 
 Values that belong in the **array part** of a props table, never as hash keys:
 `Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
-`q.OnChange(...)`, `q.OnCreated/OnRendered/OnDestroyed(...)`, and child instances.
+`q.OnChange(...)`, `q.Out(...)`, `q.OnCreated/OnRendered/OnDestroyed(...)`, and child instances.
+`q.Out("Text", src)` is the write-back sugar over `OnChange`: put it next to the plain `Text = src`
+binding (in and out stay two visible lines); `src` must be a `Source` — a `:Compute` State has no `Set`.
 `AttrKey` is the exception — a hash key: `[q.AttrKey("Hp")] = hpState` (see 6.2).
 
 ---

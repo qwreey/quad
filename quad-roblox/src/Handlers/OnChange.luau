@@ -74,11 +74,40 @@ local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 	return (d :: any) :: OnChangeDescriptor
 end
 
+-- [2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 8절] `Out(name, src)`: the write-back sugar. A pure
+-- factory over `OnChange` — no brand, no handler, nothing here changes. The downward direction stays the
+-- ordinary property key (`Text = src`); this is the explicit "out" placed next to it:
+--     TextBox { Text = textSrc, Out("Text", textSrc) }
+-- `src` must be WRITABLE (a Source — a `:Compute` State has no `Set`; the type carries `Set` so strict
+-- rejects it first). Same-value skip is not loop protection (the engine does not fire the changed signal
+-- on a same-value re-assignment — `audit/studio-docs-2026-09-10.md` A절) but ECHO protection: the array
+-- part connects before the hash part writes, so the initial `Text = src` write reaches this callback with
+-- the value `src` already holds, and `Source:Set` emits even for an equal value (`H-68`) — every subscriber
+-- of `src` would re-run once per bind. `Get` on a Source is a plain field read (no ambient tracking).
+local isSource: ((any) -> boolean)? = nil
+local isState: ((any) -> boolean)? = nil
+local function Out(name: string, src: any): OnChangeDescriptor
+	if type(name) ~= "string" or name == "" then
+		errNS.errorBeforeNearest("Out: property name must be a non-empty string", SURFACE)
+	end
+	if isSource == nil or not isSource(src) then
+		local got = if isState ~= nil and isState(src) then "a read-only State (a :Compute result?)" else typeof(src)
+		errNS.errorBeforeNearest(`Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
+	end
+	return OnChange(name, function(v: any)
+		if v ~= src:Get() then
+			src:Set(v)
+		end
+	end)
+end
+
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	if errNS == nil then
 		errNS = quad.errorNamespace
-		errNS.setFuncLevel(SURFACE, OnChange) -- `H-238`: public factory tagged
+		errNS.setFuncLevel(SURFACE, OnChange, Out) -- `H-238`: public factories tagged
+		isSource = quad.isSource
+		isState = quad.isState
 	end
 
 	dispatch.addHandler({
@@ -109,6 +138,7 @@ end
 
 return {
 	OnChange = OnChange,
+	Out = Out,
 	isOnChange = isOnChange,
 	install = install,
 }

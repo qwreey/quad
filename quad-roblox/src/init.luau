@@ -186,6 +186,18 @@ export type DeclarationMapper = DeclarationModule.DeclarationMapper
 export type OnChangeDescriptor = Types.OnChangeDescriptor
 export type PropTypes = DeclarationModule.PropTypes
 export type OnChangeFn = DeclarationModule.OnChangeFn
+-- `Out(name, src)` (2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 8절): write-back sugar over `OnChange`.
+-- The Source parameter is an INPUT position, which by 8.11 should be a marker — but the sugar needs a WRITABLE
+-- value, and "marker + `{ read Set }`" cannot be expressed: the new solver decomposes the left-hand intersection
+-- (`Source<T>` = StateData & State-part & { Set, … }) and demands EVERY component satisfy the target, so even a
+-- lone `{ read Set: … }` target rejects a real Source (typing-limits 8.25, scratch 2026-09-21). The full
+-- `Source<T>` is the one shape that accepts a Source, rejects a `:Compute` State (no `Set`) and checks the value
+-- type — the user caveat "compute 해서 in 을 넣으면 안 된다" is enforced here. Cost is bounded: the argument is
+-- always a `Source<T>` alias instance, never a structural expansion.
+export type OutFn = <K>(
+	name: K & keyof<DeclarationModule.PropTypesRead>,
+	src: QuadTypes.Source<index<DeclarationModule.PropTypesRead, K>> -- type-surface: allow — writable input, marker+Set fails under the new solver (8.25)
+) -> DeclarationModule.OnChangeDescriptor<K>
 -- M10: `OnChange(name, fn)` rides the same extension merge as `Declaration` — the
 -- runtime (Handlers/OnChange.luau) is untyped, the GENERATED `OnChangeFn`
 -- (name → callback parameter type via `index<PropTypesRead, K>` — 읽기 표면, Q19; luau-test `30`)
@@ -200,6 +212,7 @@ export type AnimateFn = Types.AnimateFn
 export type RobloxExtension = {
 	Declaration: DeclarationModule.Declaration,
 	OnChange: OnChangeFn,
+	Out: OutFn,
 	Animate: AnimateFn,
 	Tween: Types.TweenConstructor,
 	isTween: (x: any) -> boolean,

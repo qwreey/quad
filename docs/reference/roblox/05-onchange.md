@@ -7,7 +7,7 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 `GetPropertyChangedSignal` 바인딩을 **props의 숫자 키 자리에 놓는 값**으로 만든 것입니다.
 [`Tag`](../core/09-tag-attr.md)나 [생명주기 훅](../sugar/04-lifecycle-hooks.md)과 같은 자리에 놓입니다.
 
-이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn)
+이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn) · [`q.Out(name, src)`](#qoutname-src)
 
 :::note
 `OnChange`는 `quad-roblox` 백엔드 전용입니다 — 신호를 찾는 일 자체가 엔진의 지식이라
@@ -119,6 +119,56 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 |---|---|
 | 이름이 문자열이 아니거나 `""` | `OnChange: property name must be a non-empty string` |
 | 콜백이 함수가 아님 | `OnChange: callback for "{name}" must be a function (got {typeof(fn)})` |
+
+---
+
+## `q.Out(name, src)`
+
+**시그니처**
+
+```luau
+export type OutFn = <K>(
+	name: K & keyof<PropTypesRead>,
+	src: Source<index<PropTypesRead, K>> -- 쓸 수 있는 값(Source)만 — :Compute 결과는 여기서 거부된다
+) -> OnChangeDescriptor<K>
+```
+
+엔진이 바꾼 프로퍼티 값을 **`Source`에 되쓰는** 슈거입니다. `OnChange` 위에 얹힌 팩토리라 돌려주는 값도 같은
+디스크립터이고, 같은 숫자 키 자리에 놓습니다. 내려가는 방향은 평범한 문자 키 그대로라, 두 방향을 나란히 적습니다.
+
+```luau
+local text = q.Source("")
+
+local box = D.TextBox({
+	Text = text,          -- in: Source → 프로퍼티
+	q.Out("Text", text),  -- out: 프로퍼티 → Source
+})
+-- 사용자가 타이핑하면 text:Get()이 따라오고, text:Set("…")하면 입력창이 따라간다
+```
+
+**인자**
+
+| 이름 | 타입 | 설명 |
+|---|---|---|
+| `name` | 프로퍼티 이름 문자열 | `OnChange`와 같은 읽기 표면 `PropTypesRead`의 키 |
+| `src` | `Source` | 되쓸 곳. **`:Compute` 결과 같은 파생 `State`는 안 됩니다** — `Set`이 없어 타입 검사에서 걸리고, 우회하면 런타임에 거부합니다 |
+
+**동작**
+
+- 신호가 올 때 새 값이 `src:Get()`과 **같으면 `:Set`하지 않습니다.** 왕복을 끊기 위해서가 아닙니다 — 엔진은 같은 값을 다시 대입해도
+  변경 신호를 내지 않아 `Source → 프로퍼티 → 신호 → Source` 고리는 저절로 멈춥니다. 건너뛰는 이유는 **메아리**입니다: 숫자 키가 문자 키보다
+  먼저 처리되므로 `Text = text`의 첫 쓰기가 이미 연결된 이 콜백에 닿는데, `Source:Set`은 같은 값에도 늘 전파하므로([`source:Set(v)`](../core/02-source.md#sourcesetv)) 건너뛰지 않으면
+  `text`의 모든 구독자가 바인딩마다 한 번 더 헛돕니다.
+- 그 밖은 `OnChange`와 같습니다 — 길이 0, 같은 이름 여럿 가능, `State`에 담아 바꿔 끼우기.
+- 포커스나 커서는 건드리지 않습니다. 타이핑 중에 바깥에서 `text:Set`하면 입력창이 그 값으로 덮입니다 — 그런 정책이 필요하면
+  `FocusLost` 이벤트로 확정하는 쪽을 직접 짜세요.
+
+**에러**
+
+| 상황 | 문구 |
+|---|---|
+| 이름이 문자열이 아니거나 `""` | `Out: property name must be a non-empty string` |
+| 둘째 인자가 `Source`가 아님 | `Out: second argument for "{name}" must be a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
 
 ---
 

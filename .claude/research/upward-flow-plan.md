@@ -125,7 +125,7 @@ callback을 쓰는게 일반적이여 보이긴 해. 타입으로도 편하기�
    캐비엇으로 남기더라도 명확함의 이점이 더 큰것 같음."* 즉 4절의 (i)에서 "핸들러 하나가 둘 다"를 뺀 꼴 — 내려 쓰기는 Property
    핸들러 그대로, 새 값은 `OnChange` 디스크립터를 만드는 팩토리일 뿐이라 핸들러도 브랜드도 새로 생기지 않는다. 캐비엇: in 자리에
    파생 State(`:Compute` 결과)를 넣으면 out이 되쓸 곳이 없다 — 타입은 `Source<T>`를 받게 해 strict에서 막고, 문서에 한 줄.
-   **남은 것: 이름** — 탐사자 둘(외부자·내부자)이 8절에서 `Out`으로 수렴(2순위 `Writeback`, `Bind`는 양쪽 다 비권고). 걸러내기는 `v ~= src:Get()`일 때만 `Set`(초기 바인딩 echo 방지 — 8절). 사용자가 이름을 고르면 착수.
+   **이름 `Out` — 사용자 *"Out 권고대로 가면 될것 같아"*(같은 날 밤). 구현 완료**: `q.Out(name, src)`(`Handlers/OnChange.luau` 팩토리, `RobloxExtension.Out`, 타입은 전체형 `Source<…>` — 마커+`Set` 교집합은 신 솔버가 거부, `typing-limits.md` 8.25), 스펙 `spec.events` 4b·`spec.onchangetypes`, 레퍼런스 roblox/05·01, CHANGELOG Added, 정본 `onchange-plan.md` 끝 절.
 3. 문서 위치 (a) 04장 확장 / (b) 새 장 / (c) 오버뷰 페이지 — 권고 (a).
 4. web-vs-quad 다섯의 흡수 (a) 오버뷰 페이지 / (b) Quadnomicon / (c) archive만 — 권고 (a).
 5. 루트 `-ignoreme` 원본 여덟은 archive 사본이 생겼으니 사용자가 지울지(에이전트는 사용자 파일을 지우지 않는다).
@@ -150,7 +150,8 @@ callback을 쓰는게 일반적이여 보이긴 해. 타입으로도 편하기�
 
 **타입**: `Source<T> = State<T> & { Set, Emit, Revision }`라 시그니처를 `<K>(name: K & keyof<PropTypesRead>, src: Source<index<PropTypesRead, K>>) ->
 OnChangeDescriptor<K>`로 두면 `:Compute` 결과(`State<U>`, `Set` 없음)는 strict에서 구조적으로 거부된다 — 마커·브랜드 불필요, `OnChangeFn`·
-`PropTypesRead`(전역 단일 타입)를 그대로 재사용하므로 gen-d도 안 건드린다. 사용자 캐비엇("compute 해서 in 을 넣으면 안 된다")은 타입이 먼저
+`PropTypesRead`(전역 단일 타입)를 그대로 재사용하므로 gen-d도 안 건드린다. **[구현 실측]** 8.11 규칙대로 마커+`{ read Set }`로 받으려던 첫 시도는 신 솔버가
+왼쪽 교집합을 조각마다 대조해 양성까지 거부 — 전체형 `Source<…>`만 통과·음성 거부·값 타입 검사 셋을 다 한다(`typing-limits.md` 8.25, `type-surface: allow` 예외 첫 사례). 사용자 캐비엇("compute 해서 in 을 넣으면 안 된다")은 타입이 먼저
 막고 문서가 한 줄 보탠다.
 
 **걸러내기의 뜻 — 넣는 게 맞다, 그리고 루프 방지가 아니라 echo 방지다.** 엔진이 같은 값 재대입에 시그널을 안 쏘므로 루프는 저절로 끊긴다.

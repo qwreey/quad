@@ -133,3 +133,27 @@
 
 `AttrKey`만 해시부 키로 남는다(값 세팅이라 `key = value`가 자연스럽다) —
 그 키의 strict 타이핑 사각은 **[2026-09-03 확정]** `H10-12`/`H10-15`로 닫혔다 — `AttrKey(name)`는 무타입 프리미티브로 두고 타입은 배열부 슈가(`StringAttr(name, value)`류)가 진다(`attribute-plan.md` 머리 배너).
+
+## [2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 4·8절] `Out(name, src)` — `OnChange` 위의 되쓰기 슈거
+
+엔진이 바꾼 프로퍼티 값을 `Source`에 되쓰는 것은 그동안 `OnChange(name, function(v) src:Set(v) end)` 세 줄을 프로퍼티마다 손으로 적었다
+(how-to 02·03·04). 사용자 결정: **순수 슈거, in 하나·out 하나를 나란히** — *"명시적으로 out 으로 나가는 부분 하나, in 으로 들어가는 부분
+하나 … inout 은 in 에 out 을 얹는다 구조가 가장 이롭고 구현이 쉽고, 핸들러 둘이 분기로 돌아간다가 바로 보이는 부분"*:
+
+```luau
+TextBox { Text = textSrc, Out("Text", textSrc) }
+```
+
+- **구현**: `Handlers/OnChange.luau`의 `Out`은 `OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`를 돌려주는 팩토리다 —
+  새 브랜드·핸들러 없음, 이 문서의 핸들러 계약 무변경. `RobloxExtension.Out`으로 실린다.
+- **이름 `Out`**(사용자 *"권고대로"*): 외부자·내부자 탐사 둘이 수렴(`archive/surveys/2026-09-21-writeback-naming-exploration.md`) — `Bind`는
+  `bindLifetime` 핵심 어휘와 충돌하고 "한 줄이면 양방향"이라는 틀린 멘탈 모델을 심는다, `Out`은 Fusion의 같은 역할 이름과 뜻이 같다.
+  콜백을 안 받는 배열부 값이라 `On*`가 아니라 `Tag`·`Attr` 부류의 맨 파스칼.
+- **같은 값 건너뛰기는 메아리 방지**: 엔진은 같은 값 재대입에 시그널을 안 쏘므로(`audit/studio-docs-2026-09-10.md` A절) 루프는 저절로 끊긴다.
+  그러나 배열부→해시부 순서(이 문서 초기 발화 계약)로 `Text = src`의 첫 쓰기가 이미 연결된 콜백에 닿고 `Source:Set`은 같은 값도 emit(`H-68`)
+  이라, 건너뛰지 않으면 `src`의 모든 구독자가 바인딩마다 한 번 더 돈다.
+- **`src`는 쓸 수 있는 값이어야 한다**(사용자 캐비엇 *"compute 해서 in 을 넣으면 안 된다"*): 타입 `Source<index<PropTypesRead, K>>`가 `:Compute`
+  결과를 거부하고(전체형을 쓰는 이유는 `typing-limits.md` 8.25), 런타임은 `isSource`로 한 번 더 거부한다(`State`면 "read-only State (a :Compute result?)").
+- 포커스·커서 정책은 넣지 않는다 — 값 동등성과 다른 범주(탐사자 둘 다 같은 판단).
+- 스펙: `spec.events` 4b(초기 echo 무발화·같은 값 건너뜀·되쓰기 무echo·거부 셋), `spec.onchangetypes`(strict 양성). 레퍼런스 roblox/05 `q.Out` 절.
+

@@ -1,6 +1,6 @@
 ---
 title: "설치와 프로바이더"
-description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExtension 다섯 키, 타입 검사 플래그"
+description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExtension 여섯 키, 타입 검사 플래그"
 ---
 # Roblox 백엔드 설치
 
@@ -12,7 +12,7 @@ description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExten
 
 :::note
 이 폴더(`reference/roblox/`)의 모든 것은 **`quad-roblox` 백엔드를 설치한 뒤에만** 존재합니다.
-`quad-base`만 require한 모듈에서 `q.Declaration`/`q.Tween`/`q.Animate`/`q.OnChange`/`q.isTween`는 전부 `nil`입니다.
+`quad-base`만 require한 모듈에서 `q.Declaration`/`q.Tween`/`q.Animate`/`q.OnChange`/`q.Out`/`q.isTween`는 전부 `nil`입니다.
 :::
 
 이 문서의 모든 예제는 아래 프롤로그를 전제합니다.
@@ -119,12 +119,13 @@ local D = q.Declaration -- 병합된 확장. `Quad.Declaration`으로도 같은 
 
 ## `RobloxExtension`
 
-`QuadRoblox`가 돌려주고 `UseProvider`가 모듈에 병합하는 확장 표면입니다. 다섯 키가 전부입니다.
+`QuadRoblox`가 돌려주고 `UseProvider`가 모듈에 병합하는 확장 표면입니다. 여섯 키가 전부입니다.
 
 ```luau
 export type RobloxExtension = {
 	Declaration: DeclarationModule.Declaration,
 	OnChange: OnChangeFn,
+	Out: OutFn,
 	Animate: AnimateFn,
 	Tween: Types.TweenConstructor,
 	isTween: (x: any) -> boolean,
@@ -135,6 +136,7 @@ export type RobloxExtension = {
 |---|---|---|
 | `Declaration` | Instance 생성기 네임스페이스 — 클래스별 별칭 + `New`/`Mapper`/`Modifier` | [Declaration — Instance 생성](./02-d.md), [D.Modifier](./03-d-modifier.md), [Claim과 D.Mapper](./04-claim-mapper.md) |
 | `OnChange` | 프로퍼티 변경 신호 디스크립터 팩토리 | [q.OnChange](./05-onchange.md) |
+| `Out` | 프로퍼티 값을 `Source`에 되쓰는 슈거(`OnChange` 위) | [q.Out](./05-onchange.md#qoutname-src) |
 | `Animate` | `state:Apply`용 트윈 콤비네이터 | [Tween과 Animate](./06-tween-animate.md) |
 | `Tween` | 값-레벨 트윈 래퍼 생성자 | [Tween과 Animate](./06-tween-animate.md) |
 | `isTween` | 그 값이 `Tween`인지 판정하는 술어 | [Tween과 Animate](./06-tween-animate.md) |
@@ -145,7 +147,7 @@ export type RobloxExtension = {
 **타입 재익스포트** — `quad-roblox` 모듈 자체는 값 표면 외에 타입도 내보냅니다.
 `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` /
 `OnChangeDescriptor` / `AnimateInfo` / `AnimateFn`과, 생성 모듈에서 온 `Declaration` / `DeclarationMapper` / `PropTypes` /
-`OnChangeFn` / `Field<T>` / `FieldOut<T>`, 그리고 위 다섯 키의 모양인 `RobloxExtension`입니다.
+`OnChangeFn` / `Field<T>` / `FieldOut<T>`, 그리고 위 여섯 키의 모양인 `RobloxExtension`입니다.
 
 ```luau
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")

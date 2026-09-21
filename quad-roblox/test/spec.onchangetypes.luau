@@ -33,6 +33,11 @@ local function _neverCalled()
 	-- 충돌 이름(클래스 간 타입이 다름 — PropTypes에선 any): 어느 주석이든 통과
 	local s = D.UIStroke({ OnChange("Color", function(v: Color3) end) })
 	local g = D.UIGradient({ OnChange("Color", function(v: ColorSequence) end) })
+	-- Out(name, src) — 되쓰기 슈거: Source는 통과, 이름에서 값 타입 추론(2026-09-21)
+	local textSrc = q.Source("")
+	local _outBox = D.TextBox({ Text = textSrc, q.Out("Text", textSrc) })
+	local visSrc = q.Source(true)
+	local _outVis = D.Frame({ Visible = visSrc, q.Out("Visible", visSrc) })
 	-- Mapper 쪽 E에도 같은 유니언
 	local m = D.Mapper.Frame("Body")({ OnChange("Visible", function(v: boolean) end) })
 	-- NewChild 확장(2026-09-03): quad-base 배열부 값 — Tag / Attr 그룹 /

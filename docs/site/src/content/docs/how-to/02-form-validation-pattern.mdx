@@ -6,7 +6,7 @@ description: "값을 밖에서 받는 체크박스에서 시작해, 폼 상태�
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 > **대상 독자**: 입력이 여럿인 화면을 만들고, 그 결과를 컴포넌트 바깥에서 받아야 하는 개발자
-> **다루는 개념**: 상태 주입(작게는 체크박스 하나부터), `Source`/`State`, `Store`, `:Compute`, `:Depend`, `OnChange`, `Observer`
+> **다루는 개념**: 상태 주입(작게는 체크박스 하나부터), `Source`/`State`, `Store`, `:Compute`, `:Depend`, `Out`(`OnChange`), `Observer`
 
 ---
 
@@ -219,10 +219,8 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
         -- 아이디 입력창
         D.TextBox {
             PlaceholderText = "아이디 (4자 이상)",
-            Text = store.Username,
-            q.OnChange("Text", function(newText)
-                store.Username:Set(newText)
-            end),
+            Text = store.Username,          -- in: 상태 → 입력창
+            q.Out("Text", store.Username), -- out: 입력창 → 상태 (OnChange 위 슈거)
         },
 
         -- 아이디 에러 메시지
@@ -236,9 +234,7 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
         D.TextBox {
             PlaceholderText = "비밀번호 (8자 이상, 숫자 포함)",
             Text = store.Password,
-            q.OnChange("Text", function(newText)
-                store.Password:Set(newText)
-            end),
+            q.Out("Text", store.Password),
         },
 
         -- 제출 버튼 — 결과를 직접 처리하지 않고 상태에 적기만 한다
@@ -261,13 +257,13 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
 end
 ```
 
-> `Text = store.Username`으로 값을 내려보내면서 같은 `Text`의 `OnChange`로 되쓰는 모양이 순환처럼 보이지만, 되먹임은 생기지 않습니다 — 되쓴 값은 입력창이 이미 가진 값이고, Roblox는 같은 값을 다시 대입해도 변경 이벤트를 발화하지 않습니다(엔진 동작). quad 쪽은 같은 값에도 emit을 하므로, 이 안전성은 프로퍼티 자리에서만 성립합니다.
+> `Text = store.Username`으로 값을 내려보내면서 같은 `Text`를 `q.Out`으로 되쓰는 모양이 순환처럼 보이지만, 되먹임은 생기지 않습니다 — 되쓴 값은 입력창이 이미 가진 값이고, Roblox는 같은 값을 다시 대입해도 변경 이벤트를 발화하지 않습니다(엔진 동작). quad 쪽은 같은 값에도 emit을 하므로 `q.Out`은 새 값이 `Source`의 현재 값과 같으면 `:Set`을 건너뜁니다 — 첫 쓰기가 되돌아오는 메아리를 막기 위해서입니다.
 
-`q.OnChange(name, fn)`는 **숫자 키 자리에 놓는 디스크립터**입니다(문자 키가
-아닙니다). 콜백은 엔진이 주는 인자만 받습니다 — `self`는 넘어오지 않습니다.
+`q.Out(name, src)`은 `q.OnChange(name, fn)` 위에 얹은 슈거입니다 — 둘 다 **숫자 키 자리에 놓는 디스크립터**이고(문자 키가
+아닙니다), 콜백을 직접 써야 할 때(값을 가공해서 넣거나 다른 상태를 같이 바꿀 때)는 `OnChange`를 씁니다. 콜백은 엔진이 주는 인자만 받습니다 — `self`는 넘어오지 않습니다.
 이벤트 핸들러(`MouseButton1Click` 등)는 반대로 문자 키에 놓습니다. 읽기 전용
 프로퍼티까지 포함한 이름 표면과 초기값 발화 계약은
-[레퍼런스: `q.OnChange`](/reference/roblox/05-onchange/)가 다룹니다.
+[레퍼런스: `q.OnChange`·`q.Out`](/reference/roblox/05-onchange/)이 다룹니다.
 
 > ⚠️ **`:Compute`를 props 테이블 안에 인라인으로 쓰면 에디터 타입 검사가
 > 깨집니다.** 함수 인자로 넘기는 테이블 리터럴 안에서는 무주석 콜백의
@@ -362,7 +358,7 @@ end
    상태에 다른 화면을 붙일 수 있습니다.
 3. **결과는 상태로 내보내기.** 컴포넌트는 `Submitted:Set`까지만 하고, 그것을
    서버로 보낼지 화면을 넘길지는 바깥이 정합니다.
-4. **`OnChange` 콜백에서는 `Source:Set`만.** 콜백 안에서 다른 인스턴스의
+4. **되쓰기는 `q.Out`, 직접 쓰는 `OnChange` 콜백에서는 `Source:Set`만.** 콜백 안에서 다른 인스턴스의
    프로퍼티를 직접 건드리지 마세요 — 상태만 바꾸면 나머지는 디스패치가
    합니다.
 5. **여러 필드를 묶을 땐 후행 의존성.** `stateA:Compute(fn, stateB)` 한 줄이면
