@@ -14,5 +14,5 @@
 
 - `d-factory-studio-probe-2026-09-16/` — **[2026-09-16, 같은 날 실측 완료]** 생성 `Declaration`을 Luau 타입 함수로 팩토리화할 수 있는지 판정한 **Studio·VSCode·CLI 실측 팩**(`src/` 프로브 여섯 + `probe.project.json`, 사용자 관측은 파일 주석, 종합은 `REPORT.md`). 결과: 체커는 세 환경이 같고 타입 정의만 다름(프로퍼티 수·Hidden·deprecated·이벤트 표현), 읽기 전용 표시는 어디에도 없음, Studio는 생성 D에 too complex 없음, 2-c의 원인은 `LuauDoNotExportBrokenTypeFunction`(8.18 정정). 사용자 결정: 생성 D stable, type function 경로 unstable(백로그). 01 타입 함수 기본, 02 모듈 경계(정의 모듈의 "프라이밍" 인스턴스화 유무), 03 Studio 클래스 타입 데이터 덤프(읽기 전용 표시가 있는가 — luau-lsp defs엔 없다), 04 팩토리 시제품(props·Modifier·자동완성), 05 오늘의 생성 D 대조군("too complex"·자동완성 지연). `README.md`가 준비·보고 형식의 소스, 리눅스 luau-lsp 1.69.0 대조 결과는 각 파일 주석.
 
-- `round11-studio-2026-09-21/` — **[2026-09-21~]** round11 실측 라운드(Studio 샌드박스, sonnet, 항목 하나씩; 코드 변경 없이 사용자 의견 기록). 1번: `GetPropertyChangedSignal("className")` — 소문자 별칭은 시그널이 만들어지지만 발화하지 않는다(`archivable` 0회 vs `Archivable` 1회), `name`/`parent`는 생성 거부; 사용자: Deprecated는 "자주 쓰이던 것만" 허용목록이 의도(결정 대기).
+- `round11-studio-2026-09-21/` — **[2026-09-21~]** round11 실측 라운드(Studio 샌드박스, sonnet, 항목 하나씩; 코드 변경 없이 사용자 의견 기록). 1번: `GetPropertyChangedSignal("className")` — 소문자 별칭은 시그널이 만들어지지만 발화하지 않는다(`archivable` 0회 vs `Archivable` 1회), `name`/`parent`는 생성 거부; 사용자: Deprecated는 "자주 쓰이던 것만" 허용목록이 의도 → 같은 날 반영(`FontSize`/`TextWrap`만, `Draggable` 제외).
 

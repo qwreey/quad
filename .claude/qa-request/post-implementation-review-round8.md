@@ -354,7 +354,7 @@ raise 원천 셋이 전부 UB·내부 버그 범주이고 List의 KeyGone 패스
 - **Q41 데이터**: 엔진 문구 `Unable to create an Instance of type "Frmae"`(위치 접두 없음, 스택은 `D/init.luau`). 문구가 클래스 이름을 말하므로 (c)로도 충분해
   보이나 결정은 그대로 사용자 몫.
 - **Q42 데이터**: 엔진 `Attempt to set Frame as its own parent` / `… would result in circular reference`. raise 뒤 Slot에 요소는 들어가고(`IndexOf == 1`) 부기·물리는
-  안 된 반쪽 상태(`Length == 0`)가 남지만 다음 `Add`는 정상이고 `Remove(1)`로 복구된다. (b) 게이트는 `self._mountedInst`의 조상 사슬 확인이 필요해 새 백엔드
+  안 된 반쪽 상태(`Length == 0`)가 남지만 다음 `Add`는 정상이고 ~~`Remove(1)`로 복구된다~~(**[2026-09-21 실측 정정]** `Remove`는 그 인스턴스를 파괴 — `Extract` 뒤 원부모 재부착, `audit/round11-studio-2026-09-21/REPORT.md` 3번). (b) 게이트는 `self._mountedInst`의 조상 사슬 확인이 필요해 새 백엔드
   op(`isAncestorOf`류)가 되므로 사용자 결정 그대로.
 - 엔진 문구 표(Attr/Property 테이블·문자열 값)는 audit 파일 — `H-498`이 실물에서도 사용자 줄로 먼저 막는 것 확인.
 

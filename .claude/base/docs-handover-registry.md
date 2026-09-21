@@ -30,7 +30,7 @@
 - **소스로 전파된 발견**(재작성 중 실측): `quad-types`의 훅 주석이 처방하던 `q.OnCreated(function(inst: Frame))` 형태는 신 솔버에서 죽고
   `q.OnCreated<<Frame>>(fn)`만 통과(`typing-limits.md` 8.16, 주석 정정됨); `[q.AttrKey("Hp")] = v` 문자 키는 런타임 정상이나 strict에서 생성 prop 타입에
   인덱서가 없어 에러 — **사용자 결정(2026-09-09): 타입은 열지 않는다**, 문서는 숫자 키 부분 `Attr`/`StringAttr` 형태를 안내; `Font = Enum.Font.X`는 생성 `D`에 없었음
-  (`Hidden` 태그 — Deprecated가 아님) — **사용자 결정(2026-09-09): Deprecated 전부 + Hidden `Font`/`Transparency`를 되살린다** → **[2026-09-09 적용 완료]**
+  (`Hidden` 태그 — Deprecated가 아님) — **사용자 결정(2026-09-09): Deprecated 전부 + Hidden `Font`/`Transparency`를 되살린다** → **[2026-09-09 적용 완료]**(**[2026-09-21 정정]** Deprecated도 허용목록 `FontSize`/`TextWrap`으로 좁힘 — `audit/round11-studio-2026-09-21/REPORT.md` 1번)
   Studio 실측(`HUMAN_TODO.md` 12 — `ReflectionService`가 넷 다 `Permits.Write == Edit`로 준다)이 확인된 뒤 `scripts/gen-d.py`에 반영했다(`PROP_TAG_LEGACY`/
   `HIDDEN_NAME_KEEP`, 실측 원장은 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`). 이제 `Font`/`FontSize`/`TextWrap`/`Transparency`가 생성 `D`에
   다시 있고 `-- @deprecated (Roblox <tags>)` 주석이 붙는다 — **문서의 권장은 그대로 `FontFace`**(현행 API), `Font`는 v1 마이그레이션용 레거시로만 안내한다.
