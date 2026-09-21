@@ -45,6 +45,9 @@ export type TweenOptions<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?,       -- 기본 "Cancel"
 	read Dedup: boolean?,                -- 기본 true
+	read Started: (() -> ())?,           -- 콜백 셋(인자 없음) — 뜻은 아래 "프로퍼티에서의 동작"
+	read Completed: (() -> ())?,
+	read Cancelled: (() -> ())?,
 }
 ```
 
@@ -76,6 +79,7 @@ local panel = D.Frame({ Size = size })
   기본값이 채워집니다.
 - **`Override`는 문자열**입니다 — `"Cancel"`(기본) 또는 `"Finish"`. 뜻은 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서.
 - **`Dedup`은 기본 켜짐**입니다(필드를 생략하면 `nil`이고 소비자가 참으로 취급). 끄려면 `Dedup = false`.
+- **`Started`/`Completed`/`Cancelled`는 인자 없는 함수**입니다. 언제 불리는지는 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서. `:Mapped`로 만든 값에도 그대로 실립니다.
 
 **동작 — 모든 필드는 평범한 값입니다**
 
@@ -93,6 +97,7 @@ local panel = D.Frame({ Size = size })
 | `Reverses`가 불린이 아님 | `Tween: Reverses must be a boolean` |
 | `Dedup`이 불린이 아님 | `Tween: Dedup must be a boolean` |
 | `Override`가 두 값이 아님 | `Tween: Override must be "Cancel" or "Finish"` |
+| `Started`/`Completed`/`Cancelled`가 함수가 아님 | `Tween: {name} must be a function` |
 | `Value`가 State | `Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` |
 | `Value`가 `None`이거나 다른 `Tween` | `Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` |
 
@@ -160,6 +165,9 @@ export type AnimateInfo = {
 	read Override: (TweenOverride | StateMarker<TweenOverride>)?,
 	read CanAnimate: (boolean | StateMarker<boolean>)?, -- 기본 true
 	read Dedup: (boolean | StateMarker<boolean>)?,
+	read Started: (() -> ())?,   -- Tween에 그대로 실린다(State 불가)
+	read Completed: (() -> ())?,
+	read Cancelled: (() -> ())?,
 }
 ```
 
@@ -188,7 +196,9 @@ local box = D.Frame({ BackgroundTransparency = animated })
 - **옵션 State는 의존성이 아닙니다.** 다시 계산되는 것은 **원래 State의 값이 바뀔 때**뿐입니다.
   옵션 State가 바뀌었다고 애니메이션을 다시 돌리지 않고, **다음 값 변경 때** 최신 옵션이 반영됩니다.
 - **`CanAnimate`가 거짓이면** 감싸지 않고 원래 값을 그대로 내보냅니다 — 프로퍼티 핸들러가 즉시
-  씁니다(모션 축소 옵션 같은 우회로). 생략하면 항상 애니메이션합니다.
+  씁니다(모션 축소 옵션 같은 우회로). 생략하면 항상 애니메이션합니다. 단 **콜백이 하나라도 있으면**
+  `Time = 0`인 `Tween`으로 내보냅니다 — 프로퍼티 핸들러가 엔진 트윈 없이 값을 찍고 `Started`·`Completed`를
+  그 자리에서 부르므로, 모션을 껐어도 "끝났을 때"의 처리는 그대로 돕니다.
 - **`nil`/[`None`](../core/10-lifetime-sentinels.md#qnone)은 그대로 통과합니다.** 감싸지 않으므로
   프로퍼티 핸들러가 `nil`을 씁니다(객체 참조를 놓는 경로).
 - 실행마다 **새 `Tween` 값**이 만들어집니다. 같은 목표로의 재발행을 접는 것은 소비자(프로퍼티 핸들러)의
@@ -240,6 +250,20 @@ local box = D.Frame({ BackgroundTransparency = size })
 **자리가 철거될 때는 진행 중인 트윈만 취소합니다 — 기록은 남습니다**
 
 트윈이 흐르던 자리 자체가 철거되면(숏핸드 `UICorner = …`를 `nil`로 내려 관리 자식이 파괴될 때, `q.Dispatch.retractFrom`) 돌고 있던 엔진 트윈을 **취소**합니다 — 파괴된 인스턴스를 향해 트윈이 계속 돌지 않습니다. 이때는 들어오는 값이 없으므로 `Override`는 보지 않습니다(값이 그 자리에서 멈춥니다). "첫 세팅은 스냅"의 기준은 **quad가 그 인스턴스의 그 프로퍼티를 처음 쓰는가**라서, 철거해도 "쓴 적 있음"은 남고 나중에 같은 자리에 오는 `Tween`은 애니메이션합니다. 취소 순간 프로퍼티가 목표값에 못 미쳤으면 그 목표만 잊어(같은 목표를 다시 선언해도 재생됨), 이미 목표값을 쥐고 있었으면(트윈이 끝난 뒤) 그 기록은 그대로라 같은 목표는 무동작입니다.
+
+**시작·완료·취소를 알립니다 — `Started` / `Completed` / `Cancelled`**
+
+세 콜백은 전부 인자가 없고, 부르는 쪽은 프로퍼티 핸들러입니다.
+
+| 콜백 | 불리는 때 |
+|---|---|
+| `Started` | 엔진 트윈을 재생한 **직후, 동기로**. 스냅(첫 세팅, 또는 `Info` 없는 `Time = 0`)에서는 값을 찍은 뒤 `Completed` 바로 앞에 |
+| `Completed` | 트윈이 **자연히 끝났을 때만**(엔진 `Completed` 시그널의 `PlaybackState.Completed`) — 엔진이 그 시그널을 미루는 만큼 뒤에 옵니다. 스냅에서는 동기로 |
+| `Cancelled` | quad가 **돌고 있던** 트윈을 끊는 그 자리에서 **동기로** — 새 값이 들어와 교체될 때와 자리가 철거될 때. 이미 끝난 트윈에는 불리지 않습니다 |
+
+그래서 교체 순서는 항상 **이전 `Cancelled` → 새 `Started` → (나중에) 새 `Completed`**입니다. 엔진의 취소 통지는 미뤄져서(다음 yield) 동기 교체에서는 새 트윈이 시작된 **뒤에** 도착하고, 이미 끝난 트윈에 `Cancel`을 해도 한 번 더 납니다 — quad는 그 통지를 쓰지 않고 자기 `Cancel` 호출 자리에서 직접 부르며, `Completed` 연결은 한 번 불린 뒤 스스로 끊습니다. 같은 목표라 건너뛴 `Tween`(`Dedup`)은 아무것도 부르지 않습니다.
+
+**인자가 없는 이유** — 콜백이 인스턴스를 받으려면 엔진 트윈의 연결이 그 인스턴스를 붙잡아야 하는데, 그 연결은 기록이 트윈을 쥐는 동안 살아 있어 인스턴스가 수거되지 않습니다(Luau의 약한 키 테이블은 ephemeron이 아닙니다). 필요한 값은 클로저로 잡되, 인스턴스를 직접 쥐기보다 [원천을 거쳐 프로퍼티로 흘리는 모양](../../getting-started/15-animation.md#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
 
 ---
 

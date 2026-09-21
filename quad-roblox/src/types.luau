@@ -67,6 +67,11 @@ export type TweenOptions<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?, -- 기본 "Cancel"
 	read Dedup: boolean?, -- [2026-09-08 Q25] 기본 true — 소비자(Property 핸들러)가 목표 `Value`만 비교해 같으면 무동작
+	-- [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋(인자 없음): Started는 재생 직후 동기, Completed는 자연 완료(스냅은 동기),
+	-- Cancelled는 quad가 진행 중인 트윈을 교체·철거로 취소하는 자리에서 동기. 발화 계약은 `Handlers/Property.luau` 머리.
+	read Started: (() -> ())?,
+	read Completed: (() -> ())?,
+	read Cancelled: (() -> ())?,
 }
 -- 유니언 멤버용 데이터부(`Mapped` 없음) — 재귀 메소드 테이블을 수백 유니언에 직접
 -- 넣지 않는다(typing-limits 8.8). 실 Tween 값은 구조적으로 만족한다.
@@ -82,6 +87,9 @@ export type TweenData<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?,
 	read Dedup: boolean?,
+	read Started: (() -> ())?,
+	read Completed: (() -> ())?,
+	read Cancelled: (() -> ())?,
 }
 -- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
 -- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).

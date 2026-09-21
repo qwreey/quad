@@ -47,9 +47,34 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 - **`Value`는 plain 값이어야 합니다** — State를 넣을 수 없습니다. 반응성은 `Tween`을 감싼 State가 담당합니다.
 - **같은 목표인지는 `Value`만 봅니다.** `Time`/`Style`은 비교하지 않고, 비교는 값 동등입니다. 같은 값이어도 매번 다시 재생하고 싶으면 `Dedup = false`를 넣으세요.
 - **목표가 다르면 진행 중이던 트윈을 정리하고 새로 겁니다.** `Override = "Cancel"`(기본)은 지금 보간된 값에서 이어 새 트윈을 시작하고, `"Finish"`는 이전 목표값으로 먼저 스냅한 뒤 새 트윈을 시작합니다.
-- **`Tween` 팔이 있는 프로퍼티 타입은 정해져 있습니다** — `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector2int16`·`Vector3`·`Color3`·`CFrame`·`Rect`. 그 밖의 타입(`Enum.*`, `string`, Instance 참조 등)의 프로퍼티에 `Tween`을 넣으면 타입 에러입니다.
+- **`Tween`을 받을 수 있는 프로퍼티 타입은 정해져 있습니다** — `number`·`boolean`·`UDim`·`UDim2`·`Vector2`·`Vector2int16`·`Vector3`·`Color3`·`CFrame`·`Rect`. 그 밖의 타입(`Enum.*`, `string`, Instance 참조 등)의 프로퍼티에 `Tween`을 넣으면 타입 에러입니다.
 
 </details>
+
+### 끝났을 때 알기 — `Started`·`Completed`·`Cancelled`
+
+트윈이 끝난 뒤에 무언가를 하고 싶을 때가 있습니다 — 닫는 애니메이션이 다 돈 뒤에야 `Visible`을 내리는 것처럼. `Tween`에는 인자 없는 콜백 셋을 넣을 수 있습니다. 카운터에서는 금색으로 넘어가는 **동안만** 버튼 글자를 바꿔 봅니다.
+
+```luau
+-- … (Counter.luau) 버튼 글자가 따를 원천을 하나 두고
+const flash = q.Source(false)
+
+-- 숫자 라벨의 TextColor3 파이프(위)에 콜백 셋을 더합니다
+            return q.Tween {
+                Value = if isMilestone then Color3.fromRGB(255, 215, 0) else Color3.fromRGB(255, 255, 255),
+                Time = if isMilestone then 0.6 else 0.2,
+                Started = if isMilestone then function() flash:Set(true) end else nil,
+                Completed = if isMilestone then function() flash:Set(false) end else nil,
+                Cancelled = if isMilestone then function() flash:Set(false) end else nil,
+            }
+
+-- 버튼의 Text는 그 원천을 따릅니다
+            Text = flash:Compute(function(f) return if f:Get() then "✨" else "+ 1" end),
+```
+
+**실행하면** 10회째 클릭에 글자가 ✨로 바뀌었다가 0.6초 뒤 `+ 1`로 돌아옵니다. 그 사이에 한 번 더 누르면 금색 트윈이 취소되고 흰색 트윈이 시작되는데, 이때 `Cancelled`가 불려 글자가 바로 돌아옵니다 — 취소를 안 받으면 ✨가 남습니다.
+
+규칙은 셋입니다. `Started`는 트윈이 실제로 시작되는 순간, `Completed`는 **자연히 끝났을 때만**, `Cancelled`는 새 값이나 철거가 **돌고 있던** 트윈을 끊을 때만 불립니다. 교체될 때의 순서는 항상 이전 `Cancelled` → 새 `Started` → (나중에) 새 `Completed`입니다. 첫 세팅처럼 트윈 없이 바로 찍히는 경우에는 `Started`와 `Completed`가 그 자리에서 이어서 불리고, 같은 목표라 건너뛴 경우에는 아무것도 불리지 않습니다. 인스턴스를 직접 쥐지 않고 **원천을 거쳐 프로퍼티로 흘리는** 이 모양을 권합니다 — `Ref`로 인스턴스를 잡아 콜백 안에서 프로퍼티를 직접 쓰면 흐름이 두 방향이 됩니다.
 
 ---
 

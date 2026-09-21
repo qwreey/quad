@@ -29,6 +29,8 @@ local function _types()
 		BackgroundTransparency = q.Tween({ Value = 0 }):Mapped(function(v: number): number
 			return v * 0.5
 		end),
+		-- [2026-09-21] 콜백 셋은 인자 없는 함수 필드
+		Rotation = q.Tween({ Value = 90, Time = 0.2, Started = function() end, Completed = function() end, Cancelled = function() end }),
 	})
 	local src = q.Source(UDim2.new())
 	local anim: QuadTypes.State<Types.Tween<UDim2>> = src:Compute(function(h: QuadTypes.StateData<UDim2>): Types.Tween<UDim2>

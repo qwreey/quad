@@ -39,7 +39,8 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- target `Value` with the slot's recorded target; Animate no longer hands back the previous
 -- Tween object — the 2026-09-07 Q12 identity model was replaced because identity broke under
 -- any value transform, e.g. the shorthand handler's `Mapped`).
-local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup" }
+-- [2026-09-21] the three callbacks ride along too (functions pass `resolve` untouched — not States).
+local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup", "Started", "Completed", "Cancelled" }
 
 local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any): any
 	local isState = quad.isState
@@ -100,7 +101,17 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 					canAnimate = true -- omitted ⇒ always animate
 				end
 				if not canAnimate then
-					return v -- bypass: plain value, no Tween wrapper
+					-- [2026-09-21 사용자 결정 — docs-review 1-5 (a)] callbacks must still fire without animation
+					-- (a dialog's Visible handling hangs off Completed whether or not motion is on): hand the
+					-- Property handler an Info-less `Time == 0` Tween — it snaps and calls Started/Completed
+					-- synchronously, no engine tween. Without callbacks the plain value goes through as
+					-- before (no wrapper — every slot consumer accepts it; calling them from inside this
+					-- Compute was rejected: the property is not written yet at this point).
+					local started, completed, cancelled = info.Started, info.Completed, info.Cancelled
+					if started == nil and completed == nil and cancelled == nil then
+						return v -- bypass: plain value, no Tween wrapper
+					end
+					return tweenOutermost({ Value = v, Time = 0, Dedup = resolve(info.Dedup), Started = started, Completed = completed, Cancelled = cancelled })
 				end
 
 				local opts: { [string]: any } = { Value = v }

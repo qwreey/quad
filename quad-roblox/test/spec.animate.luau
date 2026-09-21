@@ -43,6 +43,13 @@ do
 	assert(q.isTween(t) and t.Value == 2, "next Value change picks up CanAnimate=true")
 	local plain = src:Apply(Animate({}))
 	assert(q.isTween(plain:Get()), "omitted CanAnimate = always animate")
+	-- [2026-09-21 docs-review 1-5 (a)] CanAnimate=false WITH callbacks → Info-less Time=0 Tween (the Property
+	-- handler snaps and fires Started/Completed); without callbacks the plain value as before
+	local done = function() end
+	local off = q.Source(3):Apply(Animate({ Time = 0.5, CanAnimate = false, Completed = done, Dedup = false }))
+	local t0 = off:Get()
+	assert(q.isTween(t0) and t0.Time == 0 and t0.Info == nil and t0.Value == 3 and t0.Completed == done and t0.Dedup == false, "callbacks survive CanAnimate=false as a zero-time Tween")
+	assert(q.Source(3):Apply(Animate({ Time = 0.5, CanAnimate = false })):Get() == 3, "no callbacks → plain value")
 	print("PASS")
 end
 

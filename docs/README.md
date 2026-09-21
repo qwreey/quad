@@ -30,6 +30,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 | **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 컴포넌트 경계 규약, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관, 그리고 부록인 디버깅 |
 | **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `D`는 표면만·Roblox 문서로 유도 |
 | **The Quadnomicon** | 프레임워크 설계자, 아키텍트 | 분석적, 한계를 숨기지 않음 | Revision/EpochMap, Slot 부분합 트리, 메모리 토폴로지, 마커 타입, 디스패치 엔진 등 내부 설계 |
+| **Agents** | AI 코딩 에이전트에게 quad 코드를 맡기는 개발자 | 절차 중심, 짧게 | 스킬 `quad-ui-dev`의 설치·호출·다른 에이전트에 붙이기·갱신(스킬 본문은 영문, 레포에만) |
 
 ---
 
@@ -58,7 +59,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`12-functions.md`](./getting-started/12-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 값을 돌려주는 팩토리(`highlightColor`)와 컴포넌트에 팩토리를 넘기는 패턴(`props.Watch` → Effect), 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, `:Apply`의 `__apply` 객체 팔 예고(16의 Blocker), Hook 규칙이 없는 이유.
 - [`13-lists.md`](./getting-started/13-lists.md) — 목록 만들기: 데이터 원천 → 부모 컴포넌트가 `Slot():List` → 항목마다 컴포넌트. `updateFn` 계약 표, 재사용/파괴, 원소 하나짜리 `:Single`(Offset이 필요할 때).
 - [`14-context.md`](./getting-started/14-context.md) — 층을 건너 값 넘기기: `q.Context` 가방(트리 조회 없음), `Provider` 키, `Get`/`Peek`.
-- [`15-animation.md`](./getting-started/15-animation.md) — 움직이게 하기(바텀업): §1 `:Compute` 안에서 `q.Tween{…}`을 직접 만들고, §2에서 그 반복을 줄이는 `:Apply(q.Animate{…})`.
+- [`15-animation.md`](./getting-started/15-animation.md) — 움직이게 하기(바텀업): §1 `:Compute` 안에서 `q.Tween{…}`을 직접 만들고(끝났을 때 알기 — `Started`/`Completed`/`Cancelled`, 원천을 거쳐 프로퍼티로), §2에서 그 반복을 줄이는 `:Apply(q.Animate{…})`.
 - [`16-blocker.md`](./getting-started/16-blocker.md) — 흐름을 잠시 막기: 값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않게 `q.Blocker`로 통지를 모았다가 한 번에 — 게이트는 **파이프 뒤**(통지가 한 줄로 모인 자리)에 하나(2026-09-11 사용자 지적·mock 실측: 원천마다 두면 통지가 게이트 수만큼). 접힘 셋(원천마다 게이트를 두면 / 게이트가 실제 메커니즘 / 시간 정책은 레퍼런스로).
 - [`17-laziness.md`](./getting-started/17-laziness.md) — 값은 언제 흐르나: 파이프·Observer·Effect·`Slot:List`·`Animate` 옵션·`Blocker` 여섯 자리를 한 표로 대조(컨베이어 벨트 비유는 여기). 사용자 결정 2026-09-10 — lazy는 라이브러리 전체에 드러나므로 뒤에서 한 번에.
 - [`18-handlers.md`](./getting-started/18-handlers.md) — 자리에 놓인 값은 누가 처리하나(핸들러 맛보기): 자리마다 핸들러 목록에서 첫 승낙자가 맡는다(`q.Dispatch.listHandlers`/`getHandler`로 들여다보기), `State`는 벗겨서 한 칸 아래로(`State<X>`가 되는가 = `X`가 되는가), 갈아 끼우면 이전 것이 빠지는 방식 여섯(Tag 차이만·Attr 이름 전부·Ref 비움·Observer 정지·Effect cleanup·Instance 떼기 — mock 실측), 심층은 레퍼런스 extend/02·Quadnomicon 08로. 사용자 요청 2026-09-11(남의 코드를 읽을 수 있는 정도가 목표).
@@ -102,9 +103,13 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [Vol. 10](./quadnomicon/10-multi-backend-abstract-machine.md) 다중 백엔드 추상 기계 — 주입 op 묶음, 생명주기 넷, `UseProvider`(성공 후 마킹).
 - [Vol. 11](./quadnomicon/11-static-grepability-and-error-architecture.md) 정적 grep 가능성·표면 blame·에러 아키텍처 — 리터럴은 raise 줄에 통째로(보간은 씀), `setFuncLevel(level, ...fns)`는 nil에 즉시 던짐.
 
+### Agents (에이전트) — 1편
+**[2026-09-21 사용자 결정(docs-review 3-7)]** 사이트에는 한국어 설치·사용 페이지만 두고 영문 스킬 본문은 레포 링크로 안내한다(영문 페이지가 섞이는 것을 피함). Claude Code가 정식 경로, 다른 에이전트는 "규칙 파일에 그대로" 한 절.
+- [`01-quad-ui-dev-skill.md`](./agents/01-quad-ui-dev-skill.md) — 스킬 폴더의 파일 넷, Claude Code 설치(폴더 통째 복사, 태그 고정), 자동 호출·`/quad-ui-dev`, 낸 코드의 확인 둘(strict·실행), 다른 에이전트, 갱신.
+
 ### Web Site & Tooling — [`site/`](./site)
 Astro + Starlight(Zero-JS 기본, Pagefind 검색, Expressive Code, `ko/`·`en/` 폴더 i18n). [`site/sync-docs.py`](./site/sync-docs.py)가
-overview·getting-started·how-to·quadnomicon·reference 다섯 트랙을 하위 폴더까지 `site/src/content/docs/<track>/`(**[2026-09-10]** 한국어가 root 로케일 — 옛 `ko/`)로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-10]** 복사는 **in-place**다(옛 `rmtree` 제거) — dev 중 감시 디렉터리가 통째로 사라지면 `astro dev`가 두 번째 변경부터 못 보고 옛 렌더를 준다(실측). 로컬 미리보기는 [`site/dev.sh`](./site/dev.sh)(`npm run dev`) — [`site/watch-docs.py`](./site/watch-docs.py)가 정본 `.md`를 폴링해 sync를 다시 돌리고 astro dev가 갱신한다(`./dev.sh stop`으로 종료, 포트는 `PORT=`). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
+overview·getting-started·how-to·quadnomicon·reference·agents 여섯 트랙을 하위 폴더까지 `site/src/content/docs/<track>/`(**[2026-09-10]** 한국어가 root 로케일 — 옛 `ko/`)로 복사하며 상대 링크를 사이트 경로로 치환하고 본문 첫 H1을 지운다(Starlight가 title로 그린다). **[2026-09-10]** 복사는 **in-place**다(옛 `rmtree` 제거) — dev 중 감시 디렉터리가 통째로 사라지면 `astro dev`가 두 번째 변경부터 못 보고 옛 렌더를 준다(실측). 로컬 미리보기는 [`site/dev.sh`](./site/dev.sh)(`npm run dev`) — [`site/watch-docs.py`](./site/watch-docs.py)가 정본 `.md`를 폴링해 sync를 다시 돌리고 astro dev가 갱신한다(`./dev.sh stop`으로 종료, 포트는 `PORT=`). **[2026-09-09] 첫 빌드 성공**(`npm run build`, Starlight 0.32). `en/`은 아직 index만.
 
 ### Agent Tooling — [`skills/quad-ui-dev/`](./skills/quad-ui-dev)
 AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md`](./skills/quad-ui-dev/SKILL.md)(온톨로지·금지 패턴·strict 타입 요구사항),
@@ -112,6 +117,7 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 [`references/rules-and-invariants.md`](./skills/quad-ui-dev/references/rules-and-invariants.md)(소스 verbatim 에러 문자열 → 처방),
 [`references/v1-migration.md`](./skills/quad-ui-dev/references/v1-migration.md)(v1 코드 이관 — 대응표·제거된 기능·strict 블로커).
 인간용 트랙과 내용이 겹치는 것은 의도된 것이다(사용자, 2026-09-09).
+설치·사용 안내는 사이트의 Agents 트랙([`agents/01-quad-ui-dev-skill.md`](./agents/01-quad-ui-dev-skill.md))이 맡는다.
 
 ---
 

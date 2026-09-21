@@ -31,7 +31,7 @@ local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
 -- `H-333`: absent convenience fields are filled with the engine defaults — the
 -- enum defaults come from the `Enum` global, shimmed here with plain markers
-;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
+;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" }, PlaybackState = { Completed = "Completed", Cancelled = "Cancelled" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
@@ -269,4 +269,84 @@ do
 	print("PASS")
 end
 
+print("=== 11. [2026-09-21 docs-review 1-5] 콜백 Started/Completed/Cancelled — 스냅은 Started→Completed 동기, 교체는 이전 Cancelled→새 Started, 자연 완료는 엔진 Completed(Completed)에서만, 끝난 트윈의 Cancel(엔진 재발화)은 무시, 철거는 진행 중일 때만 Cancelled, Dedup 스킵은 무발화, Time=0은 엔진 트윈 없는 스냅 ===")
+do
+	mock.resetTweenLog()
+	local order: { string } = {}
+	local function cbs(tag: string): any
+		return {
+			Started = function() table.insert(order, tag .. ":started") end,
+			Completed = function() table.insert(order, tag .. ":completed") end,
+			Cancelled = function() table.insert(order, tag .. ":cancelled") end,
+		}
+	end
+	local function tw(tag: string, value: any, extra: any?): any
+		local opts: any = cbs(tag)
+		opts.Value = value
+		opts.Time = 0.3
+		if extra then for k2, v2 in extra do opts[k2] = v2 end end
+		return Tween(opts)
+	end
+	local src = q.Source(tw("a", 1) :: any)
+	local f = q.Declaration.Frame({ Size = src }) :: any
+	assert(f.Size == 1 and #log == 0, "first set snaps")
+	assert(table.concat(order, ",") == "a:started,a:completed", "snap: Started then Completed, synchronously: " .. table.concat(order, ","))
+	table.clear(order)
+	-- replacement while running: old Cancelled → new Started, nothing else yet
+	src:Set(tw("b", 2))
+	local b = lastTween()
+	assert(b.plays == 1 and table.concat(order, ",") == "b:started", "engine tween b started: " .. table.concat(order, ","))
+	table.clear(order)
+	src:Set(tw("c", 3))
+	assert(b.cancels == 1 and table.concat(order, ",") == "b:cancelled,c:started", "order on replace: " .. table.concat(order, ","))
+	table.clear(order)
+	local c = lastTween()
+	-- natural finish: engine Completed(Completed) → c:completed once; the connection is gone afterwards
+	c:simulateCompleted()
+	assert(table.concat(order, ",") == "c:completed", "natural finish: " .. table.concat(order, ","))
+	table.clear(order)
+	f.Size = 3 -- the engine wrote the target
+	-- a finished tween replaced: NO Cancelled (Done), no engine Cancel either; new Started
+	src:Set(tw("d", 4))
+	assert(c.cancels == 0 and table.concat(order, ",") == "d:started", "finished tween is not cancelled again: " .. table.concat(order, ","))
+	table.clear(order)
+	local d = lastTween()
+	-- the engine re-fires Completed(Cancelled) for a finished tween: quad ignores it (disconnected)
+	c:Cancel()
+	assert(#order == 0, "stray engine Cancelled after finish is ignored")
+	-- teardown while running → Cancelled; teardown after finish → nothing
+	q.Dispatch.retractFrom(f, "Size", 1)
+	assert(d.cancels == 1 and table.concat(order, ",") == "d:cancelled", "teardown cancels a running tween: " .. table.concat(order, ","))
+	table.clear(order)
+	local g = q.Declaration.Frame({ Size = 0 }) :: any
+	q.Dispatch.drive(g, { Size = tw("e", 5) })
+	local e = lastTween()
+	e:simulateCompleted()
+	g.Size = 5
+	table.clear(order)
+	q.Dispatch.retractFrom(g, "Size", 1)
+	assert(e.cancels == 0 and #order == 0, "teardown after a natural finish fires nothing")
+	-- Dedup skip: same target → nothing fires, tween keeps running
+	mock.resetTweenLog()
+	local src2 = q.Source(0 :: any)
+	local h = q.Declaration.Frame({ Size = src2 }) :: any
+	src2:Set(tw("p", 7))
+	table.clear(order)
+	src2:Set(tw("q", 7))
+	assert(#log == 1 and #order == 0, "dedup-skipped tween fires nothing")
+	-- Time = 0 (Info-less) = snap with callbacks, no engine tween; a running tween before it is cancelled first
+	table.clear(order)
+	src2:Set(tw("z", 9, { Time = 0 }))
+	assert(#log == 1 and h.Size == 9, "Time=0: no engine tween, value written")
+	assert(table.concat(order, ",") == "p:cancelled,z:started,z:completed", "Time=0 order: " .. table.concat(order, ","))
+	-- callback-less tweens make no connection (record shape unchanged)
+	mock.resetTweenLog()
+	local src3 = q.Source(0 :: any)
+	local _i = q.Declaration.Frame({ Size = src3 }) :: any
+	src3:Set(Tween({ Value = 1, Time = 0.3 }))
+	assert(#lastTween().Completed.connections == 0, "no connection without Completed/Cancelled")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

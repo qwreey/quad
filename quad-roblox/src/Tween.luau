@@ -23,7 +23,8 @@
 
 	Value API (immutable — frozen, every operation returns a new value):
 	  Tween{ Value = v, Info = ?, Time = ?, Style = ?, Direction = ?,
-	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ?, Dedup = ? } -> Tween<T>
+	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ?, Dedup = ?,
+	         Started = ?, Completed = ?, Cancelled = ? } -> Tween<T>
 	  tween:Mapped(fn) -> Tween<U>     -- opts cloned, Value replaced by fn(Value)
 	  Override = "Cancel" | "Finish"   -- override policy as a string singleton (default "Cancel")
 	  Dedup = true | false             -- [2026-09-08 user decision, round3 Q25] default true: the
@@ -63,6 +64,10 @@ local TweenBrand = Brand.TweenBrand
 local isTween = Brand.isTween
 
 local NUMBER_FIELDS = { "Time", "RepeatCount", "DelayTime" }
+-- [2026-09-21 사용자 결정 — docs-review 1-5] three optional `() -> ()` callbacks, plain fields of the value
+-- (bare names, not `On*` — the `On*` prefix means "a factory called to fill a numeric-key slot" in this
+-- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped` carries them.
+local CALLBACK_FIELDS = { "Started", "Completed", "Cancelled" }
 
 local function install(quad: any): any
 	-- shared error namespace (`H-231`) — never a private quad-error copy
@@ -103,6 +108,12 @@ local function install(quad: any): any
 		end
 		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
 			fail("Tween: Dedup must be a boolean", SURFACE)
+		end
+		for _, name in CALLBACK_FIELDS do
+			local v = opts[name]
+			if v ~= nil and type(v) ~= "function" then
+				fail(`Tween: {name} must be a function`, SURFACE)
+			end
 		end
 		local override = opts.Override
 		if override ~= nil and override ~= "Cancel" and override ~= "Finish" then
@@ -164,12 +175,13 @@ local function install(quad: any): any
 	local KNOWN_OPTIONS = {
 		Value = true, Info = true, Time = true, Style = true, Direction = true,
 		RepeatCount = true, Reverses = true, DelayTime = true, Override = true, Dedup = true,
+		Started = true, Completed = true, Cancelled = true,
 	}
 	local function Tween(opts: any): any
 		if quad.debug and type(opts) == "table" then
 			for key in opts do
 				if not KNOWN_OPTIONS[key] then
-					print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup)`)
+					print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)`)
 				end
 			end
 		end

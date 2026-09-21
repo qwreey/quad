@@ -16,3 +16,4 @@
 
 - `round11-studio-2026-09-21/` — **[2026-09-21~]** round11 실측 라운드(Studio 샌드박스, sonnet, 항목 하나씩; 코드 변경 없이 사용자 의견 기록). 1번: `GetPropertyChangedSignal("className")` — 소문자 별칭은 시그널이 만들어지지만 발화하지 않는다(`archivable` 0회 vs `Archivable` 1회), `name`/`parent`는 생성 거부; 사용자: Deprecated는 "자주 쓰이던 것만" 허용목록이 의도 → 같은 날 반영(`FontSize`/`TextWrap`만, `Draggable` 제외).
 
+- `tween-completed-2026-09-21/` — **[2026-09-21]** `TweenBase.Completed` 실측(docs-review 1-5 — `Tween`에 `OnStarted`/`OnCompleted`/`OnCancelled`를 두기 전 사용자가 요구한 세 확인). 완료된 트윈에 `Cancel`하면 Cancelled가 한 번 더 남, Cancelled 통지는 deferred라 yield 없는 교체에서 새 트윈 시작 뒤에 옴(순서 역전 실재), 인스턴스 `Destroy`는 트윈을 멈추지 않고 연결도 안 끊음, **약한 키 테이블은 ephemeron이 아님**(탐사자의 반대 판정은 업밸류를 비운 코드라 무효 — 메인 재실측), 트윈 객체가 살아 있으면 연결 클로저가 잡은 인스턴스는 고정. `REPORT.md`가 소스, `probe-log.md`는 탐사자 원문(7·8번은 무효 표시).

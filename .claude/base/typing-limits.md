@@ -1124,3 +1124,10 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 `D.Frame { MouseEnter = function(x) end }`(기대 `(number, number) -> ()`)와 `function() end`는 Luau 함수 서브타이핑(적은 인자를 받는 함수는 많은 인자를 받는 함수 타입의 서브타입 — 초과 인자는 버려지는 호출 관례) 때문에 진단 0이다. 파라미터 타입이 다르거나 **더 많으면** 잡힌다. quad 결함이 아니라 언어 성질 — 레퍼런스 roblox/02 이벤트 절에 적었다. `store:Of<<T>>(name)`는 `name`을 `keyof<T>`로 좁히지 않고 `T`도 자유 제네릭이라 실제 필드 타입과 대조하지 않는다(`Peek<<T>>`/`As<<T>>`와 같은 계열) — 레퍼런스 core/04에 명시.
 
+## 8.24. `any`를 인덱스한 무주석 로컬을 `~= nil`로 좁히면 `*error-type* | ~nil`이 돼 호출이 거부된다 — 콜백 로컬엔 타입을 적을 것 (2026-09-21 실측, 신 솔버)
+
+`local cb = v[name]`(`v: any`, `name: string`) 뒤에 `if cb ~= nil then cb() end`를 쓰면 luau-lsp 신 솔버(Roblox defs 유무 무관)가
+`Cannot call a value of type *error-type* in union: *error-type* | ~nil`을 낸다. 같은 자리를 `local cb: (() -> ())? = v[name]`으로
+주석하거나, `local cb: any = v[name]; if cb then (cb :: any)() end`처럼 truthiness로 좁히거나, `(v :: { [string]: (() -> ())? })[name]`으로
+캐스트하면 통과한다(스크래치 다섯 변형 중 무주석 `~= nil`만 실패). 계기: `Handlers/Property.luau`의 Tween 콜백 발화 헬퍼
+(`Started`/`Completed`/`Cancelled`, docs-review 1-5). 규칙: **`any`에서 꺼낸 함수 로컬은 호출 전에 함수 타입을 적는다.**

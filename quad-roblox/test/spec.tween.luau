@@ -69,6 +69,9 @@ do
 		{ { Value = 1, DelayTime = {} }, "DelayTime must be a number" },
 		{ { Value = 1, Reverses = 1 }, "Reverses must be a boolean" },
 		{ { Value = 1, Override = "cancel" }, 'Override must be "Cancel" or "Finish"' },
+		{ { Value = 1, Completed = true }, "Completed must be a function" }, -- [2026-09-21] callbacks
+		{ { Value = 1, Started = "x" }, "Started must be a function" },
+		{ { Value = 1, Cancelled = {} }, "Cancelled must be a function" },
 	}
 	for _, case in cases do
 		local ok, err = pcall(function()
@@ -93,6 +96,8 @@ do
 	end)
 	assert(mapped ~= base and base.Value == 4, "original untouched")
 	assert(mapped.Value == "v4" and mapped.Time == 0.15 and mapped.Override == "Finish", "only Value replaced")
+	local done = function() end
+	assert((Tween({ Value = 1, Completed = done }) :: any):Mapped(function(v: number): number return v end).Completed == done, "[2026-09-21] callbacks ride along Mapped")
 	assert(Quad.isTween(mapped) and table.isfrozen(mapped :: any), "result is a branded frozen Tween")
 	local ok, err = pcall(function()
 		return base:Mapped(function(_v: number): nil

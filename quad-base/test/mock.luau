@@ -865,6 +865,12 @@ local function newMockTween(inst: any, info: any, props: { [string]: any }): any
 		PlaybackState = "Begin",
 		plays = 0,
 		cancels = 0,
+		-- [2026-09-21] `Completed(playbackState)` — the engine fires it DEFERRED (next yield) with
+		-- `Cancelled` on `Cancel` (even for a tween that already finished) and `Completed` on a
+		-- natural finish (`audit/tween-completed-2026-09-21/REPORT.md`). Here `Cancel` fires it
+		-- SYNCHRONOUSLY (stricter than the engine — quad must have disconnected before cancelling)
+		-- and the natural finish is simulated by `simulateCompleted` (no clock in the mock).
+		Completed = newSignal(),
 	}
 	function tween.Play(self: any)
 		self.plays += 1
@@ -873,6 +879,11 @@ local function newMockTween(inst: any, info: any, props: { [string]: any }): any
 	function tween.Cancel(self: any)
 		self.cancels += 1
 		self.PlaybackState = "Cancelled"
+		self.Completed:Fire("Cancelled")
+	end
+	function tween.simulateCompleted(self: any)
+		self.PlaybackState = "Completed"
+		self.Completed:Fire("Completed")
 	end
 	return setmetatable(tween, { __index = function(_self: any, key: any): any
 		if key == "Instance" then return holder[1] end

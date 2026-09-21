@@ -676,3 +676,41 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 `Handlers/Property.luau`의 retractor는 ~~평범한 값엔 `Void` 그대로이지만(`H-135`: 프로퍼티는 되돌릴 게 없다), **Tween 값을 처리한 체인은**~~ **[2026-09-17 `H-547` 정정 — 아래 끝 절]** 모든 체인이 `(inst, k)`당 하나 캐시된 실제 retractor를 돌려준다(값 교체에는 여전히 되돌릴 게 없다 — `H-135`). 철거(`retracting == true` — `Dispatch.retractFrom`, 숏핸드 관리 자식 파괴 직전의 체인 철거)면 슬롯의 엔진 Tween을 `Cancel`하고 ~~3-상태 슬롯을 지운다(다음 체인은 "첫 설정 = 스냅"부터)~~ **[2026-09-18 Q65 정정 — 위 배너]** 그 기록만 `true`로 내린다(진행 중 트윈이 없던 기록은 그대로 — 기록은 인스턴스 수명 동안); 값 교체(`retracting == false`)면 아무것도 안 한다 — 이전 Tween을 Cancel할지 Finish-스냅할지는 **들어오는** Tween의 `Override`가 정하므로(`H-343`) `process`의 몫이고, 철거에는 들어오는 값이 없어 Cancel뿐이다(사용자 확인: *"프로퍼티의 retractor 가 retract 구간에서 tween 을 멈추는건 맞긴 한듯"*). 계기 둘(round10 탐사 C F6·G-7): 철거 뒤에도 엔진 Tween이 파괴된 관리 자식을 향해 돌았고(사용자 실기기: *"파괴된 인스턴스에 대한 tween 은 삭제되고, 코너는 갑자기 사라져"* — 파괴 전 취소가 옳다), 슬롯이 남아 철거 뒤 같은 타깃 Tween 재선언이 Q25 값 dedup에 통째로 먹혔다. 스펙 `spec.shorthand` 9.
 
 **[2026-09-17 round11 `H-547` — 탐사 D′] retractor는 Tween을 거친 체인만이 아니라 모든 프로퍼티 체인이 돌려준다.** 체크포인트 리뷰의 "Tween을 거친 체인은 캐시된 retractor를 유지"는 `tweenRetractors:GetWeak(inst, k) or Void`로 구현됐는데 두 구멍이 있었다: (1) 그 weak 캐시의 유일한 강한 앵커로 적힌 `list[index].retractor`는 Dispatch가 `process`를 부르기 **전에** NOOP으로 갈아 두므로 `process` 안에서 GC가 한 번 돌면 `Void`로 강등 — 철거 때 Tween이 취소되지 않고 기록이 남아 다음 재구동이 애니메이션(재현: 프로퍼티 쓰기에 걸린 `OnChange` 콜백에서 GC; 콜백 없이도 증분 GC의 원자 단계가 그 자리에 올 수 있다); (2) Tween을 한 번도 안 거친 체인은 `true` 기록을 `Void`와 함께 남겨 철거 뒤 첫 Tween이 분기 1(스냅)을 건너뛰고 애니메이션 — 같은 `(inst, k)` 자리의 결과가 "직전 체인이 엔진 Tween을 태운 적 있나"라는 사용자가 모르는 이력에 갈렸다. ~~값 교체 경로(`Size = state`에서 `None` → Tween)는 retract가 아니라 들어오는 Tween의 `Override`가 정하는 Q53 설계 그대로라 발견이 아니다.~~ **[code-review 정정]** 그 전제가 틀렸다 — Dispatch의 (B) 갈래(같은 index의 **핸들러가 바뀔 때**: plain ↔ State, `None` ↔ 값)는 옛 retractor를 `retracting == true`로 부르므로 이제 그 자리의 3-상태 기록이 지워져 다음 Tween이 애니메이션 대신 스냅한다(27b8306은 애니메이션; `Size = 0` 뒤 `Source(Tween)`·`Size = state` 뒤 plain Tween·`None` → Tween 셋 다). retractor는 `retracting` 하나로 철거와 핸들러 교체를 못 가른다 — 처방은 **Q65**. 또 (1)의 증상 서술 중 "철거 때 Tween이 취소되지 않고"는 구성 불가다(Void가 나올 수 있던 plain 꼬리는 직전 분기 3이 이미 취소를 끝낸 뒤) — 실제 관측은 (2)와 같은 "기록 잔존 → 다음 Tween 애니메이션"뿐. 처방: 모든 경로가 `tweenRetractor(inst, k)`를 돌려준다(weak 캐시 + 수거되면 재발급 — 신원은 무관). 실행 측정(24표면 × N=50, Destroy 뒤 잔존 0/50)으로 철거 경로의 누수는 없다. 스펙 `spec.tweenproperty` 10.
+
+## [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋 `Started` / `Completed` / `Cancelled` — 발화 자리는 quad의 `Cancel`/`Play` 호출부, 엔진 시그널은 `Completed`에만
+
+**계기**: `research/docs-review-2026-09-14.md` 1-5(문서 어디에도 "트윈 완료 신호가 없다"는 말이 없다) — 사용자: *"흔한 요소이고 breaking 없이
+추가해줄 수 있는 부분임 … Tween 안에 OnCancelled 나 OnCompleted 를 넣고 … OnStarted 를 두어 OnCancelled 가 먼저 나고, OnStarted 가
+난 다음, OnCompleted 가 나서 Dialog 의 Visible 을 트윈에 맞게 처리하는 방법이 가능한가 보고싶음"*, 실측 세 가지를 먼저 요구(연결 자동
+해제 / 끝난 트윈의 Cancel / Deferred 순서). 실측은 `audit/tween-completed-2026-09-21/REPORT.md`(사실 1~8).
+
+**모양**: `Tween{ …, Started = fn?, Completed = fn?, Cancelled = fn? }` — 전부 `() -> ()`, 인자 없음. `Animate{…}`도 같은 세 필드를
+받아 그대로 싣고(`FIELDS`), `:Mapped`는 복사한다. 추가라 BREAKING 아님. 이름은 sonnet 둘(외부자·내부자) 판정 뒤 사용자 결정 —
+내부자: `On*` 접두는 이 코퍼스에서 "숫자 키 자리에 놓을 값을 만드는 팩토리"(`q.OnChange`·`q.OnCreated`)라 문자 키 필드에 쓰면 관용구
+충돌, 맨 파스칼이 `Time`/`Override`와 결이 같다; 외부자: 엔진 `Completed`가 취소 때도 나서 `OnCompleted`는 오해를 산다 → 레퍼런스가
+"자연 완료에만"을 한 줄로 닫는다. `Finished`는 `Override = "Finish"`와 나란히 서서 뺐다.
+
+**발화 자리(`Handlers/Property.luau` 머리가 코드 소스)**:
+- `Started` — quad가 `engineTween:Play()`를 부른 **직후 동기**. 스냅(첫 세팅·`Info` 없는 `Time == 0`)에서는 값을 쓴 뒤 `Completed` 직전.
+- `Completed` — 엔진 `Completed` 시그널에서 `PlaybackState.Completed`일 때만. 연결은 첫 발화에서 스스로 끊고 레코드에 `Done`을
+  세운다(사실 2: 끝난 트윈에 `Cancel`하면 엔진이 `Completed(Cancelled)`를 **한 번 더** 낸다). 스냅에서는 동기.
+- `Cancelled` — quad가 **돌고 있던** 트윈에 `:Cancel()`을 부르는 그 자리(값 교체 branch 3·철거 retractor)에서 **동기**, `Done`이 아닐
+  때만. 엔진의 Cancelled 통지는 deferred라(사실 3) yield 없는 교체에서 새 트윈 `Started` **뒤에** 온다(사실 4 — 사용자가 우려한
+  역전이 실재) → 쓰지 않는다.
+- 순서 불변식: 교체 시 **이전 `Cancelled` → 새 `Started` → (나중) 새 `Completed`**. Dedup 스킵은 무발화(트윈이 시작되지 않음).
+- 연결은 값에 `Completed`나 `Cancelled`가 있을 때만 만든다 — 콜백 없는 트윈은 레코드 모양·GC 프로파일이 전과 같다.
+
+**인자 없음(사용자 결정 2)** — 연결 클로저가 `inst`를 잡으면 레코드가 트윈을 쥐는 동안 인스턴스가 고정된다(사실 7·8: 약한 키
+테이블은 ephemeron이 아니고, 트윈 객체가 살아 있으면 연결 클로저의 포획도 산다). 클로저는 `rec`·`v`·`conn`만 잡는다. 사용자:
+*"visible 같은 경우 ref 경로가 아닌 프롭으로 설정된 source 경로를 타는게 맞음"* — GS 15가 그 모양(`flash` 원천)으로 가르친다.
+
+**`CanAnimate = false`(사용자 결정 1 — (a))** — `Animate`가 콜백이 하나라도 있으면 `Tween{ Value, Time = 0, Dedup, 콜백들 }`을
+돌려주고, Property 핸들러는 `Info` 없는 `Time == 0`을 **엔진 트윈 없는 스냅**으로 처리해 `Started`·`Completed`를 동기로 부른다(콜백이
+없으면 전처럼 plain 값). 기각한 (b) "Animate가 Compute 안에서 직접 부름"은 프로퍼티가 써지기 전에 완료를 알리는 꼴.
+
+**철거** — `stopRunning(rec)`: 연결 `Disconnect` → `Done`이 아니면 `Cancel` + `Cancelled`. 파괴된 인스턴스에서 트윈이 끝까지 돌아
+`Completed`를 내는 엔진 동작(사실 5·6)은 연결이 먼저 끊겨 콜백에 닿지 않는다.
+
+**mock** — 가짜 트윈에 `Completed` 시그널(`Cancel`은 **동기로** `Cancelled`를 발화 — 엔진보다 엄격, quad가 먼저 끊었는지 검증) +
+`simulateCompleted()`. 스펙: `spec.tweenproperty` 11, `spec.tween` 3·4, `spec.animate` 2, `spec.tweentypes`. **실기기 배선 미실측**
+(rojo 세션이 내려가 있어 Studio 사본이 옛 코드 — 다음 Studio 세션에 한 번 돌릴 것; 엔진 사실 자체는 위 REPORT).
