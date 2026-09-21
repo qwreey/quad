@@ -9,7 +9,7 @@ description: "프로퍼티 묶음을 Modifier 값 하나로 만들어 여러 인
 
 카드와 버튼의 색·테두리를 다른 화면에서도 그대로 쓰고 싶습니다. `Modifier`는
 **"이 프로퍼티들을 이렇게 설정한다"를 값 하나로 만든 것**입니다. 컴포넌트와는
-무관합니다 — 지금처럼 평범한 잎(카드 `Frame`, 버튼) 하나하나에 그대로 놓습니다.
+무관합니다 — 지금처럼 인스턴스(카드 `Frame`, 버튼) 하나하나에 그대로 놓습니다.
 
 ---
 
@@ -139,6 +139,38 @@ return {
 
 쓰는 쪽은 `const Styles = require("@game/ReplicatedStorage/Client/UI/Styles")` 뒤에 `Styles.Card`, `Styles.Accent(색)`을 숫자 키 자리에 놓습니다 — 모양은 §1의 `CardStyle`을 그런 모듈로 옮긴 것입니다(§2의 `hot` 파이프가 든 `CardStyle`을 이것으로 갈아 끼우면 배경은 정적 색으로 돌아갑니다). 이 튜토리얼에서는 만들어만 두고 쓰지 않습니다 — 실전 배치는 [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)에 있습니다.
 
+
+---
+
+## 4. 테마를 바꿀 때 — `Modifier`를 갈아 끼우지 말고 값을 흘립니다
+
+§2와 §3을 합치면 "테마 전환"의 모양이 나옵니다. 팩토리에 리터럴 대신 `State`를 넘기면, 그 팩토리가 만든 `Modifier`는 그 `State`를 따라갑니다.
+
+```luau
+-- … 위쪽 코드에 이어집니다(§3의 accent를 그대로 씁니다)
+const accentColor = q.Source(Color3.fromRGB(0, 162, 255))
+const button = D.TextButton { accent(accentColor), Text = "+ 1" }
+
+accentColor:Set(Color3.fromRGB(240, 60, 60))   -- 버튼 색만 바뀐다(확인이 끝나면 이 줄은 지웁니다)
+```
+
+**흔한 시도 하나는 안 됩니다.** 테마마다 `Modifier`를 통째로 만들어 두고 `q.Source(darkStyle)`처럼 `Modifier` 자체를 `State`에 담아 갈아 끼우려 하면 `Source: cannot hold a Modifier as a Source value`로 막힙니다. 바뀌는 것은 스타일의 **필드**이므로, 필드마다 `State`를 두고 `Modifier`가 그것을 참조하게 합니다 — 위 모양 그대로입니다. 왜 그렇게 막아 두었는지는 [09. 에러 읽는 법](../how-to/09-debugging-and-troubleshooting.md) 함정 5에, 토큰 여러 개를 테마 하나로 묶는 실전 배치는 [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)에 있습니다.
+
+한 걸음 더 가면 `Modifier` **위에 얹는 조합**이 있습니다. `mod:Apply(fn)`은 `fn(mod)`를 돌려주는 호출 슈거라, 인자를 받아 함수를 돌려주는 팩토리와 짝지으면 "스타일 조각"을 체인 중간에 끼울 수 있습니다.
+
+```luau
+-- 새 예시: 별도 스크립트
+local function emphasis(size)
+    return function(mod)
+        return mod:TextSize(size):TextColor3(Color3.fromRGB(255, 230, 120))
+    end
+end
+
+const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis(24))
+const label = D.TextLabel { title, Text = "카운터" }
+```
+
+`emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 검사도 추가 의미도 없는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [12장](./12-functions.md)에서 이름(커링)을 붙입니다.
 
 ---
 

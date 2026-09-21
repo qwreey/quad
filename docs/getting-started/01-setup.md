@@ -67,7 +67,7 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 <details>
 <summary><strong>패키지가 왜 <code>Quad</code>, <code>QuadRoblox</code> 둘인가요?</strong></summary>
 
-**`quad-base`**는 엔진을 모르는 코어입니다 — `Source`/`State`/`Slot`/`Modifier`와 디스패치 엔진이 여기 있고, 이것만으로는 Roblox `Instance`를 하나도 만들 수 없습니다. **`quad-roblox`**는 Roblox 백엔드로, `D`(Instance 생성기)·`Tween`·`Animate`·`OnChange`가 여기서 옵니다.
+**`quad-base`**는 엔진을 모르는 코어입니다 — `Source`/`State`/`Slot`/`Modifier`와 props 테이블을 처리하는 엔진이 여기 있고, 이것만으로는 Roblox `Instance`를 하나도 만들 수 없습니다. **`quad-roblox`**는 Roblox 백엔드로, `D`(Instance 생성기)·`Tween`·`Animate`·`OnChange`가 여기서 옵니다.
 
 `UseProvider` 전까지 `Quad.Declaration`·`Quad.Tween`·`Quad.Animate`·`Quad.OnChange`는 전부 `nil`입니다. 코어가 엔진 어휘를 모르기 때문에 같은 코어 위에 다른 백엔드(헤드리스 테스트용 mock 등)를 붙일 수 있고, 그 갈아 끼우는 자리가 바로 이 한 줄입니다.
 

@@ -1,0 +1,19 @@
+/* [2026-09-21] 각주 다이얼로그(public/scripts/footnote-popover.js) — 메인이 관리 */
+.fn-popover {
+	position: fixed;
+	inset: auto;
+	margin: 0;
+	max-width: min(28rem, calc(100vw - 1rem));
+	padding: 0.6rem 0.85rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.5rem;
+	background: var(--sl-color-bg-nav);
+	color: var(--sl-color-text);
+	box-shadow: var(--sl-shadow-md);
+	font-size: var(--sl-text-sm);
+	line-height: 1.6;
+}
+.fn-popover > p { margin: 0; }
+.fn-popover > p + p { margin-top: 0.4rem; }
+/* 각주 번호는 눌리는 것이라는 신호 */
+sup a[data-footnote-ref] { cursor: help; text-decoration: none; padding: 0 0.15em; }

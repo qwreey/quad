@@ -37,7 +37,7 @@ SITE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.dirname(SITE)
 DEST = os.path.join(SITE, 'src', 'content', 'docs')  # 한국어 = root 로케일(2026-09-10); en/은 별도
 BASE = '/'  # [2026-09-10] Cloudflare Pages 루트 배포 + 한국어 root 로케일 — astro.config의 base '/'와 짝
-TRACKS = ['overview', 'getting-started', 'how-to', 'quadnomicon', 'reference']
+TRACKS = ['overview', 'getting-started', 'how-to', 'quadnomicon', 'reference', 'agents']  # [2026-09-21] agents 트랙(docs-review 3-7)
 ROOT = os.path.dirname(DOCS)
 # 트랙 밖 원본 → 사본 경로, 사본에 붙일 frontmatter (원본은 건드리지 않는다)
 EXTRA = [

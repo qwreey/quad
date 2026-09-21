@@ -67,7 +67,7 @@ print(card.ClassName) --> "Frame"
 <details>
 <summary><strong><code>Parent</code>는 왜 안에 못 쓰나요?</strong></summary>
 
-`Parent`를 문자 키 자리에 적으면 **그 키를 맡는 핸들러가 없어** 디스패치가 그 자리에서 던집니다.
+`Parent`를 문자 키 자리에 적으면 **그 키를 맡을 핸들러[^handler]가 없어** quad가 그 자리에서 에러를 냅니다.
 
 ```
 Dispatch: no handler matched key Parent (value: Instance) — check that the provider for this value (e.g. quad-roblox) is initialized
@@ -183,5 +183,7 @@ props 테이블에서 이름 없이 순서대로 놓인 원소(숫자 키)는 �
 
 - [레퍼런스: `Declaration` — Instance 생성](/reference/roblox/02-d/) — 문자 키·숫자 키에 올 수 있는 것 전부, 숏핸드 키 넷, `D`에 별칭이 없는 클래스를 만드는 `D.New`
 - [00. 설치](/getting-started/00-installation/) §2 3단계 — 타입 검사 플래그 넷(편집기와 CI에 같은 값을 넣어야 합니다)
+
+[^handler]: quad는 props의 자리(키)마다 그 값을 맡을 담당을 고릅니다. 그 담당을 **핸들러**라 부르고, 고르는 일을 **디스패치**라 부릅니다. 어떤 핸들러들이 있는지는 [18장](/getting-started/18-handlers/)에서 봅니다.
 
 <QuizResults />

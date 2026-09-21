@@ -12,7 +12,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 자식을 더하거나 빼야 할 때가 있습니다. `Slot`은 숫자 키의 한 자리를
 "여기는 나중에 바뀔 구간"으로 잡아 두는 값입니다.
 
-이 장의 예제는 카운터와 별개입니다 — 부기(장부)가 어떻게 움직이는지를 작은 상자 위에서 보고, 다음 장에서 카운터로 돌아갑니다.
+이 장의 예제는 카운터와 별개입니다 — quad가 자리와 개수를 적어 두는 장부(`Offset`/`Length`)가 어떻게 움직이는지를 작은 상자 위에서 보고, 다음 장에서 카운터로 돌아갑니다.
 
 ---
 
@@ -148,7 +148,7 @@ print(slotB.Offset:Get(), slotB.Length:Get())   --> 4  1
 
 **실행하면** `slotA`는 자리가 그대로인데 길이만 늘고, `slotB`의 `Offset`이 3에서 4로 따라 움직입니다.
 
-> `Length`는 **마운트되기 전에는 0입니다.** 채워지는 것은 부기 재계산이고, 그건 Slot이 실제로 어딘가에 놓인 뒤에 돌기 때문입니다.
+> `Length`는 **마운트되기 전에는 0입니다.** 채워지는 것은 장부 재계산이고, 그건 Slot이 실제로 어딘가에 놓인 뒤에 돌기 때문입니다.
 
 ---
 
@@ -193,7 +193,7 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 
 다만 `host:GetChildren()`을 찍어 보면 순서는 `Inner1, Inner2, Outer, Inner3, Inner4`입니다. Roblox에서 자식의 순서는 물리적으로 재배치되지 않고 **장부(`Offset`/`Length`)로만** 관리되며, 화면에서의 순서는 `Position`이나 아래 5절의 `LayoutOrder`가 정합니다.
 
-부기가 위로 전파되기 때문에 Slot을 몇 겹으로 쌓아도 `Offset` 계산이 어긋나지 않습니다.
+장부 갱신이 위로 전파되기 때문에 Slot을 몇 겹으로 쌓아도 `Offset` 계산이 어긋나지 않습니다.
 
 ---
 
@@ -250,7 +250,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <details>
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
-아닙니다. 이 자리를 맡는 것은 **자식 인스턴스를 맡는 그 처리기 그대로**입니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 부기에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [18장](/getting-started/18-handlers/)에서 봅니다.
+아닙니다. 이 자리는 **자식 인스턴스를 놓을 때와 같은 규칙으로** 처리됩니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 장부에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [18장](/getting-started/18-handlers/)에서 봅니다.
 
 </details>
 
@@ -306,9 +306,9 @@ Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유�
 
 - [ ] Slot의 `:Replace`와 같아서 갈아 끼운 옛 원소가 파괴됩니다
 - [x] 옛 원소는 트리에서 떼어지기만 하고 파괴되지 않으므로, 더 쓸 일이 없으면 `q.dispose`로 직접 파괴해야 합니다
-- [ ] `Offset`/`Length` 부기에 참여하지 않으므로 앞 구간이 자라도 이 자리는 영향을 받지 않습니다
+- [ ] `Offset`/`Length` 장부에 참여하지 않으므로 앞 구간이 자라도 이 자리는 영향을 받지 않습니다
 
-이 자리는 `Parent`를 `nil`로 내려놓을 뿐이라 값 자체는 살아 있고, 같은 값을 다시 `:Set`하면 그 인스턴스가 그대로 돌아옵니다. 부기에는 앞 절들과 똑같이 참여하되, `Offset` 발행 채널이 없어 그 자리의 `Offset` 값만 쓸 수 없습니다.
+이 자리는 `Parent`를 `nil`로 내려놓을 뿐이라 값 자체는 살아 있고, 같은 값을 다시 `:Set`하면 그 인스턴스가 그대로 돌아옵니다. 장부에는 앞 절들과 똑같이 참여하되, `Offset` 발행 채널이 없어 그 자리의 `Offset` 값만 쓸 수 없습니다.
 
 </Quiz>
 
@@ -317,6 +317,6 @@ Slot은 자리만 빌려주는 것이 아니라 자기가 든 원소를 소유�
 ## 더 알고 싶다면
 
 - [레퍼런스: `Slot`](/reference/core/06-slot/) — CRUD 열하나(`:Splice`·`:Move`·`:Swap`·`:IndexOf` 등), 죽은 Slot과 마운트 규칙, `q.dispose`
-- [Quadnomicon Vol. 2](/quadnomicon/02-slot-prefix-sum-tree/) — `Offset`/`Length` 부기가 어떤 부분합 트리 위에서 도는지
+- [Quadnomicon Vol. 2](/quadnomicon/02-slot-prefix-sum-tree/) — `Offset`/`Length` 장부가 어떤 부분합 트리 위에서 도는지
 
 <QuizResults />

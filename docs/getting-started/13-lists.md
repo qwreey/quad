@@ -98,6 +98,76 @@ board.Parent = screen
 
 ---
 
+## 지금까지의 코드
+
+`row`가 나가고 `CounterBoard`가 그 자리를 대신한 시점입니다.
+
+**`Main.client.luau`**
+
+```luau
+-- (Main.client.luau — 01장부터 지금까지 전체 모습. Players·game.Loaded:Wait()·q·D·playerGui·screen은 01장 그대로입니다)
+const Players = game:GetService("Players")
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+const q = require("@game/ReplicatedStorage/Client/UI/Quad")
+const D = q.Declaration
+
+const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+const screen = D.ScreenGui { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
+
+const rows = q.Source({
+    { Id = "a", Label = "왼쪽", Start = 0 },
+    { Id = "b", Label = "오른쪽", Start = 10 },
+})
+
+const CounterBoard = require("@game/ReplicatedStorage/Client/UI/CounterBoard")
+
+const board = CounterBoard { Rows = rows }
+board.Parent = screen
+
+screen.Parent = playerGui
+```
+
+**`CounterBoard.luau`**
+
+```luau
+-- (CounterBoard.luau — 방금 만든 전체 모습)
+const q = require("./Quad")
+const D = q.Declaration
+const Counter = require("./Counter")
+
+return function(props)
+    const list = q.Slot()
+
+    list:List(props.Rows, function(ctx)
+        if ctx.Item == q.KeyGone then
+            return nil, ctx.UserData          -- 이번 데이터에서 사라진 키 → 파괴
+        end
+        if ctx.Prev then
+            return ctx.Prev, ctx.UserData     -- 이미 있는 키 → 그대로 둔다(재사용)
+        end
+        return Counter { Label = ctx.Item.Label, Start = ctx.Item.Start }, ctx.UserData   -- 새 키 → 만든다
+    end, function(item)
+        return item.Id                        -- 신원은 Id
+    end)
+
+    return D.Frame {
+        Size = UDim2.fromOffset(640, 140),
+        BackgroundTransparency = 1,
+
+        D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
+
+        list,
+    }
+end
+```
+
+`Counter.luau`는 [12장](./12-functions.md)에서 끝난 모습(`highlightColor` 파이프, `props.Children or q.None`, `props.Watch` 갈래) 그대로라 여기서는 바뀐 게 없어 다시 싣지 않습니다 — `CounterBoard`의 `updateFn`은 그중 `Label`·`Start`만 씁니다.
+
+---
+
 ## 3. 데이터를 바꾸면 필요한 것만 바뀝니다
 
 항목을 추가하는 버튼을 하나 답니다. 하는 일은 **`props.Rows`에 새 배열을 넣는 것뿐**입니다 — 보드가 받은 그 `Source`를 그대로 씁니다.

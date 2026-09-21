@@ -57,6 +57,7 @@ export default defineConfig({
 				'./src/styles/starlight-mermaid-zoom.css',
 				'./src/styles/starlight-quiz-finetune.css',
 				'./src/styles/starlight-landing.css', // [2026-09-14] 랜딩 여백·FAQ summary 굵기 — 메인이 관리
+				'./src/styles/starlight-footnote-popover.css', // [2026-09-21] 각주 다이얼로그 — 메인이 관리
 			],
 			locales: {
 				root: {
@@ -77,6 +78,8 @@ export default defineConfig({
 				{ tag: 'script', attrs: { src: '/scripts/mermaid-zoom.js', defer: true } },
 				// [2026-09-14] 모바일에서 왼쪽 가장자리 스와이프로 사이드바 popover 열기/닫기(플러그인 대체 — 위 plugins 주석)
 				{ tag: 'script', attrs: { src: '/scripts/sidebar-swipe.js', defer: true } },
+				// [2026-09-21 사용자 결정] GFM 각주를 그 자리 다이얼로그로(docs-review 1-1 — 용어 풀이를 각주로 달기로 하면서)
+				{ tag: 'script', attrs: { src: '/scripts/footnote-popover.js', defer: true } },
 			],
 			tableOfContents: {
 				minHeadingLevel: 2,
@@ -126,6 +129,13 @@ export default defineConfig({
 							link: '/quadnomicon/01-revision-and-epochmap/',
 							badge: { text: 'Deep Dive', variant: 'caution' },
 							items: [{ autogenerate: { directory: 'quadnomicon' } }],
+						},
+						// [2026-09-21 사용자 결정 — docs-review 3-7] 에이전트 사용자용 트랙: 스킬 설치·사용 페이지만 한국어로 싣고, 영문 SKILL.md 본문은 레포 링크로.
+						{
+							label: 'Agents (에이전트)',
+							link: '/agents/01-quad-ui-dev-skill/',
+							badge: { text: 'AI', variant: 'tip' },
+							items: [{ autogenerate: { directory: 'agents' } }],
 						},
 						// [2026-09-13 파일럿] starlight-changelogs 버전별 페이지(/changelog-versions/…)를 기존 전문 미러
 						// `/changelog/`(sync-docs.py가 CHANGELOG.md를 그대로 싣는 페이지) 옆에 나란히 둔다 — 대체할지

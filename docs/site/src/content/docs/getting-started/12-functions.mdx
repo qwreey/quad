@@ -230,7 +230,7 @@ const total: q.State<number> = count:Apply(q.Operator.Sum(10))
 
 ### `:Apply`에는 테이블도 들어갑니다 — `__apply`
 
-`q.Operator.Sum(10)`이 그랬듯 `:Apply`에 넘기는 것은 대개 함수입니다. 그런데 팔이 하나 더 있습니다 — **`__apply` 메소드를 가진 테이블**도 받습니다. 함수를 넘기면 `factory(state)`로 불리고, 테이블을 넘기면 `factory:__apply(state)`로 불립니다.
+`q.Operator.Sum(10)`이 그랬듯 `:Apply`에 넘기는 것은 대개 함수입니다. 그런데 받는 모양이 하나 더 있습니다 — **`__apply` 메소드를 가진 테이블**도 받습니다. 함수를 넘기면 `factory(state)`로 불리고, 테이블을 넘기면 `factory:__apply(state)`로 불립니다.
 
 ```luau
 -- … 위쪽 코드에 이어집니다 — __apply 하나면 :Apply에 들어간다
@@ -249,7 +249,7 @@ const twice = count:Apply(Doubled)
 State: Apply factory must be a function or an object with an __apply method
 ```
 
-이 팔이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](/getting-started/16-blocker/)에서 만들 `q.Blocker()`가 바로 이런 값이라 `countText:Apply(blocker)`처럼 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다). 두 팔의 계약은 [레퍼런스: `state:Apply(factory)`](/reference/core/03-state/#stateapplyfactory)에 있습니다.
+이 모양이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](/getting-started/16-blocker/)에서 만들 `q.Blocker()`가 바로 이런 값이라 `countText:Apply(blocker)`처럼 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 쪽입니다). 두 모양의 계약은 [레퍼런스: `state:Apply(factory)`](/reference/core/03-state/#stateapplyfactory)에 있습니다.
 
 ---
 
@@ -304,7 +304,7 @@ quad의 컴포넌트는 **한 번 실행되는 셋업 함수**입니다. 실행�
 - [x] 함수, 또는 `__apply` 메소드를 가진 테이블 둘 다 받습니다
 - [ ] 어떤 값이든 받아서 그대로 새 노드에 싣습니다
 
-함수를 넘기면 `factory(state)`로, 테이블을 넘기면 `factory:__apply(state)`로 불립니다. 둘 중 어느 쪽도 아닌 것을 넘기면 그 자리에서 던지고, 이 두 번째 팔이 있어서 자기 상태를 가진 값도 `:Apply`로 붙습니다.
+함수를 넘기면 `factory(state)`로, 테이블을 넘기면 `factory:__apply(state)`로 불립니다. 둘 중 어느 쪽도 아닌 것을 넘기면 그 자리에서 던지고, 이 두 번째 모양이 있어서 자기 상태를 가진 값도 `:Apply`로 붙습니다.
 
 </Quiz>
 

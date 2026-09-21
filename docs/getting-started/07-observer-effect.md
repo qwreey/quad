@@ -35,7 +35,7 @@ description: "값이 바뀔 때 화면 밖에서 무언가 하는 Observer와 Ef
 <details>
 <summary><strong>숫자 키 자리에 안 넣으면 어떻게 되나요?</strong></summary>
 
-**`:Observer(fn)`은 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다.** 이후 변경까지 받으려면 **살아나야** 하는데, 경로가 둘입니다.
+**`:Observer(fn)`은 등록하는 그 자리에서 한 번 발화하고, 그 뒤로는 조용합니다.** 이후 변경까지 받으려면 **살아나야**[^alive] 하는데, 경로가 둘입니다.
 
 1. **인스턴스에 묶는 것** — props의 숫자 키 자리에 넣으면 quad가 묶어 줍니다. 그 인스턴스가 사는 동안만 살고, 인스턴스가 파괴되면 **관측이 멈춥니다**. UI에 딸린 관측은 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()` 또는 `:WeakSubscribe()`. 인스턴스와 무관하게 사는 구독입니다. `:Subscribe()`는 참조를 어디에도 남기지 않아도 `:Unsubscribe()` 전까지 살아 있고(강한 유지), `:WeakSubscribe()`는 여러분이 그 핸들을 변수 등에 쥐고 있는 동안만 살아 있습니다(약한 유지 — 놓으면 GC가 거둡니다).
@@ -267,3 +267,5 @@ const card = D.Frame {
 - [레퍼런스: `Observer` / `Effect`](../reference/core/05-observer-effect.md) — 구독 네 진입점, 보류와 재생, cleanup이 도는 네 자리
 - [레퍼런스: 생명주기 훅](../reference/sugar/04-lifecycle-hooks.md) — `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`(`Ref`/`Effect` 위에 얹은 슈거)
 - [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치
+
+[^alive]: 이 문서에서 **살아난다**는 `Observer`/`Effect`에 구독이 붙어 그 뒤의 변경을 계속 받게 된다는 뜻입니다. 레퍼런스는 같은 상태를 "구독됨"(`Subscribed`)이라 부릅니다.
