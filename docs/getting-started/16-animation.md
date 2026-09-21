@@ -1,10 +1,10 @@
 ---
-title: "15. 움직이게 하기 — Tween과 Animate"
+title: "16. 움직이게 하기 — Tween과 Animate"
 description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직접 만들고, 그 위에 얹은 :Apply(q.Animate { … }) 슈거를 씁니다"
 ---
-# [시작하기] 15. 움직이게 하기 — `Tween`과 `Animate`
+# [시작하기] 16. 움직이게 하기 — `Tween`과 `Animate`
 
-> **대상 독자**: [14. 층을 건너 값 넘기기](./14-context.md)를 끝낸 개발자
+> **대상 독자**: [15. 설정값 여럿을 한 곳에 담기](./15-store.md)를 끝낸 개발자
 > **목표**: 색이 툭 튀지 않고 부드럽게 넘어가게 만들기
 
 `TweenService:Create`를 직접 부를 필요는 없습니다. 프로퍼티로 흘려보내는 **값**을

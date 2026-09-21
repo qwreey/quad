@@ -249,7 +249,7 @@ const twice = count:Apply(Doubled)
 State: Apply factory must be a function or an object with an __apply method
 ```
 
-이 모양이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [16장](/getting-started/16-blocker/)에서 만들 `q.Blocker()`가 바로 이런 값이라 `countText:Apply(blocker)`처럼 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 쪽입니다). 두 모양의 계약은 [레퍼런스: `state:Apply(factory)`](/reference/core/03-state/#stateapplyfactory)에 있습니다.
+이 모양이 있어서 **자기 상태를 가진 것**도 `:Apply`로 붙습니다. [17장](/getting-started/17-blocker/)에서 만들 `q.Blocker()`가 바로 이런 값이라 `countText:Apply(blocker)`처럼 붙고, 그러고도 그 스위치는 손에 남아 있어 나중에 여닫을 수 있습니다(반대로 `q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 쪽입니다). 두 모양의 계약은 [레퍼런스: `state:Apply(factory)`](/reference/core/03-state/#stateapplyfactory)에 있습니다.
 
 ---
 
@@ -276,7 +276,7 @@ quad의 컴포넌트는 **한 번 실행되는 셋업 함수**입니다. 실행�
 
 같은 이유로 `Effect`나 `Observer`를 만드는 자리도 자유롭습니다 — 만든 것을 숫자 키 자리에 **놓기만** 하면 그때부터 그 인스턴스의 수명을 따릅니다.
 
-"한 번 만든 그래프를 다시 그리지 않는다"가 어떤 성질로 이어지는지는 [17장](/getting-started/17-laziness/)에서 한 번에 봅니다.
+"한 번 만든 그래프를 다시 그리지 않는다"가 어떤 성질로 이어지는지는 [18장](/getting-started/18-laziness/)에서 한 번에 봅니다.
 
 </details>
 

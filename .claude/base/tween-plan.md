@@ -702,7 +702,7 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 
 **인자 없음(사용자 결정 2)** — 연결 클로저가 `inst`를 잡으면 레코드가 트윈을 쥐는 동안 인스턴스가 고정된다(사실 7·8: 약한 키
 테이블은 ephemeron이 아니고, 트윈 객체가 살아 있으면 연결 클로저의 포획도 산다). 클로저는 `rec`·`v`·`conn`만 잡는다. 사용자:
-*"visible 같은 경우 ref 경로가 아닌 프롭으로 설정된 source 경로를 타는게 맞음"* — GS 15가 그 모양(`flash` 원천)으로 가르친다.
+*"visible 같은 경우 ref 경로가 아닌 프롭으로 설정된 source 경로를 타는게 맞음"* — GS 16이 그 모양(`flash` 원천)으로 가르친다.
 
 **`CanAnimate = false`(사용자 결정 1 — (a))** — `Animate`가 콜백이 하나라도 있으면 `Tween{ Value, Time = 0, Dedup, 콜백들 }`을
 돌려주고, Property 핸들러는 `Info` 없는 `Time == 0`을 **엔진 트윈 없는 스냅**으로 처리해 `Started`·`Completed`를 동기로 부른다(콜백이

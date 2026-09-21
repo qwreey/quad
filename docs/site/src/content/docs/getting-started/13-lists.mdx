@@ -324,7 +324,7 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 <details>
 <summary><strong>자리에 놓은 <code>State</code>와 뭐가 다른가요?</strong></summary>
 
-`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). [10장 6절](/getting-started/10-slot/)에서 `State`를 자리에 놓은 것과 **겉보기 결과는 같지만 안쪽은 다릅니다** — 자리에 놓은 `State`는 `:Single`이 아니라 자식 인스턴스 처리기가 맡습니다([18장](/getting-started/18-handlers/)). 소유권 차이도 그래서 생깁니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 내려놓기만 하지만, 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ OwnsElements = false }`를 세 번째 인자로 주면 됩니다).
+`updateFn`을 아예 생략하면 값을 그대로 원소로 씁니다(`q.Slot():Single(cur)`). [10장 6절](/getting-started/10-slot/)에서 `State`를 자리에 놓은 것과 **겉보기 결과는 같지만 안쪽은 다릅니다** — 자리에 놓은 `State`는 `:Single`이 아니라 자식 인스턴스 처리기가 맡습니다([19장](/getting-started/19-handlers/)). 소유권 차이도 그래서 생깁니다: 자리에 놓은 `State`는 갈아 끼운 옛 원소를 내려놓기만 하지만, 직접 건 `:Single`은 **파괴합니다**(옛 원소를 살려 두고 싶으면 `{ OwnsElements = false }`를 세 번째 인자로 주면 됩니다).
 
 </details>
 

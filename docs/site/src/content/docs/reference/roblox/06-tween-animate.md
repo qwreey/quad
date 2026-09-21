@@ -261,12 +261,12 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 그래서 교체 순서는 항상 **이전 `Cancelled` → 새 `Started` → (나중에) 새 `Completed`**입니다. 엔진의 취소 통지는 미뤄져서(다음 yield) 동기 교체에서는 새 트윈이 시작된 **뒤에** 도착하고, 이미 끝난 트윈에 `Cancel`을 해도 한 번 더 납니다 — quad는 그 통지를 쓰지 않고 자기 `Cancel` 호출 자리에서 직접 부르며, `Completed` 연결은 한 번 불린 뒤 스스로 끊습니다. 같은 목표라 건너뛴 `Tween`(`Dedup`)은 아무것도 부르지 않습니다.
 
-**인자가 없는 이유** — 콜백이 인스턴스를 받으려면 엔진 트윈의 연결이 그 인스턴스를 붙잡아야 하는데, 그 연결은 기록이 트윈을 쥐는 동안 살아 있어 인스턴스가 수거되지 않습니다(Luau의 약한 키 테이블은 ephemeron이 아닙니다). 필요한 값은 클로저로 잡되, 인스턴스를 직접 쥐기보다 [원천을 거쳐 프로퍼티로 흘리는 모양](/getting-started/15-animation/#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
+**인자가 없는 이유** — 콜백이 인스턴스를 받으려면 엔진 트윈의 연결이 그 인스턴스를 붙잡아야 하는데, 그 연결은 기록이 트윈을 쥐는 동안 살아 있어 인스턴스가 수거되지 않습니다(Luau의 약한 키 테이블은 ephemeron이 아닙니다). 필요한 값은 클로저로 잡되, 인스턴스를 직접 쥐기보다 [원천을 거쳐 프로퍼티로 흘리는 모양](/getting-started/16-animation/#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
 
 ---
 
 **관련**
 
 - [D — 문자 키](/reference/roblox/02-d/#문자-키--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
-- [15. 움직이게 하기 — `Tween`과 `Animate`](/getting-started/15-animation/)
+- [16. 움직이게 하기 — `Tween`과 `Animate`](/getting-started/16-animation/)
 - [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/)

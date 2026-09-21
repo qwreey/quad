@@ -42,7 +42,7 @@ of guessing.**
   - `how-to/01`…`09` — recipes: component boundary conventions, form validation, long lists,
     RemoteEvent/input bridging, theming, headless testing, Studio `Claim`, v1 migration, and the
     error-reading appendix (`09`).
-  - `getting-started/00`…`19` — the linear tutorial (one counter grows chapter by chapter). Fetch a
+  - `getting-started/00`…`20` — the linear tutorial (one counter grows chapter by chapter). Fetch a
     chapter when the user is learning, not for lookups.
   - `overview/01` (comparison with Fusion/Vide/react-lua, design trade-offs, what is missing and
     why), `overview/02` (for quad v1 users).

@@ -207,7 +207,7 @@ end, viewportHeight)
   `Flush`/`Cancel`은 [레퍼런스: Debounce / Throttle](../reference/sugar/03-debounce-throttle.md)에 있습니다.
 - 시간이 아니라 **코드 구간**을 직접 열고 닫고 싶다면(데이터 여러 개를 한꺼번에
   바꾸는 동안 목록을 멈추는 경우) `Blocker`가 그 도구입니다 —
-  [시작하기 16](../getting-started/16-blocker.md).
+  [시작하기 17](../getting-started/17-blocker.md).
 
 ---
 

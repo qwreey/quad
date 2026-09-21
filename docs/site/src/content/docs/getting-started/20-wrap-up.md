@@ -1,8 +1,8 @@
 ---
-title: "19. 정리 — 여기서부터 어디로"
+title: "20. 정리 — 여기서부터 어디로"
 description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 읽을 문서를 고릅니다"
 ---
-> **대상 독자**: [18. 자리에 놓인 값은 누가 처리하나](/getting-started/18-handlers/)까지 따라온 개발자
+> **대상 독자**: [19. 자리에 놓인 값은 누가 처리하나](/getting-started/19-handlers/)까지 따라온 개발자
 > **목표**: 만든 것을 되짚고, 다음에 읽을 곳 고르기
 
 설치부터 핸들러까지 만든 것을 한 줄씩 되짚습니다.
@@ -26,10 +26,11 @@ description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 �
 - [12](/getting-started/12-functions/) 지금까지 써 온 콜백·클로저·**팩토리**·커링에 이름을 붙이고, 팩토리를 컴포넌트에 넘겨 안쪽 상태에 붙였습니다 — 손으로 만든 `Sum`은 `q.Operator.Sum`을 `:Apply`하는 것으로 줄였습니다.
 - [13](/getting-started/13-lists/) `Slot:List`로 데이터에 맞춰 **목록**을 그렸습니다 — 살아남은 키는 재사용, 하나짜리는 `:Single`.
 - [14](/getting-started/14-context/) `q.Context` 가방으로 값을 **층을 건너** 넘겼습니다 — 중간 컴포넌트는 안에 뭐가 들었는지 모른 채.
-- [15](/getting-started/15-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
-- [16](/getting-started/16-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
-- [17](/getting-started/17-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
-- [18](/getting-started/18-handlers/) props의 자리마다 **누가 값을 맡고 어떻게 놓는지** — `State<Tag>`·`State<Observer?>`·`State<Instance?>`가 한 원리였음을 봤습니다.
+- [15](/getting-started/15-store/) `q.Store`로 **이름 붙은 `Source` 여러 개**를 한 곳에 모아 14장의 Context 가방에 그대로 실어 보냈습니다.
+- [16](/getting-started/16-animation/) `q.Tween`과 `q.Animate`로 값이 **부드럽게 넘어가게** 했습니다.
+- [17](/getting-started/17-blocker/) `q.Blocker`로 값 여럿을 바꾸는 구간을 묶어 **통지 한 번**으로 접었습니다.
+- [18](/getting-started/18-laziness/) 그 모든 자리가 **언제 도는지**를 한자리에서 대조했습니다.
+- [19](/getting-started/19-handlers/) props의 자리마다 **누가 값을 맡고 어떻게 놓는지** — `State<Tag>`·`State<Observer?>`·`State<Instance?>`가 한 원리였음을 봤습니다.
 
 ## 화면을 내릴 때
 
@@ -58,7 +59,7 @@ q.dispose(screen)
 ## 다음에 읽을 곳
 
 - **[실전 레시피](/how-to/01-component-conventions/)** — 재사용 가능한 컴포넌트를 만들 때의 경계 규약이 첫 장입니다. 이어서 폼 검증, 긴 목록, 외부 신호 브릿지, 테마, 헤드리스 테스트, Studio 템플릿 `Claim`, v1 이관, 그리고 부록인 [에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)이 있습니다.
-- **[API 레퍼런스](/reference/00-index/)** — 타입당 한 페이지. 시그니처·인자·에러 문구를 찾을 때. 시작하기에 안 나온 것 중 먼저 볼 만한 것은 이름 붙은 `Source` 묶음 [`Store`](/reference/core/04-store/)와, 컴포넌트 하나가 던져도 화면 조립이 멈추지 않게 하는 [`Fallback` / `Traceback`](/reference/sugar/05-fallback-traceback/)입니다.
+- **[API 레퍼런스](/reference/00-index/)** — 타입당 한 페이지. 시그니처·인자·에러 문구를 찾을 때. 시작하기에 안 나온 것 중 먼저 볼 만한 것은 컴포넌트 하나가 던져도 화면 조립이 멈추지 않게 하는 [`Fallback` / `Traceback`](/reference/sugar/05-fallback-traceback/)입니다. [`Store`](/reference/core/04-store/)는 15장에서 이미 봤지만, `:Of`·예약 키까지 전체 표면이 궁금하면 여기로.
 - **[The Quadnomicon](/quadnomicon/01-revision-and-epochmap/)** — 위의 동작들이 내부에서 어떻게 구현돼 있는지. 초보자용은 아닙니다.
 - **[왜 Quad인가](/overview/01-why-quad/)** — 이 설계가 무엇을 포기하고 무엇을 얻었는지, 다른 도구와의 차이.
 

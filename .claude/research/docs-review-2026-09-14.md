@@ -48,6 +48,8 @@
 갈래는 (a) 11장 §1 뒤에 접힘 둘(Store에 이름만 붙이기, Source 수명 한 문단), (b) Store를 독립 장으로, (c) 지금처럼 how-to가 안내.
 메인 권고는 (a). (옛 A1·A7·문항 1·2)
 
+**[2026-09-21 닫힘 — (b) 독립 장]** 사용자: *"아주 간단한 요소이지만 컴포넌트와 사용성이 높아서, context 안에 몰아 넣는 구조에서도 좋아서 하나의 독립 장이 있어도 된다고 봐. 이미 context 같은 슈거를 보여줬기 때문에 동일하게 갈 수 있다 보고, 참조 끊기면 GC되는것과 bindLifetime 이 있음을 암시되도록 두어 정리에 대해서는 간략히 서술"*. 새 `15-store.md`(14장 뒤 — `settings` Store를 14장의 `ctx`에 열쇠 하나 더 실어 `Counter`가 보폭을 읽고, 진입점 버튼으로 바꾸면 전 카운터가 따라감; `:Of`·예약 키는 접힘 한 줄, 정리는 접힘 한 문단에 GC + `q.Backend.bindLifetime` 암시), 15~19 → 16~20 재번호와 링크·본문 장 번호 전수 치환(docs·`.claude` 라이브 문서·랜딩·스킬), how-to 02·04의 "시작하기에서 다루지 않았습니다"는 15장 링크로. sonnet 작성·mock 스크래치 확인, 메인이 레퍼런스 대조(생성자는 `Source`만, 점 접근 `nil`, 예약 키).
+
 **1-4. 엔진이 바꾼 값을 받는 법.** 04장은 이벤트만 다루고 "반대 방향(엔진 값이 바뀔 때 받기)은 시작하기에서 다루지 않는다"며 넘긴다.
 그런데 how-to 02·03·04가 모두 `q.OnChange`를 쓴다. 04장은 시작하기에서 가장 얇은 장이기도 하다. 갈래는 (a) 04장에 `q.OnChange` 절을
 넣기, (b) 04장을 03장에 합쳐 얇음 자체를 없애고 `OnChange`는 how-to에 맡기기, (c) 그대로. 메인 권고는 (a). (옛 N2·문항 3)
@@ -69,7 +71,7 @@
    만일 이 부분이 전부 pass 되는 경우 쉽게 얹어질 수 있다면 Animate 슈거에서 OnCompleted, OnStarted 를 다듬어야함. - tween 을 안 한다 해도, 해당 부분은 호출되어야하니까
    슈거 단에서의 에니메이션 없음 상태에서 수행을 직접 할 수 있어야함.
 
-**[2026-09-21 닫힘 — 구현]** 실측 세 가지는 `audit/tween-completed-2026-09-21/REPORT.md`(연결 자동 해제 없음·파괴돼도 끝까지 돎 / 끝난 트윈의 `Cancel`은 `Completed(Cancelled)`를 한 번 더 냄 / Cancelled 통지는 deferred라 동기 교체에서 새 트윈 시작 **뒤**에 옴 — 우려한 역전 실재; 덤으로 약한 키 테이블은 ephemeron이 아님). 사용자 결정 셋: (1) `CanAnimate=false`는 (a) `Time = 0` Tween → 스냅 + 콜백, (2) 콜백 인자 없음(*"visible 같은 경우 ref 경로가 아닌 프롭으로 설정된 source 경로를 타는게 맞음"*), (3) 이름은 sonnet 둘(외부자·내부자) 판정 뒤 **`Started`/`Completed`/`Cancelled`**(권고 1 동의). 설계 정본은 `base/tween-plan.md` 끝 절, 코드 소스는 `Handlers/Property.luau` 머리. 문서: 15장 §1 "끝났을 때 알기"(`flash` 원천 예제, mock 확인), 레퍼런스 roblox/06(타입·옵션·검증 표·`Animate`·"시작·완료·취소를 알립니다" 절), CHANGELOG Added. 실기기 배선은 미실측(rojo 세션 다운) — 다음 Studio 세션.
+**[2026-09-21 닫힘 — 구현]** 실측 세 가지는 `audit/tween-completed-2026-09-21/REPORT.md`(연결 자동 해제 없음·파괴돼도 끝까지 돎 / 끝난 트윈의 `Cancel`은 `Completed(Cancelled)`를 한 번 더 냄 / Cancelled 통지는 deferred라 동기 교체에서 새 트윈 시작 **뒤**에 옴 — 우려한 역전 실재; 덤으로 약한 키 테이블은 ephemeron이 아님). 사용자 결정 셋: (1) `CanAnimate=false`는 (a) `Time = 0` Tween → 스냅 + 콜백, (2) 콜백 인자 없음(*"visible 같은 경우 ref 경로가 아닌 프롭으로 설정된 source 경로를 타는게 맞음"*), (3) 이름은 sonnet 둘(외부자·내부자) 판정 뒤 **`Started`/`Completed`/`Cancelled`**(권고 1 동의). 설계 정본은 `base/tween-plan.md` 끝 절, 코드 소스는 `Handlers/Property.luau` 머리. 문서: 16장(옛 15장 — 같은 날 1-3으로 재번호) §1 "끝났을 때 알기"(`flash` 원천 예제, mock 확인), 레퍼런스 roblox/06(타입·옵션·검증 표·`Animate`·"시작·완료·취소를 알립니다" 절), CHANGELOG Added. 실기기 배선은 미실측(rojo 세션 다운) — 다음 Studio 세션.
 
 **1-6. 09장 "`State<Modifier>`는 안 되나요".** 테마 전환에서 `Modifier`를 통째로 갈아 끼우려는 시도가 흔하고 에러가 난다(how-to 09
 함정 5). 09장에는 그 질문이 없다. 갈래는 (a) 09장에 접힘 하나(질문·에러 문구·두 문장), (b) how-to 09 함정 5로 가는 링크 한 줄.
