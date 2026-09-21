@@ -714,3 +714,15 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 **mock** — 가짜 트윈에 `Completed` 시그널(`Cancel`은 **동기로** `Cancelled`를 발화 — 엔진보다 엄격, quad가 먼저 끊었는지 검증) +
 `simulateCompleted()`. 스펙: `spec.tweenproperty` 11, `spec.tween` 3·4, `spec.animate` 2, `spec.tweentypes`. **실기기 배선 미실측**
 (rojo 세션이 내려가 있어 Studio 사본이 옛 코드 — 다음 Studio 세션에 한 번 돌릴 것; 엔진 사실 자체는 위 REPORT).
+
+**[2026-09-21 체크포인트 code-review — 같은 날 반영, round11 원장 §8]** (1) **deferred 완료 창**: 엔진은 목표에 닿으면 `PlaybackState`를
+먼저 바꾸고 `Completed`는 다음 재개점에 보내므로, 그 사이 동기 교체·철거가 오면 레코드엔 `Done`이 없어 취소로 처리됐다 → `stopRunning`이
+`rec.Tween.PlaybackState == Completed`면 **완료로**(연결과 함께 죽는 통지 대신 그 자리에서 `Completed` 한 번) — 엔진 상태를 읽는 자리는
+이 게이트뿐, 값의 진실은 여전히 프로퍼티(mock도 `PlaybackState`를 가진다). (2) **`Done` = settled**(완료 또는 취소): 콜백을 부르기 **전에**
+세워 던지는 콜백이 레코드를 "진행 중"으로 남기지 못하게(다음 쓰기가 죽은 트윈을 또 취소·재발화하던 것). (3) **`Time == 0` 스냅 조건 좁힘**:
+`Info` 없음 + `DelayTime`/`RepeatCount` 없음(0) + `Reverses` 아님일 때만 — 손으로 쓴 `Tween{ Time = 0, DelayTime = 1 }`이 조용히 동기 스냅되던
+동작 변경을 막고, 순수 0초는 CHANGELOG Changed로 공표(엔진 경로와의 차이는 쓰기가 동기라는 것뿐). `Animate`의 `CanAnimate=false`+콜백은
+다른 옵션을 싣지 않는다(모션 꺼짐 = 즉시, 레퍼런스에 명시). (4) `Cb`는 연결과 같은 게이트로만 두고 발화 뒤 `nil`(끝난 트윈의 클로저가 인스턴스
+수명 동안 남지 않게). (5) Dedup 스킵 시 콜백은 **트윈을 시작시킨 값의 것**이 끝까지 — 의도된 동작, 레퍼런스 한 줄. (6) `zeroTime` + `Override =
+"Finish"`는 Finish 스냅을 건너뛴다(같은 동기 호출 안 이중 쓰기 — Immediate 시그널에서 유령 값). 사용자 문항 하나: 아키텍처 "새 코드는
+`const`" 원칙이 src에 한 번도 적용된 적 없음(round11 Q70).

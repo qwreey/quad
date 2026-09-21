@@ -171,7 +171,7 @@ const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis
 const label = D.TextLabel { title, Text = "카운터" }
 ```
 
-`emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 검사도 추가 의미도 없는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [12장](/getting-started/12-functions/)에서 이름(커링)을 붙입니다.
+`emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 넘긴 것이 함수인지만 검사하는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [12장](/getting-started/12-functions/)에서 이름(커링)을 붙입니다.
 
 ---
 

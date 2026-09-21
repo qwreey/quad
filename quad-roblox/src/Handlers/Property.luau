@@ -102,8 +102,13 @@ local function install(quad: any)
 	--               while that tween had not finished. The engine's own Cancelled notice is deferred (REPORT 3)
 	--               and lands AFTER a synchronous replacement's Started (REPORT 4) — so it is never used.
 	-- Order on replacement is therefore fixed: old Cancelled → new Started → (later) new Completed. A
-	-- Dedup-skipped same-target Tween fires nothing (no tween starts). A connection is made only when the
-	-- value carries Completed or Cancelled — callback-less tweens keep the old record shape and GC profile.
+	-- Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
+	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
+	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
+	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get
+	-- Cancelled on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means
+	-- SETTLED (finished or cancelled) and is set before any callback runs, so a throwing callback cannot
+	-- leave the record "running" (code-review 2026-09-21); `Cb` is released as soon as it has fired.
 	local function fire(v: any, name: string)
 		-- annotated on purpose: an unannotated `v[name]` narrowed by `~= nil` comes out as `*error-type* | ~nil`
 		-- under the new solver (2026-09-21 scratch, `typing-limits.md` 8.24)
@@ -120,11 +125,27 @@ local function install(quad: any)
 			rec.Conn = nil
 			conn:Disconnect()
 		end
-		if not rec.Done then
-			rec.Tween:Cancel()
-			if rec.Cb ~= nil then
-				fire(rec.Cb, "Cancelled")
+		if rec.Done then
+			return
+		end
+		rec.Done = true -- settle first (header)
+		local cb = rec.Cb
+		rec.Cb = nil
+		-- Deferred-notice window (code-review 2026-09-21; REPORT 1·3): the engine flips `PlaybackState` when the
+		-- tween reaches its target but delivers `Completed` only at the next resumption point — a synchronous
+		-- replacement/teardown inside that window is a FINISH, not a cancel. The pending notice died with the
+		-- connection above, so Completed is fired here instead (once). The engine state is read only for this
+		-- gate; the record's value truth still comes from the property (retractor below).
+		local playback = (Enum :: any).PlaybackState
+		if playback ~= nil and rec.Tween.PlaybackState == playback.Completed then
+			if cb ~= nil then
+				fire(cb, "Completed")
 			end
+			return
+		end
+		rec.Tween:Cancel()
+		if cb ~= nil then
+			fire(cb, "Cancelled")
 		end
 	end
 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
@@ -239,9 +260,14 @@ local function install(quad: any)
 				end
 				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
 			end
-			-- [2026-09-21] an Info-less `Time == 0` Tween is a snap with callbacks (Animate's CanAnimate=false
-			-- path hands one over) — no engine tween is created for it.
+			-- [2026-09-21] an Info-less `Time == 0` Tween with nothing else to play (no delay, no repeat, no
+			-- reverse) is a snap with callbacks — Animate's CanAnimate=false path hands one over, and a hand-written
+			-- one behaves the same (the only difference from the engine is that the write is synchronous;
+			-- CHANGELOG Changed). Any of those fields set keeps the engine path (code-review 2026-09-21).
 			local zeroTime = tweenIn and v.Info == nil and v.Time == 0
+				and (v.DelayTime == nil or v.DelayTime == 0)
+				and (v.RepeatCount == nil or v.RepeatCount == 0)
+				and v.Reverses ~= true
 			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
 			-- engine tween before touching the old one — `TweenService:Create` may
 			-- raise on engine-typed options (header), and cancelling first left a
@@ -253,8 +279,10 @@ local function install(quad: any)
 				-- branch 3: an engine tween is active — clean it up before the new value lands
 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
 				-- Finish-snap to: the property already holds that value)
-				stopRunning(prev) -- Cancel (if still running) + previous Cancelled callback + Disconnect
-				if tweenIn and v.Override == "Finish" then
+				stopRunning(prev) -- settle: Cancel (if still running) + previous Cancelled/Completed + Disconnect
+				if tweenIn and v.Override == "Finish" and not zeroTime then
+					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+					-- synchronous write of the same property, visible under Immediate signals; code-review)
 					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
 				end
 			end
@@ -264,19 +292,25 @@ local function install(quad: any)
 			end
 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
 			if tweenIn then
-				local rec: any = { Tween = engineTween, Value = v.Value, Cb = v }
+				local rec: any = { Tween = engineTween, Value = v.Value }
 				tweenSlots:SetStrong(inst, k, rec)
 				if v.Completed ~= nil or v.Cancelled ~= nil then
-					-- captures `rec`/`v`/`conn` only — never `inst` (header)
+					-- `Cb` and the connection share this gate (header: Cancelled alone still needs `Done`);
+					-- the closure captures `rec`/`conn` only — never `inst`
+					rec.Cb = v
 					local conn: any
 					conn = engineTween.Completed:Connect(function(state: any)
 						conn:Disconnect()
 						if rec.Conn == conn then
 							rec.Conn = nil
 						end
-						if state == Enum.PlaybackState.Completed then
+						if state == Enum.PlaybackState.Completed and not rec.Done then
 							rec.Done = true
-							fire(v, "Completed")
+							local cb = rec.Cb
+							rec.Cb = nil
+							if cb ~= nil then
+								fire(cb, "Completed")
+							end
 						end
 					end)
 					rec.Conn = conn

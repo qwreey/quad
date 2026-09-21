@@ -345,6 +345,53 @@ do
 	local _i = q.Declaration.Frame({ Size = src3 }) :: any
 	src3:Set(Tween({ Value = 1, Time = 0.3 }))
 	assert(#lastTween().Completed.connections == 0, "no connection without Completed/Cancelled")
+	-- code-review 2026-09-21 (a): deferred-notice window — PlaybackState already Completed but the signal not yet
+	-- delivered; a synchronous replacement counts as a FINISH (Completed once, no Cancel/Cancelled), and the
+	-- late engine notice is ignored
+	mock.resetTweenLog()
+	table.clear(order)
+	local src4 = q.Source(0 :: any)
+	local _j = q.Declaration.Frame({ Size = src4 }) :: any
+	src4:Set(tw("w", 1))
+	local w = lastTween()
+	table.clear(order)
+	w.PlaybackState = "Completed" -- engine reached the target; `Completed` still queued
+	src4:Set(tw("x", 2))
+	assert(w.cancels == 0 and table.concat(order, ",") == "w:completed,x:started", "window: finish, not cancel: " .. table.concat(order, ","))
+	table.clear(order)
+	w.Completed:Fire("Completed") -- the late notice
+	assert(#order == 0, "late notice ignored")
+	-- code-review (b): a throwing Cancelled callback settles the record first — the next write does not
+	-- Cancel/fire the same tween again, and the new tween still starts
+	mock.resetTweenLog()
+	local src5 = q.Source(0 :: any)
+	local _k = q.Declaration.Frame({ Size = src5 }) :: any
+	src5:Set(Tween({ Value = 1, Time = 0.3, Cancelled = function() error("boom") end }))
+	local boom = lastTween()
+	local okB = pcall(function() src5:Set(Tween({ Value = 2, Time = 0.3 })) end)
+	assert(not okB and boom.cancels == 1, "callback error propagates once")
+	src5:Set(Tween({ Value = 3, Time = 0.3 }))
+	assert(boom.cancels == 1 and #log == 3, "settled record is not cancelled again; new tween created")
+	-- code-review (c): Time=0 with a delay/repeat/reverse still takes the engine path
+	mock.resetTweenLog()
+	local src6 = q.Source(0 :: any)
+	local _l = q.Declaration.Frame({ Size = src6 }) :: any
+	src6:Set(Tween({ Value = 1, Time = 0.3 }))
+	src6:Set(Tween({ Value = 2, Time = 0, DelayTime = 1 }))
+	assert(#log == 2, "Time=0 + DelayTime → engine tween, not a snap")
+	-- code-review (d): Cb is released after the callback fired; no Cb without Completed/Cancelled
+	mock.resetTweenLog()
+	local src7 = q.Source(0 :: any)
+	local m = q.Declaration.Frame({ Size = src7 }) :: any
+	src7:Set(Tween({ Value = 1, Time = 0.3, Started = function() end }))
+	local recS = (getfenv(installProperty) :: any) -- (no direct slot access; the Started-only value makes no connection)
+	assert(#lastTween().Completed.connections == 0 and recS ~= nil, "Started alone: no connection")
+	src7:Set(Tween({ Value = 2, Time = 0.3, Completed = function() end }))
+	local n = lastTween()
+	n:simulateCompleted()
+	m.Size = 2
+	q.Dispatch.retractFrom(m, "Size", 1)
+	assert(n.cancels == 0, "finished tween not cancelled at teardown")
 	print("PASS")
 end
 

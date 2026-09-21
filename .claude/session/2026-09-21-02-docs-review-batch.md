@@ -45,3 +45,12 @@
 커밋 `c0af0c7d`(문서 넷) · `90c73226`(Tween 콜백) · `fd435174`(각주 히트 영역) · `26736860`(Store 장·재번호). test.sh exit 0(스펙 61),
 doc-check ERROR 0, 사이트 161→162페이지(Store 장). `/code-review`(`90749199..HEAD`, sonnet 서브에이전트)는 이 파일 작성 시점에 진행 중 —
 결과는 이 파일 끝에 덧붙인다. 남은 합본 문항: 1-4(문항 제시됨), 2-1·2-3·2-4·2-5, 3-1~3-6·3-8.
+
+## 체크포인트 code-review 결과(사용자 이석 중 반영)
+
+`90749199..HEAD` 리뷰(파인더 8·검증자 3, 전부 sonnet) 발견 10 → round11 원장 §8 `H-581`~`H-588` 자율 반영(근거가 손에 있는 것만 —
+HIGH `H-581`: 엔진이 목표에 닿아 `PlaybackState`는 `Completed`인데 통지가 아직 큐에 있는 창에서 동기 교체·철거가 오면 취소로 처리되던 것
+→ `stopRunning`이 그 상태를 읽어 완료로; `H-582` `Done`을 콜백 전에 세워 던지는 콜백에도 멱등; `H-583` `Time == 0` 스냅 조건을
+Delay/Repeat/Reverses 없음으로 좁히고 CHANGELOG Changed; `H-584` `AnimateInfo` 타입; `H-585` Dedup 콜백 소유 문서; `H-586` `Cb` 게이트·발화
+뒤 해제; `H-587` GS 09 문장; `H-588` zeroTime+Finish 이중 쓰기 생략), 세션 파일 부재 지적은 이 파일로 닫힘, **`Q70`(`const` 규칙이 src에 0건 —
+규칙 유지/좁힘/폐기)은 사용자 문항**으로 `question.md` 2절에. 스펙 11에 window·boom·Time=0+Delay·Cb 해제 케이스 추가, test.sh exit 0.
