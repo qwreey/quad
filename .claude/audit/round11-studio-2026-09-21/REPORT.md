@@ -23,3 +23,8 @@
 **사용자 의견(2026-09-21)**: *"소문자 별칭들에 대한 동작은 roblox 측에서도 deprecated 라서 우리가 보장할 것이 없어. 문서화로 끝나는 범위이고, 우리가 표면에서 주든 말든 큰 문제 없다 봄. Deprecated 를 통으로 유지한다기 보단, 자주 쓰이던 것들만 유지해준다였어. remove 나 destroy 처럼 안 쓰이는건 지워도 돼. 특히 소문자는 quad v1 이 있기도 전의 요소야. 그리고 v1 이 바로 compat 하게 연결되지 못한다는게, 중간자가 있어야한다는게 지금 상황이고 마이그레이션에 있어서 재작성은 불가피하기에 자잘한 요소는 멈춰둬도 돼. 다만 재작성에 노고가 많이 드는 Font 등 일부 표면을 놔둔다는건데."* — 즉 2026-09-09의 "Deprecated 통째" 규칙(`PROP_TAG_LEGACY`)은 메인이 넓게 적은 것이고 의도는 허용목록.
 
 **메인 의견**: Hidden처럼 Deprecated도 허용목록으로. 남길 후보 `Font`·`Transparency`·`FontSize`·`TextWrap`, 뺄 후보 `className`·`Camera.focus`·`DistanceLowerLimit`/`DistanceUpperLimit`, `Draggable`은 사용자 판단. 타입 표면만 바뀌는 변경(BREAKING 주간 안), 생성기 규칙 + 표면 JSON. **반영은 보류(사용자 지시) — 결정: (대기)**.
+
+## 2. 물리 자식 순서(HUMAN_TODO 12, K′) — **실측 불가(환경), 보류**
+
+**2026-09-21**: rojo serve(`0.0.0.0:34872`, 이 머신 `172.17.7.4`)를 사용자가 Connect해 `ReplicatedStorage`의 `quad-base`/`quad-roblox`가 HEAD로 갱신된 것까지 확인(`holdLifetime`·Q61 마커). 그러나 MCP `execute_luau` 스레드가 **제한 capability 스레드**로 돌아 rojo가 넣은 일반 ModuleScript를 `require`할 수 없다 — `The current thread cannot require 'quad_base' since 'quad_base' has additional values for the Capabilities property: LoadUnownedAsset (and 3 more)`. 9월 8·16일 실측(같은 클론+require 관용구)은 통과했으므로 그 뒤 Studio/MCP 플러그인의 Script Capabilities 처리가 바뀐 것. 우회 시험: 스크래치 폴더 `Sandboxed = true`면 클론·부모 대입·require 게이트는 지나지만 모듈에 `RunServerScript`가 없어 `cannot start`, `Capabilities` 대입은 `cannot extend 'Capabilities' (lacking capability LoadUnownedAsset)`로 거부(스레드가 권한을 부여할 수 없음). 스크래치는 전부 파괴. **사람 몫**: Studio Beta Features의 Script Capabilities 계열 베타를 끄거나(권장), 명령줄(전체 권한)에서 quad 폴더 둘을 샌드박스+capability로 설정. 그 전까지 남은 실측(2~5번, 전부 Slot 실기기)은 보류. 참고: `Enum.SecurityCapability` 목록과 `SecurityCapabilities.new(...)` 생성자는 그대로 쓸 수 있었다.
+
