@@ -16,4 +16,7 @@
 .fn-popover > p { margin: 0; }
 .fn-popover > p + p { margin-top: 0.4rem; }
 /* 각주 번호는 눌리는 것이라는 신호 */
-sup a[data-footnote-ref] { cursor: help; text-decoration: none; padding: 0 0.15em; }
+/* 히트 영역을 명시한다 — headless Chrome(--disable-gpu) 실측에서 좌표 클릭이 <sup><a>를 못 맞히고 조상으로 떨어진
+   관측이 있어(quad-site-tester 2026-09-21, 실기기 미확인) inline-block + 스택 순서로 방어 */
+sup:has(> a[data-footnote-ref]) { position: relative; z-index: 1; line-height: 0; }
+sup a[data-footnote-ref] { cursor: help; text-decoration: none; padding: 0 0.2em; display: inline-block; min-width: 1em; text-align: center; }

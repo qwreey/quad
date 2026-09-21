@@ -37,7 +37,10 @@
 	}
 
 	document.addEventListener('click', function (e) {
-		var ref = e.target.closest && e.target.closest('a[data-footnote-ref]');
+		if (!e.target.closest) return;
+		var ref = e.target.closest('a[data-footnote-ref]');
+		// <sup> 자체가 맞은 경우(좌표 히트테스트가 <a>를 비껴간 관측 — CSS 주석 참고)도 안의 각주 링크로 취급
+		if (!ref) { var sup = e.target.closest('sup'); ref = sup && sup.querySelector('a[data-footnote-ref]'); }
 		if (!ref) return;
 		if (open(ref)) e.preventDefault();
 	});
