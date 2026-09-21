@@ -90,6 +90,7 @@ CLI에서 돈다"면서 `@game/…` 경로로 require한다(CLI에서 안 풀림
 있는 1층(반응형 그래프만 검증)을 CLI에서 실제로 require하는 방법으로 다시 쓰고, 2층 이상은 "공개 경로 없음"으로 짧게 닫고, §5와 spec
 이야기는 기여자 문서(레포 README나 `.claude/`)로 옮기기, (b) 공개 mock(`quad-mock`)이 생길 때까지 페이지를 목록에서 내리기, (c) 그대로.
 메인 권고는 (a). (옛 N7·문항 없음 — 외부자 통독 발견)
+**[2026-09-21 닫힘 — (a)]** 사용자: *"quad-mock 은 언젠가는 사용자 물건이 될 것이고 그 전 까진 해당 문서는 지금 할 수 있는걸 모아주고, mock 이 들어가는건 주석 처리 하거나, 그냥 공개 하지만 캐비엇 달아주는게 나아서 권고대로"*. 반영: §2를 실측된 CLI 구성(luau 타깃 pesde 프로젝트, `luau_packages/quad_base.luau` 링커는 일반 파일이라 relink 불필요 — `audit/headless-cli-install-2026-09-21.md`)으로 다시 쓰고, 프로바이더 없는 `:Set`은 `isHeld is not available` 에러라는 사실(메인 재실측 — 에이전트가 적은 `canExecute`는 틀림)을 적음; §3은 공개 mock 없음 캐비엇을 머리에 두고 그대로 공개; 옛 §5는 새 루트 `CONTRIBUTING.md`로 이동(README 한 줄).
 
 **2-2. how-to 01·05의 `require(<quad-roblox D 모듈 경로>)` 자리표시자.** **[2026-09-16 닫힘 — (d) 사용자 "권고대로": 생성 D가 stable로 확정돼 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem`을 편입(`gen-d.py`), how-to 01·05는 `RobloxModule.…`, 설치 문서 타입 재익스포트 절 갱신, `spec.rootexports` 양성 추가.]** 클래스별 타입(`TextButtonModifier`·`IntoTextButton` 등)을
 가져오는 경로가 문서 어디에도 없어, 두 레시피를 복사하면 첫 줄에서 막힌다. 이미 열려 있던 `HUMAN_TODO.md` D절 "클래스별 타입 경로"와

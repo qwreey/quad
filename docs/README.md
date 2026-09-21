@@ -75,7 +75,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 14](./getting-started/14-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Throttle`·"안 해주는 것"만 다룬다.
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
-- [`06-headless-testing.md`](./how-to/06-headless-testing.md) — `./scripts/test.sh`(판정은 exit code)와 테스트 내부 mock 백엔드. 공개 `quad-mock`은 백로그.
+- [`06-headless-testing.md`](./how-to/06-headless-testing.md) — 반응형 그래프(`Source`/`Compute`/`Store`/`Blocker`)는 평범한 `luau` CLI에서 실측된 require 경로로 그대로 검증됩니다. 프로바이더 주입·`Observer`/`Effect`의 생명주기 결합·`Slot` 조립은 공개 `quad-mock`이 아직 없어 자기 프로바이더가 필요합니다. 이 저장소 자체의 테스트는 `CONTRIBUTING.md`.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Declaration.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
 - [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).

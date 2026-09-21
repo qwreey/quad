@@ -46,6 +46,8 @@ local D = q.Declaration
 
 [`CHANGELOG.md`](./CHANGELOG.md). SemVer를 따르고, 3.x가 이 재작성(v2)의 첫 계열입니다.
 
+이 저장소 자체를 고치고 테스트를 돌리는 법은 [`CONTRIBUTING.md`](./CONTRIBUTING.md)를 보세요.
+
 ## 라이선스
 
 [MIT](./LICENSE)

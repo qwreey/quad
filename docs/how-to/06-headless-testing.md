@@ -1,12 +1,12 @@
 ---
 title: "06. Roblox Studio 없이 헤드리스로 테스트하기"
-description: "Studio 없이 quad의 반응형 로직과 디스패치를 헤드리스로 검증하는 방법을 설명합니다"
+description: "quad의 반응형 그래프(Source/Compute/Observer/Store/Blocker)를 Studio 없이 평범한 luau CLI에서 검증하는 법과, 백엔드가 필요한 나머지 부분을 자기 프로바이더로 확인하는 법을 설명합니다"
 ---
 # [실전 레시피] 06. Roblox Studio 없이 헤드리스로 테스트하기
 
-> **대상 독자**: 반응형 로직과 컴포넌트 조립을 Studio를 켜지 않고 검증하고 싶은 개발자
-> **다루는 개념**: `quad-base`의 엔진 무관성, 프로바이더 주입, mock 백엔드, `./scripts/test.sh`
-> **범위**: 갖다 쓸 수 있는 **공개 mock 패키지는 아직 없습니다**(§3). 이 문서가 다루는 것은 이 저장소의 테스트 구조와, 자기 프로바이더를 직접 붙여 헤드리스로 검증하는 방법입니다.
+> **대상 독자**: 반응형 로직을 Studio를 켜지 않고 검증하고 싶은 개발자
+> **다루는 개념**: `quad-base`의 엔진 무관성, `Source`/`Compute`/`Observer`/`Store`/`Blocker`의 등록 의미론, 프로바이더 주입, `Slot` 조립
+> **범위**: 반응형 그래프(§2)는 여러분의 프로젝트에 이미 깔려 있는 `quad_base`만으로 평범한 `luau` CLI에서 그대로 됩니다. 백엔드가 있어야 하는 부분(§3 — 프로바이더 주입, `Observer`/`Effect`/`Slot`의 생명주기 결합, 트리 조립)은 **갖다 쓸 수 있는 공개 mock 패키지가 아직 없어서** 자기 프로바이더를 직접 붙이거나 이 저장소의 spec을 본보기로 삼아야 합니다. 실제 Roblox 프로퍼티/이벤트/Tween은 Roblox Studio에서 직접 확인해야 합니다.
 
 ---
 
@@ -17,25 +17,65 @@ description: "Studio 없이 quad의 반응형 로직과 디스패치를 헤드�
 일어납니다. 그래서 `Source`/`State`/`Store`/`Blocker`/`Slot` 같은 반응형·부기
 로직은 **평범한 `luau` CLI에서 그대로 돌아갑니다.**
 
-이 구조를 테스트에 쓰는 방법은 세 층이고, 앞의 둘이 CLI에서 돕니다.
+이 구조를 테스트에 쓰는 방법은 세 층이고, 첫 층만 백엔드 없이 됩니다.
 
 ```
 1. 반응형 그래프 (Source, State, Store, Blocker, Compute)   → 백엔드 없이 그냥 돈다
-2. 디스패치/Slot 부기 (Slot:List, 재조정, 생명주기)          → mock 백엔드 위에서 돈다
+2. 디스패치/Slot 부기 (Slot:List, 재조정, 생명주기)          → 프로바이더가 있어야 돈다(공개 mock 없음)
 3. 실제 Roblox 프로퍼티/이벤트/Tween                          → Roblox Studio에서 직접 확인해야 한다
 ```
 
-UI 버그가 났을 때 1·2층에서 재현되면 Studio를 열 필요가 없습니다.
+UI 버그가 났을 때 1층에서 재현되면 Studio를 열 필요가 없습니다.
 
 ---
 
-## 2. 반응형 그래프만 테스트하기
+## 2. 반응형 그래프만 테스트하기 — 오늘 되는 것
 
-백엔드 설치 없이 `quad-base`만 있으면 됩니다.
+백엔드 설치 없이 `quad-base`만 있으면 됩니다. 가장 단순한 구성은 `quad_base`
+하나만 까는 별도의 `luau` 타깃 pesde 프로젝트입니다(게임 본체 프로젝트와
+분리해도 되고, 같은 워크스페이스 안에 둬도 됩니다) — 실제로 레지스트리에서
+설치해 확인한 구성입니다.
+
+```toml
+# pesde.toml
+name = "you/headless_demo"
+version = "0.1.0"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[target]
+environment = "luau"
+
+[dependencies]
+quad_base = { name = "qwreey/quad_base", version = "^3.2.0" }
+```
+
+```bash
+pesde install
+```
+
+`pesde install`이 만드는 `luau_packages/`는 이렇습니다(실측 그대로).
+
+```
+luau_packages/
+├── quad_base.luau                              -- 링커: require("./.pesde/.../quad_base/src")로 위임
+└── .pesde/qwreey+quad_base/3.2.0/quad_base/src/...
+```
+
+`quad_base.luau`도 그 아래 `.pesde/` 실체도 **전부 일반 파일**입니다 —
+심볼릭 링크가 아니라서 순정 `luau` CLI가 별다른 준비 없이 그대로 따라갑니다.
+(이 저장소 자신을 고칠 때 필요한 `scripts/relink.sh`는 다른 문제입니다 — 이
+저장소가 여러 패키지를 한 워크스페이스로 묶어 두고 서로 참조하는 데서 생기는
+심볼릭을 되돌리는 절차라, 여러분의 프로젝트에는 해당하지 않습니다. 자세한 건
+[`CONTRIBUTING.md`](../../CONTRIBUTING.md).)
+
+[00. 설치](../getting-started/00-installation.md)대로 `environment = "roblox"`로 구성한 게임
+프로젝트의 `roblox_packages/` 사본을 `luau` CLI에서 바로 require하는 것은 확인하지 않았습니다 —
+헤드리스 검증은 위처럼 `luau` 타깃 프로젝트를 따로 두는 것이 확인된 길입니다.
 
 ```luau
--- 설치 경로는 프로젝트 구성에 따라 다르다(시작하기 00 참고)
-local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
+local Quad = require("../luau_packages/quad_base")
 
 local count = Quad.Source(0)
 local isEven = count:Compute(function(c)
@@ -66,12 +106,30 @@ gate:Off()          -- 여기서 밀린 전파가 정확히 한 번
 -- gate:OffWithoutEmit() -- 밀린 전파를 버리며 연다
 ```
 
+`Observer`/`Effect`도 이 층에서 **등록**은 됩니다 — `hp:Observer(fn)`을 만들면
+곧바로 1회 발화합니다. 다만 그 이상은 이 층의 일이 아닙니다: 프로바이더가
+아예 없는 채로 그 원천에 다시 `:Set`을 부르면 조용히 보류되는 게 아니라
+`quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops …`
+에러로 그 자리에서 던집니다(생명주기 op가 하나도 안 심긴 상태라는 안내). 인스턴스 수명에
+묶이는 나머지 동작(보류·재생·정지)은 §3에서 다룹니다.
+
 ---
 
-## 3. 백엔드가 필요한 것 — 프로바이더 주입
+## 3. 백엔드가 필요한 것 — 공개 mock은 아직 없습니다
+
+> ⚠️ **공개 mock 패키지는 아직 없습니다.** 이 저장소가 쓰는
+> `quad-base/test/mock.luau`는 테스트 내부물이고 배포되지 않습니다 — 물리
+> 트리 조작·판정·훅·생명주기 hold op 넷·태그/어트리뷰트·시간 op를 전부
+> 심지만 그 위에 공개 표면(`D` 등)은 없습니다. 범용 렌더 디버깅 도구
+> `quad-mock`은 백로그입니다 — 언젠가 사용자 대면 패키지가 될 예정이지만
+> 지금은 아닙니다. 지금 `Observer`/`Effect`/`Slot`을 헤드리스로 검증하려면
+> **자기 프로바이더를 직접 쓰거나**, 이 저장소의 spec을 본보기로 삼으세요.
+> 프로바이더가 채워야 하는 계약 전체는
+> [백엔드 프로바이더 규약](../reference/extend/01-backend-provider-contract.md)이
+> 다룹니다.
 
 `Observer`/`Effect`/`Slot`은 **인스턴스 수명**에 묶여 동작하므로, 생명주기 op를
-심는 프로바이더가 있어야 합니다. 설치 표면은 하나입니다.
+심는 프로바이더가 있어야 §2에서 못 본 나머지가 돕니다. 설치 표면은 하나입니다.
 
 ```luau
 local q = Quad.New():UseProvider(myProvider)
@@ -84,23 +142,9 @@ local q = Quad.New():UseProvider(myProvider)
 - `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 인스턴스입니다.
   테스트마다 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰세요.
 
-참고로 이 저장소의 mock 프로바이더는 물리 트리 조작·판정·훅·생명주기 hold op 넷·
-태그/어트리뷰트·시간 op를 모두 심고, 그 위에 얹는 공개 표면은 없습니다(빈 확장 —
-`D`가 없습니다). op 하나하나가 무엇을 요구하는지는
-[백엔드 프로바이더 규약](../reference/extend/01-backend-provider-contract.md)이
-다룹니다. 다만 백엔드가 실제로 채워야 하는 op 목록의 정본은 그 백엔드의
-엔진 op 파일이니, 자기 프로바이더를 쓸 생각이라면 문서를 계약으로 믿지 말고
-그쪽을 보세요.
-
-> ⚠️ **공개 mock 패키지는 아직 없습니다.** 이 저장소가 쓰는
-> `quad-base/test/mock.luau`는 테스트 내부물이고 배포되지 않습니다
-> (범용 렌더 디버깅 도구 `quad-mock`은 백로그입니다). 지금 헤드리스로
-> 컴포넌트를 검증하려면 자기 프로바이더를 직접 쓰거나, 이 저장소의 spec을
-> 본보기로 삼으세요.
-
 ### 생명주기에 묶이기 전까지 `Observer`는 발화하지 않는다
 
-헤드리스 테스트에서 가장 자주 걸리는 함정입니다.
+프로바이더가 있는 채로도 헤드리스 테스트에서 가장 자주 걸리는 함정입니다.
 
 ```luau
 local hp = q.Source(100)
@@ -128,9 +172,7 @@ assert(runs == 3, "인스턴스가 죽으면 더 이상 발화하지 않는다")
 `Observer`/`Effect`를 **props의 숫자 키 자리에** 넣으면 quad가 그 인스턴스 수명에
 묶어 줍니다.
 
----
-
-## 4. 트리 조립 검증
+### 트리 조립 검증
 
 백엔드가 설치된 인스턴스라면 `Slot`의 재조정을 물리 자식 수로 직접 검증할 수
 있습니다.
@@ -155,7 +197,7 @@ assert(#parent:GetChildren() == 1, "사라진 키의 요소는 파괴된다")
 ```
 
 `q.Dispatch.drive`는 이 저장소의 spec이 쓰는 디스패치 진입점입니다 — 컴포넌트
-코드에서 직접 부를 일은 없고, 안정된 테스트 API로 약속된 표면도 아닙니다.
+코드에서 직접 부를 일은 없고, **안정된 테스트 API로 약속된 표면도 아닙니다.**
 
 Roblox 프로퍼티/이벤트까지 태우려면 `quad-roblox`를 설치한 채 반사(reflection)
 조회와 `Instance.new`를 테스트용으로 갈아끼워야 합니다 — 이 저장소의
@@ -163,39 +205,11 @@ Roblox 프로퍼티/이벤트까지 태우려면 `quad-roblox`를 설치한 채 
 
 ---
 
-## 5. 테스트 돌리기
+## 4. 이 저장소 자체를 테스트하려면
 
-이 저장소의 진입점은 **`./scripts/test.sh` 하나**입니다.
-
-```bash
-./scripts/test.sh; echo $?
-```
-
-- **판정은 종료 코드입니다.** 스크립트는 타입 검사 진단이 있어도 개별 테스트
-  실행을 계속하므로, 출력에 찍힌 `ALL PASS` 줄 개수를 세면 안 됩니다. `0`이
-  아니면 실패입니다.
-- 스크립트는 먼저 `scripts/relink.sh`를 돌립니다. **`luau` CLI가 심볼릭 링크를
-  못 타기 때문**입니다 — 패키지 링크를 실제 복사로 바꿔놓지 않으면 스모크가
-  죽고, 더 나쁘게 `luau-analyze`는 모듈을 `any`로 떨어뜨린 채 **조용히
-  통과**합니다("거짓 클린").
-- 그다음 타입 검사 두 그룹이 돕니다. 엔진 무관 그룹(`quad-base`/`quad-types`/`quad-error`, 두 번째 패스는 `type-version-check`까지)은
-  **Roblox 정의 없이** 두 패스로 분석해서 엔진 전역이 새어 들어오면 그 자리에서 걸립니다 —
-  `luau-analyze` 한 번, `luau-lsp analyze --flag:LuauSolverV2=true` 한 번입니다. 둘 다 신 솔버이고,
-  차이는 솔버 종류가 아니라 Luau 빌드(luau-analyze 0.734 / luau-lsp 1.69.0 내장)와 설정입니다.
-  `quad-roblox`만 Roblox 타입 정의를 얹고 봅니다.
-- 그다음 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
-  `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 문서 커버리지와 버전 정합성 게이트가 돕니다.
-
-테스트 프레임워크는 쓰지 않습니다. 각 spec은 그냥 `assert`와 `print`로 된
-평범한 Luau 스크립트이고, 실패하면 `assert`가 그 자리에서 던집니다.
-
-```luau
-print("=== 1. 무엇을 검증하는지 ===")
-do
-    -- ... assert들 ...
-    print("PASS")
-end
-```
+이 저장소 자신의 `./scripts/test.sh`(relink, 타입 검사 그룹, spec 관용구)는
+사용자가 아니라 기여자를 위한 절차입니다 — [`CONTRIBUTING.md`](../../CONTRIBUTING.md)를
+보세요.
 
 ---
 
@@ -216,11 +230,11 @@ end
 ```quiz
 # 생명주기에 묶이기 전의 Observer
 
-아직 아무 인스턴스에도 묶이지 않은 `Observer`는 어떻게 동작하나요?
+프로바이더가 설치돼 있지만 아직 아무 인스턴스에도 묶이지 않은 `Observer`는 어떻게 동작하나요?
 
 - [x] 등록 즉시 1회 발화하고, 묶이기 전의 변경은 보류됐다가 묶는 순간 한 번 재생됩니다
 - [ ] 묶기 전에는 한 번도 발화하지 않다가, 묶는 순간부터 새 변경만 받습니다
 - [ ] 묶인 인스턴스가 파괴된 뒤에도 변경을 계속 받습니다
 
-헤드리스 테스트에서 가장 자주 걸리는 자리입니다. 인스턴스가 죽으면 그 뒤의 변경에는 더 이상 발화하지 않고, 실제 컴포넌트 코드에서는 `Observer`를 props의 숫자 키 자리에 넣으면 quad가 대신 묶어 줍니다.
+헤드리스 테스트에서 가장 자주 걸리는 자리입니다. 인스턴스가 죽으면 그 뒤의 변경에는 더 이상 발화하지 않고, 실제 컴포넌트 코드에서는 `Observer`를 props의 숫자 키 자리에 넣으면 quad가 대신 묶어 줍니다. (프로바이더가 아예 없으면 이야기가 다릅니다 — §2 끝을 보세요.)
 ```
