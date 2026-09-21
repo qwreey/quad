@@ -132,9 +132,19 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 	end
 end
 
+-- [2026-09-21 사용자 결정 — GS 05장 `:Added` 관용구] A nil ARGUMENT means "nothing to add/remove" — for the
+-- constructor's vararg slots, `Added`/`Removed`'s one argument and `Merged`'s slots. A nil HOLE inside a list
+-- stays an error (`H-380`): a table cannot hold nil, so `{ cond and "a" or nil, "b" }` silently truncates,
+-- while an argument's presence is exact (`select("#")`). This is what makes the immutable idiom
+-- `tag:Added(if cond then "Even" else nil)` an EXPRESSION that must be assigned — the alternative, a
+-- statement `if cond then tag:Added("Even") end`, drops the returned Tag silently and no type checker
+-- catches it (user: "base 자체가 바뀌는게 아닌 새로 생성되므로 = 으로 대입해야한다를 강하게 알려야").
+-- `Contains` keeps rejecting nil (`H-468`): asking "is nil a member" is a bug, not an empty choice.
 function TagImpl.Added(self: any, nameOrList: any): any
 	local names = table.clone(self._names)
-	flattenInto(names, nameOrList, 1)
+	if nameOrList ~= nil then
+		flattenInto(names, nameOrList, 1)
+	end
 	return newTag(names)
 end
 
@@ -142,7 +152,9 @@ function TagImpl.Removed(self: any, nameOrList: any): any
 	-- `H-344`: same validation as `Added` — a non-string used to be a silent
 	-- no-op and `nil` a VM "table index is nil" blaming this file
 	local toRemove: { [string]: true } = {}
-	flattenInto(toRemove, nameOrList, 1)
+	if nameOrList ~= nil then
+		flattenInto(toRemove, nameOrList, 1)
+	end
 	local names = table.clone(self._names)
 	for name in pairs(toRemove) do
 		names[name] = nil
@@ -191,9 +203,13 @@ local Tag = setmetatable({}, {
 		local names: { [string]: true } = {}
 		-- visit every vararg slot (select, not `{...}`+ipairs — a nil hole would
 		-- silently drop everything after it; Attr's __call does the same,
-		-- 통합 리뷰 발견). A nil slot is a validation error like any non-name.
+		-- 통합 리뷰 발견). A nil SLOT is "nothing here" (2026-09-21, see `Added`) — the slot count
+		-- is exact, so nothing after it is lost; every non-nil slot is validated as before.
 		for i = 1, select("#", ...) do
-			flattenInto(names, (select(i, ...)), 1)
+			local v = select(i, ...)
+			if v ~= nil then
+				flattenInto(names, v, 1)
+			end
 		end
 		return newTag(names)
 	end,
@@ -203,6 +219,9 @@ function Tag.Merged(...: any): any
 	local names: { [string]: true } = {}
 	for i = 1, select("#", ...) do
 		local tag = select(i, ...)
+		if tag == nil then
+			continue -- nil slot = nothing (2026-09-21, see `Added`)
+		end
 		if not isTag(tag) then
 			Err.errorBeforeNearest("Tag.Merged: arguments must be Tag values", SURFACE)
 		end

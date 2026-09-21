@@ -359,15 +359,15 @@ export type Operator = {
 export type TagIter = (self: any) -> (({ [string]: true }, string?) -> (string?, true?), { [string]: true })
 export type Tag = setmetatable<{
 	read __quadTag: true, -- 런타임 `TagImpl.__quadTag = true`(H-300)
-	Added: (self: Tag, names: TagNames) -> Tag,
-	Removed: (self: Tag, names: TagNames) -> Tag,
+	Added: (self: Tag, names: TagNames?) -> Tag, -- nil = nothing to add (2026-09-21) — `tag:Added(if cond then "x" else nil)`
+	Removed: (self: Tag, names: TagNames?) -> Tag,
 	Contains: (self: Tag, ...string) -> boolean, -- all present; vararg (`H-468`)
 	Apply: <U>(self: Tag, factory: (Tag) -> U) -> U,
 }, { __iter: TagIter }>
 -- `H10-3`/`H10-4` (d): 교집합(함수∩테이블 — 무거주라 값 캐스트 붕괴 +
 -- 제네릭 오염)이 아니라 솔버의 콜러블-테이블 표기로 선언한다. 실측
 -- A/B·잔여 구멍은 typing-limits 8.6절. `Merged`는 Tag만 받는 엄격형(`Tag(a, b)`와 결과 같음).
-export type TagConstructor = setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...TagNames) -> Tag }>
+export type TagConstructor = setmetatable<{ Merged: (...TagMarker?) -> Tag }, { __call: (self: any, ...TagNames?) -> Tag }> -- nil slots = nothing (2026-09-21)
 
 -- `Tween<T>`는 **[2026-09-07 사용자 결정] quad-roblox `types.luau`로 이동**했다 — 옵션
 -- 어휘(`Time`/`Style`/`Direction`/`RepeatCount`/`Reverses`/`DelayTime`)가 Roblox `TweenInfo`의

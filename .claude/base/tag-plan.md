@@ -349,3 +349,18 @@ removeTag(inst: any, names: {string}): ()
 재디스패치 모델(`question.md` 0-A)과 패키지 재배치까지 전부 반영 완료.
 남은 건 이름 자체(`Tag`/`Added`/`Removed`/`Merged`)가 용어 정리
 대기열(`.claude/question.md` 1번)에 있다는 것뿐.
+
+## [2026-09-21 사용자 결정 — GS 05장 `:Added` 관용구] 인자 자리의 `nil`은 "없음", 리스트 안 `nil` 구멍은 여전히 에러
+
+**모양**: `q.Tag("Card"):Added(if even then "Even" else nil)` — 생성자 vararg 슬롯·`Added`/`Removed` 인자·`Merged` 슬롯 전부 `nil`이면
+건너뛴다(타입 `TagNames?`). `H-380`의 리스트 구멍 거부와 `H-468`의 `Contains(nil)` 에러는 그대로. 갈라지는 선은 이 문서가 Compute 리턴 nil을
+두고 이미 그어 둔 것 — 테이블은 nil을 못 담아 구멍 뒤가 조용히 잘리지만, 인자는 `select("#")`로 개수가 정확하다.
+
+**근거(사용자)**: 조용한 무시(오타 변수)보다 더 심각한 실수를 막는다 — *"tag:Added(if...., if...) 또는 tag:Added(if....):Removed(if...)....
+식 체이닝을 안 넣는다 할 때, immutable 함을 잘 알고, base 자체가 바뀌는게 아닌 새로 생성되므로 = 으로 대입해야한다를 강하게 알려야해 …
+처음 가르칠 때 if ... then ... end 형태 안에 들도록 하면 실수 가능성이 더 높아진다고 봐. 이것 또한 조용하고 예는 심지어 타입 에러로 잡기
+불가한 부분이라, 오타보다 조금 더 심각해. 따라서 권장 동작 자체를 immutable 패턴에 맞게 줘야하고, nil변경은 이롭다고 보여"*. 즉 문장 꼴
+`if even then tag:Added("Even") end`는 돌려준 Tag를 버리고 타입 검사도 못 잡으므로, 조건을 **인자 안**에 두는 표현식 꼴을 권장 동작으로
+삼는다. 반영: `Tag.luau`(네 자리), `quad-types` 시그니처, `spec.tag`(옛 `Removed(nil)` 에러 케이스 → no-op·체이닝·리스트 구멍 유지 케이스),
+레퍼런스 core/09, CHANGELOG Changed. 옛 `H-344`의 "`Removed(nil)`은 VM 에러가 아니라 검증 에러" 목표는 유지된다(VM 에러가 아니라 무시).
+

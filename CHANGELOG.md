@@ -27,6 +27,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- `q.Tag(...)`·`tag:Added`·`tag:Removed`·`q.Tag.Merged`의 **인자 자리 `nil`은 이제 "없음"**입니다(전엔 검증 에러). `base:Added(if even then "Even" else nil)`처럼 조건을 인자 안에 쓰면 결과가 늘 새 `Tag`라 대입을 빠뜨릴 수 없습니다. 리스트 안 nil 구멍(`{ "a", nil, "b" }`)은 여전히 에러이고, `tag:Contains(nil)`도 그대로 에러입니다.
 - `Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`도 없는 `q.Tween{…}`은 이제 엔진 트윈 없이 값을 그 자리에서 씁니다(첫 세팅과 같은 스냅). 전에는 0초짜리 엔진 트윈을 만들어 다음 프레임에 썼습니다. 그 셋 중 하나라도 있으면 전과 같습니다.
 
 - `Claim`이 트리를 해석하는 단계에서 **이미 quad 소유인 인스턴스**(루트든 자식이든 — 템플릿에 꽂아 둔 `Declaration` 위젯, 먼저 `Claim`한 자식)를 `Claim: <이름> is already claimed by quad …`로 거부합니다. 아무것도 claim하기 전이라 루트와 형제는 무손상이고, 그 자식을 디스크립터에서 빼면 같은 루트에 다시 걸 수 있습니다. 전에는 자식의 경우 루트와 앞선 형제가 claim된 채 남아 그 루트를 영영 `Claim`할 수 없었습니다. 자기 백엔드를 만든 쪽: `isClaimed`가 "`nativeClaim`이 지나간 것만 참"이어야 이 게이트가 성립합니다(quad-roblox는 원래 그렇습니다).

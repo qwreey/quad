@@ -67,7 +67,7 @@ Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...Ta
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `...names` | `TagNames` | 문자열 / `Tag` / 그것들의 평범한 리스트. 개수 제한 없음 |
+| `...names` | `TagNames?` | 문자열 / `Tag` / 그것들의 평범한 리스트. 개수 제한 없음. **`nil` 인자는 "없음"** — 조건부로 넣을 때 `q.Tag("Card", if even then "Even" else nil)` |
 
 **반환** — 새 `Tag`(frozen).
 
@@ -75,8 +75,8 @@ Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...Ta
 
 - 인자가 없어도 됩니다 — `q.Tag()`는 빈 태그 집합입니다.
 - 인자마다 같은 문을 지납니다. `q.Tag(otherTag, "focus", { "a", "b" })`처럼 섞어 쓸 수 있습니다.
-- nil 슬롯은 조용히 무시되지 않고 검증 에러가 됩니다.
-- 리스트는 **배열**이어야 합니다 — 정수가 아닌 키가 섞이거나 nil 구멍이 있으면 에러입니다.
+- **인자 자리의 `nil`은 "더할 것 없음"입니다** — 인자 개수는 정확히 세어지므로 뒤 이름이 사라지지 않습니다. `:Added`/`:Removed`/`Merged`도 같습니다.
+- 리스트는 **배열**이어야 합니다 — 정수가 아닌 키가 섞이거나 nil 구멍이 있으면 에러입니다. 인자와 달리 **리스트 안** `nil`은 테이블이 담지 못해 뒤가 조용히 잘리기 때문입니다.
   - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table`
   - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
   - `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
@@ -101,12 +101,12 @@ local button = D.TextButton {
 **시그니처**
 
 ```luau
-Added: (self: Tag, names: TagNames) -> Tag
+Added: (self: Tag, names: TagNames?) -> Tag
 ```
 
-**반환** — 이름이 더해진 **새** `Tag`. 원본은 그대로입니다.
+**반환** — 이름이 더해진 **새** `Tag`. 원본은 그대로입니다 — 결과를 **대입하거나 돌려주어야** 합니다.
 
-**동작** — 인자 하나를 받고, 그 하나가 문자열이든 `Tag`든 리스트든 상관없습니다(생성자와 같은 문). 이미 있는 이름을 더하면 집합이라 변화가 없습니다.
+**동작** — 인자 하나를 받고, 그 하나가 문자열이든 `Tag`든 리스트든 상관없습니다(생성자와 같은 문). 이미 있는 이름을 더하면 집합이라 변화가 없습니다. **`nil`이면 아무것도 더하지 않은 새 `Tag`**입니다 — 그래서 조건은 인자 안에 씁니다: `base:Added(if even then "Even" else nil)`. 문장 꼴 `if even then base:Added("Even") end`는 돌려준 `Tag`를 버려 아무 일도 안 하고, 타입 검사도 잡지 못합니다.
 
 **예제**
 
@@ -114,6 +114,7 @@ Added: (self: Tag, names: TagNames) -> Tag
 local base = q.Tag("card")
 local selected = base:Added("selected")
 local both = base:Added({ "selected", "hovered" })
+local maybe = base:Added(if isSelected then "selected" else nil) -- 조건은 인자 안에 — 결과는 늘 새 Tag
 ```
 
 ## `tag:Removed(names)`
@@ -121,12 +122,12 @@ local both = base:Added({ "selected", "hovered" })
 **시그니처**
 
 ```luau
-Removed: (self: Tag, names: TagNames) -> Tag
+Removed: (self: Tag, names: TagNames?) -> Tag
 ```
 
 **반환** — 이름이 빠진 새 `Tag`.
 
-**동작** — `:Added`와 **똑같이 검증합니다.** 없는 이름을 빼는 것은 조용한 no-op이지만, 이름이 아닌 것을 넘기면 에러입니다.
+**동작** — `:Added`와 **똑같이 검증합니다.** 없는 이름을 빼는 것과 `nil`은 조용한 no-op이지만, 이름이 아닌 것을 넘기면 에러입니다. 체이닝은 왼쪽부터 읽습니다 — `base:Added(if a then "A" else nil):Removed(if b then "B" else nil)`.
 
 ## `tag:Contains(...names)`
 
