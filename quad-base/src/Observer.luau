@@ -115,18 +115,18 @@ local function createImpl(module: any)
 	-- "사용자 호출부"), the `H-378` lesson for a tagged intermediate frame.
 	function Impl._assertBindable(self: any)
 		if self._running then
-			Err.errorBefore("Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
+			Err.errorBefore("Quad0109 Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
 		end
 	end
 
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
 	function Impl.WeakSubscribe(self: any): any
 		if self._running then
-			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
+			Err.errorBeforeNearest("Quad0110 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
 		end
 		if not module.Backend.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
-			Err.errorBeforeNearest(
-				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
+			Err.errorBeforeNearest( -- error-code: inline if
+				if self.Subscribed then "Quad0111 Observer: already subscribed" else "Quad0234 Observer: already bound to an Instance",
 				SURFACE
 			)
 		end
@@ -143,7 +143,7 @@ local function createImpl(module: any)
 	function Impl.WeakUnsubscribe(self: any): any
 		-- A strong keep left behind would make a half-released, never-GC'd handle: fail fast.
 		if Subscribed[self] ~= nil then
-			Err.errorBeforeNearest("Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
+			Err.errorBeforeNearest("Quad0112 Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		-- `H-133`: that is the whole guard — never subscribed / already weakly released pass silently.
 		WeakSubscribed[self] = nil
@@ -153,13 +153,13 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if self._running then
-			Err.errorBeforeNearest("Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
+			Err.errorBeforeNearest("Quad0113 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
 		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.
 		if not module.Backend.canBound(self) then
-			Err.errorBeforeNearest(
-				if self.Subscribed then "Observer: already subscribed" else "Observer: already bound to an Instance",
+			Err.errorBeforeNearest( -- error-code: inline if
+				if self.Subscribed then "Quad0114 Observer: already subscribed" else "Quad0235 Observer: already bound to an Instance",
 				SURFACE
 			)
 		end
@@ -173,7 +173,7 @@ local function createImpl(module: any)
 	function Impl.Unsubscribe(self: any): any -- no `_running` gate — see WeakUnsubscribe (Q63 (b))
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
-			Err.errorBeforeNearest("Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
+			Err.errorBeforeNearest("Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil -- both tables, directly (`H-149`: no delegation)
@@ -271,7 +271,7 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+			Err.errorBefore(`Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})
@@ -285,7 +285,7 @@ end
 local function implFor(module: any)
 	local impl = implsOf(module).Observer
 	if impl == nil then
-		error("Observer: Observer.Init(module) has not run for this quad instance", 1) -- invariant; callers pull it in first
+		error("Quad0117 Observer: Observer.Init(module) has not run for this quad instance", 1) -- invariant; callers pull it in first
 	end
 	return impl
 end

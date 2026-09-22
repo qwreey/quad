@@ -78,3 +78,83 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 - **언제**: `q.Claim(inst, desc)`의 둘째 인자가 `D.Mapper` 디스크립터가 아닐 때.
 - **고치려면**: `D.Mapper.<Class>(key)(props)`(또는 `q.newMapperClass`)로 만든 디스크립터를 넘기세요.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
+
+### Quad0102
+
+`bindLifetime: inst must not be nil` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 `nil`일 때 — 값을 묶으려면 살아 있는 요소가 있어야 합니다.
+- **고치려면**: 실제 요소(Instance 등)를 넘기세요.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
+
+### Quad0103
+
+`bindLifetime: value must not be nil` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: `q.Backend.bindLifetime(inst, value)`의 `value`가 `nil`일 때.
+- **고치려면**: 실제로 묶을 값(Observer/Effect/Ref/Slot 등)을 넘기세요.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
+
+### Quad0104
+
+`bindLifetime: value is already subscribed` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: 이미 전역 구독(`:Subscribe()`/`:WeakSubscribe()`)으로 살아 있는 `Observer`/`Effect`를 다시 어떤 요소의 자리에 묶으려 할 때 — 전역 구독과 자리 바인딩은 겹칠 수 없습니다.
+- **고치려면**: 구독 중인 핸들은 그대로 두거나, 새 핸들을 만들어 자리에 놓으세요.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
+
+### Quad0105
+
+`unbindLifetime: value must not be nil` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: `q.Backend.unbindLifetime(value)`에 `nil`을 넘겼을 때 — 묶여 있지 않은 값은 no-op이지만, `nil`은 애초에 값이 아니라 인자 누락으로 취급합니다.
+- **고치려면**: 실제로 풀려는 값을 넘기세요.
+- **참고**: [`q.Backend.unbindLifetime(value)`](../core/10-lifetime-sentinels.md#qbackendunbindlifetimevalue)
+
+### Quad0106
+
+`{what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
+
+- **언제**: 한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`"Observer"`/`"Slot"` 등)입니다.
+- **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요 — 여러 `quad-base` 사본이 섞이지 않았는지도 확인하세요.
+- **참고**: [`q.New()`](../core/01-quad-module.md#qnew)
+
+### Quad0108
+
+`quad: {name} is not available — no backend has installed {what} (install a provider with quad:UseProvider — a bare Quad.New() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
+
+- **언제**: 프로바이더를 설치하지 않은 `Quad.New()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)를 부를 때 — `{name}`은 그 op 이름입니다.
+- **고치려면**: `quad:UseProvider(...)`로 백엔드를 설치하세요. 테스트에서는 `mock.installLifetime` 등을 쓰세요.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
+
+### Quad0138
+
+`Relate:{method}: inst must not be nil` — `quad-base/src/Relate.luau`
+
+- **언제**: `q.Relate()`가 돌려준 릴레이션의 `SetStrong`/`GetStrong`/`SetWeak`/`GetWeak` 중 하나를 부를 때 `inst` 자리에 `nil`을 넘겼을 때. `{method}`는 실제로 부른 메소드 이름입니다.
+- **고치려면**: 실제 요소를 `inst` 자리에 넘기세요.
+- **참고**: [`q.Relate()`](../core/01-quad-module.md#qrelate)
+
+### Quad0139
+
+`Relate:{method}: key must not be nil` — `quad-base/src/Relate.luau`
+
+- **언제**: 같은 네 메소드 중 하나를 부를 때 `key` 자리에 `nil`을 넘겼을 때.
+- **고치려면**: 실제 키 값을 넘기세요.
+- **참고**: [`q.Relate()`](../core/01-quad-module.md#qrelate)
+
+### Quad0232
+
+`bindLifetime: value is already bound to this Instance (the same handle at two positions?)` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: 이미 어떤 요소의 자리에 묶여 있는 값을 **같은** 요소의 다른 자리에 또 묶으려 할 때 — 같은 핸들을 한 인스턴스 안 두 자리(`D.Frame { eff, eff }` 등)에 놓은 경우입니다.
+- **고치려면**: 새 핸들을 만들어 두 번째 자리에 놓으세요 — 하나의 핸들은 한 자리에만 묶일 수 있습니다.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
+
+### Quad0233
+
+`bindLifetime: value is already bound to another Instance` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: 이미 다른 요소의 자리에 묶여 있는 값을 또 다른 요소의 자리에 묶으려 할 때.
+- **고치려면**: 새 핸들을 만들어 놓으세요 — 하나의 핸들은 한 요소에만 묶일 수 있습니다.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)

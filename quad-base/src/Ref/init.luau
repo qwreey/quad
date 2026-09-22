@@ -98,11 +98,11 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			-- say what happened instead (a dead thread stays UB, `H-170`/`H-339`)
 			local status = coroutine.status(k)
 			if status == "running" or status == "normal" then -- 7순회 `H-426`: "normal" = the waiter resumed us
-				Err.errorBeforeNearest(`Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`, SURFACE)
+				Err.errorBeforeNearest(`Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`, SURFACE)
 			end
 			local ok, err = coroutine.resume(k, self)
 			if not ok then
-				error(err, 0)
+				error(err, 0) -- error-code: rethrow
 			end
 		else
 			-- value + the Ref itself (= `Epoch`). The cast only quiets the checker:
@@ -121,7 +121,7 @@ end
 -- both VM lines inside this file. One gate, three doors.
 local function checkCallback(fn: any, surface: string)
 	if type(fn) ~= "function" then
-		Err.errorBeforeNearest(`{surface}: callback must be a function (got {typeof(fn)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0132 {surface}: callback must be a function (got {typeof(fn)})`, SURFACE)
 	end
 end
 
@@ -152,7 +152,7 @@ end
 function RefImpl.Wait<T>(self: Ref<T>, thread: thread?): Ref<T>
 	if thread ~= nil then
 		if type(thread) ~= "thread" then
-			Err.errorBeforeNearest(`Ref: Wait(thread) expects a thread (got {typeof(thread)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`, SURFACE)
 		end
 		self.Callbacks[thread] = true
 		return self
@@ -161,7 +161,7 @@ function RefImpl.Wait<T>(self: Ref<T>, thread: thread?): Ref<T>
 		-- a raw `coroutine.yield` here would surface as the host's
 		-- "attempt to yield across metamethod/C-call boundary" with quad blamed
 		-- (review finding) — say what the caller did wrong instead
-		Err.errorBeforeNearest("Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)", SURFACE)
+		Err.errorBeforeNearest("Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)", SURFACE)
 	end
 	local running = coroutine.running()
 	self.Callbacks[running] = true
@@ -187,7 +187,7 @@ end
 function RefImpl.Unwrap<T>(self: Ref<T>): any
 	local value = self.Value
 	if value == nil then
-		Err.errorBeforeNearest("Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed", SURFACE)
+		Err.errorBeforeNearest("Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed", SURFACE)
 	end
 	return value
 end
@@ -272,9 +272,9 @@ local function registerDispatchHandlers(module: any)
 					-- an array slot the pre-pass could not see: the value arrived
 					-- through a State/Store (StoreBind unwrap) — say so instead of
 					-- blaming the key type (review finding, M8 ②)
-					Err.errorBefore(`{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
+					Err.errorBefore(`Quad0136 {kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
 				end
-				Err.errorBefore(`{kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+				Err.errorBefore(`Quad0137 {kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 				return Void -- unreachable; keeps the contract type
 			end,
 		})

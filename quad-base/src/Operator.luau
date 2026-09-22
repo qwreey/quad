@@ -34,13 +34,13 @@ local function splitArgs(name: string, args: { any }, n: number, kind: string): 
 	for i = 1, n do -- `n` from select("#") — a nil argument must error, not vanish and shift the rest (`H-199` idiom)
 		local a = args[i]
 		if a == nil then
-			Err.errorBeforeNearest(`Operator.{name}: argument #{i} is nil`, SURFACE)
+			Err.errorBeforeNearest(`Quad0118 Operator.{name}: argument #{i} is nil`, SURFACE)
 		end
 		if isState(a) then
 			deps[#deps + 1] = a
 			isDep[i] = true
 		elseif type(a) ~= kind then
-			Err.errorBeforeNearest(`Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0119 Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})`, SURFACE)
 		end
 	end
 	local function read(...: any): { any }
@@ -57,9 +57,9 @@ local function splitArgs(name: string, args: { any }, n: number, kind: string): 
 				-- returned `price + ship` while `Clamp`/`Shl` died with a raw VM error. Outermost blame:
 				-- this runs inside Compute, so the user's `:Get()`/`:Set` line is the frame that matters.
 				if v == nil then
-					Err.errorBefore(`Operator.{name}: argument #{i} is a State whose current value is nil`, SURFACE)
+					Err.errorBefore(`Quad0120 Operator.{name}: argument #{i} is a State whose current value is nil`, SURFACE)
 				elseif type(v) ~= kind then
-					Err.errorBefore(`Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})`, SURFACE)
+					Err.errorBefore(`Quad0121 Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})`, SURFACE)
 				end
 				out[i] = v
 			else
@@ -75,14 +75,14 @@ end
 -- check lives here so fold/unary/withArg/Clamp share it (outermost blame: the user's :Get/:Set line)
 local function checkTarget(name: string, v: any, kind: string)
 	if type(v) ~= kind then
-		Err.errorBefore(`Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})`, SURFACE)
+		Err.errorBefore(`Quad0122 Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})`, SURFACE)
 	end
 	return v
 end
 
 local function checkSelf(name: string, self: any)
 	if not isState(self) then
-		Err.errorBeforeNearest(`Operator.{name}: Apply target must be a State (got {typeof(self)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0123 Operator.{name}: Apply target must be a State (got {typeof(self)})`, SURFACE)
 	end
 end
 
@@ -161,7 +161,7 @@ function Operator.Clamp(lo: any, hi: any): (any) -> any
 			if r[1] ~= r[1] or r[2] ~= r[2] or r[1] > r[2] then -- NaN too (round11 code-review): `>` is false on NaN and math.clamp raised with this file's blame
 				-- round11 `H-553` (탐사 C″ 2): `math.clamp` raises its own "max must be greater than or
 				-- equal to min" blaming this file — reactive bounds crossing for a frame is ordinary
-				Err.errorBefore(`Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})`, SURFACE)
+				Err.errorBefore(`Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})`, SURFACE)
 			end
 			return math.clamp(checkTarget("Clamp", h:Get(), "number"), r[1], r[2])
 		end, table.unpack(deps))
@@ -175,19 +175,19 @@ end
 -- value is the user's error (raised at emit depth → outermost).
 function Operator.Indexed(key: any): (any) -> any
 	if key == nil then
-		Err.errorBeforeNearest("Operator.Indexed: key must not be nil", SURFACE)
+		Err.errorBeforeNearest("Quad0125 Operator.Indexed: key must not be nil", SURFACE)
 	end
 	if isState(key) then
 		-- round11 `H-553` (탐사 C″ 5): every sibling takes `T | State<T>`, so a State key is a natural
 		-- guess — it silently read `t[<State object>]` (always nil) forever
-		Err.errorBeforeNearest("Operator.Indexed: key must be a plain value, not a State (the key is not reactive)", SURFACE)
+		Err.errorBeforeNearest("Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)", SURFACE)
 	end
 	return function(self: any): any
 		checkSelf("Indexed", self)
 		return self:Compute(function(h: any)
 			local t = h:Get()
 			if type(t) ~= "table" then
-				Err.errorBefore(`Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
+				Err.errorBefore(`Quad0127 Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
 			end
 			return t[key]
 		end)
@@ -197,7 +197,7 @@ end
 -- Alternative(default): nil-coalescing — `State<T?>` → `State<T>`; default may be a State
 function Operator.Alternative(default: any): (any) -> any
 	if default == nil then
-		Err.errorBeforeNearest("Operator.Alternative: default must not be nil", SURFACE)
+		Err.errorBeforeNearest("Quad0128 Operator.Alternative: default must not be nil", SURFACE)
 	end
 	local deps = if isState(default) then { default } else {}
 	return function(self: any): any
@@ -210,7 +210,7 @@ function Operator.Alternative(default: any): (any) -> any
 			if d ~= nil then
 				local dv = d:Get()
 				if dv == nil then -- code-review: a plain nil default is refused at the factory; a State default whose value is nil slipped through
-					Err.errorBefore("Operator.Alternative: the default State's current value is nil", SURFACE)
+					Err.errorBefore("Quad0129 Operator.Alternative: the default State's current value is nil", SURFACE)
 				end
 				return dv
 			end

@@ -27,10 +27,10 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function checkArgs(name: string, base: any, onError: any)
 	if type(base) ~= "function" then
-		Err.errorBeforeNearest(`{name}: base must be a function (got {typeof(base)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0099 {name}: base must be a function (got {typeof(base)})`, SURFACE)
 	end
 	if type(onError) ~= "function" then
-		Err.errorBeforeNearest(`{name}: onError must be a function (got {typeof(onError)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0100 {name}: onError must be a function (got {typeof(onError)})`, SURFACE)
 	end
 end
 

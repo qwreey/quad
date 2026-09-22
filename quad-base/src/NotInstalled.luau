@@ -27,7 +27,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local function notInstalled(name: string, what: string, hint: string?): (...any) -> ...any
 	local stub = function(...: any)
 		Err.errorBefore(
-			`quad: {name} is not available — no backend has installed {what} `
+			`Quad0108 quad: {name} is not available — no backend has installed {what} `
 				.. `(install a provider with quad:UseProvider — a bare Quad.New() has none{hint or ""})`,
 			SURFACE
 		)

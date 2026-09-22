@@ -32,7 +32,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function checkFn(name: string, fn: any)
 	if type(fn) ~= "function" then
-		Err.errorBeforeNearest(`{name}: fn must be a function (got {typeof(fn)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0101 {name}: fn must be a function (got {typeof(fn)})`, SURFACE)
 	end
 end
 

@@ -132,3 +132,99 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **언제**: `Leading`과 `Trailing`을 둘 다 `false`로 줬을 때 — 그러면 아무 신호도 하류로 통과하지 못합니다.
 - **고치려면**: 적어도 하나는 `true`로 두세요(둘 다 기본값을 건드리지 않는 것도 방법입니다).
 - **참고**: [옵션](/reference/sugar/03-debounce-throttle/#옵션)
+
+### Quad0118
+
+`Operator.{name}: argument #{i} is nil` — `quad-base/src/Operator.luau`
+
+- **언제**: `Sum`/`Product`/`Min`/`Max`/`Clamp`/`Band`/`Bor`/`Bxor`/`Shl`/`Shr` 같은 커링 콤비네이터를 만들 때 `i`번째 인자가 `nil`일 때 — 자리마다 검사하므로 조용히 사라져 뒤 인자를 당겨오지 않습니다. `{name}`은 실제로 부른 콤비네이터 이름입니다.
+- **고치려면**: 그 자리에 실제 값(숫자나 `State<number>`)을 채우세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0119
+
+`Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})` — `quad-base/src/Operator.luau`
+
+- **언제**: 커링 콤비네이터를 만드는 줄에서 `i`번째 인자가 기대하는 값 종류(`kind`, 보통 `number`)도 그 `State<kind>`도 아닐 때.
+- **고치려면**: 숫자(또는 다른 콤비네이터가 요구하는 타입)나 그 타입의 `State`를 넘기세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0120
+
+`Operator.{name}: argument #{i} is a State whose current value is nil` — `quad-base/src/Operator.luau`
+
+- **언제**: 인자로 넘긴 `State`의 **현재값**을 읽는 시점(연산이 도는 시점)에 그 값이 `nil`일 때 — 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed` 등이 원인일 수 있습니다.
+- **고치려면**: 그 `State`가 항상 값을 갖게 하거나(기본값), `Operator.Alternative`로 먼저 nil을 걷어내세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0121
+
+`Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})` — `quad-base/src/Operator.luau`
+
+- **언제**: 인자로 넘긴 `State`의 현재값이 `nil`은 아니지만 기대하는 타입(`kind`)이 아닐 때.
+- **고치려면**: 그 `State`가 항상 올바른 타입의 값을 내놓게 하세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0122
+
+`Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})` — `quad-base/src/Operator.luau`
+
+- **언제**: `state:Apply(factory)`의 대상 `State` 자신의 현재값을 읽는 시점에 그 값이 기대하는 타입(`kind`)이 아닐 때 — 인자와 마찬가지로 `:Apply`를 받는 State의 값도 검사합니다.
+- **고치려면**: `:Apply`하는 State가 항상 올바른 타입의 값을 갖게 하세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0123
+
+`Operator.{name}: Apply target must be a State (got {typeof(self)})` — `quad-base/src/Operator.luau`
+
+- **언제**: `state:Apply(factory)`의 대상이 `State`가 아닐 때.
+- **고치려면**: `State`에 `Apply`하세요.
+- **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
+
+### Quad0124
+
+`Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})` — `quad-base/src/Operator.luau`
+
+- **언제**: `Operator.Clamp(lo, hi)`의 경계를 읽는 시점에 `lo > hi`이거나 둘 중 하나가 `NaN`(흔히 `0/0`)일 때 — 반응형 경계가 한 프레임 엇갈리는 경우도 포함됩니다.
+- **고치려면**: 보통은 경계가 다음 세대에 돌아오면 회복됩니다. 계속 나면 `lo`/`hi`를 내놓는 State들의 관계를 확인하세요.
+- **참고**: [`q.Operator.Clamp(lo, hi)`](/reference/sugar/02-operator/#qoperatorclamplo-hi)
+
+### Quad0125
+
+`Operator.Indexed: key must not be nil` — `quad-base/src/Operator.luau`
+
+- **언제**: `Operator.Indexed<<V>>(key)`를 만드는 즉시 `key`가 `nil`일 때.
+- **고치려면**: 실제 키 값을 넘기세요.
+- **참고**: [`q.Operator.Indexed<<V>>(key)`](/reference/sugar/02-operator/#qoperatorindexedvkey)
+
+### Quad0126
+
+`Operator.Indexed: key must be a plain value, not a State (the key is not reactive)` — `quad-base/src/Operator.luau`
+
+- **언제**: `key` 자리에 `State`를 넘겼을 때 — 다른 콤비네이터들이 전부 `T | State<T>`를 받으므로 자연스러운 실수지만, `Indexed`의 키는 반응형이 아니라 그렇게 넘기면 조용히 `t[<State 객체>]`(항상 nil)를 읽습니다.
+- **고치려면**: 키에는 plain 값을 넘기세요.
+- **참고**: [`q.Operator.Indexed<<V>>(key)`](/reference/sugar/02-operator/#qoperatorindexedvkey)
+
+### Quad0127
+
+`Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]` — `quad-base/src/Operator.luau`
+
+- **언제**: 읽는 시점에 `:Apply`한 State의 현재값이 테이블이 아닐 때.
+- **고치려면**: `Indexed`를 붙인 State가 항상 테이블 값을 갖게 하세요.
+- **참고**: [`q.Operator.Indexed<<V>>(key)`](/reference/sugar/02-operator/#qoperatorindexedvkey)
+
+### Quad0128
+
+`Operator.Alternative: default must not be nil` — `quad-base/src/Operator.luau`
+
+- **언제**: `Operator.Alternative(default)`를 만드는 즉시 `default`가 `nil`일 때.
+- **고치려면**: 기본값(plain 값이나 State)을 넘기세요.
+- **참고**: [`q.Operator.Alternative(default)`](/reference/sugar/02-operator/#qoperatoralternativedefault)
+
+### Quad0129
+
+`Operator.Alternative: the default State's current value is nil` — `quad-base/src/Operator.luau`
+
+- **언제**: `default`로 넘긴 `State`의 현재값이 `nil`일 때(예: 아직 안 채운 `store:Of`) — 기본값 자리에는 실제 값이 있어야 합니다.
+- **고치려면**: 그 `State`가 항상 값을 갖게 하세요.
+- **참고**: [`q.Operator.Alternative(default)`](/reference/sugar/02-operator/#qoperatoralternativedefault)

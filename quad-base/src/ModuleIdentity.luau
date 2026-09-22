@@ -22,20 +22,20 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ModuleIdentity = {}
 
 local function message(what: string): string
-	return `{what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances`
+	return `Quad0106 {what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances`
 end
 
 -- dispatch depth (handlers): outermost, like the other handler raises (`H-272`)
 function ModuleIdentity.assertOwnAtDispatch(module: any, value: any, what: string)
 	if value._moduleIdentity ~= module.moduleIdentity then
-		Err.errorBefore(message(what), SURFACE)
+		Err.errorBefore(message(what), SURFACE) -- error-code: via message
 	end
 end
 
 -- direct public call (e.g. `slot:List(data)`): nearest surface frame's caller
 function ModuleIdentity.assertOwnAtCall(module: any, value: any, what: string)
 	if value._moduleIdentity ~= module.moduleIdentity then
-		Err.errorBeforeNearest(message(what), SURFACE)
+		Err.errorBeforeNearest(message(what), SURFACE) -- error-code: via message
 	end
 end
 

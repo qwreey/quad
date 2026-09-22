@@ -25,8 +25,8 @@ RelateImpl.__index = RelateImpl
 -- (architecture "잎 모듈"), so no quad-error tag: a plain level-2 error blames the caller,
 -- which is the user's line for direct use and an already-gated quad frame otherwise.
 local function checkArgs(method: string, inst: any, key: any)
-	if inst == nil then error(`Relate:{method}: inst must not be nil`, 3) end
-	error(`Relate:{method}: key must not be nil`, 3)
+	if inst == nil then error(`Quad0138 Relate:{method}: inst must not be nil`, 3) end
+	error(`Quad0139 Relate:{method}: key must not be nil`, 3)
 end
 
 local function getBucket(self, inst: any): Bucket?

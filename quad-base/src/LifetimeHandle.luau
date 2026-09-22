@@ -120,10 +120,10 @@ local function Init(module: any)
 
 	local function bindLifetime(inst: any, value: any)
 		if inst == nil then
-			Err.errorBefore("bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`: its own message, not "Claim it first"
+			Err.errorBefore("Quad0102 bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`: its own message, not "Claim it first"
 		end
 		if value == nil then
-			Err.errorBefore("bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
+			Err.errorBefore("Quad0103 bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
 		end
 		if not canBound(value) then
 			-- Only report which path holds the value. Never index `.Subscribed`
@@ -134,11 +134,11 @@ local function Init(module: any)
 			end
 			-- 5순회 `H-395`: say WHICH Instance holds it — the same handle at two
 			-- positions of one Instance (`D.Frame { eff, eff }`) is not "another"
-			Err.errorBefore(
+			Err.errorBefore( -- error-code: inline if
 				if isGlobal
-					then "bindLifetime: value is already subscribed"
-					elseif Backend.isHeldBy(value, inst) then "bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
-					else "bindLifetime: value is already bound to another Instance",
+					then "Quad0104 bindLifetime: value is already subscribed"
+					elseif Backend.isHeldBy(value, inst) then "Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
+					else "Quad0233 bindLifetime: value is already bound to another Instance",
 				SURFACE
 			)
 		end
@@ -177,7 +177,7 @@ local function Init(module: any)
 			-- `H-474` (Gemini 5차 Q31, 사용자: "특별한 이유가 없다면 에러"): `H-444` had made nil a
 			-- silent no-op under "no-op if unbound" — nil is not an unbound value, it is a missing
 			-- argument, and a silent success there hides the bug (same door as bindLifetime, `H-447`)
-			Err.errorBeforeNearest("unbindLifetime: value must not be nil", SURFACE)
+			Err.errorBeforeNearest("Quad0105 unbindLifetime: value must not be nil", SURFACE)
 		end
 		-- symmetric teardown — never calls cleanup, never detaches Ref
 		-- callbacks or inner Observers (lifecycle-pattern (1))

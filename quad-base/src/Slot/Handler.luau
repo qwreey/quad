@@ -34,7 +34,7 @@ local function register(dispatch: any, module: any)
 			-- must fail BEFORE `claimOwnerAt`/`bindLifetime` commit, or the corpse is
 			-- owned by `inst` for good (the `H-103` NOOP retractor never releases it)
 			if slotValue._destroyed then
-				Err.errorBefore("Slot: destroyed Slot cannot be mounted", SURFACE)
+				Err.errorBefore("Quad0140 Slot: destroyed Slot cannot be mounted", SURFACE)
 			end
 			ModuleIdentity.assertOwnAtDispatch(module, slotValue, "Slot") -- before claim/bind commit (same reason as above)
 			if internal.claimOwnerAt(slotValue, inst, k) then
@@ -58,7 +58,7 @@ local function register(dispatch: any, module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+			Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 			return module.Void -- unreachable; keeps the contract type
 		end,
 	} :: QuadTypes.Handler)
