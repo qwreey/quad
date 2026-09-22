@@ -49,7 +49,7 @@ local ProcessedPostRef = NoneModule.sentinel("ProcessedPostRef")
 
 local function fireOnce(v: any, kind: string)
 	if v._fired then
-		Err.errorBefore(`{kind}: already fired — a {kind} is one-shot, make a new one for each instance`, SURFACE)
+		Err.errorBefore(`Quad0069 {kind}: already fired — a {kind} is one-shot, make a new one for each instance`, SURFACE)
 	end
 	v._fired = true
 end

@@ -108,8 +108,8 @@ addHandler: (handler: Handler) -> ()
 모양 검사가 먼저 돕니다.
 
 ```
-Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof})
-Dispatch.addHandler: keyType must be "number", "string" or nil (got {값})
+Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof})
+Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {값})
 ```
 
 ## `q.Dispatch.listHandlers()`
@@ -156,7 +156,7 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 매치되는 핸들러가 없으면 즉시 던지고, 메시지는 사용자의 진입 줄까지 올라갑니다. 값의 브랜드를 알아낼 수 있으면 같이 싣습니다.
 
 ```
-Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) — check that the provider for this value (e.g. quad-roblox) is initialized
+Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) — check that the provider for this value (e.g. quad-roblox) is initialized
 ```
 
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
@@ -164,10 +164,10 @@ Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) —
 핸들러가 retractor를 돌려주지 않으면 프로바이더 계약 위반입니다.
 
 ```
-Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} — return Void when there is nothing to undo
+Quad0077 Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} — return Void when there is nothing to undo
 ```
 
-`inst`가 `nil`이면 `Dispatch.process: inst must not be nil`, `index`가 양의 정수가 아니면 `Dispatch.process: index must be a positive integer (got {tostring(index)})`.
+`inst`가 `nil`이면 `Quad0072 Dispatch.process: inst must not be nil`, `index`가 양의 정수가 아니면 `Quad0073 Dispatch.process: index must be a positive integer (got {tostring(index)})`.
 
 ## `q.Dispatch.retractFrom(inst, key, index)`
 
@@ -179,7 +179,7 @@ retractFrom: (inst: any, key: any, index: number) -> ()
 
 **동작** — `index`(포함)부터 그 자리 체인의 꼬리까지를 **깊은 쪽부터** 무릅니다. 얕은 층이 깊은 층을 만들었으므로 역순이 맞습니다. 각 retractor는 `(nil, true)`로 불립니다 — 단순 철거이고 뒤따르는 재처리가 없다는 뜻입니다.
 
-체인이 비면 그 자리의 **체인 기록**이 놓입니다(Length/Offset 부기는 핸들러가 `setLength(…, 0)` 경로로 직접 풀어야 합니다). `inst`가 `nil`이면 `Dispatch.retractFrom: inst must not be nil`, `index`가 양의 정수가 아니면 `Dispatch.retractFrom: index must be a positive integer (got {tostring(index)})`.
+체인이 비면 그 자리의 **체인 기록**이 놓입니다(Length/Offset 부기는 핸들러가 `setLength(…, 0)` 경로로 직접 풀어야 합니다). `inst`가 `nil`이면 `Quad0072 Dispatch.retractFrom: inst must not be nil`, `index`가 양의 정수가 아니면 `Quad0073 Dispatch.retractFrom: index must be a positive integer (got {tostring(index)})`.
 
 ## `q.Dispatch.drive(inst, flattened)`
 
@@ -202,10 +202,10 @@ drive: (inst: any, flattened: { [any]: any }) -> ()
 입력 게이트:
 
 ```
-Dispatch.drive: props must be a table (got {typeof})
-Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got {브랜드})
-Dispatch.drive: inst must not be nil
-Dispatch.drive: array keys must be positive integers (got {키})
+Quad0082 Dispatch.drive: props must be a table (got {typeof})
+Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got {브랜드})
+Quad0084 Dispatch.drive: inst must not be nil
+Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
 
 둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다.

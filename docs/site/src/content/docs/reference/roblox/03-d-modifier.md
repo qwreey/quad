@@ -64,11 +64,11 @@ local card = D.Frame({ boxed, D.Modifier.Frame():ZIndex(2) })
 
 | 넣으면 | 에러 |
 |---|---|
-| 문자열이 아닌 키, 또는 `""` | `Modifier: initial-field table keys must be non-empty field names (got {…} at argument #{i})` |
-| 예약 메소드 이름 | `Modifier: field "{k}" collides with a reserved Modifier method` |
-| `As<Class>` 접두 이름 | `Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields` |
-| 함수 값 | `Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` |
-| Modifier도 평범한 테이블도 아닌 인자 | `Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})` |
+| 문자열이 아닌 키, 또는 `""` | `Quad0059 Modifier: initial-field table keys must be non-empty field names (got {…} at argument #{i})` |
+| 예약 메소드 이름 | `Quad0060 Modifier: field "{k}" collides with a reserved Modifier method` |
+| `As<Class>` 접두 이름 | `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields` |
+| 함수 값 | `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` |
+| Modifier도 평범한 테이블도 아닌 인자 | `Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})` |
 
 **생성되는 Modifier 클래스는 47개**입니다 — `D`의 별칭 31개보다 많습니다. `GuiObject`/`GuiButton`/
 `UIComponent`/`Instance`처럼 **Instance로는 만들 수 없는 조상 클래스**에도 Modifier 타입이 있어서,
@@ -144,7 +144,7 @@ end)
 변환 함수의 반환이든 — 그 자리에서 던집니다.
 
 ```
-Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
 ```
 
 `State`/`Source`는 통과합니다. 이 값들은 필드가 아니라 **props의 숫자 키 자리**에 놓는 것이 자리입니다
@@ -156,7 +156,7 @@ setter 키는 문자열이어야 합니다. `AttrKey` 같은 비문자열 키는
 직접 넣습니다.
 
 ```
-Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })
+Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })
 ```
 
 `tostring(mod)`은 `Modifier<Frame>(3 fields)` 형태로 클래스 태그와 필드 수를 보여줍니다.
@@ -190,8 +190,8 @@ local frame = base:AsFrame():Style(Enum.FrameStyle.Custom)
 하나여야 합니다.
 
 ```
-Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)
-Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)
+Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
 ```
 
 `As` + 대문자로 시작하는 이름은 **전부 캐스트로 예약**돼 있어 절대 필드 setter가 되지 않습니다.
@@ -218,8 +218,8 @@ local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조
 이름이 문자열이 아니거나 등록되지 않은 이름이면 던집니다.
 
 ```
-Modifier:As: name must be a class name string (got {typeof(name)})
-Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first
+Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})
+Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first
 ```
 
 ---
@@ -280,7 +280,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
   이 층을 이미 넣어 두지만(`FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`), **무타입 `q.Modifier()`**의
   `Peek`는 quad-base의 정의라 Tween을 모릅니다 — 그 필드에 Tween이 들어 있을 수 있으면
   `mod:Peek<<UDim2 | q.Tween<UDim2>>>("Size")`처럼 `T` 안에 적으세요([core/08의 층 나눔](/reference/core/08-modifier/)).
-  빈 문자열이나 비문자열 키는 `Modifier:Peek: key must be a non-empty string (got {…})`.
+  빈 문자열이나 비문자열 키는 `Quad0049 Modifier:Peek: key must be a non-empty string (got {…})`.
 - `Overridden(a, b, …)` / `a:Overridden(b, …)` — 필드 단위 병합, 뒤가 이깁니다. 결과는 **태그 없는**
   Modifier입니다(입력들의 태그가 서로 다를 수 있어 하나를 고르지 않습니다) — 클래스가 필요하면
   `As<Class>()`로 다시 태그하세요.

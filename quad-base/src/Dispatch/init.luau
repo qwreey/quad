@@ -201,7 +201,7 @@ local function Init(module: any)
 			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
 			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"
 			else " — this quad value has no handler at an array position"
-		return `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
+		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from
@@ -209,7 +209,7 @@ local function Init(module: any)
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string
-		return `Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
+		return `Quad0077 Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
 			.. " — return Void when there is nothing to undo"
 	end
 
@@ -248,7 +248,7 @@ local function Init(module: any)
 		for i = #list, index, -1 do
 			local slot = list[i]
 			if slot == nil then
-				error(`Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+				error(`Quad0071 Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
 			end
 			slot.retractor(nil, true)
 			list[i] = nil
@@ -264,7 +264,7 @@ local function Init(module: any)
 	-- module's name in a user message. Same gate as `drive` (`H-442`), nearest (direct call).
 	local function checkInst(fnName: string, inst: any)
 		if inst == nil then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: inst must not be nil`, SURFACE)
+			Err.errorBeforeNearest(`Quad0072 Dispatch.{fnName}: inst must not be nil`, SURFACE)
 		end
 	end
 
@@ -274,13 +274,13 @@ local function Init(module: any)
 	-- a string as a raw VM error.
 	local function checkIndex(fnName: string, index: any)
 		if type(index) ~= "number" or index % 1 ~= 0 or index < 1 then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0073 Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})`, SURFACE)
 		end
 	end
 
 	local function checkKey(fnName: string, k: any) -- round11 `H-565` (탐사 G′ 3, `H-504`'s other half)
 		if k == nil then
-			Err.errorBeforeNearest(`Dispatch.{fnName}: key must not be nil`, SURFACE)
+			Err.errorBeforeNearest(`Quad0074 Dispatch.{fnName}: key must not be nil`, SURFACE)
 		end
 	end
 
@@ -314,7 +314,7 @@ local function Init(module: any)
 			-- round11 `H-564` (탐사 G′ 2, `H-256`'s sibling): a gap index parked a slot no unwind ever
 			-- visits (`retractRange` starts at #list) and `release and #list == 0` then dropped the
 			-- list with a live retractor in it — dispatch-core-plan "list가 구멍 없는 시퀀스"
-			Err.errorBeforeNearest(`Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0075 Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)`, SURFACE)
 		end
 
 		local slot = list[index]
@@ -322,7 +322,7 @@ local function Init(module: any)
 		if matched == nil then
 			-- `H-219`/`H-231`: outermost scan — climbs every wrapper (drive, a
 			-- delegating handler, later the M5 pipeline) to the user's entry.
-			Err.errorBefore(noMatchMessage(k, v), SURFACE)
+			Err.errorBefore(noMatchMessage(k, v), SURFACE) -- error-code: via noMatchMessage
 		end
 		-- errorBefore never returns; the cast just tells the checker (field
 		-- calls typed `-> never` don't narrow like the `error` builtin does)
@@ -342,7 +342,7 @@ local function Init(module: any)
 				-- provider-contract violation (`H-222`) — OUTERMOST: this fires at
 				-- dispatch depth so nearest blamed `init.luau` itself (6순회 `H-409`,
 				-- the sibling `noMatchMessage` already uses errorBefore)
-				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE)
+				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- error-code: via noRetractorMessage
 			end
 			slot.retractor = retractor
 		else
@@ -355,7 +355,7 @@ local function Init(module: any)
 			list[index] = { handler = h, retractor = NOOP }
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- `H-409`
+				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- error-code: via noRetractorMessage -- `H-409`
 			end
 			list[index] = { handler = h, retractor = retractor }
 		end
@@ -376,7 +376,7 @@ local function Init(module: any)
 		-- diagnostic is about quad's own tables, not a provider's input.
 		if type(handler) ~= "table" or type(handler.isHandlable) ~= "function"
 			or type(handler.process) ~= "function" or type(handler.priority) ~= "number" then
-			Err.errorBeforeNearest(`Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})`, SURFACE)
 		end
 		-- Tie detection is free at registration time (the registry is sorted
 		-- here, statically). No tiebreak rule is enforced — ties are usually a
@@ -384,7 +384,7 @@ local function Init(module: any)
 		local pr = handler.priority
 		if pr ~= pr or pr == math.huge or pr == -math.huge then
 			-- round11 `H-568` (탐사 G′ 7): NaN sorted anywhere and defeated the tie print (`==` false)
-			Err.errorBeforeNearest(`Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0080 Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})`, SURFACE)
 		end
 		for _, existing in handlers do
 			if existing == handler then
@@ -396,7 +396,7 @@ local function Init(module: any)
 			-- registration gate (`H-484`): a typo here would silently drop the handler
 			-- from every bucket — say so where the provider registered it (and before
 			-- the tie print below, so a rejected handler leaves no misleading line)
-			Err.errorBeforeNearest(`Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
 		end
 		if module.debug then
 			for _, existing in handlers do
@@ -448,7 +448,7 @@ local function Init(module: any)
 		-- `flatten` (`#input` / `next` — VM error blaming Dispatch/Modifier/init.luau); strict
 		-- typing is the first defense, this is the untyped-caller one
 		if type(flattened) ~= "table" then
-			Err.errorBefore(`Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
+			Err.errorBefore(`Quad0082 Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
 		-- [2026-09-16 round10] `brandNameOf` is the diagnostics-only module scan and this is the hot
 		-- path (~12% of drive, measured) — but narrowing it to `Brand.isPlainBranded` would drop
@@ -461,10 +461,10 @@ local function Init(module: any)
 			-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
 			-- value's own fields were dispatched: a frozen `AttrKey("x")` is `{ Name = "x" }`,
 			-- which quad-roblox's Property handler wrote — a silent rename.
-			Err.errorBefore(`Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
+			Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
 		end
 		if inst == nil then
-			Err.errorBefore("Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
+			Err.errorBefore("Quad0084 Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
 		end
 		-- Pipeline stages ⓪ + (b) + ⓪' (M3 unit 2 wired the batch gating; the
 		-- (a) PreRef/PostRef pre-pass and (c) postRefList join in M8 — between
@@ -485,7 +485,7 @@ local function Init(module: any)
 		-- constructor (`H-396`) and Tag's list gate. Sparse holes (`{ nil, x }`) stay UB.
 		for k in pairs(flattened) do
 			if type(k) == "number" and (k < 1 or k % 1 ~= 0) then
-				Err.errorBefore(`Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
+				Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
 			end
 		end
 		flatten(flattened)

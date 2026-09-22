@@ -75,7 +75,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 					local cur = realv
 					while isState(cur) do
 						if visited[cur] then
-							Err.errorBefore("StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
+							Err.errorBefore("Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
 						end
 						visited[cur] = true
 						cur = cur:Get()

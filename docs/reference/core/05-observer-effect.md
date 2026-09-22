@@ -57,7 +57,7 @@ local label = D.TextLabel {
 문자 키 자리에 넣으면 타입 우회 실수로 보고 거절합니다:
 
 - `Observer: must be an array item, not the value of a {typeof(k)} key`
-- `Effect: must be an array item, not the value of a {typeof(k)} key`
+- `Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`
 
 ---
 
@@ -215,17 +215,17 @@ export type Effect = {
 
 - **생성하는 그 자리에서 `fn`이 한 번 돕니다.** 구독·바인딩보다 먼저이며, 이 첫 실행은 미룰 수 없습니다.
 - 의존성은 생성자에서 한 번 검증합니다. 같은 것을 여러 번 넘기면 조용히 하나로 합쳐집니다.
-  - `Effect: fn must be a function`
-  - `Effect: dep #{i} is nil`
-  - `Effect: dep #{i} is not a State/Source/Ref` (번호는 `...deps`에서의 자리입니다)
+  - `Quad0094 Effect: fn must be a function`
+  - `Quad0095 Effect: dep #{i} is nil`
+  - `Quad0096 Effect: dep #{i} is not a State/Source/Ref` (번호는 `...deps`에서의 자리입니다)
 - **cleanup은 함수 하나입니다.** 타입의 가변 반환 표기는 "아무것도 안 돌려줘도 된다"를 위한 것이고, 런타임이 소진하는 것은 **첫 번째 반환 하나**뿐입니다. 정리할 게 여럿이면 한 클로저로 묶으세요 — `return function() a() b() end`. 함수도 `nil`도 아닌 값(숫자, 연결 객체 등)을 돌려주면 그 자리에서 던지고, `fn`이 던진 것과 같이 그 `Effect`는 죽습니다 — 연결은 `return function() conn:Disconnect() end`처럼 감싸세요.
-  - `Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`
+  - `Quad0086 Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`
 - cleanup 안에서 의존성을 `:Set`해도 됩니다 — 바로 뒤에 도는 `fn`이 그 새 값을 읽고, 그것으로 한 사이클입니다(같은 입력으로 한 번 더 돌지 않습니다). `fn` 안에서 의존성을 `:Set`하면 한 번 더 돕니다.
 - cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<Effect?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다). cleanup은 인자 하나 `dying`을 받습니다 — 셋째 자리(**인스턴스가 죽어서**)에서만 `true`이고 나머지 셋에서는 `false`입니다. 죽을 때만 해야 할 정리와 자리를 떠날 때마다 할 정리를 이걸로 가릅니다. 인자를 안 받는 `function() … end`도 그대로 됩니다.
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기를 (재)구독할 수 없습니다:
   `Effect: cannot change subscription from inside fn or cleanup`
-  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Effect: cannot bind an Effect from inside its own fn or cleanup`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 `fn` 안에서도 됩니다 — `fn`을 다시 부르지 않고, `fn`이 그 뒤 돌려준 cleanup은 저장되지 않고 즉시 소진됩니다(핸들이 더는 실행 자격이 없으므로).
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 `fn` 안에서도 됩니다 — `fn`을 다시 부르지 않고, `fn`이 그 뒤 돌려준 cleanup은 저장되지 않고 즉시 소진됩니다(핸들이 더는 실행 자격이 없으므로).
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
 - `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행과 (재)구독이 막힙니다. 남는 일은 `:Unsubscribe()`(강한 구독을 풀어 핸들과 상류를 놓아줌 — 그때 소진할 cleanup은 없습니다, 던진 `fn`은 돌려준 게 없으니까) 또는 `:WeakUnsubscribe()`뿐입니다. 죽은 핸들을 강한 구독에 둔 채 버리면 모듈 수명 동안 남습니다.
 - `fn`과 cleanup 안에서 **yield하지 마세요** — 정의되지 않은 동작입니다. 증상은 `Observer`와 다릅니다: `Effect`는 겹친 요청을 `fn`이 돌아온 뒤 한 번 더 도는 것으로 흡수하지만, yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려가면 죽음의 cleanup은 이미 지나간 뒤입니다. 그래도 `fn`이 돌아오며 돌려준 cleanup은 버려지지 않습니다 — 핸들이 더는 실행 자격이 없으므로 그 자리에서 **즉시 소진**됩니다(인스턴스가 죽어서면 `dying = true`, 자리에서 내려가서면 `false`). 그 사이에 `fn`이 잡은 자원은 그렇게 정리되지만, 순서와 타이밍은 보장하지 않습니다. 네트워크 왕복은 `fn` 밖(따로 띄운 코루틴)에서 하고 결과를 `State`로 넣으세요.
@@ -267,7 +267,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — **강한 구독**. 레지스트리가 핸들을 강하게 잡습니다. `.Subscribed`를 올린 뒤, 보류된 변경이 있으면 한 번 재생합니다.
 
-**에러** — `Effect: already subscribed` / `Effect: already bound to an Instance` / `Effect: cannot change subscription from inside fn or cleanup`
+**에러** — `Quad0091 Effect: already subscribed` / `Quad0231 Effect: already bound to an Instance` / `Quad0090 Effect: cannot change subscription from inside fn or cleanup`
 
 ---
 
@@ -284,7 +284,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 **시그니처** — `Unsubscribe: (self: Effect) -> Effect`
 
 **동작** — 강한 구독을 해제하고 **마지막 cleanup을 정확히 한 번 소진합니다**. 엄격합니다:
-`Effect: not subscribed strongly; use :WeakUnsubscribe()`
+`Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()`
 (이 문에서 거절당하면 cleanup은 건드려지지 않습니다.) `fn` 안에서도, `fn`이 던져 죽은 뒤에도 됩니다 — `fn`을 부르지 않습니다. cleanup 안에서 자기를 해제하는 것은 그 cleanup이 다음 `fn` 직전·인스턴스 파괴·자리 교체로 소진될 때만 뜻이 있습니다 — **이 메소드가 소진한 cleanup 안에서 다시 `:Unsubscribe()`를 부르면** 강한 구독은 이미 풀린 뒤라 위 문구로 던집니다(이중 해제).
 
 ---
@@ -294,6 +294,6 @@ effect:Unsubscribe() -- 마지막 정리 1회
 **시그니처** — `WeakUnsubscribe: (self: Effect) -> Effect`
 
 **동작** — 약한 구독을 해제합니다. **관대하며**(구독한 적 없어도 통과) **cleanup을 건드리지 않습니다**. 강한 유지가 남아 있으면 거절합니다:
-`Effect: subscribed strongly; use :Unsubscribe()`
+`Quad0092 Effect: subscribed strongly; use :Unsubscribe()`
 
 **관련** — [03-state](./03-state.md) · [sugar/06-blocker](../sugar/06-blocker.md) · [Quadnomicon Vol. 3 — 메모리 토폴로지](../../quadnomicon/03-luau-memory-topology.md)

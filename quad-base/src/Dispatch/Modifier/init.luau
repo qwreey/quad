@@ -175,7 +175,7 @@ function methods.Peek(self: any, key: any): any
 	if type(key) ~= "string" or key == "" then
 		-- `H-469` (Gemini 5차 G-21, 사용자 Q32): the setter path refuses these keys (`H-448`) —
 		-- Peek used to answer nil for them as if the field were absent
-		Err.errorBeforeNearest(`Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0049 Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`, SURFACE)
 	end
 	return self[FieldsKey][key] -- raw: State handle stays a handle, None stays None
 end
@@ -184,7 +184,7 @@ function methods.Apply(self: any, factory: (any) -> any): any
 	-- [2026-09-16 hunt F] the sibling `State:Apply`/`Tag:Apply` (`H-497`) gate a non-function;
 	-- here it died at the call with this file on the blame line
 	if type(factory) ~= "function" then
-		Err.errorBeforeNearest(`Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0050 Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)
 	end
 	return factory(self) -- nothing more, nothing less (8절)
 end
@@ -198,10 +198,10 @@ function methods.As(self: any, name: any): any
 		return self
 	end
 	if type(name) ~= "string" then
-		Err.errorBeforeNearest(`Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)
 	end
 	if not known[name] then
-		Err.errorBeforeNearest(`Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
+		Err.errorBeforeNearest(`Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
 	end
 	return retag(self, name)
 end
@@ -213,13 +213,13 @@ end
 local function Overridden(...: any): any
 	local n = select("#", ...)
 	if n == 0 then
-		Err.errorBeforeNearest("Modifier.Overridden: expects at least one Modifier", SURFACE)
+		Err.errorBeforeNearest("Quad0053 Modifier.Overridden: expects at least one Modifier", SURFACE)
 	end
 	local merged: { [any]: any } = {}
 	for i = 1, n do
 		local arg = select(i, ...)
 		if not isModifier(arg) then
-			Err.errorBeforeNearest(`Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0054 Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`, SURFACE)
 		end
 		for k, v in arg[FieldsKey] do
 			merged[k] = v -- baked values only — no State/function branching (9절)
@@ -245,11 +245,11 @@ local function castClosure(target: string): (any) -> any
 	end
 	local closure = function(selfArg: any): any
 		if not known[target] then
-			Err.errorBeforeNearest(`Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`, SURFACE)
 		end
 		local tag = selfArg.__quadModifier
 		if tag ~= true and tag ~= target and not isAncestorOrSelf(tag, target) then
-			Err.errorBeforeNearest(`Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`, SURFACE)
 		end
 		return retag(selfArg, target)
 	end
@@ -290,7 +290,7 @@ local function setterClosure(key: string): (any, any) -> any
 		if isHandlerLayerValue(value) then
 			-- level 2 = the user's `mod:Field(...)` line (the closure is not
 			-- table-reached, so no tag — `H-250`)
-			error(`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
+			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
 		end
 		local newFields = table.clone(oldFields)
 		newFields[key] = value
@@ -324,7 +324,7 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- (`H-310` — the two creation paths must not drift): only string keys become setters;
 		-- `construct` in turn refuses the keys this path can never make into setters (`H-448`).
 		-- Non-string keys (AttrKey/MapperDescriptor) go in the props table directly.
-		Err.errorBeforeNearest("Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
+		Err.errorBeforeNearest("Quad0058 Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
 	end
 	return setterClosure(key)
 end
@@ -364,36 +364,36 @@ local function construct(tag: any, ...: any): any
 		elseif isPlainFieldTable(arg) then
 			for k, v in arg :: { [any]: any } do
 				if type(k) ~= "string" or k == "" then
-					Err.errorBeforeNearest(`Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`, SURFACE)
+					Err.errorBeforeNearest(`Quad0059 Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`, SURFACE)
 				end
 				-- round3 `H-448`: the same keys the setter path can never produce — a cast-prefix
 				-- name (`AsTextLabl` — the header's typo case) or a reserved method name would land
 				-- as a field here and be unreachable through `mod:X(...)`
 				if methods[k] ~= nil then
-					Err.errorBeforeNearest(`Modifier: field "{k}" collides with a reserved Modifier method`, SURFACE)
+					Err.errorBeforeNearest(`Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`, SURFACE)
 				end
 				if string.match(k, "^As%u") ~= nil then
-					Err.errorBeforeNearest(`Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
+					Err.errorBeforeNearest(`Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
 				end
 				if string.sub(k, 1, 2) == "__" then
 					-- round11 code-review (`H-561`): the `__index` twin of this gate (`H-552`) — both
 					-- creation paths must refuse the same keys (`H-310`); a `__apply` field here died
 					-- much later in Dispatch with "no handler matched key __apply"
-					Err.errorBeforeNearest(`Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`, SURFACE)
+					Err.errorBeforeNearest(`Quad0062 Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`, SURFACE)
 				end
 				if type(v) == "function" then
 					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
 					-- transform-function arm (the setter would call it once with old=nil and store nil).
 					-- Modifiers carry no events (modifier-plan: the generated <Class>Modifier omits them).
-					Err.errorBeforeNearest(`Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
-					Err.errorBeforeNearest(`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
 				end
 				merged[k] = v
 			end
 		else
-			Err.errorBeforeNearest(`Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`, SURFACE)
 		end
 	end
 	return newModifier(merged, tag)
@@ -401,7 +401,7 @@ end
 
 local function checkName(fn: string, what: string, name: any)
 	if type(name) ~= "string" or name == "" then
-		Err.errorBeforeNearest(`Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0066 Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})`, SURFACE)
 	end
 end
 
@@ -435,7 +435,7 @@ local function DefineSubtype(parent: any, subtype: any)
 	checkName("DefineSubtype", "parent", parent)
 	checkName("DefineSubtype", "subtype", subtype)
 	if parent == subtype or isAncestorOrSelf(subtype, parent) then
-		Err.errorBeforeNearest(`Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`, SURFACE)
+		Err.errorBeforeNearest(`Quad0067 Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`, SURFACE)
 	end
 	known[parent] = true
 	known[subtype] = true
@@ -494,7 +494,7 @@ local function flatten(input: { [any]: any }): { [any]: any }
 			break
 		end
 		if isModifier(v) then
-			Err.errorBefore(`Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`, SURFACE)
+			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`, SURFACE)
 		end
 	end
 	for i = n, 1, -1 do -- ⚠️ reverse: the LAST modifier must write first

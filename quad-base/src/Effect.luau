@@ -116,7 +116,7 @@ local function createImpl(module: any)
 				-- `_consumeCleanup` blaming this file, leaving the Effect silently dead. Raise HERE — the
 				-- Effect dies exactly as when fn throws (`_running` stays), but at the cause with a clear
 				-- message. Outermost blame: the user's `q.Effect` line at install, the `:Set` line at emit depth.
-				Err.errorBefore(`Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)
+				Err.errorBefore(`Quad0086 Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)
 			end
 			self._cleanup = cleanup
 			-- round11 Q63/Q68 (b) (user decision 2026-09-18): the handle may have lost its executability
@@ -153,7 +153,7 @@ local function createImpl(module: any)
 	-- at `bindLifetime` and blame `Effect.luau`.
 	function Impl._assertBindable(self: any)
 		if isRunning(self) then
-			Err.errorBefore("Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)
+			Err.errorBefore("Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)
 		end
 	end
 
@@ -231,10 +231,10 @@ local function createImpl(module: any)
 	-- ── four entry points — Effect's OWN bodies (`H-144` (b)) ────
 	function Impl.WeakSubscribe(self: any): any
 		if isRunning(self) then
-			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
+			Err.errorBeforeNearest("Quad0088 Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.Backend.canBound(self) then
-			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
+			Err.errorBeforeNearest(if self.Subscribed then "Quad0089 Effect: already subscribed" else "Quad0230 Effect: already bound to an Instance", SURFACE) -- error-code: inline if
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`: every path that re-arms executability lowers it
@@ -245,10 +245,10 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if isRunning(self) then
-			Err.errorBeforeNearest("Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
+			Err.errorBeforeNearest("Quad0090 Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
 		end
 		if not module.Backend.canBound(self) then
-			Err.errorBeforeNearest(if self.Subscribed then "Effect: already subscribed" else "Effect: already bound to an Instance", SURFACE)
+			Err.errorBeforeNearest(if self.Subscribed then "Quad0091 Effect: already subscribed" else "Quad0231 Effect: already bound to an Instance", SURFACE) -- error-code: inline if
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`
@@ -268,7 +268,7 @@ local function createImpl(module: any)
 	-- by rawRerun's tail (Q68 (b) — the handle is no longer executable).
 	function Impl.WeakUnsubscribe(self: any): any -- lenient (`H-133`) — does not touch the cleanup
 		if Subscribed[self] ~= nil then
-			Err.errorBeforeNearest("Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
+			Err.errorBeforeNearest("Quad0092 Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
 		end
 		WeakSubscribed[self] = nil
 		self.Subscribed = false
@@ -277,7 +277,7 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any -- no `isRunning` gate — see WeakUnsubscribe (Q63 (b))
 		if Subscribed[self] == nil then -- gate FIRST: never strongly subscribed → error, cleanup untouched
-			Err.errorBeforeNearest("Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
+			Err.errorBeforeNearest("Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil
@@ -289,7 +289,7 @@ local function createImpl(module: any)
 	-- ── constructor ──────────────────────────────────────────────────
 	local function Effect(fn: any, ...: any): any
 		if type(fn) ~= "function" then
-			Err.errorBeforeNearest("Effect: fn must be a function", SURFACE)
+			Err.errorBeforeNearest("Quad0094 Effect: fn must be a function", SURFACE)
 		end
 		local self = setmetatable({
 			fn = fn,
@@ -317,10 +317,10 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local d = (select(i, ...))
 			if d == nil then
-				Err.errorBeforeNearest(`Effect: dep #{i} is nil`, SURFACE)
+				Err.errorBeforeNearest(`Quad0095 Effect: dep #{i} is nil`, SURFACE)
 			end
 			if not (isState(d) or isSource(d) or isRef(d)) then
-				Err.errorBeforeNearest(`Effect: dep #{i} is not a State/Source/Ref`, SURFACE)
+				Err.errorBeforeNearest(`Quad0096 Effect: dep #{i} is not a State/Source/Ref`, SURFACE)
 			end
 			seen[d] = true -- duplicates are silently ignored (dedup lives in `_deps`/`_epochs`)
 		end
@@ -417,7 +417,7 @@ local function registerDispatchHandlers(module: any)
 		end,
 		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+			Err.errorBefore(`Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})
@@ -431,7 +431,7 @@ end
 local function implFor(module: any)
 	local impl = implsOf(module).Effect
 	if impl == nil then
-		error("Effect: Effect.Init(module) has not run for this quad instance", 1)
+		error("Quad0098 Effect: Effect.Init(module) has not run for this quad instance", 1)
 	end
 	return impl
 end

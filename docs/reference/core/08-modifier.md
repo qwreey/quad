@@ -45,7 +45,7 @@ type FieldOut<T> = T | State<T> | None
 
 Modifier는 props의 **숫자 키** 항목입니다. 문자 키의 값 자리에 두면 합칠 대상이 없으므로 그 자리에서 거부됩니다.
 
-- `Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`
+- `Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`
 
 펼치기 규칙은 셋입니다.
 
@@ -90,12 +90,12 @@ Modifier: setmetatable<{
 
 **에러**
 
-- `Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`
-- `Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`
-- `Modifier: field "{k}" collides with a reserved Modifier method`
-- `Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`
-- `Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
-- `Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
+- `Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`
+- `Quad0059 Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`
+- `Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`
+- `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`
+- `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
+- `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
 
 **예제**
 
@@ -142,8 +142,8 @@ setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래�
 
 **에러**
 
-- `Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
-- `Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })`
+- `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
+- `Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })`
 
 **예제**
 
@@ -190,7 +190,7 @@ type FieldOut<T> = T | State<T> | None
 
 **에러**
 
-- `Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`
+- `Quad0049 Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`
 
 **예제**
 
@@ -219,7 +219,7 @@ Apply: <U>(self: any, factory: (any) -> U) -> U
 
 **반환** — `factory(self)`의 결과 그대로.
 
-**동작** — **순수한 호출 슈거입니다.** factory가 함수인지만 검사하고(`Modifier:Apply: factory must be a function (got {typeof(factory)})`), 그 밖의 계약도 추가 의미도 없습니다. 재사용 가능한 스타일 조합을 함수로 떼어 두고 체인 중간에 끼워 넣을 때 씁니다.
+**동작** — **순수한 호출 슈거입니다.** factory가 함수인지만 검사하고(`Quad0050 Modifier:Apply: factory must be a function (got {typeof(factory)})`), 그 밖의 계약도 추가 의미도 없습니다. 재사용 가능한 스타일 조합을 함수로 떼어 두고 체인 중간에 끼워 넣을 때 씁니다.
 
 주석이 붙은 factory는 타입이 그대로 서고, 무주석 factory는 `any`가 됩니다.
 
@@ -270,8 +270,8 @@ As: <T>(self: Modifier, name: string?) -> T
 
 **에러**
 
-- `Modifier:As: name must be a class name string (got {typeof(name)})`
-- `Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`
+- `Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})`
+- `Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`
 
 ## `mod:As<Class>()`
 
@@ -292,8 +292,8 @@ As<Class>: (self: <Ancestor>Modifier) -> <Class>Modifier -- 클래스별로 생�
 
 **에러**
 
-- `Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`
-- `Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`
+- `Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`
+- `Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`
 
 **예제**
 
@@ -324,8 +324,8 @@ Overridden: (...any) -> any
 
 **에러**
 
-- `Modifier.Overridden: expects at least one Modifier`
-- `Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`
+- `Quad0053 Modifier.Overridden: expects at least one Modifier`
+- `Quad0054 Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`
 
 **예제**
 
@@ -363,7 +363,7 @@ TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T
 
 **에러**
 
-- `Modifier.TypedFactory: name must be a non-empty class name string (got {typeof(name)})`
+- `Quad0066 Modifier.TypedFactory: name must be a non-empty class name string (got {typeof(name)})`
 
 **예제**
 
@@ -406,9 +406,9 @@ DefineSubtype: (parent: string, subtype: string) -> ()
 
 **에러**
 
-- `Modifier.DefineSubtype: parent must be a non-empty class name string (got {typeof(name)})`
-- `Modifier.DefineSubtype: subtype must be a non-empty class name string (got {typeof(name)})`
-- `Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`
+- `Quad0066 Modifier.DefineSubtype: parent must be a non-empty class name string (got {typeof(name)})`
+- `Quad0066 Modifier.DefineSubtype: subtype must be a non-empty class name string (got {typeof(name)})`
+- `Quad0067 Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`
 
 **예제**
 
