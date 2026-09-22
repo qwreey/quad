@@ -100,24 +100,24 @@ local function install(quad: any): any
 		for _, name in NUMBER_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "number" then
-				fail(`Tween: {name} must be a number`, SURFACE)
+				fail(`Quad0243 Tween: {name} must be a number`, SURFACE)
 			end
 		end
 		if opts.Reverses ~= nil and type(opts.Reverses) ~= "boolean" then
-			fail("Tween: Reverses must be a boolean", SURFACE)
+			fail("Quad0244 Tween: Reverses must be a boolean", SURFACE)
 		end
 		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
-			fail("Tween: Dedup must be a boolean", SURFACE)
+			fail("Quad0245 Tween: Dedup must be a boolean", SURFACE)
 		end
 		for _, name in CALLBACK_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "function" then
-				fail(`Tween: {name} must be a function`, SURFACE)
+				fail(`Quad0246 Tween: {name} must be a function`, SURFACE)
 			end
 		end
 		local override = opts.Override
 		if override ~= nil and override ~= "Cancel" and override ~= "Finish" then
-			fail('Tween: Override must be "Cancel" or "Finish"', SURFACE)
+			fail('Quad0247 Tween: Override must be "Cancel" or "Finish"', SURFACE)
 		end
 	end
 
@@ -128,22 +128,22 @@ local function install(quad: any): any
 	local function validate(opts: any, raise: ((string, number) -> ())?)
 		local fail = raise or Err.errorBeforeNearest
 		if type(opts) ~= "table" then
-			fail("Tween: expected an options table (Tween{ Value = ... })", SURFACE)
+			fail("Quad0248 Tween: expected an options table (Tween{ Value = ... })", SURFACE)
 		end
 		if opts.Value == nil then
-			fail("Tween: Value is required", SURFACE)
+			fail("Quad0249 Tween: Value is required", SURFACE)
 		end
 		if isState(opts.Value) then
 			-- Q16 (b) (사용자 결정 2026-09-07): every Tween field is a plain value (tween-plan 불변식) —
 			-- a State here reached the engine as a table (`H-398`). Put the Tween in the State instead.
-			fail("Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
+			fail("Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
 		end
 		if opts.Value == None or isTween(opts.Value) then
 			-- `H-463`: the same invariant, the other two non-plain quad values — None (the frozen
 			-- sentinel) and a nested Tween both reached the engine as a table through
 			-- `Property.process`'s Tween branch. To release a property, emit None ITSELF
 			-- (`Animate` passes nil/None through untouched — Q8 (a)).
-			fail("Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)
+			fail("Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)
 		end
 		validateFields(opts, raise)
 	end

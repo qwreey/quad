@@ -35,13 +35,13 @@ return function(S: Types.SlotInternal, module: any)
 	local function checkRawElement(v: any, raise: (string, any) -> ())
 		if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
 			or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
-			raise("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
+			raise("Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
 		end
 		if v == nil or v == S.None then
-			raise("Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
+			raise("Quad0239 Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
 		end
 		if not module.Backend.isInst(v) then
-			raise("Slot: this backend cannot mount this value", S.SURFACE)
+			raise("Quad0240 Slot: this backend cannot mount this value", S.SURFACE)
 		end
 		-- [2026-09-16 사용자 결정 — question.md §2] a foreign element (made outside quad, never
 		-- claimed) is rejected here rather than silently accepted: Add only did elementOwner
@@ -49,7 +49,7 @@ return function(S: Types.SlotInternal, module: any)
 		-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
 		-- the user takes ownership first with `Claim` (or builds it with the Declaration).
 		if not module.Backend.isClaimed(v) then
-			raise("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", S.SURFACE)
+			raise("Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", S.SURFACE)
 		end
 	end
 	S.checkRawElement = checkRawElement
@@ -65,7 +65,7 @@ return function(S: Types.SlotInternal, module: any)
 			-- inside attachSlot after the array/ownership mutation — otherwise
 			-- Splice's batch gate is left On by the raise (통합 리뷰 재현).
 			if v._destroyed then
-				raise("Slot: destroyed Slot cannot be an element", S.SURFACE)
+				raise("Quad0242 Slot: destroyed Slot cannot be an element", S.SURFACE)
 			end
 			return v
 		end

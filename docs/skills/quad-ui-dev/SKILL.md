@@ -16,6 +16,11 @@ their specs. When a symbol is not listed here, grep the source rather than inven
 (verbatim error strings → fix), `references/v1-migration.md` (porting a **quad v1** codebase:
 mapping table, removed features, strict-mode blockers).
 
+Every quad error message starts with a stable `QuadNNNN` identifier (wording may change,
+the ID does not) — when diagnosing a runtime error, match on the ID first, then the message
+substring. `references/rules-and-invariants.md` quotes messages with their ID; the full
+registry, grouped by layer, is `docs/reference/errors/00-index.md` at the repo root.
+
 ---
 
 ## 0. Live Docs — fetch the real page before you assert
@@ -79,7 +84,7 @@ Snippets below assume this prologue.
 
 - `require(quad-base)` **is** the default instance; `Quad.New()` only for isolated ones.
 - `UseProvider` is one slot per module: a *different* provider function errors
-  (`UseProvider: this Quad module already has a provider`); the same one is a no-op.
+  (`Quad0213 UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
   `Provider<T>`, `Context`) and the generated `Declaration` module (`DeclarationModule.FrameModifier`,
   `DeclarationModule.Field<T>`, …). **`q.State<T>` does not exist on the module value itself** — `q` is a value, not a type (the `q.State<T>` form in the reference works only because the setup module re-exports the types under its own name).
@@ -139,7 +144,7 @@ also re-publishes when the given deps change — no callback, no values passed) 
 - A `Store` inside a `Source`/`State` is allowed but **not reactive per field**: the
   outer state fires only when the whole value is replaced. Use `q.Operator.Indexed` for a
   reactive field read.
-- A `Modifier` inside a `Source` errors: `Source: cannot hold a Modifier as a Source value`.
+- A `Modifier` inside a `Source` errors: `Quad0182 Source: cannot hold a Modifier as a Source value`.
 - To reset a form, set the individual `Source` fields: `store.Name:Set("")`.
 
 ### 2.3 Operator Combinators via `:Apply`
@@ -218,7 +223,7 @@ local unchecked = base:As<<DeclarationModule.TextLabelModifier>>()     -- UNCHEC
 
 `:As<<T>>()` performs no ancestry check. Its optional string argument must be an already
 registered Modifier class name (`Modifier.TypedFactory`/`DefineSubtype`); an unknown name raises
-`Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the generated
+`Quad0052 Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the generated
 `:As<Class>()` methods — their existence is the check.
 
 ### 3.4 Multi-Store Prop Passing via `Context`
@@ -345,14 +350,14 @@ and freshly built `D.*` children may be mixed into the same array.
 ### Invariants of `Claim`
 
 1. **Claim-once**: an Instance can be claimed once. Instances made by `D.*` are already
-   claimed — `Claim: <instance> is already claimed by quad — a Declaration-made or
+   claimed — `Quad0029 Claim: <instance> is already claimed by quad — a Declaration-made or
    already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive
    it separately, or dispose it and rebuild)`. This is `q.Claim`'s own pre-check (it runs
    before any claim in the descriptor tree is committed, root and mapped children alike).
-   `nativeClaim: Instance is already claimed by quad` is the lower-level backend guard the
+   `Quad0225 nativeClaim: Instance is already claimed by quad` is the lower-level backend guard the
    same check used to surface as, before that pre-pass existed.
 2. **One-shot descriptor**: a `M.<Class>(key)({...})` value is consumed by the `Claim`
-   that uses it — `Claim: mapper descriptor was already used (descriptors are one-shot)`.
+   that uses it — `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)`.
 3. **Own-all**: quad owns the resolved children; external code must not add or remove
    them directly. Never claim a shared engine container such as `PlayerGui` — mount a
    quad-made `ScreenGui` under it instead. Both are conventions quad cannot detect (no
@@ -427,13 +432,13 @@ The first assignment snaps to the value; later emissions run an engine tween.
   the key simply does not exist (no entry, no error); a value that DISAPPEARS from a replaced
   group is NOT unset — the old attribute persists until an explicit `None`/nil. Only the scalar
   sugars (`StringAttr`/`NumberAttr`/`BooleanAttr`) reject `nil`
-  (`value of "X" must not be nil — use None to delete`).
+  (`Quad0014 {fnName}: value of "X" must not be nil — use None to delete`).
 
 ### 6.3 Refs and Lifecycle Hooks
 
 `PreRef` in the array part is filled in a pre-pass, before the rest of the props table
 is driven. `ref:Unwrap()` returns the value or errors when empty
-(`Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`) — it is
+(`Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`) — it is
 the way to drop `nil` from the type.
 
 ```luau
@@ -513,16 +518,16 @@ the solver can see; `Fallback` returns `Ok | Err`.
 
 | Anti-pattern | Observed result | Correct form |
 | :--- | :--- | :--- |
-| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
-| `Modifier` as a hash key | `Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
-| `Ref`/`PreRef`/`PostRef`/`Slot`/`Effect`/`Observer` as a hash key | `<Kind>: must be an array item, not the value of a string key` (same shape for `Ref:`/`PreRef:`/`PostRef:`/`Slot:`/`Effect:`/`Observer:`) | Put the value in the array part |
-| `Tag` as a hash key | `Dispatch: no handler matched key <K> (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
+| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
+| `Modifier` as a hash key | `Quad0068 Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
+| `Ref`/`PreRef`/`PostRef`/`Slot`/`Effect`/`Observer` as a hash key | `<Kind>: must be an array item, not the value of a string key` — `Quad0137` for `Ref:`/`PreRef:`/`PostRef:` (one shared raise site), `Quad0141` for `Slot:`, `Quad0097` for `Effect:`, `Quad0116` for `Observer:` | Put the value in the array part |
+| `Tag` as a hash key | `Quad0076 Dispatch: no handler matched key <K> (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
 | Reading a `:Compute` dep without `:Get()` | No error — `#handle` is `0`, concatenation is garbage | `dep:Get()` |
-| `Modifier` inside a `Source` | `Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
-| `q.Tween{ Value = someState }` | `Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
-| `q.Claim(inst)` with one argument | `Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
-| Reusing a `D.Mapper` descriptor | `Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
-| `A:Add(B); B:Add(A)` | Immediate error: `Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Keep the slot graph acyclic |
-| `Parent = ...` as a prop | `Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
-| `Activated` on a `Frame` | `Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |
+| `Modifier` inside a `Source` | `Quad0182 Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
+| `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
+| `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
+| Reusing a `D.Mapper` descriptor | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
+| `A:Add(B); B:Add(A)` | Immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Keep the slot graph acyclic |
+| `Parent = ...` as a prop | `Quad0076 Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
+| `Activated` on a `Frame` | `Quad0076 Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |
 | `AbsoluteSize` read inside `OnRendered` | No error, but `PostRef` guarantees only the subtree — parenting is explicitly not guaranteed | Read it later, from an event or an explicit connection |

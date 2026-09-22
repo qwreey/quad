@@ -90,15 +90,15 @@ local panel = D.Frame({ Size = size })
 
 | 상황 | 문구 |
 |---|---|
-| 옵션이 테이블이 아님 | `Tween: expected an options table (Tween{ Value = ... })` |
-| `Value` 없음 | `Tween: Value is required` |
-| `Time`/`RepeatCount`/`DelayTime`이 숫자가 아님 | `Tween: {name} must be a number` |
-| `Reverses`가 불린이 아님 | `Tween: Reverses must be a boolean` |
-| `Dedup`이 불린이 아님 | `Tween: Dedup must be a boolean` |
-| `Override`가 두 값이 아님 | `Tween: Override must be "Cancel" or "Finish"` |
-| `Started`/`Completed`/`Cancelled`가 함수가 아님 | `Tween: {name} must be a function` |
-| `Value`가 State | `Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` |
-| `Value`가 `None`이거나 다른 `Tween` | `Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` |
+| 옵션이 테이블이 아님 | `Quad0248 Tween: expected an options table (Tween{ Value = ... })` |
+| `Value` 없음 | `Quad0249 Tween: Value is required` |
+| `Time`/`RepeatCount`/`DelayTime`이 숫자가 아님 | `Quad0243 Tween: {name} must be a number` |
+| `Reverses`가 불린이 아님 | `Quad0244 Tween: Reverses must be a boolean` |
+| `Dedup`이 불린이 아님 | `Quad0245 Tween: Dedup must be a boolean` |
+| `Override`가 두 값이 아님 | `Quad0247 Tween: Override must be "Cancel" or "Finish"` |
+| `Started`/`Completed`/`Cancelled`가 함수가 아님 | `Quad0246 Tween: {name} must be a function` |
+| `Value`가 State | `Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` |
+| `Value`가 `None`이거나 다른 `Tween` | `Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` |
 
 `Info`/`Style`/`Direction`은 **생성 시점에 검사하지 않습니다** — 타입이 이미 정밀하고, 타입을 우회한
 값은 엔진이 자기 에러를 냅니다(`inst[k] = 잘못된값`과 같은 부류).

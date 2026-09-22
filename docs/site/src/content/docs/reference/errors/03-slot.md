@@ -341,3 +341,43 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 - **언제**: `dispose`에 준 값이 `Slot`도 아니고 백엔드가 요소로 인정하는 값(`q.Backend.isInst`가 참)도 아닐 때 — 백엔드가 아예 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다.
 - **고치려면**: `Slot`이거나 `q.Backend.isInst`가 참인 값을 넘기세요.
 - **참고**: [`q.dispose(value)`](/reference/core/10-lifetime-sentinels/#qdisposevalue)
+
+### Quad0238
+
+`Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements` — `quad-base/src/Slot/Elements.luau`
+
+- **언제**: `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Modifier` 같은 핸들러 레이어 값을 `Slot`의 원소(생성자 `initial`, `:Add`/`:Replace`/`:Splice`/`:List`/`:Single`의 새 원소)로 넣으려 할 때 — 이런 값은 마운트할 물리 원소가 아니라 다른 값에 붙이는 부착물입니다.
+- **고치려면**: 그 값이 붙어야 할 실제 원소(Instance 등) 자리에 붙이고, `Slot`에는 마운트 가능한 값만 넣으세요.
+- **참고**: [원소 대수](/reference/core/06-slot/#원소-대수--넣는-자리와-꺼내는-자리의-타입이-다르다)
+
+### Quad0239
+
+`Slot: nil/None cannot be an element — only actually mountable values` — `quad-base/src/Slot/Elements.luau`
+
+- **언제**: `nil`이나 `q.None`을 `Slot`의 원소로 넣으려 할 때 — `Slot`은 "빈 자리"를 원소 부재가 아니라 배열에서 그 항목이 아예 없는 것으로 표현하므로, `nil`/`None`은 원소 자리에 들어올 수 없습니다.
+- **고치려면**: 그 자리를 비우려면 `:Remove`/`:Extract`/`:Splice`로 배열에서 빼세요.
+- **참고**: [원소 대수](/reference/core/06-slot/#원소-대수--넣는-자리와-꺼내는-자리의-타입이-다르다)
+
+### Quad0240
+
+`Slot: this backend cannot mount this value` — `quad-base/src/Slot/Elements.luau`
+
+- **언제**: 백엔드의 `isInst`가 거짓을 돌려주는 값(Roblox 백엔드라면 `Instance`가 아닌 값)을 `Slot`의 원소로 넣으려 할 때.
+- **고치려면**: 그 백엔드가 마운트할 수 있는 값(Roblox면 `Instance`), `State`/`Source`, 또는 다른 `Slot`만 넣으세요.
+- **참고**: [원소 대수](/reference/core/06-slot/#원소-대수--넣는-자리와-꺼내는-자리의-타입이-다르다)
+
+### Quad0241
+
+`Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — `quad-base/src/Slot/Elements.luau`
+
+- **언제**: quad 밖에서 만들어졌거나(`Instance.new`, 다른 라이브러리) 아직 `Claim`으로 넘겨받지 않은 값, 다른 quad 모듈 인스턴스가 만든 값, 또는 이미 파괴된 값을 `Slot`의 원소로 넣으려 할 때 — 죽음을 추적할 수 없는 값은 받지 않습니다.
+- **고치려면**: `Declaration`으로 만들거나 [`Claim`](/reference/roblox/04-claim-mapper/)으로 먼저 넘겨받으세요. `Slot`이 대신 claim해 주지 않습니다.
+- **참고**: [원소 대수](/reference/core/06-slot/#원소-대수--넣는-자리와-꺼내는-자리의-타입이-다르다), [`Claim`](/reference/roblox/04-claim-mapper/)
+
+### Quad0242
+
+`Slot: destroyed Slot cannot be an element` — `quad-base/src/Slot/Elements.luau`
+
+- **언제**: 이미 파괴된 `Slot`을 다른 `Slot`의 원소로 직접 넣으려 할 때(`wrapElement`의 원소 자체가 파괴된 Slot인 경우 — 같은 뜻: Quad0169, 그쪽은 State로 감싸인 occupant가 파괴된 Slot인 경우).
+- **고치려면**: 파괴된 `Slot`은 원소로 쓸 수 없습니다 — 새 `Slot`을 만드세요.
+- **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)

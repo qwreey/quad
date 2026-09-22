@@ -7,6 +7,7 @@
 토큰을 너무 한번에 쓰지만 말고, 작게 오래 도는걸 추천해"*). 게이트는 `scripts/error-codes.py`(규칙은 그 docstring이 소스: 리터럴
 접두 / `"QuadNNNN " ..` 연결 / `-- error-code: <이유>` 주석 셋 중 하나, 소스 전체 유일, 문서 절 필수), 롤아웃은 결정론적 배정 계획
 (정렬된 파일·줄 순 → `Quad0001`부터; 한 자리가 메시지 둘을 내면 둘째는 `--next`)을 다섯 배치로. 사이드바 "Errors (에러 코드)" 그룹.
+**[2026-09-22 롤아웃 완료]** 248개 ID / raise 242자리 / 미태그 0(처음 234/228이었으나 스킬 문서 반영 중 sonnet이 지역 별칭 `raise(...)`/`fail(...)`로 던지는 14자리(`Slot/Elements`·`Tween.validate`)를 스캐너가 못 보는 것을 발견 → 스캐너에 두 이름 추가, 0238~0251 부여)(엄격 `check` 0 errors 0 warnings, test.sh 게이트 편입). 배치 다섯(`944155ca`·`34c07e40`·`e527dd24`·`194b6887`·`df8967a7`), 계획 밖 번호는 `--next`로 0229~0237(inline if 둘째 분기·3분기), 미사용 번호 0078·0107·0131(헬퍼 둘째 호출 자리·rethrow — 재사용 안 함). 런타임 스펙 `spec.errorcodes`(blame 접두 뒤 첫 토큰·`Fallback` 통과). 문서: `docs/reference/errors/` 10페이지에 절 234, 레퍼런스 에러 표·코드 블록 접두, how-to 09 한 줄, CHANGELOG Added, `conventions.md` raise 규칙. 스킬 문서 표는 별도 sonnet.
 
 **계기**: docs-review 2-3(how-to 09 부록의 "에러 문구 → 레퍼런스 앵커 색인 표")을 닫으며 사용자가 방향을 세웠다 —
 *"에러 문구: 보통 일반적으로 Quad10000 식으로 에러 아이디 스페이스를 가지는게 좋다고 보는데, 이 숫자를 어떻게 할당할 지 확인해볼

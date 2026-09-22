@@ -3,7 +3,7 @@
 
 규칙:
   1. quad가 던지는 모든 메시지는 `QuadNNNN ` (4자리, 공백 하나)로 시작한다 — 메시지 리터럴 안에 글자로.
-     raise 자리 = `errorBefore`/`errorBeforeNearest`/`errorAt`/`errorAtNearest` 호출과 직접 `error(` 호출.
+     raise 자리 = `errorBefore`/`errorBeforeNearest`/`errorAt`/`errorAtNearest` 호출, 직접 `error(` 호출, 그리고 지역 별칭 `raise(`/`fail(` 호출.
      첫 인자가 (a) `"QuadNNNN …"`/`` `QuadNNNN …` `` 리터럴이거나 (b) `"QuadNNNN " .. …` 연결이거나
      (c) 그 줄에 `-- error-code: <이유>` 주석이 있으면(메시지를 헬퍼가 만들거나 되던지기(rethrow)) 통과.
   2. ID는 소스 전체에서 유일하다(같은 ID 두 자리 = 실패). 한 번 붙은 ID는 재사용하지 않는다 — 폐기는 문서 헤딩에 `(폐기)`.
@@ -21,7 +21,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIRS = ['quad-base/src', 'quad-roblox/src', 'quad-types/src']  # quad-error는 던지는 메커니즘이지 메시지 주인이 아니다
 DOC_DIR = 'docs/reference/errors'
 ID_RE = re.compile(r'Quad(\d{4})')
-CALL_RE = re.compile(r'(?<![\w.])(?:[\w.]+\.)?(errorBefore|errorBeforeNearest|errorAt|errorAtNearest|error)\s*\(')
+# [2026-09-22 스킬 문서 반영 중 발견] 지역 별칭으로 던지는 자리 — `checkRawElement(v, raise)`의 `raise(...)`,
+# `Tween.validate`의 `local fail = raise or Err.errorBeforeNearest` 뒤 `fail(...)` — 도 raise 자리다. 이름 둘을 추가로 잡는다.
+CALL_RE = re.compile(r'(?<![\w.])(?:[\w.]+\.)?(errorBefore|errorBeforeNearest|errorAt|errorAtNearest|error|fail|raise)\s*\(')
 ALLOW_RE = re.compile(r'--\s*error-code:\s*\S')
 
 

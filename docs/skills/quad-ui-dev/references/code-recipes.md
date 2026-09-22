@@ -140,7 +140,7 @@ local function Leaderboard(itemsState: QuadTypes.State<{ Item }>)
 
         return row, { titleSrc = titleSrc, scoreSrc = scoreSrc, orderSrc = orderSrc }
     end, function(item: Item)
-        return item.Id -- stable unique key; a duplicate errors with `Slot:List: duplicate key ...`
+        return item.Id -- stable unique key; a duplicate errors with `Quad0145 Slot:List: duplicate key ...`
     end)
 
     return slot
@@ -183,7 +183,7 @@ end
 Mapped children accept the same props as `D.*` calls (plain values, States, Modifiers,
 events), and freshly built `D.*` children may be mixed into the same array. Claiming an
 Instance twice — including anything `D.*` produced — errors with
-`Claim: <instance> is already claimed by quad — a Declaration-made or already-Claimed
+`Quad0029 Claim: <instance> is already claimed by quad — a Declaration-made or already-Claimed
 Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or
 dispose it and rebuild)`.
 
