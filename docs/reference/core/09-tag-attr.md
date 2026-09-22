@@ -273,13 +273,13 @@ __call: (self: any, ...any) -> Attr
 
 **에러**
 
-- `Attr: arguments must be Stores, Attr values or plain tables`
-- `Attr: attribute name cannot be empty`
-- `Attr: plain-table keys must be non-empty strings`
-- `Attr: attribute "{name}" cannot be a function — attribute values are raw values or State`
-- `Attr: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`
+- `Quad0010 Attr: arguments must be Stores, Attr values or plain tables`
+- `Quad0003 Attr: attribute name cannot be empty`
+- `Quad0006 Attr: plain-table keys must be non-empty strings`
+- `Quad0007 Attr: attribute "{name}" cannot be a function — attribute values are raw values or State`
+- `Quad0008 Attr: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`
 
-한 인스턴스의 두 자리에 **같은 그룹 값 객체**를 놓으면 그 자리에서 던집니다 — `Attr: the same group value is placed at two positions of this instance`.
+한 인스턴스의 두 자리에 **같은 그룹 값 객체**를 놓으면 그 자리에서 던집니다 — `Quad0016 Attr: the same group value is placed at two positions of this instance`.
 
 **예제**
 
@@ -328,8 +328,8 @@ Merged: (...Attr) -> Attr
 
 **동작** — `Attr` 값**만** 받고, 이름이 겹치면 **에러**입니다. 두 출처가 같은 속성을 주장하는 사고를 조용히 넘기지 않으려는 자리입니다.
 
-- `Attr.Merged: arguments must be Attr values`
-- `Attr.Merged: attribute name "{name}" appears more than once`
+- `Quad0011 Attr.Merged: arguments must be Attr values`
+- `Quad0005 Attr.Merged: attribute name "{name}" appears more than once`
 
 ## `q.Attr.Overridden(...)`
 
@@ -343,7 +343,7 @@ Overridden: (...Attr) -> Attr
 
 **동작** — `Attr` 값만 받되, 겹치면 **뒤 인자가 조용히 이깁니다.** 생성자 `q.Attr(...)`의 정책과 같고, 입력을 `Attr`로만 제한한 철자입니다.
 
-- `Attr.Overridden: arguments must be Attr values`
+- `Quad0012 Attr.Overridden: arguments must be Attr values`
 
 **예제**
 
@@ -377,11 +377,11 @@ type AttrKeyObject = { Name: string }
 - **값 타입을 모르는 무타입 프리미티브입니다.** 값 검증은 백엔드의 `setAttr` 몫입니다. 패밀리 슈가(`StringAttr` 등)가 못 덮는 엔진 고유 타입(`Color3`, `UDim2`, `Instance` …)이 이 키의 자리입니다.
 - 이름별 **weak 캐시**를 지납니다 — 무언가가 붙들고 있는 동안 `q.AttrKey("Hp") == q.AttrKey("Hp")`가 성립합니다.
 - 값에 `q.None`을 두면 그 속성이 삭제됩니다.
-- 한 인스턴스의 같은 이름을 **서로 다른 키 객체**가 주장하면 그 자리에서 던집니다 — `AttrKey: attribute "{k.Name}" is already bound by another owner`.
+- 한 인스턴스의 같은 이름을 **서로 다른 키 객체**가 주장하면 그 자리에서 던집니다 — `Quad0002 AttrKey: attribute "{k.Name}" is already bound by another owner`.
 
 **에러**
 
-- `AttrKey: name must be a non-empty string`
+- `Quad0001 AttrKey: name must be a non-empty string`
 
 :::caution
 **문자 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
@@ -419,9 +419,9 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 
 **에러**
 
-- `StringAttr: name must be a non-empty string`
-- `StringAttr: value of "{name}" must not be nil — use None to delete`
-- `StringAttr: value of "{name}" must be a string, State or None (got {typeof(value)})`
+- `Quad0013 StringAttr: name must be a non-empty string`
+- `Quad0014 StringAttr: value of "{name}" must not be nil — use None to delete`
+- `Quad0015 StringAttr: value of "{name}" must be a string, State or None (got {typeof(value)})`
 
 **예제**
 
@@ -445,7 +445,7 @@ NumberAttr: AttrSugar<number>
 
 **동작** — [`q.StringAttr`](#qstringattrname-value)과 모든 것이 같고 원시 값 타입만 `number`입니다.
 
-**에러** — `NumberAttr: name must be a non-empty string` / `NumberAttr: value of "{name}" must not be nil — use None to delete` / `NumberAttr: value of "{name}" must be a number, State or None (got {typeof(value)})`
+**에러** — `Quad0013 NumberAttr: name must be a non-empty string` / `Quad0014 NumberAttr: value of "{name}" must not be nil — use None to delete` / `Quad0015 NumberAttr: value of "{name}" must be a number, State or None (got {typeof(value)})`
 
 ## `q.BooleanAttr(name, value)`
 
@@ -457,7 +457,7 @@ BooleanAttr: AttrSugar<boolean>
 
 **동작** — [`q.StringAttr`](#qstringattrname-value)과 모든 것이 같고 원시 값 타입만 `boolean`입니다.
 
-**에러** — `BooleanAttr: name must be a non-empty string` / `BooleanAttr: value of "{name}" must not be nil — use None to delete` / `BooleanAttr: value of "{name}" must be a boolean, State or None (got {typeof(value)})`
+**에러** — `Quad0013 BooleanAttr: name must be a non-empty string` / `Quad0014 BooleanAttr: value of "{name}" must not be nil — use None to delete` / `Quad0015 BooleanAttr: value of "{name}" must be a boolean, State or None (got {typeof(value)})`
 
 **예제**
 

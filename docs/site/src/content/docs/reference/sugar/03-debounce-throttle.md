@@ -94,25 +94,25 @@ export type ThrottleOptions = {
 **옵션 게이트(팩토리를 부르는 줄에서 던집니다).** 이름 자리(`Debounce`/`Throttle`)는 부른 쪽에 따라 바뀝니다.
 
 ```
-Debounce: options table expected (got nil)
-Debounce: Time is required (a number of seconds or a State<number>)
-Debounce: Time must be a non-negative number or a State<number> (got number)
-Debounce: Leading must be a boolean (got number)
-Debounce: Handle must be a Ref (got table)
-Debounce: Leading and Trailing both false would pass nothing through
-Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
+Quad0045 Debounce: options table expected (got nil)
+Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
+Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+Quad0042 Debounce: Leading must be a boolean (got number)
+Quad0047 Debounce: Handle must be a Ref (got table)
+Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
 ```
 
 `Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던지고, 게이트의 상태는 그 전과 같습니다 — 타이머 콜백 안에서는 읽지 않습니다). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
-Debounce: Time must be a non-negative number (got string)
+Quad0039 Debounce: Time must be a non-negative number (got string)
 ```
 
 `:Apply` 대상이 State가 아니면 그 `:Apply` 줄에서 막습니다.
 
 ```
-Debounce: Apply target must be a State (got table)
+Quad0043 Debounce: Apply target must be a State (got table)
 ```
 
 ---
@@ -131,7 +131,7 @@ export type GateHandle = {
 **Ref 하나는 `:Apply` 하나를 가리킵니다.** 이미 채워진 Ref를 다시 넘기면 — 팩토리를 재사용하며 같은 Handle을 쓰는 경우가 전형적입니다 — 그 `:Apply` 자리에서 에러가 납니다. 기본값이 `nil`이 아닌 Ref도 같은 이유로 거부됩니다.
 
 ```
-Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
+Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
 ```
 
 여러 게이트를 한꺼번에 제어하려면 Handle 대신 팩토리 브로드캐스트를 쓰십시오.

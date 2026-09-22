@@ -56,7 +56,7 @@ Provider: <T>(name: string?) -> Provider<T>
 `name`이 문자열이 아니면 만드는 그 줄에서 던집니다.
 
 ```
-Context.Provider: name must be a string (got number)
+Quad0035 Context.Provider: name must be a string (got number)
 ```
 
 **타입은 만드는 자리에서 한 번 붙입니다.** `T`는 값에 없는 팬텀이라, 캐스트든 명시적 타입 인자든 한쪽으로 적어주면 그 뒤로는 `Get`이 알아서 추론됩니다. 둘 다 `luau-analyze`와 `luau-lsp --flag:LuauSolverV2=true`(둘 다 신 솔버) 양쪽에서 통과합니다.
@@ -96,13 +96,13 @@ Set: <T>(self: Context, provider: Provider<T>, value: T) -> Context
 `false`는 값입니다. 부재로 취급되는 것은 `nil`뿐이고, `nil`을 넣으려 하면 막힙니다.
 
 ```
-Context:Set: value for Provider(Theme) must not be nil (absence is "not set")
+Quad0037 Context:Set: value for Provider(Theme) must not be nil (absence is "not set")
 ```
 
 키 자리에 Provider가 아닌 값이 오면 세 메소드가 모두 같은 모양으로 막습니다(`Set`/`Get`/`Peek` 자리에 따라 앞의 이름만 바뀝니다).
 
 ```
-Context:Set: key must be a Provider from Context.Provider() (got string)
+Quad0036 Context:Set: key must be a Provider from Context.Provider() (got string)
 ```
 
 ---
@@ -120,7 +120,7 @@ Get: <T>(self: Context, provider: Provider<T>) -> T
 **동작** — **없으면 에러입니다.** 필요한 Provider를 안 준 것은 프로그래밍 실수라는 판단이고, blame은 `:Get`을 부른 줄로 갑니다. 있는지부터 확인하고 싶으면 `:Peek`을 쓰십시오. 메시지의 `Provider(...)` 자리는 그 Provider의 `tostring`이라 이름 없는 Provider면 `Provider`만 찍힙니다.
 
 ```
-Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)
+Quad0038 Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)
 ```
 
 ---

@@ -91,7 +91,7 @@ function BlockerImpl.Policy(self: any, emit: (boolean?) -> boolean): () -> ()
 		-- `H-492` (2026-09-08 2차 감사 F-1/I-2): the only gate-policy surface without an
 		-- argument gate — a non-function sat in `_handles` until `Off()` called it,
 		-- blaming `Blocker.luau` with a raw VM error. Siblings `State:Gate`/`State:Apply` gate here.
-		Err.errorBeforeNearest(`Blocker: Policy emit must be a function (got {typeof(emit)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0017 Blocker: Policy emit must be a function (got {typeof(emit)})`, SURFACE)
 	end
 	local function handle(doEmit: boolean)
 		if doEmit then
@@ -114,7 +114,7 @@ function BlockerImpl.__apply(self: any, state: any): any
 	-- round10 H-2: the one gate-policy entry without an argument gate (`H-492` closed `Policy`'s `emit`;
 	-- `TimedGate:__apply` and every sibling `Apply` check the target) — `__apply(5)` died on `.Gate`
 	if not Brand.isState(state) then -- code-review: `{ Gate = f }` passed the duck check
-		Err.errorBeforeNearest(`Blocker: Apply target must be a State (got {typeof(state)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0018 Blocker: Apply target must be a State (got {typeof(state)})`, SURFACE)
 	end
 	return state:Gate(function(emit)
 		return self:Policy(emit)

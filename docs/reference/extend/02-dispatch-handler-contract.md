@@ -221,9 +221,9 @@ Dispatch.drive: array keys must be positive integers (got {키})
 공통 인자 검사는 세 종류이고 함수 이름만 바뀝니다.
 
 ```
-Bookkeeping.{함수}: ownerKey must not be nil
-Bookkeeping.{함수}: position must be a positive integer (got {tostring(i)})
-Bookkeeping.{함수}: length must be a non-negative integer (got {tostring(n)})
+Quad0020 Bookkeeping.{함수}: ownerKey must not be nil
+Quad0019 Bookkeeping.{함수}: position must be a positive integer (got {tostring(i)})
+Quad0021 Bookkeeping.{함수}: length must be a non-negative integer (got {tostring(n)})
 ```
 
 ## `q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)`
@@ -257,7 +257,7 @@ setOffsetSource: (ownerKey: any, i: number, source: any) -> () -- Source<number>
 **동작** — 자리 `i`의 **오프셋 발행 채널**을 등록합니다. `Source<number>`를 주면 그 자리의 절대 오프셋이 바뀔 때마다 그 소스에 `:Set`됩니다(등록 즉시 현재 값과 다르면 한 번 발행). `q.None`을 주면 "발행 채널 없음"이라는 뜻입니다 — **참여하지 않는다는 뜻이 아닙니다**(참여 여부는 길이 쪽이 답합니다). 그런 자리의 오프셋이 필요하면 `getOffsetAt`으로 당겨옵니다.
 
 ```
-Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof})
+Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof})
 ```
 
 이 검사는 부기를 한 글자도 쓰기 전에 돕니다 — 잘못된 소스를 절반쯤 기록한 채 실패하면 그 owner의 오프셋 산술이 영구히 얼어붙기 때문입니다.
@@ -287,8 +287,8 @@ getOffsetAt: (ownerKey: any, at: number) -> number
 조회할 수 있는 최대 자리는 **등록된 마지막 자리 + 1**입니다. 그보다 뒤를 묻거나, 중간 자리가 등록되지 않았으면 던집니다.
 
 ```
-Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
-Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
+Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
+Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
 ```
 
 ## `q.Bookkeeping.getBlocker(ownerKey)`

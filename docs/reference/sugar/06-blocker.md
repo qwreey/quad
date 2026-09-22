@@ -141,7 +141,7 @@ export type GateEmit = (commit: boolean?) -> boolean
 - 이 `Blocker`의 정책을 **값으로** 꺼내 직접 게이트에 배선할 때 씁니다. `state:Apply(blocker)`가 내부에서 하는 일이 바로 이것이라, 특별한 사정이 없다면 `Apply` 쪽을 쓰면 됩니다.
 - **부르는 그 자리에서** 이 `Blocker`에 해제 핸들을 등록합니다(약한 등록). 그 핸들의 강한 주인은 반환된 클로저이므로, 게이트가 살아 있는 동안만 핸들도 삽니다.
 - `emit`이 함수가 아니면 그 자리에서 거절합니다:
-  `Blocker: Policy emit must be a function (got {typeof(emit)})`
+  `Quad0017 Blocker: Policy emit must be a function (got {typeof(emit)})`
 
 **예제**
 
@@ -159,7 +159,7 @@ end)
 
 ## `state:Apply(blocker)`
 
-`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](../core/03-state.md#stateapplyfactory)의 객체 팔로 붙습니다(대상이 `State`가 아니면 `Blocker: Apply target must be a State (got {typeof(state)})`). 정확히 다음과 같습니다:
+`Blocker`는 `__apply`를 가진 애플리커티브 팩토리이므로 [`state:Apply`](../core/03-state.md#stateapplyfactory)의 객체 팔로 붙습니다(대상이 `State`가 아니면 `Quad0018 Blocker: Apply target must be a State (got {typeof(state)})`). 정확히 다음과 같습니다:
 
 ```luau
 state:Apply(blocker)

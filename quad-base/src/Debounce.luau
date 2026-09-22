@@ -79,7 +79,7 @@ local function readTime(name: string, field: string, t: any): number
 	local v = if isState(t) then t:Get() else t
 	if type(v) ~= "number" or v ~= v or v < 0 then
 		-- reached from emit depth (upstream signal) only — outermost
-		Err.errorBefore(`{name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
+		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
 	end
 	return v
 end
@@ -89,19 +89,19 @@ local function checkTime(name: string, field: string, t: any, optional: boolean)
 		if optional then
 			return
 		end
-		Err.errorBeforeNearest(`{name}: {field} is required (a number of seconds or a State<number>)`, SURFACE)
+		Err.errorBeforeNearest(`Quad0040 {name}: {field} is required (a number of seconds or a State<number>)`, SURFACE)
 	end
 	if isState(t) then
 		return
 	end
 	if type(t) ~= "number" or t ~= t or t < 0 then
-		Err.errorBeforeNearest(`{name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)
 	end
 end
 
 local function checkFlag(name: string, field: string, v: any)
 	if v ~= nil and type(v) ~= "boolean" then
-		Err.errorBeforeNearest(`{name}: {field} must be a boolean (got {typeof(v)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0042 {name}: {field} must be a boolean (got {typeof(v)})`, SURFACE)
 	end
 end
 
@@ -134,7 +134,7 @@ end
 -- Applicative factory, method form (`H-158`): `state:Apply(Debounce{...})`.
 function FactoryImpl.__apply(self: any, state: any): any
 	if not isState(state) then
-		Err.errorBeforeNearest(`{self._name}: Apply target must be a State (got {typeof(state)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0043 {self._name}: Apply target must be a State (got {typeof(state)})`, SURFACE)
 	end
 	local module, opts, name = self._module, self._opts, self._name
 	local reset, leading, trailing = self._reset, self._leading, self._trailing
@@ -146,7 +146,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 		-- orphan subscriber on the upstream — the `H-509` ordering rule again) and
 		-- OUTERMOST (`H-517`: this frame is tagged, so Nearest would blame State.luau —
 		-- the quad-error "guard reached only through tagged frames" rule, Q7).
-		Err.errorBefore(`{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)`, SURFACE)
+		Err.errorBefore(`Quad0044 {name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)`, SURFACE)
 	end
 
 	-- the per-gate handle: Flush/Cancel + the timer state (fields, not
@@ -314,7 +314,7 @@ local KNOWN_OPTIONS = { Time = true, Leading = true, Trailing = true, MaxTime = 
 
 local function make(module: any, name: string, reset: boolean, opts: any): any
 	if type(opts) ~= "table" then
-		Err.errorBeforeNearest(`{name}: options table expected (got {typeof(opts)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0045 {name}: options table expected (got {typeof(opts)})`, SURFACE)
 	end
 	-- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, and execution
 	-- continues — non-fatal blame with a cost belongs to the debug layer
@@ -331,16 +331,16 @@ local function make(module: any, name: string, reset: boolean, opts: any): any
 	if reset then
 		checkTime(name, "MaxTime", opts.MaxTime, true)
 	elseif opts.MaxTime ~= nil then
-		Err.errorBeforeNearest("Throttle: MaxTime is Debounce-only (a throttle already passes every Time)", SURFACE)
+		Err.errorBeforeNearest("Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)", SURFACE)
 	end
 	if opts.Handle ~= nil and not isRef(opts.Handle) then
-		Err.errorBeforeNearest(`{name}: Handle must be a Ref (got {typeof(opts.Handle)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0047 {name}: Handle must be a Ref (got {typeof(opts.Handle)})`, SURFACE)
 	end
 	-- defaults differ per name (plan 5-3 table); both false passes nothing → error
 	local leading = if reset then opts.Leading == true else opts.Leading ~= false
 	local trailing = opts.Trailing ~= false
 	if not leading and not trailing then
-		Err.errorBeforeNearest(`{name}: Leading and Trailing both false would pass nothing through`, SURFACE)
+		Err.errorBeforeNearest(`Quad0048 {name}: Leading and Trailing both false would pass nothing through`, SURFACE)
 	end
 	return setmetatable({
 		_module = module,

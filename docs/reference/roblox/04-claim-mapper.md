@@ -92,12 +92,12 @@ end
 
 | 상황 | 문구 |
 |---|---|
-| 첫 인자가 Instance가 아님 | `Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})` |
-| 둘째 인자가 디스크립터가 아님 | `Claim: second argument must be a D.Mapper descriptor` |
-| 디스크립터를 두 번 씀 | `Claim: mapper descriptor was already used (descriptors are one-shot)` |
-| 디스크립터의 props가 테이블이 아님 | `Claim: mapper props must be a table (got {typeof(desc._props)})` |
+| 첫 인자가 Instance가 아님 | `Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})` |
+| 둘째 인자가 디스크립터가 아님 | `Quad0034 Claim: second argument must be a D.Mapper descriptor` |
+| 디스크립터를 두 번 씀 | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` |
+| 디스크립터의 props가 테이블이 아님 | `Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})` |
 | 이미 quad가 소유한 Instance | `nativeClaim: Instance is already claimed by quad` |
-| 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}` |
+| 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}` |
 
 `D.<Class>{…}`의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
 납니다 — 디스크립터는 `Claim` 전용입니다.
@@ -119,7 +119,7 @@ end
      `M.UICorner("UICorner")({ … })`처럼 **디스크립터로 매핑하면 평범한 숫자 키 자리**이고, 그건 부기
      대상입니다. 둘을 섞으면(템플릿에 `UICorner`가 있는데 숏핸드 키도 쓰면) `UICorner`가 둘 생기니
      한쪽만 쓰세요.
-   - 이름 **중복**은 UB입니다(`FindFirstChild`가 고르는 쪽). 부재는 즉시 에러입니다 — `Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}`. 이름은 맞는데 클래스가 다른 자식(`M.TextLabel("Kid")`인데 실제로는 `ImageLabel`)도 같은 에러입니다 — 하위 클래스는 통과합니다(`IsA`).
+   - 이름 **중복**은 UB입니다(`FindFirstChild`가 고르는 쪽). 부재는 즉시 에러입니다 — `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}`. 이름은 맞는데 클래스가 다른 자식(`M.TextLabel("Kid")`인데 실제로는 `ImageLabel`)도 같은 에러입니다 — 하위 클래스는 통과합니다(`IsA`).
 3. **`PlayerGui`/`CoreGui`는 대상이 아닙니다.** 엔진과 여러 스크립트가 자식을 넣고 빼는 공유
    컨테이너라 "소유"가 성립하지 않습니다. 런타임 검사가 아니라 **설계상 대상 밖**이라는 뜻이니
    걸지 마세요. 대신 quad 트리의 **루트는 밖에서 `.Parent`를 설정해도 됩니다**(루트의 부모는 어떤

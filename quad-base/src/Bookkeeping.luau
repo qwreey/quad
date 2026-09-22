@@ -54,7 +54,7 @@ local function Init(module: any)
 	-- contiguity. User-input class -> nearest blame (the handler that called).
 	local function checkPosition(fnName: string, i: any)
 		if type(i) ~= "number" or i % 1 ~= 0 or i <= 0 then
-			Err.errorBeforeNearest(`Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0019 Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
 		end
 	end
 	-- `H-504` (2026-09-08 round8 K-2): every public bookkeeping entry with a nil owner died in
@@ -63,7 +63,7 @@ local function Init(module: any)
 	-- only. Nearest: these are direct-call surfaces.
 	local function checkOwner(fnName: string, ownerKey: any)
 		if ownerKey == nil then
-			Err.errorBeforeNearest(`Bookkeeping.{fnName}: ownerKey must not be nil`, SURFACE)
+			Err.errorBeforeNearest(`Quad0020 Bookkeeping.{fnName}: ownerKey must not be nil`, SURFACE)
 		end
 	end
 
@@ -134,7 +134,7 @@ local function Init(module: any)
 	-- `checkPosition`'s header says to keep out of the window).
 	local function checkLengthValue(fnName: string, n: any)
 		if type(n) ~= "number" or n % 1 ~= 0 or n < 0 then
-			Err.errorBeforeNearest(`Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0021 Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
 		end
 	end
 
@@ -196,10 +196,10 @@ local function Init(module: any)
 				local last = bk.N or 0
 				-- 7순회 `H-427`: name the range cause only when the query IS past N+1 —
 				-- with a hole below N the range clause called a legal query illegal
-				Err.errorBefore(
+				Err.errorBefore( -- error-code: inline if
 					if at > last + 1
-						then `Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
-						else `Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
+						then `Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
+						else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
 					SURFACE
 				)
 			end
@@ -245,7 +245,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+				error(`Quad0023 Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			if offset == None then
 				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and
@@ -285,7 +285,7 @@ local function Init(module: any)
 			-- setOffsetSource without setLength) died as an anonymous arithmetic error
 			-- inside recomputeBlocker:On, freezing the owner. Internal invariant.
 			if bk.lengthList[i] == nil then
-				error(`Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+				error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
 			end
 			sum += contribution(bk, i)
 			-- `H-240` check ② — contribution's own Get window; the possibly
@@ -377,7 +377,7 @@ local function Init(module: any)
 		if source ~= None and not Brand.isSource(source) then
 			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
 			-- die at `:Get()` with a Bookkeeping.luau line
-			Err.errorBeforeNearest(`Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
 		end
 		local bk = getBookkeeping(ownerKey)
 		if source == None then

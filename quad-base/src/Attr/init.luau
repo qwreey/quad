@@ -96,17 +96,17 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 	if isStore(arg) then
 		for _, name in ipairs(arg:Names()) do
 			if name == "" then
-				Err.errorBeforeNearest(`{ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)
+				Err.errorBeforeNearest(`Quad0003 {ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)
 			end
 			if not overwrite and map[name] ~= nil then
-				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`Quad0004 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = arg[name] -- the declared Source slot (H-79)
 		end
 	elseif isAttr(arg) then
 		for name, v in pairs(arg:NameMap()) do
 			if not overwrite and map[name] ~= nil then
-				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`Quad0005 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = v
 		end
@@ -125,25 +125,25 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 		-- path stays untyped by design (`Attr/Key.luau` header, §4 Q4's family).
 		for rawName, v in pairs(arg :: { [any]: any }) do
 			if type(rawName) ~= "string" or rawName == "" then -- `H-421`: `""` reached setAttr at dispatch depth
-				Err.errorBeforeNearest(`{ctx}: plain-table keys must be non-empty strings`, SURFACE)
+				Err.errorBeforeNearest(`Quad0006 {ctx}: plain-table keys must be non-empty strings`, SURFACE)
 			end
 			local name = rawName :: string
 			if type(v) == "function" then
-				Err.errorBeforeNearest(`{ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State`, SURFACE)
+				Err.errorBeforeNearest(`Quad0007 {ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State`, SURFACE)
 			end
 			if type(v) == "table" and v ~= None and not Brand.isState(v) then
 				-- `H-498` (2026-09-08 2차 감사 I-5/H-3): the engine stores no table at all — a
 				-- Slot/Ref/Tween/Modifier or any metatable'd table reached `setAttr` at dispatch
 				-- depth (the `H-368` family: brands are not metatables, so nothing caught them)
-				Err.errorBeforeNearest(`{ctx}: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)
+				Err.errorBeforeNearest(`Quad0008 {ctx}: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)
 			end
 			if not overwrite and map[name] ~= nil then
-				Err.errorBeforeNearest(`{ctx}: attribute name "{name}" appears more than once`, SURFACE)
+				Err.errorBeforeNearest(`Quad0009 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
 			map[name] = v
 		end
 	else
-		Err.errorBeforeNearest(`{ctx}: arguments must be Stores, Attr values or plain tables`, SURFACE)
+		Err.errorBeforeNearest(`Quad0010 {ctx}: arguments must be Stores, Attr values or plain tables`, SURFACE)
 	end
 end
 
@@ -164,7 +164,7 @@ function Attr.Merged(...: any): any
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
 		if not isAttr(arg) then
-			Err.errorBeforeNearest("Attr.Merged: arguments must be Attr values", SURFACE)
+			Err.errorBeforeNearest("Quad0011 Attr.Merged: arguments must be Attr values", SURFACE)
 		end
 		flattenArg(map, arg, false, "Attr.Merged")
 	end
@@ -176,7 +176,7 @@ function Attr.Overridden(...: any): any
 	for i = 1, select("#", ...) do
 		local arg = select(i, ...)
 		if not isAttr(arg) then
-			Err.errorBeforeNearest("Attr.Overridden: arguments must be Attr values", SURFACE)
+			Err.errorBeforeNearest("Quad0012 Attr.Overridden: arguments must be Attr values", SURFACE)
 		end
 		flattenArg(map, arg, true, "Attr.Overridden")
 	end
@@ -192,13 +192,13 @@ table.freeze(Attr)
 local function scalarSugar(fnName: string, luaType: string): (string, any) -> any
 	local function sugar(name: string, value: any): any
 		if type(name) ~= "string" or name == "" then -- `H-421`
-			Err.errorBeforeNearest(`{fnName}: name must be a non-empty string`, SURFACE)
+			Err.errorBeforeNearest(`Quad0013 {fnName}: name must be a non-empty string`, SURFACE)
 		end
 		if value == nil then
-			Err.errorBeforeNearest(`{fnName}: value of "{name}" must not be nil — use None to delete`, SURFACE)
+			Err.errorBeforeNearest(`Quad0014 {fnName}: value of "{name}" must not be nil — use None to delete`, SURFACE)
 		end
 		if not isState(value) and value ~= None and type(value) ~= luaType then
-			Err.errorBeforeNearest(`{fnName}: value of "{name}" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0015 {fnName}: value of "{name}" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)
 		end
 		return newAttr({ [name] = value })
 	end
@@ -259,7 +259,7 @@ local function Init(quad: any)
 			-- must be rejected before any name claim is half-recorded
 			local claimed = groupClaimKeys:GetStrong(inst, v)
 			if claimed ~= nil and claimed ~= k then
-				Err.errorBefore("Attr: the same group value is placed at two positions of this instance", SURFACE)
+				Err.errorBefore("Quad0016 Attr: the same group value is placed at two positions of this instance", SURFACE)
 			end
 			-- `H-154` dedup (통합 리뷰, `H10-8`): the retractor below skips
 			-- teardown when the SAME immutable group is re-emitted, and it also

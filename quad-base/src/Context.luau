@@ -49,7 +49,7 @@ end
 
 local function Provider(name: string?): any
 	if name ~= nil and type(name) ~= "string" then
-		Err.errorBeforeNearest(`Context.Provider: name must be a string (got {typeof(name)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0035 Context.Provider: name must be a string (got {typeof(name)})`, SURFACE)
 	end
 	local self = setmetatable({ __quadProvider = true, Name = name }, ProviderImpl)
 	ProviderBrand:Register(self)
@@ -69,14 +69,14 @@ end
 
 local function checkProvider(fnName: string, provider: any)
 	if not isProvider(provider) then
-		Err.errorBeforeNearest(`Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0036 Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})`, SURFACE)
 	end
 end
 
 function ContextImpl.Set(self: any, provider: any, value: any): any
 	checkProvider("Set", provider)
 	if value == nil then
-		Err.errorBeforeNearest(`Context:Set: value for {tostring(provider)} must not be nil (absence is "not set")`, SURFACE)
+		Err.errorBeforeNearest(`Quad0037 Context:Set: value for {tostring(provider)} must not be nil (absence is "not set")`, SURFACE)
 	end
 	self._values[provider] = value
 	return self
@@ -86,7 +86,7 @@ function ContextImpl.Get(self: any, provider: any): any
 	checkProvider("Get", provider)
 	local value = self._values[provider]
 	if value == nil then
-		Err.errorBeforeNearest(`Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)`, SURFACE)
+		Err.errorBeforeNearest(`Quad0038 Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)`, SURFACE)
 	end
 	return value
 end

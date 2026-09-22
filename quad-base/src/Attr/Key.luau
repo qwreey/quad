@@ -55,7 +55,7 @@ local cache = setmetatable({} :: { [string]: any }, { __mode = "v" })
 
 local function AttrKey(name: string): any
 	if type(name) ~= "string" or name == "" then -- `H-417`: an empty name is not an attribute name either
-		Err.errorBeforeNearest("AttrKey: name must be a non-empty string", SURFACE)
+		Err.errorBeforeNearest("Quad0001 AttrKey: name must be a non-empty string", SURFACE)
 	end
 	local cached = cache[name]
 	if cached ~= nil then
@@ -109,7 +109,7 @@ function module.Init(quad: any)
 				-- domain-language error (attribute-plan "에러 메시지는 도메인
 				-- 언어로"); outermost blame so the user's line is charged even
 				-- through group delegation (`H-272` reasoning)
-				Err.errorBefore(`AttrKey: attribute "{k.Name}" is already bound by another owner`, SURFACE)
+				Err.errorBefore(`Quad0002 AttrKey: attribute "{k.Name}" is already bound by another owner`, SURFACE)
 			end
 			nameClaims:SetStrong(inst, k.Name, k)
 

@@ -122,6 +122,7 @@ export default defineConfig({
 								},
 								{ label: 'Roblox (quad-roblox)', collapsed: true, badge: { text: 'Roblox', variant: 'note' }, items: [{ autogenerate: { directory: 'reference/roblox' } }] },
 								{ label: 'Extend (확장 계약)', collapsed: true, badge: { text: 'Advanced', variant: 'caution' }, items: [{ autogenerate: { directory: 'reference/extend' } }] },
+								{ label: 'Errors (에러 코드)', collapsed: true, badge: { text: 'QuadNNNN', variant: 'tip' }, items: [{ autogenerate: { directory: 'reference/errors' } }] },
 							],
 						},
 						{
