@@ -73,7 +73,7 @@ end
 -- gates were copies; since the 3절 (b) union every door reaches it through `flattenInto`)
 local function addName(target: { [string]: true }, name: string)
 	if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
-		Err.errorBeforeNearest("Tag: names must be strings — an empty string is not a tag name", SURFACE)
+		Err.errorBeforeNearest("Quad0199 Tag: names must be strings — an empty string is not a tag name", SURFACE)
 	end
 	target[name] = true
 end
@@ -99,10 +99,10 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 		end
 	elseif type(v) == "table" then
 		if getmetatable(v) ~= nil or Brand.isPlainBranded(v) then
-			Err.errorBeforeNearest(
+			Err.errorBeforeNearest( -- error-code: inline if
 				if Brand.isPlainBranded(v)
-					then "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)"
-					else "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
+					then "Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)"
+					else "Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
 				SURFACE
 			)
 		end
@@ -111,12 +111,12 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 		-- depth travels as a parameter, not module state — a counter that only reset on error
 		-- would drift upward across normal calls (hunt F 재검) and misfire on the 64th
 		if depth > 64 then
-			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
+			Err.errorBeforeNearest("Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
 		end
 		local count, maxIndex = 0, 0
 		for k, item in pairs(v :: { [any]: any }) do
 			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-				Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table", SURFACE)
+				Err.errorBeforeNearest("Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table", SURFACE)
 			end
 			count += 1
 			if k > maxIndex then
@@ -125,10 +125,10 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 			flattenInto(target, item, depth + 1)
 		end
 		if count ~= maxIndex then
-			Err.errorBeforeNearest("Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
+			Err.errorBeforeNearest("Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
 		end
 	else
-		Err.errorBeforeNearest(`Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0204 Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)
 	end
 end
 
@@ -170,7 +170,7 @@ function TagImpl.Contains(self: any, ...: string): boolean
 	for i = 1, n do
 		local name = select(i, ...)
 		if type(name) ~= "string" then
-			Err.errorBeforeNearest(`Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0205 Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)
 		end
 		if self._names[name] ~= true then
 			return false
@@ -190,7 +190,7 @@ function TagImpl.Apply(self: any, factory: any): any
 	if type(factory) ~= "function" then
 		-- `H-497` (2026-09-08 2차 감사 I-4): sibling `State:Apply` gates; here a non-function
 		-- died at the call with `Tag.luau` on the blame line
-		Err.errorBeforeNearest(`Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)
 	end
 	return factory(self)
 end
@@ -223,7 +223,7 @@ function Tag.Merged(...: any): any
 			continue -- nil slot = nothing (2026-09-21, see `Added`)
 		end
 		if not isTag(tag) then
-			Err.errorBeforeNearest("Tag.Merged: arguments must be Tag values", SURFACE)
+			Err.errorBeforeNearest("Quad0207 Tag.Merged: arguments must be Tag values", SURFACE)
 		end
 		flattenInto(names, tag, 1) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
 	end

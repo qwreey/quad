@@ -76,7 +76,7 @@ local function install(quad: any)
 				return Void -- `None`/`nil`: disconnect-only (event-plan) — nothing to connect
 			end
 			if type(v) ~= "function" then
-				Err.errorBefore(`Event: handler for "{k}" must be a function (got {typeof(v)})`, SURFACE) -- `H-507`
+				Err.errorBefore(`Quad0218 Event: handler for "{k}" must be a function (got {typeof(v)})`, SURFACE) -- `H-507`
 			end
 			local connection = inst[k]:Connect(v)
 			return function(_nextValue: any?, _retracting: boolean)

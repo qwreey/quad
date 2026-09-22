@@ -96,6 +96,9 @@ python3 scripts/doc-coverage.py || fail=1
 echo "=== type-surface-check (input positions use markers)"
 python3 scripts/type-surface-check.py || fail=1
 # [2026-09-10] 버전 리터럴 정합성 — 매니페스트 여섯·소스·테스트의 버전이 같고 VERSION_PATTERN이 그 버전을 받는지
+echo "=== error-codes (every raise carries a QuadNNNN id with a docs/reference/errors section)"
+python3 scripts/error-codes.py check || fail=1
+
 echo "=== check-version"
 python3 scripts/check-version.py || fail=1
 exit "$fail"

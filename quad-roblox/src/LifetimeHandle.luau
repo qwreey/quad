@@ -65,7 +65,7 @@ local function install(quad: any)
 			-- inst `New` made — judged by setup presence alone (claim-plan §7-10).
 			-- errorBefore (outermost) so the blame lands on the user's line even
 			-- when the call arrives via `Claim`'s DFS (`H-272` precedent)
-			Err.errorBefore("nativeClaim: Instance is already claimed by quad", SURFACE)
+			Err.errorBefore("Quad0225 nativeClaim: Instance is already claimed by quad", SURFACE)
 		end
 		local gchold: { [any]: any } = {}
 		local gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
@@ -132,7 +132,7 @@ local function install(quad: any)
 			-- them apart — tried and retracted earlier); one message names both.
 			-- NOT `isClaimed`'s cut-gcconn test (`H-548` note above): a corpse re-claimed pre-GC would
 			-- get a fresh gcconn that never fires and read as alive forever.
-			Err.errorBefore("bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)", SURFACE)
+			Err.errorBefore("Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)", SURFACE)
 		end
 		gchold[value] = true -- strong ref: value lives at least as long as inst (contract 1)
 		-- the value carries its own liveness evidence (contract 2); both weak —

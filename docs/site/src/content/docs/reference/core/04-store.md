@@ -43,12 +43,12 @@ export type Store<T> = T & {
 
   | 상황 | 문구 |
   |---|---|
-  | 값이 `Source`가 아님 | `Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})` |
-  | 테이블이 아님 | `Store: defaults must be a table of Sources (got {typeof(defaults)})` |
-  | 메타테이블이 달림(`Source` 하나를 그대로 넘긴 경우 등) | `Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)` |
-  | 브랜드 값(AttrKey·Mapper 디스크립터 등) | `Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)` |
-  | 키가 문자열이 아니거나 빈 문자열 | `Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})` (`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`) |
-  | 예약된 이름 | `Store: "{name}" is a reserved store key` |
+  | 값이 `Source`가 아님 | `Quad0198 Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})` |
+  | 테이블이 아님 | `Quad0195 Store: defaults must be a table of Sources (got {typeof(defaults)})` |
+  | 메타테이블이 달림(`Source` 하나를 그대로 넘긴 경우 등) | `Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)` |
+  | 브랜드 값(AttrKey·Mapper 디스크립터 등) | `Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)` |
+  | 키가 문자열이 아니거나 빈 문자열 | `Quad0193 Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})` (`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`) |
+  | 예약된 이름 | `Quad0194 Store: "{name}" is a reserved store key` |
 
 - `Source`의 값 제약이 그대로 따라옵니다 — Modifier는 담을 수 없습니다. 이 검사는 `Source` 생성자가 하므로 `:Of`로 만든 필드에도 적용됩니다.
 - `print(store)`는 정렬된 키 목록으로 `Store{hp, mp}` 모양입니다.

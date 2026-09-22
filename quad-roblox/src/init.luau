@@ -226,7 +226,7 @@ local function QuadRoblox<T>(quad: T): RobloxExtension
 	-- UseProvider line (UseProvider is the outermost tagged frame)
 	if type(q.Version) ~= "string" or not TypeVersionCheck.matchesPattern(q.Version, VERSION_PATTERN) then
 		q.errorNamespace.errorBefore(
-			`quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')`,
+			`Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')`,
 			QuadTypes.ERROR_LEVEL_SURFACE
 		)
 	end

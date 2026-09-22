@@ -64,10 +64,10 @@ end
 local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 	if type(name) ~= "string" or name == "" then
 		-- round3 `H-440` (외부 리뷰 G-10, `H-417` 짝): "" reached `GetPropertyChangedSignal` at dispatch depth
-		errNS.errorBeforeNearest("OnChange: property name must be a non-empty string", SURFACE)
+		errNS.errorBeforeNearest("Quad0221 OnChange: property name must be a non-empty string", SURFACE)
 	end
 	if type(fn) ~= "function" then
-		errNS.errorBeforeNearest(`OnChange: callback for "{name}" must be a function (got {typeof(fn)})`, SURFACE)
+		errNS.errorBeforeNearest(`Quad0222 OnChange: callback for "{name}" must be a function (got {typeof(fn)})`, SURFACE)
 	end
 	local d = table.freeze({ Name = name, Callback = fn })
 	descriptors[d] = true
@@ -88,11 +88,11 @@ local isSource: ((any) -> boolean)? = nil
 local isState: ((any) -> boolean)? = nil
 local function Out(name: string, src: any): OnChangeDescriptor
 	if type(name) ~= "string" or name == "" then
-		errNS.errorBeforeNearest("Out: property name must be a non-empty string", SURFACE)
+		errNS.errorBeforeNearest("Quad0223 Out: property name must be a non-empty string", SURFACE)
 	end
 	if isSource == nil or not isSource(src) then
 		local got = if isState ~= nil and isState(src) then "a read-only State (a :Compute result?)" else typeof(src)
-		errNS.errorBeforeNearest(`Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
+		errNS.errorBeforeNearest(`Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
 	end
 	return OnChange(name, function(v: any)
 		if v ~= src:Get() then

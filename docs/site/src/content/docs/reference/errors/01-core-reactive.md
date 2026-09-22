@@ -244,3 +244,131 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **언제**: `q.Source(default)`를 만들 때 초기값으로 `Modifier`를 넘겼을 때.
 - **고치려면**: `Modifier`가 아닌 값을 초기값으로 주세요.
 - **참고**: [`q.Source(value)`](/reference/core/02-source/#qsourcevalue)
+
+### Quad0183
+
+`State: dep #{i} is not a State/Source` — `quad-base/src/State.luau`
+
+- **언제**: `:Compute`나 `:Depend`에 넘긴 후행 의존성 중 하나가 `State`도 `Source`도 아닐 때. 번호는 리시버가 1번이라, 후행 의존성의 첫 자리가 `#2`입니다.
+- **고치려면**: 그 자리에 `State`나 `Source`를 넘기세요.
+- **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps) · [`state:Depend(...)`](/reference/core/03-state/#statedepend)
+
+### Quad0184
+
+`State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
+
+- **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 계산 함수 안에서 yield하는 사이 다른 코루틴이 같은 노드를 다시 읽을 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때.
+- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요. 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다.
+- **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps)
+
+### Quad0185
+
+`State: a Compute function returned a Modifier — State/Source cannot hold Modifiers` — `quad-base/src/State.luau`
+
+- **언제**: `:Compute`의 계산 함수가 `Modifier` 값을 반환했을 때.
+- **고치려면**: 계산 함수가 평범한 값을 반환하게 하세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
+- **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps)
+
+### Quad0186
+
+`State: dep #{i + 1} is nil` — `quad-base/src/State.luau`
+
+- **언제**: `:Compute`나 `:Depend`의 후행 의존성 자리(`...deps`)에 `nil`을 넘겼을 때 — 자리를 그냥 건너뛰면 뒤 의존성이 앞으로 밀려 잘못된 위치에 들어가므로, 조용히 사라지지 않고 에러입니다. 번호는 리시버가 1번이라, 후행 의존성의 첫 자리가 `#2`입니다.
+- **고치려면**: 그 자리를 실제 값으로 채우거나, 그 vararg 자체를 넘기지 마세요.
+- **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps) · [`state:Depend(...)`](/reference/core/03-state/#statedepend)
+
+### Quad0187
+
+`State: Compute fn must be a function` — `quad-base/src/State.luau`
+
+- **언제**: `:Compute(fn, ...deps)`의 `fn` 자리가 함수가 아닐 때.
+- **고치려면**: 함수를 넘기세요.
+- **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps)
+
+### Quad0188
+
+`State: Gate setup must be a function (emit) -> onUpstreamEmit` — `quad-base/src/State.luau`
+
+- **언제**: `:Gate(setup)`의 `setup` 자리가 함수가 아닐 때.
+- **고치려면**: `(emit) -> onUpstreamEmit` 모양의 함수를 넘기세요.
+- **참고**: [`state:Gate(setup)`](/reference/core/03-state/#stategatesetup)
+
+### Quad0189
+
+`State: Gate setup must return the onUpstreamEmit function` — `quad-base/src/State.luau`
+
+- **언제**: `:Gate(setup)`이 생성 시 딱 한 번 불렸는데, `setup`이 함수가 아닌 것을 반환했을 때.
+- **고치려면**: `setup`이 상류 emit마다 불릴 클로저(함수)를 반환하게 하세요.
+- **참고**: [`state:Gate(setup)`](/reference/core/03-state/#stategatesetup)
+
+### Quad0190
+
+`State: Observer fn must be a function (or nil for the always-observe utility)` — `quad-base/src/State.luau`
+
+- **언제**: `:Observer(fn)`의 `fn` 자리가 함수도 `nil`도 아닐 때.
+- **고치려면**: 콜백 함수를 넘기거나, 값 없이 그냥 관측만 하려면 `nil`을 넘기세요.
+- **참고**: [`state:Observer(fn)`](/reference/core/03-state/#stateobserverfn)
+
+### Quad0191
+
+`State: Apply factory must be a function or an object with an __apply method` — `quad-base/src/State.luau`
+
+- **언제**: `:Apply(factory)`의 `factory` 자리가 함수도, `__apply` 메소드를 가진 객체도 아닐 때.
+- **고치려면**: 함수를 넘기거나 `__apply`를 구현한 객체(`Blocker`, `Debounce`/`Throttle` 등)를 넘기세요.
+- **참고**: [`state:Apply(factory)`](/reference/core/03-state/#stateapplyfactory)
+
+### Quad0192
+
+`State: State.Init(module) has not run for this quad instance` — `quad-base/src/State.luau`
+
+- **언제**: quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 State 관련 API에 닿았을 때 — 내부 불변조건 검사입니다.
+- **고치려면**: 보통은 나지 않는 에러입니다 — `quad-base` 내부를 직접 조립하는 게 아니라면 `require(quad-base)`가 돌려주는 기본 인스턴스나 `Quad.New()`를 그대로 쓰세요.
+- **참고**: [`q:RunInit(initFn)`](/reference/core/01-quad-module/#qruninitinitfn)
+
+### Quad0193
+
+`Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})` — `quad-base/src/Store.luau`
+
+- **언제**: `{what}`은 생성자에서 `key`, `:Of`에서 `Of name`입니다 — `q.Store(defaults)`의 키나 `store:Of(name)`의 `name`이 문자열이 아니거나 빈 문자열일 때.
+- **고치려면**: 비어 있지 않은 문자열 키를 쓰세요.
+- **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults) · [`store:Of<<U>>(name)`](/reference/core/04-store/#storeofuname)
+
+### Quad0194
+
+`Store: "{name}" is a reserved store key` — `quad-base/src/Store.luau`
+
+- **언제**: `q.Store(defaults)`의 키나 `store:Of(name)`의 `name`으로 예약된 이름(`Of`, `Names`, `__`로 시작하는 이름)을 썼을 때.
+- **고치려면**: 다른 이름을 쓰세요 — 예약 목록은 [예약 키](/reference/core/04-store/#예약-키)를 보세요.
+- **참고**: [예약 키](/reference/core/04-store/#예약-키)
+
+### Quad0195
+
+`Store: defaults must be a table of Sources (got {typeof(defaults)})` — `quad-base/src/Store.luau`
+
+- **언제**: `q.Store(defaults)`의 `defaults`가 테이블이 아닐 때(생략은 허용 — 빈 Store가 됩니다).
+- **고치려면**: `{ name = Source, ... }` 모양의 테이블을 넘기거나 아예 생략하세요.
+- **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults)
+
+### Quad0196
+
+`Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)` — `quad-base/src/Store.luau`
+
+- **언제**: `q.Store(defaults)`에 메타테이블이 달린 테이블(`Source` 하나를 감싸는 테이블 없이 그대로 넘긴 경우 등)을 넘겼을 때.
+- **고치려면**: `Source`를 `{ name = source }` 꼴로 감싸 넘기세요.
+- **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults)
+
+### Quad0197
+
+`Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)` — `quad-base/src/Store.luau`
+
+- **언제**: `q.Store(defaults)`에 `AttrKey`/`Mapper` 같은 브랜드 값을 넘겼을 때 — 평범한 `{ name = Source }` 테이블이 아닙니다.
+- **고치려면**: 평범한 `{ name = Source }` 테이블을 넘기세요.
+- **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults)
+
+### Quad0198
+
+`Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})` — `quad-base/src/Store.luau`
+
+- **언제**: `q.Store(defaults)`의 값 자리(또는 `:Of`가 만든 필드)가 `Source`가 아닐 때.
+- **고치려면**: 값 자리를 `Source`로 채우세요.
+- **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults)

@@ -132,3 +132,83 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 - **언제**: 같은 `Attr` 그룹 값 객체(테이블 신원 기준)를 한 인스턴스의 서로 다른 두 props 자리에 동시에 놓았을 때.
 - **고치려면**: 자리마다 별도의 `q.Attr(...)` 호출로 새 값을 만드세요.
 - **참고**: [`q.Attr(...)`](/reference/core/09-tag-attr/#qattr)
+
+### Quad0199
+
+`Tag: names must be strings — an empty string is not a tag name` — `quad-base/src/Tag.luau`
+
+- **언제**: `q.Tag(...)`나 `tag:Added`/`tag:Removed`의 이름 자리에 빈 문자열 `""`을 넘겼을 때.
+- **고치려면**: 비어 있지 않은 이름을 쓰세요.
+- **참고**: [Tag](/reference/core/09-tag-attr/#tag)
+
+### Quad0200
+
+`Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 자리에 `AttrKey`/`Mapper` 같은 브랜드 테이블을 넘겼을 때 — 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
+- **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한 `{...}` 리스트를 넘기세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)
+
+### Quad0201
+
+`Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 리스트가 64단계보다 깊게 중첩됐을 때 — 리스트가 자기 자신을 담아 무한히 중첩되는 경우를 이 한도로 잡습니다.
+- **고치려면**: 리스트가 자기 자신을 참조하지 않는지 확인하세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)
+
+### Quad0202
+
+`Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 자리의 리스트가 배열이 아니라 해시 테이블(정수가 아니거나 1 미만인 키를 가짐)일 때.
+- **고치려면**: 배열(1부터 연속된 정수 키)로 주세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)
+
+### Quad0203
+
+`Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 리스트 중간에 `nil` 구멍이 있을 때(항목 수와 최대 인덱스가 다를 때).
+- **고치려면**: `nil` 대신 그 자리를 빼거나 실제 값을 채우세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)
+
+### Quad0204
+
+`Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 자리에 문자열도, `Tag`도, 리스트도 아닌 값(숫자, 불린 등)을 넘겼을 때.
+- **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한 `{...}` 리스트를 넘기세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)
+
+### Quad0205
+
+`Tag:Contains: names must be strings (got {typeof(name)} at argument {i})` — `quad-base/src/Tag.luau`
+
+- **언제**: `tag:Contains(...names)`의 가변 인자 중 하나가 문자열이 아닐 때(`nil` 포함).
+- **고치려면**: 검사할 이름을 전부 문자열로 넘기세요.
+- **참고**: [`tag:Contains(...names)`](/reference/core/09-tag-attr/#tagcontainsnames)
+
+### Quad0206
+
+`Tag: Apply factory must be a function (got {typeof(factory)})` — `quad-base/src/Tag.luau`
+
+- **언제**: `tag:Apply(factory)`의 `factory` 자리가 함수가 아닐 때.
+- **고치려면**: 함수를 넘기세요.
+- **참고**: [`tag:Apply(factory)`](/reference/core/09-tag-attr/#tagapplyfactory)
+
+### Quad0207
+
+`Tag.Merged: arguments must be Tag values` — `quad-base/src/Tag.luau`
+
+- **언제**: `q.Tag.Merged(...tags)`의 인자 중 `nil`이 아니면서 `Tag`도 아닌 값을 넘겼을 때 — `Tag.Merged`는 `Tag`만 받는 엄격한 철자입니다.
+- **고치려면**: `Tag` 값만 넘기세요. 문자열이나 리스트를 섞고 싶으면 `q.Tag(...)`를 쓰세요.
+- **참고**: [`q.Tag.Merged(...tags)`](/reference/core/09-tag-attr/#qtagmergedtags)
+
+### Quad0237
+
+`Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)` — `quad-base/src/Tag.luau`
+
+- **언제**: 이름 자리에 메타테이블이 달린 테이블(브랜드가 아닌 커스텀 메타테이블)을 넘겼을 때 — 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
+- **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요.
+- **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)

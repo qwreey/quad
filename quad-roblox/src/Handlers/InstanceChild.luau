@@ -61,7 +61,7 @@ local function install(quad: any)
 			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
 			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
 			if not quad.Backend.isClaimed(v) then
-				Err.errorBefore("InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
+				Err.errorBefore("Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
 			end
 			-- round11 `H-545` (탐사 A′): the static seat had no twin of Slot's `H-500` cycle guard —
 			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
@@ -73,7 +73,7 @@ local function install(quad: any)
 			local ancestor = inst
 			while ancestor ~= nil do
 				if ancestor == v then
-					Err.errorBefore("InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+					Err.errorBefore("Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
 				end
 				ancestor = ancestor.Parent
 			end

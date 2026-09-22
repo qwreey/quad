@@ -117,8 +117,8 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 
 | 상황 | 문구 |
 |---|---|
-| 이름이 문자열이 아니거나 `""` | `OnChange: property name must be a non-empty string` |
-| 콜백이 함수가 아님 | `OnChange: callback for "{name}" must be a function (got {typeof(fn)})` |
+| 이름이 문자열이 아니거나 `""` | `Quad0221 OnChange: property name must be a non-empty string` |
+| 콜백이 함수가 아님 | `Quad0222 OnChange: callback for "{name}" must be a function (got {typeof(fn)})` |
 
 ---
 
@@ -167,8 +167,8 @@ local box = D.TextBox({
 
 | 상황 | 문구 |
 |---|---|
-| 이름이 문자열이 아니거나 `""` | `Out: property name must be a non-empty string` |
-| 둘째 인자가 `Source`가 아님 | `Out: second argument for "{name}" must be a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
+| 이름이 문자열이 아니거나 `""` | `Quad0223 Out: property name must be a non-empty string` |
+| 둘째 인자가 `Source`가 아님 | `Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
 
 ---
 

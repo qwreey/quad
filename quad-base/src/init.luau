@@ -126,7 +126,7 @@ local function New(): Quad
 		if type(initFn) ~= "function" then
 			-- round11 `H-566` (탐사 G′ 4): the siblings got this gate on 2026-09-16 (hunt F); nil died
 			-- in Relate ("key must not be nil", leaf blame), a number as "attempt to call"
-			Err.errorBeforeNearest(`Quad:RunInit: initFn must be a function (got {typeof(initFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+			Err.errorBeforeNearest(`Quad0208 Quad:RunInit: initFn must be a function (got {typeof(initFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
 		end
 		if runInitRelate:GetStrong(self, initFn) then
 			return -- 이 module 인스턴스에 이 initFn은 이미 실행됨, no-op
@@ -142,7 +142,7 @@ local function New(): Quad
 		-- [2026-09-16 hunt F] a plugin/provider that mutates the module and forgets to return its
 		-- extension table died in this loop ("attempt to iterate over a nil value", this file blamed)
 		if type(extension) ~= "table" then
-			Err.errorBeforeNearest(`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE) -- Nearest like the sibling gates
+			Err.errorBeforeNearest(`Quad0209 {who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE) -- Nearest like the sibling gates
 		end
 		for k, v in extension do
 			self[k] = v
@@ -151,7 +151,7 @@ local function New(): Quad
 
 	function module.AddPlugin(self, pluginFn)
 		if type(pluginFn) ~= "function" then -- [2026-09-16 hunt F] nil reached Relate ("key must not be nil", leaf file blamed)
-			Err.errorBeforeNearest(`AddPlugin: plugin must be a function (got {typeof(pluginFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+			Err.errorBeforeNearest(`Quad0210 AddPlugin: plugin must be a function (got {typeof(pluginFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
 		end
 		-- [2026-09-15 사용자 결정] RunInit처럼 identity dedup — 여러 스크립트가 같은 모듈을 require한 뒤
 		-- 각자 `:AddPlugin(spring)`을 불러도 한 번만 설치된다. 표시는 성공 후(UseProvider `H-307`과 같은
@@ -161,7 +161,7 @@ local function New(): Quad
 		end
 		local extension = pluginFn(self)
 		if type(extension) ~= "table" then -- before the debug loop below iterates it (code-review: debug mode skipped the gate)
-			Err.errorBeforeNearest(`AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)
+			Err.errorBeforeNearest(`Quad0211 AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)
 		end
 		-- [2026-09-15 사용자 결정] 기존 필드 덮어쓰기는 막지 않는다(코어를 의도적으로
 		-- 확장하는 플러그인을 닫을 이유가 없음) — 다만 위험한 표면이라 debug일 때
@@ -194,7 +194,7 @@ local function New(): Quad
 	-- `H-294`류 실수를 구조적으로 차단.
 	function module.UseProvider(self, providerFn)
 		if type(providerFn) ~= "function" then -- [2026-09-16 hunt F] `UseProvider(nil)` was a silent no-op (nil == nil hit the idempotent branch)
-			Err.errorBeforeNearest(`UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+			Err.errorBeforeNearest(`Quad0212 UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
 		end
 		local current = providerRelate:GetStrong(self, "provider")
 		if current == providerFn then
@@ -205,7 +205,7 @@ local function New(): Quad
 			-- 소스 경로를 메시지에 실으면 "내부 경로 blame 금지" spec 규약에
 			-- 걸린다) — 메시지는 계약만 말한다
 			Err.errorBeforeNearest( -- direct-call surface (checklist 0, `H-349`)
-				"UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+				"Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends",
 				QuadTypes.ERROR_LEVEL_SURFACE
 			)
 		end

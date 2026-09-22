@@ -156,3 +156,51 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 - **언제**: 이미 다른 요소의 자리에 묶여 있는 값을 또 다른 요소의 자리에 묶으려 할 때.
 - **고치려면**: 새 핸들을 만들어 놓으세요 — 하나의 핸들은 한 요소에만 묶일 수 있습니다.
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](/reference/core/10-lifetime-sentinels/#qbackendbindlifetimeinst-value)
+
+### Quad0208
+
+`Quad:RunInit: initFn must be a function (got {typeof(initFn)})` — `quad-base/src/init.luau`
+
+- **언제**: `q:RunInit(initFn)`의 `initFn` 자리가 함수가 아닐 때.
+- **고치려면**: `(module) -> any` 모양의 함수를 넘기세요.
+- **참고**: [`q:RunInit(initFn)`](/reference/core/01-quad-module/#qruninitinitfn)
+
+### Quad0209
+
+`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)` — `quad-base/src/init.luau`
+
+- **언제**: `{who}`은 부른 자리 이름입니다 — `q:UseProvider(providerFn)`이 부른 `providerFn(self)`가 테이블을 반환하지 않았을 때(`q:AddPlugin`은 자기 자리에서 먼저 검사하므로 이 문은 사실상 `UseProvider` 경로에서만 닿습니다).
+- **고치려면**: 확장 테이블을 반환하세요 — 아무것도 추가하지 않는다면 빈 테이블 `{}`을 반환하세요.
+- **참고**: [`q:UseProvider(providerFn)`](/reference/core/01-quad-module/#quseproviderproviderfn)
+
+### Quad0210
+
+`AddPlugin: plugin must be a function (got {typeof(pluginFn)})` — `quad-base/src/init.luau`
+
+- **언제**: `q:AddPlugin(pluginFn)`의 `pluginFn` 자리가 함수가 아닐 때.
+- **고치려면**: `(module) -> extension` 모양의 함수를 넘기세요.
+- **참고**: [`q:AddPlugin(pluginFn)`](/reference/core/01-quad-module/#qaddpluginpluginfn)
+
+### Quad0211
+
+`AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)` — `quad-base/src/init.luau`
+
+- **언제**: `pluginFn(self)`가 테이블을 반환하지 않았을 때 — 모듈을 고쳐 쓰기만 하고 아무것도 반환하지 않는 플러그인이 흔한 실수입니다.
+- **고치려면**: 확장 테이블을 반환하세요 — 아무것도 추가하지 않는다면 빈 테이블 `{}`을 반환하세요.
+- **참고**: [`q:AddPlugin(pluginFn)`](/reference/core/01-quad-module/#qaddpluginpluginfn)
+
+### Quad0212
+
+`UseProvider: provider must be a function (got {typeof(providerFn)})` — `quad-base/src/init.luau`
+
+- **언제**: `q:UseProvider(providerFn)`의 `providerFn` 자리가 함수가 아닐 때(`UseProvider(nil)`은 전에 조용히 통과했습니다).
+- **고치려면**: `(module) -> extension` 모양의 함수를 넘기세요.
+- **참고**: [`q:UseProvider(providerFn)`](/reference/core/01-quad-module/#quseproviderproviderfn)
+
+### Quad0213
+
+`UseProvider: this Quad module already has a provider — a module cannot serve two backends` — `quad-base/src/init.luau`
+
+- **언제**: 이미 다른 프로바이더 함수(identity 기준)로 `UseProvider`를 부른 모듈에 다시 (다른) `providerFn`으로 `UseProvider`를 부를 때 — 같은 함수를 다시 넘기는 것은 멱등 no-op이라 에러가 아닙니다.
+- **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.New()`)를 만들어 다른 백엔드를 설치하세요.
+- **참고**: [`q:UseProvider(providerFn)`](/reference/core/01-quad-module/#quseproviderproviderfn)

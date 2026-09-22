@@ -143,17 +143,17 @@ local function install(quad: any)
 	-- reads `_native`. Gates here: these are the backend's public surface too.
 	local function setTimeout(func: () -> (), delay: number): QuadTypes.Timeout
 		if type(func) ~= "function" then
-			Err.errorBefore(`setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
+			Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
 		end
 		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
-			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
 		end
 		return { __quadTimeout = true :: true, _native = task.delay(delay, func) } -- ⚠️ order flipped vs the op
 	end
 
 	local function clearTimeout(timeout: any)
 		if type(timeout) ~= "table" or timeout.__quadTimeout ~= true then
-			Err.errorBefore(`clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+			Err.errorBefore(`Quad0217 clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
 		end
 		-- Studio 2026-09-08 실측: `task.cancel` on an already-fired (dead) thread is a
 		-- silent no-op — a late cancel by a user holding the handle needs no guard.

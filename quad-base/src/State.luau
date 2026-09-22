@@ -108,7 +108,7 @@ local function createImpl(module: any)
 	local function newNode(deps: { any }, fn: any, mt: any?): any
 		for i, dep in deps do
 			if not isState(dep) then
-				Err.errorBeforeNearest(`State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/Depend/Gate the user called
+				Err.errorBeforeNearest(`Quad0183 State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/Depend/Gate the user called
 			end
 		end
 		local self = setmetatable({
@@ -188,7 +188,7 @@ local function createImpl(module: any)
 			end
 		end
 		if self._computing == gen then
-			Err.errorBeforeNearest("State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
+			Err.errorBeforeNearest("Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
 		end
 		self._computing = gen
 		local hold = self._hold
@@ -210,7 +210,7 @@ local function createImpl(module: any)
 			-- `_recompute` is lazy, so when dispatch forces it first the nearest tagged
 			-- frame is `StoreBind.luau` (quad internals, `H-416`); the user's entry line
 			-- (their `drive`/creation) is the useful one.
-			Err.errorBefore("State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
+			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
 		end
 		self._cache = result
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
@@ -249,7 +249,7 @@ local function createImpl(module: any)
 		for i = 1, select("#", ...) do
 			local dep = (select(i, ...))
 			if dep == nil then
-				Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the Depend/Compute the user called
+				Err.errorBeforeNearest(`Quad0186 State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the Depend/Compute the user called
 			end
 			deps[i + 1] = dep
 		end
@@ -265,7 +265,7 @@ local function createImpl(module: any)
 		if type(fn) ~= "function" then
 			-- `H-202`: without this the crash lands at the first `Get` deep inside
 			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
-			Err.errorBeforeNearest("State: Compute fn must be a function", SURFACE)
+			Err.errorBeforeNearest("Quad0187 State: Compute fn must be a function", SURFACE)
 		end
 		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
 	end
@@ -323,7 +323,7 @@ local function createImpl(module: any)
 	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
 	function Impl.Gate(self: any, setup: any): any
 		if type(setup) ~= "function" then
-			Err.errorBeforeNearest("State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
+			Err.errorBeforeNearest("Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
 		end
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
@@ -336,7 +336,7 @@ local function createImpl(module: any)
 			return node:_flush(commit)
 		end)
 		if type(onUpstreamEmit) ~= "function" then
-			Err.errorBeforeNearest("State: Gate setup must return the onUpstreamEmit function", SURFACE)
+			Err.errorBeforeNearest("Quad0189 State: Gate setup must return the onUpstreamEmit function", SURFACE)
 		end
 		node._onUpstreamEmit = onUpstreamEmit -- strong: the policy closure (and, through it, the Blocker handle)
 		self._subs[node] = true -- re-attach: the gate starts hearing emits only now
@@ -347,7 +347,7 @@ local function createImpl(module: any)
 	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
 	function Impl.Observer(self: any, fn: any?): any
 		if fn ~= nil and type(fn) ~= "function" then
-			Err.errorBeforeNearest("State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
+			Err.errorBeforeNearest("Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
 		end
 		return ObserverImpl.new(self, fn)
 	end
@@ -357,7 +357,7 @@ local function createImpl(module: any)
 			return (factory :: any)(self)
 		end
 		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
-			Err.errorBeforeNearest("State: Apply factory must be a function or an object with an __apply method", SURFACE)
+			Err.errorBeforeNearest("Quad0191 State: Apply factory must be a function or an object with an __apply method", SURFACE)
 		end
 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
 	end
@@ -375,7 +375,7 @@ end
 local function implFor(module: any)
 	local impl = implsOf(module).State
 	if impl == nil then
-		error("State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
+		error("Quad0192 State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
 	end
 	return impl
 end

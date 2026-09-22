@@ -60,10 +60,10 @@ local function checkKey(name: any, what: string)
 		-- `H-201`: nil died at `self[name] =` with an internal frame after already
 		-- allocating a Source; a number silently broke `Names(): { string }`.
 		-- round3 `H-443` (외부 리뷰 G-13): "" rode `Attr(store)` to `setAttr("")`
-		Err.errorBeforeNearest(`Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0193 Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
 	end
 	if isReserved(name) then
-		Err.errorBeforeNearest(`Store: "{name}" is a reserved store key`, SURFACE)
+		Err.errorBeforeNearest(`Quad0194 Store: "{name}" is a reserved store key`, SURFACE)
 	end
 end
 
@@ -103,20 +103,20 @@ local function Init(module: any)
 		-- pairs-walked into an error naming a Source-internal field.
 		if defaults ~= nil then
 			if type(defaults) ~= "table" then
-				Err.errorBeforeNearest(`Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
+				Err.errorBeforeNearest(`Quad0195 Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
 			end
 			if getmetatable(defaults) ~= nil then
-				Err.errorBeforeNearest("Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
+				Err.errorBeforeNearest("Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
 			end
 			if Brand.isPlainBranded(defaults) then -- `H-377` gate, fourth door (4순회 `H-390`; own message — 5순회)
-				Err.errorBeforeNearest("Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)", SURFACE)
+				Err.errorBeforeNearest("Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)", SURFACE)
 			end
 		end
 		local self = table.clone(defaults or {}) -- `or {}`: `Store<<{}>>()` is valid (`H-83`)
 		for name, value in self do
 			checkKey(name, "key") -- `H-347`: same door as `Of` (`H-201`), one predicate (0순회 `H-367`)
 			if not isSource(value) then
-				Err.errorBeforeNearest(`Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})`, SURFACE)
+				Err.errorBeforeNearest(`Quad0198 Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})`, SURFACE)
 			end
 		end
 		setmetatable(self, Impl)
