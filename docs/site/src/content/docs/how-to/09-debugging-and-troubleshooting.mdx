@@ -1,12 +1,12 @@
 ---
-title: "09. 부록 — quad 에러 읽는 법과 런타임 디버깅"
-description: "quad 에러 메시지를 읽고 표면 blame으로 문제의 소스 줄을 추적하는 법을 설명합니다"
+title: "09. 부록 — quad 에러 읽는 법과 자주 밟는 함정"
+description: "quad 에러 메시지를 읽고 표면 blame으로 문제의 소스 줄을 추적하는 법과 자주 밟는 함정을 설명합니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
-> **대상 독자**: quad 런타임 에러를 빠르게 추적하려는 개발자
-> **다루는 개념**: 표면(surface) 블레임, 자주 밟는 함정 여섯과 해결책
+> **대상 독자**: quad 에러를 빠르게 추적하려는 개발자
+> **다루는 개념**: 표면(surface) 블레임, 자주 밟는 함정 일곱과 해결책
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -44,7 +44,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Event: handler for "Activated" must 
 
 ---
 
-## 2. 자주 밟는 함정 여섯
+## 2. 자주 밟는 함정 일곱
 
 ### 함정 1: nil-hole — 숫자 키 자리에 구멍 내기
 
@@ -181,6 +181,38 @@ end
 
 ---
 
+### 함정 7: 같은 Slot에 수동 CRUD와 `:List`/`:Single`을 섞기
+
+- **증상**: 어느 쪽을 먼저 썼든, 나중에 쓴 쪽이 즉시 에러로 막힙니다.
+  수동 CRUD(`:Add`/`:Remove`/`:Move`/`:Swap`/`:Extract`/`:Replace`/`:Splice`/
+  `:Clear`/`:ExtractAll`) 뒤에 `:List`나 `:Single`을 걸면
+  `Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
+  반대로 `:List`/`:Single`을 먼저 건 뒤에 수동 CRUD를 부르면
+  `Slot: manual CRUD is not allowed after :List/:Single`이 그 CRUD를
+  부른 줄에서 납니다.
+- **원인**: 한 Slot은 태어날 때부터 **수동 모드**이거나 `:List`/`:Single`이
+  설치된 **리스트 모드**이고, 이 둘은 같이 못 씁니다 — `Slot{ ... }`로
+  원소를 하나라도(빈 배열이어도) 넘겨 만들었거나 CRUD를 한 번이라도 부르면
+  그 순간 수동으로 굳고, `:List`/`:Single`을 한 번 걸면 리스트로 굳습니다.
+  리스트 모드의 원소는 `updateFn`이 데이터에서 매번 다시 만들어내는 파생값이라,
+  거기에 수동 CRUD로 끼어들면 어느 쪽이 진짜 목록인지 정의할 수 없기 때문입니다.
+- **해결책**: 한 Slot은 시작할 때 둘 중 하나로 정하세요 — 데이터 배열이
+  있다면 처음부터 `:List`/`:Single`을 쓰고, 손으로 넣고 뺄 자리라면 끝까지
+  수동 CRUD만 쓰세요.
+
+```luau
+-- ❌ 수동으로 시작했다가 나중에 :List로 갈아타기
+local s = q.Slot()
+s:Add(D.Frame {})
+s:List(items, function(ctx) return D.Frame { Text = ctx.Item } end) -- 에러
+
+-- ✅ 데이터 배열이 있다면 처음부터 :List
+local s2 = q.Slot()
+s2:List(items, function(ctx) return D.Frame { Text = ctx.Item } end)
+```
+
+---
+
 ## 3. 디버깅 체크리스트
 
 | 점검 항목 | 올바른 작성법 |
@@ -192,6 +224,19 @@ end
 | **어트리뷰트 삭제** | `q.Attr { MyKey = q.None }` — 그룹에서 이름을 빼는 것만으로는 지워지지 않는다 |
 | **부모 붙이기** | `Parent`는 props가 아니다 — 만든 뒤 밖에서 `inst.Parent = ...` |
 | **이벤트 콜백** | 엔진 인자만 온다(self 없음). self가 필요하면 `PreRef`로 인스턴스를 잡아둘 것 |
+| **조건부 자식** | 숫자 키 자리에 `(if cond then D.TextLabel { ... } else q.None)`(12장·how-to 08의 `(cond and child) or q.None`도 같은 뜻) — 끝이 `nil`이면 안 된다, `nil`은 그 자리를 구멍으로 만든다 |
+
+---
+
+## 4. 막히면 어디로
+
+위에서 해결되지 않으면 [GitHub 이슈](https://github.com/qwreey/quad/issues)로
+알려주세요. 다음을 같이 적어주시면 빠르게 도움이 됩니다.
+
+- quad 버전 (`q.Version`)
+- blame 접두(`파일:줄`)를 포함한 에러 메시지 전문
+- 재현되는 가장 작은 props 테이블(최소 재현)
+- Studio·실제 클라이언트·`luau` CLI 중 어디서 발생하는지
 
 ---
 

@@ -54,7 +54,7 @@ rm -rf /tmp/quad
 
 Claude Code는 `SKILL.md` 머리의 `description`을 보고 요청이 맞을 때 스킬을 **스스로** 불러옵니다 — "이 화면을 quad로 짜 줘"처럼 quad UI 코드를 요구하면 따로 시키지 않아도 됩니다. 직접 지정하려면 프롬프트에 `/quad-ui-dev`를 적습니다.
 
-에이전트가 낸 코드는 두 가지로 확인합니다. 첫째, [시작하기 00](/getting-started/00-installation/) §2의 타입 검사 플래그 넷을 켠 `--!strict` 검사. 스킬이 strict를 전제로 코드를 내므로 여기서 걸리는 것은 대개 스킬이 모르는 최신 표면입니다. 둘째, 실제 실행 — 특히 [실전 레시피 09](/how-to/09-debugging-and-troubleshooting/)의 함정 여섯은 에이전트도 그대로 밟습니다. 에러 문구가 나오면 그 문구를 에이전트에게 그대로 돌려주면 됩니다. `references/rules-and-invariants.md`가 문구 단위로 처방을 갖고 있습니다.
+에이전트가 낸 코드는 두 가지로 확인합니다. 첫째, [시작하기 00](/getting-started/00-installation/) §2의 타입 검사 플래그 넷을 켠 `--!strict` 검사. 스킬이 strict를 전제로 코드를 내므로 여기서 걸리는 것은 대개 스킬이 모르는 최신 표면입니다. 둘째, 실제 실행 — 특히 [실전 레시피 09](/how-to/09-debugging-and-troubleshooting/)의 함정 일곱은 에이전트도 그대로 밟습니다. 에러 문구가 나오면 그 문구를 에이전트에게 그대로 돌려주면 됩니다. `references/rules-and-invariants.md`가 문구 단위로 처방을 갖고 있습니다.
 
 ---
 

@@ -78,7 +78,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — 반응형 그래프(`Source`/`Compute`/`Store`/`Blocker`)는 평범한 `luau` CLI에서 실측된 require 경로로 그대로 검증됩니다. 프로바이더 주입·`Observer`/`Effect`의 생명주기 결합·`Slot` 조립은 공개 `quad-mock`이 아직 없어 자기 프로바이더가 필요합니다. 이 저장소 자체의 테스트는 `CONTRIBUTING.md`.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Declaration.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
-- [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 여섯(문구는 소스 verbatim).
+- [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
 
 ### API Reference — 손으로 관리하는 심볼 레퍼런스(25편 + 색인)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은

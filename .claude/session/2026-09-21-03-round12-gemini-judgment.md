@@ -57,3 +57,7 @@ Q71 — 사용자: *"파괴로 인한 트윈이 진짜 컴플리트까지 나는
 **루트 `-ignoreme` 삭제**(사용자 *"지워도 돼. 지우기 전 정말 지우도 되는지 이미 다 흡수되었는지만 보는 sonnet 에이전트 두고"*): sonnet 확인 — 여덟 `.md` 전부 archive 사본과 바이트 동일, 흡수 경로 실존, `test-ignoreme.luau` 메모는 ROADMAP에 인용, 잔여 참조는 `.gitignore` 패턴뿐 → 아홉 파일 삭제.
 
 **docs-review 2-1(how-to 06)**: 사용자 (a). sonnet이 스크래치 pesde 프로젝트(luau 타깃)에 레지스트리 `quad_base` 3.2.0을 실제 설치해 측정 — 링커·실체 전부 일반 파일이라 CLI가 그대로 따라감(relink는 이 레포 워크스페이스만의 문제), 옛 §5는 `CONTRIBUTING.md`로. 메인 대조에서 둘 정정: 프로바이더 없는 `:Set` 에러 문구는 `isHeld is not available`(에이전트가 적은 `canExecute` 아님 — 직접 재실행), roblox 프로젝트 `roblox_packages/`를 CLI에서 require하는 건 미실측이라 "확인하지 않았다"로.
+
+## 2026-09-22 — docs-review 2-3과 에러 ID
+
+사용자 결정: 제보 창구 GitHub 이슈, 제목 좁힘, 런타임 디버깅 서술 안 함(잠정·크게 바뀔 것), 색인표 대신 **에러 ID 번호 공간**을 설계하자(`Quad10000`식, 카테고리+순번 구상, 갈래 요청). how-to 09 손질은 sonnet에, 에러 ID는 메인이 `research/error-id-plan.md`로 — 남들의 방식(Rust 순차+explain, TS 느슨한 영역, MSVC, ESLint 이름) 대조 뒤 권고 (C) 평평한 순번 + 문서 페이지 레지스트리(주어가 이미 층을 말하고, 소스 재편이 두 번 있었던 코퍼스에서 밴드 번호는 낡는다), 접두 자리, ID는 안정 계약(분기 허용), 게이트 스크립트, 222곳 한 번에. 부수: 사용자가 delegate-agy(Gemini 위임 플러그인) 셋업을 요청 — `agy`·OAuth 토큰이 이미 있어 가능, 문서 문항 뒤 진행.
