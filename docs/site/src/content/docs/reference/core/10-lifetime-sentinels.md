@@ -72,7 +72,7 @@ KeyGone: KeyGone
 이 호출에서 돌려줄 수 있는 것은 `nil`/`q.None`(파괴)과 `q.Detach`(홀드) 둘뿐입니다. 요소를 돌려주면 에러입니다 —
 
 ```
-Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
+Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
 ```
 
 재조정 사이클 안에서 언제 이 호출이 오는지는 [Slot](/reference/core/06-slot/)을 보세요.
@@ -110,9 +110,9 @@ dispose: (value: any) -> ()
 에러 문구는 넷입니다.
 
 ```
-dispose: value must not be nil
-dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
-dispose: this backend cannot dispose this value
+Quad0178 dispose: value must not be nil
+Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+Quad0180 dispose: this backend cannot dispose this value
 ```
 
 마지막 문구는 "Slot도 아니고 이 백엔드의 요소도 아니다"라는 뜻입니다. 백엔드가 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다(아래 참고).

@@ -17,6 +17,8 @@ local D = q.Declaration
 
 ## 1. quad의 에러는 "사용자 줄"을 가리키려 한다
 
+에러 메시지의 첫 토큰은 `QuadNNNN` 식별자입니다(예: `Quad0142 Slot:List: duplicate key "a"`). 문구보다 번호로 찾는 편이 빠릅니다 — [레퍼런스 › 에러 코드](../reference/errors/00-index.md)에 번호마다 언제 나는지와 고치는 법이 있습니다. 번호가 없으면 quad가 아니라 엔진이 낸 에러입니다.
+
 quad는 공개 표면 함수에 태그를 달아두고, 에러를 낼 때 **스택에서 태그된
 프레임을 걷어내 그 바깥의 사용자 줄**을 blame합니다.
 

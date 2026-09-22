@@ -326,7 +326,7 @@ claimOwnerAt: (element: any, inst: any, k: any) -> boolean
 내장 핸들러가 쓰는 자리 종류는 셋입니다 — Slot의 원소(Slot 자신이 owner), 정적 자식(`(inst, 숫자 키)`), 숏핸드 관리 자식(`(inst, 자식 이름)`). 전부 한 레지스트리라 서로 섞이지 않습니다.
 
 ```
-Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
 ```
 
 ## `q.Bookkeeping.releaseOwner(element, ownerKey)`
@@ -340,7 +340,7 @@ releaseOwner: (element: any, ownerKey: any) -> ()
 **동작** — `claimOwnerAt`으로 등록한 자리를 풉니다. retractor에서, 부기 해제(`setEmpty`)까지 끝낸 **마지막**에 부르는 것이 내장 핸들러의 순서입니다. 그 `ownerKey`가 쥔 값이 아니면 소유권 추적이 깨진 것이므로 던집니다.
 
 ```
-Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
 ```
 
 ## 예제 — 커스텀 값 타입 하나 붙이기

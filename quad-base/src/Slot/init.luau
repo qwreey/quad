@@ -128,13 +128,13 @@ local function Init(module: any)
 
 	-- ── public CRUD (guard + raw* delegation) ──────────────────────────
 	local function assertLive(self: any)
-		if self._destroyed then Err.errorBeforeNearest("Slot: destroyed Slot cannot be reused", SURFACE) end
+		if self._destroyed then Err.errorBeforeNearest("Quad0165 Slot: destroyed Slot cannot be reused", SURFACE) end
 	end
 	-- [2026-09-16 hunt F] `_crudUsed` is set by `markManual` at each CRUD's mutation point, not
 	-- here — a CRUD call rejected by its own validation (`Add(nil)`, out-of-range `Remove`) used to
 	-- lock the Slot as manual, and a later `:List` blamed "CRUD was used" (the `H-386` shape again).
 	local function assertManual(self: any)
-		if self._listed then Err.errorBeforeNearest("Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
+		if self._listed then Err.errorBeforeNearest("Quad0166 Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
 	end
 	local function markManual(self: any)
 		self._crudUsed = true
@@ -145,7 +145,7 @@ local function Init(module: any)
 	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
 	local function assertNotMounting(self: any)
 		if self._materializing then
-			Err.errorBeforeNearest("Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)", SURFACE)
+			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)", SURFACE)
 		end
 	end
 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount
@@ -165,10 +165,10 @@ local function Init(module: any)
 		local limit = if allowEnd then n + 1 else n
 		if type(index) ~= "number" or index < 1 or index > limit or index % 1 ~= 0 then
 			-- 6순회: two faults, two messages (a fractional index is not "out of range")
-			Err.errorBeforeNearest(
+			Err.errorBeforeNearest( -- error-code: inline if
 				if type(index) ~= "number" or index % 1 ~= 0 or index < 1
-					then `{surface}: index must be a positive integer (got {tostring(index)})`
-					else `{surface}: index out of range (got {index}, limit {limit})`,
+					then `Quad0168 {surface}: index must be a positive integer (got {tostring(index)})`
+					else `Quad0236 {surface}: index out of range (got {index}, limit {limit})`,
 				SURFACE
 			)
 		end
@@ -236,7 +236,7 @@ local function Init(module: any)
 					end
 					if isSlot(occupant) then
 						if occupant._destroyed then
-							Err.errorBeforeNearest(surface .. ": destroyed Slot cannot be an element", SURFACE)
+							Err.errorBeforeNearest("Quad0169 " .. surface .. ": destroyed Slot cannot be an element", SURFACE)
 						end
 					elseif not module.isState(occupant) then
 						S.checkRawElement(occupant, Err.errorBeforeNearest) -- same `Slot: …` messages as the raw path (one greppable form)
@@ -246,13 +246,13 @@ local function Init(module: any)
 					-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
 					-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
 					-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.
-					Err.errorBeforeNearest(surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE)
+					Err.errorBeforeNearest("Quad0170 " .. surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE)
 				end
 				if seen[occupant] then
-					Err.errorBeforeNearest(surface .. ": the same element appears twice", SURFACE)
+					Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
 				end
 				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
-					Err.errorBeforeNearest(surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
+					Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 				end
 				if isSlot(occupant) then
 					-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its
@@ -263,7 +263,7 @@ local function Init(module: any)
 					local cursor = self
 					while isSlot(cursor) do
 						if cursor == occupant then
-							Err.errorBeforeNearest(surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
+							Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
 						end
 						cursor = elementOwner:GetWeak(cursor, OWNER)
 					end
@@ -326,7 +326,7 @@ local function Init(module: any)
 		checkIndex(self, index, "Slot:Splice", true)
 		if type(removeCount) ~= "number" or removeCount < 0 or removeCount % 1 ~= 0
 			or index + removeCount - 1 > #self._elements then
-			Err.errorBeforeNearest("Slot:Splice: removeCount out of range", SURFACE)
+			Err.errorBeforeNearest("Quad0174 Slot:Splice: removeCount out of range", SURFACE)
 		end
 		local items = table.pack(...)
 		local prepared = prepareElements(self, "Slot:Splice", items.n, items)
@@ -362,7 +362,7 @@ local function Init(module: any)
 			-- `H-468` (Gemini 5차 G-20, 사용자 Q32 "nil 허용 불가"): a nil/non-number index used to
 			-- read `_elements[nil]` and answer nil as if the slot were empty. Out-of-range stays nil
 			-- (`SlotItem<T>?` — spec.slot "arrays still construct" relies on it).
-			Err.errorBeforeNearest(`Slot:Get: index must be a number (got {typeof(index)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0175 Slot:Get: index must be a number (got {typeof(index)})`, SURFACE)
 		end
 		return S.unwrapElement(self._elements[index])
 	end
@@ -439,13 +439,13 @@ local function Init(module: any)
 			-- manual CRUD was used" naming a feature never used. Container shape
 			-- only — a nil hole stays UB per slot-plan (`ipairs` stops, rest ignored).
 			if type(initial) ~= "table" or getmetatable(initial) ~= nil or Brand.isPlainBranded(initial) then
-				Err.errorBeforeNearest(`Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value needs the braces)`, SURFACE)
+				Err.errorBeforeNearest(`Quad0176 Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value needs the braces)`, SURFACE)
 			end
 			for k in pairs(initial :: { [any]: any }) do
 				-- 5순회 `H-396`: `[0]`/`[-1]`/`[1.5]` live in the hash part too (Tag's
 				-- `flattenInto` mirror); a nil hole stays UB (no count check)
 				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-					Err.errorBeforeNearest(`Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`, SURFACE)
+					Err.errorBeforeNearest(`Quad0177 Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`, SURFACE)
 				end
 			end
 			self._crudUsed = true
@@ -469,13 +469,13 @@ local function Init(module: any)
 	-- dispose(value) — the one safe path to destroy a quad-managed value.
 	local function dispose(value: any)
 		if value == nil then
-			Err.errorBeforeNearest("dispose: value must not be nil", SURFACE) -- `H-474` (Q31): say nil, not "cannot dispose this value"
+			Err.errorBeforeNearest("Quad0178 dispose: value must not be nil", SURFACE) -- `H-474` (Q31): say nil, not "cannot dispose this value"
 		end
 		if elementOwner:GetWeak(value, OWNER) ~= nil then
 			-- 6순회: name a remedy that exists for each holder kind (a :List Slot's
 			-- detached element cannot be Remove/Extract-ed — it goes with its owner)
 			-- Q9: same note as the "already mounted" sites (one constant — round3 `H-451`)
-			Err.errorBeforeNearest("dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)" .. ZOMBIE_NOTE, SURFACE)
+			Err.errorBeforeNearest("Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)" .. ZOMBIE_NOTE, SURFACE)
 		end
 		-- round10 H-537: `elementOwner` is per module instance, so another instance's Slot passed this
 		-- check and was destroyed under a live tree — a quad value from another instance is refused
@@ -488,7 +488,7 @@ local function Init(module: any)
 		end
 		if isSlot(value) then S.destroySlotTree(value)
 		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
-		else Err.errorBeforeNearest("dispose: this backend cannot dispose this value", SURFACE) end
+		else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
 	end
 
 	-- Expose to module + the SlotHandler (Slot/Handler.luau reaches these

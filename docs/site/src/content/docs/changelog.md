@@ -13,6 +13,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 ### Added
 
 - `q.Tween{…}`(그리고 `q.Animate{…}`)에 콜백 셋 `Started`/`Completed`/`Cancelled`(인자 없음)가 생겼습니다. `Started`는 트윈이 시작된 직후, `Completed`는 **자연히 끝났을 때만**, `Cancelled`는 새 값이나 철거가 돌고 있던 트윈을 끊을 때 불립니다(순서는 이전 `Cancelled` → 새 `Started` → 새 `Completed`). 첫 세팅처럼 스냅되는 자리에서는 `Started`·`Completed`가 바로 이어서 불리고, `CanAnimate = false`여도 콜백이 있으면 그 둘은 불립니다. 트윈이 도는 동안 인스턴스가 파괴되면(파괴는 자리별 되돌리기를 거치지 않으므로 트윈은 끝까지 돕니다) 그 뒤의 `Completed`는 불리지 않습니다.
+- **모든 quad 에러 메시지가 `QuadNNNN` 식별자로 시작합니다**(Luau의 `파일:줄:` 접두 바로 뒤, 예: `Quad0142 Slot:List: duplicate key "a"`). 번호는 한 번 붙으면 바뀌지 않고 재사용하지 않으므로 검색·분기는 번호로 하세요(문구는 여전히 API가 아닙니다). 번호마다 설명은 [레퍼런스 › 에러 코드](docs/reference/errors/00-index.md). 엔진(Roblox)이 내는 에러에는 번호가 없습니다.
 - `q.Out(name, src)` — 엔진이 바꾼 프로퍼티 값을 `Source`에 되쓰는 슈거(`q.OnChange` 위, 같은 디스크립터). `D.TextBox { Text = text, q.Out("Text", text) }`처럼 내려가는 문자 키 옆에 나란히 둡니다. 새 값이 `src:Get()`과 같으면 `:Set`하지 않습니다(첫 쓰기의 메아리 방지). `:Compute` 결과 같은 읽기 전용 `State`는 타입에서 거부됩니다.
 - `Effect`의 cleanup이 인자 하나 `dying: boolean`을 받습니다 — 묶인 인스턴스가 **죽어서** 소진될 때만 `true`, 다음 `fn` 실행 직전·`:Unsubscribe()`·숫자 키 자리를 떠날 때는 `false`. 인자를 안 받던 cleanup은 그대로 됩니다. 이걸로 `q.OnDestroyed`가 고쳐졌습니다(아래 Fixed).
 

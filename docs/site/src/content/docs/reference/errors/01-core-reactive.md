@@ -228,3 +228,19 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **언제**: `default`로 넘긴 `State`의 현재값이 `nil`일 때(예: 아직 안 채운 `store:Of`) — 기본값 자리에는 실제 값이 있어야 합니다.
 - **고치려면**: 그 `State`가 항상 값을 갖게 하세요.
 - **참고**: [`q.Operator.Alternative(default)`](/reference/sugar/02-operator/#qoperatoralternativedefault)
+
+### Quad0181
+
+`Source: cannot Set a Modifier as a Source value` — `quad-base/src/Source.luau`
+
+- **언제**: `source:Set(v)`의 `v`로 `Modifier`(`:Apply`용 값)를 넘겼을 때 — `Source`/`State`는 값 자리에 `Modifier`를 담을 수 없습니다.
+- **고치려면**: `Modifier`가 아닌 실제 값을 `Set`하세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
+- **참고**: [`source:Set(v)`](/reference/core/02-source/#sourcesetv)
+
+### Quad0182
+
+`Source: cannot hold a Modifier as a Source value` — `quad-base/src/Source.luau`
+
+- **언제**: `q.Source(default)`를 만들 때 초기값으로 `Modifier`를 넘겼을 때.
+- **고치려면**: `Modifier`가 아닌 값을 초기값으로 주세요.
+- **참고**: [`q.Source(value)`](/reference/core/02-source/#qsourcevalue)

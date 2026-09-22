@@ -42,7 +42,7 @@ export type Source<T> = State<T> & {
 **동작**
 
 - 값으로 **Modifier는 담을 수 없습니다**. 생성자에서 걸리면
-  `Source: cannot hold a Modifier as a Source value`
+  `Quad0182 Source: cannot hold a Modifier as a Source value`
 - 판정 술어는 셋 다 참입니다 — `q.isSource(s)`, `q.isEpoch(s)`, `q.isState(s)`. 세 번째는 술어 합성의 결과이고, 값 자체가 `State` 브랜드에 등록되지는 않습니다.
 - `print(source)`는 `Source(<현재 값>)` 모양으로 찍힙니다. 읽기만 하며 계산을 유발하지 않습니다.
 
@@ -77,7 +77,7 @@ Set: (self: Source<T>, v: T) -> Source<T>
 
 - **같은 값을 다시 넣어도 언제나 리비전을 올리고 전파합니다.** 값 비교로 중복을 죽이지 않습니다 — 중복 제거는 하류의 판단이고(에폭 판정·게이트), `==` 비교는 테이블을 제자리에서 고친 변경을 조용히 삼켜버리기 때문입니다.
 - `:Get()`은 넣은 참조를 그대로 돌려줍니다(사본이 아닙니다). 테이블을 담아 두고 제자리에서 고쳤다면 [`:Emit()`](#sourceemit)으로 신호만 보내면 됩니다.
-- Modifier를 넣으면 `Source: cannot Set a Modifier as a Source value`
+- Modifier를 넣으면 `Quad0181 Source: cannot Set a Modifier as a Source value`
 - 전파를 받는 하류(파생 State·Observer·Effect)끼리의 **순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다.
 
 **예제**

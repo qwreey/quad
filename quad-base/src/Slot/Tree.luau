@@ -31,7 +31,7 @@ return function(S: Types.SlotInternal, module: any)
 	end
 
 	local function materializeSlotTree(slot: any, physicalTarget: any, ownerKey: any, position: number)
-		if slot._destroyed then S.Err.errorBefore("Slot: destroyed Slot cannot be mounted", S.SURFACE) end
+		if slot._destroyed then S.Err.errorBefore("Quad0164 Slot: destroyed Slot cannot be mounted", S.SURFACE) end
 		slot._physicalTarget = physicalTarget
 		-- round10 Q52 (a) (user decision 2026-09-17): while this walk runs, public CRUD (and
 		-- :List/:Single install) on THIS Slot raises — a nested :List's first `updateFn` (or an

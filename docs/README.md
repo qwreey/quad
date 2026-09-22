@@ -90,6 +90,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - `sugar/` 6편(사이트 사이드바에서는 Core 아래 하위 그룹 — quad-base 안의 순수 슈거) — [Context](./reference/sugar/01-context.md) · [Operator](./reference/sugar/02-operator.md) · [Debounce·Throttle](./reference/sugar/03-debounce-throttle.md) · [생명주기 훅](./reference/sugar/04-lifecycle-hooks.md) · [Fallback·Traceback](./reference/sugar/05-fallback-traceback.md) · [Blocker](./reference/sugar/06-blocker.md)(`state:Gate` 위의 정책 — 2026-09-11 사용자 결정으로 core에서 이동).
 - `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`Declaration`](./reference/roblox/02-d.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티) · [`D.Modifier`](./reference/roblox/03-d-modifier.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
 - `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
+- `errors/`(배지 QuadNNNN) 10편 — **[2026-09-22 신설]** [에러 코드 색인](./reference/errors/00-index.md) + 층별 아홉 페이지(`### QuadNNNN` 절마다 메시지·언제·고치려면·참고). 소스의 번호와 절의 정합은 `scripts/error-codes.py`가 지킨다(test.sh 게이트).
 
 ### The Quadnomicon — 11권
 > Rustonomicon 스타일 — 초보자용이 아니다. 입문은 [Getting Started](./getting-started/00-installation.md)부터.

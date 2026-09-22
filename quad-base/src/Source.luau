@@ -81,7 +81,7 @@ local function Init(module: any)
 	-- drop in-place table mutations.
 	function Impl.Set(self: any, value: any): any
 		if isModifier(value) then
-			Err.errorBeforeNearest("Source: cannot Set a Modifier as a Source value", SURFACE)
+			Err.errorBeforeNearest("Quad0181 Source: cannot Set a Modifier as a Source value", SURFACE)
 		end
 		self._value = value
 		return bumpAndEmit(self) -- direct local call (`H-207`/`H-330`), not colon delegation
@@ -93,7 +93,7 @@ local function Init(module: any)
 
 	local function Source(default: any): any
 		if isModifier(default) then
-			Err.errorBeforeNearest("Source: cannot hold a Modifier as a Source value", SURFACE)
+			Err.errorBeforeNearest("Quad0182 Source: cannot hold a Modifier as a Source value", SURFACE)
 		end
 		local self = setmetatable({
 			_value = default,

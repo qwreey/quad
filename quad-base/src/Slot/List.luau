@@ -92,14 +92,14 @@ return function(S: Types.SlotInternal, module: any)
 			if type(items) ~= "table" or getmetatable(items) ~= nil then
 				-- round3 `H-441`/`H-446` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
 				-- reached from State emit depth too, so outermost; branded tables are not arrays either
-				S.Err.errorBefore(`Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)
+				S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)
 			end
 			-- round11 `H-571` (탐사 I′ 1, `H-396`의 짝): a dictionary (an id-keyed map, a decoded JSON
 			-- object) passed the table check, `ipairs` saw nothing and the KeyGone pass silently
 			-- destroyed every element. A nil hole still just stops `ipairs` (documented UB).
 			for k in pairs(items) do
 				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-					S.Err.errorBefore(`Slot:List: data must be a plain array — key "{tostring(k)}" is not an array position`, S.SURFACE)
+					S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array — key "{tostring(k)}" is not an array position`, S.SURFACE)
 				end
 			end
 			local keys, seen = table.create(#items), {}
@@ -111,10 +111,10 @@ return function(S: Types.SlotInternal, module: any)
 					-- Nearest: reconcile runs at dispatch/emission depth (mount or
 					-- data:Set), never as a direct user call — `H10-2` reasoning,
 					-- same for the duplicate-key raise below
-					S.Err.errorBefore(`Slot:List: keyFn returned {if key == nil then "nil" else "NaN"} for item #{i}`, S.SURFACE)
+					S.Err.errorBefore(`Quad0144 Slot:List: keyFn returned {if key == nil then "nil" else "NaN"} for item #{i}`, S.SURFACE)
 				end
 				if seen[key] then
-					S.Err.errorBefore(`Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
+					S.Err.errorBefore(`Quad0145 Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
 				end
 				seen[key] = true
 				keys[i] = key
@@ -135,7 +135,7 @@ return function(S: Types.SlotInternal, module: any)
 				local result, ud = updateFn({ Item = item, Index = physIndex, Offset = offset, Prev = prev, UserData = userdata[key] })
 				if result == S.KeyGone then
 					-- round11 탐사 I′ 5: the third sentinel is an INPUT marker, never a return — it used to die as "cannot mount this value"
-					S.Err.errorBefore("Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it", S.SURFACE)
+					S.Err.errorBefore("Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it", S.SURFACE)
 				end
 				if result == S.None then result = nil end
 				local detach = (result == S.Detach)
@@ -169,7 +169,7 @@ return function(S: Types.SlotInternal, module: any)
 					local detach = (result == S.Detach)
 					if detach then result = nil end
 					if result ~= nil then
-						S.Err.errorBefore("Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
 					end
 					settle(key, result, detach, 0)
 					userdata[key] = ud
@@ -211,31 +211,31 @@ return function(S: Types.SlotInternal, module: any)
 	local function checkListInstall(self: any)
 		S.assertLive(self)
 		S.assertNotMounting(self) -- round10 Q52 (a)
-		if self._listed then S.Err.errorBeforeNearest("Slot: already has :List/:Single installed", S.SURFACE) end
-		if self._crudUsed then S.Err.errorBeforeNearest("Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
+		if self._listed then S.Err.errorBeforeNearest("Quad0148 Slot: already has :List/:Single installed", S.SURFACE) end
+		if self._crudUsed then S.Err.errorBeforeNearest("Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
 	end
 
 	function S.Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
 		checkListInstall(self)
 		if type(updateFn) ~= "function" then
-			S.Err.errorBeforeNearest(`Slot:List: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-441`
+			S.Err.errorBeforeNearest(`Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-441`
 		end
 		if not ((type(data) == "table" and getmetatable(data) == nil) or S.isState(data)) then
 			-- round3 `H-441`/`H-446`: a plain array or a State of one — branded tables (None/Store/Tween/Modifier)
 			-- have metatables and used to pass as an empty list
-			S.Err.errorBeforeNearest(`Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, S.SURFACE)
+			S.Err.errorBeforeNearest(`Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, S.SURFACE)
 		end
 		if S.isState(data) then
 			ModuleIdentity.assertOwnAtCall(module, data, "Slot:List") -- [2026-09-15] a data State from another instance
 		end
 		if keyFn ~= nil and type(keyFn) ~= "function" then
-			S.Err.errorBeforeNearest(`Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`
+			S.Err.errorBeforeNearest(`Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`
 		end
 		-- [2026-09-16 hunt F] the option bag was the one unchecked argument — gated BEFORE `_listed` (a rejected call must not half-install, code-review) (`H-441`/`H-446` closed the
 		-- others): a number died on `opts.OwnsElements` with this file on the blame line, a string
 		-- indexed to nil and silently dropped the option.
 		if opts ~= nil and type(opts) ~= "table" then
-			S.Err.errorBeforeNearest(`Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+			S.Err.errorBeforeNearest(`Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
 		self._listed = true
 		self._listData = data
@@ -262,10 +262,10 @@ return function(S: Types.SlotInternal, module: any)
 	function S.Slot_mt.Single(self: any, state: any, updateFn: any?, opts: any?): any
 		checkListInstall(self) -- `H-385`: gate here so the blame is this call, not the delegation below
 		if updateFn ~= nil and type(updateFn) ~= "function" then
-			S.Err.errorBeforeNearest(`Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
+			S.Err.errorBeforeNearest(`Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
 		end
 		if opts ~= nil and type(opts) ~= "table" then -- [2026-09-16 hunt F] same gate at this entry so the blame is this call
-			S.Err.errorBeforeNearest(`Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+			S.Err.errorBeforeNearest(`Quad0155 Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
 		if S.isState(state) then
 			-- [2026-09-15 code-review] cross-instance gate at the PUBLIC entry (`H-385` reasoning): inside `List`
