@@ -27,7 +27,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 |---|---|---|---|
 | **Overview** | 이미 Fusion·Vide·react-lua를 쓰며 "넘어올 값이 있나"를 판단하려는 엔지니어, quad v1 사용자 | 솔직, 대가를 같이 적음, 예정된 것은 예정으로 | 도구별 "잘하는 것 → 겪는 문제 → Quad의 풀이 → 넘어올/안 넘어올 이유", 차이표, 설계 선택과 대가, 없는 것의 이유(일부러/계획/한계); v1에서 무엇이 왜 달라졌고 어떤 틀로 옮기나 |
 | **Getting Started** | Quad를 처음 접하는 Roblox 개발자 | 친절, 선형, 최소 | 설치·설정부터 목록·애니메이션까지 카운터 하나를 키우며 완주 |
-| **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 컴포넌트 경계 규약, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관, 그리고 부록인 디버깅 |
+| **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 컴포넌트 경계 규약, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관, 오버레이(모달·토스트), 그리고 부록인 디버깅 |
 | **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `D`는 표면만·Roblox 문서로 유도 |
 | **The Quadnomicon** | 프레임워크 설계자, 아키텍트 | 분석적, 한계를 숨기지 않음 | Revision/EpochMap, Slot 부분합 트리, 메모리 토폴로지, 마커 타입, 디스패치 엔진 등 내부 설계 |
 | **Agents** | AI 코딩 에이전트에게 quad 코드를 맡기는 개발자 | 절차 중심, 짧게 | 스킬 `quad-ui-dev`의 설치·호출·다른 에이전트에 붙이기·갱신(스킬 본문은 영문, 레포에만) |
@@ -68,8 +68,8 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`20-handlers.md`](./getting-started/20-handlers.md) — 자리에 놓인 값은 누가 처리하나(핸들러 맛보기): 자리마다 핸들러 목록에서 첫 승낙자가 맡는다(`q.Dispatch.listHandlers`/`getHandler`로 들여다보기), `State`는 벗겨서 한 칸 아래로(`State<X>`가 되는가 = `X`가 되는가), 갈아 끼우면 이전 것이 빠지는 방식 여섯(Tag 차이만·Attr 이름 전부·Ref 비움·Observer 정지·Effect cleanup·Instance 떼기 — mock 실측), 심층은 레퍼런스 extend/02·Quadnomicon 08로. 사용자 요청 2026-09-11(남의 코드를 읽을 수 있는 정도가 목표).
 - [`21-wrap-up.md`](./getting-started/21-wrap-up.md) — 정리: 만든 것 요약 스물하나(00~20), 다음 읽을 곳, v1 콜아웃 `<details>`.
 
-### How-To Guides (실전 레시피) — 9편
-**[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤.
+### How-To Guides (실전 레시피) — 10편
+**[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤. **[2026-09-25]** docs-review 2-4로 `09-overlays-modal-toast.md`를 신설하면서 옛 09번이던 에러 읽는 법 부록은 `10-debugging-and-troubleshooting.md`로 옮겼다 — 부록은 여전히 순서 없이 맨 뒤.
 - [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
 - [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — 값을 밖에서 받는 체크박스로 시작해, 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 후행 의존성 `:Compute`로 실시간 검증·버튼 제어, 제출 결과는 바깥이 관측.
 - [`03-virtualized-infinite-scroll.md`](./how-to/03-virtualized-infinite-scroll.md) — 긴 목록: 기본 계약은 [시작하기 14](./getting-started/14-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Throttle`·"안 해주는 것"만 다룬다.
@@ -78,7 +78,8 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — 반응형 그래프(`Source`/`Compute`/`Store`/`Blocker`)는 평범한 `luau` CLI에서 실측된 require 경로로 그대로 검증됩니다. 프로바이더 주입·`Observer`/`Effect`의 생명주기 결합·`Slot` 조립은 공개 `quad-mock`이 아직 없어 자기 프로바이더가 필요합니다. 이 저장소 자체의 테스트는 `CONTRIBUTING.md`.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Declaration.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
 - [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
-- [`09-debugging-and-troubleshooting.md`](./how-to/09-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
+- [`09-overlays-modal-toast.md`](./how-to/09-overlays-modal-toast.md) — **[2026-09-25 신설]** 떠 있는 것 열고 닫기: `Visible` 유지 vs 조건부 자식(`State<Instance?>`)으로 모달을 열고 닫기, `q.Context`로 깊은 트리거에서 뿌리의 오버레이를 열기, `Slot:List`로 토스트 큐, `q.Fallback`으로 던진 에러를 에러 모달에 담기.
+- [`10-debugging-and-troubleshooting.md`](./how-to/10-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
 
 ### API Reference — 손으로 관리하는 심볼 레퍼런스(25편 + 색인)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은

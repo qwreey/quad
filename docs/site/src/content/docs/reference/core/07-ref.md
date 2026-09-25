@@ -370,4 +370,4 @@ local button = D.TextButton {
 }
 ```
 
-**관련** — [디버깅과 문제 해결](/how-to/09-debugging-and-troubleshooting/)
+**관련** — [디버깅과 문제 해결](/how-to/10-debugging-and-troubleshooting/)

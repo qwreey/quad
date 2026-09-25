@@ -89,7 +89,7 @@ end
 
 그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 선두나 중간이 구멍이면 quad는 그 자리에서 **에러를 냅니다**(`Bookkeeping.recompute: sourceList[N] is nil — a nil hole …`). 조용히 넘어가는 것은 **꼬리 구멍뿐**이고, 그마저 뒤에 원소를 하나 더 붙이는 순간 에러가 됩니다.
 
-그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [09. 부록 — quad 에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
+그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [10. 부록 — quad 에러 읽는 법](/how-to/10-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
 
 ```luau
 -- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 그 자리에서 에러
@@ -316,6 +316,7 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 - [ ] 문자 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
 - [ ] `Attr` 값을 지울 때 `None`(또는 State의 `nil`)을 쓰고, 그룹 교체만으로는 값이 안 지워진다는 걸 아는가?
 - [ ] 반응형 로직을 담은 헬퍼 함수를 React Hook의 제약 없이 자유롭게 분리했는가?
+- [ ] 던질 수 있는 컴포넌트를 `q.Fallback`으로 감싸고 그 에러를 받는 자리를 정했는가? → [09. 떠 있는 것 열고 닫기 — 모달과 토스트](/how-to/09-overlays-modal-toast/) §5
 
 ---
 

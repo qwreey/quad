@@ -44,9 +44,9 @@ of guessing.**
     (install, `D`, `D.Modifier`, Claim·Mapper, OnChange, Tween·Animate), `reference/extend/01`·`02`
     (backend provider / dispatch handler contracts). One type per page: signature → args → return →
     example → behavior → **error table (verbatim strings)** → related.
-  - `how-to/01`…`09` — recipes: component boundary conventions, form validation, long lists,
-    RemoteEvent/input bridging, theming, headless testing, Studio `Claim`, v1 migration, and the
-    error-reading appendix (`09`).
+  - `how-to/01`…`10` — recipes: component boundary conventions, form validation, long lists,
+    RemoteEvent/input bridging, theming, headless testing, Studio `Claim`, v1 migration,
+    overlays (modal/toast, `Fallback` error modal — `09`), and the error-reading appendix (`10`).
   - `getting-started/00`…`21` — the linear tutorial (one counter grows chapter by chapter). Fetch a
     chapter when the user is learning, not for lookups.
   - `overview/01` (comparison with Fusion/Vide/react-lua, design trade-offs, what is missing and

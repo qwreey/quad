@@ -59,7 +59,7 @@ q.dispose(screen)
 
 ## 다음에 읽을 곳
 
-- **[실전 레시피](/how-to/01-component-conventions/)** — 재사용 가능한 컴포넌트를 만들 때의 경계 규약이 첫 장입니다. 이어서 폼 검증, 긴 목록, 외부 신호 브릿지, 테마, 헤드리스 테스트, Studio 템플릿 `Claim`, v1 이관, 그리고 부록인 [에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)이 있습니다.
+- **[실전 레시피](/how-to/01-component-conventions/)** — 재사용 가능한 컴포넌트를 만들 때의 경계 규약이 첫 장입니다. 이어서 폼 검증, 긴 목록, 외부 신호 브릿지, 테마, 헤드리스 테스트, Studio 템플릿 `Claim`, v1 이관, 그리고 부록인 [에러 읽는 법](/how-to/10-debugging-and-troubleshooting/)이 있습니다.
 - **[API 레퍼런스](/reference/00-index/)** — 타입당 한 페이지. 시그니처·인자·에러 문구를 찾을 때. 시작하기에 안 나온 것 중 먼저 볼 만한 것은 컴포넌트 하나가 던져도 화면 조립이 멈추지 않게 하는 [`Fallback` / `Traceback`](/reference/sugar/05-fallback-traceback/)입니다. [`Store`](/reference/core/04-store/)는 16장에서 이미 봤지만, `:Of`·예약 키까지 전체 표면이 궁금하면 여기로.
 - **[The Quadnomicon](/quadnomicon/01-revision-and-epochmap/)** — 위의 동작들이 내부에서 어떻게 구현돼 있는지. 초보자용은 아닙니다.
 - **[왜 Quad인가](/overview/01-why-quad/)** — 이 설계가 무엇을 포기하고 무엇을 얻었는지, 다른 도구와의 차이.

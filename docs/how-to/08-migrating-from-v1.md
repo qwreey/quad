@@ -442,7 +442,7 @@ Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key pa
 1. **타입 검사부터.** 2절의 플래그로 프로젝트 전체를 돌리고 7절의 진단이 0이 될 때까지 고치세요. 이게 체크리스트의 대부분을 대신합니다.
 2. **로직은 헤드리스로.** 컴포넌트가 `Store`/`State`만 소비하도록 두면 Roblox 없이 상태 전이를 검증할 수 있습니다 — [06. Roblox Studio 없이 헤드리스로 테스트하기](./06-headless-testing.md).
 3. **Studio 스모크.** 화면 하나씩 띄워보되 (a) 목록의 추가/삭제/재정렬, (b) 애니메이션이 겹칠 때, (c) 화면을 `Destroy()`한 뒤 구독이 멈추는지를 특히 보세요 — v1에서 정리 경로가 없던 자리들이라 옮기면서 모양이 가장 많이 바뀝니다.
-4. **에러가 나면** [09. 부록 — quad 에러 읽는 법](./09-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.
+4. **에러가 나면** [10. 부록 — quad 에러 읽는 법](./10-debugging-and-troubleshooting.md)의 에러 메시지 읽는 법을 먼저 보세요.
 
 ---
 

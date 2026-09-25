@@ -78,7 +78,7 @@ v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적�
 - **`Claim` — 이미 그려진 트리를 넘겨받기.** v1의 `Apply(myFrame){props}`(이미 있는 인스턴스 재바인드 — `master`의 미배포 2.25 계열에만 있고 릴리즈 2.24에는 없습니다)가 제한된 형태로 돌아왔습니다. Studio에서 만든 프리팹을 통째로 quad 소유로 넘기는 용도이고, 계약 셋(한 번만 claim / 그려지는 직계 자식 전부 매핑 / `PlayerGui`류 공동 소유 컨테이너는 대상 밖)이 붙습니다. → [07. Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/)
 - **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](/reference/sugar/01-context/)
 - **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](/reference/sugar/03-debounce-throttle/)
-- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [09. 부록 — quad 에러 읽는 법](/how-to/09-debugging-and-troubleshooting/)
+- **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [10. 부록 — quad 에러 읽는 법](/how-to/10-debugging-and-troubleshooting/)
 - **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](/how-to/08-migrating-from-v1/), [Quadnomicon Vol. 4 — 공변 마커](/quadnomicon/04-covariant-markers/)
 - **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. Roblox Studio 없이 헤드리스로 테스트하기](/how-to/06-headless-testing/)
 
