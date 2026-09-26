@@ -40,8 +40,10 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
 1. **C 프레임이 태그된 표면을 직접 부르면 `파일:줄` 접두가 사라집니다**
    (`pcall(quad함수, ...)`처럼 quad 함수를 그대로 넘기는 경우). 메시지는 살아남습니다 —
    접두가 필요하면 `pcall(function() ... end)`으로 감싸세요.
-2. **재진입 진입에서는 바깥 진입 줄이 blame됩니다.** observer 콜백 안에서
-   다시 디스패치를 유발하면 최외곽 스캔이 바깥 진입 줄을 가리킵니다.
+2. **콜백 안에서 일어난 디스패치는 바깥 진입 줄이 blame됩니다.** `Observer`·`Compute`·`Effect`·`slot:List`의 `updateFn` 안에서
+   `D.Frame {}`을 만들거나 `Claim`·`q.Dispatch.drive`처럼 최외곽 스캔으로 던지는 표면을 부르면, 콜백 안의 그 줄이 아니라
+   그 콜백을 깨운 바깥 줄(`:Set`·`:Get`·마운트 줄)이 blame됩니다. 인자 검증 계열(`Slot:Add(nil)`·`q.Tag("")` 등)은 콜백 안에서도
+   그 줄을 정확히 가리킵니다.
 
 ---
 

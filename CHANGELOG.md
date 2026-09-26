@@ -11,7 +11,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 ### Added
 
 - `q.Tween{…}`(그리고 `q.Animate{…}`)에 콜백 셋 `Started`/`Completed`/`Cancelled`(인자 없음)가 생겼습니다. `Started`는 트윈이 시작된 직후, `Completed`는 **자연히 끝났을 때만**, `Cancelled`는 새 값이나 철거가 돌고 있던 트윈을 끊을 때 불립니다(순서는 이전 `Cancelled` → 새 `Started` → 새 `Completed`). 첫 세팅처럼 스냅되는 자리에서는 `Started`·`Completed`가 바로 이어서 불리고, `CanAnimate = false`여도 콜백이 있으면 그 둘은 불립니다. 트윈이 도는 동안 인스턴스가 파괴되면(파괴는 자리별 되돌리기를 거치지 않으므로 트윈은 끝까지 돕니다) 그 뒤의 `Completed`는 불리지 않습니다.
-- **모든 quad 에러 메시지가 `QuadNNNN` 식별자로 시작합니다**(Luau의 `파일:줄:` 접두 바로 뒤, 예: `Quad0142 Slot:List: duplicate key "a"`). 번호는 한 번 붙으면 바뀌지 않고 재사용하지 않으므로 검색·분기는 번호로 하세요(문구는 여전히 API가 아닙니다). 번호마다 설명은 [레퍼런스 › 에러 코드](docs/reference/errors/00-index.md). 엔진(Roblox)이 내는 에러에는 번호가 없습니다.
+- **모든 quad 에러 메시지가 `QuadNNNN` 식별자로 시작합니다**(Luau의 `파일:줄:` 접두 바로 뒤, 예: `Quad0145 Slot:List: duplicate key a`). 번호는 한 번 붙으면 바뀌지 않고 재사용하지 않으므로 검색·분기는 번호로 하세요(문구는 여전히 API가 아닙니다). 번호마다 설명은 [레퍼런스 › 에러 코드](docs/reference/errors/00-index.md). 엔진(Roblox)이 내는 에러에는 번호가 없습니다.
 - `q.Out(name, src)` — 엔진이 바꾼 프로퍼티 값을 `Source`에 되쓰는 슈거(`q.OnChange` 위, 같은 디스크립터). `D.TextBox { Text = text, q.Out("Text", text) }`처럼 내려가는 문자 키 옆에 나란히 둡니다. 새 값이 `src:Get()`과 같으면 `:Set`하지 않습니다(첫 쓰기의 메아리 방지). `:Compute` 결과 같은 읽기 전용 `State`는 타입에서 거부됩니다.
 - `Effect`의 cleanup이 인자 하나 `dying: boolean`을 받습니다 — 묶인 인스턴스가 **죽어서** 소진될 때만 `true`, 다음 `fn` 실행 직전·`:Unsubscribe()`·숫자 키 자리를 떠날 때는 `false`. 인자를 안 받던 cleanup은 그대로 됩니다. 이걸로 `q.OnDestroyed`가 고쳐졌습니다(아래 Fixed).
 
@@ -97,7 +97,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - Roblox 기본 Deferred 시그널 모드에서, 인스턴스가 파괴된 뒤 **같은 프레임 안에** 같은 `Effect`/훅 핸들을 다른 인스턴스에 다시 놓으면(행 캐시가 핸들을 재사용하는 목록) 옛 인스턴스의 지연된 Destroying 콜백이 새 바인딩을 끊어 cleanup이 살아 있는 인스턴스에서 돌고 그 뒤 fn이 영영 다시 안 돌던 것 — 이제 더 이상 자기 것이 아닌 바인딩의 콜백은 무시됩니다.
 - 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블·비테이블에 `true`)는 브랜드 스캔에서 걸러냅니다.
 - `Frame { Children = slot }`·`Frame { Ref = ref }`처럼 Slot/Ref를 문자 키 값으로 주면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 나오던 것 — 이제 `Slot: must be an array item, not the value of a string key`(Ref도 같은 모양)이고, 다른 quad 값(Tag 등)의 문자 키 no-match 문구도 "숫자 키 자리에 두라"로 바뀝니다.
-- 핸들러 작성자용: `q.Dispatch.process`에 체인 길이보다 큰 `index`를 주면 어떤 철거도 닿지 않는 슬롯이 남고 체인 기록까지 풀리던 것 — 이제 `index {n} would leave a gap in the chain …`으로 거부. `process`/`retractFrom`의 `nil` 키, `addHandler`의 NaN/무한 `priority`, `newMapperClass`의 비문자열 이름도 각각 즉시 거부하고, 같은 핸들러 테이블을 두 번 등록하면 한 번만 등록됩니다.
+- 핸들러 작성자용: `q.Dispatch.process`에 체인 길이보다 큰 `index`를 주면 어떤 철거도 닿지 않는 슬롯이 남고 체인 기록까지 풀리던 것 — 이제 `index {n} would leave a gap in the chain …`으로 거부. `process`/`retractFrom`의 `nil` 키, `addHandler`의 NaN/무한 `priority`, `newMapperClass`의 비문자열 이름도 각각 즉시 거부하고, 같은 핸들러 테이블을 두 번 등록하면 한 번만 등록됩니다. `q.Dispatch.getHandler`도 같은 검사를 받아, `inst`나 `key`에 `nil`을 넘기면 다른 파일을 가리키는 VM 에러 대신 `process`와 같은 quad 메시지로 거부합니다.
 - `q:RunInit(nil)`/`RunInit(5)`가 내부 파일 줄로 죽던 것 — `Quad:RunInit: initFn must be a function …`.
 - 숫자 키 자리에서 내려가는 `Ref`의 `:Wait()` 대기자가 그 자리에서 던지면(`ref:Wait():Unwrap()`이 철거의 nil에 깨어남) 같은 Ref를 되꽂아도 영영 채워지지 않던 것 — 이제 되꽂으면 채워집니다.
 - `Debounce`/`Throttle` 창 끝 통과 도중 하류가 `handle:Cancel()`을 부르면 취소했는데도 창이 다시 열려 다음 leading 신호가 한 `Time`을 더 기다리던 것.

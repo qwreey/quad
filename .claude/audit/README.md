@@ -23,3 +23,7 @@
 - `howto-overlays-mock-2026-09-25/` — **[2026-09-25]** how-to 09 신설(모달과 토스트, docs-review 2-4) 전 mock 검증 — `open` Source→`Visible`, 조건부 자식(`State<Instance?>`) nil↔인스턴스, `Slot:List` 토스트 큐(가상 시계로 `task.delay` 만료), `q.Context`로 깊은 곳에서 열기, `q.Fallback`이 던진 컴포넌트를 잡아 대체 값을 돌려주는 다섯 갈래 전부 PASS. 실측 없음(mock 전용) — `REPORT.md`가 소스, `probe.luau`는 재현 스크립트.
 
 - `studio-editor-probe-2026-09-26/` — **[2026-09-26 신설, 사용자 실측 대기 — HUMAN_TODO G]** docs-review 3-1 (4) "플래그 없이 Studio 기본 편집기·nonstrict로 쓰면 무엇을 잃는가"의 프로브 셋(01 기본 편집기 문법·자동완성·Play, 02 문자열 require `@game/…`, 03 `--!strict` 내장 검사기 진단) + 체크리스트 표. 결과가 오면 오버뷰 01 §8에 한 줄.
+
+- `perf-cli-2026-09-26/` — **[2026-09-26 자율 루프]** `research/perf-measurement-plan.md`의 CLI 산술 회차 — P3 Compute 전파(d·f·다이아몬드 기대대로), P2 `Slot:List` 갱신(단일 삽입·삭제 선형, **전체 역순·전체 교체 O(N²)** — P2-trace가 원인 함수 확정: full-replace는 reconcile 순서(KeyGone 뒤)·full-reverse는 no-op `nativeMove`용 `getOffsetAt` 62%; 원장 round13 Q76·Q77), P1-CLI 대량 마운트(recompute O(N) — 배치 Blocker), P6 GC 잔존 없음(계측 자기 리크 교훈). `REPORT.md`가 소스, `p*.luau`는 재현.
+- `round13-e1-probe.luau`·`round13-e1-probe-fuzz/`·`round13-e1b-probe.luau`(예정)·`round13-e2-probe.luau`·`round13-e3-probe.luau`·`round13-e3-probe-fuzz.luau`·`round13-e4-probe.luau`·`round13-e5-probe.luau`·`round13-e6-probe.luau`·`round13-e7-types-probe.luau`·`round13-e8-probe.luau` — **[2026-09-26 자율 루프]** round13 결함 탐사 E1~E8의 재현 스크립트(mock; 대부분 `quad-base/test/` 또는 `quad-roblox/test/`로 복사해 `./scripts/relink.sh` 뒤 실행 — 각 파일 머리 참고). 발견·확인 목록은 `qa-request/post-implementation-review-round13.md` §1·§2·§4가 소스.
+

@@ -96,3 +96,29 @@ P1/P4/P5/P6(Studio 몫). 3·5의 원인 확정(→ 자율 루프 후속 탐사 P
 **(2) 중첩 Slot 선형 증가 — 확정: 바깥 Slot 전체 recompute 1회, 설계대로.** 안쪽 recompute가 끝에서 `Length:Set` → 바깥 `setLength`의 Observer 발화 → `gatedRecompute`가 Bookkeeping 내부 지역 `recompute(outer)`를 직접 부름(BK 테이블을 안 거쳐 `_recompute` 래핑에 안 보임 — bk 프록시 읽기 카운트로 확인: outerN=5000에서 sourceList·lengthList 읽기 5000/5000, `_recompute` 자기 시간 93%). 뒤따르는 잎은 None 자리라 `getOffsetAt`을 안 부름(`H-483`) → 호출 수 12 고정. `dispatch-core-plan.md` "recompute — 매번 전체 순회"가 정한 동작, 5000에서 0.6ms(한 칸 ~120ns). 관측된 병목이 아니라 지금 고칠 근거 없음.
 
 **(3) 고치는 갈래(코드 미수정 — 원장 round13 §4 Q76·Q77).** full-replace: A1 KeyGone 패스를 배치 앞으로(O(N)이 되고 가장 단순 — 그러나 updateFn 호출 순서가 바뀌어 사용자 관측 동작, `H-38` prevKeys 증분 기록과 관계 재확인) / A2 연속 추가를 모아 `rawSplice` 한 번(표면 무변경, physIndex 산술·Slot 길이 미지 위험 중간) / A3 reindexFrom 게으르게(불변식 깨짐 — 비권고). full-reverse: B1 백엔드가 이동 offset을 안 쓰면 `getOffsetAt` 둘 건너뜀(~60% — 그러나 offset은 백엔드 op 계약 인자라 계약 변경) / B2 reconcile이 최종 순열을 계산해 한 번에 적용(내부 변경, 복잡도·위험 높음) / B3 Fenwick 트리(비권고). 개선 뒤 실측은 없다(미완).
+
+## P1-CLI — 대량 마운트 · P6 — GC 잔존(sonnet, 같은 날 밤; `p1-mount.luau`·`p6-gc.luau`)
+
+둘은 quad-roblox **실제** provider(`Quad.New():UseProvider(QuadRoblox)`, `spec.component.luau`의 `game`/`Instance` 심)를 쓴다 — `D.Frame`/`D.TextLabel` 생성기가 필요해서. 카운터는 `q.Dispatch.listHandlers()`로 핸들러별 `process` 후킹, `q.Bookkeeping._recompute`/`getOffsetAt`, `q.Backend.nativeClaim`/`holdLifetime`/`bindLifetime` 래핑(소스 무수정). 계측 한계: `Dispatch.process` 필드 래핑은 항상 0 — `drive` 내부가 클로저가 캡처한 지역 `process`를 직접 부른다.
+
+**P1 — 정적 배열 리터럴(1 property/item)**
+
+| N | Property | InstChild | recompute | scanΣ | getOffsetAt | claim | hold+bind |
+|---|---|---|---|---|---|---|---|
+| 100 | 100 | 100 | 1 | 100 | 0 | 101 | 402 |
+| 1000 | 1000 | 1000 | 1 | 1000 | 0 | 1001 | 4002 |
+| 5000 | 5000 | 5000 | 1 | 5000 | 0 | 5001 | 20002 |
+
+**P1 — 같은 N을 `Slot:List`로**
+
+| N | Property | SlotHandler | recompute | scanΣ | getOffsetAt | claim | hold+bind |
+|---|---|---|---|---|---|---|---|
+| 100 | 100 | 1 | 2 | 101 | 100 | 101 | 214 |
+| 1000 | 1000 | 1 | 2 | 1001 | 1000 | 1001 | 2014 |
+| 5000 | 5000 | 1 | 2 | 5001 | 5000 | 5001 | 10014 |
+
+**recompute는 O(N)** — `Dispatch/init.luau`의 ⓪ batch Blocker가 배열 부분이 있는 `drive` 전체(정적 리터럴이든 `:List` reconcile 1패스든)를 한 창으로 묶어 `_recompute`를 한 번만 부른다("append마다 전체 재계산 → O(N²)" 가설은 반증). P2의 O(N²)는 `Slot/Raw.luau` reindex/rawMove 경로라 여기선 재현되지 않는다. `hold+bind`가 Ref/Effect 없이도 큰 것은 `process`가 새 (inst, k) 키마다 retractor list를 `bindLifetime`으로 앵커하기 때문(`H-229` GC 앵커 패턴) — 정적 4N+2(자식 N + 속성 N + bk 1, bind마다 hold 1) 정확히 일치, O(1)/키. propsPerItem 1/5/10(N=1000): Property 1000/5000/10000, t 0.019/0.026/0.041s, gcΔ 5410/8140/12709KB — 대략 선형. 정적 vs list 시간·gcΔ 거의 동일(N=5000: 0.0716s/22913KB vs 0.0671s/22677KB).
+
+**P6** — 같은 두 모양을 `q.dispose(root)`(mock이 자손까지 cascade) 뒤 `collectgarbage` 5회: weak-ref(root·자식 표본·Source·Slot) 전부 수거, `Source._subs`는 Source 자체가 수거돼 n/a, Bookkeeping owner 잔존 0 — **정적·list 둘 다 깨끗**. 잔존 KB(베이스라인 대비) static 36/295/2240, list 24/191/1535(N=100/1000/5000) — N에 선형이지만 peak(1504~22958KB) 대비 작고 연속 시나리오 사이 baseKB가 안 늘어(1623/1624/1624) 누적되지 않는다 — 앨로케이터 슬랙으로 보임. **계측 교훈**: 1차 초안이 owner→bk를 weak-value 맵으로 들여다봤는데 키(owner)가 강참조라 계측 코드 자신이 root/slot을 살려 두어 N=5000에서 14351KB "리크"처럼 보였다 — 키까지 weak로 바꾸자 사라짐(`data` 로컬 잔존도 같은 종류). 이 도메인에서는 계측이 스스로 리크를 만들기 쉽다.
+
+**관측/후보**: P1 recompute O(N) 확정 — 구조를 볼 이유 없음; 정적 vs list 프로파일 동일; P6 잔존 없음(반복 빌드·파괴 사이클 누적은 미측정 — 후속 후보). 미완: P4/P5(Studio 몫), 사이클 반복.

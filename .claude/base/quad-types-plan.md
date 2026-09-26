@@ -238,7 +238,7 @@ local function CheckQuad<T>(quad: T): QuadTypes.CheckedQuad<T, "0.0.0">
 end
 
 local checked = CheckQuad(injectedQuad)
-local _ = checked.__versionCheck -- ⚠️ 필수 — 아래 "함정 2" 참고
+local _ = checked.__versionCheck -- 진단 위치를 이 줄로 고정하는 용도(2026-09-26 정정 — 아래 "함정 2" 참고)
 local quad = checked:AddPlugin(installRobloxBackend) -- 이후 정상적으로 체이닝
 ```
 
@@ -260,9 +260,11 @@ end
 ```
 체크는 **리턴 타입/필드 타입처럼 호출부마다 실제로 해석되는 자리**에
 박아 넣어야 한다. 이게 `CheckedQuad<T, Pattern>`이 함수 파라미터/반환
-타입 표현식 안에 직접 나타나야 하는 이유고, `__versionCheck` 필드도 **실제로
+타입 표현식 안에 직접 나타나야 하는 이유다. ~~`__versionCheck` 필드도 **실제로
 참조해야만** 평가된다(lazy) — 위 사용법 예제의 `local _ =
-checked.__versionCheck` 줄이 빠지면 검사가 조용히 스킵된다.
+checked.__versionCheck` 줄이 빠지면 검사가 조용히 스킵된다.~~ **[2026-09-26 정정 — round13 `H-624` 실측]** 타입 주석만 둬도
+그 줄에서 `type-version-check: version … does not match pattern …` 진단이 뜬다(luau-analyze 0.734·luau-lsp 1.69.0 둘 다) —
+접근 줄은 진단 위치를 고정하는 용도이고, 빠져도 검사는 스킵되지 않는다(`quad-types/src/init.luau` 주석과 같이 정정).
 **[2026-09-02 실측 보강 — `H-306`]** 이 함정의 사거리는 로컬 타입
 별칭보다 넓다: **제네릭 본문 안 로컬 *어노테이션*+강제 참조 조합도
 불활성이다**(`local checked: CheckedQuad<T,…> = quad :: any` + 참조 —
