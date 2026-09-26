@@ -1,0 +1,45 @@
+== P1 every module `is*` field (mock bare quad + roblox-backed quad) under old/new probe ==
+  roblox: 19 is* fields: isAttr,isAttrKey,isBlocker,isContext,isEffect,isEpoch,isMapperDescriptor,isModifier,isObserver,isPostRef,isPreRef,isProvider,isRef,isSlot,isSource,isState,isStore,isTag,isTween
+  roblox: failing new probe: none
+  bare: 18 is* fields: isAttr,isAttrKey,isBlocker,isContext,isEffect,isEpoch,isMapperDescriptor,isModifier,isObserver,isPostRef,isPreRef,isProvider,isRef,isSlot,isSource,isState,isStore,isTag
+  bare: failing new probe: none
+  roblox Backend is* (NOT scanned — brandNameOf walks the module only):	isClaimed,isHeld,isHeldBy,isInst
+== P2 helper shapes — old vs new verdict (true = treated as brand predicate) ==
+  isArray: old=true new=false
+  isBool: old=true new=false
+  isConfig: old=true new=false
+  isEmpty: old=false new=false
+  isFrameLike: old=true new=true
+  isHasName: old=true new=true
+  isKindConfig: old=true new=true
+  isMobile: old=false new=false
+  isNonEmpty: old=true new=false
+  isNonEmptyList: old=true new=false
+  isNonNil: old=false new=false
+  isPositive: old=false new=false
+  isString: old=true new=false
+  isTableWithMeta: old=true new=true
+  isTruthy: old=false new=false
+== P3 behaviour through the real scan (fresh instance per helper) ==
+  isArray: D.Frame{Name='x', TextLabel} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Array)
+  isBool: D.Frame{Name='x', TextLabel} => ok
+  isConfig: D.Frame{Name='x', TextLabel} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Config)
+  isEmpty: D.Frame{Name='x', TextLabel} => ok
+  isFrameLike: D.Frame{Name='x', TextLabel} => ok
+  isHasName: D.Frame{Name='x', TextLabel} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got HasName)
+  isKindConfig: D.Frame{Name='x', TextLabel} => ok
+  isMobile: D.Frame{Name='x', TextLabel} => ok
+  isNonEmpty: D.Frame{Name='x', TextLabel} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got NonEmpty)
+  isNonEmptyList: D.Frame{Name='x', TextLabel} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got NonEmptyList)
+  isNonNil: D.Frame{Name='x', TextLabel} => ok
+  isPositive: D.Frame{Name='x', TextLabel} => ok
+  isString: D.Frame{Name='x', TextLabel} => ok
+  isTableWithMeta: D.Frame{Name='x', TextLabel} => ok
+  isTruthy: D.Frame{Name='x', TextLabel} => ok
+  AddPlugin isConfig then D.Frame{Name='x'} => Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Config)
+== P4 provider brand still named in no-match diagnostic ==
+  D.Frame{ Bogus = Tween{Value=1} } (want 'got Tween' / provider hint) => Quad0076 Dispatch: no handler matched key Bogus (value: table, brand: Tween) — check that the provider for this value (e.g. quad-roblox) is initialized
+  D.Frame{ Bogus = {1,2} } (plain table) => Quad0076 Dispatch: no handler matched key Bogus (value: table, brand: NonEmptyList) — check that the provider for this value (e.g. quad-roblox) is initialized
+  D.Frame{ Bogus = Source(1) } => Quad0076 Dispatch: no handler matched key Bogus (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+== P5 cost: first-diagnostic time with 50 helpers (probe runs once per fn, weak cache) ==
+  first failing call 0.058 ms, subsequent avg 0.024 ms

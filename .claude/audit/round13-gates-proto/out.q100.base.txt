@@ -1,0 +1,17 @@
+A1 Debounce{Time=inf} => ok
+A2 Throttle{Time=inf} => ok
+A3 Debounce{Time=1, MaxTime=inf} => ok
+A4 Debounce{Time=-inf} => Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+A5 Debounce{Time=0/0} => Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+A6 Debounce{Time=1e308} (finite, huge) => ok
+A7 Debounce{Time='x'} => Quad0041 Debounce: Time must be a non-negative number or a State<number> (got string)
+A8 Debounce{Time=-1} => Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+A9 Debounce{Time=0} => ok
+B1 State Time=inf, signal => ok
+   pending timers after B1:	1	 g:	1
+B2 State MaxTime=inf, signal => ok
+B3 Throttle State Time=inf, signal (leading) => ok
+   g3 after B3:	1
+B4 Trailing=false MaxTime State=inf (not read, H-542) => ok
+C1 mock setTimeout(f, inf) direct => ok
+C2 mock setTimeout(f, -1) direct => 47: setTimeout: delay must be a non-negative number (got number)

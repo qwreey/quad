@@ -1,0 +1,25 @@
+diff --git a/quad-base/src/Dispatch/init.luau b/quad-base/src/Dispatch/init.luau
+index 0c5585b..e32ebc6 100644
+--- a/quad-base/src/Dispatch/init.luau
++++ b/quad-base/src/Dispatch/init.luau
+@@ -164,9 +164,17 @@ local function Init(module: any)
+ 		if cached ~= nil then
+ 			return cached
+ 		end
+-		local ok1, r1 = pcall(predicate, {})
+-		local ok2, r2 = pcall(predicate, 0)
+-		local verdict = ok1 and ok2 and r1 ~= true and r2 ~= true
++		-- Q106 (a) proto (`H-698`): `{}`/`0` alone let a "non-empty table" helper through
++		-- (`isNonEmptyList`, a plugin `isConfig` = `next(t) ~= nil`) — a brand predicate is a
++		-- membership test, false on ANY fresh value, so probe fresh values of every shape
++		local verdict = true
++		for _, probe in { {}, 0, { 1 }, { x = 1 }, "s", true } do
++			local ok, r = pcall(predicate, probe)
++			if not ok or r == true then
++				verdict = false
++				break
++			end
++		end
+ 		brandPredicateOk[predicate] = verdict
+ 		return verdict
+ 	end

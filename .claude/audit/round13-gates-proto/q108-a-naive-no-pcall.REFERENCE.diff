@@ -1,0 +1,21 @@
+diff --git a/quad-base/src/init.luau b/quad-base/src/init.luau
+index abccd4f..69a5ef9 100644
+--- a/quad-base/src/init.luau
++++ b/quad-base/src/init.luau
+@@ -214,7 +214,16 @@ local function New(): Quad
+ 		-- UseProvider 재호출은 계약 밖), 실행-전 표시는 providerFn이 도중
+ 		-- 던졌을 때 슬롯만 점유된 채 확장이 영영 병합되지 않는 좀비를
+ 		-- 만든다(재시도가 멱등 no-op로 삼켜짐).
++		-- Q108 (a) proto NAIVE (no pcall): "installing" flag per module — a throw leaves it set
++		if providerRelate:GetStrong(self, "installing") then
++			Err.errorBeforeNearest(
++				"QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)",
++				QuadTypes.ERROR_LEVEL_SURFACE
++			)
++		end
++		providerRelate:SetStrong(self, "installing", true)
+ 		local extension = providerFn(self)
++		providerRelate:SetStrong(self, "installing", nil)
+ 		mergeExtension(self, extension, "UseProvider")
+ 		providerRelate:SetStrong(self, "provider", providerFn)
+ 		return self :: any

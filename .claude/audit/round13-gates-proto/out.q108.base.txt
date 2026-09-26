@@ -1,0 +1,42 @@
+== B1 provider body installs a different provider ==
+UseProvider(P1) => ok
+   merged P1/P2:	1	2	 backend marks:	true	true
+  then UseProvider(P2) alone => probes/pgates.q108.luau:22: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+  then UseProvider(P1) (slot now P2) => ok
+== B2 provider re-enters itself ==
+self-reentrant provider => ok
+   body ran	5	times
+  retry (body no longer recurses) => ok
+== B2u unbounded self recursion ==
+unbounded => ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Relate.luau:60: stack overflow
+   body ran	9996	times
+== B3 yielding provider, two threads ==
+   c1	true
+   c2	true	nil
+   resume	true
+   resume	true
+   body runs:	2	 Y:	2
+  UseProvider(P) after => ok
+== B6 throwing provider, then retry / then a different provider ==
+throwing P => probes/pgates.q108.luau:68: boom
+  retry P => ok
+   Ok:	true
+throwing P on m2 => probes/pgates.q108.luau:68: boom
+  different provider on m2 => ok
+provider throwing a table on m3 => table: 0x000064b0f5b12d40
+   table error identity kept:	7
+== R Quad0228 retry path (quad-roblox) ==
+UseProvider(QuadRoblox) with Version 2.0.0 => probes/pgates.q108.luau:85: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '2.0.0')
+  retry after Version fix => ok
+   Declaration present:	true	 handlers:	24
+== N normal paths ==
+provider calling RunInit/AddPlugin/other-module UseProvider => ok
+   initRan/FromPlugin/otherOk/P:	true	1	1	1
+AddPlugin body calling UseProvider(QuadRoblox) => ok
+   Declaration:	true
+RunInit body calling UseProvider => ok
+   R:	1
+provider that pcalls a nested UseProvider and continues => ok
+   Outer/Inner/nestedErr:	1	1	ok
+mock.newQuad() => ok
+same provider twice (idempotent) => ok

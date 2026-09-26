@@ -1,0 +1,41 @@
+== B1 provider body installs a different provider ==
+UseProvider(P1) => probes/pgates.q108.luau:19: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   merged P1/P2:	nil	nil	 backend marks:	nil	nil
+  then UseProvider(P2) alone => probes/pgates.q108.luau:22: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+  then UseProvider(P1) (slot now P2) => probes/pgates.q108.luau:23: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+== B2 provider re-enters itself ==
+self-reentrant provider => probes/pgates.q108.luau:30: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   body ran	1	times
+  retry (body no longer recurses) => probes/pgates.q108.luau:34: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+== B2u unbounded self recursion ==
+unbounded => probes/pgates.q108.luau:41: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   body ran	1	times
+== B3 yielding provider, two threads ==
+   c1	true
+   c2	false	probes/pgates.q108.luau:56: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   resume	true
+   body runs:	1	 Y:	1
+  UseProvider(P) after => ok
+== B6 throwing provider, then retry / then a different provider ==
+throwing P => probes/pgates.q108.luau:68: boom
+  retry P => probes/pgates.q108.luau:71: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   Ok:	nil
+throwing P on m2 => probes/pgates.q108.luau:68: boom
+  different provider on m2 => probes/pgates.q108.luau:75: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+provider throwing a table on m3 => table: 0x000064d2489a2e30
+   table error identity kept:	false
+== R Quad0228 retry path (quad-roblox) ==
+UseProvider(QuadRoblox) with Version 2.0.0 => probes/pgates.q108.luau:85: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '2.0.0')
+  retry after Version fix => probes/pgates.q108.luau:87: QuadXXXX UseProvider: called while this module's provider is still installing — a provider must not call UseProvider on the module it is installing into (install extensions with AddPlugin)
+   Declaration present:	false	 handlers:	19
+== N normal paths ==
+provider calling RunInit/AddPlugin/other-module UseProvider => ok
+   initRan/FromPlugin/otherOk/P:	true	1	1	1
+AddPlugin body calling UseProvider(QuadRoblox) => ok
+   Declaration:	true
+RunInit body calling UseProvider => ok
+   R:	1
+provider that pcalls a nested UseProvider and continues => ok
+   Outer/Inner/nestedErr:	1	nil	QuadXXXX
+mock.newQuad() => ok
+same provider twice (idempotent) => ok

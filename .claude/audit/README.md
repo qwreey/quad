@@ -47,4 +47,5 @@
 - `round13-e23-probe-*.luau`(15개) — **[2026-09-27 자율 루프 E23]** StoreBind 언랩 사슬·래퍼 전환 매트릭스 — `Q113`(Slot State 순환 검사 없음)·`Q114`(한 파동 바깥/안쪽 순서 해시 의존), `H-717`~`H-719`, typing-limits 8.32.
 - `round13-q111-proto/` — **[2026-09-27 자율 루프 P-Q111]** Slot 선행 패스의 State 인식(A 순환 DFS + Set 시점 검사 / B State 신원 — 새 이름·ID 없음) diff·프로브·퍼저 네 설정 6000시드·List 회귀 대조·벤치(깊은 사슬 이차 비용) — §4 Q111/Q112 스파이크 문단.
 - `round13-q113-proto/` — **[2026-09-27 자율 루프 P-Q113/Q114]** Slot State 경로 `Quad0070` 순환 검사(A)·StoreBind 안쪽 재검증(B/C) diff 다섯(분리·합본·Q111 합본)·프로브·300그래프 분포·벤치·문서/CHANGELOG 초안 — §4 스파이크 문단.
+- `round13-gates-proto/` — **[2026-09-27 자율 루프 P-gates]** Q100(`math.huge` 거부 — 기존 ID)·Q106(`is*` 프로브 확대 — 술어 19 전수)·Q108(`UseProvider` 설치 중 플래그 — pcall판/naive 참고판) diff·프로브·변형 넷 스위트 — §4 스파이크 문단.
 

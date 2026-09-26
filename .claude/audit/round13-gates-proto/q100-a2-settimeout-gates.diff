@@ -1,0 +1,30 @@
+diff --git a/quad-base/test/mock.luau b/quad-base/test/mock.luau
+index 01ca0b2..69be482 100644
+--- a/quad-base/test/mock.luau
++++ b/quad-base/test/mock.luau
+@@ -607,8 +607,8 @@ local function installTimers(quad: any)
+ 		if type(fn) ~= "function" then
+ 			Err.errorBefore(`setTimeout: func must be a function (got {typeof(fn)})`, SURFACE)
+ 		end
+-		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
+-			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
++		if type(delay) ~= "number" or delay ~= delay or delay < 0 or delay == math.huge then -- Q100 (a) proto
++			Err.errorBefore(`setTimeout: delay must be a non-negative number less than math.huge (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})`, SURFACE)
+ 		end
+ 		timerSeq += 1
+ 		local t: Timer = { at = clock + delay, seq = timerSeq, fn = fn, live = true }
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index 7516d41..5ea5032 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -145,8 +145,8 @@ local function install(quad: any)
+ 		if type(func) ~= "function" then
+ 			Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
+ 		end
+-		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
+-			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
++		if type(delay) ~= "number" or delay ~= delay or delay < 0 or delay == math.huge then -- Q100 (a) proto
++			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number less than math.huge (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})`, SURFACE)
+ 		end
+ 		return { __quadTimeout = true :: true, _native = task.delay(delay, func) } -- ⚠️ order flipped vs the op
+ 	end
