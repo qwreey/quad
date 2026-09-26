@@ -29,7 +29,7 @@ Slot:List/(미래) 네트워크 동기화 설계에 근거로 인용될 때만 �
   yield를 시도하면 에러내는 가드(`flags.strict`, Studio 기본 on,
   `init.luau:71-81`)를 따로 둠 — 위험을 런타임 가드로 땜질한 것이지 없앤 게
   아님. quad는 원시 자체를 제거하는 쪽을 택했으니(`Blocker`가 그 자리를
-  대신함, `base/blocker-plan.md:25-44`) 이 모양을 참고할 이유 없음.
+  대신함, `base/blocker-plan.md` — 줄 번호 `25-44`는 2026-08-09 시점이라 개정으로 밀렸음, [2026-09-27 표시]) 이 모양을 참고할 이유 없음.
 - **`atom()`의 getter/setter 겸용 콜러블이 quad가 `Store`에서 이미 기각한
   대입 문법과 같은 트레이드오프.** `atom<T>(initialValue, equals?)`
   (`init.luau:519-527`)가 인자 개수로 read/write를 분기하는 방식 —
@@ -57,7 +57,7 @@ Slot:List/(미래) 네트워크 동기화 설계에 근거로 인용될 때만 �
   값 비교 억제를 함. quad가 나중에 Blocker에 인접한 "값 안 바뀌면 자동
   스킵" 기본값을 도입하고 싶어질 때, charm처럼 **모든 노드에 암묵적으로**
   거는 방식은 `Blocker`가 이미 명시한 "특정 게이트 지점에서만 opt-in"
-  원칙(`base/blocker-plan.md:65-68`)과 "Source는 스스로를 자동 변형하지
+  원칙(`base/blocker-plan.md` — 옛 줄 번호 `65-68`, 개정으로 밀림)과 "Source는 스스로를 자동 변형하지
   않는다"는 `base/source-state-plan.md` 기조에 둘 다 어긋남 — 반면교사로 남겨둘 것.
 
 ## 참고할만한 부분
@@ -110,7 +110,7 @@ Slot:List/(미래) 네트워크 동기화 설계에 근거로 인용될 때만 �
 
 ## 종합
 
-코어(atom/computed/effect/subscribe/batch, `init.luau`의 절반쯤)는 평범한
+코어(atom/computed/effect/subscribe/batch, `littensy/charm@b05f3a9:src/init.luau`의 절반쯤)는 평범한
 시그널 라이브러리라 quad가 이미 확정한 것을 대체로 재진술할 뿐이고, 세
 군데(`batch()`, `atom()`, 수동 dispose Effect)는 오히려 quad가 이미 능동
 기각한 패턴을 그대로 구현하고 있음 — 사용자가 애초에 예상한 "짧은
@@ -130,7 +130,7 @@ computed.test.luau:84-104` · `packages/charm/test/observe.test.luau:92-196` ·
 `packages/charm-sync/src/patch.luau:10,19-30,32-57,59-89,91-131` ·
 `packages/charm-sync/src/server.luau:27-32,124-133,192-207,209-250` ·
 `README.md:185-196,262-287` · `base/store-plan.md` · `base/source-state-plan.md` ·
-`base/blocker-plan.md:25-44,65-68` · `base/lifecycle-pattern.md`(GC-native
+`base/blocker-plan.md`(옛 줄 `25-44,65-68` — 2026-08-09 시점) · `base/lifecycle-pattern.md`(GC-native
 원칙) · `archive/batch-rejected.md` · `base/dispatch-core-plan.md`
 (None 센티널) · `archive/surveys/2026-08-06-additional-primitives-plan.md`(Blocker/키 기반
 컬렉션 미결 상태).

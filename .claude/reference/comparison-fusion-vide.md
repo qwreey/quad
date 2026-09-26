@@ -81,7 +81,7 @@ Store/Slot/Tween/bind-dispatch 설계 결정에 근거로 인용될 때만 열�
   묶어 파생값 만들기 — `:With` + `:Compute`" 절에서 이미 명시적 모델로
   확정됨** — Vide식 암묵적 ambient stack 추적은 "함수 실행 중과 끝 사이를
   확인하고 부작용이 필요"한 방식이라 Lua에서 깔끔하지 않다는 이유로 기각,
-  `:With(...)` + `:Compute(fn)`(클로저로 직접 읽는 명시적 방식)를 채택.
+  `:With(...)` + `:Compute(fn)`(클로저로 직접 읽는 명시적 방식)를 채택(**[2026-09-15]** 공개 이름은 `:Depend` — 옛 `:With`에서 개명, `base/source-state-plan.md` 537행 배너).
   Fusion의 명시적 `use()`는 `checkLifetime` 같은 bind-time 체크를 가능하게
   하는 부수 효과가 있음.
 - 두 라이브러리 다 mount 시 단일 소유권 가드가 없다는 것 자체가 quad Slot의

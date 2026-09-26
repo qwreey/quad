@@ -11,7 +11,7 @@
 > 하나뿐**이고 weak-key 레지스트리·테이블 아이덴티티·duck-typing 기각 근거·
 > predicate 합성은 전부 그대로다.
 
-**상태**: base — 동작/구현 방식은 확정, **이름 `Brand` 자체만 용어 정리
+**상태**: base — 동작/구현 방식은 확정, ~~**이름 `Brand` 자체만 용어 정리~~ **[2026-09-16 해소 — 이름 `Brand` 유지, 사용자 결정(`question.md` 1번)]** ~~정리
 대기**(`question.md` 1번).
 
 ## `Brand` — 런타임 nominal 타입 판별 통합 메커니즘, `isState`를 일반화 (2026-08-07 여덟 번째 세션)
@@ -115,7 +115,7 @@ EpochBrand:Register(source)
 백엔드(장래 quad-spring 등)가 자기 브랜드를 만드는 **공개 표면**이 되면서 그 근거가 소멸했고,
 `research/public-surface-pre-adoption-review.md` (13)번 권고에 사용자가 동의했다(*"13번 Brand 메소드를
 대문자로 바꾼다 -> 동의"*). 사용자 코드가 보는 건 여전히 `isX` wrapper들이라 소비자 코드는 안 바뀐다.
-`Brand`라는 **이름 자체**는 여전히 `question.md` 1번의 용어 정리 대기 항목이다.
+`Brand`라는 **이름 자체**는 ~~여전히 `question.md` 1번의 용어 정리 대기 항목이다~~ **[2026-09-16 해소 — 유지]**(`question.md` 1번).
 
 ## `isX` wrapper — 포함 관계는 predicate 합성으로 (2026-08-09 열한 번째 세션)
 
