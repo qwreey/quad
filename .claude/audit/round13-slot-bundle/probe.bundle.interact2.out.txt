@@ -1,0 +1,49 @@
+######## base
+I5	set	stack overflow	len	1	kids	
+   recover	Quad0161	len	1	kids	
+I7/depth1	add	boom	mat(inner..top)	true,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I7/depth3	add	boom	mat(inner..top)	true,false,false,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I8	add	stack overflow	mat	true	false	| outer:Add	ok	kids	after
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## q74
+I5	set	stack overflow	len	1	kids	
+   recover	Quad0161	len	1	kids	
+I7/depth1	add	boom	mat(inner..top)	true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I7/depth3	add	boom	mat(inner..top)	true,true,true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I8	add	stack overflow	mat	true	true	| outer:Add	Quad0167	kids	
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## q76
+I5	set	stack overflow	len	1	kids	
+   recover	Quad0161	len	1	kids	
+I7/depth1	add	boom	mat(inner..top)	true,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I7/depth3	add	boom	mat(inner..top)	true,false,false,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I8	add	stack overflow	mat	true	false	| outer:Add	ok	kids	after
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## q111ab
+I5	set	stack overflow	len	1	kids	
+   recover	Quad0161	len	1	kids	
+I7/depth1	add	boom	mat(inner..top)	true,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I7/depth3	add	boom	mat(inner..top)	true,false,false,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I8	add	stack overflow	mat	true	false	| outer:Add	ok	kids	after
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## cq
+I5	set	Quad0070	len	1	kids	a
+   recover	ok	len	1	kids	c
+I7/depth1	add	boom	mat(inner..top)	true,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I7/depth3	add	boom	mat(inner..top)	true,false,false,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I8	!! Quad0070
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## bundle
+I5	set	Quad0070	len	1	kids	a
+   recover	ok	len	1	kids	c
+I7/depth1	add	boom	mat(inner..top)	true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I7/depth3	add	boom	mat(inner..top)	true,true,true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I8	!! Quad0070
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok
+######## bundlep
+I5	set	Quad0070	len	1	kids	a
+   recover	ok	len	1	kids	c
+I7/depth1	add	boom	mat(inner..top)	true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I7/depth3	add	boom	mat(inner..top)	true,true,true,true	| top:Add	Quad0167	inner:Add	Quad0167	kids	
+I8	!! Quad0070
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok

@@ -1,0 +1,10 @@
+Scratch copies under $SCRATCH/p-slot-bundle/: base q74 q76 q111ab cq(=Q113+Q114A+Q111AB) cqp(cq+A') bundle(Q74+Q76+cq) bundlep(bundle+A').
+Each = cp -rL of quad-base quad-roblox quad-types quad-error type-version-check scripts docs(-site) mise.toml at HEAD 5d299c6c;
+quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src overwritten by that copy's quad-base/src.
+gate: ../round13-q113-proto/gate.sh <copy>  (spec/smoke 62 + luau-analyze + luau-lsp new solver + roblox with test.sh line-79 flags + error-codes check)
+fuzz copies ($SCRATCH/p-slot-bundle/fz/<v>) = <v>/quad-base + ../round13-q111-proto/HOOKS.scratch-probe.diff (patch -p1), fuzzers/probes copied into test/.
+  rf.sh <v> fuzz.e19|fuzz.q111 <tag> <from> 6000 <flags>   (plain 1.., ss/q111ss 20001..; flags "", ssheavy, q111, "q111,ssheavy")
+  list: luau test/fuzz.list.luau -a <from> 100 0 plain|rowgrow  (seeds 1..2000)
+  anc:  luau test/probe.e1.reent.modes.luau -a <from> 2000 anc|unm|excl  (seeds 1..6000); "73" copies add Observer.install-refire.diff (Q73)
+  E23:  from <copy> root: luau .claude/audit/round13-e23-probe-e{2,3,4}.luau (with round13-e15-probe-setup.luau beside), 3 runs
+bench: from <copy>/quad-base: luau -O2 test/bench.slot-bundle.luau, 3 runs each, min reported.

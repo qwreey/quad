@@ -1,0 +1,54 @@
+./test/probe.e19.boundary.luau:106: Quad0170 Slot:Add: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+stacktrace:
+[C] function error
+./luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+./src/Slot/init.luau:335 function prepareElements
+./src/Slot/init.luau:364 function Add
+./test/probe.e19.boundary.luau:106
+B | Add idx 0 | Quad0168 | blame=31 | user=31
+B | Add idx n+2 | Quad0236 | blame=32 | user=32
+B | Add idx 1.5 | Quad0168 | blame=33 | user=33
+B | Add idx NaN | Quad0168 | blame=34 | user=34
+B | Add idx math.huge | Quad0168 | blame=35 | user=35
+B | Add idx '1' | Quad0168 | blame=36 | user=36
+B | Remove idx n+1 | Quad0236 | blame=37 | user=37
+B | Remove idx 0 | Quad0168 | blame=38 | user=38
+B | Remove idx nil | Quad0168 | blame=39 | user=39
+B | Replace idx n+1 | Quad0236 | blame=40 | user=40
+B | Extract idx n+1 | Quad0236 | blame=41 | user=41
+B | Extract idx -1 | Quad0168 | blame=42 | user=42
+B | Move to n+1 | Quad0236 | blame=43 | user=43
+B | Move from 0 | Quad0168 | blame=44 | user=44
+B | Swap b n+1 | Quad0236 | blame=45 | user=45
+B | Splice idx n+2 | Quad0236 | blame=46 | user=46
+B | Splice rc past end | Quad0174 | blame=47 | user=47
+B | Splice rc -1 | Quad0174 | blame=48 | user=48
+B | Splice rc 1.5 | Quad0174 | blame=49 | user=49
+B | Splice rc nil | Quad0174 | blame=50 | user=50
+B | Splice idx n+1 rc 0 (end insert) | no error | blame=- | user=51
+B | Get idx 99 (nil ok) | no error | blame=- | user=52
+B | Get idx 'x' | Quad0175 | blame=53 | user=53
+   Get(1.5) ->	nil
+B | Get idx 1.5 (nil?) | no error | blame=- | user=54
+   state after index probes: len=4 (4 = only the end-insert Splice succeeded)
+B | Add destroyed Instance | Quad0241 | blame=64 | user=64
+B | Add destroyed Slot | Quad0242 | blame=66 | user=66
+B | Add State holding destroyed Slot | Quad0169 | blame=67 | user=67
+B | Add State holding destroyed Instance | Quad0241 | blame=68 | user=68
+B | CRUD on destroyed Slot | Quad0165 | blame=69 | user=69
+B | Move on destroyed Slot | Quad0165 | blame=70 | user=70
+   ds:Get(1) ->	nil
+B | Get on destroyed Slot | no error | blame=- | user=71
+B | Splice with destroyed in the middle | Quad0241 | blame=72 | user=72
+   after: len=0 (pre-pass: expect 0)
+B | Remove element destroyed outside quad | no error | blame=- | user=80
+B | Extract element destroyed outside quad (then reuse) | no error | blame=- | user=81
+B | Replace over destroyed element | no error | blame=- | user=83
+B | Add self (free) | Quad0173 | blame=92 | user=92
+B | Add parent into child (free root) | Quad0173 | blame=94 | user=94
+B | Add parent into child (mounted root) | Quad0172 | blame=96 | user=96
+B | Add held leaf into other Slot | Quad0172 | blame=99 | user=99
+B | Add held leaf into same Slot | Quad0170 | blame=100 | user=100
+B | Replace(i, Get(i)) | Quad0170 | blame=101 | user=101
+B | Splice puts back what it removes | Quad0170 | blame=102 | user=102
+B | same nil-State twice (second place) | Quad0172 | blame=105 | user=105

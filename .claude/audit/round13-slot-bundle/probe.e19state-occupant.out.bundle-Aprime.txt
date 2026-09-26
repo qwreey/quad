@@ -1,0 +1,38 @@
+./test/probe.e19.state-occupant.luau:154: Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+stacktrace:
+[C] function error
+./luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+./src/Bookkeeping.luau:66 function checkOwner
+./src/Bookkeeping.luau:71 function getBlocker
+./test/probe.e19.state-occupant.luau:154
+P1 — State element value changed while its Slot is UNMOUNTED: the old occupant stays claimed until remount
+  mounted: A.Parent=host?	true
+  after unmount + st:Set(B): A owner is wrapper?	true
+  other:Add(A): Quad0172 blame=30
+  q.dispose(A): Quad0179 blame=31
+  after remount: A owner=	nil	 B.Parent=host?	true	 A.Parent=	nil
+  q.dispose(A) after remount: ok
+  never-mounted: q.dispose(A): ok
+P1b — same for a user :Single(src) with OwnsElements=false, data changed while unmounted
+  q.dispose(old 'a' element) while unmounted: Quad0179 blame=55
+  q.dispose(old 'a' element) after remount: ok
+P2 — remount materializes the STALE occupant subtree before the catch-up swap
+  first mount: innerSingle updateFn calls =	1
+  after remount: innerSingle calls =	1	 old1 Parent changes during remount =		 final old1.Parent =	nil
+  pending nil->Slot->leaf, remount: innerSingle updateFn calls =	0	(0 = the intermediate Slot never mounted)
+  fresh :Single inside the stale occupant — updateFn calls at remount =	1	 its element =	inner-x	 parented? 	nil
+  oldOcc Length/Offset after remount =	2	0	 (it is no longer in the tree)
+P3 — a State element set to an already-held value while MOUNTED (reconcile-depth raise), then recovery
+  st:Set(held): Quad0156 blame=128
+  after raise: wrapper elements=1 wrapper.Length=1 root.Length=2 wrapper blocker on? true
+  st:Set(fresh) (recover?): ok
+  after: wrapper elements=1 wrapper.Length=1 root.Length=2 fresh.Parent=host? true
+  root:Add after: root.Length=3 (model 3)
+  st:Set(nil): ok
+  after Set(nil): wrapper elements=0 wrapper.Length=1 (model 0) root.Length=3 (model 2) tail Parent=host? true
+  st:Set(F('again')): ok
+  after Set(again): wrapper.Length=1 (model 1) root.Length=3 (model 3)
+P4 — the same nil State placed twice (pre-pass sees no occupant), then Set
+  s1:Add(st): ok
+  s2:Add(st) (same State, second seat): Quad0172 blame=149
+  st:Set(g): ok

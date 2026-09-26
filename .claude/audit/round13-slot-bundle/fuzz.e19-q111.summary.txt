@@ -1,0 +1,48 @@
+base     fuzz.e19.plain   ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q74      fuzz.e19.plain   ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q76      fuzz.e19.plain   ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q111ab   fuzz.e19.plain   ok=6000
+cq       fuzz.e19.plain   ok=6000
+cqp      fuzz.e19.plain   ok=6000
+bundle   fuzz.e19.plain   ok=6000
+bundlep  fuzz.e19.plain   ok=6000
+base     fuzz.e19.ss      ok=6000
+q74      fuzz.e19.ss      ok=6000
+q76      fuzz.e19.ss      ok=6000
+q111ab   fuzz.e19.ss      ok=6000
+cq       fuzz.e19.ss      ok=6000
+cqp      fuzz.e19.ss      ok=6000
+bundle   fuzz.e19.ss      ok=6000
+bundlep  fuzz.e19.ss      ok=6000
+base     fuzz.q111.plain  ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q74      fuzz.q111.plain  ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q76      fuzz.q111.plain  ok=5999 | op=ErrCycleViaST ERR-MISSING Quad0173  x1
+q111ab   fuzz.q111.plain  ok=6000
+cq       fuzz.q111.plain  ok=6000
+cqp      fuzz.q111.plain  ok=6000
+bundle   fuzz.q111.plain  ok=6000
+bundlep  fuzz.q111.plain  ok=6000
+base     fuzz.q111.ss     ok=6000
+q74      fuzz.q111.ss     ok=6000
+q76      fuzz.q111.ss     ok=6000
+q111ab   fuzz.q111.ss     ok=6000
+cq       fuzz.q111.ss     ok=6000
+cqp      fuzz.q111.ss     ok=6000
+bundle   fuzz.q111.ss     ok=6000
+bundlep  fuzz.q111.ss     ok=6000
+base     fuzz.q111.q111   ok=5799 | op=ErrStSeat ERR-ID want Quad0172 x9 | op=ErrCycleViaST ERR-MISSING Quad0173  x2 | op=ErrStSeat ERR-MISSING Quad0172  x36 | op=ErrStCycle ERR-ID want Quad0173 x109 | op=ErrStSeat ERR-MISSING Quad0170  x45
+q74      fuzz.q111.q111   ok=5799 | op=ErrStSeat ERR-ID want Quad0172 x9 | op=ErrCycleViaST ERR-MISSING Quad0173  x2 | op=ErrStSeat ERR-MISSING Quad0172  x36 | op=ErrStCycle ERR-ID want Quad0173 x109 | op=ErrStSeat ERR-MISSING Quad0170  x45
+q76      fuzz.q111.q111   ok=5799 | op=ErrStSeat ERR-ID want Quad0172 x9 | op=ErrCycleViaST ERR-MISSING Quad0173  x2 | op=ErrStSeat ERR-MISSING Quad0172  x36 | op=ErrStCycle ERR-ID want Quad0173 x109 | op=ErrStSeat ERR-MISSING Quad0170  x45
+q111ab   fuzz.q111.q111   ok=6000
+cq       fuzz.q111.q111   ok=6000
+cqp      fuzz.q111.q111   ok=6000
+bundle   fuzz.q111.q111   ok=6000
+bundlep  fuzz.q111.q111   ok=6000
+base     fuzz.q111.q111ss ok=5898 | op=ErrStSeat ERR-ID want Quad0172 x1 | op=ErrStSeat ERR-MISSING Quad0172  x22 | op=ErrStCycle ERR-ID want Quad0173 x53 | op=ErrStSeat ERR-MISSING Quad0170  x26
+q74      fuzz.q111.q111ss ok=5898 | op=ErrStSeat ERR-ID want Quad0172 x1 | op=ErrStSeat ERR-MISSING Quad0172  x22 | op=ErrStCycle ERR-ID want Quad0173 x53 | op=ErrStSeat ERR-MISSING Quad0170  x26
+q76      fuzz.q111.q111ss ok=5898 | op=ErrStSeat ERR-ID want Quad0172 x1 | op=ErrStSeat ERR-MISSING Quad0172  x22 | op=ErrStCycle ERR-ID want Quad0173 x53 | op=ErrStSeat ERR-MISSING Quad0170  x26
+q111ab   fuzz.q111.q111ss ok=6000
+cq       fuzz.q111.q111ss ok=6000
+cqp      fuzz.q111.q111ss ok=6000
+bundle   fuzz.q111.q111ss ok=6000
+bundlep  fuzz.q111.q111ss ok=6000

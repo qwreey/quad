@@ -1,0 +1,19 @@
+p-slot-bundle — application order and textual conflicts (HEAD 5d299c6c, scratch cp -rL; patch -p0)
+order: Q74 Raw.owner-chain.diff -> Q76 List.keygone-first-descending.diff (A1+A1b)
+       -> Q113+Q114+Q111AB combined diff (round13-q113-proto/prototype.Q113+Q114+Q111AB.combined.diff)
+       -> [A' copy only] prototype.Q114-gate-exemption.on-Q114.diff
+file                        patch            result
+Slot/Raw.luau               Q74              clean (hunks at 12/101/122/211/232)
+Slot/List.luau              Q76              clean (hunks at 124/151)
+Dispatch/StoreBind.luau     combined         clean
+Slot/Elements.luau          combined         clean
+Slot/List.luau              combined         clean — no offset: combined hunks at 12/21/89/120 sit ABOVE the Q76 region;
+                                             the Q113/Q111 identity checks land before `blocker:On()`, which Q76 left as context
+Slot/Raw.luau               combined         clean with offset (+21/+20 lines: Q74's raiseChain block above); the two
+                                             P-Q111 B `stateSeat` lines go right after `claimOwner` in rawAdd/rawReplace,
+                                             untouched by Q74 (Q74 only replaces the save/restore around attachSlot)
+Slot/init.luau              combined         clean
+Dispatch/StoreBind.luau     A'               applies with fuzz 2 (+19 offset) — context comments differ (Q113 comments), code line identical
+Slot/List.luau              A'               clean (+2)
+=> no hand merge needed. Order-independence: applying combined first then Q76 then Q74 gives byte-identical .luau (checked).
+bundle.A.full.diff / bundle.Aprime.full.diff = HEAD quad-base/src -> bundle; bundle.A-to-Aprime.diff = the A' delta.

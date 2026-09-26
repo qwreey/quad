@@ -1,0 +1,80 @@
+=== C1 mounted element st:Set(st), then Length/next Set/Add/Remove
+  st:Set(st)	probe.q113.luau:14 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+    blocker.Blocking =	false
+  sl:Add(c)	ok
+   	kids[b,c] Length=2
+  sl:Remove(1)	ok
+   	kids[c] Length=1
+  s:Set(d) after removal	ok
+   	kids[c] Length=1
+=== C2 two-State cycle through inner wrapper b:Set(a)
+  b:Set(a)	probe.q113.luau:25 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(a) (outer self)	probe.q113.luau:26 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(y)	ok
+   	kids[z,y] Length=2
+=== C3 three-hop a->b->c->b (cycle not through a)
+  c:Set(b)	probe.q113.luau:32 | Quad0070 Slot:
+   	kids[c] Length=1
+  c:Set(k)	ok
+   	kids[k] Length=1
+=== C4 unmounted Slot{st}, THEN st:Set(st), then mount
+  st:Set(st) (unmounted)	ok
+  mount D.Frame{sl}	probe.q113.luau:39 | Quad0070 Slot:
+  st:Set(b) after	ok
+=== C5 user-level sl:Single(st) (no updateFn), st:Set(st)
+  st:Set(st)	probe.q113.luau:47 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+=== C6 sl:List(stateArray, pass-through updateFn), an item State becomes cyclic
+   	kids[x,y] Length=2
+  y:Set(y)	probe.q113.luau:54 | Quad0070 Slot:
+   	kids[x,y] Length=2
+  y:Set(w)	ok
+   	kids[x,w] Length=2
+=== C7 sl:List(data, updateFn) returning a cyclic State (non-identity)
+   	kids[i1] Length=1
+  data:Set({2})	probe.q113.luau:63 | Quad0070 Slot:
+   	kids[i1] Length=1
+  data:Set({3})	ok
+   	kids[i3] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+    blocker.Blocking after =	true
+  data:Set({2,6}) (cycle mid-list)	probe.q113.luau:68 | Quad0070 Slot:
+   	kids[i4,i5] Length=1
+  data:Set({7})	ok
+   	kids[i7] Length=1
+=== C8 CRUD sl:Add(cyclic State) / Replace / Splice
+  sl:Add(cyc)	probe.q113.luau:74 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Replace(1, cyc)	probe.q113.luau:75 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Splice(1,0,cyc)	probe.q113.luau:76 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Add(ok)	ok
+   	kids[z,ok] Length=2
+=== C9 legit deep chain State<State<State<Frame>>> still mounts; swap depth
+   	kids[deep] Length=1
+  a:Set(Source(Frame n))	ok
+   	kids[n] Length=1
+=== C10 same State twice in chain but no cycle (diamond: a->b, c->b)
+  a:Set(c)	ok
+   	kids[b] Length=1
+=== C11 after the raise, the wrapper must still recompute Length (State<Slot> swap)
+  s:Set(s)	probe.q113.luau:95 | Quad0070 Slot:
+   	kids[a,z] Length=2
+  s:Set(Slot{p,q,r})	ok
+   	kids[z,p,q,r] Length=4
+  s:Set(Frame m)	ok
+   	kids[z,m] Length=2
+=== C12 comparison (pre-existing): non-identity updateFn returns a non-mountable string mid-list
+  data:Set({2})	probe.q113.luau:103 | Quad0240 Slot:
+   	kids[i1] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1

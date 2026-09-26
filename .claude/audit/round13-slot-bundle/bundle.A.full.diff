@@ -1,0 +1,532 @@
+diff -ru src/Dispatch/StoreBind.luau ../../bundle/quad-base/src/Dispatch/StoreBind.luau
+--- src/Dispatch/StoreBind.luau	2026-09-27 04:39:55.103684072 +0900
++++ ../../bundle/quad-base/src/Dispatch/StoreBind.luau	2026-09-27 04:40:37.855759158 +0900
+@@ -48,11 +48,37 @@
+ 
+ local StoreBind = {}
+ 
++-- [round13 Q113 (a) prototype] the one Quad0070 literal (error-codes: one id, one raise site), shared
++-- by StoreBind (above) and the Slot element path (`Slot/Elements.luau` wrapElement, `Slot/List.luau`
++-- identity reconcile) — the Slot side had no cycle check and overflowed in Brand/Relate. `first` is
++-- the value to walk from; `seed` (optional) is a State already on the chain (StoreBind's own state).
++-- `raise` is the caller's depth; `subject` names the surface ("StoreBind" / "Slot").
++function StoreBind.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> (), subject: string)
++	if not isState(first) then return end
++	local visited = {}
++	if seed ~= nil then visited[seed] = true end
++	local cur = first
++	while isState(cur) do
++		if visited[cur] then
++			raise("Quad0070 " .. subject .. ": the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
++		end
++		visited[cur] = true
++		cur = cur:Get()
++	end
++end
++
+ -- Called by InitDispatch once per module instance, after the Dispatch table
+ -- is assembled (the factory pattern, `H-174`). addHandler tags the received
+ -- functions into the shared error namespace itself.
+ -- Typed against the shared contract (`H-259`).
+ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
++	-- [round13 Q114 (a) prototype] hand-off from an outer StoreBind observer to the StoreBind
++	-- process it recurses into (`State<State<T>>`): the outer State whose CURRENT value must be
++	-- the inner one. Four upvalues, no object field; set around the recursive call, consumed
++	-- (matched on inst/k/index, then cleared) at the inner process's entry. A throw between set
++	-- and consume leaves a stale hand-off that only a process at the SAME (inst, k, index) could
++	-- pick up — the same slot, whose next outer fire overwrites it first.
++	local hoInst: any, hoK: any, hoIndex: number, hoParent: any = nil, nil, 0, nil
+ 	dispatch.addHandler({
+ 		name = "StoreBind",
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+@@ -65,23 +91,22 @@
+ 			-- the first re-run. The (B)-branch occupancy marker is already in
+ 			-- place, so the recursion below finds a hole-free chain list.
+ 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
++			local parent: any = nil
++			if hoParent ~= nil and hoInst == inst and hoK == k and hoIndex == index then parent = hoParent end
++			hoInst, hoK, hoParent = nil, nil, nil
+ 			local observer = state:Observer(function()
++				-- [round13 Q114 (a) prototype] same-wave revalidation: the outer State already moved to a
++				-- different value (its own observer, later in this wave, rebinds this slot) — writing
++				-- now would show a branch the outer no longer selects (hash-order dependent)
++				if parent ~= nil and parent:Get() ~= state then return end
+ 				local realv = state:Get()
+-				if isState(realv) then
+-					-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
+-					-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
+-					-- "Brand.luau: stack overflow" — walk the chain once with a visited set
+-					local visited = { [state] = true }
+-					local cur = realv
+-					while isState(cur) do
+-						if visited[cur] then
+-							Err.errorBefore("Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
+-						end
+-						visited[cur] = true
+-						cur = cur:Get()
+-					end
+-				end
++				-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
++				-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
++				-- "Brand.luau: stack overflow" — walk the chain once with a visited set
++				StoreBind.assertAcyclicChain(realv, state, Err.errorBefore, "StoreBind") -- error-code: via assertAcyclicChain
++				if isState(realv) then hoInst, hoK, hoIndex, hoParent = inst, k, index + 1, state end
+ 				dispatch.process(inst, k, realv, index + 1)
++				hoInst, hoK, hoParent = nil, nil, nil
+ 			end)
+ 			module.Backend.bindLifetime(inst, observer)
+ 			return function(_nextValue: any?, _retracting: boolean)
+diff -ru src/Slot/Elements.luau ../../bundle/quad-base/src/Slot/Elements.luau
+--- src/Slot/Elements.luau	2026-09-27 04:39:55.104010931 +0900
++++ ../../bundle/quad-base/src/Slot/Elements.luau	2026-09-27 04:40:37.856044875 +0900
+@@ -10,6 +10,7 @@
+ 
+ local Types = require("./types")
+ local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
++local StoreBind = require("../Dispatch/StoreBind") -- [round13 Q113 (a) prototype] shared Quad0070 chain walk
+ 
+ return function(S: Types.SlotInternal, module: any)
+ 
+@@ -73,6 +74,10 @@
+ 			checkRawElement(v, raise)
+ 			return v
+ 		end
++		-- [round13 Q113 (a) prototype] a State whose value chain loops (`st:Set(st)`, `a`→`b`→`a`) wrapped
++		-- itself forever at mount/reconcile (stack overflow in Brand/Relate) — the `H-573` walk, at the
++		-- caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost)
++		StoreBind.assertAcyclicChain(v, nil, raise, "Slot") -- error-code: via StoreBind.assertAcyclicChain
+ 		local sub = S.Slot()
+ 		sub:Single(v, nil, { OwnsElements = false })
+ 		sub._wrapped = v
+diff -ru src/Slot/List.luau ../../bundle/quad-base/src/Slot/List.luau
+--- src/Slot/List.luau	2026-09-27 04:39:55.103973291 +0900
++++ ../../bundle/quad-base/src/Slot/List.luau	2026-09-27 04:40:37.856172145 +0900
+@@ -12,6 +12,7 @@
+ 
+ local Types = require("./types")
+ local ModuleIdentity = require("../ModuleIdentity")
++local StoreBind = require("../Dispatch/StoreBind") -- [round13 Q113 (a) prototype]
+ 
+ return function(S: Types.SlotInternal, module: any)
+ 
+@@ -21,6 +22,7 @@
+ 		if item == S.KeyGone then return nil end
+ 		return item
+ 	end
++	;(S :: any).identityUpdateFn = identityUpdateFn -- [P-Q111 A] read by Slot/init's reachesSlot
+ 
+ 	-- _activateList — called by materializeSlotTree at mount. Fresh path builds
+ 	-- the reconcile closure (mounted/userdata/prevKeys upvalues) + subscribes;
+@@ -89,6 +91,20 @@
+ 		end
+ 
+ 		local function reconcile(items: any)
++			-- [round13 Q114 (a) prototype, Slot place] a State element's wrapper (`_wrapped`) whose owner
++			-- is an identity :Single that no longer holds this State (the owner's data moved on in the
++			-- same wave — its own reconcile, later in this wave, replaces this wrapper): skip, do not
++			-- mount the branch the owner no longer selects. Existing fields only: `_wrapped`, the
++			-- owner (elementOwner), the owner's `_listData`/`_updateFn`.
++			local wrapped = self._wrapped
++			if wrapped ~= nil then
++				local owner = S.elementOwner:GetWeak(self, S.OWNER)
++				if owner ~= nil and S.isSlot(owner) and owner._listed and owner._updateFn == identityUpdateFn then
++					local od = owner._listData
++					local oitems = if S.isState(od) then od:Get() else od
++					if type(oitems) == "table" and oitems[1] ~= wrapped then return end
++				end
++			end
+ 			if type(items) ~= "table" or getmetatable(items) ~= nil then
+ 				-- round3 `H-441`/`H-446` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
+ 				-- reached from State emit depth too, so outermost; branded tables are not arrays either
+@@ -120,10 +136,75 @@
+ 				keys[i] = key
+ 			end
+ 
++			-- [round13 Q113 (a) prototype] an identity :Single/:List (a State element's wrapper, or
++			-- `slot:Single(st)` without an updateFn) mounts each item as-is — a State item whose chain
++			-- loops would wrap itself forever. Checked BEFORE the batch gate goes On so the raise leaves
++			-- this Slot showing its previous element (the State already holds the new value).
++			if updateFn == identityUpdateFn then
++				for _, item in ipairs(items) do
++					StoreBind.assertAcyclicChain(item, nil, S.Err.errorBefore, "Slot") -- error-code: via StoreBind.assertAcyclicChain
++				end
++				-- [P-Q111 A] an identity :Single (a State element's wrapper, or `slot:Single(st)` without an
++				-- updateFn) whose new value is this Slot or one of its ancestors — a cycle. Checked here,
++				-- BEFORE the batch gate goes On, so the raise leaves this Slot as it was (the State itself
++				-- already holds the new value — that write happened before this observer ran).
++				for _, item in ipairs(items) do
++					local v = (S :: any).slotValueOf(item)
++					if v ~= nil and (S :: any).wouldCycle(self, v) then
++						(S :: any).raiseCycle("Slot", S.Err.errorBefore, " — here through a State element: its new value is the Slot it sits in or one of that Slot's ancestors (the State keeps the new value; this position keeps showing the previous one)")
++					end
++				end
++			end
+ 			local blocker = S.BK.getBlocker(self)
+ 			local ownsGate = not blocker.Blocking
+ 			if ownsGate then blocker:On() end
+ 
++			-- PROTOTYPE (round13 Q76 A1, scratch only): the KeyGone pass now runs FIRST, so the
++			-- gone elements leave the array before any new key is added — every later rawAdd
++			-- appends at the tail of the live range instead of shifting the N stale elements
++			-- (`reindexFrom`/`spliceArraysUp` O(N) each). `H-38` still holds: a gone key leaves
++			-- prevKeys only after its settle; a throw here leaves the remaining gone keys (and
++			-- their mounted elements) in place and no new key recorded yet.
++			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
++			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
++			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
++			-- during traversal — only inserting new keys is undefined. The one way
++			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
++			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
++			-- State; State emits synchronously): its first loop writes new keys here.
++			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
++			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
++			-- note "the clone was never needed" was wrong about insertion).
++			-- PROTOTYPE A1b: visit gone keys from the BACK of the array (descending current raw index;
++			-- detached/unmounted gone keys first, index 0 sorts last... any order is fine for them) so each
++			-- vacate removes at the tail — no `reindexFrom`/`spliceArraysDown` shift, and the offset cache
++			-- below the removal point stays valid. KeyGone-to-KeyGone order is documented as unspecified
++			-- (reference core/06). Snapshot list, so the `pairs`-mutation note below no longer applies.
++			local goneKeys, goneIdx = {}, {}
++			for key in pairs(prevKeys) do
++				if not seen[key] then
++					goneKeys[#goneKeys + 1] = key
++					local m = mounted[key]
++					goneIdx[key] = if m ~= nil then (S.indexOfRaw(self, m) or 0) else 0
++				end
++			end
++			table.sort(goneKeys, function(a: any, b: any) return goneIdx[a] > goneIdx[b] end)
++			for _, key in ipairs(goneKeys) do
++				if prevKeys[key] and not seen[key] then
++					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
++					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
++					if result == S.None then result = nil end
++					local detach = (result == S.Detach)
++					if detach then result = nil end
++					if result ~= nil then
++						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
++					end
++					settle(key, result, detach, 0)
++					userdata[key] = ud
++					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
++				end
++			end
++
+ 			local slotPos = 0
+ 			for i, item in ipairs(items) do
+ 				local key = keys[i]
+@@ -151,32 +232,6 @@
+ 				userdata[key] = ud
+ 			end
+ 
+-			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
+-			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
+-			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
+-			-- during traversal — only inserting new keys is undefined. The one way
+-			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
+-			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
+-			-- State; State emits synchronously): its first loop writes new keys here.
+-			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
+-			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
+-			-- note "the clone was never needed" was wrong about insertion).
+-			for key in pairs(prevKeys) do
+-				if not seen[key] then
+-					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
+-					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
+-					if result == S.None then result = nil end
+-					local detach = (result == S.Detach)
+-					if detach then result = nil end
+-					if result ~= nil then
+-						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+-					end
+-					settle(key, result, detach, 0)
+-					userdata[key] = ud
+-					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
+-				end
+-			end
+-
+ 			if ownsGate then
+ 				blocker:OffWithoutEmit()
+ 				S.maybeRecompute(self, S.BK.getBookkeeping(self))
+diff -ru src/Slot/Raw.luau ../../bundle/quad-base/src/Slot/Raw.luau
+--- src/Slot/Raw.luau	2026-09-27 04:39:55.104100371 +0900
++++ ../../bundle/quad-base/src/Slot/Raw.luau	2026-09-27 04:40:37.856323414 +0900
+@@ -12,7 +12,9 @@
+ 
+ local Types = require("./types")
+ 
++local PATCH_RAW = { attaches = 0, chainTotal = 0 }
+ return function(S: Types.SlotInternal, module: any)
++	pcall(function() rawset(module, "PATCH_RAW", PATCH_RAW) end)
+ 
+ 	-- reindexFrom: rewrite bk.indexOfElement from `from` to end. Every place
+ 	-- that shifts _elements calls this — regardless of materialization.
+@@ -101,11 +103,31 @@
+ 		end
+ 	end
+ 
++	-- PROTOTYPE (E1-2 Q74, scratch only): raise `_materializing` on the whole owner chain (Slot owners
++	-- up to the first non-Slot owner), restoring each saved value afterwards. Temp locals, no new fields.
++	local function raiseChain(self: any): ({ any }, { any })
++		local slots, olds = {}, {}
++		local cur = self
++		while cur ~= nil and S.isSlot(cur) do
++			slots[#slots + 1] = cur
++			olds[#olds + 1] = cur._materializing
++			cur._materializing = true
++			cur = S.elementOwner:GetWeak(cur, S.OWNER)
++		end
++		PATCH_RAW.attaches += 1
++		PATCH_RAW.chainTotal += #slots
++		return slots, olds
++	end
++	local function restoreChain(slots: { any }, olds: { any })
++		for k = #slots, 1, -1 do slots[k]._materializing = olds[k] end
++	end
++
+ 	-- ── raw layer ──────────────────────────────────────────────────────
+ 	-- `deferPhysical` (rawAdd/rawUnmount): bookkeeping only — the caller
+ 	-- (rawSplice) issues the ONE physical op for the whole batch itself.
+ 	local function rawAdd(self: any, element: any, index: number?, fromDetached: boolean?, deferPhysical: boolean?): number
+ 		S.claimOwner(element, self, fromDetached)
++		if S.isSlot(element) and element._wrapped ~= nil then (S :: any).stateSeat[element._wrapped] = element end -- [P-Q111 B] seat at commit
+ 		index = index or (#self._elements + 1)
+ 		table.insert(self._elements, index, element)
+ 		reindexFrom(self, index)
+@@ -122,10 +144,9 @@
+ 			-- registration — a CRUD on `self` from there shifted the array under the captured
+ 			-- position and left Length short for good. Save/restore: `_activateList` calls rawAdd
+ 			-- while `self` is already on a mount walk.
+-			local wasMaterializing = self._materializing
+-			self._materializing = true
++			local chainSlots, chainOlds = raiseChain(self)
+ 			S.attachSlot(element, self._physicalTarget, self, index, physical)
+-			self._materializing = wasMaterializing
++			restoreChain(chainSlots, chainOlds)
+ 		else
+ 			S.BK.setOffsetSource(self, index, S.None)
+ 			if physical then
+@@ -192,6 +213,7 @@
+ 	local function rawReplace(self: any, index: number, newElement: any, destroyOld: boolean)
+ 		local oldElement = self._elements[index]
+ 		S.claimOwner(newElement, self)
++		if S.isSlot(newElement) and newElement._wrapped ~= nil then (S :: any).stateSeat[newElement._wrapped] = newElement end -- [P-Q111 B]
+ 		S.releaseOwner(oldElement, self)
+ 		self._elements[index] = newElement
+ 		local bk = S.BK.getBookkeeping(self)
+@@ -211,10 +233,9 @@
+ 			end
+ 			if self._physicalTarget ~= nil then
+ 				if S.isSlot(newElement) then
+-					local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+-					self._materializing = true
++					local chainSlots, chainOlds = raiseChain(self)
+ 					S.attachSlot(newElement, self._physicalTarget, self, index, false)
+-					self._materializing = wasMaterializing
++					restoreChain(chainSlots, chainOlds)
+ 				else
+ 					S.BK.setOffsetSource(self, index, S.None)
+ 					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
+@@ -232,10 +253,9 @@
+ 				op(self._mountedInst, offset, { oldElement })
+ 			end
+ 			if S.isSlot(newElement) then
+-				local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+-				self._materializing = true
++				local chainSlots, chainOlds = raiseChain(self)
+ 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
+-				self._materializing = wasMaterializing
++				restoreChain(chainSlots, chainOlds)
+ 				return
+ 			end
+ 			S.BK.setOffsetSource(self, index, S.None)
+diff -ru src/Slot/init.luau ../../bundle/quad-base/src/Slot/init.luau
+--- src/Slot/init.luau	2026-09-27 04:39:55.104056071 +0900
++++ ../../bundle/quad-base/src/Slot/init.luau	2026-09-27 04:40:37.856467774 +0900
+@@ -94,6 +94,11 @@
+ 
+ 	local isSlot = Brand.isSlot -- `H-403`: the predicate lives in Brand.luau with its siblings
+ 
++	-- [P-Q111 prototype B] State element seats: State -> the wrapper Slot minted for it (both weak). A
++	-- seat counts only while that wrapper is live and owned by a Slot (`elementOwner`), so a wrapper
++	-- minted by a pre-pass that later failed, or one that left its Slot, is inert.
++	local stateSeat = setmetatable({}, { __mode = "kv" }) :: any
++
+ 	-- ⚠️ [2026-09-07 split] `S` — the module-instance-internal table the five sibling
+ 	-- files receive. The prelude values below are the ones that are stable for this
+ 	-- module instance; anything that must be read LATE off `module` stays an inline
+@@ -114,6 +119,7 @@
+ 		Detach = Detach,
+ 		KeyGone = KeyGone,
+ 	} :: Types.SlotInternal
++	;(S :: any).stateSeat = stateSeat
+ 
+ 	-- Published names are exactly the ones another file reads (round3 §9 `H-461` — the
+ 	-- first split copied every local; `S` is `any`, so a dead publish or a typo'd read is
+@@ -190,12 +196,72 @@
+ 	-- gate. The same occupant test runs against what `self` already holds
+ 	-- (unmaterialized wrappers have not claimed yet, so elementOwner alone
+ 	-- cannot see them — the materializeSlotTree variant of the leak).
+-	local function occupantOf(element: any): any
+-		if isSlot(element) then
+-			return if element._wrapped ~= nil then element._wrapped:Get() else element
++	-- [P-Q111 B] occupantOf is inlined into prepareElements' seed loop (it now also seeds the State)
++
++	-- [P-Q111 prototype A] cycle reachability THROUGH State links. The owner-chain walk below sees
++	-- only claimed links; an unmaterialized wrapper (State element never mounted) claims nothing, so
++	-- `outer{ st }`, `st:Set(inner)`, `inner:Add(outer)` passed it. `slotValueOf` unwraps a State (or a
++	-- State of a State) to the Slot it currently holds; `reachesSlot(from, target)` walks DOWN from
++	-- `from` — held elements (`_elements`, `_detached`), a wrapper's CURRENT value, and an identity
++	-- `:Single`'s current data — and answers whether `target` is reachable.
++	local function slotValueOf(v: any): any
++		local guard = 0
++		while module.isState(v) and guard < 16 do
++			v = v:Get()
++			guard += 1
++		end
++		return if isSlot(v) then v else nil
++	end
++	local function reachesSlot(from: any, target: any): boolean
++		local stack, visited = { from }, {}
++		while #stack > 0 do
++			local node = table.remove(stack)
++			if node == target then return true end
++			if not visited[node] then
++				visited[node] = true
++				for _, el in ipairs(node._elements) do
++					if isSlot(el) then table.insert(stack, el) end
++				end
++				if node._detached then
++					for _, el in pairs(node._detached) do
++						if isSlot(el) then table.insert(stack, el) end
++					end
++				end
++				if node._wrapped ~= nil then
++					local v = slotValueOf(node._wrapped)
++					if v ~= nil then table.insert(stack, v) end
++				elseif node._listed and node._updateFn == (S :: any).identityUpdateFn then
++					local data = node._listData
++					if module.isState(data) then data = data:Get() end
++					if type(data) == "table" then
++						for _, item in ipairs(data) do
++							local v = slotValueOf(item)
++							if v ~= nil then table.insert(stack, v) end
++						end
++					end
++				end
++			end
+ 		end
+-		return element
++		return false
+ 	end
++	-- container `self` would get `candidate` (a Slot) inside it: a cycle if candidate is on self's
++	-- claimed owner chain, or self is reachable from candidate through State links
++	local function wouldCycle(self: any, candidate: any): boolean
++		local cursor = self
++		while isSlot(cursor) do
++			if cursor == candidate then return true end
++			cursor = elementOwner:GetWeak(cursor, OWNER)
++		end
++		return reachesSlot(candidate, self)
++	end
++	-- [P-Q111 A] the one Quad0173 literal, shared by the CRUD pre-pass and the identity :Single
++	-- reconcile (error-codes.py: one id, one raise site)
++	local function raiseCycle(surface: string, raise: (string, any) -> (), tail: string)
++		raise("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)" .. tail, SURFACE)
++	end
++	;(S :: any).raiseCycle = raiseCycle
++	;(S :: any).slotValueOf = slotValueOf
++	;(S :: any).wouldCycle = wouldCycle
+ 
+ 	-- `H-506` (2026-09-08 round8 L-2): takes the candidates as an ARRAY (`count` keeps nil
+ 	-- holes visible — `table.pack`'s `.n` at the Splice call site) so the constructor can
+@@ -212,11 +278,25 @@
+ 		-- `== "held"` below was "Cannot compare unrelated types" (user's editor, 2026-09-17)
+ 		local seen: { [any]: boolean | "held" } = {}
+ 		for _, existing in ipairs(self._elements) do
+-			local occ = occupantOf(existing)
+-			if occ ~= nil then seen[occ] = "held" end
++			-- occupantOf inlined — [P-Q111 B] a wrapper also seeds its State itself as held (a nil-valued
++			-- State has no occupant to seed); one isSlot per element, as before
++			if isSlot(existing) then
++				local w = existing._wrapped
++				if w ~= nil then
++					seen[w] = "held"
++					local occ = w:Get()
++					if occ ~= nil then seen[occ] = "held" end
++				else
++					seen[existing] = "held"
++				end
++			else
++				seen[existing] = "held"
++			end
+ 		end
+ 		for i = 1, count do
+ 			local raw = items[i]
++			-- [P-Q111 B] read the State's seat BEFORE wrapElement mints (and records) a fresh wrapper
++			local prevSeat = if module.isState(raw) then stateSeat[raw] else nil
+ 			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
+ 			local occupant = if element ~= raw then raw:Get() else raw
+ 			-- `None` in a State is the absent element (`H-467`/Q30: None == nil) — skip like nil
+@@ -242,34 +322,36 @@
+ 						S.checkRawElement(occupant, Err.errorBeforeNearest) -- same `Slot: …` messages as the raw path (one greppable form)
+ 					end
+ 				end
+-				if seen[occupant] == "held" then
+-					-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
+-					-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
+-					-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.
+-					Err.errorBeforeNearest("Quad0170 " .. surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE)
+-				end
+-				if seen[occupant] then
+-					Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
+-				end
+-				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
+-					Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
+-				end
+-				if isSlot(occupant) then
+-					-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its
+-					-- own descendants — `s:Add(s)`, `a:Add(b); b:Add(a)` — passed every gate above
+-					-- (the ancestor is a root, so it is "not mounted") and the next CRUD recursed
+-					-- forever in teardownTree / tripped releaseOwner's invariant. Walk this Slot's
+-					-- owner chain: the candidate must not be on it.
+-					local cursor = self
+-					while isSlot(cursor) do
+-						if cursor == occupant then
+-							Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
+-						end
+-						cursor = elementOwner:GetWeak(cursor, OWNER)
+-					end
++			end
++			-- [P-Q111 B] one State, one seat: the State's own identity joins the occupant checks — a
++			-- nil-valued State has no occupant, so these could not see a second seat (`Set` then raised
++			-- `Quad0156` from reconcile depth with one wrapper frozen). Same three raise lines.
++			local stKey = if element ~= raw then raw else nil
++			if (occupant ~= nil and seen[occupant] == "held") or (stKey ~= nil and seen[stKey] == "held") then
++				-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
++				-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
++				-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.
++				Err.errorBeforeNearest("Quad0170 " .. surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE)
++			end
++			if (occupant ~= nil and seen[occupant]) or (stKey ~= nil and seen[stKey]) then
++				Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
++			end
++			if (occupant ~= nil and elementOwner:GetWeak(occupant, OWNER) ~= nil)
++				or (prevSeat ~= nil and prevSeat._wrapped == raw and not prevSeat._destroyed and elementOwner:GetWeak(prevSeat, OWNER) ~= nil) then
++				Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
++			end
++			if occupant ~= nil and isSlot(occupant) then
++				-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its
++				-- own descendants — `s:Add(s)`, `a:Add(b); b:Add(a)` — passed every gate above
++				-- (the ancestor is a root, so it is "not mounted") and the next CRUD recursed
++				-- forever in teardownTree / tripped releaseOwner's invariant.
++				-- [P-Q111 A] the walk now also follows State links (wouldCycle above)
++				if wouldCycle(self, occupant) then
++					raiseCycle(surface, Err.errorBeforeNearest, "")
+ 				end
+-				seen[occupant] = true
+ 			end
++			if occupant ~= nil then seen[occupant] = true end
++			if stKey ~= nil then seen[stKey] = true end
+ 			prepared[i] = element
+ 		end
+ 		return prepared

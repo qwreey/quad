@@ -1,0 +1,154 @@
+######## base
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0156	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/self	fired	true	set	stack overflow	add	invalid argument #2 to 'min' (number expected, got nil)	| inner.d	nil	sub.d/m	nil	false	leafDead	false	leafParent	nil	| outerLen	1	kids	head	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a b gone	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0156	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## q74
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0156	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/self	fired	true	set	stack overflow	add	invalid argument #2 to 'min' (number expected, got nil)	| inner.d	nil	sub.d/m	nil	false	leafDead	false	leafParent	nil	| outerLen	1	kids	head	outer.mat	true
+   after-add	Quad0167	outerLen	1	kids	head
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a b gone	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0156	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## q76
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0156	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/self	fired	true	set	stack overflow	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a gone b	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0156	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## q111ab
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0173	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/self	fired	true	set	stack overflow	add	invalid argument #2 to 'min' (number expected, got nil)	| inner.d	nil	sub.d/m	nil	false	leafDead	false	leafParent	nil	| outerLen	1	kids	head	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a b gone	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0173	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## cq
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0173	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/self	fired	true	set	Quad0070	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a b gone	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0173	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## bundle
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0173	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/self	fired	true	set	Quad0070	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a gone b	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0173	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w
+######## bundlep
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0173	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/self	fired	true	set	Quad0070	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a gone b	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	ok	log	a gone b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0173	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w

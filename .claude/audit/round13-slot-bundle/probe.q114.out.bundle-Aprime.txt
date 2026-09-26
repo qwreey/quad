@@ -1,0 +1,27 @@
+=== K1 outer re-selects the SAME inner every wave (Compute re-emits a)
+  src=2                              Text=a2 writes=2 [a2,a2]
+  src=3                              Text=a3 writes=4 [a2,a2,a3,a3]
+=== K2 outer swaps a -> Source(a) (same inner, wrapped once more) while a changes
+  src=2 (-> Source(a))               Text=a2 writes=1 [a2]
+  src=1 (-> a)                       Text=a1 writes=3 [a2,a1,a1]
+=== K3 the same inner State bound at two levels of one chain (outer -> x, x -> a; outer later -> a)
+  src=2 (x -> a direct)              Text=a2 writes=2 [a2,a2]
+  src=1 (-> x)                       Text=a1 writes=3 [a2,a2,a1]
+=== K4 Blocker directly on the outer (Gate node): inner of the OLD selection updates during the hold
+  hold: which->b, a->A2              Text=A2 writes=1 [A2]
+  hold: b->B2                        Text=A2 writes=1 [A2]
+  Off                                Text=B2 writes=2 [A2,B2]
+=== K5 Blocker UPSTREAM of a Compute outer (gate not on the bound State)
+  hold: which->2, a->A2              Text=A writes=0 []
+  Off                                Text=B writes=1 [B]
+=== K6 Slot place, Blocker on the element State: hold, old branch updates
+  hold: which->b, a->a2  kids	a2	len	1
+  Off  kids	b	len	1
+=== K7 Slot place, user sl:Single(outer) (not a wrapper) same-wave race
+  	300	ok [Y] len=1
+=== K8 Slot place wrapper: same-wave Slot-valued branches (State<Slot> swap with length change)
+  src=2	ok	kids	b1,b2,b3,tail	len	4
+  src=3	ok	kids	a3,tail	len	2
+=== K9 Slot place, :List(data, updateFn) whose updateFn SELECTS a State (owner is not an identity Single) — not covered
+  	171	ok [Y] len=1
+  	129	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1

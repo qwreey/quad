@@ -1,0 +1,158 @@
+## base e2
+  r1 a2,b2,b2	53
+  r1 a2,b2	80
+  r1 b2	45
+  r1 b2,b2	122
+  r1   write	b2	outer:Get()==b	true
+  r2 a2,b2,b2	59
+  r2 a2,b2	86
+  r2 b2,b2	104
+  r2 b2	51
+  r2   write	b2	outer:Get()==b	true
+  r3 a2,b2,b2	60
+  r3 a2,b2	89
+  r3 b2	48
+  r3 b2,b2	103
+  r3   write	a2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## base e3
+  r1 128	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not
+  r1 172	ok | host[Y] Z.Parent=other
+  r2 132	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not
+  r2 168	ok | host[Y] Z.Parent=other
+  r3 134	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not
+  r3 166	ok | host[Y] Z.Parent=other
+## base e4
+  r1 --- child
+  r1 139	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X
+  r1 161	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 136	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back
+  r1 164	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 133	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X
+  r2 167	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 141	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back
+  r2 159	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 144	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X
+  r3 156	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 149	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back
+  r3 151	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## cq e2
+  r1 b2,b2	174
+  r1 b2	126
+  r1   write	b2	outer:Get()==b	true
+  r2 b2	144
+  r2 b2,b2	156
+  r2   write	b2	outer:Get()==b	true
+  r3 b2,b2	182
+  r3 b2	118
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## cq e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## cq e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## cqp e2
+  r1 b2	136
+  r1 b2,b2	164
+  r1   write	b2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 b2,b2	172
+  r2 b2	128
+  r2   write	b2	outer:Get()==b	true
+  r3 b2	127
+  r3 b2,b2	173
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## cqp e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## cqp e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## bundle e2
+  r1 b2	132
+  r1 b2,b2	168
+  r1   write	b2	outer:Get()==b	true
+  r2 b2,b2	187
+  r2 b2	113
+  r2   write	b2	outer:Get()==b	true
+  r2   write	b2	outer:Get()==b	true
+  r3 b2	137
+  r3 b2,b2	163
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## bundle e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## bundle e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## bundlep e2
+  r1 b2	146
+  r1 b2,b2	154
+  r1   write	b2	outer:Get()==b	true
+  r2 b2,b2	166
+  r2 b2	134
+  r2   write	b2	outer:Get()==b	true
+  r3 b2,b2	155
+  r3 b2	145
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## bundlep e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## bundlep e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
