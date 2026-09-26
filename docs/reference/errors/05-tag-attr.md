@@ -211,6 +211,6 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)` — `quad-base/src/Tag.luau`
 
-- **언제**: 이름 자리에 메타테이블이 달린 테이블을 넘겼을 때 — `State`나 `Attr` 같은 quad 값도 포함됩니다(`q.Tag(state)`도 이 에러입니다; 메타테이블이 없는 `AttrKey`/Mapper 디스크립터는 Quad0200). 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
+- **언제**: 이름 자리에 메타테이블이 달린 테이블을 넘겼을 때 — `State`나 `Attr` 같은 quad 값도 포함되고(`q.Tag(state)`도 이 에러입니다), `q.None`도 그렇습니다(`q.Tag(q.None)`·`tag:Added(q.None)` — `None`은 "없음" 인자가 아니라 메타테이블 있는 테이블; "없음"은 `nil`로; 메타테이블이 없는 `AttrKey`/Mapper 디스크립터는 Quad0200). `q.Tag(...)`의 `__call` 인자는 타입 검사가 없어 strict도 잡지 못합니다. 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
 - **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요.
 - **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)

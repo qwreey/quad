@@ -101,7 +101,7 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 | `Tween` | 트윈 값으로 덮어쓴다(소비는 프로퍼티 핸들러 — [Tween과 Animate](/reference/roblox/06-tween-animate/)) |
 | `State` | State를 통째로 필드에 넣는다(발행될 때마다 프로퍼티가 따라간다) |
 | `q.None` | **언셋** — 그 필드를 명시적으로 `None`으로 만든다 |
-| `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") |
+| `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") — 런타임만; strict는 setter 인자의 `nil`을 거부합니다([2026-09-27 기준]) |
 | 함수 | **변환 함수** — 아래 |
 
 **보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라

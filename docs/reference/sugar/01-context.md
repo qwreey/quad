@@ -95,7 +95,7 @@ Set: <T>(self: Context, provider: Provider<T>, value: T) -> Context
 
 </details>
 
-`false`는 값입니다. 부재로 취급되는 것은 `nil`뿐이고, `nil`을 넣으려 하면 막힙니다.
+`false`는 값입니다. 부재로 취급되는 것은 `nil`뿐이고, `nil`을 넣으려 하면 막힙니다. `q.None`은 막지 않고 **값으로 보관**돼 `:Get`이 `None`을 돌려줍니다 — "없음"을 넣고 싶으면 `:Set`을 부르지 마세요.
 
 ```
 Quad0037 Context:Set: value for Provider(Theme) must not be nil (absence is "not set")

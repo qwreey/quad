@@ -1,0 +1,116 @@
+== P: Property (TextLabel.Text, Frame.NextSelectionUp)
+P1 literal Text=nil | ok -> Text=nil
+P2 literal Text=None | ok -> Text=nil
+P2b literal Text=None after Modifier sets Text | ok -> Text=nil
+P3 State initially nil | ok -> Text=nil
+P4 State a -> nil | ok -> Text a -> nil
+P5 State a -> None | ok -> Text -> nil
+P5b State a -> None -> b | ok -> Text -> b
+P6 State initially None | ok -> Text=nil
+P7 Compute returns nil | ok -> Text -> nil
+P7b Compute previous after nil result | ok -> prevs=nil,v1,nil Text=v3
+P8 object ref literal None | ok -> lit=Frame State->nil=nil
+P9 Tween{Value=nil} | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:48: Quad0249 Tween: Value is required
+P9b Tween{Value=None} | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:49: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+P9c State emits Tween{Value=nil} later | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:50: Quad0249 Tween: Value is required
+P10 Animate: nil passes | ok -> 0.5 snap=0.5 ->nil=nil completedCalls=1
+P10b Animate: None passes | ok -> ->None=nil
+P10c Animate CanAnimate=false + Completed, nil emit | ok -> cb after 0.5=1 after 0.2=2 after nil=2 val=nil
+P10d Animate initially nil | ok -> nil -> 0.3 val=nil (snap?)
+P11 State<Modifier> Text then None (retract) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:68: Quad0182 Source: cannot hold a Modifier as a Source value
+P11b State<Modifier> Text then nil | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:70: Quad0182 Source: cannot hold a Modifier as a Source value
+== M: Modifier fields
+M1 mod:Text(nil) then Peek | ok -> Peek=nil
+M2 mod:Text(None) applied | ok -> Text=x (inline wins)
+M2b mod None over earlier mod | ok -> Text=nil
+M2c mod nil over earlier mod | ok -> Text=a
+M3 transform returns nil (plain) | ok -> Text=a
+M3b transform returns nil (State old) | ok -> Text=a
+== E: Event
+E1 literal Activated=None | ok
+E2 State<cb> -> nil disconnect | ok -> calls=1
+E3 State initially nil | ok
+== S: Shorthand UICorner
+S1 literal UICorner=None | ok -> []
+S2 State 8 -> nil -> 4 | ok -> [UICorner:_quad_round] -> [] -> [UICorner:_quad_round]
+S3 State 8 -> None | ok -> []
+S4 State initially nil | ok -> []
+S5 Animate nil on shorthand | ok -> []
+S6 Tween{Value=nil} on shorthand | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:93: Quad0249 Tween: Value is required
+== C: numeric child seat
+C1 hole mid | THROW ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+C1b trailing nil | ok -> [Frame:Frame]
+C2 None seat | ok -> [Frame:Frame]
+C3 State<Instance?> nil -> inst -> nil -> inst2 | ok -> [] -> [TextLabel:TextLabel] -> [] c.Parent=nil c.alive=true -> [TextLabel:TextLabel]
+C3b State<Instance?> -> None | ok -> [] c.Parent=nil claimed=true
+C4 State<Slot> -> nil | ok -> [] c.Parent=nil claimed=true
+C5 State<Tag> -> nil | ok -> {A} -> {} -> None {}
+C6 State<Attr> -> nil | ok -> {A=1} -> {A=1} (Attr retract leaves engine?)
+C7 State<Ref> -> nil | ok -> Frame -> nil
+== SL: Slot elements
+SL1 q.Slot{None} | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:115: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+SL2 slot:Add(nil) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:116: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+SL3 slot:Add(None) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:117: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+SL4 q.Slot{a,nil,b} | ok -> Length=0
+SL5 Slot element State<Instance?> nil->c->nil->c->None | ok -> len=0[] -> len=1[TextLabel:TextLabel] -> len=0[] cParent=nil claimed=true -> len=1[TextLabel:TextLabel] -> None len=0[] claimed=true
+SL5b slot initial State<Instance?> starting nil | ok -> len=0
+SL6 slot:Single(nil state) nil->c->nil | ok -> [TextLabel:TextLabel] -> [] claimed=false
+SL6b :Single with updateFn, KeyGone on nil | ok -> gone=2 [] [TextLabel:TextLabel] []
+SL7 :List updateFn returns nil for present key | ok -> len=1[TextLabel:TextLabel]
+SL7b :List updateFn returns None for present key | ok -> len=1[TextLabel:TextLabel]
+SL7c :List KeyGone returns element | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:146: Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
+SL7d :List data nil | ok -> len=0
+SL7e :List data None | ok -> len=0
+SL7f :List data {..} -> nil | ok -> len=0
+SL7g :List keyFn returns nil | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:150: Quad0152 Slot:List: keyFn must be a function (got table)
+== T: Tag
+T1 q.Tag(nil) | ok -> {}
+T2 q.Tag('A', nil, 'B') | ok -> {A,B}
+T3 q.Tag({'A', nil, 'B'}) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:155: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+T4 q.Tag(None) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:156: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+T5 tag:Added(None) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:157: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+T6 tag:Contains(nil) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:158: Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+T7 State<Tag> via Compute returning nil | ok -> {One} -> {}
+== A: Attr
+A1 q.Attr{A=nil} | ok -> {B=1}
+A2 q.Attr{A=None} after set | ok -> {}
+A3 State nil initially | ok -> {}
+A4 State 1 -> nil -> 2 -> None | ok -> {A=1} -> {} -> {A=2} -> {}
+A5 StringAttr(nil) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:168: Quad0014 StringAttr: value of "L" must not be nil — use None to delete
+A5b NumberAttr(None) | ok -> {}
+A5c NumberAttr State -> nil | ok -> {}
+A6 [AttrKey]=None | ok -> {}
+A6b [AttrKey]=State->nil | ok -> {}
+A7 Attr State 'x' -> Tween | THROW ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+A8 Attr from Store with Source(nil) | ok -> {mp=3} -> {}
+== ST: Store / Source
+ST1 Store{hp=None} | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:177: Quad0198 Store: default for "hp" is not a Source (got table)
+ST2 Store{hp=nil} | ok -> Store{}
+ST3 Source(nil):Get | ok -> nil
+ST4 Source(None):Get | ok -> None
+ST5 Source():Get | ok -> nil
+ST6 Source dedup nil->nil fires? | ok -> fires=1
+== R: Ref
+R1 Ref:Set(nil) | ok -> nil
+R2 Ref:Set(None) | ok -> None
+R3 Ref in seat, then State seat -> None | ok -> nil
+== CX: Context
+CX1 ctx:Set(p, nil) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:190: Quad0037 Context:Set: value for Provider(P) must not be nil (absence is "not set")
+CX2 ctx:Set(p, None) | ok -> None
+CX3 ctx:Get missing | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:192: Quad0038 Context:Get: no value for Provider(P) — the creator of this Context did not :Set it (use :Peek to test)
+CX4 ctx:Peek missing | ok -> nil
+== O: Out / OnChange
+O1 Out Text: engine writes nil | ok
+O2 Out Text: engine sets nil, src gets | ok -> src=nil
+O3 Out NextSelectionUp nil | ok -> Frame -> nil
+O4 OnChange Text nil emit None? | ok -> x,nil
+O5 OnChange literal None | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:203: Quad0222 OnChange: callback for "Text" must be a function (got table)
+O6 Out with src None -> ? | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:204: Quad0224 Out: second argument for "Text" must be a Source to write back into (got table)
+== OP: Operator
+OP1 Alternative self None | ok -> None
+OP2 Alternative self nil | ok -> d
+OP3 Not None | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:210: Quad0123 Operator.Not: Apply target must be a State (got nil)
+OP4 Not nil | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:211: Quad0123 Operator.Not: Apply target must be a State (got nil)
+== DS: dispose
+DS1 q.dispose(nil) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:214: Quad0178 dispose: value must not be nil
+DS2 q.dispose(None) | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix.luau:215: Quad0180 dispose: this backend cannot dispose this value

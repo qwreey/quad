@@ -1,0 +1,46 @@
+(8,34): TypeError: Expected this to be '(None | StateMarker<string> | string)?', but got 'number'
+(11,34): TypeError: Expected this to be
+(12,34): TypeError: Expected this to be
+(13,41): TypeError: Expected this to be
+(14,108): TypeError: Expected this to be 'nil', but got 'string'
+(14,54): TypeError: Expected this to be
+(16,46): TypeError: Expected this to be
+(17,46): TypeError: Expected this to be
+(19,40): TypeError: Expected this to be
+(21,34): TypeError: Expected this to be
+(25,35): TypeError: Expected this to be 'Instance | SlotMarker<Instance> | StateMarker<Instance>', but got 'None'
+(26,39): TypeError: Expected this to be 'Instance | SlotMarker<Instance> | StateMarker<Instance>', but got 'nil'
+(27,14): TypeError: Expected this to be
+(31,30): TypeError: Expected this to be '(TagMarker | string | {read t1})? where t1 = string | { read __quadTag: true } | {read t1}', but got 'None'
+(34,31): TypeError: Expected this to be 'None | StateMarker<string> | string', but got 'nil'
+(35,26): TypeError: Expected this to be
+(38,13): TypeError: Key 'BackgroundTransparency' not found in table 'Modifier'
+(39,13): TypeError: Key 'BackgroundTransparency' not found in table 'Modifier'
+(41,33): TypeError: Expected this to be 'number', but got 'nil'
+(42,33): TypeError: Expected this to be 'number', but got 'None'
+(46,8): TypeError: Expected this to be 'Frame', but got 'nil'
+(47,8): TypeError: Expected this to be 'Frame', but got 'None'
+(48,39): TypeError: Expected this to be exactly
+(48,39): TypeError: Expected this to be exactly 'string', but got 'nil'
+(48,39): TypeError: Expected this to be
+(48,39): TypeError: Expected this to be 'string', but got 'nil'
+(48,39): TypeError: Expected this to be
+(48,39): TypeError: Expected this to be
+(48,39): TypeError: Expected this to be
+(48,39): TypeError: Expected this to be exactly
+(48,39): TypeError: Expected this to be exactly 'string', but got 'nil'
+(48,39): TypeError: Expected this to be exactly 'string', but got 'nil'
+(49,48): TypeError: Expected this to be exactly
+(49,48): TypeError: Expected this to be exactly 'GuiObject', but got 'nil'
+(49,48): TypeError: Expected this to be
+(49,48): TypeError: Expected this to be 'GuiObject', but got 'nil'
+(49,48): TypeError: Expected this to be
+(49,48): TypeError: Expected this to be
+(49,48): TypeError: Expected this to be
+(49,48): TypeError: Expected this to be exactly
+(49,48): TypeError: Expected this to be exactly 'GuiObject', but got 'nil'
+(49,48): TypeError: Expected this to be exactly 'GuiObject', but got 'nil'
+(50,44): TypeError: Expected this to be '(index<PropTypesRead, K>) -> ()', but got 'None'
+(52,47): TypeError: Expected this to be
+(55,7): TypeError: Function only returns 0 values, but 1 is required here
+(14,101): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence

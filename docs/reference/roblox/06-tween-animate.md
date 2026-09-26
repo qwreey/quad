@@ -204,7 +204,7 @@ local box = D.Frame({ BackgroundTransparency = animated })
   그 자리에서 부르므로, 모션을 껐어도 "끝났을 때"의 처리는 그대로 돕니다. 이때 `DelayTime` 같은 다른 옵션은
   싣지 않습니다(모션이 꺼진 것이니 즉시).
 - **`nil`/[`None`](../core/10-lifetime-sentinels.md#qnone)은 그대로 통과합니다.** 감싸지 않으므로
-  프로퍼티 핸들러가 `nil`을 씁니다(객체 참조를 놓는 경로).
+  프로퍼티 핸들러가 `nil`을 씁니다 — 보간 가능한 타입은 전부 엔진이 `nil`을 거부하므로 실제로 쓰이는 자리는 드물고, `nil` 발행에는 `CanAnimate = false`의 `Started`/`Completed` 콜백도 불리지 않습니다(돌던 트윈의 `Cancelled`는 옵니다 — [2026-09-27 mock 관측]).
 - 실행마다 **새 `Tween` 값**이 만들어집니다. 같은 목표로의 재발행을 접는 것은 소비자(프로퍼티 핸들러)의
   일입니다 — 아래 `Dedup`.
 - **리터럴 옵션은 `Animate(info)` 시점에 즉시 검증**됩니다(여러분의 호출 줄을 blame). State로 준

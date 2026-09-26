@@ -244,7 +244,7 @@ Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>
 
 `default`가 `nil`이면 팩토리 호출 줄에서 `Quad0128 Operator.Alternative: default must not be nil`입니다. `default`가 State인데 그 **현재값**이 `nil`이면(아직 안 채운 `store:Of`) 읽는 줄에서 `Quad0129 Operator.Alternative: the default State's current value is nil`로 던집니다 — 기본값 자리에는 값이 있어야 합니다.
 
-`q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 "비움"으로 처리). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며, 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
+`q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 프로퍼티 핸들러가 `nil`을 **씁니다** — `nil`을 못 받는 프로퍼티(`Text` 등)면 엔진이 던집니다, [Declaration](/reference/roblox/02-d/)의 값 대수 표). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며, 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
 
 ```luau
 local optionalName = q.Source<<string?>>(nil)

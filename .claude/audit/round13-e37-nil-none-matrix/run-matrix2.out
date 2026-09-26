@@ -1,0 +1,35 @@
+SL4m q.Slot{a,nil,b} mounted | ok -> Length=1[Frame] b.Parent=nil
+SL4u q.Slot{a} unmounted Length | ok -> Length=0
+SL7d :List data nil mounted | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:19: Quad0142 Slot:List: data must be a plain array (got nil) — a data State must hold one too
+SL7e :List data None mounted | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:20: Quad0142 Slot:List: data must be a plain array (got table) — a data State must hold one too
+SL7f :List data {a} -> nil mounted | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:21: Quad0142 Slot:List: data must be a plain array (got nil) — a data State must hold one too
+SL7g :List keyFn returns nil | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:22: Quad0144 Slot:List: keyFn returned nil for item #1
+SL7h :List item nil hole in data | ok -> len=1
+SL7i :List item None in data | ok -> len=2 items=a,None
+SL6m :Single data None initially mounted | ok -> len=0
+SL5m slot:Add(State<Instance?>) nil->c->nil (mounted, check destroy) | ok -> [TextLabel] -> [] claimed=true
+M3 transform returns nil (same modifier, plain) | ok -> Text=nil
+M3a earlier modifier + transform nil in later | ok -> Text=prev
+M3b transform returns nil (same modifier, State old) | ok -> Text=nil
+M3c transform returns None | ok -> Text=nil
+M4 mod field State -> nil / None | ok -> nil / nil
+M5 two mods, later field State -> nil: falls back to earlier? | ok -> Text=nil
+M6 mod state:Apply(Animate) emits nil | ok -> nil
+OP3 Not None | ok -> false
+OP4 Not nil | ok -> true
+OP5 Indexed None | ok -> nil
+OP6 Sum None | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:39: Quad0122 Operator.Sum: the Apply target's current value must be a number (got table)
+P12 Animate first value then None then value (snap vs animate) | ok -> immediately=nil after=nil
+P10d' Animate initially nil then 0.3 after runTask | ok -> nil
+P13 Source initially nil non-Animate then value (snap) | ok -> immediately=nil
+P14 Text literal nil + later State seat? (literal nil: handler never runs) | ok -> Text raw=nil
+C5b State<Tag> initially nil | ok -> {A}
+C6b State<Attr> -> None | ok -> {A=1}
+C6c q.Attr State -> Attr swap: old name left? | ok -> {A=1,B=2}
+C5c State<Tag> swap A -> B | ok -> {B}
+C8 seat State<Instance> None->c: destroy on replace? | ok -> c1 claimed=true c1.Parent=nil
+CX5 ctx:Set(p, None) then Get in consumer | ok -> None peek=None
+R4 PreRef in seat retract -> Set(nil)? | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:53: Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+E4 Event literal nil | ok -> ok
+S7 UIPadding None | ok -> []
+S8 UIScale State nil | THROW ./.claude/audit/round13-e37-nil-none-matrix/run-matrix2.luau:56: Quad0076 Dispatch: no handler matched key Name (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized

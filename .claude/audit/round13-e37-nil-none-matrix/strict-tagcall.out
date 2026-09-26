@@ -1,0 +1,1 @@
+.claude/audit/round13-e37-nil-none-matrix/strict-tagcall.luau(6,25): TypeError: Expected this to be 'TagMarker?', but got 'None'

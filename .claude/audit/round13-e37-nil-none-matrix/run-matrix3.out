@@ -1,0 +1,8 @@
+L1 :List data {a,b,c} -> {a,nil,c}: c destroyed? | ok -> len=1 c.claimed=false
+OC1 State<OnChange desc> -> None / nil | ok -> calls=2
+OB1 State<Observer?> -> nil stops | ok -> 1,2,2
+EF1 State<Effect?> -> nil cleanup once | ok -> cleanups=1
+TW1 State<Tween> -> None writes nil & cancels | ok -> val=nil
+IX1 Indexed missing key into Text (Apply unchecked) runtime | ok -> Text=nil
+AN1 Animate running tween then nil: Cancelled fires? | ok -> after 0.9: S2 C1 X0 | after nil: S2 C1 X1 val=nil
+AN2 Tween-in-State running then None: Cancelled fires? | ok -> X=1

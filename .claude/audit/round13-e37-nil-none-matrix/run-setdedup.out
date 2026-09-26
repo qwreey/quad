@@ -1,0 +1,4 @@
+1 -> Set(1) x2	init-fires=1 after=2
+nil -> Set(nil) x2	init-fires=1 after=2
+None -> Set(None) x2	init-fires=1 after=2
+1 -> Set(nil) x2	init-fires=1 after=2

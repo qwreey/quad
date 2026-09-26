@@ -55,6 +55,14 @@
 7. `Destroying` 핸들러 안에서 보이는 상태 — Parent·자식 수·자식의 Parent.
 8. `Name = 5` — 숫자가 `"5"`로 바뀌는지(mock은 거부 — 엄격한 행).
 
+### 2-E37 추가(2026-09-27, nil/None 매트릭스가 낸 다섯)
+
+1. R1 — State가 `nil`/`None`을 `Text`·`TextTransparency`·`BackgroundColor3`에 내놓을 때의 엔진 에러 문구·blame 줄, 그 뒤 정상 값이 다시 쓰이는지.
+2. R2 — 객체 참조(`NextSelectionUp`/`Adornee`)를 quad 경로의 State `nil`로 해제하는 동작(Q33은 사용자의 `Part0` 읽기 실측에만 기댔음).
+3. R3 — `q.Out`·`OnChange`가 걸린 객체 참조의 대상이 파괴될 때 변경 신호가 `nil`로 오는지(Q127).
+4. R4 — Animate가 걸린 프로퍼티에 `nil` 발행, 처음부터 `nil`인 State에 Animate를 걸 때 생성 줄에서 던지는지.
+5. R5 — `nil` 대입을 엔진이 기본값 리셋으로 해석하는 프로퍼티가 있는지(quad엔 기본값 복원 경로가 없음).
+
 ## 3. HUMAN_TODO 편입 제안 (결정은 메인)
 
 - **1절 다섯 항목(float32·프레임당 신호·같은 프레임 순서·b2 통지·IsA 상속)은 이미 서로 얽혀 있어(§0 "문항 사이 의존" 절) 기존 C 섹션 스타일대로 "Tween 실기기 프로브 팩" 하나로 묶는 게 자연스럽다** — 기존 프로브 팩 형식(`.claude/audit/studio-editor-probe-2026-09-26/`처럼 `rojo serve` + 관측표)과 같은 모양, 결과 하나가 Q78·Q81·Q91·Q97·Q99 다섯 문항의 처방을 동시에 좌우한다.
