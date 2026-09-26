@@ -206,7 +206,10 @@ Frame {
 ```
 
 **같은 계열끼리의 상대 순서는 배열 index 순서로 보장됨** — `fn1`이
-`fn2`보다 먼저 불림(`PreRef`/`PostRef` 공통 계약, `base/ref-plan.md`).
+`fn2`보다 먼저 불림(`PreRef`/`PostRef` 공통 계약, `base/ref-plan.md`). **[2026-09-27 round13 E16 `H-683` 정밀화]** 이 보장은 `OnCreated`/`OnRendered`(PreRef/PostRef
+계약)에만 있다 — **`OnDestroyed`끼리의 순서(`cleanupA`↔`cleanupB`)는 정해져 있지 않다**: 각 Effect가
+자기 `Destroying` 연결로 불려 순서는 백엔드 시그널이 정한다(mock은 등록 역순 실측, Roblox 미실측).
+파생 문서(레퍼런스 sugar/04·GS 09)도 같은 날 같은 문구로 갱신.
 이게 유용한 대표 사례는 **`PreRef`를 반환하는 다른 팩토리와의 합성**:
 예컨대 `FastQuery(...) -> PreRef`처럼 앞자리 항목이 뭔가를 미리
 해결해두면, 그 뒤에 오는 `OnCreated(fn)`은 **그게 이미 끝났음을 전제로**
