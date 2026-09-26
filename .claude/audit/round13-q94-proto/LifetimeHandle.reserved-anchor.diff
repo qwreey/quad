@@ -1,0 +1,53 @@
+--- quad-roblox/src/LifetimeHandle.luau
++++ quad-roblox/src/LifetimeHandle.luau
+@@ -37,6 +37,12 @@
+ local QuadTypes = require("../luau_packages/quad_types")
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
++-- round13 Q94 (b): the gcconn anchor's key in every gchold. A module-local table no caller can
++-- name, so no bound value (`gchold[value] = true`) can ever land on it — the old `gchold[1]`
++-- was overwritten by `bindLifetime(inst, 1)` and cleared by `unbindLifetime(1)`, cutting the
++-- (0) anchor. Never handed out; `isHeld`/`isHeldBy`/`releaseLifetime` cannot be asked about it.
++local GCCONN_ANCHOR = {}
++
+ local function install(quad: any)
+ 	local Err = quad.errorNamespace
+ 	local Relate = quad.Relate
+@@ -71,7 +77,7 @@
+ 		local gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
+ 			nop(gchold, inst) -- never fires; the capture is the point
+ 		end)
+-		gchold[1] = gcconn -- array slot 1 is reserved for gcconn (values go in hash part)
++		gchold[GCCONN_ANCHOR] = gcconn -- reserved key (Q94 (b)); bound values are their own keys and cannot collide
+ 		InstData:SetWeak(inst, "gchold", gchold)
+ 		InstData:SetWeak(inst, "gcconn", gcconn)
+ 	end
+@@ -136,7 +142,7 @@
+ 		end
+ 		gchold[value] = true -- strong ref: value lives at least as long as inst (contract 1)
+ 		-- the value carries its own liveness evidence (contract 2); both weak —
+-		-- gchold is kept alive by the (0) closure, gcconn by gchold[1]
++		-- gchold is kept alive by the (0) closure, gcconn by gchold[GCCONN_ANCHOR]
+ 		BindData:SetWeak(value, "gchold", gchold)
+ 		BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
+ 	end
+--- quad-base/test/mock.luau
++++ quad-base/test/mock.luau
+@@ -634,6 +634,8 @@
+ 	local Err = quad.errorNamespace
+ 	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
++	-- round13 Q94 (b): gcconn 앵커 키 — 어떤 바인드 값과도 부딪히지 않는 지역 센티널(quad-roblox와 같은 모양)
++	local GCCONN_ANCHOR = {}
+ 	local InstData = Relate() -- inst  -> gchold/gcconn ((0)에서 채움)
+ 	local BindData = Relate() -- value -> gchold/gcconn (holdLifetime이 채움)
+ 
+@@ -650,7 +652,7 @@
+ 		local gcconn = inst:GetPropertyChangedSignal("ClassName"):Connect(function()
+ 			nop(gchold, inst) -- 절대 발화 안 함. 클로저가 gchold와 inst를 업밸류로 붙잡는 게 전부
+ 		end)
+-		gchold[1] = gcconn -- 배열 자리 1번은 gcconn 전용(값들은 해시 자리에)
++		gchold[GCCONN_ANCHOR] = gcconn -- 예약 키(Q94 (b)) — 바인드 값은 자기 자신이 키라 부딪힐 수 없다
+ 		if getData(inst).destroyed then
+ 			-- lazy claim의 구멍(리뷰 `H-171`): 이미 Destroy된 인스턴스의 옛 gcconn은 연결이
+ 			-- 끊겨 GC되므로 여기로 다시 들어오는데, 새 gcconn이 Connected=true면 그 값은

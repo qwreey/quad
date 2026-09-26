@@ -92,7 +92,7 @@ const card = D.Frame {
 <details>
 <summary>목록이나 스크롤이 수천 개가 되어도 괜찮은가요?</summary>
 
-재활용(살아남은 항목은 다시 만들지 않는 것)은 `Slot:List`가 그대로 해 줍니다. 윈도잉(보이는 구간과 여유분만 만드는 것)은 quad가 자동으로 해 주지 않고, 넘겨받는 `ctx.Index`/`ctx.Offset` 위에 직접 구현하는 패턴입니다 — [`Slot:List`로 긴 목록 다루기](/how-to/03-virtualized-infinite-scroll/)가 그 구현을 통째로 보여 줍니다.
+재활용(살아남은 항목은 다시 만들지 않는 것)은 `Slot:List`가 그대로 해 줍니다. 윈도잉(보이는 구간과 여유분만 만드는 것)은 quad가 자동으로 해 주지 않고, 넘겨받는 `ctx.Index`/`ctx.Offset` 위에 직접 구현하는 패턴입니다 — [`Slot:List`로 긴 목록 다루기](/how-to/03-long-lists-and-windowing/)가 그 구현을 통째로 보여 줍니다.
 
 </details>
 

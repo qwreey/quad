@@ -81,7 +81,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`09-overlays-modal-toast.md`](./how-to/09-overlays-modal-toast.md) — **[2026-09-25 신설]** 떠 있는 것 열고 닫기: `Visible` 유지 vs 조건부 자식(`State<Instance?>`)으로 모달을 열고 닫기, `q.Context`로 깊은 트리거에서 뿌리의 오버레이를 열기, `Slot:List`로 토스트 큐, `q.Fallback`으로 던진 에러를 에러 모달에 담기.
 - [`10-debugging-and-troubleshooting.md`](./how-to/10-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
 
-### API Reference — 손으로 관리하는 심볼 레퍼런스(25편 + 색인)
+### API Reference — 손으로 관리하는 심볼 레퍼런스(35편 + 색인 — core 11·sugar 6·roblox 6·extend 2·errors 10)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은
 시그니처(quad-types에서 복사) → 인자 표 → 반환 → 동작(불변식·**에러 문구 verbatim**) → 예제(mock 실행·신 솔버 검사) → 관련. **생성기 없음** — 손으로 쓴 심볼은
 전부 손으로 "관리"한다(사용자: 아키텍처가 견고해 자동화 이점이 작다). `D.<Class>` 31개 페이지도 만들지 않는다 — 표면 한 페이지·한 예시만 두고 각 클래스의 프로퍼티·이벤트는

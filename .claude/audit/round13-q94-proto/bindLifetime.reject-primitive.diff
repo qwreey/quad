@@ -1,0 +1,16 @@
+--- quad-base/src/LifetimeHandle.luau
++++ quad-base/src/LifetimeHandle.luau
+@@ -125,6 +125,13 @@
+ 		if value == nil then
+ 			Err.errorBefore("Quad0103 bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
+ 		end
++		-- round13 Q94 (a): only reference-identity values. A primitive (number/string/boolean/…)
++		-- has no identity of its own — two unrelated binds of "label" are the same key and
++		-- collide, and the number 1 used to overwrite the gcconn slot (quad-roblox gchold[1]).
++		local valueType = type(value)
++		if valueType ~= "table" and valueType ~= "function" and valueType ~= "userdata" then
++			Err.errorBefore("QuadXXXX bindLifetime: value must be a table, function or userdata (a primitive has no identity to bind)", SURFACE) -- id assigned by `error-codes.py --next` on adoption
++		end
+ 		if not canBound(value) then
+ 			-- Only report which path holds the value. Never index `.Subscribed`
+ 			-- unconditionally — value may be a plain closure.

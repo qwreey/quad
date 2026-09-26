@@ -1,0 +1,17 @@
+--- quad-base/src/State.luau
++++ quad-base/src/State.luau
+@@ -203,7 +203,13 @@
+ 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
+ 		-- (`hold[1]`), never this result node.
+ 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
+-		self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
++		-- round13 Q93 (a): clear only OUR stamp. If fn yielded and an upstream change let another
++		-- coroutine enter a newer generation (stamp `gen'`, its fn still parked), wiping that stamp
++		-- let this coroutine's `Get` loop run the newer generation's fn a second time concurrently.
++		-- Left in place, that re-entry hits the Quad0184 check above like any same-generation read.
++		if self._computing == gen then
++			self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
++		end
+ 		if isModifier(result) then
+ 			-- `H-205` history: this used to be a hand-counted level 3; the walker
+ 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
