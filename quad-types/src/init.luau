@@ -608,8 +608,8 @@ export type Backend = {
 	setTimeout: (func: () -> (), delay: number) -> Timeout,
 	clearTimeout: (timeout: Timeout) -> (),
 	-- 주입 물리 op(`architecture.md` EngineOps, M5 몫 — `H-25` 단위 ⑤
-	-- 확인분). quad-base엔 값이 없고(스텁도 없음 — 미설치 접근은 nil 호출
-	-- 크래시) 백엔드 팩토리가 설치한다. 시그니처 정본은
+	-- 확인분). quad-base엔 미설치 스텁(`Quad0108`, `H-501`)만 있고 백엔드
+	-- 팩토리가 실 구현으로 덮는다. 시그니처 정본은
 	-- `base/slot-plan.md`의 "물리 조작은 주입 op다" 절.
 	nativeInsert: (target: any, offset: number, elements: { any }) -> (),
 	nativeExtract: (target: any, offset: number, elements: { any }, newElements: { any }?) -> (),

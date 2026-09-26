@@ -281,7 +281,7 @@ do
 	-- `H-471` (탐사 A): the descriptor is consumed AFTER nativeClaim — a nativeClaim raise
 	-- (already claimed) leaves the same descriptor reusable, so the retry shows the real cause
 	local root4 = Instance.new("Frame")
-	quad.Backend.bindLifetime(root4, {}) -- claims it first
+	quad.Backend.bindLifetime(root4, {}) -- Instance.new is claimed at birth (Q64); this only sets up gchold
 	local desc4 = M("Frame")(quad.MapperRoot)({})
 	local okR, errR = pcall(function() quad.Claim(root4, desc4) end)
 	assert(not okR and string.find(tostring(errR), "already claimed", 1, true) ~= nil, "first: real cause: " .. tostring(errR))

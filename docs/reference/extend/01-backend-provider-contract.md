@@ -5,7 +5,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 # 백엔드 프로바이더 규약
 
 > **대상 독자**: Quad를 Roblox 외 플랫폼으로 포팅하거나 커스텀 백엔드를 작성하려는 엔지니어
-> **정본 소스**: 주입 슬롯의 타입 정의는 `quad-types/src/init.luau`, Roblox 구현은 `quad-roblox/src/EngineOps.luau`와 `quad-roblox/src/LifetimeHandle.luau`, 미설치 스텁은 `quad-base/src/LifetimeHandle.luau`
+> **정본 소스**: 주입 슬롯의 타입 정의는 `quad-types/src/init.luau`, Roblox 구현은 `quad-roblox/src/EngineOps.luau`와 `quad-roblox/src/LifetimeHandle.luau`, 미설치 스텁 본체는 `quad-base/src/NotInstalled.luau`(hold·엔진·시간 op는 `quad-base/src/LifetimeHandle.luau`가, 태그 op는 `quad-base/src/Tag.luau`가, `setAttr`는 `quad-base/src/Attr/Key.luau`가 심습니다)
 
 이 페이지의 심볼: 주입 슬롯 20개를 [다섯 묶음](#1-아키텍처-개요-base와-provider의-분리)으로 —
 [물리 트리 조작 `native*`](#2-물리-트리-조작-native) · [판정·훅·조회 op](#3-판정훅조회-op) ·
@@ -81,7 +81,7 @@ nativeDispose (element: any) -> ()
 
 Roblox 백엔드는 `offset` 인자를 전부 무시합니다. 자식의 배치 순서는 `LayoutOrder`가 정하지 `Parent`에 붙은 순서가 정하지 않기 때문에, **순서는 quad 쪽 장부일 뿐 물리적인 성질이 아닙니다.**
 
-그래서 `nativeMove`/`nativeSwap`은 quad-roblox에서 빈 함수로 **일부러 덮어씁니다**. 그냥 두면 "떼었다 다시 붙이기"로 재배치를 흉내내게 되는데, 그건 `.Parent` 쓰기 두 번(따라서 `AncestryChanged` 재발화와 깜빡임)을 치르고도 Roblox에서는 물리적으로 아무것도 바꾸지 않습니다. mock 백엔드도 같은 이유로 같은 선택을 합니다.
+그래서 `nativeMove`/`nativeSwap`은 quad-roblox에서 **빈 함수**입니다 — 안 심으면 다른 op와 똑같이 미설치 스텁(§7)이 던지므로, "아무 일도 안 한다"는 것도 명시적으로 심어야 합니다. `.Parent`를 떼었다 다시 붙여 재배치를 흉내내는 길도 있지만 그건 `.Parent` 쓰기 두 번(따라서 `AncestryChanged` 재발화와 깜빡임)을 치르고도 Roblox에서는 물리적으로 아무것도 바꾸지 않습니다. mock 백엔드도 같은 이유로 같은 선택을 합니다.
 
 DOM처럼 자식 순서가 실제 물리 성질인 플랫폼을 쓴다면 이 둘을 진짜로 구현해야 하고, 그때 `offset` 인자들이 의미를 갖습니다.
 
@@ -100,7 +100,7 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 ```
 
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
-- **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다.
+- **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다. **발화 시점은 동기여도 지연이어도 됩니다** — Roblox는 플레이스 설정(`SignalBehavior` Immediate/Deferred)에 따라 `Destroying`이 `Destroy()` 안에서 불리기도, 다음 재개점으로 미뤄지기도 하며 quad는 둘 다 견디도록 짜여 있습니다(gcconn 끊김은 언제나 동기라 `isHeld`가 먼저 거짓이 됩니다). mock은 동기 하나만 구현합니다. `Disconnect`는 콜론 호출(`conn:Disconnect()`)이고 두 번 불러도 무해해야 합니다.
 - **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`Quad0225 nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
 - **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Quad0241 Slot: this element is not claimed by quad …` / `Quad0219 InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그 인스턴스의 `Destroying` 연결이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
 - **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
@@ -131,7 +131,7 @@ isHeld          (value: any) -> boolean
 isHeldBy        (value: any, inst: any) -> boolean
 ```
 
-- **`holdLifetime(inst, value)`** — `value`를 `inst`의 강참조 홀더에 넣고(`inst`가 사는 동안 `value`가 GC되지 않게), `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. 이것이 **커밋**입니다. quad-base는 자기 게이트(nil, `canBound`, 값의 바인드 전 훅)를 전부 통과시킨 뒤에야 이걸 부르고, 이게 돌아오면 값의 커밋 뒤 훅(`Observer`의 따라잡기, `Effect`의 `onDestroying` 연결)을 돌립니다. `inst`가 이 백엔드의 quad 소유 요소가 아니면 **아무것도 쓰지 않고 던지세요** — quad-roblox 문구는 `Quad0226 bindLifetime: Instance is not claimed by quad …`입니다(접두는 사용자가 부른 프리미티브 이름 `bindLifetime:`으로 — 사용자는 `holdLifetime`을 모릅니다). 순서 하나: quad-base의 값 쪽 게이트(nil, `canBound`)가 이 인스턴스 게이트보다 **먼저** 돕니다 — 이미 다른 곳에 묶인 값을 미claim 인스턴스에 넣으면 "already bound"가 납니다. mock은 여기서 lazy claim을 합니다(mock 인스턴스는 quad 밖에서 만들어지므로). 파괴된 인스턴스를 `isClaimed`처럼 즉시 거부하지는 **마세요** — GC 전에 다시 claim된 시체가 영원히 살아 있는 gcconn을 얻는 구멍이 있어, 여기서는 셋업 유무만 봅니다.
+- **`holdLifetime(inst, value)`** — `value`를 `inst`의 강참조 홀더에 넣고(`inst`가 사는 동안 `value`가 GC되지 않게), `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. 이것이 **커밋**입니다. quad-base는 자기 게이트(nil, `canBound`, 값의 바인드 전 훅)를 전부 통과시킨 뒤에야 이걸 부르고, 이게 돌아오면 값의 커밋 뒤 훅(`Observer`의 따라잡기, `Effect`의 `onDestroying` 연결)을 돌립니다. `inst`가 이 백엔드의 quad 소유 요소가 아니면 **아무것도 쓰지 않고 던지세요** — quad-roblox 문구는 `Quad0226 bindLifetime: Instance is not claimed by quad …`입니다(접두는 사용자가 부른 프리미티브 이름 `bindLifetime:`으로 — 사용자는 `holdLifetime`을 모릅니다). 순서 하나: quad-base의 값 쪽 게이트(nil, `canBound`)가 이 인스턴스 게이트보다 **먼저** 돕니다 — 이미 다른 곳에 묶인 값을 미claim 인스턴스에 넣으면 "already bound"가 납니다. mock도 같은 게이트를 가집니다(`Instance.new`는 태어날 때 claim된 것으로 두고 `Instance.foreign`만 미claim — **[2026-09-27]** 예전엔 여기서 lazy claim을 해 미claim 호스트가 조용히 통과했습니다). 파괴된 인스턴스를 `isClaimed`처럼 즉시 거부하지는 **마세요** — GC 전에 다시 claim된 시체가 영원히 살아 있는 gcconn을 얻는 구멍이 있어, 여기서는 셋업 유무만 봅니다.
 - **`releaseLifetime(value)`** — 역입니다. 홀더에서 `value`를 빼고 남긴 근거를 지웁니다. 안 쥐고 있던 값이면 no-op, `inst`는 건드리지 않고, **cleanup을 부르지도 안쪽 구독을 떼지도 않습니다** — 그건 quad-base의 `unbindLifetime`이 이걸 부르기 전에 이미 처리합니다. `nil` 게이트도 quad-base 몫이라 여기엔 필요 없습니다.
 - **`isHeld(value)`** — "`value`에 남긴 근거가 아직 살아 있는가". quad-roblox와 mock 모두 `holdLifetime`이 복사해 둔 gcconn의 `.Connected`를 봅니다 — 인스턴스가 Destroy되면 즉시 거짓이 되고, 그 뒤 GC가 약한 항목을 치웁니다. 순수 술어입니다: 던지지 말고, `nil`에는 거짓을 돌려주세요. 매 emit 전파마다 불리므로 싸게 만드세요.
 - **`isHeldBy(value, inst)`** — "`value`를 쥔 것이 바로 이 `inst`인가". quad-base가 거부 메시지 한 팔(`… already bound to this Instance (the same handle at two positions?)`)을 고르는 데만 씁니다. 순수 술어입니다.
@@ -160,6 +160,7 @@ setAttr   (inst: any, name: string, v: any) -> ()
 
 - **태그 op는 이름 하나가 아니라 이름 배열을 받습니다.** 배치가 계약인 이유는 웹 백엔드라면 `className`을 한 번에 다시 쓰는 게 자연스럽기 때문입니다. Roblox에는 배치 API가 없으므로 루프가 백엔드 쪽에 있습니다(`CollectionService:AddTag` / `:RemoveTag`).
 - **`setAttr(inst, name, nil)`은 삭제입니다.** Roblox는 `inst:SetAttribute(name, nil)`이 네이티브로 삭제라 그대로 위임합니다. 다른 플랫폼이라면 `nil` 분기를 직접 써야 합니다.
+- **값과 이름의 범위 검사는 백엔드 몫입니다.** quad-base는 그룹 경로 `q.Attr({ … })`에서만 함수·테이블·빈 이름을 생성 시점에 거르고, 키 경로 `[q.AttrKey(name)] = v`와 State가 나중에 emit하는 값은 그대로 `setAttr`까지 옵니다 — Roblox는 `SetAttribute`가 지원하지 않는 타입(`Array is not a supported attribute type`)과 이름 규칙을 스스로 던지므로 quad-roblox는 그대로 위임합니다. mock은 테이블·함수·스레드만 거부하고 이름은 검사하지 않습니다.
 
 ### 5.2 시간 op
 

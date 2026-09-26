@@ -1,0 +1,150 @@
+== 1. pure predicates, boundary args (contract: never throw, nil -> false) ==
+isInst(nil)                                                OK  false
+isInst(5)                                                  OK  false
+isInst('s')                                                OK  false
+isInst(NaN)                                                OK  false
+isInst({})                                                 OK  false
+isInst(true)                                               OK  false
+isInst(fn)                                                 OK  false
+isClaimed(nil)                                             OK  false
+isClaimed(5)                                               OK  false
+isClaimed('s')                                             OK  false
+isClaimed(NaN)                                             OK  false
+isClaimed({})                                              OK  false
+isClaimed(true)                                            OK  false
+isClaimed(fn)                                              OK  false
+isHeld(nil)                                                OK  false
+isHeld(5)                                                  OK  false
+isHeld('s')                                                OK  false
+isHeld(NaN)                                                OK  false
+isHeld({})                                                 OK  false
+isHeld(true)                                               OK  false
+isHeld(fn)                                                 OK  false
+isHeldBy(nil, inst)                                        OK  false
+isHeldBy({}, nil)                                          OK  false
+isHeldBy(5, inst)                                          OK  false
+isHeldBy({}, 5)                                            OK  false
+isHeldBy('s', inst)                                        OK  false
+isHeldBy({}, 's')                                          OK  false
+isHeldBy(NaN, inst)                                        OK  false
+isHeldBy({}, NaN)                                          OK  false
+isHeldBy({}, inst)                                         OK  false
+isHeldBy({}, {})                                           OK  false
+isHeldBy(true, inst)                                       OK  false
+isHeldBy({}, true)                                         OK  false
+isHeldBy(fn, inst)                                         OK  false
+isHeldBy({}, fn)                                           OK  false
+canExecute(NaN)                                            OK  false
+canBound(5)                                                OK  true
+== 2. releaseLifetime boundary (contract: nil gate is base's) ==
+releaseLifetime(nil)                                       ERR ./quad-base/test/mock.luau:706: Quad0138 Relate:GetWeak: inst must not be nil
+releaseLifetime(5)                                         OK  
+releaseLifetime('s')                                       OK  
+releaseLifetime(NaN)                                       ERR ./quad-base/src/Relate.luau:40: table index is NaN
+releaseLifetime({})                                        OK  
+releaseLifetime(true)                                      OK  
+releaseLifetime(fn)                                        OK  
+== 3. onDestroying: Connection shape / colon Disconnect / destroyed inst ==
+type	table	Connected	true	Disconnect is fn	function
+c:Disconnect()                                             OK  
+  after Disconnect Connected=	false
+c:Disconnect() twice                                       OK  
+c.Disconnect() dot-call                                    ERR ./quad-base/test/mock.luau:59: attempt to index nil with 'Connected'
+  fired after Disconnect+Destroy =	0
+  sync order:	fn(Parent=Frame,Connected=nil) ; after Destroy returns	| c2.Connected after =	false
+  onDestroying on already-destroyed: Connected=	true	fired=	0
+onDestroying(non-instance {})                              ERR onDestroying: inst is not a mock instance
+onDestroying(nil)                                          ERR onDestroying: inst is not a mock instance
+== 4. nativeFindChild: className / key domain / duplicates ==
+find(root,'Kid',nil)                                       OK  ImageLabel
+find(root,'Kid','TextLabel') [2nd sibling has class]       OK  nil
+find(root,'Kid','ImageLabel')                              OK  ImageLabel
+find(root,'Kid','GuiObject') [abstract]                    OK  nil
+find(root,'Kid','Instance') [root class]                   OK  nil
+find(root,123,nil)                                         OK  nil
+find(root,nil,nil)                                         OK  nil
+find({},'Kid')                                             ERR ./quad-base/test/mock.luau:464: attempt to call missing method 'FindFirstChild' of table
+k2:IsA('GuiObject')                                        OK  false
+k2:IsA('Instance')                                         OK  false
+== 5. native* no-op/offset, dispose domain ==
+nativeMove(any args)                                       OK  
+nativeSwap(any args)                                       OK  
+nativeInsert(t, 999, {a})                                  OK  
+  a.Parent==t	true
+nativeRemove(t,0,{a},{b})                                  OK  
+  b.Parent==t	true	a destroyed	true
+nativeDispose(already destroyed a)                         OK  
+nativeDispose({})                                          ERR ./quad-base/test/mock.luau:473: attempt to call missing method 'Destroy' of table
+nativeInsert(t,0,{ {} })                                   OK  
+== 6. hold ops: GC-evidence semantics ==
+  isHeld after bind	true	isHeldBy(v,a)	true	canExecute	true
+  isHeld right after Destroy (no GC)	false	canBound	true
+bindLifetime(a2, v) after a destroyed                      OK  
+  isHeldBy(v,a2)	true
+  isClaimed(foreign) before	false
+bindLifetime(foreign, {})                                  OK  
+  isClaimed(foreign) after bind	true
+nativeClaim(foreign) after bind                            ERR nativeClaim: Instance is already claimed by quad
+bindLifetime(destroyed Instance.new, w)                    OK  
+  isHeld(w)	false	canBound(w)	true
+bindLifetime(destroyed foreign, {})                        OK  
+holdLifetime({}, {}) non-instance                          ERR bindLifetime: inst is not a mock instance
+holdLifetime(a2, nil) direct                               ERR ./quad-base/test/mock.luau:698: table index is nil
+bindLifetime(h, 5)                                         OK  
+    isHeld(5)	true
+bindLifetime(h, 's')                                       OK  
+    isHeld('s')	true
+bindLifetime(h, true)                                      OK  
+    isHeld(true)	true
+bindLifetime(h, NaN)                                       ERR ./quad-base/test/mock.luau:698: table index is NaN
+== 7. isClaimed after Destroy / nativeClaim codes ==
+  isClaimed(new)	true
+  isClaimed(new, destroyed)	false
+nativeClaim(new) (already)                                 ERR nativeClaim: Instance is already claimed by quad
+  isClaimed(foreign claimed)	true
+== 8. time ops ==
+  fired synchronously?	0
+  after advanceTime(0)	t0
+  self-rescheduling setTimeout(0) chain: callbacks run in ONE advanceTime(0) =	1000
+clearTimeout(self) inside own callback                     OK  
+  same-instant sibling cancel: fired =	A
+setTimeout(fn, math.huge)                                  OK  table: 0x000064a580eecb00
+setTimeout(fn, -0)                                         OK  table: 0x000064a580eeca40
+setTimeout(fn, NaN)                                        ERR setTimeout: delay must be a non-negative number (got number)
+clearTimeout(forged {__quadTimeout=true})                  ERR ./quad-base/test/mock.luau:615: attempt to index nil with 'live'
+clearTimeout(nil)                                          ERR clearTimeout: expected a Timeout from setTimeout (got nil)
+== 9. setAttr / addTag value domain (mock) ==
+setAttr(a,'X',table)                                       OK  
+setAttr(a,'X',fn)                                          OK  
+setAttr(a,'X',instance)                                    OK  
+setAttr(a,'X',NaN)                                         OK  
+setAttr(a,"",1)                                            OK  
+setAttr(a,"RBXfoo",1)                                      OK  
+setAttr(a,"xxxxxxxxxxxx",1)                                OK  
+setAttr(a,"has space",1)                                   OK  
+setAttr(a,"a.b",1)                                         OK  
+addTag(a,{''})                                             OK  
+addTag(a,{string.rep('x',101)})                            OK  
+addTag(a,{5})                                              OK  
+drive {[AttrKey('T')] = {}} (raw key, table value)         OK  
+drive { Attr({ S = src }) }                                OK  
+src:Set({}) -> setAttr(table) via State                    OK  
+  inst2:GetAttribute('S') type =	table
+drive {[AttrKey('RBXname')] = 1}                           OK  
+Tag with '' name: drive { q.Tag('') }                      ERR ./quad-base/test/e11-mock.luau:206: Quad0199 Tag: names must be strings — an empty string is not a tag name
+== 10. Brand (quad_types) ==
+Brand:Is(nil)                                              OK  false
+Brand:Is(5)                                                OK  false
+Brand:Is('s')                                              OK  false
+Brand:Is(NaN)                                              OK  false
+Brand:Is({})                                               OK  false
+Brand:Is(true)                                             OK  false
+Brand:Is(fn)                                               OK  false
+Brand:Register(nil)                                        ERR ./quad-base/luau_packages/.pesde/qwreey+quad_types/3.2.0/quad_types/src/init.luau:818: table index is nil
+Brand:Register(NaN)                                        ERR ./quad-base/luau_packages/.pesde/qwreey+quad_types/3.2.0/quad_types/src/init.luau:818: table index is NaN
+Brand.Is(x) dot-call (x taken as self)                     OK  false
+Brand.Register(y) dot-call                                 ERR ./quad-base/luau_packages/.pesde/qwreey+quad_types/3.2.0/quad_types/src/init.luau:818: table index is nil
+== 11. error-code prefix of mock messages vs engine ==
+  mock setTimeout msg:	setTimeout: func must be a function (got number)
+  mock nativeClaim msg:	nativeClaim: Instance is already claimed by quad
+  mock holdLifetime msg:	bindLifetime: inst is not a mock instance

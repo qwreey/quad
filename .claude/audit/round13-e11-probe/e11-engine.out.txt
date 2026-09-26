@@ -1,0 +1,80 @@
+== 1. real pure predicates, boundary args ==
+isInst(nil)                                                OK  false
+isInst(5)                                                  OK  false
+isInst('s')                                                OK  false
+isInst(NaN)                                                OK  false
+isInst({})                                                 OK  false
+isInst(true)                                               OK  false
+isInst(fn)                                                 OK  false
+isClaimed(nil)                                             OK  false
+isClaimed(5)                                               OK  false
+isClaimed('s')                                             OK  false
+isClaimed(NaN)                                             OK  false
+isClaimed({})                                              OK  false
+isClaimed(true)                                            OK  false
+isClaimed(fn)                                              OK  false
+isHeld(nil)                                                OK  false
+isHeld(5)                                                  OK  false
+isHeld('s')                                                OK  false
+isHeld(NaN)                                                OK  false
+isHeld({})                                                 OK  false
+isHeld(true)                                               OK  false
+isHeld(fn)                                                 OK  false
+isInst(mock instance) [real = typeof=='Instance']          OK  false
+isHeldBy(nil, mi)                                          OK  false
+isHeldBy({}, nil)                                          OK  false
+isHeldBy(5, mi)                                            OK  false
+isHeldBy({}, 5)                                            OK  false
+isHeldBy('s', mi)                                          OK  false
+isHeldBy({}, 's')                                          OK  false
+isHeldBy(NaN, mi)                                          OK  false
+isHeldBy({}, NaN)                                          OK  false
+isHeldBy({}, mi)                                           OK  false
+isHeldBy({}, {})                                           OK  false
+isHeldBy(true, mi)                                         OK  false
+isHeldBy({}, true)                                         OK  false
+isHeldBy(fn, mi)                                           OK  false
+isHeldBy({}, fn)                                           OK  false
+== 2. real releaseLifetime boundary ==
+releaseLifetime(nil)                                       ERR ./quad-roblox/src/LifetimeHandle.luau:146: Quad0138 Relate:GetWeak: inst must not be nil
+releaseLifetime(5)                                         OK  
+releaseLifetime('s')                                       OK  
+releaseLifetime(NaN)                                       ERR ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Relate.luau:40: table index is NaN
+releaseLifetime({})                                        OK  
+releaseLifetime(true)                                      OK  
+releaseLifetime(fn)                                        OK  
+== 3. real nativeClaim / isClaimed / holdLifetime ==
+  real isClaimed(mock Instance.new before nativeClaim)	false
+holdLifetime(unclaimed, {})                                ERR Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+nativeClaim(a)                                             OK  
+  isClaimed(a)	true
+nativeClaim(a) again                                       ERR Quad0225 nativeClaim: Instance is already claimed by quad
+  isHeld(v)	true
+  after Destroy: isHeld(v)	false	isClaimed(a)	false
+bindLifetime(destroyed claimed a, w) pre-GC                OK  
+  isHeld(w)	false
+bindLifetime(destroyed claimed a2, {}) post-GC             ERR Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+nativeClaim(destroyed a2) post-GC (re-claim corpse)        OK  
+  isClaimed(re-claimed corpse)	true
+bindLifetime(re-claimed corpse, c)                         OK  
+  isHeld(c) on re-claimed corpse	true
+holdLifetime(nil, {}) direct                               ERR ./quad-roblox/src/LifetimeHandle.luau:124: Quad0138 Relate:GetWeak: inst must not be nil
+nativeClaim(nil)                                           ERR ./quad-roblox/src/LifetimeHandle.luau:63: Quad0138 Relate:GetWeak: inst must not be nil
+nativeClaim(5)                                             ERR ./quad-roblox/src/LifetimeHandle.luau:71: attempt to index number with 'GetPropertyChangedSignal'
+== 4. real onDestroying ==
+onDestroying(nil, fn)                                      ERR ./quad-roblox/src/EngineOps.luau:94: attempt to index nil with 'Destroying'
+onDestroying({}, fn)                                       ERR ./quad-roblox/src/EngineOps.luau:94: attempt to index nil with 'Connect'
+== 5. real nativeFindChild over mock (IsA == ClassName equality in mock) ==
+find(root,'Kid','TextLabel')                               OK  true
+find(root,'Kid','GuiObject')                               OK  false
+find(root, nil)                                            OK  nil
+find(root, 123)                                            OK  nil
+== 6. real time ops ==
+setTimeout(fn, math.huge)                                  OK  table: 0x0000604ac7c48a80
+setTimeout(fn, 0)                                          OK  0
+  msg:	Quad0215 setTimeout: func must be a function (got number)
+clearTimeout(forged {__quadTimeout=true})                  ERR ./quad-roblox/test/e11-engine.luau:13: invalid argument #1 to 'status' (thread expected, got nil)
+== 7. real setAttr/addTag pass-through (engine gate is Roblox's; mock SetAttribute accepts all) ==
+setAttr(t,'X',{})                                          OK  
+setAttr(t,'RBXx',1)                                        OK  
+addTag(t,{''})                                             OK  

@@ -1,0 +1,5 @@
+Run from a `cp -rL` copy of the repo (packages + luau_packages/.pesde), not in-tree:
+  e11-mock.luau, e11-stubs.luau   -> place in <copy>/quad-base/test/,   run `luau quad-base/test/<f>` from <copy>
+  e11-engine.luau, e11-foreign.luau -> place in <copy>/quad-roblox/test/, run `luau quad-roblox/test/<f>` from <copy>
+HEAD 6c1e942f. *.out.txt are the captured outputs. The "real" rows run quad-roblox's EngineOps/LifetimeHandle
+over MOCK instances (game/task shimmed) — Luau logic only; Roblox engine behavior is NOT measured here.

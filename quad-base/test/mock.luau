@@ -328,6 +328,14 @@ local function readAttributes(inst: any): { [string]: any }
 end
 
 function methods.SetAttribute(inst: any, name: string, v: any)
+	-- [2026-09-27 round13 E11] the engine rejects values that are not attribute types — a Lua table,
+	-- function or thread is never one (Studio 2026-09-08: "Array is not a supported attribute type").
+	-- The mock used to store anything, so `[q.AttrKey("T")] = {}` and a State that emits a table passed
+	-- every spec while failing on the engine. Names (RBX prefix, length) are engine knowledge — unmeasured, not gated.
+	local t = type(v)
+	if t == "table" or t == "function" or t == "thread" then
+		error(`{t} is not a supported attribute type`, 2)
+	end
 	attrMapOf(inst)[name] = v -- nil deletes, like Roblox
 end
 
@@ -692,7 +700,14 @@ local function mockProvider(quad: any): { [any]: any }
 		if not isMockInstance(inst) then
 			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE) -- 사용자가 부른 프리미티브 이름으로
 		end
-		claim(inst) -- mock만 lazy(헤더 주석) — quad-roblox는 여기서 "not claimed" 에러
+		-- [2026-09-27 round13 E11] quad-roblox와 같은 게이트 — quad 소유가 아닌 인스턴스(`Instance.foreign`)는
+		-- 아무것도 쓰지 않고 던진다(계약 §4). 예전엔 여기서 lazy claim을 해 foreign 호스트가 조용히 통과했고,
+		-- 그 근거("mock 인스턴스는 quad 밖에서 만들어지므로")는 Q64가 `Instance.new`를 태어날 때 claim으로
+		-- 바꾼 뒤 사라졸 것이었다. gchold/gcconn 셋업만 첫 hold에 lazy로 남긴다(이미 claim된 인스턴스에 한해).
+		if not getData(inst).claimed then
+			Err.errorBefore("bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad (mock: Instance.foreign needs nativeClaim/Claim first)", SURFACE)
+		end
+		claim(inst)
 
 		local gchold = InstData:GetWeak(inst, "gchold")
 		gchold[value] = true -- 강참조: inst가 사는 동안 value 생존 보장(계약 1)

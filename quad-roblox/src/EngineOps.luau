@@ -11,7 +11,7 @@
 	    nativeMove   (target, fromOffset, elements, toOffset)
 	    nativeSwap   (target, offsetA, elementsA, offsetB, elementsB)
 	    nativeDispose(element)
-	  judgement/hook ops (no composition fallback — absent means error):
+	  judgement/hook ops (absent means the `Quad0108` not-installed stub throws — as for every slot):
 	    isInst(value) / onDestroying(inst, fn) / nativeFindChild(inst, key, className?)
 	  (`nativeClaim` also belongs to this inventory but is implemented in
 	   LifetimeHandle.luau — it shares InstData with holdLifetime/isHeld.)
@@ -30,11 +30,11 @@
 
 	Roblox ignores `offset` — child order is not a physical property here, so
 	positional args exist only to satisfy the injected-op contract shared with
-	offset-using backends (DOM). That is also why `nativeMove`/`nativeSwap`
-	are deliberate no-op OVERRIDES rather than left to the composition
-	fallback: the fallback would detach+reattach (two `.Parent` writes →
-	AncestryChanged refires, flicker) to achieve a reorder that changes
-	nothing physical on Roblox (`ROADMAP.md` M5 banner, `H-34`/`H-44`).
+	offset-using backends (DOM). `nativeMove`/`nativeSwap` are deliberate
+	no-ops: every slot must be installed (an absent one is the `Quad0108`
+	stub — the old "composition fallback" was withdrawn, round1 Q6 / `H-501`),
+	and a detach+reattach reorder (two `.Parent` writes → AncestryChanged
+	refires, flicker) would change nothing physical on Roblox (`H-34`/`H-44`).
 ]]
 
 local QuadTypes = require("../luau_packages/quad_types")

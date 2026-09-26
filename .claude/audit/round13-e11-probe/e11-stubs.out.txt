@@ -1,0 +1,23 @@
+nativeInsert     ERR Quad0108 quad: nativeInsert is not available 
+nativeExtract    ERR Quad0108 quad: nativeExtract is not available 
+nativeRemove     ERR Quad0108 quad: nativeRemove is not available 
+nativeMove       ERR Quad0108 quad: nativeMove is not available 
+nativeSwap       ERR Quad0108 quad: nativeSwap is not available 
+nativeDispose    ERR Quad0108 quad: nativeDispose is not available 
+isInst           ERR Quad0108 quad: isInst is not available 
+onDestroying     ERR Quad0108 quad: onDestroying is not available 
+nativeClaim      ERR Quad0108 quad: nativeClaim is not available 
+isClaimed        ERR Quad0108 quad: isClaimed is not available 
+nativeFindChild  ERR Quad0108 quad: nativeFindChild is not available 
+holdLifetime     ERR Quad0108 quad: holdLifetime is not available 
+releaseLifetime  ERR Quad0108 quad: releaseLifetime is not available 
+isHeld           ERR Quad0108 quad: isHeld is not available 
+isHeldBy         ERR Quad0108 quad: isHeldBy is not available 
+addTag           ERR Quad0108 quad: addTag is not available 
+removeTag        ERR Quad0108 quad: removeTag is not available 
+setAttr          ERR Quad0108 quad: setAttr is not available 
+setTimeout       ERR Quad0108 quad: setTimeout is not available 
+clearTimeout     ERR Quad0108 quad: clearTimeout is not available 
+stubs:	20
+canExecute(bare)	false	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+other Backend fields:	bindLifetime,canBound,canExecute,unbindLifetime

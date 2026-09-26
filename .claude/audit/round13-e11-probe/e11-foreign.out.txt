@@ -1,0 +1,24 @@
+---- mock ----
+   isClaimed(foreign) after =	true
+mock: drive(foreign, { Effect })                               OK  
+mock: drive(foreign, { Slot })                                 OK  
+mock: drive(Instance.new, { Effect })  [mock: born claimed]    OK  
+mock: bindLifetime(foreign, {}) then Claim(foreign)            ERR ./quad-roblox/test/e11-foreign.luau:39: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+mock: drive(new, {[AttrKey('T')] = {}})                        OK  
+---- real ----
+real: drive(foreign, { Effect })                               ERR ./quad-roblox/test/e11-foreign.luau:25: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+real: drive(foreign, { Slot })                                 ERR ./quad-roblox/test/e11-foreign.luau:31: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+real: drive(Instance.new, { Effect })  [mock: born claimed]    ERR ./quad-roblox/test/e11-foreign.luau:34: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+real: bindLifetime(foreign, {}) then Claim(foreign)            OK  
+real: drive(new, {[AttrKey('T')] = {}})                        ERR ./quad-roblox/test/e11-foreign.luau:42: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+---- attr value domain, claimed host (real claims via nativeClaim) ----
+   GetAttribute T type	table
+mock: drive(host, {[AttrKey('T')] = {}})                       OK  
+   GetAttribute S type	table
+mock: drive(host, { Attr({S = src}) }); src:Set({})            OK  
+mock: drive(host, {[AttrKey('F')] = function})                 OK  
+   GetAttribute T type	table
+real: drive(host, {[AttrKey('T')] = {}})                       OK  
+   GetAttribute S type	table
+real: drive(host, { Attr({S = src}) }); src:Set({})            OK  
+real: drive(host, {[AttrKey('F')] = function})                 OK  
