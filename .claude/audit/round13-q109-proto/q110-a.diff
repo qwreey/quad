@@ -1,0 +1,17 @@
+--- base/quad-base/src/Effect.luau	2026-09-27 04:12:39.701926248 +0900
++++ B/quad-base/src/Effect.luau	2026-09-27 04:13:10.370661598 +0900
+@@ -133,6 +133,14 @@
+ 				self._pending = false
+ 				break
+ 			end
++			-- P-Q110 (a) prototype: `force` covers the install run ONLY. A request made during it (fn Set
++			-- its own dep, or called self:Rerun()) is an ordinary request on a not-yet-executable handle
++			-- → HOLD it (the cleanup fn just returned stays stored; the replay at bind consumes it).
++			if force and self._pending and not module.Backend.canExecute(self) then
++				self._pending = false
++				self._rerunRequired = true
++				break
++			end
+ 		until not self._pending
+ 		self._running = false
+ 	end

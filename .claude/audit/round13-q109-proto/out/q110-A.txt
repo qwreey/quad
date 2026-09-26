@@ -1,0 +1,24 @@
+== 1. install fn Sets its own dep once (unbound)
+   before bind: runs=2 seen=[0,1] cleanups=[false] rerunRequired=false hasCleanup=true
+   after Subscribe: runs=2 seen=[0,1] cleanups=[false]
+   after Set(5): runs=3 seen=[0,1,5] cleanups=[false,false]
+   after Unsubscribe: cleanups=[false,false,false]
+== 1b. same, bound by drive (leaf) instead of Subscribe, then host Destroy
+   before bind runs=2; after bind runs=2 seen=[0,1] cleanups=[false]
+   after Destroy cleanups=[false,true]
+== 2. install fn calls self:Rerun() once (unbound)
+   before bind: runs=2 cleanups=[false] rerunRequired=false
+   after Subscribe: runs=2 cleanups=[false]
+   control (Rerun outside fn, unbound): runs=1 rerunRequired=true
+== 3. subscribed Effect: fn Sets its dep → runs once more (doc sentence)
+   Set(10) → runs=2 seen=[10,11] cleanups=[false,false]
+== 4. unconditional self:Rerun() in fn (bounded at 50000 by the probe)
+   install (unbound) runs:	50000
+   after Subscribe runs:	0
+   subscribed Rerun() runs:	1
+== 5. install fn Sets its dep; a Blocker'd dep; Ref dep Set in install fn
+   before bind seen [nil,x]
+   after bind seen [nil,x]
+== 6. install fn Sets dep, then Effect is never bound (GC / Unsubscribe path)
+   unbound: cleanups [false] Unsubscribe→	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+   after WeakSubscribe/WeakUnsubscribe: cleanups [false]

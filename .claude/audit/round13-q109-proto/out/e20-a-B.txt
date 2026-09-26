@@ -1,0 +1,147 @@
+==================== Observer ====================
+fresh        Subscribe        ok fn+0 cl[] Sub=true exe=true set→fn+1
+fresh        WeakSubscribe    ok fn+0 cl[] Sub=true exe=true set→fn+1
+fresh        Unsubscribe      Quad0115 fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        bind(new)        ok fn+0 cl[] Sub=false exe=true set→fn+1
+fresh        unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=false exe=false set→fn+0
+weak         Subscribe        Quad0114 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         WeakSubscribe    Quad0111 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         Unsubscribe      Quad0115 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+weak         Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+weak         bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         unbind           ok fn+0 cl[] Sub=true exe=true set→fn+1
+weak         hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Subscribe        Quad0114 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       WeakSubscribe    Quad0111 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Unsubscribe      ok fn+0 cl[] Sub=false exe=false set→fn+0
+strong       WeakUnsubscribe  Quad0112 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+strong       bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       unbind           ok fn+0 cl[] Sub=true exe=true set→fn+1
+strong       hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+bound        Subscribe        Quad0235 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        WeakSubscribe    Quad0234 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        Unsubscribe      Quad0115 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=true set→fn+1
+bound        Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=false exe=true set→fn+1
+bound        bind(new)        Quad0233 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+bound        hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+thrown       Subscribe        Quad0113 fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       WeakSubscribe    Quad0110 fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       Unsubscribe      ok fn+0 cl[] Sub=false exe=false set→fn+0
+thrown       WeakUnsubscribe  Quad0112 fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       unbind           ok fn+0 cl[] Sub=true exe=true set→fn+1
+thrown       hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+thrownBound  Subscribe        Quad0113 fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  WeakSubscribe    Quad0110 fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  Unsubscribe      Quad0115 fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  bind(new)        Quad0233 fn+0 cl[] Sub=false exe=true set→fn+1
+thrownBound  unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+thrownBound  hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    Subscribe        ok fn+0 cl[] Sub=true exe=true set→fn+1
+destroyed    WeakSubscribe    ok fn+0 cl[] Sub=true exe=true set→fn+1
+destroyed    Unsubscribe      Quad0115 fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    bind(new)        ok fn+0 cl[] Sub=false exe=true set→fn+1
+destroyed    unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      Subscribe        ok fn+0 cl[] Sub=true exe=true set→fn+1
+unbound      WeakSubscribe    ok fn+0 cl[] Sub=true exe=true set→fn+1
+unbound      Unsubscribe      Quad0115 fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      Rerun            ./audit/e20-a.luau:49: n/a fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      bind(new)        ok fn+0 cl[] Sub=false exe=true set→fn+1
+unbound      unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       Subscribe        Quad0235 [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       WeakSubscribe    Quad0234 [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       Unsubscribe      Quad0115 [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       WeakUnsubscribe  ok [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       Rerun            ./audit/e20-a.luau:49: n/a [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       bind(new)        Quad0233 [inWave exe=true dying=nil] inWaveSet→fn+1 fn+1 cl[] Sub=false exe=false set→fn+0
+inWave       unbind           ok [inWave exe=false dying=nil] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       hostDestroy      n/a(self) fn+0 cl[] Sub=false exe=false set→fn+0
+==================== Effect ====================
+fresh        Subscribe        ok fn+0 cl[] Sub=true exe=true set→fn+1
+fresh        WeakSubscribe    ok fn+0 cl[] Sub=true exe=true set→fn+1
+fresh        Unsubscribe      Quad0093 fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        Rerun            ok fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        bind(new)        ok fn+0 cl[] Sub=false exe=true set→fn+1
+fresh        unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+fresh        hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=false exe=false set→fn+0
+weak         Subscribe        Quad0091 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         WeakSubscribe    Quad0089 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         Unsubscribe      Quad0093 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+weak         Rerun            ok fn+1 cl[false] Sub=true exe=true set→fn+1
+weak         bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+1
+weak         unbind           ok fn+0 cl[] Sub=true exe=true set→fn+1
+weak         hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Subscribe        Quad0091 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       WeakSubscribe    Quad0089 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Unsubscribe      ok fn+0 cl[false] Sub=false exe=false set→fn+0
+strong       WeakUnsubscribe  Quad0092 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       Rerun            ok fn+1 cl[false] Sub=true exe=true set→fn+1
+strong       bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+1
+strong       unbind           ok fn+0 cl[] Sub=true exe=true set→fn+1
+strong       hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+1
+bound        Subscribe        Quad0231 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        WeakSubscribe    Quad0230 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        Unsubscribe      Quad0093 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=true set→fn+1
+bound        Rerun            ok fn+1 cl[false] Sub=false exe=true set→fn+1
+bound        bind(new)        Quad0233 fn+0 cl[] Sub=false exe=true set→fn+1
+bound        unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+bound        hostDestroy      ok fn+0 cl[true] Sub=false exe=false set→fn+0
+thrown       Subscribe        Quad0090 fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       WeakSubscribe    Quad0088 fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       Unsubscribe      ok fn+0 cl[] Sub=false exe=false set→fn+0
+thrown       WeakUnsubscribe  Quad0092 fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       Rerun            ok fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       bind(new)        Quad0104 fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       unbind           ok fn+0 cl[] Sub=true exe=true set→fn+0
+thrown       hostDestroy      ./audit/e20-a.luau:52: n/a fn+0 cl[] Sub=true exe=true set→fn+0
+thrownBound  Subscribe        Quad0090 fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  WeakSubscribe    Quad0088 fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  Unsubscribe      Quad0093 fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  Rerun            ok fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  bind(new)        Quad0233 fn+0 cl[] Sub=false exe=true set→fn+0
+thrownBound  unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+thrownBound  hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    Subscribe        ok fn+1 cl[] Sub=true exe=true set→fn+1
+destroyed    WeakSubscribe    ok fn+1 cl[] Sub=true exe=true set→fn+1
+destroyed    Unsubscribe      Quad0093 fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    Rerun            ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    bind(new)        ok fn+1 cl[] Sub=false exe=true set→fn+1
+destroyed    unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+destroyed    hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      Subscribe        ok fn+0 cl[] Sub=true exe=true set→fn+1
+unbound      WeakSubscribe    ok fn+0 cl[] Sub=true exe=true set→fn+1
+unbound      Unsubscribe      Quad0093 fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      WeakUnsubscribe  ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      Rerun            ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      bind(new)        ok fn+0 cl[] Sub=false exe=true set→fn+1
+unbound      unbind           ok fn+0 cl[] Sub=false exe=false set→fn+0
+unbound      hostDestroy      ok fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       Subscribe        Quad0231 [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       WeakSubscribe    Quad0230 [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       Unsubscribe      Quad0093 [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       WeakUnsubscribe  ok [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       Rerun            ok [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       bind(new)        Quad0233 [inWave exe=true dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       unbind           ok [inWave exe=false dying=true] inWaveSet→fn+0 fn+0 cl[] Sub=false exe=false set→fn+0
+inWave       hostDestroy      n/a(self) fn+0 cl[] Sub=false exe=false set→fn+0
+exit=0

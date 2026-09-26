@@ -1,0 +1,26 @@
+== C1 fn unsubscribes a sibling mid-wave: does the sibling still get this wave? (200 trials, varied creation order)
+   sibling fired before being unsubscribed:	104	 held (not fired):	96
+== C2 fn subscribes a sibling that holds an OLDER change: runs in this wave
+   sibling ran	1	times in one wave:	75	trials
+   sibling ran	2	times in one wave:	125	trials
+== C2e same for Effect sibling (held change, subscribed mid-wave)
+   effect sibling ran	1	times in one wave:	200	trials
+== C3 Observer self-Set recursion depth (nested waves) vs Effect (flat _pending loop)
+   N=100 Observer: ok maxDepth=1 final=1 | Effect: ok final=100
+   N=1000 Observer: ok maxDepth=1 final=1 | Effect: ok final=1000
+   N=5000 Observer: ok maxDepth=1 final=1 | Effect: ok final=5000
+   N=20000 Observer: ok maxDepth=1 final=1 | Effect: ok final=20000
+   N=100000 Observer: ok maxDepth=1 final=1 | Effect: ok final=100000
+== C4 Effect Rerun() from inside its own fn: loops without depth
+   install runs (unbound, force):	1
+   subscribed Rerun loop runs:	50001
+== C5 Effect A's fn calls B:Subscribe/Unsubscribe/Rerun while B is up the stack (B running)
+  	Bcl:false | A→B:Subscribe Quad0090 Effect: cannot change subscription from inside fn or cleanup | A→B:Rerun ok | A→B:WeakUnsubscribe ok | Bcl:false
+   B after: Sub=	false	running=	false
+== C6 Observer fn destroys its own host mid-wave; siblings bound to the same host / descendant
+   order	1	killer	effRuns	0
+   order	2	killer	effRuns	0
+   order	3	sib(exe=false),desc,killer	effRuns	1
+== C7 q.dispose(host) from inside an Effect fn bound to that host
+   runs	2	cleanups	false,true	dying	true	running	false
+exit=0

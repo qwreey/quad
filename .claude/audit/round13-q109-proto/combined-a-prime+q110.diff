@@ -1,0 +1,46 @@
+--- base/quad-base/src/Effect.luau	2026-09-27 04:12:39.701926248 +0900
++++ AB2/quad-base/src/Effect.luau	2026-09-27 04:13:39.900304616 +0900
+@@ -133,13 +133,35 @@
+ 				self._pending = false
+ 				break
+ 			end
++			-- P-Q110 (a) prototype: `force` covers the install run ONLY. A request made during it (fn Set
++			-- its own dep, or called self:Rerun()) is an ordinary request on a not-yet-executable handle
++			-- → HOLD it (the cleanup fn just returned stays stored; the replay at bind consumes it).
++			if force and self._pending and not module.Backend.canExecute(self) then
++				self._pending = false
++				self._rerunRequired = true
++				break
++			end
+ 		until not self._pending
+ 		self._running = false
+ 	end
+ 
+ 	-- After registration: replay a held change once (`H-144`; `Refresh` gone, `H-151`).
++	-- P-Q109 (a′) prototype: the replay reads every dep live. For a dep that IS an Epoch
++	-- (Source/Ref — nothing can sit between it and us, so its live revision is exactly what its
++	-- next delivery would carry) mark the live revision seen, so a delivery of the SAME wave that
++	-- reaches our internal Observer after the replay fails `Update`. State deps are NOT touched —
++	-- a Gate below them may be withholding (`H-151`: a withheld emit released later re-runs).
++	local function markEpochDepsSeen(self: any)
++		for d in self._deps do
++			if isEpoch(d) then
++				self._epochs:Sync(d)
++			end
++		end
++	end
++
+ 	local function resubscribeTail(self: any)
+ 		if self._rerunRequired then
++			markEpochDepsSeen(self)
+ 			self:Rerun() -- registered now, so the public gate passes
+ 		end
+ 	end
+@@ -187,6 +209,7 @@
+ 		-- (2) catch-up: a change held while unexecutable is replayed once. gcconn is
+ 		--     connected by now, so the public Rerun's gate passes.
+ 		if self._rerunRequired then
++			markEpochDepsSeen(self) -- P-Q109 (a′) prototype: same as resubscribeTail
+ 			self:Rerun()
+ 		end
+ 	end

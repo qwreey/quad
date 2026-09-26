@@ -1,0 +1,20 @@
+== 1. revive mid-wave (200 trials): runs in the wave of Set(2)
+   Effect   dep=Source  revive=Subscribe runs-per-wave: 1x200
+   Effect   dep=Source  revive=drive     runs-per-wave: 1x200
+   Effect   dep=Compute revive=Subscribe runs-per-wave: 1x101 2x99
+   Effect   dep=Compute revive=drive     runs-per-wave: 1x95 2x105
+   Observer dep=Source  revive=Subscribe runs-per-wave: 1x82 2x118
+   Observer dep=Source  revive=drive     runs-per-wave: 1x80 2x120
+   Observer dep=Compute revive=Subscribe runs-per-wave: 1x105 2x95
+   Observer dep=Compute revive=drive     runs-per-wave: 1x92 2x108
+== 2. replay, then a later sibling in the same wave Sets 3 (200 trials): values the Effect saw
+   seen [2 final=2]:	111
+   seen [2,3 final=3]:	89
+== 3. H-151 contract — Effect(fn, gated) held, Subscribe while Blocker on, then Off
+   runs at Subscribe []  total after Off [1]  (contract: Off re-runs)
+   mixed: runs at Subscribe [1/1]  total after Off [1/1,1/1]
+   rebind: runs at bind [1]  total after Off [1,1]
+== 4. H-159 — Ref dep Set before bind
+   seen [nil,button]
+== 5. ordinary revive then ordinary Set (no wave overlap)
+   seen [0,1,2,2]

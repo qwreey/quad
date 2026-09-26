@@ -1,0 +1,22 @@
+--- base/quad-base/src/Effect.luau	2026-09-27 04:12:39.701926248 +0900
++++ A/quad-base/src/Effect.luau	2026-09-27 04:13:10.370508208 +0900
+@@ -140,6 +140,11 @@
+ 	-- After registration: replay a held change once (`H-144`; `Refresh` gone, `H-151`).
+ 	local function resubscribeTail(self: any)
+ 		if self._rerunRequired then
++			-- P-Q109 (a) prototype: the replay reads every dep live, so it covers every revision up to
++			-- now — mark them seen. A delivery of the SAME wave that reaches our internal Observer after
++			-- this point then fails `Update` (no second cycle with the same value); a later Set bumps
++			-- the revision and still re-runs.
++			self._epochs:Refresh()
+ 			self:Rerun() -- registered now, so the public gate passes
+ 		end
+ 	end
+@@ -187,6 +192,7 @@
+ 		-- (2) catch-up: a change held while unexecutable is replayed once. gcconn is
+ 		--     connected by now, so the public Rerun's gate passes.
+ 		if self._rerunRequired then
++			self._epochs:Refresh() -- P-Q109 (a) prototype: same as resubscribeTail
+ 			self:Rerun()
+ 		end
+ 	end

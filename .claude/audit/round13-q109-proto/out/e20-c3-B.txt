@@ -1,0 +1,11 @@
+   N=100 Observer: ok maxDepth=100 final=100 running-after=false
+   N=1000 Observer: ok maxDepth=1000 final=1000 running-after=false
+   N=5000 Observer: ./quad-base/src/LifetimeHandle.luau:118: stack overflow maxDepth=3998 final=3999 running-after=true
+   N=20000 Observer: ./quad-base/src/LifetimeHandle.luau:118: stack overflow maxDepth=3998 final=3999 running-after=true
+   N=100000 Observer: ./quad-base/src/LifetimeHandle.luau:118: stack overflow maxDepth=3998 final=3999 running-after=true
+== install-time: fn Sets its own dep once / calls self:Rerun() once, while unbound
+   dep Set in install fn: runs before bind =	1	cleanups =		rerunRequired =	true
+   after Subscribe runs =	2
+   self:Rerun() in install fn: runs before bind =	1	rerunRequired =	true
+   control: Rerun() outside fn on an unbound Effect: runs =	1	rerunRequired =	true
+exit=0
