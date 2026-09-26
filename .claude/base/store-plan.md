@@ -110,8 +110,14 @@ store.hp:Compute(function(s) ... end)
   (`quad-types`, 스파이크는 round8 §17; `spec.store`의 캐스트 제거). **`Of`는 주석 필수** — 무주석
   `st:Of("x")`는 `Source<any>`(Q46 (a), `typing-limits.md` 8.13).
 - **⭐ [2026-08-26 신설, 8라운드 `H-122`] 생성자가 `defaults` 값 전량을
-  런타임 검증한다 — `isSource` 화이트리스트.** 타입은 `Source<T>` 필드를
-  요구하지만 `--!nocheck`/동적 코드가 `{hp = 100}`(raw 값)을 넘기면 지금
+  런타임 검증한다 — `isSource` 화이트리스트.** ~~타입은 `Source<T>` 필드를
+  요구하지만~~ **[2026-09-27 round13 E13 정정]** 타입은 요구하지 않는다 — 생성자
+  타입 `(() -> Store<{}>) & (<T>(defaults: T) -> Store<T>)`는 값에 제약이 없어
+  strict 신 솔버에서도 `q.Store({ x = 5 })`·`q.Store({ c = q.Context() })`가
+  진단 0으로 통과하고 `local v: number = s.x`까지 통과한다(`audit/round13-e13-types-probe.luau`
+  T7~T9). 그래서 막는 것은 이 런타임 화이트리스트(`Quad0198`) **하나뿐**이다 —
+  타입에서도 막으려면 새 타입 장치가 필요하다(문항으로 올리지 않음 — 런타임이 막는다).
+  `--!nocheck`/동적 코드뿐 아니라 strict 코드도 `{hp = 100}`(raw 값)을 넘길 수 있는데 지금
   스케치(`table.clone`)는 **조용히 받고** 첫 `store.hp:Get()`에서 엉뚱한
   에러로 죽는다. `H-40`이 `:List` 요소 검증을 블랙리스트에서 화이트리스트로
   뒤집은 것과 같은 성격의 자리다 — **사용자 확정**으로 여기도 화이트리스트를

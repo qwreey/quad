@@ -74,8 +74,17 @@ local function Init(module: any)
 	-- `__tostring` (2026-09-08, advisory 권고 1): the declared key set, sorted for determinism
 	function Impl.__tostring(self: any): string
 		local names = Impl.Names(self)
-		table.sort(names)
-		return `Store\{{table.concat(names, ", ")}}`
+		-- [2026-09-27 round13 E13] a `rawset(store, 1, …)` key (the docs say direct assignment is not
+		-- blocked) made this sort throw "attempt to compare string < number" — a debugging path must
+		-- not die on what the user was told is merely unsupported. Compare as strings.
+		table.sort(names, function(a: any, b: any)
+			return tostring(a) < tostring(b)
+		end)
+		local shown = table.create(#names)
+		for i, n in names do
+			shown[i] = tostring(n)
+		end
+		return `Store\{{table.concat(shown, ", ")}}`
 	end
 
 	-- Dynamic keys only: the type cannot stop a computed name, so the runtime does.

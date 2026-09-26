@@ -26,6 +26,10 @@ type State<T> = q.State<T>
 - **단항**(`Not`/`Bnot`) — 팩토리 자체가 곧 연산이므로 **호출하지 않고 그대로 넘깁니다**: `state:Apply(Op.Not)`.
 - **나머지** — 인자를 받아 팩토리를 돌려주는 커링 형태: `state:Apply(Op.Sum(tax, 500))`.
 
+:::caution
+**커링 팩토리를 부르지 않고 넘기면 조용히 통과합니다.** `price:Apply(Op.Sum)`처럼 쓰면 `Sum(price)`가 "price를 더하는 팩토리"를 만들어 `:Apply`가 State 대신 **함수**를 돌려주고, 결과 타입을 주석으로 적지 않았다면 타입 검사도 잡지 못합니다(`Clamp`/`Alternative`는 타입이 막고, `Indexed`는 런타임에 `Quad0126 … key must be a plain value, not a State`라는 다른 원인을 가리킵니다). 결과 State의 타입을 호출부에 명시하는 습관이 유일한 방어입니다 — `local total: State<number> = price:Apply(Op.Sum(tax))`.
+:::
+
 **왜 `:Compute`가 아니라 `:Apply`인가.** 팩토리가 자기 deps를 직접 `:Compute`에 넘기므로, 한 번 이름 붙인 연산자를 여러 State에 `:Apply`해도 deps가 따라갑니다 — 이름과 의존성이 갈라질 수 없습니다.
 
 ```luau
@@ -52,7 +56,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 | 무엇 | 언제 | 예 |
 |---|---|---|
 | 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br>`Quad0118 Operator.Sum: argument #2 is nil` |
-| `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Quad0123 Operator.Sum: Apply target must be a State (got table)` |
+| `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄**(커링 팩토리를 `Op.Sum(1)`처럼 부른 뒤 넘긴 경우. `tag:Apply(Op.Not)`처럼 단항 팩토리가 다른 `:Apply` 소유자 안에서 불리면 그 소유자의 내부 파일이, 커링 안쪽 팩토리를 `Op.Sum(1)(5)`처럼 직접 부르면 `Operator.luau`가 blame됩니다 — [2026-09-27 기준]) | `Quad0123 Operator.Sum: Apply target must be a State (got table)` |
 | 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]` |
 
 `nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Quad0120 Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
@@ -167,6 +171,8 @@ Band: (...NumArg) -> NumOp
 ```
 
 `bit32.band` 폴딩. Luau엔 비트 연산자가 없어 `bit32` 위의 얇은 층입니다.
+
+비트 계열 여섯(`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)은 `bit32` 계약을 그대로 물려받고 게이트를 두지 않습니다 — 소수는 잘리고(`1.5` → `1`), 음수는 2^32 모듈로(`-1` → `4294967295`), 2^32 이상은 접히며(`2^53+2` → `2`), `NaN`·`±inf`는 `0`(`Bnot(NaN)`은 `4294967295`), 이동량이 32 이상이면 `0`, 음수 이동량은 방향이 뒤집힙니다. 수치 계열의 `NaN`도 검사하지 않습니다 — `Clamp`는 **경계**의 NaN만 거부하고 대상이 NaN이면 NaN을 그대로 돌려주며, `Min`/`Max`는 어느 쪽이 NaN이냐에 따라 결과가 갈립니다(대상이 NaN이면 NaN, 인자가 NaN이면 대상 값).
 
 ```luau
 local flags = q.Source(0b1100)

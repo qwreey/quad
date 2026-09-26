@@ -117,7 +117,7 @@ Get: <T>(self: Context, provider: Provider<T>) -> T
 
 **반환** — 등록된 값. 타입은 `Provider<T>`의 팬텀 `T`에서 나옵니다.
 
-**동작** — **없으면 에러입니다.** 필요한 Provider를 안 준 것은 프로그래밍 실수라는 판단이고, blame은 `:Get`을 부른 줄로 갑니다. 있는지부터 확인하고 싶으면 `:Peek`을 쓰십시오. 메시지의 `Provider(...)` 자리는 그 Provider의 `tostring`이라 이름 없는 Provider면 `Provider`만 찍힙니다.
+**동작** — 값을 **그 자리에서 한 번** 돌려줍니다. 가방은 반응형이 아니라서 나중에 `:Set`을 다시 해도 이미 읽어 간 곳은 모릅니다 — 실행 중에 바뀌어 따라와야 하는 값은 `State`/`Store`를 담아 넘기세요. **없으면 에러입니다.** 필요한 Provider를 안 준 것은 프로그래밍 실수라는 판단이고, blame은 `:Get`을 부른 줄로 갑니다. 있는지부터 확인하고 싶으면 `:Peek`을 쓰십시오. 메시지의 `Provider(...)` 자리는 그 Provider의 `tostring`이라 이름 없는 Provider면 `Provider`만 찍힙니다.
 
 ```
 Quad0038 Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)
