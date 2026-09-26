@@ -33,4 +33,6 @@
 - `round13-e13-probe.luau`·`round13-e13-types-probe.luau` — **[2026-09-27 자율 루프 E13]** Store·Context·Operator 조합 경계(S1~S12·C1~C9·O1~O13·D0~D4, 타입 T1~T14) — `H-666`~`H-671`·`Q101`·`Q102`, 문서 예제 출력 대조 전부 일치.
 - `round13-e14-probe*.luau`·`round13-e14-types*.luau` — **[2026-09-27 자율 루프 E14]** Modifier 팩토리·세터 체인·`__apply`·타입드 팩토리 경계(런타임 넷·타입 여섯 + quad 없는 최소 재현 `types5`) — `H-672`~`H-676`·`Q103`·`Q104`, typing-limits 8.29.
 - `round13-e15-probe-*.luau`(20개, 하네스 `-setup`·타입 설정 `-types-settings`) — **[2026-09-27 자율 루프 E15]** how-to 레시피를 이어 붙인 통합 시나리오 다섯 + 보조 넷(quad-roblox 실코드 + 가상 `task`·TweenService 심; 정상·파괴·재진입·배치·strict 다섯 축) — `H-677`~`H-680`, typing-limits 8.30.
+- `round13-e16-probe*.luau`(런타임 다섯 + 타입 셋) — **[2026-09-27 자율 루프 E16]** Tag/Attr/AttrKey × Ref/PreRef/PostRef/dispose/훅 조합 경계 — `H-681`(가드 동률로 주어가 환경 의존)~`H-686`, typing-limits 8.31, 문서 예제 대조 전부 일치.
+- `round13-q103-proto/` — **[2026-09-27 자율 루프 P-Q103]** 생성 setter 타입 `Field<T>`/`FieldP<T>`에 nil 팔을 더한 변형 A의 gen-d·D diff, 타입 게이트 시간 8회(잡음 범위), strict 프로브 base/A 대조, 관용구 변형 B 결과 — 적용은 사용자 결정(§4 Q103).
 

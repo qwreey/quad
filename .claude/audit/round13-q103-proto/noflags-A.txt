@@ -1,0 +1,26 @@
+quad-roblox/src/Declaration/init.luau(5049,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5050,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5053,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5056,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5049,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5050,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5053,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5056,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5049,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5050,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5053,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5056,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/test/spec.componenttypes.luau(68,12): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<Instance>'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, unknown) -> t1 } ; t2 = { Get: (*CYCLE*) -> unknown, read __quadState: true, read __quadStateValue: unknown } & { Apply: (({ Get: (*CYCLE*) -> unknown, read __quadState: true, read __quadStateValue: unknown }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> unknown, read __quadState: true, read __quadStateValue: unknown }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> unknown, read __quadState: true, read __quadStateValue: unknown }, ({ Get: (*CYCLE*) -> unknown, read __quadState: true, read __quadStateValue: unknown }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*... *TRUNCATED*'
+quad-roblox/test/spec.onchangetypes.luau(29,3): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox/test/spec.onchangetypes.luau(38,46): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox/test/spec.onchangetypes.luau(60,12): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox/test/spec.onchangetypes.luau(61,12): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area

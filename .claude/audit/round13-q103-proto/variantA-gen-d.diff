@@ -1,0 +1,17 @@
+--- /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/gen-d.orig.py	2026-09-27 02:30:32.075683060 +0900
++++ scripts/gen-d.py	2026-09-27 02:30:32.077038689 +0900
+@@ -393,12 +393,12 @@
+     # Q24 후속). ⚠️ 이 파일 안에서 전개하면(인라인이든 `QuadTypes.FieldOut<T | Tween<T>>`든) `export
+     # type Declaration`이 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
+     L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
+-    L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
++    L.append("export type Field<T> = FieldV<T>? | ((old: FieldOut<T>?) -> FieldV<T>?)")
+     # [Q34 (a)] non-interpolable property types get the Tween-less shape — same three roles
+     # (value / transform input / transform old), no Tween arm anywhere
+     L.append("export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)")
+     L.append("export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)")
+-    L.append("export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
++    L.append("export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
+     L.append("")
+     names = sorted(classes.keys())
+     # [2026-09-15 사용자 결정] Declaration/DeclarationMapper 테이블은 클래스 이름과 예약 이름이 같은

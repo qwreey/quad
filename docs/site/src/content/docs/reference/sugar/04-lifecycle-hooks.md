@@ -25,7 +25,7 @@ local D = q.Declaration
 | `OnDestroyed(fn)` | `Effect` | 묶인 인스턴스가 죽을 때 정확히 1회(설치 시점에는 안 돈다) |
 
 - 셋 다 **숫자 키 자리**(문자 키가 아닙니다)에 놓습니다.
-- **여러 번 등록하는 것은 그냥 숫자 키 자리를 여러 개 쓰는 일**이고, 같은 종류끼리의 상대 순서는 숫자 키 순서(1부터)입니다. 종류가 섞여 있어도 `OnCreated`들이 먼저, `OnRendered`들이 마지막입니다.
+- **여러 번 등록하는 것은 그냥 숫자 키 자리를 여러 개 쓰는 일**이고, `OnCreated`·`OnRendered`끼리의 상대 순서는 숫자 키 순서(1부터)입니다. 종류가 섞여 있어도 `OnCreated`들이 먼저, `OnRendered`들이 마지막입니다. **`OnDestroyed`끼리의 순서는 정해져 있지 않습니다** — 각각이 자기 `Destroying` 연결로 불리므로 순서는 백엔드 시그널이 정합니다(mock은 등록의 역순, Roblox는 미실측).
 - `OnCreated`/`OnRendered`의 콜백은 `(inst, ref)` 두 인자를 받고, **`inst`는 항상 non-nil**입니다 — 등록 시점의 `nil` 호출은 내부 가드가 걸러냅니다.
 - `fn`이 함수가 아니면 그 줄에서 던집니다: `Quad0101 OnCreated: fn must be a function (got number)`(이름 자리는 훅마다 바뀝니다).
 

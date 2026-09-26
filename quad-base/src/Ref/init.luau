@@ -281,7 +281,14 @@ local function registerDispatchHandlers(module: any)
 	end
 	addGuard("PreRefDynamicPathGuard", Brand.isPreRef, "PreRef")
 	addGuard("PostRefDynamicPathGuard", Brand.isPostRef, "PostRef")
-	addGuard("RefDynamicPathGuard", Brand.isRef, "Ref") -- round11 `H-567`: `Frame { Ref = ref }` got the no-match message
+	-- round11 `H-567`: `Frame { Ref = ref }` got the no-match message. [2026-09-27 round13 E16 `H-681`]
+	-- `isRef` is also true for PreRef/PostRef, and all three guards sit at the same FALLBACK
+	-- priority — ties have no defined order, so the error's subject ("Ref:" vs "PreRef:") depended
+	-- on the install environment (quad-roblox said "Ref", the mock said "PostRef"). Exclude the
+	-- tagged kinds here so exactly one guard matches.
+	addGuard("RefDynamicPathGuard", function(v: any): boolean
+		return Brand.isRef(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
+	end, "Ref")
 end
 
 -- PreRef/PostRef share this body by canon ("Ref 런타임 그대로 재사용, 브랜드

@@ -1204,3 +1204,7 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 ## 8.30. 생성자 테이블의 숫자 키 자리에 인라인으로 넣은 무주석 `state:Observer(function(t) … end)`는 `t`가 `unknown`으로 굳는다 — 8.13의 이웃, `t: StateData<T>` 주석이 처방 (2026-09-27 round13 E15 실측, luau-lsp 1.69.0 신 솔버)
 
 같은 코드를 독립 문장으로 쓰면 `local n: number = t:Get()`(t는 `State<string>`)가 잡히는데(`audit/round13-e15-probe-types-iso2.luau` J7), `D.Frame { …, count:Observer(function(t) … end) }`처럼 **children 자리에 인라인**이면 같은 줄이 진단 없이 통과한다(J1 — 검사가 꺼진 것). 값에 `#`·산술을 쓰면 `Operator '#' could not be applied to operand of type unknown`으로 거부된다(I2~I4). Source든 주석 붙은 `q.State<string>`(Compute·Debounce 결과)든 같다. `t: q.StateData<string>` 주석이면 정상(J5); `Effect`의 클로저 읽기는 정상(J6). 8.13이 "children 배열 자리는 통과"라 적은 것은 인라인 `:Compute`에 한한 관측이었다 — Observer 콜백은 그 자리에서 파라미터 타입을 잃는다. 원인은 좁히지 않았다(그 자리의 팔 유니언(`NewChild`)에 대한 문맥 타이핑 실패로 추정 — 미확인). 문서는 이 모양을 `print`로만 써서 드러나지 않았고(core/05·GS 08·how-to 02), `H-677`로 주석을 달았다.
+
+## 8.31. 숫자 키 자리에 `q.Source(q.PreRef(…))`·`q.Source(q.PostRef(…))`·`q.Source(q.OnCreated(…))`를 넣어도 strict 신 솔버가 통과한다 — 런타임은 항상 `Quad0136` (2026-09-27 round13 E16 실측, luau-lsp 1.69.0)
+
+PreRef/PostRef가 `Ref`의 하위 타입이라 숫자 키 자리의 `State<Ref>` 팔을 그대로 탄다(`audit/round13-e16-probe-types.luau` — 같은 파일의 대조 줄 `local _c: number = st`는 에러라 파일이 실제로 검사됨). 런타임 가드(`Quad0136 PreRef: must be a literal array item — it reached array index … through a State/Store value, which the pre-pass cannot see`)가 잡으니 조용히 틀리는 것은 아니지만, 타입이 약속하는 "PreRef/PostRef는 리터럴 자리만"이 State 포장 한 겹에 뚫린다. E7의 구멍 목록에는 없던 아홉째. 타입에서 막으려면 `NewChild`의 State 팔에서 `Ref`를 하위 타입 배제하는 장치가 필요한데 Luau엔 부정 타입이 없다 — 기록만.
