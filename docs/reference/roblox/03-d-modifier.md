@@ -22,7 +22,7 @@ description: "클래스별 Modifier 생성자, setter 체인의 값 대수, 검�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local DeclarationModule = require(<quad-roblox 모듈 경로의 Declaration 하위 모듈>) -- 클래스별 Modifier 타입이 사는 생성 모듈
+local RobloxModule = require(<quad-roblox 모듈>) -- 클래스별 Modifier 타입의 유일한 공개 경로(루트 재수출 — 생성 모듈 자체는 require 경로가 없습니다)
 local D = q.Declaration
 ```
 
@@ -214,7 +214,7 @@ class" 에러를 냅니다.
 | `mod:As<<T>>()` | 타입 인자로 결과 타입을 강제한다(`D`가 모르는 타입으로도 갈 수 있다) |
 
 ```luau
-local forced: DeclarationModule.TextLabelModifier = D.Modifier.GuiObject():As<<DeclarationModule.TextLabelModifier>>()
+local forced: RobloxModule.TextLabelModifier = D.Modifier.GuiObject():As<<RobloxModule.TextLabelModifier>>()
 local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조상 검사 없음)
 ```
 
@@ -241,7 +241,7 @@ export type IntoFrame = { AsFrame: (self: any) -> FrameModifier }    -- 인터�
 
 ```luau
 type ThemedProps = {
-	read Modifier: DeclarationModule.IntoTextButton?,
+	read Modifier: RobloxModule.IntoTextButton?,
 	read Text: string?,
 }
 
@@ -270,7 +270,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 - `Apply: <U>(self: any, factory: (any) -> U) -> U` — `self`가 `any`이고, **[2026-09-27 실측]** 팩토리에 주석을 달아도 `mod:Apply(factory)`는 인자도 결과도 검사되지 않습니다(`D.Modifier.Frame():Apply(TextButton용 팩토리)`·`local z: number = mod:Apply(f)` 모두 통과 — Luau 신·구 솔버 공통으로, 선언된 테이블 타입의 제네릭 함수 필드는 `U`가 결과를 제약하지 않습니다). 팩토리 결과에 클래스 검사를 걸고 싶으면 결과를 `local v: TextButtonModifier = …`처럼 주석 단 변수에 담으세요 — 그 자리는 검사됩니다.
 
   ```luau
-  local Boldify = function(mod: DeclarationModule.TextButtonModifier): DeclarationModule.TextButtonModifier
+  local Boldify = function(mod: RobloxModule.TextButtonModifier): RobloxModule.TextButtonModifier
   	return mod:TextSize(20)
   end
   local bold = D.Modifier.TextButton():Text("go"):Apply(Boldify)

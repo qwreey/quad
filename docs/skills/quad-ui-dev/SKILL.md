@@ -41,7 +41,7 @@ of guessing.**
   - `reference/core/01`…`11` (module, Source, State, Store, Observer·Effect, Slot, Ref, Modifier,
     Tag·Attr, sentinels, predicates), `reference/sugar/01`…`06` (Context, Operator,
     Debounce·Throttle, lifecycle hooks, Fallback·Traceback, Blocker), `reference/roblox/01`…`06`
-    (install, `Declaration`, `Declaration.Modifier`, Claim·Mapper, OnChange, Tween·Animate), `reference/extend/01`·`02`
+    (install, `Declaration` (`D` in examples), `D.Modifier`, Claim·`D.Mapper`, OnChange, Tween·Animate), `reference/extend/01`·`02`
     (backend provider / dispatch handler contracts). One type per page: signature → args → return →
     example → behavior → **error table (verbatim strings)** → related.
   - `how-to/01`…`10` — recipes: component boundary conventions, form validation, long lists,

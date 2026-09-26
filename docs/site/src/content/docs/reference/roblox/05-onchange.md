@@ -17,7 +17,7 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local DeclarationModule = require(<quad-roblox 모듈 경로의 Declaration 하위 모듈>) -- 클래스별 OnChange 유니언 타입
+local RobloxModule = require(<quad-roblox 모듈>) -- 디스크립터 타입 `OnChangeDescriptor`의 공개 경로(루트 재수출)
 local D = q.Declaration
 ```
 
@@ -90,7 +90,7 @@ local box = D.Frame({
   **클래스별 유니언을 타입 인자로 명시**해서 만듭니다.
 
   ```luau
-  local desc = q.Source<<DeclarationModule.FrameOnChange>>(q.OnChange("Visible", function(v: boolean) end))
+  local desc = q.Source<<RobloxModule.OnChangeDescriptor>>(q.OnChange("Visible", function(v: boolean) end)) -- 클래스별 `FrameOnChange` 유니언은 루트에 재수출되지 않아 공개 경로가 없습니다([2026-09-27 기준])
   local box = D.Frame({ desc })
   ```
 
