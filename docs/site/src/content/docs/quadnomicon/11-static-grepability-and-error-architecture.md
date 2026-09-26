@@ -48,10 +48,10 @@ quad의 코드 품질 자문에서도 정확히 이 헬퍼가 제안됐고, **�
 문자열 보간을 씁니다.
 
 ```luau
-Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE)
+Err.errorBeforeNearest(`Quad0186 State: dep #{i + 1} is nil`, SURFACE)
 ```
 
-로그에는 `State: dep #2 is nil`이 찍히지만 소스에는 `#{i + 1}`이 있습니다. **grep의
+로그에는 `Quad0186 State: dep #2 is nil`이 찍히지만 소스에는 `#{i + 1}`이 있습니다. **grep의
 단위는 값이 끼기 전까지의 고정 접두사**(`State: dep #`)이고, 그 접두사는 한 줄
 안에 온전히 있습니다. 헬퍼가 있었다면 접두사조차 다른 파일에 있었을 것입니다.
 
@@ -66,8 +66,8 @@ Err.errorBeforeNearest(`State: dep #{i + 1} is nil`, SURFACE)
   이미 프로바이더가 설치된 모듈 같은 불변식 위반)에는 이 꼬리가 없습니다.
 
 ```
-Slot:List: updateFn must be a function (got string)
-Bookkeeping.setOffsetSource: source must be a Source<number> or None (got number)
+Quad0150 Slot:List: updateFn must be a function (got string)
+Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got number)
 ```
 
 ---

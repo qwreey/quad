@@ -64,17 +64,19 @@ end
 그것을 감싼 `State`)뿐이고, `Tag`나 `Effect` 같은 값은 애초에 **숫자 키 자리의 값**으로만 선언돼 있기 때문입니다.
 
 ```
-Dispatch: no handler matched key Foo (value: table, brand: Tag) — check that the provider for this value (e.g. quad-roblox) is initialized
+Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
 ```
 
 `Effect`처럼 자기 자리를 아는 값은 더 친절한 문구를 따로 답니다.
 
 ```
-Effect: must be an array item, not the value of a string key
+Quad0097 Effect: must be an array item, not the value of a string key
 ```
 
-첫 메시지가 "프로바이더가 초기화됐는지 보라"고 말하는 이유는, 같은 증상이 **키를 잘못 쓴 경우**와
-**그 값을 맡을 핸들러를 심는 쪽이 아직 안 붙은 경우** 둘 다에서 나기 때문입니다.
+첫 메시지의 꼬리 힌트는 값이 무엇인지에 따라 갈립니다. `Tag`·`Slot`·`Ref`처럼 quad-base가 아는 브랜드 값이면
+위처럼 "숫자 키 자리로 가라"고 알려 주고, 브랜드가 없는 값(예: 숫자 키 자리에 놓인 `false`)이나 백엔드가
+심는 브랜드 값이면 "프로바이더가 초기화됐는지 보라"(`— check that the provider for this value (e.g. quad-roblox) is initialized`)고
+말합니다 — 같은 증상이 **키를 잘못 쓴 경우**와 **그 값을 맡을 핸들러를 심는 쪽이 아직 안 붙은 경우** 둘 다에서 나기 때문입니다.
 
 </details>
 

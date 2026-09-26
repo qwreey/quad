@@ -101,7 +101,7 @@ end
 - `:Get`은 없는 키에 에러를 내고, `:Peek`은 `nil`을 돌려줍니다.
 
 ```
-Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)
+Quad0038 Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)
 ```
 
 <details>

@@ -207,7 +207,7 @@ active:Set(q.None)           -- 이제 {Kind = "counter", Count = 2}   — Activ
 
 ```luau
 D.Frame { q.Attr { Kind = "counter" }, q.Attr { Kind = "other" } }
--- AttrKey: attribute "Kind" is already bound by another owner
+-- Quad0002 AttrKey: attribute "Kind" is already bound by another owner
 ```
 
 이름 하나의 주인은 하나여야 한다는 규칙이라, 겹칠 수 있으면 **먼저 합쳐서 하나로** 넘깁니다.
@@ -270,7 +270,7 @@ print(#screen:QueryDescendants("[$Kind=counter]"))  --> 1   Attribute Kind가 co
 <summary><strong>백엔드 없이도 되나요?</strong></summary>
 
 **값을 만들고 합성하는 것까지는 됩니다.** 실제로 인스턴스에 **적용**하는 것만 백엔드의 몫이라,
-백엔드 없이 거기까지 가면 안내 에러가 납니다 — `quad: addTag is not available — no backend has
+백엔드 없이 거기까지 가면 안내 에러가 납니다 — `Quad0108 quad: addTag is not available — no backend has
 installed the tag ops …`(뒤에 프로바이더를 설치하라는 안내가 붙습니다). 01장에서 `Quad:UseProvider(QuadRoblox)`를 이미 했다면 신경 쓸 일이 없습니다.
 
 </details>

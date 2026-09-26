@@ -87,7 +87,7 @@ end
 
 `Modifier`·`Ref`·`Slot`·`Observer`·`Effect`·`Tag`·`Attr` 같은 값은 **문자 키가 아니라 숫자 키 자리**에 놓습니다. 문자 키의 값 자리에 `Modifier`를 두면 디스패치가 거부합니다.
 
-그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 선두나 중간이 구멍이면 quad는 그 자리에서 **에러를 냅니다**(`Bookkeeping.recompute: sourceList[N] is nil — a nil hole …`). 조용히 넘어가는 것은 **꼬리 구멍뿐**이고, 그마저 뒤에 원소를 하나 더 붙이는 순간 에러가 됩니다.
+그런데 배열 리터럴 안의 표현식이 `nil`로 평가되면 그 자리에 **구멍(nil-hole)** 이 생깁니다. 선두나 중간이 구멍이면 quad는 그 자리에서 **에러를 냅니다**(`Quad0023 Bookkeeping.recompute: sourceList[N] is nil — a nil hole …`). 조용히 넘어가는 것은 **꼬리 구멍뿐**이고, 그마저 뒤에 원소를 하나 더 붙이는 순간 에러가 됩니다.
 
 그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [10. 부록 — quad 에러 읽는 법](/how-to/10-debugging-and-troubleshooting/)의 함정 1에 정리돼 있습니다.
 
@@ -265,7 +265,7 @@ end
 ### `Tag`와 `Attr`에서 알아둘 규칙
 
 1. **`Tag`는 합집합이다**:
-   같은 태그를 여러 자리(컴포넌트, `Modifier`, State로 바뀌는 `Tag` 값 …)에서 요구해도, quad는 참조 카운트로 **한 곳이라도 요구하는 동안 태그가 유지**되도록 관리합니다. 마지막 요구가 사라질 때 비로소 태그가 제거됩니다. 여러 곳에서 온 `Tag` 값을 미리 하나로 합쳐 넘기고 싶다면 `q.Tag.Merged(tagA, tagB, …)`가 손실 없는 합집합을 돌려줍니다 — `q.Tag(tagA, tagB, …)`와 결과는 같고, **`Tag` 값만 받는** 엄격한 철자라 문자열이나 리스트를 섞으면 `Tag.Merged: arguments must be Tag values`입니다.
+   같은 태그를 여러 자리(컴포넌트, `Modifier`, State로 바뀌는 `Tag` 값 …)에서 요구해도, quad는 참조 카운트로 **한 곳이라도 요구하는 동안 태그가 유지**되도록 관리합니다. 마지막 요구가 사라질 때 비로소 태그가 제거됩니다. 여러 곳에서 온 `Tag` 값을 미리 하나로 합쳐 넘기고 싶다면 `q.Tag.Merged(tagA, tagB, …)`가 손실 없는 합집합을 돌려줍니다 — `q.Tag(tagA, tagB, …)`와 결과는 같고, **`Tag` 값만 받는** 엄격한 철자라 문자열이나 리스트를 섞으면 `Quad0207 Tag.Merged: arguments must be Tag values`입니다.
 2. **`None`이거나 State의 값이 `nil`이면 어트리뷰트가 삭제된다**:
    - `q.Attr { MyKey = None }` — 즉시 삭제(`inst:SetAttribute(key, nil)`).
    - 바인딩된 `State`의 값이 `nil`이 된 경우도 마찬가지로 **삭제**됩니다. 그룹이든 스칼라 슈가든 그 이름의 핸들러가 값을 그대로 엔진에 넘기고, `nil`도 예외가 아닙니다.

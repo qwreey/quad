@@ -109,7 +109,7 @@ gate:Off()          -- 여기서 밀린 전파가 정확히 한 번
 `Observer`/`Effect`도 이 층에서 **등록**은 됩니다 — `hp:Observer(fn)`을 만들면
 곧바로 1회 발화합니다. 다만 그 이상은 이 층의 일이 아닙니다: 프로바이더가
 아예 없는 채로 그 원천에 다시 `:Set`을 부르면 조용히 보류되는 게 아니라
-`quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops …`
+`Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops …`
 에러로 그 자리에서 던집니다(생명주기 op가 하나도 안 심긴 상태라는 안내). 인스턴스 수명에
 묶이는 나머지 동작(보류·재생·정지)은 §3에서 다룹니다.
 
@@ -137,7 +137,7 @@ local q = Quad.New():UseProvider(myProvider)
 
 - `UseProvider`는 **모듈당 한 슬롯**입니다. 같은 프로바이더 함수로 다시 부르면
   아무 일도 안 하고(멱등), 다른 함수를 넣으면
-  `UseProvider: this Quad module already has a provider — a module cannot serve two backends`
+  `Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends`
   에러입니다.
 - `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 인스턴스입니다.
   테스트마다 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰세요.

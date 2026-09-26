@@ -97,7 +97,7 @@ quad-base 것이고, 백엔드가 심는 것은 그 아래의 hold op 넷(`holdL
 :::caution
 `canBound(nil)`은 **참**입니다. `isBoundAlive(nil)`이 거짓이므로 그 부정이 참이 됩니다.
 `nil` 거부는 술어가 아니라 `bindLifetime`의 자기 게이트가 합니다
-(`bindLifetime: value must not be nil`). 술어를 "인자 검증"으로 쓰지 말 것.
+(`Quad0103 bindLifetime: value must not be nil`). 술어를 "인자 검증"으로 쓰지 말 것.
 :::
 
 `bindLifetime`은 알려진 타입이면 뒤처리를 더 합니다(`Observer`는 밀린 emit을 한 번
@@ -123,7 +123,7 @@ function module.UseProvider(self, providerFn)
 	end
 	if current ~= nil then
 		Err.errorBeforeNearest(
-			"UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+			"Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends",
 			QuadTypes.ERROR_LEVEL_SURFACE
 		)
 	end

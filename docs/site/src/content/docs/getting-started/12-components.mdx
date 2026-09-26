@@ -301,7 +301,7 @@ D.Frame { D.TextLabel { … }, props.Children }
 D.Frame { D.TextLabel { … }, props.Children or q.None }
 ```
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 약속된 값입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Dispatch: no handler matched key 1 (value: boolean) — …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 약속된 값입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Quad0076 Dispatch: no handler matched key 1 (value: boolean) — …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
 
 <details>
 <summary><strong>받은 <code>Slot</code>을 왜 <code>Children = …</code> 같은 문자 키 자리에 꽂지 못하나요?</strong></summary>

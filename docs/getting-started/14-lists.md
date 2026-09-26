@@ -185,8 +185,8 @@ end
         },
 ```
 
-여기서 id를 배열 길이로 만든 것은 예제라서입니다. 항목을 지우기 시작하면 같은 id가 다시 만들어져 `Slot:List: duplicate key c2`로 그 자리에서 막히니, 실제 코드에서는 절대 줄지 않는 카운터나 서버가 준 id를 쓰세요.
-<!-- mock 실측 2026-09-11: gs.polish3.luau "13 dup key" — 같은 키 둘이면 `Slot:List: duplicate key a` -->
+여기서 id를 배열 길이로 만든 것은 예제라서입니다. 항목을 지우기 시작하면 같은 id가 다시 만들어져 `Quad0145 Slot:List: duplicate key c2`로 그 자리에서 막히니, 실제 코드에서는 절대 줄지 않는 카운터나 서버가 준 id를 쓰세요.
+<!-- mock 실측 2026-09-11: gs.polish3.luau "13 dup key" — 같은 키 둘이면 `Quad0145 Slot:List: duplicate key a` -->
 <!-- mock 실측 2026-09-11: gs.board.luau — 보드 안 버튼이 props.Rows:Set → 자식 3(카운터 둘+버튼)에서 4로 -->
 
 **실행하면** 카운터가 하나 더 생깁니다. 여기서 중요한 것은 **안 생긴 것**입니다.

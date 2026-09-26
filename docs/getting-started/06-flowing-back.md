@@ -179,7 +179,7 @@ D.TextBox {
 ```luau
 const derived = name:Compute(function(n) return n:Get() end)
 D.TextBox { q.Out("Text", derived) }
--- Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
+-- Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
 ```
 
 </details>

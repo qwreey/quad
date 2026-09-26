@@ -191,12 +191,12 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
 
 1. **매치 자체가 안 되면** `Dispatch.process`가 즉시 error를 냅니다. 메시지는 값의
    브랜드까지 알아내서 말합니다:
-   `Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — check
+   `Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — check
    that the provider for this value (e.g. quad-roblox) is initialized`.
    브랜드 조회는 실패 경로에서만 도는 진단입니다 — 모듈에 있는 `is<Brand>` 필드를
    훑는 규약이라, 프로바이더가 `isTween` 같은 술어를 얹어 두면 그것이 곧 등록입니다.
 2. **매치는 됐는데 엔진 op이 없으면** 그 op 자리에 심어진 안내 스텁이 던집니다:
-   `quad: addTag is not available — no backend has installed the tag ops (install a
+   `Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a
    provider with quad:UseProvider — a bare Quad.New() has none)`.
    base가 "그럴듯한 기본 동작"(조용한 no-op)을 추측하지 않는 이유는 단순합니다 — 임의의
    엔진에 무엇이 맞는 기본값인지 base는 알 수 없고, 조용한 no-op은 프로바이더 설치를

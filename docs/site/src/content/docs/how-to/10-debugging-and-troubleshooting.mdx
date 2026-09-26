@@ -18,13 +18,13 @@ local D = q.Declaration
 
 ## 1. quad의 에러는 "사용자 줄"을 가리키려 한다
 
-에러 메시지의 첫 토큰은 `QuadNNNN` 식별자입니다(예: `Quad0142 Slot:List: duplicate key "a"`). 문구보다 번호로 찾는 편이 빠릅니다 — [레퍼런스 › 에러 코드](/reference/errors/00-index/)에 번호마다 언제 나는지와 고치는 법이 있습니다. 번호가 없으면 quad가 아니라 엔진이 낸 에러입니다.
+에러 메시지의 첫 토큰은 `QuadNNNN` 식별자입니다(예: `Quad0145 Slot:List: duplicate key "a"`). 문구보다 번호로 찾는 편이 빠릅니다 — [레퍼런스 › 에러 코드](/reference/errors/00-index/)에 번호마다 언제 나는지와 고치는 법이 있습니다. 번호가 없으면 quad가 아니라 엔진이 낸 에러입니다.
 
 quad는 공개 표면 함수에 태그를 달아두고, 에러를 낼 때 **스택에서 태그된
 프레임을 걷어내 그 바깥의 사용자 줄**을 blame합니다.
 
 ```
-ReplicatedStorage.Client.UI.UserProfile:42: Event: handler for "Activated" must be a function (got table)
+ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activated" must be a function (got table)
 ```
 
 ### 기대할 수 있는 것
@@ -56,7 +56,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Event: handler for "Activated" must 
   기대는데 구멍 있는 테이블의 `#`는 명세되지 않음) 따라서 배열 구멍은
   **정의되지 않은 동작(UB)** 입니다. 실제 결과는 구멍의 위치에 따라 갈립니다 —
   1번 자리나 중간이 구멍이면 위치 부기가 어긋나 그 자리에서 에러가 나고
-  (`Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
+  (`Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
   꼬리 구멍은 우연히 통과합니다.
 - **해결책**: 선택적 값 뒤에는 **`or None`**을 붙입니다.
 
@@ -87,21 +87,21 @@ local inst = if myRef.Value then myRef.Value else myRef:Wait().Value
 호출한 줄에서 던집니다:
 
 ```
-Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 ```
 
 또 `Wait()`는 양보 가능한 코루틴 안에서만 부를 수 있습니다 — 아니면
-`Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`.
+`Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`.
 
 ---
 
 ### 함정 3: `Ref`를 `Modifier` 안에 넣기, 또는 문자 키로 넘기기
 
 - **증상**: `Modifier`에 넣으면
-  `Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`.
+  `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
   문자 키로 주면 값에 따라
-  `PreRef: must be an array item, not the value of a string key` 또는
-  `Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`.
+  `Quad0137 PreRef: must be an array item, not the value of a string key` 또는
+  `Quad0076 Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`.
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
   `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에
@@ -122,19 +122,19 @@ end
 
 ### 함정 4: 이미 claim된 인스턴스에 다시 `Claim`
 
-- **증상**: `nativeClaim: Instance is already claimed by quad`.
+- **증상**: `Quad0225 nativeClaim: Instance is already claimed by quad`.
 - **원인**: 한 인스턴스는 생애 동안 한 번만 claim됩니다. `D.New`가 만든
   인스턴스도 이미 claim된 상태이고, 부모를 `Claim`할 때 매핑된 자식도 같이
   claim되므로 그 자식에 다시 걸면 여기서 막힙니다. 자세한 계약은
   [07. Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/).
 - 이미 파괴된 인스턴스를 다시 쓰면 사촌 격 에러가 납니다 —
-  `bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`.
+  `Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`.
 
 ---
 
 ### 함정 5: `Source`에 `Modifier`를 담기
 
-- **증상**: `Source: cannot hold a Modifier as a Source value`.
+- **증상**: `Quad0182 Source: cannot hold a Modifier as a Source value`.
 - **해결책**: 바뀌는 것은 스타일 **필드**이므로, 필드마다 `Source`를 두고
   `Modifier`가 그 `Source`를 참조하게 합니다(그 방향은 정상입니다).
 
@@ -168,7 +168,7 @@ local primary: q.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Prima
 ```
 
 값이 테이블이 아니면 읽는 시점에
-`Operator.Indexed: value is not a table (got number) — cannot read [Primary]`.
+`Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [Primary]`.
 
 - **해결책 (b)**: 폼 리셋처럼 스토어를 새로 만들 이유가 없다면, 스토어를 바꾸지
   말고 필드를 리셋하세요.
@@ -188,9 +188,9 @@ end
 - **증상**: 어느 쪽을 먼저 썼든, 나중에 쓴 쪽이 즉시 에러로 막힙니다.
   수동 CRUD(`:Add`/`:Remove`/`:Move`/`:Swap`/`:Extract`/`:Replace`/`:Splice`/
   `:Clear`/`:ExtractAll`) 뒤에 `:List`나 `:Single`을 걸면
-  `Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
+  `Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
   반대로 `:List`/`:Single`을 먼저 건 뒤에 수동 CRUD를 부르면
-  `Slot: manual CRUD is not allowed after :List/:Single`이 그 CRUD를
+  `Quad0166 Slot: manual CRUD is not allowed after :List/:Single`이 그 CRUD를
   부른 줄에서 납니다.
 - **원인**: 한 Slot은 태어날 때부터 **수동 모드**이거나 `:List`/`:Single`이
   설치된 **리스트 모드**이고, 이 둘은 같이 못 씁니다 — `Slot{ ... }`로
@@ -248,7 +248,7 @@ s2:List(items, function(ctx) return D.Frame { Text = ctx.Item } end)
 
 테마가 바뀔 때 스타일을 통째로 갈아 끼우려고 `Modifier`를 `Source`에 담으면 어떻게 되나요?
 
-- [x] `Source: cannot hold a Modifier as a Source value`로 막힙니다 — 바뀌는 것은 스타일 **필드**이므로 필드마다 `Source`를 두고 `Modifier`가 그 `Source`를 참조하게 합니다
+- [x] `Quad0182 Source: cannot hold a Modifier as a Source value`로 막힙니다 — 바뀌는 것은 스타일 **필드**이므로 필드마다 `Source`를 두고 `Modifier`가 그 `Source`를 참조하게 합니다
 - [ ] 그대로 됩니다 — `Modifier`도 평범한 값이라 담아서 숫자 키 자리에 놓으면 갈아 끼워집니다
 - [ ] 반대 방향도 막히므로 `Modifier`의 필드에는 리터럴만 넣을 수 있습니다
 

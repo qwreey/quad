@@ -94,7 +94,7 @@ const buttonRef = q.PreRef<<TextButton?>>(nil)
 `:Unwrap()`은 그 확신을 코드로 적는 방법입니다. 담긴 값을 그대로 돌려주되 **타입에서 `nil`만 벗겨** 주고, 정말 비어 있으면 부른 줄을 blame하며 던집니다.
 
 ```
-Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
 ```
 
 **규약이지 강제가 아닙니다.** `:Unwrap()`은 "여기서는 반드시 차 있다"를 아는 자리에서만 쓰고, 확신이 없으면 `if ref.Value then`으로 가드하세요.
@@ -154,7 +154,7 @@ end)
 **하나의 `Ref`는 한 자리에만 놓습니다.** 앞 인스턴스가 살아 있는 채로 같은 `Ref`를 둘째 자리에 놓으면 그 자리에서 던집니다.
 
 ```
-bindLifetime: value is already bound to another Instance
+Quad0233 bindLifetime: value is already bound to another Instance
 ```
 
 문제는 앞 인스턴스를 `Destroy()`한 뒤입니다. 그때는 **에러 없이 다시 놓입니다.** 그래서 "재사용해도 되나 보다" 하고 넘어가기 쉬운데, 그 사이가 함정입니다.
@@ -164,7 +164,7 @@ bindLifetime: value is already bound to another Instance
 `PreRef`/`PostRef`는 아예 일회용이라 그 시도 자체를 막습니다.
 
 ```
-PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
 ```
 
 **결론은 하나입니다 — `Ref`는 인스턴스마다 새로 만듭니다.** 목록처럼 인스턴스가 계속 갈리는 자리라면 `Ref`를 돌려 쓰지 말고, 항목을 만드는 그 자리에서 하나씩 만드세요.

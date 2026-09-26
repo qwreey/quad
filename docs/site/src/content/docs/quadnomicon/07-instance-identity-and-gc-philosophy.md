@@ -134,7 +134,7 @@ local root = q.Claim(template:Clone(), M.Frame(M.Root)({
   (프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 claim·적용된 것이
   남습니다.
 - **같은 `inst`를 두 번 claim하는 것**(또는 `New`가 만든 inst를 claim하는 것)은
-  error입니다: `nativeClaim: Instance is already claimed by quad`. 판정은 별도 레지스트리가
+  error입니다: `Quad0225 nativeClaim: Instance is already claimed by quad`. 판정은 별도 레지스트리가
   아니라 §3의 셋업이 이미 있는지 하나로 합니다.
 - **루트의 `.Parent`는 어느 부기에도 속하지 않습니다.** 그래서 밖에서
   `root.Parent = playerGui`로 붙이고 떼는 것은 허용이고, `Mount(root, parent)`류

@@ -154,7 +154,7 @@ const button = D.TextButton { accent(accentColor), Text = "+ 1" }
 accentColor:Set(Color3.fromRGB(240, 60, 60))   -- 버튼 색만 바뀐다(확인이 끝나면 이 줄은 지웁니다)
 ```
 
-**흔한 시도 하나는 안 됩니다.** 테마마다 `Modifier`를 통째로 만들어 두고 `q.Source(darkStyle)`처럼 `Modifier` 자체를 `State`에 담아 갈아 끼우려 하면 `Source: cannot hold a Modifier as a Source value`로 막힙니다. 바뀌는 것은 스타일의 **필드**이므로, 필드마다 `State`를 두고 `Modifier`가 그것을 참조하게 합니다 — 위 모양 그대로입니다. 왜 그렇게 막아 두었는지는 [10. 에러 읽는 법](../how-to/10-debugging-and-troubleshooting.md) 함정 5에, 토큰 여러 개를 테마 하나로 묶는 실전 배치는 [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)에 있습니다.
+**흔한 시도 하나는 안 됩니다.** 테마마다 `Modifier`를 통째로 만들어 두고 `q.Source(darkStyle)`처럼 `Modifier` 자체를 `State`에 담아 갈아 끼우려 하면 `Quad0182 Source: cannot hold a Modifier as a Source value`로 막힙니다. 바뀌는 것은 스타일의 **필드**이므로, 필드마다 `State`를 두고 `Modifier`가 그것을 참조하게 합니다 — 위 모양 그대로입니다. 왜 그렇게 막아 두었는지는 [10. 에러 읽는 법](../how-to/10-debugging-and-troubleshooting.md) 함정 5에, 토큰 여러 개를 테마 하나로 묶는 실전 배치는 [05. 디자인 토큰과 테마 전환](../how-to/05-theme-and-dynamic-styling.md)에 있습니다.
 
 한 걸음 더 가면 `Modifier` **위에 얹는 조합**이 있습니다. `mod:Apply(fn)`은 `fn(mod)`를 돌려주는 호출 슈거라, 인자를 받아 함수를 돌려주는 팩토리와 짝지으면 "스타일 조각"을 체인 중간에 끼울 수 있습니다.
 
