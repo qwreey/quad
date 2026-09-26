@@ -1,0 +1,150 @@
+  sync=[] after adv0=[2@0] after 1e-9=[2@0] pending=0
+--- A1 Debounce Time=0 burst then advance(0): ok
+  sync=[] after adv0=[2@0] after 1e-9=[2@0] pending=0
+--- A1 Debounce Time=-0 burst then advance(0): ok
+  sync=[] after adv0=[] after 1e-9=[2@1e-09] pending=1
+--- A1 Debounce Time=1e-09 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0,2@0] after 1e-9=[1@0,2@0] pending=0
+--- A1 Debounce L Time=0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0,2@0] after 1e-9=[1@0,2@0] pending=0
+--- A1 Debounce L Time=-0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0,2@1e-09] pending=1
+--- A1 Debounce L Time=1e-09 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Debounce L noT Time=0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Debounce L noT Time=-0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Debounce L noT Time=1e-09 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0,2@0] after 1e-9=[1@0,2@0] pending=0
+--- A1 Throttle Time=0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0,2@0] after 1e-9=[1@0,2@0] pending=0
+--- A1 Throttle Time=-0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0,2@1e-09] pending=1
+--- A1 Throttle Time=1e-09 burst then advance(0): ok
+  sync=[] after adv0=[2@0] after 1e-9=[2@0] pending=0
+--- A1 Throttle noL Time=0 burst then advance(0): ok
+  sync=[] after adv0=[2@0] after 1e-9=[2@0] pending=0
+--- A1 Throttle noL Time=-0 burst then advance(0): ok
+  sync=[] after adv0=[] after 1e-9=[2@1e-09] pending=1
+--- A1 Throttle noL Time=1e-09 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Throttle noT Time=0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Throttle noT Time=-0 burst then advance(0): ok
+  sync=[1@0] after adv0=[1@0] after 1e-9=[1@0] pending=0
+--- A1 Throttle noT Time=1e-09 burst then advance(0): ok
+  fires=50 last=50@0 clock=0 pending=0
+--- A2 Debounce Time=0 bounded feedback: observer Sets upstream until 50 — all within one advance(0)?: ok
+  ok=false n=10000 err=./.claude/audit/round13-e12-probe.luau:59: GUARD: 10000 fires in one advance(0) clock=0
+--- A3 Debounce Time=0 unbounded feedback — mock advance(0) never returns (guard at 10000): ok
+  n=10 clock=1 pending=1
+--- A3b same feedback with Time=0.1 — advance(1) runs ~10 steps (time-bounded): ok
+  ok=false n=3331 err=./quad-base/test/mock.luau:683: stack overflow
+--- A3c feedback, NO gate (sync observer Sets upstream) — baseline: ok
+  after adv 1e300: [] pending=2
+  after Flush: [1@1e+300] pending=1
+  after Set+Cancel: [1@1e+300] pending=0
+  adv(math.huge) ok=true nil [1@1e+300] clock=inf
+--- A4 Time=math.huge Debounce: signal withheld forever? Flush? Cancel? pending: ok
+  [1@0] pending=1
+--- A4b Throttle Time=math.huge: leading passes once, then ?: ok
+  Set with NaN ok=false ./.claude/audit/round13-e12-probe.luau:118: Quad0039 Debounce: Time must be a non-negative
+  after adv(0): [2@0] pending=0
+  after fix: [2@0,3@0.5] pending=1
+--- A5 Time State flips 0 -> NaN -> 0.5; state after throw: ok
+  throw=true withheld nonempty=true pending=0
+  Flush with _time nil: [1@0] pending=0
+--- A5b first-ever read throws (idle, Leading=false) — withheld merged? next valid signal: ok
+  sync after fix: [2@0]
+  +1: [2@0] pending=0
+--- A5c first-ever read throws with Throttle(Leading) — the throwing signal later?: ok
+  adv ok=false ./.claude/audit/round13-e12-probe.luau:158: OBS BOOM seen=[1@0,2@1] clock=1 pending=0
+  after 5s idle Set(3) sync seen=[1@0,2@1] pending=1
+  +1: [1@0,2@1,3@7] pending=1
+--- B1 Throttle default: observer throws during trailing flush — state after, next leading?: ok
+  ok=false clock=1 (target 5) g2 seen=[] pending=1
+  after adv(0): g2 seen=[] clock=1
+--- B1b same throw with another gate's timer due in the same advance — mock aborts rest of advance: ok
+  after throw: seen=[1@1] pending=0
+  next: [1@1,2@2] pending=1
+  settle: [1@1,2@2] pending=0
+--- B1c Debounce: observer throws in trailing flush — Blocker On, no window: next signal starts window?: ok
+  after throw + 10s idle: seen=[1@0,2@1] pending=0
+  new burst Set(3) sync: [1@0,2@1] (leading expected 3@11)
+  +1: [1@0,2@1,3@12] pending=1
+--- B1d Debounce Leading=true: observer throws in trailing flush — next burst's leading edge?: ok
+  throw=true pending=0
+  Set(2) sync: [1@0,2@0] pending=1
+--- B1e Throttle Trailing=false: throw in leading pass: ok
+  [1@0,2@1] pending=1
+  Set(3) sync [1@0,2@1]
+  [1@0,2@1,3@2] pending=0
+--- B2 in trailing-flush observer: handle:Flush(): ok
+  after: [1@1,9@1] pending=1
+  settle: [1@1,9@1] pending=0
+--- B3 in trailing-flush observer: upstream Set then handle:Flush(): ok
+  after: [1@0,2@1] pending=0 blocking?
+  Set(10) sync (leading expected): [1@0,2@1,10@1]
+  settle [1@0,2@1,10@1] pending=0
+--- B4 in trailing-flush observer: upstream Set then handle:Cancel(): ok
+  [8@2,16@4,24@6] pending=2
+  settle [8@2,16@4,24@6,30@8] pending=0
+--- B5 in cap-flush observer: Cancel / Set: ok
+  sync [1@0] pending=1
+  Set(2) sync [1@0] (leading?)
+  settle [1@0,2@1] pending=0
+--- B6 handle:Flush() from inside observer during LEADING pass (Throttle): ok
+  Flush threw=true pending=1
+  +1 [1@0] pending=0
+  next [1@0,2@2] pending=1
+--- B7 Flush throws (observer error) — state after: ok
+  resume1	true
+  suspended: suspended seen=[1@0,2@1] pending=0
+  Set(3) while suspended: seen=[1@0,2@1] pending=1
+  resume2	true
+  settle [1@0,2@1,3@2] pending=0
+--- B8 yield inside observer during timer commit (engine-like thread), then Set/Cancel while suspended: ok
+  expired under blocker: [] pending=1
+  +1 (debounce reopened window idles): pending=0
+  Off: [1@2]
+--- C1 Debounce -> Blocker(On): expiry pushed behind blocker; Off later: ok
+  [] get=1
+  next [2@3]
+--- C1b Debounce -> Blocker(On); Blocker:OffWithoutEmit drops expiry: ok
+  pending=0 seen=[]
+  Off: pending=1 seen=[]
+  +1 [1@6]
+--- C2 Blocker(On) -> Debounce: timers never start until Off: ok
+  held: []
+  released sync: [] pending=1
+  +1 [1@3]
+  debounce expired into hold: [] pending=1
+  rel2()=true [1@4]
+--- C3 Gate(hold) inside Debounce and Debounce inside Gate: ok
+  pending timer, collected? d=false b2=true pending=1
+  after expiry: d=false b2=true pending=1
+  after 2xTime: d=true b2=true pending=0
+  bl:Off() no crash
+--- C4 Debounce gate unreferenced while timer pending & downstream Blocker closed — GC: ok
+  [] pending=0
+--- C5 Effect cleanup calls factory:Cancel() — rerun path: ok
+  Set(2)@0.5 after no-op Flush: [1@0] (withheld expected)
+  @1: [1@0,2@1]
+--- D1 Flush with nothing withheld inside Throttle window (after leading) — window untouched?: ok
+  get=2 pending=0
+  Set(3) right after Cancel: [1@0,3@0] (Cancel → idle → leading passes)
+--- D2 Cancel then :Get() latest; Throttle Cancel mid-window then signal is leading?: ok
+  self clears = 0
+--- E1 instrument: does any quad path clearTimeout the currently running timer?: ok
+  [1@1]
+--- C5b Effect cleanup Cancel — baseline without Cancel to compare: ok
+  sibling observers heard=74 missed=46
+--- A5d Time read throws inside s:Set — do sibling subscribers of s still hear the signal? (20 trials, hash order): ok
+  [1@0,2@1,3@6]
+--- B1f Throttle baseline (no throw): after idle, Set passes leading: ok
+  passes=5 intervals=1.10,1.00,1.00,1.00
+--- D3 MaxTime doc claim: 0.1s signals, Time=0.3, MaxTime=1 → pass intervals 1.0~1.1: ok
+  MaxTime=0: [2@0] pending=1
+  chain of three 0-gates: [2@0] pending=1
+--- D4 MaxTime=0 with Time=1 (accepted) and chained Debounce(0)->Debounce(0) in one advance(0): ok

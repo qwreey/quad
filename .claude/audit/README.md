@@ -29,4 +29,5 @@
 - `round13-tween-bundle/` — **[2026-09-27 자율 루프 P-TWEEN]** round13 §4 묶음 1·2(Q91·Q92·Q99·Q82 + Q81·Q97) 권고 여섯을 한 사본에 얹은 조합 검증 — 병합 diff 넷(`4-bundle-all-six.diff`가 전체), Q81 (b)·Q97 (b) 새 프로토타입, 스펙 초안 12a~12f(base에서 실패·bundle에서 통과), 관측 순서 프로브 출력 base/bundle. 채택 제안 아님 — 결정 재료.
 - `round13-drafts-2026-09-27/` — **[2026-09-27 자율 루프 초안 배치]** 결정 재료 초안 셋(결정 아님) — Q86 Luau 상류 보고서 초안(재현 재확인 포함), Q90 메시지 모양 전후 대조표(권고 범위 17행·나머지 37~38행, `Quad0076` 힌트 분기 순서·공유 배관 ID의 `surface` 인자 관찰), 묶음 1 채택 시 문서 네 곳 before/after.
 - `round13-e11-probe/` — **[2026-09-27 자율 루프 E11]** 백엔드 계약 삼자 대조(계약 문서 ↔ quad-roblox 실 구현 ↔ mock) 프로브 넷 + 출력 — 20슬롯 표, mock이 관대했던 둘(lazy claim·속성 값 범위 → `H-658`·`H-659`), 순수 술어 경계 인자 7종, 스텁 20개 확인.
+- `round13-e12-probe.luau`(+`.out.txt`) — **[2026-09-27 자율 루프 E12]** 시간 op·Debounce/Throttle·Gate·Blocker 조합 경계 프로브 — 타이머 커밋 중 하류 throw(`H-662`), `Time = 0`(`H-663`), State Time 무효 시 보류 유지·형제 누락(`H-664`), `math.huge`(`Q100`), 자기 타이머 취소 0건·GC 2×Time·문서 약속 D1~D4.
 

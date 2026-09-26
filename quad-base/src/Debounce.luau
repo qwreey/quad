@@ -44,8 +44,14 @@
 	right after it, into a local — only when `Trailing` can arm it, round11 `H-542`); every `openWindow` (signal path, the trailing reopen
 	in `commitIdle`, `Flush`) uses that cache. The only site that can throw (a bad
 	State value, a throwing Compute behind it) is therefore the signal entry, before
-	any state change — the timer callbacks and `Flush` run no user code and cannot
-	leave "Blocker On, no timer" (the `H-518` residue). If the very first read threw,
+	any state change — the timer callbacks and `Flush` never READ Time and so cannot
+	throw on their own (the `H-518` residue is closed). They do run user code
+	downstream: `commitIdle` goes `closeWindow(); clearCap(); emit()`, and `emit()`
+	runs downstream Observers. If one of those throws, `_window` is already nil while
+	the Blocker is still On — the same "On, no timer" shape, but it self-heals on the
+	next signal (that signal is withheld and goes out trailing after Time; a Leading
+	gate loses one leading edge). Exception-safety contract: user callbacks that throw
+	are not recovered (round13 E12, 2026-09-27). If the very first read threw,
 	`h._time` is still nil and `Flush` reopens nothing (stays idle). Consequence: a
 	Time change with no signal in between reaches the next window one signal later.
 

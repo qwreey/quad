@@ -87,7 +87,7 @@
 
 ---
 
-> **[2026-09-17 round10 Q55 (b), 사용자 결정]** `H-518`의 잔여(타이머 경로 `commitIdle`·`Flush`의 Time 읽기가 던지면 Blocker On·타이머 없음)는 Time을 **신호 진입에서 한 번 읽어 `h._time`에 캐시**하는 것으로 닫았다 — 타이머 콜백과 `Flush`는 사용자 코드를 돌리지 않는다. 5-2절의 같은 날 항목이 원문.
+> **[2026-09-17 round10 Q55 (b), 사용자 결정]** `H-518`의 잔여(타이머 경로 `commitIdle`·`Flush`의 Time 읽기가 던지면 Blocker On·타이머 없음)는 Time을 **신호 진입에서 한 번 읽어 `h._time`에 캐시**하는 것으로 닫았다 — 타이머 콜백과 `Flush`는 Time을 읽지 않으므로 스스로 던질 수 없다. 5-2절의 같은 날 항목이 원문. **[2026-09-27 round13 E12 정정]** 다만 "사용자 코드를 돌리지 않는다"는 틀렸다 — `commitIdle`은 `closeWindow(); clearCap(); emit()` 순서라 `emit()`이 하류 Observer(사용자 코드)를 돌리고, 그것이 던지면 `_window == nil`·Blocker On이 다음 신호까지 남는다(Throttle·`Leading=true`에서 leading edge 한 번 유실, 그 신호는 Time 뒤 trailing으로 나가며 자가 회복; `Leading=false`는 겉으로 차이 없음, `Trailing=false` 경로엔 이 창 없음, `Flush` 안 throw는 창이 유지돼 정상 수렴). 예외 안전성 계약(사용자 콜백이 던지면 복구하지 않음) 범위라 동작은 그대로 두고 주석·문서만 고쳤다(`audit/round13-e12-probe.luau` B1·B1c~e·B7). 같은 탐사의 부수: `Time = math.huge`는 게이트를 전부 통과해 Debounce는 `Flush` 전까지 영원히 보류·Throttle은 leading 한 번 뒤 영원히 보류(8절 "2×Time 유계·자가 치유"는 Time 유한 전제 — 거부/문서화는 round13 `Q100`).
 >
 > **[2026-09-16 round10 `H-518`]** `H-509`의 "읽기·스케줄 먼저, 상태 변경은 뒤"는 `openWindow` 본문뿐 아니라 **그 호출자**(idle 비-leading 분기의 `b:On()`, 재개방 분기의 `closeWindow()`)에도 적용된다 — 그 둘이 먼저 상태를 바꿔 Time 읽기가 던지면 Blocker On·창 없음이 남았다(mock 실측). 지금은 비-leading idle이 `openWindow()` 뒤 `pass()`, 재개방은 새 창을 잡은 뒤 옛 타이머를 지운다(spec.debounce 3·7d).
 

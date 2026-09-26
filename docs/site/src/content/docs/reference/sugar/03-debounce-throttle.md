@@ -39,6 +39,10 @@ type State<T> = q.State<T>
 
 ---
 
+:::caution
+**타이머가 통과시키는 순간 하류가 던지면 leading edge 하나가 사라집니다.** 창 끝(또는 `MaxTime`)의 통과는 창을 닫은 뒤 하류로 보내므로, 그 통지를 받은 Observer가 던지면 게이트는 "창 없음·상류 차단 중" 상태로 다음 신호까지 남습니다. 다음 신호는 `Leading = true`여도 즉시 통과하지 못하고 보류돼 `Time` 뒤에 trailing으로 나갑니다 — 그 한 번뿐이고 이후는 정상입니다(`Leading = false`면 겉으로 차이가 없습니다). quad는 던진 사용자 콜백을 복구하지 않습니다([공통 계약](#공통-계약)).
+:::
+
 ## `q.Debounce{...}`
 
 **시그니처**
@@ -80,7 +84,7 @@ export type ThrottleOptions = {
 
 | 옵션 | 타입 | Debounce 기본값 | Throttle 기본값 | 설명 |
 |---|---|---|---|---|
-| `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부 |
+| `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부. `0`은 허용되지만 "즉시"가 아니라 백엔드 타이머의 다음 재개점(Roblox `task.delay(0)`은 다음 프레임 근방)으로 미뤄질 수 있습니다 — mock 백엔드에선 같은 `advanceTime(0)` 안에서 발화합니다 |
 | `Leading` | `boolean?` | `false` | `true` | 창이 열릴 때 첫 신호를 즉시 통과시킬지 |
 | `Trailing` | `boolean?` | `true` | `true` | 창이 닫힐 때 보류분을 통과시킬지 |
 | `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도, 보류가 시작된 뒤 최대 이만큼 안에 강제 통과 |
@@ -107,7 +111,7 @@ Quad0048 Debounce: Leading and Trailing both false would pass nothing through
 Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
 ```
 
-`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던지고, 게이트의 상태는 그 전과 같습니다 — 타이머 콜백 안에서는 읽지 않습니다). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
+`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던집니다 — 타이머 콜백 안에서는 읽지 않습니다. 던진 신호의 출처는 이미 보류 집합에 들어가 있어 버려지지 않고 다음 통과(다음 신호의 leading·창 끝·`Flush`)에 실려 나가며, 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다 — [State](/reference/core/03-state/)의 "던진 콜백은 감싸지 않는다" 규칙 그대로). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
 Quad0039 Debounce: Time must be a non-negative number (got string)
