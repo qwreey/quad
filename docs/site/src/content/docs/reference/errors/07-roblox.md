@@ -89,7 +89,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `nativeClaim: Instance is already claimed by quad` — `quad-roblox/src/LifetimeHandle.luau`
 
-- **언제**: 같은 Instance를 `nativeClaim`으로 두 번 claim할 때 — 같은 인스턴스가 `Claim`에 두 번 걸리거나, `New`가 만든 인스턴스를 다시 claim하려 할 때입니다.
+- **언제**: 같은 Instance를 `nativeClaim`으로 두 번 claim할 때. 공개 경로(`q.Claim`을 두 번, `New`가 만든 인스턴스를 claim)는 `Claim`의 1패스가 `isClaimed`로 먼저 걸러 `Quad0029`를 내므로, 이 에러는 백엔드 op를 직접 부르거나 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다([2026-09-27 기준]).
 - **고치려면**: 이미 quad 소유인 Instance를 다시 claim하지 마세요.
 - **참고**: [`extend/01-backend-provider-contract`](/reference/extend/01-backend-provider-contract/) — "3. 판정·훅·조회 op"
 

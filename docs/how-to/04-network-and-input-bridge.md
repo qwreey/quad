@@ -98,6 +98,10 @@ end
 > `gold:Get()`으로 꺼내야 하고, 꺼낸 값은 그냥 `number`입니다. 숫자에
 > `:gsub` 같은 문자열 메소드를 바로 부를 수 없습니다.
 
+:::caution
+**서버가 값을 되돌려주는 왕복 흐름에서는 `Set`이 같은 값에도 전파된다는 것을 잊지 마세요.** 입력 → `q.Out` → Store → 검증 Compute → `Debounce` → `FireServer`로 보내고 서버가 정규화한 값을 `OnClientEvent`로 되돌려 위처럼 무조건 `Store.X:Set(v)`하면, 되돌아온 값이 지금 값과 같아도 `Set`은 전파되므로([State 레퍼런스](../reference/core/02-source.md)) Debounce가 다시 열리고 값이 `Time`마다 영원히 재전송됩니다. 되돌아온 값은 `if v ~= Store.X:Get() then Store.X:Set(v) end`처럼 비교한 뒤 넣거나, 전송을 "사용자 입력이 바꿨을 때"에만 묶으세요.
+:::
+
 ---
 
 ## 3. 하드웨어 입력 브릿징

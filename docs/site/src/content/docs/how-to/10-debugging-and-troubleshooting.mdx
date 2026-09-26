@@ -124,7 +124,7 @@ end
 
 ### 함정 4: 이미 claim된 인스턴스에 다시 `Claim`
 
-- **증상**: `Quad0225 nativeClaim: Instance is already claimed by quad`.
+- **증상**: `Quad0029 Claim: … is already claimed by quad …`(`Claim`이 1패스에서 잡습니다; 백엔드 쪽 `Quad0225 nativeClaim: …`는 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다).
 - **원인**: 한 인스턴스는 생애 동안 한 번만 claim됩니다. `D.New`가 만든
   인스턴스도 이미 claim된 상태이고, 부모를 `Claim`할 때 매핑된 자식도 같이
   claim되므로 그 자식에 다시 걸면 여기서 막힙니다. 자세한 계약은

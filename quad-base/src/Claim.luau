@@ -21,8 +21,9 @@
 	  "Processed sentinel" half of the idiom is deliberately NOT taken).
 
 	Descriptors are one-shot (`_fired`, PreRef idiom) — reuse errors.
-	Double claim = `nativeClaim`'s own setup-presence error (§7-10, no
-	registry here). Name absence/duplication is UB (§3 — debug-mode checks
+	Double claim: pass 1 asks `isClaimed` first (round11 Q64 (b)) and raises
+	`Quad0029`; `nativeClaim`'s own setup-presence error (§7-10, no registry
+	here) is only reachable through UB paths (destroyed-before-GC re-claim). Name absence/duplication is UB (§3 — debug-mode checks
 	are the debug tooling plan's, not ours).
 
 	Agent-latitude picks recorded in round14 `H-303` (§9 said "구현 시 정할

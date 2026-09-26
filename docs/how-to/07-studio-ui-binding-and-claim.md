@@ -157,7 +157,7 @@ end
 지킬 것 셋입니다.
 
 - **원본 템플릿에는 `Claim`을 걸지 마세요.** `D`가 만든 것은 이미 quad 소유라
-  `Quad0225 nativeClaim: Instance is already claimed by quad`입니다. 원본은 찍어내는 틀로만
+  `Quad0029 Claim: … is already claimed by quad …`로 거부됩니다. 원본은 찍어내는 틀로만
   두고, claim하는 것은 언제나 사본입니다.
 - **매핑할 자식에는 `Name`을 주세요.** `D.TextLabel { … }`의 기본 이름은 클래스
   이름이라, 이름을 안 주면 `M.TextLabel("ItemName")`이 찾을 자식이 없어
@@ -180,9 +180,10 @@ end
 ### 1) 한 번만 Claim한다
 
 한 Instance는 생애 동안 정확히 한 번만 claim됩니다. `D.New`로 만든 Instance도
-이미 claim된 상태입니다. 다시 걸면 `Quad0225 nativeClaim: Instance is already claimed by quad`
-입니다 — 별도 레지스트리가 아니라 claim 시점에 심는 소유 데이터의 유무로
-판정합니다. **여러 quad 인스턴스가 한 트리를 나눠 claim하는 것은 UB**입니다.
+이미 claim된 상태입니다. 다시 걸면 `Quad0029 Claim: … is already claimed by quad …`
+입니다 — `Claim`이 1패스에서 백엔드의 `isClaimed`로 먼저 묻고, 그 판정은 별도 레지스트리가
+아니라 claim 시점에 심는 소유 데이터의 유무입니다(그 게이트를 지나 `nativeClaim`까지 가서 나는
+`Quad0225`는 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다). **여러 quad 인스턴스가 한 트리를 나눠 claim하는 것은 UB**입니다.
 자식 키를 잘못 적어 `Quad0032 Claim: no child matched key …`로 실패한 호출은 아무것도 claim하지
 않습니다(해석이 전부 끝난 뒤에 claim합니다) — 키를 고쳐 같은 루트에 다시 걸면 됩니다.
 
@@ -267,6 +268,8 @@ end
 `ContentArea`를 따로 `Claim`하지 말고 부모 디스크립터 안에서 매핑하세요 —
 부모를 claim할 때 매핑된 자식도 함께 claim되므로 뒤에 다시 걸면 이중 claim
 에러입니다.
+
+**밖에서 받은 `rows` Slot은 이 창과 함께 죽습니다.** `Slot`은 처음 앉은 호스트에 묶이므로, 창을 `inst:Destroy()`로든 `q.dispose(window)`로든 내린 뒤 같은 `rows`를 다음 창에 다시 앉히면 `Quad0160 … cannot be reused after its parent is destroyed`, `q.dispose(rows)`는 `Quad0179`, `:List`는 조용히 재조정을 멈춥니다([Slot 레퍼런스](../reference/core/06-slot.md)의 마운트 대상 파괴 캐비엇 — how-to 09 §4의 토스트와 같은 모양). 창을 열 때마다 `Slot`을 새로 만들거나, 닫기 전에 `State<Slot>` 자리에서 `Set(nil)`로 떼어 두세요.
 
 ---
 
