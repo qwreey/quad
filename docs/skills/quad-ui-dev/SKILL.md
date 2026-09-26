@@ -423,7 +423,7 @@ The first assignment snaps to the value; later emissions run an engine tween.
 ### 6.2 `Tag` and `Attr`
 
 - `q.Tag("A", "B")` — reference-counted CollectionService tag set, array part.
-  A name list must not contain `nil` **or** `q.None`; filter it before passing.
+  A `nil` **argument** (a vararg slot of `q.Tag(...)`, the argument of `:Added`/`:Removed`, a slot of `Merged`) means "nothing" and is fine — `tag:Added(if cond then "Even" else nil)` is the idiom. A `nil` **hole inside a name list** (`{ "a", nil, "b" }`) and `q.None` are errors (`Quad0203`); filter lists before passing.
 - `q.Attr{ Level = 3 }`, `q.StringAttr("Title", v)`, `q.NumberAttr`, `q.BooleanAttr` —
   array part. `[q.AttrKey("Hp")] = hpState` is a hash key; it drives correctly but the
   generated prop types do not cover it, so prefer the array-part forms in `--!strict`.

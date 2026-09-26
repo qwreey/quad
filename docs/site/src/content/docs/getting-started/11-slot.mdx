@@ -55,6 +55,10 @@ const items = q.Slot<<Instance>>({
 
 [01장](/getting-started/01-setup/)에서 `export type Slot<T> = QuadTypes.Slot<T>`를 다시 내보내 두었으니, 파라미터 타입은 `props: { Children: q.Slot<Instance>? }`처럼 그대로 씁니다.
 
+:::caution
+`?`를 붙인 옵셔널 자리(`q.Slot<Instance>?`)는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 다른 `T`의 `Slot`(예: `q.Slot<<TextLabel>>()`)도 타입 검사를 통과합니다. Luau 쪽 한계이고, 런타임 가드는 그대로 동작합니다.
+:::
+
 </details>
 
 ---

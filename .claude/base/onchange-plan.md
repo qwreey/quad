@@ -159,4 +159,9 @@ TextBox { Text = textSrc, Out("Text", textSrc) }
 - **[2026-09-26 E2 발견, round13 `H-601`]** 애니메이션이 거는 프로퍼티에 `q.Out`을 같이 걸면 트윈의 프레임별 중간값이 `Out`으로 되쓰이고,
   `Animate`가 그 값을 새 목표로 삼아 옛 트윈을 취소해 첫 프레임에 멈춘다(mock 확인 — 실기기의 매 프레임 신호 여부는 미실측). 동작 변경 여부는
   `qa-request/post-implementation-review-round13.md` Q78(사용자 미답, 메인 권고는 캐비엇+관용구 문서화, 새 메커니즘 없음) — 레퍼런스 roblox/05·GS 06에 캐비엇 반영 완료.
+- **[2026-09-26 E7, round13 `H-623`/`Q87`]** 클래스 간 타입이 충돌하는 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`,
+  `PropTypesRead`에서 `any`)에서는 `OnChange` 콜백 인자 타입이 무검사이고, `OutFn`의 `src: Source<index<PropTypesRead, K>>`가 `Source<any>`로
+  풀리는 그 자리에서는 **올바른 `Source`도 타입이 거부한다**(추론 실패 — 실측으로 확인, 재현 `.claude/audit/round13-e7-types-probe.luau`의
+  `probe.e7m.luau` 블록·`probe.e7g.luau`의 `_out1`). `Source<T?>`(nilable)도 어느 이름에서든 같은 이유로 거부된다. 처방은 `Q87`(갈래: `OutFn`
+  재설계 / 생성기가 충돌 이름을 클래스별로 가름 / 캐비엇+우회만) — 레퍼런스 roblox/05에 캐비엇 반영 완료, 코드 변경은 아직 없음.
 

@@ -1155,3 +1155,23 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 콜백의 결과를 쓰면 안 된다 — §1의 무주석 파라미터 추론 실패로 결과가 에러 타입이 돼 무엇이든 통과한다(이번 스크래치가 처음 그렇게 잘못
 짜였다). 음성은 `(nil :: any) :: State<string>`처럼 주석으로 만들 것.
 
+## 8.26. 옵셔널(유니언) 자리의 자기 재귀 메소드를 가진 제네릭 테이블은 신 솔버가 타입 인자를 검사하지 않는다 — `Slot<Instance>?`·`Modifier?`·`Ref?` 등 (2026-09-26 실측, round13 E7)
+
+**최소 재현**(quad 없이): `type Box<T> = { read V: T, Put: (self: Box<T>, v: T) -> () }`에 대해 `local function G1(b: Box<number>?) end`을
+`G1((nil :: any) :: Box<string>)`으로 불러도 진단이 0이다(luau-analyze 0.734·luau-lsp 1.69.0 둘 다 동일 — 재현 파일
+`.claude/audit/round13-e7-types-probe.luau`의 `box2.luau` 블록). 조건은 **자기 재귀 메소드**(`Put`의 시그니처가 `self: Box<T>`로 자기 타입을
+받음)와 **옵셔널(유니언) 파라미터 자리**가 **동시**일 때뿐이다 — 자기 재귀 메소드가 없는 `Box4<T> = { Put: (v: T) -> () }`는 옵셔널이든
+아니든 정상 거부되고, 자기 재귀 메소드가 있어도 **비옵셔널 직접 매개변수**(`function R1(r: q.Ref<Frame?>) end`)나 `State<number>?`/`Source<number>?`
+(같은 옵셔널 자리인데도, 아래 "대조" 참고) 자리는 정상 거부된다.
+
+**quad 표면에서 걸리는 자리**(실측): [how-to 01 §4](../../docs/how-to/01-component-conventions.md#4-자식을-받는-컴포넌트에-타입-붙이기)의
+`Children: q.Slot<Instance>?`(`q.Slot<<TextLabel>>()`가 통과), [시작하기 11 §1](../../docs/getting-started/11-slot.md#1-자리-하나-잡아-두기)의
+같은 모양, [how-to 09 §2](../../docs/how-to/09-overlays-modal-toast.md#2-열림을-상태로) `Modal`의 `Children`, `read Modifier: TextButtonModifier?`
+(다른 클래스 `Modifier`가 통과), `read Ref: q.Ref<TextButton?>?`, `DebounceOptions`/`ThrottleOptions`의 `read Handle: Ref<GateHandle?>?`.
+
+**대조**(정상 거부됨): 비옵셔널 자리, 직접 매개변수, `State<number>?`/`Source<number>?`(원인은 좁히지 않았다 — `Box2<T> = { read V: T }`처럼
+자기 재귀 메소드가 아예 없는 모양과 같은 결과라는 정도만 확인).
+
+Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 보고 여부는 `question.md`의 **Q86**. 지금은 위 세 문서 + 레퍼런스
+`sugar/03-debounce-throttle.md`의 `Handle` 옵션에 캐비엇만 넣었다(런타임 가드는 그대로 돈다).
+

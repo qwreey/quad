@@ -113,6 +113,11 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 이름이 어느 클래스에도 없으면 **타입 검사에서** 걸립니다. 타입을 우회해 넘긴 이름은 런타임에
 엔진이 자기 에러를 냅니다 — quad는 프로퍼티 존재 여부를 다시 검사하지 않습니다.
 
+클래스 간 타입이 충돌하는 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)은 생성
+`PropTypesRead`에서 `any`라 콜백 인자 타입이 검사되지 않습니다 — `q.OnChange("Color", function(v: number) end)`처럼
+엉뚱한 타입을 주석해도 통과합니다. 런타임은 그대로 엔진 값을 넘기므로 값 자체는 맞지만, 주석 오타를 타입이 못 잡아 줍니다.
+<!-- .claude/qa-request/post-implementation-review-round13.md H-623 -->
+
 **에러**
 
 | 상황 | 문구 |
@@ -172,6 +177,11 @@ local box = D.TextBox({
 
 :::caution
 **애니메이션 중인 프로퍼티에는 걸지 마세요.** **[2026-09-26 round13 `H-601`]** 같은 프로퍼티에 [`q.Tween`](./06-tween-animate.md)/[`q.Animate`](./06-tween-animate.md)와 `q.Out`을 같이 걸면, 트윈이 매 프레임 쓰는 중간값이 `q.Out`을 거쳐 되쓸 `Source`에 앉고, `Animate`는 그 새 값을 다음 목표로 받아 방금 만든 트윈을 취소한 뒤 다시 만듭니다 — 그 결과 애니메이션이 첫 프레임에서 멈춘 것처럼 보입니다(mock에서 엔진의 프레임 쓰기를 대입 한 번으로 흉내 내 확인; 실기기에서 트윈 보간이 프레임마다 변경 신호를 내는지는 [2026-09-26 기준] 미실측입니다). `q.Out`은 사용자가 직접 바꾸는 프로퍼티(입력창의 `Text` 등)를 위한 것이고, 애니메이션이 거는 프로퍼티는 그 대상이 아닙니다 — 드래그하는 동안엔 `q.Out`으로 받고, 놓은 뒤 스냅은 애니메이션이 걸린 **다른** `Source`로 넘기는 식으로 두 원천을 가르세요.
+:::
+
+:::caution
+위 충돌 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)에서는 [2026-09-26 기준] **올바른 `Source`도 타입에서 거부됩니다**(거짓 양성 — 처방 검토 중, 실측으로 확인됨). 그동안은 `q.OnChange(name, function(v) src:Set(v) end)`로 손으로 되쓰세요. 또 `Source<T?>`(nilable)는 어느 이름에서도 `q.Out`에 들어가지 않습니다(쓰기 표면이 `non-nil`이라 — `Adornee`처럼 nilable을 되쓰고 싶으면 이 우회를 쓰세요).
+<!-- .claude/qa-request/post-implementation-review-round13.md H-623 / Q87 -->
 :::
 
 ---

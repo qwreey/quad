@@ -209,6 +209,11 @@ end
 
 부르는 쪽은 `ModalDialog { Title = "설정", Children = q.Slot<<Instance>>({ ... }) }`처럼 넘깁니다. `Slot`으로 받으면 호출자가 나중에 `:Add`/`:Remove`로 내용을 갈아 끼울 수 있고, 컴포넌트 쪽은 자리 하나만 잡아 두면 됩니다.
 
+:::caution
+옵셔널(`?`) 자리의 `Slot<T>`/`Modifier`/`Ref<T>`는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 위 `read Children: q.Slot<Instance>?`에 `q.Slot<<TextLabel>>()`처럼 다른 `T`의 값을 넘겨도 타입 검사가 통과합니다. Luau 쪽 한계이고 런타임 가드는 그대로 돕니다(엔진에 안 맞는 값을 실제로 넣으면 그때 에러가 납니다).
+<!-- .claude/base/typing-limits.md 8.26 -->
+:::
+
 ### 자식 **배열**을 그대로 넘기지 않는 이유
 
 props에 `{ RobloxModule.FrameElem }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.

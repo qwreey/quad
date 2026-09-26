@@ -88,6 +88,11 @@ local function Modal(props: {
 end
 ```
 
+:::caution
+`read Children: q.Slot<Instance>?`처럼 옵셔널 자리에 놓은 `Slot<T>`는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 다른 `T`의 `Slot`도 타입 검사를 통과합니다. Luau 쪽 한계이고, 런타임 가드는 그대로 동작합니다.
+<!-- .claude/base/typing-limits.md 8.26 -->
+:::
+
 부르는 쪽은 열림 원천과 콜백을 넘기기만 하면 됩니다.
 
 ```luau

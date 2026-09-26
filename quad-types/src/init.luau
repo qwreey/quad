@@ -785,10 +785,10 @@ export type Quad = {
 	때문(`typing-limits.md` §6, `type-version-check/src/init.luau`
 	참고).
 
-	**사용법(필수 — 이 필드를 실제로 참조해야 체크가 평가된다)**:
+	**사용법**:
 	```lua
 	local checked: QuadTypes.CheckedQuad<typeof(injectedQuad), "0.0.0"> = injectedQuad :: any
-	local _ = checked.__versionCheck -- ⚠️ 이 줄이 없으면 체크가 조용히 스킵됨(lazy 평가)
+	local _ = checked.__versionCheck -- 진단 위치를 이 줄로 고정하는 용도(타입 주석만으로도 체크는 이미 평가됨 — 실측 2026-09-26, luau-analyze 0.734·luau-lsp 1.69.0 동일)
 	-- 이후 checked는 injectedQuad와 완전히 같은 타입(원본 그대로) —
 	-- AddPlugin 체이닝 등 뒤이은 제네릭 연산이 전부 안전하게 동작함
 	```

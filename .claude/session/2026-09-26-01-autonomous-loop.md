@@ -38,3 +38,7 @@
 - **22:20** D6 완료(sonnet — 하위 셋으로 나눠 돎; Quadnomicon 01~06·11 발견 0) — `H-615`~`H-619`(오버뷰 01 ctx.Index·Q09 Bookkeeping 표면·Q07 Claim 2패스·Q08 예시 힌트+우선순위 표·Q10 UseProvider 인용 stale) 반영 배치(sonnet) 띄움. 도는 중: D7·fix(H-612~614)·fix(H-615~619).
 - **22:30** D7 완료(sonnet) — 레지스트리 247/248 일치, `H-620` 색인 둘 즉시 고침, `H-621`(Quad0076 힌트 전문)은 H-613 배치 뒤. 도는 중: fix(H-612~614)·fix(H-615~619). 다음: E6(opus).
 - **22:40** fix 배치 둘 완료(H-612~614: sugar/05·core/07 캐비엇, BRAND_PROBES Context/Provider + spec 1; H-615~619: 오버뷰 01·Quadnomicon 07/08/09/10). `H-621` Quad0076 힌트 전문(메인). 4회차 커밋. 도는 중: E6·E7.
+- **22:20** E6 완료(opus) — **§4 Q84**(Claim 루트 클래스 미대조, MED)·**Q85**(1패스 검증 범위, LOW), 확인만 §2(Tag nil 규칙·Attr 전부 정본대로). P1-CLI+P6(sonnet) 띄움. 도는 중: E7·D8·P1/P6.
+- **22:35** E7 완료(opus, luau-lsp 1.69.0) — `H-622`(상류: 옵셔널 자리 제네릭 무검사 → typing-limits 8.26 + 캐비엇)·`H-623`(roblox/05 충돌 이름)·`H-624`(CheckedQuad 주석) 반영 배치(sonnet) 띄움, **Q86**(상류 보고)·**Q87**(Out 충돌 이름 거짓 양성). nonstrict CLI 사실 §2. 도는 중: D8·P1/P6·fix(H-622~624).
+- **22:45** D8 완료(스킬·에이전트 문서 전부 일치, `H-625` SKILL.md nil 규칙 문장만 좁힘). 문서 사실 감사 D1~D8 전부 소진(남은 D9 CHANGELOG↔코드). E8(opus) 띄움. 도는 중: P1/P6·fix(H-622~624)·E8.
+- **22:55** fix(H-622~624) 완료(typing-limits 8.26·캐비엇 다섯·roblox/05·CheckedQuad 주석). 5회차 커밋. D9(sonnet) 띄움. 도는 중: P1/P6·E8·D9.
