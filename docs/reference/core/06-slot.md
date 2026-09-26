@@ -434,7 +434,7 @@ rows:Set({ { Id = "b", Title = "둘째" }, { Id = "a", Title = "첫째" } }) -- 
 
 `userdata`를 쓴다면 `ctx` 타입의 `UserData` 필드와 반환 팩의 두 번째 자리에 그 타입을 적습니다 — `UserData: RowUD?` / `: (any, RowUD?)`.
 
-**관련** — [가상화 무한 스크롤](../../how-to/03-virtualized-infinite-scroll.md), [DOMless Slot](../../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
+**관련** — [가상화 무한 스크롤](../../how-to/03-long-lists-and-windowing.md), [DOMless Slot](../../quadnomicon/09-fragment-breakthrough-and-domless-slot.md)
 
 ## `slot:Single(state, updateFn?, opts?)`
 
@@ -524,7 +524,7 @@ slot:List(rows, function(ctx: RowCtx): (any, nil)
 end, function(item: Row) return item.Id end)
 ```
 
-**관련** — [가상화 무한 스크롤](../../how-to/03-virtualized-infinite-scroll.md)
+**관련** — [가상화 무한 스크롤](../../how-to/03-long-lists-and-windowing.md)
 
 ## `q.KeyGone`
 

@@ -378,4 +378,4 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 ## 더 알고 싶다면
 
 - [레퍼런스: `Slot`](../reference/core/06-slot.md) — `:List`/`:Single`의 전체 계약, 에러 문구, `Detach`·`KeyGone`·`OwnsElements`
-- [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md) — 수백~수만 개짜리 목록의 윈도잉과 `Throttle`
+- [03. `Slot:List`로 긴 목록 다루기](../how-to/03-long-lists-and-windowing.md) — 수백~수만 개짜리 목록의 윈도잉과 `Throttle`

@@ -268,7 +268,7 @@ end)
 local list = D.Frame { slot }
 ```
 
-`Slot`은 컨테이너 `Frame`을 만들지 않습니다 — 자식이 부모 밑에 바로 붙습니다. 자세한 계약은 [03. `Slot:List`로 긴 목록 다루기](./03-virtualized-infinite-scroll.md)에 있습니다.
+`Slot`은 컨테이너 `Frame`을 만들지 않습니다 — 자식이 부모 밑에 바로 붙습니다. 자세한 계약은 [03. `Slot:List`로 긴 목록 다루기](./03-long-lists-and-windowing.md)에 있습니다.
 
 ### 컴포넌트 — `Class.Extend()`는 함수 하나로
 

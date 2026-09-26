@@ -206,4 +206,4 @@ print(countText:Get())   --> "13 점"   (값은 이미 최신이다)
 - [레퍼런스: `Blocker`](../reference/sugar/06-blocker.md) — `On`/`Off`/`OffWithoutEmit`/`Policy`, 푸는 도중 다시 잠갔을 때의 동작
 - [레퍼런스: `state:Gate(setup)`](../reference/core/03-state.md#stategatesetup) — 게이트 계약과 직접 배선
 - [레퍼런스: `Debounce` / `Throttle`](../reference/sugar/03-debounce-throttle.md) — 같은 게이트 위의 시간 정책
-- [03. `Slot:List`로 긴 목록 다루기](../how-to/03-virtualized-infinite-scroll.md) — 스크롤 이벤트 폭주를 `Blocker`로 접는 실전 예
+- [03. `Slot:List`로 긴 목록 다루기](../how-to/03-long-lists-and-windowing.md) — 스크롤 이벤트 폭주를 `Blocker`로 접는 실전 예

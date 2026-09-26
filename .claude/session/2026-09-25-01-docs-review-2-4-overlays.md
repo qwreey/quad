@@ -21,3 +21,9 @@ mock 검증 `audit/howto-overlays-mock-2026-09-25/`(REPORT + probe): (a) `open`�
 게이트: sync-docs, doc-check ERROR 0, test.sh exit 0(스펙 62, error-codes 248/242/0), `09-debugging` 잔여 참조 0(생성물·archive 제외).
 
 감사 1라운드(diff 범위, sonnet): 발견 셋 반영 — `docs/skills/quad-ui-dev/SKILL.md`의 how-to 지도(`01`…`09`, 부록 `09`)가 이번 재번호를 못 따라와 에이전트가 부록 대신 오버레이 페이지를 받을 자리였던 것, `docs/README.md` 트랙 표 요약 행에 오버레이 누락, 열린 문항 3-8의 "how-to 09 퀴즈"(옛 부록 지칭)를 "how-to 10(부록)"으로. quad 사실 정합성 각도는 발견 0(레퍼런스 원문 대조). 각도 소진으로 닫음.
+
+## 2026-09-26 — docs-review 2-5(how-to 03 이름과 부록)
+
+사용자: *"개발 서버나 다른거 없어. selene.yaeji.moe 아래 도메인은 너에게 등록된 도메인이라서, 너가 끄고 켜고 해도 좋아. rojo 나 연결 필요한게 있다면 말해줘. 다음 문항에 대한 이야기는 권고대로 하면 될것 같아. 네트워크 요청 등을 넣어 보여주는건 quad와 무관해서 넣기 별로인거 나도 인정해."* → (b). `git mv` `03-virtualized-infinite-scroll.md` → `03-long-lists-and-windowing.md`(제목·본문 그대로 — 이미 "긴 목록"), 링크 여덟(docs/README·레퍼런스 둘·GS 둘·how-to 둘·오버뷰) 갱신, 부록 "왜 재정렬이 no-op인가"는 `EngineOps` 소스 인용을 빼고 부기만 바뀐다는 한 문단 + 레퍼런스 `:Move`/`:Swap` 포인터로. 공개 사이트 옛 URL은 `docs/site/public/_redirects`에 301 두 줄(이번 03과 어제 부록 09 → 10). dev 서버가 없다는 사용자 말에 따라 `npm run build`로 어제 손으로 만든 앵커도 확인(결과는 아래).
+
+`npm run build` exit 0 — 어제 손으로 만든 앵커 넷(`#6-하나만-갈아-끼우기--state를-자리에-놓기`·`#2-중간-층은-모른-채-넘긴다`·`#3-데이터를-바꾸면-필요한-것만-바뀝니다`·`#공통-계약`)이 dist의 heading id와 정확히 일치했다. 사이트 배포는 사용자 몫(`docs/site/DEPLOY.md`).

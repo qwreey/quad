@@ -2,12 +2,11 @@
 title: "03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉"
 description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적으로 렌더링하는 법을 설명합니다"
 ---
-
-import { Quiz, QuizResults } from 'starlight-quiz/components';
+# [실전 레시피] 03. `Slot:List`로 긴 목록 다루기 — 재활용과 윈도잉
 
 > **대상 독자**: 수백~수만 개짜리 목록을 `ScrollingFrame`에 그려야 하는 개발자
 > **다루는 개념**: `LayoutOrder`/`Position` 바인딩, 윈도잉, `userdata`, `Throttle`
-> **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 14. 목록 만들기](/getting-started/14-lists/)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
+> **먼저**: `Slot:List`의 기본(계약·재사용·`KeyGone`·`Detach`)은 [시작하기 14. 목록 만들기](../getting-started/14-lists.md)에서 배웁니다. 이 문서는 그 위에서 **긴 목록**을 다루는 법만 봅니다.
 > **재활용과 윈도잉은 서로 다른 행에 걸립니다**: 재활용은 **화면에 계속 남아 있는 키**에만 적용되고, 윈도우 밖으로 나가 키가 사라진 행은 재활용이 아니라 파괴(또는 `q.Detach`로 홀드)입니다(§6).
 
 ---
@@ -32,7 +31,7 @@ local D = q.Declaration
 
 ## 2. 긴 목록에서 특히 중요한 계약 셋
 
-전체 계약(`ctx` 필드 다섯과 네 갈래 반환)은 [시작하기 14](/getting-started/14-lists/)와 [레퍼런스: `Slot`](/reference/core/06-slot/)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
+전체 계약(`ctx` 필드 다섯과 네 갈래 반환)은 [시작하기 14](../getting-started/14-lists.md)와 [레퍼런스: `Slot`](../reference/core/06-slot.md)에 있습니다. 여기서는 목록이 길어질 때 비용을 가르는 셋만 짚습니다.
 
 ```
 Slot():List(data, updateFn, keyFn?, opts?)
@@ -42,7 +41,7 @@ updateFn(ctx) -> (result, userdata)
 
 - **`keyFn(item, i)`가 재활용을 결정합니다.** 항목의 신원이 안정적이어야 `ctx.Prev`가 넘어오고, `ctx.Prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 **가장 싼 경로**입니다. 생략하면 배열 인덱스가 키인데, 그러면 목록이 밀릴 때마다 신원이 어긋나 전부 새로 만들어집니다.
 - **항목마다 바뀌는 값은 `userdata`에 `Source`로 넣어 둡니다**(다음 호출의 `ctx.UserData`로 돌아옵니다). 재활용 갈래에서는 인스턴스를 다시 만들 수 없으니, 라벨 텍스트나 위치는 그 `Source`만 `:Set` 합니다.
-- **`opts.OwnsElements = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다 — 단 그 Instance는 먼저 [`Claim`](/reference/roblox/04-claim-mapper/)으로 quad 소유로 넘겨져 있어야 합니다(claim되지 않은 원소는 Slot이 거부합니다). `OwnsElements = false`는 "버릴 때 파괴하지 않는다"는 뜻이지 소유 검사를 건너뛰는 옵션이 아닙니다. 그리고 목록이 마운트된 채로 그 화면(부모 Instance)이 파괴되면 엔진이 자손을 지우므로 넘긴 Instance도 같이 죽습니다 — 살려야 하면 철거 전에 data에서 빼세요.
+- **`opts.OwnsElements = false`** — 이 Slot이 요소를 **파괴하지 않습니다**(목록에서 빠질 때 언마운트만). 밖에서 만들어 넘긴 Instance를 목록에 태울 때 씁니다 — 단 그 Instance는 먼저 [`Claim`](../reference/roblox/04-claim-mapper.md)으로 quad 소유로 넘겨져 있어야 합니다(claim되지 않은 원소는 Slot이 거부합니다). `OwnsElements = false`는 "버릴 때 파괴하지 않는다"는 뜻이지 소유 검사를 건너뛰는 옵션이 아닙니다. 그리고 목록이 마운트된 채로 그 화면(부모 Instance)이 파괴되면 엔진이 자손을 지우므로 넘긴 Instance도 같이 죽습니다 — 살려야 하면 철거 전에 data에서 빼세요.
 
 `data`는 평범한 배열이거나 배열을 담은 `State`입니다. `State`면 값이 바뀔 때마다 재조정(reconcile)이 돕니다.
 
@@ -205,10 +204,10 @@ end, viewportHeight)
 - 창 안에서 막히는 것은 **통지**이지 값이 아닙니다 — `gatedScrollY:Get()`은
   언제나 마지막 스크롤 위치입니다.
 - 스크롤이 **멈춘 뒤에** 한 번만 계산하고 싶다면 `q.Debounce`를 씁니다. 옵션과
-  `Flush`/`Cancel`은 [레퍼런스: Debounce / Throttle](/reference/sugar/03-debounce-throttle/)에 있습니다.
+  `Flush`/`Cancel`은 [레퍼런스: Debounce / Throttle](../reference/sugar/03-debounce-throttle.md)에 있습니다.
 - 시간이 아니라 **코드 구간**을 직접 열고 닫고 싶다면(데이터 여러 개를 한꺼번에
   바꾸는 동안 목록을 멈추는 경우) `Blocker`가 그 도구입니다 —
-  [시작하기 18](/getting-started/18-blocker/).
+  [시작하기 18](../getting-started/18-blocker.md).
 
 ---
 
@@ -228,28 +227,14 @@ end, viewportHeight)
 
 ## 부록: 왜 재정렬이 no-op인가
 
-Roblox에서는 형제의 물리적 순서가 렌더 순서를 정하지 않습니다 — 순서는
-`UIListLayout`의 `SortOrder`/`LayoutOrder`나 `ZIndex`가 정합니다. 그래서
-quad-roblox 백엔드는 재정렬 op를 **일부러 아무 일도 하지 않게** 구현합니다.
-
-```luau
--- quad-roblox/src/EngineOps.luau의 요지(타입 주석은 뺐습니다)
-local function nativeMove(_target, _fromOffset, _elements, _toOffset)
-    -- no-op on purpose (see header) — order is bookkeeping, not physical, on Roblox
-end
-```
-
-기본 합성 폴백을 그대로 뒀다면 `.Parent`를 두 번 쓰며 떼었다 붙이게 되고
-(`AncestryChanged` 재발화), Roblox에서는 물리적으로 아무것도 바뀌지 않는
-재정렬을 위해 그 비용을 치르게 됩니다. quad-base는 여전히 정확한 슬롯 인덱스
-부기를 유지합니다 — DOM처럼 자식 순서가 실제 의미를 갖는 백엔드가 그 부기를
-쓰기 때문입니다.
+Roblox에서는 형제의 물리적 순서가 화면 순서를 정하지 않습니다 — 순서는 `UIListLayout`의 `SortOrder`/`LayoutOrder`나 `ZIndex`가 정합니다. 그래서 quad-roblox 백엔드의 재정렬 op(`nativeMove`/`nativeSwap`)는 **의도된 no-op**이고, `slot:Move`/`slot:Swap`으로 바뀌는 것은 quad의 부기(이 Slot 안의 인덱스, `slot:Get`/`slot:IndexOf`, 이후 삽입 위치)뿐입니다. 그래서 이 레시피가 순서를 `LayoutOrder` 바인딩으로 정합니다(§3). 계약 전체는 [레퍼런스: Slot](../reference/core/06-slot.md)의 `:Move`/`:Swap` 절을 보세요.
 
 ---
 
 ## 이해 점검
 
-<Quiz title={"무엇이 재활용을 결정하나"}>
+```quiz
+# 무엇이 재활용을 결정하나
 
 긴 목록에서 살아남은 항목이 다시 만들어지지 않게 하는 것은 무엇인가요?
 
@@ -258,10 +243,10 @@ end
 - [ ] `keyFn`은 항목의 정렬 순서를 정하는 함수라 재활용과는 무관합니다
 
 신원이 안정적이어야 `ctx.Prev`가 넘어오고, `ctx.Prev`를 그대로 돌려주는 갈래가 마운트도 파괴도 없는 가장 싼 경로입니다.
+```
 
-</Quiz>
-
-<Quiz title={"윈도잉에서 위치를 잡는 법"}>
+```quiz
+# 윈도잉에서 위치를 잡는 법
 
 보이는 구간만 그리는 윈도우 방식에서 행의 위치와 스크롤 범위는 어떻게 잡나요?
 
@@ -270,7 +255,4 @@ end
 - [ ] 행 높이는 quad가 측정해 주므로 가변 높이 행도 그대로 둘 수 있습니다
 
 목록의 일부만 자식으로 존재하니 레이아웃이 전체 스크롤 높이를 만들어낼 수 없어서, 두 방식 중 하나를 골라야 합니다. 그리고 quad는 행 높이를 측정해 주지 않으므로, 절대 인덱스로 위치를 계산하는 방식은 모든 행이 같은 높이라고 가정합니다.
-
-</Quiz>
-
-<QuizResults />
+```

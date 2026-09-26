@@ -175,4 +175,4 @@ local gated: q.State<number> = hp:Apply(blocker)
 
 붙이지 않은 `Blocker`는 아무 일도 하지 않습니다 — `:On()`/`:Off()`는 **붙어 있는 게이트**를 통해서만 효과를 냅니다.
 
-**관련** — [03-state](/reference/core/03-state/) · [05-observer-effect](/reference/core/05-observer-effect/) · [How-To 03 가상 스크롤](/how-to/03-virtualized-infinite-scroll/)
+**관련** — [03-state](/reference/core/03-state/) · [05-observer-effect](/reference/core/05-observer-effect/) · [How-To 03 가상 스크롤](/how-to/03-long-lists-and-windowing/)

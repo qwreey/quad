@@ -1,3 +1,7 @@
 # 2026-09-10: 한국어를 root 로케일로 옮기기 전(첫 배포 몇 시간) 잠깐 살았던 /ko/ URL
 /ko/* /:splat 301
 /ko / 301
+
+# 2026-09-25/26: how-to 재편 — 옛 부록 09 → 10, 03 파일 이름 변경(docs-review 2-4·2-5)
+/how-to/09-debugging-and-troubleshooting/ /how-to/10-debugging-and-troubleshooting/ 301
+/how-to/03-virtualized-infinite-scroll/ /how-to/03-long-lists-and-windowing/ 301
