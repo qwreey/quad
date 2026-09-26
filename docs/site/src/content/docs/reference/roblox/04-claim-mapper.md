@@ -96,6 +96,8 @@ end
 | 둘째 인자가 디스크립터가 아님 | `Quad0034 Claim: second argument must be a D.Mapper descriptor` |
 | 디스크립터를 두 번 씀 | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` |
 | 디스크립터의 props가 테이블이 아님 | `Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})` |
+| 디스크립터 둘이 같은 자식(같은 이름)을 가리킴 | `Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor` |
+| 배열 키가 양의 정수가 아님(`{ [0] = M.TextLabel(…) }`) | `Quad0031 Claim: array keys must be positive integers (got {i})` |
 | 이미 quad가 소유한 Instance(루트든 자식이든 — 백엔드의 `nativeClaim`보다 먼저 `isClaimed`로 걸립니다) | `Quad0029 Claim: {inst} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` |
 | 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}` |
 
@@ -107,7 +109,7 @@ end
 **계약 셋**
 
 1. **한 번만 claim합니다.** 한 Instance는 생애 동안 정확히 한 번 소유됩니다. `D.New`로 만든 것은
-   이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다. 여러 quad 인스턴스가 한 트리를 나눠
+   이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다 — **같은 quad 모듈 인스턴스 안에서**의 이야기입니다(소유 장부는 모듈 인스턴스마다 따로라, `Quad.New()`로 만든 다른 인스턴스는 그 Instance를 모르고 그대로 claim합니다 — 아래 UB). 여러 quad 인스턴스가 한 트리를 나눠
    claim하는 것은 UB입니다. 이미 파괴된 Instance를 claim하는 것도 UB입니다 — 막지 않습니다.
 2. **그려지는 직계 자식은 전부 매핑합니다.** quad는 claim한 Instance의 자식 자리를
    [부기](/reference/core/06-slot/)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와

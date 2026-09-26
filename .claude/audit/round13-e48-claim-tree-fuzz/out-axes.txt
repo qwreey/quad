@@ -1,0 +1,56 @@
+[a] pass-1 failure: Quad0032
+[a]   claimed root/title/list after: false/false/false fired=false
+[a]   same descriptor after fixing the tree: ok
+[a]   title.Text: x
+[a] pass-2 (drive) failure: Quad0076 | Quad0076 Dispatch: no handler matched key Bogus (value: number) — check that the provider for this value (e.
+[a]   claimed root/title, title.Text, fired: true/true x true
+[a]   fixed retry with fresh descriptor: Quad0029
+[a] descriptor at string key (Q85 known): Quad0076 root claimed=true
+[b] slot:Add(mapped child): Quad0172
+[b] D.Frame{ mapped child } (static): Quad0160
+[b] q.dispose(mapped child): Quad0179
+[b]   title.Text after failed dispose: s1
+[b] q.dispose(root): ok
+[b]   destroyed root/title/inner: true/true/true claimed=false/false
+[b]   src:Set after dispose: ok title.Text=s1
+[b] root:Destroy() → claimed title: false
+[b]   src:Set after Destroy: ok title.Text=1
+[b]   Claim the dead root again (UB §7-13): Quad0225
+[b] Slot element parked in template, mapped: Quad0029
+[b]   root claimed after: false
+[c] first Claim: ok
+[c] same root desc, other tree: Quad0027
+[c] same child desc at two slots: Quad0027 claimed=false
+[c] desc nested in itself: Quad0032
+[c] failed pass 1 then same desc on a good tree: Quad0032 → ok
+[c] consumed child desc as another root: Quad0027
+[c] keyed desc at root (key ignored): ok then as child: Quad0027
+[d] name ".": ok text=ok
+[d] name "a.b": ok text=ok
+[d] name "": ok text=ok
+[d] name "1": ok text=ok
+[d] name " ": ok text=ok
+[d] name "Title ": ok text=ok
+[d] name "a/b": ok text=ok
+[d] name "日本": ok text=ok
+[d] number key 1 vs child "1" (mock): Quad0032 root claimed=false
+[d] boolean key true: Quad0032
+[d] MapperRoot as child key: Quad0032
+[d] nil key: Quad0032
+[d] Name in mapped child's props (rename): ok name=Renamed
+[e] newMapperClass("GuiObject") child over a TextLabel (mock): Quad0032
+[e] root M.TextLabel over a Frame (Q84 known): ok claimed=true
+[e] root newMapperClass("GuiObject") over a Frame: ok bt=0.3
+[f] OnChange fired: typed
+[f] Out source: typed
+[f] tweens created on mapped child: 1 inst=true
+[g] B.Claim of an A-claimed root: ok B.isClaimed=true
+[g] B.Claim with an A-made descriptor: ok
+[g] A.MapperRoot == B.MapperRoot: true
+[g] B.Claim with an A.Source in child props: Quad0106 root claimed by B=true fired-left
+[g] B.Claim mapping an A-made (D.New) child: ok A.isClaimed=true B.isClaimed=true
+[h] 1000 children, root only: 0.0 ms
+[h] 1000 children, all mapped: 18.0 ms
+[h] 2000 children, all mapped: 44.3 ms
+[h] 4000 children, all mapped: 126.7 ms
+[h] depth-200 chain: ok 5.5 ms

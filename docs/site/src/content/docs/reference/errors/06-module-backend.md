@@ -33,7 +33,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` — `quad-base/src/Claim.luau`
 
-- **언제**: 디스크립터가 해석한 Instance가 이미 quad에 의해 소유돼 있을 때 — `D.New`로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다.
+- **언제**: 디스크립터가 해석한 Instance가 **같은 quad 모듈 인스턴스**에 이미 소유돼 있을 때 — `D.New`로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다. 다른 모듈 인스턴스(`Quad.New()`)가 소유한 것은 여기서 걸리지 않고 그대로 claim됩니다(정의되지 않은 동작 — [Claim 계약 셋](/reference/roblox/04-claim-mapper/)).
 - **고치려면**: 그 자식을 디스크립터에서 빼고 따로 다루거나, `q.dispose`한 뒤 새로 만드세요.
 - **참고**: [`q.Claim(inst, desc)`](/reference/roblox/04-claim-mapper/#qclaiminst-desc)
 

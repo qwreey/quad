@@ -1,0 +1,4 @@
+mut-noclass: seeds 3000 ok 1473 diffs 630 dupTouched 1103 time 0.61s
+mut-order: seeds 3000 ok 1473 diffs 0 dupTouched 1041 time 0.76s
+mut-no28: seeds 3000 ok 1473 diffs 63 dupTouched 1046 time 0.77s
+mut-claimset: seeds 3000 ok 1473 diffs 170 dupTouched 1041 time 0.76s

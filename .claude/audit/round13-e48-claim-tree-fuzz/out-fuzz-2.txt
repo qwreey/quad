@@ -1,0 +1,2 @@
+seeds 20000 ok 9384 diffs 0 dupTouched 7490 time 5.86s
+fail ids: Quad0027=312 Quad0028=399 Quad0029=1295 Quad0030=418 Quad0031=366 Quad0032=7826

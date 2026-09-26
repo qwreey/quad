@@ -180,7 +180,7 @@ end
 ### 1) 한 번만 Claim한다
 
 한 Instance는 생애 동안 정확히 한 번만 claim됩니다. `D.New`로 만든 Instance도
-이미 claim된 상태입니다. 다시 걸면 `Quad0029 Claim: … is already claimed by quad …`
+이미 claim된 상태입니다. 같은 quad 모듈 인스턴스에서 다시 걸면 `Quad0029 Claim: … is already claimed by quad …`
 입니다 — `Claim`이 1패스에서 백엔드의 `isClaimed`로 먼저 묻고, 그 판정은 별도 레지스트리가
 아니라 claim 시점에 심는 소유 데이터의 유무입니다(그 게이트를 지나 `nativeClaim`까지 가서 나는
 `Quad0225`는 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다). **여러 quad 인스턴스가 한 트리를 나눠 claim하는 것은 UB**입니다.
