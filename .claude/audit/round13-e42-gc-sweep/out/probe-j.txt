@@ -1,0 +1,5 @@
+[j1 Out(Text, src) + Text=src, inst:Destroy()] N=1000 residue=0 {} dKB=384.0 (N0 dKB=1.0)
+[j2 OnChange capturing a long-lived Source, inst:Destroy()] N=1000 residue=1 {cb=1} dKB=15.0 (N0 dKB=1.0)
+[j3 OnChange descriptor made, never used] N=1000 residue=0 {} dKB=48.0 (N0 dKB=0.0)
+[j4 State<OnChange?> seat swapped N times on a live inst (connections must drop)] N=1000 residue=1 {cb=1} dKB=32.0 (N0 dKB=1.0)
+[j5 Event handler key (Activated) closure, inst Destroy] N=1000 residue=1 {cb=1} dKB=65.0 (N0 dKB=0.0)

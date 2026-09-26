@@ -1,0 +1,7 @@
+[i1 Claim(template) with reactive props, root:Destroy()] N=1000 residue=0 {} dKB=1074.0 (N0 dKB=1.0)
+[i2 Claim then q.dispose(root)] N=1000 residue=0 {} dKB=128.0 (N0 dKB=0.0)
+[i3 foreign tree never claimed, dropped (control)] N=1000 residue=0 {} dKB=64.0 (N0 dKB=0.0)
+[i4 Claim failing mid-way (bad mapping), root dropped w/o Destroy] N=1000 residue=0 {} dKB=64.0 (N0 dKB=0.0)
+  i5 err:	false	./probe-i.luau:49: x
+[i5 Claim throwing in pass 2 (prop Compute throws), root dropped w/o Destroy] N=1000 residue=2000 {root=1000,title=1000} dKB=5753.0 (N0 dKB=1.0)
+[i6 same as i5 but root:Destroy() after the throw] N=1000 residue=0 {} dKB=463.0 (N0 dKB=1.0)

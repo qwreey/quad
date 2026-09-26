@@ -1,0 +1,5 @@
+[a1 D.Frame{} + q.dispose] N=1000 residue=0 {} dKB=97.0 (N0 dKB=0.0)
+[a2 D.Frame{} never disposed (contract: must Destroy)] N=1000 residue=1000 {inst=1000} dKB=2126.0 (N0 dKB=0.0)
+[a3 D.Frame{} + :Destroy()] N=1000 residue=0 {} dKB=128.0 (N0 dKB=0.0)
+[b1 parent:Destroy() with rich child] N=1000 residue=0 {} dKB=2001.0 (N0 dKB=0.0)
+[b2 q.dispose(parent) with rich child] N=1000 residue=0 {} dKB=640.0 (N0 dKB=0.0)

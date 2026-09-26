@@ -1,0 +1,6 @@
+[k1 1000 Modifiers via setter chain (static field names)] N=1000 residue=0 {} dKB=161.0 (N0 dKB=0.0)
+[k1 rounds] N=1000 x4 cumulative dKB: +0 -64 -64 -64 ; last-round residue=0
+[k2 Modifier factory :Apply to Frames, Destroy] N=1000 residue=0 {} dKB=337.0 (N0 dKB=0.0)
+[k3 computed setter names (documented unbounded cache, ROADMAP backlog)] N=1000 residue=0 {} dKB=237.0 (N0 dKB=0.0)
+[k3 rounds] N=1000 x3 cumulative dKB: +213 +424 +572 ; last-round residue=0
+[k4 TypedFactory with fresh names (class registry — module-level, by design)] N=1000 residue=1000 {ctor=1000} dKB=369.0 (N0 dKB=1.0)

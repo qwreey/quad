@@ -1,0 +1,2 @@
+[b5 UICorner/UIPadding shorthand, inst:Destroy()] N=1000 residue=0 {} dKB=856.0 (N0 dKB=1.0)
+[b6 live inst, UICorner toggled nil<->value N times (managed child destroyed/recreated)] N=1000 residue=0 {} dKB=27.0 (N0 dKB=1.0)

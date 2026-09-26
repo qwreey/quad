@@ -1,0 +1,2 @@
+[Debounce Time=1, 1000 hosts destroyed, 10 Hz upstream] alive gates: t=20s:1000 t=40s:1000 t=60s:1000 quiet 3s:0
+[Throttle Time=1, 1000 hosts destroyed, 10 Hz upstream] alive gates: t=20s:1000 t=40s:1000 t=60s:1000 quiet 3s:0

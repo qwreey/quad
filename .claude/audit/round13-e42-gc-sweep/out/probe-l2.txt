@@ -1,0 +1,6 @@
+[l4 New()+AddPlugin(top-level fn)] N=1000 residue=0 {} dKB=245.0 (N0 dKB=2.0)
+[l5 New()+AddPlugin(inline closure capturing m) — doc 01 L90 says pinned] N=1000 residue=1000 {module=1000} dKB=39174.0 (N0 dKB=1.0)
+[l6 New()+AddPlugin(inline closure NOT capturing m)] N=1000 residue=0 {} dKB=4192.0 (N0 dKB=0.0)
+[l7 New()+RunInit(closure capturing m)] N=1000 residue=1000 {module=1000} dKB=35118.0 (N0 dKB=0.0)
+[l8 New()+UseProvider(QuadRoblox)+Frame made & Destroyed] N=200 residue=0 {} dKB=128.0 (N0 dKB=0.0)
+[l9 New()+UseProvider+Frame NOT destroyed (instance pins module?)] N=200 residue=400 {inst=200,module=200} dKB=11314.0 (N0 dKB=1.0)

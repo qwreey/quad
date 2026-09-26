@@ -65,4 +65,6 @@
 - `round13-e36-version-check-fuzz/` — **[2026-09-27 자율 루프 E36]** `type_version_check` 차등 퍼즈(`refs.py`·`fuzz.py`·`analyze.py`·`repros.py`)·type function 대조(`typefn_diff.py`)·`quad_error` blame 실측(`quad_error_blame.luau`) — 코드 결함 0, 문서 `H-766`~`H-768`, `Q124`.
 - `round13-e37-nil-none-matrix/` — **[2026-09-27 자율 루프 E37]** `nil`/`q.None` 자리별 매트릭스(24×6)·프로브 `run-matrix{,2,3}`·`run-setdedup`·`strict-*` — 문서 `H-769`~`H-775`, `Q125`~`Q127`, Q90 ⑱, 실기기 R1~R5.
 - `round13-e38-spec-coverage/` — **[2026-09-27 자율 루프 E38]** spec 커버리지 표 넷(멤버·옵션 키·에러 ID·문서 약속)·`out/uncovered-lines.txt`·프로브·스펙 초안 `drafts/uncovered-assertions.luau` — 코드 결함 0, `H-777`·`H-778`, `Q128`.
+- `round13-e40-reactive-fuzz/` — **[2026-09-27 자율 루프 E40]** 반응형 그래프 차등 퍼저(`fuzz.e40.luau` 모델 둘·축소기, 프로브 P1~P8·`probe.e40.rule1`, `results.txt`) — 값 차등 0, `Q130`(게이트 뒤 게이트 재통지)·`H-783`.
+- `round13-e42-gc-sweep/` — **[2026-09-27 자율 루프 E42]** 서브시스템별 GC 스윕(`gclib.luau`·`probe-*.luau` 23·`out/`) — 강한 참조 잔여 0, `Q129`(게이트 수명)·`H-781`·`H-782`, mock 한계 M1~M4.
 

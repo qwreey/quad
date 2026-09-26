@@ -1,0 +1,3 @@
+[b3 unique Tag names + unique AttrKey names, Destroy] N=1000 residue=0 {} dKB=911.0 (N0 dKB=1.0)
+[b3 rounds] N=1000 x4 cumulative dKB: -31 -239 -239 -239 ; last-round residue=0
+[b4 State<Tag?> seat swapped with unique tag names on a live inst] N=1000 residue=0 {} dKB=48.0 (N0 dKB=0.0)

@@ -1,0 +1,3 @@
+[e9 long-lived Ref seated on N insts, each destroyed (Ref.Value keeps the last)] N=1000 residue=1 {inst=1} dKB=386.0 (N0 dKB=1.0)
+ref.Value after e9 is destroyed inst:	true
+[e10 long-lived Ref + Effect(dep ref) on each inst, destroyed] N=1000 residue=1 {inst=1} dKB=184.0 (N0 dKB=1.0)

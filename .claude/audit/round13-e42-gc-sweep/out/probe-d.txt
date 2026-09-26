@@ -1,0 +1,12 @@
+[d1 up:Compute chain (depth 3), downstream dropped] N=1000 residue=0 {} dKB=160.0 (N0 dKB=1.0)
+up._subs entries after d1:	0
+[d2 multi-dep Compute(up, other) dropped] N=1000 residue=0 {} dKB=127.0 (N0 dKB=1.0)
+[d3 Compute read into Observer (not subscribed) dropped] N=1000 residue=0 {} dKB=96.0 (N0 dKB=0.0)
+[d4 Observer :WeakSubscribe then dropped] N=1000 residue=0 {} dKB=64.0 (N0 dKB=0.0)
+[d5 Observer :Subscribe (strong) then :Unsubscribe] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[d6 Observer :Subscribe (strong) kept (contract: module-lifetime)] N=1000 residue=1000 {obs=1000} dKB=361.0 (N0 dKB=0.0)
+[d7 Effect WeakSubscribe dropped] N=1000 residue=0 {} dKB=224.0 (N0 dKB=0.0)
+[d8 Effect Subscribe then Unsubscribe] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[d9 Gate / Blocker chain dropped] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[d10 Effect with Ref dep, WeakSubscribe dropped] N=1000 residue=0 {} dKB=-33.0 (N0 dKB=3.0)
+[d11 downstream Compute of a Source that is itself dropped] N=1000 residue=0 {} dKB=63.0 (N0 dKB=1.0)

@@ -1,0 +1,2 @@
+[c9 nested rounds] N=1000 x10 cumulative dKB: +1361 +1329 +1777 +1616 +1616 +1745 +1617 +1937 +2384 +2385 ; last-round residue=0
+[c9 flat rounds] N=1000 x10 cumulative dKB: +369 +193 +370 +721 +721 +721 +721 +369 +369 +722 ; last-round residue=0

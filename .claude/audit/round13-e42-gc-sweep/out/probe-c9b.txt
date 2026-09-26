@@ -1,0 +1,1 @@
+[c9b nested :List — inner Source/Slot/elements tracked] N=1000 residue=0 {} dKB=1488.0 (N0 dKB=0.0)

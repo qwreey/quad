@@ -1,0 +1,3 @@
+[l1 Quad.New() bare] N=1000 residue=0 {} dKB=246.0 (N0 dKB=0.0)
+[l2 Quad.New()+UseProvider(QuadRoblox)] N=200 residue=0 {} dKB=2.0 (N0 dKB=0.0)
+[l3 Quad.New()+UseProvider+Frame+Destroy] N=200 residue=0 {} dKB=2.0 (N0 dKB=0.0)

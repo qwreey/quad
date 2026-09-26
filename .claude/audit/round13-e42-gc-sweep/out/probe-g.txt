@@ -1,0 +1,7 @@
+[g1 Store created/dropped (fields bound to an inst, inst destroyed)] N=1000 residue=0 {} dKB=400.0 (N0 dKB=1.0)
+[g2 long-lived Store, field values swapped N times] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[g3 long-lived Store :Of new names N times (grows by design)] N=1000 residue=1000 {src=1000} dKB=304.0 (N0 dKB=0.0)
+[g4 Context bag + Provider per iteration, dropped] N=1000 residue=0 {} dKB=223.0 (N0 dKB=1.0)
+[g5 long-lived ctx, value swapped N times under one Provider] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[g6 long-lived ctx, N new Providers Set then dropped (bag holds strongly — by design)] N=1000 residue=1000 {provider=1000} dKB=235.0 (N0 dKB=0.0)
+[g7 Context value is a Source bound to a component inst, inst destroyed] N=1000 residue=0 {} dKB=63.0 (N0 dKB=1.0)

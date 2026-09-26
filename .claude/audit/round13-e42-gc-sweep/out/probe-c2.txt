@@ -1,0 +1,4 @@
+[c8 :Single item swapped N times on a live host] N=1000 residue=0 {} dKB=400.0 (N0 dKB=0.0)
+[c9 nested :List in :List, outer keys replaced N times] N=1000 residue=0 {} dKB=1039.0 (N0 dKB=1.0)
+[c9 rounds] N=1000 x4 cumulative dKB: -303 +897 +1025 +1025 ; last-round residue=0
+[c10 :List with OwnsElements=false, keys dropped (elements survive by design)] N=1000 residue=1000 {elem=1000} dKB=2266.0 (N0 dKB=0.0)

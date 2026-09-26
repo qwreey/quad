@@ -1,0 +1,2 @@
+distinct closures over 5 iterations (upvalue-invariant):	1
+[j2b OnChange cb capturing per-iteration i, Destroy] N=1000 residue=0 {} dKB=416.0 (N0 dKB=0.0)

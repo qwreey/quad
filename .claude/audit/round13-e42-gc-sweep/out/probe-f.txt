@@ -1,0 +1,8 @@
+[f1 running Tween, inst:Destroy()] N=1000 residue=0 {} dKB=512.0 (N0 dKB=1.0)
+[f2 running Tween w/ callbacks, inst:Destroy()] N=1000 residue=0 {} dKB=207.0 (N0 dKB=1.0)
+[f3 completed Tween w/ callbacks, Destroy] N=1000 residue=0 {} dKB=129.0 (N0 dKB=0.0)
+[f4 running Tween w/ callbacks, q.dispose] N=1000 residue=0 {} dKB=32.0 (N0 dKB=0.0)
+[f5 Animate running, Destroy] N=1000 residue=0 {} dKB=224.0 (N0 dKB=0.0)
+[f2 rounds] N=1000 x4 cumulative dKB: +129 +33 +33 +129 ; last-round residue=0
+[f6 running Tween, Destroy, mock tweenLog kept] N=1000 residue=1000 {inst=1000} dKB=4430.0 (N0 dKB=1.0)
+[f7 live inst, 1000 tween replacements w/ callbacks] N=1000 residue=1 {tween=1} dKB=33.0 (N0 dKB=6.0)

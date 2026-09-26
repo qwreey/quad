@@ -1,0 +1,11 @@
+[e1 Observer on long-lived up bound to inst, inst:Destroy()] N=1000 residue=0 {} dKB=609.0 (N0 dKB=0.0)
+up._subs after e1:	0	 ref.Callbacks:	0	 ref.WeakCallbacks:	0
+[e2 same but q.dispose(inst)] N=1000 residue=0 {} dKB=239.0 (N0 dKB=1.0)
+up._subs after e2:	0	 ref.Callbacks:	0	 ref.WeakCallbacks:	0
+[e3 Effect strong Subscribe with Ref dep then Unsubscribe] N=1000 residue=0 {} dKB=31.0 (N0 dKB=1.0)
+ref.Callbacks after e3:	0	 WeakCallbacks:	0
+[e4 Effect that threw (dies) bound to inst, inst destroyed] N=1000 residue=0 {} dKB=63.0 (N0 dKB=1.0)
+[e5 State<Observer?> seat swapped then inst destroyed] N=1000 residue=0 {} dKB=-33.0 (N0 dKB=1.0)
+[e6 State<Effect?> seat swapped on a live inst (old effects must drop)] N=1000 residue=0 {} dKB=-65.0 (N0 dKB=6.0)
+[e7 OnDestroyed/OnCreated/OnRendered hooks + Destroy] N=1000 residue=0 {} dKB=415.0 (N0 dKB=0.0)
+[e8 PreRef/PostRef + Destroy] N=1000 residue=0 {} dKB=64.0 (N0 dKB=0.0)

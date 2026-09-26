@@ -1,0 +1,34 @@
+### flags='dfs' seeds 1..50000
+      1   SUMMARY flags=dfs seeds=50000 failed=0 steps=2750844 fnCalls=2114504 spurious=0 prevBad=0 obsFires=905463 effRuns=917836 fromChecks=723314 throws=0 recoveries=0 reentSets=0 multiPayloadArrivals=0 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   CALLS per node per single-mutation step: 0:5135232 1:1750096; diamond-bottom nodes=75568 diamond single-Set node-steps=930718 calls=568284
+### flags='dfs,throw' seeds 1..50000
+      1   SUMMARY flags=dfs,throw seeds=50000 failed=1 steps=2749398 fnCalls=2123209 spurious=0 prevBad=0 obsFires=904986 effRuns=917591 fromChecks=722803 throws=233461 recoveries=99468 reentSets=0 multiPayloadArrivals=0 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   R seed=28545 FAIL step 66: batch2: obs#6 on node 11 (gate) fired 3, model 2
+      1   CALLS per node per single-mutation step: 0:5159560 1:1753518; diamond-bottom nodes=75846 diamond single-Set node-steps=938448 calls=571449
+### flags='dfs,late' seeds 1..50000
+      1   SUMMARY flags=dfs,late seeds=50000 failed=0 steps=2748984 fnCalls=1714164 spurious=0 prevBad=0 obsFires=915055 effRuns=935181 fromChecks=732403 throws=0 recoveries=0 reentSets=0 multiPayloadArrivals=0 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   CALLS per node per single-mutation step: 0:4054086 1:1418332; diamond-bottom nodes=75568 diamond single-Set node-steps=698528 calls=430702
+### flags='dfs,throw,late' seeds 1..50000
+      1   SUMMARY flags=dfs,throw,late seeds=50000 failed=0 steps=2746026 fnCalls=1725623 spurious=0 prevBad=0 obsFires=915219 effRuns=929804 fromChecks=732888 throws=183318 recoveries=78988 reentSets=0 multiPayloadArrivals=0 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   CALLS per node per single-mutation step: 0:4079925 1:1427498; diamond-bottom nodes=75846 diamond single-Set node-steps=708707 calls=436684
+### flags='dfs,gate-rule1,throw,late' seeds 1..50000
+      1   SUMMARY flags=dfs,gate-rule1,throw,late seeds=50000 failed=0 steps=2746026 fnCalls=1725623 spurious=0 prevBad=0 obsFires=915224 effRuns=929799 fromChecks=732893 throws=183318 recoveries=78988 reentSets=0 multiPayloadArrivals=0 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   CALLS per node per single-mutation step: 0:4079925 1:1427498; diamond-bottom nodes=75846 diamond single-Set node-steps=708707 calls=436684
+### flags='' seeds 1..50000
+      1   SUMMARY flags= seeds=50000 failed=4 steps=2750731 fnCalls=2114342 spurious=0 prevBad=0 obsFires=905427 effRuns=917767 fromChecks=723285 throws=0 recoveries=0 reentSets=0 multiPayloadArrivals=100 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   R seed=7262 FAIL step 57: boff: obs#1 on node 11 (compute) fired 10, model 9
+      1   R seed=31494 FAIL step 49: batch2: eff#1 runs 8/9 cleanups 7/8 (quad/model)
+      1   R seed=27812 FAIL step 38: boff: obs#1 on node 9 (compute) fired 2, model 3
+      1   R seed=1208 FAIL step 19: batch2: obs#1 on node 12 (depend) fired 9, model 10
+      1   CALLS per node per single-mutation step: 0:5134897 1:1749954; diamond-bottom nodes=75568 diamond single-Set node-steps=930653 calls=568231
+### flags='throw,late' seeds 1..50000
+      1   SUMMARY flags=throw,late seeds=50000 failed=2 steps=2746002 fnCalls=1725596 spurious=0 prevBad=0 obsFires=915218 effRuns=929781 fromChecks=732887 throws=183316 recoveries=78986 reentSets=0 multiPayloadArrivals=55 installWindowSkips=0 installWindowStaleObsSteps=0
+      1   R seed=38029 FAIL step 39: batch2: eff#3 runs 5/6 cleanups 0/0 (quad/model)
+      1   R seed=33090 FAIL step 53: batch2: obs#2 on node 12 (gate) fired 5, model 4
+      1   CALLS per node per single-mutation step: 0:4079884 1:1427471; diamond-bottom nodes=75846 diamond single-Set node-steps=708688 calls=436666
+### flags='reent' seeds 1..50000
+      1   SUMMARY flags=reent seeds=50000 failed=0 steps=2750844 fnCalls=3074071 spurious=0 prevBad=0 obsFires=1523266 effRuns=1595060 fromChecks=0 throws=0 recoveries=0 reentSets=769724 multiPayloadArrivals=104 installWindowSkips=51865 installWindowStaleObsSteps=22769
+      1   CALLS per node per single-mutation step: ; diamond-bottom nodes=75568 diamond single-Set node-steps=0 calls=0
+### flags='reent,throw,late' seeds 1..50000
+      1   SUMMARY flags=reent,throw,late seeds=50000 failed=0 steps=2746026 fnCalls=2502742 spurious=0 prevBad=0 obsFires=1513804 effRuns=1589431 fromChecks=0 throws=284760 recoveries=138064 reentSets=733087 multiPayloadArrivals=59 installWindowSkips=47786 installWindowStaleObsSteps=20545
+      1   CALLS per node per single-mutation step: ; diamond-bottom nodes=75846 diamond single-Set node-steps=0 calls=0

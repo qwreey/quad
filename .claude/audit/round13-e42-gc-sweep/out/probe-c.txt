@@ -1,0 +1,15 @@
+[c1 Slot:Add + Remove(1) on a live host] N=1000 residue=0 {} dKB=305.0 (N0 dKB=0.0)
+[c1 rounds] N=1000 x4 cumulative dKB: +1 +1 +1 +1 ; last-round residue=0
+[c1b Slot:Add x N then Clear] N=1000 residue=0 {} dKB=145.0 (N0 dKB=0.0)
+[c1c Add then Extract (alive, dropped — contract: must dispose)] N=1000 residue=1000 {elem=1000} dKB=2266.0 (N0 dKB=0.0)
+[c1d Add then Extract then q.dispose] N=1000 residue=0 {} dKB=159.0 (N0 dKB=1.0)
+[c1e Add(q.Source(frame)) then Remove — State-held element survives (doc 06 L404)] N=1000 residue=1000 {elem=1000} dKB=2842.0 (N0 dKB=1.0)
+[c1f nested Slot element Add/Remove] N=1000 residue=0 {} dKB=256.0 (N0 dKB=0.0)
+host slot length	0
+[c2 :List data replace (new keys each time, 3 items)] N=1000 residue=0 {} dKB=352.0 (N0 dKB=0.0)
+[c2 rounds] N=1000 x4 cumulative dKB: +1 +1 +1 +2 ; last-round residue=0
+[c3 :List data replace, same keys reused (re-render)] N=1000 residue=0 {} dKB=64.0 (N0 dKB=0.0)
+[c4 host with :List Slot destroyed] N=1000 residue=0 {} dKB=127.0 (N0 dKB=1.0)
+[c5 host with :List Slot q.dispose(host)] N=1000 residue=0 {} dKB=703.0 (N0 dKB=1.0)
+[c6 unmounted Slot with elements, q.dispose(slot)] N=1000 residue=0 {} dKB=31.0 (N0 dKB=1.0)
+[c7 unmounted Slot with elements, dropped (never disposed)] N=1000 residue=1000 {elem=1000} dKB=2298.0 (N0 dKB=1.0)
